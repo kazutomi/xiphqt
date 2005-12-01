@@ -7,21 +7,20 @@
 #define _ASM_CMOSCAM_H
 
 /* _IOC_TYPE, bits 8 to 15 in ioctl cmd */
-
 #define CMOSCAM_IOCTYPE 124
 
 /* MINORS */
 
-#define CMOSCAM_MINOR_FRAME	1
-#define CMOSCAM_MINOR_FPN	2
-//#define CMOSCAM_MINOR_IORW	1
-//#define CMOSCAM_MINOR_I2C	2
-//#define CMOSCAM_MINOR_RAW	3
-#define CMOSCAM_MINOR_I2C	3
-#define CMOSCAM_MINOR_DMA	4
-#define CMOSCAM_MINOR_MCP	5
-#define CMOSCAM_MINOR_LOCK	6
-#define CMOSCAM_MINOR_UNLOCK	7
+#define CMOSCAM_MINOR_FRAME  1
+#define CMOSCAM_MINOR_FPN  2
+//#define CMOSCAM_MINOR_IORW  1
+//#define CMOSCAM_MINOR_I2C  2
+//#define CMOSCAM_MINOR_RAW  3
+#define CMOSCAM_MINOR_I2C  3
+#define CMOSCAM_MINOR_DMA  4
+#define CMOSCAM_MINOR_MCP  5
+#define CMOSCAM_MINOR_LOCK  6
+#define CMOSCAM_MINOR_UNLOCK  7
 #define CMOSCAM_MINOR_SENSORJTAGFPGA 8
 #define CMOSCAM_MINOR_RWTABLES 9
 #define CMOSCAM_MINOR_SENSORFPGACOMM 10
@@ -35,8 +34,8 @@
 #define CAMSEQ_OFF       0 // off, not programmed (Video mode off on Zoran sensors)
 #define CAMSEQ_READY     1 // sensor programmed may acquire at will (programSensor sets number of frames to skip (if any)
 #define CAMSEQ_SKIP      2 // skipping specified number of frames, interrupt service routine counts and will start acquisition
-#define CAMSEQ_WAIT_F 	 3 // set by "start exposure" or interrupt service routine. WAIT_F/WAIT_T/acquire/done differs by hardware register
-#define CAMSEQ_WAIT_T 	 4 // set by "start exposure" or interrupt service routine. Wait/acquire/done differs by hardware register
+#define CAMSEQ_WAIT_F    3 // set by "start exposure" or interrupt service routine. WAIT_F/WAIT_T/acquire/done differs by hardware register
+#define CAMSEQ_WAIT_T    4 // set by "start exposure" or interrupt service routine. Wait/acquire/done differs by hardware register
 #define CAMSEQ_ACQUIRE   5 // acquisition in progress (camSeqState is still CAMSEQ_WAIT)
 #define CAMSEQ_DONE      6 // acquisition over  (camSeqState is still CAMSEQ_WAIT)
 #define CAMSEQ_JPEG      7 // waiting for JPEG done interrupt, acquiring/compressing some frames
@@ -55,67 +54,67 @@ Status CAMSEQ_OFF may be changed to CAMSEQ_READY only by programSensor, it will 
   camSeqStop will terminate any acquisition in progress and set state to CAMSEQ_READY (if it was not CAMSEQ_OFF)
 */
 // For KAI11000 sensor board
-#define	sensorcom_W_size	1024
-#define	sensorcom_R_size	256
+#define  sensorcom_W_size     1024
+#define  sensorcom_R_size      256
 
 /* MCP definitions */
 
-#define	MCP_W_size	1024
-#define	MCP_R_size	256
+#define  MCP_W_size        1024
+#define  MCP_R_size         256
 
-#define	MCPOtherBits	0xffa7a7ff
-#define MCPOffReset	0x00101800
-#define MCPReset	0x00001800
-#define MCPNoReset	0x00105800
-#define MCPToggleA	0x00080000
-#define MCPToggleB	0x00001000
-#define MCPctlseq	0x00
-#define MCPsofttg	0x02
-#define MCPeackn	0x03
-#define MCPctlgate	0x04
-#define MCPwstdly	0x06
-#define MCPwrsmsk	0x07
-#define MCPwrsup	0x08
-#define MCPwrmons	0x09
-#define MCPwnom		0x0a
-#define MCPwdenom	0x0b
-#define MCPwoutw	0x0c
-#define MCPwinvctl	0x0d
-#define MCPctlsync	0x0e
-#define MCPwrdlys	0x10
-#define MCPwinv		0x40
-#define MCPwshared	0x80
-#define MCPwrsynctb	0x100
-#define MCPwrseq	0x200
+#define  MCPOtherBits  0xffa7a7ff
+#define MCPOffReset  0x00101800
+#define MCPReset  0x00001800
+#define MCPNoReset  0x00105800
+#define MCPToggleA  0x00080000
+#define MCPToggleB  0x00001000
+#define MCPctlseq  0x00
+#define MCPsofttg  0x02
+#define MCPeackn  0x03
+#define MCPctlgate  0x04
+#define MCPwstdly  0x06
+#define MCPwrsmsk  0x07
+#define MCPwrsup  0x08
+#define MCPwrmons  0x09
+#define MCPwnom    0x0a
+#define MCPwdenom  0x0b
+#define MCPwoutw  0x0c
+#define MCPwinvctl  0x0d
+#define MCPctlsync  0x0e
+#define MCPwrdlys  0x10
+#define MCPwinv    0x40
+#define MCPwshared  0x80
+#define MCPwrsynctb  0x100
+#define MCPwrseq  0x200
 
 
 /* supported ioctl _IOC_NR's */
 #ifndef I2C_WRITEARG
- #define I2C_WRITEARG(bus, slave, reg, value) (((bus) << 24) | ((slave) << 16) | ((reg) << 8) | (value))
- #define I2C_READARG(bus, slave, reg) (((bus) << 24) | ((slave) << 16) | ((reg) << 8))
+#define I2C_WRITEARG(bus, slave, reg, value) (((bus) << 24) | ((slave) << 16) | ((reg) << 8) | (value))
+#define I2C_READARG(bus, slave, reg) (((bus) << 24) | ((slave) << 16) | ((reg) << 8))
 
- #define I2C_ARGBUS(arg) (((arg) >> 24)  & 0x1)
- #define I2C_ARGSLAVE(arg) (((arg) >> 16)  & 0xff)
- #define I2C_ARGREG(arg) (((arg) >> 8) & 0xff)
- #define I2C_ARGVALUE(arg) ((arg) & 0xff)
+#define I2C_ARGBUS(arg) (((arg) >> 24)  & 0x1)
+#define I2C_ARGSLAVE(arg) (((arg) >> 16)  & 0xff)
+#define I2C_ARGREG(arg) (((arg) >> 8) & 0xff)
+#define I2C_ARGVALUE(arg) ((arg) & 0xff)
 
- #define I2C_WRITEREG 0x1   /* write to an i2c register */
- #define I2C_READREG  0x2   /* read from an i2c register */
+#define I2C_WRITEREG 0x1   /* write to an i2c register */
+#define I2C_READREG  0x2   /* read from an i2c register */
 #endif
 
 /* new for Micron sensors  - 16bit data, always bus 0 */
 #ifndef I2C_16_WRITEARG
- #define I2C_16_WRITEREG 0x3   /* write 2 bytes to an i2c register */
- #define I2C_16_READREG  0x4   /* read 2 bytes from an i2c register */
+#define I2C_16_WRITEREG 0x3   /* write 2 bytes to an i2c register */
+#define I2C_16_READREG  0x4   /* read 2 bytes from an i2c register */
   
- #define I2C_16_WRITEARG(slave, reg, value) (((slave) << 24) | ((reg) << 16) | (value))
- #define I2C_16_READARG(slave, reg) (((slave) << 24) | ((reg) << 16))
+#define I2C_16_WRITEARG(slave, reg, value) (((slave) << 24) | ((reg) << 16) | (value))
+#define I2C_16_READARG(slave, reg) (((slave) << 24) | ((reg) << 16))
 
- #define I2C_16_ARGSLAVE(arg)   (((arg) >> 24) & 0xff)
- #define I2C_16_ARGREG(arg)     (((arg) >> 16) & 0xff)
- #define I2C_16_ARGVALUE(arg)   ( (arg)      & 0xffff)
- #define I2C_16_ARGVALUE_H(arg) (((arg) >>  8) & 0xff)
- #define I2C_16_ARGVALUE_L(arg) ( (arg)        & 0xff)
+#define I2C_16_ARGSLAVE(arg)   (((arg) >> 24) & 0xff)
+#define I2C_16_ARGREG(arg)     (((arg) >> 16) & 0xff)
+#define I2C_16_ARGVALUE(arg)   ( (arg)      & 0xffff)
+#define I2C_16_ARGVALUE_H(arg) (((arg) >>  8) & 0xff)
+#define I2C_16_ARGVALUE_L(arg) ( (arg)        & 0xff)
 #endif
 
 
@@ -144,12 +143,12 @@ Status CAMSEQ_OFF may be changed to CAMSEQ_READY only by programSensor, it will 
  *   1 - in sync
  *   2 - waiting to be updated
  *   3 - update in progress (TODO: - support async)
- * 	When updating (validating) parameters and copying them to the read "registers" the I2C registers will be written
+ *   When updating (validating) parameters and copying them to the read "registers" the I2C registers will be written
  *  only if they are different from the shadows
  */
 
 /* abstract sensor register names */
-#define P_UPDATE         0	    /* R/W, see above */
+#define P_UPDATE         0      /* R/W, see above */
 #define P_SENSOR         1     /* read only
                            4  - ZR32112MLC - now there is no way to see color/mono
                            5  - ZR32112PLC
@@ -200,14 +199,14 @@ Status CAMSEQ_OFF may be changed to CAMSEQ_READY only by programSensor, it will 
 #define SENSORWIDTH_IBIS51300  1280
 #define SENSORHEIGHT_IBIS51300 1024
 
-#define P_PARS_CHANGED   2 /* RD P_RO_VALID  0	window parameters valid                  */
-#define P_DMA_VALID      3 /* RD P_RO_VALID  0	window parameters valid                  */
-#define P_ACTUAL_WIDTH   4 /* RD P_RO_WIDTH  1	pixels/row                               */
+#define P_PARS_CHANGED   2 /* RD P_RO_VALID  0  window parameters valid                  */
+#define P_DMA_VALID      3 /* RD P_RO_VALID  0  window parameters valid                  */
+#define P_ACTUAL_WIDTH   4 /* RD P_RO_WIDTH  1  pixels/row                               */
 #define P_ACTUAL_HEIGHT  5 /* RD P_RO_HEIGHT 2  pixels/column                            */
-#define P_LPR            6 /* RD P_RO_LPR    3	32-bit words per row (aligned each row)  */
-#define P_IMAGE_SIZE     7 /* RD P_RO_SIZE   4	total image size (dma data) in bytes     */
+#define P_LPR            6 /* RD P_RO_LPR    3  32-bit words per row (aligned each row)  */
+#define P_IMAGE_SIZE     7 /* RD P_RO_SIZE   4  total image size (dma data) in bytes     */
 #define P_BAYER          8 /* filter number at (0,0) 0-R, 1-G(R), 2-G(B), 3 - B. Write enabled at first, move to WindowSize later */
-#define P_TRIGGERED		 9 /* when trigger occured - 4 LSBs - pixel in DMA word, higher bits - number of DMA word */
+#define P_TRIGGERED     9 /* when trigger occured - 4 LSBs - pixel in DMA word, higher bits - number of DMA word */
 #define P_PERIOD        10 // Frame period (read only)
 #define P_FRAME         11 // Frame number (reset with JPEG pointers) -(read only)
 #define P_JPEG_WP       12 // Last reported JPEG write pointer in the circular buffer. May need to be adjustment
@@ -215,15 +214,15 @@ Status CAMSEQ_OFF may be changed to CAMSEQ_READY only by programSensor, it will 
 #define P_CLK_SENSOR    14 // Sensor clock in MHz
 #define P_FPGA_XTRA     15 // Extra cycles needed to compressor (probably constant...)
 
-//#define P_TRIG          16 /* R/W P_RW_TRIG   0	 0 - internal, 1 - external               */
+//#define P_TRIG          16 /* R/W P_RW_TRIG   0   0 - internal, 1 - external               */
 #define P_TRIG          16 /* External trigger mode                                           */
                            /* bit 0  - "old" external mode (0- internal, 1 - external )       */
                            /* bit 1 - enable(1) or disable(0) external trigger to stop clip   */
                            /* ... to be continued */
-#define P_EXPOS         17 /* P_RW_EXPOS  1	 exposure time                            */
+#define P_EXPOS         17 /* P_RW_EXPOS  1   exposure time                            */
 #define P_BGFRAME       18 // Background measurement mode - will use 16-bit mode and no FPN correction 
 
-//#define P_DMA_SZ        18 // P_RW_DMA_SZ 2	 DMA block size (debug, mostly)
+//#define P_DMA_SZ        18 // P_RW_DMA_SZ 2   DMA block size (debug, mostly)
 //#define P_DMA_LOOP      19 // Cyclic DMA buffer (should be updated to multiple of frames)
 
 
@@ -237,7 +236,7 @@ Status CAMSEQ_OFF may be changed to CAMSEQ_READY only by programSensor, it will 
 #define P_OVERLAP       21 // number of EXRA lines to be acquired
 #define P_VIDEO         22 /* still (stopped) - 0, video - 1. KAC1310 - video only */
 
-#define P_AUXCM		23 /* signal on AUXCLK pin: 0 - 0, 1 - 1, 1x - 20MHz */
+#define P_AUXCM    23 /* signal on AUXCLK pin: 0 - 0, 1 - 1, 1x - 20MHz */
 
 #define P_VIRT_WIDTH    24 /* Virtual window width - KAC-1310 sensor */
 #define P_VIRT_HEIGHT   25 /* Virtual window height - KAC-1310 sensor */
@@ -257,7 +256,7 @@ Status CAMSEQ_OFF may be changed to CAMSEQ_READY only by programSensor, it will 
 #define P_TEST          37 // 0 - normal, 1 - sensor test, 2 - FPGA test
 #define P_MCLK          38 /* 2..129 */
 #define P_MCLK_DIS      39 /* disable sensor clock */
-						 
+             
 #define P_BITS          40 /* pixel depth - bits 10/8/4 */
 #define P_SHIFTL        41 /* "digital gain" - shift left by 0/1/2 bits  (3 ->-1)*/
 #define P_FPNS          42 // FPN correction mode (subtract) 0..3
@@ -308,18 +307,18 @@ EXAMPLE usage:
 
 /* i2c errors */
 #ifndef ERR_I2C_SCL_ST0
- #define	ERR_I2C_SCL_ST0		 1
- #define	ERR_I2C_SDA_ST0		 2
- #define	ERR_I2C_SCL_ST1		 4
- #define	ERR_I2C_SDA_ST1		 8
- #define	ERR_I2C_SCL_NOPULLUP 16
- #define	ERR_I2C_SDA_NOPULLUP 32
+#define  ERR_I2C_SCL_ST0     1
+#define  ERR_I2C_SDA_ST0     2
+#define  ERR_I2C_SCL_ST1     4
+#define  ERR_I2C_SDA_ST1     8
+#define  ERR_I2C_SCL_NOPULLUP 16
+#define  ERR_I2C_SDA_NOPULLUP 32
 
 /* i2c_diagnose called by i2c_start (?) could not find any problems. Try again start */
- #define    ERR_I2C_NOTDETECTED  64
- #define	ERR_I2C_SHORT		 128
- #define	ERR_I2C_BSY		     256
- #define	ERR_I2C_NACK		 512
+#define    ERR_I2C_NOTDETECTED  64
+#define  ERR_I2C_SHORT     128
+#define  ERR_I2C_BSY         256
+#define  ERR_I2C_NACK     512
 #endif
 
 
@@ -328,19 +327,19 @@ EXAMPLE usage:
 #define IO_CCAM_MONITOR_SEQ       0x07
 
 
-//#define IO_CCAM_STOP_DMA	0x08
-//#define IO_CCAM_START_DMA	0x09 // just starts DMA - descriptor list should be set eatlier
-//#define IO_CCAM_START_RAW	0x0a // Programs DMA descriptor list according to current frame size, FPGA registers and starts DMA
+//#define IO_CCAM_STOP_DMA  0x08
+//#define IO_CCAM_START_DMA  0x09 // just starts DMA - descriptor list should be set eatlier
+//#define IO_CCAM_START_RAW  0x0a // Programs DMA descriptor list according to current frame size, FPGA registers and starts DMA
 
 
-#define IO_CCAM_JPEG		0x08 // JPEG-compressor related commands
-#define      JPEG_CMD_RESET	0x00 //	Resets pointers - both acquisition and readout
-//#define      JPEG_CMD_ARM	0x01 // Prepare compressor to read next frame acquired
-#define      JPEG_CMD_GET	0x02 // Read current page (will return empty (and length==0) if not ready
-#define      JPEG_CMD_FORGET	 0x03 // increment read frame pointer
-#define      JPEG_CMD_CATCHUP	 0x04 // set read pointer to the last acquired (or acquiring if none is acquired yet)
-#define      JPEG_CMD_ACQUIRE	 0x05 // acquire and compress one frame
-#define      JPEG_CMD_SAVE_RP	 0x06 // save read pointer
+#define IO_CCAM_JPEG    0x08 // JPEG-compressor related commands
+#define      JPEG_CMD_RESET  0x00 //  Resets pointers - both acquisition and readout
+//#define      JPEG_CMD_ARM  0x01 // Prepare compressor to read next frame acquired
+#define      JPEG_CMD_GET  0x02 // Read current page (will return empty (and length==0) if not ready
+#define      JPEG_CMD_FORGET   0x03 // increment read frame pointer
+#define      JPEG_CMD_CATCHUP   0x04 // set read pointer to the last acquired (or acquiring if none is acquired yet)
+#define      JPEG_CMD_ACQUIRE   0x05 // acquire and compress one frame
+#define      JPEG_CMD_SAVE_RP   0x06 // save read pointer
 #define      JPEG_CMD_RESTORE_RP 0x07 // restore read pointer
 #define      JPEG_CMD_N_DONE     0x08 // return 1 if no more frames to be acquired (frame number)
 #define      JPEG_CMD_L_DONE     0x09 // return 1 if no more frames to be acquired (total length)
@@ -353,17 +352,17 @@ EXAMPLE usage:
 #define      JPEG_CTRL_MONOCHROME    0x400
 #define      JPEG_CTRL_MONOCHROME_BLOCKED    0x1000
 
-#define IO_CCAM_JPEG_QUALITY	0x09 // Set P_QUALITY
+#define IO_CCAM_JPEG_QUALITY  0x09 // Set P_QUALITY
 
-#define IO_CCAM_JPEG_GET_N	0x0a	// get specified number of frames (will add to already asked for if any)
-#define IO_CCAM_JPEG_GET_L	0x0b	// get specified length (will stop after frame if got more)
+#define IO_CCAM_JPEG_GET_N  0x0a  // get specified number of frames (will add to already asked for if any)
+#define IO_CCAM_JPEG_GET_L  0x0b  // get specified length (will stop after frame if got more)
 
-#define IO_CCAM_JPEG_CTRL	0x0c // Write JPEG control word (0x10000 - use header, LSW - other settings)
-#define IO_CCAM_DMA		0x0d
-  #define CCAM_DMA_CMD_STOP	  0x00
-  #define CCAM_DMA_CMD_START  0x01 // just starts DMA - descriptor list should be set eatlier
+#define IO_CCAM_JPEG_CTRL  0x0c // Write JPEG control word (0x10000 - use header, LSW - other settings)
+#define IO_CCAM_DMA    0x0d
+ #define CCAM_DMA_CMD_STOP    0x00
+ #define CCAM_DMA_CMD_START  0x01 // just starts DMA - descriptor list should be set eatlier
 
-#define IO_CCAM_CR_MODIFY 0x0e	//(bit number)<<2 | op; op= 0 - nop, 1 - set, 2 - reset, 3 - toggle)
+#define IO_CCAM_CR_MODIFY 0x0e  //(bit number)<<2 | op; op= 0 - nop, 1 - set, 2 - reset, 3 - toggle)
 #define IO_CCAM_CR_SHADOW 0x0f
 
 
@@ -400,7 +399,8 @@ EXAMPLE usage:
 /*  For past compatibility, CCMA_DMA_SIZE...
 */
 #define CCAM_DMA_SIZE CCAM_WORDS_PER_DMABUF
-// rather arbitrary - size of indax of frames in buffer, will be limiting factor if frames are less than 256 bytes
+// rather arbitrary - size of indax of frames in buffer, 
+// will be limiting factor if frames are less than 256 bytes
 #define CCAM_DMA_INDEX_SIZE (CCAM_DMA_SIZE>>6)
 /*
 *       CCAM_MMAP_OFFSET... -- offsets in bytes in memory mapped region.

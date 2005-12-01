@@ -36,9 +36,43 @@ typedef struct {
 
 } ogg_header_t;
 
-
 #define C333_MAXWIDTH (4096)
 #define C333_MAXHEIGHT (2048)
+
+typedef struct {
+     int        nstx; // width  in superblocks
+     int        nsty; // height in superblocks
+     int        frn; // frame rate nominator ( in 1/1000000)
+     int        nobr; // nominal bit rate (-1 - undefined?)
+     int        qual; // relative quality (was 0x10)
+     int        kfgshiftm; // will calculate
+     int        nuser;
+     char      *vendor;
+     char     **user;
+
+     int        qual_left; // all in pixels, high quality will be inside and including the spacified coordinates
+     int        qual_bottom;
+     int        qual_right;
+     int        qual_top;
+     int        skip_left;
+     int        skip_bottom;
+     int        skip_right;
+     int        skip_top;
+     int        nqis;
+     int        qis[2];
+     int  sharpness;       // 0-2 - obsolete now in Theora
+     int  pre_ht[12];
+     int  pre_ht30[6];
+
+     u_int16_t   fpga_mask[C333_MAXHEIGHT>>5][C333_MAXWIDTH>>8]; // [64][16]
+     u_int32_t   fpga_zerobin[6];
+     u_int32_t   fpga_qtables[512];
+     u_int16_t   fpga_hti    [12];
+     u_int16_t   fpga_hti30  [16];
+     u_int32_t   fpga_htable [1024];
+     u_int16_t   fpga_firstbit[4];
+} fpga_params;
+
 
 
 int oggtheora_prepare (const char *headers_filename, // file to save headers
@@ -76,6 +110,9 @@ int oggtheora_prepare (const char *headers_filename, // file to save headers
 // currently code length is limited to 14 bits
                        int         pre_ht30[6]);
 
+
+// load headers from file
+int load_headers(const char *headers_filename, len_data_t *packets, int *kfgshiftm);
 
 // now encapsulate compressed data and output stream (to stdout?)
 // The two arrays will be just mmap-ed in the camera

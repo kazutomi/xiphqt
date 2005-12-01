@@ -93,14 +93,13 @@ typedef struct{
   /*The bit pattern, left-shifted so that the MSB of all patterns is
      aligned.*/
   ogg_uint32_t pattern;
-//  u_int32_t pattern;
   /*The amount the bit pattern was shifted.*/
   int          shift;
   /*The token this bit pattern represents.*/
   int          token;
 }oc_huff_entry;
-       extern int errno;
 
+extern int errno;
 
 //#define C333_MAXWIDTH (4096)
 //#define C333_MAXHEIGHT (2048)
@@ -128,7 +127,7 @@ static u_int16_t FPGA_FIRSTBIT[4];
 */
 
    
-  void fill_FPGA_qtable (u_int32_t *table,
+void fill_FPGA_qtable (u_int32_t *table,
                          int       inter,
                          int       color,
                          int       qindex_dc, // always the same in a frame
@@ -215,6 +214,8 @@ int theora_comments (char       *buf,    // returns length, buf should be big en
                      const int  *dcscale, // will encode 10bits/item
                      const int  bms[][64]    // array of 3 BMS tables
                         );
+
+
 void fill_fpga_mask_windows (u_int16_t  mask_array[C333_MAXHEIGHT>>5][C333_MAXWIDTH>>8],
                            int width,
                            int height, 
@@ -249,7 +250,7 @@ void fill_fpga_mask_windows (u_int16_t  mask_array[C333_MAXHEIGHT>>5][C333_MAXWI
 
     int makeOggTheora(u_int32_t * ccam_dma_index, // will be mmaped array in the camera
                       u_int8_t  * ccam_dma,       // will be mmaped array in the camera (char array)
-                      FILE *      movie_file,
+                      FILE *      output_fd,
                       int         page_size,  // maximal; page size to use
                       len_data_t  packets[6], // 0 - identification
                                               // 1 - comment
@@ -261,15 +262,15 @@ void fill_fpga_mask_windows (u_int16_t  mask_array[C333_MAXHEIGHT>>5][C333_MAXWI
                       int         kfgshiftm // number of bits in granule used for number of i-frames
                       );
                       
-   void write_7_2_1(char * buf,         // bitstream buffer
+void write_7_2_1(char * buf,         // bitstream buffer
                     int  * bp,          // bitstream bit pointer
                     int    length);     // run length to encode
-   
-   void write_7_2_2(char * buf,         // bitstream buffer
+
+void write_7_2_2(char * buf,         // bitstream buffer
                     int  * bp,          // bitstream bit pointer
                     int    length);     // run length to encode
-   
-   void   put_7_2_1(char * buf,         // bitstream buffer
+
+void   put_7_2_1(char * buf,         // bitstream buffer
                     int  * bp,          // bitstream bit pointer
                     int  * current_bit, // current running bit (-1 - undefined)
                     int  * run,         // current length of bits (when current bit == -1 undefined)
@@ -353,8 +354,8 @@ D(if (d>0) fprintf(stderr,"d= 0x%x, x=%d, mask_array[%d][%d]=0x%x\n",d,x,y,x8,ma
      }
      
    }
-   
-   void write_7_2_2(char * buf,         // bitstream buffer
+
+void write_7_2_2(char * buf,         // bitstream buffer
                     int  * bp,          // bitstream bit pointer
                     int    length)      // run length to encode
    {
@@ -379,8 +380,8 @@ D(if (d>0) fprintf(stderr,"d= 0x%x, x=%d, mask_array[%d][%d]=0x%x\n",d,x,y,x8,ma
      }
      
    }
-   
-   void put_7_2_1(char * buf,         // bitstream buffer
+
+void put_7_2_1(char * buf,         // bitstream buffer
                   int  * bp,          // bitstream bit pointer
                   int  * current_bit, // current running bit (-1 - undefined)
                   int  * run,         // current length of bits (when current bit == -1 undefined)
@@ -429,8 +430,8 @@ D(if (d>0) fprintf(stderr,"d= 0x%x, x=%d, mask_array[%d][%d]=0x%x\n",d,x,y,x8,ma
      } 
    }
    
-   
-   void put_7_2_2(char * buf,         // bitstream buffer
+
+void put_7_2_2(char * buf,         // bitstream buffer
                   int  * bp,          // bitstream bit pointer
                   int  * current_bit, // current running bit (-1 - undefined)
                   int  * run,         // current length of bits (when current bit == -1 undefined)
@@ -633,7 +634,7 @@ D(if (d>0) fprintf(stderr,"d= 0x%x, x=%d, mask_array[%d][%d]=0x%x\n",d,x,y,x8,ma
   }
 
 
-   void theora_frameheaders(int         width,   // pixels - will ">>" as needed
+  void theora_frameheaders(int         width,   // pixels - will ">>" as needed
                            int         height,  // pixels - will ">>" as needed
 //                           int         frame_flags,   // 0 - intra, 1 - inter(full), 3 - inter (skip according mask)
                            len_data_t  frame_headers[3],   // [0] - intra, [1] - inter(full), [2] - inter (skip according mask)
@@ -660,35 +661,42 @@ D(if (d>0) fprintf(stderr,"d= 0x%x, x=%d, mask_array[%d][%d]=0x%x\n",d,x,y,x8,ma
       frame_headers[2].data=malloc(((frame_headers[2].len+31)>>3)& (~0x3));
       memcpy (frame_headers[2].data,buf,((frame_headers[2].len+31)>>3)& (~0x3));
     }
-  
-   int theora_write_bits (char * buf, // buffer
-                          int * bp,   // pointer to bit pointer
-                          u_int32_t data,   // data to write
-                          int nb)     // number of bits to write
-   {
-     int i,m, bytp,bitp;
-     if (((*bp | nb) & 7) == 0) { // byte sync not lost
-       for (i=(nb-8); i>=0; i-=8) {
-         buf[(*bp)>>3]=(data>>i) & 0xff;
-         *bp+=8;
-       }
-     } else while (nb>0){ // processing on bit level
-       m= 0xff >> (bitp=((*bp) & 7));
-       bytp=(*bp)>>3;
-       if ((bitp+nb)>=8) {
-         buf[bytp]=((buf[bytp] ^ (data >> (bitp+nb-8))) & m) ^ buf[bytp];
-         *bp=(bytp+1)<<3;
-         nb-=(8-bitp);
-       } else {
-         buf[bytp]=((buf[bytp] ^ (data << (8-bitp-nb))) & m) ^ buf[bytp];
-         *bp+=nb;
-         break;
-       }  
-     }
+
+// used void oggpackB_write(oggpack_buffer *b,unsigned long value,int bits) from theora/libogg-1.1.1/src/bitwise.c
+// it is probably optimized so it will be a good idea to use the library, but now - just some shortcuts.
+//   int theora_write_bits (char * buf, // buffer
+//                          int * bp,   // pointer to bit pointer
+//                          int data,   // data to write
+//                          int nb)     // number of bits to write
+
+/*write theora data bitwise
+    but: buffer
+    bp: pointer to bit pointer
+    data: data to write
+    nb: number of bits to write
+    Return: bp+nb.*/  
+int theora_write_bits (char * buf, int * bp, u_int32_t data, int nb) {
+    int i,m, bytp,bitp;
+    if (((*bp | nb) & 7) == 0) { // byte sync not lost
+        for (i=(nb-8); i>=0; i-=8) {
+            buf[(*bp)>>3]=(data>>i) & 0xff;
+            *bp+=8;
+        }
+    } else while (nb>0){ // processing on bit level
+        m= 0xff >> (bitp=((*bp) & 7));
+        bytp=(*bp)>>3;
+        if ((bitp+nb)>=8) {
+            buf[bytp]=((buf[bytp] ^ (data >> (bitp+nb-8))) & m) ^ buf[bytp];
+            *bp=(bytp+1)<<3;
+            nb-=(8-bitp);
+        } else {
+            buf[bytp]=((buf[bytp] ^ (data << (8-bitp-nb))) & m) ^ buf[bytp];
+            *bp+=nb;
+            break;
+        }  
+    }
     return *bp;                        
-   }
-
-
+}
 
 
 /*Compares two oc_huff_entry structures by their bit patterns.
@@ -715,12 +723,6 @@ static int huff_entry_cmp(const void *_c1,const void *_c2){
   Return: 0 on success, or a negative value if one of the given Huffman tables
    does not form a full, prefix-free code.*/
 
-// used void oggpackB_write(oggpack_buffer *b,unsigned long value,int bits) from theora/libogg-1.1.1/src/bitwise.c
-// it is probably optimized so it will be a good idea to use the library, but now - just some shortcuts.
-//   int theora_write_bits (char * buf, // buffer
-//                          int * bp,   // pointer to bit pointer
-//                          int data,   // data to write
-//                          int nb)     // number of bits to write
 
    
 //int oc_huff_codes_pack(oggpack_buffer *_opb,
@@ -794,8 +796,8 @@ int oc_huff_codes_pack(char *buf, int* bp,
 // code assumes little endian
 int ogg_page      (ogg_header_t *    ogg_header, // pointer to the header data (returns - header length in bytes)
                             char     flags,
-                            u_int64_t granule,
-                            u_int32_t stream_serial,
+                           u_int64_t granule,
+                           u_int32_t stream_serial,
                             int      page,       // page
                             int      num_packets, // number of packets in the page
                    len_data_t *      packets) {
@@ -963,8 +965,6 @@ D(fprintf(stderr,"            ogg_frame_page: l=%d, len= %d\n",l, len[0]));
      ogg_header->lacing_values[n++]=r;
      ogg_header->num_segm=  n;
 
-
-     
 // second pass - calculate the crc
      crc_reg=0;
      for (i=0;i<(27+c_header[26]);i++) crc_reg=(crc_reg<<8)^crc_lookup[((crc_reg >> 24)^c_header[i])&0xff];
@@ -984,20 +984,18 @@ D(fprintf(stderr,"\n"));
      ogg_header->crc[3]=        (crc_reg>>24) & 0xff;
      len[0]-=(dl-l);
      return (27+c_header[26]);
-   }
-
-
+}
 
 
 //static const char theora_string[6]={0x74,0x68,0x65,0x6f,0x72,0x61};
-   int theora_identification (char *buf,  // returns length, buf should be big enough - 42 bytes
-                              int   fmbw, // width in macroblocks
-                              int   fmbh, // height in macroblocks
-                              int   frn, // frame rate nominator ( in 1/1000000)
-                              int   frd, // frame rate denominator (1000000)
-                              int   nobr, // nominal bit rate (-1 - undefined?)
-                              int   qual, // relative quality (was 0x10)
-                              int   kfgshift) // number of bits in granule used for number of i-frames
+int theora_identification (char *buf,  // returns length, buf should be big enough - 42 bytes
+                           int   fmbw, // width in macroblocks
+                           int   fmbh, // height in macroblocks
+                           int   frn, // frame rate nominator ( in 1/1000000)
+                           int   frd, // frame rate denominator (1000000)
+                           int   nobr, // nominal bit rate (-1 - undefined?)
+                           int   qual, // relative quality (was 0x10)
+                           int   kfgshift) // number of bits in granule used for number of i-frames
    {
      int bp;
      buf[ 0]=0x80;
@@ -1042,14 +1040,13 @@ D(fprintf(stderr,"\n"));
      theora_write_bits (buf, &bp, 0,2); // pixel format 4:2:0
      theora_write_bits (buf, &bp, 0,3); // reserved bits
      return 42; // length
-   }
+}
                               
-   int theora_comments (char        *buf,    // returns length, buf should be big enough - ?? bytes
-                        int          buflen,  // buffer size (returns -1 if fails to fit)
-                        const char  *vendor, // Null-terminated string (was "Xiph.Org libTheora I 20040317 3 2 0\0")
-                        int          nuser,   // number of user comments
-                        const char **user)
-   {
+int theora_comments (char        *buf,    // returns length, buf should be big enough - ?? bytes
+                     int          buflen,  // buffer size (returns -1 if fails to fit)
+                     const char  *vendor, // Null-terminated string (was "Xiph.Org libTheora I 20040317 3 2 0\0")
+                     int          nuser,   // number of user comments
+                     const char **user) {
      int b,len,i;
      if (buflen<15) return -1;
      buf[ 0]=0x81;
@@ -1081,17 +1078,16 @@ D(fprintf(stderr,"\n"));
      }
 //  D(fprintf(stderr, "theora_comments b=%d\n",b));
     return b;    
-   }
+}
 
-   int theora_setup (char       *buf,    // returns length, buf should be big enough - ?? bytes
-                     int         buflen,  // buffer size (returns -1 if fails to fit)
+int theora_setup (char       *buf,    // returns length, buf should be big enough - ?? bytes
+                  int         buflen,  // buffer size (returns -1 if fails to fit)
 // the next pointers will likely point to constant tables, the same ones should be used to program FPGA internal tables                     
-                     const int  *lflims,  // if null - skip  alltogether, not null - 5 assumed bits/value
-                     const int  *acscale, // will encode 10bits/item
-                     const int  *dcscale, // will encode 10bits/item
-                     const int  bms[][64]    // array of 3 BMS tables
-                        )
-   {
+                  const int  *lflims,  // if null - skip  alltogether, not null - 5 assumed bits/value
+                  const int  *acscale, // will encode 10bits/item
+                  const int  *dcscale, // will encode 10bits/item
+                  const int  bms[][64]    // array of 3 BMS tables
+                        ) {
      int bp,i,bmi;
      buf[ 0]=0x82;
      memcpy (buf+1,theora_string,6);
@@ -1148,14 +1144,20 @@ D(fprintf(stderr,"\n"));
    }
 
 
-//filling out FPGA tables
-  void fill_FPGA_qtable (u_int32_t *table,
-                         int       inter,
-                         int       color,
-                         int       qindex_dc, // always the same in a frame
-                         int       qindex_ac, // may be different if it is a second qi in a frame
-                         int       sharpness)  // 0..2 - common for all q
-{
+/*filling out FPGA tables
+    table:      the qtable to fill
+    inter:      ??
+    color:      ??
+    qindex_dc:  always the same in a frame
+    qindex_ac:  may be different if it is a second qi in a frame
+    sharpness:  0..2 - common for all q
+    Return: void */
+void fill_FPGA_qtable (u_int32_t *table,
+                         int      inter,
+                         int      color,
+                         int      qindex_dc, 
+                         int      qindex_ac,
+                         int      sharpness) {
      int       zbin_index_dc= (sharpness<<1) | (theora_DCSCALE[qindex_dc]>50)?1:0;// index of zero bin/rounding table to use (table is separate)
      int       zbin_index_ac= (sharpness<<1) | (theora_DCSCALE[qindex_ac]>50)?1:0;// index of zero bin/rounding table to use (table is separate)
      int i;
@@ -1184,19 +1186,27 @@ D(fprintf(stderr,"\n"));
      }
    D(fprintf(stderr,"\n"));
 }
-  void fill_FPGA_qtables (
+
+/*filling out FPGA tables
+    tables:         the qtables to fill
+    sharpness:      0..2 - common for all q
+    intra_y_qi_hi:  index in DC_Scale/AC_Scale tables, intra frame, luma
+    intra_c_qi_hi:  index in DC_Scale/AC_Scale tables, intra frame, chroma
+    inter_y_qi_hi:  index in DC_Scale/AC_Scale tables, inter frame, luma
+    inter_c_qi_hi:  index in DC_Scale/AC_Scale tables, inter frame, chroma
+
+    intra_y_qi_lo:  index in DC_Scale/AC_Scale tables, intra frame, luma
+    intra_c_qi_lo:  index in DC_Scale/AC_Scale tables, intra frame, chroma
+    inter_y_qi_lo:  index in DC_Scale/AC_Scale tables, inter frame, luma
+    inter_c_qi_lo:  index in DC_Scale/AC_Scale tables, inter frame, chroma
+
+    Return: void */
+void fill_FPGA_qtables (
      u_int32_t  tables[512],
      int  sharpness,
-     int  intra_y_qi_hi,   // index in DC_Scale/AC_Scale tables, intra frame, luma
-     int  intra_c_qi_hi,   // index in DC_Scale/AC_Scale tables, intra frame, chroma
-     int  inter_y_qi_hi,   // index in DC_Scale/AC_Scale tables, inter frame, luma
-     int  inter_c_qi_hi,   // index in DC_Scale/AC_Scale tables, inter frame, chroma
+     int  intra_y_qi_hi, int  intra_c_qi_hi, int  inter_y_qi_hi, int  inter_c_qi_hi,
 
-     int  intra_y_qi_lo,   // index in DC_Scale/AC_Scale tables, intra frame, luma
-     int  intra_c_qi_lo,   // index in DC_Scale/AC_Scale tables, intra frame, chroma
-     int  inter_y_qi_lo,   // index in DC_Scale/AC_Scale tables, inter frame, luma
-     int  inter_c_qi_lo)   // index in DC_Scale/AC_Scale tables, inter frame, chroma
-     {
+     int  intra_y_qi_lo, int  intra_c_qi_lo, int  inter_y_qi_lo, int  inter_c_qi_lo) {
        fill_FPGA_qtable (&tables[  0], 0, 0, intra_y_qi_hi, intra_y_qi_hi, sharpness);
        fill_FPGA_qtable (&tables[128], 0, 1, intra_c_qi_hi, intra_c_qi_hi, sharpness);
        fill_FPGA_qtable (&tables[256], 1, 0, inter_y_qi_hi, inter_y_qi_hi, sharpness);
@@ -1205,30 +1215,44 @@ D(fprintf(stderr,"\n"));
        fill_FPGA_qtable (&tables[192], 0, 1, intra_c_qi_hi, intra_c_qi_lo, sharpness);
        fill_FPGA_qtable (&tables[320], 1, 0, inter_y_qi_hi, inter_y_qi_lo, sharpness);
        fill_FPGA_qtable (&tables[448], 1, 1, inter_c_qi_hi, inter_c_qi_lo, sharpness);
+}
+
+
+// {len[3:0],data[13:0]} - data is MSB aligned
+/*filling out FPGA htables
+    hti:
+    hti30:
+    htable:
+    pre_ht:
+    pre_ht30:
+    Return: 0 on success, or a negative value on error. */
+int fill_FPGA_htables (u_int16_t hti  [12], u_int16_t hti30[16],
+                       u_int32_t htable[1024],
+                       int pre_ht[12], int pre_ht30[6]) {
+    int i,j,k,l,d;
+    for (i=0; i<12; i++) hti[i]=pre_ht30[pre_ht[i]];
+    for (i=0; i<16; i++) hti30[i]=7;             // unused
+    for (i=0; i< 6; i++) hti30[pre_ht30[i]] = i; // fill just needed
+    for (i=0; i< 5; i++) for (j=0;j<6;j++) for (k=0;k<32;k++) {
+        l=OC_VP31_HUFF_CODES[(i<<4)+pre_ht30[j]][k].nbits;
+        if (l>14) {
+            fprintf(stderr,"huffman code too long %d > 14 in table %d, token %d\n",
+                  l, (i<<4)+j,k ); 
+            return -1;
+        }
+        // only - up to 14 bits long !!!
+        d=OC_VP31_HUFF_CODES[(i<<4)+pre_ht30[j]][k].pattern  << (14-l);  
+        htable[i*192 + (j<<5) +k] = (d & 0x3fff) | (l << 14);
      }
-  // {len[3:0],data[13:0]} - data is MSB aligned
-  int fill_FPGA_htables (u_int16_t hti  [12],
-                          u_int16_t hti30[16],
-                          u_int32_t htable[1024],
-                          int       pre_ht[12],
-                          int       pre_ht30[6])
-  {
-     int i,j,k,l,d;                       
-     for (i=0; i<12; i++) hti[i]=pre_ht30[pre_ht[i]];
-     for (i=0; i<16; i++) hti30[i]=7;             // unused
-     for (i=0; i< 6; i++) hti30[pre_ht30[i]] = i; // fill just needed
-     for (i=0; i< 5; i++) for (j=0;j<6;j++) for (k=0;k<32;k++) {
-       l=OC_VP31_HUFF_CODES[(i<<4)+pre_ht30[j]][k].nbits;
-       if (l>14) {fprintf(stderr,"huffman code too long %d > 14 in table %d, token %d\n",
-                  l, (i<<4)+j,k ); return -1;}
-       d=OC_VP31_HUFF_CODES[(i<<4)+pre_ht30[j]][k].pattern  << (14-l);  // only - up to 14 bits long !!!
-       htable[i*192 + (j<<5) +k] = (d & 0x3fff) | (l << 14);
-     }      
-    return 0;
-  }
+     return 0;
+}
            
 
- // fwrites data to stream, until all sent
+/* fwrites data to stream, until all sent
+    stream: file handle to write data to
+    data:   pointer to data
+    len:    length of data to write
+    Return: length of data writen */
 int fwrite_all(FILE *  stream, char * data, int len) {
     char *cp= data;
     int   l=0;
@@ -1240,19 +1264,28 @@ int fwrite_all(FILE *  stream, char * data, int len) {
     return (cp-data);  
 }
 
-int makeOggTheora(u_int32_t * ccam_dma_index, // will be mmaped array in the camera
-                      u_int8_t  * ccam_dma,       // will be mmaped array in the camera (char array)
-                      FILE *      movie_file,
-                      int         page_size,      // maximal; page size to use
-                      len_data_t  packets[6],     // 0 - identification
-                                                  // 1 - comment
-                                                  // 2 - setup
-                                                  // 3 - frame - intra (.len - in bits, not bytes!)
-                                                  // 4 - frame - inter/full
-                                                  // 5 - frame - inter/mapped
+
+/*makes write out an ogg theora file
+    ccam_dma_index: will be mmaped array in the camera
+    ccam_dma:       will be mmaped array in the camera (char array)
+    output_fd:     file handler to write ogg theora stream to
+    page_size:      maximal; page size to use
+    packets[6]:     0 - identification
+                    1 - comment
+                    2 - setup
+                    3 - frame - intra (.len - in bits, not bytes!)
+                    4 - frame - inter/full
+                    5 - frame - inter/mapped
+    stream_serial:  serial number of ogg stream
+    kfgshiftm:      number of bits in granule used for number of i-frames
+    Return: 0 on success, negative values on error */
+int makeOggTheora(u_int32_t * ccam_dma_index, 
+                      u_int8_t  * ccam_dma, 
+                      FILE *      output_fd,
+                      int         page_size, 
+                      len_data_t  packets[6],
                       u_int32_t   stream_serial,
-                      int         kfgshiftm       // number of bits in granule used for number of i-frames
-                      ) {
+                      int         kfgshiftm) {
     
       ogg_header_t header;
       int          header_length, fw;
@@ -1272,154 +1305,182 @@ int makeOggTheora(u_int32_t * ccam_dma_index, // will be mmaped array in the cam
       int          last_page_flags;
       int          overlapped_header; // 0/4 - if "4" then bits from the first word of data are already copied to the header
       int          first_frame=1;
-// first make and send out first two pages (second - with 2 packets)
-    D(fprintf(stderr,"makeOggTheora: stream_serial=0x%x, kfgshiftm=0x%x\n",stream_serial,kfgshiftm));
 
-    header_length= ogg_page (&header, 2, 0, stream_serial, page++, 1, &packets[0]); //42
-    if (header_length<0) return header_length-1000;
-    if ((fw= fwrite_all(movie_file, (char *) &header, header_length))<0) {
+    // Ogg Header this should go in its own function: ogg_send_header 
+    // first make and send first page
+    header_length= ogg_page (&header, 2, 0, stream_serial, page++, 1, &packets[0]);
+    if (header_length<0) 
+        return header_length-1000;
+    if ((fw= fwrite_all(output_fd, (char *) &header, header_length))<0) {
         fprintf(stderr,"error writing output data1 - error = %d (%s)\n",
                                                          errno,strerror(errno)); 
         return fw;
     }
-    if ((fw= fwrite_all(movie_file, packets[0].data, packets[0].len))<0) {
+    if ((fw= fwrite_all(output_fd, packets[0].data, packets[0].len))<0) {
         fprintf(stderr,"error writing output data2 - error = %d (%s)\n",
                                                          errno,strerror(errno)); 
         return fw;
     }
+    //make and send second page with 2 packets
     header_length= ogg_page (&header, 0, 0, stream_serial, page++, 2, &packets[1]);
-
     if (header_length<0) 
-        return header_length-2000;
-    
-    if ((fw= fwrite_all(movie_file, (char *) &header, header_length))<0) {
+        return header_length-2000;    
+    if ((fw= fwrite_all(output_fd, (char *) &header, header_length))<0) {
         fprintf(stderr,"error writing output data3 - error = %d (%s)\n",
                                                          errno,strerror(errno)); 
         return fw;
     }
-    if ((fw= fwrite_all(movie_file, packets[1].data, packets[1].len))<0) {
+    if ((fw= fwrite_all(output_fd, packets[1].data, packets[1].len))<0) {
         fprintf(stderr,"error writing output data4 - error = %d (%s)\n",
                         errno, strerror(errno)); 
         return fw;
     }
-    if ((fw= fwrite_all(movie_file, packets[2].data, packets[2].len))<0) {
+    if ((fw= fwrite_all(output_fd, packets[2].data, packets[2].len))<0) {
         fprintf(stderr,"error writing output data5 - error = %d (%s)\n",
                         errno,strerror(errno)); 
         return fw;
     }
+    // Ogg Header End
+
     // now frames
     // what kind of an abort command is ths?
-    while (ccam_dma_index[nframe]!=0xffffffff) {
-        D(fprintf(stderr,"++++++++++++++++++++makeOggTheora: ccam_dma_index[%d]=%d(0x%x)\n",nframe,ccam_dma_index[nframe],ccam_dma_index[nframe]));
-      
+    while (ccam_dma_index[nframe]!=0xffffffff) {      
         frame_length=(ccam_dma_index[nframe] & 0xfffffff)-frame_start;
         next_frame_start=((ccam_dma_index[nframe] & 0xfffffff)+63) & (~0x1f);
         frame_type=(ccam_dma_index[nframe]>>28) & 3;
-#if 0
-        frame_header_length=  (packets[3+frame_type].len>>3)& (~3);
-#else
-        frame_header_length=  ((packets[3+frame_type].len+31)>>3)& (~3);
-        overlapped_header=    (packets[3+frame_type].len & 31)?4:0;
-#endif
-        last_page_flags= (ccam_dma_index[nframe+1]==0xffffffff)?4:0;
-        //next_granule= (granule | (frame_type?0:granule_mask))+1;
-        //granule= (granule | (frame_type?0:granule_mask))+1;
-        dp=&ccam_dma[frame_start];
+
+        frame_header_length =  ((packets[3+frame_type].len+31)>>3)& (~3);
+        overlapped_header   =  (packets[3+frame_type].len & 31)?4:0;
+        last_page_flags     =  (ccam_dma_index[nframe+1]==0xffffffff)?4:0;
+
+
+        /* calculated granulepos */
         if (first_frame) {
             first_frame=0;
         } else if (frame_type==INTRA){
-            //granule= (granule | ((frame_type==0)?granule_mask:0))+1;
             granule=(granule+ (((granule&granule_mask)+1)<<kfgshiftm)) & (~granule_mask);
         } else {
             granule=(granule & (~granule_mask)) |  ((granule+1) &granule_mask);
         }
-        D(fprintf(stderr,"********************makeOggTheora: nframe=%d, frame_length=%d (0x%x), next_frame_start=%d(0x%x), frame_type=%d\n",
-        nframe,frame_length,frame_length,next_frame_start,next_frame_start,frame_type));
 
-        dp_prev=&ccam_dma[frame_start];
+        //FIXME: this looks wrong to me j^
+        dp      = &ccam_dma[frame_start];
+        dp_prev = &ccam_dma[frame_start];
 
-        header_length= ogg_frame_page (&header,                  // pointer to the header data (returns - header length in bytes)
-                                        last_page_flags,         // +1 - continuation, +4 - last (+2 - first)
-                                                                 // "last" will be masked out if needed
-                                        page_size,
+        header_length= ogg_frame_page (&header,                 // [1]
+                                        last_page_flags,        // [2]
+                                        page_size,              // [3]
                                         granule,
                                         stream_serial,
                                         page++,
-                                        packets[3+frame_type],  // not used if (flags & 1). frame_header.len is measured in bits, not bytes!
-                                        &frame_length,          // frame data length
-                                        &dp);                   // pointer to array with frame data (bytes)
-            
- D(fprintf(stderr,"----header_length=%d, (dp-dp_prev)=0x%x, dp[0]=%x, dp_prev[0]=%x\n", header_length,(int) (dp-dp_prev),dp[0],dp_prev[0]));
- D(fprintf(stderr,"----header_length=%d, (dp-dp_prev)=0x%x, dp[1]=%x, dp_prev[1]=%x\n", header_length,(int) (dp-dp_prev),dp[1],dp_prev[1]));
- D(fprintf(stderr,"----header_length=%d, (dp-dp_prev)=0x%x, dp[2]=%x, dp_prev[2]=%x\n", header_length,(int) (dp-dp_prev),dp[2],dp_prev[2]));
+                                        packets[3+frame_type],  // [4]
+                                        &frame_length,          // [5]
+                                        &dp);                   // [6]
+                /*
+                 [1] pointer to the header data
+                     (returns - header length in bytes)
+                 [2] +1 - continuation, +4 - last (+2 - first)
+                     "last" will be masked out if needed
+                 [3]  maximal; page size to use
+                 [4]  not used if (flags & 1). 
+                      frame_header.len is measured in bits, not bytes!
+                 [5]  frame data length
+                 [6]  pointer to array with frame data(bytes)
+                */
 
         if (header_length<0) 
             return header_length-3000;
+
         // write to output stream first (or only) page of a frame
-        if ((fw= fwrite_all(movie_file, (char *) &header, header_length))<0) {
+        if ((fw= fwrite_all(output_fd, (char *) &header, header_length))<0) {
             fprintf(stderr,"error writing output data6 - error = %d (%s)\n",
                             errno,strerror(errno)); 
             return fw;
         }
-        if ((fw= fwrite_all(movie_file, packets[3+frame_type].data, frame_header_length))<0) {
+        if ((fw= fwrite_all(output_fd, packets[3+frame_type].data, frame_header_length))<0) {
             fprintf(stderr,"error writing output data7 - error = %d (%s)\n",
                             errno,strerror(errno)); 
             return fw;
         }
-        if ((fw= fwrite_all(movie_file, dp_prev+overlapped_header, (int) (dp-dp_prev-overlapped_header)))<0) {
+        if ((fw= fwrite_all(output_fd, dp_prev+overlapped_header, (int) (dp-dp_prev-overlapped_header)))<0) {
             fprintf(stderr,"error writing output data8 - error = %d (%s)\n",
                             errno,strerror(errno)); 
             return fw;
         }
 
-        // see if needed more pages
+        // create more pages if needed
         while (frame_length>0) {
             dp_prev=dp;
-            header_length= ogg_frame_page (&header,               // [1]
-                                           last_page_flags,       // [2]
-                                           page_size,
-                                           granule,
-                                           stream_serial,
-                                           page++,
-                                           packets[3+frame_type], // [3]
-                                           &frame_length,         // [4]
-                                           &dp                    // [5]
-                                          );
-        /*
-         [1] pointer to the header data
-             (returns - header length in bytes)
-         [2] +1 - continuation, +4 - last (+2 - first)
-             "last" will be masked out if needed
-         [3]  not used if (flags & 1). 
-              frame_header.len is measured in bits, not bytes!
-         [4]  frame data length
-         [5]  pointer to array with frame data(bytes)
-        */
-
- D(fprintf(stderr,"----header_length=%d, (dp-dp_prev)=0x%x, dp[0]=%x, dp_prev[0]=%x\n", header_length,(int) (dp-dp_prev),dp[0],dp_prev[0]));
- D(fprintf(stderr,"----header_length=%d, (dp-dp_prev)=0x%x, dp[1]=%x, dp_prev[1]=%x\n", header_length,(int) (dp-dp_prev),dp[1],dp_prev[1]));
- D(fprintf(stderr,"----header_length=%d, (dp-dp_prev)=0x%x, dp[2]=%x, dp_prev[2]=%x\n", header_length,(int) (dp-dp_prev),dp[2],dp_prev[2]));
+            header_length= ogg_frame_page (&header,             // [1]
+                                        last_page_flags,        // [2]
+                                        page_size,              // [3]
+                                        granule,
+                                        stream_serial,
+                                        page++,
+                                        packets[3+frame_type],  // [4]
+                                        &frame_length,          // [5]
+                                        &dp);                   // [6]
+                /*
+                 [1] pointer to the header data
+                     (returns - header length in bytes)
+                 [2] +1 - continuation, +4 - last (+2 - first)
+                     "last" will be masked out if needed
+                 [3]  maximal; page size to use
+                 [4]  not used if (flags & 1). 
+                      frame_header.len is measured in bits, not bytes!
+                 [5]  frame data length
+                 [6]  pointer to array with frame data(bytes)
+                */
 
             // write to output stream other pages of a frame
-            if ((fw= fwrite_all(movie_file, (char *) &header, header_length))<0) {
+            if ((fw= fwrite_all(output_fd, (char *) &header, header_length))<0) {
                 fprintf(stderr,"error writing output data9 - error = %d (%s)\n",
                                 errno,strerror(errno)); 
                 return fw;
             }
-            if ((fw= fwrite_all(movie_file, dp_prev, (int) (dp-dp_prev)))<0){
+            if ((fw= fwrite_all(output_fd, dp_prev, (int) (dp-dp_prev)))<0){
                 fprintf(stderr,"error writing output data10 - error = %d (%s)\n",
                                 errno,strerror(errno)); 
                 return fw;
             }                               
         }
-        //granule= (granule | (frame_type?0:granule_mask))+1;
         nframe++;
         frame_start=next_frame_start;
     }
     return 0;
 }
 
-                           
+/*prepare what?
+    headers_filename:
+    fpga_mask:
+    fpga_zerobin:
+    fpga_qtables:
+    fpga_hti:
+    fpga_hti30:
+    fpga_htable:
+    fpga_firstbit:
+    nstx:           number of supertiles (128x64) horizontal
+    nsty:           number of supertiles (128x64) vertical
+    frn:            frame rate nominator (1000000=1fps)
+    nobr:           (-1 - "undfined")
+    qual:           realtive quality =16
+    kfgshiftm:
+    vendor:         "Xiph.Org libTheora I 20040317 3 2 0"
+    nuser:
+    user:
+    qual_left:
+    qual_bottom:
+    qual_right:
+    qual_top:
+    skip_left:
+    skip_bottom:
+    skip_right:
+    skip_top:
+    qsi:            0..63 if both are the same, single qi will be encoded
+    sharpness:      0..2 - is it obsolete in encodr now?
+    pre_ht:
+    pre_ht30:
+    Return: 0 on success, negative values on error */                           
 int oggtheora_prepare (const char *headers_filename, // file to save headers
                        u_int16_t   fpga_mask[C333_MAXHEIGHT>>5][C333_MAXWIDTH>>8], // [64][16]
                        u_int32_t   fpga_zerobin[6],
@@ -1446,7 +1507,7 @@ int oggtheora_prepare (const char *headers_filename, // file to save headers
                        int         skip_bottom,
                        int         skip_right,
                        int         skip_top,
-                       int         qis[2], // 0..63 if both are the same, single qi will be encoded
+                       int         qis[2], 
                        int         sharpness, // 0..2 - is it obsolete in encodr now?
 // table that maps combinbatins of (frame type: 0 - intra, 1  inter whole, 2 - inter, partial (mapped)), AC(/DC) and chroma(/luma)
 // to internal (FPGA) indices (1-of-6 - not 1-of-16 as there is not enough room in FPGA Block RAM) 
@@ -1454,6 +1515,7 @@ int oggtheora_prepare (const char *headers_filename, // file to save headers
 // this table maps intenal (1-of-6) Huffman table index to the standard 1-of-16. Not all the tables in the standard set of 80 can work -
 // currently code length is limited to 14 bits
                        int         pre_ht30[6]){
+
 //     char       s[1024];
 //     char      *cp;
 //     char      *ep;
@@ -1544,14 +1606,13 @@ D(int ii=0;)
     for (i=0; i<3; i++) free(frame_headers[i].data);
     return 0;
  }
-// now encapsulate compressed data and output stream (to stdout?)
-// The two arrays will be just mmap-ed in the camera
-int oggtheora_send    (const char *headers_filename, // filename of a file with 6 headers and their lengths (in bits)
-                       u_int8_t    ccam_dma      [CCAM_BYTES_PER_DMABUF],
-                       u_int32_t   ccam_dma_index[CCAM_DMA_INDEX_SIZE],
-                       u_int32_t   stream_serial) {
-    int        kfgshiftm=9;
-    len_data_t packets[6];
+
+
+/* load headers from file
+    headers_filename:   filename of a file with 6 headers and their lengths (in bits)
+    packets:            ponter to load headers to.
+    Return: 0 on success, negative value on error*/
+int load_headers(const char *headers_filename, len_data_t *packets, int *kfgshiftm) {
     FILE      *headers_file;
     u_int32_t  num_headers;
     u_int32_t  header_lengths[6];
@@ -1568,7 +1629,7 @@ int oggtheora_send    (const char *headers_filename, // filename of a file with 
         return -5;
     if (fread (header_lengths, 4, 6, headers_file)<6) 
         return -5;
-    if (fread (&kfgshiftm,     4, 1, headers_file)<1) 
+    if (fread (kfgshiftm,     4, 1, headers_file)<1) 
         return -5;
 
     for (i=0;i<3;i++) 
@@ -1584,6 +1645,27 @@ int oggtheora_send    (const char *headers_filename, // filename of a file with 
         }     
     }
     fclose(headers_file);
+    return 0;
+}
+
+/* now encapsulate compressed data and output stream (to stdout)
+   The two arrays will be just mmap-ed in the camera
+    headers_filename:   filename of a file with 6 headers and their lengths (in bits)
+    ccam_dma:
+    ccam_dma_index:
+    stream_serial:
+    Return: 0 on success, negative value on error*/
+int oggtheora_send    (const char *headers_filename, 
+                       u_int8_t    ccam_dma      [CCAM_BYTES_PER_DMABUF],
+                       u_int32_t   ccam_dma_index[CCAM_DMA_INDEX_SIZE],
+                       u_int32_t   stream_serial) {
+    int        kfgshiftm=9;
+    len_data_t packets[6];
+    int        i,r;
+
+    //load header from file
+    if((i=load_headers(headers_filename, packets, &kfgshiftm)) < 0)
+        return i;
 
     D(fprintf(stderr, "oggtheora_send:stream_serial=%x\n",stream_serial));
     i= makeOggTheora( ccam_dma_index, // will be mmaped array in the camera
@@ -1604,23 +1686,33 @@ int oggtheora_send    (const char *headers_filename, // filename of a file with 
     return i;
 }
 
-
+/* reads file into char *
+    fin:
+    s:
+    Return: char*/
 char * fnegets(FILE* fin, char * s) {
-      int i;
-      char * cp;
-      fgets(s, 1024, fin);
-      while ((s[(i=strspn(s," \t\n"))]=='#') || (s[i]==0)) fgets(s, 1024, fin);;
-      cp = s +strspn(s," \t");
-      for (i=strlen(cp)-1;strchr(" \t\n",cp[i]) && (i>0);i--) cp[i]=0;
-return cp;
+    int i;
+    char * cp;
+    fgets(s, 1024, fin);
+    while ((s[(i=strspn(s," \t\n"))]=='#') || (s[i]==0)) 
+        fgets(s, 1024, fin);;
+        cp = s +strspn(s," \t");
+        for (i=strlen(cp)-1;strchr(" \t\n",cp[i]) && (i>0);i--) 
+            cp[i]=0;
+    return cp;
 }
 
-
+/* setup tbl FPGA
+    nframes_total:
+    nframes_inter_full:     number of INTER frames (full) after each INTRA
+    nframes_inter_masked:   number of INTER frames (masked) after each INTER full 
+                            (not tested yet)
+    time_slow:              reduce reported fps by this
+    Return: 0 on success, or a negative value on error.*/
 int  setup_tbl_FPGA( int nframes_total,
-             int nframes_inter_full, // number of INTER frames (full) after each INTRA
-                     int nframes_inter_masked, // number of INTER frames (masked) after each INTER full (not tested yet)
-                     int time_slow)   // reduce reported fps by this
-  {
+             int nframes_inter_full, 
+                     int nframes_inter_masked, 
+                     int time_slow) {
 
      char       headers_filename[]="/tmp/headers";
      char       parameters_filename[]="/etc/oggtheora_params";
@@ -1803,7 +1895,5 @@ int  setup_tbl_FPGA( int nframes_total,
      }
      close (fpga_tables_fd);
      
-return 0;
+    return 0;
 }
- 
-

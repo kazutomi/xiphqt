@@ -89,34 +89,10 @@ int make_OggTheoraHdrs(const char *headers_filename)
      //rtp foo, has to go
     //struct stat     f_stat;
 
-    if ((headers_file = fopen(headers_filename, "r"))==NULL) {
-        fprintf(stderr,"error opening file %s for reading - error = %d (%s)\n",
-                        headers_filename,errno,strerror(errno)); 
-        return -1;
-    }
-    if (fread (&num_headers,   4, 1, headers_file)<1) 
-        return -4;
-    if (num_headers!=6) 
-        return -5;
-    if (fread (header_lengths, 4, 6, headers_file)<6) 
-        return -5;
-    if (fread (&kfgshiftm,     4, 1, headers_file)<1) 
-        return -5;
+    //load header from file
+    if((i=load_headers(headers_filename, packets, &kfgshiftm)) < 0)
+        return i;
 
-    for (i=0;i<3;i++) 
-        packets[i].len=header_lengths[i]>>3; // now - in bytes
-    for (i=3;i<6;i++) 
-        packets[i].len=header_lengths[i]; // these are needed to be in bits
-    for (i=0;i<6;i++) {
-        header_lengths[i]=(header_lengths[i]+31)>>5;
-        packets[i].data=malloc(header_lengths[i]<<2);
-        if (((r=fread (packets[i].data, 4, header_lengths[i], headers_file))) < (int)header_lengths[i]) {
-           fprintf(stderr, "i=%d, fread returned %d, wanted - %d\n",
-                           i, r,header_lengths[i]);
-           return -6;
-        }     
-    }
-    fclose(headers_file);
 // now some RTP foo that is in no way RFC
 /*
     stat(headers_filename,&f_stat);
@@ -328,6 +304,7 @@ static void main_loop() {
                 //FIXME now actually print the ogg page here.
                 fprintf(stderr,"FIXME, now print ogg page, header_length %d = frame_length %d \n",
                                                      header_length,frame_length);
+
                 
             }
             frame_start=next_frame_start;
