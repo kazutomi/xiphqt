@@ -468,7 +468,7 @@ int main(int argc, char *argv[])
 
     // General LOOP waiting command START
     printf("HTTP/1.0 200 OK\n");
-    printf("Content-Type: applicatoin/ogg\n");
+    printf("Content-Type: application/ogg\n");
     printf("Pragma: no-cache\n\n");
 
 
