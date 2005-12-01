@@ -1,0 +1,49 @@
+This is experemental RTP Theora streamer for Elphel 333. 
+
+
+with ./init_env loaded you should be able to build cgi and daemon module.
+
+to install:
+daemon/TheoraStrm -> /mnt/flash/local/bin
+cgi/cstrm.cgi     -> /mnt/flash/etc/httpd/html/admin-bin
+cgi/index1.html   -> /mnt/flash/etc/httpd/html/
+
+
+And next - login into camera via telnet and set +x for TheoraStrm and cstrm_cgi via chmod
+
+Ok. Via WEB browser open index1.html(I test it on Firefox). Setup parameters of picture(size, quality and etc)
+and press New. You can't save file.
+
+In field Addr/hostname set address PC (unicast or multicast). If you use multicast address - yuo must set routing on interface of PC:
+
+# route add -net 224.0.0.0 netmask 240.0.0.0 eth0
+
+ and can test multicast 
+
+#ping 224.0.0.1
+
+All host with enablet multicast answer to you(include yours cameras).
+
+In telnet session into camera you can start streamer in waiting mode
+
+# TheoraStrm -w &
+
+Ok. Now press button Start - streamer must starting(you can see message on telnet session) and sending RTP packets into selected address and port. Periodicaly he send headers(after 100 frames) for syncing players.
+
+Ok. on PC you can start receiver:
+
+./TheoraRtp -a <address cam or multicast addr> -p <port> | ./mplayer -vo sdl -nocache -fps <n> -
+
+TheoraRtp syncing with stream and dumping OGG file(builded on fly) into stdout, and next (via pipe) send it to player
+
+You can dump this file too.
+./TheoraRtp -a <addr> -p <port> >file.ogg
+
+
+This is implementation of stream Theora as large file, building on receiver on fly. Receiver can attach to 
+stream on any time(syncing now building on headers in stream, after receive headers we can build and decode
+OGG file).
+
+THIS IS NOT RFC implementation. It is only for testing(We not have complete  RFC of Theora RTP )
+
+Andy Latin

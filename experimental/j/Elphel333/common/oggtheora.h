@@ -1,0 +1,101 @@
+// Implementation of Theora RTP streaming
+// Copyright 2005 Elphel, Inc
+// Andrey Latin andrey.latin@gmail.com
+
+
+#ifndef __OGGTHEORA_STRM_H_DEF_
+#define __OGGTHEORA_STRM_H_DEF_
+
+typedef enum {
+    INTRA = 0,
+    INTER_FULL = 1,
+    INTER_PARTIAL = 2
+} FrameType;
+
+
+typedef struct {
+  int     len;
+  char *  data;
+} len_data_t;
+
+
+typedef struct {
+  u_int8_t            OggS[4];
+  u_int8_t            version;
+  u_int8_t            flags;
+//  u_int64_t           granule;
+//  u_int32_t           serial;
+//  u_int32_t           page;
+//  u_int32_t           crc;
+  u_int8_t           granule[8];
+  u_int8_t           serial[4];
+  u_int8_t           page[4];
+  u_int8_t           crc[4];
+  u_int8_t           num_segm;
+  u_int8_t           lacing_values [255];
+
+} ogg_header_t;
+
+
+#define C333_MAXWIDTH (4096)
+#define C333_MAXHEIGHT (2048)
+
+
+int oggtheora_prepare (const char *headers_filename, // file to save headers
+                       u_int16_t   fpga_mask[C333_MAXHEIGHT>>5][C333_MAXWIDTH>>8], // [64][16]
+                       u_int32_t   fpga_zerobin[6],
+                       u_int32_t   fpga_qtables[512],
+                       u_int16_t   fpga_hti    [12],
+                       u_int16_t   fpga_hti30  [16],
+                       u_int32_t   fpga_htable [1024],
+                       u_int16_t   fpga_firstbit[4],
+                       int         nstx, //number of supertiles (128x64) horizontal
+                       int         nsty, //number of supertiles (128x64) vertical
+                       int         frn,  // frame rate nominator (1000000=1fps)
+                       int         nobr, // (-1 - "undfined")
+                       int         qual, // realtive quality =16
+                       int         kfgshiftm,
+                       char       *vendor, // "Xiph.Org libTheora I 20040317 3 2 0"
+                       int         nuser,
+                       char      **user,
+// selective qi and skipping blocks is not tested yet
+                       int         qual_left,
+                       int         qual_bottom,
+                       int         qual_right,
+                       int         qual_top,
+                       int         skip_left,
+                       int         skip_bottom,
+                       int         skip_right,
+                       int         skip_top,
+                       int         qis[2], // 0..63 if both are the same, single qi will be encoded
+                       int         sharpness, // 0..2 - is it obsolete in encodr now?
+// table that maps combinbatins of (frame type: 0 - intra, 1  inter whole, 2 - inter, partial (mapped)), AC(/DC) and chroma(/luma)
+// to internal (FPGA) indices (1-of-6 - not 1-of-16 as there is not enough room in FPGA Block RAM) 
+                       int         pre_ht[12],
+// this table maps intenal (1-of-6) Huffman table index to the standard 1-of-16. Not all the tables in the standard set of 80 can work -
+// currently code length is limited to 14 bits
+                       int         pre_ht30[6]);
+
+
+// now encapsulate compressed data and output stream (to stdout?)
+// The two arrays will be just mmap-ed in the camera
+int oggtheora_send    (const char *headers_filename, // filename of a file with 6 headers and their lengths (in bits)
+                       u_int8_t    ccam_dma      [CCAM_BYTES_PER_DMABUF],
+                       u_int32_t   ccam_dma_index[CCAM_DMA_INDEX_SIZE],
+                       u_int32_t   stream_serial);
+
+
+int make_OggTheoraHdrs(const char *headers_filename);
+int fwrite_all(FILE *  stream, char * data, int len); 
+char * fnegets(FILE* fin, char * s);
+int  setup_tbl_FPGA( int nframes_total,
+		     int nframes_inter_full, // number of INTER frames (full) after each INTRA
+                     int nframes_inter_masked, // number of INTER frames (masked) after each INTER full (not tested yet)
+                     int time_slow);   // reduce reported fps by this
+
+#if defined(__cplusplus)
+}
+#endif
+
+#endif 
+                      

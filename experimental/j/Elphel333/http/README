@@ -1,0 +1,8 @@
+make sure you souced init_env
+
+./.target-makefrag should be
+AXIS_BUILDTYPE=cris-axis-linux-gnu
+
+if not run: make cris-axis-linux-gnu
+
+after that run make to build TheoraHTTP

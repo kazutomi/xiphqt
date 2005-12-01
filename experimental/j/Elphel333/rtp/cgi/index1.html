@@ -1,0 +1,1215 @@
+<html>
+<head>
+<style>
+<!--
+#window_selection{
+position:absolute;
+left:0;
+top:0;
+width:1px;
+height:1px;
+color:red;
+z-index:100;
+font-size:1px;
+border: 1px #FF0000 solid;}
+
+.inputs    {  background-color: #EEEEEE; text-align: right; font-family: Verdana, Arial, Helvetica, sans-serif}
+.textStyle {  font-family: Verdana, Arial, Helvetica, sans-serif}
+.info      {  background-color: #aaaaaa; text-align: right; font-family: Verdana, Arial, Helvetica, sans-serif; color: #FF0033}
+.nowrap    {  text-align: right; white-space: nowrap;}
+-->
+</style>
+
+<script language="JavaScript">
+var isDOM=document.getElementById?true:false;
+var isOperaIE= document.all?true:false;
+  document.dragging=false;
+  document.dragEn=false;
+  document.previewDecimation=2;
+//  document.previewScale=1/document.previewDecimation;
+  document.maxWidth=1280;
+  document.maxHeight=1024;
+  document.dcm=1;
+  document.flipX=1;
+  document.flipY=0;
+  document.cgi="/admin-bin/ccam.cgi?";
+  document.previewURL="";
+  document.newWinURL="";
+  document.updateURL="";
+  document.startStopClipURL="pics/1pix.jpeg";
+  document.commonParameters="";
+//  document.commonOptions="vxych";
+//  document.defaultOptions="vxyh";
+  document.defaultOptions="vh";
+  document.saveExposure=20;
+  document.firstX=0;
+  document.firstY=0;
+  document.sizeX; // signed
+  document.sizeY; // signed
+  document.discret=1;
+  document.snap=4;
+  document.mapTop=0;
+  document.mapLeft=0;
+  document.mapWidth= document.maxWidth/document.previewDecimation;
+  document.mapHeight=document.maxHeight/document.previewDecimation;
+  document.minTilesX=2;
+  document.minTilesY=2;
+  document.imageGot=0;
+  document.clipFrame=0;
+  document.sensor=49; // MT9M001
+  document.sensorBlack=0;
+  document.sensorWhite=254;
+  document.updateTime=3000; // will sync if not in use longer than...
+  document.timeoutCntr=0;  // watches if there is any pending timeout
+  document.updating=0;
+  document.dummyImg=new Image();
+  document.timeNotSet=1;
+  document.acquireImage=""; // string to evaluate after camera is tested that it is not running streamer
+  document.discret_x=128;
+  document.discret_y=64;
+//////////// for Theora RTP streamer ///////////////////
+  document.Address = "239.0.0.1";
+  document.Port = 20000;
+  document.Sfps = 15;
+  document.cgi_strm ="/admin-bin/cstrm.cgi?";  
+  document.startStopStreamerURL="pics/1pix.jpeg";
+
+//////////////////////////////// STREAMER FUNCTIONS ///////////////////////////////////////////
+function StreamerStartStop(c) {
+
+ document.Sfps=parseFloat(document.getElementById("idRequestedFPS").value);
+ document.startStopStreamerURL=document.cgi_strm+"opt=s&addr="+document.Address
+  				+"&port="+document.Port+"&fps="+document.Sfps
+		                +"&c="+c
+  if(c==1) {
+    document.dummyImg.src=document.startStopStreamerURL;
+   } 
+   else { 
+    document.dummyImg.src=document.startStopStreamerURL;
+   }
+//alert(document.startStopStreamerURL);
+}
+
+function updateAddress() {
+document.Address=document.getElementById("idAddress").value;
+
+//alert('change Address for stream '+document.Address);
+}
+
+function updatePort() {
+var port=parseInt(document.getElementById("idPort").value);
+if (port < 20000) { alert( 'Port must be above 20000 !!! ');
+	document.Port=20000;
+	document.getElementById("idPort").value=20000;
+} else if(port>50000) { alert("Port number to big!");
+	document.Port=20000;
+	document.getElementById("idPort").value=20000;
+}else if (Math.floor(port/2)*2 !=port) { alert("Port number must be EVEN !!! ");
+		document.Port = 20000;
+ 	     document.getElementById("idPort").value=20000;	
+} else document.Port=port;
+
+}
+/////////////////////////////////////// Streamer END /////////////////////////////////////////////////////////////
+
+
+// XML related stuff
+// abort did not work? try different object
+function loadXMLDocDummy(url) {
+    // branch for native XMLHttpRequest object
+    if (window.XMLHttpRequest) {
+        dummyReq = new XMLHttpRequest();
+        dummyReq.onreadystatechange = processDummyReqChange;
+        dummyReq.open("GET", url, true);
+        dummyReq.send(null);
+    // branch for IE/Windows ActiveX version
+    } else if (window.ActiveXObject) {
+        dummyReq = new ActiveXObject("Microsoft.XMLHTTP");
+        if (dummyReq) {
+            dummyReq.onreadystatechange = processDummyReqChange;
+            dummyReq.open("GET", url, true);
+            dummyReq.send();
+        }
+    }
+}
+function processDummyReqChange() {
+    if ((dummyReq.readyState >1 ) && document.timeNotSet) {
+      document.timeNotSet=0;
+      dummyReq.abort();  // abort that reply from 1972
+      updateXML(); // start over again
+    }
+}
+
+
+function loadXMLDoc(url) {
+    // branch for native XMLHttpRequest object
+    if (window.XMLHttpRequest) {
+        req = new XMLHttpRequest();
+        req.onreadystatechange = processReqChange;
+        req.open("GET", url, true);
+        req.send(null);
+    // branch for IE/Windows ActiveX version
+    } else if (window.ActiveXObject) {
+        req = new ActiveXObject("Microsoft.XMLHTTP");
+        if (req) {
+            req.onreadystatechange = processReqChange;
+            req.open("GET", url, true);
+            req.send();
+        }
+    }
+}
+function processReqChange() {
+    // only if req shows "loaded"
+    if (req.readyState == 4) {
+        // only if "OK"
+        if (req.status == 200) {
+            // ...processing statements go here...
+          getFromCamera();
+        } else {
+            alert("There was a problem retrieving the XML data:\n" +
+                req.statusText);
+        }
+    }
+    window.status=req.readyState;
+//   if (req.readyState>1)   alert("req.readyState="+req.readyState);
+}
+
+function acquireIfCan(cmd) {
+    // branch for native XMLHttpRequest object
+    document.acquireImage=cmd;
+//    myAlert("acquireIfCan: "+cmd);
+    
+    url=document.loadXMLStateURL;
+    if (window.XMLHttpRequest) {
+        camState = new XMLHttpRequest();
+        camState.onreadystatechange = processStateChange;
+        camState.open("GET", url, true);
+        camState.send(null);
+    // branch for IE/Windows ActiveX version
+    } else if (window.ActiveXObject) {
+        camState = new ActiveXObject("Microsoft.XMLHTTP");
+        if (camState) {
+            camState.onreadystatechange = processStateChange;
+            camState.open("GET", url, true);
+            camState.send();
+        }
+    }
+}
+function processStateChange() {
+    // only if req shows "loaded"
+    if (camState.readyState == 4) {
+        // only if "OK"
+        if (camState.status == 200) {
+            // ...processing statements go here...
+           if (parseInt(camState.responseXML.getElementsByTagName('SENSOR_STATE' )[0].firstChild.nodeValue)>7)  {
+              alert("Can not acquire preview image as streamer is possibly running.\n"+
+                      "You may want to try to stop it or reset the camera");
+// and just do nothing...                      
+           } else {
+// here - actually acquire requested image
+             eval(document.acquireImage);
+           }           
+
+
+        } else {
+            alert("There was a problem retrieving the XML data:\n" +
+                camState.statusText);
+        }
+    }
+}
+
+function updateXML() {
+ document.updating++;
+ updateLinks(); // move it later outside?
+ if (document.timeNotSet) loadXMLDocDummy(document.loadXMLDocURL);
+ else                     loadXMLDoc(document.loadXMLDocURL);
+ 
+// alert(document.updating);
+}
+function myAlert(s) {
+  var sl=60;
+  var i=0;
+
+  while (i< s.length) {
+   if ((s.length-i)<sl) sl=s.length-i;
+   s=s.substr(0,i).concat("\n",s.substr(i, s.length-i));
+   i+=sl+1;
+  }
+ alert (s);  
+}
+function watchDog(t) {
+  document.timeoutCntr++;
+ window.status=document.timeoutCntr;
+//  setTimeout('document.timeoutCntr--;',t);
+  setTimeout('document.timeoutCntr--;window.status=document.timeoutCntr',t);
+}
+
+
+
+
+
+
+function updateFPS() {
+}
+
+function g2n() { // setst numeric window dimentions accrording to dragging
+// update values in the text fields
+ document.getElementById("idHeight").value= Math.round(Math.abs(document.sizeY)*document.previewDecimation);
+ document.getElementById("idWidth").value=  Math.round(Math.abs(document.sizeX)*document.previewDecimation);
+/* document.getElementById("idBottom").value= document.maxHeight-
+       (Math.round(Math.min(document.firstY, document.firstY + document.sizeY + document.discret)*document.previewDecimation)+document.getElementById("idHeight").value);
+*/       
+/*
+ document.getElementById("idBottom").value= document.maxHeight-
+       (Math.round(Math.max(document.firstY, document.firstY + document.sizeY + document.discret)*document.previewDecimation)+document.getElementById("idHeight").value);
+*/       
+ document.getElementById("idBottom").value= Math.round((document.mapHeight-Math.max(document.firstY, document.firstY + document.sizeY + document.discret))*document.previewDecimation);
+ document.getElementById("idLeft").value=
+       Math.round(Math.min(document.firstX, document.firstX + document.sizeX + document.discret)*document.previewDecimation);
+ updateNumWindow();
+}
+
+function commonDragging(mouseX,mouseY){ 
+ if (document.dragging) {
+   var dsc=16*document.dcm/document.previewDecimation;
+
+   var y=mouseY - document.mapTop;
+   var x=mouseX - document.mapLeft;
+// Snap to borders
+   if (x<document.snap) x=0;  else if (x>=document.mapWidth-document.snap) x=document.mapWidth-1;
+   if (y<document.snap) y=0;  else if (y>=document.mapHeight-document.snap) y=document.mapHeight-1;
+
+   var h=Math.abs(y-document.firstY)+1;
+   var w=Math.abs(x-document.firstX)+1;
+   h=dsc*Math.floor(h/dsc); if (h<dsc*document.minTilesY) h=dsc*document.minTilesY;
+   w=dsc*Math.floor(w/dsc); if (w<dsc*document.minTilesX) w=dsc*document.minTilesX;
+   if (y<document.firstY)  h=-h;
+   if (x<document.firstX)  w=-w;
+  
+   if ((h!=document.sizeY) || (w!=document.sizeY)) {
+     document.sizeY=h;
+     document.sizeX=w;
+
+   g2n();
+   } 
+ }
+}
+
+function  commonMouseDown (mouseX,mouseY) {
+   document.discret=2*document.dcm/document.previewDecimation; if (document.discret<1) document.discret=1;
+   var y=mouseY - parseInt(document.getElementById("mapImage").style.top);
+   var x=mouseX - parseInt(document.getElementById("mapImage").style.left);
+   document.sizeY=16*document.minTilesY*document.dcm/document.previewDecimation;
+   document.sizeX=16*document.minTilesX*document.dcm/document.previewDecimation;
+// Snap to borders
+   if (x<document.snap) x=0;  else if (x>=document.mapWidth-document.snap) x=document.mapWidth-document.discret;
+   if (y<document.snap) y=0;  else if (y>=document.mapHeight-document.snap) y=document.mapHeight-document.discret;
+
+   document.firstY=document.discret*Math.round(y/document.discret); 
+   document.firstX=document.discret*Math.round(x/document.discret);
+   if ((document.firstY + document.sizeY)>document.mapHeight) document.sizeY =- document.sizeY;
+   if ((document.firstX + document.sizeX)>document.mapWidth)  document.sizeX =- document.sizeX;
+   g2n();
+
+   document.dragging=true;
+
+}
+
+function  commonMouseUp   () {
+ endDragging();
+}
+
+
+
+
+
+function initDragging()
+{
+  if (!document.dragEn) {
+    if(isDOM) {
+	 if (!isOperaIE) {
+       document.getElementById("mapImage").addEventListener("mousemove", dragging_Mozilla, true);
+       document.getElementById("mapImage").addEventListener("mousedown", mouseDown_Mozilla, true);
+       document.getElementById("mapImage").addEventListener("mouseup",   mouseUp_Mozilla, true);
+     } else {
+       document.getElementById("mapImage").onmousemove= dragging_Opera;
+       document.getElementById("mapImage").onmousedown= mouseDown_Opera;
+       document.getElementById("mapImage").onmouseup=   mouseUp_Opera ;
+	 }
+    }
+    else alert ("incompartible browser");
+    document.getElementById("window_selection").style.borderColor= "#00ff00";
+    document.dragEn=true;
+  }
+
+}
+function endDragging()
+{
+ document.dragging=false;
+  if (document.dragEn) {
+    if(isDOM) {
+	 if (!isOperaIE) {
+      document.getElementById("mapImage").removeEventListener("mousemove", dragging_Mozilla, true);
+      document.getElementById("mapImage").removeEventListener("mousedown", mouseDown_Mozilla, true);
+      document.getElementById("mapImage").removeEventListener("mouseup",   mouseUp_Mozilla, true);
+     } else {
+       document.getElementById("mapImage").onmousemove= null;
+       document.getElementById("mapImage").onmousedown= null;
+       document.getElementById("mapImage").onmouseup=   null;
+	 }
+    }
+
+    else alert ("incompartible browser");
+    document.dragEn=false;
+    document.getElementById("window_selection").style.borderColor= "#ff0000";
+  }
+}
+
+function updateColor(){
+ document.commonOptions=document.defaultOptions;
+ if (document.getElementById("idColor").checked)document.commonOptions+="c";
+ if (document.flipX) document.commonOptions+="x";
+ if (document.flipY) document.commonOptions+="y";
+// alert ("updateColor: document.commonOptions="+document.commonOptions);
+ updateLinks();
+}
+
+function updateGamma(){
+var g;
+ g=parseFloat(document.getElementById("idGamma").value);
+ if (!((g>=0.13)&&(g<=10))) document.getElementById("idGamma").value=0.47;
+  updateLinks();
+}
+
+// document.getElementById("idLevelBlack").value=2;
+// document.getElementById("idLevelWhite").value=254;
+function updateLevels(){
+  var vb,vw;
+  vb=parseInt(document.getElementById("idLevelBlack").value);
+  if (!((vb>=0)&&(vb<=254))) {
+    vb=0;
+    document.getElementById("idLevelBlack").value=0;
+  }  
+  vw=parseInt(document.getElementById("idLevelWhite").value);
+  if (!((vw>=vb)&&(vw<=255))) document.getElementById("idLevelWhite").value=255;
+ 
+}
+
+
+
+function updateGains(){
+var g;
+ g=parseInt(document.getElementById("idGainY").value); if (!((g>=0)&&(g<=63))) document.getElementById("idGainY").value=20;
+ g=parseInt(document.getElementById("idGainR").value); if (!((g>=0)&&(g<=63))) document.getElementById("idGainR").value=20;
+ g=parseInt(document.getElementById("idGainG").value); if (!((g>=0)&&(g<=63))) document.getElementById("idGainG").value=20;
+ g=parseInt(document.getElementById("idGainB").value); if (!((g>=0)&&(g<=63))) document.getElementById("idGainB").value=20;
+  updateLinks();
+}
+function updateExposure(){ //now it is measured in 100uS
+//  var e=parseInt(document.getElementById("idExposure").value); if (!((e>0)&&(e<10000))) document.getElementById("idExposure").value=20;
+  var e=parseFloat(document.getElementById("idExposure").value); if (!((e>0)&&(e<10000))) e=20;
+    e=Math.round (10*e)/10;document.getElementById("idExposure").value=e;
+
+//  document.saveExposure=parseInt(document.getElementById("idExposure").value);
+  document.saveExposure=parseFloat(document.getElementById("idExposure").value);
+  document.getElementById("idFrameTime").checked=false;
+  updateLinks();
+}
+function updateFullFrameExposure(){
+  document.getElementById("idExposure").value=(document.getElementById("idFrameTime").checked)?"":document.saveExposure;
+  updateLinks();
+}
+function updateQuality(){
+  var v=v=parseInt(document.getElementById("idQuality").value);
+  if (!((v>0)&&(v<=100))) document.getElementById("idQuality").value=50;
+  updateLinks();
+}
+function updateSaturation(m){ // m=0 - set both (from blue), m=1 - red only
+  var v;
+   if (m>0) {
+     v=parseFloat(document.getElementById("idSaturationRed").value);
+     if (!((v>=0)&&(v<=5))) v=1.0;
+     document.getElementById("idSaturationRed").value=v;
+   } else {
+     v=parseFloat(document.getElementById("idSaturationBlue").value);
+     if (!((v>=0)&&(v<=5))) v=1.0;
+     document.getElementById("idSaturationBlue").value=v;
+     document.getElementById("idSaturationRed").value=v;
+   }     
+  updateLinks();
+}
+function updateVideoSize(){
+      v=parseInt(document.getElementById("idTimeScale").value); if (!((v>0)&&(v<1000))) document.getElementById("idTimeScale").value=10;
+      v=parseInt(document.getElementById("idTheoraFrames").value); if (!((v>0)&&(v<65536))) document.getElementById("idTheoraFrames").value=40;
+      v=parseInt(document.getElementById("idTheoraInter").value); if (!((v>=0)&&(v<256))) document.getElementById("idTheoraInter").value=255;
+  updateLinks();
+}
+function showControls(){
+ var w;
+    w=window.open('vcontrols.html',
+                  'Controls'+escape(document.URL),
+                  'resizable=no,scrollbars=no,status=no,alwaysRaised=yes,height=335,width=100' );
+   w.focus();
+}
+function showClipFrame(){
+//    var w=window.open('clip_frame.html',
+//                  'Frame'+escape(document.URL),
+//                  'resizable=no,scrollbars=no,status=no,alwaysRaised=yes,'+
+//                  'height='+(100+parseInt(document.getElementById('idHeight').value))+
+//                  'width='+(20+parseInt(document.getElementById('idWidth').value)) );
+//   w.focus();
+  acquireIfCan("var w=window.open('clip_frame.html'," +
+               "'Frame'+escape(document.URL)," +
+               "'resizable=no,scrollbars=no,status=no,alwaysRaised=yes,'+" +
+               "'height='+(100+parseInt(document.getElementById('idHeight').value))+ "+
+               "'width='+(20+parseInt(document.getElementById('idWidth').value)) ); "+
+               "w.focus();" );
+
+}
+
+function updateLinks(){
+   var t=new Date();
+   var g;
+   var e=Math.round (parseFloat(document.getElementById("idExposure").value)*10); // 10 times actual
+   var requestedFPS;
+   updateFPS();
+   requestedFPS=parseFloat(document.getElementById("idRequestedFPS").value);
+   if (!(requestedFPS>0)){
+     requestedFPS=0;
+     document.getElementById("idRequestedFPS").value=" ";
+   }
+   var dcms="&dv="+document.dcm+"&dh="+document.dcm+"&";
+   document.commonParameters ="iq="+parseInt(document.getElementById("idQuality").value)+"&"+
+                              "kga="+parseInt(document.getElementById("idGainY").value)+"&"+
+                              "kgm=6&"+
+                              "gr="+ parseInt(document.getElementById("idGainR").value)+"&"+
+                              "gg="+ parseInt(document.getElementById("idGainG").value)+"&"+
+                              "ggb="+parseInt(document.getElementById("idGainG").value)+"&"+
+                              "gb="+ parseInt(document.getElementById("idGainB").value)+"&"+
+                              "csb="+Math.round(100*parseFloat(document.getElementById("idSaturationBlue").value))+"&"+
+                              "csr="+Math.round(100*parseFloat(document.getElementById("idSaturationRed").value))+"&"+
+                              "bit=8"+"&"+
+                              "gam="+Math.round(100*parseFloat(document.getElementById("idGamma").value))+"&"+
+                              "pxl="+parseInt(document.getElementById("idLevelBlack").value)+"&"+
+                              "pxh="+parseInt(document.getElementById("idLevelWhite").value);
+   if (!document.getElementById("idFrameTime").checked)
+     document.commonParameters+="&e="+e;
+   else document.commonParameters+="&e=-1";
+/*
+   document.previewURL=document.cgi+"opt="+document.commonOptions+
+//         "&dv=2&dh=2&ww=1280&wh=1024&wl=0&wt=0&"+
+
+         "&dv="+document.previewDecimation+"&dh="+document.previewDecimation+"&ww="+document.maxWidth+"&wh="+document.maxHeight+"&wl=0&wt=0&"+
+         document.commonParameters+
+         "&fps="+ requestedFPS+
+         "&_time="+t.getTime();
+*/
+   document.previewURL="/pics/nopreview.gif";
+   
+   
+   document.probeURL=document.cgi+"opt="+document.commonOptions+
+         "&dv=1&dh=1&ww=2100&wh=2100&wl=0&wt=0&iq=1"+"&_time="+t.getTime();
+
+  document.commonParameters+= "&ww="+ parseInt(document.getElementById("idWidth").value)+"&"+
+                              "wh="+ parseInt(document.getElementById("idHeight").value)+"&"+
+                              "wl="+ parseInt(document.getElementById("idLeft").value)+"&"+
+                              "wt="+ parseInt(document.getElementById("idBottom").value);
+//new/new win will be ogg/theora
+   document.newWinURL= document.cgi+"opt=o"+document.commonOptions+dcms+
+                       document.commonParameters+
+                       "&fps="+ requestedFPS+
+                       "&tts="+ parseInt(document.getElementById("idTimeScale").value)+
+                       "&tnf="+ parseInt(document.getElementById("idTheoraFrames").value)+
+                       "&tni="+ parseInt(document.getElementById("idTheoraInter").value)+
+                       "&_time="+t.getTime();
+   document.updateURL= document.cgi+"opt="+document.commonOptions+"u"+dcms+
+                       document.commonParameters+
+                       "&fps="+ requestedFPS+
+                       "&_time="+t.getTime();
+
+  document.startStopClipURL=document.cgi+"opt="+document.commonOptions+"q"+dcms+document.commonParameters+
+                              "&qts="+ parseInt(document.getElementById("idTimeScale").value)+
+                              "&fps="+ requestedFPS+
+                              "&_time="+t.getTime()+"&qcmd=";
+   document.getElementById('idStillPhoto').href=document.newWinURL;
+   document.getElementById('idLastPhoto').href=document.cgi+"opt=o"+"&_time="+t.getTime();
+//   document.getElementById('idFrame').href=document.cgi+"hist="+document.clipFrame+"&_time="+t.getTime();
+   document.getElementById('idInfo').href=document.cgi+"html=2"+"&_time="+t.getTime();
+
+/*   document.getElementById('idClip').href=document.cgi+"opt="+document.commonOptions+"q"+dcms+document.commonParameters+
+                              "&qcmd=4"+
+                              "&qts="+ parseInt(document.getElementById("idTimeScale").value)+
+                              "&fps="+ requestedFPS+
+                              "&_time="+t.getTime();*/
+  document.loadXMLDocURL=document.cgi+"html=10&_time="+t.getTime();
+  document.loadXMLStateURL=document.cgi+"html=12&_time="+t.getTime();
+  document.rescueURL=document.cgi+"opt=*q&qcmd=2&_time="+t.getTime(); // unfreeze
+  document.setTimeURL=document.cgi+"_time="+t.getTime(); // unfreeze
+}
+function updateClipFrame(v){
+  if ((v<9999) && (v>-9999)) document.clipFrame=v;
+  document.getElementById("idClipFrame").value=document.clipFrame;
+  updateLinks();
+}
+function changeClipFrame(m) { // m=-2 - first, m=-1 - prev, +1 - next, +2 - last
+  if      (m==-2) document.clipFrame= 1; //first
+  else if (m==-1) document.clipFrame-=1; //previous
+  else if (m== 1) document.clipFrame+=1; //next
+  else if (m== 2) document.clipFrame=0; //last
+  updateClipFrame(document.clipFrame);
+}
+function clipStartStop(c) {
+  updateLinks();
+  document.dummyImg.src=document.startStopClipURL+c;
+}
+function updateParameters() {
+  updateLinks();
+  document.dummyImg.src=document.updateURL;
+}
+function cameraReset() {
+  updateLinks();
+  document.dummyImg.src=document.rescueURL;
+}
+function setTimeIf1972(){
+  updateLinks();
+  document.dummyImg
+  document.dummyImg.onload=updateXML;
+  document.dummyImg.src=document.setTimeURL;
+//  alert(document.dummyImg.src);
+}
+function getFromCamera(){
+   document.imageGot=1;
+   document.maxWidth=                        parseInt(req.responseXML.getElementsByTagName('P_SENSOR_WIDTH' )[0].firstChild.nodeValue);
+   document.maxHeight=                       parseInt(req.responseXML.getElementsByTagName('P_SENSOR_HEIGHT')[0].firstChild.nodeValue);
+// don't read decimation - it will likely be from the perview
+// document.dcm=                             parseInt(req.responseXML.getElementsByTagName('P_DCM_HOR'      )[0].firstChild.nodeValue);
+   
+   document.getElementById("idDCM8").checked=(document.dcm>=8);
+   document.getElementById("idDCM4").checked=((document.dcm>=4) && (document.dcm<8));
+   document.getElementById("idDCM2").checked=((document.dcm>=2) && (document.dcm<4));
+   document.getElementById("idDCM1").checked=                      (document.dcm<2);
+   document.getElementById("idGainY").value= parseInt(req.responseXML.getElementsByTagName('P_SPEC_KAC_GGA' )[0].firstChild.nodeValue);
+   document.getElementById("idGainR").value= parseInt(req.responseXML.getElementsByTagName('P_GAINR'        )[0].firstChild.nodeValue);
+   document.getElementById("idGainG").value= parseInt(req.responseXML.getElementsByTagName('P_GAING'        )[0].firstChild.nodeValue);
+   document.getElementById("idGainB").value= parseInt(req.responseXML.getElementsByTagName('P_GAINB'        )[0].firstChild.nodeValue);
+
+   document.getElementById("idWidth").value= parseInt(req.responseXML.getElementsByTagName('P_WOI_WIDTH'    )[0].firstChild.nodeValue);
+   document.getElementById("idHeight").value=parseInt(req.responseXML.getElementsByTagName('P_WOI_HEIGHT'   )[0].firstChild.nodeValue);
+   document.getElementById("idLeft").value=  parseInt(req.responseXML.getElementsByTagName('P_WOI_LEFT'     )[0].firstChild.nodeValue);
+   document.getElementById("idBottom").value=   parseInt(req.responseXML.getElementsByTagName('P_WOI_TOP'      )[0].firstChild.nodeValue);
+   
+   document.flipX= (parseInt(req.responseXML.getElementsByTagName('P_FLIPH')[0].firstChild.nodeValue)>0)?1:0;
+   document.flipY= (parseInt(req.responseXML.getElementsByTagName('P_FLIPV')[0].firstChild.nodeValue)>0)?1:0;
+   document.getElementById("idColor").checked= (parseInt(req.responseXML.getElementsByTagName('P_COLOR')[0].firstChild.nodeValue)>0)?"true":"false";
+   document.getElementById("idGamma").value= 0.01*parseInt(req.responseXML.getElementsByTagName('P_GAMMA'        )[0].firstChild.nodeValue);
+   document.getElementById("idSaturationBlue").value= 0.01*parseInt(req.responseXML.getElementsByTagName('P_COLOR_SATURATION_BLUE')[0].firstChild.nodeValue);
+   document.getElementById("idSaturationRed").value= 0.01*parseInt(req.responseXML.getElementsByTagName('P_COLOR_SATURATION_RED' )[0].firstChild.nodeValue);
+
+   document.getElementById("idLevelBlack").value=parseInt(req.responseXML.getElementsByTagName('P_PIXEL_LOW' )[0].firstChild.nodeValue);
+   document.getElementById("idLevelWhite").value=parseInt(req.responseXML.getElementsByTagName('P_PIXEL_HIGH')[0].firstChild.nodeValue);
+
+   
+   document.getElementById("idQuality").value= parseInt(req.responseXML.getElementsByTagName('P_QUALITY'      )[0].firstChild.nodeValue);
+   document.getElementById("idExposure").value= 0.1*parseInt(req.responseXML.getElementsByTagName('P_EXPOS'   )[0].firstChild.nodeValue);
+   document.previewDecimation=(document.maxWidth>1600)?4:2;
+
+   document.getElementById('mapImage').style.width=document.maxWidth/document.previewDecimation;
+   document.getElementById('mapImage').style.height=document.maxHeight/document.previewDecimation;
+   document.getElementById('idControls').style.top=document.maxHeight/document.previewDecimation+8;
+   if (document.previewDecimation==2)    document.getElementById('idControls').style.width=document.maxWidth/document.previewDecimation;
+   document.mapWidth= document.maxWidth/document.previewDecimation;
+   document.mapHeight=document.maxHeight/document.previewDecimation;
+//   fullWindow();
+// read defaults if sensor was never programmed 
+   document.sensor=parseInt(req.responseXML.getElementsByTagName('P_SENSOR' )[0].firstChild.nodeValue);
+   if ((!(parseInt(req.responseXML.getElementsByTagName('SENSOR_STATE' )[0].firstChild.nodeValue)>0)) ||
+       (!(parseInt(req.responseXML.getElementsByTagName('P_QUALITY' )[0].firstChild.nodeValue)>0))) {
+         setDefaults();
+   }
+//    else updateLinks();
+   updateColor();
+   updateNumWindow();
+   if (parseInt(req.responseXML.getElementsByTagName('SENSOR_STATE' )[0].firstChild.nodeValue)<8) {
+     document.getElementById("mapImage").style.backgroundImage="url("+document.previewURL+")";
+   } else alert("Can not acquire preview image as streamer is possibly running.\n"+
+              "You may want to try to stop it or reset the camera");
+   if ((document.sensor >=49) && (document.sensor <=51))  document.getElementById("idGainY").style.display="none";
+}
+function setDefaults() {
+// common defaults:
+   document.flipX=1;
+   document.flipY=0;
+   document.getElementById("idColor").checked= true;
+   document.getElementById("idGamma").value= 0.47;
+   document.getElementById("idSaturationBlue").value=2.0;
+   document.getElementById("idSaturationRed").value= 2.0;
+
+   document.getElementById("idQuality").value= 46;
+   document.getElementById("idExposure").value= 20.0;
+// default windows:
+  switch (document.sensor) {
+  case 49: MT9M001_dflt(); break;
+  case 50: MT9D001_dflt(); break;
+  case 51: MT9T001_dflt(); break;
+  default: other_dflt();
+  updateColor();
+//  updateLinks();
+  }
+  
+}
+
+function other_dflt() { // MT9M001_dflt()
+ document.getElementById("idGainY").value=63;
+ document.getElementById("idGainR").value=22;
+ document.getElementById("idGainG").value=16;
+ document.getElementById("idGainB").value=17;
+ document.getElementById("idLevelBlack").value=2;
+ document.getElementById("idLevelWhite").value=254;
+
+}
+function MT9M001_dflt() {
+ document.getElementById("idGainY").value=63;
+ document.getElementById("idGainR").value=22;
+ document.getElementById("idGainG").value=16;
+ document.getElementById("idGainB").value=17;
+ document.getElementById("idLevelBlack").value=2;
+ document.getElementById("idLevelWhite").value=254;
+}
+function MT9D001_dflt() {
+ document.getElementById("idGainY").value=63;
+ document.getElementById("idGainR").value=17; //42
+ document.getElementById("idGainG").value=11; //25
+ document.getElementById("idGainB").value=13; //27
+ document.getElementById("idLevelBlack").value=2;
+ document.getElementById("idLevelWhite").value=254;
+}  
+function MT9T001_dflt() {
+ document.getElementById("idGainY").value=63;
+ document.getElementById("idGainR").value=16;
+ document.getElementById("idGainG").value=11;
+ document.getElementById("idGainB").value=12;
+ document.getElementById("idLevelBlack").value=10;
+ document.getElementById("idLevelWhite").value=254;
+}  
+
+function updateNumWindow() { // validate window sizes, show window
+  if      (document.getElementById("idDCM1").checked) document.dcm=1;
+  else if (document.getElementById("idDCM2").checked) document.dcm=2;
+  else if (document.getElementById("idDCM4").checked) document.dcm=4;
+  else if (document.getElementById("idDCM8").checked) document.dcm=8;
+
+//alert('document.dcm='+document.dcm);
+  var w=parseInt(document.getElementById("idWidth").value);
+  var h=parseInt(document.getElementById("idHeight").value);
+  var l=parseInt(document.getElementById("idLeft").value);
+  var b=parseInt(document.getElementById("idBottom").value);
+//alert("w="+w+"\nh="+h+"\nl="+l+"\nt="+t);
+// l >=0, l<(maxWidth-16*document.dcm)
+/*
+  if (l<0) l=0;
+  if (l>=(document.maxWidth-32*document.dcm)) l=document.maxWidth-32*document.dcm;
+  l= 2*document.dcm*Math.floor(l/2/document.dcm);
+  if((l+w)>document.maxWidth) w= document.maxWidth-l;
+  w=16*document.dcm*Math.floor(w/16/document.dcm);
+  if (w<32*document.dcm) w=32*document.dcm;
+  if (t<0) t=0;
+  if (t>=(document.maxHeight-32*document.dcm)) t=document.maxHeight-32*document.dcm;
+  t= 2*document.dcm*Math.floor(t/2/document.dcm);
+  if((t+h)>document.maxHeight) h= document.maxHeight-t;
+  h=16*document.dcm*Math.floor(h/16/document.dcm);
+  if (h<32*document.dcm) h=32*document.dcm;
+*/
+//  document.discret_x=128;
+//  document.discret_y=64;
+  if (l<0) l=0;
+  if (l>=(document.maxWidth- document.discret_x*document.dcm)) l=document.maxWidth- document.discret_x*document.dcm;
+  l= document.dcm*Math.round(l/document.dcm);
+  if((l+w)>document.maxWidth) w= document.maxWidth-l;
+  w=document.discret_x*document.dcm*Math.round(w/document.discret_x/document.dcm);
+  if (w<document.discret_x*document.dcm) w=document.discret_x*document.dcm;
+  if((l+w)>document.maxWidth) l= document.maxWidth-w;
+  if (b<0) b=0;
+  if (b>=(document.maxHeight - document.discret_y*document.dcm)) b=document.maxHeight - document.discret_y*document.dcm;
+  b= document.dcm*Math.round(b/document.dcm);
+  if((b+h)>document.maxHeight) h= document.maxHeight-b;
+  h=document.discret_y*document.dcm*Math.round(h/document.discret_y/document.dcm);
+  if (h<document.discret_y*document.dcm) h=document.discret_y*document.dcm;
+  if((b+h)>document.maxHeight) b= document.maxHeight-h;
+
+
+// update values in the text fields
+  document.getElementById("idWidth").value=w;
+  document.getElementById("idHeight").value=h;
+  document.getElementById("idLeft").value=l;
+  document.getElementById("idBottom").value=b;
+// show graphically (see if needed 1 extra pixel for the border each side)
+  document.getElementById("window_selection").style.width= (w/document.previewDecimation)-2;
+  document.getElementById("window_selection").style.height=(h/document.previewDecimation)-2;
+  document.getElementById("window_selection").style.left=  l/document.previewDecimation;
+//  document.getElementById("window_selection").style.top=   t/document.previewDecimation;
+  document.getElementById("window_selection").style.top=   (document.maxHeight-b-h)/document.previewDecimation;
+//  alert ("w="+w+"\nh="+h+"\nl="+l+"\nb="+b+"\ndocument.previewDecimation="+document.previewDecimation);
+  updateLinks();
+}
+
+function fullWindow() {
+  document.getElementById("idWidth").value=document.maxWidth;
+  document.getElementById("idHeight").value=document.maxHeight;
+  document.getElementById("idLeft").value=0;
+  document.getElementById("idBottom").value=0;
+  updateNumWindow();
+}  
+
+function imgPreview() {
+//  if (document.imageGot==1) {
+    updateLinks();
+    acquireIfCan("document.getElementById('mapImage').style.backgroundImage='url('+document.previewURL+')';");
+
+
+// disable preview
+//    document.getElementById("mapImage").style.backgroundImage="url("+document.previewURL+")";
+//  } else  imgPreview_init();
+}
+
+function imgNewWindow() {
+  updateLinks();
+  var w=parseInt(document.getElementById("idWidth").value)/document.dcm;
+  var h=parseInt(document.getElementById("idHeight").value)/document.dcm;
+//  window.open(document.newWinURL,'image','resizable=yes,scrollbars=yes, width='+(w+40)+',height='+(h+30));
+  var cmd="window.open(document.newWinURL,'image','resizable=yes,scrollbars=yes, width="+(w+40)+",height="+(h+30)+"');"
+  acquireIfCan(cmd);
+
+}
+
+// Mozilla functions
+function mouseDown_Mozilla (e) {
+ if (document.dragging) mouseUp_Mozilla   (e);
+ else commonMouseDown (e.pageX,e.pageY);
+}
+function dragging_Mozilla(e) {commonDragging(e.pageX,e.pageY);}
+function mouseUp_Mozilla   (e) { commonMouseUp   ();}
+// Opera/IE6 functions
+function mouseDown_Opera (e) {
+ if (document.dragging) mouseUp_Mozilla   (e);
+ else commonMouseDown (event.clientX,event.clientY);
+}
+function dragging_Opera(){ commonDragging(event.clientX,event.clientY);}
+function mouseUp_Opera  () {commonMouseUp   ();}
+
+</script>
+<title>Elphel Model 333 Camera with Ogg/Theora</title>
+</head>
+<!--<body  class="textStyle" bgcolor="#CCCCCC" onLoad="setTimeIf1972();updateColor();updateNumWindow();"> -->
+<body  class="textStyle" bgcolor="#CCCCCC" onLoad="updateXML();">
+
+<!--
+<div id="mapImage" style="position:absolute; width:640px; height:512px; z-index:101; left: 0px; top: 0px;  border-style: solid; background-position: top center; background-repeat: no-repeat; border: 1px none #000000">
+-->
+
+<div id="mapImage" style="position:absolute; width:640px; height:512px; z-index:101; left: 0px; top: 0px;  border-style: solid; background-position: top left; background-repeat: repeat; border: 1px none #000000">
+
+
+  <div id="window_selection"></div>
+</div>
+<div id="idControls" style="position:absolute; width:640px; height:200px; z-index:101; left: 0px; top: 520;">
+
+<form method="post" action="">
+    <table border="1" cellspacing="0" cellpadding="0" width="100%">
+      <tr valign="top"> 
+        <td>
+         <table border="1" cellspacing="0" cellpadding="0" width="100%" height="100%">
+         <tr><td>
+          
+          <table border="0" cellspacing="0" cellpadding="0" width="100%">
+            <tr> 
+              <td colspan="2"> 
+                <div align="center"><b>Window</b> </div>
+              </td></tr>
+<!--            <tr><td colspan="2">&nbsp;</td></tr> -->
+              <tr>
+              <td> 
+                <div align="center">
+                  <input type="button" id="idSelectDrag" value="Drag" onClick="initDragging();" >
+                </div>
+              </td>
+              <td> 
+                <div align="center">
+                  <input type="button" id="idSelectFull" value="Full" onClick="fullWindow();" >
+                </div>
+              </td>
+            </tr>
+<!--            <tr><td colspan="2">&nbsp;</td></tr> -->
+
+            <tr> 
+              <td>
+                <div class="nowrap">
+                W<input type="text" id="idWidth" size="4" maxlength="4" value="1280" onChange="updateNumWindow();" class="inputs"></div>
+              </td>
+              <td> 
+                <div class="nowrap">
+                H<input type="text" id="idHeight" size="4" maxlength="4" value="1024" onChange="updateNumWindow();" class="inputs">
+                </div>
+              </td>
+            </tr>
+              <td>
+                <div class="nowrap">
+                L<input type="text" id="idLeft" size="4" maxlength="4" value="0" onChange="updateNumWindow();" class="inputs">
+                </div>
+              </td>
+              <td> 
+                <div class="nowrap">
+                B<input type="text" id="idBottom" size="4" maxlength="4" value="0" onChange="updateNumWindow();" class="inputs">
+                </div>
+                
+              </td>
+            </tr>
+            
+<!--            <tr><td colspan="2">&nbsp;</td></tr> -->
+            <tr><td>
+            </table>
+            </td> </tr>
+            <tr><td>
+             <table border="0"  width= "100%">
+              <tr>
+               <td colspan="4"><div align="center"><b>Decimation</b></div></td>
+              </tr>
+              <tr>
+               <td>none</td><td>1/2</td><td>1/4</td><td>1/8</td>
+              </tr>
+              <tr>
+               <td> <input type="radio" id="idDCM1" name="nDecimation" value="1" onChange="updateNumWindow();" onClick="updateNumWindow();" checked ></td>
+               <td> <input type="radio" id="idDCM2" name="nDecimation" value="2" onChange="updateNumWindow();" onClick="updateNumWindow();"  ></td>
+               <td> <input type="radio" id="idDCM4" name="nDecimation" value="4" onChange="updateNumWindow();" onClick="updateNumWindow();"  ></td>
+               <td> <input type="radio" id="idDCM8" name="nDecimation" value="8" onChange="updateNumWindow();" onClick="updateNumWindow();" c ></td>
+              </tr>
+             </table>
+            </td></tr>
+
+            
+            <tr > 
+              <td>
+               <table><tr>
+                 <td><div style="nowrap"><b>Quality</b></div></td>
+                 <td><div style="nowrap"><input type="text" id="idQuality" size="2" maxlength="2" value="46" onChange="updateQuality();" class="inputs">%</div></td>
+                </tr>
+               </table>
+              </td>
+            </tr>
+
+
+            <tr>
+              <td>
+                <table><tr> 
+                  <td>Rst</td>
+                  <td><input type="radio" id="idReset" name="nReset" value="1" onClick="cameraReset();"></td>
+                  </td>    
+                  <td>
+                  <input type="button" id="idDefault" value="Defaults" onClick="setDefaults();" >
+                </td>
+                </tr></table>
+              </td>
+            </tr>
+          </table>
+      </td>
+        
+
+        
+      <td>
+       <table border="1" cellspacing="0" cellpadding="0" width="100%" height="100%">
+        <tr><td>
+          <table border="0" cellspacing="0" cellpadding="0" width="100%">
+            <tr>
+              <td colspan="2">
+                <div align="center"><b>Exposure</b></div>
+              </td>
+              </tr>
+              <tr>
+              <td>
+                <div align="right">
+                  <input type="text" id="idExposure" size="5" maxlength="5" value="20" onChange="updateExposure();" class="inputs">
+                </div>
+              </td>
+              <td>ms</td>
+            </tr>
+            <tr>
+              <td>
+                <div align="center">1 frame</div>
+              </td>
+              <td>
+                <input type="checkbox" id="idFrameTime" onClick="updateFullFrameExposure()">
+              </td>
+            </tr>
+          </table>
+        </td></tr>
+        <tr><td>  
+          <table border="0" cellspacing="0" cellpadding="0" width="100%">
+            <tr>
+              <td colspan="2">
+                <div align="center"><b>Gains</b>
+<input type="text" id="idGainY" size="3" maxlength="3" value="100" onChange="updateGains();" class="inputs"></div>
+              </td>
+            <tr>
+              <td> 
+                <div align="right">R </div>
+              </td>
+              <td>
+                <input type="text" id="idGainR" size="3" maxlength="3" value="30" onChange="updateGains();" class="inputs">
+              </td>
+            </tr>
+            <tr> 
+              <td> 
+                <div align="right">G </div>
+              </td>
+              <td>
+                <input type="text" id="idGainG" size="3" maxlength="3" value="25" onChange="updateGains();" class="inputs">
+              </td>
+            </tr>
+            <tr> 
+              <td> 
+                <div align="right">B </div>
+              </td>
+              <td>
+                <input type="text" id="idGainB" size="3" maxlength="3" value="30" onChange="updateGains();" class="inputs">
+              </td>
+            </tr>
+            <tr>
+              <td>Color</td>
+              <td >
+                <input type="checkbox" id="idColor" onClick="updateColor()" checked>
+              </td>
+            </tr>
+           </table>
+         </td></tr>
+        </table> 
+      </td>
+
+
+
+      
+        
+      <td>
+       <table border="1" cellspacing="0" cellpadding="0" width="100%" height="100%">
+        <tr><td>
+          <table border="0" cellspacing="0" cellpadding="0" width="100%">
+            
+            <tr>
+              <td colspan="2"><div align="center"><b>Contrast</b></div></td>
+            </tr>
+            <tr>
+              <td>
+                <div align="right">Gamma</div>
+              </td>
+<!--              <td><input type="text" id="idGainY" size="3" maxlength="3" value="30" onChange="updateGains();" class="inputs"></td> --> <!-- KAC1310-->
+              <td><input type="text" id="idGamma" size="4" maxlength="4" value="0.47" onChange="updateGamma();" class="inputs"></td>
+            </tr>
+            
+            <tr>
+              <td>Levels</td><td> </td>
+            </tr>
+            <tr>
+              <td>
+                <div align="right">Black</div>
+              </td>
+              <td><input type="text" id="idLevelBlack" size="4" maxlength="4" value="0" onChange="updateLevels();" class="inputs"></td>
+            </tr>
+            <tr>
+              <td>
+                <div align="right">White</div>
+              </td>
+              <td><input type="text" id="idLevelWhite" size="4" maxlength="4" value="255" onChange="updateLevels();" class="inputs"></td>
+            </tr>
+
+          </table>
+        </td></tr>
+        <tr><td>
+          <table border="0" cellspacing="0" cellpadding="0" width="100%">
+            <tr>
+              <td colspan="2"><div align="center"><b>Saturation</b></div></td>
+            </tr>
+            <tr>
+              <td>
+                <div align="right">B-Y</div>
+              </td>
+              <td><input type="text" id="idSaturationBlue" size="4" maxlength="4" value="2.0" onChange="updateSaturation(0);" class="inputs"></td>
+            </tr>
+            <tr>
+              <td>
+                <div align="right">R-Y</div>
+              </td>
+              <td><input type="text" id="idSaturationRed" size="4" maxlength="4" value="2.0" onChange="updateSaturation(1);" class="inputs"></td>
+            </tr>
+            
+
+            
+          </table>
+        </td></tr>
+       </table>
+      </td>
+
+
+
+        
+        <td>
+          <table border="1" cellspacing="0" cellpadding="0" width="100%" height="100%">
+            <tr>
+              <td><table border="0" cellspacing="0" cellpadding="0" width="100%" >
+            <tr>
+              <td colspan="2" nowrap="y">
+
+                              <b> Theora Clip: <a id="idStillPhoto" href="#" target="_blank">New</a> : </b>
+                              <b><a id="idLastPhoto" href="#" target="_blank">Last</a></b>
+                             <b><a id="idInfo" href="#" target="_blank">?</a></b> : 
+                             <b><a href="index_help.html" target="_blank">HELP</a></b></div>
+
+                      
+              </td>
+            </tr>
+<!--
+            <tr>
+                    <td>
+                      <div align="center">
+                        <input type="button" id="idPreview" value="Preview" onClick="imgPreview();" >
+                      </div>
+                    </td><td>
+                      <div align="center">
+                        <input type="button" id="idGet" value="Separate window" onClick="imgNewWindow();" >
+                      </div>
+                    </td>
+</tr>          </table></td>
+            </tr>
+-->
+            <tr>
+              <td>
+                <table border="0" cellspacing="0" cellpadding="0" width="100%" >
+<!--
+                  <tr>
+                    <td colspan="2">
+                      <div align="center">
+                        <b><a id="idClip" href="#" target="_blank">Video Clip</a></b>&nbsp;&nbsp;
+                        <b><a id="idClip" href="strctl.cgi" target="_blank">Video Streamers</a></b>
+                      </div>
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td colspan="2">
+                        <input type="button" id="idStart" value="Start" onClick="clipStartStop(1);" >
+                        <input type="button" id="idStop" value="Stop" onClick="clipStartStop(2);" >
+                        <input type="button" id="idAcquire" value="Acquire" onClick="clipStartStop(3);" >
+                    </td>
+                  </tr>
+              <tr>
+              <tr>
+                <td> <div align="left">
+                    <input type="button" id="idUpdate" value="Update" onClick="updateParameters();" >
+                </div></td>
+                <td>
+                    <input type="button" id="idVcontrols" value="Video Controls" onClick="showControls();" >
+                </td>
+              </tr>
+-->
+              <tr>
+                <td> <div align="left">
+                    Frame rate
+                </div></td>
+                <td>
+                   <input type="text" id="idRequestedFPS" size="5" maxlength="5" value=" " onChange="updateVideoSize();" class="inputs">
+                   fps
+                </td>
+              </tr>
+              <tr>
+                <td> <div align="left">
+                   Time Scale
+                </div></td>
+                <td>
+                   <input type="text" id="idTimeScale" size="3" maxlength="3" value="3" onChange="updateVideoSize();" class="inputs">
+                   x
+                </td>
+              </tr>
+              <tr>
+                <td> <div align="left">
+                   Tot. frames
+                </div></td>
+                <td>
+                   <input type="text" id="idTheoraFrames" size="5" maxlength="5" value="100" onChange="updateVideoSize();" class="inputs">
+                </td>
+              </tr>
+              <tr>
+                <td> <div align="left">
+                   INTER/INTRA
+                </div></td>
+                <td>
+                   <input type="text" id="idTheoraInter" size="3" maxlength="3" value="255" onChange="updateVideoSize();" class="inputs">
+                </td>
+              </tr>
+<!--
+              <tr>
+                <td colspan="2">
+                <input type="button" id="idFBack" value="<<" onClick="changeClipFrame(-2);" >
+                <input type="button" id="idBack" value="<" onClick="changeClipFrame(-1);" >
+                  <input type="text" id="idClipFrame" size="4" maxlength="4" value="0" onChange="updateClipFrame(this.value);" class="inputs">
+                <input type="button" id="idFrw" value=">" onClick="changeClipFrame(1);" >
+                <input type="button" id="idFFrw" value=">>" onClick="changeClipFrame(2);" >
+                </td>
+              </tr>
+              <tr><td colspan="2">
+                <input type="button" id="idShowClipFrame" value="Show clip frame" onClick="showClipFrame();" >
+                 <b><a id="idFrame" href="#" target="_blank">Frame</a></b>              
+              </td></tr>
+-->
+                </table>
+</td>
+            </tr>
+
+          </table>
+        </td>
+    </tr>
+<!-- Video streamer -->
+            <tr>
+              <td>
+                <table border="0" cellspacing="0" cellpadding="0" width="100%" >
+                  <tr>
+                    <td colspan="2">
+                      <div align="center"><b>Theora RTP
+                        Streamer</b>
+                        <img src="pics/1pix.jpeg" width="1" height="1" name="n1pix" id="id1pix">
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                        <input type="button" id="idStartStrm" value="Start streaming" onClick="StreamerStartStop(1);" >
+                    </td>
+                    <td>
+                        <input type="button" id="idStopStrm" value="Stop streaming" onClick="StreamerStartStop(0);" >
+                    </td>
+                 </tr>
+                 <tr>
+                    <td>
+                      <div align="right">Addr/hostname</div>
+                    </td>
+                    <td> 
+                      <input type="text" id="idAddress" size="15" maxlength="15" value="239.0.0.1" onChange="updateAddress();" class="inputs" name="text">
+                    </td>
+                  </tr>
+                  <tr> 
+                    <td>
+                      <div align="right">Port#</div>
+                    </td>
+                    <td> 
+                      <input type="text" id="idPort" size="5" maxlength="5" value="20000" onChange="updatePort();" class="inputs" name="text">
+                    </td>
+		   </tr>
+
+	      </td>
+	     </tr>
+
+          </table>
+        </td>
+    </tr>
+
+  </table>
+</form>
+</div>
+</body>
+</html>

@@ -1,0 +1,11 @@
+This are three modules for the Elphel 333 Theora camera.
+each module provides a way to access the Theora video stream
+of the camera.
+    http  - provides the video as an Ogg Theora http stream,
+            the same way as streams are provided by icecast2
+    rtp   - provides the video as an RTP Theora stream.
+            this modules provides unicast and multicast rtp
+    shout - with with module you can send and Ogg Theora stream
+            to an icecast2 server. the stream can be configured 
+            via the webinterface
+           

@@ -1,0 +1,8 @@
+note:
+    due to brokenness of rtp lib for cross compile you have to run:
+      cd ntp
+      ./configure && ./configure --host=cris --build=i586-linux 
+      make
+      cd ..
+    make will fail, ingore that and run make
+    
