@@ -92,7 +92,14 @@ STDMETHODIMP OggDemuxPacketSourceFilter::NonDelegatingQueryInterface(REFIID riid
 	//	*ppv = (IAMMediaContent*)this;
 	//	((IUnknown*)*ppv)->AddRef();
 	//	return NOERROR;
+	}  else if (riid == IID_IOggBaseTime) {
+		*ppv = (IOggBaseTime*)this;
+		//((IUnknown*)*ppv)->AddRef();
+		return NOERROR;
 	}
+
+
+	
 
 	return CBaseFilter::NonDelegatingQueryInterface(riid, ppv); 
 }

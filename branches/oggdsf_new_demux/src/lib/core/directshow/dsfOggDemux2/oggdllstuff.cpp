@@ -67,10 +67,10 @@ STDAPI DllRegisterServer()
 	
 	hr = locFilterMapper->RegisterFilter(
 		CLSID_OggDemuxPacketSourceFilter,						// Filter CLSID. 
-		L"Ogg Demux Page Source Filter",							// Filter name.
+		L"Ogg Demux Packet Source Filter",							// Filter name.
         NULL,										// Device moniker. 
         &CLSID_LegacyAmFilterCategory,				// Direct Show general category
-        L"Ogg Demux Page Source Filter",							// Instance data. ???????
+        L"Ogg Demux Packet Source Filter",							// Instance data. ???????
         &OggDemuxPacketSourceFilterReg								// Pointer to filter information.
     );
 
@@ -113,7 +113,7 @@ STDAPI DllUnregisterServer()
 	
 
     hr = locFilterMapper->UnregisterFilter(&CLSID_LegacyAmFilterCategory, 
-            L"Ogg Demux Page Source Filter", CLSID_OggDemuxPacketSourceFilter);
+            L"Ogg Demux Packet Source Filter", CLSID_OggDemuxPacketSourceFilter);
 
 	//
     locFilterMapper->Release();

@@ -196,6 +196,9 @@
 				RelativePath=".\IFilterDataSource.h">
 			</File>
 			<File
+				RelativePath=".\IOggBaseTime.h">
+			</File>
+			<File
 				RelativePath=".\IOggDecoder.h">
 			</File>
 			<File
