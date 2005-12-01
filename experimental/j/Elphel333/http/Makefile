@@ -6,7 +6,7 @@ AXIS_USABLE_LIBS = UCLIBC GLIBC
 include $(AXIS_TOP_DIR)/tools/build/Rules.axis
 
 THEORACOMMON=../common
-THEORACOMMON_OBJS=$(THEORACOMMON)/oggtheora.o $(THEORACOMMON)/utils.o
+THEORACOMMON_OBJS=$(THEORACOMMON)/oggtheora.o $(THEORACOMMON)/utils.o $(THEORACOMMON)/cgi.o
 
 DEFS   = -DHAVE_CONFIG_H
 CFLAGS = -O2 -W  -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations  $(DEFS) -I$(THEORACOMMON)

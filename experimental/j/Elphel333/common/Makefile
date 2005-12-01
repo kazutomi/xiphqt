@@ -13,7 +13,7 @@ LIBS   = -lm
 
 LD	= ld-cris
 
-OBJS=oggtheora.o utils.o
+OBJS=oggtheora.o utils.o cgi.o
 SRCS=$(OBJS:%.o=%.c)
 
 all: $(OBJS)

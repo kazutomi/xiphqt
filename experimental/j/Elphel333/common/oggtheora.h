@@ -111,6 +111,40 @@ int oggtheora_prepare (const char *headers_filename, // file to save headers
                        int         pre_ht30[6]);
 
 
+int ogg_page      (ogg_header_t *    ogg_header, // pointer to the header data (returns - header length in bytes)
+                            char     flags,
+                            u_int64_t granule,
+                            u_int32_t stream_serial,
+                            int      page,       // page
+                            int      num_packets, // number of packets in the page
+                   len_data_t *      packets);
+
+/*
+    similar to above, but dedicated to the frame data.
+    There could be 2 types
+    - first page of a frame (packet) then frame header will be attached 
+      and bit-combined with the frame
+    - continuation  page (flags bit 0 should be set) - 
+        then no frame header will be added to the data
+    currently there can not be two frames (packets) on one page
+*/
+int ogg_frame_page      (ogg_header_t *    ogg_header,      // pointer to the header data (returns - header length in bytes)
+                            char           flags,           // +1 - continuation, +4 - last (+2 - first)
+                            int            maxpage,         // maximal page size (w/o ogg header)
+                            u_int64_t      granule,         // 
+                            u_int32_t      stream_serial,   //
+                            int            page,            // page
+                            len_data_t     frame_header,    // not used if (flags & 1). frame_header.len is measured in bits, not bytes!
+                            int          * len,             // pointer frame data length (will modify - if non-zero - need continuation)
+                            u_int8_t    ** frame_data);     // pointer to pointer to an array with frame data
+                                                            // if it is not continuation data is bit-aligned to be combined with frame_header
+                                                            // first word of frame data will be modified - OR-ed with the last one from
+                                                            // the frame_header
+                   
+
+
+
+
 // load headers from file
 int load_headers(const char *headers_filename, len_data_t *packets, int *kfgshiftm);
 

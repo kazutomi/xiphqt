@@ -162,36 +162,6 @@ static int huff_entry_cmp(const void *_c1,const void *_c2);
 int oc_huff_codes_pack(char *buf, int* bp,
  const theora_huff_code _codes[OC_NHUFFMAN_TABLES][OC_NDCT_TOKENS]);
 
-int ogg_page      (ogg_header_t *    ogg_header, // pointer to the header data (returns - header length in bytes)
-                            char     flags,
-                            u_int64_t granule,
-                            u_int32_t stream_serial,
-                            int      page,       // page
-                            int      num_packets, // number of packets in the page
-                   len_data_t *      packets);
-
-/*
-    similar to above, but dedicated to the frame data.
-    There could be 2 types
-    - first page of a frame (packet) then frame header will be attached 
-      and bit-combined with the frame
-    - continuation  page (flags bit 0 should be set) - 
-        then no frame header will be added to the data
-    currently there can not be two frames (packets) on one page
-*/
-int ogg_frame_page      (ogg_header_t *    ogg_header,      // pointer to the header data (returns - header length in bytes)
-                            char           flags,           // +1 - continuation, +4 - last (+2 - first)
-                            int            maxpage,         // maximal page size (w/o ogg header)
-                            u_int64_t      granule,         // 
-                            u_int32_t      stream_serial,   //
-                            int            page,            // page
-                            len_data_t     frame_header,    // not used if (flags & 1). frame_header.len is measured in bits, not bytes!
-                            int          * len,             // pointer frame data length (will modify - if non-zero - need continuation)
-                            u_int8_t    ** frame_data);     // pointer to pointer to an array with frame data
-                                                            // if it is not continuation data is bit-aligned to be combined with frame_header
-                                                            // first word of frame data will be modified - OR-ed with the last one from
-                                                            // the frame_header
-                   
                    
 int theora_identification (char *buf,  // returns length, buf should be big enough - 42 bytes
                               int   fmbw, // width in macroblocks
@@ -804,6 +774,7 @@ int ogg_page      (ogg_header_t *    ogg_header, // pointer to the header data (
      int i,n,nn,r;
      u_int32_t crc_reg;
      char * c_header= (char *) ogg_header;
+
      memcpy (ogg_header->OggS,oggs_string,4);
      ogg_header->version=        0;
      ogg_header->serial[0]=      stream_serial & 0xff;
@@ -827,6 +798,7 @@ int ogg_page      (ogg_header_t *    ogg_header, // pointer to the header data (
      ogg_header->crc[1]=         0;
      ogg_header->crc[2]=         0;
      ogg_header->crc[3]=         0;
+
 // first pass - just fill lacing values/number of segments
      n=0;
      for (i=0;i<num_packets; i++) {
@@ -839,6 +811,7 @@ int ogg_page      (ogg_header_t *    ogg_header, // pointer to the header data (
             ogg_header->lacing_values[n]=255;
         ogg_header->lacing_values[n++]=r;
      }
+
      ogg_header->num_segm=       n;
      // second pass - calculate the crc     
      crc_reg=0;

@@ -35,6 +35,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 #include "defines.h"
 #include "oggtheora.h"
+#include "cgi.h"
 
 #define D(x) 
 
@@ -126,6 +127,7 @@ static void main_loop() {
     int         nframes_total, nframes_inter_full, nframes_inter_masked;
     int         time_slow;
     u_int8_t    *ccam_dma, *dp = NULL;
+    u_int8_t    *dp_prev = NULL;
     u_int32_t   *ccam_dma_index;
     int         circindex_fd;
     int         circbuf_fd;
@@ -142,9 +144,17 @@ static void main_loop() {
     
     //FIXME where does this have to go?                    
     u_int64_t  granule=0;
+    u_int64_t    granule_mask=(1<<kfgshiftm)-1;
     int header_length;
     ogg_header_t header;
     int page_size=8192;
+
+      int          frame_header_length;   // frame header lengh truncated to 32-bit words (the rest is combined with frame data)
+      int          overlapped_header; // 0/4 - if "4" then bits from the first word of data are already copied to the header
+      int          first_frame=1;
+
+      int fw=0;
+      FILE *output_fd=stdout;
 
 
     a_ready = 0; 
@@ -181,7 +191,6 @@ static void main_loop() {
         return ;
     }
     
-    InitTimer();
     wp=wp0=0;
     
     nframe = HDR_INTERVAL;
@@ -201,12 +210,43 @@ static void main_loop() {
     if(setup_tbl_FPGA( nframes_total, nframes_inter_full,
                                       nframes_inter_masked, time_slow)<0)
         return;
-    
-    if(make_OggTheoraHdrs(headers_filename)<0) {
-        fprintf(stderr,"Error prepare headers while parsing %s\n",headers_filename);
-        free(b_headers);
-        return;
+   
+    // Ogg Header this should go in its own function: ogg_send_header 
+    // first make and send first page
+    i= load_headers(headers_filename, packets, &kfgshiftm);
+    header_length = ogg_page (&header, (int)2, (int)0, stream_serial, page++, (int)1, &packets[0]);
+
+    if (header_length<0) 
+        return; // header_length-1000;
+    if ((fw= fwrite_all(output_fd, (char *) &header, header_length))<0) {
+        fprintf(stderr,"error writing output data1 - error = %d (%s)\n",
+                                                         errno,strerror(errno)); 
     }
+    if ((fw= fwrite_all(output_fd, packets[0].data, packets[0].len))<0) {
+        fprintf(stderr,"error writing output data2 - error = %d (%s)\n",
+                                                         errno,strerror(errno)); 
+    }
+
+
+    //make and send second page with 2 packets
+    header_length= ogg_page (&header, (int)0, (int)0, stream_serial, page++, (int)2, &packets[1]);
+
+    if (header_length<0) 
+        return; // header_length-2000;    
+    if ((fw= fwrite_all(output_fd, (char *) &header, header_length))<0) {
+        fprintf(stderr,"error writing output data3 - error = %d (%s)\n",
+                                                         errno,strerror(errno)); 
+    }
+    if ((fw= fwrite_all(output_fd, packets[1].data, packets[1].len))<0) {
+        fprintf(stderr,"error writing output data4 - error = %d (%s)\n",
+                        errno, strerror(errno)); 
+    }
+    if ((fw= fwrite_all(output_fd, packets[2].data, packets[2].len))<0) {
+        fprintf(stderr,"error writing output data5 - error = %d (%s)\n",
+                        errno,strerror(errno)); 
+    }
+    // Ogg Header End
+
     frame_no = 0;
 
     while (true) {
@@ -222,12 +262,8 @@ static void main_loop() {
         ioctl(devfd, _IO(CMOSCAM_IOCTYPE, IO_CCAM_JPEG_GET_N ), acq_data);
 
         //wait for encoding to be done (or aborted?)
-        fprintf(stderr,"wait for encoding\n");
+        fprintf(stderr,"encoding...\n");
         while ((i=ioctl(devfd, _IO(CMOSCAM_IOCTYPE, IO_CCAM_MONITOR_SEQ ), 0)) > CAMSEQ_JPEG) {
-            if(strm_data->status == STOP_STREAM ) {
-                break;   // receive command STOP from web interface
-            }
-            // has to break here if http connection is closed
             
             // data ready ?    
             if(wp == 0) {
@@ -239,9 +275,7 @@ static void main_loop() {
             }
 
             // dark_loop
-            fprintf(stderr,"dark loop\n");
             do {
-                // what does this do??? 
                 last_page_flags= (ccam_dma_index[frame_no+1]==0xffffffff)?4:0;
                 
                 if (last_page_flags == 4) {
@@ -249,7 +283,6 @@ static void main_loop() {
                    sched_yield();
                 }
             } while(last_page_flags == 4);
-            fprintf(stderr,"dark loop done\n");
             //frame_no = ioctl(devfd, _CCCMD( CCAM_RPARS , P_JPEG_WP), 0)-1;
             // soft correction FPS    
 
@@ -270,14 +303,27 @@ static void main_loop() {
                 continue;
             }
 
-            time_frame+= mTimeinterval; // time start for next frame INTER/INTRA
+            frame_header_length =  ((packets[3+frame_type].len+31)>>3)& (~3);
+            overlapped_header   =  (packets[3+frame_type].len & 31)?4:0;
+            last_page_flags     =  (ccam_dma_index[nframe+1]==0xffffffff)?4:0;
+
+            /* calculated granulepos */
+            if (first_frame) {
+                first_frame=0;
+            } else if (frame_type==INTRA){
+                granule=(granule+ (((granule&granule_mask)+1)<<kfgshiftm)) & (~granule_mask);
+            } else {
+                granule=(granule & (~granule_mask)) |  ((granule+1) &granule_mask);
+            }
 
             //pointer to next theora frame in camera dma
+
             dp=&ccam_dma[frame_start];
+            dp_prev = &ccam_dma[frame_start];
 
             //why this check for 1000000?
             if((unsigned)frame_length <1000000) {
-                fprintf(stderr,"ogg_frame_page\n");
+                fprintf(stderr,"ogg_frame_page: frame_length %d\n", frame_length);
                 header_length= ogg_frame_page (&header,       // [1]
                                        last_page_flags,       // [2]
                                        page_size,             // [3]
@@ -302,9 +348,44 @@ static void main_loop() {
                 */
                 
                 //FIXME now actually print the ogg page here.
-                fprintf(stderr,"FIXME, now print ogg page, header_length %d = frame_length %d \n",
-                                                     header_length,frame_length);
+                if (header_length<0) 
+                    fprintf(stderr, "ups\n");
 
+                // write to output stream first (or only) page of a frame
+                if ((fw= fwrite_all(output_fd, (char *) &header, header_length))<0) {
+                    fprintf(stderr,"error writing output data6 - error = %d (%s)\n",
+                            errno,strerror(errno)); 
+                }
+                if ((fw= fwrite_all(output_fd, packets[3+frame_type].data, frame_header_length))<0) {
+                    fprintf(stderr,"error writing output data7 - error = %d (%s)\n",
+                            errno,strerror(errno)); 
+                }
+                if ((fw= fwrite_all(output_fd, dp_prev+overlapped_header, (int) (dp-dp_prev-overlapped_header)))<0) {
+                    fprintf(stderr,"error writing output data8 - error = %d (%s)\n",
+                            errno,strerror(errno)); 
+                }
+                while (frame_length>0) {
+                    dp_prev=dp;
+                    header_length= ogg_frame_page (&header,             // [1]
+                                        last_page_flags,        // [2]
+                                        page_size,              // [3]
+                                        granule,
+                                        stream_serial,
+                                        page++,
+                                        packets[3+frame_type],  // [4]
+                                        &frame_length,          // [5]
+                                        &dp);                   // [6]
+        
+            // write to output stream other pages of a frame
+            if ((fw= fwrite_all(output_fd, (char *) &header, header_length))<0) {
+                fprintf(stderr,"error writing output data9 - error = %d (%s)\n",
+                                errno,strerror(errno)); 
+            }
+            if ((fw= fwrite_all(output_fd, dp_prev, (int) (dp-dp_prev)))<0){
+                fprintf(stderr,"error writing output data10 - error = %d (%s)\n",
+                                errno,strerror(errno)); 
+            } 
+                }
                 
             }
             frame_start=next_frame_start;
@@ -348,75 +429,49 @@ int main(int argc, char *argv[])
     strcpy(strm_data_par.email,"camera@elphel.com");
     strm_data_par.encrypt_key[0]='\0';
 
-    while(true) {
-        c = getopt(argc, argv, "hwa:p:f:k:");
-        if (c == -1)
-            break;
-     
-        switch (c) {
-            case 'h':
-                flag++;    
-                break;
-            case 'w':
-                use_web = true;     
-                break;
-            case 'a':
-                memset(strm_data_par.address,0,21);
-                strncpy(strm_data_par.address,optarg,20);
-                break;
-            case 'k':
-                memset(strm_data_par.encrypt_key,0,41);
-                strncpy(strm_data_par.encrypt_key,optarg,40);
-                strm_data_par.encryption=1;
-                break;
-            case 'p':
-                strm_data_par.port = atol(optarg);    
-                break;
-            case 'f':
-                strm_data_par.fps = atof(optarg);
-                if(strm_data_par.fps < 0. )
-                    strm_data_par.fps=25.;    
-                break;
-            case '?':
-                flag++;
-                break;
-            default:
-                fprintf (stderr,"?? getopt returned character code 0%o ??\n", c);
-        }
-    }
-    if ((optind < argc)|| flag>0) {
-        usage();
-        exit(1);
-    }
-    if(use_web) {
-        unlink(mmapFileName);
-        // map shared memory for manage this with CGI 
-        // where shared memory opening whith query too
-    
-        devfd = open(mmapFileName,O_RDWR|O_CREAT); 
-        if(devfd == -1) {
-            printf("Error opening %s!\n",mmapFileName);
-        }
-        lseek(devfd,sizeof(strm_data_t),SEEK_SET);
-        write(devfd,"",1);
-        strm_data = (strm_data_t *) mmap(0, sizeof(strm_data_t), 
-                                     PROT_READ|PROT_WRITE, MAP_SHARED, devfd, 0);
-        if((int)strm_data == -1) {
-             fprintf(stderr,"Error in mmap %s\r\n",mmapFileName);
-             close(devfd);
-             unlink(mmapFileName);
-             exit(1);
-        }
-    } 
-    else {
-        strm_data = &strm_data_par;  // use data from local buffer   
-        // not used web - start streamer immediate
-        strm_data_par.status = START_STREAM;
-    }       
+
+  /* these are from cgitest.cgi */
+  int i;
+  const char *method;
+  const char *query;
+  const char *uri;
+  char  copyQuery [4096];
+
+  const char mmapFileName[]= "/var/tmp/mmap_strm";
+  strm_data_t    *strm_data;
+
+  method = getenv("REQUEST_METHOD");
+  query  = getenv("QUERY_STRING");
+  uri    = getenv("REQUEST_URI");
+  i= (query)? strlen (query):0;
+     fprintf(stderr,"querry length=%d\n", i);
+
+  if (i>(int)(sizeof(copyQuery)-1)) i= sizeof(copyQuery)-1;
+  if (i>0) strncpy(copyQuery,query, i);
+  copyQuery[i]=0;
+  unescape(copyQuery,sizeof(copyQuery));
+
+  if (method == NULL) {
+    /* Not a CGI! */
+    printf("This program should be run as a CGI from the web server!\n");
+   // exit(1);
+  }
+
+  parseQuery(gparams, copyQuery);
+
+
+    strm_data = &strm_data_par;  // use data from local buffer   
+    // not used web - start streamer immediate
+    strm_data_par.status = START_STREAM;    
     
     // OK - init data
 
     // General LOOP waiting command START
+    printf("HTTP/1.0 200 OK\n");
+    printf("Content-Type: applicatoin/ogg\n");
+    printf("Pragma: no-cache\n\n");
+
+
     while(true) {
          if(strm_data->status == -1)
             break;
