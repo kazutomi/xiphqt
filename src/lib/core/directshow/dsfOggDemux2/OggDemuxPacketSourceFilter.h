@@ -31,6 +31,7 @@
 #pragma once
 #include "BasicSeekPassThrough.h"
 #include "IFilterDataSource.h"
+#include "IOggBaseTime.h"
 //#include "OggStreamMapper.h"
 #include <libOOOgg/OggDataBuffer.h>
 
