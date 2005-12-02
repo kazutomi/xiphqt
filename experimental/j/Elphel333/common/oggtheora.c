@@ -909,7 +909,7 @@ D(fprintf(stderr,"ogg_frame_page: 2 mask=0x%x, fd32[0]=0x%x, fh32[frame_header.l
        nn--;
        r=255;
        granule0=~0ULL;
-       ogg_header->flags= flags & 3; //remove "last page" flag
+       ogg_header->flags= flags & !3; //remove "last page" flag
 D(fprintf(stderr,"*"));
      } else {
        granule0=granule;
