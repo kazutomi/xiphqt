@@ -305,7 +305,6 @@ static void main_loop() {
 
             frame_header_length =  ((packets[3+frame_type].len+31)>>3)& (~3);
             overlapped_header   =  (packets[3+frame_type].len & 31)?4:0;
-            last_page_flags     =  (ccam_dma_index[nframe+1]==0xffffffff)?4:0;
 
             /* calculated granulepos */
             if (first_frame) {
@@ -323,7 +322,6 @@ static void main_loop() {
 
             //why this check for 1000000?
             if((unsigned)frame_length <1000000) {
-                fprintf(stderr,"ogg_frame_page: frame_length %d\n", frame_length);
                 header_length= ogg_frame_page (&header,       // [1]
                                        last_page_flags,       // [2]
                                        page_size,             // [3]
@@ -346,8 +344,7 @@ static void main_loop() {
                  [5]  frame data length
                  [6]  pointer to array with frame data(bytes)
                 */
-                
-                //FIXME now actually print the ogg page here.
+
                 if (header_length<0) 
                     fprintf(stderr, "ups\n");
 
@@ -364,6 +361,7 @@ static void main_loop() {
                     fprintf(stderr,"error writing output data8 - error = %d (%s)\n",
                             errno,strerror(errno)); 
                 }
+
                 while (frame_length>0) {
                     dp_prev=dp;
                     header_length= ogg_frame_page (&header,             // [1]
@@ -376,17 +374,16 @@ static void main_loop() {
                                         &frame_length,          // [5]
                                         &dp);                   // [6]
         
-            // write to output stream other pages of a frame
-            if ((fw= fwrite_all(output_fd, (char *) &header, header_length))<0) {
-                fprintf(stderr,"error writing output data9 - error = %d (%s)\n",
+                    // write to output stream other pages of a frame
+                    if ((fw= fwrite_all(output_fd, (char *) &header, header_length))<0) {
+                       fprintf(stderr,"error writing output data9 - error = %d (%s)\n",
                                 errno,strerror(errno)); 
-            }
-            if ((fw= fwrite_all(output_fd, dp_prev, (int) (dp-dp_prev)))<0){
-                fprintf(stderr,"error writing output data10 - error = %d (%s)\n",
+                    }
+                    if ((fw= fwrite_all(output_fd, dp_prev, (int) (dp-dp_prev)))<0){
+                        fprintf(stderr,"error writing output data10 - error = %d (%s)\n",
                                 errno,strerror(errno)); 
-            } 
+                    } 
                 }
-                
             }
             frame_start=next_frame_start;
             frame_no++;
