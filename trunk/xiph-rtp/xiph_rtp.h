@@ -102,6 +102,7 @@ typedef struct xiph_rtp {
 	theora_info      ti;
 	theora_comment   tc;
 	theora_state     td;
+	unsigned int gp_shift;
 #endif
 	/* codec specific (speex) */
 	//FIXME

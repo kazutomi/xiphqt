@@ -61,7 +61,31 @@
 #include "xiph_rtp.h"
 
 #define BUFFER_SIZE 4096
+unsigned int cfg_parse( xiph_rtp_t *xr )
+{
+	oggpack_buffer opb;
+	
+	oggpack_readinit(&opb,xr->header[0].packet, xr->header[0].bytes);
+	
+	oggpack_read(&opb,8*7);
+	oggpack_read(&opb,8*3);
+	oggpack_read(&opb,16);
+	oggpack_read(&opb,16);
 
+	oggpack_read(&opb,64);
+
+	oggpack_read(&opb,32);
+	oggpack_read(&opb,32);
+
+	oggpack_read(&opb,24);
+	oggpack_read(&opb,24);
+	
+	oggpack_read(&opb,38);
+	
+	xr->gp_shift = oggpack_read(&opb,5);
+
+	return 0; //FIXME...
+}
 
 int main (int argc, char **argv) 
 {
@@ -263,6 +287,7 @@ unsigned char *conf_packet = malloc(conf_bytes);
     free(conf_packet);
 }
 
+cfg_parse(&xr);
 
 /*  Read raw data and send RTP packet  */
 
@@ -288,9 +313,9 @@ unsigned char *conf_packet = malloc(conf_bytes);
 			theora_decode_packetin(&xr.td,&xr.op);   
 #ifdef DEBUG
 			printf("  bytes %ld bos %ld eos %ld gp %lld pno %lld\n", xr.op.bytes, xr.op.b_o_s, xr.op.e_o_s, xr.op.granulepos, xr.op.packetno);
-#endif
-			timestamp = 
-				theora_granule_time(&xr.td,xr.op.granulepos);	
+#endif		
+			timestamp =  (xr.op.granulepos>>xr.gp_shift)+
+			(xr.op.granulepos & ((1<<xr.gp_shift)-1));
 			creatertp ( &xr, xr.op.packet, xr.op.bytes, 
 					timestamp, 0);
             	    }

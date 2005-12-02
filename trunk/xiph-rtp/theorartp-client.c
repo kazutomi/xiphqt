@@ -59,7 +59,7 @@ typedef struct ogg_context {
 	ogg_packet op;
 	ogg_stream_state os;
 	ogg_page og;
-	long long int last_gp;
+	long long int prev_gp;
 	long int prev_keyframe;
 	long int curr_frame;
 
@@ -69,23 +69,11 @@ typedef struct ogg_context {
 
 
 	int frag;
-	uint64_t timestamp;
-	unsigned int time_den;
-	unsigned int time_num;
+	long int timestamp;
 
-	int gpshift;
-	int gpmask;
+	int gp_shift;
 
-} ogg_context_t; 
-
-static int rtp_ilog(unsigned int v){
-  int ret=0;
-  while(v){
-    ret++;
-    v>>=1;
-  }
-  return(ret);
-}
+} ogg_context_t;
 
 int
 dump_packet_raw (unsigned char *data, const int len, FILE * out)
@@ -200,31 +188,21 @@ int cfg_parse( ogg_context_t *ogg )
 
 	oggpack_read(&opb,64);
 	
-	ogg->time_den = oggpack_read(&opb,32);
-	ogg->time_num = oggpack_read(&opb,32);
+//	ogg->time_den =
+	oggpack_read(&opb,32);
+//	ogg->time_num = 
+	oggpack_read(&opb,32);
 
 	oggpack_read(&opb,24);
 	oggpack_read(&opb,24);
 	
 	oggpack_read(&opb,38);
 	
-	ogg->gpshift = oggpack_read(&opb,5);
-	ogg->gpmask = (1 << ogg->gpshift) -1;
-	
+	ogg->gp_shift = oggpack_read(&opb,5);
+
 	return 0; //FIXME add some checks and return -1 on failure
 }
 
-//FIXME incomplete
-uint64_t pkt_granulepos(ogg_context_t *ogg)
-{
-	ogg->op.granulepos = 
-		(ogg->curr_frame - ogg->prev_keyframe - 1) << ogg->gpshift +
-		ogg->prev_keyframe - 1;
-
-	return ogg->op.granulepos;
-}
-
-	
 int
 cfg_repack(ogg_context_t *ogg, FILE* out)
 {
@@ -282,10 +260,60 @@ cfg_repack(ogg_context_t *ogg, FILE* out)
 }
 
 int
-pkt_repack(ogg_context_t *ogg, FILE *out){
+pkt_repack(ogg_context_t *ogg, int64_t timestamp, FILE *out){
 
-  ogg->op.granulepos = pkt_granulepos(ogg);
+  int frame_type;
+  ogg_packet *op = &ogg->op;
   
+  oggpack_buffer opb;
+  oggpack_readinit(&opb,op->packet,op->bytes);
+  oggpack_read(&opb,1); //video marker
+  
+  frame_type = oggpack_read(&opb,1);
+
+  oggpack_read(&opb,6);
+  
+  if(oggpack_read(&opb,1))
+  {
+	  oggpack_read(&opb,6);
+	  if(oggpack_read(&opb,1))
+		  oggpack_read(&opb,6);
+  }
+
+  if(timestamp)
+  {
+	  if (frame_type == 0) //KEY_FRAME
+		  ogg->prev_keyframe = timestamp;
+	  
+	  ogg->curr_frame = timestamp;
+	  
+	  op->granulepos = (ogg->curr_frame - ogg->prev_keyframe)
+		   | ogg->prev_keyframe << ogg->gp_shift;
+  }
+  else
+  {
+      if(ogg->prev_gp==-1)
+      {
+        op->granulepos = 0;
+      }
+      else
+      {
+        if(frame_type == 0) //KEY_FRAME
+	{
+          ogg->prev_keyframe = op->granulepos &
+		  ((1<<ogg->gp_shift)-1);
+          op->granulepos >>= ogg->gp_shift;
+          op->granulepos += ++ogg->prev_keyframe;
+          op->granulepos <<= ogg->gp_shift;
+        }
+	else
+          op->granulepos++;
+      }
+  }
+
+  ogg->prev_gp = op->granulepos;
+
+
   ogg_stream_packetin(&ogg->os,&ogg->op);
   do{
     int result=ogg_stream_pageout(&ogg->os,&ogg->og);
@@ -375,7 +403,7 @@ dump_packet_ogg (unsigned char *data, const int len, FILE * out, ogg_context_t *
       op->bytes += data[offset++];
       op->packet = &data[offset];
       op->packetno++;
-      count += pkt_repack(ogg,out);
+      count += pkt_repack(ogg, i ? 0 : timestamp, out);
       offset += op->bytes;
       op->b_o_s=0;
     }   
