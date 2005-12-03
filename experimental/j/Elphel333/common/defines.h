@@ -5,7 +5,7 @@
 #ifndef __STRAMER_H_DEF_
 #define __STREAMER_H_DEF_
 
-#include <inttypes.h>
+#include <stdint.h>
 
 #define HAVE_NANOSLEEP   1
 
