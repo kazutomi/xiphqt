@@ -20,19 +20,19 @@ typedef struct {
 
 
 typedef struct {
-  u_int8_t            OggS[4];
-  u_int8_t            version;
-  u_int8_t            flags;
-//  u_int64_t           granule;
-//  u_int32_t           serial;
-//  u_int32_t           page;
-//  u_int32_t           crc;
-  u_int8_t           granule[8];
-  u_int8_t           serial[4];
-  u_int8_t           page[4];
-  u_int8_t           crc[4];
-  u_int8_t           num_segm;
-  u_int8_t           lacing_values [255];
+  uint8_t            OggS[4];
+  uint8_t            version;
+  uint8_t            flags;
+//  uint64_t           granule;
+//  uint32_t           serial;
+//  uint32_t           page;
+//  uint32_t           crc;
+  uint8_t           granule[8];
+  uint8_t           serial[4];
+  uint8_t           page[4];
+  uint8_t           crc[4];
+  uint8_t           num_segm;
+  uint8_t           lacing_values [255];
 
 } ogg_header_t;
 
@@ -64,25 +64,25 @@ typedef struct {
      int  pre_ht[12];
      int  pre_ht30[6];
 
-     u_int16_t   fpga_mask[C333_MAXHEIGHT>>5][C333_MAXWIDTH>>8]; // [64][16]
-     u_int32_t   fpga_zerobin[6];
-     u_int32_t   fpga_qtables[512];
-     u_int16_t   fpga_hti    [12];
-     u_int16_t   fpga_hti30  [16];
-     u_int32_t   fpga_htable [1024];
-     u_int16_t   fpga_firstbit[4];
+     uint16_t   fpga_mask[C333_MAXHEIGHT>>5][C333_MAXWIDTH>>8]; // [64][16]
+     uint32_t   fpga_zerobin[6];
+     uint32_t   fpga_qtables[512];
+     uint16_t   fpga_hti    [12];
+     uint16_t   fpga_hti30  [16];
+     uint32_t   fpga_htable [1024];
+     uint16_t   fpga_firstbit[4];
 } fpga_params;
 
 
 
 int oggtheora_prepare (const char *headers_filename, // file to save headers
-                       u_int16_t   fpga_mask[C333_MAXHEIGHT>>5][C333_MAXWIDTH>>8], // [64][16]
-                       u_int32_t   fpga_zerobin[6],
-                       u_int32_t   fpga_qtables[512],
-                       u_int16_t   fpga_hti    [12],
-                       u_int16_t   fpga_hti30  [16],
-                       u_int32_t   fpga_htable [1024],
-                       u_int16_t   fpga_firstbit[4],
+                       uint16_t   fpga_mask[C333_MAXHEIGHT>>5][C333_MAXWIDTH>>8], // [64][16]
+                       uint32_t   fpga_zerobin[6],
+                       uint32_t   fpga_qtables[512],
+                       uint16_t   fpga_hti    [12],
+                       uint16_t   fpga_hti30  [16],
+                       uint32_t   fpga_htable [1024],
+                       uint16_t   fpga_firstbit[4],
                        int         nstx, //number of supertiles (128x64) horizontal
                        int         nsty, //number of supertiles (128x64) vertical
                        int         frn,  // frame rate nominator (1000000=1fps)
@@ -113,8 +113,8 @@ int oggtheora_prepare (const char *headers_filename, // file to save headers
 
 int ogg_page      (ogg_header_t *    ogg_header, // pointer to the header data (returns - header length in bytes)
                             char     flags,
-                            u_int64_t granule,
-                            u_int32_t stream_serial,
+                            uint64_t granule,
+                            uint32_t stream_serial,
                             int      page,       // page
                             int      num_packets, // number of packets in the page
                    len_data_t *      packets);
@@ -131,12 +131,12 @@ int ogg_page      (ogg_header_t *    ogg_header, // pointer to the header data (
 int ogg_frame_page      (ogg_header_t *    ogg_header,      // pointer to the header data (returns - header length in bytes)
                             char           flags,           // +1 - continuation, +4 - last (+2 - first)
                             int            maxpage,         // maximal page size (w/o ogg header)
-                            u_int64_t      granule,         // 
-                            u_int32_t      stream_serial,   //
+                            uint64_t      granule,         // 
+                            uint32_t      stream_serial,   //
                             int            page,            // page
                             len_data_t     frame_header,    // not used if (flags & 1). frame_header.len is measured in bits, not bytes!
                             int          * len,             // pointer frame data length (will modify - if non-zero - need continuation)
-                            u_int8_t    ** frame_data);     // pointer to pointer to an array with frame data
+                            uint8_t    ** frame_data);     // pointer to pointer to an array with frame data
                                                             // if it is not continuation data is bit-aligned to be combined with frame_header
                                                             // first word of frame data will be modified - OR-ed with the last one from
                                                             // the frame_header
@@ -151,9 +151,9 @@ int load_headers(const char *headers_filename, len_data_t *packets, int *kfgshif
 // now encapsulate compressed data and output stream (to stdout?)
 // The two arrays will be just mmap-ed in the camera
 int oggtheora_send    (const char *headers_filename, // filename of a file with 6 headers and their lengths (in bits)
-                       u_int8_t    ccam_dma      [CCAM_BYTES_PER_DMABUF],
-                       u_int32_t   ccam_dma_index[CCAM_DMA_INDEX_SIZE],
-                       u_int32_t   stream_serial);
+                       uint8_t    ccam_dma      [CCAM_BYTES_PER_DMABUF],
+                       uint32_t   ccam_dma_index[CCAM_DMA_INDEX_SIZE],
+                       uint32_t   stream_serial);
 
 
 int make_OggTheoraHdrs(const char *headers_filename);

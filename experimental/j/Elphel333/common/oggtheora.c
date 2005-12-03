@@ -21,7 +21,9 @@
 */
 
 /****************** INCLUDE FILES SECTION ***********************************/
+
 #include <stdio.h>
+#include <stdint.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -38,7 +40,7 @@
 #include "oggtheora.h"
 
 
-// used libog-1.1.1/crc/framing.c
+// we do our own ogg, borrowing crc code from libogg-1.1.1/framing.c
 #define OC_NHUFFMAN_TABLES (80)
 #define OC_NDCT_TOKENS     (32)
 
@@ -59,13 +61,13 @@
 typedef struct{
   /*The bit pattern for the code, with the LSbit of the pattern aligned in
      the LSbit of the word.*/
-  u_int32_t pattern;
+  uint32_t pattern;
   /*The number of bits in the code.
     This must be between 0 and 32, inclusive.*/
   int          nbits;
 }theora_huff_code;
 
-#define ogg_uint32_t u_int32_t
+#define ogg_uint32_t uint32_t
 
 #include "oggtheora_tables.h"
 
@@ -74,16 +76,6 @@ typedef struct{
 
 // from theora/experimental/lib/ocintrin.h
 #define OC_MAXI(_a,_b)      ((_a)<(_b)?(_b):(_a))
-
-// from theora/libogg-1.1.1/include/ogg/ogg.h
-typedef struct {
-  long endbyte;
-  int  endbit;
-
-  unsigned char *buffer;
-  unsigned char *ptr;
-  long storage;
-} oggpack_buffer;
 
 
 // from theora/experimental/lib/huffenc.c
@@ -106,35 +98,36 @@ extern int errno;
 // FPGA_MASK is used to specify (macroblock*4)-level "skip" and "low quality" (qi[0] - high, qi[1] - low)
 // skip applies to some INTER frames and will not be coded.
 // the mask is made for the 128x64 macroblock array, (0,0) matching the lower-left corner of the image
-// each element (u_int_16) encodes 8 macroblock flag pairs (LSB left, in each pair lower bit is quality,
+// each element (uint_16) encodes 8 macroblock flag pairs (LSB left, in each pair lower bit is quality,
 // higher - "skip"
 
 /*
-static u_int16_t FPGA_MASK[C333_MAXHEIGHT>>5][C333_MAXWIDTH>>8]; // [64][16]
-static const u_int32_t FPGA_ZEROBIN[6]={ // Index Sharpness S.Fact>50 Zbin       Round
+static uint16_t FPGA_MASK[C333_MAXHEIGHT>>5][C333_MAXWIDTH>>8]; // [64][16]
+static const uint32_t FPGA_ZEROBIN[6]={ // Index Sharpness S.Fact>50 Zbin       Round
                                  0x80a6, //   0       0        0      0.65(166)  0.499(128)
                                  0x76a6, //   1       0        1      0.65(166)  0.460(118)
                                  0x7ac0, //   2       1        0      0.75(192)  0.476(122)
                                  0x66c0, //   3       1        1      0.75(192)  0.400(102)
                                  0x7ae6, //   4       2        0      0.90(230)  0.476(122)
                                  0x55e6};//   5       2        1      0.90(230)  0.333( 85)
-static u_int32_t FPGA_QTABLES[512];
-static u_int16_t FPGA_HTI     [12];
-static u_int16_t FPGA_HTI30   [16];
-static u_int32_t FPGA_HTABLE  [1024];
-static u_int16_t FPGA_FIRSTBIT[4];
+//static uint32_t FPGA_QTABLES[512];
+static uint32_t FPGA_QTABLES[512];
+static uint16_t FPGA_HTI     [12];
+static uint16_t FPGA_HTI30   [16];
+static uint32_t FPGA_HTABLE  [1024];
+static uint16_t FPGA_FIRSTBIT[4];
 
 */
 
    
-void fill_FPGA_qtable (u_int32_t *table,
+void fill_FPGA_qtable (uint32_t *table,
                          int       inter,
                          int       color,
                          int       qindex_dc, // always the same in a frame
                          int       qindex_ac, // may be different if it is a second qi in a frame
                          int       sharpness);  // 0..2 - common for all q
    void fill_FPGA_qtables (
-     u_int32_t  tables[512],
+     uint32_t  tables[512],
      int  sharpness,
      int  intra_y_qi_hi,   // index in DC_Scale/AC_Scale tables, intra frame, luma
      int  intra_c_qi_hi,   // index in DC_Scale/AC_Scale tables, intra frame, chroma
@@ -146,16 +139,16 @@ void fill_FPGA_qtable (u_int32_t *table,
      int  inter_y_qi_lo,   // index in DC_Scale/AC_Scale tables, inter frame, luma
      int  inter_c_qi_lo);   // index in DC_Scale/AC_Scale tables, inter frame, chroma
   // {len[3:0],data[13:0]} - data is MSB aligned
-   int fill_FPGA_htables (u_int16_t hti  [12],
-                          u_int16_t hti30[16],
-                          u_int32_t htable[1024],
+   int fill_FPGA_htables (uint16_t hti  [12],
+                          uint16_t hti30[16],
+                          uint32_t htable[1024],
                           int       pre_ht[12],
                           int       pre_ht30[6]);
 
 
 int theora_write_bits (char * buf, // buffer
                           int * bp,   // pointer to bit pointer
-                          u_int32_t data,   // data to write
+                          uint32_t data,   // data to write
                           int nb);     // number of bits to write
 static int huff_entry_cmp(const void *_c1,const void *_c2);
 
@@ -186,7 +179,7 @@ int theora_comments (char       *buf,    // returns length, buf should be big en
                         );
 
 
-void fill_fpga_mask_windows (u_int16_t  mask_array[C333_MAXHEIGHT>>5][C333_MAXWIDTH>>8],
+void fill_fpga_mask_windows (uint16_t  mask_array[C333_MAXHEIGHT>>5][C333_MAXWIDTH>>8],
                            int width,
                            int height, 
                            int qual_left, // all in pixels, high quality will be inside and including the spacified coordinates
@@ -205,7 +198,7 @@ void fill_fpga_mask_windows (u_int16_t  mask_array[C333_MAXHEIGHT>>5][C333_MAXWI
                            int         nqis,     // number of qi in a frame (valid 1 or 2)
                            int         qis[2], // q[0] - high, DC, q[1] - low (AC only)
                           
-                           u_int16_t   mask_array[C333_MAXHEIGHT>>5][C333_MAXWIDTH>>8] //
+                           uint16_t   mask_array[C333_MAXHEIGHT>>5][C333_MAXWIDTH>>8] //
 //                           int mask_array[C333_MAXHEIGHT>>5][C333_MAXWIDTH>>8] //
                         );
    void theora_frameheaders(int         width,   // pixels - will ">>" as needed
@@ -213,13 +206,13 @@ void fill_fpga_mask_windows (u_int16_t  mask_array[C333_MAXHEIGHT>>5][C333_MAXWI
                            len_data_t  frame_headers[3],   // [0] - intra, [1] - inter(full), [2] - inter (skip according mask)
                            int         nqis,     // number of qi in a frame (valid 1 or 2)
                            int         qis[2], // q[0] - high, DC, q[1] - low (AC only)
-                           u_int16_t   mask_array[C333_MAXHEIGHT>>5][C333_MAXWIDTH>>8] //
+                           uint16_t   mask_array[C333_MAXHEIGHT>>5][C333_MAXWIDTH>>8] //
                         );
 
 
 
-    int makeOggTheora(u_int32_t * ccam_dma_index, // will be mmaped array in the camera
-                      u_int8_t  * ccam_dma,       // will be mmaped array in the camera (char array)
+    int makeOggTheora(uint32_t * ccam_dma_index, // will be mmaped array in the camera
+                      uint8_t  * ccam_dma,       // will be mmaped array in the camera (char array)
                       FILE *      output_fd,
                       int         page_size,  // maximal; page size to use
                       len_data_t  packets[6], // 0 - identification
@@ -228,7 +221,7 @@ void fill_fpga_mask_windows (u_int16_t  mask_array[C333_MAXHEIGHT>>5][C333_MAXWI
                                               // 3 - frame - intra (.len - in bits, not bytes!)
                                               // 4 - frame - inter/full
                                               // 5 - frame - inter/mapped
-                      u_int32_t   stream_serial,
+                      uint32_t   stream_serial,
                       int         kfgshiftm // number of bits in granule used for number of i-frames
                       );
                       
@@ -257,7 +250,7 @@ void   put_7_2_1(char * buf,         // bitstream buffer
                            
 //++++++++++++++++++++++++++++++++++++++++++++++
 
-void fill_fpga_mask_windows (u_int16_t  mask_array[C333_MAXHEIGHT>>5][C333_MAXWIDTH>>8],
+void fill_fpga_mask_windows (uint16_t  mask_array[C333_MAXHEIGHT>>5][C333_MAXWIDTH>>8],
                            int width,
                            int height, 
                            int qual_left, // all in pixels, high quality will be inside and including the spacified coordinates
@@ -457,7 +450,7 @@ void put_7_2_2(char * buf,         // bitstream buffer
                            int         frame_flags,   // 0 - intra, 1 - inter(full), 3 - inter (skip according mask)
                            int         nqis,     // number of qi in a frame (valid 1 or 2)
                            int         qis[2], // q[0] - high, DC, q[1] - low (AC only)
-                           u_int16_t   mask_array[C333_MAXHEIGHT>>5][C333_MAXWIDTH>>8] //
+                           uint16_t   mask_array[C333_MAXHEIGHT>>5][C333_MAXWIDTH>>8] //
                           )
    {
   D(fprintf(stderr, "theora_frameheader, frame_flags=%d, nqis=%d, qis[0]=%d,  qis[1]=%d\n",frame_flags,nqis,qis[0],qis[1]));
@@ -610,7 +603,7 @@ void put_7_2_2(char * buf,         // bitstream buffer
                            len_data_t  frame_headers[3],   // [0] - intra, [1] - inter(full), [2] - inter (skip according mask)
                            int         nqis,     // number of qi in a frame (valid 1 or 2)
                            int         qis[2], // q[0] - high, DC, q[1] - low (AC only)
-                           u_int16_t   mask_array[C333_MAXHEIGHT>>5][C333_MAXWIDTH>>8] //
+                           uint16_t   mask_array[C333_MAXHEIGHT>>5][C333_MAXWIDTH>>8] //
                         )
     {
       char * buf;
@@ -645,7 +638,7 @@ void put_7_2_2(char * buf,         // bitstream buffer
     data: data to write
     nb: number of bits to write
     Return: bp+nb.*/  
-int theora_write_bits (char * buf, int * bp, u_int32_t data, int nb) {
+int theora_write_bits (char * buf, int * bp, uint32_t data, int nb) {
     int i,m, bytp,bitp;
     if (((*bp | nb) & 7) == 0) { // byte sync not lost
         for (i=(nb-8); i>=0; i-=8) {
@@ -766,13 +759,13 @@ int oc_huff_codes_pack(char *buf, int* bp,
 // code assumes little endian
 int ogg_page      (ogg_header_t *    ogg_header, // pointer to the header data (returns - header length in bytes)
                             char     flags,
-                           u_int64_t granule,
-                           u_int32_t stream_serial,
+                           uint64_t granule,
+                           uint32_t stream_serial,
                             int      page,       // page
                             int      num_packets, // number of packets in the page
                    len_data_t *      packets) {
      int i,n,nn,r;
-     u_int32_t crc_reg;
+     uint32_t crc_reg;
      char * c_header= (char *) ogg_header;
 
      memcpy (ogg_header->OggS,oggs_string,4);
@@ -836,12 +829,12 @@ int ogg_page      (ogg_header_t *    ogg_header, // pointer to the header data (
 int ogg_frame_page      (ogg_header_t *    ogg_header,      // pointer to the header data (returns - header length in bytes)
                             char           flags,           // +1 - continuation, +4 - last (+2 - first)
                             int            maxpage,         // maximal page size (w/o ogg header)
-                            u_int64_t      granule,         // 
-                            u_int32_t      stream_serial,   //
+                            uint64_t      granule,         // 
+                            uint32_t      stream_serial,   //
                             int            page,            // page
                             len_data_t     frame_header,    // not used if (flags & 1). frame_header.len is measured in bits, not bytes!
                             int          * len,             // pointer frame data length (will modify - if non-zero - need continuation)
-                            u_int8_t    ** frame_datap)     // pointer to pointer to an array with frame data
+                            uint8_t    ** frame_datap)     // pointer to pointer to an array with frame data
                                                             // if it is not continuation data is bit-aligned to be combined with frame_header
                                                             // first word of frame data will be modified - OR-ed with the last one from
                                                             // the frame_header
@@ -850,15 +843,15 @@ int ogg_frame_page      (ogg_header_t *    ogg_header,      // pointer to the he
      int i,l,n,nn,r;
      int dl;
 //     unsigned char cmask[4];
-//     u_int32_t  *mask = (u_int32_t *) cmask;
-     u_int8_t   * frame_data = frame_datap[0];
-     u_int32_t  mask;
-     u_int8_t  *cmask= (u_int8_t  *) &mask;
-     u_int32_t  *fh32=  (u_int32_t *) frame_header.data;
-     u_int32_t crc_reg;
-     u_int32_t  *fd32=  (u_int32_t *) frame_data;
+//     uint32_t  *mask = (uint32_t *) cmask;
+     uint8_t   * frame_data = frame_datap[0];
+     uint32_t  mask;
+     uint8_t  *cmask= (uint8_t  *) &mask;
+     uint32_t  *fh32=  (uint32_t *) frame_header.data;
+     uint32_t crc_reg;
+     uint32_t  *fd32=  (uint32_t *) frame_data;
      char * c_header= (char *) ogg_header;
-     u_int64_t  granule0=0;
+     uint64_t  granule0=0;
 //quick fix to modify (up to) last 31 bits of header (not first data word)
      int        skip_first_data=0;
 D(fprintf(stderr,"ogg_frame_page: flags=%d, page= %d, frame_header.len=%d, len=%d\n",flags, page, frame_header.len, len[0]));
@@ -1125,7 +1118,7 @@ int theora_setup (char       *buf,    // returns length, buf should be big enoug
     qindex_ac:  may be different if it is a second qi in a frame
     sharpness:  0..2 - common for all q
     Return: void */
-void fill_FPGA_qtable (u_int32_t *table,
+void fill_FPGA_qtable (uint32_t *table,
                          int      inter,
                          int      color,
                          int      qindex_dc, 
@@ -1175,7 +1168,7 @@ void fill_FPGA_qtable (u_int32_t *table,
 
     Return: void */
 void fill_FPGA_qtables (
-     u_int32_t  tables[512],
+     uint32_t  tables[512],
      int  sharpness,
      int  intra_y_qi_hi, int  intra_c_qi_hi, int  inter_y_qi_hi, int  inter_c_qi_hi,
 
@@ -1199,8 +1192,8 @@ void fill_FPGA_qtables (
     pre_ht:
     pre_ht30:
     Return: 0 on success, or a negative value on error. */
-int fill_FPGA_htables (u_int16_t hti  [12], u_int16_t hti30[16],
-                       u_int32_t htable[1024],
+int fill_FPGA_htables (uint16_t hti  [12], uint16_t hti30[16],
+                       uint32_t htable[1024],
                        int pre_ht[12], int pre_ht30[6]) {
     int i,j,k,l,d;
     for (i=0; i<12; i++) hti[i]=pre_ht30[pre_ht[i]];
@@ -1252,21 +1245,21 @@ int fwrite_all(FILE *  stream, char * data, int len) {
     stream_serial:  serial number of ogg stream
     kfgshiftm:      number of bits in granule used for number of i-frames
     Return: 0 on success, negative values on error */
-int makeOggTheora(u_int32_t * ccam_dma_index, 
-                      u_int8_t  * ccam_dma, 
+int makeOggTheora(uint32_t * ccam_dma_index, 
+                      uint8_t  * ccam_dma, 
                       FILE *      output_fd,
                       int         page_size, 
                       len_data_t  packets[6],
-                      u_int32_t   stream_serial,
+                      uint32_t   stream_serial,
                       int         kfgshiftm) {
     
       ogg_header_t header;
       int          header_length, fw;
-      u_int64_t    granule=0;
-      u_int64_t    granule_mask=(1<<kfgshiftm)-1;
-      //u_int64_t    next_granule=0;
-      u_int8_t   * dp;
-      u_int8_t   * dp_prev;
+      uint64_t    granule=0;
+      uint64_t    granule_mask=(1<<kfgshiftm)-1;
+      //uint64_t    next_granule=0;
+      uint8_t   * dp;
+      uint8_t   * dp_prev;
       int          nframe=0;
       int          frame_start=0;   // in bytes
       int          next_frame_start;// in bytes
@@ -1455,13 +1448,13 @@ int makeOggTheora(u_int32_t * ccam_dma_index,
     pre_ht30:
     Return: 0 on success, negative values on error */                           
 int oggtheora_prepare (const char *headers_filename, // file to save headers
-                       u_int16_t   fpga_mask[C333_MAXHEIGHT>>5][C333_MAXWIDTH>>8], // [64][16]
-                       u_int32_t   fpga_zerobin[6],
-                       u_int32_t   fpga_qtables[512],
-                       u_int16_t   fpga_hti    [12],
-                       u_int16_t   fpga_hti30  [16],
-                       u_int32_t   fpga_htable [1024],
-                       u_int16_t   fpga_firstbit[4],
+                       uint16_t   fpga_mask[C333_MAXHEIGHT>>5][C333_MAXWIDTH>>8], // [64][16]
+                       uint32_t   fpga_zerobin[6],
+                       uint32_t   fpga_qtables[512],
+                       uint16_t   fpga_hti    [12],
+                       uint16_t   fpga_hti30  [16],
+                       uint32_t   fpga_htable [1024],
+                       uint16_t   fpga_firstbit[4],
                        int         nstx, //number of supertiles (128x64) horizontal
                        int         nsty, //number of supertiles (128x64) vertical
                        int         frn,  // frame rate nominator (1000000=1fps)
@@ -1496,7 +1489,7 @@ int oggtheora_prepare (const char *headers_filename, // file to save headers
      int        fmbw=nstx<<3; // width in macroblocks
      int        fmbh=nsty<<2; // height in macroblocks
      const int  frd=1000000;  // frame rate denominator (1000000)
-//     u_int32_t  kfgshiftm;  // number of bits in granule used for number of i-frames
+//     uint32_t  kfgshiftm;  // number of bits in granule used for number of i-frames
      char       packet1[44];
      char       packet2[4096];
      char       packet3[4096];
@@ -1507,7 +1500,7 @@ int oggtheora_prepare (const char *headers_filename, // file to save headers
      len_data_t frame_headers[3];
      int        nqis=(qis[1]==qis[0])?1:2;
      FILE      *ofile;
-     const u_int32_t FPGA_ZEROBIN_TAB[6]={ // Index Sharpness S.Fact>50 Zbin       Round
+     const uint32_t FPGA_ZEROBIN_TAB[6]={ // Index Sharpness S.Fact>50 Zbin       Round
                                            0x80a6, //   0       0        0      0.65(166)  0.499(128)
                                            0x76a6, //   1       0        1      0.65(166)  0.460(118)
                                            0x7ac0, //   2       1        0      0.75(192)  0.476(122)
@@ -1587,8 +1580,8 @@ D(int ii=0;)
     Return: 0 on success, negative value on error*/
 int load_headers(const char *headers_filename, len_data_t *packets, int *kfgshiftm) {
     FILE      *headers_file;
-    u_int32_t  num_headers;
-    u_int32_t  header_lengths[6];
+    uint32_t  num_headers;
+    uint32_t  header_lengths[6];
     int        i,r;
 
     if ((headers_file = fopen(headers_filename, "r"))==NULL) {
@@ -1629,9 +1622,9 @@ int load_headers(const char *headers_filename, len_data_t *packets, int *kfgshif
     stream_serial:
     Return: 0 on success, negative value on error*/
 int oggtheora_send    (const char *headers_filename, 
-                       u_int8_t    ccam_dma      [CCAM_BYTES_PER_DMABUF],
-                       u_int32_t   ccam_dma_index[CCAM_DMA_INDEX_SIZE],
-                       u_int32_t   stream_serial) {
+                       uint8_t    ccam_dma      [CCAM_BYTES_PER_DMABUF],
+                       uint32_t   ccam_dma_index[CCAM_DMA_INDEX_SIZE],
+                       uint32_t   stream_serial) {
     int        kfgshiftm=9;
     len_data_t packets[6];
     int        i,r;
@@ -1721,16 +1714,16 @@ int  setup_tbl_FPGA( int nframes_total,
      int  pre_ht30[6];
     
 
-     u_int16_t   fpga_mask[C333_MAXHEIGHT>>5][C333_MAXWIDTH>>8]; // [64][16]
-     u_int32_t   fpga_zerobin[6];
-     u_int32_t   fpga_qtables[512];
-     u_int16_t   fpga_hti    [12];
-     u_int16_t   fpga_hti30  [16];
-     u_int32_t   fpga_htable [1024];
-     u_int16_t   fpga_firstbit[4];
+     uint16_t   fpga_mask[C333_MAXHEIGHT>>5][C333_MAXWIDTH>>8]; // [64][16]
+     uint32_t   fpga_zerobin[6];
+     uint32_t   fpga_qtables[512];
+     uint16_t   fpga_hti    [12];
+     uint16_t   fpga_hti30  [16];
+     uint32_t   fpga_htable [1024];
+     uint16_t   fpga_firstbit[4];
 
      int fpga_tables_fd;
-     u_int32_t d[2];
+     uint32_t d[2];
 
      FILE *ifile;
      int devfd;

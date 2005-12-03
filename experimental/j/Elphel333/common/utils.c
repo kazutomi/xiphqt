@@ -147,7 +147,7 @@ RtpTimestamp TimestampToRtp(Timestamp t)
 	  return 0;
 	}
 
-static const u_int32_t SECS_BETWEEN_1900_1970 = 2208988800U;
+static const uint32_t SECS_BETWEEN_1900_1970 = 2208988800U;
 
 Timestamp TimestampToNtp(Timestamp t) 
 {
@@ -158,7 +158,7 @@ Timestamp TimestampToNtp(Timestamp t)
 }
 
 void HexDump(
-        u_int8_t* pBytes, u_int32_t numBytes)
+        uint8_t* pBytes, uint32_t numBytes)
 {
 	uint32_t i;
 

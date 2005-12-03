@@ -26,9 +26,9 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include <sys/time.h>
 #include <sys/mman.h>           /* mmap */
 #include <ctype.h>
-#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 #include <unistd.h>
 #include <getopt.h>
@@ -60,7 +60,7 @@ int			hdr_size;
 
  int        kfgshiftm=9;
  len_data_t packets[6];
- u_int32_t  header_lengths[6];
+ uint32_t  header_lengths[6];
  uint8_t    *b_headers;
 
 /////////////////////////////////////////////////////
@@ -280,7 +280,7 @@ rtp_SendTheoraHdrs(struct rtp* session, uint32_t rtp_ts,
 int make_OggTheoraHdrs(const char *headers_filename)
 {
      FILE      *headers_file;
-     u_int32_t  num_headers;
+     uint32_t  num_headers;
      int        i,r;
      struct stat     f_stat;
 
@@ -329,8 +329,8 @@ main_loop(struct rtp* session)
 	int 		devfd, i;
 	int 		acq_data, nframes_total, nframes_inter_full,
 			nframes_inter_masked, time_slow;
-	u_int8_t   	*ccam_dma, *dp = NULL;
-    	u_int32_t  	*ccam_dma_index;
+	uint8_t   	*ccam_dma, *dp = NULL;
+    	uint32_t  	*ccam_dma_index;
     	int        	circindex_fd;
    	int        	circbuf_fd;
     	int        	circbuf_size;
@@ -354,8 +354,8 @@ main_loop(struct rtp* session)
       }
       // find total buffer length
       circindex_size=lseek(circindex_fd,0,2);
-      ccam_dma_index = (u_int32_t *) mmap(0, circindex_size, PROT_READ, MAP_SHARED, circindex_fd, 0);
-      if(ccam_dma_index ==((u_int32_t  *) -1)) {
+      ccam_dma_index = (uint32_t *) mmap(0, circindex_size, PROT_READ, MAP_SHARED, circindex_fd, 0);
+      if(ccam_dma_index ==((uint32_t  *) -1)) {
         fprintf(stderr,"Error in mmap %s\r\n","/dev/circindex");
         close(circindex_fd);
         return ;
@@ -370,8 +370,8 @@ main_loop(struct rtp* session)
       // find total buffer length
       circbuf_size=lseek(circbuf_fd,0,2);
       fprintf(stderr,"circbuf stores %d long values (%d bytes)\n",(circbuf_size>>2),circbuf_size);
-      ccam_dma = (u_int8_t *) mmap(0, circbuf_size, PROT_READ, MAP_SHARED, circbuf_fd, 0);
-      if(ccam_dma ==((u_int8_t  *) -1)) {
+      ccam_dma = (uint8_t *) mmap(0, circbuf_size, PROT_READ, MAP_SHARED, circbuf_fd, 0);
+      if(ccam_dma ==((uint8_t  *) -1)) {
         fprintf(stderr,"Error in mmap %s\r\n","/dev/circbuf");
         close(circindex_fd);
         close(circbuf_fd);

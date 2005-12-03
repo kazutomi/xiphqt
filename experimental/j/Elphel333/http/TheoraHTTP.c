@@ -22,9 +22,9 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include <sys/ioctl.h>
 #include <sys/fcntl.h>
 #include <ctype.h>
-#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 #include <unistd.h>
 #include <getopt.h>
@@ -50,7 +50,7 @@ int                 hdr_size;
 /////////////// OggTheora data///////////////////////
 int                 kfgshiftm=9;
 len_data_t          packets[6];
-u_int32_t           header_lengths[6];
+uint32_t           header_lengths[6];
 uint8_t             *b_headers;
 /////////////////////////////////////////////////////
 
@@ -84,7 +84,7 @@ usage()
 int make_OggTheoraHdrs(const char *headers_filename)
 {
      FILE      *headers_file;
-     u_int32_t  num_headers;
+     uint32_t  num_headers;
      int        i,r;
 
      //rtp foo, has to go
@@ -126,9 +126,9 @@ static void main_loop() {
     int         acq_data;
     int         nframes_total, nframes_inter_full, nframes_inter_masked;
     int         time_slow;
-    u_int8_t    *ccam_dma, *dp = NULL;
-    u_int8_t    *dp_prev = NULL;
-    u_int32_t   *ccam_dma_index;
+    uint8_t    *ccam_dma, *dp = NULL;
+    uint8_t    *dp_prev = NULL;
+    uint32_t   *ccam_dma_index;
     int         circindex_fd;
     int         circbuf_fd;
     int         circbuf_size;
@@ -139,12 +139,12 @@ static void main_loop() {
     int         next_frame_start, frame_no =0,last_page_flags = 0;
 
     //FIXME, use some random number here.
-    u_int32_t   stream_serial=0x114a36b7;
+    uint32_t   stream_serial=0x114a36b7;
     int         page = 0;
     
     //FIXME where does this have to go?                    
-    u_int64_t  granule=0;
-    u_int64_t    granule_mask=(1<<kfgshiftm)-1;
+    uint64_t  granule=0;
+    uint64_t    granule_mask=(1<<kfgshiftm)-1;
     int header_length;
     ogg_header_t header;
     int page_size=8192;
@@ -165,8 +165,8 @@ static void main_loop() {
     }
     // find total buffer length
     circindex_size=lseek(circindex_fd,0,2);
-    ccam_dma_index = (u_int32_t *) mmap(0, circindex_size, PROT_READ, MAP_SHARED, circindex_fd, 0);
-    if(ccam_dma_index ==((u_int32_t  *) -1)) {
+    ccam_dma_index = (uint32_t *) mmap(0, circindex_size, PROT_READ, MAP_SHARED, circindex_fd, 0);
+    if(ccam_dma_index ==((uint32_t  *) -1)) {
         fprintf(stderr,"Error in mmap %s\r\n","/dev/circindex");
         close(circindex_fd);
         return ;
@@ -183,8 +183,8 @@ static void main_loop() {
     fprintf(stderr,"circbuf stores %d long values (%d bytes)\n",
                                                 (circbuf_size>>2),circbuf_size);
     ccam_dma = 
-        (u_int8_t *) mmap(0, circbuf_size, PROT_READ, MAP_SHARED, circbuf_fd, 0);
-    if(ccam_dma ==((u_int8_t  *) -1)) {
+        (uint8_t *) mmap(0, circbuf_size, PROT_READ, MAP_SHARED, circbuf_fd, 0);
+    if(ccam_dma ==((uint8_t  *) -1)) {
         fprintf(stderr,"Error in mmap %s\r\n","/dev/circbuf");
         close(circindex_fd);
         close(circbuf_fd);
@@ -198,6 +198,7 @@ static void main_loop() {
     nframes_inter_full = 128;
     nframes_inter_masked = 0;
     time_slow = (int)(100./strm_data_par.fps);
+    time_slow = 1;
     fprintf(stderr,"fps =%f time_slow %d\n",strm_data_par.fps,time_slow);
     acq_data = ((nframes_total)<<16 ) 
               | (((nframes_inter_full   > 255)? 

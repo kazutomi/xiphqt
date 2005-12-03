@@ -79,7 +79,7 @@ uint16_t     GetRandomPortBlock(void);
 RtpTimestamp TimestampToRtp(Timestamp);
 Timestamp    TimestampToNtp(Timestamp);
 
-void HexDump(u_int8_t* pBytes, u_int32_t numBytes);
+void HexDump(uint8_t* pBytes, uint32_t numBytes);
 
 #if defined(__cplusplus)
 }
