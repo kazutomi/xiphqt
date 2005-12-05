@@ -33,6 +33,7 @@
 #define __wrap_ogg_h__
 
 
+#include "config.h"
 #include <Ogg/ogg.h>
 
 extern Boolean WrapOggPage(ogg_page* outOggPage, const void* inRawData,
