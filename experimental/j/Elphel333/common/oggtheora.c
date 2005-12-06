@@ -110,7 +110,6 @@ static const uint32_t FPGA_ZEROBIN[6]={ // Index Sharpness S.Fact>50 Zbin       
                                  0x66c0, //   3       1        1      0.75(192)  0.400(102)
                                  0x7ae6, //   4       2        0      0.90(230)  0.476(122)
                                  0x55e6};//   5       2        1      0.90(230)  0.333( 85)
-//static uint32_t FPGA_QTABLES[512];
 static uint32_t FPGA_QTABLES[512];
 static uint16_t FPGA_HTI     [12];
 static uint16_t FPGA_HTI30   [16];
@@ -1689,7 +1688,7 @@ int  setup_tbl_FPGA( int nframes_total,
      int        i,j; //,r;
      int        nstx; // width  in superblocks
      int        nsty; // height in superblocks
-     int        frn; // frame rate nominator ( in 1/1000000)
+     int        frn; // frame rate numerator ( in 1/1000000)
      int        nobr; // nominal bit rate (-1 - undefined?)
      int        qual; // relative quality (was 0x10)
      int        kfgshiftm=9; // will calculate
