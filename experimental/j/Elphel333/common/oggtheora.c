@@ -979,8 +979,8 @@ int theora_identification (char *buf,  // returns length, buf should be big enou
      buf[17]=(fmbh >> 12) & 0xff;
      buf[18]=(fmbh >>  4) & 0xff;
      buf[19]=(fmbh <<  4) & 0xff;
-     buf[20]=0x00;
-     buf[21]=0x00;
+     buf[20]=0x00; /* crop x offset - none */
+     buf[21]=0x00; /* crop y offset - none */
      buf[22]=(frn >> 24) &0xff;
      buf[23]=(frn >> 16) &0xff;
      buf[24]=(frn >>  8) &0xff;
@@ -990,11 +990,11 @@ int theora_identification (char *buf,  // returns length, buf should be big enou
      buf[28]=(frd >>  8) &0xff;
      buf[29]= frd        &0xff;
      buf[30]= 0; //PARN - 3 bytes
-     buf[31]= 0;
-     buf[32]= 0;
+     buf[31]= 0; // assume 1:1 for the sensor
+     buf[32]= 1;
      buf[33]= 0; //PARD - 3 bytes
      buf[34]= 0;
-     buf[35]= 0;
+     buf[35]= 1;
      buf[36]= 0; // color space - "undefined"
      buf[37]=(nobr >> 16) &0xff;
      buf[38]=(nobr >>  8) &0xff;
