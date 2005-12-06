@@ -1671,12 +1671,10 @@ char * fnegets(FILE* fin, char * s) {
     nframes_inter_full:     number of INTER frames (full) after each INTRA
     nframes_inter_masked:   number of INTER frames (masked) after each INTER full 
                             (not tested yet)
-    time_slow:              reduce reported fps by this
     Return: 0 on success, or a negative value on error.*/
 int  setup_tbl_FPGA( int nframes_total,
              int nframes_inter_full, 
-                     int nframes_inter_masked, 
-                     int time_slow) {
+                     int nframes_inter_masked) {
 
      char       headers_filename[]="/tmp/headers";
      char       parameters_filename[]="/etc/oggtheora_params";
@@ -1771,7 +1769,7 @@ int  setup_tbl_FPGA( int nframes_total,
       {fprintf(stderr,"error opening file %s for reading - error = %d (%s)\n",controlfn,errno,strerror(errno)); return -1;}
      nstx=ioctl(devfd, _CCCMD( CCAM_RPARS , P_ACTUAL_WIDTH), 0)>>7;
      nsty=ioctl(devfd, _CCCMD( CCAM_RPARS , P_ACTUAL_HEIGHT), 0)>>6;
-     frn=(ioctl(devfd, _CCCMD( CCAM_RPARS , P_FP100S), 0)*10000)/time_slow;
+     frn=(ioctl(devfd, _CCCMD( CCAM_RPARS , P_FP100S), 0)*10000);
      qis[1]=qis[0]=(ioctl(devfd, _CCCMD( CCAM_RPARS , P_QUALITY), 0)*63)/100;
      fprintf(stderr,"fps=%d/1000000\r\n",frn);
     close (devfd);

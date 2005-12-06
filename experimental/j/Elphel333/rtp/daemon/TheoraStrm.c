@@ -328,7 +328,7 @@ main_loop(struct rtp* session)
 
 	int 		devfd, i;
 	int 		acq_data, nframes_total, nframes_inter_full,
-			nframes_inter_masked, time_slow;
+			nframes_inter_masked;
 	uint8_t   	*ccam_dma, *dp = NULL;
     	uint32_t  	*ccam_dma_index;
     	int        	circindex_fd;
@@ -386,15 +386,14 @@ main_loop(struct rtp* session)
 	nframes_total = 0;	// unlimited 
 	nframes_inter_full = 128;
 	nframes_inter_masked = 0;
-	time_slow = (int)(100./strm_data_par.fps);
-        fprintf(stderr,"fps =%f time_slow %d\n",strm_data_par.fps,time_slow);
+        fprintf(stderr,"fps =%f\n",strm_data_par.fps);
         acq_data = ((nframes_total)<<16 ) |
                   (((nframes_inter_full   > 255)? 255:((nframes_inter_full   < 0)?0:nframes_inter_full  )) << 8) |
                    ((nframes_inter_masked > 255)? 255:((nframes_inter_masked < 0)?0:nframes_inter_masked));
 
 
 	if(setup_tbl_FPGA( nframes_total, nframes_inter_full,
- 				nframes_inter_masked, time_slow)<0) return;
+ 				nframes_inter_masked)<0) return;
  
    	if(make_OggTheoraHdrs(headers_filename)<0) {
 		fprintf(stderr,"Error prepare headers while parsing %s\n",headers_filename);

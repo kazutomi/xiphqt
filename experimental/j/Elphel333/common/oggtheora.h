@@ -161,8 +161,7 @@ int fwrite_all(FILE *  stream, char * data, int len);
 char * fnegets(FILE* fin, char * s);
 int  setup_tbl_FPGA( int nframes_total,
 		     int nframes_inter_full, // number of INTER frames (full) after each INTRA
-                     int nframes_inter_masked, // number of INTER frames (masked) after each INTER full (not tested yet)
-                     int time_slow);   // reduce reported fps by this
+                     int nframes_inter_masked); // number of INTER frames (masked) after each INTER full (not tested yet)
 
 #if defined(__cplusplus)
 }

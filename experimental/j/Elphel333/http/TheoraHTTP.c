@@ -125,7 +125,6 @@ static void main_loop() {
     int         devfd, i;
     int         acq_data;
     int         nframes_total, nframes_inter_full, nframes_inter_masked;
-    int         time_slow;
     uint8_t    *ccam_dma, *dp = NULL;
     uint8_t    *dp_prev = NULL;
     uint32_t   *ccam_dma_index;
@@ -197,9 +196,7 @@ static void main_loop() {
     nframes_total = 0;    // unlimited 
     nframes_inter_full = 128;
     nframes_inter_masked = 0;
-    time_slow = (int)(100./strm_data_par.fps);
-    time_slow = 1;
-    fprintf(stderr,"fps =%f time_slow %d\n",strm_data_par.fps,time_slow);
+    fprintf(stderr,"fps =%f\n",strm_data_par.fps);
     acq_data = ((nframes_total)<<16 ) 
               | (((nframes_inter_full   > 255)? 
                 255:
@@ -209,7 +206,7 @@ static void main_loop() {
                 ((nframes_inter_masked < 0)?0:nframes_inter_masked));
 
     if(setup_tbl_FPGA( nframes_total, nframes_inter_full,
-                                      nframes_inter_masked, time_slow)<0)
+                                      nframes_inter_masked)<0)
         return;
    
     // Ogg Header this should go in its own function: ogg_send_header 
