@@ -327,6 +327,14 @@ SOURCE=..\common\fccs.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\pxml.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\pxml.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\utils\ringbuffer.cpp
 # End Source File
 # Begin Source File
