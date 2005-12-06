@@ -57,6 +57,10 @@
 #include "common.h"
 #include "rb.h"
 
+#if TARGET_OS_WIN32
+#include "pxml.h"
+#endif
+
 //stream-type support functions
 #include "stream_vorbis.h"
 #include "stream_speex.h"
@@ -372,70 +376,84 @@ static void CloseAllStreams(OggImportGlobalsPtr globals)
 }
 
 
-static int InitialiseMetaDataMappings(StreamInfoPtr si) {
-	CFBundleRef bundle;
-	CFURLRef mdmurl;
-	CFDataRef data;
-	SInt32 ret = 0;
-	CFStringRef errorString;
-	SInt32 error = 0;
-	CFDictionaryRef props;
+static int InitialiseMetaDataMappings(OggImportGlobalsPtr globals, StreamInfoPtr si) {
+    SInt32 ret = 0;
+    CFDictionaryRef props = NULL;
 
-	dbg_printf("--= IMDM()\n");
-	if (si->MDmapping != NULL && si->UDmapping != NULL) {
-		return 1;
-	}
-	
-	//else? let's assume for now that they are both intialised or both are not initialised
+    dbg_printf("--= IMDM()\n");
+    if (si->MDmapping != NULL && si->UDmapping != NULL) {
+        return 1;
+    }
 
-#if !TARGET_OS_WIN32
-	bundle = CFBundleGetBundleWithIdentifier(CFSTR(kOggVorbisBundleID));
-	
-	if (bundle == NULL)
-		return 0;
+    //else? let's assume for now that they are both intialised or both are not initialised
 
-	mdmurl = CFBundleCopyResourceURL(bundle, CFSTR("MetaDataConfig"), CFSTR("plist"), NULL);
-	if (mdmurl != NULL) {
-		if (CFURLCreateDataAndPropertiesFromResource(kCFAllocatorDefault, mdmurl, &data, 
-													 NULL, NULL, &error)) {
-			props = (CFDictionaryRef) CFPropertyListCreateFromXMLData(kCFAllocatorDefault, data,
-																	  kCFPropertyListImmutable, &errorString);
-			if (props != NULL) {
-				if (CFGetTypeID(props) == CFDictionaryGetTypeID()) {
-					si->MDmapping = (CFDictionaryRef) CFDictionaryGetValue(props, CFSTR("Vorbis-to-MD"));
-					if (si->MDmapping != NULL) {
-						dbg_printf("----: MDmapping found\n");
-						CFRetain(si->MDmapping);
-						ret = 1;
-					}
-					si->UDmapping = (CFDictionaryRef) CFDictionaryGetValue(props, CFSTR("Vorbis-to-UD"));
-					if (si->UDmapping != NULL) {
-						dbg_printf("----: UDmapping found\n");
-						CFRetain(si->UDmapping);
-					} else
-						ret = 0;
-				}
-				CFRelease(props);
-			}
-			CFRelease(data);
-		}
-		CFRelease(mdmurl);
-	}
-#endif
-	return ret;
+#if TARGET_OS_WIN32
+    {
+        Handle mapplist;
+        OSErr err = GetComponentResource((Component)globals->self, 'MDCf', kImporterResID, &mapplist);
+        if (err == noErr) {
+            long mpl_size = GetHandleSize(mapplist);
+            HLock(mapplist);
+            props = pxml_parse_plist((unsigned char *) *mapplist, mpl_size);
+            HUnlock(mapplist);
+        }
+    }
+#else
+    {
+        CFBundleRef bundle;
+        CFURLRef mdmurl;
+        CFDataRef data;
+        SInt32 error = 0;
+        CFStringRef errorString;
+
+        bundle = CFBundleGetBundleWithIdentifier(CFSTR(kOggVorbisBundleID));
+
+        if (bundle == NULL)
+            return 0;
+
+        mdmurl = CFBundleCopyResourceURL(bundle, CFSTR("MetaDataConfig"), CFSTR("plist"), NULL);
+        if (mdmurl != NULL) {
+            if (CFURLCreateDataAndPropertiesFromResource(kCFAllocatorDefault, mdmurl, &data, NULL, NULL, &error)) {
+                props = (CFDictionaryRef) CFPropertyListCreateFromXMLData(kCFAllocatorDefault, data,
+                                                                          kCFPropertyListImmutable, &errorString);
+                CFRelease(data);
+            }
+            CFRelease(mdmurl);
+        }
+    }
+#endif /* TARGET_OS_WIN32 */
+
+    if (props != NULL) {
+        if (CFGetTypeID(props) == CFDictionaryGetTypeID()) {
+            si->MDmapping = (CFDictionaryRef) CFDictionaryGetValue(props, CFSTR("Vorbis-to-MD"));
+            if (si->MDmapping != NULL) {
+                dbg_printf("----: MDmapping found\n");
+                CFRetain(si->MDmapping);
+                ret = 1;
+            }
+            si->UDmapping = (CFDictionaryRef) CFDictionaryGetValue(props, CFSTR("Vorbis-to-UD"));
+            if (si->UDmapping != NULL) {
+                dbg_printf("----: UDmapping found\n");
+                CFRetain(si->UDmapping);
+            } else
+                ret = 0;
+        }
+        CFRelease(props);
+    }
+
+    return ret;
 }
 
-static int LookupTagUD(StreamInfoPtr si, const char *str, long *osType) {
-	int ret = -1;
-	long len;
+static int LookupTagUD(OggImportGlobalsPtr globals, StreamInfoPtr si, const char *str, long *osType) {
+    int ret = -1;
+    long len;
 
-#if !TARGET_OS_WIN32
-	if (si->UDmapping == NULL)
+    if (si->UDmapping == NULL)
     {
-		if (!InitialiseMetaDataMappings(si))
-			return -1;
+        if (!InitialiseMetaDataMappings(globals, si))
+            return -1;
     }
-    
+
 	len = strcspn(str, "=");
 
 	if (len > 0) {
@@ -443,9 +461,10 @@ static int LookupTagUD(StreamInfoPtr si, const char *str, long *osType) {
 		if (tmpkstr != NULL) {
 			CFMutableStringRef keystr = CFStringCreateMutableCopy(NULL, len + 1, tmpkstr);
 			if (keystr != NULL) {
-				CFLocaleRef loc = CFLocaleCopyCurrent();
+				//CFLocaleRef loc = CFLocaleCopyCurrent();
+				CFLocaleRef loc = NULL;
 				CFStringUppercase(keystr, loc);
-				CFRelease(loc);
+				//CFRelease(loc);
 				dbg_printf("--- luTud: %s [%s]\n", (char *)str, (char *)CFStringGetCStringPtr(keystr,kCFStringEncodingUTF8));
 				if (CFDictionaryContainsKey(si->UDmapping, keystr)) {
 					CFStringRef udkey = (CFStringRef) CFDictionaryGetValue(si->UDmapping, keystr);
@@ -463,21 +482,20 @@ static int LookupTagUD(StreamInfoPtr si, const char *str, long *osType) {
 			CFRelease(tmpkstr);
 		}
 	}
-#endif
+
 	return ret;
 }
 
-static int LookupTagMD(StreamInfoPtr si, const char *str, long *osType) {
-	int ret = -1;
-	long len;
+static int LookupTagMD(OggImportGlobalsPtr globals, StreamInfoPtr si, const char *str, long *osType) {
+    int ret = -1;
+    long len;
 
-#if !TARGET_OS_WIN32
-	if (si->MDmapping == NULL)
+    if (si->MDmapping == NULL)
     {
-		if (!InitialiseMetaDataMappings(si))
-			return -1;
+        if (!InitialiseMetaDataMappings(globals, si))
+            return -1;
     }
-    
+
 	len = strcspn(str, "=");
 
 	if (len > 0) {
@@ -485,9 +503,10 @@ static int LookupTagMD(StreamInfoPtr si, const char *str, long *osType) {
 		if (tmpkstr != NULL) {
 			CFMutableStringRef keystr = CFStringCreateMutableCopy(NULL, len + 1, tmpkstr);
 			if (keystr != NULL) {
-				CFLocaleRef loc = CFLocaleCopyCurrent();
+				//CFLocaleRef loc = CFLocaleCopyCurrent();
+				CFLocaleRef loc = NULL;
 				CFStringUppercase(keystr, loc);
-				CFRelease(loc);
+				//CFRelease(loc);
 				dbg_printf("--- luTmd: %s [%s]\n", (char *)str, (char *)CFStringGetCStringPtr(keystr,kCFStringEncodingUTF8));
 				if (CFDictionaryContainsKey(si->MDmapping, keystr)) {
 					CFStringRef mdkey = (CFStringRef) CFDictionaryGetValue(si->MDmapping, keystr);
@@ -505,118 +524,91 @@ static int LookupTagMD(StreamInfoPtr si, const char *str, long *osType) {
 			CFRelease(tmpkstr);
 		}
 	}
-#endif
+
 	return ret;
 }
 
-#if !TARGET_OS_WIN32
-static ComponentResult ConvertUTF8toScriptCode(const char *str, Handle *h, ScriptCode *script)
+static ComponentResult ConvertUTF8toScriptCode(const char *str, Handle *h)
 {
-	TextEncoding    sourceEncoding = CreateTextEncoding(kTextEncodingUnicodeV3_0, kUnicodeNoSubset, kUnicodeUTF8Format);
-	TextEncoding    destEncoding = CreateTextEncoding(kTextEncodingMacRoman, kTextEncodingDefaultVariant, kTextEncodingDefaultFormat);
-	TECObjectRef	converter;
-    Handle          temp;
-    int             length = strlen(str);
-    int             tempLen = length * 2;
-    
-    OSErr err = TECCreateConverter(&converter, sourceEncoding, destEncoding);
-    if (err != noErr)
-        return err;
+    CFStringEncoding encoding = 0;
+    CFIndex numberOfCharsConverted = 0, usedBufferLength = 0;
+    OSStatus ret = noErr;
 
-    *script = 0;
-    *h = NULL;
+    CFStringRef tmpstr = CFStringCreateWithBytes(NULL, str, strlen(str), kCFStringEncodingUTF8, true);
+    if (tmpstr == NULL)
+        return  kTextUnsupportedEncodingErr; //!??!?!
 
-	temp = NewHandle(tempLen);
-	if (temp == NULL)
-		return memFullErr;
+    encoding = kCFStringEncodingMacRoman;
 
-	while (1)
-	{
-        ByteCount actualIn, actualOut, flushOut;
+    if (ret == noErr) {
+        CFRange range = { 0, CFStringGetLength(tmpstr)};
+        numberOfCharsConverted = CFStringGetBytes(tmpstr, range, encoding, 0, false,
+                                                  NULL, 0, &usedBufferLength);
+        if ((numberOfCharsConverted == CFStringGetLength(tmpstr)) && (usedBufferLength > 0)) {
+            *h = NewHandleClear(usedBufferLength);
+            if (*h != NULL) {
+                HLock(*h);
 
-		HLock(temp);
-		actualIn = 0;
-        flushOut = 0;
-		
-		err = TECConvertText(converter, (ConstTextPtr)str, length, &actualIn, (TextPtr)*temp, tempLen, &actualOut);
-		if (length == actualIn || actualOut < tempLen - 20)
-		{
-            if (err == noErr)
-                err = TECFlushText(converter, (TextPtr) ((*temp) + actualOut), tempLen - actualOut, &flushOut);
-			HUnlock(temp);
-            SetHandleSize(temp, actualOut + flushOut);
-            *h = temp;
-            temp = NULL;
-            err = noErr;    // ignore and supress conversion errors
-			break;
-		}
-		else
-		{
-			HUnlock(temp);
-			tempLen += length;
-			SetHandleSize(temp, tempLen);
-			err = MemError();
-			if (err != noErr)
-				break;	
-		}
-	}
-	
-	if (temp != NULL)
-		DisposeHandle(temp);
+                numberOfCharsConverted = CFStringGetBytes(tmpstr, range, encoding, 0,
+                                                          false, **h, usedBufferLength,
+                                                          &usedBufferLength);
+                HUnlock(*h);
+            } else {
+                ret = MemError();
+            }
+        } else {
+            ret = kTextUnsupportedEncodingErr;
+        }
+    }
 
-    TECDisposeConverter(converter);
+    CFRelease(tmpstr);
 
-    return err;
+    return ret;
 }
-#endif
 
-static ComponentResult AddCommentToMetaData(StreamInfoPtr si, const char *str, int len, QTMetaDataRef md) {
-	ComponentResult ret = noErr;
-	long tag;
+static ComponentResult AddCommentToMetaData(OggImportGlobalsPtr globals, StreamInfoPtr si, const char *str, int len, QTMetaDataRef md) {
+    ComponentResult ret = noErr;
+    long tag;
 
-    int	tagLen = LookupTagMD(si, str, &tag);
-	Handle h;
-	ScriptCode script;
-        
-	
+    int tagLen = LookupTagMD(globals, si, str, &tag);
+    Handle h;
+
     if (tagLen != -1 && str[tagLen] != '\0') {
-		dbg_printf("-- TAG: %08lx\n", tag);
+        dbg_printf("-- TAG: %08lx\n", tag);
 
-		ret = QTMetaDataAddItem(md, kQTMetaDataStorageFormatQuickTime, kQTMetaDataKeyFormatCommon,
-								&tag, sizeof(tag), str + tagLen, len - tagLen, kQTMetaDataTypeUTF8, NULL);
-		dbg_printf("-- TAG: %4.4s :: QT    = %ld\n", (char *)&tag, (long)ret);
-	}
-	
-    tagLen = LookupTagUD(si, str, &tag);
-	
+        ret = QTMetaDataAddItem(md, kQTMetaDataStorageFormatQuickTime, kQTMetaDataKeyFormatCommon,
+                                &tag, sizeof(tag), str + tagLen, len - tagLen, kQTMetaDataTypeUTF8, NULL);
+        dbg_printf("-- TAG: %4.4s :: QT    = %ld\n", (char *)&tag, (long)ret);
+    }
+
+    tagLen = LookupTagUD(globals, si, str, &tag);
+
     if (tagLen != -1 && str[tagLen] != '\0') {
-		QTMetaDataItem mdi;
-		char * localestr = "en";
-		Handle localeh = NewEmptyHandle();
-		
-		PtrAndHand(&localestr, localeh, strlen(localestr));
+        QTMetaDataItem mdi;
+        char * localestr = "en";
+        Handle localeh = NewEmptyHandle();
 
-		dbg_printf("-- TAG: %08lx\n", tag);
+        PtrAndHand(&localestr, localeh, strlen(localestr));
 
-#if !TARGET_OS_WIN32
-		ret = ConvertUTF8toScriptCode(str + tagLen, &h, &script);
-		if (ret == noErr) {
-			HLock(h);
-			ret = QTMetaDataAddItem(md, kQTMetaDataStorageFormatUserData, kQTMetaDataKeyFormatUserData,
-									&tag, sizeof(tag), *h, GetHandleSize(h), kQTMetaDataTypeMacEncodedText, &mdi);
-			dbg_printf("-- TAG: %4.4s :: QT[X] = %ld\n", (char *)&tag, (long)ret);
-			HUnlock(h);
-			if (ret == noErr) {
-				ret = QTMetaDataSetItemProperty(md, mdi, kPropertyClass_MetaDataItem, kQTMetaDataItemPropertyID_Locale,
-												GetHandleSize(localeh), *h);
-				dbg_printf("-- TAG: %4.4s :: QT[X] locale (%5.5s)= %ld\n", (char *)&tag, *h, (long)ret);
-			}
-			DisposeHandle(h);
-		}
-#endif
-	}
+        dbg_printf("-- TAG: %08lx\n", tag);
 
-	return ret;
+        ret = ConvertUTF8toScriptCode(str + tagLen, &h);
+        if (ret == noErr) {
+            HLock(h);
+            ret = QTMetaDataAddItem(md, kQTMetaDataStorageFormatUserData, kQTMetaDataKeyFormatUserData,
+                                    &tag, sizeof(tag), *h, GetHandleSize(h), kQTMetaDataTypeMacEncodedText, &mdi);
+            dbg_printf("-- TAG: %4.4s :: QT[X] = %ld\n", (char *)&tag, (long)ret);
+            HUnlock(h);
+            if (ret == noErr) {
+                ret = QTMetaDataSetItemProperty(md, mdi, kPropertyClass_MetaDataItem, kQTMetaDataItemPropertyID_Locale,
+                                                GetHandleSize(localeh), *h);
+                dbg_printf("-- TAG: %4.4s :: QT[X] locale (%5.5s)= %ld\n", (char *)&tag, *h, (long)ret);
+            }
+            DisposeHandle(h);
+        }
+    }
+
+    return ret;
 }
 
 ComponentResult DecodeCommentsQT(OggImportGlobalsPtr globals, StreamInfoPtr si, vorbis_comment *vc)
@@ -633,7 +625,7 @@ ComponentResult DecodeCommentsQT(OggImportGlobalsPtr globals, StreamInfoPtr si, 
 	
     for (i = 0; i < vc->comments; i++)
     {
-        ret = AddCommentToMetaData(si, vc->user_comments[i], vc->comment_lengths[i], md);
+        ret = AddCommentToMetaData(globals, si, vc->user_comments[i], vc->comment_lengths[i], md);
         if (ret != noErr) {
             //break;
 			dbg_printf("AddCommentToMetaData() failed? = %d\n", ret);
@@ -650,7 +642,7 @@ ComponentResult DecodeCommentsQT(OggImportGlobalsPtr globals, StreamInfoPtr si, 
 	
     for (i = 0; i < vc->comments; i++)
     {
-        ret = AddCommentToMetaData(si, vc->user_comments[i], vc->comment_lengths[i], md);
+        ret = AddCommentToMetaData(globals, si, vc->user_comments[i], vc->comment_lengths[i], md);
         if (ret != noErr) {
             //break;
 			dbg_printf("AddCommentToMetaData() failed? = %d\n", ret);

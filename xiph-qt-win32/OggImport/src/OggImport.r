@@ -265,4 +265,6 @@ resource 'mcfg' (kImporterResID, OggImporterName, purgeable) {
     };
 };
 
-
+#if TARGET_OS_WIN32
+read 'MDCf' (kImporterResID) "../MetaDataConfig.plist";
+#endif
