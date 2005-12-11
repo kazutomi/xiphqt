@@ -101,12 +101,11 @@ int main (int argc, char **argv)
 
 	int i = 0;
 	int opt;
-	long int acc=0;
 
 	char *ip = "227.0.0.1";
 	unsigned int port = 4044;
 	unsigned int ttl  = 1;
-	long timestamp = 0, prev = 0;
+	long timestamp = 0;
 
     	fprintf (stderr, "Theora RTP Server (draft-barbato-avt-rtp-theora-01)\n");
 	memset (&xr,0,sizeof(xiph_rtp_t));
@@ -260,16 +259,16 @@ int main (int argc, char **argv)
 /*===========================================================================*/
 /*  Print details                                                            */
 /*===========================================================================*/
-    fprintf(stdout," Theora %dx%d %.02f fps video\n"
+    fprintf(stdout,"Theora %dx%d %.02f fps video\n"
 		    "Encoded frame content is %dx%d with %dx%d offset\n",
             xr.ti.width,xr.ti.height, 
 	    (double)xr.ti.fps_numerator/xr.ti.fps_denominator,
             xr.ti.frame_width, xr.ti.frame_height, 
 	    xr.ti.offset_x, xr.ti.offset_y);
 
-    fprintf (stdout, "  Decode setup ident is 0x%06x\n", xr.bitfield.cbident);
+    fprintf (stdout, "Decode setup ident is 0x%06x\n", xr.bitfield.cbident);
     fprintf (stdout, "\n");
-    fprintf (stdout, "  Processing\n");
+    fprintf (stdout, "Processing\n");
 
 /*===========================================================================*/
 /*  Send the three headers inline                                            */
@@ -313,9 +312,11 @@ cfg_parse(&xr);
 			theora_decode_packetin(&xr.td,&xr.op);   
 #ifdef DEBUG
 			printf("  bytes %ld bos %ld eos %ld gp %lld pno %lld\n", xr.op.bytes, xr.op.b_o_s, xr.op.e_o_s, xr.op.granulepos, xr.op.packetno);
-#endif		
+#endif
+			if (xr.op.granulepos != -1)
 			timestamp =  (xr.op.granulepos>>xr.gp_shift)+
 			(xr.op.granulepos & ((1<<xr.gp_shift)-1));
+			else timestamp++ ;
 			creatertp ( &xr, xr.op.packet, xr.op.bytes, 
 					timestamp, 0);
             	    }

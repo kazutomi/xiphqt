@@ -209,11 +209,10 @@ cfg_repack(ogg_context_t *ogg, FILE* out)
   ogg_packet id,co,cb;
   unsigned char comment[] = 
 /*quite minimal comment*/
-   { 0x83,'t','h','e','o','r','a', 
+   { 0x81,'t','h','e','o','r','a',
    	10,0,0,0, 
    		't','h','e','o','r','a','-','r','t','p',
-   		0,0,0,0, 
-                1};
+   		0,0,0,0};
   
 /* get the identification packet*/
   id.packet = ogg->op.packet;
@@ -363,11 +362,16 @@ dump_packet_ogg (unsigned char *data, const int len, FILE * out, ogg_context_t *
   switch (F) {
 
   case 0:
-    
+    op->bytes = data[offset++]<<8;
+    op->bytes += data[offset++];
+    op->packet = &data[offset];
+    op->packetno++;
+    offset += op->bytes;
     break;
   case 1:
     op->bytes = 0;
-    op->packetno++;
+    if (op->packet) free (op->packet);
+    op->packet = NULL;
   case 2:
     length = data[offset++] << 8;
     length += data[offset++];
@@ -376,13 +380,11 @@ dump_packet_ogg (unsigned char *data, const int len, FILE * out, ogg_context_t *
     op->bytes += length;
     return 0;
   case 3:
-    op->packetno++;
     length = data[offset++] << 8;
     length += data[offset++];
     op->packet = realloc (op->packet, length+op->bytes);
     memcpy (op->packet + op->bytes, data + offset, length);
     op->bytes += length;
-    pkts=1;
     break;
   default:
     fprintf (stderr, " unknown frament?!\n");
@@ -392,7 +394,10 @@ dump_packet_ogg (unsigned char *data, const int len, FILE * out, ogg_context_t *
   switch (VDT) {
 
   case 0:
-  for (i = 0; i < pkts; i++)
+
+  count += pkt_repack(ogg, timestamp, out);
+  
+  for (i = 1; i < pkts; i++)
     {
       if (offset >= len)
 	{
@@ -403,10 +408,9 @@ dump_packet_ogg (unsigned char *data, const int len, FILE * out, ogg_context_t *
       op->bytes += data[offset++];
       op->packet = &data[offset];
       op->packetno++;
-      count += pkt_repack(ogg, i ? 0 : timestamp, out);
+      count += pkt_repack(ogg, 0, out);
       offset += op->bytes;
-      op->b_o_s=0;
-    }   
+    }
     break;
   case 1:
     count = cfg_repack(ogg, out);
@@ -416,8 +420,11 @@ dump_packet_ogg (unsigned char *data, const int len, FILE * out, ogg_context_t *
     break;
     
   }
-  if (F == 3) free(op->packet);
-
+  if (F == 3) 
+  {
+	  free(op->packet);
+	  op->packet = NULL;
+  }
   return count;
 }
 
@@ -434,11 +441,13 @@ main (int argc, char *argv[])
   unsigned int port = 4044;
 
   ogg_context_t ogg;
-  memset(&ogg,0,sizeof(ogg_context_t)); 
+  memset(&ogg,0,sizeof(ogg_context_t));
+  ogg.prev_gp=-1;
+
   fprintf (stderr,
 	   "||---------------------------------------------------------------------------||\n");
 
-  fprintf (stderr, "||  Vorbis RTP Client (draft-kerr-avt-vorbis-rtp-05)\n");
+  fprintf (stderr, "||  Vorbis RTP Client (draft-barbato-avt-rtp-theora-05)\n");
 
   while ((opt = getopt (argc, argv, "i:p:f:v")) != -1)
     {

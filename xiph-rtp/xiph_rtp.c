@@ -379,7 +379,7 @@ int makeheader (xiph_rtp_t *xr, unsigned char *packet, int length)
 	/* Vorbis and Theora header */
 	if (length < sizeof(header_bitfield_t)) return -1;
 	
-	printf( "\tident %06x, frag type %d,"
+	printf( "ident %06x, frag type %d,"
 		" data type %d, pkts %02d, size %d\n", xr->bitfield.cbident,
 		xr->bitfield.frag_type, xr->bitfield.data_type,
 		xr->bitfield.pkts, length);
@@ -409,7 +409,7 @@ int ogg_copy_packet(ogg_packet *dst, ogg_packet *src)
 	dst->packetno = src->packetno;
 
 #ifdef DEBUG
-  	printf(" bytes %ld bos %ld eos %ld gp %lld pno %lld\n",
+  	printf("- bytes %ld bos %ld eos %ld gp %lld pno %lld\n",
   	dst->bytes, dst->b_o_s, dst->e_o_s, dst->granulepos, dst->packetno);
 #endif
 

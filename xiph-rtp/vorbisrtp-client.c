@@ -548,11 +548,15 @@ dump_packet_ogg (unsigned char *data, const int len, FILE * out, ogg_context_t *
   switch (F) {
 
   case 0:
-    
+    op->bytes = data[offset++]<<8;
+    op->bytes += data[offset++];
+    op->packet = &data[offset];
+    op->packetno++;
+    offset += op->bytes;
     break;
   case 1:
     op->bytes = 0;
-    op->packetno++;
+    op->packet = NULL;
   case 2:
     length = data[offset++] << 8;
     length += data[offset++];
@@ -561,7 +565,6 @@ dump_packet_ogg (unsigned char *data, const int len, FILE * out, ogg_context_t *
     op->bytes += length;
     return 0;
   case 3:
-    op->packetno++;
     length = data[offset++] << 8;
     length += data[offset++];
     op->packet = realloc (op->packet, length+op->bytes);
@@ -577,7 +580,12 @@ dump_packet_ogg (unsigned char *data, const int len, FILE * out, ogg_context_t *
   switch (VDT) {
 
   case 0:
-  for (i = 0; i < pkts; i++)
+  ogg->curr_bs = pkt_blocksize(ogg);
+  if(ogg->prev_bs)
+      op->granulepos += (ogg->curr_bs + ogg->prev_bs)/4;
+  ogg->prev_bs = ogg->curr_bs;
+  count += pkt_repack(ogg,out);
+  for (i = 1; i < pkts; i++)
     {
       if (offset >= len)
 	{
@@ -609,8 +617,11 @@ dump_packet_ogg (unsigned char *data, const int len, FILE * out, ogg_context_t *
     break;
     
   }
-  if (F == 3) free(op->packet);
-
+  if (F == 3)
+  {
+	  free(op->packet);
+	  op->packet = NULL;
+  }
   return count;
 }
 
