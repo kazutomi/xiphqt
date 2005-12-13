@@ -607,17 +607,17 @@ dump_packet_ogg (unsigned char *data, const int len, FILE * out, ogg_context_t *
       count += pkt_repack(ogg,out);
       offset += op->bytes;
       op->b_o_s=0;
-    }   
-    break;
+    }
+  break;
   case 1:
     count = cfg_repack(ogg, out);
-    break;
+  break;
   default:
     //ignore
-    break;
+  break;
     
   }
-  if (F == 3)
+  if ( F == 3 )
   {
 	  free(op->packet);
 	  op->packet = NULL;

@@ -69,7 +69,7 @@ typedef struct ogg_context {
 
 
 	int frag;
-	long int timestamp;
+	unsigned int timestamp;
 
 	int gp_shift;
 
@@ -179,26 +179,26 @@ int cfg_parse( ogg_context_t *ogg )
 {
 	oggpack_buffer opb;
 	
-	oggpack_readinit(&opb,ogg->op.packet, ogg->op.bytes);
+	oggpackB_readinit(&opb,ogg->op.packet, ogg->op.bytes);
 	
-	oggpack_read(&opb,8*7);
-	oggpack_read(&opb,8*3);
-	oggpack_read(&opb,16);
-	oggpack_read(&opb,16);
+	oggpackB_read(&opb,8*7);
+	oggpackB_read(&opb,8*3);
+	oggpackB_read(&opb,16);
+	oggpackB_read(&opb,16);
 
-	oggpack_read(&opb,64);
+	oggpackB_read(&opb,64);
 	
 //	ogg->time_den =
-	oggpack_read(&opb,32);
+	oggpackB_read(&opb,32);
 //	ogg->time_num = 
-	oggpack_read(&opb,32);
+	oggpackB_read(&opb,32);
 
-	oggpack_read(&opb,24);
-	oggpack_read(&opb,24);
+	oggpackB_read(&opb,24);
+	oggpackB_read(&opb,24);
 	
-	oggpack_read(&opb,38);
+	oggpackB_read(&opb,38);
 	
-	ogg->gp_shift = oggpack_read(&opb,5);
+	ogg->gp_shift = oggpackB_read(&opb,5);
 
 	return 0; //FIXME add some checks and return -1 on failure
 }
@@ -259,7 +259,7 @@ cfg_repack(ogg_context_t *ogg, FILE* out)
 }
 
 int
-pkt_repack(ogg_context_t *ogg, int64_t timestamp, FILE *out){
+pkt_repack(ogg_context_t *ogg, unsigned int timestamp, FILE *out){
 
   int frame_type;
   ogg_packet *op = &ogg->op;
@@ -268,17 +268,9 @@ pkt_repack(ogg_context_t *ogg, int64_t timestamp, FILE *out){
   oggpack_readinit(&opb,op->packet,op->bytes);
   oggpack_read(&opb,1); //video marker
   
-  frame_type = oggpack_read(&opb,1);
+  frame_type = oggpackB_read(&opb,1);
 
-  oggpack_read(&opb,6);
-  
-  if(oggpack_read(&opb,1))
-  {
-	  oggpack_read(&opb,6);
-	  if(oggpack_read(&opb,1))
-		  oggpack_read(&opb,6);
-  }
-
+ 
   if(timestamp)
   {
 	  if (frame_type == 0) //KEY_FRAME
@@ -312,6 +304,10 @@ pkt_repack(ogg_context_t *ogg, int64_t timestamp, FILE *out){
 
   ogg->prev_gp = op->granulepos;
 
+#ifdef DEBUG
+  fprintf(stderr," type %d, timestamp %d, bytes %ld bos %ld eos %ld gp %lld pno %lld\n",frame_type, timestamp, op->bytes, op->b_o_s, op->e_o_s, op->granulepos, op->packetno );
+#endif
+ 
 
   ogg_stream_packetin(&ogg->os,&ogg->op);
   do{
@@ -370,7 +366,7 @@ dump_packet_ogg (unsigned char *data, const int len, FILE * out, ogg_context_t *
     break;
   case 1:
     op->bytes = 0;
-    if (op->packet) free (op->packet);
+    //FIXME malloc checks
     op->packet = NULL;
   case 2:
     length = data[offset++] << 8;
@@ -394,7 +390,7 @@ dump_packet_ogg (unsigned char *data, const int len, FILE * out, ogg_context_t *
   switch (VDT) {
 
   case 0:
-
+  
   count += pkt_repack(ogg, timestamp, out);
   
   for (i = 1; i < pkts; i++)
@@ -411,19 +407,20 @@ dump_packet_ogg (unsigned char *data, const int len, FILE * out, ogg_context_t *
       count += pkt_repack(ogg, 0, out);
       offset += op->bytes;
     }
-    break;
+  break;
   case 1:
     count = cfg_repack(ogg, out);
+    op->packetno+=3;
     break;
   default:
     //ignore
     break;
     
   }
-  if (F == 3) 
+  if ( F == 3 ) 
   {
-	  free(op->packet);
-	  op->packet = NULL;
+	free(op->packet);
+	op->packet = NULL;
   }
   return count;
 }
@@ -444,10 +441,8 @@ main (int argc, char *argv[])
   memset(&ogg,0,sizeof(ogg_context_t));
   ogg.prev_gp=-1;
 
-  fprintf (stderr,
-	   "||---------------------------------------------------------------------------||\n");
 
-  fprintf (stderr, "||  Vorbis RTP Client (draft-barbato-avt-rtp-theora-05)\n");
+  fprintf (stderr, "  Vorbis RTP Client (draft-barbato-avt-rtp-theora-05)\n");
 
   while ((opt = getopt (argc, argv, "i:p:f:v")) != -1)
     {

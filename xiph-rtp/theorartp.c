@@ -65,24 +65,26 @@ unsigned int cfg_parse( xiph_rtp_t *xr )
 {
 	oggpack_buffer opb;
 	
-	oggpack_readinit(&opb,xr->header[0].packet, xr->header[0].bytes);
+	oggpackB_readinit(&opb,xr->header[0].packet, xr->header[0].bytes);
 	
-	oggpack_read(&opb,8*7);
-	oggpack_read(&opb,8*3);
-	oggpack_read(&opb,16);
-	oggpack_read(&opb,16);
+	oggpackB_read(&opb,8*7); // 0x80"theora"
+	oggpackB_read(&opb,8*3); // version
+	oggpackB_read(&opb,16); //w
+	oggpackB_read(&opb,16); //h
 
-	oggpack_read(&opb,64);
+	oggpackB_read(&opb,64); 
 
-	oggpack_read(&opb,32);
-	oggpack_read(&opb,32);
+	oggpackB_read(&opb,32);
+	oggpackB_read(&opb,32);
 
-	oggpack_read(&opb,24);
-	oggpack_read(&opb,24);
+	oggpackB_read(&opb,24);
+	oggpackB_read(&opb,24);
 	
-	oggpack_read(&opb,38);
+	oggpackB_read(&opb,38);
 	
-	xr->gp_shift = oggpack_read(&opb,5);
+	xr->gp_shift = oggpackB_read(&opb,5);
+
+	printf("gp_shift %d \n", xr->gp_shift);
 
 	return 0; //FIXME...
 }
@@ -281,7 +283,7 @@ unsigned char *conf_packet = malloc(conf_bytes);
     memcpy (conf_packet + xr.header[0].bytes, 
 		    xr.header[2].packet,
 		    xr.header[2].bytes);
-    creatertp(&xr, conf_packet, conf_bytes, 0, 1);
+    creatertp(&xr, conf_packet, conf_bytes, 0, 1, 0);
     
     free(conf_packet);
 }
@@ -310,15 +312,25 @@ cfg_parse(&xr);
                         /* no reason to complain; already complained above  */
             	    } else {
 			theora_decode_packetin(&xr.td,&xr.op);   
+			if (xr.op.granulepos != -1)
+				timestamp =  (xr.op.granulepos>>xr.gp_shift)+
+				(xr.op.granulepos & ((1<<xr.gp_shift)-1));
+			else 
+				timestamp++ ;
 #ifdef DEBUG
+			{
+			oggpack_buffer opb;
+			int type;
+			  oggpackB_readinit(&opb,xr.op.packet,xr.op.bytes);
+			  oggpack_read(&opb,1); //video marker
+  
+			  type = oggpackB_read(&opb,1);
+			  printf("  type %d stamp %ld", type, timestamp);
+			}
 			printf("  bytes %ld bos %ld eos %ld gp %lld pno %lld\n", xr.op.bytes, xr.op.b_o_s, xr.op.e_o_s, xr.op.granulepos, xr.op.packetno);
 #endif
-			if (xr.op.granulepos != -1)
-			timestamp =  (xr.op.granulepos>>xr.gp_shift)+
-			(xr.op.granulepos & ((1<<xr.gp_shift)-1));
-			else timestamp++ ;
 			creatertp ( &xr, xr.op.packet, xr.op.bytes, 
-					timestamp, 0);
+					timestamp, 0, xr.op.e_o_s );
             	    }
                 }
 
