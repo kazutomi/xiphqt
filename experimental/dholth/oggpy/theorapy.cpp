@@ -5,7 +5,7 @@
 
 // Includes ====================================================================
 #include <theora/theora.h>
-#include <theoracc.h>
+#include "theoracc.h"
 #include "theora_wrappers.h"
 
 // Using =======================================================================

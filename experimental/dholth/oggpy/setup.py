@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # oggpy, by Daniel Holth <dholth@fastmail.fm>, 2004
 
+# May be necessary options for gcc version 4 (bjam uses these)
+# "g++"   -c -Wall -ftemplate-depth-255  -DBOOST_PYTHON_DYNAMIC_LIB  -g -O0 -f no-inline -fPIC   -I"bin/oggpy"   -I "/usr/include/python2.4" -I "/home/dholth/s rc/boost"  -o "bin/oggpy/oggpy.so/gcc/debug/shared-linkable-true/oggpy.o"  "oggp y.cpp"
+
+
 from distutils.core import setup
 from distutils.extension import Extension
 import os.path

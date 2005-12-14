@@ -31,6 +31,9 @@ boost::python::list get_comments(ogg::theora::comment *vco)
 
 PyObject* tostrings (ogg::theora::yuv_image *yuv, ogg::theora::info *theora_info)
 { 
+    // u is Cb
+    // v is Cr
+   
     int crop_offset=0;
     int i;
 

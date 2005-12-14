@@ -4,7 +4,7 @@
 #include <boost/cstdint.hpp>
 
 // Includes ====================================================================
-#include <vorbispy_wrappers.h>
+#include "vorbispy_wrappers.h"
 
 // Using =======================================================================
 using namespace boost::python;
@@ -14,7 +14,7 @@ BOOST_PYTHON_MODULE(vorbispy)
 {
     class_< ogg::vorbis::comment >("comment", init<  >())
         .def(init< const ogg::vorbis::comment& >())
-        .def_readwrite("data", &ogg::vorbis::comment::data)
+        // .def_readwrite("data", &ogg::vorbis::comment::data)
         .def("query", &ogg::vorbis::comment::query)
         .def("query_count", &ogg::vorbis::comment::query_count)
         .def("add", &ogg::vorbis::comment::add)
@@ -27,7 +27,7 @@ BOOST_PYTHON_MODULE(vorbispy)
 
     class_< ogg::vorbis::info >("info", init<  >())
         .def(init< const ogg::vorbis::info& >())
-        .def_readwrite("data", &ogg::vorbis::info::data)
+        // .def_readwrite("data", &ogg::vorbis::info::data)
         .def("encode_init", &ogg::vorbis::info::encode_init)
         .def("encode_setup_managed", &ogg::vorbis::info::encode_setup_managed)
         .def("encode_setup_vbr", &ogg::vorbis::info::encode_setup_vbr)
@@ -46,7 +46,7 @@ BOOST_PYTHON_MODULE(vorbispy)
 
     class_< ogg::vorbis::block >("block", init<  >())
         .def(init< const ogg::vorbis::block& >())
-        .def_readwrite("data", &ogg::vorbis::block::data)
+        // .def_readwrite("data", &ogg::vorbis::block::data)
         .def("analysis", (int (ogg::vorbis::block::*)(ogg::packet*) )&ogg::vorbis::block::analysis)
         .def("bitrate_addblock", &ogg::vorbis::block::bitrate_addblock)
         .def("block_clear", &ogg::vorbis::block::block_clear)
@@ -56,7 +56,7 @@ BOOST_PYTHON_MODULE(vorbispy)
 
     class_< ogg::vorbis::dsp >("dsp", init<  >())
         .def(init< const ogg::vorbis::dsp& >())
-        .def_readwrite("data", &ogg::vorbis::dsp::data)
+        // .def_readwrite("data", &ogg::vorbis::dsp::data)
         .def("block_init", (int (ogg::vorbis::dsp::*)(ogg::vorbis::block*) )&ogg::vorbis::dsp::block_init)
         .def("granule_time", &ogg::vorbis::dsp::granule_time)
         .def("bitrate_flushpacket", (int (ogg::vorbis::dsp::*)(ogg::packet*) )&ogg::vorbis::dsp::bitrate_flushpacket)

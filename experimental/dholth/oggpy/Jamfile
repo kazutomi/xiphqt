@@ -1,5 +1,10 @@
 # Daniel Holth <dholth@fastmail.fm>, 2004
 # based on David Abraham's example from Boost.Python
+#
+# ChangeLog:
+# 14 Dec 2005:  dwh <dholth@fastmail.fm>
+#   Add theora module to this, as Python setup.py does not build correctly for
+#   gcc-4.0.
 
 # This is the top of our own project tree
 project-root ;
@@ -37,10 +42,26 @@ extension vorbispy
 : # depends	
   <find-library>ogg
   <find-library>vorbis
+  <find-library>vorbisenc
   <find-library>boost_python
   
   <library-path>/usr/lib
   ;
+
+extension theorapy
+: # sources
+	oggcc.cc 
+	theorapy.cpp
+	theoracc.cc
+	theora_wrappers.cc
+: # depends	
+  <find-library>ogg
+  <find-library>theora
+  <find-library>boost_python
+  
+  <library-path>/usr/lib
+  ;
+
 
 
 

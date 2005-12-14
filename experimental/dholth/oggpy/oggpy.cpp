@@ -111,6 +111,5 @@ BOOST_PYTHON_MODULE(oggpy)
         .def("reset", &ogg::stream::reset)
         .def("reset_serialno", &ogg::stream::reset_serialno)
     ;
-
 }
 
