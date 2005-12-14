@@ -1,0 +1,409 @@
+--- Log opened Tue Dec 13 22:14:08 2005
+22:14 -!- xiphlog [n=giles@westfish.xiph.osuosl.org] has joined #xiphmeet
+22:14 -!- Topic for #xiphmeet: Next xiph.org monthly meeting 2005 Dec 14 06h00 GMT (one week later than usual)| please add to the agenda at http://wiki.xiph.org/index.php/MonthlyMeeting200511
+22:14 -!- Topic set by boxofpurpleducks [] [Thu Dec  1 23:29:47 2005]
+22:14 [Users #xiphmeet]
+22:14 [ Atamido] [ ginger ] [ illi     ] [ jmworx] [ rillian] [ xiphlog] 
+22:14 [ derf_  ] [ HackRip] [ jkoleszar] [ Keltus] [ tris   ] 
+22:14 -!- Irssi: #xiphmeet: Total of 11 nicks [0 ops, 0 halfops, 0 voices, 11 normal]
+22:14 -!- Channel #xiphmeet created Mon Aug 29 04:34:00 2005
+22:14 -!- Irssi: Join to #xiphmeet was synced in 1 secs
+--- Log opened Tue Dec 13 22:15:13 2005
+22:15 -!- rillian changed the topic of #xiphmeet to: Next xiph.org monthly meeting 2005 Dec 14 06h00 GMT (one week later than usual)| agenda at http://wiki.xiph.org/index.php/MonthlyMeeting200512 | live log at http://westfish.xiph.org/~giles/200512_meeting.txt
+22:16 -!- boxofpurpleducks [n=xiphmont@STARSHIP-SNOTFISH.MIT.EDU] has joined #xiphmeet
+22:16 < rillian> hi boxofpurpleducks 
+22:16 < jmworx> hi boxofpurpleducks 
+22:16 < boxofpurpleducks> Hi.
+22:16 < ginger> hi :)
+22:17 < rillian> I think we're ready to start then
+22:17 < rillian> First agenda item is wiki spam
+22:17 < rillian> which is indeed nasty
+22:17 < rillian> we're getting spambots posting to the bug tracker as well
+22:17 < rillian> (which requires trac-specific code)
+22:18 < boxofpurpleducks> who is currently Trac/Wiki maintainer?
+22:18 < jmworx> I would think using norefer would at least remove any incentive for the bots.
+22:18 < rillian> unfortunately j^ is the admin for the wiki, I'm not qualified to have much of an opinion on the proposals
+22:18 < rillian> jmworx: yes. that seems safe enough
+22:18 < jmworx> from there it's just a matter of getting spammers to realize that
+22:19 < rillian> ha
+22:19 < jmworx> For example, changing the layout so it breaks the spambots and then they won't bother fixing it if we use norefer.
+22:22 < rillian> jmworx: changing the layout sounds painful
+22:22 < rillian> but so in cleaning spam
+22:22 < boxofpurpleducks> j^ is not here...
+22:22 < rillian> indeed. probably in bed. he mentioned being both sick and jet lagged
+22:22 < boxofpurpleducks> should we down the wiki for a few hours until the plan is put into action, or is it not yet that bad?
+22:22 < rillian> I suggest we table this and ask j to look at it later
+22:22 -!- jmworx_ [n=jmworx@adsl-58-119.swiftdsl.com.au] has joined #xiphmeet
+22:22 < rillian> boxofpurpleducks: I don't think it's anything like that bad
+22:23 < boxofpurpleducks> OK
+22:23 < rillian> just requiring registration on the wiki would probably also help
+22:23 < boxofpurpleducks> I know Audacity get absolutely reamed monthly.
+22:24 < jmworx_> rillian: the spambots *are* registered. There's just nobody that deletes them
+22:24 < rillian> ah nm then
+22:24 < rillian> do they connect from reliable ips?
+22:24 < jmworx_> no clue. Anyway, let's wait for j^
+22:24 < rillian> ok, tabled for now
+22:25 < rillian> next item was the OggPCM flamewar
+22:25 < rillian> plus the request for a steering committee and formal resolution process
+22:25 < rillian> ginger: do you want to talk about this one?
+22:25 < boxofpurpleducks> OggPCM was more about other things.  It got as far as it did because I was not paying attention.
+22:26 < ginger> I'm not really a spokesperson here, but ok
+22:26 < rillian> boxofpurpleducks: the point is perhaps that you can't always be paying attention, the group is getting too big for that, and people feel informal methods weren't working
+22:26 < ginger> boxofpurpleducks: maybe we need a process for getting committee approval for some of the things that get produced as xiph work?
+22:27 < boxofpurpleducks> No, the real problem is I'm finishing my second month of 100+ hour weeks at the dayjob.
+22:27 < boxofpurpleducks> I'm back to Ogg full time feb 6th.
+22:27 < ginger> boxofpurpleducks: so do you expect that to change in future?
+22:27 < jmworx_> boxofpurpleducks: OggPCM has existed for a year or so... (despite nobody paying attention to it)
+22:27 < boxofpurpleducks> So yes.
+22:28 < boxofpurpleducks> jmworx_: I know: Arc is nothing if not prolific.  OggPCM is not really what he went ape about.
+22:28 < jmworx_> boxofpurpleducks: Got time to read the threads and specs?
+22:28 < ginger> there are some things that get publicised as official xiph work but aren't really up to xiph standards
+22:29 < boxofpurpleducks> The Aussie group and other contribs seemed happy with what was happening; I was being hands off about that aspect and will continue to be except where you eed me.
+22:29 < illi> i think that is the bigger issue... more than the actual details of the specs... is some more formal way of guiding specifications
+22:29 < boxofpurpleducks> ginger: you are referring to Arc stuff?
+22:29 < boxofpurpleducks> Well, I don't object to a more formal spec Process.
+22:29 < jmworx_> all of it as far as I'm concerned, yes
+22:30 < ginger> in particular to "Ogg Metadata" and to "Ogg Writ" on www.xiph.org
+22:30 < boxofpurpleducks> Yes, he presents it as authoritative.  We Had A Talk about that :-P
+22:31 < jmworx_> And what was the result of it?
+22:31 < boxofpurpleducks> He was informed that he does not carry my authority, even if he thinks I'd agree.  Let's leave it at that.
+22:32 < illi> they are on the main page of xiph.oprg
+22:32 < jmworx_> boxofpurpleducks: I don't know when that was, but I've seen no change whatsoever.
+22:32 < boxofpurpleducks> But sure, let's at least document a process framework.
+22:32 < ginger> so what will we do about authorising things that go on the wiki and on the web as officially supported xiph work?
+22:32 < jmworx_> All his stuff is still everywhere and nobody can touch the wiki about it.
+22:33 < boxofpurpleducks> jmworx-: See above 100+ hour weeks.  I've had one day off since my wedding in October, and that was spent in the hospital.  
+22:33 < boxofpurpleducks> In any case, why is the wiki untouchable?
+22:33 < boxofpurpleducks> It is a forum for comments.  Make honest, non-inflammatory comments.
+22:33 < ginger> boxofpurpleducks: nobody can touch his wiki entries without being privately spammed
+22:33 < jmworx_> boxofpurpleducks: in the sense that whatever you want to change gets reverted by Arc.
+22:33 < boxofpurpleducks> Frankly, I do not like the wiki and never liked the wiki myself :-|
+22:34 < boxofpurpleducks> I am watching that process now.  Complain immediately if that happens./
+22:34 < boxofpurpleducks> I explicitly told arc that he is not to censor the wiki and if he does and I see him fdoing it, he loses access, period.
+22:34 < boxofpurpleducks> there was a stright up warning to that effect.
+22:35 < ginger> boxofpurpleducks: are you saying you'll get around to fixing the web frontpage in a few weeks?
+22:35 < boxofpurpleducks> ...?  xiph.org or the wiki?
+22:35 < illi> xiph.org
+22:35 < rillian> ginger: well, metadata could go
+22:35 < ginger> the frontpage leads right through to the wiki
+22:35 < boxofpurpleducks> Oh, that.
+22:35 < rillian> writ is more-or-less official
+22:35 < jmworx_> OK, I'll try again now. Basically, all his stuff needs to be marked as "Arc's idea -- not supported by Xiph" and preferably moved somewhere else.
+22:35 < boxofpurpleducks> well, the wiki wasn't always Arc's soapbox.
+22:35 < rillian> if you don't think it's up to our standards we should discuss that
+22:35 < ginger> click on "Ogg Metadata" on the frontpage
+22:36 < boxofpurpleducks> Yes.  What I'm saying is, do not shy away from the discussion.
+22:36 < rillian> I know Mike didn't like it either
+22:36 < boxofpurpleducks> I didn't know Ogg Metadata had been put there.
+22:36 < boxofpurpleducks> As fro Writ, yes, let's review it.  Mark it and Writ a proposal for now.
+22:36 < illi> is there an implementation of writ though ?
+22:36 < jmworx_> Even Writ doesn't have any implementation, unlike CMML (which isn't there)
+22:37 < jmworx_> illi: there's a few lines of C code in SVN...
+22:37 < rillian> boxofpurpleducks: shall we take writ off the front page too then?
+22:38 < ginger> I don't want to push CMML onto xiph's frontpage - we have our own web space for that - but it would be nice to mention it as another option of doing metadata and transcripts
+22:38 -!- kfish [n=conrad@adsl-58-119.swiftdsl.com.au] has joined #xiphmeet
+22:38 < boxofpurpleducks> yes.
+22:38 < jmworx_> I'd would definitely *do* like to see CMML on the frontpage.
+22:38 < boxofpurpleducks> Who put it there?  Arc asked and Atamido complied...?
+22:38 -!- jmworx [n=jmworx@adsl-58-119.swiftdsl.com.au] has quit [Read error: 110 (Connection timed out)]
+22:38 < rillian> ginger: perhaps then you could add links from those two wiki pages then?
+22:39 < boxofpurpleducks> I do not want it erased from the site, but I do want it more clearly labelled as unofficial.
+22:39 < ginger> I don't want to spam arc's wiki pages either
+22:39 < rillian> Ideally, I think it's nice to have links on the front page so people curious about those topics can see the in-progress work
+22:39 -!- jmworx_ is now known as jmworx
+22:39 < boxofpurpleducks> (Write and OM)
+22:39 < rillian> but we should be clear about the status
+22:39 < rillian> ginger: they're not Arc's wiki pages
+22:39 < rillian> they're xiph's wiki pages
+22:40 < boxofpurpleducks> Yes.
+22:40 < ginger> rillian: arc behaves as if they are his though
+22:40 < illi> in theory... but he's given everyone the opinion, that they are his to control.,.. and changing them just causes conflict
+22:41 < jmworx> and sending threats of "moderation"...
+22:41 < boxofpurpleducks> There's no need to gripe.  It will not be that way now.
+22:41 < boxofpurpleducks> s/gripe/continue griping
+22:41 < illi> ok fair enough
+22:41 < ginger> rillian: we could make an in-progress-work on the frontpage and create a different webpage with links to all of the things that are still in development
+22:41 < jmworx> Good idea
+22:42 < rillian> ginger: yeah, that's a good idea
+22:42 < boxofpurpleducks> I don't want him railroaded out, but I'm tired of the land grabbing.
+22:42 < rillian> like to just "subtitles" or "transcripts" from the front page and push writ down a level
+22:42 < illi> agree... if only he could channel his enthusiasm a bit better !
+22:42 < ginger> and if you think CMML or Annodex or rather Skeleton is up to xiph standards, we could include those on the front page or on the in-process-work page alternatively
+22:43 < jmworx> As far as I understand, it's more than just "in progress", at least for CMML and Annodex
+22:44 < ginger> actually, I think the most immportant part of our work for xiph is skeleton
+22:44 < jmworx> Or actually, why not just define the process of "approval" first and then go through this process for the Annodex and OggPCM stuff?
+22:44 < illi> i agree
+22:44 < rillian> yes, what would that look like
+22:44 < rillian> ?
+22:44 < boxofpurpleducks> I want some documentation of process, but I think the real reason things went off the rails for a bit is my and Ralph's lack of time to give attention.
+22:45 < boxofpurpleducks> I don't want to strangle us with a process that's more overhead than it's worth.  This is merely a caution.
+22:45 < jmworx> I'd say the first thing to define is who gets to "vote" (after the matter's been fully discussed).
+22:45 < ginger> how aobut: anything that goes on the frontpage would need xiph committee (or whoever is authoritative) approval
+22:45 < ginger> does the constitution of the xiph foundation say anything about it?
+22:45 < boxofpurpleducks> No, it does not.
+22:46 < jmworx> how about. It takes approval from *any* person on the committee to put something up and then a vote is taken if others disagree.
+22:46 < illi> i think informal is good... but i also think that some sort of lightweight approval process... or even steering commitee or something like that...
+22:46 < boxofpurpleducks> Sure.  It also gives warm fuzzies.
+22:46 < ginger> who has editing access to the frontpage? that person needs to know who to ask for approval
+22:47 < jmworx> I'd like a sort of "informal but recognized by everyone" committee that's a bit wider than now.
+22:47 < illi> something slightly more formal to guide xiph forward... rather than just a random approach
+22:47 < rillian> ginger: well, everyone with svn access can make the change
+22:47 < illi> i agree infomral but recognised is just as good
+22:47 < rillian> officially they need approval from "xiph"
+22:47 < rillian> which in practice has been monty or myself
+22:47 < illi> just some sort of guidance and or end of the line in terms of disputes and decisions
+22:48 < boxofpurpleducks> well, for now the active board members were doing this, but that was more coincidence.
+22:48 < ginger> maybe we already have a process, but just need to publicise it better
+22:49 < ginger> "anything that goes on the web needs approval from monty or rillian"
+22:49 < rillian> boxofpurpleducks: I am not a board member :)
+22:49 < rillian> ginger: perhaps so
+22:49 < ginger> maybe we need a elected steering committee to look after such disputes instead?
+22:49 < boxofpurpleducks> Right, we never finished that.  Well, we need to.
+22:50 < jmworx> definitely
+22:52 < jmworx> I kind of like an elected steering committee too
+22:52 < ginger> boxofpurpleducks: what do you mean by "we never finished that"?
+22:53 < boxofpurpleducks> putting ralph on the board
+22:53 < ginger> ah ok.
+22:54 < ginger> What I don't understand about the xiph foundation is the role of the board - could you explain?
+22:54 < jmworx> I was under the impression that all the day-to-day decisions were better taken below the board, right?
+22:54 < rillian> jmworx: that's how it's been working in practice
+22:54 < boxofpurpleducks> the board is more just codified authority in the sense of it's who the government believes.
+22:54 < rillian> but there's not problem with having some of the active decision makers also be on the board
+22:54 < jmworx> I'm fine with that as long as there's an entity taking care of that.
+22:54 < rillian> in fact that's probably better because the board is the group with legal authority
+22:55 < ginger> I had felt reluctant to put anything on the xiph frontpage or the wiki for that matter that was not approved - and I didn't know how to get it approved - so it never happened
+22:55 < rillian> ginger: you could have just asked :)
+22:55 < rillian> boxofpurpleducks: anyway, I like informal too
+22:55 < rillian> but the suggestion is a valid on I think
+22:55 < boxofpurpleducks> [I am distracted... still in crunch for DI here ]-:
+22:55 < rillian> that we have an explicit committee that the board delegates to to fill the power vacuum
+22:55 < jmworx> Formal or informal can both be fine as long as it's clear to everybody.
+22:56 < rillian> if it can't be bothered to direct the org itself
+22:56 < rillian> jmworx: well, the rule is "smart people we agree with get to make decisions"
+22:56 < rillian> the problem is when people aren't able to make that determination on their own
+22:57 < jmworx> rillian: exactly, and that's why it needs to be really clear
+22:58 < ginger> rillian: I'm probably only now getting ready to ask - we've only had browser plugins this year - I wanna be able to show something for the ideas we're having before pushing it on the frontpage
+22:59 < rillian> ginger: this is all good ;)
+22:59 < ginger> rillian: I like the idea of a steering committee as a board delegate that can make such decisions
+23:00 < jmworx> I think there should be somewhere around 5-10 people that have some sort of (moral) authority.
+23:00 < rillian> right
+23:00 < rillian> so the board could just nominate the committee
+23:00 < ginger> maybe another thing we should add is a list of the maintainers of different things - not just the code, but also the frontpage and the wiki and svn
+23:01 < rillian> it doesn't have to be explicitly democratic
+23:01 < rillian> ginger: I don't think that belongs on the front page
+23:01 < illi> i agree it doesn't necessarily have to be voted...
+23:01 < rillian> maybe on the developer pages or the wiki is reasonable
+23:01 < ginger> sorry, no, I meant in the wiki
+23:01 < ginger> so that one knows who one should ask to get stuff on those :)
+23:01 < rillian> most of the code has an AUTHORS file now too
+23:01 < jmworx> How about people that want to be on the committee say so, other members say whether they think it's a good idea. Then the board decides?
+23:02 < rillian> but maybe that's too tedious to wade through, with all the history
+23:03 < illi> like say... somewhere if you want to get a page updated... or something with trac fixed... ro have a patch fixed for something specific... there should be a list somewhere
+23:03 < jmworx> rillian: what do you suggest?
+23:03 < illi> who you have to talk to for the varous things...
+23:04 < jmworx> I don't care that much about the process as long as the result means there's some kind of active authority somewhere.
+23:04 < illi> sure we can all commit in svn... but most people don't like to go commiting stuff to things other people are working on without talking to them first
+23:04 < rillian> illi: I think part of the problem with that is the person who's responsible isn't always responsive
+23:04 < ginger> ok, let's take as an example the skeleton: what is the process I should go through to get it on the web frontpage, without just going ahead and ruthlessly putting it in myself
+23:04 < ginger> ?
+23:04 < rillian> what you're supposed to do is send a patch to the list, or attach it to the issue in the tracker
+23:04 < jmworx> ginger: Probably approval from the committee?
+23:05 < rillian> and it should get dealt with
+23:05 < rillian> but that is taking months or years, and things are getting dropped
+23:05 < illi> but less so the code... more so for say trac and wiki and webpages
+23:05 < rillian> so are you nominating people to take over maintainership in that sense?
+23:06 < ginger> rillian: do you want to deal with the web and wiki pages in the same way as with code?
+23:06 < illi> i think some people are doing some of this stuff already... just no-one knows who ?
+23:06 < illi> like i have no idea who maintains trac or the mailing lists... but i'm sure someone is..
+23:07 < boxofpurpleducks> I don't know either
+23:07 < boxofpurpleducks> This also directly attributable for having been out of touch for a year.
+23:07  * rillian maintains the mailing lists, with help from Mike and few other moderators
+23:07 < boxofpurpleducks> In fact, I'm surprised folks have gotten on as well as they have without me.  :-)
+23:07 < rillian> j^ maintains wiki+trac
+23:07 < ginger> boxofpurpleducks: we're trying to make you some breathing space
+23:07 < jmworx> boxofpurpleducks: which is why we need to committee ("been out of touch for a year")
+23:08 < rillian> illi: so we need wiki page detailing who's responsible for what
+23:08 < illi> rillian: ok... but this information should be somewhere findable...
+23:08 < rillian> (or a dev page on the official website so it's harder to mess with)
+23:08 < rillian> ginger: that would suit me, yes
+23:08 < rillian> though the wiki is supposed to take care of itself, really
+23:08 < illi> i guess wiki is just as good
+23:09 < illi> but you need to know the information to put on in this case
+23:09 < jmworx> rillian: both I'd say. A centralized place (wiki) for everything and then on the page project.
+23:10 < rillian> ok, that's reasonable
+23:11 < jmworx> How about we try deciding on the committee issue?
+23:12 < illi> i think for the most things the committee will not need to do anything... but in some cases... it's good to know there is some way to "escalate" decision making when required
+23:12 < ginger> I'm going to have a go at an "admin" wiki page now
+23:12 < rillian> I would say that, if y'all are organizing, I'll go along, but I'd be inclined to leave in informal and just try and clarify current responsibilities as we've discussed
+23:12 < ginger> I'm assuming as a decision committee monty and rillian for the moment until we decide on a different committee
+23:13 < rillian> revisit after we see whether monty has more time to micromanage from red hat
+23:13 < illi> in the sense that in many ways... day to day things won't change.
+23:13 < rillian> ginger: that's fine
+23:14 < rillian> jmworx: does that work for you?
+23:14 < rillian> informal committee of monty and I
+23:14 < jmworx> rillian: I'd like the committee to be wider than you and monty.
+23:15 < rillian> right. so my decision making process is "do the best I can, and defer to monty except when I think he's really misguided" :)
+23:15 < rillian> what would the process for a bigger committee be?
+23:15 < jmworx> rillian: I'd say a two-level process.
+23:15 < rillian> jmworx: I'd nominate you, mike, and ginger then
+23:16 < rillian> and maybe josh, but that's pointless
+23:16 < jmworx> Any *single* member of the committee can take an (unimportant) decision and can be overruled if the majority of the committee is against.
+23:16 < rillian> jmworx: okey
+23:16 < rillian> derf_: you wanna help steer the boat?
+23:16 < jmworx> rillian: I'm fine with that at least for now (maybe we've forgotten someone?).
+23:17 < rillian> probably
+23:17 < jmworx> josh should be in there even if he doesn't speak up.
+23:17 < rillian> as in major project maintainers
+23:17 < rillian> j^ too then
+23:18 < rillian> he's level and smart
+23:18 < jmworx> definitely
+23:18 < rillian> and while I think he doesn't always consider himself a xiph person, he does have root :)
+23:18 < ginger> what do kfish and illi think about having me on there? I feel I haven't done enough actual coding work for that actually
+23:19 < rillian> ginger: I haven't either by that standard
+23:19 < jmworx> I definitely think ginger should be there
+23:19 < ginger> yes, j^ absolutely :)
+23:19 < ginger> I'd also nominate illi if only to get a windows person on :)
+23:19 < illi> i agree... i'm happy to have sensible people that are motivated... i don't necessarily think that that means coding lots of stuff
+23:19 < ginger> and for all the work he's done of course!
+23:20 < illi> i'm just as happy to have receptive people, than do it myself
+23:21 < kfish> same
+23:21 < kfish> and to kick some ass
+23:21 < jmworx> :-)
+23:21 -!- grizzli [n=chris@adsl-58-119.swiftdsl.com.au] has joined #xiphmeet
+23:22 < ginger> :P
+23:22 < jmworx> So who do we have so far...
+23:23 < kfish> anyway, i think we should have nominations / elections, not just decide by cabal (australian cabal or otherwise ;-)
+23:23 < boxofpurpleducks> No.
+23:23 < boxofpurpleducks> This is not a democracy :-)
+23:23 < boxofpurpleducks> Benevolent dictatorship.
+23:24 < ginger> I'mm putting this in the admin wiki page
+23:24 < kfish> boxofpurpleducks, noted (unfortunately)
+23:24 < jmworx> boxofpurpleducks: I'm fine with a benevolent dictatorship as long as there's enough dictators.
+23:24 < boxofpurpleducks> That's not to say that input isn't welcomed and that the dictator prefers to be hands-off.  But we're too small a group for democracy to really work.
+23:25 < jmworx> I'm fine with that
+23:25 < illi> i agree we just aneed a few people with enough time to do the job... not necessarily a whole working group
+23:26 < ginger> so, do we have boxofpurpleducks as the benevolent dictator with decisions for most decisions delegated to the committee?
+23:28 < jmworx> I'm happy with the idea discussed above.
+23:28 -!- Arc [n=arc@westfish.xiph.osuosl.org] has joined #xiphmeet
+23:29 < jmworx> 7-9 people means there will always be at least 1-2 people available at any time.
+23:29 < Arc> this is an usual number of people to have online this far before a meeting
+23:29 < boxofpurpleducks> Yes.  Although I don't want to appear to be (or be) an egomaniac, make no mistake that I still consider myself the central authority.  Just so there's no misunderstanding.
+23:30 < boxofpurpleducks> Arc: meeting started at 6GMT.
+23:31 < illi> i think we are all happy with you as the boss :) Just that you don't have an infinite amount of time
+23:31 < boxofpurpleducks> Correct.
+23:31 < boxofpurpleducks> About to have more, but I want much of it to be technical contribution, so it will still not be infinite.
+23:31 < jmworx> So, is the earlier proposition OK with you?
+23:32 < boxofpurpleducks> summarize it.
+23:32 < illi> which i think is the justification for a lower level decision making which can filter out some of the time sinks for you... and leave you with the important decisions to make
+23:32 < boxofpurpleducks> (sorry, it's all spread around)
+23:32 < ginger> these people were mentioned for committee: rillian, j^, jmspeex, MikeS, derf_, josh, illi, and ginger
+23:32 < jmworx> Have the "main contributors" (to be further defined) sit on an informal committee that can make some decisions and resolve conflicts.
+23:33 < boxofpurpleducks> That committe is a bit large.
+23:33 -!- ginger [n=silvia@adsl-58-119.swiftdsl.com.au] has quit ["Gotta go"]
+23:33 -!- ginger [n=silvia@adsl-58-119.swiftdsl.com.au] has joined #xiphmeet
+23:33 < boxofpurpleducks> I agree that each of those people have (and should have) authority in the org.
+23:33 < jmworx> boxofpurpleducks: What do you suggest?
+23:34 < boxofpurpleducks> The informal arrangement before was project heads were the confederate states, with a center of two to three that authorized org-wide decisions (eg Jack/me, more recently Ralph)
+23:35 < jmworx> boxofpurpleducks: And we've clearly seen the limitations of that with OggPCM.
+23:36 < boxofpurpleducks> OggPCM never made it to the status of official project.  And the problem was that Arc declared it an official project based on his own authority... except he didn't quite pull that off.
+23:36 < Arc> I disagree
+23:36 < Arc> where was it ever stated that it was anything but part of OggStream
+23:36 < jmworx> boxofpurpleducks: the thing is that it created a whole mess that nobody would resolve.
+23:37 < boxofpurpleducks> Front page, www.xiph.org, dude and in the wiki.
+23:37 < boxofpurpleducks> Oh, sorry, that was Ogg Metadata
+23:37 < Arc> OggPCM was never on www.xiph.org
+23:37 < boxofpurpleducks> wiki alone then.
+23:37 < jmworx> Arc: and reverting any changes I made to it so mention you're the only one approving it.
+23:37 < Arc> Ogg Metadata isn't my project
+23:38 < boxofpurpleducks> OK, let's not start it again regardless of resolution.
+23:38 < boxofpurpleducks> or lack thereof.
+23:38 < boxofpurpleducks> Everyone got in a big stink about... really, not an awful lot.
+23:38 < Arc> Writ was approved over a year ago, and as I have told you, yes, there are implementations of it
+23:38 < boxofpurpleducks> It got where it did because I had no time to deal.
+23:39 < boxofpurpleducks> I said it could exist in the webspace.  You hear as much as you want to :-P
+23:40 < illi> anyway... the details are a side issue
+23:40 < boxofpurpleducks> yes.
+23:40 < Arc> the details are that as i read the meeting log I'm reading an endless stream of personal attacks from JM
+23:40 < boxofpurpleducks> The upshot of a seven person committe is that, for the most part, it's a committe of internal exclusion more than anything else.
+23:40 < jmworx> boxofpurpleducks: (back on original topic) who would *you* have on the committee?
+23:41 < illi> i think a smaller committee of even jm, monty, rillian, and possibly derf_
+23:41 < boxofpurpleducks> Not the most 'worthy', but perhaps the most appropriate.
+23:41 < illi> possibly josh if he's interested... but he doesn't seem to get involved in the deatils
+23:41 < boxofpurpleducks> I was actually thinking ginger...
+23:42 < boxofpurpleducks> we could talk to josh about it, but the whole point is that it would consist of people able to deal with the time and do it with a level head.
+23:42 < boxofpurpleducks> josh perfers to be hands off.
+23:42 < boxofpurpleducks> the committe would be hands-on by definition.
+23:43 < jmworx> OK, so jm, monty, rillian, derf and silvia ?
+23:43 < ginger> feedback on http://wiki.xiph.org/index.php/AdminProcesses required
+23:44 < boxofpurpleducks> To be frank, I would suggest against you, jm, only because you enjoy The Flaming :-)  
+23:44 < jmworx> I'm fine
+23:44 < boxofpurpleducks> I wonder about Mike for the same reason, although Mike's been oddly calm lately ;-)
+23:45 < jmworx> monty, rillian, derf and silvia then
+23:45 < Arc> brendan, karl
+23:45 < jmworx> As long as we're not headless like we've been lately, I'm fine
+23:46 < boxofpurpleducks> right
+23:46 < rillian> I'm not sure derf wants to do that kind of admin work, if we're paring the list
+23:46 < Arc> i think it's important to get at least one person from the icecast team on such a committee
+23:46 < boxofpurpleducks> illi might be a better choice than derf then... although I think this is not a day-to-day time commitment
+23:46 < illi> well we tried the one per committee and it turned into a too big list
+23:47 < boxofpurpleducks> Arc: A ten person committee is going to be as useless as where we are now.
+23:47 < Arc> yes, but at least one person..
+23:47 < illi> i am happy to do it if there is consensus among others... 
+23:47 < illi> a group people aren't behind is as bad as no  group
+23:47 < boxofpurpleducks> I'm most in tune with Mike.
+23:48 < boxofpurpleducks> of the icecast people.
+23:48 < jmworx> Mike should be in I think
+23:48 < illi> i would agree mike is a good choice
+23:50 < ginger> reload http://wiki.xiph.org/index.php/AdminProcesses
+23:51 < boxofpurpleducks> The other thing I talked to Ralph about is that I was somewhat loathe to make large changes in the org that primarily address what to do in my absence, when I'm about to reappear fulltime.
+23:51 < boxofpurpleducks> Again, I'm not opposed to some more documented structure to the org, but Change may well render it all vaguely misapplied and at odds witht he way things work in the near future.
+23:51 < jmworx> boxofpurpleducks: You're not always online either. At least you weren't even when you were full-time on Xiph.org
+23:51 < rillian> what I said
+23:52 < boxofpurpleducks> there is that.
+23:52 < illi> well how far of is the RH change ?
+23:52 < boxofpurpleducks> OTOH, even Lou Gerstner got to sleep.
+23:52 < boxofpurpleducks> Feb 6 is my starting dtae.
+23:53 < jmworx> it's been worse lately because of your job and the whole OggPCM mess, but I've never had the impression that there was much going on in terms of decision making.
+23:54 < boxofpurpleducks> Not actually true.
+23:55 < boxofpurpleducks> It was more that the decisions got made and no one really noticed.
+23:55 < boxofpurpleducks> Mostly because everyone was getting along.
+23:55 < ginger> boxofpurpleducks: any ideas yet about the changes you'd like to make?
+23:56 < ginger> you can always change http://wiki.xiph.org/index.php/AdminProcesses to reflect your current state of decision-making
+23:56 < boxofpurpleducks> Mostly having a center to the org again where the projects are all communicating as opposed to the very disconnected, loose group things have devolved to.
+23:56 < ginger> boxofpurpleducks: some decisions were not made or waited forever because of people being polite and not knowing who to approach
+23:56 < rillian> I must go folks. I can trim and post the log tomorrow, but otherwise have fun
+23:56 < boxofpurpleducks> Sure.  I don't even mind that committe functioning until it becomes clear it's not quite the right thing.  perhaps it is and will remain so.
+23:58 -!- jkoleszar [n=kolesj@cpe-24-195-139-217.nycap.res.rr.com] has quit ["Gotta go."]
+23:58 < ginger> ok, shall we leave the committee as is for the moment?
+23:59 < boxofpurpleducks> Sure.
+23:59  * ginger would put jmspeex back in, but it's up to the dictator :)
+23:59 < boxofpurpleducks> I also have to go very soon.
+23:59 < boxofpurpleducks> I hope jm doesn't read anything inot it (because I'm not trying to hide any meaning in it), but I think Mike is a better choice.
+--- Day changed Wed Dec 14 2005
+00:00 < boxofpurpleducks> especially given the aspect of the committee that is a reaction to recent events.
+00:01 < ginger> boxofpurpleducks: should we go onto the next point
+00:01 < jmworx> boxofpurpleducks: If we decide it's something like "one per main project" then I should be in otherwise, you're the dictator anyway ;-)
+00:01 < Arc> it actually sounds like time to wrap up, if monty has to go soon
+00:02 < jmworx> Atamido: ping
+00:04 < jmworx> next point?
+00:05 < jmworx> I am a teapot.
+00:05 < jmworx> I AM A TEAPOT!
+00:06 < Arc> beware, for this teapot is filled with a toxic bile of the likes you DONT wont to pour out
+00:07 < illi> (incidentally the teapot comment is by a random laptop comandeerer)\
+00:08 < HackRip> Projects reports plz ? vorbis aotuvb4 merged before 2007 ? theora B1 before 2008 ? CDparanoia with cache fixed before 2009 ? vorbis II before 2010 ? just teasing ...
+00:08 < HackRip> I don't care about the evil Arc ;)
+00:09 < Arc> yea you know, the interesting part is this is different from ogm or matroska..
+00:09 < Arc> this time, when you demonize a productive developer and make it impossible to continue working with him, he goes off and releases it anyways, but fully Ogg compatable
+00:09 < jmworx> Anyone outside the Aussie cabal still awake?
+00:11 < boxofpurpleducks> Sorry, have to go for now.
+00:12 < boxofpurpleducks> Apologies for having to run otu :-(
+00:12 -!- boxofpurpleducks [n=xiphmont@STARSHIP-SNOTFISH.MIT.EDU] has quit ["He travels fastest who travels alone"]
+00:12 < illi> i guess meeting over  ? We have anxfoundation meet now anyway...
+00:13 < Arc> you got it
+00:13 < jmworx> rillian: still here?
+00:13 < Arc> he went to be 15 minutes ago
+00:13 < Arc> I think that's the meeting called.
+00:14 < HackRip> go make a team with Emmet to kick the Dictator's ass;) lol
+00:14 < Arc> Join us next month, same place, different day and time for the next exciting adventure of the Xiph avengers!
+00:17 -!- HackRip [i=HackRip@ip-134.net-82-216-235.rev.numericable.fr] has quit [""He travels alone who travels alone""]
+--- Log closed Wed Dec 14 00:18:32 2005
