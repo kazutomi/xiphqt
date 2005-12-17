@@ -48,6 +48,7 @@
           <li><a href="./">news</a></li>
           <li><a href="about.html">about</a></li>
           <li><a href="download.html">downloads</a></li>
+          <li><a href="faq.html">FAQ</a></li>
           <li><a href="bugreport.html">report problems</a></li>
           <li><a href="development.html">for developers</a></li>
           <li><a href="contact.html">contact</a></li>
@@ -56,6 +57,25 @@
       <div id="the-content">
         <h2>Release notes.</h2>
         <div>
+          <h3>version 0.1.3 (17.12.2005)</h3>
+          <div>
+            <p>Big changes and changes a bit smaller:</p>
+            <ul>
+              <li><strong>win32 port</strong> - now XiphQT should work on all the Windows flavours on which you can get
+                QuickTime 7 to work;</li>
+              <li><strong>progressive downloading</strong> - ogg files can now be opened directly from a network location,
+                using e.g. 'http://' URLs; as a side-effect most of the "live" ogg streams can now be treated
+                as remote files (of undefined size) and listened to directly in e.g. QuickTime Player;</li>
+              <li><strong>web browser integration</strong> - QuickTime plugin MIME preferences now should include options for
+                Vorbis and Speex files, allowing you to have these formats handled by QT plugin directly in a
+                browser window (note: some browsers, like <a href="http://www.caminobrowser.org">Camino</a> or
+                <a href="http://www.mozilla.com/firefox/">FireFox</a> on Mac OS X, won't automatically update
+                their lists of mime types handled by browser plugins - you will need to do it manually);</li>
+              <li><strong>Vorbis comments</strong> - XiphQT now supports all the tags mentioned in the
+                <a href="http://www.xiph.org/vorbis/doc/v-comment.html">Vorbis documentation</a>;</li>
+              <li><strong>multi-stream ogg files</strong> importing significantly improved.</li>
+            </ul>
+          </div>
           <h3>version 0.1.2 <em>"framed work"</em> (28.11.2005)</h3>
           <div>
             <p>Mainly - full binary installer: frameworks included.</p>

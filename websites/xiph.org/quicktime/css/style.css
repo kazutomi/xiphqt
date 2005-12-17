@@ -302,3 +302,44 @@ span.md5 {
 div.news {
     margin-top: -1.3em;
 }
+
+/* FAQ styles */
+div.faq-toc-sec {
+    font-weight: bolder;
+}
+
+div.faq-toc-sec a {
+    text-decoration-a: underline;
+}
+
+div.faq-toc-sec + ul{
+    margin-top: 0.4em;
+}
+
+ul.faq-toc {
+    list-style: none;
+    padding-left: 1.5em;
+}
+
+ul.faq-toc li {
+    margin-top: 0.7em;
+}
+
+.faq-sec a {
+    color: inherit;
+}
+
+.faq-sec a:hover {
+    text-decoration: none;
+}
+
+div.faq-Q {
+    font-style: italic;
+    font-size: 1.1em;
+    font-weight-a: bolder;
+}
+
+div.faq-A {
+    padding-left: 1.5em;
+    padding-bottom: 1em;
+}
