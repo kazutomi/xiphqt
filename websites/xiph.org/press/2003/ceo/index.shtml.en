@@ -1,23 +1,13 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-					  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" lang='en' xml:lang='en'>
-<head>
-	<!--#include virtual="/ssi/inhead.inc"-->
-	<!--#include virtual="/press/SSI/inhead.inc"-->
-	<title>Emmett Plant Exits as Xiph.Org CEO</title>
-	<link rel='up' href='../' />
-	<link rel='prev' href='../nonprofitspeex1/' />
+<!--#include virtual="/ssi/header.include" -->
+<!--  Enter custom page information and styles here -->
+  <title>April 17, 2003: Emmett Plant Exits as Xiph.Org CEO</title>
 </head>
 <body>
-<p class='breadcrumbs'>
-	<span>
-		<a href='http://www.xiph.org/'>Xiph.Org</a>:
-		<a href='/press/'>press</a>:
-		<a href='../'>2003</a>:
-		April 17
-	</span>
-</p>
-<div id='content'>
+<!--#include virtual="/common/xiphbar.include" -->
+
+<!--#include virtual="/ssi/pagetop.include" -->
+<!--  All your page content goes here  -->
+
 <h1>Emmett Plant Exits as Xiph.Org <abbr title='Chief Executive Officer'>CEO</abbr></h1>
 <p>
 The Xiph.Org Foundation today announced the termination of its contracting
@@ -41,8 +31,4 @@ develop free, open protocols and superior software to serve the public,
 developers and business markets.
 </p>
 
-<!--#include virtual="/press/SSI/contact.inc"-->
-</div> <!-- #content -->
-
-</body>
-</html>
+<!--#include virtual="/ssi/pagebottom.include" -->

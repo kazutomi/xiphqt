@@ -1,24 +1,15 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-					  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" lang='en' xml:lang='en'>
-<head>
-	<!--#include virtual="/ssi/inhead.inc"-->
-	<!--#include virtual="/press/SSI/inhead.inc"-->
-	<title>FLAC Joins Xiph.Org</title>
-	<link rel='up' href='../' />
-	<link rel='next' href='../nonprofitspeex1/' />
-	<meta name='author' content='Emmett Plant'/>
+<!--#include virtual="/ssi/header.include" -->
+<!--  Enter custom page information and styles here -->
+  <title>January 29, 2003: FLAC Joins Xiph.Org</title>
 </head>
 <body>
-<p class='breadcrumbs'>
-	<span>
-		<a href='http://www.xiph.org/'>Xiph.Org</a>:
-		<a href='/press/'>press</a>:
-		<a href='../'>2003</a>:
-		January 29
-	</span>
-</p>
-<div id='content'>
+<!--#include virtual="/common/xiphbar.include" -->
+
+<!--#include virtual="/ssi/pagetop.include" -->
+<!--  All your page content goes here  -->
+
+<h1>January 29, 2003: FLAC Joins Xiph.Org</h1>
+
 <h2>The Beginning</h2>
 <p>
 Many moons ago, the <a href="http://www.xiph.org/ogg/">Ogg</a> project started with a 
@@ -85,8 +76,5 @@ organization.
 <p>
 If you can’t afford to donate time or money, that’s okay, too. Just let your friends know that we’re here, so that they’re aware that patent and royalty-free alternatives to proprietary multimedia formats exist. We don’t have the resources available to evangelize and promote our work, so we need to rely on good word-of-mouth from kind folks like you.
 </p>
-<!--#include virtual="/press/SSI/contact.inc"-->
-</div> <!-- #content -->
 
-</body>
-</html>
+<!--#include virtual="/ssi/pagebottom.include" -->
