@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+         xmlns="http://purl.org/rss/1.0/"
+         xmlns:dc="http://purl.org/dc/elements/1.1/"
+         xmlns:syn="http://purl.org/rss/1.0/modules/syndication/">
+
+  <channel rdf:about="http://www.xiph.org/quicktime/news.xml">
+    <title>XiphQT News</title>
+    <link>http://www.xiph.org/quicktime/</link>
+    <description>XiphQT project (manually automated) news.</description>
+    <dc:language>en-gb</dc:language>
+    <dc:publisher>Xiph.Org Foundation</dc:publisher>
+    <dc:creator>Arek Korbik (mailto:arkadini@gmail.com)</dc:creator>
+    <dc:rights>Copyright &#169; 2005 Xiph.Org Foundation. All rights reserved.</dc:rights>
+    <dc:date>2005-12-20T18:46+00:00</dc:date>
+    <syn:updatePeriod>daily</syn:updatePeriod>
+    <syn:updateFrequency>1</syn:updateFrequency>
+    <syn:updateBase>2005-01-01T05:00+00:00</syn:updateBase>
+
+    <items>
+      <rdf:Seq>
+        <rdf:li resource="http://www.xiph.org/quicktime/index.html#2005122000" />
+        <rdf:li resource="http://www.xiph.org/quicktime/index.html#2005121701" />
+        <rdf:li resource="http://www.xiph.org/quicktime/index.html#2005121700" />
+        <rdf:li resource="http://www.xiph.org/quicktime/index.html#2005112800" />
+        <rdf:li resource="http://www.xiph.org/quicktime/index.html#2005112600" />
+        <rdf:li resource="http://www.xiph.org/quicktime/index.html#2005112501" />
+        <rdf:li resource="http://www.xiph.org/quicktime/index.html#2005112500" />
+      </rdf:Seq>
+    </items>
+  </channel>
+
+  <item rdf:about="http://www.xiph.org/quicktime/index.html#2005122000">
+    <title>XiphQT News RSS feed</title>
+    <link>http://www.xiph.org/quicktime/index.html#2005122000</link>
+    <description>
+      &lt;p&gt;I've been thinking for some time that an RSS feed for XiphQT project would be nice. And I was
+        asked about it recently, as well.&lt;/p&gt;
+      &lt;p&gt;So here it is, manually "generated" and highly experimental:
+        &lt;a href="news.xml" class="rss"&gt;XiphQT News feed&lt;/a&gt;.&lt;/p&gt;
+      &lt;p&gt;&lt;a href="contact.html"&gt;Let me know&lt;/a&gt; if there are any problems with it.&lt;/p&gt;
+    </description>
+    <dc:date>2005-12-20T18:46+00:00</dc:date>
+    <dc:creator>Arek</dc:creator>
+  </item>
+
+  <item rdf:about="http://www.xiph.org/quicktime/index.html#2005121701">
+    <title>XiphQT 0.1.3 released</title>
+    <link>http://www.xiph.org/quicktime/index.html#2005121701</link>
+    <description>
+      &lt;p&gt;I suppose it's just the right time of year to call it a "Christmas" release. And I hope the set
+        of new features and improvements won't be dissapointing: Windows port, progressive downloading...
+        just to name a few!&lt;/p&gt;
+      &lt;p&gt;So, don't let the minor release number change mislead you and
+        &lt;a href="download.html"&gt;get yourself a copy&lt;/a&gt; straightaway, and don't forget to see the
+        &lt;a href="release_notes.html"&gt;release notes&lt;/a&gt; for more info!&lt;/p&gt;
+      &lt;p&gt;And... Merry Christmas!&lt;/p&gt;
+    </description>
+    <dc:date>2005-12-17T20:10+00:00</dc:date>
+    <dc:creator>Arek</dc:creator>
+  </item>
+
+  <item rdf:about="http://www.xiph.org/quicktime/index.html#2005121700">
+    <title>XiphQT FAQ</title>
+    <link>http://www.xiph.org/quicktime/index.html#2005121700</link>
+    <description>
+      &lt;p&gt;I have created a small &lt;acronym title="Frequently Asked Questions"&gt;FAQ&lt;/acronym&gt;,
+        which at the moment is focussing mainly on the "XiphQT vs. iTunes" subject. Read the
+        &lt;a href="faq.html"&gt;FAQ&lt;/a&gt; for some explanations...&lt;/p&gt;
+    </description>
+    <dc:date>2005-12-17T20:09+00:00</dc:date>
+    <dc:creator>Arek</dc:creator>
+  </item>
+
+  <item rdf:about="http://www.xiph.org/quicktime/index.html#2005112800">
+    <title>XiphQT 0.1.2 released</title>
+    <link>http://www.xiph.org/quicktime/index.html#2005112800</link>
+    <description>
+      &lt;p&gt;Starting with this release there will be two different binary XiphQT packages available:&lt;/p&gt;
+      &lt;ul&gt;
+        &lt;li&gt;full installer including Xiph framework files&lt;/li&gt;
+        &lt;li&gt;and smaller XiphQT-only package.&lt;/li&gt;
+      &lt;/ul&gt;
+      &lt;p&gt;See &lt;a href="release_notes.html"&gt;release notes&lt;/a&gt; for more info on other changes.&lt;/p&gt;
+    </description>
+    <dc:date>2005-11-28T13:35+00:00</dc:date>
+    <dc:creator>Arek</dc:creator>
+  </item>
+
+  <item rdf:about="http://www.xiph.org/quicktime/index.html#2005112600">
+    <title>XiphQT 0.1.1-1 released</title>
+    <link>http://www.xiph.org/quicktime/index.html#2005112600</link>
+    <description>
+      &lt;p&gt;Fixed a tiny oversight resulting in meta-data not being imported properly.&lt;/p&gt;
+      &lt;p&gt;Updated files are now &lt;a href="download.html"&gt;available&lt;/a&gt;.&lt;/p&gt;
+    </description>
+    <dc:date>2005-11-26T10:45+00:00</dc:date>
+    <dc:creator>Arek</dc:creator>
+  </item>
+
+  <item rdf:about="http://www.xiph.org/quicktime/index.html#2005112501">
+    <title>XiphQT 0.1.1 released</title>
+    <link>http://www.xiph.org/quicktime/index.html#2005112501</link>
+    <description>
+      &lt;p&gt;The first binary release is now &lt;a href="download.html"&gt;available&lt;/a&gt;. It's OSX-only, but
+        a Windows version should follow soon.&lt;/p&gt;
+      &lt;p&gt;Summary of features included:&lt;/p&gt;
+      &lt;ul&gt;
+        &lt;li&gt;reading of Ogg-encapsulated Vorbis and Speex bitstreams;&lt;/li&gt;
+        &lt;li&gt;Vorbis and Speex decompression.&lt;/li&gt;
+      &lt;/ul&gt;
+      &lt;p&gt;The details can be found in the &lt;a href="release_notes.html"&gt;release notes&lt;/a&gt;.&lt;/p&gt;
+      &lt;p&gt;Don't forget to &lt;a href="bugreport.html"&gt;let us know if it doesn't work&lt;/a&gt; for you.&lt;/p&gt;
+      &lt;p&gt;Enjoy!&lt;/p&gt;
+    </description>
+    <dc:date>2005-11-25T19:35+00:00</dc:date>
+    <dc:creator>Arek</dc:creator>
+  </item>
+
+  <item rdf:about="http://www.xiph.org/quicktime/index.html#2005112500">
+    <title>Xiph QuickTime Components project goes "live"!</title>
+    <link>http://www.xiph.org/quicktime/index.html#2005112500</link>
+    <description>
+      &lt;p&gt;We are pleased to announce the first public appearance of the
+        Xiph QuickTime Components project!&lt;/p&gt;
+      &lt;p&gt;In short, the project is a continuation of the efforts to bring
+        availability of the
+        &lt;a href="http://www.xiph.org/"&gt;Xiph.Org Foundation's free and open media formats&lt;/a&gt;
+        into the Mac OS X environment, and do it in a way consistent with
+        the well-defined and established media manipulation frameworks
+        existing in that environment.&lt;/p&gt;
+      &lt;p&gt;The previous efforts in that area, focused around the
+        &lt;a href="http://qtcomponents.sf.net/"&gt;qtcomponents.sf.net&lt;/a&gt; project,
+        have recently come to a stop. With the new project: new blood, new
+        underlying technology, new enthusiasm and using the experiences of
+        the old project we hope to push things forward again.&lt;/p&gt;
+      &lt;p&gt;Please see the &lt;a href="about.html"&gt;"about" page&lt;/a&gt; for more
+        information on our project, and thanks for stopping by!&lt;/p&gt;
+    </description>
+    <dc:date>2005-11-25T19:34+00:00</dc:date>
+    <dc:creator>Arek</dc:creator>
+  </item>
+
+</rdf:RDF>

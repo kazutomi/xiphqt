@@ -343,3 +343,12 @@ div.faq-A {
     padding-left: 1.5em;
     padding-bottom: 1em;
 }
+
+/* RSS feed icon */
+a.rss {
+    background-image: url("../img/xml.png");
+    background-repeat: no-repeat;
+    background-position: 0 -1px;
+    padding-left: 42px;
+    line-height: 16px;
+}
