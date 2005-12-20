@@ -74,6 +74,11 @@
                 fixed to the main audio output only?</a></li>
             <li><a href="#faq_itunes_stream">Does XiphQT allow one to listen to ogg network streams in iTunes?</a></li>
           </ul>
+          <div class="faq-toc-sec" id="faq_toc_s_win32"><a href="#faq_s_win32">XiphQT on Windows platform</a></div>
+          <ul class="faq-toc">
+            <li><a href="#faq_win32_63chars">iTunes doesn't open (ignores) some .ogg files, but the same files play just fine in
+                other applications (not QuickTime Player, though). What can I do?</a></li>
+          </ul>
 
           <a name="faq_s_inst" id="faq_s_inst"></a>
           <h3 class="faq-sec"><a href="#faq_toc_s_inst">Installation</a></h3>
@@ -121,7 +126,7 @@
               <p>Regarding the .ogg files meta-data missing in iTunes - to my knowledge, there is no way to fix this from the XiphQT source code
                 point of view. However, there exist some AppleScript scripts that can help you with track's meta-data in iTunes (for example, see
                 <a href="http://trac.xiph.org/ticket/759">this ticket</a> or
-                <a href="http://sourceforge.net/forum/forum.php?thread_id=1361353&forum_id=135636">this thread</a>).</p>
+                <a href="http://sourceforge.net/forum/forum.php?thread_id=1361353&amp;forum_id=135636">this thread</a>).</p>
               <p>By the way, if you are curious or sceptical about the above paragraphs - here is a simple practical experiment:</p>
               <ol>
                 <li>Find a .mov files with some meta-data (try, for example, the official Apple movie trailer page);</li>
@@ -161,6 +166,21 @@
               <p>Not as such. While XiphQT support for network ogg streams has lately (v.0.1.3) improved significantly (and you can try it in QuickTime Player),
                 iTunes has its own routines for working with network audio streams and broadcasts. However, those routines see every network stream
                 as an 'MPEG audio stream'. Obviously, this can not work with streams which are not MPEG audio streams. Such as ogg streams, for example.</p>
+            </div>
+          </div>
+          
+          <a name="faq_s_win32" id="faq_s_win32"></a>
+          <h3 class="faq-sec"><a href="#faq_toc_s_win32">XiphQT on Windows platform</a></h3>
+          <div>
+            <a name="faq_win32_63chars" id="faq_win32_63chars"></a>
+            <div class="faq-Q">
+              <p>iTunes doesn't open (ignores) some .ogg files, but the same files play just fine in
+                other applications (not QuickTime Player, though). What can I do?</p>
+            </div>
+            <div class="faq-A">
+              <p>You can check if the filenames of those files are longer than 63 characters. If they are, shortening the filenames may solve
+                the problem.</p>
+              <p>This is an <a href="http://developer.apple.com/qa/qa2005/qa1413.html">acknowledged limitation</a> of the recent QuickTime releases.</p>
             </div>
           </div>
         </div>
