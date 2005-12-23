@@ -64,10 +64,10 @@ ogg_uint16_t __attribute__((aligned(8),used)) OC_IDCT_CONSTS[(4+7+1)*4]={
  "  paddw       %mm5,     %mm7\n\t" \
  "  movq        %mm0,     %mm5\n\t" \
  "  pmulhw      %mm3,     %mm0\n\t" \
- "  paddsw      %mm7,     %mm4\n\t" \
+ "  paddw       %mm7,     %mm4\n\t" \
  "  pmulhw      %mm1,     %mm5\n\t" \
  "  movq   "OC_C(7)",     %mm7\n\t" \
- "  psubsw      %mm2,     %mm6\n\t" \
+ "  psubw       %mm2,     %mm6\n\t" \
  "  paddw       %mm3,     %mm0\n\t" \
  "  pmulhw      %mm7,     %mm3\n\t" \
  "  movq   "OC_I(2)",     %mm2\n\t" \
@@ -75,50 +75,50 @@ ogg_uint16_t __attribute__((aligned(8),used)) OC_IDCT_CONSTS[(4+7+1)*4]={
  "  paddw       %mm1,     %mm5\n\t" \
  "  movq        %mm2,     %mm1\n\t" \
  "  pmulhw "OC_C(2)",     %mm2\n\t" \
- "  psubsw      %mm5,     %mm3\n\t" \
+ "  psubw       %mm5,     %mm3\n\t" \
  "  movq   "OC_J(6)",     %mm5\n\t" \
- "  paddsw      %mm7,     %mm0\n\t" \
+ "  paddw       %mm7,     %mm0\n\t" \
  "  movq        %mm5,     %mm7\n\t" \
- "  psubsw      %mm4,     %mm0\n\t" \
+ "  psubw       %mm4,     %mm0\n\t" \
  "  pmulhw "OC_C(2)",     %mm5\n\t" \
  "  paddw       %mm1,     %mm2\n\t" \
  "  pmulhw "OC_C(6)",     %mm1\n\t" \
- "  paddsw      %mm4,     %mm4\n\t" \
- "  paddsw      %mm0,     %mm4\n\t" \
- "  psubsw      %mm6,     %mm3\n\t" \
+ "  paddw       %mm4,     %mm4\n\t" \
+ "  paddw       %mm0,     %mm4\n\t" \
+ "  psubw       %mm6,     %mm3\n\t" \
  "  paddw       %mm7,     %mm5\n\t" \
- "  paddsw      %mm6,     %mm6\n\t" \
+ "  paddw       %mm6,     %mm6\n\t" \
  "  pmulhw "OC_C(6)",     %mm7\n\t" \
- "  paddsw      %mm3,     %mm6\n\t" \
+ "  paddw       %mm3,     %mm6\n\t" \
  "  movq        %mm4,"OC_I(1)"\n\t" \
- "  psubsw      %mm5,     %mm1\n\t" \
+ "  psubw       %mm5,     %mm1\n\t" \
  "  movq   "OC_C(4)",     %mm4\n\t" \
  "  movq        %mm3,     %mm5\n\t" \
  "  pmulhw      %mm4,     %mm3\n\t" \
- "  paddsw      %mm2,     %mm7\n\t" \
+ "  paddw       %mm2,     %mm7\n\t" \
  "  movq        %mm6,"OC_I(2)"\n\t" \
  "  movq        %mm0,     %mm2\n\t" \
  "  movq   "OC_I(0)",     %mm6\n\t" \
  "  pmulhw      %mm4,     %mm0\n\t" \
  "  paddw       %mm3,     %mm5\n\t" \
  "  movq   "OC_J(4)",     %mm3\n\t" \
- "  psubsw      %mm1,     %mm5\n\t" \
+ "  psubw       %mm1,     %mm5\n\t" \
  "  paddw       %mm0,     %mm2\n\t" \
- "  psubsw      %mm3,     %mm6\n\t" \
+ "  psubw       %mm3,     %mm6\n\t" \
  "  movq        %mm6,     %mm0\n\t" \
  "  pmulhw      %mm4,     %mm6\n\t" \
- "  paddsw      %mm3,     %mm3\n\t" \
- "  paddsw      %mm1,     %mm1\n\t" \
- "  paddsw      %mm0,     %mm3\n\t" \
- "  paddsw      %mm5,     %mm1\n\t" \
+ "  paddw       %mm3,     %mm3\n\t" \
+ "  paddw       %mm1,     %mm1\n\t" \
+ "  paddw       %mm0,     %mm3\n\t" \
+ "  paddw       %mm5,     %mm1\n\t" \
  "  pmulhw      %mm3,     %mm4\n\t" \
- "  paddsw      %mm0,     %mm6\n\t" \
- "  psubsw      %mm2,     %mm6\n\t" \
- "  paddsw      %mm2,     %mm2\n\t" \
+ "  paddw       %mm0,     %mm6\n\t" \
+ "  psubw       %mm2,     %mm6\n\t" \
+ "  paddw       %mm2,     %mm2\n\t" \
  "  movq   "OC_I(1)",     %mm0\n\t" \
- "  paddsw      %mm6,     %mm2\n\t" \
+ "  paddw       %mm6,     %mm2\n\t" \
  "  paddw       %mm3,     %mm4\n\t" \
- "  psubsw      %mm1,     %mm2\n\t" \
+ "  psubw       %mm1,     %mm2\n\t" \
  "#end OC_IDCT_BEGIN\n\t"
 
 /*38+8=46 cycles.*/
@@ -126,21 +126,21 @@ ogg_uint16_t __attribute__((aligned(8),used)) OC_IDCT_CONSTS[(4+7+1)*4]={
  "  #OC_ROW_IDCT\n" \
  OC_IDCT_BEGIN \
  "  movq   "OC_I(2)",     %mm3\n\t"  /* r3 = D. */ \
- "  psubsw      %mm7,     %mm4\n\t"  /* r4 = E. = E - G */ \
- "  paddsw      %mm1,     %mm1\n\t"  /* r1 = H. + H. */ \
- "  paddsw      %mm7,     %mm7\n\t"  /* r7 = G + G */ \
- "  paddsw      %mm2,     %mm1\n\t"  /* r1 = R1 = A.. + H. */ \
- "  paddsw      %mm4,     %mm7\n\t"  /* r7 = G. = E + G */ \
- "  psubsw      %mm3,     %mm4\n\t"  /* r4 = R4 = E. - D. */ \
- "  paddsw      %mm3,     %mm3\n\t" \
- "  psubsw      %mm5,     %mm6\n\t"  /* r6 = R6 = F. - B.. */ \
- "  paddsw      %mm5,     %mm5\n\t" \
- "  paddsw      %mm4,     %mm3\n\t"  /* r3 = R3 = E. + D. */ \
- "  paddsw      %mm6,     %mm5\n\t"  /* r5 = R5 = F. + B.. */ \
- "  psubsw      %mm0,     %mm7\n\t"  /* r7 = R7 = G. - C. */ \
- "  paddsw      %mm0,     %mm0\n\t" \
+ "  psubw       %mm7,     %mm4\n\t"  /* r4 = E. = E - G */ \
+ "  paddw       %mm1,     %mm1\n\t"  /* r1 = H. + H. */ \
+ "  paddw       %mm7,     %mm7\n\t"  /* r7 = G + G */ \
+ "  paddw       %mm2,     %mm1\n\t"  /* r1 = R1 = A.. + H. */ \
+ "  paddw       %mm4,     %mm7\n\t"  /* r7 = G. = E + G */ \
+ "  psubw       %mm3,     %mm4\n\t"  /* r4 = R4 = E. - D. */ \
+ "  paddw       %mm3,     %mm3\n\t" \
+ "  psubw       %mm5,     %mm6\n\t"  /* r6 = R6 = F. - B.. */ \
+ "  paddw       %mm5,     %mm5\n\t" \
+ "  paddw       %mm4,     %mm3\n\t"  /* r3 = R3 = E. + D. */ \
+ "  paddw       %mm6,     %mm5\n\t"  /* r5 = R5 = F. + B.. */ \
+ "  psubw       %mm0,     %mm7\n\t"  /* r7 = R7 = G. - C. */ \
+ "  paddw       %mm0,     %mm0\n\t" \
  "  movq        %mm1,"OC_I(1)"\n\t"  /* save R1 */ \
- "  paddsw      %mm7,     %mm0\n\t" /* r0 = R0 = G. + C. */ \
+ "  paddw       %mm7,     %mm0\n\t" /* r0 = R0 = G. + C. */ \
  "#end OC_ROW_IDCT\n\t" \
 )
 
@@ -216,35 +216,35 @@ ogg_uint16_t __attribute__((aligned(8),used)) OC_IDCT_CONSTS[(4+7+1)*4]={
 #define OC_COLUMN_IDCT __asm__ __volatile__( \
  "  #OC_COLUMN_IDCT\n" \
  OC_IDCT_BEGIN \
- "  paddsw    "OC_8",     %mm2\n\t" \
- "  paddsw      %mm1,     %mm1\n\t"  /* r1 = H. + H. */ \
- "  paddsw      %mm2,     %mm1\n\t"  /* r1 = R1 = A.. + H. */ \
+ "  paddw     "OC_8",     %mm2\n\t" \
+ "  paddw       %mm1,     %mm1\n\t"  /* r1 = H. + H. */ \
+ "  paddw       %mm2,     %mm1\n\t"  /* r1 = R1 = A.. + H. */ \
  "  psraw         $4,     %mm2\n\t"  /* r2 = NR2 */ \
- "  psubsw      %mm7,     %mm4\n\t"  /* r4 = E. = E - G */ \
+ "  psubw       %mm7,     %mm4\n\t"  /* r4 = E. = E - G */ \
  "  psraw         $4,     %mm1\n\t"  /* r1 = NR1 */ \
  "  movq   "OC_I(2)",     %mm3\n\t"  /* r3 = D. */ \
- "  paddsw      %mm7,     %mm7\n\t"  /* r7 = G + G */ \
+ "  paddw       %mm7,     %mm7\n\t"  /* r7 = G + G */ \
  "  movq        %mm2,"OC_I(2)"\n\t"  /* store NR2 at I2 */ \
- "  paddsw      %mm4,     %mm7\n\t"  /* r7 = G. = E + G */ \
+ "  paddw       %mm4,     %mm7\n\t"  /* r7 = G. = E + G */ \
  "  movq        %mm1,"OC_I(1)"\n\t"  /* store NR1 at I1 */ \
- "  psubsw      %mm3,     %mm4\n\t"  /* r4 = R4 = E. - D. */ \
- "  paddsw    "OC_8",     %mm4\n\t" \
- "  paddsw      %mm3,     %mm3\n\t"  /* r3 = D. + D. */ \
- "  paddsw      %mm4,     %mm3\n\t"  /* r3 = R3 = E. + D. */ \
+ "  psubw       %mm3,     %mm4\n\t"  /* r4 = R4 = E. - D. */ \
+ "  paddw     "OC_8",     %mm4\n\t" \
+ "  paddw       %mm3,     %mm3\n\t"  /* r3 = D. + D. */ \
+ "  paddw       %mm4,     %mm3\n\t"  /* r3 = R3 = E. + D. */ \
  "  psraw         $4,     %mm4\n\t"  /* r4 = NR4 */ \
- "  psubsw      %mm5,     %mm6\n\t"  /* r6 = R6 = F. - B.. */ \
+ "  psubw       %mm5,     %mm6\n\t"  /* r6 = R6 = F. - B.. */ \
  "  psraw         $4,     %mm3\n\t"  /* r3 = NR3 */ \
- "  paddsw    "OC_8",     %mm6\n\t" \
- "  paddsw      %mm5,     %mm5\n\t"  /* r5 = B.. + B.. */ \
- "  paddsw      %mm6,     %mm5\n\t"  /* r5 = R5 = F. + B.. */ \
+ "  paddw     "OC_8",     %mm6\n\t" \
+ "  paddw       %mm5,     %mm5\n\t"  /* r5 = B.. + B.. */ \
+ "  paddw       %mm6,     %mm5\n\t"  /* r5 = R5 = F. + B.. */ \
  "  psraw         $4,     %mm6\n\t"  /* r6 = NR6 */ \
  "  movq        %mm4,"OC_J(4)"\n\t"  /* store NR4 at J4 */ \
  "  psraw         $4,     %mm5\n\t"  /* r5 = NR5 */ \
  "  movq        %mm3,"OC_I(3)"\n\t"  /* store NR3 at I3 */ \
- "  psubsw      %mm0,     %mm7\n\t"  /* r7 = R7 = G. - C. */ \
- "  paddsw    "OC_8",     %mm7\n\t" \
- "  paddsw      %mm0,     %mm0\n\t"  /* r0 = C. + C. */ \
- "  paddsw      %mm7,     %mm0\n\t"  /* r0 = R0 = G. + C. */ \
+ "  psubw       %mm0,     %mm7\n\t"  /* r7 = R7 = G. - C. */ \
+ "  paddw     "OC_8",     %mm7\n\t" \
+ "  paddw       %mm0,     %mm0\n\t"  /* r0 = C. + C. */ \
+ "  paddw       %mm7,     %mm0\n\t"  /* r0 = R0 = G. + C. */ \
  "  psraw         $4,     %mm7\n\t"  /* r7 = NR7 */ \
  "  movq        %mm6,"OC_J(6)"\n\t"  /* store NR6 at J6 */ \
  "  psraw         $4,     %mm0\n\t"  /* r0 = NR0 */ \
@@ -331,19 +331,19 @@ void oc_idct8x8_mmx(ogg_int16_t _y[64]){
  "  movq        %mm5,     %mm1\n\t" \
  "  paddw       %mm3,     %mm0\n\t" \
  "  pmulhw "OC_C(7)",     %mm3\n\t" \
- "  psubsw      %mm2,     %mm6\n\t" \
+ "  psubw       %mm2,     %mm6\n\t" \
  "  pmulhw "OC_C(2)",     %mm5\n\t" \
- "  psubsw      %mm4,     %mm0\n\t" \
+ "  psubw       %mm4,     %mm0\n\t" \
  "  movq   "OC_I(2)",     %mm7\n\t" \
- "  paddsw      %mm4,     %mm4\n\t" \
+ "  paddw       %mm4,     %mm4\n\t" \
  "  paddw       %mm5,     %mm7\n\t" \
- "  paddsw      %mm0,     %mm4\n\t" \
+ "  paddw       %mm0,     %mm4\n\t" \
  "  pmulhw "OC_C(6)",     %mm1\n\t" \
- "  psubsw      %mm6,     %mm3\n\t" \
+ "  psubw       %mm6,     %mm3\n\t" \
  "  movq        %mm4,"OC_I(1)"\n\t" \
- "  paddsw      %mm6,     %mm6\n\t" \
+ "  paddw       %mm6,     %mm6\n\t" \
  "  movq   "OC_C(4)",     %mm4\n\t" \
- "  paddsw      %mm3,     %mm6\n\t" \
+ "  paddw       %mm3,     %mm6\n\t" \
  "  movq        %mm3,     %mm5\n\t" \
  "  pmulhw      %mm4,     %mm3\n\t" \
  "  movq        %mm6,"OC_I(2)"\n\t" \
@@ -352,17 +352,17 @@ void oc_idct8x8_mmx(ogg_int16_t _y[64]){
  "  pmulhw      %mm4,     %mm0\n\t" \
  "  paddw       %mm3,     %mm5\n\t" \
  "  paddw       %mm0,     %mm2\n\t" \
- "  psubsw      %mm1,     %mm5\n\t" \
+ "  psubw       %mm1,     %mm5\n\t" \
  "  pmulhw      %mm4,     %mm6\n\t" \
  "  paddw  "OC_I(0)",     %mm6\n\t" \
- "  paddsw      %mm1,     %mm1\n\t" \
+ "  paddw       %mm1,     %mm1\n\t" \
  "  movq        %mm6,     %mm4\n\t" \
- "  paddsw      %mm5,     %mm1\n\t" \
- "  psubsw      %mm2,     %mm6\n\t" \
- "  paddsw      %mm2,     %mm2\n\t" \
+ "  paddw       %mm5,     %mm1\n\t" \
+ "  psubw       %mm2,     %mm6\n\t" \
+ "  paddw       %mm2,     %mm2\n\t" \
  "  movq   "OC_I(1)",     %mm0\n\t" \
- "  paddsw      %mm6,     %mm2\n\t" \
- "  psubsw      %mm1,     %mm2\n\t" \
+ "  paddw       %mm6,     %mm2\n\t" \
+ "  psubw       %mm1,     %mm2\n\t" \
  "  nop\n\t" \
  "  #end OC_IDCT_BEGIN_10\n\t"
 
@@ -371,21 +371,21 @@ void oc_idct8x8_mmx(ogg_int16_t _y[64]){
  "  #OC_ROW_IDCT_10\n\t" \
  OC_IDCT_BEGIN_10 \
  "  movq    "OC_I(2)",     %mm3\n\t" /* r3 = D. */ \
- "  psubsw       %mm7,     %mm4\n\t" /* r4 = E. = E - G */ \
- "  paddsw       %mm1,     %mm1\n\t" /* r1 = H. + H. */ \
- "  paddsw       %mm7,     %mm7\n\t" /* r7 = G + G */ \
- "  paddsw       %mm2,     %mm1\n\t" /* r1 = R1 = A.. + H. */ \
- "  paddsw       %mm4,     %mm7\n\t" /* r7 = G. = E + G */ \
- "  psubsw       %mm3,     %mm4\n\t" /* r4 = R4 = E. - D. */ \
- "  paddsw       %mm3,     %mm3\n\t" \
- "  psubsw       %mm5,     %mm6\n\t" /* r6 = R6 = F. - B.. */ \
- "  paddsw       %mm5,     %mm5\n\t" \
- "  paddsw       %mm4,     %mm3\n\t" /* r3 = R3 = E. + D. */ \
- "  paddsw       %mm6,     %mm5\n\t" /* r5 = R5 = F. + B.. */ \
- "  psubsw       %mm0,     %mm7\n\t" /* r7 = R7 = G. - C. */ \
- "  paddsw       %mm0,     %mm0\n\t" \
+ "  psubw        %mm7,     %mm4\n\t" /* r4 = E. = E - G */ \
+ "  paddw        %mm1,     %mm1\n\t" /* r1 = H. + H. */ \
+ "  paddw        %mm7,     %mm7\n\t" /* r7 = G + G */ \
+ "  paddw        %mm2,     %mm1\n\t" /* r1 = R1 = A.. + H. */ \
+ "  paddw        %mm4,     %mm7\n\t" /* r7 = G. = E + G */ \
+ "  psubw        %mm3,     %mm4\n\t" /* r4 = R4 = E. - D. */ \
+ "  paddw        %mm3,     %mm3\n\t" \
+ "  psubw        %mm5,     %mm6\n\t" /* r6 = R6 = F. - B.. */ \
+ "  paddw        %mm5,     %mm5\n\t" \
+ "  paddw        %mm4,     %mm3\n\t" /* r3 = R3 = E. + D. */ \
+ "  paddw        %mm6,     %mm5\n\t" /* r5 = R5 = F. + B.. */ \
+ "  psubw        %mm0,     %mm7\n\t" /* r7 = R7 = G. - C. */ \
+ "  paddw        %mm0,     %mm0\n\t" \
  "  movq         %mm1,"OC_I(1)"\n\t" /* save R1 */ \
- "  paddsw       %mm7,     %mm0\n\t" /* r0 = R0 = G. + C. */ \
+ "  paddw        %mm7,     %mm0\n\t" /* r0 = R0 = G. + C. */ \
  "#end OC_ROW_IDCT_10\n\t" \
 )
 
@@ -393,35 +393,35 @@ void oc_idct8x8_mmx(ogg_int16_t _y[64]){
 #define OC_COLUMN_IDCT_10 __asm__ __volatile__( \
  "  #OC_COLUMN_IDCT_10\n\t" \
  OC_IDCT_BEGIN_10 \
- "  paddsw    "OC_8",     %mm2\n\t" \
- "  paddsw      %mm1,     %mm1\n\t" /* r1 = H. + H. */ \
- "  paddsw      %mm2,     %mm1\n\t" /* r1 = R1 = A.. + H. */ \
+ "  paddw     "OC_8",     %mm2\n\t" \
+ "  paddw       %mm1,     %mm1\n\t" /* r1 = H. + H. */ \
+ "  paddw       %mm2,     %mm1\n\t" /* r1 = R1 = A.. + H. */ \
  "  psraw         $4,     %mm2\n\t" /* r2 = NR2 */ \
- "  psubsw      %mm7,     %mm4\n\t" /* r4 = E. = E - G */ \
+ "  psubw       %mm7,     %mm4\n\t" /* r4 = E. = E - G */ \
  "  psraw         $4,     %mm1\n\t" /* r1 = NR1 */ \
  "  movq   "OC_I(2)",     %mm3\n\t" /* r3 = D. */ \
- "  paddsw      %mm7,     %mm7\n\t" /* r7 = G + G */ \
+ "  paddw       %mm7,     %mm7\n\t" /* r7 = G + G */ \
  "  movq        %mm2,"OC_I(2)"\n\t" /* store NR2 at I2 */ \
- "  paddsw      %mm4,     %mm7\n\t" /* r7 = G. = E + G */ \
+ "  paddw       %mm4,     %mm7\n\t" /* r7 = G. = E + G */ \
  "  movq        %mm1,"OC_I(1)"\n\t" /* store NR1 at I1 */ \
- "  psubsw      %mm3,     %mm4\n\t" /* r4 = R4 = E. - D. */ \
- "  paddsw    "OC_8",     %mm4\n\t" \
- "  paddsw      %mm3,     %mm3\n\t" /* r3 = D. + D. */ \
- "  paddsw      %mm4,     %mm3\n\t" /* r3 = R3 = E. + D. */ \
+ "  psubw       %mm3,     %mm4\n\t" /* r4 = R4 = E. - D. */ \
+ "  paddw     "OC_8",     %mm4\n\t" \
+ "  paddw       %mm3,     %mm3\n\t" /* r3 = D. + D. */ \
+ "  paddw       %mm4,     %mm3\n\t" /* r3 = R3 = E. + D. */ \
  "  psraw         $4,     %mm4\n\t" /* r4 = NR4 */ \
- "  psubsw      %mm5,     %mm6\n\t" /* r6 = R6 = F. - B.. */ \
+ "  psubw       %mm5,     %mm6\n\t" /* r6 = R6 = F. - B.. */ \
  "  psraw         $4,     %mm3\n\t" /* r3 = NR3 */ \
- "  paddsw    "OC_8",     %mm6\n\t" \
- "  paddsw      %mm5,     %mm5\n\t" /* r5 = B.. + B.. */ \
- "  paddsw      %mm6,     %mm5\n\t" /* r5 = R5 = F. + B.. */ \
+ "  paddw     "OC_8",     %mm6\n\t" \
+ "  paddw       %mm5,     %mm5\n\t" /* r5 = B.. + B.. */ \
+ "  paddw       %mm6,     %mm5\n\t" /* r5 = R5 = F. + B.. */ \
  "  psraw         $4,     %mm6\n\t" /* r6 = NR6 */ \
  "  movq        %mm4,"OC_J(4)"\n\t" /* store NR4 at J4 */ \
  "  psraw         $4,     %mm5\n\t" /* r5 = NR5 */ \
  "  movq        %mm3,"OC_I(3)"\n\t" /* store NR3 at I3 */ \
- "  psubsw      %mm0,     %mm7\n\t" /* r7 = R7 = G. - C. */ \
- "  paddsw    "OC_8",     %mm7\n\t" \
- "  paddsw      %mm0,     %mm0\n\t" /* r0 = C. + C. */ \
- "  paddsw      %mm7,     %mm0\n\t" /* r0 = R0 = G. + C. */ \
+ "  psubw       %mm0,     %mm7\n\t" /* r7 = R7 = G. - C. */ \
+ "  paddw     "OC_8",     %mm7\n\t" \
+ "  paddw       %mm0,     %mm0\n\t" /* r0 = C. + C. */ \
+ "  paddw       %mm7,     %mm0\n\t" /* r0 = R0 = G. + C. */ \
  "  psraw         $4,     %mm7\n\t" /* r7 = NR7 */ \
  "  movq        %mm6,"OC_J(6)"\n\t" /* store NR6 at J6 */ \
  "  psraw         $4,     %mm0\n\t" /* r0 = NR0 */ \

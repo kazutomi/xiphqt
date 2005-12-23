@@ -16,8 +16,8 @@ static void idct8(ogg_int16_t *_y,const ogg_int16_t _x[8]){
   ogg_int32_t r;
   /*Stage 1:*/
   /*0-1 butterfly.*/
-  t[0]=OC_C4S4*(_x[0]+(ogg_int32_t)_x[4])>>16;
-  t[1]=OC_C4S4*(_x[0]-(ogg_int32_t)_x[4])>>16;
+  t[0]=OC_C4S4*(ogg_int16_t)(_x[0]+_x[4])>>16;
+  t[1]=OC_C4S4*(ogg_int16_t)(_x[0]-_x[4])>>16;
   /*2-3 rotation by 6pi/16.*/
   t[2]=(OC_C6S2*_x[2]>>16)-(OC_C2S6*_x[6]>>16);
   t[3]=(OC_C2S6*_x[2]>>16)+(OC_C6S2*_x[6]>>16);
@@ -30,11 +30,11 @@ static void idct8(ogg_int16_t *_y,const ogg_int16_t _x[8]){
   /*Stage 2:*/
   /*4-5 butterfly.*/
   r=t[4]+t[5];
-  t[5]=OC_C4S4*(t[4]-t[5])>>16;
+  t[5]=OC_C4S4*(ogg_int16_t)(t[4]-t[5])>>16;
   t[4]=r;
   /*7-6 butterfly.*/
   r=t[7]+t[6];
-  t[6]=OC_C4S4*(t[7]-t[6])>>16;
+  t[6]=OC_C4S4*(ogg_int16_t)(t[7]-t[6])>>16;
   t[7]=r;
   /*Stage 3:*/
   /*0-3 butterfly.*/
@@ -86,10 +86,10 @@ static void idct8_4(ogg_int16_t *_y,const ogg_int16_t _x[8]){
   t[7]=OC_C1S7*_x[1]>>16;
   /*Stage 2:*/
   r=t[4]+t[5];
-  t[5]=OC_C4S4*(t[4]-t[5])>>16;
+  t[5]=OC_C4S4*(ogg_int16_t)(t[4]-t[5])>>16;
   t[4]=r;
   r=t[7]+t[6];
-  t[6]=OC_C4S4*(t[7]-t[6])>>16;
+  t[6]=OC_C4S4*(ogg_int16_t)(t[7]-t[6])>>16;
   t[7]=r;
   /*Stage 3:*/
   t[1]=t[0]+t[2];
