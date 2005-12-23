@@ -251,18 +251,18 @@ void set_font (cairo_t *c, float w, float h, int slant, int bold){
 void set_icons(){
   GError *error=NULL;
   GList *pb=NULL;
-  GdkPixbufLoader *pbl1 = gdk_pixbuf_loader_new();
+  //GdkPixbufLoader *pbl1 = gdk_pixbuf_loader_new();
   GdkPixbufLoader *pbl2 = gdk_pixbuf_loader_new();
   GdkPixbufLoader *pbl3 = gdk_pixbuf_loader_new();
 
-  gdk_pixbuf_loader_write(pbl1,icon134,sizeof(icon134),&error);
+  //gdk_pixbuf_loader_write(pbl1,icon134,sizeof(icon134),&error);
   gdk_pixbuf_loader_write(pbl2,icon64,sizeof(icon64),&error);
   gdk_pixbuf_loader_write(pbl3,icon32,sizeof(icon32),&error);
-  gdk_pixbuf_loader_close(pbl1,NULL);
+  //gdk_pixbuf_loader_close(pbl1,NULL);
   gdk_pixbuf_loader_close(pbl2,NULL);
   gdk_pixbuf_loader_close(pbl3,NULL);
 
-  pb = g_list_append(pb, gdk_pixbuf_loader_get_pixbuf(pbl1));
+  //pb = g_list_append(pb, gdk_pixbuf_loader_get_pixbuf(pbl1));
   pb = g_list_append(pb, gdk_pixbuf_loader_get_pixbuf(pbl2));
   pb = g_list_append(pb, gdk_pixbuf_loader_get_pixbuf(pbl3));
   gtk_window_set_icon_list(GTK_WINDOW(toplevel_window),pb);
