@@ -78,6 +78,10 @@ media player that was originally forked from XMMS
 (http://www.xmms.org) with the goal of porting XMMS to GTK2 and make
 use of more modern desktop standards.</dd>
 
+          <dt><a href="http://pear.php.net/package/File_XSPF">PEAR :: Package :: File_XSPF</a></dt>
+          <dd>PHP library for parsing and generating XSPF.</dd>
+
+
 <!-- template for new entries
           <dt><a href=""></a></dt>
           <dd></dd>
