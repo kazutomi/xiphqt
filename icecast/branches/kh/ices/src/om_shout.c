@@ -32,6 +32,38 @@
 #define DEFAULT_RECONN_ATTEMPTS -1
 
 
+static ogg_packet *copy_ogg_packet (ogg_packet *packet)
+{
+    ogg_packet *next;
+    do
+    {
+        next = malloc (sizeof (ogg_packet));
+        if (next == NULL)
+            break;
+        memcpy (next, packet, sizeof (ogg_packet));
+        next->packet = malloc (next->bytes);
+        if (next->packet == NULL)
+            break;
+        memcpy (next->packet, packet->packet, next->bytes);
+        return next;
+    } while (0);
+
+    if (next)
+        free (next);
+    return NULL;
+}
+
+
+static void free_ogg_packet (ogg_packet *packet)
+{
+    if (packet)
+    {
+        free (packet->packet);
+        free (packet);
+    }
+}   
+
+
 static void _output_connection_close (struct output_module *mod)
 {
     struct output_shout_state *stream = mod->specific;
@@ -133,7 +165,7 @@ void check_shout_connected (struct output_module *mod)
         mod->need_headers = 1;
         return;
     }
-    if (shouterr != SHOUTERR_UNCONNECTED)
+    if (shouterr == SHOUTERR_BUSY)
     {
         if (now - stream->restart_time > SHOUT_TIMEOUT)
         {
@@ -159,29 +191,27 @@ static int shout_audio_pageout (struct output_module *mod, ogg_page *page)
 {
     struct output_shout_state *stream = mod->specific;
     int ret;
-    uint64_t samples;
 
-    if (mod->initial_packets)
-    {
-        mod->initial_packets--;
-        if (mod->initial_packets == 0)
-            ret = ogg_stream_flush (&mod->os, page);
-        else
-            ret = 0;
-    }
-    else if (stream->page_samples >= stream->flush_trigger)
+    if (stream->page_samples >= stream->flush_trigger)
         ret = ogg_stream_flush (&mod->os, page);
     else
         ret = ogg_stream_pageout (&mod->os, page);
 
     if (ret > 0)
     {
-        samples = ogg_page_granulepos (page) - stream->prev_page_granulepos;
-        stream->page_samples -= samples;
+        stream->page_samples -= (ogg_page_granulepos (page) - stream->prev_page_granulepos);
         stream->prev_page_granulepos = ogg_page_granulepos (page);
     }
 
     return ret;
+}
+
+
+static void add_packet (struct output_module *mod, ogg_packet *op)
+{
+    op->packetno = mod->packetno++;
+    op->granulepos -= mod->initial_granulepos;
+    ogg_stream_packetin (&mod->os, op);
 }
 
 
@@ -195,10 +225,7 @@ int output_ogg_shout (struct output_module *mod, ogg_packet *op, unsigned sample
         int send_it = 1;
         ogg_page page;
         long packetno = op->packetno;
-        ogg_int64_t granule = op->granulepos;
         struct output_state *state = mod->parent;
-
-        op -> packetno = mod->packetno++;
 
         if (state->new_headers || mod->need_headers)
         {
@@ -218,9 +245,6 @@ int output_ogg_shout (struct output_module *mod, ogg_packet *op, unsigned sample
             ogg_stream_packetin (&mod->os, &state->packets[1]);
             ogg_stream_packetin (&mod->os, &state->packets[2]);
             mod->need_headers = 0;
-            mod->start_pos = granule;
-            stream->prev_page_granulepos = 0;
-            stream->prev_packet_granulepos = 0;
             if (stream->flush_trigger == 0)
                 stream->flush_trigger = state->vi.rate;
 
@@ -241,14 +265,15 @@ int output_ogg_shout (struct output_module *mod, ogg_packet *op, unsigned sample
                 }
             }
             mod->packetno = 3;
-            mod->initial_packets = 2; /* flush 2 packets into a single page */
+            mod->initial_granulepos = op->granulepos;
+            stream->page_samples = 0;
+            stream->prev_page_granulepos = 0;
         }
 
-        op->granulepos -= mod->start_pos;
-        ogg_stream_packetin (&mod->os, op);
-
-        stream->page_samples += (op->granulepos - stream->prev_packet_granulepos);
-        stream->prev_packet_granulepos = op->granulepos;
+        free_ogg_packet (mod->prev_packet);
+        mod->prev_packet = copy_ogg_packet (op);
+        add_packet (mod, op);
+        stream->page_samples += samples;
 
         while (shout_audio_pageout (mod, &page) > 0)
         {
@@ -268,7 +293,6 @@ int output_ogg_shout (struct output_module *mod, ogg_packet *op, unsigned sample
         }
         /* reset to what it was */
         op->packetno = packetno;
-        op->granulepos = granule;
     }
     return 0;
 }

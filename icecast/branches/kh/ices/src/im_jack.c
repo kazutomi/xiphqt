@@ -310,12 +310,12 @@ int jack_open_module(input_module_t *mod)
     size_t rb_size;
     const char *con_ptr=s->connect;
     const char *ind;
-    const char connect[16][32];
     int con_ports=0;
     int last=0;
     jack_port_t *input_port;
     const char *input_port_name;
     const char *output_port_name;
+    char *connect[16];
 
     // Find out which ports to connect to.
     if(strcmp(s->connect, "")) {
@@ -325,8 +325,7 @@ int jack_open_module(input_module_t *mod)
                 ind=con_ptr+strlen(con_ptr);
                 last=-1;
             }
-            strncpy((char *)connect[con_ports],con_ptr,ind-con_ptr);
-            strncpy((char *)connect[con_ports]+(ind-con_ptr),"\0",1);
+            connect[con_ports] = strndup (con_ptr, (ind-con_ptr));
             //LOG_DEBUG1("Found port connect param: %s", connect[con_ports]);
             con_ptr=ind+1;
             con_ports++;
@@ -376,7 +375,7 @@ int jack_open_module(input_module_t *mod)
     /* Create and connect the jack ports */
     for (i = 0; i < s->channels; i++) 
     {
-        sprintf(port_name, "in_%d", i+1);
+        snprintf (port_name, sizeof(port_name),"in_%d", i+1);
         s->jack_ports[i] = jack_port_register(s->client, port_name, 
                 JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput,0); 
 	
@@ -403,11 +402,15 @@ int jack_open_module(input_module_t *mod)
 
     s->newtrack = 1;
 
+    for (i=0; i<con_ports; i++)
+        free (connect[i]);
     LOG_INFO2("Channels %d / Samplerate %d", s->channels, s->rate);
     s->can_process=1;
     return 0;
 
 fail:
+    for (i=0; i<con_ports; i++)
+        free (connect[i]);
     jack_shutdown_module(mod); /* safe, this checks for valid contents */
     return -1;
 }

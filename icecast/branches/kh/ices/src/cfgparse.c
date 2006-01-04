@@ -63,6 +63,17 @@
 /* this is the global config variable */
 config_t *ices_config;
 
+#ifndef HAVE_STRNDUP
+char *strndup(const char *str, size_t len)
+{
+    char *dup= malloc (len+1);
+    if (dup == NULL) abort();
+    strncpy (dup, str, len);
+    dup[len]= '\0';
+    return dup;
+}
+#endif
+
 
 int get_xml_float (xmlNodePtr node, void *x)
 {

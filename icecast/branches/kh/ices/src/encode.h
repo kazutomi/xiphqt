@@ -49,6 +49,7 @@ struct encoder *encode_create (void);
 void encode_free (struct encoder *s);
 void encode_clear (struct encoder *s);
 void encode_comment (struct encoder *s, char *);
+unsigned int encoder_pkt_samples (struct encoder *s);
 
 int encode_endstream (struct encoder *s);
 void encode_data_float (struct encoder *s, float **pcm, size_t samples);

@@ -33,7 +33,6 @@ struct output_shout_state
     time_t restart_time;
     int page_samples;
     uint64_t prev_page_granulepos;
-    uint64_t prev_packet_granulepos;
 };
 
 int parse_shout (xmlNodePtr node, void *arg);

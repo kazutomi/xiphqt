@@ -189,9 +189,12 @@ static int initialise_input_modules (void)
         {
             ib = calloc (1, sizeof (input_buffer));
             if (ib == NULL)
-               return -1;
+                return -1;
             if (mod->initialise_buffer && mod->initialise_buffer (mod, ib) < 0)
-               return -1;
+            {
+                free (ib);
+                return -1;
+            }
 
             *mod->free_list_tail = ib;
             mod->free_list_tail = &ib->next;
@@ -214,6 +217,7 @@ void input_free_buffer(input_buffer *ib)
 
     mod = ib->mod;
 
+    /* LOG_DEBUG1 ("releasing %llu", ib->serial); */
     if (ib->serial != mod->expected)
     {
         LOG_DEBUG2("expected %lld, saw %lld", mod->expected, ib->serial);
@@ -265,7 +269,10 @@ input_buffer *input_alloc_buffer (input_module_t *mod)
             if (ib == NULL)
                 return NULL;
             if (mod->initialise_buffer && mod->initialise_buffer (mod, ib) < 0)
+            {
+                free (ib);
                 return NULL;
+            }
             mod->buffer_alloc++;
             mod->delay_buffer_check = 1000;
             /* LOG_DEBUG1 ("added buffer, length now %d", mod->allotted_serial - mod->released_serial); */
@@ -291,6 +298,7 @@ input_buffer *input_alloc_buffer (input_module_t *mod)
 
     ib->next = NULL;
     ib->serial = mod->allotted_serial++;
+    /* LOG_DEBUG1 ("issue buffer id %llu", ib->serial); */
 
     return ib;
 }
@@ -357,20 +365,23 @@ static input_module_t *open_next_input_module (input_module_t *mod)
 static void free_modules()
 {
     input_module_t *mod = ices_config->inputs;
-    input_buffer *next, *ib;
 
     LOG_DEBUG0 ("freeing up module storage");
     while (mod)
     {
-        ib = mod->free_list;
-        while (ib)
+        int i = 0;
+
+        LOG_DEBUG1 ("freeing up module %s", mod->name);
+        while (mod->free_list)
         {
-            next = ib->next;
+            input_buffer *ib = mod->free_list;
+            mod->free_list = ib->next;
             if (mod->free_input_buffer)
                 mod->free_input_buffer (mod, ib);
             free (ib);
-            ib = next;
+            i++;
         }
+        LOG_DEBUG1 (" %d buffers freed", i);
         mod->free_list = NULL;
         mod->free_list_tail = NULL;
         mod = mod->next;
@@ -437,6 +448,7 @@ void *input_loop(void *arg)
 	LOG_DEBUG0("All input stopped, shutting down.");
 
     runner_close (r);
+    thread_sleep (200000);
     free_modules();
 
     return NULL;

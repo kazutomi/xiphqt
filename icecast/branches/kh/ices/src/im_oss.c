@@ -79,9 +79,6 @@ static int oss_initialise_buffer (input_module_t *mod, input_buffer *ib)
     float **ptr;
     int i;
 
-    if ((ib->buf = calloc (1, s->default_len)) == NULL)
-        return -1;
-
     if ((ib->buf = calloc (s->channels, sizeof (float*))) == NULL)
         return -1;
     ptr = ib->buf;
@@ -191,6 +188,7 @@ void oss_shutdown_module (input_module_t *mod)
 	im_oss_state *s = mod->internal;
 
     LOG_INFO0 ("Shutdown OSS module");
+    free (s->read_buffer);
     free (s);
     mod->internal = NULL;
 }

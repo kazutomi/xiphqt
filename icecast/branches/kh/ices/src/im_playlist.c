@@ -453,7 +453,8 @@ int playlist_init_module (input_module_t *mod)
     mod->name = "playlist";
     mod->getdata = playlist_read;
     mod->initialise_buffer = playlist_init_buffer;
-    mod->buffer_count = ices_config->runner_count*100 + 200;
+    if (mod->buffer_count == 0)
+        mod->buffer_count = ices_config->runner_count*100 + 400;
     mod->prealloc_count = ices_config->runner_count * 30 + 40;
 
     mod->internal = calloc(1, sizeof(struct playlist_state));

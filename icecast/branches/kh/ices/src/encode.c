@@ -36,15 +36,22 @@ struct encoder
     vorbis_comment vc;
     vorbis_dsp_state vd;
     vorbis_block vb;
-                                                                                                                                      
+
     unsigned samplerate;
     int in_use;
     int in_header;
-                                                                                                                                      
+
     int flushed;
     ogg_packet headers[3];
+    unsigned int samples;
+    uint64_t prev_samples;
 };
 
+
+unsigned int encoder_pkt_samples (struct encoder *s)
+{
+    return s->samples;
+}
 
 
 void encode_free (struct encoder *s)
@@ -160,6 +167,8 @@ int encode_setup (struct encoder *s, struct encoder_settings *settings)
         s->in_header = 3;
         s->samplerate = settings->samplerate;
         s->in_use = 1;
+        s->prev_samples = 0;
+        s->samples = 0;
 
         return 0;
     } while (0);
@@ -190,7 +199,7 @@ void encode_data_float(struct encoder *s, float **pcm, size_t samples)
     src = pcm;
     dest = buf;
     size = samples*sizeof(float);
-    for(; i ; i--)
+    for(i=0; i<s->vi.channels ; i++)
     {
         memcpy(*dest, *src, size);
         dest++;
@@ -223,6 +232,8 @@ int encode_packetout(struct encoder *s, ogg_packet *op)
         vorbis_analysis (&s->vb, NULL);
         vorbis_bitrate_addblock (&s->vb);
     }
+    s->samples = op->granulepos - s->prev_samples;
+    s->prev_samples = op->granulepos;
     return 1;
 }
 

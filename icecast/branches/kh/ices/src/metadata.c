@@ -47,11 +47,10 @@ void metadata_thread_signal(input_module_t *mod, input_buffer *buffer)
 #ifdef STRERROR_R_CHAR_P
         char *buf = strerror_r (errno, line, sizeof (line));
 #else
-        char buf[256];
         int i = strerror_r (errno, line, sizeof (line));
 #endif
         LOG_WARN2("Failed to open file \"%s\" for metadata update: %s", 
-                mod->metadata_filename, buf);
+                mod->metadata_filename, line);
         return;
     }
 

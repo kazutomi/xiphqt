@@ -61,11 +61,8 @@ void reencode_free(struct reencode *s)
 {
     if (s)
     {
-        if (s->need_headers == 0)
-        {
-            vorbis_block_clear (&s->vb);
-            vorbis_dsp_clear (&s->vd);
-        }
+        vorbis_block_clear (&s->vb);
+        vorbis_dsp_clear (&s->vd);
         vorbis_comment_clear (&s->vc);
         vorbis_info_clear (&s->vi);
         downmix_clear (s->downmix);

@@ -106,6 +106,7 @@ static int _output_oggpacket (struct instance *stream, ogg_packet *op, unsigned 
 {
     struct output_state *state = &stream->output;
     struct output_module *mod;
+    ogg_int64_t granulepos;
 
     if (op->b_o_s)
     {
@@ -190,9 +191,11 @@ static int _output_oggpacket (struct instance *stream, ogg_packet *op, unsigned 
     /* printf("granulepos is %lld\n", op->granulepos); */
 
     mod = state->head;
+    granulepos = op->granulepos;
     while (mod)
     {
         mod->output_send (mod, op, samples);
+        op->granulepos = granulepos;
         mod = mod->next;
     }
 
@@ -223,7 +226,7 @@ void flush_ogg_packets (struct instance *stream)
         LOG_DEBUG1("Flushing out encoded ogg packets stream %d", stream->id);
         while (encode_packetout (s->enc, &op) > 0)
         {
-            if (send_it && _output_oggpacket (stream, &op, 0) < 0)
+            if (send_it && _output_oggpacket (stream, &op, encoder_pkt_samples (s->enc)) < 0)
                 send_it = 0;
         }
     }
@@ -266,7 +269,7 @@ static int encode_pcm (struct instance *stream, input_buffer *buffer)
     }
     while (encode_packetout (s->enc, &op) > 0)
     {
-        if (ret == 0 && _output_oggpacket (stream, &op, 0) < 0)
+        if (ret == 0 && _output_oggpacket (stream, &op, encoder_pkt_samples (s->enc)) < 0)
         {
             ret = -1;
             break;
@@ -335,7 +338,7 @@ static int process_encode_init (struct instance *stream, input_buffer *buffer)
         }
         while (encode_packetout (enc, &op) > 0)
         {
-            _output_oggpacket (stream, &op, 0);
+            _output_oggpacket (stream, &op, encoder_pkt_samples (enc));
         }
         ops->data = s;
         ops->flush_data = flush_ogg_packets;
@@ -370,10 +373,11 @@ static int reencode_vorbis_packet (struct instance *stream, input_buffer *buffer
     while (1)
     {
         ogg_packet reencoded_packet;
+        struct reencode *reenc = stream->ops->data;
 
         if ((ret = reencode_packetout (stream->ops->data, &reencoded_packet)) > 0)
         {
-            _output_oggpacket (stream, &reencoded_packet, 0);
+            _output_oggpacket (stream, &reencoded_packet, encoder_pkt_samples (reenc->encoder));
         }
         else
         {

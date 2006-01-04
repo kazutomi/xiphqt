@@ -31,6 +31,10 @@ typedef struct _config_tag config_t;
 
 extern int realtime_enabled;
 
+#ifndef HAVE_STRNDUP
+char *strndup(const char *str, size_t len);
+#endif
+
 struct cfg_tag
 {
     const char *name;
@@ -50,6 +54,8 @@ struct output_module
     void *specific;
     int need_headers;
     ogg_stream_state os;
+    ogg_packet *prev_packet;
+    int initial_granulepos;
     long serial;
     int in_use;
     long packetno;

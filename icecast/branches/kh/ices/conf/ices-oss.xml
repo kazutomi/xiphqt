@@ -55,6 +55,7 @@
                     <port>8000</port>
                     <password>hackme</password>
                     <mount>/example1.ogg</mount>
+                    <yp>1</yp>
                 </shout>
 
                 <!-- resample input to the stated samplerate  - optional

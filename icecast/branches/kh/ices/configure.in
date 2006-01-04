@@ -14,11 +14,12 @@ XIPH_C__FUNC__
 dnl Set some options based on environment
 
 case "$host" in
-   *bsd*|*irix*)
+   *bsd*|*irix*|*darwin*)
    ;;
    *) AC_DEFINE(_XOPEN_SOURCE, 600, [Define if you have POSIX and XPG specifications])
    ;;
 esac
+
 case "$host" in 
 *-*-irix*)
         DEBUG="-g -signed" 
@@ -32,7 +33,7 @@ case "$host" in
         PROFILE="-v -xpg -g -xO4 -fast -native -fsimple -xcg92 -Dsuncc"
 ;;
 *)
-        AC_DEFINE(GNU_SOURCE, 1, [define to 1 to enable some GNU extensions])
+        AC_DEFINE(_GNU_SOURCE, 1, [define to 1 to enable GNU extensions])
         DEBUG="-g"
         XIPH_CFLAGS="-ffast-math -fsigned-char"
         PROFILE="-g -p" 
@@ -125,6 +126,7 @@ AC_CHECK_TYPES([uint64_t],,AC_ERROR([could not find a uint64_t type]))
 
 dnl Checks for library functions.
 AC_FUNC_STRERROR_R
+AC_CHECK_FUNCS([strndup])
 
 dnl -- configure options --
 
