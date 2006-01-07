@@ -570,7 +570,7 @@ name="submit" alt="Make a donation via PayPal">
 <p>
 The libtheora reference implementation has reached its 'alpha 2' milestone.
 A lot of bugs have been fixed and new features added, including all the
-planned changes to the bitsteams format.</p>
+planned changes to the bitstream format.</p>
 <p>
 This is more of an internal milestone than a public release, but we are
 making a <a href="/files/libtheora-1.0alpha2.tar.gz">source tarball</a> available
