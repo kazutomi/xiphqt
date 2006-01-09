@@ -24,7 +24,7 @@
 #include <math.h>
 #include "sinusoids.h"
 
-void extract_sinusoids(float *x, float *w, float *ai, float *bi, float *y, int N, int len)
+void extract_sinusoids(float *x, float *w, float *window, float *ai, float *bi, float *y, int N, int len)
 {
    float cos_table[N][len];
    float sin_table[N][len];
@@ -35,8 +35,8 @@ void extract_sinusoids(float *x, float *w, float *ai, float *bi, float *y, int N
       float tmp1=0, tmp2=0;
       for (j=0;j<len;j++)
       {
-         cos_table[i][j] = cos(w[i]*j);
-         sin_table[i][j] = sin(w[i]*j);
+         cos_table[i][j] = cos(w[i]*j)*window[j];
+         sin_table[i][j] = sin(w[i]*j)*window[j];
          tmp1 += cos_table[i][j]*cos_table[i][j];
          tmp2 += sin_table[i][j]*sin_table[i][j];
       }

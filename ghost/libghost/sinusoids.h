@@ -23,6 +23,6 @@
 #ifndef _SINUSOIDS_H
 #define _SINUSOIDS_H
 
-void extract_sinusoids(float *x, float *w, float *ai, float *bi, float *y, int N, int len);
+void extract_sinusoids(float *x, float *w, float *window, float *ai, float *bi, float *y, int N, int len);
 
 #endif
