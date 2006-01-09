@@ -28,14 +28,27 @@
 #include "ghost.h"
 #include "pitch.h"
 #include "sinusoids.h"
+
 #define PCM_BUF_SIZE 2048
 
 GhostEncState *ghost_encoder_state_new(int sampling_rate)
 {
+   int i;
    GhostEncState *st = calloc(1,sizeof(GhostEncState));
-   st->frame_size = 256;
+   st->length = 256;
+   st->advance = 192;
+   st->overlap = 64;
    st->pcm_buf = calloc(PCM_BUF_SIZE,sizeof(float));
-   st->current_pcm = st->pcm_buf + PCM_BUF_SIZE - st->frame_size;
+   st->window = calloc(st->length,sizeof(float));
+   st->syn_memory = calloc(st->overlap,sizeof(float));
+   st->current_pcm = st->pcm_buf + PCM_BUF_SIZE - st->length;
+   for (i=0;i<st->length;i++)
+      st->window[i] = 1;
+   for (i=0;i<st->overlap;i++)
+   {
+      st->window[i] = .5-.5*cos(M_PI*i/st->overlap);
+      st->window[st->length-i] = .5-.5*cos(M_PI*(i+1)/st->overlap);
+   }
    return st;
 }
 
@@ -50,25 +63,34 @@ void ghost_encode(GhostEncState *st, float *pcm)
    float gain;
    float pitch;
    float w;
-   for (i=0;i<PCM_BUF_SIZE-st->frame_size;i++)
-      st->pcm_buf[i] = st->pcm_buf[i+st->frame_size];
-   for (i=0;i<st->frame_size;i++)
-      st->current_pcm[i]=pcm[i];
-   find_pitch(st->current_pcm, &gain, &pitch, 100, 768, st->frame_size);
-   //pitch = 256;
-   //printf ("%d %f\n", pitch, gain);
+   for (i=0;i<PCM_BUF_SIZE-st->advance;i++)
+      st->pcm_buf[i] = st->pcm_buf[i+st->advance];
+   for (i=0;i<st->advance;i++)
+      st->current_pcm[i+st->overlap]=pcm[i];
+   find_pitch(st->current_pcm, &gain, &pitch, 100, 1024, st->length);
+   //fprintf (stderr,"%f %f\n", pitch, gain);
+   pitch = 256;
    w = 2*M_PI/pitch;
    {
       float wi[45];
-      float y[256];
+      float x[st->length];
+      float y[st->length];
       float ai[45], bi[45];
       for (i=0;i<45;i++)
          wi[i] = w*(i+1);
-      extract_sinusoids(st->current_pcm, wi, ai, bi, y, 20, 256);
-      short out[256];
-      for (i=0;i<256;i++)
+      for (i=0;i<st->length;i++)
+         x[i] = st->window[i]*st->current_pcm[i];
+      extract_sinusoids(x, wi, st->window, ai, bi, y, 20, st->length);
+      /*for (i=0;i<st->length;i++)
+      y[i] = x[i];*/
+      short out[st->advance];
+      for (i=0;i<st->overlap;i++)
+         out[i] = st->syn_memory[i]+y[i];
+      for (i=st->overlap;i<st->advance;i++)
          out[i] = y[i];
-      fwrite(out, sizeof(short), 256, stdout);
+      for (i=st->advance;i<st->length;i++)
+         st->syn_memory[i-st->advance]=y[i];
+      fwrite(out, sizeof(short), st->advance, stdout);
    }
    
 }

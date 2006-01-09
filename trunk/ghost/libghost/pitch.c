@@ -50,7 +50,7 @@ void find_pitch(float *x, float *gain, float *pitch, int start, int end, int len
       //printf ("%f ", E);
       score = corr*fabs(corr)/(1e4+E);
       sc[i] = score;
-      if (score > max_score)
+      if (score > max_score || i==start)
       {
          p = i;
          max_score = score;

@@ -32,6 +32,7 @@
 const float predict[11] = {-0.00499385545085393, 0.0110380571786845, -0.018414597815401, 0.0275862067026581, -0.0393646739536688, 0.055303264488734, -0.0787612707745417, 0.118522526792966, -0.29689, 0.80484, 0.4211};
 const float update[11] = {-0.000749078317628089, 0.00165570857680267, -0.00276218967231015, 0.00413793100539871, -0.00590470109305032, 0.0082954896733101, -0.0118141906161813, 0.0226, -0.07844, 0.34242, 0.221};
 
+#define BLOCK_SIZE 192
 
 int main(int argc, char **argv)
 {
@@ -53,6 +54,7 @@ int main(int argc, char **argv)
    printf ("%f %f\n", ai[0], bi[0]);
    printf ("%f %f\n", ai[1], bi[1]);
    */
+#if 0
    bas.predict_delay=1;
    bas.predict_length=11;
    bas.update_delay=1;
@@ -76,19 +78,20 @@ int main(int argc, char **argv)
       printf ("%f ", x[i+30]);
    printf ("\n");
    return 0;
+#endif
    fin = fopen("test.sw", "r");
    state = ghost_encoder_state_new(48000);
    while (1)
    {
       int i;
-      float float_in[256];
-      short short_in[256];
-      fread(short_in, sizeof(short), 256, fin);
+      float float_in[BLOCK_SIZE];
+      short short_in[BLOCK_SIZE];
+      fread(short_in, sizeof(short), BLOCK_SIZE, fin);
       //printf ("%d ", short_in[0]);
 
       if (feof(fin))
          break;
-      for (i=0;i<256;i++)
+      for (i=0;i<BLOCK_SIZE;i++)
          float_in[i] = short_in[i];
       ghost_encode(state, float_in);
       
