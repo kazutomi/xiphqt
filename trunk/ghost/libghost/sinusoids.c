@@ -23,6 +23,51 @@
 
 #include <math.h>
 #include "sinusoids.h"
+#include <stdio.h>
+
+#define MIN(a,b) ((a)<(b) ? (a):(b))
+#define MAX(a,b) ((a)>(b) ? (a):(b))
+
+void find_sinusoids(float *psd, float *w, int N, int length)
+{
+   int i,j;
+   float sinusoidism[length];
+   float tmp_max;
+   int tmp_id;
+   sinusoidism[0] = sinusoidism[length-1] = -1;
+   sinusoidism[1] = sinusoidism[length-2] = -1;
+   for (i=2;i<length-2;i++)
+   {
+      if (psd[i] > psd[i-1] && psd[i] > psd[i+1])
+      {
+         float highlobe, lowlobe;
+         highlobe = psd[i]-MIN(psd[i+1], psd[i+2]);
+         lowlobe = psd[i]-MIN(psd[i-1], psd[i-2]);
+         sinusoidism[i] = psd[i] + .5*(highlobe + lowlobe - .5*MAX(lowlobe, highlobe));
+      } else {
+         sinusoidism[i] = -1;
+      }
+   }
+   /*for (i=0;i<=length;i++)
+   {
+      fprintf (stderr, "%f ", sinusoidism[i]);
+   }
+   fprintf (stderr, "\n");*/
+   for (i=0;i<N;i++)
+   {
+      tmp_max = -2;
+      for (j=0;j<length;j++)
+      {
+         if (sinusoidism[j]>tmp_max)
+         {
+            tmp_max = sinusoidism[j];
+            tmp_id = j;
+         }
+      }
+      sinusoidism[tmp_id] = -3;
+      w[i] = M_PI*tmp_id/(length-1);
+   }
+}
 
 void extract_sinusoids(float *x, float *w, float *window, float *ai, float *bi, float *y, int N, int len)
 {

@@ -9,7 +9,8 @@
 lib_LTLIBRARIES = libghost.la
 
 # Sources for compilation in the library
-libghost_la_SOURCES = ghost.c sinusoids.c pitch.c lifting.c smallft.c fftwrap.c
+libghost_la_SOURCES = ghost.c sinusoids.c pitch.c lifting.c \
+	smallft.c fftwrap.c misc.c
 
 #noinst_HEADERS =
 
