@@ -91,10 +91,10 @@ void ghost_encode(GhostEncState *st, float *pcm)
       spx_fft_float(st->big_fft, st->pcm_buf, psd);
       for (i=1;i<(PCM_BUF_SIZE>>1);i++)
       {
-         psd[i] = 10*log10(psd[2*i-1]*psd[2*i-1] + psd[2*i]*psd[2*i]);
+         psd[i] = 10*log10(1+psd[2*i-1]*psd[2*i-1] + psd[2*i]*psd[2*i]);
       }
-      psd[0] = 10*log10(psd[0]*psd[0]);
-      psd[(PCM_BUF_SIZE>>1)-1] = 10*log10(psd[PCM_BUF_SIZE-1]*psd[PCM_BUF_SIZE-1]);
+      psd[0] = 10*log10(1+psd[0]*psd[0]);
+      psd[(PCM_BUF_SIZE>>1)-1] = 10*log10(1+psd[PCM_BUF_SIZE-1]*psd[PCM_BUF_SIZE-1]);
       find_sinusoids(psd, wi, SINUSOIDS, (PCM_BUF_SIZE>>1)+1);
       /*for (i=0;i<SINUSOIDS;i++)
       {
