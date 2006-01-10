@@ -104,7 +104,8 @@ void extract_sinusoids(float *x, float *w, float *window, float *ai, float *bi, 
             tmp2 += (x[j]-y[j])*sin_table[i][j];
          }
          tmp1 /= cosE[i];
-         tmp2 /= sinE[i];
+         //Just in case it's a DC! Must fix that anyway
+         tmp2 /= (.0001+sinE[i]);
          for (j=0;j<len;j++)
          {
             y[j] += tmp1*cos_table[i][j] + tmp2*sin_table[i][j];
