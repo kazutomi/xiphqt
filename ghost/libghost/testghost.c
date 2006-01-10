@@ -37,10 +37,16 @@ const float update[11] = {-0.000749078317628089, 0.00165570857680267, -0.0027621
 int main(int argc, char **argv)
 {
    GhostEncState *state;
-   FILE *fin;
+   FILE *fin, *fout;
    struct LiftingBasis bas;
    float x[1200];
    int i;
+   
+   if (argc != 3)
+   {
+      fprintf (stderr, "usage: testghost input_file output_file\nWhere the input and output are raw mono files sampled at 44.1 kHz or 48 kHz\n");
+      exit(1);
+   }
    /*float x[256];
    float y[256];
    float w[2] = {.05, .2};
@@ -79,7 +85,8 @@ int main(int argc, char **argv)
    printf ("\n");
    return 0;
 #endif
-   fin = fopen("test.sw", "r");
+   fin = fopen(argv[1], "r");
+   fout = fopen(argv[2], "w");
    state = ghost_encoder_state_new(48000);
    while (1)
    {
@@ -94,7 +101,9 @@ int main(int argc, char **argv)
       for (i=0;i<BLOCK_SIZE;i++)
          float_in[i] = short_in[i];
       ghost_encode(state, float_in);
-      
+      for (i=0;i<BLOCK_SIZE;i++)
+         short_in[i] = float_in[i];
+      fwrite(short_in, sizeof(short), BLOCK_SIZE, fout);
    }
    ghost_encoder_state_destroy(state);
    

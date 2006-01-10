@@ -27,10 +27,12 @@ typedef struct {
    float *pcm_buf;
    float *current_pcm;
    float *window;
+   float *big_window;
    float *syn_memory;
    int length;
    int advance;
    int overlap;
+   void *big_fft;
 } GhostEncState;
 
 GhostEncState *ghost_encoder_state_new(int sampling_rate);

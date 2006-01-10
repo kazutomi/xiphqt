@@ -23,6 +23,8 @@
 #ifndef _SINUSOIDS_H
 #define _SINUSOIDS_H
 
+void find_sinusoids(float *psd, float *w, int N, int length);
+
 void extract_sinusoids(float *x, float *w, float *window, float *ai, float *bi, float *y, int N, int len);
 
 #endif
