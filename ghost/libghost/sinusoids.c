@@ -28,7 +28,7 @@
 #define MIN(a,b) ((a)<(b) ? (a):(b))
 #define MAX(a,b) ((a)>(b) ? (a):(b))
 
-void find_sinusoids(float *psd, float *w, int N, int length)
+void find_sinusoids(float *psd, float *w, int *N, int length)
 {
    int i,j;
    float sinusoidism[length];
@@ -43,7 +43,7 @@ void find_sinusoids(float *psd, float *w, int N, int length)
          float highlobe, lowlobe;
          highlobe = psd[i]-MIN(psd[i+1], psd[i+2]);
          lowlobe = psd[i]-MIN(psd[i-1], psd[i-2]);
-         sinusoidism[i] = psd[i] + .5*(highlobe + lowlobe - .5*MAX(lowlobe, highlobe));
+         sinusoidism[i] = 1*psd[i] + 1*(highlobe + lowlobe - .5*MAX(lowlobe, highlobe));
       } else {
          sinusoidism[i] = -1;
       }
@@ -53,7 +53,7 @@ void find_sinusoids(float *psd, float *w, int N, int length)
       fprintf (stderr, "%f ", sinusoidism[i]);
    }
    fprintf (stderr, "\n");*/
-   for (i=0;i<N;i++)
+   for (i=0;i<*N;i++)
    {
       tmp_max = -2;
       for (j=0;j<length;j++)
@@ -64,9 +64,32 @@ void find_sinusoids(float *psd, float *w, int N, int length)
             tmp_id = j;
          }
       }
+      //printf ("%f ", sinusoidism[tmp_id]);
+      if (sinusoidism[tmp_id]<50)
+      {
+         *N=i;
+         break;
+      }
       sinusoidism[tmp_id] = -3;
-      w[i] = M_PI*tmp_id/(length-1);
+      //w[i] = M_PI*tmp_id/(length-1);
+      float corr;
+      float side;
+      if (psd[tmp_id+1]> psd[tmp_id-1])
+         side=psd[tmp_id]-psd[tmp_id+1];
+      else
+         side=psd[tmp_id]-psd[tmp_id-1];
+      if (side>6)
+         corr = 0;
+      else if (side<0)
+         corr = 0;
+      else
+         corr = .5-.5*(side/6);
+      if (psd[tmp_id+1] < psd[tmp_id-1])
+         corr =- corr;
+      //printf ("%f\n",corr);
+      w[i] = M_PI*(tmp_id+corr)/(length-1);
    }
+   //printf ("\n");
 }
 
 void extract_sinusoids(float *x, float *w, float *window, float *ai, float *bi, float *y, int N, int len)
@@ -112,7 +135,89 @@ void extract_sinusoids(float *x, float *w, float *window, float *ai, float *bi, 
          }
          ai[i] += tmp1;
          bi[i] += tmp2;
+         if (iter==4)
+         {
+            printf ("%f %f ", w[i], (float)sqrt(ai[i]*ai[i] + bi[i]*bi[i]));
+         }
       }
    }
+   printf ("\n");
 }
 
+void extract_modulated_sinusoids(float *x, float *w, float *window, float *ai, float *bi, float *ci, float *di, float *y, int N, int len)
+{
+   float cos_table[N][len];
+   float sin_table[N][len];
+   float tcos_table[N][len];
+   float tsin_table[N][len];
+   float cosE[N], sinE[N];
+   float costE[N], sintE[N];
+   int i,j, iter;
+   for (i=0;i<N;i++)
+   {
+      float tmp1=0, tmp2=0;
+      float tmp3=0, tmp4=0;
+      for (j=0;j<len;j++)
+      {
+         cos_table[i][j] = cos(w[i]*j)*window[j];
+         sin_table[i][j] = sin(w[i]*j)*window[j];
+         tcos_table[i][j] = ((3./len)*(j-(len>>1)))*cos_table[i][j];
+         tsin_table[i][j] = ((3./len)*(j-(len>>1)))*sin_table[i][j];
+         tmp1 += cos_table[i][j]*cos_table[i][j];
+         tmp2 += sin_table[i][j]*sin_table[i][j];
+         tmp3 += tcos_table[i][j]*tcos_table[i][j];
+         tmp4 += tsin_table[i][j]*tsin_table[i][j];
+      }
+      cosE[i] = tmp1;
+      sinE[i] = tmp2;
+      costE[i] = tmp3;
+      sintE[i] = tmp4;
+   }
+   for (j=0;j<len;j++)
+      y[j] = 0;
+   for (i=0;i<N;i++)
+      ai[i] = bi[i] = ci[i] = di[i] = 0;
+   int tata=0;
+   for (iter=0;iter<5;iter++)
+   {
+      for (i=0;i<N;i++)
+      {
+         float tmp1=0, tmp2=0;
+         float tmp3=0, tmp4=0;
+         for (j=0;j<len;j++)
+         {
+            tmp1 += (x[j]-y[j])*cos_table[i][j];
+            tmp2 += (x[j]-y[j])*sin_table[i][j];
+            tmp3 += (x[j]-y[j])*tcos_table[i][j];
+            tmp4 += (x[j]-y[j])*tsin_table[i][j];
+         }
+         tmp1 /= cosE[i];
+         //Just in case it's a DC! Must fix that anyway
+         tmp2 /= (.0001+sinE[i]);
+         tmp3 /= (.0001+costE[i]);
+         tmp4 /= (.0001+sintE[i]);
+         //tmp3=tmp4 = 0;
+         for (j=0;j<len;j++)
+         {
+            y[j] += tmp1*cos_table[i][j] + tmp2*sin_table[i][j] + tmp3*tcos_table[i][j] + tmp4*tsin_table[i][j];
+         }
+         ai[i] += tmp1;
+         bi[i] += tmp2;
+         ci[i] += tmp3;
+         di[i] += tmp4;
+         if (iter==4)
+         {
+            if (w[i] > .49 && w[i] < .53 && !tata)
+            {
+               //printf ("%f %f %f %f %f\n", w[i], ai[i], bi[i], ci[i], di[i]);
+               tata = 1;
+            }
+            //printf ("%f %f ", w[i], (float)sqrt(ai[i]*ai[i] + bi[i]*bi[i]));
+         }
+      }
+   }
+   //if(!tata)
+      //printf ("0 0 0 0 0\n");
+
+   //printf ("\n");
+}
