@@ -3,6 +3,9 @@
 #include <libOOOgg/StampedOggPacket.h>
 #include <libOOOgg/OggPacket.h>
 #include "FLAC++/decoder.h"
+
+//Flac Stream Format Documentation http://flac.sourceforge.net/format.html#stream
+
 using namespace FLAC::Decoder;
 class FLACPushDecoder
 	:	protected Stream
@@ -16,13 +19,17 @@ public:
 
 	void initCodec();
 	void flushCodec();
-	//Probably shouldn't be public... but who cares for now.
+
+	unsigned long numberOfChannels()		{	return mNumChannels;	}
+	unsigned long frameSize()				{	return mFrameSize;		}
+	unsigned long sampleRate()				{	return mSampleRate;		}
+private:
+	static const int SIZE_16_BITS = 2;
+
 	unsigned long mNumChannels;
 	unsigned long mFrameSize;
 	unsigned long mSampleRate;
-	bool mBegun;
-protected:
-	static const int SIZE_16_BITS = 2;
+
 	//Virtuals frmo FLAC decoder
 	virtual ::FLAC__StreamDecoderReadStatus read_callback(FLAC__byte buffer[], unsigned *bytes);
 	virtual ::FLAC__StreamDecoderWriteStatus write_callback(const ::FLAC__Frame *frame, const FLAC__int32 * const buffer[]);
@@ -33,5 +40,6 @@ protected:
 	StampedOggPacket* mOutPacket;
 	
 	bool mGotMetaData;
+	bool mBegun;
 	
 };

@@ -136,7 +136,7 @@ STDMETHODIMP FLACDecodeInputPin::Receive(IMediaSample* inSample)
 				unsigned long locBytesCopied = 0;
 				unsigned long locBytesToCopy = 0;
 
-				locStart = convertGranuleToTime(locEnd) - (((mDecodedByteCount / mFLACDecoder.mFrameSize) * UNITS) / mFLACDecoder.mSampleRate);
+				locStart = convertGranuleToTime(locEnd) - (((mDecodedByteCount / mFLACDecoder.frameSize()) * UNITS) / mFLACDecoder.sampleRate());
 				do {
 					HRESULT locHR = mOutputPin->GetDeliveryBuffer(&locSample, NULL, NULL, NULL);
 					if (locHR != S_OK) {
@@ -153,7 +153,7 @@ STDMETHODIMP FLACDecodeInputPin::Receive(IMediaSample* inSample)
 					locBytesToCopy = ((mDecodedByteCount - locBytesCopied) <= locSample->GetSize()) ? (mDecodedByteCount - locBytesCopied) : locSample->GetSize();
 					//locBytesCopied += locBytesToCopy;
 
-					locSampleDuration = (((locBytesToCopy/mFLACDecoder.mFrameSize) * UNITS) / mFLACDecoder.mSampleRate);
+					locSampleDuration = (((locBytesToCopy/mFLACDecoder.frameSize()) * UNITS) / mFLACDecoder.sampleRate());
 					locEnd = locStart + locSampleDuration;
 
 					//Adjust the time stamps for rate and seeking
@@ -167,11 +167,11 @@ STDMETHODIMP FLACDecodeInputPin::Receive(IMediaSample* inSample)
 						locSample->Release();
 					} else {
 						if (locAdjustedStart < 0) {
-							locSeekStripOffset = (-locAdjustedStart) * mFLACDecoder.mSampleRate;
-							locSeekStripOffset *= mFLACDecoder.mFrameSize;
+							locSeekStripOffset = (-locAdjustedStart) * mFLACDecoder.sampleRate();
+							locSeekStripOffset *= mFLACDecoder.frameSize();
 							locSeekStripOffset /= UNITS;
-							locSeekStripOffset += (mFLACDecoder.mFrameSize - (locSeekStripOffset % mFLACDecoder.mFrameSize));
-							__int64 locStrippedDuration = (((locSeekStripOffset/mFLACDecoder.mFrameSize) * UNITS) / mFLACDecoder.mSampleRate);
+							locSeekStripOffset += (mFLACDecoder.frameSize() - (locSeekStripOffset % mFLACDecoder.frameSize()));
+							__int64 locStrippedDuration = (((locSeekStripOffset/mFLACDecoder.frameSize()) * UNITS) / mFLACDecoder.sampleRate());
 							locAdjustedStart += locStrippedDuration;
 						}
 							
@@ -256,112 +256,6 @@ HRESULT FLACDecodeInputPin::TransformData(BYTE* inBuf, long inNumBytes)
 		return -1;
 	}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-
-	//What happens when another packet arrives and the other one is still there ?
-	//delete mPendingPacket;
-	//debugLog<<"decodeData : "<<endl;
-	if(!m_bFlushing) {
-		unsigned char* locBuff = new unsigned char[inNumBytes];			//Given to packet.
-		memcpy((void*)locBuff, (const void*)inBuf, inNumBytes);
-
-		OggPacket* locPacket = new OggPacket(locBuff, inNumBytes, false, false);	//We give this away.
-
-		if (mGotMetaData) {
-			StampedOggPacket* locStamped = NULL;
-			{
-				CAutoLock locCodecLock(mCodecLock);
-				//for(unsigned long i = 0; i < mPendingPackets.size(); i++) {
-				 locStamped = (StampedOggPacket*)mFLACDecoder.decodeFLAC(locPacket)->clone();			//clone deleted below, locpacket accepted by decoder.
-			}
-
-			if (locStamped != NULL) {
-				//Do the directshow crap here....
-
-				IMediaSample* locSample;
-
-				HRESULT locHR = mOutputPin->GetDeliveryBuffer(&locSample, NULL, NULL, NULL);
-				
-				if (FAILED(locHR)) {
-					//debugLog<<"Write_Callback : Get deliverybuffer failed. returning abort code."<<endl;
-					//		//We get here when the application goes into stop mode usually.
-					delete locStamped;
-					return S_FALSE;
-				}	
-
-
-				BYTE* locBuffer = NULL;
-
-
-				//	//Make our pointers set to point to the samples buffer
-				locSample->GetPointer(&locBuffer);
-
-
-				//*** WARNING 4018: Leave this.
-				if (locSample->GetSize() >= locStamped->packetSize()) {
-					REFERENCE_TIME locFrameStart = (((__int64)(mUptoFrame * UNITS)) / mFLACDecoder.mSampleRate);
-					
-					//Increment the frame counter
-					//NOTE::: The returned packet is stamped 0-numSamples so endTime will be in long range.
-					mUptoFrame += (unsigned long)locStamped->endTime();
-					
-					//	//Make the end frame counter
-
-					REFERENCE_TIME locFrameEnd = (((__int64)(mUptoFrame * UNITS)) / mFLACDecoder.mSampleRate);
-
-					memcpy((void*)locBuffer, (const void*)locStamped->packetData(), locStamped->packetSize());
-					SetSampleParams(locSample, locStamped->packetSize(), &locFrameStart, &locFrameEnd);
-					HRESULT locHR = ((FLACDecodeOutputPin*)(mOutputPin))->mDataQueue->Receive(locSample);
-					if (locHR != S_OK) {
-	
-					} else {
-						//debugLog<<"Write_Callback : Delivery of sample succeeded"<<endl;
-					}
-				} else {
-					delete locStamped;
-					throw 0;		//SAMPLE SIZE IS TOO SMALL TO FIT DATA
-				}
-
-
-				delete locStamped;
-				return S_OK;
-			} else {
-				return S_FALSE;
-			}
-		} else {
-			{
-				CAutoLock locCodecLock(mCodecLock);
-				mGotMetaData = mFLACDecoder.acceptMetadata(locPacket);		//Accepts the packet.
-			}
-			if (mGotMetaData) {
-				return S_OK;
-			} else {
-				return S_FALSE;
-			}
-		}
-
-	} else {
-		//debugLog<<"decodeData : Filter flushing... bad things !!!"<<endl;
-		return S_FALSE;
-	}
-
-*/	
 }
 
 
@@ -448,15 +342,7 @@ HRESULT FLACDecodeInputPin::SetMediaType(const CMediaType* inMediaType) {
 		throw 0;
 	}
 
-	//if (inMediaType->subtype == MEDIASUBTYPE_FLAC) {
-	//	
-	//	//Keep the format block
-	//	
-	//	((FLACDecodeFilter*)mParentFilter)->setFLACFormatBlock((sFLACFormatBlock*)inMediaType->pbFormat);		//Copies the format in the mutator
 
-	//} else {
-	//	throw 0;
-	//}
 	return CBaseInputPin::SetMediaType(inMediaType);
 }
 
@@ -548,47 +434,7 @@ IOggDecoder::eAcceptHeaderResult FLACDecodeInputPin::showHeaderPacket(OggPacket*
 
 
 	}
-	//switch (mSetupState) {
-	//	case VSS_SEEN_NOTHING:
-	//		if (strncmp((char*)inCodecHeaderPacket->packetData(), "fLaC", 4) == 0) {
-	//			//TODO::: Possibly verify version
-	//			if (fish_sound_decode(mFishSound, inCodecHeaderPacket->packetData(), inCodecHeaderPacket->packetSize()) >= 0) {
-	//				mSetupState = VSS_SEEN_BOS;
-	//				return IOggDecoder::AHR_MORE_HEADERS_TO_COME;
-	//			}
-	//		}
-	//		return IOggDecoder::AHR_INVALID_HEADER;
-	//		
-	//		
-	//	case VSS_SEEN_BOS:
-	//		//The comment packet can't be easily identified in speex.
-	//		//Just ignore the second packet we see, and hope fishsound does better.
 
-	//		//if (strncmp((char*)inCodecHeaderPacket->packetData(), "\003vorbis", 7) == 0) {
-	//			if (fish_sound_decode(mFishSound, inCodecHeaderPacket->packetData(), inCodecHeaderPacket->packetSize()) >= 0) {
-	//				mSetupState = VSS_ALL_HEADERS_SEEN;
-
-	//				fish_sound_command (mFishSound, FISH_SOUND_GET_INFO, &(mFishInfo), sizeof (FishSoundInfo)); 
-	//				mBegun = true;
-	//		
-	//				mNumChannels = mFishInfo.channels;
-	//				mFrameSize = mNumChannels * SIZE_16_BITS;
-	//				mSampleRate = mFishInfo.samplerate;
-
-	//				return IOggDecoder::AHR_ALL_HEADERS_RECEIVED;
-	//			}
-	//			
-	//			
-	//		//}
-	//		return IOggDecoder::AHR_INVALID_HEADER;
-	//		
-	//		
-	//
-	//	case VSS_ALL_HEADERS_SEEN:
-	//	case VSS_ERROR:
-	//	default:
-	//		return IOggDecoder::AHR_UNEXPECTED;
-	//}
 }
 string FLACDecodeInputPin::getCodecShortName()
 {
