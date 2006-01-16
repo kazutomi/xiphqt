@@ -155,35 +155,8 @@ STDMETHODIMP NativeFLACSourceFilter::Load(LPCOLESTR inFileName, const AM_MEDIA_T
 	init();
 	bool locResult = process_until_end_of_metadata();
 
-	return S_OK;
-	////Initialise the file here and setup the stream
-	//CAutoLock locLock(m_pLock);
-	//mFileName = inFileName;
+	return (locResult ? S_OK : E_FAIL);
 
-	//mInputFile.open(StringHelper::toNarrowStr(mFileName).c_str(), ios_base::in | ios_base::binary);
-
-	//mInputFile.seekg(0, ios_base::end);
-	//mFileSize = mInputFile.tellg();
-	//mInputFile.seekg(0, ios_base::beg);
-
-	//unsigned char locBuff[64];
-	//mInputFile.read((char*)&locBuff, 64);
-	//const unsigned char FLAC_CHANNEL_MASK = 14;  //00001110
-	//const unsigned char FLAC_BPS_START_MASK = 1; //00000001
-	//const unsigned char FLAC_BPS_END_MASK = 240;  //11110000
-
-	//mNumChannels = (((locBuff[20]) & FLAC_CHANNEL_MASK) >> 1) + 1;
-	//mSampleRate = (iBE_Math::charArrToULong(&locBuff[18])) >> 12;
-	//mBitsPerSample =	(((locBuff[20] & FLAC_BPS_START_MASK) << 4)	| ((locBuff[21] & FLAC_BPS_END_MASK) >> 4)) + 1;	
-	//mTotalNumSamples = (((__int64)(locBuff[21] % 16)) << 32) + ((__int64)(iBE_Math::charArrToULong(&locBuff[22])));
-
-	////TODO::: NEed to handle the case where the number of samples is zero by making it non-seekable.
-	//mInputFile.seekg(0, ios_base::beg);
-
-	//init();
-	//bool locResult = process_until_end_of_metadata();
-
-	//return S_OK;
 }
 
 STDMETHODIMP NativeFLACSourceFilter::NonDelegatingQueryInterface(REFIID riid, void **ppv)
@@ -298,22 +271,24 @@ DWORD NativeFLACSourceFilter::ThreadProc(void) {
 	return FLAC__SEEKABLE_STREAM_DECODER_LENGTH_STATUS_OK;
 }
 ::FLAC__StreamDecoderWriteStatus NativeFLACSourceFilter::write_callback(const FLAC__Frame* inFrame,const FLAC__int32 *const inBuffer[]) {
-	//Do the magic !
+	
+
 	if (! mBegun) {
-		//This may not even be needed any more.	
 		mBegun = true;
+		
 		const int SIZE_16_BITS = 2;
+		
 		mNumChannels = inFrame->header.channels;
 		mFrameSize = mNumChannels * SIZE_16_BITS;
 		mSampleRate = inFrame->header.sample_rate;
 	}
 
 	unsigned long locNumFrames = inFrame->header.blocksize;
-	unsigned long locActualSize = locNumFrames * mFrameSize;
+	unsigned long locBufferSize = locNumFrames * mFrameSize;
 	unsigned long locTotalFrameCount = locNumFrames * mNumChannels;
 
 	//BUG::: There's a bug here. Implicitly assumes 2 channels. I think.
-	unsigned char* locBuff = new unsigned char[locActualSize];			//Gives to the deliverdata method
+	unsigned char* locBuff = new unsigned char[locBufferSize];			//Gives to the deliverdata method
 	//It could actually be a single buffer for the class.
 
 	signed short* locShortBuffer = (signed short*)locBuff;		//Don't delete this.
@@ -326,14 +301,15 @@ DWORD NativeFLACSourceFilter::ThreadProc(void) {
 			tempLong = inBuffer[j][i];
 
 			//FIX::: Why on earth are you dividing by 2 ? It does not make sense !
-			tempInt = (signed short)(tempLong/2);
+			//tempInt = (signed short)(tempLong/2);
+			tempInt = (signed short)(tempLong);
 		
 			*locShortBuffer = tempInt;
 			locShortBuffer++;
 		}
 	}
 	
-	mFLACSourcePin->deliverData(locBuff, locActualSize, (mUpto*UNITS) / mSampleRate, ((mUpto+locNumFrames)*UNITS) / mSampleRate);
+	mFLACSourcePin->deliverData(locBuff, locBufferSize, (mUpto*UNITS) / mSampleRate, ((mUpto+locNumFrames)*UNITS) / mSampleRate);
 	mUpto += locNumFrames;
 	return FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
 }

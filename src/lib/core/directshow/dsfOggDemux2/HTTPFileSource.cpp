@@ -31,7 +31,7 @@
 #include "stdafx.h"
 #include "httpfilesource.h"
 
-//#define OGGCODECS_LOGGING
+#define OGGCODECS_LOGGING
 HTTPFileSource::HTTPFileSource(void)
 	:	mBufferLock(NULL)
 	,	mIsChunked(false)
@@ -69,7 +69,7 @@ void HTTPFileSource::unChunk(unsigned char* inBuff, unsigned long inNumBytes)
 	//This method is a bit rough and ready !!
 	ASSERT(inNumBytes > 2);
 	rawDump.write((char*)inBuff, inNumBytes);
-	debugLog<<"UnChunk"<<endl;
+	//debugLog<<"UnChunk"<<endl;
 	unsigned long locNumBytesLeft = inNumBytes;
 
 	memcpy((void*)(mInterBuff + mNumLeftovers), (const void*)inBuff, inNumBytes);
@@ -321,6 +321,7 @@ DWORD HTTPFileSource::ThreadProc(void) {
 				Reply(S_OK);
 				DataProcessLoop();
 				break;
+				//return S_OK;
 		}
 
 
@@ -452,11 +453,13 @@ unsigned long HTTPFileSource::read(char* outBuffer, unsigned long inNumBytes) {
 			//debugLog<<"read : Can't read is error or eof"<<endl;
 			return 0;
 		} else {
-			debugLog<<"Reading from buffer"<<endl;
+			//debugLog<<"Reading from buffer"<<endl;
 			
 			unsigned long locNumRead = mFileCache.read((unsigned char*)outBuffer, inNumBytes);
 
-			//debugLog<<locNumRead<<" bytes read from buffer"<<endl;
+			if (locNumRead > 0) {
+				debugLog<<locNumRead<<" bytes read from buffer"<<endl;
+			}
 			return locNumRead;
 		}
 	} //END CRITICAL SECTION
