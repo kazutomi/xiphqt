@@ -35,6 +35,7 @@ typedef struct {
    
    float *syn_memory;
    float *noise_mem;
+   float *noise_mem2;
    
    float *noise_buf;
    float *new_noise;
