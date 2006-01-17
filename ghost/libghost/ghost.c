@@ -41,12 +41,19 @@ GhostEncState *ghost_encoder_state_new(int sampling_rate)
    st->length = 256;
    st->advance = 192;
    st->overlap = 64;
+   st->lpc_length = 384;
+   st->lpc_order = 20;
    st->pcm_buf = calloc(PCM_BUF_SIZE,sizeof(float));
+   st->current_frame = st->pcm_buf + PCM_BUF_SIZE/2 - st->length/2;
+   st->new_pcm = st->pcm_buf + PCM_BUF_SIZE - st->advance;
+   
+   st->noise_buf = calloc(PCM_BUF_SIZE,sizeof(float));
+   st->new_noise = st->noise_buf + PCM_BUF_SIZE/2 - st->length/2;
+   
    st->analysis_window = calloc(st->length,sizeof(float));
    st->synthesis_window = calloc(st->length,sizeof(float));
    st->big_window = calloc(PCM_BUF_SIZE,sizeof(float));
    st->syn_memory = calloc(st->overlap,sizeof(float));
-   st->current_pcm = st->pcm_buf + PCM_BUF_SIZE - st->length;
    for (i=0;i<st->length;i++)
    {
       st->analysis_window[i] = 1;
@@ -77,7 +84,7 @@ void ghost_encode(GhostEncState *st, float *pcm)
    for (i=0;i<PCM_BUF_SIZE-st->advance;i++)
       st->pcm_buf[i] = st->pcm_buf[i+st->advance];
    for (i=0;i<st->advance;i++)
-      st->current_pcm[i+st->overlap]=pcm[i];
+      st->new_pcm[i]=pcm[i];
    {
       float wi[SINUSOIDS];
       float x[st->length];
@@ -103,22 +110,37 @@ void ghost_encode(GhostEncState *st, float *pcm)
       }
       fprintf (stderr, "\n");*/
       for (i=0;i<st->length;i++)
-         x[i] = st->analysis_window[i]*st->current_pcm[i-896];
+         x[i] = st->analysis_window[i]*st->current_frame[i];
       //extract_sinusoids(x, wi, st->window, ai, bi, y, SINUSOIDS, st->length);
       extract_modulated_sinusoids(x, wi, st->analysis_window, ai, bi, ci, di, y, nb_sinusoids, st->length);
-      for (i=0;i<st->length;i++)
-         y[i] *= st->synthesis_window[i];
-
+      
       /*for (i=0;i<st->length;i++)
-      y[i] = x[i];*/
-      short out[st->advance];
+      y[i] *= st->synthesis_window[i];*/
+
+      for (i = 0;i < st->new_noise-st->noise_buf+st->overlap; i++)
+      {
+         st->noise_buf[i] = st->noise_buf[i+st->advance];
+      }
       for (i=0;i<st->overlap;i++)
+      {
+         st->new_noise[i] = st->new_noise[i]*st->synthesis_window[i+st->length-st->overlap] + 
+               (st->current_frame[i]-y[i])*st->synthesis_window[i];
+      }
+      for (i=st->overlap;i<st->length;i++)
+      {
+         st->new_noise[i] = st->current_frame[i]-y[i];
+      }
+      
+      /*for (i=0;i<st->overlap;i++)
          pcm[i] = st->syn_memory[i]+y[i];
       for (i=st->overlap;i<st->advance;i++)
          pcm[i] = y[i];
       for (i=st->advance;i<st->length;i++)
-         st->syn_memory[i-st->advance]=y[i];
-      //fwrite(out, sizeof(short), st->advance, stdout);
+      st->syn_memory[i-st->advance]=y[i];*/
+      
+      
+      for (i=0;i<st->length-st->overlap;i++)
+         pcm[i] = st->current_frame[i]-st->new_noise[i];
       
    }
    
