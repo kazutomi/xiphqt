@@ -25,14 +25,26 @@
 
 typedef struct {
    float *pcm_buf;
-   float *current_pcm;
+   float *new_pcm;
+   float *current_frame;
+   
    float *analysis_window;
-   float *synthesis_window;
+   float *synthesis_window;  
+   float *lpc_window;
    float *big_window;
+   
    float *syn_memory;
+   
+   float *noise_buf;
+   float *new_noise;
+   //float *current_noise;
+   
    int length;
    int advance;
    int overlap;
+   int lpc_length;
+   int lpc_order;
+   
    void *big_fft;
 } GhostEncState;
 
