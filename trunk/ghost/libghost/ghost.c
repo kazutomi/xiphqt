@@ -34,6 +34,69 @@
 
 #define SINUSOIDS 30
 
+void fir_mem2(const spx_sig_t *x, const spx_coef_t *num, spx_sig_t *y, int N, int ord, spx_mem_t *mem)
+{
+   int i,j;
+   spx_word32_t xi,yi;
+
+   for (i=0;i<N;i++)
+   {
+      xi=SATURATE(x[i],805306368);
+      yi = xi + SHL32(mem[0],2);
+      for (j=0;j<ord-1;j++)
+      {
+         mem[j] = MAC16_32_Q15(mem[j+1], num[j],xi);
+      }
+      mem[ord-1] = MULT16_32_Q15(num[ord-1],xi);
+      y[i] = SATURATE(yi,805306368);
+   }
+}
+
+spx_word32_t _spx_lpc(
+spx_coef_t       *lpc, /* out: [0...p-1] LPC coefficients      */
+const spx_word16_t *ac,  /* in:  [0...p] autocorrelation values  */
+int          p
+                     )
+{
+   int i, j;  
+   spx_word16_t r;
+   spx_word16_t error = ac[0];
+
+   if (ac[0] == 0)
+   {
+      for (i = 0; i < p; i++)
+         lpc[i] = 0;
+      return 0;
+   }
+
+   for (i = 0; i < p; i++) {
+
+      /* Sum up this iteration's reflection coefficient */
+      spx_word32_t rr = NEG32(SHL32(EXTEND32(ac[i + 1]),13));
+      for (j = 0; j < i; j++) 
+         rr = SUB32(rr,MULT16_16(lpc[j],ac[i - j]));
+#ifdef FIXED_POINT
+      r = DIV32_16(rr,ADD16(error,16));
+#else
+      r = rr/(error+.003*ac[0]);
+#endif
+      /*  Update LPC coefficients and total error */
+      lpc[i] = r;
+      for (j = 0; j < i>>1; j++) 
+      {
+         spx_word16_t tmp  = lpc[j];
+         lpc[j]     = MAC16_16_Q13(lpc[j],r,lpc[i-1-j]);
+         lpc[i-1-j] = MAC16_16_Q13(lpc[i-1-j],r,tmp);
+      }
+      if (i & 1) 
+         lpc[j] = MAC16_16_Q13(lpc[j],lpc[j],r);
+
+      error = SUB16(error,MULT16_16_Q13(r,MULT16_16_Q13(error,r)));
+   }
+   return error;
+}
+
+
 GhostEncState *ghost_encoder_state_new(int sampling_rate)
 {
    int i;
@@ -53,7 +116,10 @@ GhostEncState *ghost_encoder_state_new(int sampling_rate)
    st->analysis_window = calloc(st->length,sizeof(float));
    st->synthesis_window = calloc(st->length,sizeof(float));
    st->big_window = calloc(PCM_BUF_SIZE,sizeof(float));
+   st->lpc_window = calloc(st->lpc_length,sizeof(float));
+
    st->syn_memory = calloc(st->overlap,sizeof(float));
+   st->noise_mem = calloc(st->lpc_order,sizeof(float));
    for (i=0;i<st->length;i++)
    {
       st->analysis_window[i] = 1;
@@ -64,7 +130,11 @@ GhostEncState *ghost_encoder_state_new(int sampling_rate)
       st->synthesis_window[i] = .5-.5*cos(M_PI*i/st->overlap);
       st->synthesis_window[st->length-i-1] = .5-.5*cos(M_PI*(i+1)/st->overlap);
    }
+   for (i=0;i<st->lpc_length;i++)
+      st->lpc_window[i] = .5-.5*cos(M_PI*i/st->lpc_length);
+   
    st->big_fft = spx_fft_init(PCM_BUF_SIZE);
+   st->lpc_fft = spx_fft_init(st->lpc_length);
    for (i=0;i<PCM_BUF_SIZE;i++)
       st->big_window[i] = .5-.5*cos(2*M_PI*(i+1)/PCM_BUF_SIZE);
    return st;
@@ -138,9 +208,35 @@ void ghost_encode(GhostEncState *st, float *pcm)
       for (i=st->advance;i<st->length;i++)
       st->syn_memory[i-st->advance]=y[i];*/
       
+      float noise_ac[st->lpc_length];
+      float noise_psd[st->lpc_length];
+      for (i=0;i<st->lpc_length;i++)
+         noise_ac[i] = st->lpc_window[i]*st->new_noise[i];
+      spx_fft_float(st->lpc_fft, noise_ac, noise_psd);
+      /*for (i=1;i<(st->lpc_length>>1);i++)
+      {
+         noise_psd[i] = noise_psd[2*i-1]*noise_psd[2*i-1] + noise_psd[2*i]*noise_psd[2*i];
+      }
+      noise_psd[0] = noise_psd[0]*noise_psd[0];
+      noise_psd[(st->lpc_length>>1)-1] = noise_psd[st->lpc_length-1]*noise_psd[st->lpc_length-1];
+      */
       
-      for (i=0;i<st->length-st->overlap;i++)
-         pcm[i] = st->current_frame[i]-st->new_noise[i];
+      noise_psd[0] *= noise_psd[0];
+      for (i=1;i<st->lpc_length-1;i+=2)
+      {
+         noise_psd[i] = noise_psd[i]*noise_psd[i] + noise_psd[i+1]*noise_psd[i+1];
+      }
+      noise_psd[st->lpc_length-1] *= noise_psd[st->lpc_length-1];
+      spx_ifft_float(st->lpc_fft, noise_psd, noise_ac);
+      noise_ac[0] *= 1.0001;
+      
+      float lpc[st->lpc_order];
+      _spx_lpc(lpc, noise_ac, st->lpc_order);
+      fir_mem2(st->new_noise, lpc, pcm, st->advance, st->lpc_order, st->noise_mem);
+      //iir_mem2(st->new_noise, lpc, pcm, st->advance, st->lpc_order, st->noise_mem);
+      
+      for (i=0;i<st->advance;i++)
+      pcm[i] = st->current_frame[i]-st->new_noise[i];
       
    }
    

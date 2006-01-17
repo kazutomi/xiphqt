@@ -34,6 +34,7 @@ typedef struct {
    float *big_window;
    
    float *syn_memory;
+   float *noise_mem;
    
    float *noise_buf;
    float *new_noise;
@@ -46,6 +47,7 @@ typedef struct {
    int lpc_order;
    
    void *big_fft;
+   void *lpc_fft;
 } GhostEncState;
 
 GhostEncState *ghost_encoder_state_new(int sampling_rate);
