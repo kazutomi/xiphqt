@@ -26,7 +26,8 @@
 typedef struct {
    float *pcm_buf;
    float *current_pcm;
-   float *window;
+   float *analysis_window;
+   float *synthesis_window;
    float *big_window;
    float *syn_memory;
    int length;

@@ -42,16 +42,20 @@ GhostEncState *ghost_encoder_state_new(int sampling_rate)
    st->advance = 192;
    st->overlap = 64;
    st->pcm_buf = calloc(PCM_BUF_SIZE,sizeof(float));
-   st->window = calloc(st->length,sizeof(float));
+   st->analysis_window = calloc(st->length,sizeof(float));
+   st->synthesis_window = calloc(st->length,sizeof(float));
    st->big_window = calloc(PCM_BUF_SIZE,sizeof(float));
    st->syn_memory = calloc(st->overlap,sizeof(float));
    st->current_pcm = st->pcm_buf + PCM_BUF_SIZE - st->length;
    for (i=0;i<st->length;i++)
-      st->window[i] = 1;
+   {
+      st->analysis_window[i] = 1;
+      st->synthesis_window[i] = 1;
+   }
    for (i=0;i<st->overlap;i++)
    {
-      st->window[i] = .5-.5*cos(M_PI*i/st->overlap);
-      st->window[st->length-i-1] = .5-.5*cos(M_PI*(i+1)/st->overlap);
+      st->synthesis_window[i] = .5-.5*cos(M_PI*i/st->overlap);
+      st->synthesis_window[st->length-i-1] = .5-.5*cos(M_PI*(i+1)/st->overlap);
    }
    st->big_fft = spx_fft_init(PCM_BUF_SIZE);
    for (i=0;i<PCM_BUF_SIZE;i++)
@@ -99,9 +103,12 @@ void ghost_encode(GhostEncState *st, float *pcm)
       }
       fprintf (stderr, "\n");*/
       for (i=0;i<st->length;i++)
-         x[i] = st->window[i]*st->current_pcm[i-896];
+         x[i] = st->analysis_window[i]*st->current_pcm[i-896];
       //extract_sinusoids(x, wi, st->window, ai, bi, y, SINUSOIDS, st->length);
-      extract_modulated_sinusoids(x, wi, st->window, ai, bi, ci, di, y, nb_sinusoids, st->length);
+      extract_modulated_sinusoids(x, wi, st->analysis_window, ai, bi, ci, di, y, nb_sinusoids, st->length);
+      for (i=0;i<st->length;i++)
+         y[i] *= st->synthesis_window[i];
+
       /*for (i=0;i<st->length;i++)
       y[i] = x[i];*/
       short out[st->advance];
