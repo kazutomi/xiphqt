@@ -6,7 +6,7 @@
  *    exported in QT movie container.
  *
  *
- *  Copyright (c) 2005  Arek Korbik
+ *  Copyright (c) 2005-2006  Arek Korbik
  *
  *  This file is part of XiphQT, the Xiph QuickTime Components.
  *
@@ -40,7 +40,10 @@ enum {
     kAudioFormatXiphOggFramedVorbis         = 'XoVs',
 
     kAudioFormatXiphSpeex                   = 'XiSp',
-    kAudioFormatXiphOggFramedSpeex          = 'XoSp'
+    kAudioFormatXiphOggFramedSpeex          = 'XoSp',
+
+    kAudioFormatXiphFLAC                    = 'XiFL',
+    kAudioFormatXiphOggFramedFLAC           = 'XoFL',
 };
 
 
