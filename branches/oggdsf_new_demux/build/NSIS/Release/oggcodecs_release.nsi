@@ -143,7 +143,7 @@ Section "Ogg Core Files" SEC01
   File "${OGGCODECS_ROOT_DIR}\HISTORY"
 
 
-  ; Install Filters - 15
+  ; Install Filters - 16
   
 
   File "${OGGCODECS_ROOT_DIR}\src\lib\codecs\flac\filters\dsfFLACEncoder\${OGGCODECS_CONFIG_PATH}\dsfFLACEncoder.dll"
@@ -157,6 +157,8 @@ Section "Ogg Core Files" SEC01
   File "${OGGCODECS_ROOT_DIR}\src\lib\codecs\flac\filters\dsfFLACDecoder\${OGGCODECS_CONFIG_PATH}\dsfFLACDecoder.dll"
   File "${OGGCODECS_ROOT_DIR}\src\lib\codecs\vorbis\filters\dsfVorbisDecoder\${OGGCODECS_CONFIG_PATH}\dsfVorbisDecoder.dll"
 
+  File "${OGGCODECS_ROOT_DIR}\src\lib\codecs\ogm\filters\dsfOGMDecoder\${OGGCODECS_CONFIG_PATH}\dsfOGMDecoder.dll"
+
   File "${OGGCODECS_ROOT_DIR}\src\lib\core\directshow\dsfOggDemux2\${OGGCODECS_CONFIG_PATH}\dsfOggDemux2.dll"
   File "${OGGCODECS_ROOT_DIR}\src\lib\core\directshow\dsfOggMux\${OGGCODECS_CONFIG_PATH}\dsfOggMux.dll"
 
@@ -169,7 +171,7 @@ Section "Ogg Core Files" SEC01
   ; File "${OGGCODECS_ROOT_DIR}\src\lib\core\directshow\dsfAnxDemux\${OGGCODECS_CONFIG_PATH}\dsfAnxDemux.dll"
   File "${OGGCODECS_ROOT_DIR}\src\lib\core\directshow\dsfAnxMux\${OGGCODECS_CONFIG_PATH}\dsfAnxMux.dll"
 
-  ; Register libraries - 15
+  ; Register libraries - 16
 
   ExecWait 'regsvr32 "/s" "$INSTDIR\dsfFLACEncoder.dll"'
   ExecWait 'regsvr32 "/s" "$INSTDIR\dsfSpeexEncoder.dll"'
@@ -181,6 +183,7 @@ Section "Ogg Core Files" SEC01
   ExecWait 'regsvr32 "/s" "$INSTDIR\dsfTheoraDecoder.dll"'
   ExecWait 'regsvr32 "/s" "$INSTDIR\dsfFLACDecoder.dll"'
   ExecWait 'regsvr32 "/s" "$INSTDIR\dsfVorbisDecoder.dll"'
+  ExecWait 'regsvr32 "/s" "$INSTDIR\dsfOGMDecoder.dll"'
 
   ExecWait 'regsvr32 "/s" "$INSTDIR\dsfOggDemux2.dll"'
   ExecWait 'regsvr32 "/s" "$INSTDIR\dsfOggMux.dll"'
@@ -713,7 +716,7 @@ FunctionEnd
 Section Uninstall
 
 
-  ; Unregister libraries - 15
+  ; Unregister libraries - 16
 
   ; Unregister core annodex libraries
   
@@ -743,6 +746,8 @@ Section Uninstall
   ExecWait 'regsvr32 "/s" "/u" "$INSTDIR\dsfTheoraDecoder.dll"'
   ExecWait 'regsvr32 "/s" "/u" "$INSTDIR\dsfFLACDecoder.dll"'
   ExecWait 'regsvr32 "/s" "/u" "$INSTDIR\dsfVorbisDecoder.dll"'
+
+  ExecWait 'regsvr32 "/s" "/u" "$INSTDIR\dsfOGMDecoder.dll"'
 
 
 
@@ -845,7 +850,7 @@ Section Uninstall
   Delete "$INSTDIR\libTemporalURI.dll"
 
 
-  ;Delete Filters - 15
+  ;Delete Filters - 16
   Delete "$INSTDIR\dsfVorbisEncoder.dll"
   Delete "$INSTDIR\dsfTheoraEncoder.dll"
   Delete "$INSTDIR\dsfSpeexEncoder.dll"
@@ -855,6 +860,7 @@ Section Uninstall
   Delete "$INSTDIR\dsfFLACDecoder.dll"
   Delete "$INSTDIR\dsfTheoraDecoder.dll"
   Delete "$INSTDIR\dsfSpeexDecoder.dll"
+  Delete "$INSTDIR\dsfOGMDecoder.dll"
 
   Delete "$INSTDIR\dsfNativeFLACSource.dll"
 
