@@ -157,7 +157,7 @@ Section "Ogg Core Files" SEC01
   File "${OGGCODECS_ROOT_DIR}\src\lib\codecs\flac\filters\dsfFLACDecoder\${OGGCODECS_CONFIG_PATH}\dsfFLACDecoder.dll"
   File "${OGGCODECS_ROOT_DIR}\src\lib\codecs\vorbis\filters\dsfVorbisDecoder\${OGGCODECS_CONFIG_PATH}\dsfVorbisDecoder.dll"
 
-  File "${OGGCODECS_ROOT_DIR}\src\lib\core\directshow\dsfOggDemux\${OGGCODECS_CONFIG_PATH}\dsfOggDemux.dll"
+  File "${OGGCODECS_ROOT_DIR}\src\lib\core\directshow\dsfOggDemux2\${OGGCODECS_CONFIG_PATH}\dsfOggDemux2.dll"
   File "${OGGCODECS_ROOT_DIR}\src\lib\core\directshow\dsfOggMux\${OGGCODECS_CONFIG_PATH}\dsfOggMux.dll"
 
   ; File "${OGGCODECS_ROOT_DIR}\src\lib\core\directshow\dsfSeeking\${OGGCODECS_CONFIG_PATH}\dsfSeeking.dll"
@@ -182,7 +182,7 @@ Section "Ogg Core Files" SEC01
   ExecWait 'regsvr32 "/s" "$INSTDIR\dsfFLACDecoder.dll"'
   ExecWait 'regsvr32 "/s" "$INSTDIR\dsfVorbisDecoder.dll"'
 
-  ExecWait 'regsvr32 "/s" "$INSTDIR\dsfOggDemux.dll"'
+  ExecWait 'regsvr32 "/s" "$INSTDIR\dsfOggDemux2.dll"'
   ExecWait 'regsvr32 "/s" "$INSTDIR\dsfOggMux.dll"'
 
   ExecWait 'regsvr32 "/s" "$INSTDIR\dsfCMMLDecoder.dll"'
@@ -726,7 +726,7 @@ Section Uninstall
 
   
   ; Unregister core ogg libraries
-  ExecWait 'regsvr32 "/s" "/u" "$INSTDIR\dsfOggDemux.dll"'
+  ExecWait 'regsvr32 "/s" "/u" "$INSTDIR\dsfOggDemux2.dll"'
   ExecWait 'regsvr32 "/s" "/u" "$INSTDIR\dsfOggMux.dll"'
 
 
@@ -863,7 +863,7 @@ Section Uninstall
 
   Delete "$INSTDIR\dsfSubtitleVMR9.dll"
   
-  Delete "$INSTDIR\dsfOggDemux.dll"
+  Delete "$INSTDIR\dsfOggDemux2.dll"
   Delete "$INSTDIR\dsfOggMux.dll"
 
   ; Delete "$INSTDIR\dsfSeeking.dll"
