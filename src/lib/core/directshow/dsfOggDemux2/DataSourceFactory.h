@@ -32,6 +32,8 @@
 #include "IFilterDataSource.h"
 #include "FilterFileSource.h"
 #include "HTTPFileSource.h"
+
+#include "HTTPStreamingFileSource.h"
 class OGG_DEMUX2_API DataSourceFactory
 {
 public:

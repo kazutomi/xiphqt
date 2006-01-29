@@ -84,6 +84,8 @@ protected:
 	bool mIsChunked;
 	unsigned long mChunkRemains;
 
+	bool mIsBufferFilling;
+
 	bool mIsFirstChunk;
 	string mRetryAt;
 

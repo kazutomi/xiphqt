@@ -40,6 +40,7 @@ HTTPStreamingFileSource::HTTPStreamingFileSource(void)
 	,	mNumLeftovers(0)
 	,	mMemoryBuffer(NULL)
 	,	mContentLength(-1)
+	,	mIsBufferFilling(false)
 {
 	mBufferLock = new CCritSec;
 #ifdef OGGCODECS_LOGGING
@@ -179,6 +180,8 @@ void HTTPStreamingFileSource::DataProcessLoop() {
 	bool locSeenAny = false;
 	debugLog<<"Starting dataprocessloop"<<endl;
 
+	mIsBufferFilling = false;
+
 	locBuff = new char[RECV_BUFF_SIZE];
 
 	while(true) {
@@ -190,11 +193,14 @@ void HTTPStreamingFileSource::DataProcessLoop() {
 					delete[] locBuff;
 					return;
 				} else {
+					
 					Reply(S_OK);
 				}
 			}
 		} else {
 			//Got enough data, wait for a new job
+
+			mIsBufferFilling = false;
 			if (GetRequest() == THREAD_EXIT) {	//Block until we have a new job
 				debugLog<<"Thread Data Process loop received breakout signal..."<<endl;
 				delete[] locBuff;
@@ -203,6 +209,8 @@ void HTTPStreamingFileSource::DataProcessLoop() {
 				Reply(S_OK);
 			}
 		}
+
+		mIsBufferFilling = true;
 		//if(CheckRequest(&locCommand) == TRUE) {
 		//	debugLog<<"Thread Data Process loop received breakout signal..."<<endl;
 		//	delete[] locBuff;
@@ -483,8 +491,8 @@ void HTTPStreamingFileSource::clear() {
 	mIsEOF = false;
 	mWasError = false;
 	mRetryAt = "";
-	mSourceLocation = "";
-	mContentLength = -1;
+	//mSourceLocation = "";
+	//mContentLength = -1;
 }
 bool HTTPStreamingFileSource::isError()
 {
@@ -510,26 +518,36 @@ unsigned long HTTPStreamingFileSource::read(char* outBuffer, unsigned long inNum
 	//Reads from the buffer, will return 0 if nothing in buffer.
 	// If it returns 0 check the isEOF flag to see if it was the end of file or the network is just slow.
 
+	unsigned long locNumRead = 0;
 	{ //CRITICAL SECTION - PROTECTING STREAM BUFFER
 		CAutoLock locLock(mBufferLock);
 		
 		//debugLog<<"Read:"<<endl;
 		if((mMemoryBuffer->numBytesAvail() == 0) || mWasError) {
 			//debugLog<<"read : Can't read is error or eof"<<endl;
-			return 0;
+			//return 0;
 		} else {
 			//debugLog<<"Reading from buffer"<<endl;
 			
-			unsigned long locNumRead = mMemoryBuffer->read((unsigned char*)outBuffer, inNumBytes);
+			if (mMemoryBuffer->numBytesAvail() < inNumBytes) {
+				locNumRead = 0;
+			} else {
+				locNumRead = mMemoryBuffer->read((unsigned char*)outBuffer, inNumBytes);
+			}
 
 			if (locNumRead > 0) {
 				debugLog<<locNumRead<<" bytes read from buffer"<<endl;
 			}
 
-			if (mMemoryBuffer->numBytesAvail() <= MEMORY_BUFFER_LOW_TIDE) {
-				CallWorker(THREAD_RUN);
-			}
-			return locNumRead;
+			//if (mMemoryBuffer->numBytesAvail() <= MEMORY_BUFFER_LOW_TIDE) {
+			//	CallWorker(THREAD_RUN);
+			//}
+			//return locNumRead;
 		}
 	} //END CRITICAL SECTION
+
+	if ((mMemoryBuffer->numBytesAvail() <= MEMORY_BUFFER_LOW_TIDE) && (!mIsBufferFilling)) {
+		CallWorker(THREAD_RUN);
+	}
+	return locNumRead;
 }
