@@ -529,11 +529,12 @@ unsigned long HTTPStreamingFileSource::read(char* outBuffer, unsigned long inNum
 		} else {
 			//debugLog<<"Reading from buffer"<<endl;
 			
-			if (mMemoryBuffer->numBytesAvail() < inNumBytes) {
-				locNumRead = 0;
-			} else {
-				locNumRead = mMemoryBuffer->read((unsigned char*)outBuffer, inNumBytes);
-			}
+			//if (mMemoryBuffer->numBytesAvail() < inNumBytes) {
+			//	locNumRead = 0;
+			//} else {
+				//Allow short reads from buffer
+				locNumRead = mMemoryBuffer->read((unsigned char*)outBuffer, inNumBytes, true);
+			//}
 
 			if (locNumRead > 0) {
 				debugLog<<locNumRead<<" bytes read from buffer"<<endl;
@@ -546,7 +547,7 @@ unsigned long HTTPStreamingFileSource::read(char* outBuffer, unsigned long inNum
 		}
 	} //END CRITICAL SECTION
 
-	if ((mMemoryBuffer->numBytesAvail() <= MEMORY_BUFFER_LOW_TIDE) && (!mIsBufferFilling)) {
+	if ((mMemoryBuffer->numBytesAvail() <= MEMORY_BUFFER_LOW_TIDE) && (!mIsBufferFilling) && (!mIsEOF)) {
 		CallWorker(THREAD_RUN);
 	}
 	return locNumRead;

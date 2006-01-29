@@ -508,6 +508,7 @@ HRESULT OggDemuxPacketSourceFilter::DataProcessLoop()
 		{
 			CAutoLock locSourceLock(mSourceFileLock);
 
+
 			locBytesRead = mDataSource->read(locBuff, 4096);
 			mJustReset = false;
 		}
