@@ -241,8 +241,7 @@ in all MacOS and Win32 apps that use Apple Quicktime.</div>
 <div class="sl_added">added on <i>2001-06-30 23:29:04.00</i></div>
 <div class="sl_desc">These filters/plugins will allow you to play Ogg Vorbis files
 in Windows Media Player, as well as use Vorbis in many other DirectX
-applications. [This project is no longer being maintained. Please look
-at <a href="http://tobias.everwicked.com/oggds.htm">OggDS</a> for a maintained project.]</div>
+applications. [This project is no longer being maintained.]</div>
 
 <div class="sl_link"><a href="http://homepage.ntlworld.com/jfe1205/OggVorbis/">OggDropXPd</a></div>
 <div class="sl_added">added on <i>2002-07-16 15:01:12.55</i></div>
@@ -250,11 +249,12 @@ at <a href="http://tobias.everwicked.com/oggds.htm">OggDS</a> for a maintained p
 user. It has quality and bitrate management modes and features such as gain,
 resampling, downmixing, and tagging control.</div>
 
-<div class="sl_link"><a href="http://tobias.everwicked.com/oggds.htm">OggDS Direct Show Filters</a></div>
+<div class="sl_link">OggDS Direct Show Filters</div>
 <div class="sl_added">added on <i>2002-07-19 17:06:51.02</i></div>
 <div class="sl_desc">OggDS is a collection of Direct Show filters for Windows
 Media Player that supports Ogg streams and Vorbis audio playback and encoding,
-as well as splitting and multiplexing.</div>
+as well as splitting and multiplexing.
+[This project is no longer being maintained.]</div>
 
 <div class="sl_link"><a href="http://music.predixis.com/">Predixis MusicMagic Mixer</a></div>
 <div class="sl_added">added on <i>2003-10-26 15:59:32.89</i></div>
@@ -384,14 +384,15 @@ and MORE you cant go wrong!</div>
 <div class="sl_added">added on <i>2001-06-30 23:29:04.00</i></div>
 <div class="sl_desc">These filters/plugins will allow you to play Ogg Vorbis files
 in Windows Media Player, as well as use Vorbis in many other DirectX
-applications. [This project is no longer being maintained. Please look
-at <a href="http://tobias.everwicked.com/oggds.htm">OggDS</a> for a maintained project.]</div>
+applications. [This project is no longer being maintained.]</div>
 
-<div class="sl_link"><a href="http://tobias.everwicked.com/oggds.htm">OggDS Direct Show Filters</a></div>
+<div class="sl_link">OggDS Direct Show Filters</div>
 <div class="sl_added">added on <i>2002-07-19 17:06:51.02</i></div>
 <div class="sl_desc">OggDS is a collection of Direct Show filters for Windows
 Media Player that supports Ogg streams and Vorbis audio playback and encoding,
-as well as splitting and multiplexing.</div>
+as well as splitting and multiplexing.
+ [This project is no longer being maintained.]</div>
+
 
 <h2><a name="macosx">Mac OS X</a></h2>
 

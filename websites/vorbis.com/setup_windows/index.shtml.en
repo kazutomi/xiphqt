@@ -64,8 +64,9 @@ but aren't in the main list for whatever reason.</p>
   <li><a href="http://corevorbis.corecodec.org/">CoreVorbis</a>: A DirectShow
    filter for decoding from various sources including OGM and
    <a href="http://www.matroska.org/">Matroska</a> files.</li>
-  <li><a href="http://tobias.everwicked.com/">Tobias' DS Filters</a>: The
-  original DirectShow filter, but it is no longer being maintained.</li>
+  <li>Tobias' DS Filters: The
+  original DirectShow filter, but it is no longer being maintained.
+  [<a href="http://web.archive.org/web/20021004165425/tobias.everwicked.com/oggds.htm">archive.org link</a>] </li>
   <li><a href="http://www.oggmedia.info/">RadLight's OggMedia DSF</a>: A
   filter set made by the makers of the RadLight media player for compatibility reasons.</li>
   <li><a href="http://www.hydrogenaudio.org/forums/index.php?showtopic=15049">Hydrogen
