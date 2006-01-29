@@ -50,7 +50,8 @@ public:
 	virtual ~HTTPStreamingFileSource(void);
 
 	//Consts
-	static const unsigned long MEMORY_BUFFER_SIZE = 1024 * 1024 * 2;
+	static const unsigned long MEMORY_BUFFER_SIZE = 1024 * 1024 * 2;	//2 megs
+	static const unsigned long MEMORY_BUFFER_LOW_TIDE = 1024 * 512 * 3; //1.5 megs
 	//Thread commands
 	static const int THREAD_RUN = 0;
 	static const int THREAD_EXIT = 1;

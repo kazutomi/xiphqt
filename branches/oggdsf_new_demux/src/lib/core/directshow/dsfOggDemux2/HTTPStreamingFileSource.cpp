@@ -182,11 +182,32 @@ void HTTPStreamingFileSource::DataProcessLoop() {
 	locBuff = new char[RECV_BUFF_SIZE];
 
 	while(true) {
-		if(CheckRequest(&locCommand) == TRUE) {
-			debugLog<<"Thread Data Process loop received breakout signal..."<<endl;
-			delete[] locBuff;
-			return;
+		if (mMemoryBuffer->numBytesAvail() <= MEMORY_BUFFER_LOW_TIDE) {
+			//Need to keep reading
+			if(CheckRequest(&locCommand) == TRUE) {
+				if (GetRequest() == THREAD_EXIT) {
+					debugLog<<"Thread Data Process loop received breakout signal..."<<endl;
+					delete[] locBuff;
+					return;
+				} else {
+					Reply(S_OK);
+				}
+			}
+		} else {
+			//Got enough data, wait for a new job
+			if (GetRequest() == THREAD_EXIT) {	//Block until we have a new job
+				debugLog<<"Thread Data Process loop received breakout signal..."<<endl;
+				delete[] locBuff;
+				return;
+			} else {
+				Reply(S_OK);
+			}
 		}
+		//if(CheckRequest(&locCommand) == TRUE) {
+		//	debugLog<<"Thread Data Process loop received breakout signal..."<<endl;
+		//	delete[] locBuff;
+		//	return;
+		//}
 		//debugLog<<"About to call recv"<<endl;
 		locNumRead = recv(mSocket, locBuff, RECV_BUFF_SIZE, 0);
 		//debugLog<<"recv complete"<<endl;
@@ -503,6 +524,10 @@ unsigned long HTTPStreamingFileSource::read(char* outBuffer, unsigned long inNum
 
 			if (locNumRead > 0) {
 				debugLog<<locNumRead<<" bytes read from buffer"<<endl;
+			}
+
+			if (mMemoryBuffer->numBytesAvail() <= MEMORY_BUFFER_LOW_TIDE) {
+				CallWorker(THREAD_RUN);
 			}
 			return locNumRead;
 		}
