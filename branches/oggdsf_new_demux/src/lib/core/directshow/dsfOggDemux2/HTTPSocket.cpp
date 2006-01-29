@@ -64,8 +64,10 @@ HTTPSocket::~HTTPSocket(void)
 }
 
 
-bool HTTPSocket::setupSocket(string inSourceLocation) {
-	
+bool HTTPSocket::setupSocket(string inSourceLocation) 
+{
+
+	mSourceLocation = inSourceLocation;
 	//debugLog2<<"Setup Socket:"<<endl;
 	IN_ADDR locAddress;  //iaHost
 	LPHOSTENT locHostData;;  //lpHost
@@ -131,9 +133,15 @@ bool HTTPSocket::setupSocket(string inSourceLocation) {
 
 }
 
-string HTTPSocket::assembleRequest(string inFilePath) {
+string HTTPSocket::assembleRequest(string inFilePath, unsigned long inStartByte) {
 	string retRequest;
-	retRequest = "GET " + inFilePath+ " HTTP/1.1\r\n" + "Host: " + mServerName+ "\r\n" + "Connection: close" + "\r\n\r\n";
+	retRequest = "GET " + inFilePath+ " HTTP/1.1\r\n" + "Host: " + mServerName+ "\r\n" + "Connection: close";
+	
+	if (inStartByte != 0) {
+		retRequest = retRequest + "\r\n" + "Range: bytes=" + StringHelper::numToString(inStartByte) + "-";
+	}
+	
+	retRequest += "\r\n\r\n";
 	//debugLog2<<"Assembled Req : "<<endl<<retRequest<<endl;
 	return retRequest;
 }

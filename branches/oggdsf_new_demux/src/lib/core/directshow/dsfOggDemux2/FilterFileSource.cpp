@@ -47,7 +47,7 @@ unsigned long FilterFileSource::seek(unsigned long inPos) {
 void FilterFileSource::close() {
 	mSourceFile.close();
 }
-bool FilterFileSource::open(string inSourceLocation) {
+bool FilterFileSource::open(string inSourceLocation, unsigned long) {
 	mSourceFile.open(inSourceLocation.c_str(), ios_base::in|ios_base::binary);
 	return mSourceFile.is_open();
 }

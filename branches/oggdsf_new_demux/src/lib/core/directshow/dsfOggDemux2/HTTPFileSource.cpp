@@ -367,7 +367,7 @@ bool HTTPFileSource::startThread() {
 	CallWorker(THREAD_RUN);
 	return true;
 }
-bool HTTPFileSource::open(string inSourceLocation) {
+bool HTTPFileSource::open(string inSourceLocation, unsigned long inStartByte) {
 	//Open network connection and start feeding data into a buffer
 	//
 	mSeenResponse = false;

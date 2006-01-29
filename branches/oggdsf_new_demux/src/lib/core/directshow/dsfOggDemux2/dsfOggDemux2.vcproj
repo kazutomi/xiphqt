@@ -140,6 +140,9 @@
 				RelativePath=".\HTTPSocket.cpp">
 			</File>
 			<File
+				RelativePath=".\HTTPStreamingFileSource.cpp">
+			</File>
+			<File
 				RelativePath=".\OggDemuxPacketSourceFilter.cpp">
 			</File>
 			<File
@@ -193,6 +196,9 @@
 				RelativePath=".\HTTPSocket.h">
 			</File>
 			<File
+				RelativePath=".\HTTPStreamingFileSource.h">
+			</File>
+			<File
 				RelativePath=".\IFilterDataSource.h">
 			</File>
 			<File
@@ -200,6 +206,9 @@
 			</File>
 			<File
 				RelativePath=".\IOggDecoder.h">
+			</File>
+			<File
+				RelativePath=".\IOggFilterSeeker.h">
 			</File>
 			<File
 				RelativePath=".\IOggOutputPin.h">
