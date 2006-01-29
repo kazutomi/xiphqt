@@ -50,7 +50,8 @@ IFilterDataSource* DataSourceFactory::createDataSource(string inSourceLocation) 
 		return new FilterFileSource;
 	} else if (locType == "http") {
 		//Http stream
-		return new HTTPFileSource;
+		//return new HTTPFileSource;
+		return new HTTPStreamingFileSource;
 	} else {
 		//Something else
 		return NULL;
