@@ -1,5 +1,6 @@
+
 //===========================================================================
-//Copyright (C) 2003, 2004 Zentaro Kavanagh
+//Copyright (C) 2003-2006 Zentaro Kavanagh
 //
 //Redistribution and use in source and binary forms, with or without
 //modification, are permitted provided that the following conditions
@@ -32,7 +33,6 @@
 #include "oggdllstuff.h"
 
 #include "HTTPSocket.h"
-#include "SingleMediaFileCache.h"
 #include "IFilterDataSource.h"
 #include <string>
 #include <sstream>
@@ -40,15 +40,17 @@
 
 using namespace std;
 
-class OGG_DEMUX2_API HTTPFileSource
+class OGG_DEMUX2_API HTTPStreamingFileSource
 	:	public IFilterDataSource
 	,	public CAMThread
 	,	protected HTTPSocket	
 {
 public:
-	HTTPFileSource(void);
-	virtual ~HTTPFileSource(void);
+	HTTPStreamingFileSource(void);
+	virtual ~HTTPStreamingFileSource(void);
 
+	//Consts
+	static const unsigned long MEMORY_BUFFER_SIZE = 1024 * 1024 * 2;
 	//Thread commands
 	static const int THREAD_RUN = 0;
 	static const int THREAD_EXIT = 1;
@@ -63,8 +65,11 @@ public:
 	virtual unsigned long read(char* outBuffer, unsigned long inNumBytes);
 	virtual string shouldRetryAt();
 
+	
 	//CAMThread pure virtuals
-	DWORD HTTPFileSource::ThreadProc();
+	DWORD ThreadProc();
+
+
 
 protected:
 	void unChunk(unsigned char* inBuff, unsigned long inNumBytes);
@@ -72,7 +77,8 @@ protected:
 	bool startThread();
 	void DataProcessLoop();
 
-	SingleMediaFileCache mFileCache;
+	//SingleMediaFileCache mFileCache;
+	CircularBuffer* mMemoryBuffer;
 
 	bool mIsChunked;
 	unsigned long mChunkRemains;
@@ -87,6 +93,8 @@ protected:
 	unsigned char* mInterBuff;
 	unsigned long mNumLeftovers;
 	static	const unsigned long RECV_BUFF_SIZE = 1024;
+
+	__int64 mContentLength;
 
 	CCritSec* mBufferLock;
 };

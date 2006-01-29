@@ -29,15 +29,17 @@
 //SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //===========================================================================
 #include "stdafx.h"
-#include "httpfilesource.h"
+#include "HTTPStreamingFileSource.h"
 
 #define OGGCODECS_LOGGING
-HTTPFileSource::HTTPFileSource(void)
+HTTPStreamingFileSource::HTTPStreamingFileSource(void)
 	:	mBufferLock(NULL)
 	,	mIsChunked(false)
 	,	mIsFirstChunk(true)
 	,	mChunkRemains(0)
 	,	mNumLeftovers(0)
+	,	mMemoryBuffer(NULL)
+	,	mContentLength(-1)
 {
 	mBufferLock = new CCritSec;
 #ifdef OGGCODECS_LOGGING
@@ -45,11 +47,13 @@ HTTPFileSource::HTTPFileSource(void)
 	fileDump.open("d:\\zen\\logs\\filedump.ogg", ios_base::out|ios_base::binary);
 	rawDump.open("D:\\zen\\logs\\rawdump.out", ios_base::out|ios_base::binary);
 #endif
+	
 	mInterBuff = new unsigned char[RECV_BUFF_SIZE* 2];
+	mMemoryBuffer = new CircularBuffer(MEMORY_BUFFER_SIZE);
 
 }
 
-HTTPFileSource::~HTTPFileSource(void)
+HTTPStreamingFileSource::~HTTPStreamingFileSource(void)
 {
 	//debugLog<<"About to close socket"<<endl;
 	close();
@@ -61,9 +65,11 @@ HTTPFileSource::~HTTPFileSource(void)
 #endif
 	delete mBufferLock;
 	delete mInterBuff;
+
+	delete mMemoryBuffer;
 }
 
-void HTTPFileSource::unChunk(unsigned char* inBuff, unsigned long inNumBytes) 
+void HTTPStreamingFileSource::unChunk(unsigned char* inBuff, unsigned long inNumBytes) 
 {
 
 	//This method is a bit rough and ready !!
@@ -143,14 +149,14 @@ void HTTPFileSource::unChunk(unsigned char* inBuff, unsigned long inNumBytes)
 		if (locNumBytesLeft < mChunkRemains) {
 			//debugLog<<"less bytes remain than the chunk needs"<<endl;
 			
-			mFileCache.write((const unsigned char*)locWorkingBuffPtr, locNumBytesLeft );
+			mMemoryBuffer->write((const unsigned char*)locWorkingBuffPtr, locNumBytesLeft );
 			fileDump.write((char*)locWorkingBuffPtr, locNumBytesLeft);
 			locWorkingBuffPtr += locNumBytesLeft;
 			mChunkRemains -= locNumBytesLeft;
 			locNumBytesLeft = 0;
 		} else {
 			//debugLog<<"more bytes remain than the chunk needs"<<endl;
-			mFileCache.write((const unsigned char*)locWorkingBuffPtr, mChunkRemains );
+			mMemoryBuffer->write((const unsigned char*)locWorkingBuffPtr, mChunkRemains );
 			fileDump.write((char*)locWorkingBuffPtr, mChunkRemains);
 			locWorkingBuffPtr += mChunkRemains;
 			locNumBytesLeft -= mChunkRemains;
@@ -165,7 +171,7 @@ void HTTPFileSource::unChunk(unsigned char* inBuff, unsigned long inNumBytes)
 		mNumLeftovers = locNumBytesLeft;
 	}
 }
-void HTTPFileSource::DataProcessLoop() {
+void HTTPStreamingFileSource::DataProcessLoop() {
 	//debugLog<<"DataProcessLoop: "<<endl;
 	int locNumRead = 0;
 	char* locBuff = NULL;
@@ -207,7 +213,7 @@ void HTTPFileSource::DataProcessLoop() {
 				if (mIsChunked) {
 					unChunk((unsigned char*)locBuff, locNumRead);
 				} else {
-					mFileCache.write((const unsigned char*)locBuff, locNumRead);
+					mMemoryBuffer->write((const unsigned char*)locBuff, locNumRead);
 				}
 			
 				//Dump to file
@@ -258,6 +264,28 @@ void HTTPFileSource::DataProcessLoop() {
 						mIsEOF = true;
 						mWasError = true;
 						//close();
+					} else {
+						//Good response
+
+						//Check for content-length
+						mContentLength = -1;
+						size_t locContentLengthPos = mLastResponse.find("Content-Length: ");
+						if (locContentLengthPos != string::npos) {
+							locContentLengthPos += 16;
+
+							size_t locEndPos = mLastResponse.find("\r", locContentLengthPos);
+							if ((locEndPos != string::npos) && (locEndPos > locContentLengthPos)) {
+								string locLengthString = mLastResponse.substr(locContentLengthPos, locEndPos - locContentLengthPos);
+
+								
+								try {
+									__int64 locContentLength = StringHelper::stringToNum(locLengthString);
+									mContentLength = locContentLength;
+								} catch(...) {
+									mContentLength = -1;
+								}
+							}
+						}
 					}
 
 					if (locTemp.find("Transfer-Encoding: chunked") != string::npos) {
@@ -274,7 +302,7 @@ void HTTPFileSource::DataProcessLoop() {
 					} else {
                         //debugLog<<"Start of data follows"<<endl<<locTemp<<endl;
 						if (locNumRead - locPos - 4 > 0) {
-							mFileCache.write((const unsigned char*)locBuff2, (locNumRead - (locPos + 4)));
+							mMemoryBuffer->write((const unsigned char*)locBuff2, (locNumRead - (locPos + 4)));
 						}
 					}
 				}
@@ -285,7 +313,7 @@ void HTTPFileSource::DataProcessLoop() {
 	delete[] locBuff;
 }
 
-unsigned short HTTPFileSource::getHTTPResponseCode(string inHTTPResponse)
+unsigned short HTTPStreamingFileSource::getHTTPResponseCode(string inHTTPResponse)
 {
 	size_t locPos = inHTTPResponse.find(" ");
 	if (locPos != string::npos) {
@@ -300,12 +328,12 @@ unsigned short HTTPFileSource::getHTTPResponseCode(string inHTTPResponse)
 		return 0;
 	}
 }
-string HTTPFileSource::shouldRetryAt()
+string HTTPStreamingFileSource::shouldRetryAt()
 {
 	return mRetryAt;
 }
 
-DWORD HTTPFileSource::ThreadProc(void) {
+DWORD HTTPStreamingFileSource::ThreadProc(void) {
 	//debugLog<<"ThreadProc:"<<endl;
 	while(true) {
 		DWORD locThreadCommand = GetRequest();
@@ -328,23 +356,35 @@ DWORD HTTPFileSource::ThreadProc(void) {
 	}
 	return S_OK;
 }
-unsigned long HTTPFileSource::seek(unsigned long inPos) {
+unsigned long HTTPStreamingFileSource::seek(unsigned long inPos) 
+{
 	//Close the socket down
 	//Open up a new one to the same place.
 	//Make the partial content request.
 	//debugLog<<"Seeking to "<<inPos<<endl;
-	if (mFileCache.readSeek(inPos)) {
-		return inPos;
+	
+	if (mContentLength != -1) {
+		close();
+		closeSocket();
+		clear();
+
+		open(mSourceLocation, inPos);
+
 	} else {
 		return (unsigned long) -1;
 	}
+	//if (mFileCache.readSeek(inPos)) {
+	//	return inPos;
+	//} else {
+	//	return (unsigned long) -1;
+	//}
 	
 }
 
 
-void HTTPFileSource::close() {
+void HTTPStreamingFileSource::close() {
 	//Killing thread
-	//debugLog<<"HTTPFileSource::close()"<<endl;
+	//debugLog<<"HTTPStreamingFileSource::close()"<<endl;
 	if (ThreadExists() == TRUE) {
 		//debugLog<<"Calling Thread to EXIT"<<endl;
 		CallWorker(THREAD_EXIT);
@@ -360,14 +400,14 @@ void HTTPFileSource::close() {
 	closeSocket();
 }
 
-bool HTTPFileSource::startThread() {
+bool HTTPStreamingFileSource::startThread() {
 	if (ThreadExists() == FALSE) {
 		Create();
 	}
 	CallWorker(THREAD_RUN);
 	return true;
 }
-bool HTTPFileSource::open(string inSourceLocation, unsigned long inStartByte) {
+bool HTTPStreamingFileSource::open(string inSourceLocation, unsigned long inStartByte) {
 	//Open network connection and start feeding data into a buffer
 	//
 	mSeenResponse = false;
@@ -377,23 +417,25 @@ bool HTTPFileSource::open(string inSourceLocation, unsigned long inStartByte) {
 	{ //CRITICAL SECTION - PROTECTING STREAM BUFFER
 		CAutoLock locLock(mBufferLock);
 		
-		//Init rand number generator
-		LARGE_INTEGER locTicks;
-		QueryPerformanceCounter(&locTicks);
-		srand((unsigned int)locTicks.LowPart);
+		////Init rand number generator
+		//LARGE_INTEGER locTicks;
+		//QueryPerformanceCounter(&locTicks);
+		//srand((unsigned int)locTicks.LowPart);
 
-		int locRand = rand();
+		//int locRand = rand();
 
-		string locCacheFileName = getenv("TEMP");
-		//debugLog<<"Temp = "<<locCacheFileName<<endl;
-		locCacheFileName += "\\filecache";
-		
-		locCacheFileName += StringHelper::numToString(locRand);
-		locCacheFileName += ".ogg";
+		//string locCacheFileName = getenv("TEMP");
+		////debugLog<<"Temp = "<<locCacheFileName<<endl;
+		//locCacheFileName += "\\filecache";
+		//
+		//locCacheFileName += StringHelper::numToString(locRand);
+		//locCacheFileName += ".ogg";
 		//debugLog<<"Cache file  = "<<locCacheFileName<<endl;
-		if(mFileCache.open(locCacheFileName)) {
-			//debugLog<<"OPEN : Cach file opened"<<endl;
-		}
+		//if(mFileCache.open(locCacheFileName)) {
+		//	//debugLog<<"OPEN : Cach file opened"<<endl;
+		//}
+
+		mMemoryBuffer->reset();
 	} //END CRITICAL SECTION
 
 	bool locIsOK = setupSocket(inSourceLocation);
@@ -407,28 +449,30 @@ bool HTTPFileSource::open(string inSourceLocation, unsigned long inStartByte) {
 	//debugLog<<"Sending request..."<<endl;
 
 	//How is filename already set ??
-	httpRequest(assembleRequest(mFileName));
+	httpRequest(assembleRequest(mFileName, inStartByte));
 	//debugLog<<"Socket ok... starting thread"<<endl;
 	locIsOK = startThread();
 
 
 	return locIsOK;
 }
-void HTTPFileSource::clear() {
+void HTTPStreamingFileSource::clear() {
 	//Reset flags.
 	debugLog<<"Setting error to false";
 	mIsEOF = false;
 	mWasError = false;
 	mRetryAt = "";
+	mSourceLocation = "";
+	mContentLength = -1;
 }
-bool HTTPFileSource::isError()
+bool HTTPStreamingFileSource::isError()
 {
 	return mWasError;
 }
-bool HTTPFileSource::isEOF() {
+bool HTTPStreamingFileSource::isEOF() {
 	{ //CRITICAL SECTION - PROTECTING STREAM BUFFER
 		CAutoLock locLock(mBufferLock);
-		unsigned long locSizeBuffed = mFileCache.bytesAvail();;
+		unsigned long locSizeBuffed = mMemoryBuffer->numBytesAvail(); //mFileCache.bytesAvail();;
 	
 		//debugLog<<"isEOF : Amount Buffered avail = "<<locSizeBuffed<<endl;
 		if ((locSizeBuffed == 0) && mIsEOF) {
@@ -441,7 +485,7 @@ bool HTTPFileSource::isEOF() {
 	} //END CRITICAL SECTION
 
 }
-unsigned long HTTPFileSource::read(char* outBuffer, unsigned long inNumBytes) {
+unsigned long HTTPStreamingFileSource::read(char* outBuffer, unsigned long inNumBytes) {
 	//Reads from the buffer, will return 0 if nothing in buffer.
 	// If it returns 0 check the isEOF flag to see if it was the end of file or the network is just slow.
 
@@ -449,13 +493,13 @@ unsigned long HTTPFileSource::read(char* outBuffer, unsigned long inNumBytes) {
 		CAutoLock locLock(mBufferLock);
 		
 		//debugLog<<"Read:"<<endl;
-		if((mFileCache.bytesAvail() == 0) || mWasError) {
+		if((mMemoryBuffer->numBytesAvail() == 0) || mWasError) {
 			//debugLog<<"read : Can't read is error or eof"<<endl;
 			return 0;
 		} else {
 			//debugLog<<"Reading from buffer"<<endl;
 			
-			unsigned long locNumRead = mFileCache.read((unsigned char*)outBuffer, inNumBytes);
+			unsigned long locNumRead = mMemoryBuffer->read((unsigned char*)outBuffer, inNumBytes);
 
 			if (locNumRead > 0) {
 				debugLog<<locNumRead<<" bytes read from buffer"<<endl;

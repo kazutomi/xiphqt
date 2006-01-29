@@ -45,7 +45,7 @@ public:
 	//IFilterDataSource Interface
 	virtual unsigned long seek(unsigned long inPos);
 	virtual void close();
-	virtual bool open(string inSourceLocation);
+	virtual bool open(string inSourceLocation, unsigned long inStartByte = 0);
 	virtual void clear();
 	virtual bool isEOF();
 	virtual bool isError()								{	return false;	}

@@ -43,7 +43,8 @@ public:
 	virtual bool setupSocket(string inSourceLocation);
 	virtual void closeSocket();
 	virtual bool splitURL(string inURL);
-	virtual string assembleRequest(string inFilePath);
+	virtual string assembleRequest(string inFilePath, unsigned long inStartByte = 0);
+	//virtual string assembleRequest(string inFilePath);
 	bool httpRequest(string inRequest);
 protected:
 	string mServerName;
@@ -51,6 +52,8 @@ protected:
 	unsigned short mPort;
 	string mLastResponse;
 	SOCKET mSocket;
+
+	string mSourceLocation;
 
 	bool mIsEOF;
 	bool mWasError;
