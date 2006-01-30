@@ -96,6 +96,7 @@ protected:
 	unsigned char* mInterBuff;
 	unsigned long mNumLeftovers;
 	static	const unsigned long RECV_BUFF_SIZE = 1024;
+	static const unsigned long STREAM_START_BUFFER_SIZE = 32 * 1024;
 
 	//Fix for seekback on headers - since we only maintain a forward buffer. The seek back to start which occurs
 	//	right after the headers are processed, will generally trigger a stream reset. But an annodex server,
@@ -109,6 +110,12 @@ protected:
 	//If it is, then we can set a flag, and respond to read requests from this new buffer, up until the point
 	//	where the stream was before the seek, then switch back to serving out live streaming data.
 	unsigned long mCurrentAbsoluteReadPosition;
+	bool mFirstPass;
+
+	unsigned char* mStreamStartBuffer;
+	unsigned long mStreamStartBufferLength;
+
+	unsigned long mApparentReadPosition;
 	
 	//
 

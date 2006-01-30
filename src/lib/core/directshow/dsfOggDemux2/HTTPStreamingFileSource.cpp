@@ -42,6 +42,10 @@ HTTPStreamingFileSource::HTTPStreamingFileSource(void)
 	,	mMemoryBuffer(NULL)
 	,	mContentLength(-1)
 	,	mIsBufferFilling(false)
+	,	mFirstPass(true)
+	,	mStreamStartBuffer(NULL)
+	,	mStreamStartBufferLength(0)
+	,	mApparentReadPosition(0)
 {
 	mBufferLock = new CCritSec;
 #ifdef OGGCODECS_LOGGING
@@ -52,6 +56,7 @@ HTTPStreamingFileSource::HTTPStreamingFileSource(void)
 	
 	mInterBuff = new unsigned char[RECV_BUFF_SIZE* 2];
 	mMemoryBuffer = new CircularBuffer(MEMORY_BUFFER_SIZE);
+	mStreamStartBuffer = new unsigned char[STREAM_START_BUFFER_SIZE];
 
 }
 
@@ -69,6 +74,7 @@ HTTPStreamingFileSource::~HTTPStreamingFileSource(void)
 	delete mInterBuff;
 
 	delete mMemoryBuffer;
+	delete mStreamStartBuffer;
 }
 
 void HTTPStreamingFileSource::unChunk(unsigned char* inBuff, unsigned long inNumBytes) 
@@ -402,17 +408,31 @@ unsigned long HTTPStreamingFileSource::seek(unsigned long inPos)
 	//debugLog<<"Seeking to "<<inPos<<endl;
 
 	//Keep track of the absolute position we are looking at in the file.
-	mCurrentAbsoluteReadPosition = inPos;
 	
-	if ((mContentLength != -1) || (inPos == 0)) {
-		close();
-		closeSocket();
-		clear();
-
-		open(mSourceLocation, inPos);
-
+	mFirstPass = false;
+	if (mCurrentAbsoluteReadPosition <= mStreamStartBufferLength) {
+		//The network stream is still within the start buffer
+		mApparentReadPosition = inPos;
+		return inPos;
 	} else {
-		return (unsigned long) -1;
+	
+		mCurrentAbsoluteReadPosition = inPos;
+	
+	
+	
+	
+	
+		if ((mContentLength != -1) || (inPos == 0)) {
+			close();
+			closeSocket();
+			clear();
+
+			open(mSourceLocation, inPos);
+			return inPos;
+
+		} else {
+			return (unsigned long) -1;
+		}
 	}
 	//if (mFileCache.readSeek(inPos)) {
 	//	return inPos;
@@ -506,7 +526,12 @@ void HTTPStreamingFileSource::clear() {
 	mIsFirstChunk = true;
 	mChunkRemains = 0;
 	mNumLeftovers = 0;
+	
+	//TODO::: Check if this should really be here
+	mFirstPass = true;
+
 	mCurrentAbsoluteReadPosition = 0;
+	mApparentReadPosition = 0;
 	//mSourceLocation = "";
 	//mContentLength = -1;
 }
@@ -538,28 +563,56 @@ unsigned long HTTPStreamingFileSource::read(char* outBuffer, unsigned long inNum
 	{ //CRITICAL SECTION - PROTECTING STREAM BUFFER
 		CAutoLock locLock(mBufferLock);
 		
-		//debugLog<<"Read:"<<endl;
-		if((mMemoryBuffer->numBytesAvail() == 0) || mWasError) {
-			//debugLog<<"read : Can't read is error or eof"<<endl;
-			//return 0;
+		if (!mFirstPass && (mApparentReadPosition < mStreamStartBufferLength)) {
+			//In this case we have done a seekback and need to serve the request from the start buffer
+			unsigned long locBytesStillBuffered = mStreamStartBufferLength - mApparentReadPosition;
+
+			unsigned long locBytesToRead = (inNumBytes <= locBytesStillBuffered)	?	inNumBytes
+																					:	locBytesStillBuffered;
+
+			memcpy((void*)outBuffer, (const void*)(mStreamStartBuffer + mApparentReadPosition), locBytesToRead);
+			mApparentReadPosition += locBytesToRead;
+			locNumRead = locBytesToRead;
+
 		} else {
-			//debugLog<<"Reading from buffer"<<endl;
-			
-			//if (mMemoryBuffer->numBytesAvail() < inNumBytes) {
-			//	locNumRead = 0;
-			//} else {
+			//debugLog<<"Read:"<<endl;
+			if((mMemoryBuffer->numBytesAvail() == 0) || mWasError) {
+				//debugLog<<"read : Can't read is error or eof"<<endl;
+				//return 0;
+			} else {
+				//debugLog<<"Reading from buffer"<<endl;
+				
 				//Allow short reads from buffer
 				locNumRead = mMemoryBuffer->read((unsigned char*)outBuffer, inNumBytes, true);
-			//}
 
-			if (locNumRead > 0) {
-				debugLog<<locNumRead<<" bytes read from buffer at "<<mCurrentAbsoluteReadPosition<< endl;
+				//Handle the special start of stream buffer
+				if (mFirstPass && (locNumRead > 0) && (mStreamStartBufferLength < STREAM_START_BUFFER_SIZE)) {
+					//If we are still on the first pass (which means we are still parsing header info)
+					//	then we copy this into the start buffer
+
+					unsigned long locSpaceLeftInStartBuffer = STREAM_START_BUFFER_SIZE - mStreamStartBufferLength;
+
+					//There is at least 1 byte of space left
+					unsigned long locBytesToCopy = (locNumRead <= locSpaceLeftInStartBuffer)	?	locNumRead
+																								:	locSpaceLeftInStartBuffer;
+
+					memcpy((void*)(mStreamStartBuffer + mStreamStartBufferLength), (const void*)outBuffer, locBytesToCopy);
+					mStreamStartBufferLength += locBytesToCopy;
+				}
+
+
+				if (locNumRead > 0) {
+					debugLog<<locNumRead<<" bytes read from buffer at "<<mCurrentAbsoluteReadPosition<< endl;
+				}
+
+				mCurrentAbsoluteReadPosition += locNumRead;
+
+				//if (mMemoryBuffer->numBytesAvail() <= MEMORY_BUFFER_LOW_TIDE) {
+				//	CallWorker(THREAD_RUN);
+				//}
+				//return locNumRead;
+
 			}
-
-			//if (mMemoryBuffer->numBytesAvail() <= MEMORY_BUFFER_LOW_TIDE) {
-			//	CallWorker(THREAD_RUN);
-			//}
-			//return locNumRead;
 		}
 	} //END CRITICAL SECTION
 
@@ -567,6 +620,6 @@ unsigned long HTTPStreamingFileSource::read(char* outBuffer, unsigned long inNum
 		CallWorker(THREAD_RUN);
 	}
 
-	mCurrentAbsoluteReadPosition += locNumRead;
+	
 	return locNumRead;
 }
