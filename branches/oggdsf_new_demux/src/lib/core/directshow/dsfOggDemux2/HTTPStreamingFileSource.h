@@ -97,6 +97,21 @@ protected:
 	unsigned long mNumLeftovers;
 	static	const unsigned long RECV_BUFF_SIZE = 1024;
 
+	//Fix for seekback on headers - since we only maintain a forward buffer. The seek back to start which occurs
+	//	right after the headers are processed, will generally trigger a stream reset. But an annodex server,
+	//	will serve out a file with completely different serial numbers, making it impossible to map the streams
+	//	using the originally gathered information.
+	//
+	//Now we are going to buffer up the first part of the file into yet another buffer. Also keep track
+	//	of what the absolute byte position is we have read up to so far from the stream. When we receive a seek request,
+	//	we check if the current read position is within this new buffer.
+	//
+	//If it is, then we can set a flag, and respond to read requests from this new buffer, up until the point
+	//	where the stream was before the seek, then switch back to serving out live streaming data.
+	unsigned long mCurrentAbsoluteReadPosition;
+	
+	//
+
 	__int64 mContentLength;
 
 	CCritSec* mBufferLock;
