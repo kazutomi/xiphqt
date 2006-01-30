@@ -76,7 +76,7 @@ void HTTPStreamingFileSource::unChunk(unsigned char* inBuff, unsigned long inNum
 	//This method is a bit rough and ready !!
 	ASSERT(inNumBytes > 2);
 	rawDump.write((char*)inBuff, inNumBytes);
-	//debugLog<<"UnChunk"<<endl;
+	debugLog<<"UnChunk"<<endl;
 	unsigned long locNumBytesLeft = inNumBytes;
 
 	memcpy((void*)(mInterBuff + mNumLeftovers), (const void*)inBuff, inNumBytes);
@@ -84,26 +84,26 @@ void HTTPStreamingFileSource::unChunk(unsigned char* inBuff, unsigned long inNum
 	mNumLeftovers = 0;
 	unsigned char* locWorkingBuffPtr = mInterBuff;
 
-	//debugLog<<"inNumBytes = "<<inNumBytes<<endl;
+	debugLog<<"inNumBytes = "<<inNumBytes<<endl;
 
 	while (locNumBytesLeft > 8) {
-		//debugLog<<"---"<<endl;
-		//debugLog<<"Bytes left = "<<locNumBytesLeft<<endl;
-		//debugLog<<"ChunkRemaining = "<<mChunkRemains<<endl;
+		debugLog<<"---"<<endl;
+		debugLog<<"Bytes left = "<<locNumBytesLeft<<endl;
+		debugLog<<"ChunkRemaining = "<<mChunkRemains<<endl;
 
 		if (mChunkRemains == 0) {
-			//debugLog<<"Zero bytes of chunk remains"<<endl;
+			debugLog<<"Zero bytes of chunk remains"<<endl;
 
 			//Assign to a string for easy manipulation of the hex size
 			string locTemp;
 		
 			if (mIsFirstChunk) {
-				//debugLog<<"It's the first chunk"<<endl;
+				debugLog<<"+++++++++++++++ It's the first chunk ++++++++++++"<<endl;
 				mIsFirstChunk = false;
 				locTemp = (char*)locWorkingBuffPtr;
 			} else {
-				//debugLog<<"Not the first chunk"<<endl;
-				//debugLog<<"Skip bytes = "<<(int)locWorkingBuffPtr[0]<<(int)locWorkingBuffPtr[1]<<endl;
+				debugLog<<"Not the first chunk"<<endl;
+				debugLog<<"Skip bytes = "<<(int)locWorkingBuffPtr[0]<<(int)locWorkingBuffPtr[1]<<endl;
 				locTemp = (char*)(locWorkingBuffPtr + 2);
 				locWorkingBuffPtr+=2;
 				locNumBytesLeft -= 2;
@@ -119,10 +119,10 @@ void HTTPStreamingFileSource::unChunk(unsigned char* inBuff, unsigned long inNum
 			
 			
 			if (locChunkSizePos != string::npos) {
-				//debugLog<<"Found the size bytes "<<endl;
+				debugLog<<"Found the size bytes "<<endl;
 				//Get a string representation of the hex string that tells us the size of the chunk
 				string locChunkSizeStr = locTemp.substr(0, locChunkSizePos);
-				//debugLog<<"Sizingbuytes " << locChunkSizeStr<<endl;
+				debugLog<<"!!!!! Sizing bytes " << locChunkSizeStr<<endl;
 				char* locDummyPtr = NULL;
 
 				//Convert it to a number
@@ -134,7 +134,7 @@ void HTTPStreamingFileSource::unChunk(unsigned char* inBuff, unsigned long inNum
 				locWorkingBuffPtr +=  locGuffSize;
 				locNumBytesLeft -= locGuffSize;
 			} else {
-				//debugLog<<"************************************** "<<endl;
+				debugLog<<"******************* FAILED TO FIND SIZE BYTES "<<endl;
 			
 
 			}
@@ -142,10 +142,12 @@ void HTTPStreamingFileSource::unChunk(unsigned char* inBuff, unsigned long inNum
 
 		//This is the end of file
 		if (mChunkRemains == 0) {
-			//debugLog<<"EOF"<<endl;
+			debugLog<<" ??? EOF ???"<<endl;
 			return;
 		}
 
+		debugLog<<"locNumBytesLeft = "<<locNumBytesLeft<<endl;
+		debugLog<<"mChunkRemains = "<<mChunkRemains<<endl;
 		//If theres less bytes than the remainder of the chunk
 		if (locNumBytesLeft < mChunkRemains) {
 			//debugLog<<"less bytes remain than the chunk needs"<<endl;
@@ -167,9 +169,15 @@ void HTTPStreamingFileSource::unChunk(unsigned char* inBuff, unsigned long inNum
 	}
 
 	if (locNumBytesLeft != 0) {
-		//debugLog<<"There is a non- zero amount of bytes leftover... buffer them up for next time..."<<endl;
+		debugLog<<"There is a non- zero amount of bytes leftover... buffer them up for next time..."<<endl;
 		memcpy((void*)mInterBuff, (const void*)locWorkingBuffPtr, locNumBytesLeft);
 		mNumLeftovers = locNumBytesLeft;
+	}
+
+	//Debugging
+	if (strcmp((const char*)mInterBuff, "1000") == 0) {
+		debugLog<<"---- Probably failure point"<<endl;
+		int x= x;
 	}
 }
 void HTTPStreamingFileSource::DataProcessLoop() {
@@ -392,7 +400,7 @@ unsigned long HTTPStreamingFileSource::seek(unsigned long inPos)
 	//Make the partial content request.
 	//debugLog<<"Seeking to "<<inPos<<endl;
 	
-	if (mContentLength != -1) {
+	if ((mContentLength != -1) || (inPos == 0)){
 		close();
 		closeSocket();
 		clear();
@@ -491,6 +499,9 @@ void HTTPStreamingFileSource::clear() {
 	mIsEOF = false;
 	mWasError = false;
 	mRetryAt = "";
+	mIsFirstChunk = true;
+	mChunkRemains = 0;
+	mNumLeftovers = 0;
 	//mSourceLocation = "";
 	//mContentLength = -1;
 }
