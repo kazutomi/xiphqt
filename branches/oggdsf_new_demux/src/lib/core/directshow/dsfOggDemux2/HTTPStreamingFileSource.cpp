@@ -71,10 +71,10 @@ HTTPStreamingFileSource::~HTTPStreamingFileSource(void)
 	rawDump.close();
 #endif
 	delete mBufferLock;
-	delete mInterBuff;
+	delete[] mInterBuff;
 
 	delete mMemoryBuffer;
-	delete mStreamStartBuffer;
+	delete[] mStreamStartBuffer;
 }
 
 void HTTPStreamingFileSource::unChunk(unsigned char* inBuff, unsigned long inNumBytes) 
