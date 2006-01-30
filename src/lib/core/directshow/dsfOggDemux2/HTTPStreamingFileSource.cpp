@@ -38,6 +38,7 @@ HTTPStreamingFileSource::HTTPStreamingFileSource(void)
 	,	mIsFirstChunk(true)
 	,	mChunkRemains(0)
 	,	mNumLeftovers(0)
+	,	mCurrentAbsoluteReadPosition(0)
 	,	mMemoryBuffer(NULL)
 	,	mContentLength(-1)
 	,	mIsBufferFilling(false)
@@ -399,8 +400,11 @@ unsigned long HTTPStreamingFileSource::seek(unsigned long inPos)
 	//Open up a new one to the same place.
 	//Make the partial content request.
 	//debugLog<<"Seeking to "<<inPos<<endl;
+
+	//Keep track of the absolute position we are looking at in the file.
+	mCurrentAbsoluteReadPosition = inPos;
 	
-	if ((mContentLength != -1) || (inPos == 0)){
+	if ((mContentLength != -1) || (inPos == 0)) {
 		close();
 		closeSocket();
 		clear();
@@ -502,6 +506,7 @@ void HTTPStreamingFileSource::clear() {
 	mIsFirstChunk = true;
 	mChunkRemains = 0;
 	mNumLeftovers = 0;
+	mCurrentAbsoluteReadPosition = 0;
 	//mSourceLocation = "";
 	//mContentLength = -1;
 }
@@ -548,7 +553,7 @@ unsigned long HTTPStreamingFileSource::read(char* outBuffer, unsigned long inNum
 			//}
 
 			if (locNumRead > 0) {
-				debugLog<<locNumRead<<" bytes read from buffer"<<endl;
+				debugLog<<locNumRead<<" bytes read from buffer at "<<mCurrentAbsoluteReadPosition<< endl;
 			}
 
 			//if (mMemoryBuffer->numBytesAvail() <= MEMORY_BUFFER_LOW_TIDE) {
@@ -561,5 +566,7 @@ unsigned long HTTPStreamingFileSource::read(char* outBuffer, unsigned long inNum
 	if ((mMemoryBuffer->numBytesAvail() <= MEMORY_BUFFER_LOW_TIDE) && (!mIsBufferFilling) && (!mIsEOF)) {
 		CallWorker(THREAD_RUN);
 	}
+
+	mCurrentAbsoluteReadPosition += locNumRead;
 	return locNumRead;
 }
