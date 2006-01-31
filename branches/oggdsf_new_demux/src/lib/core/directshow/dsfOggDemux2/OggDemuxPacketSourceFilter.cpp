@@ -321,6 +321,7 @@ HRESULT OggDemuxPacketSourceFilter::SetUpPins()
 				locRetryCount++;
 			} else {
 				//debugLog<<"Bailing out"<<endl;
+				delete[] locBuff;
 				return VFW_E_CANNOT_RENDER;
 			}
 		}
