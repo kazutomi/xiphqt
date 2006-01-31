@@ -60,7 +60,7 @@ HTTPFileSource::~HTTPFileSource(void)
 	rawDump.close();
 #endif
 	delete mBufferLock;
-	delete mInterBuff;
+	delete[] mInterBuff;
 }
 
 void HTTPFileSource::unChunk(unsigned char* inBuff, unsigned long inNumBytes) 
