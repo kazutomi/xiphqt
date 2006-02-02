@@ -1,5 +1,5 @@
 //===========================================================================
-//Copyright (C) 2003, 2004, 2005 Zentaro Kavanagh
+//Copyright (C) 2003-2006 Zentaro Kavanagh
 //
 //Redistribution and use in source and binary forms, with or without
 //modification, are permitted provided that the following conditions
@@ -59,6 +59,12 @@ public:
 	virtual string getCodecShortName();
 	virtual string getCodecIdentString();
 
+	enum eOGMMediaType {
+		OGM_VIDEO_TYPE,
+		OGM_AUDIO_TYPE,
+		OGM_TEXT_TYPE,
+		OGM_UNKNOWN_TYPE
+	};
 	VIDEOINFOHEADER* getVideoFormatBlock()		{		return mVideoFormatBlock;	}
 protected:
 	enum eOGMSetupState {
@@ -69,10 +75,16 @@ protected:
 		VSS_ERROR
 	};
 
+	eOGMMediaType mOGMMediaType;
+
 	eOGMSetupState mSetupState;
 	bool handleHeaderPacket(OggPacket* inHeaderPack);
+	bool handleAudioHeaderPacket(OggPacket* inHeaderPack);
+	bool handleVideoHeaderPacket(OggPacket* inHeaderPack);
+	bool handleTextHeaderPacket(OggPacket* inHeaderPack);
 
 	VIDEOINFOHEADER* mVideoFormatBlock;
+	WAVEFORMATEX* mAudioFormatBlock;
 
 	static const unsigned long OGM_IDENT_HEADER_SIZE = 57;
 	static const unsigned long OGM_NUM_BUFFERS = 50;

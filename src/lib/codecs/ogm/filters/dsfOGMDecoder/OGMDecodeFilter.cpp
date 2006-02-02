@@ -1,5 +1,5 @@
 //===========================================================================
-//Copyright (C) 2003, 2004, 2005 Zentaro Kavanagh
+//Copyright (C) 2003-2006 Zentaro Kavanagh
 //
 //Redistribution and use in source and binary forms, with or without
 //modification, are permitted provided that the following conditions
@@ -105,6 +105,7 @@ HRESULT OGMDecodeFilter::DecideBufferSize(IMemAllocator* inAllocator, ALLOCATOR_
 
 
 	if (inPropertyRequest->cbBuffer == 0) {
+		//VIDSPEC::: Smaller for audio and text
 		locReqAlloc.cbBuffer = 65536*16;
 	} else {
 		locReqAlloc.cbBuffer = inPropertyRequest->cbBuffer;
@@ -154,6 +155,8 @@ HRESULT OGMDecodeFilter::GetMediaType(int inPosition, CMediaType* outMediaType)
 	}
 	
 	if ((inPosition == 0) && (mInputPin != NULL) && (mInputPin->IsConnected())) {
+
+		//VIDSPEC:::This needs cases for audio and text
 		
 		VIDEOINFOHEADER* locVideoFormat = (VIDEOINFOHEADER*)outMediaType->AllocFormatBuffer(sizeof(VIDEOINFOHEADER));
 		*locVideoFormat = *mInputPin->getVideoFormatBlock();
@@ -161,6 +164,7 @@ HRESULT OGMDecodeFilter::GetMediaType(int inPosition, CMediaType* outMediaType)
 		outMediaType->majortype = MEDIATYPE_Video;
 		outMediaType->subtype = (GUID)(FOURCCMap(locVideoFormat->bmiHeader.biCompression));;
 		outMediaType->formattype = FORMAT_VideoInfo;
+		//TODO:::Handle temproal compression and variable size field
 
 		return S_OK;
 	} else {
@@ -172,6 +176,7 @@ HRESULT OGMDecodeFilter::GetMediaType(int inPosition, CMediaType* outMediaType)
 
 HRESULT OGMDecodeFilter::Receive(IMediaSample* inSample)
 {
+	//VIDSPEC:::
 	BYTE* locInBuff = NULL;
 	HRESULT locHR = inSample->GetPointer(&locInBuff);
 
@@ -328,7 +333,7 @@ CBasePin* OGMDecodeFilter::GetPin(int inPinNo)
         if (m_pInput == NULL) {
             return NULL;
         }
-
+		//VIDSPEC::: Change the name dynamically if audio or text
 		mInputPin = (OGMDecodeInputPin*)m_pInput;
         m_pOutput = new CTransformOutputPin(NAME("OGM Out"), this, &locHR, L"Video Out");	//Deleted in base destructor
 			
