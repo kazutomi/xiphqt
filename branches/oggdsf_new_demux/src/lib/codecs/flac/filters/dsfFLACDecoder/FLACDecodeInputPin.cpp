@@ -213,7 +213,10 @@ STDMETHODIMP FLACDecodeInputPin::Receive(IMediaSample* inSample)
 
 HRESULT FLACDecodeInputPin::TransformData(BYTE* inBuf, long inNumBytes) 
 {
-
+	//TODO::: There is a thread blocking problem here. sometimes the this code
+	//		inside the checkstream check can be called while the graph is flushing.
+	//
+	//		Probably just needs a lock here on the filter, and/or in the begin/end flush method
 	if (CheckStreaming() == S_OK) {
 		unsigned char* locInBuff = new unsigned char[inNumBytes];
 		memcpy((void*)locInBuff, (const void*)inBuf, inNumBytes);
