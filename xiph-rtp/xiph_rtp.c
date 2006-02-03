@@ -191,21 +191,59 @@ void creatertp (xiph_rtp_t *xr, unsigned char* vorbdata, int length,
 	int sleeptime, frag, position = 0;
 	unsigned short framesize;
 	unsigned char *packet;
-
+	framestack_t *fs = &xr->fs;
 	const unsigned int max_payload = 1000;
 
 /*  Set sleeptime value based on timestamp */
 
 	if (type)
 		sleeptime = 300; //  ((1 / (float) bitrate) * 1000000);
+		// flush any other packet in queue (chained ogg!)
+		if ( fs->stackcount ) { //FIXME avoid code duplication!
+			/*  Set Vorbis header flags  */
+			xr->bitfield.frag_type = 0;
+			xr->bitfield.data_type = 0;
+			xr->bitfield.pkts = fs->stackcount;
+
+			packet = malloc (fs->stacksize + 4);
+
+			makeheader (xr, packet, fs->stacksize + 4);
+			memcpy (packet + 4, fs->framestack, fs->stacksize);
+
+			/*  Swap RTP headers from host to network order  */
+			xr->headers.sequence = htons (xr->headers.sequence);
+			xr->headers.timestamp = htonl (xr->headers.timestamp);
+
+			sendrtp (xr, packet, fs->stacksize + 4);
+
+			/*  Swap headers back to host order  */
+			xr->headers.sequence = htons (xr->headers.sequence);
+			xr->headers.timestamp = ntohl (xr->headers.timestamp);
+
+			if (fs->stackcount == 1) 
+				progressmarker (0);
+			else
+				progressmarker (5);
+
+			usleep (sleeptime);
+
+			xr->headers.sequence++;
+			xr->headers.timestamp += timestamp;
+
+			fs->stacksize = 0;
+			fs->stackcount = 0;
+
+			free (packet);
+		}
+			
 	else
 		sleeptime = timestamp;
 
 
 /*  Frame packing.  Used only for type 0 packets (raw Vorbis data) */
 
-	if ((length < max_payload && type == 0 ) || xr->fs.stacksize ) {
-		framestack_t *fs = &xr->fs;
+	if ((length < max_payload && type == 0 ) || fs->stacksize ) {
+		
 		if (length + fs->stacksize < max_payload 
 				&& fs->stackcount < 15) 
 		{
@@ -247,7 +285,7 @@ void creatertp (xiph_rtp_t *xr, unsigned char* vorbdata, int length,
 			else
 				progressmarker (5);
 
-			usleep (sleeptime); /* WRONG */
+			usleep (sleeptime);
 
 			xr->headers.sequence++;
 			xr->headers.timestamp += timestamp;
