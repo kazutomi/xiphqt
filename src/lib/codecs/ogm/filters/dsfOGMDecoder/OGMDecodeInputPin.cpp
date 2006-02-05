@@ -35,8 +35,11 @@
 OGMDecodeInputPin::OGMDecodeInputPin(OGMDecodeFilter* inParentFilter, HRESULT* outHR)
 	:	CTransformInputPin(NAME("OGMDecodeInputPin"), inParentFilter, outHR, L"OGM In")
 	,	mVideoFormatBlock(NULL)
+	,	mAudioFormatBlock(NULL)
 	,	mSetupState(VSS_SEEN_NOTHING)
 	,	mOGMMediaType(OGM_UNKNOWN_TYPE)
+	,	mGranuleRateNumerator(1)
+	,	mGranuleRateDenominator(0)
 {
 
 }
@@ -113,7 +116,17 @@ HRESULT OGMDecodeInputPin::GetAllocatorRequirements(ALLOCATOR_PROPERTIES *outReq
 }
 LOOG_INT64 OGMDecodeInputPin::convertGranuleToTime(LOOG_INT64 inGranule)
 {
-	return inGranule * mVideoFormatBlock->AvgTimePerFrame;
+	switch (mOGMMediaType) {
+		case OGM_VIDEO_TYPE:
+			return inGranule * mVideoFormatBlock->AvgTimePerFrame;
+		case OGM_AUDIO_TYPE:
+			return (inGranule * UNITS) / mAudioFormatBlock->nSamplesPerSec;
+		case OGM_TEXT_TYPE:
+			return (inGranule * UNITS * mGranuleRateDenominator) / mGranuleRateNumerator;
+		default:
+			return 0;
+	};
+	
 }
 
 LOOG_INT64 OGMDecodeInputPin::mustSeekBefore(LOOG_INT64 inGranule)
@@ -181,8 +194,11 @@ bool OGMDecodeInputPin::handleHeaderPacket(OggPacket* inHeaderPack)
 
 bool OGMDecodeInputPin::handleTextHeaderPacket(OggPacket* inHeaderPack)
 {
+	mGranuleRateNumerator = iLE_Math::CharArrToInt64(inHeaderPack->packetData() + 17);
+	mGranuleRateDenominator = iLE_Math::CharArrToInt64(inHeaderPack->packetData() + 25);
+	
 	//TODO:::
-	return false;
+	return true;
 }
 bool OGMDecodeInputPin::handleAudioHeaderPacket(OggPacket* inHeaderPack)
 {

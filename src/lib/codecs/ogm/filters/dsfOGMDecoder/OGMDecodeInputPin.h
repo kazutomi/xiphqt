@@ -85,6 +85,8 @@ protected:
 
 	VIDEOINFOHEADER* mVideoFormatBlock;
 	WAVEFORMATEX* mAudioFormatBlock;
+	__int64 mGranuleRateNumerator;
+	__int64 mGranuleRateDenominator;
 
 	static const unsigned long OGM_IDENT_HEADER_SIZE = 57;
 	static const unsigned long OGM_NUM_BUFFERS = 50;
