@@ -65,7 +65,10 @@ public:
 		OGM_TEXT_TYPE,
 		OGM_UNKNOWN_TYPE
 	};
+
+	eOGMMediaType getOGMMediaType()				{		return mOGMMediaType;		}
 	VIDEOINFOHEADER* getVideoFormatBlock()		{		return mVideoFormatBlock;	}
+	WAVEFORMATEX* getAudioFormatBlock()			{		return mAudioFormatBlock;	}
 protected:
 	enum eOGMSetupState {
 		VSS_SEEN_NOTHING,

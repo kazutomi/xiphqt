@@ -157,14 +157,43 @@ HRESULT OGMDecodeFilter::GetMediaType(int inPosition, CMediaType* outMediaType)
 	if ((inPosition == 0) && (mInputPin != NULL) && (mInputPin->IsConnected())) {
 
 		//VIDSPEC:::This needs cases for audio and text
-		
-		VIDEOINFOHEADER* locVideoFormat = (VIDEOINFOHEADER*)outMediaType->AllocFormatBuffer(sizeof(VIDEOINFOHEADER));
-		*locVideoFormat = *mInputPin->getVideoFormatBlock();
-		//FillMediaType(outMediaType, locVideoFormat->bmiHeader.biSizeImage);
-		outMediaType->majortype = MEDIATYPE_Video;
-		outMediaType->subtype = (GUID)(FOURCCMap(locVideoFormat->bmiHeader.biCompression));;
-		outMediaType->formattype = FORMAT_VideoInfo;
-		//TODO:::Handle temproal compression and variable size field
+		switch(mInputPin->getOGMMediaType()) {
+			case OGMDecodeInputPin::OGM_VIDEO_TYPE:
+			{
+				VIDEOINFOHEADER* locVideoFormat = (VIDEOINFOHEADER*)outMediaType->AllocFormatBuffer(sizeof(VIDEOINFOHEADER));
+				*locVideoFormat = *mInputPin->getVideoFormatBlock();
+				//FillMediaType(outMediaType, locVideoFormat->bmiHeader.biSizeImage);
+				outMediaType->majortype = MEDIATYPE_Video;
+				outMediaType->subtype = (GUID)(FOURCCMap(locVideoFormat->bmiHeader.biCompression));;
+				outMediaType->formattype = FORMAT_VideoInfo;
+				//TODO:::Handle temproal compression and variable size field
+
+			}
+			break;
+				
+			case OGMDecodeInputPin::OGM_AUDIO_TYPE:
+			{
+				WAVEFORMATEX* locAudioFormat = (WAVEFORMATEX*)outMediaType->AllocFormatBuffer(sizeof(WAVEFORMATEX));
+				*locAudioFormat = *mInputPin->getAudioFormatBlock();
+				outMediaType->majortype = MEDIATYPE_Audio;
+				outMediaType->subtype = MEDIASUBTYPE_PCM;
+				outMediaType->subtype.Data1 = locAudioFormat->wFormatTag;
+				outMediaType->formattype = FORMAT_WaveFormatEx;
+			}
+
+			break;
+			case OGMDecodeInputPin::OGM_TEXT_TYPE:
+
+				outMediaType->majortype = MEDIATYPE_Text;
+				outMediaType->subtype = MEDIASUBTYPE_None;
+				outMediaType->formattype = FORMAT_None;
+				break;
+
+			default:
+				return E_FAIL;
+
+		}
+
 
 		return S_OK;
 	} else {
