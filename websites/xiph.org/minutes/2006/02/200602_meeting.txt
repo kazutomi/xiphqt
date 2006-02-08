@@ -1,0 +1,64 @@
+--- Log opened Tue Feb 07 21:38:20 2006
+21:56 -!- xiphlog [n=giles@westfish.xiph.osuosl.org] has joined #xiphmeet
+21:56 -!- Topic for #xiphmeet: Next xiph.org monthly meeting 2006 Feb 8 6h00 GMT | agenda at http://wiki.xiph.org/index.php/MonthlyMeeting200602
+21:56 -!- Topic set by rillian [] [Thu Feb  2 15:25:05 2006]
+21:56 [Users #xiphmeet]
+21:56 [ Arc    ] [ derf_ ] [ nemo   ] [ tris   ] 
+21:56 [ Atamido] [ jmworx] [ rillian] [ xiphlog] 
+21:56 -!- Irssi: #xiphmeet: Total of 8 nicks [0 ops, 0 halfops, 0 voices, 8 normal]
+21:56 -!- Channel #xiphmeet created Sat Dec 17 03:46:31 2005
+21:56 -!- Irssi: Join to #xiphmeet was synced in 0 secs
+21:56 -!- [freenode-info] if you need to send private messages, please register: http://freenode.net/faq.shtml#privmsg
+22:02 < nemo> so who else might be showing up? :)
+22:04 < derf_> I don't know.
+22:05 < derf_> If there are actually people here, I guess we can go ahead and hold the meeting.
+22:05 < nemo> well, I'm no more than an interested onlooker
+22:06 < derf_> I was hoping more for people who could make project reports.
+22:06 < nemo> yup, me too. (I have a cdparanoia question dating back from a comment made in the septemeber05 meeting...
+22:07 < derf_> Yeah. I'm almost certain that's one I won't be able to answer.
+22:07 < nemo> *heh* 
+22:07 < nemo> it's a pjones, or monty question I think
+22:08 < derf_> Monty is likely on a plane or in an airport on his way back from NC right now.
+22:09 < nemo> *nods* 
+22:09 < jmworx> Monty's at RH HQ now
+22:09 < derf_> jmworx: Right, that's in NC.
+22:10 < jmworx> yes
+22:10 < derf_> He was supposed to be leaving directly after the training stuff was over.
+22:10 < jmworx> oh
+22:10 < jmworx> derf_: got any time to play with the noise shaping stuff?
+22:10 < derf_> jmworx: Sadly, no.
+22:11 < derf_> Lately my free time has gone towards actually implementing the motion compensation ideas I've been sitting on for over 3 years now.
+22:12 < derf_> jmworx: Want to give us a status update on Speex?
+22:18 < jmworx> sure
+22:19 < jmworx> The work I was doing on porting the acoustic echo canceller to fixed-point (for Analog Devices) in completed.
+22:19 < jmworx> Monty and I just got an abstract accepted for the next AES convention in Paris.
+22:20 < jmworx> (we need to write the paper now!)
+22:20 < derf_> What's the subject of the paper?
+22:20 < jmworx> The idea is to apply the Vorbis psychoacoustic model to Speex.
+22:20 < derf_> Ah, yes.
+22:20 < jmworx> After some strange kludges, it seems to work now.
+22:21 < derf_> Soudns like a good opportunity to actually document it, if anyone can figure out how it works.
+22:21 < jmworx> The result is the equivalent of saving 15-25% bit-rate for equal quality... according to PESQ.
+22:21 < jmworx> I'm waiting for Monty to write that part ;-)
+22:21 < derf_> I think we've been waiting for him to write that part for years.
+22:22 < jmworx> That's pretty much what he said -- a good opportunity to document it!
+22:22 < derf_> Maybe a conference deadline will be sufficient motivation.
+22:22 < jmworx> Deadline is 15th of March IIRC
+22:22 < jmworx> hopefully, he'll be able to make it to the conf too
+22:23 < derf_> Well, I look forward to reading it, either way.
+22:24 < derf_> Any news about ghost?
+22:32 < jmworx> Still very... ghost-y
+22:33 < jmworx> I've been playing with a couple interesting ideas, but it's just experiments so far.
+22:33 < derf_> Well, I imagine it will remain that way for a while yet.
+22:35 < derf_> I guess I can do a Theora update.
+22:35 < derf_> Not a great deal has happened in the past month, but Theora is supposed to be Monty's #1 priority at Red Hat, so hopefully next month that will be different.
+22:37 < derf_> I started work on an ABR mode for the experimental encoder (as in, 0.5s to 2s buffer), but I stopped and wanted to re-think some things before proceeding.
+22:37 < derf_> In the course of my other MC experients, though, I did find and fix a few severe bugs in theora-exp's motion estimation.
+22:39 < derf_> If anyone else is actually here and can contribute a project update, please do so.
+22:39 < jmworx> MC==?
+22:39 < derf_> Motion Compensation.
+22:39 < jmworx> right
+22:59 < derf_> Well, since it doesn't look like anyone else's going to show up, I move we adjourn the meeting.
+23:00 < derf_> Presumably the agenda items that had no one here to represent them will be moved to the next one, hopefully with better luck.
+23:01 < derf_> Thanks for coming, all two of you who made it, if you've bothered to stick around.
+--- Log closed Tue Feb 07 23:04:20 2006

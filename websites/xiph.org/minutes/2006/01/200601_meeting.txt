@@ -1,0 +1,198 @@
+--- Log opened Wed Jan 04 10:01:28 2006
+10:01 -!- xiphlog [n=giles@westfish.xiph.osuosl.org] has joined #xiphmeet
+10:01 -!- Topic for #xiphmeet: Next xiph.org monthly meeting 2006 Jan 4 18h00 GMT | agenda at http://wiki.xiph.org/index.php/MonthlyMeeting200601
+10:01 -!- Topic set by rillian [] [Sat Dec 17 14:29:19 2005]
+10:01 [Users #xiphmeet]
+10:01 [ Arc  ] [ ginger ] [ illi   ] [ jmworx] [ rillian] [ xiphlog] 
+10:01 [ derf_] [ HackRip] [ jmspeex] [ MikeS ] [ tris   ] 
+10:01 -!- Irssi: #xiphmeet: Total of 11 nicks [0 ops, 0 halfops, 0 voices, 11 normal]
+10:01 -!- Channel #xiphmeet created Sat Dec 17 03:46:31 2005
+10:01 -!- Irssi: Join to #xiphmeet was synced in 0 secs
+10:01 -!- [freenode-info] if you need to send private messages, please register: http://freenode.net/faq.shtml#privmsg
+10:01 < MikeS> ginger: no. Don't know if the phones do video encoding at all... maybe next-gen. I haven't looked at it
+10:02 < illi> smartphones do
+10:02 < ginger> so is it curtado running on the phone then?
+10:02 < rillian> I have a schedule conflict and can't really participate, but will follow along
+10:02 < MikeS> ginger: no. none of our software on the phone, just the builtin stuff. 
+10:02 -!- rillian changed the topic of #xiphmeet to: Next xiph.org monthly meeting 2006 Jan 4 18h00 GMT | agenda at http://wiki.xiph.org/index.php/MonthlyMeeting200601 | live log at http://westfish.xiph.org/~giles/200601_meeting.txt
+10:02 < ginger> built-in theora?
+10:02 < MikeS> ginger: no
+10:03 < MikeS> anyway, we have a meeting to run here. 
+10:03 < ginger> sorry
+10:03 < MikeS> And idea what's on the agenda?
+10:03 -!- myidiym [n=myidiym@24-48-253-242.sbtnvt.adelphia.net] has joined #xiphmeet
+10:04 < rillian> MikeS: http://wiki.xiph.org/index.php/MonthlyMeeting200601
+10:04 < HackRip> <illi>do you ever planned adding vfw encoding in your directshow filter later, it seems ffdshow theora support seems a bit random ...
+10:04 < MikeS> ok, well, I'll start the meeting off, but have to leave in a few minutes (sorry), hopefully someone esle will take over
+10:04 < MikeS> 1) Project reports.
+10:05 < illi> HackRip: I'd like to, it's not really high priority though
+10:05 < MikeS> Icecast: nothing new apart from a libshout release (with speex support).
+10:05 < HackRip> ok np
+10:05 -!- sxpert [n=sxpert@navsys.org] has joined #xiphmeet
+10:06 < MikeS> Actually, I don't know what projects have any interesting news to report.
+10:06 < illi> I have some...
+10:06 < MikeS> Anyone?
+10:06 < MikeS> go ahead, illi
+10:07 < illi> there will be a new release of oggcodecs before the end of the month, with the new seeking and demux stuff, and the finally fixed theora keyframe artefacts, several bugfixes and updates to all the six month old base libraries... that's all
+10:07 < MikeS> One thing from me before I leave: the agenda has someone asking about multichannel stuff (apparently wav has channel mapping stuff that differs from vorbis); I said I'd try to merge the patches for that into oggenc and oggdec, but I haven't done so yet. 
+10:08 < MikeS> It also asks about merging the poorly named 'oggenc2' to oggenc: selected features might be, but most of them won't, as they add support for proprietary codecs, etc.
+10:08 < MikeS> illi: good news.
+10:08 < sxpert> illi: keyframe artefacts??
+10:08 < illi> yes... finally get it moving forward again!
+10:09 < MikeS> illi: want to take over running the meeting? 
+10:09 < MikeS> Sorry, have to run. Will read logs tomorrow.
+10:09 < illi> sxpert: It never used to seek to keyframes, so it would have random artefacts until the next keyframe
+10:09 < illi> i guess... is there anyone left though?
+10:09 < ginger> news from jmspeex:
+10:09 < sxpert> illi: ah, right
+10:09 < ginger> <jmspeex> Speex status is that I'm currently on (nearly finished) a contract with Analog Devices to port the echo canceller to fixed-point.
+10:09 < ginger> <jmspeex> I've also worked a bit with Monty on using the Vorbis psycho-acoustic model in Speex. After a bit of ugly tweaking, it seems promising (PESQ seems to say ~20% saving in bit-rate for the same quality) and we've submitted an abstract for the next AES convention.
+10:09 < ginger> <jmspeex> Other than that, I've also submitted two other papers about Speex. One about Speex in general for linux.conf.au (jan 2006) that got accepted. The other is about the Speex echo canceller algo to an IEEE Journal (TrSAP).
+10:10 < ginger> news from Annodex:
+10:11 -!- dolphy [n=dolphy@polar.es6.egwn.net] has joined #xiphmeet
+10:11 < ginger> we have created a froundation (see annodex.org) and have a founding committee elected
+10:11 < sxpert> any plans for subtitle and 5.1 support ?
+10:11 < ginger> it will be heaps easier now to do a joint press release on things
+10:12 < sxpert> (or are the the questions-that-should-not-be-asked ?
+10:12 < illi> still going ginger?
+10:12 < derf_> I have some minor Theora news, as well.
+10:12 < ginger> nah, too tired for details
+10:13 < illi> ok
+10:13 < derf_> I updated the Theora IDCT spec so that it can be implemented in 16-bit registers.
+10:13 < derf_> It only affects the handling of overflow, which was done inconsistently in the old VP3 codebase between the MMX and C versions.
+10:14 < illi> derf_: anything else ?
+10:14 < derf_> That was it.
+10:15 < illi> cool... i'm not sure what to do about the other agenda items...
+10:15 < illi> the speex.org status item, need atamido (it think)?
+10:15 < ginger> should we answer sxpert's q?
+10:15 < illi> at least i don't think there are any of the web people here?
+10:15 < illi> i guess
+10:16 < derf_> Do we know the answers?
+10:16 < illi> i'm not sure what the answer is though... besides... yes it's planned, no it's not done yet
+10:16 < ginger> sxpert were you asking for subtitle support in theora?
+10:16 < ginger> or in oggcodecs?
+10:17 < illi> or in annodex?
+10:17 < ginger> :)
+10:17 < derf_> My understanding was that annodex's CMML already supports subtitles.
+10:17 < sxpert> ginger: being able to have the .fr (for example) subs on .jp only anime for instance
+10:17 < sxpert> integrating the subs in the stream
+10:17 < sxpert> so that there's only one file
+10:18 < sxpert> instead of having a .ogg and a .srt
+10:18 < ginger> CMML is ready for it, but nobody has tested this feature or extended the tools to display this sort of thing
+10:18 < illi> derf_: Well it can put the data into the cmml in the annodex file, but not sure which players will display it, except the really rough attempt i made to render the text over the video, which is currently disabled
+10:18 < ginger> it's on the list of todos though
+10:18 < derf_> CMML may also be a little heavyweight of a tool for the job.
+10:19 < derf_> sxpert: Arc wrote an OggWrit specification for simple subtitles. I'm not sure what the status of any implementation is. I don't believe it is yet production-ready.
+10:20 < sxpert> ok
+10:20 < sxpert> what about 5.1 support in vorbis ?
+10:20 < ginger> hmm, not really: when you want e.g. several alternative .srt files stored with a video, it's actually a lightweight solution
+10:20 < sxpert> (or n.m for that matter)
+10:20 < derf_> rillian has poked around some with MNG-in-Ogg for more complex overlay effects, but I don't think he's gotten very far with it.
+10:20 < illi> i'm not sure any vorbis people are still here?
+10:21 < illi> for some reason i thought vorbis already could do 5.1?
+10:21 < derf_> sxpert: Vorbis supports up to 255 channels. I was under the impression that there was a channel mapping defined for 5.1.
+10:21 < sxpert> ah, ok
+10:21 < sxpert> so it's a tool issue
+10:21 < illi> very likely sxpert
+10:21 < sxpert> ok
+10:21  * sxpert crawls back in his hole
+10:21 < illi> i don't think i've tested my tools for 5.1
+10:21 < ginger> hey, you got the speakers now, mate!
+10:22 < illi> yes... that's why i bought them *cough*
+10:22  * sxpert starts prodding the gstreamer people ;D
+10:22 < illi> ok the other item is about aoTuV
+10:22 < derf_> Ticket #736 seems to indicate that oggenc currently does not handle the 5.1 mapping correctly.
+10:22 < sxpert> oh, btw, seems ogginfo doensn't know about theora
+10:23 < illi> MikeS i think is the person to talk to about ogginfo
+10:23 < illi> i'm sure he'd welcome a patch :))
+10:23 < derf_> sxpert: Are you sure you have a recent enough version? AFAIK, it does know about Theora.
+10:23 < sxpert> derf_: ah... I have 1.0
+10:24 < illi> i don't think we can really do the aoTuV item without Monty?
+10:24 < derf_> But, I don't think the monthly meeting is for user-level tech support.
+10:24 < ginger> definate no
+10:25 < illi> ginger: Was that @me or @derf_ ?
+10:25 < derf_> Well, we should of course mention that a number of the aoTuV modifications have already been merged into the mainline encoder.
+10:25 < ginger> support for derf_
+10:25 < illi> ok
+10:26 < illi> i know some has been in the past... i think this relates to a more recent version?
+10:26 < derf_> I believe everything up through his beta2 has been merged.
+10:27 < derf_> The more recent stuff has not been, to my knowledge.
+10:27 < derf_> I understand there were some regressions on low-bitrate samples that needed to be worked out, but that was months ago.
+10:27 < illi> ok...
+10:27 < illi> ok... the other item is discuss skeleton... ginger: Do you want to do that today, or wait until next month when there are more than 3 people to discuss!
+10:28 < derf_> (I'm also operating on months-old memory, so someone might want to check those facts)
+10:28 < derf_> Since I'm the one who added it to the agenda, and the two of you are part of Annodex, it seems less than useful.
+10:28 < ginger> skeleton - putting this on the agenda was from a discussion with j^ that we had more than a month ago
+10:29 < ginger> ups, derf_ then :)
+10:29 < ginger> sorry, derf_, bad memory
+10:29 < illi> yeah... that's what i figured...
+10:29 < derf_> ginger: I just disclaimed any accuracy of my own memory. I certainly won't fault you for yours.
+10:30 < illi> there is one other issue... the spam on wiki/trac
+10:30 < ginger> thanks :)
+10:30 < illi> which i don't think we can do either?
+10:30 < illi> derf_ Know anything about this?
+10:30 < derf_> I know rillian was the most involved in handling it.
+10:30 < derf_> I believe some stuff was being done upstream by the Trac people to help.
+10:31 < illi> i've seen a few blogs now with the numeric images like gmail uses
+10:31 < ginger> I know that jmspeex has helped with spam removal on the wiki a bit, too
+10:31 < illi> is this the sort of option ?
+10:31 < illi> seeing as it's out amongst a few blogs... there must be some implementation around somewhere that shouldn't be too hard to integrate
+10:31 < derf_> illi: I don't know anything about specifics. For the moment, it's just being manually removed.
+10:32 < illi> it basically shows an image of distorted letters or numbers next to the save/comment button
+10:32 < illi> presumably the distorted characters are easy for people, but hard for automated bots
+10:32 < illi> seems like a pretty painless solution
+10:33 < derf_> Assuming you aren't being spammed by flesh-and-blood people.
+10:33 < illi> yes... that's true... i dunno, i assume that's the minority?
+10:33 < illi> Can't be a profitable way to do it
+10:34 < illi> anyhow... i don't think there is anything else on the agenda...
+10:34 < illi> any random items?
+10:34 < myidiym> how does someone start up a new project in Xiph?
+10:35 < derf_> myidiym: Ask people about it.
+10:35 < illi> what sort of project?
+10:35 < myidiym> adoption oriented projects... not technical projects.  
+10:36 < illi> anything more specific, or just a general idea for now?
+10:36 < myidiym> basically, I see how these monthly meetings operate and I see you all make good progress on Xiph technical projects... would like to share that with the adoption side of things
+10:36 < myidiym> example: increase adoption on Mac platform for X, Y, and Z specifically
+10:37 < derf_> myidiym: The best people to talk to would be rillian or xiphmont.
+10:37 < ginger> that first needs the sw to be supported on the Mac (which is happening)
+10:37 < myidiym> or develop and execute a plan to up-level some Xiph specs as Industry Standards, etc.
+10:37 < ginger> myidiym: what concrete ideas for update work do you have?
+10:37 < derf_> AFAIK, Xiph does not have any "official" adoption projects, other than individual efforts made by people like Arc.
+10:38 < myidiym> ginger: not sure what you mean by update work
+10:38 < myidiym> derf_ AFAIK, you're right
+10:38 < ginger> s/update/uptake/
+10:38 < myidiym> but I think we all want to see more uptake
+10:38 < ginger> sorry, it's early morning here
+10:38  * ginger rubs eyes
+10:39 < derf_> There were some discussions about making industry standards with the IEEE, but I believe the amount of the money they wanted for adminstrative overhead was too large to be practical.
+10:39 < ginger> Industry Standards: what process do you suggest to follow to make that happen?
+10:39 < myidiym> I don't think I have any brilliant ideas myself, but I might be helpful in brainstorming with others to generate some... I'm really wondering if the Monthly Meeting is a place for that or not.
+10:40 < ginger> you can do standards with the IETF much more cheaply
+10:40 < myidiym> derf: I used to be the guy at IEEE who Xiph was talking to
+10:40 < derf_> myidiym: Oh, good. Sorry, I did not recognize you.
+10:40 < ginger> ah! interesting!
+10:41 < myidiym> I'm not at IEEE anymore, but I'm still "in standards" as they say.  I'm just a volunteer in this context looking to help make Xiph more widely accepted. 
+10:41 < ginger> myidiym: what is your impression about the diffrence between IEEE and other standards bodies and why should you go for which?
+10:41 < illi> well i think more focus on uptake/marketing is definately a good thing
+10:41 < derf_> myidiym: Coming up with a specific plan is probably not a subject for the Monthy Meetings.
+10:42 < myidiym> Xiph is a complicated animal... I've been on the edges of it for a few years and I'm still confused about all that's going on, and where things fit.
+10:42 < derf_> But it's certainly something we can discuss in more detail afterwards.
+10:42 -!- dolphy [n=dolphy@polar.es6.egwn.net] has quit ["Network down, IP Packets delivered via UPS"]
+10:42 < myidiym> ok... I can also just hang out in this chat room from time to time and have ad hoc discussions with folks
+10:43 < illi> in #vorbis or #xiph you will normally find people around for this type of chat
+10:43 < ginger> myidiym: I would suggest to have discussions with people on irc and email and once you have a concrete plan, come back to this meeting and we'll see what we can do to help (e.g. recommend a wiki page be written...)
+10:43 < myidiym> ginger: good question... long answer
+10:43 < myidiym> ok
+10:43 < illi> but talking to rilliam or xiphmont would also be a good thing
+10:43 < illi> rillian even
+10:43 < myidiym> yeah, I do that from time to time as well
+10:44 < myidiym> and will keep at it more consistently in 2006
+10:44 < illi> any other items for discussion?
+10:44 < ginger> stick around for after the meeting and we can have the discussion
+10:44 < myidiym> ok
+10:45 < myidiym> (I have a hard stop in 15 min or so)
+10:45 < illi> nothing else?
+10:45 < illi> i guess that's meeting over then.
+10:45 < ginger> all I can say is: happy new year :)
+10:45 < illi> <--------------------------- rillian: Cut here
+--- Log closed Wed Jan 04 10:45:47 2006
