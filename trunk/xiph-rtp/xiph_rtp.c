@@ -242,24 +242,24 @@ void creatertp (xiph_rtp_t *xr, unsigned char* vorbdata, int length,
 
 /*  Frame packing.  Used only for type 0 packets (raw Vorbis data) */
 
-	if ((length < max_payload && type == 0 ) || fs->stacksize ) {
+	if ((length <= max_payload && type == 0 ) || fs->stacksize ) {
 		
-		if (length + fs->stacksize < max_payload 
+		if (length + fs->stacksize <= max_payload
 				&& fs->stackcount < 15) 
 		{
-		fs->framestack = realloc (fs->framestack, (fs->stacksize + (length + 2)));	
+		fs->framestack = realloc (fs->framestack, 
+						(fs->stacksize + (length + 2)));
 		fs->framestack[fs->stacksize++]= (length&0xff00)>>8;
 		fs->framestack[fs->stacksize++]= length&0xff;
 		
 		memcpy (fs->framestack + (fs->stacksize), vorbdata, length);
 		fs->stackcount++;
-		fs->stacksize += (length);
+		fs->stacksize += length;
 		}
 
-		if (length + fs->stacksize > max_payload 
+		else if (length + fs->stacksize > max_payload
 				|| fs->stackcount >= 15 || last)
 		{
-
 			/*  Set Vorbis header flags  */
 			xr->bitfield.frag_type = 0;
 			xr->bitfield.data_type = 0;
@@ -294,7 +294,24 @@ void creatertp (xiph_rtp_t *xr, unsigned char* vorbdata, int length,
 			fs->stackcount = 0;
 
 			free (packet);
+			
+			//FIXME workaround, the whole logic should be improved
+			if (length <= max_payload){
+
+                		fs->framestack = realloc (fs->framestack,
+                                                (fs->stacksize + (length + 2)));
+                		fs->framestack[fs->stacksize++] =
+							(length&0xff00)>>8;
+                		fs->framestack[fs->stacksize++]	=
+							length&0xff;
+
+	                	memcpy (fs->framestack + (fs->stacksize),
+							vorbdata, length);
+               			fs->stackcount++;
+                		fs->stacksize += length;
+                	}
 		}
+		
 	} 
 
 /*  Send header packets (under max_payload octets) - No Packing		*/
