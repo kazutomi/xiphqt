@@ -83,7 +83,10 @@ protected:
 		bool mIsKeyframe;
 		
 	};
-	unsigned long mFramesBuffered;
+
+
+	
+	unsigned long mOGMGranulesBuffered;
 
 	__int64 mSegStart;
 	__int64 mSegEnd;
