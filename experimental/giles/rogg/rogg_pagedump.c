@@ -1,5 +1,5 @@
 /*
-   Copyright (C) 2005 Xiph.org Foundation
+   Copyright (C) 2005-2006 Xiph.org Foundation
 
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions
@@ -49,7 +49,7 @@ void print_header_info(FILE *out, rogg_page_header *header)
   fprintf(out, " Ogg page serial %08x seq %d (%5d bytes)",
 	header->serialno, header->sequenceno, header->length);
   fprintf(out, (header->continued) ? " c" : "  ");
-  fprintf(out, " %lld", header->granulepos);
+  fprintf(out, " granule %lld", header->granulepos);
   fprintf(out, (header->bos) ? " bos" : "");
   fprintf(out, (header->eos) ? " eos" : "");
   fprintf(out, "\n");
