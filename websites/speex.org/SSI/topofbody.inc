@@ -1,5 +1,4 @@
 <p class='skipper'><a href="#content" accesskey="2">Skip to main content.</a></p>
-<br>
 	<div id="nav2">
 	<div id="nav">
 	<ul><li class="first"><a href="/" title="Return to the speex.org homepage.">Home</a></li>
@@ -17,5 +16,4 @@
 	</div>
 	<!--<a href="http://www.ffii.org/">-->
 	<!--<img src="/Images/banana120x200.png" width=120 height=200 alt="No more software patents">-->
-	</a>
 	</div>
