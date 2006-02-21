@@ -93,6 +93,25 @@
 
 	<li>
 		<div class='title'>
+			<h3>Speex 1.1.12 Released</h3>
+			<div>February 19, 2006</div>
+		</div>
+		<div class='content'>
+		<p>New things:</p>
+
+		<ul>
+		<li>echo canceller converted to fixed-point (sponsored by Analog Devices)</li>
+		<li>Improvements to the experimental Vorbis-based masking model (use <code>--enable-vorbis-psy</code> as an argument to the <code>configure</code> script)</li>
+		<li>several bug fixes</li>
+		</ul>
+
+		
+		</div>
+	</li>
+
+
+	<li>
+		<div class='title'>
 			<h3>Speex 1.1.11.1 Released</h3>
 			<div>December 2, 2005</div>
 		</div>
@@ -147,74 +166,6 @@
 		</div>
 		<div class='content'>
 			<p>The main change with this release is that it includes API additions from the 1.1.x branch (while being backward compatible), so that transition from 1.0.x to 1.1.x can be made easier.</p>
-		</div>
-	</li>
-
-	<li>
-		<div class='title'>
-			<h3>Speex 1.1.7 Released</h3>
-			<div>March 2, 2005</div>
-		</div>
-		<div class='content'>
-			<p>
-			The changes for this release are very broad and include generic optimizations in the encoder, ARM-specific optimizations (gcc inline assembly), optional shortcuts in the encoder sacrificing quality for speed, 
-			fixed-point improvements (perceptual enhancement converted), reduction in memory usage, the Symbian code now uses the same API, and several bug fixes. <br/> <br/>
-			</p>
-		</div>
-	</li>
-	
-	<li>
-		<div class='title'>
-			<h3>New Specialized libs Released</h3>
-			<div>November 18, 2004</div>
-		</div>
-		<div class='content'>
-			<p>
-			<ul>
-				<li>libspeex_emce.lib is an x86 emulator build (with debug information)</li>
-				<li>ibspeex_armce.lib is an ARMV4 release build</li>
-			</ul>
-			<br/>
-			</p>
-		</div>
-	</li>
-
-	<li>
-		<div class='title'>
-			<h3>Speex 1.1.6 Released</h3>
-			<div>July 28, 2004</div>
-		</div>
-		<div class='content'>
-			<p>
-			There are seven changes in this release.
-			<ul>
-				<li>Improved jitter buffer (now actually works)</li>
-				<li>Denoiser tuning</li>
-				<li>Improved echo canceller (please send feedback)</li>
-				<li>Support for Symbian OS</li>
-				<li>Gapless playback for speexenc/speexdec</li>
-				<li>Run-time identification of Speex version with a new speex_lib_ctl() call</li>
-				<li>Moved the includes to /usr/include/speex/</li>
-			</ul>
-			<br/>
-			</p>
-		</div>
-	</li>
-	<li>
-		<div class='title'>
-			<h3>Speex 1.0.4 Released</h3>
-			<div>July 21, 2004</div>
-		</div>
-		<div class='content'>
-			<p>
-			There are three changes in this release.
-			<ul>
-				<li>Headers are now in /usr/include/speex/ (but a copy is still in /usr/include for compat reasons).</li>
-				<li>Pseudo-gapless playback (i.e. playback has the same number of samples)</li>
-				<li>Fixed a potential bug (unconfirmed) that might cause a segfault in special circumstances.</li>
-			</ul>
-			<br/>
-			</p>
 		</div>
 	</li>
 </ul>
