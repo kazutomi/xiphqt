@@ -15,7 +15,7 @@
 <!--  All your page content goes here  -->
 <h1>Documentation</h1>
 <p>
-	A FAQ is under development.
+	An <abbr title='frequently asked questions'>FAQ</a> is under development.
 </p>
 <h2>Manual</h2>
 <p>
@@ -24,15 +24,13 @@
 	<span class="program">speexenc</span> and
 	<span class="program">speexdec</span> information, 
 	libspeex <abbr title="Application Programming Interface">API</abbr>
-
-	information,
-	and miscellaneous format information.
+	information, and miscellaneous format information.
 </p>
 <ul>
-	<li><a href="manual.pdf"><abbr title="Portable Document Format">PDF</abbr></a></li>
-	<li><a href="manual.ps">Postscript</a></li>
-	<li><a href="manual2/">HTML (online)</a></li>
-	<li><a href="manual.tar.gz">HTML (tarball)</a></li>
+	<li><a href="manual/speex-manual.pdf"><abbr title="Portable Document Format">PDF</abbr></a></li>
+	<li><a href="manual/speex-manual.ps">Postscript</a></li>
+	<li><a href="manual/speex-manual/">HTML (online)</a></li>
+	<li><a href="manual/speex-manual.tar.gz">HTML (tarball)</a></li>
 </ul>
 
 <h2><abbr title="Application Programming Interface">API</abbr> Reference</h2>
@@ -41,11 +39,11 @@
 	Reference Manual provides information on programming with libspeex.
 </p>
 <ul>
-	<li><a href="API/refman.pdf"><abbr title="Portable Document Format">PDF</abbr></a></li>
+	<li><a href="api/speex-api-reference.pdf"><abbr title="Portable Document Format">PDF</abbr></a></li>
 
-	<li><a href="API/refman.ps">Postscript</a></li>
-	<li><a href="API/refman/">HTML (online)</a></li>
-	<li><a href="API/refman.tar.gz">HTML (tarball)</a></li>
+	<li><a href="api/speex-api-reference.ps">Postscript</a></li>
+	<li><a href="api/speex-api-reference/">HTML (online)</a></li>
+	<li><a href="api/speex-api-reference.tar.gz">HTML (tarball)</a></li>
 </ul>
 
 <h2>Standards</h2>
