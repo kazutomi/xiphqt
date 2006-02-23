@@ -1,0 +1,38 @@
+<!--#include virtual="/ssi/header.include" -->
+<!--  Enter custom page information and styles here -->
+
+<title>Speex: Package Information</title>
+<style type="text/css">
+<!--
+#navlink_ a {
+	text-decoration: underline !important;
+}
+-->
+</style>
+
+<!--#include virtual="/ssi/xiphbar.include" -->
+<!--#include virtual="/ssi/pagetop.include" -->
+
+<h1>Packages</h1>
+<dl class="releases">
+	<dt><a href="http://www.debian.org/">Debian</a></dt>
+	<dd>
+		<p>
+			The speex source package supports four binary packages:
+			speex, libspeex, libspeex-dev and speex-doc.
+		</p>
+		<ul>
+			<li><a href="http://packages.qa.debian.org/s/speex.html">Overview of Speex</a></li>
+			<li><a href="http://ftp.debian.org/debian/pool/main/s/speex/">Package Pool for Speex</a> - all available Debian versions.</li>
+			<li><a href="http://bugs.debian.org/cgi-bin/pkgreport.cgi?src=speex">Debian bug report log for Speex</a></li>
+		</ul>
+	</dd>
+
+	<dt><a href="http://fink.sourceforge.net">Fink</a></dt>
+	<dd>
+		See
+		<a href="http://fink.sourceforge.net/pdb/package.php/speex">Fink's Speex page</a>.
+	</dd>
+</dl>
+
+<!--#include virtual="/ssi/pagebottom.include" -->
