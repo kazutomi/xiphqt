@@ -19,11 +19,11 @@
 	<div id="translations" <!--#if expr="$translations" -->style="display: block;"<!--#endif -->>
 		<h2>Translations</h2>
 		<ul id="languages">
-			<!--#if expr="$eng" --><li id="english"><a href="index.shtml.en">English <img src="/images/flags/flag-uk.gif" title="British Flag" alt="English translation"/></a></li><!--#endif -->
-			<!--#if expr="$rus" --><li id="russian"><a href="index.shtml.ru">&#1056;&#1091;&#1089;&#1089;&#1082;&#1080;&#1081; <img src="/images/flags/flag-russia.gif" title="Russian Flag" alt="&#1056;&#1091;&#1089;&#1089;&#1082;&#1080;&#1081;"></a></li><!--#endif -->
-			<!--#if expr="$spa" --><li id="spanish"><a href="index.shtml.es">Español <img src="/images/flags/flag-spain.gif" width="25" height="15" title="Spanish Flag" alt="Español"/></a></li><!--#endif -->
-			<!--#if expr="$fre" --><li id="french"><a href="index.shtml.fr">Français <img src="/images/flags/flag-france.gif" title="French Flag" alt="French Flag"/></a></li><!--#endif -->
-			<!--#if expr="$jpn" --><li id="japanese"><a href="index.shtml.ja">&#x65e5;&#x672c;&#x8a9e; <img src="/images/flags/flag-japan.gif" width="25" height="15" title="Japanese Flag" alt="&#x65e5;&#x672c;&#x8a9e;" /></a></li><!--#endif -->
+			<!--#if expr="$eng" --><li id="english"><a href="index.shtml.en">English</a></li><!--#endif -->
+			<!--#if expr="$rus" --><li id="russian"><a href="index.shtml.ru">&#1056;&#1091;&#1089;&#1089;&#1082;&#1080;&#1081;</a></li><!--#endif -->
+			<!--#if expr="$spa" --><li id="spanish"><a href="index.shtml.es">Español</a></li><!--#endif -->
+			<!--#if expr="$fre" --><li id="french"><a href="index.shtml.fr">Français</a></li><!--#endif -->
+			<!--#if expr="$jpn" --><li id="japanese"><a href="index.shtml.ja">&#x65e5;&#x672c;&#x8a9e;</a></li><!--#endif -->
 		</ul>
 	</div>
 </div>
