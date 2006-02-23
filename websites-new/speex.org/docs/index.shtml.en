@@ -26,6 +26,7 @@
 	libspeex <abbr title="Application Programming Interface">API</abbr>
 	information, and miscellaneous format information.
 </p>
+
 <ul>
 	<li><a href="manual/speex-manual.pdf"><abbr title="Portable Document Format">PDF</abbr></a></li>
 	<li><a href="manual/speex-manual.ps">Postscript</a></li>
@@ -33,11 +34,14 @@
 	<li><a href="manual/speex-manual.tar.gz">HTML (tarball)</a></li>
 </ul>
 
+
 <h2><abbr title="Application Programming Interface">API</abbr> Reference</h2>
+
 <p>
 	The Speex <abbr title="Application Programming Interface">API</abbr>
 	Reference Manual provides information on programming with libspeex.
 </p>
+
 <ul>
 	<li><a href="api/speex-api-reference.pdf"><abbr title="Portable Document Format">PDF</abbr></a></li>
 
@@ -45,6 +49,7 @@
 	<li><a href="api/speex-api-reference/">HTML (online)</a></li>
 	<li><a href="api/speex-api-reference.tar.gz">HTML (tarball)</a></li>
 </ul>
+
 
 <h2>Standards</h2>
 <p>
