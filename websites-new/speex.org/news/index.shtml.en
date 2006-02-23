@@ -24,9 +24,51 @@
 			<p></p>
 		</div>
 	</li>
+
 -->
 
 <ul class="descriptivelist">
+	<li>
+		<h3>Speex 1.1.12 Released</h3>
+		<p class="submitdate">February 19, 2006</p>
+		<div class="description">
+		<p>New things:</p>
+
+		<ul>
+		<li>echo canceller converted to fixed-point (sponsored by Analog Devices)</li>
+		<li>Improvements to the experimental Vorbis-based masking model (use <code>--enable-vorbis-psy</code> as an argument to the <code>configure</code> script)</li>
+		<li>several bug fixes</li>
+		</ul>
+		</div>
+	</li>
+	<li>
+		<h3>Speex 1.1.11.1 Released</h3>
+		<p class="submitdate">December 2, 2005</p>
+		<div class="description">
+			<p>This is a brown-paper-bag release fixing a pretty bad bug that affected the fixed-point port in 1.1.11. Architectures that use float were not affected at all. Architectures that use fixed-point had a big drop in audio quality. Only version 1.1.11 is affected. Sorry about the inconvenience.</p>
+		</div>
+	</li>
+	<li>
+		<h3>Speex 1.1.11 Released</h3>
+		<p class="submitdate">November 20, 2005</p>
+		<div class="description">
+			<p>This release includes lots of bug fixes. These include SSE, fixed-point and Blackfin. Also, the echo canceller and packet loss concealment have been improved.</p>
+		</div>
+	</li>
+	<li>
+		<h3>Speex 1.1.10 Released</h3>
+		<p class="submitdate">June 11, 2005</p>
+		<div class="description">
+	<p>The main improvement in this release is a <a href="http://blackfin.uclinux.org/">Blackfin</a> port funded by <a href="http://www.analog.com/">Analog Devices</a>.  This includes Blackfin assembly optimizations that reduce cpu time by a factor of two.  Also, the packet loss concealment code has now been converted to fixed-point and some of bugs for 16-bit architectures were fixed.</p>		</div>
+	</li>
+	<li>
+		<h3>Speex 1.1.9 Released</h3>
+		<p class="submitdate">June 1, 2005</p>
+		<div class="description">
+			<p>The main improvement in this release is that the acoustic echo canceller is finally usable. This work has been sponsored by <a href="http://www.tipic.com/">Tipic Inc</a>.  Also, several bugs have been fixed for the TI C5x port.</p>
+		</div>
+	</li>
+
 	<li>
 		<h3>Speex 1.1.8 Released</h3>
 		<p class="submitdate">May 7, 2005</p>
