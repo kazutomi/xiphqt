@@ -17,7 +17,7 @@
 <h1>Speex Home</h1>
 <h2>Overview</h2>
 <p>
-	Speex is an <a href="fsos.html">Open Source/Free Software</a>
+	Speex is an <a href="/fsos/">Open Source/Free Software</a>
 
 	patent-free audio compression format designed for speech.
 	The Speex Project aims to lower the barrier of entry for voice applications
@@ -53,7 +53,7 @@
 	such as intensity stereo encoding, integration of multiple sampling rates
 	in the same bitstream, and a
 	<abbr title="variable bitrate (operation)">VBR</abbr> mode; see our
-	<a href="comparison.html">comparison page</a> for more.
+	<a href="/comparison/">comparison page</a> for more.
 
 </p>
 <h2>Getting Involved</h2>
@@ -63,20 +63,20 @@
 	<abbr title="Voice over IP">VoIP</abbr>, internet audio streaming,
 	data archival (like voice mail), and audio books.
 	Currently, <a href="http://www.linphone.org/">LinPhone</a>,
-	<a href="http://www.openh323.org">OpenH323</a>, and
-	<a href="http://www.gnomemeeting.org">GnomeMeeting</a> are some of the
+	<a href="http://www.openh323.org/">OpenH323</a>, and
+	<a href="http://www.gnomemeeting.org/">GnomeMeeting</a> are some of the
 	projects currently using Speex. For a list of projects with
 	Speex support, visit our 
-	<a href="projects.html">Plugins &amp; Software</a> page.
+	<a href="/software/">Plugins &amp; Software</a> page.
 
 </p>
 <p> 
 	If you are interested in participating
 	in the project, have a look at our
-	<a href="todo.html">roadmap</a>, contact the Project Lead,
+	<a href="/roadmap/">roadmap</a>, contact the Project Lead,
 	<a href="http://people.xiph.org/~jm/">Jean-Marc Valin</a>, or
 	<a href="http://lists.xiph.org/mailman/listinfo/speex-dev">join our mailing list</a>. Or
-	<a href='http://xiph.org/ogg/vorbis/donate.html'>send us money</a>
+	<a href='http://www.xiph.org/donate/'>send us money</a>
 	so we can keep working on Speex.
 </p>
 

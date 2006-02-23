@@ -141,7 +141,7 @@
 
 <h2>Other Implementations &amp; Language Bindings</h2>
 <dl class="appList">
-	<dt><a href="download/jspeex.zip">Jspeex</a>, Java bindings to the C-based libspeex</dt>
+	<dt><a href="http://downloads.xiph.org/releases/speex/jspeex.zip">Jspeex</a>, Java bindings to the C-based libspeex</dt>
 
 	<dd>
 	written by Boyd Ebsworthy
