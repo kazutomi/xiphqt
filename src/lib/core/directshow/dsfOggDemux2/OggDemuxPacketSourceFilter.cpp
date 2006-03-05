@@ -319,7 +319,8 @@ HRESULT OggDemuxPacketSourceFilter::SetUpPins()
 				mDataSource = DataSourceFactory::createDataSource(locNewLocation.c_str());
 				mDataSource->open(locNewLocation.c_str());
 				locRetryCount++;
-			} else {
+			//This prevents us dying on small files, if we hit eof but we also saw a +'ve gran pos, this file is ok.
+			} else if (!(mDataSource->isEOF() && mSeenPositiveGranulePos)) {
 				//debugLog<<"Bailing out"<<endl;
 				delete[] locBuff;
 				return VFW_E_CANNOT_RENDER;
@@ -330,6 +331,7 @@ HRESULT OggDemuxPacketSourceFilter::SetUpPins()
 	//mStreamMapper->setAllowDispatch(true);
 	//mStreamMapper->();			//Flushes all streams and sets them to ignore the right number of headers.
 	mOggBuffer.clearData();
+	//mDataSource->clear();
 	mDataSource->seek(0);			//TODO::: This is bad for streams.
 
 	//debugLog<<"COMPLETED SETUP"<<endl;
