@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="OOOggStat"
 	ProjectGUID="{48CFEC13-E2BC-412F-8ECA-29090C7193B6}"
+	RootNamespace="OOOggStat"
 	Keyword="Win32Proj"
 	>
 	<Platforms>
@@ -120,7 +121,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="3"
+				Optimization="2"
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"

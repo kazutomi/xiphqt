@@ -104,6 +104,7 @@
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
 			ManagedExtensions="4"
+			WholeProgramOptimization="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -122,6 +123,10 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				InlineFunctionExpansion="2"
+				EnableIntrinsicFunctions="true"
+				FavorSizeOrSpeed="1"
+				OmitFramePointers="true"
 				AdditionalIncludeDirectories="..;..\..\..\helper"
 				PreprocessorDefinitions="WIN32;NDEBUG"
 				MinimalRebuild="false"
@@ -178,9 +183,11 @@
 	<References>
 		<ProjectReference
 			ReferencedProjectIdentifier="{9B83D147-AFE7-46EF-A3FF-EBEC65F00BA6}"
+			RelativePathToProject="..\..\src\lib\codecs\cmml\libCMMLTagsDotNET\libCMMLTagsDotNET.vcproj"
 		/>
 		<ProjectReference
 			ReferencedProjectIdentifier="{FCFE729D-EADE-45BA-9506-7E82A46403F7}"
+			RelativePathToProject="..\..\src\lib\helper\libiWrapper\libiWrapper.vcproj"
 		/>
 		<AssemblyReference
 			RelativePath="mscorlib.dll"

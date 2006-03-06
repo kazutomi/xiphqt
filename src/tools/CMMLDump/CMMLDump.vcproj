@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="CMMLDump"
 	ProjectGUID="{3A7DAD80-4C79-48FB-B779-8CEA4EE9CF90}"
+	RootNamespace="CMMLDump"
 	Keyword="Win32Proj"
 	>
 	<Platforms>
@@ -101,6 +102,7 @@
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
+			WholeProgramOptimization="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -119,7 +121,11 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="0"
+				Optimization="2"
+				InlineFunctionExpansion="2"
+				EnableIntrinsicFunctions="true"
+				FavorSizeOrSpeed="1"
+				OmitFramePointers="true"
 				AdditionalIncludeDirectories="..\..\lib\core\ogg;.;..\..\lib\helper;..\..\lib\codecs\cmml"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
 				RuntimeLibrary="2"

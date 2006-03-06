@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="libfishsound"
 	ProjectGUID="{AE0ABDB0-AE3B-4C38-843B-3408A6B87BA4}"
+	RootNamespace="libfishsound"
 	>
 	<Platforms>
 		<Platform
@@ -46,7 +47,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="3"
+				Optimization="2"
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"

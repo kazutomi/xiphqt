@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="libiWrapper"
 	ProjectGUID="{FCFE729D-EADE-45BA-9506-7E82A46403F7}"
+	RootNamespace="libiWrapper"
 	Keyword="ManagedCProj"
 	>
 	<Platforms>
@@ -100,6 +101,7 @@
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
 			ManagedExtensions="4"
+			WholeProgramOptimization="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -118,10 +120,11 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="3"
+				Optimization="2"
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
+				OmitFramePointers="true"
 				PreprocessorDefinitions="WIN32;NDEBUG"
 				MinimalRebuild="false"
 				RuntimeLibrary="2"

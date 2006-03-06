@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="libannodex"
 	ProjectGUID="{13BFE1FF-00A7-4741-B550-95445D9E0561}"
+	RootNamespace="libannodex"
 	Keyword="Win32Proj"
 	>
 	<Platforms>
@@ -104,6 +105,7 @@
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
+			WholeProgramOptimization="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -122,6 +124,10 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				InlineFunctionExpansion="2"
+				EnableIntrinsicFunctions="true"
+				FavorSizeOrSpeed="1"
+				OmitFramePointers="true"
 				AdditionalIncludeDirectories="..;..\..\include;..\..\src\libannodex;..\..\..\..\ogg\liboggz\include;..\..\..\..\ogg\libogg\include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;LIBANNODEX_EXPORTS"
 				RuntimeLibrary="0"

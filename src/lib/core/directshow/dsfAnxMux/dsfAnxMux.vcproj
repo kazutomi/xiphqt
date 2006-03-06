@@ -42,7 +42,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\BaseClasses;..\..\ogg;..\..\directshow\dsfOggMux;..\..\..\helper;..\..\..\core\directshow\libDirectshowAbstracts;..\..\..\codecs\flac\libs\libFLACHelper;..\..\..\core\directshow\dsfOggDemux"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;DSFANXMUX_EXPORTS"
+				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE,WIN32;_DEBUG;_WINDOWS;_USRDLL;DSFANXMUX_EXPORTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -107,6 +107,7 @@
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
+			WholeProgramOptimization="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -125,8 +126,12 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				InlineFunctionExpansion="2"
+				EnableIntrinsicFunctions="true"
+				FavorSizeOrSpeed="1"
+				OmitFramePointers="true"
 				AdditionalIncludeDirectories="..\BaseClasses;..\..\ogg;..\..\directshow\dsfOggMux;..\..\..\helper;..\..\..\core\directshow\libDirectshowAbstracts;..\..\..\codecs\flac\libs\libFLACHelper;..\..\..\core\directshow\dsfOggDemux"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;DSFANXMUX_EXPORTS"
+				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE,WIN32;NDEBUG;_WINDOWS;_USRDLL;DSFANXMUX_EXPORTS"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="2"
 				WarningLevel="3"

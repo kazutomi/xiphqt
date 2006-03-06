@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="CMMLRip"
 	ProjectGUID="{0A99562D-4B28-4F0C-93B2-06186069B9C0}"
+	RootNamespace="CMMLRip"
 	Keyword="Win32Proj"
 	>
 	<Platforms>
@@ -99,6 +100,7 @@
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
+			WholeProgramOptimization="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -117,6 +119,10 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				InlineFunctionExpansion="2"
+				EnableIntrinsicFunctions="true"
+				FavorSizeOrSpeed="1"
+				OmitFramePointers="true"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="2"

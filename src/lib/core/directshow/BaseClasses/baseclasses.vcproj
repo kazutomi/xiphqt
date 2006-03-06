@@ -23,6 +23,7 @@
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
+			WholeProgramOptimization="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -41,7 +42,10 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				InlineFunctionExpansion="1"
+				InlineFunctionExpansion="2"
+				EnableIntrinsicFunctions="true"
+				FavorSizeOrSpeed="1"
+				OmitFramePointers="true"
 				AdditionalIncludeDirectories=".;&quot;$(DXSDK_DIR)Include&quot;"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE,NDEBUG,WIN32,_LIB,_WIN32_DCOM,WINVER=0x400"
 				StringPooling="true"
@@ -53,7 +57,7 @@
 				AssemblerListingLocation=".\Release/"
 				ObjectFile=".\Release/"
 				ProgramDataBaseFileName=".\Release/"
-				WarningLevel="3"
+				WarningLevel="4"
 				SuppressStartupBanner="true"
 				CallingConvention="2"
 				CompileAs="0"

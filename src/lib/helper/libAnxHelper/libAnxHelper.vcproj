@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="libAnxHelper"
 	ProjectGUID="{6F8DE2AB-BF7A-4A4C-96F0-52BE1D992834}"
+	RootNamespace="libAnxHelper"
 	Keyword="Win32Proj"
 	>
 	<Platforms>
@@ -86,6 +87,7 @@
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
+			WholeProgramOptimization="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -104,6 +106,10 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				InlineFunctionExpansion="2"
+				EnableIntrinsicFunctions="true"
+				FavorSizeOrSpeed="1"
+				OmitFramePointers="true"
 				AdditionalIncludeDirectories="..\..\core\ogg;..\..\helper"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;LIBANXHELPER_EXPORTS"
 				RuntimeLibrary="2"

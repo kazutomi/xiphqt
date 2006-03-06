@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="testCircleBuffer"
 	ProjectGUID="{191217F4-1F30-426D-A2AB-A9E613D9A401}"
+	RootNamespace="testCircleBuffer"
 	Keyword="Win32Proj"
 	>
 	<Platforms>
@@ -120,7 +121,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="3"
+				Optimization="2"
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"

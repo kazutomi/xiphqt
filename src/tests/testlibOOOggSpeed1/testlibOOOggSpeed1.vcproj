@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="testlibOOOggSpeed1"
 	ProjectGUID="{BD43F518-8ACE-4FFD-BF75-35596469A28E}"
+	RootNamespace="testlibOOOggSpeed1"
 	Keyword="Win32Proj"
 	>
 	<Platforms>
@@ -101,6 +102,7 @@
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
+			WholeProgramOptimization="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -119,6 +121,10 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				InlineFunctionExpansion="2"
+				EnableIntrinsicFunctions="true"
+				FavorSizeOrSpeed="1"
+				OmitFramePointers="true"
 				AdditionalIncludeDirectories="..\..\lib\core\ogg;.;..\..\lib\helper"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
 				RuntimeLibrary="2"

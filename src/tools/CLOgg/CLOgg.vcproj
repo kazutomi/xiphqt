@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="CLOgg"
 	ProjectGUID="{9FAC2038-9D4F-4309-B79F-CF7C32BEE60F}"
+	RootNamespace="CLOgg"
 	Keyword="Win32Proj"
 	>
 	<Platforms>
@@ -120,11 +121,11 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="3"
+				Optimization="2"
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
-				OmitFramePointers="false"
+				OmitFramePointers="true"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
 				StringPooling="true"
 				RuntimeLibrary="2"

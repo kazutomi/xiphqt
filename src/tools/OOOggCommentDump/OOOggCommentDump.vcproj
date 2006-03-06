@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="OOOggCommentDump"
 	ProjectGUID="{43DE5FC7-7E6F-43FE-AD8A-FBBA7AF5D139}"
+	RootNamespace="OOOggCommentDump"
 	Keyword="Win32Proj"
 	>
 	<Platforms>
@@ -122,7 +123,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="3"
+				Optimization="2"
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"

@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="libogg"
 	ProjectGUID="{FB373486-0E6E-4BB6-8BF2-1F92EACA1468}"
+	RootNamespace="libogg"
 	>
 	<Platforms>
 		<Platform
@@ -129,7 +130,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="3"
+				Optimization="2"
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"

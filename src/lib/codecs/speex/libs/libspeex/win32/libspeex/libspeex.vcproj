@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="libspeex"
 	ProjectGUID="{6D653C6F-8722-4B10-9C3A-CB7094DD159F}"
+	RootNamespace="libspeex"
 	>
 	<Platforms>
 		<Platform
@@ -115,7 +116,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="3"
+				Optimization="2"
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"

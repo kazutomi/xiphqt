@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="OOOggPacketise"
 	ProjectGUID="{463B5ED7-C6A3-4343-BA67-B324580BEC70}"
+	RootNamespace="OOOggPacketise"
 	Keyword="Win32Proj"
 	>
 	<Platforms>
@@ -120,10 +121,11 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="3"
+				Optimization="2"
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
+				OmitFramePointers="true"
 				AdditionalIncludeDirectories="..\..\lib\core\ogg;..\..\lib\helper"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
 				RuntimeLibrary="2"

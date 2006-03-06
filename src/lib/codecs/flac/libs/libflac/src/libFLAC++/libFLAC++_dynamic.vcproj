@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="libFLAC++_dynamic"
 	ProjectGUID="{6B548F29-04A2-4F61-946F-72B86B4845DA}"
+	RootNamespace="libFLAC++_dynamic"
 	>
 	<Platforms>
 		<Platform
@@ -45,10 +46,11 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="3"
+				Optimization="2"
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
+				OmitFramePointers="true"
 				AdditionalIncludeDirectories=".\include,..\..\include"
 				PreprocessorDefinitions="NDEBUG;FLACPP_API_EXPORTS;_WINDOWS;WIN32;_USRDLL"
 				StringPooling="true"
