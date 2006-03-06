@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="libCMMLTags"
 	ProjectGUID="{AD38DCC6-B431-4B32-8569-74F3376EF2DA}"
+	RootNamespace="libCMMLTags"
 	Keyword="Win32Proj"
 	>
 	<Platforms>
@@ -121,7 +122,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="3"
+				Optimization="2"
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"

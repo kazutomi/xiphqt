@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="libVorbisComment"
 	ProjectGUID="{DC4D86E2-72C1-4995-8FB1-0F08655E620A}"
+	RootNamespace="libVorbisComment"
 	Keyword="Win32Proj"
 	>
 	<Platforms>
@@ -123,7 +124,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="3"
+				Optimization="2"
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"

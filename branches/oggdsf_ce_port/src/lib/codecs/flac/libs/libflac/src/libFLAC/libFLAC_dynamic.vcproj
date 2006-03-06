@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="libFLAC_dynamic"
 	ProjectGUID="{A0004AEB-B47C-4A0A-8FE7-4F65B5FD48FA}"
+	RootNamespace="libFLAC_dynamic"
 	>
 	<Platforms>
 		<Platform
@@ -45,10 +46,11 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="3"
+				Optimization="2"
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
+				OmitFramePointers="true"
 				AdditionalIncludeDirectories=".\include,..\..\include"
 				PreprocessorDefinitions="NDEBUG;FLAC_API_EXPORTS;VERSION=\&quot;1.1.0\&quot;;FLAC__CPU_IA32;FLAC__HAS_NASM;FLAC__USE_3DNOW;_WINDOWS;WIN32;_USRDLL"
 				StringPooling="true"

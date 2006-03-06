@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="testCMMLParser"
 	ProjectGUID="{BF72BA81-0735-46FB-8C8C-E36758477756}"
+	RootNamespace="testCMMLParser"
 	Keyword="Win32Proj"
 	>
 	<Platforms>
@@ -102,6 +103,7 @@
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
+			WholeProgramOptimization="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -120,6 +122,10 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				InlineFunctionExpansion="2"
+				EnableIntrinsicFunctions="true"
+				FavorSizeOrSpeed="1"
+				OmitFramePointers="true"
 				AdditionalIncludeDirectories="..\..\lib\codecs\cmml;..\..\lib\helper"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
 				RuntimeLibrary="2"

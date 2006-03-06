@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="libvorbis"
 	ProjectGUID="{95720FE9-89D5-4DCD-9A75-EE73BDF58AB2}"
+	RootNamespace="libvorbis"
 	>
 	<Platforms>
 		<Platform
@@ -142,7 +143,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="3"
+				Optimization="2"
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"

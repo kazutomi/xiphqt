@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="testliboggzSpeed1"
 	ProjectGUID="{32228390-D24D-40CD-A31E-E4E1CF94C308}"
+	RootNamespace="testliboggzSpeed1"
 	Keyword="Win32Proj"
 	>
 	<Platforms>
@@ -99,6 +100,7 @@
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
+			WholeProgramOptimization="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -117,6 +119,10 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				InlineFunctionExpansion="2"
+				EnableIntrinsicFunctions="true"
+				FavorSizeOrSpeed="1"
+				OmitFramePointers="true"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="2"

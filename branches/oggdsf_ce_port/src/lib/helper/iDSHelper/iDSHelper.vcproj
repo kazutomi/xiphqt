@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="iDSHelper"
 	ProjectGUID="{053D669F-E874-44C6-9705-8A1DEF40C4E9}"
+	RootNamespace="iDSHelper"
 	Keyword="Win32Proj"
 	>
 	<Platforms>
@@ -120,6 +121,10 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				InlineFunctionExpansion="2"
+				EnableIntrinsicFunctions="true"
+				FavorSizeOrSpeed="1"
+				OmitFramePointers="true"
 				AdditionalIncludeDirectories=".."
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;IDSHELPER_EXPORTS"
 				RuntimeLibrary="2"

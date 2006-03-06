@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="libCDROM"
 	ProjectGUID="{53C3466C-6107-41CD-80D2-5F1D423D66F3}"
+	RootNamespace="libCDROM"
 	Keyword="Win32Proj"
 	>
 	<Platforms>
@@ -120,7 +121,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="3"
+				Optimization="2"
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"

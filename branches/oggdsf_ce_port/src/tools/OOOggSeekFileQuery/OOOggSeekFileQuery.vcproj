@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="OOOggSeekFileQuery"
 	ProjectGUID="{764F4A5C-AABE-4E10-937F-2E5ECDAAF29C}"
+	RootNamespace="OOOggSeekFileQuery"
 	Keyword="Win32Proj"
 	>
 	<Platforms>
@@ -102,6 +103,7 @@
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
+			WholeProgramOptimization="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -120,6 +122,10 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				InlineFunctionExpansion="2"
+				EnableIntrinsicFunctions="true"
+				FavorSizeOrSpeed="1"
+				OmitFramePointers="true"
 				AdditionalIncludeDirectories="..\..\lib\core\ogg;.;..\..\lib\helper;..\..\lib\core\ogg"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
 				RuntimeLibrary="2"

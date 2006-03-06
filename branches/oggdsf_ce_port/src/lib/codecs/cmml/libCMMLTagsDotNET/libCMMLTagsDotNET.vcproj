@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="libCMMLTagsDotNET"
 	ProjectGUID="{9B83D147-AFE7-46EF-A3FF-EBEC65F00BA6}"
+	RootNamespace="libCMMLTagsDotNET"
 	Keyword="ManagedCProj"
 	>
 	<Platforms>
@@ -100,6 +101,7 @@
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
 			ManagedExtensions="4"
+			WholeProgramOptimization="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -118,10 +120,11 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="3"
+				Optimization="2"
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
+				OmitFramePointers="true"
 				AdditionalIncludeDirectories="..\..\..\helper\libiWrapper;..;..\..\..\helper"
 				AdditionalUsingDirectories="..\..\..\helper\libiWrapper\Release"
 				PreprocessorDefinitions="WIN32;NDEBUG"

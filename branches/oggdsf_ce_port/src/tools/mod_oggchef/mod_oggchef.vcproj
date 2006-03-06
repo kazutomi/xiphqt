@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="mod_oggchef"
 	ProjectGUID="{F8FDD992-E21A-483F-BBE7-305D10163DE4}"
+	RootNamespace="mod_oggchef"
 	Keyword="Win32Proj"
 	>
 	<Platforms>
@@ -125,7 +126,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="3"
+				Optimization="2"
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"

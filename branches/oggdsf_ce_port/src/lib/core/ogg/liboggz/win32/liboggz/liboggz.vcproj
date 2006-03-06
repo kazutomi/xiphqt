@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="liboggz"
 	ProjectGUID="{16CBAA0F-A6A5-40DA-8C50-393AFEE7B1F4}"
+	RootNamespace="liboggz"
 	Keyword="Win32Proj"
 	>
 	<Platforms>
@@ -103,6 +104,7 @@
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
+			WholeProgramOptimization="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -121,6 +123,10 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				InlineFunctionExpansion="2"
+				EnableIntrinsicFunctions="true"
+				FavorSizeOrSpeed="1"
+				OmitFramePointers="true"
 				AdditionalIncludeDirectories="..;..\..\..\libogg\include;..\..\include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;LIBOGGZ_EXPORTS"
 				RuntimeLibrary="2"
