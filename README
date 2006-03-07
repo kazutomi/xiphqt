@@ -113,7 +113,7 @@ In order to build you need the following
     downs, depending on what other development work you do.
 
    Also note: That big bold warning says you can register with
-    visual studio by using a link in add/remove programs. This
+    visual studio by using a link in the start menu. This
     *does not* work for VS2005. The platform SDK was released
     before VS2005, it's probably updating the build paths
     in vs2003. This is the reason you have to manaully update
@@ -133,7 +133,7 @@ In order to build you need the following
     This DX SDK creates the environment variable DXSDK_DIR
 
     So you need to add to the include list (as you did above)
-    $(DXSDK)include
+    $(DXSDK_DIR)include
 
  * WMP 10 SDK - At this time not required, but may be by
     the time you read this if i forget to update this doc.
@@ -157,13 +157,16 @@ You need all these things if you want to build this project.
 It may seem excessive that you need to download a gigabyte of stuff
  just to build. This project uses technologies from several sdk's, 
  and there is no way around that. Once you set up these things, the
- project is very easy to build.
+ project is very easy to build, with the professional edition and
+ above that is, possibly the standard edition. How the express edition
+ handles this type of project is as yet unknown.
 
 The baseclasses library is no longer used from the platform
  SDK (but you still need it). There is a modified version
  of the baseclasses libraries that is part of this source.
  The version in the platform SDK won't build in VS2005 as it
- is.
+ is, the modifed version that is part of this source has
+ fixes so that it builds correctly with the new compiler.
 
 This project now uses V8 of the runtime libraries. As of
  version 8, there are changes to the way the operating system
