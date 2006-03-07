@@ -62,7 +62,7 @@
 				ObjectFile=".\Release_dynamic/"
 				ProgramDataBaseFileName=".\Release_dynamic/"
 				BrowseInformation="1"
-				WarningLevel="3"
+				WarningLevel="4"
 				SuppressStartupBanner="true"
 				CallingConvention="0"
 				CompileAs="2"

@@ -44,7 +44,7 @@
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\..\helper\libiWrapper;..;..\..\..\helper"
 				AdditionalUsingDirectories="..\..\..\helper\libiWrapper\Debug"
-				PreprocessorDefinitions="WIN32;_DEBUG"
+				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;WIN32;_DEBUG"
 				MinimalRebuild="false"
 				BasicRuntimeChecks="0"
 				RuntimeLibrary="3"
@@ -127,10 +127,10 @@
 				OmitFramePointers="true"
 				AdditionalIncludeDirectories="..\..\..\helper\libiWrapper;..;..\..\..\helper"
 				AdditionalUsingDirectories="..\..\..\helper\libiWrapper\Release"
-				PreprocessorDefinitions="WIN32;NDEBUG"
+				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;WIN32;NDEBUG"
 				MinimalRebuild="false"
 				RuntimeLibrary="2"
-				WarningLevel="3"
+				WarningLevel="4"
 				CallingConvention="2"
 			/>
 			<Tool
