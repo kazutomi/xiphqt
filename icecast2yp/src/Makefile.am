@@ -13,8 +13,8 @@ yp_clean_SOURCES = yp_clean.c log.c yp_routines.c
 yp_random_SOURCES = yp_random.c log.c yp_routines.c
 yp_check_SOURCES = yp_check.c log.c check_socket.c yp_routines.c
     
-CFLAGS = @CFLAGS@ @MYSQL_CFLAGS@ @XML_CFLAGS@ -I${prefix}/include -I/usr/include/libcgi `xml2-config --cflags`
-LIBS = @LIBS@ @MYSQL_LIBS@ @XML_LIBS@ -L${prefix}/lib `xml2-config --libs`
+CFLAGS = @CFLAGS@ @MYSQL_CFLAGS@ -I${prefix}/include -I/usr/include/libcgi `xml2-config --cflags`
+LIBS = @LIBS@ @MYSQL_LIBS@ -L${prefix}/lib `xml2-config --libs`
 
 
 static:
