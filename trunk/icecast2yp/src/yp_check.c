@@ -41,7 +41,7 @@ int checkServers(char *error)
 
 	memset(sql, '\000', sizeof(sql));
 
-	sprintf(sql,"select a.id, listen_url from servers a, server_details b where a.id = b.parent_id and a.yp_status = 'notverified' order by listen_url");
+	sprintf(sql,"select a.id, listen_url, a.server_name, a.listing_ip from servers a, server_details b where a.id = b.parent_id and a.yp_status = 'notverified' order by listen_url");
 	if(mysql_real_query(&dbase,sql,strlen(sql))) {
 		strcpy(error, mysql_error(&dbase));
 		return(YP_ERROR);
@@ -56,6 +56,14 @@ int checkServers(char *error)
 		for (i=0;i<nrows;i++) {
 			//printf("%d servers left\n", nrows-i);
 			row = mysql_fetch_row(result);
+			char	sName[1024] = "";
+			char	listingIP[255] = "";
+			if (row[3]) {
+				strncpy(listingIP, row[3], sizeof(listingIP)-1);
+			}
+			if (row[2]) {
+				strncpy(sName, row[2], sizeof(sName)-1);
+			}
 			if (row[1]) {
 				//printf("(%s)\n", row[1]);
 				char *p1 = row[1] + strlen("http://");
@@ -75,7 +83,7 @@ int checkServers(char *error)
 
 						strncpy(host, p1, p3-p1);
 						port = atoi(p3+1);
-						//printf("Checking host (%s) port (%d)\n", host, port);
+						//printf("Checking host %s (%s) port (%d)\n", sName, host, port);
 
 						snprintf(addr, 254, "%s:%d", host, port);
 
@@ -101,6 +109,7 @@ int checkServers(char *error)
 							    goodCount++;
 							}
 							else {
+							    LogMessage(LOG_INFO, "Failed Validation(%s): %s - %s", listingIP, sName, row[1]);
 							    sprintf(sql,"delete from servers where id = %s", row[0]);
 							    if (mysql_real_query(&dbase,sql,strlen(sql))) {
 								sprintf(error, "servers: %s", mysql_error(&dbase));

@@ -1,3 +1,4 @@
+use oddsock;
 DROP TABLE if exists server_details;
 DROP TABLE if exists servers_touch;
 DROP TABLE if exists servers;
@@ -69,6 +70,7 @@ CREATE TABLE if not exists servers (
   listing_ip varchar(25) default NULL,
   listeners int(11) default NULL,
   rank int(11) default NULL,
+  yp_status varchar(100) default NULL,
   PRIMARY KEY  (id)
 ) TYPE=MyISAM;
 

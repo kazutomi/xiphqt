@@ -75,9 +75,24 @@ int gen_cache(char *error)
 	xmlNodePtr rootNode;
 	xmlNodePtr entryNode;
 
+	xmlDocPtr doc_xspf;
+	xmlNodePtr rootNode_xspf;
+	xmlNodePtr trackListNode_xspf;
+	xmlNodePtr trackNode_xspf;
+
 	doc = xmlNewDoc("1.0");
 	rootNode = xmlNewDocNode(doc, NULL, "directory", NULL);
 	xmlDocSetRootElement(doc, rootNode);
+
+	doc_xspf = xmlNewDoc("1.0");
+	rootNode_xspf = xmlNewDocNode(doc_xspf, NULL, "playlist", NULL);
+	xmlNewProp(rootNode_xspf, "version", "1");
+	xmlNewProp(rootNode_xspf, "xmlns", "http://xspf.org/ns/0/");
+
+	xmlDocSetRootElement(doc_xspf, rootNode_xspf);
+
+	xmlNewChild(rootNode_xspf, NULL, "title", "Xiph Stream Directory");
+	xmlNewChild(rootNode_xspf, NULL, "creator", "Xiph Stream Directory");
 
 
 	srand(time() + getpid());
@@ -95,6 +110,7 @@ int gen_cache(char *error)
 		return(SUCCESS);
 	}
 	else {
+		trackListNode_xspf = xmlNewChild(rootNode_xspf, NULL, "trackList", NULL);
 		for (i=0;i<nrows;i++) {
 			row = mysql_fetch_row(result);
 			if (row[0]) {
@@ -107,6 +123,7 @@ int gen_cache(char *error)
 				unsigned char *out6;
 				unsigned char *out7;
 
+				trackNode_xspf = xmlNewChild(trackListNode_xspf, NULL, "track", NULL);
 				entryNode = xmlNewChild(rootNode, NULL, "entry", NULL);
 				out0 = convert(row[0], encoding);
 				out1 = convert(row[1], encoding);
@@ -125,6 +142,14 @@ int gen_cache(char *error)
 				xmlNewTextChild(entryNode, NULL, "samplerate", out5);
 				xmlNewTextChild(entryNode, NULL, "genre", out6);
 				xmlNewTextChild(entryNode, NULL, "current_song", out7);
+
+				xmlNewTextChild(trackNode_xspf, NULL, "creator", out0);
+				xmlNewTextChild(trackNode_xspf, NULL, "location", out1);
+
+				char annotation[1024] = "";
+				sprintf(annotation, "%s %s/%s/%s", out6, out3, out4, out5);
+				xmlNewTextChild(trackNode_xspf, NULL, "annotation", annotation);
+
 				free(out0);
 				free(out1);
 				free(out2);
@@ -139,6 +164,8 @@ int gen_cache(char *error)
 	}
 	unlink("yp.xml");
 	xmlSaveFormatFileEnc("yp.xml", doc, encoding, 1);
+	unlink("yp.xspf");
+	xmlSaveFormatFileEnc("yp.xspf", doc_xspf, encoding, 1);
 	return(SUCCESS);
 }
 
