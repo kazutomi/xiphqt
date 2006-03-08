@@ -85,6 +85,33 @@
                 }
             }
         }
+        "Debug_CE_ARM"
+        {
+        "DisplayName" = "8:Debug_CE_ARM"
+        "IsDebugOnly" = "11:FALSE"
+        "IsReleaseOnly" = "11:FALSE"
+        "OutputFilename" = "8:Debug_CE_ARM\\DotNETOggTools.msi"
+        "PackageFilesAs" = "3:2"
+        "PackageFileSize" = "3:-2147483648"
+        "CabType" = "3:1"
+        "Compression" = "3:2"
+        "SignOutput" = "11:FALSE"
+        "CertificateFile" = "8:"
+        "PrivateKeyFile" = "8:"
+        "TimeStampServer" = "8:"
+        "InstallerBootstrapper" = "3:2"
+            "BootstrapperCfg:{63ACBE69-63AA-4F98-B2B6-99F9E24495F2}"
+            {
+            "Enabled" = "11:TRUE"
+            "PromptEnabled" = "11:TRUE"
+            "PrerequisitesLocation" = "2:1"
+            "Url" = "8:"
+            "ComponentsUrl" = "8:"
+                "Items"
+                {
+                }
+            }
+        }
         "Release"
         {
         "DisplayName" = "8:Release"
@@ -717,7 +744,7 @@
         {
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_4B3860CBBAAE41CE952C9DB17B1BDFF5"
             {
-            "SourcePath" = "8:..\\..\\src\\lib\\codecs\\cmml\\libcmmltags\\debug\\libCMMLTags.dll"
+            "SourcePath" = "8:..\\..\\src\\lib\\codecs\\cmml\\libcmmltags\\pocket pc 2003 (armv4)\\debug_ce_arm\\libCMMLTags.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_5C993B2E70A34EF8995AE3282D9A7CAA"
@@ -745,7 +772,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_7D2E9EEB21B7428FB75771288064C10B"
             {
-            "SourcePath" = "8:..\\..\\src\\lib\\codecs\\cmml\\libcmmltagsdotnet\\debug\\libCMMLTagsDotNET.dll"
+            "SourcePath" = "8:..\\..\\src\\lib\\codecs\\cmml\\libcmmltagsdotnet\\pocket pc 2003 (armv4)\\debug_ce_arm\\libCMMLTagsDotNET.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_5C993B2E70A34EF8995AE3282D9A7CAA"
@@ -773,7 +800,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_7D5C9B365F304AB0A7D754E7EB741122"
             {
-            "SourcePath" = "8:..\\..\\src\\tools\\DNPlay\\obj\\Debug\\DNPlay.exe"
+            "SourcePath" = "8:..\\..\\src\\tools\\DNPlay\\obj\\Debug_CE_ARM\\DNPlay.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_5C993B2E70A34EF8995AE3282D9A7CAA"
@@ -801,7 +828,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_B592DC6B9EAB4AA287DBA62B1EA8A758"
             {
-            "SourcePath" = "8:..\\..\\src\\tests\\testVideoImageGrab\\obj\\Debug\\testVideoImageGrab.exe"
+            "SourcePath" = "8:..\\..\\src\\tests\\testVideoImageGrab\\obj\\Debug_CE_ARM\\testVideoImageGrab.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_5C993B2E70A34EF8995AE3282D9A7CAA"
@@ -829,7 +856,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_BBDF372A1BE44FF8AA407085BEDCC524"
             {
-            "SourcePath" = "8:..\\..\\src\\lib\\player\\libdsplaydotnet\\debug\\libDSPlayDotNET.dll"
+            "SourcePath" = "8:..\\..\\src\\lib\\player\\libdsplaydotnet\\pocket pc 2003 (armv4)\\debug_ce_arm\\libDSPlayDotNET.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_5C993B2E70A34EF8995AE3282D9A7CAA"

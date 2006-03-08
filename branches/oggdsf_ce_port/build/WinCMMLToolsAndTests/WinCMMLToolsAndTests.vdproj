@@ -61,6 +61,33 @@
                 }
             }
         }
+        "Debug_CE_ARM"
+        {
+        "DisplayName" = "8:Debug_CE_ARM"
+        "IsDebugOnly" = "11:FALSE"
+        "IsReleaseOnly" = "11:FALSE"
+        "OutputFilename" = "8:Debug_CE_ARM\\WinCMMLToolsAndTests.msi"
+        "PackageFilesAs" = "3:2"
+        "PackageFileSize" = "3:-2147483648"
+        "CabType" = "3:1"
+        "Compression" = "3:2"
+        "SignOutput" = "11:FALSE"
+        "CertificateFile" = "8:"
+        "PrivateKeyFile" = "8:"
+        "TimeStampServer" = "8:"
+        "InstallerBootstrapper" = "3:2"
+            "BootstrapperCfg:{63ACBE69-63AA-4F98-B2B6-99F9E24495F2}"
+            {
+            "Enabled" = "11:TRUE"
+            "PromptEnabled" = "11:TRUE"
+            "PrerequisitesLocation" = "2:1"
+            "Url" = "8:"
+            "ComponentsUrl" = "8:"
+                "Items"
+                {
+                }
+            }
+        }
         "Release"
         {
         "DisplayName" = "8:Release"
@@ -684,7 +711,7 @@
         {
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_7685F6F2E02D464483E0A8FA0634A1C5"
             {
-            "SourcePath" = "8:..\\..\\src\\tests\\testcmmlparser\\debug\\testCMMLParser.exe"
+            "SourcePath" = "8:..\\..\\src\\tests\\testcmmlparser\\pocket pc 2003 (armv4)\\debug_ce_arm\\testCMMLParser.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_3AA5737CF1C645AA8498A457E2D4C44C"
@@ -712,7 +739,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_BE534DEE90584C6FB004252FFF0A23B7"
             {
-            "SourcePath" = "8:..\\..\\src\\lib\\codecs\\cmml\\libcmmltags\\debug\\libCMMLTags.dll"
+            "SourcePath" = "8:..\\..\\src\\lib\\codecs\\cmml\\libcmmltags\\pocket pc 2003 (armv4)\\debug_ce_arm\\libCMMLTags.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_3AA5737CF1C645AA8498A457E2D4C44C"
@@ -740,7 +767,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_ED6AFE21314549B597C8E143FF299EBE"
             {
-            "SourcePath" = "8:..\\..\\src\\lib\\codecs\\cmml\\libwincmmlparse\\debug\\libWinCMMLParse.dll"
+            "SourcePath" = "8:..\\..\\src\\lib\\codecs\\cmml\\libwincmmlparse\\pocket pc 2003 (armv4)\\debug_ce_arm\\libWinCMMLParse.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_3AA5737CF1C645AA8498A457E2D4C44C"

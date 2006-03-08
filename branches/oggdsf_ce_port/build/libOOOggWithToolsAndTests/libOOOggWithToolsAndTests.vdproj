@@ -97,6 +97,33 @@
                 }
             }
         }
+        "Debug_CE_ARM"
+        {
+        "DisplayName" = "8:Debug_CE_ARM"
+        "IsDebugOnly" = "11:FALSE"
+        "IsReleaseOnly" = "11:FALSE"
+        "OutputFilename" = "8:Debug_CE_ARM\\libOOOggWithToolsAndTests.msi"
+        "PackageFilesAs" = "3:2"
+        "PackageFileSize" = "3:-2147483648"
+        "CabType" = "3:1"
+        "Compression" = "3:2"
+        "SignOutput" = "11:FALSE"
+        "CertificateFile" = "8:"
+        "PrivateKeyFile" = "8:"
+        "TimeStampServer" = "8:"
+        "InstallerBootstrapper" = "3:2"
+            "BootstrapperCfg:{63ACBE69-63AA-4F98-B2B6-99F9E24495F2}"
+            {
+            "Enabled" = "11:TRUE"
+            "PromptEnabled" = "11:TRUE"
+            "PrerequisitesLocation" = "2:1"
+            "Url" = "8:"
+            "ComponentsUrl" = "8:"
+                "Items"
+                {
+                }
+            }
+        }
         "Release"
         {
         "DisplayName" = "8:Release"
@@ -774,7 +801,7 @@
         {
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_15D86BBDBB4144F5959F2C5175939D6C"
             {
-            "SourcePath" = "8:..\\..\\src\\lib\\helper\\libillicore\\debug\\libilliCore.lib"
+            "SourcePath" = "8:..\\..\\src\\lib\\helper\\libillicore\\pocket pc 2003 (armv4)\\debug_ce_arm\\libilliCore.lib"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_ADE7E20E4D77439FB3A1B61B3F803F3B"
@@ -802,7 +829,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_33A59244EB2841E5B6DD26D2B0A96CA0"
             {
-            "SourcePath" = "8:..\\..\\src\\tools\\oooggcommentdump\\debug\\OOOggCommentDump.exe"
+            "SourcePath" = "8:..\\..\\src\\tools\\oooggcommentdump\\pocket pc 2003 (armv4)\\debug_ce_arm\\OOOggCommentDump.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_ADE7E20E4D77439FB3A1B61B3F803F3B"
@@ -830,7 +857,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_9061237CE81A4BAC9A988D1713DCE01A"
             {
-            "SourcePath" = "8:..\\..\\src\\tools\\oooggvalidate\\debug\\OOOggValidate.exe"
+            "SourcePath" = "8:..\\..\\src\\tools\\oooggvalidate\\pocket pc 2003 (armv4)\\debug_ce_arm\\OOOggValidate.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_ADE7E20E4D77439FB3A1B61B3F803F3B"
@@ -858,7 +885,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_9BF479E16E8E489CA7D9F11A166F5612"
             {
-            "SourcePath" = "8:..\\..\\src\\tools\\oooggdump\\debug\\OOOggDump.exe"
+            "SourcePath" = "8:..\\..\\src\\tools\\oooggdump\\pocket pc 2003 (armv4)\\debug_ce_arm\\OOOggDump.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_ADE7E20E4D77439FB3A1B61B3F803F3B"
@@ -886,7 +913,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_9EB1B54CEB1D40979ADA34E55D07BB22"
             {
-            "SourcePath" = "8:..\\..\\src\\lib\\core\\ogg\\libooogg\\debug\\libOOOgg.dll"
+            "SourcePath" = "8:..\\..\\src\\lib\\core\\ogg\\libooogg\\pocket pc 2003 (armv4)\\debug_ce_arm\\libOOOgg.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_ADE7E20E4D77439FB3A1B61B3F803F3B"
@@ -914,7 +941,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_C0BA320CDA794057812E2CF28F5EA94C"
             {
-            "SourcePath" = "8:..\\..\\src\\tests\\testcirclebuffer\\debug\\testCircleBuffer.exe"
+            "SourcePath" = "8:..\\..\\src\\tests\\testcirclebuffer\\pocket pc 2003 (armv4)\\debug_ce_arm\\testCircleBuffer.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_ADE7E20E4D77439FB3A1B61B3F803F3B"
@@ -942,7 +969,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_DFF78663650B4CF0A485185D63D04FB5"
             {
-            "SourcePath" = "8:..\\..\\src\\tools\\oooggstat\\debug\\OOOggStat.exe"
+            "SourcePath" = "8:..\\..\\src\\tools\\oooggstat\\pocket pc 2003 (armv4)\\debug_ce_arm\\OOOggStat.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_ADE7E20E4D77439FB3A1B61B3F803F3B"
@@ -970,7 +997,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_E2B7419C787246EDA72E0A9CF0D1D7E4"
             {
-            "SourcePath" = "8:..\\..\\src\\tests\\testmuxdemux\\debug\\testMuxDemux.exe"
+            "SourcePath" = "8:..\\..\\src\\tests\\testmuxdemux\\pocket pc 2003 (armv4)\\debug_ce_arm\\testMuxDemux.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_ADE7E20E4D77439FB3A1B61B3F803F3B"
@@ -998,7 +1025,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_FC3DA72FCAAA4F0E8B31462D44B32FD6"
             {
-            "SourcePath" = "8:..\\..\\src\\lib\\core\\ogg\\libvorbiscomment\\debug\\libVorbisComment.dll"
+            "SourcePath" = "8:..\\..\\src\\lib\\core\\ogg\\libvorbiscomment\\pocket pc 2003 (armv4)\\debug_ce_arm\\libVorbisComment.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_ADE7E20E4D77439FB3A1B61B3F803F3B"
