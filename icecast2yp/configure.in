@@ -64,19 +64,19 @@ dnl -- configure options --
 AM_PATH_MYSQL(, , AC_MSG_ERROR(Cannot find mysql client library))
 AM_PATH_XML2(, , AC_MSG_ERROR(Cannot find libxml2))
 
-#CFLAGS="$CFLAGS -I${prefix}/include"
+#CFLAGS="$CFLAGS -I/usr/include/libcgi -I${prefix}/include"
 #LIBS="-L${prefix}/lib $LIBS -lcgi"
 #AC_CHECK_HEADERS(cgi.h,CFLAGS="$CFLAGS -I${prefix}/include" LIBS="-L${prefix}/lib $LIBS -lcgi",AC_MSG_ERROR(Cannot find libcgi))
 OLDCFLAGS=${CFLAGS}
 OLDCPPFLAGS=${CPPFLAGS}
-CFLAGS="${CFLAGS} -I$prefix/include"   
+CFLAGS="${CFLAGS} -I/usr/include/libcgi -I$prefix/include"   
 CPPFLAGS="${CPPFLAGS} -I$prefix/include"   
 AC_CHECK_HEADERS(cgi.h,,AC_MSG_ERROR(Cannot find libcgi))
 CPPFLAGS=${OLDCPPFLAGS}
 CFLAGS=${OLDCFLAGS} 
 
 
-LIBS="-L/usr/local/lib $LIBS -lcgi"
+LIBS="-L/usr/local/lib -L/usr/lib $LIBS -lcgi"
 
 dnl Make substitutions
 
@@ -84,6 +84,7 @@ AC_SUBST(LIBTOOL_DEPS)
 AC_SUBST(LIBS)
 AC_SUBST(DEBUG)
 AC_SUBST(CFLAGS)
+AC_SUBST(XML_CFLAGS)
 AC_SUBST(PROFILE)
 
 AC_OUTPUT([Makefile src/Makefile sql/Makefile]) 

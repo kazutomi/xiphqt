@@ -68,6 +68,10 @@ int main(int argc, char * argv[])
 		sendYPResponse(0, "banned", ICECAST2_RESPONSE);
 		goto endofcall;
 	}
+	if (!strcmp(listing_ip, "207.97.192.236")) {	
+		sendYPResponse(0, "banned", ICECAST2_RESPONSE);
+		goto endofcall;
+	}
 
 	/* Was there an error initializing the CGI??? */
 /*
