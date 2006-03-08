@@ -357,7 +357,7 @@ int main(int argc, char * argv[])
 			if (ret == YP_ADDED) {
 				Log(LOG_DEBUG, "sending sid  of %s", sid);
 				Log(LOG_INFO, "YP_ADD sid of %s", sid);
-				printf("SID: %s\r\nTouchFreq: 60\r\n", sid);
+				printf("SID: %s\r\nTouchFreq: 200\r\n", sid);
 				sendYPResponse(1, "Successfull Add", ICECAST2_RESPONSE);
 				goto endofcall;
 			}
