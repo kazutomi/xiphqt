@@ -222,8 +222,8 @@ extern theora_dec_ctx *theora_decode_alloc(const theora_info *_info,
  * \param _setup The setup information to free.
  *               This can safely be <tt>NULL</tt>.*/
 extern void theora_setup_free(theora_setup_info *_setup);
-/**Encoder control function.
- * This is used to provide advanced control the decoding process.
+/**Decoder control function.
+ * This is used to provide advanced control of the decoding process.
  * \param _dec    A #theora_dec_ctx handle.
  * \param _req    The control code to process.
  *                See \ref decctlcodes "the list of available control codes"
