@@ -182,6 +182,11 @@ The release distributions are built using NSIS. There is
  of distribution.
    
 
+
+*** Building for WinCE.
+
+ - Windows Mobile SDK
+
 ==========================================================
 The below information is left for reference, where the 
  information above conflicts with this, the information
