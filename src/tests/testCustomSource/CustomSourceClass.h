@@ -1,5 +1,5 @@
 //===========================================================================
-//Copyright (C) 2003, 2004 Zentaro Kavanagh
+//Copyright (C) 2003-2006 Zentaro Kavanagh
 //
 //Redistribution and use in source and binary forms, with or without
 //modification, are permitted provided that the following conditions
@@ -29,22 +29,38 @@
 //SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //===========================================================================
 #pragma once
+
+#include <fstream>
 #include <string>
+
 using namespace std;
-class IFilterDataSource
+#include "IFilterDataSource.h"
+
+//This class is just a copy of FilterFileSource class that the demux uses, It's just an example
+//	of the most basic source of data. It's intended only for random access files.
+//The custom source interface on the filter as at Mar 2006, has no mechanism to allow
+//	other sorts of data, like forward only streams. It's just an experiment for now.
+//It's most useful if you have some media files in your application you don't want the
+//  user to be able to touch. In this case you can decrypt/unpack/read directly from the
+//  applications data and feed into the demux.
+class CustomSourceClass
+	:	public IFilterDataSource
 {
 public:
-	//Empty Constructor and destructor to ensure proper deletion
-	IFilterDataSource(void)							{}
-	virtual ~IFilterDataSource(void)				{}
+	CustomSourceClass(void);
+	virtual ~CustomSourceClass(void);
 
-	virtual unsigned long seek(unsigned long inPos) = 0;
-	virtual void close()  = 0;
-	virtual bool open(string inSourceLocation, unsigned long inStartByte = 0) = 0;
-	virtual void clear() = 0;
-	virtual bool isEOF() = 0;
-	virtual bool isError() = 0;
-	virtual unsigned long read(char* outBuffer, unsigned long inNumBytes) = 0;
-	virtual string shouldRetryAt() = 0;
-	
+	//IFilterDataSource Interface
+	virtual unsigned long seek(unsigned long inPos);
+	virtual void close();
+	virtual bool open(string inSourceLocation, unsigned long inStartByte = 0);
+	virtual void clear();
+	virtual bool isEOF();
+	virtual bool isError()								{	return false;	}
+	virtual unsigned long read(char* outBuffer, unsigned long inNumBytes);
+	virtual string shouldRetryAt()						{		return "";		}
+	//
+
+protected:
+	fstream mSourceFile;
 };

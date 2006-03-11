@@ -1,5 +1,5 @@
 //===========================================================================
-//Copyright (C) 2003, 2004 Zentaro Kavanagh
+//Copyright (C) 2003-2006 Zentaro Kavanagh
 //
 //Redistribution and use in source and binary forms, with or without
 //modification, are permitted provided that the following conditions
@@ -28,23 +28,40 @@
 //NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 //SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //===========================================================================
-#pragma once
-#include <string>
-using namespace std;
-class IFilterDataSource
-{
-public:
-	//Empty Constructor and destructor to ensure proper deletion
-	IFilterDataSource(void)							{}
-	virtual ~IFilterDataSource(void)				{}
+#include "stdafx.h"
+#include "CustomSourceClass.h"
 
-	virtual unsigned long seek(unsigned long inPos) = 0;
-	virtual void close()  = 0;
-	virtual bool open(string inSourceLocation, unsigned long inStartByte = 0) = 0;
-	virtual void clear() = 0;
-	virtual bool isEOF() = 0;
-	virtual bool isError() = 0;
-	virtual unsigned long read(char* outBuffer, unsigned long inNumBytes) = 0;
-	virtual string shouldRetryAt() = 0;
-	
-};
+CustomSourceClass::CustomSourceClass(void)
+{
+}
+
+CustomSourceClass::~CustomSourceClass(void)
+{
+	mSourceFile.close();
+}
+
+unsigned long CustomSourceClass::seek(unsigned long inPos) 
+{
+	mSourceFile.clear();
+	mSourceFile.seekg(inPos, ios_base::beg);
+	return mSourceFile.tellg();
+}
+void CustomSourceClass::close() {
+	mSourceFile.close();
+}
+bool CustomSourceClass::open(string inSourceLocation, unsigned long) {
+	mSourceFile.open(inSourceLocation.c_str(), ios_base::in|ios_base::binary);
+	return mSourceFile.is_open();
+}
+void CustomSourceClass::clear() {
+	mSourceFile.clear();
+}
+bool CustomSourceClass::isEOF() {
+	return mSourceFile.eof();
+}
+unsigned long CustomSourceClass::read(char* outBuffer, unsigned long inNumBytes) {
+	//If you were going to decrypt your data, you would do that here
+	mSourceFile.read(outBuffer, inNumBytes);
+	return mSourceFile.gcount();
+}
+
