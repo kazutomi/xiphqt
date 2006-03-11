@@ -83,7 +83,7 @@ STDMETHODIMP OggDemuxPacketSourceFilter::NonDelegatingQueryInterface(REFIID riid
 		return NOERROR;
 	} else if (riid == IID_ICustomSource) {
 		*ppv = (ICustomSource*)this;
-		((IUnknown*)*ppv)->AddRef();
+		//((IUnknown*)*ppv)->AddRef();
 		return NOERROR;
 
 
@@ -507,7 +507,11 @@ void OggDemuxPacketSourceFilter::notifyPinConnected()
 		//Setup the seek table.
 		if (mSeekTable == NULL) {
 			//CUSTOM SOURCE:::
-			mSeekTable = new AutoOggChainGranuleSeekTable(StringHelper::toNarrowStr(mFileName));
+			if (!mUsingCustomSource) {
+				mSeekTable = new AutoOggChainGranuleSeekTable(StringHelper::toNarrowStr(mFileName));
+			} else {
+				mSeekTable = new CustomOggChainGranuleSeekTable(mDataSource);
+			}
 			int locNumPins = GetPinCount();
 
 			OggDemuxPacketSourcePin* locPin = NULL;

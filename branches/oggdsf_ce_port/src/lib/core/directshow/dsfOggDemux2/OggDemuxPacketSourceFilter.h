@@ -37,6 +37,7 @@
 #include <libOOOgg/OggDataBuffer.h>
 
 #include <libOOOggSeek/AutoOggChainGranuleSeekTable.h>
+#include "CustomOggChainGranuleSeekTable.h"
 #include "DataSourceFactory.h"
 
 class OggStreamMapper;

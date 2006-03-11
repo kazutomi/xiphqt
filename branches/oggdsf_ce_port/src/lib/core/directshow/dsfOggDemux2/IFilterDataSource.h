@@ -31,7 +31,7 @@
 #pragma once
 #include <string>
 using namespace std;
-class OGG_DEMUX2_API IFilterDataSource
+class IFilterDataSource
 {
 public:
 	//Empty Constructor and destructor to ensure proper deletion
