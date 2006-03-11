@@ -70,10 +70,23 @@ CUnknown* WINAPI OggDemuxPacketSourceFilter::CreateInstance(LPUNKNOWN pUnk, HRES
 //COM Interface query function
 STDMETHODIMP OggDemuxPacketSourceFilter::NonDelegatingQueryInterface(REFIID riid, void **ppv)
 {
-	if (riid == IID_IFileSourceFilter) {
+
+	//TODO::: Possibly want to add a check when someone queries for ICustomSource and then disallow IFileSource
+	//			and vice versa, but that could cause a problem if applications just want to query out of
+	//			curiosity but not actually use it.
+	//
+	//			For now, using ICustomSource is pretty much unsupported, so if you are using it, you just have to
+	//			be careful you don't try and load a file twice by accident.
+	if ((riid == IID_IFileSourceFilter)) {
 		*ppv = (IFileSourceFilter*)this;
 		((IUnknown*)*ppv)->AddRef();
 		return NOERROR;
+	} else if (riid == IID_ICustomSource) {
+		*ppv = (ICustomSource*)this;
+		((IUnknown*)*ppv)->AddRef();
+		return NOERROR;
+
+
 	//} else if (riid == IID_IMediaSeeking) {
 	//	*ppv = (IMediaSeeking*)this;
 	//	((IUnknown*)*ppv)->AddRef();
@@ -112,6 +125,9 @@ OggDemuxPacketSourceFilter::OggDemuxPacketSourceFilter(void)
 	,	mJustReset(true)
 	,	mSeekTable(NULL)
 	,	mGlobalBaseTime(0)
+
+	,	mUsingCustomSource(false)
+
 {
 	//Why do we do this, should the base class do it ?
 	m_pLock = new CCritSec;
@@ -239,20 +255,24 @@ void OggDemuxPacketSourceFilter::resetStream() {
 		CAutoLock locDemuxLock(mDemuxLock);
 		CAutoLock locSourceLock(mSourceFileLock);
 
-		//Close up the data source
-		mDataSource->clear();
-
-		mDataSource->close();
-		delete mDataSource;
-		mDataSource = NULL;
-		
-
 		mOggBuffer.clearData();
 
-		//Before opening make the interface
-		mDataSource = DataSourceFactory::createDataSource(StringHelper::toNarrowStr(mFileName).c_str());
 
-		mDataSource->open(StringHelper::toNarrowStr(mFileName).c_str());
+
+		//For a custom data source, we send it a clear request to reset any error state.
+		//For normal source, we close down the source and re-open it.
+		mDataSource->clear();
+
+		if (!mUsingCustomSource) {
+			mDataSource->close();
+			delete mDataSource;
+			mDataSource = NULL;
+
+			//Before opening make the interface
+			mDataSource = DataSourceFactory::createDataSource(StringHelper::toNarrowStr(mFileName).c_str());
+
+			mDataSource->open(StringHelper::toNarrowStr(mFileName).c_str());
+		}
 		mDataSource->seek(0);   //Should always be zero for now.
 
 		//TODO::: Should be doing stuff with the demux state here ? or packetiser ?>?
@@ -289,9 +309,16 @@ HRESULT OggDemuxPacketSourceFilter::SetUpPins()
 	unsigned short locRetryCount = 0;
 	const unsigned short RETRY_THRESHOLD = 3;
 
-	//Create and open a data source
-	mDataSource = DataSourceFactory::createDataSource(StringHelper::toNarrowStr(mFileName).c_str());
-	mDataSource->open(StringHelper::toNarrowStr(mFileName).c_str());
+	//For custom sources, we expect that the source will be provided open and ready
+	if (!mUsingCustomSource) {
+		//Create and open a data source if we are using the standard source.
+
+		mDataSource = DataSourceFactory::createDataSource(StringHelper::toNarrowStr(mFileName).c_str());
+		mDataSource->open(StringHelper::toNarrowStr(mFileName).c_str());
+	} else {
+		//For custom sources seek to the start, just in case
+		mDataSource->seek(0);
+	}
 	
 	//Error check
 	
@@ -311,7 +338,7 @@ HRESULT OggDemuxPacketSourceFilter::SetUpPins()
 		}
 
 		if (mDataSource->isEOF() || mDataSource->isError()) {
-			if (mDataSource->isError() && (mDataSource->shouldRetryAt() != "") && (locRetryCount < RETRY_THRESHOLD)) {
+			if (mDataSource->isError() && (mDataSource->shouldRetryAt() != "") && (locRetryCount < RETRY_THRESHOLD) && (!mUsingCustomSource)) {
 				mOggBuffer.clearData();
 				string locNewLocation = mDataSource->shouldRetryAt();
 				//debugLog<<"Retrying at : "<<locNewLocation<<endl;
@@ -381,6 +408,15 @@ CBasePin* OggDemuxPacketSourceFilter::GetPin(int inPinNo)
 	return mStreamMapper->getPinByIndex(inPinNo);
 }
 
+HRESULT OggDemuxPacketSourceFilter::setCustomSourceAndLoad(IFilterDataSource* inDataSource)
+{
+	CAutoLock locLock(m_pLock);
+	mDataSource = inDataSource;
+	mFileName = L"";
+	mUsingCustomSource = true;
+
+	return SetUpPins();
+}
 //IFileSource Interface
 STDMETHODIMP OggDemuxPacketSourceFilter::GetCurFile(LPOLESTR* outFileName, AM_MEDIA_TYPE* outMediaType) 
 {
@@ -470,6 +506,7 @@ void OggDemuxPacketSourceFilter::notifyPinConnected()
 	if (mStreamMapper->allStreamsReady()) {
 		//Setup the seek table.
 		if (mSeekTable == NULL) {
+			//CUSTOM SOURCE:::
 			mSeekTable = new AutoOggChainGranuleSeekTable(StringHelper::toNarrowStr(mFileName));
 			int locNumPins = GetPinCount();
 

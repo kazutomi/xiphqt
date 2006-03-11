@@ -28,6 +28,7 @@ public:
 	OggGranuleSeekTable::tSeekPair seekPos(LOOG_INT64 inTime);
 protected:
 
+
 	struct sStreamMapping {
 		unsigned long mSerialNo;
 		IOggDecoderSeek* mSeekInterface;
