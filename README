@@ -185,7 +185,13 @@ The release distributions are built using NSIS. There is
 
 *** Building for WinCE.
 
- - Windows Mobile SDK
+ - Windows Mobile 5.0 Developer Resource Kit (~900MB)
+    http://www.microsoft.com/downloads/details.aspx?familyid=3BAA5B7D-04C1-4EC2-83DC-61B21EC5FE57&displaylang=en
+
+   The express edition can not do mobile development.
+   I have no idea whether it will let you open the project
+    and ignore the mobile configurations or whether
+    it will just refuse to let you
 
 ==========================================================
 The below information is left for reference, where the 
