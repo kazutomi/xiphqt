@@ -2,7 +2,7 @@
 #include "CustomOggChainGranuleSeekTable.h"
 
 CustomOggChainGranuleSeekTable::CustomOggChainGranuleSeekTable(IFilterDataSource* inDataSource)
-	:	AutoOggChainGranuleSeekTable("")
+	:	AutoOggChainGranuleSeekTable(TEXT(""))
 	,	mCustomSource(inDataSource)
 {
 

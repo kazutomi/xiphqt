@@ -54,7 +54,7 @@ public:
 	STDMETHODIMP NonDelegatingQueryInterface(REFIID riid, void **ppv);
 
 	//Constructors
-	AbstractTransformOutputPin(AbstractTransformFilter* inParentFilter, CCritSec* inFilterLock, CHAR* inObjectName, LPCWSTR inPinDisplayName, int inBuffSize, int inNumBuffs, vector<CMediaType*> inAcceptableMediaTypes);
+	AbstractTransformOutputPin(AbstractTransformFilter* inParentFilter, CCritSec* inFilterLock, TCHAR* inObjectName, LPCWSTR inPinDisplayName, int inBuffSize, int inNumBuffs, vector<CMediaType*> inAcceptableMediaTypes);
 	virtual ~AbstractTransformOutputPin(void);
 
 	//Buffer control method

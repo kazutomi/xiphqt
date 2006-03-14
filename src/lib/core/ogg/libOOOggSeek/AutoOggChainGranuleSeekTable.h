@@ -9,7 +9,11 @@ class LIBOOOGGSEEK_API AutoOggChainGranuleSeekTable
 	:	public IOggCallback
 {
 public:
+#ifdef UNICODE
+	AutoOggChainGranuleSeekTable(wstring inFilename);
+#else
 	AutoOggChainGranuleSeekTable(string inFilename);
+#endif
 	virtual ~AutoOggChainGranuleSeekTable(void);
 
 	/// Builds the actual seek table: only works if we have random access to the file.
@@ -43,8 +47,14 @@ protected:
 
 	LOOG_INT64 mDuration;
 	sStreamMapping getMapping(unsigned long inSerialNo);
+
+
 	fstream mFile;
+#ifdef UNICODE
+	wstring mFilename;
+#else
 	string mFilename;
+#endif
 	unsigned long mFilePos;
 
 	unsigned long mPreviousFilePos;
