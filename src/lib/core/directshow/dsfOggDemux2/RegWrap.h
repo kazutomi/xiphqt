@@ -3,7 +3,7 @@
 
 //This class really shouldn't be part of this project, but i got lazy !
 //This is a pretty inefficient way to do it but its easy.
-
+#include <stdlib.h>
 #include <string>
 using namespace std;
 class OGG_DEMUX2_API RegWrap

@@ -1,5 +1,7 @@
 #pragma once
 
+
+
 //// {4BB64C4A-1674-436b-A49D-D6B3B64DBD60}
 //DEFINE_GUID(CLSID_PropsAbout, 
 //0x4bb64c4a, 0x1674, 0x436b, 0xa4, 0x9d, 0xd6, 0xb3, 0xb6, 0x4d, 0xbd, 0x60);
@@ -87,6 +89,16 @@ DEFINE_GUID(IID_ICustomSource,
 
 
 //Structure defining the registration details of the filter
+
+#ifdef WINCE
+AMOVIESETUP_FILTER OggDemuxPacketSourceFilterReg = {
+    &CLSID_OggDemuxPacketSourceFilter,      // Filter CLSID.
+    L"Ogg Demux Packet Source Filter",              // Filter name.
+    MERIT_NORMAL,           // Merit.
+    0,                      // Number of pin types.
+    NULL                // Pointer to pin information.
+};
+#else
 const REGFILTER2 OggDemuxPacketSourceFilterReg = {
 		1,
 		MERIT_NORMAL,
@@ -94,6 +106,7 @@ const REGFILTER2 OggDemuxPacketSourceFilterReg = {
         NULL
 		
 };
+#endif
 
 
 //struct sVorbisFormatBlock {

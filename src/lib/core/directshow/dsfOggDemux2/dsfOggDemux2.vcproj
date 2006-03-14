@@ -963,7 +963,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\BaseClasses;..\..\ogg;..\libDirectshowAbstracts;..\..\..\helper"
+				AdditionalIncludeDirectories="..\..\ogg;..\libDirectshowAbstracts;..\..\..\helper"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;WIN32;_DEBUG;_WINDOWS;_USRDLL;DSFOGGDEMUX2_EXPORTS;_WIN32_WCE=$(CEVER);UNDER_CE;$(PLATFORMDEFINES);WINCE;$(ARCHFAM);$(_ARCHFAM_)"
 				MinimalRebuild="true"
 				RuntimeLibrary="3"
@@ -981,10 +981,11 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="Winmm.lib Strmiids.lib Quartz.lib wsock32.lib shlwapi.lib"
+				AdditionalDependencies="strmbase.lib strmiids.lib winsock.lib"
 				OutputFile="$(OutDir)/dsfOggDemux2.dll"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories=""
+				IgnoreDefaultLibraryNames=""
 				ModuleDefinitionFile="dsfOggDemux2.def"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)/dsfOggDemux2.pdb"
@@ -1034,15 +1035,15 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ds_guid.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\dsfOggDemux2.def"
 				>
 			</File>
 			<File
 				RelativePath=".\FilterFileSource.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\HTTPFileSource.cpp"
 				>
 			</File>
 			<File
@@ -1197,10 +1198,6 @@
 			</File>
 			<File
 				RelativePath=".\FilterFileSource.h"
-				>
-			</File>
-			<File
-				RelativePath=".\HTTPFileSource.h"
 				>
 			</File>
 			<File

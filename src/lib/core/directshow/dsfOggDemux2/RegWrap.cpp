@@ -244,7 +244,7 @@ string RegWrap::findNextEmptyMediaPlayerDesc()
 	string foundNum = "";
 #endif
 	for (long i = 1; i < 24; i++) {
-		itoa(i, (char*)&locNum, 10);
+		_itoa(i, (char*)&locNum, 10);
 #ifdef UNICODE
 		string locTemp = locNum;
 		wstring locNumString = StringHelper::toWStr(locTemp);

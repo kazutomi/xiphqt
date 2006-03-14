@@ -1121,7 +1121,7 @@
 				ExecutionBucket="7"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\include;.;..\..\..\vorbis\libs\libvorbis\include;..\..\..\speex\libs\libspeex\libspeex;..\..\..\..\core\ogg\libogg\include"
-				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;WIN32;_DEBUG;_WINDOWS;_USRDLL;LIBFISHSOUND_EXPORTS"
+				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;WIN32;_DEBUG;_WINDOWS;_USRDLL;LIBFISHSOUND_EXPORTS;_WIN32_WCE=$(CEVER);UNDER_CE;$(PLATFORMDEFINES);WINCE;$(ARCHFAM);$(_ARCHFAM_)"
 				RuntimeLibrary="3"
 				PrecompiledHeaderFile="./libfishsound.pch"
 				AssemblerListingLocation="./"
@@ -1145,7 +1145,6 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalOptions="/MACHINE:I386"
 				OutputFile="$(OutDir)/libfishsound.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
