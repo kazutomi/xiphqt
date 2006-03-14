@@ -48,7 +48,7 @@ STDAPI DllRegisterServer()
 	
 	//TO DO::: Should we be releasing the filter mapper even when we return early ?
     HRESULT hr;
-    IFilterMapper2* locFilterMapper = NULL;
+    
 	
     hr = AMovieDllRegisterServer2(TRUE);
 	if (FAILED(hr)) {
@@ -56,8 +56,10 @@ STDAPI DllRegisterServer()
         return hr;
 	}
 	
-	
+#ifdef WINCE
 
+#else
+	IFilterMapper2* locFilterMapper = NULL;
     hr = CoCreateInstance(CLSID_FilterMapper2, NULL, CLSCTX_INPROC_SERVER, IID_IFilterMapper2, (void **)&locFilterMapper);
 
 	
@@ -84,7 +86,7 @@ STDAPI DllRegisterServer()
 
 
     locFilterMapper->Release();
-
+#endif //WINCE
     return hr;
 
 }
@@ -96,14 +98,17 @@ STDAPI DllUnregisterServer()
 	RegWrap::removeMediaDesc();
 #endif
    HRESULT hr;
-    IFilterMapper2* locFilterMapper = NULL;
+    
 
     hr = AMovieDllRegisterServer2(FALSE);
 	if (FAILED(hr)) {
 		
         return hr;
 	}
- 
+#ifdef WINCE
+
+#else
+	IFilterMapper2* locFilterMapper = NULL;
     hr = CoCreateInstance(CLSID_FilterMapper2, NULL, CLSCTX_INPROC_SERVER,
             IID_IFilterMapper2, (void **)&locFilterMapper);
 
@@ -117,6 +122,7 @@ STDAPI DllUnregisterServer()
 
 	//
     locFilterMapper->Release();
+#endif //WINCE
     return hr;
 
 }
