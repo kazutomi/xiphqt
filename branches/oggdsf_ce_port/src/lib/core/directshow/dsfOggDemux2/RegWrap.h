@@ -12,11 +12,22 @@ public:
 	RegWrap(void);
 	~RegWrap(void);
 
+#ifdef UNICODE
+	static LONG		addKeyVal(HKEY inHive, wstring inKeyName, wstring inValueName, wstring inValue);
+	static bool		valueExists(HKEY inHive, wstring inKeyName, wstring inValueName);
+	static wstring	findNextEmptyMediaPlayerDesc();
+	static bool		addMediaPlayerDesc(wstring inDesc, wstring inExts);
+	static bool		removeKeyVal(HKEY inHive, string inKeyName, string inValueName);
+	static bool		deleteKeyRecurse(HKEY inHive, wstring inKeyName, wstring inSubKeyToDelete);
+
+#else
 	static LONG		addKeyVal(HKEY inHive, string inKeyName, string inValueName, string inValue);
 	static bool		valueExists(HKEY inHive, string inKeyName, string inValueName);
 	static string	findNextEmptyMediaPlayerDesc();
 	static bool		addMediaPlayerDesc(string inDesc, string inExts);
 	static bool		removeKeyVal(HKEY inHive, string inKeyName, string inValueName);
-	static bool		removeMediaDesc();
 	static bool		deleteKeyRecurse(HKEY inHive, string inKeyName, string inSubKeyToDelete);
+#endif
+
+	static bool		removeMediaDesc();
 };

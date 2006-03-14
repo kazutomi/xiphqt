@@ -508,7 +508,9 @@ void OggDemuxPacketSourceFilter::notifyPinConnected()
 		if (mSeekTable == NULL) {
 			//CUSTOM SOURCE:::
 			if (!mUsingCustomSource) {
-				mSeekTable = new AutoOggChainGranuleSeekTable(StringHelper::toNarrowStr(mFileName));
+				//ZZUNICODE:::
+				//mSeekTable = new AutoOggChainGranuleSeekTable(StringHelper::toNarrowStr(mFileName));
+				mSeekTable = new AutoOggChainGranuleSeekTable(mFileName);
 			} else {
 				mSeekTable = new CustomOggChainGranuleSeekTable(mDataSource);
 			}
