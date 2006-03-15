@@ -1481,7 +1481,7 @@
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)/libOOOggSeek.pdb"
-				SubSystem="2"
+				SubSystem="9"
 				ImportLibrary="$(OutDir)/libOOOggSeek.lib"
 				TargetMachine="0"
 			/>

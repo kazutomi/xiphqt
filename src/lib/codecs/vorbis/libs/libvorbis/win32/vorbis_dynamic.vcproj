@@ -1158,6 +1158,7 @@
 				ModuleDefinitionFile=".\vorbis.def"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\Vorbis_Dynamic_Debug/vorbis_d.pdb"
+				SubSystem="9"
 				ImportLibrary=".\Vorbis_Dynamic_Debug/vorbis_d.lib"
 				TargetMachine="0"
 			/>

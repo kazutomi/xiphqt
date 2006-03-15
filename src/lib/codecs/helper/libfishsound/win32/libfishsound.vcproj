@@ -1152,6 +1152,7 @@
 				ModuleDefinitionFile=".\libfishsound\libfishsound.def"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="./libfishsound.pdb"
+				SubSystem="9"
 				ImportLibrary="./libfishsound.lib"
 				TargetMachine="0"
 			/>
