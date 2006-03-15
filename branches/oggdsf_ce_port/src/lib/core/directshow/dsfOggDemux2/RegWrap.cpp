@@ -139,7 +139,8 @@ bool RegWrap::deleteKeyRecurse(HKEY inHive, string inKeyName, string inSubKeyToD
 
 #ifdef UNICODE
 //NOTE::: For various reasons this is all ansi, all strings are internal, not user created.
-bool RegWrap::removeKeyVal(HKEY inHive, string inKeyName, string inValueName) 
+// ---- No longer true
+bool RegWrap::removeKeyVal(HKEY inHive, wstring inKeyName, wstring inValueName) 
 #else
 bool RegWrap::removeKeyVal(HKEY inHive, string inKeyName, string inValueName) 
 #endif
@@ -152,7 +153,7 @@ bool RegWrap::removeKeyVal(HKEY inHive, string inKeyName, string inValueName)
 	HKEY locKey;
 	LONG retVal;
 
-	retVal = RegOpenKeyExA(	inHive,
+	retVal = RegOpenKeyEx(	inHive,
 							inKeyName.c_str(),
 							NULL,
 							KEY_ALL_ACCESS,
@@ -163,7 +164,7 @@ bool RegWrap::removeKeyVal(HKEY inHive, string inKeyName, string inValueName)
 		return false;
 	}
 
-	retVal = RegDeleteValueA(locKey, inValueName.c_str());
+	retVal = RegDeleteValue(locKey, inValueName.c_str());
 	RegCloseKey(locKey);
 	if (retVal != ERROR_SUCCESS) {
 		return false;
@@ -266,8 +267,8 @@ bool RegWrap::removeMediaDesc()
 	HKEY locKey;
 	LONG retVal;
 
-	retVal = RegOpenKeyExA(	HKEY_LOCAL_MACHINE,
-							"SOFTWARE\\illiminable\\oggcodecs",
+	retVal = RegOpenKeyEx(	HKEY_LOCAL_MACHINE,
+							TEXT("SOFTWARE\\illiminable\\oggcodecs"),
 							NULL,
 							KEY_ALL_ACCESS,
 							&locKey);
@@ -277,25 +278,34 @@ bool RegWrap::removeMediaDesc()
 		return false;
 	}
 
-	DWORD locBuffSize = 16;
-	char locBuff[16];
 
-	retVal = RegQueryValueExA(	locKey,
-								"MediaDescNum",
+
+	DWORD locBuffSize = 64;
+	char locBuff[64];
+
+	retVal = RegQueryValueEx(	locKey,
+								TEXT("MediaDescNum"),
 								NULL,
 								NULL,
 								(BYTE*)&locBuff,
 								&locBuffSize);
+
+
+#ifdef UNICODE
+	wstring locBuffStr = (wchar_t*)locBuff;
+#else
+	string locBuffStr = locBuff;
+#endif
 
 	RegCloseKey(locKey);
 	if (retVal != ERROR_SUCCESS) {
 		//debugLog<<"Value not found"<<endl;
 		return false;
 	} else {
-		RegWrap::removeKeyVal(HKEY_LOCAL_MACHINE, "SOFTWARE\\Microsoft\\MediaPlayer\\Player\\Extensions\\Descriptions", locBuff);
-		RegWrap::removeKeyVal(HKEY_LOCAL_MACHINE, "SOFTWARE\\Microsoft\\MediaPlayer\\Player\\Extensions\\MUIDescriptions", locBuff);
-		RegWrap::removeKeyVal(HKEY_LOCAL_MACHINE, "SOFTWARE\\Microsoft\\MediaPlayer\\Player\\Extensions\\Types", locBuff);
-		RegWrap::removeKeyVal(HKEY_LOCAL_MACHINE, "SOFTWARE\\illiminable\\oggcodecs", "MediaDescNum");
+		RegWrap::removeKeyVal(HKEY_LOCAL_MACHINE, TEXT("SOFTWARE\\Microsoft\\MediaPlayer\\Player\\Extensions\\Descriptions"), locBuffStr.c_str());
+		RegWrap::removeKeyVal(HKEY_LOCAL_MACHINE, TEXT("SOFTWARE\\Microsoft\\MediaPlayer\\Player\\Extensions\\MUIDescriptions"), locBuffStr.c_str());
+		RegWrap::removeKeyVal(HKEY_LOCAL_MACHINE, TEXT("SOFTWARE\\Microsoft\\MediaPlayer\\Player\\Extensions\\Types"), locBuffStr.c_str());
+		RegWrap::removeKeyVal(HKEY_LOCAL_MACHINE, TEXT("SOFTWARE\\illiminable\\oggcodecs"), TEXT("MediaDescNum"));
 		//debugLog<<"Value found"<<endl;
 		return true;
 		

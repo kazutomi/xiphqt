@@ -17,7 +17,7 @@ public:
 	static bool		valueExists(HKEY inHive, wstring inKeyName, wstring inValueName);
 	static wstring	findNextEmptyMediaPlayerDesc();
 	static bool		addMediaPlayerDesc(wstring inDesc, wstring inExts);
-	static bool		removeKeyVal(HKEY inHive, string inKeyName, string inValueName);
+	static bool		removeKeyVal(HKEY inHive, wstring inKeyName, wstring inValueName);
 	static bool		deleteKeyRecurse(HKEY inHive, wstring inKeyName, wstring inSubKeyToDelete);
 
 #else
