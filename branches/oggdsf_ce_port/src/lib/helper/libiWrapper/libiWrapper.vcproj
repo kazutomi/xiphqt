@@ -923,7 +923,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;WIN32;_DEBUG"
+				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;WIN32;_DEBUG;_WIN32_WCE=$(CEVER);UNDER_CE;$(PLATFORMDEFINES);WINCE;$(ARCHFAM);$(_ARCHFAM_)"
 				MinimalRebuild="false"
 				RuntimeLibrary="3"
 				TreatWChar_tAsBuiltInType="true"
