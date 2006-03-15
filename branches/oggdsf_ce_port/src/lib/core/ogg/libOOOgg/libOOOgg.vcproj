@@ -1470,7 +1470,7 @@
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)/libOOOgg.pdb"
-				SubSystem="2"
+				SubSystem="9"
 				ImportLibrary="$(OutDir)/libOOOgg.lib"
 				TargetMachine="0"
 			/>

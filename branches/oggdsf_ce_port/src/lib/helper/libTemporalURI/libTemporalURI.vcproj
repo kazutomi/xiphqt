@@ -952,7 +952,7 @@
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)/libTemporalURI.pdb"
-				SubSystem="2"
+				SubSystem="9"
 				ImportLibrary="$(OutDir)/libTemporalURI.lib"
 				TargetMachine="0"
 			/>
