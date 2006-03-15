@@ -1248,6 +1248,7 @@
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;WIN32;_DEBUG;_WINDOWS;_USRDLL;_WIN32_WCE=$(CEVER);UNDER_CE;$(PLATFORMDEFINES);WINCE;$(ARCHFAM);$(_ARCHFAM_);LIBILLICORE_EXPORTS"
 				MinimalRebuild="true"
 				RuntimeLibrary="3"
+				TreatWChar_tAsBuiltInType="false"
 				UsePrecompiledHeader="2"
 				WarningLevel="4"
 			/>

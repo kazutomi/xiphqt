@@ -967,6 +967,7 @@
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;WIN32;_DEBUG;_WINDOWS;_USRDLL;DSFOGGDEMUX2_EXPORTS;_WIN32_WCE=$(CEVER);UNDER_CE;$(PLATFORMDEFINES);WINCE;$(ARCHFAM);$(_ARCHFAM_)"
 				MinimalRebuild="true"
 				RuntimeLibrary="3"
+				TreatWChar_tAsBuiltInType="false"
 				UsePrecompiledHeader="0"
 				WarningLevel="4"
 			/>
@@ -1035,7 +1036,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\ds_guid.cpp"
+				RelativePath=".\ds_guids.cpp"
 				>
 			</File>
 			<File

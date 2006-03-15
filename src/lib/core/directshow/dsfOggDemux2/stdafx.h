@@ -58,7 +58,7 @@ using namespace std;
 #include "OggDemuxPacketSourcePin.h"
 
 #include <Dshow.h>
-#include <Initguid.h>
+//#include <Initguid.h>
 #include <Qnetwork.h>
 //#include "OggStreamMapper.h"
 //#include "OggStream.h"
