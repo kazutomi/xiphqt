@@ -993,7 +993,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="Winmm.lib Strmiids.lib Quartz.lib"
+				AdditionalDependencies="strmbase.lib strmiids.lib"
 				OutputFile="$(OutDir)/dsfSubtitleVMR9.dll"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories=""

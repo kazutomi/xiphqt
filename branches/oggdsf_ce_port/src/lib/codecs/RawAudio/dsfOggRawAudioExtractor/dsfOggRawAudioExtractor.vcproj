@@ -967,6 +967,7 @@
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;WIN32;_DEBUG;_WINDOWS;_USRDLL;DSFOGGRAWAUDIOEXTRACTOR_EXPORTS"
 				MinimalRebuild="true"
 				RuntimeLibrary="3"
+				TreatWChar_tAsBuiltInType="false"
 				UsePrecompiledHeader="0"
 				WarningLevel="4"
 			/>
@@ -981,7 +982,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="Winmm.lib Strmiids.lib Quartz.lib"
+				AdditionalDependencies="strmbase.lib strmiids.lib"
 				OutputFile="$(OutDir)/dsfOggRawAudioExtractor.dll"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories=""
