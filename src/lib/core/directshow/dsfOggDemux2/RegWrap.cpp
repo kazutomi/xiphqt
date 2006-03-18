@@ -116,6 +116,8 @@ bool RegWrap::deleteKeyRecurse(HKEY inHive, string inKeyName, string inSubKeyToD
 #endif
 
 {
+
+#ifndef WINCE
 	HKEY locKey;
 	LONG retVal;
 
@@ -132,6 +134,7 @@ bool RegWrap::deleteKeyRecurse(HKEY inHive, string inKeyName, string inSubKeyToD
 
 	retVal = SHDeleteKey(locKey, inSubKeyToDelete.c_str());
 	RegCloseKey(locKey);
+#endif
 	return true;
 
 }
