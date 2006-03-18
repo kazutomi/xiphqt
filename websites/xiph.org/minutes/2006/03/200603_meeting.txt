@@ -1,0 +1,281 @@
+--- Log opened Wed Mar 01 09:46:15 2006
+09:57 -!- xiphlog [n=giles@westfish.xiph.osuosl.org] has joined #xiphmeet
+09:57 -!- Topic for #xiphmeet: Next xiph.org monthly meeting 2006 Mar 1 18h00 GMT | agenda at http://wiki.xiph.org/index.php/MonthlyMeeting200603
+09:57 -!- Topic set by rillian [] [Tue Feb  7 23:35:17 2006]
+09:57 [Users #xiphmeet]
+09:57 [ Atamido] [ Kato      ] [ manx ] [ oggTheora ] [ thomasvs] [ xiphmont] 
+09:57 [ derf_  ] [ Keltus    ] [ MikeS] [ rillian   ] [ tris    ] 
+09:57 [ jmspeex] [ maikmerten] [ nemo ] [ rillianbis] [ xiphlog ] 
+09:57 -!- Irssi: #xiphmeet: Total of 16 nicks [0 ops, 0 halfops, 0 voices, 16 normal]
+09:57 -!- Channel #xiphmeet created Sat Dec 17 03:46:31 2005
+09:57 -!- [freenode-info] if you need to send private messages, please register: http://freenode.net/faq.shtml#privmsg
+09:57 -!- Irssi: Join to #xiphmeet was synced in 0 secs
+10:00 < xiphmont> I read 1800GMT here
+10:00 < xiphmont> Welcome to the xiph.org monthly meeting.
+10:00 < xiphmont> Is the wiki on mf3 or on westfish?
+10:01 < MikeS> It was down when mf3 was having troubles, so I assume there
+10:01 < xiphmont> Ok!
+10:01 < xiphmont> So... grab your copy of the agenda *now*
+10:01 < xiphmont> :-)
+10:01 < xiphmont> Beginning iwth one thing *not* on the agenda
+10:01 < xiphmont> motherfish-iii has smoked its raid and is limping badly.
+10:02 < xiphmont> replacement parts should arrive today, we're dealing in general.
+10:02 < xiphmont> Not much else to say other than 'ignore the flames licking at the edges of theis IRC channel, thank you."
+10:03 < xiphmont> Moving on
+10:03 < xiphmont> Project reports.
+10:03 < xiphmont> (things not otherwise mentioned later ont he agenda)
+10:03 < xiphmont> Ogg:
+10:03 -!- psymin [n=psymin@psymin.mso.montana.com] has joined #xiphmeet
+10:03 < xiphmont> (me)
+10:04 -!- |bond| [n=bond@u-122-163.adsl.univie.ac.at] has joined #xiphmeet
+10:04 < xiphmont> libogg2 is the first actual Xiph-related dev priority now that I've started at Redhat, as it's the underlying release that needs to happen before any others.
+10:04 < xiphmont> Theora 1.0 is the end goal, and that end-goal is on the three-to-six month timeline.
+10:04 < xiphmont> that timeline is a goal, not hard nad fast... more on that later int he theora report
+10:05 < xiphmont> regardless the libogg2 library needs to get pushed out the door first.
+10:05 < xiphmont> Libogg2 is not a revision of Ogg, it's simply a new version of the low-level mechanics library.
+10:05 < xiphmont> Tremor, vorbose, etc already use it.
+10:06 < xiphmont> It's approximately an order of magnitude smaller memory footprint, not a big deal for audio, huge deal for video.
+10:06 < thomasvs> someone hacked on tremor rcently ?
+10:06 -!- Agathezol [n=marmon@smtpstatic.blackfoot.net] has joined #xiphmeet
+10:06 < xiphmont> thomasvs: libogg2 has been around for a long time unreleased.
+10:06 < xiphmont> Tremor has used it since the original lowmem work in 2002
+10:06 < derf_> And we're getting the libogg1 API-compatibility layer with it, I assume.
+10:06 < xiphmont> derf-: yes, as agreed.
+10:06 -!- myidiym [n=myidiym@24-48-253-242.sbtnvt.adelphia.net] has joined #xiphmeet
+10:06 < xiphmont> apologies for continuing to typo your nick, BTW
+10:07 < xiphmont> I don't touch type, I suck, I'm lower than dirt.
+10:07 < derf_> The _ is only there because someone else is using it sans _.
+10:07 < xiphmont> Unrelated to ogg, but not fitting anywhere else....
+10:07 < xiphmont> derf-: amusingly enough I believe I know who it is, and he's the butt of quite the social scandal here int he Westford office ;-)
+10:08 < derf_> xiphmont: You'll have to give me all the sordid details later. I've met him before (not IRL).
+10:08 < xiphmont> It appears linux *still* doesn't have a reliable little realtime recording app that works from the command line.  I wrote one.  Going into RedHat CVS sometime soon, contact me if you need it before that.
+10:08 < xiphmont> Linux-specific as it uses Linux's realtime hooks.
+10:09 < xiphmont> next: Vorbis
+10:09 < xiphmont> Nothing to say, although there's AoTuV  and oggdec items on the agenda later
+10:09 < xiphmont> next: Theora
+10:10 < xiphmont> [anyone else want the floor first for an update?]
+10:10  * MikeS would
+10:10 < xiphmont> go for it
+10:10 < MikeS> (I have to go in a few minutes)
+10:10 < xiphmont> sure, floor is yours for all you have to say, even if out of order.
+10:11 < xiphmont> (Theora report -> MikeS report)
+10:11 < MikeS> I got a phone call today from someone at a company doing audiobooks; they're branching out into video and are interested in looking at theora. 
+10:11 < thomasvs> "someone at some company" <- say the truth!
+10:12 < MikeS> So, they want to know a bunch of stuff about theora (performance, implementations, etc.) that I don't really know much about, because really I'm not much of a video guy at heart. Would anyone be willing to help me out with answering them?
+10:12 < MikeS> (apparently Emmett works there, and pointed them at theora)
+10:12 < xiphmont> ah
+10:13 < xiphmont> sure.  I'm probably a good contact these days.
+10:13 < xiphmont> Unless Ralph / derf_ really wants it.
+10:13 < xiphlog> nope
+10:13 < MikeS> Other thing: there's something on the agenda about oggenc and multichannel: yes, I should find a couple of hours to get that stuff working properly. It also asks about merging the strangely named "oggenc2.8": not going to happen; most of the changes in that are for decoding non-free codecs.
+10:13 < derf_> I'm willing to help, but don't let me stop you.
+10:13 < rillian> oops, nope
+10:14 < MikeS> ok, thanks. Will get back to you on that, then. That's all I wanted for now
+10:14 < xiphmont> Ooookay, I think I just killed mf3
+10:14 < MikeS> oh well. 
+10:15 < derf_> I'm sure nobody was using it.
+10:15 < xiphmont> I think I need to reboot.
+10:15 < MikeS> Back to monty: Theora?
+10:16 < xiphmont> ok
+10:16 < xiphmont> Back to Theora
+10:16 < xiphmont> any other folks want to weigh in on reports?
+10:16 < xiphmont> Otherwise, I'll launch in on mine
+10:17 < derf_> All yours.
+10:17 < xiphmont> OK
+10:17 < thomasvs> rillian: we were considering just dropping part 3 of the contract, given that xiphmont now has a job ?
+10:17 < rillian> part 3 of which contract? lucas?
+10:17 < thomasvs> rillian: no, yours
+10:17 < xiphmont> hm?
+10:17 < rillian> thomasvs: oh! we agreed to drop that in july
+10:17 < thomasvs> rillian: in exchange for, say, part of the media splash when it hits :)
+10:18 -!- imalone [n=ian@bb-87-81-240-123.ukonline.co.uk] has joined #xiphmeet
+10:18 < thomasvs> rillian: see how bad we are at doing contracts :) ok, nm then :)
+10:19 < xiphmont> ok so
+10:20 < xiphmont> The initial priority, having been hired by redhat, is Theora 1.0
+10:20 < xiphmont> Other things depend on that, but not a very deep stack
+10:20 < xiphmont> The desired timeline is in time for rhel-5
+10:21 < rillian> when's that?
+10:21 < xiphmont> ...and I'll be contributing too.  rillian: six month timeline
+10:21 < maikmerten> (rhel = Red Hat Enterprise Linux?)
+10:21 < thomasvs> maikmerten: yes
+10:21 < maikmerten> k, thanks
+10:22 < xiphmont> I don't know if that's too long or too short until I talk to you folks some more (offline probably)
+10:22 < thomasvs> xiphmont: well, it breaks the de facto schedule, but I guess that's good
+10:22 < xiphmont> but I do know that means we'll be shipping with a frozen spec and potentially incomplete impleemntation
+10:22 < xiphmont> thomasvs: expn?
+10:22 < thomasvs> xiphmont: it's been in alpha for years, doing beta and final in six months is a big step up
+10:22 < rillian> xiphmont: I really think we need full decoder support for the spec before 1.0
+10:23 < |bond|> theora 1 adds what to the latest alpha?
+10:23 < rillian> but that shouldn't take you more than a few weeks
+10:23 < MikeS> |bond|: in theory, implementing the full spec
+10:23 < xiphmont> interlace (ow) and other color spaces (less ow)
+10:23 < rillian> xiphmont: there is no interlace
+10:23 < MikeS> interlace? I didn't think we had interlacing
+10:23 < rillian> that's 1.1
+10:23 < maikmerten> I guess actually *using* the advanced stuff isn't on the agenda for the 1.0 encoder, though?
+10:23 < rillian> and requires a patent search
+10:23 < derf_> We don't. I was never able to resolve the patent issues.
+10:24 < MikeS> It's just the other pixel formats (4:4:4 and 4:2:2)
+10:24 < xiphmont> Oh, interlace = 1.1 ok
+10:24 < xiphmont> that's a good way to label it.
+10:24 < rillian> it's just per-block quant and 4:2:2, 4:4:4 chroma subsampling
+10:24 < xiphmont> ah!
+10:24 < xiphmont> that's all doable in six months.
+10:24 < |bond|> custom quant matrices
+10:24 < rillian> and possibly better support for variable quant tables; I don't remember how far I got on that
+10:24 < derf_> One implementation already exists in theora-exp.
+10:24 < xiphmont> I have an irrational fear of interlaced fields.
+10:25 < derf_> I thought we already did real quant matrix support in mainline.
+10:25 < xiphmont> we do, not well tested.
+10:25 < |bond|> really?
+10:25 < xiphmont> yes
+10:25 < xiphmont> it's not exposed though
+10:25 < derf_> |bond|: Decode only, AFAIK.
+10:25 < |bond|> ah ic
+10:25 < derf_> That's why it's not well tested.
+10:25 < maikmerten> well, I hacked a bit on the quant matrices in the encoder (they are hardcoded now) - and decoders handle that without problems
+10:26 < MikeS> ok, gotta go, sorry. See you all next month!
+10:26 < xiphmont> I also wrote my first patch to Theora in years last month :-)
+10:26 < xiphmont> by Mike!
+10:26 < xiphmont> bye even
+10:26 < derf_> maikmerten: The Theora bitstream has much more flexible support than the orignal VP3 model that the mainline encoder uses.
+10:27 < maikmerten> derf_, yes (I only tinkered within the VP3 scheme for obvious reasons)
+10:27 < derf_> I.e., you can specify different base matrices for low and high quantizers.
+10:27 < derf_> Okay.
+10:27 < maikmerten> but at least the decoder actually reads the matrices supplied by the encoded file ;)
+10:28 < derf_> Yes, since about alpha2, I think.
+10:28 < xiphmont> I think we're devolving into offline.
+10:28 < derf_> Right, please continue.
+10:28 < xiphmont> Also, I think there's some value to going back to OggFile and implementing a reference for it... maybe that could even be useful to gstreamer, dunno.
+10:29 < xiphmont> butthat's another can of worms, the original cause of my long-term insanity.
+10:29 < xiphmont> also offline.
+10:29 < xiphmont> Anything else for Theora?
+10:29 < |bond|> will you work on the encoder?
+10:29 < xiphmont> probably at least some.
+10:29 < |bond|> ic
+10:29 < xiphmont> you meant me personally?
+10:29 < |bond|> yep
+10:30 < xiphmont> "at least some" :-)
+10:30 < |bond|> :D
+10:30 < xiphlog> new theora rtp draft on the ietf website
+10:30 < rillian> that's all
+10:30 < rillian> (sorry, I keep typing in the log window)
+10:31 < xiphmont> ok, other Ogg codecs (FLAC, PCM2-candidate, etc)
+10:31 < xiphmont> speex...
+10:31 < xiphmont> no?
+10:32 < derf_> How's your paper coming?
+10:32 < xiphmont> 'it's coming'.  Hoping to mostly wrap up first-pass of my bits today.
+10:32 < xiphmont> get it all back to JM
+10:33 < xiphmont> OK, moving on: Icecast
+10:33 < xiphmont> [I don't see the normal icecast folks in-channel, so unless someone pipes up, I'll assume no icecast report]
+10:34 < xiphmont> Now to explicit agenda items
+10:35 < xiphmont> I've been hired by redhat: It was never any kind of secret that was going to happen, it just took a while to disentangle from the other job.
+10:35 < xiphmont> I started on the 6th; I've been hired to take over 'media on the desktop', and most of that responsibility will be actively getting abck to managing and coding for Xiph.
+10:35 < rillian> welcome back to the freer world
+10:35 < xiphmont> heh yeah
+10:36 < xiphmont> First time in my entire life I've not gotten to choose my username... so, things are at least a little corporate here.
+10:36 < xiphmont> OTOH, no complaints about the job itself.
+10:36 < xiphmont> For redhat, I'm taking over the audio infrastructure in general and multimedia related package management.
+10:37 < xiphmont> The rest of my time is for Xiph.
+10:37 < xiphmont> I think redhat said they were actually putting out a press release about hiring me!  Almost makes up for having a boner of a username like 'cmontgom'.
+10:38 < rillian> hopefully we and fluendo can really make the multimedia stuff rock now
+10:38 < xiphmont> ...and that concludes my report.
+10:38 < xiphmont> yes, hope so.  
+10:38 < xiphmont> RedHat is pretty happy about Fluenda and gstreamer stuff right now; I'm probably going to be the liason :-)
+10:38 < xiphmont> Fluendo
+10:39 < xiphmont> moving on unless there are more comments...
+10:39 < xiphmont> Next agenda item: skeleton
+10:39 < thomasvs> good to hear
+10:40 < xiphmont> Could someone who was there go into detail about this please?
+10:41 < xiphmont> Agenda says 'tabled from December'
+10:41 < derf_> Approximately.
+10:41 < derf_> Basically, I think skeleton fills a hole we've long been missing vis a vis the elusive "metaheader" stuff that never happened.
+10:42 -!- Apophys [n=The@195.177.228.22] has joined #xiphmeet
+10:42 < xiphmont> right, because metaheader was tied to OggFile.
+10:42 < xiphmont> at least conceptually.
+10:42 < derf_> And to encourage adoption, I was proposing we make the default tools actually start outputting it.
+10:42 < derf_> At least for concurrently multiplexed files.
+10:43 < xiphmont> yes.  I assume there's the beginning of a spec en-Wiki?
+10:43 < xiphmont> Dear god.  We *do* have a wiki backup this time, right?
+10:43 < derf_> Right. I'd point you at it, but, well...
+10:43 < rillian> xiphmont: maybe. I did an mysql dump right before it crashed, but haven't looked to see if I got the wiki data
+10:43 < derf_> R.I.P., mf3.
+10:43 < xiphmont> yeah, I just slaggedthe raid, sorry.  It was in bad shape to begin with.  And mdadmis a joke :-P
+10:44 < xiphmont> "Should have bought the 3ware"
+10:44 < xiphmont> anyway
+10:44 < xiphmont> Yes, this is a needed thing, always was, now it has a name.
+10:44 < xiphmont> Is this.... an Arc project?
+10:45 < derf_> No, it's from the Annodex folks.
+10:45 < xiphmont> OK.
+10:45 < xiphmont> Oh, OK, then I know what it is, I didn't know they'd been calling it 'Skeleton'.
+10:45 < xiphmont> Yeah, that needs more inspection/discussion once mf3 is back up.
+10:45 < derf_> Excellent. I mostly just wanted to get it on the radar screen.
+10:46 -!- oggTheora [n=chatzill@217.130.117.134] has quit ["Chatzilla 0.9.71 [Firefox 1.5.0.1/2006011112]"]
+10:46 < rillian> fwiw, I think it's a good idea too
+10:46 < xiphmont> done
+10:46 < xiphmont> it will be revisited as a project report next month
+10:47 < xiphmont> oggenc/oggdec feature update status:
+10:47 < xiphmont> Is the full story in the agenda?
+10:48 < xiphmont> Buehler?
+10:49 < xiphmont> Right. 
+10:49 < xiphmont> Nobody knows; I will investigate.
+10:49 < derf_> Sorry, I accidentally re-used the browser window with the agenda in it.
+10:49 < xiphmont> Next item: Latest AoTuV; adopting some of it and 'does it qualify for the aggressive low bitrate tuning bounty'.
+10:50 < xiphmont> oh, ok, poppinmg back
+10:50 < xiphmont> #  Any news on incorrect channel order in oggenc/oggdec? Updated audio.c and audio.h files from John Edwards are in oggenc2.81 (source). Also, what about merging the full oggenc2.81 and oggdec 1.9.2 (source) in the standard xiph.org versions, so also we linux users can use these new advanced features ? 
+10:50 < derf_> AFAIK, that's the full story.
+10:50 < derf_> MikeS already addressed some of those.
+10:51 < xiphmont> OK
+10:51 -!- ginger [n=silvia@10.66.233.220.exetel.com.au] has joined #xiphmeet
+10:51 < xiphmont> in that case I will touch base with MikeS when he reappears.
+10:51 < xiphmont> Next item: Latest AoTuV; adopting some of it and 'does it qualify for the aggressive low bitrate tuning bounty'.
+10:52 < xiphmont> We've adopted AoTuV work in the past, looks like it may be time to sync up again.  That goes without saying.
+10:52 < xiphmont> as for the low bitrate bounty: Last I looked at AoTuV, it was solidly heading that direction, but that was nearly a year ago.
+10:52 < xiphmont> I'd certainly believe it's there now.
+10:53 < maikmerten> http://www.maresweb.de/listening-tests/mf-128-1/results.htm <-- I guess that's no news to most here. Thanks to aotuv 4.51 Vorbis is a 1st class codec.
+10:53 < xiphmont> I was hoping 'aggressive low bitrate tuning' would address down to 32kbps.
+10:53 < maikmerten> I think aotuv 4.51 has a 32kbps mode (-2)
+10:53 < xiphmont> I don't know if AoTuV has gone that low.
+10:53 < xiphmont> I know it *has* it
+10:53 < xiphmont> Not sure how usable :-)
+10:54 < xiphmont> Regardless, I fully expect AoTuV *does* qualify for this bounty.
+10:54 < rillian> yep
+10:54 < xiphmont> I would probably have said that of the last version I listened to in gerat detail, which was a year ago.
+10:55 < xiphmont> I will evaluate.  I think we all agree Aoyumi totally deserves a bounty, any bounty, but I'm going to stick with both spirit and letter here :-)
+10:55 < xiphmont> Oh hell, it's 2pm...
+10:55 < xiphmont> [next meeting coming up]
+10:55 < xiphmont> for RH
+10:56 < xiphmont> "Is there any interest in extending vcedit/libvorbisfile to do basic handling of Vorbis streams from concurrently multiplexed Ogg?"
+10:56 < xiphmont> Yes, but that work was *also* tied to OggFile from way back when, and one reason I think OggFile should still happen. 
+10:56 -!- Agathezol is now known as Agathezol_Lunch
+10:56 < xiphmont> Let's treat this item as 'putting it back on the radar'.
+10:56 < ginger> is this about multiple vorbis streams multiplexed?
+10:56 < xiphmont> and real discussion should happen offline as it will get technical fast.
+10:56 < xiphmont> Oh, actually, I did have that question.
+10:57 < xiphmont> But in the past it's meant
+10:57 < xiphmont> "be able to play the vorbis out of any otherwise valid Ogg stream"
+10:57 < ginger> ah ok
+10:57 < xiphmont> It's not very far to be able to select a specific vorbis stream.
+10:57 < imalone> That's what I meant really.
+10:57 < ginger> yes, it would be nice if libvorbisfile could do that
+10:57 < xiphmont> ...but knowing which to choose begins to touch on Skeleton... if it's to be done right.
+10:58 < ginger> yeah :)
+10:58 < xiphmont> it's easy to say 'pick out the second', more layers to say 'get me the English version'
+10:58 < ginger> and multiplexing anything with anything generally can be solved with skeleton, too
+10:58 < xiphmont> I actually have to run.
+10:58 < xiphmont> Any closing comments/items?
+10:59 < rillian> nothing more from me
+10:59 < imalone> Quick question: what about tremor wrt files containg skeleton?
+10:59  * ginger missed most, so will read logs
+10:59 < ginger> imalone: are you asking whether it can parse it?
+11:00 < xiphmont> tremor and vorbisfile are closely related in that respect
+11:00 < xiphmont> Also... tremor is still scheduled to replace reference decode.
+11:00 < imalone> I'd assume it can't since it looks exactly like vorsbifile at the calls level.
+11:00 < xiphmont> so... yes, these changes would apply to tremor as well.
+11:00 < xiphmont> Right now it cannot.
+11:01 < xiphmont> I am now a pumpkin.
+11:01 < ginger> seeya :)
+11:01 < xiphmont> Meeting adjourned, feel free to stay and kibbutz around the buffet.
+11:01  * xiphmont bangs gavel
+11:02 < ginger> anyone can tell me whether wiki.xiph.org will come back?
+--- Log closed Wed Mar 01 11:02:38 2006
