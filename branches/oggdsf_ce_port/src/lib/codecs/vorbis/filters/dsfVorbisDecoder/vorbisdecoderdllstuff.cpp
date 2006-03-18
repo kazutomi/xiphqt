@@ -44,13 +44,13 @@ STDAPI DllRegisterServer()
 {
 
     HRESULT hr;
-    IFilterMapper2* locFilterMapper = NULL;
+    
 
     hr = AMovieDllRegisterServer2(TRUE);
 
 
-	
-
+#ifndef WINCE
+	IFilterMapper2* locFilterMapper = NULL;
     hr = CoCreateInstance(CLSID_FilterMapper2, NULL, CLSCTX_INPROC_SERVER, IID_IFilterMapper2, (void **)&locFilterMapper);
 
 
@@ -64,7 +64,7 @@ STDAPI DllRegisterServer()
     );
 
     locFilterMapper->Release();
-
+#endif
     return hr;
 
 }
@@ -72,14 +72,15 @@ STDAPI DllRegisterServer()
 STDAPI DllUnregisterServer()
 {
    HRESULT hr;
-    IFilterMapper2* locFilterMapper = NULL;
+    
 
     hr = AMovieDllRegisterServer2(FALSE);
 	if (FAILED(hr)) {
 		
         return hr;
 	}
- 
+#ifndef WINCE
+	IFilterMapper2* locFilterMapper = NULL;
     hr = CoCreateInstance(CLSID_FilterMapper2, NULL, CLSCTX_INPROC_SERVER,
             IID_IFilterMapper2, (void **)&locFilterMapper);
 
@@ -93,6 +94,7 @@ STDAPI DllUnregisterServer()
 
 	//
     locFilterMapper->Release();
+#endif
     return hr;
 
 }
