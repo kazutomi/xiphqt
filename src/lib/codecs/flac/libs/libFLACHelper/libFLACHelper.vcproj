@@ -1044,7 +1044,7 @@
 				AdditionalIncludeDirectories="..\..\..\..\core\ogg;..\..\..\..\helper;..\libflac\include"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;WIN32;_DEBUG;_LIB"
 				MinimalRebuild="true"
-				RuntimeLibrary="3"
+				RuntimeLibrary="2"
 				UsePrecompiledHeader="2"
 				WarningLevel="4"
 			/>

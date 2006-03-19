@@ -1213,7 +1213,7 @@
 				AdditionalIncludeDirectories="..\..\..\core\directshow\BaseClasses;..\..\..\core\directshow\dsfOggDemux2;..\..\..\core\ogg;..\..\..\helper"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;WIN32;_DEBUG;_WINDOWS;_USRDLL;DSFOGGRAWAUDIOEXTRACTOR_EXPORTS"
 				MinimalRebuild="true"
-				RuntimeLibrary="3"
+				RuntimeLibrary="2"
 				TreatWChar_tAsBuiltInType="false"
 				UsePrecompiledHeader="0"
 				WarningLevel="4"

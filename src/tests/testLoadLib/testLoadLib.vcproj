@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="testLoadLib"
 	ProjectGUID="{D3DE90D9-0D36-462C-B2D3-9460071681E5}"
+	RootNamespace="testLoadLib"
 	Keyword="Win32Proj"
 	>
 	<Platforms>
@@ -200,9 +201,9 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				PreprocessorDefinitions="_DEBUG;_WIN32_WCE=$(CEVER);UNDER_CE;$(PLATFORMDEFINES);WINCE;DEBUG;_WINDOWS;$(ARCHFAM);$(_ARCHFAM_);_UNICODE;UNICODE;POCKETPC2003_UI_MODEL"
+				PreprocessorDefinitions="NDEBUG;_WIN32_WCE=$(CEVER);UNDER_CE;$(PLATFORMDEFINES);WINCE;DEBUG;_WINDOWS;$(ARCHFAM);$(_ARCHFAM_);_UNICODE;UNICODE;POCKETPC2003_UI_MODEL"
 				MinimalRebuild="true"
-				RuntimeLibrary="1"
+				RuntimeLibrary="2"
 				UsePrecompiledHeader="2"
 				WarningLevel="3"
 				DebugInformationFormat="3"

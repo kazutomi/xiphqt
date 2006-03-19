@@ -1226,7 +1226,7 @@
 				AdditionalIncludeDirectories="..\..\..\core\directshow\BaseClasses;..\..\..\helper;..\..\cmml"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;WIN32;_DEBUG;_WINDOWS;_USRDLL;DSFCMMLRAWSOURCE_EXPORTS"
 				MinimalRebuild="true"
-				RuntimeLibrary="3"
+				RuntimeLibrary="2"
 				UsePrecompiledHeader="2"
 				WarningLevel="4"
 				DisableSpecificWarnings="4251"
