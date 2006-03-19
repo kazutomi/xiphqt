@@ -45,7 +45,7 @@ STDAPI DllRegisterServer()
 {
 
 	//MessageBox(NULL, L"xxxxx", L"xxxxx", MB_OK);
-	return S_OK;
+	//return S_OK;
     HRESULT hr;
     
 
