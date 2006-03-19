@@ -44,7 +44,11 @@ CFactoryTemplate g_Templates[] =
 	    &CLSID_VorbisDecodeFilter,            // CLSID
 	    VorbisDecodeFilter::CreateInstance,	// Method to create an instance of MyComponent
         NULL,									// Initialization function
+#ifdef WINCE
+		&VorbisDecodeFilterReg
+#else
         NULL									// Set-up information (for filters)
+#endif
     }
 
 };
@@ -52,7 +56,12 @@ CFactoryTemplate g_Templates[] =
 // Generic way of determining the number of items in the template
 int g_cTemplates = sizeof(g_Templates) / sizeof(g_Templates[0]); 
 
-
+#ifdef WINCE
+LPAMOVIESETUP_FILTER VorbisDecodeFilter::GetSetupData()
+{	
+	return (LPAMOVIESETUP_FILTER)&VorbisDecodeFilterReg;	
+}
+#endif
 
 //*************************************************************************************************
 VorbisDecodeFilter::VorbisDecodeFilter()

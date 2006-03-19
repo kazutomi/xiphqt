@@ -35,6 +35,7 @@
 extern "C" BOOL WINAPI DllEntryPoint(HINSTANCE, ULONG, LPVOID);
 BOOL APIENTRY DllMain(HANDLE hModule, DWORD dwReason, LPVOID lpReserved)
 {
+	//MessageBox(NULL, L"asda", L"ASD", MB_OK);
     return DllEntryPoint((HINSTANCE)(hModule), dwReason, lpReserved);
 }
 
@@ -43,6 +44,8 @@ BOOL APIENTRY DllMain(HANDLE hModule, DWORD dwReason, LPVOID lpReserved)
 STDAPI DllRegisterServer()
 {
 
+	//MessageBox(NULL, L"xxxxx", L"xxxxx", MB_OK);
+	return S_OK;
     HRESULT hr;
     
 

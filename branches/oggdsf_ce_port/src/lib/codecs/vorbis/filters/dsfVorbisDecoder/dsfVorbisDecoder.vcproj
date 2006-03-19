@@ -1002,6 +1002,7 @@
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)/dsfVorbisDecoder.pdb"
 				SubSystem="9"
+				EntryPointSymbol=""
 				ImportLibrary="$(OutDir)/dsfVorbisDecoder.lib"
 				TargetMachine="0"
 			/>
@@ -1023,7 +1024,7 @@
 			<DeploymentTool
 				ForceDirty="-1"
 				RemoteDirectory=""
-				RegisterOutput="0"
+				RegisterOutput="-1"
 				AdditionalFiles=""
 			/>
 			<DebuggerTool
