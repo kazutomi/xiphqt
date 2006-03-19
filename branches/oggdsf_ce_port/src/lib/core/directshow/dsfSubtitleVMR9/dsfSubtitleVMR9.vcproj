@@ -1224,7 +1224,7 @@
 				AdditionalIncludeDirectories="..\BaseClasses"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;WIN32;_DEBUG;_WINDOWS;_USRDLL;DSFSUBTITLEVMR9_EXPORTS"
 				MinimalRebuild="true"
-				RuntimeLibrary="3"
+				RuntimeLibrary="2"
 				UsePrecompiledHeader="2"
 				WarningLevel="4"
 			/>

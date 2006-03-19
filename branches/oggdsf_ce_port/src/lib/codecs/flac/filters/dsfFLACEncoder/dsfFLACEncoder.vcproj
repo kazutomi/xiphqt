@@ -1217,7 +1217,7 @@
 				AdditionalIncludeDirectories="..\..\..\..\core\directshow\BaseClasses;..\..\..\..\core\directshow\libDirectshowAbstracts;..\..\..\..\core\ogg;..\..\libs\libflac\include;..\..\..\..\helper;..\..\libs\libFLACHelper"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;WIN32;_DEBUG;_WINDOWS;_USRDLL;DSFFLACENCODER_EXPORTS"
 				MinimalRebuild="true"
-				RuntimeLibrary="3"
+				RuntimeLibrary="2"
 				UsePrecompiledHeader="2"
 				WarningLevel="4"
 			/>

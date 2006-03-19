@@ -1194,7 +1194,7 @@
 				AdditionalUsingDirectories="..\libiWrapper\Debug"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;WIN32;_DEBUG"
 				MinimalRebuild="false"
-				RuntimeLibrary="3"
+				RuntimeLibrary="2"
 				UsePrecompiledHeader="2"
 				WarningLevel="4"
 				DebugInformationFormat="3"

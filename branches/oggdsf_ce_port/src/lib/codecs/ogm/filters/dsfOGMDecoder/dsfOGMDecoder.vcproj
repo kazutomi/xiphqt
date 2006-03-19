@@ -1212,7 +1212,7 @@
 				AdditionalIncludeDirectories="..\..\..\..\core\directshow\BaseClasses;..\..\..\..\core\directshow\libDirectshowAbstracts;..\..\..\..\core\ogg;..\..\..\helper\libfishsound\include;..\..\..\..\core\directshow\dsfSeeking;..\..\..\..\helper;..\..\..\..\core\directshow\dsfOggDemux2"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;WIN32;_DEBUG;_WINDOWS;_USRDLL;DSFOGMDECODER_EXPORTS"
 				MinimalRebuild="true"
-				RuntimeLibrary="3"
+				RuntimeLibrary="2"
 				UsePrecompiledHeader="2"
 				WarningLevel="4"
 			/>

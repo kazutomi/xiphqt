@@ -1226,7 +1226,7 @@
 				AdditionalIncludeDirectories="..\BaseClasses;..\..\ogg;..\..\directshow\dsfOggMux;..\..\..\helper;..\..\..\core\directshow\libDirectshowAbstracts;..\..\..\codecs\flac\libs\libFLACHelper;..\..\..\core\directshow\dsfOggDemux"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;WIN32;_DEBUG;_WINDOWS;_USRDLL;DSFANXMUX_EXPORTS"
 				MinimalRebuild="true"
-				RuntimeLibrary="3"
+				RuntimeLibrary="2"
 				UsePrecompiledHeader="2"
 				WarningLevel="4"
 				DisableSpecificWarnings="4275"

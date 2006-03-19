@@ -1235,7 +1235,7 @@
 				AdditionalIncludeDirectories="..\..\..\..\core\directshow\BaseClasses;..\..\libs\libflac\include;..\..\..\..\core\directshow\libDirectshowAbstracts;..\..\..\..\core\ogg;..\..\..\..\core\directshow\dsfSeeking;..\..\..\..\helper;..\..\libs\libFLACHelper;..\..\..\..\core\directshow\dsfOggDemux2"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;WIN32;_DEBUG;_WINDOWS;_USRDLL;DSFFLACDECODER_EXPORTS"
 				MinimalRebuild="true"
-				RuntimeLibrary="3"
+				RuntimeLibrary="2"
 				UsePrecompiledHeader="2"
 				WarningLevel="4"
 				DisableSpecificWarnings="4275"
