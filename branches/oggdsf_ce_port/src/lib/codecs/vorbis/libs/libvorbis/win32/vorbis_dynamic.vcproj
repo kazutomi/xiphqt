@@ -1151,7 +1151,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="Vorbis_Dynamic_Debug/vorbis_d.dll"
+				OutputFile="$(OutDir)/vorbis_d.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories=""
@@ -1159,7 +1159,7 @@
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\Vorbis_Dynamic_Debug/vorbis_d.pdb"
 				SubSystem="9"
-				ImportLibrary=".\Vorbis_Dynamic_Debug/vorbis_d.lib"
+				ImportLibrary="$(OutDir)/vorbis_d.lib"
 				TargetMachine="0"
 			/>
 			<Tool
@@ -1435,7 +1435,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="Vorbis_Dynamic_Debug/vorbis_d.dll"
+				OutputFile="$(OutDir)/vorbis.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories=""
@@ -1443,7 +1443,7 @@
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\Vorbis_Dynamic_Debug/vorbis_d.pdb"
 				SubSystem="9"
-				ImportLibrary=".\Vorbis_Dynamic_Debug/vorbis_d.lib"
+				ImportLibrary="$(OutDir)/vorbis.lib"
 				TargetMachine="0"
 			/>
 			<Tool

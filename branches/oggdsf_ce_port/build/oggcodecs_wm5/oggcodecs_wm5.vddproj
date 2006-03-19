@@ -20,6 +20,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_39EDB4404AB742F1971B32144EDFF907"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_3C1ED3991BEE4DE79ABEF31F6AEBC705"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -39,12 +45,6 @@
         "Entry"
         {
         "MsmKey" = "8:_657FA65D0EF840B58E117C34EF725AE2"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_710D82D6AEB54CB287B25DF834D94509"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -134,10 +134,10 @@
     {
         "File"
         {
-            "{BA458234-9B71-4F46-8107-E91156377184}:_710D82D6AEB54CB287B25DF834D94509"
+            "{BA458234-9B71-4F46-8107-E91156377184}:_39EDB4404AB742F1971B32144EDFF907"
             {
-            "SourcePath" = "8:V:\\Program Files\\Microsoft Visual Studio 8\\VC\\ce\\Dll\\armv4\\msvcr80d.dll"
-            "TargetName" = "8:msvcr80d.dll"
+            "SourcePath" = "8:V:\\Program Files\\Microsoft Visual Studio 8\\VC\\ce\\Dll\\armv4i\\msvcr80.dll"
+            "TargetName" = "8:msvcr80.dll"
             "Tag" = "8:"
             "Folder" = "8:_8BE9216FDC6E4FB1B98829D8873DE833"
             "Condition" = "8:"
