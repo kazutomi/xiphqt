@@ -117,6 +117,18 @@
         "CertificateHash" = "8:"
         "TimeStampServer" = "8:"
         }
+        "Release_WM5_PPC_ARM"
+        {
+        "DisplayName" = "8:Release_WM5_PPC_ARM"
+        "IsDebugOnly" = "11:FALSE"
+        "IsReleaseOnly" = "11:FALSE"
+        "OutputFilename" = "8:Release_WM5_PPC_ARM\\oggcodecs_wm5.cab"
+        "PackageFileSize" = "3:-2147483648"
+        "CabType" = "3:1"
+        "SignOutput" = "11:FALSE"
+        "CertificateHash" = "8:"
+        "TimeStampServer" = "8:"
+        }
     }
     "Deployable"
     {
@@ -187,7 +199,7 @@
         {
             "{605BE39E-5046-48BD-AEC0-63C3A46626D5}:_07061F9B96124E73928A0D625D4EAC43"
             {
-            "SourcePath" = "8:..\\..\\src\\lib\\core\\ogg\\libOOOggSeek\\Windows Mobile 5.0 Pocket PC SDK (ARMV4I)\\Debug_WM5_PPC_ARM\\libOOOggSeek.dll"
+            "SourcePath" = "8:..\\..\\src\\lib\\core\\ogg\\liboooggseek\\windows mobile 5.0 pocket pc sdk (armv4i)\\release_wm5_ppc_arm\\libOOOggSeek.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_8BE9216FDC6E4FB1B98829D8873DE833"
@@ -213,7 +225,7 @@
             }
             "{605BE39E-5046-48BD-AEC0-63C3A46626D5}:_3C1ED3991BEE4DE79ABEF31F6AEBC705"
             {
-            "SourcePath" = "8:..\\..\\src\\lib\\core\\directshow\\dsfOggDemux2\\Windows Mobile 5.0 Pocket PC SDK (ARMV4I)\\Debug_WM5_PPC_ARM\\dsfOggDemux2.dll"
+            "SourcePath" = "8:..\\..\\src\\lib\\core\\directshow\\dsfoggdemux2\\windows mobile 5.0 pocket pc sdk (armv4i)\\release_wm5_ppc_arm\\dsfOggDemux2.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_8BE9216FDC6E4FB1B98829D8873DE833"
@@ -239,7 +251,7 @@
             }
             "{605BE39E-5046-48BD-AEC0-63C3A46626D5}:_3DF217B99DB14F3CB0C18118683DDE25"
             {
-            "SourcePath" = "8:..\\..\\src\\tests\\testloadlib\\windows mobile 5.0 pocket pc sdk (armv4i)\\debug\\testLoadLib.exe"
+            "SourcePath" = "8:..\\..\\src\\tests\\testloadlib\\windows mobile 5.0 pocket pc sdk (armv4i)\\release_wm5_ppc_arm\\testLoadLib.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_8BE9216FDC6E4FB1B98829D8873DE833"
@@ -265,7 +277,7 @@
             }
             "{605BE39E-5046-48BD-AEC0-63C3A46626D5}:_4811BCC1ADF5454F89B779DF82058CA2"
             {
-            "SourcePath" = "8:..\\..\\src\\lib\\codecs\\vorbis\\filters\\dsfVorbisDecoder\\Windows Mobile 5.0 Pocket PC SDK (ARMV4I)\\Debug_WM5_PPC_ARM\\dsfVorbisDecoder.dll"
+            "SourcePath" = "8:..\\..\\src\\lib\\codecs\\vorbis\\filters\\dsfvorbisdecoder\\windows mobile 5.0 pocket pc sdk (armv4i)\\release_wm5_ppc_arm\\dsfVorbisDecoder.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_8BE9216FDC6E4FB1B98829D8873DE833"
@@ -291,7 +303,7 @@
             }
             "{605BE39E-5046-48BD-AEC0-63C3A46626D5}:_657FA65D0EF840B58E117C34EF725AE2"
             {
-            "SourcePath" = "8:..\\..\\src\\lib\\codecs\\speex\\filters\\dsfSpeexDecoder\\Windows Mobile 5.0 Pocket PC SDK (ARMV4I)\\Debug_WM5_PPC_ARM\\dsfSpeexDecoder.dll"
+            "SourcePath" = "8:..\\..\\src\\lib\\codecs\\speex\\filters\\dsfspeexdecoder\\windows mobile 5.0 pocket pc sdk (armv4i)\\release_wm5_ppc_arm\\dsfSpeexDecoder.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_8BE9216FDC6E4FB1B98829D8873DE833"
@@ -317,7 +329,7 @@
             }
             "{605BE39E-5046-48BD-AEC0-63C3A46626D5}:_78B83888966E4D28897A832EC1CB59EB"
             {
-            "SourcePath" = "8:..\\..\\src\\lib\\core\\ogg\\libOOOgg\\Windows Mobile 5.0 Pocket PC SDK (ARMV4I)\\Debug_WM5_PPC_ARM\\libOOOgg.dll"
+            "SourcePath" = "8:..\\..\\src\\lib\\core\\ogg\\libooogg\\windows mobile 5.0 pocket pc sdk (armv4i)\\release_wm5_ppc_arm\\libOOOgg.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_8BE9216FDC6E4FB1B98829D8873DE833"
@@ -343,7 +355,7 @@
             }
             "{605BE39E-5046-48BD-AEC0-63C3A46626D5}:_7CC0F388C7734C2B8ECED59713F156C7"
             {
-            "SourcePath" = "8:..\\..\\src\\lib\\codecs\\theora\\libs\\libOOTheora\\Windows Mobile 5.0 Pocket PC SDK (ARMV4I)\\Debug_WM5_PPC_ARM\\libOOTheora.dll"
+            "SourcePath" = "8:..\\..\\src\\lib\\codecs\\theora\\libs\\libootheora\\windows mobile 5.0 pocket pc sdk (armv4i)\\release_wm5_ppc_arm\\libOOTheora.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_8BE9216FDC6E4FB1B98829D8873DE833"
@@ -369,7 +381,7 @@
             }
             "{605BE39E-5046-48BD-AEC0-63C3A46626D5}:_898F68EFD6EB479185D2277F89249261"
             {
-            "SourcePath" = "8:..\\..\\src\\lib\\codecs\\theora\\filters\\dsfTheoraDecoder\\Windows Mobile 5.0 Pocket PC SDK (ARMV4I)\\Debug_WM5_PPC_ARM\\dsfTheoraDecoder.dll"
+            "SourcePath" = "8:..\\..\\src\\lib\\codecs\\theora\\filters\\dsftheoradecoder\\windows mobile 5.0 pocket pc sdk (armv4i)\\release_wm5_ppc_arm\\dsfTheoraDecoder.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_8BE9216FDC6E4FB1B98829D8873DE833"
@@ -421,7 +433,7 @@
             }
             "{605BE39E-5046-48BD-AEC0-63C3A46626D5}:_FC0F711C0A9A47699D526C0B5B30DF9E"
             {
-            "SourcePath" = "8:..\\..\\src\\lib\\codecs\\helper\\libfishsound\\win32\\Windows Mobile 5.0 Pocket PC SDK (ARMV4I)\\Debug_WM5_PPC_ARM\\libfishsound.dll"
+            "SourcePath" = "8:..\\..\\src\\lib\\codecs\\helper\\libfishsound\\win32\\windows mobile 5.0 pocket pc sdk (armv4i)\\release_wm5_ppc_arm\\libfishsound.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_8BE9216FDC6E4FB1B98829D8873DE833"
