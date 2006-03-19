@@ -61,6 +61,11 @@ LPAMOVIESETUP_FILTER VorbisDecodeFilter::GetSetupData()
 {	
 	return (LPAMOVIESETUP_FILTER)&VorbisDecodeFilterReg;	
 }
+
+HRESULT VorbisDecodeFilter::Register()
+{
+	return CBaseFilter::Register();
+}
 #endif
 
 //*************************************************************************************************

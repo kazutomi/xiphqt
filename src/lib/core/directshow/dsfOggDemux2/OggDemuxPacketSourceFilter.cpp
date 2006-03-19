@@ -40,7 +40,11 @@ CFactoryTemplate g_Templates[] =
 	    &CLSID_OggDemuxPacketSourceFilter,            // CLSID
 	    OggDemuxPacketSourceFilter::CreateInstance,	// Method to create an instance of MyComponent
         NULL,									// Initialization function
+#ifdef WINCE
+		&OggDemuxPacketSourceFilterReg
+#else
         NULL									// Set-up information (for filters)
+#endif
     }
 	
 	//,
@@ -58,6 +62,13 @@ CFactoryTemplate g_Templates[] =
 // Generic way of determining the number of items in the template
 int g_cTemplates = sizeof(g_Templates) / sizeof(g_Templates[0]); 
 
+
+#ifdef WINCE
+LPAMOVIESETUP_FILTER OggDemuxPacketSourceFilter::GetSetupData()
+{	
+	return (LPAMOVIESETUP_FILTER)&OggDemuxPacketSourceFilterReg;	
+}
+#endif
 //COM Creator Function
 CUnknown* WINAPI OggDemuxPacketSourceFilter::CreateInstance(LPUNKNOWN pUnk, HRESULT *pHr) 
 {

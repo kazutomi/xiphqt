@@ -63,6 +63,7 @@ public:
 
 #ifdef WINCE
 	virtual LPAMOVIESETUP_FILTER GetSetupData(); //		{	return (LPAMOVIESETUP_FILTER)&VorbisDecodeFilterReg;	}
+	virtual HRESULT Register();
 #endif
 protected:
 	//VIRTUAL FUNCTIONS - AbstractTransformFilter
