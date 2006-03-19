@@ -246,27 +246,33 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         case WM_COMMAND:
             if (LOWORD(wParam) == IDOK)
             {
-				HINSTANCE locLib = LoadLibrary(L"dsfVorbisDecoder.dll");
-				DWORD locErr = GetLastError();
-				FARPROC locProc = GetProcAddress(locLib, L"DllRegisterServer");
-				int locRes = locProc();
+				HINSTANCE locLib;
+				DWORD locErr;
+				//FARPROC locProc;
+				HRESULT (__stdcall*locProc)(); 
+				HRESULT locRes;
+
+				locLib = LoadLibrary(L"dsfVorbisDecoder.dll");
+				locErr = GetLastError();
+				locProc = (HRESULT (__stdcall*)())GetProcAddress(locLib, L"DllRegisterServer");
+				locRes = locProc();
 				FreeLibrary(locLib);
 
 				locLib = LoadLibrary(L"dsfSpeexDecoder.dll");
 				locErr = GetLastError();
-				locProc = GetProcAddress(locLib, L"DllRegisterServer");
+				locProc = (HRESULT (__stdcall*)())GetProcAddress(locLib, L"DllRegisterServer");
 				locRes = locProc();
 				FreeLibrary(locLib);
 
 				locLib = LoadLibrary(L"dsfTheoraDecoder.dll");
 				locErr = GetLastError();
-				locProc = GetProcAddress(locLib, L"DllRegisterServer");
+				locProc = (HRESULT (__stdcall*)())GetProcAddress(locLib, L"DllRegisterServer");
 				locRes = locProc();
 				FreeLibrary(locLib);
 
 				locLib = LoadLibrary(L"dsfOggDemux2.dll");
 				locErr = GetLastError();
-				locProc = GetProcAddress(locLib, L"DllRegisterServer");
+				locProc = (HRESULT (__stdcall*)())GetProcAddress(locLib, L"DllRegisterServer");
 				locRes = locProc();
 				FreeLibrary(locLib);
 

@@ -51,7 +51,11 @@ STDAPI DllRegisterServer()
     HRESULT hr;
     
 	
+#ifdef WINCE
+	hr = AMovieDllRegisterServer();//AMovieDLLRegisterServer(TRUE);
+#else
     hr = AMovieDllRegisterServer2(TRUE);
+#endif
 	if (FAILED(hr)) {
 		
         return hr;
@@ -101,7 +105,11 @@ STDAPI DllUnregisterServer()
    HRESULT hr;
     
 
-    hr = AMovieDllRegisterServer2(FALSE);
+#ifdef WINCE
+	hr = AMovieDllUnregisterServer();//AMovieDLLRegisterServer(TRUE);
+#else
+    hr = AMovieDllRegisterServer2(TRUE);
+#endif
 	if (FAILED(hr)) {
 		
         return hr;

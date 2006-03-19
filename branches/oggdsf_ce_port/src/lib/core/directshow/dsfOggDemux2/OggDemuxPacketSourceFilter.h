@@ -73,6 +73,10 @@ public:
 	STDMETHODIMP Pause(void);
 	STDMETHODIMP Stop(void);
 
+#ifdef WINCE
+	virtual LPAMOVIESETUP_FILTER GetSetupData();
+#endif
+
 	//IOggCallback Interface
 	virtual bool acceptOggPage(OggPage* inOggPage);
 

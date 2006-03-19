@@ -107,6 +107,93 @@ static const GUID IID_IOggOutputPin =
 
 
 
+//const REGPINTYPES VorbisDecodeOutputTypes = {
+//    &MEDIATYPE_Audio,
+//	&MEDIASUBTYPE_PCM
+//};
+//
+//const REGPINTYPES VorbisDecodeInputTypes = {
+//	&MEDIATYPE_OggPacketStream,
+//	&MEDIASUBTYPE_None
+//};
+//
+//
+//const REGFILTERPINS VorbisDecodePinReg[] = {
+//	{
+//    L"Vorbis Input",						//Name (obsoleted)
+//	FALSE,								//Renders from this pin ?? Not sure about this.
+//	FALSE,								//Not an output pin
+//	FALSE,								//Cannot have zero instances of this pin
+//	FALSE,								//Cannot have more than one instance of this pin
+//	NULL,								//Connects to filter (obsoleted)
+//	NULL,								//Connects to pin (obsoleted)
+//	1,									//upport two media type
+//	&VorbisDecodeInputTypes				//Pointer to media type (Audio/Vorbis or Audio/Speex)
+//	} ,
+//
+//	{
+//	L"PCM Output",						//Name (obsoleted)
+//	FALSE,								//Renders from this pin ?? Not sure about this.
+//	TRUE,								//Is an output pin
+//	FALSE,								//Cannot have zero instances of this pin
+//	FALSE,								//Cannot have more than one instance of this pin
+//	NULL,								//Connects to filter (obsoleted)
+//	NULL,								//Connects to pin (obsoleted)
+//	1,									//Only support one media type
+//	&VorbisDecodeOutputTypes					//Pointer to media type (Audio/PCM)
+//
+//	}
+//};
+
+#ifdef WINCE
+const AMOVIESETUP_MEDIATYPE VorbisDecodeOutputTypes = {
+    &MEDIATYPE_Audio,
+	&MEDIASUBTYPE_PCM
+};
+
+const AMOVIESETUP_MEDIATYPE VorbisDecodeInputTypes = {
+	&MEDIATYPE_OggPacketStream,
+	&MEDIASUBTYPE_None
+};
+
+
+const AMOVIESETUP_PIN VorbisDecodePinReg[] = {
+	{
+    L"Vorbis Input",						//Name (obsoleted)
+	FALSE,								//Renders from this pin ?? Not sure about this.
+	FALSE,								//Not an output pin
+	FALSE,								//Cannot have zero instances of this pin
+	FALSE,								//Cannot have more than one instance of this pin
+	&GUID_NULL,							//Connects to filter (obsoleted)
+	NULL,								//Connects to pin (obsoleted)
+	1,									//upport two media type
+	&VorbisDecodeInputTypes				//Pointer to media type (Audio/Vorbis or Audio/Speex)
+	} ,
+
+	{
+	L"PCM Output",						//Name (obsoleted)
+	FALSE,								//Renders from this pin ?? Not sure about this.
+	TRUE,								//Is an output pin
+	FALSE,								//Cannot have zero instances of this pin
+	FALSE,								//Cannot have more than one instance of this pin
+	&GUID_NULL,							//Connects to filter (obsoleted)
+	NULL,								//Connects to pin (obsoleted)
+	1,									//Only support one media type
+	&VorbisDecodeOutputTypes					//Pointer to media type (Audio/PCM)
+
+	}
+};
+const AMOVIESETUP_FILTER VorbisDecodeFilterReg = {
+		&CLSID_VorbisDecodeFilter,
+		L"Vorbis Decode Filter",
+		MERIT_NORMAL,
+		2,
+        VorbisDecodePinReg
+		
+};
+
+
+#else
 const REGPINTYPES VorbisDecodeOutputTypes = {
     &MEDIATYPE_Audio,
 	&MEDIASUBTYPE_PCM
@@ -144,21 +231,6 @@ const REGFILTERPINS VorbisDecodePinReg[] = {
 
 	}
 };
-
-#ifdef WINCE
-
-const AMOVIESETUP_FILTER VorbisDecodeFilterReg = {
-		&CLSID_VorbisDecodeFilter,
-		L"Vorbis Decode Filter",
-		MERIT_NORMAL,
-		2,
-        VorbisDecodePinReg
-		
-};
-
-
-#else
-
 const REGFILTER2 VorbisDecodeFilterReg = {
 		1,
 		MERIT_NORMAL,

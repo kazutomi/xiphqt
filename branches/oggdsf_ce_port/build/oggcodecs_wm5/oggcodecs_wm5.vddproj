@@ -44,12 +44,6 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_657FA65D0EF840B58E117C34EF725AE2"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
         "MsmKey" = "8:_78B83888966E4D28897A832EC1CB59EB"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -63,6 +57,12 @@
         "Entry"
         {
         "MsmKey" = "8:_898F68EFD6EB479185D2277F89249261"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_A426EE6EF354441D95FE7C65861866C6"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -301,32 +301,6 @@
                 {
                 }
             }
-            "{605BE39E-5046-48BD-AEC0-63C3A46626D5}:_657FA65D0EF840B58E117C34EF725AE2"
-            {
-            "SourcePath" = "8:..\\..\\src\\lib\\codecs\\speex\\filters\\dsfspeexdecoder\\windows mobile 5.0 pocket pc sdk (armv4i)\\release_wm5_ppc_arm\\dsfSpeexDecoder.dll"
-            "TargetName" = "8:"
-            "Tag" = "8:"
-            "Folder" = "8:_8BE9216FDC6E4FB1B98829D8873DE833"
-            "Condition" = "8:"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "Register" = "3:0"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            "ProjectOutputGroupRegister" = "3:0"
-            "OutputConfiguration" = "8:"
-            "OutputGroupCanonicalName" = "8:Built"
-            "OutputProjectGuid" = "8:{3FB9B20E-790A-402F-A02C-B0FBDC5938E3}"
-            "ShowKeyOutput" = "11:TRUE"
-                "ExcludeFilters"
-                {
-                }
-            }
             "{605BE39E-5046-48BD-AEC0-63C3A46626D5}:_78B83888966E4D28897A832EC1CB59EB"
             {
             "SourcePath" = "8:..\\..\\src\\lib\\core\\ogg\\libooogg\\windows mobile 5.0 pocket pc sdk (armv4i)\\release_wm5_ppc_arm\\libOOOgg.dll"
@@ -405,9 +379,35 @@
                 {
                 }
             }
+            "{605BE39E-5046-48BD-AEC0-63C3A46626D5}:_A426EE6EF354441D95FE7C65861866C6"
+            {
+            "SourcePath" = "8:..\\..\\src\\lib\\codecs\\speex\\filters\\dsfspeexdecoder\\windows mobile 5.0 pocket pc sdk (armv4i)\\release_wm5_ppc_arm\\dsfSpeexDecoder.dll"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_8BE9216FDC6E4FB1B98829D8873DE833"
+            "Condition" = "8:"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "Register" = "3:0"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            "ProjectOutputGroupRegister" = "3:0"
+            "OutputConfiguration" = "8:"
+            "OutputGroupCanonicalName" = "8:Built"
+            "OutputProjectGuid" = "8:{3FB9B20E-790A-402F-A02C-B0FBDC5938E3}"
+            "ShowKeyOutput" = "11:TRUE"
+                "ExcludeFilters"
+                {
+                }
+            }
             "{605BE39E-5046-48BD-AEC0-63C3A46626D5}:_BC04D4D4A1EE423EBFA34E91DF63319A"
             {
-            "SourcePath" = "8:..\\..\\src\\lib\\codecs\\vorbis\\libs\\libvorbis\\win32\\Vorbis_Dynamic_Debug\\vorbis_d.dll"
+            "SourcePath" = "8:..\\..\\src\\lib\\codecs\\vorbis\\libs\\libvorbis\\win32\\windows mobile 5.0 pocket pc sdk (armv4i)\\release_wm5_ppc_arm\\vorbis.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_8BE9216FDC6E4FB1B98829D8873DE833"
