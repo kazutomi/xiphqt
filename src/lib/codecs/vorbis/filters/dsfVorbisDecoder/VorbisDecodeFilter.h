@@ -61,6 +61,9 @@ public:
 	virtual sVorbisFormatBlock* getVorbisFormatBlock();
 	virtual void setVorbisFormat(BYTE* inFormatBlock);
 
+#ifdef WINCE
+	virtual LPAMOVIESETUP_FILTER GetSetupData(); //		{	return (LPAMOVIESETUP_FILTER)&VorbisDecodeFilterReg;	}
+#endif
 protected:
 	//VIRTUAL FUNCTIONS - AbstractTransformFilter
 	virtual bool ConstructPins();

@@ -990,7 +990,7 @@
 				ModuleDefinitionFile="dsfOggDemux2.def"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)/dsfOggDemux2.pdb"
-				SubSystem="2"
+				SubSystem="9"
 				ImportLibrary="$(OutDir)/dsfOggDemux2.lib"
 				TargetMachine="0"
 			/>

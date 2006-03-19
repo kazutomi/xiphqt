@@ -976,7 +976,7 @@
 				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)/libOOTheora.pdb"
-				SubSystem="2"
+				SubSystem="9"
 				ImportLibrary="$(OutDir)/libOOTheora.lib"
 				TargetMachine="0"
 			/>
