@@ -32,7 +32,7 @@ audio_cb(void *userdata,
 
   buffer = g_new0(Uint8, size);
   tmp = g_new0(char, 8);
-
+  printf ("ga\n");
   while (filled < size) {
     /* don't hang here if audio buffer became empty */
     if (! ringbuffer_is_empty(audio->buffer)) {  
@@ -65,6 +65,7 @@ audio_new() {
   Audio *audio = g_new0(Audio, 1);
   audio->buffer = ringbuffer_new(1000, 128);
   audio->opened = FALSE;
+  audio->nodevice = FALSE;
   audio->volume = 64;
 
   if (SDL_Init(SDL_INIT_AUDIO) < 0) {
@@ -110,10 +111,12 @@ audio_open_device(Audio *audio,
   /* open audio device */
   if (SDL_OpenAudio(&format, NULL) < 0) {
     fprintf(stderr, "Could not open audio device: %s\n", SDL_GetError());
+    audio->nodevice = TRUE;
   } else {
-    audio->opened = TRUE;
+    audio->nodevice = FALSE;
     SDL_PauseAudio(0);
   }
+  audio->opened = TRUE;
 
 }
 
@@ -143,8 +146,12 @@ audio_play(Audio *audio,
   ((long *) tmp)[0] = timetag;
 
   /* transmit the time tag and the audio data */
-  ringbuffer_put(audio->buffer, tmp, 8);
-  ringbuffer_put(audio->buffer, data, size);
+  if (audio->nodevice) {
+    audio->timetag = timetag;
+  } else {
+    ringbuffer_put(audio->buffer, tmp, 8);
+    ringbuffer_put(audio->buffer, data, size);
+  }
 
   g_free(tmp);
 

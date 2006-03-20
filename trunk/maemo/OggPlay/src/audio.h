@@ -30,6 +30,7 @@ struct _Audio {
   RingBuffer *buffer;
 
   gboolean opened;
+  gboolean nodevice;  /* useful for running in scratchbox */
   int volume;
   int channels;
   int rate;
