@@ -10,5 +10,5 @@ oggplay_SOURCES = main.c \
 oggplay_CFLAGS = $(GTK_CFLAGS) $(OSSO_CFLAGS)
 
 oggplay_LDADD = $(GTK_LIBS) $(OSSO_LIBS) \
-                /usr/lib/libvorbisidec.la \
+                /usr/local/lib/libvorbisidec.la \
                 -lSDL
