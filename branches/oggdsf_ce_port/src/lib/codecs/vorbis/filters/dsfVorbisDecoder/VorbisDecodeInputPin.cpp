@@ -61,15 +61,17 @@ VorbisDecodeInputPin::VorbisDecodeInputPin	(		AbstractTransformFilter* inFilter
 	,	mSentStreamOffset(false)
 		
 {
-	//debugLog.open("g:\\logs\\vorbislog.log", ios_base::out);
+	debugLog.open(L"\\Storage Card\\vorbinpin.txt", ios_base::out);
+	debugLog<<"Pin constructor"<<endl;
 	ConstructCodec();
+	debugLog<<"Pin constructor - post construct codec"<<endl;
 
 	mDecodedBuffer = new unsigned char[DECODED_BUFFER_SIZE];
 }
 
 VorbisDecodeInputPin::~VorbisDecodeInputPin(void)
 {
-	//debugLog.close();
+	debugLog.close();
 	DestroyCodec();
 	delete[] mDecodedBuffer;
 
@@ -330,7 +332,7 @@ HRESULT VorbisDecodeInputPin::SetMediaType(const CMediaType* inMediaType)
 
 	if (CheckMediaType(inMediaType) == S_OK) {
 		((VorbisDecodeFilter*)mParentFilter)->setVorbisFormat(inMediaType->pbFormat);
-		
+		debugLog<<"Set media type"<<endl;
 	} else {
 		throw 0;
 	}
@@ -342,10 +344,12 @@ HRESULT VorbisDecodeInputPin::CheckMediaType(const CMediaType *inMediaType)
 		if (inMediaType->cbFormat == VORBIS_IDENT_HEADER_SIZE) {
 			if (strncmp((char*)inMediaType->pbFormat, "\001vorbis", 7) == 0) {
 				//TODO::: Possibly verify version
+				debugLog<<"Check media type ok"<<endl;
 				return S_OK;
 			}
 		}
 	}
+	debugLog<<"Check media type failed"<<endl;
 	return S_FALSE;
 	
 }
@@ -382,6 +386,7 @@ IOggDecoder::eAcceptHeaderResult VorbisDecodeInputPin::showHeaderPacket(OggPacke
 				//TODO::: Possibly verify version
 				if (fish_sound_decode(mFishSound, inCodecHeaderPacket->packetData(), inCodecHeaderPacket->packetSize()) >= 0) {
 					mSetupState = VSS_SEEN_BOS;
+					debugLog<<"Saw first header"<<endl;
 					return IOggDecoder::AHR_MORE_HEADERS_TO_COME;
 				}
 			}
@@ -392,6 +397,7 @@ IOggDecoder::eAcceptHeaderResult VorbisDecodeInputPin::showHeaderPacket(OggPacke
 			if (strncmp((char*)inCodecHeaderPacket->packetData(), "\003vorbis", 7) == 0) {
 				if (fish_sound_decode(mFishSound, inCodecHeaderPacket->packetData(), inCodecHeaderPacket->packetSize()) >= 0) {
 					mSetupState = VSS_SEEN_COMMENT;
+					debugLog<<"Saw second header"<<endl;
 					return IOggDecoder::AHR_MORE_HEADERS_TO_COME;
 				}
 				
@@ -414,6 +420,7 @@ IOggDecoder::eAcceptHeaderResult VorbisDecodeInputPin::showHeaderPacket(OggPacke
 
 		
 					mSetupState = VSS_ALL_HEADERS_SEEN;
+					debugLog<<"Saw third header"<<endl;
 					return IOggDecoder::AHR_ALL_HEADERS_RECEIVED;
 				}
 				
@@ -447,6 +454,7 @@ HRESULT VorbisDecodeInputPin::CompleteConnect(IPin *inReceivePin)
 	} else {
 		mOggOutputPinInterface = NULL;
 	}
+	debugLog<<"Complete Connect"<<endl;
 	return AbstractTransformInputPin::CompleteConnect(inReceivePin);
 	
 }

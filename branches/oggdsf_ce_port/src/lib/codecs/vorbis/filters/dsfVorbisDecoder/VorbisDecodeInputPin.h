@@ -84,7 +84,7 @@ public:
 
 
 protected:
-	//fstream debugLog;
+	fstream debugLog;
 
 	static const unsigned long DECODED_BUFFER_SIZE = 1<<20;		//1 Meg buffer
 

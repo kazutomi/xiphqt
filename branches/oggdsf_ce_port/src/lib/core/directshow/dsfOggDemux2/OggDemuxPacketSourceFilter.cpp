@@ -372,7 +372,7 @@ HRESULT OggDemuxPacketSourceFilter::SetUpPins()
 				locRetryCount++;
 			//This prevents us dying on small files, if we hit eof but we also saw a +'ve gran pos, this file is ok.
 			} else if (!(mDataSource->isEOF() && mSeenPositiveGranulePos)) {
-				//debugLog<<"Bailing out"<<endl;
+				debugLog<<L"Bailing out"<<endl;
 				delete[] locBuff;
 				return VFW_E_CANNOT_RENDER;
 			}
@@ -385,7 +385,7 @@ HRESULT OggDemuxPacketSourceFilter::SetUpPins()
 	//mDataSource->clear();
 	mDataSource->seek(0);			//TODO::: This is bad for streams.
 
-	//debugLog<<"COMPLETED SETUP"<<endl;
+	debugLog<<"COMPLETED SETUP"<<endl;
 	delete[] locBuff;
 	return S_OK;
 
