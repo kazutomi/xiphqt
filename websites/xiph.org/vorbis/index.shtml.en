@@ -41,6 +41,11 @@ use vorbis, find music, and more.</li>
 </ul>
 
 <ul>
+<li>A <a href="doc/">format specification and related documenation</a> 
+are available on this site.</li>
+</ul>
+ 
+<ul>
 <li>The <strong>libvorbis</strong> reference implementation provides 
 both a standard encoder and decoder under a BSD license.
   [<a href="http://downloads.xiph.org/releases/vorbis/">Source download</a>]
