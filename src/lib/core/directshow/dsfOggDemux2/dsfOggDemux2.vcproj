@@ -1214,7 +1214,7 @@
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="..\..\ogg;..\libDirectshowAbstracts;..\..\..\helper"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;WIN32;NDEBUG;_WINDOWS;_USRDLL;DSFOGGDEMUX2_EXPORTS;_WIN32_WCE=$(CEVER);UNDER_CE;$(PLATFORMDEFINES);WINCE;$(ARCHFAM);$(_ARCHFAM_)"
-				MinimalRebuild="true"
+				MinimalRebuild="false"
 				RuntimeLibrary="2"
 				TreatWChar_tAsBuiltInType="false"
 				UsePrecompiledHeader="0"
