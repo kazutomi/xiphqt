@@ -113,12 +113,44 @@ static const GUID  IID_ICustomSource =
 //Structure defining the registration details of the filter
 
 #ifdef WINCE
+
+
+const AMOVIESETUP_MEDIATYPE OggDemuxPacketSourceOutputTypes = {
+    &MEDIATYPE_OggPacketStream,
+	&MEDIASUBTYPE_None
+};
+
+
+const AMOVIESETUP_PIN OggDemuxPacketSourcePinReg = {
+	
+    L"Ogg Packet Out",					//Name (obsoleted)
+	FALSE,								//Renders from this pin ?? Not sure about this.
+	TRUE,								//Is an output pin
+	TRUE,								//Can have zero instances of this pin
+	TRUE,								//Can have more than one instance of this pin
+	&GUID_NULL,							//Connects to filter (obsoleted)
+	NULL,								//Connects to pin (obsoleted)
+	1,									//upport two media type
+	&OggDemuxPacketSourceOutputTypes				//Pointer to media type (Audio/Vorbis or Audio/Speex)
+	
+};
+
+
+
+
+
+
+
+
+
+
+
 static const AMOVIESETUP_FILTER OggDemuxPacketSourceFilterReg = {
     &CLSID_OggDemuxPacketSourceFilter,      // Filter CLSID.
     L"Ogg Demux Packet Source Filter",              // Filter name.
     MERIT_NORMAL,           // Merit.
     0,                      // Number of pin types.
-    NULL                // Pointer to pin information.
+    &OggDemuxPacketSourcePinReg                // Pointer to pin information.
 };
 #else
 const REGFILTER2 OggDemuxPacketSourceFilterReg = {
