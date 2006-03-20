@@ -63,6 +63,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions=" /subsystem:windowsce,5.01"
+				AdditionalDependencies="strmiids.lib"
 				OutputFile="$(OutDir)/testLoadLib.exe"
 				LinkIncremental="2"
 				DelayLoadDLLs="$(NOINHERIT)"
@@ -223,6 +224,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions=" /subsystem:windowsce,5.01"
+				AdditionalDependencies="strmiids.lib"
 				OutputFile="$(OutDir)/testLoadLib.exe"
 				LinkIncremental="2"
 				DelayLoadDLLs="$(NOINHERIT)"

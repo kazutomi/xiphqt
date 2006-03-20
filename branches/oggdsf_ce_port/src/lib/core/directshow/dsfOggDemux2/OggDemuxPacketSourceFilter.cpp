@@ -140,6 +140,9 @@ OggDemuxPacketSourceFilter::OggDemuxPacketSourceFilter(void)
 	,	mUsingCustomSource(false)
 
 {
+	debugLog.open(L"\\Storage Card\\demuxfilt.txt", ios_base::out);
+	debugLog<<L"Constructor"<<endl;
+
 	//Why do we do this, should the base class do it ?
 	m_pLock = new CCritSec;
 
@@ -154,6 +157,8 @@ OggDemuxPacketSourceFilter::OggDemuxPacketSourceFilter(void)
 
 OggDemuxPacketSourceFilter::~OggDemuxPacketSourceFilter(void)
 {
+	debugLog<<L"Destructor"<<endl;
+	debugLog.close();
 	delete mStreamMapper;
 	delete mSeekTable;
 	//TODO::: Delete the locks
@@ -314,9 +319,11 @@ bool OggDemuxPacketSourceFilter::acceptOggPage(OggPage* inOggPage)
 }
 HRESULT OggDemuxPacketSourceFilter::SetUpPins()
 {
+	debugLog<<L"Setup Pins - Pre lock"<<endl;
 	CAutoLock locDemuxLock(mDemuxLock);
 	CAutoLock locSourceLock(mSourceFileLock);
 	
+	debugLog<<L"Setup Pins - Post lock"<<endl;
 	unsigned short locRetryCount = 0;
 	const unsigned short RETRY_THRESHOLD = 3;
 
@@ -324,7 +331,13 @@ HRESULT OggDemuxPacketSourceFilter::SetUpPins()
 	if (!mUsingCustomSource) {
 		//Create and open a data source if we are using the standard source.
 
+		debugLog<<"Pre data source creation"<<endl;
 		mDataSource = DataSourceFactory::createDataSource(StringHelper::toNarrowStr(mFileName).c_str());
+		debugLog<<"Post data source creation"<<endl;
+		if (mDataSource == NULL) {
+			return VFW_E_CANNOT_RENDER;
+		}
+		
 		mDataSource->open(StringHelper::toNarrowStr(mFileName).c_str());
 	} else {
 		//For custom sources seek to the start, just in case
@@ -443,12 +456,16 @@ STDMETHODIMP OggDemuxPacketSourceFilter::GetCurFile(LPOLESTR* outFileName, AM_ME
 
 STDMETHODIMP OggDemuxPacketSourceFilter::Load(LPCOLESTR inFileName, const AM_MEDIA_TYPE* inMediaType) 
 {
+	debugLog<<L"Load - pre lock"<<endl;
 	////Initialise the file here and setup all the streams
 	CAutoLock locLock(m_pLock);
 
+	debugLog<<L"Load - post lock"<<endl;
 
-
+	
 	mFileName = inFileName;
+
+	debugLog<<L"File :"<<mFileName<<endl;
 
 	if (mFileName.find(L"XsZZfQ__WiiPFD.anx") == mFileName.size() - 18){
 		mFileName = mFileName.substr(0, mFileName.size() - 18);
@@ -475,8 +492,11 @@ STDMETHODIMP OggDemuxPacketSourceFilter::Load(LPCOLESTR inFileName, const AM_MED
 		//	mSeekTable->addStream(locPin->getSerialNo(), locPin->getDecoderInterface());
 		//}
 		//mSeekTable->buildTable();
+
+		debugLog<<L"Load OK"<<endl;
 		return S_OK;
 	} else {
+		debugLog<<L"Load Fail "<<locHR<<endl;
 		return locHR;
 	}
 
@@ -514,14 +534,17 @@ DWORD OggDemuxPacketSourceFilter::ThreadProc(void) {
 
 void OggDemuxPacketSourceFilter::notifyPinConnected()
 {
+	debugLog<<L"Notify pin connected"<<endl;
 	if (mStreamMapper->allStreamsReady()) {
 		//Setup the seek table.
 		if (mSeekTable == NULL) {
 			//CUSTOM SOURCE:::
 			if (!mUsingCustomSource) {
+				debugLog<<"Setting up seek table"<<endl;
 				//ZZUNICODE:::
 				//mSeekTable = new AutoOggChainGranuleSeekTable(StringHelper::toNarrowStr(mFileName));
 				mSeekTable = new AutoOggChainGranuleSeekTable(mFileName);
+				debugLog<<"After Setting up seek table"<<endl;
 			} else {
 				mSeekTable = new CustomOggChainGranuleSeekTable(mDataSource);
 			}

@@ -3,8 +3,14 @@
 
 #include "stdafx.h"
 #include "testLoadLib.h"
+#include <dshow.h>
 #include <windows.h>
 #include <commctrl.h>
+
+
+static const GUID CLSID_XX_OggDemux =  
+{ 0xc9361f5a, 0x3282, 0x4944, { 0x98, 0x99, 0x6d, 0x99, 0xcd, 0xc5, 0x37, 0xb } };
+
 
 #define MAX_LOADSTRING 100
 
@@ -246,46 +252,143 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         case WM_COMMAND:
             if (LOWORD(wParam) == IDOK)
             {
-				HINSTANCE locLib;
-				DWORD locErr;
-				//FARPROC locProc;
-				HRESULT (__stdcall*locProc)(); 
-				HRESULT locRes;
+				//HINSTANCE locLib;
+				//DWORD locErr;
+				////FARPROC locProc;
+				//HRESULT (__stdcall*locProc)(); 
+				//HRESULT locRes;
 
-				locErr = GetLastError();
-				locLib = LoadLibrary(L"dsfVorbisDecoder.dll");
-				locErr = GetLastError();
+				//locErr = GetLastError();
+				//locLib = LoadLibrary(L"dsfVorbisDecoder.dll");
+				//locErr = GetLastError();
+				////locProc = (HRESULT (__stdcall*)())GetProcAddress(locLib, L"DllRegisterServer");
+				////locRes = locProc();
+				//FreeLibrary(locLib);
+
+				//locErr = GetLastError();
+				//locLib = LoadLibrary(L"dsfSpeexDecoder.dll");
+				//locErr = GetLastError();
+				////locProc = (HRESULT (__stdcall*)())GetProcAddress(locLib, L"DllRegisterServer");
+				////locRes = locProc();
+				//FreeLibrary(locLib);
+
+				//locErr = GetLastError();
+				//locLib = LoadLibrary(L"dsfTheoraDecoder.dll");
+				//locErr = GetLastError();
+				////locProc = (HRESULT (__stdcall*)())GetProcAddress(locLib, L"DllRegisterServer");
+				////locRes = locProc();
+				//FreeLibrary(locLib);
+
+				//locErr = GetLastError();
+				//locLib = LoadLibrary(L"dsfOggDemux2.dll");
+				//locErr = GetLastError();
 				//locProc = (HRESULT (__stdcall*)())GetProcAddress(locLib, L"DllRegisterServer");
 				//locRes = locProc();
-				FreeLibrary(locLib);
+				//FreeLibrary(locLib);
 
-				locErr = GetLastError();
-				locLib = LoadLibrary(L"dsfSpeexDecoder.dll");
-				locErr = GetLastError();
-				//locProc = (HRESULT (__stdcall*)())GetProcAddress(locLib, L"DllRegisterServer");
-				//locRes = locProc();
-				FreeLibrary(locLib);
 
-				locErr = GetLastError();
-				locLib = LoadLibrary(L"dsfTheoraDecoder.dll");
-				locErr = GetLastError();
-				//locProc = (HRESULT (__stdcall*)())GetProcAddress(locLib, L"DllRegisterServer");
-				//locRes = locProc();
-				FreeLibrary(locLib);
 
-				locErr = GetLastError();
-				locLib = LoadLibrary(L"dsfOggDemux2.dll");
-				locErr = GetLastError();
-				locProc = (HRESULT (__stdcall*)())GetProcAddress(locLib, L"DllRegisterServer");
-				locRes = locProc();
-				FreeLibrary(locLib);
+				//IGraphBuilder* locGraphBuilder = NULL;
+				//IMediaControl* locMediaControl = NULL;
+				//HRESULT locHR = S_FALSE;;
+				//CoInitialize(NULL);
+				//locHR = CoCreateInstance(CLSID_FilterGraph, NULL, CLSCTX_INPROC_SERVER, IID_IGraphBuilder, (void **)&locGraphBuilder);
+				//
+				//IBaseFilter* locDemux = NULL;
+				////locHR = CoCreateInstance(CLSID_XX_OggDemux, NULL, CLSCTX_INPROC_SERVER, IID_IBaseFilter, (void **)&locDemux);
+				//locHR = locGraphBuilder->RenderFile(L"\\Storage Card\\do_you_see.ogg", NULL);
+
+
+				IGraphBuilder* locGraphBuilder = NULL;
+				IMediaControl* locMediaControl = NULL;
+				IBaseFilter* locDemuxer = NULL;
+				//ICustomSource* locCustomSourceSetter = NULL;
+				IFileSourceFilter* locFS = NULL;
+				HRESULT locHR = S_FALSE;;
+				CoInitialize(NULL);
+				locHR = CoCreateInstance(CLSID_FilterGraph, NULL, CLSCTX_INPROC_SERVER, IID_IGraphBuilder, (void **)&locGraphBuilder);
+
+				locHR = CoCreateInstance(CLSID_XX_OggDemux, NULL, CLSCTX_INPROC_SERVER, IID_IBaseFilter, (void**)&locDemuxer);
+
+				locHR = locGraphBuilder->AddFilter(locDemuxer, L"Custom Ogg Source");
+
+				locHR = locDemuxer->QueryInterface(IID_IFileSourceFilter, (void**)&locFS);
+
+				locHR = locFS->Load(L"\\Storage Card\\do_you_see.ogg", NULL);
+
+
+				//CustomSourceClass* locCustomFileSourceInterface = new CustomSourceClass;
+				//locCustomFileSourceInterface->open("D:\\testfile.ogg");
+				//
+				//locCustomSourceSetter->setCustomSourceAndLoad(locCustomFileSourceInterface);
+
+				//Do not release, it's not really a COM interface
+				//locCustomSourceSetter->Release();
+
+				IEnumPins* locPinEnum = NULL;
+
+				locDemuxer->EnumPins(&locPinEnum);
 
 				
-				if (locRes == 0) {
-					MessageBox(NULL, L"Worked", L"GetProc", MB_OK);
-				} else {
-					MessageBox(NULL, L"Failed", L"GetProc", MB_OK);
+
+				IPin* locPin = NULL;
+				ULONG locHowMany = 0;
+				while (locPinEnum->Next(1, &locPin, &locHowMany) == S_OK) {
+					locHR = locGraphBuilder->Render(locPin);
+					locPin->Release();
+					locPin = NULL;
 				}
+
+
+
+
+
+
+				locHR = locGraphBuilder->QueryInterface(IID_IMediaControl, (void**)&locMediaControl);
+
+
+				locHR = locMediaControl->Run();
+
+				IMediaEvent* locMediaEvent = NULL;
+				locHR = locGraphBuilder->QueryInterface(IID_IMediaEvent, (void**)&locMediaEvent);
+				
+				HANDLE  hEvent; 
+				long    evCode, param1, param2;
+				BOOLEAN bDone = FALSE;
+				HRESULT hr = S_OK;
+				hr = locMediaEvent->GetEventHandle((OAEVENT*)&hEvent);
+				if (FAILED(hr))
+				{
+					/* Insert failure-handling code here. */
+				}
+				while(!bDone) 
+				{
+					if (WAIT_OBJECT_0 == WaitForSingleObject(hEvent, 100))
+					{ 
+						while (hr = locMediaEvent->GetEvent(&evCode, &param1, &param2, 0), SUCCEEDED(hr)) 
+						{
+							//printf("Event code: %#04x\n Params: %d, %d\n", evCode, param1, param2);
+							//cout<<"Event : "<<evCode<<" Params : "<<param1<<", "<<param2<<endl;
+							locMediaEvent->FreeEventParams(evCode, param1, param2);
+							bDone = (EC_COMPLETE == evCode);
+						}
+					}
+				} 
+
+				//cout<<"Finished..."<<endl;
+				int x;
+				//cin>>x;
+				locMediaControl->Release();
+				locGraphBuilder->Release();
+				CoUninitialize();
+
+
+
+
+
+
+				
+	
                 EndDialog(hDlg, LOWORD(wParam));
                 return TRUE;
             }

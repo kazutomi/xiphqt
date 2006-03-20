@@ -149,7 +149,7 @@ static const AMOVIESETUP_FILTER OggDemuxPacketSourceFilterReg = {
     &CLSID_OggDemuxPacketSourceFilter,      // Filter CLSID.
     L"Ogg Demux Packet Source Filter",              // Filter name.
     MERIT_NORMAL,           // Merit.
-    0,                      // Number of pin types.
+    1,                      // Number of pin types.
     &OggDemuxPacketSourcePinReg                // Pointer to pin information.
 };
 #else

@@ -172,5 +172,7 @@ protected:
 	//HHHH:::
 	__int64 mGlobalBaseTime;
 
+	wfstream debugLog;
+
 	//double mPlaybackRate;
 };
