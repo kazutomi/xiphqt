@@ -252,24 +252,28 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				HRESULT (__stdcall*locProc)(); 
 				HRESULT locRes;
 
+				locErr = GetLastError();
 				locLib = LoadLibrary(L"dsfVorbisDecoder.dll");
 				locErr = GetLastError();
-				locProc = (HRESULT (__stdcall*)())GetProcAddress(locLib, L"DllRegisterServer");
-				locRes = locProc();
+				//locProc = (HRESULT (__stdcall*)())GetProcAddress(locLib, L"DllRegisterServer");
+				//locRes = locProc();
 				FreeLibrary(locLib);
 
+				locErr = GetLastError();
 				locLib = LoadLibrary(L"dsfSpeexDecoder.dll");
 				locErr = GetLastError();
-				locProc = (HRESULT (__stdcall*)())GetProcAddress(locLib, L"DllRegisterServer");
-				locRes = locProc();
+				//locProc = (HRESULT (__stdcall*)())GetProcAddress(locLib, L"DllRegisterServer");
+				//locRes = locProc();
 				FreeLibrary(locLib);
 
+				locErr = GetLastError();
 				locLib = LoadLibrary(L"dsfTheoraDecoder.dll");
 				locErr = GetLastError();
-				locProc = (HRESULT (__stdcall*)())GetProcAddress(locLib, L"DllRegisterServer");
-				locRes = locProc();
+				//locProc = (HRESULT (__stdcall*)())GetProcAddress(locLib, L"DllRegisterServer");
+				//locRes = locProc();
 				FreeLibrary(locLib);
 
+				locErr = GetLastError();
 				locLib = LoadLibrary(L"dsfOggDemux2.dll");
 				locErr = GetLastError();
 				locProc = (HRESULT (__stdcall*)())GetProcAddress(locLib, L"DllRegisterServer");
