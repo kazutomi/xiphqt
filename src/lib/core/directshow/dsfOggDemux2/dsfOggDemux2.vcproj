@@ -982,7 +982,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="strmbase.lib strmiids.lib winsock.lib"
+				AdditionalDependencies="strmbase.lib strmiids.lib ws2.lib"
 				OutputFile="$(OutDir)/dsfOggDemux2.dll"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories=""

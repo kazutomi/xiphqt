@@ -52,6 +52,11 @@ IFilterDataSource* DataSourceFactory::createDataSource(string inSourceLocation) 
 		//Http stream
 		//return new HTTPFileSource;
 		return new HTTPStreamingFileSource;
+#ifdef WINCE
+	} else if (locType == "\\") {
+		//WinCE absolute file path
+		return new FilterFileSource;
+#endif
 	} else {
 		//Something else
 		return NULL;
@@ -70,6 +75,14 @@ string DataSourceFactory::identifySourceType(string inSourceLocation) {
 				//A "\\" is a network share
 				return retStr;
 			} else {
+#ifdef WINCE
+				retStr = inSourceLocation.substr(0,1);
+
+				if (retStr == "\\") {
+					//WinCE absolute path
+					return retStr;
+				}
+#endif
 				//Not a network share.
 				return "";
 			}
