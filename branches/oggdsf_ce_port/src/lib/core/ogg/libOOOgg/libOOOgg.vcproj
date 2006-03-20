@@ -1664,6 +1664,7 @@
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="1"
+			WholeProgramOptimization="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -1684,10 +1685,10 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				Optimization="0"
+				Optimization="1"
 				AdditionalIncludeDirectories="..;..\..\..\helper"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;WIN32;NDEBUG;_WINDOWS;_USRDLL;_WIN32_WCE=$(CEVER);UNDER_CE;$(PLATFORMDEFINES);WINCE;$(ARCHFAM);$(_ARCHFAM_);LIBOOOGG_EXPORTS"
-				MinimalRebuild="true"
+				MinimalRebuild="false"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="2"
 				WarningLevel="4"
@@ -1705,9 +1706,12 @@
 				Name="VCLinkerTool"
 				OutputFile="$(OutDir)/libOOOgg.dll"
 				LinkIncremental="2"
-				GenerateDebugInformation="true"
+				GenerateDebugInformation="false"
 				ProgramDatabaseFile="$(OutDir)/libOOOgg.pdb"
 				SubSystem="9"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				OptimizeForWindows98="1"
 				ImportLibrary="$(OutDir)/libOOOgg.lib"
 				TargetMachine="0"
 			/>

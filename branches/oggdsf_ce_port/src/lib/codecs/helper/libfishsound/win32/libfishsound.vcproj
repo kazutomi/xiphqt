@@ -1379,6 +1379,7 @@
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="1"
+			WholeProgramOptimization="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -1403,7 +1404,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				Optimization="0"
+				Optimization="1"
 				AdditionalIncludeDirectories="..\include;.;..\..\..\vorbis\libs\libvorbis\include;..\..\..\speex\libs\libspeex\libspeex;..\..\..\..\core\ogg\libogg\include"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;WIN32;NDEBUG;_WINDOWS;_USRDLL;LIBFISHSOUND_EXPORTS;_WIN32_WCE=$(CEVER);UNDER_CE;$(PLATFORMDEFINES);WINCE;$(ARCHFAM);$(_ARCHFAM_)"
 				RuntimeLibrary="2"
@@ -1434,9 +1435,12 @@
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories=""
 				ModuleDefinitionFile=".\libfishsound\libfishsound.def"
-				GenerateDebugInformation="true"
+				GenerateDebugInformation="false"
 				ProgramDatabaseFile="./libfishsound.pdb"
 				SubSystem="9"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				OptimizeForWindows98="1"
 				ImportLibrary="./libfishsound.lib"
 				TargetMachine="0"
 			/>
