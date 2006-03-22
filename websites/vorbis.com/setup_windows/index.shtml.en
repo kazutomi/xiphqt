@@ -39,7 +39,9 @@ do not need these filters.</p>
   <li><a href="http://www.winamp.com/">Winamp</a>: One of the original MP3 players now plays Ogg Vorbis files.</li>
   <li><a href='http://foobar2000.hydrogenaudio.org/'>foobar2000</a>
   (<em>very</em> spartan interface, streams from Icecast, has best-of-breed
-  comment editing and masstagging capabilities)</li>
+  comment editing and mass tagging capabilities)</li>
+  <li><a href="https://helixcommunity.org/projects/xiph/">RealPlayer 
+   plugins</a> allow playback inside Realplayer and Helix Player.</li>
   <li><a href="http://www.zinf.org/">Zinf</a>: An OpenSource player based on FreeAmp.</li>
 </ul>
 
@@ -53,6 +55,9 @@ do not need these filters.</p>
   <li><a href="http://dspguru.doom9.net/">BeSweet</a>: A transcoding utility
   that supports a multitude of formats.</li>
   <li><a href="http://www.rarewares.org/ogg.html">OggEnc</a>: a command line encoder</li>
+  <li><a href="https://helixcommunity.org/projects/xiph/">RealProducer 
+   plugins</a> allow streaming of Ogg-related formats from RealNetworks' 
+   server software.</li>
 </ul>
 
 <h2>Other:</h2>

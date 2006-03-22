@@ -234,8 +234,10 @@ source to icecast2, thusly allowing you to create a vorbis stream.</div>
 
 <div class="sl_link"><a href="http://qtcomponents.sourceforge.net/">Ogg Quicktime Components</a></div>
 <div class="sl_added">added on <i>2002-02-05 16:08:44.00</i></div>
-<div class="sl_desc">What the title says. Allows Ogg encoding and playback
-in all MacOS and Win32 apps that use Apple Quicktime.</div>
+<div class="sl_desc">What the title says. Allowed Ogg encoding and 
+playback in all MacOS and Win32 apps that use Apple Quicktime. As of 
+early 2006 this software does not work well on Quicktime 7. Use <a 
+href="http://xiph.org/quicktime/">XiphQT</a> instead.</div>
 
 <div class="sl_link"><a href="http://sf.net/projects/mediaxw">Ogg Vorbis DirectShow Filters</a></div>
 <div class="sl_added">added on <i>2001-06-30 23:29:04.00</i></div>
@@ -344,6 +346,13 @@ encode them into MP3. WinCD supports FreeDB and ID3-Tags.</div>
 <div class="sl_added">added on <i>2001-06-30 22:57:08.00</i></div>
 <div class="sl_desc">A CD ripper/encoder with plugins available for Ogg Vorbis.</div>
 
+<div class="sl_link"><a href="http://xiph.org/quicktime/">Xiph Quicktime 
+Components</a></div>
+<div class="sl_added">added on <i>2006-03-23 00:57:44</i></div>
+<div class="sl_desc">These are the official quicktime components, 
+allowing Ogg file playback in all MacOS and Win32 apps that use Apple 
+Quicktime.</div>
+
 <div class="sl_link"><a href="http://www.un4seen.com/">XMPlay2</a></div>
 <div class="sl_added">added on <i>2001-11-13 18:09:28.00</i></div>
 <div class="sl_desc">XMPlay is a Windows music player, supporting the
@@ -449,7 +458,9 @@ play ogg vorbis files. Ogg Drop is entirely free.</div>
 <div class="sl_link"><a href="http://qtcomponents.sourceforge.net/">Ogg Quicktime Components</a></div>
 <div class="sl_added">added on <i>2002-02-05 16:08:44.00</i></div>
 <div class="sl_desc">What the title says. Allows Ogg encoding and playback
-in all MacOS and Win32 apps that use Apple Quicktime.</div>
+in all MacOS and Win32 apps that use Apple Quicktime. As of
+early 2006 this software does not work well on Quicktime 7. Use <a
+href="http://xiph.org/quicktime/">XiphQT</a> instead.</div>
 
 <h2><a name="macos9">Mac OS 9 (and earlier)</a></h2>
 
@@ -487,7 +498,8 @@ includes the 1.0 and Jaguar support.</div>
 <div class="sl_link"><a href="http://qtcomponents.sourceforge.net/">Ogg Quicktime Components</a></div>
 <div class="sl_added">added on <i>2002-02-05 16:08:44.00</i></div>
 <div class="sl_desc">What the title says. Allows Ogg encoding and playback
-in all MacOS and Win32 apps that use Apple Quicktime.</div>
+in all MacOS and Win32 apps that use Apple Quicktime. Not 
+recommended for MacOS X.</div>
 
 <h2><a name="linux">Linux</a></h2>
 
@@ -570,6 +582,12 @@ player for UNIX (Linux and BSD included). Today, it supports Ogg Vorbis and Theo
 (as you'd expect) as well as Real's own formats, MPEG and pretty much any other
 kind of audio/video media you can think of. </div>
 
+<div class="sl_link"><a href="https://helixcommunity.org/projects/xiph/">Xiph Real Player and Producer plugins</a></div>
+<div class="sl_added">added on <i>2006-03-22 01:02:31</i></div>
+<div class="sl_desc">These are plugins to allow streaming 
+of the free Ogg formats with RealNetworks's Real Player 
+and Real Producer. Part of the open Helix Community effort.</div>
+
 <div class="sl_link"><a href="http://ripperx.sourceforge.net">RipperX</a></div>
 <div class="sl_added">added on <i>2002-11-15 08:28:03.11</i></div>
 <div class="sl_desc">RipperX is a GTK program to rip CD audio and encode
@@ -611,6 +629,13 @@ system. Vocoditor is written in Perl and uses GTK.</div>
 <div class="sl_added">added on <i>2001-06-30 23:03:45.00</i></div>
 <div class="sl_desc">The most popular media player for Linux. XMMS plays
 vorbis files, allows ogg comments, and supports vorbis streams.</div>
+<div class="sl_link"><a href="http://xiph.org/quicktime/">Xiph Quicktime 
+Components</a></div>
+
+<div class="sl_added">added on <i>2006-03-23 00:57:44</i></div>
+<div class="sl_desc">These are the official quicktime components, 
+allowing Ogg file playback in all MacOS and Win32 apps that use Apple 
+Quicktime.</div>
 
 <div class="sl_link"><a href="http://www.amb.org/xmcd">Xmcd</a></div>
 <div class="sl_added">added on <i>2002-12-13 20:53:58.01</i></div>
