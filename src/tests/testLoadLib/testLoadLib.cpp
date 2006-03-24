@@ -288,17 +288,17 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
 
 
-				//IGraphBuilder* locGraphBuilder = NULL;
-				//IMediaControl* locMediaControl = NULL;
-				//HRESULT locHR = S_FALSE;;
-				//CoInitialize(NULL);
-				//locHR = CoCreateInstance(CLSID_FilterGraph, NULL, CLSCTX_INPROC_SERVER, IID_IGraphBuilder, (void **)&locGraphBuilder);
-				//
-				//IBaseFilter* locDemux = NULL;
-				////locHR = CoCreateInstance(CLSID_XX_OggDemux, NULL, CLSCTX_INPROC_SERVER, IID_IBaseFilter, (void **)&locDemux);
-				//locHR = locGraphBuilder->RenderFile(L"\\Storage Card\\do_you_see.ogg", NULL);
+				IGraphBuilder* locGraphBuilder = NULL;
+				IMediaControl* locMediaControl = NULL;
+				HRESULT locHR = S_FALSE;;
+				CoInitialize(NULL);
+				locHR = CoCreateInstance(CLSID_FilterGraph, NULL, CLSCTX_INPROC_SERVER, IID_IGraphBuilder, (void **)&locGraphBuilder);
+				
+				IBaseFilter* locDemux = NULL;
+				//locHR = CoCreateInstance(CLSID_XX_OggDemux, NULL, CLSCTX_INPROC_SERVER, IID_IBaseFilter, (void **)&locDemux);
+				locHR = locGraphBuilder->RenderFile(L"\\Storage Card\\do_you_see.ogg", NULL);
 
-
+/*
 				IGraphBuilder* locGraphBuilder = NULL;
 				IMediaControl* locMediaControl = NULL;
 				IBaseFilter* locDemuxer = NULL;
@@ -339,7 +339,7 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 					locPin = NULL;
 				}
 
-
+*/
 
 
 
