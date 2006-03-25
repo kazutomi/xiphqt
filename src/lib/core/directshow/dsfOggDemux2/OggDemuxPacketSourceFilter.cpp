@@ -338,7 +338,9 @@ HRESULT OggDemuxPacketSourceFilter::SetUpPins()
 			return VFW_E_CANNOT_RENDER;
 		}
 		
-		mDataSource->open(StringHelper::toNarrowStr(mFileName).c_str());
+		if (!mDataSource->open(StringHelper::toNarrowStr(mFileName).c_str())) {
+			return VFW_E_CANNOT_RENDER;
+		}
 	} else {
 		//For custom sources seek to the start, just in case
 		mDataSource->seek(0);
