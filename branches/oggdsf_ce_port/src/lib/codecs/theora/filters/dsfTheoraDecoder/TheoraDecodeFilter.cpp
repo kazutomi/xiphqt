@@ -77,15 +77,25 @@ TheoraDecodeFilter::TheoraDecodeFilter()
 	debugLog.open("G:\\logs\\newtheofilter.log", ios_base::out);
 #endif
 
+	sOutputVideoParams locVideoParams;
+
 	CMediaType* locAcceptMediaType = new CMediaType(&MEDIATYPE_Video);		//Deleted in pin destructor
 	locAcceptMediaType->subtype = MEDIASUBTYPE_YV12;
 	locAcceptMediaType->formattype = FORMAT_VideoInfo;
 	mOutputMediaTypes.push_back(locAcceptMediaType);
 
-	locAcceptMediaType = new CMediaType(&MEDIATYPE_Video);		//Deleted in pin destructor
-	locAcceptMediaType->subtype = MEDIASUBTYPE_YUY2;
-	locAcceptMediaType->formattype = FORMAT_VideoInfo;
-	mOutputMediaTypes.push_back(locAcceptMediaType);
+	locVideoParams.bitsPerPixel = 12;
+	locVideoParams.fourCC = MAKEFOURCC('Y','V','1','2');
+	mOutputVideoParams.push_back(locVideoParams);
+
+	//locAcceptMediaType = new CMediaType(&MEDIATYPE_Video);		//Deleted in pin destructor
+	//locAcceptMediaType->subtype = MEDIASUBTYPE_YUY2;
+	//locAcceptMediaType->formattype = FORMAT_VideoInfo;
+	//mOutputMediaTypes.push_back(locAcceptMediaType);
+
+	//locVideoParams.bitsPerPixel = 16;
+	//locVideoParams.fourCC = MAKEFOURCC('Y','U','Y','2');
+	//mOutputVideoParams.push_back(locVideoParams);
 
 
 	mTheoraDecoder = new TheoraDecoder;
@@ -118,16 +128,20 @@ CUnknown* WINAPI TheoraDecodeFilter::CreateInstance(LPUNKNOWN pUnk, HRESULT *pHr
     }
 	return pNewObject;
 } 
-void TheoraDecodeFilter::FillMediaType(CMediaType* outMediaType, unsigned long inSampleSize) {
+void TheoraDecodeFilter::FillMediaType(int inPosition, CMediaType* outMediaType, unsigned long inSampleSize) 
+{
 	//MTS::: Needs alternate media types
-	outMediaType->SetType(&MEDIATYPE_Video);
-	outMediaType->SetSubtype(&MEDIASUBTYPE_YV12);
-	outMediaType->SetFormatType(&FORMAT_VideoInfo);
+	//outMediaType->SetType(&MEDIATYPE_Video);
+	//outMediaType->SetSubtype(&MEDIASUBTYPE_YV12);
+	//outMediaType->SetFormatType(&FORMAT_VideoInfo);
+	outMediaType->SetType(&(mOutputMediaTypes[inPosition]->majortype));
+	outMediaType->SetSubtype(&(mOutputMediaTypes[inPosition]->subtype));
+	outMediaType->SetFormatType(&(mOutputMediaTypes[inPosition]->formattype));
 	outMediaType->SetTemporalCompression(FALSE);
 	outMediaType->SetSampleSize(inSampleSize);		
 
 }
-bool TheoraDecodeFilter::FillVideoInfoHeader(VIDEOINFOHEADER* inFormatBuffer) 
+bool TheoraDecodeFilter::FillVideoInfoHeader(int inPosition, VIDEOINFOHEADER* inFormatBuffer) 
 {
 	//MTS::: Needs changes for alternate media types. FOURCC and bitCOunt
 	TheoraDecodeFilter* locFilter = this;
@@ -135,14 +149,17 @@ bool TheoraDecodeFilter::FillVideoInfoHeader(VIDEOINFOHEADER* inFormatBuffer)
 	inFormatBuffer->AvgTimePerFrame = (UNITS * locFilter->mTheoraFormatInfo->frameRateDenominator) / locFilter->mTheoraFormatInfo->frameRateNumerator;
 	inFormatBuffer->dwBitRate = locFilter->mTheoraFormatInfo->targetBitrate;
 	
-	inFormatBuffer->bmiHeader.biBitCount = 12;   //12 bits per pixel
+	//inFormatBuffer->bmiHeader.biBitCount = 12;   //12 bits per pixel
+	inFormatBuffer->bmiHeader.biBitCount = mOutputVideoParams[inPosition].bitsPerPixel;  
+
 	inFormatBuffer->bmiHeader.biClrImportant = 0;   //All colours important
 	inFormatBuffer->bmiHeader.biClrUsed = 0;        //Use max colour depth
-	inFormatBuffer->bmiHeader.biCompression = MAKEFOURCC('Y','V','1','2');
+	//inFormatBuffer->bmiHeader.biCompression = MAKEFOURCC('Y','V','1','2');
+	inFormatBuffer->bmiHeader.biCompression = mOutputVideoParams[inPosition].fourCC;
 	inFormatBuffer->bmiHeader.biHeight = locFilter->mTheoraFormatInfo->pictureHeight;   //Not sure
 	inFormatBuffer->bmiHeader.biPlanes = 1;    //Must be 1
 	inFormatBuffer->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);    //????? Size of what ?
-	inFormatBuffer->bmiHeader.biSizeImage = ((locFilter->mTheoraFormatInfo->pictureHeight * locFilter->mTheoraFormatInfo->pictureWidth) * 3)/2;    //Size in bytes of image ??
+	inFormatBuffer->bmiHeader.biSizeImage = ((locFilter->mTheoraFormatInfo->pictureHeight * locFilter->mTheoraFormatInfo->pictureWidth) * inFormatBuffer->bmiHeader.biBitCount)/8;    //Size in bytes of image ??
 	inFormatBuffer->bmiHeader.biWidth = locFilter->mTheoraFormatInfo->pictureWidth;
 	inFormatBuffer->bmiHeader.biXPelsPerMeter = 2000;   //Fuck knows
 	inFormatBuffer->bmiHeader.biYPelsPerMeter = 2000;   //" " " " " 
@@ -180,11 +197,29 @@ HRESULT TheoraDecodeFilter::CheckInputType(const CMediaType* inMediaType)
 	return S_FALSE;
 	
 }
+
+HRESULT TheoraDecodeFilter::CheckOutputType(const CMediaType* inMediaType)
+{
+	for (size_t i = 0; i < mOutputMediaTypes.size(); i++) {
+		if	(		(inMediaType->majortype == mOutputMediaTypes[i]->majortype) 
+				&&	(inMediaType->subtype == mOutputMediaTypes[i]->subtype) 
+				&&	(inMediaType->formattype == mOutputMediaTypes[i]->formattype)
+			)
+		{
+			return S_OK;
+		} 
+	}
+
+
+	//If it matched none... return false.
+	return S_FALSE;
+}
 HRESULT TheoraDecodeFilter::CheckTransform(const CMediaType* inInputMediaType, const CMediaType* inOutputMediaType) {
 	//MTS::: Needs multiple media types
-	if ((CheckInputType(inInputMediaType) == S_OK) &&
-		((inOutputMediaType->majortype == MEDIATYPE_Video) && (inOutputMediaType->subtype == MEDIASUBTYPE_YV12) && (inOutputMediaType->formattype == FORMAT_VideoInfo)
-		)) {
+	if ((CheckInputType(inInputMediaType) == S_OK) && (CheckOutputType(inOutputMediaType) == S_OK)) {
+		//((inOutputMediaType->majortype == MEDIATYPE_Video) && (inOutputMediaType->subtype == MEDIASUBTYPE_YV12) && (inOutputMediaType->formattype == FORMAT_VideoInfo)
+		//)) {
+
 		VIDEOINFOHEADER* locVideoHeader = (VIDEOINFOHEADER*)inOutputMediaType->Format();
 
 	//	if ((locVideoHeader->bmiHeader.biHeight == mTheoraFormatInfo->pictureHeight) && (locVideoHeader->bmiHeader.biWidth == mTheoraFormatInfo->pictureWidth)) {
@@ -192,7 +227,8 @@ HRESULT TheoraDecodeFilter::CheckTransform(const CMediaType* inInputMediaType, c
 			mBMIHeight = (unsigned long)abs(locVideoHeader->bmiHeader.biHeight);
 			mBMIWidth = (unsigned long)abs(locVideoHeader->bmiHeader.biWidth);
 
-			mBMIFrameSize = (mBMIHeight * mBMIWidth * 3) / 2;
+			//mBMIFrameSize = (mBMIHeight * mBMIWidth * 3) / 2;
+			mBMIFrameSize = (mBMIHeight * mBMIWidth * locVideoHeader->bmiHeader.biBitCount) / 8;
 			return S_OK;
 	//	} else {
 	//		return S_FALSE;
@@ -341,11 +377,25 @@ HRESULT TheoraDecodeFilter::GetMediaType(int inPosition, CMediaType* outOutputMe
 		return E_INVALIDARG;
 	}
 	//MTS::: Needs alternate types.
-	if (inPosition == 0) {
+	//if (inPosition == 0) {
+	//	
+	//	VIDEOINFOHEADER* locVideoFormat = (VIDEOINFOHEADER*)outOutputMediaType->AllocFormatBuffer(sizeof(VIDEOINFOHEADER));
+	//	FillVideoInfoHeader(locVideoFormat);
+	//	FillMediaType(outOutputMediaType, locVideoFormat->bmiHeader.biSizeImage);
+	//	//debugLog<<"Vid format size "<<locVideoFormat->bmiHeader.biSizeImage<<endl;
+	//	//outMediaType->SetSampleSize(locVideoFormat->bmiHeader.biSizeImage);
+	//	//debugLog<<"Returning from GetMediaType"<<endl;
+	//	return S_OK;
+	//} else {
+	//	return VFW_S_NO_MORE_ITEMS;
+	//}
+
+
+	if (inPosition < mOutputMediaTypes.size()) {
 		
 		VIDEOINFOHEADER* locVideoFormat = (VIDEOINFOHEADER*)outOutputMediaType->AllocFormatBuffer(sizeof(VIDEOINFOHEADER));
-		FillVideoInfoHeader(locVideoFormat);
-		FillMediaType(outOutputMediaType, locVideoFormat->bmiHeader.biSizeImage);
+		FillVideoInfoHeader(inPosition, locVideoFormat);
+		FillMediaType(inPosition, outOutputMediaType, locVideoFormat->bmiHeader.biSizeImage);
 		//debugLog<<"Vid format size "<<locVideoFormat->bmiHeader.biSizeImage<<endl;
 		//outMediaType->SetSampleSize(locVideoFormat->bmiHeader.biSizeImage);
 		//debugLog<<"Returning from GetMediaType"<<endl;
