@@ -102,6 +102,8 @@ protected:
 
 	HRESULT TheoraDecoded (yuv_buffer* inYUVBuffer, IMediaSample* outSample, bool inIsKeyFrame, REFERENCE_TIME inStart, REFERENCE_TIME inEnd);
 
+	vector<CMediaType*> mOutputMediaTypes;
+
 	REFERENCE_TIME mSegStart;
 	REFERENCE_TIME mSegEnd;
 	double mPlaybackRate;

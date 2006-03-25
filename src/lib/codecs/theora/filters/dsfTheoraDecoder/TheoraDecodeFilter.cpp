@@ -76,12 +76,30 @@ TheoraDecodeFilter::TheoraDecodeFilter()
 #ifdef OGGCODECS_LOGGING
 	debugLog.open("G:\\logs\\newtheofilter.log", ios_base::out);
 #endif
+
+	CMediaType* locAcceptMediaType = new CMediaType(&MEDIATYPE_Video);		//Deleted in pin destructor
+	locAcceptMediaType->subtype = MEDIASUBTYPE_YV12;
+	locAcceptMediaType->formattype = FORMAT_VideoInfo;
+	mOutputMediaTypes.push_back(locAcceptMediaType);
+
+	locAcceptMediaType = new CMediaType(&MEDIATYPE_Video);		//Deleted in pin destructor
+	locAcceptMediaType->subtype = MEDIASUBTYPE_YUY2;
+	locAcceptMediaType->formattype = FORMAT_VideoInfo;
+	mOutputMediaTypes.push_back(locAcceptMediaType);
+
+
 	mTheoraDecoder = new TheoraDecoder;
 	mTheoraDecoder->initCodec();
 
 }
 
-TheoraDecodeFilter::~TheoraDecodeFilter() {
+TheoraDecodeFilter::~TheoraDecodeFilter() 
+{
+	
+	for (size_t i = 0; i < mOutputMediaTypes.size(); i++) {
+		delete mOutputMediaTypes[i];
+	}
+
 	delete mTheoraDecoder;
 	mTheoraDecoder = NULL;
 
@@ -101,6 +119,7 @@ CUnknown* WINAPI TheoraDecodeFilter::CreateInstance(LPUNKNOWN pUnk, HRESULT *pHr
 	return pNewObject;
 } 
 void TheoraDecodeFilter::FillMediaType(CMediaType* outMediaType, unsigned long inSampleSize) {
+	//MTS::: Needs alternate media types
 	outMediaType->SetType(&MEDIATYPE_Video);
 	outMediaType->SetSubtype(&MEDIASUBTYPE_YV12);
 	outMediaType->SetFormatType(&FORMAT_VideoInfo);
@@ -108,7 +127,9 @@ void TheoraDecodeFilter::FillMediaType(CMediaType* outMediaType, unsigned long i
 	outMediaType->SetSampleSize(inSampleSize);		
 
 }
-bool TheoraDecodeFilter::FillVideoInfoHeader(VIDEOINFOHEADER* inFormatBuffer) {
+bool TheoraDecodeFilter::FillVideoInfoHeader(VIDEOINFOHEADER* inFormatBuffer) 
+{
+	//MTS::: Needs changes for alternate media types. FOURCC and bitCOunt
 	TheoraDecodeFilter* locFilter = this;
 
 	inFormatBuffer->AvgTimePerFrame = (UNITS * locFilter->mTheoraFormatInfo->frameRateDenominator) / locFilter->mTheoraFormatInfo->frameRateNumerator;
@@ -160,6 +181,7 @@ HRESULT TheoraDecodeFilter::CheckInputType(const CMediaType* inMediaType)
 	
 }
 HRESULT TheoraDecodeFilter::CheckTransform(const CMediaType* inInputMediaType, const CMediaType* inOutputMediaType) {
+	//MTS::: Needs multiple media types
 	if ((CheckInputType(inInputMediaType) == S_OK) &&
 		((inOutputMediaType->majortype == MEDIATYPE_Video) && (inOutputMediaType->subtype == MEDIASUBTYPE_YV12) && (inOutputMediaType->formattype == FORMAT_VideoInfo)
 		)) {
@@ -198,6 +220,7 @@ HRESULT TheoraDecodeFilter::DecideBufferSize(IMemAllocator* inAllocator, ALLOCAT
 	//debugLog<<"DecideBufferSize : Prefix    : "<<inPropertyRequest->cbPrefix<<endl;
 	//debugLog<<"DecideBufferSize : NumBuffs  : "<<inPropertyRequest->cBuffers<<endl;
 
+	//MTS::: Maybe this needs to be reconsidered for other output types... ie rgb32 will be much bigger
 
 	const unsigned long MIN_BUFFER_SIZE = 16*16;			//What should this be ????
 	const unsigned long DEFAULT_BUFFER_SIZE = 1024*1024 * 2;
@@ -317,7 +340,7 @@ HRESULT TheoraDecodeFilter::GetMediaType(int inPosition, CMediaType* outOutputMe
 	if (inPosition < 0) {
 		return E_INVALIDARG;
 	}
-	
+	//MTS::: Needs alternate types.
 	if (inPosition == 0) {
 		
 		VIDEOINFOHEADER* locVideoFormat = (VIDEOINFOHEADER*)outOutputMediaType->AllocFormatBuffer(sizeof(VIDEOINFOHEADER));
@@ -646,6 +669,8 @@ HRESULT TheoraDecodeFilter::TheoraDecoded (yuv_buffer* inYUVBuffer, IMediaSample
 		locIsKeyFrame = TRUE;
 	};
 	SetSampleParams(outSample, mBMIFrameSize, &locStart, &locEnd, locIsKeyFrame);
+
+	//MTS::: Either need alternates in this method, or easier is to default out to yv12, then post convert to yuy2/rgb/etc
 
 	
 	

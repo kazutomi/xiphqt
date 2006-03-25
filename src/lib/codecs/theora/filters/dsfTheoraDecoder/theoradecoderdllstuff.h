@@ -105,6 +105,8 @@ static const GUID IID_IOggOutputPin =
 //DEFINE_GUID(IID_IOggOutputPin, 
 //0x83d7f506, 0x53ed, 0x4f15, 0xb6, 0xd8, 0x7d, 0x8e, 0x9e, 0x72, 0xa9, 0x18);
 
+
+//MTS::: Need multiple types
 const REGPINTYPES TheoraDecodeOutputTypes = {
     &MEDIATYPE_Video,
 	&MEDIASUBTYPE_YV12
@@ -127,6 +129,7 @@ const REGFILTERPINS TheoraDecodePinReg[] = {
 	&TheoraDecodeInputTypes				//Pointer to media type (Video/Theora)
 	} ,
 
+	//MTS::: Needs better name
 	{
 	L"YV12 Output",						//Name (obsoleted)
 	FALSE,								//Renders from this pin ?? Not sure about this.
