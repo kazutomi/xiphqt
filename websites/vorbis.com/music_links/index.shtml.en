@@ -8,6 +8,10 @@
 <!--#include virtual="/ssi/pagetop.include" -->
 <!--  All your page content goes here  -->
 
+  <div class='ml_link'><a href='http://www.kahvi.org/'>The Kahvi Collective</a></div>
+  <div class='ml_added'>Added on <i>2006-03-25</i></div>
+  <div class='ml_desc'>The Kahvi Collective provides music from original artists in Ogg Vorbis.</div> 
+
   <div class="ml_link"><a href="http://www.magnatune.com">Magnatune</a></div>
   <div class="ml_added">added on <i>2003-10-13 12:14:48.40</i></div>
   <div class="ml_desc">Magnatune is an Internet record label, but they're not evil.
@@ -18,8 +22,9 @@
   <div class="ml_link"><a href="http://www.theclock.org/">the clock</a></div>
   <div class="ml_added">added on <i>2005-09-12 16:41:13</i></div>
   <div class="ml_desc">The Clock is an experimental project with 
-music freely available in the Ogg format under a <a href="http://creativecommons.org/">CC</a> license. Try the <a 
-href="http://www.theclock.org/lace/">seeding</a> link.</div>
+music freely available in the Ogg format under a
+<a href="http://creativecommons.org/"><abbr title='Creative Commons'>CC</abbr></a>
+license. Try the <a href="http://www.theclock.org/lace/">seeding</a> link.</div>
 
   <div class="ml_link"><a href="http://www.devo.com/fabco">Fabco</a></div>
   <div class="ml_added">added on <i>2003-07-07 13:50:24.88</i></div>
