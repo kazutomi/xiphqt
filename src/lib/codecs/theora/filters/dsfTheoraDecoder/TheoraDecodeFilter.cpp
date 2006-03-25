@@ -72,14 +72,17 @@ TheoraDecodeFilter::TheoraDecodeFilter()
 	,	mSegEnd(0)
 	,	mPlaybackRate(0.0)
 	,	mTheoraFormatInfo(NULL)
+	,	mScratchBuffer(NULL)
 {
 #ifdef OGGCODECS_LOGGING
 	debugLog.open("G:\\logs\\newtheofilter.log", ios_base::out);
 #endif
 
+	mCurrentOutputSubType = MEDIASUBTYPE_None;
 	sOutputVideoParams locVideoParams;
 
-	CMediaType* locAcceptMediaType = new CMediaType(&MEDIATYPE_Video);		//Deleted in pin destructor
+	CMediaType* locAcceptMediaType = NULL;
+	locAcceptMediaType = new CMediaType(&MEDIATYPE_Video);		//Deleted in pin destructor
 	locAcceptMediaType->subtype = MEDIASUBTYPE_YV12;
 	locAcceptMediaType->formattype = FORMAT_VideoInfo;
 	mOutputMediaTypes.push_back(locAcceptMediaType);
@@ -88,24 +91,26 @@ TheoraDecodeFilter::TheoraDecodeFilter()
 	locVideoParams.fourCC = MAKEFOURCC('Y','V','1','2');
 	mOutputVideoParams.push_back(locVideoParams);
 
-	//locAcceptMediaType = new CMediaType(&MEDIATYPE_Video);		//Deleted in pin destructor
-	//locAcceptMediaType->subtype = MEDIASUBTYPE_YUY2;
-	//locAcceptMediaType->formattype = FORMAT_VideoInfo;
-	//mOutputMediaTypes.push_back(locAcceptMediaType);
+	locAcceptMediaType = new CMediaType(&MEDIATYPE_Video);		//Deleted in pin destructor
+	locAcceptMediaType->subtype = MEDIASUBTYPE_YUY2;
+	locAcceptMediaType->formattype = FORMAT_VideoInfo;
+	mOutputMediaTypes.push_back(locAcceptMediaType);
 
-	//locVideoParams.bitsPerPixel = 16;
-	//locVideoParams.fourCC = MAKEFOURCC('Y','U','Y','2');
-	//mOutputVideoParams.push_back(locVideoParams);
+	locVideoParams.bitsPerPixel = 16;
+	locVideoParams.fourCC = MAKEFOURCC('Y','U','Y','2');
+	mOutputVideoParams.push_back(locVideoParams);
 
 
 	mTheoraDecoder = new TheoraDecoder;
 	mTheoraDecoder->initCodec();
 
+	mScratchBuffer = new BYTE[1024*1024*2];
+
 }
 
 TheoraDecodeFilter::~TheoraDecodeFilter() 
 {
-	
+	delete[] mScratchBuffer;
 	for (size_t i = 0; i < mOutputMediaTypes.size(); i++) {
 		delete mOutputMediaTypes[i];
 	}
@@ -582,22 +587,169 @@ HRESULT TheoraDecodeFilter::Transform(IMediaSample* inInputSample, IMediaSample*
 	
 }
 
-HRESULT TheoraDecodeFilter::TheoraDecoded (yuv_buffer* inYUVBuffer, IMediaSample* outSample, bool inIsKeyFrame, REFERENCE_TIME inStart, REFERENCE_TIME inEnd) 
+HRESULT TheoraDecodeFilter::DecodeToYUY2(yuv_buffer* inYUVBuffer, IMediaSample* outSample, bool inIsKeyFrame, REFERENCE_TIME inStart, REFERENCE_TIME inEnd) 
 {
-
-	////Create pointers for the samples buffer to be assigned to
 	BYTE* locBuffer = NULL;
-	
-	//
-	////Make our pointers set to point to the samples buffer
 	outSample->GetPointer(&locBuffer);
 
-	//Fill the buffer with yuv data...
-	//	
+	//Get the stride values and offsets
+	long locYStride = inYUVBuffer->y_stride;
+	long locUVStride = inYUVBuffer->uv_stride;
+	long locDestPad = (mBMIWidth - mPictureWidth) * 2;
+	long locSourceYPad = (locYStride - mPictureWidth);
+	long locSourceUVPad = (locUVStride - (mPictureWidth/2));//locSourceYPad>>1;
+	
+	//Setup the source pointers into the planar data
+	unsigned char* locSourceY = (unsigned char*)inYUVBuffer->y;
+	unsigned char* locSourceU = (unsigned char*)inYUVBuffer->u;
+	unsigned char* locSourceV = (unsigned char*)inYUVBuffer->v;
+
+	//Skip over the Y Offset at the top of the picture and the X offset into the line
+	locSourceY += (mYOffset * locYStride) + mXOffset;
+	locSourceU += ((mYOffset/2) * locUVStride) + mXOffset/2;
+	locSourceV += ((mYOffset/2) * locUVStride) + mXOffset/2;
+
+	unsigned char* locSecondLineBuffer;
+
+	for (int line = 0; line < mPictureHeight; line+= 2) {
+		locSecondLineBuffer = mScratchBuffer;
+		for (int col = 0; col < mPictureWidth; col+=2) {
+			//Line 1
+			*(locBuffer) = *(locSourceY);
+			*(locBuffer+1) = *(locSourceU);
+			*(locBuffer+2) = *(locSourceY+1);
+			*(locBuffer+3) = *(locSourceV);
+
+			//Line 2
+			*(locSecondLineBuffer) = *(locSourceY+locYStride);
+			*(locSecondLineBuffer+1) = *(locSourceU);
+			*(locSecondLineBuffer+2) = *(locSourceY+locYStride+1);
+			*(locSecondLineBuffer+3) = *(locSourceV);
+
+			locBuffer += 4;
+			locSecondLineBuffer += 4;
+			locSourceY += 2;
+			locSourceU++;
+			locSourceV++;
+		}
+
+
+		locBuffer += locDestPad;
+		memcpy((void*)locBuffer, (const void*)mScratchBuffer, mPictureWidth*2);
+		locBuffer += mBMIWidth*2;
+		locSourceY += locSourceYPad + locYStride;
+		locSourceU += locSourceUVPad; //+ locUVStride;
+		locSourceV += locSourceUVPad; //+ locUVStride;
+
+
+	}
+
 
 	REFERENCE_TIME locStart = inStart;
 	REFERENCE_TIME locEnd = inEnd;
 
+	BOOL locIsKeyFrame = FALSE;
+	if (inIsKeyFrame) {
+		locIsKeyFrame = TRUE;
+	};
+	SetSampleParams(outSample, mBMIFrameSize, &locStart, &locEnd, locIsKeyFrame);
+
+	return S_OK;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	//BYTE* locBuffer = NULL;
+	//outSample->GetPointer(&locBuffer);
+	//
+	////Setup the source pointers into the planar data
+	//unsigned char* locSourceY = (unsigned char*)inYUVBuffer->y;
+	//unsigned char* locSourceU = (unsigned char*)inYUVBuffer->u;
+	//unsigned char* locSourceV = (unsigned char*)inYUVBuffer->v;
+
+	////Get the stride values
+	//long locYStride = inYUVBuffer->y_stride;
+	//long locUVStride = inYUVBuffer->uv_stride;
+
+	////Skip over the Y Offset at the top of the picture
+	//locSourceY += (mYOffset * locYStride);
+	//locSourceU += ((mYOffset/2) * locUVStride);
+	//locSourceV += ((mYOffset/2) * locUVStride);
+
+	////Skip over the X Offset at the start of each line. When we apply the stride later, the
+	////	stride jump to xOffset bytes into the next line
+	//BYTE* locSourceVLineStart = locSourceV + (mXOffset/2);
+	//BYTE* locSourceULineStart = locSourceU + (mXOffset/2);
+	//BYTE* locSourceYLineStart = locSourceY + mXOffset;
+	//for (unsigned long line = 0; line < mPictureHeight/2; line++) {
+
+	//	//Get the first line of Y samples. We iterate half_width times, but grab 2 Y's each iteration
+	//	for (int col = 0; col < mPictureWidth/2; col++) {
+	//		*locBuffer++ = *locSourceY++;
+	//		*locBuffer++ = *locSourceU++;
+	//		*locBuffer++ = *locSourceY++;
+	//		*locBuffer++ = *locSourceV++;
+	//	}
+
+	//	locBuffer += ((mBMIWidth - mPictureWidth) * 2);
+	//	
+	//	//Point the U and V source ptr back to the start of the line, for duplication upsampling
+	//	locSourceV = locSourceVLineStart;
+	//	locSourceU = locSourceULineStart;
+
+	//	locSourceYLineStart += locYStride;
+	//	locSourceY = locSourceYLineStart;
+
+	//	//Get the second line of Y samples, repeating the U and V samples from the previous line
+	//	for (int col = 0; col < mPictureWidth/2; col++) {
+	//		*locBuffer++ = *locSourceY++;
+	//		*locBuffer++ = *locSourceU++;
+	//		*locBuffer++ = *locSourceY++;
+	//		*locBuffer++ = *locSourceV++;
+	//	}
+
+	//	locBuffer += ((mBMIWidth - mPictureWidth) * 2);
+
+	//	//Advance the start of line pointers, and apply them to the source pointers.
+	//	locSourceYLineStart += locYStride;
+	//	locSourceY = locSourceYLineStart;
+	//	locSourceULineStart += locUVStride;
+	//	locSourceU = locSourceULineStart;
+	//	locSourceVLineStart += locUVStride;
+	//	locSourceV = locSourceVLineStart;
+	//}
+
+	//REFERENCE_TIME locStart = inStart;
+	//REFERENCE_TIME locEnd = inEnd;
+
+	//BOOL locIsKeyFrame = FALSE;
+	//if (inIsKeyFrame) {
+	//	locIsKeyFrame = TRUE;
+	//};
+	//SetSampleParams(outSample, mBMIFrameSize, &locStart, &locEnd, locIsKeyFrame);
+
+	//return S_OK;
+}
+
+HRESULT TheoraDecodeFilter::DecodeToYV12(yuv_buffer* inYUVBuffer, IMediaSample* outSample, bool inIsKeyFrame, REFERENCE_TIME inStart, REFERENCE_TIME inEnd) 
+{
+	BYTE* locBuffer = NULL;
+	outSample->GetPointer(&locBuffer);
 
 	//Set up the pointers
 	unsigned char* locDestUptoPtr = locBuffer;
@@ -718,14 +870,243 @@ HRESULT TheoraDecodeFilter::TheoraDecoded (yuv_buffer* inYUVBuffer, IMediaSample
 	if (inIsKeyFrame) {
 		locIsKeyFrame = TRUE;
 	};
+
+	REFERENCE_TIME locStart = inStart;
+	REFERENCE_TIME locEnd = inEnd;
+
 	SetSampleParams(outSample, mBMIFrameSize, &locStart, &locEnd, locIsKeyFrame);
 
-	//MTS::: Either need alternates in this method, or easier is to default out to yv12, then post convert to yuy2/rgb/etc
 
-	
 	
 	return S_OK;
+}
+HRESULT TheoraDecodeFilter::TheoraDecoded (yuv_buffer* inYUVBuffer, IMediaSample* outSample, bool inIsKeyFrame, REFERENCE_TIME inStart, REFERENCE_TIME inEnd) 
+{
 
+	if (mCurrentOutputSubType == MEDIASUBTYPE_YV12) {
+		return DecodeToYV12(inYUVBuffer, outSample, inIsKeyFrame, inStart, inEnd);
+	} else if (mCurrentOutputSubType == MEDIASUBTYPE_YUY2) {
+		return DecodeToYUY2(inYUVBuffer, outSample, inIsKeyFrame, inStart, inEnd);
+	} else {
+		return E_FAIL;
+	}
+
+	//////Create pointers for the samples buffer to be assigned to
+	//BYTE* locBuffer = NULL;
+	//
+	////
+	//////Make our pointers set to point to the samples buffer
+	//outSample->GetPointer(&locBuffer);
+
+	////Fill the buffer with yuv data...
+	////	
+
+	//REFERENCE_TIME locStart = inStart;
+	//REFERENCE_TIME locEnd = inEnd;
+
+
+	////Set up the pointers
+	//unsigned char* locDestUptoPtr = locBuffer;
+	//char* locSourceUptoPtr = inYUVBuffer->y;
+
+	////Strides from theora are generally -'ve
+	//long locYStride = inYUVBuffer->y_stride;
+	//long locUVStride = inYUVBuffer->uv_stride;
+
+
+
+	//debugLog<<"Y Stride = "<<locYStride<<endl;
+	//debugLog<<"UV Stride = "<<locUVStride<<endl;
+
+	//debugLog<<"PictureHeight = "<<mPictureHeight<<endl;
+	//debugLog<<"PictureWidth = "<<mPictureWidth<<endl;
+
+	//debugLog<<"BMIHeight = "<<mBMIHeight<<endl;
+	//debugLog<<"BMIWidth = "<<mBMIWidth<<endl;
+
+	////
+	////Y DATA
+	////
+
+	////Offsets Y Data
+	//long locTopPad = inYUVBuffer->y_height - mPictureHeight - mYOffset;
+	//debugLog<<"--------- TOP PAD = "<<locTopPad<<endl;
+
+
+	////ASSERT(locTopPad >= 0);
+	//if (locTopPad < 0) {
+	//	locTopPad = 0;
+	//} else {
+	//	
+	//}
+
+	////Skip the offset padding
+	//locSourceUptoPtr += (mYOffset * locYStride);
+
+	//for (unsigned long line = 0; line < mPictureHeight; line++) {
+	//	//Ignore the x offset, and copy mPictureWidth bytes onto the destination
+	//	memcpy((void*)(locDestUptoPtr), (const void*)(locSourceUptoPtr + mXOffset), mPictureWidth);
+
+	//	//Advance the source pointer by the stride
+	//	locSourceUptoPtr += locYStride;
+
+	//	//Advance the destination pointer by the BMI Width
+	//	locDestUptoPtr += mBMIWidth;
+	//}
+
+	////Skip the other padding
+	//locSourceUptoPtr += (locTopPad * locYStride);
+
+	////Advance the destination to pad to the size the video renderer wants
+	//locDestUptoPtr += ((mBMIHeight - mPictureHeight) * mBMIWidth);
+
+	////debugLog<<"Dest Distance(y) = "<<(unsigned long)(locDestUptoPtr - locBuffer)<<endl;
+
+	////Source advances by (y_height * y_stride)
+	////Dest advances by (mHeight * mWidth)
+
+	////
+	////V DATA
+	////
+
+	////TODO::: May be issue here with odd numbers
+
+	////Half the padding for uv planes... is this correct ? 
+	//locTopPad = locTopPad /2;
+	//
+	//locSourceUptoPtr = inYUVBuffer->v;
+
+	////Skip the top padding
+	//locSourceUptoPtr += ((mYOffset/2) * locYStride);
+
+	//for (unsigned long line = 0; line < mPictureHeight / 2; line++) {
+	//	//Ignore the x offset and copy mPictureWidth/2 bytes to the destination
+	//	memcpy((void*)(locDestUptoPtr), (const void*)(locSourceUptoPtr + (mXOffset / 2)), mPictureWidth / 2);
+	//	locSourceUptoPtr += locUVStride;
+	//	locDestUptoPtr += (mBMIWidth / 2);
+	//}
+	//locSourceUptoPtr += (locTopPad * locUVStride);
+	//locDestUptoPtr += (((mBMIHeight/2) - (mPictureHeight/2)) * (mBMIWidth/2));
+
+	////Source advances by (locTopPad + mYOffset/2 + mHeight /2) * uv_stride
+	////where locTopPad for uv = (inYUVBuffer->y_height - mHeight - mYOffset) / 2
+	////						=	(inYUVBuffer->yheight/2 - mHeight/2 - mYOffset/2)
+	//// so source advances by (y_height/2) * uv_stride
+	////Dest advances by (mHeight * mWidth) /4
+
+
+	////debugLog<<"Dest Distance(V) = "<<(unsigned long)(locDestUptoPtr - locBuffer)<<endl;
+	////
+	////U DATA
+	////
+
+	//locSourceUptoPtr = inYUVBuffer->u;
+
+	////Skip the top padding
+	//locSourceUptoPtr += ((mYOffset/2) * locYStride);
+
+	//for (unsigned long line = 0; line < mPictureHeight / 2; line++) {
+	//	memcpy((void*)(locDestUptoPtr), (const void*)(locSourceUptoPtr + (mXOffset / 2)), mPictureWidth / 2);
+	//	locSourceUptoPtr += locUVStride;
+	//	locDestUptoPtr += (mBMIWidth / 2);
+	//}
+
+	////Redundant
+	//locSourceUptoPtr += (locTopPad * locUVStride);
+	//locDestUptoPtr += (((mBMIHeight/2) - (mPictureHeight/2)) * (mBMIWidth/2));
+
+	////debugLog<<"Dest Distance(U) = "<<(unsigned long)(locDestUptoPtr - locBuffer)<<endl;
+	////debugLog<<"Frame Size = "<<mFrameSize<<endl;
+
+	////Set the sample parameters.
+	////BOOL locIsKeyFrame = (locInterFrameNo == 0);
+	//BOOL locIsKeyFrame = FALSE;
+	//if (inIsKeyFrame) {
+	//	locIsKeyFrame = TRUE;
+	//};
+	//SetSampleParams(outSample, mBMIFrameSize, &locStart, &locEnd, locIsKeyFrame);
+
+	////MTS::: Either need alternates in this method, or easier is to default out to yv12, then post convert to yuy2/rgb/etc
+
+	//YV12ToYUY2(outSample);
+	//
+	//
+	//return S_OK;
+
+
+}
+
+HRESULT TheoraDecodeFilter::YV12ToYUY2(IMediaSample* inoutSample)
+{
+	BYTE* locSourceBuffer = NULL;
+	inoutSample->GetPointer(&locSourceBuffer);
+
+	long locActualLength = inoutSample->GetActualDataLength();
+	long locPhysicalLength = inoutSample->GetSize();
+
+	BYTE* locSourceY = locSourceBuffer;
+	BYTE* locSourceV = locSourceBuffer + (mBMIWidth * mBMIHeight);
+	BYTE* locSourceU = locSourceV + ((mBMIWidth * mBMIHeight) / 4);
+
+	//16 bpp output
+	
+	BYTE* locTempDest = mScratchBuffer;
+	
+
+	//for (int i = 0; i < mBMIWidth*mBMIHeight /4; i++) {
+	//	*locTempDest++ = *locSourceY++;
+	//	*locTempDest++ = *locSourceU;
+	//	*locTempDest++ = *locSourceY++;
+	//	*locTempDest++ = *locSourceV;
+
+	//	*locTempDest++ = *locSourceY++;
+	//	*locTempDest++ = *locSourceU++;
+	//	*locTempDest++ = *locSourceY++;
+	//	*locTempDest++ = *locSourceV++;
+
+	//}
+
+	long locCount = 0;
+	BYTE* locSourceVLineStart = NULL;
+	BYTE* locSourceULineStart = NULL;
+	for (int line = 0; line < mBMIHeight/2; line++) {
+
+		locSourceVLineStart = locSourceV;
+		locSourceULineStart = locSourceU;
+
+		//A whole line of y mBMIWidth samples
+		//A whole line u and v (downsampled by 2) is mBMIWidth/2 samples eash
+		for (int col = 0; col < mBMIWidth/2; col++) {
+			*locTempDest++ = *locSourceY++;
+			*locTempDest++ = *locSourceU++;
+			*locTempDest++ = *locSourceY++;
+			*locTempDest++ = *locSourceV++;
+
+			locCount+=4;
+		}
+
+		locSourceV = locSourceVLineStart;
+		locSourceU = locSourceULineStart;
+
+		//Another whole line of y, mBMIWidth samples
+		//Repeat the previous line of u an v(downsampled by 2) is mBMIWidth/2 samples each
+		for (int col = 0; col < mBMIWidth/2; col++) {
+			*locTempDest++ = *locSourceY++;
+			*locTempDest++ = *locSourceU++;
+			*locTempDest++ = *locSourceY++;
+			*locTempDest++ = *locSourceV++;
+
+			locCount+=4;
+		}
+
+	}
+
+	memcpy((void*)locSourceBuffer, (const void*)mScratchBuffer, mBMIWidth*mBMIHeight*2);
+	inoutSample->SetActualDataLength(mBMIWidth*mBMIHeight*2);
+
+	
+
+	return S_OK;
 
 }
 
@@ -892,6 +1273,8 @@ HRESULT TheoraDecodeFilter::SetMediaType(PIN_DIRECTION inDirection, const CMedia
 
 		//debugLog<<"Size = "<<mWidth<<" x "<<mHeight<<" ("<<mFrameSize<<")"<<endl;
 		//debugLog<<"Size in Format = "<<locVideoHeader->bmiHeader.biWidth<<" x "<<locVideoHeader->bmiHeader.biHeight<<endl;
+
+		mCurrentOutputSubType = inMediaType->subtype;
 		return CTransformFilter::SetMediaType(PINDIR_OUTPUT, inMediaType);//CVideoTransformFilter::SetMediaType(PINDIR_OUTPUT, inMediaType);
 	}
 }

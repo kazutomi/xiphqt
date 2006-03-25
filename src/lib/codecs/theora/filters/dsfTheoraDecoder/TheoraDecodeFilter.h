@@ -31,7 +31,7 @@
 
 #pragma once
 
-#define OGGCODECS_LOGGING
+//#define OGGCODECS_LOGGING
 
 #include "Theoradecoderdllstuff.h"
 #include "theoradecodeoutputpin.h"
@@ -102,12 +102,19 @@ protected:
 	vector<StampedOggPacket*> mBufferedPackets;
 
 	HRESULT TheoraDecoded (yuv_buffer* inYUVBuffer, IMediaSample* outSample, bool inIsKeyFrame, REFERENCE_TIME inStart, REFERENCE_TIME inEnd);
+	HRESULT DecodeToYUY2(yuv_buffer* inYUVBuffer, IMediaSample* outSample, bool inIsKeyFrame, REFERENCE_TIME inStart, REFERENCE_TIME inEnd) ;
+	HRESULT DecodeToYV12(yuv_buffer* inYUVBuffer, IMediaSample* outSample, bool inIsKeyFrame, REFERENCE_TIME inStart, REFERENCE_TIME inEnd) ;
+
 
 	vector<CMediaType*> mOutputMediaTypes;
 	struct sOutputVideoParams {
 		WORD bitsPerPixel;
 		DWORD fourCC;
 	};
+
+	HRESULT YV12ToYUY2(IMediaSample* inoutSample);
+	BYTE* mScratchBuffer;
+	GUID mCurrentOutputSubType;
 
 	vector<sOutputVideoParams> mOutputVideoParams;
 

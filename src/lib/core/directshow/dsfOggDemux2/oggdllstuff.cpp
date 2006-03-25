@@ -50,7 +50,7 @@ STDAPI DllRegisterServer()
 	//TO DO::: Should we be releasing the filter mapper even when we return early ?
     HRESULT hr;
 
-	MessageBox(NULL, L"Ogg", L"Ogg", MB_OK);
+	//MessageBox(NULL, L"Ogg", L"Ogg", MB_OK);
     
 	
 #ifdef WINCE
