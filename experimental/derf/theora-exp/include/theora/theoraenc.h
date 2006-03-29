@@ -248,8 +248,8 @@ typedef struct theora_enc_ctx    theora_enc_ctx;
 /**\defgroup encfuncs Functions for Encoding*/
 /*@{*/
 /**\name Functions for encoding
- * You must link to <tt>libtheorabase</tt> and <tt>libtheoraenc</tt> if you use
- *  any of the functions in this section.
+ * You must link to <tt>libtheoraenc</tt> and <tt>libtheoradec</tt>
+ *  if you use any of the functions in this section.
  *
  * The functions are listed in the order they are used in a typical encode.
  * The basic steps are:

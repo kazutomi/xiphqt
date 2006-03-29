@@ -1,4 +1,4 @@
-lib_LTLIBRARIES = libtheorabase.la libtheoraenc.la libtheoradec.la
+lib_LTLIBRARIES = libtheoradec.la libtheoraenc.la
 
 INCLUDES = -I $(top_srcdir)/include
 AM_CFLAGS = $(OGG_CFLAGS) $(OPTIMIZATION_CFLAGS)
@@ -38,8 +38,12 @@ noinst_HEADERS = \
 	x86/cpu.h \
 	x86/x86int.h
 
-libtheorabase_la_SOURCES = \
+libtheoradec_la_SOURCES = \
+	decinfo.c \
+	decode.c \
+	dequant.c \
 	fragment.c \
+	huffdec.c \
 	idct.c \
 	info.c \
 	internal.c \
@@ -47,7 +51,8 @@ libtheorabase_la_SOURCES = \
 	state.c  \
 	$(X86ASM_FILES)
 
-libtheorabase_la_LDFLAGS = -version-info @V_LIB_CURRENT@:@V_LIB_REVISION@:@V_LIB_AGE@ @OGG_LIBS@
+
+libtheoradec_la_LDFLAGS = -version-info @V_LIB_CURRENT@:@V_LIB_REVISION@:@V_LIB_AGE@ @OGG_LIBS@
 
 libtheoraenc_la_SOURCES = \
 	bitrate.c \
@@ -64,10 +69,3 @@ libtheoraenc_la_SOURCES = \
 
 libtheoraenc_la_LDFLAGS = -version-info @V_LIB_CURRENT@:@V_LIB_REVISION@:@V_LIB_AGE@ @OGG_LIBS@
 
-libtheoradec_la_SOURCES = \
-	decinfo.c \
-	decode.c \
-	dequant.c \
-	huffdec.c
-
-libtheoradec_la_LDFLAGS = -version-info @V_LIB_CURRENT@:@V_LIB_REVISION@:@V_LIB_AGE@ @OGG_LIBS@

@@ -35,13 +35,9 @@
  * - <tt>libtheoraenc</tt>, containing routines exclusive to the encoder.
  *   You must link to this if you use any of the functions listed in
  *    \ref encfuncs.
- * - <tt>libtheoradec</tt>, containing routines exclusive to the decoder.
+ * - <tt>libtheoradec</tt>, contains the decoder and shared routines.
  *   You must link to this if you use any of the functions listed in
- *    \ref decfuncs.
- * - <tt>libtheorabase</tt>, containing routines shared by the encoder and the
- *    decoder.
- *   You must link to this if you use any of the functions in this API, not
- *    not just those listed in \ref basefuncs.*/
+ *    this API.*/
 
 /**\file
  * The shared <tt>libtheora</tt> C API.*/

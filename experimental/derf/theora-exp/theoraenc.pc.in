@@ -10,5 +10,5 @@ Description: Theora experimental video codec
 Version: @VERSION@
 Requires: ogg >= 1.1.1
 Conflicts:
-Libs: -L${libdir} -ltheoraenc -ltheorabase
+Libs: -L${libdir} -ltheoraenc -ltheoradec
 Cflags: -I${includedir}

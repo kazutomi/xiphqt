@@ -149,8 +149,8 @@ typedef struct theora_setup_info theora_setup_info;
 /**\defgroup decfuncs Functions for Decoding*/
 /*@{*/
 /**\name Functions for decoding
- * You must link to <tt>libtheorabase</tt> and <tt>libtheoradec</tt> if you use
- *  any of the functions in this section.
+ * You must link to <tt>libtheoradec</tt> if you use any of the 
+ * functions in this section.
  *
  * The functions are listed in the order they are used in a typical decode.
  * The basic steps are:
