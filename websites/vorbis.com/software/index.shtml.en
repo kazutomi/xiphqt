@@ -681,6 +681,11 @@ advances in codec and filter technology transparently.</div>
 playlist support and the ability to synchronize the display of information in
 the browser.</div>
 
+<div class="sl_link"><a href="http://www.stigc.dk/projects/JavaTunes/">JavaTunes</a></div>
+<div class="sl_added">added on <i>2006-03-29 17:19:00.00</i></div>
+<div class="sl_desc">JavaTunes is a small Vorbis and MP3 Jukebox with Karaoke/Covers/Last.fm/Lock</div>
+
+
 <div class="sl_link"><a href="http://www.j-ogg.de/">J-Ogg</a></div>
 <div class="sl_added">added on <i>2003-04-27 10:11:59.93</i></div>
 <div class="sl_desc">J-Ogg is a collection of Pure Java libraries for demuxing
