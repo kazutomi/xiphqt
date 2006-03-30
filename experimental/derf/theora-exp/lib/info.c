@@ -19,25 +19,25 @@ static int oc_tagcompare(const char *_s1,const char *_s2,int _n){
 
 
 
-void theora_info_init(theora_info *_info){
+void th_info_init(theora_info *_info){
   memset(_info,0,sizeof(*_info));
-  _info->version_major=OC_VERSION_MAJOR;
-  _info->version_minor=OC_VERSION_MINOR;
-  _info->version_subminor=OC_VERSION_SUB;
+  _info->version_major=TH_VERSION_MAJOR;
+  _info->version_minor=TH_VERSION_MINOR;
+  _info->version_subminor=TH_VERSION_SUB;
   _info->keyframe_granule_shift=6;
 }
 
-void theora_info_clear(theora_info *_info){
+void th_info_clear(theora_info *_info){
   memset(_info,0,sizeof(*_info));
 }
 
 
 
-void theora_comment_init(theora_comment *_tc){
+void th_comment_init(th_comment *_tc){
   memset(_tc,0,sizeof(*_tc));
 }
 
-void theora_comment_add(theora_comment *_tc,char *_comment){
+void th_comment_add(th_comment *_tc,char *_comment){
   int comment_len;
   _tc->user_comments=_ogg_realloc(_tc->user_comments,
    (_tc->comments+2)*sizeof(*_tc->user_comments));
@@ -51,7 +51,7 @@ void theora_comment_add(theora_comment *_tc,char *_comment){
   _tc->user_comments[_tc->comments]=NULL;
 }
 
-void theora_comment_add_tag(theora_comment *_tc,char *_tag,char *_val){
+void th_comment_add_tag(th_comment *_tc,char *_tag,char *_val){
   char *comment;
   int   tag_len;
   int   val_len;
@@ -62,11 +62,11 @@ void theora_comment_add_tag(theora_comment *_tc,char *_tag,char *_val){
   memcpy(comment,_tag,tag_len);
   comment[tag_len]='=';
   memcpy(comment+tag_len+1,_val,val_len+1);
-  theora_comment_add(_tc,comment);
+  th_comment_add(_tc,comment);
   _ogg_free(comment);
 }
 
-char *theora_comment_query(theora_comment *_tc,char *_tag,int _count){
+char *th_comment_query(th_comment *_tc,char *_tag,int _count){
   long i;
   int  found;
   int  tag_len;
@@ -83,7 +83,7 @@ char *theora_comment_query(theora_comment *_tc,char *_tag,int _count){
   return NULL;
 }
 
-int theora_comment_query_count(theora_comment *_tc,char *_tag){
+int th_comment_query_count(th_comment *_tc,char *_tag){
   long i;
   int  tag_len;
   int  count;
@@ -96,7 +96,7 @@ int theora_comment_query_count(theora_comment *_tc,char *_tag){
   return count;
 }
 
-void theora_comment_clear(theora_comment *_tc){
+void th_comment_clear(th_comment *_tc){
   if(_tc!=NULL){
     long i;
     for(i=0;i<_tc->comments;i++)_ogg_free(_tc->user_comments[i]);

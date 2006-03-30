@@ -32,10 +32,10 @@ extern "C" {
 /**The configuration information for the VBR encoding mode.
  * This mode attempts to encode the video with a constant psychovisual
  *  quality.
- * It can be enabled by calling theora_encode_ctl() with #OC_ENCCTL_SETUP_VBR.
+ * It can be enabled by calling th_encode_ctl() with #TH_ENCCTL_SETUP_VBR.
  * See the #theora_info struct documentation for details on how the default
  *  encoding mode is chosen.*/
-typedef struct theora_vbr_cfg{
+typedef struct th_vbr_cfg{
   /**The target quality index.
    * Valid values range from 0 to 63, inclusive, with higher values giving
    *  higher quality.
@@ -61,24 +61,24 @@ typedef struct theora_vbr_cfg{
    *  higher quality.
    * This must be at least as large as #df_qi_max.*/
   int df_qi_max;
-}theora_vbr_cfg;
+}th_vbr_cfg;
 
 /**The configuration information for the constant QI encoding mode.
  * This mode encodes the video with a constant quality index.
  * This is the fastest encoding mode.
- * It can be enabled by calling theora_encode_ctl() with #OC_ENCCTL_SETUP_CQI.
+ * It can be enabled by calling th_encode_ctl() with #TH_ENCCTL_SETUP_CQI.
  * See the #theora_info struct documentation for details on how the default
  *  encoding mode is chosen.*/
-typedef struct theora_cqi_cfg{
+typedef struct th_cqi_cfg{
   /**The target quality index.
      Valid values range from 0 to 63, inclusive, with higher values giving
       higher quality.*/
   int qi;
-}theora_cqi_cfg;
+}th_cqi_cfg;
 
-/**\name theora_encode_ctl() codes
+/**\name th_encode_ctl() codes
  * \anchor encctlcodes
- * These are the available request codes for theora_encode_ctl().
+ * These are the available request codes for th_encode_ctl().
  * By convention, these are even, to distinguish them from the
  *  \ref decctlcodes "decoder control codes".
  * Keep any experimental or vendor-specific values above \c 0x8000.*/
@@ -88,15 +88,15 @@ typedef struct theora_cqi_cfg{
  *  this call.
  * <tt>NULL</tt> may be specified to revert to the default tables.
  *
- * \param[in] _buf <tt>#theora_huff_code[#OC_NHUFFMAN_TABLES][#OC_NDCT_TOKENS]</tt>
- * \retval OC_FAULT  \a _enc_ctx is <tt>NULL</tt>.
- * \retval OC_EINVAL Encoding has already begun or one or more of the given
+ * \param[in] _buf <tt>#theora_huff_code[#TH_NHUFFMAN_TABLES][#TH_NDCT_TOKENS]</tt>
+ * \retval TH_FAULT  \a _enc_ctx is <tt>NULL</tt>.
+ * \retval TH_EINVAL Encoding has already begun or one or more of the given
  *                     tables is not full or prefix-free, \a _buf is
  *                     <tt>NULL</tt> and \a _buf_sz is not zero, or \a _buf is
  *                     non-<tt>NULL</tt> and \a _buf_sz is not
- *                     <tt>sizeof(#theora_huff_code)*#OC_NHUFFMAN_TABLES*#OC_NDCT_TOKENS</tt>.
- * \retval OC_IMPL   Not supported by this implementation.*/
-#define OC_ENCCTL_SET_HUFFMAN_CODES (0)
+ *                     <tt>sizeof(#theora_huff_code)*#TH_NHUFFMAN_TABLES*#TH_NDCT_TOKENS</tt>.
+ * \retval TH_IMPL   Not supported by this implementation.*/
+#define TH_ENCCTL_SET_HUFFMAN_CODES (0)
 /**Sets the quantization parameters to use.
  * The parameters are copied, not stored by reference, so they can be freed
  *  after this call.
@@ -108,14 +108,14 @@ typedef struct theora_cqi_cfg{
  *  \a pli, and \a ci does not increase as \a qi increases.
  *
  * \param[in] _buf #theora_quant_info
- * \retval OC_FAULT  \a _enc_ctx is <tt>NULL</tt>.
- * \retval OC_EINVAL Encoding has already begun, the quantization parameters
+ * \retval TH_FAULT  \a _enc_ctx is <tt>NULL</tt>.
+ * \retval TH_EINVAL Encoding has already begun, the quantization parameters
  *                    do not meet one of the above stated conditions, \a _buf
  *                    is <tt>NULL</tt> and \a _buf_sz is not zero, or \a _buf
  *                    is non-<tt>NULL</tt> and \a _buf_sz is not
  *                    <tt>sizeof(#theora_quant_info)</tt>.
- * \retval OC_IMPL   Not supported by this implementation.*/
-#define OC_ENCCTL_SET_QUANT_PARAMS (2)
+ * \retval TH_IMPL   Not supported by this implementation.*/
+#define TH_ENCCTL_SET_QUANT_PARAMS (2)
 /**Sets the maximum distance between key frames.
  * This can be changed during an encode, but will be bounded by
  *  <tt>1<<theora_info#keyframe_granule_shift</tt>.
@@ -125,10 +125,10 @@ typedef struct theora_cqi_cfg{
  * \param[in]  _buf <tt>ogg_uint32_t</tt>: The maximum distance between key
  *                   frames.
  * \param[out] _buf <tt>ogg_uint32_t</tt>: The actual maximum distance set.
- * \retval OC_FAULT  \a _enc_ctx or \a _buf is <tt>NULL</tt>.
- * \retval OC_EINVAL \a _buf_sz is not <tt>sizeof(ogg_uint32_t)</tt>.
- * \retval OC_IMPL   Not supported by this implementation.*/
-#define OC_ENCCTL_SET_KEYFRAME_FREQUENCY_FORCE (4)
+ * \retval TH_FAULT  \a _enc_ctx or \a _buf is <tt>NULL</tt>.
+ * \retval TH_EINVAL \a _buf_sz is not <tt>sizeof(ogg_uint32_t)</tt>.
+ * \retval TH_IMPL   Not supported by this implementation.*/
+#define TH_ENCCTL_SET_KEYFRAME_FREQUENCY_FORCE (4)
 /**Disables any encoder features that would prevent lossless transcoding back
  *  to VP3.
  * This primarily means disabling block-level QI values and not using 4MV mode
@@ -153,10 +153,10 @@ typedef struct theora_cqi_cfg{
  *                   4:2:0, the picture region is smaller than the full frame,
  *                   or if encoding has begun, preventing the quantization
  *                   tables and codebooks from being set.
- * \retval OC_FAULT  \a _enc_ctx or \a _buf is <tt>NULL</tt>.
- * \retval OC_EINVAL \a _buf_sz is not <tt>sizeof(int)</tt>.
- * \retval OC_IMPL   Not supported by this implementation.*/
-#define OC_ENCCTL_SET_VP3_COMPATIBLE (10)
+ * \retval TH_FAULT  \a _enc_ctx or \a _buf is <tt>NULL</tt>.
+ * \retval TH_EINVAL \a _buf_sz is not <tt>sizeof(int)</tt>.
+ * \retval TH_IMPL   Not supported by this implementation.*/
+#define TH_ENCCTL_SET_VP3_COMPATIBLE (10)
 /**Gets the maximum speed level.
  * Higher speed levels favor quicker encoding over better quality per bit.
  * Depending on the encoding mode, and the internal algorithms used, quality
@@ -166,25 +166,25 @@ typedef struct theora_cqi_cfg{
  *  the current encoding mode (VBR vs. CQI, etc.).
  *
  * \param[out] _buf int: The maximum encoding speed level.
- * \retval OC_FAULT  \a _enc_ctx or \a _buf is <tt>NULL</tt>.
- * \retval OC_EINVAL \a _buf_sz is not <tt>sizeof(int)</tt>.
- * \retval OC_IMPL   Not supported by this implementation in the current
+ * \retval TH_FAULT  \a _enc_ctx or \a _buf is <tt>NULL</tt>.
+ * \retval TH_EINVAL \a _buf_sz is not <tt>sizeof(int)</tt>.
+ * \retval TH_IMPL   Not supported by this implementation in the current
  *                    encoding mode.*/
-#define OC_ENCCTL_GET_SPLEVEL_MAX (12)
+#define TH_ENCCTL_GET_SPLEVEL_MAX (12)
 /**Sets the speed level.
  * By default, the slowest speed (0) is used.
  *
  * \param[in] _buf int: The new encoding speed level.
  *                      0 is slowest, larger values use less CPU.
- * \retval OC_FAULT  \a _enc_ctx or \a _buf is <tt>NULL</tt>.
- * \retval OC_EINVAL \a _buf_sz is not <tt>sizeof(int)</tt>, or the
+ * \retval TH_FAULT  \a _enc_ctx or \a _buf is <tt>NULL</tt>.
+ * \retval TH_EINVAL \a _buf_sz is not <tt>sizeof(int)</tt>, or the
  *                    encoding speed level is out of bounds.
  *                   The maximum encoding speed level may be
  *                    implementation- and encoding mode-specific, and can be
- *                    obtained via #OC_ENCCTL_GET_SPLEVEL_MAX.
- * \retval OC_IMPL   Not supported by this implementation in the current
+ *                    obtained via #TH_ENCCTL_GET_SPLEVEL_MAX.
+ * \retval TH_IMPL   Not supported by this implementation in the current
  *                    encoding mode.*/
-#define OC_ENCCTL_SET_SPLEVEL (14)
+#define TH_ENCCTL_SET_SPLEVEL (14)
 /**Puts the encoder in VBR mode.
  * This can be done at any time during the encoding process, with different
  *  configuration parameters, to encode different regions of the video segment
@@ -192,44 +192,44 @@ typedef struct theora_cqi_cfg{
  * See the #theora_info struct documentation for details on how the default
  *  encoding mode is chosen.
  *
- * \param[in] _buf <tt>#theora_vbr_cfg</tt>: the configuration parameters.
+ * \param[in] _buf <tt>#th_vbr_cfg</tt>: the configuration parameters.
  *                 This may be <tt>NULL</tt>, in which the current VBR
  *                  configuration is unchanged.
  *                 The default is to use the QI setting passed in via the
  *                  #theora_info struct when the encoder was initialized, with
  *                  a full range of admissible quantizers.
  * \retval OC_EFAULT \a _enc_ctx is <tt>NULL</tt>.
- * \retval OC_EINVAL The configuration parameters  do not meet one of their
+ * \retval TH_EINVAL The configuration parameters  do not meet one of their
  *                    stated requirements, \a _buf is <tt>NULL</tt> and
  *                    \a _buf_sz is not zero, or \a _buf is non-<tt>NULL</tt>
- *                    and \a _buf_sz is not <tt>sizeof(#theora_vbr_cfg)</tt>.
- * \retval OC_IMPL   Not supported by this implementation.*/
-#define OC_ENCCTL_SETUP_VBR (16)
+ *                    and \a _buf_sz is not <tt>sizeof(#th_vbr_cfg)</tt>.
+ * \retval TH_IMPL   Not supported by this implementation.*/
+#define TH_ENCCTL_SETUP_VBR (16)
 /**Puts the encoder in CQI mode.
  * This can be done at any time during the encoding process, with different QI
  *  values.
  * See the #theora_info struct documentation for details on how the default
  *  encoding mode is chosen.
  *
- * \param[in] _buf <tt>#theora_cqi_cfg</tt>: the configuration parameters.
+ * \param[in] _buf <tt>#th_cqi_cfg</tt>: the configuration parameters.
  *                 This may be <tt>NULL</tt>, in which case the current CQI
  *                  configuration is unchanged.
  *                 The default is to use the QI setting passed in via the
  *                  #theora_info struct when the encoder was initialized.
  * \retval OC_EFAULT \a _enc_ctx is <tt>NULL</tt>.
- * \retval OC_EINVAL \a _buf_sz is not <tt>sizeof(#theora_cqi_cfg)</tt>.
- * \retval OC_IMPL   Not supported by this implementation.*/
-#define OC_ENCCTL_SETUP_CQI (18)
+ * \retval TH_EINVAL \a _buf_sz is not <tt>sizeof(#th_cqi_cfg)</tt>.
+ * \retval TH_IMPL   Not supported by this implementation.*/
+#define TH_ENCCTL_SETUP_CQI (18)
 /*@}*/
 
 
 
 /**The quantization parameters used by VP3.*/
-extern const theora_quant_info OC_VP31_QUANT_INFO;
+extern const theora_quant_info TH_VP31_QUANT_INFO;
 
 /**The Huffman tables used by VP3.*/
 extern const theora_huff_code
- OC_VP31_HUFF_CODES[OC_NHUFFMAN_TABLES][OC_NDCT_TOKENS];
+ TH_VP31_HUFF_CODES[TH_NHUFFMAN_TABLES][TH_NDCT_TOKENS];
 
 
 
@@ -240,7 +240,7 @@ extern const theora_huff_code
     warning.*/
 /*@{*/
 /**The encoder context.*/
-typedef struct theora_enc_ctx    theora_enc_ctx;
+typedef struct th_enc_ctx    th_enc_ctx;
 /*@}*/
 
 
@@ -255,38 +255,38 @@ typedef struct theora_enc_ctx    theora_enc_ctx;
  * The basic steps are:
  * - Fill in a #theora_info structure with details on the format of the video
  *    you wish to encode.
- * - Allocate a #theora_enc_ctx handle with theora_encode_alloc().
+ * - Allocate a #th_enc_ctx handle with th_encode_alloc().
  * - Perform any additional encoder configuration required with
- *    theora_encode_ctl().
- * - Repeatedly call theora_encode_flushheader() to retrieve all the header
+ *    th_encode_ctl().
+ * - Repeatedly call th_encode_flushheader() to retrieve all the header
  *    packets.
  * - For each uncompressed frame:
- *   - Submit the uncompressed frame via theora_encode_ycbcr_in()
- *   - Repeatedly call theora_encode_packetout() to retrieve any video data
+ *   - Submit the uncompressed frame via th_encode_ycbcr_in()
+ *   - Repeatedly call th_encode_packetout() to retrieve any video data
  *      packets that are ready.
- * - Call theora_encode_free() to release all encoder memory.*/
+ * - Call th_encode_free() to release all encoder memory.*/
 /*@{*/
 /**Allocates an encoder instance.
  * \param _info A #theora_info struct filled with the desired encoding
  *               parameters.
- * \return The initialized #theora_enc_ctx handle.
+ * \return The initialized #th_enc_ctx handle.
  * \retval NULL If the encoding parameters were invalid.*/
-extern theora_enc_ctx *theora_encode_alloc(const theora_info *_info);
+extern th_enc_ctx *th_encode_alloc(const theora_info *_info);
 /**Encoder control function.
  * This is used to provide advanced control the encoding process.
- * \param _enc    A #theora_enc_ctx handle.
+ * \param _enc    A #th_enc_ctx handle.
  * \param _req    The control code to process.
  *                See \ref encctlcodes "the list of available control codes"
  *                 for details.
  * \param _buf    The parameters for this control code.
  * \param _buf_sz The size of the parameter buffer.*/
-extern int theora_encode_ctl(theora_enc_ctx *_enc,int _req,void *_buf,
+extern int th_encode_ctl(th_enc_ctx *_enc,int _req,void *_buf,
  size_t _buf_sz);
 /**Outputs the next header packet.
  * This should be called repeatedly after encoder initialization until it
  *  returns 0 to get all of the header packets, in order, before encoding
  *  actual video data.
- * \param _enc      A #theora_enc_ctx handle.
+ * \param _enc      A #th_enc_ctx handle.
  * \param _comments The metadata to place in the comment header, when it is
  *                   encoded.
  * \param _op       An <tt>ogg_packet</tt> structure to fill.
@@ -297,19 +297,19 @@ extern int theora_encode_ctl(theora_enc_ctx *_enc,int _req,void *_buf,
  * \return A positive value indicates that a header packet was successfully
  *          produced.
  * \retval 0        No packet was produced, and no more header packets remain.
- * \retval OC_FAULT \a _enc, \a _comments, or \a _op was <tt>NULL</tt>.*/
-extern int theora_encode_flushheader(theora_enc_ctx *_enc,
- theora_comment *_comments,ogg_packet *_op);
+ * \retval TH_FAULT \a _enc, \a _comments, or \a _op was <tt>NULL</tt>.*/
+extern int th_encode_flushheader(th_enc_ctx *_enc,
+ th_comment *_comments,ogg_packet *_op);
 /**Submits an uncompressed frame to the encoder.
- * \param _enc   A #theora_enc_ctx handle.
+ * \param _enc   A #th_enc_ctx handle.
  * \param _ycbcr A buffer of Y'CbCr data to encode.
  * \retval 0         Success.
- * \retval OC_FAULT  \a _enc or \a _ycbcr is <tt>NULL</tt>.
- * \retval OC_EINVAL The buffer size does not match the frame size the encoder
+ * \retval TH_FAULT  \a _enc or \a _ycbcr is <tt>NULL</tt>.
+ * \retval TH_EINVAL The buffer size does not match the frame size the encoder
  *                    was initialized with, or encoding has already completed.
  */
-extern int theora_encode_ycbcr_in(theora_enc_ctx *_enc,
- theora_ycbcr_buffer _ycbcr);
+extern int th_encode_ycbcr_in(th_enc_ctx *_enc,
+ th_ycbcr_buffer _ycbcr);
 /**Retrieves encoded video data packets.
  * This should be called repeatedly after each frame is submitted to flush any
  *  encoded packets, until it returns 0.
@@ -318,7 +318,7 @@ extern int theora_encode_ycbcr_in(theora_enc_ctx *_enc,
  * \note Currently the encoder operates in a one-frame-in, one-packet-out
  *        manner.
  *       However, this may be changed in the future.
- * \param _enc  A #theora_enc_ctx handle.
+ * \param _enc  A #th_enc_ctx handle.
  * \param _last Set this flag to a non-zero value if no more uncompressed
  *               frames will be submitted.
  *              This ensures that a proper EOS flag is set on the last packet.
@@ -330,12 +330,12 @@ extern int theora_encode_ycbcr_in(theora_enc_ctx *_enc,
  *          produced.
  * \retval 0        No packet was produced, and no more encoded video data
  *                   remains.
- * \retval OC_FAULT \a _enc or \a _op was <tt>NULL</tt>.*/
-extern int theora_encode_packetout(theora_enc_ctx *_enc,int _last,
+ * \retval TH_FAULT \a _enc or \a _op was <tt>NULL</tt>.*/
+extern int th_encode_packetout(th_enc_ctx *_enc,int _last,
  ogg_packet *_op);
 /**Frees an allocated encoder instance.
- * \param _enc A #theora_enc_ctx handle.*/
-extern void theora_encode_free(theora_enc_ctx *_enc);
+ * \param _enc A #th_enc_ctx handle.*/
+extern void th_encode_free(th_enc_ctx *_enc);
 /*@}*/
 /*@}*/
 

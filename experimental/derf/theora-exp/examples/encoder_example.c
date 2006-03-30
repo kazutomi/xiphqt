@@ -918,12 +918,12 @@ int fetch_and_process_audio(FILE *audio,ogg_page *audiopage,
 
 int fetch_and_process_video(FILE *video,ogg_page *videopage,
                             ogg_stream_state *to,
-                            theora_enc_ctx *td,
+                            th_enc_ctx *td,
                             int videoflag){
   /* You'll go to Hell for using static variables */
   static int                 state=-1;
   static unsigned char      *yuvframe[3];
-  static theora_ycbcr_buffer ycbcr;
+  static th_ycbcr_buffer ycbcr;
   ogg_packet                 op;
   int                        pic_sz;
   int                        frame_c_w;
@@ -1032,10 +1032,10 @@ int fetch_and_process_video(FILE *video,ogg_page *videopage,
       ycbcr[2].ystride=c_w;
       ycbcr[2].data=ycbcr[1].data+c_sz;
 
-      theora_encode_ycbcr_in(td,ycbcr);
+      th_encode_ycbcr_in(td,ycbcr);
 
       /* if there's only one frame, it's the last in the stream */
-      while(theora_encode_packetout(td,state<2,&op)){
+      while(th_encode_packetout(td,state<2,&op)){
         ogg_stream_packetin(to,&op);
       }
 
@@ -1061,9 +1061,9 @@ int main(int argc,char *argv[]){
   ogg_page         og; /* one Ogg bitstream page.  Vorbis packets are inside */
   ogg_packet       op; /* one raw packet of data for decode */
 
-  theora_enc_ctx  *td;
+  th_enc_ctx  *td;
   theora_info      ti;
-  theora_comment   tc;
+  th_comment   tc;
 
   vorbis_info      vi; /* struct that stores all the static vorbis bitstream
                           settings */
@@ -1188,7 +1188,7 @@ int main(int argc,char *argv[]){
   pic_x=frame_w-pic_w>>1&~1;
   pic_y=frame_h-pic_h>>1&~1;
 
-  theora_info_init(&ti);
+  th_info_init(&ti);
   ti.frame_width=frame_w;
   ti.frame_height=frame_h;
   ti.pic_width=pic_w;
@@ -1199,22 +1199,22 @@ int main(int argc,char *argv[]){
   ti.fps_denominator=video_fps_d;
   ti.aspect_numerator=video_par_n;
   ti.aspect_denominator=video_par_d;
-  ti.colorspace=OC_CS_UNSPECIFIED;
+  ti.colorspace=TH_CS_UNSPECIFIED;
   ti.target_bitrate=video_r;
   ti.quality=video_q;
   ti.keyframe_granule_shift=6;
 
   if(dst_c_dec_h==2){
-    if(dst_c_dec_v==2)ti.pixel_fmt=OC_PF_420;
-    else ti.pixel_fmt=OC_PF_422;
+    if(dst_c_dec_v==2)ti.pixel_fmt=TH_PF_420;
+    else ti.pixel_fmt=TH_PF_422;
   }
-  else ti.pixel_fmt=OC_PF_444;
+  else ti.pixel_fmt=TH_PF_444;
 
-  td=theora_encode_alloc(&ti);
-  theora_info_clear(&ti);
+  td=th_encode_alloc(&ti);
+  th_info_clear(&ti);
 
   if(vp3_compatible){
-    ret=theora_encode_ctl(td,OC_ENCCTL_SET_VP3_COMPATIBLE,&vp3_compatible,
+    ret=th_encode_ctl(td,TH_ENCCTL_SET_VP3_COMPATIBLE,&vp3_compatible,
      sizeof(vp3_compatible));
     if(ret<0||!vp3_compatible){
       fprintf(stderr,"Could not enable strict VP3 compatibility.\n");
@@ -1246,10 +1246,10 @@ int main(int argc,char *argv[]){
 
   /* write the bitstream header packets with proper page interleave */
 
-  theora_comment_init(&tc);
+  th_comment_init(&tc);
 
   /* first packet will get its own page automatically */
-  if(theora_encode_flushheader(td,&tc,&op)<=0){
+  if(th_encode_flushheader(td,&tc,&op)<=0){
     fprintf(stderr,"Internal Theora library error.\n");
     exit(1);
   }
@@ -1263,7 +1263,7 @@ int main(int argc,char *argv[]){
 
   /* create the remaining theora headers */
   for(;;){
-    ret=theora_encode_flushheader(td,&tc,&op);
+    ret=th_encode_flushheader(td,&tc,&op);
     if(ret<0){
       fprintf(stderr,"Internal Theora library error.\n");
       exit(1);
@@ -1342,7 +1342,7 @@ int main(int argc,char *argv[]){
       double audiotime=
         audioflag?vorbis_granule_time(&vd,ogg_page_granulepos(&audiopage)):-1;
       double videotime=
-        videoflag?theora_granule_time(td,ogg_page_granulepos(&videopage)):-1;
+        videoflag?th_granule_time(td,ogg_page_granulepos(&videopage)):-1;
 
       if(!audioflag){
         audio_or_video=1;
@@ -1399,8 +1399,8 @@ int main(int argc,char *argv[]){
   }
   if(video){
     ogg_stream_clear(&to);
-    theora_encode_free(td);
-    theora_comment_clear(&tc);
+    th_encode_free(td);
+    th_comment_clear(&tc);
   }
 
   if(outfile && outfile!=stdout)fclose(outfile);

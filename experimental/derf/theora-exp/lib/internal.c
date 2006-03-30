@@ -68,7 +68,7 @@ const int OC_MB_MAP[2][2]={{0,3},{1,2}};
 
 /*A list of the indices in the oc_mb.map array that can be valid for each of
    the various chroma decimation types.*/
-const int OC_MB_MAP_IDXS[OC_PF_NFORMATS][12]={
+const int OC_MB_MAP_IDXS[TH_PF_NFORMATS][12]={
   {0,1,2,3,4,8},
   {0,1,2,3,4,5,8,9},
   {0,1,2,3,4,6,8,10},
@@ -77,13 +77,13 @@ const int OC_MB_MAP_IDXS[OC_PF_NFORMATS][12]={
 
 /*The number of indices in the oc_mb.map array that can be valid for each of
    the various chroma decimation types.*/
-const int OC_MB_MAP_NIDXS[OC_PF_NFORMATS]={6,8,8,12};
+const int OC_MB_MAP_NIDXS[TH_PF_NFORMATS]={6,8,8,12};
 
 /*The number of extra bits that are coded with each of the DCT tokens.
   Each DCT token has some fixed number of additional bits (possibly 0) stored
    after the token itself, containing, for example, coefficient magnitude,
    sign bits, etc.*/
-const int OC_DCT_TOKEN_EXTRA_BITS[OC_NDCT_TOKENS]={
+const int OC_DCT_TOKEN_EXTRA_BITS[TH_NDCT_TOKENS]={
   0,0,0,2,3,4,12,3,6,
   0,0,0,0,
   1,1,1,1,2,3,4,5,6,10,
@@ -155,7 +155,7 @@ static int oc_token_skip_run(int _token,int _extra_bits){
    a given token value.
   This reduces all the conditional branches, etc., needed to parse these token
    values down to one indirect jump.*/
-static const oc_token_skip_func OC_TOKEN_SKIP_TABLE[OC_NDCT_TOKENS]={
+static const oc_token_skip_func OC_TOKEN_SKIP_TABLE[TH_NDCT_TOKENS]={
   oc_token_skip_eob,
   oc_token_skip_eob,
   oc_token_skip_eob,
@@ -269,7 +269,7 @@ static void oc_set_chroma_mvs11(char _cbmvs[4][2],const char _lbmvs[4][2]){
 /*A table of functions used to fill in the chroma plane motion vectors for a
    macro block when 4 different motion vectors are specified in the luma
    plane.*/
-const oc_set_chroma_mvs_func OC_SET_CHROMA_MVS_TABLE[OC_PF_NFORMATS]={
+const oc_set_chroma_mvs_func OC_SET_CHROMA_MVS_TABLE[TH_PF_NFORMATS]={
   oc_set_chroma_mvs00,
   oc_set_chroma_mvs01,
   oc_set_chroma_mvs10,
@@ -331,8 +331,8 @@ void oc_free_2d(void **_ptr){
   _dst: The destination buffer.
         This can be the same as _src.
   _src: The source buffer.*/
-void oc_ycbcr_buffer_flip(theora_ycbcr_buffer _dst,
- const theora_ycbcr_buffer _src){
+void oc_ycbcr_buffer_flip(th_ycbcr_buffer _dst,
+ const th_ycbcr_buffer _src){
   int pli;
   for(pli=0;pli<3;pli++){
     _dst[pli].width=_src[pli].width;
@@ -342,18 +342,18 @@ void oc_ycbcr_buffer_flip(theora_ycbcr_buffer _dst,
   }
 }
 
-const char *theora_version_string(void){
+const char *th_version_string(void){
   return OC_VENDOR_STRING;
 }
 
-ogg_uint32_t theora_version_number(void){
-  return (OC_VERSION_MAJOR<<16)+(OC_VERSION_MINOR<<8)+(OC_VERSION_SUB);
+ogg_uint32_t th_version_number(void){
+  return (TH_VERSION_MAJOR<<16)+(TH_VERSION_MINOR<<8)+(TH_VERSION_SUB);
 }
 
 /*Determines the packet type.
   Note that this correctly interprets a 0-byte packet as a video data packet.
   Return: 1 for a header packet, 0 for a data packet.*/
-int theora_packet_isheader(ogg_packet *_op){
+int th_packet_isheader(ogg_packet *_op){
   return _op->bytes>0?_op->packet[0]>>7:0;
 }
 
@@ -361,7 +361,7 @@ int theora_packet_isheader(ogg_packet *_op){
   Note that this correctly interprets a 0-byte packet as a delta frame.
   Return: 1 for a key frame, 0 for a delta frame, and -1 for a header
            packet.*/
-int theora_packet_iskeyframe(ogg_packet *_op){
+int th_packet_iskeyframe(ogg_packet *_op){
   return _op->bytes<=0?0:_op->packet[0]&0x80?-1:!(_op->packet[0]&0x40);
 }
 

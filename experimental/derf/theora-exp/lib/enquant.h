@@ -12,7 +12,7 @@
 
 
 /*The default quantization parameters used by VP3.1.*/
-extern const theora_quant_info OC_VP31_QUANT_INFO;
+extern const theora_quant_info TH_VP31_QUANT_INFO;
 /*Our default quantization parameters.*/
 extern const theora_quant_info OC_DEF_QUANT_INFO[4];
 

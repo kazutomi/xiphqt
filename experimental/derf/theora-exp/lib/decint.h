@@ -4,8 +4,8 @@
 # include "theora/theoradec.h"
 # include "internal.h"
 
-typedef struct theora_setup_info oc_setup_info;
-typedef struct theora_dec_ctx    oc_dec_ctx;
+typedef struct th_setup_info oc_setup_info;
+typedef struct th_dec_ctx    oc_dec_ctx;
 
 # include "idct.h"
 # include "huffdec.h"
@@ -18,16 +18,16 @@ typedef struct theora_dec_ctx    oc_dec_ctx;
 
 
 
-struct theora_setup_info{
+struct th_setup_info{
   /*The Huffman codes.*/
-  oc_huff_node      *huff_tables[OC_NHUFFMAN_TABLES];
+  oc_huff_node      *huff_tables[TH_NHUFFMAN_TABLES];
   /*The quantization parameters.*/
   theora_quant_info  qinfo;
 };
 
 
 
-struct theora_dec_ctx{
+struct th_dec_ctx{
   /*Shared encoder/decoder state.*/
   oc_theora_state          state;
   /*Whether or not packets are ready to be emitted.
@@ -38,7 +38,7 @@ struct theora_dec_ctx{
   /*Buffer in which to assemble packets.*/
   oggpack_buffer           opb;
   /*Huffman decode trees.*/
-  oc_huff_node            *huff_tables[OC_NHUFFMAN_TABLES];
+  oc_huff_node            *huff_tables[TH_NHUFFMAN_TABLES];
   /*The index of one past the last token in each plane for each coefficient.
     The final entries are the total number of tokens for each coefficient.*/
   int                      ti0[3][64];
@@ -69,7 +69,7 @@ struct theora_dec_ctx{
   /*Whether or not the post-processsed frame buffer has space for chroma.*/
   int                      pp_frame_has_chroma;
   /*The buffer used for the post-processed frame.*/
-  theora_ycbcr_buffer      pp_frame_buf;
+  th_ycbcr_buffer      pp_frame_buf;
   /*The striped decode callback function.*/
   theora_stripe_callback   stripe_cb;
 };

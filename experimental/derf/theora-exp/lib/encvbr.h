@@ -12,7 +12,7 @@ typedef struct oc_psych_ctx  oc_psych_ctx;
 /*Context information for the VBR encoder.*/
 struct oc_enc_vbr_ctx{
   /*Configuration information.*/
-  theora_vbr_cfg     cfg;
+  th_vbr_cfg     cfg;
   /*The main VBR encoder's pipe stage.*/
   oc_enc_pipe_stage  pipe;
   /*The scale factor for the current quality setting.*/

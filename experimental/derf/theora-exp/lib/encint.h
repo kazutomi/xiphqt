@@ -10,7 +10,7 @@ typedef struct oc_mb_enc_info         oc_mb_enc_info;
 typedef struct oc_mode_scheme_chooser oc_mode_scheme_chooser;
 typedef struct oc_enc_vbr_ctx         oc_enc_vbr_ctx;
 typedef struct oc_mcenc_ctx           oc_mcenc_ctx;
-typedef struct theora_enc_ctx         oc_enc_ctx;
+typedef struct th_enc_ctx         oc_enc_ctx;
 
 # include "fdct.h"
 # include "huffenc.h"
@@ -146,7 +146,7 @@ struct oc_mode_scheme_chooser{
 
 
 
-struct theora_enc_ctx{
+struct th_enc_ctx{
   /*Shared encoder/decoder state.*/
   oc_theora_state          state;
   /*The start of the encoder pipeline.*/
@@ -211,7 +211,7 @@ struct theora_enc_ctx{
   /*The bounding value array used for the loop filter.*/
   int                      bounding_values[512];
   /*The huffman tables in use.*/
-  theora_huff_code         huff_codes[OC_NHUFFMAN_TABLES][OC_NDCT_TOKENS];
+  theora_huff_code         huff_codes[TH_NHUFFMAN_TABLES][TH_NDCT_TOKENS];
   /*The quantization parameters in use.*/
   theora_quant_info        qinfo;
   /*Pointers to the quantization tables in use.*/
@@ -280,7 +280,7 @@ oc_enc_pipe_stage *oc_mcenc_prepend_to_pipe(oc_mcenc_ctx *_mcenc,
 
 oc_enc_vbr_ctx *oc_enc_vbr_alloc(oc_enc_ctx *_enc);
 void oc_enc_vbr_free(oc_enc_vbr_ctx *_vbr);
-int oc_enc_vbr_enable(oc_enc_vbr_ctx *_vbr,theora_vbr_cfg *_cfg);
+int oc_enc_vbr_enable(oc_enc_vbr_ctx *_vbr,th_vbr_cfg *_cfg);
 
 void oc_enc_set_speed_null(oc_enc_ctx *_enc,int _speed);
 void oc_enc_frag_intra_fdct(oc_enc_ctx *_enc,const oc_fragment *_frag,

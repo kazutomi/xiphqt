@@ -84,9 +84,9 @@ ogg_page         og;
 ogg_stream_state vo;
 ogg_stream_state to;
 theora_info      ti;
-theora_comment   tc;
-theora_setup_info *ts;
-theora_dec_ctx    *td;
+th_comment   tc;
+th_setup_info *ts;
+th_dec_ctx    *td;
 vorbis_info      vi;
 vorbis_dsp_state vd;
 vorbis_block     vb;
@@ -331,10 +331,10 @@ static void video_write(void){
   int pli;
   int wscale, hscale;
   int i;
-  theora_ycbcr_buffer ycbcr;
+  th_ycbcr_buffer ycbcr;
   int crop_offset;
 
-  theora_decode_ycbcr_out(td,ycbcr);
+  th_decode_ycbcr_out(td,ycbcr);
 
   /* Lock SDL_yuv_overlay */
   if ( SDL_MUSTLOCK(screen) ) {
@@ -372,7 +372,7 @@ static void video_write(void){
 
 }
 /* dump the theora (or vorbis) comment header */
-static int dump_comments(theora_comment *tc){
+static int dump_comments(th_comment *tc){
   int i, len;
   char *value;
   FILE *out=stdout;
@@ -401,13 +401,13 @@ static int dump_comments(theora_comment *tc){
 static void report_colorspace(theora_info *ti)
 {
     switch(ti->colorspace){
-      case OC_CS_UNSPECIFIED:
+      case TH_CS_UNSPECIFIED:
         /* nothing to report */
         break;;
-      case OC_CS_ITU_REC_470M:
+      case TH_CS_ITU_REC_470M:
         fprintf(stderr,"  encoder specified ITU Rec 470M (NTSC) color.\n");
         break;;
-      case OC_CS_ITU_REC_470BG:
+      case TH_CS_ITU_REC_470BG:
         fprintf(stderr,"  encoder specified ITU Rec 470BG (PAL) color.\n");
         break;;
       default:
@@ -474,8 +474,8 @@ int main(int argc,char *argv[]){
   vorbis_comment_init(&vc);
 
   /* init supporting Theora structures needed in header parsing */
-  theora_comment_init(&tc);
-  theora_info_init(&ti);
+  th_comment_init(&tc);
+  th_info_init(&ti);
 
   /* Ogg file open; parse the headers */
   /* Only interested in Vorbis/Theora streams */
@@ -499,7 +499,7 @@ int main(int argc,char *argv[]){
 
       /* identify the codec: try theora */
       if(!theora_p && (theora_processing_headers=
-       theora_decode_headerin(&ti,&tc,&ts,&op))>=0){
+       th_decode_headerin(&ti,&tc,&ts,&op))>=0){
         /* it is theora */
         memcpy(&to,&test,sizeof(test));
         theora_p=1;
@@ -526,7 +526,7 @@ int main(int argc,char *argv[]){
     /* look for further theora headers */
     while(theora_processing_headers&&(ret=ogg_stream_packetpeek(&to,&op))){
       if(ret<0)continue;
-      theora_processing_headers=theora_decode_headerin(&ti,&tc,&ts,&op);
+      theora_processing_headers=th_decode_headerin(&ti,&tc,&ts,&op);
       if(theora_processing_headers<0){
         printf("Error parsing Theora stream headers; corrupt stream?\n");
         exit(1);
@@ -572,7 +572,7 @@ int main(int argc,char *argv[]){
 
   /* and now we have it all.  initialize decoders */
   if(theora_p){
-    td=theora_decode_alloc(&ti,ts);
+    td=th_decode_alloc(&ti,ts);
     printf("Ogg logical stream %lx is Theora %dx%d %.02f fps video\n",
            to.serialno,ti.frame_width,ti.frame_height, 
            (double)ti.fps_numerator/ti.fps_denominator);
@@ -581,18 +581,18 @@ int main(int argc,char *argv[]){
            ti.pic_width, ti.pic_height, ti.pic_x, ti.pic_y);
     report_colorspace(&ti);
     dump_comments(&tc);
-    theora_decode_ctl(td,OC_DECCTL_GET_PPLEVEL_MAX,&pp_level_max,
+    th_decode_ctl(td,TH_DECCTL_GET_PPLEVEL_MAX,&pp_level_max,
      sizeof(pp_level_max));
     pp_level=pp_level_max;
-    theora_decode_ctl(td,OC_DECCTL_SET_PPLEVEL,&pp_level,sizeof(pp_level));
+    th_decode_ctl(td,TH_DECCTL_SET_PPLEVEL,&pp_level,sizeof(pp_level));
     pp_inc=0;
   }else{
     /* tear down the partial theora setup */
-    theora_info_clear(&ti);
-    theora_comment_clear(&tc);
+    th_info_clear(&ti);
+    th_comment_clear(&tc);
   }
   /*Either way, we're done with the codec setup data.*/
-  theora_setup_free(ts);
+  th_setup_free(ts);
   if(vorbis_p){
     vorbis_synthesis_init(&vd,&vi);
     vorbis_block_init(&vd,&vb);
@@ -665,7 +665,7 @@ int main(int argc,char *argv[]){
 
         if(pp_inc){
           pp_level+=pp_inc;
-          theora_decode_ctl(td,OC_DECCTL_SET_PPLEVEL,&pp_level,
+          th_decode_ctl(td,TH_DECCTL_SET_PPLEVEL,&pp_level,
            sizeof(pp_level));
           pp_inc=0;
         }
@@ -676,11 +676,11 @@ int main(int argc,char *argv[]){
            page and compute the correct granulepos for the first packet after
            a seek or a gap.*/
         if(op.granulepos>=0){
-          theora_decode_ctl(td,OC_DECCTL_SET_GRANPOS,&op.granulepos,
+          th_decode_ctl(td,TH_DECCTL_SET_GRANPOS,&op.granulepos,
            sizeof(op.granulepos));
         }
-        if(theora_decode_packetin(td,&op,&videobuf_granulepos)>=0){
-          videobuf_time=theora_granule_time(td,videobuf_granulepos);
+        if(th_decode_packetin(td,&op,&videobuf_granulepos)>=0){
+          videobuf_time=th_granule_time(td,videobuf_granulepos);
           frames++;
 
           /* is it already too old to be useful?  This is only actually
@@ -790,9 +790,9 @@ int main(int argc,char *argv[]){
   }
   if(theora_p){
     ogg_stream_clear(&to);
-    theora_decode_free(td);
-    theora_comment_clear(&tc);
-    theora_info_clear(&ti);
+    th_decode_free(td);
+    th_comment_clear(&tc);
+    th_info_clear(&ti);
   }
   ogg_sync_clear(&oy);
 

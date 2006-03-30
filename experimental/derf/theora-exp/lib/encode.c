@@ -287,15 +287,15 @@ static void oc_enc_init_mbinfo(oc_enc_ctx *_enc){
           This may be NULL, in which case the default Huffman codes will be
            used.
   Return: 0 on success, or a negative value on error.
-          OC_FAULT if _enc is NULL
-          OC_EINVAL if the setup header has already been written, the code is
+          TH_FAULT if _enc is NULL
+          TH_EINVAL if the setup header has already been written, the code is
            not prefix free, or does not form a full binary tree.*/
 static int oc_enc_set_huffman_codes(oc_enc_ctx *_enc,
- const theora_huff_code _codes[OC_NHUFFMAN_TABLES][OC_NDCT_TOKENS]){
+ const theora_huff_code _codes[TH_NHUFFMAN_TABLES][TH_NDCT_TOKENS]){
   int ret;
-  if(_enc==NULL)return OC_FAULT;
-  if(_enc->packet_state>OC_PACKET_SETUP_HDR)return OC_EINVAL;
-  if(_codes==NULL)_codes=OC_VP31_HUFF_CODES;
+  if(_enc==NULL)return TH_FAULT;
+  if(_enc->packet_state>OC_PACKET_SETUP_HDR)return TH_EINVAL;
+  if(_codes==NULL)_codes=TH_VP31_HUFF_CODES;
   /*Validate the codes.*/
   oggpackB_reset(&_enc->opb);
   ret=oc_huff_codes_pack(&_enc->opb,_codes);
@@ -312,39 +312,39 @@ static int oc_enc_set_huffman_codes(oc_enc_ctx *_enc,
           This can be NULL, in which case the default quantization parameters
            will be used.*
   Return: 0 on success, or a negative value on error.
-          OC_FAULT if _enc is NULL.
-          OC_EINVAL if the setup header has already been written, or it cannot
+          TH_FAULT if _enc is NULL.
+          TH_EINVAL if the setup header has already been written, or it cannot
            be verified that the quantization level of for a particular qti,
            pli, and ci never increases as qi increases.*/
-static int oc_enc_set_quant_params(theora_enc_ctx *_enc,
+static int oc_enc_set_quant_params(th_enc_ctx *_enc,
  const theora_quant_info *_qinfo){
   int qti;
   int pli;
   int qri;
   int qi;
   int ci;
-  if(_enc==NULL)return OC_FAULT;
-  if(_enc->packet_state>OC_PACKET_SETUP_HDR)return OC_EINVAL;
+  if(_enc==NULL)return TH_FAULT;
+  if(_enc->packet_state>OC_PACKET_SETUP_HDR)return TH_EINVAL;
   if(_qinfo==NULL)_qinfo=OC_DEF_QUANT_INFO+_enc->state.info.pixel_fmt;
   /*Verify that, for a given qti, pli and ci, the actual quantizer will never
      increase as qi increases.
     This is required for efficient quantizer selection.*/
   for(qi=64;qi-->1;){
-    if(_qinfo->ac_scale[qi]>_qinfo->ac_scale[qi-1])return OC_EINVAL;
-    if(_qinfo->dc_scale[qi]>_qinfo->dc_scale[qi-1])return OC_EINVAL;
+    if(_qinfo->ac_scale[qi]>_qinfo->ac_scale[qi-1])return TH_EINVAL;
+    if(_qinfo->dc_scale[qi]>_qinfo->dc_scale[qi-1])return TH_EINVAL;
   }
   for(qti=0;qti<2;qti++)for(pli=0;pli<3;pli++){
-    if(_qinfo->qi_ranges[qti][pli].nranges<=0)return OC_EINVAL;
+    if(_qinfo->qi_ranges[qti][pli].nranges<=0)return TH_EINVAL;
     for(qi=qri=0;qri<_qinfo->qi_ranges[qti][pli].nranges;qri++){
       qi+=_qinfo->qi_ranges[qti][pli].sizes[qri];
       for(ci=0;ci<64;ci++){
         if(_qinfo->qi_ranges[qti][pli].base_matrices[qri+1][ci]>
          _qinfo->qi_ranges[qti][pli].base_matrices[qri][ci]){
-          return OC_EINVAL;
+          return TH_EINVAL;
         }
       }
     }
-    if(qi!=63)return OC_EINVAL;
+    if(qi!=63)return TH_EINVAL;
   }
   /*TODO: Analyze for packing purposes instead of just doing a shallow copy.*/
   memcpy(&_enc->qinfo,_qinfo,sizeof(_enc->qinfo));
@@ -1090,7 +1090,7 @@ static int oc_enc_init(oc_enc_ctx *_enc,const theora_info *_info){
   /*Mark us as not VP3-compatible.*/
   _enc->vp3_compatible=0;
   /*Set the Huffman codes and quantization parameters to the defaults.*/
-  memcpy(_enc->huff_codes,OC_VP31_HUFF_CODES,sizeof(_enc->huff_codes));
+  memcpy(_enc->huff_codes,TH_VP31_HUFF_CODES,sizeof(_enc->huff_codes));
   oc_enc_set_quant_params(_enc,NULL);
   /*Initialize the static pipeline stages.*/
   oc_fdct_pipe_init(&_enc->fdct_pipe,_enc);
@@ -1322,7 +1322,7 @@ void oc_enc_do_inter_dcts(oc_enc_ctx *_enc){
 }
 
 
-theora_enc_ctx *theora_encode_alloc(const theora_info *_info){
+th_enc_ctx *th_encode_alloc(const theora_info *_info){
   oc_enc_ctx *enc;
   if(_info==NULL)return NULL;
   enc=_ogg_malloc(sizeof(*enc));
@@ -1333,7 +1333,7 @@ theora_enc_ctx *theora_encode_alloc(const theora_info *_info){
   return enc;
 }
 
-void theora_encode_free(theora_enc_ctx *_enc){
+void th_encode_free(th_enc_ctx *_enc){
   if(_enc!=NULL){
     oc_enc_clear(_enc);
     _ogg_free(_enc);
@@ -1342,29 +1342,29 @@ void theora_encode_free(theora_enc_ctx *_enc){
 
 
 
-typedef theora_huff_code theora_huff_table[OC_NDCT_TOKENS];
+typedef theora_huff_code theora_huff_table[TH_NDCT_TOKENS];
 
-int theora_encode_ctl(theora_enc_ctx *_enc,int _req,void *_buf,
+int th_encode_ctl(th_enc_ctx *_enc,int _req,void *_buf,
  size_t _buf_sz){
   switch(_req){
-    case OC_ENCCTL_SET_HUFFMAN_CODES:{
+    case TH_ENCCTL_SET_HUFFMAN_CODES:{
       if(_buf==NULL&&_buf_sz!=0||_buf!=NULL&&
-       _buf_sz!=sizeof(theora_huff_code)*OC_NHUFFMAN_TABLES*OC_NDCT_TOKENS){
-        return OC_EINVAL;
+       _buf_sz!=sizeof(theora_huff_code)*TH_NHUFFMAN_TABLES*TH_NDCT_TOKENS){
+        return TH_EINVAL;
       }
       return oc_enc_set_huffman_codes(_enc,(theora_huff_table *)_buf);
     }break;
-    case OC_ENCCTL_SET_QUANT_PARAMS:{
+    case TH_ENCCTL_SET_QUANT_PARAMS:{
       if(_buf==NULL&&_buf_sz!=0||
        _buf!=NULL&&_buf_sz!=sizeof(theora_quant_info)){
-        return OC_EINVAL;
+        return TH_EINVAL;
       }
       return oc_enc_set_quant_params(_enc,(theora_quant_info *)_buf);
     }break;
-    case OC_ENCCTL_SET_KEYFRAME_FREQUENCY_FORCE:{
+    case TH_ENCCTL_SET_KEYFRAME_FREQUENCY_FORCE:{
       ogg_uint32_t keyframe_frequency_force;
-      if(_enc==NULL||_buf==NULL)return OC_FAULT;
-      if(_buf_sz!=sizeof(ogg_uint32_t))return OC_EINVAL;
+      if(_enc==NULL||_buf==NULL)return TH_FAULT;
+      if(_buf_sz!=sizeof(ogg_uint32_t))return TH_EINVAL;
       keyframe_frequency_force=*(ogg_uint32_t *)_buf;
       if(_enc->packet_state==OC_PACKET_INFO_HDR){
         /*It's still early enough to enlarge keyframe_granule_shift.*/
@@ -1377,18 +1377,18 @@ int theora_encode_ctl(theora_enc_ctx *_enc,int _req,void *_buf,
       *(ogg_uint32_t *)_buf=_enc->keyframe_frequency_force;
       return 0;
     }break;
-    case OC_ENCCTL_SET_VP3_COMPATIBLE:{
+    case TH_ENCCTL_SET_VP3_COMPATIBLE:{
       int vp3_compatible;
       int ret;
-      if(_enc==NULL||_buf==NULL)return OC_FAULT;
-      if(_buf_sz!=sizeof(int))return OC_EINVAL;
+      if(_enc==NULL||_buf==NULL)return TH_FAULT;
+      if(_buf_sz!=sizeof(int))return TH_EINVAL;
       vp3_compatible=*(int *)_buf;
       _enc->vp3_compatible=vp3_compatible;
-      ret=oc_enc_set_huffman_codes(_enc,OC_VP31_HUFF_CODES);
+      ret=oc_enc_set_huffman_codes(_enc,TH_VP31_HUFF_CODES);
       if(ret<0)vp3_compatible=0;
-      ret=oc_enc_set_quant_params(_enc,&OC_VP31_QUANT_INFO);
+      ret=oc_enc_set_quant_params(_enc,&TH_VP31_QUANT_INFO);
       if(ret<0)vp3_compatible=0;
-      if(_enc->state.info.pixel_fmt!=OC_PF_420||
+      if(_enc->state.info.pixel_fmt!=TH_PF_420||
        _enc->state.info.pic_width<_enc->state.info.frame_width||
        _enc->state.info.pic_height<_enc->state.info.frame_height||
       /*If we have more than 4095 super blocks, VP3's RLE coding might
@@ -1404,41 +1404,41 @@ int theora_encode_ctl(theora_enc_ctx *_enc,int _req,void *_buf,
       *(int *)_buf=vp3_compatible;
       return 0;
     }break;
-    case OC_ENCCTL_GET_SPLEVEL_MAX:{
-      if(_enc==NULL||_buf==NULL)return OC_FAULT;
-      if(_buf_sz!=sizeof(int))return OC_EINVAL;
+    case TH_ENCCTL_GET_SPLEVEL_MAX:{
+      if(_enc==NULL||_buf==NULL)return TH_FAULT;
+      if(_buf_sz!=sizeof(int))return TH_EINVAL;
       /*We can only manipulate speed in the context of a given encoding mode.
         Ensure one is selected if the user has not already done so.*/
       if(_enc->set_speed==NULL)oc_enc_enable_default_mode(_enc);
       *(int *)_buf=_enc->speed_max;
       return 0;
     }break;
-    case OC_ENCCTL_SET_SPLEVEL:{
+    case TH_ENCCTL_SET_SPLEVEL:{
       int speed;
-      if(_enc==NULL||_buf==NULL)return OC_FAULT;
-      if(_buf_sz!=sizeof(int))return OC_EINVAL;
+      if(_enc==NULL||_buf==NULL)return TH_FAULT;
+      if(_buf_sz!=sizeof(int))return TH_EINVAL;
       speed=*(int *)_buf;
       /*We can only manipulate speed in the context of a given encoding mode.
         Ensure one is selected if the user has not already done so.*/
       if(_enc->set_speed==NULL)oc_enc_enable_default_mode(_enc);
-      if(speed<0||speed>_enc->speed_max)return OC_EINVAL;
+      if(speed<0||speed>_enc->speed_max)return TH_EINVAL;
       (*_enc->set_speed)(_enc,speed);
       return 0;
     }break;
-    case OC_ENCCTL_SETUP_VBR:{
-      if(_enc==NULL)return OC_FAULT;
-      if(_buf==NULL&&_buf_sz!=0||_buf!=NULL&&_buf_sz!=sizeof(theora_vbr_cfg)){
-        return OC_EINVAL;
+    case TH_ENCCTL_SETUP_VBR:{
+      if(_enc==NULL)return TH_FAULT;
+      if(_buf==NULL&&_buf_sz!=0||_buf!=NULL&&_buf_sz!=sizeof(th_vbr_cfg)){
+        return TH_EINVAL;
       }
       if(_enc->vbr==NULL)_enc->vbr=oc_enc_vbr_alloc(_enc);
-      return oc_enc_vbr_enable(_enc->vbr,(theora_vbr_cfg *)_buf);
+      return oc_enc_vbr_enable(_enc->vbr,(th_vbr_cfg *)_buf);
     }break;
-    default:return OC_IMPL;
+    default:return TH_IMPL;
   }
 }
 
-int theora_encode_ycbcr_in(theora_enc_ctx *_enc,theora_ycbcr_buffer _img){
-  theora_ycbcr_buffer img;
+int th_encode_ycbcr_in(th_enc_ctx *_enc,th_ycbcr_buffer _img){
+  th_ycbcr_buffer img;
   int                 y_avail[3];
   int                 cwidth;
   int                 cheight;
@@ -1446,17 +1446,17 @@ int theora_encode_ycbcr_in(theora_enc_ctx *_enc,theora_ycbcr_buffer _img){
   int                 rfi;
   int                 pli;
   /*Step 1: validate parameters.*/
-  if(_enc==NULL||_img==NULL)return OC_FAULT;
-  if(_enc->packet_state==OC_PACKET_DONE)return OC_EINVAL;
+  if(_enc==NULL||_img==NULL)return TH_FAULT;
+  if(_enc->packet_state==OC_PACKET_DONE)return TH_EINVAL;
   if(_img[0].width!=(int)_enc->state.info.frame_width||
    _img[0].height!=(int)_enc->state.info.frame_height){
-    return OC_EINVAL;
+    return TH_EINVAL;
   }
   cwidth=_enc->state.info.frame_width>>!(_enc->state.info.pixel_fmt&1);
   cheight=_enc->state.info.frame_height>>!(_enc->state.info.pixel_fmt&2);
   if(_img[1].width!=cwidth||_img[2].width!=cwidth||
    _img[1].height!=cheight||_img[2].height!=cheight){
-    return OC_EINVAL;
+    return TH_EINVAL;
   }
   /*Flip the input buffer upside down.*/
   oc_ycbcr_buffer_flip(img,_img);
@@ -1514,8 +1514,8 @@ int theora_encode_ycbcr_in(theora_enc_ctx *_enc,theora_ycbcr_buffer _img){
   return 0;
 }
 
-int theora_encode_packetout(theora_enc_ctx *_enc,int _last,ogg_packet *_op){
-  if(_enc==NULL||_op==NULL)return OC_FAULT;
+int th_encode_packetout(th_enc_ctx *_enc,int _last,ogg_packet *_op){
+  if(_enc==NULL||_op==NULL)return TH_FAULT;
   if(_enc->packet_state!=OC_PACKET_READY)return 0;
   _op->packet=oggpackB_get_buffer(&_enc->opb);
   _op->bytes=oggpackB_bytes(&_enc->opb);

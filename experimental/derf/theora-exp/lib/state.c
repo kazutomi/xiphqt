@@ -528,7 +528,7 @@ void oc_state_vtable_init(oc_theora_state *_state){
 
 int oc_state_init(oc_theora_state *_state,const theora_info *_info){
   /*First validate the parameters.*/
-  if(_info==NULL)return OC_FAULT;
+  if(_info==NULL)return TH_FAULT;
   /*The width and height of the encoded frame must be multiples of 16.
     They must also, when divided by 16, fit into a 16-bit unsigned integer.
     The displayable frame offset coordinates must fit into an 8-bit unsigned
@@ -544,9 +544,9 @@ int oc_state_init(oc_theora_state *_state,const theora_info *_info){
    _info->pic_y+_info->pic_height>_info->frame_height||
    _info->pic_x>255||
    _info->frame_height-_info->pic_height-_info->pic_y>255||
-   _info->colorspace<0||_info->colorspace>=OC_CS_NSPACES||
-   _info->pixel_fmt<0||_info->pixel_fmt>=OC_PF_NFORMATS){
-    return OC_EINVAL;
+   _info->colorspace<0||_info->colorspace>=TH_CS_NSPACES||
+   _info->pixel_fmt<0||_info->pixel_fmt>=TH_PF_NFORMATS){
+    return TH_EINVAL;
   }
   memset(_state,0,sizeof(*_state));
   memcpy(&_state->info,_info,sizeof(*_info));
@@ -652,14 +652,14 @@ void oc_state_borders_fill(oc_theora_state *_state,int _refi){
              while the last corresponds to the input image.
   _img:     The image buffer to fill the fragments with.*/
 void oc_state_fill_buffer_ptrs(oc_theora_state *_state,int _buf_idx,
- theora_ycbcr_buffer _img){
+ th_ycbcr_buffer _img){
   int pli;
   /*Special handling for the input image to give us the opportunity to skip
      some updates.
     The other buffers do not change throughout the encoding process.*/
   if(_buf_idx==OC_FRAME_IO){
-     if(memcmp(_state->input,_img,sizeof(theora_ycbcr_buffer))==0)return;
-     memcpy(_state->input,_img,sizeof(theora_ycbcr_buffer));
+     if(memcmp(_state->input,_img,sizeof(th_ycbcr_buffer))==0)return;
+     memcpy(_state->input,_img,sizeof(th_ycbcr_buffer));
   }
   for(pli=0;pli<3;pli++){
     theora_img_plane  *iplane;
@@ -1067,26 +1067,26 @@ int oc_state_dump_frame(const oc_theora_state *_state,int _frame,
   pframe=_state->granpos-(iframe<<_state->info.keyframe_granule_shift);
   sprintf(fname,"%08i%s.png",(int)(iframe+pframe),_suf);
   fp=fopen(fname,"wb");
-  if(fp==NULL)return OC_FAULT;
+  if(fp==NULL)return TH_FAULT;
   image=(png_bytep *)oc_malloc_2d(height,6*width,sizeof(image[0][0]));
   png=png_create_write_struct(PNG_LIBPNG_VER_STRING,NULL,NULL,NULL);
   if(png==NULL){
     oc_free_2d(image);
     fclose(fp);
-    return OC_FAULT;
+    return TH_FAULT;
   }
   info=png_create_info_struct(png);
   if(info==NULL){
     png_destroy_write_struct(&png,NULL);
     oc_free_2d(image);
     fclose(fp);
-    return OC_FAULT;
+    return TH_FAULT;
   }
   if(setjmp(png_jmpbuf(png))){
     png_destroy_write_struct(&png,&info);
     oc_free_2d(image);
     fclose(fp);
-    return OC_FAULT;
+    return TH_FAULT;
   }
   framei=_state->ref_frame_idx[_frame];
   y_row=_state->ref_frame_bufs[framei][0].data;
@@ -1141,12 +1141,12 @@ int oc_state_dump_frame(const oc_theora_state *_state,int _frame,
   png_set_IHDR(png,info,width,height,16,PNG_COLOR_TYPE_RGB,
    PNG_INTERLACE_NONE,PNG_COMPRESSION_TYPE_DEFAULT,PNG_FILTER_TYPE_DEFAULT);
   switch(_state->info.colorspace){
-    case OC_CS_ITU_REC_470M:{
+    case TH_CS_ITU_REC_470M:{
       png_set_gAMA(png,info,2.2);
       png_set_cHRM_fixed(png,info,31006,31616,
        67000,32000,21000,71000,14000,8000);
     }break;
-    case OC_CS_ITU_REC_470BG:{
+    case TH_CS_ITU_REC_470BG:{
       png_set_gAMA(png,info,2.67);
       png_set_cHRM_fixed(png,info,31271,32902,
        64000,33000,29000,60000,15000,6000);
@@ -1166,7 +1166,7 @@ int oc_state_dump_frame(const oc_theora_state *_state,int _frame,
 
 
 
-ogg_int64_t theora_granule_frame(void *_encdec,ogg_int64_t _granpos){
+ogg_int64_t th_granule_frame(void *_encdec,ogg_int64_t _granpos){
   oc_theora_state *state;
   state=(oc_theora_state *)_encdec;
   if(_granpos>=0){
@@ -1179,7 +1179,7 @@ ogg_int64_t theora_granule_frame(void *_encdec,ogg_int64_t _granpos){
   return -1;
 }
 
-double theora_granule_time(void *_encdec,ogg_int64_t _granpos){
+double th_granule_time(void *_encdec,ogg_int64_t _granpos){
   oc_theora_state *state;
   state=(oc_theora_state *)_encdec;
   if(_granpos>=0){

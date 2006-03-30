@@ -42,7 +42,7 @@ void oc_dequant_tables_init(oc_quant_table *_dequant[2][3],
       continue;
     }
     for(qi=qri=0;qri<=_qinfo->qi_ranges[qti][pli].nranges;qri++){
-      theora_quant_base base;
+      th_quant_base base;
       ogg_uint32_t      q;
       int               qi_start;
       int               qi_end;

@@ -16,9 +16,9 @@
 # define OC_VENDOR_STRING "derf's experimental encoder library " __DATE__
 
 /*Theora bitstream version.*/
-# define OC_VERSION_MAJOR (3)
-# define OC_VERSION_MINOR (2)
-# define OC_VERSION_SUB   (0)
+# define TH_VERSION_MAJOR (3)
+# define TH_VERSION_MINOR (2)
+# define TH_VERSION_SUB   (0)
 
 /*A keyframe.*/
 #define OC_INTRA_FRAME (0)
@@ -291,7 +291,7 @@ struct oc_theora_state{
   /*A copy of the image data used to fill the input pointers in each fragment.
     If the data pointers or strides change, these input pointers must be
      re-populated.*/
-  theora_ycbcr_buffer   input;
+  th_ycbcr_buffer   input;
   /*The number of unique border patterns.*/
   int                   nborders;
   /*The storage for the border info for all border fragments.
@@ -300,7 +300,7 @@ struct oc_theora_state{
   /*The index of the buffers being used for each OC_FRAME_* reference frame.*/
   int                   ref_frame_idx[3];
   /*The actual buffers used for the previously decoded frames.*/
-  theora_ycbcr_buffer   ref_frame_bufs[3];
+  th_ycbcr_buffer   ref_frame_bufs[3];
   /*The storage for the reference frame buffers.*/
   unsigned char        *ref_frame_data;
   /*The frame number of the last keyframe.*/
@@ -352,14 +352,14 @@ extern const int OC_FRAME_FOR_MODE[OC_NMODES];
 extern const int OC_MB_MAP[2][2];
 /*A list of the indices in the oc_mb.map array that can be valid for each of
    the various chroma decimation types.*/
-extern const int OC_MB_MAP_IDXS[OC_PF_NFORMATS][12];
+extern const int OC_MB_MAP_IDXS[TH_PF_NFORMATS][12];
 /*The number of indices in the oc_mb.map array that can be valid for each of
    the various chroma decimation types.*/
-extern const int OC_MB_MAP_NIDXS[OC_PF_NFORMATS];
+extern const int OC_MB_MAP_NIDXS[TH_PF_NFORMATS];
 /*A table of functions used to fill in the Cb,Cr plane motion vectors for a
    macro block when 4 different motion vectors are specified in the luma
    plane.*/
-extern const oc_set_chroma_mvs_func OC_SET_CHROMA_MVS_TABLE[OC_PF_NFORMATS];
+extern const oc_set_chroma_mvs_func OC_SET_CHROMA_MVS_TABLE[TH_PF_NFORMATS];
 
 
 
@@ -368,8 +368,8 @@ void **oc_malloc_2d(size_t _height,size_t _width,size_t _sz);
 void **oc_calloc_2d(size_t _height,size_t _width,size_t _sz);
 void oc_free_2d(void **_ptr);
 
-void oc_ycbcr_buffer_flip(theora_ycbcr_buffer _dst,
- const theora_ycbcr_buffer _src);
+void oc_ycbcr_buffer_flip(th_ycbcr_buffer _dst,
+ const th_ycbcr_buffer _src);
 
 int oc_dct_token_skip(int _token,int _extra_bits);
 
@@ -384,7 +384,7 @@ void oc_state_borders_fill_rows(oc_theora_state *_state,int _refi,int _pli,
 void oc_state_borders_fill_caps(oc_theora_state *_state,int _refi,int _pli);
 void oc_state_borders_fill(oc_theora_state *_state,int _refi);
 void oc_state_fill_buffer_ptrs(oc_theora_state *_state,int _buf_idx,
- theora_ycbcr_buffer _img);
+ th_ycbcr_buffer _img);
 int oc_state_mbi_for_pos(oc_theora_state *_state,int _mbx,int _mby);
 int oc_state_get_mv_offsets(oc_theora_state *_state,int *_offset0,
  int *_offset1,int _dx,int _dy,int _ystride,int _pli);

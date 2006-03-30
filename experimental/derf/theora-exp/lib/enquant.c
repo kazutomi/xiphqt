@@ -7,7 +7,7 @@
 
 /*The default quantization parameters used by VP3.1.*/
 static const int OC_VP31_RANGE_SIZES[1]={63};
-static const theora_quant_base OC_VP31_BASES_INTRA_Y[2]={
+static const th_quant_base OC_VP31_BASES_INTRA_Y[2]={
   {
      16, 11, 10, 16, 24,  40, 51, 61,
      12, 12, 14, 19, 26,  58, 60, 55,
@@ -29,7 +29,7 @@ static const theora_quant_base OC_VP31_BASES_INTRA_Y[2]={
      72, 92, 95, 98,112, 100,103, 99
   }
 };
-static const theora_quant_base OC_VP31_BASES_INTRA_C[2]={
+static const th_quant_base OC_VP31_BASES_INTRA_C[2]={
   {
      17, 18, 24, 47, 99, 99, 99, 99,
      18, 21, 26, 66, 99, 99, 99, 99,
@@ -51,7 +51,7 @@ static const theora_quant_base OC_VP31_BASES_INTRA_C[2]={
      99, 99, 99, 99, 99, 99, 99, 99
   }
 };
-static const theora_quant_base OC_VP31_BASES_INTER[2]={
+static const th_quant_base OC_VP31_BASES_INTER[2]={
   {
      16, 16, 16, 20, 24, 28, 32, 40,
      16, 16, 20, 24, 28, 32, 40, 48,
@@ -74,7 +74,7 @@ static const theora_quant_base OC_VP31_BASES_INTER[2]={
   }
 };
 
-const theora_quant_info OC_VP31_QUANT_INFO={
+const theora_quant_info TH_VP31_QUANT_INFO={
   {
     220,200,190,180,170,170,160,160,
     150,150,140,140,130,130,120,120,
@@ -123,7 +123,7 @@ const theora_quant_info OC_VP31_QUANT_INFO={
 
 static const int OC_DEF_QRANGE_SIZES[3]={15,16,32};
 
-static const theora_quant_base OC_DEF_BASE_MATRICES[9][4]={
+static const th_quant_base OC_DEF_BASE_MATRICES[9][4]={
   /*Y' matrices, 4:4:4 subsampling.*/
   {
     /*qi=0.*/
@@ -732,7 +732,7 @@ const theora_quant_info OC_DEF_QUANT_INFO[4]={
 void oc_quant_params_pack(oggpack_buffer *_opb,
  const theora_quant_info *_qinfo){
   const theora_quant_ranges *qranges;
-  const theora_quant_base   *base_mats[2*3*64];
+  const th_quant_base   *base_mats[2*3*64];
   int                        indices[2][3][64];
   int                        nbase_mats;
   int                        nbits;

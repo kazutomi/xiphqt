@@ -66,9 +66,9 @@ ogg_page           og;
 ogg_stream_state   vo;
 ogg_stream_state   to;
 theora_info        ti;
-theora_comment     tc;
-theora_setup_info *ts;
-theora_dec_ctx    *td;
+th_comment     tc;
+th_setup_info *ts;
+th_dec_ctx    *td;
 
 int              theora_p=0;
 int              theora_processing_headers;
@@ -87,9 +87,9 @@ static void sigint_handler (int signal) {
   got_sigint = 1;
 }
 
-static theora_ycbcr_buffer ycbcr;
+static th_ycbcr_buffer ycbcr;
 
-static void stripe_decoded(theora_ycbcr_buffer _dst,theora_ycbcr_buffer _src,
+static void stripe_decoded(th_ycbcr_buffer _dst,th_ycbcr_buffer _src,
  int _fragy0,int _fragy_end){
   int pli;
   for(pli=0;pli<3;pli++){
@@ -130,8 +130,8 @@ static void open_video(void){
      instead (though in C++ platform-dependent calling convention differences
      prevent us from using a real member function pointer).*/
   cb.ctx=ycbcr;
-  cb.stripe_decoded=(theora_stripe_decoded_func)stripe_decoded;
-  theora_decode_ctl(td,OC_DECCTL_SET_STRIPE_CB,&cb,sizeof(cb));
+  cb.stripe_decoded=(th_stripe_decoded_func)stripe_decoded;
+  th_decode_ctl(td,TH_DECCTL_SET_STRIPE_CB,&cb,sizeof(cb));
 }
 
 static void video_write(void){
@@ -139,8 +139,8 @@ static void video_write(void){
   int i;
 
   /*Uncomment the following to do normal, non-striped decoding.
-  theora_ycbcr_buffer ycbcr;
-  theora_decode_ycbcr_out(td,ycbcr);*/
+  th_ycbcr_buffer ycbcr;
+  th_decode_ycbcr_out(td,ycbcr);*/
   if(!raw)fprintf(outfile, "FRAME\n");
 
   for(pli=0;pli<3;pli++){
@@ -226,8 +226,8 @@ int main(int argc,char *argv[]){
   /*vorbis_comment_init(&vc);*/
 
   /* init supporting Theora structures needed in header parsing */
-  theora_comment_init(&tc);
-  theora_info_init(&ti);
+  th_comment_init(&tc);
+  th_info_init(&ti);
 
   /* Ogg file open; parse the headers */
   /* Only interested in Vorbis/Theora streams */
@@ -251,7 +251,7 @@ int main(int argc,char *argv[]){
 
       /* identify the codec: try theora */
       if(!theora_p && (theora_processing_headers=
-       theora_decode_headerin(&ti,&tc,&ts,&op))>=0){
+       th_decode_headerin(&ti,&tc,&ts,&op))>=0){
         /* it is theora */
         memcpy(&to,&test,sizeof(test));
         theora_p=1;
@@ -272,7 +272,7 @@ int main(int argc,char *argv[]){
     /* look for further theora headers */
     while(theora_processing_headers&&(ret=ogg_stream_packetpeek(&to,&op))){
       if(ret<0)continue;
-      theora_processing_headers=theora_decode_headerin(&ti,&tc,&ts,&op);
+      theora_processing_headers=th_decode_headerin(&ti,&tc,&ts,&op);
       if(theora_processing_headers<0){
         printf("Error parsing Theora stream headers; corrupt stream?\n");
         exit(1);
@@ -304,18 +304,18 @@ int main(int argc,char *argv[]){
 
   /* and now we have it all.  initialize decoders */
   if(theora_p){
-    td=theora_decode_alloc(&ti,ts);
+    td=th_decode_alloc(&ti,ts);
     fprintf(stderr,"Ogg logical stream %lx is Theora %dx%d %.02f fps video\nEncoded frame content is %dx%d with %dx%d offset\n",
             to.serialno,ti.frame_width,ti.frame_height,
             (double)ti.fps_numerator/ti.fps_denominator,
             ti.pic_width, ti.pic_height, ti.pic_x, ti.pic_y);
   }else{
     /* tear down the partial theora setup */
-    theora_info_clear(&ti);
-    theora_comment_clear(&tc);
+    th_info_clear(&ti);
+    th_comment_clear(&tc);
   }
   /*Either way, we're done with the codec setup data.*/
-  theora_setup_free(ts);
+  th_setup_free(ts);
 
   /* open video */
   if(theora_p)open_video();
@@ -343,8 +343,8 @@ int main(int argc,char *argv[]){
       /* theora is one in, one out... */
       if(ogg_stream_packetout(&to,&op)>0){
 
-        if(theora_decode_packetin(td,&op,&videobuf_granulepos)>=0){
-          videobuf_time=theora_granule_time(td,videobuf_granulepos);
+        if(th_decode_packetin(td,&op,&videobuf_granulepos)>=0){
+          videobuf_time=th_granule_time(td,videobuf_granulepos);
           videobuf_ready=1;
           frames++;
         }
@@ -372,9 +372,9 @@ int main(int argc,char *argv[]){
 
   if(theora_p){
     ogg_stream_clear(&to);
-    theora_decode_free(td);
-    theora_comment_clear(&tc);
-    theora_info_clear(&ti);
+    th_decode_free(td);
+    th_comment_clear(&tc);
+    th_info_clear(&ti);
   }
   ogg_sync_clear(&oy);
 

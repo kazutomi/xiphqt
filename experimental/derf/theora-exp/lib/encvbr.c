@@ -1360,12 +1360,12 @@ static void oc_enc_vbr_clear(oc_enc_vbr_ctx *_vbr){
   oc_impmap_free(_vbr->impmap);
 }
 
-static int oc_enc_vbr_cfg(oc_enc_vbr_ctx *_vbr,theora_vbr_cfg *_cfg){
+static int oc_enc_vbr_cfg(oc_enc_vbr_ctx *_vbr,th_vbr_cfg *_cfg){
   if(_cfg->qi<0||_cfg->qi>63||_cfg->kf_qi_min<0||_cfg->kf_qi_min>63||
    _cfg->kf_qi_max<_cfg->kf_qi_min||_cfg->kf_qi_max>63||
    _cfg->df_qi_min<0||_cfg->df_qi_min>63||
    _cfg->df_qi_max<_cfg->df_qi_min||_cfg->df_qi_max>63){
-    return OC_EINVAL;
+    return TH_EINVAL;
   }
   memcpy(&_vbr->cfg,_cfg,sizeof(_vbr->cfg));
   return 0;
@@ -1400,7 +1400,7 @@ void oc_enc_vbr_free(oc_enc_vbr_ctx *_vbr){
   }
 }
 
-int oc_enc_vbr_enable(oc_enc_vbr_ctx *_vbr,theora_vbr_cfg *_cfg){
+int oc_enc_vbr_enable(oc_enc_vbr_ctx *_vbr,th_vbr_cfg *_cfg){
   if(_cfg!=NULL){
     int ret;
     ret=oc_enc_vbr_cfg(_vbr,_cfg);

@@ -206,7 +206,7 @@ static int oc_block_run_unpack(oggpack_buffer *_opb){
 
 
 static int oc_dec_init(oc_dec_ctx *_dec,const theora_info *_info,
- const theora_setup_info *_setup){
+ const th_setup_info *_setup){
   int qti;
   int pli;
   int qi;
@@ -261,7 +261,7 @@ static int oc_dec_frame_header_unpack(oc_dec_ctx *_dec){
   long val;
   /*Check to make sure this is a data packet.*/
   theora_read1(&_dec->opb,&val);
-  if(val!=0)return OC_BADPACKET;
+  if(val!=0)return TH_BADPACKET;
   /*Read in the frame type (I or P).*/
   theora_read1(&_dec->opb,&val);
   _dec->state.frame_type=(int)val;
@@ -286,7 +286,7 @@ static int oc_dec_frame_header_unpack(oc_dec_ctx *_dec){
       Most of the other unused bits in the VP3 headers were eliminated.
       I don't know why these remain.*/
     theora_read(&_dec->opb,3,&val);
-    if(val!=0)return OC_IMPL;
+    if(val!=0)return TH_IMPL;
   }
   return 0;
 }
@@ -825,7 +825,7 @@ static int oc_token_dec1val_cati(int _token,int _extra_bits){
 
 /*A jump table for compute the first coefficient value the given token value
    represents.*/
-static const oc_token_dec1val_func OC_TOKEN_DEC1VAL_TABLE[OC_NDCT_TOKENS-
+static const oc_token_dec1val_func OC_TOKEN_DEC1VAL_TABLE[TH_NDCT_TOKENS-
  OC_NDCT_EOB_TOKEN_MAX]={
   (oc_token_dec1val_func)oc_token_dec1val_zrl,
   (oc_token_dec1val_func)oc_token_dec1val_zrl,
@@ -1164,7 +1164,7 @@ void oc_token_expand_run(int _token,int _extra_bits,
 /*A jump table for expanding token values into coefficient values.
   This reduces all the conditional branches, etc., needed to parse these token
    values down to one indirect jump.*/
-static const oc_token_expand_func OC_TOKEN_EXPAND_TABLE[OC_NDCT_TOKENS-
+static const oc_token_expand_func OC_TOKEN_EXPAND_TABLE[TH_NDCT_TOKENS-
  OC_NDCT_EOB_TOKEN_MAX]={
   oc_token_expand_zrl,
   oc_token_expand_zrl,
@@ -1848,8 +1848,8 @@ static void oc_dec_dering_frag_rows(oc_dec_ctx *_dec,theora_img_plane *_img,
 
 
 
-theora_dec_ctx *theora_decode_alloc(const theora_info *_info,
- const theora_setup_info *_setup){
+th_dec_ctx *th_decode_alloc(const theora_info *_info,
+ const th_setup_info *_setup){
   oc_dec_ctx *dec;
   if(_info==NULL||_setup==NULL)return NULL;
   dec=_ogg_malloc(sizeof(*dec));
@@ -1861,37 +1861,37 @@ theora_dec_ctx *theora_decode_alloc(const theora_info *_info,
   return dec;
 }
 
-void theora_decode_free(theora_dec_ctx *_dec){
+void th_decode_free(th_dec_ctx *_dec){
   if(_dec!=NULL){
     oc_dec_clear(_dec);
     _ogg_free(_dec);
   }
 }
 
-int theora_decode_ctl(theora_dec_ctx *_dec,int _req,void *_buf,
+int th_decode_ctl(th_dec_ctx *_dec,int _req,void *_buf,
  size_t _buf_sz){
   switch(_req){
-    case OC_DECCTL_GET_PPLEVEL_MAX:{
-      if(_dec==NULL||_buf==NULL)return OC_FAULT;
-      if(_buf_sz!=sizeof(int))return OC_EINVAL;
+    case TH_DECCTL_GET_PPLEVEL_MAX:{
+      if(_dec==NULL||_buf==NULL)return TH_FAULT;
+      if(_buf_sz!=sizeof(int))return TH_EINVAL;
       (*(int *)_buf)=OC_PP_LEVEL_MAX;
       return 0;
     }break;
-    case OC_DECCTL_SET_PPLEVEL:{
+    case TH_DECCTL_SET_PPLEVEL:{
       int pp_level;
-      if(_dec==NULL||_buf==NULL)return OC_FAULT;
-      if(_buf_sz!=sizeof(int))return OC_EINVAL;
+      if(_dec==NULL||_buf==NULL)return TH_FAULT;
+      if(_buf_sz!=sizeof(int))return TH_EINVAL;
       pp_level=*(int *)_buf;
-      if(pp_level<0||pp_level>OC_PP_LEVEL_MAX)return OC_EINVAL;
+      if(pp_level<0||pp_level>OC_PP_LEVEL_MAX)return TH_EINVAL;
       _dec->pp_level=pp_level;
       return 0;
     }break;
-    case OC_DECCTL_SET_GRANPOS:{
+    case TH_DECCTL_SET_GRANPOS:{
       ogg_int64_t granpos;
-      if(_dec==NULL||_buf==NULL)return OC_FAULT;
-      if(_buf_sz!=sizeof(ogg_int64_t))return OC_EINVAL;
+      if(_dec==NULL||_buf==NULL)return TH_FAULT;
+      if(_buf_sz!=sizeof(ogg_int64_t))return TH_EINVAL;
       granpos=*(ogg_int64_t *)_buf;
-      if(granpos<0)return OC_EINVAL;
+      if(granpos<0)return TH_EINVAL;
       _dec->state.granpos=granpos;
       _dec->state.keyframe_num=
        granpos>>_dec->state.info.keyframe_granule_shift;
@@ -1899,29 +1899,29 @@ int theora_decode_ctl(theora_dec_ctx *_dec,int _req,void *_buf,
        (granpos&(1<<_dec->state.info.keyframe_granule_shift)-1);
       return 0;
     }break;
-    case OC_DECCTL_SET_STRIPE_CB:{
+    case TH_DECCTL_SET_STRIPE_CB:{
       theora_stripe_callback *cb;
-      if(_dec==NULL||_buf==NULL)return OC_FAULT;
-      if(_buf_sz!=sizeof(theora_stripe_callback))return OC_EINVAL;
+      if(_dec==NULL||_buf==NULL)return TH_FAULT;
+      if(_buf_sz!=sizeof(theora_stripe_callback))return TH_EINVAL;
       cb=(theora_stripe_callback *)_buf;
       _dec->stripe_cb.ctx=cb->ctx;
       _dec->stripe_cb.stripe_decoded=cb->stripe_decoded;
       return 0;
     }break;
-    default:return OC_IMPL;
+    default:return TH_IMPL;
   }
 }
 
-int theora_decode_packetin(theora_dec_ctx *_dec,const ogg_packet *_op,
+int th_decode_packetin(th_dec_ctx *_dec,const ogg_packet *_op,
  ogg_int64_t *_granpos){
   int ret;
-  if(_dec==NULL||_op==NULL)return OC_FAULT;
+  if(_dec==NULL||_op==NULL)return TH_FAULT;
   /*A completely empty packet indicates a dropped frame and is treated exactly
      like an inter frame with no coded blocks.
     Only proceed if we have a non-empty packet.*/
   if(_op->bytes!=0){
     oc_dec_pipeline_state pipe;
-    theora_ycbcr_buffer   stripe_buf;
+    th_ycbcr_buffer   stripe_buf;
     int                   stripe_fragy;
     int                   refi;
     int                   pli;
@@ -2111,7 +2111,7 @@ int theora_decode_packetin(theora_dec_ctx *_dec,const ogg_packet *_op,
   return 0;
 }
 
-int theora_decode_ycbcr_out(theora_dec_ctx *_dec,theora_ycbcr_buffer _ycbcr){
+int th_decode_ycbcr_out(th_dec_ctx *_dec,th_ycbcr_buffer _ycbcr){
   oc_ycbcr_buffer_flip(_ycbcr,_dec->pp_frame_buf);
   return 0;
 }

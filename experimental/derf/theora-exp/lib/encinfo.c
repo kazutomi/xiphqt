@@ -15,9 +15,9 @@ static void oc_pack_octets(oggpack_buffer *_opb,const char *_buf,int _len){
 
 
 
-int theora_encode_flushheader(theora_enc_ctx *_enc,theora_comment *_tc,
+int th_encode_flushheader(th_enc_ctx *_enc,th_comment *_tc,
  ogg_packet *_op){
-  if(_enc==NULL||_op==NULL)return OC_FAULT;
+  if(_enc==NULL||_op==NULL)return TH_FAULT;
   switch(_enc->packet_state){
     /*Codec info header.*/
     case OC_PACKET_INFO_HDR:{
@@ -27,9 +27,9 @@ int theora_encode_flushheader(theora_enc_ctx *_enc,theora_comment *_tc,
       /*Write the codec string.*/
       oc_pack_octets(&_enc->opb,"theora",6);
       /*Write the codec bitstream version.*/
-      oggpackB_write(&_enc->opb,OC_VERSION_MAJOR,8);
-      oggpackB_write(&_enc->opb,OC_VERSION_MINOR,8);
-      oggpackB_write(&_enc->opb,OC_VERSION_SUB,8);
+      oggpackB_write(&_enc->opb,TH_VERSION_MAJOR,8);
+      oggpackB_write(&_enc->opb,TH_VERSION_MINOR,8);
+      oggpackB_write(&_enc->opb,TH_VERSION_SUB,8);
       /*Describe the encoded frame.*/
       oggpackB_write(&_enc->opb,_enc->state.info.frame_width>>4,16);
       oggpackB_write(&_enc->opb,_enc->state.info.frame_height>>4,16);
@@ -56,8 +56,8 @@ int theora_encode_flushheader(theora_enc_ctx *_enc,theora_comment *_tc,
       const char *vendor;
       int         vendor_len;
       int         i;
-      if(_tc==NULL)return OC_FAULT;
-      vendor=theora_version_string();
+      if(_tc==NULL)return TH_FAULT;
+      vendor=th_version_string();
       vendor_len=strlen(vendor);
       oggpackB_reset(&_enc->opb);
       /*Mark this packet as the comment header.*/

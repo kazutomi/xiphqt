@@ -55,19 +55,19 @@ extern "C" {
 /**\name Error codes*/
 /*@{*/
 /**An invalid pointer was provided.*/
-#define OC_FAULT     (-1)
+#define TH_FAULT     (-1)
 /**An invalid argument was provided.*/
-#define OC_EINVAL    (-10)
+#define TH_EINVAL    (-10)
 /**The contents of the header were incomplete, invalid, or unexpected.*/
-#define OC_BADHEADER (-20)
+#define TH_BADHEADER (-20)
 /**The header does not belong to a Theora stream.*/
-#define OC_NOTFORMAT (-21)
+#define TH_NOTFORMAT (-21)
 /**The bitstream version is too high.*/
-#define OC_VERSION   (-22)
+#define TH_VERSION   (-22)
 /**The specified function is not implemented.*/
-#define OC_IMPL      (-23)
+#define TH_IMPL      (-23)
 /**There were errors in the video data packet.*/
-#define OC_BADPACKET (-24)
+#define TH_BADPACKET (-24)
 /*@}*/
 
 /**The currently defined color space tags.
@@ -77,14 +77,14 @@ extern "C" {
 typedef enum{
   /**The color space was not specified at the encoder.
       It may be conveyed by an external means.*/
-  OC_CS_UNSPECIFIED,
+  TH_CS_UNSPECIFIED,
   /**A color space designed for NTSC content.*/
-  OC_CS_ITU_REC_470M,
+  TH_CS_ITU_REC_470M,
   /**A color space designed for PAL/SECAM content.*/
-  OC_CS_ITU_REC_470BG,
+  TH_CS_ITU_REC_470BG,
   /**The total number of currently defined color spaces.*/
-  OC_CS_NSPACES
-}theora_colorspace;
+  TH_CS_NSPACES
+}th_colorspace;
 
 /**The currently defined pixel format tags.
  * See <a href="http://www.theora.org/doc/Theora_I_spec.pdf">the Theora
@@ -92,16 +92,16 @@ typedef enum{
  *  locations.*/
 typedef enum{
   /**Chroma decimation by 2 in both the X and Y directions (4:2:0).*/
-  OC_PF_420,
+  TH_PF_420,
   /**Currently reserved.*/
-  OC_PF_RSVD,
+  TH_PF_RSVD,
   /**Chroma decimation by 2 in the X direction (4:2:2).*/
-  OC_PF_422,
+  TH_PF_422,
   /**No chroma decimation (4:4:4).*/
-  OC_PF_444,
+  TH_PF_444,
   /**The total number of currently defined pixel formats.*/
-  OC_PF_NFORMATS
-}theora_pixel_fmt;
+  TH_PF_NFORMATS
+}th_pixel_fmt;
 
 
 
@@ -140,17 +140,17 @@ typedef struct{
  *  Y'CbCr, and they appear in that order, always.
  * The prime symbol denotes that the Y channel is non-linear.
  * Cb and Cr stand for "Chroma blue" and "Chroma red" respectively.*/
-typedef theora_img_plane theora_ycbcr_buffer[3];
+typedef theora_img_plane th_ycbcr_buffer[3];
 
 /**Theora bitstream information.
  * This contains the basic playback parameters for a stream, and corresponds to 
  *  the initial 'info' header packet.
  * To initialize an encoder, the application fills in this structure and
- *  passes it to theora_encode_alloc().
+ *  passes it to th_encode_alloc().
  * A default encoding mode is chosen based on the values of the #quality and
  *  #target_bitrate fields.
- * On decode, it is filled in by theora_decode_headerin(), and then passed to
- *  theora_decode_alloc().
+ * On decode, it is filled in by th_decode_headerin(), and then passed to
+ *  th_decode_alloc().
  * 
  * Encoded Theora frames must be a multiple of 16 in size;
  *  this is what the #frame_width and #frame_height members represent.
@@ -223,9 +223,9 @@ typedef struct{
   ogg_uint32_t       aspect_denominator;
   /*@}*/
   /**The color space.*/
-  theora_colorspace  colorspace;
+  th_colorspace  colorspace;
   /**The pixel format.*/
-  theora_pixel_fmt   pixel_fmt;
+  th_pixel_fmt   pixel_fmt;
   /**The target bit-rate in bits per second.
      If initializing an encoder with this struct, set this field to a non-zero
       value to activate CBR encoding by default.*/
@@ -256,13 +256,13 @@ typedef struct{
   /**The amount to shift to extract the last keyframe number from the granule
    *  position.
    * This can be at most 31.
-   * theora_info_init() will set this to a default value (currently <tt>6</tt>,
+   * th_info_init() will set this to a default value (currently <tt>6</tt>,
    *  which is good for streaming applications), but you can set it to 0 to
    *  make every frame a keyframe.
    * The maximum distance between key frames is
    *  <tt>1<<#keyframe_granule_shift</tt>.
    * The keyframe frequency can be more finely controlled with
-   *  #OC_ENCCTL_SET_KEYFRAME_FREQUENCY_FORCE, which can also be adjusted
+   *  #TH_ENCCTL_SET_KEYFRAME_FREQUENCY_FORCE, which can also be adjusted
    *  during encoding (for example, to force the next frame to be a keyframe),
    *  but it cannot be set larger than the amount permitted by this field after
    *  the headers have been output.*/
@@ -293,7 +293,7 @@ typedef struct{
  *  possibly containing null characters, and so the length array should be
  *  treated as their authoritative length.
  */
-typedef struct theora_comment{
+typedef struct th_comment{
   /**The array of comment string vectors.*/
   char **user_comments;
   /**An array of the corresponding length of each vector, in bytes.*/
@@ -303,12 +303,12 @@ typedef struct theora_comment{
   /**The null-terminated vendor string.
      This identifies the software used to encode the stream.*/
   char  *vendor;
-}theora_comment;
+}th_comment;
 
 
 
 /**A single base matrix.*/
-typedef unsigned char theora_quant_base[64];
+typedef unsigned char th_quant_base[64];
 
 /**A set of \a qi ranges.*/
 typedef struct{
@@ -319,7 +319,7 @@ typedef struct{
   const int               *sizes;
   /**#nranges <tt>+1</tt> base matrices.
      Matrices \a i and <tt>i+1</tt> form the endpoints of range \a i.*/
-  const theora_quant_base *base_matrices;
+  const th_quant_base *base_matrices;
 }theora_quant_ranges;
 
 /**A complete set of quantization parameters.
@@ -393,9 +393,9 @@ typedef struct{
 
 
 /**The number of Huffman tables used by Theora.*/
-#define OC_NHUFFMAN_TABLES (80)
+#define TH_NHUFFMAN_TABLES (80)
 /**The number of DCT token values in each table.*/
-#define OC_NDCT_TOKENS     (32)
+#define TH_NDCT_TOKENS     (32)
 
 /**A Huffman code for a Theora DCT token.
  * Each set of Huffman codes in a given table must form a complete, prefix-free
@@ -426,7 +426,7 @@ typedef struct{
 /**Retrieves a human-readable string to identify the library vendor and
  *  version.
  * \return the version string.*/
-extern const char *theora_version_string(void);
+extern const char *th_version_string(void);
 /**Retrieves the library version number.
  * This is the highest bitstream version that the encoder library will produce,
  *  or that the decoder library can decode.
@@ -436,42 +436,42 @@ extern const char *theora_version_string(void);
  * (VERSION_MAJOR<<16)+(VERSION_MINOR<<8)+(VERSION_SUBMINOR)
  * \endcode
  * \return the version number.*/
-extern ogg_uint32_t theora_version_number(void);
+extern ogg_uint32_t th_version_number(void);
 /**Converts a granule position to an absolute frame number.
  * The granule position is interpreted in the context of a given
- *  #theora_enc_ctx or #theora_dec_ctx handle (either will suffice).
- * \param _encdec  A previously allocated #theora_enc_ctx or #theora_dec_ctx
+ *  #th_enc_ctx or #th_dec_ctx handle (either will suffice).
+ * \param _encdec  A previously allocated #th_enc_ctx or #th_dec_ctx
  *                  handle.
  * \param _granpos The granule position to convert.
  * \returns The absolute frame number corresponding to \a _granpos.
  * \retval -1 The given granule position was invalid (i.e. negative).*/
-extern ogg_int64_t theora_granule_frame(void *_encdec,ogg_int64_t _granpos);
+extern ogg_int64_t th_granule_frame(void *_encdec,ogg_int64_t _granpos);
 /**Converts a granule position to an absolute time in seconds.
  * The granule position is interpreted in the context of a given
- *  #theora_enc_ctx or #theora_dec_ctx handle (either will suffice).
- * \param _encdec  A previously allocated #theora_enc_ctx or #theora_dec_ctx
+ *  #th_enc_ctx or #th_dec_ctx handle (either will suffice).
+ * \param _encdec  A previously allocated #th_enc_ctx or #th_dec_ctx
  *                  handle.
  * \param _granpos The granule position to convert.
  * \return The absolute time in seconds corresponding to \a _granpos.
  * \retval -1 The given granule position was invalid (i.e. negative).*/
-extern double theora_granule_time(void *_encdec,ogg_int64_t _granpos);
+extern double th_granule_time(void *_encdec,ogg_int64_t _granpos);
 /**Determines whether a Theora packet is a header or not.
  * This function does no verification beyond checking the packet type bit, so
  *  it should not be used for bitstream identification; use
- *  theora_decode_headerin() for that.
+ *  th_decode_headerin() for that.
  * \param _op An <tt>ogg_packet</tt> containing encoded Theora data.
  * \retval 1 The packet is a header packet
  * \retval 0 The packet is a video data packet.*/
-extern int theora_packet_isheader(ogg_packet *_op);
+extern int th_packet_isheader(ogg_packet *_op);
 /**Determines whether a theora packet is a key frame or not.
  * This function does no verification beyond checking the packet type and
  *  key frame bits, so it should not be used for bitstream identification; use
- *  theora_decode_headerin() for that.
+ *  th_decode_headerin() for that.
  * \param _op An <tt>ogg_packet</tt> containing encoded Theora data.
  * \retval 1  The packet contains a key frame.
  * \retval 0  The packet contains a delta frame.
  * \retval -1 The packet is not a video data packet.*/
-extern int theora_packet_iskeyframe(ogg_packet *_op);
+extern int th_packet_iskeyframe(ogg_packet *_op);
 /*@}*/
 
 
@@ -481,66 +481,66 @@ extern int theora_packet_iskeyframe(ogg_packet *_op);
  * This should be called on a freshly allocated #theora_info structure before
  *  attempting to use it.
  * \param _info The #theora_info struct to initialize.*/
-extern void theora_info_init(theora_info *_info);
+extern void th_info_init(theora_info *_info);
 /**Clears a #theora_info structure.
  * This should be called on a #theora_info structure after it is no longer
  *  needed.
  * \param _info The #theora_info struct to clear.*/
-extern void theora_info_clear(theora_info *_info);
+extern void th_info_clear(theora_info *_info);
 
-/**Initialize a #theora_comment structure.
- * This should be called on a freshly allocated #theora_comment structure
+/**Initialize a #th_comment structure.
+ * This should be called on a freshly allocated #th_comment structure
  *  before attempting to use it.
- * \param _tc The #theora_comment struct to initialize.*/
-extern void theora_comment_init(theora_comment *_tc);
-/**Add a comment to an initialized #theora_comment structure.
- * \note Neither theora_comment_add() nor theora_comment_add_tag() support
+ * \param _tc The #th_comment struct to initialize.*/
+extern void th_comment_init(th_comment *_tc);
+/**Add a comment to an initialized #th_comment structure.
+ * \note Neither th_comment_add() nor th_comment_add_tag() support
  *  comments containing null values, although the bitstream format does
  *  support them.
- * To add such comments you will need to manipulate the #theora_comment
+ * To add such comments you will need to manipulate the #th_comment
  *  structure directly.
- * \param _tc      The #theora_comment struct to add the comment to.
+ * \param _tc      The #th_comment struct to add the comment to.
  * \param _comment Must be a null-terminated UTF-8 string containing the
  *                  comment in "TAG=the value" form.*/
-extern void theora_comment_add(theora_comment *_tc, char *_comment);
-/**Add a comment to an initialized #theora_comment structure.
- * \note Neither theora_comment_add() nor theora_comment_add_tag() support
+extern void th_comment_add(th_comment *_tc, char *_comment);
+/**Add a comment to an initialized #th_comment structure.
+ * \note Neither th_comment_add() nor th_comment_add_tag() support
  *  comments containing null values, although the bitstream format does
  *  support them.
- * To add such comments you will need to manipulate the #theora_comment
+ * To add such comments you will need to manipulate the #th_comment
  *  structure directly.
- * \param _tc  The #theora_comment struct to add the comment to.
+ * \param _tc  The #th_comment struct to add the comment to.
  * \param _tag A null-terminated string containing the tag  associated with
  *              the comment.
  * \param _val The corresponding value as a null-terminated string.*/
-extern void theora_comment_add_tag(theora_comment *_tc,char *_tag,char *_val);
+extern void th_comment_add_tag(th_comment *_tc,char *_tag,char *_val);
 /**Look up a comment value by its tag.
- * \param _tc    An initialized #theora_comment structure.
+ * \param _tc    An initialized #th_comment structure.
  * \param _tag   The tag to look up.
  * \param _count The instance of the tag.
  *               The same tag can appear  multiple times, each with a distinct
  *                value, so an index is required to retrieve them all.
  *               The order these values appear in is significant and should be
  *                preserved.
- *               Use theora_comment_query_count() to get the legal range for
+ *               Use th_comment_query_count() to get the legal range for
  *                the \a _count parameter.
  * \return A pointer to the queried tag's value.
  * \retval NULL If no matching tag is found.*/
-extern char *theora_comment_query(theora_comment *_tc,char *_tag,int _count);
+extern char *th_comment_query(th_comment *_tc,char *_tag,int _count);
 /**Look up the number of instances of a tag.
  * Call this first when querying for a specific tag and then iterate over the
- *  number of instances with separate calls to theora_comment_query() to
+ *  number of instances with separate calls to th_comment_query() to
  *   retrieve all instances in order.
- * \param _tc    An initialized #theora_comment structure.
+ * \param _tc    An initialized #th_comment structure.
  * \param _tag   The tag to look up.
  * \return The number on instances of this particular tag.*/
-extern int theora_comment_query_count(theora_comment *_tc,char *_tag);
-/**Clears a #theora_comment structure.
- * This should be called on a #theora_comment structure after it is no longer
+extern int th_comment_query_count(th_comment *_tc,char *_tag);
+/**Clears a #th_comment structure.
+ * This should be called on a #th_comment structure after it is no longer
  *  needed.
  * It will free all memory used by the structure members.
- * \param _tc The #theora_comment struct to clear.*/
-extern void theora_comment_clear(theora_comment *_tc);
+ * \param _tc The #th_comment struct to clear.*/
+extern void th_comment_clear(th_comment *_tc);
 /*@}*/
 /*@}*/
 

@@ -78,8 +78,8 @@ static int oc_huff_tree_unpack(oggpack_buffer *_opb,
   oc_huff_node *binode;
   long          bits;
   /*Prevent infinite recursion.*/
-  if(++_depth>32)return OC_BADHEADER;
-  if(theora_read1(_opb,&bits)<0)return OC_BADHEADER;
+  if(++_depth>32)return TH_BADHEADER;
+  if(theora_read1(_opb,&bits)<0)return TH_BADHEADER;
   /*Read an internal node:*/
   if(!bits){
     int ret;
@@ -94,7 +94,7 @@ static int oc_huff_tree_unpack(oggpack_buffer *_opb,
   }
   /*Read a leaf node:*/
   else{
-    if(theora_read(_opb,OC_NDCT_TOKEN_BITS,&bits)<0)return OC_BADHEADER;
+    if(theora_read(_opb,OC_NDCT_TOKEN_BITS,&bits)<0)return TH_BADHEADER;
     binode=oc_huff_node_alloc(0);
     binode->depth=(unsigned char)(_depth>1);
     binode->token=(unsigned char)bits;
@@ -219,9 +219,9 @@ static oc_huff_node *oc_huff_tree_copy(const oc_huff_node *_node){
   _nodes: The table to fill with the Huffman trees.
   Return: 0 on success, or a negative value on error.*/
 int oc_huff_trees_unpack(oggpack_buffer *_opb,
- oc_huff_node *_nodes[OC_NHUFFMAN_TABLES]){
+ oc_huff_node *_nodes[TH_NHUFFMAN_TABLES]){
   int i;
-  for(i=0;i<OC_NHUFFMAN_TABLES;i++){
+  for(i=0;i<TH_NHUFFMAN_TABLES;i++){
     int ret;
     ret=oc_huff_tree_unpack(_opb,_nodes+i,0);
     if(ret<0)return ret;
@@ -233,17 +233,17 @@ int oc_huff_trees_unpack(oggpack_buffer *_opb,
 /*Makes a copy of the given set of Huffman trees.
   _dst: The array to store the copy in.
   _src: The array of trees to copy.*/
-void oc_huff_trees_copy(oc_huff_node *_dst[OC_NHUFFMAN_TABLES],
- const oc_huff_node *const _src[OC_NHUFFMAN_TABLES]){
+void oc_huff_trees_copy(oc_huff_node *_dst[TH_NHUFFMAN_TABLES],
+ const oc_huff_node *const _src[TH_NHUFFMAN_TABLES]){
   int i;
-  for(i=0;i<OC_NHUFFMAN_TABLES;i++)_dst[i]=oc_huff_tree_copy(_src[i]);
+  for(i=0;i<TH_NHUFFMAN_TABLES;i++)_dst[i]=oc_huff_tree_copy(_src[i]);
 }
 
 /*Frees the memory used by a set of Huffman trees.
   _nodes: The array of trees to free.*/
-void oc_huff_trees_clear(oc_huff_node *_nodes[OC_NHUFFMAN_TABLES]){
+void oc_huff_trees_clear(oc_huff_node *_nodes[TH_NHUFFMAN_TABLES]){
   int i;
-  for(i=0;i<OC_NHUFFMAN_TABLES;i++)oc_huff_tree_free(_nodes[i]);
+  for(i=0;i<TH_NHUFFMAN_TABLES;i++)oc_huff_tree_free(_nodes[i]);
 }
 
 /*Unpacks a single token using the given Huffman tree.

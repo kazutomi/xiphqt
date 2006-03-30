@@ -600,7 +600,7 @@ int main(void){
     if(qri+1<NQRANGES)printf(",");
   }
   printf("};\n");
-  printf("\nstatic const theora_quant_base OC_DEF_BASE_MATRICES[9][%i]={",
+  printf("\nstatic const th_quant_base OC_DEF_BASE_MATRICES[9][%i]={",
    NQRANGES+1);
   for(pci=0;pci<9;pci++){
     if(pci==0)chx=chy=pli=pfi=0;
