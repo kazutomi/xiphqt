@@ -431,7 +431,7 @@ void ff2theora_output(ff2theora this) {
             /* video settings here */
             /* config file? commandline options? v2v presets? */
             
-            theora_info_init (&info.ti);
+            th_info_init (&info.ti);
             
             info.ti.frame_width = this->frame_width;  
             info.ti.frame_height = this->frame_height;  
@@ -450,14 +450,14 @@ void ff2theora_output(ff2theora this) {
             /* this is pixel aspect ratio */
             info.ti.aspect_numerator=this->aspect_numerator;
             info.ti.aspect_denominator=this->aspect_denominator;
-            // FIXME: is all input material with fps==25 OC_CS_ITU_REC_470BG?
+            // FIXME: is all input material with fps==25 TH_CS_ITU_REC_470BG?
             // guess not, commandline option to select colorspace would be the best.
             if(this->fps==25)
-                info.ti.colorspace = OC_CS_ITU_REC_470BG;
+                info.ti.colorspace = TH_CS_ITU_REC_470BG;
             else if(abs(this->fps-30)<1)
-                info.ti.colorspace = OC_CS_ITU_REC_470M;
+                info.ti.colorspace = TH_CS_ITU_REC_470M;
             else
-                info.ti.colorspace = OC_CS_UNSPECIFIED;
+                info.ti.colorspace = TH_CS_UNSPECIFIED;
 
             info.ti.target_bitrate = this->video_bitrate; 
             info.ti.quality = this->video_quality;
@@ -473,7 +473,7 @@ void ff2theora_output(ff2theora this) {
             // range 0-2, 0 sharp, 2 less sharp,less bandwidth
             info.ti.sharpness = this->sharpness;
 */
-            info.ti.pixel_fmt=OC_PF_420;
+            info.ti.pixel_fmt=TH_PF_420;
             info.ti.keyframe_granule_shift=6;
         }
         /* audio settings here */
@@ -580,7 +580,7 @@ void ff2theora_output(ff2theora this) {
                     first=0;
                     //now output_resized
                     /* pysical pages */
-                    static theora_ycbcr_buffer ycbcr;
+                    static th_ycbcr_buffer ycbcr;
                     /* Theora is a one-frame-in,one-frame-out system; submit a frame
                      * for compression and pull out the packet */
                     ycbcr[0].width = this->frame_width;
@@ -882,7 +882,7 @@ int main (int argc, char **argv){
     }
     // set some variables;
     init_info(&info);
-    theora_comment_init (&info.tc);
+    th_comment_init (&info.tc);
     
     while((c=getopt_long(argc,argv,optstring,options,&long_option_index))!=EOF){
         switch(c)
@@ -944,25 +944,25 @@ int main (int argc, char **argv){
                 if (metadata_flag){
                     switch(metadata_flag) {
                         case 10:
-                            theora_comment_add_tag(&info.tc, "ARTIST", optarg);
+                            th_comment_add_tag(&info.tc, "ARTIST", optarg);
                             break;
                         case 11:
-                            theora_comment_add_tag(&info.tc, "TITLE", optarg);
+                            th_comment_add_tag(&info.tc, "TITLE", optarg);
                             break;
                         case 12:
-                            theora_comment_add_tag(&info.tc, "DATE", optarg);
+                            th_comment_add_tag(&info.tc, "DATE", optarg);
                             break;
                         case 13:
-                            theora_comment_add_tag(&info.tc, "LOCATION", optarg);
+                            th_comment_add_tag(&info.tc, "LOCATION", optarg);
                             break;
                         case 14:
-                            theora_comment_add_tag(&info.tc, "ORGANIZATION", optarg);
+                            th_comment_add_tag(&info.tc, "ORGANIZATION", optarg);
                             break;
                         case 15:
-                            theora_comment_add_tag(&info.tc, "COPYRIGHT", optarg);
+                            th_comment_add_tag(&info.tc, "COPYRIGHT", optarg);
                             break;
                         case 16:
-                            theora_comment_add_tag(&info.tc, "LICENSE", optarg);
+                            th_comment_add_tag(&info.tc, "LICENSE", optarg);
                             break;
                     }
                     metadata_flag=0;

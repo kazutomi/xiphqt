@@ -59,8 +59,8 @@ void oggmux_init (oggmux_info *info){
     
     if(!info->audio_only){
         ogg_stream_init (&info->to, rand ());    /* oops, add one ot the above */
-        info->td=theora_encode_alloc(&info->ti);
-        theora_info_clear (&info->ti);
+        info->td=th_encode_alloc(&info->ti);
+        th_info_clear (&info->ti);
     }
     /* init theora done */
 
@@ -94,9 +94,9 @@ void oggmux_init (oggmux_info *info){
 
     /* first packet will get its own page automatically */
     if(!info->audio_only){
-        theora_comment_init(&info->tc);  
-        theora_comment_add_tag (&info->tc, "ENCODER",PACKAGE_STRING);  
-        if(theora_encode_flushheader(info->td,&info->tc,&op)<=0){  
+        th_comment_init(&info->tc);  
+        th_comment_add_tag (&info->tc, "ENCODER",PACKAGE_STRING);  
+        if(th_encode_flushheader(info->td,&info->tc,&op)<=0){  
             fprintf(stderr,"Internal Theora library error.\n");  
             exit(1);  
         }  
@@ -110,7 +110,7 @@ void oggmux_init (oggmux_info *info){
  	 
         /* create the remaining theora headers */  
         for(;;){  
-            ret = theora_encode_flushheader(info->td,&info->tc,&op);  
+            ret = th_encode_flushheader(info->td,&info->tc,&op);  
             if(ret<0){  
                 fprintf(stderr,"Internal Theora library error.\n");  
                 exit(1);  
@@ -177,11 +177,11 @@ void oggmux_init (oggmux_info *info){
  * @param yuv_buffer
  * @param e_o_s 1 indicates ond of stream
  */
-void oggmux_add_video (oggmux_info *info, theora_ycbcr_buffer ycbcr, int e_o_s){
+void oggmux_add_video (oggmux_info *info, th_ycbcr_buffer ycbcr, int e_o_s){
     ogg_packet op;
     
-    theora_encode_ycbcr_in(info->td,ycbcr);  
-    while(theora_encode_packetout(info->td, e_o_s, &op)) {  
+    th_encode_ycbcr_in(info->td,ycbcr);  
+    while(th_encode_packetout(info->td, e_o_s, &op)) {  
         ogg_stream_packetin (&info->to, &op);  
     }
 }
@@ -294,7 +294,7 @@ void oggmux_flush (oggmux_info *info, int e_o_s)
           memcpy(info->videopage+og.header_len , og.body, og.body_len);
 
           info->videopage_valid = 1;
-          info->videotime = theora_granule_time (info->td,
+          info->videotime = th_granule_time (info->td,
                   ogg_page_granulepos(&og));
         }
       }
@@ -352,7 +352,7 @@ void oggmux_close (oggmux_info *info){
     vorbis_info_clear (&info->vi);
 
     ogg_stream_clear (&info->to);
-    theora_encode_free (info->td);
+    th_encode_free (info->td);
 
     if (info->outfile && info->outfile != stdout)
         fclose (info->outfile);

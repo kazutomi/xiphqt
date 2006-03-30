@@ -45,10 +45,10 @@ typedef struct
 
     /* theora settings */
     theora_info ti;
-    theora_comment tc;
+    th_comment tc;
 
     /* state info */    
-    theora_enc_ctx *td;
+    th_enc_ctx *td;
     vorbis_dsp_state vd; /* central working state for the packet->PCM decoder */
     vorbis_block vb;     /* local working space for packet->PCM decode */
 
@@ -79,7 +79,7 @@ oggmux_info;
 
 extern void init_info(oggmux_info *info);
 extern void oggmux_init (oggmux_info *info);
-extern void oggmux_add_video (oggmux_info *info, theora_ycbcr_buffer ycbcr, int e_o_s);
+extern void oggmux_add_video (oggmux_info *info, th_ycbcr_buffer ycbcr, int e_o_s);
 extern void oggmux_add_audio (oggmux_info *info, int16_t * readbuffer, int bytesread, int samplesread,int e_o_s);
 extern void oggmux_flush (oggmux_info *info, int e_o_s);
 extern void oggmux_close (oggmux_info *info);
