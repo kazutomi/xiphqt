@@ -161,8 +161,8 @@ int main(int argc, char *argv[])
 	continue;
     }
     fprintf(stdout, "Checking Ogg file '%s'\n", argv[i]);
-    e = p + s.st_size;
-    q = rogg_scan(p, s.st_size);
+    e = p + s.st_size; /* pointer to the end of the file */
+    q = rogg_scan(p, s.st_size); /* scan for an Ogg page */
     refs = NULL;
     if (q == NULL) {
 	fprintf(stdout, "couldn't find ogg data!\n");
@@ -171,7 +171,7 @@ int main(int argc, char *argv[])
 	fprintf(stdout, "Skipped %d garbage bytes at the start\n", q-p);
       } 
       while (q < e) {
-	o = rogg_scan(q, e-q);
+	o = rogg_scan(q, e-q); /* find the next Ogg page */
 	if (o > q) {
 	  fprintf(stdout, "Hole in data! skipped %d bytes\n", o - q);
 	   q = o;
