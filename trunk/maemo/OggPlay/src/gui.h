@@ -1,6 +1,6 @@
 /*
  *    Graphical user interface for OggPlay
- *    Copyright (c) 2005 Martin Grimme  <martin.grimme@lintegra.de>
+ *    Copyright (c) 2005, 2006 Martin Grimme  <martin.grimme@lintegra.de>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -27,19 +27,28 @@
 #include <hildon-widgets/hildon-file-chooser-dialog.h>
 #include <hildon-widgets/hildon-seekbar.h>
 #include <hildon-widgets/hildon-vvolumebar.h>
+#include <hildon-widgets/gtk-infoprint.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
+#include <glib.h>
 
+#include "version.h"
 #include "stream.h"
 #include "decoder.h"
+#include "playlistwidget.h"
+#include "playlist.h"
 
 
-#define OPEN_CB    void (*open_cb)    (void *userdata, const char *uri)
+/* size of the cover image */
+#define COVERSIZE 112
+
+/* callback handlers */
+#define OPEN_CB    void (*open_cb)    (void *userdata, GSList *filenames)
 #define SEEK_CB    void (*seek_cb)    (void *userdata, int seconds)
 #define VOLUME_CB  void (*volume_cb)  (void *userdata, int volume)
 #define CONTROL_CB void (*control_cb) (void *userdata, int command)
 
-enum Command { PLAY, STOP };
+enum Command { PLAY, STOP, PREVIOUS, NEXT };
 
 
 struct _Gui {
@@ -53,12 +62,13 @@ struct _Gui {
   CONTROL_CB;
   void *control_cb_data;
 
-
+  char *coverpath;
   int seek_position;
 
   HildonApp *appwindow;
   HildonAppView *appview;
   GtkWidget *volumebar;
+  GtkWidget *albumcover;
   GtkWidget *songlabel;
   GtkWidget *seekbar;
   GtkWidget *timelabel;
@@ -68,7 +78,7 @@ struct _Gui {
 typedef struct _Gui Gui;
 
 
-Gui *gui_new();
+Gui *gui_new(Playlist *playlist);
 void gui_run();
 void gui_quit();
 
@@ -81,5 +91,9 @@ void gui_set_title(Gui *gui, const char *title, const char *artist,
 		   const char *album);
 void gui_set_time(Gui *gui, int seconds, int total);
 void gui_set_paused(Gui *gui, gboolean value);
+
+void gui_load_cover(Gui *gui, const char *path);
+
+void gui_show_error(Gui *gui, const char *message);
 
 #endif

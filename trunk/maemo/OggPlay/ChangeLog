@@ -1,3 +1,14 @@
+2006-04-02  Martin Grimme  <martin.grimme@lintegra.de>
+
+	* src/*: Added playlist and playlist widget.
+	Added support for freedesktop.org compliant CD covers (.directory
+	files) as "albumart" can create them for instance.
+	
+2006-03-20  Martin Grimme  <martin.grimme@lintegra.de>
+
+	* src/audio.h: Added a simple switch to simulate audio playback in
+	the scratchbox SDK environment, where I don't have sound.
+
 2005-11-21  Martin Grimme  <martin@pycage.de>
 
 	* src/gui.c: Implemented fullscreen mode.
