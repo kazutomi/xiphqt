@@ -39,7 +39,7 @@ playlist_new() {
 void
 playlist_free(Playlist *pl) {
 
-  g_free(pl->list);
+  g_ptr_array_free(pl->list, TRUE);
   g_free(pl);
 
 }
@@ -48,7 +48,11 @@ playlist_free(Playlist *pl) {
 void
 playlist_clear(Playlist *pl) {
 
-  // TODO: IMPLEMENT
+  if (pl->list->len > 0) {
+    g_ptr_array_foreach (pl->list, g_free, NULL);
+    g_ptr_array_remove_range(pl->list, 0, pl->list->len);
+    (pl->change_cb)(pl->change_cb_data);
+  }
 
 }
 
@@ -84,9 +88,17 @@ playlist_next(Playlist *pl) {
   
   if (pl->list->len == 0) return;
 
-  pl->position = MIN(pl->list->len - 1, pl->position + 1);
-  uri = g_ptr_array_index(pl->list, pl->position);
-  (pl->play_cb)(pl->play_cb_data, uri);
+  if (pl->position == pl->list->len - 1) {
+
+    (pl->play_cb)(pl->play_cb_data, NULL);
+
+  } else {
+
+    pl->position = MIN(pl->list->len - 1, pl->position + 1);
+    uri = g_ptr_array_index(pl->list, pl->position);
+    (pl->play_cb)(pl->play_cb_data, uri);
+
+  }
 
 }
 

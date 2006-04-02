@@ -48,7 +48,7 @@
 #define VOLUME_CB  void (*volume_cb)  (void *userdata, int volume)
 #define CONTROL_CB void (*control_cb) (void *userdata, int command)
 
-enum Command { PLAY, STOP, PREVIOUS, NEXT };
+enum Command { PLAY, STOP, PREVIOUS, NEXT, CLEAR };
 
 
 struct _Gui {

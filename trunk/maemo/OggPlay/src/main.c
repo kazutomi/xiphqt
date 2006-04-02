@@ -160,11 +160,11 @@ static void
 play_cb(AppData *appdata,
 	const char *uri) {
 
-  open_uri(appdata, uri);
-  //gui_set_title(appdata->gui,
-  //	appdata->decoder->tag_title,
-  //	appdata->decoder->tag_artist,
-  //	appdata->decoder->tag_album);
+  if (uri) {
+    open_uri(appdata, uri);
+  } else {
+    decoder_stop(appdata->decoder);
+  }
 
 }
 
@@ -240,6 +240,9 @@ control_cb(AppData *appdata,
     decoder_stop(appdata->decoder);
     playlist_next(appdata->playlist);
     break;
+
+  case (CLEAR):
+    playlist_clear(appdata->playlist);
 
   default:
     break;
