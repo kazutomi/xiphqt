@@ -1,9 +1,7 @@
 /*
 	mngplay
 
-	$Date: 2003/12/07 09:45:16 $
-
-	Ralph Giles <giles@xiph.org>
+	Copyright (C) 2001-2006 Ralph Giles <giles@xiph.org>
 
 	This program my be redistributed under the terms of the
 	GNU General Public Licence, version 2, or at your preference,
@@ -12,6 +10,7 @@
 	this is an SDL based mng player. the code is very rough;
 	patches welcome.
 
+	$Id: 2003/12/07 09:45:16 $
 
 	GRR 20010708:  added SDL/libmng/zlib/libjpeg version info, mouse-click
 			handling (alternate quit mode); improved automake setup
@@ -24,7 +23,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <SDL/SDL.h>
+#include <SDL.h>
 #include <libmng.h>
 
 #include <libgen.h> // basename
@@ -38,7 +37,7 @@ typedef struct {
 	char		*filename; /* pointer to the file's path/name */
 	SDL_Surface	*surface;  /* SDL display */
 	mng_uint32	delay;     /* ticks to wait before resuming decode */
-	int			sdl_video_depth;  /* The depth for SDL_SetVideoMode */
+	int		sdl_video_depth;  /* The depth for SDL_SetVideoMode */
 } mngstuff;
 
 /* callbacks for the mng decoder */
