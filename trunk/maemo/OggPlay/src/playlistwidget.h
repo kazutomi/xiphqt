@@ -41,6 +41,7 @@ struct _PLWidget {
   GtkWidget *treeview;
 
   Playlist *playlist;
+  int current_selection;
 
 };
 typedef struct _PLWidget PLWidget;

@@ -176,13 +176,16 @@ open_cb(AppData *appdata,
 	GSList *filenames) {
 
   GSList *iter;
+  gboolean do_play = FALSE;
+
+  if (playlist_get_length(appdata->playlist) == 0)
+    do_play = TRUE;
 
   for (iter = filenames; iter != NULL; iter = iter->next) {
     playlist_append(appdata->playlist, (char *) iter->data);
   }
 
-  if (playlist_get_length(appdata->playlist) == 1)
-    playlist_jump_to(appdata->playlist, 0);
+  if (do_play) playlist_jump_to(appdata->playlist, 0);
 
 }
 
