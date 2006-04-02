@@ -2,7 +2,7 @@
 
 PROGS = mngplay
 
-CFLAGS = -g -O2 #-Wall
+CFLAGS = -g -O2 -Wall
 
 mngplay_SRCS = mngplay.c
 mngplay_OBJS = $(mngplay_SRCS:.c=.o)

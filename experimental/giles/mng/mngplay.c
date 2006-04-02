@@ -224,7 +224,6 @@ mng_bool mymngprocessheader(mng_handle mng,
 mng_ptr mymnggetcanvasline(mng_handle mng, mng_uint32 line)
 {
 	mngstuff	*mymng;
-	SDL_Surface	*surface;
 	mng_ptr		row;
 
 	/* dereference our structure */
@@ -368,6 +367,9 @@ int checkevents(mng_handle mng)
 				case SDLK_q:
 					mymngquit(mng);
 					break;
+				default:
+					/* ignore unknown keys */
+					break;
 			}
 			/* FALL THROUGH */
 		default:
@@ -381,7 +383,6 @@ int main(int argc, char *argv[])
 {
 	mngstuff	*mymng;
 	mng_handle	mng;
-	SDL_Rect	updaterect;
 
 	if (argc < 2) {
 		const SDL_version *pSDLver = SDL_Linked_Version();
@@ -503,5 +504,6 @@ int main(int argc, char *argv[])
 
 	/* cleanup and quit */
 	mymngquit(mng);
-}
 
+	return 0;
+}
