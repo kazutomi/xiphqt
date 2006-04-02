@@ -185,12 +185,14 @@ gui_new(Playlist *playlist) {
   GtkWidget *toolbar;
   GtkToolItem *tb_open;
   GtkToolItem *tb_clear;
+  GtkToolItem *tb_sep;
   GtkToolItem *tb_prev;
   GtkToolItem *tb_next;
   GtkToolItem *tb_play;
   GtkToolItem *tb_stop;
   GtkToolItem *tb_seekbar;
   GtkToolItem *tb_timelabel;
+
 
   gui->coverpath = g_strdup("");
 
@@ -246,12 +248,13 @@ gui_new(Playlist *playlist) {
 
   tb_open = gtk_tool_button_new_from_stock(GTK_STOCK_ADD);
   tb_clear = gtk_tool_button_new_from_stock(GTK_STOCK_CLEAR);
+  tb_sep = gtk_separator_tool_item_new();
   gui->tb_play = gtk_tool_button_new_from_stock(GTK_STOCK_MEDIA_PLAY);
   tb_stop = gtk_tool_button_new_from_stock(GTK_STOCK_MEDIA_STOP);
 
   gui->seekbar = hildon_seekbar_new();
-  gtk_widget_set_size_request(gui->seekbar, 210, -1);
   tb_seekbar = gtk_tool_item_new();
+  gtk_tool_item_set_expand(tb_seekbar, TRUE);
   gtk_container_add(GTK_CONTAINER(tb_seekbar), gui->seekbar);
 
   gui->timelabel = gtk_label_new("");
@@ -260,6 +263,7 @@ gui_new(Playlist *playlist) {
 
   gtk_toolbar_insert(GTK_TOOLBAR(toolbar), tb_open, -1);
   gtk_toolbar_insert(GTK_TOOLBAR(toolbar), tb_clear, -1);
+  gtk_toolbar_insert(GTK_TOOLBAR(toolbar), tb_sep, -1);
   gtk_toolbar_insert(GTK_TOOLBAR(toolbar), tb_prev, -1);
   gtk_toolbar_insert(GTK_TOOLBAR(toolbar), gui->tb_play, -1);
   gtk_toolbar_insert(GTK_TOOLBAR(toolbar), tb_stop, -1);
@@ -402,8 +406,8 @@ gui_set_time(Gui *gui,
   total /= 60;
   tmins = total;
 
-  time = g_strdup_printf("   %2d:%02d / %2d:%02d", mins, secs, tmins, tsecs);
-  gtk_label_set_text(GTK_LABEL(gui->timelabel), time);
+  time = g_strdup_printf("<tt> %2d:%02d / %2d:%02d</tt>", mins, secs, tmins, tsecs);
+  gtk_label_set_markup(GTK_LABEL(gui->timelabel), time);
   g_free(time);
 
 }

@@ -180,8 +180,9 @@ open_cb(AppData *appdata,
   for (iter = filenames; iter != NULL; iter = iter->next) {
     playlist_append(appdata->playlist, (char *) iter->data);
   }
-  
-  //open_uri(appdata, uri);
+
+  if (playlist_get_length(appdata->playlist) == 1)
+    playlist_jump_to(appdata->playlist, 0);
 
 }
 

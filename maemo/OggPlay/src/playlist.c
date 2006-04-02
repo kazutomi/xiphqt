@@ -45,6 +45,13 @@ playlist_free(Playlist *pl) {
 }
 
 
+int
+playlist_get_length(Playlist *pl) {
+
+  return pl->list->len;
+
+}
+
 void
 playlist_clear(Playlist *pl) {
 

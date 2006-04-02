@@ -46,6 +46,7 @@ typedef struct _Playlist Playlist;
 Playlist *playlist_new();
 void playlist_free(Playlist *pl);
 void playlist_clear(Playlist *pl);
+int playlist_get_length(Playlist *pl);
 void playlist_append(Playlist *pl, const char *uri);
 void playlist_previous(Playlist *pl);
 void playlist_next(Playlist *pl);
