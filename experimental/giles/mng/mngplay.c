@@ -3,14 +3,11 @@
 
 	$Date: 2003/12/07 09:45:16 $
 
-	Ralph Giles <giles :at: ashlu.bc.ca>
+	Ralph Giles <giles@xiph.org>
 
 	This program my be redistributed under the terms of the
 	GNU General Public Licence, version 2, or at your preference,
 	any later version.
-
-	(this assuming there's no problem with libmng not being GPL...)
-
 
 	this is an SDL based mng player. the code is very rough;
 	patches welcome.
