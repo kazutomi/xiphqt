@@ -127,6 +127,15 @@ open_cb(GtkWidget *src,
 
 
 static void
+clear_cb(GtkWidget *src,
+	 Gui *gui) {
+
+  (gui->control_cb)(gui->control_cb_data, CLEAR);
+
+}
+
+
+static void
 prev_cb(GtkWidget *src,
 	Gui *gui) {
 
@@ -175,6 +184,7 @@ gui_new(Playlist *playlist) {
   PLWidget *plw;
   GtkWidget *toolbar;
   GtkToolItem *tb_open;
+  GtkToolItem *tb_clear;
   GtkToolItem *tb_prev;
   GtkToolItem *tb_next;
   GtkToolItem *tb_play;
@@ -234,12 +244,13 @@ gui_new(Playlist *playlist) {
   tb_prev = gtk_tool_button_new_from_stock(GTK_STOCK_MEDIA_PREVIOUS);
   tb_next = gtk_tool_button_new_from_stock(GTK_STOCK_MEDIA_NEXT);
 
-  tb_open = gtk_tool_button_new_from_stock(GTK_STOCK_OPEN);
+  tb_open = gtk_tool_button_new_from_stock(GTK_STOCK_ADD);
+  tb_clear = gtk_tool_button_new_from_stock(GTK_STOCK_CLEAR);
   gui->tb_play = gtk_tool_button_new_from_stock(GTK_STOCK_MEDIA_PLAY);
   tb_stop = gtk_tool_button_new_from_stock(GTK_STOCK_MEDIA_STOP);
 
   gui->seekbar = hildon_seekbar_new();
-  gtk_widget_set_size_request(gui->seekbar, 240, -1);
+  gtk_widget_set_size_request(gui->seekbar, 210, -1);
   tb_seekbar = gtk_tool_item_new();
   gtk_container_add(GTK_CONTAINER(tb_seekbar), gui->seekbar);
 
@@ -248,6 +259,7 @@ gui_new(Playlist *playlist) {
   gtk_container_add(GTK_CONTAINER(tb_timelabel), gui->timelabel);
 
   gtk_toolbar_insert(GTK_TOOLBAR(toolbar), tb_open, -1);
+  gtk_toolbar_insert(GTK_TOOLBAR(toolbar), tb_clear, -1);
   gtk_toolbar_insert(GTK_TOOLBAR(toolbar), tb_prev, -1);
   gtk_toolbar_insert(GTK_TOOLBAR(toolbar), gui->tb_play, -1);
   gtk_toolbar_insert(GTK_TOOLBAR(toolbar), tb_stop, -1);
@@ -277,6 +289,9 @@ gui_new(Playlist *playlist) {
 
   g_signal_connect(G_OBJECT(tb_open), "clicked",
 		   G_CALLBACK(open_cb), gui);
+
+  g_signal_connect(G_OBJECT(tb_clear), "clicked",
+		   G_CALLBACK(clear_cb), gui);
 
   g_signal_connect(G_OBJECT(gui->tb_play), "clicked",
 		   G_CALLBACK(play_cb), gui);
