@@ -1,6 +1,6 @@
 /*
  *    Ogg vorbis decoder using the Tremor library
- *    Copyright (c) 2005 Martin Grimme  <martin.grimme@lintegra.de>
+ *    Copyright (c) 2005, 2006 Martin Grimme  <martin.grimme@lintegra.de>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -50,10 +50,11 @@ decoder_thread(Decoder *dec) {
 
     if (dec->is_playing) {
       ret = ov_read(&(dec->vf), pcmout, sizeof(pcmout), &current_section);
-
+      dec->has_finished = FALSE;
       if (ret == 0) {
 	fprintf(stderr, "End of stream.\n");
 	dec->is_playing = FALSE;
+	dec->has_finished = TRUE;
 	audio_play(dec->audio, pcmout, 0, 0);
       } else if (ret < 0) {
 	//fprintf(stderr, "Error in stream %d.\n", current_section);
@@ -147,6 +148,7 @@ decoder_new() {
   dec->vf.datasource = NULL;
   dec->audio = audio_new();
   dec->is_playing = FALSE;
+  dec->has_finished = FALSE;
   
   /* spawn decoder thread */
   pthread_create(&th, NULL, decoder_thread, (void *) dec);
@@ -168,15 +170,17 @@ decoder_open_stream(Decoder *dec, Stream *stream) {
   ov_cb.tell_func = &tell_func;
   ov_cb.close_func = &close_func;
 
-
   pthread_mutex_lock(&mutex);
-
-  if (ov_open_callbacks((void *) stream, &(dec->vf), NULL, 0, ov_cb) > 0) {
+  if (ov_open_callbacks((void *) stream, &(dec->vf), NULL, 0, ov_cb) < 0) {
+    /* close stream if it's not an OGG Vorbis or does not exist */
+    stream_free(stream);
+    pthread_mutex_unlock(&mutex);
     fprintf(stderr, "Could not open stream.\n");
     return FALSE;
   }
 
   pthread_mutex_lock(&cmdmutex);
+
   vi = ov_info(&(dec->vf), -1);
   dec->channels = vi->channels;
   dec->rate = vi->rate;
@@ -240,6 +244,14 @@ gboolean
 decoder_is_playing(Decoder *dec) {
 
   return dec->is_playing;
+
+}
+
+
+gboolean
+decoder_has_finished(Decoder *dec) {
+
+  return dec->has_finished;
 
 }
 

@@ -1,5 +1,11 @@
-- add some buttons such as PLAY, STOP, PAUSE, PREVIOUS, NEXT
 - add playlist support
+
 - implement an additional backend so that MP3 and other formats can be played
-  as well
+  as well (this has to use the libraries already present on the Nokia 770 as
+  Xiph.org does not allow including proprietary codecs)
+
 - integrate well with the maemo look'n feel
+
+- Lyrics lookup in the internet
+
+- Cover art lookup in the internet

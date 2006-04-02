@@ -36,6 +36,8 @@ struct _Stream {
   GnomeVFSHandle *handle;
   enum streamcommand cmd;
 
+  int error;
+
   long positiontag;
   long seek_position;
   int seek_whence;

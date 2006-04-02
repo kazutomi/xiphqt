@@ -49,6 +49,9 @@ reader_thread(Stream *stream) {
       if (result == GNOME_VFS_OK) {
 	is_open = TRUE;
 	position = 0;
+      } else {
+	printf("Error: '%s' %d\n", stream->uri, result);
+	stream->error = result;
       }
       break;
     case (STREAM_CLOSE):
@@ -70,6 +73,7 @@ reader_thread(Stream *stream) {
 	result = gnome_vfs_seek(handle, vfswhence,
 				(GnomeVFSFileOffset) stream->seek_position);
 	ringbuffer_clear(stream->buffer);
+
 	gnome_vfs_tell(handle, &bytes_read);
 	position = (long) bytes_read;
 	stream->positiontag = position;
@@ -84,10 +88,11 @@ reader_thread(Stream *stream) {
 
     if (is_open && ! ringbuffer_is_full(stream->buffer)) {
       result = gnome_vfs_read(handle, buffer, sizeof(buffer), &bytes_read);
-      if (result == GNOME_VFS_OK) {
+      if (! stream->error && result == GNOME_VFS_OK) {
 
 	position += (long) bytes_read;
 	((long *) tmp)[0] = position;
+
 	ringbuffer_put(stream->buffer, tmp, 8);
 	ringbuffer_put(stream->buffer, buffer, (int) bytes_read);
 
@@ -117,7 +122,9 @@ stream_new_from_uri(const char *uri) {
   if (! gnome_vfs_initialized())
     gnome_vfs_init();
 
-  stream->uri = (char *) uri;
+  stream->error = 0;
+
+  stream->uri = g_strdup(uri);
   stream->buffer = ringbuffer_new(10, BUFFER_SIZE);
   stream->cmd = STREAM_OPEN;
   stream->positiontag = 0;
@@ -148,8 +155,11 @@ stream_read(Stream *stream,
 	    char *buffer,
 	    int size) {
 
+  if (stream->error) return 0;
+
   pthread_mutex_lock(&cmdmutex);
   stream->cmd = STREAM_READ;  /* just to ensure the correct order */
+
   ringbuffer_get(stream->buffer, buffer);
   stream->positiontag = ((long *) buffer)[0];
 
@@ -160,6 +170,8 @@ stream_read(Stream *stream,
 
 long
 stream_tell(Stream *stream) {
+
+  //if (stream->error) return 0;
 
   pthread_mutex_lock(&cmdmutex);
   printf("Tell %d\n", stream->positiontag);
@@ -172,6 +184,8 @@ void
 stream_seek(Stream *stream,
 	    long position,
 	    int whence) {
+
+  //if (stream->error) return;
 
   pthread_mutex_lock(&cmdmutex);
 

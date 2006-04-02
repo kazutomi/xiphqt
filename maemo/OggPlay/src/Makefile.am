@@ -5,7 +5,10 @@ oggplay_SOURCES = main.c \
                   decoder.c decoder.h \
                   audio.c audio.h \
                   stream.c stream.h \
-                  ringbuffer.c ringbuffer.h
+                  ringbuffer.c ringbuffer.h \
+                  playlist.c playlist.h \
+                  playlistwidget.c playlistwidget.h \
+                  version.h
 
 oggplay_CFLAGS = $(GTK_CFLAGS) $(OSSO_CFLAGS)
 
