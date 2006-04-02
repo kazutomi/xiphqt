@@ -21,53 +21,65 @@
 #include "playlistwidget.h"
 
 
-static gboolean
-doubleclick_cb(GtkWidget *src,
-	       GdkEventMotion *event,
-	       PLWidget *plw) {
+static void
+click_cb(GtkTreeView *treeview,
+	 GtkTreePath *path,
+	 GtkTreeViewColumn *column,
+	 PLWidget *plw) {
 
-  GtkTreeSelection *selection;
-  GList *rows;
   gint *indices;
 
-  if (event->type == GDK_2BUTTON_PRESS) {
 
-    selection = gtk_tree_view_get_selection(plw->treeview);
-    rows = gtk_tree_selection_get_selected_rows(selection, NULL);
-    indices = gtk_tree_path_get_indices(rows->data);
-    if (indices) {
-      playlist_jump_to(plw->playlist, indices[0]);
-    }
-    
-    g_list_foreach(rows, gtk_tree_path_free, NULL);
-    g_list_free(rows);
-
+  indices = gtk_tree_path_get_indices(path);
+  if (indices) {
+    playlist_jump_to(plw->playlist, indices[0]);
   }
-
-  return FALSE;
-
+  
 }
 
 
 static void
-change_cb(PLWidget *plw) {
+change_cb(PLWidget *plw, gboolean renew) {
 
   GPtrArray *list = plw->playlist->list;
+  int position = plw->playlist->position;
   GtkTreeIter iter;
-  char *item;
+  GtkTreePath *treepath;
+  char *item, *tmpitem;
   int i;
-  
-  gtk_list_store_clear(plw->liststore);
 
-  /* did I mention that the API sucks..? ;) */
-  for (i = 0; i < list->len; i++) {
+  if (renew) {
+    gtk_list_store_clear(plw->liststore);
 
-    item = g_path_get_basename(g_ptr_array_index(list, i));
-    gtk_list_store_append(plw->liststore, &iter);
-    gtk_list_store_set(plw->liststore, &iter, 1, item, -1);
-    g_free(item);
-
+    /* did I mention that the API sucks..? ;) */
+    for (i = 0; i < list->len; i++) {
+      
+      item = g_path_get_basename(g_ptr_array_index(list, i));
+      gtk_list_store_append(plw->liststore, &iter);
+      gtk_list_store_set(plw->liststore, &iter, 1, item, -1);
+      g_free(item);
+      
+    }
   }
+
+  item = g_path_get_basename(g_ptr_array_index(list,
+					       plw->current_selection));
+  treepath = gtk_tree_path_new_from_indices(plw->current_selection, -1);
+  gtk_tree_model_get_iter(plw->liststore, &iter, treepath);
+  gtk_list_store_set(plw->liststore, &iter, 1, item, -1);
+  gtk_tree_path_free(treepath);
+  g_free(item);
+
+  
+  tmpitem = g_path_get_basename(g_ptr_array_index(list, position));
+  item = g_strconcat("<b>", tmpitem, "</b>", NULL);
+  g_free(tmpitem);
+  treepath = gtk_tree_path_new_from_indices(position, -1);
+  gtk_tree_model_get_iter(plw->liststore, &iter, treepath);
+  gtk_list_store_set(plw->liststore, &iter, 1, item, -1);
+  gtk_tree_path_free(treepath);
+  g_free(item);
+  plw->current_selection = position;
 
 }
 
@@ -88,6 +100,7 @@ plwidget_new() {
 
   plw->liststore = gtk_list_store_new(2, GDK_TYPE_PIXBUF, G_TYPE_STRING);
   plw->treeview = gtk_tree_view_new_with_model(GTK_TREE_MODEL(plw->liststore));
+  plw->current_selection = 0;
 
   /* column 1: image */
   crender1 = gtk_cell_renderer_pixbuf_new();
@@ -100,13 +113,12 @@ plwidget_new() {
   g_value_init(&fontsize, G_TYPE_DOUBLE);
   g_value_set_double(&fontsize, 14.0);
   g_object_set_property(G_OBJECT(crender2), "size-points", &fontsize);
-  col2 = gtk_tree_view_column_new_with_attributes("", crender2, "text", 1, 
+  col2 = gtk_tree_view_column_new_with_attributes("", crender2, "markup", 1, 
 						  NULL);
   gtk_tree_view_append_column(plw->treeview, col2);
 
-  /* handle double clicks */
-  g_signal_connect(G_OBJECT(plw->treeview), "button-press-event",
-		   G_CALLBACK(doubleclick_cb), plw);
+  g_signal_connect(G_OBJECT(plw->treeview), "row-activated",
+		   G_CALLBACK(click_cb), plw);
 
   return plw;
 

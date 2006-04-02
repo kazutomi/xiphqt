@@ -58,7 +58,7 @@ playlist_clear(Playlist *pl) {
   if (pl->list->len > 0) {
     g_ptr_array_foreach (pl->list, g_free, NULL);
     g_ptr_array_remove_range(pl->list, 0, pl->list->len);
-    (pl->change_cb)(pl->change_cb_data);
+    (pl->change_cb)(pl->change_cb_data, TRUE);
   }
 
 }
@@ -69,7 +69,7 @@ playlist_append(Playlist *pl,
 		const char *uri) {
 
   g_ptr_array_add(pl->list, g_strdup(uri));
-  (pl->change_cb)(pl->change_cb_data);
+  (pl->change_cb)(pl->change_cb_data, TRUE);
 
 }
 
@@ -84,6 +84,7 @@ playlist_previous(Playlist *pl) {
   pl->position = MAX(0, pl->position - 1);  
   uri = g_ptr_array_index(pl->list, pl->position);
   (pl->play_cb)(pl->play_cb_data, uri);
+  (pl->change_cb)(pl->change_cb_data, FALSE);
 
 }
 
@@ -98,13 +99,14 @@ playlist_next(Playlist *pl) {
   if (pl->position == pl->list->len - 1) {
 
     (pl->play_cb)(pl->play_cb_data, NULL);
+    (pl->change_cb)(pl->change_cb_data, FALSE);
 
   } else {
 
     pl->position = MIN(pl->list->len - 1, pl->position + 1);
     uri = g_ptr_array_index(pl->list, pl->position);
     (pl->play_cb)(pl->play_cb_data, uri);
-
+    (pl->change_cb)(pl->change_cb_data, FALSE);
   }
 
 }
@@ -120,6 +122,7 @@ playlist_jump_to(Playlist *pl,
     pl->position = index;
     uri = g_ptr_array_index(pl->list, pl->position);
     (pl->play_cb)(pl->play_cb_data, uri);
+    (pl->change_cb)(pl->change_cb_data, FALSE);
   }
     
 }

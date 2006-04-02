@@ -23,7 +23,7 @@
 
 
 #define PLAY_CB    void (*play_cb)    (void *userdata, const char *uri)
-#define CHANGE_CB    void (*change_cb)    (void *userdata)
+#define CHANGE_CB    void (*change_cb)    (void *userdata, gboolean renew)
 
 
 struct _Playlist {
