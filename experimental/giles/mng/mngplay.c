@@ -22,14 +22,19 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-
-#include <SDL.h>
-#include <libmng.h>
+#include <string.h>
 
 #include <libgen.h> // basename
 
+#include <SDL.h>
+#include <libmng.h>
+#include <ogg/ogg.h>
+
+#define MNG_SIGNATURE "\212MNG\r\n\032\n"
 
 #define DEFAULT_SDL_VIDEO_DEPTH 32
+
+#define OGG_MNG_BUFFER_SIZE 4096
 
 /* structure for keeping track of our mng stream inside the callbacks */
 typedef struct {
@@ -38,6 +43,9 @@ typedef struct {
 	SDL_Surface	*surface;  /* SDL display */
 	mng_uint32	delay;     /* ticks to wait before resuming decode */
 	int		sdl_video_depth;  /* The depth for SDL_SetVideoMode */
+	int		is_ogg;	   /* whether we're parsing an Ogg file */
+	ogg_sync_state  ogg_sync;  /* libogg parse structures */
+	ogg_stream_state ogg_stream;
 } mngstuff;
 
 /* callbacks for the mng decoder */
@@ -55,9 +63,29 @@ void mymngfree(mng_ptr p, mng_uint32 size)
 	return;
 }
 
+/* pull data from the file into our ogg parser */
+int bufferoggdata(mng_handle mng)
+{
+	mngstuff	*mymng;
+	unsigned char	*buffer;
+	int		bytes;
+
+	/* look up our stream struct */
+        mymng = (mngstuff*)mng_get_userdata(mng);
+
+	buffer = ogg_sync_buffer(&mymng->ogg_sync, OGG_MNG_BUFFER_SIZE);
+	bytes = fread(buffer, 1, OGG_MNG_BUFFER_SIZE, mymng->file);
+	ogg_sync_wrote(&mymng->ogg_sync, bytes);
+
+	return bytes;
+}
+
 mng_bool mymngopenstream(mng_handle mng)
 {
 	mngstuff	*mymng;
+	unsigned char   magic[8];
+	ogg_page	page;
+	int bytes;
 
 	/* look up our stream struct */
         mymng = (mngstuff*)mng_get_userdata(mng);
@@ -69,6 +97,52 @@ mng_bool mymngopenstream(mng_handle mng)
 		return MNG_FALSE;
 	}
 
+	/* determine file type */
+	mymng->is_ogg = MNG_FALSE;
+	bytes = fread(magic, 1, 8, mymng->file);
+	if (bytes != 8) {
+		fprintf(stderr, "unable to determine file type for '%s'\n", mymng->filename);
+		fclose(mymng->file);
+		return MNG_FALSE;
+	}
+	/* return to the start */
+	fseek(mymng->file, 0, SEEK_SET);
+	if (!memcmp(magic, MNG_SIGNATURE, 8)) {
+		/* We have a normal MNG file; return */
+		return MNG_TRUE;
+	} else if (!memcmp(magic, "OggS", 4)) {
+	
+	/* set up the Ogg MNG decoder */
+	ogg_sync_init(&mymng->ogg_sync);
+	bufferoggdata(mng);
+	while (ogg_sync_pageout(&mymng->ogg_sync, &page)>0) {
+		ogg_stream_state test;
+		ogg_packet packet;
+
+		/* ignore non-bos pages */
+		if (!ogg_page_bos(&page)) break;
+		/* set up a parser for each bos page we see */
+		ogg_stream_init(&test, ogg_page_serialno(&page));
+		ogg_stream_pagein(&test,&page);
+		ogg_stream_packetout(&test, &packet);
+		if (packet.bytes >8 &&
+		    !memcmp(packet.packet, MNG_SIGNATURE, 8)) {
+			/* we have a MNG stream; save state and return */
+			memcpy(&mymng->ogg_stream, &test, sizeof(test));
+			mymng->is_ogg = MNG_TRUE;
+			/* tell the library to ignore missing CRCs */
+			mng_set_crcmode(mng, 0);
+			return MNG_TRUE;
+		}
+		/* free scratch parser */
+		ogg_stream_clear(&test);
+	}
+
+	/* no MNG streams in this Ogg file */
+	return MNG_FALSE;
+	}
+
+	/* Unknown file magic, try to parse as a raw MNG */
 	return MNG_TRUE;
 }
 
@@ -78,6 +152,12 @@ mng_bool mymngclosestream(mng_handle mng)
 
 	/* look up our stream struct */
         mymng = (mngstuff*)mng_get_userdata(mng);
+
+	/* ogg stuff */
+	if (mymng->is_ogg) {
+		ogg_stream_clear(&mymng->ogg_stream);
+		ogg_sync_clear(&mymng->ogg_sync);
+	}
 
 	/* close the file */
 	fclose(mymng->file);
@@ -94,6 +174,12 @@ mng_bool mymngreadstream(mng_handle mng, mng_ptr buffer,
 
 	/* look up our stream struct */
 	mymng = (mngstuff*)mng_get_userdata(mng);
+
+	/* we don't do anything on OggMNG streams */
+	if (mymng->is_ogg) {
+		*bytesread = 0;
+		return MNG_FALSE;
+	}
 
 	/* read the requested amount of data from the file */
 	*bytesread = fread(buffer, 1, size, mymng->file);
@@ -130,7 +216,7 @@ mng_bool mymngprocessheader(mng_handle mng,
 	snprintf(title, 256, "mngplay: %s", mymng->filename);
 	SDL_WM_SetCaption(title, "mngplay");
 
-	/* in necessary, lock the drawing surface to the decoder
+	/* in necessary, lock the drawing surface so the decoder
 	   can safely fill it. We'll unlock elsewhere before display */
 	if (SDL_MUSTLOCK(mymng->surface)) {
 		if ( SDL_LockSurface(mymng->surface) < 0 ) {
@@ -339,6 +425,42 @@ int mymngquit(mng_handle mng)
 	exit(0);
 }
 
+int pullchunks(mng_handle mng)
+{
+	mngstuff	*mymng;
+	int		bytes;
+	ogg_page	page;
+	ogg_packet	packet;
+
+        /* dereference our user data */
+        mymng = (mngstuff*)mng_get_userdata(mng);
+
+	/* make sure we're an OggMNG stream */
+	if (!mymng->is_ogg) return MNG_FALSE;
+
+	/* pull in more data */
+	bytes = bufferoggdata(mng);
+	if (bytes <= 0) return MNG_FALSE;
+
+	/* pull any new pages from the stream */
+	while (ogg_sync_pageout(&mymng->ogg_sync, &page)>0) {
+		/* we don't need the check the serialno,
+		   ogg_stream_pagein will discard the packet
+		   if it does not match */
+		ogg_stream_pagein(&mymng->ogg_stream, &page);
+		/* pull out any new packets */
+		while (ogg_stream_packetout(&mymng->ogg_stream, &packet)>0) {
+			/* each OggMNG packet is a chunk, minus
+			   length and CRC fields */
+			mng_read_pushchunk(mng,
+					packet.packet, packet.bytes,
+					MNG_FALSE);
+		}
+	}
+
+	return MNG_TRUE;
+}
+
 int checkevents(mng_handle mng)
 {
 	SDL_Event	event;
@@ -379,6 +501,7 @@ int main(int argc, char *argv[])
 {
 	mngstuff	*mymng;
 	mng_handle	mng;
+        mng_retcode     ret;
 
 	if (argc < 2) {
 		const SDL_version *pSDLver = SDL_Linked_Version();
@@ -477,7 +600,7 @@ int main(int argc, char *argv[])
 
 //	fprintf(stderr, "playing mng...maybe.\n");
 
-	mng_readdisplay(mng);
+	ret = mng_readdisplay(mng);
 
 	/* loop though the frames */
 	while (mymng->delay) {
@@ -488,7 +611,9 @@ int main(int argc, char *argv[])
 		   doesn't update it again */
 		mymng->delay = 0;
 
-		mng_display_resume(mng);
+		ret = mng_display_resume(mng);
+		if (ret == MNG_NEEDMOREDATA && mymng->is_ogg)
+			pullchunks(mng);
 
 		/* check for user input (just quit at this point) */
 		checkevents(mng);

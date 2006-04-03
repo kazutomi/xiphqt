@@ -7,7 +7,7 @@ CFLAGS = -g -O2 -Wall
 mngplay_SRCS = mngplay.c
 mngplay_OBJS = $(mngplay_SRCS:.c=.o)
 mngplay_CFLAGS = `sdl-config --cflags`
-mngplay_LIBS = `sdl-config --libs` -lmng -lz -ljpeg -llcms
+mngplay_LIBS = `sdl-config --libs` -lmng -lz -ljpeg -llcms -logg
 
 all : $(PROGS)
 
