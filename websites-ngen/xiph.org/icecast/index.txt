@@ -1,4 +1,0 @@
-Icecast
-=======
-
-Icecast is an audio streaming server for UNIX-workalikes.
