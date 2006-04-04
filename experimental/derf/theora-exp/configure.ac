@@ -27,6 +27,9 @@ CFLAGS="$cflags_save"
 
 AM_PROG_LIBTOOL
 
+dnl Add parameters for aclocal
+AC_SUBST(ACLOCAL_AMFLAGS, "-I m4")
+
 dnl Check for sdl-config
 AC_CHECK_PROG(HAVE_SDL_CONFIG, sdl-config, true, false)
 AM_CONDITIONAL(HAVE_SDL_CONFIG,$HAVE_SDL_CONFIG)
@@ -123,6 +126,7 @@ AC_TYPE_SIGNAL
 AC_CHECK_FUNCS(gettimeofday select strstr)
 
 dnl Check for optimization
+ac_enable_x86asm=yes
 AC_ARG_ENABLE(x86asm,
     AS_HELP_STRING([--enable-x86asm],
     [enable x86 assambler optimization, default=autodetect]),
@@ -145,7 +149,21 @@ if test "$enable_x86asm" != "no"; then
     esac
 else
     AM_CONDITIONAL(OC_X86ASM,false)
+    ac_enable_x86asm=no
 fi
+
+dnl enable experimental encoder
+ac_enable_encode=no
+AC_ARG_ENABLE(encode,
+     [  --enable-encode        enable encoding support(experimental) ],
+     [ ac_enable_encode=$enableval ], [ ac_enable_encode=no] )
+
+if test "x${ac_enable_encode}" != xno ; then
+    AC_DEFINE([TH_ENCODER], [], [ enable experimental encoder])
+    BUILDABLE_EXAMPLES="$BUILDABLE_EXAMPLES encoder_example"
+fi
+AM_CONDITIONAL(TH_ENCODER, [test "x${ac_enable_encode}" != xno])
+
 
 dnl Enable some opzimization for gcc
 OPTIMIZATION_CFLAGS="-O3 -fforce-addr -fomit-frame-pointer"
@@ -158,3 +176,35 @@ AC_OUTPUT([
   theoradec.pc
   theoraenc.pc
 ])
+
+AS_AC_EXPAND(LIBDIR, ${libdir})
+AS_AC_EXPAND(INCLUDEDIR, ${includedir})
+AS_AC_EXPAND(BINDIR, ${bindir})
+AS_AC_EXPAND(DOCDIR, ${datadir}/doc)
+
+AC_MSG_RESULT([
+------------------------------------------------------------------------
+  $PACKAGE $VERSION:  Automatic configuration OK.
+
+  General configuration:
+
+    x86 assambler optimization: ...... ${ac_enable_x86asm}
+    Encoding support(experimental): .. ${ac_enable_encode}
+
+
+  Installation paths:
+
+    libtheora: ....................... ${LIBDIR}
+    C header files: .................. ${INCLUDEDIR}/theora
+    Documentation: ................... ${DOCDIR}/$PACKAGE
+
+  Building:
+
+    Type 'make' to compile $PACKAGE.
+
+    Type 'make install' to install $PACKAGE.
+
+  Example programs will be built but not installed.
+------------------------------------------------------------------------
+])
+

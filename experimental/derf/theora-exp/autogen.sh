@@ -22,6 +22,8 @@ echo "checking for autoconf... "
 
 VERSIONGREP="sed -e s/.*[^0-9\.]\([0-9]\.[0-9]\).*/\1/"
 VERSIONMKINT="sed -e s/[^0-9]//"
+
+ACLOCAL_FLAGS="-I m4"
                                                                                 
 # do we need automake?
 if test -r Makefile.am; then
@@ -112,5 +114,6 @@ $AUTOMAKE --add-missing $AUTOMAKE_FLAGS || exit 1
 echo "  autoconf"
 autoconf || exit 1
 
+cd 
 cd $olddir
 $srcdir/configure --enable-maintainer-mode "$@" && echo

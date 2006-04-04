@@ -1,4 +1,10 @@
-lib_LTLIBRARIES = libtheoradec.la libtheoraenc.la
+if TH_ENCODER
+ENCODER_LA=libtheoraenc.la
+else
+ENCODER_LA=
+endif
+
+lib_LTLIBRARIES = libtheoradec.la $(ENCODER_LA)
 
 INCLUDES = -I $(top_srcdir)/include
 AM_CFLAGS = $(OGG_CFLAGS) $(OPTIMIZATION_CFLAGS)
