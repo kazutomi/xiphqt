@@ -109,9 +109,13 @@ mng_bool mymngopenstream(mng_handle mng)
 	fseek(mymng->file, 0, SEEK_SET);
 	if (!memcmp(magic, MNG_SIGNATURE, 8)) {
 		/* We have a normal MNG file; return */
+		fprintf(stderr, "opening normal MNG stream\n");
 		return MNG_TRUE;
 	} else if (!memcmp(magic, "OggS", 4)) {
-	
+
+	fprintf(stderr, "opening OggMNG stream\n");
+	mymng->is_ogg = MNG_TRUE;
+
 	/* set up the Ogg MNG decoder */
 	ogg_sync_init(&mymng->ogg_sync);
 	bufferoggdata(mng);
@@ -119,8 +123,9 @@ mng_bool mymngopenstream(mng_handle mng)
 		ogg_stream_state test;
 		ogg_packet packet;
 
-		/* ignore non-bos pages */
+		/* stop after the initial bos pages */
 		if (!ogg_page_bos(&page)) break;
+
 		/* set up a parser for each bos page we see */
 		ogg_stream_init(&test, ogg_page_serialno(&page));
 		ogg_stream_pagein(&test,&page);
@@ -129,9 +134,19 @@ mng_bool mymngopenstream(mng_handle mng)
 		    !memcmp(packet.packet, MNG_SIGNATURE, 8)) {
 			/* we have a MNG stream; save state and return */
 			memcpy(&mymng->ogg_stream, &test, sizeof(test));
-			mymng->is_ogg = MNG_TRUE;
 			/* tell the library to ignore missing CRCs */
 			mng_set_crcmode(mng, 0);
+			fprintf(stderr, "Found MNG substream with serialno 0x%08x\n", ogg_page_serialno(&page));
+			fprintf(stderr, "Pushing MNG signature\n");
+			mng_read_pushsig(mng, mng_it_mng);
+			fprintf(stderr, "returning chunk %c%c%c%c"
+				" %ld bytes\n",
+				packet.packet[8], packet.packet[9],
+				packet.packet[10], packet.packet[11],
+				packet.bytes - 4 - 8);
+			mng_read_pushchunk(mng,
+				packet.packet+8, packet.bytes-8,
+				MNG_FALSE);
 			return MNG_TRUE;
 		}
 		/* free scratch parser */
@@ -139,6 +154,8 @@ mng_bool mymngopenstream(mng_handle mng)
 	}
 
 	/* no MNG streams in this Ogg file */
+	fprintf(stderr, "Couldn't find a MNG stream in Ogg file '%s'\n", 
+		mymng->filename);
 	return MNG_FALSE;
 	}
 
@@ -178,7 +195,8 @@ mng_bool mymngreadstream(mng_handle mng, mng_ptr buffer,
 	/* we don't do anything on OggMNG streams */
 	if (mymng->is_ogg) {
 		*bytesread = 0;
-		return MNG_FALSE;
+		//return MNG_FALSE;
+		return MNG_TRUE;
 	}
 
 	/* read the requested amount of data from the file */
@@ -452,9 +470,26 @@ int pullchunks(mng_handle mng)
 		while (ogg_stream_packetout(&mymng->ogg_stream, &packet)>0) {
 			/* each OggMNG packet is a chunk, minus
 			   length and CRC fields */
-			mng_read_pushchunk(mng,
+			if (!memcmp(packet.packet, MNG_SIGNATURE, 8)) {
+			    /* first packet is special */
+			    fprintf(stderr, "returning chunk %c%c%c%c"
+				" %ld bytes\n",
+				packet.packet[8], packet.packet[9],
+				packet.packet[10], packet.packet[11],
+				packet.bytes - 8);
+			    mng_read_pushchunk(mng,
+					packet.packet+8, packet.bytes-8,
+					MNG_FALSE);
+			} else {
+			    fprintf(stderr, "returning chunk %c%c%c%c"
+				" %ld bytes\n",
+				packet.packet[0], packet.packet[1],
+				packet.packet[2], packet.packet[3],
+				packet.bytes);
+			    mng_read_pushchunk(mng,
 					packet.packet, packet.bytes,
 					MNG_FALSE);
+			}
 		}
 	}
 
@@ -502,6 +537,7 @@ int main(int argc, char *argv[])
 	mngstuff	*mymng;
 	mng_handle	mng;
         mng_retcode     ret;
+	int		done = 0;
 
 	if (argc < 2) {
 		const SDL_version *pSDLver = SDL_Linked_Version();
@@ -601,9 +637,14 @@ int main(int argc, char *argv[])
 //	fprintf(stderr, "playing mng...maybe.\n");
 
 	ret = mng_readdisplay(mng);
+//	fprintf(stderr, "mng_readdisplay() returned %d\n", ret);
+	if (ret == MNG_NEEDMOREDATA && mymng->is_ogg) {
+		fprintf(stderr, "pulling more chunks prior to main loop...\n");
+		pullchunks(mng);
+	}
 
 	/* loop though the frames */
-	while (mymng->delay) {
+	while (!done) {
 //		fprintf(stderr, "  waiting for %d ms\n", mymng->delay);
 		SDL_Delay(mymng->delay);
 
@@ -612,8 +653,14 @@ int main(int argc, char *argv[])
 		mymng->delay = 0;
 
 		ret = mng_display_resume(mng);
-		if (ret == MNG_NEEDMOREDATA && mymng->is_ogg)
+//		fprintf(stderr, "mng_readdisplay() returned %d\n", ret);
+		if (mymng->is_ogg && (ret == MNG_NEEDMOREDATA ||
+				ret == MNG_NEEDTIMERWAIT)) {
+			fprintf(stderr, "pulling more chunks...\n");
 			pullchunks(mng);
+		}
+
+		if (ret == 0) done = 1;
 
 		/* check for user input (just quit at this point) */
 		checkevents(mng);
