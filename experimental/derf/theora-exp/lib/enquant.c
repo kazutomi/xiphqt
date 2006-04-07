@@ -74,7 +74,7 @@ static const th_quant_base OC_VP31_BASES_INTER[2]={
   }
 };
 
-const theora_quant_info TH_VP31_QUANT_INFO={
+const th_quant_info TH_VP31_QUANT_INFO={
   {
     220,200,190,180,170,170,160,160,
     150,150,140,140,130,130,120,120,
@@ -549,7 +549,7 @@ static const th_quant_base OC_DEF_BASE_MATRICES[9][4]={
   }
 };
 
-const theora_quant_info OC_DEF_QUANT_INFO[4]={
+const th_quant_info OC_DEF_QUANT_INFO[4]={
   {
     {
         15,  14,  13,  13,  12,  12,  11,  11,
@@ -730,8 +730,8 @@ const theora_quant_info OC_DEF_QUANT_INFO[4]={
 
 
 void oc_quant_params_pack(oggpack_buffer *_opb,
- const theora_quant_info *_qinfo){
-  const theora_quant_ranges *qranges;
+ const th_quant_info *_qinfo){
+  const th_quant_ranges *qranges;
   const th_quant_base   *base_mats[2*3*64];
   int                        indices[2][3][64];
   int                        nbase_mats;
@@ -833,7 +833,7 @@ void oc_quant_params_pack(oggpack_buffer *_opb,
 /*See comments at oc_dequant_tables_init() for how the quantization tables'
    storage should be initialized.*/
 void oc_enquant_tables_init(oc_quant_table *_dequant[2][3],
- oc_quant_table *_enquant[2][3],const theora_quant_info *_qinfo){
+ oc_quant_table *_enquant[2][3],const th_quant_info *_qinfo){
   int qti;
   int pli;
   /*Initialize the dequantization tables first.*/

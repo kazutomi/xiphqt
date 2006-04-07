@@ -83,7 +83,7 @@ ogg_sync_state   oy;
 ogg_page         og;
 ogg_stream_state vo;
 ogg_stream_state to;
-theora_info      ti;
+th_info      ti;
 th_comment   tc;
 th_setup_info *ts;
 th_dec_ctx    *td;
@@ -398,7 +398,7 @@ static int dump_comments(th_comment *tc){
    We don't actually make use of the information in this example;
    a real player should attempt to perform color correction for
    whatever display device it supports. */
-static void report_colorspace(theora_info *ti)
+static void report_colorspace(th_info *ti)
 {
     switch(ti->colorspace){
       case TH_CS_UNSPECIFIED:

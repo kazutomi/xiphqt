@@ -628,7 +628,7 @@ int main(void){
     if(pci<8)printf(",");
   }
   printf("\n};\n");
-  printf("\nconst theora_quant_info OC_DEF_QUANT_INFO[4]={");
+  printf("\nconst th_quant_info OC_DEF_QUANT_INFO[4]={");
   for(pfi=0;pfi<4;pfi++){
     printf("\n  {");
     printf("\n    {");

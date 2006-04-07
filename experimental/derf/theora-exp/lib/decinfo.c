@@ -25,7 +25,7 @@ static long oc_unpack_length(oggpack_buffer *_opb){
   return ret[0]|ret[1]<<8|ret[2]<<16|ret[3]<<24;
 }
 
-static int oc_info_unpack(oggpack_buffer *_opb,theora_info *_info){
+static int oc_info_unpack(oggpack_buffer *_opb,th_info *_info){
   long val;
   /*Check the codec bitstream version.*/
   theora_read(_opb,8,&val);
@@ -128,7 +128,7 @@ static void oc_setup_clear(th_setup_info *_setup){
   oc_huff_trees_clear(_setup->huff_tables);
 }
 
-static int oc_dec_headerin(oggpack_buffer *_opb,theora_info *_info,
+static int oc_dec_headerin(oggpack_buffer *_opb,th_info *_info,
  th_comment *_tc,th_setup_info **_setup,ogg_packet *_op){
   char buffer[6];
   long val;
@@ -196,7 +196,7 @@ static int oc_dec_headerin(oggpack_buffer *_opb,theora_info *_info,
 /*Decodes one header packet.
   This should be called repeatedly with the packets at the beginning of the
    stream until it returns 0.*/
-int th_decode_headerin(theora_info *_info,th_comment *_tc,
+int th_decode_headerin(th_info *_info,th_comment *_tc,
  th_setup_info **_setup,ogg_packet *_op){
   oggpack_buffer opb;
   int            ret;

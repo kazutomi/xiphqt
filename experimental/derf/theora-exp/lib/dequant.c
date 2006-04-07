@@ -7,7 +7,7 @@
 
 
 int oc_quant_params_unpack(oggpack_buffer *_opb,
- theora_quant_info *_qinfo){
+ th_quant_info *_qinfo){
   th_quant_base *base_mats;
   long               val;
   int                nbase_mats;
@@ -50,7 +50,7 @@ int oc_quant_params_unpack(oggpack_buffer *_opb,
   }
   nbits=oc_ilog(nbase_mats-1);
   for(i=0;i<6;i++){
-    theora_quant_ranges *qranges;
+    th_quant_ranges *qranges;
     th_quant_base   *qrbms;
     int                 *qrsizes;
     qti=i/3;
@@ -107,7 +107,7 @@ int oc_quant_params_unpack(oggpack_buffer *_opb,
   return 0;
 }
 
-void oc_quant_params_clear(theora_quant_info *_qinfo){
+void oc_quant_params_clear(th_quant_info *_qinfo){
   int i;
   for(i=6;i-->0;){
     int qti;

@@ -123,15 +123,15 @@ typedef struct{
   int            ystride;
   /**A pointer to the first row.*/
   unsigned char *data;
-}theora_img_plane;
+}th_img_plane;
 
 /**A complete image buffer for an uncompressed frame.
  * The chroma planes may be decimated by a factor of two in either direction,
- *  as indicated by theora_info#pixel_fmt.
+ *  as indicated by th_info#pixel_fmt.
  * The width and height of the Y' plane must be multiples of 16.
  * They may need to be cropped for display, using the rectangle specified by
- *  theora_info#pic_x, theora_info#pic_y, theora_info#pic_width, and
- *  theora_info#pic_height.
+ *  th_info#pic_x, th_info#pic_y, th_info#pic_width, and
+ *  th_info#pic_height.
  * All samples are 8 bits.
  * \note The term YUV often used to describe a colorspace is ambiguous.
  * The exact parameters of the RGB to YUV conversion process aside, in many
@@ -140,7 +140,7 @@ typedef struct{
  *  Y'CbCr, and they appear in that order, always.
  * The prime symbol denotes that the Y channel is non-linear.
  * Cb and Cr stand for "Chroma blue" and "Chroma red" respectively.*/
-typedef theora_img_plane th_ycbcr_buffer[3];
+typedef th_img_plane th_ycbcr_buffer[3];
 
 /**Theora bitstream information.
  * This contains the basic playback parameters for a stream, and corresponds to 
@@ -267,7 +267,7 @@ typedef struct{
    *  but it cannot be set larger than the amount permitted by this field after
    *  the headers have been output.*/
   int                keyframe_granule_shift;
-}theora_info;
+}th_info;
 
 /**The comment information.
  *
@@ -287,7 +287,7 @@ typedef struct{
  * See <a href="http://www.theora.org/doc/Theora_I_spec.pdf">the Theora
  *  specification</a>, Section 6.3.3 for details.
  *
- * In filling in this structure, theora_decode_header() will null-terminate
+ * In filling in this structure, th_decode_headerin() will null-terminate
  *  the user_comment strings for safety.
  * However, the bitstream format itself treats them as 8-bit clean vectors,
  *  possibly containing null characters, and so the length array should be
@@ -320,7 +320,7 @@ typedef struct{
   /**#nranges <tt>+1</tt> base matrices.
      Matrices \a i and <tt>i+1</tt> form the endpoints of range \a i.*/
   const th_quant_base *base_matrices;
-}theora_quant_ranges;
+}th_quant_ranges;
 
 /**A complete set of quantization parameters.
    The quantizer for each coefficient is calculated as:
@@ -387,8 +387,8 @@ typedef struct{
   /**The loop filter limit values.*/
   unsigned char       loop_filter_limits[64];
   /**The \a qi ranges for each \a ci and \a pli.*/
-  theora_quant_ranges qi_ranges[2][3];
-}theora_quant_info;
+  th_quant_ranges qi_ranges[2][3];
+}th_quant_info;
 
 
 
@@ -415,7 +415,7 @@ typedef struct{
   /**The number of bits in the code.
    * This must be between 0 and 32, inclusive.*/
   int          nbits;
-}theora_huff_code;
+}th_huff_code;
 
 
 
@@ -477,16 +477,16 @@ extern int th_packet_iskeyframe(ogg_packet *_op);
 
 /**\name Functions for manipulating header data*/
 /*@{*/
-/**Initializes a theora_info structure.
- * This should be called on a freshly allocated #theora_info structure before
+/**Initializes a th_info structure.
+ * This should be called on a freshly allocated #th_info structure before
  *  attempting to use it.
- * \param _info The #theora_info struct to initialize.*/
-extern void th_info_init(theora_info *_info);
-/**Clears a #theora_info structure.
- * This should be called on a #theora_info structure after it is no longer
+ * \param _info The #th_info struct to initialize.*/
+extern void th_info_init(th_info *_info);
+/**Clears a #th_info structure.
+ * This should be called on a #th_info structure after it is no longer
  *  needed.
- * \param _info The #theora_info struct to clear.*/
-extern void th_info_clear(theora_info *_info);
+ * \param _info The #th_info struct to clear.*/
+extern void th_info_clear(th_info *_info);
 
 /**Initialize a #th_comment structure.
  * This should be called on a freshly allocated #th_comment structure

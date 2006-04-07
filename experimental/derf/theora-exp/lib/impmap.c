@@ -465,7 +465,7 @@ static void oc_seg_sum_moment_row(float *_xrow,float *_x2row,
            This should already be adjusted to cover only the visible
             frame, and not the full encoded frame.*/
 static void oc_seg_sum_moments(oc_seg_ctx *_seg,
- const theora_img_plane *_iplane){
+ const th_img_plane *_iplane){
   const unsigned char *ypix;
   int                  ymax;
   int                  y;
@@ -1301,7 +1301,7 @@ static void oc_seg_splitmerge_bl(oc_seg_ctx *_seg,
   _iplane: The image plane the block is contained in.*/
 static void oc_seg_splitmerge_is(oc_seg_ctx *_seg,
  int _x0,int _y0,int _level,int _area,float _sumx,float _sumx2,float _bic,
- const theora_img_plane *_iplane){
+ const th_img_plane *_iplane){
   const unsigned char *ypix;
   int                  size;
   int                  y;
@@ -1345,7 +1345,7 @@ static void oc_seg_splitmerge_is(oc_seg_ctx *_seg,
 static void oc_seg_splitmerge_bs(oc_seg_ctx *_seg,
  int _x0,int _y0,int _width,int _height,int _level,
  int _area,float _sumx,float _sumx2,float _bic,
- const theora_img_plane *_iplane){
+ const th_img_plane *_iplane){
   const unsigned char *ypix;
   int                  size;
   int                  y;
@@ -1397,7 +1397,7 @@ static void oc_seg_splitmerge_bs(oc_seg_ctx *_seg,
   _iplane:  The image plane the block is contained in.*/
 static void oc_seg_splitmerge_it(oc_seg_ctx *_seg,
  int _x0,int _y0,int _level,int _area,float _sumx,float _sumx2,float _bic,
- const theora_img_plane *_iplane){
+ const th_img_plane *_iplane){
   float sumx[4];
   float sumx2[4];
   float bic[4];
@@ -1466,7 +1466,7 @@ static void oc_seg_splitmerge_it(oc_seg_ctx *_seg,
 static void oc_seg_splitmerge_bt(oc_seg_ctx *_seg,
  int _x0,int _y0,int _width,int _height,int _level,
  int _area,float _sumx,float _sumx2,float _bic,
- const theora_img_plane *_iplane){
+ const th_img_plane *_iplane){
   float sumx[4];
   float sumx2[4];
   float bic[4];
@@ -1629,7 +1629,7 @@ static void oc_seg_clear(oc_seg_ctx *_seg){
 /*Perform segmentation over the given image plane.
   _seg:    The segmentation context.
   _iplane: The image plane to segment.*/
-static void oc_seg_plane(oc_seg_ctx *_seg,const theora_img_plane *_iplane){
+static void oc_seg_plane(oc_seg_ctx *_seg,const th_img_plane *_iplane){
   float sumx;
   float sumx2;
   float var;
@@ -2109,7 +2109,7 @@ static float oc_impmap_mb_weight(oc_impmap_ctx *_impmap,int _mbi){
   return ret;
 }
 static void oc_impmap_fill(oc_impmap_ctx *_impmap,float _duration){
-  theora_img_plane yplane;
+  th_img_plane yplane;
   float            imp_sum;
   int              img_offset;
   int              nmbs;
@@ -2245,7 +2245,7 @@ static void oc_impmap_pipe_init(oc_enc_pipe_stage *_stage,oc_enc_ctx *_enc){
 
 
 oc_impmap_ctx *oc_impmap_alloc(oc_enc_ctx *_enc){
-  theora_info   *info;
+  th_info   *info;
   oc_impmap_ctx *impmap;
   int            edge_sz;
   int            width;

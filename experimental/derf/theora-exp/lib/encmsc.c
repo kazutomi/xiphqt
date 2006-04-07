@@ -7,12 +7,12 @@
 
 
 /*The VLC code used for mode schemes 0-6.*/
-static const theora_huff_code OC_MODE_CODESA[OC_NMODES]={
+static const th_huff_code OC_MODE_CODESA[OC_NMODES]={
   {0x00,1},{0x02,2},{0x06,3},{0x0E,4},{0x1E,5},{0x3E,6},{0x7E,7},{0x7F,7}
 };
 
 /*The CLC code used for mode scheme 7.*/
-static const theora_huff_code OC_MODE_CODESB[OC_NMODES]={
+static const th_huff_code OC_MODE_CODESB[OC_NMODES]={
   {0x00,3},{0x01,3},{0x02,3},{0x03,3},{0x04,3},{0x05,3},{0x06,3},{0x07,3}
 };
 

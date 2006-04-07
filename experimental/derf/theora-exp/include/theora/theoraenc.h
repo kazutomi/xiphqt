@@ -33,7 +33,7 @@ extern "C" {
  * This mode attempts to encode the video with a constant psychovisual
  *  quality.
  * It can be enabled by calling th_encode_ctl() with #TH_ENCCTL_SETUP_VBR.
- * See the #theora_info struct documentation for details on how the default
+ * See the #th_info struct documentation for details on how the default
  *  encoding mode is chosen.*/
 typedef struct th_vbr_cfg{
   /**The target quality index.
@@ -67,7 +67,7 @@ typedef struct th_vbr_cfg{
  * This mode encodes the video with a constant quality index.
  * This is the fastest encoding mode.
  * It can be enabled by calling th_encode_ctl() with #TH_ENCCTL_SETUP_CQI.
- * See the #theora_info struct documentation for details on how the default
+ * See the #th_info struct documentation for details on how the default
  *  encoding mode is chosen.*/
 typedef struct th_cqi_cfg{
   /**The target quality index.
@@ -88,13 +88,13 @@ typedef struct th_cqi_cfg{
  *  this call.
  * <tt>NULL</tt> may be specified to revert to the default tables.
  *
- * \param[in] _buf <tt>#theora_huff_code[#TH_NHUFFMAN_TABLES][#TH_NDCT_TOKENS]</tt>
+ * \param[in] _buf <tt>#th_huff_code[#TH_NHUFFMAN_TABLES][#TH_NDCT_TOKENS]</tt>
  * \retval TH_FAULT  \a _enc_ctx is <tt>NULL</tt>.
  * \retval TH_EINVAL Encoding has already begun or one or more of the given
  *                     tables is not full or prefix-free, \a _buf is
  *                     <tt>NULL</tt> and \a _buf_sz is not zero, or \a _buf is
  *                     non-<tt>NULL</tt> and \a _buf_sz is not
- *                     <tt>sizeof(#theora_huff_code)*#TH_NHUFFMAN_TABLES*#TH_NDCT_TOKENS</tt>.
+ *                     <tt>sizeof(#th_huff_code)*#TH_NHUFFMAN_TABLES*#TH_NDCT_TOKENS</tt>.
  * \retval TH_IMPL   Not supported by this implementation.*/
 #define TH_ENCCTL_SET_HUFFMAN_CODES (0)
 /**Sets the quantization parameters to use.
@@ -107,19 +107,19 @@ typedef struct th_cqi_cfg{
  * These two conditions ensure that the actual quantizer for a given \a qti,
  *  \a pli, and \a ci does not increase as \a qi increases.
  *
- * \param[in] _buf #theora_quant_info
+ * \param[in] _buf #th_quant_info
  * \retval TH_FAULT  \a _enc_ctx is <tt>NULL</tt>.
  * \retval TH_EINVAL Encoding has already begun, the quantization parameters
  *                    do not meet one of the above stated conditions, \a _buf
  *                    is <tt>NULL</tt> and \a _buf_sz is not zero, or \a _buf
  *                    is non-<tt>NULL</tt> and \a _buf_sz is not
- *                    <tt>sizeof(#theora_quant_info)</tt>.
+ *                    <tt>sizeof(#th_quant_info)</tt>.
  * \retval TH_IMPL   Not supported by this implementation.*/
 #define TH_ENCCTL_SET_QUANT_PARAMS (2)
 /**Sets the maximum distance between key frames.
  * This can be changed during an encode, but will be bounded by
- *  <tt>1<<theora_info#keyframe_granule_shift</tt>.
- * If it is set before encoding begins, theora_info#keyframe_granule_shift will
+ *  <tt>1<<th_info#keyframe_granule_shift</tt>.
+ * If it is set before encoding begins, th_info#keyframe_granule_shift will
  *  be enlarged appropriately.
  *
  * \param[in]  _buf <tt>ogg_uint32_t</tt>: The maximum distance between key
@@ -189,14 +189,14 @@ typedef struct th_cqi_cfg{
  * This can be done at any time during the encoding process, with different
  *  configuration parameters, to encode different regions of the video segment
  *  with different qualities.
- * See the #theora_info struct documentation for details on how the default
+ * See the #th_info struct documentation for details on how the default
  *  encoding mode is chosen.
  *
  * \param[in] _buf <tt>#th_vbr_cfg</tt>: the configuration parameters.
  *                 This may be <tt>NULL</tt>, in which the current VBR
  *                  configuration is unchanged.
  *                 The default is to use the QI setting passed in via the
- *                  #theora_info struct when the encoder was initialized, with
+ *                  #th_info struct when the encoder was initialized, with
  *                  a full range of admissible quantizers.
  * \retval OC_EFAULT \a _enc_ctx is <tt>NULL</tt>.
  * \retval TH_EINVAL The configuration parameters  do not meet one of their
@@ -208,14 +208,14 @@ typedef struct th_cqi_cfg{
 /**Puts the encoder in CQI mode.
  * This can be done at any time during the encoding process, with different QI
  *  values.
- * See the #theora_info struct documentation for details on how the default
+ * See the #th_info struct documentation for details on how the default
  *  encoding mode is chosen.
  *
  * \param[in] _buf <tt>#th_cqi_cfg</tt>: the configuration parameters.
  *                 This may be <tt>NULL</tt>, in which case the current CQI
  *                  configuration is unchanged.
  *                 The default is to use the QI setting passed in via the
- *                  #theora_info struct when the encoder was initialized.
+ *                  #th_info struct when the encoder was initialized.
  * \retval OC_EFAULT \a _enc_ctx is <tt>NULL</tt>.
  * \retval TH_EINVAL \a _buf_sz is not <tt>sizeof(#th_cqi_cfg)</tt>.
  * \retval TH_IMPL   Not supported by this implementation.*/
@@ -225,10 +225,10 @@ typedef struct th_cqi_cfg{
 
 
 /**The quantization parameters used by VP3.*/
-extern const theora_quant_info TH_VP31_QUANT_INFO;
+extern const th_quant_info TH_VP31_QUANT_INFO;
 
 /**The Huffman tables used by VP3.*/
-extern const theora_huff_code
+extern const th_huff_code
  TH_VP31_HUFF_CODES[TH_NHUFFMAN_TABLES][TH_NDCT_TOKENS];
 
 
@@ -253,7 +253,7 @@ typedef struct th_enc_ctx    th_enc_ctx;
  *
  * The functions are listed in the order they are used in a typical encode.
  * The basic steps are:
- * - Fill in a #theora_info structure with details on the format of the video
+ * - Fill in a #th_info structure with details on the format of the video
  *    you wish to encode.
  * - Allocate a #th_enc_ctx handle with th_encode_alloc().
  * - Perform any additional encoder configuration required with
@@ -267,11 +267,11 @@ typedef struct th_enc_ctx    th_enc_ctx;
  * - Call th_encode_free() to release all encoder memory.*/
 /*@{*/
 /**Allocates an encoder instance.
- * \param _info A #theora_info struct filled with the desired encoding
+ * \param _info A #th_info struct filled with the desired encoding
  *               parameters.
  * \return The initialized #th_enc_ctx handle.
  * \retval NULL If the encoding parameters were invalid.*/
-extern th_enc_ctx *th_encode_alloc(const theora_info *_info);
+extern th_enc_ctx *th_encode_alloc(const th_info *_info);
 /**Encoder control function.
  * This is used to provide advanced control the encoding process.
  * \param _enc    A #th_enc_ctx handle.

@@ -19,7 +19,7 @@ static int oc_tagcompare(const char *_s1,const char *_s2,int _n){
 
 
 
-void th_info_init(theora_info *_info){
+void th_info_init(th_info *_info){
   memset(_info,0,sizeof(*_info));
   _info->version_major=TH_VERSION_MAJOR;
   _info->version_minor=TH_VERSION_MINOR;
@@ -27,7 +27,7 @@ void th_info_init(theora_info *_info){
   _info->keyframe_granule_shift=6;
 }
 
-void th_info_clear(theora_info *_info){
+void th_info_clear(th_info *_info){
   memset(_info,0,sizeof(*_info));
 }
 

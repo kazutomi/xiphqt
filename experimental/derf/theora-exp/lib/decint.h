@@ -22,7 +22,7 @@ struct th_setup_info{
   /*The Huffman codes.*/
   oc_huff_node      *huff_tables[TH_NHUFFMAN_TABLES];
   /*The quantization parameters.*/
-  theora_quant_info  qinfo;
+  th_quant_info  qinfo;
 };
 
 
@@ -71,7 +71,7 @@ struct th_dec_ctx{
   /*The buffer used for the post-processed frame.*/
   th_ycbcr_buffer      pp_frame_buf;
   /*The striped decode callback function.*/
-  theora_stripe_callback   stripe_cb;
+  th_stripe_callback   stripe_cb;
 };
 
 /*Fix-ups for the libogg1 API, which returns -1 when there are insufficient

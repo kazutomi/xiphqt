@@ -205,7 +205,7 @@ static int oc_block_run_unpack(oggpack_buffer *_opb){
 
 
 
-static int oc_dec_init(oc_dec_ctx *_dec,const theora_info *_info,
+static int oc_dec_init(oc_dec_ctx *_dec,const th_info *_info,
  const th_setup_info *_setup){
   int qti;
   int pli;
@@ -1589,7 +1589,7 @@ static void oc_filter_vedge(unsigned char *_dst,int _dst_ystride,
 }
 
 static void oc_dec_deblock_frag_rows(oc_dec_ctx *_dec,
- theora_img_plane *_dst,theora_img_plane *_src,int _pli,int _fragy0,
+ th_img_plane *_dst,th_img_plane *_src,int _pli,int _fragy0,
  int _fragy_end){
   oc_fragment_plane   *fplane;
   int                 *variance;
@@ -1787,9 +1787,9 @@ static void oc_dering_block(unsigned char *_idata,int _ystride,int _b,
 #define OC_DERING_THRESH3 (5*OC_DERING_THRESH1)
 #define OC_DERING_THRESH4 (10*OC_DERING_THRESH1)
 
-static void oc_dec_dering_frag_rows(oc_dec_ctx *_dec,theora_img_plane *_img,
+static void oc_dec_dering_frag_rows(oc_dec_ctx *_dec,th_img_plane *_img,
  int _pli,int _fragy0,int _fragy_end){
-  theora_img_plane  *iplane;
+  th_img_plane  *iplane;
   oc_fragment_plane *fplane;
   oc_fragment       *frag;
   int               *variance;
@@ -1848,7 +1848,7 @@ static void oc_dec_dering_frag_rows(oc_dec_ctx *_dec,theora_img_plane *_img,
 
 
 
-th_dec_ctx *th_decode_alloc(const theora_info *_info,
+th_dec_ctx *th_decode_alloc(const th_info *_info,
  const th_setup_info *_setup){
   oc_dec_ctx *dec;
   if(_info==NULL||_setup==NULL)return NULL;
@@ -1900,10 +1900,10 @@ int th_decode_ctl(th_dec_ctx *_dec,int _req,void *_buf,
       return 0;
     }break;
     case TH_DECCTL_SET_STRIPE_CB:{
-      theora_stripe_callback *cb;
+      th_stripe_callback *cb;
       if(_dec==NULL||_buf==NULL)return TH_FAULT;
-      if(_buf_sz!=sizeof(theora_stripe_callback))return TH_EINVAL;
-      cb=(theora_stripe_callback *)_buf;
+      if(_buf_sz!=sizeof(th_stripe_callback))return TH_EINVAL;
+      cb=(th_stripe_callback *)_buf;
       _dec->stripe_cb.ctx=cb->ctx;
       _dec->stripe_cb.stripe_decoded=cb->stripe_decoded;
       return 0;
@@ -1935,7 +1935,7 @@ int th_decode_packetin(th_dec_ctx *_dec,const ogg_packet *_op,
     if(_dec->state.frame_type!=OC_INTRA_FRAME&&
      (_dec->state.ref_frame_idx[OC_FRAME_GOLD]<0||
      _dec->state.ref_frame_idx[OC_FRAME_PREV]<0)){
-      theora_info *info;
+      th_info *info;
       size_t       yplane_sz;
       size_t       cplane_sz;
       int          yhstride;

@@ -42,7 +42,7 @@ const int OC_DCT_VAL_CAT_SHIFTS[6]={1,2,3,4,5,9};
 const int OC_MODE_HAS_MV[OC_NMODES]={0,0,1,1,1,1,0,1};
 
 /*The Huffman codes used for motion vectors.*/
-const theora_huff_code OC_MV_CODES[2][63]={
+const th_huff_code OC_MV_CODES[2][63]={
   /*Scheme 1: VLC code.*/
   {
              {0xFF,8},{0xFD,8},{0xFB,8},{0xF9,8},{0xF7,8},{0xF5,8},{0xF3,8},
@@ -291,7 +291,7 @@ static void oc_enc_init_mbinfo(oc_enc_ctx *_enc){
           TH_EINVAL if the setup header has already been written, the code is
            not prefix free, or does not form a full binary tree.*/
 static int oc_enc_set_huffman_codes(oc_enc_ctx *_enc,
- const theora_huff_code _codes[TH_NHUFFMAN_TABLES][TH_NDCT_TOKENS]){
+ const th_huff_code _codes[TH_NHUFFMAN_TABLES][TH_NDCT_TOKENS]){
   int ret;
   if(_enc==NULL)return TH_FAULT;
   if(_enc->packet_state>OC_PACKET_SETUP_HDR)return TH_EINVAL;
@@ -317,7 +317,7 @@ static int oc_enc_set_huffman_codes(oc_enc_ctx *_enc,
            be verified that the quantization level of for a particular qti,
            pli, and ci never increases as qi increases.*/
 static int oc_enc_set_quant_params(th_enc_ctx *_enc,
- const theora_quant_info *_qinfo){
+ const th_quant_info *_qinfo){
   int qti;
   int pli;
   int qri;
@@ -654,7 +654,7 @@ static void oc_enc_huff_group_pack(oc_enc_ctx *_enc,int _zzi_start,
     ti=_enc->dct_token_offs[0][zzi];
     ebi=_enc->extra_bits_offs[zzi];
     for(pli=0;pli<3;pli++){
-      const theora_huff_code *huff_codes;
+      const th_huff_code *huff_codes;
       int                     token;
       int                     ti_end;
       /*Step 2: Write the tokens using these tables.*/
@@ -728,7 +728,7 @@ static void oc_enc_residual_tokens_pack(oc_enc_ctx *_enc){
 
 
 static void oc_enc_mb_modes_pack(oc_enc_ctx *_enc){
-  const theora_huff_code *codes;
+  const th_huff_code *codes;
   const int              *mode_ranks;
   int                    *coded_mbi;
   int                    *coded_mbi_end;
@@ -752,7 +752,7 @@ static void oc_enc_mb_modes_pack(oc_enc_ctx *_enc){
   coded_mbi=_enc->state.coded_mbis;
   coded_mbi_end=coded_mbi+_enc->state.ncoded_mbis;
   for(;coded_mbi<coded_mbi_end;coded_mbi++){
-    const theora_huff_code *code;
+    const th_huff_code *code;
     oc_mb                  *mb;
     mb=_enc->state.mbs+*coded_mbi;
     code=codes+mode_ranks[mb->mode];
@@ -761,7 +761,7 @@ static void oc_enc_mb_modes_pack(oc_enc_ctx *_enc){
 }
 
 static void oc_enc_mv_pack(oc_enc_ctx *_enc,int _dx,int _dy){
-  const theora_huff_code *code;
+  const th_huff_code *code;
   code=OC_MV_CODES[_enc->mv_scheme]+_dx+31;
   oggpackB_write(&_enc->opb,code->pattern,code->nbits);
   code=OC_MV_CODES[_enc->mv_scheme]+_dy+31;
@@ -807,7 +807,7 @@ static void oc_enc_mvs_pack(oc_enc_ctx *_enc){
 static void oc_enc_enable_default_mode(oc_enc_ctx *_enc){
   /*TODO: Right now we always use VBR mode.
     When a CBR mode is available, we should use that by default if the user
-     specifies a bitrate, but not a quality, in the theora_info struct.*/
+     specifies a bitrate, but not a quality, in the th_info struct.*/
   if(_enc->vbr==NULL)_enc->vbr=oc_enc_vbr_alloc(_enc);
   oc_enc_vbr_enable(_enc->vbr,NULL);
 }
@@ -1058,7 +1058,7 @@ static void oc_pack_pipe_init(oc_enc_pipe_stage *_stage,oc_enc_ctx *_enc){
 }
 
 
-static int oc_enc_init(oc_enc_ctx *_enc,const theora_info *_info){
+static int oc_enc_init(oc_enc_ctx *_enc,const th_info *_info){
   int ret;
   /*Initialize the shared encoder/decoder state.*/
   ret=oc_state_init(&_enc->state,_info);
@@ -1322,7 +1322,7 @@ void oc_enc_do_inter_dcts(oc_enc_ctx *_enc){
 }
 
 
-th_enc_ctx *th_encode_alloc(const theora_info *_info){
+th_enc_ctx *th_encode_alloc(const th_info *_info){
   oc_enc_ctx *enc;
   if(_info==NULL)return NULL;
   enc=_ogg_malloc(sizeof(*enc));
@@ -1342,24 +1342,24 @@ void th_encode_free(th_enc_ctx *_enc){
 
 
 
-typedef theora_huff_code theora_huff_table[TH_NDCT_TOKENS];
+typedef th_huff_code theora_huff_table[TH_NDCT_TOKENS];
 
 int th_encode_ctl(th_enc_ctx *_enc,int _req,void *_buf,
  size_t _buf_sz){
   switch(_req){
     case TH_ENCCTL_SET_HUFFMAN_CODES:{
       if(_buf==NULL&&_buf_sz!=0||_buf!=NULL&&
-       _buf_sz!=sizeof(theora_huff_code)*TH_NHUFFMAN_TABLES*TH_NDCT_TOKENS){
+       _buf_sz!=sizeof(th_huff_code)*TH_NHUFFMAN_TABLES*TH_NDCT_TOKENS){
         return TH_EINVAL;
       }
       return oc_enc_set_huffman_codes(_enc,(theora_huff_table *)_buf);
     }break;
     case TH_ENCCTL_SET_QUANT_PARAMS:{
       if(_buf==NULL&&_buf_sz!=0||
-       _buf!=NULL&&_buf_sz!=sizeof(theora_quant_info)){
+       _buf!=NULL&&_buf_sz!=sizeof(th_quant_info)){
         return TH_EINVAL;
       }
-      return oc_enc_set_quant_params(_enc,(theora_quant_info *)_buf);
+      return oc_enc_set_quant_params(_enc,(th_quant_info *)_buf);
     }break;
     case TH_ENCCTL_SET_KEYFRAME_FREQUENCY_FORCE:{
       ogg_uint32_t keyframe_frequency_force;

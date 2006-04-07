@@ -445,7 +445,7 @@ static void oc_state_frarray_clear(oc_theora_state *_state){
    factor of 2 on the appropriate sides.
   _enc: The encoding context to store the buffers in.*/
 static void oc_state_ref_bufs_init(oc_theora_state *_state){
-  theora_info   *info;
+  th_info   *info;
   unsigned char *ref_frame_data;
   size_t         yplane_sz;
   size_t         cplane_sz;
@@ -526,7 +526,7 @@ void oc_state_vtable_init(oc_theora_state *_state){
 }
 
 
-int oc_state_init(oc_theora_state *_state,const theora_info *_info){
+int oc_state_init(oc_theora_state *_state,const th_info *_info){
   /*First validate the parameters.*/
   if(_info==NULL)return TH_FAULT;
   /*The width and height of the encoded frame must be multiples of 16.
@@ -583,7 +583,7 @@ void oc_state_clear(oc_theora_state *_state){
   _yend: The Y coordinate of the row to stop padding at.*/
 void oc_state_borders_fill_rows(oc_theora_state *_state,int _refi,int _pli,
  int _y0,int _yend){
-  theora_img_plane *iplane;
+  th_img_plane *iplane;
   unsigned char    *apix;
   unsigned char    *bpix;
   unsigned char    *epix;
@@ -609,7 +609,7 @@ void oc_state_borders_fill_rows(oc_theora_state *_state,int _refi,int _pli,
   _refi:      The index of the reference buffer to pad.
   _pli:       The color plane.*/
 void oc_state_borders_fill_caps(oc_theora_state *_state,int _refi,int _pli){
-  theora_img_plane *iplane;
+  th_img_plane *iplane;
   unsigned char    *apix;
   unsigned char    *bpix;
   unsigned char    *epix;
@@ -662,7 +662,7 @@ void oc_state_fill_buffer_ptrs(oc_theora_state *_state,int _buf_idx,
      memcpy(_state->input,_img,sizeof(th_ycbcr_buffer));
   }
   for(pli=0;pli<3;pli++){
-    theora_img_plane  *iplane;
+    th_img_plane  *iplane;
     oc_fragment_plane *fplane;
     oc_fragment       *frag;
     oc_fragment       *vfrag_end;
@@ -979,7 +979,7 @@ int oc_state_loop_filter_init(oc_theora_state *_state,int *_bv){
   _fragy_end: The Y coordinate of the fragment row to stop filtering at.*/
 void oc_state_loop_filter_frag_rows(oc_theora_state *_state,int *_bv,
  int _refi,int _pli,int _fragy0,int _fragy_end){
-  theora_img_plane  *iplane;
+  th_img_plane  *iplane;
   oc_fragment_plane *fplane;
   oc_fragment       *frag_top;
   oc_fragment       *frag0;

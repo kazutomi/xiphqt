@@ -69,14 +69,14 @@ extern "C" {
 /**Sets the striped decode callback function.
  * If set, this function will be called as each piece of a frame is fully
  *  decoded in th_decode_packetin().
- * You can pass in a #theora_stripe_callback with
- *  theora_stripe_callback#stripe_decoded set to <tt>NULL</tt> to disable the
+ * You can pass in a #th_stripe_callback with
+ *  th_stripe_callback#stripe_decoded set to <tt>NULL</tt> to disable the
  *  callbacks at any point.
  *
- * \param[in]  _buf #theora_stripe_callback: The callback parameters.
+ * \param[in]  _buf #th_stripe_callback: The callback parameters.
  * \retval TH_FAULT  \a _dec_ctx or \a _buf is <tt>NULL</tt>.
  * \retval TH_EINVAL \a _buf_sz is not
- *                    <tt>sizeof(theora_stripe_callback)</tt>.*/
+ *                    <tt>sizeof(th_stripe_callback)</tt>.*/
 #define TH_DECCTL_SET_STRIPE_CB (7)
 /*@}*/
 
@@ -123,7 +123,7 @@ typedef struct{
   void                       *ctx;
   /**The callback function pointer.*/
   th_stripe_decoded_func  stripe_decoded;
-}theora_stripe_callback;
+}th_stripe_callback;
 
 
 
@@ -172,7 +172,7 @@ typedef struct th_setup_info th_setup_info;
  *  packets may follow.
  * This can be used on the first packet of any logical stream to determine if
  *  that stream is a Theora stream.
- * \param _info  A #theora_info structure to fill in.
+ * \param _info  A #th_info structure to fill in.
  *               This must have been previously initialized with
  *                th_info_init().
  *               The application may immediately begin using the contents of
@@ -206,15 +206,15 @@ typedef struct th_setup_info th_setup_info;
  *                       <tt>libtheora</tt>.
  * \retval TH_NOTFORMAT The packet was not a Theora header.
  */
-extern int th_decode_headerin(theora_info *_info,th_comment *_tc,
+extern int th_decode_headerin(th_info *_info,th_comment *_tc,
  th_setup_info **_setup,ogg_packet *_op);
 /**Allocates a decoder instance.
- * \param _info  A #theora_info struct filled via th_decode_headerin().
+ * \param _info  A #th_info struct filled via th_decode_headerin().
  * \param _setup A #th_setup_info handle returned via
  *                th_decode_headerin().
  * \return The initialized #th_dec_ctx handle.
  * \retval NULL If the decoding parameters were invalid.*/
-extern th_dec_ctx *th_decode_alloc(const theora_info *_info,
+extern th_dec_ctx *th_decode_alloc(const th_info *_info,
  const th_setup_info *_setup);
 /**Releases all storage used for the decoder setup information.
  * This should be called after you no longer want to create any decoders for

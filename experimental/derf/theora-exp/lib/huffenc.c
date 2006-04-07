@@ -6,7 +6,7 @@
 
 
 /*The default Huffman codes used for VP3.1.*/
-const theora_huff_code TH_VP31_HUFF_CODES[TH_NHUFFMAN_TABLES][TH_NDCT_TOKENS]={
+const th_huff_code TH_VP31_HUFF_CODES[TH_NHUFFMAN_TABLES][TH_NDCT_TOKENS]={
   {
     {0x002D, 6},{0x0026, 7},{0x0166, 9},{0x004E, 8},
     {0x02CE,10},{0x059E,11},{0x027D,11},{0x0008, 5},
@@ -848,7 +848,7 @@ static int huff_entry_cmp(const void *_c1,const void *_c2){
   Return: 0 on success, or a negative value if one of the given Huffman tables
    does not form a full, prefix-free code.*/
 int oc_huff_codes_pack(oggpack_buffer *_opb,
- const theora_huff_code _codes[TH_NHUFFMAN_TABLES][TH_NDCT_TOKENS]){
+ const th_huff_code _codes[TH_NHUFFMAN_TABLES][TH_NDCT_TOKENS]){
   int i;
   for(i=0;i<TH_NHUFFMAN_TABLES;i++){
     oc_huff_entry entries[TH_NDCT_TOKENS];

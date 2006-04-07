@@ -249,7 +249,7 @@ typedef struct{
 /*Common state information between the encoder and decoder.*/
 struct oc_theora_state{
   /*The stream information.*/
-  theora_info           info;
+  th_info           info;
   /*Table for shared accelerated functions.*/
   oc_base_opt_vtable    opt_vtable;
   /*CPU flags to detect the presence of extended instruction sets.*/
@@ -376,7 +376,7 @@ int oc_dct_token_skip(int _token,int _extra_bits);
 int oc_frag_pred_dc(const oc_fragment *_frag,
  const oc_fragment_plane *_fplane,int _x,int _y,int _pred_last[3]);
 
-int oc_state_init(oc_theora_state *_state,const theora_info *_info);
+int oc_state_init(oc_theora_state *_state,const th_info *_info);
 void oc_state_clear(oc_theora_state *_state);
 void oc_state_vtable_init_c(oc_theora_state *_state);
 void oc_state_borders_fill_rows(oc_theora_state *_state,int _refi,int _pli,

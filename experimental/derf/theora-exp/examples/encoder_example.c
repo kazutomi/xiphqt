@@ -1062,7 +1062,7 @@ int main(int argc,char *argv[]){
   ogg_packet       op; /* one raw packet of data for decode */
 
   th_enc_ctx  *td;
-  theora_info      ti;
+  th_info      ti;
   th_comment   tc;
 
   vorbis_info      vi; /* struct that stores all the static vorbis bitstream

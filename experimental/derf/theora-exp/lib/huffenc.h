@@ -4,13 +4,13 @@
 
 
 
-extern const theora_huff_code
+extern const th_huff_code
  TH_VP31_HUFF_CODES[TH_NHUFFMAN_TABLES][TH_NDCT_TOKENS];
 
 
 
 int oc_huff_codes_pack(oggpack_buffer *_opb,
- const theora_huff_code _codes[TH_NHUFFMAN_TABLES][TH_NDCT_TOKENS]);
+ const th_huff_code _codes[TH_NHUFFMAN_TABLES][TH_NDCT_TOKENS]);
 
 
 

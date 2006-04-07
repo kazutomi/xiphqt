@@ -65,7 +65,7 @@ ogg_sync_state     oy;
 ogg_page           og;
 ogg_stream_state   vo;
 ogg_stream_state   to;
-theora_info        ti;
+th_info        ti;
 th_comment     tc;
 th_setup_info *ts;
 th_dec_ctx    *td;
@@ -106,7 +106,7 @@ static void stripe_decoded(th_ycbcr_buffer _dst,th_ycbcr_buffer _src,
 }
 
 static void open_video(void){
-  theora_stripe_callback cb;
+  th_stripe_callback cb;
   int                    pli;
   /*Here we allocate a buffer so we can use the striped decode feature.
     There's no real reason to do this in this application, because we want to

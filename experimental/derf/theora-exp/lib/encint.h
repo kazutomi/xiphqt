@@ -124,7 +124,7 @@ struct oc_mode_scheme_chooser{
   /*Pointers to the Huffman codes associated with each mode scheme.
     The first 7 are always OC_MODE_CODESA, and the last is always
      OC_MODE_CODESB.*/
-  const theora_huff_code *mode_codes[8];
+  const th_huff_code *mode_codes[8];
   /*Pointers to the a list containing the index of each mode in the mode
      alphabet used by each scheme.
     The first entry points to the dynamic scheme0_ranks, while the remaining
@@ -211,9 +211,9 @@ struct th_enc_ctx{
   /*The bounding value array used for the loop filter.*/
   int                      bounding_values[512];
   /*The huffman tables in use.*/
-  theora_huff_code         huff_codes[TH_NHUFFMAN_TABLES][TH_NDCT_TOKENS];
+  th_huff_code         huff_codes[TH_NHUFFMAN_TABLES][TH_NDCT_TOKENS];
   /*The quantization parameters in use.*/
-  theora_quant_info        qinfo;
+  th_quant_info        qinfo;
   /*Pointers to the quantization tables in use.*/
   oc_quant_table          *enquant_tables[2][3];
   /*Storage for the actual quantization tables.*/
@@ -236,7 +236,7 @@ extern const int OC_MODE_SCHEMES[7][OC_NMODES];
 extern const int OC_DCT_VAL_CAT_SIZES[6];
 extern const int OC_DCT_VAL_CAT_SHIFTS[6];
 extern const int OC_MODE_HAS_MV[OC_NMODES];
-extern const theora_huff_code OC_MV_CODES[2][63];
+extern const th_huff_code OC_MV_CODES[2][63];
 
 /*The number of fractional bits in bitrate statistics.*/
 #define OC_BIT_SCALE (7)
