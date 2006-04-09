@@ -36,6 +36,14 @@
 #include "dsplayer.h"
 
 
+static const GUID CLSID_XX_VorbisDecoder =
+{ 0x5a1d945, 0xa794, 0x44ef, { 0xb4, 0x1a, 0x2f, 0x85, 0x1a, 0x11, 0x71, 0x55 } };
+
+static const GUID CLSID_XX_OggDemux =  
+{ 0xc9361f5a, 0x3282, 0x4944, { 0x98, 0x99, 0x6d, 0x99, 0xcd, 0xc5, 0x37, 0xb } };
+
+static const GUID  CLSID_XX_TheoraDecoder =
+{ 0x5187161, 0x5c36, 0x4324, { 0xa7, 0x34, 0x22, 0xbf, 0x37, 0x50, 0x9f, 0x2d } };
 
 
 DSPlayer::DSPlayer(void) 
@@ -77,7 +85,11 @@ DSPlayer::DSPlayer(void)
 	//mCMMLProxy = new CMMLCallbackProxy;			//Need to delete this !
 	debugLog = new fstream;
 #ifdef OGGCODECS_LOGGING
+#ifndef WINCE
 	debugLog->open("C:\\logs\\DSPlayer.log", ios_base::out | ios_base::app);
+#else
+	debugLog->open("\\Storage Card\\dsplay.txt", ios_base::out | ios_base::app);
+#endif
 #endif
 	*debugLog<<"Starting new log"<<endl;
 }
@@ -485,6 +497,13 @@ bool DSPlayer::loadFile(wstring inFileName, HWND inWindowHandle, int inLeft, int
 	mTop = inTop;
 	mWidth = inWidth;
 	mHeight = inHeight;
+	*debugLog<<"HWND = "<<(int)inWindowHandle<<endl;
+	*debugLog<<"Size of string = "<<inFileName.size();
+	for (int i = 0; i < inFileName.size(); i++) {
+		*debugLog<<(int)inFileName[i]<< ":";
+		*debugLog<<(char)inFileName[i]<< " - ";
+	}
+	*debugLog<<endl;
 	
 	return loadFile(inFileName);
 }
@@ -592,6 +611,7 @@ bool DSPlayer::loadFile(wstring inFileName)
 		mIsLoaded = false;
 		return false;
 	}
+	*debugLog<<"Made filter graphs"<<endl;
 	
 	
 
@@ -731,6 +751,7 @@ bool DSPlayer::loadFile(wstring inFileName)
 				locHR = mGraphBuilder->QueryInterface(IID_IVideoWindow, (void**)&locVideoWindow);
 	
 				if (locHR == S_OK) {
+					*debugLog<<"Got IVideoWindow"<<endl;
 					mVideoWindow = locVideoWindow;
 					mVideoWindow->put_Owner((int)mWindowHandle);
 					mVideoWindow->SetWindowPosition(mLeft, mTop, mWidth, mHeight);
@@ -744,14 +765,161 @@ bool DSPlayer::loadFile(wstring inFileName)
 
 
 	*debugLog<<"About to call render on "<<endl;
-	//Build the graph
-	locHR = mGraphBuilder->RenderFile(locWFileName.c_str(), NULL);
-
-	if (locHR != S_OK) {
-		*debugLog<<"Render File FAILED !!"<<endl;
-		mIsLoaded = false;
-		return false;
+	for (int i = 0; i < inFileName.size(); i++) {
+		*debugLog<<(int)inFileName[i]<< ":";
+		*debugLog<<(char)inFileName[i]<< " - ";
 	}
+	*debugLog<<endl;
+	//Build the graph
+#ifndef DSPLAY_OGG_SPECIFIC
+	locHR = mGraphBuilder->RenderFile(locWFileName.c_str(), NULL);
+	if (locHR != S_OK) {
+		if (locHR < 0) {
+			*debugLog<<"Render File FAILED !!"<<endl;
+			*debugLog<<"Error is "<<locHR<<endl;
+			mIsLoaded = false;
+			return false;
+		} else {
+			*debugLog<<"Render file Partial success"<<endl;
+			*debugLog<<"Code is "<<locHR<<endl;
+		}
+	}
+
+#else
+
+	*debugLog<<"Custom graph building for ogg"<<endl;
+	IBaseFilter* locDemuxer = NULL;
+	IFileSourceFilter* locFS = NULL;
+	//HRESULT locHR = S_FALSE;
+	
+	locHR = CoCreateInstance(CLSID_XX_OggDemux, NULL, CLSCTX_INPROC_SERVER, IID_IBaseFilter, (void**)&locDemuxer);
+
+	*debugLog<<"Demux create = "<<locHR<<endl;
+	locHR = mGraphBuilder->AddFilter(locDemuxer, L"Custom Ogg Source");
+	*debugLog<<"Add demux to graph= "<<locHR<<endl;
+
+	locHR = locDemuxer->QueryInterface(IID_IFileSourceFilter, (void**)&locFS);
+
+	locHR = locFS->Load(locWFileName.c_str(), NULL);
+	*debugLog<<"Load = "<<locHR<<endl;
+
+
+	IEnumPins* locPinEnum = NULL;
+
+	locDemuxer->EnumPins(&locPinEnum);
+
+	
+
+	IBaseFilter* locVorbisDecoder = NULL;
+	IBaseFilter* locTheoraDecoder = NULL;
+	IPin* locPin = NULL;
+	ULONG locHowMany = 0;
+	ULONG locHowManyDecoderPins = 0;
+	while (locPinEnum->Next(1, &locPin, &locHowMany) == S_OK) {
+		//locHR = locGraphBuilder->Render(locPin);
+		*debugLog<<"Pre Pin render attempt vorbis = "<<locHR<<endl;
+
+		locHR = CoCreateInstance(CLSID_XX_VorbisDecoder, NULL, CLSCTX_INPROC_SERVER, IID_IBaseFilter, (void**)&locVorbisDecoder);
+		*debugLog<<"Create vorbis decoder = "<<locHR<<endl;
+		
+		locHR = mGraphBuilder->AddFilter(locVorbisDecoder, L"Vorbis Decoder");
+		*debugLog<<"Add vorbis filter = "<<locHR<<endl;
+
+		IEnumPins* locDecoderPinEnum = NULL;
+		locHR = locVorbisDecoder->EnumPins(&locDecoderPinEnum);
+		*debugLog<<"Get vorbis decoder pin enum = "<<locHR<<endl;
+
+		IPin* locDecoderPin = NULL;
+		IPin* locDecoderOutputPin = NULL;
+		locHR = locDecoderPinEnum->Next(1, &locDecoderPin, &locHowManyDecoderPins);
+		*debugLog<<"Get vorb pin from enum = "<<locHR<<endl;
+		PIN_DIRECTION locDirn;
+		locHR = locDecoderPin->QueryDirection(&locDirn);
+		*debugLog<<"Query dirn = "<<locHR<<endl;
+		if (locDirn != PINDIR_INPUT) {
+			*debugLog<<"First pin NOT AN INPUT PIN"<<endl;
+			//locDecoderPin->Release();
+			locDecoderOutputPin = locDecoderPin;
+			locDecoderPinEnum->Next(1, &locDecoderPin, &locHowManyDecoderPins);
+		}
+
+		*debugLog<<"Pre connect attempt for vorbis"<<endl;
+		locHR = mGraphBuilder->ConnectDirect(locPin, locDecoderPin, NULL);
+		*debugLog<<"Attempt connection to vorbis = "<<locHR<<endl;
+
+		if (locHR != S_OK) {
+			*debugLog<<"Begin theora attempt"<<endl;
+
+			locDecoderOutputPin = NULL;
+			locDecoderPin->Release();
+			locDecoderPinEnum->Release();
+			mGraphBuilder->RemoveFilter(locVorbisDecoder);
+			locVorbisDecoder->Release();
+
+
+			locHR = CoCreateInstance(CLSID_XX_TheoraDecoder, NULL, CLSCTX_INPROC_SERVER, IID_IBaseFilter, (void**)&locTheoraDecoder);
+			*debugLog<<"Create theora filter = "<<locHR<<endl;
+			
+			locHR = mGraphBuilder->AddFilter(locTheoraDecoder, L"Theora Decoder");
+			*debugLog<<"Add theora filter = "<<locHR<<endl;
+
+			locDecoderPinEnum = NULL;
+			locHR = locTheoraDecoder->EnumPins(&locDecoderPinEnum);
+			*debugLog<<"Enum theo pins = "<<endl;
+
+			locDecoderPin = NULL;
+			locDecoderPinEnum->Next(1, &locDecoderPin, &locHowManyDecoderPins);
+			PIN_DIRECTION locDirn;
+			locDecoderPin->QueryDirection(&locDirn);
+			if (locDirn != PINDIR_INPUT) {
+				//locDecoderPin->Release();
+				locDecoderOutputPin = locDecoderPin;
+				locDecoderPinEnum->Next(1, &locDecoderPin, &locHowManyDecoderPins);
+			}
+
+			*debugLog<<"Pre theora connect attempt"<<endl;
+			locHR = mGraphBuilder->ConnectDirect(locPin, locDecoderPin,NULL);
+			*debugLog<<"Attempt connection to theora = "<<locHR<<endl;
+
+			if (locHR != S_OK) {
+				*debugLog<<"FAILED TO CONNECT TO THEORA FILTER"<<endl;
+				locDecoderPin->Release();
+				locDecoderPinEnum->Release();
+				mGraphBuilder->RemoveFilter(locTheoraDecoder);
+				locTheoraDecoder->Release();
+
+			} else {
+				*debugLog<<"++ Successfully conencted to theora filter"<<endl;
+				if (locDecoderOutputPin == NULL) {
+					locDecoderPinEnum->Next(1, &locDecoderOutputPin, &locHowManyDecoderPins);
+				}
+
+				locHR = mGraphBuilder->Render(locDecoderOutputPin);
+				*debugLog<<"Rendering theora output pin = "<<locHR<<endl;
+			}
+		} else {
+			*debugLog<<"++ Successfully connected to vorbis filter"<<endl;
+			if (locDecoderOutputPin != NULL) {
+
+			} else {
+				locDecoderPinEnum->Next(1, &locDecoderOutputPin, &locHowManyDecoderPins);
+			}
+
+			locHR = mGraphBuilder->Render(locDecoderOutputPin);
+			*debugLog<<"Rendering vorbis out put pin = "<<locHR<<endl;
+		}
+
+
+
+		locPin->Release();
+		locPin = NULL;
+	}
+
+	
+#endif
+
+
+	*debugLog<<"Pre video ifo"<<endl;
 
 	//CHANGES::: Use this to get information about the video, once it's been rendered.
 	GetVideoInformation();
@@ -796,6 +964,8 @@ bool DSPlayer::loadFile(wstring inFileName)
 		mBasicAudio = NULL;
 	}
 
+	*debugLog<<"After various interfaces got"<<endl;
+
 #ifndef WINCE
 	//Get the IVideFrameStep if ity exists
 	IVideoFrameStep* locVideoStep = NULL;
@@ -821,15 +991,17 @@ bool DSPlayer::loadFile(wstring inFileName)
 
 			locHR = locFilterEnum->Next(1, &locTestFilter, &locHowMany);
 			if (locHR == S_OK) {
+				*debugLog<<"Found filter in graph..."<<endl;
 				CLSID locCLSID;
 				if (locTestFilter->GetClassID(&locCLSID) == S_OK) {
 					if (locCLSID == X_CLSID_OggDemuxPacketSourceFilter) {
 						locOggDemuxFilter = locTestFilter;
 						//Addref here... since we always do a release below
 						locOggDemuxFilter->AddRef();
-						locDoneSearch = true;
+						//locDoneSearch = true;
 						
 					}
+					*debugLog<<"Filter guid = "<<locCLSID.Data1<<"-"<<locCLSID.Data2<<"-"<<locCLSID.Data3<<endl;
 				}
 
 				locTestFilter->Release();
@@ -853,6 +1025,8 @@ bool DSPlayer::loadFile(wstring inFileName)
 		}
 
 	}
+
+	*debugLog<<"Almost done"<<endl;
 
 	//// {EB5AED9C-8CD0-4c4b-B5E8-F5D10AD1314D}
 	//DEFINE_GUID(IID_IOggBaseTime, 
@@ -936,6 +1110,7 @@ bool DSPlayer::isLoaded() {
 	return mIsLoaded;
 }
 bool DSPlayer::play() {
+	*debugLog<<"Play..."<<endl;
 	if (mIsLoaded) {
 		HRESULT locHR = mMediaControl->Run();
 		if (SUCCEEDED(locHR)) {

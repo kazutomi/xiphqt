@@ -304,6 +304,7 @@ bool OggDemuxPacketSourceFilter::acceptOggPage(OggPage* inOggPage)
 			mBufferedPages.push_back(inOggPage);
 			return true;
 		} else {
+			debugLog<<"Found BOS"<<endl;
 			return mStreamMapper->acceptOggPage(inOggPage);
 		}
 	} else if (!mSeenPositiveGranulePos) {
@@ -556,10 +557,16 @@ void OggDemuxPacketSourceFilter::notifyPinConnected()
 			for (int i = 0; i < locNumPins; i++) {
 				locPin = (OggDemuxPacketSourcePin*)GetPin(i);
 				
-				
+				debugLog<<"Adding decoder interface to sek table"<<endl;
 				mSeekTable->addStream(locPin->getSerialNo(), locPin->getDecoderInterface());
 			}
+			debugLog<<"Pre seek table build"<<endl;
+#ifndef WINCE
 			mSeekTable->buildTable();
+#else
+			mSeekTable->disableTable();
+#endif
+			debugLog<<"Post seek table build"<<endl;
 		}
 	}
 }

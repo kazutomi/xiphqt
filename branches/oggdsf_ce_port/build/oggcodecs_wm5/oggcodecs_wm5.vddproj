@@ -74,6 +74,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_A468F930F587443BA9529CBFA90E8D29"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_BC04D4D4A1EE423EBFA34E91DF63319A"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -424,6 +430,32 @@
             "OutputConfiguration" = "8:"
             "OutputGroupCanonicalName" = "8:Built"
             "OutputProjectGuid" = "8:{3FB9B20E-790A-402F-A02C-B0FBDC5938E3}"
+            "ShowKeyOutput" = "11:TRUE"
+                "ExcludeFilters"
+                {
+                }
+            }
+            "{605BE39E-5046-48BD-AEC0-63C3A46626D5}:_A468F930F587443BA9529CBFA90E8D29"
+            {
+            "SourcePath" = "8:..\\..\\src\\lib\\player\\libDSPlay\\Windows Mobile 5.0 Pocket PC SDK (ARMV4I)\\Debug_WM5_PPC_ARM\\libDSPlay.dll"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_8BE9216FDC6E4FB1B98829D8873DE833"
+            "Condition" = "8:"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "Register" = "3:0"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            "ProjectOutputGroupRegister" = "3:0"
+            "OutputConfiguration" = "8:"
+            "OutputGroupCanonicalName" = "8:Built"
+            "OutputProjectGuid" = "8:{213C8003-BD07-4534-ACFC-D630C6D0D75F}"
             "ShowKeyOutput" = "11:TRUE"
                 "ExcludeFilters"
                 {

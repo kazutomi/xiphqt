@@ -99,8 +99,15 @@ protected:
 	eVorbisSetupState mSetupState;
 
 	static const unsigned long VORBIS_IDENT_HEADER_SIZE = 30;
+
+#ifdef WINCE
+	static const unsigned long VORBIS_NUM_BUFFERS = 50;
+	static const unsigned long VORBIS_BUFFER_SIZE = 8192;
+
+#else
 	static const unsigned long VORBIS_NUM_BUFFERS = 75;
 	static const unsigned long VORBIS_BUFFER_SIZE = 65536;
+#endif
 
 	//Implementation of virtuals from AbstractTransform Filter
 	virtual bool ConstructCodec();

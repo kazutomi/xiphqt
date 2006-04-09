@@ -11,6 +11,9 @@
 static const GUID CLSID_XX_OggDemux =  
 { 0xc9361f5a, 0x3282, 0x4944, { 0x98, 0x99, 0x6d, 0x99, 0xcd, 0xc5, 0x37, 0xb } };
 
+static const GUID  CLSID_X_Theora_Decoder =
+{ 0x5187161, 0x5c36, 0x4324, { 0xa7, 0x34, 0x22, 0xbf, 0x37, 0x50, 0x9f, 0x2d } };
+
 
 #define MAX_LOADSTRING 100
 
@@ -252,6 +255,53 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         case WM_COMMAND:
             if (LOWORD(wParam) == IDOK)
             {
+
+				//IBaseFilter* locVidRender = NULL;
+				//CoCreateInstance(CLSID_VideoRenderer, NULL, CLSCTX_INPROC_SERVER, IID_IBaseFilter, (void**)locVidRender);
+
+				//IEnumPins* locPinEnum = NULL;
+				//locVidRender->EnumPins(&locPinEnum);
+
+				//IPin* locPin = NULL;
+				//ULONG locHowMany = 0;
+				//while(locPinEnum->Next(1, &locPin, &locHowMany)) {
+
+				//	IEnumMediaTypes* locMTEnum = NULL;
+				//	
+				//	locPin->EnumMediaTypes(&locMTEnum);
+
+				//	ULONG locHowManyMT = 0;
+				//	AM_MEDIA_TYPE* locMediaType = NULL;
+				//	while (locMTEnum->Next(1, &locMediaType, &locHowManyMT)) {
+				//		if (locMediaType->majortype == MEDIATYPE_Video) {
+				//			if (locMediaType->subtype == MEDIASUBTYPE_YUY2) {
+				//				locHowManyMT = locHowManyMT;
+				//			} else if (locMediaType->subtype == MEDIASUBTYPE_RGB565) {
+				//				locHowManyMT = locHowManyMT;
+				//			} else if (locMediaType->subtype == MEDIASUBTYPE_RGB555) {
+				//				locHowManyMT = locHowManyMT;
+				//			} else if (locMediaType->subtype == MEDIASUBTYPE_RGB24) {
+				//				locHowManyMT = locHowManyMT;
+				//			} else {
+				//				locHowManyMT = locHowManyMT;
+				//			}
+				//		}
+
+				//	}
+				//}
+
+				//IDirectDrawVideo* locDDV = NULL;
+				//locVidRender->QueryInterface(IID_IDirectDrawVideo, (void**)&locDDV);
+
+				//DWORD locNumCodes = 0;
+				//locDDV->GetFourCCCodes(&locNumCodes, NULL);
+
+				//DWORD* locCodes = new DWORD[locNumCodes];
+				//locDDV->GetFourCCCodes(&locNumCodes, locCodes);
+
+
+
+
 				//HINSTANCE locLib;
 				//DWORD locErr;
 				////FARPROC locProc;
@@ -288,20 +338,71 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
 
 
+
+				//c_initialise();
+				////wstring locStr = L"\\Storage Card\\do_you_see.ogg";
+				//c_loadFileWithParams( L"\\Storage Card\\do_you_see.ogg", hDlg, 0,0,64,48);
+				//c_play();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 				IGraphBuilder* locGraphBuilder = NULL;
 				IMediaControl* locMediaControl = NULL;
 				HRESULT locHR = S_FALSE;;
 				CoInitialize(NULL);
+				IBaseFilter* locTheoDecode = NULL;
 				locHR = CoCreateInstance(CLSID_FilterGraph, NULL, CLSCTX_INPROC_SERVER, IID_IGraphBuilder, (void **)&locGraphBuilder);
+
+				//locHR = CoCreateInstance(CLSID_X_Theora_Decoder, NULL, CLSCTX_INPROC_SERVER, IID_IBaseFilter, (void **)&locTheoDecode);
 				
-				IBaseFilter* locDemux = NULL;
+
+				
+				//IBaseFilter* locDemux = NULL;
 				//locHR = CoCreateInstance(CLSID_XX_OggDemux, NULL, CLSCTX_INPROC_SERVER, IID_IBaseFilter, (void **)&locDemux);
-				locHR = locGraphBuilder->RenderFile(L"\\Storage Card\\do_you_see.ogg", NULL);
+				locHR = locGraphBuilder->RenderFile(L"\\Storage Card\\carbon.ogg", NULL);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /*
+
+
+
+
+
+
 				IGraphBuilder* locGraphBuilder = NULL;
 				IMediaControl* locMediaControl = NULL;
 				IBaseFilter* locDemuxer = NULL;
+				IBaseFilter* locTheoDecoder = NULL;
 				//ICustomSource* locCustomSourceSetter = NULL;
 				IFileSourceFilter* locFS = NULL;
 				HRESULT locHR = S_FALSE;;
@@ -310,11 +411,16 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
 				locHR = CoCreateInstance(CLSID_XX_OggDemux, NULL, CLSCTX_INPROC_SERVER, IID_IBaseFilter, (void**)&locDemuxer);
 
+				locHR = CoCreateInstance(CLSID_X_Theora_Decoder, NULL, CLSCTX_INPROC_SERVER, IID_IBaseFilter, (void**)&locTheoDecoder);
+
 				locHR = locGraphBuilder->AddFilter(locDemuxer, L"Custom Ogg Source");
+				locHR = locGraphBuilder->AddFilter(locTheoDecoder, L"Theo Filter");
+
+				
 
 				locHR = locDemuxer->QueryInterface(IID_IFileSourceFilter, (void**)&locFS);
 
-				locHR = locFS->Load(L"\\Storage Card\\do_you_see.ogg", NULL);
+				locHR = locFS->Load(L"\\Storage Card\\carbon.ogg", NULL);
 
 
 				//CustomSourceClass* locCustomFileSourceInterface = new CustomSourceClass;
@@ -327,60 +433,81 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
 				IEnumPins* locPinEnum = NULL;
 
-				locDemuxer->EnumPins(&locPinEnum);
+				locTheoDecoder->EnumPins(&locPinEnum);
+				vector<IPin*> locTheoPins;
+
+				ULONG locHowMany = 0;
+				
+				IPin* locPin = NULL;
 
 				
 
-				IPin* locPin = NULL;
-				ULONG locHowMany = 0;
 				while (locPinEnum->Next(1, &locPin, &locHowMany) == S_OK) {
-					locHR = locGraphBuilder->Render(locPin);
+					locTheoPins.push_back(locPin);
+				}
+
+				
+
+				locDemuxer->EnumPins(&locPinEnum);
+				locPin = NULL;
+				
+				
+				
+				locHowMany = 0;
+				while (locPinEnum->Next(1, &locPin, &locHowMany) == S_OK) {
+					//locHR = locGraphBuilder->Render(locPin);
+
+					//for (size_t i = 0; i < locTheoPins.size(); i++) {
+						//locPin->Connect(locTheoPins[i], 
+						locHR = locGraphBuilder->ConnectDirect(locPin, locTheoPins[0], NULL);
+						locHR = locGraphBuilder->Render(locTheoPins[1]);
+					//}
 					locPin->Release();
 					locPin = NULL;
 				}
+
 
 */
 
 
 
+				//locHR = locGraphBuilder->QueryInterface(IID_IMediaControl, (void**)&locMediaControl);
 
-				locHR = locGraphBuilder->QueryInterface(IID_IMediaControl, (void**)&locMediaControl);
 
+				//locHR = locMediaControl->Run();
 
-				locHR = locMediaControl->Run();
+				//IMediaEvent* locMediaEvent = NULL;
+				//locHR = locGraphBuilder->QueryInterface(IID_IMediaEvent, (void**)&locMediaEvent);
+				//
+				//HANDLE  hEvent; 
+				//long    evCode, param1, param2;
+				//BOOLEAN bDone = FALSE;
+				//HRESULT hr = S_OK;
+				//hr = locMediaEvent->GetEventHandle((OAEVENT*)&hEvent);
+				//if (FAILED(hr))
+				//{
+				//	/* Insert failure-handling code here. */
+				//}
+				//while(!bDone) 
+				//{
+				//	if (WAIT_OBJECT_0 == WaitForSingleObject(hEvent, 100))
+				//	{ 
+				//		while (hr = locMediaEvent->GetEvent(&evCode, &param1, &param2, 0), SUCCEEDED(hr)) 
+				//		{
+				//			//printf("Event code: %#04x\n Params: %d, %d\n", evCode, param1, param2);
+				//			//cout<<"Event : "<<evCode<<" Params : "<<param1<<", "<<param2<<endl;
+				//			locMediaEvent->FreeEventParams(evCode, param1, param2);
+				//			bDone = (EC_COMPLETE == evCode);
+				//		}
+				//	}
+				//} 
 
-				IMediaEvent* locMediaEvent = NULL;
-				locHR = locGraphBuilder->QueryInterface(IID_IMediaEvent, (void**)&locMediaEvent);
-				
-				HANDLE  hEvent; 
-				long    evCode, param1, param2;
-				BOOLEAN bDone = FALSE;
-				HRESULT hr = S_OK;
-				hr = locMediaEvent->GetEventHandle((OAEVENT*)&hEvent);
-				if (FAILED(hr))
-				{
-					/* Insert failure-handling code here. */
-				}
-				while(!bDone) 
-				{
-					if (WAIT_OBJECT_0 == WaitForSingleObject(hEvent, 100))
-					{ 
-						while (hr = locMediaEvent->GetEvent(&evCode, &param1, &param2, 0), SUCCEEDED(hr)) 
-						{
-							//printf("Event code: %#04x\n Params: %d, %d\n", evCode, param1, param2);
-							//cout<<"Event : "<<evCode<<" Params : "<<param1<<", "<<param2<<endl;
-							locMediaEvent->FreeEventParams(evCode, param1, param2);
-							bDone = (EC_COMPLETE == evCode);
-						}
-					}
-				} 
-
-				//cout<<"Finished..."<<endl;
-				int x;
-				//cin>>x;
-				locMediaControl->Release();
-				locGraphBuilder->Release();
-				CoUninitialize();
+				////cout<<"Finished..."<<endl;
+				//int x;
+				////cin>>x;
+				//locMediaControl->Release();
+				//locGraphBuilder->Release();
+				//CoUninitialize();
 
 
 
