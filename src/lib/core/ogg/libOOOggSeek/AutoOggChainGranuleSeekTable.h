@@ -19,6 +19,8 @@ public:
 	/// Builds the actual seek table: only works if we have random access to the file.
 	virtual bool buildTable();
 
+	virtual void disableTable()		{	mIsEnabled = false;	}
+
 	//IOggCallback interface
 	virtual bool acceptOggPage(OggPage* inOggPage);
 

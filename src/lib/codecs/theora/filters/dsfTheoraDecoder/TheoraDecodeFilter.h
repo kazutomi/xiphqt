@@ -73,6 +73,13 @@ public:
 	//Helpers
 	sTheoraFormatBlock* getTheoraFormatBlock();
 	void setTheoraFormat(BYTE* inFormatBlock);
+
+#ifdef WINCE
+	virtual LPAMOVIESETUP_FILTER GetSetupData(); //		{	return (LPAMOVIESETUP_FILTER)&VorbisDecodeFilterReg;	}
+	virtual HRESULT Register();
+#endif
+
+
 protected:
 
 	static const unsigned long THEORA_IDENT_HEADER_SIZE = 42;
@@ -104,6 +111,10 @@ protected:
 	HRESULT TheoraDecoded (yuv_buffer* inYUVBuffer, IMediaSample* outSample, bool inIsKeyFrame, REFERENCE_TIME inStart, REFERENCE_TIME inEnd);
 	HRESULT DecodeToYUY2(yuv_buffer* inYUVBuffer, IMediaSample* outSample, bool inIsKeyFrame, REFERENCE_TIME inStart, REFERENCE_TIME inEnd) ;
 	HRESULT DecodeToYV12(yuv_buffer* inYUVBuffer, IMediaSample* outSample, bool inIsKeyFrame, REFERENCE_TIME inStart, REFERENCE_TIME inEnd) ;
+	HRESULT DecodeToRGB565(yuv_buffer* inYUVBuffer, IMediaSample* outSample, bool inIsKeyFrame, REFERENCE_TIME inStart, REFERENCE_TIME inEnd) ;
+	HRESULT DecodeToRGB24(yuv_buffer* inYUVBuffer, IMediaSample* outSample, bool inIsKeyFrame, REFERENCE_TIME inStart, REFERENCE_TIME inEnd) ;
+
+
 
 
 	vector<CMediaType*> mOutputMediaTypes;

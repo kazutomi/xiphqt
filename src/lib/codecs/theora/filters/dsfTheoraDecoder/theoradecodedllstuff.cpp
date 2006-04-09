@@ -47,8 +47,11 @@ STDAPI DllRegisterServer()
 	//TO DO::: Should we be releasing the filter mapper even when we return early ?
     HRESULT hr;
     
-
+#ifndef WINCE
     hr = AMovieDllRegisterServer2(TRUE);
+#else
+	hr = AMovieDllRegisterServer();
+#endif
 
 
 #ifndef WINCE
