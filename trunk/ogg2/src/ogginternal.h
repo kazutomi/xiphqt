@@ -1,11 +1,11 @@
 /********************************************************************
  *                                                                  *
- * THIS FILE IS PART OF THE OggVorbis SOFTWARE CODEC SOURCE CODE.   *
+ * THIS FILE IS PART OF THE Ogg Reference Library SOURCE CODE.      *
  * USE, DISTRIBUTION AND REPRODUCTION OF THIS LIBRARY SOURCE IS     *
  * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2003             *
+ * THE Ogg Reference Library SOURCE CODE IS (C) COPYRIGHT 1994-2004 *
  * by the Xiph.Org Foundation http://www.xiph.org/                  *
  *                                                                  *
  ********************************************************************
@@ -15,76 +15,80 @@
 
  ********************************************************************/
 
-#ifndef _OGGI_H
-#define _OGGI_H
+#ifndef _OGG2I_H
+#define _OGG2I_H
 
-#include <ogg2/ogg.h>
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+
+#include <ogg/ogg2.h>
 #include "mutex.h"
 
-struct ogg_buffer_state{
-  ogg_buffer    *unused_buffers;
-  ogg_reference *unused_references;
+struct ogg2_buffer_state{
+  ogg2_buffer    *unused_buffers;
+  ogg2_reference *unused_references;
   int            outstanding;
 
-  ogg_mutex_t mutex;
+  ogg2_mutex_t mutex;
   int         shutdown;
 };
 
-struct ogg_buffer {
+struct ogg2_buffer {
   unsigned char      *data;
   long                size;
   int                 refcount;
   
   union {
-    ogg_buffer_state *owner;
-    ogg_buffer       *next;
+    ogg2_buffer_state *owner;
+    ogg2_buffer       *next;
   } ptr;
 };
 
-struct ogg_reference {
-  struct ogg_buffer    *buffer;
+struct ogg2_reference {
+  struct ogg2_buffer    *buffer;
   long                  begin;
   long                  length;
 
-  struct ogg_reference *next;
-#ifdef OGGBUFFER_DEBUG
+  struct ogg2_reference *next;
+#ifdef OGG2BUFFER_DEBUG
   int                   used;
 #endif
 };
 
-struct oggpack_buffer {
+struct ogg2pack_buffer {
   int            headbit;
   unsigned char *headptr;
   long           headend;
 
   /* memory management */
-  ogg_reference *head;
-  ogg_reference *tail;
+  ogg2_reference *head;
+  ogg2_reference *tail;
 
   /* render the byte/bit counter API constant time */
   long              count; /* doesn't count the tail */
-  ogg_buffer_state *owner; /* useful on encode side */
+  ogg2_buffer_state *owner; /* useful on encode side */
 };
 
-typedef struct oggbyte_buffer {
-  ogg_reference *baseref;
+typedef struct ogg2byte_buffer {
+  ogg2_reference *baseref;
 
-  ogg_reference *ref;
+  ogg2_reference *ref;
   unsigned char *ptr;
   long           pos;
   long           end;
 
-  ogg_buffer_state *owner; /* if it's to be extensible; encode side */
+  ogg2_buffer_state *owner; /* if it's to be extensible; encode side */
   int               external; /* did baseref come from outside? */ 
-} oggbyte_buffer;
+} ogg2byte_buffer;
 
-struct ogg_sync_state {
+struct ogg2_sync_state {
   /* decode memory management pool */
-  ogg_buffer_state *bufferpool;
+  ogg2_buffer_state *bufferpool;
 
   /* stream buffers */
-  ogg_reference    *fifo_head;
-  ogg_reference    *fifo_tail;
+  ogg2_reference    *fifo_head;
+  ogg2_reference    *fifo_tail;
   long              fifo_fill;
 
   /* stream sync management */
@@ -94,14 +98,14 @@ struct ogg_sync_state {
 
 };
 
-struct ogg_stream_state {
+struct ogg2_stream_state {
   /* encode memory management pool */
-  ogg_buffer_state *bufferpool;
+  ogg2_buffer_state *bufferpool;
 
-  ogg_reference *header_head;
-  ogg_reference *header_tail;
-  ogg_reference *body_head;
-  ogg_reference *body_tail;
+  ogg2_reference *header_head;
+  ogg2_reference *header_tail;
+  ogg2_reference *body_head;
+  ogg2_reference *body_tail;
 
   int            e_o_s;    /* set when we have buffered the last
                               packet in the logical bitstream */
@@ -115,14 +119,16 @@ struct ogg_stream_state {
 			      (which is in a seperate abstraction
 			      layer) also knows about the gap */
   ogg_int64_t    granulepos;
+  int            discont;  /* 0 = continuous, 1 = discontinuous */
 
   int            lacing_fill;
   ogg_uint32_t   body_fill;
 
   /* encode-side header build */
   unsigned int   watermark;
-  oggbyte_buffer header_build;
+  ogg2byte_buffer header_build;
   int            continued;
+  int            packets;
 
   /* decode-side state data */
   int            holeflag;
@@ -133,49 +139,49 @@ struct ogg_stream_state {
   
 };
 
-extern ogg_buffer_state *ogg_buffer_create(void);
-extern void              ogg_buffer_destroy(ogg_buffer_state *bs);
-extern ogg_reference    *ogg_buffer_alloc(ogg_buffer_state *bs,long bytes);
-extern void              ogg_buffer_realloc(ogg_reference *or,long bytes);
-extern ogg_reference    *ogg_buffer_sub(ogg_reference *or,long begin,long length);
-extern ogg_reference    *ogg_buffer_dup(ogg_reference *or);
-extern ogg_reference    *ogg_buffer_extend(ogg_reference *or,long bytes);
-extern void              ogg_buffer_mark(ogg_reference *or);
-extern void              ogg_buffer_release(ogg_reference *or);
-extern void              ogg_buffer_release_one(ogg_reference *or);
-extern ogg_reference    *ogg_buffer_pretruncate(ogg_reference *or,long pos);
-extern void              ogg_buffer_posttruncate(ogg_reference *or,long pos);
-extern ogg_reference    *ogg_buffer_cat(ogg_reference *tail, ogg_reference *head);
-extern ogg_reference    *ogg_buffer_walk(ogg_reference *or);
-extern long              ogg_buffer_length(ogg_reference *or);
-extern ogg_reference    *ogg_buffer_split(ogg_reference **tail,
-				       ogg_reference **head,long pos);
-extern void              ogg_buffer_outstanding(ogg_buffer_state *bs);
+extern ogg2_buffer_state *ogg2_buffer_create(void);
+extern void              ogg2_buffer_destroy(ogg2_buffer_state *bs);
+extern ogg2_reference    *ogg2_buffer_alloc(ogg2_buffer_state *bs,long bytes);
+extern void              ogg2_buffer_realloc(ogg2_reference *or,long bytes);
+extern ogg2_reference    *ogg2_buffer_sub(ogg2_reference *or,long begin,long length);
+extern ogg2_reference    *ogg2_buffer_dup(ogg2_reference *or);
+extern ogg2_reference    *ogg2_buffer_extend(ogg2_reference *or,long bytes);
+extern void              ogg2_buffer_mark(ogg2_reference *or);
+extern void              ogg2_buffer_release(ogg2_reference *or);
+extern void              ogg2_buffer_release_one(ogg2_reference *or);
+extern ogg2_reference    *ogg2_buffer_pretruncate(ogg2_reference *or,long pos);
+extern void              ogg2_buffer_posttruncate(ogg2_reference *or,long pos);
+extern ogg2_reference    *ogg2_buffer_cat(ogg2_reference *tail, ogg2_reference *head);
+extern ogg2_reference    *ogg2_buffer_walk(ogg2_reference *or);
+extern long              ogg2_buffer_length(ogg2_reference *or);
+extern ogg2_reference    *ogg2_buffer_split(ogg2_reference **tail,
+				       ogg2_reference **head,long pos);
+extern void              ogg2_buffer_outstanding(ogg2_buffer_state *bs);
 
-extern  int              oggbyte_init(oggbyte_buffer *b,ogg_reference *or,
-				   ogg_buffer_state *bs);
-extern void              oggbyte_clear(oggbyte_buffer *b);
-extern ogg_reference    *oggbyte_return_and_reset(oggbyte_buffer *b);
-extern void              oggbyte_set1(oggbyte_buffer *b,unsigned char val,
+extern  int              ogg2byte_init(ogg2byte_buffer *b,ogg2_reference *or,
+				   ogg2_buffer_state *bs);
+extern void              ogg2byte_clear(ogg2byte_buffer *b);
+extern ogg2_reference    *ogg2byte_return_and_reset(ogg2byte_buffer *b);
+extern void              ogg2byte_set1(ogg2byte_buffer *b,unsigned char val,
 				   int pos);
-extern void              oggbyte_set2(oggbyte_buffer *b,int val,int pos);
-extern void              oggbyte_set4(oggbyte_buffer *b,ogg_uint32_t val,int pos);
-extern void              oggbyte_set8(oggbyte_buffer *b,ogg_int64_t val,int pos);
-extern unsigned char     oggbyte_read1(oggbyte_buffer *b,int pos);
-extern int               oggbyte_read2(oggbyte_buffer *b,int pos);
-extern ogg_uint32_t      oggbyte_read4(oggbyte_buffer *b,int pos);
-extern ogg_int64_t       oggbyte_read8(oggbyte_buffer *b,int pos);
+extern void              ogg2byte_set2(ogg2byte_buffer *b,int val,int pos);
+extern void              ogg2byte_set4(ogg2byte_buffer *b,ogg_uint32_t val,int pos);
+extern void              ogg2byte_set8(ogg2byte_buffer *b,ogg_int64_t val,int pos);
+extern unsigned char     ogg2byte_read1(ogg2byte_buffer *b,int pos);
+extern int               ogg2byte_read2(ogg2byte_buffer *b,int pos);
+extern ogg_uint32_t      ogg2byte_read4(ogg2byte_buffer *b,int pos);
+extern ogg_int64_t       ogg2byte_read8(ogg2byte_buffer *b,int pos);
+extern int               ogg2_page_checksum_set(ogg2_page *og);
 
 #ifdef _V_SELFTEST
-#define OGGPACK_CHUNKSIZE 3
-#define OGGPACK_MINCHUNKSIZE 1
+#define OGG2PACK_CHUNKSIZE 3
+#define OGG2PACK_MINCHUNKSIZE 1
 #else
-#define OGGPACK_CHUNKSIZE 128
-#define OGGPACK_MINCHUNKSIZE 16
+#define OGG2PACK_CHUNKSIZE 128
+#define OGG2PACK_MINCHUNKSIZE 16
 #endif
 
 #endif
-
 
 
 

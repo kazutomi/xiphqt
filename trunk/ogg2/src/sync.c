@@ -1,11 +1,11 @@
 /********************************************************************
  *                                                                  *
- * THIS FILE IS PART OF THE OggVorbis SOFTWARE CODEC SOURCE CODE.   *
+ * THIS FILE IS PART OF THE Ogg Reference Library SOURCE CODE.      *
  * USE, DISTRIBUTION AND REPRODUCTION OF THIS LIBRARY SOURCE IS     *
  * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2003             *
+ * THE Ogg Reference Library SOURCE CODE IS (C) COPYRIGHT 1994-2004 *
  * by the Xiph.Org Foundation http://www.xiph.org/                  *
  *                                                                  *
  ********************************************************************
@@ -27,46 +27,46 @@
 
 /* A complete description of Ogg framing exists in docs/framing.html */
 
-int ogg_page_version(ogg_page *og){
-  oggbyte_buffer ob;
-  oggbyte_init(&ob,og->header,0);
-  return oggbyte_read1(&ob,4);
+int ogg2_page_version(ogg2_page *og){
+  ogg2byte_buffer ob;
+  ogg2byte_init(&ob,og->header,0);
+  return ogg2byte_read1(&ob,4);
 }
 
-int ogg_page_continued(ogg_page *og){
-  oggbyte_buffer ob;
-  oggbyte_init(&ob,og->header,0);
-  return oggbyte_read1(&ob,5)&0x01;
+int ogg2_page_continued(ogg2_page *og){
+  ogg2byte_buffer ob;
+  ogg2byte_init(&ob,og->header,0);
+  return ogg2byte_read1(&ob,5)&0x01;
 }
 
-int ogg_page_bos(ogg_page *og){
-  oggbyte_buffer ob;
-  oggbyte_init(&ob,og->header,0);
-  return oggbyte_read1(&ob,5)&0x02;
+int ogg2_page_bos(ogg2_page *og){
+  ogg2byte_buffer ob;
+  ogg2byte_init(&ob,og->header,0);
+  return ogg2byte_read1(&ob,5)&0x02;
 }
 
-int ogg_page_eos(ogg_page *og){
-  oggbyte_buffer ob;
-  oggbyte_init(&ob,og->header,0);
-  return oggbyte_read1(&ob,5)&0x04;
+int ogg2_page_eos(ogg2_page *og){
+  ogg2byte_buffer ob;
+  ogg2byte_init(&ob,og->header,0);
+  return ogg2byte_read1(&ob,5)&0x04;
 }
 
-ogg_int64_t ogg_page_granulepos(ogg_page *og){
-  oggbyte_buffer ob;
-  oggbyte_init(&ob,og->header,0);
-  return oggbyte_read8(&ob,6);
+ogg_int64_t ogg2_page_granulepos(ogg2_page *og){
+  ogg2byte_buffer ob;
+  ogg2byte_init(&ob,og->header,0);
+  return ogg2byte_read8(&ob,6);
 }
 
-ogg_uint32_t ogg_page_serialno(ogg_page *og){
-  oggbyte_buffer ob;
-  oggbyte_init(&ob,og->header,0);
-  return oggbyte_read4(&ob,14);
+ogg_uint32_t ogg2_page_serialno(ogg2_page *og){
+  ogg2byte_buffer ob;
+  ogg2byte_init(&ob,og->header,0);
+  return ogg2byte_read4(&ob,14);
 }
  
-ogg_uint32_t ogg_page_pageno(ogg_page *og){
-  oggbyte_buffer ob;
-  oggbyte_init(&ob,og->header,0);
-  return oggbyte_read4(&ob,18);
+ogg_uint32_t ogg2_page_pageno(ogg2_page *og){
+  ogg2byte_buffer ob;
+  ogg2byte_init(&ob,og->header,0);
+  return ogg2byte_read4(&ob,18);
 }
 
 /* returns the number of packets that are completed on this page (if
@@ -76,30 +76,90 @@ ogg_uint32_t ogg_page_pageno(ogg_page *og){
 /* NOTE:
 If a page consists of a packet begun on a previous page, and a new
 packet begun (but not completed) on this page, the return will be:
-  ogg_page_packets(page)   ==1, 
-  ogg_page_continued(page) !=0
+  ogg2_page_packets(page)   ==1, 
+  ogg2_page_continued(page) !=0
 
 If a page happens to be a single packet that was begun on a
 previous page, and spans to the next page (in the case of a three or
 more page packet), the return will be: 
-  ogg_page_packets(page)   ==0, 
-  ogg_page_continued(page) !=0
+  ogg2_page_packets(page)   ==0, 
+  ogg2_page_continued(page) !=0
 */
 
-int ogg_page_packets(ogg_page *og){
+int ogg2_page_packets(ogg2_page *og){
   int i;
   int n;
   int count=0;
-  oggbyte_buffer ob;
-  oggbyte_init(&ob,og->header,0);
+  ogg2byte_buffer ob;
+  ogg2byte_init(&ob,og->header,0);
 
-  n=oggbyte_read1(&ob,26);
+  n=ogg2byte_read1(&ob,26);
   for(i=0;i<n;i++)
-    if(oggbyte_read1(&ob,27+i)<255)count++;
+    if(ogg2byte_read1(&ob,27+i)<255)count++;
   return(count);
 }
 
-/* Static CRC calculation table.  See older code in CVS for dead
+/*
+   These functions can be used to change some header values of an 
+   Ogg Page without having to decode and recompile the stream.  This can 
+   be very helpful for repairing broken streams, chaining streams which
+   have the same serialno, or intentionally creating broken streams
+   to test how your application will react to the erronious data.
+*/
+
+void ogg2_page_set_continued(ogg2_page *og, int value){
+  int b;
+  ogg2byte_buffer ob;
+  ogg2byte_init(&ob,og->header,0);
+  b=ogg2byte_read1(&ob,5);
+  if(value)ogg2byte_set1(&ob,b|0x01,5);
+  else ogg2byte_set1(&ob,b&0xFE,5);
+  ogg2_page_checksum_set(og);
+}
+
+void ogg2_page_set_bos(ogg2_page *og, int value){
+  int b;
+  ogg2byte_buffer ob;
+  ogg2byte_init(&ob,og->header,0);
+  b=ogg2byte_read1(&ob,5);
+  if(value)ogg2byte_set1(&ob,b|0x02,5);
+  else ogg2byte_set1(&ob,b&0xFD,5);
+  ogg2_page_checksum_set(og);
+}
+
+void ogg2_page_set_eos(ogg2_page *og, int value){
+  int b;
+  ogg2byte_buffer ob;
+  ogg2byte_init(&ob,og->header,0);
+  b=ogg2byte_read1(&ob,5);
+  if(value)ogg2byte_set1(&ob,b|0x04,5);
+  else ogg2byte_set1(&ob,b&0xFB,5);
+  ogg2_page_checksum_set(og);
+}
+
+void ogg2_page_set_granulepos(ogg2_page *og, ogg_int64_t value){
+  ogg2byte_buffer ob;
+  ogg2byte_init(&ob,og->header,0);
+  ogg2byte_set8(&ob,value,6);
+  ogg2_page_checksum_set(og);
+}
+
+void ogg2_page_set_serialno(ogg2_page *og, ogg_uint32_t value){
+  ogg2byte_buffer ob;
+  ogg2byte_init(&ob,og->header,0);
+  ogg2byte_set4(&ob,value,14);
+  ogg2_page_checksum_set(og);
+}
+
+void ogg2_page_set_pageno(ogg2_page *og, ogg_uint32_t value){
+  ogg2byte_buffer ob;
+  ogg2byte_init(&ob,og->header,0);
+  ogg2byte_set4(&ob,value,18);
+  ogg2_page_checksum_set(og);
+}
+
+
+/* Static CRC calculation table.  See older code in SVN for dead
    run-time initialization code. */
 
 static ogg_uint32_t crc_lookup[256]={
@@ -173,34 +233,34 @@ static ogg_uint32_t crc_lookup[256]={
 /* This has two layers (split page decode and packet decode) to place
    more of the multi-serialno and paging control in the hands of
    higher layers (eg, OggFile).  First, we expose a data buffer using
-   ogg_sync_buffer().  The app either copies into the buffer, or
-   passes it directly to read(), etc.  We then call ogg_sync_wrote()
+   ogg2_sync_buffer().  The app either copies into the buffer, or
+   passes it directly to read(), etc.  We then call ogg2_sync_wrote()
    to tell how many bytes we just added. 
 
    Efficiency note: request the same buffer size each time if at all
    possible.
 
-   Pages are returned (pointers into the buffer in ogg_sync_state)
-   by ogg_sync_pageout().  */
+   Pages are returned (pointers into the buffer in ogg2_sync_state)
+   by ogg2_sync_pageout().  */
 
-ogg_sync_state *ogg_sync_create(void){
-  ogg_sync_state *oy=_ogg_calloc(1,sizeof(*oy));
+ogg2_sync_state *ogg2_sync_create(void){
+  ogg2_sync_state *oy=_ogg_calloc(1,sizeof(*oy));
   memset(oy,0,sizeof(*oy));
-  oy->bufferpool=ogg_buffer_create();
+  oy->bufferpool=ogg2_buffer_create();
   return oy;
 }
 
-int ogg_sync_destroy(ogg_sync_state *oy){
+int ogg2_sync_destroy(ogg2_sync_state *oy){
   if(oy){
-    ogg_sync_reset(oy);
-    ogg_buffer_destroy(oy->bufferpool);
+    ogg2_sync_reset(oy);
+    ogg2_buffer_destroy(oy->bufferpool);
     memset(oy,0,sizeof(*oy));
     _ogg_free(oy);
   }
-  return OGG_SUCCESS;
+  return OGG2_SUCCESS;
 }
 
-unsigned char *ogg_sync_bufferin(ogg_sync_state *oy, long bytes){
+unsigned char *ogg2_sync_bufferin(ogg2_sync_state *oy, long bytes){
 
   /* [allocate and] expose a buffer for data submission.
 
@@ -218,7 +278,7 @@ unsigned char *ogg_sync_bufferin(ogg_sync_state *oy, long bytes){
 
   /* base case; fifo uninitialized */
   if(!oy->fifo_head){
-    oy->fifo_head=oy->fifo_tail=ogg_buffer_alloc(oy->bufferpool,bytes);
+    oy->fifo_head=oy->fifo_tail=ogg2_buffer_alloc(oy->bufferpool,bytes);
     return oy->fifo_head->buffer->data;
   }
   
@@ -231,29 +291,29 @@ unsigned char *ogg_sync_bufferin(ogg_sync_state *oy, long bytes){
 
   /* current fragment is unused, but too small */
   if(!oy->fifo_head->length){
-    ogg_buffer_realloc(oy->fifo_head,bytes);
+    ogg2_buffer_realloc(oy->fifo_head,bytes);
     return oy->fifo_head->buffer->data+oy->fifo_head->begin;
   }
   
   /* current fragment used/full; get new fragment */
   {
-    ogg_reference *new=ogg_buffer_alloc(oy->bufferpool,bytes);
+    ogg2_reference *new=ogg2_buffer_alloc(oy->bufferpool,bytes);
     oy->fifo_head->next=new;
     oy->fifo_head=new;
   }
   return oy->fifo_head->buffer->data;
 }
 
-int ogg_sync_wrote(ogg_sync_state *oy, long bytes){ 
-  if(!oy->fifo_head)return OGG_EINVAL;
+int ogg2_sync_wrote(ogg2_sync_state *oy, long bytes){ 
+  if(!oy->fifo_head)return OGG2_EINVAL;
   if(oy->fifo_head->buffer->size-oy->fifo_head->length-oy->fifo_head->begin < 
-     bytes)return OGG_EINVAL;
+     bytes)return OGG2_EINVAL;
   oy->fifo_head->length+=bytes;
   oy->fifo_fill+=bytes;
-  return OGG_SUCCESS;
+  return OGG2_SUCCESS;
 }
 
-static ogg_uint32_t _checksum(ogg_reference *or, int bytes){
+static ogg_uint32_t _checksum(ogg2_reference *or, int bytes){
   ogg_uint32_t crc_reg=0;
   int j,post;
 
@@ -280,26 +340,26 @@ static ogg_uint32_t _checksum(ogg_reference *or, int bytes){
    
 8*/
 
-long ogg_sync_pageseek(ogg_sync_state *oy,ogg_page *og){
-  oggbyte_buffer page;
+long ogg2_sync_pageseek(ogg2_sync_state *oy,ogg2_page *og){
+  ogg2byte_buffer page;
   long           bytes,ret=0;
 
   /* don't leak a valid reference */
-  ogg_page_release(og);
+  ogg2_page_release(og);
 
   bytes=oy->fifo_fill;
-  oggbyte_init(&page,oy->fifo_tail,0);
+  ogg2byte_init(&page,oy->fifo_tail,0);
 
   if(oy->headerbytes==0){
     if(bytes<27)goto sync_out; /* not enough for even a minimal header */
     
     /* verify capture pattern */
-    if(oggbyte_read1(&page,0)!=(int)'O' ||
-       oggbyte_read1(&page,1)!=(int)'g' ||
-       oggbyte_read1(&page,2)!=(int)'g' ||
-       oggbyte_read1(&page,3)!=(int)'S'    ) goto sync_fail;
+    if(ogg2byte_read1(&page,0)!=(int)'O' ||
+       ogg2byte_read1(&page,1)!=(int)'g' ||
+       ogg2byte_read1(&page,2)!=(int)'g' ||
+       ogg2byte_read1(&page,3)!=(int)'S'    ) goto sync_fail;
 
-    oy->headerbytes=oggbyte_read1(&page,26)+27;
+    oy->headerbytes=ogg2byte_read1(&page,26)+27;
   }
   if(bytes<oy->headerbytes)goto sync_out; /* not enough for header +
                                              seg table */
@@ -307,7 +367,7 @@ long ogg_sync_pageseek(ogg_sync_state *oy,ogg_page *og){
     int i;
     /* count up body length in the segment table */
     for(i=0;i<oy->headerbytes-27;i++)
-      oy->bodybytes+=oggbyte_read1(&page,27+i);
+      oy->bodybytes+=ogg2byte_read1(&page,27+i);
   }
   
   if(oy->bodybytes+oy->headerbytes>bytes)goto sync_out;
@@ -315,8 +375,8 @@ long ogg_sync_pageseek(ogg_sync_state *oy,ogg_page *og){
   /* we have what appears to be a complete page; last test: verify
      checksum */
   {
-    ogg_uint32_t chksum=oggbyte_read4(&page,22);
-    oggbyte_set4(&page,0,22);
+    ogg_uint32_t chksum=ogg2byte_read4(&page,22);
+    ogg2byte_set4(&page,0,22);
 
     /* Compare checksums; memory continues to be common access */
     if(chksum!=_checksum(oy->fifo_tail,oy->bodybytes+oy->headerbytes)){
@@ -325,23 +385,23 @@ long ogg_sync_pageseek(ogg_sync_state *oy,ogg_page *og){
 	 at all). replace the computed checksum with the one actually
 	 read in; remember all the memory is common access */
       
-      oggbyte_set4(&page,chksum,22);
+      ogg2byte_set4(&page,chksum,22);
       goto sync_fail;
     }
-    oggbyte_set4(&page,chksum,22);
+    ogg2byte_set4(&page,chksum,22);
   }
 
   /* We have a page.  Set up page return. */
   if(og){
     /* set up page output */
-    og->header=ogg_buffer_split(&oy->fifo_tail,&oy->fifo_head,oy->headerbytes);
+    og->header=ogg2_buffer_split(&oy->fifo_tail,&oy->fifo_head,oy->headerbytes);
     og->header_len=oy->headerbytes;
-    og->body=ogg_buffer_split(&oy->fifo_tail,&oy->fifo_head,oy->bodybytes);
+    og->body=ogg2_buffer_split(&oy->fifo_tail,&oy->fifo_head,oy->bodybytes);
     og->body_len=oy->bodybytes;
   }else{
     /* simply advance */
     oy->fifo_tail=
-      ogg_buffer_pretruncate(oy->fifo_tail,oy->headerbytes+oy->bodybytes);
+      ogg2_buffer_pretruncate(oy->fifo_tail,oy->headerbytes+oy->bodybytes);
     if(!oy->fifo_tail)oy->fifo_head=0;
   }
   
@@ -357,7 +417,7 @@ long ogg_sync_pageseek(ogg_sync_state *oy,ogg_page *og){
 
   oy->headerbytes=0;
   oy->bodybytes=0;
-  oy->fifo_tail=ogg_buffer_pretruncate(oy->fifo_tail,1);
+  oy->fifo_tail=ogg2_buffer_pretruncate(oy->fifo_tail,1);
   ret--;
   
   /* search forward through fragments for possible capture */
@@ -369,14 +429,14 @@ long ogg_sync_pageseek(ogg_sync_state *oy,ogg_page *og){
     if(next){
       /* possible capture in this segment */
       long bytes=next-now;
-      oy->fifo_tail=ogg_buffer_pretruncate(oy->fifo_tail,bytes);
+      oy->fifo_tail=ogg2_buffer_pretruncate(oy->fifo_tail,bytes);
       ret-=bytes;
       break;
     }else{
       /* no capture.  advance to next segment */
       long bytes=oy->fifo_tail->length;
       ret-=bytes;
-      oy->fifo_tail=ogg_buffer_pretruncate(oy->fifo_tail,bytes);
+      oy->fifo_tail=ogg2_buffer_pretruncate(oy->fifo_tail,bytes);
     }
   }
   if(!oy->fifo_tail)oy->fifo_head=0;
@@ -390,21 +450,21 @@ long ogg_sync_pageseek(ogg_sync_state *oy,ogg_page *og){
    Supress 'sync errors' after reporting the first.
 
    return values:
-   OGG_HOLE) recapture (hole in data)
+   OGG2_HOLE) recapture (hole in data)
           0) need more data
           1) page returned
 
    Returns pointers into buffered data; invalidated by next call to
    _stream, _clear, _init, or _buffer */
 
-int ogg_sync_pageout(ogg_sync_state *oy, ogg_page *og){
+int ogg2_sync_pageout(ogg2_sync_state *oy, ogg2_page *og){
 
   /* all we need to do is verify a page at the head of the stream
      buffer.  If it doesn't verify, we look for the next potential
      frame */
 
   while(1){
-    long ret=ogg_sync_pageseek(oy,og);
+    long ret=ogg2_sync_pageseek(oy,og);
     if(ret>0){
       /* have a page */
       return 1;
@@ -417,7 +477,7 @@ int ogg_sync_pageout(ogg_sync_state *oy, ogg_page *og){
     /* head did not start a synced page... skipped some bytes */
     if(!oy->unsynced){
       oy->unsynced=1;
-      return OGG_HOLE;
+      return OGG2_HOLE;
     }
 
     /* loop. keep looking */
@@ -426,9 +486,9 @@ int ogg_sync_pageout(ogg_sync_state *oy, ogg_page *og){
 }
 
 /* clear things to an initial state.  Good to call, eg, before seeking */
-int ogg_sync_reset(ogg_sync_state *oy){
+int ogg2_sync_reset(ogg2_sync_state *oy){
 
-  ogg_buffer_release(oy->fifo_tail);
+  ogg2_buffer_release(oy->fifo_tail);
   oy->fifo_tail=0;
   oy->fifo_head=0;
   oy->fifo_fill=0;
@@ -436,21 +496,21 @@ int ogg_sync_reset(ogg_sync_state *oy){
   oy->unsynced=0;
   oy->headerbytes=0;
   oy->bodybytes=0;
-  return OGG_SUCCESS;
+  return OGG2_SUCCESS;
 }
 
 /* checksum the page; direct table CRC */
 
-int ogg_page_checksum_set(ogg_page *og){
+int ogg2_page_checksum_set(ogg2_page *og){
   if(og && og->header){
-    oggbyte_buffer ob;
-    ogg_reference *or;
+    ogg2byte_buffer ob;
+    ogg2_reference *or;
     ogg_uint32_t crc_reg=0;
     int j;
 
     /* safety; needed for API behavior, but not framing code */
-    oggbyte_init(&ob,og->header,0);
-    oggbyte_set4(&ob,0,22);
+    ogg2byte_init(&ob,og->header,0);
+    ogg2byte_set4(&ob,0,22);
 
     or=og->header;
     while(or){
@@ -468,11 +528,11 @@ int ogg_page_checksum_set(ogg_page *og){
       or=or->next;
     }
     
-    oggbyte_set4(&ob,crc_reg,22);
+    ogg2byte_set4(&ob,crc_reg,22);
 
-    return OGG_SUCCESS;
+    return OGG2_SUCCESS;
   }
-  return OGG_EINVAL;
+  return OGG2_EINVAL;
 }
 
 /* ENCODING PRIMITIVES: raw stream and page layer *******************/
@@ -480,20 +540,20 @@ int ogg_page_checksum_set(ogg_page *og){
 /* On encode side, the sync layer provides centralized memory
    management, buffering, and and abstraction to deal with fragmented
    linked buffers as an iteration over flat char buffers.
-   ogg_sync_encode and ogg_sync_destroy are as in decode. */
+   ogg2_sync_encode and ogg2_sync_destroy are as in decode. */
 
-int ogg_sync_pagein(ogg_sync_state *oy,ogg_page *og){
+int ogg2_sync_pagein(ogg2_sync_state *oy,ogg2_page *og){
   /* buffer new */
   if(oy->fifo_head)
-    oy->fifo_head=ogg_buffer_cat(oy->fifo_head,og->header);
+    oy->fifo_head=ogg2_buffer_cat(oy->fifo_head,og->header);
   else
-    oy->fifo_head=ogg_buffer_walk(oy->fifo_tail=og->header);
-  oy->fifo_head=ogg_buffer_cat(oy->fifo_head,og->body);
+    oy->fifo_head=ogg2_buffer_walk(oy->fifo_tail=og->header);
+  oy->fifo_head=ogg2_buffer_cat(oy->fifo_head,og->body);
   memset(og,0,sizeof(*og));
-  return OGG_SUCCESS;
+  return OGG2_SUCCESS;
 }
 
-long ogg_sync_bufferout(ogg_sync_state *oy, unsigned char **buffer){
+long ogg2_sync_bufferout(ogg2_sync_state *oy, unsigned char **buffer){
   long ret=0;
 
   /* return next fragment */
@@ -512,27 +572,28 @@ long ogg_sync_bufferout(ogg_sync_state *oy, unsigned char **buffer){
   return ret;
 }
 
-int ogg_sync_read(ogg_sync_state *oy, long bytes){ 
-  if(!oy->fifo_tail)return OGG_EINVAL;
-  oy->fifo_tail=ogg_buffer_pretruncate(oy->fifo_tail,bytes);
+int ogg2_sync_read(ogg2_sync_state *oy, long bytes){ 
+  if(!oy->fifo_tail)return OGG2_EINVAL;
+  oy->fifo_tail=ogg2_buffer_pretruncate(oy->fifo_tail,bytes);
   if(!oy->fifo_tail)oy->fifo_head=0;
 
-  return OGG_SUCCESS;
+  return OGG2_SUCCESS;
 }
 
-void ogg_page_dup(ogg_page *dup,ogg_page *orig){
+void ogg2_page_dup(ogg2_page *dup,ogg2_page *orig){
   dup->header_len=orig->header_len;
   dup->body_len=orig->body_len;
-  dup->header=ogg_buffer_dup(orig->header);
-  dup->body=ogg_buffer_dup(orig->body);
+  dup->header=ogg2_buffer_dup(orig->header);
+  dup->body=ogg2_buffer_dup(orig->body);
 }
 
-void ogg_packet_dup(ogg_packet *dup,ogg_packet *orig){
+void ogg2_packet_dup(ogg2_packet *dup,ogg2_packet *orig){
   dup->bytes=orig->bytes;
   dup->b_o_s=orig->b_o_s;
   dup->e_o_s=orig->e_o_s;
-  dup->granulepos=orig->granulepos;
+  dup->top_granule=orig->top_granule;
+  dup->end_granule=orig->end_granule;
   dup->packetno=orig->packetno;
 
-  dup->packet=ogg_buffer_dup(orig->packet);
+  dup->packet=ogg2_buffer_dup(orig->packet);
 }

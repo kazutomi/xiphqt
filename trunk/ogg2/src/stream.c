@@ -1,11 +1,11 @@
 /********************************************************************
  *                                                                  *
- * THIS FILE IS PART OF THE OggVorbis SOFTWARE CODEC SOURCE CODE.   *
+ * THIS FILE IS PART OF THE Ogg Reference Library SOURCE CODE.      *
  * USE, DISTRIBUTION AND REPRODUCTION OF THIS LIBRARY SOURCE IS     *
  * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2003             *
+ * THE Ogg Reference Library SOURCE CODE IS (C) COPYRIGHT 1994-2004 *
  * by the Xiph.Org Foundation http://www.xiph.org/                  *
  *                                                                  *
  ********************************************************************
@@ -23,92 +23,101 @@
 
 /* A complete description of Ogg framing exists in docs/framing.html */
 
-ogg_stream_state *ogg_stream_create(int serialno){
-  ogg_stream_state *os=_ogg_calloc(1,sizeof(*os));
+ogg2_stream_state *ogg2_stream_create(int serialno){
+  ogg2_stream_state *os=_ogg_calloc(1,sizeof(*os));
   os->watermark=4096;
   os->serialno=serialno;
-  os->bufferpool=ogg_buffer_create();
+  os->bufferpool=ogg2_buffer_create();
   return os;
 } 
 
-int ogg_stream_setfill(ogg_stream_state *os,int watermark){
+int ogg2_stream_setdiscont(ogg2_stream_state *os){
+  /* Discont mode must be known and set before Page 1 is processed */
+  if(os->pageno==0||(os->pageno==1&&os->packets==0)){
+    os->discont=1;
+    return OGG2_SUCCESS;
+  }
+  return OGG2_EINVAL;
+}
+
+int ogg2_stream_setfill(ogg2_stream_state *os,int watermark){
   if(os){
     if(watermark>65535)watermark=65535;
     os->watermark=watermark;
     return watermark;
   }
-  return OGG_EINVAL;
+  return OGG2_EINVAL;
 } 
 
 /* _clear does not free os, only the non-flat storage within */
-int ogg_stream_destroy(ogg_stream_state *os){
+int ogg2_stream_destroy(ogg2_stream_state *os){
   if(os){
 
-    ogg_buffer_release(os->header_tail);
-    ogg_buffer_release(os->body_tail);
-    oggbyte_clear(&os->header_build);
-    ogg_buffer_destroy(os->bufferpool);
+    ogg2_buffer_release(os->header_tail);
+    ogg2_buffer_release(os->body_tail);
+    ogg2byte_clear(&os->header_build);
+    ogg2_buffer_destroy(os->bufferpool);
     memset(os,0,sizeof(*os));    
 
   }
-  return OGG_SUCCESS;
+  return OGG2_SUCCESS;
 } 
 
 /* finish building a header then flush the current page header and
    body to the output buffer */
-static void _packet_flush(ogg_stream_state *os,int nextcomplete){
-  oggbyte_buffer *obb=&os->header_build;
+static void _packet_flush(ogg2_stream_state *os,int nextcomplete){
+  ogg2byte_buffer *obb=&os->header_build;
   unsigned char ctemp;
 
   if(os->lacing_fill){
     /* build header */
-    oggbyte_set1(obb,'O',0);
-    oggbyte_set1(obb,'g',1);
-    oggbyte_set1(obb,'g',2);
-    oggbyte_set1(obb,'S',3);
+    ogg2byte_set1(obb,'O',0);
+    ogg2byte_set1(obb,'g',1);
+    ogg2byte_set1(obb,'g',2);
+    ogg2byte_set1(obb,'S',3);
 
-    oggbyte_set1(obb,0x00,4);   /* stream structure version */
+    ogg2byte_set1(obb,0x00,4);   /* stream structure version */
      
     ctemp=0x00;
     if(os->continued)ctemp|=0x01; /* continued packet flag? */
     os->continued=nextcomplete;
     if(os->b_o_s==0)ctemp|=0x02;  /* first page flag? */
     if(os->e_o_s)ctemp|=0x04;     /* last page flag? */
-    oggbyte_set1(obb,ctemp,5);
+    ogg2byte_set1(obb,ctemp,5);
 
-    /* 64 bits of PCM position */
+    /* 64 bits of granule position */
     if(!os->b_o_s)
-      oggbyte_set8(obb,0,6);
+      ogg2byte_set8(obb,0,6);
     else
-      oggbyte_set8(obb,os->granulepos,6);
+      ogg2byte_set8(obb,os->granulepos,6);
     os->b_o_s=1;
-    
+    os->packets=0;
     
     /* 32 bits of stream serial number */
-    oggbyte_set4(obb,os->serialno,14);
+    ogg2byte_set4(obb,os->serialno,14);
     
     /* 32 bits of page counter (we have both counter and page header
        because this val can roll over) */
     if(os->pageno==-1)os->pageno=0; /* because someone called
-				       stream_reset; this would be a
-				       strange thing to do in an
-				       encode stream, but it has
-				       plausible uses */
-    oggbyte_set4(obb,os->pageno++,18);
+                                       stream_reset; this would be a
+                                       strange thing to do in an
+                                       encode stream, but it has
+                                       plausible uses */
+    ogg2byte_set4(obb,os->pageno++,18);
     
     /* CRC filled in later */
     /* segment table size */
-    oggbyte_set1(obb,os->lacing_fill,26);
+    ogg2byte_set1(obb,os->lacing_fill,26);
 
     /* toss the header on the fifo */
     if(os->header_tail){
-      ogg_reference *ret=oggbyte_return_and_reset(&os->header_build);
-      os->header_head=ogg_buffer_cat(os->header_head,ret);
-      if(nextcomplete)oggbyte_init(&os->header_build,0,os->bufferpool);
+      ogg2_reference *ret=ogg2byte_return_and_reset(&os->header_build);
+      os->header_head=ogg2_buffer_cat(os->header_head,ret);
+      if(nextcomplete)ogg2byte_init(&os->header_build,0,os->bufferpool);
     }else{
-      os->header_tail=oggbyte_return_and_reset(&os->header_build);
-      os->header_head=ogg_buffer_walk(os->header_tail);
-      if(nextcomplete)oggbyte_init(&os->header_build,0,os->bufferpool);
+      os->header_tail=ogg2byte_return_and_reset(&os->header_build);
+      os->header_head=ogg2_buffer_walk(os->header_tail);
+      if(nextcomplete)ogg2byte_init(&os->header_build,0,os->bufferpool);
     }
     os->lacing_fill=0;
     os->body_fill=0;
@@ -116,24 +125,28 @@ static void _packet_flush(ogg_stream_state *os,int nextcomplete){
 }
 
 /* submit data to the internal buffer of the framing engine */
-int ogg_stream_packetin(ogg_stream_state *os,ogg_packet *op){
+int ogg2_stream_packetin(ogg2_stream_state *os,ogg2_packet *op){
   /* get sizing */
-  long bytes=ogg_buffer_length(op->packet);
+  long bytes=ogg2_buffer_length(op->packet);
   long lacing_vals=bytes/255+1;
   int  remainder=bytes%255;
   int  i;
 
   if(os->e_o_s){
-    ogg_packet_release(op);
-    return OGG_EEOS;
+    ogg2_packet_release(op);
+    return OGG2_EEOS;
   }
 
   if(!os->lacing_fill)
-    oggbyte_init(&os->header_build,0,os->bufferpool);
+    ogg2byte_init(&os->header_build, 0, os->bufferpool);
+
+  /* for discontinuous mode */
+  if(os->discont && !os->packets) os->granulepos=op->end_granule;
+  os->packets++;   
 
   /* concat packet data */
   if(os->body_head)
-    os->body_head=ogg_buffer_cat(os->body_head,op->packet);
+    os->body_head=ogg2_buffer_cat(os->body_head,op->packet);
   else
     os->body_tail=os->body_head=op->packet;
 
@@ -141,7 +154,7 @@ int ogg_stream_packetin(ogg_stream_state *os,ogg_packet *op){
      (watermark && not initial page) */
   for(i=0;i<lacing_vals-1;i++){ /* handle the 255s first */
     os->body_fill+=255;
-    oggbyte_set1(&os->header_build,255,27+os->lacing_fill++);
+    ogg2byte_set1(&os->header_build,255,27+os->lacing_fill++);
     
     if(os->body_fill>=os->watermark && os->b_o_s)_packet_flush(os,1);
     if(os->lacing_fill==255)_packet_flush(os,1);
@@ -151,10 +164,10 @@ int ogg_stream_packetin(ogg_stream_state *os,ogg_packet *op){
      granulepos et al and then finish packet lacing */
   
   os->body_fill+=remainder;
-  os->granulepos=op->granulepos;
+  if (!os->discont) os->granulepos=op->end_granule;
   os->packetno++;  /* for the sake of completeness */
   if(op->e_o_s)os->e_o_s=1;
-  oggbyte_set1(&os->header_build,remainder,27+os->lacing_fill++);
+  ogg2byte_set1(&os->header_build,remainder,27+os->lacing_fill++);
 
   if(os->e_o_s || 
      os->body_fill>=os->watermark ||
@@ -162,72 +175,71 @@ int ogg_stream_packetin(ogg_stream_state *os,ogg_packet *op){
      os->lacing_fill==255)_packet_flush(os,0);
 
   memset(op,0,sizeof(*op));
-  return OGG_SUCCESS;
+  return OGG2_SUCCESS;
 }
 
 /* This constructs pages from buffered packet segments. */
-int ogg_stream_pageout(ogg_stream_state *os, ogg_page *og){
-  oggbyte_buffer ob;
+int ogg2_stream_pageout(ogg2_stream_state *os, ogg2_page *og){
+  ogg2byte_buffer ob;
   long header_bytes;
   long body_bytes=0;
   int i;
 
   /* if the incoming page is still valid (and thus unconsumed),
      release it to prevent a leak */
-  ogg_page_release(og);
+  ogg2_page_release(og);
 
   /* is there a page waiting to come back? */
   if(!os->header_tail) return 0;
 
   /* get header and body sizes */
-  oggbyte_init(&ob,os->header_tail,0);
-  header_bytes=oggbyte_read1(&ob,26)+27;
+  ogg2byte_init(&ob,os->header_tail,0);
+  header_bytes=ogg2byte_read1(&ob,26)+27;
   for(i=27;i<header_bytes;i++)
-    body_bytes+=oggbyte_read1(&ob,i);
+    body_bytes+=ogg2byte_read1(&ob,i);
 
   /* split page references out of the fifos */
   if(og){
-    og->header=ogg_buffer_split(&os->header_tail,&os->header_head,header_bytes);
+    og->header=ogg2_buffer_split(&os->header_tail,&os->header_head,header_bytes);
     og->header_len=header_bytes;
-    og->body=ogg_buffer_split(&os->body_tail,&os->body_head,body_bytes);
+    og->body=ogg2_buffer_split(&os->body_tail,&os->body_head,body_bytes);
     og->body_len=body_bytes;
 
     /* checksum */
-    ogg_page_checksum_set(og);
+    ogg2_page_checksum_set(og);
   }else{
-    os->header_tail=ogg_buffer_pretruncate(os->header_tail,header_bytes);
-    os->body_tail=ogg_buffer_pretruncate(os->body_tail,body_bytes);
+    os->header_tail=ogg2_buffer_pretruncate(os->header_tail,header_bytes);
+    os->body_tail=ogg2_buffer_pretruncate(os->body_tail,body_bytes);
     if(!os->header_tail)os->header_head=0;
     if(!os->body_tail)os->body_head=0;
   }
-  
   return 1;
 }
 
 /* This will flush remaining packets into a page (returning nonzero),
    even if there is not enough data to trigger a flush normally
    (undersized page). If there are no packets or partial packets to
-   flush, ogg_stream_flush returns 0.  Note that ogg_stream_flush will
-   try to flush a normal sized page like ogg_stream_pageout; a call to
-   ogg_stream_flush does not guarantee that all packets have flushed.
-   Only a return value of 0 from ogg_stream_flush indicates all packet
+   flush, ogg2_stream_flush returns 0.  Note that ogg2_stream_flush will
+   try to flush a normal sized page like ogg2_stream_pageout; a call to
+   ogg2_stream_flush does not guarantee that all packets have flushed.
+   Only a return value of 0 from ogg2_stream_flush indicates all packet
    data is flushed into pages.
 
-   since ogg_stream_flush will flush the last page in a stream even if
-   it's undersized, you almost certainly want to use ogg_stream_pageout
-   (and *not* ogg_stream_flush) unless you specifically need to flush 
+   since ogg2_stream_flush will flush the last page in a stream even if
+   it's undersized, you almost certainly want to use ogg2_stream_pageout
+   (and *not* ogg2_stream_flush) unless you specifically need to flush 
    an page regardless of size in the middle of a stream. */
 
-int ogg_stream_flush(ogg_stream_state *os,ogg_page *og){
+int ogg2_stream_flush(ogg2_stream_state *os,ogg2_page *og){
   
   /* If there's no page already waiting for output, flush a partial
      page... assuming we have one */
   if(!os->header_tail)_packet_flush(os,0);
-  return ogg_stream_pageout(os,og);
+  return ogg2_stream_pageout(os,og);
   
 }
 
-int ogg_stream_eos(ogg_stream_state *os){
+int ogg2_stream_eos(ogg2_stream_state *os){
   return os->e_o_s;
 }
 
@@ -236,11 +248,11 @@ int ogg_stream_eos(ogg_stream_state *os){
 #define FINFLAG 0x80000000UL
 #define FINMASK 0x7fffffffUL
 
-static void _next_lace(oggbyte_buffer *ob,ogg_stream_state *os){
+static void _next_lace(ogg2byte_buffer *ob,ogg2_stream_state *os){
   /* search ahead one lace */
   os->body_fill_next=0;
   while(os->laceptr<os->lacing_fill){
-    int val=oggbyte_read1(ob,27+os->laceptr++);
+    int val=ogg2byte_read1(ob,27+os->laceptr++);
     os->body_fill_next+=val;
     if(val<255){
       os->body_fill_next|=FINFLAG;
@@ -267,7 +279,7 @@ static void _next_lace(oggbyte_buffer *ob,ogg_stream_state *os){
    declared span.  Naturally, this error should also not be
    mistriggered due to seek or reset, or reported redundantly. */
 
-static void _span_queued_page(ogg_stream_state *os){ 
+static void _span_queued_page(ogg2_stream_state *os){ 
   while( !(os->body_fill&FINFLAG) ){
     
     if(!os->header_tail)break;
@@ -276,29 +288,30 @@ static void _span_queued_page(ogg_stream_state *os){
        flushed as it's consumed, so that's not done here. */
 
     if(os->lacing_fill>=0)
-      os->header_tail=ogg_buffer_pretruncate(os->header_tail,
+      os->header_tail=ogg2_buffer_pretruncate(os->header_tail,
 					     os->lacing_fill+27);
     os->lacing_fill=0;
     os->laceptr=0;
     os->clearflag=0;
+    os->packets=0;
 
     if(!os->header_tail){
       os->header_head=0;
       break;
     }else{
-      
+
       /* process/prepare next page, if any */
 
-      ogg_page og;               /* only for parsing header values */
+      ogg2_page og;               /* only for parsing header values */
       long pageno;
-      oggbyte_buffer ob;
+      ogg2byte_buffer ob;
 
       og.header=os->header_tail; /* only for parsing header values */
-      pageno=ogg_page_pageno(&og);
+      pageno=ogg2_page_pageno(&og);
 
-      oggbyte_init(&ob,os->header_tail,0);
-      os->lacing_fill=oggbyte_read1(&ob,26);
-      
+      ogg2byte_init(&ob,os->header_tail,0);
+      os->lacing_fill=ogg2byte_read1(&ob,26);
+
       /* are we in sequence? */
       if(pageno!=os->pageno){
 	if(os->pageno==-1) /* indicates seek or reset */
@@ -306,29 +319,31 @@ static void _span_queued_page(ogg_stream_state *os){
 	else
 	  os->holeflag=2;  /* set for external reporting */
 
-	os->body_tail=ogg_buffer_pretruncate(os->body_tail,
+	os->body_tail=ogg2_buffer_pretruncate(os->body_tail,
 					     os->body_fill);
 	if(os->body_tail==0)os->body_head=0;
 	os->body_fill=0;
 
       }
-    
-      if(ogg_page_continued(&og)){
+
+      if(ogg2_page_continued(&og)){
+        os->continued=1;
 	if(os->body_fill==0){
 	  /* continued packet, but no preceeding data to continue */
 	  /* dump the first partial packet on the page */
 	  _next_lace(&ob,os);	
 	  os->body_tail=
-	    ogg_buffer_pretruncate(os->body_tail,os->body_fill_next&FINMASK);
+	    ogg2_buffer_pretruncate(os->body_tail,os->body_fill_next&FINMASK);
 	  if(os->body_tail==0)os->body_head=0;
 	  /* set span flag */
 	  if(!os->spanflag && !os->holeflag)os->spanflag=2;
 	}
       }else{
+        os->continued=0;
 	if(os->body_fill>0){
 	  /* preceeding data to continue, but not a continued page */
 	  /* dump body_fill */
-	  os->body_tail=ogg_buffer_pretruncate(os->body_tail,
+	  os->body_tail=ogg2_buffer_pretruncate(os->body_tail,
 					       os->body_fill);
 	  if(os->body_tail==0)os->body_head=0;
 	  os->body_fill=0;
@@ -339,20 +354,20 @@ static void _span_queued_page(ogg_stream_state *os){
       }
 
       if(os->laceptr<os->lacing_fill){
-	os->granulepos=ogg_page_granulepos(&og);
+	os->granulepos=ogg2_page_granulepos(&og);
 
-	/* get current packet size & flag */
-	_next_lace(&ob,os);
-	os->body_fill+=os->body_fill_next; /* addition handles the flag fine;
+        /* get current packet size & flag */
+        _next_lace(&ob,os);
+        os->body_fill+=os->body_fill_next; /* addition handles the flag fine;
 					     unsigned on purpose */
-	/* ...and next packet size & flag */
-	_next_lace(&ob,os);
+        /* ...and next packet size & flag */
+        _next_lace(&ob,os);
 
       }
       
       os->pageno=pageno+1;
-      os->e_o_s=ogg_page_eos(&og);
-      os->b_o_s=ogg_page_bos(&og);
+      os->e_o_s=ogg2_page_eos(&og);
+      os->b_o_s=ogg2_page_bos(&og);
     
     }
   }
@@ -361,44 +376,44 @@ static void _span_queued_page(ogg_stream_state *os){
 /* add the incoming page to the stream state; we decompose the page
    into packet segments here as well. */
 
-int ogg_stream_pagein(ogg_stream_state *os, ogg_page *og){
+int ogg2_stream_pagein(ogg2_stream_state *os, ogg2_page *og){
 
-  int serialno=ogg_page_serialno(og);
-  int version=ogg_page_version(og);
+  int serialno=ogg2_page_serialno(og);
+  int version=ogg2_page_version(og);
 
   /* check the serial number */
   if(serialno!=os->serialno){
-    ogg_page_release(og);
-    return OGG_ESERIAL;
+    ogg2_page_release(og);
+    return OGG2_ESERIAL;
   }
   if(version>0){
-    ogg_page_release(og);
-    return OGG_EVERSION;
+    ogg2_page_release(og);
+    return OGG2_EVERSION;
   }
 
   /* add to fifos */
   if(!os->body_tail){
     os->body_tail=og->body;
-    os->body_head=ogg_buffer_walk(og->body);
+    os->body_head=ogg2_buffer_walk(og->body);
   }else{
-    os->body_head=ogg_buffer_cat(os->body_head,og->body);
+    os->body_head=ogg2_buffer_cat(os->body_head,og->body);
   }
   if(!os->header_tail){
     os->header_tail=og->header;
-    os->header_head=ogg_buffer_walk(og->header);
+    os->header_head=ogg2_buffer_walk(og->header);
     os->lacing_fill=-27;
   }else{
-    os->header_head=ogg_buffer_cat(os->header_head,og->header);
+    os->header_head=ogg2_buffer_cat(os->header_head,og->header);
   }
 
   memset(og,0,sizeof(*og));
-  return OGG_SUCCESS;
+  return OGG2_SUCCESS;
 }
 
-int ogg_stream_reset(ogg_stream_state *os){
+int ogg2_stream_reset(ogg2_stream_state *os){
 
-  ogg_buffer_release(os->header_tail);
-  ogg_buffer_release(os->body_tail);
+  ogg2_buffer_release(os->header_tail);
+  ogg2_buffer_release(os->body_tail);
   os->header_tail=os->header_head=0;
   os->body_tail=os->body_head=0;
 
@@ -410,7 +425,8 @@ int ogg_stream_reset(ogg_stream_state *os){
 
   os->body_fill=0;
   os->lacing_fill=0;
-  oggbyte_clear(&os->header_build);
+  ogg2byte_clear(&os->header_build);
+  os->packets=0;
 
   os->holeflag=0;
   os->spanflag=0;
@@ -418,20 +434,20 @@ int ogg_stream_reset(ogg_stream_state *os){
   os->laceptr=0;
   os->body_fill_next=0;
 
-  return OGG_SUCCESS;
+  return OGG2_SUCCESS;
 }
 
-int ogg_stream_reset_serialno(ogg_stream_state *os,int serialno){
-  ogg_stream_reset(os);
+int ogg2_stream_reset_serialno(ogg2_stream_state *os,int serialno){
+  ogg2_stream_reset(os);
   os->serialno=serialno;
-  return OGG_SUCCESS;
+  return OGG2_SUCCESS;
 }
 
-static int _packetout(ogg_stream_state *os,ogg_packet *op,int adv){
+static int _packetout(ogg2_stream_state *os,ogg2_packet *op,int adv){
 
   /* if the incoming packet is a valid reference, release it such that
      we don't leak the memory */
-  ogg_packet_release(op);
+  ogg2_packet_release(op);
 
   /* buffer packets for return */
   _span_queued_page(os);
@@ -444,7 +460,7 @@ static int _packetout(ogg_stream_state *os,ogg_packet *op,int adv){
       os->holeflag=1;
     if(temp==2){
       os->packetno++;
-      return OGG_HOLE;
+      return OGG2_HOLE;
     }
   }
   if(os->spanflag){
@@ -455,7 +471,7 @@ static int _packetout(ogg_stream_state *os,ogg_packet *op,int adv){
       os->spanflag=1;
     if(temp==2){
       os->packetno++;
-      return OGG_SPAN;
+      return OGG2_SPAN;
     }
   }
 
@@ -469,23 +485,38 @@ static int _packetout(ogg_stream_state *os,ogg_packet *op,int adv){
       op->e_o_s=os->e_o_s;
     else
       op->e_o_s=0;
-    if( (os->body_fill&FINFLAG) && !(os->body_fill_next&FINFLAG) )
-      op->granulepos=os->granulepos;
-    else
-      op->granulepos=-1;
+
+    if (os->discont){
+      /* Discontinuous Mode */
+      if(!os->continued) {
+        if(os->packets==0)op->end_granule=os->granulepos;
+        else op->end_granule=-1;
+      }else{
+        if(os->packets==1)op->end_granule=os->granulepos;
+        else op->end_granule=-1;
+      }
+    }else{
+      /* Continuous Mode */
+      if( (os->body_fill&FINFLAG) && !(os->body_fill_next&FINFLAG) )
+        op->end_granule=os->granulepos;
+      else
+        op->end_granule=-1;
+    }
+    
+    os->packets++;
     op->packetno=os->packetno;
   }
 
   if(adv){
-    oggbyte_buffer ob;
-    oggbyte_init(&ob,os->header_tail,0);
+    ogg2byte_buffer ob;
+    ogg2byte_init(&ob,os->header_tail,0);
 
     /* split the body contents off */
     if(op){
-      op->packet=ogg_buffer_split(&os->body_tail,&os->body_head,os->body_fill&FINMASK);
+      op->packet=ogg2_buffer_split(&os->body_tail,&os->body_head,os->body_fill&FINMASK);
       op->bytes=os->body_fill&FINMASK;
     }else{
-      os->body_tail=ogg_buffer_pretruncate(os->body_tail,os->body_fill&FINMASK);
+      os->body_tail=ogg2_buffer_pretruncate(os->body_tail,os->body_fill&FINMASK);
       if(os->body_tail==0)os->body_head=0;
     }
 
@@ -494,7 +525,7 @@ static int _packetout(ogg_stream_state *os,ogg_packet *op,int adv){
     _next_lace(&ob,os);
   }else{
     if(op){
-      op->packet=ogg_buffer_sub(os->body_tail,0,os->body_fill&FINMASK);
+      op->packet=ogg2_buffer_sub(os->body_tail,0,os->body_fill&FINMASK);
       op->bytes=os->body_fill&FINMASK;
     }
   }
@@ -507,49 +538,49 @@ static int _packetout(ogg_stream_state *os,ogg_packet *op,int adv){
   return 1;
 }
 
-int ogg_stream_packetout(ogg_stream_state *os,ogg_packet *op){
+int ogg2_stream_packetout(ogg2_stream_state *os,ogg2_packet *op){
   return _packetout(os,op,1);
 }
 
-int ogg_stream_packetpeek(ogg_stream_state *os,ogg_packet *op){
+int ogg2_stream_packetpeek(ogg2_stream_state *os,ogg2_packet *op){
   return _packetout(os,op,0);
 }
 
-int ogg_packet_release(ogg_packet *op) {
+int ogg2_packet_release(ogg2_packet *op) {
   if(op){
-    ogg_buffer_release(op->packet);
+    ogg2_buffer_release(op->packet);
     memset(op, 0, sizeof(*op));
   }
-  return OGG_SUCCESS;
+  return OGG2_SUCCESS;
 }
 
-int ogg_page_release(ogg_page *og) {
+int ogg2_page_release(ogg2_page *og) {
   if(og){
-    ogg_buffer_release(og->header);
-    ogg_buffer_release(og->body);
+    ogg2_buffer_release(og->header);
+    ogg2_buffer_release(og->body);
     memset(og, 0, sizeof(*og));
   }
-  return OGG_SUCCESS;
+  return OGG2_SUCCESS;
 }
 
 #ifdef _V_SELFTEST2
 #include <stdio.h>
 
-ogg_stream_state *os_en, *os_de;
-ogg_sync_state *oy;
-ogg_buffer_state *bs;
+ogg2_stream_state *os_en, *os_de;
+ogg2_sync_state *oy;
+ogg2_buffer_state *bs;
 
-void checkpacket(ogg_packet *op,int len, int no, int pos){
+void checkpacket(ogg2_packet *op,int len, int no, int pos){
   long j;
   static int sequence=0;
   static int lastno=0;
-  oggbyte_buffer ob;
+  ogg2byte_buffer ob;
 
-  if(ogg_buffer_length(op->packet)!=len){
+  if(ogg2_buffer_length(op->packet)!=len){
     fprintf(stderr,"incorrect packet length!\n");
     exit(1);
   }
-  if(op->granulepos!=pos){
+  if(op->end_granule!=pos){
     fprintf(stderr,"incorrect packet position!\n");
     exit(1);
   }
@@ -571,18 +602,18 @@ void checkpacket(ogg_packet *op,int len, int no, int pos){
   }
 
   /* Test data */
-  oggbyte_init(&ob,op->packet,0);
-  for(j=0;j<ogg_buffer_length(op->packet);j++)
-    if(oggbyte_read1(&ob,j)!=((j+no)&0xff)){
+  ogg2byte_init(&ob,op->packet,0);
+  for(j=0;j<ogg2_buffer_length(op->packet);j++)
+    if(ogg2byte_read1(&ob,j)!=((j+no)&0xff)){
       fprintf(stderr,"body data mismatch (1) at pos %ld: %x!=%lx!\n\n",
-	      j,oggbyte_read1(&ob,j),(j+no)&0xff);
+	      j,ogg2byte_read1(&ob,j),(j+no)&0xff);
       exit(1);
     }
 }
 
-void check_page(unsigned char *data,const int *header,ogg_page *og){
+void check_page(unsigned char *data,const int *header,ogg2_page *og){
   long j;
-  oggbyte_buffer ob;
+  ogg2byte_buffer ob;
 
   /* test buffer lengths */
   long header_len=header[26]+27;
@@ -591,65 +622,65 @@ void check_page(unsigned char *data,const int *header,ogg_page *og){
   for(j=27;j<header_len;j++)
     body_len+=header[j];
 
-  if(header_len!=ogg_buffer_length(og->header)){
+  if(header_len!=ogg2_buffer_length(og->header)){
     fprintf(stderr,"page header length mismatch: %ld correct, buffer is %ld\n",
-	    header_len,ogg_buffer_length(og->header));
+	    header_len,ogg2_buffer_length(og->header));
     exit(1);
   }
-  if(body_len!=ogg_buffer_length(og->body)){
+  if(body_len!=ogg2_buffer_length(og->body)){
     fprintf(stderr,"page body length mismatch: %ld correct, buffer is %ld\n",
-	    body_len,ogg_buffer_length(og->body));
+	    body_len,ogg2_buffer_length(og->body));
     exit(1);
   }
 
   /* Test data */
-  oggbyte_init(&ob,og->body,0);
-  for(j=0;j<ogg_buffer_length(og->body);j++)
-    if(oggbyte_read1(&ob,j)!=data[j]){
+  ogg2byte_init(&ob,og->body,0);
+  for(j=0;j<ogg2_buffer_length(og->body);j++)
+    if(ogg2byte_read1(&ob,j)!=data[j]){
       fprintf(stderr,"body data mismatch (2) at pos %ld: %x!=%x!\n\n",
-	      j,data[j],oggbyte_read1(&ob,j));
+	      j,data[j],ogg2byte_read1(&ob,j));
       exit(1);
     }
 
   /* Test header */
-  oggbyte_init(&ob,og->header,0);
-  for(j=0;j<ogg_buffer_length(og->header);j++){
-    if(oggbyte_read1(&ob,j)!=header[j]){
+  ogg2byte_init(&ob,og->header,0);
+  for(j=0;j<ogg2_buffer_length(og->header);j++){
+    if(ogg2byte_read1(&ob,j)!=header[j]){
       fprintf(stderr,"header content mismatch at pos %ld:\n",j);
       for(j=0;j<header[26]+27;j++)
-	fprintf(stderr," (%ld)%02x:%02x",j,header[j],oggbyte_read1(&ob,j));
+	fprintf(stderr," (%ld)%02x:%02x",j,header[j],ogg2byte_read1(&ob,j));
       fprintf(stderr,"\n");
       exit(1);
     }
   }
-  if(ogg_buffer_length(og->header)!=header[26]+27){
+  if(ogg2_buffer_length(og->header)!=header[26]+27){
     fprintf(stderr,"header length incorrect! (%ld!=%d)\n",
-	    ogg_buffer_length(og->header),header[26]+27);
+	    ogg2_buffer_length(og->header),header[26]+27);
     exit(1);
   }
 }
 
-void print_header(ogg_page *og){
+void print_header(ogg2_page *og){
   int j;
-  oggbyte_buffer ob;
-  oggbyte_init(&ob,og->header,0);
+  ogg2byte_buffer ob;
+  ogg2byte_init(&ob,og->header,0);
 
   fprintf(stderr,"\nHEADER:\n");
   fprintf(stderr,"  capture: %c %c %c %c  version: %d  flags: %x\n",
-	  oggbyte_read1(&ob,0),oggbyte_read1(&ob,1),
-	  oggbyte_read1(&ob,2),oggbyte_read1(&ob,3),
-	  (int)oggbyte_read1(&ob,4),(int)oggbyte_read1(&ob,5));
+	  ogg2byte_read1(&ob,0),ogg2byte_read1(&ob,1),
+	  ogg2byte_read1(&ob,2),ogg2byte_read1(&ob,3),
+	  (int)ogg2byte_read1(&ob,4),(int)ogg2byte_read1(&ob,5));
 
   fprintf(stderr,"  granulepos: %08x%08x  serialno: %x  pageno: %ld\n",
-	  oggbyte_read4(&ob,10),oggbyte_read4(&ob,6),
-	  oggbyte_read4(&ob,14),
-	  (long)oggbyte_read4(&ob,18));
+	  ogg2byte_read4(&ob,10),ogg2byte_read4(&ob,6),
+	  ogg2byte_read4(&ob,14),
+	  (long)ogg2byte_read4(&ob,18));
 
   fprintf(stderr,"  checksum: %08x\n  segments: %d (",
-	  oggbyte_read4(&ob,22),(int)oggbyte_read1(&ob,26));
+	  ogg2byte_read4(&ob,22),(int)ogg2byte_read1(&ob,26));
 
-  for(j=27;j<ogg_buffer_length(og->header);j++)
-    fprintf(stderr,"%d ",(int)oggbyte_read1(&ob,j));
+  for(j=27;j<ogg2_buffer_length(og->header);j++)
+    fprintf(stderr,"%d ",(int)ogg2byte_read1(&ob,j));
   fprintf(stderr,")\n\n");
 }
 
@@ -844,7 +875,7 @@ const int head3_7[] = {0x4f,0x67,0x67,0x53,0,0x05,
 		       0xd4,0xe0,0x60,0xe5,
 		       1,0};
 
-void bufcpy(void *data,ogg_reference *or){
+void bufcpy(void *data,ogg2_reference *or){
   while(or){
     memcpy(data,or->buffer->data+or->begin,or->length);
     data+=or->length;
@@ -852,7 +883,7 @@ void bufcpy(void *data,ogg_reference *or){
   }
 }
 
-void bufcpy2(void *data,ogg_reference *or,int begin){
+void bufcpy2(void *data,ogg2_reference *or,int begin){
   while(or){
     if(or->length-begin>0){
       memcpy(data,or->buffer->data+or->begin+begin,or->length-begin);
@@ -863,7 +894,7 @@ void bufcpy2(void *data,ogg_reference *or,int begin){
   }
 }
 
-int bufcmp(void *data,ogg_reference *or){
+int bufcmp(void *data,ogg2_reference *or){
   while(or){
     int ret=memcmp(data,or->buffer->data+or->begin,or->length);
     if(ret)return ret;
@@ -888,10 +919,10 @@ void test_pack(const int *pl, const int **headers){
 
   for(i=0;i<packets;i++){
     /* construct a test packet */
-    ogg_packet op={0,0,0,0,0,0};
+    ogg2_packet op={0,0,0,0,0,0};
     int len=pl[i];
     
-    op.packet=ogg_buffer_alloc(bs,len);
+    op.packet=ogg2_buffer_alloc(bs,len);
     op.e_o_s=(pl[i+1]<0?1:0);
     op.granulepos=granulepos;
 
@@ -903,13 +934,13 @@ void test_pack(const int *pl, const int **headers){
 
     inptr+=j;
     /* submit the test packet */
-    ogg_stream_packetin(os_en,&op);
+    ogg2_stream_packetin(os_en,&op);
 
     /* retrieve any finished pages */
     {
-      ogg_page og={0,0,0,0};
+      ogg2_page og={0,0,0,0};
       
-      while(ogg_stream_pageout(os_en,&og)){
+      while(ogg2_stream_pageout(os_en,&og)){
 	/* We have a page.  Check it carefully */
 
 	fprintf(stderr,"%ld, ",pageno);
@@ -921,34 +952,34 @@ void test_pack(const int *pl, const int **headers){
 
 	check_page(data+outptr,headers[pageno],&og);
 
-	outptr+=ogg_buffer_length(og.body);
+	outptr+=ogg2_buffer_length(og.body);
 	pageno++;
 
 	/* have a complete page; submit it to sync/decode */
 
 	{
-	  ogg_page og_de={0,0,0,0};
-	  ogg_packet op_de={0,0,0,0,0,0},op_de2={0,0,0,0,0,0};
-	  int blen=ogg_buffer_length(og.header)+ogg_buffer_length(og.body);
-	  char *buf=ogg_sync_bufferin(oy,blen);
+	  ogg2_page og_de={0,0,0,0};
+	  ogg2_packet op_de={0,0,0,0,0,0},op_de2={0,0,0,0,0,0};
+	  int blen=ogg2_buffer_length(og.header)+ogg2_buffer_length(og.body);
+	  char *buf=ogg2_sync_bufferin(oy,blen);
 	  bufcpy(buf,og.header);
-	  bufcpy(buf+ogg_buffer_length(og.header),og.body);
-	  ogg_sync_wrote(oy,blen);
+	  bufcpy(buf+ogg2_buffer_length(og.header),og.body);
+	  ogg2_sync_wrote(oy,blen);
 
-	  while(ogg_sync_pageout(oy,&og_de)>0){
+	  while(ogg2_sync_pageout(oy,&og_de)>0){
 	    /* got a page.  Happy happy.  Verify that it's good. */
 	    
 	    check_page(data+deptr,headers[pageout],&og_de);
-	    deptr+=ogg_buffer_length(og_de.body);
+	    deptr+=ogg2_buffer_length(og_de.body);
 	    pageout++;
 
 	    /* submit it to deconstitution */
-	    ogg_stream_pagein(os_de,&og_de);
+	    ogg2_stream_pagein(os_de,&og_de);
 
 	    /* packets out? */
-	    while(ogg_stream_packetpeek(os_de,NULL)>0){
-	      ogg_stream_packetpeek(os_de,&op_de2);
-	      ogg_stream_packetout(os_de,&op_de); /* just catching them all */
+	    while(ogg2_stream_packetpeek(os_de,NULL)>0){
+	      ogg2_stream_packetpeek(os_de,&op_de2);
+	      ogg2_stream_packetout(os_de,&op_de); /* just catching them all */
 	      
 	      /* verify the packets! */
 	      /* check data */
@@ -980,7 +1011,7 @@ void test_pack(const int *pl, const int **headers){
 		exit(1);
 	      }
 	      bosflag=1;
-	      depacket+=ogg_buffer_length(op_de.packet);
+	      depacket+=ogg2_buffer_length(op_de.packet);
 	      
 	      /* check eos flag */
 	      if(eosflag){
@@ -1002,12 +1033,12 @@ void test_pack(const int *pl, const int **headers){
 		exit(1);
 	      }
 
-	      ogg_packet_release(&op_de);
-	      ogg_packet_release(&op_de2);
+	      ogg2_packet_release(&op_de);
+	      ogg2_packet_release(&op_de2);
 	    }
 	  }
 	}
-	ogg_page_release(&og);
+	ogg2_page_release(&og);
       }
     }
   }
@@ -1038,18 +1069,18 @@ void test_pack(const int *pl, const int **headers){
   }
   fprintf(stderr,"ok.\n");
 
-  ogg_stream_reset(os_en);
-  ogg_stream_reset(os_de);
-  ogg_sync_reset(oy);
+  ogg2_stream_reset(os_en);
+  ogg2_stream_reset(os_de);
+  ogg2_sync_reset(oy);
 
 }
 
 int main(void){
 
-  os_en=ogg_stream_create(0x04030201);
-  os_de=ogg_stream_create(0x04030201);
-  oy=ogg_sync_create();
-  bs=ogg_buffer_create();
+  os_en=ogg2_stream_create(0x04030201);
+  os_de=ogg2_stream_create(0x04030201);
+  oy=ogg2_sync_create();
+  bs=ogg2_buffer_create();
 
   /* Exercise each code path in the framing code.  Also verify that
      the checksums are working.  */
@@ -1165,16 +1196,16 @@ int main(void){
     unsigned char *data=_ogg_malloc(1024*1024);
     int pl[]={0,100,4079,2956,2057,76,34,912,0,234,1000,1000,1000,300,-1};
     int inptr=0,i,j;
-    ogg_page og[5];
+    ogg2_page og[5];
     memset(og,0,sizeof(og));
     
-    ogg_stream_reset(os_en);
+    ogg2_stream_reset(os_en);
 
     for(i=0;pl[i]!=-1;i++){
-      ogg_packet op;
+      ogg2_packet op;
       int len=pl[i];
 
-      op.packet=ogg_buffer_alloc(bs,len);
+      op.packet=ogg2_buffer_alloc(bs,len);
       op.e_o_s=(pl[i+1]<0?1:0);
       op.granulepos=(i+1)*1000;
 
@@ -1182,7 +1213,7 @@ int main(void){
       memcpy(op.packet->buffer->data,data+inptr,len);
       op.packet->length=len;
 
-      ogg_stream_packetin(os_en,&op);
+      ogg2_stream_packetin(os_en,&op);
       inptr+=j;
     }
 
@@ -1190,14 +1221,14 @@ int main(void){
 
     /* retrieve finished pages */
     for(i=0;i<5;i++){
-      if(ogg_stream_pageout(os_en,&og[i])==0){
+      if(ogg2_stream_pageout(os_en,&og[i])==0){
 	fprintf(stderr,"Too few pages output building sync tests!\n");
 	exit(1);
       }
     }
     {
-      ogg_page temp;
-      if(ogg_stream_pageout(os_en,&temp)>0){
+      ogg2_page temp;
+      if(ogg2_stream_pageout(os_en,&temp)>0){
 	fprintf(stderr,"Too many pages output building sync tests!\n");
 	exit(1);
       }
@@ -1205,269 +1236,269 @@ int main(void){
     
     /* Test lost pages on pagein/packetout: no rollback */
     {
-      ogg_page temp={0,0,0,0};
-      ogg_packet test={0,0,0,0,0,0};
+      ogg2_page temp={0,0,0,0};
+      ogg2_packet test={0,0,0,0,0,0};
 
       fprintf(stderr,"Testing loss of pages... ");
 
-      ogg_sync_reset(oy);
-      ogg_stream_reset(os_de);
+      ogg2_sync_reset(oy);
+      ogg2_stream_reset(os_de);
       for(i=0;i<5;i++){
-	bufcpy(ogg_sync_bufferin(oy,ogg_buffer_length(og[i].header)),
+	bufcpy(ogg2_sync_bufferin(oy,ogg2_buffer_length(og[i].header)),
 	       og[i].header);
-	ogg_sync_wrote(oy,ogg_buffer_length(og[i].header));
-	bufcpy(ogg_sync_bufferin(oy,ogg_buffer_length(og[i].body)),
+	ogg2_sync_wrote(oy,ogg2_buffer_length(og[i].header));
+	bufcpy(ogg2_sync_bufferin(oy,ogg2_buffer_length(og[i].body)),
 	       og[i].body);
-	ogg_sync_wrote(oy,ogg_buffer_length(og[i].body));
+	ogg2_sync_wrote(oy,ogg2_buffer_length(og[i].body));
       }
 
-      ogg_sync_pageout(oy,&temp);
-      ogg_stream_pagein(os_de,&temp);
-      ogg_sync_pageout(oy,&temp);
-      ogg_stream_pagein(os_de,&temp);
-      ogg_sync_pageout(oy,&temp);
-      ogg_page_release(&temp);/* skip */
-      ogg_sync_pageout(oy,&temp);
-      ogg_stream_pagein(os_de,&temp);
+      ogg2_sync_pageout(oy,&temp);
+      ogg2_stream_pagein(os_de,&temp);
+      ogg2_sync_pageout(oy,&temp);
+      ogg2_stream_pagein(os_de,&temp);
+      ogg2_sync_pageout(oy,&temp);
+      ogg2_page_release(&temp);/* skip */
+      ogg2_sync_pageout(oy,&temp);
+      ogg2_stream_pagein(os_de,&temp);
 
       /* do we get the expected results/packets? */
       
-      if(ogg_stream_packetout(os_de,&test)!=1)error();
+      if(ogg2_stream_packetout(os_de,&test)!=1)error();
       checkpacket(&test,0,0,0);
-      ogg_packet_release(&test);
-      if(ogg_stream_packetout(os_de,&test)!=1)error();
+      ogg2_packet_release(&test);
+      if(ogg2_stream_packetout(os_de,&test)!=1)error();
       checkpacket(&test,100,1,-1);
-      ogg_packet_release(&test);
-      if(ogg_stream_packetout(os_de,&test)!=1)error();
+      ogg2_packet_release(&test);
+      if(ogg2_stream_packetout(os_de,&test)!=1)error();
       checkpacket(&test,4079,2,3000);
-      ogg_packet_release(&test);
-      if(ogg_stream_packetout(os_de,&test)!=OGG_HOLE){
+      ogg2_packet_release(&test);
+      if(ogg2_stream_packetout(os_de,&test)!=OGG2_HOLE){
 	fprintf(stderr,"Error: loss of page did not return error\n");
 	exit(1);
       }
-      ogg_packet_release(&test);
-      if(ogg_stream_packetout(os_de,&test)!=1)error();
+      ogg2_packet_release(&test);
+      if(ogg2_stream_packetout(os_de,&test)!=1)error();
       checkpacket(&test,76,5,-1);
-      ogg_packet_release(&test);
-      if(ogg_stream_packetout(os_de,&test)!=1)error();
+      ogg2_packet_release(&test);
+      if(ogg2_stream_packetout(os_de,&test)!=1)error();
       checkpacket(&test,34,6,-1);
-      ogg_packet_release(&test);
+      ogg2_packet_release(&test);
       fprintf(stderr,"ok.\n");
     }
 
     /* Test lost pages on pagein/packetout: rollback with continuation */
     {
-      ogg_page temp={0,0,0,0};
-      ogg_packet test={0,0,0,0,0,0};
+      ogg2_page temp={0,0,0,0};
+      ogg2_packet test={0,0,0,0,0,0};
 
       fprintf(stderr,"Testing loss of pages (rollback required)... ");
 
-      ogg_sync_reset(oy);
-      ogg_stream_reset(os_de);
+      ogg2_sync_reset(oy);
+      ogg2_stream_reset(os_de);
       for(i=0;i<5;i++){
-	bufcpy(ogg_sync_bufferin(oy,ogg_buffer_length(og[i].header)),
+	bufcpy(ogg2_sync_bufferin(oy,ogg2_buffer_length(og[i].header)),
 	       og[i].header);
-	ogg_sync_wrote(oy,ogg_buffer_length(og[i].header));
-	bufcpy(ogg_sync_bufferin(oy,ogg_buffer_length(og[i].body)),
+	ogg2_sync_wrote(oy,ogg2_buffer_length(og[i].header));
+	bufcpy(ogg2_sync_bufferin(oy,ogg2_buffer_length(og[i].body)),
 	       og[i].body);
-	ogg_sync_wrote(oy,ogg_buffer_length(og[i].body));
+	ogg2_sync_wrote(oy,ogg2_buffer_length(og[i].body));
       }
 
-      ogg_sync_pageout(oy,&temp);
-      ogg_stream_pagein(os_de,&temp);
-      ogg_sync_pageout(oy,&temp);
-      ogg_stream_pagein(os_de,&temp);
-      ogg_sync_pageout(oy,&temp);
-      ogg_stream_pagein(os_de,&temp);
-      ogg_sync_pageout(oy,&temp);
-      ogg_page_release(&temp);/* skip */
-      ogg_sync_pageout(oy,&temp);
-      ogg_stream_pagein(os_de,&temp);
+      ogg2_sync_pageout(oy,&temp);
+      ogg2_stream_pagein(os_de,&temp);
+      ogg2_sync_pageout(oy,&temp);
+      ogg2_stream_pagein(os_de,&temp);
+      ogg2_sync_pageout(oy,&temp);
+      ogg2_stream_pagein(os_de,&temp);
+      ogg2_sync_pageout(oy,&temp);
+      ogg2_page_release(&temp);/* skip */
+      ogg2_sync_pageout(oy,&temp);
+      ogg2_stream_pagein(os_de,&temp);
 
       /* do we get the expected results/packets? */
       
-      if(ogg_stream_packetout(os_de,&test)!=1)error();
+      if(ogg2_stream_packetout(os_de,&test)!=1)error();
       checkpacket(&test,0,0,0);
-      ogg_packet_release(&test);
-      if(ogg_stream_packetout(os_de,&test)!=1)error();
+      ogg2_packet_release(&test);
+      if(ogg2_stream_packetout(os_de,&test)!=1)error();
       checkpacket(&test,100,1,-1);
-      ogg_packet_release(&test);
-      if(ogg_stream_packetout(os_de,&test)!=1)error();
+      ogg2_packet_release(&test);
+      if(ogg2_stream_packetout(os_de,&test)!=1)error();
       checkpacket(&test,4079,2,3000);
-      ogg_packet_release(&test);
-      if(ogg_stream_packetout(os_de,&test)!=1)error();
+      ogg2_packet_release(&test);
+      if(ogg2_stream_packetout(os_de,&test)!=1)error();
       checkpacket(&test,2956,3,4000);
-      ogg_packet_release(&test);
-      if(ogg_stream_packetout(os_de,&test)!=OGG_HOLE){
+      ogg2_packet_release(&test);
+      if(ogg2_stream_packetout(os_de,&test)!=OGG2_HOLE){
 	fprintf(stderr,"Error: loss of page did not return error\n");
 	exit(1);
       }
-      ogg_packet_release(&test);
-      if(ogg_stream_packetout(os_de,&test)!=1)error();
+      ogg2_packet_release(&test);
+      if(ogg2_stream_packetout(os_de,&test)!=1)error();
       checkpacket(&test,300,13,14000);
-      ogg_packet_release(&test);
+      ogg2_packet_release(&test);
       fprintf(stderr,"ok.\n");
     }
     
     /* the rest only test sync */
     {
-      ogg_page og_de={0,0,0,0};
+      ogg2_page og_de={0,0,0,0};
       /* Test fractional page inputs: incomplete capture */
       fprintf(stderr,"Testing sync on partial inputs... ");
-      ogg_sync_reset(oy);
-      bufcpy(ogg_sync_bufferin(oy,ogg_buffer_length(og[1].header)),og[1].header);
-      ogg_sync_wrote(oy,3);
-      if(ogg_sync_pageout(oy,&og_de)>0)error();
-      ogg_page_release(&og_de);
+      ogg2_sync_reset(oy);
+      bufcpy(ogg2_sync_bufferin(oy,ogg2_buffer_length(og[1].header)),og[1].header);
+      ogg2_sync_wrote(oy,3);
+      if(ogg2_sync_pageout(oy,&og_de)>0)error();
+      ogg2_page_release(&og_de);
       
       /* Test fractional page inputs: incomplete fixed header */
-      bufcpy2(ogg_sync_bufferin(oy,ogg_buffer_length(og[1].header)),og[1].header,3);
-      ogg_sync_wrote(oy,20);
-      if(ogg_sync_pageout(oy,&og_de)>0)error();
-      ogg_page_release(&og_de);
+      bufcpy2(ogg2_sync_bufferin(oy,ogg2_buffer_length(og[1].header)),og[1].header,3);
+      ogg2_sync_wrote(oy,20);
+      if(ogg2_sync_pageout(oy,&og_de)>0)error();
+      ogg2_page_release(&og_de);
       
       /* Test fractional page inputs: incomplete header */
-      bufcpy2(ogg_sync_bufferin(oy,ogg_buffer_length(og[1].header)),og[1].header,23);
-      ogg_sync_wrote(oy,5);
-      if(ogg_sync_pageout(oy,&og_de)>0)error();
-      ogg_page_release(&og_de);
+      bufcpy2(ogg2_sync_bufferin(oy,ogg2_buffer_length(og[1].header)),og[1].header,23);
+      ogg2_sync_wrote(oy,5);
+      if(ogg2_sync_pageout(oy,&og_de)>0)error();
+      ogg2_page_release(&og_de);
       
       /* Test fractional page inputs: incomplete body */
       
-      bufcpy2(ogg_sync_bufferin(oy,ogg_buffer_length(og[1].header)),og[1].header,28);
-      ogg_sync_wrote(oy,ogg_buffer_length(og[1].header)-28);
-      if(ogg_sync_pageout(oy,&og_de)>0)error();
-      ogg_page_release(&og_de);
+      bufcpy2(ogg2_sync_bufferin(oy,ogg2_buffer_length(og[1].header)),og[1].header,28);
+      ogg2_sync_wrote(oy,ogg2_buffer_length(og[1].header)-28);
+      if(ogg2_sync_pageout(oy,&og_de)>0)error();
+      ogg2_page_release(&og_de);
       
-      bufcpy(ogg_sync_bufferin(oy,ogg_buffer_length(og[1].body)),og[1].body);
-      ogg_sync_wrote(oy,1000);
-      if(ogg_sync_pageout(oy,&og_de)>0)error();
-      ogg_page_release(&og_de);
+      bufcpy(ogg2_sync_bufferin(oy,ogg2_buffer_length(og[1].body)),og[1].body);
+      ogg2_sync_wrote(oy,1000);
+      if(ogg2_sync_pageout(oy,&og_de)>0)error();
+      ogg2_page_release(&og_de);
       
-      bufcpy2(ogg_sync_bufferin(oy,ogg_buffer_length(og[1].body)),og[1].body,1000);
-      ogg_sync_wrote(oy,ogg_buffer_length(og[1].body)-1000);
-      if(ogg_sync_pageout(oy,&og_de)<=0)error();
-      ogg_page_release(&og_de);
+      bufcpy2(ogg2_sync_bufferin(oy,ogg2_buffer_length(og[1].body)),og[1].body,1000);
+      ogg2_sync_wrote(oy,ogg2_buffer_length(og[1].body)-1000);
+      if(ogg2_sync_pageout(oy,&og_de)<=0)error();
+      ogg2_page_release(&og_de);
       
       fprintf(stderr,"ok.\n");
     }
 
     /* Test fractional page inputs: page + incomplete capture */
     {
-      ogg_page og_de={0,0,0,0};
+      ogg2_page og_de={0,0,0,0};
       fprintf(stderr,"Testing sync on 1+partial inputs... ");
-      ogg_sync_reset(oy); 
+      ogg2_sync_reset(oy); 
 
-      bufcpy(ogg_sync_bufferin(oy,ogg_buffer_length(og[1].header)),og[1].header);
-      ogg_sync_wrote(oy,ogg_buffer_length(og[1].header));
+      bufcpy(ogg2_sync_bufferin(oy,ogg2_buffer_length(og[1].header)),og[1].header);
+      ogg2_sync_wrote(oy,ogg2_buffer_length(og[1].header));
 
-      bufcpy(ogg_sync_bufferin(oy,ogg_buffer_length(og[1].body)),og[1].body);
-      ogg_sync_wrote(oy,ogg_buffer_length(og[1].body));
+      bufcpy(ogg2_sync_bufferin(oy,ogg2_buffer_length(og[1].body)),og[1].body);
+      ogg2_sync_wrote(oy,ogg2_buffer_length(og[1].body));
 
-      bufcpy(ogg_sync_bufferin(oy,ogg_buffer_length(og[1].header)),og[1].header);
-      ogg_sync_wrote(oy,20);
-      if(ogg_sync_pageout(oy,&og_de)<=0)error();
-      ogg_page_release(&og_de);
-      if(ogg_sync_pageout(oy,&og_de)>0)error();
-      ogg_page_release(&og_de);
+      bufcpy(ogg2_sync_bufferin(oy,ogg2_buffer_length(og[1].header)),og[1].header);
+      ogg2_sync_wrote(oy,20);
+      if(ogg2_sync_pageout(oy,&og_de)<=0)error();
+      ogg2_page_release(&og_de);
+      if(ogg2_sync_pageout(oy,&og_de)>0)error();
+      ogg2_page_release(&og_de);
 
-      bufcpy2(ogg_sync_bufferin(oy,ogg_buffer_length(og[1].header)),og[1].header,20);
-      ogg_sync_wrote(oy,ogg_buffer_length(og[1].header)-20);
+      bufcpy2(ogg2_sync_bufferin(oy,ogg2_buffer_length(og[1].header)),og[1].header,20);
+      ogg2_sync_wrote(oy,ogg2_buffer_length(og[1].header)-20);
 
-      bufcpy(ogg_sync_bufferin(oy,ogg_buffer_length(og[1].body)),og[1].body);
-      ogg_sync_wrote(oy,ogg_buffer_length(og[1].body));
+      bufcpy(ogg2_sync_bufferin(oy,ogg2_buffer_length(og[1].body)),og[1].body);
+      ogg2_sync_wrote(oy,ogg2_buffer_length(og[1].body));
 
-      if(ogg_sync_pageout(oy,&og_de)<=0)error();
-      ogg_page_release(&og_de);
+      if(ogg2_sync_pageout(oy,&og_de)<=0)error();
+      ogg2_page_release(&og_de);
 
       fprintf(stderr,"ok.\n");
     }
     
     /* Test recapture: garbage + page */
     {
-      ogg_page og_de={0,0,0,0};
+      ogg2_page og_de={0,0,0,0};
       fprintf(stderr,"Testing search for capture... ");
-      ogg_sync_reset(oy); 
+      ogg2_sync_reset(oy); 
       
       /* 'garbage' */
-      bufcpy(ogg_sync_bufferin(oy,ogg_buffer_length(og[1].body)),og[1].body);
-      ogg_sync_wrote(oy,ogg_buffer_length(og[1].body));
+      bufcpy(ogg2_sync_bufferin(oy,ogg2_buffer_length(og[1].body)),og[1].body);
+      ogg2_sync_wrote(oy,ogg2_buffer_length(og[1].body));
 
-      bufcpy(ogg_sync_bufferin(oy,ogg_buffer_length(og[1].header)),og[1].header);
-      ogg_sync_wrote(oy,ogg_buffer_length(og[1].header));
+      bufcpy(ogg2_sync_bufferin(oy,ogg2_buffer_length(og[1].header)),og[1].header);
+      ogg2_sync_wrote(oy,ogg2_buffer_length(og[1].header));
 
-      bufcpy(ogg_sync_bufferin(oy,ogg_buffer_length(og[1].body)),og[1].body);
-      ogg_sync_wrote(oy,ogg_buffer_length(og[1].body));
+      bufcpy(ogg2_sync_bufferin(oy,ogg2_buffer_length(og[1].body)),og[1].body);
+      ogg2_sync_wrote(oy,ogg2_buffer_length(og[1].body));
 
-      bufcpy(ogg_sync_bufferin(oy,ogg_buffer_length(og[2].header)),og[2].header);
-      ogg_sync_wrote(oy,20);
+      bufcpy(ogg2_sync_bufferin(oy,ogg2_buffer_length(og[2].header)),og[2].header);
+      ogg2_sync_wrote(oy,20);
 
-      if(ogg_sync_pageout(oy,&og_de)>0)error();
-      ogg_page_release(&og_de);
-      if(ogg_sync_pageout(oy,&og_de)<=0)error();
-      ogg_page_release(&og_de);
-      if(ogg_sync_pageout(oy,&og_de)>0)error();
-      ogg_page_release(&og_de);
+      if(ogg2_sync_pageout(oy,&og_de)>0)error();
+      ogg2_page_release(&og_de);
+      if(ogg2_sync_pageout(oy,&og_de)<=0)error();
+      ogg2_page_release(&og_de);
+      if(ogg2_sync_pageout(oy,&og_de)>0)error();
+      ogg2_page_release(&og_de);
 
-      bufcpy2(ogg_sync_bufferin(oy,ogg_buffer_length(og[2].header)),og[2].header,20);
-      ogg_sync_wrote(oy,ogg_buffer_length(og[2].header)-20);
+      bufcpy2(ogg2_sync_bufferin(oy,ogg2_buffer_length(og[2].header)),og[2].header,20);
+      ogg2_sync_wrote(oy,ogg2_buffer_length(og[2].header)-20);
 
-      bufcpy(ogg_sync_bufferin(oy,ogg_buffer_length(og[2].body)),og[2].body);
-      ogg_sync_wrote(oy,ogg_buffer_length(og[2].body));
-      if(ogg_sync_pageout(oy,&og_de)<=0)error();
-      ogg_page_release(&og_de);
+      bufcpy(ogg2_sync_bufferin(oy,ogg2_buffer_length(og[2].body)),og[2].body);
+      ogg2_sync_wrote(oy,ogg2_buffer_length(og[2].body));
+      if(ogg2_sync_pageout(oy,&og_de)<=0)error();
+      ogg2_page_release(&og_de);
 
       fprintf(stderr,"ok.\n");
     }
 
     /* Test recapture: page + garbage + page */
     {
-      ogg_page og_de={0,0,0,0};
+      ogg2_page og_de={0,0,0,0};
       fprintf(stderr,"Testing recapture... ");
-      ogg_sync_reset(oy); 
+      ogg2_sync_reset(oy); 
 
-      bufcpy(ogg_sync_bufferin(oy,ogg_buffer_length(og[1].header)),og[1].header);
-      ogg_sync_wrote(oy,ogg_buffer_length(og[1].header));
+      bufcpy(ogg2_sync_bufferin(oy,ogg2_buffer_length(og[1].header)),og[1].header);
+      ogg2_sync_wrote(oy,ogg2_buffer_length(og[1].header));
 
-      bufcpy(ogg_sync_bufferin(oy,ogg_buffer_length(og[1].body)),og[1].body);
-      ogg_sync_wrote(oy,ogg_buffer_length(og[1].body));
+      bufcpy(ogg2_sync_bufferin(oy,ogg2_buffer_length(og[1].body)),og[1].body);
+      ogg2_sync_wrote(oy,ogg2_buffer_length(og[1].body));
 
       /* garbage */
 
-      bufcpy(ogg_sync_bufferin(oy,ogg_buffer_length(og[2].header)),og[2].header);
-      ogg_sync_wrote(oy,ogg_buffer_length(og[2].header));
+      bufcpy(ogg2_sync_bufferin(oy,ogg2_buffer_length(og[2].header)),og[2].header);
+      ogg2_sync_wrote(oy,ogg2_buffer_length(og[2].header));
 
-      bufcpy(ogg_sync_bufferin(oy,ogg_buffer_length(og[2].header)),og[2].header);
-      ogg_sync_wrote(oy,ogg_buffer_length(og[2].header));
+      bufcpy(ogg2_sync_bufferin(oy,ogg2_buffer_length(og[2].header)),og[2].header);
+      ogg2_sync_wrote(oy,ogg2_buffer_length(og[2].header));
 
-      if(ogg_sync_pageout(oy,&og_de)<=0)error();
-      ogg_page_release(&og_de);
+      if(ogg2_sync_pageout(oy,&og_de)<=0)error();
+      ogg2_page_release(&og_de);
 
-      bufcpy(ogg_sync_bufferin(oy,ogg_buffer_length(og[2].body)),og[2].body);
-      ogg_sync_wrote(oy,ogg_buffer_length(og[2].body)-5);
+      bufcpy(ogg2_sync_bufferin(oy,ogg2_buffer_length(og[2].body)),og[2].body);
+      ogg2_sync_wrote(oy,ogg2_buffer_length(og[2].body)-5);
 
-      bufcpy(ogg_sync_bufferin(oy,ogg_buffer_length(og[3].header)),og[3].header);
-      ogg_sync_wrote(oy,ogg_buffer_length(og[3].header));
+      bufcpy(ogg2_sync_bufferin(oy,ogg2_buffer_length(og[3].header)),og[3].header);
+      ogg2_sync_wrote(oy,ogg2_buffer_length(og[3].header));
 
-      bufcpy(ogg_sync_bufferin(oy,ogg_buffer_length(og[3].body)),og[3].body);
-      ogg_sync_wrote(oy,ogg_buffer_length(og[3].body));
+      bufcpy(ogg2_sync_bufferin(oy,ogg2_buffer_length(og[3].body)),og[3].body);
+      ogg2_sync_wrote(oy,ogg2_buffer_length(og[3].body));
 
-      if(ogg_sync_pageout(oy,&og_de)>0)error();
-      ogg_page_release(&og_de);
-      if(ogg_sync_pageout(oy,&og_de)<=0)error();
-      ogg_page_release(&og_de);
+      if(ogg2_sync_pageout(oy,&og_de)>0)error();
+      ogg2_page_release(&og_de);
+      if(ogg2_sync_pageout(oy,&og_de)<=0)error();
+      ogg2_page_release(&og_de);
 
       fprintf(stderr,"ok.\n");
     }
-    ogg_stream_destroy(os_en);
+    ogg2_stream_destroy(os_en);
     for(i=0;i<5;i++)
-      ogg_page_release(&og[i]);
+      ogg2_page_release(&og[i]);
   }
 
-  ogg_stream_destroy(os_de);
-  ogg_sync_destroy(oy);
+  ogg2_stream_destroy(os_de);
+  ogg2_sync_destroy(oy);
 
-  ogg_buffer_destroy(bs);
+  ogg2_buffer_destroy(bs);
   return 0;
 }
 
