@@ -287,13 +287,13 @@ static void oc_enc_init_mbinfo(oc_enc_ctx *_enc){
           This may be NULL, in which case the default Huffman codes will be
            used.
   Return: 0 on success, or a negative value on error.
-          TH_FAULT if _enc is NULL
+          TH_EFAULT if _enc is NULL
           TH_EINVAL if the setup header has already been written, the code is
            not prefix free, or does not form a full binary tree.*/
 static int oc_enc_set_huffman_codes(oc_enc_ctx *_enc,
  const th_huff_code _codes[TH_NHUFFMAN_TABLES][TH_NDCT_TOKENS]){
   int ret;
-  if(_enc==NULL)return TH_FAULT;
+  if(_enc==NULL)return TH_EFAULT;
   if(_enc->packet_state>OC_PACKET_SETUP_HDR)return TH_EINVAL;
   if(_codes==NULL)_codes=TH_VP31_HUFF_CODES;
   /*Validate the codes.*/
@@ -312,7 +312,7 @@ static int oc_enc_set_huffman_codes(oc_enc_ctx *_enc,
           This can be NULL, in which case the default quantization parameters
            will be used.*
   Return: 0 on success, or a negative value on error.
-          TH_FAULT if _enc is NULL.
+          TH_EFAULT if _enc is NULL.
           TH_EINVAL if the setup header has already been written, or it cannot
            be verified that the quantization level of for a particular qti,
            pli, and ci never increases as qi increases.*/
@@ -323,7 +323,7 @@ static int oc_enc_set_quant_params(th_enc_ctx *_enc,
   int qri;
   int qi;
   int ci;
-  if(_enc==NULL)return TH_FAULT;
+  if(_enc==NULL)return TH_EFAULT;
   if(_enc->packet_state>OC_PACKET_SETUP_HDR)return TH_EINVAL;
   if(_qinfo==NULL)_qinfo=OC_DEF_QUANT_INFO+_enc->state.info.pixel_fmt;
   /*Verify that, for a given qti, pli and ci, the actual quantizer will never
@@ -1363,7 +1363,7 @@ int th_encode_ctl(th_enc_ctx *_enc,int _req,void *_buf,
     }break;
     case TH_ENCCTL_SET_KEYFRAME_FREQUENCY_FORCE:{
       ogg_uint32_t keyframe_frequency_force;
-      if(_enc==NULL||_buf==NULL)return TH_FAULT;
+      if(_enc==NULL||_buf==NULL)return TH_EFAULT;
       if(_buf_sz!=sizeof(ogg_uint32_t))return TH_EINVAL;
       keyframe_frequency_force=*(ogg_uint32_t *)_buf;
       if(_enc->packet_state==OC_PACKET_INFO_HDR){
@@ -1380,7 +1380,7 @@ int th_encode_ctl(th_enc_ctx *_enc,int _req,void *_buf,
     case TH_ENCCTL_SET_VP3_COMPATIBLE:{
       int vp3_compatible;
       int ret;
-      if(_enc==NULL||_buf==NULL)return TH_FAULT;
+      if(_enc==NULL||_buf==NULL)return TH_EFAULT;
       if(_buf_sz!=sizeof(int))return TH_EINVAL;
       vp3_compatible=*(int *)_buf;
       _enc->vp3_compatible=vp3_compatible;
@@ -1405,7 +1405,7 @@ int th_encode_ctl(th_enc_ctx *_enc,int _req,void *_buf,
       return 0;
     }break;
     case TH_ENCCTL_GET_SPLEVEL_MAX:{
-      if(_enc==NULL||_buf==NULL)return TH_FAULT;
+      if(_enc==NULL||_buf==NULL)return TH_EFAULT;
       if(_buf_sz!=sizeof(int))return TH_EINVAL;
       /*We can only manipulate speed in the context of a given encoding mode.
         Ensure one is selected if the user has not already done so.*/
@@ -1415,7 +1415,7 @@ int th_encode_ctl(th_enc_ctx *_enc,int _req,void *_buf,
     }break;
     case TH_ENCCTL_SET_SPLEVEL:{
       int speed;
-      if(_enc==NULL||_buf==NULL)return TH_FAULT;
+      if(_enc==NULL||_buf==NULL)return TH_EFAULT;
       if(_buf_sz!=sizeof(int))return TH_EINVAL;
       speed=*(int *)_buf;
       /*We can only manipulate speed in the context of a given encoding mode.
@@ -1426,14 +1426,14 @@ int th_encode_ctl(th_enc_ctx *_enc,int _req,void *_buf,
       return 0;
     }break;
     case TH_ENCCTL_SETUP_VBR:{
-      if(_enc==NULL)return TH_FAULT;
+      if(_enc==NULL)return TH_EFAULT;
       if(_buf==NULL&&_buf_sz!=0||_buf!=NULL&&_buf_sz!=sizeof(th_vbr_cfg)){
         return TH_EINVAL;
       }
       if(_enc->vbr==NULL)_enc->vbr=oc_enc_vbr_alloc(_enc);
       return oc_enc_vbr_enable(_enc->vbr,(th_vbr_cfg *)_buf);
     }break;
-    default:return TH_IMPL;
+    default:return TH_EIMPL;
   }
 }
 
@@ -1446,7 +1446,7 @@ int th_encode_ycbcr_in(th_enc_ctx *_enc,th_ycbcr_buffer _img){
   int                 rfi;
   int                 pli;
   /*Step 1: validate parameters.*/
-  if(_enc==NULL||_img==NULL)return TH_FAULT;
+  if(_enc==NULL||_img==NULL)return TH_EFAULT;
   if(_enc->packet_state==OC_PACKET_DONE)return TH_EINVAL;
   if(_img[0].width!=(int)_enc->state.info.frame_width||
    _img[0].height!=(int)_enc->state.info.frame_height){
@@ -1515,7 +1515,7 @@ int th_encode_ycbcr_in(th_enc_ctx *_enc,th_ycbcr_buffer _img){
 }
 
 int th_encode_packetout(th_enc_ctx *_enc,int _last,ogg_packet *_op){
-  if(_enc==NULL||_op==NULL)return TH_FAULT;
+  if(_enc==NULL||_op==NULL)return TH_EFAULT;
   if(_enc->packet_state!=OC_PACKET_READY)return 0;
   _op->packet=oggpackB_get_buffer(&_enc->opb);
   _op->bytes=oggpackB_bytes(&_enc->opb);

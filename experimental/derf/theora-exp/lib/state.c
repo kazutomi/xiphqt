@@ -528,7 +528,7 @@ void oc_state_vtable_init(oc_theora_state *_state){
 
 int oc_state_init(oc_theora_state *_state,const th_info *_info){
   /*First validate the parameters.*/
-  if(_info==NULL)return TH_FAULT;
+  if(_info==NULL)return TH_EFAULT;
   /*The width and height of the encoded frame must be multiples of 16.
     They must also, when divided by 16, fit into a 16-bit unsigned integer.
     The displayable frame offset coordinates must fit into an 8-bit unsigned
@@ -1067,26 +1067,26 @@ int oc_state_dump_frame(const oc_theora_state *_state,int _frame,
   pframe=_state->granpos-(iframe<<_state->info.keyframe_granule_shift);
   sprintf(fname,"%08i%s.png",(int)(iframe+pframe),_suf);
   fp=fopen(fname,"wb");
-  if(fp==NULL)return TH_FAULT;
+  if(fp==NULL)return TH_EFAULT;
   image=(png_bytep *)oc_malloc_2d(height,6*width,sizeof(image[0][0]));
   png=png_create_write_struct(PNG_LIBPNG_VER_STRING,NULL,NULL,NULL);
   if(png==NULL){
     oc_free_2d(image);
     fclose(fp);
-    return TH_FAULT;
+    return TH_EFAULT;
   }
   info=png_create_info_struct(png);
   if(info==NULL){
     png_destroy_write_struct(&png,NULL);
     oc_free_2d(image);
     fclose(fp);
-    return TH_FAULT;
+    return TH_EFAULT;
   }
   if(setjmp(png_jmpbuf(png))){
     png_destroy_write_struct(&png,&info);
     oc_free_2d(image);
     fclose(fp);
-    return TH_FAULT;
+    return TH_EFAULT;
   }
   framei=_state->ref_frame_idx[_frame];
   y_row=_state->ref_frame_bufs[framei][0].data;

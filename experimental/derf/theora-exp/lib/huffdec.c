@@ -78,8 +78,8 @@ static int oc_huff_tree_unpack(oggpack_buffer *_opb,
   oc_huff_node *binode;
   long          bits;
   /*Prevent infinite recursion.*/
-  if(++_depth>32)return TH_BADHEADER;
-  if(theora_read1(_opb,&bits)<0)return TH_BADHEADER;
+  if(++_depth>32)return TH_EBADHEADER;
+  if(theora_read1(_opb,&bits)<0)return TH_EBADHEADER;
   /*Read an internal node:*/
   if(!bits){
     int ret;
@@ -94,7 +94,7 @@ static int oc_huff_tree_unpack(oggpack_buffer *_opb,
   }
   /*Read a leaf node:*/
   else{
-    if(theora_read(_opb,OC_NDCT_TOKEN_BITS,&bits)<0)return TH_BADHEADER;
+    if(theora_read(_opb,OC_NDCT_TOKEN_BITS,&bits)<0)return TH_EBADHEADER;
     binode=oc_huff_node_alloc(0);
     binode->depth=(unsigned char)(_depth>1);
     binode->token=(unsigned char)bits;

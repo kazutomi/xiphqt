@@ -39,22 +39,22 @@ extern "C" {
 /**Gets the maximum post-processing level.
  *
  * \param[out] _buf int: The maximum post-processing level.
- * \retval TH_FAULT  \a _dec_ctx or \a _buf is <tt>NULL</tt>.
- * \retval TH_EINVAL \a _buf_sz is not <tt>sizeof(int)</tt>.
- * \retval TH_IMPL   Not supported by this implementation.*/
+ * \retval TH_EFAULT  \a _dec_ctx or \a _buf is <tt>NULL</tt>.
+ * \retval TH_EINVAL  \a _buf_sz is not <tt>sizeof(int)</tt>.
+ * \retval TH_EIMPL   Not supported by this implementation.*/
 #define TH_DECCTL_GET_PPLEVEL_MAX (1)
 /**Sets the post-processing level.
  * By default, post-processing is disabled.
  *
  * \param[in] _buf int: The new post-processing level.
  *                      0 to disable; larger values use more CPU.
- * \retval TH_FAULT  \a _dec_ctx or \a _buf is <tt>NULL</tt>.
- * \retval TH_EINVAL \a _buf_sz is not <tt>sizeof(int)</tt>, or the
- *                    post-processing level is out of bounds.
- *                   The maximum post-processing level may be
- *                    implementation-specific, and can be obtained via
- *                    #TH_DECCTL_GET_PPLEVEL_MAX.
- * \retval TH_IMPL   Not supported by this implementation.*/
+ * \retval TH_EFAULT  \a _dec_ctx or \a _buf is <tt>NULL</tt>.
+ * \retval TH_EINVAL  \a _buf_sz is not <tt>sizeof(int)</tt>, or the
+ *                     post-processing level is out of bounds.
+ *                    The maximum post-processing level may be
+ *                     implementation-specific, and can be obtained via
+ *                     #TH_DECCTL_GET_PPLEVEL_MAX.
+ * \retval TH_EIMPL   Not supported by this implementation.*/
 #define TH_DECCTL_SET_PPLEVEL (3)
 /**Sets the granule position.
  * Call this after a seek, before decoding the first frame, to ensure that the
@@ -62,9 +62,9 @@ extern "C" {
  *
  * \param[in] _buf <tt>ogg_int64_t</tt>: The granule position of the next
  *                  frame.
- * \retval TH_FAULT  \a _dec_ctx or \a _buf is <tt>NULL</tt>.
- * \retval TH_EINVAL \a _buf_sz is not <tt>sizeof(ogg_int64_t)</tt>, or the
- *                    granule position is negative.*/
+ * \retval TH_EFAULT  \a _dec_ctx or \a _buf is <tt>NULL</tt>.
+ * \retval TH_EINVAL  \a _buf_sz is not <tt>sizeof(ogg_int64_t)</tt>, or the
+ *                     granule position is negative.*/
 #define TH_DECCTL_SET_GRANPOS (5)
 /**Sets the striped decode callback function.
  * If set, this function will be called as each piece of a frame is fully
@@ -74,9 +74,9 @@ extern "C" {
  *  callbacks at any point.
  *
  * \param[in]  _buf #th_stripe_callback: The callback parameters.
- * \retval TH_FAULT  \a _dec_ctx or \a _buf is <tt>NULL</tt>.
- * \retval TH_EINVAL \a _buf_sz is not
- *                    <tt>sizeof(th_stripe_callback)</tt>.*/
+ * \retval TH_EFAULT  \a _dec_ctx or \a _buf is <tt>NULL</tt>.
+ * \retval TH_EINVAL  \a _buf_sz is not
+ *                     <tt>sizeof(th_stripe_callback)</tt>.*/
 #define TH_DECCTL_SET_STRIPE_CB (7)
 /*@}*/
 
@@ -191,20 +191,20 @@ typedef struct th_setup_info th_setup_info;
  *                initial packets of an Ogg logical stream.
  * \return A positive value indicates that a Theora header was successfully
  *          processed.
- * \retval 0            The first video data packet was encountered after all
- *                       required header packets were parsed.
- *                      The packet just passed in on this call should be saved
- *                       and fed to th_decode_packetin() to begin decoding
- *                       video data.
- * \retval TH_FAULT     One of \a _info, \a _tc, or \a _setup was
- *                       <tt>NULL</tt>.
- * \retval TH_BADHEADER \a _op was <tt>NULL</tt>, the packet was not the next
- *                       header packet in the expected sequence, or the format
- *                       of the header data was invalid.
- * \retval TH_VERSION   The packet data was a Theora info header, but for a
- *                       bitstream version not decodable with this version of
- *                       <tt>libtheora</tt>.
- * \retval TH_NOTFORMAT The packet was not a Theora header.
+ * \retval 0             The first video data packet was encountered after all
+ *                        required header packets were parsed.
+ *                       The packet just passed in on this call should be saved
+ *                        and fed to th_decode_packetin() to begin decoding
+ *                        video data.
+ * \retval TH_EFAULT     One of \a _info, \a _tc, or \a _setup was
+ *                        <tt>NULL</tt>.
+ * \retval TH_EBADHEADER \a _op was <tt>NULL</tt>, the packet was not the next
+ *                        header packet in the expected sequence, or the format
+ *                        of the header data was invalid.
+ * \retval TH_EVERSION   The packet data was a Theora info header, but for a
+ *                        bitstream version not decodable with this version of
+ *                        <tt>libtheora</tt>.
+ * \retval TH_ENOTFORMAT The packet was not a Theora header.
  */
 extern int th_decode_headerin(th_info *_info,th_comment *_tc,
  th_setup_info **_setup,ogg_packet *_op);
@@ -242,11 +242,17 @@ extern int th_decode_ctl(th_dec_ctx *_dec,int _req,void *_buf,
  *                  packets.
  *                 After a seek, the correct granule position must be set via
  *                  #TH_DECCTL_SET_GRANPOS for this to work properly.
- * \retval 0            Success.
- * \retval TH_FAULT     \a _dec or _op was <tt>NULL</tt>.
- * \retval TH_BADPACKET \a _op does not contain encoded video data.
- * \retval TH_IMPL      The video data uses bitstream features which this
- *                       library does not support.*/
+ * \retval 0             Success.
+ *                       A new decoded frame can be retrieved by calling
+ *                        th_decode_ycbcr_out().
+ * \retval TH_DUPFRAME   The packet represented a dropped (0-byte) frame.
+ *                       The player can skip the call to th_decode_ycbcr_out(),
+ *                        as the contents of the decoded frame buffer have not
+ *                        changed.
+ * \retval TH_EFAULT     \a _dec or _op was <tt>NULL</tt>.
+ * \retval TH_EBADPACKET \a _op does not contain encoded video data.
+ * \retval TH_EIMPL      The video data uses bitstream features which this
+ *                        library does not support.*/
 extern int th_decode_packetin(th_dec_ctx *_dec,const ogg_packet *_op,
  ogg_int64_t *_granpos);
 /**Outputs the next available frame of decoded Y'CbCr data.

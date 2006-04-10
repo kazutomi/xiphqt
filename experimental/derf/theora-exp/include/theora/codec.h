@@ -52,22 +52,26 @@ extern "C" {
 
 
 
-/**\name Error codes*/
+/**\name Return codes*/
 /*@{*/
 /**An invalid pointer was provided.*/
-#define TH_FAULT     (-1)
+#define TH_EFAULT     (-1)
 /**An invalid argument was provided.*/
-#define TH_EINVAL    (-10)
+#define TH_EINVAL     (-10)
 /**The contents of the header were incomplete, invalid, or unexpected.*/
-#define TH_BADHEADER (-20)
+#define TH_EBADHEADER (-20)
 /**The header does not belong to a Theora stream.*/
-#define TH_NOTFORMAT (-21)
+#define TH_ENOTFORMAT (-21)
 /**The bitstream version is too high.*/
-#define TH_VERSION   (-22)
+#define TH_EVERSION   (-22)
 /**The specified function is not implemented.*/
-#define TH_IMPL      (-23)
+#define TH_EIMPL      (-23)
 /**There were errors in the video data packet.*/
-#define TH_BADPACKET (-24)
+#define TH_EBADPACKET (-24)
+/**The decoded packet represented a dropped frame.
+   The player can continue to display the current frame, as the contents of the
+    decoded frame buffer have not changed.*/
+#define TH_DUPFRAME   (1)
 /*@}*/
 
 /**The currently defined color space tags.

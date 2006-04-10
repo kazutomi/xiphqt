@@ -39,7 +39,7 @@ static int oc_info_unpack(oggpack_buffer *_opb,th_info *_info){
    (_info->version_minor>TH_VERSION_MINOR||
    _info->version_minor==TH_VERSION_MINOR&&
    _info->version_subminor>TH_VERSION_SUB)){
-    return TH_VERSION;
+    return TH_EVERSION;
   }
   /*Read the encoded frame description.*/
   theora_read(_opb,16,&val);
@@ -66,7 +66,7 @@ static int oc_info_unpack(oggpack_buffer *_opb,th_info *_info){
    _info->pic_width+_info->pic_x>_info->frame_width||
    _info->pic_height+_info->pic_y>_info->frame_height||
    _info->fps_numerator<=0||_info->fps_denominator<=0){
-    return TH_BADHEADER;
+    return TH_EBADHEADER;
   }
   theora_read(_opb,24,&val);
   _info->aspect_numerator=(ogg_uint32_t)val;
@@ -82,7 +82,7 @@ static int oc_info_unpack(oggpack_buffer *_opb,th_info *_info){
   _info->keyframe_granule_shift=(int)val;
   theora_read(_opb,2,&val);
   _info->pixel_fmt=(th_pixel_fmt)val;
-  if(theora_read(_opb,3,&val)<0||val!=0)return TH_BADHEADER;
+  if(theora_read(_opb,3,&val)<0||val!=0)return TH_EBADHEADER;
   return 0;
 }
 
@@ -90,7 +90,7 @@ static int oc_comment_unpack(oggpack_buffer *_opb,th_comment *_tc){
   long len;
   /*Read the vendor string.*/
   len=oc_unpack_length(_opb);
-  if(len<0)return TH_BADHEADER;
+  if(len<0)return TH_EBADHEADER;
   _tc->vendor=_ogg_malloc((size_t)len+1);
   oc_unpack_octets(_opb,_tc->vendor,len);
   _tc->vendor[len]='\0';
@@ -104,14 +104,14 @@ static int oc_comment_unpack(oggpack_buffer *_opb,th_comment *_tc){
      _tc->comments*sizeof(_tc->user_comments[0]));
     for(i=0;i<_tc->comments;i++){
       len=oc_unpack_length(_opb);
-      if(len<0)return TH_BADHEADER;
+      if(len<0)return TH_EBADHEADER;
       _tc->comment_lengths[i]=len;
       _tc->user_comments[i]=_ogg_malloc((size_t)len+1);
       oc_unpack_octets(_opb,_tc->user_comments[i],len);
       _tc->user_comments[i][len]='\0';
     }
   }
-  return theora_read(_opb,0,&len)<0?TH_BADHEADER:0;
+  return theora_read(_opb,0,&len)<0?TH_EBADHEADER:0;
 }
 
 static int oc_setup_unpack(oggpack_buffer *_opb,th_setup_info *_setup){
@@ -143,23 +143,23 @@ static int oc_dec_headerin(oggpack_buffer *_opb,th_info *_info,
   }
   /*Check the codec string.*/
   oc_unpack_octets(_opb,buffer,6);
-  if(memcmp(buffer,"theora",6)!=0)return TH_NOTFORMAT;
+  if(memcmp(buffer,"theora",6)!=0)return TH_ENOTFORMAT;
   switch(packtype){
     /*Codec info header.*/
     case 0x80:{
       /*This should be the first packet, and we should not already be
          initialized.*/
-      if(!_op->b_o_s||_info->frame_width>0)return TH_BADHEADER;
+      if(!_op->b_o_s||_info->frame_width>0)return TH_EBADHEADER;
       ret=oc_info_unpack(_opb,_info);
       if(ret<0)th_info_clear(_info);
       else ret=3;
     }break;
     /*Comment header.*/
     case 0x81:{
-      if(_tc==NULL)return TH_FAULT;
+      if(_tc==NULL)return TH_EFAULT;
       /*We shoud have already decoded the info header, and should not yet have
          decoded the comment header.*/
-      if(_info->frame_width<=0||_tc->vendor!=NULL)return TH_BADHEADER;
+      if(_info->frame_width<=0||_tc->vendor!=NULL)return TH_EBADHEADER;
       ret=oc_comment_unpack(_opb,_tc);
       if(ret<0)th_comment_clear(_tc);
       else ret=2;
@@ -167,11 +167,11 @@ static int oc_dec_headerin(oggpack_buffer *_opb,th_info *_info,
     /*Codec setup header.*/
     case 0x82:{
       oc_setup_info *setup;
-      if(_tc==NULL||_setup==NULL)return TH_FAULT;
+      if(_tc==NULL||_setup==NULL)return TH_EFAULT;
       /*We should have already decoded the info header and the comment header,
          and should not yet have decoded the setup header.*/
       if(_info->frame_width<=0||_tc->vendor==NULL||*_setup!=NULL){
-        return TH_BADHEADER;
+        return TH_EBADHEADER;
       }
       setup=(oc_setup_info *)_ogg_calloc(1,sizeof(*setup));
       ret=oc_setup_unpack(_opb,setup);
@@ -186,7 +186,7 @@ static int oc_dec_headerin(oggpack_buffer *_opb,th_info *_info,
     }break;
     default:{
       /*We don't know what this header is.*/
-      return TH_BADHEADER;
+      return TH_EBADHEADER;
     }break;
   }
   return ret;
@@ -200,8 +200,8 @@ int th_decode_headerin(th_info *_info,th_comment *_tc,
  th_setup_info **_setup,ogg_packet *_op){
   oggpack_buffer opb;
   int            ret;
-  if(_op==NULL)return TH_BADHEADER;
-  if(_info==NULL)return TH_FAULT;
+  if(_op==NULL)return TH_EBADHEADER;
+  if(_info==NULL)return TH_EFAULT;
   oggpackB_readinit(&opb,_op->packet,_op->bytes);
   ret=oc_dec_headerin(&opb,_info,_tc,_setup,_op);
   /*TODO: Clear opb in libogg2.*/

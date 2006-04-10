@@ -93,7 +93,7 @@ int oc_quant_params_unpack(oggpack_buffer *_opb,
        constructed qinfo.*/
     if(qi>63){
       _ogg_free(base_mats);
-      return TH_BADHEADER;
+      return TH_EBADHEADER;
     }
     qranges->nranges=qri;
     qranges->sizes=qrsizes=(int *)_ogg_malloc(qri*sizeof(qrsizes[0]));

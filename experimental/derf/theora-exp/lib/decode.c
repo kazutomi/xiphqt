@@ -261,7 +261,7 @@ static int oc_dec_frame_header_unpack(oc_dec_ctx *_dec){
   long val;
   /*Check to make sure this is a data packet.*/
   theora_read1(&_dec->opb,&val);
-  if(val!=0)return TH_BADPACKET;
+  if(val!=0)return TH_EBADPACKET;
   /*Read in the frame type (I or P).*/
   theora_read1(&_dec->opb,&val);
   _dec->state.frame_type=(int)val;
@@ -286,7 +286,7 @@ static int oc_dec_frame_header_unpack(oc_dec_ctx *_dec){
       Most of the other unused bits in the VP3 headers were eliminated.
       I don't know why these remain.*/
     theora_read(&_dec->opb,3,&val);
-    if(val!=0)return TH_IMPL;
+    if(val!=0)return TH_EIMPL;
   }
   return 0;
 }
@@ -1872,14 +1872,14 @@ int th_decode_ctl(th_dec_ctx *_dec,int _req,void *_buf,
  size_t _buf_sz){
   switch(_req){
     case TH_DECCTL_GET_PPLEVEL_MAX:{
-      if(_dec==NULL||_buf==NULL)return TH_FAULT;
+      if(_dec==NULL||_buf==NULL)return TH_EFAULT;
       if(_buf_sz!=sizeof(int))return TH_EINVAL;
       (*(int *)_buf)=OC_PP_LEVEL_MAX;
       return 0;
     }break;
     case TH_DECCTL_SET_PPLEVEL:{
       int pp_level;
-      if(_dec==NULL||_buf==NULL)return TH_FAULT;
+      if(_dec==NULL||_buf==NULL)return TH_EFAULT;
       if(_buf_sz!=sizeof(int))return TH_EINVAL;
       pp_level=*(int *)_buf;
       if(pp_level<0||pp_level>OC_PP_LEVEL_MAX)return TH_EINVAL;
@@ -1888,7 +1888,7 @@ int th_decode_ctl(th_dec_ctx *_dec,int _req,void *_buf,
     }break;
     case TH_DECCTL_SET_GRANPOS:{
       ogg_int64_t granpos;
-      if(_dec==NULL||_buf==NULL)return TH_FAULT;
+      if(_dec==NULL||_buf==NULL)return TH_EFAULT;
       if(_buf_sz!=sizeof(ogg_int64_t))return TH_EINVAL;
       granpos=*(ogg_int64_t *)_buf;
       if(granpos<0)return TH_EINVAL;
@@ -1901,21 +1901,21 @@ int th_decode_ctl(th_dec_ctx *_dec,int _req,void *_buf,
     }break;
     case TH_DECCTL_SET_STRIPE_CB:{
       th_stripe_callback *cb;
-      if(_dec==NULL||_buf==NULL)return TH_FAULT;
+      if(_dec==NULL||_buf==NULL)return TH_EFAULT;
       if(_buf_sz!=sizeof(th_stripe_callback))return TH_EINVAL;
       cb=(th_stripe_callback *)_buf;
       _dec->stripe_cb.ctx=cb->ctx;
       _dec->stripe_cb.stripe_decoded=cb->stripe_decoded;
       return 0;
     }break;
-    default:return TH_IMPL;
+    default:return TH_EIMPL;
   }
 }
 
 int th_decode_packetin(th_dec_ctx *_dec,const ogg_packet *_op,
  ogg_int64_t *_granpos){
   int ret;
-  if(_dec==NULL||_op==NULL)return TH_FAULT;
+  if(_dec==NULL||_op==NULL)return TH_EFAULT;
   /*A completely empty packet indicates a dropped frame and is treated exactly
      like an inter frame with no coded blocks.
     Only proceed if we have a non-empty packet.*/
@@ -1983,8 +1983,8 @@ int th_decode_packetin(th_dec_ctx *_dec,const ogg_packet *_op,
     if(_granpos!=NULL)*_granpos=_dec->state.granpos;
     /*All of the rest of the operations -- DC prediction reversal,
        reconstructing coded fragments, copying uncoded fragments, loop
-       filtering, extending borders, and out-of-loop and post-processing --
-       should be pipelined.
+       filtering, extending borders, and out-of-loop post-processing -- should
+       be pipelined.
       I.e., DC prediction reversal, reconstruction, and uncoded fragment
        copying are done for one or two super block rows, then loop filtering is
        run as far as it can, then bordering copying, then post-processing.
@@ -2096,6 +2096,11 @@ int th_decode_packetin(th_dec_ctx *_dec,const ogg_packet *_op,
       _dec->state.ref_frame_idx[OC_FRAME_PREV]=
        _dec->state.ref_frame_idx[OC_FRAME_SELF];
     }
+#if defined(OC_DUMP_IMAGES)
+    /*Don't dump images for dropped frames.*/
+    oc_state_dump_frame(&_dec->state,OC_FRAME_SELF,"dec");
+#endif
+    return 0;
   }
   else{
     /*Just update the granule position and return.*/
@@ -2104,11 +2109,8 @@ int th_decode_packetin(th_dec_ctx *_dec,const ogg_packet *_op,
      (_dec->state.curframe_num-_dec->state.keyframe_num);
     _dec->state.curframe_num++;
     if(_granpos!=NULL)*_granpos=_dec->state.granpos;
+    return TH_DUPFRAME;
   }
-#if defined(OC_DUMP_IMAGES)
-  oc_state_dump_frame(&_dec->state,OC_FRAME_SELF,"dec");
-#endif
-  return 0;
 }
 
 int th_decode_ycbcr_out(th_dec_ctx *_dec,th_ycbcr_buffer _ycbcr){

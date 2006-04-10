@@ -17,7 +17,7 @@ static void oc_pack_octets(oggpack_buffer *_opb,const char *_buf,int _len){
 
 int th_encode_flushheader(th_enc_ctx *_enc,th_comment *_tc,
  ogg_packet *_op){
-  if(_enc==NULL||_op==NULL)return TH_FAULT;
+  if(_enc==NULL||_op==NULL)return TH_EFAULT;
   switch(_enc->packet_state){
     /*Codec info header.*/
     case OC_PACKET_INFO_HDR:{
@@ -56,7 +56,7 @@ int th_encode_flushheader(th_enc_ctx *_enc,th_comment *_tc,
       const char *vendor;
       int         vendor_len;
       int         i;
-      if(_tc==NULL)return TH_FAULT;
+      if(_tc==NULL)return TH_EFAULT;
       vendor=th_version_string();
       vendor_len=strlen(vendor);
       oggpackB_reset(&_enc->opb);
