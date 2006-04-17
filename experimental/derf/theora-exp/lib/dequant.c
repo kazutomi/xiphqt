@@ -100,7 +100,16 @@ int oc_quant_params_unpack(oggpack_buffer *_opb,
     memcpy(qrsizes,sizes,qri*sizeof(qrsizes[0]));
     qranges->base_matrices=qrbms=(th_quant_base *)_ogg_malloc(
      (qri+1)*sizeof(qrbms[0]));
-    do memcpy(qrbms[qri],base_mats[indices[qri]],sizeof(qrbms[qri]));
+    do{
+      bmi=indices[qri];
+      /*Note: The caller is responsible for cleaning up any partially
+         constructed qinfo.*/
+      if(bmi>=nbase_mats){
+        _ogg_free(base_mats);
+        return TH_EBADHEADER;
+      }
+      memcpy(qrbms[qri],base_mats[bmi],sizeof(qrbms[qri]));
+    }
     while(qri-->0);
   }
   _ogg_free(base_mats);
