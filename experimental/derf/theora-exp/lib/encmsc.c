@@ -20,7 +20,7 @@ static const th_huff_code OC_MODE_CODESB[OC_NMODES]={
 
 /*Initialize the mode scheme chooser.
   This need only be called once per encoder.
-  This is probably the best place to describe the various scheme's Theora uses
+  This is probably the best place to describe the various schemes Theora uses
    to encode macro block modes.
   There are 8 possible schemes.
   Schemes 0-6 use a highly unbalanced Huffman code to code each of the modes.
