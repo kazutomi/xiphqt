@@ -16,7 +16,7 @@
  ********************************************************************/
 
 /**\file
- * The <tt>libtheora</tt> C encoding API.*/
+ * The <tt>libtheoraenc</tt> C encoding API.*/
 
 #if !defined(_O_THEORA_THEORAENC_H_)
 # define _O_THEORA_THEORAENC_H_ (1)
@@ -40,7 +40,7 @@ typedef struct th_vbr_cfg{
    * Valid values range from 0 to 63, inclusive, with higher values giving
    *  higher quality.
    * Note that, in this case, this corresponds to a <em>perceptual</em>
-   *  quality, and does not translate directly into a quantization setting.
+   *  quality, and may not translate directly into a quantization setting.
    * Limits on the admissible quantizers can be controlled below.*/
   int qi;
   /**The minimum quality to use for a keyframe.
@@ -160,8 +160,8 @@ typedef struct th_cqi_cfg{
 /**Gets the maximum speed level.
  * Higher speed levels favor quicker encoding over better quality per bit.
  * Depending on the encoding mode, and the internal algorithms used, quality
- *  may actually improve, but bitrate will also increase, and overall
- *  rate/distortion performance will likely decrease.
+ *  may actually improve, but in this case bitrate will also likely increase.
+ * In any case, overall rate/distortion performance will probably decrease.
  * The maximum value, and the meaning of each value, may change depending on
  *  the current encoding mode (VBR vs. CQI, etc.).
  *
@@ -193,13 +193,13 @@ typedef struct th_cqi_cfg{
  *  encoding mode is chosen.
  *
  * \param[in] _buf <tt>#th_vbr_cfg</tt>: the configuration parameters.
- *                 This may be <tt>NULL</tt>, in which the current VBR
+ *                 This may be <tt>NULL</tt>, in which case the current VBR
  *                  configuration is unchanged.
  *                 The default is to use the QI setting passed in via the
  *                  #th_info struct when the encoder was initialized, with
  *                  a full range of admissible quantizers.
  * \retval OC_EFAULT \a _enc_ctx is <tt>NULL</tt>.
- * \retval TH_EINVAL The configuration parameters  do not meet one of their
+ * \retval TH_EINVAL The configuration parameters do not meet one of their
  *                    stated requirements, \a _buf is <tt>NULL</tt> and
  *                    \a _buf_sz is not zero, or \a _buf is non-<tt>NULL</tt>
  *                    and \a _buf_sz is not <tt>sizeof(#th_vbr_cfg)</tt>.
@@ -284,8 +284,8 @@ extern int th_encode_ctl(th_enc_ctx *_enc,int _req,void *_buf,
  size_t _buf_sz);
 /**Outputs the next header packet.
  * This should be called repeatedly after encoder initialization until it
- *  returns 0 to get all of the header packets, in order, before encoding
- *  actual video data.
+ *  returns 0 in order to get all of the header packets, in order, before
+ *  encoding actual video data.
  * \param _enc      A #th_enc_ctx handle.
  * \param _comments The metadata to place in the comment header, when it is
  *                   encoded.
@@ -293,7 +293,8 @@ extern int th_encode_ctl(th_enc_ctx *_enc,int _req,void *_buf,
  *                  All of the elements of this structure will be set,
  *                   including a pointer to the header data.
  *                  The memory for the header data is owned by
- *                   <tt>libtheora</tt>.
+ *                   <tt>libtheoraenc</tt>, and may be invalidated when the
+ *                   next encoder function is called.
  * \return A positive value indicates that a header packet was successfully
  *          produced.
  * \retval 0        No packet was produced, and no more header packets remain.
@@ -306,15 +307,15 @@ extern int th_encode_flushheader(th_enc_ctx *_enc,
  * \retval 0         Success.
  * \retval TH_FAULT  \a _enc or \a _ycbcr is <tt>NULL</tt>.
  * \retval TH_EINVAL The buffer size does not match the frame size the encoder
- *                    was initialized with, or encoding has already completed.
- */
+ *                    was initialized with, or encoding has already
+ *                    completed.*/
 extern int th_encode_ycbcr_in(th_enc_ctx *_enc,
  th_ycbcr_buffer _ycbcr);
 /**Retrieves encoded video data packets.
  * This should be called repeatedly after each frame is submitted to flush any
  *  encoded packets, until it returns 0.
  * The encoder will not buffer these packets as subsequent frames are
- *  compressed, so a failure to do so function will result in lost video data.
+ *  compressed, so a failure to do so will result in lost video data.
  * \note Currently the encoder operates in a one-frame-in, one-packet-out
  *        manner.
  *       However, this may be changed in the future.
@@ -325,7 +326,9 @@ extern int th_encode_ycbcr_in(th_enc_ctx *_enc,
  * \param _op   An <tt>ogg_packet</tt> structure to fill.
  *              All of the elements of this structure will be set, including a
  *               pointer to the video data.
- *              The memory for the video data is owned by <tt>libtheora</tt>.
+ *              The memory for the video data is owned by
+ *               <tt>libtheoraenc</tt>, and may be invalidated when the next
+ *               encoder function is called.
  * \return A positive value indicates that a video data packet was successfully
  *          produced.
  * \retval 0        No packet was produced, and no more encoded video data

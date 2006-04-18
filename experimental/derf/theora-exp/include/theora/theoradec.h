@@ -16,7 +16,7 @@
  ********************************************************************/
 
 /**\file
- * The <tt>libtheora</tt> C decoding API.*/
+ * The <tt>libtheoradec</tt> C decoding API.*/
 
 #if !defined(_O_THEORA_THEORADEC_H_)
 # define _O_THEORA_THEORADEC_H_ (1)
@@ -59,6 +59,8 @@ extern "C" {
 /**Sets the granule position.
  * Call this after a seek, before decoding the first frame, to ensure that the
  *  proper granule position is returned for all subsequent frames.
+ * If you track timestamps yourself and do not use the granule position
+ *  returned by the decoder, then you need not call this function.
  *
  * \param[in] _buf <tt>ogg_int64_t</tt>: The granule position of the next
  *                  frame.
@@ -72,6 +74,8 @@ extern "C" {
  * You can pass in a #th_stripe_callback with
  *  th_stripe_callback#stripe_decoded set to <tt>NULL</tt> to disable the
  *  callbacks at any point.
+ * Enabling striped decode does not prevent you from calling
+ *  th_decode_ycbcr_out() after the frame is fully decoded.
  *
  * \param[in]  _buf #th_stripe_callback: The callback parameters.
  * \retval TH_EFAULT  \a _dec_ctx or \a _buf is <tt>NULL</tt>.
@@ -120,7 +124,7 @@ typedef void (*th_stripe_decoded_func)(void *_ctx,th_ycbcr_buffer _buf,
 typedef struct{
   /**An application-provided context pointer.
    * This will be passed back verbatim to the application.*/
-  void                       *ctx;
+  void                   *ctx;
   /**The callback function pointer.*/
   th_stripe_decoded_func  stripe_decoded;
 }th_stripe_callback;
@@ -203,7 +207,7 @@ typedef struct th_setup_info th_setup_info;
  *                        of the header data was invalid.
  * \retval TH_EVERSION   The packet data was a Theora info header, but for a
  *                        bitstream version not decodable with this version of
- *                        <tt>libtheora</tt>.
+ *                        <tt>libtheoradec</tt>.
  * \retval TH_ENOTFORMAT The packet was not a Theora header.
  */
 extern int th_decode_headerin(th_info *_info,th_comment *_tc,
@@ -260,11 +264,11 @@ extern int th_decode_packetin(th_dec_ctx *_dec,const ogg_packet *_op,
  *  then the application does not need to call this function.
  * \param _dec   A #th_dec_ctx handle.
  * \param _ycbcr A video buffer structure to fill in.
- *               <tt>libtheora</tt> will fill in all the members of this
+ *               <tt>libtheoradec</tt> will fill in all the members of this
  *                structure, including the pointers to the uncompressed video
  *                data.
  *               The memory for this video data is owned by
- *                <tt>libtheora</tt>.
+ *                <tt>libtheoradec</tt>.
  *               It may be freed or overwritten without notification when
  *                subsequent frames are decoded.
  * \retval 0 Success

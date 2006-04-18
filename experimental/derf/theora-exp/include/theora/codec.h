@@ -19,9 +19,11 @@
  * 
  * \section intro Introduction
  *
- * This is the documentation for the <tt>libtheora</tt> C API.
- * <tt>libtheora</tt> is the reference implementation for
- *  <a href="http://www.theora.org/">Theora</a>, a free video codec.
+ * This is the documentation for the <tt>libtheoradec</tt> and
+ *  <tt>libtheoraenc</tt> C API.
+ * These were written to replace <tt>libtheora</tt>, the current reference
+ *  implementation for <a href="http://www.theora.org/">Theora</a>, a free,
+ *  patent-unencumbered video codec.
  * Theora is derived from On2's VP3 codec with additional features and
  *  integration for Ogg multimedia formats by
  *  <a href="http://www.xiph.org/">the Xiph.Org Foundation</a>.
@@ -31,16 +33,17 @@
  *
  * \subsection Organization
  *
- * <tt>libtheora</tt> is actually subdivided into three separate libraries:
+ * The functions documented here are actually subdivided into two separate
+ *  libraries:
  * - <tt>libtheoraenc</tt>, containing routines exclusive to the encoder.
  *   You must link to this if you use any of the functions listed in
  *    \ref encfuncs.
  * - <tt>libtheoradec</tt>, contains the decoder and shared routines.
  *   You must link to this if you use any of the functions listed in
- *    this API.*/
+ *    this API, i.e., those listed in \ref basefuncs and \ref decfuncs.*/
 
 /**\file
- * The shared <tt>libtheora</tt> C API.*/
+ * The shared <tt>libtheoradec</tt> and <tt>libtheoraenc</tt> C API.*/
 
 #if !defined(_O_THEORA_CODEC_H_)
 # define _O_THEORA_CODEC_H_ (1)
@@ -114,10 +117,9 @@ typedef enum{
  * Each row of pixels is stored contiguously in memory, but successive rows
  *  need not be.
  * Use \a ystride to compute the offset of the next row.
- * The encoder accepts both positive \a ystride values (top-down) and negative
- *  (bottom-up).
- * The decoder currently always generates images with positive strides.
- */
+ * The encoder accepts both positive \a ystride values (top-down in memory) and
+ *  negative (bottom-up in memory).
+ * The decoder currently always generates images with positive strides.*/
 typedef struct{
   /**The width of this plane.*/
   int            width;
@@ -125,7 +127,7 @@ typedef struct{
   int            height;
   /**The offset in bytes between successive rows.*/
   int            ystride;
-  /**A pointer to the first row.*/
+  /**A pointer to the beginning of the first row.*/
   unsigned char *data;
 }th_img_plane;
 
@@ -140,10 +142,10 @@ typedef struct{
  * \note The term YUV often used to describe a colorspace is ambiguous.
  * The exact parameters of the RGB to YUV conversion process aside, in many
  *  contexts the U and V channels actually have opposite meanings.
- * To avoid this confusion, we are explicit: the name of the color channels is
+ * To avoid this confusion, we are explicit: the name of the color channels are
  *  Y'CbCr, and they appear in that order, always.
  * The prime symbol denotes that the Y channel is non-linear.
- * Cb and Cr stand for "Chroma blue" and "Chroma red" respectively.*/
+ * Cb and Cr stand for "Chroma blue" and "Chroma red", respectively.*/
 typedef th_img_plane th_ycbcr_buffer[3];
 
 /**Theora bitstream information.
@@ -155,7 +157,7 @@ typedef th_img_plane th_ycbcr_buffer[3];
  *  #target_bitrate fields.
  * On decode, it is filled in by th_decode_headerin(), and then passed to
  *  th_decode_alloc().
- * 
+ *
  * Encoded Theora frames must be a multiple of 16 in size;
  *  this is what the #frame_width and #frame_height members represent.
  * To handle arbitrary picture sizes, a crop rectangle is specified in the
@@ -170,7 +172,7 @@ typedef th_img_plane th_ycbcr_buffer[3];
  *  data.
  *
  * It is also generally recommended that the offsets and sizes should still be
- *  multiples of 2 to avoid chroma sampling shifts.
+ *  multiples of 2 to avoid chroma sampling shifts when chroma is sub-sampled.
  * See <a href="http://www.theora.org/doc/Theora_I_spec.pdf">the Theora
  *  specification</a>, Section 4.4, for more details.
  *
@@ -179,8 +181,7 @@ typedef th_img_plane th_ycbcr_buffer[3];
  * Note that this refers to the aspect ratio of the individual pixels, not of
  *  the overall frame itself.
  * The frame aspect ratio can be computed from pixel aspect ratio using the
- *  image dimensions.
- */
+ *  image dimensions.*/
 typedef struct{
   /**\name Theora version
    * Bitstream version information.*/
@@ -208,8 +209,10 @@ typedef struct{
   /**The Y offset of the displayed picture.
    * This must be no larger than #frame_height-#pic_height, and
    *  #frame_height-#pic_height-#pic_y must be no larger than 255.
-   * This offset is specified from the top of the image, as this API uses the
-   *  standard graphics left-handed coordinate system.*/
+   * This slightly funny restriction is due to the fact that the offset is
+   *  specified from the top of the image for consistency with the standard
+   *  graphics left-handed coordinate system used throughout this API, while it
+   *  is stored in the encoded stream as an offset from the bottom.*/
   ogg_uint32_t       pic_y;
   /**\name Frame rate
    * The frame rate, as a fraction.
@@ -221,7 +224,11 @@ typedef struct{
   /**\name Aspect ratio
    * The aspect ratio of the pixels.
    * If either value is zero, the aspect ratio is undefined.
-   * If not specified by any external means, 1:1 should be assumed.*/
+   * If not specified by any external means, 1:1 should be assumed.
+   * The aspect ratio of the full picture can be computed as
+   * \code
+   *  aspect_numerator*pic_width/(aspect_denominator*pic_height).
+   * \endcode */
   /*@{*/
   ogg_uint32_t       aspect_numerator;
   ogg_uint32_t       aspect_denominator;
@@ -334,7 +341,7 @@ typedef struct{
    \endcode
 
    \a qti is the quantization type index: 0 for intra, 1 for inter.
-   <tt>ci!=0</tt> is 0 for the DC coefficient and 1 for the AC coefficient.
+   <tt>ci!=0</tt> is 0 for the DC coefficient and 1 for AC coefficients.
    \a qi is the quality index, ranging between 0 (low quality) and 63 (high
     quality).
    \a pli is the color plane index: 0 for Y', 1 for Cb, 2 for Cr.
@@ -349,12 +356,12 @@ typedef struct{
 
    Parameters that can be stored in the bitstream are as follows:
     - The two scale matrices ac_scale and dc_scale.
-      \code 
+      \code
       scale[2][64]={dc_scale,ac_scale}.
       \endcode
     - The base matrices for each \a qi, \a qti and \a pli (up to 384 in all).
       In order to avoid storing a full 384 base matrices, only a sparse set of
-       matrices is stored, and the rest are linearly interpolated.
+       matrices are stored, and the rest are linearly interpolated.
       This is done as follows.
       For each \a qti and \a pli, a series of \a n \a qi ranges is defined.
       The size of each \a qi range can vary arbitrarily, but they must sum to
@@ -406,8 +413,8 @@ typedef struct{
  *  code.
  * There is no requirement that all the tokens in a table have a valid code,
  *  but the current encoder is not optimized to take advantage of this.
- * If there is not at least one table with a code for every token in each of
- *  the five groups of 16 tables, then the encoder may fail to encode certain
+ * If each of the five grouops of 16 tables does not contain at least one table
+ *  with a code for every token, then the encoder may fail to encode certain
  *  frames.
  * The complete table in the first group of 16 does not have to be in the same
  *  place as the complete table in the other groups, but the complete tables in
@@ -463,6 +470,8 @@ extern double th_granule_time(void *_encdec,ogg_int64_t _granpos);
  * This function does no verification beyond checking the packet type bit, so
  *  it should not be used for bitstream identification; use
  *  th_decode_headerin() for that.
+ * As per the Theora specification, an empty (0-byte) packet is treated as a
+ *  data packet (a delta frame with no coded blocks).
  * \param _op An <tt>ogg_packet</tt> containing encoded Theora data.
  * \retval 1 The packet is a header packet
  * \retval 0 The packet is a video data packet.*/
@@ -471,6 +480,8 @@ extern int th_packet_isheader(ogg_packet *_op);
  * This function does no verification beyond checking the packet type and
  *  key frame bits, so it should not be used for bitstream identification; use
  *  th_decode_headerin() for that.
+ * As per the Theora specification, an empty (0-byte) packet is treated as a
+ *  delta frame (with no coded blocks).
  * \param _op An <tt>ogg_packet</tt> containing encoded Theora data.
  * \retval 1  The packet contains a key frame.
  * \retval 0  The packet contains a delta frame.
@@ -522,19 +533,22 @@ extern void th_comment_add_tag(th_comment *_tc,char *_tag,char *_val);
  * \param _tc    An initialized #th_comment structure.
  * \param _tag   The tag to look up.
  * \param _count The instance of the tag.
- *               The same tag can appear  multiple times, each with a distinct
+ *               The same tag can appear multiple times, each with a distinct
  *                value, so an index is required to retrieve them all.
- *               The order these values appear in is significant and should be
- *                preserved.
+ *               The order in which these values appear is significant and
+ *                should be preserved.
  *               Use th_comment_query_count() to get the legal range for
  *                the \a _count parameter.
  * \return A pointer to the queried tag's value.
+ *         This points directly to data in the #th_comment structure.
+ *         It should not be modified or freed by the application, and
+ *          modifications to the structure may invalidate the pointer.
  * \retval NULL If no matching tag is found.*/
 extern char *th_comment_query(th_comment *_tc,char *_tag,int _count);
 /**Look up the number of instances of a tag.
  * Call this first when querying for a specific tag and then iterate over the
  *  number of instances with separate calls to th_comment_query() to
- *   retrieve all instances in order.
+ *  retrieve all the values for that tag in order.
  * \param _tc    An initialized #th_comment structure.
  * \param _tag   The tag to look up.
  * \return The number on instances of this particular tag.*/
