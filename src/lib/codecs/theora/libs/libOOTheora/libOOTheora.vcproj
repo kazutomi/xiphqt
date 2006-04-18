@@ -1193,7 +1193,10 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				Optimization="1"
+				Optimization="2"
+				InlineFunctionExpansion="2"
+				EnableIntrinsicFunctions="true"
+				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories="..\..\..\..\core\ogg;..\libtheora\include;..\..\..\..\core\ogg\libogg\include;..\..\..\..\helper"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;WIN32;NDEBUG;_WINDOWS;_USRDLL;LIBOOTHEORA_EXPORTS;_WIN32_WCE=$(CEVER);UNDER_CE;$(PLATFORMDEFINES);WINCE;$(ARCHFAM);$(_ARCHFAM_)"
 				MinimalRebuild="false"
@@ -1213,7 +1216,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				OutputFile="$(OutDir)/libOOTheora.dll"
-				LinkIncremental="2"
+				LinkIncremental="1"
 				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="false"
 				ProgramDatabaseFile="$(OutDir)/libOOTheora.pdb"
