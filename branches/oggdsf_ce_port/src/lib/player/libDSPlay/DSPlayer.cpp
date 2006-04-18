@@ -575,6 +575,8 @@ bool DSPlayer::loadFile(wstring inFileName)
 	ULONG numRef = 0;
 	//
 
+	bool locDeferWindowSetup = false;
+
 
 	//TODO:::: This should only do this for annodex right now. It should leave alone other
 	//				query URLS\'s.
@@ -719,7 +721,7 @@ bool DSPlayer::loadFile(wstring inFileName)
 					*debugLog<<"Got VMR9 windowless interface"<<endl;
 					mVMR9Window = locVMR9Window;
 					
-					locHR = mVMR9Window->SetVideoClippingWindow(  ((HWND)((int)mWindowHandle)));
+					locHR = mVMR9Window->SetVideoClippingWindow(  ((HWND)(mWindowHandle)));
 					if (locHR == S_OK) {
 						*debugLog<<"Clipping window set"<<endl;
 						RECT locRect;
@@ -751,11 +753,20 @@ bool DSPlayer::loadFile(wstring inFileName)
 				locHR = mGraphBuilder->QueryInterface(IID_IVideoWindow, (void**)&locVideoWindow);
 	
 				if (locHR == S_OK) {
-					*debugLog<<"Got IVideoWindow"<<endl;
+					locDeferWindowSetup = true;
+					//*debugLog<<"Got IVideoWindow"<<endl;
 					mVideoWindow = locVideoWindow;
-					mVideoWindow->put_Owner((int)mWindowHandle);
-					mVideoWindow->SetWindowPosition(mLeft, mTop, mWidth, mHeight);
-					mVideoWindow->put_WindowStyle(WS_CHILD | WS_CLIPCHILDREN);
+					//HRESULT locVHR = S_OK;
+					//locVHR = mVideoWindow->put_Owner((OAHWND)mWindowHandle);
+					//*debugLog<<"Put owner = "<<locVHR<<endl;
+					//locVHR = mVideoWindow->put_WindowStyle(WS_CHILD | WS_CLIPSIBLINGS);
+					//*debugLog<<"Put window style = "<<locVHR<<endl;
+
+					//RECT locRect;
+					//GetClientRect(mWindowHandle, &locRect);
+					//locVHR = mVideoWindow->SetWindowPosition(0, 0, locRect.right, locRect.bottom);
+					//*debugLog<<"Set win pos = "<<locVHR<<endl;
+					
 				}
 				break;
 		}
@@ -917,6 +928,22 @@ bool DSPlayer::loadFile(wstring inFileName)
 
 	
 #endif
+
+	if (locDeferWindowSetup) {
+
+		*debugLog<<"Got IVideoWindow"<<endl;
+		
+		HRESULT locVHR = S_OK;
+		locVHR = mVideoWindow->put_Owner((OAHWND)mWindowHandle);
+		*debugLog<<"Put owner = "<<locVHR<<endl;
+		locVHR = mVideoWindow->put_WindowStyle(WS_CHILD | WS_CLIPSIBLINGS);
+		*debugLog<<"Put window style = "<<locVHR<<endl;
+
+		RECT locRect;
+		GetClientRect(mWindowHandle, &locRect);
+		locVHR = mVideoWindow->SetWindowPosition(0, 0, locRect.right, locRect.bottom);
+		*debugLog<<"Set win pos = "<<locVHR<<endl;
+	}
 
 
 	*debugLog<<"Pre video ifo"<<endl;

@@ -1685,7 +1685,10 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				Optimization="1"
+				Optimization="2"
+				InlineFunctionExpansion="2"
+				EnableIntrinsicFunctions="true"
+				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories="..;..\..\..\helper"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;WIN32;NDEBUG;_WINDOWS;_USRDLL;_WIN32_WCE=$(CEVER);UNDER_CE;$(PLATFORMDEFINES);WINCE;$(ARCHFAM);$(_ARCHFAM_);LIBOOOGG_EXPORTS"
 				MinimalRebuild="false"
@@ -1705,7 +1708,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				OutputFile="$(OutDir)/libOOOgg.dll"
-				LinkIncremental="2"
+				LinkIncremental="1"
 				GenerateDebugInformation="false"
 				ProgramDatabaseFile="$(OutDir)/libOOOgg.pdb"
 				SubSystem="9"

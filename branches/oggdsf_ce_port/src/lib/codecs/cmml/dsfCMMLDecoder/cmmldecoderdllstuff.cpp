@@ -63,7 +63,7 @@ STDAPI DllRegisterServer()
 		L"CMML Decode Filter",							// Filter name.
         NULL,										// Device moniker. 
         &CLSID_LegacyAmFilterCategory,				// Direct Show general category
-        L"CMML Decode Filter",							// Instance data. ???????
+        NULL,							// Instance data. ???????
         &CMMLDecodeFilterReg								// Pointer to filter information.
     );
 
@@ -93,7 +93,7 @@ STDAPI DllUnregisterServer()
 	}
 	
 
-    hr = locFilterMapper->UnregisterFilter(&CLSID_LegacyAmFilterCategory, L"CMML Decode Filter", CLSID_CMMLDecodeFilter);
+    hr = locFilterMapper->UnregisterFilter(&CLSID_LegacyAmFilterCategory, NULL, CLSID_CMMLDecodeFilter);
 
 
 	//
