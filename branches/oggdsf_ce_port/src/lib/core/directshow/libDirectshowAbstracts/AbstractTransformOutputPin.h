@@ -74,6 +74,9 @@ public:
 	virtual HRESULT DeliverEndOfStream(void);
 	virtual HRESULT DeliverEndFlush(void);
 	virtual HRESULT DeliverBeginFlush(void);
+
+	//Temp
+	virtual unsigned long actualBufferCount()		{		return mActualBufferCount;	}
 	
 protected:
 	//Helper methods

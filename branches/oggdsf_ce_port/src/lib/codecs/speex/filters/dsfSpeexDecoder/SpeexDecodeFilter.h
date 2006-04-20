@@ -62,6 +62,10 @@ public:
 	virtual sSpeexFormatBlock* getSpeexFormatBlock();
 	virtual void setSpeexFormat(BYTE* inFormatBlock);
 
+#ifdef WINCE
+	virtual LPAMOVIESETUP_FILTER GetSetupData(); //		{	return (LPAMOVIESETUP_FILTER)&VorbisDecodeFilterReg;	}
+	virtual HRESULT Register();
+#endif
 protected:
 	//Pure Virtuals from AbstracttransformFilter
 	virtual bool ConstructPins();
