@@ -44,54 +44,6 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_78CB361988C2A119353CA3205DA869C2"
-        "OwnerKey" = "8:_07061F9B96124E73928A0D625D4EAC43"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_78CB361988C2A119353CA3205DA869C2"
-        "OwnerKey" = "8:_FC0F711C0A9A47699D526C0B5B30DF9E"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_78CB361988C2A119353CA3205DA869C2"
-        "OwnerKey" = "8:_BC04D4D4A1EE423EBFA34E91DF63319A"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_78CB361988C2A119353CA3205DA869C2"
-        "OwnerKey" = "8:_898F68EFD6EB479185D2277F89249261"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_78CB361988C2A119353CA3205DA869C2"
-        "OwnerKey" = "8:_7CC0F388C7734C2B8ECED59713F156C7"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_78CB361988C2A119353CA3205DA869C2"
-        "OwnerKey" = "8:_78B83888966E4D28897A832EC1CB59EB"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_78CB361988C2A119353CA3205DA869C2"
-        "OwnerKey" = "8:_4811BCC1ADF5454F89B779DF82058CA2"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_78CB361988C2A119353CA3205DA869C2"
-        "OwnerKey" = "8:_3C1ED3991BEE4DE79ABEF31F6AEBC705"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
         "MsmKey" = "8:_7CC0F388C7734C2B8ECED59713F156C7"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -122,8 +74,8 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_EF0A11FDECB40AC0752058C4C404456C"
-        "OwnerKey" = "8:_3C1ED3991BEE4DE79ABEF31F6AEBC705"
+        "MsmKey" = "8:_E3036F3DC7294931BA2ED09C5AFA0761"
+        "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -206,24 +158,6 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{BA458234-9B71-4F46-8107-E91156377184}:_78CB361988C2A119353CA3205DA869C2"
-            {
-            "SourcePath" = "8:Microsoft_VC80_DebugCRT_x86.msm"
-            "TargetName" = "8:Microsoft_VC80_DebugCRT_x86.msm"
-            "Tag" = "8:"
-            "Folder" = "8:_4F94174C36AD4B1B8302678AD372CE00"
-            "Condition" = "8:"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "Register" = "3:0"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:TRUE"
-            "IsolateTo" = "8:"
-            }
             "{BA458234-9B71-4F46-8107-E91156377184}:_99D03DD0E510464783D60DEE08696E18"
             {
             "SourcePath" = "8:V:\\Program Files\\Microsoft Visual Studio 8\\VC\\ce\\Dll\\armv4i\\msvcr80d.dll"
@@ -240,24 +174,6 @@
             "Register" = "3:0"
             "Exclude" = "11:FALSE"
             "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
-            "{BA458234-9B71-4F46-8107-E91156377184}:_EF0A11FDECB40AC0752058C4C404456C"
-            {
-            "SourcePath" = "8:WSOCK32.dll"
-            "TargetName" = "8:WSOCK32.dll"
-            "Tag" = "8:"
-            "Folder" = "8:_4F94174C36AD4B1B8302678AD372CE00"
-            "Condition" = "8:"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "Register" = "3:0"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
         }
@@ -508,6 +424,32 @@
             "OutputConfiguration" = "8:"
             "OutputGroupCanonicalName" = "8:Built"
             "OutputProjectGuid" = "8:{95720FE9-89D5-4DCD-9A75-EE73BDF58AB2}"
+            "ShowKeyOutput" = "11:TRUE"
+                "ExcludeFilters"
+                {
+                }
+            }
+            "{605BE39E-5046-48BD-AEC0-63C3A46626D5}:_E3036F3DC7294931BA2ED09C5AFA0761"
+            {
+            "SourcePath" = "8:..\\..\\src\\lib\\codecs\\speex\\filters\\dsfSpeexDecoder\\Windows Mobile 5.0 Pocket PC SDK (ARMV4I)\\Release_WM5_PPC_ARM\\dsfSpeexDecoder.dll"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_4F94174C36AD4B1B8302678AD372CE00"
+            "Condition" = "8:"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "Register" = "3:0"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            "ProjectOutputGroupRegister" = "3:0"
+            "OutputConfiguration" = "8:"
+            "OutputGroupCanonicalName" = "8:Built"
+            "OutputProjectGuid" = "8:{3FB9B20E-790A-402F-A02C-B0FBDC5938E3}"
             "ShowKeyOutput" = "11:TRUE"
                 "ExcludeFilters"
                 {
@@ -1477,6 +1419,34 @@
                                                 }
                                                 "Values"
                                                 {
+                                                    "{C3684F64-58E2-4092-8E3C-D7483080DE5A}:_022180B9060E4D65A826FEF6CD89F847"
+                                                    {
+                                                    "Name" = "8:IsRendered"
+                                                    "Condition" = "8:"
+                                                    "ValueTypes" = "3:3"
+                                                    "Value" = "3:0"
+                                                    }
+                                                    "{C3684F64-58E2-4092-8E3C-D7483080DE5A}:_104277C8F4E04A428A551D6953EE640F"
+                                                    {
+                                                    "Name" = "8:Direction"
+                                                    "Condition" = "8:"
+                                                    "ValueTypes" = "3:3"
+                                                    "Value" = "3:0"
+                                                    }
+                                                    "{C3684F64-58E2-4092-8E3C-D7483080DE5A}:_8A201885F5D84DB1A94BCB92F0DEE003"
+                                                    {
+                                                    "Name" = "8:AllowedMany"
+                                                    "Condition" = "8:"
+                                                    "ValueTypes" = "3:3"
+                                                    "Value" = "3:0"
+                                                    }
+                                                    "{C3684F64-58E2-4092-8E3C-D7483080DE5A}:_A11F245FFB89448ABBC932A6575EAC26"
+                                                    {
+                                                    "Name" = "8:AllowedZero"
+                                                    "Condition" = "8:"
+                                                    "ValueTypes" = "3:3"
+                                                    "Value" = "3:0"
+                                                    }
                                                 }
                                             }
                                             "{B1EBC968-6B66-4532-A885-748B79AF4477}:_BA2D3D2669184AA898FC168E5A3BC286"
@@ -1521,6 +1491,34 @@
                                                 }
                                                 "Values"
                                                 {
+                                                    "{C3684F64-58E2-4092-8E3C-D7483080DE5A}:_13627F3D5B7545379CA2E4856A14125F"
+                                                    {
+                                                    "Name" = "8:Direction"
+                                                    "Condition" = "8:"
+                                                    "ValueTypes" = "3:3"
+                                                    "Value" = "3:1"
+                                                    }
+                                                    "{C3684F64-58E2-4092-8E3C-D7483080DE5A}:_D4671FD893AE481381E9F1500677F9B0"
+                                                    {
+                                                    "Name" = "8:AllowedMany"
+                                                    "Condition" = "8:"
+                                                    "ValueTypes" = "3:3"
+                                                    "Value" = "3:0"
+                                                    }
+                                                    "{C3684F64-58E2-4092-8E3C-D7483080DE5A}:_DD1220E2360349BE87F2F3BDD4D16C40"
+                                                    {
+                                                    "Name" = "8:AllowedZero"
+                                                    "Condition" = "8:"
+                                                    "ValueTypes" = "3:3"
+                                                    "Value" = "3:0"
+                                                    }
+                                                    "{C3684F64-58E2-4092-8E3C-D7483080DE5A}:_F2CC3D488F734C09BA43B284A5AFB1D3"
+                                                    {
+                                                    "Name" = "8:IsRendered"
+                                                    "Condition" = "8:"
+                                                    "ValueTypes" = "3:3"
+                                                    "Value" = "3:0"
+                                                    }
                                                 }
                                             }
                                         }
