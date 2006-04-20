@@ -42,13 +42,32 @@ CFactoryTemplate g_Templates[] =
 	    &CLSID_SpeexDecodeFilter,				// CLSID
 	    SpeexDecodeFilter::CreateInstance,		// Method to create an instance of Speex Decoder
         NULL,									// Initialization function
+#ifdef WINCE
+		&SpeexDecodeFilterReg
+#else
         NULL									// Set-up information (for filters)
+#endif
+      
     }
 
 };
 
 // Generic way of determining the number of items in the template
 int g_cTemplates = sizeof(g_Templates) / sizeof(g_Templates[0]); 
+
+
+#ifdef WINCE
+LPAMOVIESETUP_FILTER SpeexDecodeFilter::GetSetupData()
+{	
+	return (LPAMOVIESETUP_FILTER)&SpeexDecodeFilterReg;	
+}
+
+HRESULT SpeexDecodeFilter::Register()
+{
+	return CBaseFilter::Register();
+}
+#endif
+
 
 SpeexDecodeFilter::SpeexDecodeFilter()
 	:	AbstractTransformFilter(NAME("Speex Audio Decoder"), CLSID_SpeexDecodeFilter)
