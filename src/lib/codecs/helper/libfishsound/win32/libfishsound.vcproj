@@ -58,7 +58,7 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				OmitFramePointers="true"
-				AdditionalIncludeDirectories="..\include;.;..\..\..\vorbis\libs\libvorbis\include;..\..\..\speex\libs\libspeex\libspeex;..\..\..\..\core\ogg\libogg\include"
+				AdditionalIncludeDirectories="..\include;.;..\..\..\vorbis\libs\libvorbis\include;..\..\..\speex\libs\libspeex\include\speex;..\..\..\..\core\ogg\libogg\include;..\..\..\speex\libs\libspeex\include"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;WIN32;NDEBUG;_WINDOWS;_USRDLL;LIBFISHSOUND_EXPORTS"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -361,7 +361,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\include;.;..\..\..\vorbis\libs\libvorbis\include;..\..\..\speex\libs\libspeex\libspeex;..\..\..\..\core\ogg\libogg\include"
+				AdditionalIncludeDirectories="..\include;.;..\..\..\vorbis\libs\libvorbis\include;..\..\..\speex\libs\libspeex\include\speex;..\..\..\..\core\ogg\libogg\include;..\..\..\speex\libs\libspeex\include"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;WIN32;_DEBUG;_WINDOWS;_USRDLL;LIBFISHSOUND_EXPORTS"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -645,7 +645,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\include;.;..\..\..\vorbis\libs\libvorbis\include;..\..\..\speex\libs\libspeex\libspeex;..\..\..\..\core\ogg\libogg\include"
+				AdditionalIncludeDirectories="..\include;.;..\..\..\vorbis\libs\libvorbis\include;..\..\..\speex\libs\libspeex\include\speex;..\..\..\..\core\ogg\libogg\include;..\..\..\speex\libs\libspeex\include"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;WIN32;_DEBUG;_WINDOWS;_USRDLL;LIBFISHSOUND_EXPORTS"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -929,7 +929,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\include;.;..\..\..\vorbis\libs\libvorbis\include;..\..\..\speex\libs\libspeex\libspeex;..\..\..\..\core\ogg\libogg\include"
+				AdditionalIncludeDirectories="..\include;.;..\..\..\vorbis\libs\libvorbis\include;..\..\..\speex\libs\libspeex\include\speex;..\..\..\..\core\ogg\libogg\include;..\..\..\speex\libs\libspeex\include"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;WIN32;_DEBUG;_WINDOWS;_USRDLL;LIBFISHSOUND_EXPORTS"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -1213,7 +1213,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\include;.;..\..\..\vorbis\libs\libvorbis\include;..\..\..\speex\libs\libspeex\libspeex;..\..\..\..\core\ogg\libogg\include"
+				AdditionalIncludeDirectories="..\include;.;..\..\..\vorbis\libs\libvorbis\include;..\..\..\speex\libs\libspeex\include\speex;..\..\..\..\core\ogg\libogg\include;..\..\..\speex\libs\libspeex\include"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;WIN32;_DEBUG;_WINDOWS;_USRDLL;LIBFISHSOUND_EXPORTS"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
