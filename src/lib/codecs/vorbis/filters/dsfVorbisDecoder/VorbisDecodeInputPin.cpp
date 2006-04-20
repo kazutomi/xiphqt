@@ -61,7 +61,7 @@ VorbisDecodeInputPin::VorbisDecodeInputPin	(		AbstractTransformFilter* inFilter
 	,	mSentStreamOffset(false)
 		
 {
-	debugLog.open(L"\\Storage Card\\vorbinpin.txt", ios_base::out);
+	debugLog.open(L"\\Memory Card\\vorbinpin.txt", ios_base::out);
 	debugLog<<"Pin constructor"<<endl;
 	ConstructCodec();
 	debugLog<<"Pin constructor - post construct codec"<<endl;
@@ -248,7 +248,10 @@ STDMETHODIMP VorbisDecodeInputPin::Receive(IMediaSample* inSample)
 						return locHR;
 					}
 
+					debugLog<<"Sample Size = "<<locSample->GetSize()<<endl;
 					locBytesToCopy = ((mDecodedByteCount - locBytesCopied) <= locSample->GetSize()) ? (mDecodedByteCount - locBytesCopied) : locSample->GetSize();
+					debugLog<<"Filled size = "<<locBytesToCopy<<endl;
+					debugLog<<"Actual Buffer count = "<<mOutputPin->actualBufferCount()<<endl;
 					//locBytesCopied += locBytesToCopy;
 
 					locSampleDuration = (((locBytesToCopy/mFrameSize) * UNITS) / mSampleRate);
