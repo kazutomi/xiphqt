@@ -153,6 +153,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\SpeexDecodeSettings.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\stdafx.cpp"
 				>
 				<FileConfiguration
@@ -180,6 +184,10 @@
 			>
 			<File
 				RelativePath=".\SpeexDecoder.h"
+				>
+			</File>
+			<File
+				RelativePath=".\SpeexDecodeSettings.h"
 				>
 			</File>
 			<File
