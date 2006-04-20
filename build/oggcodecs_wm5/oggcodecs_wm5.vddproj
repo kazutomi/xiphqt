@@ -680,6 +680,17 @@
                                     }
                                 }
                             }
+                            "{B1EBC968-6B66-4532-A885-748B79AF4477}:_ECE052F4956141309C9A9855B5AD5DFA"
+                            {
+                            "Name" = "8:{7605E26C-DE38-4B82-ADD8-FE2568CC0B25}"
+                            "Condition" = "8:"
+                                "Keys"
+                                {
+                                }
+                                "Values"
+                                {
+                                }
+                            }
                         }
                         "Values"
                         {
