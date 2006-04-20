@@ -46,3 +46,4 @@ extern void ogg_mutex_init(ogg_mutex_t *mutex){
 #error "this platform has no threading primitive wrappers in ogg/mutex.c"
 
 #endif
+#endif
