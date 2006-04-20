@@ -1,5 +1,6 @@
 #pragma once
 
+#include "SpeexDecodeSettings.h"
 #include <libOOOgg/dllstuff.h>
 #include <libOOOgg/StampedOggPacket.h>
 extern "C" {
@@ -15,6 +16,7 @@ public:
 	SpeexDecoder(void);
 	~SpeexDecoder(void);
 
+	bool setDecodeParams(SpeexDecodeSettings inSettings);
 	bool decodePacket(StampedOggPacket* inPacket, short* outSamples, unsigned long inBufferSize); 
 
 	int frameSize()	{	return mFrameSize;	}
@@ -28,9 +30,12 @@ protected:
 	int mSampleRate;
 	int mNumFrames;
 	int mNumExtraHeaders;
+	bool mIsVBR;
 
 	SpeexStereoState* mStereoState;
 	SpeexBits mSpeexBits;
 	void* mSpeexState;
+
+	SpeexDecodeSettings mDecoderSettings;
 
 };

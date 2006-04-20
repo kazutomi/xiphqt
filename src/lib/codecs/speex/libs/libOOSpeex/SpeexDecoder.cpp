@@ -8,6 +8,7 @@ SpeexDecoder::SpeexDecoder(void)
 	,	mSampleRate(0)
 	,	mNumFrames(0)
 	,	mNumExtraHeaders(0)
+	,	mIsVBR(false)
 	,	mSpeexState(NULL)
 	,	mStereoState(NULL)
 {
@@ -15,6 +16,15 @@ SpeexDecoder::SpeexDecoder(void)
 
 SpeexDecoder::~SpeexDecoder(void)
 {
+}
+
+bool SpeexDecoder::setDecodeParams(SpeexDecodeSettings inSettings)
+{
+	if (mPacketCount == 0) {
+		mDecoderSettings = inSettings;
+		return true;
+	}
+	return false;
 }
 
 bool SpeexDecoder::decodePacket(StampedOggPacket* inPacket, short* outSamples, unsigned long inBufferSize)
@@ -96,23 +106,29 @@ bool SpeexDecoder::decodeHeader(StampedOggPacket* inPacket)
 		return false;
 	}
 
-	//speex_decoder_ctl(locState, SPEEX_SET_ENH, &mEnableEnhance);
+	speex_decoder_ctl(locState, SPEEX_SET_ENH, &mDecoderSettings.mPerceptualEnhancement);
 	speex_decoder_ctl(locState, SPEEX_GET_FRAME_SIZE, &mFrameSize);
 
 
-	if (mNumChannels == 1) {
+	if (mDecoderSettings.mForceChannels == SpeexDecodeSettings::SPEEX_CHANNEL_FORCE_STEREO) {
 		locCallback.callback_id = SPEEX_INBAND_STEREO;
 		locCallback.func = speex_std_stereo_request_handler;
 		locCallback.data = mStereoState;
 		speex_decoder_ctl(locState, SPEEX_SET_HANDLER, &locCallback);
 	}
 
+	//TODO::: Apply rate forces
 	mSampleRate = locSpeexHeader->rate;
 
 	speex_decoder_ctl(locState, SPEEX_SET_SAMPLING_RATE, &mSampleRate);
 
 	mNumFrames = locSpeexHeader->frames_per_packet;
-	mNumChannels = locSpeexHeader->nb_channels;
+
+	if (mDecoderSettings.mForceChannels == SpeexDecodeSettings::SPEEX_CHANNEL_LEAVE_ALONE) {
+		mNumChannels = locSpeexHeader->nb_channels;
+	}
+
+	mIsVBR = (locSpeexHeader->vbr != 0);
 
 	mNumExtraHeaders = locSpeexHeader->extra_headers;
 
