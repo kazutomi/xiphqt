@@ -1,5 +1,5 @@
 //===========================================================================
-//Copyright (C) 2006 Zentaro Kavanagh
+//Copyright (C) 2003-2006 Zentaro Kavanagh
 //
 //Redistribution and use in source and binary forms, with or without
 //modification, are permitted provided that the following conditions
@@ -42,33 +42,6 @@
 
 unsigned long bytePos;
 
-
-
-
-////This will be called by the callback
-//bool pageCB(OggPage* inOggPage, void*  /* inUserData  ignored */) {
-//	cout<<"Page Location : "<<bytePos;
-//	bytePos += inOggPage->pageSize();
-//	cout<<" to "<<bytePos<<endl;
-//	OggPacket* locPack = NULL;
-//	cout << inOggPage->header()->toString();
-//	cout << "Num Packets : " << inOggPage->numPackets() << endl;;
-//	for (unsigned long i = 0; i < inOggPage->numPackets(); i++) {
-//		locPack = inOggPage->getPacket(i);
-//		cout << "------ Packet  " << i << " (" << locPack->packetSize() << " bytes) -------";
-//		
-//		if (locPack->isContinuation()) {
-//			cout<<"  ** CONT **";
-//		}
-//		if (locPack->isTruncated()) {
-//			cout<<" ** TRUNC **";
-//		}
-//		cout<<endl;
-//		cout << locPack->toPackDumpString();
-//	}
-//	
-//	return true;
-//}
 
 
 #ifdef WIN32
