@@ -27,7 +27,7 @@ bool SpeexDecoder::setDecodeParams(SpeexDecodeSettings inSettings)
 	return false;
 }
 
-bool SpeexDecoder::decodePacket(StampedOggPacket* inPacket, short* outSamples, unsigned long inBufferSize)
+SpeexDecoder::eSpeexResult SpeexDecoder::decodePacket(StampedOggPacket* inPacket, short* outSamples, unsigned long inBufferSize)
 {
 	if (mPacketCount == 0) {
 		mPacketCount++;
@@ -35,11 +35,11 @@ bool SpeexDecoder::decodePacket(StampedOggPacket* inPacket, short* outSamples, u
 	} else if (mPacketCount == 1) {
 		//Comment
 		mPacketCount++;
-		return true;
+		return SPEEX_COMMENT_OK;
 	} else if (mPacketCount < 2+mNumExtraHeaders) {
 		//Ignore
 		mPacketCount++;
-		return true;
+		return SPEEX_EXTRA_HEADER_OK;
 	} else {
 		mPacketCount++;
 
@@ -52,12 +52,12 @@ bool SpeexDecoder::decodePacket(StampedOggPacket* inPacket, short* outSamples, u
 				break;
 			} else if (locRet == -2) {
 				//Corrupted
-				return false;
+				return SPEEX_CORRUPTED_BITSTREAM;
 			}
 
 			if (speex_bits_remaining(&mSpeexBits) < 0) {
 				//Corrupted
-				return false;
+				return SPEEX_CORRUPTED_UNDERFLOW;
 			}
 
 
@@ -65,13 +65,13 @@ bool SpeexDecoder::decodePacket(StampedOggPacket* inPacket, short* outSamples, u
 				speex_decode_stereo_int(outSamples, mFrameSize, mStereoState);
 			}
 		}
-		return true;
+		return SPEEX_DATA_OK;
 
 		
 	}
 }
 
-bool SpeexDecoder::decodeHeader(StampedOggPacket* inPacket)
+SpeexDecoder::eSpeexResult SpeexDecoder::decodeHeader(StampedOggPacket* inPacket)
 {
 
 	SpeexHeader* locSpeexHeader = NULL;
@@ -84,7 +84,7 @@ bool SpeexDecoder::decodeHeader(StampedOggPacket* inPacket)
 
 	if (locSpeexHeader == NULL) {
 		//Can't read header
-		return false;
+		return SPEEX_BAD_HEADER;
 	}
 
 	//Check modes?
@@ -94,7 +94,7 @@ bool SpeexDecoder::decodeHeader(StampedOggPacket* inPacket)
 
 	if (locSpeexHeader->speex_version_id > 1) {
 		//Invalid version
-		return false;
+		return SPEEX_INVALID_SPEEX_VERSION;
 	}
 
 	//TODO::: Other bitstream version checks
@@ -103,7 +103,7 @@ bool SpeexDecoder::decodeHeader(StampedOggPacket* inPacket)
 
 	if (locState == NULL) {
 		//Init failed
-		return false;
+		return SPEEX_INITIALISATION_FAILED;
 	}
 
 	speex_decoder_ctl(locState, SPEEX_SET_ENH, &mDecoderSettings.mPerceptualEnhancement);
@@ -137,7 +137,7 @@ bool SpeexDecoder::decodeHeader(StampedOggPacket* inPacket)
 
 	speex_bits_init(&mSpeexBits);
 
-	return true;
+	return SPEEX_HEADER_OK;
 
 
 }

@@ -16,13 +16,26 @@ public:
 	SpeexDecoder(void);
 	~SpeexDecoder(void);
 
+	enum eSpeexResult {
+		SPEEX_DATA_OK,
+		SPEEX_HEADER_OK,
+		SPEEX_COMMENT_OK,
+		SPEEX_EXTRA_HEADER_OK,
+		SPEEX_BAD_HEADER = 64,
+		SPEEX_CORRUPTED_BITSTREAM,
+		SPEEX_CORRUPTED_UNDERFLOW,
+		SPEEX_INVALID_SPEEX_VERSION,
+		SPEEX_INITIALISATION_FAILED,
+
+	};
+
 	bool setDecodeParams(SpeexDecodeSettings inSettings);
-	bool decodePacket(StampedOggPacket* inPacket, short* outSamples, unsigned long inBufferSize); 
+	eSpeexResult decodePacket(StampedOggPacket* inPacket, short* outSamples, unsigned long inBufferSize); 
 
 	int frameSize()	{	return mFrameSize;	}
 	int numChannels()	{	return mNumChannels;	}
 protected:
-	bool decodeHeader(StampedOggPacket* inPacket);
+	eSpeexResult decodeHeader(StampedOggPacket* inPacket);
 	unsigned long mPacketCount;
 
 	int mFrameSize;
