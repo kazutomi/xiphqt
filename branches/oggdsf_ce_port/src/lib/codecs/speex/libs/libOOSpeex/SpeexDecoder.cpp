@@ -10,8 +10,13 @@ SpeexDecoder::SpeexDecoder(void)
 	,	mNumExtraHeaders(0)
 	,	mIsVBR(false)
 	,	mSpeexState(NULL)
-	,	mStereoState(NULL)
+	//,	mStereoState(NULL)
 {
+	//mStereoState = SPEEX_STEREO_STATE_INIT;
+	mStereoState.balance = 1.0;
+	mStereoState.e_ratio = 0.5;
+	mStereoState.smooth_left = 1.0;
+	mStereoState.smooth_right = 1.0;
 }
 
 SpeexDecoder::~SpeexDecoder(void)
@@ -65,7 +70,7 @@ SpeexDecoder::eSpeexResult SpeexDecoder::decodePacket(		const unsigned char* inP
 
 
 			if (mNumChannels == 2) {
-				speex_decode_stereo_int(outSamples, mFrameSize, mStereoState);
+				speex_decode_stereo_int(outSamples, mFrameSize, &mStereoState);
 			}
 		}
 		return SPEEX_DATA_OK;
@@ -116,7 +121,7 @@ SpeexDecoder::eSpeexResult SpeexDecoder::decodeHeader(const unsigned char* inPac
 	if (mDecoderSettings.mForceChannels == SpeexDecodeSettings::SPEEX_CHANNEL_FORCE_STEREO) {
 		locCallback.callback_id = SPEEX_INBAND_STEREO;
 		locCallback.func = speex_std_stereo_request_handler;
-		locCallback.data = mStereoState;
+		locCallback.data = &mStereoState;
 		speex_decoder_ctl(locState, SPEEX_SET_HANDLER, &locCallback);
 	}
 

@@ -54,7 +54,7 @@ protected:
 	int mNumExtraHeaders;
 	bool mIsVBR;
 
-	SpeexStereoState* mStereoState;
+	SpeexStereoState mStereoState;
 	SpeexBits mSpeexBits;
 	void* mSpeexState;
 
