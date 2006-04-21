@@ -44,10 +44,12 @@ using namespace std;
 
 #include "VorbisDecodeFilter.h"
 
-extern "C" {
+#include "VorbisDecoder.h"
+
+//extern "C" {
 //#include <fishsound/fishsound.h>
-#include "fish_cdecl.h"
-}
+//#include "fish_cdecl.h"
+//}
 
 class VorbisDecodeOutputPin;
 
@@ -61,7 +63,7 @@ public:
 	STDMETHODIMP NonDelegatingQueryInterface(REFIID riid, void **ppv);
 	VorbisDecodeInputPin(AbstractTransformFilter* inFilter, CCritSec* inFilterLock, AbstractTransformOutputPin* inOutputPin, vector<CMediaType*> inAcceptableMediaTypes);
 	virtual ~VorbisDecodeInputPin(void);
-	static int __cdecl VorbisDecoded (FishSound* inFishSound, float** inPCM, long inFrames, void* inThisPointer);
+	//static int __cdecl VorbisDecoded (FishSound* inFishSound, float** inPCM, long inFrames, void* inThisPointer);
 
 	virtual HRESULT SetMediaType(const CMediaType* inMediaType);
 	virtual HRESULT CheckMediaType(const CMediaType *inMediaType);
@@ -114,16 +116,23 @@ protected:
 	virtual void DestroyCodec();
 	virtual HRESULT TransformData(unsigned char* inBuf, long inNumBytes);
 
-	HRESULT mHR;
-	bool mBegun;
+	
 
-	FishSound* mFishSound;
-	FishSoundInfo mFishInfo; 
+	//TODO::: Are these needed?
+	bool mBegun;
+	unsigned int mUptoFrame;
+	HRESULT mHR;
+	//FishSound* mFishSound;
+	//FishSoundInfo mFishInfo; 
 
 	int mNumChannels;
 	int mFrameSize;
 	int mSampleRate;
-	unsigned int mUptoFrame;
+
+	VorbisDecoder mVorbisDecoder;
+
+
+	
 
 	unsigned char* mDecodedBuffer;
 	unsigned long mDecodedByteCount;
