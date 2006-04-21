@@ -16,11 +16,15 @@ SpeexDecWriter::~SpeexDecWriter(void)
 
 bool SpeexDecWriter::acceptStampedOggPacket(StampedOggPacket* inPacket)
 {
-	SpeexDecoder::eSpeexResult locRes = mSpeexDecoder.decodePacket(inPacket, mOutputBuffer, OUTPUT_BUFFER_SIZE);
+	SpeexDecoder::eSpeexResult locRes = mSpeexDecoder.decodePacket(		inPacket->packetData()
+																	,	inPacket->packetSize()
+																	,	mOutputBuffer
+																	,	OUTPUT_BUFFER_SIZE);
+
 	if (locRes == SpeexDecoder::SPEEX_DATA_OK) {
 		mOutputFile.write((char*)mOutputBuffer, mSpeexDecoder.frameSize() * mSpeexDecoder.numChannels() * sizeof(short));
 		return true;
-	else if (locRes < SpeexDecoder::SPEEX_ERROR_MIN) {
+	} else if (locRes < SpeexDecoder::SPEEX_ERROR_MIN) {
 		return true;
 	} else {
 		return false;
