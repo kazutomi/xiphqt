@@ -47,7 +47,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\..\core\directshow\BaseClasses;..\..\..\..\core\directshow\libDirectshowAbstracts;..\..\..\..\core\ogg;..\..\..\helper\libfishsound\include;..\..\..\..\core\directshow\dsfSeeking;..\..\..\..\helper;..\..\..\..\core\directshow\dsfOggDemux2"
+				AdditionalIncludeDirectories="..\..\..\..\core\directshow\BaseClasses;..\..\..\..\core\directshow\libDirectshowAbstracts;..\..\..\..\core\ogg;..\..\..\..\helper;..\..\..\..\core\directshow\dsfOggDemux2;..\..\libs\libOOSpeex;..\..\libs\libspeex\include"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;WIN32;_DEBUG;_WINDOWS;_USRDLL;DSFSPEEXDECODER_EXPORTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -301,7 +301,7 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				OmitFramePointers="true"
-				AdditionalIncludeDirectories="..\..\..\..\core\directshow\BaseClasses;..\..\..\..\core\directshow\libDirectshowAbstracts;..\..\..\..\core\ogg;..\..\..\helper\libfishsound\include;..\..\..\..\core\directshow\dsfSeeking;..\..\..\..\helper;..\..\..\..\core\directshow\dsfOggDemux2"
+				AdditionalIncludeDirectories="..\..\..\..\core\directshow\BaseClasses;..\..\..\..\core\directshow\libDirectshowAbstracts;..\..\..\..\core\ogg;..\..\..\..\helper;..\..\..\..\core\directshow\dsfOggDemux2;..\..\libs\libOOSpeex;..\..\libs\libspeex\include"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;WIN32;NDEBUG;_WINDOWS;_USRDLL;DSFSPEEXDECODER_EXPORTS"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -565,7 +565,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\..\core\directshow\BaseClasses;..\..\..\..\core\directshow\libDirectshowAbstracts;..\..\..\..\core\ogg;..\..\..\helper\libfishsound\include;..\..\..\..\core\directshow\dsfSeeking;..\..\..\..\helper;..\..\..\..\core\directshow\dsfOggDemux2"
+				AdditionalIncludeDirectories="..\..\..\..\core\directshow\BaseClasses;..\..\..\..\core\directshow\libDirectshowAbstracts;..\..\..\..\core\ogg;..\..\..\..\helper;..\..\..\..\core\directshow\dsfOggDemux2;..\..\libs\libOOSpeex;..\..\libs\libspeex\include"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;WIN32;_DEBUG;_WINDOWS;_USRDLL;DSFSPEEXDECODER_EXPORTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -814,7 +814,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\..\core\directshow\BaseClasses;..\..\..\..\core\directshow\libDirectshowAbstracts;..\..\..\..\core\ogg;..\..\..\helper\libfishsound\include;..\..\..\..\core\directshow\dsfSeeking;..\..\..\..\helper;..\..\..\..\core\directshow\dsfOggDemux2"
+				AdditionalIncludeDirectories="..\..\..\..\core\directshow\BaseClasses;..\..\..\..\core\directshow\libDirectshowAbstracts;..\..\..\..\core\ogg;..\..\..\..\helper;..\..\..\..\core\directshow\dsfOggDemux2;..\..\libs\libOOSpeex;..\..\libs\libspeex\include"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;WIN32;_DEBUG;_WINDOWS;_USRDLL;DSFSPEEXDECODER_EXPORTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -1064,7 +1064,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\..\core\directshow\BaseClasses;..\..\..\..\core\directshow\libDirectshowAbstracts;..\..\..\..\core\ogg;..\..\..\helper\libfishsound\include;..\..\..\..\core\directshow\dsfSeeking;..\..\..\..\helper;..\..\..\..\core\directshow\dsfOggDemux2"
+				AdditionalIncludeDirectories="..\..\..\..\core\directshow\BaseClasses;..\..\..\..\core\directshow\libDirectshowAbstracts;..\..\..\..\core\ogg;..\..\..\..\helper;..\..\..\..\core\directshow\dsfOggDemux2;..\..\libs\libOOSpeex;..\..\libs\libspeex\include"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;WIN32;_DEBUG;_WINDOWS;_USRDLL;DSFSPEEXDECODER_EXPORTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"

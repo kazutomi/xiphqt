@@ -37,10 +37,12 @@
 
 #include "SpeexDecodeFilter.h"
 
-extern "C" {
-//#include <fishsound/fishsound.h>
-#include "fish_cdecl.h"
-}
+#include "SpeexDecoder.h"
+
+//extern "C" {
+////#include <fishsound/fishsound.h>
+//#include "fish_cdecl.h"
+//}
 
 class SpeexDecodeOutputPin;
 
@@ -54,7 +56,7 @@ public:
 	SpeexDecodeInputPin(AbstractTransformFilter* inFilter, CCritSec* inFilterLock, AbstractTransformOutputPin* inOutputPin, vector<CMediaType*> inAcceptableMediaTypes);
 	virtual ~SpeexDecodeInputPin(void);
 	
-	static int __cdecl SpeexDecoded (FishSound* inFishSound, float** inPCM, long inFrames, void* inThisPointer);
+	//static int __cdecl SpeexDecoded (FishSound* inFishSound, float** inPCM, long inFrames, void* inThisPointer);
 
 
 	virtual HRESULT SetMediaType(const CMediaType* inMediaType);
@@ -85,18 +87,22 @@ protected:
 	virtual void DestroyCodec();
 	virtual HRESULT TransformData(unsigned char* inBuf, long inNumBytes);
 
-	FishSound* mFishSound;
-	FishSoundInfo mFishInfo; 
+	//FSN:::
+	//FishSound* mFishSound;
+	//FishSoundInfo mFishInfo; 
 
-	int mNumChannels;
-	int mFrameSize;
-	int mSampleRate;
+	SpeexDecoder mSpeexDecoder;
+
+	unsigned long mNumChannels;
+	unsigned long mSampleFrameSize;
+	unsigned long mSpeexFrameSize;
+	unsigned long mSampleRate;
+
+	//TODO::: NEEDED???
 	unsigned int mUptoFrame;
-
 	bool mBegun;
 
 	unsigned char* mDecodedBuffer;
-
 	unsigned long mDecodedByteCount;
 
 	enum eSpeexSetupState {
