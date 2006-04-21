@@ -58,7 +58,8 @@ VorbisDecoder::eVorbisResult VorbisDecoder::decodeCodebook()
 VorbisDecoder::eVorbisResult VorbisDecoder::decodePacket(		const unsigned char* inPacket
 											,	unsigned long inPacketSize
 											,	short* outSamples
-											,	unsigned long inOutputBufferSize)
+											,	unsigned long inOutputBufferSize
+											,	unsigned long* outNumSamples)
 {
 	mWorkPacket.b_o_s = 0;
 	mWorkPacket.bytes = inPacketSize;
@@ -66,6 +67,8 @@ VorbisDecoder::eVorbisResult VorbisDecoder::decodePacket(		const unsigned char* 
 	mWorkPacket.granulepos = 0;
 	mWorkPacket.packet = (unsigned char*)inPacket;		//Naughty!
 	mWorkPacket.packetno = mPacketCount;
+
+	*outNumSamples = 0;
 
 	if (mPacketCount == 0) {
 		mPacketCount++;
@@ -121,6 +124,7 @@ VorbisDecoder::eVorbisResult VorbisDecoder::decodePacket(		const unsigned char* 
 				}
 
 				vorbis_synthesis_read(&mVorbisState, locNumSamples);
+				*outNumSamples = locNumSamples;
 			}
 
 		}

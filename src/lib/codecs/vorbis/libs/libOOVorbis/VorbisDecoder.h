@@ -27,7 +27,8 @@ public:
 	eVorbisResult decodePacket(		const unsigned char* inPacket
 								,	unsigned long inPacketSize
 								,	short* outSamples
-								,	unsigned long inOutputBufferSize); 
+								,	unsigned long inOutputBufferSize
+								,	unsigned long* outNumSamples); 
 
 	int numChannels()	{	return mNumChannels;	}
 	int sampleRate()	{	return mSampleRate;		}
