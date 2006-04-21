@@ -29,14 +29,14 @@
 //SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //===========================================================================
 
-// testOOSpeexDec.cpp : Defines the entry point for the console application.
+// testOOVorbisDec.cpp : Defines the entry point for the console application.
 //
 
 #include "stdafx.h"
 #include <libOOOgg/libOOOgg.h>
 #include <libOOOgg/dllstuff.h>
 
-#include "SpeexDecWriter.h"
+#include "VorbisDecWriter.h"
 #include <iostream>
 #include <fstream>
 
@@ -60,14 +60,14 @@ int main (int argc, char * argv[])
 	bytePos = 0;
 
 	if (argc < 3) {
-		cout<<"Usage : testOOSpeexDec <in speex filename> <out pcm dump>"<<endl;
+		cout<<"Usage : testOOVorbisDec <in vorbis filename> <out pcm dump>"<<endl;
 	} else {
 		OggDataBuffer testOggBuff;
 		
 		//testOggBuff.registerStaticCallback(&pageCB, NULL);
 		string locFN = argv[2];
-		SpeexDecWriter locSpeexDec(locFN);
-		testOggBuff.registerVirtualCallback(&locSpeexDec);
+		VorbisDecWriter locVorbisDec(locFN);
+		testOggBuff.registerVirtualCallback(&locVorbisDec);
 
 		fstream testFile;
 		testFile.open(argv[1], ios_base::in | ios_base::binary);
