@@ -27,11 +27,14 @@ bool SpeexDecoder::setDecodeParams(SpeexDecodeSettings inSettings)
 	return false;
 }
 
-SpeexDecoder::eSpeexResult SpeexDecoder::decodePacket(StampedOggPacket* inPacket, short* outSamples, unsigned long inBufferSize)
+SpeexDecoder::eSpeexResult SpeexDecoder::decodePacket(		const unsigned char* inPacket
+														,	unsigned long inPacketSize
+														,	short* outSamples
+														,	unsigned long inOutputBufferSize)
 {
 	if (mPacketCount == 0) {
 		mPacketCount++;
-		return decodeHeader(inPacket);
+		return decodeHeader(inPacket, inPacketSize);
 	} else if (mPacketCount == 1) {
 		//Comment
 		mPacketCount++;
@@ -43,7 +46,7 @@ SpeexDecoder::eSpeexResult SpeexDecoder::decodePacket(StampedOggPacket* inPacket
 	} else {
 		mPacketCount++;
 
-		speex_bits_read_from(&mSpeexBits, (char*)inPacket->packetData(), inPacket->packetSize());
+		speex_bits_read_from(&mSpeexBits, (char*)inPacket, inPacketSize);
 		
 		for (int frame = 0; frame < mNumFrames; frame++) {
 			int locRet = speex_decode_int(mSpeexState, &mSpeexBits, outSamples);
@@ -71,7 +74,7 @@ SpeexDecoder::eSpeexResult SpeexDecoder::decodePacket(StampedOggPacket* inPacket
 	}
 }
 
-SpeexDecoder::eSpeexResult SpeexDecoder::decodeHeader(StampedOggPacket* inPacket)
+SpeexDecoder::eSpeexResult SpeexDecoder::decodeHeader(const unsigned char* inPacket, unsigned long inPacketSize)
 {
 
 	SpeexHeader* locSpeexHeader = NULL;
@@ -80,7 +83,7 @@ SpeexDecoder::eSpeexResult SpeexDecoder::decodeHeader(StampedOggPacket* inPacket
 	void* locState = NULL;
 	SpeexCallback locCallback;
 
-	locSpeexHeader = speex_packet_to_header((char*)inPacket->packetData(), inPacket->packetSize());
+	locSpeexHeader = speex_packet_to_header((char*)inPacket, inPacketSize);
 
 	if (locSpeexHeader == NULL) {
 		//Can't read header

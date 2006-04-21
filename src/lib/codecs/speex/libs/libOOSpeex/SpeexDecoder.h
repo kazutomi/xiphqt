@@ -1,13 +1,17 @@
 #pragma once
 
 #include "SpeexDecodeSettings.h"
-#include <libOOOgg/dllstuff.h>
-#include <libOOOgg/StampedOggPacket.h>
+//#include <libOOOgg/dllstuff.h>
+//#include <libOOOgg/StampedOggPacket.h>
 extern "C" {
-#include "speex/speex.h"
-#include "speex/speex_header.h"
-#include "speex/speex_callbacks.h"
-#include "speex/speex_stereo.h"
+//#include "speex/speex.h"
+#include "speex_cdecl.h"
+//#include "speex/speex_header.h"
+#include "speex_header_cdecl.h"
+//#include "speex/speex_callbacks.h"
+#include "speex_callbacks_cdecl.h"
+//#include "speex/speex_stereo.h"
+#include "speex_stereo_cdecl.h"
 }
 
 class SpeexDecoder
@@ -31,12 +35,16 @@ public:
 	};
 
 	bool setDecodeParams(SpeexDecodeSettings inSettings);
-	eSpeexResult decodePacket(StampedOggPacket* inPacket, short* outSamples, unsigned long inBufferSize); 
+	eSpeexResult decodePacket(		const unsigned char* inPacket
+								,	unsigned long inPacketSize
+								,	short* outSamples
+								,	unsigned long inOutputBufferSize); 
 
-	int frameSize()	{	return mFrameSize;	}
+	int frameSize()		{	return mFrameSize;		}
 	int numChannels()	{	return mNumChannels;	}
+	int sampleRate()	{	return mSampleRate;		}
 protected:
-	eSpeexResult decodeHeader(StampedOggPacket* inPacket);
+	eSpeexResult decodeHeader(const unsigned char* inPacket, unsigned long inPacketSize);
 	unsigned long mPacketCount;
 
 	int mFrameSize;
