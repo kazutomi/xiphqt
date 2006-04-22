@@ -32,8 +32,17 @@
 #include "stdafx.h"
 #include "Vorbisdecodeoutputpin.h"
 
-VorbisDecodeOutputPin::VorbisDecodeOutputPin(VorbisDecodeFilter* inParentFilter, CCritSec* inFilterLock, vector<CMediaType*> inAcceptableMediaTypes)
-	: AbstractTransformOutputPin(inParentFilter, inFilterLock,NAME("VorbisDecodeOutputPin"), L"PCM Out", 65536, 20, inAcceptableMediaTypes)
+VorbisDecodeOutputPin::VorbisDecodeOutputPin(		VorbisDecodeFilter* inParentFilter
+												,	CCritSec* inFilterLock
+												,	vector<CMediaType*> inAcceptableMediaTypes)
+
+	:	AbstractTransformOutputPin(		inParentFilter
+									,	inFilterLock
+									,	NAME("VorbisDecodeOutputPin")
+									,	L"PCM Out"
+									,	65536
+									,	20
+									,	inAcceptableMediaTypes)
 {
 
 		
