@@ -1,5 +1,5 @@
 //===========================================================================
-//Copyright (C) 2003, 2004 Zentaro Kavanagh
+//Copyright (C) 2003-2006 Zentaro Kavanagh
 //
 //Redistribution and use in source and binary forms, with or without
 //modification, are permitted provided that the following conditions
@@ -56,6 +56,7 @@ CFactoryTemplate g_Templates[] =
 int g_cTemplates = sizeof(g_Templates) / sizeof(g_Templates[0]); 
 
 
+
 #ifdef WINCE
 LPAMOVIESETUP_FILTER SpeexDecodeFilter::GetSetupData()
 {	
@@ -99,9 +100,6 @@ bool SpeexDecodeFilter::ConstructPins()
 	//Setup the media Types for the input pin.
 	locAcceptMediaType = NULL;
 	locAcceptMediaType = new CMediaType(&MEDIATYPE_OggPacketStream);			//Deleted by pin
-
-	//locAcceptMediaType->subtype = MEDIASUBTYPE_Speex;
-	//locAcceptMediaType->formattype = FORMAT_Speex;
 
 	locAcceptMediaType->subtype = MEDIASUBTYPE_None;
 	locAcceptMediaType->formattype = FORMAT_OggIdentHeader;
