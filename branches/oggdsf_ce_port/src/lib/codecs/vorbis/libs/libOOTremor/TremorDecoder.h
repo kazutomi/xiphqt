@@ -38,7 +38,13 @@ protected:
 	eVorbisResult decodeComment();
 	eVorbisResult decodeCodebook();
 
-	short clip16(int inVal)		{	return (short)((inVal > 32767) ? (32767) : ((inVal < -32768) ? (-32768) : (inVal)));	}
+	short clip16(int inVal)		{	
+		//return (short)((inVal > 32767) ? (32767) : ((inVal < -32768) ? (-32768) : (inVal)));	
+		int retVal = inVal;
+		retVal -= ((inVal <= 32767) - 1) & (inVal - 32767);
+		retVal -= ((inVal >= -32768) -1) & (inVal + 32768);
+		return retVal;
+	}
 	unsigned long mPacketCount;
 
 	int mNumChannels;
