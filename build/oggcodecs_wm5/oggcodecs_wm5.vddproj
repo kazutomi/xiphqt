@@ -20,6 +20,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_2CCC3C09CD9E45FD8DD46EAE62034604"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_39EDB4404AB742F1971B32144EDFF907"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -27,12 +33,6 @@
         "Entry"
         {
         "MsmKey" = "8:_3C1ED3991BEE4DE79ABEF31F6AEBC705"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_4811BCC1ADF5454F89B779DF82058CA2"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -247,6 +247,32 @@
                 {
                 }
             }
+            "{605BE39E-5046-48BD-AEC0-63C3A46626D5}:_2CCC3C09CD9E45FD8DD46EAE62034604"
+            {
+            "SourcePath" = "8:..\\..\\src\\lib\\codecs\\vorbis\\filters\\dsfVorbisDecoder\\Windows Mobile 5.0 Pocket PC SDK (ARMV4I)\\Release_WM5_PPC_ARM\\dsfVorbisDecoder.dll"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_4F94174C36AD4B1B8302678AD372CE00"
+            "Condition" = "8:"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "Register" = "3:0"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            "ProjectOutputGroupRegister" = "3:0"
+            "OutputConfiguration" = "8:"
+            "OutputGroupCanonicalName" = "8:Built"
+            "OutputProjectGuid" = "8:{C2B7DBC0-5AB3-46F5-90E9-05EF1B230AE2}"
+            "ShowKeyOutput" = "11:TRUE"
+                "ExcludeFilters"
+                {
+                }
+            }
             "{605BE39E-5046-48BD-AEC0-63C3A46626D5}:_3C1ED3991BEE4DE79ABEF31F6AEBC705"
             {
             "SourcePath" = "8:..\\..\\src\\lib\\core\\directshow\\dsfOggDemux2\\Windows Mobile 5.0 Pocket PC SDK (ARMV4I)\\Release_WM5_PPC_ARM\\dsfOggDemux2.dll"
@@ -268,32 +294,6 @@
             "OutputConfiguration" = "8:"
             "OutputGroupCanonicalName" = "8:Built"
             "OutputProjectGuid" = "8:{304B710A-7355-471C-A4A8-9E8F6D640E6D}"
-            "ShowKeyOutput" = "11:TRUE"
-                "ExcludeFilters"
-                {
-                }
-            }
-            "{605BE39E-5046-48BD-AEC0-63C3A46626D5}:_4811BCC1ADF5454F89B779DF82058CA2"
-            {
-            "SourcePath" = "8:..\\..\\src\\lib\\codecs\\vorbis\\filters\\dsfVorbisDecoder\\Windows Mobile 5.0 Pocket PC SDK (ARMV4I)\\Release_WM5_PPC_ARM\\dsfVorbisDecoder.dll"
-            "TargetName" = "8:"
-            "Tag" = "8:"
-            "Folder" = "8:_4F94174C36AD4B1B8302678AD372CE00"
-            "Condition" = "8:"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "Register" = "3:0"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            "ProjectOutputGroupRegister" = "3:0"
-            "OutputConfiguration" = "8:"
-            "OutputGroupCanonicalName" = "8:Built"
-            "OutputProjectGuid" = "8:{C2B7DBC0-5AB3-46F5-90E9-05EF1B230AE2}"
             "ShowKeyOutput" = "11:TRUE"
                 "ExcludeFilters"
                 {
