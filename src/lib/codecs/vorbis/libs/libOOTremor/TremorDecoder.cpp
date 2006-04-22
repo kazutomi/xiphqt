@@ -71,7 +71,7 @@ TremorDecoder::eVorbisResult TremorDecoder::decodePacket(		const unsigned char* 
 	//mWorkPacket.packet = (unsigned char*)inPacket;		//Naughty!
 	mWorkPacket.packet->buffer->data = (unsigned char*)inPacket;		//Naughty!
 	mWorkPacket.packet->buffer->ptr.next = NULL;
-	mWorkPacket.packet->buffer->refcount = 0;
+	mWorkPacket.packet->buffer->refcount = 1;
 	mWorkPacket.packet->buffer->size = inPacketSize;
 	mWorkPacket.packet->begin = 0;
 	mWorkPacket.packet->length = inPacketSize;
@@ -127,7 +127,7 @@ TremorDecoder::eVorbisResult TremorDecoder::decodePacket(		const unsigned char* 
 					ogg_int32_t* locOneChannel = locPCM[chan];
 					for (int i = 0; i < locNumSamples; i++) {
 						//locTemp = (int)(locOneChannel[i] * 32767.0f);
-						*locOutBuffer = clip16(locOneChannel[i]);
+						*locOutBuffer = clip16(locOneChannel[i]>>9);
 
 						//Jump forward numChannels in the buffer
 						locOutBuffer += mNumChannels;
