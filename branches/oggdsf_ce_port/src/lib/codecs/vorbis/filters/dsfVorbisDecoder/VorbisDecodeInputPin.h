@@ -1,5 +1,5 @@
 //===========================================================================
-//Copyright (C) 2003, 2004 Zentaro Kavanagh
+//Copyright (C) 2003-2006 Zentaro Kavanagh
 //
 //Redistribution and use in source and binary forms, with or without
 //modification, are permitted provided that the following conditions
@@ -51,10 +51,6 @@ using namespace std;
 #include "VorbisDecoder.h"
 #endif
 
-//extern "C" {
-//#include <fishsound/fishsound.h>
-//#include "fish_cdecl.h"
-//}
 
 class VorbisDecodeOutputPin;
 
@@ -66,9 +62,9 @@ public:
 
 	DECLARE_IUNKNOWN
 	STDMETHODIMP NonDelegatingQueryInterface(REFIID riid, void **ppv);
+
 	VorbisDecodeInputPin(AbstractTransformFilter* inFilter, CCritSec* inFilterLock, AbstractTransformOutputPin* inOutputPin, vector<CMediaType*> inAcceptableMediaTypes);
 	virtual ~VorbisDecodeInputPin(void);
-	//static int __cdecl VorbisDecoded (FishSound* inFishSound, float** inPCM, long inFrames, void* inThisPointer);
 
 	virtual HRESULT SetMediaType(const CMediaType* inMediaType);
 	virtual HRESULT CheckMediaType(const CMediaType *inMediaType);
@@ -87,8 +83,6 @@ public:
 	virtual IOggDecoder::eAcceptHeaderResult showHeaderPacket(OggPacket* inCodecHeaderPacket);
 	virtual string getCodecShortName();
 	virtual string getCodecIdentString();
-
-
 
 protected:
 	fstream debugLog;
@@ -127,8 +121,6 @@ protected:
 	bool mBegun;
 	unsigned int mUptoFrame;
 	HRESULT mHR;
-	//FishSound* mFishSound;
-	//FishSoundInfo mFishInfo; 
 
 	int mNumChannels;
 	int mFrameSize;
@@ -136,9 +128,6 @@ protected:
 
 
 	VorbisDecoder mVorbisDecoder;
-
-
-	
 
 	unsigned char* mDecodedBuffer;
 	unsigned long mDecodedByteCount;
