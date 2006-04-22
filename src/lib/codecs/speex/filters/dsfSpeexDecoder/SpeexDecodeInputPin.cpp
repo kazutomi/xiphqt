@@ -1,5 +1,5 @@
 //===========================================================================
-//Copyright (C) 2003, 2004 Zentaro Kavanagh
+//Copyright (C) 2003-2006 Zentaro Kavanagh
 //
 //Redistribution and use in source and binary forms, with or without
 //modification, are permitted provided that the following conditions
@@ -35,8 +35,6 @@
 
 SpeexDecodeInputPin::SpeexDecodeInputPin(AbstractTransformFilter* inFilter, CCritSec* inFilterLock, AbstractTransformOutputPin* inOutputPin, vector<CMediaType*> inAcceptableMediaTypes)
 	:	AbstractTransformInputPin(inFilter, inFilterLock, inOutputPin, NAME("SpeexDecodeInputPin"), L"Speex In", inAcceptableMediaTypes)
-	//FSN:::
-	//,	mFishSound(NULL)
 
 	,	mNumChannels(0)
 	,	mSampleFrameSize(0)
@@ -46,6 +44,7 @@ SpeexDecodeInputPin::SpeexDecodeInputPin(AbstractTransformFilter* inFilter, CCri
 
 	,	mDecodedByteCount(0)
 	,	mDecodedBuffer(NULL)
+
 	,	mRateNumerator(RATE_DENOMINATOR)
 
 	,	mSetupState(VSS_SEEN_NOTHING)
@@ -64,32 +63,21 @@ bool SpeexDecodeInputPin::ConstructCodec()
 	//Don't need to do much... mSpeexDecoder is good to go
 	return true;
 
-	////FSN:::
-	//mFishSound = fish_sound_new (FISH_SOUND_DECODE, &mFishInfo);
-
-	//int i = 1;
-	////FIX::: Use new API for interleave setting
-	//fish_sound_command(mFishSound, FISH_SOUND_SET_INTERLEAVE, &i, sizeof(int));
-
-	//fish_sound_set_decoded_callback (mFishSound, SpeexDecodeInputPin::SpeexDecoded, this);
-	//FIX::: Proper return value
-	//return true;
 }
 void SpeexDecodeInputPin::DestroyCodec() 
 {
-	//FSN:::
-	//fish_sound_delete(mFishSound);
-	//mFishSound = NULL;
+
 }
 SpeexDecodeInputPin::~SpeexDecodeInputPin(void)
 {
 	DestroyCodec();
 
-	delete mDecodedBuffer;
+	delete[] mDecodedBuffer;
 }
 
 STDMETHODIMP SpeexDecodeInputPin::NonDelegatingQueryInterface(REFIID riid, void **ppv)
 {
+	//TODO::: Make the IOggDecoder interface a proper COM interface
 	if (riid == IID_IMediaSeeking) {
 		*ppv = (IMediaSeeking*)this;
 		((IUnknown*)*ppv)->AddRef();
@@ -109,6 +97,7 @@ STDMETHODIMP SpeexDecodeInputPin::NewSegment(REFERENCE_TIME inStartTime, REFEREN
 	//debugLog<<"New segment "<<inStartTime<<" - "<<inStopTime<<endl;
 	mUptoFrame = 0;
 
+	//Denominator and numerator are a 16 bit fraction
 	mRateNumerator = RATE_DENOMINATOR * inRate;
 	if (mRateNumerator > RATE_DENOMINATOR) {
 		mRateNumerator = RATE_DENOMINATOR;
@@ -133,65 +122,12 @@ HRESULT SpeexDecodeInputPin::GetAllocatorRequirements(ALLOCATOR_PROPERTIES *outR
 
 	return S_OK;
 }
-//int SpeexDecodeInputPin::SpeexDecoded (FishSound* inFishSound, float** inPCM, long inFrames, void* inThisPointer) 
-//{
-//
-//	SpeexDecodeInputPin* locThis = reinterpret_cast<SpeexDecodeInputPin*> (inThisPointer);
-//	SpeexDecodeFilter* locFilter = reinterpret_cast<SpeexDecodeFilter*>(locThis->m_pFilter);
-//
-//	if (locThis->CheckStreaming() == S_OK) {
-//
-//		unsigned long locActualSize = inFrames * locThis->mFrameSize;
-//		unsigned long locTotalFrameCount = inFrames * locThis->mNumChannels;
-//		unsigned long locBufferRemaining = DECODED_BUFFER_SIZE - locThis->mDecodedByteCount;
-//		
-//
-//
-//		//Create a pointer into the buffer		
-//		signed short* locShortBuffer = (signed short*)&locThis->mDecodedBuffer[locThis->mDecodedByteCount];
-//		
-//		
-//		signed short tempInt = 0;
-//		float tempFloat = 0;
-//		
-//		//FIX:::Move the clipping to the abstract function
-//
-//		if (locBufferRemaining >= locActualSize) {
-//			//Do float to int conversion with clipping
-//			const float SINT_MAX_AS_FLOAT = 32767.0f;
-//			for (unsigned long i = 0; i < locTotalFrameCount; i++) {
-//				//Clipping because vorbis puts out floats out of range -1 to 1
-//				if (((float*)inPCM)[i] <= -1.0f) {
-//					tempInt = SINT_MIN;	
-//				} else if (((float*)inPCM)[i] >= 1.0f) {
-//					tempInt = SINT_MAX;
-//				} else {
-//					//FIX:::Take out the unnescessary variable.
-//					tempFloat = ((( (float*) inPCM )[i]) * SINT_MAX_AS_FLOAT);
-//					//ASSERT((tempFloat <= 32767.0f) && (tempFloat >= -32786.0f));
-//					tempInt = (signed short)(tempFloat);
-//					//tempInt = (signed short) ((( (float*) inPCM )[i]) * SINT_MAX_AS_FLOAT);
-//				}
-//				
-//				*locShortBuffer = tempInt;
-//				locShortBuffer++;
-//			}
-//
-//			locThis->mDecodedByteCount += locActualSize;
-//			
-//			return 0;
-//		} else {
-//			throw 0;
-//		}
-//	} else {
-//		DbgLog((LOG_TRACE,1,TEXT("Fishsound sending stuff we aren't ready for...")));
-//		return -1;
-//	}
-//
-//}
+
 
 STDMETHODIMP SpeexDecodeInputPin::Receive(IMediaSample* inSample) 
 {
+	//TODO::: All the internal buffer handling should be abstracted - it's duped in vorbis speex and flac
+	//TODO::: Document the buffer end point cutting better
 	CAutoLock locLock(mStreamLock);
 
 	HRESULT locHR = CheckStreaming();
@@ -296,13 +232,6 @@ STDMETHODIMP SpeexDecodeInputPin::Receive(IMediaSample* inSample)
 
 HRESULT SpeexDecodeInputPin::TransformData(BYTE* inBuf, long inNumBytes) 
 {
-	////FSN:::
-	//long locErr = fish_sound_decode(mFishSound, inBuf, inNumBytes);
-	//if (locErr == 0) {
-	//	return S_OK;
-	//} else {
-	//	return S_FALSE;
-	//}
 
 	//TODO::: Verify size of remaining buffer
 	SpeexDecoder::eSpeexResult locResult;
@@ -324,8 +253,6 @@ HRESULT SpeexDecodeInputPin::TransformData(BYTE* inBuf, long inNumBytes)
 
 HRESULT SpeexDecodeInputPin::SetMediaType(const CMediaType* inMediaType) 
 {
-	//FIX:::Error checking
-	//RESOLVED::: Bit better.
 	if (CheckMediaType(inMediaType) == S_OK) {
 		((SpeexDecodeFilter*)mParentFilter)->setSpeexFormat(inMediaType->pbFormat);
 		
@@ -365,6 +292,7 @@ LOOG_INT64 SpeexDecodeInputPin::mustSeekBefore(LOOG_INT64 inGranule)
 	//TODO::: Get adjustment from block size info... for now, it doesn't matter if no preroll
 	return inGranule;
 }
+
 IOggDecoder::eAcceptHeaderResult SpeexDecodeInputPin::showHeaderPacket(OggPacket* inCodecHeaderPacket)
 {
 	switch (mSetupState) {
@@ -372,10 +300,7 @@ IOggDecoder::eAcceptHeaderResult SpeexDecodeInputPin::showHeaderPacket(OggPacket
 			if (strncmp((char*)inCodecHeaderPacket->packetData(), "Speex   ", 8) == 0) {
 				//TODO::: Possibly verify version
 
-				//FSN:::
-				//if (fish_sound_decode(mFishSound, inCodecHeaderPacket->packetData(), inCodecHeaderPacket->packetSize()) >= 0) {
 				if (mSpeexDecoder.decodePacket(	inCodecHeaderPacket->packetData(),	inCodecHeaderPacket->packetSize(),	NULL, 0) == SpeexDecoder::SPEEX_HEADER_OK) {
-					 
 					mSetupState = VSS_SEEN_BOS;
 					return IOggDecoder::AHR_MORE_HEADERS_TO_COME;
 				}
@@ -385,31 +310,22 @@ IOggDecoder::eAcceptHeaderResult SpeexDecodeInputPin::showHeaderPacket(OggPacket
 			
 		case VSS_SEEN_BOS:
 			//The comment packet can't be easily identified in speex.
-			//Just ignore the second packet we see, and hope fishsound does better.
+			//Just ignore the second packet we see, and hope for the best
 
-			//if (strncmp((char*)inCodecHeaderPacket->packetData(), "\003vorbis", 7) == 0) {
-			//FSN:::
-				//if (fish_sound_decode(mFishSound, inCodecHeaderPacket->packetData(), inCodecHeaderPacket->packetSize()) >= 0) {
 			if (mSpeexDecoder.decodePacket(	inCodecHeaderPacket->packetData(),	inCodecHeaderPacket->packetSize(),	NULL, 0) == SpeexDecoder::SPEEX_COMMENT_OK) {
-					mSetupState = VSS_ALL_HEADERS_SEEN;
+				mSetupState = VSS_ALL_HEADERS_SEEN;
 
-					//FSN:::
-					//fish_sound_command (mFishSound, FISH_SOUND_GET_INFO, &(mFishInfo), sizeof (FishSoundInfo)); 
-					mBegun = true;
-			
-					mNumChannels = mSpeexDecoder.numChannels();//mFishInfo.channels;
-					mSampleFrameSize = mNumChannels * SIZE_16_BITS;
-					mSampleRate = mSpeexDecoder.sampleRate(); //mFishInfo.samplerate;
-					mSpeexFrameSize = mSampleFrameSize * mSpeexDecoder.frameSize();
+				mBegun = true;
+		
+				mNumChannels = mSpeexDecoder.numChannels();//mFishInfo.channels;
+				mSampleFrameSize = mNumChannels * SIZE_16_BITS;
+				mSampleRate = mSpeexDecoder.sampleRate(); //mFishInfo.samplerate;
+				mSpeexFrameSize = mSampleFrameSize * mSpeexDecoder.frameSize();
 
-					return IOggDecoder::AHR_ALL_HEADERS_RECEIVED;
-				}
+				return IOggDecoder::AHR_ALL_HEADERS_RECEIVED;
+			}
 				
-				
-			//}
 			return IOggDecoder::AHR_INVALID_HEADER;
-			
-			
 	
 		case VSS_ALL_HEADERS_SEEN:
 		case VSS_ERROR:
@@ -421,9 +337,10 @@ string SpeexDecodeInputPin::getCodecShortName()
 {
 	return "speex";
 }
+
 string SpeexDecodeInputPin::getCodecIdentString()
 {
-	//TODO:::
+	//TODO::: Get the full ident string from the decoder
 	return "speex";
 }
 
