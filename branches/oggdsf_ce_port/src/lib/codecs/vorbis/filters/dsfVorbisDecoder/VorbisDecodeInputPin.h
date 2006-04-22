@@ -44,7 +44,12 @@ using namespace std;
 
 #include "VorbisDecodeFilter.h"
 
+#ifdef USING_TREMOR
+#include "TremorDecoder.h"
+#define VorbisDecoder TremorDecoder
+#else
 #include "VorbisDecoder.h"
+#endif
 
 //extern "C" {
 //#include <fishsound/fishsound.h>
@@ -128,6 +133,7 @@ protected:
 	int mNumChannels;
 	int mFrameSize;
 	int mSampleRate;
+
 
 	VorbisDecoder mVorbisDecoder;
 
