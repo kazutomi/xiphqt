@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="Windows-1252"?>
+<?xml version="1.0" encoding="Windows-1252"?> 
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="8.00"
@@ -953,7 +953,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\..\core\ogg;..\libtheora\include;..\..\..\..\core\ogg\libogg\include;..\..\..\..\helper"
+				AdditionalIncludeDirectories="..\..\..\..\core\ogg;..\libtheora\include;..\..\..\..\core\ogg\libogg\include;..\..\..\..\helper;&quot;..\..\libs\libtheora-exp\include&quot;"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;WIN32;_DEBUG;_WINDOWS;_USRDLL;LIBOOTHEORA_EXPORTS;_WIN32_WCE=$(CEVER);UNDER_CE;$(PLATFORMDEFINES);WINCE;$(ARCHFAM);$(_ARCHFAM_)"
 				MinimalRebuild="true"
 				RuntimeLibrary="3"
@@ -1197,7 +1197,7 @@
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="..\..\..\..\core\ogg;..\libtheora\include;..\..\..\..\core\ogg\libogg\include;..\..\..\..\helper"
+				AdditionalIncludeDirectories="..\..\..\..\core\ogg;..\libtheora\include;..\..\..\..\core\ogg\libogg\include;..\..\..\..\helper;&quot;..\..\libs\libtheora-exp\include&quot;"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;WIN32;NDEBUG;_WINDOWS;_USRDLL;LIBOOTHEORA_EXPORTS;_WIN32_WCE=$(CEVER);UNDER_CE;$(PLATFORMDEFINES);WINCE;$(ARCHFAM);$(_ARCHFAM_)"
 				MinimalRebuild="false"
 				RuntimeLibrary="2"
