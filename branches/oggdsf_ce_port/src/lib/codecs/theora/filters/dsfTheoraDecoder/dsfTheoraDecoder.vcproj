@@ -47,7 +47,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\..\core\directshow\BaseClasses;..\..\libs\libOOTheora;..\..\libs\libtheora\include;..\..\..\..\core\ogg;..\..\..\..\core\ogg\libogg\include;..\..\..\..\core\directshow\libDirectshowAbstracts;..\..\..\..\helper;..\..\..\..\helper\iDSHelper;..\..\..\..\core\directshow\dsfOggDemux2"
+				AdditionalIncludeDirectories="..\..\..\..\core\directshow\BaseClasses;..\..\libs\libOOTheora;..\..\libs\libtheora\include;..\..\..\..\core\ogg;..\..\..\..\core\ogg\libogg\include;..\..\..\..\core\directshow\libDirectshowAbstracts;..\..\..\..\helper;..\..\..\..\helper\iDSHelper;..\..\..\..\core\directshow\dsfOggDemux2;&quot;..\..\libs\libtheora-exp\include&quot;"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;WIN32;_DEBUG;_WINDOWS;_USRDLL;DSFTHEORADECODER_EXPORTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -298,7 +298,7 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				OmitFramePointers="true"
-				AdditionalIncludeDirectories="..\..\..\..\core\directshow\BaseClasses;..\..\libs\libOOTheora;..\..\libs\libtheora\include;..\..\..\..\core\ogg;..\..\..\..\core\ogg\libogg\include;..\..\..\..\core\directshow\libDirectshowAbstracts;..\..\..\..\helper;..\..\..\..\helper\iDSHelper;..\..\..\..\core\directshow\dsfOggDemux2"
+				AdditionalIncludeDirectories="..\..\..\..\core\directshow\BaseClasses;..\..\libs\libOOTheora;..\..\libs\libtheora\include;..\..\..\..\core\ogg;..\..\..\..\core\ogg\libogg\include;..\..\..\..\core\directshow\libDirectshowAbstracts;..\..\..\..\helper;..\..\..\..\helper\iDSHelper;..\..\..\..\core\directshow\dsfOggDemux2;&quot;..\..\libs\libtheora-exp\include&quot;"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;WIN32;NDEBUG;_WINDOWS;_USRDLL;DSFTHEORADECODER_EXPORTS"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -562,7 +562,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\..\core\directshow\BaseClasses;..\..\libs\libOOTheora;..\..\libs\libtheora\include;..\..\..\..\core\ogg;..\..\..\..\core\ogg\libogg\include;..\..\..\..\core\directshow\libDirectshowAbstracts;..\..\..\..\helper;..\..\..\..\helper\iDSHelper;..\..\..\..\core\directshow\dsfOggDemux2"
+				AdditionalIncludeDirectories="..\..\..\..\core\directshow\BaseClasses;..\..\libs\libOOTheora;..\..\libs\libtheora\include;..\..\..\..\core\ogg;..\..\..\..\core\ogg\libogg\include;..\..\..\..\core\directshow\libDirectshowAbstracts;..\..\..\..\helper;..\..\..\..\helper\iDSHelper;..\..\..\..\core\directshow\dsfOggDemux2;&quot;..\..\libs\libtheora-exp\include&quot;"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;WIN32;_DEBUG;_WINDOWS;_USRDLL;DSFTHEORADECODER_EXPORTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -808,7 +808,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\..\core\directshow\BaseClasses;..\..\libs\libOOTheora;..\..\libs\libtheora\include;..\..\..\..\core\ogg;..\..\..\..\core\ogg\libogg\include;..\..\..\..\core\directshow\libDirectshowAbstracts;..\..\..\..\helper;..\..\..\..\helper\iDSHelper;..\..\..\..\core\directshow\dsfOggDemux2"
+				AdditionalIncludeDirectories="..\..\..\..\core\directshow\BaseClasses;..\..\libs\libOOTheora;..\..\libs\libtheora\include;..\..\..\..\core\ogg;..\..\..\..\core\ogg\libogg\include;..\..\..\..\core\directshow\libDirectshowAbstracts;..\..\..\..\helper;..\..\..\..\helper\iDSHelper;..\..\..\..\core\directshow\dsfOggDemux2;&quot;..\..\libs\libtheora-exp\include&quot;"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;WIN32;_DEBUG;_WINDOWS;_USRDLL;DSFTHEORADECODER_EXPORTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -1055,7 +1055,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\..\core\directshow\BaseClasses;..\..\libs\libOOTheora;..\..\libs\libtheora\include;..\..\..\..\core\ogg;..\..\..\..\core\ogg\libogg\include;..\..\..\..\core\directshow\libDirectshowAbstracts;..\..\..\..\helper;..\..\..\..\helper\iDSHelper;..\..\..\..\core\directshow\dsfOggDemux2"
+				AdditionalIncludeDirectories="..\..\..\..\core\directshow\BaseClasses;..\..\libs\libOOTheora;..\..\libs\libtheora\include;..\..\..\..\core\ogg;..\..\..\..\core\ogg\libogg\include;..\..\..\..\core\directshow\libDirectshowAbstracts;..\..\..\..\helper;..\..\..\..\helper\iDSHelper;..\..\..\..\core\directshow\dsfOggDemux2;&quot;..\..\libs\libtheora-exp\include&quot;"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;WIN32;_DEBUG;_WINDOWS;_USRDLL;DSFTHEORADECODER_EXPORTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"

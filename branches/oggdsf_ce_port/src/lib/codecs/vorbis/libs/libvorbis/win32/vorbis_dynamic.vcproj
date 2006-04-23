@@ -1096,7 +1096,7 @@
 			Name="Debug_WM5_PPC_ARM|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
 			OutputDirectory="Windows Mobile 5.0 Pocket PC SDK (ARMV4I)\$(ConfigurationName)"
 			IntermediateDirectory="Windows Mobile 5.0 Pocket PC SDK (ARMV4I)\$(ConfigurationName)"
-			ConfigurationType="2"
+			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
@@ -1150,17 +1150,8 @@
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
-				Name="VCLinkerTool"
-				OutputFile="$(OutDir)/vorbis_d.dll"
-				LinkIncremental="2"
-				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories=""
-				ModuleDefinitionFile=".\vorbis.def"
-				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\Vorbis_Dynamic_Debug/vorbis_d.pdb"
-				SubSystem="9"
-				ImportLibrary="$(OutDir)/vorbis_d.lib"
-				TargetMachine="0"
+				Name="VCLibrarianTool"
+				AdditionalOptions=""
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -1380,7 +1371,7 @@
 			Name="Release_WM5_PPC_ARM|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
 			OutputDirectory="Windows Mobile 5.0 Pocket PC SDK (ARMV4I)\$(ConfigurationName)"
 			IntermediateDirectory="Windows Mobile 5.0 Pocket PC SDK (ARMV4I)\$(ConfigurationName)"
-			ConfigurationType="2"
+			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
@@ -1438,21 +1429,8 @@
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
-				Name="VCLinkerTool"
-				OutputFile="$(OutDir)/vorbis.dll"
-				LinkIncremental="1"
-				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories=""
-				ModuleDefinitionFile=".\vorbis.def"
-				GenerateDebugInformation="false"
-				ProgramDatabaseFile=".\Vorbis_Dynamic_Debug/vorbis_d.pdb"
-				SubSystem="9"
-				OptimizeReferences="2"
-				EnableCOMDATFolding="2"
-				OptimizeForWindows98="1"
-				LinkTimeCodeGeneration="1"
-				ImportLibrary="$(OutDir)/vorbis.lib"
-				TargetMachine="0"
+				Name="VCLibrarianTool"
+				AdditionalOptions=""
 			/>
 			<Tool
 				Name="VCALinkTool"
