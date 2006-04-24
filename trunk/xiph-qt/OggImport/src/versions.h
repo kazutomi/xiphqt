@@ -4,7 +4,7 @@
  *    The current version of the OggImport component.
  *
  *
- *  Copyright (c) 2005  Arek Korbik
+ *  Copyright (c) 2005-2006  Arek Korbik
  *
  *  This file is part of XiphQT, the Xiph QuickTime Components.
  *
@@ -32,9 +32,9 @@
 #define __versions_h__
 
 #ifdef DEBUG
-#define kOgg_eat__Version		(0x00FF0103)
+#define kOgg_eat__Version		(0x00FF0106)
 #else
-#define kOgg_eat__Version		(0x00000103)
+#define kOgg_eat__Version		(0x00000106)
 #endif /* DEBUG */
 
 #endif /* __versions_h__ */
