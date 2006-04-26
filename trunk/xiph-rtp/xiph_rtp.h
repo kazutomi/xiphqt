@@ -113,7 +113,7 @@ int createsocket (xiph_rtp_t *xr, char *addr, unsigned int port,
 		  unsigned char TTL);
 
 void creatertp (xiph_rtp_t *xr, unsigned char* vorbdata, int length,
-		long timestamp, int type, int last);
+		long timestamp, long sleeptime, int type, int last);
 
 int sendrtp (xiph_rtp_t *xr, const void *data, int len);
 

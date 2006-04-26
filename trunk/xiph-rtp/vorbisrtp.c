@@ -255,7 +255,7 @@ unsigned char *conf_packet = malloc(conf_bytes);
     memcpy (conf_packet + xr.header[0].bytes, 
 		    xr.header[2].packet,
 		    xr.header[2].bytes);
-    creatertp(&xr, conf_packet, conf_bytes, 0, 1, 0);
+    creatertp(&xr, conf_packet, conf_bytes, 0, 0, 1, 0);
     
     free(conf_packet);
 }
@@ -287,7 +287,7 @@ unsigned char *conf_packet = malloc(conf_bytes);
 			printf("  bytes %ld bos %ld eos %ld gp %lld pno %lld\n", xr.op.bytes, xr.op.b_o_s, xr.op.e_o_s, xr.op.granulepos, xr.op.packetno);
 #endif
 			creatertp ( &xr, xr.op.packet, xr.op.bytes, 
-					timestamp, 0, xr.op.e_o_s );
+					timestamp, timestamp, 0, xr.op.e_o_s );
 			timestamp = ( vorbis_packet_blocksize(&xr.vi,&xr.op) +
 					prev ) / 4*1000000L / xr.vi.rate;
 			prev = vorbis_packet_blocksize(&xr.vi,&xr.op);
