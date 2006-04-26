@@ -246,22 +246,19 @@ static void stack_packet(xiph_rtp_t *xr, unsigned char* vorbdata, int length)
 
 //FIXME max_payload should stay somewhere else
 void creatertp (xiph_rtp_t *xr, unsigned char* vorbdata, int length,
-		long timestamp, int type, int last)
+		long timestamp, long sleeptime, int type, int last)
 {
 	int frag, position = 0;
 	unsigned short framesize;
 	unsigned char *packet;
-	long sleeptime = timestamp;
 	framestack_t *fs = &xr->fs;
 	const unsigned int max_payload = 1000;
 
-/*  Set sleeptime value based on timestamp */
-
 	if (type)
 	{
-		sleeptime = 300; //  ((1 / (float) bitrate) * 1000000);
 		// flush any other packet in queue (chained ogg!)
-		flush_stack(xr, timestamp, timestamp);
+		flush_stack(xr, sleeptime, timestamp);
+		sleeptime = 300; //  ((1 / (float) bitrate) * 1000000);
 	}
 
 /*  Frame packing.  Used only for type 0 packets (raw Vorbis data) */
@@ -317,9 +314,8 @@ void creatertp (xiph_rtp_t *xr, unsigned char* vorbdata, int length,
 		xr->headers.sequence = htons (xr->headers.sequence);
 		xr->headers.timestamp = ntohl (xr->headers.timestamp);
 
-	/* We need to sleep something like enough time to not overflow
-	 * the playout buffer nor starve it */
-		sleeptime = timestamp;
+        /* We need to sleep enough time to not overflow
+         * the playout buffer nor starve it */
 		usleep (sleeptime);
 
 		xr->headers.sequence++;

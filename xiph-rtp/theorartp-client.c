@@ -67,6 +67,8 @@ typedef struct ogg_context {
 	theora_comment tc;
 	theora_state td;
 
+	long time_den;
+	long time_num;
 
 	int frag;
 	unsigned int timestamp;
@@ -188,9 +190,9 @@ int cfg_parse( ogg_context_t *ogg )
 
 	oggpackB_read(&opb,64);
 	
-//	ogg->time_den =
+	ogg->time_den =
 	oggpackB_read(&opb,32);
-//	ogg->time_num = 
+	ogg->time_num = 
 	oggpackB_read(&opb,32);
 
 	oggpackB_read(&opb,24);
