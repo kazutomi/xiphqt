@@ -82,6 +82,7 @@ static int oc_info_unpack(oggpack_buffer *_opb,th_info *_info){
   _info->keyframe_granule_shift=(int)val;
   theora_read(_opb,2,&val);
   _info->pixel_fmt=(th_pixel_fmt)val;
+  if(_info->pixel_fmt==TH_PF_RSVD)return TH_EBADHEADER;
   if(theora_read(_opb,3,&val)<0||val!=0)return TH_EBADHEADER;
   return 0;
 }
