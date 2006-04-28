@@ -29,7 +29,7 @@
 		731DDD3A0A01586000CAD2C4 /* state.c in Sources */ = {isa = PBXBuildFile; fileRef = 731DDD280A01586000CAD2C4 /* state.c */; };
 		731DDD3C0A01586E00CAD2C4 /* Ogg.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 731DDD3B0A01586E00CAD2C4 /* Ogg.framework */; };
 		731DDD4B0A0159AF00CAD2C4 /* info.c in Sources */ = {isa = PBXBuildFile; fileRef = 731DDD4A0A0159AF00CAD2C4 /* info.c */; };
-		8D07F2BE0486CC7A007CD1D0 /* Theora_Prefix.pch in Headers */ = {isa = PBXBuildFile; fileRef = 32BAE0B70371A74B00C91783 /* Theora_Prefix.pch */; };
+		8D07F2BE0486CC7A007CD1D0 /* TheoraExp_Prefix.pch in Headers */ = {isa = PBXBuildFile; fileRef = 32BAE0B70371A74B00C91783 /* TheoraExp_Prefix.pch */; };
 		8D07F2C00486CC7A007CD1D0 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C1666FE841158C02AAC07 /* InfoPlist.strings */; };
 		8D07F2C40486CC7A007CD1D0 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 08FB77AAFE841565C02AAC07 /* Carbon.framework */; };
 /* End PBXBuildFile section */
@@ -52,7 +52,7 @@
 /* Begin PBXFileReference section */
 		089C1667FE841158C02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		08FB77AAFE841565C02AAC07 /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = /System/Library/Frameworks/Carbon.framework; sourceTree = "<absolute>"; };
-		32BAE0B70371A74B00C91783 /* Theora_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Theora_Prefix.pch; sourceTree = "<group>"; };
+		32BAE0B70371A74B00C91783 /* TheoraExp_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TheoraExp_Prefix.pch; sourceTree = "<group>"; };
 		731DDD100A0157CB00CAD2C4 /* codec.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = codec.h; path = ../include/theora/codec.h; sourceTree = SOURCE_ROOT; };
 		731DDD110A0157CB00CAD2C4 /* theoradec.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = theoradec.h; path = ../include/theora/theoradec.h; sourceTree = SOURCE_ROOT; };
 		731DDD170A01586000CAD2C4 /* dct.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = dct.h; path = ../lib/dct.h; sourceTree = SOURCE_ROOT; };
@@ -76,7 +76,7 @@
 		731DDD3B0A01586E00CAD2C4 /* Ogg.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Ogg.framework; path = /Library/Frameworks/Ogg.framework; sourceTree = "<absolute>"; };
 		731DDD4A0A0159AF00CAD2C4 /* info.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = info.c; path = ../lib/info.c; sourceTree = SOURCE_ROOT; };
 		8D07F2C70486CC7A007CD1D0 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
-		8D07F2C80486CC7A007CD1D0 /* Theora.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Theora.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		8D07F2C80486CC7A007CD1D0 /* TheoraExp.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TheoraExp.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -95,12 +95,12 @@
 		034768DDFF38A45A11DB9C8B /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				8D07F2C80486CC7A007CD1D0 /* Theora.framework */,
+				8D07F2C80486CC7A007CD1D0 /* TheoraExp.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		0867D691FE84028FC02AAC07 /* Theora */ = {
+		0867D691FE84028FC02AAC07 /* TheoraExp */ = {
 			isa = PBXGroup;
 			children = (
 				08FB77ACFE841707C02AAC07 /* Source */,
@@ -108,7 +108,7 @@
 				0867D69AFE84028FC02AAC07 /* External Frameworks and Libraries */,
 				034768DDFF38A45A11DB9C8B /* Products */,
 			);
-			name = Theora;
+			name = TheoraExp;
 			sourceTree = "<group>";
 		};
 		0867D69AFE84028FC02AAC07 /* External Frameworks and Libraries */ = {
@@ -153,7 +153,7 @@
 				731DDD280A01586000CAD2C4 /* state.c */,
 				731DDD100A0157CB00CAD2C4 /* codec.h */,
 				731DDD110A0157CB00CAD2C4 /* theoradec.h */,
-				32BAE0B70371A74B00C91783 /* Theora_Prefix.pch */,
+				32BAE0B70371A74B00C91783 /* TheoraExp_Prefix.pch */,
 			);
 			name = Source;
 			sourceTree = "<group>";
@@ -165,7 +165,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8D07F2BE0486CC7A007CD1D0 /* Theora_Prefix.pch in Headers */,
+				8D07F2BE0486CC7A007CD1D0 /* TheoraExp_Prefix.pch in Headers */,
 				731DDD120A0157CB00CAD2C4 /* codec.h in Headers */,
 				731DDD130A0157CB00CAD2C4 /* theoradec.h in Headers */,
 				731DDD290A01586000CAD2C4 /* dct.h in Headers */,
@@ -183,9 +183,9 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		8D07F2BC0486CC7A007CD1D0 /* Theora */ = {
+		8D07F2BC0486CC7A007CD1D0 /* TheoraExp */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 4FADC24208B4156D00ABE55E /* Build configuration list for PBXNativeTarget "Theora" */;
+			buildConfigurationList = 4FADC24208B4156D00ABE55E /* Build configuration list for PBXNativeTarget "TheoraExp" */;
 			buildPhases = (
 				8D07F2BD0486CC7A007CD1D0 /* Headers */,
 				8D07F2BF0486CC7A007CD1D0 /* Resources */,
@@ -199,10 +199,10 @@
 			};
 			dependencies = (
 			);
-			name = Theora;
+			name = TheoraExp;
 			productInstallPath = "$(HOME)/Library/Frameworks";
-			productName = Theora;
-			productReference = 8D07F2C80486CC7A007CD1D0 /* Theora.framework */;
+			productName = TheoraExp;
+			productReference = 8D07F2C80486CC7A007CD1D0 /* TheoraExp.framework */;
 			productType = "com.apple.product-type.framework";
 		};
 /* End PBXNativeTarget section */
@@ -210,7 +210,7 @@
 /* Begin PBXProject section */
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
-			buildConfigurationList = 4FADC24608B4156D00ABE55E /* Build configuration list for PBXProject "Theora" */;
+			buildConfigurationList = 4FADC24608B4156D00ABE55E /* Build configuration list for PBXProject "TheoraExp" */;
 			buildSettings = {
 			};
 			buildStyles = (
@@ -218,11 +218,11 @@
 				4F0BB7ED011F40E904CA0E50 /* Release */,
 			);
 			hasScannedForEncodings = 1;
-			mainGroup = 0867D691FE84028FC02AAC07 /* Theora */;
+			mainGroup = 0867D691FE84028FC02AAC07 /* TheoraExp */;
 			productRefGroup = 034768DDFF38A45A11DB9C8B /* Products */;
 			projectDirPath = "";
 			targets = (
-				8D07F2BC0486CC7A007CD1D0 /* Theora */,
+				8D07F2BC0486CC7A007CD1D0 /* TheoraExp */,
 			);
 		};
 /* End PBXProject section */
@@ -291,12 +291,12 @@
 				GCC_ENABLE_FIX_AND_CONTINUE = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = Theora_Prefix.pch;
+				GCC_PREFIX_HEADER = TheoraExp_Prefix.pch;
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = /Library/Frameworks;
 				LIBRARY_STYLE = DYNAMIC;
 				MACH_O_TYPE = mh_dylib;
-				PRODUCT_NAME = Theora;
+				PRODUCT_NAME = TheoraExp;
 				WRAPPER_EXTENSION = framework;
 				ZERO_LINK = YES;
 			};
@@ -314,12 +314,12 @@
 				FRAMEWORK_VERSION = A;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = Theora_Prefix.pch;
+				GCC_PREFIX_HEADER = TheoraExp_Prefix.pch;
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = /Library/Frameworks;
 				LIBRARY_STYLE = DYNAMIC;
 				MACH_O_TYPE = mh_dylib;
-				PRODUCT_NAME = Theora;
+				PRODUCT_NAME = TheoraExp;
 				WRAPPER_EXTENSION = framework;
 			};
 			name = Release;
@@ -337,6 +337,10 @@
 				);
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(HEADER_SEARCH_PATHS)",
+					../include,
+				);
 				PREBINDING = NO;
 				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
 			};
@@ -360,6 +364,10 @@
 				);
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(HEADER_SEARCH_PATHS)",
+					../include,
+				);
 				OTHER_CFLAGS = (
 					"$(OTHER_CFLAGS)",
 					"-falign-loops=16",
@@ -374,7 +382,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		4FADC24208B4156D00ABE55E /* Build configuration list for PBXNativeTarget "Theora" */ = {
+		4FADC24208B4156D00ABE55E /* Build configuration list for PBXNativeTarget "TheoraExp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				4FADC24308B4156D00ABE55E /* Debug */,
@@ -383,7 +391,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		4FADC24608B4156D00ABE55E /* Build configuration list for PBXProject "Theora" */ = {
+		4FADC24608B4156D00ABE55E /* Build configuration list for PBXProject "TheoraExp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				4FADC24708B4156D00ABE55E /* Debug */,
