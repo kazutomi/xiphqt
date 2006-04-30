@@ -36,6 +36,8 @@
 
 
 enum {
+    kXiphComponentsManufacturer             = 'Xiph',
+
     kAudioFormatXiphVorbis                  = 'XiVs',
     kAudioFormatXiphOggFramedVorbis         = 'XoVs',
 
@@ -44,6 +46,8 @@ enum {
 
     kAudioFormatXiphFLAC                    = 'XiFL',
     kAudioFormatXiphOggFramedFLAC           = 'XoFL',
+
+    kVideoFormatXiphTheora                  = 'XiTh'
 };
 
 
