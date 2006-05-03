@@ -175,7 +175,7 @@ static void recon_inter8x8_half__mmx (unsigned char *ReconPtr, unsigned char *Re
   );
 }
 
-void dsp_i386_mmx_recon_init(DspFunctions *funcs)
+void dsp_mmx_recon_init(DspFunctions *funcs)
 {
   funcs->copy8x8 = copy8x8__mmx;
   funcs->recon_intra8x8 = recon_intra8x8__mmx;

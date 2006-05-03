@@ -304,7 +304,7 @@ static ogg_uint32_t inter8x8_err_xy2__mmxext (unsigned char *SrcData, ogg_uint32
   return (( (XXSum<<6) - XSum*XSum ));
 }
 
-void dsp_i386_mmxext_init(DspFunctions *funcs)
+void dsp_mmxext_init(DspFunctions *funcs)
 {
   funcs->row_sad8 = row_sad8__mmxext;
   funcs->col_sad8x8 = col_sad8x8__mmxext;
