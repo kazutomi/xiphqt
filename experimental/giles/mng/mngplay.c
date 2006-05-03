@@ -67,7 +67,7 @@ void mymngfree(mng_ptr p, mng_uint32 size)
 int bufferoggdata(mng_handle mng)
 {
 	mngstuff	*mymng;
-	unsigned char	*buffer;
+	char		*buffer;
 	int		bytes;
 
 	/* look up our stream struct */
