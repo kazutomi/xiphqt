@@ -2,7 +2,7 @@
 #if !defined(_dct_H)
 # define _dct_H (1)
 
-/*cos(n*pi/2) (resp. sin(m*pi/2)) scaled by 65536.*/
+/*cos(n*pi/16) (resp. sin(m*pi/16)) scaled by 65536.*/
 #define OC_C1S7 ((ogg_int32_t)64277)
 #define OC_C2S6 ((ogg_int32_t)60547)
 #define OC_C3S5 ((ogg_int32_t)54491)
