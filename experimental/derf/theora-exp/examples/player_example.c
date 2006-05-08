@@ -679,7 +679,7 @@ int main(int argc,char *argv[]){
           th_decode_ctl(td,TH_DECCTL_SET_GRANPOS,&op.granulepos,
            sizeof(op.granulepos));
         }
-        if(th_decode_packetin(td,&op,&videobuf_granulepos)>=0){
+        if(th_decode_packetin(td,&op,&videobuf_granulepos)==0){
           videobuf_time=th_granule_time(td,videobuf_granulepos);
           frames++;
 

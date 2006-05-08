@@ -12,7 +12,7 @@ Some of these are not yet present even in the reference decoder.
 These include:
 - Support for non-VP3 style quantization matrices (i.e., complete support for
    the additional flexibility added to the quantization matrix specification).
-- Support for additional pixel foramts: 4:4:4 and 4:2:2 (in addition to the
+- Support for additional pixel formats: 4:4:4 and 4:2:2 (in addition to the
    4:2:0 format supported by VP3).
 - Support for block-level qi values.
 Additional features of the new library design:
