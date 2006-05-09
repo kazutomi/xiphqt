@@ -38,7 +38,7 @@
       <!-- Integer with value greater than zero giving the ordinal position of the media on the xspf:album. This value is primarily for fuzzy lookups, though a user-agent may display it. xspf:track elements MAY contain exactly one. It MUST be a valid XML Schema nonNegativeInteger. -->
       <trackNum>3</trackNum>
 
-      <!-- The time to render a resource, in milliseconds. It MUST be a valid XML Schema nonNegativeInteger. This value is only a hint -- different XSPF generators will generate slightly different values. A user-agent MUST NOT use this value to determine the rendering duration, since the data will likely be low quality. xspf:track elements MAY contain exactly one duration element. -->
+      <!-- The time to render a resource, in milliseconds. It MUST be a valid XML Schema nonNegativeInteger. This value is only a hint - different XSPF generators will generate slightly different values. A user-agent MUST NOT use this value to determine the rendering duration, since the data will likely be low quality. xspf:track elements MAY contain exactly one duration element. -->
       <duration>19200</duration>
 
       <!-- The link element allows non-XSPF web resources to be included in xspf:track elements without breaking XSPF validation. -->
