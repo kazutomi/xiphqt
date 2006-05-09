@@ -89,7 +89,7 @@ typedef struct xiph_rtp {
 	ogg_packet op;
 	ogg_packet header[3];
 	/* codec generic */
-	int codec; // 0 = vorbis, 1 = theora, 2 =speex
+	int codec; // 0 = vorbis, 1 = theora, 2 = speex
 #ifdef HAVE_VORBIS
 	/* codec specific (vorbis)*/
 	vorbis_info vi; 

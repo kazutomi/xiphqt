@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2005, Fluendo / Xiph.Org
+  Copyright (c) 2006, Fluendo / Xiph.Org
 
   Redistribution and use in source and binary forms, with or without 
   modification, are permitted provided that the following conditions are met:
@@ -183,8 +183,8 @@ int sendrtp (xiph_rtp_t *xr, const void *data, int len)
 	return (ret);
 }
 
-//FIXME timestamp and sleeptime could be just one parameter
-static void flush_stack (xiph_rtp_t *xr, long sleeptime, long timestamp)
+
+static void flush_stack (xiph_rtp_t *xr, long timestamp, long sleeptime)
 {
 	framestack_t *fs = &xr->fs;
 	unsigned char *packet;
@@ -257,7 +257,7 @@ void creatertp (xiph_rtp_t *xr, unsigned char* vorbdata, int length,
 	if (type)
 	{
 		// flush any other packet in queue (chained ogg!)
-		flush_stack(xr, sleeptime, timestamp);
+		flush_stack(xr, timestamp, sleeptime);
 		sleeptime = 300; //  ((1 / (float) bitrate) * 1000000);
 	}
 
@@ -274,13 +274,13 @@ void creatertp (xiph_rtp_t *xr, unsigned char* vorbdata, int length,
 		else if (length + fs->stacksize > max_payload
 				|| fs->stackcount >= 15)
 		{
-			flush_stack(xr, sleeptime, timestamp);
+			flush_stack(xr, timestamp, sleeptime);
 		
 			if (length <= max_payload)
 				stack_packet(xr,vorbdata,length);
 		}
 		if (last)
-			flush_stack(xr, sleeptime, timestamp);
+			flush_stack(xr, timestamp, sleeptime);
 
 	} 
 
