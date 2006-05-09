@@ -4,7 +4,7 @@
   Date: 05/01/2005
   Platform: Linux
 
-  Copyright (c) 2005, Fluendo / Xiph.Org
+  Copyright (c) 2006, Fluendo / Xiph.Org
 
   Redistribution and use in source and binary forms, with or without 
   modification, are permitted provided that the following conditions are met:
@@ -83,7 +83,7 @@ int main (int argc, char **argv)
 	unsigned int ttl  = 1;
 	long timestamp = 0, prev = 0;
 
-    	fprintf (stderr, "Vorbis RTP Server (draft-kerr-avt-vorbis-rtp-05)\n");
+    	fprintf (stderr, "Vorbis RTP Server (draft-ietf-avt-rtp-vorbis-00)\n");
 	memset (&xr,0,sizeof(xiph_rtp_t));
 
 /*  Command-line args processing  */

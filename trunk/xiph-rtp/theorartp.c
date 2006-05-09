@@ -4,7 +4,7 @@
   Date: 05/01/2005
   Platform: Linux
 
-  Copyright (c) 2005, Fluendo / Xiph.Org
+  Copyright (c) 2006, Fluendo / Xiph.Org
 
   Redistribution and use in source and binary forms, with or without 
   modification, are permitted provided that the following conditions are met:
@@ -109,7 +109,7 @@ int main (int argc, char **argv)
 	unsigned int ttl  = 1;
 	long timestamp = 0;
 
-    	fprintf (stderr, "Theora RTP Server (draft-barbato-avt-rtp-theora-01)\n");
+    	fprintf (stderr, "Theora RTP Server (draft-barbato-avt-rtp-theora-00)\n");
 	memset (&xr,0,sizeof(xiph_rtp_t));
 
 /*  Command-line args processing  */
@@ -331,7 +331,7 @@ cfg_parse(&xr);
 #endif
                         //FIXME ugly as hell and probably wrong!!!!
 			creatertp ( &xr, xr.op.packet, xr.op.bytes, 
-				    timestamp, timestamp, 0, xr.op.e_o_s );
+				    timestamp*90000/((double)xr.ti.fps_numerator/xr.ti.fps_denominator), timestamp, 0, xr.op.e_o_s );
             	    }
                 }
 

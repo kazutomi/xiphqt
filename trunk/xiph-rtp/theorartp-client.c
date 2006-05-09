@@ -271,7 +271,8 @@ pkt_repack(ogg_context_t *ogg, unsigned int timestamp, FILE *out){
   oggpack_read(&opb,1); //video marker
   
   frame_type = oggpackB_read(&opb,1);
-
+  timestamp/=90000;
+  timestamp*=ogg->time_num/ogg->time_den;
  
   if(timestamp)
   {
@@ -444,7 +445,7 @@ main (int argc, char *argv[])
   ogg.prev_gp=-1;
 
 
-  fprintf (stderr, "  Vorbis RTP Client (draft-barbato-avt-rtp-theora-05)\n");
+  fprintf (stderr, "  Vorbis RTP Client (draft-barbato-avt-rtp-theora-00)\n");
 
   while ((opt = getopt (argc, argv, "i:p:f:v")) != -1)
     {
