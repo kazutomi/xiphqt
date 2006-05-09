@@ -64,6 +64,7 @@
           <ul class="faq-toc">
             <li><a href="#faq_inst_frameworks">What are "Xiph frameworks"? Do I need to install them?</a></li>
             <li><a href="#faq_inst_panther">After installation on OS X 10.3.9 I can open .ogg files but there is no sound...?</a></li>
+            <li><a href="#faq_inst_uninst">It's good, but... how do I uninstall this "XiphQT" thing?</a></li>
           </ul>
           <div class="faq-toc-sec" id="faq_toc_s_itunes"><a href="#faq_s_itunes">"XiphQT vs. iTunes"</a></div>
           <ul class="faq-toc">
@@ -102,8 +103,26 @@
               <p>If an application, e.g. QuickTime Player, can open an .ogg file without errors but then simply produces just silence you may need
                 to restart your computer.</p>
               <p>Some of the XiphQT components are implemented as system components and not QuickTime components. While "Tiger" seems to be able
-                to detect those components automatically - "Panther", apparently, can only detect those newly installed components only on system
+                to detect those components automatically - "Panther", apparently, can only detect those newly installed components on system
                 start.</p>
+            </div>
+            <a name="faq_inst_uninst" id="faq_inst_uninst"></a>
+            <div class="faq-Q">
+              <p>It's good, but... how do I uninstall this "XiphQT" thing?</p>
+            </div>
+            <div class="faq-A">
+              <p>To manually uninstall XiphQT packages on OS X:</p>
+              <ol>
+                <li>Start the installer again.</li>
+                <li>Select "Show Files" from the "File" menu (or use Command-I) - it will display a list of files the installer copies to your
+                  machine during installation.</li>
+                <li>Delete those files (do not delete non-empty directories, though).</li>
+                <li>Quit the installer.</li>
+                <li>Find XiphQT.pkg and xiph-frameworks.pkg in /Library/Receipts and delete them, too.</li>
+                <li>Done.</li>
+              </ol>
+              <p>Or you can have a look <a href="http://krugazor.free.fr/software/desinstaller/DesInstaller.php">here</a> for a more automated
+                approach.</p>
             </div>
           </div>
           <a name="faq_s_itunes" id="faq_s_itunes"></a>
@@ -187,7 +206,7 @@
       </div>
       <div id="the-footer">
         <p><a href="./" class="link">Home</a> | <a href="http://www.xiph.org/" class="link">xiph.org</a> | <a href="contact.html" class="link">Contact</a></p>
-        <p>Copyright &copy; 2005 Xiph.Org Foundation. All rights reserved.</p>
+        <p>Copyright &copy; 2005-2006 Xiph.Org Foundation. All rights reserved.</p>
       </div>
     </div>
   </body>

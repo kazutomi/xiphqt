@@ -12,14 +12,15 @@
     <dc:language>en-gb</dc:language>
     <dc:publisher>Xiph.Org Foundation</dc:publisher>
     <dc:creator>Arek Korbik (mailto:arkadini@gmail.com)</dc:creator>
-    <dc:rights>Copyright &#169; 2005 Xiph.Org Foundation. All rights reserved.</dc:rights>
-    <dc:date>2005-12-20T18:46+00:00</dc:date>
+    <dc:rights>Copyright &#169; 2005-2006 Xiph.Org Foundation. All rights reserved.</dc:rights>
+    <dc:date>2006-05-08T23:59+00:00</dc:date>
     <syn:updatePeriod>daily</syn:updatePeriod>
     <syn:updateFrequency>1</syn:updateFrequency>
     <syn:updateBase>2005-01-01T05:00+00:00</syn:updateBase>
 
     <items>
       <rdf:Seq>
+        <rdf:li resource="http://www.xiph.org/quicktime/index.html#id2006050800" />
         <rdf:li resource="http://www.xiph.org/quicktime/index.html#id2005122000" />
         <rdf:li resource="http://www.xiph.org/quicktime/index.html#id2005121701" />
         <rdf:li resource="http://www.xiph.org/quicktime/index.html#id2005121700" />
@@ -30,6 +31,22 @@
       </rdf:Seq>
     </items>
   </channel>
+
+  <item rdf:about="http://www.xiph.org/quicktime/index.html#id2006050800">
+    <title>XiphQT 0.1.5 released</title>
+    <link>http://www.xiph.org/quicktime/index.html#id2006050800</link>
+    <description>
+      &lt;p&gt;What's new in this release? Intel Mac compatibility (finally!),
+        FLAC decoder, fresh (and still warm!) Theora decoder and a
+        number of bug fixes and other smaller changes - see
+        the &lt;a href="release_notes.html"&gt;release notes&lt;/a&gt; for
+        details.&lt;/p&gt;
+      &lt;p&gt;As always, you can find it on the &lt;a href="download.html"&gt;download&lt;/a&gt;
+        page.&lt;/p&gt;
+    </description>
+    <dc:date>2006-05-08T23:59+00:00</dc:date>
+    <dc:creator>Arek</dc:creator>
+  </item>
 
   <item rdf:about="http://www.xiph.org/quicktime/index.html#id2005122000">
     <title>XiphQT News RSS feed</title>
