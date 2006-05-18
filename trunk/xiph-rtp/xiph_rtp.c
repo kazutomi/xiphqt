@@ -208,7 +208,7 @@ static void flush_stack (xiph_rtp_t *xr, long timestamp, long sleeptime)
 		sendrtp (xr, packet, fs->stacksize + 4);
 
 		/*  Swap headers back to host order  */
-		xr->headers.sequence = htons (xr->headers.sequence);
+		xr->headers.sequence = ntohs (xr->headers.sequence);
 		xr->headers.timestamp = ntohl (xr->headers.timestamp);
 
 		if (fs->stackcount == 1) 
