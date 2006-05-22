@@ -82,7 +82,29 @@ use of more modern desktop standards.</dd>
           <dd>PHP library for parsing and generating XSPF.</dd>
 
           <dt><a href="http://rubyforge.org/forum/forum.php?forum_id=5162">Armangil's podcatcher (Unix)</a></dt>
-          <dd>Armangil's podcatcher is a podcast client for the command line which supports XSPF enclosures. </dd>
+          <dd>A podcast client for the command line which supports XSPF enclosures. </dd>
+
+          <dt><a href="http://www.jamendo.com/us/static/concept/">Jamendo</a></dt>
+          <dd>A repository of artists and music that allows users to create XSPF playlists.</dd>
+
+	  <dt><a href="http://www.artistserver.com/">ArtistServer</a></dt>
+          <dd>A hosting service for musicians which makes playlists available in XSPF.</dd>
+
+	  <dt><a href="http://projectopus.com/">Project Opus</a></dt>
+	  <dd>A music community site which makes playlists available in XSPF.</dd>
+
+	  <dt><a href="http://search.cpan.org/~daniel/XML-XSPF/lib/XML/XSPF.pm">XML::XSPF on CPAN</a></dt>
+          <dd>Perl library for parsing and generating XSPF.</dd>
+
+          <dt><a
+          href="http://www.slimdevices.com/pi_features.html">Slim
+          Server</a></dt> <dd>Controller for <a
+          href="http://slimdevices.com/pi_overview.html">Squeezebox</a>,
+          a living room music device.  Quote: <cite>You can punch an
+          XSPF URL into the "Radio Tune In" field in our webUI.  Or if
+          you are browsing a Podcast or RSS feed that links to an XSPF
+          document, that will work as well. The XSPF document does not
+          need to be local.</cite></dd>
 
 <!-- template for new entries
           <dt><a href=""></a></dt>
