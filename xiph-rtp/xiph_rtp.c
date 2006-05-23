@@ -228,7 +228,8 @@ static void flush_stack (xiph_rtp_t *xr, long timestamp, long sleeptime)
 	}
 }
 
-static void stack_packet(xiph_rtp_t *xr, unsigned char* vorbdata, int length)
+static void stack_packet(xiph_rtp_t *xr, unsigned char* vorbdata, int length, 
+                         long timestamp)
 {
 	framestack_t *fs = &xr->fs;
 	
@@ -241,6 +242,7 @@ static void stack_packet(xiph_rtp_t *xr, unsigned char* vorbdata, int length)
 	
 	fs->stackcount++;
 	fs->stacksize += length;
+	xr->headers.timestamp += timestamp;
 
 }
 
@@ -268,7 +270,7 @@ void creatertp (xiph_rtp_t *xr, unsigned char* vorbdata, int length,
 		if (length + fs->stacksize <= max_payload
 				&& fs->stackcount < 15) 
 		{
-			stack_packet(xr, vorbdata, length);
+			stack_packet(xr, vorbdata, length, timestamp);
 		}
 
 		else if (length + fs->stacksize > max_payload
@@ -277,7 +279,7 @@ void creatertp (xiph_rtp_t *xr, unsigned char* vorbdata, int length,
 			flush_stack(xr, timestamp, sleeptime);
 		
 			if (length <= max_payload)
-				stack_packet(xr,vorbdata,length);
+				stack_packet(xr, vorbdata, length, timestamp);
 		}
 		if (last)
 			flush_stack(xr, timestamp, sleeptime);
