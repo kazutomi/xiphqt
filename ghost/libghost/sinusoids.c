@@ -28,6 +28,12 @@
 #define MIN(a,b) ((a)<(b) ? (a):(b))
 #define MAX(a,b) ((a)>(b) ? (a):(b))
 
+/* Find the sinusoids present in a frame -- THIS CAN BE IMPROVED
+ * psd is the power spectral density of the signal
+ * w are the returned sinudois frequencies (0 to pi)
+ * N is the max number of sinusoids (returns the actual number)
+ * length is the size of the psd
+ */
 void find_sinusoids(float *psd, float *w, int *N, int length)
 {
    int i,j;
@@ -144,6 +150,18 @@ void extract_sinusoids(float *x, float *w, float *window, float *ai, float *bi, 
    printf ("\n");
 }
 
+/* Models the signal as modulated sinusoids 
+ * x is the signal
+ * w are the frequencies
+ * window is the analysis window (you can use a rectangular window)
+ * ai are the cos(x) coefficients
+ * bi are the sin(x) coefficients
+ * ci are the x*cos(x) coefficients
+ * di are the x*sin(x) coefficients
+ * y is the approximated signal by summing all the params
+ * N is the number of sinusoids
+ * len is the frame size
+*/
 void extract_modulated_sinusoids(float *x, float *w, float *window, float *ai, float *bi, float *ci, float *di, float *y, int N, int len)
 {
    float cos_table[N][len];
