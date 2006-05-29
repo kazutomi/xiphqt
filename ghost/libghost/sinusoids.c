@@ -153,6 +153,7 @@ void extract_modulated_sinusoids(float *x, float *w, float *window, float *ai, f
    float cosE[N], sinE[N];
    float costE[N], sintE[N];
    int i,j, iter;
+   /* Build a table for the four basis functions at each frequency: cos(x), sin(x), x*cos(x), x*sin(x)*/
    for (i=0;i<N;i++)
    {
       float tmp1=0, tmp2=0;
@@ -163,8 +164,10 @@ void extract_modulated_sinusoids(float *x, float *w, float *window, float *ai, f
          sin_table[i][j] = sin(w[i]*j)*window[j];
          tcos_table[i][j] = ((3./len)*(j-(len>>1)))*cos_table[i][j];
          tsin_table[i][j] = ((3./len)*(j-(len>>1)))*sin_table[i][j];
+         /* The sinusoidal terms */
          tmp1 += cos_table[i][j]*cos_table[i][j];
          tmp2 += sin_table[i][j]*sin_table[i][j];
+         /* The modulation terms */
          tmp3 += tcos_table[i][j]*tcos_table[i][j];
          tmp4 += tsin_table[i][j]*tsin_table[i][j];
       }
@@ -173,17 +176,20 @@ void extract_modulated_sinusoids(float *x, float *w, float *window, float *ai, f
       costE[i] = tmp3;
       sintE[i] = tmp4;
    }
+   /* y is the initial approximation of the signal */
    for (j=0;j<len;j++)
       y[j] = 0;
    for (i=0;i<N;i++)
       ai[i] = bi[i] = ci[i] = di[i] = 0;
    int tata=0;
+   /* This is an iterative solution -- much quicker than inverting a matrix */
    for (iter=0;iter<5;iter++)
    {
       for (i=0;i<N;i++)
       {
          float tmp1=0, tmp2=0;
          float tmp3=0, tmp4=0;
+         /* (Sort of) project the residual on the four basis functions */
          for (j=0;j<len;j++)
          {
             tmp1 += (x[j]-y[j])*cos_table[i][j];
@@ -191,12 +197,15 @@ void extract_modulated_sinusoids(float *x, float *w, float *window, float *ai, f
             tmp3 += (x[j]-y[j])*tcos_table[i][j];
             tmp4 += (x[j]-y[j])*tsin_table[i][j];
          }
+         /* Normalize by the energy of each basis function */
          tmp1 /= cosE[i];
          //Just in case it's a DC! Must fix that anyway
          tmp2 /= (.0001+sinE[i]);
          tmp3 /= (.0001+costE[i]);
          tmp4 /= (.0001+sintE[i]);
          //tmp3=tmp4 = 0;
+
+         /* Update the signal approximation for the next iteration */
          for (j=0;j<len;j++)
          {
             y[j] += tmp1*cos_table[i][j] + tmp2*sin_table[i][j] + tmp3*tcos_table[i][j] + tmp4*tsin_table[i][j];
