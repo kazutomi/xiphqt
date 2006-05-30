@@ -87,7 +87,7 @@
 <div class="nav">
 <h3 class="nav">Source</h3>
 <ul class="nav">
-<li><a href="http://downloads.xiph.org/releases/theora/libtheora-1.0alpha5.tar.gz">libtheora-1.0alpha5</a></li>
+<li><a href="http://downloads.xiph.org/releases/theora/libtheora-1.0alpha5.tar.gz">libtheora-1.0alpha6</a></li>
 <li><a href="http://downloads.xiph.org/releases/ogg/libogg-1.1.2.tar.gz">libogg-1.1.2</a></li>
 <li><a href="http://downloads.xiph.org/releases/vorbis/libvorbis-1.1.1.tar.gz">libvorbis-1.1.1</a></li>
 </ul>
@@ -124,6 +124,35 @@
 </div>
 
 <div class="content">	
+
+<h3>[ 2006 May 30 - libtheora 1.0alpha6 release ]</h3>
+<p>We're pleased to announce a new release of the libtheora reference 
+implemenation. This is an incremental update over alpha 5, consisting
+primarily of bug fixes and a merge of the encoder optimizations from the 
+theora-mmx branch.</p>
+
+<blockquote>
+    <a href="http://downloads.xiph.org/releases/theora/libtheora-1.0alpha6.tar.bz2">libtheora-1.0alpha6.tar.bz2<a/><br>
+    <a href="http://downloads.xiph.org/releases/theora/libtheora-1.0alpha6.tar.gz">libtheora-1.0alpha6.tar.gz</a><br>
+    <a href="http://downloads.xiph.org/releases/theora/libtheora-1.0alpha6.zip">libtheora-1.0alpha6.zip</a>
+</blockquote>
+
+<p><strong>Changes since the 1.0 alpha 5 release:</strong>
+<ul>
+<li>Merge theora-mmx simd acceleration (x86_32 and x86_64)</li>
+<li>Major RTP payload specification update</li>
+<li>Minor format specification updates</li>
+<li>Fix some spurious calls to free() instead of _ogg_free()</li>
+<li>Fix invalid array indexing in PixelLineSearch()</li>
+<li>Improve robustness against invalid input</li>
+<li>General warning cleanup</li>
+<li>The offset_y member now means what every application thought it meant
+   (offset from the top). This will mean some old files (those with a
+   non-centered image created with a buggy encoder) will display 
+   differently.</li>
+</ul>
+
+<p>Thanks to everyone who contributed!</p>
 
 <h3>[ 2006 March 25 - Live installfest streams ]</h3>
 <p>The 2006 FLISOL (Festival de Instalacion de Software Libre en 
