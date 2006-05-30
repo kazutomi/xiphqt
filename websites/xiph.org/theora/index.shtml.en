@@ -37,13 +37,13 @@ with future releases.
 <ul>
   <li>The <strong>libtheora</strong> reference implementation provides
       the standard encoder and decoder under a BSD license.
-      [<a href="http://downloads.xiph.org/releases/theora/libtheora-1.0alpha5.tar.gz">libtheora-1.0alpha5</a>]
+      [<a href="http://downloads.xiph.org/releases/theora/libtheora-1.0alpha6.tar.gz">libtheora-1.0alpha5</a>]
       [<a href="http://svn.xiph.org/trunk/theora/">SVN trunk</a>]
   </li>
   <li>The <strong>theora-exp</strong> project is a from-scratch 
       implementation of the complete Theora I decoder and a 
       more sophisticated but still experimental encoder.
-      [<a href="http://svn.xiph.org/experimental/derf/theora-exp/">SVN trunk</a>]
+      [<a href="http://svn.xiph.org/trunk/theora-exp/">SVN trunk</a>]
   </li>
 </ul>
 
@@ -59,7 +59,7 @@ with future releases.
 <ul>
   <li><a href="faq/">Frequently Asked Questions</a></li>
   <li><a href="doc/Theora_I_spec.pdf">Theora I Format Specification</a></li>
-  <li><a href="doc/libtheora-1.0alpha5/">libtheora API reference</a></li>
+  <li><a href="doc/libtheora-1.0alpha6/">libtheora API reference</a></li>
   <li><a href="http://people.xiph.org/~tterribe/doc/libtheora-exp/">theora-exp API reference</a>
 </ul>
 
