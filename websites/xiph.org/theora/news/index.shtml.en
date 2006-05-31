@@ -12,6 +12,68 @@
 
 <h1>Theora News</h1>
 
+<h3>[ 2006 May 30 - libtheora 1.0alpha6 release ]</h3>
+<p>We're pleased to announce a new release of the libtheora reference 
+implemenation. This is an incremental update over alpha 5, consisting
+primarily of bug fixes and a merge of the encoder optimizations from the 
+theora-mmx branch.</p>
+
+<blockquote>
+    <a href="http://downloads.xiph.org/releases/theora/libtheora-1.0alpha6.tar.bz2">libtheora-1.0alpha6.tar.bz2<a/><br>
+    <a href="http://downloads.xiph.org/releases/theora/libtheora-1.0alpha6.tar.gz">libtheora-1.0alpha6.tar.gz</a><br>
+    <a href="http://downloads.xiph.org/releases/theora/libtheora-1.0alpha6.zip">libtheora-1.0alpha6.zip</a>
+</blockquote>
+
+<p><strong>Changes since the 1.0 alpha 5 release:</strong>
+<ul>
+<li>Merge theora-mmx simd acceleration (x86_32 and x86_64)</li>
+<li>Major RTP payload specification update</li>
+<li>Minor format specification updates</li>
+<li>Fix some spurious calls to free() instead of _ogg_free()</li>
+<li>Fix invalid array indexing in PixelLineSearch()</li>
+<li>Improve robustness against invalid input</li>
+<li>General warning cleanup</li>
+<li>The offset_y member now means what every application thought it meant
+   (offset from the top). This will mean some old files (those with a
+   non-centered image created with a buggy encoder) will display 
+   differently.</li>
+</ul>
+
+<p>Thanks to everyone who contributed!</p>
+
+<h3>[ 2006 March 25 - Live installfest streams ]</h3>
+<p>The 2006 FLISOL (Festival de Instalacion de Software Libre en 
+Latin America) is webcasting <a 
+href="http://giss.hackitectura.net/flisol/">live streams</a> from
+today's event. See <a 
+href="http://www1.autistici.org/communa/platanal/2006/03/10/flisol-tvstreams-installfest-latinoamerica/">here</a> 
+and <a 
+href="http://lists.xiph.org/pipermail/theora/2006-March/001084.html">here</a> 
+for more information.</p>
+ 
+<h3>[ 2006 March 24 - Malagasy TV in Ogg Theora ]</h3>
+<p>Browsing the Icecast <a href="http://dir.xiph.org/">stream 
+directory</a> today I noticed <a 
+href="http://telegasy.info/">Telegasy</a> has an online Malagasy
+language <a 
+href="http://telegasy4.rktmb.org:8000/telegasy.ogg">stream</a> 
+in Ogg Theora. Very cool.</p>
+
+<h3>[ 2006 January 13 - YSTV webcast in Ogg Theora ]</h3>
+<p><a href="http://ystv.york.ac.uk/">York Student Television</a> is now 
+available online in Ogg Theora, both as a live stream and downloads of 
+past shows. <a href="http://ystv.york.ac.uk/watch/">Take a look</a> or
+<a href="http://ystv.york.ac.uk/streamlaunch/pressrelease.php">read</a> 
+about how they're using open source technology to distribute their 
+content in open formats.</p>
+
+<p>Way to go, YSTV, this is great to see!</p>
+
+<p>Note that the programs are also generally under a <a 
+href="http://creativecommons.org/licenses/by-nc-sa/2.0">CC</a> license 
+with a wierd additional advance notification requirement. We're not sure 
+how exactly that's intended to work...</p>
+
 <h3>[ 2005 August 20 - libtheora 1.0 alpha 5 release ]</h3>
 <p>We're pleased to announce a new release of the libtheora reference
 implemenation. This is an incremental update over alpha 4, to draw
