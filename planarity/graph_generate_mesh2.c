@@ -129,7 +129,7 @@ static int select_available(mesh *m,vertex *current,float length_limit,int inter
   // mark all possible choices
   while(v){
     v->selected = 0;
-    if(v!=current){
+    if(v!=current && current->active == m->active_current){
       if(length_limit==0 || sq_point_distance(v,current)<=length_limit){
 	if(!exists_edge(v,current)){
 	  edge e;
@@ -349,15 +349,17 @@ static void span_depth_first2(mesh *m,vertex *current, float length_limit){
 }
 
 static void random_populate(mesh *m,vertex *current,int dense_128, float length_limit){
-  int count=select_available(m,current,length_limit,0);
-  if(count){
-    vertex *v = m->g->verticies;
-    while(v){
-      if(v->active == m->active_current && v->selected && random_yes(dense_128)){
-	add_edge(m->g,v,current);
-	v->selected=0;
+  if(current->active == m->active_current){
+    int count=select_available(m,current,length_limit,0);
+    if(count){
+      vertex *v = m->g->verticies;
+      while(v){
+	if(v->selected && random_yes(dense_128)){
+	  add_edge(m->g,v,current);
+	  v->selected=0;
+	}
+	v=v->next;
       }
-      v=v->next;
     }
   }
 }
