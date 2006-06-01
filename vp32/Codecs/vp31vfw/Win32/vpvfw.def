@@ -1,4 +1,0 @@
-DESCRIPTION "VIDC.VP40:Duck VP4 codec" 
-HEAPSIZE 8192 
-EXPORTS 
-DriverProc 
