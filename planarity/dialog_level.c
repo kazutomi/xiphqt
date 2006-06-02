@@ -41,7 +41,8 @@ static void unlevel_post (Gameboard *g){
   g->level_dialog_active=0;
   pop_curtain(g);
   levelstate_go();
-  enter_game(g);
+  prepare_reenter_game(g);
+  reenter_game(g);
 } 
 
 static void unlevel_quit (Gameboard *g){
