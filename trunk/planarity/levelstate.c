@@ -405,12 +405,14 @@ void levelstate_go(){
       generate_board(&gameboard->g,curr->gm.num);
       activate_verticies(&gameboard->g);
       impress_location(&gameboard->g);
+      set_timer(0);
     }
   }else{
     /* no board in progress; fetch a new board */
     generate_board(&gameboard->g,curr->gm.num);
     activate_verticies(&gameboard->g);
     impress_location(&gameboard->g);
+    set_timer(0);
   }
 
   graph_dirty=0;
