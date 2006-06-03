@@ -32,6 +32,7 @@ class Souffleur:
 	gladefile="souffleur.glade"
 	windowname="MAIN_WINDOW"
 	self.wTree=gtk.glade.XML (gladefile,windowname)
+	self.gladefile = gladefile
 	# we only have two callbacks to register, but
 	# you could register any number, or use a
 	# special class that automatically
@@ -94,6 +95,7 @@ class Souffleur:
 	TStreams=self.Streams.getStreams()
 	for OGGStream in Streams:
 	    #TODO
+	    pass
 	return
 #==============================================================================
 #	MAIN:
