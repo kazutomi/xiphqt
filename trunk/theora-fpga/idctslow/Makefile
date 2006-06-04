@@ -1,14 +1,11 @@
 
-all: elaborate
+all: tb_idctslow
 	@echo "PLEASE, DO: make run"
 
-idctslow.o: idctslow.vhd
+
+tb_idctslow: idctslow.vhd tb_idctslow.vhd
 	ghdl -a --ieee=synopsys  idctslow.vhd
-
-tb_idctslow.o: tb_idctslow.vhd
 	ghdl -a --ieee=synopsys  tb_idctslow.vhd
-
-elaborate: idctslow.o tb_idctslow.o
 	ghdl -e  --ieee=synopsys tb_idctslow
 
 
