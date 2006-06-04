@@ -39,15 +39,14 @@ architecture rtl of IDctSlow is
 
   signal InData : mem64_t;
   signal QuantMat : mem64_t;
-  signal OutData : mem64_t;
 
-  signal IntermediateData : mem64_32bits_t;
-  alias ip : mem64_32bits_t is  IntermediateData;
-  alias op : mem64_t is  OutData;
+  signal IntermediateData : mem64_t;
+  alias ip : mem64_t is  IntermediateData;
+  alias op : mem64_t is  InData;
 
 
-  signal s_A, s_B, s_C, s_D, s_Ad, s_Bd, s_Cd, s_Dd, s_E, s_F, s_G, s_H : ogg_int_32_t;
-  signal s_Ed, s_Gd, s_Add, s_Bdd, s_Fd, s_Hd : ogg_int_32_t;
+  signal s_A, s_B, s_C, s_D, s_Ad, s_Bd, s_Cd, s_Dd, s_E, s_F, s_G, s_H : ogg_int_16_t;
+  signal s_Ed, s_Gd, s_Add, s_Bdd, s_Fd, s_Hd : ogg_int_16_t;
 
 
 
@@ -96,21 +95,21 @@ architecture rtl of IDctSlow is
 
 
 
-  constant xC1S7 : ogg_int_32_t := "00000000000000001111101100010101";
-  constant xC2S6 : ogg_int_32_t := "00000000000000001110110010000011";
-  constant xC3S5 : ogg_int_32_t := "00000000000000001101010011011011";
-  constant xC4S4 : ogg_int_32_t := "00000000000000001011010100000101";
-  constant xC5S3 : ogg_int_32_t := "00000000000000001000111000111010";
-  constant xC6S2 : ogg_int_32_t := "00000000000000000110000111111000";
-  constant xC7S1 : ogg_int_32_t := "00000000000000000011000111110001";
+   constant xC1S7 : ogg_int_32_t := "00000000000000001111101100010101";
+   constant xC2S6 : ogg_int_32_t := "00000000000000001110110010000011";
+   constant xC3S5 : ogg_int_32_t := "00000000000000001101010011011011";
+   constant xC4S4 : ogg_int_32_t := "00000000000000001011010100000101";
+   constant xC5S3 : ogg_int_32_t := "00000000000000001000111000111010";
+   constant xC6S2 : ogg_int_32_t := "00000000000000000110000111111000";
+   constant xC7S1 : ogg_int_32_t := "00000000000000000011000111110001";
 
---   constant xC1S7 : ogg_int_16_t := "1111101100010101";
---   constant xC2S6 : ogg_int_16_t := "1110110010000011";
---   constant xC3S5 : ogg_int_16_t := "1101010011011011";
---   constant xC4S4 : ogg_int_16_t := "1011010100000101";
---   constant xC5S3 : ogg_int_16_t := "1000111000111010";
---   constant xC6S2 : ogg_int_16_t := "0110000111111000";
---   constant xC7S1 : ogg_int_16_t := "0011000111110001";
+--    constant xC1S7 : ogg_int_16_t := "1111101100010101";
+--    constant xC2S6 : ogg_int_16_t := "1110110010000011";
+--    constant xC3S5 : ogg_int_16_t := "1101010011011011";
+--    constant xC4S4 : ogg_int_16_t := "1011010100000101";
+--    constant xC5S3 : ogg_int_16_t := "1000111000111010";
+--    constant xC6S2 : ogg_int_16_t := "0110000111111000";
+--    constant xC7S1 : ogg_int_16_t := "0011000111110001";
 
   
 begin
@@ -145,7 +144,7 @@ begin
 
     procedure WriteOut is
     begin
-      out_data <= OutData( count );
+      out_data <= op( count );
       s_out_valid <= '1';
       
       if( out_requested = '1' )then
@@ -171,15 +170,9 @@ begin
 
     procedure Dequant_slow is
     begin
-
-      -- IntermediateData(count) = InData(count) * QuantMat(count);
       IntermediateData( to_integer(dezigzag_index( count )) ) <=
-        InData(count) * QuantMat(count);
+        "*"(InData(count), QuantMat(count))(15 downto 0);
 
-      --OutData( to_integer(dezigzag_index( count )) ) <=
-      --    "*"(InData(count) , QuantMat(count))(15 downto 0);
-
-      
       if( count = 63 )then
         state <= idct_row;
         count <= 0;
@@ -201,38 +194,38 @@ begin
     begin
       case idct_row_state is
         when idct_row_st1 =>
-          s_A <= shift_right( "*"(xC1S7, ip(1 + count))(31 downto 0), 16 ) +
-                 shift_right( "*"(xC7S1, ip(7 + count))(31 downto 0), 16 );
+          s_A <= "*"(xC1S7, ip(1 + count))(31 downto 16) +
+                 "*"(xC7S1, ip(7 + count))(31 downto 16);
           
-          s_B <= shift_right( "*"(xC7S1, ip(1 + count))(31 downto 0), 16 ) -
-                 shift_right( "*"(xC1S7, ip(7 + count))(31 downto 0), 16 );
+          s_B <= "*"(xC7S1, ip(1 + count))(31 downto 16) -
+                 "*"(xC1S7, ip(7 + count))(31 downto 16);
 
-          s_C <= shift_right( "*"(xC3S5, ip(3 + count))(31 downto 0), 16 ) +
-                 shift_right( "*"(xC5S3, ip(5 + count))(31 downto 0), 16 );
+          s_C <= "*"(xC3S5, ip(3 + count))(31 downto 16) +
+                 "*"(xC5S3, ip(5 + count))(31 downto 16);
 
-          s_D <= shift_right( "*"(xC3S5, ip(5 + count))(31 downto 0), 16 ) -
-                 shift_right( "*"(xC5S3, ip(3 + count))(31 downto 0), 16 );
+          s_D <= "*"(xC3S5, ip(5 + count))(31 downto 16) -
+                 "*"(xC5S3, ip(3 + count))(31 downto 16);
 
           idct_row_state <= idct_row_st2;
         when idct_row_st2 =>
-          s_Ad <= shift_right( "*"(xC4S4, (s_A - s_C))(31 downto 0), 16 );
+          s_Ad <= "*"(xC4S4, (s_A - s_C))(31 downto 16);
 
-          s_Bd <= shift_right( "*"(xC4S4, (s_B - s_D))(31 downto 0), 16 );
+          s_Bd <= "*"(xC4S4, (s_B - s_D))(31 downto 16);
 
           s_Cd <= (s_A + s_C);
           s_Dd <= (s_B + s_D);
 
 
-          s_E <= shift_right( "*"(xC4S4, (ip(0 + count) + ip(4 + count)) )(31 downto 0), 16 );
+          s_E <= "*"(xC4S4, (ip(0 + count) + ip(4 + count)) )(31 downto 16);
 
           
-          s_F <= shift_right( "*"(xC4S4, (ip(0 + count) - ip(4 + count)) )(31 downto 0), 16 );
+          s_F <= "*"(xC4S4, (ip(0 + count) - ip(4 + count)) )(31 downto 16);
 
-          s_G <= shift_right( "*"(xC2S6, ip(2 + count))(31 downto 0), 16 ) +
-                 shift_right( "*"(xC6S2, ip(6 + count))(31 downto 0), 16 );
+          s_G <= "*"(xC2S6, ip(2 + count))(31 downto 16) +
+                 "*"(xC6S2, ip(6 + count))(31 downto 16);
 
-          s_H <= shift_right( "*"(xC6S2, ip(2 + count))(31 downto 0), 16 ) -
-                 shift_right( "*"(xC2S6, ip(6 + count))(31 downto 0), 16 );
+          s_H <= "*"(xC6S2, ip(2 + count))(31 downto 16) -
+                 "*"(xC2S6, ip(6 + count))(31 downto 16);
           
           idct_row_state <= idct_row_st3;
 
@@ -285,79 +278,79 @@ begin
         -- Inverse DCT on the rows now
     procedure Idct_col is
     begin
-      case idct_col_state is
-        when idct_col_st1 =>
-          s_A <= shift_right( "*"(xC1S7, ip(1*8 + count))(31 downto 0), 16 ) +
-                 shift_right( "*"(xC7S1, ip(7*8 + count))(31 downto 0), 16 );
+       case idct_col_state is
+         when idct_col_st1 =>
+           s_A <= "*"(xC1S7, ip(1*8 + count))(31 downto 16) +
+                  "*"(xC7S1, ip(7*8 + count))(31 downto 16);
           
-          s_B <= shift_right( "*"(xC7S1, ip(1*8 + count))(31 downto 0), 16 ) -
-                 shift_right( "*"(xC1S7, ip(7*8 + count))(31 downto 0), 16 );
+           s_B <= "*"(xC7S1, ip(1*8 + count))(31 downto 16) -
+                  "*"(xC1S7, ip(7*8 + count))(31 downto 16);
 
-          s_C <= shift_right( "*"(xC3S5, ip(3*8 + count))(31 downto 0), 16 ) +
-                 shift_right( "*"(xC5S3, ip(5*8 + count))(31 downto 0), 16 );
+           s_C <= "*"(xC3S5, ip(3*8 + count))(31 downto 16) +
+                  "*"(xC5S3, ip(5*8 + count))(31 downto 16);
 
-          s_D <= shift_right( "*"(xC3S5, ip(5*8 + count))(31 downto 0), 16 ) -
-                 shift_right( "*"(xC5S3, ip(3*8 + count))(31 downto 0), 16 );
+           s_D <= "*"(xC3S5, ip(5*8 + count))(31 downto 16) -
+                  "*"(xC5S3, ip(3*8 + count))(31 downto 16);
 
-          idct_col_state <= idct_col_st2;
-        when idct_col_st2 =>
-          s_Ad <= shift_right( "*"(xC4S4, (s_A - s_C))(31 downto 0), 16 );
+           idct_col_state <= idct_col_st2;
+         when idct_col_st2 =>
+           s_Ad <= "*"(xC4S4, (s_A - s_C))(31 downto 16);
 
-          s_Bd <= shift_right( "*"(xC4S4, (s_B - s_D))(31 downto 0), 16 );
+           s_Bd <= "*"(xC4S4, (s_B - s_D))(31 downto 16);
 
-          s_Cd <= (s_A + s_C);
-          s_Dd <= (s_B + s_D);
+           s_Cd <= (s_A + s_C);
+           s_Dd <= (s_B + s_D);
 
 
-          s_E <= shift_right( "*"(xC4S4, (ip(0*8 + count) + ip(4*8 + count)) )(31 downto 0), 16 );
+           s_E <= "*"(xC4S4, (ip(0*8 + count) + ip(4*8 + count)) )(31 downto 16);
           
-          s_F <= shift_right( "*"(xC4S4, (ip(0*8 + count) - ip(4*8 + count)) )(31 downto 0), 16 );
+           s_F <= "*"(xC4S4, (ip(0*8 + count) - ip(4*8 + count)) )(31 downto 16);
 
-          s_G <= shift_right( "*"(xC2S6, ip(2*8 + count))(31 downto 0), 16 ) +
-                 shift_right( "*"(xC6S2, ip(6*8 + count))(31 downto 0), 16 );
+           s_G <= "*"(xC2S6, ip(2*8 + count))(31 downto 16) +
+                  "*"(xC6S2, ip(6*8 + count))(31 downto 16);
 
-          s_H <= shift_right( "*"(xC6S2, ip(2*8 + count))(31 downto 0), 16 ) -
-                 shift_right( "*"(xC2S6, ip(6*8 + count))(31 downto 0), 16 );
+           s_H <= "*"(xC6S2, ip(2*8 + count))(31 downto 16) -
+                  "*"(xC2S6, ip(6*8 + count))(31 downto 16);
           
-          idct_col_state <= idct_col_st3;
+           idct_col_state <= idct_col_st3;
 
-        when idct_col_st3 =>
-          s_Ed <= (s_E - s_G + 8 );
-          s_Gd <= (s_E + s_G + 8 );
+         when idct_col_st3 =>
+           s_Ed <= (s_E - s_G + 8 );
+           s_Gd <= (s_E + s_G + 8 );
 
-          s_Add <= (s_F + s_Ad + 8 );
-          s_Bdd <= (s_Bd - s_H );
+           s_Add <= (s_F + s_Ad + 8 );
+           s_Bdd <= (s_Bd - s_H );
 
-          s_Fd <= (s_F - s_Ad + 8 );
-          s_Hd <= (s_Bd + s_H );
+           s_Fd <= (s_F - s_Ad + 8 );
+           s_Hd <= (s_Bd + s_H );
 
-          idct_col_state <= idct_col_st4;
+           idct_col_state <= idct_col_st4;
           
-        when idct_col_st4 =>
-          op(0*8 + count) <= shift_right( (s_Gd + s_Cd ), 4 )(15 downto 0);
-          op(7*8 + count) <= shift_right( (s_Gd - s_Cd ), 4 )(15 downto 0);
+         when idct_col_st4 =>
+           op(0*8 + count) <= shift_right( (s_Gd + s_Cd ), 4 )(15 downto 0);
+           op(7*8 + count) <= shift_right( (s_Gd - s_Cd ), 4 )(15 downto 0);
 
-          op(1*8 + count) <= shift_right( (s_Add + s_Hd ), 4 )(15 downto 0);
-          op(2*8 + count) <= shift_right( (s_Add - s_Hd ), 4 )(15 downto 0);
+           op(1*8 + count) <= shift_right( (s_Add + s_Hd ), 4 )(15 downto 0);
+           op(2*8 + count) <= shift_right( (s_Add - s_Hd ), 4 )(15 downto 0);
 
-          op(3*8 + count) <= shift_right( (s_Ed + s_Dd ), 4 )(15 downto 0);
-          op(4*8 + count) <= shift_right( (s_Ed - s_Dd ), 4 )(15 downto 0);
+           op(3*8 + count) <= shift_right( (s_Ed + s_Dd ), 4 )(15 downto 0);
+           op(4*8 + count) <= shift_right( (s_Ed - s_Dd ), 4 )(15 downto 0);
 
-          op(5*8 + count) <= shift_right( (s_Fd + s_Bdd ), 4 )(15 downto 0);
-          op(6*8 + count) <= shift_right( (s_Fd - s_Bdd ), 4 )(15 downto 0);
+           op(5*8 + count) <= shift_right( (s_Fd + s_Bdd ), 4 )(15 downto 0);
+           op(6*8 + count) <= shift_right( (s_Fd - s_Bdd ), 4 )(15 downto 0);
 
-          idct_col_state <= idct_col_st1;
+           idct_col_state <= idct_col_st1;
 
-          if( count = 7 )then
-            count <= 0;
-            state <= writeOut;
-          else
-            count <= count + 1;    
-          end if;
+           if( count = 7 )then
+             count <= 0;
+             state <= writeOut;
+           else
+             count <= count + 1;    
+           end if;
           
 
-        when others => null;
-      end case;    
+         when others => null;
+       end case;    
     end procedure Idct_col;
 
 
@@ -365,20 +358,20 @@ begin
     
 
     
-    procedure Proc is
-    begin
+--     procedure Proc is
+--     begin
       
-      OutData( count ) <= ip( count )(15 downto 0);
+--       op( count ) <= ip( count );
 
-      if( count = 63 )then
-        state <= writeOut;
-        count <= 0;
-      else
-        count <= count + 1;
-      end if;
+--       if( count = 63 )then
+--         state <= writeOut;
+--         count <= 0;
+--       else
+--         count <= count + 1;
+--       end if;
       
 
-    end procedure Proc;
+--     end procedure Proc;
 
 
 
@@ -399,7 +392,7 @@ begin
          when dequant => Dequant_slow;
          when idct_row => Idct_row;
          when idct_col => Idct_col;
-         when proc => proc;
+--          when proc => proc;
          when writeOut => WriteOut;
 
          when others => ReadIn; state <= readIn;
