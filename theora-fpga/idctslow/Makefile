@@ -3,7 +3,8 @@ all: tb_idctslow
 	@echo "PLEASE, DO: make run"
 
 
-tb_idctslow: idctslow.vhd tb_idctslow.vhd
+tb_idctslow: idctslow.vhd tb_idctslow.vhd ../include/syncram.vhd
+	ghdl -a --ieee=synopsys  ../include/syncram.vhd
 	ghdl -a --ieee=synopsys  idctslow.vhd
 	ghdl -a --ieee=synopsys  tb_idctslow.vhd
 	ghdl -e  --ieee=synopsys tb_idctslow
