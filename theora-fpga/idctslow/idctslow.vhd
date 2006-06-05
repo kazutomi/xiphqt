@@ -147,7 +147,7 @@ begin
      port map(clk, mem1_we, mem1_waddr, mem1_wdata, mem1_raddr1, mem1_rdata1, mem1_raddr2, mem1_rdata2 );
 
    
-   out_data <= mem0_rdata;
+   out_data <= mem1_rdata1;
 
 
   
@@ -187,7 +187,7 @@ begin
       case write_state is
         when w_st1 =>
           write_state <= w_st2;
-          mem0_raddr <= to_unsigned(count,6);
+          mem1_raddr1 <= to_unsigned(count,6);
 
         when w_st2 =>
           write_state <= w_st3;
@@ -202,7 +202,7 @@ begin
               write_state <= w_st1;
             else
               nextCount := count + 1;
-              mem0_raddr <= to_unsigned(nextCount,6);
+              mem1_raddr1 <= to_unsigned(nextCount,6);
               count <= nextCount;
               write_state <= w_st2;
             end if;
@@ -306,11 +306,7 @@ begin
                  "*"(xC2S6, mem1_rdata2)(31 downto 16);
 
         when rst11 =>
-          if( col_loop = '1' )then
-            idct_state <= col1;
-          else
-            idct_state <= rst12;
-          end if;
+          idct_state <= rst12;
 
           s_Ed <= (s_E - s_G + adjustBeforeShift );
           s_Gd <= (s_E + s_G + adjustBeforeShift );
@@ -368,76 +364,24 @@ begin
           mem1_waddr <= to_unsigned( 6*col + count, 6 );
           mem1_we <= '1';
           wdata_aux := (s_Fd - s_Bdd );
-          
-          if( count = 56 )then
-            count <= 0;
-            --state <= proc;
-            col_loop <= '1';
+
+          if( col_loop = '1' )then
+            if( count = 7 )then
+              count <= 0;
+              state <= writeOut;
+              col_loop <= '0';
+            else
+              count <= count + 1;    
+            end if;
           else
-            count <= count + 8;    
+            if( count = 56 )then
+              count <= 0;
+              col_loop <= '1';
+            else
+              count <= count + 8;    
+            end if;
           end if;
 
-
-
-
-        when col1 =>
-          idct_state <= col2;
-          mem0_we <= '1';
-          mem0_waddr <= to_unsigned(0*8 + count,6);
-          mem0_wdata <= shift_right( (s_Gd + s_Cd ), 4 )(15 downto 0);
-           
-        when col2 =>
-          idct_state <= col3;
-          mem0_we <= '1';
-          mem0_waddr <= to_unsigned(7*8 + count,6);
-          mem0_wdata <= shift_right( (s_Gd - s_Cd ), 4 )(15 downto 0);
-
-           
-        when col3 =>
-          idct_state <= col4;         
-          mem0_we <= '1';
-          mem0_waddr <= to_unsigned(1*8 + count,6);
-          mem0_wdata <= shift_right( (s_Add + s_Hd ), 4 )(15 downto 0);
-
-        when col4 =>
-          idct_state <= col5;
-          mem0_we <= '1';
-          mem0_waddr <= to_unsigned(2*8 + count,6);
-          mem0_wdata <= shift_right( (s_Add - s_Hd ), 4 )(15 downto 0);
-
-        when col5 =>
-          idct_state <= col6;
-          mem0_we <= '1';
-          mem0_waddr <= to_unsigned(3*8 + count,6);
-          mem0_wdata <= shift_right( (s_Ed + s_Dd ), 4 )(15 downto 0);
-
-        when col6 =>
-          idct_state <= col7;
-          mem0_we <= '1';
-          mem0_waddr <= to_unsigned(4*8 + count,6);
-          mem0_wdata <= shift_right( (s_Ed - s_Dd ), 4 )(15 downto 0);
-
-        when col7 =>
-          idct_state <= col8;
-          mem0_we <= '1';
-          mem0_waddr <= to_unsigned(5*8 + count,6);
-          mem0_wdata <= shift_right( (s_Fd + s_Bdd ), 4 )(15 downto 0);
-
-        when col8 =>
-          idct_state <= rst1;
-          mem0_we <= '1';
-          mem0_waddr <= to_unsigned(6*8 + count,6);
-          mem0_wdata <= shift_right( (s_Fd - s_Bdd ), 4 )(15 downto 0);
-
-           
-          if( count = 7 )then
-            count <= 0;
-            state <= writeOut;
-            col_loop <= '0';
-
-          else
-            count <= count + 1;    
-          end if;
 
         when others => null;
       end case;    
