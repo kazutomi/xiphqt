@@ -4,6 +4,7 @@ all: tb_idctslow
 
 
 tb_idctslow: idctslow.vhd tb_idctslow.vhd ../include/syncram.vhd
+	ghdl -a --ieee=synopsys  ../include/dual_syncram.vhd
 	ghdl -a --ieee=synopsys  ../include/syncram.vhd
 	ghdl -a --ieee=synopsys  idctslow.vhd
 	ghdl -a --ieee=synopsys  tb_idctslow.vhd
