@@ -231,6 +231,7 @@ begin
     procedure Idct is
       variable col : integer range 0 to 8;
       variable adjustBeforeShift : integer range 0 to 8;
+      variable wdata_aux : ogg_int_16_t;
     begin
 
       if( col_loop = '1' )then
@@ -252,21 +253,16 @@ begin
         when rst2 =>
           idct_state <= rst3;
 
+          mem1_raddr1 <= to_unsigned(3*col + count, 6);
+          mem1_raddr2 <= to_unsigned(5*col + count, 6);
+
         when rst3 =>
-          idct_state <= rst4;
+          idct_state <= rst5;
            s_A <= "*"(xC1S7, mem1_rdata1)(31 downto 16) +
                   "*"(xC7S1, mem1_rdata2)(31 downto 16);
           
            s_B <= "*"(xC7S1, mem1_rdata1)(31 downto 16) -
                   "*"(xC1S7, mem1_rdata2)(31 downto 16);
-
-          
-          mem1_raddr1 <= to_unsigned(3*col + count, 6);
-          mem1_raddr2 <= to_unsigned(5*col + count, 6);
-
-          
-        when rst4 =>
-          idct_state <= rst5;
 
         when rst5 =>
           idct_state <= rst6;        
@@ -277,8 +273,11 @@ begin
           s_D <= "*"(xC3S5, mem1_rdata2 )(31 downto 16) -
                  "*"(xC5S3, mem1_rdata1 )(31 downto 16);
 
+          mem1_raddr1 <= to_unsigned(0*col + count, 6);
+          mem1_raddr2 <= to_unsigned(4*col + count, 6);
+          
         when rst6 =>
-          idct_state <= rst7;        
+          idct_state <= rst8;        
           
           s_Ad <= "*"(xC4S4, (s_A - s_C))(31 downto 16);
 
@@ -287,25 +286,15 @@ begin
           s_Cd <= (s_A + s_C);
           s_Dd <= (s_B + s_D);
 
-          mem1_raddr1 <= to_unsigned(0*col + count, 6);
-          mem1_raddr2 <= to_unsigned(4*col + count, 6);
-
-          
-        when rst7 =>
-          idct_state <= rst8;
+          mem1_raddr1 <= to_unsigned(2*col + count, 6);
+          mem1_raddr2 <= to_unsigned(6*col + count, 6);
 
         when rst8 =>
-          idct_state <= rst9;
+          idct_state <= rst10;
 
           s_E <= "*"(xC4S4, ( mem1_rdata1 + mem1_rdata2) )(31 downto 16);          
           s_F <= "*"(xC4S4, ( mem1_rdata1 - mem1_rdata2) )(31 downto 16);
 
-          mem1_raddr1 <= to_unsigned(2*col + count, 6);
-          mem1_raddr2 <= to_unsigned(6*col + count, 6);
-
-          
-        when rst9 =>
-          idct_state <= rst10;
 
         when rst10 =>
           idct_state <= rst11;
@@ -334,51 +323,51 @@ begin
         
         when rst12 =>
           idct_state <= rst13;
-          mem1_waddr <= to_unsigned( 0+count, 6 );
-          mem1_wdata <= (s_Gd + s_Cd );
-          mem1_we <= '1';
+          mem1_waddr <= to_unsigned( 0*col + count, 6 );        
+          mem1_we <= '1';          
+          wdata_aux := (s_Gd + s_Cd );
           
         when rst13 =>
           idct_state <= rst14;
-          mem1_waddr <= to_unsigned( 7+count, 6 );
-          mem1_wdata <= (s_Gd - s_Cd );
+          mem1_waddr <= to_unsigned( 7*col + count, 6 );
           mem1_we <= '1';
-          
+          wdata_aux := (s_Gd - s_Cd );
+
         when rst14 =>
           idct_state <= rst15;
-          mem1_waddr <= to_unsigned( 1+count, 6 );
-          mem1_wdata <= (s_Add + s_Hd );
+          mem1_waddr <= to_unsigned( 1*col + count, 6 );
           mem1_we <= '1';
+          wdata_aux := (s_Add + s_Hd );
           
         when rst15 =>
           idct_state <= rst16;
-          mem1_waddr <= to_unsigned( 2+count, 6 );
-          mem1_wdata <= (s_Add - s_Hd );
+          mem1_waddr <= to_unsigned( 2*col + count, 6 );
           mem1_we <= '1';
+          wdata_aux := (s_Add - s_Hd );
           
         when rst16 =>
           idct_state <= rst17;
-          mem1_waddr <= to_unsigned( 3+count, 6 );
-          mem1_wdata <= (s_Ed + s_Dd );
+          mem1_waddr <= to_unsigned( 3*col + count, 6 );
           mem1_we <= '1';
+          wdata_aux := (s_Ed + s_Dd );
           
         when rst17 =>
           idct_state <= rst18;
-          mem1_waddr <= to_unsigned( 4+count, 6 );
-          mem1_wdata <= (s_Ed - s_Dd );
+          mem1_waddr <= to_unsigned( 4*col + count, 6 );
           mem1_we <= '1';
+          wdata_aux := (s_Ed - s_Dd );
           
         when rst18 =>
           idct_state <= rst19;
-          mem1_waddr <= to_unsigned( 5+count, 6 );
-          mem1_wdata <= (s_Fd + s_Bdd );
+          mem1_waddr <= to_unsigned( 5*col + count, 6 );
           mem1_we <= '1';
+          wdata_aux := (s_Fd + s_Bdd );
           
         when rst19 =>
           idct_state <= rst1;
-          mem1_waddr <= to_unsigned( 6+count, 6 );
-          mem1_wdata <= (s_Fd - s_Bdd );
+          mem1_waddr <= to_unsigned( 6*col + count, 6 );
           mem1_we <= '1';
+          wdata_aux := (s_Fd - s_Bdd );
           
           if( count = 56 )then
             count <= 0;
@@ -452,6 +441,13 @@ begin
 
         when others => null;
       end case;    
+
+      if( col_loop = '1' )then
+        mem1_wdata <= shift_right( wdata_aux, 4 )(15 downto 0);
+      else
+        mem1_wdata <= wdata_aux;
+      end if;
+
     end procedure Idct;
 
 
