@@ -23,7 +23,7 @@ compare:
         fi
 
 
-runvcd: elaborate
+runvcd: tb_idctslow
 	@echo "Running... wait some minutes"
 	ghdl -r tb_idctslow  --vcd=dump.vcd
 
