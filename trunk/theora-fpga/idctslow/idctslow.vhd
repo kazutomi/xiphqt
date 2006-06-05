@@ -39,9 +39,7 @@ architecture rtl of IDctSlow is
 
 
 
-  signal s_A, s_B, s_C, s_D, s_Ad, s_Bd, s_Cd, s_Dd, s_E, s_F, s_G, s_H : ogg_int_16_t;
-  signal s_Ed, s_Gd, s_Add, s_Bdd, s_Fd, s_Hd : ogg_int_16_t;
-
+  signal s_A, s_B, s_C, s_D, s_E, s_F, s_G, s_H : ogg_int_16_t;
 
 
 
@@ -51,10 +49,11 @@ architecture rtl of IDctSlow is
   signal state : state_t;
 
 
-  type idct_state_t is (rst1, rst2, rst3, rst4, rst5, rst6,
-                       rst7, rst8, rst9, rst10, rst11, rst12,
-                       rst13, rst14, rst15, rst16, rst17, rst18, rst19,
-                       col0, col1, col2, col3, col4, col5, col6, col7, col8, col9);
+  type idct_state_t is (
+    idct_st1, idct_st2, idct_st3, idct_st4, idct_st5,
+    idct_st6, idct_st7, idct_st8, idct_st9, idct_st10,
+    idct_st11, idct_st12, idct_st13, idct_st14, idct_st15,
+    idct_st16 );
   signal idct_state : idct_state_t;
 
 
@@ -116,14 +115,6 @@ architecture rtl of IDctSlow is
 
 
 
-  
-
-  signal mem0_we  : std_logic;
-  signal mem0_waddr : unsigned(5 downto 0) := "000000";
-  signal mem0_wdata : ogg_int_16_t;
-  signal mem0_raddr : unsigned(5 downto 0) := "000000";
-  signal mem0_rdata : ogg_int_16_t;
-
   signal mem1_we  : std_logic;
   signal mem1_waddr : unsigned(5 downto 0) := "000000";
   signal mem1_wdata : ogg_int_16_t;
@@ -134,12 +125,6 @@ architecture rtl of IDctSlow is
 
   
 begin
-
-  -- mem0 = 64 x 16 bits
-   mem0 : entity work.syncram
-     generic map( DEPTH => 64, DATA_WIDTH => 16, ADDR_WIDTH => 6 )
-     port map(clk, mem0_we, mem0_waddr, mem0_wdata, mem0_raddr, mem0_rdata );
-
 
   -- mem1 = dual 64 x 16 bits
    mem1 : entity work.dual_syncram
@@ -245,27 +230,27 @@ begin
 
 
       case idct_state is
-        when rst1 =>
-          idct_state <= rst2;
+        when idct_st1 =>
+          idct_state <= idct_st2;
           mem1_raddr1 <= to_unsigned(1*col + count, 6);
           mem1_raddr2 <= to_unsigned(7*col + count, 6);
           
-        when rst2 =>
-          idct_state <= rst3;
+        when idct_st2 =>
+          idct_state <= idct_st3;
 
           mem1_raddr1 <= to_unsigned(3*col + count, 6);
           mem1_raddr2 <= to_unsigned(5*col + count, 6);
 
-        when rst3 =>
-          idct_state <= rst5;
+        when idct_st3 =>
+          idct_state <= idct_st4;
            s_A <= "*"(xC1S7, mem1_rdata1)(31 downto 16) +
                   "*"(xC7S1, mem1_rdata2)(31 downto 16);
           
            s_B <= "*"(xC7S1, mem1_rdata1)(31 downto 16) -
                   "*"(xC1S7, mem1_rdata2)(31 downto 16);
 
-        when rst5 =>
-          idct_state <= rst6;        
+        when idct_st4 =>
+          idct_state <= idct_st5;        
 
           s_C <= "*"(xC3S5, mem1_rdata1 )(31 downto 16) +
                  "*"(xC5S3, mem1_rdata2 )(31 downto 16);
@@ -276,28 +261,28 @@ begin
           mem1_raddr1 <= to_unsigned(0*col + count, 6);
           mem1_raddr2 <= to_unsigned(4*col + count, 6);
           
-        when rst6 =>
-          idct_state <= rst8;        
+        when idct_st5 =>
+          idct_state <= idct_st6;        
           
-          s_Ad <= "*"(xC4S4, (s_A - s_C))(31 downto 16);
+          s_A <= "*"(xC4S4, (s_A - s_C))(31 downto 16);
 
-          s_Bd <= "*"(xC4S4, (s_B - s_D))(31 downto 16);
+          s_B <= "*"(xC4S4, (s_B - s_D))(31 downto 16);
 
-          s_Cd <= (s_A + s_C);
-          s_Dd <= (s_B + s_D);
+          s_C <= (s_A + s_C);
+          s_D <= (s_B + s_D);
 
           mem1_raddr1 <= to_unsigned(2*col + count, 6);
           mem1_raddr2 <= to_unsigned(6*col + count, 6);
 
-        when rst8 =>
-          idct_state <= rst10;
+        when idct_st6 =>
+          idct_state <= idct_st7;
 
           s_E <= "*"(xC4S4, ( mem1_rdata1 + mem1_rdata2) )(31 downto 16);          
           s_F <= "*"(xC4S4, ( mem1_rdata1 - mem1_rdata2) )(31 downto 16);
 
 
-        when rst10 =>
-          idct_state <= rst11;
+        when idct_st7 =>
+          idct_state <= idct_st8;
           
           s_G <= "*"(xC2S6, mem1_rdata1)(31 downto 16) +
                  "*"(xC6S2, mem1_rdata2)(31 downto 16);
@@ -305,65 +290,65 @@ begin
           s_H <= "*"(xC6S2, mem1_rdata1)(31 downto 16) -
                  "*"(xC2S6, mem1_rdata2)(31 downto 16);
 
-        when rst11 =>
-          idct_state <= rst12;
+        when idct_st8 =>
+          idct_state <= idct_st9;
 
-          s_Ed <= (s_E - s_G + adjustBeforeShift );
-          s_Gd <= (s_E + s_G + adjustBeforeShift );
+          s_E <= (s_E - s_G + adjustBeforeShift );
+          s_G <= (s_E + s_G + adjustBeforeShift );
 
-          s_Add <= (s_F + s_Ad + adjustBeforeShift );
-          s_Bdd <= (s_Bd - s_H );
+          s_A <= (s_F + s_A + adjustBeforeShift );
+          s_B <= (s_B - s_H );
 
-          s_Fd <= (s_F - s_Ad + adjustBeforeShift );
-          s_Hd <= (s_Bd + s_H );
+          s_F <= (s_F - s_A + adjustBeforeShift );
+          s_H <= (s_B + s_H );
         
-        when rst12 =>
-          idct_state <= rst13;
+        when idct_st9 =>
+          idct_state <= idct_st10;
           mem1_waddr <= to_unsigned( 0*col + count, 6 );        
           mem1_we <= '1';          
-          wdata_aux := (s_Gd + s_Cd );
+          wdata_aux := (s_G + s_C );
           
-        when rst13 =>
-          idct_state <= rst14;
+        when idct_st10 =>
+          idct_state <= idct_st11;
           mem1_waddr <= to_unsigned( 7*col + count, 6 );
           mem1_we <= '1';
-          wdata_aux := (s_Gd - s_Cd );
+          wdata_aux := (s_G - s_C );
 
-        when rst14 =>
-          idct_state <= rst15;
+        when idct_st11 =>
+          idct_state <= idct_st12;
           mem1_waddr <= to_unsigned( 1*col + count, 6 );
           mem1_we <= '1';
-          wdata_aux := (s_Add + s_Hd );
+          wdata_aux := (s_A + s_H );
           
-        when rst15 =>
-          idct_state <= rst16;
+        when idct_st12 =>
+          idct_state <= idct_st13;
           mem1_waddr <= to_unsigned( 2*col + count, 6 );
           mem1_we <= '1';
-          wdata_aux := (s_Add - s_Hd );
+          wdata_aux := (s_A - s_H );
           
-        when rst16 =>
-          idct_state <= rst17;
+        when idct_st13 =>
+          idct_state <= idct_st14;
           mem1_waddr <= to_unsigned( 3*col + count, 6 );
           mem1_we <= '1';
-          wdata_aux := (s_Ed + s_Dd );
+          wdata_aux := (s_E + s_D );
           
-        when rst17 =>
-          idct_state <= rst18;
+        when idct_st14 =>
+          idct_state <= idct_st15;
           mem1_waddr <= to_unsigned( 4*col + count, 6 );
           mem1_we <= '1';
-          wdata_aux := (s_Ed - s_Dd );
+          wdata_aux := (s_E - s_D );
           
-        when rst18 =>
-          idct_state <= rst19;
+        when idct_st15 =>
+          idct_state <= idct_st16;
           mem1_waddr <= to_unsigned( 5*col + count, 6 );
           mem1_we <= '1';
-          wdata_aux := (s_Fd + s_Bdd );
+          wdata_aux := (s_F + s_B );
           
-        when rst19 =>
-          idct_state <= rst1;
+        when idct_st16 =>
+          idct_state <= idct_st1;
           mem1_waddr <= to_unsigned( 6*col + count, 6 );
           mem1_we <= '1';
-          wdata_aux := (s_Fd - s_Bdd );
+          wdata_aux := (s_F - s_B );
 
           if( col_loop = '1' )then
             if( count = 7 )then
@@ -408,9 +393,6 @@ begin
     
 --      procedure Proc is
 --      begin
---        mem0_we <= '1';
---        mem0_waddr <= to_unsigned(count,6);
---        mem0_wdata <= ip( count );
 
        
 --        if( count = 63 )then
@@ -434,10 +416,7 @@ begin
        s_in_request <= '0';
        count <= 0;
        s_out_valid <= '0';
-       idct_state <= rst1;
-       mem0_we <= '0';
-       mem0_raddr <= "000000";
-       mem0_waddr <= "000000";
+       idct_state <= idct_st1;
 
        mem1_we <= '0';
        mem1_waddr <= "000000";
@@ -449,7 +428,6 @@ begin
        col_loop <= '0';
        
      elsif(clk'event and clk = '1') then
-       mem0_we <= '0';
        mem1_we <= '0';
        
        case state is
