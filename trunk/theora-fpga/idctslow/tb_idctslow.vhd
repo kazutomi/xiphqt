@@ -39,6 +39,10 @@ architecture behavior of tb_IDctSlow is
   signal in_valid : std_logic;
   signal in_data : signed(15 downto 0);
 
+
+  signal samples : integer := 0;
+  signal clock_cycles : integer := 0;
+  
 begin  -- behavior
 
   idctslow0: entity work.IDctSlow
@@ -58,9 +62,11 @@ begin  -- behavior
     if (resetn = '0') then
       end_of_file <= false;
 
-    elsif clk'EVENT and clk = '1' then
+    elsif clk'EVENT and clk = '1' then      
       if ( EndFile(DataInFile) or EndFile(QuantMatInFile) ) then
 	end_of_file <= true;
+        report "Latency = "&integer'image( clock_cycles/samples )&
+          " clock cycles per data sample." severity note;
       else
 
         if( out_requested = '1' )then
@@ -89,11 +95,14 @@ begin  -- behavior
   begin  -- process ReadInput
     if (resetn = '0') then
     elsif clk'EVENT and clk = '1' then
+      clock_cycles <= clock_cycles + 1;
+
       in_request <= '1' after delta;
       if( in_request = '1' and in_valid = '1' )then
         --Write(output_line, now, left, 15);
 	Write(output_line, to_integer(in_data));
 	WriteLine(OutFile, output_line);
+        samples <= samples + 1;
       end if;
     end if;
 
