@@ -409,36 +409,35 @@ begin
 
     
   begin
+     if(clk'event and clk = '1') then
+       if( Reset_n = '0' ) then
+         state <= readIn;
+         s_in_request <= '0';
+         count <= 0;
+         s_out_valid <= '0';
+         idct_state <= idct_st1;
 
-    
-     if( Reset_n = '0' ) then
-       state <= readIn;
-       s_in_request <= '0';
-       count <= 0;
-       s_out_valid <= '0';
-       idct_state <= idct_st1;
+         mem1_we <= '0';
+         mem1_waddr <= "000000";
+         mem1_raddr1 <= "000000";
+         mem1_raddr2 <= "000000";
+         
+         write_state <= w_st1;
 
-       mem1_we <= '0';
-       mem1_waddr <= "000000";
-       mem1_raddr1 <= "000000";
-       mem1_raddr2 <= "000000";
-       
-       write_state <= w_st1;
+         col_loop <= '0';
+         
+       else
+         mem1_we <= '0';
+         
+         case state is
+           when readIn => ReadIn;
+           when idct => Idct;
+                        --when proc => proc;
+           when writeOut => WriteOut;
 
-       col_loop <= '0';
-       
-     elsif(clk'event and clk = '1') then
-       mem1_we <= '0';
-       
-       case state is
-         when readIn => ReadIn;
-         when idct => Idct;
-         --when proc => proc;
-         when writeOut => WriteOut;
-
-         when others => ReadIn; state <= readIn;
-       end case;  
-
+           when others => ReadIn; state <= readIn;
+         end case;  
+       end if;
      end if;
   end process;
 
