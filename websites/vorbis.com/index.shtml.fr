@@ -1,0 +1,61 @@
+<!--#include virtual="/ssi/header.include" -->
+<!-- Enter custom page information and styles here -->
+  <title>Vorbis.com</title>
+</head>
+<body>
+<!--#include virtual="/common/xiphbar.include" -->
+
+<!--#include virtual="/ssi/pagetop.include.fr" -->
+<!--  All your page content goes here  -->
+
+<div id="getsetupandlisten">
+  <img src="/images/banners/getsetupandlisten.png" height="121" width="483" alt="Choisir l'OS sur lequel vous voulez installer" usemap="#map"/>
+    <map xml:lang="fr" dir="ltr" title="map" name="map" id="map">
+      <area shape="rect" coords="20,75,109,105" href="/setup_windows/" alt="Installation sous Windows"/>
+      <area shape="rect" coords="118,75,218,105" href="/setup_linux/" alt="Installation sous UNIX/Linux"/>
+      <area shape="rect" coords="227,75,313,105" href="/setup_osx/" alt="Installation sous Mac OSX"/>
+      <area shape="rect" coords="321,73,464,106" href="/setup_other/" alt="Installation sur d'autres plateformes"/>
+    </map>
+</div>
+
+<p style="font-size: 1.2em; font-weight: bold;">Pour obtenir le code source, rendez vous
+sur la <a href="http://www.xiph.org/downloads/" hreflang="en">page de téléchargement Xiph.org</a>.</p>
+
+<div style="border-top: 3px solid #d7e0e6;">
+<p style="font-size: 1.25em; font-weight: bold;">
+Ogg Vorbis est une technologie d'encodage et de <span xml:lang="en">streaming</span>
+audio professionnelle, complètement ouverte et sans brevet, avec tous les avantages
+de l'<span xml:lang="en">Open Source</span>.</p>
+</div>
+
+<div class="navbar" style="text-align: left; padding-top: 0;">
+<table border="0" cellpadding="0" cellspacing="0">
+<tr>
+<td>
+  <a href="/faq/">Foire aux questions</a>
+  <img src="/images/dot.png" alt="" class="dot"/>
+
+  <a href="http://xiph.org/vorbis/">Développeurs</a>
+  <img src="/images/dot.png" alt="" class="dot"/>
+
+  <a href="/contact/">Nous contacter</a>
+</td>
+</tr>
+</table>
+</div>
+
+<div style="border-top: 3px solid #d7e0e6;">
+  <p style="font-size: 1.29em; font-weight: bold; margin-bottom: 0;">Vorbis est partout !</p>
+  <p>Voir notre liste de <a href="/software/">Logiciels Tiers</a> qui utilisent Vorbis.</p>
+</div>
+
+<!--
+<div style="border-top: 3px solid #d7e0e6;">
+  <h1>News</h1>
+  <ul>
+    <li>news item</li>
+  </ul>
+</div>
+-->
+
+<!--#include virtual="/ssi/pagebottom.include.fr" -->

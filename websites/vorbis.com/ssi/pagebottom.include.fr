@@ -1,0 +1,13 @@
+</div><!-- content -->
+
+<div id="copyright">
+  Le logo du Poisson Xiph et le logo à plusieurs poissons Vorbis.com sont des
+  marques déposées de Xiph.Org.<br/>
+
+  Ces pages sont &copy; 1994 - 2005 Xiph.Org. Tous droits réservés.
+</div>
+
+</div><!-- thepage -->
+
+</body>
+</html>

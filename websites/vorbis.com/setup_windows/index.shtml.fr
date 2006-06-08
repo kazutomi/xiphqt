@@ -1,0 +1,84 @@
+<!--#include virtual="/ssi/header.include" -->
+<!-- Enter custom page information and styles here -->
+  <title>Vorbis.com : Installation sous Windows</title>
+</head>
+<body>
+<!--#include virtual="/common/xiphbar.include" -->
+
+<!--#include virtual="/ssi/pagetop.include.fr" -->
+<!--  All your page content goes here  -->
+
+<h1>Installation : Windows</h1>
+
+<h2>Lecture :</h2>
+
+<p>Nous avons un nouveau décodeur basé sur Windows DirectShow grâce à nos amis chez
+Illiminable. Il vous permettra de lire vos fichiers Ogg Vorbis files dans
+<a href="http://www.microsoft.com/windows/windowsmedia/mp10/default.aspx">Windows Media Player</a>
+et tous les <a href="http://sourceforge.net/project/showfiles.php?group_id=82303&amp;package_id=84358">autres</a>
+<a href="http://www.radlight.net/">lecteurs</a>
+<a href="http://www.inmatrix.com/zplayer/">basés sur</a>
+<a href="http://www.corecoded.com/">DirectShow</a>. Les lecteurs qui n'utilisent pas
+DirectShow n'ont pas besoin de ces filtres.</p>
+
+<ul>
+  <li><a href="http://www.illiminable.com/ogg/">Filtres DirectShow Illiminable</a></li>
+</ul>
+
+<h2>Lecteurs :</h2>
+
+<p>Les lecteurs utilisant DirectShow n'ont besoin que des filtres Illiminable ci-dessus.</p>
+
+<ul>
+  <li><a href="http://sourceforge.net/project/showfiles.php?group_id=82303&amp;package_id=84358">Media Player Classic</a> : un lecteur DirectShow Libre avec une interface minimaliste.</li>
+  <li><a href="http://www.corecoded.com/">The Core Media Player</a> : un lecteur DirectShow.</li>
+  <li><a href="http://www.inmatrix.com/zplayer/">Zoom Player</a> : un lecteur DirectShow.</li>
+  <li><a href="http://www.radlight.net/">RadLight</a> : un lecteur DirectShow.</li>
+  <li><a href="http://www.microsoft.com/windows/windowsmedia/mp10/default.aspx">Windows
+  Media Player</a>: le lecteur DirectShow de Microsoft.</li>
+  <li><a href="http://www.winamp.com/">Winamp</a> : un des premiers lecteurs MP3 qui lit maintenant les fichiers Ogg Vorbis.</li>
+  <li><a href='http://foobar2000.hydrogenaudio.org/'>foobar2000</a>
+  (interface <em>très</em> spartiate, compatible Icecast, a le meilleur éditeur de commentaires existant,
+  et fait du tagging de masse).</li>
+  <li>les <a href="https://helixcommunity.org/projects/xiph/">plugins RealPlayer</a>
+  permet la lecture des fichiers Ogg Vorbis dans RealPlayer et Helix Player.</li>
+  <li><a href="http://www.zinf.org/">Zinf</a> : un lecteur Libre basé sur FreeAmp.</li>
+</ul>
+
+<h2>Encodage :</h2>
+
+<p>Des tas d'utilitaires sympa.</p>
+
+<ul>
+  <li><a href="http://www.rarewares.org/ogg.html">OggDropXPd</a> : un encodeur en mode
+  graphique pour Vorbis.</li>
+  <li><a href="http://dspguru.doom9.net/">BeSweet</a> : un utilitaire de transcodage qui
+  supporte une multitude de formats.</li>
+  <li><a href="http://www.rarewares.org/ogg.html">OggEnc</a> : un encodeur en ligne de
+  commande.</li>
+  <li>les <a href="https://helixcommunity.org/projects/xiph/">plugins RealProducer</a>
+  permettent le <span xml:lang="en">streaming</span> des formats de la famille Ogg à partir
+  des logiciels serveurs de RealNetworks.</li>
+</ul>
+
+<h2>Autres :</h2>
+
+<p>Voici une liste d'autres filtres et programmes que vous pouvez tester, mais qui ne sont
+pas dans la liste principale pour diverses raisons.</p>
+
+<ul>
+  <li><a href="http://corevorbis.corecodec.org/">CoreVorbis</a> : un filtre DirectShow
+  pour décoder diverses sources dont les fichiers OGM et
+  <a href="http://www.matroska.org/">Matroska</a>.</li>
+  <li>Les filtres DS de Tobias: le filtre DirectShow original, mais il n'est plus maintenu.
+  [<a href="http://web.archive.org/web/20021004165425/tobias.everwicked.com/oggds.htm">lien archive.org</a>]
+  [<a href="http://svn.xiph.org/trunk/oggds/">un peu de code source</a>]
+  </li>
+  <li><a href="http://www.oggmedia.info/">OggMedia DSF de RadLight</a>: Un set de filtres
+  créé par les auteurs du lecteur multimédia RadLight pour des raisons de compatibilité.</li>
+  <li>les <a href="http://www.hydrogenaudio.org/forums/index.php?showtopic=15049">pages de
+  Logiciels Vorbis de Hydrogen Audio</a>: une liste de liens vers des logiciels pour Vorbis
+  maintenue par la communauté.</li>
+</ul>
+
+<!--#include virtual="/ssi/pagebottom.include.fr" -->

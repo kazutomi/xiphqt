@@ -1,0 +1,46 @@
+<div id="thepage">
+
+<div id="vorbislogo">
+  <a href="http://www.vorbis.com/"><img src="/images/logos/vorbisdotcom.png" alt="Logo Vorbis point com "/></a>
+</div>
+
+<div class="navbar">
+  <table border="0" cellpadding="0" cellspacing="0" style="width: 840px; max-width: 100%;">
+  <tr>
+  <td>
+
+  <a href="/setup/">Installation</a>
+  <img src="/images/dot.png" alt="" class="dot"/>
+
+  <a href="/faq/"><acronym title="Foire Aux Questions">FAQ</acronym></a>
+  <img src="/images/dot.png" alt="" class="dot"/>
+
+  <a href="http://www.xiph.org/donate/" hreflang="en">Soutenir</a>
+  <img src="/images/dot.png" alt="" class="dot"/>
+
+  <a href="/music/">Musique</a>
+  <img src="/images/dot.png" alt="" class="dot"/>
+
+  <a href="/music_links/">Liens Musique</a>
+  <img src="/images/dot.png" alt="" class="dot"/>
+
+  <a href="/software/">Logiciels Tiers</a>
+  <img src="/images/dot.png" alt="" class="dot"/>
+
+  <a href="http://xiph.org/vorbis/" hreflang="en">Développeurs</a>
+  <img src="/images/dot.png" alt="" class="dot"/>
+
+  <a href="/contact/">Contact</a>
+
+  </td>
+  </tr>
+  </table>
+</div>
+
+<div id="banners">
+  <a href="/music/"><img src="/images/banners/download_music.png" alt="Télécharger de la musique"/></a>
+  <a href="/music_links/"><img src="/images/banners/music_sites.png" alt="Liens musique"/></a>
+  <a href="https://secure.paypal.com/xclick/business=donate@xiph.org&amp;item_name=Donation&amp;item_number=DONATE&amp;return=http://www.vorbis.com"><img src="/images/banners/donate_today.png" alt="Soutenir maintenant" hreflang="en"/></a>
+</div>
+
+<div id="content">

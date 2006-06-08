@@ -1,0 +1,40 @@
+<!--#include virtual="/ssi/header.include" -->
+<!-- Enter custom page information and styles here -->
+  <title>Vorbis.com : Installation sous Mac OS X</title>
+</head>
+<body>
+<!--#include virtual="/common/xiphbar.include" -->
+
+<!--#include virtual="/ssi/pagetop.include.fr" -->
+<!--  All your page content goes here  -->
+
+<h1>Installation : Mac OS X</h1>
+
+<h2>Lecture :</h2>
+
+<ul>
+  <li><a href="http://www.xiph.org/quicktime/">XiphQT</a> :
+  Xiph QuickTime Components (XiphQT) est un ensemble de plugins QuickTime qui
+  permettent à iTunes, et d'autres applications basées sur QuickTime, de lire les
+  fichiers Ogg Vorbis.</li>
+  
+  <li><a href="http://www.videolan.org/vlc/">VLC media player</a> :
+  VLC est un lecteur multimédia très portable pour divers formats
+  audio et vidéo.</li>
+
+  <li><a href="http://www.nouturn.com/oggdrop/">Ogg Drop</a> :
+  Ogg Drop encode les fichiers audio et les CD en Vorbis. Il contient
+  également un composant QuickTime qui permet à iTunes de lire des
+  fichiers Ogg Vorbis. Ogg Drop est complètement gratuit.</li>
+</ul>
+
+<h2>Encodage :</h2>
+
+<ul>
+  <li><a href="http://www.nouturn.com/oggdrop/">Ogg Drop</a> :
+  Ogg Drop encode les fichiers audio et les CD en Vorbis. Il contient
+  également un composant QuickTime qui permet à iTunes de lire des
+  fichiers Ogg Vorbis. Ogg Drop est complètement gratuit.</li>
+</ul>
+
+<!--#include virtual="/ssi/pagebottom.include.fr" -->

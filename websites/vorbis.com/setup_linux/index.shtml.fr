@@ -1,0 +1,45 @@
+<!--#include virtual="/ssi/header.include" -->
+<!-- Enter custom page information and styles here -->
+  <title>Vorbis.com : Installation sous UNIX/Linux</title>
+</head>
+<body>
+<!--#include virtual="/common/xiphbar.include" -->
+
+<!--#include virtual="/ssi/pagetop.include.fr" -->
+<!--  All your page content goes here  -->
+
+<h1>Installation : UNIX/Linux</h1>
+
+<h2>Lecture :</h2>
+
+<ul>
+  <li>libogg / libvorbis / vorbis-tools :
+  Ce sont les logiciels standard qui vous permettent de lire
+  et encoder des fichiers Ogg Vorbis. Ils sont inclus dans la
+  majorité des Systèmes d'Exploitation. Sinon, vous pouvez les
+  compiler depuis les
+  <a href="http://www.xiph.org/downloads/">sources</a>.</li>
+
+  <li><a href="http://www.videolan.org/vlc/">VLC media player</a> :
+  VLC est un lecteur multimédia très portable pour divers formats
+  audio et vidéo.</li>
+
+  <li><a href="http://www.xmms.org/">XMMS</a> :
+  Le plus populaire des lecteurs multimédia pour Linux. XMMS
+  lit les fichiers Ogg Vorbis, permet d'éditer les commentaires
+  de ces fichiers, et supporte les <span xml:lang="en">streams</span>
+  Vorbis.</li>
+</ul>
+
+<h2>Encodage :</h2>
+
+<ul>
+  <li>libogg / libvorbis / vorbis-tools :
+  Ce sont les logiciels standard qui vous permettent de lire
+  et encoder des fichiers Ogg Vorbis. Ils sont inclus dans la
+  majorité des Systèmes d'Exploitation. Sinon, vous pouvez les
+  compiler depuis les
+  <a href="http://www.xiph.org/downloads/">sources</a>.</li>
+</ul>
+
+<!--#include virtual="/ssi/pagebottom.include.fr" -->

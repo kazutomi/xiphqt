@@ -1,0 +1,13 @@
+<!--#include virtual="/ssi/header.include" -->
+<!-- Enter custom page information and styles here -->
+  <title>page title</title>
+</head>
+<body>
+<!--#include virtual="/common/xiphbar.include" -->
+
+<!--#include virtual="/ssi/pagetop.include.fr" -->
+<!--  All your page content goes here  -->
+
+<b>This is where your page content goes.</b>
+
+<!--#include virtual="/ssi/pagebottom.include.fr" -->
