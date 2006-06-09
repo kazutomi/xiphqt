@@ -64,11 +64,16 @@ rand_file (FILE *fp, FILE *out)
 static void 
 scramble (FILE *fp, FILE *out)
 {
+  static int seeded = 0;
+
   char *line_storage = NULL, **table = NULL;
   struct ll *llist = NULL, *ptr = NULL;
   int size = 0, n = 0, x = 0;
 
-  srand (ices_util_get_random ());
+  if (!seeded) {
+    srand (ices_util_get_random ());
+    seeded = 1;
+  }
 
   llist = malloc (sizeof (struct ll));
   llist->data = NULL;
