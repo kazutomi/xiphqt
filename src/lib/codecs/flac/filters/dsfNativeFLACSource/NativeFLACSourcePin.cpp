@@ -64,7 +64,6 @@ STDMETHODIMP NativeFLACSourcePin::NonDelegatingQueryInterface(REFIID riid, void 
 HRESULT NativeFLACSourcePin::DeliverNewSegment(REFERENCE_TIME tStart, REFERENCE_TIME tStop, double dRate)
 {
 	mDataQueue->NewSegment(tStart, tStop, dRate);
-
 	return S_OK;
 }
 HRESULT NativeFLACSourcePin::DeliverEndOfStream(void)
@@ -92,6 +91,8 @@ HRESULT NativeFLACSourcePin::CompleteConnect (IPin *inReceivePin)
 	mDataQueue = new COutputQueue (inReceivePin, &mFilterHR, FALSE, TRUE,1,TRUE, NUM_BUFFERS);
 	if (FAILED(mFilterHR)) {
 		//TODO::: Probably should handle this !
+        //CHECK::: See if it ever silently reports failure but actually does work before bailing here.
+        
 		mFilterHR = mFilterHR;
 	}
 	
@@ -105,7 +106,9 @@ HRESULT NativeFLACSourcePin::BreakConnect(void) {
 }
 
 	//CSourceStream virtuals
-HRESULT NativeFLACSourcePin::GetMediaType(int inPosition, CMediaType* outMediaType) {
+HRESULT NativeFLACSourcePin::GetMediaType(int inPosition, CMediaType* outMediaType) 
+{
+    //WFE::: Also offer extensible format
 	if (inPosition == 0) {
 		outMediaType->SetType(&MEDIATYPE_Audio);
 		outMediaType->SetSubtype(&MEDIASUBTYPE_PCM);
@@ -128,14 +131,17 @@ HRESULT NativeFLACSourcePin::GetMediaType(int inPosition, CMediaType* outMediaTy
 		return VFW_S_NO_MORE_ITEMS;
 	}
 }
-HRESULT NativeFLACSourcePin::CheckMediaType(const CMediaType* inMediaType) {
+HRESULT NativeFLACSourcePin::CheckMediaType(const CMediaType* inMediaType) 
+{
+    //WFE::: Do check for extensible type
 	if ((inMediaType->majortype == MEDIATYPE_Audio) && (inMediaType->subtype == MEDIASUBTYPE_PCM) && (inMediaType->formattype == FORMAT_WaveFormatEx)) {
 		return S_OK;
 	} else {
 		return E_FAIL;
 	}
 }
-HRESULT NativeFLACSourcePin::DecideBufferSize(IMemAllocator* inoutAllocator, ALLOCATOR_PROPERTIES* inoutInputRequest) {
+HRESULT NativeFLACSourcePin::DecideBufferSize(IMemAllocator* inoutAllocator, ALLOCATOR_PROPERTIES* inoutInputRequest) 
+{
 	HRESULT locHR = S_OK;
 
 	ALLOCATOR_PROPERTIES locReqAlloc;
@@ -158,7 +164,8 @@ HRESULT NativeFLACSourcePin::DecideBufferSize(IMemAllocator* inoutAllocator, ALL
 }
 
 //This method is responsible for deleting the incoming buffer.
-HRESULT NativeFLACSourcePin::deliverData(unsigned char* inBuff, unsigned long inBuffSize, __int64 inStart, __int64 inEnd) {
+HRESULT NativeFLACSourcePin::deliverData(unsigned char* inBuff, unsigned long inBuffSize, __int64 inStart, __int64 inEnd) 
+{
 	//Locks !!
 	
 	IMediaSample* locSample = NULL;
