@@ -81,10 +81,12 @@ NativeFLACSourceFilter::~NativeFLACSourceFilter(void)
 }
 
 //BaseFilter Interface
-int NativeFLACSourceFilter::GetPinCount() {
+int NativeFLACSourceFilter::GetPinCount() 
+{
 	return 1;
 }
-CBasePin* NativeFLACSourceFilter::GetPin(int inPinNo) {
+CBasePin* NativeFLACSourceFilter::GetPin(int inPinNo) 
+{
 	if (inPinNo == 0) {
 		return mFLACSourcePin;
 	} else {
@@ -93,12 +95,14 @@ CBasePin* NativeFLACSourceFilter::GetPin(int inPinNo) {
 }
 
 //IAMFilterMiscFlags Interface
-ULONG NativeFLACSourceFilter::GetMiscFlags(void) {
+ULONG NativeFLACSourceFilter::GetMiscFlags(void) 
+{
 	return AM_FILTER_MISC_FLAGS_IS_SOURCE;
 }
 
 	//IFileSource Interface
-STDMETHODIMP NativeFLACSourceFilter::GetCurFile(LPOLESTR* outFileName, AM_MEDIA_TYPE* outMediaType) {
+STDMETHODIMP NativeFLACSourceFilter::GetCurFile(LPOLESTR* outFileName, AM_MEDIA_TYPE* outMediaType) 
+{
 	LPOLESTR x = SysAllocString(mFileName.c_str());
 	*outFileName = x;
 	return S_OK;
@@ -111,7 +115,7 @@ STDMETHODIMP NativeFLACSourceFilter::Load(LPCOLESTR inFileName, const AM_MEDIA_T
 	CAutoLock locLock(m_pLock);
 	mFileName = inFileName;
 
-	mInputFile.open(StringHelper::toNarrowStr(mFileName).c_str(), ios_base::in | ios_base::binary);
+	mInputFile.open(mFileName.c_str(), ios_base::in | ios_base::binary);
 
 	//CT> Added header check (for FLAC files with ID3 v1/2 tags in them)
 	//    We'll look in the first 128kb of the file
@@ -172,11 +176,13 @@ STDMETHODIMP NativeFLACSourceFilter::NonDelegatingQueryInterface(REFIID riid, vo
 
 
 //IMEdiaStreaming
-STDMETHODIMP NativeFLACSourceFilter::Run(REFERENCE_TIME tStart) {
+STDMETHODIMP NativeFLACSourceFilter::Run(REFERENCE_TIME tStart) 
+{
 	CAutoLock locLock(m_pLock);
 	return CBaseFilter::Run(tStart);
 }
-STDMETHODIMP NativeFLACSourceFilter::Pause(void) {
+STDMETHODIMP NativeFLACSourceFilter::Pause(void) 
+{
 	CAutoLock locLock(m_pLock);
 	if (m_State == State_Stopped) {
 		if (ThreadExists() == FALSE) {
@@ -189,7 +195,8 @@ STDMETHODIMP NativeFLACSourceFilter::Pause(void) {
 	return locHR;
 	
 }
-STDMETHODIMP NativeFLACSourceFilter::Stop(void) {
+STDMETHODIMP NativeFLACSourceFilter::Stop(void) 
+{
 	CAutoLock locLock(m_pLock);
 	CallWorker(THREAD_EXIT);
 	Close();
@@ -214,9 +221,11 @@ HRESULT NativeFLACSourceFilter::DataProcessLoop() {
 				mJustSeeked = false;
 				bool res2 = false;
 				res2 = seek_absolute(mSeekRequest);
+                //ERROR???
 			}
 			
 			res = process_single();
+            //ERROR???
 
 			if (mWasEOF) {
 				break;
@@ -233,7 +242,8 @@ HRESULT NativeFLACSourceFilter::DataProcessLoop() {
 }
 
 //CAMThread Stuff
-DWORD NativeFLACSourceFilter::ThreadProc(void) {
+DWORD NativeFLACSourceFilter::ThreadProc(void) 
+{
 	while(true) {
 		DWORD locThreadCommand = GetRequest();
 		switch(locThreadCommand) {
@@ -245,34 +255,41 @@ DWORD NativeFLACSourceFilter::ThreadProc(void) {
 				Reply(S_OK);
 				DataProcessLoop();
 				break;
+            //OTHER CASES?
 		}
 	}
 	return S_OK;
 }
 
 
-::FLAC__SeekableStreamDecoderReadStatus NativeFLACSourceFilter::read_callback(FLAC__byte outBuffer[], unsigned int* outNumBytes) {
+::FLAC__SeekableStreamDecoderReadStatus NativeFLACSourceFilter::read_callback(FLAC__byte outBuffer[], unsigned int* outNumBytes) 
+{
 	const unsigned long BUFF_SIZE = 8192;
 	mInputFile.read((char*)outBuffer, BUFF_SIZE);
 	*outNumBytes = mInputFile.gcount();
 	mWasEOF = mInputFile.eof();
 	return FLAC__SEEKABLE_STREAM_DECODER_READ_STATUS_OK;
 }
-::FLAC__SeekableStreamDecoderSeekStatus NativeFLACSourceFilter::seek_callback(FLAC__uint64 inSeekPos) {
+::FLAC__SeekableStreamDecoderSeekStatus NativeFLACSourceFilter::seek_callback(FLAC__uint64 inSeekPos) 
+{
 	mInputFile.seekg(inSeekPos);
 	return FLAC__SEEKABLE_STREAM_DECODER_SEEK_STATUS_OK;
 }
-::FLAC__SeekableStreamDecoderTellStatus NativeFLACSourceFilter::tell_callback(FLAC__uint64* outTellPos) {
+::FLAC__SeekableStreamDecoderTellStatus NativeFLACSourceFilter::tell_callback(FLAC__uint64* outTellPos) 
+{
 	*outTellPos = mInputFile.tellg();
 	return FLAC__SEEKABLE_STREAM_DECODER_TELL_STATUS_OK;
 }
-::FLAC__SeekableStreamDecoderLengthStatus NativeFLACSourceFilter::length_callback(FLAC__uint64* outLength) {
+::FLAC__SeekableStreamDecoderLengthStatus NativeFLACSourceFilter::length_callback(FLAC__uint64* outLength) 
+{
 	*outLength = mFileSize;
 	return FLAC__SEEKABLE_STREAM_DECODER_LENGTH_STATUS_OK;
 }
-::FLAC__StreamDecoderWriteStatus NativeFLACSourceFilter::write_callback(const FLAC__Frame* inFrame,const FLAC__int32 *const inBuffer[]) {
+::FLAC__StreamDecoderWriteStatus NativeFLACSourceFilter::write_callback(const FLAC__Frame* inFrame,const FLAC__int32 *const inBuffer[]) 
+{
 	
 
+    //WFE::: wave format extensible
 	if (! mBegun) {
 		mBegun = true;
 		
