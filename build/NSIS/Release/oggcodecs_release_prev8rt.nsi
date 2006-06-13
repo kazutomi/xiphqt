@@ -2,15 +2,14 @@
 
 ; Location of Visual Studio runtime libraries on the compiling system
 ;   ************* Change this to match the path where msvcp71.dll and msvcr71.dll live ******************
-; !define VS_RUNTIME_LOCATION "c:\Program Files\Microsoft Visual Studio .NET 2003\SDK\v1.1\Bin"
-!define VS_RUNTIME_LOCATION "V:\Program Files\Microsoft Visual Studio 8\VC\redist\x86\Microsoft.VC80.CRT"
+!define VS_RUNTIME_LOCATION "c:\Program Files\Microsoft Visual Studio .NET 2003\SDK\v1.1\Bin"
 ;   *****************************************************************************************************
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "oggcodecs"
 
 ;	CHANGE EVERY VERSION
-!define PRODUCT_VERSION "0.72.0000"					
+!define PRODUCT_VERSION "0.71.0946"					
 
 !define PRODUCT_PUBLISHER "illiminable"
 !define PRODUCT_WEB_SITE "http://www.illiminable.com/ogg/"
@@ -104,10 +103,9 @@ Section "Ogg Core Files" SEC01
   SetOutPath "$INSTDIR"
   SetOverwrite ifnewer
 
-  ; Runtime libraries from visual studio - 3
-  File "${VS_RUNTIME_LOCATION}\msvcr80.dll"
-  File "${VS_RUNTIME_LOCATION}\msvcp80.dll"
-  File "${VS_RUNTIME_LOCATION}\Microsoft.VC80.CRT.manifest"
+  ; Runtime libraries from visual studio - 2
+  File "${VS_RUNTIME_LOCATION}\msvcr71.dll"
+  File "${VS_RUNTIME_LOCATION}\msvcp71.dll"
 
 
   ; Libraries - 11
@@ -893,10 +891,10 @@ Section Uninstall
   Delete "$INSTDIR\HISTORY"
 
 
-  ; Delete runtimes - 3
-  Delete "$INSTDIR\msvcr80.dll"
-  Delete "$INSTDIR\msvcp80.dll"
-  Delete "$INSTDIR\Microsoft.VC80.CRT.manifest"
+  ; Delete runtimes - 2
+  Delete "$INSTDIR\msvcr71.dll"
+  Delete "$INSTDIR\msvcp71.dll"
+
 
   ;Delete accesory files, links etc.
   Delete "$SMPROGRAMS\$ICONS_GROUP\Uninstall.lnk"
