@@ -61,6 +61,7 @@ NativeFLACSourceFilter::NativeFLACSourceFilter(void)
 	,	mNumChannels(0)
 	,	mSampleRate(0)
 	,	mBitsPerSample(0)
+    ,   mSignificantBitsPerSample(0)
 	,	mBegun(false)
 	,	mUpto(0)
 	,	mJustSeeked(true)
@@ -150,7 +151,14 @@ STDMETHODIMP NativeFLACSourceFilter::Load(LPCOLESTR inFileName, const AM_MEDIA_T
 
 	mNumChannels = (((locBuff[20]) & FLAC_CHANNEL_MASK) >> 1) + 1;
 	mSampleRate = (iBE_Math::charArrToULong(&locBuff[18])) >> 12;
-	mBitsPerSample =	(((locBuff[20] & FLAC_BPS_START_MASK) << 4)	| ((locBuff[21] & FLAC_BPS_END_MASK) >> 4)) + 1;	
+	mSignificantBitsPerSample =	(((locBuff[20] & FLAC_BPS_START_MASK) << 4)	| ((locBuff[21] & FLAC_BPS_END_MASK) >> 4)) + 1;
+
+    mBitsPerSample = (mSignificantBitsPerSample + 7)  & 0xfffffff8UL;
+
+    if (mBitsPerSample == 24) {
+        mBitsPerSample = 32;
+    }
+
 	mTotalNumSamples = (((__int64)(locBuff[21] % 16)) << 32) + ((__int64)(iBE_Math::charArrToULong(&locBuff[22])));
 
 	//TODO::: NEed to handle the case where the number of samples is zero by making it non-seekable.
@@ -289,14 +297,14 @@ DWORD NativeFLACSourceFilter::ThreadProc(void)
 {
 	
 
-    //WFE::: wave format extensible
+    
 	if (! mBegun) {
 		mBegun = true;
 		
-		const int SIZE_16_BITS = 2;
-		
+	
 		mNumChannels = inFrame->header.channels;
-		mFrameSize = mNumChannels * SIZE_16_BITS;
+        mFrameSize = mNumChannels * (mBitsPerSample >> 3);
+
 		mSampleRate = inFrame->header.sample_rate;
 	}
 
@@ -304,27 +312,96 @@ DWORD NativeFLACSourceFilter::ThreadProc(void)
 	unsigned long locBufferSize = locNumFrames * mFrameSize;
 	unsigned long locTotalFrameCount = locNumFrames * mNumChannels;
 
-	//BUG::: There's a bug here. Implicitly assumes 2 channels. I think.
-	unsigned char* locBuff = new unsigned char[locBufferSize];			//Gives to the deliverdata method
-	//It could actually be a single buffer for the class.
 
-	signed short* locShortBuffer = (signed short*)locBuff;		//Don't delete this.
-	
-	signed short tempInt = 0;
-	int tempLong = 0;
-	float tempFloat = 0;
-	for(unsigned long i = 0; i < locNumFrames; i++) {
-		for (unsigned long j = 0; j < mNumChannels; j++) {
-			tempLong = inBuffer[j][i];
 
-			//FIX::: Why on earth are you dividing by 2 ? It does not make sense !
-			//tempInt = (signed short)(tempLong/2);
-			tempInt = (signed short)(tempLong);
-		
-			*locShortBuffer = tempInt;
-			locShortBuffer++;
-		}
-	}
+    // TODO::: It's not clear whether in the 32 bit flac sample, the significant bits are always rightmost (
+    //      ie justified into the least significant bits. They seem to be for nbits = 16. But it's unclear
+    //      whether eg a 20 bit sample is 0000 0000 1111 1111 1111 1111 1111 0000 so it's still a valid
+    //      24 bit sample, or whether it would require a 4 bit left shift to be a true 24 bit sample.
+
+    //      For now, working on the basis that it is truly right shifted.
+
+
+    //It could actually be a single buffer for the class.????
+    unsigned char* locBuff = new unsigned char[locBufferSize];			//Gives to the deliverdata method
+    unsigned long locLeftShift = mBitsPerSample - mSignificantBitsPerSample;
+
+    if (mBitsPerSample == 8) {
+        unsigned char* locByteBuffer = (unsigned char*)locBuff;
+
+        if (locLeftShift == 0) {
+	        for(unsigned long i = 0; i < locNumFrames; i++) {
+		        for (unsigned long j = 0; j < mNumChannels; j++) {
+                    *(locByteBuffer++) = (unsigned char)(inFrame + 128);
+                }
+
+            }
+        } else {
+	        for(unsigned long i = 0; i < locNumFrames; i++) {
+		        for (unsigned long j = 0; j < mNumChannels; j++) {
+                    *(locByteBuffer++) = (unsigned char)(inFrame + 128) << locLeftShift;
+                }
+
+            }
+
+        }
+
+
+    } else if (mBitsPerSample == 16) {
+	    signed short* locShortBuffer = (signed short*)locBuff;		//Don't delete this.
+        if (locLeftShift == 0) {
+        
+	        for(unsigned long i = 0; i < locNumFrames; i++) {
+		        for (unsigned long j = 0; j < mNumChannels; j++) {
+
+                    *(locShortBuffer++) = (signed short)inBuffer[j][i];
+			        //tempLong = inBuffer[j][i];
+
+			        ////FIX::: Why on earth are you dividing by 2 ? It does not make sense !
+			        ////tempInt = (signed short)(tempLong/2);
+			        //tempInt = (signed short)(tempLong);
+        		
+			        //*locShortBuffer = tempInt;
+			        //locShortBuffer++;
+		        }
+	        }
+        } else {
+	        for(unsigned long i = 0; i < locNumFrames; i++) {
+		        for (unsigned long j = 0; j < mNumChannels; j++) {
+
+                    *(locShortBuffer++) = (signed short)inBuffer[j][i] << locLeftShift;
+		        }
+	        }
+        }
+    } else if (mBitsPerSample == 32) {
+        signed long* locLongBuffer = (signed long*)locBuff;
+        if (locLeftShift == 8) {
+            //Special case for 24 bit, let the shift be hardcoded.
+            for(unsigned long i = 0; i < locNumFrames; i++) {
+		        for (unsigned long j = 0; j < mNumChannels; j++) {
+                    *(locLongBuffer++) = inBuffer[j][i] << 8;
+                }
+            }
+        } else if (locLeftShift == 0) {
+            //Real 32 bit data
+            for(unsigned long i = 0; i < locNumFrames; i++) {
+		        for (unsigned long j = 0; j < mNumChannels; j++) {
+                    *(locLongBuffer++) = inBuffer[j][i];
+                }
+            }
+
+        } else {
+            
+            for(unsigned long i = 0; i < locNumFrames; i++) {
+		        for (unsigned long j = 0; j < mNumChannels; j++) {
+                    *(locLongBuffer++) = inBuffer[j][i] << locLeftShift;
+                }
+            }
+
+        }
+    }
+
+
 	
 	mFLACSourcePin->deliverData(locBuff, locBufferSize, (mUpto*UNITS) / mSampleRate, ((mUpto+locNumFrames)*UNITS) / mSampleRate);
 	mUpto += locNumFrames;
