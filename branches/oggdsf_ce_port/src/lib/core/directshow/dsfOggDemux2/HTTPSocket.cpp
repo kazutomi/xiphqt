@@ -74,7 +74,7 @@ bool HTTPSocket::setupSocket(string inSourceLocation)
 
 	bool locValidURL = splitURL(inSourceLocation);
 
-	locAddress.S_un.S_addr = inet_addr(mServerName.c_str());
+    locAddress.S_un.S_addr = inet_addr(mServerName.c_str());
 	
 
 	if (locAddress.S_un.S_addr == INADDR_NONE) {

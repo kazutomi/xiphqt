@@ -285,9 +285,9 @@ void OggDemuxPacketSourceFilter::resetStream() {
 			mDataSource = NULL;
 
 			//Before opening make the interface
-			mDataSource = DataSourceFactory::createDataSource(StringHelper::toNarrowStr(mFileName).c_str());
+			mDataSource = DataSourceFactory::createDataSource(mFileName);
 
-			mDataSource->open(StringHelper::toNarrowStr(mFileName).c_str());
+			mDataSource->open(mFileName);
 		}
 		mDataSource->seek(0);   //Should always be zero for now.
 
@@ -333,13 +333,14 @@ HRESULT OggDemuxPacketSourceFilter::SetUpPins()
 		//Create and open a data source if we are using the standard source.
 
 		debugLog<<"Pre data source creation"<<endl;
-		mDataSource = DataSourceFactory::createDataSource(StringHelper::toNarrowStr(mFileName).c_str());
+		//mDataSource = DataSourceFactory::createDataSource(StringHelper::toNarrowStr(mFileName).c_str());
+        mDataSource = DataSourceFactory::createDataSource(mFileName);
 		debugLog<<"Post data source creation"<<endl;
 		if (mDataSource == NULL) {
 			return VFW_E_CANNOT_RENDER;
 		}
 		
-		if (!mDataSource->open(StringHelper::toNarrowStr(mFileName).c_str())) {
+		if (!mDataSource->open(mFileName)) {
 			return VFW_E_CANNOT_RENDER;
 		}
 	} else {
@@ -365,13 +366,13 @@ HRESULT OggDemuxPacketSourceFilter::SetUpPins()
 		}
 
 		if (mDataSource->isEOF() || mDataSource->isError()) {
-			if (mDataSource->isError() && (mDataSource->shouldRetryAt() != "") && (locRetryCount < RETRY_THRESHOLD) && (!mUsingCustomSource)) {
+			if (mDataSource->isError() && (mDataSource->shouldRetryAt() != L"") && (locRetryCount < RETRY_THRESHOLD) && (!mUsingCustomSource)) {
 				mOggBuffer.clearData();
-				string locNewLocation = mDataSource->shouldRetryAt();
+				wstring locNewLocation = mDataSource->shouldRetryAt();
 				//debugLog<<"Retrying at : "<<locNewLocation<<endl;
 				delete mDataSource;
-				mDataSource = DataSourceFactory::createDataSource(locNewLocation.c_str());
-				mDataSource->open(locNewLocation.c_str());
+				mDataSource = DataSourceFactory::createDataSource(locNewLocation);
+				mDataSource->open(locNewLocation);
 				locRetryCount++;
 			//This prevents us dying on small files, if we hit eof but we also saw a +'ve gran pos, this file is ok.
 			} else if (!(mDataSource->isEOF() && mSeenPositiveGranulePos)) {
@@ -561,11 +562,11 @@ void OggDemuxPacketSourceFilter::notifyPinConnected()
 				mSeekTable->addStream(locPin->getSerialNo(), locPin->getDecoderInterface());
 			}
 			debugLog<<"Pre seek table build"<<endl;
-#ifndef WINCE
+//#ifndef WINCE
 			mSeekTable->buildTable();
-#else
-			mSeekTable->disableTable();
-#endif
+//#else
+			//mSeekTable->disableTable();
+//#endif
 			debugLog<<"Post seek table build"<<endl;
 		}
 	}

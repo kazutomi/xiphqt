@@ -339,10 +339,10 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
 
 
-				//c_initialise();
+				c_initialise();
 				////wstring locStr = L"\\Storage Card\\do_you_see.ogg";
-				//c_loadFileWithParams( L"\\Storage Card\\do_you_see.ogg", hDlg, 0,0,64,48);
-				//c_play();
+				c_loadFileWithParams( L"http://www.illiminable.com/temp/do_you_see.ogg", hDlg, 0,0,64,48);
+				c_play();
 
 
 
@@ -360,20 +360,20 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
 
 
-				IGraphBuilder* locGraphBuilder = NULL;
-				IMediaControl* locMediaControl = NULL;
-				HRESULT locHR = S_FALSE;;
-				CoInitialize(NULL);
-				IBaseFilter* locTheoDecode = NULL;
-				locHR = CoCreateInstance(CLSID_FilterGraph, NULL, CLSCTX_INPROC_SERVER, IID_IGraphBuilder, (void **)&locGraphBuilder);
+				//IGraphBuilder* locGraphBuilder = NULL;
+				//IMediaControl* locMediaControl = NULL;
+				//HRESULT locHR = S_FALSE;;
+				//CoInitialize(NULL);
+				//IBaseFilter* locTheoDecode = NULL;
+				//locHR = CoCreateInstance(CLSID_FilterGraph, NULL, CLSCTX_INPROC_SERVER, IID_IGraphBuilder, (void **)&locGraphBuilder);
 
-				//locHR = CoCreateInstance(CLSID_X_Theora_Decoder, NULL, CLSCTX_INPROC_SERVER, IID_IBaseFilter, (void **)&locTheoDecode);
-				
+				////locHR = CoCreateInstance(CLSID_X_Theora_Decoder, NULL, CLSCTX_INPROC_SERVER, IID_IBaseFilter, (void **)&locTheoDecode);
+				//
 
-				
-				//IBaseFilter* locDemux = NULL;
-				//locHR = CoCreateInstance(CLSID_XX_OggDemux, NULL, CLSCTX_INPROC_SERVER, IID_IBaseFilter, (void **)&locDemux);
-				locHR = locGraphBuilder->RenderFile(L"\\Storage Card\\carbon.ogg", NULL);
+				//
+				////IBaseFilter* locDemux = NULL;
+				////locHR = CoCreateInstance(CLSID_XX_OggDemux, NULL, CLSCTX_INPROC_SERVER, IID_IBaseFilter, (void **)&locDemux);
+				//locHR = locGraphBuilder->RenderFile(L"http://www.illiminable.com/temp/summer_city.ogg", NULL);
 
 
 
