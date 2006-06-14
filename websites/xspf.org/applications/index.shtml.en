@@ -106,6 +106,12 @@ use of more modern desktop standards.</dd>
           document, that will work as well. The XSPF document does not
           need to be local.</cite></dd>
 
+          <dt><a href="http://users.musicbrainz.org/~matt/xspf/m3u2xspf">m3u2xspf</a></dt>
+          <dd>A tool for converting M3U playlists to XSPF.  This is a console tool written in Python, so for a Unix-like environment.  It is free software under the Gnu GPL.</dd>
+
+          <dt><a href="http://subsonic.sourceforge.net/">Subsonic</a></dt>
+          <dd>A web-based media streamer and jukebox.  Free software under the LGPL.</dd>
+
 <!-- template for new entries
           <dt><a href=""></a></dt>
           <dd></dd>
