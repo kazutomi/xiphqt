@@ -117,6 +117,6 @@ use of more modern desktop standards.</dd>
           <dd></dd>
 --></dl>
 
-<p>Note to application developers: to be included here, write your entry in the format above and email it to <a href="mailto:lucas@gonze.com">lucas@gonze.com</a></p>
+<p>Note to application developers: to be included here, write your entry in the format above and email it to <a href="http://lists.musicbrainz.org/mailman/listinfo/playlist">the XSPF mailing list</a>.</p>
 
 <!--#include virtual="/ssi/pagebottom.include" -->
