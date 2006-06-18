@@ -6,7 +6,7 @@ YP-CGI by oddsock
 
 int main(int argc, char * argv[])
 {
-	int res;
+	int 	res = 0;
 	int	ret = 0;
 	int	ok = 0;
 	int	action = NO_ACTION;
@@ -73,21 +73,6 @@ int main(int argc, char * argv[])
 		goto endofcall;
 	}
 
-	/* Was there an error initializing the CGI??? */
-/*
-
-	if (res != CGIERR_NONE) {
-		sprintf(msg, "Error # %d: %s<p>\n", res, cgi_strerror(res));
-		sendYPResponse(0, msg, ICECAST2_RESPONSE);
-	}
-*/
-	res = connectToDB();
-	if (!res) {
-		sendYPResponse(0, "Error connecting to database", ICECAST2_RESPONSE);
-		goto endofcall;
-	}
-
-	Log(LOG_DEBUG, "Connected to DB");
 	/* Grab some fields from an HTML form and display them: */
 
 	if (cgi_param("action") != NULL) {
@@ -325,6 +310,19 @@ int main(int argc, char * argv[])
 			}
 		}
 		Log(LOG_DEBUG, "Done getting parameters");
+		Log(LOG_DEBUG, "Limiting by stream mime-type");
+		if (strncmp(server_type, "application/ogg", strlen("application/ogg"))) {
+			sendYPResponse(0, "We only accept Ogg stream listings", ICECAST2_RESPONSE);
+			goto endofcall;
+		}
+
+		res = connectToDB();
+		if (!res) {
+			sendYPResponse(0, "Error connecting to database", ICECAST2_RESPONSE);
+			goto endofcall;
+		}
+	Log(LOG_DEBUG, "Connected to DB");
+
 		if (action == ADD) {
 			Log(LOG_DEBUG, "Checking server name");
 			if (strlen(server_name) == 0) {
@@ -424,8 +422,10 @@ int main(int argc, char * argv[])
 
 	cgi_end();
 
-	Log(LOG_DEBUG, "Disconnecting from DB");
-	disconnectFromDB();
+	if (!res) {
+		Log(LOG_DEBUG, "Disconnecting from DB");
+		disconnectFromDB();
+	}
 
 	Log(LOG_DEBUG, "Ending execution");
 
