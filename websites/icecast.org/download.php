@@ -41,7 +41,11 @@ Older releases can be found <a href="http://downloads.xiph.org/releases/icecast"
 <h4>Icecast Library / Language Bindings</h4>
 <table border=1 cellpadding=5 cellspacing=0 width=90% bordercolor="#000000">
 <tr><td><b>Library</b></td><td><b>Desc</b></td><td><b>Download Link</b></td></tr>
-<tr><td>libshout 2.2.1</td><td>Library which can be used to write a source client like ices</td><td><a href="http://downloads.us.xiph.org/releases/libshout/libshout-2.2.1.tar.gz">libshout-2.2.1.tar.gz</a></td></tr>
+<tr>
+  <td>libshout 2.2.2</td>
+  <td>Library which can be used to write a source client like ices</td>
+  <td><a href="http://downloads.us.xiph.org/releases/libshout/libshout-2.2.2.tar.gz">libshout-2.2.2.tar.gz</a></td>
+</tr>
 <tr><td>shout-python</td><td>Python bindings for libshout 2</td><td><a href="http://downloads.us.xiph.org/releases/libshout/shout-python-0.2.tar.gz">shout-python-0.2.tar.gz</a></td></tr>
 <tr><td>shout-perl</td><td>Perl bindings for libshout 2</td><td><a href="http://downloads.us.xiph.org/releases/libshout/Shout-2.1.tar.gz">Shout-2.1.tar.gz</a></td></tr>
 <tr><td>ruby-shout</td><td>Ruby bindings for libshout 2</td><td><a href="http://www.dingoskidneys.com/~jaredj/shout.html">http://www.dingoskidneys.com/~jaredj/shout.html</a></td></tr>
