@@ -172,9 +172,14 @@ int main(int argc, char * argv[])
 			Log(LOG_DEBUG, "Getting Server Type");
 			if (strlen(cgi_param("type")) > 0) {
 				ptmp = cgi_unescape_special_chars(cgi_param("type"));
-				if (ptmp) {
+		 		if (ptmp) {
 					strncpy(server_type, ptmp, sizeof(server_type)-1);
 					free(ptmp);
+					Log(LOG_DEBUG, "Limiting by stream mime-type");
+					if (strncmp(server_type, "application/ogg", strlen("application/ogg"))) {
+						sendYPResponse(0, "We only accept Ogg stream listings", ICECAST2_RESPONSE);
+						goto endofcall;
+					}
 				}
 			}
 		}
@@ -310,18 +315,13 @@ int main(int argc, char * argv[])
 			}
 		}
 		Log(LOG_DEBUG, "Done getting parameters");
-		Log(LOG_DEBUG, "Limiting by stream mime-type");
-		if (strncmp(server_type, "application/ogg", strlen("application/ogg"))) {
-			sendYPResponse(0, "We only accept Ogg stream listings", ICECAST2_RESPONSE);
-			goto endofcall;
-		}
 
 		res = connectToDB();
 		if (!res) {
 			sendYPResponse(0, "Error connecting to database", ICECAST2_RESPONSE);
 			goto endofcall;
 		}
-	Log(LOG_DEBUG, "Connected to DB");
+		Log(LOG_DEBUG, "Connected to DB");
 
 		if (action == ADD) {
 			Log(LOG_DEBUG, "Checking server name");
