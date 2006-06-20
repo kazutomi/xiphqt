@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
-import oggStreams
+#import oggStreams
+from gstfile import GstFile
 import sys
 
 try:
@@ -12,6 +13,7 @@ except:
     pass
 try:
     import gtk
+    import gobject
     import gtk.glade
 except:
     print "You need to install pyGTK or GTKv2 ",
@@ -49,9 +51,16 @@ class Souffleur:
 
 	self.windowFileOpen=None
 	self.windowStreams=gtk.glade.XML (self.gladefile,"STREAM_WINDOW")
+	### Setup LIST_STREAMS
+	LIST = self.windowStreams.get_widget("LIST_STREAMS")
+	if LIST:
+	    self.streamsTreeStore = gtk.TreeStore(gobject.TYPE_STRING)
+	    LIST.set_model(self.streamsTreeStore)
+	    cell = gtk.CellRendererText()
+	    tvcolumn = gtk.TreeViewColumn('Streams', cell, text = 0)
+	    LIST.append_column(tvcolumn)
 	WND=self.windowStreams.get_widget("STREAM_WINDOW")
 	WND.hide()
-	self.Streams=None
 	return
 #==============================================================================
     def mainFileOpen(self, widget):
@@ -60,11 +69,11 @@ class Souffleur:
 	    dic={"on_OPEN_BUTTON_CANCEL_clicked": self.openFileCancel,\
 		"on_OPEN_BUTTON_OPEN_clicked": self.openFileOpen }
 	    self.windowFileOpen.signal_autoconnect(dic)
-	    WND=self.windowFileOpen.get_widget("OPEN_OGG")
-	    Filter=gtk.FileFilter()
-	    Filter.set_name("OGM file")
-	    Filter.add_pattern("*.og[gm]")
-	    WND.add_filter(Filter)
+#	    WND=self.windowFileOpen.get_widget("OPEN_OGG")
+#	    Filter=gtk.FileFilter()
+#	    Filter.set_name("OGM file")
+#	    Filter.add_pattern("*.og[gm]")
+#	    WND.add_filter(Filter)
 	else:
 	    WND=self.windowFileOpen.get_widget("OPEN_OGG")
 	    if(WND==None):
@@ -83,20 +92,36 @@ class Souffleur:
     def openFileOpen(self, widget):
 	WND=self.windowFileOpen.get_widget("OPEN_OGG")
 	FN=WND.get_filename()
+	Streams = None
 	if((FN!="")and(FN!=None)):
-	    self.Streams=oggStreams.oggStreams(FN)
+#	    self.Streams=oggStreams.oggStreams(FN)
+	    print FN
+	    Streams = GstFile(FN)
+	    if Streams:
+		Streams.run()
 	WND.hide()
 	WND=self.windowStreams.get_widget("STREAM_WINDOW")
 	WND.show()
-	self.refreshStreamsWindow()
+	self.addStreams(Streams)
+#	self.refreshStreamsWindow()
 	return
 #==============================================================================
-    def refreshStreamsWindow(self):
-	TStreams=self.Streams.getStreams()
-	for OGGStream in Streams:
-	    #TODO
-	    pass
+    def addStreams(self, Streams):
+	if not Streams:
+	    return
+	iter = self.streamsTreeStore.append(None)
+	self.streamsTreeStore.set(iter, 0, Streams.MIME + " " + Streams.SOURCE)
+	for i in Streams.STREAMS.keys():
+	    child = self.streamsTreeStore.append(iter)
+	    self.streamsTreeStore.set(child, 0, i +" " + Streams.STREAMS[i])
+	    print i +" " + Streams.STREAMS[i]
 	return
+#    def refreshStreamsWindow(self):
+#	TStreams=self.Streams.getStreams()
+#	for OGGStream in Streams:
+	    #TODO
+#	    pass
+#	return
 #==============================================================================
 #	MAIN:
 #==============================================================================
