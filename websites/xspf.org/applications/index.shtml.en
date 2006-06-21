@@ -112,6 +112,9 @@ use of more modern desktop standards.</dd>
           <dt><a href="http://subsonic.sourceforge.net/">Subsonic</a></dt>
           <dd>A web-based media streamer and jukebox.  Free software under the LGPL.</dd>
 
+          <dt><a href="http://www.videolan.org/">VLC media player</a></dt>
+          <dd>A cross-platform media player.  Under the GNU General Public License.</dd>
+
 <!-- template for new entries
           <dt><a href=""></a></dt>
           <dd></dd>
