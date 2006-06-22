@@ -69,7 +69,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="Winmm.lib Strmiids.lib Quartz.lib wsock32.lib shlwapi.lib"
+				AdditionalDependencies="Winmm.lib Strmiids.lib Quartz.lib wsock32.lib shlwapi.lib unicows.lib"
 				OutputFile="$(OutDir)/dsfOggDemux2.dll"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories=""
@@ -317,7 +317,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="Winmm.lib Strmiids.lib Quartz.lib wsock32.lib shlwapi.lib"
+				AdditionalDependencies="Winmm.lib Strmiids.lib Quartz.lib wsock32.lib shlwapi.lib unicows.lib"
 				OutputFile="$(OutDir)/dsfOggDemux2.dll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories=""
