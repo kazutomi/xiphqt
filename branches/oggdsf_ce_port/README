@@ -66,7 +66,7 @@ In order to build you need the following
     are using XP or whatever operating system.
 
     You can download it from (~400MB, getting the disk image is easiest)
-    http://msdn.microsoft.com/vstudio/express/visualc/default.aspx
+    http://www.microsoft.com/downloads/details.aspx?FamilyId=A55B6B43-E24F-4EA3-A93E-40C0EC4F68E5&displaylang=en
 
    You will need to update the build paths in VS2005, whether
     you use express or the full version. The following link explains
@@ -75,9 +75,7 @@ In order to build you need the following
 
    http://msdn.microsoft.com/vstudio/express/visualc/usingpsdk/
 
-   In step 3, it advises to hardcode paths into the VS build
-    options. A alternate way is to use the environment variable
-    $(MSSdk)    -- see below
+   See step 3. 
 
    eg. in the Executable files list *at the top* of the list
     ad $(MSSdk)\Bin and in the include list $(MSSdk)\include
@@ -123,7 +121,7 @@ In order to build you need the following
 
    You mileage mary vary if you have the express edition.
 
- * DirectX SDK February 2006 - You also need this SDK.
+ * DirectX SDK February 2006 (or probably later will work too)
 
     You can download it from (~350MB, validation required)
     http://www.microsoft.com/downloads/details.aspx?FamilyID=EDB98FFA-A59C-4C23-9B92-BA304F188314&displaylang=en
@@ -148,18 +146,29 @@ In order to build you need the following
    You can download from here
    http://sourceforge.net/projects/nasm
 
+ * Windows Mobile 5.0 Developer Resource Kit (~900MB)
+    http://www.microsoft.com/downloads/details.aspx?familyid=3BAA5B7D-04C1-4EC2-83DC-61B21EC5FE57&displaylang=en
+
+   The express edition can not do mobile development.
+   I have no idea whether it will let you open the project
+    and ignore the mobile configurations or whether
+    it will just refuse to let you. I'm not sure if
+    the professional edition will even let you open the
+    projects which have wm5 configs (most of them)
+    without installing this.
+
+
 
 You need all these things if you want to build this project.
  If you already do directx/multimedia development you may already
  have some or all of these sdk's. You only need them once to setup
  your build environment.
 
-It may seem excessive that you need to download a gigabyte of stuff
+It may seem excessive that you need to download 2 gigabytes of stuff
  just to build. This project uses technologies from several sdk's, 
  and there is no way around that. Once you set up these things, the
  project is very easy to build, with the professional edition and
- above that is, possibly the standard edition. How the express edition
- handles this type of project is as yet unknown.
+ above that is, possibly the standard edition. 
 
 The baseclasses library is no longer used from the platform
  SDK (but you still need it). There is a modified version
@@ -170,10 +179,8 @@ The baseclasses library is no longer used from the platform
 
 This project now uses V8 of the runtime libraries. As of
  version 8, there are changes to the way the operating system
- handles these libraries. If you are looking at this
- before the 0.72 release is on the website, it's likely
- that the NSIS release distribution has not been updated to
- account for this yet.
+ handles these libraries. The first release to use this is/will be
+ 0.72.xxxx
 
 The release distributions are built using NSIS. There is
  an MSI installer project in the solution, this is only
@@ -181,17 +188,6 @@ The release distributions are built using NSIS. There is
  date, and/or correct. It should *never* be used as a means
  of distribution.
    
-
-
-*** Building for WinCE.
-
- - Windows Mobile 5.0 Developer Resource Kit (~900MB)
-    http://www.microsoft.com/downloads/details.aspx?familyid=3BAA5B7D-04C1-4EC2-83DC-61B21EC5FE57&displaylang=en
-
-   The express edition can not do mobile development.
-   I have no idea whether it will let you open the project
-    and ignore the mobile configurations or whether
-    it will just refuse to let you
 
 ==========================================================
 The below information is left for reference, where the 
