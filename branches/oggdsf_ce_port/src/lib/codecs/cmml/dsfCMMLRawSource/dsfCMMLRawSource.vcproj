@@ -70,7 +70,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="Winmm.lib Strmiids.lib Quartz.lib"
+				AdditionalDependencies="Winmm.lib Strmiids.lib Quartz.lib unicows.lib"
 				OutputFile="$(OutDir)/dsfCMMLRawSource.dll"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories=""
@@ -321,7 +321,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="Winmm.lib Strmiids.lib Quartz.lib"
+				AdditionalDependencies="Winmm.lib Strmiids.lib Quartz.lib unicows.lib"
 				OutputFile="$(OutDir)/dsfCMMLRawSource.dll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories=""
