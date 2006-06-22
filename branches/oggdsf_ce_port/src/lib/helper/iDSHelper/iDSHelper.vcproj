@@ -69,6 +69,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="unicows.lib"
 				OutputFile="$(OutDir)/iDSHelper.dll"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
@@ -307,6 +308,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="unicows.lib"
 				OutputFile="$(OutDir)/iDSHelper.dll"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
