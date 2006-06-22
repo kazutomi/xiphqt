@@ -70,6 +70,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="unicows.lib"
 				OutputFile="$(OutDir)/OOOggSeekFileQuery.exe"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
@@ -309,6 +310,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="unicows.lib"
 				OutputFile="$(OutDir)/OOOggSeekFileQuery.exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"

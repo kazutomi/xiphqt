@@ -69,6 +69,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="unicows.lib"
 				OutputFile="$(OutDir)/OOOggDump.exe"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories=""
@@ -312,6 +313,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="unicows.lib"
 				OutputFile="$(OutDir)/OOOggDump.exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"

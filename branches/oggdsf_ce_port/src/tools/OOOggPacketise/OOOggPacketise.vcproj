@@ -69,6 +69,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="unicows.lib"
 				OutputFile="$(OutDir)/OOOggPacketise.exe"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
@@ -306,6 +307,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="unicows.lib"
 				OutputFile="$(OutDir)/OOOggPacketise.exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
