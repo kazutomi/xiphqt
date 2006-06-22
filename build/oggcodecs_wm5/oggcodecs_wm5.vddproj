@@ -50,6 +50,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_8690122600E2456DA8E47A2A13A844AB"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_898F68EFD6EB479185D2277F89249261"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -291,7 +297,7 @@
             }
             "{605BE39E-5046-48BD-AEC0-63C3A46626D5}:_7CC0F388C7734C2B8ECED59713F156C7"
             {
-            "SourcePath" = "8:..\\..\\src\\lib\\codecs\\theora\\libs\\libOOTheora\\Windows Mobile 5.0 Pocket PC SDK (ARMV4I)\\Release_WM5_PPC_ARM\\libOOTheora.dll"
+            "SourcePath" = "8:..\\..\\src\\lib\\codecs\\theora\\libs\\libootheora\\windows mobile 5.0 pocket pc sdk (armv4i)\\release_wm5_ppc_arm\\libOOTheora.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_4F94174C36AD4B1B8302678AD372CE00"
@@ -315,9 +321,35 @@
                 {
                 }
             }
+            "{605BE39E-5046-48BD-AEC0-63C3A46626D5}:_8690122600E2456DA8E47A2A13A844AB"
+            {
+            "SourcePath" = "8:..\\..\\src\\tests\\testLoadLib\\Windows Mobile 5.0 Pocket PC SDK (ARMV4I)\\Release_WM5_PPC_ARM\\testLoadLib.exe"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_4F94174C36AD4B1B8302678AD372CE00"
+            "Condition" = "8:"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "Register" = "3:0"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            "ProjectOutputGroupRegister" = "3:0"
+            "OutputConfiguration" = "8:"
+            "OutputGroupCanonicalName" = "8:Built"
+            "OutputProjectGuid" = "8:{D3DE90D9-0D36-462C-B2D3-9460071681E5}"
+            "ShowKeyOutput" = "11:TRUE"
+                "ExcludeFilters"
+                {
+                }
+            }
             "{605BE39E-5046-48BD-AEC0-63C3A46626D5}:_898F68EFD6EB479185D2277F89249261"
             {
-            "SourcePath" = "8:..\\..\\src\\lib\\codecs\\theora\\filters\\dsfTheoraDecoder\\Windows Mobile 5.0 Pocket PC SDK (ARMV4I)\\Release_WM5_PPC_ARM\\dsfTheoraDecoder.dll"
+            "SourcePath" = "8:..\\..\\src\\lib\\codecs\\theora\\filters\\dsftheoradecoder\\windows mobile 5.0 pocket pc sdk (armv4i)\\release_wm5_ppc_arm\\dsfTheoraDecoder.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_4F94174C36AD4B1B8302678AD372CE00"
@@ -620,6 +652,24 @@
                             "Condition" = "8:"
                                 "Keys"
                                 {
+                                    "{B1EBC968-6B66-4532-A885-748B79AF4477}:_33C6100E0ADA46EBA34505BFE38CF3C5"
+                                    {
+                                    "Name" = "8:.anx"
+                                    "Condition" = "8:"
+                                        "Keys"
+                                        {
+                                        }
+                                        "Values"
+                                        {
+                                            "{C3684F64-58E2-4092-8E3C-D7483080DE5A}:_B3FB609B097E4899A04C815E32C499F8"
+                                            {
+                                            "Name" = "8:Source Filter"
+                                            "Condition" = "8:"
+                                            "ValueTypes" = "3:1"
+                                            "Value" = "8:{C9361F5A-3282-4944-9899-6D99CDC5370B}"
+                                            }
+                                        }
+                                    }
                                     "{B1EBC968-6B66-4532-A885-748B79AF4477}:_67D56AD7C7AF4CCCB562EB196756EE00"
                                     {
                                     "Name" = "8:.ogg"
@@ -1490,6 +1540,42 @@
                                     "Condition" = "8:"
                                     "ValueTypes" = "3:1"
                                     "Value" = "8:Speex Decode Filter"
+                                    }
+                                }
+                            }
+                        }
+                        "Values"
+                        {
+                        }
+                    }
+                    "{B1EBC968-6B66-4532-A885-748B79AF4477}:_F8308018008249EA88EDAC5B5114B19F"
+                    {
+                    "Name" = "8:http"
+                    "Condition" = "8:"
+                        "Keys"
+                        {
+                            "{B1EBC968-6B66-4532-A885-748B79AF4477}:_4D913C4D62F248FE95A6B4A4E0CD26D7"
+                            {
+                            "Name" = "8:Extensions"
+                            "Condition" = "8:"
+                                "Keys"
+                                {
+                                }
+                                "Values"
+                                {
+                                    "{C3684F64-58E2-4092-8E3C-D7483080DE5A}:_1C237950894C498B99C9C8710D8FC5AB"
+                                    {
+                                    "Name" = "8:.ogg"
+                                    "Condition" = "8:"
+                                    "ValueTypes" = "3:1"
+                                    "Value" = "8:{C9361F5A-3282-4944-9899-6D99CDC5370B}"
+                                    }
+                                    "{C3684F64-58E2-4092-8E3C-D7483080DE5A}:_7F81A2BE3F38444F844F3143DA64B77A"
+                                    {
+                                    "Name" = "8:.anx"
+                                    "Condition" = "8:"
+                                    "ValueTypes" = "3:1"
+                                    "Value" = "8:{C9361F5A-3282-4944-9899-6D99CDC5370B}"
                                     }
                                 }
                             }
