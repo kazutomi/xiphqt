@@ -140,7 +140,7 @@ OggDemuxPacketSourceFilter::OggDemuxPacketSourceFilter(void)
 	,	mUsingCustomSource(false)
 
 {
-	debugLog.open(L"\\Storage Card\\demuxfilt.txt", ios_base::out);
+    debugLog.open(L"d:\\demux.log", ios_base::out);
 	debugLog<<L"Constructor"<<endl;
 
 	//Why do we do this, should the base class do it ?
@@ -163,6 +163,8 @@ OggDemuxPacketSourceFilter::~OggDemuxPacketSourceFilter(void)
 	delete mSeekTable;
 	//TODO::: Delete the locks
 
+
+
 	delete mDemuxLock;
 	delete mStreamLock;
 	delete mSourceFileLock;
@@ -174,6 +176,7 @@ OggDemuxPacketSourceFilter::~OggDemuxPacketSourceFilter(void)
 STDMETHODIMP OggDemuxPacketSourceFilter::Run(REFERENCE_TIME tStart) 
 {
 	CAutoLock locLock(m_pLock);
+    debugLog<<L"Run ------- "<<endl;
 	return CBaseFilter::Run(tStart);
 
 	
@@ -182,13 +185,19 @@ STDMETHODIMP OggDemuxPacketSourceFilter::Run(REFERENCE_TIME tStart)
 STDMETHODIMP OggDemuxPacketSourceFilter::Pause(void) 
 {
 	CAutoLock locLock(m_pLock);
+    debugLog<<L"Pause post-lock"<<endl;
 	if (m_State == State_Stopped) {
+        debugLog<<L"Pause -- was stopped"<<endl;
 		if (ThreadExists() == FALSE) {
+            debugLog<<L"Pause -- CREATING THREAD"<<endl;
 			Create();
 		}
+        debugLog<<L"Pause -- RUNNING THREAD"<<endl;
 		CallWorker(THREAD_RUN);
 	}
 	HRESULT locHR = CBaseFilter::Pause();
+
+    debugLog<<L"Pause ()() COMPLETE"<<endl;
 	
 	return locHR;
 	
@@ -196,6 +205,7 @@ STDMETHODIMP OggDemuxPacketSourceFilter::Pause(void)
 STDMETHODIMP OggDemuxPacketSourceFilter::Stop(void) 
 {
 	CAutoLock locLock(m_pLock);
+    debugLog<<L"Stop -- KILLING!! THREAD"<<endl;
 	CallWorker(THREAD_EXIT);
 	Close();
 	DeliverBeginFlush();
@@ -209,6 +219,7 @@ STDMETHODIMP OggDemuxPacketSourceFilter::Stop(void)
 void OggDemuxPacketSourceFilter::DeliverBeginFlush() 
 {
 	CAutoLock locLock(m_pLock);
+    debugLog<<"%%% Begin Flush"<<endl;
 	
 	for (unsigned long i = 0; i < mStreamMapper->numPins(); i++) {
 		mStreamMapper->getPinByIndex(i)->DeliverBeginFlush();
@@ -223,32 +234,18 @@ void OggDemuxPacketSourceFilter::DeliverBeginFlush()
 void OggDemuxPacketSourceFilter::DeliverEndFlush() 
 {
 	CAutoLock locLock(m_pLock);
+    debugLog<<L"$$$ End Flush"<<endl;
 	for (unsigned long i = 0; i < mStreamMapper->numPins(); i++) {
 		//mStreamMapper->getOggStream(i)->flush();
 		mStreamMapper->getPinByIndex(i)->DeliverEndFlush();
 	}
 
-	
-	//if (mSetIgnorePackets == true) {
-	//	mStreamMapper->toStartOfData();
-	//	for (unsigned long i = 0; i < mStreamMapper->numStreams(); i++) {
-	//		//mStreamMapper->getOggStream(i)->flush();
-	//		mStreamMapper->getOggStream(i)->getPin()->DeliverEndFlush();
-	//	}
-
-	//} else {
-	//
-	//	for (unsigned long i = 0; i < mStreamMapper->numStreams(); i++) {
-	//		mStreamMapper->getOggStream(i)->flush();
-	//		mStreamMapper->getOggStream(i)->getPin()->DeliverEndFlush();
-	//	}
-	//}
-	//mSetIgnorePackets = false;
 }
 void OggDemuxPacketSourceFilter::DeliverEOS() 
 {
 	//mStreamMapper->toStartOfData();
-	//CAutoLock locLock(m_pLock);
+    CAutoLock locStreamLock(mStreamLock);
+    debugLog<<L"### Deliver EOS"<<endl;
 	for (unsigned long i = 0; i < mStreamMapper->numPins(); i++) {
 		//mStreamMapper->getOggStream(i)->flush();
 		mStreamMapper->getPinByIndex(i)->DeliverEndOfStream();
@@ -260,7 +257,8 @@ void OggDemuxPacketSourceFilter::DeliverEOS()
 
 void OggDemuxPacketSourceFilter::DeliverNewSegment(REFERENCE_TIME tStart, REFERENCE_TIME tStop, double dRate) 
 {
-	
+    CAutoLock locStreamLock(mStreamLock);
+	debugLog<<L"Deliver New Segment"<<endl;
 	for (unsigned long i = 0; i < mStreamMapper->numPins(); i++) {
 		mStreamMapper->getPinByIndex(i)->DeliverNewSegment(tStart, tStop, dRate);
 	}
@@ -268,8 +266,10 @@ void OggDemuxPacketSourceFilter::DeliverNewSegment(REFERENCE_TIME tStart, REFERE
 
 void OggDemuxPacketSourceFilter::resetStream() {
 	{
+        
 		CAutoLock locDemuxLock(mDemuxLock);
 		CAutoLock locSourceLock(mSourceFileLock);
+        debugLog<<L"---RESET STREAM::: post locks"<<endl;
 
 		mOggBuffer.clearData();
 
@@ -294,6 +294,7 @@ void OggDemuxPacketSourceFilter::resetStream() {
 		//TODO::: Should be doing stuff with the demux state here ? or packetiser ?>?
 		
 		mJustReset = true;   //TODO::: Look into this !
+        debugLog<<L"---RESET STREAM::: JUST RESET = TRUE"<<endl;
 	}
 }
 bool OggDemuxPacketSourceFilter::acceptOggPage(OggPage* inOggPage)
@@ -320,7 +321,7 @@ bool OggDemuxPacketSourceFilter::acceptOggPage(OggPage* inOggPage)
 }
 HRESULT OggDemuxPacketSourceFilter::SetUpPins()
 {
-	debugLog<<L"Setup Pins - Pre lock"<<endl;
+	
 	CAutoLock locDemuxLock(mDemuxLock);
 	CAutoLock locSourceLock(mSourceFileLock);
 	
@@ -332,10 +333,10 @@ HRESULT OggDemuxPacketSourceFilter::SetUpPins()
 	if (!mUsingCustomSource) {
 		//Create and open a data source if we are using the standard source.
 
-		debugLog<<"Pre data source creation"<<endl;
+		debugLog<<L"Pre data source creation"<<endl;
 		//mDataSource = DataSourceFactory::createDataSource(StringHelper::toNarrowStr(mFileName).c_str());
         mDataSource = DataSourceFactory::createDataSource(mFileName);
-		debugLog<<"Post data source creation"<<endl;
+		debugLog<<L"Post data source creation"<<endl;
 		if (mDataSource == NULL) {
 			return VFW_E_CANNOT_RENDER;
 		}
@@ -460,7 +461,7 @@ STDMETHODIMP OggDemuxPacketSourceFilter::GetCurFile(LPOLESTR* outFileName, AM_ME
 
 STDMETHODIMP OggDemuxPacketSourceFilter::Load(LPCOLESTR inFileName, const AM_MEDIA_TYPE* inMediaType) 
 {
-	debugLog<<L"Load - pre lock"<<endl;
+	
 	////Initialise the file here and setup all the streams
 	CAutoLock locLock(m_pLock);
 
@@ -524,12 +525,14 @@ DWORD OggDemuxPacketSourceFilter::ThreadProc(void) {
 			case THREAD_EXIT:
 	
 				Reply(S_OK);
+                debugLog<<L"Thread Proc --- THREAD IS EXITING"<<endl;
 				return S_OK;
 
 			case THREAD_RUN:
 	
 				Reply(S_OK);
 				DataProcessLoop();
+                debugLog<<L"Thread Proc --- Data Process Loop has returnsed"<<endl;
 				break;
 		}
 	}
@@ -544,11 +547,11 @@ void OggDemuxPacketSourceFilter::notifyPinConnected()
 		if (mSeekTable == NULL) {
 			//CUSTOM SOURCE:::
 			if (!mUsingCustomSource) {
-				debugLog<<"Setting up seek table"<<endl;
+				debugLog<<L"Setting up seek table"<<endl;
 				//ZZUNICODE:::
 				//mSeekTable = new AutoOggChainGranuleSeekTable(StringHelper::toNarrowStr(mFileName));
 				mSeekTable = new AutoOggChainGranuleSeekTable(mFileName);
-				debugLog<<"After Setting up seek table"<<endl;
+				debugLog<<L"After Setting up seek table"<<endl;
 			} else {
 				mSeekTable = new CustomOggChainGranuleSeekTable(mDataSource);
 			}
@@ -558,16 +561,16 @@ void OggDemuxPacketSourceFilter::notifyPinConnected()
 			for (int i = 0; i < locNumPins; i++) {
 				locPin = (OggDemuxPacketSourcePin*)GetPin(i);
 				
-				debugLog<<"Adding decoder interface to sek table"<<endl;
+				debugLog<<L"Adding decoder interface to sek table"<<endl;
 				mSeekTable->addStream(locPin->getSerialNo(), locPin->getDecoderInterface());
 			}
-			debugLog<<"Pre seek table build"<<endl;
+			debugLog<<L"Pre seek table build"<<endl;
 //#ifndef WINCE
 			mSeekTable->buildTable();
 //#else
 			//mSeekTable->disableTable();
 //#endif
-			debugLog<<"Post seek table build"<<endl;
+			debugLog<<L"Post seek table build"<<endl;
 		}
 	}
 }
@@ -593,7 +596,7 @@ HRESULT OggDemuxPacketSourceFilter::DataProcessLoop()
 
 	while(true) {
 		if(CheckRequest(&locCommand) == TRUE) {
-			//debugLog<<"DataProcessLoop : Thread Command issued... leaving loop."<<endl;
+			debugLog<<L"DataProcessLoop : Thread Command issued... leaving loop."<<endl;
 			delete[] locBuff;
 			return S_OK;
 		}
@@ -610,28 +613,37 @@ HRESULT OggDemuxPacketSourceFilter::DataProcessLoop()
 			CAutoLock locDemuxLock(mDemuxLock);
 			//CAutoLock locStreamLock(mStreamLock);
 			if (mJustReset) {		//To avoid blocking problems... restart the loop if it was just reset while waiting for lock.
+                debugLog<<L"DataProcessLoop : Detected JustRest condition"<<endl;
 				continue;
 			}
 			locFeedResult = mOggBuffer.feed((const unsigned char*)locBuff, locBytesRead);
 			locKeepGoing = ((locFeedResult == (OggDataBuffer::FEED_OK)) || (locFeedResult == OggDataBuffer::PROCESS_DISPATCH_FALSE));;
+            if (locFeedResult != OggDataBuffer::FEED_OK)
+            {
+                debugLog << L"Feed result = "<<locFeedResult<<endl;
+                break;
+            }
 		}
-		if (!locKeepGoing) {
-			//debugLog << "DataProcessLoop : Feed in data buffer said stop"<<endl;
-			//debugLog<<"DataProcessLoop : Exiting. Deliver EOS"<<endl;
-			DeliverEOS();
-		}
+		//if (!locKeepGoing) {
+		//	//debugLog << "DataProcessLoop : Feed in data buffer said stop"<<endl;
+  //          CAutoLock locStreamLock(mStreamLock);
+		//	debugLog<<L"DataProcessLoop : Keep going false Deliver EOS"<<endl;
+  //          debugLog<<L"Feed Result = "<<locFeedResult<<endl;
+		//	DeliverEOS();
+		//}
 		{
 			CAutoLock locSourceLock(mSourceFileLock);
 			locIsEOF = mDataSource->isEOF();
 		}
 		if (locIsEOF) {
 			//debugLog << "DataProcessLoop : EOF"<<endl;
-			//debugLog<<"DataProcessLoop : Exiting. Deliver EOS"<<endl;
+            CAutoLock locStreamLock(mStreamLock);
+			debugLog<<L"DataProcessLoop : EOF Deliver EOS"<<endl;
 			DeliverEOS();
 		}
 	}
 
-	//debugLog<<"DataProcessLoop : Exiting. Deliver EOS"<<endl;
+	debugLog<<L"DataProcessLoop : Left loop., balinig out"<<endl;
 
 	//Shuold we flush ehre ?
 	delete[] locBuff;
