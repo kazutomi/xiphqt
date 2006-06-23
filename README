@@ -14,6 +14,18 @@ secure CRT. Since there are so many of these occurences,
 and some of the code needs to be portable, these warnings
 are mostly suppressed/ignored.
 
+In order to fix unicode problems on modern systems without
+ dropping support for 9X/ME machines, a custom built
+ C runtime needs to be used. These are in the repository
+ in the bin directory. You need to overwrite some of your
+ Visual Studio files to build the version that can run
+ on the old versions. At this stage i haven't checked
+ whether it is now unbuildable without doing this (i don't
+ think it will be, just you will get a binary that only
+ works on NT/2K/XP systems)
+
+(More info to come on this)  
+
 You need to set up several things in your build environment
  in order to build this project. It depends on several
  Microsoft SDK's. Without these you cannot build this
