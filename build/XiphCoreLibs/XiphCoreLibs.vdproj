@@ -15,14 +15,20 @@
     {
         "Entry"
         {
-        "MsmKey" = "8:_85BFDA4CE716439F99B132912ED31125"
-        "OwnerKey" = "8:_UNDEFINED"
+        "MsmKey" = "8:_1119B78CA16D44E4991CCA4C5D038DE0"
+        "OwnerKey" = "8:_9297F69221344C25876DCB6577CD4340"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_889E8A765E1C4A8BA541AD0B217E4C50"
-        "OwnerKey" = "8:_9297F69221344C25876DCB6577CD4340"
+        "MsmKey" = "8:_67835885DB0045649CD61DE2B54C493F"
+        "OwnerKey" = "8:_1119B78CA16D44E4991CCA4C5D038DE0"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_85BFDA4CE716439F99B132912ED31125"
+        "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -34,18 +40,6 @@
         "Entry"
         {
         "MsmKey" = "8:_A60D5EE3D8B74B42BF2AF32A5F2D6726"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_C7506C7418604EA6B6C9814C1A6BD881"
-        "OwnerKey" = "8:_889E8A765E1C4A8BA541AD0B217E4C50"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_FC4C0390D8BC485BB6D95E4837ECE7B2"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -805,7 +799,7 @@
         }
         "MergeModule"
         {
-            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_889E8A765E1C4A8BA541AD0B217E4C50"
+            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_1119B78CA16D44E4991CCA4C5D038DE0"
             {
             "UseDynamicProperties" = "11:TRUE"
             "IsDependency" = "11:TRUE"
@@ -819,7 +813,7 @@
             "Feature" = "8:"
             "IsolateTo" = "8:"
             }
-            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_C7506C7418604EA6B6C9814C1A6BD881"
+            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_67835885DB0045649CD61DE2B54C493F"
             {
             "UseDynamicProperties" = "11:TRUE"
             "IsDependency" = "11:TRUE"
@@ -838,7 +832,7 @@
         {
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_85BFDA4CE716439F99B132912ED31125"
             {
-            "SourcePath" = "8:..\\..\\src\\lib\\codecs\\speex\\libs\\libspeex\\win32\\libspeex\\Release\\libspeex.lib"
+            "SourcePath" = "8:..\\..\\src\\lib\\codecs\\speex\\libs\\libspeex\\win32\\vs2005\\libspeex\\debug_rtl_dll\\libspeex.lib"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_35F67CC352C846C79B8F731AE14D6640"
@@ -866,7 +860,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_9297F69221344C25876DCB6577CD4340"
             {
-            "SourcePath" = "8:..\\..\\src\\lib\\codecs\\vorbis\\libs\\libvorbis\\win32\\Vorbis_Dynamic_Release\\vorbis.dll"
+            "SourcePath" = "8:..\\..\\src\\lib\\codecs\\vorbis\\libs\\libvorbis\\win32\\Vorbis_Dynamic_Debug\\vorbis_d.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_35F67CC352C846C79B8F731AE14D6640"
@@ -894,7 +888,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_A60D5EE3D8B74B42BF2AF32A5F2D6726"
             {
-            "SourcePath" = "8:..\\..\\src\\lib\\core\\ogg\\libogg\\win32\\Dynamic_Release\\libogg.lib"
+            "SourcePath" = "8:..\\..\\src\\lib\\core\\ogg\\libogg\\win32\\Dynamic_Debug\\libogg.lib"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_35F67CC352C846C79B8F731AE14D6640"
@@ -915,34 +909,6 @@
             "OutputConfiguration" = "8:"
             "OutputGroupCanonicalName" = "8:Built"
             "OutputProjectGuid" = "8:{FB373486-0E6E-4BB6-8BF2-1F92EACA1468}"
-            "ShowKeyOutput" = "11:TRUE"
-                "ExcludeFilters"
-                {
-                }
-            }
-            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_FC4C0390D8BC485BB6D95E4837ECE7B2"
-            {
-            "SourcePath" = "8:..\\..\\src\\lib\\codecs\\theora\\libs\\libtheora\\win32\\libtheora\\Release\\libtheora.lib"
-            "TargetName" = "8:"
-            "Tag" = "8:"
-            "Folder" = "8:_35F67CC352C846C79B8F731AE14D6640"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            "ProjectOutputGroupRegister" = "3:1"
-            "OutputConfiguration" = "8:"
-            "OutputGroupCanonicalName" = "8:Built"
-            "OutputProjectGuid" = "8:{2394BCBD-BAE8-443F-A65C-6BFDDD42D7CA}"
             "ShowKeyOutput" = "11:TRUE"
                 "ExcludeFilters"
                 {
