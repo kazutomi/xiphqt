@@ -3,7 +3,7 @@
 ; Location of Visual Studio runtime libraries on the compiling system
 ;   ************* Change this to match the path where msvcp71.dll and msvcr71.dll live ******************
 ; !define VS_RUNTIME_LOCATION "c:\Program Files\Microsoft Visual Studio .NET 2003\SDK\v1.1\Bin"
-!define VS_RUNTIME_LOCATION "V:\Program Files\Microsoft Visual Studio 8\VC\redist\x86\Microsoft.VC80.CRT"
+!define VS_RUNTIME_LOCATION "C:\Program Files\Microsoft Visual Studio 8\VC\redist\x86\Microsoft.VC80.CRT"
 ;   *****************************************************************************************************
 
 ; HM NIS Edit Wizard helper defines
@@ -108,6 +108,9 @@ Section "Ogg Core Files" SEC01
   File "${VS_RUNTIME_LOCATION}\msvcr80.dll"
   File "${VS_RUNTIME_LOCATION}\msvcp80.dll"
   File "${VS_RUNTIME_LOCATION}\Microsoft.VC80.CRT.manifest"
+
+  ; Unicows for old windows with no unicode - 1
+  File .\unicows.dll
 
 
   ; Libraries - 11
@@ -897,6 +900,9 @@ Section Uninstall
   Delete "$INSTDIR\msvcr80.dll"
   Delete "$INSTDIR\msvcp80.dll"
   Delete "$INSTDIR\Microsoft.VC80.CRT.manifest"
+
+  ; Delete unicows - 1
+  Delete "$INSTDIR\unicows.dll"
 
   ;Delete accesory files, links etc.
   Delete "$SMPROGRAMS\$ICONS_GROUP\Uninstall.lnk"
