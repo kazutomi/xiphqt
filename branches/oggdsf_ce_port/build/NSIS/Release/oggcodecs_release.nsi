@@ -19,7 +19,7 @@
 !define PRODUCT_NAME "oggcodecs"
 
 ;	CHANGE EVERY VERSION
-!define PRODUCT_VERSION "0.72.1580"					
+!define PRODUCT_VERSION "0.72.1634"					
 
 !define PRODUCT_PUBLISHER "illiminable"
 !define PRODUCT_WEB_SITE "http://www.illiminable.com/ogg/"
@@ -107,6 +107,37 @@ ShowUnInstDetails show
 
 Function .onInit
   !insertmacro MUI_LANGDLL_DISPLAY
+
+  ReadRegStr $R0 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}" "UninstallString"
+  StrCmp $R0 "" done
+ 
+  MessageBox MB_OKCANCEL|MB_ICONEXCLAMATION "${PRODUCT_NAME} is already installed. $\n$\nClick `OK` to remove the existing version or `Cancel` to cancel this installation." IDOK uninst
+  Abort
+
+;Run the uninstaller
+uninst:
+  ClearErrors
+  ; Copy the uninstaller to a temp location
+  GetTempFileName $0
+  CopyFiles $R0 $0
+  ;Start the uninstaller using the option to not copy itself
+  ExecWait '$0 _?=$INSTDIR'
+ 
+  IfErrors no_remove_uninstaller
+    ; In most cases the uninstall is successful at this point.
+    ; You may also consider using a registry key to check whether 
+    ; the user has chosen to uninstall. If you are using an uninstaller
+    ; components page, make sure all sections are uninstalled.
+    goto done
+  no_remove_uninstaller:
+    MessageBox MB_ICONEXCLAMATION \
+    "Unable to remove previous version of ${PRODUCT_NAME}"
+    Abort
+  
+done:
+  ; remove the copied uninstaller
+  Delete '$0'
+
 FunctionEnd
 
 Section "Ogg Core Files" SEC01
