@@ -23,7 +23,7 @@
 !define PRODUCT_NAME "oggcodecs"
 
 ;	CHANGE EVERY VERSION
-!define PRODUCT_VERSION "0.72.1634"					
+!define PRODUCT_VERSION "0.72.1638"					
 
 !define PRODUCT_PUBLISHER "illiminable"
 !define PRODUCT_WEB_SITE "http://www.illiminable.com/ogg/"
@@ -75,6 +75,9 @@ SetCompressor lzma
 !insertmacro MUI_PAGE_LICENSE "${OGGCODECS_ROOT_DIR}\COPYRIGHTS.rtf"
 ; Directory page
 !insertmacro MUI_PAGE_DIRECTORY
+; COMPONENTS
+!insertmacro MUI_PAGE_COMPONENTS
+
 ; Start menu page
 var ICONS_GROUP
 !define MUI_STARTMENUPAGE_NODISABLE
@@ -171,7 +174,9 @@ FunctionEnd
 
 
 
-Section "Ogg Core Files" SEC01
+Section "Oggcodecs Core Files" SEC_CORE
+  SectionIn 1 RO
+
   SetOutPath "$INSTDIR"
   SetOverwrite ifnewer
 
@@ -282,6 +287,20 @@ SectionEnd
 
 
 
+Section ".ogg defaults to audio" SEC_OGG_AUDIO_DEFAULT
+  SectionIn 1
+SectionEnd
+
+
+
+
+LangString DESC_OggCoreSection ${LANG_ENGLISH} "Core files for oggcodecs"
+LangString DESC_OggExtensionAudioByDefault ${LANG_ENGLISH} "Makes files with .ogg extension default to the audio section in Windows Media Player Library. Note: This means that ogg theora files with .ogg extension will be in audio section. The .ogv section defaults to video."
+
+!insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
+  !insertmacro MUI_DESCRIPTION_TEXT ${SEC_CORE} $(DESC_OggCoreSection)
+  !insertmacro MUI_DESCRIPTION_TEXT ${SEC_OGG_AUDIO_DEFAULT} $(DESC_OggExtensionAudioByDefault)
+!insertmacro MUI_FUNCTION_DESCRIPTION_END
 
 
 
