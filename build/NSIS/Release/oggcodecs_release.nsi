@@ -276,60 +276,10 @@ Section "Oggcodecs Core Files" SEC_CORE
   ExecWait 'regsvr32 "/s" "$INSTDIR\dsfAnxMux.dll"'
 
   ; ExecWait 'regsvr32 "/s" "$INSTDIR\dsfAnxDemux.dll"'
-
-
-
-  ;Sleep 10000
-; Shortcuts
-  !insertmacro MUI_STARTMENU_WRITE_BEGIN Application
-  !insertmacro MUI_STARTMENU_WRITE_END
-SectionEnd
-
-
-
-Section ".ogg defaults to audio" SEC_OGG_AUDIO_DEFAULT
-  SectionIn 1
-SectionEnd
-
-
-
-
-LangString DESC_OggCoreSection ${LANG_ENGLISH} "Core files for oggcodecs"
-LangString DESC_OggExtensionAudioByDefault ${LANG_ENGLISH} "Makes files with .ogg extension default to the audio section in Windows Media Player Library. Note: This means that ogg theora files with .ogg extension will be in audio section. The .ogv section defaults to video."
-
-!insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
-  !insertmacro MUI_DESCRIPTION_TEXT ${SEC_CORE} $(DESC_OggCoreSection)
-  !insertmacro MUI_DESCRIPTION_TEXT ${SEC_OGG_AUDIO_DEFAULT} $(DESC_OggExtensionAudioByDefault)
-!insertmacro MUI_FUNCTION_DESCRIPTION_END
-
-
-
-Section -AdditionalIcons
-  !insertmacro MUI_STARTMENU_WRITE_BEGIN Application
-  WriteIniStr "$INSTDIR\${PRODUCT_NAME}.url" "InternetShortcut" "URL" "${PRODUCT_WEB_SITE}"
-  CreateDirectory "$SMPROGRAMS\$ICONS_GROUP"
-  CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\Website.lnk" "$INSTDIR\${PRODUCT_NAME}.url"
-  CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\Uninstall.lnk" "$INSTDIR\uninst.exe"
-  !insertmacro MUI_STARTMENU_WRITE_END
-SectionEnd
-
-
-
-
-
-
-
-Section -Post
-  WriteUninstaller "$INSTDIR\uninst.exe"
-  WriteRegStr HKLM "${PRODUCT_DIR_REGKEY}" "" "$INSTDIR\OOOggDump.exe"
-  WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayName" "$(^Name)"
-  WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "UninstallString" "$INSTDIR\uninst.exe"
-  WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayIcon" "$INSTDIR\OOOggDump.exe"
-  WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayVersion" "${PRODUCT_VERSION}"
-  WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "URLInfoAbout" "${PRODUCT_WEB_SITE}"
-  WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "Publisher" "${PRODUCT_PUBLISHER}"
-
-
+  
+  
+  
+  
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Registry Entries for directshow and WMP
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -628,7 +578,81 @@ Section -Post
   WriteRegStr HKLM "SOFTWARE\Microsoft\MediaPlayer\MLS\Extensions" "axv" "video"
   WriteRegStr HKLM "SOFTWARE\Microsoft\MediaPlayer\MLS\Extensions" "axa" "audio"
   WriteRegStr HKLM "SOFTWARE\Microsoft\MediaPlayer\MLS\Extensions" "spx" "audio"
-  WriteRegStr HKLM "SOFTWARE\Microsoft\MediaPlayer\MLS\Extensions" "flac" "audio"
+  WriteRegStr HKLM "SOFTWARE\Microsoft\MediaPlayer\MLS\Extensions" "flac" "audio"  
+  
+  
+  
+  
+  
+  
+  
+
+
+
+  ;Sleep 10000
+; Shortcuts
+  !insertmacro MUI_STARTMENU_WRITE_BEGIN Application
+  !insertmacro MUI_STARTMENU_WRITE_END
+SectionEnd
+
+
+
+Section ".ogg defaults to audio" SEC_OGG_AUDIO_DEFAULT
+  SectionIn 1
+  
+  
+  ; Make .ogg recognised as audio
+  WriteRegStr HKLM "SOFTWARE\Microsoft\Multimedia\WMPlayer\Groups\Audio\OGG" "" "Ogg File (ogg)"
+  WriteRegStr HKLM "SOFTWARE\Microsoft\Multimedia\WMPlayer\Groups\Audio\OGG" "Extensions" ".ogg"
+  WriteRegStr HKLM "SOFTWARE\Microsoft\Multimedia\WMPlayer\Groups\Audio\OGG" "MIME Types" "application/ogg"  
+  
+  
+  WriteRegStr HKLM "SOFTWARE\Microsoft\Multimedia\WMPlayer\Extensions\.ogg" "PerceivedType" "audio"
+  
+  
+  WriteRegStr HKLM "SOFTWARE\Microsoft\MediaPlayer\MLS\Extensions" "ogg" "audio"  
+SectionEnd
+
+
+
+
+LangString DESC_OggCoreSection ${LANG_ENGLISH} "Core files for oggcodecs"
+LangString DESC_OggExtensionAudioByDefault ${LANG_ENGLISH} "Makes files with .ogg extension default to the audio section in Windows Media Player Library. Note: This means that ogg theora files with .ogg extension will be in audio section. The .ogv section defaults to video."
+
+!insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
+  !insertmacro MUI_DESCRIPTION_TEXT ${SEC_CORE} $(DESC_OggCoreSection)
+  !insertmacro MUI_DESCRIPTION_TEXT ${SEC_OGG_AUDIO_DEFAULT} $(DESC_OggExtensionAudioByDefault)
+!insertmacro MUI_FUNCTION_DESCRIPTION_END
+
+
+
+Section -AdditionalIcons
+  !insertmacro MUI_STARTMENU_WRITE_BEGIN Application
+  WriteIniStr "$INSTDIR\${PRODUCT_NAME}.url" "InternetShortcut" "URL" "${PRODUCT_WEB_SITE}"
+  CreateDirectory "$SMPROGRAMS\$ICONS_GROUP"
+  CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\Website.lnk" "$INSTDIR\${PRODUCT_NAME}.url"
+  CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\Uninstall.lnk" "$INSTDIR\uninst.exe"
+  !insertmacro MUI_STARTMENU_WRITE_END
+SectionEnd
+
+
+
+
+
+
+
+Section -Post
+  WriteUninstaller "$INSTDIR\uninst.exe"
+  WriteRegStr HKLM "${PRODUCT_DIR_REGKEY}" "" "$INSTDIR\OOOggDump.exe"
+  WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayName" "$(^Name)"
+  WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "UninstallString" "$INSTDIR\uninst.exe"
+  WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayIcon" "$INSTDIR\OOOggDump.exe"
+  WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayVersion" "${PRODUCT_VERSION}"
+  WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "URLInfoAbout" "${PRODUCT_WEB_SITE}"
+  WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "Publisher" "${PRODUCT_PUBLISHER}"
+
+
+
   
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 SectionEnd
