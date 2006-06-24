@@ -178,7 +178,7 @@ Section "Oggcodecs Core Files" SEC_CORE
   SectionIn 1 RO
 
   SetOutPath "$INSTDIR"
-  SetOverwrite ifnewer
+  SetOverwrite on
 
   ; Runtime libraries from visual studio - 3
   File "${VS_RUNTIME_LOCATION_PREFIX}r80.dll"
@@ -613,15 +613,70 @@ Section ".ogg defaults to audio" SEC_OGG_AUDIO_DEFAULT
   WriteRegStr HKLM "SOFTWARE\Microsoft\MediaPlayer\MLS\Extensions" "ogg" "audio"  
 SectionEnd
 
+Section "Open Ogg files with WMP" SEC_USE_WMP_FOR_OGG
+
+  SectionIn 1
+  Var /GLOBAL WMP_LOCATION
+
+  
+ 
+  ReadRegStr $WMP_LOCATION HKLM "SOFTWARE\Microsoft\Multimedia\WMPlayer" "Player.Path"
+  StrCmp $WMP_LOCATION "" fail_wmp 0
+  
+  ; Point the extension to the handlers
+  WriteRegStr HKCR ".ogg" "" "WMP.OggFile"
+  WriteRegStr HKCR ".oga" "" "WMP.OgaFile"
+  WriteRegStr HKCR ".ogv" "" "WMP.OgvFile"
+  
+  
+  ; Handler key for ogg
+  WriteRegStr HKCR "WMP.OggFile" "" "Ogg File"
+  WriteRegStr HKCR "WMP.OggFile\shell" "" "open"
+  WriteRegStr HKCR "WMP.OggFile\shell\open" "" "&Open"
+  WriteRegStr HKCR "WMP.OggFile\shell\open\command" "" "$WMP_LOCATION /Open $\"%L$\""
+  
+  WriteRegStr HKCR "WMP.OggFile\shell\play" "" "&Play"
+  WriteRegStr HKCR "WMP.OggFile\shell\play\command" "" "$WMP_LOCATION /Play $\"%L$\""    
+  
+  ; Handler key for oga
+  WriteRegStr HKCR "WMP.OgaFile" "" "Oga File"
+  WriteRegStr HKCR "WMP.OgaFile\shell" "" "open"
+  WriteRegStr HKCR "WMP.OgaFile\shell\open" "" "&Open"
+  WriteRegStr HKCR "WMP.OgaFile\shell\open\command" "" "$WMP_LOCATION /Open $\"%L$\""
+  
+  WriteRegStr HKCR "WMP.OgaFile\shell\play" "" "&Play"
+  WriteRegStr HKCR "WMP.OgaFile\shell\play\command" "" "$WMP_LOCATION /Play $\"%L$\""    
+  
+  ; Handler key for ogv
+  WriteRegStr HKCR "WMP.OgvFile" "" "Ogv File"
+  WriteRegStr HKCR "WMP.OgvFile\shell" "" "open"
+  WriteRegStr HKCR "WMP.OgvFile\shell\open" "" "&Open"
+  WriteRegStr HKCR "WMP.OgvFile\shell\open\command" "" "$WMP_LOCATION /Open $\"%L$\""
+  
+  WriteRegStr HKCR "WMP.OgvFile\shell\play" "" "&Play"
+  WriteRegStr HKCR "WMP.OgvFile\shell\play\command" "" "$WMP_LOCATION /Play $\"%L$\""    
+   
+  goto done_wmp
+  
+fail_wmp:
+MessageBox MB_OK|MB_ICONEXCLAMATION "A recognised version of Windows Media Player was not found. $\n File extenstion association must be done manually." IDOK done_wmp
+
+done_wmp:
+  
+  
+SectionEnd
+
 
 
 
 LangString DESC_OggCoreSection ${LANG_ENGLISH} "Core files for oggcodecs"
-LangString DESC_OggExtensionAudioByDefault ${LANG_ENGLISH} "Makes files with .ogg extension default to the audio section in Windows Media Player Library. Note: This means that ogg theora files with .ogg extension will be in audio section. The .ogv section defaults to video."
+LangString DESC_OggExtensionAudioByDefault ${LANG_ENGLISH} "Makes files with .ogg extension default to the audio section in Windows Media Player Library. Note: This means that ogg theora files with .ogg extension will also be in audio section. .ogv defaults to video."
+LangString DESC_OggOpensInWMP ${LANG_ENGLISH} "Associates Ogg Files with Windows Media Player, so you can double click them in explorer. Uncheck this if you don't want to use WMP for ogg files."
 
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_CORE} $(DESC_OggCoreSection)
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_OGG_AUDIO_DEFAULT} $(DESC_OggExtensionAudioByDefault)
+  !insertmacro MUI_DESCRIPTION_TEXT ${SEC_USE_WMP_FOR_OGG} ${DESC_OggOpensInWMP}
 !insertmacro MUI_FUNCTION_DESCRIPTION_END
 
 
