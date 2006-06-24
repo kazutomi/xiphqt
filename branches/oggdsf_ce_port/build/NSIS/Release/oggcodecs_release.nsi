@@ -150,7 +150,7 @@ Section "Ogg Core Files" SEC01
   File "${VS_RUNTIME_LOCATION}\Microsoft.VC80.CRT.manifest"
 
   ; Unicows for old windows with no unicode - 1
-  File .\unicows.dll
+  File "${VS_RUNTIME_LOCATION}\unicows.dll"
 
 
   ; Libraries - 11
