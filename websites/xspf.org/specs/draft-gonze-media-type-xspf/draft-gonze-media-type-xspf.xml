@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE rfc SYSTEM "rfc2629.dtd" [
+<!ENTITY rfc2119 PUBLIC '' 
+'http://xml.resource.org/public/rfc/bibxml/reference.RFC.2119.xml'>
+<!ENTITY rfc3023 PUBLIC '' 
+'http://xml.resource.org/public/rfc/bibxml/reference.RFC.3023.xml'>
+]>
+
+<rfc category="std" ipr="full3978" docName="draft-gonze-media-type-xspf.txt">
+
+  <?xml-stylesheet type='text/xsl' href='rfc2629.xslt' ?>
+
+  <?rfc toc="yes" ?>
+  <?rfc symrefs="yes" ?>
+  <?rfc sortrefs="yes"?>
+  <?rfc iprnotified="no" ?>
+  <?rfc strict="yes" ?>
+
+  <front>
+    <title abbrev="Media type application/xspf+xml">The application/xspf+xml Media Type</title>
+    <author initials='L' surname="Gonze" fullname='Lucas Gonze'>
+      <organization>Yahoo! Music</organization>
+      <address>
+	<email>lucas@gonze.com</email>
+	<uri>http://gonze.com</uri>
+	<postal>
+	  <city>Venice</city> <region>CA</region>
+	  <country>US</country>
+	</postal>
+      </address>
+    </author>
+    <date month="June" year="2006"/>
+    <abstract><t>This is the media type specification for the playlist format XSPF ("spiff").</t></abstract>
+  </front>
+
+  <middle>
+    <section title="Requirements notation">
+      <t>The key words "MUST", "MUST NOT", "REQUIRED", "SHALL",
+      "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY",
+      and "OPTIONAL" in this document are to be interpreted as
+      described in <xref target="RFC2119"/>.</t>
+    </section>
+    
+    <section title="Registration">
+
+      <list style="hanging">
+
+	<t hangText="Type name">
+	  <t>application</t>
+	</t>
+	
+	<t hangText="Subtype name">
+	  <t>xspf+xml</t>
+	</t>
+	
+	<t hangText="Required parameters">
+	  <t>none</t>
+	</t>
+	
+	<t hangText="Optional parameters">
+	  <t>charset.  Same as charset parameter of application/xml as
+	  specified in <xref target="RFC3023"/>.</t>
+	</t>
+
+	<t hangText="Encoding considerations">
+	  <t>Same as encoding considerations of application/xml as
+	  specified in <xref target="RFC3023"/>.</t>
+	</t>
+
+	<t hangText="Security considerations">
+	  <t>The XML-based media type being registered has all of the
+	  security considerations described in <xref target="RFC3023"/> plus additional
+	  considerations.</t>
+
+	  <t>Playlist authors who publish documents containing local
+	  filesystem paths should take care to not reveal confidential
+	  information contained in those strings.</t>
+
+	  <t>The registration does not employ active content.</t>
+	</t>
+
+	<t hangText="Interoperability considerations">
+	  <t>Versions 0 and 1 are compatible except for some playlist
+	  publication dates which precede the first publication of
+	  either specification.</t>
+	</t>
+
+	<t hangText="Published specification">
+	  <t>http://xspf.org/xspf-v1 (version 1)</t>
+	  <t>http://xspf.org/xspf-v0 (version 0)</t>
+	</t>
+
+	<t hangText="Applications that use this media type">
+	  <t>Gnomoradio, Webjay.org, Musicplayer, Playr, Yahoo Music Engine, Videolan Client, AmaroK, BMPx, I/ON, (others)</t>
+	</t>
+
+	<t hangText="Additional information">
+
+	  <t hangText="Magic number(s)">
+	    <t>none, but see section 3.1 of <xref target="RFC3023"/>.</t>
+	  </t>
+	  <t hangText="File extension(s)">
+	    <t>.xspf</t>
+	  </t>
+	  <t hangText="Macintosh file type code(s)">
+	    <t>"TEXT"</t>
+	  </t>
+	  <t hangText="Fragment/anchor identifiers">
+	    <t>see <xref target="RFC3023"/>.</t>
+	  </t>
+	  
+	</t>
+
+	<t hangText="Person &amp; email address to contact for further information">
+	  <t>Lucas Gonze &lt;lucas@gonze.com></t>
+	</t>
+	
+	<t hangText="Intended usage">
+	  <t>COMMON</t>
+	</t>
+	
+	<t hangText="Restrictions on usage">
+	  <t>none</t>
+	</t>
+	
+	<t hangText="Author/change controller">
+	  <t>The XSPF specification is a work product of the Xiph.org
+	  Foundation's Playlist Ad Hoc Group.  The working group's home on
+	  the web is http://xspf.org.  The specifications were edited by
+	  Lucas Gonze &lt;lucas@gonze.com>, Matthias Friedrich
+	  &lt;matt@mafr.de>, and Robert Kaye &lt;rob@eorbit.net>.</t>
+	</t>
+
+	<t hangText="XML namespace">
+	  <t>http://xspf.org/ns/0</t>
+	</t>
+	
+	<t hangText="Base URIs">
+	  <t>see <xref target="RFC3023"/>.</t>
+	</t>
+	
+	<t hangText="BOM">
+	  <t>see <xref target="RFC3023"/>.</t>
+	</t>
+
+      </list>
+    </section><!-- end Registration -->
+
+  </middle>
+  
+  <back>
+    <references>&rfc2119;&rfc3023;</references>
+  </back>
+  
+</rfc>
