@@ -75,13 +75,20 @@ end-user download links are provided for convenience:
 
 <tr>
 <td>libtheora</td>
-<td>1.0alpha6</td>
-<td><a href="http://downloads.xiph.org/releases/theora/libtheora-1.0alpha6.tar.gz">libtheora-1.0alpha5.tar.gz</a><br/>
-  <a href="http://downloads.xiph.org/releases/theora/libtheora-1.0alpha6.zip">libtheora-1.0alpha5.zip</a></td>
-<td>1.8M<br/>
-  1.9M</td>
-<td>0309b6e6da4b3a5e5d27adfc8558a73d<br/>
-  b591a1173712eebc2395c9ab5aa4318f</td>
+<td>1.0alpha7</td>
+<td>
+	<a href="http://downloads.xiph.org/releases/theora/libtheora-1.0alpha7.tar.bz2">libtheora-1.0alpha7.tar.bz2</a><br />
+	<a href="http://downloads.xiph.org/releases/theora/libtheora-1.0alpha7.tar.gz">libtheora-1.0alpha7.tar.gz</a><br />
+	<a href="http://downloads.xiph.org/releases/theora/libtheora-1.0alpha7.zip">libtheora-1.0alpha7.zip</a>
+</td>
+<td>
+	1.6M<br />
+	1.9M<br />
+	2.1M</td>
+<td>
+1bc851e39e4b16977131d5e5f769f48b<br />
+55ee3c6db3e0927e7918309891a8f52b<br />
+3a82e97b3930d124fe3f7a992d84553f</td>
 </tr>
 
 <tr>
