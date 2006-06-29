@@ -45,6 +45,7 @@ noinst_HEADERS = \
 	x86/x86int.h
 
 libtheoradec_la_SOURCES = \
+	apiwrapper.c \
 	decinfo.c \
 	decode.c \
 	dequant.c \
