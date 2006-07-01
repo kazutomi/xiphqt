@@ -269,21 +269,12 @@ ogg_uint16_t __attribute__((aligned(8),used)) OC_IDCT_CONSTS[(4+7+1)*4]={
 void oc_idct8x8_mmx(ogg_int16_t _y[64]){
 /*This routine accepts an 8x8 matrix, but in transposed form.
   Every 4x4 submatrix is transposed.*/
-#if (defined(__amd64__) || defined(__x86_64__))
   __asm__ __volatile__(
    ""
    :
    :"d" (_y),
     "c" (OC_IDCT_CONSTS)
   );
-#else
-  __asm__ __volatile__(
-   "  movl $OC_IDCT_CONSTS,%%ecx\n\t"
-   :
-   :"d" (_y)
-   :"ecx"
-  );
-#endif
 #define OC_I(_k)      OC_M2STR((_k*16))"("OC_Y_REG")"
 #define OC_J(_k)      OC_M2STR(((_k-4)*16)+8)"("OC_Y_REG")"
   OC_ROW_IDCT;
@@ -432,21 +423,12 @@ void oc_idct8x8_mmx(ogg_int16_t _y[64]){
 )
 
 void oc_idct8x8_10_mmx(ogg_int16_t _y[64],const ogg_int16_t _x[64]){
-#if (defined(__amd64__) ||  defined(__x86_64__))
   __asm__ __volatile__(
    ""
    :
    :"d" (_y),
    "c" (OC_IDCT_CONSTS)
   );
-#else
-  __asm__ __volatile__(
-   "  mov    $OC_IDCT_CONSTS,%%ecx\n\t"
-   :
-   :"d" (_y)
-   :"ecx"
-  );
-#endif
 #define OC_I(_k) OC_M2STR((_k*16))"("OC_Y_REG")"
 #define OC_J(_k) OC_M2STR(((_k-4)*16)+8)"("OC_Y_REG")"
   /*Done with dequant, descramble, and partial transpose.
