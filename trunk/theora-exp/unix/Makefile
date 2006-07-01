@@ -45,6 +45,7 @@ quant.h \
 ../include/theora/theora.h \
 
 LIBTHEORADEC_CSOURCES = \
+apiwrapper.c \
 decinfo.c \
 decode.c \
 dequant.c \
