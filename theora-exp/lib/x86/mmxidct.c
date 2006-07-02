@@ -422,7 +422,7 @@ void oc_idct8x8_mmx(ogg_int16_t _y[64]){
  "  #end OC_COLUMN_IDCT_10\n\t" \
 )
 
-void oc_idct8x8_10_mmx(ogg_int16_t _y[64],const ogg_int16_t _x[64]){
+void oc_idct8x8_10_mmx(ogg_int16_t _y[64]){
   __asm__ __volatile__(
    ""
    :
