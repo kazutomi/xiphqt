@@ -15,6 +15,7 @@
 #include "x86int.h"
 #include "../internal.h"
 
+#if defined(OC_X86ASM)
 
 
 static const __attribute__((aligned(8),used)) int OC_FZIG_ZAGMMX[64]={
@@ -260,3 +261,4 @@ void oc_state_frag_copy_mmx(const oc_theora_state *_state,const int *_fragis,
   /*This needs to be removed when decode specific functions are implemented:*/
   __asm__ __volatile__("emms\n\t");
 }
+#endif

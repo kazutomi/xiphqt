@@ -1,4 +1,7 @@
 #include "x86int.h"
+
+#if defined(OC_X86ASM)
+
 #include "cpu.h"
 
 void oc_state_vtable_init_x86(oc_theora_state *_state){
@@ -13,3 +16,4 @@ void oc_state_vtable_init_x86(oc_theora_state *_state){
   }
   else oc_state_vtable_init_c(_state);
 }
+#endif

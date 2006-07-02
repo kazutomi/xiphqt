@@ -15,6 +15,8 @@
 #include "cpu.h"
 #include "x86int.h"
 
+#if defined(OC_X86ASM)
+
 ogg_uint32_t oc_cpu_flags_get(void){
   ogg_uint32_t eax;
   ogg_uint32_t ebx;
@@ -94,3 +96,5 @@ inteltest:
   }
   return flags;
 }
+
+#endif
