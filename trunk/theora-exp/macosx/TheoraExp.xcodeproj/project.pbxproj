@@ -7,6 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		09AFFECB0A5833DE0043DDB1 /* cpu.c in Sources */ = {isa = PBXBuildFile; fileRef = 09AFFEC40A5833DE0043DDB1 /* cpu.c */; };
+		09AFFECC0A5833DE0043DDB1 /* cpu.h in Headers */ = {isa = PBXBuildFile; fileRef = 09AFFEC50A5833DE0043DDB1 /* cpu.h */; };
+		09AFFECD0A5833DE0043DDB1 /* mmxfrag.c in Sources */ = {isa = PBXBuildFile; fileRef = 09AFFEC60A5833DE0043DDB1 /* mmxfrag.c */; };
+		09AFFECE0A5833DE0043DDB1 /* mmxidct.c in Sources */ = {isa = PBXBuildFile; fileRef = 09AFFEC70A5833DE0043DDB1 /* mmxidct.c */; };
+		09AFFECF0A5833DE0043DDB1 /* mmxstate.c in Sources */ = {isa = PBXBuildFile; fileRef = 09AFFEC80A5833DE0043DDB1 /* mmxstate.c */; };
+		09AFFED00A5833DE0043DDB1 /* x86int.h in Headers */ = {isa = PBXBuildFile; fileRef = 09AFFEC90A5833DE0043DDB1 /* x86int.h */; };
+		09AFFED10A5833DE0043DDB1 /* x86state.c in Sources */ = {isa = PBXBuildFile; fileRef = 09AFFECA0A5833DE0043DDB1 /* x86state.c */; };
 		731DDD120A0157CB00CAD2C4 /* codec.h in Headers */ = {isa = PBXBuildFile; fileRef = 731DDD100A0157CB00CAD2C4 /* codec.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		731DDD130A0157CB00CAD2C4 /* theoradec.h in Headers */ = {isa = PBXBuildFile; fileRef = 731DDD110A0157CB00CAD2C4 /* theoradec.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		731DDD290A01586000CAD2C4 /* dct.h in Headers */ = {isa = PBXBuildFile; fileRef = 731DDD170A01586000CAD2C4 /* dct.h */; };
@@ -34,24 +41,16 @@
 		8D07F2C40486CC7A007CD1D0 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 08FB77AAFE841565C02AAC07 /* Carbon.framework */; };
 /* End PBXBuildFile section */
 
-/* Begin PBXBuildStyle section */
-		4F0BB7EC011F40E904CA0E50 /* Debug */ = {
-			isa = PBXBuildStyle;
-			buildSettings = {
-			};
-			name = Debug;
-		};
-		4F0BB7ED011F40E904CA0E50 /* Release */ = {
-			isa = PBXBuildStyle;
-			buildSettings = {
-			};
-			name = Release;
-		};
-/* End PBXBuildStyle section */
-
 /* Begin PBXFileReference section */
 		089C1667FE841158C02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		08FB77AAFE841565C02AAC07 /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = /System/Library/Frameworks/Carbon.framework; sourceTree = "<absolute>"; };
+		09AFFEC40A5833DE0043DDB1 /* cpu.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = cpu.c; sourceTree = "<group>"; };
+		09AFFEC50A5833DE0043DDB1 /* cpu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cpu.h; sourceTree = "<group>"; };
+		09AFFEC60A5833DE0043DDB1 /* mmxfrag.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mmxfrag.c; sourceTree = "<group>"; };
+		09AFFEC70A5833DE0043DDB1 /* mmxidct.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mmxidct.c; sourceTree = "<group>"; };
+		09AFFEC80A5833DE0043DDB1 /* mmxstate.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mmxstate.c; sourceTree = "<group>"; };
+		09AFFEC90A5833DE0043DDB1 /* x86int.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = x86int.h; sourceTree = "<group>"; };
+		09AFFECA0A5833DE0043DDB1 /* x86state.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = x86state.c; sourceTree = "<group>"; };
 		32BAE0B70371A74B00C91783 /* TheoraExp_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TheoraExp_Prefix.pch; sourceTree = "<group>"; };
 		731DDD100A0157CB00CAD2C4 /* codec.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = codec.h; path = ../include/theora/codec.h; sourceTree = SOURCE_ROOT; };
 		731DDD110A0157CB00CAD2C4 /* theoradec.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = theoradec.h; path = ../include/theora/theoradec.h; sourceTree = SOURCE_ROOT; };
@@ -132,6 +131,7 @@
 		08FB77ACFE841707C02AAC07 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				09AFFEC30A5833DE0043DDB1 /* x86 */,
 				731DDD4A0A0159AF00CAD2C4 /* info.c */,
 				731DDD170A01586000CAD2C4 /* dct.h */,
 				731DDD180A01586000CAD2C4 /* decinfo.c */,
@@ -158,6 +158,21 @@
 			name = Source;
 			sourceTree = "<group>";
 		};
+		09AFFEC30A5833DE0043DDB1 /* x86 */ = {
+			isa = PBXGroup;
+			children = (
+				09AFFEC40A5833DE0043DDB1 /* cpu.c */,
+				09AFFEC50A5833DE0043DDB1 /* cpu.h */,
+				09AFFEC60A5833DE0043DDB1 /* mmxfrag.c */,
+				09AFFEC70A5833DE0043DDB1 /* mmxidct.c */,
+				09AFFEC80A5833DE0043DDB1 /* mmxstate.c */,
+				09AFFEC90A5833DE0043DDB1 /* x86int.h */,
+				09AFFECA0A5833DE0043DDB1 /* x86state.c */,
+			);
+			name = x86;
+			path = ../lib/x86;
+			sourceTree = SOURCE_ROOT;
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -177,6 +192,8 @@
 				731DDD360A01586000CAD2C4 /* internal.h in Headers */,
 				731DDD370A01586000CAD2C4 /* ocintrin.h in Headers */,
 				731DDD390A01586000CAD2C4 /* quant.h in Headers */,
+				09AFFECC0A5833DE0043DDB1 /* cpu.h in Headers */,
+				09AFFED00A5833DE0043DDB1 /* x86int.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -195,8 +212,6 @@
 			);
 			buildRules = (
 			);
-			buildSettings = {
-			};
 			dependencies = (
 			);
 			name = TheoraExp;
@@ -211,12 +226,6 @@
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			buildConfigurationList = 4FADC24608B4156D00ABE55E /* Build configuration list for PBXProject "TheoraExp" */;
-			buildSettings = {
-			};
-			buildStyles = (
-				4F0BB7EC011F40E904CA0E50 /* Debug */,
-				4F0BB7ED011F40E904CA0E50 /* Release */,
-			);
 			hasScannedForEncodings = 1;
 			mainGroup = 0867D691FE84028FC02AAC07 /* TheoraExp */;
 			productRefGroup = 034768DDFF38A45A11DB9C8B /* Products */;
@@ -263,6 +272,11 @@
 				731DDD380A01586000CAD2C4 /* quant.c in Sources */,
 				731DDD3A0A01586000CAD2C4 /* state.c in Sources */,
 				731DDD4B0A0159AF00CAD2C4 /* info.c in Sources */,
+				09AFFECB0A5833DE0043DDB1 /* cpu.c in Sources */,
+				09AFFECD0A5833DE0043DDB1 /* mmxfrag.c in Sources */,
+				09AFFECE0A5833DE0043DDB1 /* mmxidct.c in Sources */,
+				09AFFECF0A5833DE0043DDB1 /* mmxstate.c in Sources */,
+				09AFFED10A5833DE0043DDB1 /* x86state.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -341,6 +355,8 @@
 					"$(HEADER_SEARCH_PATHS)",
 					../include,
 				);
+				PER_ARCH_CFLAGS_i386 = "-DOC_X86ASM";
+				PER_ARCH_CFLAGS_ppc = "";
 				PREBINDING = NO;
 				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
 			};
@@ -374,6 +390,8 @@
 					"-fforce-addr",
 					"-fomit-frame-pointer",
 				);
+				PER_ARCH_CFLAGS_i386 = "-DOC_X86ASM";
+				PER_ARCH_CFLAGS_ppc = "";
 				PREBINDING = NO;
 				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
 			};
