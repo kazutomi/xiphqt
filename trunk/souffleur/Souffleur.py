@@ -61,7 +61,9 @@ class Souffleur:
         
         self.Subtitle = None
         self.curSub = -1
-        
+        self.scroll = 0
+        self.videoWidgetGst=None
+        self.player=None
         #self.videoWidget=VideoWidget();
         #gtk.glade.set_custom_handler(self.videoWidget, VideoWidget())
 
@@ -78,7 +80,14 @@ class Souffleur:
         #	"gtk_main_quit" : (gtk.mainquit) }
         dic = { "gtk_main_quit" : (gtk.main_quit),\
             "on_main_file_quit_activate": (gtk.main_quit), \
-            "on_main_file_open_activate": self.mainFileOpen}
+            "on_main_file_open_activate": self.mainFileOpen, \
+            "on_TOOL_PLAY_clicked": self.playerPlay,\
+            "on_TOOL_PAUSE_clicked": self.playerPause,\
+            "on_TOOL_STOP_clicked": self.playerStop,\
+            "on_MEDIA_ADJUSTMENT_button_press_event": self.buttonPressAdjustment,\
+            "on_MEDIA_ADJUSTMENT_button_release_event": self.buttonReleaseAdjustment,\
+            "on_MEDIA_ADJUSTMENT_change_value": self.changeValueAdjustment,\
+            "on_VIDEO_OUT_PUT_expose_event": self.exposeEventVideoOut}
         self.wTree.signal_autoconnect (dic)
         
         self.windowFileOpen=None
@@ -98,6 +107,36 @@ class Souffleur:
         self.adjustment = self.wTree.get_widget("MEDIA_ADJUSTMENT")
         self.SubEdit = self.wTree.get_widget("VIEW_SUB")
         return
+#==============================================================================
+    def exposeEventVideoOut(self, widget, event):
+        if self.videoWidgetGst:
+            self.videoWidgetGst.do_expose_event(event)
+#==============================================================================
+    def changeValueAdjustment(self, widget, t1, t2):
+        if (not self.scroll):
+            real = long(self.adjustment.get_value() * self.p_duration / 100) # in ns
+            self.player.seek(real)
+            # allow for a preroll
+            self.player.get_state(timeout=50*gst.MSECOND) # 50 ms
+
+#==============================================================================
+    def buttonReleaseAdjustment(self, widget, event):
+        self.scroll=0
+#==============================================================================
+    def buttonPressAdjustment(self, widget, event):
+        self.scroll=1
+#==============================================================================
+    def playerStop(self, widget):
+        if self.player:
+            self.player.stop()
+#==============================================================================
+    def playerPause(self, widget):
+        if self.player:
+            self.player.pause()
+#==============================================================================
+    def playerPlay(self, widget):
+        if self.player:
+            self.player.play()
 #==============================================================================
     def mainFileOpen(self, widget):
         if(self.windowFileOpen==None):
@@ -204,7 +243,7 @@ class Souffleur:
                     BUF.set_text("")
                     self.SubEdit.set_buffer(BUF)
                     self.curSub=-1
-        if self.p_position != gst.CLOCK_TIME_NONE:
+        if (self.p_position != gst.CLOCK_TIME_NONE) and (not self.scroll):
             value = self.p_position * 100.0 / self.p_duration
             self.adjustment.set_value(value)
             #if not had_duration:

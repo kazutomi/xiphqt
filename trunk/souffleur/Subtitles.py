@@ -33,12 +33,15 @@ class Subtitles:
         DATA=os.read(FILE,FS.st_size)
         os.close(FILE)
 
-        self._subLoadFromString(DATA)
+        self._subSRTLoadFromString(DATA)
 
         self.subSource=fileName
 
-    def _subLoadFromString(self, DATA):
-        DATA=string.split(DATA,"\n")
+    def _subSRTLoadFromString(self, DATA):
+        if (string.find(DATA, "\r\n")==-1):
+            DATA=string.split(DATA,"\n")
+        else:
+            DATA=string.split(DATA,"\r\n")
         i=0
         while(i<len(DATA)):
             #i=i+1

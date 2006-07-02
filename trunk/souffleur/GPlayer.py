@@ -50,12 +50,12 @@ class GstPlayer:
         if t == gst.MESSAGE_ERROR:
             err, debug = message.parse_error()
             print "Error: %s" % err, debug
-            if self.on_eos:
-                self.on_eos()
+            #if self.on_eos:
+            #    self.on_eos()
             self.playing = False
         elif t == gst.MESSAGE_EOS:
-            if self.on_eos:
-                self.on_eos()
+            #if self.on_eos:
+            #    self.on_eos()
             self.playing = False
 
     def set_location(self, location):
