@@ -20,7 +20,7 @@ from gstfile import GstFile
 from GPlayer import VideoWidget
 from GPlayer import GstPlayer
 from Subtitles import Subtitles
-from datetime import time
+#from datetime import time
 import sys
 
 try:
@@ -87,7 +87,10 @@ class Souffleur:
             "on_MEDIA_ADJUSTMENT_button_press_event": self.buttonPressAdjustment,\
             "on_MEDIA_ADJUSTMENT_button_release_event": self.buttonReleaseAdjustment,\
             "on_MEDIA_ADJUSTMENT_change_value": self.changeValueAdjustment,\
-            "on_VIDEO_OUT_PUT_expose_event": self.exposeEventVideoOut}
+            "on_VIDEO_OUT_PUT_expose_event": self.exposeEventVideoOut,\
+            "on_TOOL_START_clicked": self.cb_setSubStartTime,\
+            "on_TOOL_END_clicked": self.cb_setSubEndTime,\
+            "on_TOOL_SAVE_clicked": self.cb_subChangeSave}
         self.wTree.signal_autoconnect (dic)
         
         self.windowFileOpen=None
@@ -106,14 +109,40 @@ class Souffleur:
         self.videoWidget = self.wTree.get_widget("VIDEO_OUT_PUT")
         self.adjustment = self.wTree.get_widget("MEDIA_ADJUSTMENT")
         self.SubEdit = self.wTree.get_widget("VIEW_SUB")
+        self.labelHour = self.wTree.get_widget("LABEL_HOUR")
+        self.labelMin = self.wTree.get_widget("LABEL_MIN")
+        self.labelSec = self.wTree.get_widget("LABEL_SEC")
+        self.labelMSec = self.wTree.get_widget("LABEL_MSEC")
+        self.subStartTime = self.wTree.get_widget("SUB_START_TIME")
+        self.subEndTime = self.wTree.get_widget("SUB_END_TIME")
         return
+#==============================================================================
+    def cb_subChangeSave(self, widget):
+        if (self.curSub != -1) and (self.Subtitle != None):
+            BUF = self.SubEdit.get_buffer()
+            TEXT = BUF.get_text(BUF.get_start_iter(), BUF.get_end_iter())
+            self.Subtitle.subs[int(self.curSub)-1].text = str(TEXT)
+            self.Subtitle.subs[int(self.curSub)-1].start_time=self.subStartTime.get_value_as_int()
+            self.Subtitle.subs[int(self.curSub)-1].end_time=self.subEndTime.get_value_as_int()
+#==============================================================================
+    def cb_setSubStartTime(self, widget):
+        self.subStartTime.set_value(self.p_position/1000000)
+#==============================================================================
+    def cb_setSubEndTime(self, widget):
+        self.subEndTime.set_value(self.p_position/1000000)
+#==============================================================================
+    def setSubStartTime(self, time):
+        self.subStartTime.set_value(time)
+#==============================================================================
+    def setSubEndTime(self, time):
+        self.subEndTime.set_value(time)
 #==============================================================================
     def exposeEventVideoOut(self, widget, event):
         if self.videoWidgetGst:
             self.videoWidgetGst.do_expose_event(event)
 #==============================================================================
     def changeValueAdjustment(self, widget, t1, t2):
-        if (not self.scroll):
+        #if (not self.scroll):
             real = long(self.adjustment.get_value() * self.p_duration / 100) # in ns
             self.player.seek(real)
             # allow for a preroll
@@ -221,33 +250,40 @@ class Souffleur:
     def update_scale_cb(self):
         had_duration = self.p_duration != gst.CLOCK_TIME_NONE
         self.p_position, self.p_duration = self.player.query_position()
+        tmSec= self.p_position/1000000
+        MSec = tmSec
+        tmSec = tmSec/1000
+        Sec = tmSec%60
+        tmSec = tmSec/60
+        Min = tmSec%60
+        Hour=tmSec/60
         if self.Subtitle:
-            tmSec= self.p_position/1000000
-            MSec = tmSec%1000
-            tmSec = tmSec/1000
-            Sec = tmSec%60
-            tmSec = tmSec/60
-            Min = tmSec%60
-            Hour=tmSec/60
-            ST = time( Hour, Min, Sec, MSec )
-            TText = self.Subtitle.getSub(ST)
+            TText = self.Subtitle.getSub(MSec)
             if TText:
                 if (TText.N!=self.curSub):
                     BUF=gtk.TextBuffer()
                     BUF.set_text(TText.text)
                     self.SubEdit.set_buffer(BUF)
                     self.curSub=TText.N
+                    self.setSubStartTime(TText.start_time)
+                    self.setSubEndTime(TText.end_time)
             else:
                 if (self.curSub!=-1):
                     BUF=gtk.TextBuffer()
                     BUF.set_text("")
                     self.SubEdit.set_buffer(BUF)
                     self.curSub=-1
-        if (self.p_position != gst.CLOCK_TIME_NONE) and (not self.scroll):
+                    self.setSubStartTime(0)
+                    self.setSubEndTime(0)
+        if (self.p_position != gst.CLOCK_TIME_NONE):# and (not self.scroll):
             value = self.p_position * 100.0 / self.p_duration
             self.adjustment.set_value(value)
             #if not had_duration:
             #    self.cutin.set_time(0)
+        self.labelHour.set_text(str(Hour))
+        self.labelMin.set_text(str(Min))
+        self.labelSec.set_text(str(Sec))
+        self.labelMSec.set_text(str(MSec))
         return True
 #==============================================================================
 #	MAIN:

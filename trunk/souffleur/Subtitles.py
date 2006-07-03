@@ -1,6 +1,6 @@
 import os
 import string
-from datetime import time
+#from datetime import time
 #from array import array
 
 SUB_NONE=0
@@ -60,8 +60,11 @@ class Subtitles:
                 Text=Text+DATA[i]+"\n"
                 i+=1
             i+=1
-            ST=time(int(Timing[0:2]), int(Timing[3:5]), int(Timing[6:8]), int(Timing[9:12])*1000)
-            ET=time(int(Timing[17:19]), int(Timing[20:22]), int(Timing[23:25]), int(Timing[26:29])*1000)
+            #ST=time(int(Timing[0:2]), int(Timing[3:5]), int(Timing[6:8]), int(Timing[9:12])*1000)
+            #ET=time(int(Timing[17:19]), int(Timing[20:22]), int(Timing[23:25]), int(Timing[26:29])*1000)
+            
+            ST=int(Timing[0:2])*3600000+int(Timing[3:5])*60000+int(Timing[6:8])*1000+int(Timing[9:12])
+            ET=int(Timing[17:19])*3600000+int(Timing[20:22])*60000+int(Timing[23:25])*1000+int(Timing[26:29])
             
             TS=Sub()
             TS.text=Text
@@ -77,6 +80,6 @@ class Subtitles:
             if(self.subs[i].isInTime(time)==1):
                 return self.subs[i]
             i=i+1
-            if(i>(len(self.subs)+1)):
+            if(i>=len(self.subs)):
                 return None
         return None
