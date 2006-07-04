@@ -12,7 +12,6 @@ class Sub:
         self.start_time=None
         self.end_time=None
         self.subType=SUB_NONE
-        #self.N=0
         self.Attributes=None
 
     def isInTime(self, time):
@@ -26,7 +25,7 @@ class Subtitles:
     def __init__(self):
         self.subs={}
         self.subSource=None
-        self.subType=SUB_SRT
+        self.subType=SUB_NONE
         self.subKeys=[]
 
     def subLoad(self, fileName):
@@ -40,6 +39,7 @@ class Subtitles:
         self.subSource=fileName
 
     def _subSRTLoadFromString(self, DATA):
+        self.subType=SUB_SRT
         if (string.find(DATA, "\r\n")==-1):
             DATA=string.split(DATA,"\n")
         else:
@@ -62,8 +62,6 @@ class Subtitles:
                 Text=Text+DATA[i]+"\n"
                 i+=1
             i+=1
-            #ST=time(int(Timing[0:2]), int(Timing[3:5]), int(Timing[6:8]), int(Timing[9:12])*1000)
-            #ET=time(int(Timing[17:19]), int(Timing[20:22]), int(Timing[23:25]), int(Timing[26:29])*1000)
             
             ST=int(Timing[0:2])*3600000+int(Timing[3:5])*60000+int(Timing[6:8])*1000+int(Timing[9:12])
             ET=int(Timing[17:19])*3600000+int(Timing[20:22])*60000+int(Timing[23:25])*1000+int(Timing[26:29])
@@ -73,9 +71,23 @@ class Subtitles:
             TS.start_time=ST
             TS.end_time=ET
             TS.subType=self.subType
-            #TS.N=N
             self.subs[int(ST)]=TS
         self.updateKeys()
+    
+    def subDel(self, time):
+        del self.subs[time]
+        self.updateKeys()
+    
+    def subAdd(self, STime, ETime, Text, Attrs, isUpdate=0):
+        TS=Sub()
+        TS.text=Text
+        TS.start_time=STime
+        TS.end_time=ETime
+        TS.subType=self.subType
+        TS.Attributes=Attrs
+        self.subs[int(STime)]=TS
+        if isUpdate==1:
+            self.updateKeys()
     
     def updateKeys(self):
         self.subKeys=self.subs.keys()
