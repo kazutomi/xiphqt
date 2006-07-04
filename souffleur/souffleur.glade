@@ -288,21 +288,6 @@
 		  </child>
 
 		  <child>
-		    <widget class="GtkToolButton" id="TOOL_PAUSE">
-		      <property name="visible">True</property>
-		      <property name="stock_id">gtk-media-pause</property>
-		      <property name="visible_horizontal">True</property>
-		      <property name="visible_vertical">True</property>
-		      <property name="is_important">False</property>
-		      <signal name="clicked" handler="on_TOOL_PAUSE_clicked" last_modification_time="Sun, 02 Jul 2006 17:29:05 GMT"/>
-		    </widget>
-		    <packing>
-		      <property name="expand">False</property>
-		      <property name="homogeneous">True</property>
-		    </packing>
-		  </child>
-
-		  <child>
 		    <widget class="GtkToolButton" id="TOOL_STOP">
 		      <property name="visible">True</property>
 		      <property name="stock_id">gtk-media-stop</property>
@@ -376,12 +361,13 @@
 		  </child>
 
 		  <child>
-		    <widget class="GtkToolButton" id="TOOL_ADD">
+		    <widget class="GtkToolButton" id="TOOL_SAVE">
 		      <property name="visible">True</property>
-		      <property name="stock_id">gtk-add</property>
+		      <property name="stock_id">gtk-save</property>
 		      <property name="visible_horizontal">True</property>
 		      <property name="visible_vertical">True</property>
 		      <property name="is_important">False</property>
+		      <signal name="clicked" handler="on_TOOL_SAVE_clicked" last_modification_time="Mon, 03 Jul 2006 18:18:30 GMT"/>
 		    </widget>
 		    <packing>
 		      <property name="expand">False</property>
@@ -396,6 +382,7 @@
 		      <property name="visible_horizontal">True</property>
 		      <property name="visible_vertical">True</property>
 		      <property name="is_important">False</property>
+		      <signal name="clicked" handler="on_TOOL_DELETE_clicked" last_modification_time="Tue, 04 Jul 2006 16:54:36 GMT"/>
 		    </widget>
 		    <packing>
 		      <property name="expand">False</property>
@@ -445,34 +432,6 @@
 		      <property name="visible_vertical">True</property>
 		      <property name="is_important">False</property>
 		      <signal name="clicked" handler="on_TOOL_END_clicked" last_modification_time="Mon, 03 Jul 2006 17:35:36 GMT"/>
-		    </widget>
-		    <packing>
-		      <property name="expand">False</property>
-		      <property name="homogeneous">True</property>
-		    </packing>
-		  </child>
-
-		  <child>
-		    <widget class="GtkSeparatorToolItem" id="separatortoolitem5">
-		      <property name="visible">True</property>
-		      <property name="draw">True</property>
-		      <property name="visible_horizontal">True</property>
-		      <property name="visible_vertical">True</property>
-		    </widget>
-		    <packing>
-		      <property name="expand">False</property>
-		      <property name="homogeneous">False</property>
-		    </packing>
-		  </child>
-
-		  <child>
-		    <widget class="GtkToolButton" id="TOOL_SAVE">
-		      <property name="visible">True</property>
-		      <property name="stock_id">gtk-save</property>
-		      <property name="visible_horizontal">True</property>
-		      <property name="visible_vertical">True</property>
-		      <property name="is_important">False</property>
-		      <signal name="clicked" handler="on_TOOL_SAVE_clicked" last_modification_time="Mon, 03 Jul 2006 18:18:30 GMT"/>
 		    </widget>
 		    <packing>
 		      <property name="expand">False</property>

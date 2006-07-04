@@ -82,7 +82,6 @@ class Souffleur:
             "on_main_file_quit_activate": (gtk.main_quit), \
             "on_main_file_open_activate": self.mainFileOpen, \
             "on_TOOL_PLAY_clicked": self.playerPlay,\
-            "on_TOOL_PAUSE_clicked": self.playerPause,\
             "on_TOOL_STOP_clicked": self.playerStop,\
             "on_MEDIA_ADJUSTMENT_button_press_event": self.buttonPressAdjustment,\
             "on_MEDIA_ADJUSTMENT_button_release_event": self.buttonReleaseAdjustment,\
@@ -90,7 +89,8 @@ class Souffleur:
             "on_VIDEO_OUT_PUT_expose_event": self.exposeEventVideoOut,\
             "on_TOOL_START_clicked": self.cb_setSubStartTime,\
             "on_TOOL_END_clicked": self.cb_setSubEndTime,\
-            "on_TOOL_SAVE_clicked": self.cb_subChangeSave}
+            "on_TOOL_SAVE_clicked": self.cb_subChangeSave,\
+            "on_TOOL_DELETE_clicked": self.cb_subDel}
         self.wTree.signal_autoconnect (dic)
         
         self.windowFileOpen=None
@@ -115,15 +115,32 @@ class Souffleur:
         self.labelMSec = self.wTree.get_widget("LABEL_MSEC")
         self.subStartTime = self.wTree.get_widget("SUB_START_TIME")
         self.subEndTime = self.wTree.get_widget("SUB_END_TIME")
+        self.playButton = self.wTree.get_widget("TOOL_PLAY")
         return
 #==============================================================================
+    def cb_subDel(self, widget):
+        if (self.Subtitle != None) and (self.curSub != -1):
+            self.Subtitle.subDel(self.curSub)
+#==============================================================================
     def cb_subChangeSave(self, widget):
-        if (self.curSub != -1) and (self.Subtitle != None):
-            BUF = self.SubEdit.get_buffer()
-            TEXT = BUF.get_text(BUF.get_start_iter(), BUF.get_end_iter())
-            self.Subtitle.subs[int(self.curSub)].text = str(TEXT)
-            self.Subtitle.subs[int(self.curSub)].start_time=self.subStartTime.get_value_as_int()
-            self.Subtitle.subs[int(self.curSub)].end_time=self.subEndTime.get_value_as_int()
+        if (self.Subtitle != None):
+            if (self.curSub != -1):
+                BUF = self.SubEdit.get_buffer()
+                TEXT = BUF.get_text(BUF.get_start_iter(), BUF.get_end_iter())
+                self.Subtitle.subs[int(self.curSub)].text = str(TEXT)
+                self.Subtitle.subs[int(self.curSub)].start_time=self.subStartTime.get_value_as_int()
+                self.Subtitle.subs[int(self.curSub)].end_time=self.subEndTime.get_value_as_int()
+            else:
+                self.subAdd()
+#==============================================================================
+    def subAdd(self):
+        ST = self.subStartTime.get_value()
+        ET = self.subEndTime.get_value()
+        BUF = self.SubEdit.get_buffer()
+        Text = BUF.get_text(BUF.get_start_iter(), BUF.get_end_iter())
+        if (( ST > 0 ) and ( ET > ST ) and ( Text != "" )):
+            self.Subtitle.subAdd(ST, ET, Text, None, 1)
+            self.curSub = ST
 #==============================================================================
     def cb_setSubStartTime(self, widget):
         self.subStartTime.set_value(self.p_position/1000000)
@@ -157,15 +174,13 @@ class Souffleur:
 #==============================================================================
     def playerStop(self, widget):
         if self.player:
+            if self.player.is_playing():
+                self.play_toggled()
             self.player.stop()
-#==============================================================================
-    def playerPause(self, widget):
-        if self.player:
-            self.player.pause()
 #==============================================================================
     def playerPlay(self, widget):
         if self.player:
-            self.player.play()
+            self.play_toggled()
 #==============================================================================
     def mainFileOpen(self, widget):
         if(self.windowFileOpen==None):
@@ -239,13 +254,14 @@ class Souffleur:
     def play_toggled(self):
         if self.player.is_playing():
             self.player.pause()
-            #self.button.set_label(gtk.STOCK_MEDIA_PLAY)
+            self.playButton.set_stock_id(gtk.STOCK_MEDIA_PLAY)
+            #self.playButton.set_icon_name(gtk.STOCK_MEDIA_PLAY)
         else:
             self.player.play()
             if self.update_id == -1:
                 self.update_id = gobject.timeout_add(self.UPDATE_INTERVAL,
                                                      self.update_scale_cb)
-            #self.button.set_label(gtk.STOCK_MEDIA_PAUSE)
+            self.playButton.set_stock_id(gtk.STOCK_MEDIA_PAUSE)
 #==============================================================================
     def update_scale_cb(self):
         had_duration = self.p_duration != gst.CLOCK_TIME_NONE
@@ -256,7 +272,7 @@ class Souffleur:
         Sec = tmSec%60
         tmSec = tmSec/60
         Min = tmSec%60
-        Hour=tmSec/60
+        Hour = tmSec/60
         if self.Subtitle:
             TText = self.Subtitle.getSub(MSec)
             if TText:
@@ -278,8 +294,6 @@ class Souffleur:
         if (self.p_position != gst.CLOCK_TIME_NONE):# and (not self.scroll):
             value = self.p_position * 100.0 / self.p_duration
             self.adjustment.set_value(value)
-            #if not had_duration:
-            #    self.cutin.set_time(0)
         self.labelHour.set_text(str(Hour))
         self.labelMin.set_text(str(Min))
         self.labelSec.set_text(str(Sec))
