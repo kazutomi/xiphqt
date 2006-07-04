@@ -12,7 +12,8 @@ class Sub:
         self.start_time=None
         self.end_time=None
         self.subType=SUB_NONE
-        self.N=0
+        #self.N=0
+        self.Attributes=None
 
     def isInTime(self, time):
         if( (time>=self.start_time) and (time<=self.end_time) ):
@@ -23,9 +24,10 @@ class Sub:
 
 class Subtitles:
     def __init__(self):
-        self.subs=[]
+        self.subs={}
         self.subSource=None
         self.subType=SUB_SRT
+        self.subKeys=[]
 
     def subLoad(self, fileName):
         FILE=os.open(fileName, os.O_RDONLY)
@@ -71,15 +73,20 @@ class Subtitles:
             TS.start_time=ST
             TS.end_time=ET
             TS.subType=self.subType
-            TS.N=N
-            self.subs.append(TS)
+            #TS.N=N
+            self.subs[int(ST)]=TS
+        self.updateKeys()
+    
+    def updateKeys(self):
+        self.subKeys=self.subs.keys()
+        self.subKeys.sort()
 
     def getSub(self, time):
         i=0
-        while(time>=self.subs[i].start_time):
-            if(self.subs[i].isInTime(time)==1):
-                return self.subs[i]
-            i=i+1
-            if(i>=len(self.subs)):
+        for i in self.subKeys:
+            if(time>=i):
+                if(self.subs[i].isInTime(time)==1):
+                    return self.subs[i]
+            else:
                 return None
         return None

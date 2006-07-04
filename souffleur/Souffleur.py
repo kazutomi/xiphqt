@@ -121,9 +121,9 @@ class Souffleur:
         if (self.curSub != -1) and (self.Subtitle != None):
             BUF = self.SubEdit.get_buffer()
             TEXT = BUF.get_text(BUF.get_start_iter(), BUF.get_end_iter())
-            self.Subtitle.subs[int(self.curSub)-1].text = str(TEXT)
-            self.Subtitle.subs[int(self.curSub)-1].start_time=self.subStartTime.get_value_as_int()
-            self.Subtitle.subs[int(self.curSub)-1].end_time=self.subEndTime.get_value_as_int()
+            self.Subtitle.subs[int(self.curSub)].text = str(TEXT)
+            self.Subtitle.subs[int(self.curSub)].start_time=self.subStartTime.get_value_as_int()
+            self.Subtitle.subs[int(self.curSub)].end_time=self.subEndTime.get_value_as_int()
 #==============================================================================
     def cb_setSubStartTime(self, widget):
         self.subStartTime.set_value(self.p_position/1000000)
@@ -260,11 +260,11 @@ class Souffleur:
         if self.Subtitle:
             TText = self.Subtitle.getSub(MSec)
             if TText:
-                if (TText.N!=self.curSub):
+                if (TText.start_time!=self.curSub):
                     BUF=gtk.TextBuffer()
                     BUF.set_text(TText.text)
                     self.SubEdit.set_buffer(BUF)
-                    self.curSub=TText.N
+                    self.curSub=int(TText.start_time)
                     self.setSubStartTime(TText.start_time)
                     self.setSubEndTime(TText.end_time)
             else:
