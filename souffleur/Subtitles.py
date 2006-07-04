@@ -13,21 +13,22 @@ class Sub:
         self.end_time=None
         self.subType=SUB_NONE
         self.Attributes=None
-
+#==============================================================================
     def isInTime(self, time):
         if( (time>=self.start_time) and (time<=self.end_time) ):
             return 1
         else:
             return 0
 
-
+#==============================================================================
+#==============================================================================
 class Subtitles:
     def __init__(self):
         self.subs={}
         self.subSource=None
         self.subType=SUB_NONE
         self.subKeys=[]
-
+#==============================================================================
     def subLoad(self, fileName):
         FILE=os.open(fileName, os.O_RDONLY)
         FS=os.fstat(FILE)
@@ -37,7 +38,38 @@ class Subtitles:
         self._subSRTLoadFromString(DATA)
 
         self.subSource=fileName
-
+#==============================================================================    
+    def subSave(self, format):
+        if (self.subSource!=None):
+            FUN=os.open(self.subSource,os.O_WRONLY|os.O_CREAT|os.O_TRUNC)
+            N=1
+            for i in self.subKeys:
+                SUB = self.subs[int(i)]
+                Text=str(N)+"\n"
+                Hour, Min, Sec, MSec = self._subTime2SRTtime(SUB.start_time)
+                #Text+=str(Hour)+":"+str(Min)+":"+str(Sec)+","+str(MSec)
+                Text+="%02d:%02d:%02d,%03d"%(Hour, Min, Sec, MSec)
+                Text+=" --> "
+                Hour, Min, Sec, MSec = self._subTime2SRTtime(SUB.end_time)
+                #Text+=str(Hour)+":"+str(Min)+":"+str(Sec)+","+str(MSec)+"\n"
+                Text+="%02d:%02d:%02d,%03d"%(Hour, Min, Sec, MSec)+"\n"
+                Text+=SUB.text+"\n"
+                if (SUB.text[-1]!='\n'):
+                    Text+="\n"
+                os.write(FUN, Text)
+                N+=1
+            os.close(FUN)
+#==============================================================================
+    def _subTime2SRTtime(self, time):
+        tTime = time
+        MSec = tTime%1000
+        tTime /=1000
+        Sec = tTime%60
+        tTime /= 60
+        Min = tTime%60
+        Hour = tTime/60
+        return Hour, Min, Sec, MSec
+#==============================================================================
     def _subSRTLoadFromString(self, DATA):
         self.subType=SUB_SRT
         if (string.find(DATA, "\r\n")==-1):
@@ -73,11 +105,11 @@ class Subtitles:
             TS.subType=self.subType
             self.subs[int(ST)]=TS
         self.updateKeys()
-    
+#==============================================================================    
     def subDel(self, time):
         del self.subs[time]
         self.updateKeys()
-    
+ #==============================================================================   
     def subAdd(self, STime, ETime, Text, Attrs, isUpdate=0):
         TS=Sub()
         TS.text=Text
@@ -88,11 +120,11 @@ class Subtitles:
         self.subs[int(STime)]=TS
         if isUpdate==1:
             self.updateKeys()
-    
+#==============================================================================    
     def updateKeys(self):
         self.subKeys=self.subs.keys()
         self.subKeys.sort()
-
+#==============================================================================
     def getSub(self, time):
         i=0
         for i in self.subKeys:

@@ -90,7 +90,8 @@ class Souffleur:
             "on_TOOL_START_clicked": self.cb_setSubStartTime,\
             "on_TOOL_END_clicked": self.cb_setSubEndTime,\
             "on_TOOL_SAVE_clicked": self.cb_subChangeSave,\
-            "on_TOOL_DELETE_clicked": self.cb_subDel}
+            "on_TOOL_DELETE_clicked": self.cb_subDel,\
+            "on_main_file_save_activate": self.cb_onSaveMenu}
         self.wTree.signal_autoconnect (dic)
         
         self.windowFileOpen=None
@@ -117,6 +118,10 @@ class Souffleur:
         self.subEndTime = self.wTree.get_widget("SUB_END_TIME")
         self.playButton = self.wTree.get_widget("TOOL_PLAY")
         return
+#==============================================================================
+    def cb_onSaveMenu(self, widget):
+        if (self.Subtitle != None):
+            self.Subtitle.subSave(1)
 #==============================================================================
     def cb_subDel(self, widget):
         if (self.Subtitle != None) and (self.curSub != -1):
