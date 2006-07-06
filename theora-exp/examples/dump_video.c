@@ -5,7 +5,7 @@
  * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
- * THE Theora SOURCE CODE IS COPYRIGHT (C) 2002-2003                *
+ * THE Theora SOURCE CODE IS COPYRIGHT (C) 2002-2006                *
  * by the Xiph.Org Foundation http://www.xiph.org/                  *
  *                                                                  *
  ********************************************************************
@@ -27,7 +27,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
-/*#include <sys/time.h>*/
+#include <sys/time.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 /*Yes, yes, we're going to hell.*/
@@ -42,11 +42,11 @@
 
 
 
-const char *optstring = "o:r";
+const char *optstring = "o:rf";
 struct option options [] = {
   {"output",required_argument,NULL,'o'},
-  /*Disable YUV4MPEG2 headers:*/
-  {"raw",no_argument, NULL,'r'},
+  {"raw",no_argument, NULL,'r'}, /*Disable YUV4MPEG2 headers:*/
+  {"fps-only",no_argument, NULL, 'f'}, /* Only interested in fps of decode loop */
   {NULL,0,NULL,0}
 };
 
@@ -141,7 +141,7 @@ static void video_write(void){
   /*Uncomment the following to do normal, non-striped decoding.
   th_ycbcr_buffer ycbcr;
   th_decode_ycbcr_out(td,ycbcr);*/
-  if(!raw)fprintf(outfile, "FRAME\n");
+  fprintf(outfile, "FRAME\n");
 
   for(pli=0;pli<3;pli++){
     for(i=0;i<ycbcr[pli].height;i++){
@@ -179,8 +179,12 @@ int main(int argc,char *argv[]){
   FILE *infile = stdin;
   outfile = stdout;
 
+  struct timeval start;
+  struct timeval after;
+  struct timeval last;
+  int fps_only=0;
 
-#ifdef _WIN32 /* We need to set stdin/stdout to binary mode. Damn windows. */
+#ifdef _WIN32 /* We need to set stdin/stdout to binary mode on windows. */
   /* Beware the evil ifdef. We avoid these where we can, but this one we
      cannot. Don't add any more, you'll probably go to hell if you do. */
   _setmode( _fileno( stdin ), _O_BINARY );
@@ -190,20 +194,29 @@ int main(int argc,char *argv[]){
   /* Process option arguments. */
   while((c=getopt_long(argc,argv,optstring,options,&long_option_index))!=EOF){
     switch(c){
-      case 'o':
-      outfile=fopen(optarg,"wb");
-      if(outfile==NULL){
-        fprintf(stderr,"Unable to open output file '%s'\n", optarg);
-        exit(1);
+    case 'o':
+      if(!strcmp(optarg,"-")){
+	outfile=fopen(optarg,"wb");
+	if(outfile==NULL){
+	  fprintf(stderr,"Unable to open output file '%s'\n", optarg);
+	  exit(1);
+	}
+      }else{
+	outfile=stdout;
       }
       break;
-
-      case 'r':
-      raw=1;
+      
+    case 'r':
+	raw=1;
+	break;
+	
+    case 'f':
+      fps_only = 1;
+      outfile = NULL;
       break;
-
-      default:
-        usage();
+      
+    default:
+      usage();
     }
   }
   if(optind<argc){
@@ -320,7 +333,7 @@ int main(int argc,char *argv[]){
   /* open video */
   if(theora_p)open_video();
 
-  if(!raw){
+  if(!raw && outfile){
     fprintf(outfile, "YUV4MPEG2 W%d H%d F%d:%d I%c A%d:%d\n",
      ti.pic_width,ti.pic_height,ti.fps_numerator,ti.fps_denominator,'p',
      ti.aspect_numerator,ti.aspect_denominator);
@@ -337,6 +350,12 @@ int main(int argc,char *argv[]){
   while(ogg_sync_pageout(&oy,&og)>0){
     queue_page(&og);
   }
+
+  if(fps_only){
+    gettimeofday(&start,NULL);
+    gettimeofday(&last,NULL);
+  }
+
   while(!got_sigint){
 
     while(theora_p && !videobuf_ready){
@@ -347,12 +366,34 @@ int main(int argc,char *argv[]){
           videobuf_time=th_granule_time(td,videobuf_granulepos);
           videobuf_ready=1;
           frames++;
+	  if(fps_only)
+	    gettimeofday(&after,NULL);
         }
-
+	
       }else
         break;
     }
 
+    if(fps_only && (videobuf_ready || fps_only==2)){
+      long ms = 
+	after.tv_sec*1000.+after.tv_usec*.001-
+	(last.tv_sec*1000.+last.tv_usec*.001);
+      
+      if(ms>500 || fps_only==1 || 
+	 (feof(infile) && !videobuf_ready)){
+	float file_fps = (float)ti.fps_numerator/ti.fps_denominator;
+	fps_only=2;
+	
+	ms = after.tv_sec*1000.+after.tv_usec*.001-
+	  (start.tv_sec*1000.+start.tv_usec*.001);
+	
+	fprintf(stderr,"\rframe:%d rate:%.2fx           ",
+		frames, 
+		frames*1000./(ms*file_fps));
+	memcpy(&last,&after,sizeof(last));
+      }
+    }
+    
     if(!videobuf_ready  && feof(infile))break;
 
     if(!videobuf_ready ){
@@ -363,7 +404,8 @@ int main(int argc,char *argv[]){
       }
     }
     /* dumpvideo frame, and get new one */
-    else video_write();
+    else 
+      if(outfile)video_write();
 
     videobuf_ready=0;
   }
@@ -381,9 +423,7 @@ int main(int argc,char *argv[]){
   if(infile && infile!=stdin)fclose(infile);
   if(outfile && outfile!=stdout)fclose(outfile);
 
-  fprintf(stderr,
-          "\r                                                              \r");
-  fprintf(stderr, "%d frames\n", frames);
+  fprintf(stderr, "\n\n%d frames\n", frames);
   fprintf(stderr, "\nDone.\n");
 
   return(0);
