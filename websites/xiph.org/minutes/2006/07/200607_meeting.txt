@@ -1,0 +1,341 @@
+--- Log opened Wed Jul 12 10:55:50 2006
+10:59 -!- xiphlog [n=giles@westfish.xiph.osuosl.org] has joined #xiphmeet
+10:59 -!- Topic for #xiphmeet: MonthlyMeeting with our SoC students! live log at http://westfish.xiph.org/~giles/200607_meeting.txt
+10:59 -!- Topic set by rillian [] [Wed Jul 12 10:57:29 2006]
+10:59 [Users #xiphmeet]
+10:59 [ _chaOS_away] [ Atamido     ] [ illi_vanilli] [ kombinator] [ rillian] 
+10:59 [ adar       ] [ derf_       ] [ jmspeex     ] [ nemo      ] [ tris   ] 
+10:59 [ anup       ] [ horizontilli] [ jmworx      ] [ portavales] [ xiphlog] 
+10:59 -!- Irssi: #xiphmeet: Total of 15 nicks [0 ops, 0 halfops, 0 voices, 15 normal]
+10:59 -!- Channel #xiphmeet created Sat Jun 24 20:53:52 2006
+10:59 -!- [freenode-info] why register and identify? your IRC nick is how people know you. http://freenode.net/faq.shtml#nicksetup
+10:59 -!- Irssi: Join to #xiphmeet was synced in 0 secs
+10:59 < rillian> hi anup, portavales
+10:59 < portavales> hi :-)
+10:59 < anup> hi rillian and portvales
+10:59 < rillian> unfortunately, kfish and derf can't make it
+11:00 < portavales> ok, no problem
+11:00 < rillian> _chaOS_away: ping
+11:00 < adar> hi rillian
+11:00 < rillian> and looks like we're missing tahseen and saraku
+11:00 < horizontilli> i think derf maybe just going to be late?
+11:01 < rillian> horizontilli: hopefully
+11:01 -!- _chaOS_away [i=wefjq@s15209521.onlinehome-server.info] has quit [Read error: 104 (Connection reset by peer)]
+11:01 < rillian> guess not
+11:01 -!- adar is now known as tahseen
+11:01 < rillian> oh, hi tahseen! :)
+11:01 < rillian> Ok, I guess we should start
+11:02 < tahseen> rillian, I'm not sure how I got logged in as adar. :)
+11:02 < portavales> how many developers are under the SoC program ?
+11:02 < rillian> we have 5 students
+11:02 -!- _chaOS_ [i=hzo@s15209521.onlinehome-server.info] has joined #xiphmeet
+11:02 < rillian> portavales is working on a hardware theora decoder
+11:02 < rillian> _chaOS_ is working on an encoder for theora-exp
+11:03 < rillian> tahseen is working on OggSkeleton implementation
+11:03 < rillian> anup is working on ghost (next gen audio codec)
+11:03 < rillian> and saraku is working on souffleur, the subtitle editor
+11:03 < rillian> and seems to be the only student missing
+11:04 < rillian> thanks everyone from coming!
+11:04 < rillian> we'd like all the students to give project reports
+11:04 < rillian> and then we can talk about what's going on
+11:04 < rillian> and you all have a chance to meet each other if you haven't already :)
+11:04 < rillian> portavales: want to go first?
+11:04 < _chaOS_> hi everyone.
+11:04 < portavales> yes :-)
+11:05 < portavales> well, what goes first... 
+11:05 < portavales> I did the DCT implementation in VHDL and tested in the FPGA
+11:06 < portavales> after some small profilings running on the FPGA I can say that the only way to get a high resolution video decoding on FPGA in real-time is to have all the ReconRefFrame routine implemented in hardware
+11:07 < portavales> It means that the Reconstruction Filters, DCT and the LoopFilter will be running on hardware designed modules
+11:07 < rillian> so lots of work...
+11:07 < portavales> the reconstruction filters was developed by my friends in the university, and the LoopFilter is under development
+11:08 < rillian> can you tell us about the competition too? how did the theora project go?
+11:08 < portavales> oh yes
+11:09 < portavales> the competition: We have to get the theora working on the FPGA as a NIOS2 peripheral until the end of July
+11:10 < rillian> ah, didn't realize there was another month
+11:10 < rillian> so the competition hasn't happened yet?
+11:10 < portavales> Than, all the competitors will be analised , and 3 will be choosed to show the work on a conference in september
+11:10 -!- arkadini [n=arkadini@62.141.217.185] has joined #xiphmeet
+11:10 < portavales> no not yet
+11:10 < rillian> hi arkadini
+11:10 < arkadini> hi
+11:11 < rillian> portavales: ok. I'd like to see the modules ported to LEON as well in the meantime
+11:11 < rillian> or at least your module :)
+11:11 < portavales> Ok
+11:11 < portavales> it is easy :-)
+11:11 < rillian> given the open source requirements of the project
+11:11 < rillian> good. :)
+11:11 < portavales> yes, of course
+11:12 < rillian> just curious, what framerates are your currently getting with the decoder?
+11:12 < rillian> it's good to get code other people can try into svn
+11:13 < portavales> with a 320x240, running on the NIOS 2 with the hardware DCT , I can get 44 miliseconds per frame, or 22 FPS
+11:13 < rillian> and how many gates, what clock?
+11:13 < portavales> 1 min to get these infos
+11:14 < portavales> i have the report here somewhere...
+11:14 < rillian> still, doesn't sound all that bad. just not competitive with general purpose hardware
+11:14 < horizontilli> i'm curious if it scales linearly by the number of pixels?
+11:14 < horizontilli> ie if you double width and height, is it four times slower?
+11:15 < rillian> horizontilli: may not be enough ram in the current implementation to do that
+11:15 < portavales> not the gates, only the RAM size
+11:15 < rillian> but halving it should work :)
+11:15 < portavales> as Rillian sayd: The DCT hardware is not a competitive choice with a general purpose hardware
+11:16 < portavales> but, there is some reasons
+11:17 < portavales> When I put only the DCT on hardware, I have to send DCT samples and get DCT samples every time from software to hardware and vice-versa
+11:17 < portavales> this causes a lot of trafic in the bus
+11:17 < portavales> If we have all the ReconRefFrames in hardware, I can just send he data, and the hardware can send the decoded frames dirctly to the video output
+11:18 < rillian> right. and even then, as with the elphel encoder, it looks like memory bandwidth will be the biggest contraint
+11:18 < portavales> yes
+11:18 < rillian> portavales: how are you liking the project so far?
+11:19 < portavales> sorry, I dont undestand ... (my english is not so good)
+11:19 < portavales> liking = If I like to work on this ?
+11:19 < rillian> yes
+11:20 < rillian> non technical aspects of the project report
+11:20 < rillian> do you like to work on this? do you like working as part of the SoC
+11:20 < rillian> can we do anything to help you more?
+11:20 < portavales> Yes :-)
+11:20 < portavales> I like it very much, 
+11:20 < portavales> I'm learning a lot of things about video encoding
+11:21 < rillian> great
+11:21 < portavales> I like to work as part of an Open Source video codec , I want to learn video codec techniques
+11:22 < rillian> anup: can you go next? how's ghost?
+11:22 < anup> ok
+11:23 < derf_> Hi all, sorry I'm late.
+11:23 < anup> As for Ghost, I am afraid I have not made any significant progress as yet. I had started off trying to improve the sinusoidal extraction algorithms. 
+11:24 < rillian> hi derf_. hope your talk went well :)
+11:24 < rillian> anup: and how did that go?
+11:24 < anup> But since I was finding it hard to really understand all the theory and techniqoues Jean-Marc had advised me to work on the sinuodial params quantization. And that is what i am working on now. 
+11:25 < rillian> I've still not seen any commits. do you have any code at this point?
+11:25 < anup> I have written some functions for quantization \, but have not committed it yet.
+11:26 < rillian> ok. this is really between you an jm, but I'd rather you commit what you have every few days
+11:26 < rillian> even if it doesn't really work
+11:26 < rillian> as he said, there's not much there to break
+11:26 < rillian> and it lets us keep better track of how you're doing
+11:26 < anup> ok. te reason why i didnt commt was because i was not really sure it was going alright
+11:27 < anup> ok ,. i will do that asap
+11:27 < rillian> don't be shy. it's more likely you'll find out if you put the code somewhere where someone else can look at it :)
+11:27 < rillian> and thanks for moving your discussion to the mailing list, that's helped a lot too
+11:27 < anup> Ok :)
+11:27 < rillian> google keeps reminding us that teaching you about open source development models is a big part of the SoC
+11:28 < rillian> and doing as much as possible in the open is part of that :)
+11:28 < rillian> jmworx: did you have anything to add?
+11:28 < anup> This is the first time I am doind anything with open source. So..
+11:28 < rillian> anup: sounds like monty's not been involved in the project at all. is that correct?
+11:28 < anup> i guess so
+11:28 < rillian> anup: that's fine. the rules are a little different from normal engineering, so it can take some getting used to
+11:29 < anup> Ok
+11:29 < rillian> anup: sorry about that; let me know if you need more direction, or have spare time
+11:29 < rillian> I'm sure we can find something else to do, or I can prod monty and jm :)
+11:29 < horizontilli> jmspeex is more likely to flash than jmworx
+11:30 < rillian> horizontilli: thanks. "timezones are hard"
+11:30 < rillian> in the meantime, _chaOS_, can you give your report now? How's the encoder coming?
+11:30 < _chaOS_> Yeah..
+11:31 < rillian> (hmm, it occurs to me I should introduce people. I'm Ralph Giles, one of the xiph.org volunteers and official "SoC administrator" for the xiph projects.
+11:31 < _chaOS_> i have resorted back to doing some reading as of lately..
+11:31 < rillian> (jm is the author of speex, and coauthor of oggpcm and ghost, and anup's mentor.
+11:31 < rillian> (derf_ is the author of the theora spec and theora-exp implementation and _chaOS_'s mentor.
+11:32 < rillian> (kfish (not present) is the author of liboggz and various annodex project goodness and the mentor of both tahseen and saraku
+11:32 < rillian> (oh, and I'm also mentor for portavales and the nominal theora maintainer.)
+11:32 < rillian> _chaOS_: did you get the constant quant mode working?
+11:33 < _chaOS_> well yes, i honestly hope so.
+11:33 < _chaOS_> had been home bounf last few days.. so could'nt keep in touch
+11:34 < derf_> I'd like to see your latest code for it. We need to get it into a state where we can commit it.
+11:34 < rillian> agreed
+11:34 < _chaOS_> (derf_: im sorry could'nt talk to you other day)
+11:35 < _chaOS_> yes, derf_ i'd send it to you asap
+11:35 < rillian> _chaOS_: anyway, working code is an important part of the project, so please work with derf to get the code into a state where we can commit it
+11:35 < rillian> and cc the theora-dev list
+11:35 < derf_> I'm also anxious to see that revised schedule you promised.
+11:35 < rillian> don't be afraid to ask questions. the rest of us are here to help you out
+11:36 < _chaOS_> thanks rillian.
+11:36 < rillian> derf_, _chaOS_: anything else to report?
+11:36 < rillian> anything we can do better?
+11:36 < _chaOS_> the CQI mode is the major thing
+11:36 < rillian> anup: I forgot to ask you that too :)
+11:37 < _chaOS_> R-D optimization follows later.
+11:37 < rillian> ok, that leaves tahseen
+11:37 < derf_> Just remember that "later" is rapidly getting sooner.
+11:37 < anup> :) I don't think anything to report. Bt I would like to know what exactly is the target for the SoC project for me
+11:38 < rillian> anup: yes, the idea was that monty and/or jmspeex would feed you ideas to try out, you'd implement them and report back
+11:38 < rillian> ideally we'd have something like a research prototype at the end
+11:38 < rillian> less ideally, just a pile of code
+11:38 < derf_> The fun bit about research is that you don't actually know what your goals are in advance.
+11:38 < derf_> Except in the broadest terms.
+11:38 < rillian> *nod*
+11:39 < anup> I understand :)
+11:39 < rillian> "if we knew what we were doing, it wouldn't be research"
+11:39 < rillian> but if you're not geting enough interaction or need more specific direction, you need to let us know
+11:39 < anup> SUre, I will do that
+11:39 < derf_> We want to get Google's money's worth out of you :)
+11:39 < tahseen> Ok here's my summary. I've got libvorbis supporting playing of vorbis+skeleton file. Thats actually pretty old news.
+11:40 < tahseen> Its in vorbis-tahseen branch & I haven't got much feedback on that.
+11:40 < derf_> You mean libvorbisfile.
+11:40 < rillian> he does
+11:40 < tahseen> Oops right
+11:40 < rillian> ok. I've not reviewed it
+11:41 < rillian> but the proper response here is probably to commit to trunk/vorbis
+11:41 < rillian> and then it should get some involuntary testing :)
+11:41 < rillian> you also had a patch for ffmpeg2theora. can you tell us about that?
+11:41 < tahseen> j^ committed my ffmpeg2theora patch and I patched up some bugs so now ffmpeg2theora can output skeleton bitstream if you set the flag.
+11:42 < derf_> We should probably do something about getting player_example to decode such streams.
+11:42 < tahseen> what player example?
+11:42 < rillian> derf_: the theora player_example, you mean?
+11:42 < derf_> tahseen: Theora's.
+11:42 < rillian> derf_: does it not ignore them properly, at least?
+11:43 < derf_> Let's go read the code.
+11:43 < rillian> tahseen: cool. has j^ shown any interest in turning it on by default?
+11:43 < rillian> and what's your next target?
+11:43 < tahseen> I'ven't tested that one, but most players seems to play those files fine like xine, gstreamer, quicktime as j^ and illi tested
+11:44 < derf_> rillian: It appears to just blindly ignore it.
+11:44 < rillian> derf_: that's what I expected
+11:44 < derf_> Monty says:         /* whatever it is, we don't care about it */
+11:44 < rillian> do you think we should print out a summary or something?
+11:44 < derf_> tahseen: That's good to hear.
+11:44 < tahseen> I actually have the speexenc quite ready. I should be able to make it ready for review tomorrow.
+11:45 < rillian> great
+11:45 < rillian> so what about: oggenc? gstreamer oggmux? oggz-validate?
+11:46 < tahseen> I will then start with speexdec & it looks simple enough from what I understood of the code.
+11:46 < rillian> or maybe you should write a separate oggz-based tool to add skeleton headers to existing files, and to validate the the information in a skeleton header matches the stream?
+11:47 < rillian> yes, speexdec is quite straighforward
+11:48 < tahseen> ok, thats an interesting idea, me or kfish haven't thought about that.
+11:48 < rillian> also, I know it's tangential, but fixing libvorbisfile to handle all multiplexed streams in an api compatible way would be very, very nice. that's been an open bug for years. just a humble request. :)
+11:49 < rillian> tahseen: ok, think about it.
+11:49 < rillian> tahseen: hope you're feeling better today?
+11:49 < tahseen> yes, I'm really interested on that one too. The only reason I switched from it because I started worrying I may used up all my soc alloted time on that
+11:50 < rillian> fair enough, it is tangential
+11:50 < rillian> kfish also said I should ask you about the general skeleton api you're developing.
+11:50 < rillian> can you say something about that
+11:50 < tahseen> yes, I'm feeling a lot better since yesterday afternoon.
+11:50 < rillian> will we get to see it in the speexenc patch?
+11:50 < rillian> tahseen: :)
+11:51 < tahseen> its basically very simple API. two structure for fishead and fisbone packet. 5/6 functions for making ogg_packet from the skeleton packets and add them in ogg_stream
+11:52 < tahseen> The idea is just to put away the pointer operations in a single place and make the code more readable.
+11:52 < rillian> sounds good so far. when can we see it?
+11:52 < derf_> The less code people have to write to use skeleton, the more likely they'll use it.
+11:53 < tahseen> the problem is where do I put these file & I have no idea how to modify the compilation/configuration script to add the new files :(
+11:53 < rillian> tahseen: just ask for help in one of the irc channels, or on the mailing list
+11:54 < rillian> with a specific goal it's easy to give a autotools tutorial
+11:54 < rillian> myself and thomasvs are good ones to ask about build issues
+11:54 < rillian> and you can check whatever you want into a new module under /branches or /experimental
+11:54 -!- ginger [n=silvia@c-71-198-223-153.hsd1.ca.comcast.net] has joined #xiphmeet
+11:54 < rillian> if you have a real skeleton library, maybe we should put that under /trunk/skeleton/ or similar?
+11:55 < rillian> hi ginger
+11:55 < ginger> hi rillian
+11:55 < ginger> sorry I'm late
+11:55 -!- bigmammoth [n=mike@c-71-198-223-153.hsd1.ca.comcast.net] has joined #xiphmeet
+11:55 < rillian> you can also mail example code to the lists, (probably ogg-dev) but that's less permanent. better to commit and then tell the list to go look
+11:56 < rillian> tahseen: anyway, the important point it to get the api up where people can review it. it doesn't really matter if it's a separate module or something attached to a specific program
+11:57 < tahseen> right now its not a skeleton library rather a skeleton utility library, I suppose.
+11:57 < rillian> are you using it for the speexenc patch?
+11:57 < derf_> Does Annodex have a skeleton library?
+11:57 < tahseen> I'm not cause I can't compile it. But replacing my current code its just a matter of half an hour at most.
+11:58 < rillian> tahseen: ok. put your code up somewhere we can look at it, and I'll help fix the build
+11:59 < rillian> (I'm busy tomorrow, but can look later today or friday, someone else can help)
+11:59 < tahseen> Annodex's skeleton support is a lot more complex (with support for CMML I guess) and really heavy weight for my purpose.
+11:59 < rillian> the short answer to adding new source files is to put in the _SOURCES list in the Makefile.am file in the same directory
+11:59 < rillian> tahseen: and how are you liking the SoC project so far. anything we could be doing better?
+12:00  * ginger just read up on the log a bit: liboggz and all the oggz tools already support skeleton - no need to dig around there
+12:00 < rillian> but the validator and updater?
+12:01 < ginger> derf_: the skeleton library is libannodex
+12:01 < tahseen> ok. Tomorrow I will try putting my skeleton files in speex/src and if I can compile it, I will mail the diffs in the lists.
+12:01 < derf_> ginger: That's what I figured.
+12:01 < ginger> and liboggz is also doing skeleton
+12:01 < ginger> and oggz-validate validates skeleton
+12:01  * rillian notes that svn.annodex.net is timing out
+12:01 < derf_> That's kind of a large dependency for anyone wanting to read any kind of Ogg file.
+12:01 < rillian> ginger: aha, great.
+12:01 < ginger> you don't need libannodex, just liboggz really
+12:02 < rillian> tahseen: ok. and if you can't compile it, email the diffs to the list and ask for help :)
+12:02 < tahseen> ginger: does oggz-validate compares if the values in the skeleon stream agrees with the actual data streams or it just check for structural consistency.
+12:02 < ginger> that's a good question
+12:03 -!- MikeS [n=msmith@87.217.234.37] has joined #xiphmeet
+12:03 < ginger> I'm not sure it validates that, but it should be easy to add this functionality
+12:03 < MikeS> sorry I'm late - timezone mixup or something?
+12:03 < rillian> MikeS: apparenlty
+12:03 < rillian> tahseen: are you happy with your project?
+12:06 < derf_> MikeS: All the Australians seem to be an hour off.
+12:06 < derf_> I guess even the former ones.
+12:06 < MikeS> I'm not even in Australia!
+12:06 < tahseen> Happy in the sense, I'm really enjoying my work. Coding is always fun for me and all of you guys have been more helpful then I could wish for. But I'm really unhappy about loosing a lot of time in the last few weeks.
+12:07 < rillian> tahseen: glad our side has been good for you. do you think you'll have any more time for the rest of the term?
+12:07 < ginger> rillian: and I'm off because I was travelling, sorry
+12:07 < rillian> 's alright. thanks for coming.
+12:08 < ginger> tahseen: I think you're doing very well
+12:08 < rillian> and thanks to the students for coming!
+12:08 < rillian> any more SoC related comments?
+12:09 < rillian> there are a few more things on the agenda, I'd like to go through the quickly
+12:09 < tahseen> yes, My next exam is at the end of the month and it would take just 2/3 days. We just had a production release in my office & our system is pretty stable now. So I'm planning on putting some heavy hours in the coming weeks.
+12:09 < rillian> tahseen: great! I hope that works out
+12:09 < rillian> I've been happy with the openness of your work, and look forward to seeing more!
+12:09 < rillian> arkadini: the next item is the apple codec page
+12:10 < ginger> I look forward to a separate skeleton library, too, btw - anything slim is good
+12:10 < rillian> did we ever get a blurb to them?
+12:10 < anup> Can the  SOC student can leave now :)
+12:10 < portavales> Sorry to interrupt, but I must go now. I have an appointment with my professor now. Thanks.
+12:10 < portavales> See yours in the mailing list, and I will keep sending reports there.
+12:10 < rillian> portavales: great thanks
+12:10 < portavales> :-)
+12:10 < derf_> anup: Looks like the answer is yes.
+12:10 < portavales> bye
+12:10 < rillian> anup: you can leave if you want, yes.
+12:11 < rillian> thanks all for coming
+12:11 < anup> bye and thank you for your time
+12:11 < rillian> oh! I forgot
+12:11 < MikeS> anup: we don't _need_ you to stay, but part of working with an open source project is being involved, and it's good to have some idea what else is going on related to your work. So it might be a better idea to stay
+12:11  * ginger waves (and thanks!)
+12:11 < arkadini> apple codec page - no progress
+12:11 < rillian> the other student is working on souffleur, we've not heard from him since the midterm evaluations at the end of june
+12:11 < ginger> arkadini: what is the hold-up?
+12:12 < rillian> there's a start of an app in svn. it plays movies, and seeks, but I've not been able to create a subtitle track with it
+12:12 < anup> I am only happy to stay and listen to you
+12:12 < _chaOS_> me too.
+12:12 < MikeS> anup: or if you have something you'd prefer to do, reading the meeting log later is fine too. 
+12:12 -!- portavales [n=portaval@c91f9e6a.cps.virtua.com.br] has left #xiphmeet []
+12:12 < MikeS> Some of us do multiple things at once (I'm writing emails, etc. while being  here)
+12:12 < rillian> anup, _chaOS_: great. I know it's late. otherwise, what MikeS said
+12:13 < MikeS> I'll probably have to leave in a few minutes (my mum & aunt are visiting from australia - about 16000 km away), so if there's anything anyone wants ME to talk about...
+12:13 < arkadini> ginger: me, been moving, busy
+12:13 < rillian> MikeS: any news on vorbis 5.1?
+12:14 < rillian> MikeS: any opinion on OggPCM?
+12:14 < ginger> arkadini: that is fair enough
+12:14 < rillian> I guess one of us should have taken over
+12:14 < MikeS> rillian: I haven't been working on actually improving stuff in libvorbis, just in gstreamer and somewhat in supporting tools - I fixed up oggenc and oggdec to do the channel remapping stuff right.
+12:14 < rillian> arkadini: can you do it now or do we need to put something together ourselves?
+12:14 < rillian> MikeS: I saw that, thanks!
+12:14 < MikeS> rillian: Monty has Plans, and seems motivated to do stuff about it, though (later this year, probably)
+12:15 < MikeS> rillian: Yes, I have Many Opinions about OggPCM
+12:16 < arkadini> rillian: doing it at the moment
+12:17 < rillian> for my part, I bought some crappy surround speakers, but I've not gotten my sound card to output 5.1 yet
+12:17 < rillian> arkadini: excellent, thanks
+12:17 < bigmammoth> ... also : update on the embed media front: http://metavid.ucsc.edu/blog/?p=33
+12:18 < derf_> Hey, that's nice.
+12:18 < derf_> Something that actually just gives me a link to the content when I don't have the plugin installed.
+12:18 < derf_> I wish everyone did that.
+12:18 < anup> i am sorry if i am interrupting you- where can i find info on OggPCM and is there any otehr source for Vorbis 5.1 info other than the mailing list?
+12:19 < rillian> also on the agenda: spam in the wiki and trac. I'd noticed the problem too. sure, we should do something like that. :)
+12:19 < MikeS> anup: there's not much about 5.1 vorbis apart from about one line in the specification
+12:19 < MikeS> anup: OggPCM is only mentioned on the wiki.
+12:19 < rillian> see also: can we find some webmasters? I agree that would be nice. we can certainly ask for volunteers again
+12:19 < anup> MikeS: Thank you
+12:19 < derf_> http://wiki.xiph.org/index.php/OggPCM
+12:20 < rillian> bigmammoth: cool. the 'easy one-clink install' wasn't though :)
+12:20 < arkadini> rillian: I'll be back in about 3 weeks, could help with webmastering...
+12:21 < ginger> when it fits, bigmammoth should actually explain more about the work he is doing in a SoC for wikipedia
+12:21 < rillian> on the speex website, it was almost done over a year ago. I was waiting for a finally bring-up-to-date before flipping the switch
+12:21 < rillian> that can happen
+12:21 < rillian> bigmammoth: please do explain!
+12:22 < rillian> that can happen whenever, I mean
+12:22 < rillian> arkadini: that would be cool. I liked your quicktime pages
+12:22 < bigmammoth> oh sorry .. yea need to add that link in ;)
+12:23 < bigmammoth> I guess its more of a 2-3 click install
+12:23 < arkadini> rillian: thanks :)
+12:23 < rillian> bigmammoth: especially when one is used to ignoring the firefox block notices :)
+12:23 < bigmammoth> yea
+12:24 < rillian> bigmammoth: and it still doesn't work, even after restarting firefox :(
+12:25 < bigmammoth> .. I will make it a single click.. for pure theora ogg I use cortado.. thats demoed as part of medaiWiki extension I am working on as part of my SOC ;)
+12:25 < bigmammoth> http://metavid.ucsc.edu/wiki_dev/phase3/index.php/Vlc_embed
+12:26 < rillian> yes, that link worked
+12:26 -!- aphid [n=aphid@c-71-198-223-153.hsd1.ca.comcast.net] has joined #xiphmeet
+12:26 < rillian> anyone have any other issues?
+12:26 < rillian> if not I move we adjourn the official meeting
+12:29 < rillian> ok, I take your deafening silence as assent :)
+12:29 < rillian> thanks everyone for coming!
+--- Log closed Wed Jul 12 12:29:33 2006
