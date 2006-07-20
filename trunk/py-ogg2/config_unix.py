@@ -28,7 +28,7 @@ ogg_test_program = '''
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ogg2/ogg.h>
+#include <ogg/ogg2.h>
 
 int main ()
 {

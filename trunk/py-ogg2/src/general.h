@@ -2,7 +2,7 @@
 #define __GENERAL_H__
 
 #include <Python.h>
-#include <ogg2/ogg.h>
+#include <ogg/ogg2.h>
 
 #define MSG_SIZE 256
 #define KEY_SIZE 1024
