@@ -115,6 +115,9 @@ use of more modern desktop standards.</dd>
           <dt><a href="http://www.videolan.org/">VLC media player</a></dt>
           <dd>A cross-platform media player.  Under the GNU General Public License.</dd>
 
+          <dt><a href="http://www.lasmit.co.uk/category/xpsf-playlist-generator/">PHP XPSF Playlist Generator</a></dt>
+          <dd>A PHP script that reads the contents of a folder containing MP3s, reads the ID3 tags and outputs an XPSF playlist. It means you just have to upload your files into a folder and then the playlist is generated automatically.</dd>
+
 <!-- template for new entries
           <dt><a href=""></a></dt>
           <dd></dd>
