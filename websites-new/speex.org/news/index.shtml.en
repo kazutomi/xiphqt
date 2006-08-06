@@ -29,6 +29,20 @@
 
 <ul class="descriptivelist">
 	<li>
+		<h3>New website design</h3>
+		<p class="submitdate">August 6, 2006</p>
+		<div class="description">
+			<p>We have a new website design. There may be a few problems, so please report them and be patient.</p>
+		</div>
+	</li>
+	<li>
+		<h3>On How Speex Works</h3>
+		<p class="submitdate">March 19, 2006</p>
+		<div class="description">
+			<p>Interested in how Speex works? Have a look at <a href='http://people.xiph.org/~jm/papers/aes120_speex_vorbis.pdf'>"Improved Noise Weighting in CELP Coding of Speech - Applying the Vorbis Psychoacoustic Model To Speex"</a>, authored by Jean-Marc Valin and Christopher Montgomery.</p>
+		</div>
+	</li>
+	<li>
 		<h3>Speex 1.1.12 Released</h3>
 		<p class="submitdate">February 19, 2006</p>
 		<div class="description">
