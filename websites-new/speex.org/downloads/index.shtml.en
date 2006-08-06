@@ -28,7 +28,7 @@
 
 
 <h2>Current Stable Release</h2>
-<h3 id='one.0.4'>1.0.5</h3>
+<h3 id='one.0.5'>1.0.5</h3>
 <p>
 The main change with this release is that it includes API additions from the 1.1.x branch (while being backward compatible), so that transition from 1.0.x to 1.1.x can be made easier.
 </p>
@@ -42,19 +42,25 @@ The main change with this release is that it includes API additions from the 1.1
 <li><a href="http://downloads.us.xiph.org/releases/speex/speex_win32_1.0.4_setup.exe">Windows binaries (1.0.4)</a></li>
 </ul>
 <h2>Current <strong style='font-style: italic;'>Unstable</strong> Release</h2>
-<h3 id='one.1.10'>1.1.10</h3>
+<h3 id='one.1.12'>1.1.12</h3>
 
-			<p>The main improvement in this release is a <a href="http://blackfin.uclinux.org/">Blackfin</a> port funded by <a href="http://www.analog.com/">Analog Devices</a>.  This includes Blackfin assembly optimizations that reduce cpu time by a factor of two.  Also, the packet loss concealment code has now been converted to fixed-point and some of bugs for 16-bit architectures were fixed.</p>
+<p>New things:</p>
+
+<ul>
+<li>echo canceller converted to fixed-point (sponsored by Analog Devices)</li>
+<li>Improvements to the experimental Vorbis-based masking model (use <code>--enable-vorbis-psy</code> as an argument to the <code>configure</code> script)</li>
+<li>several bug fixes</li>
+</ul>
+
 
 <span>Downloads:</span>
 
 <ul>
-<li><a href="http://downloads.us.xiph.org/releases/speex/speex-1.1.10.tar.gz">Source Code</a></li>
-<li><a href="http://downloads.us.xiph.org/releases/speex/speex-1.1.10-1.i386.rpm">i386 RPM</a></li>
+<li><a href="http://downloads.us.xiph.org/releases/speex/speex-1.1.12.tar.gz">Source Code</a></li>
+<li><a href="http://downloads.us.xiph.org/releases/speex/speex-1.1.12-1.i386.rpm">i386 RPM</a></li>
 
-<li><a href="http://downloads.us.xiph.org/releases/speex/speex-devel-1.1.10-1.i386.rpm">i386 Development RPM</a></li>
-<li><a href="http://downloads.us.xiph.org/releases/speex/speex-1.1.10-1.src.rpm">Source RPM</a></li>
-<li><a href="http://downloads.us.xiph.org/releases/speex/speex_win32_1.1.6_setup.exe">Windows binaries (from 1.1.6 source)</a></li>
+<li><a href="http://downloads.us.xiph.org/releases/speex/speex-devel-1.1.12-1.i386.rpm">i386 Development RPM</a></li>
+<li><a href="http://downloads.us.xiph.org/releases/speex/speex-1.1.12-1.src.rpm">Source RPM</a></li>
 </ul>
 
 <p>The builds below are third-party builds.  Their stability, safety, and security have not been verified.  Use at your own risk.</p>
