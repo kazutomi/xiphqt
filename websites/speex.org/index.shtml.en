@@ -1,4 +1,4 @@
-﻿<!--#include virtual="/ssi/header.include" -->
+<!--#include virtual="/ssi/header.include" -->
 <!--  Enter custom page information and styles here -->
 
 <title>Speex: a free codec for free speech</title>
@@ -14,7 +14,7 @@
 <!--#include virtual="/ssi/pagetop.include" -->
 <!--  All your page content goes here  -->
 
-<h1>Speex Home</h1>
+<h1>Speex: A Free Codec For Free Speech</h1>
 <h2>Overview</h2>
 <p>
 	Speex is an <a href="/fsos/">Open Source/Free Software</a>
@@ -79,5 +79,23 @@
 	<a href='http://www.xiph.org/donate/'>send us money</a>
 	so we can keep working on Speex.
 </p>
+
+<h2>Headlines</h2>
+<ul class="descriptivelist">
+        <li>
+                <h3>New website design</h3>
+                <p class="submitdate">August 6, 2006</p>
+                <div class="description">
+                        <p>We have a new website design. There may be a few problems, so please report them and be patient.</p>
+                </div>
+        </li>
+        <li>
+                <h3>On How Speex Works</h3>
+                <p class="submitdate">March 19, 2006</p>
+                <div class="description">
+                        <p>Interested in how Speex works? Have a look at <a href='http://people.xiph.org/~jm/papers/aes120_speex_vorbis.pdf'>"Improved Noise Weighting in CELP Coding of Speech - Applying the Vorbis Psychoacoustic Model To Speex"</a>, authored by Jean-Marc Valin and Christopher Montgomery.</p>
+                </div>
+        </li>
+</ul>
 
 <!--#include virtual="/ssi/pagebottom.include" -->
