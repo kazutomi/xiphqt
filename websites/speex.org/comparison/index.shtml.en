@@ -22,7 +22,7 @@
 			<th>Rate (kHz)</th>
 
 			<th>bitrate (kbps)</th>
-			<th>delay (ms)</th>
+			<th>delay frame+lookahead (ms)</th>
 			<th><a href="#multiRate">multi-rate</a></th>
 			<th><a href="#embedded">embedded</a></th>
 			<th><a href="#vbr"><abbr title="variable bitrate">VBR</abbr></a></th>
@@ -43,8 +43,8 @@
 			</td>
 			<td>
 
-				30 (<abbr title="narrowband">NB</abbr>)<br/>
-				34 (<abbr title="wideband">WB</abbr>)
+				20+10 (<abbr title="narrowband">NB</abbr>)<br/>
+				20+14 (<abbr title="wideband">WB</abbr>)
 			</td>
 			<td>yes</td>
 			<td>yes</td>
@@ -58,8 +58,8 @@
 			<td><a href="http://www.ilbcfreeware.org/">iLBC</a></td>
 			<td>8</td>
 
-			<td>13.3</td>
-			<td>30</td>
+			<td>15.2 or 13.3</td>
+			<td>20+5 or 30+10</td>
 			<td/>
 			<td/>
 			<td/>
@@ -72,7 +72,7 @@
 			<td>AMR-NB</td>
 			<td>8</td>
 			<td>4.75-12.2</td>
-			<td>20</td>
+			<td>20+5?</td>
 
 			<td>yes</td>
 			<td/>
@@ -86,7 +86,7 @@
 			<td>AMR-<abbr title="wideband">WB</abbr><br/>(G.722.2)</td>
 			<td>16</td>
 			<td>6.6-23.85</td>
-			<td>20</td>
+			<td>20+5?</td>
 			<td>yes</td>
 
 			<td/>
@@ -100,7 +100,7 @@
 			<td>G.729</td>
 			<td>8</td>
 			<td>8</td>
-			<td>15</td>
+			<td>10+5</td>
 			<td/>
 			<td/>
 			<td/>
@@ -114,7 +114,7 @@
 			<td>8</td>
 
 			<td>13</td>
-			<td>20</td>
+			<td>20+?</td>
 			<td/>
 			<td/>
 			<td/>
@@ -127,7 +127,7 @@
 			<td>GSM-EFR</td>
 			<td>8</td>
 			<td>12.2</td>
-			<td>20</td>
+			<td>20+?</td>
 
 			<td/>
 			<td/>
