@@ -82,6 +82,13 @@
 
 <h2>Headlines</h2>
 <ul class="descriptivelist">
+	<li>
+		<h3>How the Echo Canceller works</h3>
+		<p class="submitdate">August 7, 2006</p>
+		<div class="description">
+                <p>Always wanted to know how the Speex echo canceller works? <a href='http://people.xiph.org/~jm/papers/valin_taslp2006.pdf'>On Adjusting the Learning Rate in Frequency Domain Echo Cancellation With Double-Talk</a> has just been accepted for <i>IEEE Trans. on Audio, Speech and Language Processing</i>.</p>
+		</div>
+	</li>
         <li>
                 <h3>New website design</h3>
                 <p class="submitdate">August 6, 2006</p>
