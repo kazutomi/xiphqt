@@ -1,7 +1,5 @@
 import os
 import string
-#from datetime import time
-#from array import array
 
 SUB_NONE=0
 SUB_SRT=1
@@ -29,7 +27,7 @@ class Subtitles:
         self.subType=SUB_NONE
         self.subKeys=[]
 #==============================================================================
-    def subLoad(self, fileName):
+    def subLoad(self, fileName, ID):
         FILE=os.open(fileName, os.O_RDONLY)
         FS=os.fstat(FILE)
         DATA=os.read(FILE,FS.st_size)
@@ -37,7 +35,7 @@ class Subtitles:
 
         self._subSRTLoadFromString(DATA)
 
-        self.subSource=fileName
+        self.subSource=ID
 #==============================================================================    
     def subSave(self, format):
         if (self.subSource!=None):
@@ -94,7 +92,7 @@ class Subtitles:
                 Text=Text+DATA[i]+"\n"
                 i+=1
             i+=1
-            
+            Text=Text[0:-1]
             ST=int(Timing[0:2])*3600000+int(Timing[3:5])*60000+int(Timing[6:8])*1000+int(Timing[9:12])
             ET=int(Timing[17:19])*3600000+int(Timing[20:22])*60000+int(Timing[23:25])*1000+int(Timing[26:29])
             
@@ -124,6 +122,11 @@ class Subtitles:
     def updateKeys(self):
         self.subKeys=self.subs.keys()
         self.subKeys.sort()
+#==============================================================================
+    def subUpdate(self, upSubKey):
+        Sub = self.subs[upSubKey]
+        self.subDel(upSubKey)
+        self.subAdd(Sub.start_time, Sub.end_time, Sub.text, Sub.Attributes, 1)
 #==============================================================================
     def getSub(self, time):
         i=0
