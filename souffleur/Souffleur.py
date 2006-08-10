@@ -23,6 +23,11 @@ from Subtitles import Subtitles
 #from datetime import time
 import sys
 
+from streams import Media
+from streams import Stream
+from MediaInfo import MediaInfo
+from SouffleurXML import ProjectXML
+
 try:
     import pygtk
     #tell pyGTK, if possible, that we want GTKv2
@@ -60,10 +65,15 @@ class Souffleur:
         self.UPDATE_INTERVAL=100
         
         self.Subtitle = None
+        self.Subtitles = []
         self.curSub = -1
         self.scroll = 0
-        self.videoWidgetGst=None
-        self.player=None
+        self.videoWidgetGst = None
+        self.player = None
+        self.t_duration = 0
+        
+        self.media = []
+        self.lastID=0
         #self.videoWidget=VideoWidget();
         #gtk.glade.set_custom_handler(self.videoWidget, VideoWidget())
 
@@ -91,10 +101,12 @@ class Souffleur:
             "on_TOOL_END_clicked": self.cb_setSubEndTime,\
             "on_TOOL_SAVE_clicked": self.cb_subChangeSave,\
             "on_TOOL_DELETE_clicked": self.cb_subDel,\
-            "on_main_file_save_activate": self.cb_onSaveMenu}
+            "on_main_file_save_activate": self.cb_onSaveMenu,\
+            "on_LIST_SUBS_cursor_changed": self.cb_onSubsListSelect}
         self.wTree.signal_autoconnect (dic)
         
         self.windowFileOpen=None
+        self.windowProjectSO=None
         self.windowStreams=gtk.glade.XML (self.gladefile,"STREAM_WINDOW")
         ### Setup LIST_STREAMS
         LIST = self.windowStreams.get_widget("LIST_STREAMS")
@@ -104,7 +116,28 @@ class Souffleur:
             cell = gtk.CellRendererText()
             tvcolumn = gtk.TreeViewColumn('Streams', cell, text = 0)
             LIST.append_column(tvcolumn)
+        
+        self.windowSubsList=gtk.glade.XML (self.gladefile,"SUBS_LIST")
+        dic = {"on_LIST_SUBS_cursor_changed": self.cb_onSubsListSelect}
+        self.windowSubsList.signal_autoconnect (dic)
+        SUBLIST = self.windowSubsList.get_widget("LIST_SUBS")
+        if SUBLIST:
+            self.subsListStore = gtk.ListStore(gobject.TYPE_UINT,
+                                                gobject.TYPE_UINT,
+                                                gobject.TYPE_STRING)
+            SUBLIST.set_model(self.subsListStore)
+            cell = gtk.CellRendererText()
+            tvcolumn = gtk.TreeViewColumn('Start', cell, text = 0)
+            SUBLIST.append_column(tvcolumn)
+            cell = gtk.CellRendererText()
+            tvcolumn = gtk.TreeViewColumn('End', cell, text = 1)
+            SUBLIST.append_column(tvcolumn)
+            cell = gtk.CellRendererText()
+            tvcolumn = gtk.TreeViewColumn('Text', cell, text = 2)
+            SUBLIST.append_column(tvcolumn)
         WND=self.windowStreams.get_widget("STREAM_WINDOW")
+        WND.hide()
+        WND=self.windowSubsList.get_widget("SUBS_LIST")
         WND.hide()
         ### Main window setup
         self.videoWidget = self.wTree.get_widget("VIDEO_OUT_PUT")
@@ -119,9 +152,104 @@ class Souffleur:
         self.playButton = self.wTree.get_widget("TOOL_PLAY")
         return
 #==============================================================================
+    def setEditSubtitle(self, Sub):
+        if not self.Subtitle:
+            return
+        if Sub == None:
+            if (self.curSub!=-1):
+                BUF=gtk.TextBuffer()
+                BUF.set_text("")
+                self.SubEdit.set_buffer(BUF)
+                self.curSub=-1
+                self.setSubStartTime(0)
+                self.setSubEndTime(0)
+        else:
+            if (Sub.start_time!=self.curSub):
+                BUF=gtk.TextBuffer()
+                BUF.set_text(Sub.text)
+                self.SubEdit.set_buffer(BUF)
+                self.curSub=int(Sub.start_time)
+                self.setSubStartTime(Sub.start_time)
+                self.setSubEndTime(Sub.end_time)
+#==============================================================================
+    def cb_onSubsListSelect(self, widget):
+        Row=None
+        Selection = widget.get_selection()
+        if Selection==None:
+            return
+        Model, Rows = Selection.get_selected_rows()
+        if Rows != None:
+            Row = Model[Rows[0][0]]
+            if self.Subtitle:
+                Sub = self.Subtitle.subs[Row[0]]
+                self.setEditSubtitle(Sub)
+                if self.player:
+                    B=0;
+                    if self.player.is_playing():
+                        B=1
+                        self.play_toggled()
+                    real = long(Row[0]) # in ns
+                    self.player.seek(real*1000000)
+                    # allow for a preroll
+                    self.player.get_state(timeout=50*gst.MSECOND) # 50 ms
+                    if B==1:
+                        self.play_toggled()
+#==============================================================================
+    def subsWindowUpdate(self):
+        if (self.windowSubsList):
+            self.subsListStore.clear()
+            for i in self.Subtitle.subKeys:
+                S=self.Subtitle.subs[i]
+                iter = self.subsListStore.append(None)
+                self.subsListStore.set(iter, 0, S.start_time,
+                                            1, S.end_time,
+                                            2, S.text)
+#==============================================================================
+    def cb_projectOpenOpen(self, widget):
+        WND=self.windowProjectSO.get_widget("SAVE_OPEN_PFILE")
+        FN=WND.get_filename()
+        if FN[-4:]!=".spf":
+            FN=FN+".spf"
+        PXML=ProjectXML()
+        PXML.addHeadInfo("title", "Soufleur development version")
+        PXML.addHeadInfo("desc", "This is version current at development stage.")
+        PXML.addHeadInfo("author", "DarakuTenshi")
+        PXML.addHeadInfo("email", "otaky@ukr.net")
+        PXML.addHeadInfo("info", "Sample of save function")
+        for i in self.media:
+            PXML.addMedia(i)
+        for i in self.Subtitles:
+            PXML.addSubtitle(i)
+        PXML.write(FN)
+        WND.hide()
+#==============================================================================
+    def cb_projectSaveCancel(self, widget):
+        if(self.windowProjectSO==None): return
+        WND=self.windowProjectSO.get_widget("SAVE_OPEN_PFILE")
+        WND.hide()
+#==============================================================================
     def cb_onSaveMenu(self, widget):
-        if (self.Subtitle != None):
-            self.Subtitle.subSave(1)
+        if(self.windowProjectSO==None):
+            self.windowProjectSO=gtk.glade.XML (self.gladefile,"SAVE_OPEN_PFILE")
+            dic={"on_PROJECT_BUTTON_CANCEL_clicked": self.cb_projectSaveCancel,\
+                "on_PROJECT_BUTTON_OK_clicked": self.cb_projectOpenOpen }
+            self.windowProjectSO.signal_autoconnect(dic)
+            WND=self.windowProjectSO.get_widget("SAVE_OPEN_PFILE")
+            WND.set_action(gtk.FILE_CHOOSER_ACTION_SAVE)
+            OKB = self.windowProjectSO.get_widget("PROJECT_BUTTON_OK")
+            OKB.set_label("gtk-save")
+            OKB.set_use_stock(True)
+            Filter=gtk.FileFilter()
+            Filter.set_name("Souffleur project file")
+            Filter.add_pattern("*.spf")
+            WND.add_filter(Filter)
+        else:
+            WND=self.windowProjectSO.get_widget("SAVE_OPEN_PFILE")
+            if(WND==None):
+                self.windowProjectSO=None
+                self.cb_onSaveMenu(widget)
+            else:
+                WND.show()
 #==============================================================================
     def cb_subDel(self, widget):
         if (self.Subtitle != None) and (self.curSub != -1):
@@ -133,8 +261,13 @@ class Souffleur:
                 BUF = self.SubEdit.get_buffer()
                 TEXT = BUF.get_text(BUF.get_start_iter(), BUF.get_end_iter())
                 self.Subtitle.subs[int(self.curSub)].text = str(TEXT)
-                self.Subtitle.subs[int(self.curSub)].start_time=self.subStartTime.get_value_as_int()
                 self.Subtitle.subs[int(self.curSub)].end_time=self.subEndTime.get_value_as_int()
+                if self.Subtitle.subs[int(self.curSub)].start_time!=self.subStartTime.get_value_as_int():
+                    newTime=self.subStartTime.get_value_as_int()
+                    self.Subtitle.subs[int(self.curSub)].start_time=newTime
+                    self.Subtitle.subUpdate(int(self.curSub))
+                    self.curSub = newTime
+                self.subsWindowUpdate()
             else:
                 self.subAdd()
 #==============================================================================
@@ -165,7 +298,7 @@ class Souffleur:
 #==============================================================================
     def changeValueAdjustment(self, widget, t1, t2):
         #if (not self.scroll):
-            real = long(self.adjustment.get_value() * self.p_duration / 100) # in ns
+            real = long(self.adjustment.get_value()) # in ns
             self.player.seek(real)
             # allow for a preroll
             self.player.get_state(timeout=50*gst.MSECOND) # 50 ms
@@ -216,39 +349,45 @@ class Souffleur:
     def openFileOpen(self, widget):
         WND=self.windowFileOpen.get_widget("OPEN_OGG")
         FN=WND.get_filename()
-        Streams = None
-        if((FN!="")and(FN!=None)):
-#	        self.Streams=oggStreams.oggStreams(FN)
-#   	    print FN
-            Streams = GstFile(FN)
-            if Streams:
-                Streams.run()
+        URI=WND.get_uri()
+        mInfo = MediaInfo(URI, FN, self.lastID)
+        mInfo.run()
+        #Streams = None
+        #if((FN!="")and(FN!=None)):
+        #    Streams = GstFile(FN)
+        #    if Streams:
+        #        Streams.run()
+        
         WND.hide()
         WND=self.windowStreams.get_widget("STREAM_WINDOW")
         WND.show()
-        self.addStreams(Streams)
-#   	self.refreshStreamsWindow()
+        self.addMedia(mInfo.getMedia())
         return
 #==============================================================================
-    def loadSubtitle(self, FileName):
-        pass
-#==============================================================================
-    def addStreams(self, Streams):
-        if not Streams:
+    def addMedia(self, mInfo):
+        if not mInfo:
             return
+        self.media.append(mInfo)
+        self.lastID = mInfo.lastID
         iter = self.streamsTreeStore.append(None)
-        self.streamsTreeStore.set(iter, 0, Streams.MIME + " " + Streams.SOURCE)
-        for i in Streams.STREAMS.keys():
+        self.streamsTreeStore.set(iter, 0, mInfo.MIME + " ("+mInfo.source+")")
+        for i in mInfo.Streams:
             child = self.streamsTreeStore.append(iter)
-            self.streamsTreeStore.set(child, 0, i +" " + Streams.STREAMS[i])
-            print i +" " + Streams.STREAMS[i]
-        if "subtitle" in Streams.MIME:
+            self.streamsTreeStore.set(child, 0, i.MIME + " ("+i.Name+")")
+            #print i +" " + Streams.STREAMS[i]
+        if "subtitle" in mInfo.MIME:
             self.Subtitle = Subtitles()
-            self.Subtitle.subLoad(Streams.SOURCE)
+            self.Subtitle.subLoad(mInfo.source, mInfo.Streams[0].ID)
+            self.Subtitles.append(self.Subtitle)
+            if (self.windowStreams):
+                WND=self.windowSubsList.get_widget("SUBS_LIST")
+                WND.show()
+                self.subsWindowUpdate()
+                
         else:
             self.videoWidgetGst=VideoWidget(self.videoWidget)
             self.player=GstPlayer(self.videoWidgetGst)
-            self.player.set_location("file://"+Streams.SOURCE)
+            self.player.set_location("file://"+mInfo.source)
             if self.videoWidget.flags() & gtk.REALIZED:
                 self.play_toggled()
             else:
@@ -271,6 +410,9 @@ class Souffleur:
     def update_scale_cb(self):
         had_duration = self.p_duration != gst.CLOCK_TIME_NONE
         self.p_position, self.p_duration = self.player.query_position()
+        if self.p_duration != self.t_duration:
+            self.t_duration = self.p_duration
+            self.adjustment.set_range(0, self.t_duration)
         tmSec= self.p_position/1000000
         MSec = tmSec
         tmSec = tmSec/1000
@@ -281,28 +423,16 @@ class Souffleur:
         if self.Subtitle:
             TText = self.Subtitle.getSub(MSec)
             if TText:
-                if (TText.start_time!=self.curSub):
-                    BUF=gtk.TextBuffer()
-                    BUF.set_text(TText.text)
-                    self.SubEdit.set_buffer(BUF)
-                    self.curSub=int(TText.start_time)
-                    self.setSubStartTime(TText.start_time)
-                    self.setSubEndTime(TText.end_time)
+                self.setEditSubtitle(TText)
             else:
-                if (self.curSub!=-1):
-                    BUF=gtk.TextBuffer()
-                    BUF.set_text("")
-                    self.SubEdit.set_buffer(BUF)
-                    self.curSub=-1
-                    self.setSubStartTime(0)
-                    self.setSubEndTime(0)
+                self.setEditSubtitle(None)
         if (self.p_position != gst.CLOCK_TIME_NONE):# and (not self.scroll):
-            value = self.p_position * 100.0 / self.p_duration
+            value = self.p_position
             self.adjustment.set_value(value)
-        self.labelHour.set_text(str(Hour))
-        self.labelMin.set_text(str(Min))
-        self.labelSec.set_text(str(Sec))
-        self.labelMSec.set_text(str(MSec))
+        self.labelHour.set_text("%02d"%Hour)
+        self.labelMin.set_text("%02d"%Min)
+        self.labelSec.set_text("%02d"%Sec)
+        self.labelMSec.set_text("%09d"%MSec)
         return True
 #==============================================================================
 #	MAIN:
