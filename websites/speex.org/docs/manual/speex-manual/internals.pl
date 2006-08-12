@@ -1,45 +1,97 @@
-# LaTeX2HTML 2002 (1.62)
+# LaTeX2HTML 2002-2-1 (1.71)
 # Associate internals original text with physical files.
 
 
-$key = q/sec:Programming-with-Speex/;
-$ref_files{$key} = "$dir".q|node6.html|; 
-$noresave{$key} = "$nosave";
-
-$key = q/sec:Formats-and-standards/;
-$ref_files{$key} = "$dir".q|node7.html|; 
-$noresave{$key} = "$nosave";
-
-$key = q/sec:Speex-narrowband-mode/;
-$ref_files{$key} = "$dir".q|node9.html|; 
-$noresave{$key} = "$nosave";
-
-$key = q/sec:IETF-draft/;
-$ref_files{$key} = "$dir".q|node13.html|; 
-$noresave{$key} = "$nosave";
-
-$key = q/sec:Speex-wideband-mode/;
+$key = q/cap:Frame-open-loop-analysis/;
 $ref_files{$key} = "$dir".q|node10.html|; 
 $noresave{$key} = "$nosave";
 
-$key = q/sec:Command-line-encoder_decoder/;
-$ref_files{$key} = "$dir".q|node5.html|; 
+$key = q/sub:Encoding/;
+$ref_files{$key} = "$dir".q|node7.html|; 
+$noresave{$key} = "$nosave";
+
+$key = q/eq:gamma-weighting/;
+$ref_files{$key} = "$dir".q|node9.html|; 
+$noresave{$key} = "$nosave";
+
+$key = q/sec:Formats-and-standards/;
+$ref_files{$key} = "$dir".q|node8.html|; 
+$noresave{$key} = "$nosave";
+
+$key = q/cap:Standard-noise-shaping/;
+$ref_files{$key} = "$dir".q|node9.html|; 
+$noresave{$key} = "$nosave";
+
+$key = q/sub:Preprocessor/;
+$ref_files{$key} = "$dir".q|node7.html|; 
 $noresave{$key} = "$nosave";
 
 $key = q/sec:Sample-code/;
-$ref_files{$key} = "$dir".q|node12.html|; 
+$ref_files{$key} = "$dir".q|node13.html|; 
 $noresave{$key} = "$nosave";
 
-$key = q/eq:weighting_filter/;
-$ref_files{$key} = "$dir".q|node8.html|; 
+$key = q/cap:Sub-frame-AbS/;
+$ref_files{$key} = "$dir".q|node10.html|; 
 $noresave{$key} = "$nosave";
 
-$key = q/sec:Introduction-to-CELP/;
-$ref_files{$key} = "$dir".q|node8.html|; 
+$key = q/sec:IETF-draft/;
+$ref_files{$key} = "$dir".q|node14.html|; 
+$noresave{$key} = "$nosave";
+
+$key = q/sec:Programming-with-Speex/;
+$ref_files{$key} = "$dir".q|node7.html|; 
+$noresave{$key} = "$nosave";
+
+$key = q/sub:Preprocessor-options/;
+$ref_files{$key} = "$dir".q|node7.html|; 
+$noresave{$key} = "$nosave";
+
+$key = q/sec:Speex-License/;
+$ref_files{$key} = "$dir".q|node15.html|; 
+$noresave{$key} = "$nosave";
+
+$key = q/sec:Speex-wideband-mode/;
+$ref_files{$key} = "$dir".q|node11.html|; 
+$noresave{$key} = "$nosave";
+
+$key = q/fig:The-CELP-model/;
+$ref_files{$key} = "$dir".q|node9.html|; 
+$noresave{$key} = "$nosave";
+
+$key = q/sub:Mode-queries/;
+$ref_files{$key} = "$dir".q|node7.html|; 
+$noresave{$key} = "$nosave";
+
+$key = q/eq:adaptive-3tap/;
+$ref_files{$key} = "$dir".q|node10.html|; 
+$noresave{$key} = "$nosave";
+
+$key = q/sub:Decoding/;
+$ref_files{$key} = "$dir".q|node7.html|; 
+$noresave{$key} = "$nosave";
+
+$key = q/sec:Command-line-encoder_decoder/;
+$ref_files{$key} = "$dir".q|node6.html|; 
+$noresave{$key} = "$nosave";
+
+$key = q/sub:Codec-Options/;
+$ref_files{$key} = "$dir".q|node7.html|; 
 $noresave{$key} = "$nosave";
 
 $key = q/sec:Feature-description/;
 $ref_files{$key} = "$dir".q|node4.html|; 
+$noresave{$key} = "$nosave";
+
+$key = q/sec:Speex-narrowband-mode/;
+$ref_files{$key} = "$dir".q|node10.html|; 
+$noresave{$key} = "$nosave";
+
+$key = q/sec:Introduction-to-CELP/;
+$ref_files{$key} = "$dir".q|node9.html|; 
+$noresave{$key} = "$nosave";
+
+$key = q/sub:Echo-Cancellation/;
+$ref_files{$key} = "$dir".q|node7.html|; 
 $noresave{$key} = "$nosave";
 
 1;

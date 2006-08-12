@@ -28,3 +28,10 @@ TD.eqno			{ }	/* equation-number cells */
 
 
 /* document-specific styles come next */
+DIV.navigation		{   }
+DIV.center		{   }
+DIV.LaTeX		{   }
+DIV.logo-LaTeX		{   }
+SPAN.textit		{ font-style: italic  }
+SPAN.arabic		{   }
+SPAN.textbf		{ font-weight: bold  }

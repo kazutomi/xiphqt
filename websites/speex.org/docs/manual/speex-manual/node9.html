@@ -1,22 +1,20 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 
-<!--Converted with jLaTeX2HTML 2002 (1.62) JA patch-1.4
-patched version by:  Kenshi Muto, Debian Project.
-LaTeX2HTML 2002 (1.62),
+<!--Converted with LaTeX2HTML 2002-2-1 (1.71)
 original version by:  Nikos Drakos, CBLU, University of Leeds
 * revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
 * with significant contributions from:
   Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
 <HTML>
 <HEAD>
-<TITLE>Speex narrowband mode</TITLE>
-<META NAME="description" CONTENT="Speex narrowband mode">
+<TITLE>Introduction to CELP Coding</TITLE>
+<META NAME="description" CONTENT="Introduction to CELP Coding">
 <META NAME="keywords" CONTENT="manual">
 <META NAME="resource-type" CONTENT="document">
 <META NAME="distribution" CONTENT="global">
 
 <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
-<META NAME="Generator" CONTENT="jLaTeX2HTML v2002 JA patch-1.4">
+<META NAME="Generator" CONTENT="LaTeX2HTML v2002-2-1">
 <META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
 
 <LINK REL="STYLESHEET" HREF="manual.css">
@@ -28,607 +26,664 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
 </HEAD>
 
 <BODY >
-<!--Navigation Panel-->
-<A NAME="tex2html315"
+
+<DIV CLASS="navigation"><!--Navigation Panel-->
+<A NAME="tex2html310"
   HREF="node10.html">
 <IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
-<A NAME="tex2html309"
+<A NAME="tex2html304"
   HREF="manual.html">
 <IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
-<A NAME="tex2html303"
+<A NAME="tex2html298"
   HREF="node8.html">
 <IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
-<A NAME="tex2html311"
+<A NAME="tex2html306"
   HREF="node1.html">
 <IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
-<A NAME="tex2html313"
-  HREF="node15.html">
+<A NAME="tex2html308"
+  HREF="node17.html">
 <IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
 <BR>
-<B> Next:</B> <A NAME="tex2html316"
-  HREF="node10.html">Speex wideband mode (sub-band</A>
-<B> Up:</B> <A NAME="tex2html310"
+<B> Next:</B> <A NAME="tex2html311"
+  HREF="node10.html">Speex narrowband mode</A>
+<B> Up:</B> <A NAME="tex2html305"
   HREF="manual.html">The Speex Codec Manual</A>
-<B> Previous:</B> <A NAME="tex2html304"
-  HREF="node8.html">Introduction to CELP Coding</A>
- &nbsp <B>  <A NAME="tex2html312"
+<B> Previous:</B> <A NAME="tex2html299"
+  HREF="node8.html">Formats and standards</A>
+ &nbsp; <B>  <A NAME="tex2html307"
   HREF="node1.html">Contents</A></B> 
- &nbsp <B>  <A NAME="tex2html314"
-  HREF="node15.html">Index</A></B> 
+ &nbsp; <B>  <A NAME="tex2html309"
+  HREF="node17.html">Index</A></B> 
 <BR>
-<BR>
+<BR></DIV>
 <!--End of Navigation Panel-->
 <!--Table of Child-Links-->
 <A NAME="CHILD_LINKS"><STRONG>Subsections</STRONG></A>
 
-<UL>
+<UL CLASS="ChildLinks">
+<LI><A NAME="tex2html312"
+  HREF="node9.html#SECTION00091000000000000000">Source-Filter Model of Speech Prediction</A>
+<LI><A NAME="tex2html313"
+  HREF="node9.html#SECTION00092000000000000000">Linear Prediction (LPC)</A>
+<LI><A NAME="tex2html314"
+  HREF="node9.html#SECTION00093000000000000000">Pitch Prediction</A>
+<LI><A NAME="tex2html315"
+  HREF="node9.html#SECTION00094000000000000000">Innovation Codebook</A>
+<LI><A NAME="tex2html316"
+  HREF="node9.html#SECTION00095000000000000000">Noise Weighting</A>
 <LI><A NAME="tex2html317"
-  HREF="node9.html#SECTION00091000000000000000">LPC Analysis</A>
-<LI><A NAME="tex2html318"
-  HREF="node9.html#SECTION00092000000000000000">Pitch Prediction (adaptive codebook)</A>
-<LI><A NAME="tex2html319"
-  HREF="node9.html#SECTION00093000000000000000">Innovation Codebook</A>
-<LI><A NAME="tex2html320"
-  HREF="node9.html#SECTION00094000000000000000">Bit allocation</A>
-<LI><A NAME="tex2html321"
-  HREF="node9.html#SECTION00095000000000000000">Perceptual enhancement</A>
+  HREF="node9.html#SECTION00096000000000000000">Analysis-by-Synthesis</A>
 </UL>
 <!--End of Table of Child-Links-->
 <HR>
 
-<H1><A NAME="SECTION00090000000000000000"></A><A NAME="sec:Speex-narrowband-mode"></A><A NAME="371"></A>
+<H1><A NAME="SECTION00090000000000000000"></A><A NAME="449"></A><A NAME="sec:Introduction-to-CELP"></A>
 <BR>
-Speex narrowband mode
+Introduction to CELP Coding
 </H1>
 
 <P>
-This section looks at how Speex works for narrowband (<!-- MATH
- $8\:\mathrm{kHz}$
- -->
-<IMG
- WIDTH="43" HEIGHT="15" ALIGN="BOTTOM" BORDER="0"
- SRC="img47.png"
- ALT="$8\:\mathrm{kHz}$">
-sampling rate) operation. The frame size for this mode is <!-- MATH
- $20\:\mathrm{ms}$
- -->
-<IMG
- WIDTH="43" HEIGHT="15" ALIGN="BOTTOM" BORDER="0"
- SRC="img48.png"
- ALT="$20\:\mathrm{ms}$">,
-corresponding to 160 samples. Each frame is also subdivided into 4
-sub-frames of 40 samples each.
-
-<P>
-Also many design decisions were based on the original goals and assumptions:
+Speex is based on CELP, which stands for Code Excited Linear Prediction.
+This section attempts to introduce the principles behind CELP, so
+if you are already familiar with CELP, you can safely skip to section
+<A HREF="node10.html#sec:Speex-narrowband-mode">8</A>. The CELP technique is based on three
+ideas:
 
 <P>
 
-<UL>
-<LI>Minimizing the amount of information extracted from past frames (for
-robustness to packet loss)
+<OL>
+<LI>The use of a linear prediction (LP) model to model the vocal tract
 </LI>
-<LI>Dynamically-selectable codebooks (LSP, pitch and innovation)
+<LI>The use of (adaptive and fixed) codebook entries as input (excitation)
+of the LP model
 </LI>
-<LI>sub-vector fixed (innovation) codebooks
+<LI>The search performed in closed-loop in a ``perceptually weighted
+domain''
 </LI>
-</UL>
+</OL>
+This section describes the basic ideas behind CELP. This is still
+a work in progress.
 
 <P>
 
-<H2><A NAME="SECTION00091000000000000000"></A><A NAME="376"></A>
-<BR>
-LPC Analysis
+<H2><A NAME="SECTION00091000000000000000">
+Source-Filter Model of Speech Prediction</A>
 </H2>
 
 <P>
-An LPC analysis is first performed on a (asymetric Hamming) window
-that spans all of the current frame and half a frame in advance. The
-LPC coefficients are then converted to Line Spectral Pair<A NAME="377"></A>
-(LSP), a representation that is more robust to quantization. The LSP's
-are considered to be associated to the <IMG
- WIDTH="25" HEIGHT="17" ALIGN="BOTTOM" BORDER="0"
- SRC="img49.png"
- ALT="$4^{th}$"> sub-frames and the
-LSP's associated to the first 3 sub-frames are linearly interpolated
-using the current and previous LSP's.
+The source-filter model of speech production assumes that the vocal
+cords are the source of spectrally flat sound (the excitation signal),
+and that the vocal tract acts as a filter to spectrally shape the
+various sounds of speech. While still an approximation, the model
+is widely used in speech coding because of its simplicity.Its use
+is also the reason why most speech codecs (Speex included) perform
+badly on music signals. The different phonemes can be distinguished
+by their excitation (source) and spectral shape (filter). Voiced sounds
+(e.g. vowels) have an excitation signal that is periodic and that
+can be approximated by an impulse train in the time domain or by regularly-spaced
+harmonics in the frequency domain. On the other hand, fricatives (such
+as the &#34;s&#34;, &#34;sh&#34; and &#34;f&#34;
+sounds) have an excitation signal that is similar to white Gaussian
+noise. So called voice fricatives (such as &#34;z&#34; and
+&#34;v&#34;) have excitation signal composed of an harmonic
+part and a noisy part.
 
 <P>
-The LSP's are encoded using 30 bits for higher quality modes and 18
-bits for lower quality, through the use of a multi-stage split-vector
-quantizer. For the lower quality modes, the 10 coefficients are first
-quantized with 6 bits and the error is then divided in two 5-coefficient
-sub-vectors. Each of them is quantized with 6 bits, for a total of
-18 bits. For the higher quality modes, the remaining error on both
-sub-vectors is further quantized with 6 bits each, for a total of
-30 bits.
-
-<P>
-The perceptual weighting filter <IMG
- WIDTH="42" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
- SRC="img38.png"
- ALT="$W(z)$"> used by Speex is derived from
-the LPC filter <IMG
- WIDTH="37" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
- SRC="img19.png"
- ALT="$A(z)$"> and corresponds to the one described by eq.
-<A HREF="node8.html#eq:weighting_filter">1</A> with <!-- MATH
- $\gamma_{1}=0.9$
- -->
-<IMG
- WIDTH="61" HEIGHT="29" ALIGN="MIDDLE" BORDER="0"
- SRC="img50.png"
- ALT="$\gamma_{1}=0.9$"> and <!-- MATH
- $\gamma_{2}=0.6$
- -->
-<IMG
- WIDTH="61" HEIGHT="29" ALIGN="MIDDLE" BORDER="0"
- SRC="img51.png"
- ALT="$\gamma_{2}=0.6$">.
-We can use the unquantized <IMG
- WIDTH="37" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
- SRC="img19.png"
- ALT="$A(z)$"> filter since the weighting filter
-is only used in the encoder.
+The source-filter model is usually tied with the use of Linear prediction.
+The CELP model is based on source-filter model, as can be seen from
+the CELP decoder illustrated in Figure <A HREF="#fig:The-CELP-model">1</A>. 
 
 <P>
 
-<H2><A NAME="SECTION00092000000000000000"></A><A NAME="382"></A>
-<BR>
-Pitch Prediction (adaptive codebook)
-</H2>
-
-<P>
-Speex uses a 3-tap prediction for pitch. That is, the pitch prediction
-signal <IMG
- WIDTH="30" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
- SRC="img52.png"
- ALT="$p[n]$"> is obtained by the past of the excitation by:
-<BR><P></P>
+<DIV ALIGN="CENTER"><A NAME="fig:The-CELP-model"></A><A NAME="835"></A>
+<TABLE>
+<CAPTION ALIGN="BOTTOM"><STRONG>Figure 1:</STRONG>
+The CELP model of speech synthesis (decoder)</CAPTION>
+<TR><TD>
 <DIV ALIGN="CENTER">
+<IMG
+ WIDTH="426" HEIGHT="300" ALIGN="BOTTOM" BORDER="0"
+ SRC="img5.png"
+ ALT="\includegraphics[width=0.45\paperwidth,keepaspectratio]{celp_decoder}">
+</DIV>
+
+<P></TD></TR>
+</TABLE>
+</DIV>
+
+<P>
+
+<H2><A NAME="SECTION00092000000000000000"></A><A NAME="473"></A>
+<BR>
+Linear Prediction (LPC)
+</H2>
+
+<P>
+Linear prediction is at the base of many speech coding techniques,
+including CELP. The idea behind it is to predict the signal <SPAN CLASS="MATH"><IMG
+ WIDTH="28" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img6.png"
+ ALT="$x[n]$"></SPAN>
+using a linear combination of its past samples:
+
+<P>
+<BR><P></P>
+<DIV ALIGN="CENTER" CLASS="mathdisplay">
 <!-- MATH
  \begin{displaymath}
-p[n]=\beta_{0}e[n-T-1]+\beta_{1}e[n-T]+\beta_{2}e[n-T+1]
+y[n]=\sum_{i=1}^{N}a_{i}x[n-i]
 \end{displaymath}
  -->
 
 <IMG
- WIDTH="359" HEIGHT="28" BORDER="0"
- SRC="img53.png"
+ WIDTH="120" HEIGHT="51" BORDER="0"
+ SRC="img7.png"
  ALT="\begin{displaymath}
-p[n]=\beta_{0}e[n-T-1]+\beta_{1}e[n-T]+\beta_{2}e[n-T+1]\end{displaymath}">
+y[n]=\sum_{i=1}^{N}a_{i}x[n-i]\end{displaymath}">
+</DIV>
+<BR CLEAR="ALL">
+<P></P>
+where <SPAN CLASS="MATH"><IMG
+ WIDTH="28" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img8.png"
+ ALT="$y[n]$"></SPAN> is the linear prediction of <SPAN CLASS="MATH"><IMG
+ WIDTH="28" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img6.png"
+ ALT="$x[n]$"></SPAN>. The prediction
+error is thus given by:
+<BR><P></P>
+<DIV ALIGN="CENTER" CLASS="mathdisplay">
+<!-- MATH
+ \begin{displaymath}
+e[n]=x[n]-y[n]=x[n]-\sum_{i=1}^{N}a_{i}x[n-i]
+\end{displaymath}
+ -->
+
+<IMG
+ WIDTH="243" HEIGHT="51" BORDER="0"
+ SRC="img9.png"
+ ALT="\begin{displaymath}
+e[n]=x[n]-y[n]=x[n]-\sum_{i=1}^{N}a_{i}x[n-i]\end{displaymath}">
 </DIV>
 <BR CLEAR="ALL">
 <P></P>
 
 <P>
-where <IMG
- WIDTH="16" HEIGHT="14" ALIGN="BOTTOM" BORDER="0"
- SRC="img27.png"
- ALT="$T$"> is the pitch period and the <IMG
- WIDTH="18" HEIGHT="29" ALIGN="MIDDLE" BORDER="0"
- SRC="img54.png"
- ALT="$\beta_{i}$"> are the prediction
-(filter) taps. It is worth noting that when the pitch is smaller than
-the sub-frame size, we repeat the excitation at a period <IMG
- WIDTH="16" HEIGHT="14" ALIGN="BOTTOM" BORDER="0"
- SRC="img27.png"
- ALT="$T$">. For
-example, when <IMG
- WIDTH="72" HEIGHT="29" ALIGN="MIDDLE" BORDER="0"
- SRC="img55.png"
- ALT="$n-T+1$">, we use <IMG
- WIDTH="80" HEIGHT="29" ALIGN="MIDDLE" BORDER="0"
- SRC="img56.png"
- ALT="$n-2T+1$"> instead. The period and quantized
-gains are determined in closed loop (analysis-by-synthesis). In most
-modes, the pitch period is encoded with 7 bits in the <!-- MATH
- $\left[17,144\right]$
+The goal of the LPC analysis is to find the best prediction coefficients
+<SPAN CLASS="MATH"><IMG
+ WIDTH="17" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img10.png"
+ ALT="$a_{i}$"></SPAN> which minimize the quadratic error function:
+<BR><P></P>
+<DIV ALIGN="CENTER" CLASS="mathdisplay">
+<!-- MATH
+ \begin{displaymath}
+E=\sum_{n=0}^{L-1}\left[e[n]\right]^{2}=\sum_{n=0}^{L-1}\left[x[n]-\sum_{i=1}^{N}a_{i}x[n-i]\right]^{2}
+\end{displaymath}
  -->
+
 <IMG
- WIDTH="60" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
- SRC="img57.png"
- ALT="$\left[17,144\right]$">
-range and the <IMG
- WIDTH="18" HEIGHT="29" ALIGN="MIDDLE" BORDER="0"
- SRC="img54.png"
- ALT="$\beta_{i}$"> coefficients are vector-quantized using
-7 bits (15 kbps narrowband and above) at higher bit-rates and 5 bits
-at lower bit-rates (11 kbps narrowband and below).
+ WIDTH="279" HEIGHT="58" BORDER="0"
+ SRC="img11.png"
+ ALT="\begin{displaymath}
+E=\sum_{n=0}^{L-1}\left[e[n]\right]^{2}=\sum_{n=0}^{L-1}\left[x[n]-\sum_{i=1}^{N}a_{i}x[n-i]\right]^{2}\end{displaymath}">
+</DIV>
+<BR CLEAR="ALL">
+<P></P>
+That can be done by making all derivatives <!-- MATH
+ $\frac{\partial E}{\partial a_{i}}$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="23" HEIGHT="38" ALIGN="MIDDLE" BORDER="0"
+ SRC="img12.png"
+ ALT="$\frac{\partial E}{\partial a_{i}}$"></SPAN>
+equal to zero:
+<BR><P></P>
+<DIV ALIGN="CENTER" CLASS="mathdisplay">
+<!-- MATH
+ \begin{displaymath}
+\frac{\partial E}{\partial a_{i}}=\frac{\partial}{\partial a_{i}}\sum_{n=0}^{L-1}\left[x[n]-\sum_{i=1}^{N}a_{i}x[n-i]\right]^{2}=0
+\end{displaymath}
+ -->
+
+<IMG
+ WIDTH="260" HEIGHT="58" BORDER="0"
+ SRC="img13.png"
+ ALT="\begin{displaymath}
+\frac{\partial E}{\partial a_{i}}=\frac{\partial}{\partial a...
+...um_{n=0}^{L-1}\left[x[n]-\sum_{i=1}^{N}a_{i}x[n-i]\right]^{2}=0\end{displaymath}">
+</DIV>
+<BR CLEAR="ALL">
+<P></P>
+
+<P>
+For an order <SPAN CLASS="MATH"><IMG
+ WIDTH="16" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img4.png"
+ ALT="$N$"></SPAN> filter, the filter coefficients <SPAN CLASS="MATH"><IMG
+ WIDTH="17" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img10.png"
+ ALT="$a_{i}$"></SPAN> are found
+by solving the system <SPAN CLASS="MATH"><IMG
+ WIDTH="44" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img14.png"
+ ALT="$N\times N$"></SPAN> linear system <!-- MATH
+ $\mathbf{Ra}=\mathbf{r}$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="50" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img15.png"
+ ALT="$\mathbf{Ra}=\mathbf{r}$"></SPAN>,
+where
+<BR><P></P>
+<DIV ALIGN="CENTER" CLASS="mathdisplay">
+<!-- MATH
+ \begin{displaymath}
+\mathbf{R}=\left[\begin{array}{cccc}
+R(0) & R(1) & \cdots & R(N-1)\\
+R(1) & R(0) & \cdots & R(N-2)\\
+\vdots & \vdots & \ddots & \vdots\\
+R(N-1) & R(N-2) & \cdots & R(0)\end{array}\right]
+\end{displaymath}
+ -->
+
+<IMG
+ WIDTH="302" HEIGHT="109" BORDER="0"
+ SRC="img16.png"
+ ALT="\begin{displaymath}
+\mathbf{R}=\left[\begin{array}{cccc}
+R(0) &amp; R(1) &amp; \cdots &amp; ...
+...s &amp; \vdots\\
+R(N-1) &amp; R(N-2) &amp; \cdots &amp; R(0)\end{array}\right]\end{displaymath}">
+</DIV>
+<BR CLEAR="ALL">
+<P></P>
+<BR><P></P>
+<DIV ALIGN="CENTER" CLASS="mathdisplay">
+<!-- MATH
+ \begin{displaymath}
+\mathbf{r}=\left[\begin{array}{c}
+R(1)\\
+R(2)\\
+\vdots\\
+R(N)\end{array}\right]
+\end{displaymath}
+ -->
+
+<IMG
+ WIDTH="92" HEIGHT="109" BORDER="0"
+ SRC="img17.png"
+ ALT="\begin{displaymath}
+\mathbf{r}=\left[\begin{array}{c}
+R(1)\\
+R(2)\\
+\vdots\\
+R(N)\end{array}\right]\end{displaymath}">
+</DIV>
+<BR CLEAR="ALL">
+<P></P>
+with <SPAN CLASS="MATH"><IMG
+ WIDTH="38" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img18.png"
+ ALT="$R(m)$"></SPAN>, the auto-correlation<A NAME="513"></A> of the
+signal <SPAN CLASS="MATH"><IMG
+ WIDTH="28" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img6.png"
+ ALT="$x[n]$"></SPAN>, computed as:
+
+<P>
+<BR><P></P>
+<DIV ALIGN="CENTER" CLASS="mathdisplay">
+<!-- MATH
+ \begin{displaymath}
+R(m)=\sum_{i=0}^{N-1}x[i]x[i-m]
+\end{displaymath}
+ -->
+
+<IMG
+ WIDTH="147" HEIGHT="51" BORDER="0"
+ SRC="img19.png"
+ ALT="\begin{displaymath}
+R(m)=\sum_{i=0}^{N-1}x[i]x[i-m]\end{displaymath}">
+</DIV>
+<BR CLEAR="ALL">
+<P></P>
+
+<P>
+Because <SPAN CLASS="MATH"><IMG
+ WIDTH="16" HEIGHT="17" ALIGN="BOTTOM" BORDER="0"
+ SRC="img20.png"
+ ALT="$\mathbf{R}$"></SPAN> is toeplitz hermitian, the Levinson-Durbin<A NAME="517"></A>
+algorithm can be used, making the solution to the problem <!-- MATH
+ $\mathcal{O}\left(N^{2}\right)$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="51" HEIGHT="37" ALIGN="MIDDLE" BORDER="0"
+ SRC="img21.png"
+ ALT="$\mathcal{O}\left(N^{2}\right)$"></SPAN>
+instead of <!-- MATH
+ $\mathcal{O}\left(N^{3}\right)$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="51" HEIGHT="37" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$\mathcal{O}\left(N^{3}\right)$"></SPAN>. Also, it can be proven
+that all the roots of <SPAN CLASS="MATH"><IMG
+ WIDTH="33" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img23.png"
+ ALT="$A(z)$"></SPAN> are within the unit circle, which means
+that <SPAN CLASS="MATH"><IMG
+ WIDTH="49" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img24.png"
+ ALT="$1/A(z)$"></SPAN> is always stable. This is in theory; in practice because
+of finite precision, there are two commonly used techniques to make
+sure we have a stable filter. First, we multiply <SPAN CLASS="MATH"><IMG
+ WIDTH="35" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img25.png"
+ ALT="$R(0)$"></SPAN> by a number
+slightly above one (such as 1.0001), which is equivalent to adding
+noise to the signal. Also, we can apply a window to the auto-correlation,
+which is equivalent to filtering in the frequency domain, reducing
+sharp resonances.
 
 <P>
 
-<H2><A NAME="SECTION00093000000000000000">
-Innovation Codebook</A>
+<H2><A NAME="SECTION00093000000000000000"></A><A NAME="522"></A>
+<BR>
+Pitch Prediction
 </H2>
 
 <P>
-In Speex, the innovation signal is quantized using sub-vector shape-only
-vector quantization (VQ). That means that the innovation signal is
-divided in sub-vectors (of size 5 to 20) and quantized using a codebook
-that represents both the shape and the gain at the same time. This
-saves many bits that would otherwise be allocated for a separate gain
-at the price of a slight increase in complexity. 
+During voiced segments, the speech signal is periodic, so it is possible
+to take advantage of that property by approximating the excitation
+signal <SPAN CLASS="MATH"><IMG
+ WIDTH="28" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img26.png"
+ ALT="$e[n]$"></SPAN> by a gain times the past of the excitation:
+
+<P>
+<BR><P></P>
+<DIV ALIGN="CENTER" CLASS="mathdisplay">
+<!-- MATH
+ \begin{displaymath}
+e[n]\simeq p[n]=\beta e[n-T]
+\end{displaymath}
+ -->
+
+<IMG
+ WIDTH="147" HEIGHT="33" BORDER="0"
+ SRC="img27.png"
+ ALT="\begin{displaymath}
+e[n]\simeq p[n]=\beta e[n-T]\end{displaymath}">
+</DIV>
+<BR CLEAR="ALL">
+<P></P>
+
+<P>
+where <SPAN CLASS="MATH"><IMG
+ WIDTH="15" HEIGHT="17" ALIGN="BOTTOM" BORDER="0"
+ SRC="img28.png"
+ ALT="$T$"></SPAN> is the pitch period, <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img29.png"
+ ALT="$\beta$"></SPAN> is the pitch gain. We call
+that long-term prediction since the excitation is predicted from <SPAN CLASS="MATH"><IMG
+ WIDTH="56" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img30.png"
+ ALT="$e[n-T]$"></SPAN>
+with <SPAN CLASS="MATH"><IMG
+ WIDTH="50" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img31.png"
+ ALT="$T\gg N$"></SPAN>.
 
 <P>
 
 <H2><A NAME="SECTION00094000000000000000">
-Bit allocation</A>
+Innovation Codebook</A>
 </H2>
 
 <P>
-There are 7 different narrowband bit-rates defined for Speex, ranging
-from 250 bps to 24.6 kbps, although the modes below 5.9 kbps should
-not be used for speech. The bit-allocation for each mode is detailed
-in table <A HREF="#cap:bits-narrowband">3</A>. Each frame starts with the mode
-ID encoded with 4 bits which allows a range from 0 to 15, though only
-the first 7 values are used (the others are reserved). The parameters
-are listed in the table in the order they are packed in the bit-stream.
-All frame-based parameters are packed before sub-frame parameters.
-The parameters for a certain sub-frame are all packed before the following
-sub-frame is packed. Note that the ``OL'' in the parameter description
-means that the parameter is an open loop estimation based on the whole
-frame.
+The final excitation <SPAN CLASS="MATH"><IMG
+ WIDTH="28" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img26.png"
+ ALT="$e[n]$"></SPAN> will be the sum of the pitch prediction
+and an <SPAN  CLASS="textit">innovation</SPAN> signal <SPAN CLASS="MATH"><IMG
+ WIDTH="28" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img32.png"
+ ALT="$c[n]$"></SPAN> taken from a fixed codebook,
+hence the name <SPAN  CLASS="textit">Code</SPAN> Excited Linear Prediction. The final excitation
+is given by:
 
 <P>
 <BR><P></P>
-<DIV ALIGN="CENTER"><A NAME="595"></A>
-<TABLE>
-<CAPTION><STRONG>Table 3:</STRONG>
-Bit allocation for narrowband modes</CAPTION>
-<TR><TD><TABLE CELLPADDING=3 BORDER="1">
-<TR><TD ALIGN="CENTER">Parameter</TD>
-<TD ALIGN="CENTER">Update rate</TD>
-<TD ALIGN="CENTER">0</TD>
-<TD ALIGN="CENTER">1</TD>
-<TD ALIGN="CENTER">2</TD>
-<TD ALIGN="CENTER">3</TD>
-<TD ALIGN="CENTER">4</TD>
-<TD ALIGN="CENTER">5</TD>
-<TD ALIGN="CENTER">6</TD>
-<TD ALIGN="CENTER">7</TD>
-<TD ALIGN="CENTER">8</TD>
-</TR>
-<TR><TD ALIGN="CENTER">Wideband bit</TD>
-<TD ALIGN="CENTER">frame</TD>
-<TD ALIGN="CENTER">1</TD>
-<TD ALIGN="CENTER">1</TD>
-<TD ALIGN="CENTER">1</TD>
-<TD ALIGN="CENTER">1</TD>
-<TD ALIGN="CENTER">1</TD>
-<TD ALIGN="CENTER">1</TD>
-<TD ALIGN="CENTER">1</TD>
-<TD ALIGN="CENTER">1</TD>
-<TD ALIGN="CENTER">1</TD>
-</TR>
-<TR><TD ALIGN="CENTER">Mode ID</TD>
-<TD ALIGN="CENTER">frame</TD>
-<TD ALIGN="CENTER">4</TD>
-<TD ALIGN="CENTER">4</TD>
-<TD ALIGN="CENTER">4</TD>
-<TD ALIGN="CENTER">4</TD>
-<TD ALIGN="CENTER">4</TD>
-<TD ALIGN="CENTER">4</TD>
-<TD ALIGN="CENTER">4</TD>
-<TD ALIGN="CENTER">4</TD>
-<TD ALIGN="CENTER">4</TD>
-</TR>
-<TR><TD ALIGN="CENTER">LSP</TD>
-<TD ALIGN="CENTER">frame</TD>
-<TD ALIGN="CENTER">0</TD>
-<TD ALIGN="CENTER">18</TD>
-<TD ALIGN="CENTER">18</TD>
-<TD ALIGN="CENTER">18</TD>
-<TD ALIGN="CENTER">18</TD>
-<TD ALIGN="CENTER">30</TD>
-<TD ALIGN="CENTER">30</TD>
-<TD ALIGN="CENTER">30</TD>
-<TD ALIGN="CENTER">18</TD>
-</TR>
-<TR><TD ALIGN="CENTER">OL pitch</TD>
-<TD ALIGN="CENTER">frame</TD>
-<TD ALIGN="CENTER">0</TD>
-<TD ALIGN="CENTER">7</TD>
-<TD ALIGN="CENTER">7</TD>
-<TD ALIGN="CENTER">0</TD>
-<TD ALIGN="CENTER">0</TD>
-<TD ALIGN="CENTER">0</TD>
-<TD ALIGN="CENTER">0</TD>
-<TD ALIGN="CENTER">0</TD>
-<TD ALIGN="CENTER">7</TD>
-</TR>
-<TR><TD ALIGN="CENTER">OL pitch gain</TD>
-<TD ALIGN="CENTER">frame</TD>
-<TD ALIGN="CENTER">0</TD>
-<TD ALIGN="CENTER">4</TD>
-<TD ALIGN="CENTER">0</TD>
-<TD ALIGN="CENTER">0</TD>
-<TD ALIGN="CENTER">0</TD>
-<TD ALIGN="CENTER">0</TD>
-<TD ALIGN="CENTER">0</TD>
-<TD ALIGN="CENTER">0</TD>
-<TD ALIGN="CENTER">4</TD>
-</TR>
-<TR><TD ALIGN="CENTER">OL Exc gain</TD>
-<TD ALIGN="CENTER">frame</TD>
-<TD ALIGN="CENTER">0</TD>
-<TD ALIGN="CENTER">5</TD>
-<TD ALIGN="CENTER">5</TD>
-<TD ALIGN="CENTER">5</TD>
-<TD ALIGN="CENTER">5</TD>
-<TD ALIGN="CENTER">5</TD>
-<TD ALIGN="CENTER">5</TD>
-<TD ALIGN="CENTER">5</TD>
-<TD ALIGN="CENTER">5</TD>
-</TR>
-<TR><TD ALIGN="CENTER">Fine pitch</TD>
-<TD ALIGN="CENTER">sub-frame</TD>
-<TD ALIGN="CENTER">0</TD>
-<TD ALIGN="CENTER">0</TD>
-<TD ALIGN="CENTER">0</TD>
-<TD ALIGN="CENTER">7</TD>
-<TD ALIGN="CENTER">7</TD>
-<TD ALIGN="CENTER">7</TD>
-<TD ALIGN="CENTER">7</TD>
-<TD ALIGN="CENTER">7</TD>
-<TD ALIGN="CENTER">0</TD>
-</TR>
-<TR><TD ALIGN="CENTER">Pitch gain</TD>
-<TD ALIGN="CENTER">sub-frame</TD>
-<TD ALIGN="CENTER">0</TD>
-<TD ALIGN="CENTER">0</TD>
-<TD ALIGN="CENTER">5</TD>
-<TD ALIGN="CENTER">5</TD>
-<TD ALIGN="CENTER">5</TD>
-<TD ALIGN="CENTER">7</TD>
-<TD ALIGN="CENTER">7</TD>
-<TD ALIGN="CENTER">7</TD>
-<TD ALIGN="CENTER">0</TD>
-</TR>
-<TR><TD ALIGN="CENTER">Innovation gain</TD>
-<TD ALIGN="CENTER">sub-frame</TD>
-<TD ALIGN="CENTER">0</TD>
-<TD ALIGN="CENTER">1</TD>
-<TD ALIGN="CENTER">0</TD>
-<TD ALIGN="CENTER">1</TD>
-<TD ALIGN="CENTER">1</TD>
-<TD ALIGN="CENTER">3</TD>
-<TD ALIGN="CENTER">3</TD>
-<TD ALIGN="CENTER">3</TD>
-<TD ALIGN="CENTER">0</TD>
-</TR>
-<TR><TD ALIGN="CENTER">Innovation VQ</TD>
-<TD ALIGN="CENTER">sub-frame</TD>
-<TD ALIGN="CENTER">0</TD>
-<TD ALIGN="CENTER">0</TD>
-<TD ALIGN="CENTER">16</TD>
-<TD ALIGN="CENTER">20</TD>
-<TD ALIGN="CENTER">35</TD>
-<TD ALIGN="CENTER">48</TD>
-<TD ALIGN="CENTER">64</TD>
-<TD ALIGN="CENTER">96</TD>
-<TD ALIGN="CENTER">10</TD>
-</TR>
-<TR><TD ALIGN="CENTER">Total</TD>
-<TD ALIGN="CENTER">frame</TD>
-<TD ALIGN="CENTER">5</TD>
-<TD ALIGN="CENTER">43</TD>
-<TD ALIGN="CENTER">119</TD>
-<TD ALIGN="CENTER">160</TD>
-<TD ALIGN="CENTER">220</TD>
-<TD ALIGN="CENTER">300</TD>
-<TD ALIGN="CENTER">364</TD>
-<TD ALIGN="CENTER">492</TD>
-<TD ALIGN="CENTER">79</TD>
-</TR>
-</TABLE>
-
-<P>
-</TD></TR>
-</TABLE>
-</DIV><P></P>
-<BR>
-
-<P>
-So far, no MOS (Mean Opinion Score<A NAME="398"></A>) subjective
-evaluation has been performed for Speex. In order to give an idea
-of the quality achivable with it, table <A HREF="#cap:quality_vs_bps">4</A>
-presents my own subjective opinion on it. It sould be noted that different
-people will perceive the quality differently and that the person that
-designed the codec often has a bias (one way or another) when it comes
-to subjective evaluation. Last thing, it should be noted that for
-most codecs (including Speex) encoding quality sometimes varies depending
-on the input. Note that the complexity is only approximate (within
-0.5 mflops and using the lowest complexity setting). Decoding requires
-approximately 0.5 mflops<A NAME="400"></A> in most modes (1 mflops
-with perceptual enhancement).
-
-<P>
-<BR><P></P>
-<DIV ALIGN="CENTER"><A NAME="596"></A>
-<TABLE>
-<CAPTION><STRONG>Table 4:</STRONG>
-Quality versus bit-rate</CAPTION>
-<TR><TD><TABLE CELLPADDING=3 BORDER="1">
-<TR><TD ALIGN="CENTER">Mode</TD>
-<TD ALIGN="CENTER">Bit-rate<A NAME="404"></A> (bps)</TD>
-<TD ALIGN="CENTER">mflops<A NAME="405"></A></TD>
-<TD ALIGN="CENTER">Quality/description</TD>
-</TR>
-<TR><TD ALIGN="CENTER">0</TD>
-<TD ALIGN="CENTER">250</TD>
-<TD ALIGN="CENTER">N/A</TD>
-<TD ALIGN="CENTER">No transmission (DTX)</TD>
-</TR>
-<TR><TD ALIGN="CENTER">1</TD>
-<TD ALIGN="CENTER">2,150</TD>
-<TD ALIGN="CENTER">6</TD>
-<TD ALIGN="CENTER">Vocoder (mostly for comfort noise)</TD>
-</TR>
-<TR><TD ALIGN="CENTER">2</TD>
-<TD ALIGN="CENTER">5,950</TD>
-<TD ALIGN="CENTER">9</TD>
-<TD ALIGN="CENTER">Very noticeable artifacts/noise, good intelligibility</TD>
-</TR>
-<TR><TD ALIGN="CENTER">3</TD>
-<TD ALIGN="CENTER">8,000</TD>
-<TD ALIGN="CENTER">10</TD>
-<TD ALIGN="CENTER">Artifacts/noise sometimes noticeable</TD>
-</TR>
-<TR><TD ALIGN="CENTER">4</TD>
-<TD ALIGN="CENTER">11,000</TD>
-<TD ALIGN="CENTER">14</TD>
-<TD ALIGN="CENTER">Artifacts usually noticeable only with headphones</TD>
-</TR>
-<TR><TD ALIGN="CENTER">5</TD>
-<TD ALIGN="CENTER">15,000</TD>
-<TD ALIGN="CENTER">11</TD>
-<TD ALIGN="CENTER">Need good headphones to tell the difference</TD>
-</TR>
-<TR><TD ALIGN="CENTER">6</TD>
-<TD ALIGN="CENTER">18,200</TD>
-<TD ALIGN="CENTER">17.5</TD>
-<TD ALIGN="CENTER">Hard to tell the difference even with good headphones</TD>
-</TR>
-<TR><TD ALIGN="CENTER">7</TD>
-<TD ALIGN="CENTER">24,600</TD>
-<TD ALIGN="CENTER">14.5</TD>
-<TD ALIGN="CENTER">Completely transparent for voice, good quality music</TD>
-</TR>
-<TR><TD ALIGN="CENTER">8</TD>
-<TD ALIGN="CENTER">3,950</TD>
-<TD ALIGN="CENTER">10.5</TD>
-<TD ALIGN="CENTER">Very noticeable artifacts/noise, good intelligibility</TD>
-</TR>
-<TR><TD ALIGN="CENTER">9</TD>
-<TD ALIGN="CENTER">N/A</TD>
-<TD ALIGN="CENTER">N/A</TD>
-<TD ALIGN="CENTER">reserved</TD>
-</TR>
-<TR><TD ALIGN="CENTER">10</TD>
-<TD ALIGN="CENTER">N/A</TD>
-<TD ALIGN="CENTER">N/A</TD>
-<TD ALIGN="CENTER">reserved</TD>
-</TR>
-<TR><TD ALIGN="CENTER">11</TD>
-<TD ALIGN="CENTER">N/A</TD>
-<TD ALIGN="CENTER">N/A</TD>
-<TD ALIGN="CENTER">reserved</TD>
-</TR>
-<TR><TD ALIGN="CENTER">12</TD>
-<TD ALIGN="CENTER">N/A</TD>
-<TD ALIGN="CENTER">N/A</TD>
-<TD ALIGN="CENTER">reserved</TD>
-</TR>
-<TR><TD ALIGN="CENTER">13</TD>
-<TD ALIGN="CENTER">N/A</TD>
-<TD ALIGN="CENTER">N/A</TD>
-<TD ALIGN="CENTER">Application-defined, interpreted by callback or skipped</TD>
-</TR>
-<TR><TD ALIGN="CENTER">14</TD>
-<TD ALIGN="CENTER">N/A</TD>
-<TD ALIGN="CENTER">N/A</TD>
-<TD ALIGN="CENTER">Speex in-band signaling</TD>
-</TR>
-<TR><TD ALIGN="CENTER">15</TD>
-<TD ALIGN="CENTER">N/A</TD>
-<TD ALIGN="CENTER">N/A</TD>
-<TD ALIGN="CENTER">Terminator code</TD>
-</TR>
-</TABLE>
-
-<P>
-</TD></TR>
-</TABLE>
-</DIV><P></P>
-<BR>
-
-<P>
-
-<H2><A NAME="SECTION00095000000000000000"></A><A NAME="409"></A>
-<BR>
-Perceptual enhancement
-</H2>
-
-<P>
-This part of the codec only applies to the decoder and can even be
-changed without affecting inter-operability. For that reason, the
-implementation provided and described here should only be considered
-as a reference implementation. The enhancement system is divided into
-two parts. First, the synthesis filter <IMG
- WIDTH="104" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
- SRC="img58.png"
- ALT="$S(z)=1/A(z)$"> is replaced
-by an enhanced filter
-<BR><P></P>
-<DIV ALIGN="CENTER">
+<DIV ALIGN="CENTER" CLASS="mathdisplay">
 <!-- MATH
  \begin{displaymath}
-S'(z)=\frac{A\left(z/a_{2}\right)A\left(z/a_{3}\right)}{A\left(z\right)A\left(z/a_{1}\right)}
+e[n]=p[n]+c[n]=\beta e[n-T]+c[n]
 \end{displaymath}
  -->
 
 <IMG
- WIDTH="178" HEIGHT="44" BORDER="0"
- SRC="img59.png"
+ WIDTH="227" HEIGHT="33" BORDER="0"
+ SRC="img33.png"
  ALT="\begin{displaymath}
-S'(z)=\frac{A\left(z/a_{2}\right)A\left(z/a_{3}\right)}{A\left(z\right)A\left(z/a_{1}\right)}\end{displaymath}">
+e[n]=p[n]+c[n]=\beta e[n-T]+c[n]\end{displaymath}">
 </DIV>
 <BR CLEAR="ALL">
 <P></P>
-where <IMG
- WIDTH="20" HEIGHT="29" ALIGN="MIDDLE" BORDER="0"
- SRC="img60.png"
- ALT="$a_{1}$"> and <IMG
- WIDTH="20" HEIGHT="29" ALIGN="MIDDLE" BORDER="0"
- SRC="img61.png"
- ALT="$a_{2}$"> depend on the mode in use and <!-- MATH
- $a_{3}=\frac{1}{r}\left(1-\frac{1-ra_{1}}{1-ra_{2}}\right)$
+The quantization of <SPAN CLASS="MATH"><IMG
+ WIDTH="28" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img32.png"
+ ALT="$c[n]$"></SPAN> is where most of the bits in a CELP codec
+are allocated. It represents the information that couldn't be obtained
+either from linear prediction or pitch prediction. In the <SPAN  CLASS="textit">z</SPAN>-domain
+we can represent the final signal <SPAN CLASS="MATH"><IMG
+ WIDTH="34" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img34.png"
+ ALT="$X(z)$"></SPAN> as <BR><P></P>
+<DIV ALIGN="CENTER" CLASS="mathdisplay">
+<!-- MATH
+ \begin{displaymath}
+X(z)=\frac{C(z)}{A(z)\left(1-\beta z^{-T}\right)}
+\end{displaymath}
  -->
+
 <IMG
- WIDTH="140" HEIGHT="44" ALIGN="MIDDLE" BORDER="0"
- SRC="img62.png"
- ALT="$a_{3}=\frac{1}{r}\left(1-\frac{1-ra_{1}}{1-ra_{2}}\right)$">
-with <IMG
- WIDTH="45" HEIGHT="15" ALIGN="BOTTOM" BORDER="0"
- SRC="img63.png"
- ALT="$r=.9$">. The second part of the enhancement consists of using
-a comb filter to enhance the pitch in the excitation domain. 
+ WIDTH="153" HEIGHT="44" BORDER="0"
+ SRC="img35.png"
+ ALT="\begin{displaymath}
+X(z)=\frac{C(z)}{A(z)\left(1-\beta z^{-T}\right)}\end{displaymath}">
+</DIV>
+<BR CLEAR="ALL">
+<P></P>
 
 <P>
 
-<HR>
+<H2><A NAME="SECTION00095000000000000000"></A><A NAME="529"></A><A NAME="530"></A>
+<BR>
+Noise Weighting
+</H2>
+
+<P>
+Most (if not all) modern audio codecs attempt to ``shape'' the
+noise so that it appears mostly in the frequency regions where the
+ear cannot detect it. For example, the ear is more tolerant to noise
+in parts of the spectrum that are louder and <SPAN  CLASS="textit">vice versa</SPAN>. In
+order to maximize speech quality, CELP codecs minimize the mean square
+of the error (noise) in the perceptually weighted domain. This means
+that a perceptual noise weighting filter <SPAN CLASS="MATH"><IMG
+ WIDTH="37" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img36.png"
+ ALT="$W(z)$"></SPAN> is applied to the
+error signal in the encoder. In most CELP codecs, <SPAN CLASS="MATH"><IMG
+ WIDTH="37" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img36.png"
+ ALT="$W(z)$"></SPAN> is a pole-zero
+weighting filter derived from the linear prediction coefficients (LPC),
+generally using bandwidth expansion. Let the spectral envelope be
+represented by the synthesis filter <SPAN CLASS="MATH"><IMG
+ WIDTH="49" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img24.png"
+ ALT="$1/A(z)$"></SPAN>, CELP codecs typically
+derive the noise weighting filter as: <BR>
+<DIV ALIGN="RIGHT" CLASS="mathdisplay">
+
+<!-- MATH
+ \begin{equation}
+W(z)=\frac{A(z/\gamma_{1})}{A(z/\gamma_{2})}
+\end{equation}
+ -->
+<A NAME="eq:gamma-weighting"></A>
+<TABLE WIDTH="100%" ALIGN="CENTER">
+<TR VALIGN="MIDDLE"><TD ALIGN="CENTER" NOWRAP><A NAME="eq:gamma-weighting"></A><IMG
+ WIDTH="104" HEIGHT="44" BORDER="0"
+ SRC="img37.png"
+ ALT="\begin{displaymath}
+W(z)=\frac{A(z/\gamma_{1})}{A(z/\gamma_{2})}
+\end{displaymath}"></TD>
+<TD CLASS="eqno" WIDTH=10 ALIGN="RIGHT">
+(<SPAN CLASS="arabic">1</SPAN>)</TD></TR>
+</TABLE>
+<BR CLEAR="ALL"></DIV><P></P>
+where <!-- MATH
+ $\gamma_{1}=0.9$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="57" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img38.png"
+ ALT="$\gamma_{1}=0.9$"></SPAN> and <!-- MATH
+ $\gamma_{2}=0.6$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="57" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img39.png"
+ ALT="$\gamma_{2}=0.6$"></SPAN> in the Speex reference
+implementation. If a filter <SPAN CLASS="MATH"><IMG
+ WIDTH="33" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img23.png"
+ ALT="$A(z)$"></SPAN> has (complex) poles at <SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img40.png"
+ ALT="$p_{i}$"></SPAN>
+in the <SPAN CLASS="MATH"><IMG
+ WIDTH="11" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img41.png"
+ ALT="$z$"></SPAN>-plane, the filter <SPAN CLASS="MATH"><IMG
+ WIDTH="47" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img42.png"
+ ALT="$A(z/\gamma)$"></SPAN> will have its poles at
+<!-- MATH
+ $p'_{i}=\gamma p_{i}$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="57" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img43.png"
+ ALT="$p'_{i}=\gamma p_{i}$"></SPAN>, making it a flatter version of <SPAN CLASS="MATH"><IMG
+ WIDTH="33" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img23.png"
+ ALT="$A(z)$"></SPAN>.
+
+<P>
+The weighting filter is applied to the error signal used to optimize
+the codebook search through analysis-by-synthesis (AbS). This results
+in a spectral shape of the noise that tends towards <SPAN CLASS="MATH"><IMG
+ WIDTH="53" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img44.png"
+ ALT="$1/W(z)$"></SPAN>. While
+the simplicity of the model has been an important reason for the success
+of CELP, it remains that <SPAN CLASS="MATH"><IMG
+ WIDTH="37" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img36.png"
+ ALT="$W(z)$"></SPAN> is a very rough approximation for
+the perceptually optimal noise weighting function. Fig. <A HREF="#cap:Standard-noise-shaping">2</A>
+illustrates the noise shaping that results from Eq. <A HREF="#eq:gamma-weighting">1</A>.
+Throughout this paper, we refer to <SPAN CLASS="MATH"><IMG
+ WIDTH="37" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img36.png"
+ ALT="$W(z)$"></SPAN> as the noise weighting
+filter and to <SPAN CLASS="MATH"><IMG
+ WIDTH="53" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img44.png"
+ ALT="$1/W(z)$"></SPAN> as the noise shaping filter (or curve).
+
+<P>
+
+<DIV ALIGN="CENTER"><A NAME="cap:Standard-noise-shaping"></A><A NAME="845"></A>
+<TABLE>
+<CAPTION ALIGN="BOTTOM"><STRONG>Figure 2:</STRONG>
+Standard noise shaping in CELP. Arbitrary y-axis offset.</CAPTION>
+<TR><TD>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="430" HEIGHT="301" ALIGN="BOTTOM" BORDER="0"
+ SRC="img45.png"
+ ALT="\includegraphics[width=0.45\paperwidth,keepaspectratio]{ref_shaping}">
+</DIV>
+
+<P></TD></TR>
+</TABLE>
+</DIV>
+
+<P>
+
+<H2><A NAME="SECTION00096000000000000000">
+Analysis-by-Synthesis</A>
+</H2>
+
+<P>
+One of the main principles behind CELP is called Analysis-by-Synthesis
+(AbS), meaning that the encoding (analysis) is performed by perceptually
+optimising the decoded (synthesis) signal in a closed loop. In theory,
+the best CELP stream would be produced by trying all possible bit
+combinations and selecting the one that produces the best-sounding
+decoded signal. This is obviously not possible in practice for two
+reasons: the required complexity is beyond any currently available
+hardware and the ``best sounding'' selection criterion implies
+a human listener. 
+
+<P>
+In order to achieve real-time encoding using limited computing resources,
+the CELP optimisation is broken down into smaller, more manageable,
+sequential searches using the perceptual weighting function described
+earlier.
+
+<P>
+
+
+<P>
+
+<DIV CLASS="navigation"><HR>
 <!--Navigation Panel-->
-<A NAME="tex2html315"
+<A NAME="tex2html310"
   HREF="node10.html">
 <IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
-<A NAME="tex2html309"
+<A NAME="tex2html304"
   HREF="manual.html">
 <IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
-<A NAME="tex2html303"
+<A NAME="tex2html298"
   HREF="node8.html">
 <IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
-<A NAME="tex2html311"
+<A NAME="tex2html306"
   HREF="node1.html">
 <IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
-<A NAME="tex2html313"
-  HREF="node15.html">
+<A NAME="tex2html308"
+  HREF="node17.html">
 <IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
 <BR>
-<B> Next:</B> <A NAME="tex2html316"
-  HREF="node10.html">Speex wideband mode (sub-band</A>
-<B> Up:</B> <A NAME="tex2html310"
+<B> Next:</B> <A NAME="tex2html311"
+  HREF="node10.html">Speex narrowband mode</A>
+<B> Up:</B> <A NAME="tex2html305"
   HREF="manual.html">The Speex Codec Manual</A>
-<B> Previous:</B> <A NAME="tex2html304"
-  HREF="node8.html">Introduction to CELP Coding</A>
- &nbsp <B>  <A NAME="tex2html312"
+<B> Previous:</B> <A NAME="tex2html299"
+  HREF="node8.html">Formats and standards</A>
+ &nbsp; <B>  <A NAME="tex2html307"
   HREF="node1.html">Contents</A></B> 
- &nbsp <B>  <A NAME="tex2html314"
-  HREF="node15.html">Index</A></B> 
+ &nbsp; <B>  <A NAME="tex2html309"
+  HREF="node17.html">Index</A></B> </DIV>
 <!--End of Navigation Panel-->
 <ADDRESS>
 Jean-Marc Valin
-2003-03-23
+2006-08-12
 </ADDRESS>
 </BODY>
 </HTML>
