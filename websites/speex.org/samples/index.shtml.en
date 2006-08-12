@@ -13,7 +13,8 @@
 <!--#include virtual="/ssi/xiphbar.include" -->
 <!--#include virtual="/ssi/pagetop.include" -->
 
-<h1>Speex Samples (version 1.0)</h1>
+<h1>Speex Samples (based on version 1.2-beta1)</h1>
+<p> Samples coded with Speex have been decoded back to wav format so you don't need to have a Speex decoder to listen to them</p>
 <h2>Narrowband</h2>
 <p>These samples are coded using narrowband Speex mode (more bit-rates available)</p>
 
