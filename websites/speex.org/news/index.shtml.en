@@ -107,15 +107,6 @@
 		</div>
 	</li>
 
-
-	<li>
-		<h3>Speex 1.0.5 Released</h3>
-		<p class="submitdate">March 2, 2005</p>
-		<div class="description">
-			<p>The main change with this release is that it includes API additions from the 1.1.x branch (while being backward compatible), so that transition from 1.0.x to 1.1.x can be made easier.</p>
-		</div>
-	</li>
-
 	<li>
 		<h3>Speex 1.1.7 Released</h3>
 		<p class="submitdate">March 2, 2005</p>
