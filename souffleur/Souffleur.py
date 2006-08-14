@@ -16,7 +16,7 @@
 
 
 #import oggStreams
-from gstfile import GstFile
+#from gstfile import GstFile
 from GPlayer import VideoWidget
 from GPlayer import GstPlayer
 from Subtitles import Subtitles
@@ -102,11 +102,13 @@ class Souffleur:
             "on_TOOL_SAVE_clicked": self.cb_subChangeSave,\
             "on_TOOL_DELETE_clicked": self.cb_subDel,\
             "on_main_file_save_activate": self.cb_onSaveMenu,\
+            "on_main_file_save_as_activate": self.cb_onSaveAsMenu,\
             "on_LIST_SUBS_cursor_changed": self.cb_onSubsListSelect}
         self.wTree.signal_autoconnect (dic)
         
-        self.windowFileOpen=None
+        self.windowProjectOpen=None
         self.windowProjectSO=None
+        self.PFileName=None
         self.windowStreams=gtk.glade.XML (self.gladefile,"STREAM_WINDOW")
         ### Setup LIST_STREAMS
         LIST = self.windowStreams.get_widget("LIST_STREAMS")
@@ -205,11 +207,11 @@ class Souffleur:
                                             1, S.end_time,
                                             2, S.text)
 #==============================================================================
-    def cb_projectOpenOpen(self, widget):
-        WND=self.windowProjectSO.get_widget("SAVE_OPEN_PFILE")
-        FN=WND.get_filename()
-        if FN[-4:]!=".spf":
-            FN=FN+".spf"
+    def saveProject(self):
+        if not self.PFileName:
+            return
+        if self.PFileName[-4:]!=".spf":
+            self.PFileName=self.PFileName+".spf"
         PXML=ProjectXML()
         PXML.addHeadInfo("title", "Soufleur development version")
         PXML.addHeadInfo("desc", "This is version current at development stage.")
@@ -220,7 +222,12 @@ class Souffleur:
             PXML.addMedia(i)
         for i in self.Subtitles:
             PXML.addSubtitle(i)
-        PXML.write(FN)
+        PXML.write(self.PFileName)
+#==============================================================================
+    def cb_projectSaveOpen(self, widget):
+        WND=self.windowProjectSO.get_widget("SAVE_OPEN_PFILE")
+        self.PFileName=WND.get_filename()
+        self.saveProject()
         WND.hide()
 #==============================================================================
     def cb_projectSaveCancel(self, widget):
@@ -228,11 +235,18 @@ class Souffleur:
         WND=self.windowProjectSO.get_widget("SAVE_OPEN_PFILE")
         WND.hide()
 #==============================================================================
+    def cb_onSaveAsMenu(self, widget):
+        self.PFileName=None
+        self.cb_onSaveMenu(widget)
+#==============================================================================
     def cb_onSaveMenu(self, widget):
+        if self.PFileName:
+            self.saveProject()
+            return
         if(self.windowProjectSO==None):
             self.windowProjectSO=gtk.glade.XML (self.gladefile,"SAVE_OPEN_PFILE")
             dic={"on_PROJECT_BUTTON_CANCEL_clicked": self.cb_projectSaveCancel,\
-                "on_PROJECT_BUTTON_OK_clicked": self.cb_projectOpenOpen }
+                "on_PROJECT_BUTTON_OK_clicked": self.cb_projectSaveOpen }
             self.windowProjectSO.signal_autoconnect(dic)
             WND=self.windowProjectSO.get_widget("SAVE_OPEN_PFILE")
             WND.set_action(gtk.FILE_CHOOSER_ACTION_SAVE)
@@ -321,47 +335,65 @@ class Souffleur:
             self.play_toggled()
 #==============================================================================
     def mainFileOpen(self, widget):
-        if(self.windowFileOpen==None):
-            self.windowFileOpen=gtk.glade.XML (self.gladefile,"OPEN_OGG")
-            dic={"on_OPEN_BUTTON_CANCEL_clicked": self.openFileCancel,\
-                "on_OPEN_BUTTON_OPEN_clicked": self.openFileOpen }
-            self.windowFileOpen.signal_autoconnect(dic)
-#   	    WND=self.windowFileOpen.get_widget("OPEN_OGG")
-#	        Filter=gtk.FileFilter()
-#	        Filter.set_name("OGM file")
-#   	    Filter.add_pattern("*.og[gm]")
-#	        WND.add_filter(Filter)
+        if(self.windowProjectOpen==None):
+            self.windowProjectOpen=gtk.glade.XML (self.gladefile,"SAVE_OPEN_PFILE")
+            dic={"on_PROJECT_BUTTON_CANCEL_clicked": self.openFileCancel,\
+                "on_PROJECT_BUTTON_OK_clicked": self.openFileOpen }
+            self.windowProjectOpen.signal_autoconnect(dic)
+            WND=self.windowProjectOpen.get_widget("SAVE_OPEN_PFILE")
+            WND.set_action(gtk.FILE_CHOOSER_ACTION_OPEN)
+            OKB = self.windowProjectOpen.get_widget("PROJECT_BUTTON_OK")
+            OKB.set_label("gtk-open")
+            OKB.set_use_stock(True)
+            Filter=gtk.FileFilter()
+            Filter.set_name("Souffleur project file")
+            Filter.add_pattern("*.spf")
+            WND.add_filter(Filter)
         else:
-            WND=self.windowFileOpen.get_widget("OPEN_OGG")
+            WND=self.windowProjectOpen.get_widget("SAVE_OPEN_PFILE")
             if(WND==None):
-                self.windowFileOpen=None
+                self.windowProjectOpen=None
                 self.mainFileOpen(widget)
             else:
                 WND.show()
         return
 #==============================================================================
     def openFileCancel(self, widget):
-        if(self.windowFileOpen==None): return
-        WND=self.windowFileOpen.get_widget("OPEN_OGG")
+        if(self.windowProjectOpen==None): return
+        WND=self.windowProjectOpen.get_widget("SAVE_OPEN_PFILE")
         WND.hide()
         return
 #==============================================================================
     def openFileOpen(self, widget):
-        WND=self.windowFileOpen.get_widget("OPEN_OGG")
-        FN=WND.get_filename()
-        URI=WND.get_uri()
-        mInfo = MediaInfo(URI, FN, self.lastID)
-        mInfo.run()
+        WND=self.windowProjectOpen.get_widget("SAVE_OPEN_PFILE")
+        self.PFileName=WND.get_filename()
+        #URI=WND.get_uri()
+        #mInfo = MediaInfo(URI, FN, self.lastID)
+        #mInfo.run()
         #Streams = None
         #if((FN!="")and(FN!=None)):
         #    Streams = GstFile(FN)
         #    if Streams:
         #        Streams.run()
-        
+        #WND.hide()
+        #WND=self.windowStreams.get_widget("STREAM_WINDOW")
+        #WND.show()
+        #self.addMedia(mInfo.getMedia())
         WND.hide()
-        WND=self.windowStreams.get_widget("STREAM_WINDOW")
-        WND.show()
-        self.addMedia(mInfo.getMedia())
+        PXML=ProjectXML()
+        PXML.load(self.PFileName)
+        for i in PXML.getMedia():
+            self.addMedia(i)
+        for i in PXML.getSubtitle():
+            self.Subtitles.append(i)
+        if len(self.Subtitles)>0:
+            if (self.windowStreams):
+                WND=self.windowSubsList.get_widget("SUBS_LIST")
+                WND.show()
+                self.subsWindowUpdate()
+        if len(self.media)>0:
+            WND=self.windowStreams.get_widget("STREAM_WINDOW")
+            WND.show()
         return
 #==============================================================================
     def addMedia(self, mInfo):
@@ -374,7 +406,6 @@ class Souffleur:
         for i in mInfo.Streams:
             child = self.streamsTreeStore.append(iter)
             self.streamsTreeStore.set(child, 0, i.MIME + " ("+i.Name+")")
-            #print i +" " + Streams.STREAMS[i]
         if "subtitle" in mInfo.MIME:
             self.Subtitle = Subtitles()
             self.Subtitle.subLoad(mInfo.source, mInfo.Streams[0].ID)
