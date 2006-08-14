@@ -10,7 +10,7 @@
 -->
 </style>
 
-<!--#include virtual="/ssi/xiphbar.include" -->
+<!--#include virtual="/common/xiphbar.include" -->
 <!--#include virtual="/ssi/pagetop.include" -->
 <!--  All your page content goes here  -->
 <h1>Documentation</h1>

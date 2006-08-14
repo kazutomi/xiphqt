@@ -10,7 +10,7 @@
 -->
 </style>
 
-<!--#include virtual="/ssi/xiphbar.include" -->
+<!--#include virtual="/common/xiphbar.include" -->
 <!--#include virtual="/ssi/pagetop.include" -->
 
 <h1>Speex Samples (based on version 1.2-beta1)</h1>
