@@ -41,7 +41,7 @@ class ProjectXML:
             elif i.nodeName=="body":
                 self.body=i
             elif i.nodeName=="version":
-                self.version = i.childNode[0].nodeValue
+                self.version = i.childNodes[0].nodeValue
         return self
 
     def write(self, fileName):
@@ -177,7 +177,7 @@ class ProjectXML:
                             elif nodeName == "id":
                                 tStream.ID = k.childNodes[0].nodeValue
                             elif nodeName == "name":
-                                tStream.name = k.childNodes[0].nodeValue
+                                tStream.Name = k.childNodes[0].nodeValue
                             elif nodeName == "attrs":
                                 for l in k.childNodes:
                                     tStream.addAttr(l.nodeName, l.childNodes[0].nodeValue)
