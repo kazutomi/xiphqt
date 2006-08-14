@@ -192,7 +192,7 @@
 		<h3>Speex 1.0.3 Released</h3>
 		<p class="submitdate">November 19, 2003</p>
 		<div class="description">
-			<p>In this bugfix release: a fix for a multithreqading bug and a correction for an underflow problem that could slow decoding dramatically on x86 processors.</p>
+			<p>In this bugfix release: a fix for a multithreading bug and a correction for an underflow problem that could slow decoding dramatically on x86 processors.</p>
 		</div>
 	</li>
 
