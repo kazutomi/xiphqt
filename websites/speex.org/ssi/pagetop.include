@@ -15,17 +15,6 @@
 		<li id="software_"><a href="/software/">Plugins &amp; Software</a></li>
 		<li id="contact_"><a href="/contact/">Contact</a></li>
 	</ul>
-
-	<div id="translations" <!--#if expr="$translations" -->style="display: block;"<!--#endif -->>
-		<h2>Translations</h2>
-		<ul id="languages">
-			<!--#if expr="$eng" --><li id="english"><a href="index.shtml.en">English</a></li><!--#endif -->
-			<!--#if expr="$rus" --><li id="russian"><a href="index.shtml.ru">&#1056;&#1091;&#1089;&#1089;&#1082;&#1080;&#1081;</a></li><!--#endif -->
-			<!--#if expr="$spa" --><li id="spanish"><a href="index.shtml.es">Español</a></li><!--#endif -->
-			<!--#if expr="$fre" --><li id="french"><a href="index.shtml.fr">Français</a></li><!--#endif -->
-			<!--#if expr="$jpn" --><li id="japanese"><a href="index.shtml.ja">&#x65e5;&#x672c;&#x8a9e;</a></li><!--#endif -->
-		</ul>
-	</div>
 </div>
 
 <div id="banners">
