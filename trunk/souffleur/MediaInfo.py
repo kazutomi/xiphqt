@@ -312,14 +312,17 @@ class OggBin(gst.Bin):
         self.parsers = []
 
         self.demux = gst.element_factory_make('oggdemux')
+        #self.videoparse = gst.element_factory_make("ogmvideoparse")
         self.mux = gst.element_factory_make('oggmux')
 
-        self.add(self.demux, self.mux)
+        self.add(self.demux, self.mux)#, self.videoparse)
 
         self.add_pad(gst.GhostPad('sink', self.demux.get_pad('sink')))
+        #self.add_pad(gst.GhostPad('vsink', self.videoparse.get_pad('sink')))
         self.add_pad(gst.GhostPad('src', self.mux.get_pad('src')))
 
         self.demux.connect('pad-added', self._new_demuxed_pad)
+        #self.videoparse.connect('pad-added', self._new_demuxed_pad)
         self.demux.connect('no-more-pads', self._no_more_pads)
 
     def _no_more_pads(self, elem):
@@ -370,6 +373,9 @@ class OggBin(gst.Bin):
         self.startID=self.startID+1
         nStream.ID=self.startID
         self.media.addStream(nStream)
+        print format
+        #if format in "application/x-ogm-video":
+        #    pad.link(self.videoparse.get_pad('sink'))
         if format not in self.parsefactories:
             #self.async_error("Unsupported media type: %s", format)
             return
