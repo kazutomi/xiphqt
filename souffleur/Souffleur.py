@@ -103,13 +103,17 @@ class Souffleur:
             "on_TOOL_DELETE_clicked": self.cb_subDel,\
             "on_main_file_save_activate": self.cb_onSaveMenu,\
             "on_main_file_save_as_activate": self.cb_onSaveAsMenu,\
+            "on_main_file_new_activate": self.cb_onNewMenu,\
             "on_LIST_SUBS_cursor_changed": self.cb_onSubsListSelect}
         self.wTree.signal_autoconnect (dic)
         
         self.windowProjectOpen=None
         self.windowProjectSO=None
         self.PFileName=None
+        self.windowMediaOpen=None
         self.windowStreams=gtk.glade.XML (self.gladefile,"STREAM_WINDOW")
+        dic = {"on_TOOL_ADD_STREAM_clicked": self.cb_addNewStream}
+        self.windowStreams.signal_autoconnect (dic)
         ### Setup LIST_STREAMS
         LIST = self.windowStreams.get_widget("LIST_STREAMS")
         if LIST:
@@ -153,6 +157,41 @@ class Souffleur:
         self.subEndTime = self.wTree.get_widget("SUB_END_TIME")
         self.playButton = self.wTree.get_widget("TOOL_PLAY")
         return
+#==============================================================================
+    def cb_openMediaCancel(self, widget):
+        if self.windowMediaOpen:
+            WND=self.windowMediaOpen.get_widget("OPEN_MEDIA")
+            WND.hide()
+#==============================================================================
+    def cb_openMediaOpen(self, widget):
+        WND=self.windowMediaOpen.get_widget("OPEN_MEDIA")
+        FN=WND.get_filename()
+        URI=WND.get_uri()
+        WND.hide()
+        print FN, URI
+        MI = MediaInfo(URI, FN, self.lastID)
+        MI.run()
+        tMedia = MI.getMedia()
+        self.addMedia(tMedia)
+#==============================================================================
+    def cb_addNewStream(self, widget):
+        if(self.windowMediaOpen==None):
+            self.windowMediaOpen=gtk.glade.XML (self.gladefile,"OPEN_MEDIA")
+            dic={"on_OPEN_BUTTON_CANCEL_clicked": self.cb_openMediaCancel,\
+                "on_OPEN_BUTTON_OPEN_clicked": self.cb_openMediaOpen }
+            self.windowMediaOpen.signal_autoconnect(dic)
+        else:
+            WND=self.windowMediaOpen.get_widget("OPEN_MEDIA")
+            if not WND:
+                self.windowMediaOpen=None
+            else:
+                WND.show()
+        return
+#==============================================================================
+    def cb_onNewMenu(self, menu):
+        if self.windowStreams:
+            WND=self.windowStreams.get_widget("STREAM_WINDOW")
+            WND.show()
 #==============================================================================
     def setEditSubtitle(self, Sub):
         if not self.Subtitle:
@@ -367,18 +406,6 @@ class Souffleur:
     def openFileOpen(self, widget):
         WND=self.windowProjectOpen.get_widget("SAVE_OPEN_PFILE")
         self.PFileName=WND.get_filename()
-        #URI=WND.get_uri()
-        #mInfo = MediaInfo(URI, FN, self.lastID)
-        #mInfo.run()
-        #Streams = None
-        #if((FN!="")and(FN!=None)):
-        #    Streams = GstFile(FN)
-        #    if Streams:
-        #        Streams.run()
-        #WND.hide()
-        #WND=self.windowStreams.get_widget("STREAM_WINDOW")
-        #WND.show()
-        #self.addMedia(mInfo.getMedia())
         WND.hide()
         PXML=ProjectXML()
         PXML.load(self.PFileName)
