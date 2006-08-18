@@ -112,12 +112,15 @@ class Souffleur:
         self.PFileName=None
         self.windowMediaOpen=None
         self.windowStreams=gtk.glade.XML (self.gladefile,"STREAM_WINDOW")
-        dic = {"on_TOOL_ADD_STREAM_clicked": self.cb_addNewStream}
+        dic = {"on_TOOL_DEL_STREAM_clicked": self.cb_delStream,\
+                "on_TOOL_MOD_STREAM_clicked": self.cb_modStream,\
+                "on_TOOL_SAVE_STREAM_clicked": self.cb_saveStream,\
+                "on_TOOL_ADD_STREAM_clicked": self.cb_addNewStream}
         self.windowStreams.signal_autoconnect (dic)
         ### Setup LIST_STREAMS
         LIST = self.windowStreams.get_widget("LIST_STREAMS")
         if LIST:
-            self.streamsTreeStore = gtk.TreeStore(gobject.TYPE_STRING)
+            self.streamsTreeStore = gtk.TreeStore(gobject.TYPE_STRING, gobject.TYPE_UINT)
             LIST.set_model(self.streamsTreeStore)
             cell = gtk.CellRendererText()
             tvcolumn = gtk.TreeViewColumn('Streams', cell, text = 0)
@@ -158,6 +161,79 @@ class Souffleur:
         self.playButton = self.wTree.get_widget("TOOL_PLAY")
         return
 #==============================================================================
+    def getSubtitle(self, source):
+        for i in self.Subtitles:
+            if i.subSource==source:
+                return i
+        return None
+#==============================================================================
+    def cb_saveStream(self, widget):
+        if not self.windowStreams:
+            return
+        if not self.streamsTreeStore:
+            return
+        TView = self.windowStreams.get_widget("LIST_STREAMS")
+        TSelec = TView.get_selection()
+        TModel, TIter = TSelec.get_selected()
+        if not TIter:
+            return
+        N=TModel.get_value(TIter, 1)
+        mInfo = self.media[N]
+        if "subtitle" in mInfo.MIME:
+            tSubtitle = self.getSubtitle(mInfo.Streams[0].ID)
+            tSubtitle.subSave(mInfo.source, 1)
+#==============================================================================
+    def cb_modStream(self, widget):
+        if not self.windowStreams:
+            return
+        if not self.streamsTreeStore:
+            return
+        TView = self.windowStreams.get_widget("LIST_STREAMS")
+        TSelec = TView.get_selection()
+        TModel, TIter = TSelec.get_selected()
+        if not TIter:
+            return
+        N=TModel.get_value(TIter, 1)
+        mInfo = self.media[N]
+        if "subtitle" in mInfo.MIME:
+            self.setSubtitle(mInfo.Streams[0].ID)
+#==============================================================================
+    def setSubtitle(self, source):
+        for i in self.Subtitles:
+            if i.subSource==source:
+                self.Subtitle=i
+                break
+        if self.Subtitle:
+            if (self.windowStreams):
+                WND=self.windowSubsList.get_widget("SUBS_LIST")
+                WND.show()
+            self.subsWindowUpdate()
+#==============================================================================
+    def updateStreamWindow(self):
+        if not self.streamsTreeStore:
+            return
+        self.streamsTreeStore.clear()
+        for mInfo in self.media:
+            iter = self.streamsTreeStore.append(None)
+            self.streamsTreeStore.set(iter, 0, mInfo.MIME + " ("+mInfo.source+")", 1, self.media.index(mInfo))
+            for i in mInfo.Streams:
+                child = self.streamsTreeStore.append(iter)
+                self.streamsTreeStore.set(child, 0, i.MIME + " ("+i.Name+")", 1, self.media.index(mInfo))
+#==============================================================================
+    def cb_delStream(self, widget):
+        if not self.windowStreams:
+            return
+        if not self.streamsTreeStore:
+            return
+        TView = self.windowStreams.get_widget("LIST_STREAMS")
+        TSelec = TView.get_selection()
+        TModel, TIter = TSelec.get_selected()
+        if not TIter:
+            return
+        N=TModel.get_value(TIter, 1)
+        del self.media[N]
+        self.updateStreamWindow()
+#==============================================================================
     def cb_openMediaCancel(self, widget):
         if self.windowMediaOpen:
             WND=self.windowMediaOpen.get_widget("OPEN_MEDIA")
@@ -168,10 +244,10 @@ class Souffleur:
         FN=WND.get_filename()
         URI=WND.get_uri()
         WND.hide()
-        print FN, URI
         MI = MediaInfo(URI, FN, self.lastID)
         MI.run()
         tMedia = MI.getMedia()
+        MI=None
         self.addMedia(tMedia)
 #==============================================================================
     def cb_addNewStream(self, widget):
@@ -237,14 +313,16 @@ class Souffleur:
                         self.play_toggled()
 #==============================================================================
     def subsWindowUpdate(self):
-        if (self.windowSubsList):
+        if not self.Subtitle:
+            return
+        if self.windowSubsList:
             self.subsListStore.clear()
             for i in self.Subtitle.subKeys:
                 S=self.Subtitle.subs[i]
                 iter = self.subsListStore.append(None)
-                self.subsListStore.set(iter, 0, S.start_time,
-                                            1, S.end_time,
-                                            2, S.text)
+                self.subsListStore.set(iter, 0, int(S.start_time),
+                                            1, int(S.end_time),
+                                            2, str(S.text))
 #==============================================================================
     def saveProject(self):
         if not self.PFileName:
@@ -320,6 +398,9 @@ class Souffleur:
                     self.Subtitle.subs[int(self.curSub)].start_time=newTime
                     self.Subtitle.subUpdate(int(self.curSub))
                     self.curSub = newTime
+                #for i in self.Subtitles:
+                #    if i.subSource == self.Subtitle.subSource:
+                #        self.Subtitles[self.Subtitles.index(i)]=self.Subtitle
                 self.subsWindowUpdate()
             else:
                 self.subAdd()
@@ -411,13 +492,9 @@ class Souffleur:
         PXML.load(self.PFileName)
         for i in PXML.getMedia():
             self.addMedia(i)
+        self.Subtitles=[]
         for i in PXML.getSubtitle():
             self.Subtitles.append(i)
-        if len(self.Subtitles)>0:
-            if (self.windowStreams):
-                WND=self.windowSubsList.get_widget("SUBS_LIST")
-                WND.show()
-                self.subsWindowUpdate()
         if len(self.media)>0:
             WND=self.windowStreams.get_widget("STREAM_WINDOW")
             WND.show()
@@ -426,22 +503,14 @@ class Souffleur:
     def addMedia(self, mInfo):
         if not mInfo:
             return
+        N=len(self.media)
         self.media.append(mInfo)
         self.lastID = mInfo.lastID
-        iter = self.streamsTreeStore.append(None)
-        self.streamsTreeStore.set(iter, 0, mInfo.MIME + " ("+mInfo.source+")")
-        for i in mInfo.Streams:
-            child = self.streamsTreeStore.append(iter)
-            self.streamsTreeStore.set(child, 0, i.MIME + " ("+i.Name+")")
+        self.updateStreamWindow()
         if "subtitle" in mInfo.MIME:
-            self.Subtitle = Subtitles()
-            self.Subtitle.subLoad(mInfo.source, mInfo.Streams[0].ID)
-            self.Subtitles.append(self.Subtitle)
-            if (self.windowStreams):
-                WND=self.windowSubsList.get_widget("SUBS_LIST")
-                WND.show()
-                self.subsWindowUpdate()
-                
+            tSubtitle = Subtitles()
+            tSubtitle.subLoad(mInfo.source, mInfo.Streams[0].ID)
+            self.Subtitles.append(tSubtitle)
         else:
             self.videoWidgetGst=VideoWidget(self.videoWidget)
             self.player=GstPlayer(self.videoWidgetGst)

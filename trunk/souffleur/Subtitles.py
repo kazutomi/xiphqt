@@ -37,23 +37,23 @@ class Subtitles:
 
         self.subSource=ID
 #==============================================================================    
-    def subSave(self, format):
+    def subSave(self, FN, format):
         if (self.subSource!=None):
-            FUN=os.open(self.subSource,os.O_WRONLY|os.O_CREAT|os.O_TRUNC)
+            FUN=os.open(FN,os.O_WRONLY|os.O_CREAT|os.O_TRUNC)
             N=1
             for i in self.subKeys:
                 SUB = self.subs[int(i)]
-                Text=str(N)+"\n"
+                Text=str(N)+"\r\n"
                 Hour, Min, Sec, MSec = self._subTime2SRTtime(SUB.start_time)
                 #Text+=str(Hour)+":"+str(Min)+":"+str(Sec)+","+str(MSec)
                 Text+="%02d:%02d:%02d,%03d"%(Hour, Min, Sec, MSec)
                 Text+=" --> "
                 Hour, Min, Sec, MSec = self._subTime2SRTtime(SUB.end_time)
                 #Text+=str(Hour)+":"+str(Min)+":"+str(Sec)+","+str(MSec)+"\n"
-                Text+="%02d:%02d:%02d,%03d"%(Hour, Min, Sec, MSec)+"\n"
-                Text+=SUB.text+"\n"
-                if (SUB.text[-1]!='\n'):
-                    Text+="\n"
+                Text+="%02d:%02d:%02d,%03d"%(Hour, Min, Sec, MSec)+"\r\n"
+                Text+=SUB.text+"\r\n"
+                if (SUB.text[-2]!="\r\n"):
+                    Text+="\r\n"
                 os.write(FUN, Text)
                 N+=1
             os.close(FUN)
