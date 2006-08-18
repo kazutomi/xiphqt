@@ -194,17 +194,17 @@ class ProjectXML:
                 tSubtitles=Subtitles()
                 for j in i.childNodes:
                     if j.nodeName=="source":
-                        tSubtitles.ID=j.childNodes[0].nodeValue
+                        tSubtitles.subSource=j.childNodes[0].nodeValue
                     elif j.nodeName=="sub":
                         tSub=Sub()
                         for k in j.childNodes:
                             nodeName = k.nodeName
                             if nodeName == "start":
-                                tSub.start_time=k.childNodes[0].nodeValue
+                                tSub.start_time=int(k.childNodes[0].nodeValue)
                             elif nodeName == "end":
-                                tSub.end_time=k.childNodes[0].nodeValue
+                                tSub.end_time=int(k.childNodes[0].nodeValue)
                             elif nodeName == "text":
-                                tSub.text=k.childNodes[0].nodeValue
+                                tSub.text=str(k.childNodes[0].nodeValue)
                         tSubtitles.subs[tSub.start_time]=tSub
                         tSubtitles.updateKeys()
                 ret.append(tSubtitles)

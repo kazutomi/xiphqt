@@ -412,7 +412,7 @@ class DefaultBin(gst.Bin):
         self.demux = gst.element_factory_make('decodebin')
         self.mux = gst.element_factory_make('oggmux')
 
-        self.add(self.demux, self.mux)
+        self.add(self.demux) #, self.mux)
 
         self.add_pad(gst.GhostPad('sink', self.demux.get_pad('sink')))
         self.add_pad(gst.GhostPad('src', self.mux.get_pad('src')))
