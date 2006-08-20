@@ -104,6 +104,10 @@ class Souffleur:
             "on_main_file_save_activate": self.cb_onSaveMenu,\
             "on_main_file_save_as_activate": self.cb_onSaveAsMenu,\
             "on_main_file_new_activate": self.cb_onNewMenu,\
+            "on_TOOL_FIRST_clicked": self.cb_onToolFirst,\
+            "on_TOOL_LAST_clicked": self.cb_onToolLast,\
+            "on_MAIN_VIEW_STREAMS_activate": self.cb_onStreamsWindow,\
+            "on_MAIN_VIEW_SUBTITLES_activate": self.cb_onSubtitleWindow,\
             "on_LIST_SUBS_cursor_changed": self.cb_onSubsListSelect}
         self.wTree.signal_autoconnect (dic)
         
@@ -115,7 +119,8 @@ class Souffleur:
         dic = {"on_TOOL_DEL_STREAM_clicked": self.cb_delStream,\
                 "on_TOOL_MOD_STREAM_clicked": self.cb_modStream,\
                 "on_TOOL_SAVE_STREAM_clicked": self.cb_saveStream,\
-                "on_TOOL_ADD_STREAM_clicked": self.cb_addNewStream}
+                "on_TOOL_ADD_STREAM_clicked": self.cb_addNewStream,\
+                "on_STREAM_WINDOW_delete_event": self.cb_StreamWindowDelete}
         self.windowStreams.signal_autoconnect (dic)
         ### Setup LIST_STREAMS
         LIST = self.windowStreams.get_widget("LIST_STREAMS")
@@ -127,7 +132,8 @@ class Souffleur:
             LIST.append_column(tvcolumn)
         
         self.windowSubsList=gtk.glade.XML (self.gladefile,"SUBS_LIST")
-        dic = {"on_LIST_SUBS_cursor_changed": self.cb_onSubsListSelect}
+        dic = {"on_LIST_SUBS_cursor_changed": self.cb_onSubsListSelect,\
+                "on_SUBS_LIST_delete_event": self.cb_onSubsWindowDelete}
         self.windowSubsList.signal_autoconnect (dic)
         SUBLIST = self.windowSubsList.get_widget("LIST_SUBS")
         if SUBLIST:
@@ -160,6 +166,36 @@ class Souffleur:
         self.subEndTime = self.wTree.get_widget("SUB_END_TIME")
         self.playButton = self.wTree.get_widget("TOOL_PLAY")
         return
+#==============================================================================
+    def cb_onSubsWindowDelete(self, widget, event):
+        widget.hide()
+        return True
+#==============================================================================
+    def cb_StreamWindowDelete(self, widget, event):
+        widget.hide()
+        return True
+#==============================================================================
+    def cb_onSubtitleWindow(self, menu):
+        if self.windowSubsList:
+            WND=self.windowSubsList.get_widget("SUBS_LIST")
+            WND.show()
+#==============================================================================
+    def cb_onStreamsWindow(self, menu):
+        if self.windowStreams:
+            WND=self.windowStreams.get_widget("STREAM_WINDOW")
+            WND.show()
+#==============================================================================
+    def cb_onToolLast(self, widget):
+        if self.Subtitle:
+            time = self.Subtitle.subKeys[-1]
+            self.setEditSubtitle(self.Subtitle.getSub(time))
+            self.player.seek(time*1000000)
+#==============================================================================
+    def cb_onToolFirst(self, widget):
+        if self.Subtitle:
+            time = self.Subtitle.subKeys[0]
+            self.setEditSubtitle(self.Subtitle.getSub(time))
+            self.player.seek(time*1000000)
 #==============================================================================
     def getSubtitle(self, source):
         for i in self.Subtitles:
@@ -549,10 +585,11 @@ class Souffleur:
         Hour = tmSec/60
         if self.Subtitle:
             TText = self.Subtitle.getSub(MSec)
-            if TText:
-                self.setEditSubtitle(TText)
-            else:
-                self.setEditSubtitle(None)
+            if self.player.is_playing():
+                if TText:
+                    self.setEditSubtitle(TText)
+                else:
+                    self.setEditSubtitle(None)
         if (self.p_position != gst.CLOCK_TIME_NONE):# and (not self.scroll):
             value = self.p_position
             self.adjustment.set_value(value)
