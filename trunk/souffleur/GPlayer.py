@@ -108,6 +108,7 @@ class GstPlayer:
         
     def stop(self):
         self.player.set_state(gst.STATE_NULL)
+        self.playing = False
         gst.info("stopped player")
 
     def get_state(self, timeout=1):

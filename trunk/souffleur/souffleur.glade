@@ -97,6 +97,37 @@
 	  </child>
 
 	  <child>
+	    <widget class="GtkMenuItem" id="MAIN_VIEW">
+	      <property name="visible">True</property>
+	      <property name="label" translatable="yes">_VIew</property>
+	      <property name="use_underline">True</property>
+
+	      <child>
+		<widget class="GtkMenu" id="MAIN_VIEW_menu">
+
+		  <child>
+		    <widget class="GtkMenuItem" id="MAIN_VIEW_STREAMS">
+		      <property name="visible">True</property>
+		      <property name="label" translatable="yes">_Streams window</property>
+		      <property name="use_underline">True</property>
+		      <signal name="activate" handler="on_MAIN_VIEW_STREAMS_activate" last_modification_time="Sun, 20 Aug 2006 17:44:48 GMT"/>
+		    </widget>
+		  </child>
+
+		  <child>
+		    <widget class="GtkMenuItem" id="MAIN_VIEW_SUBTITLES">
+		      <property name="visible">True</property>
+		      <property name="label" translatable="yes">S_ubtitles window</property>
+		      <property name="use_underline">True</property>
+		      <signal name="activate" handler="on_MAIN_VIEW_SUBTITLES_activate" last_modification_time="Sun, 20 Aug 2006 17:44:48 GMT"/>
+		    </widget>
+		  </child>
+		</widget>
+	      </child>
+	    </widget>
+	  </child>
+
+	  <child>
 	    <widget class="GtkMenuItem" id="MAIN_HELP_MENU">
 	      <property name="visible">True</property>
 	      <property name="label" translatable="yes">_Help</property>
@@ -173,7 +204,6 @@
 
 		  <child>
 		    <widget class="GtkToolButton" id="TOOL_PREV">
-		      <property name="visible">True</property>
 		      <property name="stock_id">gtk-media-previous</property>
 		      <property name="visible_horizontal">True</property>
 		      <property name="visible_vertical">True</property>
@@ -187,7 +217,6 @@
 
 		  <child>
 		    <widget class="GtkToolButton" id="TOOL_NEXT">
-		      <property name="visible">True</property>
 		      <property name="label" translatable="yes"></property>
 		      <property name="use_underline">True</property>
 		      <property name="stock_id">gtk-media-next</property>
@@ -203,7 +232,6 @@
 
 		  <child>
 		    <widget class="GtkSeparatorToolItem" id="separatortoolitem1">
-		      <property name="visible">True</property>
 		      <property name="draw">True</property>
 		      <property name="visible_horizontal">True</property>
 		      <property name="visible_vertical">True</property>
@@ -266,6 +294,7 @@
 		      <property name="visible_horizontal">True</property>
 		      <property name="visible_vertical">True</property>
 		      <property name="is_important">False</property>
+		      <signal name="clicked" handler="on_TOOL_FIRST_clicked" last_modification_time="Sun, 20 Aug 2006 17:31:43 GMT"/>
 		    </widget>
 		    <packing>
 		      <property name="expand">False</property>
@@ -282,6 +311,7 @@
 		      <property name="visible_horizontal">True</property>
 		      <property name="visible_vertical">True</property>
 		      <property name="is_important">False</property>
+		      <signal name="clicked" handler="on_TOOL_LAST_clicked" last_modification_time="Sun, 20 Aug 2006 17:31:48 GMT"/>
 		    </widget>
 		    <packing>
 		      <property name="expand">False</property>
@@ -1150,7 +1180,7 @@
   <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
   <property name="focus_on_map">True</property>
   <property name="urgency_hint">False</property>
-  <signal name="destroy" handler="on_STREAM_WINDOW_destroy" last_modification_time="Sat, 03 Jun 2006 16:29:02 GMT"/>
+  <signal name="delete_event" handler="on_STREAM_WINDOW_delete_event" last_modification_time="Sun, 20 Aug 2006 17:53:42 GMT"/>
 
   <child>
     <widget class="GtkVBox" id="vbox3">
@@ -1283,6 +1313,7 @@
   <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
   <property name="focus_on_map">True</property>
   <property name="urgency_hint">False</property>
+  <signal name="delete_event" handler="on_SUBS_LIST_delete_event" last_modification_time="Sun, 20 Aug 2006 17:56:03 GMT"/>
 
   <child>
     <widget class="GtkVBox" id="vbox4">
@@ -1367,7 +1398,6 @@
 	      <property name="hover_selection">False</property>
 	      <property name="hover_expand">False</property>
 	      <signal name="cursor_changed" handler="on_LIST_SUBS_cursor_changed" last_modification_time="Wed, 02 Aug 2006 05:34:48 GMT"/>
-	      <signal name="move_cursor" handler="on_LIST_SUBS_move_cursor" last_modification_time="Wed, 02 Aug 2006 05:42:07 GMT"/>
 	    </widget>
 	  </child>
 	</widget>
