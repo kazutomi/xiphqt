@@ -15,8 +15,6 @@
 import pygtk
 pygtk.require('2.0')
 
-#import sys
-
 import gobject
 gobject.threads_init()
 
@@ -26,7 +24,16 @@ import gst
 import gst.interfaces
 import gtk
 
+## \file GPlayer.py
+# Documentation for GPlayer module of Souffleur project.
+# \todo Add better seeking.
+
+
+## GstPlayer class.
+# Class for playing media in GStreamer.
 class GstPlayer:
+    ## Construstor
+    # \param videowidget - VideoWidget class.
     def __init__(self, videowidget):
         self.playing = False
         self.player = gst.element_factory_make("playbin", "player")
@@ -38,33 +45,48 @@ class GstPlayer:
         bus.connect('sync-message::element', self.on_sync_message)
         bus.connect('message', self.on_message)
 
+    ## \var playing
+    # Bool variable, TRUE - if media is playing.
+    
+    ## \var player
+    # GStreamer playerbin element.
+    
+    ## \var videowidget
+    # GTK+ widget for video render.
+    
+#==============================================================================
     def on_sync_message(self, bus, message):
         if message.structure is None:
             return
         if message.structure.get_name() == 'prepare-xwindow-id':
             self.videowidget.set_sink(message.src)
             message.src.set_property('force-aspect-ratio', True)
-            
+
+#==============================================================================
     def on_message(self, bus, message):
         t = message.type
         if t == gst.MESSAGE_ERROR:
             err, debug = message.parse_error()
             print "Error: %s" % err, debug
-            #if self.on_eos:
-            #    self.on_eos()
             self.playing = False
         elif t == gst.MESSAGE_EOS:
-            #if self.on_eos:
-            #    self.on_eos()
             self.playing = False
 
+#==============================================================================
+    ## Set location.
+    # Set location of the source.
+    # \param location - URI of the source.
     def set_location(self, location):
         self.player.set_state(gst.STATE_NULL)
         self.player.set_property('uri', location)
 
+#==============================================================================
+    ## Get location.
+    # Get location of the source.
     def get_location(self):
         return self.player.get_property('uri')
 
+#==============================================================================
     def query_position(self):
         "Returns a (position, duration) tuple"
         try:
@@ -79,10 +101,11 @@ class GstPlayer:
 
         return (position, duration)
 
+#==============================================================================
+    ## Seek.
+    # Seek media.
+    # \param location - location to the seek.
     def seek(self, location):
-        """
-        @param location: time to seek to, in nanoseconds
-        """
         gst.debug("seeking to %r" % location)
         event = gst.event_new_seek(1.0, gst.FORMAT_TIME,
             gst.SEEK_FLAG_FLUSH,
@@ -96,32 +119,60 @@ class GstPlayer:
         else:
             gst.error("seek to %r failed" % location)
 
+#==============================================================================
+    ## Pause.
+    # Media pause.
     def pause(self):
         gst.info("pausing player")
         self.player.set_state(gst.STATE_PAUSED)
         self.playing = False
 
+#==============================================================================
+    ## Play.
+    # Media play.
     def play(self):
         gst.info("playing player")
         self.player.set_state(gst.STATE_PLAYING)
         self.playing = True
-        
+
+#==============================================================================
+    ## Stop
+    # Media stop.
     def stop(self):
         self.player.set_state(gst.STATE_NULL)
         self.playing = False
         gst.info("stopped player")
 
+#==============================================================================
+    ## Get state.
+    # Get current state of the media.
+    # \param timeout - time out of the operation.
+    # \raturn state of the media.
     def get_state(self, timeout=1):
         return self.player.get_state(timeout=timeout)
 
+#==============================================================================
+    ## Is playing
+    # \return TRUE if media is playing.
     def is_playing(self):
         return self.playing
 
+#==============================================================================
+## VideoWidget class.
+# VideoWidget class for render video stream on GTK+ widget.
 class VideoWidget:
+    ## Constructor.
+    # \param TArea - GTK+ drowing area widget.
     def __init__(self, TArea):
         self.Area=TArea
         self.imagesink = None
         self.Area.unset_flags(gtk.DOUBLE_BUFFERED)
+
+    ## \var Area
+    # GTK+ drowing area widget.
+    
+    ## \var imagesink
+    # Sink element for 
 
     def do_expose_event(self, event):
         if self.imagesink:
