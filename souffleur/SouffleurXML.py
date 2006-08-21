@@ -1,3 +1,7 @@
+## \file SouffleurXML.py
+# Documentation for subtitles module of Souffleur project.
+# \author Maxim Litvinov (aka DarakuTenshi) <otaky@ukr.net>
+
 import xml.dom.minidom
 
 from streams import Media
@@ -6,7 +10,10 @@ from streams import Stream
 from Subtitles import Sub
 from Subtitles import Subtitles
 
+## ProjectXML class.
+# Class for working whith XML formated project file.
 class ProjectXML:
+    ## Constructor
     def __init__(self):
         self.impl = xml.dom.minidom.getDOMImplementation()
         self.doc = self.impl.createDocument(None, "souffleur", None)
@@ -26,6 +33,29 @@ class ProjectXML:
         self.body = None
         self.version = 0
 
+    ## \var impl
+    # DOMImplementation for XML parsing.
+    
+    ## \var doc
+    # Document XML object.
+    
+    ## \var root
+    # Root element ("souffleur" section) in the object.
+    
+    ## \var head
+    # Object of the "head" section in the XML.
+    
+    ## \var body 
+    # Object of the "body" section in the XML.
+    
+    ## \var version
+    # Version of the pfoject file format.
+
+#==============================================================================
+    ## Load XML file.
+    # Load XML tree from the file.
+    # \param fileName - name of the XML project file.
+    # \return self object or None.
     def load(self, fileName):
         self.root = None
         self.head = None
@@ -44,11 +74,20 @@ class ProjectXML:
                 self.version = i.childNodes[0].nodeValue
         return self
 
+#==============================================================================
+    ## Write XML.
+    # Write XML data to the file.
+    # \param fileName - name of file to store data.
     def write(self, fileName):
         HDLR=file(fileName, "w")
         self.doc.writexml(HDLR)
         HDLR.close()
 
+#==============================================================================
+    ## Add variable head.
+    # Add some variable to the head section.
+    # \param attrName - name of the attribute.
+    # \param attrValue - value of the attribute.
     def addHeadInfo(self, attrName, attrValue):
         if not self.head:
             self.head=self.doc.createElement("head")
@@ -62,6 +101,10 @@ class ProjectXML:
         attrEl.appendChild(attrTxt)
         self.head.appendChild(attrEl)
 
+#==============================================================================
+    ## Add media.
+    # Add media info to the body section.
+    # \param media - Media class instance.
     def addMedia(self, media):
         if not media:
             return
@@ -112,7 +155,10 @@ class ProjectXML:
                 tmpEl.appendChild(tmpTxt)
                 attrs.appendChild(tmpEl)
 
-
+#==============================================================================
+    ## Add subtitles.
+    # Add subtitles to the body section.
+    # \param subtitle - Subtitles class instance.
     def addSubtitle(self, subtitle):
         if not subtitle:
             return
@@ -146,6 +192,10 @@ class ProjectXML:
             sub.appendChild(tmpEl)
             data.appendChild(sub)
 
+#==============================================================================
+    ##Get head
+    # Get list of the head section attributes.
+    # \return list of the attrName => attrValue
     def getHead(self):
         if not self.head:
             return None
@@ -154,6 +204,10 @@ class ProjectXML:
             ret[i.nodeName]=i.childNodes[0].nodeValue
         return ret
 
+#==============================================================================
+    ## Get media.
+    # Get media info from XML.
+    # \return List of the Media class.
     def getMedia(self):
         if not self.body:
             return None
@@ -185,6 +239,10 @@ class ProjectXML:
                 ret.append(tMedia)
         return ret
 
+#==============================================================================
+    ##Get subtitles.
+    # Get subtitles from XML project file.
+    # \raturn Array of the Subtitles.
     def getSubtitle(self):
         if not self.body:
             return None
