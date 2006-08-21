@@ -38,7 +38,7 @@
 <dd>A Flash application for playing music in web pages. Skinnable and slick.</dd>
 <dt><a href="http://plurn.com/app/Download">Spiffy</a> (Windows)</dt>
 <dd>A client application that downloads XSPF playlist content, effectively localizing the playlist. In an alpha state as of this writing (Jun 4, 2005), but potentially very useful when it grows up.</dd>
-	  <dt><a href="plext.blogspot.com">Plext</a> (Windows; Winamp)</dt>
+	  <dt><a href="http://plext.blogspot.com">Plext</a> (Windows; Winamp)</dt>
           <dd>Winamp plugin for advanced playlist functionality, including XSPF.  Notable for supporting recursive playlists.  (The author of this document uses this plugin often).</dd>
 
 
