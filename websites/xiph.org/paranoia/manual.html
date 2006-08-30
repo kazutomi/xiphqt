@@ -88,169 +88,210 @@ an appropriate manner."</strong><br><em>
 <hr>
 
 <p align=left>
-August 25, 1999
+August 29, 2006
 <p align=center>
 <!-- body or table of contents -->
 
-<img src=wait.gif><br><em>Apologies; this page is still under
-construction.  At the moment, this document contains only the
-cdparanoia 9.4 manpage.</em><p>
+<em>At the moment, this document contains only the
+cdparanoia 10pre0 manpage.</em><p>
 
-Japanese manpage available for <a
+Japanese manpage for cdparanoia 9.8 available for <a
 href="http://cvs.linux.or.jp/JM/manual/cdparanoia/release/man1/cdparanoia.1">download</a> or <a
 href="manualj.html">viewing as HTML</a>.
 
 <pre>
-<font face="courier" color="#000080">
 
-CDPARANOIA(1)                                       CDPARANOIA(1)
+CDPARANOIA(1)                                                    CDPARANOIA(1)
+
 
 
 NAME
-       cdparanoia  (Paranoia  release  III) - an audio CD reading
-       utility which includes extra data verification features
-
-DATE
-       version III release alpha 9 (03 Dec 1998)
+       cdparanoia  10.0  (Paranoia  release III) - an audio CD reading utility
+       which includes extra data verification features
 
 SYNOPSIS
        cdparanoia [options] span [outfile]
 
 DESCRIPTION
-       cdparanoia retrieves audio tracks from CDDA capable  CDROM
-       drives.   The  data  can be saved to a file or directed to
-       standard output in WAV, AIFF, AIFF-C or raw format.   Most
-       ATAPI,  SCSI and several proprietary CDROM drive makes are
-       supported; cdparanoia can determine if the target drive is
-       CDDA capable.
+       cdparanoia retrieves audio tracks from CDDA capable CDROM drives.   The
+       data  can  be  saved  to  a file or directed to standard output in WAV,
+       AIFF, AIFF-C or raw format.  Most ATAPI, SCSI and  several  proprietary
+       CDROM drive makes are supported; cdparanoia can determine if the target
+       drive is CDDA capable.
 
-       In  addition  to  simple  reading,  cdparanoia adds extra-
-       robust data verification, synchronization, error  handling
-       and scratch reconstruction capability.
+       In addition to simple reading, cdparanoia adds extra-robust data  veri-
+       fication,  synchronization,  error  handling and scratch reconstruction
+       capability.
 
 OPTIONS
        -v --verbose
-              Be absurdly verbose about the autosensing and read-
-              ing process. Good for setup and debugging.
+              Be absurdly verbose about the autosensing and  reading  process.
+              Good for setup and debugging.
+
 
        -q --quiet
-              Do not print any progress or error information dur-
-              ing the reading process.
+              Do  not print any progress or error information during the read-
+              ing process.
+
 
        -e --stderr-progress
-              Force output of progress information to stderr (for
-              wrapper scripts).
+              Force output of progress  information  to  stderr  (for  wrapper
+              scripts).
+
 
        -V --version
               Print the program version and quit.
 
+
        -Q --query
-              Perform CDROM drive autosense, query and print  the
-              CDROM table of contents, then quit.
+              Perform  CDROM  drive autosense, query and print the CDROM table
+              of contents, then quit.
+
 
        -s --search-for-drive
-              Forces a complete search for a cdrom drive, even if
-              the /dev/cdrom link exists.
+              Forces a  complete  search  for  a  cdrom  drive,  even  if  the
+              /dev/cdrom link exists.
+
 
        -h --help
-              Print a brief  synopsis  of  cdparanoia  usage  and
-              options.
+              Print a brief synopsis of cdparanoia usage and options.
+
 
        -p --output-raw
-              Output  headerless data as raw 16 bit PCM data with
-              interleaved samples in host byte order.   To  force
-              little  or  big  endian byte order, use -r or -R as
-              described below.
+              Output  headerless  data as raw 16 bit PCM data with interleaved
+              samples in host byte order.  To force little or big endian  byte
+              order, use -r or -R as described below.
+
 
        -r --output-raw-little-endian
-              Output headerless data as raw 16 bit PCM data  with
-              interleaved samples in LSB first byte order.
+              Output  headerless  data as raw 16 bit PCM data with interleaved
+              samples in LSB first byte order.
+
 
        -R --output-raw-big-endian
-              Output  headerless data as raw 16 bit PCM data with
-              interleaved samples in MSB first byte order.
+              Output headerless data as raw 16 bit PCM data  with  interleaved
+              samples in MSB first byte order.
+
 
        -w --output-wav
-              Output data in Micro$oft RIFF WAV format (note that
-              WAV data is always LSB first byte order).
+              Output  data in Microsoft RIFF WAV format (note that WAV data is
+              always LSB first byte order).
+
 
        -f --output-aiff
-              Output  data  in  Apple AIFF format (note that AIFC
-              data is always in MSB first byte order).
+              Output data in Apple AIFF format (note that AIFC data is  always
+              in MSB first byte order).
+
 
        -a --output-aifc
-              Output data in  uncompressed  Apple  AIFF-C  format
-              (note  that AIFF-C data is always in MSB first byte
-              order).
+              Output data in uncompressed Apple AIFF-C format (note that AIFF-
+              C data is always in MSB first byte order).
 
-       -i --output-info file
-              Output a log file containing  autosensing  informa-
-              tion,  events during the reading process, locations
-              of  fixups  and  detected  scratches,  and  general
-              statistics.
 
        -B --batch
-              Cdda2wav-style  batch  output flag; cdparanoia will
-              split the  output  into  multiple  files  at  track
-              boundaries.   Output  file names are prepended with
-              'track#.'
+
+              Cdda2wav-style batch output flag; cdparanoia will split the out-
+              put  into multiple files at track boundaries.  Output file names
+              are prepended with 'track#.'
+
 
        -c --force-cdrom-little-endian
-              Some CDROM drives misreport their endianness (or do
-              not   report   it   at  all);  it's  possible  that
-              cdparanoia will  guess  wrong.   Use  -c  to  force
-              cdparanoia  to  treat  the drive as a little endian
+              Some CDROM drives misreport their endianness (or do  not  report
+              it at all); it's possible that cdparanoia will guess wrong.  Use
+              -c to force cdparanoia to treat the drive  as  a  little  endian
               device.
 
+
        -C --force-cdrom-big-endian
-              As above but force cdparanoia to treat the drive as
-              a big endian device.
+              As above but force cdparanoia to treat the drive as a big endian
+              device.
 
-       -n --force-default-sectors n
-              Force the interface backend to do atomic reads of n
-              sectors per read.  This number can  be  misleading;
-              the kernel will often split read requests into mul-
-              tiple atomic reads (the automated Paranoia code  is
-              aware   of  this)  or  allow  reads  only  wihin  a
-              restricted size range.  This option  should  gener-
-              ally not be used.
 
-       -d --force-cdrom-device device
-              Force  the  interface  backend  to read from device
-              rather than  the  first  readable  CDROM  drive  it
-              finds.   This can be used to specify devices of any
-              valid interface type (ATAPI, SCSI or  proprietary).
+       -n --force-default-sectors _
+              Force the interface backend to do atomic reads of n sectors  per
+              read.   This  number  can  be  misleading; the kernel will often
+              split read requests into multiple atomic  reads  (the  automated
+              Paranoia  code  is  aware  of  this) or allow reads only wihin a
+              restricted size range.  This  option  should  generally  not  be
+              used.
 
-       -g --force-generic-device device
-              This  option  is  used along with -d when one wants
-              explicit control in setting both the SCSI cdrom and
-              generic  devices  seperately.  This  option is only
-              useful on non-standard SCSI setups.
+
+       -d --force-cdrom-device ______
+              Force  the interface backend to read from device rather than the
+              first readable CDROM drive it finds.  This can be used to  spec-
+              ify  devices of any valid interface type (ATAPI, SCSI or propri-
+              etary).
+
+
+       -g --force-generic-device ______
+              This option forces use of the old  'generic  scsi'  (sg)  kernel
+              interface  with  the  specified  generic scsi device.  -g may be
+              used with -d to explicitly set both the SCSI cdrom  and  generic
+              (sg) devices seperately. This option is only useful on non-stan-
+              dard SCSI setups and when using the generic scsi (sg) driver.
+
+
+       -S --force-read-speed ______
+              Use this option explicitly to set the read rate of the CD  drive
+              (where  supported).   This can reduce underruns on machines with
+              slow disks, or which are low on memory.
+
+
+       -t --toc-offset ______
+              Use this option to force the entire disc LBA addressing to shift
+              by the given amount; the value is added to the beginning offsets
+              in the TOC.  This can be used to shift track boundaries for  the
+              whole disc manually on sector granularity.  The next option does
+              something similar...
+
+
+       -T --toc-bias
+              Some drives (usually random Toshibas) report  the  actual  track
+              beginning offset values in the TOC, but then treat the beginning
+              of track 1 index 1 as sector 0 for all  read  operations.   This
+              results  in  every track seeming to start too late (losing a bit
+              of the beginning and catching a bit  of  the  next  track).   -T
+              accounts  for  this  behavior.  Note that this option will cause
+              cdparanoia to attempt to read sectors before or past  the  known
+              user  data  area  of  the disc, resulting in read errors at disc
+              edges on most drives and possibly  even  hard  lockups  on  some
+              buggy hardware.
+
+
+       -O --sample-offset ______
+              Use  this  option to force the entire disc to shift sample posi-
+              tion output by the given amount; This can be used to shift track
+              boundaries  for  the  whole disc manually on sample granularity.
+              Note that this will cause cdparanoia to attempt to read  partial
+              sectors  before  or  past  the known user data area of the disc,
+              probably causing read errors on most drives  and  possibly  even
+              hard lockups on some buggy hardware.
+
+
 
        -Z --disable-paranoia
-              Disable data verification and correction  features.
-              When  using  -Z,  cdparanoia  reads data exactly as
-              would cdda2wav with an  overlap  setting  of  zero.
-              This  option implies that and -Y are active, but is
-              not equivalent to -Z -W -X -Y as the -W through  -Z
-              options  specify  layered  levels  of verification.
-              The last specified option takes precedence.
+              Disable  all  data  verification  and correction features.  When
+              using -Z, cdparanoia reads data exactly as would  cdda2wav  with
+              an  overlap  setting  of  zero.   This option implies that -Y is
+              active.
+
+
+       -z --never-skip[=max_retries]
+              Do not accept any skips; retry forever if needed.   An  optional
+              maximum  number  of  retries  can  be specified; for comparison,
+              default without -z is currently 20.
+
 
        -Y --disable-extra-paranoia
-              Disables intra-read data verification; only overlap
-              checking at read boundaries is performed.
+              Disables intra-read data verification; only overlap checking  at
+              read  boundaries  is  performed. It can wedge if errors occur in
+              the attempted overlap area. Not recommended.
 
-       -X --disable-scratch-detection
-              Neither look for scratches nor perform scratch-tol-
-              erant synchronization during verification. With  -X
-              specified,  a  scratched disc will cause cdparanoia
-              to abort its read.
 
-       -W --disable-scratch-repair
-              Detect and hold sync across scratches, but  do  not
-              attempt  any  repair  of  damaged data.  If an info
-              file is in use (-i) log the frame positions of  all
-              scratches.
+       -X --abort-on-skip
+              If the read skips due to imperfect data,  a  scratch,  whatever,
+              abort  reading  this  track.  If output is to a file, delete the
+              partially completed file.
 
 
 OUTPUT SMILIES
@@ -260,11 +301,10 @@ OUTPUT SMILIES
 
          :-/  Read drift
 
-         :-P  Unreported  loss of streaming in atomic read opera-
-              tion
+         :-P  Unreported loss of streaming in atomic read operation
 
-         8-|  Finding read problems at same point during  reread;
-              hard to correct
+         8-|  Finding read problems at same point during reread; hard to  cor-
+              rect
 
          :-0  SCSI/ATAPI transport error
 
@@ -272,20 +312,21 @@ OUTPUT SMILIES
 
          ;-(  Gave up trying to perform a correction
 
+         8-X  Aborted read due to known, uncorrectable error
+
          :^D  Finished extracting
 
 
 PROGRESS BAR SYMBOLS
-       <space>
-              No corrections needed
+         ' '  No corrections needed
 
           -   Jitter correction required
 
           +   Unreported loss of streaming/other error in read
 
-          !   Errors found after stage 1 correction; the drive is
-              making the same error  through  multiple  re-reads,
-              and cdparanoia is having trouble detecting them.
+          !   Errors  found  after stage 1 correction; the drive is making the
+              same error through multiple re-reads, and cdparanoia  is  having
+              trouble detecting them.
 
           e   SCSI/ATAPI transport error (corrected)
 
@@ -293,105 +334,97 @@ PROGRESS BAR SYMBOLS
 
 
 SPAN ARGUMENT
-       The span argument specifies which track, tracks or subsec-
-       tions of tracks  to  read.   This  argument  is  required.
-       NOTE: Unless the span is a simple number, it's generally a
-       good idea to quote the span argument to  protect  it  from
-       the shell.
+       The  span  argument  specifies  which  track,  tracks or subsections of
+       tracks to read.  This argument is required.  NOTE: Unless the span is a
+       simple number, it's generally a good idea to quote the span argument to
+       protect it from the shell.
 
-       The  span  argument  may  be  a  simple track number or an
-       offset/span specification.  The syntax of  an  offset/span
-       takes the rough form:
+       The span argument may be a simple track number or an offset/span speci-
+       fication.  The syntax of an offset/span takes the rough form:
 
        1[ww:xx:yy.zz]-2[aa:bb:cc.dd]
 
-       Here,  1  and 2 are track numbers; the numbers in brackets
-       provide a finer grained offset within a particular  track.
-       [aa:bb:cc.dd]  is in hours/minutes/seconds/sectors format.
-       Zero fields need not be specified:  [::20],  [:20],  [20],
-       [20.],  etc, would be interpreted as twenty seconds, [10:]
-       would be ten minutes, [.30] would be  thirty  sectors  (75
+       Here,  1  and  2  are  track numbers; the numbers in brackets provide a
+       finer grained offset within a particular  track.  [aa:bb:cc.dd]  is  in
+       hours/minutes/seconds/sectors  format.  Zero  fields need not be speci-
+       fied: [::20], [:20], [20], [20.], etc, would be interpreted  as  twenty
+       seconds,  [10:] would be ten minutes, [.30] would be thirty sectors (75
        sectors per second).
 
-       When  only  a single offset is supplied, it is interpreted
-       as a starting offset and ripping will continue to the  end
-       of  he track.  If a single offset is preceeded or followed
-       by a hyphen, the implicit missing offset is  taken  to  be
-       the start or end of the disc, respectively. Thus:
+       When only a single offset is supplied, it is interpreted as a  starting
+       offset  and ripping will continue to the end of the track.  If a single
+       offset is preceeded or followed by a hyphen, the implicit missing  off-
+       set is taken to be the start or end of the disc, respectively. Thus:
 
 
        1:[20.35]
-              Specifies  ripping  from track 1, second 20, sector
-              35 to the end of track 1.
+              Specifies  ripping from track 1, second 20, sector 35 to the end
+              of track 1.
 
        1:[20.35]-
-              Specifies ripping from 1[20.35] to the end  of  the
-              disc
+              Specifies ripping from 1[20.35] to the end of the disc
 
-       -2     Specifies ripping from the beginning of the disc up
-              to (and including) track 2
+       -2     Specifies ripping from the beginning of  the  disc  up  to  (and
+              including) track 2
 
        -2:[30.35]
-              Specifies ripping from the beginning of the disc up
-              to 2:[30.35]
+              Specifies ripping from the beginning of the disc up to 2:[30.35]
 
-       2-4    Specifies  ripping  from the beginning of track two
-              to the end of track 4.
+       2-4    Specifies ripping from the beginning of track 2 to  the  end  of
+              track 4.
 
-       Again, don't forget to protect square  brackets  and  pre-
-       ceeding hyphens from the shell.
+       Again,  don't  forget to protect square brackets and preceeding hyphens
+       from the shell.
 
 
 EXAMPLES
        A few examples, protected from the shell:
 
-       Query  only with exhaustive search for a drive and full
-              reporting of autosense:
+       Query only with exhaustive search for a drive  and  full  reporting  of
+       autosense:
 
               cdparanoia -vsQ
 
-       Extract an entire disc, putting each track in a seperate
-              file:
+       Extract an entire disc, putting each track in a seperate file:
 
-              cdparanoia -B "1-"
+              cdparanoia -B
 
        Extract from track 1, time 0:30.12 to 1:10.00:
 
               cdparanoia "1[:30.12]-1[1:10]"
 
-       Extract one minute from track 1, starting at time 0:30.12:
+       Extract from the beginning of the disc up to track 3:
 
-              cdparanoia "1[:30.12]-[1:00]"
+              cdparanoia -- "-3"
 
+       The "--" above is to distinguish "-3" from an option flag.
 
 OUTPUT
-       The  output file argument is optional; if it is not speci-
-       fied, cdparanoia will output samples to one  of  cdda.wav,
-       cdda.aifc,  or cdda.raw depending on whether -w, -a, -r or
-       -R is used (-w is the implicit default).  The output  file
-       argument  of - specifies standard output; all data formats
-       may be piped.
+       The output file argument is optional; if it is not  specified,  cdpara-
+       noia  will  output  samples  to one of cdda.wav, cdda.aifc, or cdda.raw
+       depending on whether -w, -a, -r or -R  is  used  (-w  is  the  implicit
+       default).  The output file argument of - specifies standard output; all
+       data formats may be piped.
 
 
 ACKNOWLEDGEMENTS
-       Cdparanoia sprang from and  once  drew  heavily  from  the
-       interface  of Heiko Eissfeldt's (heiko@colossus.escape.de)
-       'cdda2wav' package. Cdparanoia  would  not  have  happened
-       without it.
+       Cdparanoia sprang from and once drew  heavily  from  the  interface  of
+       Heiko   Eissfeldt's   (heiko@colossus.escape.de)   'cdda2wav'  package.
+       Cdparanoia would not have happened without it.
 
-       Joerg   Schilling  has  also  contributed  SCSI  expertise
-       through his generic SCSI transport library.
+       Joerg Schilling has also contributed SCSI expertise through his generic
+       SCSI transport library.
 
 
 AUTHOR
        Monty &lt;monty@xiph.org&gt;
 
-       Cdparanoia's homepage may be found at:
-
-       http://www.xiph.org/paranoia/index.html
+       Cdparanoia's homepage may be found at: http://www.xiph.org/paranoia/
 
 
-</font>
+
+                                  29 Aug 2006                    CDPARANOIA(1)
+
 </pre>
 
 
@@ -443,8 +476,8 @@ src=barbottom.gif border=0 width=132 height=18 alt=""></td>
 <td><img src=sidespacer1.gif width=10 alt=""></td>
 <td bgcolor="#2a2a2c" valign=bottom><img src=bottomB.gif alt=""></td>
 <td bgcolor="#2a2a2c" align=center valign=center width=100%>
-  <table border=0 cellpadding=0 cellspacing=5 width=100%><tr>
-    <td valign=center><a href="../index.html"><img src=black-xifish.gif 
+  <table border=0 cellpadding=0 cellspacing=0 width=100%><tr>
+    <td valign=center><a href="../index.html"><img src=black-xifish.png
     border=0></a></td>
     <td valign=center>
     <font face="Verdana, Arial, Helvetica" size=-2 color=#a0a0a0>

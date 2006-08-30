@@ -87,7 +87,7 @@ means."</strong><br>--Inigo Montoya, <em>The Princess Bride</em>
 <hr>
 
 <p align=left>
-December 14, 1999
+August 29, 2006
 <p align=left>
 <!-- body or table of contents -->
 
@@ -95,7 +95,15 @@ December 14, 1999
 This document describes common problems using cdparanoia.  Note that
 "troubleshooting" addresses examples of system setup or 'pilot error'.
 Bugs in Paranoia are documented elsewhere (on the <a
-href="bugs.html">bugs page</a>).
+href="bugs.html">bugs page</a>).<p>
+
+<em>A quick note:</em> Long ago, the only ways to read from a cdrom
+were to use one of two interfaces, the 'ATAPI cooked ioctl' interface
+or the 'generic scsi (SG)' interface.  The setup and usage of these
+interfaces could be very tricky for users, and much of theis FAQ deals
+with these now-dead methods.  If you're using cdparanoia 10 and a
+modern (2.6 or later) Linux kernel, chances are that nothing below
+about 'SG' or 'cooked ioctl()' interface applies to you.<p>
 
 <h1>Table of contents</h1>
 <ol>
@@ -166,19 +174,23 @@ Now your system knows about the shared libs.<p>
 <a name="gendev">
 <h2>Cdparanoia says "could not find generic device to match SCSI cdrom device"</h2>
 
+[this error happens only when using the SG interface; modern kernels
+offer a newer SG_IO interface which is preferred by cdparanoia]
+
 This error means exactly what it says; the generic SCSI devices are
 missing, unusable or have permissions set to deny access by users.
 First, a bit of explanation...<p>
 
-Cdparanoia doesn't actually use the 'normal' SCSI cdrom device,
-typically /dev/scd* or /dev/sr*; it uses (and requires) a generic SCSI
-device (typically /dev/sg*) to access a drive's audio extraction
-features.  Cdparanoia does accept the CDROM device name because users
-are used to this device specifying a cdrom drive, but only uses the
-CDROM device name to map to a matching generic SCSI device.<p>
+When using the old 'sg' (scsi generic) interface, cdparanoia doesn't
+actually use the 'normal' SCSI cdrom device, typically /dev/scd* or
+/dev/sr*; it uses (and requires) a generic SCSI device (typically
+/dev/sg*) to access a drive's audio extraction features.  Cdparanoia
+does accept the CDROM device name because users are used to this
+device specifying a cdrom drive, but only uses the CDROM device name
+to map to a matching generic SCSI device.<p>
 
 If cdparanoia can't get to a working set of generic devices, it can't
-use a SCSI drive.  Before sending mail, check that:
+use a SCSI drive with the sg interface.  Before sending mail, check that:
 
 <ol>
 <li>The kernel has generic SCSI support compiled in (or the generic
@@ -202,11 +214,9 @@ matching the cdrom).<p>
 
 Make sure you're using a WAV player that can play CD quality data.  So
 far, every case of a 'garbage' .WAV file has been due to a bad player.
-Note particularly that the 'play' utility packaged with RedHat is
-incapable of playing CD quality WAV files.<p>
+Note particularly that the 'play' utility packaged with old RedHat
+distros is incapable of playing CD quality WAV files.<p>
 
-Splay, aplay and Ogg (at the very least) can play CD quality audio correctly.<p>
- 
 <hr>
 <a name=underrun>
 <h2>(Linux) My ATAPI drive is *very* slow and /var/log/messages contains 
@@ -217,19 +227,26 @@ drive is returning too little data for a given request.  The ATAPI
 driver, then tries to repeat the request (and likely gets the same
 error again).<p>
 
-The solution (aside from fixing Linux) is to use your ATAPI drive with
-<a href="#useemu">IDE-SCSI hotadapter emulation</a>.<p>
+This error is rare these days as modern (2.6) Linux kernels offer a
+new default interface named SG_IO for raw access of IDE CDROMs, and
+cdparanoia 10 will use this interface by default.  If you're stuck
+using an older version of linux without SG_IO (or an older versionof
+cdparanoia), the solution is to use your ATAPI drive with <a
+href="#useemu">IDE-SCSI hotadapter emulation</a>.<p>
 
 <hr>
 <a name=eightsec>
 <h2>My ATAPI performance is slow; cdparanoia is slower on my ATAPI drive than cdda2wav.</h2>
 
-The Linux ATAPI ioctl()-based kernel drivel only reads 8 sectors from
-an audio CD at a time.  If you tell it to read more than eight, it
-will divide the request up into 8-sector chunks.  Alignment and jitter
-errors are most likely to happen on those boundaries.  Cdparanois is
-aware of this, and thus only requests 8 sectors at a time when using
-the ATAPI interface.<p>
+Again, this problem is rare on 2.6 with the new SG_IO interface for ATAPI cdrom drives.
+
+On older kernels or with older versions of cdparanoia that are using
+the 'cooked ioctl()' kernel interface, the kernel only reads 8 sectors
+from an audio CD at a time.  If you tell it to read more than eight,
+it will divide the request up into 8-sector chunks.  Alignment and
+jitter errors are most likely to happen on those boundaries.
+Cdparanoia is aware of this, and thus only requests 8 sectors at a
+time when using the cooked ioctl() interface.<p>
 
 The kernel overhead involved in each request is farily high, so this
 is inefficient; however, the goal is to be correct, not fast.
@@ -237,21 +254,23 @@ cdparanoia is slower on ATAPI drives than, for example, cdda2wav
 because it's being more careful (cdda2wav makes larger requests and
 doesn't track boundaries).<p>
 
-If you're concerned about performance, use the SG driver and <a
+If you're concerned about performance and are stuck using an old
+kernel or old cdparanoia, use the SG driver and <a
 name=underrun>IDE-SCSI hostadapter emulation</a>.  SG is superior to
 the ATAPI interface for several additional reasons.. However, if you
 absolutely *must* use the ATAPI interface, the following
 kernel/cdparanoia mods will help you out.<p>
 
-<ol>
+<ul>
 <li>
 In linux/drivers/block/ide-cdrom.h, increase the value of
 CDROM_NBLOCKS_BUFFER from 8 to a larger value (eg, 16).  Rebuild the
-kernel.  <li>In cdparanoia/interface/cooked_interface.c, change the
-value of d->nsectors on line 205 to the same value you used int he
+kernel.  
+<li>
+In cdparanoia/interface/cooked_interface.c, change the
+value of d->nsectors on line 205 to the same value you used in the
 kernel.
 </ul>
-
 
 
 <p>
@@ -261,7 +280,7 @@ kernel.
 and CPU usage is 100%</h2>
 
 Most likely, your using a drive that suffers from fragmentation with
-an older version of cdparanoia.  Upgrade to the latest release.<p>
+an older version of cdparanoia.  Upgrade to a recent release.<p>
 
 <hr>
 <a name=repslow>
@@ -343,11 +362,12 @@ Most likely, the session ended just before the TOC said it would, or
 the drive's positioning isn't exactly correct and it's managing to
 read a bit too far.<p>
 
-The problem would not be serious except that the Linux ATAPI driver
-then tells the drive to retry.... and gets the same error which
-triggers a retry, etc.  In this case, the solution, as above, is to
-use the drive with IDE-SCSI hostadapter emulation.  The errors will
-become harmless.<p>
+The problem would not be serious except that the Linux cooked-ioctl
+kernel interface (used by older kernels and older versions of
+cdparanoia) automatically tells the drive to retry.... and gets the
+same error which triggers a retry, etc.  In this case, the solution,
+as above, is to use the drive with IDE-SCSI hostadapter emulation.
+The errors will become harmless.<p>
 
 Also, discs with sectors in the gaps between tracks marked as non-audio
 are becoming more common.  Some cdrom drives complain about it.  Is
@@ -362,10 +382,13 @@ with the -v option; this will show every place that cdparanoia is
 looking for the drive and the result of searching in each place.
 Chances are the problem is one of two things:<p>
 
-<ul><li>Permission denied: a CDROM device must be readable, and a
-generic SCSI device must be readable and writable by the user for
-cdparanoia to work.  <li>No such file or device: Support for the CDROM
-(or generic SCSI if a SCSI drive) is not built into the kernel.</ul><p>
+<ul><li>Permission denied: CDROM devices must be readable and writable
+by the user for cdparanoia to work (write access is required to send
+commands to the drive).  When using the older SG interface, the CDROM
+and generic scsi devices both must be accessible.  The newer SG_IO
+interface uses only the CDROM device.<li>No such file or device:
+Support for the CDROM (or generic SCSI if a drive is being used with
+SG) is not built into the kernel.</ul><p>
 
 <hr>
 <a name=longfind>
@@ -376,9 +399,12 @@ Make a symlink from /dev/cdrom (where cdparanoia checks first) to the
 real device name of the CDROM drive.  Things should become much faster.<p>
 <hr>
 <a name=bigbuff>
+
 <h2>(Linux) I get an error about not having SG_BIG_BUFF defined in my kernel</h2>
 
-This was a common problem in Linux distributions until recently.
+[This note does not apply to modern (2.6) kernels]<p>
+
+This was a common problem in Linux distributions until about 1999.
 Without the big buffer for generic SCSI reads, cdparanoia can only
 read a single sector from a SCSI cdrom at a time.  This is too small
 for cdparanoia to function.<p>
@@ -393,16 +419,20 @@ then rebuild and install the new kernel.<p>
 <a name=emu>
 <h2>(Linux) I'm trying to use an ATAPI drive with SCSI emulation (or a SCSI MMC drive), and I get a file full of zeroes (silence)!</h2>
 
-You are using an old version of cdparanoia that doesn;t know when a
+You are using an old version of cdparanoia that doesn't know when a
 packet command has been rejected (this is actually hard to do under
 Linux).  Use alpha 6 or later.
 <hr>
 <a name=unable>
 <h2>My ATAPI CDROM drive reports 'unable to read any data'!</h2>
 
+<em>The information below applies to older Linux kernels (2.4 and earlier)
+without the SG_IO interface, or older versions of cdparanoia (earlier
+than cdparanaoia 10) that could not use SG_IO.</em><p>
+
 Chances are that the drive is not capable of reading audio discs.  To
 be certain, try using the drive under Linux IDE-SCSI emulation rather
-than with the native ATAPI driver.  The emulation is more flexible,
+than with the cooked ioctl ATAPI driver.  The emulation is more flexible,
 and cdparanoia will be able to try more possible read techniques.<p>
 
 Note that a few Matsushita drives (and Panasonics which are made by
@@ -421,13 +451,18 @@ Follow the directions in the next section *exactly*.<p>
 <h2>(Linux) How do I use my ATAPI drive through IDE-SCSI hostadapter
 emulation?</h2>
 
-To use the SCSI emulation with an ATAPI cdrom, the kernel must be
-configured <strong>with</strong> SCSI support, generic SCSI device
-support and IDE-SCSI emulation, and <em>without</em> ATAPI (IDE) CDROM
-drive support.  If the kernel includes native ATAPI (IDE CDROM drive)
-support, then the kernel will always use it over the emulation
-interface.<p>
-<hr>
+First off, if you're using a recent (2.6) kernel, there's no reason to
+do so; the 2.6 kernel offers SG_IO, which can do everything the old
+IDE-SCSI emulation could.<p>
+
+If you're stuck with Linux older than 2.6 or a version of cdparanoia
+before cdparanoia 10, then IDE-SCSI hostadapter emulation is
+recommended for ATAPI drives.  To use the SCSI emulation with an
+ATAPI cdrom, the kernel must be configured <strong>with</strong> SCSI
+support, generic SCSI device support and IDE-SCSI emulation, and
+<em>without</em> ATAPI (IDE) CDROM drive support.  If the kernel
+includes cooked ioctl ATAPI (IDE CDROM drive) support, then the kernel
+will always use it over the emulation interface.<p> <hr>
 
 <a name=term>
 <h2>My SCSI drive is unable to read some tracks, occasionally locks
@@ -498,8 +533,8 @@ well on my system (100 MHz Cyrix 586 cpu & Panasonic CR563 drive).
 <td><img src=sidespacer1.gif width=10 alt=""></td>
 <td bgcolor="#2a2a2c" valign=bottom><img src=bottomB.gif alt=""></td>
 <td bgcolor="#2a2a2c" align=center valign=center width=100%>
-  <table border=0 cellpadding=0 cellspacing=5 width=100%><tr>
-    <td valign=center><a href="../index.html"><img src=black-xifish.gif 
+  <table border=0 cellpadding=0 cellspacing=0 width=100%><tr>
+    <td valign=center><a href="../index.html"><img src=black-xifish.png
     border=0></a></td>
     <td valign=center>
     <font face="Verdana, Arial, Helvetica" size=-2 color=#a0a0a0>

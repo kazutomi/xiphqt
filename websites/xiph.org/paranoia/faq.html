@@ -86,7 +86,7 @@ src=bug.gif border=0 width=132 height=18 alt="">
 <hr>
 
 <p align=left>
-August 25, 1999
+August 29, 2006
 <p align=left>
 <!-- body or table of contents -->
 
@@ -96,9 +96,6 @@ place to look for information and answers to your questions.
 <p>
 Questions about errors and problems with Paranoia/cdparanoia aren't
 here; look at the <a href="trouble.html">troubleshooting page</a>.<p>
-
-And yes, dammit, it's y2k compliant.  Now I don't want to hear any
-more about it.<p>
 
 <p>
 <h1>Table of Contents:</h1>
@@ -115,12 +112,11 @@ more about it.<p>
   <li><a href="#versions">What are the differences between Paranoia II, III and IV?</a>
   <li><a href="#maillist">Are there cdparanoia mailing lists for users or developers?</a>
   <li><a href="#devstatus">What is Paranoia IV's current development status?</a>
-  <li><a href="#merge">Will cdparanoia, and cdda2wav or xcdroast merge anytime in the future?</a>
   </ol>
 <li>Questions about using Paranoia and cdparanoia
   <ol>
-  <li><a href="#req">Requirements to run cdparanoia (as of alpha 3)</a>
-  <li><a href="#supp">Does Cdparanoia support ATAPI drives?  SCSI Emulation? Parallel port drives?</a>
+  <li><a href="#req">Requirements to run cdparanoia</a>
+  <li><a href="#supp">Does Cdparanoia support ATAPI drives?  SCSI Emulation? USB drives? Parallel port drives?</a>
   <li><a href="#play">I can play audio CDs perfectly; why is reading the CD into a file so difficult and prone to errors?</a>
   <li><a href="#analog">Does cdparanoia lose quality from the CD recording?</a>
   <li><a href="#toc">Can cdparanoia detect pregaps? Can it remove the two second gaps between tracks</a>
@@ -212,45 +208,45 @@ announced today, adds more error correcting abilities.<p>
 <a name=paranoia>
 <h2>What is Paranoia?</h2>
 
-Paranoia is a library project that provides a platform independent,
-unified, robust interface for packet-command based devices.  In the
-case of CDROM drives for example, handling and programming cdrom
-drives becomes identical whether on Solaris or Linux, or if the Linux
-drive is SCSI, ATAPI or on the parallel port.  In this way, Paranoia
-is similar to Joerg Schilling's SCG library.<p>
+Paranoia is a library that provides a unified, robust interface for
+Linux applications that want to use CDROM devices.<p>
 
-In addition to device/platform unification, the library provides tools
-for automatically identifying devices, and intelligent
+In addition to Linux device interface unification, the library
+provides tools for automatically identifying devices, and intelligent
 handling/correction of errors at all levels of the interface. On top
 of a generic low-level packet command layer, Paranoia implements
 high-level error-correcting interfaces for tasks such as CDDA where
 broken or vastly non-standard devices are the rule, rather than the
 exception.<p>
 
-The Paranoia libraries are incomplete; the first release for use will
-be Paranoia IV, to be bundled with cdparanoia alpha release 10.
-Programming documentation for Paranoia IV will appear shortly on the
-<a href="doc.html">documentation page</a> as <a
-href="prog.html">Programming with Paranoia IV</a>.  Programmers
-interested in contributing to Paranoia IV should read the heading <a
-href="#devstatus">Paranoia IV development information</a>.<p>
-
 <hr>
 <a name=portable>
 <h2>Is cdparanoia / Paranoia portable?</h2>
 
-Paranoia III is Linux only (although it runs on all the flavors of linux
+Paranoia is Linux only (although it runs on all the flavors of linux
 with a 2.0 or later kernel.  It is not only for x86).<p>
 
-Paranoia IV (cdparanoia alpha 10 and later) is a port to other UNIX
-flavors and uses a substantially revised infrastructure. NetBSD and
-Solaris will be first; others will be added as time and outside
-assistance allow.<p>
+In the past, there was effort to make this library as portable as
+possible across other OS platforms.  As time has worn on, I've come to
+realize that most cross-platform libraries that try to bring a
+completely uniform interface to a wide variety of very different
+OSes:<p>
 
-Suggestions on the proper way to handle each OS's native configuration
-idioms are welcome. I want Rhapsody cdparanoia to look just like other
-Rhapsody apps just as much as I want Linux cdparanoia to look like a
-Linux app.<p>
+<ol> 
+<li>fail to be all that uniform 
+<li>limit functionality to some subset of what any given platform can do
+<li>introduce additional lyers of bugs
+<li><em>just don't work very well</em>
+</ol>
+
+I'm a Linux user.  I'm a Linux developer.  As a user and developer, I
+don't really give a damn about other platforms.  I want my apps to be
+the best Linux apps they can be.  Full stop.<p>
+
+Should other developers like to participate on full-featured ports to
+other platforms, I'm all for full cooperation.  I'd like to see those
+ports take *full* advantage of the target platform, not turn into a
+halfbaked subset of the features that work on both.<p>
 
 <hr>
 <a name=history>
@@ -279,140 +275,72 @@ standard cdda2wav.  They were inefficient and only worked with some
 drives.<p>
 
 Paranoia III was the first version to be written seperately from
-cdda2wav in the form of a standalone library.  It was not terribly
+cdda2wav in the form of a standalone library.<p>  It was not terribly
 portable, however, and the API proved to be inadequate for extension.<p>
 
-Paranoia IV is the upcoming new generation of CDDA Paranoia.  It is
-both portable and more capable than Paranoia III.<p>
+Paranoia IV is an upcoming generation that intends to improve the
+library API as well as take advantage of new CDROM features that
+existed on only a few specialist drives five years ago, but are now
+ubiquitous even in inexpensive models.  Where Paranoia III
+concentrated on bulletproof extraction from good media and reliable
+extraction from damaged media, Paranoia IV will concentrate on the
+best possible extraction and correction from even heavily damaged
+media-- so long as the drive can still recognize the disc.<p>
 
 <hr>
 <a name=maillist>
 <h2>Are there cdparanoia mailing lists for users or developers?</h2>
 Yes.  In addition to the mailing lists below, read-only Subversion access to
-Paranoia II and IV is availble <a href="/svn">here</a>.
+Paranoia is availble <a href="/svn">here</a>.
 
-<h3>
-Mailing list for Paranoia and Cdparanoia users (paranoia@xiph.org)
-</h3>
-
-Assuming that the email preferences in your web browser are set up
-correctly, you can use the following button to subscribe:
-
-    <form enctype=text/plain action="mailto:majordomo@xiph.org">
-    <b>
-    <input type=hidden name="# Paranoia user list" value="
-subscribe paranoia">
-    <input type=submit value="Subscribe to the Paranoia mailing list">
-    </b>
-    </form>
-
-The traditional way to join: send a message containing only the
-one-word line 'subscribe' in the body to <a
-href="mailto:paranoia-request@xiph.org">paranoia-request@xiph.org</a>. Do
-not send subscription requests directly to the main list.  The list
-server at xiph.org should respond fairly quickly with a welcome
-message.<p>
-
-
-<h3>
-Mailing list for Paranoia IV developers: paranoia-dev@xiph.org
-</h3>
-
-The developers list is intended for focused development discussion
-amongst the core Paranoia development team and outside groups
-developing their own applications using Paranoia.  Of course, anyone
-is welcome to read.<p>
-
-Assuming
-that the email preferences in your web browser are set up correctly,
-you can just use the following button to subscribe:
-
-    <form enctype=text/plain action="mailto:majordomo@xiph.org">
-    <b>
-    <input type=hidden name="# Paranoia user list" value="
-subscribe paranoia-dev">
-    <input type=submit value="Subscribe to the Paranoia developers mailing list">
-    </b>
-    </form><p>
-
-Tradiitonal method: send a message containing only the one-word line
-'subscribe' in the body to <a
-href="mailto:paranoia-dev-request@xiph.org">paranoia-dev-request@xiph.org</a>.
-Do not send subscription requests directly to the main list.
-
-<h3>
-List for general CDROM tools
-</h3>
-
-There's also a general mailing list for those using/developing CDDA
-extraction and CD writing tools (cdwrite@other.debian.org).  
-
-The following form submission button should set up the submission email automatically if the email features of your web browser are properly configured:
-
-    <form enctype=text/plain action="mailto:other-cdwrite-request@lists.debian.org">
-    <b>
-    <input type=hidden name="# Cdwrite list" value="
-subscribe cdwrite">
-    <input type=submit value="Subscribe to the cdwrite mailing list">
-    </b>
-    </form><p>
-
-Otherwise, subscribe by sending mail to <a
-href="mailto:other-cdwrite-request@lists.debian.org">other-cdwrite-request@lists.debian.org</a>
-containing only the word <strong>subscribe</strong> in the body.  Do
-not send subscription requests directly to the main list.<p>
+<ul>
+<li><a href="http://lists.xiph.org/mailman/listinfo/paranoia">
+Mailing list for Paranoia and Cdparanoia users (paranoia@xiph.org)</a>
+<li><a href="http://lists.xiph.org/mailman/listinfo/paranoia-dev">
+Mailing list for Paranoia developers: paranoia-dev@xiph.org</a>
+<li><a href="http://lists.xiph.org/mailman/listinfo/paranoia-announce">
+Announcement list for new Paranoia releases</a>
+</ul>
 
 <hr>
 <a name=devstatus>
 <h2>What is Paranoia IV's current development status?</h2>
 
-Paranoia IV code will soon be available for internal evaluation,
-testing and development work to the developers involved in the
-Paranoia project; read-only <a href="/svn">Subversion</a> access 
-is also available. A public release does not yet set for any firm date.<p>
+Paranoia IV has been on haitus for several years while Xiph.Org
+concentrated on other projects such as Ogg. It was originally intended
+to be little more than a more cross-platform update of Paranoia-III
+that included other devices; although the project drew some outside
+interest, it's not clear there's any great need for it.<p>
 
-Those interested in contributing to the development of Paranoia, or
-who wich to contribute to porting to other platforms, please <a
-href="mailto:monty@xiph.org">contact us</a>.  Paranoia IV prerelease
-code will be available to porters soon; I prefer to be in contact with
-those porting to other platforms so that Paranoia development has
-consistent quality across platforms.<p>
-
-At the moment, volunteers have contacted me for most major platforms,
-but more help is still welcome on every OS.<p>
-
-<hr>
-<a name=merge>
-<h2>Will cdparanoia, and cdda2wav or xcdroast merge anytime in the future?</h2>
-
-Probably not beyond the point it already has.  Versions of XCDRoast
-(and other GUI frontends; see the <a href=links.html>links page</a>)
-that make use of cdparanoia already exist.<p>
-
-Although the cdrecord/cdda2wav and Paranoia projects cooperate,
-they're likely to remain seperate as the former is committed to Joerg
-Schilling's libscg (part of the <a
-href="http://www.fokus.gmd.de/research/cc/glone/employees/joerg.schilling/private/cdrecord.html">cdrecord
-package</a>), just as cdparanoia is committed to using Paranoia IV.<p>
-
-
+Since Paranoia III was originally declared 'finished' in 1999
+(subsequent releases have mostly just been to fix bugs and keep up
+with kernel changes), a number of features that once existed only on
+very expensive CDROM drives have become more widespread.  In
+particular, drives today are much more capable of fine-grained
+reporting of media damage.  Thus Paranoia IV is now intended to be an
+update of Paranoia III that improves error handling and reconstruction
+ability.
 
 <hr>
 <h1>Questions about using Paranoia and cdparanoia</h1>
 <a name=req>
 <h2>
-Requirements to run cdparanoia (as of alpha 3)
+Requirements to run cdparanoia 10
 </h2>
 
 <ol>
-<li>A CDDA capable CDROM drive</li>
-<li> Linux 2.0, 2.1 or 2.2 
+<li>A CDDA capable CDROM drive (in 2006, virtually all CDROm drives are)</li>
+<li> Linux 2.0 through 2.2:
 <ol>
    <li>kernel support for the particular CDROM in use</li>
    <li>kernel support for the generic SCSI interface (if using a SCSI 
    CDROM drive) and proper device (/dev/sg?) files (get them
    with the MAKEDEV script) in /dev. Most distributions 
    already have the /dev/sg? files.</li>
+   </ol>
+<li> Linux 2.4, through 2.6: 
+<ol>
+   <li>kernel support for either the generic SCSI of SG_IO interfaces; most modern kernels are built with SG_IO by default.
    </ol>
 </ol>
 
@@ -422,39 +350,29 @@ that the source will not build on kernel installs older than 2.0, but
 the problems are mostly related to the ever-changing locations of
 proprietary cdrom include files.<p>
 
-Also, although a stock SCSI setup will work, performance will be
-better if linux/include/scsi/sg.h defines SG_BIG_BUFF to 65536 (it
-can't be bigger).  Recent kernels (2.0.x+?) already set it to 32768;
-that's OK.  Cdparanoia will tell you how big your generic SCSI buffer
-is.<p>
-
-Unlike cdda2wav, cdparanoia does not require threading, IPC or
-(optionally) sound card support.  /proc filesystem support is no
-longer required (but encouraged!), and /dev/sr? or /dev/scd? devices
-are not required for SCSI, although they do add functionality if
-present.<p>
-
 <hr>
 <a name=supp>
 <h2>
-Does Cdparanoia support ATAPI drives?  SCSI Emulation? Parallel port drives?  
+Does Cdparanoia support ATAPI drives?  SCSI Emulation?   USB drives? Parallel port drives?
 </h2>
 
-Alpha 9 supports the full ATAPI, IDE-SCSI and SCSI generic interfaces
-under Linux.<p>
+Cdparanoia 9 and 10 support the full ATAPI, IDE-SCSI and SCSI generic
+interfaces under Linux.  Cdparanoia 10 adds SG_IO support, which it
+the default interface for all modern CDROM drives under linux 2.6. <p>
 
-Note that the native ATAPI driver is supported, but that IDE-SCSI
-emulation works better with ATAPI drives.  This is an issue of
-control; the emulation interface gives cdparanoia complete control
-over the drive whereas the native ATAPI driver insists on hiding the
-device under an abstraction layer with poor error handling
-capabilities.  Note also that a number of ATAPI drives that do not
-work at all with the ATAPI driver (error 006: Could not read audio)
-*will* work with IDE-SCSI emulation.<p>
+Note that the native 'cooked' ATAPI driver is supported, but should be
+considered deprecated; SG_IO and IDE-SCSI emulation both work better
+with ATAPI drives.  This is an issue of control; the other interfaces
+gives cdparanoia complete control over the drive whereas the native
+ATAPI driver insists on hiding the device under an abstraction layer
+with poor error handling capabilities.  Note also that a number of
+ATAPI drives that do not work at all with the ATAPI driver (error 006:
+Could not read audio) *will* work with SG_IO and IDE-SCSI
+emulation.<p>
 
-Parallel port based CDROM (paride) drives are not yet supported;
-support for these drives in Linux will appear in alpha release 10
-(Paranoia IV).
+USB drives are fully supported through the SG_IO and SG interfaces.<p>
+
+Parallel port based CDROM (paride) drives are not yet explicitly supported.
 <p>
 
 <hr>
@@ -585,8 +503,7 @@ conversion to analog first.
 <a name=toc>
 <h2>Can cdparanoia detect pregaps? Can it remove the two second gaps between tracks</h2>
 
-Not yet.  This feature is slated to appear in a release of alpha 10
-(Paranoia IV).<p>
+Not yet.  This feature is slated to appear in Paranoia IV.<p>
 
 <hr>
 <a name=gimme>
@@ -824,6 +741,10 @@ cdda2wav.<p>
 <a name=bigbuff>
 <h2>(Linux only) What is the biggest value of SG_BIG_BUFF I can use?</h2>
 
+<em>[note: This question only applies to the SG kernel interface;
+cdparanoia 10 prefers the 2.6 kernel's new SG_IO interface.  Only
+users with older kernels care about SG.]<em><p>
+
 65536 (64 kilobytes).  Some motherboards can use 128kB DMA, but
 attempting to use 128kB DMA on a machine that can't do it will crash
 the machine.  Cdparanoia will not use larger than 64kB requests.<p>
@@ -832,7 +753,7 @@ the machine.  Cdparanoia will not use larger than 64kB requests.<p>
 <a name=diff>
 <h2>Why do the binary files from two reads differ when compared?</h2>
 
-The problem is the beginning point of the read.  Cdparanoia enforces
+The usual problem is the beginning point of the read.  Cdparanoia enforces
 consistency from whatever the drive considers to be the starting point
 of the data, and the drive is returning a slightly different beginning
 point each time.  The beginning point should not vary by much, and if
@@ -840,6 +761,9 @@ this shift is accounted for when comparing the files, they should
 indeed turn out to be the same (aside from errors duly reported during
 the read; scratch correction or any reported skips will very likely
 also result in different files).<p>
+
+It is also possible to get different reads if the media is damaged and
+cdparanoia is unable to deterministically repair the error.<p>
 
 <hr>
 <a name=cdr>
@@ -883,8 +807,8 @@ software.<p>
 <td><img src=sidespacer1.gif width=10 alt=""></td>
 <td bgcolor="#2a2a2c" valign=bottom><img src=bottomB.gif alt=""></td>
 <td bgcolor="#2a2a2c" align=center valign=center width=100%>
-  <table border=0 cellpadding=0 cellspacing=5 width=100%><tr>
-    <td valign=center><a href="../index.html"><img src=black-xifish.gif 
+  <table border=0 cellpadding=0 cellspacing=0 width=100%><tr>
+    <td valign=center><a href="../index.html"><img src=black-xifish.png 
     border=0></a></td>
     <td valign=center>
     <font face="Verdana, Arial, Helvetica" size=-2 color=#a0a0a0>
