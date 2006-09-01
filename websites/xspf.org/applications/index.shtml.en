@@ -118,6 +118,9 @@ use of more modern desktop standards.</dd>
           <dt><a href="http://www.lasmit.co.uk/category/xpsf-playlist-generator/">PHP XPSF Playlist Generator</a></dt>
           <dd>A PHP script that reads the contents of a folder containing MP3s, reads the ID3 tags and outputs an XPSF playlist. It means you just have to upload your files into a folder and then the playlist is generated automatically.</dd>
 
+          <dt><a href="http://plait.sourceforge.net/">Plait command line jukebox</a></dt>
+          <dd>A script that creates playlists from a music library and submits the playlists to music players.  Now includes an XSPF publishing feature which creates a complete web site including an XSPF playlist, a web page that embeds the XSPF Web Music Player, and MP3 files. </dd>
+
 <!-- template for new entries
           <dt><a href=""></a></dt>
           <dd></dd>
