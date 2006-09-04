@@ -48,6 +48,7 @@
 	<li title="Speex can detect if someone is speaking or not, and adjust itself accordingly">Voice Activity Detection (VAD)</li>
 	<li title="Speex can stop sending data if it thinks it’s okay (such as when there is no voice data)">Discontinuous Transmission (DTX)</li>
 	<li>In-progress fixed-point port</li>
+	<li>Acoustic echo canceller</li>
 </ul>
 <p>
 	Note that Speex has a number of features that aren't in other codecs
@@ -83,6 +84,14 @@
 
 <h2>Headlines</h2>
 <ul class="descriptivelist">
+	<li>
+		<h3>Speex 1.2beta1: Better, smaller, faster and more</h3>
+		<p class="submitdate">September 4, 2006</p>
+		<div class="description">
+                <p>This new release brings many significant improvements. The quality has been improved, both at the encoder level and the decoder level. These include enhancer improvements (now on by default), input/output high-pass filters, as well as fixing minor regressions in previous 1.1.x releases. A strange and rare instability problem with pure sinusoids has also been fixed. On top of that, memory use has been greatly reduced, especially for fixed-point and narrowband. The fixed-point narrowband encoder+decoder memory use has been cut by more than half, making it possible to fit both in less than 6 kB of RAM. In general, CPU requirement had gone down, especially for the fixed-point port. The Blackfin port has been speeded up significantly, thanks to David Rowe. There are also a few fixes for the TI C5X DSPs, as well as better support for C++ compilers and crappy MS compilers. Oh, and before anyone starts worrying, the format (bit-stream) itself has not changed, so Speex is still compatible with version 1.0 and will continue to be in the future.</p>
+                <p>Non-codec improvements include a extension (easier to use) to the echo canceller API and a Speex-independent version of the jitter buffer. The echo canceller should also be more robust to saturation in the capture path. Last, but not least, the documentation has been updated.</p>
+		</div>
+	</li>
 	<li>
 		<h3>How the Echo Canceller works</h3>
 		<p class="submitdate">August 7, 2006</p>
