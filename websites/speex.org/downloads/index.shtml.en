@@ -57,6 +57,8 @@ The main change with this release is that it includes API additions from the 1.1
 
 <li><a href="http://downloads.us.xiph.org/releases/speex/speex-devel-1.2beta1-1.i386.rpm">i386 Development RPM</a></li>
 <li><a href="http://downloads.us.xiph.org/releases/speex/speex-1.2beta1-1.src.rpm">Source RPM</a></li>
+<li><a href="http://downloads.us.xiph.org/releases/speex/libspeex-win32-v1.2beta1.zip">Windows binaries (libspeex)</a></li>
+<li><a href="http://downloads.us.xiph.org/releases/speex/speex-tools-win32-v1.2beta1.zip">Windows binaries (tools)</a></li>
 </ul>
 
 <h2>DirectShow Filters</h2>
