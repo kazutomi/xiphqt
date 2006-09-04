@@ -121,6 +121,9 @@ use of more modern desktop standards.</dd>
           <dt><a href="http://plait.sourceforge.net/">Plait command line jukebox</a></dt>
           <dd>A script that creates playlists from a music library and submits the playlists to music players.  Now includes an XSPF publishing feature which creates a complete web site including an XSPF playlist, a web page that embeds the XSPF Web Music Player, and MP3 files. </dd>
 
+          <dt><a href="http://libspiff.sourceforge.net/">libSpiff</a></dt>
+          <dd>A cross-platform C++ library for reading and writing XSPF playlist files (both Version 0 and 1).  Licensed under the GPL.</dd>
+
 <!-- template for new entries
           <dt><a href=""></a></dt>
           <dd></dd>
