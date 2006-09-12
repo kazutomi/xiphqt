@@ -146,27 +146,27 @@ sub drawit{
 
 	$below->configure(-borderwidth=>$aborder,
 			  -background=>$aback,
-			  highlightthickness=>0,
-			  width=>($width-$aborder*2),
-			  height=>($height-$aborder*2),
-			  relief=>$arelief);
+			  -highlightthickness=>0,
+			  -width=>($width-$aborder*2),
+			  -height=>($height-$aborder*2),
+			  -relief=>$arelief);
 	
 	$above->configure(-borderwidth=>0,
 			  -background=>$back,
-			  highlightthickness=>0,
-			  width=>$width,
-			  height=>$height,
-			  relief=>'flat');
+			  -highlightthickness=>0,
+			  -width=>$width,
+			  -height=>$height,
+			  -relief=>'flat');
 	
 	$this->{"reliefhack"}->destroy if(defined($this->{"reliefhack"}));
 	if($aborder){
 	    $this->{"reliefhack"}=$above->
 		Label(-borderwidth=>$aborder,
 		      -background=>$aback,
-		      highlightthickness=>0,
-		      width=>($width-$aborder*2),
-		      height=>4,
-		      relief=>$arelief)->
+		      -highlightthickness=>0,
+		      -width=>($width-$aborder*2),
+		      -height=>4,
+		      -relief=>$arelief)->
 			  place('-x'=>0,-rely=>1.0,'-y'=>-$aborder,
 				-anchor=>'nw',-bordermode=>'outside');
 	}
@@ -191,17 +191,17 @@ sub drawit{
 	$this->{"cfborder"}=$aborder;
 	$below->configure(-borderwidth=>0,
 			  -background=>$back,
-			  highlightthickness=>0,
-			  width=>$width,
-			  height=>$height-$border*2,
-			  relief=>'flat');
+			  -highlightthickness=>0,
+			  -width=>$width,
+			  -height=>$height-$border*2,
+			  -relief=>'flat');
 	
 	$above->configure(-borderwidth=>$aborder,
 			  -background=>$aback,
-			  highlightthickness=>0,
-			  width=>($width-2*$aborder),
-			  height=>($height-2*$aborder),
-			  relief=>$arelief);
+			  -highlightthickness=>0,
+			  -width=>($width-2*$aborder),
+			  -height=>($height-2*$aborder),
+			  -relief=>$arelief);
 	
 	$above->createImage($pad,$height-$pad,-image=>$littext,-anchor=>'sw',
 			    -tags=>['xpmlabel']);
@@ -332,10 +332,10 @@ sub promptlabel{
 	if($orient eq 'vertical'){
 	    $label=$p->{"widget"}->Canvas(Name=>'scalerange',
 					  -borderwidth=>0,
-					  highlightthickness=>0,
-					  width=>$textw,
-					  height=>$textl,
-					  relief=>'flat')->
+					  -highlightthickness=>0,
+					  -width=>$textw,
+					  -height=>$textl,
+					  -relief=>'flat')->
 					      place('-x'=>0,'-y'=>2,-anchor=>'nw');
 	    $label->createImage(0,0,
 				-image=>$prompts{"$mult$prompt"},-anchor=>'nw');
@@ -344,10 +344,10 @@ sub promptlabel{
 	}else{
 	    $label=$p->{"widget"}->Canvas(Name=>'scalerange',
 					  -borderwidth=>0,
-					  highlightthickness=>0,
-					  width=>$textl,
-					  height=>$textw,
-					  relief=>'flat')->
+					  -highlightthickness=>0,
+					  -width=>$textl,
+					  -height=>$textw,
+					  -relief=>'flat')->
 					      place(-relx=>1.0,
 						    '-x'=>-2,'-y'=>0,
 						    -anchor=>'ne');
@@ -445,10 +445,10 @@ sub drawit{
 	my $widget=$this->{"widget"};
 
 	$widget->configure(-borderwidth=>0,
-			   highlightthickness=>0,
-			   width=>$width,
-			   height=>$height,
-			   relief=>'flat');
+			   -highlightthickness=>0,
+			   -width=>$width,
+			   -height=>$height,
+			   -relief=>'flat');
 	
 	my $rangesetting=$this->{"rangesetting"};
 	my($dummy,$dummy2,$scalew)=&calcsize($this,$rangesetting,$prompt,$num);

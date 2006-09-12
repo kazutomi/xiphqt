@@ -61,30 +61,30 @@ sub module_run{
 
     my$widget=$toplevel->Frame(-class=>$this->{"name"},
 			       Name=>$this->{"sequence"},
-			       width=>$width,
-			       height=>$height,
-			       borderwidth=>0,
-			       highlightthickness=>0,
+			       -width=>$width,
+			       -height=>$height,
+			       -borderwidth=>0,
+			       -highlightthickness=>0,
 			       -background=>$mainback);
 
     my$back=$widget->optionGet("background","");
 
     if($stack eq 'vertical'){
 	my$pad=($height-$thick-$border*2)/2;
-	$widget->Frame(highlightthickness=>0,
-		       borderwidth=>$border,
-		       relief=>$this->{"relief"},
-		       width=>$width,
-		       height=>$border*2+$thick,
+	$widget->Frame(-highlightthickness=>0,
+		       -borderwidth=>$border,
+		       -relief=>$this->{"relief"},
+		       -width=>$width,
+		       -height=>$border*2+$thick,
 		       -background=>$back)->place('-x'=>0,'-y'=>$pad,
 						 -anchor=>'nw');
     }else{
 	my$pad=($width-$thick-$border*2)/2;
-	$widget->Frame(highlightthickness=>0,
-		       borderwidth=>$border,
-		       relief=>$this->{"relief"},
-		       width=>$border*2+$thick,
-		       height=>$height,
+	$widget->Frame(-highlightthickness=>0,
+		       -borderwidth=>$border,
+		       -relief=>$this->{"relief"},
+		       -width=>$border*2+$thick,
+		       -height=>$height,
 		       -background=>$back)->place('-x'=>$pad,'-y'=>0,
 						 -anchor=>'nw');
     }

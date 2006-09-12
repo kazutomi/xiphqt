@@ -109,14 +109,14 @@ sub module_run{
 
     my$widget=$toplevel->Frame(-class=>$this->{"name"},
 			       Name=>$this->{"sequence"},
-			       highlightthickness=>0,
-			       borderwidth=>$this->{"borderwidth"},
-			       relief=>$this->{"relief"},
-			       width=>$width,height=>$height);
-    $this->{"logowidget"}=$widget->Canvas(borderwidth=>0,
-					  highlightthickness=>0,
-					  width=>$this->{"logowidth"},
-					  height=>$this->{"logoheight"})->
+			       -highlightthickness=>0,
+			       -borderwidth=>$this->{"borderwidth"},
+			       -relief=>$this->{"relief"},
+			       -width=>$width,-height=>$height);
+    $this->{"logowidget"}=$widget->Canvas(-borderwidth=>0,
+					  -highlightthickness=>0,
+					  -width=>$this->{"logowidth"},
+					  -height=>$this->{"logoheight"})->
 					      place('-x'=>$logopad,
 						    '-y'=>$vpad,-anchor=>'nw',
 						    -bordermode=>'outside');
