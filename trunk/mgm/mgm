@@ -60,7 +60,7 @@ $toplevel->optionAdd("$Xname*textpad",          '1',20);
 $toplevel->optionAdd("$Xname*widgetpad",        '2',20);
 
 $toplevel->optionAdd("$Xname*font",    
-		     '-*-helvetica-medium-r-*-*-8-*-*-*-*-*-*-*',20);
+		     '-*-helvetica-medium-r-semicondensed-*-8-*-*-*-*-*-*-*',20);
 
 $toplevel->optionAdd("$Xname*labelsize",       '9',20);
 
