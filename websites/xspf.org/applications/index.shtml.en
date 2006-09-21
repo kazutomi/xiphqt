@@ -124,6 +124,9 @@ use of more modern desktop standards.</dd>
           <dt><a href="http://libspiff.sourceforge.net/">libSpiff</a></dt>
           <dd>A cross-platform C++ library for reading and writing XSPF playlist files (both Version 0 and 1).  Licensed under the GPL.</dd>
 
+          <dt><a href="http://melloware.com/products/jukes/index.html">Jukes</a></dt>
+          <dd>A cross platform MP3 player and organizer written in Java that uses XSPF as its playlist format.</dd>
+
 <!-- template for new entries
           <dt><a href=""></a></dt>
           <dd></dd>
