@@ -196,7 +196,6 @@ table.resolution
 <link rel="Chapter" title="5 Requirements for XSPF generators" href="#rfc.section.5" />
 <link rel="Chapter" title="6 Requirements for XSPF players" href="#rfc.section.6" />
 <link rel="Chapter" title="7 Usecases for playlists" href="#rfc.section.7" />
-<link rel="Chapter" title="8 Recipes" href="#rfc.section.8" />
 <link rel="schema.DC" href="http://purl.org/dc" />
 <meta name="DC.Creator" content="Lucas Gonze, Matthias Friedrich, Robert Kaye, Dave Brown" />
 </head>
@@ -327,18 +326,6 @@ table.resolution
 <b>7.5 <a href="#rfc.section.7.5">Caching derived info</a></b><br />
 <b>7.6 <a href="#rfc.section.7.6">Metadata storage</a></b><br />
 <b>7.7 <a href="#rfc.section.7.7">Authoring compilations for expressive reasons</a></b><br />
-<b>8 <a href="#rfc.section.8">Recipes</a></b><br />
-<b>8.1 <a href="#rfc.section.8.1">How do I set relative paths in an XSPF playlist, for example if I want to use it as a file manifest?</a></b><br />
-<b>8.2 <a href="#rfc.section.8.2">How to I convert XSPF to M3U?</a></b><br />
-<b>8.3 <a href="#rfc.section.8.3">How to I convert XSPF to HTML?</a></b><br />
-<b>8.4 <a href="#rfc.section.8.4">How to I convert XSPF to SMIL?</a></b><br />
-<b>8.5 <a href="#rfc.section.8.5">How to I convert XSPF to Soundblox?</a></b><br />
-<b>8.6 <a href="#rfc.section.8.6">How do I customize XSPF? Should I use namespaces?</a></b><br />
-<b>8.7 <a href="#rfc.section.8.7">How do I validate XSPF?</a></b><br />
-<b>8.8 <a href="#rfc.section.8.8">How do I use MusicBrainz metadata?</a></b><br />
-<b>8.9 <a href="#rfc.section.8.9">How do I refer to a BitTorrent?</a></b><br />
-<b>8.10 <a href="#rfc.section.8.10">How do I refer to a Magnet or sha1: URI?</a></b><br />
-<b>8.11 <a href="#rfc.section.8.11">How do I view the edit history of this document?</a></b><br />
 <b>&sect; <a href="#rfc.references">References</a></b><br />
 <b>&sect; <a href="#rfc.authors">Author's Addresses</a></b><br />
 <b>&sect; <a href="#rfc.ipr">Intellectual Property and Copyright Statements</a></b><br /></p>
@@ -396,7 +383,7 @@ table.resolution
 <h2><a name="rfc.section.2.1" id="rfc.section.2.1">2.1</a> History</h2>
 <div style="margin-left: 8px;">
 <div><a name="rfc.section.2.1.p.1" id="rfc.section.2.1.p.1"></a></div>
-<p>Our group started work in February 2004, achieved rough consensus on version 0 in April 2004, did implementations and fine tuning throughout summer and fall 2004, and declared the tuned version to be version 1 in January 2005. In late 2006 we did a round of improvements to the drafting which did not require any implementation to be modified.</p>
+<p>Our group started work in February 2004, achieved rough consensus on version 0 in April 2004, did implementations and fine tuning throughout summer and fall 2004, and declared the tuned version to be version 1 in January 2005. In late 2006 we did a final round of improvements to the drafting, limiting changes to those which did not require any implementation to be modified.  The edit history of this document can be viewed at </a>http://trac.xiph.org/log/websites/xspf.org/xspf-v1.html</a>.</p>
 <div><a name="rfc.section.2.1.p.2" id="rfc.section.2.1.p.2"></a></div>
 <p>This document describes version 1, which is frozen and code-ready. </p>
 <div><a name="rfc.section.2.1.p.3" id="rfc.section.2.1.p.3"></a></div>
@@ -906,84 +893,6 @@ summarized as follows (highest priority to lowest):
 <p>Typical solution: A user compiles copies of the videos and puts them in the same location, maybe in the same directory on a web server, maybe in the same directory on a hard drive. The user then puts the locations, whether paths or URIs, into a file in the M3U format.</p>
 <div><a name="rfc.section.7.7.p.3" id="rfc.section.7.7.p.3"></a></div>
 <p>XSPF' solution: The XSPF <em>trackList</em> element contains a sequence of <em>track</em> elements, each of which points to one of the objects.</p>
-</div>
-</div>
-<hr class="noprint" />
-<table summary="link to TOC" class="noprint" style="margin-left: auto; margin-right: 0; float: right; width: 2.5em;">
-<tr>
-<td style="background-color: #990000; text-align: center; height: 1.5em;"><a href="#rfc.toc"><b class="link2">TOC</b></a></td>
-</tr>
-</table>
-<h1><a name="rfc.section.8" id="rfc.section.8">8</a> Recipes</h1>
-<div style="margin-left: 8px;">
-<h2><a name="rfc.section.8.1" id="rfc.section.8.1">8.1</a> How do I set relative paths in an XSPF playlist, for example if I want to use it as a file manifest?</h2>
-<div style="margin-left: 8px;">
-<div><a name="rfc.section.8.1.p.1" id="rfc.section.8.1.p.1"></a></div>
-<p>See the <a href="http://www.w3.org/TR/xmlbase/">XML Base</a> specification or <a href="http://www.w3.org/TR/xmlbase/#RFC2396">IETF RFC 2396</a>.</p>
-</div>
-<h2><a name="rfc.section.8.2" id="rfc.section.8.2">8.2</a> How to I convert XSPF to M3U?</h2>
-<div style="margin-left: 8px;">
-<div><a name="rfc.section.8.2.p.1" id="rfc.section.8.2.p.1"></a></div>
-<p>Use the <a href="http://gonze.com/xspf/xspf2m3u.xsl">xspf2m3u.xsl</a> stylesheet.</p>
-</div>
-<h2><a name="rfc.section.8.3" id="rfc.section.8.3">8.3</a> How to I convert XSPF to HTML?</h2>
-<div style="margin-left: 8px;">
-<div><a name="rfc.section.8.3.p.1" id="rfc.section.8.3.p.1"></a></div>
-<p>Use the <a href="http://gonze.com/xspf/xspf2html.xsl">xspf2html.xsl</a> stylesheet.</p>
-</div>
-<h2><a name="rfc.section.8.4" id="rfc.section.8.4">8.4</a> How to I convert XSPF to SMIL?</h2>
-<div style="margin-left: 8px;">
-<div><a name="rfc.section.8.4.p.1" id="rfc.section.8.4.p.1"></a></div>
-<p>Use the <a href="http://gonze.com/xspf/xspf2smil.xsl">xspf2smil.xsl</a> stylesheet.</p>
-</div>
-<h2><a name="rfc.section.8.5" id="rfc.section.8.5">8.5</a> How to I convert XSPF to Soundblox?</h2>
-<div style="margin-left: 8px;">
-<div><a name="rfc.section.8.5.p.1" id="rfc.section.8.5.p.1"></a></div>
-<p>Use the <a href="http://gonze.com/xspf/xspf2soundblox.xsl">xspf2soundblox.xsl</a> stylesheet.</p>
-</div>
-<h2><a name="rfc.section.8.6" id="rfc.section.8.6">8.6</a> How do I customize XSPF? Should I use namespaces?</h2>
-<div style="margin-left: 8px;">
-<div><a name="rfc.section.8.6.p.1" id="rfc.section.8.6.p.1"></a></div>
-<p>Use the meta or link elements. Use meta if the element contains a single value, like "blue" or "rock"; use link if the element contents are a URI. Try to avoid using namespaces to add fields, because namespaced items cannot be validated by an XSPF validator.</p>
-</div>
-<h2><a name="rfc.section.8.7" id="rfc.section.8.7">8.7</a> How do I validate XSPF?</h2>
-<div style="margin-left: 8px;">
-<div><a name="rfc.section.8.7.p.1" id="rfc.section.8.7.p.1"></a></div>
-<p>Matthias Friedrich has created an XML schema for XSPF version 1 at <a href="http://www.stud.uni-karlsruhe.de/~uy7l/xspf-1.xsd">http://www.stud.uni-karlsruhe.de/~uy7l/xspf-1.xsd</a>.</p>
-<div><a name="rfc.section.8.7.p.2" id="rfc.section.8.7.p.2"></a></div>
-<p>Robert Kaye has created a Relax NG schema for XSPF version 0 draft 8 at <a href="http://mayhem-chaos.net/stuff/xspf-draft8.rng">http://mayhem-chaos.net/stuff/xspf-draft8.rng</a>. You can use <a href="http://www.thaiopensource.com/relaxng/jing.html">Jing</a> to invoke it.</p>
-<div><a name="rfc.section.8.7.p.3" id="rfc.section.8.7.p.3"></a></div>
-<p>For users of Emacs nxml-mode, Ryan Shaw has posted a .rnc version of Robert's schema at <a href="http://lists.musicbrainz.org/pipermail/playlist/2004-October/000429.html">http://lists.musicbrainz.org/pipermail/playlist/2004-October/000429.html</a>. This is just a matter of putting the .rnc file in the schema/ subdirectory of your nxml-mode installation. nxml-mode will find it automatically and add it to the list of available schemas; if you begin authoring an XSPF playlist, nxml-mode will choose the correct schema by examining the root element name.</p>
-</div>
-<h2><a name="rfc.section.8.8" id="rfc.section.8.8">8.8</a> How do I use MusicBrainz metadata?</h2>
-<div style="margin-left: 8px;">
-<div><a name="rfc.section.8.8.p.1" id="rfc.section.8.8.p.1"></a></div>
-<p>Rather than include the literal artist name, song duration, etc, for a track within a playlist, MusicBrainz gives the URI of an XML file containing these items. Assume that the MusicBrainz definition of what a track listing means is at http://musicbrainz.org/track. (There is nothing at that URI, which is fine -- the URI in an XSPF meta[@rel] attribute works the same way as the URI in an XML namespace declaration). A typical track listing has a URI like http://musicbrainz.org/mm-2.1/track/bdc846e7-6c26-4193-82a6-8d1b5a4d3429.</p>
-<div><a name="rfc.figure.u.11" id="rfc.figure.u.11"></a></div>
-<pre>
-&lt;track&gt;
-  &lt;identifier&gt;bdc846e7-6c26-4193-82a6-8d1b5a4d3429&lt;/identifier&gt;
-  &lt;title&gt;Smoke Two Joints&lt;/title&gt;
-  &lt;creator&gt;Sublime&lt;/creator&gt;
-  &lt;duration&gt;175466&lt;/duration&gt;
-  &lt;meta rel="http://musicbrainz.org/track"&gt;http://musicbrainz.org/mm-2.1/track/bdc846e7-6c26-4193-82a6-8d1b5a4d3429&lt;/meta&gt;
-&lt;/track&gt;
-                          
-</pre></div>
-<h2><a name="rfc.section.8.9" id="rfc.section.8.9">8.9</a> How do I refer to a BitTorrent?</h2>
-<div style="margin-left: 8px;">
-<div><a name="rfc.section.8.9.p.1" id="rfc.section.8.9.p.1"></a></div>
-<p>Put the torrent file in a playlist/trackList/track/location element.</p>
-</div>
-<h2><a name="rfc.section.8.10" id="rfc.section.8.10">8.10</a> How do I refer to a Magnet or sha1: URI?</h2>
-<div style="margin-left: 8px;">
-<div><a name="rfc.section.8.10.p.1" id="rfc.section.8.10.p.1"></a></div>
-<p>A sha1: URI is a location independent canonical ID, so it belongs in a playlist/trackList/track/identifier element. A Magnet URI is resolvable, so belongs in playlist/trackList/track/location.</p>
-</div>
-<h2><a name="rfc.section.8.11" id="rfc.section.8.11">8.11</a> How do I view the edit history of this document?</h2>
-<div style="margin-left: 8px;">
-<div><a name="rfc.section.8.11.p.1" id="rfc.section.8.11.p.1"></a></div>
-<p>The edit history of this document can be viewed at <a href="http://trac.xiph.org/log/websites/xspf.org/xspf-v1.html">http://trac.xiph.org/log/websites/xspf.org/xspf-v1.html</a></p>
 </div>
 </div>
 <hr class="noprint" />
