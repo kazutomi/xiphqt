@@ -36,7 +36,7 @@
 <h3>Female</h3>
 
 <ul>
-	<li><a href="audio/samples/female.wav">original</a></li>
+	<li><a href="audio/female.wav">original</a></li>
 	<li><a href="audio/female_speex_4.wav">coded 4 kbps</a></li>
 	<li><a href="audio/female_speex_4_vbr.wav">coded 4 kbps VBR</a></li>
 	<li><a href="audio/female_speex_6.wav">coded 6 kbps</a></li>
