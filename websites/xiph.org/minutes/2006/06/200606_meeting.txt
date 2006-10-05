@@ -1,0 +1,196 @@
+--- Log opened Tue Jun 06 22:55:28 2006
+22:55 -!- xiphlog [n=giles@westfish.xiph.osuosl.org] has left #xiphmeet []
+22:55 -!- xiphlog [n=giles@westfish.xiph.osuosl.org] has joined #xiphmeet
+22:55 -!- Topic for #xiphmeet: Next xiph.org monthly meeting 2006 June 7 06h00 GMT | agenda at http://wiki.xiph.org/index.php/MonthlyMeeting200606 | log of last meeting at http://westfish.xiph.org/~giles/200603_meeting.txt | consider putting the monthly meeting schedule on calendar.google.com
+22:55 -!- Topic set by jmworx [] [Tue Jun  6 20:25:35 2006]
+22:55 [Users #xiphmeet]
+22:55 [ adiabatic] [ derf_ ] [ illi  ] [ nemo   ] [ tahseen] [ xiphlog] 
+22:55 [ Atamido  ] [ ginger] [ jmworx] [ rillian] [ tris   ] 
+22:55 -!- Irssi: #xiphmeet: Total of 11 nicks [0 ops, 0 halfops, 0 voices, 11 normal]
+22:55 -!- Channel #xiphmeet created Sat Dec 17 03:46:31 2005
+22:55 -!- Irssi: Join to #xiphmeet was synced in 1 secs
+22:56 < rillian> illi: not unless someone invited them. I didn't
+22:56 < rillian> hi tahseen!
+22:56 < tahseen> hi, rillian 
+22:57 < rillian> hi nemo, have we met?
+22:58 < adiabatic> rillian: he's a #-talk regular, at the very least
+22:58 < adiabatic> (if a long-time idler)
+22:58 < nemo> rillian: probably not. I'm just an interested lurker. (mainly interested from a xiphmeet log from ages ago mentioning updates to cdparanoia...
+22:58 < adiabatic> rillian, nemo; nemo, rillian...
+22:58 < nemo> and yeah, what adiabatic said. I've been a lurker for years
+22:59 < rillian> ah, I've not heard of any cdparanoia work
+22:59 < rillian> pjones is the one you want to ping about that
+22:59 -!- rillian changed the topic of #xiphmeet to: Xiph.org monthly meeting 2006 June 7 06h00 GMT | agenda at http://wiki.xiph.org/index.php/MonthlyMeeting200606 | live log at http://westfish.xiph.org/~giles/200606_meeting.txt | consider putting the monthly meeting schedule on calendar.google.com
+22:59 < nemo> yeah, that name sounds familiar from the log I saw once upon a time. (a late 2005 log I think it was)
+23:00 < rillian> well, shall be begin?
+23:00 < rillian> biggest news is of course that we've got 5 google summer of code students working on xiph projects!
+23:01 < rillian> tahseen here is working on adding skeleton support to various tools
+23:01 < rillian> I don't think the other students got invited
+23:01 < rillian> but we have _chAOs_ working on theora-exp encoder
+23:02 < jmworx> rillian: Is Google supposed to contact us at some point?
+23:02 < rillian> daraku (sp?) working on a subtitle editor (see http://svn.xiph.org/trunk/souffleur/ for a mockup)
+23:02 < derf_> I haven't seen _chaOS_ online in a couple days.
+23:02 < rillian> derf_: me neither. maybe you should send them an email?
+23:03 < rillian> some time of after exams isn't unexpected, but the end of june is approaching
+23:03 < rillian> and portavales is doing hardware theora decoder
+23:03 < rillian> there's an idct implementation so far from him in trunk/theora-fpga
+23:03 -!- kfish [n=conrad@squelch.CeNTIE.NET.au] has joined #xiphmeet
+23:04 < rillian> finally, we have Anup supposedlly working for jm and monty on the ghost audio codec
+23:04 < rillian> jmworx: my impression is that we're supposed to run with it
+23:04 < rillian> at some point they're supposed to send us tax forms and a check; that should go to jack
+23:05 < rillian> jmworx: have you been in contact with Anup?
+23:05 < jmworx> yes
+23:05 < rillian> how's that going?
+23:05 < jmworx> Is only partiall on this at the moment (school not ended), but he'll be full-time on it later.
+23:05 < rillian> ok
+23:06 < jmworx> I think he understands what's going on, and (especially looking at his CV) he looks very capable
+23:06 < jmworx> He definitely has a lot of experience with codecs
+23:07 < rillian> *nod* we got some very good applicants
+23:07 < jmworx> yes, all of them from what I saw
+23:07 < rillian> unfortunately, the top three people we picked for the theora simd project weren't available
+23:08 < jmworx> So what happened?
+23:08 < rillian> I'm still waiting to hear back from google on whether we can switch #3 but it's not looking promising at this point
+23:08 < rillian> jmworx: our first choice had an unexpected time conflict and withdrew
+23:08 < rillian> our second and third were also chosen by other projects
+23:09 < jmworx> :-(
+23:09 < rillian> and the way the conflict resolution worked they didn't really get a chance pick between the options, it was first-come, first-served
+23:09 < rillian> hopefully that will be better next year
+23:10 < rillian> kfish, ginger, tahseen: how are things going with your project(s)?
+23:10 < derf_> The good news is that illi has been doing some SSE work on Theora without the financial compensation.
+23:10 < kfish> rillian, tahseen's going very well -- ogg123 plays the vorbis out of theora files etc. with his libvorbisfile patch :)
+23:11 < kfish> and it should probably go in an svn branch, if you could please arrange svn access for him
+23:11 < jmworx> illi: cool.
+23:11 < rillian> it sounded like his patch might have broken chaining?
+23:11 < kfish> rillian, yes, the patch is not ready for trunk yet
+23:11 < kfish> but it's worth more people playing with
+23:11 < rillian> tahseen: send me a preferred username and (optional) htpasswd2-crypted secret <giles@xiph.org>
+23:12 < illi> yeah... i've done the dsp and recon functions -- going to start on the idct and dct ones soon, but been looking at two other as yet non-optimised functions which have bigger potential for gain... but they are really hard to make a big gain because of their weird memroy access shape
+23:12 < tahseen> actually theora files is having a bit of problem but vorbis+skeleton looks fine
+23:13 < jmworx> illi: Are you working with assembly, intrinsics, ...?
+23:13 < illi> assembly
+23:13 < jmworx> illi: considered intrinsics?
+23:14 < illi> yeah... it didn't look like it was really any easier/better -- i might reconsider later... but for now just finding a good vector way to do the algorithm is the hard part
+23:15 < illi> also, i'm think of moving stuff to seperate files for nasm -- and i already wrote an at&t to intel converter, so i can just write the inverse to get back to gcc syntax
+23:15 < illi> i'm still just playing around to see what works for now
+23:16 < rillian> illi: thanks for doing that
+23:16 < rillian> kfish: any news from Maxim?
+23:16 < kfish> rillian, no, not since last week's email
+23:16 < tahseen> the chaining issue, I'm not so sure of it, I tested my modification primarily with oggdec which seems not to work with chained vorbis file originally, so it I didn't focus on chaining
+23:17 < tahseen> chaining & theora support is what i'm going to work on now.
+23:17 < jmworx> illi: YMMV, but in case you want to look into that, when I converted the Speex SSE asm to intrinsics, I got almost the same performance (actually better on x86-64 because of the 16 regs) and the code became more portable. But it's definitely nice you're doing this, regardless of the form :-)
+23:17 < kfish> rillian, maxim just finished uni on the 3rd, he said he wouldn't be very active till then -- i'll drop him an email to see how he's going
+23:17 < rillian> ah, I just checked http://code.google.com/soc/xiph/about.html and we onlly have 5 projects listed, so I guess that's a "no" on our third choice for the theora SIMD work
+23:18 < rillian> kfish: right, I forgot. sounds good. he seems to be off to a good start
+23:18 < rillian> even if he did shell out to ogmtools :)
+23:18 < rillian> in other news, we merged the theora-mmx branch into trunk and did a release
+23:19 < rillian> including an x86_64 port of wim's MMX from Dan Lenski
+23:19 < rillian> unfortunately I messed up and didn't enable asm by default
+23:19 < rillian> so we need to do a 1.0alpha6a release to fix that
+23:19 < ginger> awesome!
+23:20 < rillian> jmworx: I've seen lots of speex commits lately. how's that going?
+23:20 < rillian> ginger: yes, it was nice to do something with the code for once :-)
+23:20 < jmworx> I've been continuously pushing back 1.2-beta1 because of a lot of changes
+23:21 < jmworx> Basically, it started by reducing the memory by about a factor or two.
+23:21 < jmworx> Ended up doing some quality improvements as well, especially on fixed-point, a few optimizations...
+23:22 < jmworx> Now, I'm working with David Rowe (the guy I originally started Speex with) to really get every cycles out of Speex on the Blackfin DSP
+23:22 < jmworx> actually, he's doing most of the work on that (trying to run an Asterisk PBX on a small GPL, Blackfin-powered STAMP board).
+23:23 < jmworx> So most of the big changes are done, hopefully 1.2-beta1 (aka 1.1.13) will be out in the not too distant future (after things stabilize a bit).
+23:24 < rillian> sounds really great
+23:24 < jmworx> I'm also waiting for someone to update the Speex website (adiabatic?)...
+23:24 < adiabatic> shoulda pinged me earlier.
+23:24 < adiabatic> ....403?
+23:24 < jmworx> adiabatic: Well, it's still the "move to new layout" we've been discussing a few months ago
+23:25 < adiabatic> http://www.speex.org/ 403ing for anyone else?
+23:25 < jmworx> Works fine for me
+23:25 < rillian> try it without the www
+23:25 < rillian> one of the planetmirror mirrors seems to be misconfigured
+23:26 < kfish> hmm, i pinged them about that a month or two ago and they fixed it promptly
+23:26 < kfish> is it broken again?
+23:26 < rillian> seems to be
+23:26 < rillian> www.theora.org has the same problem
+23:26 < kfish> http://speex.planetmirror.com/
+23:26 < kfish> yeah, broken again
+23:26 < adiabatic> yeah, um. That would be my department...this weekend would be good, assuming nobody falls from the sky and invites me to a weekend-long beach party...
+23:26 < kfish> http://theora.planetmirror.com/ works
+23:27 < rillian> kfish: could you ping them again? I don't have the contact handy
+23:27 < kfish> sure
+23:27 < rillian> ta
+23:27 < kfish> heh, exactly the same problem on feb 23
+23:28 < rillian> (www.)(au.)(theora|speex|xiph).org
+23:28 < rillian> it's a long ServerAlias :)
+23:28 < rillian> any other project news?
+23:29 < rillian> ginger, kfish: how's CMML?
+23:29 < rillian> annodex, etc?
+23:30 < rillian> oh, I should also mention Arek's quicktime plugins got theora support. it needs some polish but plackback usually works
+23:30 < kfish> rillian, wait up, the planetmirror mirrors seem to be working now (?)
+23:30 < rillian> kfish: there's more than on, so check the ip
+23:30 < kfish> ah ok
+23:30 < rillian> more than one
+23:31 < kfish> ok i'll dig into it and email them
+23:31 < kfish> annodex is going well
+23:31 < kfish> we just got a new guy working with us (shans), working on the firefox plugin mainly
+23:31 < kfish> ie. fixing stuff that stopped it working on linux ...
+23:31 < rillian> cool
+23:32 < rillian> let's see, I think we've covered the first two items on the agenda
+23:32 < rillian> libogg2 directions?
+23:32 < rillian> monty was mumbling about working on it again, but I've not seen any commits
+23:33 < kfish> perhaps he's hacking but not committing?
+23:33 < rillian> kfish: it's possible, but unusual over such a long period
+23:33 < derf_> Monty tends to commit regularly to keep things backed-up.
+23:34 < rillian> anyway, my only caveat is that the api needs some love; last I looked things like creating pages and packets from existing buffers wasn't implemented
+23:34 < rillian> kfish: you said once it was actually slower than libogg; you have any idea why?
+23:35 < rillian> anyone else have anything to say on libogg2?
+23:35 < kfish> i think that for larger packets, on machines with decent cache, it thrashes the cache less to reassemble
+23:35 < kfish> libogg2 style is definitely better for smaller systems
+23:35 < rillian> huh, interesting
+23:35 < ginger> on other news for the quicktime component, we should prolly mention that apple will put a link up on their components website
+23:35 < jmworx> The part that puzzles me about libogg2 is that the main concern seems to be memory, while at the same time, the current "sort by end time" rule is much more inefficient...
+23:35 -!- tahseen [n=tahseen@mx.therapbd.com] has left #xiphmeet ["Leaving"]
+23:35 < adiabatic> ginger: woot
+23:36 < rillian> ginger: awesome
+23:36 < rillian> I think Arek was supposed to be writing them a blurb. any word on that?
+23:36 < rillian> anyone else want to pick that up?
+23:36 < kfish> rillian, libogg2 + libogg backwards compat layer would be fine (actually, more because a lot of stuff depends on libogg already, and it's much simpler to use)
+23:37 < illi> and that it remain easy to pull the data out and put it back in when creating fake packets
+23:37 < rillian> kfish: the compat layer would presumedly have the same performance problems
+23:37 < ginger> rillian - I thought you knew...
+23:37 < derf_> rillian: Not really. It would be forced to assemble the packets into a contiguous buffer.
+23:37 < ginger> no, haven't heard from Arek recently
+23:38 -!- tahseen [n=tahseen@mx.therapbd.com] has joined #xiphmeet
+23:38 < ginger> but I'm kinda busy with other stuff these days...
+23:38 < rillian> ginger:I did know; I was just being publicly celebratory :)
+23:38 < rillian> ok
+23:38 < rillian> perhaps we should leave it to arek
+23:38 < ginger> rillian: cool :)
+23:38 < rillian> derf_: aha, right
+23:39 < rillian> something to think about then; perhaps we just need two different implementations
+23:39 < ginger> yeah - I'm celebratory, too, but cautious until it really happens :)
+23:39 < rillian> libogg2 certainly grew out of monty's experience porting vorbis to the neuros (TI 320C54x)
+23:40 < rillian> ginger: :-)
+23:40 < rillian> last on the agenda is changes in the meeting times
+23:40 < illi> any memory savings are far outwieghed by the buffering required when you have more than 1 stream
+23:40 < illi> for a single vorbis stream it probably is significant though
+23:41 < kfish> rillian, this meeting time rules ;-)
+23:41 < rillian> we discussed changing the time, but I can't remember if we agreed on anything
+23:41 < illi> yes... but the 12 hour opposite will suck for us kfish :)
+23:41 < rillian> basically every time sucks for someone
+23:41 < rillian> maybe we should try rotating by 6 hours instead of alternating by 12?
+23:42 < jmworx> illi: That's exactly what I think. I actually heard monty mentioning libogg2 was mainly for theory (which is why I don't see the point)
+23:43 < illi> i don't see why not support both... let the embedded things use libogg2 -- libogg1 is actually better for everything except single stream vorbis on an embedded device
+23:43 < illi> seems silly to make every other piece of software jump through hoops and do things that have no benefit for one minor use case
+23:44 < illi> and having a contiguous packet is far better for the codec layers on a machine with a real cache
+23:46 < rillian> seems like a reasonable position :)
+23:46 < rillian> anyway, I need to get to bed, so if there's nothing further, I vote we adjourn
+23:47 < kfish> aye
+23:47 < rillian> ok, thanks for coming everyone
+23:47 < jmworx> rillian: Any proposal on how to solve the issue.
+23:47 < rillian> jmworx: which issue?
+23:48 < jmworx> what to do about libogg2 (obviously is won't be today since monty isn't here)
+23:48 < jmworx> s/is/it/
+23:48 < rillian> no, I don't have a suggestion
+23:48 < rillian> I like hearing people's opinions so I have some idea what concensus is
+23:49 < rillian> and I can feed that to monty if he starts working on it again
+23:49 < rillian> but at the moment if we do nothing we will be implementing the concensus :)
+23:49 < jmworx> :-)
+23:49 < rillian> ok, cheers all
+--- Log closed Tue Jun 06 23:49:58 2006
