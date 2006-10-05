@@ -1,0 +1,604 @@
+[Log starts 2006 October 4 05:09 UTC]
+--- rillian has changed the topic to: Xiph.org meeting channel
+--- illi is now known as illi_log
+* rillian can't stay up for the meeting, but will read the logs
+<xiphmont> Mr. Responsible ;-)
+--> illi_vanilli (n=illimina@dsl-202-72-166-70.wa.westnet.com.au) has joined #xiphmeet
+--- illi_vanilli is now known as illi_home
+<illi_home> hopefully be back soon
+<-- illi_log has quit (Read error: 110 (Connection timed out))
+<xiphmont> And now, a quick Cairo patch that should fix Sushivision right up...
+<xiphmont> Also, for those who care, the Tyan K8WE is proving to be an absolutely flawless Linux mobo.
+--> Luna-Tick (n=Luna-Tic@203-100-218-102.jetbuster.co.nz) has joined #xiphmeet
+<xiphmont> hello hello
+<xiphmont> I wasn't asked to chair this month, so I assume I'm not...
+<xiphmont> but is the chair here?
+--> arkadini (n=arkadini@host-89-228-237-99.kalisz.mm.pl) has joined #xiphmeet
+<arkadini> hi
+<xiphmont> hi hi
+<xiphmont> we've not yet started, I'm trying to determine who the Chair this month is :-)
+<jmworx> should we get started?
+* jmworx looks at Monty
+<xiphmont> Yes, I think so.
+<xiphmont> OK, sure.
+<xiphmont> I see we actually have an agenda on the Wiki, good, I call the meeting to order.
+<xiphmont> I'll go by wiki agenda first
+<xiphmont> without thought to whether or not it makes sense.
+<xiphmont> Item 1
+<xiphmont> "Can we find some webmasters?"
+<xiphmont> ...but I thinkt he real issue is actually, "Are we really doing anything anymore" :-)
+<jmworx> Sure, let's address that.
+<xiphmont> OK
+<xiphmont> Then Item 0:  state of the Org in general.
+<jmworx> I think we're sort of going totally independently at this point.
+<xiphmont> Yes, we have been for a few months.
+<xiphmont> Especially as I'd been pulled, once again, entirely away from Xiph work.
+<jmworx> I'm continuing to work on Speex, not sure how the other projects are doing.
+<xiphmont> I've just completed my first large task at readhat.
+<jmworx> Then Item -1: "State of Monty in the future".
+<jmworx> what was the large task?
+<xiphmont> I don't know if that means I'm going back to working on Vorbis/Ghost, but that's been true the past few days.
+<xiphmont> If the Org is entirely dependent on me, it will go through large fits and spurts of activity like it always had since it started in 1994 :-)
+<jmworx> Well, you're our dictator ;-)
+<xiphmont> The large task was a substantial uprgade of USB 2.0 support in Linux 2.6 because USB audio devices souldn't work properly.
+<xiphmont> s/souldn't/couldn't/
+<jmworx> Seriously, I think we really lack contributors that are seriously involved.
+<xiphmont> My 5000 lines of patch is in the -mm kernel as of tonight.
+<jmworx> I'm not sure what the solution to that is.
+<xiphmont> well, yes.  If I'm not involved, how involved is anyone else going to be?
+<xiphmont> I don't actually view it as a huge problem.  We don't have any duty to beat a dead horde.  Or, more accurately, to establish an ISO9001 accredited process to keep the horse awake.
+<xiphmont> We've all been involved because it suited us and we wanted to.  This isn't IBM.
+<xiphmont> And that will be true again.  I
+<jmworx> We don't have a duty, but it would be nice if we could accomplish stuff. Otherwise, why would we have written this software?
+<xiphmont> I think a new exciting project would restart all the involvement.  Seven years ago, Vorbis was that project.  Perhaps Ghost or Postfish would be next time around... if I ever get time to work on it
+<xiphmont> Heh
+<xiphmont> None of our projects are dead or even unhealthy... even if the org looks like it's asleep.
+<jmworx> There's already a lot of stuff we can do.
+<jmworx> I mean with the current projects.
+<xiphmont> Well, there's alot of new stuff I want to do.
+<jmworx> Sure
+<xiphmont> as long as we're coding on audio, there will be an Org.  Things have been slow because, for the past two years-- I've had no time to write audio code.  I've been a > full-time programmer in the real world.
+<xiphmont> RedHat offered a chance to get back to it to an extent, I'm grabbing at the first opportunity.
+<xiphmont> I've released a new cdparanoia, I need to look at a release of Vorbis, and I've been coding Ghost past few says
+<jmworx> I think Xiph should be better at *promoting* the stuff. Of course, that requires more people, who are very different from the ones creating the software anyway (so there's no overlap).
+<xiphmont> days
+<xiphmont> So I'm not worried.
+<Luna-Tick> Theoretically, Xiph.org is a standards body, isn't it? For a standards body there is an awfully large focus on development.
+<xiphmont> well
+<xiphmont> Xiph.Org was always primarily deployment of research.
+<jmworx> I'd *like* Xiph.Org to become a sort of standards body, but that's definitely not the case atm
+<xiphmont> we talked very seriously about becoming a standards body, but it requires infrastructure we don't have.
+<xiphmont> And, frankly, it's less fun.
+<xiphmont> As Xiph.Org became less fun, the core members went off to other things.
+<jmworx> xiphmont: Well, why couldn't we have these infrastructures -- also doesn't mean you have to be in charge of that part (especially if you don't enjoy it).
+<xiphmont> heh
+<jmworx> Yeah, we lost Arc that way ;-D
+* jmworx runs
+<Luna-Tick> As jmworx says, it just requires a different group. A standards body aims to create alliances and brand value. The current "leaders" are developers that want to develop
+<xiphmont> If I didn't do it, no one else did.  
+<xiphmont> Luna-Tick, yes, and I don't want to change that
+<xiphmont> If Xiph is something I don't want to do, I'm not going to do it.
+<jmworx> Regardless of what the exact goal is, the thing is we need to get more people involved.
+<xiphmont> Running a standards body is not what I want to do.  I wouldn't mind being *part* of a standards body.
+<xiphmont> Oh, that's easy.
+<jmworx> You've got a limited time to spend on Xiph and so do I (and the others).
+<xiphmont> Exciting new code.
+<xiphmont> Not necessarily new projects, but new code.
+<jmworx> xiphmont: that's exactly what I meant: "I wouldn't mind being *part* of a standards body"
+<xiphmont> Well, we did have a contributor who was very interested in lending expertise (Brett McDowell)
+<jmworx> Anything in particular you had in mind?
+<xiphmont> But he also was unable to be the person who would run it.
+<xiphmont> what, new code?
+<jmworx> yes
+<xiphmont> Well, I plan to spend my coding time for the future on Ghost and Postfish.
+<xiphmont> Those are both exciting to *me* :-)
+<jmworx> well, the Ghost part is to me too, even though we've got slightly different goals for Ghost.
+<xiphmont> yes
+<jmworx> BTW, I've got a post-doc with me looking into sinusoidal analysis.
+<xiphmont> And I expect we will also get two implementations out of one spec ;-)
+--> illi2 (i=illimina@134.7.222.214) has joined #xiphmeet
+--- illi2 is now known as illi
+<xiphmont> jmworx: I will keep you up to date on Sushivision then.
+<xiphmont> (multidimensional vis tool)
+<jmworx> I think what could be a real "killer app" with Ghost is being able to have musicians playing together over the net.
+<xiphmont> you can do that now, with enough bandwidth :-)
+<jmworx> What's that?
+<jmworx> xiphmont: I mean something that works with a standard DSL/Cable connection.
+<xiphmont> simple tool for investigating continuous multidimensional functions.
+<xiphmont> "I have theis 16 dimensional thing, what does it look like?"
+<xiphmont> I'm a visual thinker (which is odd in so many ways) so I need a tool like that.
+<jmworx> Does some sort of 2-D projection?
+<xiphmont> yes, but it's the manipulation of the parameters that makes it useful.
+<xiphmont> It's not fancy.
+<xiphmont> It's just terribly convenient.
+<jmworx> It's in svn?
+<xiphmont> Not yet I think...
+<xiphmont> It has been languishing unfinished on a shelf because it exposed alot of Cairo bugs, I think I'm fixing the last of them now though.
+<xiphmont> [Had a long talk with Carl earlier today]
+<jmworx> BTW, I'm going to open-source a MUSHRA GUI, so I might as well put it on the xiph.org site I think.
+<xiphmont> MUSHRA?
+<jmworx> A perceptual test.
+<xiphmont> Oh! Right.
+<jmworx> MUltiple Stimuli with Hidden Reference and Anchor
+<xiphmont> (MY first task for sushivision is to try to generalise your xcosx sinusoid solver...)
+<jmworx> Took me 2 days to write with libglade and it's been 3 months since I've been trying to open-source it (the joys of large organisations!)
+<xiphmont> heh
+<jmworx> generalize in what sense?
+<xiphmont> make it useful (or at least fail in predictable ways) for chirp rates of > 1 cycle per analysis frame.
+<xiphmont> But also to look at the manifold shape of the larger equation to begin with.
+<xiphmont> Like most fourier things, a general purpose iterative solver is a waste.
+<xiphmont> The minimax patterns should be very predictable.
+<jmworx> xiphmont: actually, I'm thinking it may be more useful to get rid of the xcos/xsin terms altogether.
+<jmworx> euh?
+<jmworx> Can you explain your last 3 lines?
+<xiphmont> A general purpose nonlinear solver is usually going to zoom in on the local maximum.
+<jmworx> my solver is actually linear BTW
+<xiphmont> Oh, right.
+<xiphmont> well...
+<jmworx> And the system is positive (semi-)definite
+<xiphmont> within your solution range it is ;-)
+<jmworx> it is by definition because I explicitly linearized the problem
+<xiphmont> The general solution isn;t though.
+<xiphmont> system/solution
+<jmworx> you mean with unknown frequency?
+<xiphmont> right
+<xiphmont> I don't mean to belittle your recasting of the problem; it would never have occured to me and is very clever.
+<jmworx> Did you read the paper I sent to Anup a while ago about instantaneous frequency estimation?
+<xiphmont> Yes, but I can't remember much of it right now.
+<xiphmont> Liek I said, I'm a visual thinker and papers are written by people who love symbols :-|
+<jmworx> Well, papers are usually much more useful when you have the explanation that goes with it -- which I was fortunate to have.
+<xiphmont> Visualize something in eight dimensions?  No problem.  Read a paper that's 50% LaTeX equations, can't do it.
+<jmworx> Otherwise, it's mainly a matter of practice. After reading a few, you become better at understanding what they're talking about.
+<xiphmont> sure
+<jmworx> See, I'm a bit of the opposite, though it still depends on the kind of equations they have.
+<derf_dk> I just can't understand anything.
+<xiphmont> Yes, it makes you hard to talk to :-)
+<xiphmont> jmworx I mean
+<xiphmont> Anyway
+<jmworx> Anyway, I've been thinking it might be more useful to approach the problem the other way 'round. 
+<xiphmont> Don't cry for the state of the org.  If it languishes, that's because it's what we really want-- it means our priorities are really elsewhere, at least at the moment.
+<jmworx> Have a really bad codec working and then improve it...
+<xiphmont> heh
+<xiphmont> well, it will start out as really bad.
+<xiphmont> It has to.
+<xiphmont> It always does.
+<xiphmont> back to the subject at hand.
+<jmworx> OK
+<xiphmont> eventually popping back to item 1.
+<xiphmont> "webmasters"
+<jmworx> There are very different tasks here anyway
+<xiphmont> We had 'support people' int he past because what we were doing was exciting enough that folks wanted to be involved, even though there was no one explicitly managing or motivating them.
+<jmworx> The people that will do new applications, new codecs, websites are all different
+<xiphmont> Also, and do not overlook this, we had Jack.
+<jmworx> what happened with jack BTW
+<xiphmont> And Jack was very effective at managing people without explicitly managing them.
+<jmworx> sure
+<xiphmont> He went off and has a life on his own :-)  Went back to school, finished his degree, started an online chess company.
+<jmworx> Who's actually involved these days?
+<xiphmont> (also, he and Emmett didn't get along because what Jack was doing implicitly, Emmett wanted to take over explicitly.  And jack's take was 'OK, fine' and he wandered away.  Jack was better at what he did than Emmett was.)
+<xiphmont> here, yoady?  Wel,, damn, it feels like I've been in a cave for a month.
+<xiphmont> oops
+<derf_dk> Well, I defend in November, so presuming that goes well, I should have some time for Xiph stuff again.
+<xiphmont> fingers got a row off
+<xiphmont> Today, it's lurkers, you, me, rillian, derf, mike, the Aussie
+<xiphmont> s
+<xiphmont> I've seen Manuel pop in but only briefly.
+<jmworx> I personally had no problem with jack or Emmett. I think Emmett was getting stuff to happen, though I don't know about the whole story.
+<xiphmont> Woldn't mind getting him back :-)
+<jmworx> sure
+<xiphmont> [manuel I mean]
+<xiphmont> well, Emmett was good at some things and bad at others.
+<jmworx> Yes, I understood that
+<xiphmont> Problem is he wanted to be an executive, but was not at all organized enough to be one.
+<jmworx> Can't comment on that.
+<xiphmont> We hired him to be a salesman, but he had a fatal flaw there too
+<jmworx> But it would be nice to get someone to do that type of things.
+<xiphmont> [he can schmooze, he's charming, he doesn't blush--- but his understanding of $$$ ends at about $10k.  He never seemed able to imagine any amount that was bigger than that]
+<jmworx> Though I guess it's useless to post to the mailing list saying "We want an organizer"!
+<xiphmont> well, see, we never 'got people' to do things.  They showed up, and if they were good at something we needed, we encouraged them to stick around informally.
+<jmworx> Yes, I understand that.
+<xiphmont> We've had people wander through who *were* organized, like Brett, but were also not willing or not able to enact what they suggested.
+<xiphmont> We don't need people to make suggestions.  We need people to act ont heir suggestions.
+<jmworx> what did they suggest?
+<jmworx> sure
+<xiphmont> Brett was the standards body person.
+<xiphmont> he had half a founding charter drawn up at one point.  Nothing happened.  I still don't know why, but I think it's because 'there was no one there who knew how to and was able to act on the plan."
+<xiphmont> When Jack and PFM were still interested, they knew how to act on things.
+<xiphmont> It was instinctive, they Just Did things.
+<xiphmont> And when we lost them to other interests, we stopped being able to Just Do.
+<jmworx> so we're sort of stuck in a loop atm. not enough people because not much is going on. Not much is going on because not enough people.
+<xiphmont> No, not true.
+<xiphmont> it is not a loop.
+<xiphmont> Xiph was always about the core projects.
+<jmworx> where's the open end?
+<xiphmont> We're not doing much because we're not doing much.
+<derf_dk> Right. It's the people who do the core work that there aren't enough of.
+<xiphmont> If a completed Ghost hit Slashdot tomorrow, we'd have people.
+<xiphmont> pfft, in 1998, Xiph was down to just me.
+<derf_dk> You said yourself, jmworx, that that was a very different class of person than the one who organized or publicized.
+<xiphmont> (no one here knows or remembers the original core)
+<xiphmont> and then I wrote Vorbis.
+<xiphmont> And the group we had that everyone knows today self-assembled around it.
+<xiphmont> [well, it was also cdparanoia; that attracted jack's attention]
+<derf_dk> I actually self-assembled around Tarkin.
+<jmworx> xiphmont: so, outside of Ghost (which will take a *long* time), what would attract attention?
+<xiphmont> that was the right way to do it, from my standpoint, because I'm about the code and the R&D.
+<xiphmont> Tarkin was a direct result of the heady days of eraly Vorbis :-)
+<derf_dk> jmworx: An actual competitive video codec?
+<xiphmont> jmworx: I don't care about attracting attention.  I know that if I write soemthing good, it will attract attention as a useful side effect.
+<xiphmont> You know that too.
+<xiphmont> But we have to have that first.
+<xiphmont> So let the external face collect dust while we code in peace.
+<xiphmont> Because we will get stuff doen that way.
+<jmworx> xiphmont: in other words, what are good projects atm?
+<derf_dk> Sounds like a good plan to me.
+<xiphmont> I care about Ghost and Postfish.
+<xiphmont> I'm still following the path of 'Things I need FOr Myself'.
+<derf_dk> And I care about Theora and Something After Theora.
+<jmworx> xiphmont: the external face is also important, even though done by other people 
+<jmworx> derf_dk: Dirac?
+<xiphmont> Postfish [in a nother form] is the original project that started everything.  Ogg and Vorbis were spinoffs.
+<derf_dk> jmworx: Possibly. I have my own ideas I'd like to try out, though.
+<xiphmont> I don't think the external face is fundamentally important int he first order.  IT's not what I'm in it for.
+<jmworx> Then I think I missed some parts of what postfish is supposed to be...
+<xiphmont> Postfish isn;t that much.  General purpose audio manipulation.  It's still a project because even the commercial tools are so patently awful as yet.
+<xiphmont> ProTools is the gold standard, but it's so damned painful to look at...
+<jmworx> xiphmont: never said you should be handling that, just that it has it use. My goal in here is promoting open media formats. What I'm good (or not too bad) at is creating the said format, but I'm not good at promoting it.
+<xiphmont> and the free tools are just doing a poor job of aping protools.
+<derf_dk> I have similar problems with video tools, but honestly I have no real interest in developing my own.
+<xiphmont> well, open audio formats are a necessary foundation for all I want to do.  That's why the project spawned Ogg.
+<xiphmont> But, in the end, I want to *do things* with what I'm writring.  I'm writing the code I need myself.
+<xiphmont> I'm an application developer at heart.
+<Luna-Tick> There is a certain circularity. People are always impressed when they see Vorbis, but don't use it because hardware support isn't there. Hardware support isn't there because the masses don't use it. The masses don't use it because there is no community, publicity or excitement around the formats. McDonalds didn't succeed by making the best hamburger... it is the one that everybody got excited about.
+<xiphmont> but the apps I want to write have no foundations to build upon.
+<xiphmont> Luna-Tick: Vorbis a specific design limitation that prevented wildfire adoption.
+<xiphmont> I made a guess that DSPs were moving toward general purpose parts (like ARM) with offboard DRAM.
+<jmworx> I want Speex to be supported by any soft or hard phone out there (I don't care if they also have proprietary codecs as well) so anyone can talk to anyone. At this point, the limiting factor is industry contacts and I'm not good at that.
+<xiphmont> I designed Vorbis to need very little CPU, but relatively large memory.
+<xiphmont> The guess was off.
+<xiphmont> DSPs went to high-er and higher clock rates, but even less onboard memory.
+<xiphmont> And I plan to correct that in Ghost.
+<xiphmont> [that is, Ghost must have a smaller memory footprint]
+<jmworx> I'm fine with that.
+<xiphmont> Anyway, manufacturers *all* wanted vorbis... until the ones not using ARM found out they needed a different DSP to do it.
+<xiphmont> Very few managed to make it fit.
+<jmworx> really?
+<jmworx> So it doesn't work on a C55?
+<xiphmont> And that is why VOrbis stalled out at the adoption plateau it reached.
+<jmworx> What's the part that's taking that much mem?
+<xiphmont> two things:
+<Luna-Tick> Right - so you think that if you develop something that will work for them, the manufacturers will all want to just pick it up? (that isn't sarcastic)
+<xiphmont> the 8192 sample vectors
+<xiphmont> but also the semi-packed codebooks.
+<jmworx> you mean 8192 samples for the DCT?
+<xiphmont> Don't forget; the average player DSP has only about 32kW for code and memory.
+<xiphmont> jmworx: yes
+<jmworx> what do the other codecs do?
+<xiphmont> the tend to have ALUs with special blocks tailored to in-flight mp3 specific transforms.
+<xiphmont> Luna-Tick: I don't know, but I do know it is a requirement.
+<jmworx> I think going with small frames will definitely help in any case.
+<xiphmont> yes
+<xiphmont> samller anyway.  Vorbis was too expansive a spec.
+<xiphmont> It was explicitly desighned as a software player because I thought that was the direction all hardware was going.
+<xiphmont> And maybe it will yet be.
+<jmworx> xiphmont: a bit OT, but Shane and Silvia are pushing for the Xiph codecs to be in the main firefox build.
+<xiphmont> But it didn't turn out that way in the predicted 5-year span.
+<xiphmont> What we do know is that the industry *really* wanted Vorbis.
+<jmworx> I think I've generally be lucky with the guesses I took in Speex, including implicit assumptions I made.
+<xiphmont> OK, re-asserting Chair.
+<xiphmont> ANy last points to make ont his topic before moving on?
+<xiphmont> I don't want this to get dragged out (although that was a solid and necessary conversation, no fluff there)
+<derf_dk> Plese move on... I'd like to get to breakfast before it closes.
+<xiphmont> OK
+<xiphmont> Points 1-3 are discussed, at least in abstract.
+<xiphmont> OggPCM is item 4
+<jmworx> Any opinion on that one.
+<jmworx> I think the main interest in OggPCM comes from Annodex.
+<xiphmont> Yes, we need OggPCM, because we need to be able to include raw PCM into Ogg files in a 'free' way
+<xiphmont> and by 'free' I am taking the maximal (Debianish) stance.
+<jmworx> .wav isn't free?
+<xiphmont> It doesn't matter where it comes from, I assert we need it (or something much like it)
+<xiphmont> .wav is broken in a few nsty ways.
+<jmworx> Sure, I'm also in favor. I was just curious about the "free" comment you made.
+<xiphmont> heh
+<xiphmont> the point is valid.
+<xiphmont> WAV is free
+<xiphmont> there are also multiple WAVs, a different point.
+<xiphmont> But yes, I endorce OggPCM.
+<xiphmont> endorse
+<jmworx> So basically, MikeS had a few objections at some point, but I think they've been resolved. Did you have a look at it in details?
+<xiphmont> I have read it.  Again, I can't pull section numbers out of the air, but I had no great worries when I read it in detail some months ago.
+<xiphmont> I will check again.
+<jmworx> I think illi actually has an implementation of it, but I'm not sure how complete it is.
+<xiphmont> Hell, I'll do it tonight.
+<derf_dk> I still want to say I was a big fan of Gumboot's proposal.
+<xiphmont> If I have any worries, I'll bring them up immediately.   I don;t think I will
+<xiphmont> Which was.... 
+<xiphmont> ?
+<jmworx> derf_dk: what's Gumboot's proposal?
+<xiphmont> [alternate version?]
+<illi> i have  a working implementation...
+<derf_dk> It was half a page. It said, "You will do it like this."
+<derf_dk> Instead of giving you any choices about how to store the data.
+<jmworx> euh?
+<jmworx> you mean the sample format?
+<derf_dk> Yes.
+<xiphmont> paste a link.
+<derf_dk> Let me dig it up.
+<xiphmont> to Gumboots.  I'll review both.  But I don't consider the proposal on the webpage to be overcomplex.
+<xiphmont> do you have it handy?
+<xiphmont> Actually, toss it in when you find it, let's move on.
+<jmworx> We may want to restrict the number of formats (I wouldn't mind having only BE or LE), but just one may be a bit extreme.
+<derf_dk> http://bovine.muck.net.nz/users/gumboot/OggPCM0-draft.txt
+<xiphmont> I wouldn't either, but that's a small thing.
+<xiphmont> thank you
+<xiphmont> two items:
+<xiphmont> New vorbis-tools and AoTuV merge
+<xiphmont> yes, both need to happen.
+<xiphmont> There's a third thing that's not in there Vorbis related, ad that is replacing reference decode with Tremor, which is now the better decoder.
+<xiphmont> Item after:
+<jmworx> But isn't tremor fixed-point only?
+<xiphmont> Trac.
+<xiphmont> oops, popping back
+<xiphmont> Tremor is a different decode architecture.  It is not wedded to fixed-point and in fact the reference replacement would go back to float.
+<jmworx> I assume it would be slower on a general-purpose CPU... or maybe I'm missing something
+<jmworx> Oh, I thought Tremor was just a fixed-point port of the reference decoder.
+<xiphmont> So, no, reference would not be replaced by a fixed-point version.  It would be replaced by a float-version Tremor.
+<xiphmont> Tremor forked mightily.
+--> MikeS_ (n=msmith@84.77.175.160) has joined #xiphmeet
+<derf_dk> But that would require a public release of libogg2, at the least.
+<xiphmont> It used less than 1/10th the memory, uses libogg2, can eliminate mallocs entirely, etc.
+<xiphmont> yes, it would.
+<derf_dk> Which is something you've been promising for years now, it seems.
+<xiphmont> so you can see, there's a long line of stalled dev :-)
+<xiphmont> Oh, libogg2 would have happened years ago if not for Arc sending me out the door screaming.
+<jmworx> xiphmont: I think kfish showed interest in getting involved in libogg2, though I'm not sure how much his vews are compatible with yours.
+<xiphmont> really, the whole Mux thing a few years ago was the last straw and I couldn't even stand to think about Ogg or Xiph for a long time.  I got a job and was happy Just Not Thinking About It.
+<jmworx> Didn't know Arc managed to screw up on libogg2 as well. What happened?
+<derf_dk> xiphmont: It's been some time since Arc left, I don't think you can lay the blame entirely on him.
+<xiphmont> kfish reset my thinking on several things.  Our views are now compatable, as he's generally farily balanced/practical in his approach.
+<xiphmont> derf_dk: No, it just sent me away and other things caught my interest.
+<xiphmont> I started dating again, got a job, bought a house, got married, etc :-)
+<xiphmont> I didn't say it had been a *bad* thing.
+<Luna-Tick> Congratulations :)
+<derf_dk> Well, that sounds far too much like a real life to be allowed arond here.
+<xiphmont> right.
+<jmworx> xiphmont: Maybe kfish should take over libogg2? (haven't consulted him on that one!)
+<illi> isn't he out of country and on other things now?
+<xiphmont> well, the libogg2, as it stands in SVN, is complete but missing the libogg1 compat layer kfish convinced me was necessary.
+<xiphmont> that is the reason it has not been released.
+<xiphmont> it's not hard code to write, it's also just not fun code.
+<derf_dk> And it's been that way for months.
+<jmworx> illi: he just moved to Kyoto, but I think he'll stay involved.
+<xiphmont> years.
+<xiphmont> An Aussie in Kyoto... hm, no, he's going to go native chasing the girls.
+<jmworx> xiphmont: how about having liboggz in libogg2?
+<jmworx> i.e. some usable layer directly there.
+<xiphmont> Different layer abstractions.
+<xiphmont> in any case, we'd not discussed it.
+<xiphmont> when I see kfish, I'll bring it up.
+<xiphmont> I'll be around more give Sushi.
+<jmworx> OK
+<xiphmont> Trac:
+<jmworx> Last thing about libogg2
+<xiphmont> Argh
+<xiphmont> ok :-)
+<jmworx> Would be nice if there was a way (some abstraction?) to make it possible for Speex (and ideally other codecs) to use it properly with the bitpacker without an explicit dependency.
+<xiphmont> well, libogg2 is 90% the bitpacker.
+<xiphmont> there's not much left if you sep it out.
+<xiphmont> Actually, that may not be entirely true.
+<jmworx> could be an option or callbacks, I don't know.
+<xiphmont> you want the bitpacker but not the lib?
+<jmworx> I don't think it's clean to have the codec depend on the container
+<xiphmont> Or you want a formalized bitpacker API that can be reimplemented?
+<jmworx> could be that. I'm not sure exactly. I want my cake and eat it too :-)
+<xiphmont> the problem with sepping out the bitpacker is that internally it's very wedded to the memory model used in libogg2.
+<illi> and the libogg2 api is harder to use your own packet structure that libogg1
+<illi> that=than
+<jmworx> I want the benefit of libogg2 if it's there, but I don't want to depend on it.
+<xiphmont> illi: yes, libogg2 is meant to be used throught he bitpacker only, period.
+<xiphmont> well, the idea was that libogg2 would offer the ibogg1 semantics as well, but they require an extra copy in some ops.
+<illi> yeah... but other frameworks need to transport in other ways... whic h i think was the main reason kfish was big on a compatability layer
+<jmworx> We could standardize a struct with the packet and the callbacks in it?
+<xiphmont> well, the bitpack API is simple and reimplementable.
+<xiphmont> why callbacks?  Just call the bitpacker you want to use.
+<illi> from my implemenation, i just want to be able to get the data out and not actually use libogg except where the codec needs it
+<jmworx> I mean, you receive this struct and if you want to pack some bits, you just need to call the Nth field in it and pass the struct itself.
+<xiphmont> jmworx: the point of libogg2 was zero-copy in a transport that fragments packets.
+<xiphmont> You can't do that and have zero-copy.
+<derf_dk> I would suggest that maybe this discussion is getting too technical for the monthly meeting.
+<jmworx> Basically, you could pass any bitpacker to the encoder/decoder and it would just work.
+<xiphmont> jmworx: you can do that now.
+<jmworx> xiphmont: sure you can.
+<xiphmont> Yes, this is arcana.  It can continue outside the meeting.
+<xiphmont> moving on.
+<xiphmont> really this time
+<xiphmont> Trac:
+<jmworx> I just mean that if we standardize some "bitpacker object", I could have the Speex bit-packer be interchangeable with the libogg2 one
+<jmworx> OK
+<xiphmont> I don't know how to use it.  I hate usiong it.  I don't even know who's maintaining it.
+<xiphmont> jmworx: agreed, but let's continue it later.
+<derf_dk> I'm pretty sure the answer to that last one is "no one".
+<jmworx> OK
+* jmworx thinks too
+<derf_dk> Trac has pretty much been a dismal failure, AFAICT.
+<MikeS_> trac's also got filing bugs disabled, due to spam... so it's not a public bugtracker any more.
+<jmworx> I can't even close/comment the bugs that are filed against Speex
+<xiphmont> UGH
+<jmworx> derf_dk: well, trac is great for the svn browser, otherwise I agree
+<xiphmont> I will bring this up with Rillian as he had a hand in moving us to Trac from Bugzilla.
+<MikeS_> (I use trac for work too; it's terrible as a bugtracker, though the svn browser is cute)
+<xiphmont> We need to have a maintained bug tracker people will use, or we should have no bug tracker at all.
+<MikeS_> xiphmont: the basic problem is that nobody is willing to do the work to maintain a bugzilla instance
+<jmworx> Do we have a large enough volume of bugs that the mailing lists can't handle?
+<derf_dk> Right now we're in the latter camp.
+<xiphmont> yes, we need a bug-tracker.
+<xiphmont> Bugzilla was suiting us fine.
+<xiphmont> Then one day I went to get a bug and we'd moved to Trac.
+<MikeS_> jmworx: yes. mailing lists don't handle bugs at all, ever. That's a guaranteed way to get everything forgotten
+<jmworx> I don't mind as long as I'm not in charge ;-)
+<xiphmont> anyway, offline.  "The system as it stands is broken because people won't use it/can't use it".
+<xiphmont> It will be fixed, it is on my list.
+<jmworx> OK
+<xiphmont> XSPF:
+<xiphmont> I'm out of touch.  I don't knwo what exactly this means:
+<xiphmont> "Lucas Gonze from the XSPF project needs help with the MIME registration of XSPF at the IETF"
+<xiphmont> MIME is IANA.
+<xiphmont> I need to find out what the problem is.
+<jmworx> No idea on any of that
+<xiphmont> I may need to ask Jack for a refresher on how we got .ogg registered ;-)
+<derf_dk> XSPF is the .m3u-replacement project.
+<jmworx> I think you'll like the next one :-)
+<xiphmont> yes
+<xiphmont> OK, XSPF is on my 'hook up with others' todo list.
+<xiphmont> Next: extension wars.
+<jmworx> Reminds me of http://lists.xiph.org/pipermail/vorbis/2004-June/025293.html
+<xiphmont> My primary objection to many extensions is that with .3, we're going to run out and so we can't go all crazy.
+<xiphmont> Any .3 extension you use... is already being used by somebody else for somethign esle somewhere.
+<xiphmont> On the other hand, the world is absolutely convinced of this extension need.
+<xiphmont> Can windows yet use anythiong other than .3 reliably?
+<jmworx> I guess I'm not giving the right example by using .spx...
+<xiphmont> I'd *love* to use, eg, .v.ogg as a compromise, but I recall that breaking things.
+<xiphmont> Because I'm sick of arguing about it.
+<xiphmont> I don't care, so I'm going to give in, so long as the compromize isn't absurd.
+<xiphmont> .ogm is not a good idea.
+<derf_dk> That's a question for illi. I honestly have no idea.
+<jmworx> xiphmont: Any opinion on .spx vs .ogg for Speex files? Used to recommend .spx when Speex has little player support. It's changing *a bit* now.
+<xiphmont> jmworx: my point is that I don;t care all that much and I'm tired of the subject coming up.  Jrb has, however, conviced me that the idea of file magic is flawed int eh long run.
+<Luna-Tick> What's wrong with ogm?
+<illi> extensions can be long
+<illi> (and it's recommended)
+<xiphmont> illi: but multidot?
+<illi> though most have a 3 letter fallback
+<xiphmont> right, thus .v.ogg ;-)
+<illi> only the last will count as extension
+<illi> also wmp11 defines ogg as an audio type
+<illi> which has been a problem i've had for a long time
+<derf_dk> Well, that's because WMP11 is dumb.
+<illi> it has basically forced the issue
+<derf_dk> But we all knew that.
+<xiphmont> sigh
+<illi> what is so wrong with .ogv for theora?
+<xiphmont> .v:ogg
+<xiphmont> illi: the namespace of .3 is polluted and getting worse.
+<derf_dk> xiphmont: No colons.
+<illi> well that's not our problem
+<xiphmont> .v,ogg :-)
+<illi> ogv is not used by anything important
+<jmworx> how about .v/ogg  :-D
+<xiphmont> .v+ogg
+<xiphmont> hee hee hee
+<illi> why tempt fate that some screwed up bit of software will fail on that
+<xiphmont> sigh.  this argument is just so... dumb.
+<illi> i don't see the big deal... every other format has it
+<illi> it may not be the best way... but it will make the pain go away
+<jmworx> .anx :-)
+<xiphmont> because it is an ogg with something else and the only reason this is a concern at all is because Windows is still using a convention that was obsolete in 1979.
+<illi> we already have .axa and .axv
+<illi> that's what cmml wiki and mod_annodex use now
+<jmworx> wasn't aware of that.
+<xiphmont> I like the '+'
+<illi> well... that's just the way it is... we can make a philosophical stand on important things
+<xiphmont> If I'm going to compromise, I'm not going to do it unless I also leave the other side at least a little pissed off.
+<xiphmont> Moving on.
+<jmworx> K
+<xiphmont> SoC
+<xiphmont> jm and I lost our student to illness.
+<xiphmont> ...so we have little/nothing to report.  
+<xiphmont> Others?
+<derf_dk> I lost mine due to a severe motorcycle accident.
+<xiphmont> oh my
+<jmworx> I think tahseen did a good job with skeleton
+<jmworx> derf_dk: Oh, didn't know that. :-(
+<xiphmont> Oh, yes, we should have a Skeleton get together sometime soon.
+<jmworx> xiphmont: did the skeleton patch make it to the vorbis stuff?
+<xiphmont> XiphCon didn't happen this year due to general apathy and Real Life getting in the way.
+<xiphmont> jmworx: I don't know.
+<jmworx> What's XiphCon?
+<xiphmont> Xiph Convention.  We all get together somewhere.  
+<jmworx> Wasn't even aware of that.
+<xiphmont> Although GUADEC almost counted.
+<jmworx> FOMS would be a good occasion :-)
+<xiphmont> well, we're more spread out that we used to be.
+<xiphmont> Futot of Music?
+<xiphmont> er
+<xiphmont> Future
+<xiphmont> the actual XiphCon wasn't generally aligned with anything.
+<jmworx> Foundation of Open Media Software -- which I'm organising with Silvia, jdub, ...
+<xiphmont> And I'm not going to suggest Wintertime in BOS.
+<jmworx> Though she had invited you
+<xiphmont> jmworx, the January thing?
+<jmworx> yes
+<xiphmont> The problem is: Camilla will have just delivered.
+<xiphmont> Both our families will be here.
+<jmworx> Bring all your family then ;-)
+<xiphmont> If it was indispensible, I could go.  But I think this counts as something I have to skip in this case.
+<jmworx> xiphmont: congrats, didn't know she was pregnant
+<xiphmont> thnaks.  she's due mid-december.
+<jmworx> understandable
+<xiphmont> I would love to come :-(
+<jmworx> Try doing all the work you want to do before that :-)
+<xiphmont> hah, yeah.  It's always easier to go to conferences when you've actually achieved soemthing :-)
+<xiphmont> OK, that's the agenda this week, if a bit scattershot.
+<xiphmont> s/week/month
+<xiphmont> any last subjects?
+<jmworx> No, I mean do whatever work before Camilla delivers :-)
+<derf_dk> I think the point is you won't be achieving anything afterwards.
+<xiphmont> jmworx: *trying*
+<Luna-Tick> Right... so the end result of all the agenda points is that Monty is sorting everything except the extension - which will be the only one ever with a + in it?
+<jmworx> cuz you're not going to have much spare time afterwards!
+<xiphmont> Pff, I don;t believe that.  Hell, the kid is going to be like having a captive grad student!  An obligated minion!
+<derf_dk> xiphmont: Grad students usually come in with _some_ education.
+<xiphmont> Seriously, I'm not planning to end my coding life on acccount of a kid :-P
+<xiphmont> Although I'm planning to enjoy the kid immensely ;-)
+<jmworx> xiphmont: I wasn't planning on that either!
+<xiphmont> We bred two engineers, what do you think the kid's going to be?
+<jmworx> Depends on the kid, though. Some sleep 23 hours/day. Some cry 23 hours/day
+<derf_dk> A musician.
+<xiphmont> Pff, I'm a musician.
+<xiphmont> *everyone* should be a musician.  
+<derf_dk> Not everyone should do it for a living.
+* jmworx is a (bad) musician
+<derf_dk> Anyway, breakfast.
+<xiphmont> Luna-Tick: well, the '+' will only be if it doesn't break things :-)
+<xiphmont> Right, we;re done.
+<xiphmont> Going
+<xiphmont> Going
+<jmworx> OK
+<xiphmont> Gone.
+<xiphmont> Thank you all for coming.
+<jmworx> xiphmont: get back to be re. OggPCM and (eventually) Ghost
+<jmworx> Bye everyone
+<Luna-Tick> Bye all. Thanks to the chair.
+<xiphmont> jmworx: I have a working home machine again, I'll be on more.
+<xiphmont> Actually I *have* been on, but I've been knee-deep in USB.
+<xiphmont> the USB work took *way* longer than expected or desired, and I blame Intel.  The rat-bastards.
+<jmworx> xiphmont: Will my usb extigy work better now?
+<xiphmont> oh fuck yeah.
+<jmworx> what was the exact problem?
+<xiphmont> The in-kernal ehci driver had no real scheduler.
+<xiphmont> EHCI is a software driven spec.
+<jmworx> was it related to the huge latency issue?
+<xiphmont> and you have to schedule every bit that goes out or comes back on the wire.
+<jmworx> OK, got to go now. Will be home in a few minutes...
+<-- Luna-Tick (n=Luna-Tic@203-100-218-102.jetbuster.co.nz) has left #xiphmeet
+<xiphmont> Yeah, I promised Carl a Cairo patch tonight, need to get on that.
+--> jmspeex (n=jmspeex@142.163.233.220.exetel.com.au) has joined #xiphmeet
+<-- MikeS_ has quit ("Leaving")
+<-- illi has quit ("bye")
+<-- Atamido has quit ("Chatzilla 0.9.73-rdmsoft [XULRunner 1.8.0.1/2006012608]")
+--- illi_home is now known as illi
+--> nessy (n=silvia@10.66.233.220.exetel.com.au) has joined #xiphmeet
+<nessy> so, was there a meeting that I missed?
+<jmspeex> yes
+<jmspeex> Not that many people, but quite useful.
+<illi> not sure if anyone has a full log up... i think i missed the first 5-10 minutes
+<nessy> I was in meetings all day :(
+--- nessy is now known as ginger
+<ginger> jmspeex: if you have a log, could you put it up, please?
+<jmspeex> I have one on my work machine. Not sure how to get it from here... will try
+<-- jmspeex has quit (Remote closed the connection)
+--> jmspeex (n=jmspeex@142.163.233.220.exetel.com.au) has joined #xiphmeet
+--> Atamido (n=atamido@cpe-67-9-173-252.austin.res.rr.com) has joined #xiphmeet
+<-- arkadini (n=arkadini@host-89-228-237-99.kalisz.mm.pl) has left #xiphmeet
+--- Disconnected ().
