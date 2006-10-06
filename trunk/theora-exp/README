@@ -8,7 +8,9 @@ Although they are based upon the VP3.2 and Theora source, which as of the time
 Decoder:
 The decoder here is feature-complete, up to and including all planned bitstream
  features for the initial Theora release.
-Some of these are not yet present even in the reference decoder.
+Some of these are not yet present even in the reference decoder. This decoder
+is strictly better than the reference decoder - it is both more complete, more
+secure, and faster.
 These include:
 - Support for non-VP3 style quantization matrices (i.e., complete support for
    the additional flexibility added to the quantization matrix specification).
@@ -27,6 +29,8 @@ Additional features of the new library design:
 - Hardened against invalid video data.
   Special attention has been paid to eliminate possible buffer overflows and
    access violations when receiving invalid video data, for better security.
+- A backwards-compatibility API wrapper, for applications that use the older
+  libtheora API.
 Algorithmic optimizations:
 - DCT token and motion vector decoding have been optimized to use fewer calls
    to oggpackB_read().
@@ -49,13 +53,14 @@ The encoder is highly experimental.
 It currently generates bitstreams using ALL of the decoder features supported
  above.
 There are still a few outstanding bugs, and the HVS model is very experimental.
+The encoder is not built by default.
 
 Building:
 On Unix or Cygwin, building through automake is now supported.
 On a fresh checkout, run:
-./autogen.sh
+./autogen.sh --enable-encode
 From a distribution tarball, run:
-./configure
+./configure --enable-encode
 Then run:
 make
 make install
