@@ -112,31 +112,31 @@ struct vorbis_info{
 };
 
 extern int  vorbis_info_blocksize(vorbis_info *vi,ogg_int16_t zo);
-extern int  vorbis_info_headerin(vorbis_info *vi,ogg_packet *op);
+extern int  vorbis_info_headerin(vorbis_info *vi,ogg2_packet *op);
 extern int  vorbis_info_clear(vorbis_info *vi);
 extern int  vorbis_book_clear(codebook *b);
-extern int  vorbis_book_unpack(oggpack_buffer *b,codebook *c);
-extern long vorbis_book_decode(codebook *book, oggpack_buffer *b);
+extern int  vorbis_book_unpack(ogg2pack_buffer *b,codebook *c);
+extern long vorbis_book_decode(codebook *book, ogg2pack_buffer *b);
 
 
-extern int floor_info_unpack(vorbis_info *vi,oggpack_buffer *opb,
+extern int floor_info_unpack(vorbis_info *vi,ogg2pack_buffer *opb,
 			     vorbis_info_floor *fi);
 extern int res_unpack(vorbis_info_residue *info,
-		      vorbis_info *vi,oggpack_buffer *opb);
+		      vorbis_info *vi,ogg2pack_buffer *opb);
 
 extern int res_inverse(vorbis_info *vi,
 		       vorbis_info_residue *info,
 		       int *nonzero,int ch,
-		       oggpack_buffer *opb);
+		       ogg2pack_buffer *opb);
 
 extern int mapping_info_unpack(vorbis_info_mapping *info,vorbis_info *vi,
-			       oggpack_buffer *opb);
+			       ogg2pack_buffer *opb);
 
 extern int floor0_inverse(vorbis_info *vi,vorbis_info_floor0 *info,
-			  oggpack_buffer *opb);
+			  ogg2pack_buffer *opb);
 extern int floor1_inverse(vorbis_info *vi,vorbis_info_floor1 *info,
-			  oggpack_buffer *opb);
+			  ogg2pack_buffer *opb);
 extern int mapping_inverse(vorbis_info *vi,vorbis_info_mapping *info,
-			   oggpack_buffer *opb);
-extern int vorbis_decode(vorbis_info *vi,ogg_packet *op);
+			   ogg2pack_buffer *opb);
+extern int vorbis_decode(vorbis_info *vi,ogg2_packet *op);
 

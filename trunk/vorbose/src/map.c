@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include <ogg2/ogg.h>
+#include <ogg/ogg2.h>
 #include "codec.h"
 
 extern int codebook_p;
@@ -21,13 +21,13 @@ static int ilog(unsigned long v){
 }
 
 int mapping_info_unpack(vorbis_info_mapping *info,vorbis_info *vi,
-			oggpack_buffer *opb){
+			ogg2pack_buffer *opb){
   int i;
   unsigned long ret;
   memset(info,0,sizeof(*info));
 
-  oggpack_read(opb,16,&ret);
-  if(oggpack_eop(opb))goto eop;
+  ogg2pack_read(opb,16,&ret);
+  if(ogg2pack_eop(opb))goto eop;
   switch(ret){
   case 0:
     if(headerinfo_p)
@@ -40,10 +40,10 @@ int mapping_info_unpack(vorbis_info_mapping *info,vorbis_info *vi,
     return 1;
   }
   
-  if(oggpack_read1(opb)){
-    oggpack_read(opb,4,&ret);
+  if(ogg2pack_read1(opb)){
+    ogg2pack_read(opb,4,&ret);
     info->submaps=ret+1;
-    if(oggpack_eop(opb))goto eop;
+    if(ogg2pack_eop(opb))goto eop;
     if(headerinfo_p)
       printf("             multi-submap mapping\n"
 	     "             submaps               : %d\n",info->submaps);
@@ -55,10 +55,10 @@ int mapping_info_unpack(vorbis_info_mapping *info,vorbis_info *vi,
 	     "             submaps               : %d\n",info->submaps);
   }
 
-  if(oggpack_read1(opb)){
-    oggpack_read(opb,8,&ret);
+  if(ogg2pack_read1(opb)){
+    ogg2pack_read(opb,8,&ret);
     info->coupling_steps=ret+1;
-    if(oggpack_eop(opb))goto eop;
+    if(ogg2pack_eop(opb))goto eop;
     if(headerinfo_p)
       printf("             channel coupling flag : set\n"
 	     "             coupling steps        : %d\n",
@@ -68,11 +68,11 @@ int mapping_info_unpack(vorbis_info_mapping *info,vorbis_info *vi,
       unsigned long testM;
       unsigned long testA;
 
-      oggpack_read(opb,ilog(vi->channels),&testM);
-      oggpack_read(opb,ilog(vi->channels),&testA);
+      ogg2pack_read(opb,ilog(vi->channels),&testM);
+      ogg2pack_read(opb,ilog(vi->channels),&testA);
       info->coupling[i].mag=testM;
       info->coupling[i].ang=testA;
-      if(oggpack_eop(opb))goto eop;
+      if(ogg2pack_eop(opb))goto eop;
       
       if(headerinfo_p)
 	printf("             coupling step %3d     : %lu <-> %lu\n",
@@ -94,14 +94,14 @@ int mapping_info_unpack(vorbis_info_mapping *info,vorbis_info *vi,
       printf("             channel coupling flag: not set\n");
   }
   
-  if(oggpack_read1(opb)){
-    if(oggpack_eop(opb))goto eop;
+  if(ogg2pack_read1(opb)){
+    if(ogg2pack_eop(opb))goto eop;
     if(headerinfo_p || warn_p)
       printf("WARN header: Reserved fields not zeroed\n\n");
     goto err_out; /* 2:reserved */
   }
-  if(oggpack_read1(opb)){
-    if(oggpack_eop(opb))goto eop;
+  if(ogg2pack_read1(opb)){
+    if(ogg2pack_eop(opb))goto eop;
     if(headerinfo_p || warn_p)
       printf("WARN header: Reserved fields not zeroed\n\n");
     goto err_out; /* 3:reserved */
@@ -112,9 +112,9 @@ int mapping_info_unpack(vorbis_info_mapping *info,vorbis_info *vi,
       printf("             channel->submap list  : ");
 
     for(i=0;i<vi->channels;i++){
-      oggpack_read(opb,4,&ret);
+      ogg2pack_read(opb,4,&ret);
       info->chmuxlist[i]=ret;
-      if(oggpack_eop(opb))goto eop;
+      if(ogg2pack_eop(opb))goto eop;
 
       if(headerinfo_p)
 	printf("%d/%lu ",i,ret);
@@ -133,10 +133,10 @@ int mapping_info_unpack(vorbis_info_mapping *info,vorbis_info *vi,
   for(i=0;i<info->submaps;i++){
     if(headerinfo_p)
       printf("             submap %2d config      : ",i);
-    oggpack_read(opb,8,&ret);
-    oggpack_read(opb,8,&ret);
+    ogg2pack_read(opb,8,&ret);
+    ogg2pack_read(opb,8,&ret);
     info->submaplist[i].floor=ret;
-    if(oggpack_eop(opb))goto eop;
+    if(ogg2pack_eop(opb))goto eop;
     if(headerinfo_p)
       printf("floor %lu, ",ret);
     if(info->submaplist[i].floor>=vi->floors){
@@ -144,8 +144,8 @@ int mapping_info_unpack(vorbis_info_mapping *info,vorbis_info *vi,
 	printf("WARN header: Requested floor (%lu) out of range.\n\n",ret);
       goto err_out;
     }
-    oggpack_read(opb,8,&ret);
-    if(oggpack_eop(opb))goto eop;
+    ogg2pack_read(opb,8,&ret);
+    if(ogg2pack_eop(opb))goto eop;
     info->submaplist[i].residue=ret;
     if(headerinfo_p)
       printf("res %lu ",ret);
@@ -172,7 +172,7 @@ int mapping_info_unpack(vorbis_info_mapping *info,vorbis_info *vi,
 }
 
 int mapping_inverse(vorbis_info *vi,vorbis_info_mapping *info,
-			    oggpack_buffer *opb){
+			    ogg2pack_buffer *opb){
   int   i,j;
   int  *zerobundle=alloca(sizeof(*zerobundle)*vi->channels);
   int  *nonzero=alloca(sizeof(*nonzero)*vi->channels);
@@ -226,27 +226,27 @@ int mapping_inverse(vorbis_info *vi,vorbis_info_mapping *info,
 }
 
 
-int vorbis_decode(vorbis_info *vi,ogg_packet *op){
+int vorbis_decode(vorbis_info *vi,ogg2_packet *op){
   int                   mode;
   unsigned long         ret;
-  oggpack_buffer       *opb=alloca(oggpack_buffersize());
-  oggpack_readinit(opb,op->packet);
+  ogg2pack_buffer       *opb=alloca(ogg2pack_buffersize());
+  ogg2pack_readinit(opb,op->packet);
 
   if(packetinfo_p)
     printf("info packet: decoding Vorbis stream packet %ld\n",
 	   (long)op->packetno);
   
   /* Check the packet type */
-  if(oggpack_read1(opb)!=0){
+  if(ogg2pack_read1(opb)!=0){
     if(warn_p || packetinfo_p)
       printf("WARN packet: packet is not an audio packet! Skipping...\n\n");
     return 1 ;
   }
   
   /* read our mode and pre/post windowsize */
-  oggpack_read(opb,ilog(vi->modes),&ret);
+  ogg2pack_read(opb,ilog(vi->modes),&ret);
   mode=ret;
-  if(oggpack_eop(opb))goto eop;
+  if(ogg2pack_eop(opb))goto eop;
   if(packetinfo_p)
     printf("             packet mode     : %d\n",mode);
   if(mode>=vi->modes){
@@ -260,13 +260,13 @@ int vorbis_decode(vorbis_info *vi,ogg_packet *op){
 	   vi->blocksizes[vi->mode_param[mode].blockflag]);
   
   if(vi->mode_param[mode].blockflag){
-    oggpack_read(opb,1,&ret);
-    if(oggpack_eop(opb))goto eop;
+    ogg2pack_read(opb,1,&ret);
+    if(ogg2pack_eop(opb))goto eop;
     if(packetinfo_p)
       printf("             previous        : %d\n",
 	     vi->blocksizes[ret!=0]);
-    oggpack_read(opb,1,&ret);
-    if(oggpack_eop(opb))goto eop;
+    ogg2pack_read(opb,1,&ret);
+    if(ogg2pack_eop(opb))goto eop;
     if(packetinfo_p)
       printf("             next            : %d\n",
 	     vi->blocksizes[ret!=0]);

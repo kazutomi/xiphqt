@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <getopt.h>
-#include <ogg2/ogg.h>
+#include <ogg/ogg2.h>
 #include "codec.h"
 
 void usage(FILE *out){
@@ -48,10 +48,10 @@ struct option options [] = {
   {NULL,0,NULL,0}
 };
 
-static ogg_sync_state   *oy;
-static ogg_stream_state *os;
-static ogg_page          og;
-static ogg_packet        op;
+static ogg2_sync_state   *oy;
+static ogg2_stream_state *os;
+static ogg2_page          og;
+static ogg2_packet        op;
 static vorbis_info       vi;
 
 int codebook_p=0;
@@ -66,34 +66,34 @@ int syncp=1;
 int get_data(){
   unsigned char *buf;
   int ret;
-  buf = ogg_sync_bufferin(oy,256);
+  buf = ogg2_sync_bufferin(oy,256);
   
   if(!buf){
-    fprintf(stderr,"ERROR internal: Failed to allocate managed buffer; ogg_sync_buffer() failed.\n");
+    fprintf(stderr,"ERROR internal: Failed to allocate managed buffer; ogg2_sync_buffer() failed.\n");
     exit(1);
   }
 
   ret=fread(buf,1,256,stdin);
-  if(ret>0)ogg_sync_wrote(oy,ret);
+  if(ret>0)ogg2_sync_wrote(oy,ret);
   return ret;
 }
 
-void dump_page(ogg_page *og){
-  oggpack_buffer *opb=alloca(oggpack_buffersize());
+void dump_page(ogg2_page *og){
+  ogg2pack_buffer *opb=alloca(ogg2pack_buffersize());
   unsigned long ret,ret2,flag;
   unsigned int i,count=0,postp;
   unsigned long lacing[255];
 
-  oggpack_readinit(opb,og->header);
+  ogg2pack_readinit(opb,og->header);
   /* capture pattern */
-  oggpack_read(opb,32,&ret);
-  oggpack_read(opb,8,&ret2);
+  ogg2pack_read(opb,32,&ret);
+  ogg2pack_read(opb,8,&ret2);
   printf("INFO   page: Capture pattern %c%c%c%c, ",
 	 (char)(ret),(char)(ret>>8),(char)(ret>>16),(char)(ret>>24));
   /* version */
   printf("format version %lu\n",ret2);
   /* flags */
-  oggpack_read(opb,8,&flag);
+  ogg2pack_read(opb,8,&flag);
   printf("             Flags: %s%s%s",
 	 (flag&1 ? 
 	  "packet continued from previous page"
@@ -107,24 +107,24 @@ void dump_page(ogg_page *og){
   if(!(flag&7))printf("none\n");
   
   /* granpos */
-  oggpack_read(opb,32,&ret);
-  oggpack_read(opb,32,&ret2);
+  ogg2pack_read(opb,32,&ret);
+  ogg2pack_read(opb,32,&ret2);
   printf("\n             Granule position: 0x%08lx%08lx\n",ret2,ret);
   /* serial number */
-  oggpack_read(opb,32,&ret);
+  ogg2pack_read(opb,32,&ret);
   printf("             Stream serialno : 0x%08lx\n",ret);
   /* sequence number */
-  oggpack_read(opb,32,&ret);
+  ogg2pack_read(opb,32,&ret);
   printf("             Sequence number : %ld\n",ret);
   /* checksum */
-  oggpack_read(opb,32,&ret);
+  ogg2pack_read(opb,32,&ret);
   printf("             Checksum        : 0x%08lx\n",ret);
   /* segments (packets) */
-  oggpack_read(opb,8,&ret);
+  ogg2pack_read(opb,8,&ret);
   printf("             Total segments  : %ld\n",ret);
   /* segment list and packet count */
   for(i=0;i<ret;i++){
-    oggpack_read(opb,8,lacing+i);
+    ogg2pack_read(opb,8,lacing+i);
     postp=1;
     if(lacing[i]<255){
       count++;
@@ -209,8 +209,8 @@ int main(int argc,char *argv[]){
 
   /* set up sync */
   
-  oy=ogg_sync_create(); 
-  os=ogg_stream_create(0);
+  oy=ogg2_sync_create(); 
+  os=ogg2_stream_create(0);
 
 
   while(!eof){
@@ -226,7 +226,7 @@ int main(int argc,char *argv[]){
     while(1){
       
       /* is there a packet available? */
-      if(ogg_stream_packetout(os,&op)>0){
+      if(ogg2_stream_packetout(os,&op)>0){
 	/* yes, process it */
 
 	if(packetcounter<3){
@@ -278,7 +278,7 @@ int main(int argc,char *argv[]){
 
       /* is there a page available? */
 	  
-      ret=ogg_sync_pageseek(oy,&og);
+      ret=ogg2_sync_pageseek(oy,&og);
       if(ret<0){
 	garbagecounter-=ret;
       }
@@ -291,7 +291,7 @@ int main(int argc,char *argv[]){
 	  garbagecounter=0;
 	}
 
-	if(initialphase && !ogg_page_bos(&og)){
+	if(initialphase && !ogg2_page_bos(&og)){
 	  /* initial header pages phase has ended */
 	  if(streaminfo_p || headerinfo_p){
 	    printf("info stream: All identification header pages parsed.\n"
@@ -310,17 +310,17 @@ int main(int argc,char *argv[]){
 
 
 	/* is this a stream transition? */
-	if(ogg_page_bos(&og) || pagecounter==0){
+	if(ogg2_page_bos(&og) || pagecounter==0){
 	  if(initialphase){
 	    /* we're in a muxed stream, which is illegal for Vorbis I
                audio-only, but perfectly legal for Ogg. */
 	    if(!syncp){
 	      /* we've not yet seen the Vorbis header go past; keep trying new streams */
-	      ogg_stream_reset_serialno(os,ogg_page_serialno(&og));
+	      ogg2_stream_reset_serialno(os,ogg2_page_serialno(&og));
 	    }
 	  }else{
 	    /* first new packet, signals new stream link.  Dump the current vorbis stream, if any */
-	    ogg_stream_reset_serialno(os,ogg_page_serialno(&og));
+	    ogg2_stream_reset_serialno(os,ogg2_page_serialno(&og));
 	    memset(&vi,0,sizeof(vi));
 	    packetcounter=0;
 	    vorbis_info_clear(&vi);
@@ -328,12 +328,12 @@ int main(int argc,char *argv[]){
 	  initialphase++;
 
 	  /* got an initial page.  Is it beginning of stream? */
-	  if(!ogg_page_bos(&og) && pagecounter==0 && streaminfo_p)
+	  if(!ogg2_page_bos(&og) && pagecounter==0 && streaminfo_p)
 	    if(warn_p || streaminfo_p)
 	      fprintf(stdout,"WARN stream: first page (0) is not marked beginning of stream.\n\n");
 	}	
 	
-	ogg_stream_pagein(os,&og);
+	ogg2_stream_pagein(os,&og);
 	pagecounter++;
 	continue;
       }
@@ -357,9 +357,9 @@ int main(int argc,char *argv[]){
   
   fprintf(stdout,"Done.\n");
   
-  ogg_page_release(&og);
-  ogg_stream_destroy(os);
-  ogg_sync_destroy(oy);
+  ogg2_page_release(&og);
+  ogg2_stream_destroy(os);
+  ogg2_sync_destroy(oy);
   
   return 0;
 }
