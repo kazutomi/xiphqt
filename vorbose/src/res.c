@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <ogg2/ogg.h>
+#include <ogg/ogg2.h>
 #include "codec.h"
 
 extern int headerinfo_p;
@@ -11,25 +11,25 @@ extern int warn_p;
 
 /* vorbis_info is for range checking */
 int res_unpack(vorbis_info_residue *info,
-	       vorbis_info *vi,oggpack_buffer *opb){
+	       vorbis_info *vi,ogg2pack_buffer *opb){
   int j,k;
   unsigned long ret;
 
   memset(info,0,sizeof(*info));
 
-  oggpack_read(opb,16,&ret);
+  ogg2pack_read(opb,16,&ret);
   info->type=ret;
-  oggpack_read(opb,24,&ret);
+  ogg2pack_read(opb,24,&ret);
   info->begin=ret;
-  oggpack_read(opb,24,&ret);
+  ogg2pack_read(opb,24,&ret);
   info->end=ret;
-  oggpack_read(opb,24,&ret);
+  ogg2pack_read(opb,24,&ret);
   info->grouping=ret+1;
-  oggpack_read(opb,6,&ret);
+  ogg2pack_read(opb,6,&ret);
   info->partitions=ret+1;
-  oggpack_read(opb,8,&ret);
+  ogg2pack_read(opb,8,&ret);
   info->groupbook=ret;
-  if(oggpack_eop(opb))goto eop;
+  if(ogg2pack_eop(opb))goto eop;
 
   if(info->type>2 || info->type<0){
     if(warn_p || headerinfo_p)
@@ -67,9 +67,9 @@ int res_unpack(vorbis_info_residue *info,
   
   for(j=0;j<info->partitions;j++){
     unsigned long cascade;
-    oggpack_read(opb,3,&cascade);
-    if(oggpack_read1(opb)){
-      oggpack_read(opb,5,&ret);
+    ogg2pack_read(opb,3,&cascade);
+    if(ogg2pack_read1(opb)){
+      ogg2pack_read(opb,5,&ret);
       cascade|=(ret<<3);
     }
     info->stagemasks[j]=cascade;
@@ -80,7 +80,7 @@ int res_unpack(vorbis_info_residue *info,
       printf("             partition %2d books: ",j);
     for(k=0;k<8;k++){
       if((info->stagemasks[j]>>k)&1){
-	oggpack_read(opb,8,&ret);
+	ogg2pack_read(opb,8,&ret);
 	if((signed)ret>=vi->books){
 	  printf("\nWARN header: requested residue book (%lu) greater than\n"
 		 "             highest numbered available codebook (%d)\n\n",
@@ -103,7 +103,7 @@ int res_unpack(vorbis_info_residue *info,
   if(headerinfo_p)
     printf("             ------------------\n");    
   
-  if(oggpack_eop(opb))goto eop;
+  if(ogg2pack_eop(opb))goto eop;
   return 0;
  eop:
   if(headerinfo_p || warn_p)
@@ -117,7 +117,7 @@ int res_unpack(vorbis_info_residue *info,
 int res_inverse(vorbis_info *vi,
 		vorbis_info_residue *info,
 		int *nonzero,int ch,
-		oggpack_buffer *opb){
+		ogg2pack_buffer *opb){
   
   long i,j,k,l,s,used=0;
   codebook *phrasebook=vi->book_param+info->groupbook;
@@ -166,7 +166,7 @@ int res_inverse(vorbis_info *vi,
 	
 	for(j=0;j<ch;j++){
 	  ogg_int32_t temp=vorbis_book_decode(phrasebook,opb);
-	  if(oggpack_eop(opb))goto eopbreak1;
+	  if(ogg2pack_eop(opb))goto eopbreak1;
 	  
 	  /* this can be done quickly in assembly due to the quotient
 	     always being at most six bits */

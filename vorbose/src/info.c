@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include <ogg2/ogg.h>
+#include <ogg/ogg2.h>
 #include "codec.h"
 
 extern int codebook_p;
@@ -11,7 +11,7 @@ extern int syncp;
 
 /* Header packing/unpacking ********************************************/
 
-static int _vorbis_unpack_info(vorbis_info *vi,oggpack_buffer *opb){
+static int _vorbis_unpack_info(vorbis_info *vi,ogg2pack_buffer *opb){
   unsigned long version;
   unsigned long channels;
   unsigned long rate;
@@ -20,18 +20,18 @@ static int _vorbis_unpack_info(vorbis_info *vi,oggpack_buffer *opb){
   long bitrate_lower;
   unsigned long ret;
   
-  oggpack_read(opb,32,&version);
-  oggpack_read(opb,8,&channels);
-  oggpack_read(opb,32,&rate);
-  oggpack_read(opb,32,&bitrate_upper);
-  oggpack_read(opb,32,&bitrate_nominal);
-  oggpack_read(opb,32,&bitrate_lower);
+  ogg2pack_read(opb,32,&version);
+  ogg2pack_read(opb,8,&channels);
+  ogg2pack_read(opb,32,&rate);
+  ogg2pack_read(opb,32,&bitrate_upper);
+  ogg2pack_read(opb,32,&bitrate_nominal);
+  ogg2pack_read(opb,32,&bitrate_lower);
 
   vi->channels=channels;
 
-  oggpack_read(opb,4,&ret);
+  ogg2pack_read(opb,4,&ret);
   vi->blocksizes[0]=1<<ret;
-  oggpack_read(opb,4,&ret);
+  ogg2pack_read(opb,4,&ret);
   vi->blocksizes[1]=1<<ret;
 
   ret=0;
@@ -79,7 +79,7 @@ static int _vorbis_unpack_info(vorbis_info *vi,oggpack_buffer *opb){
     ret=1;
   }
 
-  if((warn_p || headerinfo_p) && oggpack_eop(opb)){
+  if((warn_p || headerinfo_p) && ogg2pack_eop(opb)){
     printf("WARN header: premature end of packet.\n\n");
     ret=1;
   }
@@ -90,7 +90,7 @@ static int _vorbis_unpack_info(vorbis_info *vi,oggpack_buffer *opb){
   return(ret);
 }
 
-static int _vorbis_unpack_comment(oggpack_buffer *opb){
+static int _vorbis_unpack_comment(ogg2pack_buffer *opb){
   unsigned long i,j;
   unsigned long temp;
   unsigned long len;
@@ -98,15 +98,15 @@ static int _vorbis_unpack_comment(oggpack_buffer *opb){
 
   if(headerinfo_p)
     printf("info header: Vorbis comment header parsed:\n");
-  oggpack_read(opb,32,&len);
-  if(oggpack_eop(opb))goto err_out;
+  ogg2pack_read(opb,32,&len);
+  if(ogg2pack_eop(opb))goto err_out;
   if(headerinfo_p)
     printf("             vendor length   : %lu\n",len);
   if(headerinfo_p)
     printf("             vendor string   : \"");
     
   for(i=0;i<len;i++){
-    oggpack_read(opb,8,&temp);
+    ogg2pack_read(opb,8,&temp);
     if(headerinfo_p)
       putchar((int)temp);
   }
@@ -115,22 +115,22 @@ static int _vorbis_unpack_comment(oggpack_buffer *opb){
     putchar('\n');
   }
 
-  oggpack_read(opb,32,&comments);
-  if(oggpack_eop(opb))goto err_out;
+  ogg2pack_read(opb,32,&comments);
+  if(ogg2pack_eop(opb))goto err_out;
   if(headerinfo_p)
     printf("             total comments  : %lu (comments follow)\n\n",
 	   comments);
   for(j=0;j<comments;j++){
-    oggpack_read(opb,32,&len);
+    ogg2pack_read(opb,32,&len);
     if(headerinfo_p)
       printf("             comment %lu length: %lu\n",j,len);
 
-    if(oggpack_eop(opb))goto err_out;
+    if(ogg2pack_eop(opb))goto err_out;
     if(headerinfo_p)
       printf("             comment %lu key   : \"",j);
     for(i=0;i<len;i++){
-      oggpack_read(opb,8,&temp);
-      if(oggpack_eop(opb))goto err_out;
+      ogg2pack_read(opb,8,&temp);
+      if(ogg2pack_eop(opb))goto err_out;
       if(temp=='='){
 	i++;
 	break;
@@ -141,8 +141,8 @@ static int _vorbis_unpack_comment(oggpack_buffer *opb){
     if(headerinfo_p)
       printf("\"\n             comment %lu value : \"",j);
     for(;i<len;i++){
-      oggpack_read(opb,8,&temp);
-      if(oggpack_eop(opb))goto err_out;
+      ogg2pack_read(opb,8,&temp);
+      if(ogg2pack_eop(opb))goto err_out;
       if(headerinfo_p)
 	putchar(temp);
     }
@@ -157,7 +157,7 @@ static int _vorbis_unpack_comment(oggpack_buffer *opb){
   return(0);
 }
 
-static int _vorbis_unpack_books(vorbis_info *vi,oggpack_buffer *opb){
+static int _vorbis_unpack_books(vorbis_info *vi,ogg2pack_buffer *opb){
   int i;
   unsigned long ret;
 
@@ -165,7 +165,7 @@ static int _vorbis_unpack_books(vorbis_info *vi,oggpack_buffer *opb){
     printf("info header: Vorbis I setup header parsed\n\n");
 
   /* codebooks */
-  oggpack_read(opb,8,&ret);
+  ogg2pack_read(opb,8,&ret);
   vi->books=ret+1;
   if(headerinfo_p)
     printf("info header: Codebooks: %d\n\n",vi->books);
@@ -178,20 +178,20 @@ static int _vorbis_unpack_books(vorbis_info *vi,oggpack_buffer *opb){
     printf("\n");
 
   /* time backend settings, not actually used */
-  oggpack_read(opb,6,&ret);
+  ogg2pack_read(opb,6,&ret);
   i=ret;
   for(;i>=0;i--){
-    oggpack_read(opb,16,&ret);
+    ogg2pack_read(opb,16,&ret);
     if(ret!=0){
       if(headerinfo_p || warn_p)
 	printf("WARN header: Time %d is an illegal type (%lu).\n\n",
 	       i,ret);
     }
   }
-  if(oggpack_eop(opb))goto eop;
+  if(ogg2pack_eop(opb))goto eop;
 
   /* floor backend settings */
-  oggpack_read(opb,6,&ret);
+  ogg2pack_read(opb,6,&ret);
   vi->floors=ret+1;
   if(headerinfo_p)
     printf("info header: Floors: %d\n\n",vi->floors);
@@ -208,7 +208,7 @@ static int _vorbis_unpack_books(vorbis_info *vi,oggpack_buffer *opb){
     printf("\n");
   
   /* residue backend settings */
-  oggpack_read(opb,6,&ret);
+  ogg2pack_read(opb,6,&ret);
   vi->residues=ret+1;
   if(headerinfo_p)
     printf("info header: Residues: %d\n\n",vi->residues);
@@ -225,7 +225,7 @@ static int _vorbis_unpack_books(vorbis_info *vi,oggpack_buffer *opb){
     printf("\n");
 
   /* map backend settings */
-  oggpack_read(opb,6,&ret);
+  ogg2pack_read(opb,6,&ret);
   vi->maps=ret+1;
   if(headerinfo_p)
     printf("info header: Mappings: %d\n\n",vi->maps);
@@ -243,21 +243,21 @@ static int _vorbis_unpack_books(vorbis_info *vi,oggpack_buffer *opb){
     printf("\n");
   
   /* mode settings */
-  oggpack_read(opb,6,&ret);
+  ogg2pack_read(opb,6,&ret);
   vi->modes=ret+1;
   if(headerinfo_p)
     printf("info header: Modes: %d\n\n",vi->modes);
   for(i=0;i<vi->modes;i++){
     if(headerinfo_p)
       printf("info header: Parsing mode %d\n",i);
-    oggpack_read(opb,1,&ret);
-    if(oggpack_eop(opb))goto eop;
+    ogg2pack_read(opb,1,&ret);
+    if(ogg2pack_eop(opb))goto eop;
     vi->mode_param[i].blockflag=ret;
     if(headerinfo_p)
       printf("             block size flag: %lu (%d)\n",
 	     ret,vi->blocksizes[ret]);
 
-    oggpack_read(opb,16,&ret);
+    ogg2pack_read(opb,16,&ret);
     if(ret){
       if(headerinfo_p || warn_p)
 	printf("WARN header: Window in map %d is an illegal type (%lu).\n\n",
@@ -267,7 +267,7 @@ static int _vorbis_unpack_books(vorbis_info *vi,oggpack_buffer *opb){
     if(headerinfo_p)
       printf("             window type    : 0 (Vorbis window)\n");
 
-    oggpack_read(opb,16,&ret);
+    ogg2pack_read(opb,16,&ret);
     if(ret){
       if(headerinfo_p || warn_p)
 	printf("WARN header: Transform in map %d is an illegal type (%lu).\n\n",
@@ -277,7 +277,7 @@ static int _vorbis_unpack_books(vorbis_info *vi,oggpack_buffer *opb){
     if(headerinfo_p)
       printf("             transform type : 0 (MDCT)\n");
 
-    oggpack_read(opb,8,&ret);
+    ogg2pack_read(opb,8,&ret);
     vi->mode_param[i].mapping=ret;
     if(vi->mode_param[i].mapping>=vi->maps){
       if(headerinfo_p || warn_p)
@@ -294,7 +294,7 @@ static int _vorbis_unpack_books(vorbis_info *vi,oggpack_buffer *opb){
     printf("\n");
 
   
-  if(oggpack_eop(opb))goto eop;
+  if(ogg2pack_eop(opb))goto eop;
   
   return(0);
  eop:
@@ -304,11 +304,11 @@ static int _vorbis_unpack_books(vorbis_info *vi,oggpack_buffer *opb){
   return 1;
 }
 
-int vorbis_info_headerin(vorbis_info *vi,ogg_packet *op){
-  oggpack_buffer *opb=alloca(oggpack_buffersize());
+int vorbis_info_headerin(vorbis_info *vi,ogg2_packet *op){
+  ogg2pack_buffer *opb=alloca(ogg2pack_buffersize());
   
   if(op){
-    oggpack_readinit(opb,op->packet);
+    ogg2pack_readinit(opb,op->packet);
 
     /* Which of the three types of header is this? */
     /* Also verify header-ness, vorbis */
@@ -317,9 +317,9 @@ int vorbis_info_headerin(vorbis_info *vi,ogg_packet *op){
       unsigned long packtype;
       int i;
 
-      oggpack_read(opb,8,&packtype);
+      ogg2pack_read(opb,8,&packtype);
       for(i=0;i<6;i++)
-	oggpack_read(opb,8,temp+i);
+	ogg2pack_read(opb,8,temp+i);
       
       if(temp[0]!='v' ||
 	 temp[1]!='o' ||

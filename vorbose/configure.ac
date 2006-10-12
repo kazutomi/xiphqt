@@ -12,7 +12,7 @@ AC_PROG_CC
 
 # Checks for libraries.
 
-AC_CHECK_LIB(ogg2, oggpack_eop, [], [
+AC_CHECK_LIB(ogg2, ogg2pack_eop, [], [
   AC_MSG_ERROR([$PACKAGE requires libogg2])
 ])
 

@@ -19,7 +19,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <ogg2/ogg.h>
+#include <ogg/ogg2.h>
 #include "codec.h"
 
 extern int codebook_p;
@@ -147,7 +147,7 @@ long _book_maptype1_quantvals(codebook *b){
   }
 }
 
-int vorbis_book_unpack(oggpack_buffer *opb,codebook *s){
+int vorbis_book_unpack(ogg2pack_buffer *opb,codebook *s){
   char *lengthlist=0;
   long quantvals=0;
   long i,j;
@@ -155,8 +155,8 @@ int vorbis_book_unpack(oggpack_buffer *opb,codebook *s){
   unsigned long ret;
 
   memset(s,0,sizeof(*s));
-  oggpack_read(opb,24,&ret);
-  if(oggpack_eop(opb))goto eop;
+  ogg2pack_read(opb,24,&ret);
+  if(ogg2pack_eop(opb))goto eop;
   if(ret!=0x564342 && (warn_p || codebook_p || headerinfo_p)){
     printf("WARN codebk: Sync sequence (0x%lx) incorrect (!=0x564342)\n"
 	   "             Corrupt codebook.\n",ret);
@@ -164,14 +164,14 @@ int vorbis_book_unpack(oggpack_buffer *opb,codebook *s){
   }
 
   /* first the basic parameters */
-  oggpack_read(opb,16,&ret);
+  ogg2pack_read(opb,16,&ret);
   s->dim=ret;
-  oggpack_read(opb,24,&ret);
+  ogg2pack_read(opb,24,&ret);
   s->entries=ret;
 
   /* codeword ordering.... length ordered or unordered? */
-  oggpack_read(opb,1,&ret);
-  if(oggpack_eop(opb))goto eop;
+  ogg2pack_read(opb,1,&ret);
+  if(ogg2pack_eop(opb))goto eop;
 
   switch(ret){
   case 0:
@@ -179,14 +179,14 @@ int vorbis_book_unpack(oggpack_buffer *opb,codebook *s){
     lengthlist=alloca(sizeof(*lengthlist)*s->entries);
 
     /* allocated but unused entries? */
-    if(oggpack_read1(opb)){
+    if(ogg2pack_read1(opb)){
       /* yes, unused entries */
 
       for(i=0;i<s->entries;i++){
-	if(oggpack_read1(opb)){
+	if(ogg2pack_read1(opb)){
 	  unsigned long num;
-	  oggpack_read(opb,5,&num);
-	  if(oggpack_eop(opb))goto eop;
+	  ogg2pack_read(opb,5,&num);
+	  if(ogg2pack_eop(opb))goto eop;
 	  lengthlist[i]=num+1;
 	  s->used_entries++;
 	}else
@@ -204,8 +204,8 @@ int vorbis_book_unpack(oggpack_buffer *opb,codebook *s){
       s->used_entries=s->entries;
       for(i=0;i<s->entries;i++){
 	unsigned long num;
-	oggpack_read(opb,5,&num);
-	if(oggpack_eop(opb))goto eop;
+	ogg2pack_read(opb,5,&num);
+	if(ogg2pack_eop(opb))goto eop;
 	lengthlist[i]=num+1;
       }
 
@@ -222,15 +222,15 @@ int vorbis_book_unpack(oggpack_buffer *opb,codebook *s){
     /* ordered */
     {
       unsigned long length;
-      oggpack_read(opb,5,&length);
+      ogg2pack_read(opb,5,&length);
       length++;
       s->used_entries=s->entries;
       lengthlist=alloca(sizeof(*lengthlist)*s->entries);
       
       for(i=0;i<s->entries;){
 	unsigned long num;
-	oggpack_read(opb,_ilog(s->entries-i),&num);
-	if(oggpack_eop(opb))goto eop;
+	ogg2pack_read(opb,_ilog(s->entries-i),&num);
+	if(ogg2pack_eop(opb))goto eop;
 	for(j=0;j<(signed)num && i<s->entries;j++,i++)
 	  lengthlist[i]=length;
 	length++;
@@ -253,7 +253,7 @@ int vorbis_book_unpack(oggpack_buffer *opb,codebook *s){
 
 
   /* Do we have a mapping to unpack? */
-  oggpack_read(opb,4,&maptype);
+  ogg2pack_read(opb,4,&maptype);
   if(maptype>0){
     unsigned long q_min,q_del,q_bits,q_seq;
 
@@ -263,12 +263,12 @@ int vorbis_book_unpack(oggpack_buffer *opb,codebook *s){
       quantvals=s->entries*s->dim;
     }
 
-    oggpack_read(opb,32,&q_min);
-    oggpack_read(opb,32,&q_del);
-    oggpack_read(opb,4,&q_bits);
+    ogg2pack_read(opb,32,&q_min);
+    ogg2pack_read(opb,32,&q_del);
+    ogg2pack_read(opb,4,&q_bits);
     q_bits++;
-    oggpack_read(opb,1,&q_seq);
-    if(oggpack_eop(opb))goto eop;
+    ogg2pack_read(opb,1,&q_seq);
+    if(ogg2pack_eop(opb))goto eop;
 
     if(codebook_p)
       printf("             Value mapping  : %lu (%s)\n"
@@ -285,9 +285,9 @@ int vorbis_book_unpack(oggpack_buffer *opb,codebook *s){
 	     q_bits,q_seq?"set":"unset");
 
     for(i=0;i<quantvals;i++)
-      oggpack_read(opb,q_bits,&ret);
+      ogg2pack_read(opb,q_bits,&ret);
 
-    if(oggpack_eop(opb))goto eop;
+    if(ogg2pack_eop(opb))goto eop;
 
   }else{
     if(codebook_p)
@@ -308,17 +308,17 @@ int vorbis_book_unpack(oggpack_buffer *opb,codebook *s){
   return -1;
 }
 
-long vorbis_book_decode(codebook *book, oggpack_buffer *b){
+long vorbis_book_decode(codebook *book, ogg2pack_buffer *b){
   unsigned long chase=0;
   int           read=32;
   unsigned long lok;
   long          i;
-  int eop=oggpack_look(b,read,&lok);
+  int eop=ogg2pack_look(b,read,&lok);
   
   while(eop && read>1)
-    eop = oggpack_look(b, --read, &lok);
+    eop = ogg2pack_look(b, --read, &lok);
   if(eop<0){
-    oggpack_adv(b,32); /* make sure to trigger EOP! */
+    ogg2pack_adv(b,32); /* make sure to trigger EOP! */
     return -1;
   }
 
@@ -330,10 +330,10 @@ long vorbis_book_decode(codebook *book, oggpack_buffer *b){
   chase&=0x7fffffffUL;
   
   if(i<read){
-    oggpack_adv(b,i+1);
+    ogg2pack_adv(b,i+1);
     return chase;
   }
-  oggpack_adv(b,32); /* make sure to trigger EOP! */
+  ogg2pack_adv(b,32); /* make sure to trigger EOP! */
   return -1;
 }
 

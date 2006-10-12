@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <ogg2/ogg.h>
+#include <ogg/ogg2.h>
 #include "codec.h"
 
 extern int headerinfo_p;
@@ -18,26 +18,26 @@ static int ilog(unsigned long v){
 }
 
 static int floor0_info_unpack(vorbis_info *vi,
-			      oggpack_buffer *opb,
+			      ogg2pack_buffer *opb,
 			      vorbis_info_floor0 *info){
 
   int j;
   unsigned long ret;
 
-  oggpack_read(opb,8,&ret);
+  ogg2pack_read(opb,8,&ret);
   info->order=ret;
-  oggpack_read(opb,16,&ret);
+  ogg2pack_read(opb,16,&ret);
   info->rate=ret;
-  oggpack_read(opb,16,&ret);
+  ogg2pack_read(opb,16,&ret);
   info->barkmap=ret;
-  oggpack_read(opb,6,&ret);
+  ogg2pack_read(opb,6,&ret);
   info->ampbits=ret;
-  oggpack_read(opb,8,&ret);
+  ogg2pack_read(opb,8,&ret);
   info->ampdB=ret;
-  oggpack_read(opb,4,&ret);
+  ogg2pack_read(opb,4,&ret);
   info->numbooks=ret+1;
   
-  if(oggpack_eop(opb))goto eop;
+  if(ogg2pack_eop(opb))goto eop;
   if(info->order<1)goto err;
   if(info->rate<1)goto err;
   if(info->barkmap<1)goto err;
@@ -55,8 +55,8 @@ static int floor0_info_unpack(vorbis_info *vi,
 	   info->numbooks);
 	   
   for(j=0;j<info->numbooks;j++){
-    oggpack_read(opb,8,&ret);
-    if(oggpack_eop(opb))goto eop;
+    ogg2pack_read(opb,8,&ret);
+    if(ogg2pack_eop(opb))goto eop;
     info->books[j]=ret;
     if(info->books[j]>=vi->books){
       if(headerinfo_p || warn_p)
@@ -74,7 +74,7 @@ static int floor0_info_unpack(vorbis_info *vi,
     }
   }
   
-  if(oggpack_eop(opb))goto eop;
+  if(ogg2pack_eop(opb))goto eop;
   return(0);
  eop:
   if(headerinfo_p || warn_p)
@@ -86,12 +86,12 @@ static int floor0_info_unpack(vorbis_info *vi,
 }
 
 int floor0_inverse(vorbis_info *vi,vorbis_info_floor0 *info,
-		   oggpack_buffer *opb){
+		   ogg2pack_buffer *opb){
   int j;
   
   unsigned long ampraw;
-  oggpack_read(opb,info->ampbits,&ampraw);
-  if(oggpack_eop(opb))goto eop;
+  ogg2pack_read(opb,info->ampbits,&ampraw);
+  if(ogg2pack_eop(opb))goto eop;
 
   if(ampraw>0){
     unsigned long booknum;
@@ -102,14 +102,14 @@ int floor0_inverse(vorbis_info *vi,vorbis_info_floor0 *info,
 	     (float)ampraw/maxval*info->ampdB-info->ampdB,ampraw);
     }
 
-    oggpack_read(opb,ilog(info->numbooks),&booknum);
-    if(oggpack_eop(opb))goto eop;
+    ogg2pack_read(opb,ilog(info->numbooks),&booknum);
+    if(ogg2pack_eop(opb))goto eop;
 
     if((signed)booknum<info->numbooks){ /* be paranoid */
       codebook *b=vi->book_param+info->books[booknum];
       for(j=0;j<info->order;j+=b->dim)
 	vorbis_book_decode(b,opb);
-      if(oggpack_eop(opb))goto eop;
+      if(ogg2pack_eop(opb))goto eop;
       return 1;
     }else{
       if(packetinfo_p || warn_p)
@@ -133,23 +133,23 @@ int floor0_inverse(vorbis_info *vi,vorbis_info_floor0 *info,
 static const int quant_look[4]={256,128,86,64};
 
 static int floor1_info_unpack(vorbis_info *vi,
-			      oggpack_buffer *opb,
+			      ogg2pack_buffer *opb,
 			      vorbis_info_floor1 *info){
   
   int j,k,count=0,maxclass=-1,rangebits;
   unsigned long ret;
   
   /* read partitions */
-  oggpack_read(opb,5,&ret);
+  ogg2pack_read(opb,5,&ret);
   info->partitions=ret;
   if(headerinfo_p)
     printf("(type 1; log piecewise)\n"
 	   "             partitions       : %lu\n"
 	   "             partition classes: ",ret);
-  if(oggpack_eop(opb))goto eop;
+  if(ogg2pack_eop(opb))goto eop;
   for(j=0;j<info->partitions;j++){
-    oggpack_read(opb,4,&ret);
-    if(oggpack_eop(opb))goto eop;
+    ogg2pack_read(opb,4,&ret);
+    if(ogg2pack_eop(opb))goto eop;
     info->partitionclass[j]=ret;
     if(headerinfo_p){
       printf("%lu",ret);
@@ -165,16 +165,16 @@ static int floor1_info_unpack(vorbis_info *vi,
   for(j=0;j<maxclass+1;j++){
     if(headerinfo_p)
       printf("             class %d config   : ",j);
-    oggpack_read(opb,3,&ret);
+    ogg2pack_read(opb,3,&ret);
     info->class[j].class_dim=ret+1;
-    oggpack_read(opb,2,&ret);
+    ogg2pack_read(opb,2,&ret);
     info->class[j].class_subs=ret;
-    if(oggpack_eop(opb)) goto eop;
+    if(ogg2pack_eop(opb)) goto eop;
     
     if(info->class[j].class_subs){
-      oggpack_read(opb,8,&ret);
+      ogg2pack_read(opb,8,&ret);
       info->class[j].class_book=ret;
-      if(oggpack_eop(opb)) goto eop;
+      if(ogg2pack_eop(opb)) goto eop;
       
       if(headerinfo_p)
 	printf("dim=%d, subs=%d (1<<%d), book=%lu\n",
@@ -199,9 +199,9 @@ static int floor1_info_unpack(vorbis_info *vi,
     if(headerinfo_p)
       printf("                               (subbooks: ");
     for(k=0;k<(1<<info->class[j].class_subs);k++){
-      oggpack_read(opb,8,&ret);
+      ogg2pack_read(opb,8,&ret);
       info->class[j].class_subbook[k]=ret-1;
-      if(oggpack_eop(opb))goto eop;
+      if(ogg2pack_eop(opb))goto eop;
       if(headerinfo_p){
 	if(info->class[j].class_subbook[k]==-1)
 	  printf(" x");
@@ -224,13 +224,13 @@ static int floor1_info_unpack(vorbis_info *vi,
   }
   
   /* read the post list */
-  oggpack_read(opb,2,&ret);
+  ogg2pack_read(opb,2,&ret);
   info->mult=ret+1;     /* only 1,2,3,4 legal now */ 
   if(headerinfo_p)
     printf("             multiplier       : %d (number %d)\n",quant_look[ret],
 	   info->mult);
   
-  oggpack_read(opb,4,&ret);
+  ogg2pack_read(opb,4,&ret);
   rangebits=ret;
   if(headerinfo_p)
     printf("             post range       : %d bits\n"
@@ -241,7 +241,7 @@ static int floor1_info_unpack(vorbis_info *vi,
     count+=info->class[info->partitionclass[j]].class_dim; 
     for(;k<count;k++){
       int t;
-      oggpack_read(opb,rangebits,&ret);
+      ogg2pack_read(opb,rangebits,&ret);
       t=ret;
       
       if(headerinfo_p){
@@ -262,7 +262,7 @@ static int floor1_info_unpack(vorbis_info *vi,
   if(headerinfo_p)
     printf("\n             -----------------\n");
 
-  if(oggpack_eop(opb))goto eop;
+  if(ogg2pack_eop(opb))goto eop;
   info->posts=count+2;
   
   return 0;
@@ -276,18 +276,18 @@ static int floor1_info_unpack(vorbis_info *vi,
 }
 
 int floor1_inverse(vorbis_info *vi,vorbis_info_floor1 *info,
-		   oggpack_buffer *opb){
+		   ogg2pack_buffer *opb){
   int i,j,k;
   codebook *books=vi->book_param;   
   unsigned long ret;
 
   /* unpack wrapped/predicted values from stream */
-  if(oggpack_read1(opb)==1){
+  if(ogg2pack_read1(opb)==1){
     int quant_q=quant_look[info->mult-1];
     if(packetinfo_p)
       printf("amplitude nonzero\n");
-    oggpack_read(opb,ilog(quant_q-1),&ret);
-    oggpack_read(opb,ilog(quant_q-1),&ret);
+    ogg2pack_read(opb,ilog(quant_q-1),&ret);
+    ogg2pack_read(opb,ilog(quant_q-1),&ret);
     
     /* partition by partition */
     /* partition by partition */
@@ -329,12 +329,12 @@ int floor1_inverse(vorbis_info *vi,vorbis_info_floor1 *info,
 }
 
 int floor_info_unpack(vorbis_info *vi,
-		       oggpack_buffer *opb,
+		       ogg2pack_buffer *opb,
 		       vorbis_info_floor *fi){
   unsigned long ret,i;
-  oggpack_read(opb,16,&ret);
+  ogg2pack_read(opb,16,&ret);
   fi->type=ret;
-  if(oggpack_eop(opb)){
+  if(ogg2pack_eop(opb)){
     if(headerinfo_p || warn_p)
       printf("WARN header: Premature EOP parsing floor setup.\n");
     return 1;
