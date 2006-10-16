@@ -675,7 +675,7 @@ $tz = substr_replace ($tz, ':', 3, 0);
 <h3><a name="rfc.section.4.1.1.2.14.1.1.1.6" id="rfc.section.4.1.1.2.14.1.1.1.6">4.1.1.2.14.1.1.1.6</a> info</h3>
 <div style="margin-left: 8px;">
 <div><a name="rfc.section.4.1.1.2.14.1.1.1.6.p.1" id="rfc.section.4.1.1.2.14.1.1.1.6.p.1"></a></div>
-<p>URI of a place where this resource can be bought or more info can be found.</p>
+<p>URI of a place where this resource can be bought or more info can be found.  xspf:track elements MAY contain exactly one.</p>
 </div>
 <h3><a name="rfc.section.4.1.1.2.14.1.1.1.7" id="rfc.section.4.1.1.2.14.1.1.1.7">4.1.1.2.14.1.1.1.7</a> image</h3>
 <div style="margin-left: 8px;">
@@ -700,7 +700,7 @@ $tz = substr_replace ($tz, ':', 3, 0);
 <h3><a name="rfc.section.4.1.1.2.14.1.1.1.11" id="rfc.section.4.1.1.2.14.1.1.1.11">4.1.1.2.14.1.1.1.11</a> link</h3>
 <div style="margin-left: 8px;">
 <div><a name="rfc.section.4.1.1.2.14.1.1.1.11.p.1" id="rfc.section.4.1.1.2.14.1.1.1.11.p.1"></a></div>
-<p>The link element allows non-XSPF web resources to be included in xspf:track elements without breaking XSPF validation.</p>
+<p>The link element allows non-XSPF web resources to be included in xspf:track elements without breaking XSPF validation.  xspf:track elements MAY contain zero or more link elements.</p>
 <div><a name="rfc.figure.u.8" id="rfc.figure.u.8"></a></div>
 <pre>
 &lt;link rel="http://foaf.org/namespace/version1"&gt;http://socialnetwork.org/foaf/mary.rdfs&lt;/link&gt;
@@ -723,7 +723,8 @@ $tz = substr_replace ($tz, ':', 3, 0);
 <h3><a name="rfc.section.4.1.1.2.14.1.1.1.12" id="rfc.section.4.1.1.2.14.1.1.1.12">4.1.1.2.14.1.1.1.12</a> meta</h3>
 <div style="margin-left: 8px;">
 <div><a name="rfc.section.4.1.1.2.14.1.1.1.12.p.1" id="rfc.section.4.1.1.2.14.1.1.1.12.p.1"></a></div>
-<p>The meta element allows non-XSPF metadata to be included in xspf:track elements without breaking XSPF validation.</p>
+<p>The meta element allows non-XSPF metadata to be included in xspf:track elements without breaking XSPF validation.  xspf:track elements MAY contain zero or more meta elements.
+</p>
 <div><a name="rfc.figure.u.9" id="rfc.figure.u.9"></a></div>
 <pre>
 &lt;meta rel="http://example.org/key"&gt;value&lt;/meta&gt;
