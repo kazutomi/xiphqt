@@ -96,7 +96,7 @@ int cleanServers3(char *error)
 
 	memset(sql, '\000', sizeof(sql));
 
-	sprintf(sql,"SELECT id FROM servers_touch");
+	sprintf(sql,"SELECT id FROM server_details");
 	if(mysql_real_query(&dbase,sql,strlen(sql))) {
 		strcpy(error, mysql_error(&dbase));
 		return(YP_ERROR);
@@ -128,15 +128,6 @@ int cleanServers3(char *error)
 					row2 = mysql_fetch_row(result2);
 					if (row2[0]) {
 						if (atoi(row2[0]) == 0) {
-							sprintf(sql,"delete from servers_touch where id = '%s'", row[0]);
-							if (mysql_real_query(&dbase,sql,strlen(sql))) {
-								sprintf(error, "servers: %s", mysql_error(&dbase));
-								sprintf(sql,"ROLLBACK");
-								mysql_real_query(&dbase,sql,strlen(sql));
-								mysql_free_result(result);
-								mysql_free_result(result2);
-								return(YP_ERROR);
-							}
 							sprintf(sql,"delete from server_details where parent_id = %s", parent_id);
 							if (mysql_real_query(&dbase,sql,strlen(sql))) {
 								sprintf(error, "servers: %s", mysql_error(&dbase));
@@ -192,31 +183,6 @@ int cleanServers4(char *error)
 			row = mysql_fetch_row(result);
 			if (row[0]) {
 				sprintf(id, "%s-%s", row[1], row[0]);
-				sprintf(sql,"SELECT count(*) FROM servers_touch where id = '%s'", id);
-				if(mysql_real_query(&dbase,sql,strlen(sql))) {
-					strcpy(error, mysql_error(&dbase));
-					return(YP_ERROR);
-				}
-				result2 = mysql_store_result(&dbase);
-				nrows2 = mysql_num_rows(result2);
-				if(nrows2 != 0) {
-					row2 = mysql_fetch_row(result2);
-					if (row2[0]) {
-						if (atoi(row2[0]) == 0) {
-							sprintf(sql,"delete from server_details where id = '%s'", row[0]);
-							if (mysql_real_query(&dbase,sql,strlen(sql))) {
-								sprintf(error, "servers: %s", mysql_error(&dbase));
-								sprintf(sql,"ROLLBACK");
-								mysql_real_query(&dbase,sql,strlen(sql));
-								mysql_free_result(result);
-								mysql_free_result(result2);
-								return(YP_ERROR);
-							}
-							LogMessage(LOG_INFO, "Server Details (%s)(%s) because it didn't have a record (%s) in servers_touch", row[0], row[1], id);
-						}
-					}
-				}
-				mysql_free_result(result2);
 				sprintf(sql,"SELECT count(*) FROM servers where id = %s", row[1]);
 				if(mysql_real_query(&dbase,sql,strlen(sql))) {
 					strcpy(error, mysql_error(&dbase));
@@ -439,7 +405,7 @@ int cleanServers(char *error)
 
 	memset(sql, '\000', sizeof(sql));
 
-	sprintf(sql,"select id from servers_touch where last_touch < NOW() - INTERVAL 5 MINUTE");
+	sprintf(sql,"select id, parent_id from server_details where last_touch < NOW() - INTERVAL 5 MINUTE");
 	if(mysql_real_query(&dbase,sql,strlen(sql))) {
 		strcpy(error, mysql_error(&dbase));
 		return(YP_ERROR);
@@ -455,11 +421,15 @@ int cleanServers(char *error)
 			if (row[0]) {
 				memset(parent_id, '\000', sizeof(parent_id));
 				memset(detail_id, '\000', sizeof(detail_id));
+				strcpy(detail_id, row[0]);
+				strcpy(parent_id, row[1]);
+				/*
 				p1 = strchr(row[0], '-');
 				if (p1) {
 					strncpy(parent_id, row[0], p1-row[0]);
 					strcpy(detail_id, p1+1);
 				}
+				*/
 			
 				sprintf(sql,"delete from server_details where id = '%s'", detail_id);
 				if (mysql_real_query(&dbase,sql,strlen(sql))) {
@@ -489,14 +459,6 @@ int cleanServers(char *error)
 				else {
 					Log(LOG_DEBUG, "Yep, so lets NOT delete the parent...");
 				}
-
-				sprintf(sql,"delete from servers_touch where id = '%s'", row[0]);
-				if (mysql_real_query(&dbase,sql,strlen(sql))) {
-					sprintf(error, "servers: %s", mysql_error(&dbase));
-					sprintf(sql,"ROLLBACK");
-					mysql_real_query(&dbase,sql,strlen(sql));
-					return(YP_ERROR);
-				}
 			}
 		}
 		mysql_free_result(result);
@@ -517,7 +479,7 @@ int main(int argc, char * argv[])
 
 	memset(error, '\000', sizeof(error));
 
-	setErrorType(LM_INFO);
+	setErrorType(LM_ERROR);
 	setLogFile(YP_LOGDIR"yp-clean.log");
 
 	if (connectToDB()) {
