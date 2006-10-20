@@ -712,7 +712,8 @@ int addServer(char *server_name, char *genre, char *cluster_password, char *desc
 			  bitrate,		\
 			  listeners,		\
 			  samplerate,		\
-			  channels)		\
+			  channels,		\
+			  last_touch)		\
 		 values  (%s,			\
 			  '%s',			\
 			  '%s',			\
@@ -729,7 +730,8 @@ int addServer(char *server_name, char *genre, char *cluster_password, char *desc
 			  '%s',			\
 			  0,			\
 			  '%s',			\
-			  '%s')", parent_id, server_name_esc, listing_ip, desc_esc, genre_esc, sid, cluster_password_esc, url_esc, "", listenurl_esc, cluster_id, server_type_esc, server_subtype_esc, bitrate_esc, samplerate_esc, channels_esc);
+			  '%s',			\
+			  NOW())", parent_id, server_name_esc, listing_ip, desc_esc, genre_esc, sid, cluster_password_esc, url_esc, "", listenurl_esc, cluster_id, server_type_esc, server_subtype_esc, bitrate_esc, samplerate_esc, channels_esc);
 	Log(LOG_DEBUG, sql);
 	if (mysql_real_query(&dbase,sql,strlen(sql))) {
 		sprintf(error, "servers: %s", mysql_error(&dbase));
@@ -747,17 +749,6 @@ int addServer(char *server_name, char *genre, char *cluster_password, char *desc
 
 	setLogSid(sid);
 
-	Log(LOG_DEBUG, "Going to insert into servers_touch now...");
-	sprintf(sql,"insert into servers_touch (id, server_name, listing_ip, last_touch) values  ('%s', '%s', '%s', NOW())", sid, server_name_esc, listing_ip);
-
-	Log(LOG_DEBUG, sql);
-
-	if (mysql_real_query(&dbase,sql,strlen(sql))) {
-		sprintf(error, "servers_info: %s", mysql_error(&dbase));
-		sprintf(sql,"ROLLBACK");
-		mysql_real_query(&dbase,sql,strlen(sql));
-		return(YP_ERROR);
-	}
 	sprintf(sql,"COMMIT");
 	mysql_real_query(&dbase,sql,strlen(sql));
 	Log(LOG_DEBUG, "Everything is good");
@@ -865,134 +856,64 @@ int touchServer(char *sid, char *touchip, char *cluster_password, char *song, ch
 		strcpy(detail_id, p1+1);
 	}
 
-	sprintf(sql,"select listing_ip from servers_touch where id = \'%s\'",sid);
-	if(mysql_real_query(&dbase,sql,strlen(sql))) {
-		strcpy(error, mysql_error(&dbase));
-		goto TouchError;
-	}
-	result = mysql_store_result(&dbase);
-	nrows = mysql_num_rows(result);
-	if(nrows == 0) {
-		goto TouchError;
-	}
-	else {
-		row = mysql_fetch_row(result);
-		if (row[0]) {
-			if (strcmp(touchip, row[0])) {
-				strcpy(error, "trying to touch from a different IP than was added");
-				return(YP_ERROR);
-			}
-		}
-		mysql_free_result(result);
+	song_esc = malloc(strlen(song)*2 + 1);
+	memset(song_esc, '\000', strlen(song)*2 + 1);
+	mysql_real_escape_string(&dbase, song_esc, song, strlen(song));
 
-		song_esc = malloc(strlen(song)*2 + 1);
-		memset(song_esc, '\000', strlen(song)*2 + 1);
-		mysql_real_escape_string(&dbase, song_esc, song, strlen(song));
+	server_subtype_esc = malloc(strlen(server_subtype)*2 + 1);
+	memset(server_subtype_esc, '\000', strlen(server_subtype)*2 + 1);
+	mysql_real_escape_string(&dbase, server_subtype_esc, server_subtype, strlen(server_subtype));
 
-		server_subtype_esc = malloc(strlen(server_subtype)*2 + 1);
-		memset(server_subtype_esc, '\000', strlen(server_subtype)*2 + 1);
-		mysql_real_escape_string(&dbase, server_subtype_esc, server_subtype, strlen(server_subtype));
+	sprintf(sql,"update server_details set current_song = \'%s\', server_subtype = \'%s\', last_touch = NOW() where id = %s and listing_ip = '%s'", song_esc, server_subtype_esc, detail_id, touchip);
 
-		sprintf(sql,"update server_details set current_song = \'%s\', server_subtype = \'%s\', listeners = %d where id = %s", song_esc, server_subtype_esc, atol(listeners), detail_id);
-	
-		Log(LOG_DEBUG, sql);
-		if (mysql_real_query(&dbase,sql,strlen(sql))) {
-			sprintf(error, "servers: %s", mysql_error(&dbase));
-			Log(LOG_ERROR, error);
-			sprintf(sql,"ROLLBACK");
-			mysql_real_query(&dbase,sql,strlen(sql));
-			goto TouchError;
-		}
-		if (mysql_affected_rows(&dbase) < 0) {
-			// something squirly...
-			sprintf(error, "Error updating server info, %d records updated", mysql_affected_rows(&dbase));
-			Log(LOG_ERROR, error);
-			sprintf(sql,"ROLLBACK");
-			mysql_real_query(&dbase,sql,strlen(sql));
-			goto TouchError;
-		}
-
-		sprintf(sql,"update servers_touch set last_touch = NOW() where id = '%s'", sid);
-
-		Log(LOG_DEBUG, sql);
-		
-		if (mysql_real_query(&dbase,sql,strlen(sql))) {
-			sprintf(error, "servers_touch: %s", mysql_error(&dbase));
-			Log(LOG_ERROR, error);
-			sprintf(sql,"ROLLBACK");
-			mysql_real_query(&dbase,sql,strlen(sql));
-			goto TouchError;
-		}
-		if (mysql_affected_rows(&dbase) < 0) {
-			// something squirly...
-			sprintf(error, "Error updating server touch info, %d records updated", mysql_affected_rows(&dbase));
-			Log(LOG_ERROR, error);
-			sprintf(sql,"ROLLBACK");
-			mysql_real_query(&dbase,sql,strlen(sql));
-			goto TouchError;
-		}
-		sprintf(sql,"COMMIT");
+	Log(LOG_DEBUG, sql);
+	if (mysql_real_query(&dbase,sql,strlen(sql))) {
+		sprintf(error, "servers: %s", mysql_error(&dbase));
+		Log(LOG_ERROR, error);
+		sprintf(sql,"ROLLBACK");
 		mysql_real_query(&dbase,sql,strlen(sql));
-
-
-		sprintf(sql,"select sum(listeners) from server_details where parent_id = %s",parent_id);
-		if(mysql_real_query(&dbase,sql,strlen(sql))) {
-			strcpy(error, mysql_error(&dbase));
-			goto TouchError;
-		}
-		result = mysql_store_result(&dbase);
-		nrows = mysql_num_rows(result);
-		if(nrows == 0) {
-			goto TouchError;
-		}
-		else {
-			row = mysql_fetch_row(result);
-			if (row[0]) {
-				sprintf(sql,"update servers set listeners = %s where id = %s", row[0], parent_id);
-
-				Log(LOG_DEBUG, sql);
-				
-				if (mysql_real_query(&dbase,sql,strlen(sql))) {
-					sprintf(error, "servers_touch: %s", mysql_error(&dbase));
-					Log(LOG_ERROR, error);
-					sprintf(sql,"ROLLBACK");
-					mysql_real_query(&dbase,sql,strlen(sql));
-					goto TouchError;
-				}
-			}
-		}
-
-		mysql_free_result(result);
-
-		Log(LOG_DEBUG, "YP Touched");
-		if (song_esc) {
-			free(song_esc);
-		}
-		if (genre_esc) {
-			free(genre_esc);
-		}
-		if (listenurl_esc) {
-			free(listenurl_esc);
-		}
-		if (server_type_esc) {
-			free(server_type_esc);
-		}
-		if (server_subtype_esc) {
-			free(server_subtype_esc);
-		}
-		if (bitrate_esc) {
-			free(bitrate_esc);
-		}
-		if (desc_esc) {
-			free(desc_esc);
-		}
-		if (server_name_esc) {
-			free(server_name_esc);
-		}
-		endTime = GetCurrentTime();
-		//Log(LOG_ERROR, "TOUCH: %f", endTime - startTime);
-		return(YP_TOUCHED);
+		goto TouchError;
 	}
+	if (mysql_affected_rows(&dbase) <= 0) {
+		// something squirly...
+		sprintf(error, "Error updating server info, %d records updated", mysql_affected_rows(&dbase));
+		Log(LOG_INFO, error);
+		sprintf(sql,"ROLLBACK");
+		mysql_real_query(&dbase,sql,strlen(sql));
+		goto TouchError;
+	}
+
+	sprintf(sql,"COMMIT");
+	mysql_real_query(&dbase,sql,strlen(sql));
+
+	Log(LOG_DEBUG, "YP Touched");
+	if (song_esc) {
+		free(song_esc);
+	}
+	if (genre_esc) {
+		free(genre_esc);
+	}
+	if (listenurl_esc) {
+		free(listenurl_esc);
+	}
+	if (server_type_esc) {
+		free(server_type_esc);
+	}
+	if (server_subtype_esc) {
+		free(server_subtype_esc);
+	}
+	if (bitrate_esc) {
+		free(bitrate_esc);
+	}
+	if (desc_esc) {
+		free(desc_esc);
+	}
+	if (server_name_esc) {
+		free(server_name_esc);
+	}
+	endTime = GetCurrentTime();
+	//Log(LOG_ERROR, "TOUCH: %f", endTime - startTime);
+	return(YP_TOUCHED);
 TouchError:
 	if (song_esc) {
 		free(song_esc);
@@ -1045,7 +966,7 @@ int removeServer(char *sid, char *removeip, char *cluster_password, char *error)
 
 	memset(sql, '\000', sizeof(sql));
 
-	sprintf(sql,"select listing_ip from servers_touch where id = '%s'",sid);
+	sprintf(sql,"select listing_ip from server_details where id = '%s'",detail_id);
 	if(mysql_real_query(&dbase,sql,strlen(sql))) {
 		strcpy(error, mysql_error(&dbase));
 		return(YP_ERROR);
@@ -1127,21 +1048,6 @@ int removeServer(char *sid, char *removeip, char *cluster_password, char *error)
 			Log(LOG_DEBUG, "Yep, so lets NOT delete the parent...");
 		}
 	
-		sprintf(sql,"delete from servers_touch where id = '%s'", sid);
-		
-		if (mysql_real_query(&dbase,sql,strlen(sql))) {
-			sprintf(error, "servers_info: %s", mysql_error(&dbase));
-			sprintf(sql,"ROLLBACK");
-			mysql_real_query(&dbase,sql,strlen(sql));
-			return(YP_ERROR);
-		}
-		if (mysql_affected_rows(&dbase) < 0) {
-			// something squirly...
-			sprintf(error, "Error removing server info, %d records deleted", mysql_affected_rows(&dbase));
-			sprintf(sql,"ROLLBACK");
-			mysql_real_query(&dbase,sql,strlen(sql));
-			return(YP_ERROR);
-		}
 		sprintf(sql,"COMMIT");
 		mysql_real_query(&dbase,sql,strlen(sql));
 		return(YP_TOUCHED);
@@ -1178,10 +1084,11 @@ void sendYPResponse(int errorcode, char *msg, int type)
 	if (type == ICECAST2_RESPONSE) {
 		if (strlen(msg) == 0) {
 			printf("YPResponse: 0\r\nYPMessage: NAK\r\n\r\n", errorcode);
-			Log(LOG_DEBUG, "Sending NAK");
+			Log(LOG_INFO, "Sending NAK");
 		}
 		else {
 			printf("YPResponse: %d\r\nYPMessage: %s\r\n\r\n", errorcode, msg);
+			Log(LOG_INFO, "Sending %s", msg);
 		}
 	}
 }
