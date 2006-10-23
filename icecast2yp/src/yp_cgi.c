@@ -175,11 +175,13 @@ int main(int argc, char * argv[])
 		 		if (ptmp) {
 					strncpy(server_type, ptmp, sizeof(server_type)-1);
 					free(ptmp);
+					/*
 					Log(LOG_DEBUG, "Limiting by stream mime-type");
 					if (strncmp(server_type, "application/ogg", strlen("application/ogg"))) {
 						sendYPResponse(0, "We only accept Ogg stream listings", ICECAST2_RESPONSE);
 						goto endofcall;
 					}
+					*/
 				}
 			}
 		}
