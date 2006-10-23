@@ -125,6 +125,9 @@ Playlist publication community and XSPF content resolver. Mobster  creates iTune
           <dt><a href="http://xspf.binera.de/">XSPF Validator</a></dt>
           <dd>Online validator for XSPF documents.</dd>
 
+          <dt><a href="http://rubyforge.org/projects/xspf">Ruby XSPF playlist class</a></dt>
+          <dd>A Ruby library to parse XML Shareable Playlist Format (XSPF) documents and export them to M3U, SMIL, HTML and SoundBlox.  License: GNU General Public License (GPL) version 2, Ruby License.</dd>
+
 <!-- template for new entries
           <dt><a href=""></a></dt>
           <dd></dd>
