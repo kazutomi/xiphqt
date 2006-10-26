@@ -102,6 +102,13 @@
 	<dt><a href="http://www.rarewares.org/others.html">Windows builds of Speex utilities</a></dt>
 
 	<dd>Windows builds of speexenc, speexdec, and speexdrop</dd>
+
+	<dt><a href="http://www.jabbin.com/int/">jabbin</a></dt>
+	<dd>
+		Jabbin is an instant-message and VoIP (PC-to-PC) application utilizing Jabber. It runs on
+		Linux, Apple OS X, and Microsoft Windows and can be distributed under the terms of
+		GNU General Public License Version 2 (GPL).
+	</dd>
 </dl>
 
 <h2>Player Plugins &amp; Code Examples</h2>
