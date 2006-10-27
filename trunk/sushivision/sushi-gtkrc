@@ -1,0 +1,202 @@
+style "button-poppy" {
+	bg[NORMAL]="#80a0ff" 
+	bg[ACTIVE]="#c0f0ff" 
+	bg[PRELIGHT]="#c0f0ff" 
+
+	text[NORMAL]="#000000"
+	text[ACTIVE]="#000000"
+	text[PRELIGHT]="#000000" 
+
+	fg[NORMAL]="#000000"
+	fg[ACTIVE]="#000000"
+	fg[PRELIGHT]="#000000" 
+
+	font_name = "sans 8"
+
+	GtkWidget::focus_line_width       = 1
+	GtkWidget::focus_padding                     = 0 
+	GtkWidget::interior_focus                    = 0 
+	GtkWidget::internal_padding                  = 0 
+
+}
+
+style "panel-label" {
+	font_name = "sans bold 11"
+}
+
+style "panel-text" {
+	font_name = "sans 9"
+}
+
+style "small-marker" {
+        fg[NORMAL]="#905050" 
+	font_name = "sans 6"
+}
+
+style "scale-marker" {
+	font_name = "sans 7"
+}
+
+style "frame-label" {
+	font_name = "sans bold 10"
+}
+
+style "frame-text" {
+	font_name = "sans 9"
+}
+
+style "check-poppy" {
+	bg[NORMAL]="#80a0ff" 
+
+	font_name = "sans 8"	
+	GtkButton::focus-padding = 0
+	GtkButton::focus-line-width = 1
+	GtkButton::interior-focus = 0
+}
+
+style "slider" {
+	bg[NORMAL]="#80a0ff" 
+	bg[PRELIGHT]="#c0f0ff" 
+	GtkWidget::focus-padding = 0
+	GtkWidget::focus-line-width = 1
+	GtkWidget::interior-focus = 0
+}
+
+style "multibar" {
+        bg[NORMAL]="#80a0ff" 
+        bg[ACTIVE]="#b0b0b0" 
+        bg[PRELIGHT]="#c0f0ff" 
+
+        fg[NORMAL]="#000000" 
+        fg[ACTIVE]="#ff8080" 
+        fg[PRELIGHT]="#f0f080" 
+
+        text[NORMAL]="#c0c0d0" 
+        text[ACTIVE]="#ffb0b0" 
+        font_name = "sans 7"    
+}
+
+style "multislide" {
+        bg[NORMAL]="#80a0ff" 
+        bg[ACTIVE]="#b0b0b0" 
+        bg[PRELIGHT]="#c0f0ff" 
+
+        fg[NORMAL]="#000000" 
+        fg[ACTIVE]="#ff8080" 
+        fg[PRELIGHT]="#f0f080" 
+
+        text[NORMAL]="#707070" 
+        text[ACTIVE]="#905050" 
+        font_name = "sans 7"    
+}
+
+style "clipbar" {
+	fg[NORMAL]="#404040" 
+	fg[ACTIVE]="#ff8080" 
+	text[NORMAL]="#c0c0d0" 
+	text[ACTIVE]="#c0c0d0" 
+	font_name = "sans 8"	
+}
+
+style "readout" {
+	base[NORMAL]="#ffffff" 
+	base[ACTIVE]="#ffffff" 
+	bg[NORMAL]="#ffffff" 
+	bg[ACTIVE]="#ffffff" 
+
+	font_name = "Fixed, Nimbus Mono L, Courier, Monospace 10"	
+}
+
+style "small-readout" {
+	base[NORMAL]="#ffffff" 
+	base[ACTIVE]="#ffffff" 
+	bg[NORMAL]="#ffffff" 
+	bg[ACTIVE]="#ffffff" 
+	text[NORMAL]="#606060"
+	font_name = "Fixed, Nimbus Mono L, Courier, Monospace 8"	
+}
+
+style "darkpanel" {
+	bg[NORMAL]="#b0b0b0" 
+	bg[INSENSITIVE]="#b0b0b0" 
+}
+
+style "quitbutton" {
+	bg[NORMAL]="#d0d0d0"
+	bg[PRELIGHT]="#ffc0c0"
+	bg[ACTIVE]="#ffc0c0"
+	font_name = "sans 8"	
+	GtkButton::focus-padding = 0
+	GtkButton::focus-line-width = 1
+	GtkButton::interior-focus = 0
+}
+
+style "left" {
+	text[NORMAL] = "#606060"
+	text[ACTIVE] = "#606060"
+	text[SELECTED] = "#606060"
+	text[PRELIGHT] = "#606060"
+	fg[ACTIVE] = "#606060"
+	bg[NORMAL]="#80a0ff" 
+}
+style "right" {
+	text[NORMAL] = "#cc0000"
+	text[ACTIVE] = "#cc0000"
+	text[SELECTED] = "#cc0000"
+	text[PRELIGHT] = "#cc0000"
+	bg[NORMAL]="#80a0ff" 
+}
+style "mid" {
+	text[NORMAL] = "#0000fc"
+	text[ACTIVE] = "#0000fc"
+	text[SELECTED] = "#0000fc"
+	text[PRELIGHT] = "#0000fc"
+	bg[NORMAL]="#80a0ff" 
+}
+style "side" {
+	text[NORMAL] = "#00B200"
+	text[ACTIVE] = "#00B200"
+	text[SELECTED] = "#00B200"
+	text[PRELIGHT] = "#00B200"
+	bg[NORMAL]="#80a0ff" 
+}
+
+widget "*.GtkLabel" style "panel-text"
+widget "*.scalemarker" style "scale-marker"
+widget "*.smallmarker" style "small-marker"
+
+widget "*.color0" style "left"
+widget "*.color1" style "right"
+widget "*.color2" style "mid"
+widget "*.color3" style "side"
+
+widget "*.panelbox*" style "darkpanel"
+widget "*.winpanel*" style "darkpanel"
+
+widget "*.choiceframe.*" style "frame-text"
+widget "*.GtkFrame.GtkLabel" style "frame-label"
+widget "*.GtkFrame.GtkHBox.GtkLabel" style "frame-label"
+widget "*.framelabel" style "frame-label"
+
+widget "*.Readout*" style "readout"
+widget "*.smallreadout" style "small-readout"
+widget "*.GtkEntry" style "readout"
+widget "*.GtkHScale" style "slider"
+widget "*.GtkMenu*" style "button-poppy"
+widget "*.GtkComboBox*" style "button-poppy"
+widget "*.GtkToggleButton*" style "button-poppy"
+widget "*.GtkButton*" style "button-poppy"
+widget "*.GtkCheckButton" style "check-poppy"
+widget "*.Windowbutton*" style "button-poppy"
+widget "*.windowbuttonlike" style "button-poppy"
+widget "*.quitbutton" style "quitbutton"
+widget "*.quitbutton.GtkLabel" style "quitbutton"
+
+widget "*.panelbutton*" style "button-poppy"
+widget "*.panelbutton*.GtkLabel" style "panel-label"
+widget "*.Multibar*" style "multibar"
+widget "*.Multislide*" style "multislide"
+
+widget "*.clipbar*" style "clipbar"
+
+widget "*.Slider" style "button-poppy"
