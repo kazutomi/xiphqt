@@ -308,6 +308,24 @@ static void recompute_callback_2d(void *ptr){
   _mark_recompute_2d(p);
 }
 
+static void update_crosshairs(sushiv_panel_t *p){
+  sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
+  double x=0,y=0;
+  int i;
+  
+  for(i=0;i<p->dimensions;i++){
+    sushiv_dimension_t *d = p->dimension_list[i];
+    sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
+    if(d->flags & SUSHIV_X_DIM)
+      x = slider_get_value(p2->dim_scales[i],1);
+    if(d->flags & SUSHIV_Y_DIM)
+      y = slider_get_value(p2->dim_scales[i],1);
+    
+  }
+  
+  plot_set_crosshairs(PLOT(p2->graph),x,y);
+}
+
 static void dim_callback_2d(void *in){
   sushiv_dimension_t **dptr = (sushiv_dimension_t **)in;
   sushiv_dimension_t *d = *dptr;
@@ -319,28 +337,13 @@ static void dim_callback_2d(void *in){
 
   d->val = slider_get_value(p2->dim_scales[dnum],1);
 
-  // if the mid slider of a non-axis dimension changed, rerender
   if(!axisp){
+    // mid slider of a non-axis dimension changed, rerender
     _mark_recompute_2d(p);
     return;
   }else{
-    
-    // if the mid slider of an axis dimension changed, move crosshairs
-    double x=0,y=0;
-    int i;
-    
-    for(i=0;i<p->dimensions;i++){
-      sushiv_dimension_t *d = p->dimension_list[i];
-      sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
-      if(d->flags & SUSHIV_X_DIM)
-	x = slider_get_value(p2->dim_scales[i],1);
-      if(d->flags & SUSHIV_Y_DIM)
-	y = slider_get_value(p2->dim_scales[i],1);
-      
-    }
-    
-    plot_set_crosshairs(PLOT(p2->graph),x,y);
-
+    // mid slider of an axis dimension changed, move crosshairs
+    update_crosshairs(p);
   }
 
 }
@@ -367,6 +370,7 @@ static void dimchange_callback_2d(GtkWidget *button,gpointer in){
   sushiv_panel_t *p = (sushiv_panel_t *)in;
 
   update_xy_availability(p);
+  update_crosshairs(p);
   _mark_recompute_2d(p);
 }
 
