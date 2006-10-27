@@ -461,7 +461,7 @@ int _sushiv_panel_cooperative_compute_2d(sushiv_panel_t *p){
 
   // Initialize local dimension value array
   for(i=0;i<d;i++){
-    sushiv_dimension_t *dim = p->dimension_list[i];
+    sushiv_dimension_t *dim = p->sushi->dimension_list[i];
     dim_vals[i]=dim->val;
   }
 
