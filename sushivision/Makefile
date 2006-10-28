@@ -23,7 +23,7 @@ LDF  = -pthread -L/lib -lgtk-x11-2.0 -lgdk-x11-2.0 -latk-1.0 -lgdk_pixbuf-2.0 -l
 
 all:    
 	pkg-config --cflags "gtk+-2.0 $(GTKVER) cairo $(CAIROVER) freetype2" 1>/dev/null
-	$(MAKE) target CFLAGS='-O2 -ffast-math $(GCF) $(ADD_DEF)'
+	$(MAKE) target CFLAGS='-O2 $(GCF) $(ADD_DEF)'
 	$(STRIP) $(TARGET)
 
 debug:
@@ -32,7 +32,7 @@ debug:
 
 profile:
 	pkg-config --cflags "gtk+-2.0 $(GTKVER) cairo $(CAIROVER) freetype2" 1>/dev/null
-	$(MAKE) target CFLAGS='-pg -g -O2 -ffast-math $(GCF) $(ADD_DEF)' LIBS='-lgprof-helper'
+	$(MAKE) target CFLAGS='-pg -g -O2 $(GCF) $(ADD_DEF)' LIBS='-lgprof-helper'
 
 clean:
 	rm -f $(OBJ) *.d *.d.* gmon.out $(TARGET)
