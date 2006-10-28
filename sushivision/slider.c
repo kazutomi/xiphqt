@@ -479,10 +479,11 @@ void slider_size_request_slice(Slider *s,GtkRequisition *requisition){
     if(ex.height > maxy)maxy=ex.height;
   }
 
+  maxx*=1.5;
   // also check first + second label width
-  if(x0+x1 > maxx)maxx=x0+x1;
+  if(x0+x1*1.2 > maxx)maxx=(x0+x1)*1.2;
 
-  w = (maxx*1.5+2)*s->labels+4;
+  w = (maxx+2)*s->labels+4;
   requisition->width = (w+s->num_slices-1)/s->num_slices;
   requisition->height = maxy+4+s->ypad*2;
 
