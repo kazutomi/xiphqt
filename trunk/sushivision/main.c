@@ -34,6 +34,9 @@
 #include "sushivision.h"
 #include "internal.h"
 
+
+static pthread_mutex_t gdkm;
+static pthread_mutexattr_t gdkma;
 static pthread_mutex_t m = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t mc = PTHREAD_COND_INITIALIZER;
 sig_atomic_t _sushiv_exiting=0;
@@ -132,11 +135,29 @@ static void sushiv_realize_all(void){
     sushiv_realize_instance(instance_list[i]);
 }
 
+static void recursive_gdk_lock(void){
+  pthread_mutex_lock(&gdkm);
+}
+
+static void recursive_gdk_unlock(void){
+  pthread_mutex_unlock(&gdkm);
+
+}
+
 int main (int argc, char *argv[]){
   int ret;
 
   gtk_init (&argc, &argv);
   g_thread_init (NULL);
+
+  // correct an annoying default of gdk (use of non-recursive mutexes)
+  // otherwise we'd need seperate versions of each widget method that
+  // would be called outside the main thread
+  pthread_mutexattr_init(&gdkma);
+  pthread_mutexattr_settype(&gdkma,PTHREAD_MUTEX_RECURSIVE);
+  pthread_mutex_init(&gdkm,&gdkma);
+  gdk_threads_set_lock_functions(recursive_gdk_lock,recursive_gdk_unlock);
+  
   gdk_threads_init ();
   gtk_rc_parse_string(gtkrc_string());
   gtk_rc_add_default_file("sushi-gtkrc");
