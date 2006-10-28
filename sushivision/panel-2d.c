@@ -397,14 +397,14 @@ static void crosshairs_callback(void *in){
 int _sushiv_panel_cooperative_compute_2d(sushiv_panel_t *p){
   sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
   Plot *plot;
-
+  
   int w,h,i,d;
   int serialno;
   double x_min, x_max;
   double y_min, y_max;
   double invh;
   int x_d=-1, y_d=-1;
-
+  int render_scale_flag = 0;
   // lock during setup
   gdk_threads_enter ();
   w = p2->data_w;
@@ -466,10 +466,7 @@ int _sushiv_panel_cooperative_compute_2d(sushiv_panel_t *p){
   }
 
   // update scales if we're just starting
-  if(p2->last_line==0){
-    plot_set_x_scale(PLOT(p2->graph),x_min,x_max);
-    plot_set_y_scale(PLOT(p2->graph),y_min,y_max); 
-  }
+  if(p2->last_line==0) render_scale_flag = 1;
 
   /* iterate */
   /* by line */
@@ -482,6 +479,13 @@ int _sushiv_panel_cooperative_compute_2d(sushiv_panel_t *p){
 
     /* unlock for computation */
     gdk_threads_leave ();
+
+    if(render_scale_flag){
+      plot_set_x_scale(plot,x_min,x_max);
+      plot_set_y_scale(plot,y_min,y_max); 
+      render_scale_flag = 0;
+    }
+
     y = v_swizzle(last,h);
     dim_vals[y_d]= (y_max - y_min) * h * y;
 

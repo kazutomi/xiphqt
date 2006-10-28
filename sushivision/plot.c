@@ -33,9 +33,10 @@
 
 static GtkWidgetClass *parent_class = NULL;
 
-static void draw_scales(Plot *p){
-  GtkWidget *widget = GTK_WIDGET(p);
-  cairo_t *c = cairo_create(p->fore);
+static void draw_scales_work(cairo_surface_t *s, scalespace xs, scalespace ys){
+  int w = cairo_image_surface_get_width(s);
+  int h = cairo_image_surface_get_height(s);
+  cairo_t *c = cairo_create(s);
   int i=0,x,y;
   char buffer[80];
 
@@ -53,19 +54,19 @@ static void draw_scales(Plot *p){
   cairo_set_source_rgba(c,.7,.7,1.,.3);
 
   i=0;
-  x=scalespace_mark(&p->x,i++);
-  while(x < widget->allocation.width){
+  x=scalespace_mark(&xs,i++);
+  while(x < w){
     cairo_move_to(c,x+.5,0);
-    cairo_line_to(c,x+.5,widget->allocation.height);
-    x=scalespace_mark(&p->x,i++);
+    cairo_line_to(c,x+.5,h);
+    x=scalespace_mark(&xs,i++);
   }
 
   i=0;
-  y=scalespace_mark(&p->y,i++);
-  while(y < widget->allocation.height){
-    cairo_move_to(c,0,widget->allocation.height-y+.5);
-    cairo_line_to(c,widget->allocation.width,widget->allocation.height-y+.5);
-    y=scalespace_mark(&p->y,i++);
+  y=scalespace_mark(&ys,i++);
+  while(y < h){
+    cairo_move_to(c,0,h-y+.5);
+    cairo_line_to(c,w,h-y+.5);
+    y=scalespace_mark(&ys,i++);
   }
   cairo_stroke(c);
   cairo_restore(c);
@@ -78,16 +79,16 @@ static void draw_scales(Plot *p){
   cairo_set_line_width(c,2);
 
   i=0;
-  y=scalespace_mark(&p->y,i);
-  scalespace_label(&p->y,i++,buffer);
+  y=scalespace_mark(&ys,i);
+  scalespace_label(&ys,i++,buffer);
 
-  while(y < widget->allocation.height){
+  while(y < h){
     cairo_text_extents_t extents;
     cairo_text_extents (c, buffer, &extents);
 
     if(y - extents.height > 0){
       
-      double yy = widget->allocation.height-y+.5-(extents.height/2 + extents.y_bearing);
+      double yy = h-y+.5-(extents.height/2 + extents.y_bearing);
 
       cairo_move_to(c,2, yy);
       cairo_set_source_rgba(c,0,0,0,.5);
@@ -99,20 +100,20 @@ static void draw_scales(Plot *p){
       cairo_show_text (c, buffer);
     }
 
-    y=scalespace_mark(&p->y,i);
-    scalespace_label(&p->y,i++,buffer);
+    y=scalespace_mark(&ys,i);
+    scalespace_label(&ys,i++,buffer);
   }
 
   i=0;
-  x=scalespace_mark(&p->x,i);
-  scalespace_label(&p->x,i++,buffer);
+  x=scalespace_mark(&xs,i);
+  scalespace_label(&xs,i++,buffer);
   
   {
-    cairo_matrix_t m = {0.,-1., 1.,0.,  0.,widget->allocation.height};
+    cairo_matrix_t m = {0.,-1., 1.,0.,  0.,h};
     cairo_set_matrix(c,&m);
   }
 
-  while(x < widget->allocation.width){
+  while(x < w){
     cairo_text_extents_t extents;
     cairo_text_extents (c, buffer, &extents);
 
@@ -128,13 +129,33 @@ static void draw_scales(Plot *p){
       cairo_show_text (c, buffer);
     }
 
-    x=scalespace_mark(&p->x,i);
-    scalespace_label(&p->x,i++,buffer);
+    x=scalespace_mark(&xs,i);
+    scalespace_label(&xs,i++,buffer);
   }
 
   cairo_destroy(c);
 }
 
+// enter with lock; releases lock before exit
+static void draw_scales(Plot *p){
+  // render into a temporary surface; do it [potentially] outside the global Gtk lock.
+  scalespace x = p->x;
+  scalespace y = p->y;
+  int w = GTK_WIDGET(p)->allocation.width;
+  int h = GTK_WIDGET(p)->allocation.height;
+  cairo_surface_t *s = cairo_image_surface_create(CAIRO_FORMAT_ARGB32,w,h);
+  gdk_threads_leave();
+  
+  draw_scales_work(s,x,y);
+  
+  gdk_threads_enter();
+  // swap fore/temp
+  cairo_surface_t *temp = p->fore;
+  p->fore = s;
+  cairo_surface_destroy(temp);
+  plot_expose_request(p);
+  gdk_threads_leave();
+}
 
 static void plot_init (Plot *p){
   // instance initialization
@@ -169,7 +190,7 @@ static void plot_destroy (GtkObject *object){
 
 }
 
-void plot_draw (Plot *p,
+static void plot_draw (Plot *p,
 		int x, int y, int w, int h){
 
   GtkWidget *widget = GTK_WIDGET(p);
@@ -302,7 +323,8 @@ static void plot_size_allocate (GtkWidget     *widget,
   widget->allocation = *allocation;
   p->x = scalespace_linear(p->x.lo,p->x.hi,widget->allocation.width,p->scalespacing);
   p->y = scalespace_linear(p->y.lo,p->y.hi,widget->allocation.height,p->scalespacing);
-  draw_scales(p);
+  gdk_threads_enter();
+  draw_scales(p); // releases one lock level
   if(p->recompute_callback)p->recompute_callback(p->app_data);
 
 }
@@ -414,6 +436,8 @@ Plot *plot_new (void (*callback)(void *),void *app_data,
 }
 
 void plot_expose_request(Plot *p){
+  gdk_threads_enter();
+
   GtkWidget *widget = GTK_WIDGET(p);
   GdkRectangle r;
   
@@ -423,9 +447,11 @@ void plot_expose_request(Plot *p){
   r.height=widget->allocation.height;
   
   gdk_window_invalidate_rect (widget->window, &r, FALSE);
+  gdk_threads_leave();
 }
 
 void plot_expose_request_line(Plot *p, int num){
+  gdk_threads_enter();
   GtkWidget *widget = GTK_WIDGET(p);
   GdkRectangle r;
   
@@ -435,42 +461,44 @@ void plot_expose_request_line(Plot *p, int num){
   r.height=1;
   
   gdk_window_invalidate_rect (widget->window, &r, FALSE);
-}
-
-void plot_draw_line(Plot *p, int num){
-  GtkWidget *widget = GTK_WIDGET(p);
-  //GdkRectangle r;
-  
-  plot_draw(p,0,num,widget->allocation.width,1);
+  gdk_threads_leave();
 }
 
 void plot_set_x_scale(Plot *p, double low, double high){
+  gdk_threads_enter();
   GtkWidget *widget = GTK_WIDGET(p);
   scalespace temp = p->x;
   p->x = scalespace_linear(low,high,widget->allocation.width,p->scalespacing);
   p->selx = scalespace_pixel(&p->x,p->selx_val);
   if(memcmp(&temp,&p->x,sizeof(temp)))
-    draw_scales(p);
+    draw_scales(p); // releases one lock level
+  else
+    gdk_threads_leave();
 }
 
 void plot_set_y_scale(Plot *p, double low, double high){
+  gdk_threads_enter();
   GtkWidget *widget = GTK_WIDGET(p);
   scalespace temp = p->y;
   p->y = scalespace_linear(low,high,widget->allocation.height,p->scalespacing);
   p->sely = widget->allocation.height - scalespace_pixel(&p->y,p->sely_val);
 
   if(memcmp(&temp,&p->y,sizeof(temp)))
-    draw_scales(p);
+    draw_scales(p); // releases one lock level
+  else
+    gdk_threads_leave();
 }
 
 void plot_set_x_name(Plot *p, char *name){
+  gdk_threads_enter();
   p->namex = name;
-  draw_scales(p);
+  draw_scales(p); // releases one lock level
 }
 
 void plot_set_y_name(Plot *p, char *name){
+  gdk_threads_enter();
   p->namey = name;
-  draw_scales(p);
+  draw_scales(p); // releases one lock level
 }
 
 u_int32_t *plot_get_background_line(Plot *p, int num){
@@ -479,14 +507,19 @@ u_int32_t *plot_get_background_line(Plot *p, int num){
 }
 
 cairo_t *plot_get_background_cairo(Plot *p){
-  return cairo_create(p->back);
+  gdk_threads_enter();
+  cairo_t *ret= cairo_create(p->back);
+  gdk_threads_leave();
+  return ret;
 }
 
 void plot_set_crosshairs(Plot *p, double x, double y){
+  gdk_threads_enter();
   p->selx_val = x;
   p->sely_val = y;
   p->selx = scalespace_pixel(&p->x,x);
   p->sely = GTK_WIDGET(p)->allocation.height - scalespace_pixel(&p->y,y);
 
   plot_expose_request(p);
+  gdk_threads_leave();
 }
