@@ -178,13 +178,15 @@ static u_int32_t red_overlay(double val, u_int32_t mix){
   if(val<0)val=0;
   if(val>1)val=1;
   {
-    unsigned r = ((mix>>16) & 0xff) + (unsigned )(val*255.);
-    unsigned g = ((mix>>8) & 0xff);
-    unsigned b = ((mix) & 0xff);
+    int r = ((mix>>16) & 0xff) + (unsigned )(val*255.);
+    int g = ((mix>>8) & 0xff);
+    int b = ((mix) & 0xff);
     if(r>255){
       g -= (r-255);
       b -= (r-255);
       r=255;
+      if(g<0)g=0;
+      if(b<0)b=0;
     }
     return  (r<<16)+(g<<8)+b;
   }
@@ -194,13 +196,15 @@ static u_int32_t green_overlay(double val, u_int32_t mix){
   if(val<0)val=0;
   if(val>1)val=1;
   {
-    unsigned r = ((mix>>16) & 0xff);
-    unsigned g = ((mix>>8) & 0xff) + (unsigned )(val*255.);
-    unsigned b = ((mix) & 0xff);
+    int r = ((mix>>16) & 0xff);
+    int g = ((mix>>8) & 0xff) + (unsigned)(val*255.);
+    int b = ((mix) & 0xff);
     if(g>255){
       r -= (g-255);
       b -= (g-255);
       g=255;
+      if(r<0)r=0;
+      if(b<0)b=0;
     }
     return  (r<<16)+(g<<8)+b;
   }
@@ -210,13 +214,15 @@ static u_int32_t blue_overlay(double val, u_int32_t mix){
   if(val<0)val=0;
   if(val>1)val=1;
   {
-    unsigned r = ((mix>>16) & 0xff);
-    unsigned g = ((mix>>8) & 0xff);
-    unsigned b = ((mix) & 0xff) + (unsigned )(val*255.);
+    int r = ((mix>>16) & 0xff);
+    int g = ((mix>>8) & 0xff);
+    int b = ((mix) & 0xff) + (unsigned )(val*255.);
     if(b>255){
       r -= (b-255);
       g -= (b-255);
       b=255;
+      if(r<0)r=0;
+      if(g<0)g=0;
     }
     return  (r<<16)+(g<<8)+b;
   }
