@@ -78,10 +78,11 @@ G_END_DECLS
 // the widget subclass half
 void plot_expose_request(Plot *p);
 void plot_expose_request_line(Plot *p, int num);
-void plot_set_x_scale(Plot *p, double low, double high);
-void plot_set_y_scale(Plot *p, double low, double high);
+void plot_set_x_scale(Plot *p, scalespace x);
+void plot_set_y_scale(Plot *p, scalespace y);
 void plot_set_x_name(Plot *p, char *name);
 void plot_set_y_name(Plot *p, char *name);
 u_int32_t * plot_get_background_line(Plot *p, int num);
 cairo_t *plot_get_background_cairo(Plot *p);
 void plot_set_crosshairs(Plot *p, double x, double y);
+void plot_draw_scales(Plot *p);
