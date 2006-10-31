@@ -52,9 +52,7 @@ static void render_checks(int w, int y, u_int32_t *render){
   }
 }
 
-/* called from idle handler only, and as such, we can be sure we're
-   locked and uninterruptable */
-void _sushiv_panel2d_map_redraw(sushiv_panel_t *p){
+static void _sushiv_panel2d_remap(sushiv_panel_t *p){
   sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
   Plot *plot = PLOT(p2->graph);
 
@@ -90,8 +88,20 @@ void _sushiv_panel2d_map_redraw(sushiv_panel_t *p){
       /* store result in panel */
       memcpy(plot->datarect+y*w,render,w*sizeof(*render));
     }
-    plot_expose_request(plot);
   }
+}
+
+void _sushiv_panel2d_map_redraw(sushiv_panel_t *p){
+  sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
+  Plot *plot = PLOT(p2->graph);
+
+  gdk_threads_enter (); // misuse me as a global mutex
+  
+  _sushiv_panel2d_remap(p);
+  if(plot)
+    plot_expose_request(plot);
+ 
+  gdk_threads_leave (); // misuse me as a global mutex
 }
 
 static void mapchange_callback_2d(GtkWidget *w,gpointer in){
@@ -139,28 +149,34 @@ static void update_xy_availability(sushiv_panel_t *p){
       // make the y insensitive
       if(p2->dim_yb[i])
 	gtk_widget_set_sensitive(p2->dim_yb[i],FALSE);
-      // set the dim x flag
-      p->dimension_list[i]->flags |= SUSHIV_X_DIM;
+      // set the x dim flag
+      p2->x_d = p->dimension_list[i];
+      // set panel x scale to this dim
+      p2->x = scalespace_linear(p2->x_d->bracket[0],
+				p2->x_d->bracket[1],
+				p2->data_w,
+				PLOT(p2->graph)->scalespacing);
     }else{
       // if there is a y, make it sensitive 
       if(p2->dim_yb[i])
 	gtk_widget_set_sensitive(p2->dim_yb[i],TRUE);
-      // unset dim x flag 
-      p->dimension_list[i]->flags &= ~SUSHIV_X_DIM;
     }
     if(p2->dim_yb[i] &&
        gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(p2->dim_yb[i]))){
       // make the x insensitive
       if(p2->dim_xb[i])
 	gtk_widget_set_sensitive(p2->dim_xb[i],FALSE);
-      // set the dim y flag
-      p->dimension_list[i]->flags |= SUSHIV_Y_DIM;
+      // set the y dim
+      p2->y_d = p->dimension_list[i];
+      // set panel y scale to this dim
+      p2->y = scalespace_linear(p2->y_d->bracket[0],
+				p2->y_d->bracket[1],
+				p2->data_h,
+				PLOT(p2->graph)->scalespacing);
     }else{
       // if there is a x, make it sensitive 
       if(p2->dim_xb[i])
 	gtk_widget_set_sensitive(p2->dim_xb[i],TRUE);
-      // unset dim y flag 
-      p->dimension_list[i]->flags &= ~SUSHIV_Y_DIM;
     }
     if((p2->dim_xb[i] &&
 	gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(p2->dim_xb[i]))) ||
@@ -205,7 +221,7 @@ static void compute_one_line_2d(sushiv_panel_t *p,
     for(j=0;j<w;j++){
 
       /* compute value for this objective for this pixel */
-      dim_vals[x_d] = (x_max-x_min) * inv_w * j;
+      dim_vals[x_d] = (x_max-x_min) * inv_w * j + x_min;
       work[j] = o->callback(dim_vals);
       
     }
@@ -260,38 +276,214 @@ static int v_swizzle(int y, int height){
   return y<<1;
 }
 
+// assumes data is locked
+static void fast_scale_x(double *data, 
+			 int w,
+			 int h,
+			 scalespace new,
+			 scalespace old){
+  int x,y;
+  double work[w];
+  int mapbase[w];
+  double mapdel[w];
+
+  double old_w = old.pixels;
+  double new_w = new.pixels;
+  double old_lo = scalespace_value(&old,0);
+  double old_hi = scalespace_value(&old,old_w);
+  double new_lo = scalespace_value(&new,0);
+  double new_hi = scalespace_value(&new,new_w);
+  double newscale = (new_hi-new_lo)/new_w;
+  double oldscale = old_w/(old_hi-old_lo);
+  for(x=0;x<w;x++){
+    double xval = x*newscale+new_lo;
+    double map = ((xval-old_lo)*oldscale);
+    mapbase[x]=(int)floor(map);
+    mapdel[x]=map-floor(map);
+  }
+
+  for(y=0;y<h;y++){
+    double *data_line = data+y*w;
+    for(x=0;x<w;x++){
+      if(mapbase[x]<0 || mapbase[x]>=(w-1)){
+	work[x]=NAN;
+      }else{
+	int base = mapbase[x];
+	double del = mapdel[x];
+	double A = data_line[base];
+	double B = data_line[base+1];
+	if(isnan(A) || isnan(B)) // damn you SIGFPE
+	  work[x]=NAN;
+	else
+	  work[x]= A - A*del + B*del;
+	
+      }
+    }
+    memcpy(data_line,work,w*(sizeof(*work)));
+  }   
+}
+
+static void fast_scale_y(double *data, 
+			 int w,
+			 int h,
+			 scalespace new,
+			 scalespace old){
+  int x,y;
+  double work[w];
+  int mapbase[w];
+  double mapdel[w];
+
+  double old_h = old.pixels;
+  double new_h = new.pixels;
+  double old_lo = scalespace_value(&old,0);
+  double old_hi = scalespace_value(&old,old_h);
+  double new_lo = scalespace_value(&new,0);
+  double new_hi = scalespace_value(&new,new_h);
+  double newscale = (new_hi-new_lo)/new_h;
+  double oldscale = old_h/(old_hi-old_lo);
+  
+  for(y=0;y<h;y++){
+    double yval = y*newscale+new_lo;
+    double map = ((yval-old_lo)*oldscale);
+    mapbase[y]=(int)floor(map);
+    mapdel[y]=map-floor(map);
+  }
+  
+  for(x=0;x<w;x++){
+    double *data_column = data+x;
+    int stride = w;
+    for(y=0;y<h;y++){
+      if(mapbase[y]<0 || mapbase[y]>=(h-1)){
+	work[y]=NAN;
+      }else{
+	int base = mapbase[y]*stride;
+	double del = mapdel[y];
+	double A = data_column[base];
+	double B = data_column[base+stride];
+	
+	if(isnan(A) || isnan(B)) // damn you SIGFPE
+	  work[y]=NAN;
+	else
+	  work[y]= A - A*del + B*del;
+	
+      }
+    }
+    for(y=0;y<h;y++){
+      *data_column = work[y];
+      data_column+=stride;
+    }
+  }   
+}
+
+static void fast_scale(double *newdata, 
+		       scalespace xnew,
+		       scalespace ynew,
+		       double *olddata,
+		       scalespace xold,
+		       scalespace yold){
+  int y;
+  
+  int new_w = xnew.pixels;
+  int new_h = ynew.pixels;
+  int old_w = xold.pixels;
+  int old_h = yold.pixels;
+
+  if(new_w > old_w){
+    if(new_h > old_h){
+      // copy image to new, scale there
+      for(y=0;y<old_h;y++){
+	double *new_line = newdata+y*new_w;
+	double *old_line = olddata+y*old_w;
+	memcpy(new_line,old_line,old_w*(sizeof*new_line));
+      }
+      fast_scale_x(newdata,new_w,new_h,xnew,xold);
+      fast_scale_y(newdata,new_w,new_h,ynew,yold);
+    }else{
+      // scale y in old pane, copy to new, scale x 
+      fast_scale_y(olddata,old_w,old_h,ynew,yold);
+      for(y=0;y<new_h;y++){
+	double *new_line = newdata+y*new_w;
+	double *old_line = olddata+y*old_w;
+	memcpy(new_line,old_line,old_w*(sizeof*new_line));
+      }
+      fast_scale_x(newdata,new_w,new_h,xnew,xold);
+    }
+  }else{
+    if(new_h > old_h){
+      // scale x in old pane, o=copy to new, scale y
+      fast_scale_x(olddata,old_w,old_h,xnew,xold);
+      for(y=0;y<old_h;y++){
+	double *new_line = newdata+y*new_w;
+	double *old_line = olddata+y*old_w;
+	memcpy(new_line,old_line,new_w*(sizeof*new_line));
+      }
+      fast_scale_y(newdata,new_w,new_h,ynew,yold);
+    }else{
+      // scale in old pane, copy to new 
+      // also the case where newdata == olddata and the size is unchanged
+      fast_scale_x(olddata,old_w,old_h,xnew,xold);
+      fast_scale_y(olddata,old_w,old_h,ynew,yold);
+      if(olddata != newdata){
+	for(y=0;y<new_h;y++){
+	  double *new_line = newdata+y*new_w;
+	  double *old_line = olddata+y*old_w;
+	  memcpy(new_line,old_line,new_w*(sizeof*new_line));
+	}
+      }
+    }
+  }
+}
+
 // call only from main gtk thread!
 void _mark_recompute_2d(sushiv_panel_t *p){
   sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
   Plot *plot = PLOT(p2->graph);
+  int w = plot->w.allocation.width;
+  int h = plot->w.allocation.height;
 
   if(plot && GTK_WIDGET_REALIZED(GTK_WIDGET(plot))){
     if(p2->data_w != plot->w.allocation.width ||
        p2->data_h != plot->w.allocation.height){
       if(p2->data_rect){
+	
+	// make new rects, do a fast/dirty scaling job from old to new
 	int i;
-	for(i=0;i<p->objectives;i++)
+	for(i=0;i<p->objectives;i++){
+	  double *new_rect = malloc(w * h* sizeof(**p2->data_rect));
+
+	  fast_scale(new_rect,plot->x,plot->y,p2->data_rect[i],p2->x,p2->y);
+
 	  free(p2->data_rect[i]);
-	free(p2->data_rect);
-	p2->data_rect = NULL;
+	  p2->data_rect[i] = new_rect;
+	}
+	p2->x = plot->x;
+	p2->y = plot->y;
+	p2->data_w = w;
+	p2->data_h = h;
+	_sushiv_panel2d_map_redraw(p);
       }
-      
     }
     
-    p2->data_w = plot->w.allocation.width;
-    p2->data_h = plot->w.allocation.height;
     p2->serialno++;
     p2->last_line = 0;
     
     if(!p2->data_rect){
-      int i;
+      int i,j;
       // allocate it
+      p2->data_w = w;
+      p2->data_h = h;
+      p2->x = scalespace_linear(p2->x_d->bracket[0],
+				p2->x_d->bracket[1],
+				w,
+				PLOT(p2->graph)->scalespacing);
+      p2->y = scalespace_linear(p2->y_d->bracket[0],
+				p2->y_d->bracket[1],
+				h,
+				PLOT(p2->graph)->scalespacing);
       p2->data_rect = calloc(p->objectives,sizeof(*p2->data_rect));
       for(i=0;i<p->objectives;i++)
 	p2->data_rect[i] = malloc(p2->data_w * p2->data_h* sizeof(**p2->data_rect));
-    }
-    {
-      int i,j;
+      
       // blank it 
       for(i=0;i<p->objectives;i++)
 	for(j=0;j<p2->data_w*p2->data_h;j++)
@@ -316,9 +508,9 @@ static void update_crosshairs(sushiv_panel_t *p){
   for(i=0;i<p->dimensions;i++){
     sushiv_dimension_t *d = p->dimension_list[i];
     sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
-    if(d->flags & SUSHIV_X_DIM)
+    if(d == p2->x_d)
       x = slider_get_value(p2->dim_scales[i],1);
-    if(d->flags & SUSHIV_Y_DIM)
+    if(d == p2->y_d)
       y = slider_get_value(p2->dim_scales[i],1);
     
   }
@@ -333,7 +525,7 @@ static void dim_callback_2d(void *in){
   sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
   int dnum = dptr - p->dimension_list;
 
-  int axisp = (d->flags & SUSHIV_DIM_MASK);
+  int axisp = (d == p2->x_d || d == p2->y_d);
 
   d->val = slider_get_value(p2->dim_scales[dnum],1);
 
@@ -355,10 +547,20 @@ static void bracket_callback_2d(void *in){
   sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
   int dnum = dptr - p->dimension_list;
 
-  int axisp = (d->flags & SUSHIV_DIM_MASK);
+  int axisp = (d == p2->x_d || d == p2->y_d);
 
-  d->bracket[0] = slider_get_value(p2->dim_scales[dnum],0);
-  d->bracket[1] = slider_get_value(p2->dim_scales[dnum],2);
+  double lo = slider_get_value(p2->dim_scales[dnum],0);
+  double hi = slider_get_value(p2->dim_scales[dnum],2);
+
+  if(axisp){  
+    double xy_p = d == p2->x_d;
+    scalespace s = scalespace_linear(lo,hi,(xy_p?p2->data_w:p2->data_h),
+				     PLOT(p2->graph)->scalespacing);
+    xy_p?(p2->x=s):(p2->y=s);
+  }
+
+  d->bracket[0] = lo;
+  d->bracket[1] = hi;
 
   // if the bracketing of an axis dimension changed, rerender
   if(axisp)
@@ -368,10 +570,11 @@ static void bracket_callback_2d(void *in){
 
 static void dimchange_callback_2d(GtkWidget *button,gpointer in){
   sushiv_panel_t *p = (sushiv_panel_t *)in;
-
-  update_xy_availability(p);
-  update_crosshairs(p);
-  _mark_recompute_2d(p);
+  if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button))){
+    update_xy_availability(p);
+    update_crosshairs(p);
+    _mark_recompute_2d(p);
+  }
 }
 
 static void crosshairs_callback(void *in){
@@ -384,9 +587,9 @@ static void crosshairs_callback(void *in){
   for(i=0;i<p->dimensions;i++){
     sushiv_dimension_t *d = p->dimension_list[i];
     sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
-    if(d->flags & SUSHIV_X_DIM)
+    if(d == p2->x_d)
       slider_set_value(p2->dim_scales[i],1,x);
-    if(d->flags & SUSHIV_Y_DIM)
+    if(d == p2->y_d)
       slider_set_value(p2->dim_scales[i],1,y);
   }
 }
@@ -405,10 +608,15 @@ int _sushiv_panel_cooperative_compute_2d(sushiv_panel_t *p){
   double invh;
   int x_d=-1, y_d=-1;
   int render_scale_flag = 0;
+  scalespace sx;
+  scalespace sy;
+
   // lock during setup
   gdk_threads_enter ();
   w = p2->data_w;
   h = p2->data_h;
+  sx = p2->x;
+  sy = p2->y;
 
   if(p2->last_line>=h){
       gdk_threads_leave ();
@@ -433,22 +641,39 @@ int _sushiv_panel_cooperative_compute_2d(sushiv_panel_t *p){
   /* which dim is our x?  Our y? */
   for(i=0;i<d;i++){
     sushiv_dimension_t *dim = p->dimension_list[i];
-    if((dim->flags & SUSHIV_DIM_MASK) == SUSHIV_X_DIM ){
+    if(dim == p2->x_d){
+      x_min = scalespace_value(&sx,0);
+      x_max = scalespace_value(&sx,w);
       x_d = dim->number;
-      x_min = dim->bracket[0];
-      x_max = dim->bracket[1];
       break;
     }
   }
 
   for(i=0;i<d;i++){
     sushiv_dimension_t *dim = p->dimension_list[i];
-    if((dim->flags & SUSHIV_DIM_MASK) == SUSHIV_Y_DIM){
+    if(dim == p2->y_d){
+      y_min = scalespace_value(&sy,0);
+      y_max = scalespace_value(&sy,h);
       y_d = dim->number;
-      y_min = dim->bracket[0];
-      y_max = dim->bracket[1];
       break;
     }
+  }
+
+  // if the scale bound has changed, fast scale our background data to fill
+  // the pane while new, more precise data renders.
+  if(memcmp(&sx,&plot->x,sizeof(sx))){
+    for(i=0;i<p->objectives;i++)
+      fast_scale_x(p2->data_rect[i],w,h,
+		   sx,plot->x);
+    plot->x = sx;
+    _sushiv_panel2d_remap(p);
+  }
+  if(memcmp(&sy,&plot->y,sizeof(sy))){
+    for(i=0;i<p->objectives;i++)
+      fast_scale_y(p2->data_rect[i],w,h,
+		   sy,plot->y);
+    plot->y = sy;
+    _sushiv_panel2d_remap(p);
   }
 
   // Bulletproofing; shouldn't ever come up
@@ -475,19 +700,19 @@ int _sushiv_panel_cooperative_compute_2d(sushiv_panel_t *p){
     int y;
     if(plot->w.allocation.height != h)break;
     if(last>=h)break;
+    if(serialno != p2->serialno)break;
     p2->last_line++;
 
     /* unlock for computation */
     gdk_threads_leave ();
 
     if(render_scale_flag){
-      plot_set_x_scale(plot,x_min,x_max);
-      plot_set_y_scale(plot,y_min,y_max); 
+      plot_draw_scales(plot);
       render_scale_flag = 0;
     }
 
     y = v_swizzle(last,h);
-    dim_vals[y_d]= (y_max - y_min) * h * y;
+    dim_vals[y_d]= (y_max - y_min) / h * y + y_min;
 
     /* compute line */
     compute_one_line_2d(p, serialno, y, x_d, x_min, x_max, w, dim_vals, render);

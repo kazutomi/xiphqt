@@ -136,9 +136,9 @@ static void draw_scales_work(cairo_surface_t *s, scalespace xs, scalespace ys){
   cairo_destroy(c);
 }
 
-// enter with lock; releases lock before exit
-static void draw_scales(Plot *p){
+void plot_draw_scales(Plot *p){
   // render into a temporary surface; do it [potentially] outside the global Gtk lock.
+  gdk_threads_enter();
   scalespace x = p->x;
   scalespace y = p->y;
   int w = GTK_WIDGET(p)->allocation.width;
@@ -323,8 +323,7 @@ static void plot_size_allocate (GtkWidget     *widget,
   widget->allocation = *allocation;
   p->x = scalespace_linear(p->x.lo,p->x.hi,widget->allocation.width,p->scalespacing);
   p->y = scalespace_linear(p->y.lo,p->y.hi,widget->allocation.height,p->scalespacing);
-  gdk_threads_enter();
-  draw_scales(p); // releases one lock level
+  plot_draw_scales(p);
   if(p->recompute_callback)p->recompute_callback(p->app_data);
 
 }
@@ -464,41 +463,31 @@ void plot_expose_request_line(Plot *p, int num){
   gdk_threads_leave();
 }
 
-void plot_set_x_scale(Plot *p, double low, double high){
-  gdk_threads_enter();
-  GtkWidget *widget = GTK_WIDGET(p);
+void plot_set_x_scale(Plot *p, scalespace x){
   scalespace temp = p->x;
-  p->x = scalespace_linear(low,high,widget->allocation.width,p->scalespacing);
+  p->x = x;
   p->selx = scalespace_pixel(&p->x,p->selx_val);
   if(memcmp(&temp,&p->x,sizeof(temp)))
-    draw_scales(p); // releases one lock level
-  else
-    gdk_threads_leave();
+    plot_draw_scales(p);
 }
 
-void plot_set_y_scale(Plot *p, double low, double high){
-  gdk_threads_enter();
+void plot_set_y_scale(Plot *p, scalespace y){
   GtkWidget *widget = GTK_WIDGET(p);
   scalespace temp = p->y;
-  p->y = scalespace_linear(low,high,widget->allocation.height,p->scalespacing);
+  p->y = y;
   p->sely = widget->allocation.height - scalespace_pixel(&p->y,p->sely_val);
-
   if(memcmp(&temp,&p->y,sizeof(temp)))
-    draw_scales(p); // releases one lock level
-  else
-    gdk_threads_leave();
+    plot_draw_scales(p);
 }
 
 void plot_set_x_name(Plot *p, char *name){
-  gdk_threads_enter();
   p->namex = name;
-  draw_scales(p); // releases one lock level
+  plot_draw_scales(p); // releases one lock level
 }
 
 void plot_set_y_name(Plot *p, char *name){
-  gdk_threads_enter();
   p->namey = name;
-  draw_scales(p); // releases one lock level
+  plot_draw_scales(p); // releases one lock level
 }
 
 u_int32_t *plot_get_background_line(Plot *p, int num){

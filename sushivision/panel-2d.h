@@ -30,6 +30,9 @@ typedef struct sushiv_panel2d {
   int data_h;
   int serialno;
   double **data_rect;
+  scalespace x;
+  scalespace y;
+  int scales_init;
 
   mapping *mappings;
   Slider    **range_scales;
@@ -39,6 +42,9 @@ typedef struct sushiv_panel2d {
   Slider **dim_scales;
   GtkWidget **dim_xb;
   GtkWidget **dim_yb;
+
+  sushiv_dimension_t *x_d;
+  sushiv_dimension_t *y_d;
 
   int last_line;
   int dirty_flag;

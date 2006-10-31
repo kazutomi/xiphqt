@@ -37,7 +37,3 @@ extern void _sushiv_wake_workers(void);
 extern int _sushiv_panel_cooperative_compute(sushiv_panel_t *p);
 
 extern sig_atomic_t _sushiv_exiting;
-
-#define SUSHIV_DIM_MASK 0x003
-#define SUSHIV_X_DIM 0x001
-#define SUSHIV_Y_DIM 0x002

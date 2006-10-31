@@ -31,6 +31,9 @@ typedef struct {
 
   int decimal_exponent;
   double m;
+
+  int init;
+  int pixels;
 } scalespace;
 
 extern char **scale_generate_labels(unsigned scalevals, double *scaleval_list);

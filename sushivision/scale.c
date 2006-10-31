@@ -189,14 +189,18 @@ scalespace scalespace_linear (double lowpoint, double highpoint, int pixels, int
 
   ret.lo = lowpoint;
   ret.hi = highpoint;
+  ret.init = 1;
+  ret.pixels=pixels;
 
-  while(pixels / range < max_spacing){
-    place++;
-    range *= .1;
-  }
-  while(pixels / range > max_spacing){
-    place--;
-    range *= 10;
+  if(range!=0.){
+    while(pixels / range < max_spacing){
+      place++;
+      range *= .1;
+    }
+    while(pixels / range > max_spacing){
+      place--;
+      range *= 10;
+    }
   }
 
   ret.decimal_exponent = place;
@@ -211,7 +215,10 @@ scalespace scalespace_linear (double lowpoint, double highpoint, int pixels, int
   }
 
   ret.step_val = step;
-  ret.step_pixel = rint(pixels / range);
+  if(pixels == 0. || range == 0.)
+    ret.step_pixel = max_spacing;
+  else
+    ret.step_pixel = rint(pixels / range);
   ret.m = pow(10,place);
   first = (int)(lowpoint/ret.m)/step*step;
 
