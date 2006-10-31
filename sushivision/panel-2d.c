@@ -80,8 +80,7 @@ static void _sushiv_panel2d_remap(sushiv_panel_t *p){
 	  
 	  /* map/render result */
 	  if(!isnan(val) && val>=alpha)
-	    render[x] = mapping_calc(p2->mappings+i,val);
-
+	    render[x] = mapping_calc(p2->mappings+i,val,render[x]);
 	}
       }
       
@@ -235,7 +234,7 @@ static void compute_one_line_2d(sushiv_panel_t *p,
 	work[j] = val;
 	
 	if(!isnan(val) && val>=alpha)
-	  render[j] = mapping_calc(p2->mappings+i,val);
+	  render[j] = mapping_calc(p2->mappings+i,val,render[j]);
 	
       }
       

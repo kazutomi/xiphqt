@@ -25,7 +25,7 @@ typedef struct {
   double low;
   double high;
   double i_range;
-  u_int32_t (*mapfunc)(double val);
+  u_int32_t (*mapfunc)(double val,u_int32_t mix);
 
 } mapping;
 
@@ -35,4 +35,4 @@ extern void mapping_setup(mapping *m, double lo, double hi, int funcnum);
 extern void mapping_set_lo(mapping *m, double lo);
 extern void mapping_set_hi(mapping *m, double hi);
 extern void mapping_set_func(mapping *m, int funcnum);
-extern u_int32_t mapping_calc(mapping *m, double in);
+extern u_int32_t mapping_calc(mapping *m, double in, u_int32_t mix);
