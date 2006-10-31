@@ -91,8 +91,8 @@ static void parent_shade(Slider *s, cairo_t *c, int shade){
 void slider_draw_background(Slider *s){
   int i;
   GtkWidget *parent=gtk_widget_get_parent(s->slices[0]);
-  GdkColor *bg = &parent->style->bg[0];
   GdkColor *fg = &s->slices[0]->style->fg[0];
+  GdkColor *bg = &parent->style->bg[0];
   int textborder=1;
   double textr=1.;
   double textg=1.;
@@ -117,13 +117,19 @@ void slider_draw_background(Slider *s){
   cairo_rectangle(c,0,0,w,h);
   cairo_fill(c);
 
+
+  cairo_rectangle (c, x+1, ty, w-2, th);
+  parent_shade(s,c,3);
+  cairo_fill (c);
+  cairo_surface_flush(s->background);
+
   // Create trough innards
  if(s->gradient){
     // background map gradient 
     u_int32_t *pixel=s->backdata+ty*s->w;
     
     for(i=tx;i<tx+tw;i++)
-      pixel[i]=mapping_calc(s->gradient,slider_pixel_to_del(s,0,i));
+      pixel[i]=mapping_calc(s->gradient,slider_pixel_to_del(s,0,i), pixel[i]);
     
     for(i=ty+1;i<ty+th;i++){
       memcpy(pixel+w,pixel,w*4);
@@ -136,10 +142,6 @@ void slider_draw_background(Slider *s){
     textg=fg->green;
     textb=fg->blue;
     textborder=0;
- 
-    cairo_rectangle (c, x+1, ty, w-2, th);
-    parent_shade(s,c,3);
-    cairo_fill (c);
   }
 
   // Top shadow 

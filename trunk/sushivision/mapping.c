@@ -24,7 +24,7 @@
 #include <string.h>
 #include "mapping.h"
 
-static u_int32_t scalloped_colorwheel(double val){
+static u_int32_t scalloped_colorwheel(double val, u_int32_t mix){
   if(val<0.)val=0.;
   if(val>1.)val=1.;
   {
@@ -66,8 +66,7 @@ static u_int32_t scalloped_colorwheel(double val){
   }
 }
 
-#include <stdio.h>
-static u_int32_t smooth_colorwheel(double val){
+static u_int32_t smooth_colorwheel(double val, u_int32_t mix){
   if(val<0)val=0;
   if(val>1)val=1;
   {
@@ -129,7 +128,7 @@ static u_int32_t smooth_colorwheel(double val){
   }
 }
 
-static u_int32_t grayscale(double val){
+static u_int32_t grayscale(double val, u_int32_t mix){
   if(val<0)val=0;
   if(val>1)val=1;
   {
@@ -138,7 +137,7 @@ static u_int32_t grayscale(double val){
   }
 }
 
-static u_int32_t grayscale_cont(double val){
+static u_int32_t grayscale_cont(double val, u_int32_t mix){
   if(val<0)val=0;
   if(val>1)val=1;
   {
@@ -148,19 +147,112 @@ static u_int32_t grayscale_cont(double val){
   }
 }
 
-static u_int32_t (*mapfunc[])(double)={
-  scalloped_colorwheel,
+static u_int32_t red(double val, u_int32_t mix){
+  if(val<0)val=0;
+  if(val>1)val=1;
+  {
+    int g=rint(val*255.);
+    return (g<<16);
+  }
+}
+
+static u_int32_t green(double val, u_int32_t mix){
+  if(val<0)val=0;
+  if(val>1)val=1;
+  {
+    int g=rint(val*255.);
+    return (g<<8);
+  }
+}
+
+static u_int32_t blue(double val, u_int32_t mix){
+  if(val<0)val=0;
+  if(val>1)val=1;
+  {
+    int g=rint(val*255.);
+    return (g);
+  }
+}
+
+static u_int32_t red_overlay(double val, u_int32_t mix){
+  if(val<0)val=0;
+  if(val>1)val=1;
+  {
+    unsigned r = ((mix>>16) & 0xff) + (unsigned )(val*255.);
+    unsigned g = ((mix>>8) & 0xff);
+    unsigned b = ((mix) & 0xff);
+    if(r>255){
+      g -= (r-255);
+      b -= (r-255);
+      r=255;
+    }
+    return  (r<<16)+(g<<8)+b;
+  }
+}
+
+static u_int32_t green_overlay(double val, u_int32_t mix){
+  if(val<0)val=0;
+  if(val>1)val=1;
+  {
+    unsigned r = ((mix>>16) & 0xff);
+    unsigned g = ((mix>>8) & 0xff) + (unsigned )(val*255.);
+    unsigned b = ((mix) & 0xff);
+    if(g>255){
+      r -= (g-255);
+      b -= (g-255);
+      g=255;
+    }
+    return  (r<<16)+(g<<8)+b;
+  }
+}
+
+static u_int32_t blue_overlay(double val, u_int32_t mix){
+  if(val<0)val=0;
+  if(val>1)val=1;
+  {
+    unsigned r = ((mix>>16) & 0xff);
+    unsigned g = ((mix>>8) & 0xff);
+    unsigned b = ((mix) & 0xff) + (unsigned )(val*255.);
+    if(b>255){
+      r -= (b-255);
+      g -= (b-255);
+      b=255;
+    }
+    return  (r<<16)+(g<<8)+b;
+  }
+}
+
+static u_int32_t inactive(double val, u_int32_t mix){
+  return mix;
+}
+
+static u_int32_t (*mapfunc[])(double,u_int32_t)={
   smooth_colorwheel,
+  scalloped_colorwheel,
   grayscale,
   grayscale_cont,
+  red,
+  green,
+  blue,
+  red_overlay,
+  green_overlay,
+  blue_overlay,
+  inactive
 };
 
 static char *mapnames[]={
-  "scalloped colorwheel",
   "smooth colorwheel",
+  "scalloped colorwheel",
   "grayscale",
   "grayscale with contours",
-  0
+  "red",
+  "green",
+  "blue",
+  "red overlay",
+  "green overlay",
+  "blue overlay",
+  "inactive",
+0
 };
 
 int num_mappings(){
@@ -200,14 +292,14 @@ void mapping_set_func(mapping *m, int funcnum){
   m->mapfunc = mapfunc[funcnum];
 }
 
-u_int32_t mapping_calc(mapping *m, double in){
+u_int32_t mapping_calc(mapping *m, double in, u_int32_t mix){
   if(m->i_range==0){
     if(in<=m->low)
-      return m->mapfunc(0.);
+      return m->mapfunc(0.,mix);
     else
-      return m->mapfunc(1.);
+      return m->mapfunc(1.,mix);
   }else{
     double val = (in - m->low) * m->i_range;
-    return m->mapfunc(val);
+    return m->mapfunc(val,mix);
   }
 }
