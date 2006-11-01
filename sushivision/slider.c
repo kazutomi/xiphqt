@@ -266,9 +266,7 @@ static double val_to_pixel(Slider *s,double v){
 
 double slider_val_to_del(Slider *s,double v){
   if(isnan(v))return NAN;
-
   int j;
-  double ret=0;
   
   for(j=0;j<s->labels;j++){
     if(v<=s->label_vals[j+1] || (j+1)==s->labels){
@@ -575,13 +573,15 @@ static int determine_thumb(Slider *s,int slicenum,int x,int y){
   int i;
   int best=-1;
   float bestdist=s->w+1;
+  int n = s->num_slices;
 
   x=slice_adjust_pixel(s,slicenum,x);
-  for(i=0;i<s->num_slices;i++){
+  for(i=0;i<n;i++){
     Slice *sl = SLICE(s->slices[i]);
     if(sl->thumb_active){
-      float tpix = val_to_pixel(s,sl->thumb_val) + i - s->num_slices/2;
-      float d = fabs(x - tpix);
+      float tx = val_to_pixel(s,sl->thumb_val) + i - s->num_slices/2;
+      float ty = ((n==3 && i==1) ? 0:s->h);
+      float d = hypot (x-tx,y-ty);
       if(d<bestdist){
 	best=i;
 	bestdist=d;
