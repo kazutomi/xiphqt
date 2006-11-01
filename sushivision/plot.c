@@ -190,6 +190,15 @@ static void plot_destroy (GtkObject *object){
 
 }
 
+static int inside_box(Plot *p, int x, int y){
+  int bx = (p->boxA_x<p->boxB_x ? p->boxA_x : p->boxB_x)+.5;
+  int by = (p->boxA_y<p->boxB_y ? p->boxA_y : p->boxB_y)+.5;
+  int bw = abs(p->boxA_x-p->boxB_x);
+  int bh = abs(p->boxA_y-p->boxB_y);
+  
+  return (x >= bx && x <= bx+bw && y >= by && y <= by+bh);
+}
+
 static void plot_draw (Plot *p,
 		int x, int y, int w, int h){
 
@@ -207,13 +216,33 @@ static void plot_draw (Plot *p,
     cairo_fill(c);
     
     // transient foreground
-    cairo_set_source_rgba(c,1.,1.,1.,.6);
+    cairo_set_source_rgba(c,1.,1.,1.,.8);
     cairo_set_line_width(c,1.);
     cairo_move_to(c,0,p->sely+.5);
     cairo_line_to(c,widget->allocation.width,p->sely+.5);
     cairo_move_to(c,p->selx+.5,0);
     cairo_line_to(c,p->selx+.5,widget->allocation.height);
     cairo_stroke(c);
+
+    if(p->box_active){
+      int bx = (p->boxA_x<p->boxB_x ? p->boxA_x : p->boxB_x);
+      int by = (p->boxA_y<p->boxB_y ? p->boxA_y : p->boxB_y);
+      int bw = abs(p->boxA_x-p->boxB_x)+1;
+      int bh = abs(p->boxA_y-p->boxB_y)+1;
+
+      cairo_rectangle(c,bx,by,bw,bh);	
+      if(p->box_active>1)
+	cairo_set_source_rgba(c,1.,1.,.6,.4);
+      else
+	cairo_set_source_rgba(c,1.,1.,1.,.3);
+      cairo_fill(c);
+      cairo_rectangle(c,bx+.5,by+.5,bw-1,bh-1);
+      if(p->box_active>1)
+	cairo_set_source_rgba(c,1.,1.,.6,.9);
+      else
+	cairo_set_source_rgba(c,1.,1.,1.,.8);
+      cairo_stroke(c);
+    }
 
     cairo_destroy(c);
 
@@ -330,16 +359,63 @@ static void plot_size_allocate (GtkWidget     *widget,
 
 static gint mouse_motion(GtkWidget        *widget,
 			 GdkEventMotion   *event){
-  //Plot *p = PLOT (widget);
+  Plot *p = PLOT (widget);
+
+  int x = event->x;
+  int y = event->y;
+
+  if(p->button_down){
+    if(abs(p->boxA_x - x)>5 ||
+       abs(p->boxA_y - y)>5)
+      p->box_active = 1;
+    
+    
+    if(p->box_active){
+      int bx = (p->boxA_x<p->boxB_x ? p->boxA_x : p->boxB_x);
+      int by = (p->boxA_y<p->boxB_y ? p->boxA_y : p->boxB_y);
+      int bw = abs(p->boxA_x-p->boxB_x)+1;
+      int bh = abs(p->boxA_y-p->boxB_y)+1;
+      plot_expose_request_partial(p,bx,by,bw,bh);
+    }
+    
+    p->boxB_x = x;
+    p->boxB_y = y;
+  }
+  
+  if(inside_box(p,x,y))
+    p->box_active = 2;
+  else
+    p->box_active = 1;
+  
+  if(p->box_active){
+    int bx = (p->boxA_x<p->boxB_x ? p->boxA_x : p->boxB_x);
+    int by = (p->boxA_y<p->boxB_y ? p->boxA_y : p->boxB_y);
+    int bw = abs(p->boxA_x-p->boxB_x)+1;
+    int bh = abs(p->boxA_y-p->boxB_y)+1;
+    plot_expose_request_partial(p,bx,by,bw,bh);
+  }
 
   return TRUE;
 }
 
 static gboolean mouse_press (GtkWidget        *widget,
 			     GdkEventButton   *event){
-  //Plot *p = PLOT (widget);
+  Plot *p = PLOT (widget);
  
+  if(p->box_active && inside_box(p,event->x,event->y)){
 
+    if(p->box_callback)
+      p->box_callback(p->cross_data);
+
+    p->button_down=0;
+    p->box_active=0;
+
+  }else{
+    p->boxA_x = event->x;
+    p->boxA_y = event->y;
+    p->box_active = 0;
+    p->button_down=1; 
+  }
   return TRUE;
 }
  
@@ -347,15 +423,19 @@ static gboolean mouse_release (GtkWidget        *widget,
 			       GdkEventButton   *event){
   Plot *p = PLOT (widget);
   plot_expose_request(p);
-  p->selx = event->x;
-  p->sely = event->y;
-  p->selx_val = scalespace_value(&p->x,p->selx);
-  p->sely_val = scalespace_value(&p->y,widget->allocation.height-p->sely);
 
-  if(p->crosshairs_callback)
-    p->crosshairs_callback(p->cross_data);
-  plot_expose_request(p);
+  if(!p->box_active){
+    p->selx = event->x;
+    p->sely = event->y;
+    p->selx_val = scalespace_value(&p->x,p->selx);
+    p->sely_val = scalespace_value(&p->y,widget->allocation.height-p->sely);
 
+    if(p->crosshairs_callback)
+      p->crosshairs_callback(p->cross_data);
+    plot_expose_request(p);
+  }
+
+  p->button_down=0;
   return TRUE;
 }
 
@@ -444,6 +524,21 @@ void plot_expose_request(Plot *p){
   r.y=0;
   r.width=widget->allocation.width;
   r.height=widget->allocation.height;
+  
+  gdk_window_invalidate_rect (widget->window, &r, FALSE);
+  gdk_threads_leave();
+}
+
+void plot_expose_request_partial(Plot *p,int x, int y, int w, int h){
+  gdk_threads_enter();
+
+  GtkWidget *widget = GTK_WIDGET(p);
+  GdkRectangle r;
+  
+  r.x=x;
+  r.y=y;
+  r.width=w;
+  r.height=h;
   
   gdk_window_invalidate_rect (widget->window, &r, FALSE);
   gdk_threads_leave();
