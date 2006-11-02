@@ -150,6 +150,7 @@ static void update_xy_availability(sushiv_panel_t *p){
 	gtk_widget_set_sensitive(p2->dim_yb[i],FALSE);
       // set the x dim flag
       p2->x_d = p->dimension_list[i];
+      p2->x_scale = p2->dim_scales[i];
       // set panel x scale to this dim
       p2->x = scalespace_linear(p2->x_d->bracket[0],
 				p2->x_d->bracket[1],
@@ -167,6 +168,7 @@ static void update_xy_availability(sushiv_panel_t *p){
 	gtk_widget_set_sensitive(p2->dim_xb[i],FALSE);
       // set the y dim
       p2->y_d = p->dimension_list[i];
+      p2->y_scale = p2->dim_scales[i];
       // set panel y scale to this dim
       p2->y = scalespace_linear(p2->y_d->bracket[0],
 				p2->y_d->bracket[1],
@@ -569,9 +571,11 @@ static void bracket_callback_2d(void *in){
 
 static void dimchange_callback_2d(GtkWidget *button,gpointer in){
   sushiv_panel_t *p = (sushiv_panel_t *)in;
+  sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
   if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button))){
     update_xy_availability(p);
     update_crosshairs(p);
+    plot_unset_box(PLOT(p2->graph));
     _mark_recompute_2d(p);
   }
 }
@@ -591,6 +595,22 @@ static void crosshairs_callback(void *in){
     if(d == p2->y_d)
       slider_set_value(p2->dim_scales[i],1,y);
   }
+}
+
+static void box_callback(void *in){
+  sushiv_panel_t *p = (sushiv_panel_t *)in;
+  sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
+  Plot *plot = PLOT(p2->graph);
+
+  // zoom current dimensions to box
+  double corners[4];
+  plot_box_vals(plot,corners);
+
+  slider_set_value(p2->x_scale,0,corners[0]);
+  slider_set_value(p2->x_scale,2,corners[1]);
+  slider_set_value(p2->y_scale,0,corners[2]);
+  slider_set_value(p2->y_scale,2,corners[3]);
+
 }
 
 // called from one/all of the worker threads; the idea is that several
@@ -750,7 +770,8 @@ void _sushiv_realize_panel2d(sushiv_panel_t *p){
   
   /* graph */
   p2->graph = GTK_WIDGET(plot_new(recompute_callback_2d,p,
-				  crosshairs_callback,p)); 
+				  crosshairs_callback,p,
+				  box_callback,p)); 
   gtk_table_attach(GTK_TABLE(p2->top_table),p2->graph,0,5,0,1,
 		   GTK_EXPAND|GTK_FILL,GTK_EXPAND|GTK_FILL,0,5);
 
