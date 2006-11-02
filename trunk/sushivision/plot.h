@@ -79,8 +79,9 @@ struct _PlotClass{
 };
 
 GType     plot_get_type        (void);
-Plot*     plot_new             (void (*callback)(void *),void *app_data,
-				void (*cross_callback)(void *),void *cross_data);
+Plot     *plot_new (void (*callback)(void *),void *app_data,
+		    void (*cross_callback)(void *),void *cross_data,
+		    void (*box_callback)(void *),void *box_data);
 
 G_END_DECLS
 
@@ -96,3 +97,5 @@ u_int32_t * plot_get_background_line(Plot *p, int num);
 cairo_t *plot_get_background_cairo(Plot *p);
 void plot_set_crosshairs(Plot *p, double x, double y);
 void plot_draw_scales(Plot *p);
+void plot_unset_box(Plot *p);
+void plot_box_vals(Plot *p, double ret[4]);

@@ -352,6 +352,7 @@ static void plot_size_allocate (GtkWidget     *widget,
   widget->allocation = *allocation;
   p->x = scalespace_linear(p->x.lo,p->x.hi,widget->allocation.width,p->scalespacing);
   p->y = scalespace_linear(p->y.lo,p->y.hi,widget->allocation.height,p->scalespacing);
+  plot_unset_box(p);
   plot_draw_scales(p);
   if(p->recompute_callback)p->recompute_callback(p->app_data);
 
@@ -382,12 +383,12 @@ static gint mouse_motion(GtkWidget        *widget,
     p->boxB_y = y;
   }
   
-  if(inside_box(p,x,y))
-    p->box_active = 2;
-  else
-    p->box_active = 1;
-  
   if(p->box_active){
+    if(inside_box(p,x,y) && !p->button_down)
+      p->box_active = 2;
+    else
+      p->box_active = 1;
+    
     int bx = (p->boxA_x<p->boxB_x ? p->boxA_x : p->boxB_x);
     int by = (p->boxA_y<p->boxB_y ? p->boxA_y : p->boxB_y);
     int bw = abs(p->boxA_x-p->boxB_x)+1;
@@ -504,13 +505,16 @@ GType plot_get_type (void){
 }
 
 Plot *plot_new (void (*callback)(void *),void *app_data,
-		void (*cross_callback)(void *),void *cross_data) {
+		void (*cross_callback)(void *),void *cross_data,
+		void (*box_callback)(void *),void *box_data) {
   GtkWidget *g = GTK_WIDGET (g_object_new (PLOT_TYPE, NULL));
   Plot *p = PLOT (g);
   p->recompute_callback = callback;
   p->app_data = app_data;
   p->crosshairs_callback = cross_callback;
   p->cross_data = cross_data;
+  p->box_callback = box_callback;
+  p->box_data = box_data;
   return p;
 }
 
@@ -606,4 +610,20 @@ void plot_set_crosshairs(Plot *p, double x, double y){
 
   plot_expose_request(p);
   gdk_threads_leave();
+}
+
+void plot_unset_box(Plot *p){
+  p->box_active = 0;
+}
+
+void plot_box_vals(Plot *p, double ret[4]){
+  int bx1 = (p->boxA_x<p->boxB_x ? p->boxA_x : p->boxB_x);
+  int by1 = (p->boxA_y<p->boxB_y ? p->boxA_y : p->boxB_y);
+  int bx2 = abs(p->boxA_x-p->boxB_x)+bx1+1;
+  int by2 = abs(p->boxA_y-p->boxB_y)+by1+1;
+  
+  ret[0] = scalespace_value(&p->x,bx1);
+  ret[1] = scalespace_value(&p->x,bx2);
+  ret[2] = scalespace_value(&p->y,by1);
+  ret[3] = scalespace_value(&p->y,by2);
 }

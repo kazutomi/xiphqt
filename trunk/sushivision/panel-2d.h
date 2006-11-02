@@ -45,6 +45,8 @@ typedef struct sushiv_panel2d {
 
   sushiv_dimension_t *x_d;
   sushiv_dimension_t *y_d;
+  Slider *x_scale;
+  Slider *y_scale;
 
   int last_line;
   int dirty_flag;
