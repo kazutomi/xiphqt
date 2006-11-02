@@ -36,7 +36,7 @@ struct _Slider {
   char **label;
   double *label_vals;
   int labels;
-
+  int neg;
   int flags;
 
   //double minstep;
