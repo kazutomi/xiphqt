@@ -117,7 +117,6 @@ void slider_draw_background(Slider *s){
   cairo_rectangle(c,0,0,w,h);
   cairo_fill(c);
 
-
   cairo_rectangle (c, x+1, ty, w-2, th);
   parent_shade(s,c,3);
   cairo_fill (c);
@@ -242,34 +241,39 @@ void slider_realize(Slider *s){
 static double val_to_pixel(Slider *s,double v){
   int j;
   double ret=0;
-
+  double neg = (s->neg? -1.: 1.);
   int tx=s->xpad;
   int tw=s->w - tx*2;
-  
-  if(v<s->label_vals[0]){
+
+  v*=neg;
+
+  if( v<s->label_vals[0]*neg){
     ret=0;
-  }else if(v>s->label_vals[s->labels-1]){
+  }else if(v>s->label_vals[s->labels-1]*neg){
     ret=tw;
   }else{
     for(j=0;j<s->labels;j++){
-      if(v>=s->label_vals[j] && v<=s->label_vals[j+1]){
-        double del=(v-s->label_vals[j])/(s->label_vals[j+1]-s->label_vals[j]);
-        double pixlo=rint((double)j/(s->labels-1)*tw);
-        double pixhi=rint((double)(j+1)/(s->labels-1)*tw);
-        ret=pixlo*(1.-del)+pixhi*del+tx;
-        break;
+      if(v>=s->label_vals[j]*neg && v<=s->label_vals[j+1]*neg){
+	v*=neg;
+	double del=(v-s->label_vals[j])/(s->label_vals[j+1]-s->label_vals[j]);
+	double pixlo=rint((double)(j)/(s->labels-1)*tw);
+	double pixhi=rint((double)(j+1)/(s->labels-1)*tw);
+	ret=pixlo*(1.-del)+pixhi*del+tx;
+	break;
       }
     }
   }
+
   return ret;
 }
 
 double slider_val_to_del(Slider *s,double v){
   if(isnan(v))return NAN;
   int j;
+  int flip = (s->neg? 1: 0);
   
   for(j=0;j<s->labels;j++){
-    if(v<=s->label_vals[j+1] || (j+1)==s->labels){
+    if(((v<=s->label_vals[j+1]) ^ flip) || (j+2)==s->labels){
       double del=(v-s->label_vals[j])/(s->label_vals[j+1]-s->label_vals[j]);
       return (j+del)/(s->labels-1);
     }
@@ -500,19 +504,18 @@ double slider_pixel_to_val(Slider *s,int slicenum,double x){
   int j;
   int tx=s->xpad;
   int tw=s->w - tx*2;
-
+  double pixlo;
   x=slice_adjust_pixel(s,slicenum,x);
 
+  pixlo = tx;
   for(j=0;j<s->labels-1;j++){
-
-    double pixlo=rint((float)j/(s->labels-1)*(tw-1))+tx;
-    double pixhi=rint((float)(j+1)/(s->labels-1)*(tw-1))+tx;
+    double pixhi=rint((double)(j+1)/(s->labels-1)*(tw-1))+tx;
 
     if(x>=pixlo && x<=pixhi){
-      if(pixlo==pixhi)return s->label_vals[j];
-      double del=(float)(x-pixlo)/(pixhi-pixlo);
-      return (1.-del)*s->label_vals[j] + del*s->label_vals[j+1];
+      double del=(double)(x-pixlo)/(pixhi-pixlo);
+      return ( (1.-del)*s->label_vals[j] + del*s->label_vals[j+1] );
     }
+    pixlo=pixhi;
   }
   if(x<tx)
     return s->label_vals[0];
@@ -537,8 +540,10 @@ double slider_pixel_to_del(Slider *s,int slicenum,double x){
 void slider_vals_bound(Slider *s,int slicenum){
   int i,flag=0;
   Slice *center = SLICE(s->slices[slicenum]);
-  double min = s->label_vals[0];
-  double max = s->label_vals[s->labels-1];
+  double min = (s->neg ? s->label_vals[s->labels-1] : s->label_vals[0]);
+  double max = (s->neg ? s->label_vals[0] : s->label_vals[s->labels-1]);
+  int flip = (s->neg? 1: 0);
+
   if(center->thumb_val < min)
     center->thumb_val = min;
 
@@ -555,7 +560,7 @@ void slider_vals_bound(Slider *s,int slicenum){
 
     Slice *sl = SLICE(s->slices[i]);
     Slice *sl2 = SLICE(s->slices[i+1]);
-    if(sl->thumb_val>sl2->thumb_val)
+    if((sl->thumb_val>sl2->thumb_val)^flip)
       sl->thumb_val=sl2->thumb_val;
   }
   
@@ -564,7 +569,7 @@ void slider_vals_bound(Slider *s,int slicenum){
 
     Slice *sl = SLICE(s->slices[i]);
     Slice *sl2 = SLICE(s->slices[i-1]);
-    if(sl->thumb_val<sl2->thumb_val)
+    if((sl->thumb_val<sl2->thumb_val)^flip)
       sl->thumb_val=sl2->thumb_val;
   }
 }
@@ -665,11 +670,14 @@ void slider_motion(Slider *s,int slicenum,int x,int y){
   if(s->gradient && s->num_slices>=2){
     Slice *sl = SLICE(s->slices[0]);
     Slice *sh = SLICE(s->slices[s->num_slices-1]);
-    if(s->gradient->low != sl->thumb_val ||
-       s->gradient->high != sh->thumb_val){
+    double ldel = slider_val_to_del(s,sl->thumb_val);
+    double hdel = slider_val_to_del(s,sh->thumb_val);
 
-      mapping_set_lo(s->gradient,slider_val_to_del(s,sl->thumb_val));
-      mapping_set_hi(s->gradient,slider_val_to_del(s,sh->thumb_val));
+    if(s->gradient->low != ldel ||
+       s->gradient->high != hdel){
+
+      mapping_set_lo(s->gradient,ldel);
+      mapping_set_hi(s->gradient,hdel);
       slider_draw_background(s);
     }
   }
@@ -718,6 +726,9 @@ Slider *slider_new(Slice **slices, int num_slices, char **labels, double *label_
   ret->xpad=5;
   //ret->minstep=minstep;
   //ret->step=step;
+
+  if(label_vals[0]>label_vals[1])
+    ret->neg = 1;
 
   ret->flags=flags;
   return ret;

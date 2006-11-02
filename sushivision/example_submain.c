@@ -71,9 +71,17 @@ static int blocksize_callback(sushiv_dimension_t *d){
 int sushiv_submain(int argc, char *argv[]){
   int i;
 
-  for(i=0;i<funcsize;i++)
-    function[i]=sin(i*.1)*.1;
+  {
+    double phasechirp = 0;
+    double phi = 0;
 
+    for(i=0;i<funcsize;i++){
+      phasechirp +=.005;
+      phi += .1+phasechirp;
+      
+      function[i]=sin(phi)*.1;
+    }
+  }
 
   s=sushiv_new_instance();
 
