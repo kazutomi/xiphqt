@@ -30,6 +30,7 @@
 #include <sys/types.h>
 #include <gtk/gtk.h>
 #include <cairo-ft.h>
+#include <gdk/gdkkeysyms.h>
 #include "sushivision.h"
 #include "mapping.h"
 #include "plot.h"
@@ -37,6 +38,11 @@
 #include "slider.h"
 #include "panel-2d.h"
 #include "internal.h"
+
+static void panel2d_undo_log(sushiv_panel_t *p);
+static void panel2d_undo_push(sushiv_panel_t *p);
+static void panel2d_undo_suspend(sushiv_panel_t *p);
+static void panel2d_undo_resume(sushiv_panel_t *p);
 
 static void render_checks(int w, int y, u_int32_t *render){
   int x,j;
@@ -110,6 +116,9 @@ static void mapchange_callback_2d(GtkWidget *w,gpointer in){
   sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
   int onum = optr - p->objective_list;
 
+  panel2d_undo_push(p);
+  panel2d_undo_suspend(p);
+
   mapping_set_func(&p2->mappings[onum],gtk_combo_box_get_active(GTK_COMBO_BOX(w)));
   
   //redraw the map slider
@@ -119,14 +128,20 @@ static void mapchange_callback_2d(GtkWidget *w,gpointer in){
     
   //redraw the plot
   _sushiv_panel_dirty_map(p);
+  panel2d_undo_resume(p);
 }
 
-static void map_callback_2d(void *in){
+static void map_callback_2d(void *in,int buttonstate){
   sushiv_objective_t **optr = (sushiv_objective_t **)in;
   sushiv_objective_t *o = *optr;
   sushiv_panel_t *p = o->panel;
   sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
   int onum = optr - p->objective_list;
+
+  if(buttonstate == 0){
+    panel2d_undo_push(p);
+    panel2d_undo_suspend(p);
+  }
 
   // recache alpha del */
   p2->alphadel[onum] = 
@@ -135,6 +150,8 @@ static void map_callback_2d(void *in){
 
   //redraw the plot
   _sushiv_panel_dirty_map(p);
+  if(buttonstate == 2)
+    panel2d_undo_resume(p);
 }
 
 static void update_xy_availability(sushiv_panel_t *p){
@@ -151,6 +168,7 @@ static void update_xy_availability(sushiv_panel_t *p){
       // set the x dim flag
       p2->x_d = p->dimension_list[i];
       p2->x_scale = p2->dim_scales[i];
+      p2->x_dnum = i;
       // set panel x scale to this dim
       p2->x = scalespace_linear(p2->x_d->bracket[0],
 				p2->x_d->bracket[1],
@@ -169,6 +187,7 @@ static void update_xy_availability(sushiv_panel_t *p){
       // set the y dim
       p2->y_d = p->dimension_list[i];
       p2->y_scale = p2->dim_scales[i];
+      p2->y_dnum = i;
       // set panel y scale to this dim
       p2->y = scalespace_linear(p2->y_d->bracket[0],
 				p2->y_d->bracket[1],
@@ -519,39 +538,47 @@ static void update_crosshairs(sushiv_panel_t *p){
   plot_set_crosshairs(PLOT(p2->graph),x,y);
 }
 
-static void dim_callback_2d(void *in){
+static void dim_callback_2d(void *in, int buttonstate){
   sushiv_dimension_t **dptr = (sushiv_dimension_t **)in;
   sushiv_dimension_t *d = *dptr;
   sushiv_panel_t *p = d->panel;
   sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
   int dnum = dptr - p->dimension_list;
-
   int axisp = (d == p2->x_d || d == p2->y_d);
+
+  if(buttonstate == 0){
+    panel2d_undo_push(p);
+    panel2d_undo_suspend(p);
+  }
 
   d->val = slider_get_value(p2->dim_scales[dnum],1);
 
   if(!axisp){
     // mid slider of a non-axis dimension changed, rerender
     _mark_recompute_2d(p);
-    return;
   }else{
     // mid slider of an axis dimension changed, move crosshairs
     update_crosshairs(p);
   }
 
+  if(buttonstate == 2)
+    panel2d_undo_resume(p);
 }
 
-static void bracket_callback_2d(void *in){
+static void bracket_callback_2d(void *in, int buttonstate){
   sushiv_dimension_t **dptr = (sushiv_dimension_t **)in;
   sushiv_dimension_t *d = *dptr;
   sushiv_panel_t *p = d->panel;
   sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
   int dnum = dptr - p->dimension_list;
-
   int axisp = (d == p2->x_d || d == p2->y_d);
-
   double lo = slider_get_value(p2->dim_scales[dnum],0);
   double hi = slider_get_value(p2->dim_scales[dnum],2);
+
+  if(buttonstate == 0){
+    panel2d_undo_push(p);
+    panel2d_undo_suspend(p);
+  }
 
   if(axisp){  
     double xy_p = d == p2->x_d;
@@ -567,26 +594,38 @@ static void bracket_callback_2d(void *in){
   if(axisp)
     _mark_recompute_2d(p);
  
+  if(buttonstate == 2)
+    panel2d_undo_resume(p);
 }
 
 static void dimchange_callback_2d(GtkWidget *button,gpointer in){
   sushiv_panel_t *p = (sushiv_panel_t *)in;
   sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
+
   if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button))){
+
+    panel2d_undo_push(p);
+    panel2d_undo_suspend(p);
+
     update_xy_availability(p);
     update_crosshairs(p);
     plot_unset_box(PLOT(p2->graph));
     _mark_recompute_2d(p);
+
+    panel2d_undo_resume(p);
   }
 }
 
 static void crosshairs_callback(void *in){
   sushiv_panel_t *p = (sushiv_panel_t *)in;
   sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
-  double x=PLOT(p2->graph)->selx_val;
-  double y=PLOT(p2->graph)->sely_val;
+  double x=PLOT(p2->graph)->selx;
+  double y=PLOT(p2->graph)->sely;
   int i;
   
+  panel2d_undo_push(p);
+  panel2d_undo_suspend(p);
+
   for(i=0;i<p->dimensions;i++){
     sushiv_dimension_t *d = p->dimension_list[i];
     sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
@@ -595,6 +634,7 @@ static void crosshairs_callback(void *in){
     if(d == p2->y_d)
       slider_set_value(p2->dim_scales[i],1,y);
   }
+  panel2d_undo_resume(p);
 }
 
 static void box_callback(void *in){
@@ -606,10 +646,14 @@ static void box_callback(void *in){
   double corners[4];
   plot_box_vals(plot,corners);
 
+  panel2d_undo_push(p);
+  panel2d_undo_suspend(p);
+
   slider_set_value(p2->x_scale,0,corners[0]);
   slider_set_value(p2->x_scale,2,corners[1]);
   slider_set_value(p2->y_scale,0,corners[2]);
   slider_set_value(p2->y_scale,2,corners[3]);
+  panel2d_undo_resume(p);
 
 }
 
@@ -750,11 +794,227 @@ int _sushiv_panel_cooperative_compute_2d(sushiv_panel_t *p){
   return 1;
 }
 
+static void panel2d_undo_suspend(sushiv_panel_t *p){
+  sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
+  p2->undo_suspend++;
+}
+
+static void panel2d_undo_resume(sushiv_panel_t *p){
+  sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
+  p2->undo_suspend--;
+  if(p2->undo_suspend<0){
+    fprintf(stderr,"Internal error: undo suspend refcount count < 0\n");
+    p2->undo_suspend=0;
+  }
+
+  if(p2->undo_suspend==0)
+    panel2d_undo_log(p);
+}
+
+static void panel2d_undo_log(sushiv_panel_t *p){
+  sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
+  Plot *plot = PLOT(p2->graph);
+  sushiv_panel2d_undo_t *u;
+  int i;
+
+  if(!p2->undo_stack)
+    p2->undo_stack = calloc(2,sizeof(*p2->undo_stack));
+
+  // alloc new undo
+  u = p2->undo_stack[p2->undo_level];
+  if(!u){
+    u = p2->undo_stack[p2->undo_level]= calloc(1,sizeof(*u));
+    u->mappings =  calloc(p->objectives,sizeof(*u->mappings));
+    u->obj_vals[0] =  calloc(p->objectives,sizeof(**u->obj_vals));
+    u->obj_vals[1] =  calloc(p->objectives,sizeof(**u->obj_vals));
+    u->obj_vals[2] =  calloc(p->objectives,sizeof(**u->obj_vals));
+    u->dim_vals[0] =  calloc(p->dimensions,sizeof(**u->dim_vals));
+    u->dim_vals[1] =  calloc(p->dimensions,sizeof(**u->dim_vals));
+    u->dim_vals[2] =  calloc(p->dimensions,sizeof(**u->dim_vals));
+  }
+
+  // populate undo
+  for(i=0;i<p->objectives;i++){
+    u->mappings[i] = p2->mappings[i].mapnum;
+    u->obj_vals[0][i] = slider_get_value(p2->range_scales[i],0);
+    u->obj_vals[1][i] = slider_get_value(p2->range_scales[i],1);
+    u->obj_vals[2][i] = slider_get_value(p2->range_scales[i],2);
+  }
+
+  for(i=0;i<p->dimensions;i++){
+    u->dim_vals[0][i] = slider_get_value(p2->dim_scales[i],0);
+    u->dim_vals[1][i] = slider_get_value(p2->dim_scales[i],1);
+    u->dim_vals[2][i] = slider_get_value(p2->dim_scales[i],2);
+  }
+  
+  u->x_d = p2->x_dnum;
+  u->y_d = p2->y_dnum;
+  plot_box_vals(plot,u->box);  
+  u->box_active = plot->box_active;
+}
+
+static void panel2d_undo_restore(sushiv_panel_t *p){
+  sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
+  sushiv_panel2d_undo_t *u = p2->undo_stack[p2->undo_level];
+  Plot *plot = PLOT(p2->graph);
+  int i;
+  int remap_flag=0;
+  int recomp_flag=0;
+
+  // go in through widgets
+  for(i=0;i<p->objectives;i++){
+    if(gtk_combo_box_get_active(GTK_COMBO_BOX(p2->range_pulldowns[i])) != u->mappings[i] ||
+       slider_get_value(p2->range_scales[i],0)!=u->obj_vals[0][i] ||
+       slider_get_value(p2->range_scales[i],1)!=u->obj_vals[1][i] ||
+       slider_get_value(p2->range_scales[i],2)!=u->obj_vals[2][i]){ 
+      remap_flag = 1;
+    }
+
+    gtk_combo_box_set_active(GTK_COMBO_BOX(p2->range_pulldowns[i]),u->mappings[i]);
+    slider_set_value(p2->range_scales[i],0,u->obj_vals[0][i]);
+    slider_set_value(p2->range_scales[i],1,u->obj_vals[1][i]);
+    slider_set_value(p2->range_scales[i],2,u->obj_vals[2][i]);
+  }
+
+  for(i=0;i<p->dimensions;i++){
+    if(slider_get_value(p2->dim_scales[i],0)!=u->dim_vals[0][i] ||
+       slider_get_value(p2->dim_scales[i],1)!=u->dim_vals[1][i] ||
+       slider_get_value(p2->dim_scales[i],2)!=u->dim_vals[2][i]){
+      if(i==u->x_d || i==u->y_d)
+	recomp_flag=1;
+    }
+    slider_set_value(p2->dim_scales[i],0,u->dim_vals[0][i]);
+    slider_set_value(p2->dim_scales[i],1,u->dim_vals[1][i]);
+    slider_set_value(p2->dim_scales[i],2,u->dim_vals[2][i]);
+  }
+
+  if(!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(p2->dim_xb[u->x_d]))){
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(p2->dim_xb[u->x_d]),TRUE);
+    recomp_flag=1;
+  }
+  if(!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(p2->dim_yb[u->y_d]))){
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(p2->dim_yb[u->y_d]),TRUE);
+    recomp_flag=1;
+  }
+
+  update_xy_availability(p);
+
+  if(u->box_active)
+    plot_box_set(plot,u->box);
+  else
+    plot_unset_box(plot);
+
+  if(recomp_flag)
+    _mark_recompute_2d(p);
+  else if(remap_flag)
+    _sushiv_panel_dirty_map(p);
+  else
+    plot_expose_request(plot);
+}
+
+static void panel2d_undo_push(sushiv_panel_t *p){
+  sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
+  sushiv_panel2d_undo_t *u;
+  int i;
+  
+  if(p2->undo_suspend)return;
+
+  panel2d_undo_log(p);
+
+  if(p2->undo_stack[p2->undo_level+1]){
+    /* pop levels above this one */
+    i=p2->undo_level+1;
+    while(p2->undo_stack[i]){
+      u = p2->undo_stack[i];
+      if(u->mappings) free(u->mappings);
+      if(u->obj_vals[0]) free(u->obj_vals[0]);
+      if(u->obj_vals[1]) free(u->obj_vals[1]);
+      if(u->obj_vals[2]) free(u->obj_vals[2]);
+      if(u->dim_vals[0]) free(u->dim_vals[0]);
+      if(u->dim_vals[1]) free(u->dim_vals[1]);
+      if(u->dim_vals[2]) free(u->dim_vals[2]);
+      free(u);
+      p2->undo_stack[i]= NULL;
+      i++;
+    }
+  }
+
+  // realloc stack 
+  p2->undo_stack = realloc(p2->undo_stack,(p2->undo_level+3)*sizeof(*p2->undo_stack));
+  p2->undo_level++;
+  p2->undo_stack[p2->undo_level]=0;
+  p2->undo_stack[p2->undo_level+1]=0;
+
+}
+
+static void panel2d_undo_up(sushiv_panel_t *p){
+  sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
+  
+  if(!p2->undo_stack)return;
+  if(!p2->undo_stack[p2->undo_level])return;
+  if(!p2->undo_stack[p2->undo_level+1])return;
+
+  p2->undo_level++;
+  panel2d_undo_suspend(p);
+  panel2d_undo_restore(p);
+  panel2d_undo_resume(p);
+
+}
+
+static void panel2d_undo_down(sushiv_panel_t *p){
+  sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
+
+  if(!p2->undo_stack)return;
+  if(!p2->undo_level)return;
+ 
+  panel2d_undo_log(p);
+  p2->undo_level--;
+
+  panel2d_undo_suspend(p);
+  panel2d_undo_restore(p);
+  panel2d_undo_resume(p);
+}
+
+static gboolean panel2d_keypress(GtkWidget *widget,
+				 GdkEventKey *event,
+				 gpointer in){
+  sushiv_panel_t *p = (sushiv_panel_t *)in;
+  //  sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
+  
+  if(event->state&GDK_MOD1_MASK) return FALSE;
+  if(event->state&GDK_CONTROL_MASK)return FALSE;
+  
+  /* non-control keypresses */
+  switch(event->keyval){
+    
+  case GDK_Q:
+  case GDK_q:
+    // quit
+    _sushiv_clean_exit(SIGINT);
+    return TRUE;
+
+  case GDK_BackSpace:
+    // undo 
+    panel2d_undo_down(p);
+    return TRUE;
+
+  case GDK_r:
+    // redo
+    panel2d_undo_up(p);
+    return TRUE;
+  }
+
+
+  return FALSE;
+}
+
 void _sushiv_realize_panel2d(sushiv_panel_t *p){
   sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
   int i;
   int lo = p->scale_val_list[0];
   int hi = p->scale_val_list[p->scale_vals-1];
+
+  panel2d_undo_suspend(p);
 
   p2->toplevel = gtk_window_new (GTK_WINDOW_TOPLEVEL);
   g_signal_connect_swapped (G_OBJECT (p2->toplevel), "delete-event",
@@ -777,6 +1037,7 @@ void _sushiv_realize_panel2d(sushiv_panel_t *p){
 
   /* objective sliders */
   p2->range_scales = calloc(p->objectives,sizeof(*p2->range_scales));
+  p2->range_pulldowns = calloc(p->objectives,sizeof(*p2->range_pulldowns));
   p2->alphadel = calloc(p->objectives,sizeof(*p2->alphadel));
   p2->mappings = calloc(p->objectives,sizeof(*p2->mappings));
   for(i=0;i<p->objectives;i++){
@@ -799,6 +1060,7 @@ void _sushiv_realize_panel2d(sushiv_panel_t *p){
 			G_CALLBACK (mapchange_callback_2d), p->objective_list+i);
       gtk_table_attach(GTK_TABLE(p2->top_table),menu,4,5,i+1,i+2,
 		       GTK_SHRINK,GTK_SHRINK,5,0);
+      p2->range_pulldowns[i] = menu;
     }
 
     /* the range mapping slices/slider */ 
@@ -893,10 +1155,13 @@ void _sushiv_realize_panel2d(sushiv_panel_t *p){
   }
   update_xy_availability(p);
 
+  g_signal_connect (G_OBJECT (p2->toplevel), "key-press-event",
+                    G_CALLBACK (panel2d_keypress), p);
 
   gtk_widget_realize(p2->toplevel);
   gtk_widget_realize(p2->graph);
   gtk_widget_show_all(p2->toplevel);
+  panel2d_undo_resume(p);
 }
 
 int sushiv_new_panel_2d(sushiv_instance_t *s,
@@ -921,4 +1186,5 @@ int sushiv_new_panel_2d(sushiv_instance_t *s,
 
   return 0;
 }
+
 

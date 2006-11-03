@@ -29,6 +29,8 @@
 #include "slice.h"
 #include "slider.h"
 
+static double val_to_pixel(Slider *s, double val);
+
 static int total_slice_width(Slider *s){
   int i;
   int count=0;
@@ -163,7 +165,7 @@ void slider_draw_background(Slider *s){
  
   // lines & labels
   for(i=0;i<s->labels;i++){
-    int x=rint(((float)i)/(s->labels-1)*(s->w - s->xpad*2 -1))+s->xpad;
+    int x=val_to_pixel(s,s->label_vals[i])+.5;
     int y=s->h-s->ypad-1.5;
     
     cairo_move_to(c,x+.5,s->ypad+2);
@@ -297,6 +299,7 @@ void slider_draw(Slider *s){
   for(i=0;i<s->num_slices;i++){
     GtkWidget *sl = s->slices[i];
     double x = val_to_pixel(s,((Slice *)(s->slices[i]))->thumb_val)+.5;
+
     double rad = 2.;
     
     float y = rint(h/2)+.5;
@@ -637,6 +640,7 @@ void slider_button_press(Slider *s,int slicenum,int x,int y){
       sl->thumb_focus=1;
       gtk_widget_grab_focus(GTK_WIDGET(sl));
 
+      if(sl->callback)sl->callback(sl->callback_data,0);
       slider_motion(s,slicenum,x,y);
     }
   }
@@ -648,7 +652,30 @@ void slider_button_release(Slider *s,int slicenum,int x,int y){
   int i;
   for(i=0;i<s->num_slices;i++){
     Slice *sl = SLICE(s->slices[i]);
-    sl->thumb_grab=0;
+
+    if(sl->thumb_grab){
+      sl->thumb_grab=0;
+      if(sl->callback)sl->callback(sl->callback_data,2);
+    }
+  }
+}
+
+static void update_gradient(Slider *s){
+  if(s->gradient){
+    Slice *sl = SLICE(s->slices[0]);
+    Slice *sh = SLICE(s->slices[s->num_slices-1]);
+    double ldel = slider_val_to_del(s,sl->thumb_val);
+    double hdel = slider_val_to_del(s,sh->thumb_val);
+    
+    if(s->gradient->low != ldel ||
+       s->gradient->high != hdel){
+      
+      mapping_set_lo(s->gradient,ldel);
+      mapping_set_hi(s->gradient,hdel);
+      slider_draw_background(s);
+      slider_draw(s);
+    }
+    slider_expose(s);
   }
 }
 
@@ -667,24 +694,12 @@ void slider_motion(Slider *s,int slicenum,int x,int y){
   }
 
   // did a gradient get altered?
-  if(s->gradient && s->num_slices>=2){
-    Slice *sl = SLICE(s->slices[0]);
-    Slice *sh = SLICE(s->slices[s->num_slices-1]);
-    double ldel = slider_val_to_del(s,sl->thumb_val);
-    double hdel = slider_val_to_del(s,sh->thumb_val);
+  update_gradient(s);
 
-    if(s->gradient->low != ldel ||
-       s->gradient->high != hdel){
-
-      mapping_set_lo(s->gradient,ldel);
-      mapping_set_hi(s->gradient,hdel);
-      slider_draw_background(s);
-    }
-  }
   if(altered){
     Slice *sl = SLICE(s->slices[altered-1]);
     
-    if(sl->callback)sl->callback(sl->callback_data);
+    if(sl->callback)sl->callback(sl->callback_data,1);
     slider_draw(s);
     slider_expose(s);
   }else{
@@ -756,4 +771,5 @@ void slider_set_value(Slider *s, int thumbnum, double v){
   if(thumbnum < 0)return;
   w = s->slices[thumbnum];
   slice_thumb_set(SLICE(w),v);
+  update_gradient(s);
 }

@@ -190,13 +190,26 @@ static void plot_destroy (GtkObject *object){
 
 }
 
+static void box_corners(Plot *p, double vals[4]){
+  double x1 = scalespace_pixel(&p->x,p->box_x1);
+  double x2 = scalespace_pixel(&p->x,p->box_x2);
+  double y1 = scalespace_pixel(&p->y,p->box_y1);
+  double y2 = scalespace_pixel(&p->y,p->box_y2);
+
+  vals[0] = (x1<x2 ? x1 : x2);
+  vals[1] = (y1<y2 ? y1 : y2);
+  vals[2] = fabs(x1-x2);
+  vals[3] = fabs(y1-y2);
+}
+
 static int inside_box(Plot *p, int x, int y){
-  int bx = (p->boxA_x<p->boxB_x ? p->boxA_x : p->boxB_x)+.5;
-  int by = (p->boxA_y<p->boxB_y ? p->boxA_y : p->boxB_y)+.5;
-  int bw = abs(p->boxA_x-p->boxB_x);
-  int bh = abs(p->boxA_y-p->boxB_y);
+  double vals[4];
+  box_corners(p,vals);
   
-  return (x >= bx && x <= bx+bw && y >= by && y <= by+bh);
+  return (x >= vals[0] && 
+	  x <= vals[0]+vals[2] && 
+	  y >= vals[1] && 
+	  y <= vals[1]+vals[3]);
 }
 
 static void plot_draw (Plot *p,
@@ -216,27 +229,29 @@ static void plot_draw (Plot *p,
     cairo_fill(c);
     
     // transient foreground
-    cairo_set_source_rgba(c,1.,1.,1.,.8);
-    cairo_set_line_width(c,1.);
-    cairo_move_to(c,0,p->sely+.5);
-    cairo_line_to(c,widget->allocation.width,p->sely+.5);
-    cairo_move_to(c,p->selx+.5,0);
-    cairo_line_to(c,p->selx+.5,widget->allocation.height);
-    cairo_stroke(c);
+    {
+      double sx = scalespace_pixel(&p->x,p->selx);
+      double sy = widget->allocation.height-scalespace_pixel(&p->y,p->sely);
+      cairo_set_source_rgba(c,1.,1.,1.,.8);
+      cairo_set_line_width(c,1.);
+      cairo_move_to(c,0,sy+.5);
+      cairo_line_to(c,widget->allocation.width,sy+.5);
+      cairo_move_to(c,sx+.5,0);
+      cairo_line_to(c,sx+.5,widget->allocation.height);
+      cairo_stroke(c);
+    }
 
     if(p->box_active){
-      int bx = (p->boxA_x<p->boxB_x ? p->boxA_x : p->boxB_x);
-      int by = (p->boxA_y<p->boxB_y ? p->boxA_y : p->boxB_y);
-      int bw = abs(p->boxA_x-p->boxB_x)+1;
-      int bh = abs(p->boxA_y-p->boxB_y)+1;
+      double vals[4];
+      box_corners(p,vals);
 
-      cairo_rectangle(c,bx,by,bw,bh);	
+      cairo_rectangle(c,vals[0],vals[1],vals[2]+1,vals[3]+1);	
       if(p->box_active>1)
 	cairo_set_source_rgba(c,1.,1.,.6,.4);
       else
 	cairo_set_source_rgba(c,1.,1.,1.,.3);
       cairo_fill(c);
-      cairo_rectangle(c,bx+.5,by+.5,bw-1,bh-1);
+      cairo_rectangle(c,vals[0]+.5,vals[1]+.5,vals[2],vals[3]);
       if(p->box_active>1)
 	cairo_set_source_rgba(c,1.,1.,.6,.9);
       else
@@ -364,36 +379,42 @@ static gint mouse_motion(GtkWidget        *widget,
 
   int x = event->x;
   int y = event->y;
+  int bx = scalespace_pixel(&p->x,p->box_x1);
+  int by = scalespace_pixel(&p->y,p->box_y1);
 
   if(p->button_down){
-    if(abs(p->boxA_x - x)>5 ||
-       abs(p->boxA_y - y)>5)
+    if(abs(bx - x)>5 ||
+       abs(by - y)>5)
       p->box_active = 1;
     
-    
     if(p->box_active){
-      int bx = (p->boxA_x<p->boxB_x ? p->boxA_x : p->boxB_x);
-      int by = (p->boxA_y<p->boxB_y ? p->boxA_y : p->boxB_y);
-      int bw = abs(p->boxA_x-p->boxB_x)+1;
-      int bh = abs(p->boxA_y-p->boxB_y)+1;
-      plot_expose_request_partial(p,bx,by,bw,bh);
+      double vals[4];
+      box_corners(p,vals);
+      plot_expose_request_partial(p,
+				  (int)(vals[0]),
+				  (int)(vals[1]),
+				  (int)(vals[2]+2),
+				  (int)(vals[3]+2));
     }
     
-    p->boxB_x = x;
-    p->boxB_y = y;
+    p->box_x2 = scalespace_value(&p->x,x);
+    p->box_y2 = scalespace_value(&p->y,y);
   }
   
   if(p->box_active){
+    double vals[4];
+    box_corners(p,vals);
+    
     if(inside_box(p,x,y) && !p->button_down)
       p->box_active = 2;
     else
       p->box_active = 1;
     
-    int bx = (p->boxA_x<p->boxB_x ? p->boxA_x : p->boxB_x);
-    int by = (p->boxA_y<p->boxB_y ? p->boxA_y : p->boxB_y);
-    int bw = abs(p->boxA_x-p->boxB_x)+1;
-    int bh = abs(p->boxA_y-p->boxB_y)+1;
-    plot_expose_request_partial(p,bx,by,bw,bh);
+    plot_expose_request_partial(p,
+				(int)(vals[0]),
+				(int)(vals[1]),
+				(int)(vals[2]+2),
+				(int)(vals[3]+2));
   }
 
   return TRUE;
@@ -412,8 +433,8 @@ static gboolean mouse_press (GtkWidget        *widget,
     p->box_active=0;
 
   }else{
-    p->boxA_x = event->x;
-    p->boxA_y = event->y;
+    p->box_x1 = scalespace_value(&p->x,event->x);
+    p->box_y1 = scalespace_value(&p->y,event->y);
     p->box_active = 0;
     p->button_down=1; 
   }
@@ -425,11 +446,9 @@ static gboolean mouse_release (GtkWidget        *widget,
   Plot *p = PLOT (widget);
   plot_expose_request(p);
 
-  if(!p->box_active){
-    p->selx = event->x;
-    p->sely = event->y;
-    p->selx_val = scalespace_value(&p->x,p->selx);
-    p->sely_val = scalespace_value(&p->y,widget->allocation.height-p->sely);
+  if(!p->box_active && p->button_down){
+    p->selx = scalespace_value(&p->x,event->x);
+    p->sely = scalespace_value(&p->y,widget->allocation.height-event->y);
 
     if(p->crosshairs_callback)
       p->crosshairs_callback(p->cross_data);
@@ -565,7 +584,6 @@ void plot_expose_request_line(Plot *p, int num){
 void plot_set_x_scale(Plot *p, scalespace x){
   scalespace temp = p->x;
   p->x = x;
-  p->selx = scalespace_pixel(&p->x,p->selx_val);
   if(memcmp(&temp,&p->x,sizeof(temp)))
     plot_draw_scales(p);
 }
@@ -574,7 +592,6 @@ void plot_set_y_scale(Plot *p, scalespace y){
   GtkWidget *widget = GTK_WIDGET(p);
   scalespace temp = p->y;
   p->y = y;
-  p->sely = widget->allocation.height - scalespace_pixel(&p->y,p->sely_val);
   if(memcmp(&temp,&p->y,sizeof(temp)))
     plot_draw_scales(p);
 }
@@ -603,27 +620,38 @@ cairo_t *plot_get_background_cairo(Plot *p){
 
 void plot_set_crosshairs(Plot *p, double x, double y){
   gdk_threads_enter();
-  p->selx_val = x;
-  p->sely_val = y;
-  p->selx = scalespace_pixel(&p->x,x);
-  p->sely = GTK_WIDGET(p)->allocation.height - scalespace_pixel(&p->y,y);
+  p->selx = x;
+  p->sely = y;
 
   plot_expose_request(p);
   gdk_threads_leave();
 }
 
 void plot_unset_box(Plot *p){
+  gdk_threads_enter();
   p->box_active = 0;
+  gdk_threads_leave();
 }
 
 void plot_box_vals(Plot *p, double ret[4]){
-  int bx1 = (p->boxA_x<p->boxB_x ? p->boxA_x : p->boxB_x);
-  int by1 = (p->boxA_y<p->boxB_y ? p->boxA_y : p->boxB_y);
-  int bx2 = abs(p->boxA_x-p->boxB_x)+bx1+1;
-  int by2 = abs(p->boxA_y-p->boxB_y)+by1+1;
-  
-  ret[0] = scalespace_value(&p->x,bx1);
-  ret[1] = scalespace_value(&p->x,bx2);
-  ret[2] = scalespace_value(&p->y,by1);
-  ret[3] = scalespace_value(&p->y,by2);
+  gdk_threads_enter();
+  ret[0] = (p->box_x1<p->box_x2?p->box_x1:p->box_x2);
+  ret[1] = (p->box_x1>p->box_x2?p->box_x1:p->box_x2);
+
+  ret[2] = (p->box_y1<p->box_y2?p->box_y1:p->box_y2);
+  ret[3] = (p->box_y1>p->box_y2?p->box_y1:p->box_y2);
+  gdk_threads_leave();
+}
+
+void plot_box_set(Plot *p, double vals[4]){
+  gdk_threads_enter();
+
+  p->box_x1=vals[0];
+  p->box_x2=vals[1];
+  p->box_y1=vals[2];
+  p->box_y2=vals[3];
+  p->box_active = 1;
+
+  plot_expose_request(p);
+  gdk_threads_leave();
 }

@@ -21,7 +21,7 @@
 
 #include <sys/types.h>
 typedef struct {
-
+  int mapnum;
   double low;
   double high;
   double i_range;
