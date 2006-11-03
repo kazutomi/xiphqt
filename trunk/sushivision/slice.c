@@ -232,7 +232,7 @@ GType slice_get_type (void){
   return m_type;
 }
 
-GtkWidget* slice_new (void (*callback)(void *), void *data){
+GtkWidget* slice_new (void (*callback)(void *,int), void *data){
   GtkWidget *ret= GTK_WIDGET (g_object_new (slice_get_type (), NULL));
   Slice *s=SLICE(ret);
   s->callback = callback;
@@ -252,6 +252,6 @@ void slice_thumb_set(Slice *s,float v){
   s->thumb_val=v;
   slider_vals_bound(s->slider,s->slicenum);
   
-  if(s->callback)s->callback(s->callback_data);
+  if(s->callback)s->callback(s->callback_data,5);
   draw_and_expose(w);
 }

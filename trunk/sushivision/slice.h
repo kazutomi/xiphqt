@@ -54,7 +54,7 @@ struct _Slice{
   int    thumb_grab;
   double thumb_val;
 
-  void (*callback)(void *);
+  void (*callback)(void *,int);
   void *callback_data;
 
 };
@@ -65,7 +65,7 @@ struct _SliceClass{
 };
 
 extern GType slice_get_type        (void);
-extern GtkWidget* slice_new (void (*callback)(void *), void *data);
+extern GtkWidget* slice_new (void (*callback)(void *,int), void *data);
 extern void slice_set_active(Slice *s, int activep);
 extern void slice_thumb_set(Slice *s,float v);
 

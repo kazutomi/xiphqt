@@ -51,15 +51,13 @@ struct _Plot{
   char *namex;
   char *namey;
 
-  double selx_val;
-  double sely_val;
   double selx;
   double sely;
 
-  double boxA_x;
-  double boxA_y;
-  double boxB_x;
-  double boxB_y;
+  double box_x1;
+  double box_y1;
+  double box_x2;
+  double box_y2;
   int box_active;
   void *box_data;
   void (*box_callback)(void *);
@@ -99,3 +97,4 @@ void plot_set_crosshairs(Plot *p, double x, double y);
 void plot_draw_scales(Plot *p);
 void plot_unset_box(Plot *p);
 void plot_box_vals(Plot *p, double ret[4]);
+void plot_box_set(Plot *p, double vals[4]);

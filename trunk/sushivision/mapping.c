@@ -295,6 +295,7 @@ void mapping_set_hi(mapping *m, double hi){
 }
 
 void mapping_set_func(mapping *m, int funcnum){
+  m->mapnum = funcnum;
   m->mapfunc = mapfunc[funcnum];
 }
 

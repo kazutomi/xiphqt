@@ -19,6 +19,20 @@
  * 
  */
 
+// undo history
+typedef struct sushiv_panel2d_undo {
+  int *mappings;
+
+  double *obj_vals[3];
+  double *dim_vals[3];
+  
+  int x_d;
+  int y_d;
+
+  double box[4];
+  int box_active;
+} sushiv_panel2d_undo_t;
+
 typedef struct sushiv_panel2d {
 
   GtkWidget *toplevel;
@@ -47,9 +61,16 @@ typedef struct sushiv_panel2d {
   sushiv_dimension_t *y_d;
   Slider *x_scale;
   Slider *y_scale;
+  int x_dnum; // number of dimension within panel, not global instance
+  int y_dnum; // number of dimension within panel, not global instance
 
   int last_line;
   int dirty_flag;
+
+  sushiv_panel2d_undo_t **undo_stack;
+  int undo_level;
+  int undo_suspend;
+
 } sushiv_panel2d_t;
 
 extern void _sushiv_realize_panel2d(sushiv_panel_t *p);
