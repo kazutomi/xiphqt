@@ -373,6 +373,24 @@ static void plot_size_allocate (GtkWidget     *widget,
 
 }
 
+static void box_check(Plot *p, int x, int y){
+  if(p->box_active){
+    double vals[4];
+    box_corners(p,vals);
+    
+    if(inside_box(p,x,y) && !p->button_down)
+      p->box_active = 2;
+    else
+      p->box_active = 1;
+    
+    plot_expose_request_partial(p,
+				(int)(vals[0]),
+				(int)(vals[1]),
+				(int)(vals[2]+2),
+				(int)(vals[3]+2));
+  }
+}
+
 static gint mouse_motion(GtkWidget        *widget,
 			 GdkEventMotion   *event){
   Plot *p = PLOT (widget);
@@ -400,22 +418,8 @@ static gint mouse_motion(GtkWidget        *widget,
     p->box_x2 = scalespace_value(&p->x,x);
     p->box_y2 = scalespace_value(&p->y,y);
   }
-  
-  if(p->box_active){
-    double vals[4];
-    box_corners(p,vals);
-    
-    if(inside_box(p,x,y) && !p->button_down)
-      p->box_active = 2;
-    else
-      p->box_active = 1;
-    
-    plot_expose_request_partial(p,
-				(int)(vals[0]),
-				(int)(vals[1]),
-				(int)(vals[2]+2),
-				(int)(vals[3]+2));
-  }
+
+  box_check(p,x,y);
 
   return TRUE;
 }
@@ -427,7 +431,7 @@ static gboolean mouse_press (GtkWidget        *widget,
   if(p->box_active && inside_box(p,event->x,event->y)){
 
     if(p->box_callback)
-      p->box_callback(p->cross_data);
+      p->box_callback(p->cross_data,1);
 
     p->button_down=0;
     p->box_active=0;
@@ -456,6 +460,14 @@ static gboolean mouse_release (GtkWidget        *widget,
   }
 
   p->button_down=0;
+  box_check(p,event->x, event->y);
+
+  if(p->box_active){
+    if(p->box_callback)
+      p->box_callback(p->cross_data,0);
+  }  
+  
+
   return TRUE;
 }
 
@@ -525,7 +537,7 @@ GType plot_get_type (void){
 
 Plot *plot_new (void (*callback)(void *),void *app_data,
 		void (*cross_callback)(void *),void *cross_data,
-		void (*box_callback)(void *),void *box_data) {
+		void (*box_callback)(void *, int),void *box_data) {
   GtkWidget *g = GTK_WIDGET (g_object_new (PLOT_TYPE, NULL));
   Plot *p = PLOT (g);
   p->recompute_callback = callback;
@@ -651,7 +663,7 @@ void plot_box_set(Plot *p, double vals[4]){
   p->box_y1=vals[2];
   p->box_y2=vals[3];
   p->box_active = 1;
-
+  
   plot_expose_request(p);
   gdk_threads_leave();
 }
