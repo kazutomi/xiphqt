@@ -633,6 +633,7 @@ static void crosshairs_callback(void *in){
       slider_set_value(p2->dim_scales[i],1,x);
     if(d == p2->y_d)
       slider_set_value(p2->dim_scales[i],1,y);
+    p2->oldbox_active = 0;
   }
   panel2d_undo_resume(p);
 }
@@ -642,21 +643,24 @@ static void box_callback(void *in, int state){
   sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
   Plot *plot = PLOT(p2->graph);
   
-  // zoom current dimensions to box
-  panel2d_undo_push(p);
-  panel2d_undo_suspend(p);
-  
-  if(state == 0){
+
+  switch(state){
+  case 0: // box set
+    panel2d_undo_push(p);
     plot_box_vals(plot,p2->oldbox);
     p2->oldbox_active = plot->box_active;
-  }else{ // click, not just create
+    break;
+  case 1: // box activate
+    panel2d_undo_push(p);
+    panel2d_undo_suspend(p);
     slider_set_value(p2->x_scale,0,p2->oldbox[0]);
     slider_set_value(p2->x_scale,2,p2->oldbox[1]);
     slider_set_value(p2->y_scale,0,p2->oldbox[2]);
     slider_set_value(p2->y_scale,2,p2->oldbox[3]);
+    p2->oldbox_active = 0;
+    panel2d_undo_resume(p);
+    break;
   }
-  panel2d_undo_resume(p);
-
 }
 
 // called from one/all of the worker threads; the idea is that several
@@ -903,10 +907,13 @@ static void panel2d_undo_restore(sushiv_panel_t *p){
 
   update_xy_availability(p);
 
-  if(u->box_active)
+  if(u->box_active){
     plot_box_set(plot,u->box);
-  else
+    p2->oldbox_active = 1;
+  }else{
     plot_unset_box(plot);
+    p2->oldbox_active = 0;
+  }
 
   if(recomp_flag)
     _mark_recompute_2d(p);

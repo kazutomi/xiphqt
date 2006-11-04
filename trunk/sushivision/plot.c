@@ -23,6 +23,7 @@
 #include <gtk/gtk.h>
 #include <gtk/gtkmain.h>
 #include <gdk/gdk.h>
+#include <gdk/gdkkeysyms.h>
 #include <stdlib.h>
 #include <math.h>
 #include <stdio.h>
@@ -291,6 +292,41 @@ static void plot_size_request (GtkWidget *widget,
   requisition->height = 200; // XXX
 }
 
+static gboolean key_press(GtkWidget *widget,
+			  GdkEventKey *event){
+  Plot *p = PLOT(widget);
+
+  fprintf(stderr,"KEY");
+  int shift = (event->state&GDK_SHIFT_MASK);
+  if(event->state&GDK_MOD1_MASK) return FALSE;
+  if(event->state&GDK_CONTROL_MASK)return FALSE;
+  
+  /* non-control keypresses */
+  switch(event->keyval){
+    
+  case GDK_Return:
+    // if box is active, effect it
+    if(p->box_active){
+      
+      if(p->box_callback)
+	p->box_callback(p->cross_data,1);
+      
+      p->button_down=0;
+      p->box_active=0;
+    }
+    return TRUE;
+
+  case GDK_Left:
+  case GDK_Right:
+  case GDK_Up:
+  case GDK_Down:
+    break;
+  }
+
+
+  return FALSE;
+}
+
 static void plot_realize (GtkWidget *widget){
   GdkWindowAttr attributes;
   gint      attributes_mask;
@@ -506,6 +542,7 @@ static void plot_class_init (PlotClass * class) {
   widget_class->motion_notify_event = mouse_motion;
   widget_class->enter_notify_event = plot_enter;
   widget_class->leave_notify_event = plot_leave;
+  widget_class->key_press_event = key_press;
 
 }
 
