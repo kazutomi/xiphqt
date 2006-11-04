@@ -60,7 +60,7 @@ struct _Plot{
   double box_y2;
   int box_active;
   void *box_data;
-  void (*box_callback)(void *);
+  void (*box_callback)(void *,int);
   int button_down;
   
   u_int32_t *datarect;
@@ -79,7 +79,7 @@ struct _PlotClass{
 GType     plot_get_type        (void);
 Plot     *plot_new (void (*callback)(void *),void *app_data,
 		    void (*cross_callback)(void *),void *cross_data,
-		    void (*box_callback)(void *),void *box_data);
+		    void (*box_callback)(void *,int),void *box_data);
 
 G_END_DECLS
 

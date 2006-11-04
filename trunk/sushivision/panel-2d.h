@@ -47,6 +47,8 @@ typedef struct sushiv_panel2d {
   scalespace x;
   scalespace y;
   int scales_init;
+  double oldbox[4];
+  int oldbox_active;
 
   mapping *mappings;
   Slider    **range_scales;

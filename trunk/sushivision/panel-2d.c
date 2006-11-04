@@ -637,22 +637,24 @@ static void crosshairs_callback(void *in){
   panel2d_undo_resume(p);
 }
 
-static void box_callback(void *in){
+static void box_callback(void *in, int state){
   sushiv_panel_t *p = (sushiv_panel_t *)in;
   sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
   Plot *plot = PLOT(p2->graph);
-
+  
   // zoom current dimensions to box
-  double corners[4];
-  plot_box_vals(plot,corners);
-
   panel2d_undo_push(p);
   panel2d_undo_suspend(p);
-
-  slider_set_value(p2->x_scale,0,corners[0]);
-  slider_set_value(p2->x_scale,2,corners[1]);
-  slider_set_value(p2->y_scale,0,corners[2]);
-  slider_set_value(p2->y_scale,2,corners[3]);
+  
+  if(state == 0){
+    plot_box_vals(plot,p2->oldbox);
+    p2->oldbox_active = plot->box_active;
+  }else{ // click, not just create
+    slider_set_value(p2->x_scale,0,p2->oldbox[0]);
+    slider_set_value(p2->x_scale,2,p2->oldbox[1]);
+    slider_set_value(p2->y_scale,0,p2->oldbox[2]);
+    slider_set_value(p2->y_scale,2,p2->oldbox[3]);
+  }
   panel2d_undo_resume(p);
 
 }
@@ -813,7 +815,6 @@ static void panel2d_undo_resume(sushiv_panel_t *p){
 
 static void panel2d_undo_log(sushiv_panel_t *p){
   sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
-  Plot *plot = PLOT(p2->graph);
   sushiv_panel2d_undo_t *u;
   int i;
 
@@ -849,8 +850,11 @@ static void panel2d_undo_log(sushiv_panel_t *p){
   
   u->x_d = p2->x_dnum;
   u->y_d = p2->y_dnum;
-  plot_box_vals(plot,u->box);  
-  u->box_active = plot->box_active;
+  u->box[0] = p2->oldbox[0];
+  u->box[1] = p2->oldbox[1];
+  u->box[2] = p2->oldbox[2];
+  u->box[3] = p2->oldbox[3];
+  u->box_active = p2->oldbox_active;
 }
 
 static void panel2d_undo_restore(sushiv_panel_t *p){
