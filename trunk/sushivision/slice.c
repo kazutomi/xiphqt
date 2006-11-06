@@ -125,7 +125,7 @@ static gboolean slice_refocus(GtkWidget        *widget,
 static gboolean slice_key_press(GtkWidget *widget,GdkEventKey *event){
   Slice *s=SLICE(widget);
 
-  return slider_key_press(s->slider,event);
+  return slider_key_press(s->slider,event,s->slicenum);
 }
 
 static void slice_state_changed(GtkWidget *w,GtkStateType ps){
