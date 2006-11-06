@@ -141,7 +141,7 @@
     </div>
     <div class="theader">
       <div class="header">&#160;</div>
-      <div class="header">January 2004-November 2006</div>
+      <div class="header">November 2006</div>
     </div>
     <div class="title"><abbr title="XML Shareable Playlist Format">XSPF</abbr> Version 1<br/>
     <span class="filename">XML Shareable Playlist Format ("spiff")</span></div>
@@ -234,9 +234,9 @@
       <div><a id="rfc.section.1.p.1"></a></div>
       <p>There is no XML format for playlists that can measure up to the standards of the formats for web pages (<abbr title="HyperText Markup Language">HTML</abbr>), weblogs (<abbr title="Really Simple Syndication">RSS</abbr>/Atom), and web graphs (<abbr title="Resource Description Framework">RDF</abbr>/XML). It is evident that there is a need, because XML is the preferred data description language of the moment and as a result the tools and skills to use it are ubiquitous.</p>
       <div><a id="rfc.section.1.p.2"></a></div>
-      <p>It is also evident that existing playlist formats fall short. <abbr title="Advanced Stream Redirector">ASX</abbr> (for Windows Media Player) and the iTunes library format are proprietary.  ASX resembles XML in that it uses angle brackets, but is not XML by any means.  <abbr title="MPEG Version 3.0 URL">M3U</abbr>, RAM, and M4U are flat files; QuickTime is binary; Pls is in the Windows .ini format; Gnomoradio RDF is RDF, not XML.  <abbr title="Synchronized Multimedia Integration Language">SMIL</abbr> addresses a much larger problem space than the average digital music player.  The timing model of RSS doesn't fit audio and video.  Forcing timing models into HTML, as HTML+Time does, creates an unintelligible feature set.  Few of these formats are well documented.  None of these formats make simple features easy to code and hard features possible. Only one is an open standard.  Not one offers playlist interoperability across major vendors.</p>
+      <p>It is also evident that existing playlist formats fall short. <abbr title="Advanced Stream Redirector">ASX</abbr> (for Windows Media Player) and the iTunes library format are proprietary.  ASX resembles XML in that it uses angle brackets, but is not XML by any means.  <abbr title="MPEG Version 3.0 URL">M3U</abbr>, RAM, and M4U are flat files; QuickTime is binary; Pls is in the Windows .ini format; Gnomoradio RDF is RDF, not XML.  <abbr title="Synchronized Multimedia Integration Language">SMIL</abbr> addresses a much larger problem space than the average digital music player.  The timing model of RSS is incompatible with playlists.  Few of these formats are well documented.  None of these formats make simple features easy to code and hard features possible. Only one is an open standard.  Not one offers playlist interoperability across major vendors.</p>
       <div><a id="rfc.section.1.p.3"></a></div>
-      <p>The question for software developers is <em>why should I support this new XML playlist format</em>? The choice is mainly between M3U and SMIL.  Almost every digital music player accepts M3U but also invents an XML playlist format. Inventing a format creates work, for example to study related formats; you should use XSPF to avoid the work.  SMIL, on the other hand, is a prescription for a kind of application that is different from a typical music player &#8212; it describes layouts in time, while XSPF describes concepts common among music players. Given a song with the comment "danceable!", SMIL might have an instruction to write that text in the upper left in a bold sans-serif font, while XSPF would tell a player that the text is a comment and say nothing about formatting.</p>
+      <p>The question for software developers is <em>why should I support this new XML playlist format</em>? The choice is between M3U and SMIL.  Almost every digital music player accepts M3U but also invents an XML playlist format. Inventing a format creates work, for example to study related formats; you should use XSPF to avoid the work.  SMIL, on the other hand, is a prescription for a kind of application that is different from a typical music player &#8212; it describes layouts in time, while XSPF describes concepts common among music players. Given a song with the comment "danceable!", SMIL might have an instruction to write that text in the upper left in a bold sans-serif font, while XSPF would tell a player that the text is a comment and say nothing about formatting.</p>
       <h2><a id="rfc.section.1.1">1.1</a> Example</h2>
       <div style="margin-left: 8px;">
 	<div><a id="rfc.figure.u.1"></a></div>
@@ -267,16 +267,26 @@
       <h2><a id="rfc.section.2.1">2.1</a> History</h2>
       <div style="margin-left: 8px;">
 	<div><a id="rfc.section.2.1.p.1"></a></div>
-	<p>Our group started work in February 2004, achieved rough consensus on version 0 in April 2004, did implementations and fine tuning throughout summer and fall 2004, and declared the tuned version to be version 1 in January 2005.  Between August and November of 2006 we did a final round of improvements to the drafting, limiting changes to those which did not require any implementation to be modified.  </p>
-	<div><a id="rfc.section.2.1.p.2"></a></div>
-	<p>This document describes version 1, which is frozen and code-ready.</p>
+	<p>Our group started work in February 2004, achieved rough consensus on version 0 in April 2004, did implementations and fine tuning throughout summer and fall 2004, and declared the tuned version to be version 1 in January 2005.  Between August and November of 2006 we unfroze this document for a final round of improvements to the drafting, limiting changes to those which did not require any implementation to be modified.  </p>
+ 	<div><a id="rfc.section.2.1.p.2"></a></div>
 	<div><a id="rfc.section.2.1.p.3"></a></div>
-	<p>The home of our working group on the web is http://xspf.org.</p>
       </div>
       <h2><a id="rfc.section.2.2">2.2</a> Acknowledgements</h2>
       <div style="margin-left: 8px;">
 	<div><a id="rfc.section.2.2.p.1"></a></div>
-	<p>Our project was started by Ian C. Rogers and Robert Kaye.  The contributions of Dan Brickley, Kevin Marks and Dave Brown strongly influenced aspects of the design.  We are grateful for comments and feedback from Ryan Shaw, Alf Eaton, Steve Gedikian, Russell Garrett, and Ben Tesch.  We would like to acknowledge our debt to Sebastian Pipping and Ivo Emanuel Gon&#231;alves, without whom the 2006 revisions would not have been possible.  Special thanks to the developers Tomas Franz&#233;n (who participated in our work from the very beginning), Jim Garrison, Brander Lien, and Fabricio Zuardi, and to everyone who contributed their time and skill on the mailing list and wiki.  We would especially like to thank our hosts at the Metabrainz Foundation and the Xiph.org Foundation for their generosity.</p>
+
+	<p>Ian C. Rogers and Robert Kaye bootstrapped our project.
+	Dave Brown, Dan Brickley, and Kevin Marks contributed ideas
+	which had a strong influence on architecture and
+	syntax. Sebastian Pipping and Ivo Emanuel Gon&#231;alves were
+	the drivers behind the 2006 revisions.</p>
+
+	<p>We are grateful for comments and feedback from Ryan Shaw, Alf Eaton, Steve Gedikian, Russell Garrett, Ben Tesch and Pau Garcia i Quiles.  Special thanks to the developers Tomas Franz&#233;n (who participated in our work from the very beginning), Jim Garrison, Brander Lien, and Fabricio Zuardi, and to everyone who contributed their time and skill on the mailing list and wiki.</p>
+
+	<p>We would especially like to thank our hosts at the
+	Metabrainz Foundation and the Xiph.org foundation, on whom we
+	have relied in ways large and small.</p>
+
       </div>
       <h2><a id="rfc.section.2.3">2.3</a> terminology</h2>
       <div style="margin-left: 8px;">
@@ -336,6 +346,7 @@
 	<p>If XSPF is not a catalog format, what is it? XSPF is an intermediate format. We expected a new kind of software called a <em>content resolver</em> to do the job of converting XSPF to a plain old list of files or URIs. A content resolver would be smart enough to keep your playlists from breaking when you move your media from /oggs to /music/ogg. It would be able to figure out that a playlist entry by the artist "Hank Williams" with the title "Your Cheating Heart" could be satisfied by the file /vorbis/hankwilliams/yourcheatingheart.ogg. It might even know how to query the iTunes music store or another online provider to locate and download a missing song.</p>
 	<div><a id="rfc.section.3.4.p.4"></a></div>
 	<p>The content resolver maintains the catalog of your songs in whatever format it prefers. It might use a flatfile, a file in the Berkeley DB format, or a SQL database. It might use only ID3 metadata, but it might also know how to query MusicBrainz or another metadata service.</p>
+	<p>All XSPF user agents are content resolvers, in that they have complete leeway to turn the contents of a track element into a specific set of bytes.</p>
       </div>
       <h2><a id="rfc.section.3.5">3.5</a> Fuzzy names</h2>
       <div style="margin-left: 8px;">
@@ -652,7 +663,7 @@ $tz = substr_replace ($tz, ':', 3, 0);</pre>
       <h2><a id="rfc.section.6.1">6.1</a> Graceful failure</h2>
       <div style="margin-left: 8px;">
 	<div><a id="rfc.section.6.1.p.1"></a></div>
-	<p>If a media player is unable to render a resource, the show MUST go on. Playlists exist in time; a player that stops processing when it encounters an error is considered broken; it is not conformant with the standard; it must be shunned by the community and made an outcast. Players will frequently encounter resources that they cannot render &#8212; this is not a fatal error unless the player stops processing the playlist.</p>
+	<p>If a media player is unable to render a track in the sequence, the player MUST NOT stop rendering the sequence and MUST attempt to continue at the next track.  Players will frequently encounter resources that they cannot render &#8212; this is not a fatal error unless the player stops processing the playlist.</p>
       </div>
       <h2><a id="rfc.section.6.2">6.2</a> Relative paths</h2>
       <div style="margin-left: 8px;">
@@ -691,12 +702,25 @@ $tz = substr_replace ($tz, ':', 3, 0);</pre>
    <h1><a id="rfc.ipr">Copyright and Patent Statements</a></h1>
    <div style="text-align:center">
       <p>Copyright &#169; Xiph.org Foundation 2005.</p>
-      <p>The primary author of this work is <a href="http://gonze.com/about">Lucas Gonze</a>.  He knows of no patent claims which would restrict usage, and disclaims any such patent claims with regard to his own contributions.</p>
-      <p><!--Creative Commons License--><a rel="license" href="http://creativecommons.org/licenses/by-nd/2.5/"><img alt="Creative Commons License" style="border-width: 0" src="http://creativecommons.org/images/public/somerights20.png"/></a><br/>This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nd/2.5/">Creative Commons Attribution-NoDerivs 2.5  License</a>.<!--/Creative Commons License--><!-- <rdf:RDF xmlns="http://web.resource.org/cc/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
-	<Work rdf:about="">
-		<license rdf:resource="http://creativecommons.org/licenses/by-nd/2.5/" />
-	</Work>
-	<License rdf:about="http://creativecommons.org/licenses/by-nd/2.5/"><permits rdf:resource="http://web.resource.org/cc/Reproduction"/><permits rdf:resource="http://web.resource.org/cc/Distribution"/><requires rdf:resource="http://web.resource.org/cc/Notice"/><requires rdf:resource="http://web.resource.org/cc/Attribution"/></License></rdf:RDF> --></p>
+      <p>The primary author of this work is <a href="http://gonze.com/about">Lucas Gonze</a>.  He knows of no patent claims related to this work, and hereby forgoes any such claims with regard to his own contributions.</p>
+      <p>This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nd/2.5/">Creative Commons Attribution-NoDerivs 2.5  License</a>.
+      <!--/Creative Commons License-->
+      <!--
+<rdf:RDF
+    xmlns="http://web.resource.org/cc/"
+    xmlns:dc="http://purl.org/dc/elements/1.1/"
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+  <Work rdf:about="">
+    <license rdf:resource="http://creativecommons.org/licenses/by-nd/2.5/" />
+  </Work>
+  <License rdf:about="http://creativecommons.org/licenses/by-nd/2.5/">
+    <permits rdf:resource="http://web.resource.org/cc/Reproduction"/>
+    <permits rdf:resource="http://web.resource.org/cc/Distribution"/>
+    <requires rdf:resource="http://web.resource.org/cc/Notice"/>
+    <requires rdf:resource="http://web.resource.org/cc/Attribution"/>
+  </License>
+</rdf:RDF> 
+      --></p>
     </div>
 
 
