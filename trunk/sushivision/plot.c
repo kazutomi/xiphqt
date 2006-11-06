@@ -260,6 +260,23 @@ static void plot_draw (Plot *p,
       cairo_stroke(c);
     }
 
+    if(p->widgetfocus){
+      double dashes[] = {1.,  /* ink */
+			 1.};
+      cairo_save(c);
+      cairo_set_dash (c, dashes, 2, .5);
+      cairo_set_source_rgba(c,0.,0.,0.,1.);
+      cairo_set_line_width(c,1.);
+      cairo_rectangle(c,.5,.5,
+		      widget->allocation.width-1.,
+		      widget->allocation.height-1.);
+      cairo_stroke_preserve (c);
+      cairo_set_dash (c, dashes, 2, 1.5);
+      cairo_set_source_rgba(c,1.,1.,1.,1.);
+      cairo_stroke(c);
+      cairo_restore(c);
+    }
+
     cairo_destroy(c);
 
     // blit to window
@@ -296,7 +313,6 @@ static gboolean key_press(GtkWidget *widget,
 			  GdkEventKey *event){
   Plot *p = PLOT(widget);
 
-  fprintf(stderr,"KEY");
   int shift = (event->state&GDK_SHIFT_MASK);
   if(event->state&GDK_MOD1_MASK) return FALSE;
   if(event->state&GDK_CONTROL_MASK)return FALSE;
@@ -317,7 +333,29 @@ static gboolean key_press(GtkWidget *widget,
     return TRUE;
 
   case GDK_Left:
+    {
+      double x = scalespace_pixel(&p->x,p->selx)-1;
+      if(shift)
+	x-=9;
+      p->selx = scalespace_value(&p->x,x);
+      if(p->crosshairs_callback)
+	p->crosshairs_callback(p->cross_data);
+      plot_expose_request(p);
+    }
+    return TRUE;
+
   case GDK_Right:
+    {
+      double x = scalespace_pixel(&p->x,p->selx)+1;
+      if(shift)
+	x+=9;
+      p->selx = scalespace_value(&p->x,x);
+       if(p->crosshairs_callback)
+	p->crosshairs_callback(p->cross_data);
+      plot_expose_request(p);
+
+    }
+    return TRUE;
   case GDK_Up:
   case GDK_Down:
     break;
@@ -332,6 +370,7 @@ static void plot_realize (GtkWidget *widget){
   gint      attributes_mask;
 
   GTK_WIDGET_SET_FLAGS (widget, GTK_REALIZED);
+  GTK_WIDGET_SET_FLAGS (widget, GTK_CAN_FOCUS);
 
   attributes.x = widget->allocation.x;
   attributes.y = widget->allocation.y;
@@ -478,6 +517,7 @@ static gboolean mouse_press (GtkWidget        *widget,
     p->box_active = 0;
     p->button_down=1; 
   }
+  gtk_widget_grab_focus(widget);
   return TRUE;
 }
  
@@ -521,6 +561,22 @@ static gboolean plot_leave (GtkWidget        *widget,
   return TRUE;
 }
 
+static gboolean plot_unfocus(GtkWidget        *widget,
+			     GdkEventFocus       *event){
+  Plot *p=PLOT(widget);
+  p->widgetfocus=0;
+  plot_expose_request(p);
+  return TRUE;
+}
+
+static gboolean plot_refocus(GtkWidget        *widget,
+			     GdkEventFocus       *event){
+  Plot *p=PLOT(widget);
+  p->widgetfocus=1;
+  plot_expose_request(p);
+  return TRUE;
+}
+
 static void plot_class_init (PlotClass * class) {
 
   GtkObjectClass *object_class;
@@ -540,9 +596,12 @@ static void plot_class_init (PlotClass * class) {
   widget_class->button_press_event = mouse_press;
   widget_class->button_release_event = mouse_release;
   widget_class->motion_notify_event = mouse_motion;
-  widget_class->enter_notify_event = plot_enter;
-  widget_class->leave_notify_event = plot_leave;
+  //widget_class->enter_notify_event = plot_enter;
+  //widget_class->leave_notify_event = plot_leave;
   widget_class->key_press_event = key_press;
+
+  widget_class->focus_out_event = plot_unfocus;
+  widget_class->focus_in_event = plot_refocus;
 
 }
 
