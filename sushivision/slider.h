@@ -60,7 +60,7 @@ extern void slider_unlight(Slider *slider);
 extern void slider_button_press(Slider *slider,int slicenum,int x,int y);
 extern void slider_button_release(Slider *s,int slicenum,int x,int y);
 extern void slider_motion(Slider *s,int slicenum,int x,int y);
-extern gboolean slider_key_press(Slider *slider,GdkEventKey *event);
+extern gboolean slider_key_press(Slider *slider,GdkEventKey *event,int slicenum);
 extern Slider *slider_new(Slice **slices, int num_slices, 
 			  char **labels, double *label_vals, int num_labels,
 			  unsigned flags);

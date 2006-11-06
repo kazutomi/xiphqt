@@ -512,7 +512,7 @@ double slider_pixel_to_val(Slider *s,int slicenum,double x){
 
   pixlo = tx;
   for(j=0;j<s->labels-1;j++){
-    double pixhi=rint((double)(j+1)/(s->labels-1)*(tw-1))+tx;
+    double pixhi=rint((double)(j+1)/(s->labels-1)*tw)+tx;
 
     if(x>=pixlo && x<=pixhi){
       double del=(double)(x-pixlo)/(pixhi-pixlo);
@@ -711,7 +711,53 @@ void slider_motion(Slider *s,int slicenum,int x,int y){
   }
 }
 
-gboolean slider_key_press(Slider *s,GdkEventKey *event){
+gboolean slider_key_press(Slider *s,GdkEventKey *event,int slicenum){
+  Slice *sl = (Slice *)(s->slices[slicenum]);
+  int shift = (event->state&GDK_SHIFT_MASK);
+  if(event->state&GDK_MOD1_MASK) return FALSE;
+  if(event->state&GDK_CONTROL_MASK)return FALSE;
+  
+  /* non-control keypresses */
+  switch(event->keyval){
+  case GDK_Left:
+    {
+      double x = val_to_pixel(s,sl->thumb_val)-1;
+      if(shift)
+	x-=9;
+      sl->thumb_val=slider_pixel_to_val(s,0,x);
+      slider_vals_bound(s,slicenum);
+      // did a gradient get altered?
+      update_gradient(s);
+      
+      if(sl->callback){
+	sl->callback(sl->callback_data,0);
+	sl->callback(sl->callback_data,2);
+      }
+      slider_draw(s);
+      slider_expose(s);
+
+    }
+    return TRUE;
+
+  case GDK_Right:
+    {
+      double x = val_to_pixel(s,sl->thumb_val)+1;
+      if(shift)
+	x+=9;
+      sl->thumb_val=slider_pixel_to_val(s,0,x);
+      slider_vals_bound(s,slicenum);
+      // did a gradient get altered?
+      update_gradient(s);
+      
+      if(sl->callback){
+	sl->callback(sl->callback_data,0);
+	sl->callback(sl->callback_data,2);
+      }
+      slider_draw(s);
+      slider_expose(s);
+    }
+    return TRUE;
+  }
 
   return FALSE; // keep processing
 }
