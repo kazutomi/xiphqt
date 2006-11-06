@@ -192,10 +192,13 @@ static void plot_destroy (GtkObject *object){
 }
 
 static void box_corners(Plot *p, double vals[4]){
+  GtkWidget *widget = GTK_WIDGET(p);
   double x1 = scalespace_pixel(&p->x,p->box_x1);
   double x2 = scalespace_pixel(&p->x,p->box_x2);
-  double y1 = scalespace_pixel(&p->y,p->box_y1);
-  double y2 = scalespace_pixel(&p->y,p->box_y2);
+  double y1 = widget->allocation.height-
+    scalespace_pixel(&p->y,p->box_y1);
+  double y2 = widget->allocation.height-
+    scalespace_pixel(&p->y,p->box_y2);
 
   vals[0] = (x1<x2 ? x1 : x2);
   vals[1] = (y1<y2 ? y1 : y2);
@@ -307,62 +310,6 @@ static void plot_size_request (GtkWidget *widget,
 			       GtkRequisition *requisition){
   requisition->width = 400; // XXX
   requisition->height = 200; // XXX
-}
-
-static gboolean key_press(GtkWidget *widget,
-			  GdkEventKey *event){
-  Plot *p = PLOT(widget);
-
-  int shift = (event->state&GDK_SHIFT_MASK);
-  if(event->state&GDK_MOD1_MASK) return FALSE;
-  if(event->state&GDK_CONTROL_MASK)return FALSE;
-  
-  /* non-control keypresses */
-  switch(event->keyval){
-    
-  case GDK_Return:
-    // if box is active, effect it
-    if(p->box_active){
-      
-      if(p->box_callback)
-	p->box_callback(p->cross_data,1);
-      
-      p->button_down=0;
-      p->box_active=0;
-    }
-    return TRUE;
-
-  case GDK_Left:
-    {
-      double x = scalespace_pixel(&p->x,p->selx)-1;
-      if(shift)
-	x-=9;
-      p->selx = scalespace_value(&p->x,x);
-      if(p->crosshairs_callback)
-	p->crosshairs_callback(p->cross_data);
-      plot_expose_request(p);
-    }
-    return TRUE;
-
-  case GDK_Right:
-    {
-      double x = scalespace_pixel(&p->x,p->selx)+1;
-      if(shift)
-	x+=9;
-      p->selx = scalespace_value(&p->x,x);
-       if(p->crosshairs_callback)
-	p->crosshairs_callback(p->cross_data);
-      plot_expose_request(p);
-
-    }
-    return TRUE;
-  case GDK_Up:
-  case GDK_Down:
-    break;
-  }
-
-
-  return FALSE;
 }
 
 static void plot_realize (GtkWidget *widget){
@@ -491,7 +438,7 @@ static gint mouse_motion(GtkWidget        *widget,
     }
     
     p->box_x2 = scalespace_value(&p->x,x);
-    p->box_y2 = scalespace_value(&p->y,y);
+    p->box_y2 = scalespace_value(&p->y,widget->allocation.height-y);
   }
 
   box_check(p,x,y);
@@ -503,7 +450,7 @@ static gboolean mouse_press (GtkWidget        *widget,
 			     GdkEventButton   *event){
   Plot *p = PLOT (widget);
  
-  if(p->box_active && inside_box(p,event->x,event->y)){
+  if(p->box_active && inside_box(p,event->x,event->y) && !p->button_down){
 
     if(p->box_callback)
       p->box_callback(p->cross_data,1);
@@ -512,8 +459,8 @@ static gboolean mouse_press (GtkWidget        *widget,
     p->box_active=0;
 
   }else{
-    p->box_x1 = scalespace_value(&p->x,event->x);
-    p->box_y1 = scalespace_value(&p->y,event->y);
+    p->box_x2=p->box_x1 = scalespace_value(&p->x,event->x);
+    p->box_y2=p->box_y1 = scalespace_value(&p->y,widget->allocation.height-event->y);
     p->box_active = 0;
     p->button_down=1; 
   }
@@ -547,18 +494,122 @@ static gboolean mouse_release (GtkWidget        *widget,
   return TRUE;
 }
 
-static gboolean plot_enter (GtkWidget        *widget,
-			    GdkEventCrossing   *event){
-  //Plot *p = PLOT (widget);
+static gboolean key_press(GtkWidget *widget,
+			  GdkEventKey *event){
+  Plot *p = PLOT(widget);
 
-  return TRUE;
-}
+  int shift = (event->state&GDK_SHIFT_MASK);
+  if(event->state&GDK_MOD1_MASK) return FALSE;
+  if(event->state&GDK_CONTROL_MASK)return FALSE;
+  
+  /* non-control keypresses */
+  switch(event->keyval){
+  case GDK_Escape:
+    p->button_down=0;
+    p->box_active=0;
+    plot_expose_request(p);
 
-static gboolean plot_leave (GtkWidget        *widget,
-			    GdkEventCrossing   *event){	
-  //Plot *p = PLOT (widget);
+    return TRUE;
+  case GDK_Return:
+    // if box is active, effect it
+    if(p->box_active){
+      
+      if(p->box_callback)
+	p->box_callback(p->cross_data,1);
+      
+      p->button_down=0;
+      p->box_active=0;
+    }else{
+      GdkEventButton event;
+      event.x = scalespace_pixel(&p->x,p->selx);
+      event.y = widget->allocation.height-
+	scalespace_pixel(&p->y,p->sely);
+      if(p->button_down)
+	mouse_release(widget,&event);
+      else
+	mouse_press(widget,&event);
+    }
+    return TRUE;
 
-  return TRUE;
+  case GDK_Left:
+    {
+      double x = scalespace_pixel(&p->x,p->selx)-1;
+      if(shift)
+	x-=9;
+      p->selx = scalespace_value(&p->x,x);
+      if(p->crosshairs_callback)
+	p->crosshairs_callback(p->cross_data);
+
+      if(p->button_down){
+	p->box_active=1;
+	p->box_x2 = p->selx;
+      }else
+	p->box_active=0;
+
+      plot_expose_request(p);
+    }
+    return TRUE;
+
+  case GDK_Right:
+    {
+      double x = scalespace_pixel(&p->x,p->selx)+1;
+      if(shift)
+	x+=9;
+      p->selx = scalespace_value(&p->x,x);
+       if(p->crosshairs_callback)
+	p->crosshairs_callback(p->cross_data);
+
+      if(p->button_down){
+	p->box_active=1;
+	p->box_x2 = p->selx;
+      }else
+	p->box_active=0;
+
+      plot_expose_request(p);
+
+    }
+    return TRUE;
+  case GDK_Up:
+    {
+      double y = widget->allocation.height - scalespace_pixel(&p->y,p->sely)-1;
+      if(shift)
+	y-=9;
+      p->sely = scalespace_value(&p->y,widget->allocation.height - y);
+      if(p->crosshairs_callback)
+	p->crosshairs_callback(p->cross_data);
+
+      if(p->button_down){
+	p->box_active=1;
+	p->box_y2 = p->sely;
+      }else
+	p->box_active=0;
+
+      plot_expose_request(p);
+    }
+    return TRUE;
+  case GDK_Down:
+    {
+      double y = widget->allocation.height - scalespace_pixel(&p->y,p->sely)+1;
+      if(shift)
+	y+=9;
+      p->sely = scalespace_value(&p->y,widget->allocation.height - y);
+      if(p->crosshairs_callback)
+	p->crosshairs_callback(p->cross_data);
+      
+      if(p->button_down){
+	p->box_active=1;
+	p->box_y2 = p->sely;
+      }else
+	p->box_active=0;
+      
+      plot_expose_request(p);
+
+    }
+    return TRUE;
+  }
+
+
+  return FALSE;
 }
 
 static gboolean plot_unfocus(GtkWidget        *widget,
