@@ -44,6 +44,7 @@ struct _Plot{
   cairo_surface_t *back;
   cairo_surface_t *fore;
   cairo_surface_t *stage;
+  int widgetfocus;
 
   int scalespacing;
   scalespace x;
