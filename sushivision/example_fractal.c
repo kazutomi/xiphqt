@@ -66,8 +66,8 @@ int sushiv_submain(int argc, char *argv[]){
   
   sushiv_new_objective(s,0,"fractal",fractal_objective,0);
 
-  sushiv_new_panel_2d(s,0,"Mandel/Julia Fractal",2,
-		      (double []){0,1.0},
+  sushiv_new_panel_2d(s,0,"Mandel/Julia Fractal",4,
+		      (double []){0, .01, .1, 1.0},
 		      (int []){0,-1},
 		      (int []){0,1,2,3,-1},
 		      0);

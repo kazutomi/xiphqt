@@ -349,9 +349,9 @@ static void fast_scale_y(double *data,
 			 scalespace new,
 			 scalespace old){
   int x,y;
-  double work[w];
-  int mapbase[w];
-  double mapdel[w];
+  double work[h];
+  int mapbase[h];
+  double mapdel[h];
 
   double old_h = old.pixels;
   double new_h = new.pixels;
