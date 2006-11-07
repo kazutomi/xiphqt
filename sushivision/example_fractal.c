@@ -19,6 +19,7 @@
  * 
  */
 
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <math.h>
 #include "sushivision.h"
@@ -39,7 +40,7 @@ static double fractal_objective(double *d){
     if (z*z + zi*zi > 4.0) return (double)i/MAX_ITER;
   }
 
-  return 0.0;
+  return NAN;
 }
 
 int sushiv_submain(int argc, char *argv[]){
