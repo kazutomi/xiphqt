@@ -42,37 +42,25 @@ static double fractal_objective(double *d){
   return 0.0;
 }
 
-static int time_callback(sushiv_dimension_t *d){
-
-
-  return 1; // indicate that default processing chain should continue
-}
-
-static int blocksize_callback(sushiv_dimension_t *d){
-
-
-  return 1; // indicate that default processing chain should continue
-}
-
 int sushiv_submain(int argc, char *argv[]){
 
   s=sushiv_new_instance();
 
   sushiv_new_dimension(s,0,"Re(c)",
-		       5,(double []){-3,-1.5,0,1.5,3},
-		       time_callback,
+		       5,(double []){-2.25,-0.75,0,0.25,0.75},
+		       NULL,
 		       SUSHIV_X_RANGE|SUSHIV_Y_RANGE);
   sushiv_new_dimension(s,1,"Im(c)",
-		       5,(double []){-3,-1.5,0,1.5,3},
-		       time_callback,
+		       5,(double []){-2,-1,0,1,2},
+		       NULL,
 		       SUSHIV_X_RANGE|SUSHIV_Y_RANGE);
 
   sushiv_new_dimension(s,2,"Re(z0)",
-		       5,(double []){-3,-1.5,0,1.5,3},
+		       5,(double []){-2.25,-1,0,1,2.25},
 		       NULL,
 		       SUSHIV_X_RANGE|SUSHIV_Y_RANGE);
   sushiv_new_dimension(s,3,"Im(z0)",
-		       5,(double []){-3,-1.5,0,1.5,3},
+		       5,(double []){-2.25,-1,0,1,2.25},
 		       NULL,
 		       SUSHIV_X_RANGE|SUSHIV_Y_RANGE);
   
