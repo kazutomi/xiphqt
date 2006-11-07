@@ -2,7 +2,7 @@
 # Fuck the horse it rode in on
 # and Fuck its little dog Libtool too
 
-TARGET  = sushivision
+TARGET  = sushivision.so.0.0.0
 CC      = gcc 
 LD      = gcc
 INSTALL = install
@@ -11,11 +11,14 @@ PREFIX  = /usr/local
 BINDIR  = $(PREFIX)/bin
 ETCDIR  = /etc/$(TARGET)
 MANDIR  = $(PREFIX)/man
+SOFLAGS = -shared -nostdlib -fPIC
 
-SRC  = main.c scale.c plot.c slider.c slice.c panel.c panel-2d.c mapping.c dimension.c objective.c example_submain.c
-OBJ  = main.o scale.o plot.o slider.o slice.o panel.o panel-2d.o mapping.o dimension.o objective.o example_submain.o
+SRC  = main.c scale.c plot.c slider.c slice.c panel.c panel-2d.c mapping.c dimension.c objective.c example_submain.c example_fractal.c
+OBJ  = main.o scale.o plot.o slider.o slice.o panel.o panel-2d.o mapping.o dimension.o objective.o 
+OBJ_EX1  = main.o scale.o plot.o slider.o slice.o panel.o panel-2d.o mapping.o dimension.o objective.o example_submain.o
+OBJ_EX2  = main.o scale.o plot.o slider.o slice.o panel.o panel-2d.o mapping.o dimension.o objective.o example_fractal.o
 INC  = sushivision.h
-LIBS = -lpthread
+LIBS = -lpthread -ldl
 CAIROVER =  >= 1.0.0
 GTKVER   =  >= 2.8.0
 GCF  = `pkg-config --static --cflags "gtk+-2.0 $(GTKVER) cairo $(CAIROVER) freetype2 gthread-2.0"`
@@ -24,15 +27,16 @@ LDF  = -pthread -L/lib -lgtk-x11-2.0 -lgdk-x11-2.0 -latk-1.0 -lgdk_pixbuf-2.0 -l
 all:    
 	pkg-config --cflags "gtk+-2.0 $(GTKVER) cairo $(CAIROVER) freetype2" 1>/dev/null
 	$(MAKE) target CFLAGS='-O2 $(GCF) $(ADD_DEF)'
-	$(STRIP) $(TARGET)
+	$(MAKE) examples CFLAGS='-O2 $(GCF) $(ADD_DEF)'
 
 debug:
 	pkg-config --cflags "gtk+-2.0 $(GTKVER) cairo $(CAIROVER) freetype2" 1>/dev/null
 	$(MAKE) target CFLAGS='-g -Wall -W -Wno-unused-parameter -D__NO_MATH_INLINES $(GCF) $(ADD_DEF)'
+	$(MAKE) examples CFLAGS='-g -Wall -W -Wno-unused-parameter -D__NO_MATH_INLINES $(GCF) $(ADD_DEF)'
 
 profile:
 	pkg-config --cflags "gtk+-2.0 $(GTKVER) cairo $(CAIROVER) freetype2" 1>/dev/null
-	$(MAKE) target CFLAGS='-pg -g -O2 $(GCF) $(ADD_DEF)' LIBS='-lgprof-helper'
+	$(MAKE) examples CFLAGS='-pg -g -O2 $(GCF) $(ADD_DEF)' LIBS='-lgprof-helper'
 
 clean:
 	rm -f $(OBJ) *.d *.d.* gmon.out $(TARGET)
@@ -52,7 +56,11 @@ include $(SRC:.c=.d)
 endif
 
 target:  $(OBJ) 
-	$(LD) $(OBJ) $(CFLAGS) -o $(TARGET) $(LIBS) $(LDF)
+	$(LD) $(OBJ) $(CFLAGS) $(SOFLAGS) -o $(TARGET) $(LIBS) $(LDF)
+
+examples:  $(OBJ_EX1) $(OBJ_EX2) 
+	$(LD) $(OBJ_EX1) $(CFLAGS) -o sushivision_example $(LIBS) $(LDF)
+	$(LD) $(OBJ_EX2) $(CFLAGS) -o sushivision_fractal $(LIBS) $(LDF)
 
 install: target
 	$(INSTALL) -d -m 0755 $(BINDIR)
