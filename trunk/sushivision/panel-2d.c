@@ -355,10 +355,10 @@ static void fast_scale_y(double *data,
 
   double old_h = old.pixels;
   double new_h = new.pixels;
-  double old_lo = scalespace_value(&old,0);
-  double old_hi = scalespace_value(&old,old_h);
-  double new_lo = scalespace_value(&new,0);
-  double new_hi = scalespace_value(&new,new_h);
+  double old_lo = scalespace_value(&old,old_h);
+  double old_hi = scalespace_value(&old,0);
+  double new_lo = scalespace_value(&new,new_h);
+  double new_hi = scalespace_value(&new,0);
   double newscale = (new_hi-new_lo)/new_h;
   double oldscale = old_h/(old_hi-old_lo);
   
@@ -721,8 +721,8 @@ int _sushiv_panel_cooperative_compute_2d(sushiv_panel_t *p){
   for(i=0;i<d;i++){
     sushiv_dimension_t *dim = p->dimension_list[i];
     if(dim == p2->y_d){
-      y_min = scalespace_value(&sy,0);
-      y_max = scalespace_value(&sy,h);
+      y_min = scalespace_value(&sy,h);
+      y_max = scalespace_value(&sy,0);
       y_d = dim->number;
       break;
     }
