@@ -30,13 +30,11 @@
 /* slider scales */
 static int trailing_zeroes(double A){
   int count=0;
-  if(A<0)A=-A;
-  if(A==0)return 0;
-  A = floor(A);
-  A/=10;
-  while(A == floor(A)){
+  int64_t iA = (A<0 ? floor(-A) : floor(A));;
+  if(iA==0)return 0;
+  while(!(iA%10)){
     count++;
-    A/=10;
+    iA/=10;
   }
   return count;
 }
