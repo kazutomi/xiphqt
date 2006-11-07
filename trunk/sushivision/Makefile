@@ -11,7 +11,8 @@ PREFIX  = /usr/local
 BINDIR  = $(PREFIX)/bin
 ETCDIR  = /etc/$(TARGET)
 MANDIR  = $(PREFIX)/man
-SOFLAGS = -shared -nostdlib -fPIC
+SOCFLAGS  = -fPIC
+SOLDFLAGS = -shared -nostdlib
 
 SRC  = main.c scale.c plot.c slider.c slice.c panel.c panel-2d.c mapping.c dimension.c objective.c example_submain.c example_fractal.c
 OBJ  = main.o scale.o plot.o slider.o slice.o panel.o panel-2d.o mapping.o dimension.o objective.o 
@@ -26,12 +27,12 @@ LDF  = -pthread -L/lib -lgtk-x11-2.0 -lgdk-x11-2.0 -latk-1.0 -lgdk_pixbuf-2.0 -l
 
 all:    
 	pkg-config --cflags "gtk+-2.0 $(GTKVER) cairo $(CAIROVER) freetype2" 1>/dev/null
-	$(MAKE) target CFLAGS='-O2 $(GCF) $(ADD_DEF)'
+	$(MAKE) target CFLAGS='-O2 $(SOCFLAGS) $(GCF) $(ADD_DEF)'
 	$(MAKE) examples CFLAGS='-O2 $(GCF) $(ADD_DEF)'
 
 debug:
 	pkg-config --cflags "gtk+-2.0 $(GTKVER) cairo $(CAIROVER) freetype2" 1>/dev/null
-	$(MAKE) target CFLAGS='-g -Wall -W -Wno-unused-parameter -D__NO_MATH_INLINES $(GCF) $(ADD_DEF)'
+	$(MAKE) target CFLAGS='-g -Wall -W -Wno-unused-parameter -D__NO_MATH_INLINES $(SOCFLAGS) $(GCF) $(ADD_DEF)'
 	$(MAKE) examples CFLAGS='-g -Wall -W -Wno-unused-parameter -D__NO_MATH_INLINES $(GCF) $(ADD_DEF)'
 
 profile:
@@ -56,7 +57,7 @@ include $(SRC:.c=.d)
 endif
 
 target:  $(OBJ) 
-	$(LD) $(OBJ) $(CFLAGS) $(SOFLAGS) -o $(TARGET) $(LIBS) $(LDF)
+	$(LD) $(OBJ) $(CFLAGS) $(SOLDFLAGS) -o $(TARGET) $(LIBS) $(LDF)
 
 examples:  $(OBJ_EX1) $(OBJ_EX2) 
 	$(LD) $(OBJ_EX1) $(CFLAGS) -o sushivision_example $(LIBS) $(LDF)
