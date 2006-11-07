@@ -520,14 +520,19 @@ static gboolean key_press(GtkWidget *widget,
       p->button_down=0;
       p->box_active=0;
     }else{
-      GdkEventButton event;
-      event.x = scalespace_pixel(&p->x,p->selx);
-      event.y = widget->allocation.height-
-	scalespace_pixel(&p->y,p->sely);
-      if(p->button_down)
+      if(p->button_down){
+	GdkEventButton event;
+	event.x = scalespace_pixel(&p->x,p->selx);
+	event.y = widget->allocation.height-
+	  scalespace_pixel(&p->y,p->sely);
+	
 	mouse_release(widget,&event);
-      else
-	mouse_press(widget,&event);
+      }else{
+	p->box_x2=p->box_x1 = p->selx;
+	p->box_y2=p->box_y1 = p->sely;
+	p->box_active = 1;
+	p->button_down=1; 
+      }
     }
     return TRUE;
 
