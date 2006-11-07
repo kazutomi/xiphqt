@@ -24,18 +24,16 @@
 #include <math.h>
 #include "sushivision.h"
 
-#define MAX_ITER 16384
-
 sushiv_instance_t *s;
+#define MAX_ITER 1024
 
 static double fractal_objective(double *d){
   int i;
   double z, zi, zz;
-  const int max_iter = d[4];
   const double c=d[0],ci=d[1];
 
   z = d[2]; zi = d[3];
-  for(i=0;i<max_iter;i++){
+  for(i=0;i<MAX_ITER;i++){
     zz = z*z - zi*zi + c;
     zi = 2.0*z*zi + ci;
     z  = zz;
@@ -66,18 +64,13 @@ int sushiv_submain(int argc, char *argv[]){
 		       5,(double []){-2.25,-1,0,1,2.25},
 		       NULL,
 		       SUSHIV_X_RANGE|SUSHIV_Y_RANGE);
-
-  sushiv_new_dimension(s,4,"Iter",
-		       8,(double []){128,256,512,1024,2048,4096,8192,MAX_ITER},
-  		       NULL,
-		       0);
-
+  
   sushiv_new_objective(s,0,"fractal",fractal_objective,0);
 
   sushiv_new_panel_2d(s,0,"Mandel/Julia Fractal",4,
 		      (double []){0, .01, .1, 1.0},
 		      (int []){0,-1},
-		      (int []){0,1,2,3,4,-1},
+		      (int []){0,1,2,3,-1},
 		      0);
   
   return 0;
