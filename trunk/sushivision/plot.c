@@ -40,6 +40,7 @@ static void draw_scales_work(cairo_surface_t *s, scalespace xs, scalespace ys){
   cairo_t *c = cairo_create(s);
   int i=0,x,y;
   char buffer[80];
+  int y_width=0;
 
   cairo_save(c);
   cairo_set_operator(c,CAIRO_OPERATOR_CLEAR);
@@ -87,6 +88,8 @@ static void draw_scales_work(cairo_surface_t *s, scalespace xs, scalespace ys){
     cairo_text_extents_t extents;
     cairo_text_extents (c, buffer, &extents);
 
+    if(extents.width > y_width) y_width = extents.width;
+
     if(y - extents.height > 0){
       
       double yy = h-y+.5-(extents.height/2 + extents.y_bearing);
@@ -118,7 +121,7 @@ static void draw_scales_work(cairo_surface_t *s, scalespace xs, scalespace ys){
     cairo_text_extents_t extents;
     cairo_text_extents (c, buffer, &extents);
 
-    if(x - extents.height > 0){
+    if(x - extents.height > y_width+5 ){
 
       cairo_move_to(c,2, x+.5-(extents.height/2 + extents.y_bearing));
       cairo_set_source_rgba(c,0,0,0,.5);
