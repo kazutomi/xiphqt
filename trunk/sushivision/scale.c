@@ -25,6 +25,7 @@
 #include <cairo-ft.h>
 #include <fontconfig/fontconfig.h>
 #include <stdio.h>
+#include <limits.h>
 #include "scale.h"
 
 /* slider scales */
