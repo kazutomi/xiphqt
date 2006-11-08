@@ -147,7 +147,7 @@ char **scale_generate_labels(unsigned scalevals, double *scaleval_list){
 /* plot and graph scales */
 
 double scalespace_value(scalespace *s, double pixel){
-  double val = (double)((pixel-s->first_pixel)*s->step_val)/s->step_pixel + s->first_val;
+  double val = (pixel-s->first_pixel)*s->step_val/s->step_pixel + s->first_val;
   return val * s->m;
 }
 
@@ -183,12 +183,17 @@ scalespace scalespace_linear (double lowpoint, double highpoint, int pixels, int
 
   int place = 0;
   int step = 1;
-  int first;
+  long long first;
 
   ret.lo = lowpoint;
   ret.hi = highpoint;
   ret.init = 1;
   ret.pixels=pixels;
+
+  if(range == 0){
+    ret.m = 0;
+    return ret;
+  }
 
   if(range!=0.){
     while(pixels / range < max_spacing){
@@ -218,14 +223,26 @@ scalespace scalespace_linear (double lowpoint, double highpoint, int pixels, int
   else
     ret.step_pixel = rint(pixels / range);
   ret.m = pow(10,place);
-  first = (int)(lowpoint/ret.m)/step*step;
+  first = (long long)(lowpoint/ret.m)/step*step;
+
+  if(LLONG_MAX * ret.m < lowpoint){
+    ret.m = 0;
+    return ret;
+  }
 
   while(first * ret.m < lowpoint)
     first += step;
+
+  if(LLONG_MIN * ret.m > highpoint){
+    ret.m = 0;
+    return ret;
+  }
+
   while(first * ret.m > highpoint)
     first -= step;
 
   ret.first_val = first;
+
   ret.first_pixel = rint((first - (lowpoint / ret.m)) * ret.step_pixel / ret.step_val);
 
   return ret;

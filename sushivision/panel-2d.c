@@ -571,28 +571,31 @@ static void bracket_callback_2d(void *in, int buttonstate){
   sushiv_panel_t *p = d->panel;
   sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
   int dnum = dptr - p->dimension_list;
-  int axisp = (d == p2->x_d || d == p2->y_d);
   double lo = slider_get_value(p2->dim_scales[dnum],0);
   double hi = slider_get_value(p2->dim_scales[dnum],2);
+  
 
+  double xy_p = d == p2->x_d;
+  scalespace s = scalespace_linear(lo,hi,(xy_p?p2->data_w:p2->data_h),
+				   PLOT(p2->graph)->scalespacing);
   if(buttonstate == 0){
     panel2d_undo_push(p);
     panel2d_undo_suspend(p);
   }
 
-  if(axisp){  
-    double xy_p = d == p2->x_d;
-    scalespace s = scalespace_linear(lo,hi,(xy_p?p2->data_w:p2->data_h),
-				     PLOT(p2->graph)->scalespacing);
+  if(s.m == 0){
+    if(xy_p)
+      fprintf(stderr,"X scale underflow; cannot zoom further.\n");
+    else
+      fprintf(stderr,"Y scale underflow; cannot zoom further.\n");
+  }else{
     xy_p?(p2->x=s):(p2->y=s);
-  }
 
-  d->bracket[0] = lo;
-  d->bracket[1] = hi;
-
-  // if the bracketing of an axis dimension changed, rerender
-  if(axisp)
+    d->bracket[0] = lo;
+    d->bracket[1] = hi;
+    
     _mark_recompute_2d(p);
+  }
  
   if(buttonstate == 2)
     panel2d_undo_resume(p);

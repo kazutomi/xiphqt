@@ -23,7 +23,7 @@ typedef struct {
   double lo;
   double hi;
 
-  long first_val;
+  long long first_val;
   long first_pixel;
   
   long step_val;
