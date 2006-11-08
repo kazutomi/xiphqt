@@ -408,8 +408,8 @@ static void box_check(Plot *p, int x, int y){
     plot_expose_request_partial(p,
 				(int)(vals[0]),
 				(int)(vals[1]),
-				(int)(vals[2]+2),
-				(int)(vals[3]+2));
+				(int)(vals[2]+3), // account for floor/ceil *and* roundoff potential
+				(int)(vals[3]+3));
   }
 }
 
@@ -433,8 +433,8 @@ static gint mouse_motion(GtkWidget        *widget,
       plot_expose_request_partial(p,
 				  (int)(vals[0]),
 				  (int)(vals[1]),
-				  (int)(vals[2]+2),
-				  (int)(vals[3]+2));
+				  (int)(vals[2]+3),  // account for floor/ceil *and* roundoff potential
+				  (int)(vals[3]+3));
     }
     
     p->box_x2 = scalespace_value(&p->x,x);
