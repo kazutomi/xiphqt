@@ -67,7 +67,7 @@ struct _SliceClass{
 extern GType slice_get_type        (void);
 extern GtkWidget* slice_new (void (*callback)(void *,int), void *data);
 extern void slice_set_active(Slice *s, int activep);
-extern void slice_thumb_set(Slice *s,float v);
+extern void slice_thumb_set(Slice *s,double v);
 
 G_END_DECLS
 #endif

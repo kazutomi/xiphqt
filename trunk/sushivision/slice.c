@@ -246,7 +246,7 @@ void slice_set_active(Slice *s, int activep){
   draw_and_expose(GTK_WIDGET(s));
 }
 
-void slice_thumb_set(Slice *s,float v){
+void slice_thumb_set(Slice *s,double v){
   GtkWidget *w=GTK_WIDGET(s);
 
   s->thumb_val=v;
