@@ -69,7 +69,9 @@ struct _Plot{
   void (*recompute_callback)(void *);
   void *cross_data;
   void (*crosshairs_callback)(void *);
-  
+
+  int legend_entries;
+  char **legend_list;
 };
 
 struct _PlotClass{
@@ -99,3 +101,7 @@ void plot_draw_scales(Plot *p);
 void plot_unset_box(Plot *p);
 void plot_box_vals(Plot *p, double ret[4]);
 void plot_box_set(Plot *p, double vals[4]);
+void plot_legend_add(Plot *p, char *entry);
+void plot_legend_clear(Plot *p);
+int plot_get_crosshair_xpixel(Plot *p);
+int plot_get_crosshair_ypixel(Plot *p);

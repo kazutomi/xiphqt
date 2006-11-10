@@ -130,7 +130,7 @@ void slider_draw_background(Slider *s){
     u_int32_t *pixel=s->backdata+ty*s->w;
     
     for(i=tx;i<tx+tw;i++)
-      pixel[i]=mapping_calc(s->gradient,slider_pixel_to_del(s,0,i), pixel[i]);
+      pixel[i]=mapping_calc(s->gradient,slider_pixel_to_del(s,i), pixel[i]);
     
     for(i=ty+1;i<ty+th;i++){
       memcpy(pixel+w,pixel,w*4);
@@ -503,34 +503,21 @@ static double slice_adjust_pixel(Slider *s,int slicenum, double x){
   return x+width;
 }
 
-double slider_pixel_to_val(Slider *s,int slicenum,double x){
-  int j;
+double slider_pixel_to_val(Slider *s,double x){
   int tx=s->xpad;
   int tw=s->w - tx*2;
-  double pixlo;
-  x=slice_adjust_pixel(s,slicenum,x);
-
-  pixlo = tx;
-  for(j=0;j<s->labels-1;j++){
-    double pixhi=rint((double)(j+1)/(s->labels-1)*tw)+tx;
-
-    if(x>=pixlo && x<=pixhi){
-      double del=(double)(x-pixlo)/(pixhi-pixlo);
-      return ( (1.-del)*s->label_vals[j] + del*s->label_vals[j+1] );
-    }
-    pixlo=pixhi;
-  }
-  if(x<tx)
+  double del = (double)(x-tx)/tw;
+  if(del<0)
     return s->label_vals[0];
-  else
+  if(del>=1.)
     return (s->label_vals[s->labels-1]);
+  return slider_del_to_val(s,del);
 }
 
-double slider_pixel_to_del(Slider *s,int slicenum,double x){
+double slider_pixel_to_del(Slider *s,double x){
   int tx=s->xpad;
   int tw=s->w - tx*2;
-
-  x=slice_adjust_pixel(s,slicenum,x-tx);
+  x-=tx;
 
   if(x<=0){
     return 0.;
@@ -538,6 +525,17 @@ double slider_pixel_to_del(Slider *s,int slicenum,double x){
     return 1.;
   }else
     return x/tw;
+}
+
+double slider_del_to_val(Slider *s, double del){
+  int base;
+  if(isnan(del))return del;
+
+  del *= (s->labels-1);
+  base = floor(del);
+  del -= base;
+  
+  return ( (1.-del)*s->label_vals[base] + del*s->label_vals[base+1] );
 }
 
 void slider_vals_bound(Slider *s,int slicenum){
@@ -687,7 +685,8 @@ void slider_motion(Slider *s,int slicenum,int x,int y){
   for(i=0;i<s->num_slices;i++){
     Slice *sl = SLICE(s->slices[i]);
     if(sl->thumb_grab){      
-      sl->thumb_val=slider_pixel_to_val(s,slicenum,x);
+      sl->thumb_val=
+	slider_pixel_to_val(s,slice_adjust_pixel(s,slicenum,x));
       slider_vals_bound(s,i);
       altered=i+1;
     }
@@ -724,7 +723,7 @@ gboolean slider_key_press(Slider *s,GdkEventKey *event,int slicenum){
       double x = val_to_pixel(s,sl->thumb_val)-1;
       if(shift)
 	x-=9;
-      sl->thumb_val=slider_pixel_to_val(s,0,x);
+      sl->thumb_val=slider_pixel_to_val(s,x);
       slider_vals_bound(s,slicenum);
       // did a gradient get altered?
       update_gradient(s);
@@ -744,7 +743,7 @@ gboolean slider_key_press(Slider *s,GdkEventKey *event,int slicenum){
       double x = val_to_pixel(s,sl->thumb_val)+1;
       if(shift)
 	x+=9;
-      sl->thumb_val=slider_pixel_to_val(s,0,x);
+      sl->thumb_val=slider_pixel_to_val(s,x);
       slider_vals_bound(s,slicenum);
       // did a gradient get altered?
       update_gradient(s);

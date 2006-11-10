@@ -310,3 +310,8 @@ u_int32_t mapping_calc(mapping *m, double in, u_int32_t mix){
     return m->mapfunc(val,mix);
   }
 }
+
+int mapping_inactive_p(mapping *m){
+  if(m->mapfunc == inactive)return 1;
+  return 0;
+}

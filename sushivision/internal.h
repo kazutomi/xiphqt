@@ -32,6 +32,7 @@ extern int _sushiv_new_panel(sushiv_instance_t *s,
 			     unsigned flags);
 
 extern void _sushiv_panel_dirty_map(sushiv_panel_t *p);
+extern void _sushiv_panel_dirty_legend(sushiv_panel_t *p);
 extern void _sushiv_wake_workers(void);
 
 extern int _sushiv_panel_cooperative_compute(sushiv_panel_t *p);

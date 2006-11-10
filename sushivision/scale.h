@@ -36,6 +36,7 @@ typedef struct {
   int pixels;
 } scalespace;
 
+int del_depth(double A, double B);
 extern char **scale_generate_labels(unsigned scalevals, double *scaleval_list);
 
 extern double scalespace_value(scalespace *s, double pixel);

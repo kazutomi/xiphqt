@@ -40,8 +40,8 @@ static int trailing_zeroes(double A){
   return count;
 }
 
-/* depth, at a minimum, must capture the difference between consective scale values */
-static int del_depth(double A, double B){
+/* depth, at a minimum, must capture the difference between consecutive scale values */
+int del_depth(double A, double B){
   int depth = 0;
 
   double del = B-A;

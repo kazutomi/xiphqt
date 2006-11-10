@@ -140,6 +140,61 @@ static void draw_scales_work(cairo_surface_t *s, scalespace xs, scalespace ys){
   cairo_destroy(c);
 }
 
+static void draw_legend_work(Plot *p, cairo_surface_t *s){
+  if(p->legend_entries && p->legend_list){
+    int w = cairo_image_surface_get_width(s);
+    //int h = cairo_image_surface_get_height(s);
+    cairo_t *c = cairo_create(s);
+    int i;
+    int textw=0, texth=0;
+    int totalh=0;
+    int x,y;
+    cairo_text_extents_t extents;
+    
+    cairo_select_font_face (c, "Sans",
+			    CAIRO_FONT_SLANT_NORMAL,
+			    CAIRO_FONT_WEIGHT_NORMAL);
+    cairo_set_font_size (c, 10);
+    cairo_set_line_width(c,1);
+    
+    /* determine complete x/y extents of text */
+    
+    for(i=0;i<p->legend_entries;i++){
+      cairo_text_extents (c, p->legend_list[i], &extents);
+      if(texth < extents.height)
+	texth = extents.height;
+      if(textw < extents.width)
+	textw = extents.width;
+    }
+    
+    y = 10+texth;
+    texth = ceil(texth * 1.2+3);
+    totalh = texth*p->legend_entries;
+    
+    x = w - textw - 10;
+    
+    for(i=0;i<p->legend_entries;i++){
+      cairo_text_extents (c, p->legend_list[i], &extents);
+      x = w - extents.width - 10;
+      
+      cairo_move_to(c,x, y);
+      cairo_text_path (c, p->legend_list[i]); 
+
+      cairo_set_source_rgba(c,0,0,0,.5);
+      cairo_set_line_width(c,3);
+      cairo_stroke(c);
+
+      cairo_set_source_rgba(c,1.,1.,1.,1.);
+      cairo_move_to(c,x, y);
+      cairo_show_text (c, p->legend_list[i]);
+
+      y+=texth;
+    }
+    
+    cairo_destroy(c);
+  }
+}
+
 void plot_draw_scales(Plot *p){
   // render into a temporary surface; do it [potentially] outside the global Gtk lock.
   gdk_threads_enter();
@@ -151,6 +206,7 @@ void plot_draw_scales(Plot *p){
   gdk_threads_leave();
   
   draw_scales_work(s,x,y);
+  draw_legend_work(p,s);
   
   gdk_threads_enter();
   // swap fore/temp
@@ -237,8 +293,8 @@ static void plot_draw (Plot *p,
     
     // transient foreground
     {
-      double sx = scalespace_pixel(&p->x,p->selx);
-      double sy = widget->allocation.height-scalespace_pixel(&p->y,p->sely);
+      double sx = plot_get_crosshair_xpixel(p);
+      double sy = plot_get_crosshair_ypixel(p);
       cairo_set_source_rgba(c,1.,1.,1.,.8);
       cairo_set_line_width(c,1.);
       cairo_move_to(c,0,sy+.5);
@@ -455,6 +511,11 @@ static gboolean mouse_press (GtkWidget        *widget,
  
   if(p->box_active && inside_box(p,event->x,event->y) && !p->button_down){
 
+    p->selx = scalespace_value(&p->x,event->x);
+    p->sely = scalespace_value(&p->y,widget->allocation.height-event->y);
+
+    if(p->crosshairs_callback)
+      p->crosshairs_callback(p->cross_data);
     if(p->box_callback)
       p->box_callback(p->cross_data,1);
 
@@ -710,12 +771,14 @@ void plot_expose_request(Plot *p){
   GtkWidget *widget = GTK_WIDGET(p);
   GdkRectangle r;
   
-  r.x=0;
-  r.y=0;
-  r.width=widget->allocation.width;
-  r.height=widget->allocation.height;
-  
-  gdk_window_invalidate_rect (widget->window, &r, FALSE);
+  if (GTK_WIDGET_REALIZED (widget)){
+    r.x=0;
+    r.y=0;
+    r.width=widget->allocation.width;
+    r.height=widget->allocation.height;
+    
+    gdk_window_invalidate_rect (widget->window, &r, FALSE);
+  }
   gdk_threads_leave();
 }
 
@@ -756,7 +819,7 @@ void plot_set_x_scale(Plot *p, scalespace x){
 }
 
 void plot_set_y_scale(Plot *p, scalespace y){
-  GtkWidget *widget = GTK_WIDGET(p);
+  //GtkWidget *widget = GTK_WIDGET(p);
   scalespace temp = p->y;
   p->y = y;
   if(memcmp(&temp,&p->y,sizeof(temp)))
@@ -794,6 +857,31 @@ void plot_set_crosshairs(Plot *p, double x, double y){
   gdk_threads_leave();
 }
 
+int plot_get_crosshair_xpixel(Plot *p){
+  scalespace x;
+  double v;
+
+  gdk_threads_enter();
+  x = p->x;
+  v = p->selx;
+  gdk_threads_leave();
+
+  return (int)rint(scalespace_pixel(&x,v));
+}
+
+int plot_get_crosshair_ypixel(Plot *p){
+  GtkWidget *widget = GTK_WIDGET(p);
+  scalespace y;
+  double v;
+
+  gdk_threads_enter();
+  y = p->y;
+  v = p->sely;
+  gdk_threads_leave();
+
+  return (int)rint(widget->allocation.height-scalespace_pixel(&y,v));
+}
+
 void plot_unset_box(Plot *p){
   gdk_threads_enter();
   p->box_active = 0;
@@ -821,4 +909,31 @@ void plot_box_set(Plot *p, double vals[4]){
   
   plot_expose_request(p);
   gdk_threads_leave();
+}
+
+void plot_legend_clear(Plot *p){
+  int i;
+  if(p->legend_list){
+    for(i=0;i<p->legend_entries;i++)
+      if(p->legend_list[i])
+	free(p->legend_list[i]);
+    free(p->legend_list);
+    p->legend_list=NULL;
+  }
+  p->legend_entries=0;
+}
+
+void plot_legend_add(Plot *p, char *entry){
+  if(!p->legend_list){
+    p->legend_list = calloc(1, sizeof(*p->legend_list));
+    p->legend_entries=1;
+  }else{
+    p->legend_entries++;
+    p->legend_list = realloc(p->legend_list, p->legend_entries*sizeof(*p->legend_list));
+  }
+
+  if(entry)
+    p->legend_list[p->legend_entries-1] = strdup(entry);
+  else
+    p->legend_list[p->legend_entries-1] = strdup("");
 }

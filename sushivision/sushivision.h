@@ -78,6 +78,7 @@ struct sushiv_panel {
   enum sushiv_panel_type type;
   int realized;
   int maps_dirty;
+  int legend_dirty;
 
   int dimensions;
   sushiv_dimension_t **dimension_list;

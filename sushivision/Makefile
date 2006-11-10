@@ -22,7 +22,7 @@ INC  = sushivision.h
 LIBS = -lpthread -ldl
 CAIROVER =  >= 1.0.0
 GTKVER   =  >= 2.8.0
-GCF  = -std=c99 `pkg-config --static --cflags "gtk+-2.0 $(GTKVER) cairo $(CAIROVER) freetype2 gthread-2.0"`
+GCF  = `pkg-config --static --cflags "gtk+-2.0 $(GTKVER) cairo $(CAIROVER) freetype2 gthread-2.0"`
 LDF  = -pthread -L/lib -lgtk-x11-2.0 -lgdk-x11-2.0 -latk-1.0 -lgdk_pixbuf-2.0 -lpangocairo-1.0 -lpango-1.0 -lgobject-2.0 -lgmodule-2.0 -ldl -lm -lfontconfig -lpng12 -lXrender -lX11 -lpthread -lfreetype -lz -lgthread-2.0 -lglib-2.0 -lcairo
 
 all:    
