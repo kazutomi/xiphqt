@@ -104,6 +104,20 @@ static void _sushiv_panel_map_redraw(sushiv_panel_t *p){
   }
 }
 
+static void _sushiv_panel_legend_redraw(sushiv_panel_t *p){
+  if(p->legend_dirty){
+    p->legend_dirty = 0;
+    switch(p->type){
+    case SUSHIV_PANEL_1D:
+      //_sushiv_panel1d_legend_redraw(p);
+      break;
+    case SUSHIV_PANEL_2D:
+      _sushiv_panel2d_legend_redraw(p);
+      break;
+    }
+  }
+}
+
 int _sushiv_panel_cooperative_compute(sushiv_panel_t *p){
   if(p->realized){
     if(p->type == SUSHIV_PANEL_2D)
@@ -124,10 +138,25 @@ static gboolean _map_idle_work(gpointer ptr){
   return FALSE;
 }
 
+static gboolean _legend_idle_work(gpointer ptr){
+  sushiv_instance_t *s = (sushiv_instance_t *)ptr;
+  int i;
+  
+  for(i=0;i<s->panels;i++)
+    _sushiv_panel_legend_redraw(s->panel_list[i]);
+  
+  return FALSE;
+}
+
 
 void _sushiv_panel_dirty_map(sushiv_panel_t *p){
   p->maps_dirty = 1;
   g_idle_add(_map_idle_work,p->sushi);
+}
+
+void _sushiv_panel_dirty_legend(sushiv_panel_t *p){
+  p->legend_dirty = 1;
+  g_idle_add(_legend_idle_work,p->sushi);
 }
 
 int _sushiv_new_panel(sushiv_instance_t *s,

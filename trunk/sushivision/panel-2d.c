@@ -109,6 +109,82 @@ void _sushiv_panel2d_map_redraw(sushiv_panel_t *p){
   gdk_threads_leave (); // misuse me as a global mutex
 }
 
+void _sushiv_panel2d_legend_redraw(sushiv_panel_t *p){
+  sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
+  Plot *plot = PLOT(p2->graph);
+
+  if(plot)
+    plot_draw_scales(plot);
+}
+
+static int ilog10(int x){
+  int count=0;
+  if(x<0)x=-x;
+  while(x){
+    count++;
+    x/=10;
+  }
+  return count;
+}
+
+static void update_legend(sushiv_panel_t *p){  
+  sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;  
+  Plot *plot = PLOT(p2->graph);
+
+  gdk_threads_enter ();
+  int w = p2->data_w;
+  int h = p2->data_h;
+  int x = plot_get_crosshair_xpixel(plot);
+  int y = plot_get_crosshair_ypixel(plot);
+  int offset = ilog10(w>h?w:h);
+
+  if(plot){
+    int i;
+    char buffer[320];
+    plot_legend_clear(plot);
+
+    // add each dimension to the legend
+    for(i=0;i<p->dimensions;i++){
+      // display decimal precision relative to bracket
+      int depth = del_depth(p->dimension_list[i]->bracket[0],
+			    p->dimension_list[i]->bracket[1]) + offset;
+      snprintf(buffer,320,"%s = %.*f",
+	       p->dimension_list[i]->name,
+	       depth,
+	       p->dimension_list[i]->val);
+      plot_legend_add(plot,buffer);
+    }
+
+    // one space 
+    plot_legend_add(plot,NULL);
+
+    // add each active objective to the legend
+    // choose the value under the crosshairs 
+    for(i=0;i<p->objectives;i++){
+      float val=NAN;
+
+      if(p2->data_rect && p2->data_rect[i])
+	val = p2->data_rect[i][y*w+x];
+
+      if(!isnan(val) && val >= p2->alphadel[i]){
+	
+	val = slider_del_to_val(p2->range_scales[i],val);
+	
+	if(!isnan(val) && !mapping_inactive_p(p2->mappings+i)){
+	  snprintf(buffer,320,"%s = %f",
+		   p->objective_list[i]->name,
+		   val);
+	  plot_legend_add(plot,buffer);
+	}
+      }
+    }
+    gdk_threads_leave ();
+
+    _sushiv_panel_dirty_legend(p);
+
+  }
+}
+
 static void mapchange_callback_2d(GtkWidget *w,gpointer in){
   sushiv_objective_t **optr = (sushiv_objective_t **)in;
   sushiv_objective_t *o = *optr;
@@ -126,6 +202,8 @@ static void mapchange_callback_2d(GtkWidget *w,gpointer in){
   slider_draw(p2->range_scales[onum]);
   slider_expose(p2->range_scales[onum]);
     
+  update_legend(p);
+
   //redraw the plot
   _sushiv_panel_dirty_map(p);
   panel2d_undo_resume(p);
@@ -522,6 +600,7 @@ static void recompute_callback_2d(void *ptr){
 
 static void update_crosshairs(sushiv_panel_t *p){
   sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
+  Plot *plot = PLOT(p2->graph);
   double x=0,y=0;
   int i;
   
@@ -536,6 +615,18 @@ static void update_crosshairs(sushiv_panel_t *p){
   }
   
   plot_set_crosshairs(PLOT(p2->graph),x,y);
+
+  // crosshairs snap to a pixel position; the cached dimension value
+  // should be accurate with respect to the crosshairs
+  for(i=0;i<p->dimensions;i++){
+    sushiv_dimension_t *d = p->dimension_list[i];
+    sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
+    if(d == p2->x_d)
+      d->val = scalespace_value(&p2->x,plot_get_crosshair_xpixel(plot));
+    if(d == p2->y_d)
+      d->val = scalespace_value(&p2->y,plot_get_crosshair_ypixel(plot));
+  }
+  update_legend(p);
 }
 
 static void dim_callback_2d(void *in, int buttonstate){
@@ -543,6 +634,7 @@ static void dim_callback_2d(void *in, int buttonstate){
   sushiv_dimension_t *d = *dptr;
   sushiv_panel_t *p = d->panel;
   sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
+  Plot *plot = PLOT(p2->graph);
   int dnum = dptr - p->dimension_list;
   int axisp = (d == p2->x_d || d == p2->y_d);
 
@@ -574,27 +666,30 @@ static void bracket_callback_2d(void *in, int buttonstate){
   double lo = slider_get_value(p2->dim_scales[dnum],0);
   double hi = slider_get_value(p2->dim_scales[dnum],2);
   
-
-  double xy_p = d == p2->x_d;
-  scalespace s = scalespace_linear(lo,hi,(xy_p?p2->data_w:p2->data_h),
-				   PLOT(p2->graph)->scalespacing);
   if(buttonstate == 0){
     panel2d_undo_push(p);
     panel2d_undo_suspend(p);
   }
 
-  if(s.m == 0){
-    if(xy_p)
-      fprintf(stderr,"X scale underflow; cannot zoom further.\n");
-    else
-      fprintf(stderr,"Y scale underflow; cannot zoom further.\n");
-  }else{
-    xy_p?(p2->x=s):(p2->y=s);
-
-    d->bracket[0] = lo;
-    d->bracket[1] = hi;
+  if(d->bracket[0] != lo || d->bracket[1] != hi){
+    double xy_p = d == p2->x_d;
+    scalespace s = scalespace_linear(lo,hi,(xy_p?p2->data_w:p2->data_h),
+				     PLOT(p2->graph)->scalespacing);
     
-    _mark_recompute_2d(p);
+    if(s.m == 0){
+      if(xy_p)
+	fprintf(stderr,"X scale underflow; cannot zoom further.\n");
+      else
+	fprintf(stderr,"Y scale underflow; cannot zoom further.\n");
+    }else{
+      xy_p?(p2->x=s):(p2->y=s);
+      
+      d->bracket[0] = lo;
+      d->bracket[1] = hi;
+      update_crosshairs(p);
+
+      _mark_recompute_2d(p);
+    }
   }
  
   if(buttonstate == 2)
@@ -632,10 +727,22 @@ static void crosshairs_callback(void *in){
   for(i=0;i<p->dimensions;i++){
     sushiv_dimension_t *d = p->dimension_list[i];
     sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
-    if(d == p2->x_d)
+    if(d == p2->x_d){
       slider_set_value(p2->dim_scales[i],1,x);
-    if(d == p2->y_d)
+
+      // key bindings could move crosshairs out of the window; we
+      // stretch in that case, which requires a recompute.
+      bracket_callback_2d(p->dimension_list+i,1);
+    }
+
+    if(d == p2->y_d){
       slider_set_value(p2->dim_scales[i],1,y);
+
+      // key bindings could move crosshairs out of the window; we
+      // stretch in that case, which requires a recompute.
+      bracket_callback_2d(p->dimension_list+i,1);
+    }
+
     p2->oldbox_active = 0;
   }
   panel2d_undo_resume(p);
@@ -646,7 +753,6 @@ static void box_callback(void *in, int state){
   sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
   Plot *plot = PLOT(p2->graph);
   
-
   switch(state){
   case 0: // box set
     panel2d_undo_push(p);
@@ -656,6 +762,7 @@ static void box_callback(void *in, int state){
   case 1: // box activate
     panel2d_undo_push(p);
     panel2d_undo_suspend(p);
+
     slider_set_value(p2->x_scale,0,p2->oldbox[0]);
     slider_set_value(p2->x_scale,2,p2->oldbox[1]);
     slider_set_value(p2->y_scale,0,p2->oldbox[2]);
@@ -690,11 +797,13 @@ int _sushiv_panel_cooperative_compute_2d(sushiv_panel_t *p){
   sx = p2->x;
   sy = p2->y;
 
-  if(p2->last_line>=h){
-      gdk_threads_leave ();
-      return 0;
+  if(p2->last_line==h){
+    p2->last_line++;
+    gdk_threads_leave ();
+    update_legend(p);
+    return 0;
   }
-
+  
   plot = PLOT(p2->graph);
   serialno = p2->serialno;
   invh = 1./h;
@@ -1200,5 +1309,4 @@ int sushiv_new_panel_2d(sushiv_instance_t *s,
 
   return 0;
 }
-
 

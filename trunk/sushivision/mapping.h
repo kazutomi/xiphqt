@@ -36,3 +36,4 @@ extern void mapping_set_lo(mapping *m, double lo);
 extern void mapping_set_hi(mapping *m, double hi);
 extern void mapping_set_func(mapping *m, int funcnum);
 extern u_int32_t mapping_calc(mapping *m, double in, u_int32_t mix);
+extern int mapping_inactive_p(mapping *m);
