@@ -73,6 +73,7 @@ typedef struct sushiv_panel2d {
   int undo_level;
   int undo_suspend;
 
+  int peak_count;
 } sushiv_panel2d_t;
 
 extern void _sushiv_realize_panel2d(sushiv_panel_t *p);

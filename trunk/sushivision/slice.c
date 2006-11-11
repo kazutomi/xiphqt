@@ -248,10 +248,12 @@ void slice_set_active(Slice *s, int activep){
 
 void slice_thumb_set(Slice *s,double v){
   GtkWidget *w=GTK_WIDGET(s);
-
-  s->thumb_val=v;
-  slider_vals_bound(s->slider,s->slicenum);
   
-  if(s->callback)s->callback(s->callback_data,5);
-  draw_and_expose(w);
+  if(s->thumb_val != v){
+    s->thumb_val=v;
+    slider_vals_bound(s->slider,s->slicenum);
+    
+    if(s->callback)s->callback(s->callback_data,5);
+    draw_and_expose(w);
+  }
 }

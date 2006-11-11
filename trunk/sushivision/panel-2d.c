@@ -764,6 +764,8 @@ static void box_callback(void *in, int state){
     panel2d_undo_push(p);
     panel2d_undo_suspend(p);
 
+    crosshairs_callback(p);
+
     slider_set_value(p2->x_scale,0,p2->oldbox[0]);
     slider_set_value(p2->x_scale,2,p2->oldbox[1]);
     slider_set_value(p2->y_scale,0,p2->oldbox[2]);
@@ -797,6 +799,11 @@ int _sushiv_panel_cooperative_compute_2d(sushiv_panel_t *p){
   h = p2->data_h;
   sx = p2->x;
   sy = p2->y;
+
+  if(p2->last_line>h){
+    gdk_threads_leave ();
+    return 0;
+  }
 
   if(p2->last_line==h){
     p2->last_line++;
@@ -998,12 +1005,15 @@ static void panel2d_undo_restore(sushiv_panel_t *p){
   }
 
   for(i=0;i<p->dimensions;i++){
-    if(slider_get_value(p2->dim_scales[i],0)!=u->dim_vals[0][i] ||
-       slider_get_value(p2->dim_scales[i],1)!=u->dim_vals[1][i] ||
+    /*if(slider_get_value(p2->dim_scales[i],0)!=u->dim_vals[0][i] ||
        slider_get_value(p2->dim_scales[i],2)!=u->dim_vals[2][i]){
       if(i==u->x_d || i==u->y_d)
 	recomp_flag=1;
     }
+    if(slider_get_value(p2->dim_scales[i],0)!=u->dim_vals[1][i]){
+      if(i!=u->x_d && i!=u->y_d)
+	recomp_flag=1;
+	}*/
     slider_set_value(p2->dim_scales[i],0,u->dim_vals[0][i]);
     slider_set_value(p2->dim_scales[i],1,u->dim_vals[1][i]);
     slider_set_value(p2->dim_scales[i],2,u->dim_vals[2][i]);
@@ -1135,21 +1145,21 @@ static void panel2d_find_peak(sushiv_panel_t *p){
 	      }
 	    }
 	  }
+	}
+	 
+	count = inner_count;
+	if(count>p2->peak_count){
+	  int y = best_j/w;
+	  int x = best_j - y*w;
+	  double xv = scalespace_value(&p2->x,x);
+	  double yv = scalespace_value(&p2->y,h-y);
 	  
-	  count = inner_count;
-	  if(count>p2->peak_count){
-	    int y = best_j/w;
-	    int x = best_j - y*w;
-	    double xv = scalespace_value(&p2->x,x);
-	    double yv = scalespace_value(&p2->y,h-y);
-	    
-	    plot_set_crosshairs(plot,xv,yv);
-	    crosshairs_callback(p);
-	    
-	    p2->peak_count++;
-	    
-	    return;
-	  }
+	  plot_set_crosshairs(plot,xv,yv);
+	  crosshairs_callback(p);
+	  
+	  p2->peak_count++;
+	  
+	  return;
 	}
       }
     }
