@@ -623,9 +623,9 @@ static void update_crosshairs(sushiv_panel_t *p){
     sushiv_dimension_t *d = p->dimension_list[i];
     sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
     if(d == p2->x_d)
-      d->val = scalespace_value(&p2->x,plot_get_crosshair_xpixel(plot));
+      d->val = scalespace_value(&plot->x,plot_get_crosshair_xpixel(plot));
     if(d == p2->y_d)
-      d->val = scalespace_value(&p2->y,plot_get_crosshair_ypixel(plot));
+      d->val = scalespace_value(&plot->y,p2->data_h - plot_get_crosshair_ypixel(plot));
   }
   update_legend(p);
 }
@@ -635,7 +635,7 @@ static void dim_callback_2d(void *in, int buttonstate){
   sushiv_dimension_t *d = *dptr;
   sushiv_panel_t *p = d->panel;
   sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
-  Plot *plot = PLOT(p2->graph);
+  //Plot *plot = PLOT(p2->graph);
   int dnum = dptr - p->dimension_list;
   int axisp = (d == p2->x_d || d == p2->y_d);
 
@@ -1099,13 +1099,66 @@ static void panel2d_undo_down(sushiv_panel_t *p){
   panel2d_undo_resume(p);
 }
 
+// called with lock
 static void panel2d_find_peak(sushiv_panel_t *p){
   sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
-
+  Plot *plot = PLOT(p2->graph);
+  int i,j;
+  int w = p2->data_w;
+  int h = p2->data_h;
+  int n = w*h;
+  int count = 0;
+  int best_j = 0;
+  
   // finds in order each peak (in the event there's more than one) of
   // each active objective
+  while(1){
 
-
+    for(i=0;i<p->objectives;i++){
+      if(p2->data_rect && p2->data_rect[i] && !mapping_inactive_p(p2->mappings+i)){
+	double *data=p2->data_rect[i];
+	double best_val = data[0];
+	double best_j = 0;
+	int inner_count = count+1;
+	
+	for(j=1;j<n;j++){
+	  if(!isnan(data[j])){
+	    if(data[j]>best_val){
+	      inner_count = count+1;
+	      best_val = data[j];
+	      best_j = j;
+	    }else if (data[j]==best_val){
+	      if(inner_count <= p2->peak_count){
+		inner_count++;
+		best_val = data[j];
+		best_j = j;
+	      }
+	    }
+	  }
+	  
+	  count = inner_count;
+	  if(count>p2->peak_count){
+	    int y = best_j/w;
+	    int x = best_j - y*w;
+	    double xv = scalespace_value(&p2->x,x);
+	    double yv = scalespace_value(&p2->y,h-y);
+	    
+	    plot_set_crosshairs(plot,xv,yv);
+	    crosshairs_callback(p);
+	    
+	    p2->peak_count++;
+	    
+	    return;
+	  }
+	}
+      }
+    }
+    
+    if(p2->peak_count==0)
+      return; // must be all inactive
+    else
+      p2->peak_count=0;
+  }
 }
 
 static gboolean panel2d_keypress(GtkWidget *widget,
