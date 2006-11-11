@@ -163,7 +163,8 @@ static void update_legend(sushiv_panel_t *p){
     for(i=0;i<p->objectives;i++){
       float val=NAN;
 
-      if(p2->data_rect && p2->data_rect[i])
+      if(p2->data_rect && p2->data_rect[i] &&
+	 x<w && y<h )
 	val = p2->data_rect[i][y*w+x];
 
       if(!isnan(val) && val >= p2->alphadel[i]){
@@ -1098,6 +1099,15 @@ static void panel2d_undo_down(sushiv_panel_t *p){
   panel2d_undo_resume(p);
 }
 
+static void panel2d_find_peak(sushiv_panel_t *p){
+  sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
+
+  // finds in order each peak (in the event there's more than one) of
+  // each active objective
+
+
+}
+
 static gboolean panel2d_keypress(GtkWidget *widget,
 				 GdkEventKey *event,
 				 gpointer in){
@@ -1129,7 +1139,7 @@ static gboolean panel2d_keypress(GtkWidget *widget,
 
   case GDK_p:
     // find [next] peak
-    //panel2d_peak_find(p);
+    panel2d_find_peak(p);
     return TRUE;
   }
 
