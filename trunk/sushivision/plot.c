@@ -151,6 +151,13 @@ static void draw_legend_work(Plot *p, cairo_surface_t *s){
     int x,y;
     cairo_text_extents_t extents;
     
+    gdk_threads_enter();
+    int n = p->legend_entries;
+    char *buffer[n];
+    for(i=0;i<n;i++)
+      buffer[i] = strdup(p->legend_list[i]);
+    gdk_threads_leave();
+
     cairo_select_font_face (c, "Sans",
 			    CAIRO_FONT_SLANT_NORMAL,
 			    CAIRO_FONT_WEIGHT_NORMAL);
@@ -159,8 +166,8 @@ static void draw_legend_work(Plot *p, cairo_surface_t *s){
     
     /* determine complete x/y extents of text */
     
-    for(i=0;i<p->legend_entries;i++){
-      cairo_text_extents (c, p->legend_list[i], &extents);
+    for(i=0;i<n;i++){
+      cairo_text_extents (c, buffer[i], &extents);
       if(texth < extents.height)
 	texth = extents.height;
       if(textw < extents.width)
@@ -169,16 +176,16 @@ static void draw_legend_work(Plot *p, cairo_surface_t *s){
     
     y = 10+texth;
     texth = ceil(texth * 1.2+3);
-    totalh = texth*p->legend_entries;
+    totalh = texth*n;
     
     x = w - textw - 10;
     
-    for(i=0;i<p->legend_entries;i++){
-      cairo_text_extents (c, p->legend_list[i], &extents);
+    for(i=0;i<n;i++){
+      cairo_text_extents (c, buffer[i], &extents);
       x = w - extents.width - 10;
       
       cairo_move_to(c,x, y);
-      cairo_text_path (c, p->legend_list[i]); 
+      cairo_text_path (c, buffer[i]); 
 
       cairo_set_source_rgba(c,0,0,0,.5);
       cairo_set_line_width(c,3);
@@ -186,12 +193,16 @@ static void draw_legend_work(Plot *p, cairo_surface_t *s){
 
       cairo_set_source_rgba(c,1.,1.,1.,1.);
       cairo_move_to(c,x, y);
-      cairo_show_text (c, p->legend_list[i]);
+      cairo_show_text (c, buffer[i]);
 
       y+=texth;
     }
     
     cairo_destroy(c);
+    for(i=0;i<n;i++)
+      free(buffer[i]);
+
+    
   }
 }
 
