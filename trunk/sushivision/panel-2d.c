@@ -1122,8 +1122,14 @@ static gboolean panel2d_keypress(GtkWidget *widget,
     return TRUE;
 
   case GDK_r:
-    // redo
+  case GDK_space:
+    // redo/forward
     panel2d_undo_up(p);
+    return TRUE;
+
+  case GDK_p:
+    // find [next] peak
+    //panel2d_peak_find(p);
     return TRUE;
   }
 

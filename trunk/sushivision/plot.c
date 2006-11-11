@@ -292,7 +292,7 @@ static void plot_draw (Plot *p,
     cairo_fill(c);
     
     // transient foreground
-    {
+    if(p->cross_active){
       double sx = plot_get_crosshair_xpixel(p);
       double sy = plot_get_crosshair_ypixel(p);
       cairo_set_source_rgba(c,1.,1.,1.,.8);
@@ -513,6 +513,7 @@ static gboolean mouse_press (GtkWidget        *widget,
 
     p->selx = scalespace_value(&p->x,event->x);
     p->sely = scalespace_value(&p->y,widget->allocation.height-event->y);
+    p->cross_active=1;
 
     if(p->crosshairs_callback)
       p->crosshairs_callback(p->cross_data);
@@ -540,6 +541,7 @@ static gboolean mouse_release (GtkWidget        *widget,
   if(!p->box_active && p->button_down){
     p->selx = scalespace_value(&p->x,event->x);
     p->sely = scalespace_value(&p->y,widget->allocation.height-event->y);
+    p->cross_active=1;
 
     if(p->crosshairs_callback)
       p->crosshairs_callback(p->cross_data);
@@ -571,6 +573,7 @@ static gboolean key_press(GtkWidget *widget,
   case GDK_Escape:
     p->button_down=0;
     p->box_active=0;
+    p->cross_active=0;
     plot_expose_request(p);
 
     return TRUE;
@@ -603,6 +606,7 @@ static gboolean key_press(GtkWidget *widget,
   case GDK_Left:
     {
       double x = scalespace_pixel(&p->x,p->selx)-1;
+      p->cross_active=1;
       if(shift)
 	x-=9;
       p->selx = scalespace_value(&p->x,x);
@@ -622,6 +626,7 @@ static gboolean key_press(GtkWidget *widget,
   case GDK_Right:
     {
       double x = scalespace_pixel(&p->x,p->selx)+1;
+      p->cross_active=1;
       if(shift)
 	x+=9;
       p->selx = scalespace_value(&p->x,x);
@@ -641,6 +646,7 @@ static gboolean key_press(GtkWidget *widget,
   case GDK_Up:
     {
       double y = widget->allocation.height - scalespace_pixel(&p->y,p->sely)-1;
+      p->cross_active=1;
       if(shift)
 	y-=9;
       p->sely = scalespace_value(&p->y,widget->allocation.height - y);
@@ -659,6 +665,7 @@ static gboolean key_press(GtkWidget *widget,
   case GDK_Down:
     {
       double y = widget->allocation.height - scalespace_pixel(&p->y,p->sely)+1;
+      p->cross_active=1;
       if(shift)
 	y+=9;
       p->sely = scalespace_value(&p->y,widget->allocation.height - y);
@@ -852,6 +859,7 @@ void plot_set_crosshairs(Plot *p, double x, double y){
   gdk_threads_enter();
   p->selx = x;
   p->sely = y;
+  p->cross_active=1;
 
   plot_expose_request(p);
   gdk_threads_leave();

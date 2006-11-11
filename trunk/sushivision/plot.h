@@ -54,6 +54,7 @@ struct _Plot{
 
   double selx;
   double sely;
+  int cross_active;
 
   double box_x1;
   double box_y1;
