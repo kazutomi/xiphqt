@@ -51,7 +51,7 @@ void _sushiv_clean_exit(int sig){
   pthread_cond_broadcast(&mc);
   pthread_mutex_unlock(&m);
 
-  signal(sig,SIG_IGN);
+  //signal(sig,SIG_IGN);
   if(sig!=SIGINT)
     fprintf(stderr,
             "\nTrapped signal %d; exiting!\n",sig);

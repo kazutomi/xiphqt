@@ -490,7 +490,7 @@ static gint mouse_motion(GtkWidget        *widget,
   int x = event->x;
   int y = event->y;
   int bx = scalespace_pixel(&p->x,p->box_x1);
-  int by = scalespace_pixel(&p->y,p->box_y1);
+  int by = widget->allocation.height-scalespace_pixel(&p->y,p->box_y1);
 
   if(p->button_down){
     if(abs(bx - x)>5 ||
@@ -526,8 +526,6 @@ static gboolean mouse_press (GtkWidget        *widget,
     p->sely = scalespace_value(&p->y,widget->allocation.height-event->y);
     p->cross_active=1;
 
-    if(p->crosshairs_callback)
-      p->crosshairs_callback(p->cross_data);
     if(p->box_callback)
       p->box_callback(p->cross_data,1);
 
