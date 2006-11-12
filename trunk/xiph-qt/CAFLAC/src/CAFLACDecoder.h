@@ -82,7 +82,8 @@ public:
 
     virtual UInt32      FramesReady() const;
     virtual Boolean     GenerateFrames();
-    virtual void        OutputFrames(void* outOutputData, UInt32 inNumberFrames, UInt32 inFramesOffset) const;
+    virtual void        OutputFrames(void* outOutputData, UInt32 inNumberFrames, UInt32 inFramesOffset,
+                                     AudioStreamPacketDescription* outPacketDescription) const;
     virtual void        Zap(UInt32 inFrames);
 
 //    virtual UInt32      InPacketsConsumed() const;

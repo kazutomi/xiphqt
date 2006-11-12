@@ -7,7 +7,7 @@
 	<key>CFBundleExecutable</key>
 	<string>CAVorbis</string>
 	<key>CFBundleGetInfoString</key>
-	<string>CoreAudio Vorbis Decoder Component 0.1.5, Copyright © 2005-2006 Arek Korbik</string>
+	<string>CoreAudio Vorbis Decoder Component 0.1.7, Copyright © 2005-2006 Arek Korbik</string>
 	<key>CFBundleIconFile</key>
 	<string></string>
 	<key>CFBundleIdentifier</key>
@@ -17,13 +17,13 @@
 	<key>CFBundlePackageType</key>
 	<string>BNDL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>0.1.5</string>
+	<string>0.1.7</string>
 	<key>CFBundleSignature</key>
-	<string>adec</string>
+	<string>acdc</string>
 	<key>CFBundleVersion</key>
-	<string>0.1.5</string>
+	<string>0.1.7</string>
 	<key>NSHumanReadableCopyright</key>
-	<string>CoreAudio Vorbis Decoder Component 0.1.5, Copyright © 2005-2006 Arek Korbik</string>
+	<string>CoreAudio Vorbis Decoder Component 0.1.7, Copyright © 2005-2006 Arek Korbik</string>
 	<key>CSResourcesFileMapped</key>
 	<true/>
 </dict>
