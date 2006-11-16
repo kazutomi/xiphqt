@@ -20,6 +20,7 @@
  */
 
 typedef struct {
+  char *legend;
   double lo;
   double hi;
 
@@ -43,4 +44,4 @@ extern double scalespace_value(scalespace *s, double pixel);
 extern double scalespace_pixel(scalespace *s, double val);
 extern int scalespace_mark(scalespace *s, int num);
 extern double scalespace_label(scalespace *s, int num, char *buffer);
-extern scalespace scalespace_linear (double lowpoint, double highpoint, int pixels, int max_spacing);
+extern scalespace scalespace_linear (double lowpoint, double highpoint, int pixels, int max_spacing,char *name);
