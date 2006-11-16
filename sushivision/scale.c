@@ -178,7 +178,8 @@ double scalespace_label(scalespace *s, int num, char *buffer){
   return val;
 }
 
-scalespace scalespace_linear (double lowpoint, double highpoint, int pixels, int max_spacing){
+// name is *not* copied
+scalespace scalespace_linear (double lowpoint, double highpoint, int pixels, int max_spacing, char *name){
   double range = fabs(highpoint - lowpoint);
   scalespace ret;
 
@@ -190,6 +191,7 @@ scalespace scalespace_linear (double lowpoint, double highpoint, int pixels, int
   ret.hi = highpoint;
   ret.init = 1;
   ret.pixels=pixels;
+  ret.legend=name;
 
   if(range == 0){
     ret.m = 0;

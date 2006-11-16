@@ -238,6 +238,7 @@ static void update_xy_availability(sushiv_panel_t *p){
   int i;
   // update which x/y buttons are pressable */
   // enable/disable dimension slider thumbs
+
   for(i=0;i<p->dimensions;i++){
     if(p2->dim_xb[i] &&
        gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(p2->dim_xb[i]))){
@@ -252,7 +253,8 @@ static void update_xy_availability(sushiv_panel_t *p){
       p2->x = scalespace_linear(p2->x_d->bracket[0],
 				p2->x_d->bracket[1],
 				p2->data_w,
-				PLOT(p2->graph)->scalespacing);
+				PLOT(p2->graph)->scalespacing,
+				p2->x_d->name);
     }else{
       // if there is a y, make it sensitive 
       if(p2->dim_yb[i])
@@ -271,7 +273,8 @@ static void update_xy_availability(sushiv_panel_t *p){
       p2->y = scalespace_linear(p2->y_d->bracket[0],
 				p2->y_d->bracket[1],
 				p2->data_h,
-				PLOT(p2->graph)->scalespacing);
+				PLOT(p2->graph)->scalespacing,
+				p2->y_d->name);
     }else{
       // if there is a x, make it sensitive 
       if(p2->dim_xb[i])
@@ -574,11 +577,13 @@ void _mark_recompute_2d(sushiv_panel_t *p){
       p2->x = scalespace_linear(p2->x_d->bracket[0],
 				p2->x_d->bracket[1],
 				w,
-				PLOT(p2->graph)->scalespacing);
+				PLOT(p2->graph)->scalespacing,
+				p2->x_d->name);
       p2->y = scalespace_linear(p2->y_d->bracket[0],
 				p2->y_d->bracket[1],
 				h,
-				PLOT(p2->graph)->scalespacing);
+				PLOT(p2->graph)->scalespacing,
+				p2->y_d->name);
       p2->data_rect = calloc(p->objectives,sizeof(*p2->data_rect));
       for(i=0;i<p->objectives;i++)
 	p2->data_rect[i] = malloc(p2->data_w * p2->data_h* sizeof(**p2->data_rect));
@@ -675,7 +680,8 @@ static void bracket_callback_2d(void *in, int buttonstate){
   if(d->bracket[0] != lo || d->bracket[1] != hi){
     double xy_p = d == p2->x_d;
     scalespace s = scalespace_linear(lo,hi,(xy_p?p2->data_w:p2->data_h),
-				     PLOT(p2->graph)->scalespacing);
+				     PLOT(p2->graph)->scalespacing,
+				     d->name);
     
     if(s.m == 0){
       if(xy_p)
@@ -1359,6 +1365,7 @@ void _sushiv_realize_panel2d(sushiv_panel_t *p){
 
   g_signal_connect (G_OBJECT (p2->toplevel), "key-press-event",
                     G_CALLBACK (panel2d_keypress), p);
+  gtk_window_set_title (GTK_WINDOW (p2->toplevel), p->name);
 
   gtk_widget_realize(p2->toplevel);
   gtk_widget_realize(p2->graph);

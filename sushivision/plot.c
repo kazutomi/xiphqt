@@ -41,6 +41,7 @@ static void draw_scales_work(cairo_surface_t *s, scalespace xs, scalespace ys){
   int i=0,x,y;
   char buffer[80];
   int y_width=0;
+  int x_height=0;
 
   cairo_save(c);
   cairo_set_operator(c,CAIRO_OPERATOR_CLEAR);
@@ -73,7 +74,7 @@ static void draw_scales_work(cairo_surface_t *s, scalespace xs, scalespace ys){
   cairo_stroke(c);
   cairo_restore(c);
 
-  // text labels
+  // text number labels
   cairo_select_font_face (c, "Sans",
 			  CAIRO_FONT_SLANT_NORMAL,
 			  CAIRO_FONT_WEIGHT_NORMAL);
@@ -108,18 +109,35 @@ static void draw_scales_work(cairo_surface_t *s, scalespace xs, scalespace ys){
     scalespace_label(&ys,i++,buffer);
   }
 
+  // set sideways text
+  cairo_save(c);
+  cairo_matrix_t m = {0.,-1., 1.,0.,  0.,h};
+  cairo_set_matrix(c,&m);
+
+  // text y scale label
+  if(ys.legend){
+    cairo_text_extents_t extents;
+    cairo_text_extents (c, ys.legend, &extents);
+    
+    cairo_move_to(c,h/2 - extents.width/2+extents.x_bearing, y_width-extents.y_bearing+5);
+    cairo_set_source_rgba(c,0,0,0,.5);
+    cairo_text_path (c, ys.legend);  
+    cairo_stroke(c);
+    
+    cairo_move_to(c,h/2 - extents.width/2+extents.x_bearing, y_width-extents.y_bearing+5);
+    cairo_set_source_rgba(c,1.,1.,1.,1.);
+    cairo_show_text (c, ys.legend);
+  }
+
   i=0;
   x=scalespace_mark(&xs,i);
   scalespace_label(&xs,i++,buffer);
   
-  {
-    cairo_matrix_t m = {0.,-1., 1.,0.,  0.,h};
-    cairo_set_matrix(c,&m);
-  }
-
   while(x < w){
     cairo_text_extents_t extents;
     cairo_text_extents (c, buffer, &extents);
+
+    if(extents.width > x_height) x_height = extents.width;
 
     if(x - extents.height > y_width+5 ){
 
@@ -135,6 +153,22 @@ static void draw_scales_work(cairo_surface_t *s, scalespace xs, scalespace ys){
 
     x=scalespace_mark(&xs,i);
     scalespace_label(&xs,i++,buffer);
+  }
+
+  cairo_restore(c);
+  // text x scale label
+  if(xs.legend){
+    cairo_text_extents_t extents;
+    cairo_text_extents (c, xs.legend, &extents);
+    
+    cairo_move_to(c,w/2 - extents.width/2+extents.x_bearing, h - x_height+ extents.y_bearing-5);
+    cairo_set_source_rgba(c,0,0,0,.5);
+    cairo_text_path (c, xs.legend);  
+    cairo_stroke(c);
+    
+    cairo_move_to(c,w/2 - extents.width/2+extents.x_bearing, h - x_height+ extents.y_bearing-5);
+    cairo_set_source_rgba(c,1.,1.,1.,1.);
+    cairo_show_text (c, xs.legend);
   }
 
   cairo_destroy(c);
@@ -231,8 +265,8 @@ void plot_draw_scales(Plot *p){
 static void plot_init (Plot *p){
   // instance initialization
   p->scalespacing = 50;
-  p->x = scalespace_linear(0.0,1.0,400,p->scalespacing);
-  p->y = scalespace_linear(0.0,1.0,200,p->scalespacing);
+  p->x = scalespace_linear(0.0,1.0,400,p->scalespacing,NULL);
+  p->y = scalespace_linear(0.0,1.0,200,p->scalespacing,NULL);
 }
 
 static void plot_destroy (GtkObject *object){
@@ -457,8 +491,8 @@ static void plot_size_allocate (GtkWidget     *widget,
   }
 
   widget->allocation = *allocation;
-  p->x = scalespace_linear(p->x.lo,p->x.hi,widget->allocation.width,p->scalespacing);
-  p->y = scalespace_linear(p->y.lo,p->y.hi,widget->allocation.height,p->scalespacing);
+  p->x = scalespace_linear(p->x.lo,p->x.hi,widget->allocation.width,p->scalespacing,p->x.legend);
+  p->y = scalespace_linear(p->y.lo,p->y.hi,widget->allocation.height,p->scalespacing,p->y.legend);
   plot_unset_box(p);
   plot_draw_scales(p);
   if(p->recompute_callback)p->recompute_callback(p->app_data);
