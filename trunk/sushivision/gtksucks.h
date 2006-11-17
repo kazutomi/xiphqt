@@ -26,6 +26,11 @@ extern void gtk_widget_set_sensitive_fixup(GtkWidget *w, gboolean state);
 extern void gtk_widget_remove_events (GtkWidget *widget, gint events);
 extern void gtk_button3_fixup();
 extern void gtk_mutex_fixup();
-extern GtkWidget *gtk_menu_new_twocol(char **menu_list, char **shortcuts);
+extern GtkWidget *gtk_menu_new_twocol(GtkWidget *bind, 
+				      char **menu_list, 
+				      char **shortcuts,
+				      void (*callbacks[])(void *),
+				      void *callback_data);
+extern GtkWidget *gtk_menu_get_item(GtkMenu *m, int pos);
 
 #endif

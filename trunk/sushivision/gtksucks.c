@@ -230,7 +230,25 @@ void gtk_mutex_fixup(){
 /* Not really a fixup; generate menus that declare what the keyboard
    shortcuts are */
 
-GtkWidget *gtk_menu_new_twocol(char **menu_list, char **shortcuts){
+static gint popup_callback (GtkWidget *widget, GdkEvent *event){
+
+  GtkMenu *menu = GTK_MENU (widget);
+  GdkEventButton *event_button = (GdkEventButton *) event;
+
+  if (event_button->button == 3){
+    gtk_menu_popup (menu, NULL, NULL, NULL, NULL, 
+		    event_button->button, event_button->time);
+    return TRUE;
+  }
+
+  return FALSE;
+}
+
+GtkWidget *gtk_menu_new_twocol(GtkWidget *bind, 
+			       char **menu_list, 
+			       char **shortcuts,
+			       void (*callbacks[])(void *),
+			       void *callback_data){
 
   char **ptr = menu_list;
   char **sptr = shortcuts;
@@ -262,15 +280,40 @@ GtkWidget *gtk_menu_new_twocol(char **menu_list, char **shortcuts){
 	item = gtk_menu_item_new_with_label(*ptr);
       }
       gtk_menu_shell_append(GTK_MENU_SHELL(ret),item);
+      if(callbacks && *callbacks)
+	g_signal_connect_swapped (G_OBJECT (item), "activate",
+				  G_CALLBACK (*callbacks), callback_data);
     }
     gtk_widget_show_all(item);
-
+    
     ptr++;
     if(sptr)
       sptr++;
+    if(callbacks)
+      callbacks++;
   }
+
+  gtk_widget_add_events(bind, GDK_BUTTON_PRESS_MASK);
+  g_signal_connect_swapped (bind, "button-press-event",
+			    G_CALLBACK (popup_callback), ret);
 
   return ret;
 }
 
+GtkWidget *gtk_menu_get_item(GtkMenu *m, int pos){
+  int i=0;
+  GList *l=gtk_container_get_children (GTK_CONTAINER(m));    
+  
+  while(l){
+    if(i == pos){
+      GtkWidget *ret = (GtkWidget *)l->data;
+      g_list_free (l);
+      return ret;
+    }
 
+    i++;
+    l=l->next;
+  }
+
+  return NULL;
+}
