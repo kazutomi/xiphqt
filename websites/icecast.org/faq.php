@@ -11,10 +11,11 @@
 <table border=0 width=90% cellpadding=10>
 <tr><td width=25></td><td bgcolor="#222222">
 Icecast, the project, is a collection of programs and libraries for streaming audio over the Internet. This includes: 
-
-<li>icecast, a program that streams audio data to listeners 
-<li>libshout, a library for communicating with Icecast servers 
-<li>IceS, a program that sends audio data to Icecast servers 
+<ul>
+<li>icecast, a program that streams audio data to listeners </li>
+<li>libshout, a library for communicating with Icecast servers </li>
+<li>IceS, a program that sends audio data to Icecast servers </li>
+</ul>
 </td></tr></table>
 
 <p>What is icecast, the program? </p>
@@ -82,7 +83,7 @@ Go to the Icecast Documentation Page and follow the instructions for your versio
 <p>How can I view the stream status page? </p>
 <table border=0 width=90% cellpadding=10>
 <tr><td width=25></td><td bgcolor="#222222">
-Check your icecast configuration file for an element called <webroot>. This directory contains web stuff. In it, place a file called <i>status.xsl</i> that transforms an XML file containing stream data into a web page (either XHTML or HTML). 
+Check your icecast configuration file for an element called &lt;webroot&gt;. This directory contains web stuff. In it, place a file called <i>status.xsl</i> that transforms an XML file containing stream data into a web page (either XHTML or HTML). 
 
 There are sample XSL stylesheets available in icecast/web/ in the CVS distribution of icecast. 
 
