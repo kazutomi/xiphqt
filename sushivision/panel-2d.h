@@ -39,6 +39,7 @@ typedef struct sushiv_panel2d {
   GtkWidget *graph;
   GtkWidget *top_table;
   GtkWidget *dim_table;
+  GtkWidget *popmenu;
 
   int data_w;
   int data_h;

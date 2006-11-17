@@ -38,11 +38,20 @@
 #include "slider.h"
 #include "panel-2d.h"
 #include "internal.h"
+#include "gtksucks.h"
 
 static void panel2d_undo_log(sushiv_panel_t *p);
 static void panel2d_undo_push(sushiv_panel_t *p);
 static void panel2d_undo_suspend(sushiv_panel_t *p);
 static void panel2d_undo_resume(sushiv_panel_t *p);
+
+static char *menulist[]={
+  "Undo [Backspace]",
+  "Redo [Space]",
+  "Find Peaks [p]",
+  "Quit [q]",
+  NULL
+};
 
 static void render_checks(int w, int y, u_int32_t *render){
   int x,j;
@@ -244,7 +253,8 @@ static void update_xy_availability(sushiv_panel_t *p){
        gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(p2->dim_xb[i]))){
       // make the y insensitive
       if(p2->dim_yb[i])
-	gtk_widget_set_sensitive(p2->dim_yb[i],FALSE);
+	gtk_widget_set_sensitive_fixup(p2->dim_yb[i],FALSE);
+
       // set the x dim flag
       p2->x_d = p->dimension_list[i];
       p2->x_scale = p2->dim_scales[i];
@@ -258,13 +268,14 @@ static void update_xy_availability(sushiv_panel_t *p){
     }else{
       // if there is a y, make it sensitive 
       if(p2->dim_yb[i])
-	gtk_widget_set_sensitive(p2->dim_yb[i],TRUE);
+	gtk_widget_set_sensitive_fixup(p2->dim_yb[i],TRUE);
     }
     if(p2->dim_yb[i] &&
        gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(p2->dim_yb[i]))){
       // make the x insensitive
       if(p2->dim_xb[i])
-	gtk_widget_set_sensitive(p2->dim_xb[i],FALSE);
+	gtk_widget_set_sensitive_fixup(p2->dim_xb[i],FALSE);
+
       // set the y dim
       p2->y_d = p->dimension_list[i];
       p2->y_scale = p2->dim_scales[i];
@@ -278,7 +289,7 @@ static void update_xy_availability(sushiv_panel_t *p){
     }else{
       // if there is a x, make it sensitive 
       if(p2->dim_xb[i])
-	gtk_widget_set_sensitive(p2->dim_xb[i],TRUE);
+	gtk_widget_set_sensitive_fixup(p2->dim_xb[i],TRUE);
     }
     if((p2->dim_xb[i] &&
 	gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(p2->dim_xb[i]))) ||
@@ -1216,6 +1227,20 @@ static gboolean panel2d_keypress(GtkWidget *widget,
   return FALSE;
 }
 
+static gint popup_callback (GtkWidget *widget, GdkEvent *event){
+
+  GtkMenu *menu = GTK_MENU (widget);
+  GdkEventButton *event_button = (GdkEventButton *) event;
+
+  if (event_button->button == 3){
+    gtk_menu_popup (menu, NULL, NULL, NULL, NULL, 
+		    event_button->button, event_button->time);
+    return TRUE;
+  }
+
+  return FALSE;
+}
+
 void _sushiv_realize_panel2d(sushiv_panel_t *p){
   sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
   int i;
@@ -1363,6 +1388,24 @@ void _sushiv_realize_panel2d(sushiv_panel_t *p){
   }
   update_xy_availability(p);
 
+  // right mouse menu 
+  {
+    char **ptr = menulist;
+    p2->popmenu = gtk_menu_new();
+    
+    while(*ptr){
+      GtkWidget *mi = gtk_menu_item_new_with_label(*ptr);
+      gtk_menu_shell_append(GTK_MENU_SHELL(p2->popmenu),mi);
+      gtk_widget_show(mi);
+      ptr++;
+    }
+
+    gtk_widget_add_events(p2->toplevel, GDK_BUTTON_PRESS_MASK);
+    g_signal_connect_swapped (G_OBJECT(p2->toplevel), "button-press-event",
+			      G_CALLBACK (popup_callback), p2->popmenu);
+
+  }
+
   g_signal_connect (G_OBJECT (p2->toplevel), "key-press-event",
                     G_CALLBACK (panel2d_keypress), p);
   gtk_window_set_title (GTK_WINDOW (p2->toplevel), p->name);
@@ -1370,6 +1413,11 @@ void _sushiv_realize_panel2d(sushiv_panel_t *p){
   gtk_widget_realize(p2->toplevel);
   gtk_widget_realize(p2->graph);
   gtk_widget_show_all(p2->toplevel);
+  update_xy_availability(p); // yes, this was already done; however,
+			     // gtk clobbered the event setup on the
+			     // insensitive buttons when it realized
+			     // them.  This call will restore them.
+
   panel2d_undo_resume(p);
 }
 
