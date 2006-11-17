@@ -44,24 +44,7 @@ static void panel2d_undo_log(sushiv_panel_t *p);
 static void panel2d_undo_push(sushiv_panel_t *p);
 static void panel2d_undo_suspend(sushiv_panel_t *p);
 static void panel2d_undo_resume(sushiv_panel_t *p);
-
-static char *menulist[]={
-  "Undo",
-  "Redo",
-  "Find peaks",
-  "",
-  "Quit",
-  NULL
-};
-
-static char *shortlist[]={
-  "Backspace",
-  "Space",
-  "p",
-  NULL,
-  "q",
-  NULL
-};
+static void update_context_menu(sushiv_panel_t *p);
 
 static void render_checks(int w, int y, u_int32_t *render){
   int x,j;
@@ -1105,6 +1088,7 @@ static void panel2d_undo_push(sushiv_panel_t *p){
   p2->undo_level++;
   p2->undo_stack[p2->undo_level]=0;
   p2->undo_stack[p2->undo_level+1]=0;
+  update_context_menu(p);
 
 }
 
@@ -1119,7 +1103,7 @@ static void panel2d_undo_up(sushiv_panel_t *p){
   panel2d_undo_suspend(p);
   panel2d_undo_restore(p);
   panel2d_undo_resume(p);
-
+  update_context_menu(p);
 }
 
 static void panel2d_undo_down(sushiv_panel_t *p){
@@ -1134,6 +1118,7 @@ static void panel2d_undo_down(sushiv_panel_t *p){
   panel2d_undo_suspend(p);
   panel2d_undo_restore(p);
   panel2d_undo_resume(p);
+  update_context_menu(p);
 }
 
 // called with lock
@@ -1233,23 +1218,59 @@ static gboolean panel2d_keypress(GtkWidget *widget,
     return TRUE;
   }
 
-
   return FALSE;
 }
 
-static gint popup_callback (GtkWidget *widget, GdkEvent *event){
+static void update_context_menu(sushiv_panel_t *p){
+  sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
+  
+  // is undo active?
+  if(!p2->undo_stack ||
+     !p2->undo_level)
+    gtk_widget_set_sensitive(gtk_menu_get_item(GTK_MENU(p2->popmenu),0),FALSE);
+  else
+    gtk_widget_set_sensitive(gtk_menu_get_item(GTK_MENU(p2->popmenu),0),TRUE);
 
-  GtkMenu *menu = GTK_MENU (widget);
-  GdkEventButton *event_button = (GdkEventButton *) event;
-
-  if (event_button->button == 3){
-    gtk_menu_popup (menu, NULL, NULL, NULL, NULL, 
-		    event_button->button, event_button->time);
-    return TRUE;
-  }
-
-  return FALSE;
+  // is redo active?
+  if(!p2->undo_stack ||
+     !p2->undo_stack[p2->undo_level] ||
+     !p2->undo_stack[p2->undo_level+1])
+    gtk_widget_set_sensitive(gtk_menu_get_item(GTK_MENU(p2->popmenu),1),FALSE);
+  else
+    gtk_widget_set_sensitive(gtk_menu_get_item(GTK_MENU(p2->popmenu),1),TRUE);
 }
+
+void wrap_exit(sushiv_panel_t *dummy){
+  _sushiv_clean_exit(SIGINT);
+}
+
+static char *menulist[]={
+  "Undo",
+  "Redo",
+  "Find peaks",
+  "",
+  "Quit",
+  NULL
+};
+
+static char *shortlist[]={
+  "Backspace",
+  "Space",
+  "p",
+  NULL,
+  "q",
+  NULL
+};
+
+static void (*calllist[])(sushiv_panel_t *)={
+  &panel2d_undo_down,
+  &panel2d_undo_up,
+  &panel2d_find_peak,
+  NULL,
+  &wrap_exit,
+  NULL,
+};
+
 
 void _sushiv_realize_panel2d(sushiv_panel_t *p){
   sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
@@ -1398,10 +1419,9 @@ void _sushiv_realize_panel2d(sushiv_panel_t *p){
   }
   update_xy_availability(p);
 
-  p2->popmenu = gtk_menu_new_twocol(menulist,shortlist);
-  gtk_widget_add_events(p2->toplevel, GDK_BUTTON_PRESS_MASK);
-  g_signal_connect_swapped (G_OBJECT(p2->toplevel), "button-press-event",
-			    G_CALLBACK (popup_callback), p2->popmenu);
+  p2->popmenu = gtk_menu_new_twocol(p2->toplevel,menulist,shortlist,
+				    (void *)(void *)calllist,p);
+  update_context_menu(p);
 
   g_signal_connect (G_OBJECT (p2->toplevel), "key-press-event",
                     G_CALLBACK (panel2d_keypress), p);
