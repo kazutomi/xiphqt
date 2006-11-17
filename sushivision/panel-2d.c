@@ -816,6 +816,8 @@ int _sushiv_panel_cooperative_compute_2d(sushiv_panel_t *p){
     return 0;
   }
 
+  plot = PLOT(p2->graph);
+
   if(p2->last_line==h){
     p2->last_line++;
     gdk_threads_leave ();
@@ -824,7 +826,6 @@ int _sushiv_panel_cooperative_compute_2d(sushiv_panel_t *p){
     return 0;
   }
   
-  plot = PLOT(p2->graph);
   serialno = p2->serialno;
   invh = 1./h;
   d = p->dimensions;

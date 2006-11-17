@@ -827,6 +827,12 @@ Plot *plot_new (void (*callback)(void *),void *app_data,
   p->cross_data = cross_data;
   p->box_callback = box_callback;
   p->box_data = box_data;
+
+  struct timeval now;
+  gettimeofday(&now,NULL);
+
+  p->begin = now.tv_sec;
+  p->last_line_expose = 0;
   return p;
 }
 
@@ -868,17 +874,16 @@ void plot_expose_request_line(Plot *p, int num){
   GtkWidget *widget = GTK_WIDGET(p);
   GdkRectangle r;
   struct timeval now;
-  time_t msec;
+  int64_t msec;
 
   if(num<p->expose_y_lo)
     p->expose_y_lo=num;
   if(num>p->expose_y_hi)
     p->expose_y_hi=num;
   gettimeofday(&now,NULL);
-  msec = now.tv_sec*1000 + now.tv_usec/1000;
+  msec = (now.tv_sec-p->begin)*100LL + now.tv_usec/10000;
 
-  if(msec > p->last_line_expose + 250){
-
+  if(msec > p->last_line_expose + 25){
     r.x=0;
     r.y=p->expose_y_lo;
     r.width=widget->allocation.width;
