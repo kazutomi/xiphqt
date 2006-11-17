@@ -78,6 +78,7 @@ struct _Plot{
   int expose_y_lo;
   int expose_y_hi;
   time_t last_line_expose;
+  time_t begin;
 };
 
 struct _PlotClass{
