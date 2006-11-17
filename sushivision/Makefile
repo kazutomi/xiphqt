@@ -27,8 +27,8 @@ LDF  = -pthread -L/lib -lgtk-x11-2.0 -lgdk-x11-2.0 -latk-1.0 -lgdk_pixbuf-2.0 -l
 
 all:    
 	pkg-config --cflags "gtk+-2.0 $(GTKVER) cairo $(CAIROVER) freetype2" 1>/dev/null
-	$(MAKE) target CFLAGS='-O2 $(SOCFLAGS) $(GCF) $(ADD_DEF)'
-	$(MAKE) examples CFLAGS='-O2 $(GCF) $(ADD_DEF)'
+	$(MAKE) target CFLAGS='-O2 -g $(SOCFLAGS) $(GCF) $(ADD_DEF)'
+	$(MAKE) examples CFLAGS='-O2 -g $(GCF) $(ADD_DEF)'
 
 debug:
 	pkg-config --cflags "gtk+-2.0 $(GTKVER) cairo $(CAIROVER) freetype2" 1>/dev/null
