@@ -819,7 +819,8 @@ int _sushiv_panel_cooperative_compute_2d(sushiv_panel_t *p){
   if(p2->last_line==h){
     p2->last_line++;
     gdk_threads_leave ();
-    update_legend(p);
+    plot_expose_request(plot);
+    update_legend(p); 
     return 0;
   }
   
