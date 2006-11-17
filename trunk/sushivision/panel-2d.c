@@ -166,7 +166,8 @@ static void update_legend(sushiv_panel_t *p){
       float val=NAN;
 
       if(p2->data_rect && p2->data_rect[i] &&
-	 x<w && y<h )
+	 x<w && x>0 &&
+	 y<h && y>0 )
 	val = p2->data_rect[i][y*w+x];
 
       if(!isnan(val) && val >= p2->alphadel[i]){
