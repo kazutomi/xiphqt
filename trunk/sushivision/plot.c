@@ -610,6 +610,40 @@ static gboolean mouse_release (GtkWidget        *widget,
   return TRUE;
 }
 
+void plot_do_enter(Plot *p){
+  // if box is active, effect it
+  
+  if(p->box_active){
+    
+    if(p->box_callback)
+      p->box_callback(p->cross_data,1);
+    
+    p->button_down=0;
+    p->box_active=0;
+  }else{
+    if(p->button_down){
+      GdkEventButton event;
+      event.x = scalespace_pixel(&p->x,p->selx);
+      event.y = GTK_WIDGET(p)->allocation.height-
+	scalespace_pixel(&p->y,p->sely);
+      
+      mouse_release(GTK_WIDGET(p),&event);
+    }else{
+      p->box_x2=p->box_x1 = p->selx;
+      p->box_y2=p->box_y1 = p->sely;
+      p->box_active = 1;
+      p->button_down=1; 
+    }
+  }
+}
+
+void plot_do_escape(Plot *p){
+  p->button_down=0;
+  p->box_active=0;
+  p->cross_active=0;
+  plot_expose_request(p);
+}
+
 static gboolean key_press(GtkWidget *widget,
 			  GdkEventKey *event){
   Plot *p = PLOT(widget);
@@ -621,36 +655,10 @@ static gboolean key_press(GtkWidget *widget,
   /* non-control keypresses */
   switch(event->keyval){
   case GDK_Escape:
-    p->button_down=0;
-    p->box_active=0;
-    p->cross_active=0;
-    plot_expose_request(p);
-
+    plot_do_escape(p);
     return TRUE;
   case GDK_Return:
-    // if box is active, effect it
-    if(p->box_active){
-      
-      if(p->box_callback)
-	p->box_callback(p->cross_data,1);
-      
-      p->button_down=0;
-      p->box_active=0;
-    }else{
-      if(p->button_down){
-	GdkEventButton event;
-	event.x = scalespace_pixel(&p->x,p->selx);
-	event.y = widget->allocation.height-
-	  scalespace_pixel(&p->y,p->sely);
-	
-	mouse_release(widget,&event);
-      }else{
-	p->box_x2=p->box_x1 = p->selx;
-	p->box_y2=p->box_y1 = p->sely;
-	p->box_active = 1;
-	p->button_down=1; 
-      }
-    }
+    plot_do_enter(p);
     return TRUE;
 
   case GDK_Left:
