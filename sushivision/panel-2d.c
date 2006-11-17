@@ -46,10 +46,20 @@ static void panel2d_undo_suspend(sushiv_panel_t *p);
 static void panel2d_undo_resume(sushiv_panel_t *p);
 
 static char *menulist[]={
-  "Undo [Backspace]",
-  "Redo [Space]",
-  "Find Peaks [p]",
-  "Quit [q]",
+  "Undo",
+  "Redo",
+  "Find peaks",
+  "",
+  "Quit",
+  NULL
+};
+
+static char *shortlist[]={
+  "Backspace",
+  "Space",
+  "p",
+  NULL,
+  "q",
   NULL
 };
 
@@ -1388,23 +1398,10 @@ void _sushiv_realize_panel2d(sushiv_panel_t *p){
   }
   update_xy_availability(p);
 
-  // right mouse menu 
-  {
-    char **ptr = menulist;
-    p2->popmenu = gtk_menu_new();
-    
-    while(*ptr){
-      GtkWidget *mi = gtk_menu_item_new_with_label(*ptr);
-      gtk_menu_shell_append(GTK_MENU_SHELL(p2->popmenu),mi);
-      gtk_widget_show(mi);
-      ptr++;
-    }
-
-    gtk_widget_add_events(p2->toplevel, GDK_BUTTON_PRESS_MASK);
-    g_signal_connect_swapped (G_OBJECT(p2->toplevel), "button-press-event",
-			      G_CALLBACK (popup_callback), p2->popmenu);
-
-  }
+  p2->popmenu = gtk_menu_new_twocol(menulist,shortlist);
+  gtk_widget_add_events(p2->toplevel, GDK_BUTTON_PRESS_MASK);
+  g_signal_connect_swapped (G_OBJECT(p2->toplevel), "button-press-event",
+			    G_CALLBACK (popup_callback), p2->popmenu);
 
   g_signal_connect (G_OBJECT (p2->toplevel), "key-press-event",
                     G_CALLBACK (panel2d_keypress), p);
