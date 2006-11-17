@@ -90,15 +90,23 @@ static gint slice_leave(GtkWidget        *widget,
 static gboolean slice_button_press(GtkWidget        *widget,
 				   GdkEventButton   *event){
   Slice *s=SLICE(widget);
+  if(event->button == 3)return FALSE;
+  
+  if(event->button == 1)
+    slider_button_press(s->slider,s->slicenum,event->x,event->y);
 
-  slider_button_press(s->slider,s->slicenum,event->x,event->y);
+  gtk_widget_grab_focus(GTK_WIDGET(s));
   return TRUE;
 }
 
 static gboolean slice_button_release(GtkWidget        *widget,
 				     GdkEventButton   *event){
   Slice *s=SLICE(widget);
-  slider_button_release(s->slider,s->slicenum,event->x,event->y);
+  if(event->button == 3)return FALSE;
+
+  if(event->button == 1)
+    slider_button_release(s->slider,s->slicenum,event->x,event->y);
+
   return TRUE;
 }
 

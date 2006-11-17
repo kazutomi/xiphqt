@@ -636,7 +636,6 @@ void slider_button_press(Slider *s,int slicenum,int x,int y){
     if(sl->thumb_state){
       sl->thumb_grab=1;
       sl->thumb_focus=1;
-      gtk_widget_grab_focus(GTK_WIDGET(sl));
 
       if(sl->callback)sl->callback(sl->callback_data,0);
       slider_motion(s,slicenum,x,y);

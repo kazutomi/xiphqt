@@ -226,6 +226,51 @@ void gtk_mutex_fixup(){
   gdk_threads_set_lock_functions(recursive_gdk_lock,recursive_gdk_unlock);
 }
 
+/**********************************************************************/
+/* Not really a fixup; generate menus that declare what the keyboard
+   shortcuts are */
 
+GtkWidget *gtk_menu_new_twocol(char **menu_list, char **shortcuts){
+
+  char **ptr = menu_list;
+  char **sptr = shortcuts;
+  GtkWidget *ret = gtk_menu_new();
+   
+  /* create packable boxes for labels, put left labels in */
+  while(*ptr){
+    GtkWidget *item;
+    if(!strcmp(*ptr,"")){
+      // seperator, not item
+      item = gtk_separator_menu_item_new();
+      gtk_menu_shell_append(GTK_MENU_SHELL(ret),item);
+    }else{
+      if(sptr && *sptr){
+	GtkWidget *box = gtk_hbox_new(0,10);
+	GtkWidget *left = gtk_label_new(*ptr);
+	GtkWidget *right = gtk_label_new(NULL);
+
+	char *markup = g_markup_printf_escaped ("<i>%s</i>", *sptr);
+	gtk_label_set_markup (GTK_LABEL (right), markup);
+	g_free (markup);
+	
+	item = gtk_menu_item_new();
+	gtk_container_add(GTK_CONTAINER(item),box);
+	gtk_box_pack_start(GTK_BOX(box),left,0,0,5);
+	gtk_box_pack_end(GTK_BOX(box),right,0,0,5);
+
+      }else{
+	item = gtk_menu_item_new_with_label(*ptr);
+      }
+      gtk_menu_shell_append(GTK_MENU_SHELL(ret),item);
+    }
+    gtk_widget_show_all(item);
+
+    ptr++;
+    if(sptr)
+      sptr++;
+  }
+
+  return ret;
+}
 
 

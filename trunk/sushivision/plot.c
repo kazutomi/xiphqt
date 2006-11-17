@@ -552,25 +552,30 @@ static gint mouse_motion(GtkWidget        *widget,
 
 static gboolean mouse_press (GtkWidget        *widget,
 			     GdkEventButton   *event){
-  Plot *p = PLOT (widget);
- 
-  if(p->box_active && inside_box(p,event->x,event->y) && !p->button_down){
 
-    p->selx = scalespace_value(&p->x,event->x);
-    p->sely = scalespace_value(&p->y,widget->allocation.height-event->y);
-    p->cross_active=1;
-
-    if(p->box_callback)
-      p->box_callback(p->cross_data,1);
-
-    p->button_down=0;
-    p->box_active=0;
-
-  }else{
-    p->box_x2=p->box_x1 = scalespace_value(&p->x,event->x);
-    p->box_y2=p->box_y1 = scalespace_value(&p->y,widget->allocation.height-event->y);
-    p->box_active = 0;
-    p->button_down=1; 
+  if (event->button == 3) return FALSE;
+  if (event->button == 1){
+  
+    Plot *p = PLOT (widget);
+    
+    if(p->box_active && inside_box(p,event->x,event->y) && !p->button_down){
+      
+      p->selx = scalespace_value(&p->x,event->x);
+      p->sely = scalespace_value(&p->y,widget->allocation.height-event->y);
+      p->cross_active=1;
+      
+      if(p->box_callback)
+	p->box_callback(p->cross_data,1);
+      
+      p->button_down=0;
+      p->box_active=0;
+      
+    }else{
+      p->box_x2=p->box_x1 = scalespace_value(&p->x,event->x);
+      p->box_y2=p->box_y1 = scalespace_value(&p->y,widget->allocation.height-event->y);
+      p->box_active = 0;
+      p->button_down=1; 
+    }
   }
   gtk_widget_grab_focus(widget);
   return TRUE;
@@ -578,6 +583,8 @@ static gboolean mouse_press (GtkWidget        *widget,
  
 static gboolean mouse_release (GtkWidget        *widget,
 			       GdkEventButton   *event){
+  if (event->button == 3) return FALSE;
+
   Plot *p = PLOT (widget);
   plot_expose_request(p);
 
