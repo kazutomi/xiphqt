@@ -862,17 +862,34 @@ void plot_expose_request_partial(Plot *p,int x, int y, int w, int h){
   gdk_threads_leave();
 }
 
+// 'in progress' exposes that may or may not be honored
 void plot_expose_request_line(Plot *p, int num){
   gdk_threads_enter();
   GtkWidget *widget = GTK_WIDGET(p);
   GdkRectangle r;
+  struct timeval now;
+  time_t msec;
+
+  if(num<p->expose_y_lo)
+    p->expose_y_lo=num;
+  if(num>p->expose_y_hi)
+    p->expose_y_hi=num;
+  gettimeofday(&now,NULL);
+  msec = now.tv_sec*1000 + now.tv_usec/1000;
+
+  if(msec > p->last_line_expose + 250){
+
+    r.x=0;
+    r.y=p->expose_y_lo;
+    r.width=widget->allocation.width;
+    r.height=p->expose_y_hi-p->expose_y_lo+1;
   
-  r.x=0;
-  r.y=num;
-  r.width=widget->allocation.width;
-  r.height=1;
-  
-  gdk_window_invalidate_rect (widget->window, &r, FALSE);
+    gdk_window_invalidate_rect (widget->window, &r, FALSE);
+
+    p->expose_y_lo = widget->allocation.height;
+    p->expose_y_hi=0;
+    p->last_line_expose = msec;
+  }
   gdk_threads_leave();
 }
 

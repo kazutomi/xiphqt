@@ -24,6 +24,7 @@
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
 #include <sys/types.h>
+#include <sys/time.h>
 #include "scale.h"
 
 G_BEGIN_DECLS
@@ -73,6 +74,10 @@ struct _Plot{
 
   int legend_entries;
   char **legend_list;
+
+  int expose_y_lo;
+  int expose_y_hi;
+  time_t last_line_expose;
 };
 
 struct _PlotClass{
