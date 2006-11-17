@@ -44,7 +44,7 @@ static void panel2d_undo_log(sushiv_panel_t *p);
 static void panel2d_undo_push(sushiv_panel_t *p);
 static void panel2d_undo_suspend(sushiv_panel_t *p);
 static void panel2d_undo_resume(sushiv_panel_t *p);
-static void update_context_menu(sushiv_panel_t *p);
+static void update_context_menus(sushiv_panel_t *p);
 
 static void render_checks(int w, int y, u_int32_t *render){
   int x,j;
@@ -784,6 +784,7 @@ static void box_callback(void *in, int state){
     panel2d_undo_resume(p);
     break;
   }
+  update_context_menus(p);
 }
 
 // called from one/all of the worker threads; the idea is that several
@@ -1088,7 +1089,7 @@ static void panel2d_undo_push(sushiv_panel_t *p){
   p2->undo_level++;
   p2->undo_stack[p2->undo_level]=0;
   p2->undo_stack[p2->undo_level+1]=0;
-  update_context_menu(p);
+  update_context_menus(p);
 
 }
 
@@ -1103,7 +1104,7 @@ static void panel2d_undo_up(sushiv_panel_t *p){
   panel2d_undo_suspend(p);
   panel2d_undo_restore(p);
   panel2d_undo_resume(p);
-  update_context_menu(p);
+  update_context_menus(p);
 }
 
 static void panel2d_undo_down(sushiv_panel_t *p){
@@ -1118,7 +1119,7 @@ static void panel2d_undo_down(sushiv_panel_t *p){
   panel2d_undo_suspend(p);
   panel2d_undo_restore(p);
   panel2d_undo_resume(p);
-  update_context_menu(p);
+  update_context_menus(p);
 }
 
 // called with lock
@@ -1221,50 +1222,108 @@ static gboolean panel2d_keypress(GtkWidget *widget,
   return FALSE;
 }
 
-static void update_context_menu(sushiv_panel_t *p){
+static void update_context_menus(sushiv_panel_t *p){
   sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
-  
+
   // is undo active?
   if(!p2->undo_stack ||
-     !p2->undo_level)
+     !p2->undo_level){
     gtk_widget_set_sensitive(gtk_menu_get_item(GTK_MENU(p2->popmenu),0),FALSE);
-  else
+    gtk_widget_set_sensitive(gtk_menu_get_item(GTK_MENU(p2->graphmenu),0),FALSE);
+  }else{
     gtk_widget_set_sensitive(gtk_menu_get_item(GTK_MENU(p2->popmenu),0),TRUE);
+    gtk_widget_set_sensitive(gtk_menu_get_item(GTK_MENU(p2->graphmenu),0),TRUE);
+  }
 
   // is redo active?
   if(!p2->undo_stack ||
      !p2->undo_stack[p2->undo_level] ||
-     !p2->undo_stack[p2->undo_level+1])
+     !p2->undo_stack[p2->undo_level+1]){
     gtk_widget_set_sensitive(gtk_menu_get_item(GTK_MENU(p2->popmenu),1),FALSE);
-  else
+    gtk_widget_set_sensitive(gtk_menu_get_item(GTK_MENU(p2->graphmenu),1),FALSE);
+  }else{
     gtk_widget_set_sensitive(gtk_menu_get_item(GTK_MENU(p2->popmenu),1),TRUE);
+    gtk_widget_set_sensitive(gtk_menu_get_item(GTK_MENU(p2->graphmenu),1),TRUE);
+  }
+
+  // are we starting or enacting a zoom box?
+  if(p2->oldbox_active){ 
+    gtk_menu_alter_item_label(GTK_MENU(p2->graphmenu),3,"Zoom to box");
+  }else{
+    gtk_menu_alter_item_label(GTK_MENU(p2->graphmenu),3,"Start zoom box");
+  }
+
 }
 
 void wrap_exit(sushiv_panel_t *dummy){
   _sushiv_clean_exit(SIGINT);
 }
 
-static char *menulist[]={
+static char *panel_menulist[]={
   "Undo",
   "Redo",
+  "",
+  "Quit",
+  NULL
+};
+
+static char *panel_shortlist[]={
+  "Backspace",
+  "Space",
+  NULL,
+  "q",
+  NULL
+};
+
+static void (*panel_calllist[])(sushiv_panel_t *)={
+  &panel2d_undo_down,
+  &panel2d_undo_up,
+  NULL,
+  &wrap_exit,
+  NULL,
+};
+
+void wrap_enter(sushiv_panel_t *p){
+  sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
+  plot_do_enter(PLOT(p2->graph));
+}
+
+void wrap_escape(sushiv_panel_t *p){
+  sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
+  plot_do_escape(PLOT(p2->graph));
+}
+
+static char *graph_menulist[]={
+  "Undo",
+  "Redo",
+  "",
+  "Start zoom box",
+  "Clear box and crosshairs",
   "Find peaks",
   "",
   "Quit",
   NULL
 };
 
-static char *shortlist[]={
+static char *graph_shortlist[]={
   "Backspace",
   "Space",
+  NULL,
+  "Enter",
+  "Escape",
   "p",
   NULL,
   "q",
   NULL
 };
 
-static void (*calllist[])(sushiv_panel_t *)={
+static void (*graph_calllist[])(sushiv_panel_t *)={
   &panel2d_undo_down,
   &panel2d_undo_up,
+  NULL,
+
+  &wrap_enter,
+  &wrap_escape,
   &panel2d_find_peak,
   NULL,
   &wrap_exit,
@@ -1419,9 +1478,18 @@ void _sushiv_realize_panel2d(sushiv_panel_t *p){
   }
   update_xy_availability(p);
 
-  p2->popmenu = gtk_menu_new_twocol(p2->toplevel,menulist,shortlist,
-				    (void *)(void *)calllist,p);
-  update_context_menu(p);
+  p2->popmenu = gtk_menu_new_twocol(p2->toplevel,
+				    panel_menulist,
+				    panel_shortlist,
+				    (void *)(void *)panel_calllist,
+				    p);
+  p2->graphmenu = gtk_menu_new_twocol(p2->graph,
+				      graph_menulist,
+				      graph_shortlist,
+				      (void *)(void *)graph_calllist,
+				      p);
+
+  update_context_menus(p);
 
   g_signal_connect (G_OBJECT (p2->toplevel), "key-press-event",
                     G_CALLBACK (panel2d_keypress), p);

@@ -262,23 +262,24 @@ GtkWidget *gtk_menu_new_twocol(GtkWidget *bind,
       item = gtk_separator_menu_item_new();
       gtk_menu_shell_append(GTK_MENU_SHELL(ret),item);
     }else{
-      if(sptr && *sptr){
-	GtkWidget *box = gtk_hbox_new(0,10);
-	GtkWidget *left = gtk_label_new(*ptr);
-	GtkWidget *right = gtk_label_new(NULL);
+      GtkWidget *box = gtk_hbox_new(0,10);
+      GtkWidget *left = gtk_label_new(*ptr);
+      GtkWidget *right = NULL;
 
+      item = gtk_menu_item_new();
+      gtk_container_add(GTK_CONTAINER(item),box);
+      gtk_box_pack_start(GTK_BOX(box),left,0,0,5);
+      
+      if(sptr && *sptr){
 	char *markup = g_markup_printf_escaped ("<i>%s</i>", *sptr);
+	right = gtk_label_new(NULL);
+	
 	gtk_label_set_markup (GTK_LABEL (right), markup);
 	g_free (markup);
 	
-	item = gtk_menu_item_new();
-	gtk_container_add(GTK_CONTAINER(item),box);
-	gtk_box_pack_start(GTK_BOX(box),left,0,0,5);
 	gtk_box_pack_end(GTK_BOX(box),right,0,0,5);
-
-      }else{
-	item = gtk_menu_item_new_with_label(*ptr);
       }
+
       gtk_menu_shell_append(GTK_MENU_SHELL(ret),item);
       if(callbacks && *callbacks)
 	g_signal_connect_swapped (G_OBJECT (item), "activate",
@@ -316,4 +317,26 @@ GtkWidget *gtk_menu_get_item(GtkMenu *m, int pos){
   }
 
   return NULL;
+}
+
+void gtk_menu_alter_item_label(GtkMenu *m, int pos, char *text){
+  GList *l;
+  GtkWidget *box=NULL;
+  GtkWidget *label=NULL;
+  GtkWidget *item = gtk_menu_get_item(m, pos);
+  if(!item)return;
+
+  l=gtk_container_get_children (GTK_CONTAINER(item));    
+  box = l->data;
+  g_list_free(l);
+
+  if(!box)return;
+
+  l=gtk_container_get_children (GTK_CONTAINER(box));    
+  label = l->data;
+  g_list_free(l);
+
+  if(!label)return;
+
+  gtk_label_set_label(GTK_LABEL(label),text);
 }

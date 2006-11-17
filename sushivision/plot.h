@@ -106,3 +106,6 @@ void plot_legend_add(Plot *p, char *entry);
 void plot_legend_clear(Plot *p);
 int plot_get_crosshair_xpixel(Plot *p);
 int plot_get_crosshair_ypixel(Plot *p);
+
+void plot_do_enter(Plot *p);
+void plot_do_escape(Plot *p);

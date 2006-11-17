@@ -32,5 +32,6 @@ extern GtkWidget *gtk_menu_new_twocol(GtkWidget *bind,
 				      void (*callbacks[])(void *),
 				      void *callback_data);
 extern GtkWidget *gtk_menu_get_item(GtkMenu *m, int pos);
+extern void gtk_menu_alter_item_label(GtkMenu *m, int pos, char *text);
 
 #endif
