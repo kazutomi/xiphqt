@@ -28,4 +28,6 @@
 <li><code>version</code> incremented.</li>
 </ul>
 
+<p>Generator developers should check their output against <a href="http://xspf.binera.de">the XSPF validator</a>.</p>
+
 <!--#include virtual="/ssi/pagebottom.include" -->
