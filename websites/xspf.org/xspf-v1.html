@@ -683,7 +683,12 @@ $tz = substr_replace ($tz, ':', 3, 0);</pre>
   The base URI is defined by the context of the application.</pre>
 
   <div>Generators should take extra care to ensure that relative paths
-  are correctly encoded.</div>
+  are correctly encoded.  Do:</div>
+  <p><pre style="color:green">&lt;location>My%20Song.flac&lt;/location></pre></p>
+
+  <div>Don&apos;t:</div>
+  <p><pre style="color:red">&lt;location>My Song.flac&lt;/location></pre></p>
+
 
   </div>
 
