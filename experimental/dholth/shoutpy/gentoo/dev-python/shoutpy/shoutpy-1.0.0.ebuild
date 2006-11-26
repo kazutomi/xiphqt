@@ -4,7 +4,7 @@
 
 inherit distutils
 
-DESCRIPTION="Python bindings for libshout2."
+DESCRIPTION="Python bindings for libshout2.1 or higher"
 HOMEPAGE="http://dingoskidneys.com/shoutpy/"
 SRC_URI="http://dingoskidneys.com/shoutpy/${P}.tar.gz"
 
@@ -13,7 +13,7 @@ SLOT="0"
 KEYWORDS="~x86"
 
 DEPEND="dev-lang/python
-	>=media-libs/libshout-2.0
+	>=media-libs/libshout-2.1
 	>=dev-libs/boost-1.31.0"
 
 # Install the example

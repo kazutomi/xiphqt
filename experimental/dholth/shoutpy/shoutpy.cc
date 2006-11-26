@@ -1,4 +1,4 @@
-/* Boost.Python wrapper for libshout 2                                       */
+/* Boost.Python wrapper for libshout 2.2.2 or newer                          */
 /*                                                                           */
 /* This library is free software; you can redistribute it and/or             */
 /* modify it under the terms of the GNU Lesser General Public                */
@@ -120,6 +120,10 @@ BOOST_PYTHON_MODULE_INIT(shoutpy)
 //                  "URL of a page describing this stream.")
     .add_property("user", &Shout::get_user, &Shout::set_user)
 //                  "Username for authenticating with the server.")
+    .add_property("nonblocking", &Shout::get_nonblocking, &Shout::set_nonblocking)
+//                  "Instruct shout to use nonblocking I/O. Must set before calling shout_open.")    
+    .add_property("queuelen", &Shout::queuelen)
+//                  "Number of bytes currently on the write queue (only makes sense in nonblocking mode)"    
     .def("get_audio_info", &Shout::get_audio_info,
          "x.get_audio_info(\"keyword\") -> value")
     .def("set_audio_info", &Shout::set_audio_info,

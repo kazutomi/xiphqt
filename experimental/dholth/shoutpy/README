@@ -2,7 +2,8 @@ shoutpy
 -------
 http://dingoskidneys.com/shoutpy/
 
-A Python (Boost.Python) and C++ wrapper for libshout 2.
+A Python (Boost.Python) and C++ wrapper for libshout 2.1 or higher. The
+libshout API remains the same up to at least version 2.2.2
 
 Installing
 ----------
@@ -20,12 +21,14 @@ In gentoo, you may install the notable dependencies thus:
 
 A gentoo ebuild is provided.
 
-A boost-jam setup (edit Jamrules and boost-build.jam to point to your
-boost installation) is also provided; you will need to install the boost
-sources and the latest boost-jam before you can use this.  Then type
+A deprecated boost-jam setup, probably more trouble than it is worth
+(edit Jamrules and boost-build.jam to point to your boost installation)
+is also provided; you will need to install the boost sources and the
+latest boost-jam before you can use this.  Then type
 
 	bjam
 
-and look for the module and C++ source client under ./bin/
+and look for the module and C++ source client under ./bin/ . If it works
+for you, you will get a considerably smaller binary.
 
-(c) 2004 Daniel Holth <dholth@fastmail.fm>
+(c) 2004-2006 Daniel Holth <dholth@fastmail.fm>

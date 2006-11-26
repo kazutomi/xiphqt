@@ -125,6 +125,11 @@ class Shout {
     int delay();
 
     void set_metadata(ShoutMetadata *metadata);
+
+    void set_nonblocking(bool unblocking);
+    bool get_nonblocking();
+
+    ssize_t queuelen();
 };
 
 /// Wrapper for shout_metadata_t, a dictionary-like metadata object.

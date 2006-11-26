@@ -94,6 +94,8 @@ ShoutErr::ShoutErr(int n) {
     case SHOUTERR_UNSUPPORTED:
       d = "UNSUPPORTED";
       break;
+    case SHOUTERR_BUSY:
+      d = "BUSY";
     default:
       d = "";
   }
@@ -406,3 +408,23 @@ int Shout::delay() {
 void Shout::set_metadata(ShoutMetadata *metadata) {
   this->check(shout_set_metadata(this->self, metadata->self));
 }
+
+// Instruct libshout to use nonblocking I/O. 
+/**
+ * Must be called before shout_open (no switching back and forth
+ * midstream).
+ */
+void Shout::set_nonblocking(bool unblocking) {
+  this->check(shout_set_nonblocking(this->self, (unsigned int) unblocking));
+}
+
+/// true if libshout will use nonblocking I/O.
+bool Shout::get_nonblocking() {
+  return 1 == shout_get_nonblocking(this->self);
+}
+
+/// Number of bytes on the write queue (only makes sense in nonblocking mode).
+ssize_t Shout::queuelen() {
+    return shout_queuelen(this->self);
+}
+
