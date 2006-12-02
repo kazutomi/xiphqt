@@ -15,19 +15,26 @@
 <!--  All your page content goes here  -->
 
 <h1>Specifications</h1>
-<p>XSPF version 0 was finished and frozen in late April 2004. XSPF version 1 was finished and frozen in March 2005. The differences between them are subtle and fairly minor, so <em>please use version 1</em> unless you have a compelling reason not to.</p>
-<ul>
-<li><a href="/xspf-v0.html">Specification for XSPF version 0</a></li>
-<li><a href="/xspf-v1.html">Specification for XSPF version 1</a> (recommended)</li>
-</ul>
-<h2>Differences between version 0 and version 1</h2>
-<ul>
-<li><code>trackList</code> may be empty.</li>
-<li><code>extension</code> added.</li>
-<li><code>date</code> changed from ISO 8601 to xsd:dateTime.</li>
-<li><code>version</code> incremented.</li>
-</ul>
 
-<p>Generator developers should check their output against <a href="http://xspf.binera.de">the XSPF validator</a>.</p>
+<p>Unless you have a specific reason otherwise, the following is the One True Spec:</p>
+
+<p style="margin-left:2em"><a href="/xspf-v1.html" style="font-size:110%">XSPF version 1</a> (November, 2006)</p>
+
+<p>For historical reasons, you may find the following two versions of the spec useful.</p>
+
+  <ul>
+    <li><a href="/xspf-v0.html">Specification for XSPF version 0</a> (May, 2004)</li>
+    <li><a href="/orig-xspf-v1.html">First draft for XSPF version 1</a> (March, 2005)</li>
+  </ul>
+
+  <h2>Differences between version 0 and version 1</h2>
+  <ul>
+    <li><code>trackList</code> may be empty.</li>
+    <li><code>extension</code> added.</li>
+    <li><code>date</code> changed from ISO 8601 to xsd:dateTime.</li>
+    <li><code>version</code> incremented.</li>
+  </ul>
+  
+  <p>Because it is easy to make mistakes, those who create XSPF documents should check their output against <a href="/validation/">a validator</a>.</p>
 
 <!--#include virtual="/ssi/pagebottom.include" -->
