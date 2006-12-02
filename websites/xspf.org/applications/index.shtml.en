@@ -461,8 +461,15 @@
 the track information and attempt to find information about the track
 at MusicBrainz, and fix or augment this information.</dd>
 
+    <dt><a href="https://www.cruxy.com/lab/xspfview/">XSPFView</a></dt>
+    <dd>A variation on the traditional form of Flash-based XSPF player
+    which uses Flash as the controller but HTML for most display.</dd>
+
+
 		 <dt><a href="http://www.jointradio.com">Joint Radio</a></dt>
           <dd>A distributed playlist aggregator. It takes RSS bookmark feeds from a social bookmarking service (del.icio.us currently tested) and creates a playlist (XSPF, but that's not important here). Further, members can aggregate other user's playlists into a master playlist or use the whole site playlist.</dd>
+
+
 
 
 	    <!-- template for new entries
