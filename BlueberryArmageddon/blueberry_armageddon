@@ -102,50 +102,50 @@ $toplevel->configure(-background=>$toplevel->optionGet("background",""));
 
 #$toplevel->resizable(FALSE,FALSE);
 
-$window_shell=$toplevel->Label(Name=>"shell",borderwidth=>1,relief=>raised)->
+$window_shell=$toplevel->Label(Name=>"shell",-borderwidth=>1,-relief=>raised)->
     place(-x=>10,-y=>36,-relwidth=>1.0,-relheight=>1.0,
 	  -width=>-20,-height=>-46,-anchor=>'nw');
 
-$window_quit=$window_shell->Button(-class=>"Exit",text=>"quit")->
+$window_quit=$window_shell->Button(-class=>"Exit",-text=>"quit")->
     place(-x=>-1,-y=>-1,-relx=>1.0,-rely=>1.0,-anchor=>'se');
 
 $window_version=$toplevel->
-    Label(Name=>"logo text",-class=>"Panel",text=>$version)->
+    Label(Name=>"logo text",-class=>"Panel",-text=>$version)->
     place(-x=>5,-y=>5,-anchor=>'nw');
 
 $y=8;
 $x=5;
 
 $window_statuslabel=$window_shell->
-    Label(Name=>"statuslabel",-class=>"Statuslabel",text=>"Status: ")->
+    Label(Name=>"statuslabel",-class=>"Statuslabel",-text=>"Status: ")->
     place(-x=>$x,-y=>$y,-anchor=>'nw');
 
 $window_status=$window_shell->
-    Label(Name=>"status",-class=>"Status",text=>"Starting...",-anchor=>'w')->
+    Label(Name=>"status",-class=>"Status",-text=>"Starting...",-anchor=>'w')->
     place(-x=>0,-y=>0,-relx=>1.,-anchor=>'nw',-in=>$window_statuslabel);
 
 $y+=$window_statuslabel->reqheight()*1.3;
 
 $window_quit->configure(-command=>[sub{Shutdown();}]);
 
-$window_device_label=$window_shell->Label(text=>"device: ")->
+$window_device_label=$window_shell->Label(-text=>"device: ")->
     place(-x=>$x,-y=>$y,-anchor=>'nw');
-$window_device=$window_shell->Label(-class=>"Field",text=>"$device")->
+$window_device=$window_shell->Label(-class=>"Field",-text=>"$device")->
     place(-relx=>1.,-anchor=>'nw',-bordermode=>outside,
 	  -in=>$window_device_label);
 
-$window_go=$window_shell->Button(text=>"go",-state=>'disabled')->
+$window_go=$window_shell->Button(-text=>"go",-state=>'disabled')->
     place(-x=>-$x,-y=>$y,-relx=>1.,-anchor=>'ne',-bordermode=>outside);
 
-$window_check=$window_shell->Button(text=>"recheck",-state=>disabled)->
+$window_check=$window_shell->Button(-text=>"recheck",-state=>disabled)->
     place(-anchor=>'ne',-bordermode=>outside,-in=>$window_go);
 
-$window_scan=$window_shell->Button(text=>"rescan")->
+$window_scan=$window_shell->Button(-text=>"rescan")->
     place(-anchor=>'ne',-bordermode=>outside,-in=>$window_check);
 
 $y+=$window_scan->reqheight()*1.2+5;
 
-$window_artist_label=$window_shell->Label(text=>"artist: ")->
+$window_artist_label=$window_shell->Label(-text=>"artist: ")->
     place(-x=>$x,-y=>$y,-anchor=>'nw');
 	
 $window_artist=$window_shell->
@@ -157,7 +157,7 @@ $window_artist=$window_shell->
 
 $y+=$window_artist_label->reqheight();
 
-$window_album_label=$window_shell->Label(text=>"album: ")->
+$window_album_label=$window_shell->Label(-text=>"album: ")->
     place(-x=>$x,-y=>$y,-anchor=>'nw');
 
 $window_album=$window_shell->
@@ -176,14 +176,14 @@ for(my$i=1;$i<=99;$i++){
     my$text="track$i: ";
     $text="track0$i: " if($i<10);
     
-    $window_track_label[$i]=$window_shell->Label(text=>$text);
+    $window_track_label[$i]=$window_shell->Label(-text=>$text);
     $trackname[$i]="";
     $window_track[$i]=$window_shell->
 	Entry(-width=>1024,-textvariable=>\$trackname[$i]);
     $window_play[$i]=$window_shell->
-	Button(text=>"play",-command=>[main::playtrack,$i]);
+	Button(-text=>"play",-command=>[main::playtrack,$i]);
     $window_rip[$i]=$window_shell->
-	Checkbutton(-variable=>\$trackrip[$i],text=>"rip");
+	Checkbutton(-variable=>\$trackrip[$i],-text=>"rip");
 }
 
 $totaly=int(46+$window_quit->reqheight()+10+$y);
@@ -214,7 +214,7 @@ sub playstop{
 	waitpid $playpid1,0;
 	waitpid $playpid2,0;
     
-	$window_play[$playstatus]->configure(text=>"play");
+	$window_play[$playstatus]->configure(-text=>"play");
 	Status("Playback stopped");
 	$playstatus=0;
     }
@@ -228,7 +228,7 @@ sub playtrack{
     }else{
 	playstop();
 	$playstatus=$tracknum;
-	$window_play[$tracknum]->configure(text=>"stop");
+	$window_play[$tracknum]->configure(-text=>"stop");
 
 	# creating a process -> process pipe is buggy if we [the Perl
 	# script] are not one of the processes (first one works,
@@ -269,8 +269,8 @@ sub Cancel{
 	unlink $outfile;
 	waitpid $rippid,0;
     }
-    $window_go->configure(-command=>[sub{Rip();}],text=>"go");
-    $window_scan->configure(-command=>[sub{Rescan();}],text=>"rescan");
+    $window_go->configure(-command=>[sub{Rip();}],-text=>"go");
+    $window_scan->configure(-command=>[sub{Rescan();}],-text=>"rescan");
     $ripstatus=0;
     $rippid=-1;
     Status("Ready");
@@ -293,8 +293,8 @@ sub Skip{
 sub Rip{
     $ripstatus++;
 
-    $window_go->configure(-command=>[sub{Cancel();}],text=>"cancel");
-    $window_scan->configure(-command=>[sub{Skip();}],text=>"skip");
+    $window_go->configure(-command=>[sub{Cancel();}],-text=>"cancel");
+    $window_scan->configure(-command=>[sub{Skip();}],-text=>"skip");
     print STDERR "\n";
 
     while($ripstatus<=$tracks){
@@ -324,8 +324,8 @@ sub Rip{
 	$ripstatus++;
     }
     # all done!
-    $window_go->configure(-command=>[sub{Rip();}],text=>"go");
-    $window_scan->configure(-command=>[sub{Rescan();}],text=>"rescan");
+    $window_go->configure(-command=>[sub{Rip();}],-text=>"go");
+    $window_scan->configure(-command=>[sub{Rescan();}],-text=>"rescan");
     Status("Done");
     $ripstatus=0;
 }
@@ -530,7 +530,7 @@ sub Shutdown{
 
 sub Status{
     my$text=shift @_;
-    $window_status->configure(text=>"$text");
+    $window_status->configure(-text=>"$text");
     #$toplevel->update();
 }
 
@@ -546,16 +546,16 @@ sub Alert{
     $modal->configure(-background=>$modal->optionGet("background",""));
     
     $modal_shell=$modal->Label(-class=>Alert,Name=>"shell",
-			       borderwidth=>1,relief=>raised)->
+			       Borderwidth=>1,Relief=>raised)->
 				   place(-x=>4,-y=>4,-relwidth=>1.0,-relheight=>1.0,
 					 -width=>-8,-height=>-8,-anchor=>'nw');
 
     $modal_exit=$modal_shell->
-	Button(-class=>"Exit",text=>"X")->
+	Button(-class=>"Exit",-text=>"X")->
 		   place(-x=>-1,-y=>-1,-relx=>1.0,-rely=>1.0,-anchor=>'se');
     
     $modal_message=$modal_shell->
-	Label(text=>$message,-class=>"AlertText")->
+	Label(-text=>$message,-class=>"AlertText")->
 	    place(-x=>5,-y=>10);
 
     my$width=$modal_message->reqwidth();
@@ -563,7 +563,7 @@ sub Alert{
     
     $detail="" if(!defined($detail));
     $modal_detail=$modal_shell->
-	Message(text=>$detail,-class=>"AlertDetail",
+	Message(-text=>$detail,-class=>"AlertDetail",
 		-width=>($width-$modal_exit->reqwidth()))->
 	    place(-relx=>0,-y=>5,-rely=>1.0,-anchor=>'nw',
 		  -in=>$modal_message);
