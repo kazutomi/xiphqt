@@ -154,6 +154,7 @@ int main(int argc, char *argv[])
 	op.bytes = bytes;
 	op.b_o_s = 0;
 	op.e_o_s = feof(in); /* set eos flag on the last packet */
+	if (!memcmp(buffer, "MEND", 4)) op.e_o_s = 1;
 	op.granulepos = -1;
 	op.packetno = packetno++;
 	ogg_stream_packetin(&os, &op);
