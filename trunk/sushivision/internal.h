@@ -25,8 +25,6 @@ extern void _sushiv_clean_exit(int sig);
 extern int _sushiv_new_panel(sushiv_instance_t *s,
 			     int number,
 			     const char *name, 
-			     unsigned scalevals,
-			     double *scaleval_list,
 			     int *objectives,
 			     int *dimensions,
 			     unsigned flags);
