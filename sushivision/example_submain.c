@@ -115,12 +115,13 @@ int sushiv_submain(int argc, char *argv[]){
 		       NULL,
 		       SUSHIV_X_RANGE|SUSHIV_Y_RANGE);
   
-  sushiv_new_objective(s,0,"fourier",fourier_objective,0);
+  sushiv_new_objective(s,0,"fourier",
+		       8,(double []){-96,-48,-36,-24,-12,-6,0,6},
+		       fourier_objective,0);
   //sushiv_new_objective(s,1,"fit",fit_objective,0);
   //sushiv_new_objective(s,2,"waveform",fourier_objective,0);
 
-  sushiv_new_panel_2d(s,0,"fourier objective",8,
-		      (double []){-96,-48,-36,-24,-12,-6,0,6},
+  sushiv_new_panel_2d(s,0,"fourier objective",
 		      (int []){0,-1},
 		      (int []){2,3,4,5,6,-1},
 		      0);

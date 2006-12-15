@@ -1134,7 +1134,6 @@ static void panel2d_find_peak(sushiv_panel_t *p){
   int h = p2->data_h;
   int n = w*h;
   int count = 0;
-  int best_j = 0;
   
   // finds in order each peak (in the event there's more than one) of
   // each active objective
@@ -1337,8 +1336,6 @@ static void (*graph_calllist[])(sushiv_panel_t *)={
 void _sushiv_realize_panel2d(sushiv_panel_t *p){
   sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
   int i;
-  int lo = p->scale_val_list[0];
-  int hi = p->scale_val_list[p->scale_vals-1];
 
   panel2d_undo_suspend(p);
 
@@ -1369,6 +1366,8 @@ void _sushiv_realize_panel2d(sushiv_panel_t *p){
   for(i=0;i<p->objectives;i++){
     GtkWidget **sl = calloc(3,sizeof(*sl));
     sushiv_objective_t *o = p->objective_list[i];
+    int lo = o->scale_val_list[0];
+    int hi = o->scale_val_list[o->scale_vals-1];
 
     /* label */
     GtkWidget *label = gtk_label_new(o->name);
@@ -1400,8 +1399,8 @@ void _sushiv_realize_panel2d(sushiv_panel_t *p){
 		     GTK_EXPAND|GTK_FILL,0,0,0);
     gtk_table_attach(GTK_TABLE(p2->top_table),sl[2],3,4,i+1,i+2,
 		     GTK_EXPAND|GTK_FILL,0,0,0);
-    p2->range_scales[i] = slider_new((Slice **)sl,3,p->scale_label_list,p->scale_val_list,
-				    p->scale_vals,SLIDER_FLAG_INDEPENDENT_MIDDLE);
+    p2->range_scales[i] = slider_new((Slice **)sl,3,o->scale_label_list,o->scale_val_list,
+				    o->scale_vals,SLIDER_FLAG_INDEPENDENT_MIDDLE);
 
     slice_thumb_set((Slice *)sl[0],lo);
     slice_thumb_set((Slice *)sl[1],lo);
@@ -1512,14 +1511,11 @@ void _sushiv_realize_panel2d(sushiv_panel_t *p){
 int sushiv_new_panel_2d(sushiv_instance_t *s,
 			int number,
 			const char *name, 
-			unsigned scalevals,
-			double *scaleval_list,
-			       int *objectives,
+			int *objectives,
 			int *dimensions,
 			unsigned flags){
   
-  int ret = _sushiv_new_panel(s,number,name,scalevals,scaleval_list,
-			      objectives,dimensions,flags);
+  int ret = _sushiv_new_panel(s,number,name,objectives,dimensions,flags);
   sushiv_panel_t *p;
   sushiv_panel2d_t *p2;
 

@@ -52,44 +52,6 @@ void _sushiv_realize_panel(sushiv_panel_t *p){
   }
 }
 
-int sushiv_panel_set_scale(sushiv_panel_t *d, unsigned scalevals, 
-			   double *scaleval_list){
-  int i;
-
-  if(scalevals<2){
-    fprintf(stderr,"Scale requires at least two scale values.");
-    return -EINVAL;
-  }
-
-  if(d->scale_val_list)free(d->scale_val_list);
-  if(d->scale_label_list){
-    for(i=0;i<d->scale_vals;i++)
-      free(d->scale_label_list[i]);
-    free(d->scale_label_list);
-  }
-
-  // copy values
-  d->scale_vals = scalevals;
-  d->scale_val_list = calloc(scalevals,sizeof(*d->scale_val_list));
-  for(i=0;i<(int)scalevals;i++)
-    d->scale_val_list[i] = scaleval_list[i];
-
-  // generate labels
-  d->scale_label_list = scale_generate_labels(scalevals,scaleval_list);
-
-  return 0;
-}
-
-int sushiv_panel_set_scalelabels(sushiv_panel_t *d, char **scalelabel_list){
-  int i;
-  for(i=0;i<d->scale_vals;i++){
-    if(d->scale_label_list[i])
-      free(d->scale_label_list[i]);
-    d->scale_label_list[i] = strdup(scalelabel_list[i]);
-  }
-  return 0;
-}
-
 static void _sushiv_panel_map_redraw(sushiv_panel_t *p){
   if(p->maps_dirty){
     p->maps_dirty = 0;
@@ -162,8 +124,6 @@ void _sushiv_panel_dirty_legend(sushiv_panel_t *p){
 int _sushiv_new_panel(sushiv_instance_t *s,
 		      int number,
 		      const char *name, 
-		      unsigned scalevals,
-		      double *scaleval_list,
 		      int *objectives,
 		      int *dimensions,
 		      unsigned flags){
@@ -226,8 +186,6 @@ int _sushiv_new_panel(sushiv_instance_t *s,
     d->panel = p;
     p->dimension_list[i] = d;
   }
-
-  sushiv_panel_set_scale(p, scalevals, scaleval_list);
 
   return number;
 }
