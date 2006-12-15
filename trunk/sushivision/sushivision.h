@@ -39,8 +39,8 @@ typedef struct sushiv_instance {
   void *internal;
 } sushiv_instance_t;
 
-#define SUSHIV_X_RANGE 0x100
-#define SUSHIV_Y_RANGE 0x200
+#define SUSHIV_NO_X 0x100
+#define SUSHIV_NO_Y 0x200
 
 struct sushiv_dimension{ 
   int number;

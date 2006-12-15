@@ -49,21 +49,17 @@ int sushiv_submain(int argc, char *argv[]){
 
   sushiv_new_dimension(s,0,"Re(c)",
 		       5,(double []){-2.25,-0.75,0,0.25,0.75},
-		       NULL,
-		       SUSHIV_X_RANGE|SUSHIV_Y_RANGE);
+		       NULL,0);
   sushiv_new_dimension(s,1,"Im(c)",
 		       5,(double []){-2,-1,0,1,2},
-		       NULL,
-		       SUSHIV_X_RANGE|SUSHIV_Y_RANGE);
+		       NULL,0);
 
   sushiv_new_dimension(s,2,"Re(z0)",
 		       5,(double []){-2.25,-1,0,1,2.25},
-		       NULL,
-		       SUSHIV_X_RANGE|SUSHIV_Y_RANGE);
+		       NULL,0);
   sushiv_new_dimension(s,3,"Im(z0)",
 		       5,(double []){-2.25,-1,0,1,2.25},
-		       NULL,
-		       SUSHIV_X_RANGE|SUSHIV_Y_RANGE);
+		       NULL,0);
   
   sushiv_new_objective(s,0,"fractal",
 		       4,(double []){0, .01, .1, 1.0},

@@ -88,32 +88,27 @@ int sushiv_submain(int argc, char *argv[]){
   sushiv_new_dimension(s,0,"time",
 		       4,(double []){0,1024,2048,4096},
 		       time_callback,
-		       0);
+		       SUSHIV_NO_X|SUSHIV_NO_Y);
   sushiv_new_dimension(s,1,"blocksize",
 		       8,(double []){64,128,256,512,1024,2048,4096,8192},
 		       blocksize_callback,
-		       0);
+		       SUSHIV_NO_X|SUSHIV_NO_Y);
 
   sushiv_new_dimension(s,2,"amplitude",
 		       9,(double []){-96,-84,-72,-60,-48,-36,-24,-12,0},
-		       NULL,
-		       SUSHIV_X_RANGE|SUSHIV_Y_RANGE);
+		       NULL,0);
   sushiv_new_dimension(s,3,"amplitude delta",
 		       9,(double []){-96,-48,-24,-12,0,12,24,48,96},
-		       NULL,
-		       SUSHIV_X_RANGE|SUSHIV_Y_RANGE);
+		       NULL,0);
   sushiv_new_dimension(s,4,"frequency",
 		       6,(double []){0,.1,.2,.3,.4,.5},
-		       NULL,
-		       SUSHIV_X_RANGE|SUSHIV_Y_RANGE);
+		       NULL,0);
   sushiv_new_dimension(s,5,"phase",
 		       3,(double []){-.5,0,.5},
-		       NULL,
-		       SUSHIV_X_RANGE|SUSHIV_Y_RANGE);
+		       NULL,0);
   sushiv_new_dimension(s,6,"phase delta",
 		       3,(double []){-10,0,10},
-		       NULL,
-		       SUSHIV_X_RANGE|SUSHIV_Y_RANGE);
+		       NULL,0);
   
   sushiv_new_objective(s,0,"fourier",
 		       8,(double []){-96,-48,-36,-24,-12,-6,0,6},

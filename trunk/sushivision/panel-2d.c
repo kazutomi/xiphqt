@@ -1426,7 +1426,7 @@ void _sushiv_realize_panel2d(sushiv_panel_t *p){
 		     0,0,10,0);
     
     /* x/y radio buttons */
-    if(d->flags & SUSHIV_X_RANGE){
+    if(!(d->flags & SUSHIV_NO_X)){
       if(first_x)
 	p2->dim_xb[i] = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(first_x),"X");
       else{
@@ -1437,7 +1437,7 @@ void _sushiv_realize_panel2d(sushiv_panel_t *p){
 		       0,0,10,0);
     }
     
-    if(d->flags & SUSHIV_Y_RANGE){
+    if(!(d->flags & SUSHIV_NO_Y)){
       if(first_y)
 	p2->dim_yb[i] = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(first_y),"Y");
       else
