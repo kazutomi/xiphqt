@@ -139,6 +139,8 @@ mng_bool mymngopenstream(mng_handle mng)
 			fprintf(stderr, "Found MNG substream with serialno 0x%08x\n", ogg_page_serialno(&page));
 			fprintf(stderr, "Pushing MNG signature\n");
 			mng_read_pushsig(mng, mng_it_mng);
+			/* the first packet is special, with the 8 byte
+			   signature prepended. */
 			fprintf(stderr, "returning chunk %c%c%c%c"
 				" %ld bytes\n",
 				packet.packet[8], packet.packet[9],
@@ -463,33 +465,22 @@ int pullchunks(mng_handle mng)
 	/* pull any new pages from the stream */
 	while (ogg_sync_pageout(&mymng->ogg_sync, &page)>0) {
 		/* we don't need the check the serialno,
-		   ogg_stream_pagein will discard the packet
+		   ogg_stream_pagein will discard the page
 		   if it does not match */
 		ogg_stream_pagein(&mymng->ogg_stream, &page);
+		fprintf(stderr, "got new page no %ld\n", mymng->ogg_stream.pageno);
 		/* pull out any new packets */
 		while (ogg_stream_packetout(&mymng->ogg_stream, &packet)>0) {
 			/* each OggMNG packet is a chunk, minus
 			   length and CRC fields */
-			if (!memcmp(packet.packet, MNG_SIGNATURE, 8)) {
-			    /* first packet is special */
-			    fprintf(stderr, "returning chunk %c%c%c%c"
-				" %ld bytes\n",
-				packet.packet[8], packet.packet[9],
-				packet.packet[10], packet.packet[11],
-				packet.bytes - 8);
-			    mng_read_pushchunk(mng,
-					packet.packet+8, packet.bytes-8,
-					MNG_FALSE);
-			} else {
-			    fprintf(stderr, "returning chunk %c%c%c%c"
+			fprintf(stderr, "  returning chunk %c%c%c%c"
 				" %ld bytes\n",
 				packet.packet[0], packet.packet[1],
 				packet.packet[2], packet.packet[3],
 				packet.bytes);
-			    mng_read_pushchunk(mng,
+			mng_read_pushchunk(mng,
 					packet.packet, packet.bytes,
 					MNG_FALSE);
-			}
 		}
 	}
 
@@ -656,8 +647,8 @@ int main(int argc, char *argv[])
 //		fprintf(stderr, "mng_readdisplay() returned %d\n", ret);
 		if (mymng->is_ogg && (ret == MNG_NEEDMOREDATA ||
 				ret == MNG_NEEDTIMERWAIT)) {
-			fprintf(stderr, "pulling more chunks...\n");
-			pullchunks(mng);
+			/* FIXME: heisenbug clobbers the file pointer */
+			if (mymng->file) pullchunks(mng);
 		}
 
 		if (ret == 0) done = 1;
