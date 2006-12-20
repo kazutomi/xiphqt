@@ -164,13 +164,8 @@ int _sushiv_new_panel(sushiv_instance_t *s,
   p->objective_list = malloc(i*sizeof(*p->objective_list));
   for(i=0;i<p->objectives;i++){
     sushiv_objective_t *o = s->objective_list[objectives[i]];
-    if(o->panel){
-      fprintf(stderr,"Objective %d already in use with another panel\n",o->number);
-      return -EINVAL;
-    }
-    o->panel = p;
-    p->objective_list[i] = o;
-    
+    p->objective_list[i].o = o;
+    p->objective_list[i].p = p;
   }
 
   i=0;
@@ -179,12 +174,8 @@ int _sushiv_new_panel(sushiv_instance_t *s,
   p->dimension_list = malloc(i*sizeof(*p->dimension_list));
   for(i=0;i<p->dimensions;i++){
     sushiv_dimension_t *d = s->dimension_list[dimensions[i]];
-    if(d->panel){
-      fprintf(stderr,"Dimension %d already in use with another panel\n",d->number);
-      return -EINVAL;
-    }
-    d->panel = p;
-    p->dimension_list[i] = d;
+    p->dimension_list[i].d = d;
+    p->dimension_list[i].p = p;
   }
 
   return number;

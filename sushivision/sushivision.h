@@ -54,7 +54,6 @@ struct sushiv_dimension{
   unsigned flags;
   
   int (*callback)(sushiv_dimension_t *);
-  sushiv_panel_t *panel;
   sushiv_instance_t *sushi;
   void *internal;
 };
@@ -69,12 +68,21 @@ struct sushiv_objective {
   unsigned flags;
 
   double (*callback)(double[]);
-  sushiv_panel_t *panel;
   sushiv_instance_t *sushi;
   void *internal;
 };
 
 enum sushiv_panel_type { SUSHIV_PANEL_1D, SUSHIV_PANEL_2D };
+
+typedef struct {
+  sushiv_dimension_t *d;
+  sushiv_panel_t *p;
+} sushiv_dimension_list_t;
+
+typedef struct {
+  sushiv_objective_t *o;
+  sushiv_panel_t *p;
+} sushiv_objective_list_t;
  
 struct sushiv_panel {
   int number;
@@ -85,9 +93,9 @@ struct sushiv_panel {
   int legend_dirty;
 
   int dimensions;
-  sushiv_dimension_t **dimension_list;
+  sushiv_dimension_list_t *dimension_list;
   int objectives;
-  sushiv_objective_t **objective_list;
+  sushiv_objective_list_t *objective_list;
 
   sushiv_instance_t *sushi;
   void *internal;
