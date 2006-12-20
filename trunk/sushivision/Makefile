@@ -40,7 +40,7 @@ profile:
 	$(MAKE) examples CFLAGS='-pg -g -O2 $(GCF) $(ADD_DEF)' LIBS='-lgprof-helper'
 
 clean:
-	rm -f $(OBJ) *.d *.d.* gmon.out $(TARGET)
+	rm -f *.o *.d *.d.* gmon.out $(TARGET)
 
 distclean: clean
 	rm -f *~

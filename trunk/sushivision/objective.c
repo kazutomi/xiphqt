@@ -100,7 +100,6 @@ int sushiv_new_objective(sushiv_instance_t *s,
   o->name = strdup(name);
   o->flags = flags;
   o->sushi = s;
-  o->panel = NULL;
   o->callback = callback;
 
   sushiv_objective_set_scale(o, scalevals, scaleval_list);

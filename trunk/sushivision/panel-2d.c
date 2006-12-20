@@ -148,12 +148,12 @@ static void update_legend(sushiv_panel_t *p){
     // add each dimension to the legend
     for(i=0;i<p->dimensions;i++){
       // display decimal precision relative to bracket
-      int depth = del_depth(p->dimension_list[i]->bracket[0],
-			    p->dimension_list[i]->bracket[1]) + offset;
+      int depth = del_depth(p->dimension_list[i].d->bracket[0],
+			    p->dimension_list[i].d->bracket[1]) + offset;
       snprintf(buffer,320,"%s = %.*f",
-	       p->dimension_list[i]->name,
+	       p->dimension_list[i].d->name,
 	       depth,
-	       p->dimension_list[i]->val);
+	       p->dimension_list[i].d->val);
       plot_legend_add(plot,buffer);
     }
 
@@ -176,7 +176,7 @@ static void update_legend(sushiv_panel_t *p){
 	
 	if(!isnan(val) && !mapping_inactive_p(p2->mappings+i)){
 	  snprintf(buffer,320,"%s = %f",
-		   p->objective_list[i]->name,
+		   p->objective_list[i].o->name,
 		   val);
 	  plot_legend_add(plot,buffer);
 	}
@@ -190,9 +190,9 @@ static void update_legend(sushiv_panel_t *p){
 }
 
 static void mapchange_callback_2d(GtkWidget *w,gpointer in){
-  sushiv_objective_t **optr = (sushiv_objective_t **)in;
-  sushiv_objective_t *o = *optr;
-  sushiv_panel_t *p = o->panel;
+  sushiv_objective_list_t *optr = (sushiv_objective_list_t *)in;
+  //sushiv_objective_t *o = optr->o;
+  sushiv_panel_t *p = optr->p;
   sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
   int onum = optr - p->objective_list;
 
@@ -214,9 +214,9 @@ static void mapchange_callback_2d(GtkWidget *w,gpointer in){
 }
 
 static void map_callback_2d(void *in,int buttonstate){
-  sushiv_objective_t **optr = (sushiv_objective_t **)in;
-  sushiv_objective_t *o = *optr;
-  sushiv_panel_t *p = o->panel;
+  sushiv_objective_list_t *optr = (sushiv_objective_list_t *)in;
+  //sushiv_objective_t *o = optr->o;
+  sushiv_panel_t *p = optr->p;
   sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
   int onum = optr - p->objective_list;
 
@@ -250,7 +250,7 @@ static void update_xy_availability(sushiv_panel_t *p){
 	gtk_widget_set_sensitive_fixup(p2->dim_yb[i],FALSE);
 
       // set the x dim flag
-      p2->x_d = p->dimension_list[i];
+      p2->x_d = p->dimension_list[i].d;
       p2->x_scale = p2->dim_scales[i];
       p2->x_dnum = i;
       // set panel x scale to this dim
@@ -271,7 +271,7 @@ static void update_xy_availability(sushiv_panel_t *p){
 	gtk_widget_set_sensitive_fixup(p2->dim_xb[i],FALSE);
 
       // set the y dim
-      p2->y_d = p->dimension_list[i];
+      p2->y_d = p->dimension_list[i].d;
       p2->y_scale = p2->dim_scales[i];
       p2->y_dnum = i;
       // set panel y scale to this dim
@@ -319,7 +319,7 @@ static void compute_one_line_2d(sushiv_panel_t *p,
   
   /* by objective */
   for(i=0;i<p->objectives;i++){
-    sushiv_objective_t *o = p->objective_list[i];
+    sushiv_objective_t *o = p->objective_list[i].o;
     double alpha = p2->alphadel[i];
     
     gdk_threads_leave (); // misuse me as a global mutex
@@ -599,7 +599,7 @@ void _mark_recompute_2d(sushiv_panel_t *p){
 	  p2->data_rect[i][j]=NAN;
       _sushiv_panel2d_map_redraw(p);
     }
-    
+
     _sushiv_wake_workers();
   }
 }
@@ -616,7 +616,7 @@ static void update_crosshairs(sushiv_panel_t *p){
   int i;
   
   for(i=0;i<p->dimensions;i++){
-    sushiv_dimension_t *d = p->dimension_list[i];
+    sushiv_dimension_t *d = p->dimension_list[i].d;
     sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
     if(d == p2->x_d)
       x = slider_get_value(p2->dim_scales[i],1);
@@ -630,7 +630,7 @@ static void update_crosshairs(sushiv_panel_t *p){
   // crosshairs snap to a pixel position; the cached dimension value
   // should be accurate with respect to the crosshairs
   for(i=0;i<p->dimensions;i++){
-    sushiv_dimension_t *d = p->dimension_list[i];
+    sushiv_dimension_t *d = p->dimension_list[i].d;
     sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
     if(d == p2->x_d)
       d->val = scalespace_value(&plot->x,plot_get_crosshair_xpixel(plot));
@@ -641,9 +641,9 @@ static void update_crosshairs(sushiv_panel_t *p){
 }
 
 static void dim_callback_2d(void *in, int buttonstate){
-  sushiv_dimension_t **dptr = (sushiv_dimension_t **)in;
-  sushiv_dimension_t *d = *dptr;
-  sushiv_panel_t *p = d->panel;
+  sushiv_dimension_list_t *dptr = (sushiv_dimension_list_t *)in;
+  sushiv_dimension_t *d = dptr->d;
+  sushiv_panel_t *p = dptr->p;
   sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
   //Plot *plot = PLOT(p2->graph);
   int dnum = dptr - p->dimension_list;
@@ -669,9 +669,9 @@ static void dim_callback_2d(void *in, int buttonstate){
 }
 
 static void bracket_callback_2d(void *in, int buttonstate){
-  sushiv_dimension_t **dptr = (sushiv_dimension_t **)in;
-  sushiv_dimension_t *d = *dptr;
-  sushiv_panel_t *p = d->panel;
+  sushiv_dimension_list_t *dptr = (sushiv_dimension_list_t *)in;
+  sushiv_dimension_t *d = dptr->d;
+  sushiv_panel_t *p = dptr->p;
   sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
   int dnum = dptr - p->dimension_list;
   double lo = slider_get_value(p2->dim_scales[dnum],0);
@@ -737,7 +737,7 @@ static void crosshairs_callback(void *in){
   panel2d_undo_suspend(p);
 
   for(i=0;i<p->dimensions;i++){
-    sushiv_dimension_t *d = p->dimension_list[i];
+    sushiv_dimension_t *d = p->dimension_list[i].d;
     sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
     if(d == p2->x_d){
       slider_set_value(p2->dim_scales[i],1,x);
@@ -824,6 +824,7 @@ int _sushiv_panel_cooperative_compute_2d(sushiv_panel_t *p){
     gdk_threads_leave ();
     plot_expose_request(plot);
     update_legend(p); 
+    //_sushiv_panel1d_mark_recompute_linked(p);    
     return 0;
   }
   
@@ -843,7 +844,7 @@ int _sushiv_panel_cooperative_compute_2d(sushiv_panel_t *p){
 
   /* which dim is our x?  Our y? */
   for(i=0;i<d;i++){
-    sushiv_dimension_t *dim = p->dimension_list[i];
+    sushiv_dimension_t *dim = p->dimension_list[i].d;
     if(dim == p2->x_d){
       x_min = scalespace_value(&sx,0);
       x_max = scalespace_value(&sx,w);
@@ -853,7 +854,7 @@ int _sushiv_panel_cooperative_compute_2d(sushiv_panel_t *p){
   }
 
   for(i=0;i<d;i++){
-    sushiv_dimension_t *dim = p->dimension_list[i];
+    sushiv_dimension_t *dim = p->dimension_list[i].d;
     if(dim == p2->y_d){
       y_min = scalespace_value(&sy,h);
       y_max = scalespace_value(&sy,0);
@@ -1365,7 +1366,9 @@ void _sushiv_realize_panel2d(sushiv_panel_t *p){
   p2->mappings = calloc(p->objectives,sizeof(*p2->mappings));
   for(i=0;i<p->objectives;i++){
     GtkWidget **sl = calloc(3,sizeof(*sl));
-    sushiv_objective_t *o = p->objective_list[i];
+    sushiv_objective_t *o = p->objective_list[i].o;
+    int lo = o->scale_val_list[0];
+    int hi = o->scale_val_list[o->scale_vals-1];
     int lo = o->scale_val_list[0];
     int hi = o->scale_val_list[o->scale_vals-1];
 
@@ -1418,7 +1421,7 @@ void _sushiv_realize_panel2d(sushiv_panel_t *p){
 
   for(i=0;i<p->dimensions;i++){
     GtkWidget **sl = calloc(3,sizeof(*sl));
-    sushiv_dimension_t *d = p->dimension_list[i];
+    sushiv_dimension_t *d = p->dimension_list[i].d;
 
     /* label */
     GtkWidget *label = gtk_label_new(d->name);

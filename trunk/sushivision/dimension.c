@@ -98,6 +98,5 @@ int sushiv_new_dimension(sushiv_instance_t *s,
   d->flags = flags;
   d->sushi = s;
   d->callback = callback;
-  d->panel = NULL;
   return sushiv_dim_set_scale(d, scalevals, scaleval_list);
 }

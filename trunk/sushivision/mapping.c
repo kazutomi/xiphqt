@@ -299,6 +299,14 @@ void mapping_set_func(mapping *m, int funcnum){
   m->mapfunc = mapfunc[funcnum];
 }
 
+double mapping_val(mapping *m, double in){
+  if(m->i_range==0){
+    return NAN;
+  }else{
+    return (in - m->low) * m->i_range;
+  }
+}
+
 u_int32_t mapping_calc(mapping *m, double in, u_int32_t mix){
   if(m->i_range==0){
     if(in<=m->low)
@@ -314,4 +322,71 @@ u_int32_t mapping_calc(mapping *m, double in, u_int32_t mix){
 int mapping_inactive_p(mapping *m){
   if(m->mapfunc == inactive)return 1;
   return 0;
+}
+
+static u_int32_t swhite(double val, u_int32_t mix){
+  return 0xffffffU;
+}
+static u_int32_t sred(double val, u_int32_t mix){
+  return 0xff0000U;
+}
+static u_int32_t sgreen(double val, u_int32_t mix){
+  return 0x00ff00U;
+}
+static u_int32_t sblue(double val, u_int32_t mix){
+  return 0x0000ffU;
+}
+static u_int32_t syellow(double val, u_int32_t mix){
+  return 0xffff00U;
+}
+static u_int32_t scyan(double val, u_int32_t mix){
+  return 0x00ffffU;
+}
+static u_int32_t spurple(double val, u_int32_t mix){
+  return 0xff00ffU;
+}
+static u_int32_t sgray(double val, u_int32_t mix){
+  return 0xa0a0a0aU;
+}
+
+static u_int32_t (*solidfunc[])(double,u_int32_t)={
+  swhite,
+  sred,
+  sgreen,
+  sblue,
+  syellow,
+  scyan,
+  spurple,
+  sgray,
+  inactive
+};
+
+static char *solidnames[]={
+  "white",
+  "red",
+  "green",
+  "blue",
+  "yellow",
+  "cyan",
+  "purple",
+  "gray",
+  "inactive",
+  0
+};
+
+int num_solids(){
+  int i=0;
+  while(solidnames[i])i++;
+  return i;
+}
+
+char *solid_name(int i){
+  return solidnames[i];
+}
+
+void solid_setup(mapping *m, double lo, double hi, int funcnum){
+  m->low = lo;
+  m->high = hi;
+  m->i_range = 1./(hi-lo);
+  m->mapfunc = solidfunc[funcnum];
 }
