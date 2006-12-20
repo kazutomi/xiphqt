@@ -1369,8 +1369,6 @@ void _sushiv_realize_panel2d(sushiv_panel_t *p){
     sushiv_objective_t *o = p->objective_list[i].o;
     int lo = o->scale_val_list[0];
     int hi = o->scale_val_list[o->scale_vals-1];
-    int lo = o->scale_val_list[0];
-    int hi = o->scale_val_list[o->scale_vals-1];
 
     /* label */
     GtkWidget *label = gtk_label_new(o->name);
