@@ -548,6 +548,8 @@ void _mark_recompute_2d(sushiv_panel_t *p){
   int w = plot->w.allocation.width;
   int h = plot->w.allocation.height;
 
+  //_sushiv_panel1d_mark_recompute_linked(p);    XXXX
+
   if(plot && GTK_WIDGET_REALIZED(GTK_WIDGET(plot))){
     if(p2->data_w != plot->w.allocation.width ||
        p2->data_h != plot->w.allocation.height){
@@ -637,6 +639,9 @@ static void update_crosshairs(sushiv_panel_t *p){
     if(d == p2->y_d)
       d->val = scalespace_value(&plot->y,p2->data_h - plot_get_crosshair_ypixel(plot));
   }
+
+  // _sushiv_panel1d_update_linked_crosshairs(p); XXXX
+
   update_legend(p);
 }
 
@@ -726,7 +731,7 @@ static void dimchange_callback_2d(GtkWidget *button,gpointer in){
   }
 }
 
-static void crosshairs_callback(void *in){
+void _sushiv_panel2d_crosshairs_callback(void *in){
   sushiv_panel_t *p = (sushiv_panel_t *)in;
   sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
   double x=PLOT(p2->graph)->selx;
@@ -775,7 +780,7 @@ static void box_callback(void *in, int state){
     panel2d_undo_push(p);
     panel2d_undo_suspend(p);
 
-    crosshairs_callback(p);
+    _sushiv_panel2d_crosshairs_callback(p);
 
     slider_set_value(p2->x_scale,0,p2->oldbox[0]);
     slider_set_value(p2->x_scale,2,p2->oldbox[1]);
@@ -1171,7 +1176,7 @@ static void panel2d_find_peak(sushiv_panel_t *p){
 	  double yv = scalespace_value(&p2->y,h-y);
 	  
 	  plot_set_crosshairs(plot,xv,yv);
-	  crosshairs_callback(p);
+	  _sushiv_panel2d_crosshairs_callback(p);
 	  
 	  p2->peak_count++;
 	  
@@ -1354,7 +1359,7 @@ void _sushiv_realize_panel2d(sushiv_panel_t *p){
   
   /* graph */
   p2->graph = GTK_WIDGET(plot_new(recompute_callback_2d,p,
-				  crosshairs_callback,p,
+				  _sushiv_panel2d_crosshairs_callback,p,
 				  box_callback,p)); 
   gtk_table_attach(GTK_TABLE(p2->top_table),p2->graph,0,5,0,1,
 		   GTK_EXPAND|GTK_FILL,GTK_EXPAND|GTK_FILL,0,5);
@@ -1367,8 +1372,8 @@ void _sushiv_realize_panel2d(sushiv_panel_t *p){
   for(i=0;i<p->objectives;i++){
     GtkWidget **sl = calloc(3,sizeof(*sl));
     sushiv_objective_t *o = p->objective_list[i].o;
-    int lo = o->scale_val_list[0];
-    int hi = o->scale_val_list[o->scale_vals-1];
+    int lo = o->scale->val_list[0];
+    int hi = o->scale->val_list[o->scale->vals-1];
 
     /* label */
     GtkWidget *label = gtk_label_new(o->name);
@@ -1400,8 +1405,8 @@ void _sushiv_realize_panel2d(sushiv_panel_t *p){
 		     GTK_EXPAND|GTK_FILL,0,0,0);
     gtk_table_attach(GTK_TABLE(p2->top_table),sl[2],3,4,i+1,i+2,
 		     GTK_EXPAND|GTK_FILL,0,0,0);
-    p2->range_scales[i] = slider_new((Slice **)sl,3,o->scale_label_list,o->scale_val_list,
-				    o->scale_vals,SLIDER_FLAG_INDEPENDENT_MIDDLE);
+    p2->range_scales[i] = slider_new((Slice **)sl,3,o->scale->label_list,o->scale->val_list,
+				    o->scale->vals,SLIDER_FLAG_INDEPENDENT_MIDDLE);
 
     slice_thumb_set((Slice *)sl[0],lo);
     slice_thumb_set((Slice *)sl[1],lo);
@@ -1463,12 +1468,12 @@ void _sushiv_realize_panel2d(sushiv_panel_t *p){
     gtk_table_attach(GTK_TABLE(p2->dim_table),sl[2],5,6,i,i+1,
 		     GTK_EXPAND|GTK_FILL,0,0,0);
 
-    p2->dim_scales[i] = slider_new((Slice **)sl,3,d->scale_label_list,d->scale_val_list,
-				   d->scale_vals,0);
+    p2->dim_scales[i] = slider_new((Slice **)sl,3,d->scale->label_list,d->scale->val_list,
+				   d->scale->vals,0);
 
-    slice_thumb_set((Slice *)sl[0],d->scale_val_list[0]);
+    slice_thumb_set((Slice *)sl[0],d->scale->val_list[0]);
     slice_thumb_set((Slice *)sl[1],0);
-    slice_thumb_set((Slice *)sl[2],d->scale_val_list[d->scale_vals-1]);
+    slice_thumb_set((Slice *)sl[2],d->scale->val_list[d->scale->vals-1]);
 
   }
   for(i=0;i<p->dimensions;i++){
@@ -1516,6 +1521,7 @@ int sushiv_new_panel_2d(sushiv_instance_t *s,
 			int *dimensions,
 			unsigned flags){
   
+  int i;
   int ret = _sushiv_new_panel(s,number,name,objectives,dimensions,flags);
   sushiv_panel_t *p;
   sushiv_panel2d_t *p2;
@@ -1525,6 +1531,14 @@ int sushiv_new_panel_2d(sushiv_instance_t *s,
   p2 = calloc(1, sizeof(*p2));
   p->internal = p2;
   p->type = SUSHIV_PANEL_2D;
+
+  // verify all the objectives have scales
+  for(i=0;i<p->objectives;i++){
+    if(!p->objective_list[i].o->scale){
+      fprintf(stderr,"All objectives in a 2d panel must have a scale\n");
+      return -EINVAL;
+    }
+  }
 
   return 0;
 }

@@ -22,6 +22,7 @@
 #ifndef _SUSHIVISION_
 #define _SUSHIVISION_
   
+typedef struct sushiv_scale sushiv_scale_t;
 typedef struct sushiv_panel sushiv_panel_t;
 typedef struct sushiv_dimension sushiv_dimension_t;
 typedef struct sushiv_objective sushiv_objective_t;
@@ -42,15 +43,19 @@ typedef struct sushiv_instance {
 #define SUSHIV_NO_X 0x100
 #define SUSHIV_NO_Y 0x200
 
+struct sushiv_scale{
+  int vals;
+  double *val_list;
+  char **label_list; 
+};
+
 struct sushiv_dimension{ 
   int number;
   char *name;
   double bracket[2];
   double val;
 
-  int scale_vals;
-  double *scale_val_list;
-  char **scale_label_list; 
+  sushiv_scale_t *scale;
   unsigned flags;
   
   int (*callback)(sushiv_dimension_t *);
@@ -62,9 +67,7 @@ struct sushiv_objective {
   int number;
   char *name;
 
-  int scale_vals;
-  double *scale_val_list;
-  char **scale_label_list; 
+  sushiv_scale_t *scale;
   unsigned flags;
 
   double (*callback)(double[]);
@@ -104,6 +107,10 @@ struct sushiv_panel {
 
 extern sushiv_instance_t *sushiv_new_instance(void);
 
+extern void scale_free(sushiv_scale_t *s);
+extern sushiv_scale_t *scale_new(unsigned scalevals, double *scaleval_list);
+extern int scale_set_scalelabels(sushiv_scale_t *s, char **scalelabel_list);
+
 extern int sushiv_new_dimension(sushiv_instance_t *s,
 				int number,
 				const char *name,
@@ -111,24 +118,14 @@ extern int sushiv_new_dimension(sushiv_instance_t *s,
 				double *scaleval_list,
 				int (*callback)(sushiv_dimension_t *),
 				unsigned flags);
-extern int sushiv_dim_set_scale(sushiv_dimension_t *d, 
-				unsigned scalevals, 
-				double *scaleval_list);
-extern int sushiv_dim_set_scalelabels(sushiv_dimension_t *d, 
-				      char **scalelabel_list);
 
 extern int sushiv_new_objective(sushiv_instance_t *s,
 				int number,
 				const char *name,
-				unsigned scalevals,
+				unsigned scalevals, 
 				double *scaleval_list,
 				double (*callback)(double *),
 				unsigned flags);
-extern int sushiv_objective_set_scale(sushiv_objective_t *o, 
-				      unsigned scalevals, 
-				      double *scaleval_list);
-extern int sushiv_objective_set_scalelabels(sushiv_objective_t *o, 
-					    char **scalelabel_list);
 
 extern int sushiv_new_panel_2d(sushiv_instance_t *s,
 			       int number,
@@ -140,9 +137,28 @@ extern int sushiv_new_panel_2d(sushiv_instance_t *s,
 extern int sushiv_new_panel_1d(sushiv_instance_t *s,
 			       int number,
 			       const char *name,
+			       sushiv_scale_t *scale,
 			       int *objectives,
-			       int *dimensions,
+			       int *dimensions,	
 			       unsigned flags);
+
+extern int sushiv_new_panel_1d_linked(sushiv_instance_t *s,
+				      int number,
+				      const char *name,
+				      sushiv_scale_t *scale,
+				      int *objectives,
+				      sushiv_panel_t *s2d,
+				      unsigned flags);
+
+extern int sushiv_new_panel_xy(sushiv_instance_t *s,
+			       int number,
+			       const char *name,
+			       sushiv_scale_t *xscale,
+			       sushiv_scale_t *yscale,
+			       int *objectives,
+			       int *dimensions,	
+			       unsigned flags);
+
 
 extern int sushiv_submain(int argc, char *argv[]);
 

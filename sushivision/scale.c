@@ -26,6 +26,7 @@
 #include <fontconfig/fontconfig.h>
 #include <stdio.h>
 #include <limits.h>
+#include "sushivision.h"
 #include "scale.h"
 
 /* slider scales */
@@ -144,6 +145,53 @@ char **scale_generate_labels(unsigned scalevals, double *scaleval_list){
   return ret;
 }
 
+void scale_free(sushiv_scale_t *s){
+  int i;
+  
+  if(s){
+    if(s->val_list)free(s->val_list);
+    if(s->label_list){
+      for(i=0;i<s->vals;i++)
+	free(s->label_list[i]);
+      free(s->label_list);
+    }
+    free(s);
+  }
+}
+
+sushiv_scale_t *scale_new(unsigned scalevals, double *scaleval_list){
+  int i;
+
+  sushiv_scale_t *s = NULL;
+
+  if(scalevals<2){
+    fprintf(stderr,"Scale requires at least two scale values.");
+    return NULL;
+  }
+
+  s = calloc(1, sizeof(*s));
+  
+  // copy values
+  s->vals = scalevals;
+  s->val_list = calloc(scalevals,sizeof(*s->val_list));
+  for(i=0;i<(int)scalevals;i++)
+    s->val_list[i] = scaleval_list[i];
+
+  // generate labels
+  s->label_list = scale_generate_labels(scalevals,scaleval_list);
+
+  return s;
+}
+
+int scale_set_scalelabels(sushiv_scale_t *s, char **scalelabel_list){
+  int i;
+  for(i=0;i<s->vals;i++){
+    if(s->label_list[i])
+      free(s->label_list[i]);
+    s->label_list[i] = strdup(scalelabel_list[i]);
+  }
+  return 0;
+}
 
 /* plot and graph scales */
 
