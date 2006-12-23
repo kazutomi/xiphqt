@@ -37,3 +37,8 @@ extern void mapping_set_func(mapping *m, int funcnum);
 extern double mapping_val(mapping *m, double in);
 extern u_int32_t mapping_calc(mapping *m, double in, u_int32_t mix);
 extern int mapping_inactive_p(mapping *m);
+
+extern int num_solids();
+extern char *solid_name(int i);
+extern void solid_setup(mapping *m, double lo, double hi, int funcnum);
+extern void solid_set_func(mapping *m, int funcnum);

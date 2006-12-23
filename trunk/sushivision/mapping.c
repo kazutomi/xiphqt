@@ -390,3 +390,8 @@ void solid_setup(mapping *m, double lo, double hi, int funcnum){
   m->i_range = 1./(hi-lo);
   m->mapfunc = solidfunc[funcnum];
 }
+
+void solid_set_func(mapping *m, int funcnum){
+  m->mapnum = funcnum;
+  m->mapfunc = solidfunc[funcnum];
+}
