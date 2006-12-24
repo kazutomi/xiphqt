@@ -71,14 +71,11 @@ typedef struct sushiv_panel2d {
   int last_line;
   int dirty_flag;
 
-  sushiv_panel2d_undo_t **undo_stack;
+  int peak_count;
+
   int undo_level;
   int undo_suspend;
+  sushiv_panel2d_undo_t **undo_stack;
 
-  int peak_count;
 } sushiv_panel2d_t;
 
-extern void _sushiv_realize_panel2d(sushiv_panel_t *p);
-extern int _sushiv_panel_cooperative_compute_2d(sushiv_panel_t *p);
-extern void _sushiv_panel2d_map_redraw(sushiv_panel_t *p);
-extern void _sushiv_panel2d_legend_redraw(sushiv_panel_t *p);

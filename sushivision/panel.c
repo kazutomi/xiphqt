@@ -35,56 +35,18 @@
 #include "plot.h"
 #include "slice.h"
 #include "slider.h"
-#include "panel-2d.h"
 #include "internal.h"
 
 void _sushiv_realize_panel(sushiv_panel_t *p){
-  if(!p->realized){
-    switch(p->type){
-    case SUSHIV_PANEL_1D:
-      //_sushiv_realize_panel1d(p);
-      break;
-    case SUSHIV_PANEL_2D:
-      _sushiv_realize_panel2d(p);
-      break;
-    }
-    p->realized=1;
-  }
-}
-
-static void _sushiv_panel_map_redraw(sushiv_panel_t *p){
-  if(p->maps_dirty){
-    p->maps_dirty = 0;
-    switch(p->type){
-    case SUSHIV_PANEL_1D:
-      //_sushiv_panel1d_map_redraw(p);
-      break;
-    case SUSHIV_PANEL_2D:
-      _sushiv_panel2d_map_redraw(p);
-      break;
-    }
-  }
-}
-
-static void _sushiv_panel_legend_redraw(sushiv_panel_t *p){
-  if(p->legend_dirty){
-    p->legend_dirty = 0;
-    switch(p->type){
-    case SUSHIV_PANEL_1D:
-      //_sushiv_panel1d_legend_redraw(p);
-      break;
-    case SUSHIV_PANEL_2D:
-      _sushiv_panel2d_legend_redraw(p);
-      break;
-    }
+  if(!p->private->realized){
+    p->private->realize(p);
+    p->private->realized=1;
   }
 }
 
 int _sushiv_panel_cooperative_compute(sushiv_panel_t *p){
-  if(p->realized){
-    if(p->type == SUSHIV_PANEL_2D)
-      return _sushiv_panel_cooperative_compute_2d(p);
-  }
+  if(p->private->realized)
+    return p->private->compute_action(p);
   return 0;
 }
 
@@ -94,9 +56,13 @@ static gboolean _map_idle_work(gpointer ptr){
   sushiv_instance_t *s = (sushiv_instance_t *)ptr;
   int i;
   
-  for(i=0;i<s->panels;i++)
-    _sushiv_panel_map_redraw(s->panel_list[i]);
-  
+  for(i=0;i<s->panels;i++){
+    sushiv_panel_t *p = s->panel_list[i];
+    if(p->private->maps_dirty){
+      p->private->maps_dirty = 0;
+      p->private->map_redraw(p);
+    }
+  }  
   return FALSE;
 }
 
@@ -104,20 +70,24 @@ static gboolean _legend_idle_work(gpointer ptr){
   sushiv_instance_t *s = (sushiv_instance_t *)ptr;
   int i;
   
-  for(i=0;i<s->panels;i++)
-    _sushiv_panel_legend_redraw(s->panel_list[i]);
-  
+  for(i=0;i<s->panels;i++){
+    sushiv_panel_t *p = s->panel_list[i];
+    if(p->private->legend_dirty){
+      p->private->legend_dirty = 0;
+      p->private->legend_redraw(p);
+    }
+  }
   return FALSE;
 }
 
 
 void _sushiv_panel_dirty_map(sushiv_panel_t *p){
-  p->maps_dirty = 1;
+  p->private->maps_dirty = 1;
   g_idle_add(_map_idle_work,p->sushi);
 }
 
 void _sushiv_panel_dirty_legend(sushiv_panel_t *p){
-  p->legend_dirty = 1;
+  p->private->legend_dirty = 1;
   g_idle_add(_legend_idle_work,p->sushi);
 }
 
@@ -157,7 +127,8 @@ int _sushiv_new_panel(sushiv_instance_t *s,
   p->name = strdup(name);
   p->flags = flags;
   p->sushi = s;
-  
+  p->private = calloc(1, sizeof(*p->private));
+
   i=0;
   while(objectives && objectives[i]>=0)i++;
   p->objectives = i;

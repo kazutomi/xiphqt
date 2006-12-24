@@ -20,6 +20,29 @@
  */
 
 #include <signal.h>
+#include "sushivision.h"
+#include "panel-2d.h"
+
+union sushiv_panel_subtype {
+  //sushiv_panel1d_t *p1;
+  sushiv_panel2d_t *p2;
+};
+
+struct sushiv_panel_internal {
+  int realized;
+  int maps_dirty;
+  int legend_dirty;
+
+  // function bundles 
+  void (*realize)(sushiv_panel_t *p);
+  void (*map_redraw)(sushiv_panel_t *p);
+  void (*legend_redraw)(sushiv_panel_t *p);
+  int (*compute_action)(sushiv_panel_t *p);
+  void (*request_compute)(sushiv_panel_t *p);
+
+  void (*crosshair_action)(sushiv_panel_t *p);
+};
+
 extern void _sushiv_realize_panel(sushiv_panel_t *p);
 extern void _sushiv_clean_exit(int sig);
 extern int _sushiv_new_panel(sushiv_instance_t *s,

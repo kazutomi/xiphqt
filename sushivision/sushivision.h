@@ -27,6 +27,8 @@ typedef struct sushiv_panel sushiv_panel_t;
 typedef struct sushiv_dimension sushiv_dimension_t;
 typedef struct sushiv_objective sushiv_objective_t;
 
+typedef struct sushiv_instance_internal sushiv_instance_internal_t;
+
 typedef struct sushiv_instance {
   int dimensions;
   sushiv_dimension_t **dimension_list;
@@ -37,7 +39,7 @@ typedef struct sushiv_instance {
   int panels;
   struct sushiv_panel **panel_list;
 
-  void *internal;
+  sushiv_instance_internal_t *private;
 } sushiv_instance_t;
 
 #define SUSHIV_NO_X 0x100
@@ -48,6 +50,8 @@ struct sushiv_scale{
   double *val_list;
   char **label_list; 
 };
+
+typedef struct sushiv_panel_internal sushiv_panel_internal_t;
 
 struct sushiv_dimension{ 
   int number;
@@ -60,8 +64,10 @@ struct sushiv_dimension{
   
   int (*callback)(sushiv_dimension_t *);
   sushiv_instance_t *sushi;
-  void *internal;
+  sushiv_panel_internal_t *private;
 };
+
+typedef struct sushiv_objective_internal sushiv_objective_internal_t;
 
 struct sushiv_objective { 
   int number;
@@ -72,10 +78,11 @@ struct sushiv_objective {
 
   double (*callback)(double[]);
   sushiv_instance_t *sushi;
-  void *internal;
+  sushiv_objective_internal_t *private;
 };
 
-enum sushiv_panel_type { SUSHIV_PANEL_1D, SUSHIV_PANEL_2D };
+enum sushiv_panel_type { SUSHIV_PANEL_1D, SUSHIV_PANEL_2D, SUSHIV_PANEL_XY };
+typedef union sushiv_panel_subtype sushiv_panel_subtype_t;
 
 typedef struct {
   sushiv_dimension_t *d;
@@ -91,9 +98,6 @@ struct sushiv_panel {
   int number;
   char *name;
   enum sushiv_panel_type type;
-  int realized;
-  int maps_dirty;
-  int legend_dirty;
 
   int dimensions;
   sushiv_dimension_list_t *dimension_list;
@@ -101,8 +105,10 @@ struct sushiv_panel {
   sushiv_objective_list_t *objective_list;
 
   sushiv_instance_t *sushi;
-  void *internal;
   unsigned flags;
+
+  sushiv_panel_subtype_t *subtype;
+  sushiv_panel_internal_t *private;
 };
 
 extern sushiv_instance_t *sushiv_new_instance(void);
