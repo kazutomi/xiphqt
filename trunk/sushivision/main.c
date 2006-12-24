@@ -31,9 +31,7 @@
 #include <gtk/gtk.h>
 #include <cairo-ft.h>
 #include <pthread.h>
-#include "sushivision.h"
 #include "internal.h"
-#include "gtksucks.h"
 
 
 static pthread_mutex_t m = PTHREAD_MUTEX_INITIALIZER;

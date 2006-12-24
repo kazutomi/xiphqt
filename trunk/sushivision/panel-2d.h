@@ -19,24 +19,8 @@
  * 
  */
 
-// undo history
-typedef struct sushiv_panel2d_undo {
-  int *mappings;
-
-  double *obj_vals[3];
-  double *dim_vals[3];
-  
-  int x_d;
-  int y_d;
-
-  double box[4];
-  int box_active;
-} sushiv_panel2d_undo_t;
-
 typedef struct sushiv_panel2d {
 
-  GtkWidget *toplevel;
-  GtkWidget *graph;
   GtkWidget *top_table;
   GtkWidget *dim_table;
   GtkWidget *popmenu;
@@ -72,10 +56,6 @@ typedef struct sushiv_panel2d {
   int dirty_flag;
 
   int peak_count;
-
-  int undo_level;
-  int undo_suspend;
-  sushiv_panel2d_undo_t **undo_stack;
 
 } sushiv_panel2d_t;
 

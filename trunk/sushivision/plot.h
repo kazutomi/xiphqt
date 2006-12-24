@@ -25,7 +25,6 @@
 #include <gdk/gdk.h>
 #include <sys/types.h>
 #include <sys/time.h>
-#include "scale.h"
 
 G_BEGIN_DECLS
 

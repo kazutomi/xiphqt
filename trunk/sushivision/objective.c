@@ -23,9 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include "sushivision.h"
 #include "internal.h"
-#include "scale.h"
 
 int sushiv_new_objective(sushiv_instance_t *s,
 			 int number,

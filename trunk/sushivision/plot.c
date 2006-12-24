@@ -30,6 +30,7 @@
 #include <time.h>
 #include <string.h>
 
+#include "scale.h"
 #include "plot.h"
 
 static GtkWidgetClass *parent_class = NULL;

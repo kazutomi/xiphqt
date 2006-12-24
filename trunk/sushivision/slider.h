@@ -20,6 +20,7 @@
  */
 
 #include <sys/types.h>
+
 struct _Slider {
   GtkWidget **slices;
   int num_slices;
