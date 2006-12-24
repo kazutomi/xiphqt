@@ -30,11 +30,6 @@
 #include <sys/types.h>
 #include <gtk/gtk.h>
 #include <cairo-ft.h>
-#include "sushivision.h"
-#include "mapping.h"
-#include "plot.h"
-#include "slice.h"
-#include "slider.h"
 #include "internal.h"
 
 void _sushiv_realize_panel(sushiv_panel_t *p){

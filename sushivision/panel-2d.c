@@ -31,19 +31,7 @@
 #include <gtk/gtk.h>
 #include <cairo-ft.h>
 #include <gdk/gdkkeysyms.h>
-#include "sushivision.h"
-#include "mapping.h"
-#include "plot.h"
-#include "slice.h"
-#include "slider.h"
 #include "internal.h"
-#include "gtksucks.h"
-
-static void panel2d_undo_log(sushiv_panel_t *p);
-static void panel2d_undo_push(sushiv_panel_t *p);
-static void panel2d_undo_suspend(sushiv_panel_t *p);
-static void panel2d_undo_resume(sushiv_panel_t *p);
-static void update_context_menus(sushiv_panel_t *p);
 
 static void render_checks(int w, int y, u_int32_t *render){
   int x,j;
@@ -61,7 +49,7 @@ static void render_checks(int w, int y, u_int32_t *render){
 
 static void _sushiv_panel2d_remap(sushiv_panel_t *p){
   sushiv_panel2d_t *p2 = p->subtype->p2;
-  Plot *plot = PLOT(p2->graph);
+  Plot *plot = PLOT(p->private->graph);
 
   int w,h,x,y,i;
   w = p2->data_w;
@@ -98,8 +86,7 @@ static void _sushiv_panel2d_remap(sushiv_panel_t *p){
 }
 
 static void _sushiv_panel2d_map_redraw(sushiv_panel_t *p){
-  sushiv_panel2d_t *p2 = p->subtype->p2;
-  Plot *plot = PLOT(p2->graph);
+  Plot *plot = PLOT(p->private->graph);
 
   gdk_threads_enter (); // misuse me as a global mutex
   
@@ -111,8 +98,7 @@ static void _sushiv_panel2d_map_redraw(sushiv_panel_t *p){
 }
 
 static void _sushiv_panel2d_legend_redraw(sushiv_panel_t *p){
-  sushiv_panel2d_t *p2 = p->subtype->p2;
-  Plot *plot = PLOT(p2->graph);
+  Plot *plot = PLOT(p->private->graph);
 
   if(plot)
     plot_draw_scales(plot);
@@ -130,7 +116,7 @@ static int ilog10(int x){
 
 static void update_legend(sushiv_panel_t *p){  
   sushiv_panel2d_t *p2 = p->subtype->p2;
-  Plot *plot = PLOT(p2->graph);
+  Plot *plot = PLOT(p->private->graph);
 
   gdk_threads_enter ();
   int w = p2->data_w;
@@ -195,8 +181,8 @@ static void mapchange_callback_2d(GtkWidget *w,gpointer in){
   sushiv_panel2d_t *p2 = p->subtype->p2;
   int onum = optr - p->objective_list;
 
-  panel2d_undo_push(p);
-  panel2d_undo_suspend(p);
+  _sushiv_panel_undo_push(p);
+  _sushiv_panel_undo_suspend(p);
 
   mapping_set_func(&p2->mappings[onum],gtk_combo_box_get_active(GTK_COMBO_BOX(w)));
   
@@ -209,7 +195,7 @@ static void mapchange_callback_2d(GtkWidget *w,gpointer in){
 
   //redraw the plot
   _sushiv_panel_dirty_map(p);
-  panel2d_undo_resume(p);
+  _sushiv_panel_undo_resume(p);
 }
 
 static void map_callback_2d(void *in,int buttonstate){
@@ -220,8 +206,8 @@ static void map_callback_2d(void *in,int buttonstate){
   int onum = optr - p->objective_list;
 
   if(buttonstate == 0){
-    panel2d_undo_push(p);
-    panel2d_undo_suspend(p);
+    _sushiv_panel_undo_push(p);
+    _sushiv_panel_undo_suspend(p);
   }
 
   // recache alpha del */
@@ -232,7 +218,7 @@ static void map_callback_2d(void *in,int buttonstate){
   //redraw the plot
   _sushiv_panel_dirty_map(p);
   if(buttonstate == 2)
-    panel2d_undo_resume(p);
+    _sushiv_panel_undo_resume(p);
 }
 
 static void update_xy_availability(sushiv_panel_t *p){
@@ -256,7 +242,7 @@ static void update_xy_availability(sushiv_panel_t *p){
       p2->x = scalespace_linear(p2->x_d->bracket[0],
 				p2->x_d->bracket[1],
 				p2->data_w,
-				PLOT(p2->graph)->scalespacing,
+				PLOT(p->private->graph)->scalespacing,
 				p2->x_d->name);
     }else{
       // if there is a y, make it sensitive 
@@ -277,7 +263,7 @@ static void update_xy_availability(sushiv_panel_t *p){
       p2->y = scalespace_linear(p2->y_d->bracket[0],
 				p2->y_d->bracket[1],
 				p2->data_h,
-				PLOT(p2->graph)->scalespacing,
+				PLOT(p->private->graph)->scalespacing,
 				p2->y_d->name);
     }else{
       // if there is a x, make it sensitive 
@@ -543,7 +529,7 @@ static void fast_scale(double *newdata,
 // call only from main gtk thread!
 static void _mark_recompute_2d(sushiv_panel_t *p){
   sushiv_panel2d_t *p2 = p->subtype->p2;
-  Plot *plot = PLOT(p2->graph);
+  Plot *plot = PLOT(p->private->graph);
   int w = plot->w.allocation.width;
   int h = plot->w.allocation.height;
 
@@ -583,12 +569,12 @@ static void _mark_recompute_2d(sushiv_panel_t *p){
       p2->x = scalespace_linear(p2->x_d->bracket[0],
 				p2->x_d->bracket[1],
 				w,
-				PLOT(p2->graph)->scalespacing,
+				PLOT(p->private->graph)->scalespacing,
 				p2->x_d->name);
       p2->y = scalespace_linear(p2->y_d->bracket[0],
 				p2->y_d->bracket[1],
 				h,
-				PLOT(p2->graph)->scalespacing,
+				PLOT(p->private->graph)->scalespacing,
 				p2->y_d->name);
       p2->data_rect = calloc(p->objectives,sizeof(*p2->data_rect));
       for(i=0;i<p->objectives;i++)
@@ -612,7 +598,7 @@ static void recompute_callback_2d(void *ptr){
 
 static void update_crosshairs(sushiv_panel_t *p){
   sushiv_panel2d_t *p2 = p->subtype->p2;
-  Plot *plot = PLOT(p2->graph);
+  Plot *plot = PLOT(p->private->graph);
   double x=0,y=0;
   int i;
   
@@ -625,7 +611,7 @@ static void update_crosshairs(sushiv_panel_t *p){
     
   }
   
-  plot_set_crosshairs(PLOT(p2->graph),x,y);
+  plot_set_crosshairs(PLOT(p->private->graph),x,y);
 
   // crosshairs snap to a pixel position; the cached dimension value
   // should be accurate with respect to the crosshairs
@@ -647,13 +633,13 @@ static void dim_callback_2d(void *in, int buttonstate){
   sushiv_dimension_t *d = dptr->d;
   sushiv_panel_t *p = dptr->p;
   sushiv_panel2d_t *p2 = p->subtype->p2;
-  //Plot *plot = PLOT(p2->graph);
+  //Plot *plot = PLOT(p->private->graph);
   int dnum = dptr - p->dimension_list;
   int axisp = (d == p2->x_d || d == p2->y_d);
 
   if(buttonstate == 0){
-    panel2d_undo_push(p);
-    panel2d_undo_suspend(p);
+    _sushiv_panel_undo_push(p);
+    _sushiv_panel_undo_suspend(p);
   }
 
   d->val = slider_get_value(p2->dim_scales[dnum],1);
@@ -667,7 +653,7 @@ static void dim_callback_2d(void *in, int buttonstate){
   }
 
   if(buttonstate == 2)
-    panel2d_undo_resume(p);
+    _sushiv_panel_undo_resume(p);
 }
 
 static void bracket_callback_2d(void *in, int buttonstate){
@@ -680,14 +666,14 @@ static void bracket_callback_2d(void *in, int buttonstate){
   double hi = slider_get_value(p2->dim_scales[dnum],2);
   
   if(buttonstate == 0){
-    panel2d_undo_push(p);
-    panel2d_undo_suspend(p);
+    _sushiv_panel_undo_push(p);
+    _sushiv_panel_undo_suspend(p);
   }
 
   if(d->bracket[0] != lo || d->bracket[1] != hi){
     double xy_p = d == p2->x_d;
     scalespace s = scalespace_linear(lo,hi,(xy_p?p2->data_w:p2->data_h),
-				     PLOT(p2->graph)->scalespacing,
+				     PLOT(p->private->graph)->scalespacing,
 				     d->name);
     
     if(s.m == 0){
@@ -707,35 +693,34 @@ static void bracket_callback_2d(void *in, int buttonstate){
   }
  
   if(buttonstate == 2)
-    panel2d_undo_resume(p);
+    _sushiv_panel_undo_resume(p);
 }
 
 static void dimchange_callback_2d(GtkWidget *button,gpointer in){
   sushiv_panel_t *p = (sushiv_panel_t *)in;
-  sushiv_panel2d_t *p2 = p->subtype->p2;
 
   if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button))){
 
-    panel2d_undo_push(p);
-    panel2d_undo_suspend(p);
+    _sushiv_panel_undo_push(p);
+    _sushiv_panel_undo_suspend(p);
 
     update_xy_availability(p);
     update_crosshairs(p);
-    plot_unset_box(PLOT(p2->graph));
+    plot_unset_box(PLOT(p->private->graph));
     _mark_recompute_2d(p);
 
-    panel2d_undo_resume(p);
+    _sushiv_panel_undo_resume(p);
   }
 }
 
 static void _sushiv_panel2d_crosshairs_callback(sushiv_panel_t *p){
   sushiv_panel2d_t *p2 = p->subtype->p2;
-  double x=PLOT(p2->graph)->selx;
-  double y=PLOT(p2->graph)->sely;
+  double x=PLOT(p->private->graph)->selx;
+  double y=PLOT(p->private->graph)->sely;
   int i;
   
-  panel2d_undo_push(p);
-  panel2d_undo_suspend(p);
+  _sushiv_panel_undo_push(p);
+  _sushiv_panel_undo_suspend(p);
 
   for(i=0;i<p->dimensions;i++){
     sushiv_dimension_t *d = p->dimension_list[i].d;
@@ -757,23 +742,23 @@ static void _sushiv_panel2d_crosshairs_callback(sushiv_panel_t *p){
 
     p2->oldbox_active = 0;
   }
-  panel2d_undo_resume(p);
+  _sushiv_panel_undo_resume(p);
 }
 
 static void box_callback(void *in, int state){
   sushiv_panel_t *p = (sushiv_panel_t *)in;
   sushiv_panel2d_t *p2 = p->subtype->p2;
-  Plot *plot = PLOT(p2->graph);
+  Plot *plot = PLOT(p->private->graph);
   
   switch(state){
   case 0: // box set
-    panel2d_undo_push(p);
+    _sushiv_panel_undo_push(p);
     plot_box_vals(plot,p2->oldbox);
     p2->oldbox_active = plot->box_active;
     break;
   case 1: // box activate
-    panel2d_undo_push(p);
-    panel2d_undo_suspend(p);
+    _sushiv_panel_undo_push(p);
+    _sushiv_panel_undo_suspend(p);
 
     _sushiv_panel2d_crosshairs_callback(p);
 
@@ -782,10 +767,10 @@ static void box_callback(void *in, int state){
     slider_set_value(p2->y_scale,0,p2->oldbox[2]);
     slider_set_value(p2->y_scale,2,p2->oldbox[3]);
     p2->oldbox_active = 0;
-    panel2d_undo_resume(p);
+    _sushiv_panel_undo_resume(p);
     break;
   }
-  update_context_menus(p);
+  p->private->update_menus(p);
 }
 
 // called from one/all of the worker threads; the idea is that several
@@ -817,7 +802,7 @@ static int _sushiv_panel_cooperative_compute_2d(sushiv_panel_t *p){
     return 0;
   }
 
-  plot = PLOT(p2->graph);
+  plot = PLOT(p->private->graph);
 
   if(p2->last_line==h){
     p2->last_line++;
@@ -935,43 +920,27 @@ static int _sushiv_panel_cooperative_compute_2d(sushiv_panel_t *p){
   return 1;
 }
 
-static void panel2d_undo_suspend(sushiv_panel_t *p){
+static void panel2d_undo_log(sushiv_panel_undo_t *u){
+  sushiv_panel_t *p = u->p;
   sushiv_panel2d_t *p2 = p->subtype->p2;
-  p2->undo_suspend++;
-}
-
-static void panel2d_undo_resume(sushiv_panel_t *p){
-  sushiv_panel2d_t *p2 = p->subtype->p2;
-  p2->undo_suspend--;
-  if(p2->undo_suspend<0){
-    fprintf(stderr,"Internal error: undo suspend refcount count < 0\n");
-    p2->undo_suspend=0;
-  }
-
-  if(p2->undo_suspend==0)
-    panel2d_undo_log(p);
-}
-
-static void panel2d_undo_log(sushiv_panel_t *p){
-  sushiv_panel2d_t *p2 = p->subtype->p2;
-  sushiv_panel2d_undo_t *u;
   int i;
 
-  if(!p2->undo_stack)
-    p2->undo_stack = calloc(2,sizeof(*p2->undo_stack));
-
-  // alloc new undo
-  u = p2->undo_stack[p2->undo_level];
-  if(!u){
-    u = p2->undo_stack[p2->undo_level]= calloc(1,sizeof(*u));
+  // alloc fields as necessary
+  
+  if(!u->mappings)
     u->mappings =  calloc(p->objectives,sizeof(*u->mappings));
+  if(!u->obj_vals[0])
     u->obj_vals[0] =  calloc(p->objectives,sizeof(**u->obj_vals));
+  if(!u->obj_vals[1])
     u->obj_vals[1] =  calloc(p->objectives,sizeof(**u->obj_vals));
+  if(!u->obj_vals[2])
     u->obj_vals[2] =  calloc(p->objectives,sizeof(**u->obj_vals));
+  if(!u->dim_vals[0])
     u->dim_vals[0] =  calloc(p->dimensions,sizeof(**u->dim_vals));
+  if(!u->dim_vals[1])
     u->dim_vals[1] =  calloc(p->dimensions,sizeof(**u->dim_vals));
+  if(!u->dim_vals[2])
     u->dim_vals[2] =  calloc(p->dimensions,sizeof(**u->dim_vals));
-  }
 
   // populate undo
   for(i=0;i<p->objectives;i++){
@@ -996,13 +965,14 @@ static void panel2d_undo_log(sushiv_panel_t *p){
   u->box_active = p2->oldbox_active;
 }
 
-static void panel2d_undo_restore(sushiv_panel_t *p){
+static void panel2d_undo_restore(sushiv_panel_undo_t *u, int *remap_flag, int *recomp_flag){
+  sushiv_panel_t *p = u->p;
   sushiv_panel2d_t *p2 = p->subtype->p2;
-  sushiv_panel2d_undo_t *u = p2->undo_stack[p2->undo_level];
-  Plot *plot = PLOT(p2->graph);
+  Plot *plot = PLOT(p->private->graph);
   int i;
-  int remap_flag=0;
-  int recomp_flag=0;
+  
+  *remap_flag=0;
+  *recomp_flag=0;
 
   // go in through widgets
   for(i=0;i<p->objectives;i++){
@@ -1010,9 +980,9 @@ static void panel2d_undo_restore(sushiv_panel_t *p){
        slider_get_value(p2->range_scales[i],0)!=u->obj_vals[0][i] ||
        slider_get_value(p2->range_scales[i],1)!=u->obj_vals[1][i] ||
        slider_get_value(p2->range_scales[i],2)!=u->obj_vals[2][i]){ 
-      remap_flag = 1;
+      *remap_flag = 1;
     }
-
+    
     gtk_combo_box_set_active(GTK_COMBO_BOX(p2->range_pulldowns[i]),u->mappings[i]);
     slider_set_value(p2->range_scales[i],0,u->obj_vals[0][i]);
     slider_set_value(p2->range_scales[i],1,u->obj_vals[1][i]);
@@ -1036,11 +1006,11 @@ static void panel2d_undo_restore(sushiv_panel_t *p){
 
   if(!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(p2->dim_xb[u->x_d]))){
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(p2->dim_xb[u->x_d]),TRUE);
-    recomp_flag=1;
+    *recomp_flag=1;
   }
   if(!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(p2->dim_yb[u->y_d]))){
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(p2->dim_yb[u->y_d]),TRUE);
-    recomp_flag=1;
+    *recomp_flag=1;
   }
 
   update_xy_availability(p);
@@ -1052,84 +1022,12 @@ static void panel2d_undo_restore(sushiv_panel_t *p){
     plot_unset_box(plot);
     p2->oldbox_active = 0;
   }
-
-  if(recomp_flag)
-    _mark_recompute_2d(p);
-  else if(remap_flag)
-    _sushiv_panel_dirty_map(p);
-  else
-    plot_expose_request(plot);
-}
-
-static void panel2d_undo_push(sushiv_panel_t *p){
-  sushiv_panel2d_t *p2 = p->subtype->p2;
-  sushiv_panel2d_undo_t *u;
-  int i;
-  
-  if(p2->undo_suspend)return;
-
-  panel2d_undo_log(p);
-
-  if(p2->undo_stack[p2->undo_level+1]){
-    /* pop levels above this one */
-    i=p2->undo_level+1;
-    while(p2->undo_stack[i]){
-      u = p2->undo_stack[i];
-      if(u->mappings) free(u->mappings);
-      if(u->obj_vals[0]) free(u->obj_vals[0]);
-      if(u->obj_vals[1]) free(u->obj_vals[1]);
-      if(u->obj_vals[2]) free(u->obj_vals[2]);
-      if(u->dim_vals[0]) free(u->dim_vals[0]);
-      if(u->dim_vals[1]) free(u->dim_vals[1]);
-      if(u->dim_vals[2]) free(u->dim_vals[2]);
-      free(u);
-      p2->undo_stack[i]= NULL;
-      i++;
-    }
-  }
-
-  // realloc stack 
-  p2->undo_stack = realloc(p2->undo_stack,(p2->undo_level+3)*sizeof(*p2->undo_stack));
-  p2->undo_level++;
-  p2->undo_stack[p2->undo_level]=0;
-  p2->undo_stack[p2->undo_level+1]=0;
-  update_context_menus(p);
-
-}
-
-static void panel2d_undo_up(sushiv_panel_t *p){
-  sushiv_panel2d_t *p2 = p->subtype->p2;
-  
-  if(!p2->undo_stack)return;
-  if(!p2->undo_stack[p2->undo_level])return;
-  if(!p2->undo_stack[p2->undo_level+1])return;
-
-  p2->undo_level++;
-  panel2d_undo_suspend(p);
-  panel2d_undo_restore(p);
-  panel2d_undo_resume(p);
-  update_context_menus(p);
-}
-
-static void panel2d_undo_down(sushiv_panel_t *p){
-  sushiv_panel2d_t *p2 = p->subtype->p2;
-
-  if(!p2->undo_stack)return;
-  if(!p2->undo_level)return;
- 
-  panel2d_undo_log(p);
-  p2->undo_level--;
-
-  panel2d_undo_suspend(p);
-  panel2d_undo_restore(p);
-  panel2d_undo_resume(p);
-  update_context_menus(p);
 }
 
 // called with lock
 static void panel2d_find_peak(sushiv_panel_t *p){
   sushiv_panel2d_t *p2 = p->subtype->p2;
-  Plot *plot = PLOT(p2->graph);
+  Plot *plot = PLOT(p->private->graph);
   int i,j;
   int w = p2->data_w;
   int h = p2->data_h;
@@ -1207,13 +1105,13 @@ static gboolean panel2d_keypress(GtkWidget *widget,
 
   case GDK_BackSpace:
     // undo 
-    panel2d_undo_down(p);
+    _sushiv_panel_undo_down(p);
     return TRUE;
 
   case GDK_r:
   case GDK_space:
     // redo/forward
-    panel2d_undo_up(p);
+    _sushiv_panel_undo_up(p);
     return TRUE;
 
   case GDK_p:
@@ -1229,19 +1127,19 @@ static void update_context_menus(sushiv_panel_t *p){
   sushiv_panel2d_t *p2 = p->subtype->p2;
 
   // is undo active?
-  if(!p2->undo_stack ||
-     !p2->undo_level){
+  if(!p->private->undo_stack ||
+     !p->private->undo_level){
     gtk_widget_set_sensitive(gtk_menu_get_item(GTK_MENU(p2->popmenu),0),FALSE);
-    gtk_widget_set_sensitive(gtk_menu_get_item(GTK_MENU(p2->graphmenu),0),FALSE);
+    gtk_widget_set_sensitive(gtk_menu_get_item(GTK_MENU(p2->popmenu),0),FALSE);
   }else{
     gtk_widget_set_sensitive(gtk_menu_get_item(GTK_MENU(p2->popmenu),0),TRUE);
     gtk_widget_set_sensitive(gtk_menu_get_item(GTK_MENU(p2->graphmenu),0),TRUE);
   }
 
   // is redo active?
-  if(!p2->undo_stack ||
-     !p2->undo_stack[p2->undo_level] ||
-     !p2->undo_stack[p2->undo_level+1]){
+  if(!p->private->undo_stack ||
+     !p->private->undo_stack[p->private->undo_level] ||
+     !p->private->undo_stack[p->private->undo_level+1]){
     gtk_widget_set_sensitive(gtk_menu_get_item(GTK_MENU(p2->popmenu),1),FALSE);
     gtk_widget_set_sensitive(gtk_menu_get_item(GTK_MENU(p2->graphmenu),1),FALSE);
   }else{
@@ -1251,9 +1149,9 @@ static void update_context_menus(sushiv_panel_t *p){
 
   // are we starting or enacting a zoom box?
   if(p2->oldbox_active){ 
-    gtk_menu_alter_item_label(GTK_MENU(p2->graphmenu),3,"Zoom to box");
+    gtk_menu_alter_item_label(GTK_MENU(p2->popmenu),3,"Zoom to box");
   }else{
-    gtk_menu_alter_item_label(GTK_MENU(p2->graphmenu),3,"Start zoom box");
+    gtk_menu_alter_item_label(GTK_MENU(p2->popmenu),3,"Start zoom box");
   }
 
 }
@@ -1279,21 +1177,19 @@ static char *panel_shortlist[]={
 };
 
 static void (*panel_calllist[])(sushiv_panel_t *)={
-  &panel2d_undo_down,
-  &panel2d_undo_up,
+  &_sushiv_panel_undo_down,
+  &_sushiv_panel_undo_up,
   NULL,
   &wrap_exit,
   NULL,
 };
 
 static void wrap_enter(sushiv_panel_t *p){
-  sushiv_panel2d_t *p2 = p->subtype->p2;
-  plot_do_enter(PLOT(p2->graph));
+  plot_do_enter(PLOT(p->private->graph));
 }
 
 static void wrap_escape(sushiv_panel_t *p){
-  sushiv_panel2d_t *p2 = p->subtype->p2;
-  plot_do_escape(PLOT(p2->graph));
+  plot_do_escape(PLOT(p->private->graph));
 }
 
 static char *graph_menulist[]={
@@ -1321,8 +1217,8 @@ static char *graph_shortlist[]={
 };
 
 static void (*graph_calllist[])(sushiv_panel_t *)={
-  &panel2d_undo_down,
-  &panel2d_undo_up,
+  &_sushiv_panel_undo_down,
+  &_sushiv_panel_undo_up,
   NULL,
 
   &wrap_enter,
@@ -1338,25 +1234,25 @@ static void _sushiv_realize_panel2d(sushiv_panel_t *p){
   sushiv_panel2d_t *p2 = p->subtype->p2;
   int i;
 
-  panel2d_undo_suspend(p);
+  _sushiv_panel_undo_suspend(p);
 
-  p2->toplevel = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-  g_signal_connect_swapped (G_OBJECT (p2->toplevel), "delete-event",
+  p->private->toplevel = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+  g_signal_connect_swapped (G_OBJECT (p->private->toplevel), "delete-event",
 			    G_CALLBACK (_sushiv_clean_exit), (void *)SIGINT);
  
   p2->top_table = gtk_table_new(2 + p->objectives,5,0);
-  gtk_container_add (GTK_CONTAINER (p2->toplevel), p2->top_table);
-  gtk_container_set_border_width (GTK_CONTAINER (p2->toplevel), 5);
+  gtk_container_add (GTK_CONTAINER (p->private->toplevel), p2->top_table);
+  gtk_container_set_border_width (GTK_CONTAINER (p->private->toplevel), 5);
   
   p2->dim_table = gtk_table_new(p->dimensions,6,0);
   gtk_table_attach(GTK_TABLE(p2->top_table),p2->dim_table,0,5,1+p->objectives,2+p->objectives,
 		   GTK_EXPAND|GTK_FILL,0,0,5);
   
   /* graph */
-  p2->graph = GTK_WIDGET(plot_new(recompute_callback_2d,p,
+  p->private->graph = GTK_WIDGET(plot_new(recompute_callback_2d,p,
 				  (void *)(void *)_sushiv_panel2d_crosshairs_callback,p,
 				  box_callback,p)); 
-  gtk_table_attach(GTK_TABLE(p2->top_table),p2->graph,0,5,0,1,
+  gtk_table_attach(GTK_TABLE(p2->top_table),p->private->graph,0,5,0,1,
 		   GTK_EXPAND|GTK_FILL,GTK_EXPAND|GTK_FILL,0,5);
 
   /* objective sliders */
@@ -1481,12 +1377,12 @@ static void _sushiv_realize_panel2d(sushiv_panel_t *p){
   }
   update_xy_availability(p);
 
-  p2->popmenu = gtk_menu_new_twocol(p2->toplevel,
+  p2->popmenu = gtk_menu_new_twocol(p->private->toplevel,
 				    panel_menulist,
 				    panel_shortlist,
 				    (void *)(void *)panel_calllist,
 				    p);
-  p2->graphmenu = gtk_menu_new_twocol(p2->graph,
+  p2->graphmenu = gtk_menu_new_twocol(p->private->graph,
 				      graph_menulist,
 				      graph_shortlist,
 				      (void *)(void *)graph_calllist,
@@ -1494,19 +1390,19 @@ static void _sushiv_realize_panel2d(sushiv_panel_t *p){
 
   update_context_menus(p);
 
-  g_signal_connect (G_OBJECT (p2->toplevel), "key-press-event",
+  g_signal_connect (G_OBJECT (p->private->toplevel), "key-press-event",
                     G_CALLBACK (panel2d_keypress), p);
-  gtk_window_set_title (GTK_WINDOW (p2->toplevel), p->name);
+  gtk_window_set_title (GTK_WINDOW (p->private->toplevel), p->name);
 
-  gtk_widget_realize(p2->toplevel);
-  gtk_widget_realize(p2->graph);
-  gtk_widget_show_all(p2->toplevel);
+  gtk_widget_realize(p->private->toplevel);
+  gtk_widget_realize(p->private->graph);
+  gtk_widget_show_all(p->private->toplevel);
   update_xy_availability(p); // yes, this was already done; however,
 			     // gtk clobbered the event setup on the
 			     // insensitive buttons when it realized
 			     // them.  This call will restore them.
 
-  panel2d_undo_resume(p);
+  _sushiv_panel_undo_resume(p);
 }
 
 int sushiv_new_panel_2d(sushiv_instance_t *s,
@@ -1526,8 +1422,8 @@ int sushiv_new_panel_2d(sushiv_instance_t *s,
   p2 = calloc(1, sizeof(*p2));
   p->subtype = 
     calloc(1, sizeof(*p->subtype)); /* the union is alloced not
-				     embedded as its internal
-				     structure must be hidden */
+				       embedded as its internal
+				       structure must be hidden */
   
   p->subtype->p2 = p2;
   p->type = SUSHIV_PANEL_2D;
@@ -1547,6 +1443,9 @@ int sushiv_new_panel_2d(sushiv_instance_t *s,
   p->private->request_compute = _mark_recompute_2d;
   p->private->crosshair_action = _sushiv_panel2d_crosshairs_callback;
 
+  p->private->undo_log = panel2d_undo_log;
+  p->private->undo_restore = panel2d_undo_restore;
+  p->private->update_menus = update_context_menus;
   return 0;
 }
 
