@@ -979,11 +979,14 @@ void plot_unset_box(Plot *p){
 
 void plot_box_vals(Plot *p, double ret[4]){
   gdk_threads_enter();
-  ret[0] = (p->box_x1<p->box_x2?p->box_x1:p->box_x2);
-  ret[1] = (p->box_x1>p->box_x2?p->box_x1:p->box_x2);
+  int n = p->x.neg;
+  
+  ret[0] = (p->box_x1*n<p->box_x2*n?p->box_x1:p->box_x2);
+  ret[1] = (p->box_x1*n>p->box_x2*n?p->box_x1:p->box_x2);
 
-  ret[2] = (p->box_y1<p->box_y2?p->box_y1:p->box_y2);
-  ret[3] = (p->box_y1>p->box_y2?p->box_y1:p->box_y2);
+  n = p->y.neg;
+  ret[2] = (p->box_y1*n<p->box_y2*n?p->box_y1:p->box_y2);
+  ret[3] = (p->box_y1*n>p->box_y2*n?p->box_y1:p->box_y2);
   gdk_threads_leave();
 }
 

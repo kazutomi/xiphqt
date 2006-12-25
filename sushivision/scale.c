@@ -312,6 +312,7 @@ scalespace scalespace_linear (double lowpoint, double highpoint, int pixels, int
   ret.first_val = first;
 
   ret.first_pixel = rint((first - (lowpoint / ret.m)) * ret.step_pixel / ret.step_val);
+  ret.neg = neg;
 
   return ret;
 }

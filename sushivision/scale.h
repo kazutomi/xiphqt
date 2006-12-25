@@ -23,6 +23,7 @@ typedef struct {
   char *legend;
   double lo;
   double hi;
+  int neg;
 
   long long first_val;
   long first_pixel;
