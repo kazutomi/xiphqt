@@ -677,9 +677,14 @@ static void update_gradient(Slider *s){
 }
 
 void slider_motion(Slider *s,int slicenum,int x,int y){
-  int altered=0;
-  int i;
+  double altered[s->num_slices];
+  int i, grabflag=0;
   
+  for(i=0;i<s->num_slices;i++){
+    Slice *sl = SLICE(s->slices[i]);
+    altered[i] = sl->thumb_val;
+  }
+
   /* is a thumb already grabbed? */
   for(i=0;i<s->num_slices;i++){
     Slice *sl = SLICE(s->slices[i]);
@@ -687,19 +692,27 @@ void slider_motion(Slider *s,int slicenum,int x,int y){
       sl->thumb_val=
 	slider_pixel_to_val(s,slice_adjust_pixel(s,slicenum,x));
       slider_vals_bound(s,i);
-      altered=i+1;
+      grabflag = 1;
     }
   }
 
   // did a gradient get altered?
   update_gradient(s);
 
-  if(altered){
-    Slice *sl = SLICE(s->slices[altered-1]);
-    
-    if(sl->callback)sl->callback(sl->callback_data,1);
+  if(grabflag){
     slider_draw(s);
     slider_expose(s);
+
+    // call slice callbacks on all slices that were altered; value
+    // bounding might have affected slices other than the grabbed one.
+
+    for(i=0;i<s->num_slices;i++){
+      Slice *sl = SLICE(s->slices[i]);
+    
+      if(sl->thumb_val != altered[i])
+	if(sl->callback)sl->callback(sl->callback_data,1);
+    }
+
   }else{
     /* nothing grabbed right now; determine if we're in a a thumb's area */
     if(slider_lightme(s,slicenum,x,y)){
