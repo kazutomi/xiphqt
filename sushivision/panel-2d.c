@@ -236,7 +236,7 @@ static void update_xy_availability(sushiv_panel_t *p){
 
       // set the x dim flag
       p2->x_d = p->dimension_list[i].d;
-      p2->x_scale = p2->dim_scales[i];
+      p2->x_scale = p->private->dim_scales[i];
       p2->x_dnum = i;
       // set panel x scale to this dim
       p2->x = scalespace_linear(p2->x_d->bracket[0],
@@ -257,7 +257,7 @@ static void update_xy_availability(sushiv_panel_t *p){
 
       // set the y dim
       p2->y_d = p->dimension_list[i].d;
-      p2->y_scale = p2->dim_scales[i];
+      p2->y_scale = p->private->dim_scales[i];
       p2->y_dnum = i;
       // set panel y scale to this dim
       p2->y = scalespace_linear(p2->y_d->bracket[0],
@@ -275,12 +275,12 @@ static void update_xy_availability(sushiv_panel_t *p){
        (p2->dim_yb[i] &&
 	gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(p2->dim_yb[i])))){
       // make all thumbs visible 
-      slider_set_thumb_active(p2->dim_scales[i],0,1);
-      slider_set_thumb_active(p2->dim_scales[i],2,1);
+      slider_set_thumb_active(p->private->dim_scales[i],0,1);
+      slider_set_thumb_active(p->private->dim_scales[i],2,1);
     }else{
       // make bracket thumbs invisible */
-      slider_set_thumb_active(p2->dim_scales[i],0,0);
-      slider_set_thumb_active(p2->dim_scales[i],2,0);
+      slider_set_thumb_active(p->private->dim_scales[i],0,0);
+      slider_set_thumb_active(p->private->dim_scales[i],2,0);
     }
   } 
 }
@@ -605,9 +605,9 @@ static void update_crosshairs(sushiv_panel_t *p){
   for(i=0;i<p->dimensions;i++){
     sushiv_dimension_t *d = p->dimension_list[i].d;
     if(d == p2->x_d)
-      x = slider_get_value(p2->dim_scales[i],1);
+      x = slider_get_value(p->private->dim_scales[i],1);
     if(d == p2->y_d)
-      y = slider_get_value(p2->dim_scales[i],1);
+      y = slider_get_value(p->private->dim_scales[i],1);
     
   }
   
@@ -636,13 +636,15 @@ static void dim_callback_2d(void *in, int buttonstate){
   //Plot *plot = PLOT(p->private->graph);
   int dnum = dptr - p->dimension_list;
   int axisp = (d == p2->x_d || d == p2->y_d);
+  double val = slider_get_value(p->private->dim_scales[dnum],1);
+  int recursep = (val != d->val);
 
   if(buttonstate == 0){
     _sushiv_panel_undo_push(p);
     _sushiv_panel_undo_suspend(p);
   }
 
-  d->val = slider_get_value(p2->dim_scales[dnum],1);
+  d->val = slider_get_value(p->private->dim_scales[dnum],1);
 
   if(!axisp){
     // mid slider of a non-axis dimension changed, rerender
@@ -651,6 +653,11 @@ static void dim_callback_2d(void *in, int buttonstate){
     // mid slider of an axis dimension changed, move crosshairs
     update_crosshairs(p);
   }
+
+  /* dims can be shared amongst multiple panels; all must be updated */
+  if(recursep)
+    _sushiv_panel_update_shared_dimension(d,val);
+  
 
   if(buttonstate == 2)
     _sushiv_panel_undo_resume(p);
@@ -662,8 +669,8 @@ static void bracket_callback_2d(void *in, int buttonstate){
   sushiv_panel_t *p = dptr->p;
   sushiv_panel2d_t *p2 = p->subtype->p2;
   int dnum = dptr - p->dimension_list;
-  double lo = slider_get_value(p2->dim_scales[dnum],0);
-  double hi = slider_get_value(p2->dim_scales[dnum],2);
+  double lo = slider_get_value(p->private->dim_scales[dnum],0);
+  double hi = slider_get_value(p->private->dim_scales[dnum],2);
   
   if(buttonstate == 0){
     _sushiv_panel_undo_push(p);
@@ -689,6 +696,7 @@ static void bracket_callback_2d(void *in, int buttonstate){
       update_crosshairs(p);
 
       _mark_recompute_2d(p);
+      _sushiv_panel_update_shared_bracket(d,lo,hi);
     }
   }
  
@@ -725,7 +733,7 @@ static void _sushiv_panel2d_crosshairs_callback(sushiv_panel_t *p){
   for(i=0;i<p->dimensions;i++){
     sushiv_dimension_t *d = p->dimension_list[i].d;
     if(d == p2->x_d){
-      slider_set_value(p2->dim_scales[i],1,x);
+      slider_set_value(p->private->dim_scales[i],1,x);
 
       // key bindings could move crosshairs out of the window; we
       // stretch in that case, which requires a recompute.
@@ -733,7 +741,7 @@ static void _sushiv_panel2d_crosshairs_callback(sushiv_panel_t *p){
     }
 
     if(d == p2->y_d){
-      slider_set_value(p2->dim_scales[i],1,y);
+      slider_set_value(p->private->dim_scales[i],1,y);
 
       // key bindings could move crosshairs out of the window; we
       // stretch in that case, which requires a recompute.
@@ -874,7 +882,7 @@ static int _sushiv_panel_cooperative_compute_2d(sushiv_panel_t *p){
   }
 
   // Initialize local dimension value array
-  for(i=0;i<d;i++){
+  for(i=0;i<p->sushi->dimensions;i++){
     sushiv_dimension_t *dim = p->sushi->dimension_list[i];
     dim_vals[i]=dim->val;
   }
@@ -951,9 +959,9 @@ static void panel2d_undo_log(sushiv_panel_undo_t *u){
   }
 
   for(i=0;i<p->dimensions;i++){
-    u->dim_vals[0][i] = slider_get_value(p2->dim_scales[i],0);
-    u->dim_vals[1][i] = slider_get_value(p2->dim_scales[i],1);
-    u->dim_vals[2][i] = slider_get_value(p2->dim_scales[i],2);
+    u->dim_vals[0][i] = slider_get_value(p->private->dim_scales[i],0);
+    u->dim_vals[1][i] = slider_get_value(p->private->dim_scales[i],1);
+    u->dim_vals[2][i] = slider_get_value(p->private->dim_scales[i],2);
   }
   
   u->x_d = p2->x_dnum;
@@ -990,18 +998,18 @@ static void panel2d_undo_restore(sushiv_panel_undo_t *u, int *remap_flag, int *r
   }
 
   for(i=0;i<p->dimensions;i++){
-    /*if(slider_get_value(p2->dim_scales[i],0)!=u->dim_vals[0][i] ||
-       slider_get_value(p2->dim_scales[i],2)!=u->dim_vals[2][i]){
+    /*if(slider_get_value(p->private->dim_scales[i],0)!=u->dim_vals[0][i] ||
+       slider_get_value(p->private->dim_scales[i],2)!=u->dim_vals[2][i]){
       if(i==u->x_d || i==u->y_d)
 	recomp_flag=1;
     }
-    if(slider_get_value(p2->dim_scales[i],0)!=u->dim_vals[1][i]){
+    if(slider_get_value(p->private->dim_scales[i],0)!=u->dim_vals[1][i]){
       if(i!=u->x_d && i!=u->y_d)
 	recomp_flag=1;
 	}*/
-    slider_set_value(p2->dim_scales[i],0,u->dim_vals[0][i]);
-    slider_set_value(p2->dim_scales[i],1,u->dim_vals[1][i]);
-    slider_set_value(p2->dim_scales[i],2,u->dim_vals[2][i]);
+    slider_set_value(p->private->dim_scales[i],0,u->dim_vals[0][i]);
+    slider_set_value(p->private->dim_scales[i],1,u->dim_vals[1][i]);
+    slider_set_value(p->private->dim_scales[i],2,u->dim_vals[2][i]);
   }
 
   if(!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(p2->dim_xb[u->x_d]))){
@@ -1309,7 +1317,7 @@ static void _sushiv_realize_panel2d(sushiv_panel_t *p){
   GtkWidget *first_x = NULL;
   GtkWidget *first_y = NULL;
   GtkWidget *pressed_y = NULL;
-  p2->dim_scales = calloc(p->dimensions,sizeof(*p2->dim_scales));
+  p->private->dim_scales = calloc(p->dimensions,sizeof(*p->private->dim_scales));
   p2->dim_xb = calloc(p->dimensions,sizeof(*p2->dim_xb));
   p2->dim_yb = calloc(p->dimensions,sizeof(*p2->dim_yb));
 
@@ -1359,8 +1367,8 @@ static void _sushiv_realize_panel2d(sushiv_panel_t *p){
     gtk_table_attach(GTK_TABLE(p2->dim_table),sl[2],5,6,i,i+1,
 		     GTK_EXPAND|GTK_FILL,0,0,0);
 
-    p2->dim_scales[i] = slider_new((Slice **)sl,3,d->scale->label_list,d->scale->val_list,
-				   d->scale->vals,0);
+    p->private->dim_scales[i] = slider_new((Slice **)sl,3,d->scale->label_list,d->scale->val_list,
+					   d->scale->vals,0);
 
     slice_thumb_set((Slice *)sl[0],d->scale->val_list[0]);
     slice_thumb_set((Slice *)sl[1],0);

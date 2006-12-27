@@ -56,6 +56,7 @@ typedef struct sushiv_panel_undo {
 struct sushiv_panel_internal {
   GtkWidget *toplevel;
   GtkWidget *graph;
+  Slider **dim_scales;
 
   int realized;
   int maps_dirty;
@@ -100,5 +101,11 @@ extern void _sushiv_panel_undo_resume(sushiv_panel_t *p);
 extern void _sushiv_panel_undo_restore(sushiv_panel_t *p);
 extern void _sushiv_panel_undo_up(sushiv_panel_t *p);
 extern void _sushiv_panel_undo_down(sushiv_panel_t *p);
+
+extern void _sushiv_panel_update_shared_bracket(sushiv_dimension_t *d,
+						double lo, double hi);
+extern void _sushiv_panel_update_shared_dimension(sushiv_dimension_t *d,
+						  double val);
+
 
 extern sig_atomic_t _sushiv_exiting;

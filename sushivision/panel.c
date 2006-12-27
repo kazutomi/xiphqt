@@ -45,6 +45,42 @@ int _sushiv_panel_cooperative_compute(sushiv_panel_t *p){
   return 0;
 }
 
+void _sushiv_panel_update_shared_dimension(sushiv_dimension_t *d,
+					   double val){
+  int i,j;
+  sushiv_instance_t *s = d->sushi;
+  for(i=0;i<s->panels;i++){
+    sushiv_panel_t *p = s->panel_list[i];
+    if(p && p->private && p->private->dim_scales){
+      for(j=0;j<p->dimensions;j++){
+	sushiv_dimension_list_t *dl = p->dimension_list+j;
+	if(dl->d == d && p->private->dim_scales[j])
+	  slider_set_value(p->private->dim_scales[j],1,val);
+      }
+    }
+  }
+}
+
+void _sushiv_panel_update_shared_bracket(sushiv_dimension_t *d,
+					 double lo, double hi){
+  int i,j;
+  sushiv_instance_t *s = d->sushi;
+  for(i=0;i<s->panels;i++){
+    sushiv_panel_t *p = s->panel_list[i];
+    if(p && p->private && p->private->dim_scales){
+
+      for(j=0;j<p->dimensions;j++){
+	sushiv_dimension_list_t *dl = p->dimension_list+j;
+	if(dl->d == d && p->private->dim_scales[j]){
+	  slider_set_value(p->private->dim_scales[j],0,lo);
+	  slider_set_value(p->private->dim_scales[j],2,hi);
+	}
+      }
+
+    }
+  }
+}
+
 /* doesn't take an unbounded period, but shouldn't be
    synchronous in the interests of responsiveness. */
 static gboolean _map_idle_work(gpointer ptr){

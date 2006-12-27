@@ -41,7 +41,6 @@ typedef struct sushiv_panel2d {
   GtkWidget **range_pulldowns;
   double *alphadel;
 
-  Slider **dim_scales;
   GtkWidget **dim_xb;
   GtkWidget **dim_yb;
 
