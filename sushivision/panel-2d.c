@@ -1271,7 +1271,7 @@ static void _sushiv_realize_panel2d(sushiv_panel_t *p){
       GtkWidget *menu=gtk_combo_box_new_markup();
       int j;
       for(j=0;j<num_mappings();j++)
-	gtk_combo_box_append_text (GTK_COMBO_BOX (menu), "<i>testing</i>");//mapping_name(j));
+	gtk_combo_box_append_text (GTK_COMBO_BOX (menu), mapping_name(j));
       gtk_combo_box_set_active(GTK_COMBO_BOX(menu),0);
       g_signal_connect (G_OBJECT (menu), "changed",
 			G_CALLBACK (mapchange_callback_2d), p->objective_list+i);
