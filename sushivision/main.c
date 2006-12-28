@@ -171,6 +171,7 @@ int main (int argc, char *argv[]){
 
 sushiv_instance_t *sushiv_new_instance(void) {
   sushiv_instance_t *ret=calloc(1,sizeof(*ret));
+  ret->private = calloc(1,sizeof(*ret->private));
 
   if(instances){
     instance_list = realloc(instance_list,(instances+1)*sizeof(*instance_list));

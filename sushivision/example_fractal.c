@@ -73,6 +73,10 @@ int sushiv_submain(int argc, char *argv[]){
   sushiv_new_panel_1d_linked(s,1,"X Slice",s->objective_list[0]->scale,
 			     (int []){0,-1},
 			     0,0);
+
+  sushiv_new_panel_1d_linked(s,2,"Y Slice",s->objective_list[0]->scale,
+			     (int []){0,-1},
+			     0,SUSHIV_LINK_Y | SUSHIV_FLIP);
   
   return 0;
 }
