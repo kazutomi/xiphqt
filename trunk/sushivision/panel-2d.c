@@ -827,7 +827,7 @@ static int _sushiv_panel_cooperative_compute_2d(sushiv_panel_t *p){
 
   /* render using local dimension array; several threads will be
      computing objectives */
-  double dim_vals[d];
+  double dim_vals[p->sushi->dimensions];
 
   /* render into temporary line; computation may be interrupted by
      events such as resizing, so we must be careful to simply assume
