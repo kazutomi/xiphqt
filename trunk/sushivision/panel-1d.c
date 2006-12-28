@@ -391,6 +391,7 @@ void _mark_recompute_1d(sushiv_panel_t *p){
   int dw = w;
   sushiv_panel_t *link = (p1->link_x ? p1->link_x : p1->link_y);
   sushiv_panel2d_t *p2 = (link?link->subtype->p2:NULL);
+  int i,j;
 
   if(p1->link_x){
     dw = p2->data_w;
@@ -445,18 +446,19 @@ void _mark_recompute_1d(sushiv_panel_t *p){
     p1->panel_h = h;
     
     if(!p1->data_vec){
-      int i,j;
       // allocate it
 
       p1->data_vec = calloc(p->objectives,sizeof(*p1->data_vec));
       for(i=0;i<p->objectives;i++)
 	p1->data_vec[i] = malloc(dw*sizeof(**p1->data_vec));
       
-      // blank it 
-      for(i=0;i<p->objectives;i++)
-	for(j=0;j<dw;j++)
-	  p1->data_vec[i][j]=NAN;
     }
+
+    // blank it 
+    for(i=0;i<p->objectives;i++)
+      for(j=0;j<dw;j++)
+	p1->data_vec[i][j]=NAN;
+    _sushiv_panel1d_map_redraw(p);
 
     p1->serialno++;
     p1->last_line = 0;
