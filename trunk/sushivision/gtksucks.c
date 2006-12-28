@@ -340,3 +340,24 @@ void gtk_menu_alter_item_label(GtkMenu *m, int pos, char *text){
 
   gtk_label_set_label(GTK_LABEL(label),text);
 }
+
+/**********************************************************************/
+/* unlock text combo boxes to support markup as well as straight text */
+
+GtkWidget * gtk_combo_box_new_markup (void){
+  GtkWidget *combo_box;
+  GtkCellRenderer *cell;
+  GtkListStore *store;
+
+  store = gtk_list_store_new (1, G_TYPE_STRING);
+  combo_box = gtk_combo_box_new_with_model (GTK_TREE_MODEL (store));
+  g_object_unref (store);
+
+  cell = gtk_cell_renderer_text_new ();
+  gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (combo_box), cell, TRUE);
+  gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT (combo_box), cell,
+                                  "markup", 0,
+                                  NULL);
+
+  return combo_box;
+}

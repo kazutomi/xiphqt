@@ -41,6 +41,7 @@ union sushiv_panel_subtype {
 typedef struct sushiv_panel_undo {
   sushiv_panel_t *p;
   int *mappings;
+  int *submappings;
 
   double *scale_vals[3];
   double *obj_vals[3];

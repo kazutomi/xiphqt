@@ -68,9 +68,10 @@ void _sushiv_panel_undo_restore(sushiv_panel_t *p){
 
   if(recomp_flag)
     p->private->request_compute(p);
-  else if(remap_flag)
+  else if(remap_flag){
     p->private->map_redraw(p);
-  else
+    p->private->legend_redraw(p);
+  }else
     plot_expose_request(PLOT(p->private->graph));
 }
 
