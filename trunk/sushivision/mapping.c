@@ -362,14 +362,14 @@ static u_int32_t (*solidfunc[])(double,u_int32_t)={
 };
 
 static char *solidnames[]={
-  "white",
-  "red",
-  "green",
-  "blue",
-  "yellow",
-  "cyan",
-  "purple",
-  "gray",
+  "<span foreground=\"white\">white</span>",
+  "<span foreground=\"red\">white</span>",
+  "<span foreground=\"green\">white</span>",
+  "<span foreground=\"blue\">white</span>",
+  "<span foreground=\"yellow\">white</span>",
+  "<span foreground=\"cyan\">white</span>",
+  "<span foreground=\"purple\">white</span>",
+  "<span foreground=\"gray\">white</span>",
   "inactive",
   0
 };

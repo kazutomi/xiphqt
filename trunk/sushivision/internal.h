@@ -26,12 +26,13 @@
 #include "slice.h"
 #include "slider.h"
 #include "scale.h"
+#include "panel-1d.h"
 #include "panel-2d.h"
 #include "gtksucks.h"
 #include "plot.h"
 
 union sushiv_panel_subtype {
-  //sushiv_panel1d_t *p1;
+  sushiv_panel1d_t *p1;
   sushiv_panel2d_t *p2;
 };
 
@@ -108,5 +109,7 @@ extern void _sushiv_panel_update_shared_bracket(sushiv_dimension_t *d,
 extern void _sushiv_panel_update_shared_dimension(sushiv_dimension_t *d,
 						  double val);
 
+extern void _sushiv_panel1d_mark_recompute_linked(sushiv_panel_t *p); 
+extern void _sushiv_panel1d_update_linked_crosshairs(sushiv_panel_t *p); 
 
 extern sig_atomic_t _sushiv_exiting;

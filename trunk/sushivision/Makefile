@@ -14,10 +14,10 @@ MANDIR  = $(PREFIX)/man
 SOCFLAGS  = -fPIC
 SOLDFLAGS = -shared -nostdlib
 
-SRC  = main.c scale.c plot.c slider.c slice.c panel.c panel-2d.c mapping.c dimension.c objective.c undo.c gtksucks.c example_submain.c example_fractal.c
-OBJ  = main.o scale.o plot.o slider.o slice.o panel.o panel-2d.o mapping.o dimension.o objective.o undo.o gtksucks.o
-OBJ_EX1  = main.o scale.o plot.o slider.o slice.o panel.o panel-2d.o mapping.o dimension.o objective.o undo.o gtksucks.o example_submain.o
-OBJ_EX2  = main.o scale.o plot.o slider.o slice.o panel.o panel-2d.o mapping.o dimension.o objective.o undo.o gtksucks.o example_fractal.o
+SRC  = main.c scale.c plot.c slider.c slice.c panel.c panel-1d.c panel-2d.c mapping.c dimension.c objective.c undo.c gtksucks.c example_submain.c example_fractal.c
+OBJ  = main.o scale.o plot.o slider.o slice.o panel.o panel-1d.o panel-2d.o mapping.o dimension.o objective.o undo.o gtksucks.o
+OBJ_EX1  = main.o scale.o plot.o slider.o slice.o panel.o panel-1d.o panel-2d.o mapping.o dimension.o objective.o undo.o gtksucks.o example_submain.o
+OBJ_EX2  = main.o scale.o plot.o slider.o slice.o panel.o panel-1d.o panel-2d.o mapping.o dimension.o objective.o undo.o gtksucks.o example_fractal.o
 INC  = sushivision.h
 LIBS = -lpthread -ldl
 CAIROVER =  >= 1.0.0
