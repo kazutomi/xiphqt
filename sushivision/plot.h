@@ -72,6 +72,7 @@ struct _Plot{
   void (*crosshairs_callback)(void *);
 
   int legend_entries;
+  u_int32_t *legend_colors;
   char **legend_list;
 
   int expose_y_lo;
@@ -111,6 +112,7 @@ void plot_unset_box(Plot *p);
 void plot_box_vals(Plot *p, double ret[4]);
 void plot_box_set(Plot *p, double vals[4]);
 void plot_legend_add(Plot *p, char *entry);
+void plot_legend_add_with_color(Plot *p, char *entry, u_int32_t color);
 void plot_legend_clear(Plot *p);
 int plot_get_crosshair_xpixel(Plot *p);
 int plot_get_crosshair_ypixel(Plot *p);

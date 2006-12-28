@@ -189,8 +189,11 @@ static void draw_legend_work(Plot *p, cairo_surface_t *s){
     gdk_threads_enter();
     int n = p->legend_entries;
     char *buffer[n];
-    for(i=0;i<n;i++)
+    u_int32_t colors[n];
+    for(i=0;i<n;i++){
       buffer[i] = strdup(p->legend_list[i]);
+      colors[i] = p->legend_colors[i];
+    }
     gdk_threads_leave();
 
     cairo_select_font_face (c, "Sans",
@@ -226,7 +229,11 @@ static void draw_legend_work(Plot *p, cairo_surface_t *s){
       cairo_set_line_width(c,3);
       cairo_stroke(c);
 
-      cairo_set_source_rgba(c,1.,1.,1.,1.);
+      cairo_set_source_rgba(c,
+			    ((colors[i]>>16)&0xff)/255.,
+			    ((colors[i]>>8)&0xff)/255.,
+			    ((colors[i])&0xff)/255.,
+			    1.);
       cairo_move_to(c,x, y);
       cairo_show_text (c, buffer[i]);
 
@@ -1034,16 +1041,23 @@ void plot_legend_clear(Plot *p){
 }
 
 void plot_legend_add(Plot *p, char *entry){
-  if(!p->legend_list){
+  plot_legend_add_with_color(p,entry,0xffffffUL);
+}
+
+void plot_legend_add_with_color(Plot *p, char *entry, u_int32_t color){
+  if(!p->legend_list || !p->legend_colors){
     p->legend_list = calloc(1, sizeof(*p->legend_list));
+    p->legend_colors = calloc(1, sizeof(*p->legend_colors));
     p->legend_entries=1;
   }else{
     p->legend_entries++;
     p->legend_list = realloc(p->legend_list, p->legend_entries*sizeof(*p->legend_list));
+    p->legend_colors = realloc(p->legend_colors, p->legend_entries*sizeof(*p->legend_colors));
   }
 
   if(entry)
     p->legend_list[p->legend_entries-1] = strdup(entry);
   else
     p->legend_list[p->legend_entries-1] = strdup("");
+  p->legend_colors[p->legend_entries-1] = color;
 }
