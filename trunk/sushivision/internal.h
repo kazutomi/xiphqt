@@ -64,10 +64,6 @@ struct sushiv_panel_internal {
   int maps_dirty;
   int legend_dirty;
 
-  int undo_level;
-  int undo_suspend;
-  sushiv_panel_undo_t **undo_stack;
-
   // function bundles 
   void (*realize)(sushiv_panel_t *p);
   void (*map_redraw)(sushiv_panel_t *p);
@@ -79,6 +75,12 @@ struct sushiv_panel_internal {
   void (*undo_log)(sushiv_panel_undo_t *u);
   void (*undo_restore)(sushiv_panel_undo_t *u, int *mapflag, int *compflag);
   void (*update_menus)(sushiv_panel_t *p);
+};
+
+struct sushiv_instance_internal {
+  int undo_level;
+  int undo_suspend;
+  sushiv_panel_undo_t **undo_stack;
 };
 
 extern void _sushiv_realize_panel(sushiv_panel_t *p);

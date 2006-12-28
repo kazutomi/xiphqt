@@ -1121,19 +1121,19 @@ static void update_context_menus(sushiv_panel_t *p){
   sushiv_panel2d_t *p2 = p->subtype->p2;
 
   // is undo active?
-  if(!p->private->undo_stack ||
-     !p->private->undo_level){
+  if(!p->sushi->private->undo_stack ||
+     !p->sushi->private->undo_level){
     gtk_widget_set_sensitive(gtk_menu_get_item(GTK_MENU(p2->popmenu),0),FALSE);
-    gtk_widget_set_sensitive(gtk_menu_get_item(GTK_MENU(p2->popmenu),0),FALSE);
+    gtk_widget_set_sensitive(gtk_menu_get_item(GTK_MENU(p2->graphmenu),0),FALSE);
   }else{
     gtk_widget_set_sensitive(gtk_menu_get_item(GTK_MENU(p2->popmenu),0),TRUE);
     gtk_widget_set_sensitive(gtk_menu_get_item(GTK_MENU(p2->graphmenu),0),TRUE);
   }
 
   // is redo active?
-  if(!p->private->undo_stack ||
-     !p->private->undo_stack[p->private->undo_level] ||
-     !p->private->undo_stack[p->private->undo_level+1]){
+  if(!p->sushi->private->undo_stack ||
+     !p->sushi->private->undo_stack[p->sushi->private->undo_level] ||
+     !p->sushi->private->undo_stack[p->sushi->private->undo_level+1]){
     gtk_widget_set_sensitive(gtk_menu_get_item(GTK_MENU(p2->popmenu),1),FALSE);
     gtk_widget_set_sensitive(gtk_menu_get_item(GTK_MENU(p2->graphmenu),1),FALSE);
   }else{

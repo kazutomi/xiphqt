@@ -64,7 +64,6 @@ static void _sushiv_panel1d_remap(sushiv_panel_t *p){
     int xi,i;
     int dw = p1->data_size;
     double r = (p1->flip?p1->panel_w:p1->panel_h);
-    double neg = p1->y.neg;
 
     scalespace sx = (p1->flip?p1->y:p1->x);
     scalespace sy = (p1->flip?p1->x:p1->y);
@@ -84,43 +83,48 @@ static void _sushiv_panel1d_remap(sushiv_panel_t *p){
     }
 
     /* by objective */
-    for(i=0;i<p->objectives;i++){
-      double *data_vec = p1->data_vec[i];
-      double yprev=NAN,xprev=NAN;
-      
-      u_int32_t color = mapping_calc(p1->mappings+i,0,0);
-      cairo_set_source_rgb(c,
-			   ((color>>16)&0xff)/255.,
-			   ((color>>8)&0xff)/255.,
-			   ((color)&0xff)/255.);
-      
-      /* by x */
-      for(xi=0;xi<dw;xi++){
-	double val = data_vec[xi];
-	double xpixel = xi;
-	double ypixel = NAN;
-	
-	/* in linked panels, the data vector doesn't match the graph width; map */
-	if(p1->link_x || p1->link_y)
-	  xpixel = scalespace_pixel(&p1->x,scalespace_value(&p1->vs,xpixel))+.5;
-
-	/* map/render result */
-	if(!isnan(val))
-	  ypixel = scalespace_pixel(&p1->y,val)+.5;
-	
-	if(!isnan(ypixel) && !isnan(yprev)){
-	  if(p1->flip){
-	    cairo_move_to(c,yprev,r-xprev);
-	    cairo_line_to(c,ypixel,r-xpixel);
-	  }else{
-	    cairo_move_to(c,xprev,r-yprev);
-	    cairo_line_to(c,xpixel,r-ypixel);
+    if(p1->data_vec){
+      for(i=0;i<p->objectives;i++){
+	double *data_vec = p1->data_vec[i];
+	if(data_vec){
+	  double yprev=NAN,xprev=NAN;
+	  
+	  u_int32_t color = mapping_calc(p1->mappings+i,0,0);
+	  
+	  cairo_set_source_rgb(c,
+			       ((color>>16)&0xff)/255.,
+			       ((color>>8)&0xff)/255.,
+			       ((color)&0xff)/255.);
+	  
+	  /* by x */
+	  for(xi=0;xi<dw;xi++){
+	    double val = data_vec[xi];
+	    double xpixel = xi;
+	    double ypixel = NAN;
+	    
+	    /* in linked panels, the data vector doesn't match the graph width; map */
+	    if(p1->link_x || p1->link_y)
+	      xpixel = scalespace_pixel(&p1->x,scalespace_value(&p1->vs,xpixel))+.5;
+	    
+	    /* map/render result */
+	    if(!isnan(val))
+	      ypixel = scalespace_pixel(&p1->y,val)+.5;
+	    
+	    if(!isnan(ypixel) && !isnan(yprev)){
+	      if(p1->flip){
+		cairo_move_to(c,yprev,r-xprev);
+		cairo_line_to(c,ypixel,r-xpixel);
+	      }else{
+		cairo_move_to(c,xprev,r-yprev);
+		cairo_line_to(c,xpixel,r-ypixel);
+	      }
+	      cairo_stroke(c);
+	    }
+	    
+	    yprev=ypixel;
+	    xprev=xpixel;
 	  }
-	  cairo_stroke(c);
 	}
-
-	yprev=ypixel;
-	xprev=xpixel;
       }
     }
   }
@@ -610,8 +614,7 @@ static void bracket_callback_1d(void *in, int buttonstate){
     if(s.m == 0){
       fprintf(stderr,"X scale underflow; cannot zoom further.\n");
     }else{
-      p1->x=s;
-      
+
       d->bracket[0] = lo;
       d->bracket[1] = hi;
       update_crosshair(p);
@@ -762,8 +765,13 @@ int _sushiv_panel_cooperative_compute_1d(sushiv_panel_t *p){
   x_max = scalespace_value(&sv,dw);
   x_d = p1->x_d->number;
 
-  plot->x = sx;
-  plot->y = sy;
+  if(p1->flip){
+    plot->x = sy;
+    plot->y = sx;
+  }else{
+    plot->x = sx;
+    plot->y = sy;
+  }
 
   // Bulletproofing; shouldn't ever come up
   if(x_d==-1){
@@ -1001,8 +1009,8 @@ static void update_context_menus(sushiv_panel_t *p){
   sushiv_panel1d_t *p1 = p->subtype->p1;
 
   // is undo active?
-  if(!p->private->undo_stack ||
-     !p->private->undo_level){
+  if(!p->sushi->private->undo_stack ||
+     !p->sushi->private->undo_level){
     gtk_widget_set_sensitive(gtk_menu_get_item(GTK_MENU(p1->popmenu),0),FALSE);
     gtk_widget_set_sensitive(gtk_menu_get_item(GTK_MENU(p1->graphmenu),0),FALSE);
   }else{
@@ -1011,9 +1019,9 @@ static void update_context_menus(sushiv_panel_t *p){
   }
 
   // is redo active?
-  if(!p->private->undo_stack ||
-     !p->private->undo_stack[p->private->undo_level] ||
-     !p->private->undo_stack[p->private->undo_level+1]){
+  if(!p->sushi->private->undo_stack ||
+     !p->sushi->private->undo_stack[p->sushi->private->undo_level] ||
+     !p->sushi->private->undo_stack[p->sushi->private->undo_level+1]){
     gtk_widget_set_sensitive(gtk_menu_get_item(GTK_MENU(p1->popmenu),1),FALSE);
     gtk_widget_set_sensitive(gtk_menu_get_item(GTK_MENU(p1->graphmenu),1),FALSE);
   }else{
