@@ -835,26 +835,13 @@ static int _sushiv_panel_cooperative_compute_2d(sushiv_panel_t *p){
      checks. */
   u_int32_t render[w];
 
-  /* which dim is our x?  Our y? */
-  for(i=0;i<d;i++){
-    sushiv_dimension_t *dim = p->dimension_list[i].d;
-    if(dim == p2->x_d){
-      x_min = scalespace_value(&sx,0);
-      x_max = scalespace_value(&sx,w);
-      x_d = dim->number;
-      break;
-    }
-  }
+  x_min = scalespace_value(&sx,0);
+  x_max = scalespace_value(&sx,w);
+  x_d = p2->x_d->number;
 
-  for(i=0;i<d;i++){
-    sushiv_dimension_t *dim = p->dimension_list[i].d;
-    if(dim == p2->y_d){
-      y_min = scalespace_value(&sy,h);
-      y_max = scalespace_value(&sy,0);
-      y_d = dim->number;
-      break;
-    }
-  }
+  y_min = scalespace_value(&sy,h);
+  y_max = scalespace_value(&sy,0);
+  y_d = p2->y_d->number;
 
   // if the scale bound has changed, fast scale our background data to fill
   // the pane while new, more precise data renders.
@@ -1281,10 +1268,10 @@ static void _sushiv_realize_panel2d(sushiv_panel_t *p){
     
     /* mapping pulldown */
     {
-      GtkWidget *menu=gtk_combo_box_new_text();
+      GtkWidget *menu=gtk_combo_box_new_markup();
       int j;
       for(j=0;j<num_mappings();j++)
-	gtk_combo_box_append_text (GTK_COMBO_BOX (menu), mapping_name(j));
+	gtk_combo_box_append_text (GTK_COMBO_BOX (menu), "<i>testing</i>");//mapping_name(j));
       gtk_combo_box_set_active(GTK_COMBO_BOX(menu),0);
       g_signal_connect (G_OBJECT (menu), "changed",
 			G_CALLBACK (mapchange_callback_2d), p->objective_list+i);
