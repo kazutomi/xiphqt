@@ -533,7 +533,7 @@ static void _mark_recompute_2d(sushiv_panel_t *p){
   int w = plot->w.allocation.width;
   int h = plot->w.allocation.height;
 
-  //_sushiv_panel1d_mark_recompute_linked(p);    XXXX
+  _sushiv_panel1d_mark_recompute_linked(p);   
 
   if(plot && GTK_WIDGET_REALIZED(GTK_WIDGET(plot))){
     if(p2->data_w != plot->w.allocation.width ||
@@ -623,7 +623,7 @@ static void update_crosshairs(sushiv_panel_t *p){
       d->val = scalespace_value(&plot->y,p2->data_h - plot_get_crosshair_ypixel(plot));
   }
 
-  // _sushiv_panel1d_update_linked_crosshairs(p); XXXX
+  _sushiv_panel1d_update_linked_crosshairs(p); 
 
   update_legend(p);
 }
@@ -1246,7 +1246,7 @@ static void _sushiv_realize_panel2d(sushiv_panel_t *p){
   /* graph */
   p->private->graph = GTK_WIDGET(plot_new(recompute_callback_2d,p,
 				  (void *)(void *)_sushiv_panel2d_crosshairs_callback,p,
-				  box_callback,p)); 
+				  box_callback,p,0)); 
   gtk_table_attach(GTK_TABLE(p2->top_table),p->private->graph,0,5,0,1,
 		   GTK_EXPAND|GTK_FILL,GTK_EXPAND|GTK_FILL,0,5);
 

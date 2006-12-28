@@ -44,11 +44,15 @@ typedef struct sushiv_instance {
 
 #define SUSHIV_NO_X 0x100
 #define SUSHIV_NO_Y 0x200
+#define SUSHIV_LINK_X 0x400 
+#define SUSHIV_LINK_Y 0x800 
+#define SUSHIV_FLIP 0x1000 
 
 struct sushiv_scale{
   int vals;
   double *val_list;
   char **label_list; 
+  char *legend;
 };
 
 typedef struct sushiv_panel_internal sushiv_panel_internal_t;
@@ -114,7 +118,7 @@ struct sushiv_panel {
 extern sushiv_instance_t *sushiv_new_instance(void);
 
 extern void scale_free(sushiv_scale_t *s);
-extern sushiv_scale_t *scale_new(unsigned scalevals, double *scaleval_list);
+extern sushiv_scale_t *scale_new(unsigned scalevals, double *scaleval_list, const char *legend);
 extern int scale_set_scalelabels(sushiv_scale_t *s, char **scalelabel_list);
 
 extern int sushiv_new_dimension(sushiv_instance_t *s,
@@ -153,7 +157,7 @@ extern int sushiv_new_panel_1d_linked(sushiv_instance_t *s,
 				      const char *name,
 				      sushiv_scale_t *scale,
 				      int *objectives,
-				      sushiv_panel_t *s2d,
+				      int linkee,
 				      unsigned flags);
 
 extern int sushiv_new_panel_xy(sushiv_instance_t *s,

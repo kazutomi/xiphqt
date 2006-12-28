@@ -62,7 +62,7 @@ int sushiv_new_objective(sushiv_instance_t *s,
   o->callback = callback;
 
   if(scalevals>0 && scaleval_list)
-    o->scale=scale_new(scalevals, scaleval_list);
+    o->scale=scale_new(scalevals, scaleval_list, name);
 
   return 0;
 }

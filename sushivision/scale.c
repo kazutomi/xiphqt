@@ -155,11 +155,12 @@ void scale_free(sushiv_scale_t *s){
 	free(s->label_list[i]);
       free(s->label_list);
     }
+    if(s->legend)free(s->legend);
     free(s);
   }
 }
 
-sushiv_scale_t *scale_new(unsigned scalevals, double *scaleval_list){
+sushiv_scale_t *scale_new(unsigned scalevals, double *scaleval_list, const char *legend){
   int i;
 
   sushiv_scale_t *s = NULL;
@@ -179,7 +180,10 @@ sushiv_scale_t *scale_new(unsigned scalevals, double *scaleval_list){
 
   // generate labels
   s->label_list = scale_generate_labels(scalevals,scaleval_list);
-
+  if(legend)
+    s->legend=strdup(legend);
+  else
+    s->legend=strdup("");
   return s;
 }
 

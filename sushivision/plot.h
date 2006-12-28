@@ -78,6 +78,8 @@ struct _Plot{
   int expose_y_hi;
   time_t last_line_expose;
   time_t begin;
+
+  unsigned flags;
 };
 
 struct _PlotClass{
@@ -88,7 +90,8 @@ struct _PlotClass{
 GType     plot_get_type        (void);
 Plot     *plot_new (void (*callback)(void *),void *app_data,
 		    void (*cross_callback)(void *),void *cross_data,
-		    void (*box_callback)(void *,int),void *box_data);
+		    void (*box_callback)(void *,int),void *box_data,
+		    unsigned flags);
 
 G_END_DECLS
 
@@ -114,3 +117,6 @@ int plot_get_crosshair_ypixel(Plot *p);
 
 void plot_do_enter(Plot *p);
 void plot_do_escape(Plot *p);
+
+#define PLOT_NO_X_CROSS 1
+#define PLOT_NO_Y_CROSS 2

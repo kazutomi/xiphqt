@@ -343,16 +343,32 @@ static void plot_draw (Plot *p,
       double sy = plot_get_crosshair_ypixel(p);
       cairo_set_source_rgba(c,1.,1.,1.,.8);
       cairo_set_line_width(c,1.);
-      cairo_move_to(c,0,sy+.5);
-      cairo_line_to(c,widget->allocation.width,sy+.5);
-      cairo_move_to(c,sx+.5,0);
-      cairo_line_to(c,sx+.5,widget->allocation.height);
+
+      if(! (p->flags && PLOT_NO_Y_CROSS)){
+	cairo_move_to(c,0,sy+.5);
+	cairo_line_to(c,widget->allocation.width,sy+.5);
+      }
+
+      if(! (p->flags && PLOT_NO_X_CROSS)){
+	cairo_move_to(c,sx+.5,0);
+	cairo_line_to(c,sx+.5,widget->allocation.height);
+      }
       cairo_stroke(c);
     }
 
     if(p->box_active){
       double vals[4];
       box_corners(p,vals);
+
+      if(p->flags && PLOT_NO_X_CROSS){
+	vals[0]=-1;
+	vals[2]=widget->allocation.width+2;
+      }
+
+      if(p->flags && PLOT_NO_Y_CROSS){
+	vals[1]=-1;
+	vals[2]=widget->allocation.height+2;
+      }
 
       cairo_rectangle(c,vals[0],vals[1],vals[2]+1,vals[3]+1);	
       if(p->box_active>1)
@@ -819,7 +835,8 @@ GType plot_get_type (void){
 
 Plot *plot_new (void (*callback)(void *),void *app_data,
 		void (*cross_callback)(void *),void *cross_data,
-		void (*box_callback)(void *, int),void *box_data) {
+		void (*box_callback)(void *, int),void *box_data,
+		unsigned flags) {
   GtkWidget *g = GTK_WIDGET (g_object_new (PLOT_TYPE, NULL));
   Plot *p = PLOT (g);
   p->recompute_callback = callback;
@@ -828,6 +845,7 @@ Plot *plot_new (void (*callback)(void *),void *app_data,
   p->cross_data = cross_data;
   p->box_callback = box_callback;
   p->box_data = box_data;
+  p->flags = flags;
 
   struct timeval now;
   gettimeofday(&now,NULL);

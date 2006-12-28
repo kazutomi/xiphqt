@@ -60,6 +60,6 @@ int sushiv_new_dimension(sushiv_instance_t *s,
   d->flags = flags;
   d->sushi = s;
   d->callback = callback;
-  d->scale = scale_new(scalevals, scaleval_list);
+  d->scale = scale_new(scalevals, scaleval_list, name);
   return 0;
 }
