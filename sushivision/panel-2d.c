@@ -528,6 +528,7 @@ static void fast_scale(double *newdata,
 
 // call only from main gtk thread!
 static void _mark_recompute_2d(sushiv_panel_t *p){
+  if(!p->private->realized) return;
   sushiv_panel2d_t *p2 = p->subtype->p2;
   Plot *plot = PLOT(p->private->graph);
   int w = plot->w.allocation.width;
@@ -558,9 +559,6 @@ static void _mark_recompute_2d(sushiv_panel_t *p){
       }
     }
     
-    p2->serialno++;
-    p2->last_line = 0;
-    
     if(!p2->data_rect){
       int i,j;
       // allocate it
@@ -587,6 +585,9 @@ static void _mark_recompute_2d(sushiv_panel_t *p){
       _sushiv_panel2d_map_redraw(p);
     }
 
+    p2->serialno++;
+    p2->last_line = 0;
+    
     _sushiv_wake_workers();
   }
 }
@@ -815,9 +816,7 @@ static int _sushiv_panel_cooperative_compute_2d(sushiv_panel_t *p){
   if(p2->last_line==h){
     p2->last_line++;
     gdk_threads_leave ();
-    plot_expose_request(plot);
     update_legend(p); 
-    //_sushiv_panel1d_mark_recompute_linked(p);    
     return 0;
   }
   

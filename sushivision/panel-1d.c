@@ -64,7 +64,6 @@ static void _sushiv_panel1d_remap(sushiv_panel_t *p){
     int xi,i;
     int dw = p1->data_size;
     double r = (p1->flip?p1->panel_w:p1->panel_h);
-    double alpha = p1->alphaval;
     double neg = p1->y.neg;
 
     scalespace sx = (p1->flip?p1->y:p1->x);
@@ -106,7 +105,7 @@ static void _sushiv_panel1d_remap(sushiv_panel_t *p){
 	  xpixel = scalespace_pixel(&p1->x,scalespace_value(&p1->vs,xpixel))+.5;
 
 	/* map/render result */
-	if(!isnan(val) && val*neg > alpha*neg)
+	if(!isnan(val))
 	  ypixel = scalespace_pixel(&p1->y,val)+.5;
 	
 	if(!isnan(ypixel) && !isnan(yprev)){
@@ -117,6 +116,7 @@ static void _sushiv_panel1d_remap(sushiv_panel_t *p){
 	    cairo_move_to(c,xprev,r-yprev);
 	    cairo_line_to(c,xpixel,r-ypixel);
 	  }
+	  cairo_stroke(c);
 	}
 
 	yprev=ypixel;
@@ -213,13 +213,17 @@ static void update_legend(sushiv_panel_t *p){
 	
 	for(i=0;i<p->objectives;i++){
 	  float val = p1->data_vec[i][bin];
+	  u_int32_t color = mapping_calc(p1->mappings+i,0,0);
 
 	  if(!isnan(val)){
 	    snprintf(buffer,320,"%s = %f",
 		     p->objective_list[i].o->name,
 		     val);
-	    plot_legend_add(plot,buffer);
+	  }else{
+	    snprintf(buffer,320,"%s",
+		     p->objective_list[i].o->name);
 	  }
+	  plot_legend_add_with_color(plot,buffer,color);
 	}
       }
     }
@@ -276,22 +280,19 @@ static void map_callback_1d(void *in,int buttonstate){
     _sushiv_panel_undo_suspend(p);
   }
 
-  // recache alpha vals 
-  p1->alphaval = slider_get_value(p1->range_slider,1);
-
   // has new bracketing changed the plot range scale?
   if(p1->range_bracket[0] != slider_get_value(p1->range_slider,0) ||
-     p1->range_bracket[1] != slider_get_value(p1->range_slider,2)){
+     p1->range_bracket[1] != slider_get_value(p1->range_slider,1)){
 
     int w = plot->w.allocation.width;
     int h = plot->w.allocation.height;
 
     p1->range_bracket[0] = slider_get_value(p1->range_slider,0);
-    p1->range_bracket[1] = slider_get_value(p1->range_slider,2);
+    p1->range_bracket[1] = slider_get_value(p1->range_slider,1);
     
     p1->y = scalespace_linear(p1->range_bracket[0],
 			      p1->range_bracket[1],
-			      (p1->flip?h:w),
+			      (p1->flip?w:h),
 			      PLOT(p->private->graph)->scalespacing,
 			      p1->range_scale->legend);
   }
@@ -378,6 +379,7 @@ static void compute_1d(sushiv_panel_t *p,
 
 // call only from main gtk thread
 void _mark_recompute_1d(sushiv_panel_t *p){
+  if(!p->private->realized) return;
   sushiv_panel1d_t *p1 = p->subtype->p1;
   Plot *plot = PLOT(p->private->graph);
   int w = plot->w.allocation.width;
@@ -386,16 +388,18 @@ void _mark_recompute_1d(sushiv_panel_t *p){
   sushiv_panel_t *link = (p1->link_x ? p1->link_x : p1->link_y);
   sushiv_panel2d_t *p2 = (link?link->subtype->p2:NULL);
 
-  if(plot && GTK_WIDGET_REALIZED(GTK_WIDGET(plot))){
+  if(p1->link_x){
+    dw = p2->data_w;
+    p1->x_d = p2->x_d;
+    p1->x_scale = p2->x_scale;
+  }
+  if(p1->link_y){
+    dw = p2->data_h;
+    p1->x_d = p2->y_d;
+    p1->x_scale = p2->y_scale;
+  }
 
-    if(p1->link_x){
-      dw = p2->data_w;
-      p1->x_d = p2->x_d;
-    }
-    if(p1->link_y){
-      dw = p2->data_h;
-      p1->x_d = p2->y_d;
-    }
+  if(plot && GTK_WIDGET_REALIZED(GTK_WIDGET(plot))){
 
     p1->x = scalespace_linear(p1->x_d->bracket[0],
 			      p1->x_d->bracket[1],
@@ -404,7 +408,7 @@ void _mark_recompute_1d(sushiv_panel_t *p){
 			      p1->x_d->name);
     p1->y = scalespace_linear(p1->range_bracket[0],
 			      p1->range_bracket[1],
-			      (p1->flip?h:w),
+			      (p1->flip?w:h),
 			      PLOT(p->private->graph)->scalespacing,
 			      p1->range_scale->legend);
     
@@ -435,7 +439,6 @@ void _mark_recompute_1d(sushiv_panel_t *p){
     p1->data_size = dw;
     p1->panel_w = w;
     p1->panel_h = h;
-    p1->serialno++;
     
     if(!p1->data_vec){
       int i,j;
@@ -450,7 +453,9 @@ void _mark_recompute_1d(sushiv_panel_t *p){
 	for(j=0;j<dw;j++)
 	  p1->data_vec[i][j]=NAN;
     }
-    
+
+    p1->serialno++;
+    p1->last_line = 0;
     _sushiv_wake_workers();
   }
 }
@@ -485,6 +490,8 @@ static void update_crosshair(sushiv_panel_t *p){
   Plot *plot = PLOT(p->private->graph);
   double x=0;
   int i;
+
+  if(!p->private->realized)return;
   
   if(p1->link_y)link=p1->link_y;
 
@@ -503,9 +510,9 @@ static void update_crosshair(sushiv_panel_t *p){
   }
   
   if(p1->flip)
-    plot_set_crosshairs(PLOT(p->private->graph),0,x);
+    plot_set_crosshairs(plot,0,x);
   else
-    plot_set_crosshairs(PLOT(p->private->graph),x,0);
+    plot_set_crosshairs(plot,x,0);
   
   // in independent panels, crosshairs snap to a pixel position; the
   // cached dimension value should be accurate with respect to the
@@ -534,11 +541,14 @@ void _sushiv_panel1d_update_linked_crosshairs(sushiv_panel_t *p){
     sushiv_panel_t *q = s->panel_list[i];
     if(q != p && q->type == SUSHIV_PANEL_1D){
       sushiv_panel1d_t *q1 = q->subtype->p1;
-      if(q1->link_x == p)
+      if(q1->link_x == p){
 	update_crosshair(q);
-      else{
-	if(q1->link_y == p)
+	q->private->request_compute(q);
+      }else{
+	if(q1->link_y == p){
 	  update_crosshair(q);
+	  q->private->request_compute(q);
+	}
       }
     }
   }
@@ -673,8 +683,8 @@ static void crosshair_callback(sushiv_panel_t *p){
             
       p1->oldbox_active = 0;
     }
+    _sushiv_panel_undo_resume(p);
   }
-  _sushiv_panel_undo_resume(p);
 }
 
 static void box_callback(void *in, int state){
@@ -749,7 +759,7 @@ int _sushiv_panel_cooperative_compute_1d(sushiv_panel_t *p){
   double dim_vals[p->sushi->dimensions];
 
   x_min = scalespace_value(&sv,0);
-  x_max = scalespace_value(&sv,w);
+  x_max = scalespace_value(&sv,dw);
   x_d = p1->x_d->number;
 
   plot->x = sx;
@@ -785,6 +795,7 @@ int _sushiv_panel_cooperative_compute_1d(sushiv_panel_t *p){
     
     /* compute */
     compute_1d(p, serialno, x_d, x_min, x_max, dw, dim_vals);
+    _sushiv_panel1d_map_redraw(p);
   }else
     gdk_threads_leave ();
 
@@ -818,7 +829,6 @@ static void panel1d_undo_log(sushiv_panel_undo_t *u){
   // populate undo
   u->scale_vals[0][0] = slider_get_value(p1->range_slider,0);
   u->scale_vals[1][0] = slider_get_value(p1->range_slider,1);
-  u->scale_vals[2][0] = slider_get_value(p1->range_slider,2);
 
   for(i=0;i<p->objectives;i++){
     u->mappings[i] = p1->mappings[i].mapnum;
@@ -849,14 +859,12 @@ static void panel1d_undo_restore(sushiv_panel_undo_t *u, int *remap_flag, int *r
 
   // go in through widgets
   if(slider_get_value(p1->range_slider,0)!=u->scale_vals[0][0] ||
-     slider_get_value(p1->range_slider,1)!=u->scale_vals[1][0] ||
-     slider_get_value(p1->range_slider,2)!=u->scale_vals[2][0]){ 
+     slider_get_value(p1->range_slider,1)!=u->scale_vals[1][0]){
     *remap_flag = 1;
   }
    
   slider_set_value(p1->range_slider,0,u->scale_vals[0][0]);
   slider_set_value(p1->range_slider,1,u->scale_vals[1][0]);
-  slider_set_value(p1->range_slider,2,u->scale_vals[2][0]);
 
   for(i=0;i<p->objectives;i++){
     if(gtk_combo_box_get_active(GTK_COMBO_BOX(p1->map_pulldowns[i])) != u->mappings[i] ||
@@ -874,9 +882,11 @@ static void panel1d_undo_restore(sushiv_panel_undo_t *u, int *remap_flag, int *r
     slider_set_value(p->private->dim_scales[i],2,u->dim_vals[2][i]);
   }
 
-  if(!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(p1->dim_xb[u->x_d]))){
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(p1->dim_xb[u->x_d]),TRUE);
-    *recomp_flag=1;
+  if(p1->dim_xb && u->x_d<p->dimensions && p1->dim_xb[u->x_d]){
+    if(!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(p1->dim_xb[u->x_d]))){
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(p1->dim_xb[u->x_d]),TRUE);
+      *recomp_flag=1;
+    }
   }
 
   update_x_sel(p);
@@ -1103,7 +1113,7 @@ void _sushiv_realize_panel1d(sushiv_panel_t *p){
   g_signal_connect_swapped (G_OBJECT (p->private->toplevel), "delete-event",
 			    G_CALLBACK (_sushiv_clean_exit), (void *)SIGINT);
  
-  p1->top_table = gtk_table_new(4,4,0);
+  p1->top_table = gtk_table_new(3,4,0);
 
   gtk_container_add (GTK_CONTAINER (p->private->toplevel), p1->top_table);
   gtk_container_set_border_width (GTK_CONTAINER (p->private->toplevel), 5);
@@ -1132,7 +1142,7 @@ void _sushiv_realize_panel1d(sushiv_panel_t *p){
 
   /* range slider */
   {
-    GtkWidget **sl = calloc(3,sizeof(*sl));
+    GtkWidget **sl = calloc(2,sizeof(*sl));
 
     int lo = p1->range_scale->val_list[0];
     int hi = p1->range_scale->val_list[p1->range_scale->vals-1];
@@ -1144,29 +1154,25 @@ void _sushiv_realize_panel1d(sushiv_panel_t *p){
       GtkWidget *label = gtk_label_new(buf);
       gtk_table_attach(GTK_TABLE(p1->top_table),label,0,1,1,2,
 		       0,0,10,0);
-      free(label);
+      free(buf);
     }
 
     /* the range slices/slider */ 
     sl[0] = slice_new(map_callback_1d,p);
     sl[1] = slice_new(map_callback_1d,p);
-    sl[2] = slice_new(map_callback_1d,p);
 
     gtk_table_attach(GTK_TABLE(p1->top_table),sl[0],1,2,1,2,
 		     GTK_EXPAND|GTK_FILL,0,0,0);
     gtk_table_attach(GTK_TABLE(p1->top_table),sl[1],2,3,1,2,
 		     GTK_EXPAND|GTK_FILL,0,0,0);
-    gtk_table_attach(GTK_TABLE(p1->top_table),sl[2],3,4,1,2,
-		     GTK_EXPAND|GTK_FILL,0,0,0);
-    p1->range_slider = slider_new((Slice **)sl,3,
+    p1->range_slider = slider_new((Slice **)sl,2,
 				  p1->range_scale->label_list,
 				  p1->range_scale->val_list,
 				  p1->range_scale->vals,
 				  SLIDER_FLAG_INDEPENDENT_MIDDLE);
 
     slice_thumb_set((Slice *)sl[0],lo);
-    slice_thumb_set((Slice *)sl[1],lo);
-    slice_thumb_set((Slice *)sl[2],hi);
+    slice_thumb_set((Slice *)sl[1],hi);
   }
 
   /* objective pulldowns */
@@ -1195,6 +1201,7 @@ void _sushiv_realize_panel1d(sushiv_panel_t *p){
       gtk_table_attach(GTK_TABLE(p1->obj_table),menu,1,2,i,i+1,
 		       GTK_SHRINK,GTK_SHRINK,5,0);
       p1->map_pulldowns[i] = menu;
+      solid_setup(&p1->mappings[i],0.,1.,0);
     }
 
     /* line pulldown */
@@ -1341,7 +1348,7 @@ int sushiv_new_panel_1d_linked(sushiv_instance_t *s,
   p->private->undo_log = panel1d_undo_log;
   p->private->undo_restore = panel1d_undo_restore;
   p->private->update_menus = update_context_menus;
-
+  
   return 0;
 }
 
