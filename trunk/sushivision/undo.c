@@ -111,7 +111,9 @@ void _sushiv_panel_undo_push(sushiv_panel_t *p){
   _sushiv_panel_undo_log(p);
 
   // realloc stack 
-  p->sushi->private->undo_stack = realloc(p->sushi->private->undo_stack,(p->sushi->private->undo_level+3)*sizeof(*p->sushi->private->undo_stack));
+  p->sushi->private->undo_stack = 
+    realloc(p->sushi->private->undo_stack,
+	    (p->sushi->private->undo_level+3)*sizeof(*p->sushi->private->undo_stack));
   p->sushi->private->undo_level++;
   p->sushi->private->undo_stack[p->sushi->private->undo_level]=NULL;
   p->sushi->private->undo_stack[p->sushi->private->undo_level+1]=NULL;

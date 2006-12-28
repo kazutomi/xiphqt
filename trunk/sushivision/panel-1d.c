@@ -63,7 +63,7 @@ static void _sushiv_panel1d_remap(sushiv_panel_t *p){
   if(plot){
     int xi,i;
     int dw = p1->data_size;
-    double r = (p1->flip?p1->panel_w:p1->panel_h);
+    double h = p1->panel_h;
 
     scalespace sx = (p1->flip?p1->y:p1->x);
     scalespace sy = (p1->flip?p1->x:p1->y);
@@ -112,11 +112,11 @@ static void _sushiv_panel1d_remap(sushiv_panel_t *p){
 	    
 	    if(!isnan(ypixel) && !isnan(yprev)){
 	      if(p1->flip){
-		cairo_move_to(c,yprev,r-xprev);
-		cairo_line_to(c,ypixel,r-xpixel);
+		cairo_move_to(c,yprev,h-xprev);
+		cairo_line_to(c,ypixel,h-xpixel);
 	      }else{
-		cairo_move_to(c,xprev,r-yprev);
-		cairo_line_to(c,xpixel,r-ypixel);
+		cairo_move_to(c,xprev,h-yprev);
+		cairo_line_to(c,xpixel,h-ypixel);
 	      }
 	      cairo_stroke(c);
 	    }
