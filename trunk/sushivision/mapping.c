@@ -328,25 +328,25 @@ static u_int32_t swhite(double val, u_int32_t mix){
   return 0xffffffU;
 }
 static u_int32_t sred(double val, u_int32_t mix){
-  return 0xff0000U;
+  return 0xff6060U;
 }
 static u_int32_t sgreen(double val, u_int32_t mix){
-  return 0x00ff00U;
+  return 0x60ff60U;
 }
 static u_int32_t sblue(double val, u_int32_t mix){
-  return 0x0000ffU;
+  return 0x8080ffU;
 }
 static u_int32_t syellow(double val, u_int32_t mix){
   return 0xffff00U;
 }
 static u_int32_t scyan(double val, u_int32_t mix){
-  return 0x00ffffU;
+  return 0x60ffffU;
 }
 static u_int32_t spurple(double val, u_int32_t mix){
-  return 0xff00ffU;
+  return 0xff60ffU;
 }
 static u_int32_t sgray(double val, u_int32_t mix){
-  return 0xa0a0a0aU;
+  return 0xa0a0a0U;
 }
 
 static u_int32_t (*solidfunc[])(double,u_int32_t)={
@@ -363,13 +363,13 @@ static u_int32_t (*solidfunc[])(double,u_int32_t)={
 
 static char *solidnames[]={
   "<span foreground=\"white\">white</span>",
-  "<span foreground=\"red\">white</span>",
-  "<span foreground=\"green\">white</span>",
-  "<span foreground=\"blue\">white</span>",
-  "<span foreground=\"yellow\">white</span>",
-  "<span foreground=\"cyan\">white</span>",
-  "<span foreground=\"purple\">white</span>",
-  "<span foreground=\"gray\">white</span>",
+  "<span foreground=\"red\">red</span>",
+  "<span foreground=\"green\">green</span>",
+  "<span foreground=\"blue\">blue</span>",
+  "<span foreground=\"yellow\">yellow</span>",
+  "<span foreground=\"cyan\">cyan</span>",
+  "<span foreground=\"purple\">purple</span>",
+  "<span foreground=\"gray\">gray</span>",
   "inactive",
   0
 };
