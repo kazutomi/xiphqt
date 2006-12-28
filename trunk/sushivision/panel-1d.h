@@ -47,7 +47,6 @@ typedef struct sushiv_panel1d {
   int flip;
   sushiv_scale_t *range_scale;
   Slider *range_slider;
-  double alphaval;
   double range_bracket[2];
   
   mapping *mappings;

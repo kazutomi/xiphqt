@@ -316,6 +316,17 @@ static void box_corners(Plot *p, double vals[4]){
   vals[1] = (y1<y2 ? y1 : y2);
   vals[2] = fabs(x1-x2);
   vals[3] = fabs(y1-y2);
+
+  if(p->flags & PLOT_NO_X_CROSS){
+    vals[0]=-1;
+    vals[2]=widget->allocation.width+2;
+  }
+  
+  if(p->flags & PLOT_NO_Y_CROSS){
+    vals[1]=-1;
+    vals[3]=widget->allocation.height+2;
+  }
+  
 }
 
 static int inside_box(Plot *p, int x, int y){
@@ -351,12 +362,12 @@ static void plot_draw (Plot *p,
       cairo_set_source_rgba(c,1.,1.,1.,.8);
       cairo_set_line_width(c,1.);
 
-      if(! (p->flags && PLOT_NO_Y_CROSS)){
+      if(! (p->flags & PLOT_NO_Y_CROSS)){
 	cairo_move_to(c,0,sy+.5);
 	cairo_line_to(c,widget->allocation.width,sy+.5);
       }
 
-      if(! (p->flags && PLOT_NO_X_CROSS)){
+      if(! (p->flags & PLOT_NO_X_CROSS)){
 	cairo_move_to(c,sx+.5,0);
 	cairo_line_to(c,sx+.5,widget->allocation.height);
       }
@@ -366,16 +377,6 @@ static void plot_draw (Plot *p,
     if(p->box_active){
       double vals[4];
       box_corners(p,vals);
-
-      if(p->flags && PLOT_NO_X_CROSS){
-	vals[0]=-1;
-	vals[2]=widget->allocation.width+2;
-      }
-
-      if(p->flags && PLOT_NO_Y_CROSS){
-	vals[1]=-1;
-	vals[2]=widget->allocation.height+2;
-      }
 
       cairo_rectangle(c,vals[0],vals[1],vals[2]+1,vals[3]+1);	
       if(p->box_active>1)

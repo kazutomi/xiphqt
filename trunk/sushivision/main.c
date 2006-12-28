@@ -124,6 +124,8 @@ static void sushiv_realize_instance(sushiv_instance_t *s){
   int i;
   for(i=0;i<s->panels;i++)
     _sushiv_realize_panel(s->panel_list[i]);
+  for(i=0;i<s->panels;i++)
+    s->panel_list[i]->private->request_compute(s->panel_list[i]);
 }
 
 static void sushiv_realize_all(void){
