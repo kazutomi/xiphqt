@@ -539,7 +539,7 @@ double slider_del_to_val(Slider *s, double del){
 }
 
 void slider_vals_bound(Slider *s,int slicenum){
-  int i,flag=0;
+  int i,flag=-1;
   Slice *center = SLICE(s->slices[slicenum]);
   double min = (s->neg ? s->label_vals[s->labels-1] : s->label_vals[0]);
   double max = (s->neg ? s->label_vals[0] : s->label_vals[s->labels-1]);
@@ -557,19 +557,25 @@ void slider_vals_bound(Slider *s,int slicenum){
     flag=1;
   
   for(i=slicenum-1; i>=0;i--){
-    if(flag && (i==0 || i==1))continue;
+    int i2 = i+1;
+    if(i==flag)continue;
+    if(i2 == flag)i2++;
+    if(i2>=s->num_slices)continue;
 
     Slice *sl = SLICE(s->slices[i]);
-    Slice *sl2 = SLICE(s->slices[i+1]);
+    Slice *sl2 = SLICE(s->slices[i2]);
     if((sl->thumb_val>sl2->thumb_val)^flip)
       sl->thumb_val=sl2->thumb_val;
   }
   
   for(i=slicenum+1; i<s->num_slices;i++){
-    if(flag && (i==2 || i==1))continue;
-
+    int i2 = i-1;
+    if(i==flag)continue;
+    if(i2 == flag)i2--;
+    if(i2<0)continue;
+  
     Slice *sl = SLICE(s->slices[i]);
-    Slice *sl2 = SLICE(s->slices[i-1]);
+    Slice *sl2 = SLICE(s->slices[i2]);
     if((sl->thumb_val<sl2->thumb_val)^flip)
       sl->thumb_val=sl2->thumb_val;
   }
