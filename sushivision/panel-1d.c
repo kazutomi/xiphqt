@@ -50,6 +50,16 @@ static char *line_name[LINETYPES+1] = {
 
 static void update_context_menus(sushiv_panel_t *p);
 
+static int ilog10(int x){
+  int count=0;
+  if(x<0)x=-x;
+  while(x){
+    count++;
+    x/=10;
+  }
+  return count;
+}
+
 // called internally, assumes we hold lock
 // redraws the data, does not compute the data
 static void _sushiv_panel1d_remap(sushiv_panel_t *p){
@@ -130,35 +140,6 @@ static void _sushiv_panel1d_remap(sushiv_panel_t *p){
   }
 }
 
-void _sushiv_panel1d_map_redraw(sushiv_panel_t *p){
-  Plot *plot = PLOT(p->private->graph);
-
-  gdk_threads_enter (); // misuse me as a global mutex
-  
-  _sushiv_panel1d_remap(p);
-  if(plot)
-    plot_expose_request(plot);
- 
-  gdk_threads_leave (); // misuse me as a global mutex
-}
-
-void _sushiv_panel1d_legend_redraw(sushiv_panel_t *p){
-  Plot *plot = PLOT(p->private->graph);
-
-  if(plot)
-    plot_draw_scales(plot);
-}
-
-static int ilog10(int x){
-  int count=0;
-  if(x<0)x=-x;
-  while(x){
-    count++;
-    x/=10;
-  }
-  return count;
-}
-
 static void update_legend(sushiv_panel_t *p){  
   sushiv_panel1d_t *p1 = p->subtype->p1;
   Plot *plot = PLOT(p->private->graph);
@@ -212,30 +193,52 @@ static void update_legend(sushiv_panel_t *p){
     {
       double val = (p1->flip?plot->sely:plot->selx);
       int bin = scalespace_pixel(&p1->vs, val);
+      u_int32_t color = mapping_calc(p1->mappings+i,0,0);
+	  
+      for(i=0;i<p->objectives;i++){
 
-      if(bin>=0 && bin<p1->data_size){
+	snprintf(buffer,320,"%s",
+		 p->objective_list[i].o->name);
 	
-	for(i=0;i<p->objectives;i++){
+	if(bin>=0 && bin<p1->data_size){
+	  
 	  float val = p1->data_vec[i][bin];
-	  u_int32_t color = mapping_calc(p1->mappings+i,0,0);
-
+	  
 	  if(!isnan(val)){
 	    snprintf(buffer,320,"%s = %f",
 		     p->objective_list[i].o->name,
 		     val);
-	  }else{
-	    snprintf(buffer,320,"%s",
-		     p->objective_list[i].o->name);
 	  }
-	  plot_legend_add_with_color(plot,buffer,color);
 	}
+	
+	plot_legend_add_with_color(plot,buffer,color);
+
       }
     }
     gdk_threads_leave ();
-    
-    _sushiv_panel_dirty_legend(p);
-    
   }
+}
+
+void _sushiv_panel1d_map_redraw(sushiv_panel_t *p){
+  Plot *plot = PLOT(p->private->graph);
+
+  gdk_threads_enter (); // misuse me as a global mutex
+  
+  _sushiv_panel1d_remap(p);
+  if(plot)
+    plot_expose_request(plot);
+ 
+  gdk_threads_leave (); // misuse me as a global mutex
+}
+
+void _sushiv_panel1d_legend_redraw(sushiv_panel_t *p){
+  Plot *plot = PLOT(p->private->graph);
+
+  gdk_threads_enter (); // misuse me as a global mutex
+  update_legend(p);
+  if(plot)
+    plot_draw_scales(plot);
+  gdk_threads_leave (); // misuse me as a global mutex
 }
 
 static void mapchange_callback_1d(GtkWidget *w,gpointer in){
@@ -252,8 +255,8 @@ static void mapchange_callback_1d(GtkWidget *w,gpointer in){
   solid_set_func(&p1->mappings[onum],
 		 gtk_combo_box_get_active(GTK_COMBO_BOX(w)));
 
-  update_legend(p);
   _sushiv_panel_dirty_map(p);
+  _sushiv_panel_dirty_legend(p);
   _sushiv_panel_undo_resume(p);
 }
 
@@ -269,7 +272,6 @@ static void linetype_callback_1d(GtkWidget *w,gpointer in){
   // update colormap
   p1->linetype[onum]=gtk_combo_box_get_active(GTK_COMBO_BOX(w));
 
-  //update_legend(p);
   _sushiv_panel_dirty_map(p);
   _sushiv_panel_undo_resume(p);
 }
@@ -535,7 +537,7 @@ static void update_crosshair(sushiv_panel_t *p){
 	d->val = scalespace_value(&plot->x,plot_get_crosshair_xpixel(plot));
     }
   }
-  update_legend(p);
+  _sushiv_panel_dirty_legend(p);
 }
 
 void _sushiv_panel1d_update_linked_crosshairs(sushiv_panel_t *p){
@@ -741,20 +743,12 @@ int _sushiv_panel_cooperative_compute_1d(sushiv_panel_t *p){
   sy = p1->y;
   sv = p1->vs;
   
-  if(p1->last_line==2){
+  if(p1->last_line){
     gdk_threads_leave ();
     return 0;
   }
 
   plot = PLOT(p->private->graph);
-
-  if(p1->last_line){
-    p1->last_line++;
-    gdk_threads_leave ();
-    plot_expose_request(plot);
-    update_legend(p); 
-    return 0;
-  }
   
   serialno = p1->serialno;
   d = p->dimensions;
@@ -805,7 +799,11 @@ int _sushiv_panel_cooperative_compute_1d(sushiv_panel_t *p){
     
     /* compute */
     compute_1d(p, serialno, x_d, x_min, x_max, dw, dim_vals);
-    _sushiv_panel1d_map_redraw(p);
+    gdk_threads_enter ();
+    _sushiv_panel_dirty_map(p);
+    _sushiv_panel_dirty_legend(p);
+    gdk_threads_leave ();
+
   }else
     gdk_threads_leave ();
 

@@ -806,20 +806,13 @@ static int _sushiv_panel_cooperative_compute_2d(sushiv_panel_t *p){
   sx = p2->x;
   sy = p2->y;
 
-  if(p2->last_line>h){
+  if(p2->last_line>=h){
     gdk_threads_leave ();
     return 0;
   }
 
   plot = PLOT(p->private->graph);
 
-  if(p2->last_line==h){
-    p2->last_line++;
-    gdk_threads_leave ();
-    update_legend(p); 
-    return 0;
-  }
-  
   serialno = p2->serialno;
   invh = 1./h;
   d = p->dimensions;
@@ -906,6 +899,11 @@ static int _sushiv_panel_cooperative_compute_2d(sushiv_panel_t *p){
       u_int32_t *line = plot_get_background_line(plot, y);
       memcpy(line,render,w*sizeof(*render));
       plot_expose_request_line(plot,y);
+
+      if(p2->last_line==h){
+	_sushiv_panel_dirty_map(p);
+	_sushiv_panel_dirty_legend(p);
+      }
     }else
       break;
   }
