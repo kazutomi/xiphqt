@@ -85,41 +85,67 @@ void _sushiv_panel_update_shared_bracket(sushiv_dimension_t *d,
    synchronous in the interests of responsiveness. */
 static gboolean _map_idle_work(gpointer ptr){
   sushiv_instance_t *s = (sushiv_instance_t *)ptr;
-  int i;
+  int i,flag=1;
   
-  for(i=0;i<s->panels;i++){
-    sushiv_panel_t *p = s->panel_list[i];
-    if(p->private->maps_dirty){
-      p->private->maps_dirty = 0;
-      p->private->map_redraw(p);
+  while(flag){
+    flag = 0;
+    
+    for(i=0;i<s->panels;i++){
+      sushiv_panel_t *p = s->panel_list[i];
+      gdk_threads_enter ();
+      if(p->private->maps_dirty){
+	p->private->maps_dirty = 0;
+	flag=1;
+	gdk_threads_leave ();
+      
+	p->private->map_redraw(p);
+
+      }else
+	gdk_threads_leave ();
     }
-  }  
+  }
+
   return FALSE;
 }
 
 static gboolean _legend_idle_work(gpointer ptr){
   sushiv_instance_t *s = (sushiv_instance_t *)ptr;
-  int i;
+  int i,flag=1;
   
-  for(i=0;i<s->panels;i++){
-    sushiv_panel_t *p = s->panel_list[i];
-    if(p->private->legend_dirty){
-      p->private->legend_dirty = 0;
-      p->private->legend_redraw(p);
+  while(flag){
+    flag = 0;
+
+    for(i=0;i<s->panels;i++){
+      sushiv_panel_t *p = s->panel_list[i];
+      gdk_threads_enter ();
+      if(p->private->legend_dirty){
+	p->private->legend_dirty = 0;
+	flag=1;
+	gdk_threads_leave ();
+      
+	p->private->legend_redraw(p);
+
+      }else
+	gdk_threads_leave ();
     }
   }
+
   return FALSE;
 }
 
 
 void _sushiv_panel_dirty_map(sushiv_panel_t *p){
+  gdk_threads_enter ();
   p->private->maps_dirty = 1;
   g_idle_add(_map_idle_work,p->sushi);
+  gdk_threads_leave ();
 }
 
 void _sushiv_panel_dirty_legend(sushiv_panel_t *p){
+  gdk_threads_enter ();
   p->private->legend_dirty = 1;
   g_idle_add(_legend_idle_work,p->sushi);
+  gdk_threads_leave ();
 }
 
 int _sushiv_new_panel(sushiv_instance_t *s,
