@@ -871,41 +871,37 @@ static int _sushiv_panel_cooperative_compute_2d(sushiv_panel_t *p){
 
   /* iterate */
   /* by line */
-  while(!_sushiv_exiting){
-    int last = p2->last_line;
-    int y;
-    if(plot->w.allocation.height != h)break;
-    if(last>=h)break;
-    if(serialno != p2->serialno)break;
-    p2->last_line++;
+  if(plot->w.allocation.height == h &&
+     p2->last_line<h &&
+     serialno == p2->serialno){
+    int y = v_swizzle(p2->last_line,h);
 
+    p2->last_line++;
+    
     /* unlock for computation */
     gdk_threads_leave ();
-
+    
     if(render_scale_flag){
       plot_draw_scales(plot);
       render_scale_flag = 0;
     }
-
-    y = v_swizzle(last,h);
+    
     dim_vals[y_d]= (y_max - y_min) / h * y + y_min;
-
+    
     /* compute line */
     compute_one_line_2d(p, serialno, y, x_d, x_min, x_max, w, dim_vals, render);
-
+    
     /* move rendered line back into widget */
     gdk_threads_enter ();
     if(p2->serialno == serialno){
       u_int32_t *line = plot_get_background_line(plot, y);
       memcpy(line,render,w*sizeof(*render));
       plot_expose_request_line(plot,y);
-
-      if(p2->last_line==h){
-	_sushiv_panel_dirty_map(p);
+      
+      if(p2->last_line==h){ // yes, the current last_line!
 	_sushiv_panel_dirty_legend(p);
       }
-    }else
-      break;
+    }
   }
    
   gdk_threads_leave ();
