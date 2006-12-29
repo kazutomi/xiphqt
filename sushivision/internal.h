@@ -112,6 +112,6 @@ extern void _sushiv_panel_update_shared_dimension(sushiv_dimension_t *d,
 						  double val);
 
 extern void _sushiv_panel1d_mark_recompute_linked(sushiv_panel_t *p); 
-extern void _sushiv_panel1d_update_linked_crosshairs(sushiv_panel_t *p); 
+extern void _sushiv_panel1d_update_linked_crosshairs(sushiv_panel_t *p, int xflag, int yflag); 
 
 extern sig_atomic_t _sushiv_exiting;

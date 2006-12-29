@@ -601,7 +601,7 @@ static void update_crosshairs(sushiv_panel_t *p){
   sushiv_panel2d_t *p2 = p->subtype->p2;
   Plot *plot = PLOT(p->private->graph);
   double x=0,y=0;
-  int i;
+  int i,xflag=0,yflag=0;
   
   for(i=0;i<p->dimensions;i++){
     sushiv_dimension_t *d = p->dimension_list[i].d;
@@ -612,20 +612,7 @@ static void update_crosshairs(sushiv_panel_t *p){
     
   }
   
-  plot_set_crosshairs(PLOT(p->private->graph),x,y);
-
-  // crosshairs snap to a pixel position; the cached dimension value
-  // should be accurate with respect to the crosshairs
-  for(i=0;i<p->dimensions;i++){
-    sushiv_dimension_t *d = p->dimension_list[i].d;
-    if(d == p2->x_d)
-      d->val = scalespace_value(&plot->x,plot_get_crosshair_xpixel(plot));
-    if(d == p2->y_d)
-      d->val = scalespace_value(&plot->y,p2->data_h - plot_get_crosshair_ypixel(plot));
-  }
-
-  _sushiv_panel1d_update_linked_crosshairs(p); 
-
+  plot_set_crosshairs_snap(PLOT(p->private->graph),x,y);
   update_legend(p);
 }
 
@@ -653,12 +640,12 @@ static void dim_callback_2d(void *in, int buttonstate){
   }else{
     // mid slider of an axis dimension changed, move crosshairs
     update_crosshairs(p);
+    _sushiv_panel1d_update_linked_crosshairs(p,d==p2->x_d,d==p2->y_d); 
   }
 
   /* dims can be shared amongst multiple panels; all must be updated */
   if(recursep)
     _sushiv_panel_update_shared_dimension(d,val);
-  
 
   if(buttonstate == 2)
     _sushiv_panel_undo_resume(p);
@@ -734,23 +721,28 @@ static void _sushiv_panel2d_crosshairs_callback(sushiv_panel_t *p){
   for(i=0;i<p->dimensions;i++){
     sushiv_dimension_t *d = p->dimension_list[i].d;
     if(d == p2->x_d){
-      slider_set_value(p->private->dim_scales[i],1,x);
+      if(p2->x_d->val != x){
+	slider_set_value(p->private->dim_scales[i],1,x);
 
-      // key bindings could move crosshairs out of the window; we
-      // stretch in that case, which requires a recompute.
-      bracket_callback_2d(p->dimension_list+i,1);
+	// key bindings could move crosshairs out of the window; we
+	// stretch in that case, which requires a recompute.
+	bracket_callback_2d(p->dimension_list+i,1);
+      }
     }
 
     if(d == p2->y_d){
-      slider_set_value(p->private->dim_scales[i],1,y);
-
-      // key bindings could move crosshairs out of the window; we
-      // stretch in that case, which requires a recompute.
-      bracket_callback_2d(p->dimension_list+i,1);
+      if(p2->y_d->val != y){
+	slider_set_value(p->private->dim_scales[i],1,y);
+      
+	// key bindings could move crosshairs out of the window; we
+	// stretch in that case, which requires a recompute.
+	bracket_callback_2d(p->dimension_list+i,1);
+      }
     }
 
     p2->oldbox_active = 0;
   }
+
   _sushiv_panel_undo_resume(p);
 }
 
