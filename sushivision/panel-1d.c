@@ -460,7 +460,6 @@ void _mark_recompute_1d(sushiv_panel_t *p){
     for(i=0;i<p->objectives;i++)
       for(j=0;j<dw;j++)
 	p1->data_vec[i][j]=NAN;
-    _sushiv_panel1d_map_redraw(p);
 
     p1->serialno++;
     p1->last_line = 0;
