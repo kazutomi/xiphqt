@@ -540,7 +540,7 @@ static void update_crosshair(sushiv_panel_t *p){
   _sushiv_panel_dirty_legend(p);
 }
 
-void _sushiv_panel1d_update_linked_crosshairs(sushiv_panel_t *p){
+void _sushiv_panel1d_update_linked_crosshairs(sushiv_panel_t *p, int xflag, int yflag){
   int i;
 
   /* look to see if any 1d panels link to passed in panel */
@@ -550,12 +550,16 @@ void _sushiv_panel1d_update_linked_crosshairs(sushiv_panel_t *p){
     if(q != p && q->type == SUSHIV_PANEL_1D){
       sushiv_panel1d_t *q1 = q->subtype->p1;
       if(q1->link_x == p){
-	update_crosshair(q);
-	q->private->request_compute(q);
+	if(xflag)
+	  update_crosshair(q);
+	if(yflag)
+	  q->private->request_compute(q);
       }else{
 	if(q1->link_y == p){
-	  update_crosshair(q);
-	  q->private->request_compute(q);
+	  if(yflag)
+	    update_crosshair(q);
+	  if(xflag)
+	    q->private->request_compute(q);
 	}
       }
     }
@@ -662,13 +666,13 @@ static void crosshair_callback(sushiv_panel_t *p){
   
   if(p1->link_x){
     // make it the master panel's problem.
-    plot_set_crosshairs(PLOT(link->private->graph),
+    plot_set_crosshairs_snap(PLOT(link->private->graph),
 			x,
 			PLOT(link->private->graph)->sely);
     link->private->crosshair_action(link);
   }else if (p1->link_y){
     // make it the master panel's problem.
-    plot_set_crosshairs(PLOT(link->private->graph),
+    plot_set_crosshairs_snap(PLOT(link->private->graph),
 			PLOT(link->private->graph)->selx,
 			x);
     link->private->crosshair_action(link);

@@ -964,8 +964,22 @@ cairo_t *plot_get_background_cairo(Plot *p){
 
 void plot_set_crosshairs(Plot *p, double x, double y){
   gdk_threads_enter();
+
   p->selx = x;
   p->sely = y;
+  p->cross_active=1;
+
+  plot_expose_request(p);
+  gdk_threads_leave();
+}
+
+void plot_set_crosshairs_snap(Plot *p, double x, double y){
+  gdk_threads_enter();
+  double xpixel =  rint(scalespace_pixel(&p->x,x));
+  double ypixel =  rint(scalespace_pixel(&p->y,y));
+
+  p->selx = scalespace_value(&p->x,xpixel);
+  p->sely = scalespace_value(&p->y,ypixel);
   p->cross_active=1;
 
   plot_expose_request(p);
