@@ -80,7 +80,7 @@ struct sushiv_objective {
   sushiv_scale_t *scale;
   unsigned flags;
 
-  double (*callback)(double[]);
+  void (*callback)(double *,double *);
   sushiv_instance_t *sushi;
   sushiv_objective_internal_t *private;
 };
@@ -134,7 +134,7 @@ extern int sushiv_new_objective(sushiv_instance_t *s,
 				const char *name,
 				unsigned scalevals, 
 				double *scaleval_list,
-				double (*callback)(double *),
+				void (*callback)(double *, double *),
 				unsigned flags);
 
 extern int sushiv_new_panel_2d(sushiv_instance_t *s,

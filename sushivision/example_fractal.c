@@ -27,20 +27,22 @@
 sushiv_instance_t *s;
 #define MAX_ITER 1024
 
-static double fractal_objective(double *d){
+static void fractal_objective(double *d, double *ret){
   int i;
   double z, zi, zz;
   const double c=d[0],ci=d[1];
 
+  *ret=NAN;
   z = d[2]; zi = d[3];
   for(i=0;i<MAX_ITER;i++){
     zz = z*z - zi*zi + c;
     zi = 2.0*z*zi + ci;
     z  = zz;
-    if (z*z + zi*zi > 4.0) return (double)i/MAX_ITER;
+    if (z*z + zi*zi > 4.0){
+      *ret = (double)i/MAX_ITER;
+      return;
+    }
   }
-
-  return NAN;
 }
 
 int sushiv_submain(int argc, char *argv[]){
