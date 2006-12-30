@@ -607,33 +607,46 @@ static void bracket_callback_1d(void *in, int buttonstate){
   int dnum = dptr - p->dimension_list;
   double lo = slider_get_value(p->private->dim_scales[dnum],0);
   double hi = slider_get_value(p->private->dim_scales[dnum],2);
-  
+  int axisp = d == p1->x_d;
+
   if(buttonstate == 0){
     _sushiv_panel_undo_push(p);
     _sushiv_panel_undo_suspend(p);
   }
 
   if(d->bracket[0] != lo || d->bracket[1] != hi){
-    scalespace s = scalespace_linear(lo,hi,p1->data_size,
-				     PLOT(p->private->graph)->scalespacing,
-				     d->name);
-    
-    if(s.m == 0){
-      fprintf(stderr,"X scale underflow; cannot zoom further.\n");
-    }else{
 
-      d->bracket[0] = lo;
-      d->bracket[1] = hi;
-      update_crosshair(p);
+    d->bracket[0] = lo;
+    d->bracket[1] = hi;
+    
+    if(axisp){
+      scalespace s = scalespace_linear(lo,hi,p1->data_size,
+				       PLOT(p->private->graph)->scalespacing,
+				       d->name);
+      
+      if(s.m == 0){
+	  fprintf(stderr,"X scale underflow; cannot zoom further.\n");
+
+	// abort attempt
+	if(buttonstate == 2)
+	  _sushiv_panel_undo_resume(p);
+	return;
+
+      }
 
       _mark_recompute_1d(p);
-      _sushiv_panel_update_shared_bracket(d,lo,hi);
+    
     }
-  }
+    
+    _sushiv_panel_update_shared_bracket(d,lo,hi);
  
+  }
+  
   if(buttonstate == 2)
     _sushiv_panel_undo_resume(p);
 }
+
+
 
 static void dimchange_callback_1d(GtkWidget *button,gpointer in){
   sushiv_panel_t *p = (sushiv_panel_t *)in;
@@ -974,7 +987,6 @@ static gboolean panel1d_keypress(GtkWidget *widget,
 				 GdkEventKey *event,
 				 gpointer in){
   sushiv_panel_t *p = (sushiv_panel_t *)in;
-  //  sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
   
   if(event->state&GDK_MOD1_MASK) return FALSE;
   if(event->state&GDK_CONTROL_MASK)return FALSE;
