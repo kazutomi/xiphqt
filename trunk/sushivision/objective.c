@@ -30,7 +30,7 @@ int sushiv_new_objective(sushiv_instance_t *s,
 			 const char *name,
 			 unsigned scalevals,
 			 double *scaleval_list,
-			 double(*callback)(double *),
+			 void(*callback)(double *,double *),
 			 unsigned flags){
   sushiv_objective_t *o;
   

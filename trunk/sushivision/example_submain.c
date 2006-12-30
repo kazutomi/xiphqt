@@ -29,7 +29,7 @@ sushiv_instance_t *s;
 /* time, blocksz, amp_0, amp_del, freq_0, phase_0, phase_del */
 int funcsize=64;
 double function[64];
-static double fourier_objective(double *d){
+static void fourier_objective(double *d, double *ret){
   int i;
   double re_obj=0;
   double im_obj=0;
@@ -44,7 +44,7 @@ static double fourier_objective(double *d){
   re_obj/=funcsize;
 
   obj = sqrt(im_obj*im_obj + re_obj*re_obj);
-  return todB(obj);
+  *ret = todB(obj);
 
 }
 

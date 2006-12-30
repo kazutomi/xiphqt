@@ -314,7 +314,7 @@ static void compute_one_line_2d(sushiv_panel_t *p,
 
       /* compute value for this objective for this pixel */
       dim_vals[x_d] = (x_max-x_min) * inv_w * j + x_min;
-      work[j] = o->callback(dim_vals);
+      o->callback(dim_vals,work+j);
       
     }
     
