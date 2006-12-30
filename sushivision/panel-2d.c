@@ -601,7 +601,7 @@ static void update_crosshairs(sushiv_panel_t *p){
   sushiv_panel2d_t *p2 = p->subtype->p2;
   Plot *plot = PLOT(p->private->graph);
   double x=0,y=0;
-  int i,xflag=0,yflag=0;
+  int i;
   
   for(i=0;i<p->dimensions;i++){
     sushiv_dimension_t *d = p->dimension_list[i].d;
@@ -612,7 +612,7 @@ static void update_crosshairs(sushiv_panel_t *p){
     
   }
   
-  plot_set_crosshairs_snap(PLOT(p->private->graph),x,y);
+  plot_set_crosshairs_snap(plot,x,y);
   update_legend(p);
 }
 
@@ -659,35 +659,46 @@ static void bracket_callback_2d(void *in, int buttonstate){
   int dnum = dptr - p->dimension_list;
   double lo = slider_get_value(p->private->dim_scales[dnum],0);
   double hi = slider_get_value(p->private->dim_scales[dnum],2);
-  
+  int axisp = (d == p2->x_d || d == p2->y_d);
+
   if(buttonstate == 0){
     _sushiv_panel_undo_push(p);
     _sushiv_panel_undo_suspend(p);
   }
 
   if(d->bracket[0] != lo || d->bracket[1] != hi){
-    double xy_p = d == p2->x_d;
-    scalespace s = scalespace_linear(lo,hi,(xy_p?p2->data_w:p2->data_h),
-				     PLOT(p->private->graph)->scalespacing,
-				     d->name);
-    
-    if(s.m == 0){
-      if(xy_p)
-	fprintf(stderr,"X scale underflow; cannot zoom further.\n");
-      else
-	fprintf(stderr,"Y scale underflow; cannot zoom further.\n");
-    }else{
-      xy_p?(p2->x=s):(p2->y=s);
-      
-      d->bracket[0] = lo;
-      d->bracket[1] = hi;
-      update_crosshairs(p);
 
+    d->bracket[0] = lo;
+    d->bracket[1] = hi;
+    
+    if(axisp){
+      double xy_p = d == p2->x_d;
+      scalespace s = scalespace_linear(lo,hi,(xy_p?p2->data_w:p2->data_h),
+				       PLOT(p->private->graph)->scalespacing,
+				       d->name);
+      
+      if(s.m == 0){
+	if(xy_p)
+	  fprintf(stderr,"X scale underflow; cannot zoom further.\n");
+	else
+	  fprintf(stderr,"Y scale underflow; cannot zoom further.\n");
+
+	// abort attempt
+	if(buttonstate == 2)
+	  _sushiv_panel_undo_resume(p);
+	return;
+
+      }
+
+      xy_p?(p2->x=s):(p2->y=s);
       _mark_recompute_2d(p);
-      _sushiv_panel_update_shared_bracket(d,lo,hi);
+    
     }
-  }
+    
+    _sushiv_panel_update_shared_bracket(d,lo,hi);
  
+  }
+  
   if(buttonstate == 2)
     _sushiv_panel_undo_resume(p);
 }
