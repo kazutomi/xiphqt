@@ -1148,7 +1148,7 @@ static void _sushiv_realize_panel2d(sushiv_panel_t *p){
   gtk_container_add (GTK_CONTAINER (p->private->toplevel), p2->top_table);
   gtk_container_set_border_width (GTK_CONTAINER (p->private->toplevel), 5);
   
-  p2->dim_table = gtk_table_new(p->dimensions,6,0);
+  p2->dim_table = gtk_table_new(p->dimensions,4,0);
   gtk_table_attach(GTK_TABLE(p2->top_table),p2->dim_table,0,5,1+p->objectives,2+p->objectives,
 		   GTK_EXPAND|GTK_FILL,0,0,5);
   
@@ -1255,7 +1255,7 @@ static void _sushiv_realize_panel2d(sushiv_panel_t *p){
     
     gtk_table_attach(GTK_TABLE(p2->dim_table),
 		     GTK_WIDGET(p->private->dim_scales[i]->t),
-		     2,3,i,i+1,
+		     3,4,i,i+1,
 		     GTK_EXPAND|GTK_FILL,0,0,0);
 
   }
