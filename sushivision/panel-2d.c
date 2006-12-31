@@ -610,6 +610,7 @@ static void update_crosshairs(sushiv_panel_t *p){
   }
   
   plot_set_crosshairs(plot,x,y);
+  _sushiv_panel1d_update_linked_crosshairs(p,0,0); 
   update_legend(p);
 }
 
@@ -651,9 +652,8 @@ static void dimchange_callback_2d(GtkWidget *button,gpointer in){
     _sushiv_panel_undo_push(p);
     _sushiv_panel_undo_suspend(p);
 
-    update_xy_availability(p);
-    update_crosshairs(p);
     plot_unset_box(PLOT(p->private->graph));
+    update_xy_availability(p);
 
     /* if the data_rect already exists, blank it */
     for(i=0;i<p->objectives;i++)
@@ -662,6 +662,7 @@ static void dimchange_callback_2d(GtkWidget *button,gpointer in){
     _sushiv_panel2d_map_redraw(p);
     
     _mark_recompute_2d(p);
+    update_crosshairs(p);
 
     _sushiv_panel_undo_resume(p);
   }
