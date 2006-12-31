@@ -46,8 +46,8 @@ typedef struct sushiv_panel2d {
 
   sushiv_dimension_t *x_d;
   sushiv_dimension_t *y_d;
-  Slider *x_scale;
-  Slider *y_scale;
+  sushiv_dim_widget_t *x_scale;
+  sushiv_dim_widget_t *y_scale;
   int x_dnum; // number of dimension within panel, not global instance
   int y_dnum; // number of dimension within panel, not global instance
 

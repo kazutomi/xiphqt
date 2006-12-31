@@ -26,10 +26,11 @@
 #include "slice.h"
 #include "slider.h"
 #include "scale.h"
-#include "panel-1d.h"
-#include "panel-2d.h"
 #include "gtksucks.h"
 #include "plot.h"
+#include "dimension.h"
+#include "panel-1d.h"
+#include "panel-2d.h"
 
 union sushiv_panel_subtype {
   sushiv_panel1d_t *p1;
@@ -58,7 +59,7 @@ typedef struct sushiv_panel_undo {
 struct sushiv_panel_internal {
   GtkWidget *toplevel;
   GtkWidget *graph;
-  Slider **dim_scales;
+  sushiv_dim_widget_t **dim_scales;
 
   int realized;
   int maps_dirty;
@@ -105,11 +106,6 @@ extern void _sushiv_panel_undo_resume(sushiv_panel_t *p);
 extern void _sushiv_panel_undo_restore(sushiv_panel_t *p);
 extern void _sushiv_panel_undo_up(sushiv_panel_t *p);
 extern void _sushiv_panel_undo_down(sushiv_panel_t *p);
-
-extern void _sushiv_panel_update_shared_bracket(sushiv_dimension_t *d,
-						double lo, double hi);
-extern void _sushiv_panel_update_shared_dimension(sushiv_dimension_t *d,
-						  double val);
 
 extern void _sushiv_panel1d_mark_recompute_linked(sushiv_panel_t *p); 
 extern void _sushiv_panel1d_update_linked_crosshairs(sushiv_panel_t *p, int xflag, int yflag); 

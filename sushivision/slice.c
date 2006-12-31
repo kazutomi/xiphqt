@@ -46,20 +46,6 @@ static void slice_size_request (GtkWidget *widget,GtkRequisition *requisition){
   slider_size_request_slice(s->slider,requisition);
 }
 
-static gboolean slice_focus (GtkWidget         *widget,
-			     GtkDirectionType   direction){
-  Slice *s=SLICE(widget);
-
-  if(!s->thumb_active)return FALSE;
-  if(s->thumb_focus)return TRUE;
-
-  s->thumb_focus=1;
-  gtk_widget_grab_focus(widget);
-  draw_and_expose(widget);
-
-  return TRUE;
-}
-
 static gint slice_motion(GtkWidget        *widget,
 			 GdkEventMotion   *event){
   Slice *s=SLICE(widget);
