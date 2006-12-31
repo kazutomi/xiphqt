@@ -542,6 +542,9 @@ static void _mark_recompute_2d(sushiv_panel_t *p){
       }
       p2->x = plot->x;
       p2->y = plot->y;
+      p2->data_w = w;
+      p2->data_h = h;
+      
       _sushiv_panel2d_map_redraw(p);
     }else{
       
