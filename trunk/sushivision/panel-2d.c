@@ -123,7 +123,6 @@ static void update_legend(sushiv_panel_t *p){
   int h = p2->data_h;
   int x = plot_get_crosshair_xpixel(plot);
   int y = plot_get_crosshair_ypixel(plot);
-  int offset = ilog10(w>h?w:h);
 
   if(plot){
     int i;
@@ -849,8 +848,7 @@ static int _sushiv_panel_cooperative_compute_2d(sushiv_panel_t *p){
   return 1;
 }
 
-static void panel2d_undo_log(sushiv_panel_undo_t *u){
-  sushiv_panel_t *p = u->p;
+static void panel2d_undo_log(sushiv_panel_undo_t *u, sushiv_panel_t *p){
   sushiv_panel2d_t *p2 = p->subtype->p2;
   int i;
 
@@ -858,12 +856,12 @@ static void panel2d_undo_log(sushiv_panel_undo_t *u){
   
   if(!u->mappings)
     u->mappings =  calloc(p->objectives,sizeof(*u->mappings));
-  if(!u->obj_vals[0])
-    u->obj_vals[0] =  calloc(p->objectives,sizeof(**u->obj_vals));
-  if(!u->obj_vals[1])
-    u->obj_vals[1] =  calloc(p->objectives,sizeof(**u->obj_vals));
-  if(!u->obj_vals[2])
-    u->obj_vals[2] =  calloc(p->objectives,sizeof(**u->obj_vals));
+  if(!u->scale_vals[0])
+    u->scale_vals[0] =  calloc(p->objectives,sizeof(**u->scale_vals));
+  if(!u->scale_vals[1])
+    u->scale_vals[1] =  calloc(p->objectives,sizeof(**u->scale_vals));
+  if(!u->scale_vals[2])
+    u->scale_vals[2] =  calloc(p->objectives,sizeof(**u->scale_vals));
   if(!u->dim_vals[0])
     u->dim_vals[0] =  calloc(p->dimensions,sizeof(**u->dim_vals));
   if(!u->dim_vals[1])
@@ -874,9 +872,9 @@ static void panel2d_undo_log(sushiv_panel_undo_t *u){
   // populate undo
   for(i=0;i<p->objectives;i++){
     u->mappings[i] = p2->mappings[i].mapnum;
-    u->obj_vals[0][i] = slider_get_value(p2->range_scales[i],0);
-    u->obj_vals[1][i] = slider_get_value(p2->range_scales[i],1);
-    u->obj_vals[2][i] = slider_get_value(p2->range_scales[i],2);
+    u->scale_vals[0][i] = slider_get_value(p2->range_scales[i],0);
+    u->scale_vals[1][i] = slider_get_value(p2->range_scales[i],1);
+    u->scale_vals[2][i] = slider_get_value(p2->range_scales[i],2);
   }
 
   for(i=0;i<p->dimensions;i++){
@@ -894,28 +892,17 @@ static void panel2d_undo_log(sushiv_panel_undo_t *u){
   u->box_active = p2->oldbox_active;
 }
 
-static void panel2d_undo_restore(sushiv_panel_undo_t *u, int *remap_flag, int *recomp_flag){
-  sushiv_panel_t *p = u->p;
+static void panel2d_undo_restore(sushiv_panel_undo_t *u, sushiv_panel_t *p){
   sushiv_panel2d_t *p2 = p->subtype->p2;
   Plot *plot = PLOT(p->private->graph);
   int i;
   
-  *remap_flag=0;
-  *recomp_flag=0;
-
   // go in through widgets
   for(i=0;i<p->objectives;i++){
-    if(gtk_combo_box_get_active(GTK_COMBO_BOX(p2->range_pulldowns[i])) != u->mappings[i] ||
-       slider_get_value(p2->range_scales[i],0)!=u->obj_vals[0][i] ||
-       slider_get_value(p2->range_scales[i],1)!=u->obj_vals[1][i] ||
-       slider_get_value(p2->range_scales[i],2)!=u->obj_vals[2][i]){ 
-      *remap_flag = 1;
-    }
-    
     gtk_combo_box_set_active(GTK_COMBO_BOX(p2->range_pulldowns[i]),u->mappings[i]);
-    slider_set_value(p2->range_scales[i],0,u->obj_vals[0][i]);
-    slider_set_value(p2->range_scales[i],1,u->obj_vals[1][i]);
-    slider_set_value(p2->range_scales[i],2,u->obj_vals[2][i]);
+    slider_set_value(p2->range_scales[i],0,u->scale_vals[0][i]);
+    slider_set_value(p2->range_scales[i],1,u->scale_vals[1][i]);
+    slider_set_value(p2->range_scales[i],2,u->scale_vals[2][i]);
   }
 
   for(i=0;i<p->dimensions;i++){
@@ -924,14 +911,8 @@ static void panel2d_undo_restore(sushiv_panel_undo_t *u, int *remap_flag, int *r
     sushiv_dimension_set_value(p->private->dim_scales[i],2,u->dim_vals[2][i]);
   }
 
-  if(!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(p2->dim_xb[u->x_d]))){
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(p2->dim_xb[u->x_d]),TRUE);
-    *recomp_flag=1;
-  }
-  if(!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(p2->dim_yb[u->y_d]))){
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(p2->dim_yb[u->y_d]),TRUE);
-    *recomp_flag=1;
-  }
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(p2->dim_xb[u->x_d]),TRUE);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(p2->dim_yb[u->y_d]),TRUE);
 
   update_xy_availability(p);
 

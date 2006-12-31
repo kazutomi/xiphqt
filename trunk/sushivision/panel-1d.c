@@ -50,16 +50,6 @@ static char *line_name[LINETYPES+1] = {
 
 static void update_context_menus(sushiv_panel_t *p);
 
-static int ilog10(int x){
-  int count=0;
-  if(x<0)x=-x;
-  while(x){
-    count++;
-    x/=10;
-  }
-  return count;
-}
-
 // called internally, assumes we hold lock
 // redraws the data, does not compute the data
 static void _sushiv_panel1d_remap(sushiv_panel_t *p){
@@ -145,9 +135,6 @@ static void update_legend(sushiv_panel_t *p){
   Plot *plot = PLOT(p->private->graph);
 
   gdk_threads_enter ();
-  int w = p1->panel_w;
-  int h = p1->panel_h;
-  int offset = ilog10(w>h?w:h);
 
   if(plot){
     int i,depth=0;
@@ -513,13 +500,13 @@ static void update_crosshair(sushiv_panel_t *p){
     for(i=0;i<link->dimensions;i++){
       sushiv_dimension_t *d = link->dimension_list[i].d;
       if(d == p1->x_d)
-	x = link->private->dim_scales[i]->dl->d->val;
+	x = link->dimension_list[i].d->val;
     }
   }else{
     for(i=0;i<p->dimensions;i++){
       sushiv_dimension_t *d = p->dimension_list[i].d;
       if(d == p1->x_d)
-	x = p->private->dim_scales[i]->dl->d->val;
+	x = p->dimension_list[i].d->val;
     }
   }
   
@@ -769,13 +756,11 @@ int _sushiv_panel_cooperative_compute_1d(sushiv_panel_t *p){
   return 1;
 }
 
-static void panel1d_undo_log(sushiv_panel_undo_t *u){
-  sushiv_panel_t *p = u->p;
+static void panel1d_undo_log(sushiv_panel_undo_t *u, sushiv_panel_t *p){
   sushiv_panel1d_t *p1 = p->subtype->p1;
   int i;
 
   // alloc fields as necessary
-  
   if(!u->mappings)
     u->mappings =  calloc(p->objectives,sizeof(*u->mappings));
   if(!u->submappings)
@@ -787,11 +772,11 @@ static void panel1d_undo_log(sushiv_panel_undo_t *u){
   if(!u->scale_vals[2])
     u->scale_vals[2] =  calloc(1,sizeof(**u->scale_vals));
   if(!u->dim_vals[0])
-    u->dim_vals[0] =  calloc(p->dimensions,sizeof(**u->dim_vals));
+    u->dim_vals[0] =  calloc(p->dimensions+1,sizeof(**u->dim_vals)); // +1 for possible linked dim
   if(!u->dim_vals[1])
-    u->dim_vals[1] =  calloc(p->dimensions,sizeof(**u->dim_vals));
+    u->dim_vals[1] =  calloc(p->dimensions+1,sizeof(**u->dim_vals)); // +1 for possible linked dim
   if(!u->dim_vals[2])
-    u->dim_vals[2] =  calloc(p->dimensions,sizeof(**u->dim_vals));
+    u->dim_vals[2] =  calloc(p->dimensions+1,sizeof(**u->dim_vals)); // +1 for possible linked dim
 
   // populate undo
   u->scale_vals[0][0] = slider_get_value(p1->range_slider,0);
@@ -803,11 +788,15 @@ static void panel1d_undo_log(sushiv_panel_undo_t *u){
   }
 
   for(i=0;i<p->dimensions;i++){
-    u->dim_vals[0][i] = p->private->dim_scales[i]->dl->d->bracket[0];
-    u->dim_vals[1][i] = p->private->dim_scales[i]->dl->d->val;
-    u->dim_vals[2][i] = p->private->dim_scales[i]->dl->d->bracket[1];
+    u->dim_vals[0][i] = p->dimension_list[i].d->bracket[0];
+    u->dim_vals[1][i] = p->dimension_list[i].d->val;
+    u->dim_vals[2][i] = p->dimension_list[i].d->bracket[1];
   }
-  
+
+  u->dim_vals[0][i] = p1->x_d->bracket[0];
+  u->dim_vals[1][i] = p1->x_d->val;
+  u->dim_vals[2][i] = p1->x_d->bracket[1];
+
   u->x_d = p1->x_dnum;
   u->box[0] = p1->oldbox[0];
   u->box[1] = p1->oldbox[1];
@@ -815,30 +804,19 @@ static void panel1d_undo_log(sushiv_panel_undo_t *u){
   
 }
 
-static void panel1d_undo_restore(sushiv_panel_undo_t *u, int *remap_flag, int *recomp_flag){
-  sushiv_panel_t *p = u->p;
+static void panel1d_undo_restore(sushiv_panel_undo_t *u, sushiv_panel_t *p){
   sushiv_panel1d_t *p1 = p->subtype->p1;
   Plot *plot = PLOT(p->private->graph);
+  sushiv_panel_t *link = (p1->link_x?p1->link_x:p1->link_y);
+
   int i;
   
-  *remap_flag=0;
-  *recomp_flag=0;
-
   // go in through widgets
-  if(slider_get_value(p1->range_slider,0)!=u->scale_vals[0][0] ||
-     slider_get_value(p1->range_slider,1)!=u->scale_vals[1][0]){
-    *remap_flag = 1;
-  }
    
   slider_set_value(p1->range_slider,0,u->scale_vals[0][0]);
   slider_set_value(p1->range_slider,1,u->scale_vals[1][0]);
 
   for(i=0;i<p->objectives;i++){
-    if(gtk_combo_box_get_active(GTK_COMBO_BOX(p1->map_pulldowns[i])) != u->mappings[i] ||
-       gtk_combo_box_get_active(GTK_COMBO_BOX(p1->line_pulldowns[i])) != u->submappings[i]){
-      *remap_flag = 1;
-    }
-    
     gtk_combo_box_set_active(GTK_COMBO_BOX(p1->map_pulldowns[i]),u->mappings[i]);
     gtk_combo_box_set_active(GTK_COMBO_BOX(p1->line_pulldowns[i]),u->submappings[i]);
   }
@@ -849,14 +827,18 @@ static void panel1d_undo_restore(sushiv_panel_undo_t *u, int *remap_flag, int *r
     sushiv_dimension_set_value(p->private->dim_scales[i],2,u->dim_vals[2][i]);
   }
 
-  if(p1->dim_xb && u->x_d<p->dimensions && p1->dim_xb[u->x_d]){
-    if(!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(p1->dim_xb[u->x_d]))){
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(p1->dim_xb[u->x_d]),TRUE);
-      *recomp_flag=1;
-    }
-  }
+  if(p1->dim_xb && u->x_d<p->dimensions && p1->dim_xb[u->x_d])
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(p1->dim_xb[u->x_d]),TRUE);
 
+  /* make sure x_d is set before updating the x_d sliders! */
   update_x_sel(p);
+
+  if(link){
+    /* doesn't matter which widget belonging to the dimension is the one that gets set */
+    sushiv_dimension_set_value(p1->x_d->private->widget_list[0],0,u->dim_vals[0][p->dimensions]);
+    sushiv_dimension_set_value(p1->x_d->private->widget_list[0],1,u->dim_vals[1][p->dimensions]);
+    sushiv_dimension_set_value(p1->x_d->private->widget_list[0],2,u->dim_vals[2][p->dimensions]);
+  }
 
   if(u->box_active){
     plot_box_set(plot,u->box);
