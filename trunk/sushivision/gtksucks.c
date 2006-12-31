@@ -44,7 +44,7 @@
    right-clicked over an insensitive widget.  Wrap the widget
    sensitivity setting method to also also set/unset the
    GDK_BUTTON_PRESS_MASK on a widget; when insensitive, this will
-   remove it's ability to silently swallow mouse events. */
+   remove its ability to silently swallow mouse events. */
 
 /* Note that this only works after the widget is realized, as
    realization will clobber the event mask */
