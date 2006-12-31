@@ -556,14 +556,12 @@ void _sushiv_panel1d_update_linked_crosshairs(sushiv_panel_t *p, int xflag, int 
     if(q != p && q->type == SUSHIV_PANEL_1D){
       sushiv_panel1d_t *q1 = q->subtype->p1;
       if(q1->link_x == p){
-	if(xflag)
-	  update_crosshair(q);
+	update_crosshair(q);
 	if(yflag)
 	  q->private->request_compute(q);
       }else{
 	if(q1->link_y == p){
-	  if(yflag)
-	    update_crosshair(q);
+	  update_crosshair(q);
 	  if(xflag)
 	    q->private->request_compute(q);
 	}
