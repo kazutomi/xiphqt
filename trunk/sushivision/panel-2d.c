@@ -637,6 +637,8 @@ static void bracket_callback_2d(sushiv_dimension_list_t *dptr){
 
 static void dimchange_callback_2d(GtkWidget *button,gpointer in){
   sushiv_panel_t *p = (sushiv_panel_t *)in;
+  sushiv_panel2d_t *p2 = p->subtype->p2;
+  int i,j;
 
   if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button))){
 
@@ -646,6 +648,13 @@ static void dimchange_callback_2d(GtkWidget *button,gpointer in){
     update_xy_availability(p);
     update_crosshairs(p);
     plot_unset_box(PLOT(p->private->graph));
+
+    /* if the data_rect already exists, blank it */
+    for(i=0;i<p->objectives;i++)
+      for(j=0;j<p2->data_w*p2->data_h;j++)
+	p2->data_rect[i][j]=NAN;
+    _sushiv_panel2d_map_redraw(p);
+    
     _mark_recompute_2d(p);
 
     _sushiv_panel_undo_resume(p);
