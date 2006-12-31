@@ -150,16 +150,18 @@ static void update_legend(sushiv_panel_t *p){
   int offset = ilog10(w>h?w:h);
 
   if(plot){
-    int i;
+    int i,depth=0;
     char buffer[320];
     plot_legend_clear(plot);
+
+    if(-p1->vs.decimal_exponent > depth) depth = 3-p1->vs.decimal_exponent;
 
     // add each dimension to the legend
     for(i=0;i<p->dimensions;i++){
       // display decimal precision relative to bracket
-      int depth = del_depth(p->dimension_list[i].d->bracket[0],
-			    p->dimension_list[i].d->bracket[1]) + offset;
-      snprintf(buffer,320,"%s = %.*f",
+      //int depth = del_depth(p->dimension_list[i].d->bracket[0],
+      //		    p->dimension_list[i].d->bracket[1]) + offset;
+      snprintf(buffer,320,"%s = %+.*f",
 	       p->dimension_list[i].d->name,
 	       depth,
 	       p->dimension_list[i].d->val);
@@ -169,16 +171,17 @@ static void update_legend(sushiv_panel_t *p){
     // linked? add the linked dimension value to the legend
     if(p1->link_x || p1->link_y){
       sushiv_dimension_t *d;
-      int depth;
+      int depth=0;
       if(p1->link_x)
 	d = p1->link_x->subtype->p2->x_d;
       else
 	d = p1->link_y->subtype->p2->y_d;
 
-      // display decimal precision relative to bracket
-      depth = del_depth(d->bracket[0],
-			d->bracket[1]) + offset;
-      snprintf(buffer,320,"%s = %.*f",
+      
+      // add each dimension to the legend
+      // display decimal precision relative to display scales
+      if(3-p1->vs.decimal_exponent > depth) depth = 3-p1->vs.decimal_exponent;
+      snprintf(buffer,320,"%s = %+.*f",
 	       d->name,
 	       depth,
 	       d->val);
