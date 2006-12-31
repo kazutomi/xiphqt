@@ -603,7 +603,7 @@ static void update_crosshairs(sushiv_panel_t *p){
     
   }
   
-  plot_set_crosshairs_snap(plot,x,y);
+  plot_set_crosshairs(plot,x,y);
   update_legend(p);
 }
 
