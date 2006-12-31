@@ -50,98 +50,96 @@ void _sushiv_panel_undo_resume(sushiv_panel_t *p){
 }
 
 void _sushiv_panel_undo_log(sushiv_panel_t *p){
+  sushiv_instance_t *s = p->sushi;
   sushiv_panel_undo_t *u;
-  int i;
+  int i,j;
 
   if(!p->sushi->private->undo_stack)
-    p->sushi->private->undo_stack = calloc(2,sizeof(*p->sushi->private->undo_stack));
+    s->private->undo_stack = calloc(2,s->panels*sizeof(*s->private->undo_stack));
 
   // log into a fresh entry; pop this level and all above it 
-  if(p->sushi->private->undo_stack[p->sushi->private->undo_level]){
-    i=p->sushi->private->undo_level;
-    while(p->sushi->private->undo_stack[i]){
-      u = p->sushi->private->undo_stack[i];
-      if(u->mappings) free(u->mappings);
-      if(u->scale_vals[0]) free(u->scale_vals[0]);
-      if(u->scale_vals[1]) free(u->scale_vals[1]);
-      if(u->scale_vals[2]) free(u->scale_vals[2]);
-      if(u->obj_vals[0]) free(u->obj_vals[0]);
-      if(u->obj_vals[1]) free(u->obj_vals[1]);
-      if(u->obj_vals[2]) free(u->obj_vals[2]);
-      if(u->dim_vals[0]) free(u->dim_vals[0]);
-      if(u->dim_vals[1]) free(u->dim_vals[1]);
-      if(u->dim_vals[2]) free(u->dim_vals[2]);
-      free(u);
-      p->sushi->private->undo_stack[i]= NULL;
+  if(s->private->undo_stack[s->private->undo_level]){
+    i=s->private->undo_level;
+    while(s->private->undo_stack[i]){
+      for(j=0;j<s->panels;j++){
+	u = s->private->undo_stack[i]+j;
+	if(u->mappings) free(u->mappings);
+	if(u->scale_vals[0]) free(u->scale_vals[0]);
+	if(u->scale_vals[1]) free(u->scale_vals[1]);
+	if(u->scale_vals[2]) free(u->scale_vals[2]);
+	if(u->dim_vals[0]) free(u->dim_vals[0]);
+	if(u->dim_vals[1]) free(u->dim_vals[1]);
+	if(u->dim_vals[2]) free(u->dim_vals[2]);
+      }
+      free(s->private->undo_stack[i]);
+      s->private->undo_stack[i]= NULL;
       i++;
     }
   }
 
-  // alloc new undo
-  u = p->sushi->private->undo_stack[p->sushi->private->undo_level]= calloc(1,sizeof(*u));
+  // alloc new undos
+  u = s->private->undo_stack[s->private->undo_level]= calloc(s->panels,sizeof(*u));
   
-  // pass off actual population to panel subtype
-  u->p = p;
-  p->private->undo_log(u);
+  // pass off actual population to panels
+  for(j=0;j<s->panels;j++)
+    s->panel_list[j]->private->undo_log(u+j,s->panel_list[j]);
 }
 
 void _sushiv_panel_undo_restore(sushiv_panel_t *p){
-  sushiv_panel_undo_t *u = p->sushi->private->undo_stack[p->sushi->private->undo_level];
-  int remap_flag=0;
-  int recomp_flag=0;
-
-  u->p->private->undo_restore(u, &remap_flag, &recomp_flag);
-
-  if(recomp_flag)
-    u->p->private->request_compute(u->p);
-  else if(remap_flag){
-    u->p->private->map_redraw(u->p);
-    u->p->private->legend_redraw(u->p);
-  }else
-    plot_expose_request(PLOT(u->p->private->graph));
+  sushiv_instance_t *s = p->sushi;
+  int i;
+  
+  for(i=0;i<s->panels;i++){
+    sushiv_panel_undo_t *u = &s->private->undo_stack[s->private->undo_level][i];
+    
+    s->panel_list[i]->private->undo_restore(u,s->panel_list[i]);
+    plot_expose_request(PLOT(s->panel_list[i]->private->graph));
+  }
 }
 
 void _sushiv_panel_undo_push(sushiv_panel_t *p){
+  sushiv_instance_t *s = p->sushi;
   
-  if(p->sushi->private->undo_suspend)return;
+  if(s->private->undo_suspend)return;
 
   _sushiv_panel_undo_log(p);
 
   // realloc stack 
-  p->sushi->private->undo_stack = 
-    realloc(p->sushi->private->undo_stack,
-	    (p->sushi->private->undo_level+3)*sizeof(*p->sushi->private->undo_stack));
-  p->sushi->private->undo_level++;
-  p->sushi->private->undo_stack[p->sushi->private->undo_level]=NULL;
-  p->sushi->private->undo_stack[p->sushi->private->undo_level+1]=NULL;
-  update_all_menus(p->sushi);
-
+  s->private->undo_stack = 
+    realloc(s->private->undo_stack,
+	    (s->private->undo_level+3)*sizeof(*s->private->undo_stack));
+  s->private->undo_level++;
+  s->private->undo_stack[s->private->undo_level]=NULL;
+  s->private->undo_stack[s->private->undo_level+1]=NULL;
+  update_all_menus(s);
 }
 
 void _sushiv_panel_undo_up(sushiv_panel_t *p){
+  sushiv_instance_t *s = p->sushi;
   
-  if(!p->sushi->private->undo_stack)return;
-  if(!p->sushi->private->undo_stack[p->sushi->private->undo_level])return;
-  if(!p->sushi->private->undo_stack[p->sushi->private->undo_level+1])return;
+  if(!s->private->undo_stack)return;
+  if(!s->private->undo_stack[s->private->undo_level])return;
+  if(!s->private->undo_stack[s->private->undo_level+1])return;
   
-  p->sushi->private->undo_level++;
+  s->private->undo_level++;
   _sushiv_panel_undo_suspend(p);
   _sushiv_panel_undo_restore(p);
   _sushiv_panel_undo_resume(p);
-  update_all_menus(p->sushi);
+  update_all_menus(s);
 }
 
 void _sushiv_panel_undo_down(sushiv_panel_t *p){
+  sushiv_instance_t *s = p->sushi;
 
-  if(!p->sushi->private->undo_stack)return;
-  if(!p->sushi->private->undo_level)return;
+  if(!s->private->undo_stack)return;
+  if(!s->private->undo_level)return;
 
-  if(!p->sushi->private->undo_stack[p->sushi->private->undo_level+1])
+  if(!s->private->undo_stack[s->private->undo_level+1])
     _sushiv_panel_undo_log(p);
-  p->sushi->private->undo_level--;
+  s->private->undo_level--;
 
   _sushiv_panel_undo_suspend(p);
   _sushiv_panel_undo_restore(p);
   _sushiv_panel_undo_resume(p);
-  update_all_menus(p->sushi);
+  update_all_menus(s);
 }

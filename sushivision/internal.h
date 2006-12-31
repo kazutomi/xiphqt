@@ -41,12 +41,10 @@ union sushiv_panel_subtype {
 // for now we use a master undo type which leaves one or two fields
 // unused for a given panel.
 typedef struct sushiv_panel_undo {
-  sushiv_panel_t *p;
   int *mappings;
   int *submappings;
 
   double *scale_vals[3];
-  double *obj_vals[3];
   double *dim_vals[3];
   
   int x_d;
@@ -73,8 +71,8 @@ struct sushiv_panel_internal {
   void (*request_compute)(sushiv_panel_t *p);
   void (*crosshair_action)(sushiv_panel_t *p);
 
-  void (*undo_log)(sushiv_panel_undo_t *u);
-  void (*undo_restore)(sushiv_panel_undo_t *u, int *mapflag, int *compflag);
+  void (*undo_log)(sushiv_panel_undo_t *u, sushiv_panel_t *p);
+  void (*undo_restore)(sushiv_panel_undo_t *u, sushiv_panel_t *p);
   void (*update_menus)(sushiv_panel_t *p);
 };
 
