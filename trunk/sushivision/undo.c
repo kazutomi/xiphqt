@@ -47,9 +47,6 @@ void _sushiv_panel_undo_resume(sushiv_panel_t *p){
     fprintf(stderr,"Internal error: undo suspend refcount count < 0\n");
     p->sushi->private->undo_suspend=0;
   }
-
-  //if(p->sushi->private->undo_suspend==0)
-  //_sushiv_panel_undo_log(p);
 }
 
 void _sushiv_panel_undo_log(sushiv_panel_t *p){
@@ -138,8 +135,9 @@ void _sushiv_panel_undo_down(sushiv_panel_t *p){
 
   if(!p->sushi->private->undo_stack)return;
   if(!p->sushi->private->undo_level)return;
- 
-  _sushiv_panel_undo_log(p);
+
+  if(!p->sushi->private->undo_stack[p->sushi->private->undo_level+1])
+    _sushiv_panel_undo_log(p);
   p->sushi->private->undo_level--;
 
   _sushiv_panel_undo_suspend(p);
