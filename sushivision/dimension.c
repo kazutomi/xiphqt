@@ -29,7 +29,7 @@
 /* modules attempts to encapsulate and hide differences between the
    different types of dimensions with respect to widgets, iterators,
    shared dimensions */
-scalespace sushiv_dimension_datascale(sushiv_dimension_t *d, scalespace x){
+scalespace _sushiv_dimension_datascale(sushiv_dimension_t *d, scalespace x){
   scalespace ret;
   memset(&ret,0,sizeof(ret));
 
@@ -67,11 +67,11 @@ scalespace sushiv_dimension_datascale(sushiv_dimension_t *d, scalespace x){
 }
 
 /* takes the data scale, not the panel plot scale */
-int sushiv_dimension_data_width(sushiv_dimension_t *d, scalespace *datascale){
+int _sushiv_dimension_data_width(sushiv_dimension_t *d, scalespace *datascale){
   return datascale->pixels;
 }
 
-static void sushiv_dimension_center_callback(void *data, int buttonstate){
+static void _sushiv_dimension_center_callback(void *data, int buttonstate){
   gdk_threads_enter();
 
   sushiv_dim_widget_t *dw = (sushiv_dim_widget_t *)data;
@@ -115,7 +115,7 @@ static void sushiv_dimension_center_callback(void *data, int buttonstate){
   gdk_threads_leave();
 }
 
-static void sushiv_dimension_bracket_callback(void *data, int buttonstate){
+static void _sushiv_dimension_bracket_callback(void *data, int buttonstate){
   gdk_threads_enter();
 
   sushiv_dim_widget_t *dw = (sushiv_dim_widget_t *)data;
@@ -163,7 +163,7 @@ static void sushiv_dimension_bracket_callback(void *data, int buttonstate){
   gdk_threads_leave();
 }
 
-static void sushiv_dimension_dropdown_callback(void *data){
+static void _sushiv_dimension_dropdown_callback(GtkWidget *dummy, void *data){
   gdk_threads_enter();
 
   sushiv_dim_widget_t *dw = (sushiv_dim_widget_t *)data;
@@ -207,7 +207,7 @@ static void sushiv_dimension_dropdown_callback(void *data){
 }
 
 /* undo/redo have to frob widgets; this is indirected here too */
-void sushiv_dimension_set_value(sushiv_dim_widget_t *dw, int thumb, double val){
+void _sushiv_dimension_set_value(sushiv_dim_widget_t *dw, int thumb, double val){
   sushiv_dimension_t *d = dw->dl->d;
 
   switch(d->type){
@@ -240,12 +240,44 @@ void sushiv_dimension_set_value(sushiv_dim_widget_t *dw, int thumb, double val){
   }
 }
 
-void sushiv_dim_widget_set_thumb_active(sushiv_dim_widget_t *dw, int thumb, int active){
+/* external version with externalish API */
+void sushiv_dimension_set_value(sushiv_instance_t *s, int dim_number, int thumb, double val){
+  sushiv_dimension_t *d;
+
+  if(dim_number<0 || dim_number>=s->dimensions){
+    fprintf(stderr,"Dimension number %d out of range.\n",dim_number);
+    return;
+  }
+
+  d=s->dimension_list[dim_number];
+  if(!d){
+    fprintf(stderr,"Dimension %d does not exist.\n",dim_number);
+    return;
+  }
+
+  if(!d->private->widgets){
+    switch(thumb){
+    case 0:
+      d->bracket[0] = val;
+      break;
+    case 1:
+      d->val = val;
+      break;
+    default:
+      d->bracket[1] = val;
+      break;
+    }
+  }else
+    _sushiv_dimension_set_value(d->private->widget_list[0],thumb,val);
+  
+}
+
+void _sushiv_dim_widget_set_thumb_active(sushiv_dim_widget_t *dw, int thumb, int active){
   if(dw->scale)
     slider_set_thumb_active(dw->scale,thumb,active);
 }
 
-sushiv_dim_widget_t *sushiv_new_dimension_widget(sushiv_dimension_list_t *dl,   
+sushiv_dim_widget_t *_sushiv_new_dimension_widget(sushiv_dimension_list_t *dl,   
 						 void (*center_callback)(sushiv_dimension_list_t *),
 						 void (*bracket_callback)(sushiv_dimension_list_t *)){
   
@@ -261,12 +293,16 @@ sushiv_dim_widget_t *sushiv_new_dimension_widget(sushiv_dimension_list_t *dl,
   case SUSHIV_DIM_DISCRETE:
     /* Continuous and discrete dimensions get sliders */
     {
+      double v[3];
       GtkWidget **sl = calloc(3,sizeof(*sl));
       dw->t = GTK_TABLE(gtk_table_new(1,3,0));
-    
-      sl[0] = slice_new(sushiv_dimension_bracket_callback,dw);
-      sl[1] = slice_new(sushiv_dimension_center_callback,dw);
-      sl[2] = slice_new(sushiv_dimension_bracket_callback,dw);
+      v[0]=d->bracket[0];
+      v[1]=d->val;
+      v[2]=d->bracket[1];
+
+      sl[0] = slice_new(_sushiv_dimension_bracket_callback,dw);
+      sl[1] = slice_new(_sushiv_dimension_center_callback,dw);
+      sl[2] = slice_new(_sushiv_dimension_bracket_callback,dw);
       
       gtk_table_attach(dw->t,sl[0],0,1,0,1,
 		       GTK_EXPAND|GTK_FILL,0,0,0);
@@ -278,9 +314,9 @@ sushiv_dim_widget_t *sushiv_new_dimension_widget(sushiv_dimension_list_t *dl,
       dw->scale = slider_new((Slice **)sl,3,d->scale->label_list,d->scale->val_list,
 			     d->scale->vals,0);
 
-      slice_thumb_set((Slice *)sl[0],d->scale->val_list[0]);
-      slice_thumb_set((Slice *)sl[1],0);
-      slice_thumb_set((Slice *)sl[2],d->scale->val_list[d->scale->vals-1]);
+      slice_thumb_set((Slice *)sl[0],v[0]);
+      slice_thumb_set((Slice *)sl[1],v[1]);
+      slice_thumb_set((Slice *)sl[2],v[2]);
     }
     break;
   case SUSHIV_DIM_PICKLIST:
@@ -292,12 +328,14 @@ sushiv_dim_widget_t *sushiv_new_dimension_widget(sushiv_dimension_list_t *dl,
       dw->menu=gtk_combo_box_new_markup();
       for(j=0;j<d->scale->vals;j++)
 	gtk_combo_box_append_text (GTK_COMBO_BOX (dw->menu), d->scale->label_list[j]);
-      gtk_combo_box_set_active(GTK_COMBO_BOX(dw->menu),0);
+
       g_signal_connect (G_OBJECT (dw->menu), "changed",
-			G_CALLBACK (sushiv_dimension_dropdown_callback), dw);
+			G_CALLBACK (_sushiv_dimension_dropdown_callback), dw);
       
       gtk_table_attach(dw->t,dw->menu,0,1,0,1,
 		       GTK_EXPAND|GTK_FILL,GTK_SHRINK,5,0);
+      _sushiv_dimension_set_value(dw,1,d->val);
+      //gtk_combo_box_set_active(GTK_COMBO_BOX(dw->menu),0);
     }
     break;
   default:
@@ -356,6 +394,10 @@ int sushiv_new_dimension(sushiv_instance_t *s,
   d->scale = scale_new(scalevals, scaleval_list, name);
   d->type = SUSHIV_DIM_CONTINUOUS;
   d->private = calloc(1, sizeof(*d->private));
+
+  d->bracket[0]=d->scale->val_list[0];
+  d->val = 0;
+  d->bracket[1]=d->scale->val_list[d->scale->vals-1];
 
   return 0;
 }

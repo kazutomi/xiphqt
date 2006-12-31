@@ -51,10 +51,10 @@ struct sushiv_dimension_internal {
   sushiv_dim_widget_t **widget_list;
 };
 
-extern scalespace sushiv_dimension_datascale(sushiv_dimension_t *d, scalespace x);
-extern int sushiv_dimension_data_width(sushiv_dimension_t *d, scalespace *datascale);
-extern void sushiv_dimension_set_value(sushiv_dim_widget_t *d, int thumb, double val);
-extern void sushiv_dim_widget_set_thumb_active(sushiv_dim_widget_t *dw, int thumb, int active);
-extern sushiv_dim_widget_t * sushiv_new_dimension_widget(sushiv_dimension_list_t *dl,   
+extern scalespace _sushiv_dimension_datascale(sushiv_dimension_t *d, scalespace x);
+extern int _sushiv_dimension_data_width(sushiv_dimension_t *d, scalespace *datascale);
+extern void _sushiv_dimension_set_value(sushiv_dim_widget_t *d, int thumb, double val);
+extern void _sushiv_dim_widget_set_thumb_active(sushiv_dim_widget_t *dw, int thumb, int active);
+extern sushiv_dim_widget_t *_sushiv_new_dimension_widget(sushiv_dimension_list_t *dl,   
 							 void (*center_callback)(sushiv_dimension_list_t *),
 							 void (*bracket_callback)(sushiv_dimension_list_t *));

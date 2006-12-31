@@ -159,6 +159,8 @@ extern int sushiv_new_dimension_picklist(sushiv_instance_t *s,
 					 int (*callback)(sushiv_dimension_t *),
 					 unsigned flags);
 
+extern void sushiv_dimension_set_value(sushiv_instance_t *s, int dim_number, int thumb, double val);
+
 extern int sushiv_new_objective(sushiv_instance_t *s,
 				int number,
 				const char *name,

@@ -25,21 +25,21 @@
 #include "sushivision.h"
 
 sushiv_instance_t *s;
-#define MAX_ITER 1024
 
 static void fractal_objective(double *d, double *ret){
+  int max_iter = d[4];
   int i;
   double z, zi, zz;
   const double c=d[0],ci=d[1];
-
+  
   *ret=NAN;
   z = d[2]; zi = d[3];
-  for(i=0;i<MAX_ITER;i++){
+  for(i=0;i<max_iter;i++){
     zz = z*z - zi*zi + c;
     zi = 2.0*z*zi + ci;
     z  = zz;
     if (z*z + zi*zi > 4.0){
-      *ret = (double)i/MAX_ITER;
+      *ret = (double)i/max_iter;
       return;
     }
   }
@@ -62,14 +62,23 @@ int sushiv_submain(int argc, char *argv[]){
   sushiv_new_dimension(s,3,"Im(z0)",
 		       5,(double []){-2.25,-1,0,1,2.25},
 		       NULL,0);
-  
+
+  sushiv_new_dimension_picklist(s,4,"Max Iterations",
+				4,
+				(double []){100,1000,10000,100000},
+				(char *[]){"one hundred",
+					     "one thousand",
+					     "ten thousand",
+					     "one hundred thousand"},
+				NULL,0);
+
   sushiv_new_objective(s,0,"fractal",
-		       4,(double []){0, .01, .1, 1.0},
+		       5,(double []){0, .001, .01, .1, 1.0},
 		       fractal_objective,0);
 
   sushiv_new_panel_2d(s,0,"Mandel/Julia Fractal",
 		      (int []){0,-1},
-		      (int []){0,1,2,3,-1},
+		      (int []){0,1,2,3,4,-1},
 		      0);
 
   sushiv_new_panel_1d_linked(s,1,"X Slice",s->objective_list[0]->scale,
@@ -79,6 +88,8 @@ int sushiv_submain(int argc, char *argv[]){
   sushiv_new_panel_1d_linked(s,2,"Y Slice",s->objective_list[0]->scale,
 			     (int []){0,-1},
 			     0,SUSHIV_PANEL_LINK_Y | SUSHIV_PANEL_FLIP);
+
+  sushiv_dimension_set_value(s,4,1,10000);
   
   return 0;
 }

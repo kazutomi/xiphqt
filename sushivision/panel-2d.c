@@ -265,12 +265,12 @@ static void update_xy_availability(sushiv_panel_t *p){
        (p2->dim_yb[i] &&
 	gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(p2->dim_yb[i])))){
       // make all thumbs visible 
-      sushiv_dim_widget_set_thumb_active(p->private->dim_scales[i],0,1);
-      sushiv_dim_widget_set_thumb_active(p->private->dim_scales[i],2,1);
+      _sushiv_dim_widget_set_thumb_active(p->private->dim_scales[i],0,1);
+      _sushiv_dim_widget_set_thumb_active(p->private->dim_scales[i],2,1);
     }else{
       // make bracket thumbs invisible */
-      sushiv_dim_widget_set_thumb_active(p->private->dim_scales[i],0,0);
-      sushiv_dim_widget_set_thumb_active(p->private->dim_scales[i],2,0);
+      _sushiv_dim_widget_set_thumb_active(p->private->dim_scales[i],0,0);
+      _sushiv_dim_widget_set_thumb_active(p->private->dim_scales[i],2,0);
     }
   } 
 }
@@ -680,12 +680,12 @@ static void _sushiv_panel2d_crosshairs_callback(sushiv_panel_t *p){
     sushiv_dimension_t *d = p->dimension_list[i].d;
     if(d == p2->x_d){
       if(p2->x_d->val != x)
-	sushiv_dimension_set_value(p->private->dim_scales[i],1,x);
+	_sushiv_dimension_set_value(p->private->dim_scales[i],1,x);
     }
 
     if(d == p2->y_d){
       if(p2->y_d->val != y)
-	sushiv_dimension_set_value(p->private->dim_scales[i],1,y);
+	_sushiv_dimension_set_value(p->private->dim_scales[i],1,y);
     }
     
     p2->oldbox_active = 0;
@@ -711,10 +711,10 @@ static void box_callback(void *in, int state){
 
     _sushiv_panel2d_crosshairs_callback(p);
 
-    sushiv_dimension_set_value(p2->x_scale,0,p2->oldbox[0]);
-    sushiv_dimension_set_value(p2->x_scale,2,p2->oldbox[1]);
-    sushiv_dimension_set_value(p2->y_scale,0,p2->oldbox[2]);
-    sushiv_dimension_set_value(p2->y_scale,2,p2->oldbox[3]);
+    _sushiv_dimension_set_value(p2->x_scale,0,p2->oldbox[0]);
+    _sushiv_dimension_set_value(p2->x_scale,2,p2->oldbox[1]);
+    _sushiv_dimension_set_value(p2->y_scale,0,p2->oldbox[2]);
+    _sushiv_dimension_set_value(p2->y_scale,2,p2->oldbox[3]);
     p2->oldbox_active = 0;
     _sushiv_panel_undo_resume(p);
     break;
@@ -906,9 +906,9 @@ static void panel2d_undo_restore(sushiv_panel_undo_t *u, sushiv_panel_t *p){
   }
 
   for(i=0;i<p->dimensions;i++){
-    sushiv_dimension_set_value(p->private->dim_scales[i],0,u->dim_vals[0][i]);
-    sushiv_dimension_set_value(p->private->dim_scales[i],1,u->dim_vals[1][i]);
-    sushiv_dimension_set_value(p->private->dim_scales[i],2,u->dim_vals[2][i]);
+    _sushiv_dimension_set_value(p->private->dim_scales[i],0,u->dim_vals[0][i]);
+    _sushiv_dimension_set_value(p->private->dim_scales[i],1,u->dim_vals[1][i]);
+    _sushiv_dimension_set_value(p->private->dim_scales[i],2,u->dim_vals[2][i]);
   }
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(p2->dim_xb[u->x_d]),TRUE);
@@ -1248,7 +1248,7 @@ static void _sushiv_realize_panel2d(sushiv_panel_t *p){
     }
 
     p->private->dim_scales[i] = 
-      sushiv_new_dimension_widget(p->dimension_list+i,center_callback_2d,bracket_callback_2d);
+      _sushiv_new_dimension_widget(p->dimension_list+i,center_callback_2d,bracket_callback_2d);
     
     gtk_table_attach(GTK_TABLE(p2->dim_table),
 		     GTK_WIDGET(p->private->dim_scales[i]->t),
