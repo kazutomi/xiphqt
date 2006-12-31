@@ -602,9 +602,9 @@ static void update_crosshairs(sushiv_panel_t *p){
   for(i=0;i<p->dimensions;i++){
     sushiv_dimension_t *d = p->dimension_list[i].d;
     if(d == p2->x_d)
-      x = p->private->dim_scales[i]->dl->d->val;
+      x = d->val;
     if(d == p2->y_d)
-      y = p->private->dim_scales[i]->dl->d->val;
+      y = d->val;
     
   }
   
@@ -878,9 +878,9 @@ static void panel2d_undo_log(sushiv_panel_undo_t *u, sushiv_panel_t *p){
   }
 
   for(i=0;i<p->dimensions;i++){
-    u->dim_vals[0][i] = p->private->dim_scales[i]->dl->d->bracket[0];
-    u->dim_vals[1][i] = p->private->dim_scales[i]->dl->d->val;
-    u->dim_vals[2][i] = p->private->dim_scales[i]->dl->d->bracket[1];
+    u->dim_vals[0][i] = p->dimension_list[i].d->bracket[0];
+    u->dim_vals[1][i] = p->dimension_list[i].d->val;
+    u->dim_vals[2][i] = p->dimension_list[i].d->bracket[1];
   }
   
   u->x_d = p2->x_dnum;
