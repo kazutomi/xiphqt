@@ -525,32 +525,29 @@ static void _mark_recompute_2d(sushiv_panel_t *p){
   _sushiv_panel1d_mark_recompute_linked(p);   
 
   if(plot && GTK_WIDGET_REALIZED(GTK_WIDGET(plot))){
-    if(p2->data_w != w ||
-       p2->data_h != h){
+
+    if( (p2->data_w != w ||
+	 p2->data_h != h) &&
+	p2->data_rect){
+	
+      // make new rects, do a fast/dirty scaling job from old to new
+      int i;
+      for(i=0;i<p->objectives;i++){
+	double *new_rect = malloc(w * h* sizeof(**p2->data_rect));
+	
+	fast_scale(new_rect,plot->x,plot->y,p2->data_rect[i],p2->x,p2->y);
+	
+	free(p2->data_rect[i]);
+	p2->data_rect[i] = new_rect;
+      }
+      p2->x = plot->x;
+      p2->y = plot->y;
+      _sushiv_panel2d_map_redraw(p);
+    }else{
       
       p2->data_w = w;
       p2->data_h = h;
       
-      if(p2->data_rect){
-	
-	// make new rects, do a fast/dirty scaling job from old to new
-	int i;
-	for(i=0;i<p->objectives;i++){
-	  double *new_rect = malloc(w * h* sizeof(**p2->data_rect));
-
-	  fast_scale(new_rect,plot->x,plot->y,p2->data_rect[i],p2->x,p2->y);
-
-	  free(p2->data_rect[i]);
-	  p2->data_rect[i] = new_rect;
-	}
-	p2->x = plot->x;
-	p2->y = plot->y;
-	_sushiv_panel2d_map_redraw(p);
-      }else{
-	p2->x = plot->x;
-	p2->y = plot->y;
-      }
-    }else{
       p2->x = scalespace_linear(p2->x_d->bracket[0],
 				p2->x_d->bracket[1],
 				w,
