@@ -57,7 +57,7 @@ typedef struct sushiv_panel1d {
   GtkWidget **dim_xb;
 
   sushiv_dimension_t *x_d;
-  Slider *x_scale;
+  sushiv_dim_widget_t *x_scale;
   int x_dnum; // number of dimension within panel, not global instance
 
   int last_line;

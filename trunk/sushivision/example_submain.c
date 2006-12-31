@@ -88,11 +88,11 @@ int sushiv_submain(int argc, char *argv[]){
   sushiv_new_dimension(s,0,"time",
 		       4,(double []){0,1024,2048,4096},
 		       time_callback,
-		       SUSHIV_NO_X|SUSHIV_NO_Y);
+		       SUSHIV_DIM_NO_X|SUSHIV_DIM_NO_Y);
   sushiv_new_dimension(s,1,"blocksize",
 		       8,(double []){64,128,256,512,1024,2048,4096,8192},
 		       blocksize_callback,
-		       SUSHIV_NO_X|SUSHIV_NO_Y);
+		       SUSHIV_DIM_NO_X|SUSHIV_DIM_NO_Y);
 
   sushiv_new_dimension(s,2,"amplitude",
 		       9,(double []){-96,-84,-72,-60,-48,-36,-24,-12,0},

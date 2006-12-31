@@ -42,12 +42,6 @@ typedef struct sushiv_instance {
   sushiv_instance_internal_t *private;
 } sushiv_instance_t;
 
-#define SUSHIV_NO_X 0x100
-#define SUSHIV_NO_Y 0x200
-#define SUSHIV_LINK_X 0x400 
-#define SUSHIV_LINK_Y 0x800 
-#define SUSHIV_FLIP 0x1000 
-
 struct sushiv_scale{
   int vals;
   double *val_list;
@@ -55,11 +49,18 @@ struct sushiv_scale{
   char *legend;
 };
 
-typedef struct sushiv_panel_internal sushiv_panel_internal_t;
+#define SUSHIV_DIM_NO_X 0x100
+#define SUSHIV_DIM_NO_Y 0x200
+
+typedef struct sushiv_dimension_internal sushiv_dimension_internal_t;
+enum sushiv_dimension_type { SUSHIV_DIM_CONTINUOUS, SUSHIV_DIM_DISCRETE, SUSHIV_DIM_PICKLIST };
+typedef union sushiv_dimension_subtype sushiv_dimension_subtype_t;
 
 struct sushiv_dimension{ 
   int number;
   char *name;
+  enum sushiv_dimension_type type;
+
   double bracket[2];
   double val;
 
@@ -68,23 +69,33 @@ struct sushiv_dimension{
   
   int (*callback)(sushiv_dimension_t *);
   sushiv_instance_t *sushi;
-  sushiv_panel_internal_t *private;
+  sushiv_dimension_subtype_t *subtype;
+  sushiv_dimension_internal_t *private;
 };
 
 typedef struct sushiv_objective_internal sushiv_objective_internal_t;
+enum sushiv_objective_type { SUSHIV_OBJ_CONTINUOUS };
+typedef union sushiv_objective_subtype sushiv_objective_subtype_t;
 
 struct sushiv_objective { 
   int number;
   char *name;
+  enum sushiv_objective_type type;
 
   sushiv_scale_t *scale;
   unsigned flags;
 
   void (*callback)(double *,double *);
   sushiv_instance_t *sushi;
+  sushiv_objective_subtype_t *subtype;
   sushiv_objective_internal_t *private;
 };
 
+#define SUSHIV_PANEL_LINK_X 0x1 
+#define SUSHIV_PANEL_LINK_Y 0x2 
+#define SUSHIV_PANEL_FLIP 0x4 
+
+typedef struct sushiv_panel_internal sushiv_panel_internal_t;
 enum sushiv_panel_type { SUSHIV_PANEL_1D, SUSHIV_PANEL_2D, SUSHIV_PANEL_XY };
 typedef union sushiv_panel_subtype sushiv_panel_subtype_t;
 
@@ -128,6 +139,25 @@ extern int sushiv_new_dimension(sushiv_instance_t *s,
 				double *scaleval_list,
 				int (*callback)(sushiv_dimension_t *),
 				unsigned flags);
+
+extern int sushiv_new_dimension_discrete(sushiv_instance_t *s,
+					 int number,
+					 const char *name,
+					 unsigned scalevals, 
+					 double *scaleval_list,
+					 int (*callback)(sushiv_dimension_t *),
+					 long quant_numerator,
+					 long quant_denominator,
+					 unsigned flags);
+
+extern int sushiv_new_dimension_picklist(sushiv_instance_t *s,
+					 int number,
+					 const char *name,
+					 unsigned pickvals, 
+					 double *pickval_list,
+					 char **pickval_labels,
+					 int (*callback)(sushiv_dimension_t *),
+					 unsigned flags);
 
 extern int sushiv_new_objective(sushiv_instance_t *s,
 				int number,
