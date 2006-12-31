@@ -128,14 +128,17 @@ static void update_legend(sushiv_panel_t *p){
   if(plot){
     int i;
     char buffer[320];
+    int depth = 0;
     plot_legend_clear(plot);
 
     // add each dimension to the legend
+    // display decimal precision relative to display scales
+    if(3-p2->x.decimal_exponent > depth) depth = 3-p2->x.decimal_exponent;
+    if(3-p2->y.decimal_exponent > depth) depth = 3-p2->y.decimal_exponent;
     for(i=0;i<p->dimensions;i++){
-      // display decimal precision relative to bracket
-      int depth = del_depth(p->dimension_list[i].d->bracket[0],
-			    p->dimension_list[i].d->bracket[1]) + offset;
-      snprintf(buffer,320,"%s = %.*f",
+      //int depth = del_depth(p->dimension_list[i].d->bracket[0],
+      //		    p->dimension_list[i].d->bracket[1]) + offset;
+      snprintf(buffer,320,"%s = %+.*f",
 	       p->dimension_list[i].d->name,
 	       depth,
 	       p->dimension_list[i].d->val);

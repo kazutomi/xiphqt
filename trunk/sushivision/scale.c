@@ -200,7 +200,7 @@ int scale_set_scalelabels(sushiv_scale_t *s, char **scalelabel_list){
 /* plot and graph scales */
 
 double scalespace_value(scalespace *s, double pixel){
-  double val = (pixel-s->first_pixel)*s->step_val/s->step_pixel + s->first_val;
+  double val = (double)(pixel-s->first_pixel)*s->step_val/s->step_pixel + s->first_val;
   return val * s->m;
 }
 
@@ -232,13 +232,15 @@ double scalespace_label(scalespace *s, int num, char *buffer){
 
 // name is *not* copied
 scalespace scalespace_linear (double lowpoint, double highpoint, int pixels, int max_spacing, char *name){
-  double range = fabs(highpoint - lowpoint);
+  double orange = fabs(highpoint - lowpoint), range;
   scalespace ret;
 
-  int place = 0;
-  int step = 1;
+  int place;
+  int step;
   long long first;
   int neg = (lowpoint>highpoint?-1:1);
+
+  if(pixels<1)pixels=1;
 
   ret.lo = lowpoint;
   ret.hi = highpoint;
@@ -246,12 +248,18 @@ scalespace scalespace_linear (double lowpoint, double highpoint, int pixels, int
   ret.pixels=pixels;
   ret.legend=name;
 
-  if(range < DBL_MIN*pixels){
-    ret.m = DBL_MIN * pixels;
-    highpoint = lowpoint + ret.m;
+  if(orange < DBL_MIN*pixels){
+    // insufficient to safeguard the int64 first var below all by
+    // itself, but it will keep things on track until later checks
+    orange = DBL_MIN * pixels;
+    highpoint = lowpoint + orange;
   }
 
-  if(range!=0.){
+  while(1){
+    range = orange;
+    place = 0;
+    step = 1;
+
     while(pixels / range < max_spacing){
       place++;
       range *= .1;
@@ -260,39 +268,73 @@ scalespace scalespace_linear (double lowpoint, double highpoint, int pixels, int
       place--;
       range *= 10;
     }
+    
+    ret.decimal_exponent = place;
+    
+    if (pixels / (range*.2) <= max_spacing){
+      step *= 5;
+      range *= .2;
+    }
+    if (pixels / (range*.5) <= max_spacing){
+      step *= 2;
+      range *= .5;
+    }
+
+    step *= neg;
+    ret.step_val = step;
+    
+    if(pixels == 0. || range == 0.)
+      ret.step_pixel = max_spacing;
+    else
+      ret.step_pixel = rint(pixels / range);
+    ret.m = pow(10,place);
+  
+    first = (long long)(lowpoint/ret.m)/step*step;
+
+    if(neg){
+      if(LLONG_MAX * ret.m < highpoint){
+	orange *= 2;
+	continue;
+      }
+    }else{
+      if(LLONG_MAX * ret.m < lowpoint){
+	orange *= 2;
+	continue;
+      }
+    }
+
+    while(first * ret.m * neg < lowpoint*neg)
+      first += step;
+    
+    if(neg){
+      if(LLONG_MIN * ret.m > lowpoint){
+	orange *= 2;
+	continue;
+      }
+    }else{
+      if(LLONG_MIN * ret.m > highpoint){
+	orange *= 2;
+	continue;
+      }
+    }
+    
+    while(first * ret.m * neg > highpoint*neg)
+      first -= step;
+    
+    // make sure the scale display has meaningful sig figs to work with */
+    if( first*128/128 != first ||
+	first*16*ret.m == (first*16 +step)*ret.m ||
+	(first*16+step)*ret.m == (first*16 +step*2)*ret.m){
+      orange*=2;
+      continue;
+    }
+
+    ret.first_val = first;
+    
+    ret.first_pixel = rint((first - (lowpoint / ret.m)) * ret.step_pixel / ret.step_val);
+    ret.neg = neg;
+    break;
   }
-
-  ret.decimal_exponent = place;
-
-  if (pixels / (range*.2) <= max_spacing){
-    step *= 5;
-    range *= .2;
-  }
-  if (pixels / (range*.5) <= max_spacing){
-    step *= 2;
-    range *= .5;
-  }
-
-  step *= neg;
-  ret.step_val = step;
-
-  if(pixels == 0. || range == 0.)
-    ret.step_pixel = max_spacing;
-  else
-    ret.step_pixel = rint(pixels / range);
-  ret.m = pow(10,place);
-  first = (long long)(lowpoint/ret.m)/step*step;
-
-  while(first * ret.m * neg < lowpoint*neg)
-    first += step;
-
-  while(first * ret.m * neg > highpoint*neg)
-    first -= step;
-
-  ret.first_val = first;
-
-  ret.first_pixel = rint((first - (lowpoint / ret.m)) * ret.step_pixel / ret.step_val);
-  ret.neg = neg;
 
   return ret;
 }
