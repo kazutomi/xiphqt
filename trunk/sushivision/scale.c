@@ -246,9 +246,9 @@ scalespace scalespace_linear (double lowpoint, double highpoint, int pixels, int
   ret.pixels=pixels;
   ret.legend=name;
 
-  if(range == 0){
-    ret.m = 0;
-    return ret;
+  if(range < DBL_MIN*pixels){
+    ret.m = DBL_MIN * pixels;
+    highpoint = lowpoint + ret.m;
   }
 
   if(range!=0.){
@@ -283,32 +283,8 @@ scalespace scalespace_linear (double lowpoint, double highpoint, int pixels, int
   ret.m = pow(10,place);
   first = (long long)(lowpoint/ret.m)/step*step;
 
-  if(neg){
-    if(LLONG_MAX * ret.m < highpoint){
-      ret.m = 0;
-      return ret;
-    }
-  }else{
-    if(LLONG_MAX * ret.m < lowpoint){
-      ret.m = 0;
-      return ret;
-    }
-  }
-
   while(first * ret.m * neg < lowpoint*neg)
     first += step;
-
-  if(neg){
-    if(LLONG_MIN * ret.m > lowpoint){
-      ret.m = 0;
-      return ret;
-    }
-  }else{
-    if(LLONG_MIN * ret.m > highpoint){
-      ret.m = 0;
-      return ret;
-    }
-  }
 
   while(first * ret.m * neg > highpoint*neg)
     first -= step;
