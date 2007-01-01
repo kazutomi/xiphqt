@@ -682,6 +682,7 @@ static void _sushiv_panel2d_crosshairs_callback(sushiv_panel_t *p){
     p2->oldbox_active = 0;
   }
 
+  _sushiv_panel_dirty_legend(p);
   _sushiv_panel_undo_resume(p);
 }
 
@@ -1092,7 +1093,7 @@ static char *graph_menulist[]={
   "Redo",
   "",
   "Start zoom box",
-  "Clear box and crosshairs",
+  "Clear readouts",
   "Find peaks",
   "",
   "Quit",

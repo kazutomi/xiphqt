@@ -666,7 +666,8 @@ void plot_do_escape(Plot *p){
   p->button_down=0;
   p->box_active=0;
   p->cross_active=0;
-  plot_expose_request(p);
+  plot_legend_clear(p);
+  plot_draw_scales(p);
 }
 
 static gboolean key_press(GtkWidget *widget,

@@ -613,6 +613,8 @@ static void crosshair_callback(sushiv_panel_t *p){
   if(p1->link_y)
     link=p1->link_y;
   
+  _sushiv_panel_dirty_legend(p);
+
   if(p1->link_x){
     // make it the master panel's problem.
     plot_set_crosshairs_snap(PLOT(link->private->graph),
@@ -1021,7 +1023,7 @@ static char *graph_menulist[]={
   "Redo",
   "",
   "Start zoom selection",
-  "Clear selection",
+  "Clear readouts",
   "Find peaks",
   "",
   "Quit",
