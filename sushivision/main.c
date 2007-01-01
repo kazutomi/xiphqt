@@ -124,7 +124,7 @@ static void *worker_thread(void *dummy){
 	    p->private->legend_redraw(p);
 	    gdk_threads_enter ();
 
-	    p->private->maps_rendering = 0;
+	    p->private->legend_rendering = 0;
 	  }
 	  gdk_threads_leave ();
 

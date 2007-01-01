@@ -71,6 +71,19 @@ int _sushiv_dimension_data_width(sushiv_dimension_t *d, scalespace *datascale){
   return datascale->pixels;
 }
 
+static double discrete_quantize_val(sushiv_dimension_t *d, double val){
+  if(d->type == SUSHIV_DIM_DISCRETE){
+    val *= d->private->discrete_denominator;
+    val /= d->private->discrete_numerator;
+    
+    val = rint(val);
+    
+    val *= d->private->discrete_numerator;
+    val /= d->private->discrete_denominator;
+  }
+  return val;
+}
+
 static void _sushiv_dimension_center_callback(void *data, int buttonstate){
   gdk_threads_enter();
 
@@ -80,7 +93,8 @@ static void _sushiv_dimension_center_callback(void *data, int buttonstate){
     sushiv_dimension_t *d = dw->dl->d;
     sushiv_panel_t *p = dw->dl->p;
     double val = slider_get_value(dw->scale,1);
- 
+
+    val = discrete_quantize_val(d,val);
     dw->center_updating = 1;
     
     if(buttonstate == 0){
@@ -126,6 +140,9 @@ static void _sushiv_dimension_bracket_callback(void *data, int buttonstate){
     double lo = slider_get_value(dw->scale,0);
     double hi = slider_get_value(dw->scale,2);
  
+    hi = discrete_quantize_val(d,hi);
+    lo = discrete_quantize_val(d,lo);
+
     dw->bracket_updating = 1;
     
     if(buttonstate == 0){
@@ -212,7 +229,17 @@ void _sushiv_dimension_set_value(sushiv_dim_widget_t *dw, int thumb, double val)
 
   switch(d->type){
   case SUSHIV_DIM_CONTINUOUS:
+    slider_set_value(dw->scale,thumb,val);
+    break;
   case SUSHIV_DIM_DISCRETE:
+    val *= d->private->discrete_denominator;
+    val /= d->private->discrete_numerator;
+
+    val = rint(val);
+
+    val *= d->private->discrete_numerator;
+    val /= d->private->discrete_denominator;
+
     slider_set_value(dw->scale,thumb,val);
     break;
   case SUSHIV_DIM_PICKLIST:
@@ -258,13 +285,13 @@ void sushiv_dimension_set_value(sushiv_instance_t *s, int dim_number, int thumb,
   if(!d->private->widgets){
     switch(thumb){
     case 0:
-      d->bracket[0] = val;
+      d->bracket[0] = discrete_quantize_val(d,val);
       break;
     case 1:
-      d->val = val;
+      d->val = discrete_quantize_val(d,val);
       break;
     default:
-      d->bracket[1] = val;
+      d->bracket[1] = discrete_quantize_val(d,val);
       break;
     }
   }else
@@ -313,6 +340,8 @@ sushiv_dim_widget_t *_sushiv_new_dimension_widget(sushiv_dimension_list_t *dl,
 
       dw->scale = slider_new((Slice **)sl,3,d->scale->label_list,d->scale->val_list,
 			     d->scale->vals,0);
+      if(d->type == SUSHIV_DIM_DISCRETE)
+	slider_set_quant(dw->scale,d->private->discrete_numerator,d->private->discrete_denominator);
 
       slice_thumb_set((Slice *)sl[0],v[0]);
       slice_thumb_set((Slice *)sl[1],v[1]);
