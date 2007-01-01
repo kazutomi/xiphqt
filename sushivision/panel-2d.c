@@ -85,25 +85,6 @@ static void _sushiv_panel2d_remap(sushiv_panel_t *p){
   }
 }
 
-static void _sushiv_panel2d_map_redraw(sushiv_panel_t *p){
-  Plot *plot = PLOT(p->private->graph);
-
-  gdk_threads_enter (); // misuse me as a global mutex
-  
-  _sushiv_panel2d_remap(p);
-  if(plot)
-    plot_expose_request(plot);
- 
-  gdk_threads_leave (); // misuse me as a global mutex
-}
-
-static void _sushiv_panel2d_legend_redraw(sushiv_panel_t *p){
-  Plot *plot = PLOT(p->private->graph);
-
-  if(plot)
-    plot_draw_scales(plot);
-}
-
 static void update_legend(sushiv_panel_t *p){  
   sushiv_panel2d_t *p2 = p->subtype->p2;
   Plot *plot = PLOT(p->private->graph);
@@ -160,10 +141,29 @@ static void update_legend(sushiv_panel_t *p){
       }
     }
     gdk_threads_leave ();
-
-    _sushiv_panel_dirty_legend(p);
-
   }
+}
+
+static void _sushiv_panel2d_map_redraw(sushiv_panel_t *p){
+  Plot *plot = PLOT(p->private->graph);
+
+  gdk_threads_enter (); // misuse me as a global mutex
+  
+  _sushiv_panel2d_remap(p);
+  if(plot)
+    plot_expose_request(plot);
+ 
+  gdk_threads_leave (); // misuse me as a global mutex
+}
+
+static void _sushiv_panel2d_legend_redraw(sushiv_panel_t *p){
+  Plot *plot = PLOT(p->private->graph);
+
+  gdk_threads_enter (); // misuse me as a global mutex
+    update_legend(p);
+  if(plot)
+    plot_draw_scales(plot);
+  gdk_threads_leave (); // misuse me as a global mutex
 }
 
 static void mapchange_callback_2d(GtkWidget *w,gpointer in){
@@ -183,7 +183,7 @@ static void mapchange_callback_2d(GtkWidget *w,gpointer in){
   slider_draw(p2->range_scales[onum]);
   slider_expose(p2->range_scales[onum]);
     
-  update_legend(p);
+  _sushiv_panel_dirty_legend(p);
 
   //redraw the plot
   _sushiv_panel_dirty_map(p);
@@ -601,7 +601,7 @@ static void update_crosshairs(sushiv_panel_t *p){
   
   plot_set_crosshairs(plot,x,y);
   _sushiv_panel1d_update_linked_crosshairs(p,0,0); 
-  update_legend(p);
+  _sushiv_panel_dirty_legend(p);
 }
 
 static void center_callback_2d(sushiv_dimension_list_t *dptr){
@@ -832,10 +832,9 @@ static int _sushiv_panel_cooperative_compute_2d(sushiv_panel_t *p){
       if(p2->completed_lines==h){ 
 	_sushiv_panel_dirty_legend(p);
 	plot_expose_request(plot);
-      }else
+      }else{
 	plot_expose_request_line(plot,y);
-      
-
+      }
     }
   }
    
