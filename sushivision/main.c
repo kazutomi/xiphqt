@@ -37,16 +37,14 @@
 static pthread_mutex_t m = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t mc = PTHREAD_COND_INITIALIZER;
 sig_atomic_t _sushiv_exiting=0;
+static int wake_pending = 0;
 
 static int instances;
 static sushiv_instance_t **instance_list;
 
 void _sushiv_clean_exit(int sig){
   _sushiv_exiting = 1;
-
-  pthread_mutex_lock(&m);
-  pthread_cond_broadcast(&mc);
-  pthread_mutex_unlock(&m);
+  _sushiv_wake_workers();
 
   //signal(sig,SIG_IGN);
   if(sig!=SIGINT)
@@ -80,16 +78,16 @@ static int num_proccies(){
 void _sushiv_wake_workers(){
   if(instances){
     pthread_mutex_lock(&m);
+    wake_pending = instances;
     pthread_cond_broadcast(&mc);
     pthread_mutex_unlock(&m);
   }
 }
 
 static void *worker_thread(void *dummy){
-  pthread_mutex_lock(&m);
   while(1){
     if(_sushiv_exiting)break;
-
+    
     // look for work
     {
       int i,j,flag=0;
@@ -98,17 +96,52 @@ static void *worker_thread(void *dummy){
 	sushiv_instance_t *s = instance_list[j];
 				 
 	for(i=0;i<s->panels;i++){
+	  sushiv_panel_t *p = s->panel_list[i];
+
 	  if(_sushiv_exiting)break;
-	  pthread_mutex_unlock(&m);
+
+	  // pending remap work?
+	  gdk_threads_enter();
+	  if(p->private->maps_dirty && !p->private->maps_rendering){
+	    p->private->maps_dirty = 0;
+	    p->private->maps_rendering = 1;
+	    flag = 1;
+	    
+	    gdk_threads_leave ();
+	    p->private->map_redraw(p);
+	    gdk_threads_enter ();
+
+	    p->private->maps_rendering = 0;
+	  }
+
+	  // pending legend work?
+	  if(p->private->legend_dirty && !p->private->legend_rendering){
+	    p->private->legend_dirty = 0;
+	    p->private->legend_rendering = 1;
+	    flag = 1;
+	    
+	    gdk_threads_leave ();
+	    p->private->legend_redraw(p);
+	    gdk_threads_enter ();
+
+	    p->private->maps_rendering = 0;
+	  }
+	  gdk_threads_leave ();
+
+	  // pending computation work?
 	  flag |= _sushiv_panel_cooperative_compute(s->panel_list[i]);
-	  pthread_mutex_lock(&m);
 	}
       }
       if(flag==1)continue;
     }
     
     // nothing to do, wait
-    pthread_cond_wait(&mc,&m);
+    pthread_mutex_lock(&m);
+    if(!wake_pending)
+      pthread_cond_wait(&mc,&m);
+    else
+      wake_pending--;
+    pthread_mutex_unlock(&m);
   }
   
   pthread_mutex_unlock(&m);

@@ -62,6 +62,8 @@ struct sushiv_panel_internal {
   int realized;
   int maps_dirty;
   int legend_dirty;
+  int maps_rendering;
+  int legend_rendering;
 
   // function bundles 
   void (*realize)(sushiv_panel_t *p);

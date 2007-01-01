@@ -23,6 +23,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <pthread.h>
 #include <errno.h>
 #include <math.h>
 #include <signal.h>
@@ -45,70 +46,40 @@ int _sushiv_panel_cooperative_compute(sushiv_panel_t *p){
   return 0;
 }
 
-/* doesn't take an unbounded period, but shouldn't be
-   synchronous in the interests of responsiveness. */
-static gboolean _map_idle_work(gpointer ptr){
-  sushiv_instance_t *s = (sushiv_instance_t *)ptr;
-  int i,flag=1;
-  
-  while(flag){
-    flag = 0;
-    
-    for(i=0;i<s->panels;i++){
-      sushiv_panel_t *p = s->panel_list[i];
-      gdk_threads_enter ();
-      if(p->private->maps_dirty){
-	p->private->maps_dirty = 0;
-	flag=1;
-	gdk_threads_leave ();
-      
-	p->private->map_redraw(p);
+// the following is slightly odd; we want map and legend updates to
+// fire when the UI is otherwise idle (only good way to do event
+// compression in gtk), but we don't want it processed int he main UI
+// thread because of render latencies.  Thus we have a map/legend
+// chain register an idle handler that then wakes the worker threads
+// and has them render the map/legend changes
 
-      }else
-	gdk_threads_leave ();
-    }
-  }
-
+static gboolean _idle_map_fire(gpointer ptr){
+  sushiv_panel_t *p = (sushiv_panel_t *)ptr;
+  gdk_threads_enter ();
+  p->private->maps_dirty = 1;
+  gdk_threads_leave ();
+  _sushiv_wake_workers();
   return FALSE;
 }
 
-static gboolean _legend_idle_work(gpointer ptr){
-  sushiv_instance_t *s = (sushiv_instance_t *)ptr;
-  int i,flag=1;
-  
-  while(flag){
-    flag = 0;
-
-    for(i=0;i<s->panels;i++){
-      sushiv_panel_t *p = s->panel_list[i];
-      gdk_threads_enter ();
-      if(p->private->legend_dirty){
-	p->private->legend_dirty = 0;
-	flag=1;
-	gdk_threads_leave ();
-      
-	p->private->legend_redraw(p);
-
-      }else
-	gdk_threads_leave ();
-    }
-  }
-
+static gboolean _idle_legend_fire(gpointer ptr){
+  sushiv_panel_t *p = (sushiv_panel_t *)ptr;
+  gdk_threads_enter ();
+  p->private->legend_dirty = 1;
+  gdk_threads_leave ();
+  _sushiv_wake_workers();
   return FALSE;
 }
-
 
 void _sushiv_panel_dirty_map(sushiv_panel_t *p){
   gdk_threads_enter ();
-  p->private->maps_dirty = 1;
-  g_idle_add(_map_idle_work,p->sushi);
+  g_idle_add(_idle_map_fire,p);
   gdk_threads_leave ();
 }
 
 void _sushiv_panel_dirty_legend(sushiv_panel_t *p){
   gdk_threads_enter ();
-  p->private->legend_dirty = 1;
-  g_idle_add(_legend_idle_work,p->sushi);
+  g_idle_add(_idle_legend_fire,p);
   gdk_threads_leave ();
 }
 

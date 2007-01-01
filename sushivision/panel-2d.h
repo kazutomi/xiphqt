@@ -52,7 +52,7 @@ typedef struct sushiv_panel2d {
   int y_dnum; // number of dimension within panel, not global instance
 
   int last_line;
-  int dirty_flag;
+  int completed_lines;
 
   int peak_count;
 

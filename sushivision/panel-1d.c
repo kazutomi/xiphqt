@@ -65,25 +65,27 @@ static void _sushiv_panel1d_remap(sushiv_panel_t *p){
     int dw = p1->data_size;
     double h = p1->panel_h;
 
-    scalespace sx = (p1->flip?p1->y:p1->x);
-    scalespace sy = (p1->flip?p1->x:p1->y);
-    
     /* blank frame to black */
     cairo_set_source_rgb (c, 0,0,0);
     cairo_paint(c);
 
-    /* do the panel and plot scales match?  If not, redraw the plot
-       scales */
-    if(memcmp(&sx,&plot->x,sizeof(sx)) |
-       memcmp(&sy,&plot->y,sizeof(sy))){
-      plot->x = sx;
-      plot->y = sy;
-
-      plot_draw_scales(plot);
-    }
-
-    /* by objective */
     if(p1->data_vec){
+
+      /* do the panel and plot scales match?  If not, redraw the plot
+	 scales */
+      
+      scalespace sx = (p1->flip?p1->y:p1->x);
+      scalespace sy = (p1->flip?p1->x:p1->y);
+      
+      if(memcmp(&sx,&plot->x,sizeof(sx)) ||
+	 memcmp(&sy,&plot->y,sizeof(sy))){
+	plot->x = sx;
+	plot->y = sy;
+	
+	plot_draw_scales(plot);
+      }
+
+      /* by objective */
       for(i=0;i<p->objectives;i++){
 	double *data_vec = p1->data_vec[i];
 	if(data_vec){

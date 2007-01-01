@@ -104,16 +104,6 @@ static void _sushiv_panel2d_legend_redraw(sushiv_panel_t *p){
     plot_draw_scales(plot);
 }
 
-static int ilog10(int x){
-  int count=0;
-  if(x<0)x=-x;
-  while(x){
-    count++;
-    x/=10;
-  }
-  return count;
-}
-
 static void update_legend(sushiv_panel_t *p){  
   sushiv_panel2d_t *p2 = p->subtype->p2;
   Plot *plot = PLOT(p->private->graph);
@@ -583,6 +573,7 @@ static void _mark_recompute_2d(sushiv_panel_t *p){
     
     p2->serialno++;
     p2->last_line = 0;
+    p2->completed_lines = 0;
     
     _sushiv_wake_workers();
   }
@@ -833,14 +824,18 @@ static int _sushiv_panel_cooperative_compute_2d(sushiv_panel_t *p){
     
     /* move rendered line back into widget */
     gdk_threads_enter ();
+    p2->completed_lines++;
+
     if(p2->serialno == serialno){
       u_int32_t *line = plot_get_background_line(plot, y);
       memcpy(line,render,w*sizeof(*render));
-      plot_expose_request_line(plot,y);
-      
-      if(p2->last_line==h){ // yes, the current last_line!
+      if(p2->completed_lines==h){ 
 	_sushiv_panel_dirty_legend(p);
-      }
+	plot_expose_request(plot);
+      }else
+	plot_expose_request_line(plot,y);
+      
+
     }
   }
    
