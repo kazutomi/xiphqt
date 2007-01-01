@@ -39,7 +39,9 @@ struct _Slider {
   int labels;
   int neg;
   int flags;
-
+  
+  double quant_num;
+  double quant_denom;
   //double minstep;
   //double step;
 };
@@ -70,3 +72,4 @@ extern void slider_set_gradient(Slider *s, mapping *m);
 extern double slider_get_value(Slider *s, int thumbnum);
 extern void slider_set_value(Slider *s, int thumbnum, double v);
 extern double slider_del_to_val(Slider *s, double del);
+extern void slider_set_quant(Slider *s, double n, double d);

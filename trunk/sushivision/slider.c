@@ -503,14 +503,26 @@ static double slice_adjust_pixel(Slider *s,int slicenum, double x){
   return x+width;
 }
 
+static double quant(Slider *s, double val){
+  val *= s->quant_denom;
+  val /= s->quant_num;
+  
+  val = rint(val);
+    
+  val *= s->quant_num;
+  val /= s->quant_denom;
+ 
+  return val;
+}
+
 double slider_pixel_to_val(Slider *s,double x){
   int tx=s->xpad;
   int tw=s->w - tx*2;
   double del = (double)(x-tx)/tw;
   if(del<0)
-    return s->label_vals[0];
+    return quant(s,s->label_vals[0]);
   if(del>=1.)
-    return (s->label_vals[s->labels-1]);
+    return quant(s,(s->label_vals[s->labels-1]));
   return slider_del_to_val(s,del);
 }
 
@@ -535,7 +547,7 @@ double slider_del_to_val(Slider *s, double del){
   base = floor(del);
   del -= base;
   
-  return ( (1.-del)*s->label_vals[base] + del*s->label_vals[base+1] );
+  return quant(s,( (1.-del)*s->label_vals[base] + del*s->label_vals[base+1] ));
 }
 
 void slider_vals_bound(Slider *s,int slicenum){
@@ -786,6 +798,8 @@ Slider *slider_new(Slice **slices, int num_slices, char **labels, double *label_
 
   ret->slices = (GtkWidget **)slices;
   ret->num_slices = num_slices;
+  ret->quant_num=1.;
+  ret->quant_denom=1.;
 
   ret->label = calloc(num_labels,sizeof(*ret->label));
   for(i=0;i<num_labels;i++)
@@ -835,4 +849,9 @@ void slider_set_value(Slider *s, int thumbnum, double v){
   w = s->slices[thumbnum];
   slice_thumb_set(SLICE(w),v);
   update_gradient(s);
+}
+
+void slider_set_quant(Slider *s,double num, double denom){
+  s->quant_num=num;
+  s->quant_denom=denom;
 }
