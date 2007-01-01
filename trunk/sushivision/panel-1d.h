@@ -61,7 +61,6 @@ typedef struct sushiv_panel1d {
   int x_dnum; // number of dimension within panel, not global instance
 
   int last_line;
-  int dirty_flag;
 
   int peak_count;
 } sushiv_panel1d_t;

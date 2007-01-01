@@ -226,6 +226,10 @@ void gtk_mutex_fixup(){
   gdk_threads_set_lock_functions(recursive_gdk_lock,recursive_gdk_unlock);
 }
 
+pthread_mutex_t *gtk_get_mutex(void){
+  return &gdkm;
+}
+
 /**********************************************************************/
 /* Not really a fixup; generate menus that declare what the keyboard
    shortcuts are */
