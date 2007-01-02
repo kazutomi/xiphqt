@@ -44,10 +44,11 @@ static char *line_name[LINETYPES+1] = {
   NULL
 };
 
-#define POINTTYPES 8
+#define POINTTYPES 9
 static char *point_name[POINTTYPES+1] = {
   "dot",
   "cross",
+  "plus",
   "open circle",
   "open square",
   "open triangle",
@@ -221,8 +222,71 @@ static void _sushiv_panel1d_remap(sushiv_panel_t *p){
 		  cairo_line_to(c,xv[i],h-yv[i]);
 		}
 		cairo_stroke(c);
+	      }	      
+	    }
+	  }
+
+	  /* now draw the points */
+	  if(pointtype > 0 || linetype == 5){
+	    cairo_set_line_width(c,1.);
+
+	    for(i=0;i<dw;i++){
+	      if(!isnan(yv[i])){
+		double xx,yy;
+		if(p1->flip){
+		  xx = yv[i];
+		  yy = h - xv[i];
+		}else{
+		  xx = xv[i];
+		  yy = h- yv[i];
+		}
+
+		cairo_set_source_rgba(c,
+				      ((color>>16)&0xff)/255.,
+				      ((color>>8)&0xff)/255.,
+				      ((color)&0xff)/255.,
+				      alpha);
+
+		switch(pointtype){
+		case 0: /* pixeldots */
+		  cairo_rectangle(c, xx-.5,yy-.5,1,1);
+		  cairo_fill(c);
+		  break;
+		case 1: /* X */
+		  cairo_move_to(c,xx-4,yy-4);
+		  cairo_line_to(c,xx+4,yy+4);
+		  cairo_move_to(c,xx+4,yy-4);
+		  cairo_line_to(c,xx-4,yy+4);
+		  break;
+		case 2: /* + */
+		  cairo_move_to(c,xx-4,yy);
+		  cairo_line_to(c,xx+4,yy);
+		  cairo_move_to(c,xx,yy-4);
+		  cairo_line_to(c,xx,yy+4);
+		  break;
+		case 3: case 6: /* circle */
+		  cairo_arc(c,xx,yy,4,0,2.*M_PI);
+		  break;
+		case 4: case 7: /* square */
+		  cairo_rectangle(c,xx-4,yy-4,8,8);
+		  break;
+		case 5: case 8: /* triangle */
+		  cairo_move_to(c,xx,yy-5);
+		  cairo_line_to(c,xx-4,yy+3);
+		  cairo_line_to(c,xx+4,yy+3);
+		  cairo_close_path(c);
+		  break;
+		}
+
+		if(pointtype>5){
+		  cairo_fill_preserve(c);
+		}
+
+		if(pointtype>0){
+		  cairo_set_source_rgba(c,1.,1.,1.,alpha);
+		  cairo_stroke(c);
+		}
 	      }
-	      
 	    }
 	  }
 	}
