@@ -63,12 +63,6 @@ int sushiv_submain(int argc, char *argv[]){
 		       5,(double []){-2.25,-1,0,1,2.25},
 		       NULL,0);
 
-  sushiv_new_dimension_discrete(s,4,"Iterations",
-				5,(double []){1,10,100,1000,10000},
-				NULL,
-				10,1,
-				0);
-  
   sushiv_new_dimension_picklist(s,4,"Max Iterations",
   				4,
   				(double []){100,1000,10000,100000},
@@ -77,6 +71,7 @@ int sushiv_submain(int argc, char *argv[]){
   					     "ten thousand",
   					     "one hundred thousand"},
 				NULL,0);
+  sushiv_dimension_set_value(s,4,1,10000);
 
   sushiv_new_objective(s,0,"fractal",
 		       5,(double []){0, .001, .01, .1, 1.0},
