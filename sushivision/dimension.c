@@ -362,7 +362,7 @@ sushiv_dim_widget_t *_sushiv_new_dimension_widget(sushiv_dimension_list_t *dl,
 			G_CALLBACK (_sushiv_dimension_dropdown_callback), dw);
       
       gtk_table_attach(dw->t,dw->menu,0,1,0,1,
-		       GTK_EXPAND|GTK_FILL,GTK_SHRINK,5,0);
+		       GTK_EXPAND|GTK_FILL,GTK_SHRINK,0,0);
       _sushiv_dimension_set_value(dw,1,d->val);
       //gtk_combo_box_set_active(GTK_COMBO_BOX(dw->menu),0);
     }
