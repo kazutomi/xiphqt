@@ -813,14 +813,12 @@ static void panel1d_undo_log(sushiv_panel_undo_t *u, sushiv_panel_t *p){
   // alloc fields as necessary
   if(!u->mappings)
     u->mappings =  calloc(p->objectives,sizeof(*u->mappings));
-  if(!u->submappings)
-    u->submappings =  calloc(p->objectives,sizeof(*u->submappings));
   if(!u->scale_vals[0])
     u->scale_vals[0] =  calloc(1,sizeof(**u->scale_vals));
   if(!u->scale_vals[1])
     u->scale_vals[1] =  calloc(1,sizeof(**u->scale_vals));
   if(!u->scale_vals[2])
-    u->scale_vals[2] =  calloc(1,sizeof(**u->scale_vals));
+    u->scale_vals[2] =  calloc(p->objectives,sizeof(**u->scale_vals));
   if(!u->dim_vals[0])
     u->dim_vals[0] =  calloc(p->dimensions+1,sizeof(**u->dim_vals)); // +1 for possible linked dim
   if(!u->dim_vals[1])
@@ -833,8 +831,11 @@ static void panel1d_undo_log(sushiv_panel_undo_t *u, sushiv_panel_t *p){
   u->scale_vals[1][0] = slider_get_value(p1->range_slider,1);
 
   for(i=0;i<p->objectives;i++){
-    u->mappings[i] = p1->mappings[i].mapnum;
-    u->submappings[i] = p1->linetype[i];
+    u->mappings[i] = 
+      (p1->mappings[i].mapnum<<24) | 
+      (p1->linetype[i]<<16) |
+      (p1->pointtype[i]<<8);
+    u->scale_vals[2][0] = slider_get_value(p1->alpha_scale[i],0);
   }
 
   for(i=0;i<p->dimensions;i++){
@@ -867,8 +868,10 @@ static void panel1d_undo_restore(sushiv_panel_undo_t *u, sushiv_panel_t *p){
   slider_set_value(p1->range_slider,1,u->scale_vals[1][0]);
 
   for(i=0;i<p->objectives;i++){
-    gtk_combo_box_set_active(GTK_COMBO_BOX(p1->map_pulldowns[i]),u->mappings[i]);
-    gtk_combo_box_set_active(GTK_COMBO_BOX(p1->line_pulldowns[i]),u->submappings[i]);
+    gtk_combo_box_set_active(GTK_COMBO_BOX(p1->map_pulldowns[i]), (u->mappings[i]>>24)&0xff );
+    gtk_combo_box_set_active(GTK_COMBO_BOX(p1->line_pulldowns[i]), (u->mappings[i]>>16)&0xff );
+    gtk_combo_box_set_active(GTK_COMBO_BOX(p1->point_pulldowns[i]), (u->mappings[i]>>8)&0xff );
+    slider_set_value(p1->alpha_scale[i],0,u->scale_vals[2][i]);
   }
 
   for(i=0;i<p->dimensions;i++){

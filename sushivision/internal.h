@@ -41,8 +41,7 @@ union sushiv_panel_subtype {
 // for now we use a master undo type which leaves one or two fields
 // unused for a given panel.
 typedef struct sushiv_panel_undo {
-  int *mappings;
-  int *submappings;
+  u_int32_t *mappings;
 
   double *scale_vals[3];
   double *dim_vals[3];
