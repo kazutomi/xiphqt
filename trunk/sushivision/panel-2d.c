@@ -514,8 +514,6 @@ static void _mark_recompute_2d(sushiv_panel_t *p){
   int w = plot->w.allocation.width;
   int h = plot->w.allocation.height;
 
-  _sushiv_panel1d_mark_recompute_linked(p);   
-
   if(plot && GTK_WIDGET_REALIZED(GTK_WIDGET(plot))){
 
     if( (p2->data_w != w ||
@@ -575,6 +573,8 @@ static void _mark_recompute_2d(sushiv_panel_t *p){
     p2->last_line = 0;
     p2->completed_lines = 0;
     
+    _sushiv_panel1d_mark_recompute_linked(p);   
+
     _sushiv_wake_workers();
   }
 }
