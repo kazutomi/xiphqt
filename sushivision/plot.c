@@ -233,7 +233,7 @@ static void draw_legend_work(Plot *p, cairo_surface_t *s){
 			    ((colors[i]>>16)&0xff)/255.,
 			    ((colors[i]>>8)&0xff)/255.,
 			    ((colors[i])&0xff)/255.,
-			    1.);
+			    ((colors[i]>>24)&0xff)/255.);
       cairo_move_to(c,x, y);
       cairo_show_text (c, buffer[i]);
 
@@ -1057,7 +1057,7 @@ void plot_legend_clear(Plot *p){
 }
 
 void plot_legend_add(Plot *p, char *entry){
-  plot_legend_add_with_color(p,entry,0xffffffUL);
+  plot_legend_add_with_color(p,entry,0xffffffffUL);
 }
 
 void plot_legend_add_with_color(Plot *p, char *entry, u_int32_t color){

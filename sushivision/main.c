@@ -38,8 +38,9 @@ static pthread_mutex_t m = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t mc = PTHREAD_COND_INITIALIZER;
 sig_atomic_t _sushiv_exiting=0;
 static int wake_pending = 0;
+static int num_threads;
 
-static int instances;
+static int instances=0;
 static sushiv_instance_t **instance_list;
 
 void _sushiv_clean_exit(int sig){
@@ -78,7 +79,7 @@ static int num_proccies(){
 void _sushiv_wake_workers(){
   if(instances){
     pthread_mutex_lock(&m);
-    wake_pending = instances;
+    wake_pending = num_threads;
     pthread_cond_broadcast(&mc);
     pthread_mutex_unlock(&m);
   }
@@ -169,6 +170,7 @@ static void sushiv_realize_all(void){
 
 int main (int argc, char *argv[]){
   int ret;
+  num_threads = num_proccies();
 
   gtk_init (&argc, &argv);
   g_thread_init (NULL);
@@ -185,7 +187,7 @@ int main (int argc, char *argv[]){
   
   {
     pthread_t dummy;
-    int threads = num_proccies();
+    int threads = num_threads;
     while(threads--)
       pthread_create(&dummy, NULL, &worker_thread,NULL);
   }

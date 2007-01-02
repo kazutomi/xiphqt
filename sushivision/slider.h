@@ -24,7 +24,8 @@
 struct _Slider {
   GtkWidget **slices;
   int num_slices;
-  
+  int realized;
+
   u_int32_t *backdata;
   cairo_surface_t *background;
   cairo_surface_t *foreground;

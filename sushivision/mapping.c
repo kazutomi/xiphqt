@@ -325,28 +325,84 @@ int mapping_inactive_p(mapping *m){
 }
 
 static u_int32_t swhite(double val, u_int32_t mix){
-  return 0xffffffU;
+  if(val<0)val=0;
+  if(val>1)val=1;
+  {
+    int r = ((mix>>16) & 0xff) *(1.-val) + (val*0xff);
+    int g = ((mix>>8) & 0xff) *(1.-val) + (val*0xff);
+    int b = ((mix) & 0xff) *(1.-val) + (val*0xff);
+    return  (r<<16)+(g<<8)+b;
+  }
 }
 static u_int32_t sred(double val, u_int32_t mix){
-  return 0xff6060U;
+  if(val<0)val=0;
+  if(val>1)val=1;
+  {
+    int r = ((mix>>16) & 0xff) *(1.-val) + (val*0xff);
+    int g = ((mix>>8) & 0xff) *(1.-val) + (val*0x60);
+    int b = ((mix) & 0xff) *(1.-val) + (val*0x60);
+    return  (r<<16)+(g<<8)+b;
+  }
 }
 static u_int32_t sgreen(double val, u_int32_t mix){
-  return 0x60ff60U;
+  if(val<0)val=0;
+  if(val>1)val=1;
+  {
+    int r = ((mix>>16) & 0xff) *(1.-val) + (val*0x60);
+    int g = ((mix>>8) & 0xff) *(1.-val) + (val*0xff);
+    int b = ((mix) & 0xff) *(1.-val) + (val*0x60);
+    return  (r<<16)+(g<<8)+b;
+  }
 }
 static u_int32_t sblue(double val, u_int32_t mix){
-  return 0x8080ffU;
+  if(val<0)val=0;
+  if(val>1)val=1;
+  {
+    int r = ((mix>>16) & 0xff) *(1.-val) + (val*0x80);
+    int g = ((mix>>8) & 0xff) *(1.-val) + (val*0x80);
+    int b = ((mix) & 0xff) *(1.-val) + (val*0xff);
+    return  (r<<16)+(g<<8)+b;
+  }
 }
 static u_int32_t syellow(double val, u_int32_t mix){
-  return 0xffff00U;
+  if(val<0)val=0;
+  if(val>1)val=1;
+  {
+    int r = ((mix>>16) & 0xff) *(1.-val) + (val*0xff);
+    int g = ((mix>>8) & 0xff) *(1.-val) + (val*0xff);
+    int b = ((mix) & 0xff) *(1.-val);
+    return  (r<<16)+(g<<8)+b;
+  }
 }
 static u_int32_t scyan(double val, u_int32_t mix){
-  return 0x60ffffU;
+  if(val<0)val=0;
+  if(val>1)val=1;
+  {
+    int r = ((mix>>16) & 0xff) *(1.-val) + (val*0x60);
+    int g = ((mix>>8) & 0xff) *(1.-val) + (val*0xff);
+    int b = ((mix) & 0xff) *(1.-val) + (val*0xff);
+    return  (r<<16)+(g<<8)+b;
+  }
 }
 static u_int32_t spurple(double val, u_int32_t mix){
-  return 0xff60ffU;
+  if(val<0)val=0;
+  if(val>1)val=1;
+  {
+    int r = ((mix>>16) & 0xff) *(1.-val) + (val*0xff);
+    int g = ((mix>>8) & 0xff) *(1.-val) + (val*0x60);
+    int b = ((mix) & 0xff) *(1.-val) + (val*0xff);
+    return  (r<<16)+(g<<8)+b;
+  }
 }
 static u_int32_t sgray(double val, u_int32_t mix){
-  return 0xa0a0a0U;
+  if(val<0)val=0;
+  if(val>1)val=1;
+  {
+    int r = ((mix>>16) & 0xff) *(1.-val) + (val*0xa0);
+    int g = ((mix>>8) & 0xff) *(1.-val) + (val*0xa0);
+    int b = ((mix) & 0xff) *(1.-val) + (val*0xa0);
+    return  (r<<16)+(g<<8)+b;
+  }
 }
 
 static u_int32_t (*solidfunc[])(double,u_int32_t)={
