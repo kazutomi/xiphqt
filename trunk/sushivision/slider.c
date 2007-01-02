@@ -125,7 +125,7 @@ void slider_draw_background(Slider *s){
   cairo_surface_flush(s->background);
 
   // Create trough innards
- if(s->gradient){
+  if(s->gradient){
     // background map gradient 
     u_int32_t *pixel=s->backdata+ty*s->w;
     
@@ -238,6 +238,7 @@ void slider_realize(Slider *s){
     slider_draw(s);
 
   }
+  s->realized = 1;
 }
 
 static double val_to_pixel(Slider *s,double v){
@@ -504,14 +505,15 @@ static double slice_adjust_pixel(Slider *s,int slicenum, double x){
 }
 
 static double quant(Slider *s, double val){
-  val *= s->quant_denom;
-  val /= s->quant_num;
-  
-  val = rint(val);
+  if(s->quant_denom!=0.){
+    val *= s->quant_denom;
+    val /= s->quant_num;
     
-  val *= s->quant_num;
-  val /= s->quant_denom;
- 
+    val = rint(val);
+    
+    val *= s->quant_num;
+    val /= s->quant_denom;
+  }
   return val;
 }
 
@@ -676,7 +678,7 @@ void slider_button_release(Slider *s,int slicenum,int x,int y){
 }
 
 static void update_gradient(Slider *s){
-  if(s->gradient){
+  if(s->gradient && s->num_slices>1){
     Slice *sl = SLICE(s->slices[0]);
     Slice *sh = SLICE(s->slices[s->num_slices-1]);
     double ldel = slider_val_to_del(s,sl->thumb_val);
@@ -798,8 +800,8 @@ Slider *slider_new(Slice **slices, int num_slices, char **labels, double *label_
 
   ret->slices = (GtkWidget **)slices;
   ret->num_slices = num_slices;
-  ret->quant_num=1.;
-  ret->quant_denom=1.;
+  ret->quant_num=0.;
+  ret->quant_denom=0.;
 
   ret->label = calloc(num_labels,sizeof(*ret->label));
   for(i=0;i<num_labels;i++)
@@ -828,6 +830,11 @@ Slider *slider_new(Slice **slices, int num_slices, char **labels, double *label_
 
 void slider_set_gradient(Slider *s, mapping *m){
   s->gradient = m;
+  if(s->realized){
+    slider_draw_background(s);
+    slider_draw(s);
+    slider_expose(s);
+  }
 }
 
 void slider_set_thumb_active(Slider *s, int thumbnum, int activep){

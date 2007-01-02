@@ -33,18 +33,26 @@
 #include <gdk/gdkkeysyms.h>
 #include "internal.h"
 
-#define LINETYPES 10
+#define LINETYPES 5
 static char *line_name[LINETYPES+1] = {
   "line",
+  "fill above",
+  "fill below",
+  "fill to zero",
+  "no line",
+  NULL
+};
+
+#define POINTTYPES 8
+static char *point_name[POINTTYPES+1] = {
   "dot",
-  "circle",
-  "square",
   "cross",
-  "triangle",
-  "line and circle",
-  "line and square",
-  "line and cross",
-  "line and triangle",
+  "open circle",
+  "open square",
+  "open triangle",
+  "solid circle",
+  "solid square",
+  "solid triangle",
   NULL
 };
 
@@ -88,15 +96,17 @@ static void _sushiv_panel1d_remap(sushiv_panel_t *p){
       /* by objective */
       for(i=0;i<p->objectives;i++){
 	double *data_vec = p1->data_vec[i];
+	double alpha = slider_get_value(p1->alpha_scale[i],0);
 	if(data_vec){
 	  double yprev=NAN,xprev=NAN;
 	  
-	  u_int32_t color = mapping_calc(p1->mappings+i,0,0);
+	  u_int32_t color = mapping_calc(p1->mappings+i,1.,0);
 	  
-	  cairo_set_source_rgb(c,
-			       ((color>>16)&0xff)/255.,
-			       ((color>>8)&0xff)/255.,
-			       ((color)&0xff)/255.);
+	  cairo_set_source_rgba(c,
+				((color>>16)&0xff)/255.,
+				((color>>8)&0xff)/255.,
+				((color)&0xff)/255.,
+				alpha);
 	  
 	  /* by x */
 	  for(xi=0;xi<dw;xi++){
@@ -185,8 +195,9 @@ static void update_legend(sushiv_panel_t *p){
     {
       double val = (p1->flip?plot->sely:plot->selx);
       int bin = scalespace_pixel(&p1->vs, val);
-      u_int32_t color = mapping_calc(p1->mappings+i,0,0);
-	  
+      u_int32_t color = mapping_calc(p1->mappings+i,1.,0);
+      double alpha = slider_get_value(p1->alpha_scale[i],0);
+
       for(i=0;i<p->objectives;i++){
 
 	snprintf(buffer,320,"%s",
@@ -203,7 +214,7 @@ static void update_legend(sushiv_panel_t *p){
 	  }
 	}
 	
-	plot_legend_add_with_color(plot,buffer,color);
+	plot_legend_add_with_color(plot,buffer,color | ((unsigned)(alpha*255.)<<24));
 
       }
     }
@@ -246,10 +257,29 @@ static void mapchange_callback_1d(GtkWidget *w,gpointer in){
   // oh, the wasteful
   solid_set_func(&p1->mappings[onum],
 		 gtk_combo_box_get_active(GTK_COMBO_BOX(w)));
-
+  slider_set_gradient(p1->alpha_scale[onum], &p1->mappings[onum]);
+  
   _sushiv_panel_dirty_map(p);
   _sushiv_panel_dirty_legend(p);
   _sushiv_panel_undo_resume(p);
+}
+
+static void alpha_callback_1d(void * in, int buttonstate){
+  sushiv_objective_list_t *optr = (sushiv_objective_list_t *)in;
+  sushiv_panel_t *p = optr->p;
+  //  sushiv_panel1d_t *p1 = p->subtype->p1;
+  //  int onum = optr - p->objective_list;
+
+  if(buttonstate == 0){
+    _sushiv_panel_undo_push(p);
+    _sushiv_panel_undo_suspend(p);
+  }
+
+  _sushiv_panel_dirty_map(p);
+  _sushiv_panel_dirty_legend(p);
+
+  if(buttonstate == 2)
+    _sushiv_panel_undo_resume(p);
 }
 
 static void linetype_callback_1d(GtkWidget *w,gpointer in){
@@ -263,6 +293,22 @@ static void linetype_callback_1d(GtkWidget *w,gpointer in){
 
   // update colormap
   p1->linetype[onum]=gtk_combo_box_get_active(GTK_COMBO_BOX(w));
+
+  _sushiv_panel_dirty_map(p);
+  _sushiv_panel_undo_resume(p);
+}
+
+static void pointtype_callback_1d(GtkWidget *w,gpointer in){
+  sushiv_objective_list_t *optr = (sushiv_objective_list_t *)in;
+  sushiv_panel_t *p = optr->p;
+  sushiv_panel1d_t *p1 = p->subtype->p1;
+  int onum = optr - p->objective_list;
+  
+  _sushiv_panel_undo_push(p);
+  _sushiv_panel_undo_suspend(p);
+
+  // update colormap
+  p1->pointtype[onum]=gtk_combo_box_get_active(GTK_COMBO_BOX(w));
 
   _sushiv_panel_dirty_map(p);
   _sushiv_panel_undo_resume(p);
@@ -1070,7 +1116,7 @@ void _sushiv_realize_panel1d(sushiv_panel_t *p){
   gtk_container_add (GTK_CONTAINER (p->private->toplevel), p1->top_table);
   gtk_container_set_border_width (GTK_CONTAINER (p->private->toplevel), 5);
   
-  p1->obj_table = gtk_table_new(p->objectives,3,0);
+  p1->obj_table = gtk_table_new(p->objectives,5,0);
   gtk_table_attach(GTK_TABLE(p1->top_table),p1->obj_table,0,4,2,3,
 		   GTK_EXPAND|GTK_FILL,0,0,5);
 
@@ -1128,10 +1174,13 @@ void _sushiv_realize_panel1d(sushiv_panel_t *p){
   }
 
   /* objective pulldowns */
+  p1->pointtype = calloc(p->objectives,sizeof(*p1->pointtype));
   p1->linetype = calloc(p->objectives,sizeof(*p1->linetype));
   p1->mappings = calloc(p->objectives,sizeof(*p1->mappings));
   p1->map_pulldowns = calloc(p->objectives,sizeof(*p1->map_pulldowns));
   p1->line_pulldowns = calloc(p->objectives,sizeof(*p1->line_pulldowns));
+  p1->point_pulldowns = calloc(p->objectives,sizeof(*p1->point_pulldowns));
+  p1->alpha_scale = calloc(p->objectives,sizeof(*p1->alpha_scale));
 
   for(i=0;i<p->objectives;i++){
     sushiv_objective_t *o = p->objective_list[i].o;
@@ -1168,6 +1217,38 @@ void _sushiv_realize_panel1d(sushiv_panel_t *p){
       gtk_table_attach(GTK_TABLE(p1->obj_table),menu,2,3,i,i+1,
 		       GTK_SHRINK,GTK_SHRINK,5,0);
       p1->line_pulldowns[i] = menu;
+    }
+
+    /* point pulldown */
+    {
+      GtkWidget *menu=gtk_combo_box_new_text();
+      int j;
+      for(j=0;j<POINTTYPES;j++)
+	gtk_combo_box_append_text (GTK_COMBO_BOX (menu), point_name[j]);
+      gtk_combo_box_set_active(GTK_COMBO_BOX(menu),0);
+      g_signal_connect (G_OBJECT (menu), "changed",
+			G_CALLBACK (pointtype_callback_1d), p->objective_list+i);
+      gtk_table_attach(GTK_TABLE(p1->obj_table),menu,3,4,i,i+1,
+		       GTK_SHRINK,GTK_SHRINK,5,0);
+      p1->point_pulldowns[i] = menu;
+    }
+
+    /* alpha slider */
+    {
+      GtkWidget **sl = calloc(1, sizeof(*sl));
+      sl[0] = slice_new(alpha_callback_1d,p->objective_list+i);
+      
+      gtk_table_attach(GTK_TABLE(p1->obj_table),sl[0],4,5,i,i+1,
+		       GTK_EXPAND|GTK_FILL,0,0,0);
+
+      p1->alpha_scale[i] = slider_new((Slice **)sl,1,
+				      (char *[]){"transparent","solid"},
+				      (double []){0.,1.},
+				      2,0);
+
+      slider_set_gradient(p1->alpha_scale[i], &p1->mappings[i]);
+      slice_thumb_set((Slice *)sl[0],1.);
+
     }
   }
 

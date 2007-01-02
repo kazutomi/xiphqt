@@ -51,8 +51,11 @@ typedef struct sushiv_panel1d {
   
   mapping *mappings;
   int *linetype;
+  int *pointtype;
   GtkWidget **map_pulldowns;
   GtkWidget **line_pulldowns;
+  GtkWidget **point_pulldowns;
+  Slider **alpha_scale;
 
   GtkWidget **dim_xb;
 

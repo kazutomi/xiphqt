@@ -248,10 +248,10 @@ scalespace scalespace_linear (double lowpoint, double highpoint, int pixels, int
   ret.pixels=pixels;
   ret.legend=name;
 
-  if(orange < DBL_MIN*pixels){
+  if(orange < 1e-30*pixels){
     // insufficient to safeguard the int64 first var below all by
     // itself, but it will keep things on track until later checks
-    orange = DBL_MIN * pixels;
+    orange = 1e-30 * pixels;
     highpoint = lowpoint + orange;
   }
 
