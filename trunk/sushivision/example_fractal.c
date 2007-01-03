@@ -1,6 +1,6 @@
 /*
  *
- *     sushivision copyright (C) 2006 Monty <monty@xiph.org>
+ *     sushivision copyright (C) 2006-2007 Monty <monty@xiph.org>
  *
  *  sushivision is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -73,9 +73,11 @@ int sushiv_submain(int argc, char *argv[]){
 				NULL,0);
   sushiv_dimension_set_value(s,4,1,10000);
 
-  sushiv_new_objective(s,0,"fractal",
-		       5,(double []){0, .001, .01, .1, 1.0},
-		       fractal_objective,0);
+  sushiv_new_function(s, 0, 5, 1, fractal_objective, 0);
+
+  sushiv_new_objective_Y(s,0,"fractal",
+			 5,(double []){0, .001, .01, .1, 1.0},
+			 0,0,0);
 
   sushiv_new_panel_2d(s,0,"Mandel/Julia Fractal",
 		      (int []){0,-1},

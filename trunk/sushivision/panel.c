@@ -1,6 +1,6 @@
 /*
  *
- *     sushivision copyright (C) 2006 Monty <monty@xiph.org>
+ *     sushivision copyright (C) 2006-2007 Monty <monty@xiph.org>
  *
  *  sushivision is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -40,9 +40,10 @@ void _sushiv_realize_panel(sushiv_panel_t *p){
   }
 }
 
-int _sushiv_panel_cooperative_compute(sushiv_panel_t *p){
+int _sushiv_panel_cooperative_compute(sushiv_panel_t *p,
+				      _sushiv_compute_cache *c){
   if(p->private->realized)
-    return p->private->compute_action(p);
+    return p->private->compute_action(p,c);
   return 0;
 }
 

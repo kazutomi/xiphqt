@@ -1,6 +1,6 @@
 /*
  *
- *     sushivision copyright (C) 2006 Monty <monty@xiph.org>
+ *     sushivision copyright (C) 2006-2007 Monty <monty@xiph.org>
  *
  *  sushivision is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -542,25 +542,46 @@ static void compute_1d(sushiv_panel_t *p,
 		       double x_min, 
 		       double x_max, 
 		       int w, 
-		       double *dim_vals){
+		       double *dim_vals,
+		       _sushiv_compute_cache *c){
   sushiv_panel1d_t *p1 = p->subtype->p1;
   double work[w];
-  double inv_w = 1./w;
-  int i,j;
+  int i,j,fn=p->sushi->functions;
 
-  /* by objective */
+  /* by function */
+  for(i=0;i<fn;i++){
+    if(c->call[i]){
+      sushiv_function_t *f = p->sushi->function_list[i];
+      int step = f->outputs;
+      double *fout = c->fout[i];
+      
+      /* by x */
+      for(j=0;j<w;j++){
+
+	dim_vals[x_d] = (x_max-x_min) * j / w + x_min;
+	c->call[i](dim_vals,fout);
+	fout+=step;
+      }
+    }
+  }
+
+  /* process function output by objective */
+  /* 1d panels currently only care about the Y output value; in the
+     future, Z may also be relevant */
   for(i=0;i<p->objectives;i++){
     sushiv_objective_t *o = p->objective_list[i].o;
-    
-    /* by x */
+    int funcnum = o->function_map[obj_y(o)];
+    int offset = o->output_map[obj_y(o)];
+    sushiv_function_t *f = p->sushi->function_list[funcnum];
+    int step = f->outputs;
+    double *fout = c->fout[funcnum]+offset;
+
+    /* map result from function output to objective output */
     for(j=0;j<w;j++){
-      
-      /* compute value for this objective for this pixel */
-      dim_vals[x_d] = (x_max-x_min) * inv_w * j + x_min;
-      o->callback(dim_vals,work+j);
-      
+      work[j] = *fout;
+      fout+=step;
     }
-    
+
     gdk_threads_enter (); // misuse me as a global mutex
     if(p1->serialno == serialno){
       /* store result in panel */
@@ -868,7 +889,8 @@ static void box_callback(void *in, int state){
   update_context_menus(p);
 }
 
-int _sushiv_panel_cooperative_compute_1d(sushiv_panel_t *p){
+int _sushiv_panel_cooperative_compute_1d(sushiv_panel_t *p,
+					 _sushiv_compute_cache *c){
   sushiv_panel1d_t *p1 = p->subtype->p1;
   Plot *plot;
   
@@ -930,8 +952,12 @@ int _sushiv_panel_cooperative_compute_1d(sushiv_panel_t *p){
     dim_vals[i]=dim->val;
   }
 
+  _maintain_cache(p,c,dw);
+
   // update scales if we're just starting
-  if(p1->last_line==0) render_scale_flag = 1;
+  if(p1->last_line==0){
+    render_scale_flag = 1;
+  }
 
   if(plot->w.allocation.height == h &&
      serialno == p1->serialno){
@@ -946,7 +972,7 @@ int _sushiv_panel_cooperative_compute_1d(sushiv_panel_t *p){
     }
     
     /* compute */
-    compute_1d(p, serialno, x_d, x_min, x_max, dw, dim_vals);
+    compute_1d(p, serialno, x_d, x_min, x_max, dw, dim_vals, c);
     gdk_threads_enter ();
     _sushiv_panel_dirty_map(p);
     _sushiv_panel_dirty_legend(p);
@@ -1504,7 +1530,6 @@ int sushiv_new_panel_1d_linked(sushiv_instance_t *s,
 				       structure must be hidden */
   p->subtype->p1 = p1;
   p->type = SUSHIV_PANEL_1D;
-
   p1->range_scale = scale;
 
   if(flags && SUSHIV_PANEL_LINK_Y)

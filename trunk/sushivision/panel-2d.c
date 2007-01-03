@@ -1,6 +1,6 @@
 /*
  *
- *     sushivision copyright (C) 2006 Monty <monty@xiph.org>
+ *     sushivision copyright (C) 2006-2007 Monty <monty@xiph.org>
  *
  *  sushivision is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -273,50 +273,70 @@ static void compute_one_line_2d(sushiv_panel_t *p,
 				double x_max, 
 				int w, 
 				double *dim_vals, 
-				u_int32_t *render){
+				u_int32_t *render,
+				_sushiv_compute_cache *c){
+
   sushiv_panel2d_t *p2 = p->subtype->p2;
+  int i,j,fn=p->sushi->functions;
   double work[w];
-  double inv_w = 1./w;
-  int i,j;
 
   render_checks(w,y,render);
-  gdk_threads_enter (); // misuse me as a global mutex
-  
-  /* by objective */
+
+  /* by function */
+  for(i=0;i<fn;i++){
+    if(c->call[i]){
+      sushiv_function_t *f = p->sushi->function_list[i];
+      int step = f->outputs;
+      double *fout = c->fout[i];
+      
+      /* by x */
+      for(j=0;j<w;j++){
+
+	dim_vals[x_d] = (x_max-x_min) * j / w + x_min;
+	c->call[i](dim_vals,fout);
+	fout+=step;
+      }
+    }
+  }
+
+  /* process function output by objective */
+  /* 2d panels only care about the Y output value */
   for(i=0;i<p->objectives;i++){
     sushiv_objective_t *o = p->objective_list[i].o;
-    double alpha = p2->alphadel[i];
-    
-    gdk_threads_leave (); // misuse me as a global mutex
-    
-    /* by x */
-    for(j=0;j<w;j++){
+    int funcnum = o->function_map[obj_y(o)];
+    int offset = o->output_map[obj_y(o)];
+    sushiv_function_t *f = p->sushi->function_list[funcnum];
+    int step = f->outputs;
+    double *fout = c->fout[funcnum]+offset;
+    mapping m;
+    double alpha;
 
-      /* compute value for this objective for this pixel */
-      dim_vals[x_d] = (x_max-x_min) * inv_w * j + x_min;
-      o->callback(dim_vals,work+j);
-      
+    /* map result */
+    /* range scales are static so no need to lock; if that ever
+       changes, locking should happen in the scales... */
+    for(j=0;j<w;j++){
+      work[j] = slider_val_to_del(p2->range_scales[i],*fout);
+      fout+=step;
     }
-    
+
     gdk_threads_enter (); // misuse me as a global mutex
     if(p2->serialno == serialno){
-      
-      /* map/render result */
-      for(j=0;j<w;j++){
-	double val = slider_val_to_del(p2->range_scales[i],work[j]);
-	work[j] = val;
-	
-	if(!isnan(val) && val>=alpha)
-	  render[j] = mapping_calc(p2->mappings+i,val,render[j]);
-	
-      }
-      
-      /* store result in panel */
       memcpy(p2->data_rect[i]+y*w,work,w*sizeof(*work));
-    }else
+      memcpy(&m,p2->mappings+i,sizeof(m));
+      alpha = p2->alphadel[i];
+      gdk_threads_leave (); // misuse me as a global mutex
+    }else{
+      gdk_threads_leave (); // misuse me as a global mutex
       break;
+    }
+
+    for(j=0;j<w;j++){	
+      double val = work[j];
+      if(!isnan(val) && val>=alpha)
+	render[j] = mapping_calc(&m,val,render[j]);
+      
+    }
   }
-  gdk_threads_leave (); // misuse me as a global mutex 
 }
 
 static int v_swizzle(int y, int height){
@@ -717,7 +737,9 @@ static void box_callback(void *in, int state){
 // called from one/all of the worker threads; the idea is that several
 // of the threads will all call this and they collectively interleave
 // ongoing computation of the pane
-static int _sushiv_panel_cooperative_compute_2d(sushiv_panel_t *p){
+static int _sushiv_panel_cooperative_compute_2d(sushiv_panel_t *p,
+						_sushiv_compute_cache *c){
+
   sushiv_panel2d_t *p2 = p->subtype->p2;
   Plot *plot;
   
@@ -798,8 +820,12 @@ static int _sushiv_panel_cooperative_compute_2d(sushiv_panel_t *p){
     dim_vals[i]=dim->val;
   }
 
+  _maintain_cache(p,c,w);
+
   // update scales if we're just starting
-  if(p2->last_line==0) render_scale_flag = 1;
+  if(p2->last_line==0){
+    render_scale_flag = 1;
+  }
 
   /* iterate */
   /* by line */
@@ -821,7 +847,7 @@ static int _sushiv_panel_cooperative_compute_2d(sushiv_panel_t *p){
     dim_vals[y_d]= (y_max - y_min) / h * y + y_min;
     
     /* compute line */
-    compute_one_line_2d(p, serialno, y, x_d, x_min, x_max, w, dim_vals, render);
+    compute_one_line_2d(p, serialno, y, x_d, x_min, x_max, w, dim_vals, render, c);
     
     /* move rendered line back into widget */
     gdk_threads_enter ();
