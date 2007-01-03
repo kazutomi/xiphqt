@@ -32,17 +32,22 @@ static void fractal_objective(double *d, double *ret){
   double z, zi, zz;
   const double c=d[0],ci=d[1];
   
-  *ret=NAN;
+  ret[0]=NAN;
+  ret[1]=1.;
+
   z = d[2]; zi = d[3];
   for(i=0;i<max_iter;i++){
     zz = z*z - zi*zi + c;
     zi = 2.0*z*zi + ci;
     z  = zz;
     if (z*z + zi*zi > 4.0){
-      *ret = (double)i/max_iter;
+      ret[0] = (double)i/max_iter;
+      ret[1] = NAN;
       return;
     }
   }
+
+  ret[1] = sqrt(z*z + zi*zi)/4.;
 }
 
 int sushiv_submain(int argc, char *argv[]){
@@ -73,23 +78,27 @@ int sushiv_submain(int argc, char *argv[]){
 				NULL,0);
   sushiv_dimension_set_value(s,4,1,10000);
 
-  sushiv_new_function(s, 0, 5, 1, fractal_objective, 0);
+  sushiv_new_function(s, 0, 5, 2, fractal_objective, 0);
 
-  sushiv_new_objective_Y(s,0,"fractal",
+  sushiv_new_objective_Y(s,0,"outer",
 			 5,(double []){0, .001, .01, .1, 1.0},
 			 0,0,0);
 
+  sushiv_new_objective_Y(s,1,"inner",
+			 5,(double []){0, .001, .01, .1, 1.0},
+			 0,1,0);
+
   sushiv_new_panel_2d(s,0,"Mandel/Julia Fractal",
-		      (int []){0,-1},
+		      (int []){0,1,-1},
 		      (int []){0,1,2,3,4,-1},
 		      0);
 
   sushiv_new_panel_1d_linked(s,1,"X Slice",s->objective_list[0]->scale,
-			     (int []){0,-1},
+			     (int []){0,1,-1},
 			     0,0);
 
   sushiv_new_panel_1d_linked(s,2,"Y Slice",s->objective_list[0]->scale,
-			     (int []){0,-1},
+			     (int []){0,1,-1},
 			     0,SUSHIV_PANEL_LINK_Y | SUSHIV_PANEL_FLIP);
   
   return 0;

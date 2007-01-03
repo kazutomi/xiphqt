@@ -69,7 +69,7 @@ static void _sushiv_panel1d_remap(sushiv_panel_t *p){
   cairo_t *c = cairo_create(cs);
 
   if(plot){
-    int xi,i;
+    int xi,i,j;
     int dw = p1->data_size;
     double h = p1->panel_h;
     double r = (p1->flip?p1->panel_w:p1->panel_h);
@@ -95,12 +95,12 @@ static void _sushiv_panel1d_remap(sushiv_panel_t *p){
       }
 
       /* by objective */
-      for(i=0;i<p->objectives;i++){
-	double *data_vec = p1->data_vec[i];
-	double alpha = slider_get_value(p1->alpha_scale[i],0);
-	int linetype = p1->linetype[i];
-	int pointtype = p1->pointtype[i];
-	u_int32_t color = mapping_calc(p1->mappings+i,1.,0);
+      for(j=0;j<p->objectives;j++){
+	double *data_vec = p1->data_vec[j];
+	double alpha = slider_get_value(p1->alpha_scale[j],0);
+	int linetype = p1->linetype[j];
+	int pointtype = p1->pointtype[j];
+	u_int32_t color = mapping_calc(p1->mappings+j,1.,0);
 	
 	if(data_vec){
 	  double xv[dw];
