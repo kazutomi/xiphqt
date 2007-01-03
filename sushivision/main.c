@@ -1,6 +1,6 @@
 /*
  *
- *     sushivision copyright (C) 2006 Monty <monty@xiph.org>
+ *     sushivision copyright (C) 2006-2007 Monty <monty@xiph.org>
  *
  *  sushivision is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -85,13 +85,56 @@ void _sushiv_wake_workers(){
   }
 }
 
+void _maintain_cache(sushiv_panel_t *p, _sushiv_compute_cache *c, int w){
+  
+  /* toplevel initialization */
+  if(c->fout == 0){
+    int i,j;
+    
+    /* determine which functions are actually needed */
+    c->call = calloc(p->sushi->functions,sizeof(*c->call));
+    c->fout = calloc(p->sushi->functions,sizeof(*c->fout));
+    for(i=0;i<p->objectives;i++){
+      sushiv_objective_t *o = p->objective_list[i].o;
+      for(j=0;j<o->outputs;j++)
+	c->call[o->function_map[j]]=
+	  p->sushi->function_list[o->function_map[j]]->callback;
+    }
+  }
+
+  /* once to begin, as well as anytime the data width changes */
+  if(c->storage_width < w){
+    int i;
+    c->storage_width = w;
+
+    for(i=0;i<p->sushi->functions;i++){
+      if(c->call[i]){
+	if(c->fout[i])free(c->fout[i]);
+	c->fout[i] = malloc(w * p->sushi->function_list[i]->outputs *
+			    sizeof(**c->fout));
+      }
+    }
+  }
+}
+
 static void *worker_thread(void *dummy){
+  /* set up temporary working space for function rendering; this saves
+     continuously recreating it in the loop below */
+  _sushiv_compute_cache **c; // [instance][panel]
+  int i,j;
+  
+  c = calloc(instances,sizeof(*c));
+  for(j=0;j<instances;j++){
+    sushiv_instance_t *s = instance_list[j];
+    c[j] = calloc(s->panels,sizeof(**c));
+  }
+
   while(1){
     if(_sushiv_exiting)break;
     
     // look for work
     {
-      int i,j,flag=0;
+      int flag=0;
       // by instance
       for(j=0;j<instances;j++){
 	sushiv_instance_t *s = instance_list[j];
@@ -130,7 +173,8 @@ static void *worker_thread(void *dummy){
 	  gdk_threads_leave ();
 
 	  // pending computation work?
-	  flag |= _sushiv_panel_cooperative_compute(s->panel_list[i]);
+	  flag |= _sushiv_panel_cooperative_compute(s->panel_list[i],
+						    &c[j][i]);
 	}
       }
       if(flag==1)continue;

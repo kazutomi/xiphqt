@@ -1,6 +1,6 @@
 /*
  *
- *     sushivision copyright (C) 2006 Monty <monty@xiph.org>
+ *     sushivision copyright (C) 2006-2007 Monty <monty@xiph.org>
  *
  *  sushivision is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -53,6 +53,13 @@ typedef struct sushiv_panel_undo {
   int box_active;
 } sushiv_panel_undo_t;
 
+typedef struct {
+  void (**call)(double *, double *);
+  double **fout; // [function number][outval_number*x]
+  int storage_width;
+
+} _sushiv_compute_cache;
+
 struct sushiv_panel_internal {
   GtkWidget *toplevel;
   GtkWidget *graph;
@@ -68,7 +75,7 @@ struct sushiv_panel_internal {
   void (*realize)(sushiv_panel_t *p);
   void (*map_redraw)(sushiv_panel_t *p);
   void (*legend_redraw)(sushiv_panel_t *p);
-  int (*compute_action)(sushiv_panel_t *p);
+  int (*compute_action)(sushiv_panel_t *p, _sushiv_compute_cache *c);
   void (*request_compute)(sushiv_panel_t *p);
   void (*crosshair_action)(sushiv_panel_t *p);
 
@@ -96,7 +103,9 @@ extern void _sushiv_panel_dirty_map(sushiv_panel_t *p);
 extern void _sushiv_panel_dirty_legend(sushiv_panel_t *p);
 extern void _sushiv_wake_workers(void);
 
-extern int _sushiv_panel_cooperative_compute(sushiv_panel_t *p);
+extern void _maintain_cache(sushiv_panel_t *p, _sushiv_compute_cache *c, int w);
+extern int _sushiv_panel_cooperative_compute(sushiv_panel_t *p,
+					     _sushiv_compute_cache *c);
 
 extern void _sushiv_panel_undo_log(sushiv_panel_t *p);
 extern void _sushiv_panel_undo_push(sushiv_panel_t *p);
@@ -108,5 +117,7 @@ extern void _sushiv_panel_undo_down(sushiv_panel_t *p);
 
 extern void _sushiv_panel1d_mark_recompute_linked(sushiv_panel_t *p); 
 extern void _sushiv_panel1d_update_linked_crosshairs(sushiv_panel_t *p, int xflag, int yflag); 
+
+extern int obj_y(sushiv_objective_t *o);
 
 extern sig_atomic_t _sushiv_exiting;
