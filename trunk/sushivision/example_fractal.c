@@ -103,3 +103,9 @@ int sushiv_submain(int argc, char *argv[]){
   
   return 0;
 }
+
+int sushiv_atexit(void){
+  fprintf(stderr,"Done!\n");
+  return 0;
+
+}

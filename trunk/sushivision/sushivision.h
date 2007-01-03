@@ -275,5 +275,6 @@ extern int sushiv_new_panel_xy(sushiv_instance_t *s,
 
 
 extern int sushiv_submain(int argc, char *argv[]);
+extern int sushiv_atexit(void);
 
 #endif
