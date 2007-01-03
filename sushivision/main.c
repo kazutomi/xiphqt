@@ -31,6 +31,7 @@
 #include <gtk/gtk.h>
 #include <cairo-ft.h>
 #include <pthread.h>
+#include <dlfcn.h>
 #include "internal.h"
 
 
@@ -53,7 +54,6 @@ void _sushiv_clean_exit(int sig){
             "\nTrapped signal %d; exiting!\n",sig);
 
   gtk_main_quit();
-  exit(0);
 }
 
 static int num_proccies(){
@@ -212,40 +212,6 @@ static void sushiv_realize_all(void){
     sushiv_realize_instance(instance_list[i]);
 }
 
-int main (int argc, char *argv[]){
-  int ret;
-  num_threads = num_proccies();
-
-  gtk_init (&argc, &argv);
-  g_thread_init (NULL);
-
-  gtk_mutex_fixup();
-  gdk_threads_init ();
-  gtk_rc_parse_string(gtkrc_string());
-  gtk_rc_add_default_file("sushi-gtkrc");
-
-  ret = sushiv_submain(argc,argv);
-  if(ret)return ret;
-
-  sushiv_realize_all();
-  
-  {
-    pthread_t dummy;
-    int threads = num_threads;
-    while(threads--)
-      pthread_create(&dummy, NULL, &worker_thread,NULL);
-  }
-
-  signal(SIGINT,_sushiv_clean_exit);
-  //signal(SIGSEGV,_sushiv_clean_exit);
-
-  gtk_button3_fixup();
-  gtk_main ();
-
-
-  return 0;
-}
-
 /* externally visible interface */
 
 sushiv_instance_t *sushiv_new_instance(void) {
@@ -261,5 +227,45 @@ sushiv_instance_t *sushiv_new_instance(void) {
   instances++;
   
   return ret;
+}
+
+int main (int argc, char *argv[]){
+  int ret;
+
+  num_threads = num_proccies();
+
+  gtk_init (&argc, &argv);
+  g_thread_init (NULL);
+
+  gtk_mutex_fixup();
+  gdk_threads_init ();
+  gtk_rc_parse_string(gtkrc_string());
+  gtk_rc_add_default_file("sushi-gtkrc");
+
+  ret = sushiv_submain(argc,argv);
+  if(ret)return ret;
+  
+  sushiv_realize_all();
+  
+  {
+    pthread_t dummy;
+    int threads = num_threads;
+    while(threads--)
+      pthread_create(&dummy, NULL, &worker_thread,NULL);
+  }
+
+  signal(SIGINT,_sushiv_clean_exit);
+  //signal(SIGSEGV,_sushiv_clean_exit);
+
+  gtk_button3_fixup();
+  gtk_main ();
+  
+  {
+    int (*optional_exit)(void) = dlsym(RTLD_DEFAULT, "sushiv_atexit");
+    if(optional_exit)
+      return optional_exit();
+  }
+
+  return 0;
 }
 

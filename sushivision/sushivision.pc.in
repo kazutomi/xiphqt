@@ -1,0 +1,13 @@
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+bindir=${exec_prefix}/bin
+includedir=${prefix}/include
+
+Name: Sushivision
+Description: Function visualization UI library
+Version: ${version}
+URL: http://www.sushivision.org/
+Requires: gtk+-2.0 ${gtkver} cairo ${cairover} freetype2 gthread-2.0
+Libs: -rdynamic -L${libdir} -lsushivision
+Cflags: -g -I${includedir}
+

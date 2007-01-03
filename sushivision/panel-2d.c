@@ -747,7 +747,6 @@ static int _sushiv_panel_cooperative_compute_2d(sushiv_panel_t *p,
   int serialno;
   double x_min, x_max;
   double y_min, y_max;
-  double invh;
   int x_d=-1, y_d=-1;
   int render_scale_flag = 0;
   scalespace sx;
@@ -768,7 +767,6 @@ static int _sushiv_panel_cooperative_compute_2d(sushiv_panel_t *p,
   plot = PLOT(p->private->graph);
 
   serialno = p2->serialno;
-  invh = 1./h;
   d = p->dimensions;
 
   /* render using local dimension array; several threads will be
