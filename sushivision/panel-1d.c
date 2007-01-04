@@ -501,27 +501,23 @@ static void map_callback_1d(void *in,int buttonstate){
 
 static void update_x_sel(sushiv_panel_t *p){
   sushiv_panel1d_t *p1 = p->subtype->p1;
-  int i;
+  int i, flag=0;
 
   // enable/disable dimension slider thumbs
-  
+  // enable/disable objective 'point' dropdowns
   for(i=0;i<p->dimensions;i++){
     
     if(p1->dim_xb[i] &&
        gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(p1->dim_xb[i]))){
-
+      
       // set the x dim flag
       p1->x_d = p->dimension_list[i].d;
       p1->x_scale = p->private->dim_scales[i];
       p1->x_dnum = i;
 
-      // set panel x scale to this dim
-      p1->x = p1->vs = scalespace_linear(p1->x_d->bracket[0],
-					 p1->x_d->bracket[1],
-					 p1->data_size,
-					 PLOT(p->private->graph)->scalespacing,
-					 p1->x_d->name);
-
+      // don't have linked panels to worry about here
+      if(p1->x_d->type == SUSHIV_DIM_DISCRETE)
+	flag = 1;
     }
     if(p1->dim_xb[i] &&
        gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(p1->dim_xb[i]))){
@@ -534,6 +530,10 @@ static void update_x_sel(sushiv_panel_t *p){
       _sushiv_dim_widget_set_thumb_active(p->private->dim_scales[i],2,0);
     }
   } 
+
+  p1->pointactive = flag;
+  for(i=0;i<p->objectives;i++)
+    gtk_combo_box_set_active(GTK_COMBO_BOX(p1->point_pulldowns[i]),flag);
 }
 
 static void compute_1d(sushiv_panel_t *p, 
@@ -636,10 +636,10 @@ void _mark_recompute_1d(sushiv_panel_t *p){
     // recompute time, and 1d panels may be recomputed first,
     // thus duplicate the scale computaiton here
     p1->vs = scalespace_linear(p1->x_d->bracket[0],
-			      p1->x_d->bracket[1],
-			      dw,
-			      PLOT(p->private->graph)->scalespacing,
-			      p1->x_d->name);
+			       p1->x_d->bracket[1],
+			       dw,
+			       PLOT(p->private->graph)->scalespacing,
+			       p1->x_d->name);
     
     // the data iterator may need to be mapped to the dimension type
     p1->vs = _sushiv_dimension_datascale(p1->x_d, p1->vs);
@@ -1530,6 +1530,7 @@ int sushiv_new_panel_1d_linked(sushiv_instance_t *s,
 				       structure must be hidden */
   p->subtype->p1 = p1;
   p->type = SUSHIV_PANEL_1D;
+  p1->pointactive = 1;
   p1->range_scale = scale;
 
   if(flags && SUSHIV_PANEL_LINK_Y)

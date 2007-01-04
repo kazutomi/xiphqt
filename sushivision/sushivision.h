@@ -59,7 +59,7 @@ struct sushiv_scale{
 typedef struct sushiv_dimension_internal sushiv_dimension_internal_t;
 enum sushiv_dimension_type { SUSHIV_DIM_CONTINUOUS, 
 			     SUSHIV_DIM_DISCRETE, 
-			     SUSHIV_DIM_PICKLIST };
+			     SUSHIV_DIM_PICKLIST};
 typedef union sushiv_dimension_subtype sushiv_dimension_subtype_t;
 
 struct sushiv_dimension{ 
