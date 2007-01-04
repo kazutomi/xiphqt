@@ -36,9 +36,11 @@ typedef struct sushiv_panel1d {
   int serialno;
   double **data_vec;
 
-  scalespace x;
-  scalespace vs;
   scalespace y;
+
+  scalespace x;   // the x scale aligned to panel's pixel context
+  scalespace x_v; // the x scale aligned to data vector's bins
+  scalespace x_i; // the 'counting' scale used to iterate for compute
 
   int scales_init;
   double oldbox[4];

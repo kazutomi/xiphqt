@@ -70,10 +70,10 @@ static void _sushiv_panel1d_remap(sushiv_panel_t *p){
 
   if(plot){
     int xi,i,j;
-    int dw = p1->data_size;
     double h = p1->panel_h;
+    int dw = p1->data_size;
     double r = (p1->flip?p1->panel_w:p1->panel_h);
-
+    
     /* blank frame to black */
     cairo_set_source_rgb (c, 0,0,0);
     cairo_paint(c);
@@ -112,9 +112,8 @@ static void _sushiv_panel1d_remap(sushiv_panel_t *p){
 	    double xpixel = xi;
 	    double ypixel = NAN;
 	    
-	    /* in linked panels, the data vector doesn't match the graph width; map */
-	    if(p1->link_x || p1->link_y)
-	      xpixel = scalespace_pixel(&p1->x,scalespace_value(&p1->vs,xpixel))+.5;
+	    /* map data vector bin to x pixel location in the plot */
+	    xpixel = scalespace_pixel(&p1->x,scalespace_value(&p1->x_v,xpixel))+.5;
 	    
 	    /* map/render result */
 	    if(!isnan(val))
@@ -306,7 +305,7 @@ static void update_legend(sushiv_panel_t *p){
     char buffer[320];
     plot_legend_clear(plot);
 
-    if(-p1->vs.decimal_exponent > depth) depth = 3-p1->vs.decimal_exponent;
+    if(-p1->x_v.decimal_exponent > depth) depth = 3-p1->x_v.decimal_exponent;
 
     // add each dimension to the legend
     for(i=0;i<p->dimensions;i++){
@@ -332,7 +331,7 @@ static void update_legend(sushiv_panel_t *p){
       
       // add each dimension to the legend
       // display decimal precision relative to display scales
-      if(3-p1->vs.decimal_exponent > depth) depth = 3-p1->vs.decimal_exponent;
+      if(3-p1->x_v.decimal_exponent > depth) depth = 3-p1->x_v.decimal_exponent;
       snprintf(buffer,320,"%s = %+.*f",
 	       d->name,
 	       depth,
@@ -347,7 +346,7 @@ static void update_legend(sushiv_panel_t *p){
     // choose the value under the crosshairs 
     {
       double val = (p1->flip?plot->sely:plot->selx);
-      int bin = scalespace_pixel(&p1->vs, val);
+      int bin = scalespace_pixel(&p1->x_v, val);
       u_int32_t color = mapping_calc(p1->mappings+i,1.,0);
 
       for(i=0;i<p->objectives;i++){
@@ -610,32 +609,22 @@ void _mark_recompute_1d(sushiv_panel_t *p){
   }
 
   if(plot && GTK_WIDGET_REALIZED(GTK_WIDGET(plot))){
-    p1->x = scalespace_linear(p1->x_d->bracket[0],
-			     p1->x_d->bracket[1],
-			     (p1->flip?h:w),
-			     PLOT(p->private->graph)->scalespacing,
-			     p1->x_d->name);
+    dw = _sushiv_dimension_scales(p1->x_d, 
+				  p1->x_d->bracket[0],
+				  p1->x_d->bracket[1],
+				  (p1->flip?h:w),dw,
+				  plot->scalespacing,
+				  p1->x_d->name,
+				  &p1->x,
+				  &p1->x_v,
+				  &p1->x_i);
 
     p1->y = scalespace_linear(p1->range_bracket[0],
-			     p1->range_bracket[1],
-			     (p1->flip?w:h),
-			     PLOT(p->private->graph)->scalespacing,
-			     p1->range_scale->legend);
+			      p1->range_bracket[1],
+			      (p1->flip?w:h),
+			      plot->scalespacing,
+			      p1->range_scale->legend);
     
-
-    // handle the possibility that our data scale is from a link.
-    // 2d panels do not necessarily update their scales until
-    // recompute time, and 1d panels may be recomputed first,
-    // thus duplicate the scale computaiton here
-    p1->vs = scalespace_linear(p1->x_d->bracket[0],
-			       p1->x_d->bracket[1],
-			       dw,
-			       PLOT(p->private->graph)->scalespacing,
-			       p1->x_d->name);
-    
-    // the data iterator may need to be mapped to the dimension type
-    p1->vs = _sushiv_dimension_datascale(p1->x_d, p1->vs);
-
     if(p1->data_size != dw){
       if(p1->data_vec){
 
@@ -891,9 +880,11 @@ int _sushiv_panel_cooperative_compute_1d(sushiv_panel_t *p,
   double x_min, x_max;
   int x_d=-1;
   int render_scale_flag = 0;
-  scalespace sx;
   scalespace sy;
-  scalespace sv;
+
+  scalespace sx;
+  scalespace sxv;
+  scalespace sxi;
 
   // lock during setup
   gdk_threads_enter ();
@@ -901,9 +892,11 @@ int _sushiv_panel_cooperative_compute_1d(sushiv_panel_t *p,
   w = p1->panel_w;
   h = p1->panel_h;
 
-  sx = p1->x;
   sy = p1->y;
-  sv = p1->vs;
+
+  sx = p1->x;
+  sxv = p1->x_v;
+  sxi = p1->x_i;
   
   if(p1->last_line){
     gdk_threads_leave ();
@@ -919,8 +912,9 @@ int _sushiv_panel_cooperative_compute_1d(sushiv_panel_t *p,
      computing objectives */
   double dim_vals[p->sushi->dimensions];
 
-  x_min = scalespace_value(&sv,0);
-  x_max = scalespace_value(&sv,dw);
+  /* get iterator bounds, use iterator scale */
+  x_min = scalespace_value(&sxi,0);
+  x_max = scalespace_value(&sxi,dw);
   x_d = p1->x_d->number;
 
   if(p1->flip){
@@ -1109,7 +1103,7 @@ static void panel1d_find_peak(sushiv_panel_t *p){
 	
 	count = inner_count;
 	if(count>p1->peak_count){
-	  double xv = scalespace_value(&p1->vs,best_j);
+	  double xv = scalespace_value(&p1->x_v,best_j);
 
 	  if(p1->flip)
 	    plot_set_crosshairs(plot,0,xv);

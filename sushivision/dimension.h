@@ -51,8 +51,15 @@ struct sushiv_dimension_internal {
   sushiv_dim_widget_t **widget_list;
 };
 
-extern scalespace _sushiv_dimension_datascale(sushiv_dimension_t *d, scalespace x);
-extern int _sushiv_dimension_data_width(sushiv_dimension_t *d, scalespace *datascale);
+extern int _sushiv_dimension_scales(sushiv_dimension_t *d,
+				    double lo,
+				    double hi,
+				    int panel_w, int data_w,
+				    int spacing,
+				    char *legend,
+				    scalespace *panel, 
+				    scalespace *data, 
+				    scalespace *iter);
 extern void _sushiv_dimension_set_value(sushiv_dim_widget_t *d, int thumb, double val);
 extern void _sushiv_dim_widget_set_thumb_active(sushiv_dim_widget_t *dw, int thumb, int active);
 extern sushiv_dim_widget_t *_sushiv_new_dimension_widget(sushiv_dimension_list_t *dl,   

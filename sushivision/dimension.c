@@ -29,46 +29,81 @@
 /* modules attempts to encapsulate and hide differences between the
    different types of dimensions with respect to widgets, iterators,
    shared dimensions */
-scalespace _sushiv_dimension_datascale(sushiv_dimension_t *d, scalespace x){
-  scalespace ret;
-  memset(&ret,0,sizeof(ret));
+
+/* A panel that supports discrete dimensions must deal with up to
+   three different scales for the discrete axis; the first is
+   pixel-oriented to the actually displayed panel, the second covers
+   the same range but is oriented to integer bin numbers in the
+   underlying data vector (often the same as the display), and the
+   third the same as the second, but over the absolute range [0 - n)
+   such that discrete dimensions will count from 0 in iteration. */
+/* if a dimension is linked, that is not handled here; the passed in x
+   must be the linked x_v scale in which case it will be unaltered (it
+   will be filtered through the discrete transformation a second time,
+   which will not alter it) but x_i will bre generated fresh. */
+int _sushiv_dimension_scales(sushiv_dimension_t *d,
+			     double lo,
+			     double hi,
+			     int panel_w, int data_w,
+			     int spacing,
+			     char *legend,
+			     scalespace *panel, 
+			     scalespace *data, 
+			     scalespace *iter){
 
   switch(d->type){
   case SUSHIV_DIM_CONTINUOUS:
-    ret = x;
+    *panel = scalespace_linear(lo, hi, panel_w, spacing, legend);
+    *data = *iter = scalespace_linear(lo, hi, data_w, spacing, legend);
     break;
   case SUSHIV_DIM_DISCRETE:
     {
       /* return a scale that when iterated will only hit values
 	 quantized to the discrete base */
+      /* what is the absolute base? */
+      /* the ceiling in a discrete dimension is an inclusive upper bound, not one-past */
+      int floor_i =  rint(d->scale->val_list[0] * d->private->discrete_denominator / 
+			  d->private->discrete_numerator);
+      int ceil_i =  rint(d->scale->val_list[d->scale->vals-1] * d->private->discrete_denominator / 
+			 d->private->discrete_numerator) +1;
       
-      int lo_i =  floor(x.lo * d->private->discrete_denominator / 
+      int lo_i =  floor(lo * d->private->discrete_denominator / 
 			d->private->discrete_numerator);
-      int hi_i =  ceil(x.hi * d->private->discrete_denominator / 
-		       d->private->discrete_numerator);
-      
+      int hi_i =  floor(hi * d->private->discrete_denominator / 
+		       d->private->discrete_numerator)+1;
+
+      if(floor_i < ceil_i){
+	if(lo_i < floor_i)lo_i = floor_i;
+	if(hi_i > ceil_i)hi_i = ceil_i;
+      }else{
+	if(lo_i > floor_i)lo_i = floor_i;
+	if(hi_i < ceil_i)hi_i = ceil_i;
+      }
+
       double lo = lo_i * d->private->discrete_numerator / 
 	d->private->discrete_denominator;
       double hi = hi_i * d->private->discrete_numerator / 
 	d->private->discrete_denominator;
-      
-      ret = scalespace_linear(lo, hi, hi_i-lo_i+1, 1, x.legend);
+
+      data_w = hi_i-lo_i;
+
+      *panel = scalespace_linear(lo, hi, panel_w, spacing, legend);
+      *data = scalespace_linear(lo, hi, data_w, 1, legend);
+      *iter = scalespace_linear(lo_i - floor_i, hi_i - floor_i, data_w, 1, legend);
+      break;
     }
     break;
   case SUSHIV_DIM_PICKLIST:
-    fprintf(stderr,"ERROR: Cannot iterate over picklist dimensions!\n"
+    fprintf(stderr,"ERROR: Cannot iterate over picklist dimension!\n"
 	    "\tA picklist dimension may not be a panel axis.\n");
+    data_w = 0;
     break;
   default:
     fprintf(stderr,"ERROR: Unsupporrted dimension type in dimension_datascale.\n");
+    data_w = 0;
     break;
   }
-  return ret;
-}
-
-/* takes the data scale, not the panel plot scale */
-int _sushiv_dimension_data_width(sushiv_dimension_t *d, scalespace *datascale){
-  return datascale->pixels;
+  return data_w;
 }
 
 static double discrete_quantize_val(sushiv_dimension_t *d, double val){
