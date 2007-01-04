@@ -53,8 +53,12 @@ int _sushiv_dimension_scales(sushiv_dimension_t *d,
 
   switch(d->type){
   case SUSHIV_DIM_CONTINUOUS:
-    *panel = scalespace_linear(lo, hi, panel_w, spacing, legend);
-    *data = *iter = scalespace_linear(lo, hi, data_w, spacing, legend);
+    {
+      double fl = ((d->flags & SUSHIV_DIM_ZEROINDEX) ? d->scale->val_list[0] : 0.);
+      *panel = scalespace_linear(lo, hi, panel_w, spacing, legend);
+      *data = scalespace_linear(lo, hi, data_w, spacing, legend);
+      *iter = scalespace_linear(lo-fl, hi-fl, data_w, spacing, legend);
+    }
     break;
   case SUSHIV_DIM_DISCRETE:
     {
@@ -86,9 +90,11 @@ int _sushiv_dimension_scales(sushiv_dimension_t *d,
 	d->private->discrete_denominator;
 
       data_w = hi_i-lo_i;
+      if(!(d->flags & SUSHIV_DIM_ZEROINDEX))
+	floor_i = 0;
 
       *panel = scalespace_linear(lo, hi, panel_w, spacing, legend);
-      *data = scalespace_linear(lo, hi, data_w, 1, legend);
+      *data = scalespace_linear(lo_i, hi_i, data_w, 1, legend);
       *iter = scalespace_linear(lo_i - floor_i, hi_i - floor_i, data_w, 1, legend);
       break;
     }

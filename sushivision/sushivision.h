@@ -55,6 +55,7 @@ struct sushiv_scale{
 
 #define SUSHIV_DIM_NO_X 0x100
 #define SUSHIV_DIM_NO_Y 0x200
+#define SUSHIV_DIM_ZEROINDEX 0x1
 
 typedef struct sushiv_dimension_internal sushiv_dimension_internal_t;
 enum sushiv_dimension_type { SUSHIV_DIM_CONTINUOUS, 
