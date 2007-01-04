@@ -49,6 +49,7 @@ typedef struct sushiv_panel1d {
   Slider *range_slider;
   double range_bracket[2];
   
+  int pointactive;
   mapping *mappings;
   int *linetype;
   int *pointtype;

@@ -104,6 +104,7 @@ int sushiv_submain(int argc, char *argv[]){
   return 0;
 }
 
+/* sushiv_atexit is entirely optional and may be ommitted */
 int sushiv_atexit(void){
   fprintf(stderr,"Done!\n");
   return 0;
