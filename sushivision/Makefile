@@ -36,26 +36,26 @@ OBJ       = main.o scale.o plot.o slider.o slice.o panel.o panel-1d.o panel-2d.o
 LIBS      = -lpthread -ldl
 CAIROVER  =  >= 1.0.0
 GTKVER    =  >= 2.8.0
-GCF       = -std=gnu99 `pkg-config --cflags "gtk+-2.0 $(GTKVER) cairo $(CAIROVER) gthread-2.0"`
+GCF       = -std=gnu99 `pkg-config --cflags "gtk+-2.0 $(GTKVER) cairo $(CAIROVER) gthread-2.0 freetype2"`
 LDF       = -pthread -L/lib -lgtk-x11-2.0 -lgdk-x11-2.0 -latk-1.0 -lgdk_pixbuf-2.0 \
 	-lpangocairo-1.0 -lpango-1.0 -lgobject-2.0 -lgmodule-2.0 -ldl -lm \
 	-lfontconfig -lpng12 -lXrender -lX11 -lpthread -lfreetype -lz -lgthread-2.0 \
 	-lglib-2.0 -lcairo -ldl -rdynamic
 
 all:    
-	pkg-config --cflags "gtk+-2.0 $(GTKVER) cairo $(CAIROVER) gthread-2.0" \
+	pkg-config --cflags "gtk+-2.0 $(GTKVER) cairo $(CAIROVER) gthread-2.0 freetype2" \
 		1>/dev/null
 	$(MAKE) target CFLAGS='-O2 -g $(SOCFLAGS) $(GCF) $(ADD_DEF)'
 	$(MAKE) examples CFLAGS='-O2 -g $(GCF) $(ADD_DEF)'
 
 debug:
-	pkg-config --cflags "gtk+-2.0 $(GTKVER) cairo $(CAIROVER) freetype2" \
+	pkg-config --cflags "gtk+-2.0 $(GTKVER) cairo $(CAIROVER) gthread-2.0 freetype2" \
 		1>/dev/null
 	$(MAKE) target CFLAGS='-g -Wall -W -Wno-unused-parameter -D__NO_MATH_INLINES $(SOCFLAGS) $(GCF) $(ADD_DEF)'
 	$(MAKE) examples CFLAGS='-g -Wall -W -Wno-unused-parameter -D__NO_MATH_INLINES $(GCF) $(ADD_DEF)'
 
 profile:
-	pkg-config --cflags "gtk+-2.0 $(GTKVER) cairo $(CAIROVER) freetype2" \
+	pkg-config --cflags "gtk+-2.0 $(GTKVER) cairo $(CAIROVER) gthread-2.0 freetype2" \
 		1>/dev/null
 	$(MAKE) examples CFLAGS='-pg -g -O2 $(GCF) $(ADD_DEF)' LIBS='-lgprof-helper'
 
