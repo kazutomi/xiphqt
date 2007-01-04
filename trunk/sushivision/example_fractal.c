@@ -80,14 +80,18 @@ int sushiv_submain(int argc, char *argv[]){
 
   sushiv_new_function(s, 0, 5, 2, fractal_objective, 0);
 
-  sushiv_new_objective_Y(s,0,"outer",
-			 5,(double []){0, .001, .01, .1, 1.0},
-			 0,0,0);
+  sushiv_new_objective(s,0,"outer",
+		       5,(double []){0, .001, .01, .1, 1.0},
+		       (int []){0},
+		       (int []){0},
+		       "Y", 0);
 
-  sushiv_new_objective_Y(s,1,"inner",
-			 5,(double []){0, .001, .01, .1, 1.0},
-			 0,1,0);
-
+  sushiv_new_objective(s,1,"inner",
+		       5,(double []){0, .001, .01, .1, 1.0},
+		       (int []){0},
+		       (int []){1},
+		       "Y", 0);
+  
   sushiv_new_panel_2d(s,0,"Mandel/Julia Fractal",
 		      (int []){0,1,-1},
 		      (int []){0,1,2,3,4,-1},

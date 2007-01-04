@@ -561,26 +561,27 @@ static void compute_1d(sushiv_panel_t *p,
      future, Z may also be relevant */
   for(i=0;i<p->objectives;i++){
     sushiv_objective_t *o = p->objective_list[i].o;
-    int funcnum = o->function_map[obj_y(o)];
-    int offset = o->output_map[obj_y(o)];
-    sushiv_function_t *f = p->sushi->function_list[funcnum];
-    int step = f->outputs;
-    double *fout = c->fout[funcnum]+offset;
-
-    /* map result from function output to objective output */
-    for(j=0;j<w;j++){
-      work[j] = *fout;
-      fout+=step;
-    }
-
-    gdk_threads_enter (); // misuse me as a global mutex
-    if(p1->serialno == serialno){
-      /* store result in panel */
-      memcpy(p1->data_vec[i],work,w*sizeof(*work));
-      gdk_threads_leave (); // misuse me as a global mutex 
-    }else{
-      gdk_threads_leave (); // misuse me as a global mutex 
-      break;
+    int offset = o->private->y_fout;
+    sushiv_function_t *f = o->private->y_func;
+    if(f){
+      int step = f->outputs;
+      double *fout = c->fout[f->number]+offset;
+      
+      /* map result from function output to objective output */
+      for(j=0;j<w;j++){
+	work[j] = *fout;
+	fout+=step;
+      }
+      
+      gdk_threads_enter (); // misuse me as a global mutex
+      if(p1->serialno == serialno){
+	/* store result in panel */
+	memcpy(p1->data_vec[i],work,w*sizeof(*work));
+	gdk_threads_leave (); // misuse me as a global mutex 
+      }else{
+	gdk_threads_leave (); // misuse me as a global mutex 
+	break;
+      }
     }
   }
 }

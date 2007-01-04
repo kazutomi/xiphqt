@@ -303,38 +303,39 @@ static void compute_one_line_2d(sushiv_panel_t *p,
   /* 2d panels only care about the Y output value */
   for(i=0;i<p->objectives;i++){
     sushiv_objective_t *o = p->objective_list[i].o;
-    int funcnum = o->function_map[obj_y(o)];
-    int offset = o->output_map[obj_y(o)];
-    sushiv_function_t *f = p->sushi->function_list[funcnum];
-    int step = f->outputs;
-    double *fout = c->fout[funcnum]+offset;
-    mapping m;
-    double alpha;
-
-    /* map result */
-    /* range scales are static so no need to lock; if that ever
-       changes, locking should happen in the scales... */
-    for(j=0;j<w;j++){
-      work[j] = slider_val_to_del(p2->range_scales[i],*fout);
-      fout+=step;
-    }
-
-    gdk_threads_enter (); // misuse me as a global mutex
-    if(p2->serialno == serialno){
-      memcpy(p2->data_rect[i]+y*w,work,w*sizeof(*work));
-      memcpy(&m,p2->mappings+i,sizeof(m));
-      alpha = p2->alphadel[i];
-      gdk_threads_leave (); // misuse me as a global mutex
-    }else{
-      gdk_threads_leave (); // misuse me as a global mutex
-      break;
-    }
-
-    for(j=0;j<w;j++){	
-      double val = work[j];
-      if(!isnan(val) && val>=alpha)
-	render[j] = mapping_calc(&m,val,render[j]);
+    int offset = o->private->y_fout;
+    sushiv_function_t *f = o->private->y_func;
+    if(f){
+      int step = f->outputs;
+      double *fout = c->fout[f->number]+offset;
+      mapping m;
+      double alpha;
       
+      /* map result */
+      /* range scales are static so no need to lock; if that ever
+	 changes, locking should happen in the scales... */
+      for(j=0;j<w;j++){
+	work[j] = slider_val_to_del(p2->range_scales[i],*fout);
+	fout+=step;
+      }
+      
+      gdk_threads_enter (); // misuse me as a global mutex
+      if(p2->serialno == serialno){
+	memcpy(p2->data_rect[i]+y*w,work,w*sizeof(*work));
+	memcpy(&m,p2->mappings+i,sizeof(m));
+	alpha = p2->alphadel[i];
+	gdk_threads_leave (); // misuse me as a global mutex
+      }else{
+	gdk_threads_leave (); // misuse me as a global mutex
+	break;
+      }
+      
+      for(j=0;j<w;j++){	
+	double val = work[j];
+	if(!isnan(val) && val>=alpha)
+	  render[j] = mapping_calc(&m,val,render[j]);
+	
+      }
     }
   }
 }

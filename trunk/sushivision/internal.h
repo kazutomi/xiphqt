@@ -29,6 +29,7 @@
 #include "gtksucks.h"
 #include "plot.h"
 #include "dimension.h"
+#include "objective.h"
 #include "panel-1d.h"
 #include "panel-2d.h"
 
@@ -117,7 +118,5 @@ extern void _sushiv_panel_undo_down(sushiv_panel_t *p);
 
 extern void _sushiv_panel1d_mark_recompute_linked(sushiv_panel_t *p); 
 extern void _sushiv_panel1d_update_linked_crosshairs(sushiv_panel_t *p, int xflag, int yflag); 
-
-extern int obj_y(sushiv_objective_t *o);
 
 extern sig_atomic_t _sushiv_exiting;
