@@ -25,28 +25,19 @@
 #include <errno.h>
 #include "internal.h"
 
-int obj_y(sushiv_objective_t *o){
-  switch(o->type){
-  case SUSHIV_OBJ_XY:
-  case SUSHIV_OBJ_XYZ:
-    return 1;
-  default:
-    return 0;
-  }
-}
-
-static int _sushiv_new_objective(sushiv_instance_t *s,
-				 int number,
-				 const char *name,
-				 unsigned scalevals,
-				 double *scaleval_list,
-				 int type,
-				 int outputs,
-				 int *function_map,
-				 int *output_map,
-				 unsigned flags){
+int sushiv_new_objective(sushiv_instance_t *s,
+			 int number,
+			 const char *name,
+			 unsigned scalevals,
+			 double *scaleval_list,
+			 int *function_map,
+			 int *output_map,
+			 char *output_types,
+			 unsigned flags){
   sushiv_objective_t *o;
+  sushiv_objective_internal_t *p;
   int i;
+  int outputs = strlen(output_types);
 
   if(number<0){
     fprintf(stderr,"Objective number must be >= 0\n");
@@ -67,6 +58,9 @@ static int _sushiv_new_objective(sushiv_instance_t *s,
     }
     s->objectives=number+1;
   }
+  
+  o = s->objective_list[number] = calloc(1, sizeof(**s->objective_list));
+  p = o->private = calloc(1,sizeof(*o->private));
 
   /* sanity check the maps */
   for(i=0;i<outputs;i++){
@@ -83,12 +77,63 @@ static int _sushiv_new_objective(sushiv_instance_t *s,
 	      number,function_map[i],output_map[i]);
       return -EINVAL;
     }
+    switch(output_types[i]){
+    case 'X':
+      if(p->x_func){
+	fprintf(stderr,"Objective %d: More than one X dimension specified.\n",
+		number);
+	return -EINVAL;
+      }
+      p->x_fout = output_map[i];
+      p->x_func = s->function_list[function_map[i]];
+      break;
+
+    case 'Y':
+      if(p->y_func){
+	fprintf(stderr,"Objective %d: More than one Y dimension specified.\n",
+		number);
+	return -EINVAL;
+      }
+      p->y_fout = output_map[i];
+      p->y_func = s->function_list[function_map[i]];
+      break;
+
+    case 'Z':
+      if(p->z_func){
+	fprintf(stderr,"Objective %d: More than one Z dimension specified.\n",
+		number);
+	return -EINVAL;
+      }
+      p->z_fout = output_map[i];
+      p->z_func = s->function_list[function_map[i]];
+      break;
+
+    case 'E':
+      if(p->e2_func){
+	fprintf(stderr,"Objective %d: More than two E dimensions specified.\n",
+		number);
+	return -EINVAL;
+      }
+      if(p->e1_func){
+	p->e2_fout = output_map[i];
+	p->e2_func = s->function_list[function_map[i]];
+      }else{
+	p->e1_fout = output_map[i];
+	p->e1_func = s->function_list[function_map[i]];
+      }
+      break;
+
+    default:
+      fprintf(stderr,"Objective %d: '%c' is an usupported output type.\n",
+	      number,output_types[i]);
+      return -EINVAL;
+    }
   }
 
-  o = s->objective_list[number] = calloc(1, sizeof(**s->objective_list));
   o->number = number;
   o->name = strdup(name);
-  o->type = type;
+  o->output_types = strdup(output_types);
+  o->type = SUSHIV_OBJ_BASIC;
   o->outputs = outputs;
   o->flags = flags;
   o->sushi = s;
@@ -103,72 +148,4 @@ static int _sushiv_new_objective(sushiv_instance_t *s,
   memcpy(o->output_map,output_map,outputs * sizeof(*o->output_map));
 
   return 0;
-}
-
-int sushiv_new_objective_Y(sushiv_instance_t *s,
-			   int number,
-			   const char *name,
-			   unsigned scalevals, 
-			   double *scaleval_list,
-			   int function_number,
-			   int function_output,
-			   unsigned flags){
-  return _sushiv_new_objective(s,number,name, 
-			       scalevals,scaleval_list,
-			       SUSHIV_OBJ_Y,
-			       1,
-			       (int []){function_number},
-			       (int []){function_output},
-			       flags);
-}
-
-int sushiv_new_objective_XY(sushiv_instance_t *s,
-			    int number,
-			    const char *name,
-			    unsigned scalevals, 
-			    double *scaleval_list,
-			    int function_number[2],
-			    int function_output[2],
-			    unsigned flags){
-  return _sushiv_new_objective(s,number,name, 
-			       scalevals,scaleval_list,
-			       SUSHIV_OBJ_XY,
-			       2,
-			       function_number,
-			       function_output,
-			       flags);
-}
-
-int sushiv_new_objective_YZ(sushiv_instance_t *s,
-			    int number,
-			    const char *name,
-			    unsigned scalevals, 
-			    double *scaleval_list,
-			    int function_number[2],
-			    int function_output[2],
-			    unsigned flags){
-  return _sushiv_new_objective(s,number,name, 
-			       scalevals,scaleval_list,
-			       SUSHIV_OBJ_YZ,
-			       2,
-			       function_number,
-			       function_output,
-			       flags);
-}
-
-int sushiv_new_objective_XYZ(sushiv_instance_t *s,
-			     int number,
-			     const char *name,
-			     unsigned scalevals, 
-			     double *scaleval_list,
-			     int function_number[3],
-			     int function_output[3],
-			     unsigned flags){
-  return _sushiv_new_objective(s,number,name, 
-			       scalevals,scaleval_list,
-			       SUSHIV_OBJ_XYZ,
-			       3,
-			       function_number,
-			       function_output,
-			       flags);
 }

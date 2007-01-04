@@ -99,10 +99,7 @@ struct sushiv_function {
 };
 
 typedef struct sushiv_objective_internal sushiv_objective_internal_t;
-enum sushiv_objective_type { SUSHIV_OBJ_Y, 
-			     SUSHIV_OBJ_XY, 
-			     SUSHIV_OBJ_YZ, 
-			     SUSHIV_OBJ_XYZ };
+enum sushiv_objective_type { SUSHIV_OBJ_BASIC };
 typedef union sushiv_objective_subtype sushiv_objective_subtype_t;
 
 struct sushiv_objective { 
@@ -114,6 +111,7 @@ struct sushiv_objective {
   int outputs;
   int *function_map;
   int *output_map;
+  char *output_types;
   unsigned flags;
 
   sushiv_instance_t *sushi;
@@ -206,41 +204,15 @@ extern int sushiv_new_function(sushiv_instance_t *s,
 			       void(*callback)(double *,double *),
 			       unsigned flags);
   
-extern int sushiv_new_objective_Y(sushiv_instance_t *s,
-				  int number,
-				  const char *name,
-				  unsigned scalevals, 
-				  double *scaleval_list,
-				  int function_number,
-				  int function_output,
-				  unsigned flags);
-
-extern int sushiv_new_objective_XY(sushiv_instance_t *s,
-				  int number,
-				  const char *name,
-				  unsigned scalevals, 
-				  double *scaleval_list,
-				  int function_number[2],
-				  int function_output[2],
-				  unsigned flags);
-
-extern int sushiv_new_objective_YZ(sushiv_instance_t *s,
-				   int number,
-				   const char *name,
-				   unsigned scalevals, 
-				   double *scaleval_list,
-				   int function_number[2],
-				   int function_output[2],
-				   unsigned flags);
-
-extern int sushiv_new_objective_XYZ(sushiv_instance_t *s,
-				    int number,
-				    const char *name,
-				    unsigned scalevals, 
-				    double *scaleval_list,
-				    int function_number[3],
-				    int function_output[3],
-				    unsigned flags);
+extern int sushiv_new_objective(sushiv_instance_t *s,
+				int number,
+				const char *name,
+				unsigned scalevals, 
+				double *scaleval_list,
+				int *function_map,
+				int *function_output_map,
+				char *output_type_map,
+				unsigned flags);
 
 extern int sushiv_new_panel_2d(sushiv_instance_t *s,
 			       int number,
