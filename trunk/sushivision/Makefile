@@ -36,7 +36,7 @@ OBJ       = main.o scale.o plot.o slider.o slice.o panel.o panel-1d.o panel-2d.o
 LIBS      = -lpthread -ldl
 CAIROVER  =  >= 1.0.0
 GTKVER    =  >= 2.8.0
-GCF       = -std=gnu99 `pkg-config --cflags "gtk+-2.0 $(GTKVER) cairo $(CAIROVER) gthread-2.0 freetype2"`
+GCF       = -std=gnu99 `pkg-config --cflags "gtk+-2.0 $(GTKVER) cairo $(CAIROVER) cairo-ft $(CAIROVER) gthread-2.0"`
 LDF       = -pthread -L/lib -lgtk-x11-2.0 -lgdk-x11-2.0 -latk-1.0 -lgdk_pixbuf-2.0 \
 	-lpangocairo-1.0 -lpango-1.0 -lgobject-2.0 -lgmodule-2.0 -ldl -lm \
 	-lfontconfig -lpng12 -lXrender -lX11 -lpthread -lfreetype -lz -lgthread-2.0 \
