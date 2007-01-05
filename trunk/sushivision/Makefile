@@ -60,13 +60,15 @@ profile:
 	$(MAKE) examples CFLAGS='-pg -g -O2 $(GCF) $(ADD_DEF)' LIBS='-lgprof-helper'
 
 clean:
-	rm -f *.o *.d *.d.* *.pc gmon.out $(TARGET) sushivision_*
+	rm -f *.o *.d *.d.* *.pc gmon.out $(TARGET) sushivision_* sushi-gtkrc.h
 
 distclean: clean
 	rm -f *~
 
 %.d: %.c
 	$(CC) -M $(CFLAGS) $< > $@.$$$$; sed 's,\($*\)\.o[ :]*,\1.o $@ : ,g' < $@.$$$$ > $@; rm -f $@.$$$$
+
+main.o: sushi-gtkrc.h
 
 ifeq ($(MAKECMDGOALS),target)
 include $(SRC:.c=.d)
@@ -84,6 +86,13 @@ sushivision.pc: Makefile
 	echo "gtkver = $(GTKVER)" >> sushivision.pc
 	echo "cairover = $(CAIROVER)" >> sushivision.pc
 	cat sushivision.pc.in >> sushivision.pc	
+
+sushi-gtkrc.h: sushi-gtkrc.in
+	rm -f sushi-gtkrc.h
+	touch sushi-gtkrc.h
+	echo "static char *_SUSHI_GTKRC_STRING=" >> sushi-gtkrc.h
+	sed -e 's/\(\"\)/\\\"/g' -e 's/^\(.*\)$$/"\1\\n"/' sushi-gtkrc.in >> sushi-gtkrc.h
+	echo "\"\";" >> sushi-gtkrc.h
 
 target:  $(OBJ) examples sushivision.pc
 	$(LD) $(OBJ) $(CFLAGS) $(SOLDFLAGS) -o $(TARGET) $(LIBS) $(LDF)

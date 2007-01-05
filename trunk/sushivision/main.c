@@ -33,7 +33,7 @@
 #include <pthread.h>
 #include <dlfcn.h>
 #include "internal.h"
-
+#include "sushi-gtkrc.h"
 
 static pthread_mutex_t m = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t mc = PTHREAD_COND_INITIALIZER;
@@ -194,8 +194,7 @@ static void *worker_thread(void *dummy){
 }
 
 static char * gtkrc_string(){
-
-  return "";
+  return _SUSHI_GTKRC_STRING;
 }
 
 static void sushiv_realize_instance(sushiv_instance_t *s){

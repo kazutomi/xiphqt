@@ -1315,12 +1315,10 @@ void _sushiv_realize_panel1d(sushiv_panel_t *p){
 
     /* label */
     {
-      char *buf;
-      asprintf(&buf,"%s range",p1->range_scale->legend);
-      GtkWidget *label = gtk_label_new(buf);
+      GtkWidget *label = gtk_label_new("range");
+      gtk_misc_set_alignment(GTK_MISC(label),1.,.5);
       gtk_table_attach(GTK_TABLE(p1->top_table),label,0,1,1,2,
-		       0,0,10,0);
-      free(buf);
+		       GTK_FILL,0,10,0);
     }
 
     /* the range slices/slider */ 
@@ -1355,8 +1353,9 @@ void _sushiv_realize_panel1d(sushiv_panel_t *p){
 
     /* label */
     GtkWidget *label = gtk_label_new(o->name);
+    gtk_misc_set_alignment(GTK_MISC(label),1.,.5);
     gtk_table_attach(GTK_TABLE(p1->obj_table),label,0,1,i,i+1,
-		     0,0,10,0);
+		     GTK_FILL,0,10,0);
     
     /* mapping pulldown */
     {
@@ -1430,8 +1429,9 @@ void _sushiv_realize_panel1d(sushiv_panel_t *p){
       
       /* label */
       GtkWidget *label = gtk_label_new(d->name);
+      gtk_misc_set_alignment(GTK_MISC(label),1.,.5);
       gtk_table_attach(GTK_TABLE(p1->dim_table),label,0,1,i,i+1,
-		       0,0,10,0);
+		       GTK_FILL,0,10,0);
       
       /* x radio buttons */
       if(!(d->flags & SUSHIV_DIM_NO_X) && !p1->link_x && !p1->link_y){
