@@ -1,24 +1,82 @@
-[Modified from the oss2jack README written by Kor]
+This is a quick writeup to get the oss2pulse daemon running as things
+stand at 2007-01-11.  Things are as yet unfinished, and this applies
+to both fusd and oss2pulse.
 
-This is an initial release and thus there is currently no
-configuration.  This creates a single OSS device that connects to the
-default Pulse source/sink. For now, just make sure pulseaudio is
-running, ALSA OSS emulation is *not* installed, and then run oss2pulse.
+WHAT IT DOES:
 
-oss2pulse creates the dynamic device node /dev/dsp, the mixer device
-/dev/mixer and /de/sndstat.  Make sure, ALSA OSS emulation (or a real
-OSS install) has not already created these devices.  Or, use the -n
-command line argument to create an OSS device on an usused number (ie,
-/dev/dspN)
+oss2pulse is an OSS emulation daemon for PulseAudio, much like
+oss2jack for the Jack daemon(1).  Using fusd(2), it creates real
+/dev/dsp, /dev/mixer and /dev/sndstat entries that are intended to be
+functionally indistinguishable from real OSS devices, but are
+serviced by the PulseAudio daemon.  In this way, legacy OSS
+applications work properly and cooperatively with PulseAudio,
+eliminating the historical problem of 'sound stops working after the
+desktop makes a noise'(3).  Thus we can move to Pulse on the
+desktop without affecting legacy OSS apps(4).
 
-Requirements:
+(1): oss2pulse and oss2jack share some amount of code; I originally
+started porting from oss2jack but found it was easier to start with
+padsp and just use oss2jack as a fusd interaction example.
 
-  - Pulse Audio server
-  - a 2.6 kernel with udev
-  - kfusd (updated version from xiph.org)
-  - udevd rule for fusd: 
-	SUBSYSTEM=="fusd", NAME="fusd/%k"
+(2): Framework for User Space Devices; allows a daemon to create
+system entries / device entries that can be serviced by a userspace
+application.  Despite the similar name, it is not related to FUSE
+(which is used to implement filesystems in userspace) or any of
+the suggested APIs for allowing userspace PCI device drivers.  FUSD is
+intended for implementing high-level device-class drivers.
+
+(3): ...and the knee jerk support reaction, 'ps ax, look for esd, and
+kill it.'
+
+(4): A similar strategy is envisioned for hiding the ALSA devices being
+used by PulseAudio and offering emulated equivalents such that legacy
+ALSA apps can also work through PulseAudio without modification.
+Whether that's done with a similar daemon, through an alternate
+libasound or using an ALSA module, the goal is the same.  We *can*
+stamp out dmix in our lifetimes.
+
+CURRENT STATE:
+
+oss2pulse has just now reached the point of 'worth testing, please
+comment.'  The code is sound, but raw and unfinished.  Numerous small
+details are incomplete or known to be incorrect.  Among them:
+
+1) no mmap support for /dev/dsp yet (should be there within two weeks). 
+
+2) no select (poll) yet (should be there in a few days).
+
+3) numerous unimplemented ioctl()s.
+
+4) Mixer mapping is a bit of a hack. See the 'RFC' section.
+
+5) the fusd implementation as yet does not have fully generic class
+   support.  It can only create devices of a class that doesn't
+   already exist, but handles the 'sound' class as a special case.
+   This requires a small kernel patch to correct and will be available
+   soon.
+
+Despite these unfinished bits, most OSS apps already work and work
+properly.
+
+THINGS I'D ESPECIALLY LIKE FEEDBACK ON:
+
+1) 'FUSD', which claims to be pronounced 'fused', not 'fuse - dee' is
+confusingly similar to the unrelated FUSE.  For fusd to be adopted, it
+needs another name. ("Exodev"?  "Userdev"?)
+
+2) FUSD, at the moment, takes as arguments to its registration function a
+'name' and a 'devname'.  Confusingly, 'name' specifies the name of the
+device under /dev and 'devname' (not present in the original fusd, it
+appears in Kor's update to kernel 2.6) seems to be a mostly
+meaningless symbol embedded in the registered kobject.  Might anyone
+be able to shed some light on why exactly the independent 'devname'
+field is useful?
+ 
+3) Pulse has no control over the hardware master volume, but the vast
+majority of OSS apps are only capable of using the master and simply
+assume it is there.  The plan, not implemented yet, is to have
+'Master' map to the source/sink gain and implement PCM/IGAIN via
+in-daemon software scaling.
 
 Monty
-
-
+20070111
