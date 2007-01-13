@@ -1,0 +1,24 @@
+[Modified from the oss2jack README written by Kor]
+
+This is an initial release and thus there is currently no
+configuration.  This creates a single OSS device that connects to the
+default Pulse source/sink. For now, just make sure pulseaudio is
+running, ALSA OSS emulation is *not* installed, and then run oss2pulse.
+
+oss2pulse creates the dynamic device node /dev/dsp, the mixer device
+/dev/mixer and /de/sndstat.  Make sure, ALSA OSS emulation (or a real
+OSS install) has not already created these devices.  Or, use the -n
+command line argument to create an OSS device on an usused number (ie,
+/dev/dspN)
+
+Requirements:
+
+  - Pulse Audio server
+  - a 2.6 kernel with udev
+  - kfusd (updated version from xiph.org)
+  - udevd rule for fusd: 
+	SUBSYSTEM=="fusd", NAME="fusd/%k"
+
+Monty
+
+
