@@ -4,4 +4,6 @@ oss2pulse_CFLAGS = $(PULSE_CFLAGS)
 oss2pulse_LDFLAGS = $(PULSE_LDFLAGS) $(PULSE_LIBADD)
 oss2pulse_LIBS = -lfusd -lpulse $(PULSE_LIBADD)
 
-
+install-exec-hook:
+	chown root $(bindir)/oss2pulse
+	chmod u+s $(bindir)/oss2pulse
