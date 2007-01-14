@@ -16,13 +16,13 @@
     <p>If you are generating XSPF, your playlist should be valid according to one of the tools listed below.  This is crucial for interoperability.  Please take it seriously, despite the inconvenience.</p>
 
     <ol>
-      
-      <li style="margin-bottom: 1em;"><a href="http://xspf.binera.de">Online XSPF validator</a> by Sebastian Pipping.</li>
-      <li><a href="xspf-1.rng">Relax NG for XSPF</a> by Matthias Friedrich.  Sample usage:
-      <pre><a href="http://xmlstar.sourceforge.net/">xmlstarlet</a> validate -e -r xspf-1.rng myplaylist.xspf</pre>
-      </li>
+
+      <li style="margin-bottom: 1em;"><a href="http://xspf.binera.de/">Online XSPF validator</a> by Sebastian Pipping.</li>
       <li><a href="xspf-1.xsd">XML Schema for XSPF</a> by Matthias Friedrich.  Sample usage:
-      <pre><a href="http://xmlstar.sourceforge.net/">xmlstarlet</a> validate -e -r xspf-1.xsd myplaylist.xspf</pre>
+      <pre><a href="http://xmlstar.sourceforge.net/">xmlstarlet</a> validate -e -s xspf-1.xsd myplaylist.xspf</pre>
+      </li>
+      <li><a href="xspf-1.rng">Relax NG Schema for XSPF</a> by Matthias Friedrich.  Sample usage:
+      <pre><a href="http://xmlstar.sourceforge.net/">xmlstarlet</a> validate -e -r xspf-1.rng myplaylist.xspf</pre>
       </li>
 
     </ol>
