@@ -18,7 +18,6 @@
 <dl>
 
             <dt>
-
               <a id="Gnomoradio"></a><a href=
               "http://gnomoradio.org/">Gnomoradio</a> (GNU/Linux)
             </dt>
@@ -26,14 +25,7 @@
               A program that can find, fetch, share, and play music that is
               freely available for file sharing.
             </dd>
-            <dt>
-              <a id="Webjay"></a><a href="http://webjay.org/">Webjay</a> (web)
-            </dt>
 
-            <dd>
-              A playlist community site and playlist authoring tool which
-              exports XSPF playlists.
-            </dd>
             <dt>
               <a id="xspf-download-0.1.0.py"></a><a href=
               "http://mayhem-chaos.net/stuff/xspf-download-0.1.0.py">xspf-download-0.1.0.py</a>
@@ -54,27 +46,7 @@
               including for commercial purposes. Very popular both in its own
               right and as a source for derived applications.
             </dd>
-            <dt>
-              <a id="playr"></a><a href="http://playr.hubmed.org/">Playr</a>
 
-              (web)
-            </dt>
-            <dd>
-              A web-based tool for screen-scraping web pages and emitting the
-              results as a playlist. Says Playr creator Alf Eaton:
-              <cite>There's a Flash/XSPF bookmarklet on the front page -- which
-              you can use to directly play any page containing linked MP3s --
-              as well as 'Flash' links on the New Playlists page.</cite>
-            </dd>
-            <dt>
-              <a id="jinzora"></a><a href="http://jinzora.com/">Jinzora</a>
-              (web)
-            </dt>
-
-            <dd>
-              A web based media streaming and management system, designed to
-              stream audio and video files to any internet connected computer.
-            </dd>
             <dt>
               <a id="ymj"></a><a href=
               "http://music.yahoo.com/musicengine/">Yahoo! Music Jukebox</a>
@@ -99,24 +71,7 @@
               Software for mastering audio CDs. It uses XSPF playlists to set
               the CD content.
             </dd>
-            <dt>
 
-              <a id="plurn"></a><a href="http://plurn.com/app/About/">Plurn</a>
-              (web)
-            </dt>
-            <dd>
-              A web-based playlist community modeled after Webjay.
-            </dd>
-            <dt>
-              <a id="ultraPh0nZ"></a><a href=
-              "http://www.draftlight.net/dnex/mp3player/free/">ultraPh0nZ
-              FMP256</a> (web)
-            </dt>
-
-            <dd>
-              A Flash application for playing music in web pages. Skinnable and
-              slick.
-            </dd>
             <dt>
               <a id="Spiffy"></a><a href=
               "http://plurn.com/app/Download">Spiffy</a> (Windows)
@@ -137,9 +92,9 @@
               XSPF. Notable for supporting recursive playlists. (The author of
               this document uses this plugin often).
             </dd>
+
             <dt>
               <a id="BMPx"></a><a href="http://beep-media-player.org/">BMPx</a>
-
               (GNU/Linux)
             </dt>
             <dd>
@@ -149,12 +104,12 @@
               (http://www.xmms.org) with the goal of porting XMMS to GTK2 and
               make use of more modern desktop standards.
             </dd>
+
             <dt>
               <a id="ion"></a><a href=
               "http://openvision.tv/home/home.html">I/ON</a> (Java, runs on
               MacOS X and Windows XP)
             </dt>
-
             <dd>
               A media player oriented towards internet based content rather
               than locally stored content. Support for video formats like
@@ -163,13 +118,13 @@
               "https://ion.dev.java.net/source/browse/ion/IonXSPF/tv/openvision/xspf/">
               Java source for XSPF support based on JDOM</a>.
             </dd>
+
             <dt>
               <a id="drupal"></a><a href=
               "http://drupal.org/handbook/modules/playlist">Drupal playlist
               module</a> (blog/web publishing)
             </dt>
             <dd>
-
               <cite src="http://drupal.org/handbook/modules/playlist">The
               playlist module allows [publishers] to arrange content into
               personal playlists. This module empowers users to become
@@ -180,17 +135,18 @@
               "http://playlist-demo.drupalart.org/">Drupal playlist demo
               page</a>.
             </dd>
+
             <dt>
               <a id="boriel"></a><a href=
               "http://www.boriel.com/?page_id=12">WordPress XSPF Player
               Plugin</a> (blog publishing; uses Musicplayer Flash app)
             </dt>
-
             <dd>
               A popular tool for publishing weblogs. The XSPF plugin allows
               bloggers to edit and publish XSPF documents, then embed a Flash
               player in their weblog to render the XSPF.
             </dd>
+
             <dt>
               <a id="ning"></a><a href=
               "http://documentation.ning.com/post.php?Post:slug=XNCAlpha-FormatXSPF">Ning</a>
@@ -203,17 +159,8 @@
             </dd>
 
             <dt>
-              <a id="mfdz"></a><a href="http://mfdz.com/">Music for Dozens</a>
-              (web site; Flash player)
-            </dt>
-            <dd>
-              Pay-per-download no-DRM music store emphasizing independent
-              artists. Sample songs use custom Flash player which accepts XSPF.
-            </dd>
-            <dt>
               <a id="musicmobs"></a><a href="http://musicmobs.com/">Musicmobs /
               Mobster (OS X and Windows)</a>
-
             </dt>
             <dd>
               Playlist publication community and XSPF content resolver. Mobster
@@ -222,14 +169,6 @@
               portability since the file location is ignored. Musicmobs acts as
               a playlist trading community by accepting XSPFs from Mobster or
               manual upload.
-            </dd>
-            <dt>
-              <a id="pear"></a><a href=
-              "http://pear.php.net/package/File_XSPF">PEAR :: Package ::
-              File_XSPF</a>
-            </dt>
-            <dd>
-              PHP library for parsing and generating XSPF.
             </dd>
 
             <dt>
@@ -241,40 +180,7 @@
               A podcast client for the command line which supports XSPF
               enclosures.
             </dd>
-            <dt>
-              <a id="jamendo"></a><a href=
-              "http://www.jamendo.com/us/static/concept/">Jamendo</a>
 
-            </dt>
-            <dd>
-              A repository of artists and music that allows users to create
-              XSPF playlists.
-            </dd>
-            <dt>
-              <a id="artistserver"></a><a href=
-              "http://www.artistserver.com/">ArtistServer</a>
-            </dt>
-            <dd>
-              A hosting service for musicians which makes playlists available
-              in XSPF.
-            </dd>
-
-            <dt>
-              <a id="projectopus"></a><a href="http://projectopus.com/">Project
-              Opus</a>
-            </dt>
-            <dd>
-              A music community site which makes playlists available in XSPF.
-            </dd>
-            <dt>
-              <a id="cpan"></a><a href=
-              "http://search.cpan.org/%7Edaniel/XML-XSPF/lib/XML/XSPF.pm">XML::XSPF
-              on CPAN</a>
-
-            </dt>
-            <dd>
-              Perl library for parsing and generating XSPF.
-            </dd>
             <dt>
               <a id="slimdevices"></a><a href=
               "http://www.slimdevices.com/pi_features.html">Slim Server</a>
@@ -287,8 +193,8 @@
               browsing a Podcast or RSS feed that links to an XSPF document,
               that will work as well. The XSPF document does not need to be
               local.</cite>
-
             </dd>
+
             <dt>
               <a id="m3u2xspf"></a><a href=
               "http://users.musicbrainz.org/%7Ematt/xspf/m3u2xspf">m3u2xspf</a>
@@ -298,15 +204,16 @@
               tool written in Python, so for a Unix-like environment. It is
               free software under the Gnu GPL.
             </dd>
+
             <dt>
               <a id="subsonic"></a><a href=
               "http://subsonic.sourceforge.net/">Subsonic</a>
-
             </dt>
             <dd>
               A web-based media streamer and jukebox. Free software under the
               LGPL.
             </dd>
+
             <dt>
               <a id="vlc"></a><a href="http://www.videolan.org/">VLC media
               player</a>
@@ -327,11 +234,11 @@
               just have to upload your files into a folder and then the
               playlist is generated automatically.
             </dd>
+
             <dt>
               <a id="Jeroen"></a><a href=
               "http://www.jeroenwijering.com/?item=Flash_MP3_Player">Jeroen
               Wijering's Flash MP3 Player</a>
-
             </dt>
             <dd>
               A Flash-based application for playing music in web pages.
@@ -340,18 +247,19 @@
               "http://creativecommons.org/licenses/by-nc-sa/2.0/">Attribution-NonCommercial-ShareAlike
               2.0 license</a>.
             </dd>
+
             <dt>
               <a id="plait"></a><a href="http://plait.sourceforge.net/">Plait
               command line jukebox</a>
             </dt>
             <dd>
-
               A script that creates playlists from a music library and submits
               the playlists to music players. Now includes an XSPF publishing
               feature which creates a complete web site including an XSPF
               playlist, a web page that embeds the XSPF Web Music Player, and
               MP3 files.
             </dd>
+
             <dt>
               <a id="lacy"></a><a href=
               "http://geekkid.net/jukebox/xspfdoc.html">Lacy Morrow's Flash
@@ -366,51 +274,14 @@
             </dd>
 
             <dt>
-              <a id="libspiff"></a><a href=
-              "http://libspiff.sourceforge.net/">libSpiff</a>
-            </dt>
-            <dd>
-              A cross-platform C++ library for reading and writing XSPF
-              playlist files (both Version 0 and 1). Licensed under the LGPL.
-              See also <a href="http://libspiff.sourceforge.net/doc/html/"
-              title="XSPF C++ library tutorial">libSpiff tutorial</a>.
-            </dd>
-            <dt>
               <a id="jukes"></a><a href=
               "http://melloware.com/products/jukes/index.html">Jukes</a>
-
             </dt>
             <dd>
               A cross platform MP3 player and organizer written in Java that
               uses XSPF as its playlist format.
             </dd>
-            <dt>
-              <a id="jspiff"></a><a href=
-              "http://melloware.com/products/jspiff/">JSpiff</a>
-            </dt>
-            <dd>
-              JSpiff is a Java API for reading and writing XSPF ("Spiff") open
-              XML playlists using JAXP or JAXB.
-            </dd>
 
-            <dt>
-              <a id="validator"></a><a href="http://xspf.binera.de/">XSPF
-              Validator</a>
-            </dt>
-            <dd>
-              Online validator for XSPF documents.
-            </dd>
-            <dt>
-              <a id="ruby"></a><a href=
-              "http://rubyforge.org/projects/xspf">Ruby XSPF playlist class</a>
-
-            </dt>
-            <dd>
-              A Ruby library to parse XML Shareable Playlist Format (XSPF)
-              documents and export them to M3U, SMIL, HTML and SoundBlox.
-              License: GNU General Public License (GPL) version 2, Ruby
-              License.
-            </dd>
             <dt>
               <a id="FMP3"></a><a href=
               "http://www.enricolai.com/fmp3/xspf-flash-mp3-player.asp">FMP3
@@ -434,8 +305,8 @@
               accounts, and share your music catalogs with other Ampache
               servers.</cite>
             </dd>
-            <dt>
 
+            <dt>
               <a id="boutell"></a><a href="http://www.boutell.com/xspf/">Thomas
               Boutell's XSPF Player With Autoresume Support</a>
             </dt>
@@ -446,8 +317,8 @@
               Distinguished by the ability to keep its place when a user clicks
               through from one page to the next.
             </dd>
-            <dt>
 
+            <dt>
               <a id="podpager"></a><a href="http://www.podpager.com/">Pod
               Pager</a>
             </dt>
@@ -456,21 +327,188 @@
               RSS as output.
             </dd>
 
-	    <dt><a href="http://contentresolver.com">Paul Lamere's playlist resolver</a></dt>
-            <dd>An experimental playlist resolver which will look at
-the track information and attempt to find information about the track
-at MusicBrainz, and fix or augment this information.</dd>
+            <dt>
+               <a href="http://contentresolver.com">Paul Lamere's playlist resolver</a>
+            </dt>
+            <dd>
+              An experimental playlist resolver which will look at
+              the track information and attempt to find information about the track
+              at MusicBrainz, and fix or augment this information.
+            </dd>
 
-    <dt><a href="https://www.cruxy.com/lab/xspfview/">XSPFView</a></dt>
-    <dd>A variation on the traditional form of Flash-based XSPF player
-    which uses Flash as the controller but HTML for most display.</dd>
+            <dt>
+              <a href="https://www.cruxy.com/lab/xspfview/">XSPFView</a>
+            </dt>
+            <dd>
+              A variation on the traditional form of Flash-based XSPF player
+              which uses Flash as the controller but HTML for most display.
+            </dd>
 
+            <dt>
+              <a href="http://www.jointradio.com">Joint Radio</a>
+            </dt>
+            <dd>
+              A distributed playlist aggregator. It takes RSS bookmark feeds
+              from a social bookmarking service (del.icio.us currently tested)
+              and creates a playlist (XSPF, but that's not important here).
+              Further, members can aggregate other user's playlists into a master
+              playlist or use the whole site playlist.
+            </dd>
 
-		 <dt><a href="http://www.jointradio.com">Joint Radio</a></dt>
-          <dd>A distributed playlist aggregator. It takes RSS bookmark feeds from a social bookmarking service (del.icio.us currently tested) and creates a playlist (XSPF, but that's not important here). Further, members can aggregate other user's playlists into a master playlist or use the whole site playlist.</dd>
+	    <!-- template for new entries
+		 <dt><a href=""></a></dt>
+          <dd></dd>
+	  -->
+</dl>
 
+<h1>Websites</h1>
+<dl>
+            <dt>
+              <a id="Webjay"></a><a href="http://webjay.org/">Webjay</a> (web)
+            </dt>
+            <dd>
+              A playlist community site and playlist authoring tool which
+              exports XSPF playlists.
+            </dd>
 
+            <dt>
+              <a id="playr"></a><a href="http://playr.hubmed.org/">Playr</a>
+              (web)
+            </dt>
+            <dd>
+              A web-based tool for screen-scraping web pages and emitting the
+              results as a playlist. Says Playr creator Alf Eaton:
+              <cite>There's a Flash/XSPF bookmarklet on the front page -- which
+              you can use to directly play any page containing linked MP3s --
+              as well as 'Flash' links on the New Playlists page.</cite>
+            </dd>
 
+            <dt>
+              <a id="jinzora"></a><a href="http://jinzora.com/">Jinzora</a>
+              (web)
+            </dt>
+            <dd>
+              A web based media streaming and management system, designed to
+              stream audio and video files to any internet connected computer.
+            </dd>
+
+            <dt>
+              <a id="plurn"></a><a href="http://plurn.com/app/About/">Plurn</a>
+              (web)
+            </dt>
+            <dd>
+              A web-based playlist community modeled after Webjay.
+            </dd>
+
+            <dt>
+              <a id="ultraPh0nZ"></a><a href=
+              "http://www.draftlight.net/dnex/mp3player/free/">ultraPh0nZ
+              FMP256</a> (web)
+            </dt>
+            <dd>
+              A Flash application for playing music in web pages. Skinnable and
+              slick.
+            </dd>
+
+            <dt>
+              <a id="mfdz"></a><a href="http://mfdz.com/">Music for Dozens</a>
+              (web site; Flash player)
+            </dt>
+            <dd>
+              Pay-per-download no-DRM music store emphasizing independent
+              artists. Sample songs use custom Flash player which accepts XSPF.
+            </dd>
+
+            <dt>
+              <a id="jamendo"></a><a href=
+              "http://www.jamendo.com/us/static/concept/">Jamendo</a>
+            </dt>
+            <dd>
+              A repository of artists and music that allows users to create
+              XSPF playlists.
+            </dd>
+
+            <dt>
+              <a id="artistserver"></a><a href=
+              "http://www.artistserver.com/">ArtistServer</a>
+            </dt>
+            <dd>
+              A hosting service for musicians which makes playlists available
+              in XSPF.
+            </dd>
+
+            <dt>
+              <a id="projectopus"></a><a href="http://projectopus.com/">Project
+              Opus</a>
+            </dt>
+            <dd>
+              A music community site which makes playlists available in XSPF.
+            </dd>
+
+            <dt>
+              <a id="validator"></a><a href="http://xspf.binera.de/">XSPF
+              Validator</a>
+            </dt>
+            <dd>
+              Online validator for XSPF documents.
+            </dd>
+
+	    <!-- template for new entries
+		 <dt><a href=""></a></dt>
+          <dd></dd>
+	  -->
+</dl>
+
+<h1>Libraries</h1>
+<dl>
+            <dt>
+              <a id="pear"></a><a href=
+              "http://pear.php.net/package/File_XSPF">PEAR :: Package ::
+              File_XSPF</a>
+            </dt>
+            <dd>
+              PHP library for parsing and generating XSPF.
+            </dd>
+
+            <dt>
+              <a id="cpan"></a><a href=
+              "http://search.cpan.org/%7Edaniel/XML-XSPF/lib/XML/XSPF.pm">XML::XSPF
+              on CPAN</a>
+            </dt>
+            <dd>
+              Perl library for parsing and generating XSPF.
+            </dd>
+
+            <dt>
+              <a id="libspiff"></a><a href=
+              "http://libspiff.sourceforge.net/">libSpiff</a>
+            </dt>
+            <dd>
+              A cross-platform C++ library for reading and writing XSPF
+              playlist files (both Version 0 and 1). Licensed under the LGPL.
+              See also <a href="http://libspiff.sourceforge.net/doc/html/"
+              title="XSPF C++ library tutorial">libSpiff tutorial</a>.
+            </dd>
+
+            <dt>
+              <a id="jspiff"></a><a href=
+              "http://melloware.com/products/jspiff/">JSpiff</a>
+            </dt>
+            <dd>
+              JSpiff is a Java API for reading and writing XSPF ("Spiff") open
+              XML playlists using JAXP or JAXB.
+            </dd>
+
+            <dt>
+              <a id="ruby"></a><a href=
+              "http://rubyforge.org/projects/xspf">Ruby XSPF playlist class</a>
+            </dt>
+            <dd>
+              A Ruby library to parse XML Shareable Playlist Format (XSPF)
+              documents and export them to M3U, SMIL, HTML and SoundBlox.
+              License: GNU General Public License (GPL) version 2, Ruby
+              License.
+            </dd>
 
 	    <!-- template for new entries
 		 <dt><a href=""></a></dt>
