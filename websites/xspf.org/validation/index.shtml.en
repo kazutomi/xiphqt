@@ -17,12 +17,18 @@
 
     <ol>
 
-      <li style="margin-bottom: 1em;"><a href="http://xspf.binera.de/">Online XSPF validator</a> by Sebastian Pipping.</li>
-      <li><a href="xspf-1.xsd">XML Schema for XSPF</a> by Matthias Friedrich.  Sample usage:
-      <pre><a href="http://xmlstar.sourceforge.net/">xmlstarlet</a> validate -e -s xspf-1.xsd myplaylist.xspf</pre>
+      <li style="margin-bottom: 1em;">
+        <a href="http://xspf.binera.de/">Online XSPF validator</a> by Sebastian Pipping.
       </li>
-      <li><a href="xspf-1.rng">Relax NG Schema for XSPF</a> by Matthias Friedrich.  Sample usage:
-      <pre><a href="http://xmlstar.sourceforge.net/">xmlstarlet</a> validate -e -r xspf-1.rng myplaylist.xspf</pre>
+      <li>
+        <a href="xspf-1_0.2.xsd">XML Schema for XSPF</a> by Matthias Friedrich.  Sample usage of <a href="http://xmlstar.sourceforge.net/">XMLStarlet</a>:
+        <pre>(Unix)     xmlstarlet validate -e -s xspf-1_0.2.xsd myplaylist.xspf
+(Windows)  xml.exe validate -e -s xspf-1_0.2.xsd myplaylist.xspf        </pre>
+      </li>
+      <li>
+        <a href="xspf-1_0.3.rng">Relax NG Schema for XSPF</a> by Matthias Friedrich.  Sample usage of <a href="http://xmlstar.sourceforge.net/">XMLStarlet</a>:
+        <pre>(Unix)     xmlstarlet validate -e -r xspf-1_0.3.rng myplaylist.xspf
+(Windows)  xml.exe validate -e -r xspf-1_0.3.rng myplaylist.xspf</pre>
       </li>
 
     </ol>
