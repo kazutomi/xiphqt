@@ -595,11 +595,7 @@ static void *dsp_open_thread(void *arg){
   debug(DEBUG_LEVEL_NORMAL, __FILE__": dsp_open_worker()\n");
   
   if ((i = fd_info_new(FD_INFO_STREAM, &ret))){
-
     debug(DEBUG_LEVEL_NORMAL, __FILE__": dsp_open() succeeded\n");
-    
-    fd_info_add_to_list(i);
-    fd_info_unref(i);
     file->private_data = i;
   }
 
@@ -1025,7 +1021,7 @@ static void *dsp_close_thread(void *arg){
     int ret = 0;
     close_helper(i,0);  
     if(dsp_drain(i)) ret = -EIO; 
-    fd_info_remove_from_list(i);
+    fd_info_unref(i);
     fusd_return(file, ret);
   }
   return 0;

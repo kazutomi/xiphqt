@@ -50,7 +50,7 @@ static void fd_info_free(fd_info *i) {
     free(i);
 }
 
-static fd_info *fd_info_ref(fd_info *i) {
+fd_info *fd_info_ref(fd_info *i) {
     assert(i);
     
     pthread_mutex_lock(&i->mutex);
@@ -131,7 +131,6 @@ fd_info* fd_info_new(fd_info_type_t type, int *_errno) {
     i->volume_modify_count = 0;
     i->sink_index = (uint32_t) -1;
     i->source_index = (uint32_t) -1;
-    PA_LLIST_INIT(fd_info, i);
 
     reset_params(i);
 
@@ -186,27 +185,3 @@ fail:
     
     return NULL;
 }
-
-static pthread_mutex_t fd_infos_mutex = PTHREAD_MUTEX_INITIALIZER;
-static PA_LLIST_HEAD(fd_info, fd_infos) = NULL;
-
-void fd_info_add_to_list(fd_info *i) {
-    assert(i);
-
-    pthread_mutex_lock(&fd_infos_mutex);
-    PA_LLIST_PREPEND(fd_info, fd_infos, i);
-    pthread_mutex_unlock(&fd_infos_mutex);
-
-    fd_info_ref(i);
-}
-
-void fd_info_remove_from_list(fd_info *i) {
-    assert(i);
-
-    pthread_mutex_lock(&fd_infos_mutex);
-    PA_LLIST_REMOVE(fd_info, fd_infos, i);
-    pthread_mutex_unlock(&fd_infos_mutex);
-
-    fd_info_unref(i);
-}
-
