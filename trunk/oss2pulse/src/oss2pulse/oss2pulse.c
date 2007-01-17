@@ -31,7 +31,7 @@
 #include <sys/mman.h>
 #include <sys/errno.h>
 
-static int debuglevel = DEBUG_LEVEL_NORMAL;
+static int debuglevel = DEBUG_LEVEL_WARNING;
 static int daemonized = 0;
 static int dsp_fd = -1;
 static int mixer_fd = -1;
