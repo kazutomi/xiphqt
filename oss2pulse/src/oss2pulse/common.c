@@ -25,8 +25,6 @@ static void fd_info_free(fd_info *i) {
 
     debug(DEBUG_LEVEL_NORMAL, __FILE__": freeing fd info\n");
 
-    dsp_drain(i);
-    
     if (i->mainloop)
         pa_threaded_mainloop_stop(i->mainloop);
     
@@ -107,6 +105,7 @@ void reset_params(fd_info *i) {
 }
 
 
+// TODO: eliminate the mainloop_wait
 fd_info* fd_info_new(fd_info_type_t type, int *_errno) {
     fd_info *i;
     int sfds[2] = { -1, -1 };

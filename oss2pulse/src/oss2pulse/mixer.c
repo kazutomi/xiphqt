@@ -72,6 +72,7 @@ static void subscribe_cb(pa_context *context, pa_subscription_event_type_t t, ui
     pa_operation_unref(o);
 }
 
+// Eliminate the mainloop_wait
 static int mixer_open(struct fusd_file_info* file){
   fd_info *i;
   pa_operation *o = NULL;
@@ -176,6 +177,7 @@ fail:
   return ret;
 }
 
+// Eliminate the mainloop_wait
 static int mixer_ioctl(struct fusd_file_info *file, int request, void *argp){
   fd_info *i = file->private_data;
   

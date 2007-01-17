@@ -99,6 +99,9 @@ struct fd_info {
 
   struct fusd_file_info* poll_file;
 
+  int ioctl_request;
+  void *ioctl_argp;
+
   size_t write_size;
   size_t write_rem;
   const char *write_buffer;
@@ -148,4 +151,4 @@ extern void fd_info_remove_from_list(fd_info *i);
 extern void fd_info_add_to_list(fd_info *i);
 
 extern void debug(const int level, const char *format, ...);
-extern int dsp_drain(fd_info *i);
+
