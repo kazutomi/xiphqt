@@ -43,7 +43,6 @@
 #include <fusd.h>
 
 #include <pulse/pulseaudio.h>
-#include "llist.h"
 
 // Define the DEBUG_LEVEL values used for printfs
 #define DEBUG_LEVEL_CRITICAL 0
@@ -113,7 +112,6 @@ struct fd_info {
   uint32_t sink_index, source_index;
   int volume_modify_count;
   
-  PA_LLIST_FIELDS(fd_info);
 };
 
 #define CONTEXT_CHECK_DEAD_GOTO(i, label) do { \
@@ -144,11 +142,9 @@ extern struct fusd_file_operations dsp_file_ops;
 extern struct fusd_file_operations mixer_file_ops;
 
 extern fd_info* fd_info_new(fd_info_type_t type, int *_errno);
+extern fd_info *fd_info_ref(fd_info *i);
 extern void fd_info_unref(fd_info *i);
 extern void reset_params(fd_info *i);
-
-extern void fd_info_remove_from_list(fd_info *i);
-extern void fd_info_add_to_list(fd_info *i);
 
 extern void debug(const int level, const char *format, ...);
 

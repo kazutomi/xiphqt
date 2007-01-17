@@ -156,9 +156,6 @@ static void *mixer_open_thread(void *arg){
     file->private_data = i;
     
     pa_threaded_mainloop_unlock(i->mainloop);
-    
-    fd_info_add_to_list(i);
-    fd_info_unref(i);
   }
 
   fusd_return(file, 0);
@@ -406,7 +403,7 @@ int mixer_close(struct fusd_file_info* file){
   
   debug(DEBUG_LEVEL_NORMAL, __FILE__": close()\n");
   
-  fd_info_remove_from_list(i);
+  fd_info_unref(i);
   
   return 0;
 }
