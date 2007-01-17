@@ -97,6 +97,8 @@ struct fd_info {
   char *read_buffer;
   struct fusd_file_info* read_file;
 
+  struct fusd_file_info* poll_file;
+
   size_t write_size;
   size_t write_rem;
   const char *write_buffer;

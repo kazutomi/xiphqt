@@ -20,6 +20,66 @@
 
 #include "oss2pulse.h"
 
+static void close_helper(struct fusd_file_info* file, int retval){
+  fd_info *i = file->private_data;
+  if(i != NULL){
+    debug(DEBUG_LEVEL_NORMAL, __FILE__": close_helper()\n");
+    
+    if(i->read_file){
+      fusd_return(i->read_file, retval);
+      i->read_file = NULL;
+      i->read_buffer = NULL;
+    }
+    
+    if(i->write_file){
+      fusd_return(i->write_file, retval);
+      i->write_file = NULL;
+      i->write_buffer = NULL;
+    }
+    
+    if(i->poll_file){
+      fusd_return(i->poll_file, FUSD_NOTIFY_EXCEPT);
+      i->poll_file = NULL;
+    }
+    
+    file->private_data = NULL;
+    fd_info_remove_from_list(i);
+  }
+}
+
+static void poll_notify(struct fusd_file_info* file, unsigned int cached_state){
+  int state = 0;
+  fd_info *i = file->private_data;
+
+  if(!i->poll_file) return;
+
+  if (i->play_stream && // active stream
+      pa_stream_get_state(i->play_stream) == PA_STREAM_READY && // stream is ready
+      !i->write_file){ // nothing already pending
+
+    size_t n = pa_stream_writable_size(i->play_stream);
+      
+    // OSS selected upon a full fragment of space
+    if (n >= i->fragment_size)
+      state |= FUSD_NOTIFY_OUTPUT;
+  }
+
+  if (i->rec_stream && // active stream
+      pa_stream_get_state(i->rec_stream) == PA_STREAM_READY && // stream is ready
+      !i->read_file){ // nothing already pending
+    
+    ssize_t n = pa_stream_readable_size(i->rec_stream);
+    
+    if (n - i->read_offset > 0)
+      state |= FUSD_NOTIFY_INPUT;
+  }
+
+  if(state != cached_state){
+    fusd_return(i->poll_file, state);
+    i->poll_file = NULL;
+  }
+}
+
 static void stream_success_cb(pa_stream *s, int success, void *userdata) {
     fd_info *i = userdata;
 
@@ -243,89 +303,100 @@ static void stream_request_cb(pa_stream *s, size_t length, void *userdata) {
     if (n >= i->fragment_size)
       stream_read_copy_data(i);
   }
+
+  if(i->poll_file)
+    poll_notify(i->poll_file, fusd_get_poll_diff_cached_state(i->poll_file));
+
 }
 
-static void stream_state_cb(pa_stream *s, void * userdata) {
-    fd_info *i = userdata;
-    assert(s);
+static void stream_state_cb(pa_stream *s, void *userdata) {
+			      
+  struct fusd_file_info* file = userdata;   
+  fd_info *i= file->private_data;
 
-    switch (pa_stream_get_state(s)) {
+  assert(s);
+  
+  switch (pa_stream_get_state(s)) {
+    
+  case PA_STREAM_READY:
+    debug(DEBUG_LEVEL_NORMAL, __FILE__": stream established.\n");
+    break;
+    
+  case PA_STREAM_FAILED:
+    debug(DEBUG_LEVEL_NORMAL, __FILE__": pa_stream_connect_playback() failed: %s\n", pa_strerror(pa_context_errno(i->context)));
+    
+  case PA_STREAM_TERMINATED:
+  case PA_STREAM_UNCONNECTED:
+    close_helper(file, -EIO);
+    break;
 
-        case PA_STREAM_READY:
-            debug(DEBUG_LEVEL_NORMAL, __FILE__": stream established.\n");
-            break;
-            
-        case PA_STREAM_FAILED:
-            debug(DEBUG_LEVEL_NORMAL, __FILE__": pa_stream_connect_playback() failed: %s\n", pa_strerror(pa_context_errno(i->context)));
-            break;
-
-        case PA_STREAM_TERMINATED:
-        case PA_STREAM_UNCONNECTED:
-        case PA_STREAM_CREATING:
-            break;
+  case PA_STREAM_CREATING:
+    break;
     }
 }
 
-static int create_playback_stream(fd_info *i) {
-    pa_buffer_attr attr;
-    int n;
-    
-    assert(i);
-
-    fix_metrics(i);
-
-    if (!(i->play_stream = pa_stream_new(i->context, "Audio Stream", &i->sample_spec, NULL))) {
-        debug(DEBUG_LEVEL_NORMAL, __FILE__": pa_stream_new() failed: %s\n", pa_strerror(pa_context_errno(i->context)));
-        goto fail;
-    }
-
-    pa_stream_set_state_callback(i->play_stream, stream_state_cb, i);
-    pa_stream_set_write_callback(i->play_stream, stream_request_cb, i);
-    pa_stream_set_latency_update_callback(i->play_stream, stream_latency_update_cb, i);
-
-    memset(&attr, 0, sizeof(attr));
-    attr.maxlength = i->fragment_size * (i->n_fragments+1);
-    attr.tlength = i->fragment_size * i->n_fragments;
-    attr.prebuf = i->fragment_size;
-    attr.minreq = i->fragment_size;
-    
-    if (pa_stream_connect_playback(i->play_stream, NULL, &attr, PA_STREAM_INTERPOLATE_TIMING|PA_STREAM_AUTO_TIMING_UPDATE, NULL, NULL) < 0) {
-        debug(DEBUG_LEVEL_NORMAL, __FILE__": pa_stream_connect_playback() failed: %s\n", pa_strerror(pa_context_errno(i->context)));
-        goto fail;
-    }
-
-    return 0;
-
-fail:
-    return -1;
+static int create_playback_stream(struct fusd_file_info* file){
+  fd_info *i= file->private_data;
+  pa_buffer_attr attr;
+  int n;
+  
+  assert(i);
+  
+  fix_metrics(i);
+  
+  if (!(i->play_stream = pa_stream_new(i->context, "Audio Stream", &i->sample_spec, NULL))) {
+    debug(DEBUG_LEVEL_NORMAL, __FILE__": pa_stream_new() failed: %s\n", pa_strerror(pa_context_errno(i->context)));
+    goto fail;
+  }
+  
+  pa_stream_set_state_callback(i->play_stream, stream_state_cb, file);
+  pa_stream_set_write_callback(i->play_stream, stream_request_cb, i);
+  pa_stream_set_latency_update_callback(i->play_stream, stream_latency_update_cb, i);
+  
+  memset(&attr, 0, sizeof(attr));
+  attr.maxlength = i->fragment_size * (i->n_fragments+1);
+  attr.tlength = i->fragment_size * i->n_fragments;
+  attr.prebuf = i->fragment_size;
+  attr.minreq = i->fragment_size;
+  
+  if (pa_stream_connect_playback(i->play_stream, NULL, &attr, PA_STREAM_INTERPOLATE_TIMING|PA_STREAM_AUTO_TIMING_UPDATE, NULL, NULL) < 0) {
+    debug(DEBUG_LEVEL_NORMAL, __FILE__": pa_stream_connect_playback() failed: %s\n", pa_strerror(pa_context_errno(i->context)));
+    goto fail;
+  }
+  
+  return 0;
+  
+ fail:
+  return -1;
 }
 
-static int create_record_stream(fd_info *i) {
-    pa_buffer_attr attr;
-    int n;
-    
-    assert(i);
-
-    fix_metrics(i);
-
-    if (!(i->rec_stream = pa_stream_new(i->context, "Audio Stream", &i->sample_spec, NULL))) {
-        debug(DEBUG_LEVEL_NORMAL, __FILE__": pa_stream_new() failed: %s\n", pa_strerror(pa_context_errno(i->context)));
-        goto fail;
-    }
-
-    pa_stream_set_state_callback(i->rec_stream, stream_state_cb, i);
-    pa_stream_set_read_callback(i->rec_stream, stream_request_cb, i);
-    pa_stream_set_latency_update_callback(i->rec_stream, stream_latency_update_cb, i);
-
-    memset(&attr, 0, sizeof(attr));
-    attr.maxlength = i->fragment_size * (i->n_fragments+1);
-    attr.fragsize = i->fragment_size;
-    
+ static int create_record_stream(struct fusd_file_info* file){
+   fd_info *i= file->private_data;
+   pa_buffer_attr attr;
+   int n;
+   
+   assert(i);
+   
+   fix_metrics(i);
+   
+   if (!(i->rec_stream = pa_stream_new(i->context, "Audio Stream", &i->sample_spec, NULL))) {
+     debug(DEBUG_LEVEL_NORMAL, __FILE__": pa_stream_new() failed: %s\n", pa_strerror(pa_context_errno(i->context)));
+     goto fail;
+   }
+   
+   pa_stream_set_state_callback(i->rec_stream, stream_state_cb, file);
+   pa_stream_set_read_callback(i->rec_stream, stream_request_cb, i);
+   pa_stream_set_latency_update_callback(i->rec_stream, stream_latency_update_cb, i);
+   
+   memset(&attr, 0, sizeof(attr));
+   attr.maxlength = i->fragment_size * (i->n_fragments+1);
+   attr.fragsize = i->fragment_size;
+   
     if (pa_stream_connect_record(i->rec_stream, NULL, &attr, PA_STREAM_INTERPOLATE_TIMING|PA_STREAM_AUTO_TIMING_UPDATE) < 0) {
-        debug(DEBUG_LEVEL_NORMAL, __FILE__": pa_stream_connect_playback() failed: %s\n", pa_strerror(pa_context_errno(i->context)));
-        goto fail;
+      debug(DEBUG_LEVEL_NORMAL, __FILE__": pa_stream_connect_playback() failed: %s\n", pa_strerror(pa_context_errno(i->context)));
+      goto fail;
     }
-
+    
     return 0;
 
 fail:
@@ -525,7 +596,7 @@ static ssize_t dsp_read(struct fusd_file_info* file,
   pa_threaded_mainloop_lock(i->mainloop);
   
   if(!i->rec_stream)
-    if (create_record_stream(i) < 0){
+    if (create_record_stream(file) < 0){
       pa_threaded_mainloop_unlock(i->mainloop);
       return -EIO;
     }
@@ -555,7 +626,7 @@ static ssize_t dsp_write(struct fusd_file_info *file,
   pa_threaded_mainloop_lock(i->mainloop);
   
   if(!i->play_stream)
-    if (create_playback_stream(i) < 0){
+    if (create_playback_stream(file) < 0){
       pa_threaded_mainloop_unlock(i->mainloop);
       return -EIO;
     }
@@ -841,32 +912,23 @@ static int dsp_mmap(struct fusd_file_info *file,
 }
 
 static int dsp_polldiff(struct fusd_file_info* file, unsigned int cached_state){
-  
+  fd_info *i = file->private_data;
+
   debug(DEBUG_LEVEL_NORMAL, __FILE__": poll_diff()\n");
-
-
-  return -EINVAL;
+  
+  if(i->poll_file != NULL){
+    fusd_destroy(i->poll_file);
+    i->poll_file = NULL;
+  }
+        
+  i->poll_file = file;
+  poll_notify(file, cached_state);
+  return -FUSD_NOREPLY;
 }
 
-int dsp_close(struct fusd_file_info* file){
-  fd_info *i = file->private_data;
-  
+static int dsp_close(struct fusd_file_info* file){
   debug(DEBUG_LEVEL_NORMAL, __FILE__": close()\n");
-
-  if(i->read_file){
-    fusd_return(i->read_file, 0);
-    i->read_file = NULL;
-    i->read_buffer = NULL;
-  }
-
-  if(i->write_file){
-    fusd_return(i->write_file, 0);
-    i->write_file = NULL;
-    i->write_buffer = NULL;
-  }
-
-  fd_info_remove_from_list(i);
-  
+  close_helper(file,0);  
   return 0;
 }
 
