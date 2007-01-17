@@ -86,7 +86,7 @@ void setscheduler(void){
     debug(DEBUG_LEVEL_INFO, "Scheduler set to Round Robin with priority %i...\n", sched_param.sched_priority);
 		return;
   }
-  debug(DEBUG_LEVEL_WARNING, "!!!Scheduler set to Round Robin with priority %i FAILED!!!\n", sched_param.sched_priority);
+  debug(DEBUG_LEVEL_WARNING, "Scheduler set to Round Robin with priority %i FAILED\n", sched_param.sched_priority);
 }
 
 /**

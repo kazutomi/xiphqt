@@ -534,7 +534,7 @@ int dsp_drain(fd_info *i) {
   
   pa_threaded_mainloop_unlock(i->mainloop);
   
-  return 0;
+  return r;
 }
 
 // TODO: this blocks inside FUSD!  eliminate the pa_threaded_mainloop_wait(i->mainloop)!
@@ -667,267 +667,303 @@ static ssize_t dsp_write(struct fusd_file_info *file,
   return -FUSD_NOREPLY;
 }
 
-// TODO: this blocks inside FUSD!  eliminate the pa_threaded_mainloop_wait(i->mainloop)!
+// There are a few ioctl()s that can block; normally, we could use
+// completion callbacks, but at the time of this note there's at least
+// one operation (dsp_drain) that has to be threaded anyway because
+// it's used in close(), and the last step of a close() can't be
+// called from a callback.  Given that the elegant solution of
+// callbacks isn't usable in all cases, we might as well take the easy
+// way out (a worker thread) with ioctl()s as well.
+
+static void *dsp_ioctl_thread(void *arg){
+  struct fusd_file_info* file = arg;
+  struct fd_info* i = file->private_data;
+
+  if(i == NULL || i->unusable){
+    fusd_return(file, -EBADFD);
+  }else{
+    int request = i->ioctl_request;
+    void *argp = i->ioctl_argp;
+    int ret = 0;
+
+    debug(DEBUG_LEVEL_NORMAL, __FILE__": ioctl_worker()\n");
+
+    switch (request) {
+    case SNDCTL_DSP_SETFMT: 
+      debug(DEBUG_LEVEL_NORMAL, __FILE__": SNDCTL_DSP_SETFMT: %i\n", *(int*) argp);
+      
+      pa_threaded_mainloop_lock(i->mainloop);
+      
+      if (*(int*) argp == AFMT_QUERY)
+	*(int*) argp = map_format_back(i->sample_spec.format);
+      else {
+	map_format((int*) argp, &i->sample_spec);
+	free_streams(i);
+      }
+      
+      pa_threaded_mainloop_unlock(i->mainloop);
+      break;
+      
+    case SNDCTL_DSP_SPEED: 
+      {
+	pa_sample_spec ss;
+	int valid;
+	char t[256];
+	
+	debug(DEBUG_LEVEL_NORMAL, __FILE__": SNDCTL_DSP_SPEED: %i\n", *(int*) argp);
+	
+	pa_threaded_mainloop_lock(i->mainloop);
+	
+	ss = i->sample_spec;
+	ss.rate = *(int*) argp;
+	
+	if ((valid = pa_sample_spec_valid(&ss))) {
+	  i->sample_spec = ss;
+	  free_streams(i);
+	}
+	
+	debug(DEBUG_LEVEL_NORMAL, __FILE__": ss: %s\n", pa_sample_spec_snprint(t, sizeof(t), &i->sample_spec));
+	
+	pa_threaded_mainloop_unlock(i->mainloop);
+	
+	if (!valid) ret = -EINVAL;    
+      }
+      break;
+      
+    case SNDCTL_DSP_STEREO:
+      debug(DEBUG_LEVEL_NORMAL, __FILE__": SNDCTL_DSP_STEREO: %i\n", *(int*) argp);
+      
+      pa_threaded_mainloop_lock(i->mainloop);
+      
+      i->sample_spec.channels = *(int*) argp ? 2 : 1;
+      free_streams(i);
+      
+      pa_threaded_mainloop_unlock(i->mainloop);
+      break;
+      
+    case SNDCTL_DSP_CHANNELS: 
+      {
+	pa_sample_spec ss;
+	int valid;
+	
+	debug(DEBUG_LEVEL_NORMAL, __FILE__": SNDCTL_DSP_CHANNELS: %i\n", *(int*) argp);
+	
+	pa_threaded_mainloop_lock(i->mainloop);
+	
+	ss = i->sample_spec;
+	ss.channels = *(int*) argp;
+	
+	if ((valid = pa_sample_spec_valid(&ss))) {
+	  i->sample_spec = ss;
+	  free_streams(i);
+	}
+	
+	pa_threaded_mainloop_unlock(i->mainloop);
+	
+	if (!valid) ret = -EINVAL;
+      }
+      break;
+      
+    case SNDCTL_DSP_GETBLKSIZE:
+      debug(DEBUG_LEVEL_NORMAL, __FILE__": SNDCTL_DSP_GETBLKSIZE\n");
+      
+      pa_threaded_mainloop_lock(i->mainloop);
+      
+      fix_metrics(i);
+      *(int*) argp = i->fragment_size;
+      
+      pa_threaded_mainloop_unlock(i->mainloop);
+      
+      break;
+      
+    case SNDCTL_DSP_SETFRAGMENT:
+      debug(DEBUG_LEVEL_NORMAL, __FILE__": SNDCTL_DSP_SETFRAGMENT: 0x%8x\n", *(int*) argp);
+      
+      pa_threaded_mainloop_lock(i->mainloop);
+      
+      i->fragment_size = 1 << (*(int*) argp);
+      i->n_fragments = (*(int*) argp) >> 16;
+      
+      /* 0x7FFF means that we can set whatever we like */
+      if (i->n_fragments == 0x7FFF)
+	i->n_fragments = 12;
+      
+      free_streams(i);
+      
+      pa_threaded_mainloop_unlock(i->mainloop);
+      
+      break;
+      
+    case SNDCTL_DSP_GETCAPS:
+      debug(DEBUG_LEVEL_NORMAL, __FILE__": SNDCTL_DSP_CAPS\n");
+      
+      *(int*)  argp = DSP_CAP_DUPLEX | DSP_CAP_MULTI;
+      break;
+      
+    case SNDCTL_DSP_GETODELAY: 
+      {
+	int l;
+	
+	debug(DEBUG_LEVEL_NORMAL, __FILE__": SNDCTL_DSP_GETODELAY\n");
+	
+	pa_threaded_mainloop_lock(i->mainloop);
+	
+	*(int*) argp = 0;
+	
+	for (;;) {
+	  pa_usec_t usec;
+	  
+	  PLAYBACK_STREAM_CHECK_DEAD_GOTO(i, exit_loop);
+	  
+	  if (pa_stream_get_latency(i->play_stream, &usec, NULL) >= 0) {
+	    *(int*) argp = pa_usec_to_bytes(usec, &i->sample_spec);
+	    break;
+	  }
+	  
+	  if (pa_context_errno(i->context) != PA_ERR_NODATA) {
+	    debug(DEBUG_LEVEL_NORMAL, __FILE__": pa_stream_get_latency(): %s\n", pa_strerror(pa_context_errno(i->context)));
+	    break;
+	  }
+	  
+	  pa_threaded_mainloop_wait(i->mainloop);
+	}
+	
+      exit_loop:
+	
+	pa_threaded_mainloop_unlock(i->mainloop);
+	
+	debug(DEBUG_LEVEL_NORMAL, __FILE__": ODELAY: %i\n", *(int*) argp);
+      }
+
+      break;
+      
+    case SNDCTL_DSP_RESET: 
+      debug(DEBUG_LEVEL_NORMAL, __FILE__": SNDCTL_DSP_RESET\n");
+      
+      pa_threaded_mainloop_lock(i->mainloop);
+      
+      free_streams(i);
+      reset_params(i);
+      
+      pa_threaded_mainloop_unlock(i->mainloop);
+      break;
+      
+    case SNDCTL_DSP_GETFMTS:
+      debug(DEBUG_LEVEL_NORMAL, __FILE__": SNDCTL_DSP_GETFMTS\n");
+      *(int*) argp = AFMT_MU_LAW|AFMT_A_LAW|AFMT_U8|AFMT_S16_LE|AFMT_S16_BE;
+      break;
+      
+    case SNDCTL_DSP_POST:
+      debug(DEBUG_LEVEL_NORMAL, __FILE__": SNDCTL_DSP_POST\n");
+    
+      if (dsp_trigger(i) < 0) ret = -EIO;
+      break;
+      
+    case SNDCTL_DSP_SYNC: 
+      debug(DEBUG_LEVEL_NORMAL, __FILE__": SNDCTL_DSP_SYNC\n");
+      if (dsp_drain(i) < 0) ret = -EIO;
+      break;
+      
+    case SNDCTL_DSP_GETOSPACE:
+      {
+	audio_buf_info *bi = (audio_buf_info*) argp;
+	int l = 0;
+	size_t k = 0;
+	
+	debug(DEBUG_LEVEL_NORMAL, __FILE__": SNDCTL_DSP_GETOSPACE\n");
+	pa_threaded_mainloop_lock(i->mainloop);
+	
+	fix_metrics(i);
+	
+	if (i->play_stream) {
+	  if ((k = pa_stream_writable_size(i->play_stream)) == (size_t) -1)
+	    debug(DEBUG_LEVEL_NORMAL, __FILE__": pa_stream_writable_size(): %s\n", pa_strerror(pa_context_errno(i->context)));
+	} else
+	  k = i->fragment_size * i->n_fragments;
+	
+	bi->bytes = k > (size_t) l ? k - l : 0;
+	
+	
+	bi->fragsize = i->fragment_size;
+	bi->fragstotal = i->n_fragments;
+	bi->fragments = bi->bytes / bi->fragsize;
+	
+	pa_threaded_mainloop_unlock(i->mainloop);
+	
+	debug(DEBUG_LEVEL_NORMAL, __FILE__": fragsize=%i, fragstotal=%i, bytes=%i, fragments=%i\n", 
+	      bi->fragsize, bi->fragstotal, bi->bytes, bi->fragments);
+	
+      }
+      break;
+      
+    case SNDCTL_DSP_GETISPACE: 
+      {
+	audio_buf_info *bi = (audio_buf_info*) argp;
+	int l = 0;
+	size_t k = 0;
+	
+	debug(DEBUG_LEVEL_NORMAL, __FILE__": SNDCTL_DSP_GETISPACE\n");
+	
+	pa_threaded_mainloop_lock(i->mainloop);
+	
+	fix_metrics(i);
+	
+	if (i->rec_stream) {
+	  if ((k = pa_stream_readable_size(i->rec_stream)) == (size_t) -1)
+	    debug(DEBUG_LEVEL_NORMAL, __FILE__": pa_stream_readable_size(): %s\n", pa_strerror(pa_context_errno(i->context)));
+	} else
+	  k = 0;
+	
+	bi->bytes = k + l;
+	
+	bi->fragsize = i->fragment_size;
+	bi->fragstotal = i->n_fragments;
+	bi->fragments = bi->bytes / bi->fragsize;
+	
+	pa_threaded_mainloop_unlock(i->mainloop);
+	
+	debug(DEBUG_LEVEL_NORMAL, __FILE__": fragsize=%i, fragstotal=%i, bytes=%i, fragments=%i\n", 
+	      bi->fragsize, bi->fragstotal, bi->bytes, bi->fragments);
+	
+      }
+      break;
+      
+    case SNDCTL_DSP_GETIPTR:
+      debug(DEBUG_LEVEL_NORMAL, __FILE__": invalid ioctl SNDCTL_DSP_GETIPTR\n");
+      ret = -EINVAL;
+      break;
+
+    case SNDCTL_DSP_GETOPTR:
+      debug(DEBUG_LEVEL_NORMAL, __FILE__": invalid ioctl SNDCTL_DSP_GETOPTR\n");
+      ret = -EINVAL;
+      break;
+
+    default:
+      debug(DEBUG_LEVEL_NORMAL, __FILE__": unknown ioctl 0x%08lx\n", request);
+      ret = -EINVAL;
+      break;
+    }
+    
+    fusd_return(file, ret);
+
+  }
+  return 0;
+}
+
 static int dsp_ioctl(struct fusd_file_info *file, int request, void *argp){
   struct fd_info* i = file->private_data;
+  pthread_t dummy;
 
   if(i == NULL) return -EBADFD;
   if(i->unusable) return -EBADFD;
 
-  switch (request) {
-  case SNDCTL_DSP_SETFMT: 
-    debug(DEBUG_LEVEL_NORMAL, __FILE__": SNDCTL_DSP_SETFMT: %i\n", *(int*) argp);
-    
-    pa_threaded_mainloop_lock(i->mainloop);
-    
-    if (*(int*) argp == AFMT_QUERY)
-      *(int*) argp = map_format_back(i->sample_spec.format);
-    else {
-      map_format((int*) argp, &i->sample_spec);
-      free_streams(i);
-    }
-    
-    pa_threaded_mainloop_unlock(i->mainloop);
-    return 0;
-            
-  case SNDCTL_DSP_SPEED: 
-    {
-      pa_sample_spec ss;
-      int valid;
-      char t[256];
-      
-      debug(DEBUG_LEVEL_NORMAL, __FILE__": SNDCTL_DSP_SPEED: %i\n", *(int*) argp);
-      
-      pa_threaded_mainloop_lock(i->mainloop);
-      
-      ss = i->sample_spec;
-      ss.rate = *(int*) argp;
-      
-      if ((valid = pa_sample_spec_valid(&ss))) {
-	i->sample_spec = ss;
-	free_streams(i);
-      }
-      
-      debug(DEBUG_LEVEL_NORMAL, __FILE__": ss: %s\n", pa_sample_spec_snprint(t, sizeof(t), &i->sample_spec));
-      
-      pa_threaded_mainloop_unlock(i->mainloop);
-      
-      if (!valid) return -EINVAL;    
-    }
-    return 0;
-    
-  case SNDCTL_DSP_STEREO:
-    debug(DEBUG_LEVEL_NORMAL, __FILE__": SNDCTL_DSP_STEREO: %i\n", *(int*) argp);
-    
-    pa_threaded_mainloop_lock(i->mainloop);
-    
-    i->sample_spec.channels = *(int*) argp ? 2 : 1;
-    free_streams(i);
-    
-    pa_threaded_mainloop_unlock(i->mainloop);
-    return 0;
+  i->ioctl_request = request;
+  i->ioctl_argp = argp;
+  
+  if(pthread_create(&dummy,NULL,dsp_ioctl_thread,file))
+    dsp_ioctl_thread(file);
 
-  case SNDCTL_DSP_CHANNELS: 
-    {
-      pa_sample_spec ss;
-      int valid;
-      
-      debug(DEBUG_LEVEL_NORMAL, __FILE__": SNDCTL_DSP_CHANNELS: %i\n", *(int*) argp);
-      
-      pa_threaded_mainloop_lock(i->mainloop);
-      
-      ss = i->sample_spec;
-      ss.channels = *(int*) argp;
-      
-      if ((valid = pa_sample_spec_valid(&ss))) {
-	i->sample_spec = ss;
-	free_streams(i);
-            }
-      
-      pa_threaded_mainloop_unlock(i->mainloop);
-      
-      if (!valid) return -EINVAL;
-    }
-    return 0;
-
-  case SNDCTL_DSP_GETBLKSIZE:
-    debug(DEBUG_LEVEL_NORMAL, __FILE__": SNDCTL_DSP_GETBLKSIZE\n");
-    
-    pa_threaded_mainloop_lock(i->mainloop);
-    
-    fix_metrics(i);
-    *(int*) argp = i->fragment_size;
-    
-    pa_threaded_mainloop_unlock(i->mainloop);
-    
-    return 0;
-    
-  case SNDCTL_DSP_SETFRAGMENT:
-    debug(DEBUG_LEVEL_NORMAL, __FILE__": SNDCTL_DSP_SETFRAGMENT: 0x%8x\n", *(int*) argp);
-    
-    pa_threaded_mainloop_lock(i->mainloop);
-    
-    i->fragment_size = 1 << (*(int*) argp);
-    i->n_fragments = (*(int*) argp) >> 16;
-    
-    /* 0x7FFF means that we can set whatever we like */
-    if (i->n_fragments == 0x7FFF)
-      i->n_fragments = 12;
-    
-    free_streams(i);
-    
-    pa_threaded_mainloop_unlock(i->mainloop);
-    
-    return 0;
-    
-  case SNDCTL_DSP_GETCAPS:
-    debug(DEBUG_LEVEL_NORMAL, __FILE__": SNDCTL_DSP_CAPS\n");
-    
-    *(int*)  argp = DSP_CAP_DUPLEX | DSP_CAP_MULTI;
-    return 0;
-    
-  case SNDCTL_DSP_GETODELAY: 
-    {
-      int l;
-      
-      debug(DEBUG_LEVEL_NORMAL, __FILE__": SNDCTL_DSP_GETODELAY\n");
-      
-      pa_threaded_mainloop_lock(i->mainloop);
-      
-      *(int*) argp = 0;
-      
-      for (;;) {
-	pa_usec_t usec;
-	
-	PLAYBACK_STREAM_CHECK_DEAD_GOTO(i, exit_loop);
-	
-	if (pa_stream_get_latency(i->play_stream, &usec, NULL) >= 0) {
-	  *(int*) argp = pa_usec_to_bytes(usec, &i->sample_spec);
-	  break;
-	}
-	
-	if (pa_context_errno(i->context) != PA_ERR_NODATA) {
-	  debug(DEBUG_LEVEL_NORMAL, __FILE__": pa_stream_get_latency(): %s\n", pa_strerror(pa_context_errno(i->context)));
-	  break;
-	}
-	
-	pa_threaded_mainloop_wait(i->mainloop);
-      }
-      
-    exit_loop:
-      
-      pa_threaded_mainloop_unlock(i->mainloop);
-      
-      debug(DEBUG_LEVEL_NORMAL, __FILE__": ODELAY: %i\n", *(int*) argp);
-    }
-    return 0;
-    
-  case SNDCTL_DSP_RESET: 
-    debug(DEBUG_LEVEL_NORMAL, __FILE__": SNDCTL_DSP_RESET\n");
-    
-    pa_threaded_mainloop_lock(i->mainloop);
-    
-    free_streams(i);
-    //dsp_flush_socket(i);
-    reset_params(i);
-    
-    pa_threaded_mainloop_unlock(i->mainloop);
-    
-    return 0;
-    
-  case SNDCTL_DSP_GETFMTS:
-    debug(DEBUG_LEVEL_NORMAL, __FILE__": SNDCTL_DSP_GETFMTS\n");
-    *(int*) argp = AFMT_MU_LAW|AFMT_A_LAW|AFMT_U8|AFMT_S16_LE|AFMT_S16_BE;
-    return 0;
-    
-  case SNDCTL_DSP_POST:
-    debug(DEBUG_LEVEL_NORMAL, __FILE__": SNDCTL_DSP_POST\n");
-    
-    if (dsp_trigger(i) < 0) return -EIO;
-    return 0;
-
-  case SNDCTL_DSP_SYNC: 
-    debug(DEBUG_LEVEL_NORMAL, __FILE__": SNDCTL_DSP_SYNC\n");
-    
-    if (dsp_drain(i) < 0) return -EIO;
-    return 0;
-
-  case SNDCTL_DSP_GETOSPACE:
-    {
-      audio_buf_info *bi = (audio_buf_info*) argp;
-      int l = 0;
-      size_t k = 0;
-      
-      debug(DEBUG_LEVEL_NORMAL, __FILE__": SNDCTL_DSP_GETOSPACE\n");
-      pa_threaded_mainloop_lock(i->mainloop);
-      
-      fix_metrics(i);
-      
-      if (i->play_stream) {
-	if ((k = pa_stream_writable_size(i->play_stream)) == (size_t) -1)
-	  debug(DEBUG_LEVEL_NORMAL, __FILE__": pa_stream_writable_size(): %s\n", pa_strerror(pa_context_errno(i->context)));
-      } else
-	k = i->fragment_size * i->n_fragments;
-      
-      bi->bytes = k > (size_t) l ? k - l : 0;
-      
-      
-      bi->fragsize = i->fragment_size;
-      bi->fragstotal = i->n_fragments;
-      bi->fragments = bi->bytes / bi->fragsize;
-      
-      pa_threaded_mainloop_unlock(i->mainloop);
-      
-      debug(DEBUG_LEVEL_NORMAL, __FILE__": fragsize=%i, fragstotal=%i, bytes=%i, fragments=%i\n", 
-	    bi->fragsize, bi->fragstotal, bi->bytes, bi->fragments);
-      
-    }
-    return 0;
-
-  case SNDCTL_DSP_GETISPACE: 
-    {
-      audio_buf_info *bi = (audio_buf_info*) argp;
-      int l = 0;
-      size_t k = 0;
-      
-      debug(DEBUG_LEVEL_NORMAL, __FILE__": SNDCTL_DSP_GETISPACE\n");
-      
-      pa_threaded_mainloop_lock(i->mainloop);
-      
-      fix_metrics(i);
-      
-      if (i->rec_stream) {
-	if ((k = pa_stream_readable_size(i->rec_stream)) == (size_t) -1)
-	  debug(DEBUG_LEVEL_NORMAL, __FILE__": pa_stream_readable_size(): %s\n", pa_strerror(pa_context_errno(i->context)));
-      } else
-	k = 0;
-      
-      bi->bytes = k + l;
-      
-      bi->fragsize = i->fragment_size;
-      bi->fragstotal = i->n_fragments;
-      bi->fragments = bi->bytes / bi->fragsize;
-      
-      pa_threaded_mainloop_unlock(i->mainloop);
-      
-      debug(DEBUG_LEVEL_NORMAL, __FILE__": fragsize=%i, fragstotal=%i, bytes=%i, fragments=%i\n", 
-	    bi->fragsize, bi->fragstotal, bi->bytes, bi->fragments);
-      
-    }
-    return 0;
-    
-  case SNDCTL_DSP_GETIPTR:
-    debug(DEBUG_LEVEL_NORMAL, __FILE__": invalid ioctl SNDCTL_DSP_GETIPTR\n");
-    return -EINVAL;
-    
-  case SNDCTL_DSP_GETOPTR:
-    debug(DEBUG_LEVEL_NORMAL, __FILE__": invalid ioctl SNDCTL_DSP_GETOPTR\n");
-    return -EINVAL;
-    
-  default:
-    debug(DEBUG_LEVEL_NORMAL, __FILE__": unknown ioctl 0x%08lx\n", request);
-    return -EINVAL;
-  }
+  return -FUSD_NOREPLY;
 }
 
 static int dsp_mmap(struct fusd_file_info *file, 
@@ -960,13 +996,33 @@ static int dsp_polldiff(struct fusd_file_info* file, unsigned int cached_state){
   return -FUSD_NOREPLY;
 }
 
-static int dsp_close(struct fusd_file_info* file){
-  debug(DEBUG_LEVEL_NORMAL, __FILE__": close()\n");
+// we have to thread the close call because Pulse has painted us
+// into an API corner.  The drain call takes a completion callback,
+// but we can't complete the close there because
+// pa_threaded_mainloop_stop may not be called from a callback.
+
+static void *dsp_close_thread(void *arg){
+  struct fusd_file_info* file = arg;
+  debug(DEBUG_LEVEL_NORMAL, __FILE__": close_worker()\n");
   fd_info *i = file->private_data;
-  if(i == NULL) return -EBADFD;
-  close_helper(i,0);  
-  fd_info_remove_from_list(i);
+  if(i == NULL)
+    fusd_return(file, -EBADFD);
+  else{
+    int ret = 0;
+    close_helper(i,0);  
+    if(dsp_drain(i)) ret = -EIO; 
+    fd_info_remove_from_list(i);
+    fusd_return(file, ret);
+  }
   return 0;
+}
+
+static int dsp_close(struct fusd_file_info* file){
+  pthread_t dummy;
+  debug(DEBUG_LEVEL_NORMAL, __FILE__": close()\n");
+  if(pthread_create(&dummy,NULL,dsp_close_thread,file))
+    dsp_close_thread(file);
+  return -FUSD_NOREPLY;
 }
 
 
