@@ -72,95 +72,96 @@ static void subscribe_cb(pa_context *context, pa_subscription_event_type_t t, ui
     pa_operation_unref(o);
 }
 
-// Eliminate the mainloop_wait
-static int mixer_open(struct fusd_file_info* file){
+static void *mixer_open_thread(void *arg){
+  struct fusd_file_info *file = arg;
   fd_info *i;
   pa_operation *o = NULL;
   int ret = 0;
   
   debug(DEBUG_LEVEL_NORMAL, __FILE__": mixer_open()\n");
   
-  if (!(i = fd_info_new(FD_INFO_MIXER, &ret))) 
-    return -ret;
+  if ((i = fd_info_new(FD_INFO_MIXER, &ret))){
   
-  pa_threaded_mainloop_lock(i->mainloop);
-  
-  pa_context_set_subscribe_callback(i->context, subscribe_cb, i);
-  
-  if (!(o = pa_context_subscribe(i->context, PA_SUBSCRIPTION_MASK_SINK | PA_SUBSCRIPTION_MASK_SOURCE, context_success_cb, i))) {
-    debug(DEBUG_LEVEL_NORMAL, __FILE__": Failed to subscribe to events: %s", pa_strerror(pa_context_errno(i->context)));
-    ret = -EIO;
-    goto fail;
-  }
-
-  i->operation_success = 0;
-  while (pa_operation_get_state(o) != PA_OPERATION_DONE) {
-    pa_threaded_mainloop_wait(i->mainloop);
-    CONTEXT_CHECK_DEAD_GOTO(i, fail);
-  }
-  
-  pa_operation_unref(o);
-  o = NULL;
-  
-  if (!i->operation_success) {
-    debug(DEBUG_LEVEL_NORMAL, __FILE__":Failed to subscribe to events: %s", pa_strerror(pa_context_errno(i->context)));
-    ret = -EIO;
-    goto fail;
-  }
-  
-  /* Get sink info */
-  
-  if (!(o = pa_context_get_sink_info_by_name(i->context, NULL, sink_info_cb, i))) {
-    debug(DEBUG_LEVEL_NORMAL, __FILE__": Failed to get sink info: %s", pa_strerror(pa_context_errno(i->context)));
-    ret = -EIO;
-    goto fail;
-  }
-  
-  i->operation_success = 0;
-  while (pa_operation_get_state(o) != PA_OPERATION_DONE) {
-    pa_threaded_mainloop_wait(i->mainloop);
-    CONTEXT_CHECK_DEAD_GOTO(i, fail);
-  }
-  
-  pa_operation_unref(o);
-  o = NULL;
-  
-  if (!i->operation_success) {
-    debug(DEBUG_LEVEL_NORMAL, __FILE__": Failed to get sink info: %s", pa_strerror(pa_context_errno(i->context)));
-    ret = -EIO;
-    goto fail;
-  }
-  
-  /* Get source info */
-  
-  if (!(o = pa_context_get_source_info_by_name(i->context, NULL, source_info_cb, i))) {
-    debug(DEBUG_LEVEL_NORMAL, __FILE__": Failed to get source info: %s", pa_strerror(pa_context_errno(i->context)));
-    ret = -EIO;
-    goto fail;
-  }
-  
-  i->operation_success = 0;
-  while (pa_operation_get_state(o) != PA_OPERATION_DONE) {
-    pa_threaded_mainloop_wait(i->mainloop);
-    CONTEXT_CHECK_DEAD_GOTO(i, fail);
-  }
-  
-  pa_operation_unref(o);
-  o = NULL;
-  
-  if (!i->operation_success) {
-    debug(DEBUG_LEVEL_NORMAL, __FILE__": Failed to get source info: %s", pa_strerror(pa_context_errno(i->context)));
-    ret = -EIO;
-    goto fail;
-  }
-
-  file->private_data = i;
-  
-  pa_threaded_mainloop_unlock(i->mainloop);
- 
-  fd_info_add_to_list(i);
-  fd_info_unref(i);
+    pa_threaded_mainloop_lock(i->mainloop);
     
+    pa_context_set_subscribe_callback(i->context, subscribe_cb, i);
+  
+    if (!(o = pa_context_subscribe(i->context, PA_SUBSCRIPTION_MASK_SINK | PA_SUBSCRIPTION_MASK_SOURCE, context_success_cb, i))) {
+      debug(DEBUG_LEVEL_NORMAL, __FILE__": Failed to subscribe to events: %s", pa_strerror(pa_context_errno(i->context)));
+      ret = -EIO;
+      goto fail;
+    }
+    
+    i->operation_success = 0;
+    while (pa_operation_get_state(o) != PA_OPERATION_DONE) {
+      pa_threaded_mainloop_wait(i->mainloop);
+      CONTEXT_CHECK_DEAD_GOTO(i, fail);
+    }
+    
+    pa_operation_unref(o);
+    o = NULL;
+    
+    if (!i->operation_success) {
+      debug(DEBUG_LEVEL_NORMAL, __FILE__":Failed to subscribe to events: %s", pa_strerror(pa_context_errno(i->context)));
+      ret = -EIO;
+      goto fail;
+    }
+    
+    /* Get sink info */
+    
+    if (!(o = pa_context_get_sink_info_by_name(i->context, NULL, sink_info_cb, i))) {
+      debug(DEBUG_LEVEL_NORMAL, __FILE__": Failed to get sink info: %s", pa_strerror(pa_context_errno(i->context)));
+      ret = -EIO;
+      goto fail;
+    }
+    
+    i->operation_success = 0;
+    while (pa_operation_get_state(o) != PA_OPERATION_DONE) {
+      pa_threaded_mainloop_wait(i->mainloop);
+      CONTEXT_CHECK_DEAD_GOTO(i, fail);
+    }
+    
+    pa_operation_unref(o);
+    o = NULL;
+    
+    if (!i->operation_success) {
+      debug(DEBUG_LEVEL_NORMAL, __FILE__": Failed to get sink info: %s", pa_strerror(pa_context_errno(i->context)));
+      ret = -EIO;
+      goto fail;
+    }
+    
+    /* Get source info */
+    
+    if (!(o = pa_context_get_source_info_by_name(i->context, NULL, source_info_cb, i))) {
+      debug(DEBUG_LEVEL_NORMAL, __FILE__": Failed to get source info: %s", pa_strerror(pa_context_errno(i->context)));
+      ret = -EIO;
+      goto fail;
+    }
+    
+    i->operation_success = 0;
+    while (pa_operation_get_state(o) != PA_OPERATION_DONE) {
+      pa_threaded_mainloop_wait(i->mainloop);
+      CONTEXT_CHECK_DEAD_GOTO(i, fail);
+    }
+    
+    pa_operation_unref(o);
+    o = NULL;
+    
+    if (!i->operation_success) {
+      debug(DEBUG_LEVEL_NORMAL, __FILE__": Failed to get source info: %s", pa_strerror(pa_context_errno(i->context)));
+      ret = -EIO;
+      goto fail;
+    }
+    
+    file->private_data = i;
+    
+    pa_threaded_mainloop_unlock(i->mainloop);
+    
+    fd_info_add_to_list(i);
+    fd_info_unref(i);
+  }
+
+  fusd_return(file, 0);
   return 0;
 
 fail:
@@ -172,27 +173,40 @@ fail:
   if (i)
     fd_info_unref(i);
   
-  debug(DEBUG_LEVEL_NORMAL, __FILE__": mixer_open() failed\n");
+  if(ret)
+    debug(DEBUG_LEVEL_NORMAL, __FILE__": mixer_open() failed\n");
   
-  return ret;
+  fusd_return(file, ret);
+  return 0;
 }
 
-// Eliminate the mainloop_wait
-static int mixer_ioctl(struct fusd_file_info *file, int request, void *argp){
+static int mixer_open(struct fusd_file_info* file){
+  pthread_t dummy;
+  debug(DEBUG_LEVEL_NORMAL, __FILE__": mixer_open()\n");
+  if(pthread_create(&dummy,NULL,mixer_open_thread,file))
+    mixer_open_thread(file);
+  return -FUSD_NOREPLY;
+}
+
+static void *mixer_ioctl_thread(void *arg){
+  struct fusd_file_info *file = arg;
   fd_info *i = file->private_data;
+  int request = i->ioctl_request;
+  void *argp = i->ioctl_argp;
+  int ret = 0;
   
   switch (request) {
   case SOUND_MIXER_READ_DEVMASK :
     debug(DEBUG_LEVEL_NORMAL, __FILE__": SOUND_MIXER_READ_DEVMASK\n");
     
     *(int*) argp = SOUND_MASK_PCM | SOUND_MASK_IGAIN | SOUND_MASK_VOLUME;
-    return 0;
+    break;
     
   case SOUND_MIXER_READ_RECMASK :
     debug(DEBUG_LEVEL_NORMAL, __FILE__": SOUND_MIXER_READ_RECMASK\n");
     
     *(int*) argp = SOUND_MASK_IGAIN;
-    return 0;
+    break;
     
   case SOUND_MIXER_READ_STEREODEVS:
     debug(DEBUG_LEVEL_NORMAL, __FILE__": SOUND_MIXER_READ_STEREODEVS\n");
@@ -204,23 +218,23 @@ static int mixer_ioctl(struct fusd_file_info *file, int request, void *argp){
     if (i->source_volume.channels > 1)
       *(int*) argp |= SOUND_MASK_IGAIN;
     pa_threaded_mainloop_unlock(i->mainloop);
-    return 0;
+    break;
 
   case SOUND_MIXER_READ_RECSRC:
     debug(DEBUG_LEVEL_NORMAL, __FILE__": SOUND_MIXER_READ_RECSRC\n");
     
     *(int*) argp = SOUND_MASK_IGAIN;
-    return 0;
+    break;
     
   case SOUND_MIXER_WRITE_RECSRC:
     debug(DEBUG_LEVEL_NORMAL, __FILE__": SOUND_MIXER_WRITE_RECSRC\n");
-    return 0;
+    break;
     
   case SOUND_MIXER_READ_CAPS:
     debug(DEBUG_LEVEL_NORMAL, __FILE__": SOUND_MIXER_READ_CAPS\n");
     
     *(int*) argp = 0;
-    return 0;
+    break;
     
   case SOUND_MIXER_READ_PCM:
   case SOUND_MIXER_READ_VOLUME:
@@ -238,7 +252,7 @@ static int mixer_ioctl(struct fusd_file_info *file, int request, void *argp){
       
       pa_threaded_mainloop_unlock(i->mainloop);
     }
-    return 0;
+    break;
 
   case SOUND_MIXER_READ_IGAIN: 
     {
@@ -255,7 +269,7 @@ static int mixer_ioctl(struct fusd_file_info *file, int request, void *argp){
       
       pa_threaded_mainloop_unlock(i->mainloop);
     }
-    return 0;
+    break;
 
   case SOUND_MIXER_WRITE_PCM:
   case SOUND_MIXER_WRITE_VOLUME:
@@ -299,7 +313,7 @@ static int mixer_ioctl(struct fusd_file_info *file, int request, void *argp){
       
       pa_threaded_mainloop_unlock(i->mainloop);
     }   
-    return 0;
+    break;
     
   case SOUND_MIXER_WRITE_IGAIN: 
     {
@@ -343,7 +357,7 @@ static int mixer_ioctl(struct fusd_file_info *file, int request, void *argp){
       
       pa_threaded_mainloop_unlock(i->mainloop);
     }
-    return 0;
+    break;
 
   case SOUND_MIXER_INFO: 
     {
@@ -358,13 +372,33 @@ static int mixer_ioctl(struct fusd_file_info *file, int request, void *argp){
       mi->modify_counter = i->volume_modify_count;
       pa_threaded_mainloop_unlock(i->mainloop);
     }
-    return 0;
+    break;
 
   default:
     debug(DEBUG_LEVEL_NORMAL, __FILE__": unknown ioctl 0x%08lx\n", request);
     
-    return -EINVAL;
+    ret = -EINVAL;
+    break;
   }
+
+  fusd_return(file, ret);
+  return 0;
+}
+
+static int mixer_ioctl(struct fusd_file_info *file, int request, void *argp){
+  struct fd_info* i = file->private_data;
+  pthread_t dummy;
+
+  if(i == NULL) return -EBADFD;
+  if(i->unusable) return -EBADFD;
+
+  i->ioctl_request = request;
+  i->ioctl_argp = argp;
+  
+  if(pthread_create(&dummy,NULL,mixer_ioctl_thread,file))
+    mixer_ioctl_thread(file);
+
+  return -FUSD_NOREPLY;
 }
 
 int mixer_close(struct fusd_file_info* file){

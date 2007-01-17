@@ -105,7 +105,8 @@ void reset_params(fd_info *i) {
 }
 
 
-// TODO: eliminate the mainloop_wait
+// Only ever called from an async worker thread, so the mainloop_wait
+// can't block fusd.
 fd_info* fd_info_new(fd_info_type_t type, int *_errno) {
     fd_info *i;
     int sfds[2] = { -1, -1 };

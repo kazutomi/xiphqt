@@ -485,7 +485,11 @@ static int map_format_back(pa_sample_format_t format) {
     }
 }
 
-// TODO: this blocks inside FUSD!  eliminate the pa_threaded_mainloop_wait(i->mainloop)!
+// the mainloop_wait below is unfortunately unavoidable; see the
+// comments for dsp_close.
+
+// Only ever called from an async worker thread, so the mainloop_wait
+// can't block fusd.
 int dsp_drain(fd_info *i) {
   if(i == NULL) return -1;
   
@@ -498,9 +502,6 @@ int dsp_drain(fd_info *i) {
   debug(DEBUG_LEVEL_NORMAL, __FILE__": Draining.\n");
   
   pa_threaded_mainloop_lock(i->mainloop);
-  
-  //if (dsp_empty_socket(i) < 0)
-  //   goto fail;
   
   if (!i->play_stream)
     goto fail;
@@ -537,7 +538,8 @@ int dsp_drain(fd_info *i) {
   return r;
 }
 
-// TODO: this blocks inside FUSD!  eliminate the pa_threaded_mainloop_wait(i->mainloop)!
+// Only ever called from an async worker thread, so the mainloop_wait
+// can't block fusd.
 static int dsp_trigger(fd_info *i) {
   if(i == NULL) return -1;
   pa_operation *o = NULL;
@@ -582,23 +584,35 @@ static int dsp_trigger(fd_info *i) {
   return 0;
 }
 
-static int dsp_open(struct fusd_file_info* file){
+// fd_info_new can block and the mainloop thread manipulation within
+// can't be done from a callback.
+static void *dsp_open_thread(void *arg){
+  struct fusd_file_info* file = arg;
   fd_info *i;
-  int ret;
+  int ret = 0;
   int f;
   
-  debug(DEBUG_LEVEL_NORMAL, __FILE__": dsp_open()\n");
+  debug(DEBUG_LEVEL_NORMAL, __FILE__": dsp_open_worker()\n");
   
-  if (!(i = fd_info_new(FD_INFO_STREAM, &ret)))
-    return -ret;
-  
-  debug(DEBUG_LEVEL_NORMAL, __FILE__": dsp_open() succeeded\n");
+  if ((i = fd_info_new(FD_INFO_STREAM, &ret))){
 
-  fd_info_add_to_list(i);
-  fd_info_unref(i);
-  file->private_data = i;
-  
+    debug(DEBUG_LEVEL_NORMAL, __FILE__": dsp_open() succeeded\n");
+    
+    fd_info_add_to_list(i);
+    fd_info_unref(i);
+    file->private_data = i;
+  }
+
+  fusd_return(file, -ret);
   return 0;
+}
+
+static int dsp_open(struct fusd_file_info* file){
+  pthread_t dummy;
+  debug(DEBUG_LEVEL_NORMAL, __FILE__": dsp_open()\n");
+  if(pthread_create(&dummy,NULL,dsp_open_thread,file))
+    dsp_open_thread(file);
+  return -FUSD_NOREPLY;
 }
 
 static ssize_t dsp_read(struct fusd_file_info* file, 
