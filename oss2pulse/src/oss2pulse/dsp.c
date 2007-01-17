@@ -841,7 +841,10 @@ static int dsp_mmap(struct fusd_file_info *file,
 }
 
 static int dsp_polldiff(struct fusd_file_info* file, unsigned int cached_state){
-  debug (DEBUG_LEVEL_DEBUG2, "PollDiff to device...\n");
+  
+  debug(DEBUG_LEVEL_NORMAL, __FILE__": poll_diff()\n");
+
+
   return -EINVAL;
 }
 
@@ -849,7 +852,19 @@ int dsp_close(struct fusd_file_info* file){
   fd_info *i = file->private_data;
   
   debug(DEBUG_LEVEL_NORMAL, __FILE__": close()\n");
-  
+
+  if(i->read_file){
+    fusd_return(i->read_file, 0);
+    i->read_file = NULL;
+    i->read_buffer = NULL;
+  }
+
+  if(i->write_file){
+    fusd_return(i->write_file, 0);
+    i->write_file = NULL;
+    i->write_buffer = NULL;
+  }
+
   fd_info_remove_from_list(i);
   
   return 0;
