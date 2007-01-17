@@ -364,11 +364,39 @@
 <h1>Websites</h1>
 <dl>
             <dt>
-              <a id="Webjay"></a><a href="http://webjay.org/">Webjay</a> (web)
+              <a id="artistserver"></a><a href=
+              "http://www.artistserver.com/">ArtistServer</a>
             </dt>
             <dd>
-              A playlist community site and playlist authoring tool which
-              exports XSPF playlists.
+              A hosting service for musicians which makes playlists available
+              in XSPF.
+            </dd>
+
+            <dt>
+              <a id="jamendo"></a><a href=
+              "http://www.jamendo.com/us/static/concept/">Jamendo</a>
+            </dt>
+            <dd>
+              A repository of artists and music that allows users to create
+              XSPF playlists.
+            </dd>
+
+            <dt>
+              <a id="jinzora"></a><a href="http://jinzora.com/">Jinzora</a>
+              (web)
+            </dt>
+            <dd>
+              A web based media streaming and management system, designed to
+              stream audio and video files to any internet connected computer.
+            </dd>
+
+            <dt>
+              <a id="mfdz"></a><a href="http://mfdz.com/">Music for Dozens</a>
+              (web site; Flash player)
+            </dt>
+            <dd>
+              Pay-per-download no-DRM music store emphasizing independent
+              artists. Sample songs use custom Flash player which accepts XSPF.
             </dd>
 
             <dt>
@@ -384,20 +412,19 @@
             </dd>
 
             <dt>
-              <a id="jinzora"></a><a href="http://jinzora.com/">Jinzora</a>
-              (web)
-            </dt>
-            <dd>
-              A web based media streaming and management system, designed to
-              stream audio and video files to any internet connected computer.
-            </dd>
-
-            <dt>
               <a id="plurn"></a><a href="http://plurn.com/app/About/">Plurn</a>
               (web)
             </dt>
             <dd>
               A web-based playlist community modeled after Webjay.
+            </dd>
+
+            <dt>
+              <a id="projectopus"></a><a href="http://projectopus.com/">Project
+              Opus</a>
+            </dt>
+            <dd>
+              A music community site which makes playlists available in XSPF.
             </dd>
 
             <dt>
@@ -411,38 +438,11 @@
             </dd>
 
             <dt>
-              <a id="mfdz"></a><a href="http://mfdz.com/">Music for Dozens</a>
-              (web site; Flash player)
+              <a id="Webjay"></a><a href="http://webjay.org/">Webjay</a> (web)
             </dt>
             <dd>
-              Pay-per-download no-DRM music store emphasizing independent
-              artists. Sample songs use custom Flash player which accepts XSPF.
-            </dd>
-
-            <dt>
-              <a id="jamendo"></a><a href=
-              "http://www.jamendo.com/us/static/concept/">Jamendo</a>
-            </dt>
-            <dd>
-              A repository of artists and music that allows users to create
-              XSPF playlists.
-            </dd>
-
-            <dt>
-              <a id="artistserver"></a><a href=
-              "http://www.artistserver.com/">ArtistServer</a>
-            </dt>
-            <dd>
-              A hosting service for musicians which makes playlists available
-              in XSPF.
-            </dd>
-
-            <dt>
-              <a id="projectopus"></a><a href="http://projectopus.com/">Project
-              Opus</a>
-            </dt>
-            <dd>
-              A music community site which makes playlists available in XSPF.
+              A playlist community site and playlist authoring tool which
+              exports XSPF playlists.
             </dd>
 
             <dt>
@@ -462,26 +462,17 @@
 <h1>Libraries</h1>
 <dl>
             <dt>
-              <a id="pear"></a><a href=
-              "http://pear.php.net/package/File_XSPF">PEAR :: Package ::
-              File_XSPF</a>
+              <a id="jspiff"></a><a href=
+              "http://melloware.com/products/jspiff/">JSpiff</a> (Java)
             </dt>
             <dd>
-              PHP library for parsing and generating XSPF.
-            </dd>
-
-            <dt>
-              <a id="cpan"></a><a href=
-              "http://search.cpan.org/%7Edaniel/XML-XSPF/lib/XML/XSPF.pm">XML::XSPF
-              on CPAN</a>
-            </dt>
-            <dd>
-              Perl library for parsing and generating XSPF.
+              JSpiff is a Java API for reading and writing XSPF ("Spiff") open
+              XML playlists using JAXP or JAXB.
             </dd>
 
             <dt>
               <a id="libspiff"></a><a href=
-              "http://libspiff.sourceforge.net/">libSpiff</a>
+              "http://libspiff.sourceforge.net/">libSpiff</a> (C++)
             </dt>
             <dd>
               A cross-platform C++ library for reading and writing XSPF
@@ -491,23 +482,32 @@
             </dd>
 
             <dt>
-              <a id="jspiff"></a><a href=
-              "http://melloware.com/products/jspiff/">JSpiff</a>
+              <a id="pear"></a><a href=
+              "http://pear.php.net/package/File_XSPF">PEAR :: Package ::
+              File_XSPF</a> (PHP)
             </dt>
             <dd>
-              JSpiff is a Java API for reading and writing XSPF ("Spiff") open
-              XML playlists using JAXP or JAXB.
+              PHP library for parsing and generating XSPF.
             </dd>
 
             <dt>
               <a id="ruby"></a><a href=
-              "http://rubyforge.org/projects/xspf">Ruby XSPF playlist class</a>
+              "http://rubyforge.org/projects/xspf">Ruby XSPF playlist class</a> (Ruby)
             </dt>
             <dd>
               A Ruby library to parse XML Shareable Playlist Format (XSPF)
               documents and export them to M3U, SMIL, HTML and SoundBlox.
               License: GNU General Public License (GPL) version 2, Ruby
               License.
+            </dd>
+
+            <dt>
+              <a id="cpan"></a><a href=
+              "http://search.cpan.org/%7Edaniel/XML-XSPF/lib/XML/XSPF.pm">XML::XSPF
+              on CPAN</a> (Perl)
+            </dt>
+            <dd>
+              Perl library for parsing and generating XSPF.
             </dd>
 
 	    <!-- template for new entries
