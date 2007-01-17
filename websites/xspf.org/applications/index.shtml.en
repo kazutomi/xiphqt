@@ -18,6 +18,14 @@
 <dl>
 
             <dt>
+              <a id="amarok"></a>
+              <a href="http://amarok.kde.org/">Amarok</a>
+            <dt>
+            <dd>
+              &lt;TODO&gt;
+            </dd>
+
+            <dt>
               <a id="ampache"></a><a href="http://www.ampache.org">Ampache</a>
             </dt>
             <dd>
@@ -36,6 +44,14 @@
             <dd>
               A podcast client for the command line which supports XSPF
               enclosures.
+            </dd>
+
+            <dt>
+              <a id="audacious"></a>
+              <a href="http://audacious-media-player.org/">Audacious</a>
+            <dt>
+            <dd>
+              &lt;TODO&gt;
             </dd>
 
             <dt>
@@ -78,6 +94,14 @@
               "http://creativecommons.org/licenses/by-nc-nd/2.5/">Creative
               Commons Attribution-NonCommercial-NoDerivs 2.5 license</a>, with
               additional conditions.
+            </dd>
+
+            <dt>
+              <a id="fooxspf"></a>
+              <a href="http://maadman.ma.funpic.de/?page_id=4">foo_xspf</a>
+            <dt>
+            <dd>
+              &lt;TODO&gt;
             </dd>
 
             <dt>
@@ -291,6 +315,14 @@
             </dd>
 
             <dt>
+              <a id="theplaylistresolver"></a>
+              <a href="http://xspfresolver.com/">The Playlist Resolver</a> (web)
+            <dt>
+            <dd>
+              &lt;TODO&gt;
+            </dd>
+
+            <dt>
               <a id="boutell"></a><a href="http://www.boutell.com/xspf/">Thomas
               Boutell's XSPF Player With Autoresume Support</a>
             </dt>
@@ -356,9 +388,14 @@
             </dd>
 
 	    <!-- template for new entries
-		 <dt><a href=""></a></dt>
-          <dd></dd>
-	  -->
+            <dt>
+              <a id="TODOID"></a>
+              <a href="TODO-URL">TODONAME</a>
+            <dt>
+            <dd>
+              &lt;TODO&gt;
+            </dd>
+            -->
 </dl>
 
 <h1>Websites</h1>
@@ -388,6 +425,22 @@
             <dd>
               A web based media streaming and management system, designed to
               stream audio and video files to any internet connected computer.
+            </dd>
+
+            <dt>
+              <a id="lastfm"></a>
+              <a href="http://www.last.fm/">Last.fm / Audioscrobbler</a>
+            <dt>
+            <dd>
+              &lt;TODO&gt;
+            </dd>
+
+            <dt>
+              <a id="magnatune"></a>
+              <a href="http://www.magnatune.com/">Magnatune</a>
+            <dt>
+            <dd>
+              &lt;TODO&gt;
             </dd>
 
             <dt>
@@ -454,9 +507,14 @@
             </dd>
 
 	    <!-- template for new entries
-		 <dt><a href=""></a></dt>
-          <dd></dd>
-	  -->
+            <dt>
+              <a id="TODOID"></a>
+              <a href="TODO-URL">TODONAME</a>
+            <dt>
+            <dd>
+              &lt;TODO&gt;
+            </dd>
+            -->
 </dl>
 
 <h1>Libraries</h1>
@@ -510,10 +568,23 @@
               Perl library for parsing and generating XSPF.
             </dd>
 
+            <dt>
+              <a id="xspf4php"></a>
+              <a href="http://php4xspf.berlios.de/">XSPF4PHP</a> (PHP)
+            <dt>
+            <dd>
+              &lt;TODO&gt;
+            </dd>
+
 	    <!-- template for new entries
-		 <dt><a href=""></a></dt>
-          <dd></dd>
-	  -->
+            <dt>
+              <a id="TODOID"></a>
+              <a href="TODO-URL">TODONAME</a>
+            <dt>
+            <dd>
+              &lt;TODO&gt;
+            </dd>
+            -->
 </dl>
 
 <p>Note to application developers: to be included here, write your entry in the format above and email it to <a href="http://lists.musicbrainz.org/mailman/listinfo/playlist">the XSPF mailing list</a>.</p>
