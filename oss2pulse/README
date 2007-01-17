@@ -43,7 +43,9 @@ details are incomplete or known to be incorrect.  Among them:
 
 1) no mmap support for /dev/dsp yet (should be there within two weeks). 
 
-2) no select (poll) yet (should be there in a few days).
+2) there are as yet three places where the code simply blocks waiting
+   for a response from Pulse; this will block all applications talking
+   to oss2pulse.
 
 3) numerous unimplemented ioctl()s.
 

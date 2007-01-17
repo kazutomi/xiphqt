@@ -20,8 +20,7 @@
 
 #include "oss2pulse.h"
 
-static void close_helper(struct fusd_file_info* file, int retval){
-  fd_info *i = file->private_data;
+static void close_helper(fd_info *i, int retval){
   if(i != NULL){
     debug(DEBUG_LEVEL_NORMAL, __FILE__": close_helper()\n");
     
@@ -41,15 +40,16 @@ static void close_helper(struct fusd_file_info* file, int retval){
       fusd_return(i->poll_file, FUSD_NOTIFY_EXCEPT);
       i->poll_file = NULL;
     }
-    
-    file->private_data = NULL;
-    fd_info_remove_from_list(i);
+
+    i->unusable = 1;
   }
 }
 
 static void poll_notify(struct fusd_file_info* file, unsigned int cached_state){
   int state = 0;
   fd_info *i = file->private_data;
+  if(i == NULL) return;
+  if(i->unusable) return;
 
   if(!i->poll_file) return;
 
@@ -128,13 +128,18 @@ static void fix_metrics(fd_info *i) {
 }
 
 static void stream_latency_update_cb(pa_stream *s, void *userdata) {
-    fd_info *i = userdata;
-    assert(s);
-
-    pa_threaded_mainloop_signal(i->mainloop, 0);
+  fd_info *i = userdata;
+  if(i == NULL) return;
+  if(i->unusable) return;
+  assert(s);
+  
+  pa_threaded_mainloop_signal(i->mainloop, 0);
 }
 
 static int stream_write_copy_data (fd_info *i) {
+  if(i == NULL) return;
+  if(i->unusable) return;
+
   if (i->write_file){
 
     if((i->play_stream) && 
@@ -201,6 +206,9 @@ static int stream_write_copy_data (fd_info *i) {
 }
 
 static int stream_read_copy_data (fd_info *i) {
+  if(i == NULL) return;
+  if(i->unusable) return;
+
   if (i->read_file){
   
     if ((i->rec_stream) && 
@@ -279,6 +287,9 @@ static int stream_read_copy_data (fd_info *i) {
 
 static void stream_request_cb(pa_stream *s, size_t length, void *userdata) {
   fd_info *i = userdata;
+  if(i == NULL) return;
+  if(i->unusable) return;
+
   assert(s);
   
   size_t n;
@@ -310,9 +321,9 @@ static void stream_request_cb(pa_stream *s, size_t length, void *userdata) {
 }
 
 static void stream_state_cb(pa_stream *s, void *userdata) {
-			      
-  struct fusd_file_info* file = userdata;   
-  fd_info *i= file->private_data;
+  fd_info *i = userdata;   
+  if(i == NULL) return;
+  if(i->unusable) return;
 
   assert(s);
   
@@ -327,12 +338,12 @@ static void stream_state_cb(pa_stream *s, void *userdata) {
     
   case PA_STREAM_TERMINATED:
   case PA_STREAM_UNCONNECTED:
-    close_helper(file, -EIO);
+    close_helper(i, -EIO);
     break;
 
   case PA_STREAM_CREATING:
     break;
-    }
+  }
 }
 
 static int create_playback_stream(struct fusd_file_info* file){
@@ -340,7 +351,8 @@ static int create_playback_stream(struct fusd_file_info* file){
   pa_buffer_attr attr;
   int n;
   
-  assert(i);
+  if(i == NULL) return -1;
+  if(i->unusable) return -1;
   
   fix_metrics(i);
   
@@ -349,7 +361,7 @@ static int create_playback_stream(struct fusd_file_info* file){
     goto fail;
   }
   
-  pa_stream_set_state_callback(i->play_stream, stream_state_cb, file);
+  pa_stream_set_state_callback(i->play_stream, stream_state_cb, i);
   pa_stream_set_write_callback(i->play_stream, stream_request_cb, i);
   pa_stream_set_latency_update_callback(i->play_stream, stream_latency_update_cb, i);
   
@@ -370,53 +382,54 @@ static int create_playback_stream(struct fusd_file_info* file){
   return -1;
 }
 
- static int create_record_stream(struct fusd_file_info* file){
-   fd_info *i= file->private_data;
-   pa_buffer_attr attr;
-   int n;
+static int create_record_stream(struct fusd_file_info* file){
+  fd_info *i= file->private_data;
+  pa_buffer_attr attr;
+  int n;
+  
+  if(i == NULL) return -1;
+  if(i->unusable) return -1;
+  
+  fix_metrics(i);
    
-   assert(i);
-   
-   fix_metrics(i);
-   
-   if (!(i->rec_stream = pa_stream_new(i->context, "Audio Stream", &i->sample_spec, NULL))) {
-     debug(DEBUG_LEVEL_NORMAL, __FILE__": pa_stream_new() failed: %s\n", pa_strerror(pa_context_errno(i->context)));
-     goto fail;
-   }
-   
-   pa_stream_set_state_callback(i->rec_stream, stream_state_cb, file);
-   pa_stream_set_read_callback(i->rec_stream, stream_request_cb, i);
-   pa_stream_set_latency_update_callback(i->rec_stream, stream_latency_update_cb, i);
-   
-   memset(&attr, 0, sizeof(attr));
-   attr.maxlength = i->fragment_size * (i->n_fragments+1);
-   attr.fragsize = i->fragment_size;
-   
-    if (pa_stream_connect_record(i->rec_stream, NULL, &attr, PA_STREAM_INTERPOLATE_TIMING|PA_STREAM_AUTO_TIMING_UPDATE) < 0) {
-      debug(DEBUG_LEVEL_NORMAL, __FILE__": pa_stream_connect_playback() failed: %s\n", pa_strerror(pa_context_errno(i->context)));
-      goto fail;
-    }
-    
-    return 0;
+  if (!(i->rec_stream = pa_stream_new(i->context, "Audio Stream", &i->sample_spec, NULL))) {
+    debug(DEBUG_LEVEL_NORMAL, __FILE__": pa_stream_new() failed: %s\n", pa_strerror(pa_context_errno(i->context)));
+    goto fail;
+  }
+  
+  pa_stream_set_state_callback(i->rec_stream, stream_state_cb, i);
+  pa_stream_set_read_callback(i->rec_stream, stream_request_cb, i);
+  pa_stream_set_latency_update_callback(i->rec_stream, stream_latency_update_cb, i);
+  
+  memset(&attr, 0, sizeof(attr));
+  attr.maxlength = i->fragment_size * (i->n_fragments+1);
+  attr.fragsize = i->fragment_size;
+  
+  if (pa_stream_connect_record(i->rec_stream, NULL, &attr, PA_STREAM_INTERPOLATE_TIMING|PA_STREAM_AUTO_TIMING_UPDATE) < 0) {
+    debug(DEBUG_LEVEL_NORMAL, __FILE__": pa_stream_connect_playback() failed: %s\n", pa_strerror(pa_context_errno(i->context)));
+    goto fail;
+  }
+  
+  return 0;
 
-fail:
-    return -1;
+ fail:
+  return -1;
 }
 
 static void free_streams(fd_info *i) {
-    assert(i);
-
-    if (i->play_stream) {
-        pa_stream_disconnect(i->play_stream);
-        pa_stream_unref(i->play_stream);
-        i->play_stream = NULL;
-    }
-
-    if (i->rec_stream) {
-        pa_stream_disconnect(i->rec_stream);
-        pa_stream_unref(i->rec_stream);
-        i->rec_stream = NULL;
-    }
+  if(i == NULL) return;
+  
+  if (i->play_stream) {
+    pa_stream_disconnect(i->play_stream);
+    pa_stream_unref(i->play_stream);
+    i->play_stream = NULL;
+  }
+  
+  if (i->rec_stream) {
+    pa_stream_disconnect(i->rec_stream);
+    pa_stream_unref(i->rec_stream);
+    i->rec_stream = NULL;
+  }
 }
 
 static int map_format(int *fmt, pa_sample_spec *ss) {
@@ -472,95 +485,101 @@ static int map_format_back(pa_sample_format_t format) {
     }
 }
 
+// TODO: this blocks inside FUSD!  eliminate the pa_threaded_mainloop_wait(i->mainloop)!
 int dsp_drain(fd_info *i) {
-    pa_operation *o = NULL;
-    int r = -1;
-
-    if (!i->mainloop)
-        return 0;
-    
-    debug(DEBUG_LEVEL_NORMAL, __FILE__": Draining.\n");
-
-    pa_threaded_mainloop_lock(i->mainloop);
-
-    //if (dsp_empty_socket(i) < 0)
-    //   goto fail;
-    
-    if (!i->play_stream)
-        goto fail;
-
-    debug(DEBUG_LEVEL_NORMAL, __FILE__": Really draining.\n");
-        
-    if (!(o = pa_stream_drain(i->play_stream, stream_success_cb, i))) {
-        debug(DEBUG_LEVEL_NORMAL, __FILE__": pa_stream_drain(): %s\n", pa_strerror(pa_context_errno(i->context)));
-        goto fail;
-    }
-
-    i->operation_success = 0;
-    while (pa_operation_get_state(o) != PA_OPERATION_DONE) {
-        PLAYBACK_STREAM_CHECK_DEAD_GOTO(i, fail);
-            
-        pa_threaded_mainloop_wait(i->mainloop);
-    }
-
-    if (!i->operation_success) {
-        debug(DEBUG_LEVEL_NORMAL, __FILE__": pa_stream_drain() 2: %s\n", pa_strerror(pa_context_errno(i->context)));
-        goto fail;
-    }
-
-    r = 0;
-    
-fail:
-    
-    if (o)
-        pa_operation_unref(o);
-
-    pa_threaded_mainloop_unlock(i->mainloop);
-
+  if(i == NULL) return -1;
+  
+  pa_operation *o = NULL;
+  int r = -1;
+  
+  if (!i->mainloop)
     return 0;
+  
+  debug(DEBUG_LEVEL_NORMAL, __FILE__": Draining.\n");
+  
+  pa_threaded_mainloop_lock(i->mainloop);
+  
+  //if (dsp_empty_socket(i) < 0)
+  //   goto fail;
+  
+  if (!i->play_stream)
+    goto fail;
+  
+  debug(DEBUG_LEVEL_NORMAL, __FILE__": Really draining.\n");
+  
+  if (!(o = pa_stream_drain(i->play_stream, stream_success_cb, i))) {
+    debug(DEBUG_LEVEL_NORMAL, __FILE__": pa_stream_drain(): %s\n", pa_strerror(pa_context_errno(i->context)));
+    goto fail;
+  }
+  
+  i->operation_success = 0;
+  while (pa_operation_get_state(o) != PA_OPERATION_DONE) {
+    debug(DEBUG_LEVEL_NORMAL, __FILE__": check goto.\n");
+    PLAYBACK_STREAM_CHECK_DEAD_GOTO(i, fail);
+    debug(DEBUG_LEVEL_NORMAL, __FILE__": waiting.\n");
+    pa_threaded_mainloop_wait(i->mainloop);
+  }
+  
+  if (!i->operation_success) {
+    debug(DEBUG_LEVEL_NORMAL, __FILE__": pa_stream_drain() 2: %s\n", pa_strerror(pa_context_errno(i->context)));
+    goto fail;
+  }
+  
+  r = 0;
+  
+ fail:
+  
+  if (o)
+    pa_operation_unref(o);
+  
+  pa_threaded_mainloop_unlock(i->mainloop);
+  
+  return 0;
 }
 
+// TODO: this blocks inside FUSD!  eliminate the pa_threaded_mainloop_wait(i->mainloop)!
 static int dsp_trigger(fd_info *i) {
-    pa_operation *o = NULL;
-    int r = -1;
-
-    if (!i->play_stream)
-        return 0;
-
-    pa_threaded_mainloop_lock(i->mainloop);
-
-    //if (dsp_empty_socket(i) < 0)
-    //  goto fail;
-
-    debug(DEBUG_LEVEL_NORMAL, __FILE__": Triggering.\n");
-        
-    if (!(o = pa_stream_trigger(i->play_stream, stream_success_cb, i))) {
-        debug(DEBUG_LEVEL_NORMAL, __FILE__": pa_stream_trigger(): %s\n", pa_strerror(pa_context_errno(i->context)));
-        goto fail;
-    }
-
-    i->operation_success = 0;
-    while (!pa_operation_get_state(o) != PA_OPERATION_DONE) {
-        PLAYBACK_STREAM_CHECK_DEAD_GOTO(i, fail);
-            
-        pa_threaded_mainloop_wait(i->mainloop);
-    }
-
-    if (!i->operation_success) {
-        debug(DEBUG_LEVEL_NORMAL, __FILE__": pa_stream_trigger(): %s\n", pa_strerror(pa_context_errno(i->context)));
-        goto fail;
-    }
-
-    r = 0;
-    
-fail:
-    
-    if (o)
-        pa_operation_unref(o);
-
-    pa_threaded_mainloop_unlock(i->mainloop);
-
+  if(i == NULL) return -1;
+  pa_operation *o = NULL;
+  int r = -1;
+  
+  if (!i->play_stream)
     return 0;
+  
+  pa_threaded_mainloop_lock(i->mainloop);
+  
+  //if (dsp_empty_socket(i) < 0)
+  //  goto fail;
+  
+  debug(DEBUG_LEVEL_NORMAL, __FILE__": Triggering.\n");
+  
+  if (!(o = pa_stream_trigger(i->play_stream, stream_success_cb, i))) {
+    debug(DEBUG_LEVEL_NORMAL, __FILE__": pa_stream_trigger(): %s\n", pa_strerror(pa_context_errno(i->context)));
+    goto fail;
+  }
+  
+  i->operation_success = 0;
+  while (!pa_operation_get_state(o) != PA_OPERATION_DONE) {
+    PLAYBACK_STREAM_CHECK_DEAD_GOTO(i, fail);
+    
+    pa_threaded_mainloop_wait(i->mainloop);
+  }
+  
+  if (!i->operation_success) {
+    debug(DEBUG_LEVEL_NORMAL, __FILE__": pa_stream_trigger(): %s\n", pa_strerror(pa_context_errno(i->context)));
+    goto fail;
+  }
+  
+  r = 0;
+  
+ fail:
+  
+  if (o)
+    pa_operation_unref(o);
+  
+  pa_threaded_mainloop_unlock(i->mainloop);
+  
+  return 0;
 }
 
 static int dsp_open(struct fusd_file_info* file){
@@ -591,6 +610,9 @@ static ssize_t dsp_read(struct fusd_file_info* file,
   struct device_info* info = (struct device_info*) file->device_info;
   int ret;
 
+  if(i == NULL) return -EBADFD;
+  if(i->unusable) return -EBADFD;
+
   debug(DEBUG_LEVEL_DEBUG2, "Reading %d bytes from device..\n", size);
   
   pa_threaded_mainloop_lock(i->mainloop);
@@ -620,6 +642,9 @@ static ssize_t dsp_write(struct fusd_file_info *file,
   struct fd_info* i = file->private_data;
   struct device_info* info = (struct device_info*) file->device_info;
   int ret;
+
+  if(i == NULL) return -EBADFD;
+  if(i->unusable) return -EBADFD;
   
   debug(DEBUG_LEVEL_DEBUG2, "Writing %d bytes to device..\n", size);
   
@@ -642,8 +667,12 @@ static ssize_t dsp_write(struct fusd_file_info *file,
   return -FUSD_NOREPLY;
 }
 
+// TODO: this blocks inside FUSD!  eliminate the pa_threaded_mainloop_wait(i->mainloop)!
 static int dsp_ioctl(struct fusd_file_info *file, int request, void *argp){
   struct fd_info* i = file->private_data;
+
+  if(i == NULL) return -EBADFD;
+  if(i->unusable) return -EBADFD;
 
   switch (request) {
   case SNDCTL_DSP_SETFMT: 
@@ -907,12 +936,17 @@ static int dsp_mmap(struct fusd_file_info *file,
 		    int flags, 
 		    void** addr, 
 		    size_t* out_length){
+  fd_info *i = file->private_data;
+  if(i == NULL) return -EBADFD;
+  if(i->unusable) return -EBADFD;
 
   return -EINVAL;
 }
 
 static int dsp_polldiff(struct fusd_file_info* file, unsigned int cached_state){
   fd_info *i = file->private_data;
+  if(i == NULL) return -EBADFD;
+  if(i->unusable) return -EBADFD;
 
   debug(DEBUG_LEVEL_NORMAL, __FILE__": poll_diff()\n");
   
@@ -928,7 +962,10 @@ static int dsp_polldiff(struct fusd_file_info* file, unsigned int cached_state){
 
 static int dsp_close(struct fusd_file_info* file){
   debug(DEBUG_LEVEL_NORMAL, __FILE__": close()\n");
-  close_helper(file,0);  
+  fd_info *i = file->private_data;
+  if(i == NULL) return -EBADFD;
+  close_helper(i,0);  
+  fd_info_remove_from_list(i);
   return 0;
 }
 
