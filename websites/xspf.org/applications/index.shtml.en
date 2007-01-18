@@ -19,10 +19,10 @@
 
             <dt>
               <a id="amarok"></a>
-              <a href="http://amarok.kde.org/">Amarok</a>
+              <a href="http://amarok.kde.org/">Amarok</a> (Unix)
             <dt>
             <dd>
-              &lt;TODO&gt;
+              A feature-rich, library-oriented music player for Unix systems.
             </dd>
 
             <dt>
@@ -48,10 +48,10 @@
 
             <dt>
               <a id="audacious"></a>
-              <a href="http://audacious-media-player.org/">Audacious</a>
+              <a href="http://audacious-media-player.org/">Audacious</a> (Unix)
             <dt>
             <dd>
-              &lt;TODO&gt;
+              A media player for Unix systems. Audacious is a fork of the Beep Media Player and therefore also descendant of XMMS.
             </dd>
 
             <dt>
@@ -98,10 +98,10 @@
 
             <dt>
               <a id="fooxspf"></a>
-              <a href="http://maadman.ma.funpic.de/?page_id=4">foo_xspf</a>
+              <a href="http://maadman.ma.funpic.de/?page_id=4">foo_xspf</a> (Windows, Foobar2000)
             <dt>
             <dd>
-              &lt;TODO&gt;
+              Adds XSPF read and write support to <a href="http://www.foobar2000.org/">Foobar2000</a>.
             </dd>
 
             <dt>
@@ -253,7 +253,7 @@
 
             <dt>
               <a id="Plext"></a><a href="http://plext.blogspot.com/">Plext</a>
-              (Windows; Winamp)
+              (Windows, Winamp)
             </dt>
             <dd>
               Winamp plugin for advanced playlist functionality, including
@@ -319,7 +319,7 @@
               <a href="http://xspfresolver.com/">The Playlist Resolver</a> (web)
             <dt>
             <dd>
-              &lt;TODO&gt;
+              Takes an XSPF playlist and tries to enrich the tracks with more information from online sources. Output is a XSPF file again.
             </dd>
 
             <dt>
@@ -432,7 +432,10 @@
               <a href="http://www.last.fm/">Last.fm / Audioscrobbler</a>
             <dt>
             <dd>
-              &lt;TODO&gt;
+              A listener community grown out of Audioscrobbler. Listeners send information
+              about each track they play to Last.fm. That way Last.fm can build statistics
+              about your music habits and make suggestions for music you might want to check
+              out in the future.
             </dd>
 
             <dt>
@@ -440,7 +443,10 @@
               <a href="http://www.magnatune.com/">Magnatune</a>
             <dt>
             <dd>
-              &lt;TODO&gt;
+              A "non-evil" record label offering free downloads of all their albums.
+              You can <i>try before you buy</i>: Listen to 128KB/s MP3s for free or buy a higher quality
+              (or even lossless) version if you like it. 50% go directly to the artist. More details
+              <a href="http://www.magnatune.com/info/whynotevil">here</a>.
             </dd>
 
             <dt>
@@ -573,7 +579,7 @@
               <a href="http://php4xspf.berlios.de/">XSPF4PHP</a> (PHP)
             <dt>
             <dd>
-              &lt;TODO&gt;
+              Set of classes for creating XSPF files from PHP.
             </dd>
 
 	    <!-- template for new entries
