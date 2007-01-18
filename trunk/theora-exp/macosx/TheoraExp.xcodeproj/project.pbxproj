@@ -36,14 +36,27 @@
 		731DDD3A0A01586000CAD2C4 /* state.c in Sources */ = {isa = PBXBuildFile; fileRef = 731DDD280A01586000CAD2C4 /* state.c */; };
 		731DDD3C0A01586E00CAD2C4 /* Ogg.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 731DDD3B0A01586E00CAD2C4 /* Ogg.framework */; };
 		731DDD4B0A0159AF00CAD2C4 /* info.c in Sources */ = {isa = PBXBuildFile; fileRef = 731DDD4A0A0159AF00CAD2C4 /* info.c */; };
+		738836DB0B1916C9005C7A69 /* decinfo.c in Sources */ = {isa = PBXBuildFile; fileRef = 731DDD180A01586000CAD2C4 /* decinfo.c */; };
+		738836DC0B1916CB005C7A69 /* decode.c in Sources */ = {isa = PBXBuildFile; fileRef = 731DDD1A0A01586000CAD2C4 /* decode.c */; };
+		738836DD0B1916CC005C7A69 /* dequant.c in Sources */ = {isa = PBXBuildFile; fileRef = 731DDD1B0A01586000CAD2C4 /* dequant.c */; };
+		738836DE0B1916CE005C7A69 /* fragment.c in Sources */ = {isa = PBXBuildFile; fileRef = 731DDD1D0A01586000CAD2C4 /* fragment.c */; };
+		738836DF0B1916CF005C7A69 /* huffdec.c in Sources */ = {isa = PBXBuildFile; fileRef = 731DDD1E0A01586000CAD2C4 /* huffdec.c */; };
+		738836E00B1916D1005C7A69 /* idct.c in Sources */ = {isa = PBXBuildFile; fileRef = 731DDD210A01586000CAD2C4 /* idct.c */; };
+		738836E10B1916D3005C7A69 /* info.c in Sources */ = {isa = PBXBuildFile; fileRef = 731DDD4A0A0159AF00CAD2C4 /* info.c */; };
+		738836E20B1916D5005C7A69 /* internal.c in Sources */ = {isa = PBXBuildFile; fileRef = 731DDD230A01586000CAD2C4 /* internal.c */; };
+		738836E30B1916D9005C7A69 /* quant.c in Sources */ = {isa = PBXBuildFile; fileRef = 731DDD260A01586000CAD2C4 /* quant.c */; };
+		738836E40B1916DC005C7A69 /* state.c in Sources */ = {isa = PBXBuildFile; fileRef = 731DDD280A01586000CAD2C4 /* state.c */; };
+		738836E50B1916ED005C7A69 /* cpu.c in Sources */ = {isa = PBXBuildFile; fileRef = 09AFFEC40A5833DE0043DDB1 /* cpu.c */; };
+		738836E60B1916EF005C7A69 /* mmxfrag.c in Sources */ = {isa = PBXBuildFile; fileRef = 09AFFEC60A5833DE0043DDB1 /* mmxfrag.c */; };
+		738836E70B1916F0005C7A69 /* mmxidct.c in Sources */ = {isa = PBXBuildFile; fileRef = 09AFFEC70A5833DE0043DDB1 /* mmxidct.c */; };
+		738836E80B1916F1005C7A69 /* mmxstate.c in Sources */ = {isa = PBXBuildFile; fileRef = 09AFFEC80A5833DE0043DDB1 /* mmxstate.c */; };
+		738836E90B1916F4005C7A69 /* x86state.c in Sources */ = {isa = PBXBuildFile; fileRef = 09AFFECA0A5833DE0043DDB1 /* x86state.c */; };
 		8D07F2BE0486CC7A007CD1D0 /* TheoraExp_Prefix.pch in Headers */ = {isa = PBXBuildFile; fileRef = 32BAE0B70371A74B00C91783 /* TheoraExp_Prefix.pch */; };
 		8D07F2C00486CC7A007CD1D0 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C1666FE841158C02AAC07 /* InfoPlist.strings */; };
-		8D07F2C40486CC7A007CD1D0 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 08FB77AAFE841565C02AAC07 /* Carbon.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		089C1667FE841158C02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
-		08FB77AAFE841565C02AAC07 /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = /System/Library/Frameworks/Carbon.framework; sourceTree = "<absolute>"; };
 		09AFFEC40A5833DE0043DDB1 /* cpu.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = cpu.c; sourceTree = "<group>"; };
 		09AFFEC50A5833DE0043DDB1 /* cpu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cpu.h; sourceTree = "<group>"; };
 		09AFFEC60A5833DE0043DDB1 /* mmxfrag.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mmxfrag.c; sourceTree = "<group>"; };
@@ -74,16 +87,23 @@
 		731DDD280A01586000CAD2C4 /* state.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = state.c; path = ../lib/state.c; sourceTree = SOURCE_ROOT; };
 		731DDD3B0A01586E00CAD2C4 /* Ogg.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Ogg.framework; path = /Library/Frameworks/Ogg.framework; sourceTree = "<absolute>"; };
 		731DDD4A0A0159AF00CAD2C4 /* info.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = info.c; path = ../lib/info.c; sourceTree = SOURCE_ROOT; };
+		738836400B191426005C7A69 /* libtheoradec.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libtheoradec.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		8D07F2C70486CC7A007CD1D0 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		8D07F2C80486CC7A007CD1D0 /* TheoraExp.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TheoraExp.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		7388363E0B191426005C7A69 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		8D07F2C30486CC7A007CD1D0 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8D07F2C40486CC7A007CD1D0 /* Carbon.framework in Frameworks */,
 				731DDD3C0A01586E00CAD2C4 /* Ogg.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -95,6 +115,7 @@
 			isa = PBXGroup;
 			children = (
 				8D07F2C80486CC7A007CD1D0 /* TheoraExp.framework */,
+				738836400B191426005C7A69 /* libtheoradec.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -114,7 +135,6 @@
 			isa = PBXGroup;
 			children = (
 				731DDD3B0A01586E00CAD2C4 /* Ogg.framework */,
-				08FB77AAFE841565C02AAC07 /* Carbon.framework */,
 			);
 			name = "External Frameworks and Libraries";
 			sourceTree = "<group>";
@@ -176,6 +196,13 @@
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
+		7388363C0B191426005C7A69 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		8D07F2BD0486CC7A007CD1D0 /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
@@ -200,6 +227,23 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
+		7388363F0B191426005C7A69 /* libtheoradec (static) */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 738836410B19144F005C7A69 /* Build configuration list for PBXNativeTarget "libtheoradec (static)" */;
+			buildPhases = (
+				7388363C0B191426005C7A69 /* Headers */,
+				7388363D0B191426005C7A69 /* Sources */,
+				7388363E0B191426005C7A69 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "libtheoradec (static)";
+			productName = theoradec;
+			productReference = 738836400B191426005C7A69 /* libtheoradec.a */;
+			productType = "com.apple.product-type.library.static";
+		};
 		8D07F2BC0486CC7A007CD1D0 /* TheoraExp */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 4FADC24208B4156D00ABE55E /* Build configuration list for PBXNativeTarget "TheoraExp" */;
@@ -232,6 +276,7 @@
 			projectDirPath = "";
 			targets = (
 				8D07F2BC0486CC7A007CD1D0 /* TheoraExp */,
+				7388363F0B191426005C7A69 /* libtheoradec (static) */,
 			);
 		};
 /* End PBXProject section */
@@ -258,6 +303,28 @@
 /* End PBXRezBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		7388363D0B191426005C7A69 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				738836DB0B1916C9005C7A69 /* decinfo.c in Sources */,
+				738836DC0B1916CB005C7A69 /* decode.c in Sources */,
+				738836DD0B1916CC005C7A69 /* dequant.c in Sources */,
+				738836DE0B1916CE005C7A69 /* fragment.c in Sources */,
+				738836DF0B1916CF005C7A69 /* huffdec.c in Sources */,
+				738836E00B1916D1005C7A69 /* idct.c in Sources */,
+				738836E10B1916D3005C7A69 /* info.c in Sources */,
+				738836E20B1916D5005C7A69 /* internal.c in Sources */,
+				738836E30B1916D9005C7A69 /* quant.c in Sources */,
+				738836E40B1916DC005C7A69 /* state.c in Sources */,
+				738836E50B1916ED005C7A69 /* cpu.c in Sources */,
+				738836E60B1916EF005C7A69 /* mmxfrag.c in Sources */,
+				738836E70B1916F0005C7A69 /* mmxidct.c in Sources */,
+				738836E80B1916F1005C7A69 /* mmxstate.c in Sources */,
+				738836E90B1916F4005C7A69 /* x86state.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		8D07F2C10486CC7A007CD1D0 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -397,6 +464,46 @@
 			};
 			name = Release;
 		};
+		738836420B19144F005C7A69 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					../../ogg/include,
+				);
+				INSTALL_PATH = /usr/local/lib;
+				PER_ARCH_CFLAGS_i386 = "-DOC_X86ASM";
+				PER_ARCH_CFLAGS_ppc = "";
+				PREBINDING = NO;
+				PRODUCT_NAME = theoradec;
+				ZERO_LINK = YES;
+			};
+			name = Debug;
+		};
+		738836430B19144F005C7A69 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					../../ogg/include,
+				);
+				INSTALL_PATH = /usr/local/lib;
+				PER_ARCH_CFLAGS_i386 = "-DOC_X86ASM";
+				PER_ARCH_CFLAGS_ppc = "";
+				PREBINDING = NO;
+				PRODUCT_NAME = theoradec;
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -414,6 +521,15 @@
 			buildConfigurations = (
 				4FADC24708B4156D00ABE55E /* Debug */,
 				4FADC24808B4156D00ABE55E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		738836410B19144F005C7A69 /* Build configuration list for PBXNativeTarget "libtheoradec (static)" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				738836420B19144F005C7A69 /* Debug */,
+				738836430B19144F005C7A69 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
