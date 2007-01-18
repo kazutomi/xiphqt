@@ -51,8 +51,7 @@ write_headers__audio(StreamInfoPtr si, DataHandler data_h,
                      wide *offset);
 extern ComponentResult
 fill_page__audio(OggExportGlobalsPtr globals, StreamInfoPtr si,
-                 Float64 max_duration, UInt32 *pos_sec,
-                 Float64 *pos_subsec);
+                 Float64 max_duration);
 
 extern ComponentResult initialize_stream__audio(StreamInfo *si);
 extern void clear_stream__audio(StreamInfo *si);
@@ -64,9 +63,5 @@ extern void clear_stream__audio(StreamInfo *si);
             &fill_page__audio,                                  \
             &initialize_stream__audio, &clear_stream__audio }
 
-
-extern ComponentResult
-extract_audio(OggExportGlobalsPtr globals, StreamInfoPtr si,
-              DataHandler data_h);
 
 #endif /* __stream_audio_h__ */

@@ -59,10 +59,10 @@
 #endif /* __DO_WE_NEED_ALL_THOSE_P__ */
 #endif /* __APPLE_CC__ */
 
-#if defined(__APPLE_CC__)
+#if defined(__APPLE_CC__) && defined(XIPHQT_USE_FRAMEWORKS)
 #include <TheoraExp/theoradec.h>
 #else
-#include <theoradec.h>
+#include <theora/theoradec.h>
 #endif /* __APPLE_CC__ */
 
 

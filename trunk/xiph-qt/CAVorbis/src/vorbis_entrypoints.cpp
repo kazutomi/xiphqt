@@ -4,7 +4,7 @@
  *    Declaration of the entry points for the Vorbis component.
  *
  *
- *  Copyright (c) 2005  Arek Korbik
+ *  Copyright (c) 2005-2006  Arek Korbik
  *
  *  This file is part of XiphQT, the Xiph QuickTime Components.
  *
@@ -46,9 +46,13 @@ ComponentResult	CAOggVorbisDecoderEntry(ComponentParameters* inParameters, CAOgg
     return ACCodecDispatch(inParameters, inThis);
 }
 
+
+#if !defined(XIPHQT_NO_ENCODERS)
+
 extern "C"
 ComponentResult	CAVorbisEncoderEntry(ComponentParameters* inParameters, CAVorbisEncoder* inThis)
 {
     return ACCodecDispatch(inParameters, inThis);
 }
 
+#endif  /* XIPHQT_NO_ENCODERS */

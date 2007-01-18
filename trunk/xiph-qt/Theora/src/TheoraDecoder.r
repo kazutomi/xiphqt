@@ -71,8 +71,10 @@
   #else
     #define Target_PlatformType       platformPowerPCNativeEntryPoint
   #endif
+  #define theoraThreadSafe cmpThreadSafe
 #elif TARGET_OS_WIN32
   #define Target_PlatformType platformWin32
+  #define theoraThreadSafe 0
 #else
   #error get a real platform type
 #endif /* TARGET_OS_MAC */
@@ -83,6 +85,7 @@
 
 
 #define kTheoraDecoderFlags (codecInfoDoes32 | codecInfoDoesTemporal | codecInfoDoesSpool)
+//#define kTheoraEncoderFlags (codecInfoDoes32 | codecInfoDoesTemporal | codecInfoDoesRateConstrain | theoraThreadSafe)
 
 #define kTheoraFormatFlags	(codecInfoDepth24)
 
@@ -94,9 +97,9 @@ resource 'cdci' (kTheoraDecoderResID) {
 	kTheoraDecoderFlags, // Decompression Flags
 	0, // Compression Flags
 	kTheoraFormatFlags, // Format Flags
-	128, // Compression Accuracy
+            0, //128, // Compression Accuracy
 	128, // Decomression Accuracy
-	128, // Compression Speed
+            0, //128, // Compression Speed
 	128, // Decompression Speed
 	128, // Compression Level
 	0, // Reserved
