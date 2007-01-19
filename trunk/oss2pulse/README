@@ -1,5 +1,5 @@
 This is a quick writeup to get the oss2pulse daemon running as things
-stand at 2007-01-17.  Things are as yet unfinished, and this applies
+stand at 2007-01-19.  Things are as yet unfinished, and this applies
 to both fusd and oss2pulse.
 
 WHAT IT DOES:
@@ -46,12 +46,6 @@ details are incomplete or known to be incorrect.  Among them:
 2) numerous unimplemented ioctl()s.
 
 3) Mixer mapping is a bit of a hack. See the 'RFC' section.
-
-4) the fusd implementation as yet does not have fully generic class
-   support.  It can only create devices of a class that doesn't
-   already exist, but handles the 'sound' class as a special case.
-   This requires a small kernel patch to correct and will be available
-   soon.
 
 Despite these unfinished bits, most OSS apps already work and work
 properly.
