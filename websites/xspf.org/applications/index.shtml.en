@@ -335,6 +335,14 @@
             </dd>
 
             <dt>
+              <a id="totem"></a>
+              <a href="http://www.gnome.org/projects/totem/">Totem (Unix)</a>
+            <dt>
+            <dd>
+              Official movie player of the GNOME desktop environment.
+            </dd>
+
+            <dt>
               <a id="vlc"></a><a href="http://www.videolan.org/">VLC media
               player</a>
             </dt>
@@ -407,6 +415,14 @@
             <dd>
               A hosting service for musicians which makes playlists available
               in XSPF.
+            </dd>
+
+            <dt>
+              <a id="cruxy"></a>
+              <a href="https://www.cruxy.com/">Cruxy</a>
+            <dt>
+            <dd>
+              A media selling platform.
             </dd>
 
             <dt>
