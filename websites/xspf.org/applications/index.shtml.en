@@ -230,12 +230,12 @@
 
             <dt>
               <a id="lasmit"></a><a href=
-              "http://www.lasmit.co.uk/category/xpsf-playlist-generator/">PHP
-              XPSF Playlist Generator</a>
+              "http://www.lasmit.co.uk/category/xspf-playlist-generator/">PHP
+              XSPF Playlist Generator</a>
             </dt>
             <dd>
               A PHP script that reads the contents of a folder containing MP3s,
-              reads the ID3 tags and outputs an XPSF playlist. It means you
+              reads the ID3 tags and outputs an XSPF playlist. It means you
               just have to upload your files into a folder and then the
               playlist is generated automatically.
             </dd>
