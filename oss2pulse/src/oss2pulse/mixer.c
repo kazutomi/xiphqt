@@ -178,10 +178,12 @@ fail:
 }
 
 static int mixer_open(struct fusd_file_info* file){
-  pthread_t dummy;
+  pthread_t thread;
   debug(DEBUG_LEVEL_NORMAL, __FILE__": mixer_open()\n");
-  if(pthread_create(&dummy,NULL,mixer_open_thread,file))
+  if(pthread_create(&thread,NULL,mixer_open_thread,file))
     mixer_open_thread(file);
+  else
+    pthread_detach(thread);
   return -FUSD_NOREPLY;
 }
 
@@ -384,7 +386,7 @@ static void *mixer_ioctl_thread(void *arg){
 
 static int mixer_ioctl(struct fusd_file_info *file, int request, void *argp){
   struct fd_info* i = file->private_data;
-  pthread_t dummy;
+  pthread_t thread;
 
   if(i == NULL) return -EBADFD;
   if(i->unusable) return -EBADFD;
@@ -392,8 +394,10 @@ static int mixer_ioctl(struct fusd_file_info *file, int request, void *argp){
   i->ioctl_request = request;
   i->ioctl_argp = argp;
   
-  if(pthread_create(&dummy,NULL,mixer_ioctl_thread,file))
+  if(pthread_create(&thread,NULL,mixer_ioctl_thread,file))
     mixer_ioctl_thread(file);
+  else
+    pthread_detach(thread);
 
   return -FUSD_NOREPLY;
 }

@@ -604,10 +604,12 @@ static void *dsp_open_thread(void *arg){
 }
 
 static int dsp_open(struct fusd_file_info* file){
-  pthread_t dummy;
+  pthread_t thread;
   debug(DEBUG_LEVEL_NORMAL, __FILE__": dsp_open()\n");
-  if(pthread_create(&dummy,NULL,dsp_open_thread,file))
+  if(pthread_create(&thread,NULL,dsp_open_thread,file))
     dsp_open_thread(file);
+  else
+    pthread_detach(thread);
   return -FUSD_NOREPLY;
 }
 
@@ -962,7 +964,7 @@ static void *dsp_ioctl_thread(void *arg){
 
 static int dsp_ioctl(struct fusd_file_info *file, int request, void *argp){
   struct fd_info* i = file->private_data;
-  pthread_t dummy;
+  pthread_t thread;
 
   if(i == NULL) return -EBADFD;
   if(i->unusable) return -EBADFD;
@@ -970,8 +972,10 @@ static int dsp_ioctl(struct fusd_file_info *file, int request, void *argp){
   i->ioctl_request = request;
   i->ioctl_argp = argp;
   
-  if(pthread_create(&dummy,NULL,dsp_ioctl_thread,file))
+  if(pthread_create(&thread,NULL,dsp_ioctl_thread,file))
     dsp_ioctl_thread(file);
+  else
+    pthread_detach(thread);
 
   return -FUSD_NOREPLY;
 }
@@ -1028,10 +1032,13 @@ static void *dsp_close_thread(void *arg){
 }
 
 static int dsp_close(struct fusd_file_info* file){
-  pthread_t dummy;
+  pthread_t thread;
   debug(DEBUG_LEVEL_NORMAL, __FILE__": close()\n");
-  if(pthread_create(&dummy,NULL,dsp_close_thread,file))
+  if(pthread_create(&thread,NULL,dsp_close_thread,file))
     dsp_close_thread(file);
+  else
+    pthread_detach(thread);
+
   return -FUSD_NOREPLY;
 }
 
