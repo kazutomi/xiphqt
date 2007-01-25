@@ -411,6 +411,16 @@
 <h1>Websites</h1>
 <dl>
             <dt>
+              <a id="360soundcheck"></a>
+              <a href="http://www.austin360.com/music/content/music/soundcheck/form_upload.html">360SoundCheck</a>
+            <dt>
+            <dd>
+              <cite>360SoundCheck, an extension of the Austin360 music page, is an online music player
+              dedicated to local musicians. This is a free service and any Austin band/artist is
+              welcome to submit material using our online form.</cite>
+            </dd>
+
+            <dt>
               <a id="artistserver"></a><a href=
               "http://www.artistserver.com/">ArtistServer</a>
             </dt>
