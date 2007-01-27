@@ -25,11 +25,17 @@ struct sushiv_objective_internal {
   sushiv_function_t *z_func;
   sushiv_function_t *e1_func;
   sushiv_function_t *e2_func;
+  sushiv_function_t *p1_func;
+  sushiv_function_t *p2_func;
+  sushiv_function_t *m_func;
 
   int x_fout;
   int y_fout;
   int z_fout;
   int e1_fout;
   int e2_fout;
+  int p1_fout;
+  int p2_fout;
+  int m_fout;
 };
 
