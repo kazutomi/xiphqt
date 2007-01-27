@@ -108,9 +108,19 @@ int sushiv_new_objective(sushiv_instance_t *s,
       p->z_func = s->function_list[function_map[i]];
       break;
 
+    case 'M':
+      if(p->m_func){
+	fprintf(stderr,"Objective %d: More than one magnitude [M] dimension specified.\n",
+		number);
+	return -EINVAL;
+      }
+      p->m_fout = output_map[i];
+      p->m_func = s->function_list[function_map[i]];
+      break;
+
     case 'E':
       if(p->e2_func){
-	fprintf(stderr,"Objective %d: More than two E dimensions specified.\n",
+	fprintf(stderr,"Objective %d: More than two error [E] dimensions specified.\n",
 		number);
 	return -EINVAL;
       }
@@ -120,6 +130,21 @@ int sushiv_new_objective(sushiv_instance_t *s,
       }else{
 	p->e1_fout = output_map[i];
 	p->e1_func = s->function_list[function_map[i]];
+      }
+      break;
+
+    case 'P':
+      if(p->p2_func){
+	fprintf(stderr,"Objective %d: More than two phase [P] dimensions specified.\n",
+		number);
+	return -EINVAL;
+      }
+      if(p->p1_func){
+	p->p2_fout = output_map[i];
+	p->p2_func = s->function_list[function_map[i]];
+      }else{
+	p->p1_fout = output_map[i];
+	p->p1_func = s->function_list[function_map[i]];
       }
       break;
 
