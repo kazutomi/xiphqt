@@ -70,3 +70,10 @@ typedef struct sushiv_panel1d {
   int peak_count;
 } sushiv_panel1d_t;
 
+typedef struct {
+  void (**call)(double *, double *);
+  double **fout; // [function number][outval_number*x]
+  int storage_width;
+
+} _sushiv_compute_cache_1d;
+

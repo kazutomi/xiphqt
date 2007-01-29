@@ -75,11 +75,6 @@ struct _Plot{
   u_int32_t *legend_colors;
   char **legend_list;
 
-  int expose_y_lo;
-  int expose_y_hi;
-  time_t last_line_expose;
-  time_t begin;
-
   unsigned flags;
 };
 
@@ -98,7 +93,6 @@ G_END_DECLS
 
 // the widget subclass half
 void plot_expose_request(Plot *p);
-void plot_expose_request_line(Plot *p, int num);
 void plot_expose_request_partial(Plot *p,int x, int y, int w, int h);
 void plot_set_x_scale(Plot *p, scalespace x);
 void plot_set_y_scale(Plot *p, scalespace y);

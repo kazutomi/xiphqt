@@ -33,10 +33,498 @@
 #include <gdk/gdkkeysyms.h>
 #include "internal.h"
 
+/* helper functions for performing progressive computation */
+
+/* performs render helper cleanup after finishing a progressive
+   render; makes sure old map is completely replaced by new. */
+/* Don't check serialno or size; we must force any completion before a
+   resize/rerender, so it will always match anyway */
+/* call from lock */
+static void compute_complete_render(sushiv_panel_t *p, 
+				    int true_complete){
+
+  sushiv_panel2d_t *p2 = p->subtype->p2;
+  scalespace *panelx = &p2->x;
+  scalespace *panely = &p2->y;
+  scalespace *datay = &p2->y_v;
+
+  int i,x,y;
+  int w = panelx->pixels;
+  int h = panely->pixels;
+
+  /* these progressive rendering helpers are specific to resampled y;
+     if ph=dh, there's nothing to do */
+
+  if(h != datay->pixels){
+    if(p2->render_flag){
+      if(true_complete){
+	/* fully complete render; swap and zero */
+
+	for(i=0;i<p2->y_obj_num;i++){
+	  float *n = p2->y_num_rend[i];
+	  float *d = p2->y_den_rend[i];
+
+	  p2->y_num_rend[i] = p2->y_num[i];
+	  p2->y_num = n;
+	  p2->y_den_rend[i] = p2->y_den[i];
+	  p2->y_den = d;
+	  
+	  memset(p2->y_num_rend[i],0,sizeof(**p2->y_num_rend)*w*h);
+	  memset(p2->y_den_rend[i],0,sizeof(**p2->y_den_rend)*w*h);
+
+	}
+
+      }else{
+	/* partially complete render; force the completion as a mix of current/pending */
+
+	for(i=0;i<p2->y_obj_num;i++){
+	  for(y=0;y<h;y++){
+	    float del = p2->y_rend[y];
+	    if(del>0){
+	      float *a = p2->y_num[i] + y*w;
+	      float *b = p2->y_num_rend[i] + y*w;
+	      for(x=0;x<w;x++){
+		*a = (*a) + (*a - *b++)*del;
+		a++;
+	      }
+
+	      a = p2->y_den[i] + y*w;
+	      b = p2->y_den_rend[i] + y*w;
+	      for(x=0;x<w;x++){
+		*a = *a+(*a-*b++)*del;
+		a++;
+	      }
+	    }
+	  }
+
+	  memset(p2->y_num_rend[i],0,sizeof(**p2->y_num_rend)*w*h);
+	  memset(p2->y_den_rend[i],0,sizeof(**p2->y_den_rend)*w*h);
+
+	}      
+      
+      }
+
+      memset(p2->y_rend,0,sizeof(*p2->y_rend)*h);
+    }
+
+    p2->render_flag = 0;
+  }
+}
+
+/* prepares for a render (checks for / sets up resampling) */
+// call from lock
+static void compute_prepare_render(sushiv_panel_t *p){
+  sushiv_panel2d_t *p2 = p->subtype->p2;
+  scalespace *panelx = &p2->x;
+  scalespace *panely = &p2->y;
+  scalespace *datay = &p2->y_v;
+
+  int i;
+  int w = panelx->pixels;
+  int h = panely->pixels;
+
+  if(p2->render_flag)
+    compute_complete_render(p, 0);
+
+  /* progressive rendering helpers are specific to resampled y;
+     if ph=dh, there's nothing to do */
+  if(!p2->y_rend && h != datay->pixels){
+    p2->y_rend = calloc(h,sizeof(*p2->y_rend));
+
+    if(!p2->y_num_rend)
+      p2->y_num_rend = calloc(p2->y_obj_num,sizeof(*p2->y_num_rend));
+    if(!p2->y_den_rend)
+      p2->y_den_rend = calloc(p2->y_obj_num,sizeof(*p2->y_den_rend));
+
+    for(i=0;i<p2->y_obj_num;i++){
+      p2->y_num_rend[i] = calloc(w*h,sizeof(**p2->y_num_rend));
+      p2->y_den_rend[i] = calloc(w*h,sizeof(**p2->y_den_rend));
+    }
+  }
+}
+
+static void compute_free_render(sushiv_panel_t *p){
+  sushiv_panel2d_t *p2 = p->subtype->p2;
+  int i;
+
+  if(p2->y_rend){
+    free(p2->y_rend);
+    p2->y_rend = NULL;
+  }
+    
+  if(p2->y_num_rend){
+    for(i=0;i<p2->y_obj_num;i++){
+      free(p2->y_num_rend[i]);
+      p2->y_num_rend[i]=NULL;
+    }
+  }
+
+  if(p2->y_den_rend){
+    for(i=0;i<p2->y_obj_num;i++){
+      free(p2->y_den_rend[i]);
+      p2->y_den_rend[i]=NULL;
+    }
+  }
+}
+
+// enter unlocked
+static void compute_one_data_line_2d(sushiv_panel_t *p, 
+				     scalespace panelx,
+				     scalespace datax,
+				     int x_d, 
+				     double x_min, 
+				     double x_max, 
+				     double *dim_vals, 
+				     _sushiv_compute_cache_2d *c){
+  int pw = panelx.pixels;
+  int dw = datax.pixels;
+
+  sushiv_panel2d_t *p2 = p->subtype->p2;
+  int i,j;
+
+  /* cache access is unlocked because the cache is private to this
+     worker thread */
+
+  if(pw != dw){
+    /* resampled computation */
+    float scaledel = scalespace_scaledel(&panelx,&datax);
+    float outdel = scalespace_pixel(&panelx,scalespace_value(&datax,0));
+    int outbin = floor(outdel);
+    outdel -= outbin; 
+    
+    /* zero obj line cache */
+    for(i=0;i<p->objectives;i++){
+      if(c->y_num[i])
+	memset(c->y_num[i],0, c->storage_width * sizeof(**c->y_num));
+      if(c->y_den[i])
+	memset(c->y_den[i],0, c->storage_width * sizeof(**c->y_den));
+    }
+
+    /* by x */
+    for(j=0;j<dw;j++){
+      float outdel2 = outdel + scaledel;
+
+      double *fout = c->fout;
+      sushiv_function_t **f = p2->used_function_list;
+      int *obj_y_off = p2->y_fout_offset;
+
+      float obj_y[p2->y_obj_num];
+      int *onum = p2->y_obj_to_panel;
+      
+      /* by function */
+      dim_vals[x_d] = (x_max-x_min) * j / dw + x_min;
+      for(i=0;i<p2->used_functions;i++){
+	(*f)->callback(dim_vals,fout);
+	fout += (*f)->outputs;
+	f++;
+      }
+
+      /* process function output by plane type/objective */
+      /* 2d panels currently only care about the Y output value */
+
+      /* slider map */
+      for(i=0;i<p2->y_obj_num;i++){
+	obj_y[i] = (float)slider_val_to_del(p2->range_scales[*onum], c->fout[*obj_y_off]);
+	obj_y_off++;
+	onum++;
+      }
+      
+      /* resample */
+      while(outdel2>1.f){
+	float addel = (1.f - outdel);
+	
+	if(outbin >= 0 && outbin < pw){
+	  for(i=0;i<p2->y_obj_num;i++){
+	    if(!isnan(obj_y[i])){
+	       c->y_num[i][outbin] += obj_y[i] * addel;
+	       c->y_den[i][outbin] += addel;
+	    }
+	  }
+	}
+	
+	outdel2 -= addel;
+	outbin++;
+	outdel = 0.f;
+      }
+      
+      if(outdel2>0.f){
+	float addel = (outdel2 - outdel);
+	
+	if(outbin >= 0 && outbin < pw){
+	  for(i=0;i<p2->y_obj_num;i++){
+	    if(!isnan(obj_y[i])){
+	       c->y_num[i][outbin] += obj_y[i] * addel;
+	       c->y_den[i][outbin] += addel;
+	    }
+	  }
+	}
+      }
+    }
+
+  }else{
+    /* simpler non-resampling case */
+    /* by x */
+    for(j=0;j<dw;j++){
+      double *fout = c->fout;
+      sushiv_function_t **f = p2->used_function_list;
+      int *obj_y_off = p2->y_fout_offset;
+      int *onum = p2->y_obj_to_panel;
+      
+      /* by function */
+      dim_vals[x_d] = (x_max-x_min) * j / dw + x_min;
+      for(i=0;i<p2->used_functions;i++){
+	(*f)->callback(dim_vals,fout);
+	fout += (*f)->outputs;
+	f++;
+      }
+      
+      /* process function output by plane type/objective */
+      /* 2d panels currently only care about the Y output value */
+
+      /* slider map */
+      for(i=0;i<p2->y_obj_num;i++){
+	float yval = (float)slider_val_to_del(p2->range_scales[*onum], c->fout[*obj_y_off]);
+	
+	if(!isnan(yval)){
+	  c->y_num[i][j] = yval;
+	  c->y_den[i][j] = 1.f;
+	}else{
+	  c->y_num[i][j] = 0.f;
+	  c->y_den[i][j] = 0.f;
+	}
+
+	obj_y_off++;
+	onum++;
+      }
+    }
+  }
+}
+
+/* Although render/swizzle is done by data line, we still need to
+   display panel lines.  This is a wrapper around data line rendering
+   that updates the relevant panel line[s] with the computed
+   data. */
+static void compute_one_line_2d(sushiv_panel_t *p, 
+				int serialno,
+				scalespace panelx,
+				scalespace datax,
+				scalespace panely,
+				scalespace datay,
+				      
+				int y, // data line
+				int x_d, 
+				double x_min, 
+				double x_max, 
+				double *dim_vals, 
+				_sushiv_compute_cache_2d *c){
+
+  sushiv_panel2d_t *p2 = p->subtype->p2;
+  int i,j;
+  int w = panelx.pixels;
+  int ph = panely.pixels;
+  int dh = datay.pixels;
+  
+  /* before anything else-- compute the line. */
+  compute_one_data_line_2d(p, panelx, datax, x_d, x_min, x_max,
+			   dim_vals, c);    
+
+  if(ph != dh){
+    /* this is a resampling population */
+
+    float scaledel = scalespace_scaledel(&panely,&datay);
+    float outdel = scalespace_pixel(&panely,scalespace_value(&datay,y));
+    int outbin = floor(outdel);
+    float outdel2 = (outdel-outbin) + scaledel;
+    outdel -= outbin; 
+
+    while(outdel2>1.f){
+      float addel = (1.f - outdel);
+      
+      if(outbin >= 0 && outbin < ph){
+	gdk_threads_enter ();
+
+	if(p2->serialno == serialno){
+	  for(j=0;j<p2->y_obj_num;j++){
+	    float *n = p2->y_num_rend[j] + outbin*w;
+	    float *d = p2->y_den_rend[j] + outbin*w;
+	    float *tn = c->y_num[j];
+	    float *td = c->y_den[j];
+	    
+	    for(i=0;i<w;i++){
+	      n[i] += tn[i] * addel;
+	      d[i] += td[i] * addel;
+	    }
+	  }
+	  p2->y_rend[outbin]+=addel;
+	}else{
+	  gdk_threads_leave ();
+	  return;
+	}
+	gdk_threads_leave ();
+      }
+
+      outdel2 -= addel;
+      outbin++;
+      outdel = 0.f;
+    }
+
+    if(outdel2>0.f){
+      float addel = (outdel2 - outdel);
+      
+      if(outbin >= 0 && outbin < ph){
+	gdk_threads_enter ();
+	if(p2->serialno == serialno){
+	  for(j=0;j<p2->y_obj_num;j++){
+	    float *n = p2->y_num_rend[j] + outbin*w;
+	    float *d = p2->y_den_rend[j] + outbin*w;
+	    float *tn = c->y_num[j];
+	    float *td = c->y_den[j];
+	    
+	    for(i=0;i<w;i++){
+	      n[i] += tn[i] * addel;
+	      d[i] += td[i] * addel;
+	    }
+	  }
+	  p2->y_rend[outbin]+=addel;
+	}
+	gdk_threads_leave ();
+      }
+    }
+  }else{
+
+    gdk_threads_enter ();
+    
+    if(p2->serialno == serialno){
+      for(j=0;j<p2->y_obj_num;j++){
+	float *n = p2->y_num[j] + y*w;
+	float *d = p2->y_den[j] + y*w;
+	float *tn = c->y_num[j];
+	float *td = c->y_den[j];
+	
+	memcpy(n,tn,w*sizeof(*n));
+	memcpy(d,td,w*sizeof(*n));
+	
+      }
+    }
+    gdk_threads_leave ();
+  }
+}
+
+// call with lock
+static void clear_pane(sushiv_panel_t *p){
+
+  sushiv_panel2d_t *p2 = p->subtype->p2;
+  scalespace *panelx = &p2->x;
+  scalespace *panely = &p2->y;
+  int i;
+  int w = panelx->pixels;
+  int h = panely->pixels;
+
+  for(i=0;i<p2->y_obj_num;i++){
+    memset(p2->y_num[i],0,sizeof(**p2->y_num)*w*h);
+    memset(p2->y_den[i],0,sizeof(**p2->y_den)*w*h);
+    if(p2->y_num_rend && p2->y_num_rend[i])
+      memset(p2->y_num_rend[i],0,sizeof(**p2->y_num_rend)*w*h);
+    if(p2->y_den_rend && p2->y_den_rend[i])
+      memset(p2->y_den_rend[i],0,sizeof(**p2->y_den_rend)*w*h);
+  } 
+  if(p2->y_rend)
+    memset(p2->y_rend,0,sizeof(*p2->y_rend)*h);
+  p2->render_flag = 0;
+}
+
+typedef struct{
+  double x;
+  double y;
+  double z;
+  double e1;
+  double e2;
+  double p1;
+  double p2;
+  double m;
+} compute_result;
+
+// used by the legend code. this lets us get away with having only a mapped display pane
+// call with lock
+static void compute_single_point(sushiv_panel_t *p,sushiv_objective_t *o, double x, double y, compute_result *out){
+  double dim_vals[p->sushi->dimensions];
+  sushiv_panel2d_t *p2 = p->subtype->p2;
+  int i,j;
+  int pflag=0;
+  int eflag=0;
+
+  // fill in dimensions
+  int x_d = p2->x_d->number;
+  int y_d = p2->y_d->number;
+
+  for(i=0;i<p->sushi->dimensions;i++){
+    sushiv_dimension_t *dim = p->sushi->dimension_list[i];
+    dim_vals[i]=dim->val;
+  }
+
+  gdk_threads_leave();
+
+  dim_vals[x_d] = x;
+  dim_vals[y_d] = y;
+
+  *out = (compute_result){NAN,NAN,NAN,NAN,NAN,NAN,NAN,NAN};
+
+  // compute
+  for(i=0;i<p->sushi->functions;i++){
+    sushiv_function_t *f = p->sushi->function_list[i];
+    int compflag = 0;
+    double fout[f->outputs];
+    double val;
+
+    // compute and demultiplex output
+    for(j=0;j<o->outputs;j++){
+      if(o->function_map[j] == i){
+
+	if(!compflag) f->callback(dim_vals,fout);
+	compflag = 1;
+	
+	val = fout[o->output_map[j]];
+	switch(o->output_types[j]){
+	case 'X':
+	  out->x = val;
+	  break;
+	case 'Y':
+	  out->y = val;
+	  break;
+	case 'Z':
+	  out->z = val;
+	  break;
+	case 'E':
+	  if(eflag)
+	    out->e2 = val;
+	  else
+	    out->e1 = val;
+	  eflag = 1;
+	  break;
+	case 'P':
+	  if(pflag)
+	    out->p2 = val;
+	  else
+	    out->p1 = val;
+	  pflag = 1;
+	  break;
+	case 'M':
+	  out->m = val;
+	  break;
+	}
+      }
+    }
+  }
+  gdk_threads_enter();
+
+}
+
+/* functions that perform actual graphical rendering */
+
 static void render_checks(int w, int y, u_int32_t *render){
   int x,j;
   /* default checked background */
-  /* 16x16 'mid-checks' */
+  /* 16x16 'mid-checks' */ 
   int phase = (y>>4)&1;
   for(x=0;x<w;){
     u_int32_t phaseval = 0x505050;
@@ -47,40 +535,75 @@ static void render_checks(int w, int y, u_int32_t *render){
   }
 }
 
+static void render_y_plane(sushiv_panel_t *p, int y, int objnum, u_int32_t *render){
+  sushiv_panel2d_t *p2 = p->subtype->p2;
+
+  int w,h,x;
+  int cond_onum = p2->y_obj_from_panel[objnum];
+  double alpha = p2->alphadel[objnum];
+  w = p2->x.pixels;
+  h = p2->y.pixels;
+
+  // is this a resampled render in-progress?
+  if(p2->render_flag){
+    // resampled render in-progress; we must merge the panel and render buffers
+    float del = p2->y_rend[y];
+    float *numA = p2->y_num[cond_onum] + w*y;
+    float *denA = p2->y_den[cond_onum] + w*y;
+    float *numB = p2->y_num_rend[cond_onum] + w*y;
+    float *denB = p2->y_den_rend[cond_onum] + w*y;
+
+    for(x=0;x<w;x++){
+      float num = numA[x] + (numB[x] - numA[x])*del;
+      float den = denA[x] + (denB[x] - denA[x])*del;
+      if(den>0.f){
+	num /= den;
+	/* map/render result */
+	if(!isnan(num) && num>=alpha)
+	  render[x] = mapping_calc_a(p2->mappings+objnum,num,den,render[x]);
+      }
+    }
+
+  }else{
+    // normal render or fully complete resampled render 
+
+    float *num = p2->y_num[cond_onum] + w*y;
+    float *den = p2->y_den[cond_onum] + w*y;
+
+    for(x=0;x<w;x++){
+      /* map/render result */
+      if(!isnan(num[x]) && num[x]>=alpha)
+	render[x] = mapping_calc_a(p2->mappings+objnum,num[x],den[x],render[x]);
+    }
+  }
+}
+
 static void _sushiv_panel2d_remap(sushiv_panel_t *p){
   sushiv_panel2d_t *p2 = p->subtype->p2;
   Plot *plot = PLOT(p->private->graph);
 
-  int w,h,x,y,i;
-  w = p2->data_w;
-  h = p2->data_h;
+  int w,h,y,i;
+  w = p2->x.pixels;
+  h = p2->y.pixels;
 
   if(plot){
-    u_int32_t render[w];
-
-    /* iterate */
-    /* by line */
     for(y = 0; y<h; y++){
-   
+      u_int32_t *render = plot->datarect + y*w;
+      
+      /* background checks */
       render_checks(w,y,render);
-
+      
       /* by objective */
       for(i=0;i<p->objectives;i++){
-	double *data_rect = p2->data_rect[i] + y*w;
-	double alpha = p2->alphadel[i];
+	
+	/**** render Y plane */
+	render_y_plane(p, y, i, render);
+	
+	/**** render Z plane */
 
-	/* by x */
-	for(x=0;x<w;x++){
-	  double val = data_rect[x];
-	  
-	  /* map/render result */
-	  if(!isnan(val) && val>=alpha)
-	    render[x] = mapping_calc(p2->mappings+i,val,render[x]);
-	}
+	/**** render vector plane */
+
       }
-      
-      /* store result in panel */
-      memcpy(plot->datarect+y*w,render,w*sizeof(*render));
     }
   }
 }
@@ -90,10 +613,6 @@ static void update_legend(sushiv_panel_t *p){
   Plot *plot = PLOT(p->private->graph);
 
   gdk_threads_enter ();
-  int w = p2->data_w;
-  int h = p2->data_h;
-  int x = plot_get_crosshair_xpixel(plot);
-  int y = plot_get_crosshair_ypixel(plot);
 
   if(plot){
     int i;
@@ -106,36 +625,29 @@ static void update_legend(sushiv_panel_t *p){
     if(3-p2->x.decimal_exponent > depth) depth = 3-p2->x.decimal_exponent;
     if(3-p2->y.decimal_exponent > depth) depth = 3-p2->y.decimal_exponent;
     for(i=0;i<p->dimensions;i++){
-      //int depth = del_depth(p->dimension_list[i].d->bracket[0],
-      //		    p->dimension_list[i].d->bracket[1]) + offset;
       snprintf(buffer,320,"%s = %+.*f",
 	       p->dimension_list[i].d->name,
 	       depth,
 	       p->dimension_list[i].d->val);
       plot_legend_add(plot,buffer);
     }
-
+    
     // one space 
     plot_legend_add(plot,NULL);
 
-    // add each active objective to the legend
+    // add each active objective plane to the legend
     // choose the value under the crosshairs 
     for(i=0;i<p->objectives;i++){
-      float val=NAN;
 
-      if(p2->data_rect && p2->data_rect[i] &&
-	 x<w && x>0 &&
-	 y<h && y>0 )
-	val = p2->data_rect[i][y*w+x];
+      if(!mapping_inactive_p(p2->mappings+i)){
+	compute_result vals;
+	compute_single_point(p,p->objective_list[i].o, plot->selx, plot->sely, &vals);
 
-      if(!isnan(val) && val >= p2->alphadel[i]){
-	
-	val = slider_del_to_val(p2->range_scales[i],val);
-	
-	if(!isnan(val) && !mapping_inactive_p(p2->mappings+i)){
+	if(!isnan(vals.y)){
+	  
 	  snprintf(buffer,320,"%s = %f",
 		   p->objective_list[i].o->name,
-		   val);
+		   vals.y);
 	  plot_legend_add(plot,buffer);
 	}
       }
@@ -265,81 +777,6 @@ static void update_xy_availability(sushiv_panel_t *p){
   } 
 }
 
-static void compute_one_line_2d(sushiv_panel_t *p, 
-				int serialno,
-				int y, 
-				int x_d, 
-				double x_min, 
-				double x_max, 
-				int w, 
-				double *dim_vals, 
-				u_int32_t *render,
-				_sushiv_compute_cache *c){
-
-  sushiv_panel2d_t *p2 = p->subtype->p2;
-  int i,j,fn=p->sushi->functions;
-  double work[w];
-
-  render_checks(w,y,render);
-
-  /* by function */
-  for(i=0;i<fn;i++){
-    if(c->call[i]){
-      sushiv_function_t *f = p->sushi->function_list[i];
-      int step = f->outputs;
-      double *fout = c->fout[i];
-      
-      /* by x */
-      for(j=0;j<w;j++){
-
-	dim_vals[x_d] = (x_max-x_min) * j / w + x_min;
-	c->call[i](dim_vals,fout);
-	fout+=step;
-      }
-    }
-  }
-
-  /* process function output by objective */
-  /* 2d panels only care about the Y output value */
-  for(i=0;i<p->objectives;i++){
-    sushiv_objective_t *o = p->objective_list[i].o;
-    int offset = o->private->y_fout;
-    sushiv_function_t *f = o->private->y_func;
-    if(f){
-      int step = f->outputs;
-      double *fout = c->fout[f->number]+offset;
-      mapping m;
-      double alpha;
-      
-      /* map result */
-      /* range scales are static so no need to lock; if that ever
-	 changes, locking should happen in the scales... */
-      for(j=0;j<w;j++){
-	work[j] = slider_val_to_del(p2->range_scales[i],*fout);
-	fout+=step;
-      }
-      
-      gdk_threads_enter (); // misuse me as a global mutex
-      if(p2->serialno == serialno){
-	memcpy(p2->data_rect[i]+y*w,work,w*sizeof(*work));
-	memcpy(&m,p2->mappings+i,sizeof(m));
-	alpha = p2->alphadel[i];
-	gdk_threads_leave (); // misuse me as a global mutex
-      }else{
-	gdk_threads_leave (); // misuse me as a global mutex
-	break;
-      }
-      
-      for(j=0;j<w;j++){	
-	double val = work[j];
-	if(!isnan(val) && val>=alpha)
-	  render[j] = mapping_calc(&m,val,render[j]);
-	
-      }
-    }
-  }
-}
-
 static int v_swizzle(int y, int height){
   int yy = height >> 5;
   if(y < yy)
@@ -370,15 +807,15 @@ static int v_swizzle(int y, int height){
 }
 
 // assumes data is locked
-static void fast_scale_x(double *data, 
+static void fast_scale_x(float *data, 
 			 int w,
 			 int h,
 			 scalespace new,
 			 scalespace old){
   int x,y;
-  double work[w];
+  float work[w];
   int mapbase[w];
-  double mapdel[w];
+  float mapdel[w];
 
   double old_w = old.pixels;
   double new_w = new.pixels;
@@ -396,19 +833,16 @@ static void fast_scale_x(double *data,
   }
 
   for(y=0;y<h;y++){
-    double *data_line = data+y*w;
+    float *data_line = data+y*w;
     for(x=0;x<w;x++){
       if(mapbase[x]<0 || mapbase[x]>=(w-1)){
-	work[x]=NAN;
+	work[x]=0.f;
       }else{
 	int base = mapbase[x];
-	double del = mapdel[x];
-	double A = data_line[base];
-	double B = data_line[base+1];
-	if(isnan(A) || isnan(B)) // damn you SIGFPE
-	  work[x]=NAN;
-	else
-	  work[x]= A - A*del + B*del;
+	float del = mapdel[x];
+	float A = data_line[base];
+	float B = data_line[base+1];
+	  work[x]= A + (B - A)*del;
 	
       }
     }
@@ -416,15 +850,15 @@ static void fast_scale_x(double *data,
   }   
 }
 
-static void fast_scale_y(double *data, 
+static void fast_scale_y(float *data, 
 			 int w,
 			 int h,
 			 scalespace new,
 			 scalespace old){
   int x,y;
-  double work[h];
+  float work[h];
   int mapbase[h];
-  double mapdel[h];
+  float mapdel[h];
 
   double old_h = old.pixels;
   double new_h = new.pixels;
@@ -443,21 +877,18 @@ static void fast_scale_y(double *data,
   }
   
   for(x=0;x<w;x++){
-    double *data_column = data+x;
+    float *data_column = data+x;
     int stride = w;
     for(y=0;y<h;y++){
       if(mapbase[y]<0 || mapbase[y]>=(h-1)){
-	work[y]=NAN;
+	work[y]=0.f;
       }else{
 	int base = mapbase[y]*stride;
-	double del = mapdel[y];
-	double A = data_column[base];
-	double B = data_column[base+stride];
+	float del = mapdel[y];
+	float A = data_column[base];
+	float B = data_column[base+stride];
 	
-	if(isnan(A) || isnan(B)) // damn you SIGFPE
-	  work[y]=NAN;
-	else
-	  work[y]= A - A*del + B*del;
+	work[y]= A + (B-A)*del;
 	
       }
     }
@@ -468,10 +899,10 @@ static void fast_scale_y(double *data,
   }   
 }
 
-static void fast_scale(double *newdata, 
+static void fast_scale(float *newdata, 
 		       scalespace xnew,
 		       scalespace ynew,
-		       double *olddata,
+		       float *olddata,
 		       scalespace xold,
 		       scalespace yold){
   int y;
@@ -485,8 +916,8 @@ static void fast_scale(double *newdata,
     if(new_h > old_h){
       // copy image to new, scale there
       for(y=0;y<old_h;y++){
-	double *new_line = newdata+y*new_w;
-	double *old_line = olddata+y*old_w;
+	float *new_line = newdata+y*new_w;
+	float *old_line = olddata+y*old_w;
 	memcpy(new_line,old_line,old_w*(sizeof*new_line));
       }
       fast_scale_x(newdata,new_w,new_h,xnew,xold);
@@ -495,8 +926,8 @@ static void fast_scale(double *newdata,
       // scale y in old pane, copy to new, scale x 
       fast_scale_y(olddata,old_w,old_h,ynew,yold);
       for(y=0;y<new_h;y++){
-	double *new_line = newdata+y*new_w;
-	double *old_line = olddata+y*old_w;
+	float *new_line = newdata+y*new_w;
+	float *old_line = olddata+y*old_w;
 	memcpy(new_line,old_line,old_w*(sizeof*new_line));
       }
       fast_scale_x(newdata,new_w,new_h,xnew,xold);
@@ -506,8 +937,8 @@ static void fast_scale(double *newdata,
       // scale x in old pane, o=copy to new, scale y
       fast_scale_x(olddata,old_w,old_h,xnew,xold);
       for(y=0;y<old_h;y++){
-	double *new_line = newdata+y*new_w;
-	double *old_line = olddata+y*old_w;
+	float *new_line = newdata+y*new_w;
+	float *old_line = olddata+y*old_w;
 	memcpy(new_line,old_line,new_w*(sizeof*new_line));
       }
       fast_scale_y(newdata,new_w,new_h,ynew,yold);
@@ -518,8 +949,8 @@ static void fast_scale(double *newdata,
       fast_scale_y(olddata,old_w,old_h,ynew,yold);
       if(olddata != newdata){
 	for(y=0;y<new_h;y++){
-	  double *new_line = newdata+y*new_w;
-	  double *old_line = olddata+y*old_w;
+	  float *new_line = newdata+y*new_w;
+	  float *old_line = olddata+y*old_w;
 	  memcpy(new_line,old_line,new_w*(sizeof*new_line));
 	}
       }
@@ -534,61 +965,96 @@ static void _mark_recompute_2d(sushiv_panel_t *p){
   Plot *plot = PLOT(p->private->graph);
   int w = plot->w.allocation.width;
   int h = plot->w.allocation.height;
+  int remapflag = 0;
 
   if(plot && GTK_WIDGET_REALIZED(GTK_WIDGET(plot))){
-
-    if( (p2->data_w != w ||
-	 p2->data_h != h) &&
-	p2->data_rect){
+    
+    if( p2->serialno && // we've been through once and alloced
+	(p2->x.pixels != w ||
+	 p2->y.pixels != h)){
 	
+	
+      // if a render was in progress, force completion 
+      compute_complete_render(p, 0);
+      compute_free_render(p);
+
       // make new rects, do a fast/dirty scaling job from old to new
       int i;
-      for(i=0;i<p->objectives;i++){
-	double *new_rect = malloc(w * h* sizeof(**p2->data_rect));
+
+      /* Y planes */
+      for(i=0;i<p2->y_obj_num;i++){
+	float *new_n = calloc(w*h,sizeof(*new_n));
+	float *new_d = calloc(w*h,sizeof(*new_d));
 	
-	fast_scale(new_rect,plot->x,plot->y,p2->data_rect[i],p2->x,p2->y);
+	fast_scale(new_n,plot->x,plot->y,p2->y_num[i],p2->x,p2->y);
+	fast_scale(new_d,plot->x,plot->y,p2->y_den[i],p2->x,p2->y);
 	
-	free(p2->data_rect[i]);
-	p2->data_rect[i] = new_rect;
+	free(p2->y_num[i]);
+	free(p2->y_den[i]);
+	p2->y_num[i] = new_n;
+	p2->y_den[i] = new_d;
       }
+
+      /* match data scales to new panel size/scale */
       p2->x = plot->x;
+      _sushiv_dimension_scales_from_panel(p2->x_d,
+					  p2->x,
+					  p2->x.pixels, // over/undersample will go here
+					  &p2->x_v,
+					  &p2->x_i);
       p2->y = plot->y;
-      p2->data_w = w;
-      p2->data_h = h;
-      
+      _sushiv_dimension_scales_from_panel(p2->y_d,
+					  p2->y,
+					  p2->y.pixels, // over/undersample will go here
+					  &p2->y_v,
+					  &p2->y_i);
       _sushiv_panel2d_map_redraw(p);
     }else{
-      
-      p2->data_w = w;
-      p2->data_h = h;
-      
-      p2->x = scalespace_linear(p2->x_d->bracket[0],
-				p2->x_d->bracket[1],
-				w,
-				PLOT(p->private->graph)->scalespacing,
-				p2->x_d->name);
-      
-      p2->y = scalespace_linear(p2->y_d->bracket[0],
-				p2->y_d->bracket[1],
-				h,
-				PLOT(p->private->graph)->scalespacing,
-				p2->y_d->name);
+
+      _sushiv_dimension_scales(p2->x_d, 
+			       p2->x_d->bracket[0],
+			       p2->x_d->bracket[1],
+			       w,w,// over/undersample will go here
+			       plot->scalespacing,
+			       p2->x_d->name,
+			       &p2->x,
+			       &p2->x_v,
+			       &p2->x_i);
+      _sushiv_dimension_scales(p2->y_d, 
+			       p2->y_d->bracket[0],
+			       p2->y_d->bracket[1],
+			       h,h,// over/undersample will go here
+			       plot->scalespacing,
+			       p2->y_d->name,
+			       &p2->y,
+			       &p2->y_v,
+			       &p2->y_i);
     }
     
-    if(!p2->data_rect){
-      int i,j;
+    if(!p2->y_num){
+      int i;
       // allocate it
-
-      p2->data_rect = calloc(p->objectives,sizeof(*p2->data_rect));
-      for(i=0;i<p->objectives;i++)
-	p2->data_rect[i] = malloc(p2->data_w * p2->data_h* sizeof(**p2->data_rect));
       
-      // blank it 
-      for(i=0;i<p->objectives;i++)
-	for(j=0;j<p2->data_w*p2->data_h;j++)
-	  p2->data_rect[i][j]=NAN;
-      _sushiv_panel2d_map_redraw(p);
+      p2->y_num = calloc(p2->y_obj_num,sizeof(*p2->y_num));
+      for(i=0;i<p2->y_obj_num;i++)
+	p2->y_num[i] = calloc(w*h, sizeof(**p2->y_num));
+
+      remapflag = 1;
     }
+
+    if(!p2->y_den){
+      int i;
+      // allocate it
+      
+      p2->y_den = calloc(p2->y_obj_num,sizeof(*p2->y_den));
+      for(i=0;i<p2->y_obj_num;i++)
+	p2->y_den[i] = calloc(w*h, sizeof(**p2->y_den));
+
+      remapflag = 1;
+    }
+
+    if(remapflag)
+      _sushiv_panel2d_map_redraw(p);
     
     p2->serialno++;
     p2->last_line = 0;
@@ -655,8 +1121,6 @@ static void bracket_callback_2d(sushiv_dimension_list_t *dptr){
 
 static void dimchange_callback_2d(GtkWidget *button,gpointer in){
   sushiv_panel_t *p = (sushiv_panel_t *)in;
-  sushiv_panel2d_t *p2 = p->subtype->p2;
-  int i,j;
 
   if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button))){
 
@@ -666,10 +1130,7 @@ static void dimchange_callback_2d(GtkWidget *button,gpointer in){
     plot_unset_box(PLOT(p->private->graph));
     update_xy_availability(p);
 
-    /* if the data_rect already exists, blank it */
-    for(i=0;i<p->objectives;i++)
-      for(j=0;j<p2->data_w*p2->data_h;j++)
-	p2->data_rect[i][j]=NAN;
+    clear_pane(p);
     _sushiv_panel2d_map_redraw(p);
     
     _mark_recompute_2d(p);
@@ -735,6 +1196,44 @@ static void box_callback(void *in, int state){
   p->private->update_menus(p);
 }
 
+void _maintain_cache_2d(sushiv_panel_t *p, _sushiv_compute_cache_2d *c, int w){
+  sushiv_panel2d_t *p2 = p->subtype->p2;
+  
+  /* toplevel initialization */
+  if(c->fout == 0){
+    int i,count=0;
+    
+    /* allocate output temporary buffer */
+    for(i=0;i<p2->used_functions;i++){
+      int fnum = p2->used_function_list[i]->number;
+      sushiv_function_t *f = p->sushi->function_list[fnum];
+      count += f->outputs;
+    }
+    c->fout = calloc(count, sizeof(*c->fout));
+
+    /* objective line buffer index */
+    c->y_num = calloc(p2->y_obj_num,sizeof(*c->y_num));
+    c->y_den = calloc(p2->y_obj_num,sizeof(*c->y_den));
+    for(i=0;i<p2->y_obj_num;i++){
+      c->y_num[i] = calloc(w,sizeof(**c->y_num));
+      c->y_den[i] = calloc(w,sizeof(**c->y_den));
+    }
+    c->storage_width = w;
+  }
+
+  /* anytime the data width changes */
+  if(c->storage_width != w){
+    int i;
+    c->storage_width = w;
+
+    for(i=0;i<p2->y_obj_num;i++){
+      p2->y_num[i] = realloc(p2->y_num[i],w*sizeof(**p2->y_num));
+      p2->y_den[i] = realloc(p2->y_den[i],w*sizeof(**p2->y_den));
+    }
+  }
+}
+
+
 // called from one/all of the worker threads; the idea is that several
 // of the threads will all call this and they collectively interleave
 // ongoing computation of the pane
@@ -744,23 +1243,28 @@ static int _sushiv_panel_cooperative_compute_2d(sushiv_panel_t *p,
   sushiv_panel2d_t *p2 = p->subtype->p2;
   Plot *plot;
   
-  int w,h,i,d;
+  int pw,ph,dw,dh,i,d;
   int serialno;
   double x_min, x_max;
   double y_min, y_max;
   int x_d=-1, y_d=-1;
   int render_scale_flag = 0;
-  scalespace sx;
-  scalespace sy;
+  scalespace sx,sx_v;
+  scalespace sy,sy_v;
 
   // lock during setup
   gdk_threads_enter ();
-  w = p2->data_w;
-  h = p2->data_h;
   sx = p2->x;
+  sx_v = p2->x_i;
   sy = p2->y;
+  sy_v = p2->y_i;
 
-  if(p2->last_line>=h){
+  pw = sx.pixels;
+  ph = sy.pixels;
+  dw = sx_v.pixels;
+  dh = sy_v.pixels;
+
+  if(p2->last_line>=dh){
     gdk_threads_leave ();
     return 0;
   }
@@ -774,43 +1278,35 @@ static int _sushiv_panel_cooperative_compute_2d(sushiv_panel_t *p,
      computing objectives */
   double dim_vals[p->sushi->dimensions];
 
-  /* render into temporary line; computation may be interrupted by
-     events such as resizing, so we must be careful to simply assume
-     the widget is unaltered between locks. This allows us to minimize
-     checks. */
-  u_int32_t render[w];
-
-  x_min = scalespace_value(&sx,0);
-  x_max = scalespace_value(&sx,w);
+  x_min = scalespace_value(&p2->x_i,0);
+  x_max = scalespace_value(&p2->x_i,dw);
   x_d = p2->x_d->number;
 
-  y_min = scalespace_value(&sy,h);
-  y_max = scalespace_value(&sy,0);
+  y_min = scalespace_value(&p2->y_i,dh);
+  y_max = scalespace_value(&p2->y_i,0);
   y_d = p2->y_d->number;
 
   // if the scale bound has changed, fast scale our background data to fill
   // the pane while new, more precise data renders.
   if(memcmp(&sx,&plot->x,sizeof(sx))){
-    for(i=0;i<p->objectives;i++)
-      fast_scale_x(p2->data_rect[i],w,h,
+    for(i=0;i<p2->y_obj_num;i++){
+      fast_scale_x(p2->y_num[i],pw,ph,
 		   sx,plot->x);
+      fast_scale_x(p2->y_den[i],pw,ph,
+		   sx,plot->x);
+    }
     plot->x = sx;
     _sushiv_panel2d_remap(p);
   }
   if(memcmp(&sy,&plot->y,sizeof(sy))){
-    for(i=0;i<p->objectives;i++)
-      fast_scale_y(p2->data_rect[i],w,h,
+    for(i=0;i<p2->y_obj_num;i++){
+      fast_scale_y(p2->y_num[i],pw,ph,
 		   sy,plot->y);
+      fast_scale_y(p2->y_den[i],pw,ph,
+		   sy,plot->y);
+    }
     plot->y = sy;
     _sushiv_panel2d_remap(p);
-  }
-
-  // Bulletproofing; shouldn't ever come up
-  if(x_d == y_d || x_d==-1 || y_d==-1){
-    gdk_threads_leave ();
-    fprintf(stderr,"Invalid/missing x/y dimension setting in panel x_d=%d, y_d=%d\n",
-	    x_d,y_d);
-    return 0;
   }
 
   // Initialize local dimension value array
@@ -819,7 +1315,8 @@ static int _sushiv_panel_cooperative_compute_2d(sushiv_panel_t *p,
     dim_vals[i]=dim->val;
   }
 
-  _maintain_cache(p,c,w);
+  _maintain_cache_2d(p,&c->p2,pw);
+  compute_prepare_render(p);
 
   // update scales if we're just starting
   if(p2->last_line==0){
@@ -828,10 +1325,9 @@ static int _sushiv_panel_cooperative_compute_2d(sushiv_panel_t *p,
 
   /* iterate */
   /* by line */
-  if(plot->w.allocation.height == h &&
-     p2->last_line<h &&
+  if(p2->last_line<dh &&
      serialno == p2->serialno){
-    int y = v_swizzle(p2->last_line,h);
+    int y = v_swizzle(p2->last_line,dh);
 
     p2->last_line++;
     
@@ -843,27 +1339,26 @@ static int _sushiv_panel_cooperative_compute_2d(sushiv_panel_t *p,
       render_scale_flag = 0;
     }
     
-    dim_vals[y_d]= (y_max - y_min) / h * y + y_min;
+    dim_vals[y_d]= (y_max - y_min) / dh * y + y_min;
     
     /* compute line */
-    compute_one_line_2d(p, serialno, y, x_d, x_min, x_max, w, dim_vals, render, c);
-    
-    /* move rendered line back into widget */
+    compute_one_line_2d(p, serialno, sx, sx_v, sy, sy_v,  y, x_d, x_min, x_max, dim_vals, &c->p2);
+
     gdk_threads_enter ();
     p2->completed_lines++;
 
     if(p2->serialno == serialno){
-      u_int32_t *line = plot_get_background_line(plot, y);
-      memcpy(line,render,w*sizeof(*render));
-      if(p2->completed_lines==h){ 
+      if(p2->completed_lines==dh){ 
+	compute_complete_render(p, 1);
+	_sushiv_panel_dirty_map(p);
 	_sushiv_panel_dirty_legend(p);
 	plot_expose_request(plot);
       }else{
-	plot_expose_request_line(plot,y);
+	_sushiv_panel_dirty_map_throttled(p);
       }
     }
   }
-   
+  
   gdk_threads_leave ();
   return 1;
 }
@@ -945,67 +1440,6 @@ static void panel2d_undo_restore(sushiv_panel_undo_t *u, sushiv_panel_t *p){
   }
 }
 
-// called with lock
-static void panel2d_find_peak(sushiv_panel_t *p){
-  sushiv_panel2d_t *p2 = p->subtype->p2;
-  Plot *plot = PLOT(p->private->graph);
-  int i,j;
-  int w = p2->data_w;
-  int h = p2->data_h;
-  int n = w*h;
-  int count = 0;
-  
-  // finds in order each peak (in the event there's more than one) of
-  // each active objective
-  while(1){
-
-    for(i=0;i<p->objectives;i++){
-      if(p2->data_rect && p2->data_rect[i] && !mapping_inactive_p(p2->mappings+i)){
-	double *data=p2->data_rect[i];
-	double best_val = data[0];
-	double best_j = 0;
-	int inner_count = count+1;
-	
-	for(j=1;j<n;j++){
-	  if(!isnan(data[j])){
-	    if(data[j]>best_val){
-	      inner_count = count+1;
-	      best_val = data[j];
-	      best_j = j;
-	    }else if (data[j]==best_val){
-	      if(inner_count <= p2->peak_count){
-		inner_count++;
-		best_val = data[j];
-		best_j = j;
-	      }
-	    }
-	  }
-	}
-	 
-	count = inner_count;
-	if(count>p2->peak_count){
-	  int y = best_j/w;
-	  int x = best_j - y*w;
-	  double xv = scalespace_value(&p2->x,x);
-	  double yv = scalespace_value(&p2->y,h-y);
-	  
-	  plot_set_crosshairs(plot,xv,yv);
-	  _sushiv_panel2d_crosshairs_callback(p);
-	  
-	  p2->peak_count++;
-	  
-	  return;
-	}
-      }
-    }
-    
-    if(p2->peak_count==0)
-      return; // must be all inactive
-    else
-      p2->peak_count=0;
-  }
-}
-
 static gboolean panel2d_keypress(GtkWidget *widget,
 				 GdkEventKey *event,
 				 gpointer in){
@@ -1035,10 +1469,6 @@ static gboolean panel2d_keypress(GtkWidget *widget,
     _sushiv_panel_undo_up(p);
     return TRUE;
 
-  case GDK_p:
-    // find [next] peak
-    panel2d_find_peak(p);
-    return TRUE;
   }
 
   return FALSE;
@@ -1119,7 +1549,6 @@ static char *graph_menulist[]={
   "",
   "Start zoom box",
   "Clear readouts",
-  "Find peaks",
   "",
   "Quit",
   NULL
@@ -1131,7 +1560,6 @@ static char *graph_shortlist[]={
   NULL,
   "Enter",
   "Escape",
-  "p",
   NULL,
   "q",
   NULL
@@ -1144,7 +1572,6 @@ static void (*graph_calllist[])(sushiv_panel_t *)={
 
   &wrap_enter,
   &wrap_escape,
-  &panel2d_find_peak,
   NULL,
   &wrap_exit,
   NULL,
@@ -1323,10 +1750,11 @@ int sushiv_new_panel_2d(sushiv_instance_t *s,
 			int *dimensions,
 			unsigned flags){
   
-  int i;
+  int i,j;
   int ret = _sushiv_new_panel(s,number,name,objectives,dimensions,flags);
   sushiv_panel_t *p;
   sushiv_panel2d_t *p2;
+  int fout_offsets[s->functions];
 
   if(ret<0)return ret;
   p = s->panel_list[number];
@@ -1370,6 +1798,81 @@ int sushiv_new_panel_2d(sushiv_instance_t *s,
   p->private->undo_log = panel2d_undo_log;
   p->private->undo_restore = panel2d_undo_restore;
   p->private->update_menus = update_context_menus;
+
+  /* set up helper data structures for rendering */
+
+  /* determine which functions are actually needed; if it's referenced
+     by an objective, it's used.  Precache them in dense form. */
+  {
+    int fn = p->sushi->functions;
+    int used[fn],count=0,offcount=0;
+    memset(used,0,sizeof(used));
+    memset(fout_offsets,-1,sizeof(fout_offsets));
+    
+    for(i=0;i<p->objectives;i++){
+      sushiv_objective_t *o = p->objective_list[i].o;
+      for(j=0;j<o->outputs;j++)
+	used[o->function_map[j]]=1;
+    }
+
+    for(i=0;i<fn;i++)
+      if(used[i]){
+	sushiv_function_t *f = p->sushi->function_list[i];
+	fout_offsets[i] = offcount;
+	offcount += f->outputs;
+	count++;
+      }
+
+    p2->used_functions = count;
+    p2->used_function_list = calloc(count, sizeof(*p2->used_function_list));
+
+    for(count=0,i=0;i<fn;i++)
+     if(used[i]){
+        p2->used_function_list[count]=p->sushi->function_list[i];
+	count++;
+      }
+  }
+
+  /* set up computation/render helpers for Y planes */
+
+  /* set up Y object mapping index */
+  {
+    int yobj_count = 0;
+
+    for(i=0;i<p->objectives;i++){
+      sushiv_objective_t *o = p->objective_list[i].o;
+      if(o->private->y_func) yobj_count++;
+    }
+
+    p2->y_obj_num = yobj_count;
+    p2->y_obj_list = calloc(yobj_count, sizeof(*p2->y_obj_list));
+    p2->y_obj_to_panel = calloc(yobj_count, sizeof(*p2->y_obj_to_panel));
+    p2->y_obj_from_panel = calloc(p->objectives, sizeof(*p2->y_obj_from_panel));
+    
+    yobj_count=0;
+    for(i=0;i<p->objectives;i++){
+      sushiv_objective_t *o = p->objective_list[i].o;
+      if(o->private->y_func){
+	p2->y_obj_list[yobj_count] = o;
+	p2->y_obj_to_panel[yobj_count] = i;
+	p2->y_obj_from_panel[i] = yobj_count;
+	yobj_count++;
+      }else
+	p2->y_obj_from_panel[i] = -1;
+      
+    }
+  }
+  
+  /* set up function Y output value demultiplex helper */
+  {
+    p2->y_fout_offset = calloc(p2->y_obj_num, sizeof(*p2->y_fout_offset));
+    for(i=0;i<p2->y_obj_num;i++){
+      sushiv_objective_t *o = p2->y_obj_list[i];
+      int funcnum = o->private->y_func->number;
+      p2->y_fout_offset[i] = fout_offsets[funcnum] + o->private->y_fout;
+    }
+  }
+  
   return 0;
 }
 

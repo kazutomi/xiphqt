@@ -27,7 +27,6 @@
 #include <stdlib.h>
 #include <math.h>
 #include <stdio.h>
-#include <time.h>
 #include <string.h>
 
 #include "scale.h"
@@ -856,11 +855,6 @@ Plot *plot_new (void (*callback)(void *),void *app_data,
   p->box_data = box_data;
   p->flags = flags;
 
-  struct timeval now;
-  gettimeofday(&now,NULL);
-
-  p->begin = now.tv_sec;
-  p->last_line_expose = 0;
   return p;
 }
 
@@ -893,36 +887,6 @@ void plot_expose_request_partial(Plot *p,int x, int y, int w, int h){
   r.height=h;
   
   gdk_window_invalidate_rect (widget->window, &r, FALSE);
-  gdk_threads_leave();
-}
-
-// 'in progress' exposes that may or may not be honored
-void plot_expose_request_line(Plot *p, int num){
-  gdk_threads_enter();
-  GtkWidget *widget = GTK_WIDGET(p);
-  GdkRectangle r;
-  struct timeval now;
-  int64_t msec;
-
-  if(num<p->expose_y_lo)
-    p->expose_y_lo=num;
-  if(num>p->expose_y_hi)
-    p->expose_y_hi=num;
-  gettimeofday(&now,NULL);
-  msec = (now.tv_sec-p->begin)*100LL + now.tv_usec/10000;
-
-  if(msec > p->last_line_expose + 25){
-    r.x=0;
-    r.y=p->expose_y_lo;
-    r.width=widget->allocation.width;
-    r.height=p->expose_y_hi-p->expose_y_lo+1;
-  
-    gdk_window_invalidate_rect (widget->window, &r, FALSE);
-
-    p->expose_y_lo = widget->allocation.height;
-    p->expose_y_hi=0;
-    p->last_line_expose = msec;
-  }
   gdk_threads_leave();
 }
 

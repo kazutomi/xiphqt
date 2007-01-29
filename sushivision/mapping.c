@@ -319,6 +319,37 @@ u_int32_t mapping_calc(mapping *m, double in, u_int32_t mix){
   }
 }
 
+u_int32_t mapping_calc_a(mapping *m, float num, float den, u_int32_t mix){
+  u_int32_t o;
+  int r = (mix>>16)&0xff;
+  int g = (mix>>8)&0xff;
+  int b = mix&0xff;
+
+  if(den>0.f)
+    num /= den;
+
+  if(m->i_range==0){
+    if(num<=m->low)
+      o = m->mapfunc(0.,mix);
+    else
+      o = m->mapfunc(1.,mix);
+  }else{
+    double val = (num - m->low) * m->i_range;
+    o = m->mapfunc(val,mix);
+  }
+
+  r += (((o>>16)&0xff) - r)*den;
+  g += (((o>>8)&0xff) - g)*den;
+  b += ((o&0xff) - b)*den;
+  if(r<0)r=0;
+  if(g<0)g=0;
+  if(b<0)b=0;
+  if(r>255)r=255;
+  if(g>255)g=255;
+  if(b>255)b=255;
+  return (r<<16) + (g<<8) + b;
+}
+
 int mapping_inactive_p(mapping *m){
   if(m->mapfunc == inactive)return 1;
   return 0;
