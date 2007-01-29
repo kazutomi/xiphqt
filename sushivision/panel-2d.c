@@ -193,7 +193,7 @@ static void compute_one_data_line_2d(sushiv_panel_t *p,
   if(pw != dw){
     /* resampled computation */
     float scaledel = scalespace_scaledel(&datax,&panelx);
-    float outdel = scalespace_pixel(&panelx,scalespace_value(&datax,0));
+    float outdel = scalespace_pixel(&panelx,scalespace_value(&datax,-.5))+.5;
     int outbin = floor(outdel);
     outdel -= outbin; 
     
@@ -338,7 +338,7 @@ static void compute_one_line_2d(sushiv_panel_t *p,
     /* this is a resampling population */
 
     float scaledel = scalespace_scaledel(&datay,&panely);
-    float outdel = ph-scalespace_pixel(&panely,scalespace_value(&datay,dh-y));
+    float outdel = ph-scalespace_pixel(&panely,scalespace_value(&datay,dh-(y+.5)))+.5;
     int outbin = floor(outdel);
     float outdel2 = (outdel-outbin) + scaledel;
     outdel -= outbin; 
