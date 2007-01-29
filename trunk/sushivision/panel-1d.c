@@ -346,7 +346,7 @@ static void update_legend(sushiv_panel_t *p){
     // choose the value under the crosshairs 
     {
       double val = (p1->flip?plot->sely:plot->selx);
-      int bin = scalespace_pixel(&p1->x_v, val);
+      int bin = rint(scalespace_pixel(&p1->x_v, val));
       u_int32_t color = mapping_calc(p1->mappings+i,1.,0);
 
       for(i=0;i<p->objectives;i++){
@@ -534,7 +534,7 @@ static void compute_1d(sushiv_panel_t *p,
 		       double x_max, 
 		       int w, 
 		       double *dim_vals,
-		       _sushiv_compute_cache *c){
+		       _sushiv_compute_cache_1d *c){
   sushiv_panel1d_t *p1 = p->subtype->p1;
   double work[w];
   int i,j,fn=p->sushi->functions;
@@ -599,12 +599,12 @@ void _mark_recompute_1d(sushiv_panel_t *p){
   int i,j;
 
   if(p1->link_x){
-    dw = p2->data_w;
+    dw = p2->x_v.pixels;
     p1->x_d = p2->x_d;
     p1->x_scale = p2->x_scale;
   }
   if(p1->link_y){
-    dw = p2->data_h;
+    dw = p2->y_v.pixels;
     p1->x_d = p2->y_d;
     p1->x_scale = p2->y_scale;
   }
@@ -871,6 +871,38 @@ static void box_callback(void *in, int state){
   update_context_menus(p);
 }
 
+void _maintain_cache_1d(sushiv_panel_t *p, _sushiv_compute_cache_1d *c, int w){
+  
+  /* toplevel initialization */
+  if(c->fout == 0){
+    int i,j;
+    
+    /* determine which functions are actually needed */
+    c->call = calloc(p->sushi->functions,sizeof(*c->call));
+    c->fout = calloc(p->sushi->functions,sizeof(*c->fout));
+    for(i=0;i<p->objectives;i++){
+      sushiv_objective_t *o = p->objective_list[i].o;
+      for(j=0;j<o->outputs;j++)
+	c->call[o->function_map[j]]=
+	  p->sushi->function_list[o->function_map[j]]->callback;
+    }
+  }
+
+  /* once to begin, as well as anytime the data width changes */
+  if(c->storage_width < w){
+    int i;
+    c->storage_width = w;
+
+    for(i=0;i<p->sushi->functions;i++){
+      if(c->call[i]){
+	if(c->fout[i])free(c->fout[i]);
+	c->fout[i] = malloc(w * p->sushi->function_list[i]->outputs *
+			    sizeof(**c->fout));
+      }
+    }
+  }
+}
+
 int _sushiv_panel_cooperative_compute_1d(sushiv_panel_t *p,
 					 _sushiv_compute_cache *c){
   sushiv_panel1d_t *p1 = p->subtype->p1;
@@ -939,7 +971,7 @@ int _sushiv_panel_cooperative_compute_1d(sushiv_panel_t *p,
     dim_vals[i]=dim->val;
   }
 
-  _maintain_cache(p,c,dw);
+  _maintain_cache_1d(p,&c->p1,dw);
 
   // update scales if we're just starting
   if(p1->last_line==0){
@@ -959,7 +991,7 @@ int _sushiv_panel_cooperative_compute_1d(sushiv_panel_t *p,
     }
     
     /* compute */
-    compute_1d(p, serialno, x_d, x_min, x_max, dw, dim_vals, c);
+    compute_1d(p, serialno, x_d, x_min, x_max, dw, dim_vals, &c->p1);
     gdk_threads_enter ();
     _sushiv_panel_dirty_map(p);
     _sushiv_panel_dirty_legend(p);
@@ -1067,65 +1099,6 @@ static void panel1d_undo_restore(sushiv_panel_undo_t *u, sushiv_panel_t *p){
   }
 }
 
-// called with lock
-static void panel1d_find_peak(sushiv_panel_t *p){
-  sushiv_panel1d_t *p1 = p->subtype->p1;
-  Plot *plot = PLOT(p->private->graph);
-  int i,j;
-  int dw = p1->data_size;
-  int count = 0;
-  
-  // finds in order each peak (in the event there's more than one) of
-  // each active objective
-  while(1){
-    
-    for(i=0;i<p->objectives;i++){
-      if(p1->data_vec && p1->data_vec[i] && !mapping_inactive_p(p1->mappings+i)){
-	double *data=p1->data_vec[i];
-	double best_val = data[0];
-	double best_j = 0;
-	int inner_count = count+1;
-	
-	for(j=1;j<dw;j++){
-	  if(!isnan(data[j])){
-	    if(data[j]>best_val){
-	      inner_count = count+1;
-	      best_val = data[j];
-	      best_j = j;
-	    }else if (data[j]==best_val){
-	      if(inner_count <= p1->peak_count){
-		inner_count++;
-		best_val = data[j];
-		best_j = j;
-	      }
-	    }
-	  }
-	}
-	
-	count = inner_count;
-	if(count>p1->peak_count){
-	  double xv = scalespace_value(&p1->x_v,best_j);
-
-	  if(p1->flip)
-	    plot_set_crosshairs(plot,0,xv);
-	  else
-	    plot_set_crosshairs(plot,xv,0);
-	  crosshair_callback(p);
-	  
-	  p1->peak_count++;
-	  
-	  return;
-	}
-      }
-    }
-    
-    if(p1->peak_count==0)
-      return; // must be all inactive
-    else
-      p1->peak_count=0;
-  }
-}
- 
 static gboolean panel1d_keypress(GtkWidget *widget,
 				 GdkEventKey *event,
 				 gpointer in){
@@ -1154,10 +1127,6 @@ static gboolean panel1d_keypress(GtkWidget *widget,
     _sushiv_panel_undo_up(p);
     return TRUE;
 
-  case GDK_p:
-    // find [next] peak
-    panel1d_find_peak(p);
-    return TRUE;
   }
 
   return FALSE;
@@ -1238,7 +1207,6 @@ static char *graph_menulist[]={
   "",
   "Start zoom selection",
   "Clear readouts",
-  "Find peaks",
   "",
   "Quit",
   NULL
@@ -1250,7 +1218,6 @@ static char *graph_shortlist[]={
   NULL,
   "Enter",
   "Escape",
-  "p",
   NULL,
   "q",
   NULL
@@ -1263,7 +1230,6 @@ static void (*graph_calllist[])(sushiv_panel_t *)={
 
   &wrap_enter,
   &wrap_escape,
-  &panel1d_find_peak,
   NULL,
   &wrap_exit,
   NULL,

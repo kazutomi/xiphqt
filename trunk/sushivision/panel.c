@@ -47,6 +47,25 @@ int _sushiv_panel_cooperative_compute(sushiv_panel_t *p,
   return 0;
 }
 
+void set_map_throttle_time(sushiv_panel_t *p){
+  struct timeval now;
+  gettimeofday(&now,NULL);
+
+  p->private->last_map_throttle = now.tv_sec*1000 + now.tv_usec/1000;
+}
+
+static int test_throttle_time(sushiv_panel_t *p){
+  struct timeval now;
+  long test;
+  gettimeofday(&now,NULL);
+  
+  test = now.tv_sec*1000 + now.tv_usec/1000;
+  if(p->private->last_map_throttle + 500 < test) 
+    return 1;
+
+  return 0;  
+}
+
 // the following is slightly odd; we want map and legend updates to
 // fire when the UI is otherwise idle (only good way to do event
 // compression in gtk), but we don't want it processed int he main UI
@@ -75,6 +94,13 @@ static gboolean _idle_legend_fire(gpointer ptr){
 void _sushiv_panel_dirty_map(sushiv_panel_t *p){
   gdk_threads_enter ();
   g_idle_add(_idle_map_fire,p);
+  gdk_threads_leave ();
+}
+
+void _sushiv_panel_dirty_map_throttled(sushiv_panel_t *p){
+  gdk_threads_enter ();
+  if(test_throttle_time(p))
+     g_idle_add(_idle_map_fire,p);
   gdk_threads_leave ();
 }
 

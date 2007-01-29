@@ -60,6 +60,12 @@ extern int _sushiv_dimension_scales(sushiv_dimension_t *d,
 				    scalespace *panel, 
 				    scalespace *data, 
 				    scalespace *iter);
+extern int _sushiv_dimension_scales_from_panel(sushiv_dimension_t *d,
+					       scalespace panel,
+					       int data_w,
+					       scalespace *data, 
+					       scalespace *iter);
+
 extern void _sushiv_dimension_set_value(sushiv_dim_widget_t *d, int thumb, double val);
 extern void _sushiv_dim_widget_set_thumb_active(sushiv_dim_widget_t *dw, int thumb, int active);
 extern sushiv_dim_widget_t *_sushiv_new_dimension_widget(sushiv_dimension_list_t *dl,   

@@ -26,20 +26,48 @@ typedef struct sushiv_panel2d {
   GtkWidget *popmenu;
   GtkWidget *graphmenu;
 
-  int data_w;
-  int data_h;
   int serialno;
-  double **data_rect;
+  
+  /* only run those functions used by this panel */
+  int used_functions;
+  sushiv_function_t **used_function_list;
+
+  /**** Y PLANES ******/
+  float **y_num; // not indirected; unused planes are simply empty
+  float **y_den; // not indirected; unused planes are simply empty
+
+  int y_obj_num;
+  sushiv_objective_t **y_obj_list; // list of objectives with a y plane
+  int *y_obj_to_panel; /* maps from position in condensed list to position in full list */
+  int *y_obj_from_panel; /* maps from position in full list to position in condensed list */
+  int *y_fout_offset; 
+  
+  /* these are gratuitous temporary storage to make progressive
+     resampled render after a fast scale look nicer.  They're here
+     purely on the premise that 'lots of memory is cheap'.  I'm sure
+     Firefox is at least this stupidly wasteful of memory for cosmetic
+     benefit. */
+  int     render_flag;
+  float **y_num_rend;
+  float **y_den_rend;
+  float  *y_rend;
+
+  /* scales and data -> display scale mapping */
   scalespace x;
+  scalespace x_v;
+  scalespace x_i;
   scalespace y;
+  scalespace y_v;
+  scalespace y_i;
+
   int scales_init;
   double oldbox[4];
   int oldbox_active;
 
-  mapping *mappings;
+  mapping    *mappings;
   Slider    **range_scales;
   GtkWidget **range_pulldowns;
-  double *alphadel;
+  double     *alphadel;
 
   GtkWidget **dim_xb;
   GtkWidget **dim_yb;
@@ -48,8 +76,8 @@ typedef struct sushiv_panel2d {
   sushiv_dimension_t *y_d;
   sushiv_dim_widget_t *x_scale;
   sushiv_dim_widget_t *y_scale;
-  int x_dnum; // number of dimension within panel, not global instance
-  int y_dnum; // number of dimension within panel, not global instance
+  int x_dnum; // panel, not global list context
+  int y_dnum; // panel, not global list context
 
   int last_line;
   int completed_lines;
@@ -57,4 +85,14 @@ typedef struct sushiv_panel2d {
   int peak_count;
 
 } sushiv_panel2d_t;
+
+typedef struct {
+  double *fout; // [function number * outval_number]
+
+  float **y_num; // [y_obj_list[i]][px]
+  float **y_den; // [y_obj_list[i]][px]
+
+  int storage_width;
+
+} _sushiv_compute_cache_2d;
 

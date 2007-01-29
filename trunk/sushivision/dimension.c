@@ -37,10 +37,8 @@
    underlying data vector (often the same as the display), and the
    third the same as the second, but over the absolute range [0 - n)
    such that discrete dimensions will count from 0 in iteration. */
-/* if a dimension is linked, that is not handled here; the passed in x
-   must be the linked x_v scale in which case it will be unaltered (it
-   will be filtered through the discrete transformation a second time,
-   which will not alter it) but x_i will bre generated fresh. */
+/* data_w ignored except in the continuous case, where it may be used
+   to generate linked or over/undersampled data scales. */
 int _sushiv_dimension_scales(sushiv_dimension_t *d,
 			     double lo,
 			     double hi,
@@ -111,6 +109,25 @@ int _sushiv_dimension_scales(sushiv_dimension_t *d,
   }
   return data_w;
 }
+
+int _sushiv_dimension_scales_from_panel(sushiv_dimension_t *d,
+					scalespace panel,
+					int data_w,
+					scalespace *data, 
+					scalespace *iter){
+
+  return _sushiv_dimension_scales(d,
+				  panel.lo,
+				  panel.hi,
+				  panel.pixels,
+				  data_w,
+				  panel.spacing,
+				  panel.legend,
+				  &panel, // dummy
+				  data, 
+				  iter);
+}
+
 
 static double discrete_quantize_val(sushiv_dimension_t *d, double val){
   if(d->type == SUSHIV_DIM_DISCRETE){

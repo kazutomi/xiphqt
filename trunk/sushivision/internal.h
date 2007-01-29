@@ -19,6 +19,7 @@
  * 
  */
 
+#include <time.h>
 #include <signal.h>
 #include <gtk/gtk.h>
 #include "sushivision.h"
@@ -54,11 +55,9 @@ typedef struct sushiv_panel_undo {
   int box_active;
 } sushiv_panel_undo_t;
 
-typedef struct {
-  void (**call)(double *, double *);
-  double **fout; // [function number][outval_number*x]
-  int storage_width;
-
+typedef union {
+  _sushiv_compute_cache_1d p1;
+  _sushiv_compute_cache_2d p2;
 } _sushiv_compute_cache;
 
 struct sushiv_panel_internal {
@@ -71,6 +70,8 @@ struct sushiv_panel_internal {
   int legend_dirty;
   int maps_rendering;
   int legend_rendering;
+
+  time_t last_map_throttle;
 
   // function bundles 
   void (*realize)(sushiv_panel_t *p);
@@ -99,8 +100,11 @@ extern int _sushiv_new_panel(sushiv_instance_t *s,
 			     int *objectives,
 			     int *dimensions,
 			     unsigned flags);
+extern void set_map_throttle_time(sushiv_panel_t *p);
+
 
 extern void _sushiv_panel_dirty_map(sushiv_panel_t *p);
+extern void _sushiv_panel_dirty_map_throttled(sushiv_panel_t *p);
 extern void _sushiv_panel_dirty_legend(sushiv_panel_t *p);
 extern void _sushiv_wake_workers(void);
 

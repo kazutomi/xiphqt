@@ -214,6 +214,10 @@ double scalespace_pixel(scalespace *s, double val){
   return val;
 }
 
+double scalespace_scaledel(scalespace *from, scalespace *to){
+  return from->step_val / from->step_pixel * from->m / to->m * to->step_pixel / to->step_val;
+}
+
 int scalespace_mark(scalespace *s, int num){
   return s->first_pixel + s->step_pixel*num;
 }
@@ -247,6 +251,7 @@ scalespace scalespace_linear (double lowpoint, double highpoint, int pixels, int
   ret.init = 1;
   ret.pixels=pixels;
   ret.legend=name;
+  ret.spacing = max_spacing;
 
   if(orange < 1e-30*pixels){
     // insufficient to safeguard the int64 first var below all by

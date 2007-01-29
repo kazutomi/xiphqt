@@ -85,38 +85,6 @@ void _sushiv_wake_workers(){
   }
 }
 
-void _maintain_cache(sushiv_panel_t *p, _sushiv_compute_cache *c, int w){
-  
-  /* toplevel initialization */
-  if(c->fout == 0){
-    int i,j;
-    
-    /* determine which functions are actually needed */
-    c->call = calloc(p->sushi->functions,sizeof(*c->call));
-    c->fout = calloc(p->sushi->functions,sizeof(*c->fout));
-    for(i=0;i<p->objectives;i++){
-      sushiv_objective_t *o = p->objective_list[i].o;
-      for(j=0;j<o->outputs;j++)
-	c->call[o->function_map[j]]=
-	  p->sushi->function_list[o->function_map[j]]->callback;
-    }
-  }
-
-  /* once to begin, as well as anytime the data width changes */
-  if(c->storage_width < w){
-    int i;
-    c->storage_width = w;
-
-    for(i=0;i<p->sushi->functions;i++){
-      if(c->call[i]){
-	if(c->fout[i])free(c->fout[i]);
-	c->fout[i] = malloc(w * p->sushi->function_list[i]->outputs *
-			    sizeof(**c->fout));
-      }
-    }
-  }
-}
-
 static void *worker_thread(void *dummy){
   /* set up temporary working space for function rendering; this saves
      continuously recreating it in the loop below */
@@ -156,6 +124,7 @@ static void *worker_thread(void *dummy){
 	    gdk_threads_enter ();
 
 	    p->private->maps_rendering = 0;
+	    set_map_throttle_time(p);
 	  }
 
 	  // pending legend work?
