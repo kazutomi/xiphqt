@@ -65,9 +65,9 @@ static void compute_complete_render(sushiv_panel_t *p,
 	  float *d = p2->y_den_rend[i];
 
 	  p2->y_num_rend[i] = p2->y_num[i];
-	  p2->y_num = n;
+	  p2->y_num[i] = n;
 	  p2->y_den_rend[i] = p2->y_den[i];
-	  p2->y_den = d;
+	  p2->y_den[i] = d;
 	  
 	  memset(p2->y_num_rend[i],0,sizeof(**p2->y_num_rend)*w*h);
 	  memset(p2->y_den_rend[i],0,sizeof(**p2->y_den_rend)*w*h);
@@ -81,18 +81,19 @@ static void compute_complete_render(sushiv_panel_t *p,
 	  for(y=0;y<h;y++){
 	    float del = p2->y_rend[y];
 	    if(del>0){
-	      float *a = p2->y_num[i] + y*w;
-	      float *b = p2->y_num_rend[i] + y*w;
+	      float *na = p2->y_num[i] + y*w;
+	      float *nb = p2->y_num_rend[i] + y*w;
+	      float *da = p2->y_den[i] + y*w;
+	      float *db = p2->y_den_rend[i] + y*w;
+
 	      for(x=0;x<w;x++){
-		*a = (*a) + (*a - *b++)*del;
-		a++;
+		*na = (*na) + (*na - *nb++)*del;
+		na++;
 	      }
 
-	      a = p2->y_den[i] + y*w;
-	      b = p2->y_den_rend[i] + y*w;
 	      for(x=0;x<w;x++){
-		*a = *a+(*a-*b++)*del;
-		a++;
+		*da = (*da) + (*da - *db++)*del;
+		da++;
 	      }
 	    }
 	  }
@@ -349,18 +350,19 @@ static void compute_one_line_2d(sushiv_panel_t *p,
 	    float *d = p2->y_den_rend[j] + outbin*w;
 	    float *tn = c->y_num[j];
 	    float *td = c->y_den[j];
-	    
+
 	    for(i=0;i<w;i++){
 	      n[i] += tn[i] * addel;
 	      d[i] += td[i] * addel;
 	    }
+
 	  }
 	  p2->y_rend[outbin]+=addel;
+	  gdk_threads_leave ();
 	}else{
 	  gdk_threads_leave ();
 	  return;
 	}
-	gdk_threads_leave ();
       }
 
       outdel2 -= addel;
@@ -384,6 +386,7 @@ static void compute_one_line_2d(sushiv_panel_t *p,
 	      n[i] += tn[i] * addel;
 	      d[i] += td[i] * addel;
 	    }
+
 	  }
 	  p2->y_rend[outbin]+=addel;
 	}
@@ -403,7 +406,7 @@ static void compute_one_line_2d(sushiv_panel_t *p,
 	
 	memcpy(n,tn,w*sizeof(*n));
 	memcpy(d,td,w*sizeof(*n));
-	
+
       }
     }
     gdk_threads_leave ();
@@ -556,24 +559,27 @@ static void render_y_plane(sushiv_panel_t *p, int y, int objnum, u_int32_t *rend
     for(x=0;x<w;x++){
       float num = numA[x] + (numB[x] - numA[x])*del;
       float den = denA[x] + (denB[x] - denA[x])*del;
-      if(den>0.f){
+      if(den>0.f && !isnan(num)){
 	num /= den;
 	/* map/render result */
-	if(!isnan(num) && num>=alpha)
+	if(num>=alpha)
 	  render[x] = mapping_calc_a(p2->mappings+objnum,num,den,render[x]);
       }
     }
-
+    
   }else{
     // normal render or fully complete resampled render 
-
+    
     float *num = p2->y_num[cond_onum] + w*y;
     float *den = p2->y_den[cond_onum] + w*y;
 
     for(x=0;x<w;x++){
-      /* map/render result */
-      if(!isnan(num[x]) && num[x]>=alpha)
-	render[x] = mapping_calc_a(p2->mappings+objnum,num[x],den[x],render[x]);
+      if(den[x]>0.f && !isnan(num[x])){
+	float val = num[x] / den[x];
+	/* map/render result */
+	if(val>=alpha)
+	  render[x] = mapping_calc_a(p2->mappings+objnum,val,den[x],render[x]);
+      }
     }
   }
 }
@@ -972,8 +978,7 @@ static void _mark_recompute_2d(sushiv_panel_t *p){
     if( p2->serialno && // we've been through once and alloced
 	(p2->x.pixels != w ||
 	 p2->y.pixels != h)){
-	
-	
+		
       // if a render was in progress, force completion 
       compute_complete_render(p, 0);
       compute_free_render(p);
@@ -1227,8 +1232,8 @@ void _maintain_cache_2d(sushiv_panel_t *p, _sushiv_compute_cache_2d *c, int w){
     c->storage_width = w;
 
     for(i=0;i<p2->y_obj_num;i++){
-      p2->y_num[i] = realloc(p2->y_num[i],w*sizeof(**p2->y_num));
-      p2->y_den[i] = realloc(p2->y_den[i],w*sizeof(**p2->y_den));
+      c->y_num[i] = realloc(c->y_num[i],w*sizeof(**c->y_num));
+      c->y_den[i] = realloc(c->y_den[i],w*sizeof(**c->y_den));
     }
   }
 }

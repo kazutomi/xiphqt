@@ -325,9 +325,6 @@ u_int32_t mapping_calc_a(mapping *m, float num, float den, u_int32_t mix){
   int g = (mix>>8)&0xff;
   int b = mix&0xff;
 
-  if(den>0.f)
-    num /= den;
-
   if(m->i_range==0){
     if(num<=m->low)
       o = m->mapfunc(0.,mix);
@@ -338,9 +335,9 @@ u_int32_t mapping_calc_a(mapping *m, float num, float den, u_int32_t mix){
     o = m->mapfunc(val,mix);
   }
 
-  r += (((o>>16)&0xff) - r)*den;
-  g += (((o>>8)&0xff) - g)*den;
-  b += ((o&0xff) - b)*den;
+  r += ((int)((o>>16)&0xff) - r)*den;
+  g += ((int)((o>>8)&0xff) - g)*den;
+  b += ((int)(o&0xff) - b)*den;
   if(r<0)r=0;
   if(g<0)g=0;
   if(b<0)b=0;
