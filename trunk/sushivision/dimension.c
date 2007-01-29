@@ -82,9 +82,9 @@ int _sushiv_dimension_scales(sushiv_dimension_t *d,
 	if(hi_i < ceil_i)hi_i = ceil_i;
       }
 
-      double lo = lo_i * d->private->discrete_numerator / 
+      double lo = (double)lo_i * d->private->discrete_numerator / 
 	d->private->discrete_denominator;
-      double hi = hi_i * d->private->discrete_numerator / 
+      double hi = (double)hi_i * d->private->discrete_numerator / 
 	d->private->discrete_denominator;
 
       data_w = hi_i-lo_i;
@@ -92,8 +92,19 @@ int _sushiv_dimension_scales(sushiv_dimension_t *d,
 	floor_i = 0;
 
       *panel = scalespace_linear(lo, hi, panel_w, spacing, legend);
-      *data = scalespace_linear(lo_i, hi_i, data_w, 1, legend);
-      *iter = scalespace_linear(lo_i - floor_i, hi_i - floor_i, data_w, 1, legend);
+      *data = scalespace_linear(lo, hi, data_w, 1, legend);
+
+      if(d->flags & SUSHIV_DIM_MONOTONIC)
+	*iter = scalespace_linear(lo_i - floor_i, hi_i - floor_i,
+				  data_w, 1, legend);
+      else
+	*iter = scalespace_linear((double)(lo_i - floor_i) * 
+				  d->private->discrete_numerator / 
+				  d->private->discrete_denominator,
+				  (double)(hi_i - floor_i) * 
+				  d->private->discrete_numerator / 
+				  d->private->discrete_denominator,
+				  data_w, 1, legend);
       break;
     }
     break;

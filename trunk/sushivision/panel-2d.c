@@ -129,18 +129,22 @@ static void compute_prepare_render(sushiv_panel_t *p){
 
   /* progressive rendering helpers are specific to resampled y;
      if ph=dh, there's nothing to do */
-  if(!p2->y_rend && h != datay->pixels){
-    p2->y_rend = calloc(h,sizeof(*p2->y_rend));
+  if(h != datay->pixels){
+    if(!p2->y_rend){
 
-    if(!p2->y_num_rend)
-      p2->y_num_rend = calloc(p2->y_obj_num,sizeof(*p2->y_num_rend));
-    if(!p2->y_den_rend)
-      p2->y_den_rend = calloc(p2->y_obj_num,sizeof(*p2->y_den_rend));
-
-    for(i=0;i<p2->y_obj_num;i++){
-      p2->y_num_rend[i] = calloc(w*h,sizeof(**p2->y_num_rend));
-      p2->y_den_rend[i] = calloc(w*h,sizeof(**p2->y_den_rend));
+      p2->y_rend = calloc(h,sizeof(*p2->y_rend));
+    
+      if(!p2->y_num_rend)
+	p2->y_num_rend = calloc(p2->y_obj_num,sizeof(*p2->y_num_rend));
+      if(!p2->y_den_rend)
+	p2->y_den_rend = calloc(p2->y_obj_num,sizeof(*p2->y_den_rend));
+      
+      for(i=0;i<p2->y_obj_num;i++){
+	p2->y_num_rend[i] = calloc(w*h,sizeof(**p2->y_num_rend));
+	p2->y_den_rend[i] = calloc(w*h,sizeof(**p2->y_den_rend));
+      }
     }
+    p2->render_flag = 1;
   }
 }
 
@@ -188,7 +192,7 @@ static void compute_one_data_line_2d(sushiv_panel_t *p,
 
   if(pw != dw){
     /* resampled computation */
-    float scaledel = scalespace_scaledel(&panelx,&datax);
+    float scaledel = scalespace_scaledel(&datax,&panelx);
     float outdel = scalespace_pixel(&panelx,scalespace_value(&datax,0));
     int outbin = floor(outdel);
     outdel -= outbin; 
@@ -243,7 +247,7 @@ static void compute_one_data_line_2d(sushiv_panel_t *p,
 	  }
 	}
 	
-	outdel2 -= addel;
+	outdel2--;;
 	outbin++;
 	outdel = 0.f;
       }
@@ -259,6 +263,7 @@ static void compute_one_data_line_2d(sushiv_panel_t *p,
 	    }
 	  }
 	}
+	outdel += addel;
       }
     }
 
@@ -332,15 +337,15 @@ static void compute_one_line_2d(sushiv_panel_t *p,
   if(ph != dh){
     /* this is a resampling population */
 
-    float scaledel = scalespace_scaledel(&panely,&datay);
-    float outdel = scalespace_pixel(&panely,scalespace_value(&datay,y));
+    float scaledel = scalespace_scaledel(&datay,&panely);
+    float outdel = ph-scalespace_pixel(&panely,scalespace_value(&datay,dh-y));
     int outbin = floor(outdel);
     float outdel2 = (outdel-outbin) + scaledel;
     outdel -= outbin; 
 
     while(outdel2>1.f){
       float addel = (1.f - outdel);
-      
+
       if(outbin >= 0 && outbin < ph){
 	gdk_threads_enter ();
 
@@ -365,7 +370,7 @@ static void compute_one_line_2d(sushiv_panel_t *p,
 	}
       }
 
-      outdel2 -= addel;
+      outdel2--;
       outbin++;
       outdel = 0.f;
     }
@@ -832,8 +837,8 @@ static void fast_scale_x(float *data,
   double newscale = (new_hi-new_lo)/new_w;
   double oldscale = old_w/(old_hi-old_lo);
   for(x=0;x<w;x++){
-    double xval = x*newscale+new_lo;
-    double map = ((xval-old_lo)*oldscale);
+    double xval = (x+.5)*newscale+new_lo;
+    double map = ((xval-old_lo)*oldscale)-.5;
     mapbase[x]=(int)floor(map);
     mapdel[x]=map-floor(map);
   }
@@ -876,8 +881,8 @@ static void fast_scale_y(float *data,
   double oldscale = old_h/(old_hi-old_lo);
   
   for(y=0;y<h;y++){
-    double yval = y*newscale+new_lo;
-    double map = ((yval-old_lo)*oldscale);
+    double yval = (y+.5)*newscale+new_lo;
+    double map = ((yval-old_lo)*oldscale)-.5;
     mapbase[y]=(int)floor(map);
     mapdel[y]=map-floor(map);
   }
@@ -1274,6 +1279,13 @@ static int _sushiv_panel_cooperative_compute_2d(sushiv_panel_t *p,
     return 0;
   }
 
+  // preparation and init before first line render attempt 
+  if(p2->last_line==0){
+    render_scale_flag = 1;
+    _maintain_cache_2d(p,&c->p2,pw);
+    compute_prepare_render(p);
+  }
+
   plot = PLOT(p->private->graph);
 
   serialno = p2->serialno;
@@ -1318,14 +1330,6 @@ static int _sushiv_panel_cooperative_compute_2d(sushiv_panel_t *p,
   for(i=0;i<p->sushi->dimensions;i++){
     sushiv_dimension_t *dim = p->sushi->dimension_list[i];
     dim_vals[i]=dim->val;
-  }
-
-  _maintain_cache_2d(p,&c->p2,pw);
-  compute_prepare_render(p);
-
-  // update scales if we're just starting
-  if(p2->last_line==0){
-    render_scale_flag = 1;
   }
 
   /* iterate */
@@ -1777,19 +1781,6 @@ int sushiv_new_panel_2d(sushiv_instance_t *s,
     if(!p->objective_list[i].o->scale){
       fprintf(stderr,"All objectives in a 2d panel must have a scale\n");
       return -EINVAL;
-    }
-  }
-
-  // verify all dimensions that can accept axis selection are continuous 
-  for(i=0;i<p->dimensions;i++){
-    if(p->dimension_list[i].d->type != SUSHIV_DIM_CONTINUOUS){
-      if( (p->dimension_list[i].d->flags & (SUSHIV_DIM_NO_X|SUSHIV_DIM_NO_Y)) !=
-	  (SUSHIV_DIM_NO_X|SUSHIV_DIM_NO_Y)){
-	fprintf(stderr,"Panel %d: x/y selectable dimensions in a 2d panel\n"
-		"must be continuous; removing dimension %d from selectable lists.\n",
-		number,p->dimension_list[i].d->number);
-	p->dimension_list[i].d->flags|=(SUSHIV_DIM_NO_X|SUSHIV_DIM_NO_Y);
-      }
     }
   }
 
