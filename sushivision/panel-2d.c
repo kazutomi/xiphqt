@@ -837,8 +837,8 @@ static void fast_scale_x(float *data,
   double newscale = (new_hi-new_lo)/new_w;
   double oldscale = old_w/(old_hi-old_lo);
   for(x=0;x<w;x++){
-    double xval = (x+.5)*newscale+new_lo;
-    double map = ((xval-old_lo)*oldscale)-.5;
+    double xval = (x)*newscale+new_lo;
+    double map = ((xval-old_lo)*oldscale);
     mapbase[x]=(int)floor(map);
     mapdel[x]=map-floor(map);
   }
@@ -881,8 +881,8 @@ static void fast_scale_y(float *data,
   double oldscale = old_h/(old_hi-old_lo);
   
   for(y=0;y<h;y++){
-    double yval = (y+.5)*newscale+new_lo;
-    double map = ((yval-old_lo)*oldscale)-.5;
+    double yval = (y)*newscale+new_lo;
+    double map = ((yval-old_lo)*oldscale);
     mapbase[y]=(int)floor(map);
     mapdel[y]=map-floor(map);
   }
