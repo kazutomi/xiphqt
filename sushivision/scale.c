@@ -215,7 +215,7 @@ double scalespace_pixel(scalespace *s, double val){
 }
 
 double scalespace_scaledel(scalespace *from, scalespace *to){
-  return from->step_val / from->step_pixel * from->m / to->m * to->step_pixel / to->step_val;
+  return (double)from->step_val / from->step_pixel * from->m / to->m * to->step_pixel / to->step_val;
 }
 
 int scalespace_mark(scalespace *s, int num){
@@ -265,22 +265,22 @@ scalespace scalespace_linear (double lowpoint, double highpoint, int pixels, int
     place = 0;
     step = 1;
 
-    while(pixels / range < max_spacing){
+    while(rint(pixels / range) < max_spacing){
       place++;
       range *= .1;
     }
-    while(pixels / range > max_spacing){
+    while(rint(pixels / range) > max_spacing){
       place--;
       range *= 10;
     }
     
     ret.decimal_exponent = place;
     
-    if (pixels / (range*.2) <= max_spacing){
+    if (rint(pixels / (range*.2)) <= max_spacing){
       step *= 5;
       range *= .2;
     }
-    if (pixels / (range*.5) <= max_spacing){
+    if (rint(pixels / (range*.5)) <= max_spacing){
       step *= 2;
       range *= .5;
     }

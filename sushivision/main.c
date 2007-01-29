@@ -200,7 +200,8 @@ sushiv_instance_t *sushiv_new_instance(void) {
 int main (int argc, char *argv[]){
   int ret;
 
-  num_threads = num_proccies();
+  num_threads = 1;
+  //num_threads = num_proccies();
 
   gtk_init (&argc, &argv);
   g_thread_init (NULL);
