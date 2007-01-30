@@ -374,6 +374,7 @@ static void plot_draw (Plot *p,
     if(p->box_active){
       double vals[4];
       box_corners(p,vals);
+      cairo_set_line_width(c,1.);
 
       cairo_rectangle(c,vals[0],vals[1],vals[2]+1,vals[3]+1);	
       if(p->box_active>1)
