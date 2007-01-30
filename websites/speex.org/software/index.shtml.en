@@ -113,9 +113,9 @@
 
 <h2>Player Plugins &amp; Code Examples</h2>
 <dl class="appList">
-	<dt><a href='http://www.openacm.org/'>OpenACM Codec</a></dt>
+	<dt><a href='http://web.archive.org/web/20030807122429/http://www.openacm.org/'>OpenACM Codec</a></dt>
 	<dd>
-		This allows Speex to be used in NetMeeting.
+		This allowed Speex to be used in NetMeeting.
 	</dd>
 
 	<dt><a href='http://www.republika.pl/roed/speexw/'>Speex for Windows</a></dt>
