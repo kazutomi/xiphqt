@@ -127,9 +127,9 @@ static void _sushiv_panel1d_remap(sushiv_panel_t *p){
 	  if(linetype>1 && linetype < 5){
 	    double yA=-1;
 	    if(linetype == 2) /* fill above */
-	      yA= r;
+	      yA= (p1->flip?r:-1);
 	    if(linetype == 3) /* fill below */
-	      yA = -1;
+	      yA = (p1->flip?-1:r);
 	    if(linetype == 4) /* fill to zero */
 	      yA = scalespace_pixel(&p1->y,0.)+.5;
 	    
@@ -141,11 +141,11 @@ static void _sushiv_panel1d_remap(sushiv_panel_t *p){
 	    
 	    if(!isnan(yv[0])){
 	      if(p1->flip){
-		cairo_move_to(c,yA,h-xv[0]+.5);
-		cairo_line_to(c,yv[0],h-xv[0]+.5);
+		cairo_move_to(c,yA,xv[0]+.5);
+		cairo_line_to(c,yv[0],xv[0]+.5);
 	      }else{
-		cairo_move_to(c,xv[0]-.5,h-yA);
-		cairo_line_to(c,xv[0]-.5,h-yv[0]);
+		cairo_move_to(c,xv[0]-.5,yA);
+		cairo_line_to(c,xv[0]-.5,yv[0]);
 	      }
 	    }
 	    
@@ -155,28 +155,28 @@ static void _sushiv_panel1d_remap(sushiv_panel_t *p){
 		if(!isnan(yv[i-1])){
 		  /* close off the area */
 		  if(p1->flip){
-		    cairo_line_to(c,yv[i-1],h-xv[i-1]-.5);
-		    cairo_line_to(c,yA,h-xv[i-1]-.5);
+		    cairo_line_to(c,yv[i-1],xv[i-1]-.5);
+		    cairo_line_to(c,yA,xv[i-1]-.5);
 		  }else{
-		    cairo_line_to(c,xv[i-1]+.5,h-yv[i-1]);
-		    cairo_line_to(c,xv[i-1]+.5,h-yA);
+		    cairo_line_to(c,xv[i-1]+.5,yv[i-1]);
+		    cairo_line_to(c,xv[i-1]+.5,yA);
 		  }
 		  cairo_close_path(c);
 		}
 	      }else{
 		if(isnan(yv[i-1])){
 		  if(p1->flip){
-		    cairo_move_to(c,yA,h-xv[i]+.5);
-		    cairo_line_to(c,yv[i],h-xv[i]+.5);
+		    cairo_move_to(c,yA,xv[i]+.5);
+		    cairo_line_to(c,yv[i],xv[i]+.5);
 		  }else{
-		    cairo_move_to(c,xv[i]-.5,h-yA);
-		    cairo_line_to(c,xv[i]-.5,h-yv[i]);
+		    cairo_move_to(c,xv[i]-.5,yA);
+		    cairo_line_to(c,xv[i]-.5,yv[i]);
 		  }
 		}else{
 		  if(p1->flip){
-		    cairo_line_to(c,yv[i],h-xv[i]);
+		    cairo_line_to(c,yv[i],xv[i]);
 		  }else{
-		    cairo_line_to(c,xv[i],h-yv[i]);
+		    cairo_line_to(c,xv[i],yv[i]);
 		  }
 		}
 	      }
@@ -185,11 +185,11 @@ static void _sushiv_panel1d_remap(sushiv_panel_t *p){
 	    if(!isnan(yv[i-1])){
 	      /* close off the area */
 	      if(p1->flip){
-		cairo_line_to(c,yv[i-1],h-xv[i-1]-.5);
-		cairo_line_to(c,yA,h-xv[i-1]-.5);
+		cairo_line_to(c,yv[i-1],xv[i-1]-.5);
+		cairo_line_to(c,yA,xv[i-1]-.5);
 	      }else{
-		cairo_line_to(c,xv[i-1]+.5,h-yv[i-1]);
-		cairo_line_to(c,xv[i-1]+.5,h-yA);
+		cairo_line_to(c,xv[i-1]+.5,yv[i-1]);
+		cairo_line_to(c,xv[i-1]+.5,yA);
 	      }
 	      cairo_close_path(c);
 	    }
@@ -214,11 +214,11 @@ static void _sushiv_panel1d_remap(sushiv_panel_t *p){
 	      if(!isnan(yv[i-1]) && !isnan(yv[i])){
 		
 		if(p1->flip){
-		  cairo_move_to(c,yv[i-1],h-xv[i-1]);
-		  cairo_line_to(c,yv[i],h-xv[i]);
+		  cairo_move_to(c,yv[i-1],xv[i-1]);
+		  cairo_line_to(c,yv[i],xv[i]);
 		}else{
-		  cairo_move_to(c,xv[i-1],h-yv[i-1]);
-		  cairo_line_to(c,xv[i],h-yv[i]);
+		  cairo_move_to(c,xv[i-1],yv[i-1]);
+		  cairo_line_to(c,xv[i],yv[i]);
 		}
 		cairo_stroke(c);
 	      }	      
@@ -234,10 +234,10 @@ static void _sushiv_panel1d_remap(sushiv_panel_t *p){
 		double xx,yy;
 		if(p1->flip){
 		  xx = yv[i];
-		  yy = h - xv[i];
+		  yy = xv[i];
 		}else{
 		  xx = xv[i];
-		  yy = h- yv[i];
+		  yy = yv[i];
 		}
 
 		cairo_set_source_rgba(c,
@@ -485,11 +485,20 @@ static void map_callback_1d(void *in,int buttonstate){
     p1->range_bracket[0] = slider_get_value(p1->range_slider,0);
     p1->range_bracket[1] = slider_get_value(p1->range_slider,1);
     
-    p1->y = scalespace_linear(p1->range_bracket[0],
-			      p1->range_bracket[1],
-			      (p1->flip?w:h),
-			      PLOT(p->private->graph)->scalespacing,
-			      p1->range_scale->legend);
+    if(p1->flip)
+      p1->y = scalespace_linear(p1->range_bracket[0],
+				p1->range_bracket[1],
+				w,
+				plot->scalespacing,
+				p1->range_scale->legend);
+    
+    else
+      p1->y = scalespace_linear(p1->range_bracket[1],
+				p1->range_bracket[0],
+				h,
+				plot->scalespacing,
+				p1->range_scale->legend);
+
   }
 
   //redraw the plot
@@ -610,21 +619,40 @@ void _mark_recompute_1d(sushiv_panel_t *p){
   }
 
   if(plot && GTK_WIDGET_REALIZED(GTK_WIDGET(plot))){
-    dw = _sushiv_dimension_scales(p1->x_d, 
-				  p1->x_d->bracket[0],
-				  p1->x_d->bracket[1],
-				  (p1->flip?h:w),dw,
-				  plot->scalespacing,
-				  p1->x_d->name,
-				  &p1->x,
-				  &p1->x_v,
-				  &p1->x_i);
+    if(p1->flip){
+      dw = _sushiv_dimension_scales(p1->x_d, 
+				    p1->x_d->bracket[1],
+				    p1->x_d->bracket[0],
+				    h,dw,
+				    plot->scalespacing,
+				    p1->x_d->name,
+				    &p1->x,
+				    &p1->x_v,
+				    &p1->x_i);
+      
+      p1->y = scalespace_linear(p1->range_bracket[0],
+				p1->range_bracket[1],
+				w,
+				plot->scalespacing,
+				p1->range_scale->legend);
+    
+    }else{
+      dw = _sushiv_dimension_scales(p1->x_d, 
+				    p1->x_d->bracket[0],
+				    p1->x_d->bracket[1],
+				    w,dw,
+				    plot->scalespacing,
+				    p1->x_d->name,
+				    &p1->x,
+				    &p1->x_v,
+				    &p1->x_i);
 
-    p1->y = scalespace_linear(p1->range_bracket[0],
-			      p1->range_bracket[1],
-			      (p1->flip?w:h),
-			      plot->scalespacing,
-			      p1->range_scale->legend);
+      p1->y = scalespace_linear(p1->range_bracket[1],
+				p1->range_bracket[0],
+				h,
+				plot->scalespacing,
+				p1->range_scale->legend);
+    }
     
     if(p1->data_size != dw){
       if(p1->data_vec){

@@ -63,17 +63,17 @@ int _sushiv_dimension_scales(sushiv_dimension_t *d,
       /* return a scale that when iterated will only hit values
 	 quantized to the discrete base */
       /* what is the absolute base? */
-      /* the ceiling in a discrete dimension is an inclusive upper bound, not one-past */
       int floor_i =  rint(d->scale->val_list[0] * d->private->discrete_denominator / 
 			  d->private->discrete_numerator);
       int ceil_i =  rint(d->scale->val_list[d->scale->vals-1] * d->private->discrete_denominator / 
-			 d->private->discrete_numerator) +1;
+			 d->private->discrete_numerator);
       
       int lo_i =  floor(lo * d->private->discrete_denominator / 
 			d->private->discrete_numerator);
       int hi_i =  floor(hi * d->private->discrete_denominator / 
-		       d->private->discrete_numerator)+1;
-
+		       d->private->discrete_numerator);
+      int extend  = 0;
+      
       if(floor_i < ceil_i){
 	if(lo_i < floor_i)lo_i = floor_i;
 	if(hi_i > ceil_i)hi_i = ceil_i;
@@ -82,26 +82,39 @@ int _sushiv_dimension_scales(sushiv_dimension_t *d,
 	if(hi_i < ceil_i)hi_i = ceil_i;
       }
 
-      double lo = (double)lo_i * d->private->discrete_numerator / 
-	d->private->discrete_denominator;
-      double hi = (double)hi_i * d->private->discrete_numerator / 
-	d->private->discrete_denominator;
+      // although the rest of the code assumes 'hi' is a one-past, the
+      // discrete dim code assumes hi is an inclusive bound, so we
+      // just extend.
+      if(lo_i<hi_i){
+	extend = 1;
+      }else{
+	extend = -1;
+      }
 
-      data_w = hi_i-lo_i;
+      data_w = abs(hi_i-lo_i)+1;
       if(!(d->flags & SUSHIV_DIM_ZEROINDEX))
 	floor_i = 0;
 
-      *panel = scalespace_linear(lo, hi, panel_w, spacing, legend);
-      *data = scalespace_linear(lo, hi, data_w, 1, legend);
+      *panel = scalespace_linear((double)lo_i * d->private->discrete_numerator / 
+				 d->private->discrete_denominator,
+				 (double)hi_i * d->private->discrete_numerator / 
+				 d->private->discrete_denominator,
+				 panel_w, spacing, legend);
 
+      *data = scalespace_linear((double)lo_i * d->private->discrete_numerator / 
+				d->private->discrete_denominator,
+				(double)(hi_i+extend) * d->private->discrete_numerator / 
+				d->private->discrete_denominator,
+				data_w, spacing, legend);
+      
       if(d->flags & SUSHIV_DIM_MONOTONIC)
-	*iter = scalespace_linear(lo_i - floor_i, hi_i - floor_i,
+	*iter = scalespace_linear(lo_i - floor_i, hi_i - floor_i + extend,
 				  data_w, 1, legend);
       else
 	*iter = scalespace_linear((double)(lo_i - floor_i) * 
 				  d->private->discrete_numerator / 
 				  d->private->discrete_denominator,
-				  (double)(hi_i - floor_i) * 
+				  (double)(hi_i - floor_i + extend) * 
 				  d->private->discrete_numerator / 
 				  d->private->discrete_denominator,
 				  data_w, 1, legend);
