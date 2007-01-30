@@ -338,7 +338,7 @@ static void compute_one_line_2d(sushiv_panel_t *p,
     /* this is a resampling population */
 
     float scaledel = scalespace_scaledel(&datay,&panely);
-    float outdel = ph-scalespace_pixel(&panely,scalespace_value(&datay,dh-(y+.5)))+.5;
+    float outdel = scalespace_pixel(&panely,scalespace_value(&datay,y-.5))+.5;
     int outbin = floor(outdel);
     float outdel2 = (outdel-outbin) + scaledel;
     outdel -= outbin; 
@@ -873,10 +873,10 @@ static void fast_scale_y(float *data,
 
   double old_h = old.pixels;
   double new_h = new.pixels;
-  double old_lo = scalespace_value(&old,old_h);
-  double old_hi = scalespace_value(&old,0);
-  double new_lo = scalespace_value(&new,new_h);
-  double new_hi = scalespace_value(&new,0);
+  double old_lo = scalespace_value(&old,0);
+  double old_hi = scalespace_value(&old,old_h);
+  double new_lo = scalespace_value(&new,0);
+  double new_hi = scalespace_value(&new,new_h);
   double newscale = (new_hi-new_lo)/new_h;
   double oldscale = old_h/(old_hi-old_lo);
   
@@ -1031,8 +1031,8 @@ static void _mark_recompute_2d(sushiv_panel_t *p){
 			       &p2->x_v,
 			       &p2->x_i);
       _sushiv_dimension_scales(p2->y_d, 
-			       p2->y_d->bracket[0],
 			       p2->y_d->bracket[1],
+			       p2->y_d->bracket[0],
 			       h,h,// over/undersample will go here
 			       plot->scalespacing,
 			       p2->y_d->name,
@@ -1279,15 +1279,7 @@ static int _sushiv_panel_cooperative_compute_2d(sushiv_panel_t *p,
     return 0;
   }
 
-  // preparation and init before first line render attempt 
-  if(p2->last_line==0){
-    render_scale_flag = 1;
-    _maintain_cache_2d(p,&c->p2,pw);
-    compute_prepare_render(p);
-  }
-
   plot = PLOT(p->private->graph);
-
   serialno = p2->serialno;
   d = p->dimensions;
 
@@ -1299,31 +1291,38 @@ static int _sushiv_panel_cooperative_compute_2d(sushiv_panel_t *p,
   x_max = scalespace_value(&p2->x_i,dw);
   x_d = p2->x_d->number;
 
-  y_min = scalespace_value(&p2->y_i,dh);
-  y_max = scalespace_value(&p2->y_i,0);
+  y_min = scalespace_value(&p2->y_i,0);
+  y_max = scalespace_value(&p2->y_i,dh);
   y_d = p2->y_d->number;
 
-  // if the scale bound has changed, fast scale our background data to fill
-  // the pane while new, more precise data renders.
-  if(memcmp(&sx,&plot->x,sizeof(sx))){
-    for(i=0;i<p2->y_obj_num;i++){
-      fast_scale_x(p2->y_num[i],pw,ph,
-		   sx,plot->x);
-      fast_scale_x(p2->y_den[i],pw,ph,
-		   sx,plot->x);
+  // preparation and init before first line render attempt 
+  _maintain_cache_2d(p,&c->p2,pw);
+  if(p2->last_line==0){
+    render_scale_flag = 1;
+    compute_prepare_render(p);
+
+    // if the scale bound has changed, fast scale our background data to fill
+    // the pane while new, more precise data renders.
+    if(memcmp(&sx,&plot->x,sizeof(sx))){
+      for(i=0;i<p2->y_obj_num;i++){
+	fast_scale_x(p2->y_num[i],pw,ph,
+		     sx,plot->x);
+	fast_scale_x(p2->y_den[i],pw,ph,
+		     sx,plot->x);
+      }
+      plot->x = sx;
+      _sushiv_panel2d_remap(p);
     }
-    plot->x = sx;
-    _sushiv_panel2d_remap(p);
-  }
-  if(memcmp(&sy,&plot->y,sizeof(sy))){
-    for(i=0;i<p2->y_obj_num;i++){
-      fast_scale_y(p2->y_num[i],pw,ph,
-		   sy,plot->y);
-      fast_scale_y(p2->y_den[i],pw,ph,
-		   sy,plot->y);
+    if(memcmp(&sy,&plot->y,sizeof(sy))){
+      for(i=0;i<p2->y_obj_num;i++){
+	fast_scale_y(p2->y_num[i],pw,ph,
+		     sy,plot->y);
+	fast_scale_y(p2->y_den[i],pw,ph,
+		     sy,plot->y);
+      }
+      plot->y = sy;
+      _sushiv_panel2d_remap(p);
     }
-    plot->y = sy;
-    _sushiv_panel2d_remap(p);
   }
 
   // Initialize local dimension value array
@@ -1354,9 +1353,9 @@ static int _sushiv_panel_cooperative_compute_2d(sushiv_panel_t *p,
     compute_one_line_2d(p, serialno, sx, sx_v, sy, sy_v,  y, x_d, x_min, x_max, dim_vals, &c->p2);
 
     gdk_threads_enter ();
-    p2->completed_lines++;
 
     if(p2->serialno == serialno){
+      p2->completed_lines++;
       if(p2->completed_lines==dh){ 
 	compute_complete_render(p, 1);
 	_sushiv_panel_dirty_map(p);

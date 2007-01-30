@@ -67,8 +67,8 @@ static void draw_scales_work(cairo_surface_t *s, scalespace xs, scalespace ys){
   i=0;
   y=scalespace_mark(&ys,i++);
   while(y < h){
-    cairo_move_to(c,0,h-y+.5);
-    cairo_line_to(c,w,h-y+.5);
+    cairo_move_to(c,0,y+.5);
+    cairo_line_to(c,w,y+.5);
     y=scalespace_mark(&ys,i++);
   }
   cairo_stroke(c);
@@ -93,7 +93,7 @@ static void draw_scales_work(cairo_surface_t *s, scalespace xs, scalespace ys){
 
     if(y - extents.height > 0){
       
-      double yy = h-y+.5-(extents.height/2 + extents.y_bearing);
+      double yy = y+.5-(extents.height/2 + extents.y_bearing);
 
       cairo_move_to(c,2, yy);
       cairo_set_source_rgba(c,0,0,0,.5);
@@ -306,10 +306,8 @@ static void box_corners(Plot *p, double vals[4]){
   GtkWidget *widget = GTK_WIDGET(p);
   double x1 = scalespace_pixel(&p->x,p->box_x1);
   double x2 = scalespace_pixel(&p->x,p->box_x2);
-  double y1 = widget->allocation.height-
-    scalespace_pixel(&p->y,p->box_y1);
-  double y2 = widget->allocation.height-
-    scalespace_pixel(&p->y,p->box_y2);
+  double y1 = scalespace_pixel(&p->y,p->box_y1);
+  double y2 = scalespace_pixel(&p->y,p->box_y2);
 
   vals[0] = (x1<x2 ? x1 : x2);
   vals[1] = (y1<y2 ? y1 : y2);
@@ -548,7 +546,7 @@ static gint mouse_motion(GtkWidget        *widget,
   int x = event->x;
   int y = event->y;
   int bx = scalespace_pixel(&p->x,p->box_x1);
-  int by = widget->allocation.height-scalespace_pixel(&p->y,p->box_y1);
+  int by = scalespace_pixel(&p->y,p->box_y1);
 
   if(p->button_down){
     if(abs(bx - x)>5 ||
@@ -566,7 +564,7 @@ static gint mouse_motion(GtkWidget        *widget,
     }
     
     p->box_x2 = scalespace_value(&p->x,x);
-    p->box_y2 = scalespace_value(&p->y,widget->allocation.height-y);
+    p->box_y2 = scalespace_value(&p->y,y);
   }
 
   box_check(p,x,y);
@@ -585,7 +583,7 @@ static gboolean mouse_press (GtkWidget        *widget,
     if(p->box_active && inside_box(p,event->x,event->y) && !p->button_down){
       
       p->selx = scalespace_value(&p->x,event->x);
-      p->sely = scalespace_value(&p->y,widget->allocation.height-event->y);
+      p->sely = scalespace_value(&p->y,event->y);
       p->cross_active=1;
       
       if(p->box_callback)
@@ -596,7 +594,7 @@ static gboolean mouse_press (GtkWidget        *widget,
       
     }else{
       p->box_x2=p->box_x1 = scalespace_value(&p->x,event->x);
-      p->box_y2=p->box_y1 = scalespace_value(&p->y,widget->allocation.height-event->y);
+      p->box_y2=p->box_y1 = scalespace_value(&p->y,event->y);
       p->box_active = 0;
       p->button_down=1; 
     }
@@ -614,7 +612,7 @@ static gboolean mouse_release (GtkWidget        *widget,
 
   if(!p->box_active && p->button_down){
     p->selx = scalespace_value(&p->x,event->x);
-    p->sely = scalespace_value(&p->y,widget->allocation.height-event->y);
+    p->sely = scalespace_value(&p->y,event->y);
     p->cross_active=1;
 
     if(p->crosshairs_callback)
@@ -648,8 +646,7 @@ void plot_do_enter(Plot *p){
     if(p->button_down){
       GdkEventButton event;
       event.x = scalespace_pixel(&p->x,p->selx);
-      event.y = GTK_WIDGET(p)->allocation.height-
-	scalespace_pixel(&p->y,p->sely);
+      event.y = scalespace_pixel(&p->y,p->sely);
       
       mouse_release(GTK_WIDGET(p),&event);
     }else{
@@ -728,11 +725,11 @@ static gboolean key_press(GtkWidget *widget,
     return TRUE;
   case GDK_Up:
     {
-      double y = widget->allocation.height - scalespace_pixel(&p->y,p->sely)-1;
+      double y = scalespace_pixel(&p->y,p->sely)-1;
       p->cross_active=1;
       if(shift)
 	y-=9;
-      p->sely = scalespace_value(&p->y,widget->allocation.height - y);
+      p->sely = scalespace_value(&p->y,y);
       if(p->crosshairs_callback)
 	p->crosshairs_callback(p->cross_data);
 
@@ -747,11 +744,11 @@ static gboolean key_press(GtkWidget *widget,
     return TRUE;
   case GDK_Down:
     {
-      double y = widget->allocation.height - scalespace_pixel(&p->y,p->sely)+1;
+      double y = scalespace_pixel(&p->y,p->sely)+1;
       p->cross_active=1;
       if(shift)
 	y+=9;
-      p->sely = scalespace_value(&p->y,widget->allocation.height - y);
+      p->sely = scalespace_value(&p->y,y);
       if(p->crosshairs_callback)
 	p->crosshairs_callback(p->cross_data);
       
@@ -973,7 +970,7 @@ int plot_get_crosshair_ypixel(Plot *p){
   v = p->sely;
   gdk_threads_leave();
 
-  return (int)rint(widget->allocation.height-scalespace_pixel(&y,v));
+  return (int)rint(scalespace_pixel(&y,v));
 }
 
 void plot_unset_box(Plot *p){
@@ -990,8 +987,8 @@ void plot_box_vals(Plot *p, double ret[4]){
   ret[1] = (p->box_x1*n>p->box_x2*n?p->box_x1:p->box_x2);
 
   n = p->y.neg;
-  ret[2] = (p->box_y1*n<p->box_y2*n?p->box_y1:p->box_y2);
-  ret[3] = (p->box_y1*n>p->box_y2*n?p->box_y1:p->box_y2);
+  ret[2] = (p->box_y1*n>p->box_y2*n?p->box_y1:p->box_y2);
+  ret[3] = (p->box_y1*n<p->box_y2*n?p->box_y1:p->box_y2);
   gdk_threads_leave();
 }
 
