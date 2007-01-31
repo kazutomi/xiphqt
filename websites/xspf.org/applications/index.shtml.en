@@ -162,19 +162,6 @@
             </dd>
 
             <dt>
-              <a id="lacy"></a><a href=
-              "http://geekkid.net/jukebox/">Lacy Morrow's Flash
-              XSPF player</a>
-            </dt>
-            <dd>
-              Probably the best known of the many forks of <a href=
-              "#Musicplayer">Musicplayer</a>, enhanced with a number of
-              features. See also <a href=
-              "http://geekkid.net/jukebox/creator/">the online customization
-              tool</a> for this player.
-            </dd>
-
-            <dt>
               <a id="m3u2xspf"></a><a href=
               "http://users.musicbrainz.org/%7Ematt/xspf/m3u2xspf">m3u2xspf</a>
             </dt>
@@ -371,6 +358,19 @@
             <dd>
               A Python script that parses XSPF and M3U files and downloads the
               files to the local harddrive.
+            </dd>
+
+            <dt>
+              <a id="lacy"></a><a href=
+              "http://blog.geekkid.net/projects/xspf-jukebox/">XSPF Jukebox</a>
+            </dt>
+            <dd>
+              Probably the best known of the many forks of <a href=
+              "#Musicplayer">Musicplayer</a>, enhanced with a number of
+              features. See also <a href=
+              "http://blog.geekkid.net/projects/playlist-creator/">the online customization
+              tool</a> for this player and the previous version which is now
+              called <a href="http://blog.geekkid.net/projects/xspf-wmp/">XSPF WMP</a>.
             </dd>
 
             <dt>
