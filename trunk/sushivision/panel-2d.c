@@ -613,8 +613,17 @@ static void fast_scale_x(float *data,
   for(x=0;x<w;x++){
     double xval = (x)*newscale+new_lo;
     double map = ((xval-old_lo)*oldscale);
-    mapbase[x]=(int)floor(map);
-    mapdel[x]=map-floor(map);
+    int base = (int)floor(map);
+    double del = map - floor(map);
+    /* hack to overwhelm roundoff error; this is inside a purely
+       temporary cosmetic approximation anyway*/
+    if(base>0 && del < .0001){
+      mapbase[x]=base-1;
+      mapdel[x]=1.f;
+    }else{
+      mapbase[x]=base;
+      mapdel[x]=del;
+    }
   }
 
   for(y=0;y<h;y++){
@@ -660,8 +669,17 @@ static void fast_scale_y(float *data,
   for(y=0;y<h;y++){
     double yval = (y)*newscale+new_lo;
     double map = ((yval-old_lo)*oldscale);
-    mapbase[y]=(int)floor(map);
-    mapdel[y]=map-floor(map);
+    int base = (int)floor(map);
+    double del = map - floor(map);
+    /* hack to overwhelm roundoff error; this is inside a purely
+       temporary cosmetic approximation anyway*/
+    if(base>0 && del < .0001){
+      mapbase[y]=base-1;
+      mapdel[y]=1.f;
+    }else{
+      mapbase[y]=base;
+      mapdel[y]=del;
+    }
   }
   
   for(x=0;x<w;x++){
