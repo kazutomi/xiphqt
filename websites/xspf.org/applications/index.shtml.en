@@ -66,7 +66,19 @@
               (http://www.xmms.org) with the goal of porting XMMS to GTK2 and
               make use of more modern desktop standards.
             </dd>
-
+            
+             <dt>
+              <a id="cchost"></a><a href=
+              "http://wiki.creativecommons.org/Cchost">ccHost</a> (web-based system supporting remixing and collaboration on media)
+            </dt>
+            <dd>
+              <cite src="http://wiki.creativecommons.org/Cchost#Zeitgeist">
+              ccHost is an open source (GPL licensed) project that provides web-based infrastructure (PHP) to support collaboration,
+              sharing, and storage of multi-media using the Creative Commons licenses and metadata. 
+              It is the codebase used by <a href="http://ccmixter.org/">ccMixter</a> and other sites.</cite> Since version 3.0 cchost
+              supports XSPF 1.0 (see <a href="http://sourceforge.net/project/shownotes.php?release_id=445818&group_id=80503">release notes 3.0</a>). 
+            </dd>
+            
             <dt>
               <a id="drupal"></a><a href=
               "http://drupal.org/handbook/modules/playlist">Drupal playlist
