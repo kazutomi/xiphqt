@@ -33,25 +33,14 @@ typedef struct sushiv_panel2d {
   sushiv_function_t **used_function_list;
 
   /**** Y PLANES ******/
-  float **y_num; // not indirected; unused planes are simply empty
-  float **y_den; // not indirected; unused planes are simply empty
-
   int y_obj_num;
+  float **y_map; // indirected, dw*dh
+
   sushiv_objective_t **y_obj_list; // list of objectives with a y plane
   int *y_obj_to_panel; /* maps from position in condensed list to position in full list */
   int *y_obj_from_panel; /* maps from position in full list to position in condensed list */
   int *y_fout_offset; 
   
-  /* these are gratuitous temporary storage to make progressive
-     resampled render after a fast scale look nicer.  They're here
-     purely on the premise that 'lots of memory is cheap'.  I'm sure
-     Firefox is at least this stupidly wasteful of memory for cosmetic
-     benefit. */
-  int     render_flag;
-  float **y_num_rend;
-  float **y_den_rend;
-  float  *y_rend;
-
   /* scales and data -> display scale mapping */
   scalespace x;
   scalespace x_v;
@@ -89,8 +78,7 @@ typedef struct sushiv_panel2d {
 typedef struct {
   double *fout; // [function number * outval_number]
 
-  float **y_num; // [y_obj_list[i]][px]
-  float **y_den; // [y_obj_list[i]][px]
+  float **y_map; // [y_obj_list[i]][px]
 
   int storage_width;
 

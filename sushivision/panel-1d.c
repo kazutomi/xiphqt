@@ -70,7 +70,7 @@ static void _sushiv_panel1d_remap(sushiv_panel_t *p){
 
   if(plot){
     int xi,i,j;
-    double h = p1->panel_h;
+    //double h = p1->panel_h;
     int dw = p1->data_size;
     double r = (p1->flip?p1->panel_w:p1->panel_h);
     
