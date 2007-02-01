@@ -216,8 +216,9 @@ static void resample_render_y_plane_line(mapping *map, float obj_alpha,
   int x_bin = floor(x_del);
   x_del -= x_bin; 
   linedel *= .00392156862745; // 1./255
+  linedel /= x_scaledel;
   for(i=0;i<pw;i++){
-    float alpha=1.f;
+    float alpha=x_scaledel;
     float x_del2 = x_del + x_scaledel;
       
     while(x_del2>=1.f){
@@ -228,10 +229,10 @@ static void resample_render_y_plane_line(mapping *map, float obj_alpha,
 	float val = data[x_bin];
 	if(!isnan(val) && val >= obj_alpha){
 	  u_int32_t partial = mapping_calc(map,val,panel[i]);
-	  r[i] += ((partial>>16)&0xff) * pixdel/x_scaledel;
-	  g[i] += ((partial>>8)&0xff) * pixdel/x_scaledel;
-	  b[i] += ((partial)&0xff) * pixdel/x_scaledel;
-	  alpha -= addel/x_scaledel;
+	  r[i] += ((partial>>16)&0xff) * pixdel;
+	  g[i] += ((partial>>8)&0xff) * pixdel;
+	  b[i] += ((partial)&0xff) * pixdel;
+	  alpha -= addel;
 	}
       }
 	
@@ -248,10 +249,10 @@ static void resample_render_y_plane_line(mapping *map, float obj_alpha,
 	float val = data[x_bin];
 	if(!isnan(val) && val >= obj_alpha){
 	  u_int32_t partial = mapping_calc(map,val,panel[i]);
-	  r[i] += ((partial>>16)&0xff) * pixdel/x_scaledel;
-	  g[i] += ((partial>>8)&0xff) * pixdel/x_scaledel;
-	  b[i] += ((partial)&0xff) * pixdel/x_scaledel;
-	  alpha -= addel/x_scaledel;
+	  r[i] += ((partial>>16)&0xff) * pixdel;
+	  g[i] += ((partial>>8)&0xff) * pixdel;
+	  b[i] += ((partial)&0xff) * pixdel;
+	  alpha -= addel;
 	}
       }
       x_del = x_del2;
@@ -295,7 +296,8 @@ static void resample_render_y_plane(mapping *map, float obj_alpha,
       float r[pw]; 
       float g[pw]; 
       float b[pw]; 
-      float alpha=1.f;
+      float alpha = y_scaledel;
+      float idel = 1./y_scaledel;
       float y_del2 = y_del + y_scaledel;
       u_int32_t *line = panel+i*pw;
       
@@ -309,12 +311,12 @@ static void resample_render_y_plane(mapping *map, float obj_alpha,
 	
 	if(y_bin >= 0 && y_bin < dh){
 	  resample_render_y_plane_line(map,obj_alpha,
-				       r,g,b,addel/y_scaledel,
+				       r,g,b,addel * idel,
 				       line,
 				       panelx,
 				       data+y_bin*dw,
 				       datax);
-	  alpha -= addel/y_scaledel;
+	  alpha -= addel;
 	}
 	
 	y_del2--;
@@ -327,12 +329,12 @@ static void resample_render_y_plane(mapping *map, float obj_alpha,
 	
 	if(y_bin >= 0 && y_bin < dh){
 	  resample_render_y_plane_line(map,obj_alpha,
-				       r,g,b,addel/y_scaledel,
+				       r,g,b,addel * idel,
 				       line,
 				       panelx,
 				       data+y_bin*dw,
 				       datax);
-	  alpha -= addel/y_scaledel;
+	  alpha -= addel;
 	}
 	y_del += addel;
       }
