@@ -487,6 +487,8 @@ static void plot_size_allocate (GtkWidget     *widget,
       cairo_surface_destroy(p->fore);
     if (p->back)
       cairo_surface_destroy(p->back);
+    if(p->datarect)
+      free(p->datarect);
     if (p->stage)
       cairo_surface_destroy(p->stage);
     
@@ -962,7 +964,6 @@ int plot_get_crosshair_xpixel(Plot *p){
 }
 
 int plot_get_crosshair_ypixel(Plot *p){
-  GtkWidget *widget = GTK_WIDGET(p);
   scalespace y;
   double v;
 
@@ -1039,3 +1040,22 @@ void plot_legend_add_with_color(Plot *p, char *entry, u_int32_t color){
     p->legend_list[p->legend_entries-1] = strdup("");
   p->legend_colors[p->legend_entries-1] = color;
 }
+
+void plot_replace_data(Plot *p, u_int32_t *data){
+  gdk_threads_enter();
+  GtkWidget *widget = GTK_WIDGET(p);
+
+  if (p->back)
+    cairo_surface_destroy(p->back);
+  if(p->datarect)
+    free(p->datarect);
+  
+  p->datarect = data;  
+  p->back = cairo_image_surface_create_for_data ((unsigned char *)p->datarect,
+						 CAIRO_FORMAT_RGB24,
+						 widget->allocation.width,
+						 widget->allocation.height,
+						 widget->allocation.width*4);
+  gdk_threads_leave();
+}
+

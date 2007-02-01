@@ -111,6 +111,7 @@ void plot_legend_add_with_color(Plot *p, char *entry, u_int32_t color);
 void plot_legend_clear(Plot *p);
 int plot_get_crosshair_xpixel(Plot *p);
 int plot_get_crosshair_ypixel(Plot *p);
+void plot_replace_data(Plot *p, u_int32_t *d);
 
 void plot_do_enter(Plot *p);
 void plot_do_escape(Plot *p);
