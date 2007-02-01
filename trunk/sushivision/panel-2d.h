@@ -26,8 +26,9 @@ typedef struct sushiv_panel2d {
   GtkWidget *popmenu;
   GtkWidget *graphmenu;
 
-  int serialno;
-  
+  int serialno;              // timestamps access to map planes, widget pixels
+  int scaling_in_progress;
+
   /* only run those functions used by this panel */
   int used_functions;
   sushiv_function_t **used_function_list;

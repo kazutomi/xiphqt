@@ -246,6 +246,8 @@ scalespace scalespace_linear (double lowpoint, double highpoint, int pixels, int
 
   if(pixels<1)pixels=1;
 
+  memset(&ret,0,sizeof(ret)); // otherwise packing may do us in!
+
   ret.lo = lowpoint;
   ret.hi = highpoint;
   ret.init = 1;
