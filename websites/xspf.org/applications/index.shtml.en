@@ -450,6 +450,14 @@
             </dd>
 
             <dt>
+              <a id="foafingthemusic"></a><a href="http://foafing-the-music.iua.upf.edu/index.html">Foafing the music</a>
+            </dt>
+            <dd>
+            A music recommendation system, based on user's profile. Uses the <a href="http://www.foaf-project.org/">FOAF</a> vocabulary to recommend music.
+            Looks promising, but seems to be in an experimental phase at this moment.
+           </dd>
+            
+            <dt>
               <a id="jamendo"></a><a href=
               "http://www.jamendo.com/us/static/concept/">Jamendo</a>
             </dt>
