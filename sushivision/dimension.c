@@ -85,19 +85,19 @@ int _sushiv_dimension_scales(sushiv_dimension_t *d,
       // although the rest of the code assumes 'hi' is a one-past, the
       // discrete dim code assumes hi is an inclusive bound, so we
       // just extend.
-      if(lo_i<hi_i){
-	extend = 1;
-      }else{
+      if(lo_i>hi_i){ // == must be 1 to match scale gen code when width is 0
 	extend = -1;
+      }else{
+	extend = 1;
       }
 
       data_w = abs(hi_i-lo_i)+1;
       if(!(d->flags & SUSHIV_DIM_ZEROINDEX))
 	floor_i = 0;
 
-      *panel = scalespace_linear((double)lo_i * d->private->discrete_numerator / 
+      *panel = scalespace_linear((double)(lo_i-extend*.4) * d->private->discrete_numerator / 
 				 d->private->discrete_denominator,
-				 (double)hi_i * d->private->discrete_numerator / 
+				 (double)(hi_i+extend*.4) * d->private->discrete_numerator / 
 				 d->private->discrete_denominator,
 				 panel_w, spacing, legend);
 

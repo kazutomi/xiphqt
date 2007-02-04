@@ -257,8 +257,8 @@ static void resample_render_y_plane_line(mapping *map, float obj_alpha,
 	  alpha -= addel;
 	}
       }
-      x_del = x_del2;
     }
+    x_del = x_del2;
 
     /* partial pixels need some of the background mixed in */
     if(alpha>0.f){
@@ -329,7 +329,7 @@ static void resample_render_y_plane(sushiv_panel2d_t *p2, int serialno,
 				       r,g,b,addel * idel,
 				       line,
 				       panelx,
-				       data+y_bin*dw,
+				       dline,
 				       datax);
 	  alpha -= addel * idel;
 	}
@@ -353,12 +353,12 @@ static void resample_render_y_plane(sushiv_panel2d_t *p2, int serialno,
 				       r,g,b,addel * idel,
 				       line,
 				       panelx,
-				       data+y_bin*dw,
+				       dline,
 				       datax);
 	  alpha -= addel * idel;
 	}
-	y_del += addel;
       }
+      y_del = y_del2;
 
       /* work is finished; replace panel line with it */
       if(alpha>.0001){ // less than a color step of rounding error
@@ -1103,8 +1103,9 @@ static int _sushiv_panel_cooperative_compute_2d(sushiv_panel_t *p,
       
       p2->scaling_in_progress = 0;
       gdk_threads_leave ();
+      _sushiv_panel_dirty_map(p);
       _sushiv_wake_workers();   
-      _sushiv_panel2d_remap(p);
+      //_sushiv_panel2d_remap(p);
       plot_draw_scales(plot);
 
     }else

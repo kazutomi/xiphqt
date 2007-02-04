@@ -31,10 +31,10 @@ static void discrete_objective(double *d, double *ret){
   int X = rint(d[0]);
   int Y = rint(d[1]);
 
-  if(!(X&0x3) && !(Y&0x3)) 
+  if(!(X%100) && !(Y%100)) 
     ret[0]=1.;
   else
-    ret[0]=((X+Y)&0xf)*.02;
+    ret[0]=0.;
 }
 
 int sushiv_submain(int argc, char *argv[]){
@@ -42,10 +42,10 @@ int sushiv_submain(int argc, char *argv[]){
   s=sushiv_new_instance();
 
   sushiv_new_dimension_discrete(s,0,"A",
-				5,(double []){-100,-10,0,10,100},
+				5,(double []){-500,-10,0,10,500},
 				NULL,1,1,0);
   sushiv_new_dimension_discrete(s,1,"B",
-				5,(double []){-100,-10,0,10,100},
+				5,(double []){-500,-10,0,10,500},
 				NULL,1,1,0);
 
   sushiv_dimension_set_value(s,0,0,-2);
