@@ -126,7 +126,7 @@ namespace ogg {
                                                   base_quality); }
 
 
-                int encode_ctl(vorbis_info *vi, int number, void *arg) {
+                int encode_ctl(vorbis_info *vi, int number, unsigned char *arg) {
                     return vorbis_encode_ctl( &this->data, number, arg ); }
 
 

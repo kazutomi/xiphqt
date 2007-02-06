@@ -120,7 +120,7 @@ namespace ogg {
 
             void writealign (  )                            { oggpack_writealign ( this->get_data() ); }
             void writeclear (  )                            { oggpack_writeclear ( this->get_data() ); }
-            void writecopy  ( void *source, long bits )     { oggpack_writecopy ( this->get_data(), source, bits );  }
+            void writecopy  ( unsigned char *source, long bits )     { oggpack_writecopy ( this->get_data(), source, bits );  }
             void writetrunc ( long bits )                   { oggpack_writetrunc ( this->get_data(), bits );  }
     };
 
@@ -143,7 +143,7 @@ namespace ogg {
 
             void writealign (  )                            { oggpackB_writealign ( this->get_data() ); }
             void writeclear (  )                            { oggpackB_writeclear ( this->get_data() ); }
-            void writecopy  ( void *source, long bits )     { oggpackB_writecopy ( this->get_data(), source, bits );  }
+            void writecopy  ( unsigned char *source, long bits )     { oggpackB_writecopy ( this->get_data(), source, bits );  }
             void writetrunc ( long bits )                   { oggpackB_writetrunc ( this->get_data(), bits );  }
     };
 
