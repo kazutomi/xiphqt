@@ -188,86 +188,72 @@ static void compute_single_point(sushiv_panel_t *p,sushiv_objective_t *o, double
 
 /* functions that perform actual graphical rendering */
 
-static void render_checks(int w, int h, u_int32_t *render){
+static void render_checks(int w, int h, ccolor *c){
   /* default checked background */
   /* 16x16 'mid-checks' */ 
   int x,y,j;
-
+  
   for(y=0;y<h;y++){
     int phase = (y>>4)&1;
     for(x=0;x<w;){
-      u_int32_t phaseval = 0x505050;
-      if(phase) phaseval = 0x808080;
+      ccolor phaseval = {.314f, .314f, .314f};
+      if(phase) phaseval = (ccolor){.5f, .5f, .5f};
       for(j=0;j<16 && x<w;j++,x++)
-	render[x] = phaseval;
+	c[x] = phaseval;
       phase=!phase;
     }
-    render += w;
+    c += w;
   }
 }
 
+
 // called without any locks; all passed in data is locally replicated 
 static void resample_render_y_plane_line(mapping *map, float obj_alpha,
-					 float *r, float *g, float *b, float linedel,
-					 u_int32_t *panel, scalespace panelx,
+					 ccolor *out, float linedel,
+					 ccolor *mix, scalespace panelx, 
+					 float x_scaledel, float x_del, int x_bin,
+					 
 					 float *data, scalespace datax){
   int pw = panelx.pixels;
   int dw = datax.pixels;
   int i;
 
-  float x_scaledel = scalespace_scaledel(&panelx,&datax);
-  float x_del = scalespace_pixel(&datax,scalespace_value(&panelx,-.5))+.5;
-  int x_bin = floor(x_del);
-  x_del -= x_bin; 
-  linedel *= .00392156862745; // 1./255
-  linedel /= x_scaledel;
-  for(i=0;i<pw;i++){
-    float alpha=x_scaledel;
+   for(i=0;i<pw;i++){
     float x_del2 = x_del + x_scaledel;
-    
-    while(x_del2>=1.f){
+    float alpha = x_scaledel * linedel;
+    int flag = 0;
+
+    while(x_del2>1.f){
       if(x_bin >= 0 && x_bin < dw){
-	float addel = (1.f - x_del);
-	float pixdel = addel*linedel;
 	float val = data[x_bin];
-	if(!isnan(val) && val >= obj_alpha){
-	  u_int32_t partial = mapping_calc(map,val,panel[i]);
-	  r[i] += ((partial>>16)&0xff) * pixdel;
-	  g[i] += ((partial>>8)&0xff) * pixdel;
-	  b[i] += ((partial)&0xff) * pixdel;
+	if(!isnan(val) && val>=obj_alpha){
+	  float addel = (1.f - x_del) * linedel;
+	  mapping_calcf(map,val,addel,out+i,mix+i);
 	  alpha -= addel;
 	}
       }
-	
-      x_del2--;
+
+      x_del2-=1.f;
       x_bin++;
       x_del = 0.f;
     }
-    
+        
     if(x_del2>0.f){
       if(x_bin >= 0 && x_bin < dw){
-	float addel = (x_del2 - x_del);
-	float pixdel = addel*linedel;
 	float val = data[x_bin];
-	if(!isnan(val) && val >= obj_alpha){
-	  u_int32_t partial = mapping_calc(map,val,panel[i]);
-	  r[i] += ((partial>>16)&0xff) * pixdel;
-	  g[i] += ((partial>>8)&0xff) * pixdel;
-	  b[i] += ((partial)&0xff) * pixdel;
+	if(!isnan(val) && val>=obj_alpha){
+	  float addel = (x_del2 - x_del)*linedel;
+	  mapping_calcf(map,val,addel,out+i,mix+i);
 	  alpha -= addel;
 	}
       }
     }
+
     x_del = x_del2;
 
-    /* partial pixels need some of the background mixed in */
-    if(alpha>0.f){
-      float pixdel = alpha*linedel;
-      u_int32_t bg = panel[i];
-      r[i] += ((bg>>16)&0xff) * pixdel;
-      g[i] += ((bg>>8)&0xff) * pixdel;
-      b[i] += ((bg)&0xff) * pixdel;
-    }
+    out[i].r += mix[i].r * alpha;
+    out[i].g += mix[i].g * alpha;
+    out[i].b += mix[i].b * alpha;
   }
 }
 
@@ -278,13 +264,13 @@ static void resample_render_y_plane_line(mapping *map, float obj_alpha,
    against serialno */
 static void resample_render_y_plane(sushiv_panel2d_t *p2, int serialno, 
 				    mapping *map, float obj_alpha,
-				    u_int32_t *panel, scalespace panelx, scalespace panely,
+				    ccolor *panel, scalespace panelx, scalespace panely,
 				    float *data, scalespace datax, scalespace datay){
   int pw = panelx.pixels;
   int dw = datax.pixels;
   int ph = panely.pixels;
   int dh = datay.pixels;
-  u_int32_t *line;
+  ccolor *line;
   float dline[dw];
   int i,j;
 
@@ -293,26 +279,28 @@ static void resample_render_y_plane(sushiv_panel2d_t *p2, int serialno,
   if(ph!=dh || pw!=dw){
     /* resampled row computation */
 
-    /* by line */
+    /* by row */
     float y_scaledel = scalespace_scaledel(&panely,&datay);
     float y_del = scalespace_pixel(&datay,scalespace_value(&panely,-.5))+.5;
     int y_bin = floor(y_del);
     y_del -= y_bin; 
 
+    /* by column */
+    float x_scaledel = scalespace_scaledel(&panelx,&datax);
+    float x_del = scalespace_pixel(&datax,scalespace_value(&panelx,-.5))+.5;
+    int x_bin = floor(x_del);
+    x_del -= x_bin; 
+
+    float idel = 1./y_scaledel/x_scaledel;
+
     for(i=0;i<ph;i++){
       /* render is done into a temporary line because of the way alpha
 	 blending is done; the background for the blend must be taken
 	 from the original line */
-      float r[pw]; 
-      float g[pw]; 
-      float b[pw]; 
+      ccolor out[pw]; 
       float alpha = 1.;
-      float idel = 1./y_scaledel;
       float y_del2 = y_del + y_scaledel;
-
-      memset(r,0,sizeof(r)); 
-      memset(g,0,sizeof(g)); 
-      memset(b,0,sizeof(b)); 
+      memset(out,0,sizeof(out)); 
 
       line=panel+i*pw;
       
@@ -326,12 +314,13 @@ static void resample_render_y_plane(sushiv_panel2d_t *p2, int serialno,
 	  gdk_threads_leave ();
 
 	  resample_render_y_plane_line(map,obj_alpha,
-				       r,g,b,addel * idel,
+				       out,addel * idel,
 				       line,
 				       panelx,
+				       x_scaledel,x_del,x_bin,
 				       dline,
 				       datax);
-	  alpha -= addel * idel;
+	  alpha -= addel * idel * x_scaledel;
 	}
 	
 	y_del2--;
@@ -350,12 +339,13 @@ static void resample_render_y_plane(sushiv_panel2d_t *p2, int serialno,
 	  gdk_threads_leave ();
 
 	  resample_render_y_plane_line(map,obj_alpha,
-				       r,g,b,addel * idel,
+				       out,addel * idel,
 				       line,
 				       panelx,
+				       x_scaledel,x_del,x_bin,
 				       dline,
 				       datax);
-	  alpha -= addel * idel;
+	  alpha -= addel * idel * x_scaledel;
 	}
       }
       y_del = y_del2;
@@ -363,19 +353,15 @@ static void resample_render_y_plane(sushiv_panel2d_t *p2, int serialno,
       /* work is finished; replace panel line with it */
       if(alpha>.0001){ // less than a color step of rounding error
 	for(j=0;j<pw;j++){
-	  int ri = rint(r[j]*0xff0000.p0f +  (line[j]&0xff0000) * alpha);
-	  int gi = rint(g[j]*0xff00.p0f +  (line[j]&0xff00) * alpha);
-	  int bi = rint(b[j]*0xff.p0f +  (line[j]&0xff) * alpha);
-	  
-	  line[j] = (ri&0xff0000) + (gi&0xff00) + (bi&0xff);
+	  line[j].r = out[j].r + line[j].r * alpha;
+	  line[j].g = out[j].g + line[j].g * alpha;
+	  line[j].b = out[j].b + line[j].b * alpha;
 	}
       }else{
 	for(j=0;j<pw;j++){
-	  int ri = rint(r[j]*0xff0000.p0f);
-	  int gi = rint(g[j]*0xff00.p0f);
-	  int bi = rint(b[j]*0xff.p0f);
-	  
-	  line[j] = (ri&0xff0000) + (gi&0xff00) + (bi&0xff);
+	  line[j].r = out[j].r;
+	  line[j].g = out[j].g;
+	  line[j].b = out[j].b;
 	}
       }
     }      
@@ -392,8 +378,11 @@ static void resample_render_y_plane(sushiv_panel2d_t *p2, int serialno,
       
       for(j=0;j<pw;j++){
 	float val = dline[j];
-	if(!isnan(val) && val >= obj_alpha)
-	  line[j] = mapping_calc(map,val,line[j]);
+	if(!isnan(val) && val >= obj_alpha){
+	  ccolor out;
+	  mapping_calcf(map,val,1.,&out,line+j);
+	  line[j] = out;
+	}
       }
     }
   }
@@ -416,7 +405,8 @@ static void _sushiv_panel2d_remap(sushiv_panel_t *p){
   scalespace y = p2->y;
   scalespace x_v = p2->x_v;
   scalespace y_v = p2->y_v;
-  u_int32_t *doublebuff = malloc(x.pixels*y.pixels*sizeof(*doublebuff));
+
+  ccolor *c = malloc(x.pixels*y.pixels*sizeof(*c));
 
   double alphadel[p->objectives];
   mapping mappings[p->objectives];
@@ -429,10 +419,10 @@ static void _sushiv_panel2d_remap(sushiv_panel_t *p){
   
   pw = plot->x.pixels;
   ph = plot->y.pixels;
+  gdk_threads_leave();
   
   /* background checks */
-  render_checks(pw,ph,doublebuff);
-  gdk_threads_leave();
+  render_checks(pw,ph,c);
   
   /* by objective */
   for(i=0;i<p->objectives;i++){
@@ -441,7 +431,7 @@ static void _sushiv_panel2d_remap(sushiv_panel_t *p){
     int o_ynum = p2->y_obj_from_panel[i];
     resample_render_y_plane(p2, serialno, 
 			    mappings+i, alphadel[i],
-			    doublebuff, x, y,
+			    c, x, y,
 			    y_rects[o_ynum], x_v, y_v);
     
     /**** render Z plane */
@@ -452,11 +442,16 @@ static void _sushiv_panel2d_remap(sushiv_panel_t *p){
 
   gdk_threads_enter ();
   if(serialno == p2->serialno){
-    plot_replace_data(plot,doublebuff);
-  }else{
-    free(doublebuff);
+    u_int32_t *dr = plot->datarect;
+    ccolor *cp = c;
+    for(i=0;i<pw*ph;i++){
+      *dr    = (u_int32_t)rint(cp  ->r * 0xff.p0f)<<16;
+      *dr   += (u_int32_t)rint(cp  ->g * 0xff.p0f)<<8;
+      *dr++ += (u_int32_t)rint(cp++->b * 0xff.p0f);
+    }
   }
   gdk_threads_leave();
+  free(c);
 }
 
 static void update_legend(sushiv_panel_t *p){  
@@ -1103,7 +1098,7 @@ static int _sushiv_panel_cooperative_compute_2d(sushiv_panel_t *p,
       
       p2->scaling_in_progress = 0;
       gdk_threads_leave ();
-      _sushiv_panel_dirty_map(p);
+      _sushiv_panel_dirty_map_throttled(p);
       _sushiv_wake_workers();   
       //_sushiv_panel2d_remap(p);
       plot_draw_scales(plot);
@@ -1188,8 +1183,6 @@ static int _sushiv_panel_cooperative_compute_2d(sushiv_panel_t *p,
 
 static void recompute_callback_2d(void *ptr){
   sushiv_panel_t *p = (sushiv_panel_t *)ptr;
-  Plot *plot = PLOT(p->private->graph);
-  render_checks(plot->x.pixels, plot->y.pixels, plot->datarect);
   _mark_recompute_2d(p);
   _sushiv_panel_cooperative_compute_2d(p,NULL); // initial scale setup
 }

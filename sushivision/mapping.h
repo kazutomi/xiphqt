@@ -20,25 +20,33 @@
  */
 
 #include <sys/types.h>
+
+typedef struct{
+  float r;
+  float g;
+  float b;
+} ccolor;
+
 typedef struct {
   int mapnum;
-  double low;
-  double high;
-  double i_range;
-  u_int32_t (*mapfunc)(double val,u_int32_t mix);
+  float low;
+  float high;
+  float i_range;
+  void (*mapfunc)(float val,float mul, ccolor *out, ccolor *mix);
 } mapping;
 
 extern int num_mappings();
 extern char *mapping_name(int i);
-extern void mapping_setup(mapping *m, double lo, double hi, int funcnum);
-extern void mapping_set_lo(mapping *m, double lo);
-extern void mapping_set_hi(mapping *m, double hi);
+extern void mapping_setup(mapping *m, float lo, float hi, int funcnum);
+extern void mapping_set_lo(mapping *m, float lo);
+extern void mapping_set_hi(mapping *m, float hi);
 extern void mapping_set_func(mapping *m, int funcnum);
-extern double mapping_val(mapping *m, double in);
-extern u_int32_t mapping_calc(mapping *m, double in, u_int32_t mix);
+extern float mapping_val(mapping *m, float in);
+extern u_int32_t mapping_calc(mapping *m, float in, u_int32_t mix);
+extern void mapping_calcf(mapping *m, float in, float mul, ccolor *out, ccolor *mix);
 extern int mapping_inactive_p(mapping *m);
 
 extern int num_solids();
 extern char *solid_name(int i);
-extern void solid_setup(mapping *m, double lo, double hi, int funcnum);
+extern void solid_setup(mapping *m, float lo, float hi, int funcnum);
 extern void solid_set_func(mapping *m, int funcnum);

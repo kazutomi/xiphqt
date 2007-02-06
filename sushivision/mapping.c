@@ -24,219 +24,165 @@
 #include <string.h>
 #include "mapping.h"
 
-static u_int32_t scalloped_colorwheel(double val, u_int32_t mix){
-  if(val<0.)val=0.;
-  if(val>1.)val=1.;
-  {
-    int r,g,b;
-    
-    int category = val*12;
-    int v = rint((val*12 - category)*255.);
-    
-    switch(category){
-    case 0:
-      r=0;g=v;b=0;break;
-    case 1:
-      r=v;g=v;b=0;break;
-    case 2:
-      r=v;g=(v>>1);b=0;break;
-    case 3:
-      r=v;g=0;b=0;break;
-    case 4:
-      r=v;g=0;b=v*3/4;break;
-    case 5:
-      r=v*3/4;g=0;b=v;break;
-    case 6:
-      r=(v>>1);g=0;b=v;break;
-    case 7:
-      r=0;g=0;b=v;break;
-    case 8:
-      r=0;g=v*2/3;b=v;break;
-    case 9:
-      r=0;g=v;b=v;break;
-    case 10:
-      r=v*2/3;g=v;b=v;break;
-    case 11:
-      r=v;g=v;b=v;break;
-    case 12:
-      r=255;g=255;b=255;break;
-    }
-    
-    return (r<<16) + (g<<8) + b;
+static void scalloped_colorwheel(float val, float mul, ccolor *r, ccolor *mix){
+  int category = val*12.f;
+  val = (val*12.f - category)*mul;
+  
+  switch(category){
+  case 0:
+    r->g+=val;break;
+  case 1:
+    r->r+=val; r->g+=val; break;
+  case 2:
+    r->r+=val; r->g+=val*.5f; break;
+  case 3:
+    r->r+=val; break;
+  case 4:
+    r->r+=val; r->b+=val*.75f; break;
+  case 5:
+    r->r+=val*.75; r->b+=val; break;
+  case 6:
+    r->r+=val*.5f; r->b+=val; break;
+  case 7:
+    r->b+=val; break;
+  case 8:
+    r->g+=val*.67f; r->b+=val; break;
+  case 9:
+    r->g+=val; r->b+=val; break;
+  case 10:
+    r->r+=val*.67f; r->g+=val; r->b+=val; break;
+  case 11:
+    r->r+=val; r->g+=val; r->b+=val; break;
+  case 12:
+    r->r+=mul; r->g+=mul; r->b+=mul; break;
   }
 }
 
-static u_int32_t smooth_colorwheel(double val, u_int32_t mix){
-  if(val<0)val=0;
-  if(val>1)val=1;
-  {
-    int r,g,b;
-
-    if(val<= (4./7.)){
-      if(val<= (2./7.)){
-	if(val<= (1./7.)){
-	  // 0->1, 0->g
-	  r=0;
-	  g= rint(7.*255.*val);
-	  b=0;
-	  
-	}else{
-	  // 1->2, g->rg
-	  r= rint(7.*255.*val-255.);
-	  g=255;
-	  b=0;
-	  
-	}
+static void smooth_colorwheel(float val, float mul, ccolor *r, ccolor *mix){
+  if(val<= (4.f/7.f)){
+    if(val<= (2.f/7.f)){
+      if(val<= (1.f/7.f)){
+	// 0->1, 0->g
+	r->g+=7.f*val*mul;
+	
       }else{
-	if(val<=(3./7.)){
-	  // 2->3, rg->r
-	  r= 255;
-	  g= rint(3.*255. - 7.*255.*val);
-	  b=0;
-
-	}else{
-	  // 3->4, r->rb
-	  r= 255;
-	  g= 0.;
-	  b= rint(7.*255.*val-3.*255.);
-	}
+	// 1->2, g->rg
+	r->r+=(7.f*val-1.f)*mul;
+	r->g+=mul;
+	
       }
     }else{
-      if(val<= (5./7.)){
-	// 4->5, rb->b
-	r= rint(5.*255. - 7.*255.*val);
-	g= 0;
-	b= 255;
-
+      if(val<=(3.f/7.f)){
+	// 2->3, rg->r
+	r->r+=mul;
+	r->g+=(3.f - 7.f*val)*mul;
+	
       }else{
-	if(val<= (6./7.)){
-	  // 5->6, b->bg
-	  r= 0.;
-	  g= rint(7.*255.*val-5.*255.);
-	  b= 255;
-	  
-	}else{
-	  // 6->7, bg->rgb
-	  r= rint(7.*255.*val-6.*255.);
-	  g= 255;
-	  b= 255;
-	  
-	}
+	// 3->4, r->rb
+	r->r+=mul;
+	r->b+=(7.f*val-3.f)*mul;
       }
     }
-    return (r<<16) + (g<<8) + b;
-  }
-}
-
-static u_int32_t grayscale(double val, u_int32_t mix){
-  if(val<0)val=0;
-  if(val>1)val=1;
-  {
-    int g=rint(val*255.);
-    return (g<<16)+(g<<8)+g;
-  }
-}
-
-static u_int32_t grayscale_cont(double val, u_int32_t mix){
-  if(val<0)val=0;
-  if(val>1)val=1;
-  {
-    int g=rint(val*255.);
-    if((g & 0xf) < 0x1) g=0;
-    return (g<<16)+(g<<8)+g;
-  }
-}
-
-static u_int32_t red(double val, u_int32_t mix){
-  if(val<0)val=0;
-  if(val>1)val=1;
-  {
-    int g=rint(val*255.);
-    return (g<<16);
-  }
-}
-
-static u_int32_t green(double val, u_int32_t mix){
-  if(val<0)val=0;
-  if(val>1)val=1;
-  {
-    int g=rint(val*255.);
-    return (g<<8);
-  }
-}
-
-static u_int32_t blue(double val, u_int32_t mix){
-  if(val<0)val=0;
-  if(val>1)val=1;
-  {
-    int g=rint(val*255.);
-    return (g);
-  }
-}
-
-static u_int32_t red_overlay(double val, u_int32_t mix){
-  if(val<0)val=0;
-  if(val>1)val=1;
-  {
-    int r = ((mix>>16) & 0xff) + (unsigned )(val*255.);
-    int g = ((mix>>8) & 0xff);
-    int b = ((mix) & 0xff);
-    if(r>255){
-      g -= (r-255);
-      b -= (r-255);
-      r=255;
-      if(g<0)g=0;
-      if(b<0)b=0;
+  }else{
+    if(val<= (5.f/7.f)){
+      // 4->5, rb->b
+      r->r+=(5.f - 7.f*val)*mul;
+      r->b+=mul;
+      
+    }else{
+      if(val<= (6.f/7.f)){
+	// 5->6, b->bg
+	r->g+=(7.f*val-5.f)*mul;
+	r->b+=mul;
+	
+      }else{
+	// 6->7, bg->rgb
+	r->r+=(7.f*val-6.f)*mul;
+	r->g+=mul;
+	r->b+=mul;
+	
+      }
     }
-    return  (r<<16)+(g<<8)+b;
   }
 }
 
-static u_int32_t green_overlay(double val, u_int32_t mix){
-  if(val<0)val=0;
-  if(val>1)val=1;
-  {
-    int r = ((mix>>16) & 0xff);
-    int g = ((mix>>8) & 0xff) + (unsigned)(val*255.);
-    int b = ((mix) & 0xff);
-    if(g>255){
-      r -= (g-255);
-      b -= (g-255);
-      g=255;
-      if(r<0)r=0;
-      if(b<0)b=0;
-    }
-    return  (r<<16)+(g<<8)+b;
+static void grayscale(float val, float mul, ccolor *r, ccolor *mix){
+  val*=mul;
+  r->r += val;
+  r->g += val;
+  r->b += val;
+}
+
+static void red(float val, float mul, ccolor *r, ccolor *mix){
+  r->r += val*mul;
+}
+
+static void green(float val, float mul, ccolor *r, ccolor *mix){
+  r->g += val*mul;
+}
+
+static void blue(float val, float mul, ccolor *r, ccolor *mix){
+  r->b += val*mul;
+}
+
+static void red_overlay(float val, float mul, ccolor *o, ccolor *mix){
+  float r = mix->r + val;
+  float g = mix->g;
+  float b = mix->b;
+  if(r>1.f){
+    g -= r - 1.f;
+    b -= r - 1.f;
+    r  = 1.f;
+    if(g<0.f)g=0.f;
+    if(b<0.f)b=0.f;
   }
+  o->r += r*mul;
+  o->g += g*mul;
+  o->b += b*mul;
 }
 
-static u_int32_t blue_overlay(double val, u_int32_t mix){
-  if(val<0)val=0;
-  if(val>1)val=1;
-  {
-    int r = ((mix>>16) & 0xff);
-    int g = ((mix>>8) & 0xff);
-    int b = ((mix) & 0xff) + (unsigned )(val*255.);
-    if(b>255){
-      r -= (b-255);
-      g -= (b-255);
-      b=255;
-      if(r<0)r=0;
-      if(g<0)g=0;
-    }
-    return  (r<<16)+(g<<8)+b;
+static void green_overlay(float val, float mul, ccolor *o, ccolor *mix){
+  float r = mix->r;
+  float g = mix->g + val;
+  float b = mix->b;
+  if(g>1.f){
+    r -= g - 1.f;
+    b -= g - 1.f;
+    g  = 1.f;
+    if(r<0.f)r=0.f;
+    if(b<0.f)b=0.f;
   }
+  o->r += r*mul;
+  o->g += g*mul;
+  o->b += b*mul;
 }
 
-static u_int32_t inactive(double val, u_int32_t mix){
-  return mix;
+static void blue_overlay(float val, float mul, ccolor *o, ccolor *mix){
+  float r = mix->r;
+  float g = mix->g;
+  float b = mix->b + val;
+  if(b>1.f){
+    r -= b - 1.f;
+    g -= b - 1.f;
+    b  = 1.f;
+    if(r<0.f)r=0.f;
+    if(g<0.f)g=0.f;
+  }
+  o->r += r*mul;
+  o->g += g*mul;
+  o->b += b*mul;
 }
 
-static u_int32_t (*mapfunc[])(double,u_int32_t)={
+static void inactive(float val, float mul, ccolor *r, ccolor *mix){
+  r->r += mix->r*mul;
+  r->g += mix->g*mul;
+  r->b += mix->b*mul;
+}
+
+static void (*mapfunc[])(float, float, ccolor *, ccolor *)={
   smooth_colorwheel,
   scalloped_colorwheel,
   grayscale,
-  grayscale_cont,
   red,
   green,
   blue,
@@ -250,7 +196,6 @@ static char *mapnames[]={
   "smooth colorwheel",
   "scalloped colorwheel",
   "grayscale",
-  "grayscale with contours",
   "red",
   "green",
   "blue",
@@ -271,14 +216,14 @@ char *mapping_name(int i){
   return mapnames[i];
 }
 
-void mapping_setup(mapping *m, double lo, double hi, int funcnum){
+void mapping_setup(mapping *m, float lo, float hi, int funcnum){
   m->low = lo;
   m->high = hi;
   m->i_range = 1./(hi-lo);
   m->mapfunc = mapfunc[funcnum];
 }
 
-void mapping_set_lo(mapping *m, double lo){
+void mapping_set_lo(mapping *m, float lo){
   m->low = lo;
   if(m->high-m->low>0.)
     m->i_range = 1./(m->high-m->low);
@@ -286,7 +231,7 @@ void mapping_set_lo(mapping *m, double lo){
     m->i_range=0;
 }
 
-void mapping_set_hi(mapping *m, double hi){
+void mapping_set_hi(mapping *m, float hi){
   m->high=hi;
   if(m->high-m->low>0.)
     m->i_range = 1./(m->high-m->low);
@@ -299,7 +244,7 @@ void mapping_set_func(mapping *m, int funcnum){
   m->mapfunc = mapfunc[funcnum];
 }
 
-double mapping_val(mapping *m, double in){
+float mapping_val(mapping *m, float in){
   if(m->i_range==0){
     return NAN;
   }else{
@@ -307,16 +252,32 @@ double mapping_val(mapping *m, double in){
   }
 }
 
-u_int32_t mapping_calc(mapping *m, double in, u_int32_t mix){
+void mapping_calcf(mapping *m, float in, float mul, ccolor *out, ccolor *mix){
   if(m->i_range==0){
     if(in<=m->low)
-      return m->mapfunc(0.,mix);
+      m->mapfunc(0.f,mul,out,mix);
     else
-      return m->mapfunc(1.,mix);
+      m->mapfunc(1.f,mul,out,mix);
   }else{
-    double val = (in - m->low) * m->i_range;
-    return m->mapfunc(val,mix);
+    float val = (in - m->low) * m->i_range;
+    if(val<0.f)val=0.f;
+    if(val>1.f)val=1.f;
+    m->mapfunc(val,mul,out,mix);
   }
+}
+
+u_int32_t mapping_calc(mapping *m, float in, u_int32_t mix){
+  ccolor mixc,outc = {0.f,0.f,0.f};
+  mixc.r = ((mix>>16)&0xff) * .0039215686f;
+  mixc.g = ((mix>>8)&0xff) * .0039215686f;
+  mixc.b = ((mix)&0xff) * .0039215686f;
+  
+  mapping_calcf(m,in,1.f,&outc,&mixc);
+
+  return 
+    ((u_int32_t)rint(outc.r * 0xff0000.p0f)&0xff0000) +
+    ((u_int32_t)rint(outc.g *   0xff00.p0f)&0xff00) + 
+     (u_int32_t)rint(outc.b *     0xff.p0f);
 }
 
 int mapping_inactive_p(mapping *m){
@@ -324,88 +285,55 @@ int mapping_inactive_p(mapping *m){
   return 0;
 }
 
-static u_int32_t swhite(double val, u_int32_t mix){
-  if(val<0)val=0;
-  if(val>1)val=1;
-  {
-    int r = ((mix>>16) & 0xff) *(1.-val) + (val*0xff);
-    int g = ((mix>>8) & 0xff) *(1.-val) + (val*0xff);
-    int b = ((mix) & 0xff) *(1.-val) + (val*0xff);
-    return  (r<<16)+(g<<8)+b;
-  }
-}
-static u_int32_t sred(double val, u_int32_t mix){
-  if(val<0)val=0;
-  if(val>1)val=1;
-  {
-    int r = ((mix>>16) & 0xff) *(1.-val) + (val*0xff);
-    int g = ((mix>>8) & 0xff) *(1.-val) + (val*0x60);
-    int b = ((mix) & 0xff) *(1.-val) + (val*0x60);
-    return  (r<<16)+(g<<8)+b;
-  }
-}
-static u_int32_t sgreen(double val, u_int32_t mix){
-  if(val<0)val=0;
-  if(val>1)val=1;
-  {
-    int r = ((mix>>16) & 0xff) *(1.-val) + (val*0x60);
-    int g = ((mix>>8) & 0xff) *(1.-val) + (val*0xff);
-    int b = ((mix) & 0xff) *(1.-val) + (val*0x60);
-    return  (r<<16)+(g<<8)+b;
-  }
-}
-static u_int32_t sblue(double val, u_int32_t mix){
-  if(val<0)val=0;
-  if(val>1)val=1;
-  {
-    int r = ((mix>>16) & 0xff) *(1.-val) + (val*0x80);
-    int g = ((mix>>8) & 0xff) *(1.-val) + (val*0x80);
-    int b = ((mix) & 0xff) *(1.-val) + (val*0xff);
-    return  (r<<16)+(g<<8)+b;
-  }
-}
-static u_int32_t syellow(double val, u_int32_t mix){
-  if(val<0)val=0;
-  if(val>1)val=1;
-  {
-    int r = ((mix>>16) & 0xff) *(1.-val) + (val*0xff);
-    int g = ((mix>>8) & 0xff) *(1.-val) + (val*0xff);
-    int b = ((mix) & 0xff) *(1.-val);
-    return  (r<<16)+(g<<8)+b;
-  }
-}
-static u_int32_t scyan(double val, u_int32_t mix){
-  if(val<0)val=0;
-  if(val>1)val=1;
-  {
-    int r = ((mix>>16) & 0xff) *(1.-val) + (val*0x60);
-    int g = ((mix>>8) & 0xff) *(1.-val) + (val*0xff);
-    int b = ((mix) & 0xff) *(1.-val) + (val*0xff);
-    return  (r<<16)+(g<<8)+b;
-  }
-}
-static u_int32_t spurple(double val, u_int32_t mix){
-  if(val<0)val=0;
-  if(val>1)val=1;
-  {
-    int r = ((mix>>16) & 0xff) *(1.-val) + (val*0xff);
-    int g = ((mix>>8) & 0xff) *(1.-val) + (val*0x60);
-    int b = ((mix) & 0xff) *(1.-val) + (val*0xff);
-    return  (r<<16)+(g<<8)+b;
-  }
-}
-static u_int32_t sgray(double val, u_int32_t mix){
-  if(val<0)val=0;
-  if(val>1)val=1;
-  {
-    int r = ((mix>>16) & 0xff) *(1.-val) + (val*0xa0);
-    int g = ((mix>>8) & 0xff) *(1.-val) + (val*0xa0);
-    int b = ((mix) & 0xff) *(1.-val) + (val*0xa0);
-    return  (r<<16)+(g<<8)+b;
-  }
+static void swhite(float val, float mul, ccolor *r, ccolor *mix){
+  r->r += (mix->r * (1.f-val) + val)*mul;
+  r->g += (mix->g * (1.f-val) + val)*mul;
+  r->b += (mix->b * (1.f-val) + val)*mul;
 }
 
-static u_int32_t (*solidfunc[])(double,u_int32_t)={
+static void sred(float val, float mul, ccolor *r, ccolor *mix){
+  r->r += (mix->r * (1.f-val) + val)*mul;
+  r->g += (mix->g * (1.f-val) + val*.376f)*mul;
+  r->b += (mix->b * (1.f-val) + val*.376f)*mul;
+}
+
+static void sgreen(float val, float mul, ccolor *r, ccolor *mix){
+  r->r += (mix->r * (1.f-val) + val*.376f)*mul;
+  r->g += (mix->g * (1.f-val) + val)*mul;
+  r->b += (mix->b * (1.f-val) + val*.376f)*mul;
+}
+
+static void sblue(float val, float mul, ccolor *r, ccolor *mix){
+  r->r += (mix->r * (1.f-val) + val*.5f)*mul;
+  r->g += (mix->g * (1.f-val) + val*.5f)*mul;
+  r->b += (mix->b * (1.f-val) + val)*mul;
+}
+
+static void syellow(float val, float mul, ccolor *r, ccolor *mix){
+  r->r += (mix->r * (1.f-val) + val)*mul;
+  r->g += (mix->g * (1.f-val) + val)*mul;
+  r->b += (mix->b * (1.f-val))*mul;
+}
+
+static void scyan(float val, float mul, ccolor *r, ccolor *mix){
+  r->r += (mix->r * (1.f-val) + val*.376f)*mul;
+  r->g += (mix->g * (1.f-val) + val)*mul;
+  r->b += (mix->b * (1.f-val) + val)*mul;
+}
+
+static void spurple(float val, float mul, ccolor *r, ccolor *mix){
+  r->r += (mix->r * (1.f-val) + val)*mul;
+  r->g += (mix->g * (1.f-val) + val*.376f)*mul;
+  r->b += (mix->b * (1.f-val) + val)*mul;
+}
+
+static void sgray(float val, float mul, ccolor *r, ccolor *mix){
+  r->r += (mix->r * (1.f-val) + val*.627f)*mul;
+  r->g += (mix->g * (1.f-val) + val*.627f)*mul;
+  r->b += (mix->b * (1.f-val) + val*.627f)*mul;
+}
+
+static void (*solidfunc[])(float, float, ccolor *, ccolor *)={
   swhite,
   sred,
   sgreen,
@@ -440,7 +368,7 @@ char *solid_name(int i){
   return solidnames[i];
 }
 
-void solid_setup(mapping *m, double lo, double hi, int funcnum){
+void solid_setup(mapping *m, float lo, float hi, int funcnum){
   m->low = lo;
   m->high = hi;
   m->i_range = 1./(hi-lo);
