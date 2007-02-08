@@ -310,8 +310,13 @@
               "http://subsonic.sourceforge.net/">Subsonic</a>
             </dt>
             <dd>
-              A web-based media streamer and jukebox. Free software under the
-              LGPL.
+              A media server that turns your browser into a jukebox.
+              Free software under the LGPL.<br>
+              Quote: <cite>Subsonic is a free, web-based media streamer, providing access to your
+              entire music collection wherever you are. Use it to share your music with
+              friends, or to listen to your own music while at work. You can stream to
+              multiple players simultaneously, for instance to one player in your kitchen and
+              another in your living room.</cite>
             </dd>
 
             <dt>
