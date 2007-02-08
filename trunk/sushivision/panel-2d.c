@@ -1019,7 +1019,7 @@ static int _sushiv_panel_cooperative_compute_2d(sushiv_panel_t *p,
 
   // lock during setup
   gdk_threads_enter ();
-  serialno = ++p2->serialno;
+  serialno = ++p2->serialno; // we're about to free the old data rectangles
   plot = PLOT(p->private->graph);
   pw = plot->x.pixels;
   ph = plot->y.pixels;
@@ -1076,7 +1076,7 @@ static int _sushiv_panel_cooperative_compute_2d(sushiv_panel_t *p,
 	int j;
 	
 	p2->y_map[i] = NULL;
-	gdk_threads_leave ();
+	//gdk_threads_leave ();
 	
 	for(j=0;j<sx_v.pixels*sy_v.pixels;j++)
 	  newmap[j]=NAN;
@@ -1088,12 +1088,12 @@ static int _sushiv_panel_cooperative_compute_2d(sushiv_panel_t *p,
 	  free(oldmap);
 	}
 	
-	gdk_threads_enter ();
-	if(p2->serialno != serialno){
-	  gdk_threads_leave();
-	  return 1;
-	}
-	p2->y_map[i] = newmap;
+	//gdk_threads_enter ();
+	//if(p2->serialno != serialno){
+	//  gdk_threads_leave();
+	//  return 1;
+	//}
+	p2->y_map[i] = newmap; 
       }
       
       p2->scaling_in_progress = 0;
