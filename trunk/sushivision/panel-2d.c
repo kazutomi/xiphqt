@@ -1019,7 +1019,7 @@ static int _sushiv_panel_cooperative_compute_2d(sushiv_panel_t *p,
 
   // lock during setup
   gdk_threads_enter ();
-  serialno = p2->serialno;
+  serialno = ++p2->serialno;
   plot = PLOT(p->private->graph);
   pw = plot->x.pixels;
   ph = plot->y.pixels;
