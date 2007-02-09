@@ -24,7 +24,7 @@
 #include <string.h>
 #include "mapping.h"
 
-static void scalloped_colorwheel(float val, float mul, ccolor *r, ccolor *mix){
+static void scalloped_colorwheel(float val, float mul, accolor *r, ccolor *mix){
   int category = val*12.f;
   val = (val*12.f - category)*mul;
   
@@ -58,7 +58,7 @@ static void scalloped_colorwheel(float val, float mul, ccolor *r, ccolor *mix){
   }
 }
 
-static void smooth_colorwheel(float val, float mul, ccolor *r, ccolor *mix){
+static void smooth_colorwheel(float val, float mul, accolor *r, ccolor *mix){
   if(val<= (4.f/7.f)){
     if(val<= (2.f/7.f)){
       if(val<= (1.f/7.f)){
@@ -106,26 +106,26 @@ static void smooth_colorwheel(float val, float mul, ccolor *r, ccolor *mix){
   }
 }
 
-static void grayscale(float val, float mul, ccolor *r, ccolor *mix){
+static void grayscale(float val, float mul, accolor *r, ccolor *mix){
   val*=mul;
   r->r += val;
   r->g += val;
   r->b += val;
 }
 
-static void red(float val, float mul, ccolor *r, ccolor *mix){
+static void red(float val, float mul, accolor *r, ccolor *mix){
   r->r += val*mul;
 }
 
-static void green(float val, float mul, ccolor *r, ccolor *mix){
+static void green(float val, float mul, accolor *r, ccolor *mix){
   r->g += val*mul;
 }
 
-static void blue(float val, float mul, ccolor *r, ccolor *mix){
+static void blue(float val, float mul, accolor *r, ccolor *mix){
   r->b += val*mul;
 }
 
-static void red_overlay(float val, float mul, ccolor *o, ccolor *mix){
+static void red_overlay(float val, float mul, accolor *o, ccolor *mix){
   float r = mix->r + val;
   float g = mix->g;
   float b = mix->b;
@@ -141,7 +141,7 @@ static void red_overlay(float val, float mul, ccolor *o, ccolor *mix){
   o->b += b*mul;
 }
 
-static void green_overlay(float val, float mul, ccolor *o, ccolor *mix){
+static void green_overlay(float val, float mul, accolor *o, ccolor *mix){
   float r = mix->r;
   float g = mix->g + val;
   float b = mix->b;
@@ -157,7 +157,7 @@ static void green_overlay(float val, float mul, ccolor *o, ccolor *mix){
   o->b += b*mul;
 }
 
-static void blue_overlay(float val, float mul, ccolor *o, ccolor *mix){
+static void blue_overlay(float val, float mul, accolor *o, ccolor *mix){
   float r = mix->r;
   float g = mix->g;
   float b = mix->b + val;
@@ -173,13 +173,13 @@ static void blue_overlay(float val, float mul, ccolor *o, ccolor *mix){
   o->b += b*mul;
 }
 
-static void inactive(float val, float mul, ccolor *r, ccolor *mix){
+static void inactive(float val, float mul, accolor *r, ccolor *mix){
   r->r += mix->r*mul;
   r->g += mix->g*mul;
   r->b += mix->b*mul;
 }
 
-static void (*mapfunc[])(float, float, ccolor *, ccolor *)={
+static void (*mapfunc[])(float, float, accolor *, ccolor *)={
   smooth_colorwheel,
   scalloped_colorwheel,
   grayscale,
@@ -252,7 +252,7 @@ float mapping_val(mapping *m, float in){
   }
 }
 
-void mapping_calcf(mapping *m, float in, float mul, ccolor *out, ccolor *mix){
+void mapping_calcf(mapping *m, float in, float mul, accolor *out, ccolor *mix){
   if(m->i_range==0){
     if(in<=m->low)
       m->mapfunc(0.f,mul,out,mix);
@@ -267,7 +267,8 @@ void mapping_calcf(mapping *m, float in, float mul, ccolor *out, ccolor *mix){
 }
 
 u_int32_t mapping_calc(mapping *m, float in, u_int32_t mix){
-  ccolor mixc,outc = {0.f,0.f,0.f};
+  ccolor mixc;
+  accolor outc = {0.f,0.f,0.f,0.f};
   mixc.r = ((mix>>16)&0xff) * .0039215686f;
   mixc.g = ((mix>>8)&0xff) * .0039215686f;
   mixc.b = ((mix)&0xff) * .0039215686f;
@@ -285,55 +286,55 @@ int mapping_inactive_p(mapping *m){
   return 0;
 }
 
-static void swhite(float val, float mul, ccolor *r, ccolor *mix){
+static void swhite(float val, float mul, accolor *r, ccolor *mix){
   r->r += (mix->r * (1.f-val) + val)*mul;
   r->g += (mix->g * (1.f-val) + val)*mul;
   r->b += (mix->b * (1.f-val) + val)*mul;
 }
 
-static void sred(float val, float mul, ccolor *r, ccolor *mix){
+static void sred(float val, float mul, accolor *r, ccolor *mix){
   r->r += (mix->r * (1.f-val) + val)*mul;
   r->g += (mix->g * (1.f-val) + val*.376f)*mul;
   r->b += (mix->b * (1.f-val) + val*.376f)*mul;
 }
 
-static void sgreen(float val, float mul, ccolor *r, ccolor *mix){
+static void sgreen(float val, float mul, accolor *r, ccolor *mix){
   r->r += (mix->r * (1.f-val) + val*.376f)*mul;
   r->g += (mix->g * (1.f-val) + val)*mul;
   r->b += (mix->b * (1.f-val) + val*.376f)*mul;
 }
 
-static void sblue(float val, float mul, ccolor *r, ccolor *mix){
+static void sblue(float val, float mul, accolor *r, ccolor *mix){
   r->r += (mix->r * (1.f-val) + val*.5f)*mul;
   r->g += (mix->g * (1.f-val) + val*.5f)*mul;
   r->b += (mix->b * (1.f-val) + val)*mul;
 }
 
-static void syellow(float val, float mul, ccolor *r, ccolor *mix){
+static void syellow(float val, float mul, accolor *r, ccolor *mix){
   r->r += (mix->r * (1.f-val) + val)*mul;
   r->g += (mix->g * (1.f-val) + val)*mul;
   r->b += (mix->b * (1.f-val))*mul;
 }
 
-static void scyan(float val, float mul, ccolor *r, ccolor *mix){
+static void scyan(float val, float mul, accolor *r, ccolor *mix){
   r->r += (mix->r * (1.f-val) + val*.376f)*mul;
   r->g += (mix->g * (1.f-val) + val)*mul;
   r->b += (mix->b * (1.f-val) + val)*mul;
 }
 
-static void spurple(float val, float mul, ccolor *r, ccolor *mix){
+static void spurple(float val, float mul, accolor *r, ccolor *mix){
   r->r += (mix->r * (1.f-val) + val)*mul;
   r->g += (mix->g * (1.f-val) + val*.376f)*mul;
   r->b += (mix->b * (1.f-val) + val)*mul;
 }
 
-static void sgray(float val, float mul, ccolor *r, ccolor *mix){
+static void sgray(float val, float mul, accolor *r, ccolor *mix){
   r->r += (mix->r * (1.f-val) + val*.627f)*mul;
   r->g += (mix->g * (1.f-val) + val*.627f)*mul;
   r->b += (mix->b * (1.f-val) + val*.627f)*mul;
 }
 
-static void (*solidfunc[])(float, float, ccolor *, ccolor *)={
+static void (*solidfunc[])(float, float, accolor *, ccolor *)={
   swhite,
   sred,
   sgreen,

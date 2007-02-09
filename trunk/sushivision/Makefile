@@ -57,7 +57,7 @@ debug:
 profile:
 	pkg-config --cflags "gtk+-2.0 $(GTKVER) cairo $(CAIROVER) gthread-2.0 freetype2" \
 		1>/dev/null
-	$(MAKE) examples CFLAGS='-pg -g -O2 $(GCF) $(ADD_DEF)' LIBS='-lgprof-helper'
+	$(MAKE) examples CFLAGS='-pg -g -O2 $(GCF) $(ADD_DEF)' 
 
 clean:
 	rm -f *.o *.d *.d.* *.pc gmon.out $(TARGET) sushivision_* sushi-gtkrc.h
