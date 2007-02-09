@@ -27,12 +27,19 @@ typedef struct{
   float b;
 } ccolor;
 
+typedef struct{
+  float a;
+  float r;
+  float g;
+  float b;
+} accolor;
+
 typedef struct {
   int mapnum;
   float low;
   float high;
   float i_range;
-  void (*mapfunc)(float val,float mul, ccolor *out, ccolor *mix);
+  void (*mapfunc)(float val,float mul, accolor *out, ccolor *mix);
 } mapping;
 
 extern int num_mappings();
@@ -43,7 +50,7 @@ extern void mapping_set_hi(mapping *m, float hi);
 extern void mapping_set_func(mapping *m, int funcnum);
 extern float mapping_val(mapping *m, float in);
 extern u_int32_t mapping_calc(mapping *m, float in, u_int32_t mix);
-extern void mapping_calcf(mapping *m, float in, float mul, ccolor *out, ccolor *mix);
+extern void mapping_calcf(mapping *m, float in, float mul, accolor *out, ccolor *mix);
 extern int mapping_inactive_p(mapping *m);
 
 extern int num_solids();

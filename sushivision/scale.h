@@ -42,6 +42,9 @@ typedef struct {
 int del_depth(double A, double B);
 extern char **scale_generate_labels(unsigned scalevals, double *scaleval_list);
 extern double scalespace_scaledel(scalespace *from, scalespace *to);
+extern long scalespace_scalenum(scalespace *from, scalespace *to);
+extern long scalespace_scaleden(scalespace *from, scalespace *to);
+extern long scalespace_scaleoff(scalespace *from, scalespace *to);
 extern double scalespace_value(scalespace *s, double pixel);
 extern double scalespace_pixel(scalespace *s, double val);
 extern int scalespace_mark(scalespace *s, int num);

@@ -218,6 +218,37 @@ double scalespace_scaledel(scalespace *from, scalespace *to){
   return (double)from->step_val / from->step_pixel * from->m / to->m * to->step_pixel / to->step_val;
 }
 
+long scalespace_scalenum(scalespace *from, scalespace *to){
+  int dec = from->decimal_exponent - to->decimal_exponent;
+  long ret = from->step_val * to->step_pixel * from->neg;
+  while(dec-->0)
+    ret *= 10;
+  return ret*2;
+}
+
+long scalespace_scaleden(scalespace *from, scalespace *to){
+  int dec = to->decimal_exponent - from->decimal_exponent;
+  long ret = from->step_pixel * to->step_val * to->neg;
+  while(dec-->0)
+    ret *= 10;
+  return ret*2;
+}
+
+long scalespace_scaleoff(scalespace *from, scalespace *to){
+  int decF = from->decimal_exponent - to->decimal_exponent;
+  int decT = to->decimal_exponent - from->decimal_exponent;
+  long expF = 1;
+  long expT = 1;
+
+  while(decF-->0) expF *= 10;
+  while(decT-->0) expT *= 10;
+  
+  return (2 * from->first_val * from->step_pixel - (2 * from->first_pixel + 1) * from->step_val) 
+    * expF * to->step_pixel * from->neg
+    - (2 * to->first_val * to->step_pixel - (2 * to->first_pixel + 1) * to->step_val) 
+    * expT * from->step_pixel * to->neg;
+}
+
 int scalespace_mark(scalespace *s, int num){
   return s->first_pixel + s->step_pixel*num;
 }
