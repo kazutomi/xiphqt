@@ -92,7 +92,7 @@ void rogg_read_uint16(unsigned char *p, uint16_t *v)
 }
 
 /* calculate the length of the page starting at p */
-void rogg_get_length(unsigned char *p, int *length)
+void rogg_page_get_length(unsigned char *p, int *length)
 {
   int i;
   int segments;
@@ -125,7 +125,7 @@ unsigned char *rogg_scan(unsigned char *p, int len)
 }
 
 /* parse out the header fields of the page starting at p */
-void rogg_parse_header(unsigned char *p, rogg_page_header *header)
+void rogg_page_parse(unsigned char *p, rogg_page_header *header)
 {
   header->capture = p;
   header->version = p[ROGG_OFFSET_VERSION];
@@ -142,7 +142,7 @@ void rogg_parse_header(unsigned char *p, rogg_page_header *header)
   header->bos = (header->flags & 0x02) ? 1 : 0;
   header->eos = (header->flags & 0x04) ? 1 : 0;
 
-  rogg_get_length(p, &header->length);
+  rogg_page_get_length(p, &header->length);
 }
 
 /* helper lookup table for the crc */
@@ -213,13 +213,13 @@ static const uint32_t rogg_crc_lookup[256]={
   0xbcb4666d,0xb8757bda,0xb5365d03,0xb1f740b4};
 
 /* recompute and store a new crc on the page starting at p */
-void rogg_update_crc(unsigned char *p)
+void rogg_page_update_crc(unsigned char *p)
 {
   uint32_t crc = 0;
   unsigned char *q = p;
   int i, length;
 
-  rogg_get_length(p, &length);
+  rogg_page_get_length(p, &length);
   
   /* calculate the CRC with the CRC header element zeroed */
   p[ROGG_OFFSET_CRC + 0] = 0;

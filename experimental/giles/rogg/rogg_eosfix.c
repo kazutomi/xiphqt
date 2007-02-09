@@ -55,7 +55,7 @@ void print_header_info(FILE *out, rogg_page_header *header)
   fprintf(out, " Ogg page serial %08x seq %d (%5d bytes)",
 	header->serialno, header->sequenceno, header->length);
   fprintf(out, (header->continued) ? " c" : "  ");
-  fprintf(out, " %lld", header->granulepos);
+  fprintf(out, " %lld", (long long int)header->granulepos);
   fprintf(out, (header->bos) ? " bos" : "");
   fprintf(out, (header->eos) ? " eos" : "");
   fprintf(out, "\n");
@@ -123,12 +123,12 @@ void streamref_seteos(streamref *head)
   rogg_page_header header;
 
   while (ref != NULL) {
-    rogg_parse_header(ref->last, &header);
+    rogg_page_parse(ref->last, &header);
     if (!header.eos) {
 	fprintf(stderr, "setting missing eos on stream %08x\n",
 	  header.serialno);
 	ref->last[ROGG_OFFSET_FLAGS] |= 0x04;
-	rogg_update_crc(ref->last);
+	rogg_page_update_crc(ref->last);
     }
     ref = ref->next;
   }
@@ -156,7 +156,7 @@ int main(int argc, char *argv[])
     p = mmap(0, s.st_size, PROT_READ|PROT_WRITE,
 	MAP_SHARED, f, 0);
     if (p == NULL) {
-	fprintf(stderr, "could mmap '%s'\n", argv[i]);
+	fprintf(stderr, "couldn't mmap '%s'\n", argv[i]);
 	close(f);
 	continue;
     }
@@ -168,18 +168,18 @@ int main(int argc, char *argv[])
 	fprintf(stdout, "couldn't find ogg data!\n");
     } else {
       if (q > p) {
-	fprintf(stdout, "Skipped %d garbage bytes at the start\n", q-p);
+	fprintf(stdout, "Skipped %d garbage bytes at the start\n", (int)(q-p));
       } 
       while (q < e) {
 	o = rogg_scan(q, e-q); /* find the next Ogg page */
 	if (o > q) {
-	  fprintf(stdout, "Hole in data! skipped %d bytes\n", o - q);
+	  fprintf(stdout, "Hole in data! skipped %d bytes\n", (int)(o-q));
 	   q = o;
 	} else if (o == NULL) {
-	  fprintf(stdout, "Skipped %d garbage bytes as the end\n", e-q);
+	  fprintf(stdout, "Skipped %d garbage bytes as the end\n", (int)(e-q));
 	  break;
 	}
-	rogg_parse_header(q, &header);
+	rogg_page_parse(q, &header);
 #ifdef VERBOSE
 	print_header_info(stdout, &header);
 #endif
@@ -187,7 +187,7 @@ int main(int argc, char *argv[])
 	if (header.eos) {
 	  /* unset any eos flags */
 	  q[ROGG_OFFSET_FLAGS] &= ~0x04;
-	  rogg_update_crc(q);
+	  rogg_page_update_crc(q);
 	  fprintf(stderr, "Removed eos flag on stream %08x\n", 
 		header.serialno);
         }

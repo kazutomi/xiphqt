@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
     p = mmap(0, s.st_size, PROT_READ|PROT_WRITE,
 	MAP_SHARED, f, 0);
     if (p == NULL) {
-	fprintf(stderr, "could mmap '%s'\n", argv[i]);
+	fprintf(stderr, "couldn't mmap '%s'\n", argv[i]);
 	close(f);
 	continue;
     }
@@ -98,7 +98,7 @@ int main(int argc, char *argv[])
 	  fprintf(stdout, "Skipped %d garbage bytes as the end\n", e-q);
 	  break;
 	}
-	rogg_parse_header(q, &header);
+	rogg_page_parse(q, &header);
 	print_header_info(stdout, &header);
 	q += header.length;
       }

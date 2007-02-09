@@ -63,6 +63,16 @@ struct _rogg_page_header {
 #define ROGG_OFFSET_SEGMENTS 26
 #define ROGG_OFFSET_LACING 27
 
+/* parsed packet struct */
+typedef struct _rogg_packet rogg_packet;
+struct _rogg_packet {
+  unsigned char **data;	/* array of pointers to body data sections */
+  /* framing data derived from the page header(s) */
+  unsigned int *lengths;	/* array of data section lengths */
+  uint64_t granulepos;		/* timestamp, -1 if unknown */
+  int bos, eos;			/* beginning and end flags */
+};
+
 /* little endian i/o */
 void rogg_write_uint64(unsigned char *p, uint64_t v);
 void rogg_write_uint32(unsigned char *p, uint32_t v);
@@ -75,12 +85,12 @@ void rogg_read_uint16(unsigned char *p, uint16_t *v);
 unsigned char *rogg_scan(unsigned char *p, int len);
 
 /* calculate the length of the page starting at p */
-void rogg_get_length(unsigned char *p, int *length);
+void rogg_page_get_length(unsigned char *p, int *length);
 
 /* parse out the header fields of the page starting at p */
-void rogg_parse_header(unsigned char *p, rogg_page_header *header);
+void rogg_page_parse(unsigned char *p, rogg_page_header *header);
 
 /* recompute and store a new crc on the page starting at p */
-void rogg_update_crc(unsigned char *p);
+void rogg_page_update_crc(unsigned char *p);
 
 #endif /* _ROGG_H */
