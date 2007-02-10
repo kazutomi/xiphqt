@@ -2,7 +2,7 @@
 
 OPTS = -g -O2 -Wall
 
-rogg_UTILS = rogg_pagedump rogg_eosfix
+rogg_UTILS = rogg_pagedump rogg_eosfix rogg_aspect
 
 all : librogg.a $(rogg_UTILS)
 
@@ -14,6 +14,9 @@ rogg_eosfix : rogg_eosfix.o librogg.a
 	$(CC) $(CFLAGS) -o $@ $^
 
 rogg_pagedump : rogg_pagedump.o librogg.a
+	$(CC) $(CFLAGS) -o $@ $^
+
+rogg_aspect : rogg_aspect.o librogg.a
 	$(CC) $(CFLAGS) -o $@ $^
 
 clean :
