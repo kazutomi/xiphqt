@@ -21,25 +21,41 @@
 
 #include <sys/types.h>
 
+#if __BYTE_ORDER == __LITTLE_ENDIAN
 typedef struct{
-  float r;
-  float g;
-  float b;
+  unsigned char b;
+  unsigned char g;
+  unsigned char r;
+  unsigned char a;
 } ccolor;
+#else
+typedef struct{
+  unsigned char a;
+  unsigned char r;
+  unsigned char g;
+  unsigned char b;
+} ccolor;
+#endif 
+
+typedef union {
+  ccolor c;
+  u_int32_t u;
+} ucolor;
 
 typedef struct{
-  float a;
-  float r;
-  float g;
-  float b;
-} accolor;
+  long a;
+  long r;
+  long g;
+  long b;
+} lcolor;
 
 typedef struct {
   int mapnum;
   float low;
   float high;
   float i_range;
-  void (*mapfunc)(float val,float mul, accolor *out, ccolor *mix);
+  void (*mapfunc)(int val,int mul, lcolor *out);
+  ucolor (*mixfunc)(ucolor in, ucolor mix);
 } mapping;
 
 extern int num_mappings();
@@ -50,7 +66,6 @@ extern void mapping_set_hi(mapping *m, float hi);
 extern void mapping_set_func(mapping *m, int funcnum);
 extern float mapping_val(mapping *m, float in);
 extern u_int32_t mapping_calc(mapping *m, float in, u_int32_t mix);
-extern void mapping_calcf(mapping *m, float in, float mul, accolor *out, ccolor *mix);
 extern int mapping_inactive_p(mapping *m);
 
 extern int num_solids();

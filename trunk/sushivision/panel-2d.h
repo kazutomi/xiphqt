@@ -35,7 +35,7 @@ typedef struct sushiv_panel2d {
 
   /**** Y PLANES ******/
   int y_obj_num;
-  float **y_map; // indirected, dw*dh
+  int **y_map; // indirected, dw*dh
 
   sushiv_objective_t **y_obj_list; // list of objectives with a y plane
   int *y_obj_to_panel; /* maps from position in condensed list to position in full list */
@@ -79,7 +79,7 @@ typedef struct sushiv_panel2d {
 typedef struct {
   double *fout; // [function number * outval_number]
 
-  float **y_map; // [y_obj_list[i]][px]
+  int **y_map; // [y_obj_list[i]][px]
 
   int storage_width;
 
