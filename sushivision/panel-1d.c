@@ -942,6 +942,7 @@ int _sushiv_panel_cooperative_compute_1d(sushiv_panel_t *p,
   int x_d=-1;
   int render_scale_flag = 0;
   scalespace sy;
+  scalespace syv;
 
   scalespace sx;
   scalespace sxv;
@@ -981,9 +982,13 @@ int _sushiv_panel_cooperative_compute_1d(sushiv_panel_t *p,
   if(p1->flip){
     plot->x = sy;
     plot->y = sx;
+    plot->x_v = sy;
+    plot->y_v = sxv;
   }else{
     plot->x = sx;
     plot->y = sy;
+    plot->x_v = sxv;
+    plot->y_v = sy;
   }
 
   // Bulletproofing; shouldn't ever come up
