@@ -48,7 +48,9 @@ struct _Plot{
 
   int scalespacing;
   scalespace x;
+  scalespace x_v;
   scalespace y;
+  scalespace y_v;
   char *namex;
   char *namey;
 
@@ -102,6 +104,7 @@ u_int32_t * plot_get_background_line(Plot *p, int num);
 cairo_t *plot_get_background_cairo(Plot *p);
 void plot_set_crosshairs(Plot *p, double x, double y);
 void plot_set_crosshairs_snap(Plot *p, double x, double y);
+void plot_snap_crosshairs(Plot *p);
 void plot_draw_scales(Plot *p);
 void plot_unset_box(Plot *p);
 void plot_box_vals(Plot *p, double ret[4]);

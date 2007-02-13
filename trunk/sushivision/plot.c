@@ -272,8 +272,8 @@ void plot_draw_scales(Plot *p){
 static void plot_init (Plot *p){
   // instance initialization
   p->scalespacing = 50;
-  p->x = scalespace_linear(0.0,1.0,400,p->scalespacing,NULL);
-  p->y = scalespace_linear(0.0,1.0,200,p->scalespacing,NULL);
+  p->x_v = p->x = scalespace_linear(0.0,1.0,400,p->scalespacing,NULL);
+  p->y_v = p->y = scalespace_linear(0.0,1.0,200,p->scalespacing,NULL);
 }
 
 static void plot_destroy (GtkObject *object){
@@ -587,6 +587,7 @@ static gboolean mouse_press (GtkWidget        *widget,
       
       p->selx = scalespace_value(&p->x,event->x);
       p->sely = scalespace_value(&p->y,event->y);
+      plot_snap_crosshairs(p);
       p->cross_active=1;
       
       if(p->box_callback)
@@ -616,6 +617,7 @@ static gboolean mouse_release (GtkWidget        *widget,
   if(!p->box_active && p->button_down){
     p->selx = scalespace_value(&p->x,event->x);
     p->sely = scalespace_value(&p->y,event->y);
+    plot_snap_crosshairs(p);
     p->cross_active=1;
 
     if(p->crosshairs_callback)
@@ -688,11 +690,11 @@ static gboolean key_press(GtkWidget *widget,
 
   case GDK_Left:
     {
-      double x = scalespace_pixel(&p->x,p->selx)-1;
+      double x = scalespace_pixel(&p->x_v,p->selx)-1;
       p->cross_active=1;
       if(shift)
 	x-=9;
-      p->selx = scalespace_value(&p->x,x);
+      p->selx = scalespace_value(&p->x_v,x);
       if(p->crosshairs_callback)
 	p->crosshairs_callback(p->cross_data);
 
@@ -708,11 +710,11 @@ static gboolean key_press(GtkWidget *widget,
 
   case GDK_Right:
     {
-      double x = scalespace_pixel(&p->x,p->selx)+1;
+      double x = scalespace_pixel(&p->x_v,p->selx)+1;
       p->cross_active=1;
       if(shift)
 	x+=9;
-      p->selx = scalespace_value(&p->x,x);
+      p->selx = scalespace_value(&p->x_v,x);
        if(p->crosshairs_callback)
 	p->crosshairs_callback(p->cross_data);
 
@@ -728,11 +730,11 @@ static gboolean key_press(GtkWidget *widget,
     return TRUE;
   case GDK_Up:
     {
-      double y = scalespace_pixel(&p->y,p->sely)-1;
+      double y = scalespace_pixel(&p->y_v,p->sely)-1;
       p->cross_active=1;
       if(shift)
 	y-=9;
-      p->sely = scalespace_value(&p->y,y);
+      p->sely = scalespace_value(&p->y_v,y);
       if(p->crosshairs_callback)
 	p->crosshairs_callback(p->cross_data);
 
@@ -747,11 +749,11 @@ static gboolean key_press(GtkWidget *widget,
     return TRUE;
   case GDK_Down:
     {
-      double y = scalespace_pixel(&p->y,p->sely)+1;
+      double y = scalespace_pixel(&p->y_v,p->sely)+1;
       p->cross_active=1;
       if(shift)
 	y+=9;
-      p->sely = scalespace_value(&p->y,y);
+      p->sely = scalespace_value(&p->y_v,y);
       if(p->crosshairs_callback)
 	p->crosshairs_callback(p->cross_data);
       
@@ -890,43 +892,6 @@ void plot_expose_request_partial(Plot *p,int x, int y, int w, int h){
   gdk_threads_leave();
 }
 
-void plot_set_x_scale(Plot *p, scalespace x){
-  scalespace temp = p->x;
-  p->x = x;
-  if(memcmp(&temp,&p->x,sizeof(temp)))
-    plot_draw_scales(p);
-}
-
-void plot_set_y_scale(Plot *p, scalespace y){
-  //GtkWidget *widget = GTK_WIDGET(p);
-  scalespace temp = p->y;
-  p->y = y;
-  if(memcmp(&temp,&p->y,sizeof(temp)))
-    plot_draw_scales(p);
-}
-
-void plot_set_x_name(Plot *p, char *name){
-  p->namex = name;
-  plot_draw_scales(p); // releases one lock level
-}
-
-void plot_set_y_name(Plot *p, char *name){
-  p->namey = name;
-  plot_draw_scales(p); // releases one lock level
-}
-
-u_int32_t *plot_get_background_line(Plot *p, int num){
-  GtkWidget *widget = GTK_WIDGET(p);
-  return p->datarect + num*widget->allocation.width;
-}
-
-cairo_t *plot_get_background_cairo(Plot *p){
-  gdk_threads_enter();
-  cairo_t *ret= cairo_create(p->back);
-  gdk_threads_leave();
-  return ret;
-}
-
 void plot_set_crosshairs(Plot *p, double x, double y){
   gdk_threads_enter();
 
@@ -940,12 +905,25 @@ void plot_set_crosshairs(Plot *p, double x, double y){
 
 void plot_set_crosshairs_snap(Plot *p, double x, double y){
   gdk_threads_enter();
-  double xpixel =  rint(scalespace_pixel(&p->x,x));
-  double ypixel =  rint(scalespace_pixel(&p->y,y));
+  double xpixel =  rint(scalespace_pixel(&p->x_v,x));
+  double ypixel =  rint(scalespace_pixel(&p->y_v,y));
 
-  p->selx = scalespace_value(&p->x,xpixel);
-  p->sely = scalespace_value(&p->y,ypixel);
+  p->selx = scalespace_value(&p->x_v,xpixel);
+  p->sely = scalespace_value(&p->y_v,ypixel);
   p->cross_active=1;
+
+  plot_expose_request(p);
+  gdk_threads_leave();
+}
+
+void plot_snap_crosshairs(Plot *p){
+  gdk_threads_enter();
+
+  double xpixel =  rint(scalespace_pixel(&p->x_v,p->selx));
+  double ypixel =  rint(scalespace_pixel(&p->y_v,p->sely));
+
+  p->selx = scalespace_value(&p->x_v,xpixel);
+  p->sely = scalespace_value(&p->y_v,ypixel);
 
   plot_expose_request(p);
   gdk_threads_leave();

@@ -954,20 +954,27 @@ static void _sushiv_panel2d_crosshairs_callback(sushiv_panel_t *p){
   _sushiv_panel_undo_push(p);
   _sushiv_panel_undo_suspend(p);
 
+  //plot_snap_crosshairs(PLOT(p->private->graph));
+
   for(i=0;i<p->dimensions;i++){
     sushiv_dimension_t *d = p->dimension_list[i].d;
     if(d == p2->x_d){
-      if(p2->x_d->val != x)
-	_sushiv_dimension_set_value(p->private->dim_scales[i],1,x);
+      _sushiv_dimension_set_value(p->private->dim_scales[i],1,x);
     }
 
     if(d == p2->y_d){
-      if(p2->y_d->val != y)
-	_sushiv_dimension_set_value(p->private->dim_scales[i],1,y);
+      _sushiv_dimension_set_value(p->private->dim_scales[i],1,y);
     }
     
     p2->oldbox_active = 0;
   }
+
+  // dimension setting might have enforced granularity restrictions;
+  // have the display reflect that
+  x = p2->x_d->val;
+  y = p2->y_d->val;
+
+  plot_set_crosshairs(PLOT(p->private->graph),x,y);
 
   _sushiv_panel_dirty_legend(p);
   _sushiv_panel_undo_resume(p);
@@ -1096,6 +1103,8 @@ static int _sushiv_panel_cooperative_compute_2d(sushiv_panel_t *p,
 
     plot->x = sx;
     plot->y = sy;
+    plot->x_v = sx_v;
+    plot->y_v = sy_v;
 
     p2->last_line++;
     ++p2->serialno; // we're about to free the old data rectangles
