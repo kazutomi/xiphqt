@@ -44,6 +44,15 @@ static int num_threads;
 static int instances=0;
 static sushiv_instance_t **instance_list;
 
+void _sushiv_wake_workers(){
+  if(instances){
+    pthread_mutex_lock(&m);
+    wake_pending = num_threads;
+    pthread_cond_broadcast(&mc);
+    pthread_mutex_unlock(&m);
+  }
+}
+
 void _sushiv_clean_exit(int sig){
   _sushiv_exiting = 1;
   _sushiv_wake_workers();
@@ -74,15 +83,6 @@ static int num_proccies(){
   fprintf(stderr,"Number of processors: %d\n",num);
   fclose(f);
   return num;
-}
-
-void _sushiv_wake_workers(){
-  if(instances){
-    pthread_mutex_lock(&m);
-    wake_pending = num_threads;
-    pthread_cond_broadcast(&mc);
-    pthread_mutex_unlock(&m);
-  }
 }
 
 static void *worker_thread(void *dummy){
@@ -118,7 +118,8 @@ static void *worker_thread(void *dummy){
 	    p->private->maps_dirty = 0;
 	    p->private->maps_rendering = 1;
 	    flag = 1;
-	    
+	    plot_set_busy(PLOT(p->private->graph));
+
 	    gdk_threads_leave ();
 	    p->private->map_redraw(p);
 	    gdk_threads_enter ();
@@ -132,6 +133,7 @@ static void *worker_thread(void *dummy){
 	    p->private->legend_dirty = 0;
 	    p->private->legend_rendering = 1;
 	    flag = 1;
+	    plot_set_busy(PLOT(p->private->graph));
 	    
 	    gdk_threads_leave ();
 	    p->private->legend_redraw(p);
@@ -142,8 +144,19 @@ static void *worker_thread(void *dummy){
 	  gdk_threads_leave ();
 
 	  // pending computation work?
-	  flag |= _sushiv_panel_cooperative_compute(s->panel_list[i],
-						    &c[j][i]);
+	  if(p->private->panel_dirty)
+	    flag |= _sushiv_panel_cooperative_compute(p,
+						      &c[j][i]);
+
+	  gdk_threads_enter ();
+	  if(!flag && 
+	     !p->private->panel_dirty &&
+	     !p->private->legend_rendering &&
+	     !p->private->legend_dirty &&
+	     !p->private->maps_rendering &&
+	     !p->private->maps_dirty)
+	    plot_set_idle(PLOT(p->private->graph));
+	  gdk_threads_leave ();
 	}
       }
       if(flag==1)continue;

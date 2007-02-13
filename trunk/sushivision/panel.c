@@ -33,6 +33,8 @@
 #include <cairo-ft.h>
 #include "internal.h"
 
+extern void _sushiv_wake_workers(void);
+
 void _sushiv_realize_panel(sushiv_panel_t *p){
   if(!p->private->realized){
     p->private->realize(p);
@@ -86,6 +88,14 @@ static gboolean _idle_legend_fire(gpointer ptr){
   sushiv_panel_t *p = (sushiv_panel_t *)ptr;
   gdk_threads_enter ();
   p->private->legend_dirty = 1;
+  gdk_threads_leave ();
+  _sushiv_wake_workers();
+  return FALSE;
+}
+
+void _sushiv_panel_dirty_panel(sushiv_panel_t *p){
+  gdk_threads_enter ();
+  p->private->panel_dirty = 1;
   gdk_threads_leave ();
   _sushiv_wake_workers();
   return FALSE;

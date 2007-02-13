@@ -34,6 +34,69 @@
 
 static GtkWidgetClass *parent_class = NULL;
 
+static void plot_draw_busy(Plot *p, cairo_t *c){
+  cairo_surface_t *s = p->stage;
+  int w = cairo_image_surface_get_width(s);
+  int h = cairo_image_surface_get_height(s);
+  int xv[8] = {-20,-13,-10,-13,-20,-27,-30,-27};
+  int yv[8] = {-30,-27,-20,-13,-10,-13,-20,-27};
+  int i;
+  double alpha=1.;
+
+  i = p->busy_count;
+  do{
+    double x = w+xv[i]+.5;
+    double y = h+yv[i]+.5;
+    
+    cairo_set_source_rgba (c, 0,0,.5,1.);
+    cairo_arc(c,x,y,3.5,0,M_PI*2.);
+    cairo_fill(c);
+
+    cairo_set_source_rgba (c, 1.,1.,1.,alpha);
+    cairo_arc(c,x,y,3.5,0,M_PI*2.);
+    cairo_fill(c);
+
+    i--;
+    alpha *=.8;
+    if(i<0)i=7;
+  }while(i!=p->busy_count);
+}
+
+void plot_expose_busy(Plot *p){
+  cairo_surface_t *s = p->stage;
+  int w = cairo_image_surface_get_width(s);
+  int h = cairo_image_surface_get_height(s);
+
+  plot_expose_request_partial(p,w - 40, h - 40, 40, 40);
+}
+
+void plot_set_busy(Plot *p){
+  struct timeval now;
+  long test;
+
+  if(!p->busy){
+    p->busy=1;
+    plot_expose_busy(p);
+  }else{
+    gettimeofday(&now,NULL);
+    
+    test = now.tv_sec*1000 + now.tv_usec/1000;
+    if(p->last_busy_throttle + 100 < test) {
+      p->busy_count++;
+      if(p->busy_count>7)
+	p->busy_count=0;
+      p->last_busy_throttle = test;
+      plot_expose_busy(p);
+      return;
+    }
+  }
+}
+
+void plot_set_idle(Plot *p){
+  p->busy=0;
+  plot_expose_busy(p);
+}
+
 static void draw_scales_work(cairo_surface_t *s, scalespace xs, scalespace ys){
   int w = cairo_image_surface_get_width(s);
   int h = cairo_image_surface_get_height(s);
@@ -406,6 +469,10 @@ static void plot_draw (Plot *p,
       cairo_stroke(c);
       cairo_restore(c);
     }
+
+    // busy indicator
+    if(p->busy)
+      plot_draw_busy(p, c);
 
     cairo_destroy(c);
 
