@@ -70,6 +70,7 @@ struct sushiv_panel_internal {
   int legend_dirty;
   int maps_rendering;
   int legend_rendering;
+  int panel_dirty;
 
   time_t last_map_throttle;
 
@@ -106,7 +107,7 @@ extern void set_map_throttle_time(sushiv_panel_t *p);
 extern void _sushiv_panel_dirty_map(sushiv_panel_t *p);
 extern void _sushiv_panel_dirty_map_throttled(sushiv_panel_t *p);
 extern void _sushiv_panel_dirty_legend(sushiv_panel_t *p);
-extern void _sushiv_wake_workers(void);
+extern void _sushiv_panel_dirty_panel(sushiv_panel_t *p);
 
 extern void _maintain_cache(sushiv_panel_t *p, _sushiv_compute_cache *c, int w);
 extern int _sushiv_panel_cooperative_compute(sushiv_panel_t *p,

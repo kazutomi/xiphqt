@@ -688,7 +688,7 @@ void _mark_recompute_1d(sushiv_panel_t *p){
 
     p1->serialno++;
     p1->last_line = 0;
-    _sushiv_wake_workers();
+    _sushiv_panel_dirty_panel(p);
   }
 }
 
@@ -942,7 +942,6 @@ int _sushiv_panel_cooperative_compute_1d(sushiv_panel_t *p,
   int x_d=-1;
   int render_scale_flag = 0;
   scalespace sy;
-  scalespace syv;
 
   scalespace sx;
   scalespace sxv;
@@ -1028,6 +1027,7 @@ int _sushiv_panel_cooperative_compute_1d(sushiv_panel_t *p,
     gdk_threads_enter ();
     _sushiv_panel_dirty_map(p);
     _sushiv_panel_dirty_legend(p);
+    p->private->panel_dirty = 0;
     gdk_threads_leave ();
 
   }else

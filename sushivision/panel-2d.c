@@ -872,7 +872,7 @@ static void _mark_recompute_2d(sushiv_panel_t *p){
     p2->scaling_in_progress = 0; 
     
     _sushiv_panel1d_mark_recompute_linked(p);   
-    _sushiv_wake_workers();
+    _sushiv_panel_dirty_panel(p);
   }
 }
 
@@ -1138,7 +1138,6 @@ static int _sushiv_panel_cooperative_compute_2d(sushiv_panel_t *p,
       p2->scaling_in_progress = 0;
       _sushiv_panel2d_map_redraw(p);
       gdk_threads_leave ();
-      _sushiv_wake_workers();   
       plot_draw_scales(plot);
 
     }else
@@ -1146,10 +1145,6 @@ static int _sushiv_panel_cooperative_compute_2d(sushiv_panel_t *p,
 
     return 1;
   }else{
-    if(p2->scaling_in_progress){
-      gdk_threads_leave();
-      return 0;
-    }
     sx = p2->x;
     sx_v = p2->x_v;
     sx_i = p2->x_i;
@@ -1210,6 +1205,7 @@ static int _sushiv_panel_cooperative_compute_2d(sushiv_panel_t *p,
       if(p2->completed_lines>=dh){ 
 	_sushiv_panel_dirty_map(p);
 	_sushiv_panel_dirty_legend(p);
+	p->private->panel_dirty = 0;
       }else{
 	_sushiv_panel_dirty_map_throttled(p);
       }

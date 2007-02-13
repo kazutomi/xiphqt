@@ -57,6 +57,9 @@ struct _Plot{
   double selx;
   double sely;
   int cross_active;
+  int busy;
+  int busy_count;
+  time_t last_busy_throttle;
 
   double box_x1;
   double box_y1;
@@ -118,6 +121,9 @@ void plot_replace_data(Plot *p, u_int32_t *d);
 
 void plot_do_enter(Plot *p);
 void plot_do_escape(Plot *p);
+
+void plot_set_busy(Plot *p);
+void plot_set_idle(Plot *p);
 
 #define PLOT_NO_X_CROSS 1
 #define PLOT_NO_Y_CROSS 2
