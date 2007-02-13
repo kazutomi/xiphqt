@@ -77,7 +77,7 @@ static void compute_one_data_line_2d(sushiv_panel_t *p,
       }else{
 	if(val<0)val=0;
 	if(val>1)val=1;
-	c->y_map[i][j] = rint(val*65536.f);
+	c->y_map[i][j] = rint(val * (256.f*256.f*256.f));
       }
     }
   }
@@ -214,9 +214,10 @@ static void render_checks(int w, int h, ucolor *c){
 }
 
 
-static int resample_helpers_init(scalespace *to, scalespace *from,
-				  int *delA, int *delB, 
-				  int *posA, int *posB){
+static float resample_helpers_init(scalespace *to, scalespace *from,
+				   unsigned char *delA, unsigned char *delB, 
+				   int *posA, int *posB,
+				   int xymul){
   int i;
   int dw = from->pixels;
   int pw = to->pixels;
@@ -226,6 +227,7 @@ static int resample_helpers_init(scalespace *to, scalespace *from,
   long del = scalespace_scaleoff(to,from);
   int bin = del / scaleden;
   del -= bin * scaleden; 
+  int discscale = (scaleden>scalenum?scalenum:scaleden);
 
   for(i=0;i<pw;i++){
     long del2 = del + scalenum;
@@ -237,13 +239,15 @@ static int resample_helpers_init(scalespace *to, scalespace *from,
       del = 0;
       del2 -= scaleden;
       sizeceil--;
-      sizefloor--;
     }
     
     if(del2 > scaleden && bin>=0 && bin<dw){
+      int total = xymul*scalenum/discscale;
 
-      delA[i] = scaleden - del;
+      delA[i] = (xymul * (scaleden - del)) / discscale;
       posA[i] = bin;
+      total -= delA[i];
+      total -= xymul*(sizeceil-2);
 
       while(bin+sizeceil>dw){
 	sizeceil--;
@@ -251,7 +255,7 @@ static int resample_helpers_init(scalespace *to, scalespace *from,
       }
 
       del2 %= scaleden;
-      delB[i] = del2;
+      delB[i] = total; // don't leak 
       posB[i] = bin+sizeceil;
 
     }else{
@@ -261,17 +265,33 @@ static int resample_helpers_init(scalespace *to, scalespace *from,
 	delB[i] = 0;
 	posB[i] = 0;
       }else{
-	delA[i] = del2 - del;
+	delA[i] = (xymul * (del2-del)) / discscale;
 	posA[i] = bin;
 	delB[i] = 0;
 	posB[i] = bin+1;
+	if(del2 == scaleden)del2=0;
       }
     }
 
     bin += sizefloor;
     del = del2;
   }
-  return scaleden;
+  return (float)discscale/scalenum;
+}
+
+static inline void l_mapping_calc( void (*m)(int,int, lcolor*), 
+				   int low,
+				   float range,
+				   int in, 
+				   int alpha, 
+				   int mul, 
+				   lcolor *outc){
+  if(mul && !isnan(in) && in>=alpha){
+    int val = rint((in - low) * range);
+    if(val<0)val=0;
+    if(val>65536)val=65536;
+    m(val,mul,outc);
+  }
 }
 
 /* the data rectangle is data width/height mapped deltas.  we render
@@ -286,16 +306,15 @@ static void resample_render_y_plane(sushiv_panel2d_t *p2, int serialno,
   int ph = panely.pixels;
   int dh = datay.pixels;
   int i,j;
-  int ol_alpha = rint(obj_alpha*65536.f);
+  int ol_alpha = rint(obj_alpha * (256.f*256.f*256.f));
+  int ol_low = rint(map->low * (256.f*256.f*256.f));
+  float ol_range = map->i_range * (1.f/256.f);
   if(!in_data)return;
 
   int *data = malloc(dw*dh*sizeof(*data));
   
   gdk_threads_enter ();
-  if(serialno != p2->serialno){
-    free(data);
-    goto abort;
-  }
+  if(serialno != p2->serialno) goto abort;
   memcpy(data,in_data,dw*dh*sizeof(*data));
   gdk_threads_leave ();
 
@@ -303,108 +322,84 @@ static void resample_render_y_plane(sushiv_panel2d_t *p2, int serialno,
     /* resampled row computation */
 
     /* by column */
-    int   xdelA[pw];
-    int   xdelB[pw];
+    unsigned char   xdelA[pw];
+    unsigned char   xdelB[pw];
     int   xnumA[pw];
     int   xnumB[pw];
-    int   xnum= scalespace_scalenum(&panelx,&datax);
-    int   xden = resample_helpers_init(&panelx, &datax, xdelA, xdelB, xnumA, xnumB);
+    float xsc = resample_helpers_init(&panelx, &datax, xdelA, xdelB, xnumA, xnumB, 17);
 
     /* by row */
-    int   y_scaledel = scalespace_scaledel(&panely,&datay);
-    int   ydelA[ph];
-    int   ydelB[ph];
+    unsigned char   ydelA[ph];
+    unsigned char   ydelB[ph];
     int   ynumA[ph];
     int   ynumB[ph];
-    int   ynum= scalespace_scalenum(&panely,&datay);
-    int   yden = resample_helpers_init(&panely, &datay, ydelA, ydelB, ynumA, ynumB);
+    float ysc = resample_helpers_init(&panely, &datay, ydelA, ydelB, ynumA, ynumB, 15);
 
-    int den = xden*yden;
-    float idel = 255./(ynum*xnum);
+    float idel = ysc * xsc;
     ucolor *mix = panel;
+    int xy=0;
 
-    /* by row */
+    /* by panel row */
     for(i=0;i<ph;i++){
-      /* render is done into a temporary line because of the way alpha
-	 blending is done; the background for the blend must be taken
-	 from the original line */
 
-      int *dline_start = data + ynumA[i]*dw;
       int yend=ynumB[i];
       
-      /* by col */
+      /* by panel col */
       for(j=0;j<pw;j++){
 	
 	lcolor out = (lcolor){0,0,0,0}; 
 	int ydel = ydelA[i];
-	int *dline = dline_start;
-	
-	int x=xnumA[j];
-	int y=ynumA[i];
-	int xend=xnumB[j];
+	int y = ynumA[i];
+
+	int xstart = y*dw + xnumA[j];
+	int xend = y*dw + xnumB[j];
+	int dx = xstart;
 	int xA = xdelA[j];
 	int xB = xdelB[j];
 
+	// first line
+	l_mapping_calc(map->mapfunc, ol_low, ol_range, data[dx++], ol_alpha, ydel*xA, &out);
+
+	for(; dx < xend-1; dx++)
+	  l_mapping_calc(map->mapfunc, ol_low, ol_range, data[dx], ol_alpha, ydel*17, &out);
+	
+	if(dx<xend)
+	  l_mapping_calc(map->mapfunc, ol_low, ol_range, data[dx], ol_alpha, ydel*xB, &out);
+	y++;
+	
+	// mid lines
+	for(;y<yend-1;y++){
+	  dx = xstart += dw;
+	  xend += dw;
+	  l_mapping_calc(map->mapfunc, ol_low, ol_range, data[dx++], ol_alpha, 15*xA, &out);
+
+	  for(; dx < xend-1; dx++)
+	    l_mapping_calc(map->mapfunc, ol_low, ol_range, data[dx], ol_alpha, 255, &out);
+	
+	  if(dx<xend)
+	    l_mapping_calc(map->mapfunc, ol_low, ol_range, data[dx], ol_alpha, 15*xB, &out);
+	}
+	
+	// last line
 	if(y<yend){
-	  // first line
-	  if(x<xend){
-	    if(dline[x]>=ol_alpha)
-	      map->mapfunc(dline[x],ydel*xA,&out);
-	    x++;
-	    
-	    for(; x < xend-1; x++)
-	      if(dline[x]>=ol_alpha)
-		map->mapfunc(dline[x],ydel*xden,&out);
-	    
-	    if(x<xend)
-	      if(dline[x]>=ol_alpha)
-		map->mapfunc(dline[x],ydel*xB,&out);
-	  }
-	  y++;
-	  dline+=dw;
-
-	  // mid lines
-	  for(;y<yend-1;y++){
-	    x = xnumA[j];
-	    if(dline[x]>=ol_alpha)
-	      map->mapfunc(dline[x],xA*yden,&out);
-	    x++;
-	    
-	    for(; x < xend-1; x++)
-	      if(dline[x]>=ol_alpha)
-		map->mapfunc(dline[x],den,&out);
-	    
-	    if(x<xend)
-	      if(dline[x]>=ol_alpha)
-		map->mapfunc(dline[x],xB*yden,&out);
-
-	    dline+=dw;
-	  }
-	    
-	  // last line
-	  if(y<yend){
-	    x = xnumA[j];
-	    ydel = ydelB[i];
-	    if(dline[x]>=ol_alpha)
-	      map->mapfunc(dline[x],xA*ydel,&out);
-	    x++;
-	    
-	    for(; x < xend-1; x++)
-	      if(dline[x]>=ol_alpha)
-		map->mapfunc(dline[x],ydel*xden,&out);
-	    
-	    if(x<xend)
-	      if(dline[x]>=ol_alpha)
-		map->mapfunc(dline[x],xB*ydel,&out);
-	  }
+	  dx = xstart += dw;
+	  xend += dw;
+	  ydel = ydelB[i];
+	  l_mapping_calc(map->mapfunc, ol_low, ol_range, data[dx++], ol_alpha, ydel*xA, &out);
+	  
+	  for(; dx < xend-1; dx++)
+	    l_mapping_calc(map->mapfunc, ol_low, ol_range, data[dx], ol_alpha, ydel*17, &out);
+	  
+	  if(dx<xend)
+	    l_mapping_calc(map->mapfunc, ol_low, ol_range, data[dx], ol_alpha, ydel*xB, &out);
 	}
 
-	*mix = map->mixfunc( (ucolor)(((u_int32_t)(out.a*idel)<<24) +
-				      ((u_int32_t)(out.r*idel)<<16) +
-				      ((u_int32_t)(out.g*idel)<<8) +
-				      ((u_int32_t)(out.b*idel))),
-			     *mix);
-	mix++;
+	mix[xy] = map->mixfunc( (ucolor)(((u_int32_t)(out.a*idel)<<24) +
+					 ((u_int32_t)(out.r*idel)<<16) +
+					 ((u_int32_t)(out.g*idel)<<8) +
+					 ((u_int32_t)(out.b*idel))),
+				mix[xy]);
+	xy++;
 
       }
     }
@@ -414,17 +409,16 @@ static void resample_render_y_plane(sushiv_panel2d_t *p2, int serialno,
       int *dline = data+i*dw;
       
       for(j=0;j<pw;j++){
-	if(dline[j]>=ol_alpha){
-	  lcolor out = (lcolor){0,0,0,0};
-	  map->mapfunc(dline[j],255,&out);
+	lcolor out = (lcolor){0,0,0,0};
+	l_mapping_calc(map->mapfunc, ol_low, ol_range, dline[j], ol_alpha, 255, &out);
 	
-	  *panel = map->mixfunc((ucolor)(((u_int32_t)(out.a)<<24) +
-					 ((u_int32_t)(out.r)<<16) +
-					 ((u_int32_t)(out.g)<<8) +
-					 ((u_int32_t)(out.b))),
-				*panel);
-	  panel++;
-	}
+	*panel = map->mixfunc((ucolor)(((u_int32_t)(out.a)<<24) +
+				       ((u_int32_t)(out.r)<<16) +
+				       ((u_int32_t)(out.g)<<8) +
+				       ((u_int32_t)(out.b))),
+			      *panel);
+	panel++;
+
       }
     }
   }
@@ -432,6 +426,7 @@ static void resample_render_y_plane(sushiv_panel2d_t *p2, int serialno,
   return;
  abort:
   gdk_threads_leave ();
+  if(data)free(data);
 }
 
 static void _sushiv_panel2d_remap(sushiv_panel_t *p){
@@ -689,13 +684,13 @@ static int v_swizzle(int y, int height){
 }
 
 // assumes data is locked
-static void fast_scale_x(float *data, 
+static void fast_scale_x(int *data, 
 			 int w,
 			 int h,
 			 scalespace new,
 			 scalespace old){
   int x,y;
-  float work[w];
+  int work[w];
   int mapbase[w];
   float mapdel[w];
 
@@ -724,19 +719,19 @@ static void fast_scale_x(float *data,
   }
 
   for(y=0;y<h;y++){
-    float *data_line = data+y*w;
+    int *data_line = data+y*w;
     for(x=0;x<w;x++){
       if(mapbase[x]<0 || mapbase[x]>=(w-1)){
-	work[x]=NAN;
+	work[x]=-1;
       }else{
 	int base = mapbase[x];
 	float del = mapdel[x];
-	float A = data_line[base];
-	float B = data_line[base+1];
-	if(isnan(A) || isnan(B))
-	  work[x]=NAN;
+	int A = data_line[base];
+	int B = data_line[base+1];
+	if(A<0 || B<0)
+	  work[x]=-1;
 	else
-	  work[x]= A + (B - A)*del;
+	  work[x]= A + rint((B - A)*del);
 	
       }
     }
@@ -744,13 +739,13 @@ static void fast_scale_x(float *data,
   }   
 }
 
-static void fast_scale_y(float *data, 
+static void fast_scale_y(int *data, 
 			 int w,
 			 int h,
 			 scalespace new,
 			 scalespace old){
   int x,y;
-  float work[h];
+  int work[h];
   int mapbase[h];
   float mapdel[h];
 
@@ -780,20 +775,20 @@ static void fast_scale_y(float *data,
   }
   
   for(x=0;x<w;x++){
-    float *data_column = data+x;
+    int *data_column = data+x;
     int stride = w;
     for(y=0;y<h;y++){
       if(mapbase[y]<0 || mapbase[y]>=(h-1)){
-	work[y]=NAN;
+	work[y]=-1;
       }else{
 	int base = mapbase[y]*stride;
 	float del = mapdel[y];
-	float A = data_column[base];
-	float B = data_column[base+stride];
-	if(isnan(A) || isnan(B))
-	  work[y]=NAN;
+	int A = data_column[base];
+	int B = data_column[base+stride];
+	if(A<0 || B<0)
+	  work[y]=-1;
 	else
-	  work[y]= A + (B-A)*del;
+	  work[y]= A + rint((B-A)*del);
 	
       }
     }
@@ -804,10 +799,10 @@ static void fast_scale_y(float *data,
   }   
 }
 
-static void fast_scale(float *newdata, 
+static void fast_scale(int *newdata, 
 		       scalespace xnew,
 		       scalespace ynew,
-		       float *olddata,
+		       int *olddata,
 		       scalespace xold,
 		       scalespace yold){
   int y;
@@ -821,8 +816,8 @@ static void fast_scale(float *newdata,
     if(new_h > old_h){
       // copy image to new, scale there
       for(y=0;y<old_h;y++){
-	float *new_line = newdata+y*new_w;
-	float *old_line = olddata+y*old_w;
+	int *new_line = newdata+y*new_w;
+	int *old_line = olddata+y*old_w;
 	memcpy(new_line,old_line,old_w*(sizeof*new_line));
       }
       fast_scale_x(newdata,new_w,new_h,xnew,xold);
@@ -831,8 +826,8 @@ static void fast_scale(float *newdata,
       // scale y in old pane, copy to new, scale x 
       fast_scale_y(olddata,old_w,old_h,ynew,yold);
       for(y=0;y<new_h;y++){
-	float *new_line = newdata+y*new_w;
-	float *old_line = olddata+y*old_w;
+	int *new_line = newdata+y*new_w;
+	int *old_line = olddata+y*old_w;
 	memcpy(new_line,old_line,old_w*(sizeof*new_line));
       }
       fast_scale_x(newdata,new_w,new_h,xnew,xold);
@@ -842,8 +837,8 @@ static void fast_scale(float *newdata,
       // scale x in old pane, o=copy to new, scale y
       fast_scale_x(olddata,old_w,old_h,xnew,xold);
       for(y=0;y<old_h;y++){
-	float *new_line = newdata+y*new_w;
-	float *old_line = olddata+y*old_w;
+	int *new_line = newdata+y*new_w;
+	int *old_line = olddata+y*old_w;
 	memcpy(new_line,old_line,new_w*(sizeof*new_line));
       }
       fast_scale_y(newdata,new_w,new_h,ynew,yold);
@@ -854,8 +849,8 @@ static void fast_scale(float *newdata,
       fast_scale_y(olddata,old_w,old_h,ynew,yold);
       if(olddata != newdata){
 	for(y=0;y<new_h;y++){
-	  float *new_line = newdata+y*new_w;
-	  float *old_line = olddata+y*old_w;
+	  int *new_line = newdata+y*new_w;
+	  int *old_line = olddata+y*old_w;
 	  memcpy(new_line,old_line,new_w*(sizeof*new_line));
 	}
       }
@@ -1103,7 +1098,7 @@ static int _sushiv_panel_cooperative_compute_2d(sushiv_panel_t *p,
     plot->y = sy;
 
     p2->last_line++;
-    serialno = ++p2->serialno; // we're about to free the old data rectangles
+    ++p2->serialno; // we're about to free the old data rectangles
     
     if(memcmp(&sx_v,&old_xv,sizeof(sx_v)) || memcmp(&sy_v,&old_yv,sizeof(sy_v))){
       p2->scaling_in_progress = 1;
@@ -1122,27 +1117,19 @@ static int _sushiv_panel_cooperative_compute_2d(sushiv_panel_t *p,
 	  newmap[j]=-1;
 	
 	// zoom scale data in map planes as placeholder for render
-	/* come back once converted to fixed point
 	if(oldmap){
 	  fast_scale(newmap, sx_v, sy_v,
 		     oldmap,old_xv, old_yv);
 	  free(oldmap);
 	}
-	*/
 
-	//gdk_threads_enter ();
-	//if(p2->serialno != serialno){
-	//  gdk_threads_leave();
-	//  return 1;
-	//}
 	p2->y_map[i] = newmap; 
       }
       
       p2->scaling_in_progress = 0;
+      _sushiv_panel2d_map_redraw(p);
       gdk_threads_leave ();
-      _sushiv_panel_dirty_map_throttled(p);
       _sushiv_wake_workers();   
-      //_sushiv_panel2d_remap(p);
       plot_draw_scales(plot);
 
     }else
