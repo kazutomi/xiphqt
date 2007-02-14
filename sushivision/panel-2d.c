@@ -442,6 +442,7 @@ static int resample_render_y_plane(sushiv_panel_t *p, int plot_serialno, int map
   return 0;
 }
 
+// enter with lock
 static int _sushiv_panel2d_remap(sushiv_panel_t *p){
   sushiv_panel2d_t *p2 = p->subtype->p2;
   Plot *plot = PLOT(p->private->graph);
@@ -490,8 +491,10 @@ static int _sushiv_panel2d_remap(sushiv_panel_t *p){
     if (!resample_render_y_plane(p, plot_serialno, map_serialno, 
 				 mappings+i, alphadel[i],
 				 c, x, y,
-				 y_rects[o_ynum], x_v, y_v))
+				 y_rects[o_ynum], x_v, y_v)){
+      gdk_threads_enter ();  
       goto abort;
+    }
 
     /**** render Z plane */
     
