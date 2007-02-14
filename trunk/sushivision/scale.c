@@ -291,6 +291,7 @@ scalespace scalespace_linear (double lowpoint, double highpoint, int pixels, int
     // itself, but it will keep things on track until later checks
     orange = 1e-30 * pixels;
     highpoint = lowpoint + orange;
+    ret.massaged = 1;
   }
 
   while(1){
@@ -330,13 +331,21 @@ scalespace scalespace_linear (double lowpoint, double highpoint, int pixels, int
     first = (long long)(lowpoint/ret.m)/step*step;
 
     if(neg){
+      /* overflow check */
       if(LLONG_MAX * ret.m < highpoint){
+	lowpoint += orange/2;
 	orange *= 2;
+	highpoint = lowpoint - orange;
+	ret.massaged = 1;
 	continue;
       }
     }else{
+      /* overflow check */
       if(LLONG_MAX * ret.m < lowpoint){
+	lowpoint -= orange/2;
 	orange *= 2;
+	highpoint = lowpoint + orange;
+	ret.massaged = 1;
 	continue;
       }
     }
@@ -345,13 +354,21 @@ scalespace scalespace_linear (double lowpoint, double highpoint, int pixels, int
       first += step;
     
     if(neg){
+      /* overflow check */
       if(LLONG_MIN * ret.m > lowpoint){
+	lowpoint += orange/2;
 	orange *= 2;
+	highpoint = lowpoint - orange;
+	ret.massaged = 1;
 	continue;
       }
     }else{
+      /* overflow check */
       if(LLONG_MIN * ret.m > highpoint){
+	lowpoint -= orange/2;
 	orange *= 2;
+	highpoint = lowpoint + orange;
+	ret.massaged = 1;
 	continue;
       }
     }
@@ -363,7 +380,10 @@ scalespace scalespace_linear (double lowpoint, double highpoint, int pixels, int
     if( first*128/128 != first ||
 	first*16*ret.m == (first*16 +step)*ret.m ||
 	(first*16+step)*ret.m == (first*16 +step*2)*ret.m){
-      orange*=2;
+      lowpoint -= orange/(neg*2);
+      orange *= 2;
+      highpoint = lowpoint + neg*orange;
+      ret.massaged = 1;
       continue;
     }
 

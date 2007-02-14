@@ -37,6 +37,7 @@ typedef struct {
   int init;
   int pixels;
   int spacing;
+  int massaged; // set if range had to be adjusted to avoid underflows
 } scalespace;
 
 int del_depth(double A, double B);
