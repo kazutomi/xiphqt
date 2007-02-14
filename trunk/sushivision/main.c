@@ -114,48 +114,32 @@ static void *worker_thread(void *dummy){
 
 	  // pending remap work?
 	  gdk_threads_enter();
-	  if(p->private->maps_dirty && !p->private->maps_rendering){
-	    p->private->maps_dirty = 0;
-	    p->private->maps_rendering = 1;
-	    flag = 1;
-	    plot_set_busy(PLOT(p->private->graph));
+	  if(p->private->realized && p->private->graph){
 
-	    gdk_threads_leave ();
-	    p->private->map_redraw(p);
-	    gdk_threads_enter ();
-
-	    p->private->maps_rendering = 0;
-	    set_map_throttle_time(p);
-	  }
-
-	  // pending legend work?
-	  if(p->private->legend_dirty && !p->private->legend_rendering){
-	    p->private->legend_dirty = 0;
-	    p->private->legend_rendering = 1;
-	    flag = 1;
-	    plot_set_busy(PLOT(p->private->graph));
+	    if(p->private->map_active){
+	      plot_set_busy(PLOT(p->private->graph));
+	      flag |= p->private->map_action(p); // may drop lock internally
+	      if(!p->private->map_active)
+		set_map_throttle_time(p);
+	    }
 	    
-	    gdk_threads_leave ();
-	    p->private->legend_redraw(p);
-	    gdk_threads_enter ();
-
-	    p->private->legend_rendering = 0;
+	    // pending legend work?
+	    if(p->private->legend_active){
+	      plot_set_busy(PLOT(p->private->graph));
+	      flag |= p->private->legend_action(p); // may drop lock internally
+	    }
+	    
+	    // pending computation work?
+	    if(p->private->plot_active){
+	      plot_set_busy(PLOT(p->private->graph));
+	      flag |= p->private->compute_action(p,&c[j][i]); // may drop lock internally
+	    }
+	    
+	    if(!p->private->plot_active &&
+	       !p->private->legend_active &&
+	       !p->private->map_active)
+	      plot_set_idle(PLOT(p->private->graph));
 	  }
-	  gdk_threads_leave ();
-
-	  // pending computation work?
-	  if(p->private->panel_dirty)
-	    flag |= _sushiv_panel_cooperative_compute(p,
-						      &c[j][i]);
-
-	  gdk_threads_enter ();
-	  if(!flag && 
-	     !p->private->panel_dirty &&
-	     !p->private->legend_rendering &&
-	     !p->private->legend_dirty &&
-	     !p->private->maps_rendering &&
-	     !p->private->maps_dirty)
-	    plot_set_idle(PLOT(p->private->graph));
 	  gdk_threads_leave ();
 	}
       }

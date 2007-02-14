@@ -327,7 +327,6 @@ static void update_legend(sushiv_panel_t *p){
 	d = p1->link_x->subtype->p2->x_d;
       else
 	d = p1->link_y->subtype->p2->y_d;
-
       
       // add each dimension to the legend
       // display decimal precision relative to display scales
@@ -371,28 +370,6 @@ static void update_legend(sushiv_panel_t *p){
     }
     gdk_threads_leave ();
   }
-}
-
-void _sushiv_panel1d_map_redraw(sushiv_panel_t *p){
-  Plot *plot = PLOT(p->private->graph);
-
-  gdk_threads_enter (); // misuse me as a global mutex
-  
-  _sushiv_panel1d_remap(p);
-  if(plot)
-    plot_expose_request(plot);
- 
-  gdk_threads_leave (); // misuse me as a global mutex
-}
-
-void _sushiv_panel1d_legend_redraw(sushiv_panel_t *p){
-  Plot *plot = PLOT(p->private->graph);
-
-  gdk_threads_enter (); // misuse me as a global mutex
-  update_legend(p);
-  if(plot)
-    plot_draw_scales(plot);
-  gdk_threads_leave (); // misuse me as a global mutex
 }
 
 static void mapchange_callback_1d(GtkWidget *w,gpointer in){
@@ -583,7 +560,7 @@ static void compute_1d(sushiv_panel_t *p,
       }
       
       gdk_threads_enter (); // misuse me as a global mutex
-      if(p1->serialno == serialno){
+      if(p->private->plot_serialno == serialno){
 	/* store result in panel */
 	memcpy(p1->data_vec[i],work,w*sizeof(*work));
 	gdk_threads_leave (); // misuse me as a global mutex 
@@ -686,9 +663,7 @@ void _mark_recompute_1d(sushiv_panel_t *p){
       for(j=0;j<dw;j++)
 	p1->data_vec[i][j]=NAN;
 
-    p1->serialno++;
-    p1->last_line = 0;
-    _sushiv_panel_dirty_panel(p);
+    _sushiv_panel_dirty_plot(p);
   }
 }
 
@@ -931,8 +906,33 @@ void _maintain_cache_1d(sushiv_panel_t *p, _sushiv_compute_cache_1d *c, int w){
   }
 }
 
-int _sushiv_panel_cooperative_compute_1d(sushiv_panel_t *p,
-					 _sushiv_compute_cache *c){
+// subtype entry point for plot remaps; lock held
+int _sushiv_panel1d_map_redraw(sushiv_panel_t *p){
+  Plot *plot = PLOT(p->private->graph);
+
+  if(p->private->map_progress_count)return 0;
+  p->private->map_progress_count++;
+  _sushiv_panel1d_remap(p);
+  _sushiv_panel_clean_map(p);
+  plot_expose_request(plot);
+  return 1;
+}
+
+// subtype entry point for legend redraws; lock held
+int _sushiv_panel1d_legend_redraw(sushiv_panel_t *p){
+  Plot *plot = PLOT(p->private->graph);
+
+  if(p->private->legend_progress_count)return 0;
+  p->private->legend_progress_count++;
+  update_legend(p);
+  _sushiv_panel_clean_legend(p);
+  plot_draw_scales(plot);
+  return 1;
+}
+
+// subtype entry point for recomputation; lock held
+int _sushiv_panel1d_compute(sushiv_panel_t *p,
+			    _sushiv_compute_cache *c){
   sushiv_panel1d_t *p1 = p->subtype->p1;
   Plot *plot;
   
@@ -940,15 +940,12 @@ int _sushiv_panel_cooperative_compute_1d(sushiv_panel_t *p,
   int serialno;
   double x_min, x_max;
   int x_d=-1;
-  int render_scale_flag = 0;
   scalespace sy;
 
   scalespace sx;
   scalespace sxv;
   scalespace sxi;
 
-  // lock during setup
-  gdk_threads_enter ();
   dw = p1->data_size;
   w = p1->panel_w;
   h = p1->panel_h;
@@ -959,16 +956,14 @@ int _sushiv_panel_cooperative_compute_1d(sushiv_panel_t *p,
   sxv = p1->x_v;
   sxi = p1->x_i;
   
-  if(p1->last_line){
-    gdk_threads_leave ();
+  if(p->private->plot_progress_count)
     return 0;
-  }
 
+  serialno = p->private->plot_serialno;
+  p->private->plot_progress_count++;
+  d = p->dimensions;
   plot = PLOT(p->private->graph);
   
-  serialno = p1->serialno;
-  d = p->dimensions;
-
   /* render using local dimension array; several threads will be
      computing objectives */
   double dim_vals[p->sushi->dimensions];
@@ -990,13 +985,6 @@ int _sushiv_panel_cooperative_compute_1d(sushiv_panel_t *p,
     plot->y_v = sy;
   }
 
-  // Bulletproofing; shouldn't ever come up
-  if(x_d==-1){
-    gdk_threads_leave ();
-    fprintf(stderr,"Invalid/missing x dimension setting in 1d panel x_d\n");
-    return 0;
-  }
-
   // Initialize local dimension value array
   for(i=0;i<p->sushi->dimensions;i++){
     sushiv_dimension_t *dim = p->sushi->dimension_list[i];
@@ -1004,35 +992,19 @@ int _sushiv_panel_cooperative_compute_1d(sushiv_panel_t *p,
   }
 
   _maintain_cache_1d(p,&c->p1,dw);
+  
+  /* unlock for computation */
+  gdk_threads_leave ();
 
-  // update scales if we're just starting
-  if(p1->last_line==0){
-    render_scale_flag = 1;
-  }
-
-  if(plot->w.allocation.height == h &&
-     serialno == p1->serialno){
-    p1->last_line++;
-    
-    /* unlock for computation */
-    gdk_threads_leave ();
-    
-    if(render_scale_flag){
-      plot_draw_scales(plot);
-      render_scale_flag = 0;
-    }
-    
-    /* compute */
-    compute_1d(p, serialno, x_d, x_min, x_max, dw, dim_vals, &c->p1);
-    gdk_threads_enter ();
-    _sushiv_panel_dirty_map(p);
-    _sushiv_panel_dirty_legend(p);
-    p->private->panel_dirty = 0;
-    gdk_threads_leave ();
-
-  }else
-    gdk_threads_leave ();
-
+  plot_draw_scales(plot);
+  compute_1d(p, serialno, x_d, x_min, x_max, dw, dim_vals, &c->p1);
+  
+  gdk_threads_enter ();
+  
+  _sushiv_panel_dirty_map(p);
+  _sushiv_panel_dirty_legend(p);
+  _sushiv_panel_clean_plot(p);
+  
   return 1;
 }
 
@@ -1527,9 +1499,9 @@ int sushiv_new_panel_1d_linked(sushiv_instance_t *s,
     p1->flip=1;
 
   p->private->realize = _sushiv_realize_panel1d;
-  p->private->map_redraw = _sushiv_panel1d_map_redraw;
-  p->private->legend_redraw = _sushiv_panel1d_legend_redraw;
-  p->private->compute_action = _sushiv_panel_cooperative_compute_1d;
+  p->private->map_action = _sushiv_panel1d_map_redraw;
+  p->private->legend_action = _sushiv_panel1d_legend_redraw;
+  p->private->compute_action = _sushiv_panel1d_compute;
   p->private->request_compute = _mark_recompute_1d;
   p->private->crosshair_action = crosshair_callback;
 

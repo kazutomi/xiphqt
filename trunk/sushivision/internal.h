@@ -66,18 +66,28 @@ struct sushiv_panel_internal {
   sushiv_dim_widget_t **dim_scales;
 
   int realized;
-  int maps_dirty;
-  int legend_dirty;
-  int maps_rendering;
-  int legend_rendering;
-  int panel_dirty;
+
+  int map_active;
+  int map_progress_count;
+  int map_complete_count;
+  int map_serialno;
+
+  int legend_active;
+  int legend_progress_count;
+  int legend_complete_count;
+  int legend_serialno;
+
+  int plot_active;
+  int plot_progress_count;
+  int plot_complete_count;
+  int plot_serialno;
 
   time_t last_map_throttle;
 
   // function bundles 
   void (*realize)(sushiv_panel_t *p);
-  void (*map_redraw)(sushiv_panel_t *p);
-  void (*legend_redraw)(sushiv_panel_t *p);
+  int (*map_action)(sushiv_panel_t *p);
+  int (*legend_action)(sushiv_panel_t *p);
   int (*compute_action)(sushiv_panel_t *p, _sushiv_compute_cache *c);
   void (*request_compute)(sushiv_panel_t *p);
   void (*crosshair_action)(sushiv_panel_t *p);
@@ -101,17 +111,15 @@ extern int _sushiv_new_panel(sushiv_instance_t *s,
 			     int *objectives,
 			     int *dimensions,
 			     unsigned flags);
+
 extern void set_map_throttle_time(sushiv_panel_t *p);
-
-
 extern void _sushiv_panel_dirty_map(sushiv_panel_t *p);
 extern void _sushiv_panel_dirty_map_throttled(sushiv_panel_t *p);
 extern void _sushiv_panel_dirty_legend(sushiv_panel_t *p);
-extern void _sushiv_panel_dirty_panel(sushiv_panel_t *p);
-
-extern void _maintain_cache(sushiv_panel_t *p, _sushiv_compute_cache *c, int w);
-extern int _sushiv_panel_cooperative_compute(sushiv_panel_t *p,
-					     _sushiv_compute_cache *c);
+extern void _sushiv_panel_dirty_plot(sushiv_panel_t *p);
+extern void _sushiv_panel_clean_map(sushiv_panel_t *p);
+extern void _sushiv_panel_clean_legend(sushiv_panel_t *p);
+extern void _sushiv_panel_clean_plot(sushiv_panel_t *p);
 
 extern void _sushiv_panel_undo_log(sushiv_panel_t *p);
 extern void _sushiv_panel_undo_push(sushiv_panel_t *p);

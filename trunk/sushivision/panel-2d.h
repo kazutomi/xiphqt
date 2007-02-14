@@ -26,9 +26,6 @@ typedef struct sushiv_panel2d {
   GtkWidget *popmenu;
   GtkWidget *graphmenu;
 
-  int serialno;              // timestamps access to map planes, widget pixels
-  int scaling_in_progress;
-
   /* only run those functions used by this panel */
   int used_functions;
   sushiv_function_t **used_function_list;
@@ -68,11 +65,6 @@ typedef struct sushiv_panel2d {
   sushiv_dim_widget_t *y_scale;
   int x_dnum; // panel, not global list context
   int y_dnum; // panel, not global list context
-
-  int last_line;
-  int completed_lines;
-
-  int peak_count;
 
 } sushiv_panel2d_t;
 
