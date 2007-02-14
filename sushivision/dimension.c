@@ -72,7 +72,22 @@ int _sushiv_dimension_scales(sushiv_dimension_t *d,
 			d->private->discrete_numerator);
       int hi_i =  floor(hi * d->private->discrete_denominator / 
 		       d->private->discrete_numerator);
-      int extend  = 0;
+
+      /* the panel scales may be reversed (the easiest way to do y)
+	 and/or the dimension may have an inverted scale. */
+      int pneg, dimneg;
+
+      if(lo_i>hi_i){ // == must be 1 to match scale gen code when width is 0
+	pneg = -1;
+      }else{
+	pneg = 1;
+      }
+
+      if(d->scale->val_list[0] > d->scale->val_list[d->scale->vals-1]){
+	dimneg = -1;
+      }else{
+	dimneg = 1;
+      }
       
       if(floor_i < ceil_i){
 	if(lo_i < floor_i)lo_i = floor_i;
@@ -82,39 +97,53 @@ int _sushiv_dimension_scales(sushiv_dimension_t *d,
 	if(hi_i < ceil_i)hi_i = ceil_i;
       }
 
-      // although the rest of the code assumes 'hi' is a one-past, the
-      // discrete dim code assumes hi is an inclusive bound, so we
-      // just extend.
-      if(lo_i>hi_i){ // == must be 1 to match scale gen code when width is 0
-	extend = -1;
-      }else{
-	extend = 1;
-      }
-
-      data_w = abs(hi_i-lo_i)+1;
-      if(!(d->flags & SUSHIV_DIM_ZEROINDEX))
-	floor_i = 0;
-
-      *panel = scalespace_linear((double)(lo_i-extend*.4) * d->private->discrete_numerator / 
+      *panel = scalespace_linear((double)(lo_i-pneg*.4) * d->private->discrete_numerator / 
 				 d->private->discrete_denominator,
-				 (double)(hi_i+extend*.4) * d->private->discrete_numerator / 
+				 (double)(hi_i+pneg*.4) * d->private->discrete_numerator / 
 				 d->private->discrete_denominator,
 				 panel_w, spacing, legend);
 
+      /* if possible, the data/iterator scales should cover the entire pane exposed
+	 by the panel scale so long as there's room left to extend them without
+	 overflowing the lo/hi fenceposts */
+      double panel1 = scalespace_value(panel,0)*pneg;
+      double panel2 = scalespace_value(panel,panel->pixels)*pneg;
+      double data1 = (double)(lo_i-.49*pneg) * d->private->discrete_numerator / 
+	d->private->discrete_denominator*pneg;
+      double data2 = (double)(hi_i-.51*pneg) * d->private->discrete_numerator / 
+	d->private->discrete_denominator*pneg;
+
+      while(data1 > panel1 && lo_i*dimneg > floor_i*dimneg){
+	lo_i -= pneg;
+	data1 = (double)(lo_i-.49*pneg) * d->private->discrete_numerator / 
+	  d->private->discrete_denominator*pneg;
+      }
+
+      while(data2 < panel2 && hi_i*dimneg <= ceil_i*dimneg){ // inclusive upper
+	hi_i += pneg;
+	data2 = (double)(hi_i-.51*pneg) * d->private->discrete_numerator / 
+	  d->private->discrete_denominator*pneg;
+      }
+
+      /* cosmetic adjustment complete, generate the scales */
+      data_w = abs(hi_i-lo_i);
+      if(!(d->flags & SUSHIV_DIM_ZEROINDEX))
+	floor_i = 0;
+
       *data = scalespace_linear((double)lo_i * d->private->discrete_numerator / 
 				d->private->discrete_denominator,
-				(double)(hi_i+extend) * d->private->discrete_numerator / 
+				(double)hi_i * d->private->discrete_numerator / 
 				d->private->discrete_denominator,
 				data_w, spacing, legend);
       
       if(d->flags & SUSHIV_DIM_MONOTONIC)
-	*iter = scalespace_linear(lo_i - floor_i, hi_i - floor_i + extend,
+	*iter = scalespace_linear(lo_i - floor_i, hi_i - floor_i,
 				  data_w, 1, legend);
       else
 	*iter = scalespace_linear((double)(lo_i - floor_i) * 
 				  d->private->discrete_numerator / 
 				  d->private->discrete_denominator,
-				  (double)(hi_i - floor_i + extend) * 
+				  (double)(hi_i - floor_i) * 
 				  d->private->discrete_numerator / 
 				  d->private->discrete_denominator,
 				  data_w, 1, legend);
@@ -131,6 +160,7 @@ int _sushiv_dimension_scales(sushiv_dimension_t *d,
     data_w = 0;
     break;
   }
+
   return data_w;
 }
 
