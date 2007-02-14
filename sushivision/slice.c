@@ -81,7 +81,6 @@ static gboolean slice_button_press(GtkWidget        *widget,
   if(event->button == 1)
     slider_button_press(s->slider,s->slicenum,event->x,event->y);
 
-  gtk_widget_grab_focus(GTK_WIDGET(s));
   return TRUE;
 }
 
