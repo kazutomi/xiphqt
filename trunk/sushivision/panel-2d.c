@@ -510,6 +510,9 @@ static int _sushiv_panel2d_remap(sushiv_panel_t *p){
     dr[i] = cp[i];
 
   free(c);
+  set_map_throttle_time(p); // done by worker threads too, but
+			    // delaying first throttled remap after
+			    // forced remap is useful too
   return 1;
 
  abort:
