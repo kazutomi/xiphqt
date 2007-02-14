@@ -228,6 +228,7 @@ static float resample_helpers_init(scalespace *to, scalespace *from,
   int bin = del / scaleden;
   del -= bin * scaleden; 
   int discscale = (scaleden>scalenum?scalenum:scaleden);
+  int total = xymul*scalenum/discscale;
 
   for(i=0;i<pw;i++){
     long del2 = del + scalenum;
@@ -242,12 +243,12 @@ static float resample_helpers_init(scalespace *to, scalespace *from,
     }
     
     if(del2 > scaleden && bin>=0 && bin<dw){
-      int total = xymul*scalenum/discscale;
+      int rem = total;
 
       delA[i] = (xymul * (scaleden - del)) / discscale;
       posA[i] = bin;
-      total -= delA[i];
-      total -= xymul*(sizeceil-2);
+      rem -= delA[i];
+      rem -= xymul*(sizeceil-2);
 
       while(bin+sizeceil>dw){
 	sizeceil--;
@@ -255,7 +256,7 @@ static float resample_helpers_init(scalespace *to, scalespace *from,
       }
 
       del2 %= scaleden;
-      delB[i] = total; // don't leak 
+      delB[i] = rem; // don't leak 
       posB[i] = bin+sizeceil;
 
     }else{
@@ -265,7 +266,7 @@ static float resample_helpers_init(scalespace *to, scalespace *from,
 	delB[i] = 0;
 	posB[i] = 0;
       }else{
-	delA[i] = (xymul * (del2-del)) / discscale;
+	delA[i] = xymul;
 	posA[i] = bin;
 	delB[i] = 0;
 	posB[i] = bin+1;
@@ -276,7 +277,7 @@ static float resample_helpers_init(scalespace *to, scalespace *from,
     bin += sizefloor;
     del = del2;
   }
-  return (float)discscale/scalenum;
+  return (float)xymul/total;
 }
 
 static inline void l_mapping_calc( void (*m)(int,int, lcolor*), 
