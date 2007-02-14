@@ -299,7 +299,7 @@ void slider_draw(Slider *s){
   // thumbs
   for(i=0;i<s->num_slices;i++){
     GtkWidget *sl = s->slices[i];
-    double x = val_to_pixel(s,((Slice *)(s->slices[i]))->thumb_val)+.5;
+    double x = rint(val_to_pixel(s,((Slice *)(s->slices[i]))->thumb_val))+.5;
 
     double rad = 2.;
     
