@@ -33,7 +33,6 @@ typedef struct sushiv_panel1d {
   int panel_w;
   int panel_h;
   int data_size;
-  int serialno;
   double **data_vec;
 
   scalespace y;
@@ -64,10 +63,6 @@ typedef struct sushiv_panel1d {
   sushiv_dimension_t *x_d;
   sushiv_dim_widget_t *x_scale;
   int x_dnum; // number of dimension within panel, not global instance
-
-  int last_line;
-
-  int peak_count;
 } sushiv_panel1d_t;
 
 typedef struct {
