@@ -580,12 +580,9 @@ void _mark_recompute_1d(sushiv_panel_t *p){
   int w = plot->w.allocation.width;
   int h = plot->w.allocation.height;
   int dw = w;
-  int dwt;
   sushiv_panel_t *link = (p1->link_x ? p1->link_x : p1->link_y);
   sushiv_panel2d_t *p2 = (link?link->subtype->p2:NULL);
   int i,j;
-
-  scalespace sx,sx_v,sx_i,sy;
 
   if(p1->link_x){
     dw = p2->x_v.pixels;
@@ -600,53 +597,38 @@ void _mark_recompute_1d(sushiv_panel_t *p){
 
   if(plot && GTK_WIDGET_REALIZED(GTK_WIDGET(plot))){
     if(p1->flip){
-      dwt = _sushiv_dimension_scales(p1->x_d, 
+      dw = _sushiv_dimension_scales(p1->x_d, 
 				    p1->x_d->bracket[1],
 				    p1->x_d->bracket[0],
 				    h,dw,
 				    plot->scalespacing,
 				    p1->x_d->name,
-				    &sx,
-				    &sx_v,
-				    &sx_i);
+				    &p1->x,
+				    &p1->x_v,
+				    &p1->x_i);
       
-      sy = scalespace_linear(p1->range_bracket[0],
-			     p1->range_bracket[1],
-			     w,
-			     plot->scalespacing,
-			     p1->range_scale->legend);
-    
+      p1->y = scalespace_linear(p1->range_bracket[0],
+				p1->range_bracket[1],
+				w,
+				plot->scalespacing,
+				p1->range_scale->legend);
+      
     }else{
-      dwt = _sushiv_dimension_scales(p1->x_d, 
+      dw = _sushiv_dimension_scales(p1->x_d, 
 				    p1->x_d->bracket[0],
 				    p1->x_d->bracket[1],
 				    w,dw,
 				    plot->scalespacing,
 				    p1->x_d->name,
-				    &sx,
-				    &sx_v,
-				    &sx_i);
+				    &p1->x,
+				    &p1->x_v,
+				    &p1->x_i);
 
-      sy = scalespace_linear(p1->range_bracket[1],
-			     p1->range_bracket[0],
-			     h,
-			     plot->scalespacing,
-			     p1->range_scale->legend);
-    }
-    
-    if(sx.massaged || sx_v.massaged || sx_i.massaged){
-      fprintf(stderr,"\nX axis resolution exceeded; keeping old X.\n");
-    }else{
-      p1->x = sx;
-      p1->x_v = sx_v;
-      p1->x_i = sx_i;
-      dw=dwt;
-    }
-
-    if(sy.massaged){
-      fprintf(stderr,"\nY axis resolution exceeded; keeping old Y.\n");
-    }else{
-      p1->y = sy;
+      p1->y = scalespace_linear(p1->range_bracket[1],
+				p1->range_bracket[0],
+				h,
+				plot->scalespacing,
+				p1->range_scale->legend);
     }
 
     if(p1->data_size != dw){
