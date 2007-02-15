@@ -344,16 +344,17 @@ static int resample_render_y_plane(sushiv_panel_t *p, int plot_serialno, int map
     for(i=0;i<ph;i++){
 
       int yend=ynumB[i];
+
+      gdk_threads_enter ();  
+      if(plot_serialno != p->private->plot_serialno ||
+	 map_serialno != p->private->map_serialno)
+	goto abort;
+      spinner_set_busy(p->private->spinner);
+      gdk_threads_leave();
       
       /* by panel col */
       for(j=0;j<pw;j++){
 	
-	gdk_threads_enter ();  
-	if(plot_serialno != p->private->plot_serialno ||
-	   map_serialno != p->private->map_serialno)
-	  goto abort;
-	gdk_threads_leave();
-
 	lcolor out = (lcolor){0,0,0,0}; 
 	int ydel = ydelA[i];
 	int y = ynumA[i];
@@ -414,13 +415,15 @@ static int resample_render_y_plane(sushiv_panel_t *p, int plot_serialno, int map
     /* non-resampling render */
     for(i=0;i<ph;i++){
       int *dline = data+i*dw;
+
+      gdk_threads_enter ();  
+      if(plot_serialno != p->private->plot_serialno ||
+	 map_serialno != p->private->map_serialno)
+	goto abort;
+      spinner_set_busy(p->private->spinner);
+      gdk_threads_leave();
       
       for(j=0;j<pw;j++){
-	gdk_threads_enter ();  
-	if(plot_serialno != p->private->plot_serialno ||
-	   map_serialno != p->private->map_serialno)
-	  goto abort;
-	gdk_threads_leave();
 
 	lcolor out = (lcolor){0,0,0,0};
 	l_mapping_calc(map->mapfunc, ol_low, ol_range, dline[j], ol_alpha, 255, &out);
@@ -701,7 +704,8 @@ static int v_swizzle(int y, int height){
 }
 
 // assumes data is locked
-static void fast_scale_x(int *data, 
+static void fast_scale_x(Spinner *sp,
+			 int *data, 
 			 int w,
 			 int h,
 			 scalespace new,
@@ -737,6 +741,7 @@ static void fast_scale_x(int *data,
 
   for(y=0;y<h;y++){
     int *data_line = data+y*w;
+    spinner_set_busy(sp);
     for(x=0;x<w;x++){
       if(mapbase[x]<0 || mapbase[x]>=(w-1)){
 	work[x]=-1;
@@ -756,7 +761,8 @@ static void fast_scale_x(int *data,
   }   
 }
 
-static void fast_scale_y(int *data, 
+static void fast_scale_y(Spinner *sp,
+			 int *data, 
 			 int w,
 			 int h,
 			 scalespace new,
@@ -794,6 +800,7 @@ static void fast_scale_y(int *data,
   for(x=0;x<w;x++){
     int *data_column = data+x;
     int stride = w;
+    spinner_set_busy(sp);
     for(y=0;y<h;y++){
       if(mapbase[y]<0 || mapbase[y]>=(h-1)){
 	work[y]=-1;
@@ -816,7 +823,8 @@ static void fast_scale_y(int *data,
   }   
 }
 
-static void fast_scale(int *newdata, 
+static void fast_scale(Spinner *sp, 
+		       int *newdata, 
 		       scalespace xnew,
 		       scalespace ynew,
 		       int *olddata,
@@ -837,33 +845,33 @@ static void fast_scale(int *newdata,
 	int *old_line = olddata+y*old_w;
 	memcpy(new_line,old_line,old_w*(sizeof*new_line));
       }
-      fast_scale_x(newdata,new_w,new_h,xnew,xold);
-      fast_scale_y(newdata,new_w,new_h,ynew,yold);
+      fast_scale_x(sp,newdata,new_w,new_h,xnew,xold);
+      fast_scale_y(sp,newdata,new_w,new_h,ynew,yold);
     }else{
       // scale y in old pane, copy to new, scale x 
-      fast_scale_y(olddata,old_w,old_h,ynew,yold);
+      fast_scale_y(sp,olddata,old_w,old_h,ynew,yold);
       for(y=0;y<new_h;y++){
 	int *new_line = newdata+y*new_w;
 	int *old_line = olddata+y*old_w;
 	memcpy(new_line,old_line,old_w*(sizeof*new_line));
       }
-      fast_scale_x(newdata,new_w,new_h,xnew,xold);
+      fast_scale_x(sp,newdata,new_w,new_h,xnew,xold);
     }
   }else{
     if(new_h > old_h){
       // scale x in old pane, o=copy to new, scale y
-      fast_scale_x(olddata,old_w,old_h,xnew,xold);
+      fast_scale_x(sp,olddata,old_w,old_h,xnew,xold);
       for(y=0;y<old_h;y++){
 	int *new_line = newdata+y*new_w;
 	int *old_line = olddata+y*old_w;
 	memcpy(new_line,old_line,new_w*(sizeof*new_line));
       }
-      fast_scale_y(newdata,new_w,new_h,ynew,yold);
+      fast_scale_y(sp,newdata,new_w,new_h,ynew,yold);
     }else{
       // scale in old pane, copy to new 
       // also the case where newdata == olddata and the size is unchanged
-      fast_scale_x(olddata,old_w,old_h,xnew,xold);
-      fast_scale_y(olddata,old_w,old_h,ynew,yold);
+      fast_scale_x(sp,olddata,old_w,old_h,xnew,xold);
+      fast_scale_y(sp,olddata,old_w,old_h,ynew,yold);
       if(olddata != newdata){
 	for(y=0;y<new_h;y++){
 	  int *new_line = newdata+y*new_w;
@@ -1151,7 +1159,7 @@ static int _sushiv_panel2d_compute(sushiv_panel_t *p,
 	
 	// zoom scale data in map planes as placeholder for render
 	if(oldmap){
-	  fast_scale(newmap, sx_v, sy_v,
+	  fast_scale(p->private->spinner,newmap, sx_v, sy_v,
 		     oldmap,old_xv, old_yv);
 	  free(oldmap);
 	}
@@ -1460,20 +1468,29 @@ static void _sushiv_realize_panel2d(sushiv_panel_t *p){
   g_signal_connect_swapped (G_OBJECT (p->private->toplevel), "delete-event",
 			    G_CALLBACK (_sushiv_clean_exit), (void *)SIGINT);
  
-  p2->top_table = gtk_table_new(2 + p->objectives,5,0);
+  p2->top_table = gtk_table_new(3 + p->objectives,5,0);
   gtk_container_add (GTK_CONTAINER (p->private->toplevel), p2->top_table);
-  gtk_container_set_border_width (GTK_CONTAINER (p->private->toplevel), 5);
-  
+  gtk_container_set_border_width (GTK_CONTAINER (p->private->toplevel), 1);
+
+  /* spinner, top bar */
+  {
+    GtkWidget *hbox = gtk_hbox_new(0,0);
+    gtk_table_attach(GTK_TABLE(p2->top_table),hbox,0,5,0,1,GTK_EXPAND|GTK_FILL,0,4,0);
+    gtk_box_pack_end(GTK_BOX(hbox),GTK_WIDGET(p->private->spinner),0,0,0);
+  }
+
+  /* dims */
   p2->dim_table = gtk_table_new(p->dimensions,4,0);
-  gtk_table_attach(GTK_TABLE(p2->top_table),p2->dim_table,0,5,1+p->objectives,2+p->objectives,
-		   GTK_EXPAND|GTK_FILL,0,0,5);
+  gtk_table_attach(GTK_TABLE(p2->top_table),p2->dim_table,0,5,2+p->objectives,3+p->objectives,
+		   GTK_EXPAND|GTK_FILL,0,4,5);
   
   /* graph */
   p->private->graph = GTK_WIDGET(plot_new(recompute_callback_2d,p,
 				  (void *)(void *)_sushiv_panel2d_crosshairs_callback,p,
 				  box_callback,p,0)); 
-  gtk_table_attach(GTK_TABLE(p2->top_table),p->private->graph,0,5,0,1,
-		   GTK_EXPAND|GTK_FILL,GTK_EXPAND|GTK_FILL,0,5);
+  gtk_table_attach(GTK_TABLE(p2->top_table),p->private->graph,0,5,1,2,
+		   GTK_EXPAND|GTK_FILL,GTK_EXPAND|GTK_FILL,4,1);
+  gtk_table_set_row_spacing(GTK_TABLE(p2->top_table),1,4);
 
   /* objective sliders */
   p2->range_scales = calloc(p->objectives,sizeof(*p2->range_scales));
@@ -1489,7 +1506,7 @@ static void _sushiv_realize_panel2d(sushiv_panel_t *p){
     /* label */
     GtkWidget *label = gtk_label_new(o->name);
     gtk_misc_set_alignment(GTK_MISC(label),1.,.5);
-    gtk_table_attach(GTK_TABLE(p2->top_table),label,0,1,i+1,i+2,
+    gtk_table_attach(GTK_TABLE(p2->top_table),label,0,1,i+2,i+3,
 		     GTK_FILL,0,10,0);
     
     /* mapping pulldown */
@@ -1501,8 +1518,8 @@ static void _sushiv_realize_panel2d(sushiv_panel_t *p){
       gtk_combo_box_set_active(GTK_COMBO_BOX(menu),0);
       g_signal_connect (G_OBJECT (menu), "changed",
 			G_CALLBACK (mapchange_callback_2d), p->objective_list+i);
-      gtk_table_attach(GTK_TABLE(p2->top_table),menu,4,5,i+1,i+2,
-		       GTK_SHRINK,GTK_SHRINK,5,0);
+      gtk_table_attach(GTK_TABLE(p2->top_table),menu,4,5,i+2,i+3,
+		       GTK_SHRINK,GTK_SHRINK,4,0);
       p2->range_pulldowns[i] = menu;
     }
 
@@ -1511,11 +1528,11 @@ static void _sushiv_realize_panel2d(sushiv_panel_t *p){
     sl[1] = slice_new(map_callback_2d,p->objective_list+i);
     sl[2] = slice_new(map_callback_2d,p->objective_list+i);
 
-    gtk_table_attach(GTK_TABLE(p2->top_table),sl[0],1,2,i+1,i+2,
+    gtk_table_attach(GTK_TABLE(p2->top_table),sl[0],1,2,i+2,i+3,
 		     GTK_EXPAND|GTK_FILL,0,0,0);
-    gtk_table_attach(GTK_TABLE(p2->top_table),sl[1],2,3,i+1,i+2,
+    gtk_table_attach(GTK_TABLE(p2->top_table),sl[1],2,3,i+2,i+3,
 		     GTK_EXPAND|GTK_FILL,0,0,0);
-    gtk_table_attach(GTK_TABLE(p2->top_table),sl[2],3,4,i+1,i+2,
+    gtk_table_attach(GTK_TABLE(p2->top_table),sl[2],3,4,i+2,i+3,
 		     GTK_EXPAND|GTK_FILL,0,0,0);
     p2->range_scales[i] = slider_new((Slice **)sl,3,o->scale->label_list,o->scale->val_list,
 				    o->scale->vals,SLIDER_FLAG_INDEPENDENT_MIDDLE);
@@ -1606,6 +1623,7 @@ static void _sushiv_realize_panel2d(sushiv_panel_t *p){
 
   gtk_widget_realize(p->private->toplevel);
   gtk_widget_realize(p->private->graph);
+  gtk_widget_realize(GTK_WIDGET(p->private->spinner));
   gtk_widget_show_all(p->private->toplevel);
   update_xy_availability(p); // yes, this was already done; however,
 			     // gtk clobbered the event setup on the

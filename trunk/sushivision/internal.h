@@ -25,6 +25,7 @@
 #include "sushivision.h"
 #include "mapping.h"
 #include "slice.h"
+#include "spinner.h"
 #include "slider.h"
 #include "scale.h"
 #include "gtksucks.h"
@@ -63,6 +64,7 @@ typedef union {
 struct sushiv_panel_internal {
   GtkWidget *toplevel;
   GtkWidget *graph;
+  Spinner *spinner;
   sushiv_dim_widget_t **dim_scales;
 
   int realized;
