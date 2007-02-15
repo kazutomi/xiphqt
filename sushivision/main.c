@@ -117,7 +117,7 @@ static void *worker_thread(void *dummy){
 	  if(p->private->realized && p->private->graph){
 
 	    if(p->private->map_active){
-	      plot_set_busy(PLOT(p->private->graph));
+	      spinner_set_busy(p->private->spinner);
 	      flag |= p->private->map_action(p); // may drop lock internally
 	      if(!p->private->map_active)
 		set_map_throttle_time(p);
@@ -125,20 +125,20 @@ static void *worker_thread(void *dummy){
 	    
 	    // pending legend work?
 	    if(p->private->legend_active){
-	      plot_set_busy(PLOT(p->private->graph));
+	      spinner_set_busy(p->private->spinner);
 	      flag |= p->private->legend_action(p); // may drop lock internally
 	    }
 	    
 	    // pending computation work?
 	    if(p->private->plot_active){
-	      plot_set_busy(PLOT(p->private->graph));
+	      spinner_set_busy(p->private->spinner);
 	      flag |= p->private->compute_action(p,&c[j][i]); // may drop lock internally
 	    }
 	    
 	    if(!p->private->plot_active &&
 	       !p->private->legend_active &&
 	       !p->private->map_active)
-	      plot_set_idle(PLOT(p->private->graph));
+	      spinner_set_idle(p->private->spinner);
 	  }
 	  gdk_threads_leave ();
 	}

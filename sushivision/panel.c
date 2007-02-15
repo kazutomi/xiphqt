@@ -179,6 +179,7 @@ int _sushiv_new_panel(sushiv_instance_t *s,
   p->flags = flags;
   p->sushi = s;
   p->private = calloc(1, sizeof(*p->private));
+  p->private->spinner = spinner_new();
 
   i=0;
   while(objectives && objectives[i]>=0)i++;

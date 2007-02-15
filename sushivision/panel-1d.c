@@ -1250,18 +1250,26 @@ void _sushiv_realize_panel1d(sushiv_panel_t *p){
   g_signal_connect_swapped (G_OBJECT (p->private->toplevel), "delete-event",
 			    G_CALLBACK (_sushiv_clean_exit), (void *)SIGINT);
  
-  p1->top_table = gtk_table_new(3,4,0);
+  p1->top_table = gtk_table_new(5,3,0);
 
   gtk_container_add (GTK_CONTAINER (p->private->toplevel), p1->top_table);
-  gtk_container_set_border_width (GTK_CONTAINER (p->private->toplevel), 5);
+  gtk_container_set_border_width (GTK_CONTAINER (p->private->toplevel), 1);
   
   p1->obj_table = gtk_table_new(p->objectives,5,0);
-  gtk_table_attach(GTK_TABLE(p1->top_table),p1->obj_table,0,4,2,3,
+  gtk_table_attach(GTK_TABLE(p1->top_table),p1->obj_table,0,3,3,4,
 		   GTK_EXPAND|GTK_FILL,0,0,5);
 
+  /* spinner, top bar */
+  {
+    GtkWidget *hbox = gtk_hbox_new(0,0);
+    gtk_table_attach(GTK_TABLE(p1->top_table),hbox,0,4,0,1,GTK_EXPAND|GTK_FILL,0,4,0);
+    gtk_box_pack_end(GTK_BOX(hbox),GTK_WIDGET(p->private->spinner),0,0,0);
+  }
+
+  /* dim table */
   p1->dim_table = gtk_table_new(p->dimensions,3,0);
-  gtk_table_attach(GTK_TABLE(p1->top_table),p1->dim_table,0,4,3,4,
-		   GTK_EXPAND|GTK_FILL,0,0,5);
+  gtk_table_attach(GTK_TABLE(p1->top_table),p1->dim_table,0,4,4,5,
+		   GTK_EXPAND|GTK_FILL,0,4,4);
   
   /* graph */
   {
@@ -1273,8 +1281,11 @@ void _sushiv_realize_panel1d(sushiv_panel_t *p){
     p->private->graph = GTK_WIDGET(plot_new(recompute_callback_1d,p,
 					    (void *)(void *)crosshair_callback,p,
 					    box_callback,p,flags)); 
-    gtk_table_attach(GTK_TABLE(p1->top_table),p->private->graph,0,4,0,1,
-		     GTK_EXPAND|GTK_FILL,GTK_EXPAND|GTK_FILL,0,5);
+    gtk_table_attach(GTK_TABLE(p1->top_table),p->private->graph,0,4,1,2,
+		     GTK_EXPAND|GTK_FILL,GTK_EXPAND|GTK_FILL,4,1);
+    gtk_table_set_row_spacing(GTK_TABLE(p1->top_table),1,4);
+    gtk_table_set_col_spacing(GTK_TABLE(p1->top_table),2,4);
+
   }
 
   /* range slider */
@@ -1288,7 +1299,7 @@ void _sushiv_realize_panel1d(sushiv_panel_t *p){
     {
       GtkWidget *label = gtk_label_new("range");
       gtk_misc_set_alignment(GTK_MISC(label),1.,.5);
-      gtk_table_attach(GTK_TABLE(p1->top_table),label,0,1,1,2,
+      gtk_table_attach(GTK_TABLE(p1->top_table),label,0,1,2,3,
 		       GTK_FILL,0,10,0);
     }
 
@@ -1296,9 +1307,9 @@ void _sushiv_realize_panel1d(sushiv_panel_t *p){
     sl[0] = slice_new(map_callback_1d,p);
     sl[1] = slice_new(map_callback_1d,p);
 
-    gtk_table_attach(GTK_TABLE(p1->top_table),sl[0],1,2,1,2,
+    gtk_table_attach(GTK_TABLE(p1->top_table),sl[0],1,2,2,3,
 		     GTK_EXPAND|GTK_FILL,0,0,0);
-    gtk_table_attach(GTK_TABLE(p1->top_table),sl[1],2,3,1,2,
+    gtk_table_attach(GTK_TABLE(p1->top_table),sl[1],2,3,2,3,
 		     GTK_EXPAND|GTK_FILL,0,0,0);
     p1->range_slider = slider_new((Slice **)sl,2,
 				  p1->range_scale->label_list,
@@ -1453,6 +1464,7 @@ void _sushiv_realize_panel1d(sushiv_panel_t *p){
 
   gtk_widget_realize(p->private->toplevel);
   gtk_widget_realize(p->private->graph);
+  gtk_widget_realize(GTK_WIDGET(p->private->spinner));
   gtk_widget_show_all(p->private->toplevel);
 
   _sushiv_panel_undo_resume(p);
