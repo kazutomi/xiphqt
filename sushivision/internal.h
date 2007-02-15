@@ -86,6 +86,9 @@ struct sushiv_panel_internal {
 
   time_t last_map_throttle;
 
+  int oversample_n;
+  int oversample_d;
+
   // function bundles 
   void (*realize)(sushiv_panel_t *p);
   int (*map_action)(sushiv_panel_t *p);
