@@ -142,6 +142,21 @@ void _sushiv_panel_clean_legend(sushiv_panel_t *p){
   gdk_threads_leave ();
 }
 
+extern int sushiv_panel_oversample(sushiv_instance_t *s,
+				   int number,
+				   int numer,
+				   int denom){
+
+  sushiv_panel_t *p = s->panel_list[number];
+  sushiv_panel_internal_t *pi = p->private;
+
+  if(denom == 0)return -EINVAL;
+
+  pi->oversample_n = numer;
+  pi->oversample_d = denom;
+  return 0;
+}
+
 int _sushiv_new_panel(sushiv_instance_t *s,
 		      int number,
 		      const char *name, 
@@ -180,6 +195,8 @@ int _sushiv_new_panel(sushiv_instance_t *s,
   p->sushi = s;
   p->private = calloc(1, sizeof(*p->private));
   p->private->spinner = spinner_new();
+  p->private->oversample_n = 1;
+  p->private->oversample_d = 1;
 
   i=0;
   while(objectives && objectives[i]>=0)i++;

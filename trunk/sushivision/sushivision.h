@@ -247,6 +247,10 @@ extern int sushiv_new_panel_xy(sushiv_instance_t *s,
 			       int *dimensions,	
 			       unsigned flags);
 
+extern int sushiv_panel_oversample(sushiv_instance_t *s,
+				   int number,
+				   int numer,
+				   int denom);
 
 extern int sushiv_submain(int argc, char *argv[]);
 extern int sushiv_atexit(void);
