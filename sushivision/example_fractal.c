@@ -54,12 +54,12 @@ int sushiv_submain(int argc, char *argv[]){
 
   s=sushiv_new_instance();
 
-  sushiv_new_dimension_discrete(s,0,"Re(c)",
+  sushiv_new_dimension(s,0,"Re(c)",
 		       5,(double []){-2.25,-0.75,0,0.25,0.75},
-				NULL,1,1000,0);
-  sushiv_new_dimension_discrete(s,1,"Im(c)",
+		       NULL,0);
+  sushiv_new_dimension(s,1,"Im(c)",
 		       5,(double []){-2,-1,0,1,2},
-				NULL,1,1000,0);
+		       NULL,0);
 
   sushiv_new_dimension(s,2,"Re(z0)",
 		       5,(double []){-2.25,-1,0,1,2.25},
