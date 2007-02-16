@@ -34,7 +34,26 @@
 
 static GtkWidgetClass *parent_class = NULL;
 
-static void draw_scales_work(cairo_surface_t *s, scalespace xs, scalespace ys){
+// When sufficienty zoomed in that the demarks of the data scale are a
+// coarser mesh than the resolution of the data scale (eg, when the
+// data scale is undersampled or discrete), we want the demarks from
+// the data scale (plotted in terms of the panel scale).  In most
+// cases they will be the same, but not always.
+static double scale_demark(scalespace *panel, scalespace *data, int i, char *buffer){
+  if(abs(data->step_val*data->m) > abs(panel->step_val*panel->m)){
+    double x=scalespace_mark(data,i);
+    if(buffer) scalespace_label(data,i,buffer);
+    return scalespace_pixel(panel, scalespace_value(data, x));
+  }else{
+    if(buffer) scalespace_label(panel,i,buffer);
+    return scalespace_mark(panel,i);
+  }
+}
+
+static void draw_scales_work(cairo_surface_t *s, 
+			     scalespace xs, scalespace ys,
+			     scalespace xs_v, scalespace ys_v){
+
   int w = cairo_image_surface_get_width(s);
   int h = cairo_image_surface_get_height(s);
   cairo_t *c = cairo_create(s);
@@ -57,19 +76,19 @@ static void draw_scales_work(cairo_surface_t *s, scalespace xs, scalespace ys){
   cairo_set_source_rgba(c,.7,.7,1.,.3);
 
   i=0;
-  x=scalespace_mark(&xs,i++);
+  x = scale_demark(&xs, &xs_v, i++, NULL);
   while(x < w){
     cairo_move_to(c,x+.5,0);
     cairo_line_to(c,x+.5,h);
-    x=scalespace_mark(&xs,i++);
+    x = scale_demark(&xs, &xs_v, i++, NULL);
   }
 
   i=0;
-  y=scalespace_mark(&ys,i++);
+  y = scale_demark(&ys, &ys_v, i++, NULL);
   while(y < h){
     cairo_move_to(c,0,y+.5);
     cairo_line_to(c,w,y+.5);
-    y=scalespace_mark(&ys,i++);
+    y = scale_demark(&ys, &ys_v, i++, NULL);
   }
   cairo_stroke(c);
   cairo_restore(c);
@@ -82,8 +101,7 @@ static void draw_scales_work(cairo_surface_t *s, scalespace xs, scalespace ys){
   cairo_set_line_width(c,2);
 
   i=0;
-  y=scalespace_mark(&ys,i);
-  scalespace_label(&ys,i++,buffer);
+  y = scale_demark(&ys, &ys_v, i++, buffer);
 
   while(y < h){
     cairo_text_extents_t extents;
@@ -105,8 +123,7 @@ static void draw_scales_work(cairo_surface_t *s, scalespace xs, scalespace ys){
       cairo_show_text (c, buffer);
     }
 
-    y=scalespace_mark(&ys,i);
-    scalespace_label(&ys,i++,buffer);
+    y = scale_demark(&ys, &ys_v, i++, buffer);
   }
 
   // set sideways text
@@ -130,8 +147,7 @@ static void draw_scales_work(cairo_surface_t *s, scalespace xs, scalespace ys){
   }
 
   i=0;
-  x=scalespace_mark(&xs,i);
-  scalespace_label(&xs,i++,buffer);
+  x = scale_demark(&xs, &xs_v, i++, buffer);
   
   while(x < w){
     cairo_text_extents_t extents;
@@ -151,8 +167,7 @@ static void draw_scales_work(cairo_surface_t *s, scalespace xs, scalespace ys){
       cairo_show_text (c, buffer);
     }
 
-    x=scalespace_mark(&xs,i);
-    scalespace_label(&xs,i++,buffer);
+    x = scale_demark(&xs, &xs_v, i++, buffer);
   }
 
   cairo_restore(c);
@@ -252,12 +267,14 @@ void plot_draw_scales(Plot *p){
   gdk_threads_enter();
   scalespace x = p->x;
   scalespace y = p->y;
+  scalespace xv = p->x_v;
+  scalespace yv = p->y_v;
   int w = GTK_WIDGET(p)->allocation.width;
   int h = GTK_WIDGET(p)->allocation.height;
   cairo_surface_t *s = cairo_image_surface_create(CAIRO_FORMAT_ARGB32,w,h);
   gdk_threads_leave();
   
-  draw_scales_work(s,x,y);
+  draw_scales_work(s,x,y,xv,yv);
   draw_legend_work(p,s);
   
   gdk_threads_enter();

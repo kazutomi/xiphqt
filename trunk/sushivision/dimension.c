@@ -134,7 +134,7 @@ int _sushiv_dimension_scales(sushiv_dimension_t *d,
 				d->private->discrete_denominator,
 				(double)hi_i * d->private->discrete_numerator / 
 				d->private->discrete_denominator,
-				data_w, spacing, legend);
+				data_w, 1, legend);
       
       if(d->flags & SUSHIV_DIM_MONOTONIC)
 	*iter = scalespace_linear(lo_i - floor_i, hi_i - floor_i,
