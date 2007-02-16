@@ -235,18 +235,18 @@ void spinner_set_busy(Spinner *p){
   
   if(!p->busy){
     p->busy=1;
-    p->begin_s = now.tv_sec;
+    p->last = now;
     spinner_expose(GTK_WIDGET(p),NULL); // do it now
   }else{
     
-    test = (now.tv_sec - p->begin_s)*1000 + now.tv_usec/1000;
-    if(p->last_busy_throttle + 100 < test) {
+    test = (now.tv_sec - p->last.tv_sec)*1000 + (now.tv_usec - p->last.tv_usec)/1000;
+    if(test>100) {
 
       p->busy_count++;
       
       if(p->busy_count>7)
 	p->busy_count=0;
-      p->last_busy_throttle = test;
+      p->last = now;
       spinner_expose(GTK_WIDGET(p),NULL); // do it now
     }
   }
