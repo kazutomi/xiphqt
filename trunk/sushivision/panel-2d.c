@@ -714,9 +714,9 @@ static void fast_scale_x(Spinner *sp,
   int work[w];
   int mapbase[w];
   float mapdel[w];
-
   double old_w = old.pixels;
   double new_w = new.pixels;
+
   double old_lo = scalespace_value(&old,0);
   double old_hi = scalespace_value(&old,old_w);
   double new_lo = scalespace_value(&new,0);
@@ -762,26 +762,29 @@ static void fast_scale_x(Spinner *sp,
 }
 
 static void fast_scale_y(Spinner *sp,
-			 int *data, 
-			 int w,
-			 int h,
+			 int *olddata, 
+			 int *newdata, 
+			 int oldw,
+			 int neww,
 			 scalespace new,
 			 scalespace old){
   int x,y;
-  int work[h];
-  int mapbase[h];
-  float mapdel[h];
+  int w = (oldw<neww?oldw:neww);
 
-  double old_h = old.pixels;
-  double new_h = new.pixels;
+  int old_h = old.pixels;
+  int new_h = new.pixels;
+
+  int mapbase[new_h];
+  float mapdel[new_h];
+
   double old_lo = scalespace_value(&old,0);
-  double old_hi = scalespace_value(&old,old_h);
+  double old_hi = scalespace_value(&old,(double)old_h);
   double new_lo = scalespace_value(&new,0);
-  double new_hi = scalespace_value(&new,new_h);
+  double new_hi = scalespace_value(&new,(double)new_h);
   double newscale = (new_hi-new_lo)/new_h;
   double oldscale = old_h/(old_hi-old_lo);
   
-  for(y=0;y<h;y++){
+  for(y=0;y<new_h;y++){
     double yval = (y)*newscale+new_lo;
     double map = ((yval-old_lo)*oldscale);
     int base = (int)floor(map);
@@ -796,31 +799,30 @@ static void fast_scale_y(Spinner *sp,
       mapdel[y]=del;
     }
   }
+
   
-  for(x=0;x<w;x++){
-    int *data_column = data+x;
-    int stride = w;
+  for(y=0;y<new_h;y++){
+    int base = mapbase[y];
+    int *new_column = &newdata[y*neww];
     spinner_set_busy(sp);
-    for(y=0;y<h;y++){
-      if(mapbase[y]<0 || mapbase[y]>=(h-1)){
-	work[y]=-1;
-      }else{
-	int base = mapbase[y]*stride;
-	float del = mapdel[y];
-	int A = data_column[base];
-	int B = data_column[base+stride];
+
+    if(base<0 || base>=(old_h-1)){
+      for(x=0;x<w;x++)
+	new_column[x] = -1;
+    }else{
+      float del = mapdel[y];
+      int *old_column = &olddata[base*oldw];
+
+      for(x=0;x<w;x++){
+	int A = old_column[x];
+	int B = old_column[x+oldw];
 	if(A<0 || B<0)
-	  work[y]=-1;
+	  new_column[x]=-1;
 	else
-	  work[y]= A + rint((B-A)*del);
-	
+	  new_column[x]= A + rint((B-A)*del);
       }
     }
-    for(y=0;y<h;y++){
-      *data_column = work[y];
-      data_column+=stride;
-    }
-  }   
+  }
 }
 
 static void fast_scale(Spinner *sp, 
@@ -830,7 +832,6 @@ static void fast_scale(Spinner *sp,
 		       int *olddata,
 		       scalespace xold,
 		       scalespace yold){
-  int y;
   
   int new_w = xnew.pixels;
   int new_h = ynew.pixels;
@@ -838,48 +839,11 @@ static void fast_scale(Spinner *sp,
   int old_h = yold.pixels;
 
   if(new_w > old_w){
-    if(new_h > old_h){
-      // copy image to new, scale there
-      for(y=0;y<old_h;y++){
-	int *new_line = newdata+y*new_w;
-	int *old_line = olddata+y*old_w;
-	memcpy(new_line,old_line,old_w*(sizeof*new_line));
-      }
-      fast_scale_x(sp,newdata,new_w,new_h,xnew,xold);
-      fast_scale_y(sp,newdata,new_w,new_h,ynew,yold);
-    }else{
-      // scale y in old pane, copy to new, scale x 
-      fast_scale_y(sp,olddata,old_w,old_h,ynew,yold);
-      for(y=0;y<new_h;y++){
-	int *new_line = newdata+y*new_w;
-	int *old_line = olddata+y*old_w;
-	memcpy(new_line,old_line,old_w*(sizeof*new_line));
-      }
-      fast_scale_x(sp,newdata,new_w,new_h,xnew,xold);
-    }
+    fast_scale_y(sp,olddata,newdata,old_w,new_w,ynew,yold);
+    fast_scale_x(sp,newdata,new_w,new_h,xnew,xold);
   }else{
-    if(new_h > old_h){
-      // scale x in old pane, o=copy to new, scale y
-      fast_scale_x(sp,olddata,old_w,old_h,xnew,xold);
-      for(y=0;y<old_h;y++){
-	int *new_line = newdata+y*new_w;
-	int *old_line = olddata+y*old_w;
-	memcpy(new_line,old_line,new_w*(sizeof*new_line));
-      }
-      fast_scale_y(sp,newdata,new_w,new_h,ynew,yold);
-    }else{
-      // scale in old pane, copy to new 
-      // also the case where newdata == olddata and the size is unchanged
-      fast_scale_x(sp,olddata,old_w,old_h,xnew,xold);
-      fast_scale_y(sp,olddata,old_w,old_h,ynew,yold);
-      if(olddata != newdata){
-	for(y=0;y<new_h;y++){
-	  int *new_line = newdata+y*new_w;
-	  int *old_line = olddata+y*old_w;
-	  memcpy(new_line,old_line,new_w*(sizeof*new_line));
-	}
-      }
-    }
+    fast_scale_x(sp,olddata,old_w,old_h,xnew,xold);
+    fast_scale_y(sp,olddata,newdata,old_w,new_w,ynew,yold);
   }
 }
 
