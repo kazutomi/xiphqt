@@ -713,7 +713,7 @@ static void fast_scale_x(Spinner *sp,
   int x,y;
   int work[w];
   int mapbase[w];
-  float mapdel[w];
+  int mapdel[w];
   double old_w = old.pixels;
   double new_w = new.pixels;
 
@@ -727,12 +727,12 @@ static void fast_scale_x(Spinner *sp,
     double xval = (x)*newscale+new_lo;
     double map = ((xval-old_lo)*oldscale);
     int base = (int)floor(map);
-    double del = map - floor(map);
+    int del = rint((map - floor(map))*128.f);
     /* hack to overwhelm roundoff error; this is inside a purely
        temporary cosmetic approximation anyway*/
-    if(base>0 && del < .0001){
+    if(base>0 && del==0){
       mapbase[x]=base-1;
-      mapdel[x]=1.f;
+      mapdel[x]=128;
     }else{
       mapbase[x]=base;
       mapdel[x]=del;
@@ -747,13 +747,12 @@ static void fast_scale_x(Spinner *sp,
 	work[x]=-1;
       }else{
 	int base = mapbase[x];
-	float del = mapdel[x];
 	int A = data_line[base];
 	int B = data_line[base+1];
 	if(A<0 || B<0)
 	  work[x]=-1;
 	else
-	  work[x]= A + rint((B - A)*del);
+	  work[x]= A + (((B - A)*mapdel[x])>>7);
 	
       }
     }
@@ -775,7 +774,7 @@ static void fast_scale_y(Spinner *sp,
   int new_h = new.pixels;
 
   int mapbase[new_h];
-  float mapdel[new_h];
+  int mapdel[new_h];
 
   double old_lo = scalespace_value(&old,0);
   double old_hi = scalespace_value(&old,(double)old_h);
@@ -788,12 +787,12 @@ static void fast_scale_y(Spinner *sp,
     double yval = (y)*newscale+new_lo;
     double map = ((yval-old_lo)*oldscale);
     int base = (int)floor(map);
-    double del = map - floor(map);
+    int del = rint((map - floor(map))*127.);
     /* hack to overwhelm roundoff error; this is inside a purely
-       temporary cosmetic approximation anyway*/
-    if(base>0 && del < .0001){
+       temporary cosmetic approximation anyway */
+    if(base>0 && del==0){
       mapbase[y]=base-1;
-      mapdel[y]=1.f;
+      mapdel[y]=128;
     }else{
       mapbase[y]=base;
       mapdel[y]=del;
@@ -810,7 +809,7 @@ static void fast_scale_y(Spinner *sp,
       for(x=0;x<w;x++)
 	new_column[x] = -1;
     }else{
-      float del = mapdel[y];
+      int del = mapdel[y];
       int *old_column = &olddata[base*oldw];
 
       for(x=0;x<w;x++){
@@ -819,7 +818,7 @@ static void fast_scale_y(Spinner *sp,
 	if(A<0 || B<0)
 	  new_column[x]=-1;
 	else
-	  new_column[x]= A + rint((B-A)*del);
+	  new_column[x]= A + (((B-A)*del)>>7);
       }
     }
   }
@@ -918,7 +917,6 @@ static void dimchange_callback_2d(GtkWidget *button,gpointer in){
     update_xy_availability(p);
 
     clear_pane(p);
-    _sushiv_panel2d_remap(p); // do it now, don't queue
     _mark_recompute_2d(p);
     update_crosshairs(p);
 
