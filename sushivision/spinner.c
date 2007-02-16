@@ -227,19 +227,23 @@ Spinner *spinner_new (){
 
 void spinner_set_busy(Spinner *p){
   struct timeval now;
-  long test;
+  int test;
 
   if(!p)return;
+
+  gettimeofday(&now,NULL);
   
   if(!p->busy){
     p->busy=1;
+    p->begin_s = now.tv_sec;
     spinner_expose(GTK_WIDGET(p),NULL); // do it now
   }else{
-    gettimeofday(&now,NULL);
     
-    test = now.tv_sec*1000 + now.tv_usec/1000;
+    test = (now.tv_sec - p->begin_s)*1000 + now.tv_usec/1000;
     if(p->last_busy_throttle + 100 < test) {
+
       p->busy_count++;
+      
       if(p->busy_count>7)
 	p->busy_count=0;
       p->last_busy_throttle = test;

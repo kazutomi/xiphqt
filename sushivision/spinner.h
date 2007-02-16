@@ -44,7 +44,8 @@ struct _Spinner{
 
   int busy;
   int busy_count;
-  time_t last_busy_throttle;
+  int last_busy_throttle;
+  time_t begin_s;
 };
 
 struct _SpinnerClass{
