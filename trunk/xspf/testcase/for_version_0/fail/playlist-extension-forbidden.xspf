@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<playlist version="0" xmlns="http://xspf.org/ns/0/">
+	<extension application="http://localhost/valid/url/">
+		<sometag />
+	</extension>
+	<trackList />
+</playlist>
