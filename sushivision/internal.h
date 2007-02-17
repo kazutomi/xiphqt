@@ -57,9 +57,9 @@ typedef struct sushiv_panel_undo {
 } sushiv_panel_undo_t;
 
 typedef union {
-  _sushiv_compute_cache_1d p1;
-  _sushiv_compute_cache_2d p2;
-} _sushiv_compute_cache;
+  _sushiv_bythread_cache_1d p1;
+  _sushiv_bythread_cache_2d p2;
+} _sushiv_bythread_cache;
 
 struct sushiv_panel_internal {
   GtkWidget *toplevel;
@@ -91,9 +91,9 @@ struct sushiv_panel_internal {
 
   // function bundles 
   void (*realize)(sushiv_panel_t *p);
-  int (*map_action)(sushiv_panel_t *p);
+  int (*map_action)(sushiv_panel_t *p, _sushiv_bythread_cache *c);
   int (*legend_action)(sushiv_panel_t *p);
-  int (*compute_action)(sushiv_panel_t *p, _sushiv_compute_cache *c);
+  int (*compute_action)(sushiv_panel_t *p, _sushiv_bythread_cache *c);
   void (*request_compute)(sushiv_panel_t *p);
   void (*crosshair_action)(sushiv_panel_t *p);
 

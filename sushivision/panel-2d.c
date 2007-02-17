@@ -44,7 +44,7 @@ static void compute_one_data_line_2d(sushiv_panel_t *p,
 				     double x_min, 
 				     double x_max, 
 				     double *dim_vals, 
-				     _sushiv_compute_cache_2d *c){
+				     _sushiv_bythread_cache_2d *c){
 
   sushiv_panel2d_t *p2 = p->subtype->p2;
   int i,j;
@@ -280,6 +280,57 @@ static float resample_helpers_init(scalespace *to, scalespace *from,
   return (float)xymul/total;
 }
 
+/* x resample helpers are put in the per-thread cache because locking it would
+   be relatively expensive. */
+// call while locked
+static void resample_helpers_manage_x(sushiv_panel_t *p, _sushiv_bythread_cache_2d *c){
+  sushiv_panel2d_t *p2 = p->subtype->p2;
+  if(p->private->plot_serialno != c->serialno){
+    int pw = p2->x.pixels;
+    c->serialno = p->private->plot_serialno;
+
+    if(c->xdelA)
+      free(c->xdelA);
+    if(c->xdelB)
+      free(c->xdelB);
+    if(c->xnumA)
+      free(c->xnumA);
+    if(c->xnumB)
+      free(c->xnumB);
+    
+    c->xdelA = calloc(pw,sizeof(*c->xdelA));
+    c->xdelB = calloc(pw,sizeof(*c->xdelB));
+    c->xnumA = calloc(pw,sizeof(*c->xnumA));
+    c->xnumB = calloc(pw,sizeof(*c->xnumB));
+    c->xscalemul = resample_helpers_init(&p2->x, &p2->x_v, c->xdelA, c->xdelB, c->xnumA, c->xnumB, 17);
+  }
+}
+
+/* y resample is in the panel struct as per-row access is already locked */
+// call while locked
+static void resample_helpers_manage_y(sushiv_panel_t *p){
+  sushiv_panel2d_t *p2 = p->subtype->p2;
+  if(p->private->plot_serialno != p2->resample_serialno){
+    int ph = p2->y.pixels;
+    p2->resample_serialno = p->private->plot_serialno;
+
+    if(p2->ydelA)
+      free(p2->ydelA);
+    if(p2->ydelB)
+      free(p2->ydelB);
+    if(p2->ynumA)
+      free(p2->ynumA);
+    if(p2->ynumB)
+      free(p2->ynumB);
+    
+    p2->ydelA = calloc(ph,sizeof(*p2->ydelA));
+    p2->ydelB = calloc(ph,sizeof(*p2->ydelB));
+    p2->ynumA = calloc(ph,sizeof(*p2->ynumA));
+    p2->ynumB = calloc(ph,sizeof(*p2->ynumB));
+    p2->yscalemul = resample_helpers_init(&p2->y, &p2->y_v, p2->ydelA, p2->ydelB, p2->ynumA, p2->ynumB, 15);
+  }
+}
+
 static inline void l_mapping_calc( void (*m)(int,int, lcolor*), 
 				   int low,
 				   float range,
@@ -297,67 +348,73 @@ static inline void l_mapping_calc( void (*m)(int,int, lcolor*),
 
 /* the data rectangle is data width/height mapped deltas.  we render
    and subsample at the same time. */
-/* enter with no locks; only data is not replicated local storage. */
-static int resample_render_y_plane(sushiv_panel_t *p, int plot_serialno, int map_serialno,
+/* enter unlocked */
+static int resample_render_y_plane(sushiv_panel_t *p, _sushiv_bythread_cache_2d *c,
+				   int plot_serialno, int map_serialno,
 				   mapping *map, float obj_alpha,
-				   ucolor *panel, scalespace panelx, scalespace panely,
-				   int *in_data, scalespace datax, scalespace datay){
-  int pw = panelx.pixels;
-  int dw = datax.pixels;
-  int ph = panely.pixels;
-  int dh = datay.pixels;
+				   ucolor *panel, int *in_data){
+  sushiv_panel2d_t *p2 = p->subtype->p2;
   int i,j;
   int ol_alpha = rint(obj_alpha * (256.f*256.f*256.f));
   int ol_low = rint(map->low * (256.f*256.f*256.f));
   float ol_range = map->i_range * (1.f/256.f);
-  if(!in_data)return 0;
+  if(!in_data || !c)return 1;
 
-  int *data = malloc(dw*dh*sizeof(*data));
+  int *data = NULL;
   
   gdk_threads_enter ();
   if(plot_serialno != p->private->plot_serialno) goto abort;
+
+  int pw = p2->x.pixels;
+  int dw = p2->x_v.pixels;
+  int ph = p2->y.pixels;
+  int dh = p2->y_v.pixels;
+  
+  data = malloc(dw*dh*sizeof(*data));
   memcpy(data,in_data,dw*dh*sizeof(*data));
-  gdk_threads_leave ();
 
   if(ph!=dh || pw!=dw){
     /* resampled row computation */
 
+    resample_helpers_manage_y(p);
+    resample_helpers_manage_x(p,c);
+
+    float idel = p2->yscalemul * c->xscalemul;
+
+    gdk_threads_leave ();
+
     /* by column */
-    unsigned char   xdelA[pw];
-    unsigned char   xdelB[pw];
-    int   xnumA[pw];
-    int   xnumB[pw];
-    float xsc = resample_helpers_init(&panelx, &datax, xdelA, xdelB, xnumA, xnumB, 17);
+    unsigned char *xdelA = c->xdelA;
+    unsigned char *xdelB = c->xdelB;
+    int *xnumA = c->xnumA;
+    int *xnumB = c->xnumB;
 
-    /* by row */
-    unsigned char   ydelA[ph];
-    unsigned char   ydelB[ph];
-    int   ynumA[ph];
-    int   ynumB[ph];
-    float ysc = resample_helpers_init(&panely, &datay, ydelA, ydelB, ynumA, ynumB, 15);
-
-    float idel = ysc * xsc;
     ucolor *mix = panel;
     int xy=0;
 
     /* by panel row */
     for(i=0;i<ph;i++){
 
-      int yend=ynumB[i];
-
       gdk_threads_enter ();  
       if(plot_serialno != p->private->plot_serialno ||
 	 map_serialno != p->private->map_serialno)
 	goto abort;
       spinner_set_busy(p->private->spinner);
+
+      int ydelA=p2->ydelA[i];
+      int ydelB=p2->ydelB[i];
+      
+      int ynumA=p2->ynumA[i];
+      int yend=p2->ynumB[i];
+      
       gdk_threads_leave();
       
       /* by panel col */
       for(j=0;j<pw;j++){
 	
 	lcolor out = (lcolor){0,0,0,0}; 
-	int ydel = ydelA[i];
-	int y = ynumA[i];
+	int ydel = ydelA;
+	int y = ynumA;
 
 	int xstart = y*dw + xnumA[j];
 	int xend = y*dw + xnumB[j];
@@ -392,7 +449,7 @@ static int resample_render_y_plane(sushiv_panel_t *p, int plot_serialno, int map
 	if(y<yend){
 	  dx = xstart += dw;
 	  xend += dw;
-	  ydel = ydelB[i];
+	  ydel = ydelB;
 	  l_mapping_calc(map->mapfunc, ol_low, ol_range, data[dx++], ol_alpha, ydel*xA, &out);
 	  
 	  for(; dx < xend-1; dx++)
@@ -413,6 +470,8 @@ static int resample_render_y_plane(sushiv_panel_t *p, int plot_serialno, int map
     }
   }else{
     /* non-resampling render */
+
+    gdk_threads_leave ();
     for(i=0;i<ph;i++){
       int *dline = data+i*dw;
 
@@ -447,20 +506,16 @@ static int resample_render_y_plane(sushiv_panel_t *p, int plot_serialno, int map
 }
 
 // enter with lock
-static int _sushiv_panel2d_remap(sushiv_panel_t *p){
+static int _sushiv_panel2d_remap(sushiv_panel_t *p, _sushiv_bythread_cache_2d *thread_cache){
   sushiv_panel2d_t *p2 = p->subtype->p2;
   Plot *plot = PLOT(p->private->graph);
-  int pw,ph,i;
+  int i;
 
   if(!plot) return 0;
 
-  // marshall all the locked data we'll need
-  scalespace x = p2->x;
-  scalespace y = p2->y;
-  scalespace x_v = p2->x_v;
-  scalespace y_v = p2->y_v;
-
-  ucolor *c = malloc(x.pixels*y.pixels*sizeof(*c));
+  int pw = plot->x.pixels;
+  int ph = plot->y.pixels;
+  ucolor *c = malloc(pw*ph*sizeof(*c));
 
   double alphadel[p->objectives];
   mapping mappings[p->objectives];
@@ -472,9 +527,6 @@ static int _sushiv_panel2d_remap(sushiv_panel_t *p){
   memcpy(mappings, p2->mappings, sizeof(mappings));
   memcpy(y_rects, p2->y_map, sizeof(y_rects));
   
-  pw = plot->x.pixels;
-  ph = plot->y.pixels;
-
   /* exit for computation */
   gdk_threads_leave();
   
@@ -492,10 +544,10 @@ static int _sushiv_panel2d_remap(sushiv_panel_t *p){
 
     /**** render Y plane */
     int o_ynum = p2->y_obj_from_panel[i];
-    if (!resample_render_y_plane(p, plot_serialno, map_serialno, 
+    if (!resample_render_y_plane(p, thread_cache, 
+				 plot_serialno, map_serialno, 
 				 mappings+i, alphadel[i],
-				 c, x, y,
-				 y_rects[o_ynum], x_v, y_v)){
+				 c, y_rects[o_ynum])){
       gdk_threads_enter ();  
       goto abort;
     }
@@ -987,7 +1039,7 @@ static void box_callback(void *in, int state){
   p->private->update_menus(p);
 }
 
-void _maintain_cache_2d(sushiv_panel_t *p, _sushiv_compute_cache_2d *c, int w){
+void _maintain_compute_cache_2d(sushiv_panel_t *p, _sushiv_bythread_cache_2d *c, int w){
   sushiv_panel2d_t *p2 = p->subtype->p2;
   
   /* toplevel initialization */
@@ -1022,12 +1074,12 @@ void _maintain_cache_2d(sushiv_panel_t *p, _sushiv_compute_cache_2d *c, int w){
 
 
 // subtype entry point for plot remaps; lock held
-static int _sushiv_panel2d_map_redraw(sushiv_panel_t *p){
+static int _sushiv_panel2d_map_redraw(sushiv_panel_t *p, _sushiv_bythread_cache *c){
   Plot *plot = PLOT(p->private->graph);
 
   if(p->private->map_progress_count)return 0;
   p->private->map_progress_count++;
-  if(_sushiv_panel2d_remap(p))
+  if(_sushiv_panel2d_remap(p,&c->p2))
     _sushiv_panel_clean_map(p);
   plot_expose_request(plot);
   return 1;
@@ -1047,7 +1099,7 @@ static int _sushiv_panel2d_legend_redraw(sushiv_panel_t *p){
 
 // subtype entry point for recomputation; lock held
 static int _sushiv_panel2d_compute(sushiv_panel_t *p,
-				   _sushiv_compute_cache *c){
+				   _sushiv_bythread_cache *c){
 
   sushiv_panel2d_t *p2 = p->subtype->p2;
   Plot *plot;
@@ -1107,6 +1159,7 @@ static int _sushiv_panel2d_compute(sushiv_panel_t *p,
 
     p->private->plot_progress_count++;
     p->private->plot_serialno++; // we're about to free the old data rectangles
+
     if(memcmp(&sx_v,&old_xv,sizeof(sx_v)) || memcmp(&sy_v,&old_yv,sizeof(sy_v))){
       
       // maintain data planes
@@ -1131,7 +1184,7 @@ static int _sushiv_panel2d_compute(sushiv_panel_t *p,
       // wrap the remap so that it does not give up the lock and allow
       // itself to be interrupted
       gdk_threads_enter ();
-      _sushiv_panel2d_remap(p); // do it now, don't queue it
+      _sushiv_panel2d_remap(p,&c->p2); // do it now, don't queue it
       gdk_threads_leave ();      
 
       gdk_threads_leave ();      
@@ -1155,7 +1208,7 @@ static int _sushiv_panel2d_compute(sushiv_panel_t *p,
 
   if(p->private->plot_progress_count>dh) return 0;
 
-  _maintain_cache_2d(p,&c->p2,dw);
+  _maintain_compute_cache_2d(p,&c->p2,dw);
   
   d = p->dimensions;
 

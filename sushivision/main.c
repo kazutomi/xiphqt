@@ -88,7 +88,7 @@ static int num_proccies(){
 static void *worker_thread(void *dummy){
   /* set up temporary working space for function rendering; this saves
      continuously recreating it in the loop below */
-  _sushiv_compute_cache **c; // [instance][panel]
+  _sushiv_bythread_cache **c; // [instance][panel]
   int i,j;
   
   c = calloc(instances,sizeof(*c));
@@ -118,7 +118,7 @@ static void *worker_thread(void *dummy){
 
 	    if(p->private->map_active){
 	      spinner_set_busy(p->private->spinner);
-	      flag |= p->private->map_action(p); // may drop lock internally
+	      flag |= p->private->map_action(p,&c[j][i]); // may drop lock internally
 	      if(!p->private->map_active)
 		set_map_throttle_time(p);
 	    }

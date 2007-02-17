@@ -38,7 +38,15 @@ typedef struct sushiv_panel2d {
   int *y_obj_to_panel; /* maps from position in condensed list to position in full list */
   int *y_obj_from_panel; /* maps from position in full list to position in condensed list */
   int *y_fout_offset; 
-  
+
+  /* cached resampling helpers */
+  int resample_serialno;
+  unsigned char *ydelA;
+  unsigned char *ydelB;
+  int *ynumA;
+  int *ynumB;
+  float yscalemul;
+
   /* scales and data -> display scale mapping */
   scalespace x;
   scalespace x_v;
@@ -72,8 +80,16 @@ typedef struct {
   double *fout; // [function number * outval_number]
 
   int **y_map; // [y_obj_list[i]][px]
-
   int storage_width;
 
-} _sushiv_compute_cache_2d;
+  /* cached resampling helpers; x is here becasue locking overhead
+     would be prohibitive to share between threads */
+  int serialno;
+  unsigned char *xdelA;
+  unsigned char *xdelB;
+  int *xnumA;
+  int *xnumB;
+  float xscalemul;
+  
+} _sushiv_bythread_cache_2d;
 
