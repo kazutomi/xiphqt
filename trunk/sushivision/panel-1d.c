@@ -520,7 +520,7 @@ static void compute_1d(sushiv_panel_t *p,
 		       double x_max, 
 		       int w, 
 		       double *dim_vals,
-		       _sushiv_compute_cache_1d *c){
+		       _sushiv_bythread_cache_1d *c){
   sushiv_panel1d_t *p1 = p->subtype->p1;
   double work[w];
   int i,j,fn=p->sushi->functions;
@@ -874,7 +874,7 @@ static void box_callback(void *in, int state){
   update_context_menus(p);
 }
 
-void _maintain_cache_1d(sushiv_panel_t *p, _sushiv_compute_cache_1d *c, int w){
+void _maintain_cache_1d(sushiv_panel_t *p, _sushiv_bythread_cache_1d *c, int w){
   
   /* toplevel initialization */
   if(c->fout == 0){
@@ -907,7 +907,7 @@ void _maintain_cache_1d(sushiv_panel_t *p, _sushiv_compute_cache_1d *c, int w){
 }
 
 // subtype entry point for plot remaps; lock held
-int _sushiv_panel1d_map_redraw(sushiv_panel_t *p){
+int _sushiv_panel1d_map_redraw(sushiv_panel_t *p, _sushiv_bythread_cache *c){
   Plot *plot = PLOT(p->private->graph);
 
   if(p->private->map_progress_count)return 0;
@@ -932,7 +932,7 @@ int _sushiv_panel1d_legend_redraw(sushiv_panel_t *p){
 
 // subtype entry point for recomputation; lock held
 int _sushiv_panel1d_compute(sushiv_panel_t *p,
-			    _sushiv_compute_cache *c){
+			    _sushiv_bythread_cache *c){
   sushiv_panel1d_t *p1 = p->subtype->p1;
   Plot *plot;
   

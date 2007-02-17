@@ -70,5 +70,5 @@ typedef struct {
   double **fout; // [function number][outval_number*x]
   int storage_width;
 
-} _sushiv_compute_cache_1d;
+} _sushiv_bythread_cache_1d;
 
