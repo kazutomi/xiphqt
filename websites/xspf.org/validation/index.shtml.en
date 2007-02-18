@@ -21,16 +21,25 @@
         <a href="http://xspf.binera.de/">Online XSPF validator</a> by Sebastian Pipping.
       </li>
       <li>
-        <a href="xspf-1_0.2.xsd">XML Schema for XSPF</a> by Matthias Friedrich.  Sample usage of <a href="http://xmlstar.sourceforge.net/">XMLStarlet</a>:
-        <pre>(Unix)     xmlstarlet validate -e -s xspf-1_0.2.xsd myplaylist.xspf
-(Windows)  xml.exe validate -e -s xspf-1_0.2.xsd myplaylist.xspf        </pre>
+        <a href="xspf-1_0.5.rng">Relax NG Schema for XSPF</a> by Matthias Friedrich.  Sample usage of <a href="http://xmlstar.sourceforge.net/">XMLStarlet</a>:
+        <pre>(Unix)     xmlstarlet validate -e -r xspf-1_0.5.rng myplaylist.xspf
+(Windows)  xml.exe validate -e -r xspf-1_0.5.rng myplaylist.xspf</pre>
       </li>
       <li>
-        <a href="xspf-1_0.3.rng">Relax NG Schema for XSPF</a> by Matthias Friedrich.  Sample usage of <a href="http://xmlstar.sourceforge.net/">XMLStarlet</a>:
-        <pre>(Unix)     xmlstarlet validate -e -r xspf-1_0.3.rng myplaylist.xspf
-(Windows)  xml.exe validate -e -r xspf-1_0.3.rng myplaylist.xspf</pre>
+        <s>
+          <a href="xspf-1_0.2.xsd">XML Schema for XSPF</a> by Matthias Friedrich.  Sample usage of <a href="http://xmlstar.sourceforge.net/">XMLStarlet</a>:
+          <pre>(Unix)     xmlstarlet validate -e -s xspf-1_0.2.xsd myplaylist.xspf
+(Windows)  xml.exe validate -e -s xspf-1_0.2.xsd myplaylist.xspf</pre>
+        </s>
       </li>
 
     </ol>
+
+    <p>
+		Note: The above XML Schema (XSD) is not fully spec compliant and therefore <strong>deprecated</strong>.
+		Please use the Relax NG schema instead if you can. Since the XSD schema language is not powerful
+		enough to express the XSPF specification there will never be a correct XSD schema for XSPF.
+		Please see the mailing list archive for the discussion on this topic.
+    </p>
 
 <!--#include virtual="/ssi/pagebottom.include" -->
