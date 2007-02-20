@@ -110,10 +110,15 @@ void _sushiv_panel_dirty_map(sushiv_panel_t *p){
   gdk_threads_leave ();
 }
 
+void _sushiv_panel_dirty_map_immediate(sushiv_panel_t *p){
+  _idle_map_fire(p);
+}
+
 void _sushiv_panel_dirty_map_throttled(sushiv_panel_t *p){
   gdk_threads_enter ();
-  if(!p->private->map_active && test_throttle_time(p))
-     g_idle_add(_idle_map_fire,p);
+  if(!p->private->map_active && test_throttle_time(p)){
+     _idle_map_fire(p);
+  }
   gdk_threads_leave ();
 }
 

@@ -99,12 +99,35 @@ static void compute_one_data_line_2d(sushiv_panel_t *p,
 static void clear_pane(sushiv_panel_t *p){
 
   sushiv_panel2d_t *p2 = p->subtype->p2;
+  int pw = p2->x.pixels;
+  int ph = p2->y.pixels;
   int i;
-
+  Plot *plot = PLOT(p->private->graph);
+  
   for(i=0;i<p2->y_obj_num;i++){
-    free(p2->y_map[i]);
+    // map is freed and nulled to avoid triggering a fast-scale on an empty data pane
+    if(p2->y_map[i])
+      free(p2->y_map[i]);
     p2->y_map[i]=NULL;
+
+    // free y_planes so that initial remap doesn't waste time on mix
+    // op; they are recreated during remap at the point the y_todo
+    // vector indicates something to do
+    if(p2->y_planes[i])
+      free(p2->y_planes[i]);
+    p2->y_planes[i] = NULL;
+
+    // work vector is merely cleared
+    memset(p2->y_planetodo[i], 0, ph*sizeof(**p2->y_planetodo));
   }
+
+  // clear the background surface 
+  if(plot->datarect)
+    memset(plot->datarect, 0, ph*pw*sizeof(*plot->datarect));
+
+  // the bg is not marked to be refreshed; computation setup will do
+  // that as part of the fast_scale, even if the fast_scale is
+  // short-circuited to a noop.
 }
 
 typedef struct{
@@ -195,24 +218,20 @@ static void compute_single_point(sushiv_panel_t *p,sushiv_objective_t *o, double
 
 /* functions that perform actual graphical rendering */
 
-static void render_checks(int w, int h, ucolor *c){
+static void render_checks(ucolor *c, int w, int y){
   /* default checked background */
   /* 16x16 'mid-checks' */ 
-  int x,y,j;
+  int x,j;
   
-  for(y=0;y<h;y++){
-    int phase = (y>>4)&1;
-    for(x=0;x<w;){
-      u_int32_t phaseval = 0xff505050UL;
-      if(phase) phaseval = 0xff808080UL;
-      for(j=0;j<16 && x<w;j++,x++)
-	c[x].u = phaseval;
-      phase=!phase;
-    }
-    c += w;
+  int phase = (y>>4)&1;
+  for(x=0;x<w;){
+    u_int32_t phaseval = 0xff505050UL;
+    if(phase) phaseval = 0xff808080UL;
+    for(j=0;j<16 && x<w;j++,x++)
+      c[x].u = phaseval;
+    phase=!phase;
   }
 }
-
 
 static float resample_helpers_init(scalespace *to, scalespace *from,
 				   unsigned char *delA, unsigned char *delB, 
@@ -338,7 +357,7 @@ static inline void l_mapping_calc( void (*m)(int,int, lcolor*),
 				   int alpha, 
 				   int mul, 
 				   lcolor *outc){
-  if(mul && !isnan(in) && in>=alpha){
+  if(mul && in>=alpha){
     int val = rint((in - low) * range);
     if(val<0)val=0;
     if(val>65536)val=65536;
@@ -348,242 +367,404 @@ static inline void l_mapping_calc( void (*m)(int,int, lcolor*),
 
 /* the data rectangle is data width/height mapped deltas.  we render
    and subsample at the same time. */
-/* enter unlocked */
-static int resample_render_y_plane(sushiv_panel_t *p, _sushiv_bythread_cache_2d *c,
-				   int plot_serialno, int map_serialno,
-				   mapping *map, float obj_alpha,
-				   ucolor *panel, int *in_data){
-  sushiv_panel2d_t *p2 = p->subtype->p2;
-  int i,j;
-  int ol_alpha = rint(obj_alpha * (256.f*256.f*256.f));
-  int ol_low = rint(map->low * (256.f*256.f*256.f));
-  float ol_range = map->i_range * (1.f/256.f);
-  if(!in_data || !c)return 1;
+/* return: -1 == abort
+            0 == more work to be done in this plane
+	    1 == plane fully dispatched (possibly not complete) */
 
-  int *data = NULL;
-  
-  gdk_threads_enter ();
-  if(plot_serialno != p->private->plot_serialno) goto abort;
+/* enter with lock */
+static int resample_render_y_plane_line(sushiv_panel_t *p, _sushiv_bythread_cache_2d *c, 
+					int plot_serialno, int map_serialno, int y_no){
+
+  sushiv_panel2d_t *p2 = p->subtype->p2;
+  int objnum = p2->y_obj_to_panel[y_no]; 
+  int *in_data = p2->y_map[y_no];
+  int ph = p2->y.pixels;
+
+  if(!in_data || !c){
+    p->private->map_complete_count -= ph;
+    return 1;
+  }
+
+  unsigned char *todo = p2->y_planetodo[y_no];
+  int i = p2->y_next_line;
+  int j;
+
+  /* find a row that needs to be updated */
+  while(i<ph && !todo[i]){
+    p->private->map_complete_count--;
+    p2->y_next_line++;
+    i++;
+  }
+
+  if(i == ph) return 1;
+
+  p2->y_next_line++;
+
+  /* row [i] needs to be updated; marshal */
+  mapping *map = p2->mappings+objnum;
+  void (*mapfunc)(int,int, lcolor *) = map->mapfunc;
+  int ol_alpha = rint(p2->alphadel[y_no] * 16777216.f);
+  ucolor *panel = p2->y_planes[y_no];
+  int ol_low = rint(map->low * 16777216.f);
+  float ol_range = map->i_range * (1.f/256.f);
 
   int pw = p2->x.pixels;
   int dw = p2->x_v.pixels;
-  int ph = p2->y.pixels;
   int dh = p2->y_v.pixels;
-  
-  data = malloc(dw*dh*sizeof(*data));
-  memcpy(data,in_data,dw*dh*sizeof(*data));
+  ccolor work[pw];
+
+  if(!panel)
+    panel = p2->y_planes[y_no] = calloc(pw*ph, sizeof(**p2->y_planes));
 
   if(ph!=dh || pw!=dw){
-    /* resampled row computation */
+    /* resampled row computation; may involve multiple data rows */
 
     resample_helpers_manage_y(p);
     resample_helpers_manage_x(p,c);
 
     float idel = p2->yscalemul * c->xscalemul;
 
-    gdk_threads_leave ();
-
     /* by column */
+    int ydelA=p2->ydelA[i];
+    int ydelB=p2->ydelB[i];
+    int ystart=p2->ynumA[i];
+    int yend=p2->ynumB[i];
+    int lh = yend - ystart;
+    int data[lh*dw];
+
+    memcpy(data,in_data+ystart*dw,sizeof(data));
+
+    gdk_threads_leave();
+
     unsigned char *xdelA = c->xdelA;
     unsigned char *xdelB = c->xdelB;
     int *xnumA = c->xnumA;
     int *xnumB = c->xnumB;
-
-    ucolor *mix = panel;
-    int xy=0;
-
-    /* by panel row */
-    for(i=0;i<ph;i++){
-
-      gdk_threads_enter ();  
-      if(plot_serialno != p->private->plot_serialno ||
-	 map_serialno != p->private->map_serialno)
-	goto abort;
-      spinner_set_busy(p->private->spinner);
-
-      int ydelA=p2->ydelA[i];
-      int ydelB=p2->ydelB[i];
       
-      int ynumA=p2->ynumA[i];
-      int yend=p2->ynumB[i];
-      
-      gdk_threads_leave();
-      
-      /* by panel col */
-      for(j=0;j<pw;j++){
+    /* by panel col */
+    for(j=0;j<pw;j++){
 	
-	lcolor out = (lcolor){0,0,0,0}; 
-	int ydel = ydelA;
-	int y = ynumA;
+      lcolor out = (lcolor){0,0,0,0}; 
+      int xstart = xnumA[j];
+      int xend = xnumB[j];
+      int dx = xstart;
+      int xA = xdelA[j];
+      int xB = xdelB[j];
+      int y = ystart;
 
-	int xstart = y*dw + xnumA[j];
-	int xend = y*dw + xnumB[j];
-	int dx = xstart;
-	int xA = xdelA[j];
-	int xB = xdelB[j];
-
-	// first line
-	l_mapping_calc(map->mapfunc, ol_low, ol_range, data[dx++], ol_alpha, ydel*xA, &out);
-
+      // first line
+      l_mapping_calc(mapfunc, ol_low, ol_range, data[dx++], ol_alpha, ydelA*xA, &out);
+      
+      for(; dx < xend-1; dx++)
+	l_mapping_calc(mapfunc, ol_low, ol_range, data[dx], ol_alpha, ydelA*17, &out);
+      
+      if(dx<xend)
+	l_mapping_calc(mapfunc, ol_low, ol_range, data[dx], ol_alpha, ydelA*xB, &out);
+      y++;
+      
+	// mid lines
+      for(;y<yend-1;y++){
+	dx = xstart += dw;
+	xend += dw;
+	l_mapping_calc(mapfunc, ol_low, ol_range, data[dx++], ol_alpha, 15*xA, &out);
+	
 	for(; dx < xend-1; dx++)
-	  l_mapping_calc(map->mapfunc, ol_low, ol_range, data[dx], ol_alpha, ydel*17, &out);
+	  l_mapping_calc(mapfunc, ol_low, ol_range, data[dx], ol_alpha, 255, &out);
 	
 	if(dx<xend)
-	  l_mapping_calc(map->mapfunc, ol_low, ol_range, data[dx], ol_alpha, ydel*xB, &out);
-	y++;
-	
-	// mid lines
-	for(;y<yend-1;y++){
-	  dx = xstart += dw;
-	  xend += dw;
-	  l_mapping_calc(map->mapfunc, ol_low, ol_range, data[dx++], ol_alpha, 15*xA, &out);
-
-	  for(; dx < xend-1; dx++)
-	    l_mapping_calc(map->mapfunc, ol_low, ol_range, data[dx], ol_alpha, 255, &out);
-	
-	  if(dx<xend)
-	    l_mapping_calc(map->mapfunc, ol_low, ol_range, data[dx], ol_alpha, 15*xB, &out);
-	}
-	
-	// last line
-	if(y<yend){
-	  dx = xstart += dw;
-	  xend += dw;
-	  ydel = ydelB;
-	  l_mapping_calc(map->mapfunc, ol_low, ol_range, data[dx++], ol_alpha, ydel*xA, &out);
-	  
-	  for(; dx < xend-1; dx++)
-	    l_mapping_calc(map->mapfunc, ol_low, ol_range, data[dx], ol_alpha, ydel*17, &out);
-	  
-	  if(dx<xend)
-	    l_mapping_calc(map->mapfunc, ol_low, ol_range, data[dx], ol_alpha, ydel*xB, &out);
-	}
-
-	mix[xy] = map->mixfunc( (ucolor)(((u_int32_t)(out.a*idel)<<24) +
-					 ((u_int32_t)(out.r*idel)<<16) +
-					 ((u_int32_t)(out.g*idel)<<8) +
-					 ((u_int32_t)(out.b*idel))),
-				mix[xy]);
-	xy++;
-
+	  l_mapping_calc(mapfunc, ol_low, ol_range, data[dx], ol_alpha, 15*xB, &out);
       }
+      
+      // last line
+      if(y<yend){
+	dx = xstart += dw;
+	xend += dw;
+	l_mapping_calc(mapfunc, ol_low, ol_range, data[dx++], ol_alpha, ydelB*xA, &out);
+	
+	for(; dx < xend-1; dx++)
+	  l_mapping_calc(mapfunc, ol_low, ol_range, data[dx], ol_alpha, ydelB*17, &out);
+	
+	if(dx<xend)
+	  l_mapping_calc(mapfunc, ol_low, ol_range, data[dx], ol_alpha, ydelB*xB, &out);
+      }
+
+      work[j].a = (u_int32_t)(out.a*idel);
+      work[j].r = (u_int32_t)(out.r*idel);
+      work[j].g = (u_int32_t)(out.g*idel);
+      work[j].b = (u_int32_t)(out.b*idel);
+      
     }
+
   }else{
     /* non-resampling render */
 
-    gdk_threads_leave ();
-    for(i=0;i<ph;i++){
-      int *dline = data+i*dw;
+    int data[dw];
+    memcpy(data,in_data+i*dw,sizeof(data));
+    gdk_threads_leave();      
 
-      gdk_threads_enter ();  
-      if(plot_serialno != p->private->plot_serialno ||
-	 map_serialno != p->private->map_serialno)
-	goto abort;
-      spinner_set_busy(p->private->spinner);
-      gdk_threads_leave();
-      
-      for(j=0;j<pw;j++){
+    for(j=0;j<pw;j++){
 
-	lcolor out = (lcolor){0,0,0,0};
-	l_mapping_calc(map->mapfunc, ol_low, ol_range, dline[j], ol_alpha, 255, &out);
+      lcolor out = (lcolor){0,0,0,0};
+      l_mapping_calc(mapfunc, ol_low, ol_range, data[j], ol_alpha, 255, &out);
 	
-	*panel = map->mixfunc((ucolor)(((u_int32_t)(out.a)<<24) +
-				       ((u_int32_t)(out.r)<<16) +
-				       ((u_int32_t)(out.g)<<8) +
-				       ((u_int32_t)(out.b))),
-			      *panel);
-	panel++;
-
-      }
+      work[j].a = (u_int32_t)(out.a);
+      work[j].r = (u_int32_t)(out.r);
+      work[j].g = (u_int32_t)(out.g);
+      work[j].b = (u_int32_t)(out.b);
     }
   }
-  free(data);
-  return 1;
- abort:
-  gdk_threads_leave ();
-  if(data)free(data);
+
+  gdk_threads_enter ();  
+  if(plot_serialno != p->private->plot_serialno ||
+     map_serialno != p->private->map_serialno)
+    return -1;
+  memcpy(panel+i*pw,work,sizeof(work));
+  p2->bg_todo[i] = 1;
+  p2->y_planetodo[y_no][i] = 0;
+
+  // must be last; it indicates completion
+  p->private->map_complete_count--;
   return 0;
 }
 
 // enter with lock
-static int _sushiv_panel2d_remap(sushiv_panel_t *p, _sushiv_bythread_cache_2d *thread_cache){
+static int render_bg_line(sushiv_panel_t *p, int plot_serialno, int map_serialno){
   sushiv_panel2d_t *p2 = p->subtype->p2;
   Plot *plot = PLOT(p->private->graph);
-  int i;
-
-  if(!plot) return 0;
-
-  int pw = plot->x.pixels;
-  int ph = plot->y.pixels;
-  ucolor *c = malloc(pw*ph*sizeof(*c));
-
-  double alphadel[p->objectives];
-  mapping mappings[p->objectives];
-  int plot_serialno = p->private->plot_serialno; 
-  int map_serialno = p->private->map_serialno; 
-  int *y_rects[p2->y_obj_num];
-
-  memcpy(alphadel, p2->alphadel, sizeof(alphadel));
-  memcpy(mappings, p2->mappings, sizeof(mappings));
-  memcpy(y_rects, p2->y_map, sizeof(y_rects));
-  
-  /* exit for computation */
-  gdk_threads_leave();
-  
-  /* background checks */
-  render_checks(pw,ph,c);
-
-  gdk_threads_enter ();  
   if(plot_serialno != p->private->plot_serialno ||
-     map_serialno != p->private->map_serialno)
-    goto abort;
+     map_serialno != p->private->map_serialno) return -1;
+  
+  int ph = p2->y.pixels;
+  int pw = p2->x.pixels;
+  unsigned char *todo = p2->bg_todo;
+  int i = p2->bg_next_line,j;
+  ucolor work_bg[pw];
+  ucolor work_pl[pw];
+
+  /* find a row that needs to be updated */
+  while(i<ph && !todo[i]){
+    p->private->map_complete_count--;
+    p2->bg_next_line++;
+    i++;
+  }
+
+  if(i < p2->bg_first_line) p2->bg_first_line = i;
+  if(i+1 > p2->bg_last_line) p2->bg_last_line = i+1;
+
+  if(i == ph)
+    goto done;
+
+  p2->bg_next_line++;
+
+  /* gray background checks */
   gdk_threads_leave();
+  render_checks(work_bg,pw,i);
 
   /* by objective */
-  for(i=0;i<p->objectives;i++){
-
-    /**** render Y plane */
-    int o_ynum = p2->y_obj_from_panel[i];
-    if (!resample_render_y_plane(p, thread_cache, 
-				 plot_serialno, map_serialno, 
-				 mappings+i, alphadel[i],
-				 c, y_rects[o_ynum])){
-      gdk_threads_enter ();  
-      goto abort;
-    }
-
-    /**** render Z plane */
+  for(j=0;j<p->objectives;j++){
+    int o_ynum = p2->y_obj_from_panel[j];
     
-    /**** render vector plane */
+    gdk_threads_enter();
+    if(plot_serialno != p->private->plot_serialno ||
+       map_serialno != p->private->map_serialno) return -1;
+
+    /**** mix Y plane */
+    
+    if(p2->y_planes[o_ynum]){
+      int x;
+      ucolor (*mixfunc)(ucolor,ucolor) = p2->mappings[j].mixfunc;
+      ucolor *rect = p2->y_planes[o_ynum] + i*pw;
+      memcpy(work_pl,rect,sizeof(work_pl));
+      
+      gdk_threads_leave();
+      for(x=0;x<pw;x++)
+	work_bg[x] = mixfunc(work_pl[x],work_bg[x]);
+    }else
+      gdk_threads_leave();
+
+    /**** mix Z plane */
+    
+    /**** mix vector plane */
 
   }
 
-  gdk_threads_enter ();  
+  gdk_threads_enter();
   if(plot_serialno != p->private->plot_serialno ||
-     map_serialno != p->private->map_serialno)
-    goto abort;
+     map_serialno != p->private->map_serialno) return -1;
 
-  u_int32_t *dr = plot->datarect;
-  u_int32_t *cp = (u_int32_t *)c;
-  for(i=0;i<pw*ph;i++)
-    dr[i] = cp[i];
+    // rendered a line, get it on the screen */
+  
+  memcpy(plot->datarect+pw*i, work_bg, sizeof(work_bg));
 
-  free(c);
-  set_map_throttle_time(p); // done by worker threads too, but
-			    // delaying first throttled remap after
-			    // forced remap is useful too
-  return 1;
+  p->private->map_complete_count--;
 
- abort:
-  free(c);
+ done:
+  if(p->private->map_complete_count)
+    return 1; // not done yet
+
+  // remap completed; flush background to screen
+  plot_expose_request_partial (plot,0,p2->bg_first_line,
+			       pw,p2->bg_last_line - p2->bg_first_line);
+  gdk_flush();
   return 0;
 }
 
+// enter with lock; returns zero if thread should sleep / get distracted
+static int _sushiv_panel2d_remap(sushiv_panel_t *p, _sushiv_bythread_cache_2d *thread_cache){
+  sushiv_panel2d_t *p2 = p->subtype->p2;
+  Plot *plot = PLOT(p->private->graph);
+
+  if(!plot) goto abort;
+  int ph = plot->y.pixels;
+  
+  int plot_serialno = p->private->plot_serialno; 
+  int map_serialno = p->private->map_serialno; 
+
+  /* brand new remap indicated by the generic progress indicator being set to 0 */
+  if(p->private->map_progress_count == 0){
+
+    p->private->map_progress_count = 1; // 'in progress'
+    p->private->map_complete_count = p2->y_obj_num * ph; // count down to 0; 0 indicates completion
+
+    // set up Y plane rendering
+    p2->y_next_plane = 0;
+    p2->y_next_line = 0;
+
+    // bg mix
+    p2->bg_next_line = 0;
+    p2->bg_first_line = ph;
+    p2->bg_last_line = 0;
+  }
+
+  /* by plane, by line; each plane renders independently */
+  /* Y planes */
+  if(p2->y_planetodo){
+    if(p2->y_next_plane < p2->y_obj_num){
+      int status = resample_render_y_plane_line(p, thread_cache, 
+						plot_serialno, map_serialno, 
+						p2->y_next_plane);
+      if(status == -1) goto abort;
+      if(status == 1){
+	p2->y_next_plane++;
+	p2->y_next_line = 0;
+      }
+      return 1;
+    }
+  }else{
+    p->private->map_complete_count = 0;
+  }
+
+  /* renders have been completely dispatched, but are they complete? */
+  /* the below is effectively a a thread join */
+  if(p2->bg_next_line == 0){
+
+    // join still needs to complete....
+    if(p->private->map_complete_count){
+      // nonzero complete count, not finished.  returning zero will cause
+      // this worker thread to sleep or go on to do other things.
+      return 0; 
+    }else{
+      // zero complete count, the planes are done; we can begin
+      // background render.  At least one thread is guaranteed to get
+      // here, which is enough; we can now wake the others [if they were
+      // asleep] and have them look for work here. */
+      p->private->map_complete_count = ph; // [ph] lines to render in bg plane
+      p2->bg_next_line = 0;
+
+      _sushiv_wake_workers();
+    }
+  }
+
+  /* mix new background, again line by line */
+  if(p2->bg_next_line < ph){
+    int status = render_bg_line(p, plot_serialno, map_serialno);
+    if(status == -1) goto abort;
+    if(p->private->map_complete_count)return status;
+  }else
+    return 0; // nothing left to dispatch
+
+  // entirely finished.
+  // clean bg todo list
+  memset(p2->bg_todo,0,ph*sizeof(*p2->bg_todo));
+
+  // clear 'panel in progress' flag
+  _sushiv_panel_clean_map(p);
+  return 0;
+
+ abort:
+  // reset progress to 'start over'
+  p->private->map_progress_count=0;
+  p->private->map_complete_count=0;
+  return 1;
+}
+
+// call while locked
+static void _dirty_map_one_plane(sushiv_panel_t *p, int onum, int y, int z, int v){
+  sushiv_panel2d_t *p2 = p->subtype->p2;
+  int ph = p2->y.pixels;
+
+  if(y && p2->y_planetodo){
+    int y_no = p2->y_obj_from_panel[onum];
+    if(y_no>=0 && p2->y_planetodo[y_no])
+      memset(p2->y_planetodo[y_no],1,ph * sizeof(**p2->y_planetodo));
+  }
+}
+
+// call while locked 
+static void _dirty_map_one_data_line_y(sushiv_panel_t *p, int line){
+  // determine all panel lines this y data line affects
+  sushiv_panel2d_t *p2 = p->subtype->p2;
+  int ph = p2->y.pixels;
+  int pw = p2->x.pixels;
+  int dw = p2->x_v.pixels;
+  int dh = p2->y_v.pixels;
+  int i,j;
+
+  if(ph!=dh || pw!=dw){
+    /* resampled row computation; may involve multiple data rows */
+    if(p2->y_planetodo){
+      resample_helpers_manage_y(p);
+      
+      for(i=0;i<ph;i++)
+	if(p2->ynumA[i]<=line &&
+	   p2->ynumB[i]>line){
+	  
+	  for(j=0;j<p2->y_obj_num;j++)
+	    if(p2->y_planetodo[j])
+	      p2->y_planetodo[j][i]=1;
+      }
+    }
+  }else{
+    if(p2->y_planetodo)
+      if(line>0 && line<ph)
+	for(j=0;j<p2->y_obj_num;j++)
+	  if(p2->y_planetodo[j])
+	    p2->y_planetodo[j][line]=1;
+  }
+}
+
+// call while locked
+static void _dirty_map_full(sushiv_panel_t *p){
+  sushiv_panel2d_t *p2 = p->subtype->p2;
+  int ph = p2->y.pixels;
+  int i,j;
+
+  if(p2->y_planetodo){
+    for(j=0;j<p2->y_obj_num;j++){
+      if(p2->y_planetodo[j]){
+	for(i=0;i<ph;i++){
+	  p2->y_planetodo[j][i]=1;
+	}
+      }
+    }
+  }
+}
+
+// enter with lock
 static void update_legend(sushiv_panel_t *p){  
   sushiv_panel2d_t *p2 = p->subtype->p2;
   Plot *plot = PLOT(p->private->graph);
 
-  gdk_threads_enter ();
   if(plot){
     int i;
     char buffer[320];
@@ -623,7 +804,6 @@ static void update_legend(sushiv_panel_t *p){
       }
     }
   }
-  gdk_threads_leave ();
 }
 
 static void mapchange_callback_2d(GtkWidget *w,gpointer in){
@@ -646,6 +826,7 @@ static void mapchange_callback_2d(GtkWidget *w,gpointer in){
   _sushiv_panel_dirty_legend(p);
 
   //redraw the plot
+  _dirty_map_one_plane(p,onum,1,0,0);
   _sushiv_panel_dirty_map(p);
   _sushiv_panel_undo_resume(p);
 }
@@ -668,8 +849,10 @@ static void map_callback_2d(void *in,int buttonstate){
 		      slider_get_value(p2->range_scales[onum],1));
 
   // redraw the plot on motion
-  if(buttonstate == 1)
+  if(buttonstate == 1){
+    _dirty_map_one_plane(p,onum,1,0,0);
     _sushiv_panel_dirty_map(p);
+  }
   if(buttonstate == 2)
     _sushiv_panel_undo_resume(p);
 }
@@ -779,12 +962,12 @@ static void fast_scale_x(Spinner *sp,
     double xval = (x)*newscale+new_lo;
     double map = ((xval-old_lo)*oldscale);
     int base = (int)floor(map);
-    int del = rint((map - floor(map))*128.f);
+    int del = rint((map - floor(map))*64.f);
     /* hack to overwhelm roundoff error; this is inside a purely
        temporary cosmetic approximation anyway*/
     if(base>0 && del==0){
       mapbase[x]=base-1;
-      mapdel[x]=128;
+      mapdel[x]=64;
     }else{
       mapbase[x]=base;
       mapdel[x]=del;
@@ -804,7 +987,7 @@ static void fast_scale_x(Spinner *sp,
 	if(A<0 || B<0)
 	  work[x]=-1;
 	else
-	  work[x]= A + (((B - A)*mapdel[x])>>7);
+	  work[x]= A + (((B - A)*mapdel[x])>>6);
 	
       }
     }
@@ -839,12 +1022,12 @@ static void fast_scale_y(Spinner *sp,
     double yval = (y)*newscale+new_lo;
     double map = ((yval-old_lo)*oldscale);
     int base = (int)floor(map);
-    int del = rint((map - floor(map))*127.);
+    int del = rint((map - floor(map))*64.);
     /* hack to overwhelm roundoff error; this is inside a purely
        temporary cosmetic approximation anyway */
     if(base>0 && del==0){
       mapbase[y]=base-1;
-      mapdel[y]=128;
+      mapdel[y]=64;
     }else{
       mapbase[y]=base;
       mapdel[y]=del;
@@ -870,7 +1053,7 @@ static void fast_scale_y(Spinner *sp,
 	if(A<0 || B<0)
 	  new_column[x]=-1;
 	else
-	  new_column[x]= A + (((B-A)*del)>>7);
+	  new_column[x]= A + (((B-A)*del)>>6);
       }
     }
   }
@@ -1075,14 +1258,7 @@ void _maintain_compute_cache_2d(sushiv_panel_t *p, _sushiv_bythread_cache_2d *c,
 
 // subtype entry point for plot remaps; lock held
 static int _sushiv_panel2d_map_redraw(sushiv_panel_t *p, _sushiv_bythread_cache *c){
-  Plot *plot = PLOT(p->private->graph);
-
-  if(p->private->map_progress_count)return 0;
-  p->private->map_progress_count++;
-  if(_sushiv_panel2d_remap(p,&c->p2))
-    _sushiv_panel_clean_map(p);
-  plot_expose_request(plot);
-  return 1;
+  return _sushiv_panel2d_remap(p,&c->p2);
 }
 
 // subtype entry point for legend redraws; lock held
@@ -1121,7 +1297,10 @@ static int _sushiv_panel2d_compute(sushiv_panel_t *p,
 
   // beginning of computation init
   if(p->private->plot_progress_count==0){
-    
+    int remapflag = 0;
+
+    scalespace old_x = p2->x;
+    scalespace old_y = p2->y;
     scalespace old_xv = p2->x_v;
     scalespace old_yv = p2->y_v;
 
@@ -1160,6 +1339,7 @@ static int _sushiv_panel2d_compute(sushiv_panel_t *p,
     p->private->plot_progress_count++;
     p->private->plot_serialno++; // we're about to free the old data rectangles
 
+    // realloc/fast scale the current data contents if appropriate
     if(memcmp(&sx_v,&old_xv,sizeof(sx_v)) || memcmp(&sy_v,&old_yv,sizeof(sy_v))){
       
       // maintain data planes
@@ -1178,14 +1358,38 @@ static int _sushiv_panel2d_compute(sushiv_panel_t *p,
 		     oldmap,old_xv, old_yv);
 	  free(oldmap);
 	}
-
 	p2->y_map[i] = newmap; 
       }
-      // wrap the remap so that it does not give up the lock and allow
-      // itself to be interrupted
-      gdk_threads_enter ();
-      _sushiv_panel2d_remap(p,&c->p2); // do it now, don't queue it
-      gdk_threads_leave ();      
+      remapflag = 1;
+    }
+
+    // realloc render planes if appropriate
+    if(memcmp(&sx,&old_x,sizeof(sx)) || memcmp(&sy,&old_y,sizeof(sy))){
+      for(i=0;i<p2->y_obj_num;i++){
+
+	// y planes
+	if(p2->y_planes[i])
+	  free(p2->y_planes[i]);
+	p2->y_planes[i] = calloc(sx.pixels*sy.pixels,sizeof(**p2->y_planes));
+
+	// todo lists
+	if(p2->y_planetodo[i])
+	  free(p2->y_planetodo[i]);
+	p2->y_planetodo[i] = calloc(sy.pixels,sizeof(**p2->y_planetodo));
+	
+      }
+
+      if(p2->bg_todo)
+	free(p2->bg_todo);
+      p2->bg_todo=calloc(ph,sizeof(*p2->bg_todo));
+      
+      remapflag = 1;
+    }
+
+    if(remapflag){
+      _dirty_map_full(p);
+
+      _sushiv_panel_dirty_map_immediate(p);
 
       gdk_threads_leave ();      
       plot_draw_scales(plot); // this should happen outside lock
@@ -1240,22 +1444,35 @@ static int _sushiv_panel2d_compute(sushiv_panel_t *p,
 
   if(p->private->plot_serialno == serialno){
     p->private->plot_complete_count++;
+    _dirty_map_one_data_line_y(p,y);
     if(p->private->plot_complete_count>=dh){ 
       _sushiv_panel_dirty_map(p);
       _sushiv_panel_dirty_legend(p);
       _sushiv_panel_clean_plot(p);
-    }else{
-      _sushiv_panel_dirty_map_throttled(p);
-    }
+    }else
+      _sushiv_panel_dirty_map_throttled(p); 
   }
 
   return 1;
 }
 
+// only called for resize events
 static void recompute_callback_2d(void *ptr){
   sushiv_panel_t *p = (sushiv_panel_t *)ptr;
+  int i;
+
+  gdk_threads_enter ();
   _mark_recompute_2d(p);
   _sushiv_panel2d_compute(p,NULL); // initial scale setup
+
+  // temporary: blank background to checks
+  Plot *plot = PLOT(p->private->graph);
+  int pw = plot->x.pixels;
+  int ph = plot->y.pixels;
+  for(i=0;i<ph;i++)
+    render_checks((ucolor *)plot->datarect+pw*i, pw, i);
+  
+  gdk_threads_leave();
 }
 
 static void panel2d_undo_log(sushiv_panel_undo_t *u, sushiv_panel_t *p){
@@ -1766,6 +1983,8 @@ int sushiv_new_panel_2d(sushiv_instance_t *s,
   }
 
   p2->y_map = calloc(p2->y_obj_num,sizeof(*p2->y_map));
+  p2->y_planetodo = calloc(p2->y_obj_num,sizeof(*p2->y_planetodo));
+  p2->y_planes = calloc(p2->y_obj_num,sizeof(*p2->y_planes));
 
   return 0;
 }

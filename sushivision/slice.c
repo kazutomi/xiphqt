@@ -246,7 +246,7 @@ void slice_thumb_set(Slice *s,double v){
     s->thumb_val=v;
     slider_vals_bound(s->slider,s->slicenum);
     
-    if(s->callback)s->callback(s->callback_data,5);
+    if(s->callback)s->callback(s->callback_data,1);
     draw_and_expose(w);
   }
 }

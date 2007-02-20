@@ -40,7 +40,6 @@ typedef struct _PlotClass  PlotClass;
 struct _Plot{
   GtkWidget w;
   cairo_t         *wc;
-  cairo_t         *bc;
   cairo_surface_t *back;
   cairo_surface_t *fore;
   cairo_surface_t *stage;

@@ -116,23 +116,26 @@ static void *worker_thread(void *dummy){
 	  gdk_threads_enter();
 	  if(p->private->realized && p->private->graph){
 
-	    if(p->private->map_active){
+	    // pending computation work?
+	    if(p->private->plot_active){
 	      spinner_set_busy(p->private->spinner);
-	      flag |= p->private->map_action(p,&c[j][i]); // may drop lock internally
-	      if(!p->private->map_active)
-		set_map_throttle_time(p);
+	      flag |= p->private->compute_action(p,&c[j][i]); // may drop lock internally
+	    }
+	    
+	    if(p->private->map_active){
+	      int ret = 1;
+	      while(ret){ // favor completing remaps over other ops
+		spinner_set_busy(p->private->spinner);
+		flag |= ret = p->private->map_action(p,&c[j][i]); // may drop lock internally
+		if(!p->private->map_active)
+		  set_map_throttle_time(p);
+	      }
 	    }
 	    
 	    // pending legend work?
 	    if(p->private->legend_active){
 	      spinner_set_busy(p->private->spinner);
 	      flag |= p->private->legend_action(p); // may drop lock internally
-	    }
-	    
-	    // pending computation work?
-	    if(p->private->plot_active){
-	      spinner_set_busy(p->private->spinner);
-	      flag |= p->private->compute_action(p,&c[j][i]); // may drop lock internally
 	    }
 	    
 	    if(!p->private->plot_active &&
@@ -199,10 +202,9 @@ int main (int argc, char *argv[]){
 
   num_threads = num_proccies();
 
-  gtk_init (&argc, &argv);
-  g_thread_init (NULL);
-
   gtk_mutex_fixup();
+  g_thread_init (NULL);
+  gtk_init (&argc, &argv);
   gdk_threads_init ();
   gtk_rc_parse_string(gtkrc_string());
   gtk_rc_add_default_file("sushi-gtkrc");
@@ -211,6 +213,7 @@ int main (int argc, char *argv[]){
   if(ret)return ret;
   
   sushiv_realize_all();
+  gtk_button3_fixup();
   
   {
     pthread_t dummy;
@@ -222,8 +225,9 @@ int main (int argc, char *argv[]){
   signal(SIGINT,_sushiv_clean_exit);
   //signal(SIGSEGV,_sushiv_clean_exit);
 
-  gtk_button3_fixup();
+  gdk_threads_enter();
   gtk_main ();
+  gdk_threads_leave();
   
   {
     int (*optional_exit)(void) = dlsym(RTLD_DEFAULT, "sushiv_atexit");
