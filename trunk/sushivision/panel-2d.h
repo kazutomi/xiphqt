@@ -30,15 +30,25 @@ typedef struct sushiv_panel2d {
   int used_functions;
   sushiv_function_t **used_function_list;
 
+  unsigned char *bg_todo;
+  int bg_next_line;
+  int bg_first_line;
+  int bg_last_line;
+
   /**** Y PLANES ******/
   int y_obj_num;
   int **y_map; // indirected, dw*dh
+  ucolor **y_planes; // indirected, dw*dh
+  unsigned char **y_planetodo; // indirected, dh
+
+  int y_next_plane; // which y plane to issue next render
+  int y_next_line; // incremented when a line is claimed, per plane [0-ph)
 
   sushiv_objective_t **y_obj_list; // list of objectives with a y plane
   int *y_obj_to_panel; /* maps from position in condensed list to position in full list */
   int *y_obj_from_panel; /* maps from position in full list to position in condensed list */
   int *y_fout_offset; 
-
+  
   /* cached resampling helpers */
   int resample_serialno;
   unsigned char *ydelA;

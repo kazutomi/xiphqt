@@ -282,7 +282,7 @@ void plot_draw_scales(Plot *p){
   cairo_surface_t *temp = p->fore;
   p->fore = s;
   cairo_surface_destroy(temp);
-  plot_expose_request(p);
+  //plot_expose_request(p);
   gdk_threads_leave();
 }
 
@@ -536,8 +536,8 @@ static void plot_size_allocate (GtkWidget     *widget,
   p->x = scalespace_linear(p->x.lo,p->x.hi,widget->allocation.width,p->scalespacing,p->x.legend);
   p->y = scalespace_linear(p->y.lo,p->y.hi,widget->allocation.height,p->scalespacing,p->y.legend);
   plot_unset_box(p);
-  plot_draw_scales(p);
   if(p->recompute_callback)p->recompute_callback(p->app_data);
+  //plot_draw_scales(p); geenrally done in callback after scale massaging
 
 }
 

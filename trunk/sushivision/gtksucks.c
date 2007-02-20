@@ -134,7 +134,7 @@ void gtk_widget_remove_events (GtkWidget *widget,
    handler to each and every button on a toplevel.  This is mad
    whack.  The below 'fixes' buttons at the class level by ramming a
    new button press handler into the GtkButtonClass structure (and,
-   unfortunately, button subclasses as thir classes have also already
+   unfortunately, button subclasses as their classes have also already
    initialized and made a copy of the Button's class structure and
    handlers */ 
 
@@ -216,7 +216,6 @@ static void recursive_gdk_lock(void){
 
 static void recursive_gdk_unlock(void){
   pthread_mutex_unlock(&gdkm);
-
 }
 
 void gtk_mutex_fixup(){
