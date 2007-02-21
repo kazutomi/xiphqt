@@ -150,6 +150,11 @@ static void blue(int val, int mul, lcolor *r){
   r->b += val;
 }
  
+static void black_a(int val, int mul, lcolor *r){
+  if(val<0)return;
+  val = (val*mul)>>16;
+  r->a += val;
+}
 
 static void white_a(int val, int mul, lcolor *r){
   if(val<0)return;
@@ -397,7 +402,7 @@ int mapping_inactive_p(mapping *m){
 }
 
 static void (*mapsolid[])(int, int, lcolor *)={
-  white_a,
+  black_a,
   red_a,
   green_a,
   blue_a,
@@ -405,6 +410,7 @@ static void (*mapsolid[])(int, int, lcolor *)={
   cyan_a,
   purple_a,
   gray_a,
+  white_a,
   inactive
 };
 
@@ -417,11 +423,12 @@ static ucolor (*mixsolid[])(ucolor, ucolor)={
   normal_mix,
   normal_mix,
   normal_mix,
+  normal_mix,
   inactive_mix
 };
 
 static char *solidnames[]={
-  "<span foreground=\"white\">white</span>",
+  "<span foreground=\"black\">black</span>",
   "<span foreground=\"red\">red</span>",
   "<span foreground=\"green\">green</span>",
   "<span foreground=\"blue\">blue</span>",
@@ -429,6 +436,7 @@ static char *solidnames[]={
   "<span foreground=\"cyan\">cyan</span>",
   "<span foreground=\"purple\">purple</span>",
   "<span foreground=\"gray\">gray</span>",
+  "<span foreground=\"white\">white</span>",
   "inactive",
   0
 };

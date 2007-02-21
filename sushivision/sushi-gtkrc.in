@@ -20,6 +20,39 @@ style "button-poppy" {
 
 }
 
+style "slider-poppy" {
+	bg[NORMAL]="#c0c0c0" 
+	bg[ACTIVE]="#c0c0c0" 
+	bg[PRELIGHT]="#c0c0c0" 
+
+	fg[NORMAL]="#80a0ff" 
+	fg[ACTIVE]="#c0f0ff" 
+	fg[PRELIGHT]="#c0f0ff" 
+
+	text[NORMAL]="#000000"
+	text[ACTIVE]="#000000"
+	text[PRELIGHT]="#000000" 
+
+	font_name = "sans 8"
+
+	GtkWidget::focus_line_width = 1
+	GtkWidget::focus_padding = 0 
+	GtkWidget::interior_focus = 0 
+	GtkWidget::internal_padding = 0 
+
+}
+
+style "panel" {
+	bg[NORMAL]="#a0a0a0" 
+	bg[ACTIVE]="#c0f0ff" 
+	bg[PRELIGHT]="#c0f0ff" 
+
+	text[INSENSITIVE]="#606060"
+	text[NORMAL]="#000000"
+	text[ACTIVE]="#000000"
+	text[PRELIGHT]="#000000" 
+}
+
 style "panel-text" {
 	font_name = "sans 9"
 }
@@ -37,6 +70,7 @@ style "readout" {
 	font_name = "Fixed, Nimbus Mono L, Courier, Monospace 10"	
 }
 
+widget "*" style "panel"
 widget "*.GtkLabel" style "panel-text"
 widget "*.GtkFrame.GtkLabel" style "frame-label"
 widget "*.GtkFrame.GtkHBox.GtkLabel" style "frame-label"
@@ -45,4 +79,4 @@ widget "*.GtkMenu*" style "button-poppy"
 widget "*.GtkComboBox*" style "button-poppy"
 widget "*.GtkToggleButton*" style "button-poppy"
 widget "*.GtkButton*" style "button-poppy"
-widget "*.Slider" style "button-poppy"
+widget "*.Slider" style "slider-poppy"

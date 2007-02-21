@@ -65,7 +65,11 @@ struct sushiv_panel_internal {
   GtkWidget *toplevel;
   GtkWidget *graph;
   Spinner *spinner;
+  GtkWidget *popmenu;
+
+  enum sushiv_background bg_type;
   sushiv_dim_widget_t **dim_scales;
+  int oldbox_active;
 
   int realized;
 
@@ -99,7 +103,6 @@ struct sushiv_panel_internal {
 
   void (*undo_log)(sushiv_panel_undo_t *u, sushiv_panel_t *p);
   void (*undo_restore)(sushiv_panel_undo_t *u, sushiv_panel_t *p);
-  void (*update_menus)(sushiv_panel_t *p);
 };
 
 struct sushiv_instance_internal {
@@ -139,5 +142,8 @@ extern void _sushiv_panel_undo_down(sushiv_panel_t *p);
 
 extern void _sushiv_panel1d_mark_recompute_linked(sushiv_panel_t *p); 
 extern void _sushiv_panel1d_update_linked_crosshairs(sushiv_panel_t *p, int xflag, int yflag); 
+extern void _sushiv_panel_update_menus(sushiv_panel_t *p);
+
+extern void render_checks(ucolor *c, int w, int y);
 
 extern sig_atomic_t _sushiv_exiting;

@@ -44,6 +44,8 @@ struct _Plot{
   cairo_surface_t *fore;
   cairo_surface_t *stage;
   int widgetfocus;
+  int bg_inv;
+  int grid_mode;
 
   int scalespacing;
   scalespace x;
@@ -93,6 +95,7 @@ Plot     *plot_new (void (*callback)(void *),void *app_data,
 G_END_DECLS
 
 // the widget subclass half
+void plot_set_bg_invert(Plot *p, int setp);
 void plot_expose_request(Plot *p);
 void plot_expose_request_partial(Plot *p,int x, int y, int w, int h);
 void plot_set_x_scale(Plot *p, scalespace x);
@@ -113,10 +116,13 @@ void plot_legend_add_with_color(Plot *p, char *entry, u_int32_t color);
 void plot_legend_clear(Plot *p);
 int plot_get_crosshair_xpixel(Plot *p);
 int plot_get_crosshair_ypixel(Plot *p);
-void plot_replace_data(Plot *p, u_int32_t *d);
+void plot_set_grid(Plot *p, int mode);
 
 void plot_do_enter(Plot *p);
 void plot_do_escape(Plot *p);
 
 #define PLOT_NO_X_CROSS 1
 #define PLOT_NO_Y_CROSS 2
+
+#define PLOT_GRID_NORMAL 4
+#define PLOT_GRID_TICS   8

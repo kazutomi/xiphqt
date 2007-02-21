@@ -33,7 +33,7 @@ static void update_all_menus(sushiv_instance_t *s){
   if(s->panel_list){
     for(i=0;i<s->panels;i++)
       if(s->panel_list[i])
-	s->panel_list[i]->private->update_menus(s->panel_list[i]);
+	_sushiv_panel_update_menus(s->panel_list[i]);
   }
 }
 

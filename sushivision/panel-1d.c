@@ -58,8 +58,6 @@ static char *point_name[POINTTYPES+1] = {
   NULL
 };
 
-static void update_context_menus(sushiv_panel_t *p);
-
 // called internally, assumes we hold lock
 // redraws the data, does not compute the data
 static void _sushiv_panel1d_remap(sushiv_panel_t *p){
@@ -70,13 +68,26 @@ static void _sushiv_panel1d_remap(sushiv_panel_t *p){
 
   if(plot){
     int xi,i,j;
-    //double h = p1->panel_h;
+    int pw = plot->x.pixels;
+    int ph = plot->y.pixels;
     int dw = p1->data_size;
     double r = (p1->flip?p1->panel_w:p1->panel_h);
     
-    /* blank frame to black */
-    cairo_set_source_rgb (c, 0,0,0);
-    cairo_paint(c);
+    /* blank frame to selected bg */
+    switch(p->private->bg_type){
+    case SUSHIV_BG_WHITE:
+      cairo_set_source_rgb (c, 1.,1.,1.);
+      cairo_paint(c);
+      break;
+    case SUSHIV_BG_BLACK:
+      cairo_set_source_rgb (c, 0,0,0);
+      cairo_paint(c);
+      break;
+    case SUSHIV_BG_CHECKS:
+      for(i=0;i<ph;i++)
+	render_checks((ucolor *)plot->datarect+pw*i, pw, i);
+      break;
+    }
 
     if(p1->data_vec){
 
@@ -282,7 +293,10 @@ static void _sushiv_panel1d_remap(sushiv_panel_t *p){
 		}
 
 		if(pointtype>0){
-		  cairo_set_source_rgba(c,1.,1.,1.,alpha);
+		  if(p->private->bg_type == SUSHIV_BG_WHITE)
+		    cairo_set_source_rgba(c,0.,0.,0.,alpha);
+		  else
+		    cairo_set_source_rgba(c,1.,1.,1.,alpha);
 		  cairo_stroke(c);
 		}
 	      }
@@ -842,7 +856,7 @@ static void crosshair_callback(sushiv_panel_t *p){
       if(d == p1->x_d)
 	_sushiv_dimension_set_value(p->private->dim_scales[i],1,x);
 	            
-      p1->oldbox_active = 0;
+      p->private->oldbox_active = 0;
     }
     _sushiv_panel_undo_resume(p);
   }
@@ -857,7 +871,7 @@ static void box_callback(void *in, int state){
   case 0: // box set
     _sushiv_panel_undo_push(p);
     plot_box_vals(plot,p1->oldbox);
-    p1->oldbox_active = plot->box_active;
+    p->private->oldbox_active = plot->box_active;
     break;
   case 1: // box activate
     _sushiv_panel_undo_push(p);
@@ -867,11 +881,11 @@ static void box_callback(void *in, int state){
     
     _sushiv_dimension_set_value(p1->x_scale,0,p1->oldbox[0]);
     _sushiv_dimension_set_value(p1->x_scale,2,p1->oldbox[1]);
-    p1->oldbox_active = 0;
+    p->private->oldbox_active = 0;
     _sushiv_panel_undo_resume(p);
     break;
   }
-  update_context_menus(p);
+  _sushiv_panel_update_menus(p);
 }
 
 void _maintain_cache_1d(sushiv_panel_t *p, _sushiv_bythread_cache_1d *c, int w){
@@ -927,6 +941,7 @@ int _sushiv_panel1d_legend_redraw(sushiv_panel_t *p){
   update_legend(p);
   _sushiv_panel_clean_legend(p);
   plot_draw_scales(plot);
+  plot_expose_request(plot);
   return 1;
 }
 
@@ -1053,7 +1068,7 @@ static void panel1d_undo_log(sushiv_panel_undo_t *u, sushiv_panel_t *p){
   u->x_d = p1->x_dnum;
   u->box[0] = p1->oldbox[0];
   u->box[1] = p1->oldbox[1];
-  u->box_active = p1->oldbox_active;
+  u->box_active = p->private->oldbox_active;
   
 }
 
@@ -1097,10 +1112,10 @@ static void panel1d_undo_restore(sushiv_panel_undo_t *u, sushiv_panel_t *p){
 
   if(u->box_active){
     plot_box_set(plot,u->box);
-    p1->oldbox_active = 1;
+    p->private->oldbox_active = 1;
   }else{
     plot_unset_box(plot);
-    p1->oldbox_active = 0;
+    p->private->oldbox_active = 0;
   }
 }
 
@@ -1136,109 +1151,6 @@ static gboolean panel1d_keypress(GtkWidget *widget,
 
   return FALSE;
 }
-
-static void update_context_menus(sushiv_panel_t *p){
-  sushiv_panel1d_t *p1 = p->subtype->p1;
-
-  // is undo active?
-  if(!p->sushi->private->undo_stack ||
-     !p->sushi->private->undo_level){
-    gtk_widget_set_sensitive(gtk_menu_get_item(GTK_MENU(p1->popmenu),0),FALSE);
-    gtk_widget_set_sensitive(gtk_menu_get_item(GTK_MENU(p1->graphmenu),0),FALSE);
-  }else{
-    gtk_widget_set_sensitive(gtk_menu_get_item(GTK_MENU(p1->popmenu),0),TRUE);
-    gtk_widget_set_sensitive(gtk_menu_get_item(GTK_MENU(p1->graphmenu),0),TRUE);
-  }
-
-  // is redo active?
-  if(!p->sushi->private->undo_stack ||
-     !p->sushi->private->undo_stack[p->sushi->private->undo_level] ||
-     !p->sushi->private->undo_stack[p->sushi->private->undo_level+1]){
-    gtk_widget_set_sensitive(gtk_menu_get_item(GTK_MENU(p1->popmenu),1),FALSE);
-    gtk_widget_set_sensitive(gtk_menu_get_item(GTK_MENU(p1->graphmenu),1),FALSE);
-  }else{
-    gtk_widget_set_sensitive(gtk_menu_get_item(GTK_MENU(p1->popmenu),1),TRUE);
-    gtk_widget_set_sensitive(gtk_menu_get_item(GTK_MENU(p1->graphmenu),1),TRUE);
-  }
-
-  // are we starting or enacting a zoom box?
-  if(p1->oldbox_active){ 
-    gtk_menu_alter_item_label(GTK_MENU(p1->graphmenu),3,"Zoom to selection");
-  }else{
-    gtk_menu_alter_item_label(GTK_MENU(p1->graphmenu),3,"Start zoom selection");
-  }
-
-}
-
-void wrap_exit(sushiv_panel_t *dummy){
-  _sushiv_clean_exit(SIGINT);
-}
-
-static char *panel_menulist[]={
-  "Undo",
-  "Redo",
-  "",
-  "Quit",
-  NULL
-};
-
-static char *panel_shortlist[]={
-  "Backspace",
-  "Space",
-  NULL,
-  "q",
-  NULL
-};
-
-static void (*panel_calllist[])(sushiv_panel_t *)={
-  &_sushiv_panel_undo_down,
-  &_sushiv_panel_undo_up,
-  NULL,
-  &wrap_exit,
-  NULL,
-};
-
-void wrap_enter(sushiv_panel_t *p){
-  plot_do_enter(PLOT(p->private->graph));
-}
-
-void wrap_escape(sushiv_panel_t *p){
-  plot_do_escape(PLOT(p->private->graph));
-}
-
-static char *graph_menulist[]={
-  "Undo",
-  "Redo",
-  "",
-  "Start zoom selection",
-  "Clear readouts",
-  "",
-  "Quit",
-  NULL
-};
-
-static char *graph_shortlist[]={
-  "Backspace",
-  "Space",
-  NULL,
-  "Enter",
-  "Escape",
-  NULL,
-  "q",
-  NULL
-};
-
-static void (*graph_calllist[])(sushiv_panel_t *)={
-  &_sushiv_panel_undo_down,
-  &_sushiv_panel_undo_up,
-  NULL,
-
-  &wrap_enter,
-  &wrap_escape,
-  NULL,
-  &wrap_exit,
-  NULL,
-};
 
 void _sushiv_realize_panel1d(sushiv_panel_t *p){
   sushiv_panel1d_t *p1 = p->subtype->p1;
@@ -1283,6 +1195,7 @@ void _sushiv_realize_panel1d(sushiv_panel_t *p){
 					    box_callback,p,flags)); 
     gtk_table_attach(GTK_TABLE(p1->top_table),p->private->graph,0,4,1,2,
 		     GTK_EXPAND|GTK_FILL,GTK_EXPAND|GTK_FILL,4,1);
+    gtk_table_set_row_spacing(GTK_TABLE(p1->top_table),0,1);
     gtk_table_set_row_spacing(GTK_TABLE(p1->top_table),1,4);
     gtk_table_set_col_spacing(GTK_TABLE(p1->top_table),2,4);
 
@@ -1445,19 +1358,6 @@ void _sushiv_realize_panel1d(sushiv_panel_t *p){
     update_x_sel(p);
   }
 
-  p1->popmenu = gtk_menu_new_twocol(p->private->toplevel,
-				    panel_menulist,
-				    panel_shortlist,
-				    (void *)(void *)panel_calllist,
-				    p);
-  p1->graphmenu = gtk_menu_new_twocol(p->private->graph,
-				      graph_menulist,
-				      graph_shortlist,
-				      (void *)(void *)graph_calllist,
-				      p);
-
-  update_context_menus(p);
-
   g_signal_connect (G_OBJECT (p->private->toplevel), "key-press-event",
                     G_CALLBACK (panel1d_keypress), p);
   gtk_window_set_title (GTK_WINDOW (p->private->toplevel), p->name);
@@ -1494,13 +1394,12 @@ int sushiv_new_panel_1d_linked(sushiv_instance_t *s,
   if(ret<0)return ret;
   p = s->panel_list[number];
   p1 = calloc(1, sizeof(*p1));
-  p->subtype = 
-    calloc(1, sizeof(*p->subtype)); /* the union is alloced not
-				       embedded as its internal
-				       structure must be hidden */
+  p->subtype = calloc(1, sizeof(*p->subtype));
+
   p->subtype->p1 = p1;
   p->type = SUSHIV_PANEL_1D;
   p1->range_scale = scale;
+  p->private->bg_type = SUSHIV_BG_WHITE;
 
   if(flags && SUSHIV_PANEL_LINK_Y)
     p1->link_y = p2;
@@ -1519,7 +1418,6 @@ int sushiv_new_panel_1d_linked(sushiv_instance_t *s,
 
   p->private->undo_log = panel1d_undo_log;
   p->private->undo_restore = panel1d_undo_restore;
-  p->private->update_menus = update_context_menus;
   
   return 0;
 }

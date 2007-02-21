@@ -70,12 +70,22 @@ static void rounded_rectangle (cairo_t *c,
 
 double shades[] = {1.15, 0.95, 0.896, 0.82, 0.7, 0.665, 0.5, 0.45, 0.4};
 
-static void set_shade(GtkWidget *w, cairo_t *c, int shade){
+static void bg_set(GtkWidget *w, cairo_t *c){
   Slice *sl = SLICE(w);
   GdkColor *bg = &w->style->bg[sl->thumb_state?GTK_STATE_ACTIVE:GTK_STATE_NORMAL];
-  double shade_r=bg->red*shades[shade]/65535;
-  double shade_g=bg->green*shades[shade]/65535;
-  double shade_b=bg->blue*shades[shade]/65535;
+  double shade_r=bg->red/65535.;
+  double shade_g=bg->green/65535.;
+  double shade_b=bg->blue/65535.;
+
+  cairo_set_source_rgb (c, shade_r,shade_g,shade_b);
+}
+
+static void fg_shade(GtkWidget *w, cairo_t *c, int shade){
+  Slice *sl = SLICE(w);
+  GdkColor *fg = &w->style->fg[sl->thumb_state?GTK_STATE_ACTIVE:GTK_STATE_NORMAL];
+  double shade_r=fg->red*shades[shade]/65535;
+  double shade_g=fg->green*shades[shade]/65535;
+  double shade_b=fg->blue*shades[shade]/65535;
 
   cairo_set_source_rgb (c, shade_r,shade_g,shade_b);
 }
@@ -93,12 +103,12 @@ static void parent_shade(Slider *s, cairo_t *c, int shade){
 void slider_draw_background(Slider *s){
   int i;
   GtkWidget *parent=gtk_widget_get_parent(s->slices[0]);
-  GdkColor *fg = &s->slices[0]->style->fg[0];
+  GdkColor *text = &s->slices[0]->style->text[0];
   GdkColor *bg = &parent->style->bg[0];
   int textborder=1;
-  double textr=1.;
-  double textg=1.;
-  double textb=1.;
+  double textr=text->red;
+  double textg=text->green;
+  double textb=text->blue;
 
   int x=0;
   int y=0;
@@ -120,7 +130,7 @@ void slider_draw_background(Slider *s){
   cairo_fill(c);
 
   cairo_rectangle (c, x+1, ty, w-2, th);
-  parent_shade(s,c,3);
+  bg_set(s->slices[0],c);
   cairo_fill (c);
   cairo_surface_flush(s->background);
 
@@ -139,9 +149,6 @@ void slider_draw_background(Slider *s){
  
   }else{
     // normal background
-    textr=fg->red;
-    textg=fg->green;
-    textb=fg->blue;
     textborder=0;
   }
 
@@ -186,14 +193,14 @@ void slider_draw_background(Slider *s){
     }
 
     if(textborder){
-      cairo_set_source_rgba(c,0,0,0,.8);
-      cairo_set_line_width(c,2);
+      cairo_set_source_rgba(c,1.,1.,1.,.5);
+      cairo_set_line_width(c,2.5);
       cairo_move_to (c, x,y);
       cairo_text_path (c, s->label[i]); 
       cairo_stroke(c);
     }
 
-    cairo_set_source_rgba(c,textr,textg,textb,.8);
+    cairo_set_source_rgba(c,textr,textg,textb,1.);
     cairo_move_to (c, x,y);
     cairo_show_text (c, s->label[i]); 
   }
@@ -316,11 +323,11 @@ void slider_draw(Slider *s){
 	cairo_arc_negative(c, x-xd+rx, rad+.5, rad, 270.*(M_PI/180.), 150.*(M_PI/180.));
 	cairo_close_path(c);
 	
-	set_shade(sl,c,2);
+	fg_shade(sl,c,2);
 	cairo_fill_preserve(c);
 
 	cairo_set_line_width(c,1);
-	set_shade(sl,c,7);
+	fg_shade(sl,c,7);
       
 	if(((Slice *)s->slices[i])->thumb_focus)
 	  cairo_set_source_rgba(c,0,0,0,1);
@@ -369,10 +376,10 @@ void slider_draw(Slider *s){
 	  cairo_line_to(c, x, h-.5);
 	  cairo_close_path(c);
 	
-	  set_shade(sl,c,2);
+	  fg_shade(sl,c,2);
 	  cairo_set_line_width(c,1);
 	  cairo_fill_preserve(c);
-	  set_shade(sl,c,7);
+	  fg_shade(sl,c,7);
 	  if(((Slice *)s->slices[i])->thumb_focus)
 	    cairo_set_source_rgba(c,0,0,0,1);
 	  cairo_stroke_preserve(c);
@@ -403,10 +410,10 @@ void slider_draw(Slider *s){
 	  cairo_line_to(c, x, h-.5);
 	  cairo_close_path(c);
 	
-	  set_shade(sl,c,2);
+	  fg_shade(sl,c,2);
 	  cairo_set_line_width(c,1);
 	  cairo_fill_preserve(c);
-	  set_shade(sl,c,7);
+	  fg_shade(sl,c,7);
 	  if(((Slice *)s->slices[i])->thumb_focus)
 	    cairo_set_source_rgba(c,0,0,0,1);
 	  cairo_stroke_preserve(c);
@@ -492,6 +499,7 @@ void slider_size_request_slice(Slider *s,GtkRequisition *requisition){
   if(x0+x1*1.2 > maxx)maxx=(x0+x1)*1.2;
 
   w = (maxx+2)*s->labels+4;
+  if(w<200)w=200;
   requisition->width = (w+s->num_slices-1)/s->num_slices;
   requisition->height = maxy+4+s->ypad*2;
 

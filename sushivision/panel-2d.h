@@ -23,8 +23,6 @@ typedef struct sushiv_panel2d {
 
   GtkWidget *top_table;
   GtkWidget *dim_table;
-  GtkWidget *popmenu;
-  GtkWidget *graphmenu;
 
   /* only run those functions used by this panel */
   int used_functions;
@@ -40,6 +38,7 @@ typedef struct sushiv_panel2d {
   int **y_map; // indirected, dw*dh
   ucolor **y_planes; // indirected, dw*dh
   unsigned char **y_planetodo; // indirected, dh
+  int partial_remap;
 
   int y_next_plane; // which y plane to issue next render
   int y_next_line; // incremented when a line is claimed, per plane [0-ph)
@@ -67,7 +66,6 @@ typedef struct sushiv_panel2d {
 
   int scales_init;
   double oldbox[4];
-  int oldbox_active;
 
   mapping    *mappings;
   Slider    **range_scales;
