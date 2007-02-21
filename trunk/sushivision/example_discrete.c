@@ -32,9 +32,9 @@ static void discrete_objective(double *d, double *ret){
   int Y = rint(d[1]);
 
   if(!(X%100) && !(Y%100)) 
-    ret[0]=1.;
-  else
     ret[0]=0.;
+  else
+    ret[0]=1.;
 }
 
 int sushiv_submain(int argc, char *argv[]){

@@ -128,6 +128,9 @@ typedef struct sushiv_panel_internal sushiv_panel_internal_t;
 enum sushiv_panel_type { SUSHIV_PANEL_1D, 
 			 SUSHIV_PANEL_2D, 
 			 SUSHIV_PANEL_XY };
+enum sushiv_background { SUSHIV_BG_WHITE, 
+			 SUSHIV_BG_BLACK, 
+			 SUSHIV_BG_CHECKS };
 typedef union sushiv_panel_subtype sushiv_panel_subtype_t;
 
 typedef struct {
@@ -251,6 +254,10 @@ extern int sushiv_panel_oversample(sushiv_instance_t *s,
 				   int number,
 				   int numer,
 				   int denom);
+
+extern int sushiv_panel_background(sushiv_instance_t *s,
+				   int number,
+				   enum sushiv_background bg);
 
 extern int sushiv_submain(int argc, char *argv[]);
 extern int sushiv_atexit(void);

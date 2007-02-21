@@ -27,8 +27,6 @@ typedef struct sushiv_panel1d {
   GtkWidget *top_table;
   GtkWidget *obj_table;
   GtkWidget *dim_table;
-  GtkWidget *popmenu;
-  GtkWidget *graphmenu;
 
   int panel_w;
   int panel_h;
@@ -43,7 +41,6 @@ typedef struct sushiv_panel1d {
 
   int scales_init;
   double oldbox[4];
-  int oldbox_active;
 
   int flip;
   sushiv_scale_t *range_scale;

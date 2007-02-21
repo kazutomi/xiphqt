@@ -218,21 +218,6 @@ static void compute_single_point(sushiv_panel_t *p,sushiv_objective_t *o, double
 
 /* functions that perform actual graphical rendering */
 
-static void render_checks(ucolor *c, int w, int y){
-  /* default checked background */
-  /* 16x16 'mid-checks' */ 
-  int x,j;
-  
-  int phase = (y>>4)&1;
-  for(x=0;x<w;){
-    u_int32_t phaseval = 0xff505050UL;
-    if(phase) phaseval = 0xff808080UL;
-    for(j=0;j<16 && x<w;j++,x++)
-      c[x].u = phaseval;
-    phase=!phase;
-  }
-}
-
 static float resample_helpers_init(scalespace *to, scalespace *from,
 				   unsigned char *delA, unsigned char *delB, 
 				   int *posA, int *posB,
@@ -540,6 +525,7 @@ static int render_bg_line(sushiv_panel_t *p, int plot_serialno, int map_serialno
   int i = p2->bg_next_line,j;
   ucolor work_bg[pw];
   ucolor work_pl[pw];
+  int bgmode = p->private->bg_type;
 
   /* find a row that needs to be updated */
   while(i<ph && !todo[i]){
@@ -558,7 +544,20 @@ static int render_bg_line(sushiv_panel_t *p, int plot_serialno, int map_serialno
 
   /* gray background checks */
   gdk_threads_leave();
-  render_checks(work_bg,pw,i);
+
+  switch(bgmode){
+  case SUSHIV_BG_WHITE:
+    for(j=0;j<pw;j++)
+      work_bg[j].u = 0xffffffffU;
+    break;
+  case SUSHIV_BG_BLACK:
+    for(j=0;j<pw;j++)
+      work_bg[j].u = 0xff000000U;
+    break;
+  default:
+    render_checks(work_bg,pw,i);
+    break;
+  }
 
   /* by objective */
   for(j=0;j<p->objectives;j++){
@@ -609,6 +608,7 @@ static int render_bg_line(sushiv_panel_t *p, int plot_serialno, int map_serialno
   return 0;
 }
 
+static void _dirty_map_full(sushiv_panel_t *p);
 // enter with lock; returns zero if thread should sleep / get distracted
 static int _sushiv_panel2d_remap(sushiv_panel_t *p, _sushiv_bythread_cache_2d *thread_cache){
   sushiv_panel2d_t *p2 = p->subtype->p2;
@@ -634,6 +634,9 @@ static int _sushiv_panel2d_remap(sushiv_panel_t *p, _sushiv_bythread_cache_2d *t
     p2->bg_next_line = 0;
     p2->bg_first_line = ph;
     p2->bg_last_line = 0;
+
+    if(!p2->partial_remap)
+      _dirty_map_full(p);
   }
 
   /* by plane, by line; each plane renders independently */
@@ -688,6 +691,7 @@ static int _sushiv_panel2d_remap(sushiv_panel_t *p, _sushiv_bythread_cache_2d *t
   memset(p2->bg_todo,0,ph*sizeof(*p2->bg_todo));
 
   // clear 'panel in progress' flag
+  p2->partial_remap = 0;
   _sushiv_panel_clean_map(p);
   return 0;
 
@@ -708,6 +712,7 @@ static void _dirty_map_one_plane(sushiv_panel_t *p, int onum, int y, int z, int 
     if(y_no>=0 && p2->y_planetodo[y_no])
       memset(p2->y_planetodo[y_no],1,ph * sizeof(**p2->y_planetodo));
   }
+  p2->partial_remap = 1;
 }
 
 // call while locked 
@@ -719,6 +724,8 @@ static void _dirty_map_one_data_line_y(sushiv_panel_t *p, int line){
   int dw = p2->x_v.pixels;
   int dh = p2->y_v.pixels;
   int i,j;
+
+  p2->partial_remap = 1;
 
   if(ph!=dh || pw!=dw){
     /* resampled row computation; may involve multiple data rows */
@@ -748,6 +755,8 @@ static void _dirty_map_full(sushiv_panel_t *p){
   sushiv_panel2d_t *p2 = p->subtype->p2;
   int ph = p2->y.pixels;
   int i,j;
+
+  p2->partial_remap = 1;
 
   if(p2->y_planetodo){
     for(j=0;j<p2->y_obj_num;j++){
@@ -1180,7 +1189,7 @@ static void _sushiv_panel2d_crosshairs_callback(sushiv_panel_t *p){
       _sushiv_dimension_set_value(p->private->dim_scales[i],1,y);
     }
     
-    p2->oldbox_active = 0;
+    p->private->oldbox_active = 0;
   }
 
   // dimension setting might have enforced granularity restrictions;
@@ -1203,7 +1212,7 @@ static void box_callback(void *in, int state){
   case 0: // box set
     _sushiv_panel_undo_push(p);
     plot_box_vals(plot,p2->oldbox);
-    p2->oldbox_active = plot->box_active;
+    p->private->oldbox_active = plot->box_active;
     break;
   case 1: // box activate
     _sushiv_panel_undo_push(p);
@@ -1215,11 +1224,11 @@ static void box_callback(void *in, int state){
     _sushiv_dimension_set_value(p2->x_scale,2,p2->oldbox[1]);
     _sushiv_dimension_set_value(p2->y_scale,0,p2->oldbox[2]);
     _sushiv_dimension_set_value(p2->y_scale,2,p2->oldbox[3]);
-    p2->oldbox_active = 0;
+    p->private->oldbox_active = 0;
     _sushiv_panel_undo_resume(p);
     break;
   }
-  p->private->update_menus(p);
+  _sushiv_panel_update_menus(p);
 }
 
 void _maintain_compute_cache_2d(sushiv_panel_t *p, _sushiv_bythread_cache_2d *c, int w){
@@ -1270,6 +1279,7 @@ static int _sushiv_panel2d_legend_redraw(sushiv_panel_t *p){
   update_legend(p);
   _sushiv_panel_clean_legend(p);
   plot_draw_scales(plot);
+  plot_expose_request(plot);
   return 1;
 }
 
@@ -1516,7 +1526,7 @@ static void panel2d_undo_log(sushiv_panel_undo_t *u, sushiv_panel_t *p){
   u->box[1] = p2->oldbox[1];
   u->box[2] = p2->oldbox[2];
   u->box[3] = p2->oldbox[3];
-  u->box_active = p2->oldbox_active;
+  u->box_active = p->private->oldbox_active;
 }
 
 static void panel2d_undo_restore(sushiv_panel_undo_t *u, sushiv_panel_t *p){
@@ -1545,10 +1555,10 @@ static void panel2d_undo_restore(sushiv_panel_undo_t *u, sushiv_panel_t *p){
 
   if(u->box_active){
     plot_box_set(plot,u->box);
-    p2->oldbox_active = 1;
+    p->private->oldbox_active = 1;
   }else{
     plot_unset_box(plot);
-    p2->oldbox_active = 0;
+    p->private->oldbox_active = 0;
   }
 }
 
@@ -1586,110 +1596,6 @@ static gboolean panel2d_keypress(GtkWidget *widget,
   return FALSE;
 }
 
-static void update_context_menus(sushiv_panel_t *p){
-  sushiv_panel2d_t *p2 = p->subtype->p2;
-
-  // is undo active?
-  if(!p->sushi->private->undo_stack ||
-     !p->sushi->private->undo_level){
-    gtk_widget_set_sensitive(gtk_menu_get_item(GTK_MENU(p2->popmenu),0),FALSE);
-    gtk_widget_set_sensitive(gtk_menu_get_item(GTK_MENU(p2->graphmenu),0),FALSE);
-  }else{
-    gtk_widget_set_sensitive(gtk_menu_get_item(GTK_MENU(p2->popmenu),0),TRUE);
-    gtk_widget_set_sensitive(gtk_menu_get_item(GTK_MENU(p2->graphmenu),0),TRUE);
-  }
-
-  // is redo active?
-  if(!p->sushi->private->undo_stack ||
-     !p->sushi->private->undo_stack[p->sushi->private->undo_level] ||
-     !p->sushi->private->undo_stack[p->sushi->private->undo_level+1]){
-    gtk_widget_set_sensitive(gtk_menu_get_item(GTK_MENU(p2->popmenu),1),FALSE);
-    gtk_widget_set_sensitive(gtk_menu_get_item(GTK_MENU(p2->graphmenu),1),FALSE);
-  }else{
-    gtk_widget_set_sensitive(gtk_menu_get_item(GTK_MENU(p2->popmenu),1),TRUE);
-    gtk_widget_set_sensitive(gtk_menu_get_item(GTK_MENU(p2->graphmenu),1),TRUE);
-  }
-
-  // are we starting or enacting a zoom box?
-  if(p2->oldbox_active){ 
-    gtk_menu_alter_item_label(GTK_MENU(p2->popmenu),3,"Zoom to box");
-  }else{
-    gtk_menu_alter_item_label(GTK_MENU(p2->popmenu),3,"Start zoom box");
-  }
-
-}
-
-static void wrap_exit(sushiv_panel_t *dummy){
-  _sushiv_clean_exit(SIGINT);
-}
-
-static char *panel_menulist[]={
-  "Undo",
-  "Redo",
-  "",
-  "Quit",
-  NULL
-};
-
-static char *panel_shortlist[]={
-  "Backspace",
-  "Space",
-  NULL,
-  "q",
-  NULL
-};
-
-static void (*panel_calllist[])(sushiv_panel_t *)={
-  &_sushiv_panel_undo_down,
-  &_sushiv_panel_undo_up,
-  NULL,
-  &wrap_exit,
-  NULL,
-};
-
-static void wrap_enter(sushiv_panel_t *p){
-  plot_do_enter(PLOT(p->private->graph));
-}
-
-static void wrap_escape(sushiv_panel_t *p){
-  plot_do_escape(PLOT(p->private->graph));
-}
-
-static char *graph_menulist[]={
-  "Undo",
-  "Redo",
-  "",
-  "Start zoom box",
-  "Clear readouts",
-  "",
-  "Quit",
-  NULL
-};
-
-static char *graph_shortlist[]={
-  "Backspace",
-  "Space",
-  NULL,
-  "Enter",
-  "Escape",
-  NULL,
-  "q",
-  NULL
-};
-
-static void (*graph_calllist[])(sushiv_panel_t *)={
-  &_sushiv_panel_undo_down,
-  &_sushiv_panel_undo_up,
-  NULL,
-
-  &wrap_enter,
-  &wrap_escape,
-  NULL,
-  &wrap_exit,
-  NULL,
-};
-
-
 static void _sushiv_realize_panel2d(sushiv_panel_t *p){
   sushiv_panel2d_t *p2 = p->subtype->p2;
   int i;
@@ -1722,6 +1628,7 @@ static void _sushiv_realize_panel2d(sushiv_panel_t *p){
 				  box_callback,p,0)); 
   gtk_table_attach(GTK_TABLE(p2->top_table),p->private->graph,0,5,1,2,
 		   GTK_EXPAND|GTK_FILL,GTK_EXPAND|GTK_FILL,4,1);
+  gtk_table_set_row_spacing(GTK_TABLE(p2->top_table),0,1);
   gtk_table_set_row_spacing(GTK_TABLE(p2->top_table),1,4);
 
   /* objective sliders */
@@ -1836,19 +1743,6 @@ static void _sushiv_realize_panel2d(sushiv_panel_t *p){
   }
   update_xy_availability(p);
 
-  p2->popmenu = gtk_menu_new_twocol(p->private->toplevel,
-				    panel_menulist,
-				    panel_shortlist,
-				    (void *)(void *)panel_calllist,
-				    p);
-  p2->graphmenu = gtk_menu_new_twocol(p->private->graph,
-				      graph_menulist,
-				      graph_shortlist,
-				      (void *)(void *)graph_calllist,
-				      p);
-
-  update_context_menus(p);
-
   g_signal_connect (G_OBJECT (p->private->toplevel), "key-press-event",
                     G_CALLBACK (panel2d_keypress), p);
   gtk_window_set_title (GTK_WINDOW (p->private->toplevel), p->name);
@@ -1888,6 +1782,7 @@ int sushiv_new_panel_2d(sushiv_instance_t *s,
   
   p->subtype->p2 = p2;
   p->type = SUSHIV_PANEL_2D;
+  p->private->bg_type = SUSHIV_BG_CHECKS;
 
   // verify all the objectives have scales
   for(i=0;i<p->objectives;i++){
@@ -1906,7 +1801,6 @@ int sushiv_new_panel_2d(sushiv_instance_t *s,
 
   p->private->undo_log = panel2d_undo_log;
   p->private->undo_restore = panel2d_undo_restore;
-  p->private->update_menus = update_context_menus;
 
   /* set up helper data structures for rendering */
 
