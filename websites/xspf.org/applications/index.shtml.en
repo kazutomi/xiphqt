@@ -80,6 +80,18 @@
             </dd>
             
             <dt>
+              <a id="cruxy Second-Life player"></a><a href=
+              "http://slurl.com/secondlife/Silver%20Shores/164/100/23/?img=https://www.cruxy.com/features/tbatb/images/sl/sltbatb1_001_sm.jpg%3Fv%3D0&msg=enter%20the%20listening%20lounge">Cruxy Second-Life player</a> (Second-Life XSPF player)
+            </dt>
+            <dd>
+              <cite src="http://cruxy.com/blog/full.jsp?idx=2">
+              Cruxy Player for Second Life is a portable music player for use at listening parties,
+              as a promotional giveaway, or for just some relaxing downtime in your personal parcel of land.
+              It can load and play music from mp3 playlists using the XSPF standard.
+              To provide maximum opportunity for creativity, the player is being released open-source, under the GNU General Public License.
+            </dd>
+            
+            <dt>
               <a id="drupal"></a><a href=
               "http://drupal.org/handbook/modules/playlist">Drupal playlist
               module</a> (blog/web publishing)
