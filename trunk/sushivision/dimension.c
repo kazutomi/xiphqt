@@ -49,13 +49,50 @@ int _sushiv_dimension_scales(sushiv_dimension_t *d,
 			     scalespace *data, 
 			     scalespace *iter){
 
+  /* the panel scales may be reversed (the easiest way to do y)
+     and/or the dimension may have an inverted scale. */
+  int pneg, dimneg;
+  
+  if(lo>hi){ // == must be 1 to match scale gen code when width is 0
+    pneg = -1;
+  }else{
+    pneg = 1;
+  }
+  
+  if(d->scale->val_list[0] > d->scale->val_list[d->scale->vals-1]){
+    dimneg = -1;
+  }else{
+    dimneg = 1;
+  }
+      
+
   switch(d->type){
   case SUSHIV_DIM_CONTINUOUS:
     {
+      double ceil = d->scale->val_list[d->scale->vals-1] * dimneg;
       double fl = ((d->flags & SUSHIV_DIM_ZEROINDEX) ? d->scale->val_list[0] : 0.);
       *panel = scalespace_linear(lo, hi, panel_w, spacing, legend);
       *data = scalespace_linear(lo, hi, data_w, spacing, legend);
       *iter = scalespace_linear(lo-fl, hi-fl, data_w, spacing, legend);
+
+      /* if possible, the data/iterator scales should cover the entire pane exposed
+	 by the panel scale so long as there's room left to extend them without
+	 overflowing the lo/hi fenceposts */
+      while(1){
+	double panel2 = scalespace_value(panel,panel->pixels)*pneg;
+	double data2 = scalespace_value(data,data_w)*pneg;
+
+	if(data2>=panel2)break;
+	data_w++;
+	if(data2>ceil){
+	  data_w--;
+	  break;
+	}
+      }
+
+      data->pixels = data_w;
+      iter->pixels = data_w;
+
     }
     break;
   case SUSHIV_DIM_DISCRETE:
@@ -73,22 +110,6 @@ int _sushiv_dimension_scales(sushiv_dimension_t *d,
       int hi_i =  floor(hi * d->private->discrete_denominator / 
 		       d->private->discrete_numerator);
 
-      /* the panel scales may be reversed (the easiest way to do y)
-	 and/or the dimension may have an inverted scale. */
-      int pneg, dimneg;
-
-      if(lo_i>hi_i){ // == must be 1 to match scale gen code when width is 0
-	pneg = -1;
-      }else{
-	pneg = 1;
-      }
-
-      if(d->scale->val_list[0] > d->scale->val_list[d->scale->vals-1]){
-	dimneg = -1;
-      }else{
-	dimneg = 1;
-      }
-      
       if(floor_i < ceil_i){
 	if(lo_i < floor_i)lo_i = floor_i;
 	if(hi_i > ceil_i)hi_i = ceil_i;
