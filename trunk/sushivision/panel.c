@@ -155,8 +155,8 @@ static menuitem *menu_bg[]={
 };
 
 static menuitem *menu_text[]={
-  &(menuitem){"<span foreground=\"black\">black</span>",NULL,NULL,&black_text},
-  &(menuitem){"<span foreground=\"white\">white</span>",NULL,NULL,&white_text},
+  &(menuitem){"<span foreground=\"black\">dark</span>",NULL,NULL,&black_text},
+  &(menuitem){"<span foreground=\"white\">light</span>",NULL,NULL,&white_text},
   &(menuitem){NULL,NULL,NULL,NULL}
 };
 
@@ -273,37 +273,6 @@ static int test_throttle_time(sushiv_panel_t *p){
   return 0;  
 }
 
-// the following is slightly odd; we want map and legend updates to
-// fire when the UI is otherwise idle (only good way to do event
-// compression in gtk), but we don't want it processed in the main UI
-// thread because of render latencies.  Thus we have a map/legend
-// chain register an idle handler that then wakes the worker threads
-// and has them render the map/legend changes
-
-static gboolean _idle_map_fire(gpointer ptr){
-  sushiv_panel_t *p = (sushiv_panel_t *)ptr;
-  gdk_threads_enter ();
-  p->private->map_active = 1;
-  p->private->map_serialno++;
-  p->private->map_progress_count=0;
-  p->private->map_complete_count=0;
-  gdk_threads_leave ();
-  _sushiv_wake_workers();
-  return FALSE;
-}
-
-static gboolean _idle_legend_fire(gpointer ptr){
-  sushiv_panel_t *p = (sushiv_panel_t *)ptr;
-  gdk_threads_enter ();
-  p->private->legend_active = 1;
-  p->private->legend_serialno++;
-  p->private->legend_progress_count=0;
-  p->private->legend_complete_count=0;
-  gdk_threads_leave ();
-  _sushiv_wake_workers();
-  return FALSE;
-}
-
 /* use these to request a render/compute action.  Do panel
    subtype-specific setup, then wake workers with one of the below */
 void _sushiv_panel_dirty_plot(sushiv_panel_t *p){
@@ -318,26 +287,30 @@ void _sushiv_panel_dirty_plot(sushiv_panel_t *p){
 
 void _sushiv_panel_dirty_map(sushiv_panel_t *p){
   gdk_threads_enter ();
-  g_idle_add(_idle_map_fire,p);
+  p->private->map_active = 1;
+  p->private->map_serialno++;
+  p->private->map_progress_count=0;
+  p->private->map_complete_count=0;
   gdk_threads_leave ();
-}
-
-void _sushiv_panel_dirty_map_immediate(sushiv_panel_t *p){
-  _idle_map_fire(p);
+  _sushiv_wake_workers();
 }
 
 void _sushiv_panel_dirty_map_throttled(sushiv_panel_t *p){
   gdk_threads_enter ();
   if(!p->private->map_active && test_throttle_time(p)){
-     _idle_map_fire(p);
+     _sushiv_panel_dirty_map(p);
   }
   gdk_threads_leave ();
 }
 
 void _sushiv_panel_dirty_legend(sushiv_panel_t *p){
   gdk_threads_enter ();
-  g_idle_add(_idle_legend_fire,p);
+  p->private->legend_active = 1;
+  p->private->legend_serialno++;
+  p->private->legend_progress_count=0;
+  p->private->legend_complete_count=0;
   gdk_threads_leave ();
+  _sushiv_wake_workers();
 }
 
 /* use these to signal a computation is completed */
