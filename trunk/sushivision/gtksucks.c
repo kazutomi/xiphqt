@@ -209,7 +209,7 @@ void gtk_button3_fixup(){
 
 static pthread_mutex_t gdkm;
 static pthread_mutexattr_t gdkma;
-static depth = 0;
+static int depth = 0;
 
 static void recursive_gdk_lock(void){
   pthread_mutex_lock(&gdkm);
@@ -218,7 +218,10 @@ static void recursive_gdk_lock(void){
 
 static void recursive_gdk_unlock(void){
   depth--;
-  if(depth<0)abort();
+  if(depth<0){
+    fprintf(stderr,"Internal locking error; refcount < 0. Dumping core for debugging\n");
+    abort();
+  }
   pthread_mutex_unlock(&gdkm);
 }
 
