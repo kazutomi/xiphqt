@@ -10,6 +10,14 @@ style "button-poppy" {
 	fg[NORMAL]="#000000"
 	fg[ACTIVE]="#000000"
 	fg[PRELIGHT]="#000000" 
+	fg[SELECTED]="#000000" 
+	fg[INSENSITIVE]="#808080" 
+
+	base[NORMAL] = "#80a0ff"
+	base[SELECTED] = "#80a0ff"
+	base[ACTIVE] = "#80a0ff"
+	base[PRELIGHT] = "#80a0ff"
+	base[INSENSITIVE] = "#808080" 
 
 	font_name = "sans 8"
 
@@ -17,7 +25,36 @@ style "button-poppy" {
 	GtkWidget::focus_padding = 0 
 	GtkWidget::interior_focus = 0 
 	GtkWidget::internal_padding = 0 
+}
 
+style "exp-poppy" {
+	bg[NORMAL]="#a0a0a0" 
+	bg[ACTIVE]="#a0a0a0" 
+	bg[PRELIGHT]="#a0a0a0" 
+
+	text[NORMAL]="#000000"
+	text[ACTIVE]="#000000"
+	text[PRELIGHT]="#000000" 
+
+	fg[NORMAL]="#000000"
+	fg[ACTIVE]="#0000ff"
+	fg[PRELIGHT]="#c0f0ff" 
+	fg[SELECTED]="#c0f0ff" 
+	fg[INSENSITIVE]="#808080" 
+
+	base[NORMAL] = "#80a0ff"
+	base[SELECTED] = "#c0f0ff"
+	base[ACTIVE] = "#c0f0ff"
+	base[PRELIGHT] = "#c0f0ff"
+	base[INSENSITIVE] = "#808080" 
+
+	font_name = "sans 8"
+
+	GtkWidget::focus_line_width = 1
+	GtkWidget::focus_padding = 0 
+	GtkWidget::interior_focus = 0 
+	GtkWidget::internal_padding = 0 
+	GtkExpander::expander_size = 14
 }
 
 style "slider-poppy" {
@@ -79,4 +116,5 @@ widget "*.GtkMenu*" style "button-poppy"
 widget "*.GtkComboBox*" style "button-poppy"
 widget "*.GtkToggleButton*" style "button-poppy"
 widget "*.GtkButton*" style "button-poppy"
+widget "*.GtkExpander" style "exp-poppy"
 widget "*.Slider" style "slider-poppy"
