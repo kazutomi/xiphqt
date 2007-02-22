@@ -25,6 +25,7 @@ struct _Slider {
   GtkWidget **slices;
   int num_slices;
   int realized;
+  int flip; // native is horizontal
 
   u_int32_t *backdata;
   cairo_surface_t *background;
@@ -43,11 +44,10 @@ struct _Slider {
   
   double quant_num;
   double quant_denom;
-  //double minstep;
-  //double step;
 };
 
 #define SLIDER_FLAG_INDEPENDENT_MIDDLE 0x1
+#define SLIDER_FLAG_VERTICAL 0x80
 
 extern void slider_draw_background(Slider *s);
 extern void slider_realize(Slider *s);

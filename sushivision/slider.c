@@ -34,25 +34,39 @@ static double val_to_pixel(Slider *s, double val);
 static int total_slice_width(Slider *s){
   int i;
   int count=0;
-  for(i=0;i<s->num_slices;i++)
-    count += s->slices[i]->allocation.width;
+  if(s->flip)
+    for(i=0;i<s->num_slices;i++)
+      count += s->slices[i]->allocation.height;
+  else
+    for(i=0;i<s->num_slices;i++)
+      count += s->slices[i]->allocation.width;
   return count;
 }
 
 static int slice_width(Slider *s,int slices){
   int i;
   int count=0;
-  for(i=0;i<slices;i++)
-    count += s->slices[i]->allocation.width;
+  if(s->flip)
+    for(i=0;i<slices;i++)
+      count += s->slices[i]->allocation.height;
+  else
+    for(i=0;i<slices;i++)
+      count += s->slices[i]->allocation.width;
   return count;
 }
 
 static int total_slice_height(Slider *s){
   int i;
   int max=0;
-  for(i=0;i<s->num_slices;i++)
-    if(max<s->slices[i]->allocation.height)
-      max = s->slices[i]->allocation.height;
+  if(s->flip){
+    for(i=0;i<s->num_slices;i++)
+      if(max<s->slices[i]->allocation.width)
+	max = s->slices[i]->allocation.width;
+  }else{
+    for(i=0;i<s->num_slices;i++)
+      if(max<s->slices[i]->allocation.height)
+	max = s->slices[i]->allocation.height;
+  }
   return max;
 }
 
@@ -124,6 +138,11 @@ void slider_draw_background(Slider *s){
   // prepare background 
   cairo_t *c = cairo_create(s->background);
   
+  if(s->flip){
+    cairo_matrix_t m = {0.,-1., 1.,0.,  0.,h};
+    cairo_set_matrix(c,&m);
+  }
+
   // Fill with bg color
   gdk_cairo_set_source_color(c,bg); 
   cairo_rectangle(c,0,0,w,h);
@@ -137,16 +156,27 @@ void slider_draw_background(Slider *s){
   // Create trough innards
   if(s->gradient){
     // background map gradient 
-    u_int32_t *pixel=s->backdata+ty*s->w;
-    
-    for(i=tx;i<tx+tw;i++)
-      pixel[i]=mapping_calc(s->gradient,slider_pixel_to_del(s,i), pixel[i]);
-    
-    for(i=ty+1;i<ty+th;i++){
-      memcpy(pixel+w,pixel,w*4);
-      pixel+=s->w;
+    // this happens 'under' cairo
+    if(s->flip){
+      u_int32_t *pixel=s->backdata+ty;
+      
+      for(i=tx+tw-1;i>=tx;i--){
+	*pixel=mapping_calc(s->gradient,slider_pixel_to_del(s,i), *pixel);
+	for(i=1;i<th;i++)
+	  pixel[i] = pixel[0];
+	pixel+=s->w;
+      }
+    }else{
+      u_int32_t *pixel=s->backdata+ty*s->w;
+      
+      for(i=tx;i<tx+tw;i++)
+	pixel[i]=mapping_calc(s->gradient,slider_pixel_to_del(s,i), pixel[i]);
+      
+      for(i=ty+1;i<ty+th;i++){
+	memcpy(pixel+w,pixel,w*4);
+	pixel+=s->w;
+      }
     }
- 
   }else{
     // normal background
     textborder=0;
@@ -210,7 +240,7 @@ void slider_draw_background(Slider *s){
   parent_shade(s,c,7);
   cairo_set_line_width (c, 1.0);
   cairo_stroke (c);
-	
+
   cairo_destroy(c);
 }
 
@@ -229,12 +259,20 @@ void slider_realize(Slider *s){
       free(s->backdata);
 
     s->backdata = calloc(w*h,4);
-    
-    s->background = cairo_image_surface_create_for_data ((unsigned char *)s->backdata,
-							 CAIRO_FORMAT_RGB24,
-							 w,h,w*4);
-    s->foreground = cairo_image_surface_create (CAIRO_FORMAT_RGB24,
-						w,h);
+
+    if(s->flip){
+      s->background = cairo_image_surface_create_for_data ((unsigned char *)s->backdata,
+							   CAIRO_FORMAT_RGB24,
+							   h,w,w*4);
+      s->foreground = cairo_image_surface_create (CAIRO_FORMAT_RGB24,
+						  h,w);
+    }else{
+      s->background = cairo_image_surface_create_for_data ((unsigned char *)s->backdata,
+							   CAIRO_FORMAT_RGB24,
+							   w,h,w*4);
+      s->foreground = cairo_image_surface_create (CAIRO_FORMAT_RGB24,
+						  w,h);
+    }
 
     s->w=w;
     s->h=h;
@@ -299,6 +337,12 @@ void slider_draw(Slider *s){
   int h=s->h;
 
   c = cairo_create(s->foreground);
+
+  if(s->flip){
+    cairo_matrix_t m = {0.,-1., 1.,0.,  0.,h};
+    cairo_set_matrix(c,&m);
+  }
+
   cairo_set_source_surface(c,s->background,0,0);
   cairo_rectangle(c,0,0,s->w,s->h);
   cairo_fill(c);
@@ -463,7 +507,11 @@ void slider_expose_slice(Slider *s, int slicenum){
     cairo_t *c = gdk_cairo_create(w->window);
 
     slider_realize(s);
-    cairo_set_source_surface(c,s->foreground,-slice_width(s,slicenum),0);
+    if(s->flip){
+      cairo_set_source_surface(c,s->foreground,0,-slice_width(s,slicenum));
+    }else{
+      cairo_set_source_surface(c,s->foreground,-slice_width(s,slicenum),0);
+    }
     cairo_rectangle(c,0,0,w->allocation.width,w->allocation.height);
     cairo_fill(c);
   
@@ -500,9 +548,14 @@ void slider_size_request_slice(Slider *s,GtkRequisition *requisition){
 
   w = (maxx+2)*s->labels+4;
   if(w<200)w=200;
-  requisition->width = (w+s->num_slices-1)/s->num_slices;
-  requisition->height = maxy+4+s->ypad*2;
 
+  if(s->flip){
+    requisition->height = (w+s->num_slices-1)/s->num_slices;
+    requisition->width = maxy+4+s->ypad*2;
+  }else{
+    requisition->width = (w+s->num_slices-1)/s->num_slices;
+    requisition->height = maxy+4+s->ypad*2;
+  }
   cairo_destroy(c);
   cairo_surface_destroy(dummy);
 }
@@ -609,6 +662,12 @@ static int determine_thumb(Slider *s,int slicenum,int x,int y){
   float bestdist=s->w+1;
   int n = s->num_slices;
 
+  if(s->flip){
+    int temp = x;
+    x = s->h - y -1;
+    y = temp;
+  }
+
   x=slice_adjust_pixel(s,slicenum,x);
   for(i=0;i<n;i++){
     Slice *sl = SLICE(s->slices[i]);
@@ -711,7 +770,8 @@ static void update_gradient(Slider *s){
 void slider_motion(Slider *s,int slicenum,int x,int y){
   double altered[s->num_slices];
   int i, grabflag=0;
-  
+  int px = (s->flip?s->h-y-1 : x);
+
   for(i=0;i<s->num_slices;i++){
     Slice *sl = SLICE(s->slices[i]);
     altered[i] = sl->thumb_val;
@@ -722,7 +782,7 @@ void slider_motion(Slider *s,int slicenum,int x,int y){
     Slice *sl = SLICE(s->slices[i]);
     if(sl->thumb_grab){      
       sl->thumb_val=
-	slider_pixel_to_val(s,slice_adjust_pixel(s,slicenum,x));
+	slider_pixel_to_val(s,slice_adjust_pixel(s,slicenum,px));
       slider_vals_bound(s,i);
       grabflag = 1;
     }
@@ -746,7 +806,7 @@ void slider_motion(Slider *s,int slicenum,int x,int y){
     }
 
   }else{
-    /* nothing grabbed right now; determine if we're in a a thumb's area */
+    /* nothing grabbed right now; determine if we're in a thumb's area */
     if(slider_lightme(s,slicenum,x,y)){
       slider_draw(s);
       slider_expose(s);
@@ -837,6 +897,7 @@ Slider *slider_new(Slice **slices, int num_slices, char **labels, double *label_
     ret->neg = 1;
 
   ret->flags=flags;
+  if(flags & SLIDER_FLAG_VERTICAL) ret->flip = 1;
   return ret;
 }
 

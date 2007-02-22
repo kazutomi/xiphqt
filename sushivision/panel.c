@@ -138,7 +138,7 @@ static menuitem *menu[]={
 
   &(menuitem){"Background","...",NULL,NULL},
   &(menuitem){"Text color","...",NULL,NULL},
-  &(menuitem){"Scales","...",NULL,NULL},
+  &(menuitem){"Grid mode","...",NULL,NULL},
 
   &(menuitem){"",NULL,NULL,NULL},
 
@@ -161,7 +161,7 @@ static menuitem *menu_text[]={
 };
 
 static menuitem *menu_scales[]={
-  &(menuitem){"grid",NULL,NULL,grid_scale},
+  &(menuitem){"full",NULL,NULL,grid_scale},
   &(menuitem){"tics",NULL,NULL,tic_scale},
   &(menuitem){"none",NULL,NULL,no_scale},
   &(menuitem){NULL,NULL,NULL,NULL}
