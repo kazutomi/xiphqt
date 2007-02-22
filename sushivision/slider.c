@@ -138,11 +138,6 @@ void slider_draw_background(Slider *s){
   // prepare background 
   cairo_t *c = cairo_create(s->background);
   
-  if(s->flip){
-    cairo_matrix_t m = {0.,-1., 1.,0.,  0.,h};
-    cairo_set_matrix(c,&m);
-  }
-
   // Fill with bg color
   gdk_cairo_set_source_color(c,bg); 
   cairo_rectangle(c,0,0,w,h);
@@ -157,25 +152,14 @@ void slider_draw_background(Slider *s){
   if(s->gradient){
     // background map gradient 
     // this happens 'under' cairo
-    if(s->flip){
-      u_int32_t *pixel=s->backdata+ty;
-      
-      for(i=tx+tw-1;i>=tx;i--){
-	*pixel=mapping_calc(s->gradient,slider_pixel_to_del(s,i), *pixel);
-	for(i=1;i<th;i++)
-	  pixel[i] = pixel[0];
-	pixel+=s->w;
-      }
-    }else{
-      u_int32_t *pixel=s->backdata+ty*s->w;
-      
-      for(i=tx;i<tx+tw;i++)
-	pixel[i]=mapping_calc(s->gradient,slider_pixel_to_del(s,i), pixel[i]);
-      
-      for(i=ty+1;i<ty+th;i++){
-	memcpy(pixel+w,pixel,w*4);
-	pixel+=s->w;
-      }
+    u_int32_t *pixel=s->backdata+ty*s->w;
+    
+    for(i=tx;i<tx+tw;i++)
+      pixel[i]=mapping_calc(s->gradient,slider_pixel_to_del(s,i), pixel[i]);
+    
+    for(i=ty+1;i<ty+th;i++){
+      memcpy(pixel+w,pixel,w*4);
+      pixel+=s->w;
     }
   }else{
     // normal background
@@ -260,16 +244,13 @@ void slider_realize(Slider *s){
 
     s->backdata = calloc(w*h,4);
 
-    if(s->flip){
-      s->background = cairo_image_surface_create_for_data ((unsigned char *)s->backdata,
-							   CAIRO_FORMAT_RGB24,
-							   h,w,w*4);
-      s->foreground = cairo_image_surface_create (CAIRO_FORMAT_RGB24,
-						  h,w);
-    }else{
       s->background = cairo_image_surface_create_for_data ((unsigned char *)s->backdata,
 							   CAIRO_FORMAT_RGB24,
 							   w,h,w*4);
+    if(s->flip){
+      s->foreground = cairo_image_surface_create (CAIRO_FORMAT_RGB24,
+						  h,w);
+    }else{
       s->foreground = cairo_image_surface_create (CAIRO_FORMAT_RGB24,
 						  w,h);
     }
@@ -335,16 +316,17 @@ void slider_draw(Slider *s){
   cairo_t *c;
   //int w=s->w;
   int h=s->h;
+  int w=s->w;
 
   c = cairo_create(s->foreground);
 
   if(s->flip){
-    cairo_matrix_t m = {0.,-1., 1.,0.,  0.,h};
+    cairo_matrix_t m = {0.,-1., 1.,0.,  0.,w};
     cairo_set_matrix(c,&m);
   }
 
   cairo_set_source_surface(c,s->background,0,0);
-  cairo_rectangle(c,0,0,s->w,s->h);
+  cairo_rectangle(c,0,0,w,h);
   cairo_fill(c);
 
   // thumbs
@@ -508,7 +490,7 @@ void slider_expose_slice(Slider *s, int slicenum){
 
     slider_realize(s);
     if(s->flip){
-      cairo_set_source_surface(c,s->foreground,0,-slice_width(s,slicenum));
+      cairo_set_source_surface(c,s->foreground,0,slice_width(s,slicenum)-w->allocation.height);
     }else{
       cairo_set_source_surface(c,s->foreground,-slice_width(s,slicenum),0);
     }
@@ -663,8 +645,9 @@ static int determine_thumb(Slider *s,int slicenum,int x,int y){
   int n = s->num_slices;
 
   if(s->flip){
+    Slice *sl = SLICE(s->slices[slicenum]);
     int temp = x;
-    x = s->h - y -1;
+    x = sl->widget.allocation.height - y -1;
     y = temp;
   }
 
@@ -770,16 +753,17 @@ static void update_gradient(Slider *s){
 void slider_motion(Slider *s,int slicenum,int x,int y){
   double altered[s->num_slices];
   int i, grabflag=0;
-  int px = (s->flip?s->h-y-1 : x);
+  Slice *sl = SLICE(s->slices[slicenum]);
+  int px = (s->flip?sl->widget.allocation.height-y-1 : x);
 
   for(i=0;i<s->num_slices;i++){
-    Slice *sl = SLICE(s->slices[i]);
+    sl = SLICE(s->slices[i]);
     altered[i] = sl->thumb_val;
   }
 
   /* is a thumb already grabbed? */
   for(i=0;i<s->num_slices;i++){
-    Slice *sl = SLICE(s->slices[i]);
+    sl = SLICE(s->slices[i]);
     if(sl->thumb_grab){      
       sl->thumb_val=
 	slider_pixel_to_val(s,slice_adjust_pixel(s,slicenum,px));
