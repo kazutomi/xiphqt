@@ -72,7 +72,7 @@ static void set_shadow(int inv, cairo_t *c){
     cairo_set_source_rgba(c,1.,1.,1.,.5);
 }
 
-static void draw_scales_work(cairo_surface_t *s, int inv_text,
+static void draw_scales_work(cairo_surface_t *s, int inv_text, int grid,
 			     scalespace xs, scalespace ys,
 			     scalespace xs_v, scalespace ys_v){
 
@@ -83,6 +83,7 @@ static void draw_scales_work(cairo_surface_t *s, int inv_text,
   char buffer[80];
   int y_width=0;
   int x_height=0;
+  int off = (grid == PLOT_GRID_TICS?6:0);
 
   cairo_save(c);
   cairo_set_operator(c,CAIRO_OPERATOR_CLEAR);
@@ -91,61 +92,66 @@ static void draw_scales_work(cairo_surface_t *s, int inv_text,
   cairo_restore(c);
 
   // draw all axis lines, then stroke
-  cairo_save(c);
-  cairo_set_operator(c,CAIRO_OPERATOR_XOR); 
+  if(grid){
 
-  cairo_set_line_width(c,1.);
-  cairo_set_source_rgba(c,.5,.5,7.,.5);
-
-  i=0;
-  x = scale_demark(&xs, &xs_v, i++, NULL);
-  while(x < w){
-    cairo_move_to(c,x+.5,0);
-    cairo_line_to(c,x+.5,h);
-    x = scale_demark(&xs, &xs_v, i++, NULL);
-  }
-
-  i=0;
-  y = scale_demark(&ys, &ys_v, i++, NULL);
-  while(y < h){
-    cairo_move_to(c,0,y+.5);
-    cairo_line_to(c,w,y+.5);
-    y = scale_demark(&ys, &ys_v, i++, NULL);
-  }
-  cairo_stroke(c);
-  cairo_restore(c);
-
-  // text number labels
-  cairo_select_font_face (c, "Sans",
-			  CAIRO_FONT_SLANT_NORMAL,
-			  CAIRO_FONT_WEIGHT_NORMAL);
-  cairo_set_font_size (c, 10);
-  cairo_set_line_width(c,2);
-
-  i=0;
-  y = scale_demark(&ys, &ys_v, i++, buffer);
-
-  while(y < h){
-    cairo_text_extents_t extents;
-    cairo_text_extents (c, buffer, &extents);
-
-    if(extents.width > y_width) y_width = extents.width;
-
-    if(y - extents.height > 0){
+    cairo_set_line_width(c,1.);
+    if(grid == PLOT_GRID_NORMAL){
+      cairo_save(c);
+      cairo_set_operator(c,CAIRO_OPERATOR_XOR);       
+      cairo_set_source_rgba(c,.5,.5,7.,.5);
       
-      double yy = y+.5-(extents.height/2 + extents.y_bearing);
-
-      cairo_move_to(c,2, yy);
-      set_shadow(inv_text,c);
-      cairo_text_path (c, buffer);  
+      i=0;
+      x = scale_demark(&xs, &xs_v, i++, NULL);
+      while(x < w){
+	cairo_move_to(c,x+.5,0);
+	cairo_line_to(c,x+.5,h);
+	x = scale_demark(&xs, &xs_v, i++, NULL);
+      }
+      
+      i=0;
+      y = scale_demark(&ys, &ys_v, i++, NULL);
+      while(y < h){
+	cairo_move_to(c,0,y+.5);
+	cairo_line_to(c,w,y+.5);
+	y = scale_demark(&ys, &ys_v, i++, NULL);
+      }
+      
       cairo_stroke(c);
-      
-      set_text(inv_text,c);
-      cairo_move_to(c,2, yy);
-      cairo_show_text (c, buffer);
+      cairo_restore(c);
     }
 
+    // text number labels
+    cairo_select_font_face (c, "Sans",
+			    CAIRO_FONT_SLANT_NORMAL,
+			    CAIRO_FONT_WEIGHT_NORMAL);
+    cairo_set_font_size (c, 10);
+    cairo_set_line_width(c,2);
+    
+    i=0;
     y = scale_demark(&ys, &ys_v, i++, buffer);
+    
+    while(y < h){
+      cairo_text_extents_t extents;
+      cairo_text_extents (c, buffer, &extents);
+      
+      if(extents.width > y_width) y_width = extents.width;
+      
+      if(y - extents.height > 0){
+	
+	double yy = y+.5-(extents.height/2 + extents.y_bearing);
+	
+	cairo_move_to(c,2+off, yy);
+	set_shadow(inv_text,c);
+	cairo_text_path (c, buffer);  
+	cairo_stroke(c);
+	
+	set_text(inv_text,c);
+	cairo_move_to(c,2+off, yy);
+	cairo_show_text (c, buffer);
+      }
+      
+      y = scale_demark(&ys, &ys_v, i++, buffer);
+    }
   }
 
   // set sideways text
@@ -158,58 +164,89 @@ static void draw_scales_work(cairo_surface_t *s, int inv_text,
     cairo_text_extents_t extents;
     cairo_text_extents (c, ys.legend, &extents);
     
-    cairo_move_to(c,h/2 - extents.width/2+extents.x_bearing, y_width-extents.y_bearing+5);
+    cairo_move_to(c,h/2 - extents.width/2+extents.x_bearing, y_width-extents.y_bearing+5+off);
     set_shadow(inv_text,c);
     cairo_text_path (c, ys.legend);  
     cairo_stroke(c);
     
-    cairo_move_to(c,h/2 - extents.width/2+extents.x_bearing, y_width-extents.y_bearing+5);
+    cairo_move_to(c,h/2 - extents.width/2+extents.x_bearing, y_width-extents.y_bearing+5+off);
     set_text(inv_text,c);
     cairo_show_text (c, ys.legend);
   }
 
-  i=0;
-  x = scale_demark(&xs, &xs_v, i++, buffer);
-  
-  while(x < w){
-    cairo_text_extents_t extents;
-    cairo_text_extents (c, buffer, &extents);
 
-    if(extents.width > x_height) x_height = extents.width;
-
-    if(x - extents.height > y_width+5 ){
-
-      cairo_move_to(c,2, x+.5-(extents.height/2 + extents.y_bearing));
-      set_shadow(inv_text,c);
-      cairo_text_path (c, buffer);  
-      cairo_stroke(c);
-      
-      cairo_move_to(c,2, x+.5-(extents.height/2 + extents.y_bearing));
-      set_text(inv_text,c);
-      cairo_show_text (c, buffer);
-    }
-
+  if(grid){
+    i=0;
     x = scale_demark(&xs, &xs_v, i++, buffer);
+    
+    while(x < w){
+      cairo_text_extents_t extents;
+      cairo_text_extents (c, buffer, &extents);
+      
+      if(extents.width > x_height) x_height = extents.width;
+      
+      if(x - extents.height > y_width+5 ){
+	
+	cairo_move_to(c,2+off, x+.5-(extents.height/2 + extents.y_bearing));
+	set_shadow(inv_text,c);
+	cairo_text_path (c, buffer);  
+	cairo_stroke(c);
+	
+	cairo_move_to(c,2+off, x+.5-(extents.height/2 + extents.y_bearing));
+	set_text(inv_text,c);
+	cairo_show_text (c, buffer);
+      }
+      
+      x = scale_demark(&xs, &xs_v, i++, buffer);
+    }
   }
-
+   
   cairo_restore(c);
   // text x scale label
   if(xs.legend){
     cairo_text_extents_t extents;
     cairo_text_extents (c, xs.legend, &extents);
     
-    cairo_move_to(c,w/2 - extents.width/2+extents.x_bearing, h - x_height+ extents.y_bearing-5);
+    cairo_move_to(c,w/2 - extents.width/2+extents.x_bearing, h - x_height+ extents.y_bearing-3-off);
     set_shadow(inv_text,c);
-    cairo_set_source_rgba(c,1,1,1,.5);
     cairo_text_path (c, xs.legend);  
     cairo_stroke(c);
     
-    cairo_move_to(c,w/2 - extents.width/2+extents.x_bearing, h - x_height+ extents.y_bearing-5);
+    cairo_move_to(c,w/2 - extents.width/2+extents.x_bearing, h - x_height+ extents.y_bearing-3-off);
     set_text(inv_text,c);
-    cairo_set_source_rgba(c,0.,0.,0.,1.);
     cairo_show_text (c, xs.legend);
   }
 
+  if(grid == PLOT_GRID_TICS){
+    cairo_set_line_width(c,1.);
+    set_text(inv_text,c);
+    
+    i=0;
+    x = scale_demark(&xs, &xs_v, i++, NULL);
+    while(x < w){
+      if(x > y_width+5 ){
+	cairo_move_to(c,x+.5,0);
+	cairo_line_to(c,x+.5,off);
+	cairo_move_to(c,x+.5,h-off);
+	cairo_line_to(c,x+.5,h);
+      }
+      x = scale_demark(&xs, &xs_v, i++, NULL);
+    }
+    
+    i=0;
+    y = scale_demark(&ys, &ys_v, i++, NULL);
+    while(y < h){
+      cairo_move_to(c,0,y+.5);
+      cairo_line_to(c,off,y+.5);
+      cairo_move_to(c,w-off,y+.5);
+      cairo_line_to(c,w,y+.5);
+      y = scale_demark(&ys, &ys_v, i++, NULL);
+    }
+  
+    cairo_stroke(c);
+    cairo_restore(c);
+  }
+  
   cairo_destroy(c);
 }
 
@@ -302,9 +339,10 @@ void plot_draw_scales(Plot *p){
   int h = GTK_WIDGET(p)->allocation.height;
   cairo_surface_t *s = cairo_image_surface_create(CAIRO_FORMAT_ARGB32,w,h);
   int inv = p->bg_inv;
+  int grid = p->grid_mode;
   gdk_threads_leave();
   
-  draw_scales_work(s,inv,x,y,xv,yv);
+  draw_scales_work(s,inv,grid,x,y,xv,yv);
   draw_legend_work(p,s);
   
   gdk_threads_enter();
