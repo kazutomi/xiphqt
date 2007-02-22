@@ -438,20 +438,24 @@ static int resample_render_y_plane_line(sushiv_panel_t *p, _sushiv_bythread_cach
       int y = ystart;
 
       // first line
-      l_mapping_calc(mapfunc, ol_low, ol_range, data[dx++], ol_alpha, ydelA*xA, &out);
-      
-      for(; dx < xend-1; dx++)
-	l_mapping_calc(mapfunc, ol_low, ol_range, data[dx], ol_alpha, ydelA*17, &out);
-      
-      if(dx<xend)
-	l_mapping_calc(mapfunc, ol_low, ol_range, data[dx], ol_alpha, ydelA*xB, &out);
-      y++;
-      
-	// mid lines
+      if(y<yend){
+	if(dx<xend)
+	  l_mapping_calc(mapfunc, ol_low, ol_range, data[dx++], ol_alpha, ydelA*xA, &out);
+	
+	for(; dx < xend-1; dx++)
+	  l_mapping_calc(mapfunc, ol_low, ol_range, data[dx], ol_alpha, ydelA*17, &out);
+	
+	if(dx<xend)
+	  l_mapping_calc(mapfunc, ol_low, ol_range, data[dx], ol_alpha, ydelA*xB, &out);
+	y++;
+      }
+
+      // mid lines
       for(;y<yend-1;y++){
 	dx = xstart += dw;
 	xend += dw;
-	l_mapping_calc(mapfunc, ol_low, ol_range, data[dx++], ol_alpha, 15*xA, &out);
+	if(dx<xend)
+	  l_mapping_calc(mapfunc, ol_low, ol_range, data[dx++], ol_alpha, 15*xA, &out);
 	
 	for(; dx < xend-1; dx++)
 	  l_mapping_calc(mapfunc, ol_low, ol_range, data[dx], ol_alpha, 255, &out);
@@ -464,7 +468,8 @@ static int resample_render_y_plane_line(sushiv_panel_t *p, _sushiv_bythread_cach
       if(y<yend){
 	dx = xstart += dw;
 	xend += dw;
-	l_mapping_calc(mapfunc, ol_low, ol_range, data[dx++], ol_alpha, ydelB*xA, &out);
+	if(dx<xend)
+	  l_mapping_calc(mapfunc, ol_low, ol_range, data[dx++], ol_alpha, ydelB*xA, &out);
 	
 	for(; dx < xend-1; dx++)
 	  l_mapping_calc(mapfunc, ol_low, ol_range, data[dx], ol_alpha, ydelB*17, &out);
