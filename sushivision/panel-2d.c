@@ -534,12 +534,11 @@ static int render_bg_line(sushiv_panel_t *p, int plot_serialno, int map_serialno
     i++;
   }
 
-  if(i < p2->bg_first_line) p2->bg_first_line = i;
-  if(i+1 > p2->bg_last_line) p2->bg_last_line = i+1;
-
   if(i == ph)
     goto done;
 
+  if(i < p2->bg_first_line) p2->bg_first_line = i;
+  if(i+1 > p2->bg_last_line) p2->bg_last_line = i+1;
   p2->bg_next_line++;
 
   /* gray background checks */
@@ -601,10 +600,6 @@ static int render_bg_line(sushiv_panel_t *p, int plot_serialno, int map_serialno
   if(p->private->map_complete_count)
     return 1; // not done yet
 
-  // remap completed; flush background to screen
-  plot_expose_request_partial (plot,0,p2->bg_first_line,
-			       pw,p2->bg_last_line - p2->bg_first_line);
-  gdk_flush();
   return 0;
 }
 
@@ -616,6 +611,7 @@ static int _sushiv_panel2d_remap(sushiv_panel_t *p, _sushiv_bythread_cache_2d *t
 
   if(!plot) goto abort;
   int ph = plot->y.pixels;
+  int pw = plot->x.pixels;
   
   int plot_serialno = p->private->plot_serialno; 
   int map_serialno = p->private->map_serialno; 
@@ -687,6 +683,12 @@ static int _sushiv_panel2d_remap(sushiv_panel_t *p, _sushiv_bythread_cache_2d *t
     return 0; // nothing left to dispatch
 
   // entirely finished.
+
+  // remap completed; flush background to screen
+  plot_expose_request_partial (plot,0,p2->bg_first_line,
+			       pw,p2->bg_last_line - p2->bg_first_line);
+  gdk_flush();
+
   // clean bg todo list
   memset(p2->bg_todo,0,ph*sizeof(*p2->bg_todo));
 
@@ -697,8 +699,6 @@ static int _sushiv_panel2d_remap(sushiv_panel_t *p, _sushiv_bythread_cache_2d *t
 
  abort:
   // reset progress to 'start over'
-  p->private->map_progress_count=0;
-  p->private->map_complete_count=0;
   return 1;
 }
 
@@ -743,7 +743,7 @@ static void _dirty_map_one_data_line_y(sushiv_panel_t *p, int line){
     }
   }else{
     if(p2->y_planetodo)
-      if(line>0 && line<ph)
+      if(line>=0 && line<ph)
 	for(j=0;j<p2->y_obj_num;j++)
 	  if(p2->y_planetodo[j])
 	    p2->y_planetodo[j][line]=1;
@@ -1399,12 +1399,13 @@ static int _sushiv_panel2d_compute(sushiv_panel_t *p,
     if(remapflag){
       _dirty_map_full(p);
 
-      _sushiv_panel_dirty_map_immediate(p);
+      _sushiv_panel_dirty_map(p);
 
       gdk_threads_leave ();      
       plot_draw_scales(plot); // this should happen outside lock
       gdk_threads_enter ();      
     }
+    set_map_throttle_time(p); // swallow the first 'throttled' remap which would only be a single line;
 
     return 1;
   }else{

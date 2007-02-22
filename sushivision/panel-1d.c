@@ -63,249 +63,285 @@ static char *point_name[POINTTYPES+1] = {
 static void _sushiv_panel1d_remap(sushiv_panel_t *p){
   sushiv_panel1d_t *p1 = p->subtype->p1;
   Plot *plot = PLOT(p->private->graph);
-  cairo_surface_t *cs = plot->back;
+  cairo_surface_t *back = plot->back;
+
+  int plot_serialno = p->private->plot_serialno;
+  int map_serialno = p->private->map_serialno;
+
+  // render to a temp surface so that we can release the lock occasionally
+  cairo_surface_t *cs = cairo_surface_create_similar(back,CAIRO_CONTENT_COLOR,
+						     cairo_image_surface_get_width(back),
+						     cairo_image_surface_get_height(back));
   cairo_t *c = cairo_create(cs);
-
-  if(plot){
-    int xi,i,j;
-    int pw = plot->x.pixels;
-    int ph = plot->y.pixels;
-    int dw = p1->data_size;
-    double r = (p1->flip?p1->panel_w:p1->panel_h);
+  int xi,i,j;
+  int pw = plot->x.pixels;
+  int ph = plot->y.pixels;
+  int dw = p1->data_size;
+  double r = (p1->flip?p1->panel_w:p1->panel_h);
+  
+  scalespace rx = (p1->flip?p1->y:p1->x);
+  scalespace ry = (p1->flip?p1->x:p1->y);
+  scalespace sx = p1->x;
+  scalespace sy = p1->y;
+  scalespace sx_v = p1->x_v;
+  scalespace px = plot->x;
+  scalespace py = plot->y;
     
-    /* blank frame to selected bg */
-    switch(p->private->bg_type){
-    case SUSHIV_BG_WHITE:
-      cairo_set_source_rgb (c, 1.,1.,1.);
-      cairo_paint(c);
-      break;
-    case SUSHIV_BG_BLACK:
-      cairo_set_source_rgb (c, 0,0,0);
-      cairo_paint(c);
-      break;
-    case SUSHIV_BG_CHECKS:
-      for(i=0;i<ph;i++)
-	render_checks((ucolor *)plot->datarect+pw*i, pw, i);
-      break;
-    }
+  /* do the panel and plot scales match?  If not, redraw the plot
+     scales */
+  
+  if(memcmp(&rx,&px,sizeof(rx)) ||
+     memcmp(&ry,&py,sizeof(ry))){
 
-    if(p1->data_vec){
+    plot->x = rx;
+    plot->y = ry;
+    
+    gdk_threads_leave();
+    plot_draw_scales(plot);
+  }else
+    gdk_threads_leave();
 
-      /* do the panel and plot scales match?  If not, redraw the plot
-	 scales */
-      
-      scalespace sx = (p1->flip?p1->y:p1->x);
-      scalespace sy = (p1->flip?p1->x:p1->y);
-      
-      if(memcmp(&sx,&plot->x,sizeof(sx)) ||
-	 memcmp(&sy,&plot->y,sizeof(sy))){
-	plot->x = sx;
-	plot->y = sy;
+  /* blank frame to selected bg */
+  switch(p->private->bg_type){
+  case SUSHIV_BG_WHITE:
+    cairo_set_source_rgb (c, 1.,1.,1.);
+    cairo_paint(c);
+    break;
+  case SUSHIV_BG_BLACK:
+    cairo_set_source_rgb (c, 0,0,0);
+    cairo_paint(c);
+      break;
+  case SUSHIV_BG_CHECKS:
+    for(i=0;i<ph;i++)
+      render_checks((ucolor *)plot->datarect+pw*i, pw, i);
+    break;
+  }
+
+  gdk_threads_enter();
+  if(plot_serialno != p->private->plot_serialno ||
+     map_serialno != p->private->map_serialno) goto abort;
+
+  if(p1->data_vec){
+    
+    /* by objective */
+    for(j=0;j<p->objectives;j++){
+      if(p1->data_vec[j]){
 	
-	plot_draw_scales(plot);
-      }
-
-      /* by objective */
-      for(j=0;j<p->objectives;j++){
-	double *data_vec = p1->data_vec[j];
 	double alpha = slider_get_value(p1->alpha_scale[j],0);
 	int linetype = p1->linetype[j];
 	int pointtype = p1->pointtype[j];
 	u_int32_t color = mapping_calc(p1->mappings+j,1.,0);
+      
+	double xv[dw];
+	double yv[dw];
+	double data_vec[dw];
+	
+	memcpy(data_vec,p1->data_vec[j],sizeof(data_vec));
+	gdk_threads_leave();
 
-	if(data_vec){
-	  double xv[dw];
-	  double yv[dw];
+	/* by x */
+	for(xi=0;xi<dw;xi++){
+	  double val = data_vec[xi];
+	  double xpixel = xi;
+	  double ypixel = NAN;
 	  
-	  /* by x */
-	  for(xi=0;xi<dw;xi++){
-	    double val = data_vec[xi];
-	    double xpixel = xi;
-	    double ypixel = NAN;
-	    
-	    /* map data vector bin to x pixel location in the plot */
-	    xpixel = scalespace_pixel(&p1->x,scalespace_value(&p1->x_v,xpixel))+.5;
-	    
-	    /* map/render result */
-	    if(!isnan(val))
-	      ypixel = scalespace_pixel(&p1->y,val)+.5;
-	    
-	    xv[xi] = xpixel;
-	    yv[xi] = ypixel;
+	  /* map data vector bin to x pixel location in the plot */
+	  xpixel = scalespace_pixel(&sx,scalespace_value(&sx_v,xpixel))+.5;
+	  
+	  /* map/render result */
+	  if(!isnan(val))
+	    ypixel = scalespace_pixel(&sy,val)+.5;
+	  
+	  xv[xi] = xpixel;
+	  yv[xi] = ypixel;
+	}
+	
+	/* draw areas, if any */
+	if(linetype>1 && linetype < 5){
+	  double yA=-1;
+	  if(linetype == 2) /* fill above */
+	    yA= (p1->flip?r:-1);
+	  if(linetype == 3) /* fill below */
+	    yA = (p1->flip?-1:r);
+	  if(linetype == 4) /* fill to zero */
+	    yA = scalespace_pixel(&sy,0.)+.5;
+	  
+	  cairo_set_source_rgba(c,
+				((color>>16)&0xff)/255.,
+				((color>>8)&0xff)/255.,
+				((color)&0xff)/255.,
+				alpha*.75);
+	  
+	  if(!isnan(yv[0])){
+	    if(p1->flip){
+	      cairo_move_to(c,yA,xv[0]+.5);
+	      cairo_line_to(c,yv[0],xv[0]+.5);
+	    }else{
+	      cairo_move_to(c,xv[0]-.5,yA);
+	      cairo_line_to(c,xv[0]-.5,yv[0]);
+	    }
 	  }
 	  
-	  /* draw areas, if any */
-	  if(linetype>1 && linetype < 5){
-	    double yA=-1;
-	    if(linetype == 2) /* fill above */
-	      yA= (p1->flip?r:-1);
-	    if(linetype == 3) /* fill below */
-	      yA = (p1->flip?-1:r);
-	    if(linetype == 4) /* fill to zero */
-	      yA = scalespace_pixel(&p1->y,0.)+.5;
+	  for(i=1;i<dw;i++){
 	    
-	    cairo_set_source_rgba(c,
-				  ((color>>16)&0xff)/255.,
-				  ((color>>8)&0xff)/255.,
-				  ((color)&0xff)/255.,
-				  alpha*.75);
-	    
-	    if(!isnan(yv[0])){
-	      if(p1->flip){
-		cairo_move_to(c,yA,xv[0]+.5);
-		cairo_line_to(c,yv[0],xv[0]+.5);
-	      }else{
-		cairo_move_to(c,xv[0]-.5,yA);
-		cairo_line_to(c,xv[0]-.5,yv[0]);
-	      }
-	    }
-	    
-	    for(i=1;i<dw;i++){
-	      
-	      if(isnan(yv[i])){
-		if(!isnan(yv[i-1])){
-		  /* close off the area */
-		  if(p1->flip){
-		    cairo_line_to(c,yv[i-1],xv[i-1]-.5);
-		    cairo_line_to(c,yA,xv[i-1]-.5);
-		  }else{
-		    cairo_line_to(c,xv[i-1]+.5,yv[i-1]);
-		    cairo_line_to(c,xv[i-1]+.5,yA);
-		  }
-		  cairo_close_path(c);
-		}
-	      }else{
-		if(isnan(yv[i-1])){
-		  if(p1->flip){
-		    cairo_move_to(c,yA,xv[i]+.5);
-		    cairo_line_to(c,yv[i],xv[i]+.5);
-		  }else{
-		    cairo_move_to(c,xv[i]-.5,yA);
-		    cairo_line_to(c,xv[i]-.5,yv[i]);
-		  }
-		}else{
-		  if(p1->flip){
-		    cairo_line_to(c,yv[i],xv[i]);
-		  }else{
-		    cairo_line_to(c,xv[i],yv[i]);
-		  }
-		}
-	      }
-	    }
-	    
-	    if(!isnan(yv[i-1])){
-	      /* close off the area */
-	      if(p1->flip){
-		cairo_line_to(c,yv[i-1],xv[i-1]-.5);
-		cairo_line_to(c,yA,xv[i-1]-.5);
-	      }else{
-		cairo_line_to(c,xv[i-1]+.5,yv[i-1]);
-		cairo_line_to(c,xv[i-1]+.5,yA);
-	      }
-	      cairo_close_path(c);
-	    }
-	    
-	    cairo_fill(c);
-	  }
-	  
-	  /* now draw the lines */
-	  if(linetype != 5){
-	    cairo_set_source_rgba(c,
-				  ((color>>16)&0xff)/255.,
-				  ((color>>8)&0xff)/255.,
-				  ((color)&0xff)/255.,
-				  alpha);
-	    if(linetype == 1)
-	      cairo_set_line_width(c,2.);
-	    else
-	      cairo_set_line_width(c,1.);
-	    
-	    for(i=1;i<dw;i++){
-	      
-	      if(!isnan(yv[i-1]) && !isnan(yv[i])){
-		
+	    if(isnan(yv[i])){
+	      if(!isnan(yv[i-1])){
+		/* close off the area */
 		if(p1->flip){
-		  cairo_move_to(c,yv[i-1],xv[i-1]);
+		  cairo_line_to(c,yv[i-1],xv[i-1]-.5);
+		  cairo_line_to(c,yA,xv[i-1]-.5);
+		}else{
+		  cairo_line_to(c,xv[i-1]+.5,yv[i-1]);
+		  cairo_line_to(c,xv[i-1]+.5,yA);
+		}
+		cairo_close_path(c);
+	      }
+	    }else{
+	      if(isnan(yv[i-1])){
+		if(p1->flip){
+		  cairo_move_to(c,yA,xv[i]+.5);
+		  cairo_line_to(c,yv[i],xv[i]+.5);
+		}else{
+		  cairo_move_to(c,xv[i]-.5,yA);
+		  cairo_line_to(c,xv[i]-.5,yv[i]);
+		}
+	      }else{
+		if(p1->flip){
 		  cairo_line_to(c,yv[i],xv[i]);
 		}else{
-		  cairo_move_to(c,xv[i-1],yv[i-1]);
 		  cairo_line_to(c,xv[i],yv[i]);
 		}
-		cairo_stroke(c);
-	      }	      
+	      }
 	    }
 	  }
-
-	  /* now draw the points */
-	  if(pointtype > 0 || linetype == 5){
+	    
+	  if(!isnan(yv[i-1])){
+	    /* close off the area */
+	    if(p1->flip){
+	      cairo_line_to(c,yv[i-1],xv[i-1]-.5);
+	      cairo_line_to(c,yA,xv[i-1]-.5);
+	    }else{
+	      cairo_line_to(c,xv[i-1]+.5,yv[i-1]);
+	      cairo_line_to(c,xv[i-1]+.5,yA);
+	    }
+	    cairo_close_path(c);
+	  }
+	    
+	  cairo_fill(c);
+	}
+	  
+	/* now draw the lines */
+	if(linetype != 5){
+	  cairo_set_source_rgba(c,
+				((color>>16)&0xff)/255.,
+				((color>>8)&0xff)/255.,
+				((color)&0xff)/255.,
+				alpha);
+	  if(linetype == 1)
+	    cairo_set_line_width(c,2.);
+	  else
 	    cairo_set_line_width(c,1.);
+	    
+	  for(i=1;i<dw;i++){
+	      
+	    if(!isnan(yv[i-1]) && !isnan(yv[i])){
+		
+	      if(p1->flip){
+		cairo_move_to(c,yv[i-1],xv[i-1]);
+		cairo_line_to(c,yv[i],xv[i]);
+	      }else{
+		cairo_move_to(c,xv[i-1],yv[i-1]);
+		cairo_line_to(c,xv[i],yv[i]);
+	      }
+	      cairo_stroke(c);
+	    }	      
+	  }
+	}
 
-	    for(i=0;i<dw;i++){
-	      if(!isnan(yv[i])){
-		double xx,yy;
-		if(p1->flip){
-		  xx = yv[i];
-		  yy = xv[i];
-		}else{
-		  xx = xv[i];
-		  yy = yv[i];
-		}
+	/* now draw the points */
+	if(pointtype > 0 || linetype == 5){
+	  cairo_set_line_width(c,1.);
 
-		cairo_set_source_rgba(c,
-				      ((color>>16)&0xff)/255.,
-				      ((color>>8)&0xff)/255.,
-				      ((color)&0xff)/255.,
-				      alpha);
+	  for(i=0;i<dw;i++){
+	    if(!isnan(yv[i])){
+	      double xx,yy;
+	      if(p1->flip){
+		xx = yv[i];
+		yy = xv[i];
+	      }else{
+		xx = xv[i];
+		yy = yv[i];
+	      }
 
-		switch(pointtype){
-		case 0: /* pixeldots */
-		  cairo_rectangle(c, xx-.5,yy-.5,1,1);
-		  cairo_fill(c);
-		  break;
-		case 1: /* X */
-		  cairo_move_to(c,xx-4,yy-4);
-		  cairo_line_to(c,xx+4,yy+4);
-		  cairo_move_to(c,xx+4,yy-4);
-		  cairo_line_to(c,xx-4,yy+4);
-		  break;
-		case 2: /* + */
-		  cairo_move_to(c,xx-4,yy);
-		  cairo_line_to(c,xx+4,yy);
-		  cairo_move_to(c,xx,yy-4);
-		  cairo_line_to(c,xx,yy+4);
-		  break;
-		case 3: case 6: /* circle */
-		  cairo_arc(c,xx,yy,4,0,2.*M_PI);
-		  break;
-		case 4: case 7: /* square */
-		  cairo_rectangle(c,xx-4,yy-4,8,8);
-		  break;
-		case 5: case 8: /* triangle */
-		  cairo_move_to(c,xx,yy-5);
-		  cairo_line_to(c,xx-4,yy+3);
-		  cairo_line_to(c,xx+4,yy+3);
-		  cairo_close_path(c);
-		  break;
-		}
+	      cairo_set_source_rgba(c,
+				    ((color>>16)&0xff)/255.,
+				    ((color>>8)&0xff)/255.,
+				    ((color)&0xff)/255.,
+				    alpha);
 
-		if(pointtype>5){
-		  cairo_fill_preserve(c);
-		}
+	      switch(pointtype){
+	      case 0: /* pixeldots */
+		cairo_rectangle(c, xx-.5,yy-.5,1,1);
+		cairo_fill(c);
+		break;
+	      case 1: /* X */
+		cairo_move_to(c,xx-4,yy-4);
+		cairo_line_to(c,xx+4,yy+4);
+		cairo_move_to(c,xx+4,yy-4);
+		cairo_line_to(c,xx-4,yy+4);
+		break;
+	      case 2: /* + */
+		cairo_move_to(c,xx-4,yy);
+		cairo_line_to(c,xx+4,yy);
+		cairo_move_to(c,xx,yy-4);
+		cairo_line_to(c,xx,yy+4);
+		break;
+	      case 3: case 6: /* circle */
+		cairo_arc(c,xx,yy,4,0,2.*M_PI);
+		break;
+	      case 4: case 7: /* square */
+		cairo_rectangle(c,xx-4,yy-4,8,8);
+		break;
+	      case 5: case 8: /* triangle */
+		cairo_move_to(c,xx,yy-5);
+		cairo_line_to(c,xx-4,yy+3);
+		cairo_line_to(c,xx+4,yy+3);
+		cairo_close_path(c);
+		break;
+	      }
 
-		if(pointtype>0){
-		  if(p->private->bg_type == SUSHIV_BG_WHITE)
-		    cairo_set_source_rgba(c,0.,0.,0.,alpha);
-		  else
-		    cairo_set_source_rgba(c,1.,1.,1.,alpha);
-		  cairo_stroke(c);
-		}
+	      if(pointtype>5){
+		cairo_fill_preserve(c);
+	      }
+
+	      if(pointtype>0){
+		if(p->private->bg_type == SUSHIV_BG_WHITE)
+		  cairo_set_source_rgba(c,0.,0.,0.,alpha);
+		else
+		  cairo_set_source_rgba(c,1.,1.,1.,alpha);
+		cairo_stroke(c);
 	      }
 	    }
 	  }
 	}
+	
+	gdk_threads_enter();
+	if(plot_serialno != p->private->plot_serialno ||
+	   map_serialno != p->private->map_serialno) goto abort;
+	
+
       }
     }
   }
+
+  cairo_surface_destroy(plot->back);
+  plot->back = cs;
+  cairo_destroy(c);
+  return;
+
+ abort:
+  cairo_destroy(c);
+  cairo_surface_destroy(cs);
 }
 
 static void update_legend(sushiv_panel_t *p){  

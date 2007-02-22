@@ -124,7 +124,6 @@ extern int _sushiv_new_panel(sushiv_instance_t *s,
 
 extern void set_map_throttle_time(sushiv_panel_t *p);
 extern void _sushiv_panel_dirty_map(sushiv_panel_t *p);
-extern void _sushiv_panel_dirty_map_immediate(sushiv_panel_t *p);
 extern void _sushiv_panel_dirty_map_throttled(sushiv_panel_t *p);
 extern void _sushiv_panel_dirty_legend(sushiv_panel_t *p);
 extern void _sushiv_panel_dirty_plot(sushiv_panel_t *p);

@@ -209,12 +209,16 @@ void gtk_button3_fixup(){
 
 static pthread_mutex_t gdkm;
 static pthread_mutexattr_t gdkma;
+static depth = 0;
 
 static void recursive_gdk_lock(void){
   pthread_mutex_lock(&gdkm);
+  depth++;
 }
 
 static void recursive_gdk_unlock(void){
+  depth--;
+  if(depth<0)abort();
   pthread_mutex_unlock(&gdkm);
 }
 
