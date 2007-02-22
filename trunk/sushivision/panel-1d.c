@@ -72,6 +72,7 @@ static void _sushiv_panel1d_remap(sushiv_panel_t *p){
   cairo_surface_t *cs = cairo_surface_create_similar(back,CAIRO_CONTENT_COLOR,
 						     cairo_image_surface_get_width(back),
 						     cairo_image_surface_get_height(back));
+  ucolor *lback = (ucolor *)cairo_image_surface_get_data(cs);
   cairo_t *c = cairo_create(cs);
   int xi,i,j;
   int pw = plot->x.pixels;
@@ -110,10 +111,10 @@ static void _sushiv_panel1d_remap(sushiv_panel_t *p){
   case SUSHIV_BG_BLACK:
     cairo_set_source_rgb (c, 0,0,0);
     cairo_paint(c);
-      break;
+    break;
   case SUSHIV_BG_CHECKS:
     for(i=0;i<ph;i++)
-      render_checks((ucolor *)plot->datarect+pw*i, pw, i);
+      render_checks(lback+pw*i, pw, i);
     break;
   }
 
