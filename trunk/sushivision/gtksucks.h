@@ -42,4 +42,7 @@ extern void gtk_menu_alter_item_label(GtkMenu *m, int pos, char *text);
 extern void gtk_menu_alter_item_right(GtkMenu *m, int pos, char *text);
 extern GtkWidget * gtk_combo_box_new_markup (void);
 
+extern void gtk_box_freeze_child (GtkBox *box, GtkWidget *child);
+extern void gtk_box_unfreeze_child (GtkBox *box, GtkWidget *child);
+
 #endif
