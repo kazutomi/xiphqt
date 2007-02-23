@@ -389,3 +389,62 @@ GtkWidget * gtk_combo_box_new_markup (void){
 
   return combo_box;
 }
+
+/**********************************************************************/
+/* Gtk has an annoying habit of 'overresizing'; superfluous resize
+   events within panels that cause all hell to break loose for a
+   while, only to have the panel finally look exactly like it did when
+   it started.  This happens especially with expander widgets.  There
+   are two problems: One, it's ugly as Hell to click an expander and
+   have the whole window freak out just to make a little space.
+   Second, having the Plot resize will trigger a recompute, which
+   could seriously screw the user.
+
+   The below lets us freeze/unfreeze an auto-resizing box's
+   child at its current size without queueing resize events. */
+
+void gtk_box_freeze_child (GtkBox *box,
+			   GtkWidget *child){
+  GList *list;
+  GtkBoxChild *child_info = NULL;
+
+  g_return_if_fail (GTK_IS_BOX (box));
+  g_return_if_fail (GTK_IS_WIDGET (child));
+
+  list = box->children;
+  while (list){
+    child_info = list->data;
+    if (child_info->widget == child)
+      break;
+
+    list = list->next;
+  }
+
+  if (list){
+    child_info->expand = FALSE;
+    child_info->fill = FALSE;
+  }
+}
+
+void gtk_box_unfreeze_child (GtkBox *box,
+			     GtkWidget *child){
+  GList *list;
+  GtkBoxChild *child_info = NULL;
+  
+  g_return_if_fail (GTK_IS_BOX (box));
+  g_return_if_fail (GTK_IS_WIDGET (child));
+
+  list = box->children;
+  while (list){
+    child_info = list->data;
+    if (child_info->widget == child)
+      break;
+
+    list = list->next;
+  }
+
+  if (list){
+    child_info->expand = TRUE;
+    child_info->fill = TRUE;
+  }
+}
