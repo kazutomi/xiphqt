@@ -521,8 +521,14 @@ static gint plot_expose (GtkWidget      *widget,
 
 static void plot_size_request (GtkWidget *widget,
 			       GtkRequisition *requisition){
-  requisition->width = 400; // XXX
-  requisition->height = 200; // XXX
+  Plot *p = PLOT (widget);
+  if(p->resizable || !p->wc){
+    requisition->width = 400;
+    requisition->height = 200;
+  }else{
+    requisition->width = widget->allocation.width;
+    requisition->height = widget->allocation.height;
+  }
 }
 
 static void plot_realize (GtkWidget *widget){
@@ -564,8 +570,10 @@ static void plot_realize (GtkWidget *widget){
 static void plot_size_allocate (GtkWidget     *widget,
 				GtkAllocation *allocation){
   Plot *p = PLOT (widget);
-  
+
   if (GTK_WIDGET_REALIZED (widget)){
+
+    if(p->wc && !p->resizable)return;
 
     if(p->wc)
       cairo_destroy(p->wc);
@@ -944,6 +952,7 @@ Plot *plot_new (void (*callback)(void *),void *app_data,
   p->box_data = box_data;
   p->flags = flags;
   p->grid_mode = PLOT_GRID_NORMAL;
+  p->resizable = 1;
 
   return p;
 }
@@ -1106,3 +1115,23 @@ void plot_legend_add_with_color(Plot *p, char *entry, u_int32_t color){
     p->legend_list[p->legend_entries-1] = strdup("");
   p->legend_colors[p->legend_entries-1] = color;
 }
+
+void plot_resizable(Plot *p, int rp){
+  GtkWidget *widget = GTK_WIDGET(p);
+  if(!rp){
+
+    p->resizable = 0;
+    gtk_widget_set_size_request(widget,
+				widget->allocation.width,
+				widget->allocation.height);
+    
+  }else{
+    gtk_widget_set_size_request(widget,400,200);
+    while(gtk_events_pending()){
+      gtk_main_iteration(); 
+      gdk_flush();
+    }
+    p->resizable = 1;
+  }
+}
+

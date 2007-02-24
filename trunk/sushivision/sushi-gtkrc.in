@@ -79,6 +79,20 @@ style "slider-poppy" {
 
 }
 
+style "entry-poppy" {
+	base[NORMAL]="#ffffff" 
+	base[ACTIVE]="#ffffff" 
+	base[PRELIGHT]="#ffffff" 
+	base[INSENSITIVE]="#c0c0c0" 
+
+	text[NORMAL]="#000000"
+	text[ACTIVE]="#000000"
+	text[PRELIGHT]="#000000" 
+
+	font_name = "sans 7"
+
+}
+
 style "panel" {
 	bg[NORMAL]="#a0a0a0" 
 	bg[ACTIVE]="#c0f0ff" 
@@ -117,4 +131,5 @@ widget "*.GtkComboBox*" style "button-poppy"
 widget "*.GtkToggleButton*" style "button-poppy"
 widget "*.GtkButton*" style "button-poppy"
 widget "*.GtkExpander" style "exp-poppy"
+widget "*.GtkEntry" style "entry-poppy"
 widget "*.Slider" style "slider-poppy"

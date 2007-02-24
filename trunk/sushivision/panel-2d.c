@@ -1574,32 +1574,72 @@ static gboolean panel2d_keypress(GtkWidget *widget,
   sushiv_panel_t *p = (sushiv_panel_t *)in;
   //  sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
   
+  // check if the widget with focus is an Entry
+  GtkWidget *focused = gtk_window_get_focus(GTK_WINDOW(widget));
+  int entryp = (focused?GTK_IS_ENTRY(focused):0);
+
+  // don't swallow modified keypresses
   if(event->state&GDK_MOD1_MASK) return FALSE;
   if(event->state&GDK_CONTROL_MASK)return FALSE;
-  
-  /* non-control keypresses */
-  switch(event->keyval){
-    
-  case GDK_Q:
-  case GDK_q:
-    // quit
+
+  if(entryp){
+    // we still filter, but differently
+    switch(event->keyval){
+    case GDK_BackSpace:
+    case GDK_Home:case GDK_KP_Begin:
+    case GDK_End:case GDK_KP_End:
+    case GDK_Up:case GDK_KP_Up:
+    case GDK_Down:case GDK_KP_Down:
+    case GDK_Left:case GDK_KP_Left:
+    case GDK_Right:case GDK_KP_Right:
+    case GDK_minus:case GDK_KP_Subtract:
+    case GDK_plus:case GDK_KP_Add:
+    case GDK_period:case GDK_KP_Decimal:
+    case GDK_0:case GDK_KP_0:
+    case GDK_1:case GDK_KP_1:
+    case GDK_2:case GDK_KP_2:
+    case GDK_3:case GDK_KP_3:
+    case GDK_4:case GDK_KP_4:
+    case GDK_5:case GDK_KP_5:
+    case GDK_6:case GDK_KP_6:
+    case GDK_7:case GDK_KP_7:
+    case GDK_8:case GDK_KP_8:
+    case GDK_9:case GDK_KP_9:
+    case GDK_Tab:case GDK_KP_Tab:
+    case GDK_ISO_Left_Tab:
+    case GDK_Delete:case GDK_KP_Delete:
+    case GDK_Return:case GDK_ISO_Enter:
+    case GDK_Insert:case GDK_KP_Insert:
+    case GDK_e:case GDK_E:
+      return FALSE;
+    }
+    return TRUE;
+
+  }else{
+        
+    /* non-control keypresses */
+    switch(event->keyval){
+      
+    case GDK_Q:
+    case GDK_q:
+      // quit
     _sushiv_clean_exit(SIGINT);
     return TRUE;
-
-  case GDK_BackSpace:
-    // undo 
-    _sushiv_panel_undo_down(p);
-    return TRUE;
-
-  case GDK_r:
-  case GDK_space:
-    // redo/forward
-    _sushiv_panel_undo_up(p);
-    return TRUE;
-
+    
+    case GDK_BackSpace:
+      // undo 
+      _sushiv_panel_undo_down(p);
+      return TRUE;
+      
+    case GDK_r:
+    case GDK_space:
+      // redo/forward
+      _sushiv_panel_undo_up(p);
+      return TRUE;
+      
+    } 
+    return FALSE;
   }
-
-  return FALSE;
 }
 
 static void _sushiv_realize_panel2d(sushiv_panel_t *p){
@@ -1612,141 +1652,154 @@ static void _sushiv_realize_panel2d(sushiv_panel_t *p){
   g_signal_connect_swapped (G_OBJECT (p->private->toplevel), "delete-event",
 			    G_CALLBACK (_sushiv_clean_exit), (void *)SIGINT);
  
-  p2->top_table = gtk_table_new(3 + p->objectives,5,0);
-  gtk_container_add (GTK_CONTAINER (p->private->toplevel), p2->top_table);
+  // add border to sides with hbox/padding
+  GtkWidget *borderbox =  gtk_hbox_new(0,0);
+  gtk_container_add (GTK_CONTAINER (p->private->toplevel), borderbox);
+
+  // main layout vbox
+  p->private->topbox = gtk_vbox_new(0,0);
+  gtk_box_pack_start(GTK_BOX(borderbox), p->private->topbox, 0,0,4);
   gtk_container_set_border_width (GTK_CONTAINER (p->private->toplevel), 1);
 
   /* spinner, top bar */
   {
     GtkWidget *hbox = gtk_hbox_new(0,0);
-    gtk_table_attach(GTK_TABLE(p2->top_table),hbox,0,5,0,1,GTK_EXPAND|GTK_FILL,0,4,0);
+    gtk_box_pack_start(GTK_BOX(p->private->topbox), hbox, 0,0,0);
     gtk_box_pack_end(GTK_BOX(hbox),GTK_WIDGET(p->private->spinner),0,0,0);
   }
 
-  /* dims */
-  p2->dim_table = gtk_table_new(p->dimensions,4,0);
-  gtk_table_attach(GTK_TABLE(p2->top_table),p2->dim_table,0,5,2+p->objectives,3+p->objectives,
-		   GTK_EXPAND|GTK_FILL,0,4,5);
-  
-  /* graph */
-  p->private->graph = GTK_WIDGET(plot_new(recompute_callback_2d,p,
-				  (void *)(void *)_sushiv_panel2d_crosshairs_callback,p,
-				  box_callback,p,0)); 
-  gtk_table_attach(GTK_TABLE(p2->top_table),p->private->graph,0,5,1,2,
-		   GTK_EXPAND|GTK_FILL,GTK_EXPAND|GTK_FILL,4,1);
-  gtk_table_set_row_spacing(GTK_TABLE(p2->top_table),0,1);
-  gtk_table_set_row_spacing(GTK_TABLE(p2->top_table),1,4);
+  /* plotbox, graph */
+  {
+    p->private->graph = GTK_WIDGET(plot_new(recompute_callback_2d,p,
+					    (void *)(void *)_sushiv_panel2d_crosshairs_callback,p,
+					    box_callback,p,0)); 
+    p->private->plotbox = p->private->graph;
+    gtk_box_pack_start(GTK_BOX(p->private->topbox), p->private->plotbox, 1,1,2);
+  }
 
-  /* objective sliders */
-  p2->range_scales = calloc(p->objectives,sizeof(*p2->range_scales));
-  p2->range_pulldowns = calloc(p->objectives,sizeof(*p2->range_pulldowns));
-  p2->alphadel = calloc(p->objectives,sizeof(*p2->alphadel));
-  p2->mappings = calloc(p->objectives,sizeof(*p2->mappings));
-  for(i=0;i<p->objectives;i++){
-    GtkWidget **sl = calloc(3,sizeof(*sl));
-    sushiv_objective_t *o = p->objective_list[i].o;
-    int lo = o->scale->val_list[0];
-    int hi = o->scale->val_list[o->scale->vals-1];
+  /* obj box */
+  {
+    p2->obj_table = gtk_table_new(p->objectives, 5, 0);
+    gtk_box_pack_start(GTK_BOX(p->private->topbox), p2->obj_table, 0,0,1);
 
-    /* label */
-    GtkWidget *label = gtk_label_new(o->name);
-    gtk_misc_set_alignment(GTK_MISC(label),1.,.5);
-    gtk_table_attach(GTK_TABLE(p2->top_table),label,0,1,i+2,i+3,
-		     GTK_FILL,0,10,0);
-    
-    /* mapping pulldown */
-    {
-      GtkWidget *menu=gtk_combo_box_new_markup();
-      int j;
-      for(j=0;j<num_mappings();j++)
-	gtk_combo_box_append_text (GTK_COMBO_BOX (menu), mapping_name(j));
-      gtk_combo_box_set_active(GTK_COMBO_BOX(menu),0);
-      g_signal_connect (G_OBJECT (menu), "changed",
-			G_CALLBACK (mapchange_callback_2d), p->objective_list+i);
-      gtk_table_attach(GTK_TABLE(p2->top_table),menu,4,5,i+2,i+3,
-		       GTK_SHRINK,GTK_SHRINK,4,0);
-      p2->range_pulldowns[i] = menu;
-    }
+    /* objective sliders */
+    p2->range_scales = calloc(p->objectives,sizeof(*p2->range_scales));
+    p2->range_pulldowns = calloc(p->objectives,sizeof(*p2->range_pulldowns));
+    p2->alphadel = calloc(p->objectives,sizeof(*p2->alphadel));
+    p2->mappings = calloc(p->objectives,sizeof(*p2->mappings));
+    for(i=0;i<p->objectives;i++){
+      GtkWidget **sl = calloc(3,sizeof(*sl));
+      sushiv_objective_t *o = p->objective_list[i].o;
+      int lo = o->scale->val_list[0];
+      int hi = o->scale->val_list[o->scale->vals-1];
+      
+      /* label */
+      GtkWidget *label = gtk_label_new(o->name);
+      gtk_misc_set_alignment(GTK_MISC(label),1.,.5);
+      gtk_table_attach(GTK_TABLE(p2->obj_table),label,0,1,i,i+1,
+		       GTK_FILL,0,10,0);
+      
+      /* mapping pulldown */
+      {
+	GtkWidget *menu=gtk_combo_box_new_markup();
+	int j;
+	for(j=0;j<num_mappings();j++)
+	  gtk_combo_box_append_text (GTK_COMBO_BOX (menu), mapping_name(j));
+	gtk_combo_box_set_active(GTK_COMBO_BOX(menu),0);
+	g_signal_connect (G_OBJECT (menu), "changed",
+			  G_CALLBACK (mapchange_callback_2d), p->objective_list+i);
+	gtk_table_attach(GTK_TABLE(p2->obj_table),menu,4,5,i,i+1,
+			 GTK_SHRINK,GTK_SHRINK,0,0);
+	p2->range_pulldowns[i] = menu;
+      }
 
     /* the range mapping slices/slider */ 
-    sl[0] = slice_new(map_callback_2d,p->objective_list+i);
-    sl[1] = slice_new(map_callback_2d,p->objective_list+i);
-    sl[2] = slice_new(map_callback_2d,p->objective_list+i);
+      sl[0] = slice_new(map_callback_2d,p->objective_list+i);
+      sl[1] = slice_new(map_callback_2d,p->objective_list+i);
+      sl[2] = slice_new(map_callback_2d,p->objective_list+i);
+      
+      gtk_table_attach(GTK_TABLE(p2->obj_table),sl[0],1,2,i,i+1,
+		       GTK_EXPAND|GTK_FILL,0,0,0);
+      gtk_table_attach(GTK_TABLE(p2->obj_table),sl[1],2,3,i,i+1,
+		       GTK_EXPAND|GTK_FILL,0,0,0);
+      gtk_table_attach(GTK_TABLE(p2->obj_table),sl[2],3,4,i,i+1,
+		       GTK_EXPAND|GTK_FILL,0,0,0);
+      p2->range_scales[i] = slider_new((Slice **)sl,3,o->scale->label_list,o->scale->val_list,
+				       o->scale->vals,SLIDER_FLAG_INDEPENDENT_MIDDLE);
 
-    gtk_table_attach(GTK_TABLE(p2->top_table),sl[0],1,2,i+2,i+3,
-		     GTK_EXPAND|GTK_FILL,0,0,0);
-    gtk_table_attach(GTK_TABLE(p2->top_table),sl[1],2,3,i+2,i+3,
-		     GTK_EXPAND|GTK_FILL,0,0,0);
-    gtk_table_attach(GTK_TABLE(p2->top_table),sl[2],3,4,i+2,i+3,
-		     GTK_EXPAND|GTK_FILL,0,0,0);
-    p2->range_scales[i] = slider_new((Slice **)sl,3,o->scale->label_list,o->scale->val_list,
-				    o->scale->vals,SLIDER_FLAG_INDEPENDENT_MIDDLE);
-
-    slice_thumb_set((Slice *)sl[0],lo);
-    slice_thumb_set((Slice *)sl[1],lo);
-    slice_thumb_set((Slice *)sl[2],hi);
-    mapping_setup(&p2->mappings[i],0.,1.,0);
-    slider_set_gradient(p2->range_scales[i], &p2->mappings[i]);
+      slice_thumb_set((Slice *)sl[0],lo);
+      slice_thumb_set((Slice *)sl[1],lo);
+      slice_thumb_set((Slice *)sl[2],hi);
+      mapping_setup(&p2->mappings[i],0.,1.,0);
+      slider_set_gradient(p2->range_scales[i], &p2->mappings[i]);
+    }
   }
 
-  GtkWidget *first_x = NULL;
-  GtkWidget *first_y = NULL;
-  GtkWidget *pressed_y = NULL;
-  p->private->dim_scales = calloc(p->dimensions,sizeof(*p->private->dim_scales));
-  p2->dim_xb = calloc(p->dimensions,sizeof(*p2->dim_xb));
-  p2->dim_yb = calloc(p->dimensions,sizeof(*p2->dim_yb));
-
-  for(i=0;i<p->dimensions;i++){
-    sushiv_dimension_t *d = p->dimension_list[i].d;
-
-    /* label */
-    GtkWidget *label = gtk_label_new(d->name);
-    gtk_misc_set_alignment(GTK_MISC(label),1.,.5);
-    gtk_table_attach(GTK_TABLE(p2->dim_table),label,0,1,i,i+1,
-		     GTK_FILL,0,10,0);
+  /* dims */
+  {
+    p2->dim_table = gtk_table_new(p->dimensions,4,0);
+    gtk_box_pack_start(GTK_BOX(p->private->topbox), p2->dim_table, 0,0,4);
     
-    /* x/y radio buttons */
-    if(!(d->flags & SUSHIV_DIM_NO_X)){
-      if(first_x)
-	p2->dim_xb[i] = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(first_x),"X");
-      else{
-	first_x = p2->dim_xb[i] = gtk_radio_button_new_with_label(NULL,"X");
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(p2->dim_xb[i]),TRUE);
+    GtkWidget *first_x = NULL;
+    GtkWidget *first_y = NULL;
+    GtkWidget *pressed_y = NULL;
+    p->private->dim_scales = calloc(p->dimensions,sizeof(*p->private->dim_scales));
+    p2->dim_xb = calloc(p->dimensions,sizeof(*p2->dim_xb));
+    p2->dim_yb = calloc(p->dimensions,sizeof(*p2->dim_yb));
+    
+    for(i=0;i<p->dimensions;i++){
+      sushiv_dimension_t *d = p->dimension_list[i].d;
+      
+      /* label */
+      GtkWidget *label = gtk_label_new(d->name);
+      gtk_misc_set_alignment(GTK_MISC(label),1.,.5);
+      gtk_table_attach(GTK_TABLE(p2->dim_table),label,0,1,i,i+1,
+		       GTK_FILL,0,5,0);
+      
+      /* x/y radio buttons */
+      if(!(d->flags & SUSHIV_DIM_NO_X)){
+	if(first_x)
+	  p2->dim_xb[i] = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(first_x),"X");
+	else{
+	  first_x = p2->dim_xb[i] = gtk_radio_button_new_with_label(NULL,"X");
+	  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(p2->dim_xb[i]),TRUE);
+	}
+	gtk_table_attach(GTK_TABLE(p2->dim_table),p2->dim_xb[i],1,2,i,i+1,
+			 GTK_SHRINK,0,3,0);
       }
-      gtk_table_attach(GTK_TABLE(p2->dim_table),p2->dim_xb[i],1,2,i,i+1,
-		       0,0,10,0);
-    }
-    
-    if(!(d->flags & SUSHIV_DIM_NO_Y)){
-      if(first_y)
-	p2->dim_yb[i] = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(first_y),"Y");
-      else
-	first_y = p2->dim_yb[i] = gtk_radio_button_new_with_label(NULL,"Y");
-      if(!pressed_y && p2->dim_xb[i]!=first_x){
-	pressed_y = p2->dim_yb[i];
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(p2->dim_yb[i]),TRUE);
+      
+      if(!(d->flags & SUSHIV_DIM_NO_Y)){
+	if(first_y)
+	  p2->dim_yb[i] = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(first_y),"Y");
+	else
+	  first_y = p2->dim_yb[i] = gtk_radio_button_new_with_label(NULL,"Y");
+	if(!pressed_y && p2->dim_xb[i]!=first_x){
+	  pressed_y = p2->dim_yb[i];
+	  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(p2->dim_yb[i]),TRUE);
+	}
+	gtk_table_attach(GTK_TABLE(p2->dim_table),p2->dim_yb[i],2,3,i,i+1,
+			 GTK_SHRINK,0,3,0);
       }
-      gtk_table_attach(GTK_TABLE(p2->dim_table),p2->dim_yb[i],2,3,i,i+1,
-		       0,0,10,0);
+      
+      p->private->dim_scales[i] = 
+	_sushiv_new_dimension_widget(p->dimension_list+i,center_callback_2d,bracket_callback_2d);
+      
+      gtk_table_attach(GTK_TABLE(p2->dim_table),
+		       p->private->dim_scales[i]->t,
+		       3,4,i,i+1,
+		       GTK_EXPAND|GTK_FILL,0,0,0);
+      
     }
-
-    p->private->dim_scales[i] = 
-      _sushiv_new_dimension_widget(p->dimension_list+i,center_callback_2d,bracket_callback_2d);
-    
-    gtk_table_attach(GTK_TABLE(p2->dim_table),
-		     GTK_WIDGET(p->private->dim_scales[i]->t),
-		     3,4,i,i+1,
-		     GTK_EXPAND|GTK_FILL,0,0,0);
-
-  }
-  for(i=0;i<p->dimensions;i++){
-    if(p2->dim_xb[i])
-      g_signal_connect (G_OBJECT (p2->dim_xb[i]), "toggled",
+    for(i=0;i<p->dimensions;i++){
+      if(p2->dim_xb[i])
+	g_signal_connect (G_OBJECT (p2->dim_xb[i]), "toggled",
 			  G_CALLBACK (dimchange_callback_2d), p);
-    if(p2->dim_yb[i])
-      g_signal_connect (G_OBJECT (p2->dim_yb[i]), "toggled",
-			G_CALLBACK (dimchange_callback_2d), p);
+      if(p2->dim_yb[i])
+	g_signal_connect (G_OBJECT (p2->dim_yb[i]), "toggled",
+			  G_CALLBACK (dimchange_callback_2d), p);
+    }
   }
+
   update_xy_availability(p);
 
   g_signal_connect (G_OBJECT (p->private->toplevel), "key-press-event",

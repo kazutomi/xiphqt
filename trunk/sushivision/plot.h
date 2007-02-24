@@ -46,6 +46,7 @@ struct _Plot{
   int widgetfocus;
   int bg_inv;
   int grid_mode;
+  int resizable;
 
   int scalespacing;
   scalespace x;
@@ -120,6 +121,8 @@ void plot_set_grid(Plot *p, int mode);
 
 void plot_do_enter(Plot *p);
 void plot_do_escape(Plot *p);
+
+void plot_resizable(Plot *p, int rp);
 
 #define PLOT_NO_X_CROSS 1
 #define PLOT_NO_Y_CROSS 2

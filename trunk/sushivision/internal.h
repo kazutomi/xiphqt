@@ -63,6 +63,8 @@ typedef union {
 
 struct sushiv_panel_internal {
   GtkWidget *toplevel;
+  GtkWidget *topbox;
+  GtkWidget *plotbox;
   GtkWidget *graph;
   Spinner *spinner;
   GtkWidget *popmenu;
