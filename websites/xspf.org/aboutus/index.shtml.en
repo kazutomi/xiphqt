@@ -7,6 +7,9 @@
 #aboutus_ a {
 	text-decoration: underline;
 }
+p {
+	text-align: justify;
+}
 -->
 </style>
 
@@ -30,17 +33,17 @@
 	<p>Ian C. Rogers and Robert Kaye bootstrapped our project.  Dave
 	Brown, Dan Brickley, and Kevin Marks contributed ideas which had a
 	strong influence on architecture and syntax. Sebastian Pipping and Ivo
-	Emanuel Gonçalves were the drivers behind the 2006 revisions.
-	Sebastian Pipping created the online validator.  Sebastian Pipping,
-	Bjorn Wijjers, and Lucas Gonze maintain web resources like the
+	Emanuel GonÃ§alves were the drivers behind the 2006 revisions.
+	Sebastian Pipping created the online validator.  Lucas Gonze,
+	Bjorn Wijers and Sebastian Pipping maintain web resources like the
 	applications and extensions directories.  </p>
 
 
 	<p>We are grateful for comments and feedback from Ryan Shaw,
 	Alf Eaton, Steve Gedikian, Russell Garrett, Ben Tesch and Pau
 	Garcia i Quiles.  Special thanks to the developers Tomas
-	Franzén (who participated in our work from the very
-	beginning), Jim Garrison, Brander Lien, and Fabricio Zuardi,
+	FranzÃ©n (who participated in our work from the very
+	beginning), Jim Garrison, Brander Lien, Fabricio Zuardi
 	and to everyone who contributed their time and skill on the
 	mailing list and wiki.</p>
 
