@@ -14,33 +14,41 @@
 <!--#include virtual="/ssi/pagetop.include" -->
 <!--  All your page content goes here  -->
 
-<h1>About Us</h1>
-<p>We started work in February 2004, achieved rough consensus on version 0 in April 2004, did implementations and fine tuning throughout summer and fall 2004, and declared the tuned version to be version 1 in January 2005.</p>
-<p>During the spring of 2005 we settled XSPF into a home at <a href="http://xiph.org">Xiph.org</a>, a non-profit organization of like-minded people working on audio/video formats like Ogg Vorbis, FLAC, and SPEEX.</p>
-<p>A key document prior to our starting work was Lucas Gonze's <a href="http://gonze.com/playlists/playlist-format-survey.html">Survey of playlist formats</a>, finalized in November 2003.</p>
-<p>Our group did what it did because we wanted to bring playlist formats up to snuff. There was no standards organization and no commercial sponsorship.</p>
-<h2>Contributors to XSPF</h2>
-<ul>
-<li>Lucas Gonze</li>
-<li>Matthias Friedrich</li>
-<li>Robert Kaye</li>
-<li>Dave Brown</li>
-<li>Dan Brickley</li>
-<li>Kevin Marks</li>
-<li>Ian C. Rogers</li>
-<li>Ryan Shaw</li>
-<li>Alf Eaton</li>
-<li>Steve Gedikian</li>
-<li>Russell Garrett</li>
-<li>Ben Tesch</li>
-<li>Tomas Franz&#233;n</li>
-<li>Jim Garrison</li>
-<li>Brander Lien</li>
-<li>Fabricio Zuardi</li>
-</ul>
+	<h1>About Us</h1>
 
-<h2>Legal help</h2>
+	<p>Our group started work in February 2004, achieved rough
+	consensus on version 0 in April 2004, did implementations and
+	fine tuning throughout summer and fall 2004, and declared the
+	tuned version to be version 1 in January 2005.  During the
+	spring of 2005 we settled into a permanent home at <a
+	href="http://xiph.org">Xiph.org</a>.  Between August and
+	November of 2006 we unfroze the version 1 document for a final
+	round of improvements to the drafting and formatting, limiting
+	changes to those which did not require any implementation to
+	be modified.</p>
 
-<p>We are grateful to Thomas Ruth of <a href="http://www.lassiterlaw.com/">Lassiter, Tidwell & Hildebrand, PLLC</a> for pro bono legal assistance.</p>
+	<p>Ian C. Rogers and Robert Kaye bootstrapped our project.  Dave
+	Brown, Dan Brickley, and Kevin Marks contributed ideas which had a
+	strong influence on architecture and syntax. Sebastian Pipping and Ivo
+	Emanuel Gonçalves were the drivers behind the 2006 revisions.
+	Sebastian Pipping created the online validator.  Sebastian Pipping,
+	Bjorn Wijjers, and Lucas Gonze maintain web resources like the
+	applications and extensions directories.  </p>
+
+
+	<p>We are grateful for comments and feedback from Ryan Shaw,
+	Alf Eaton, Steve Gedikian, Russell Garrett, Ben Tesch and Pau
+	Garcia i Quiles.  Special thanks to the developers Tomas
+	Franzén (who participated in our work from the very
+	beginning), Jim Garrison, Brander Lien, and Fabricio Zuardi,
+	and to everyone who contributed their time and skill on the
+	mailing list and wiki.</p>
+
+	<p>We are grateful to the Metabrainz foundation for their
+	continuing generosity.  We are in awe of Fabricio Zuardi, who
+	popularized the format by creating <a
+	href="http://musicplayer.sourceforge.net">a player</a> which
+	became a runaway hit.</p>
+
 
 <!--#include virtual="/ssi/pagebottom.include" -->
