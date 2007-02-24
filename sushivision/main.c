@@ -114,7 +114,7 @@ static void *worker_thread(void *dummy){
 
 	  // pending remap work?
 	  gdk_threads_enter();
-	  if(p->private->realized && p->private->graph){
+	  if(p && p->private && p->private->realized && p->private->graph){
 
 	    // pending computation work?
 	    if(p->private->plot_active){
@@ -171,7 +171,8 @@ static void sushiv_realize_instance(sushiv_instance_t *s){
   for(i=0;i<s->panels;i++)
     _sushiv_realize_panel(s->panel_list[i]);
   for(i=0;i<s->panels;i++)
-    s->panel_list[i]->private->request_compute(s->panel_list[i]);
+    if(s->panel_list[i])
+      s->panel_list[i]->private->request_compute(s->panel_list[i]);
 }
 
 static void sushiv_realize_all(void){

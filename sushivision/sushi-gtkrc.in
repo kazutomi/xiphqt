@@ -19,12 +19,12 @@ style "button-poppy" {
 	base[PRELIGHT] = "#80a0ff"
 	base[INSENSITIVE] = "#808080" 
 
-	font_name = "sans 8"
-
 	GtkWidget::focus_line_width = 1
 	GtkWidget::focus_padding = 0 
 	GtkWidget::interior_focus = 0 
 	GtkWidget::internal_padding = 0 
+
+	font_name = "sans"
 }
 
 style "exp-poppy" {
@@ -48,13 +48,13 @@ style "exp-poppy" {
 	base[PRELIGHT] = "#c0f0ff"
 	base[INSENSITIVE] = "#808080" 
 
-	font_name = "sans 8"
-
 	GtkWidget::focus_line_width = 1
 	GtkWidget::focus_padding = 0 
 	GtkWidget::interior_focus = 0 
 	GtkWidget::internal_padding = 0 
 	GtkExpander::expander_size = 14
+
+	font_name = "sans"
 }
 
 style "slider-poppy" {
@@ -70,13 +70,12 @@ style "slider-poppy" {
 	text[ACTIVE]="#000000"
 	text[PRELIGHT]="#000000" 
 
-	font_name = "sans 8"
-
 	GtkWidget::focus_line_width = 1
 	GtkWidget::focus_padding = 0 
 	GtkWidget::interior_focus = 0 
 	GtkWidget::internal_padding = 0 
 
+	font_name = "sans"
 }
 
 style "entry-poppy" {
@@ -89,8 +88,7 @@ style "entry-poppy" {
 	text[ACTIVE]="#000000"
 	text[PRELIGHT]="#000000" 
 
-	font_name = "sans 7"
-
+	font_name = "sans"
 }
 
 style "panel" {
@@ -102,30 +100,16 @@ style "panel" {
 	text[NORMAL]="#000000"
 	text[ACTIVE]="#000000"
 	text[PRELIGHT]="#000000" 
+
+	font_name = "sans"
 }
 
 style "panel-text" {
-	font_name = "sans 9"
-}
-
-style "frame-label" {
-	font_name = "sans bold 10"
-}
-
-style "readout" {
-	base[NORMAL]="#ffffff" 
-	base[ACTIVE]="#ffffff" 
-	bg[NORMAL]="#ffffff" 
-	bg[ACTIVE]="#ffffff" 
-
-	font_name = "Fixed, Nimbus Mono L, Courier, Monospace 10"	
+	font_name = "sans"	
 }
 
 widget "*" style "panel"
 widget "*.GtkLabel" style "panel-text"
-widget "*.GtkFrame.GtkLabel" style "frame-label"
-widget "*.GtkFrame.GtkHBox.GtkLabel" style "frame-label"
-widget "*.GtkEntry" style "readout"
 widget "*.GtkMenu*" style "button-poppy"
 widget "*.GtkComboBox*" style "button-poppy"
 widget "*.GtkToggleButton*" style "button-poppy"

@@ -126,7 +126,7 @@ static void _sushiv_panel1d_remap(sushiv_panel_t *p){
     
     /* by objective */
     for(j=0;j<p->objectives;j++){
-      if(p1->data_vec[j]){
+      if(p1->data_vec[j] && !mapping_inactive_p(p1->mappings+j)){
 	
 	double alpha = slider_get_value(p1->alpha_scale[j],0);
 	int linetype = p1->linetype[j];
@@ -338,6 +338,9 @@ static void _sushiv_panel1d_remap(sushiv_panel_t *p){
   cairo_surface_destroy(plot->back);
   plot->back = cs;
   cairo_destroy(c);
+
+  _sushiv_panel_clean_map(p);
+  plot_expose_request(plot);
   return;
 
  abort:
@@ -397,26 +400,27 @@ static void update_legend(sushiv_panel_t *p){
     {
       double val = (p1->flip?plot->sely:plot->selx);
       int bin = rint(scalespace_pixel(&p1->x_v, val));
-      u_int32_t color = mapping_calc(p1->mappings+i,1.,0);
 
       for(i=0;i<p->objectives;i++){
-
-	snprintf(buffer,320,"%s",
-		 p->objective_list[i].o->name);
-	
-	if(bin>=0 && bin<p1->data_size){
+	if(!mapping_inactive_p(p1->mappings+i)){
+	  u_int32_t color = mapping_calc(p1->mappings+i,1.,0);
 	  
-	  float val = p1->data_vec[i][bin];
+	  snprintf(buffer,320,"%s",
+		   p->objective_list[i].o->name);
 	  
-	  if(!isnan(val)){
-	    snprintf(buffer,320,"%s = %f",
-		     p->objective_list[i].o->name,
-		     val);
+	  if(bin>=0 && bin<p1->data_size){
+	    
+	    float val = p1->data_vec[i][bin];
+	    
+	    if(!isnan(val)){
+	      snprintf(buffer,320,"%s = %f",
+		       p->objective_list[i].o->name,
+		       val);
+	    }
 	  }
-	}
 	
-	plot_legend_add_with_color(plot,buffer,color | 0xff000000);
-
+	  plot_legend_add_with_color(plot,buffer,color | 0xff000000);
+	}
       }
     }
     gdk_threads_leave ();
@@ -959,13 +963,9 @@ void _maintain_cache_1d(sushiv_panel_t *p, _sushiv_bythread_cache_1d *c, int w){
 
 // subtype entry point for plot remaps; lock held
 int _sushiv_panel1d_map_redraw(sushiv_panel_t *p, _sushiv_bythread_cache *c){
-  Plot *plot = PLOT(p->private->graph);
-
   if(p->private->map_progress_count)return 0;
   p->private->map_progress_count++;
   _sushiv_panel1d_remap(p);
-  _sushiv_panel_clean_map(p);
-  plot_expose_request(plot);
   return 1;
 }
 
@@ -1052,11 +1052,12 @@ int _sushiv_panel1d_compute(sushiv_panel_t *p,
   compute_1d(p, serialno, x_d, x_min, x_max, dw, dim_vals, &c->p1);
   
   gdk_threads_enter ();
-  
-  _sushiv_panel_dirty_map(p);
-  _sushiv_panel_dirty_legend(p);
-  _sushiv_panel_clean_plot(p);
-  
+
+  if(serialno == p->private->plot_serialno){
+    _sushiv_panel_dirty_map(p);
+    _sushiv_panel_dirty_legend(p);
+    _sushiv_panel_clean_plot(p);
+  }
   return 1;
 }
 
@@ -1417,6 +1418,44 @@ void _sushiv_realize_panel1d(sushiv_panel_t *p){
   _sushiv_panel_undo_resume(p);
 }
 
+int sushiv_new_panel_1d(sushiv_instance_t *s,
+			int number,
+			const char *name,
+			sushiv_scale_t *scale,
+			int *objectives,
+			int *dimensions,	
+			unsigned flags){
+
+  int ret = _sushiv_new_panel(s,number,name,objectives,dimensions,flags);
+  sushiv_panel_t *p;
+  sushiv_panel1d_t *p1;
+
+  if(ret<0)return ret;
+  p = s->panel_list[number];
+  p1 = calloc(1, sizeof(*p1));
+  p->subtype = calloc(1, sizeof(*p->subtype));
+
+  p->subtype->p1 = p1;
+  p->type = SUSHIV_PANEL_1D;
+  p1->range_scale = scale;
+  p->private->bg_type = SUSHIV_BG_WHITE;
+
+  if(p->flags && SUSHIV_PANEL_FLIP)
+    p1->flip=1;
+
+  p->private->realize = _sushiv_realize_panel1d;
+  p->private->map_action = _sushiv_panel1d_map_redraw;
+  p->private->legend_action = _sushiv_panel1d_legend_redraw;
+  p->private->compute_action = _sushiv_panel1d_compute;
+  p->private->request_compute = _mark_recompute_1d;
+  p->private->crosshair_action = crosshair_callback;
+
+  p->private->undo_log = panel1d_undo_log;
+  p->private->undo_restore = panel1d_undo_restore;
+  
+  return 0;
+}
+
 int sushiv_new_panel_1d_linked(sushiv_instance_t *s,
 			       int number,
 			       const char *name,
@@ -1433,39 +1472,21 @@ int sushiv_new_panel_1d_linked(sushiv_instance_t *s,
     return -EINVAL;
   }
 
-  int ret = _sushiv_new_panel(s,number,name,objectives,(int []){-1},flags);
+  int ret = sushiv_new_panel_1d(s,number,name,scale,objectives,(int []){-1},flags);
+
   sushiv_panel_t *p;
   sushiv_panel1d_t *p1;
   sushiv_panel_t *p2 = s->panel_list[link];
 
   if(ret<0)return ret;
   p = s->panel_list[number];
-  p1 = calloc(1, sizeof(*p1));
-  p->subtype = calloc(1, sizeof(*p->subtype));
-
-  p->subtype->p1 = p1;
-  p->type = SUSHIV_PANEL_1D;
-  p1->range_scale = scale;
-  p->private->bg_type = SUSHIV_BG_WHITE;
+  p1 = p->subtype->p1;
 
   if(flags && SUSHIV_PANEL_LINK_Y)
     p1->link_y = p2;
   else
     p1->link_x = p2;
 
-  if(p->flags && SUSHIV_PANEL_FLIP)
-    p1->flip=1;
-
-  p->private->realize = _sushiv_realize_panel1d;
-  p->private->map_action = _sushiv_panel1d_map_redraw;
-  p->private->legend_action = _sushiv_panel1d_legend_redraw;
-  p->private->compute_action = _sushiv_panel1d_compute;
-  p->private->request_compute = _mark_recompute_1d;
-  p->private->crosshair_action = crosshair_callback;
-
-  p->private->undo_log = panel1d_undo_log;
-  p->private->undo_restore = panel1d_undo_restore;
-  
   return 0;
 }
 
