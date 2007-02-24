@@ -22,11 +22,12 @@
 
 typedef struct {
   sushiv_dimension_list_t *dl;
-  GtkTable *t;
+  GtkWidget *t;
 
   /* one or the other */
   Slider *scale;
   GtkWidget *menu;
+  GtkWidget *entry[3];
 
   /* don't rely on intuited state; that could be fragile. If we don't
      want updates to recurse, be explicit about it! */

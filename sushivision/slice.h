@@ -57,6 +57,9 @@ struct _Slice{
   void (*callback)(void *,int);
   void *callback_data;
 
+  void (*active_callback)(void *, int);
+  void *active_callback_data;
+
 };
 
 struct _SliceClass{
@@ -68,6 +71,6 @@ extern GType slice_get_type        (void);
 extern GtkWidget* slice_new (void (*callback)(void *,int), void *data);
 extern void slice_set_active(Slice *s, int activep);
 extern void slice_thumb_set(Slice *s,double v);
-
+extern void slice_set_active_callback(Slice *s, void (*callback)(void *,int), void *data);
 G_END_DECLS
 #endif

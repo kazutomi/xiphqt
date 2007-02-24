@@ -212,6 +212,7 @@ int main (int argc, char *argv[]){
   ret = sushiv_submain(argc,argv);
   if(ret)return ret;
   
+  gdk_threads_enter();
   sushiv_realize_all();
   gtk_button3_fixup();
   
@@ -225,7 +226,6 @@ int main (int argc, char *argv[]){
   signal(SIGINT,_sushiv_clean_exit);
   //signal(SIGSEGV,_sushiv_clean_exit);
 
-  gdk_threads_enter();
   gtk_main ();
   gdk_threads_leave();
   

@@ -65,7 +65,6 @@ int _sushiv_dimension_scales(sushiv_dimension_t *d,
     dimneg = 1;
   }
       
-
   switch(d->type){
   case SUSHIV_DIM_CONTINUOUS:
     {
@@ -226,6 +225,7 @@ static void _sushiv_dimension_center_callback(void *data, int buttonstate){
     sushiv_dimension_t *d = dw->dl->d;
     sushiv_panel_t *p = dw->dl->p;
     double val = slider_get_value(dw->scale,1);
+      char buffer[80];
 
     val = discrete_quantize_val(d,val);
     dw->center_updating = 1;
@@ -235,11 +235,18 @@ static void _sushiv_dimension_center_callback(void *data, int buttonstate){
       _sushiv_panel_undo_suspend(p);
     }
     
+    snprintf(buffer,80,"%.10g",d->bracket[0]);
+    gtk_entry_set_text(GTK_ENTRY(dw->entry[0]),buffer);
+    snprintf(buffer,80,"%.10g",val);
+    gtk_entry_set_text(GTK_ENTRY(dw->entry[1]),buffer);
+    snprintf(buffer,80,"%.10g",d->bracket[1]);
+    gtk_entry_set_text(GTK_ENTRY(dw->entry[2]),buffer);
+    
     if(d->val != val){
       int i;
-
-      d->val = val;
       
+      d->val = val;
+            
       /* dims can be shared amongst multiple widgets; all must be updated */
       for(i=0;i<d->private->widgets;i++){
 	sushiv_dim_widget_t *w = d->private->widget_list[i];
@@ -272,7 +279,8 @@ static void _sushiv_dimension_bracket_callback(void *data, int buttonstate){
     sushiv_panel_t *p = dw->dl->p;
     double lo = slider_get_value(dw->scale,0);
     double hi = slider_get_value(dw->scale,2);
- 
+    char buffer[80];
+
     hi = discrete_quantize_val(d,hi);
     lo = discrete_quantize_val(d,lo);
 
@@ -282,6 +290,13 @@ static void _sushiv_dimension_bracket_callback(void *data, int buttonstate){
       _sushiv_panel_undo_push(p);
       _sushiv_panel_undo_suspend(p);
     }
+
+    snprintf(buffer,80,"%.10g",lo);
+    gtk_entry_set_text(GTK_ENTRY(dw->entry[0]),buffer);
+    snprintf(buffer,80,"%.10g",d->val);
+    gtk_entry_set_text(GTK_ENTRY(dw->entry[1]),buffer);
+    snprintf(buffer,80,"%.10g",hi);
+    gtk_entry_set_text(GTK_ENTRY(dw->entry[2]),buffer);
     
     if(d->bracket[0] != lo || d->bracket[1] != hi){
       int i;
@@ -437,6 +452,83 @@ void _sushiv_dim_widget_set_thumb_active(sushiv_dim_widget_t *dw, int thumb, int
     slider_set_thumb_active(dw->scale,thumb,active);
 }
 
+static int expander_level = 0; // avoid races due to calling main_loop internally
+static int expander_loop = 0;
+
+static void expander_callback (GtkExpander *expander, sushiv_dim_widget_t *dw){
+  expander_level++;
+  if(expander_level==1){
+
+    // do not allow the Plot to resize 
+    plot_resizable(PLOT(dw->dl->p->private->graph),0);
+
+    do{
+      expander_loop = 0;
+
+      // Prevent the resizing algorithm from frobbing the plot's box
+      gtk_box_freeze_child (GTK_BOX(dw->dl->p->private->topbox),
+			    dw->dl->p->private->plotbox);
+
+      // allow the toplevel to resize automatically
+      gtk_window_set_policy (GTK_WINDOW (dw->dl->p->private->toplevel), FALSE, FALSE, TRUE);
+      
+      if (gtk_expander_get_expanded (expander)){
+	gtk_widget_show(dw->entry[0]);
+	gtk_widget_show(dw->entry[1]);
+	gtk_widget_show(dw->entry[2]);	
+      }else{
+	gtk_widget_hide(dw->entry[0]);
+	gtk_widget_hide(dw->entry[1]);
+	gtk_widget_hide(dw->entry[2]);
+      }
+
+      // process this change
+      while(gtk_events_pending()){
+	gtk_main_iteration();
+	gdk_flush();
+      }
+      
+      // revert toplevel to user-resizing
+      gtk_window_set_policy (GTK_WINDOW (dw->dl->p->private->toplevel), FALSE, TRUE, FALSE);
+      while(gtk_events_pending()){
+	gtk_main_iteration(); 
+	gdk_flush();
+      }
+
+      // revert plot box to autofilling if user alters window size
+      gtk_box_unfreeze_child(GTK_BOX(dw->dl->p->private->topbox),
+			     dw->dl->p->private->plotbox);
+      while(gtk_events_pending()){
+	gtk_main_iteration(); 
+	gdk_flush();
+      }
+
+    } while(expander_loop);
+
+    // lastly, allow plot to resize again
+    plot_resizable(PLOT(dw->dl->p->private->graph),1);
+    
+  }else
+    expander_loop=1;
+  
+  expander_level--; 
+}
+
+static void entry_callback (GtkEntry *entry, Slice *s){
+  slice_thumb_set(s, atof(gtk_entry_get_text(entry)));
+}
+
+static gboolean entry_refresh_callback (GtkEntry *entry, GdkEventFocus *event, Slice *s){
+  char buffer[80];
+  snprintf(buffer,80,"%.10g",s->thumb_val);
+  gtk_entry_set_text(entry,buffer);
+  return FALSE;
+}
+
+static void entry_active_callback(void *e, int active){
+  gtk_widget_set_sensitive(GTK_WIDGET(e),active);
+}
+
 sushiv_dim_widget_t *_sushiv_new_dimension_widget(sushiv_dimension_list_t *dl,   
 						 void (*center_callback)(sushiv_dimension_list_t *),
 						 void (*bracket_callback)(sushiv_dimension_list_t *)){
@@ -455,7 +547,9 @@ sushiv_dim_widget_t *_sushiv_new_dimension_widget(sushiv_dimension_list_t *dl,
     {
       double v[3];
       GtkWidget **sl = calloc(3,sizeof(*sl));
-      dw->t = GTK_TABLE(gtk_table_new(1,3,0));
+      GtkWidget *exp = gtk_expander_new(NULL);
+      GtkTable *st = GTK_TABLE(gtk_table_new(2,4,0));
+
       v[0]=d->bracket[0];
       v[1]=d->val;
       v[2]=d->bracket[1];
@@ -463,12 +557,32 @@ sushiv_dim_widget_t *_sushiv_new_dimension_widget(sushiv_dimension_list_t *dl,
       sl[0] = slice_new(_sushiv_dimension_bracket_callback,dw);
       sl[1] = slice_new(_sushiv_dimension_center_callback,dw);
       sl[2] = slice_new(_sushiv_dimension_bracket_callback,dw);
-      
-      gtk_table_attach(dw->t,sl[0],0,1,0,1,
+      dw->entry[0] = gtk_entry_new();
+      dw->entry[1] = gtk_entry_new();
+      dw->entry[2] = gtk_entry_new();
+
+      gtk_entry_set_width_chars(GTK_ENTRY(dw->entry[0]),0);
+      gtk_entry_set_width_chars(GTK_ENTRY(dw->entry[1]),0);
+      gtk_entry_set_width_chars(GTK_ENTRY(dw->entry[2]),0);
+     
+      gtk_table_attach(st,exp,0,1,0,1,
+		       GTK_SHRINK,0,0,0);
+
+      gtk_table_attach(st,sl[0],1,2,0,1,
 		       GTK_EXPAND|GTK_FILL,0,0,0);
-      gtk_table_attach(dw->t,sl[1],1,2,0,1,
+      gtk_table_attach(st,sl[1],2,3,0,1,
 		       GTK_EXPAND|GTK_FILL,0,0,0);
-      gtk_table_attach(dw->t,sl[2],2,3,0,1,
+      gtk_table_attach(st,sl[2],3,4,0,1,
+		       GTK_EXPAND|GTK_FILL,0,0,0);
+
+      gtk_widget_set_no_show_all(dw->entry[0], TRUE);
+      gtk_widget_set_no_show_all(dw->entry[1], TRUE);
+      gtk_widget_set_no_show_all(dw->entry[2], TRUE);
+      gtk_table_attach(st,dw->entry[0],1,2,1,2,
+		       GTK_EXPAND|GTK_FILL,0,0,0);
+      gtk_table_attach(st,dw->entry[1],2,3,1,2,
+		       GTK_EXPAND|GTK_FILL,0,0,0);
+      gtk_table_attach(st,dw->entry[2],3,4,1,2,
 		       GTK_EXPAND|GTK_FILL,0,0,0);
 
       dw->scale = slider_new((Slice **)sl,3,d->scale->label_list,d->scale->val_list,
@@ -479,11 +593,34 @@ sushiv_dim_widget_t *_sushiv_new_dimension_widget(sushiv_dimension_list_t *dl,
       slice_thumb_set((Slice *)sl[0],v[0]);
       slice_thumb_set((Slice *)sl[1],v[1]);
       slice_thumb_set((Slice *)sl[2],v[2]);
+
+      g_signal_connect_after (G_OBJECT (exp), "activate",
+			      G_CALLBACK (expander_callback), dw);
+
+      g_signal_connect (G_OBJECT (dw->entry[0]), "activate",
+			G_CALLBACK (entry_callback), sl[0]);
+      g_signal_connect (G_OBJECT (dw->entry[1]), "activate",
+			G_CALLBACK (entry_callback), sl[1]);
+      g_signal_connect (G_OBJECT (dw->entry[2]), "activate",
+			G_CALLBACK (entry_callback), sl[2]);
+
+      g_signal_connect (G_OBJECT (dw->entry[0]), "focus-out-event",
+			G_CALLBACK (entry_refresh_callback), sl[0]);
+      g_signal_connect (G_OBJECT (dw->entry[1]), "focus-out-event",
+			G_CALLBACK (entry_refresh_callback), sl[1]);
+      g_signal_connect (G_OBJECT (dw->entry[2]), "focus-out-event",
+			G_CALLBACK (entry_refresh_callback), sl[2]);
+
+      slice_set_active_callback((Slice *)sl[0], entry_active_callback, dw->entry[0]);
+      slice_set_active_callback((Slice *)sl[1], entry_active_callback, dw->entry[1]);
+      slice_set_active_callback((Slice *)sl[2], entry_active_callback, dw->entry[2]);
+
+      dw->t = GTK_WIDGET(st);
     }
     break;
   case SUSHIV_DIM_PICKLIST:
     /* picklist dimensions get a wide dropdown */
-    dw->t = GTK_TABLE(gtk_table_new(1,1,0));
+    dw->t = gtk_table_new(1,1,0);
 
     {
       int j;
@@ -494,8 +631,8 @@ sushiv_dim_widget_t *_sushiv_new_dimension_widget(sushiv_dimension_list_t *dl,
       g_signal_connect (G_OBJECT (dw->menu), "changed",
 			G_CALLBACK (_sushiv_dimension_dropdown_callback), dw);
       
-      gtk_table_attach(dw->t,dw->menu,0,1,0,1,
-		       GTK_EXPAND|GTK_FILL,GTK_SHRINK,0,0);
+      gtk_table_attach(GTK_TABLE(dw->t),dw->menu,0,1,0,1,
+		       GTK_EXPAND|GTK_FILL,GTK_SHRINK,0,2);
       _sushiv_dimension_set_value(dw,1,d->val);
       //gtk_combo_box_set_active(GTK_COMBO_BOX(dw->menu),0);
     }

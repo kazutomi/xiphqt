@@ -21,7 +21,7 @@
 
 typedef struct sushiv_panel2d {
 
-  GtkWidget *top_table;
+  GtkWidget *obj_table;
   GtkWidget *dim_table;
 
   /* only run those functions used by this panel */

@@ -236,6 +236,8 @@ GtkWidget* slice_new (void (*callback)(void *,int), void *data){
 
 void slice_set_active(Slice *s, int activep){
   s->thumb_active = activep;
+  if(s->active_callback)
+    s->active_callback(s->active_callback_data, activep);
   draw_and_expose(GTK_WIDGET(s));
 }
 
@@ -249,4 +251,9 @@ void slice_thumb_set(Slice *s,double v){
     if(s->callback)s->callback(s->callback_data,1);
     draw_and_expose(w);
   }
+}
+
+void slice_set_active_callback(Slice *s, void (*callback)(void *,int), void *data){
+  s->active_callback = callback;
+  s->active_callback_data = data;
 }
