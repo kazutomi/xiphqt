@@ -229,7 +229,7 @@ void _sushiv_panel_update_menus(sushiv_panel_t *p){
 }
 
 void _sushiv_realize_panel(sushiv_panel_t *p){
-  if(!p->private->realized){
+  if(p && !p->private->realized){
     p->private->realize(p);
     p->private->realized=1;
 

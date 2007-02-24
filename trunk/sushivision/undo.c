@@ -82,7 +82,8 @@ void _sushiv_panel_undo_log(sushiv_panel_t *p){
   
   // pass off actual population to panels
   for(j=0;j<s->panels;j++)
-    s->panel_list[j]->private->undo_log(u+j,s->panel_list[j]);
+    if(s->panel_list[j])
+      s->panel_list[j]->private->undo_log(u+j,s->panel_list[j]);
 }
 
 void _sushiv_panel_undo_restore(sushiv_panel_t *p){
