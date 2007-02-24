@@ -24,7 +24,6 @@ typedef struct sushiv_panel1d {
   sushiv_panel_t *link_x;
   sushiv_panel_t *link_y;
 
-  GtkWidget *top_table;
   GtkWidget *graph_table;
   GtkWidget *obj_table;
   GtkWidget *dim_table;
