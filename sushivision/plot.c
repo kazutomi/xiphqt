@@ -1124,6 +1124,10 @@ void plot_resizable(Plot *p, int rp){
     gtk_widget_set_size_request(widget,
 				widget->allocation.width,
 				widget->allocation.height);
+    while(gtk_events_pending()){
+      gtk_main_iteration(); 
+      gdk_flush();
+    }
     
   }else{
     gtk_widget_set_size_request(widget,400,200);

@@ -471,6 +471,10 @@ static void expander_callback (GtkExpander *expander, sushiv_dim_widget_t *dw){
 
       // allow the toplevel to resize automatically
       gtk_window_set_policy (GTK_WINDOW (dw->dl->p->private->toplevel), FALSE, FALSE, TRUE);
+      while(gtk_events_pending()){
+	gtk_main_iteration();
+	gdk_flush();
+      }
       
       if (gtk_expander_get_expanded (expander)){
 	gtk_widget_show(dw->entry[0]);
