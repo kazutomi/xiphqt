@@ -1198,43 +1198,35 @@ void _sushiv_realize_panel1d(sushiv_panel_t *p){
   p->private->toplevel = gtk_window_new (GTK_WINDOW_TOPLEVEL);
   g_signal_connect_swapped (G_OBJECT (p->private->toplevel), "delete-event",
 			    G_CALLBACK (_sushiv_clean_exit), (void *)SIGINT);
- 
-  p1->top_table = gtk_table_new(4,1,0);
 
-  gtk_container_add (GTK_CONTAINER (p->private->toplevel), p1->top_table);
+  // add border to sides with hbox/padding 
+  GtkWidget *borderbox =  gtk_hbox_new(0,0);
+  gtk_container_add (GTK_CONTAINER (p->private->toplevel), borderbox);
+
+  // main layout vbox
+  p->private->topbox = gtk_vbox_new(0,0);
+  gtk_box_pack_start(GTK_BOX(borderbox), p->private->topbox, 0,0,4);
   gtk_container_set_border_width (GTK_CONTAINER (p->private->toplevel), 1);
- 
-  gtk_table_set_col_spacing(GTK_TABLE(p1->top_table),0,4);
- 
-  p1->graph_table = gtk_table_new(2,2,0);
-  gtk_table_attach(GTK_TABLE(p1->top_table),p1->graph_table,0,1,1,2,
-		   GTK_EXPAND|GTK_FILL,0,4,1);
-  gtk_table_set_row_spacing(GTK_TABLE(p1->top_table),1,4);
-
-
-  p1->obj_table = gtk_table_new(p->objectives,5,0);
-  gtk_table_attach(GTK_TABLE(p1->top_table),p1->obj_table,0,1,2,3,
-		   GTK_EXPAND|GTK_FILL,0,4,0);
 
   /* spinner, top bar */
   {
     GtkWidget *hbox = gtk_hbox_new(0,0);
-    gtk_table_attach(GTK_TABLE(p1->top_table),hbox,0,1,0,1,GTK_EXPAND|GTK_FILL,0,4,0);
+    gtk_box_pack_start(GTK_BOX(p->private->topbox), hbox, 0,0,0);
     gtk_box_pack_end(GTK_BOX(hbox),GTK_WIDGET(p->private->spinner),0,0,0);
   }
 
-  /* dim table */
-  p1->dim_table = gtk_table_new(p->dimensions,3,0);
-  gtk_table_attach(GTK_TABLE(p1->top_table),p1->dim_table,0,1,3,4,
-		   GTK_EXPAND|GTK_FILL,0,4,4);
-  
-  /* graph */
+  /* plotbox, graph */
   {
     unsigned flags = 0;
     if(p1->flip)
       flags |= PLOT_NO_X_CROSS;
     else
       flags |= PLOT_NO_Y_CROSS;
+
+    p1->graph_table = gtk_table_new(2,2,0);
+    p->private->plotbox = p1->graph_table;
+    gtk_box_pack_start(GTK_BOX(p->private->topbox), p->private->plotbox, 1,1,2);
+
     p->private->graph = GTK_WIDGET(plot_new(recompute_callback_1d,p,
 					    (void *)(void *)crosshair_callback,p,
 					    box_callback,p,flags)); 
@@ -1247,7 +1239,7 @@ void _sushiv_realize_panel1d(sushiv_panel_t *p){
     }
   }
 
-  /* range slider */
+  /* range slider, goes in the plotbox table */
   /* may be vertical to the left of the plot or along the bottom if the plot is flipped */
   {
     GtkWidget **sl = calloc(2,sizeof(*sl));
@@ -1282,91 +1274,101 @@ void _sushiv_realize_panel1d(sushiv_panel_t *p){
     slice_thumb_set((Slice *)sl[1],hi);
   }
 
-  /* objective pulldowns */
-  p1->pointtype = calloc(p->objectives,sizeof(*p1->pointtype));
-  p1->linetype = calloc(p->objectives,sizeof(*p1->linetype));
-  p1->mappings = calloc(p->objectives,sizeof(*p1->mappings));
-  p1->map_pulldowns = calloc(p->objectives,sizeof(*p1->map_pulldowns));
-  p1->line_pulldowns = calloc(p->objectives,sizeof(*p1->line_pulldowns));
-  p1->point_pulldowns = calloc(p->objectives,sizeof(*p1->point_pulldowns));
-  p1->alpha_scale = calloc(p->objectives,sizeof(*p1->alpha_scale));
+  /* obj box */
+  {
+    p1->obj_table = gtk_table_new(p->objectives,5,0);
+    gtk_box_pack_start(GTK_BOX(p->private->topbox), p1->obj_table, 0,0,1);
 
-  for(i=0;i<p->objectives;i++){
-    sushiv_objective_t *o = p->objective_list[i].o;
+    /* pulldowns */
+    p1->pointtype = calloc(p->objectives,sizeof(*p1->pointtype));
+    p1->linetype = calloc(p->objectives,sizeof(*p1->linetype));
+    p1->mappings = calloc(p->objectives,sizeof(*p1->mappings));
+    p1->map_pulldowns = calloc(p->objectives,sizeof(*p1->map_pulldowns));
+    p1->line_pulldowns = calloc(p->objectives,sizeof(*p1->line_pulldowns));
+    p1->point_pulldowns = calloc(p->objectives,sizeof(*p1->point_pulldowns));
+    p1->alpha_scale = calloc(p->objectives,sizeof(*p1->alpha_scale));
 
-    /* label */
-    GtkWidget *label = gtk_label_new(o->name);
-    gtk_misc_set_alignment(GTK_MISC(label),1.,.5);
-    gtk_table_attach(GTK_TABLE(p1->obj_table),label,0,1,i,i+1,
-		     GTK_FILL,0,10,0);
-    
-    /* mapping pulldown */
-    {
-      GtkWidget *menu=gtk_combo_box_new_markup();
-      int j;
-      for(j=0;j<num_solids();j++)
-	gtk_combo_box_append_text (GTK_COMBO_BOX (menu), solid_name(j));
-      gtk_combo_box_set_active(GTK_COMBO_BOX(menu),0);
-      g_signal_connect (G_OBJECT (menu), "changed",
-			G_CALLBACK (mapchange_callback_1d), p->objective_list+i);
-      gtk_table_attach(GTK_TABLE(p1->obj_table),menu,1,2,i,i+1,
-		       GTK_SHRINK,GTK_SHRINK,5,0);
-      p1->map_pulldowns[i] = menu;
-      solid_setup(&p1->mappings[i],0.,1.,0);
-    }
-
-    /* line pulldown */
-    {
-      GtkWidget *menu=gtk_combo_box_new_text();
-      int j;
-      for(j=0;j<LINETYPES;j++)
-	gtk_combo_box_append_text (GTK_COMBO_BOX (menu), line_name[j]);
-      gtk_combo_box_set_active(GTK_COMBO_BOX(menu),0);
-      g_signal_connect (G_OBJECT (menu), "changed",
-			G_CALLBACK (linetype_callback_1d), p->objective_list+i);
-      gtk_table_attach(GTK_TABLE(p1->obj_table),menu,2,3,i,i+1,
-		       GTK_SHRINK,GTK_SHRINK,5,0);
-      p1->line_pulldowns[i] = menu;
-    }
-
-    /* point pulldown */
-    {
-      GtkWidget *menu=gtk_combo_box_new_text();
-      int j;
-      for(j=0;j<POINTTYPES;j++)
-	gtk_combo_box_append_text (GTK_COMBO_BOX (menu), point_name[j]);
-      gtk_combo_box_set_active(GTK_COMBO_BOX(menu),0);
-      g_signal_connect (G_OBJECT (menu), "changed",
-			G_CALLBACK (pointtype_callback_1d), p->objective_list+i);
-      gtk_table_attach(GTK_TABLE(p1->obj_table),menu,3,4,i,i+1,
-		       GTK_SHRINK,GTK_SHRINK,5,0);
-      p1->point_pulldowns[i] = menu;
-    }
-
-    /* alpha slider */
-    {
-      GtkWidget **sl = calloc(1, sizeof(*sl));
-      sl[0] = slice_new(alpha_callback_1d,p->objective_list+i);
+    for(i=0;i<p->objectives;i++){
+      sushiv_objective_t *o = p->objective_list[i].o;
       
-      gtk_table_attach(GTK_TABLE(p1->obj_table),sl[0],4,5,i,i+1,
-		       GTK_EXPAND|GTK_FILL,0,0,0);
-
-      p1->alpha_scale[i] = slider_new((Slice **)sl,1,
-				      (char *[]){"transparent","solid"},
-				      (double []){0.,1.},
-				      2,0);
-
-      slider_set_gradient(p1->alpha_scale[i], &p1->mappings[i]);
-      slice_thumb_set((Slice *)sl[0],1.);
-
+      /* label */
+      GtkWidget *label = gtk_label_new(o->name);
+      gtk_misc_set_alignment(GTK_MISC(label),1.,.5);
+      gtk_table_attach(GTK_TABLE(p1->obj_table),label,0,1,i,i+1,
+		       GTK_FILL,0,10,0);
+      
+      /* mapping pulldown */
+      {
+	GtkWidget *menu=gtk_combo_box_new_markup();
+	int j;
+	for(j=0;j<num_solids();j++)
+	  gtk_combo_box_append_text (GTK_COMBO_BOX (menu), solid_name(j));
+	gtk_combo_box_set_active(GTK_COMBO_BOX(menu),0);
+	g_signal_connect (G_OBJECT (menu), "changed",
+			  G_CALLBACK (mapchange_callback_1d), p->objective_list+i);
+	gtk_table_attach(GTK_TABLE(p1->obj_table),menu,1,2,i,i+1,
+			 GTK_SHRINK,GTK_SHRINK,5,0);
+	p1->map_pulldowns[i] = menu;
+	solid_setup(&p1->mappings[i],0.,1.,0);
+      }
+      
+      /* line pulldown */
+      {
+	GtkWidget *menu=gtk_combo_box_new_text();
+	int j;
+	for(j=0;j<LINETYPES;j++)
+	  gtk_combo_box_append_text (GTK_COMBO_BOX (menu), line_name[j]);
+	gtk_combo_box_set_active(GTK_COMBO_BOX(menu),0);
+	g_signal_connect (G_OBJECT (menu), "changed",
+			  G_CALLBACK (linetype_callback_1d), p->objective_list+i);
+	gtk_table_attach(GTK_TABLE(p1->obj_table),menu,2,3,i,i+1,
+			 GTK_SHRINK,GTK_SHRINK,5,0);
+	p1->line_pulldowns[i] = menu;
+      }
+      
+      /* point pulldown */
+      {
+	GtkWidget *menu=gtk_combo_box_new_text();
+	int j;
+	for(j=0;j<POINTTYPES;j++)
+	  gtk_combo_box_append_text (GTK_COMBO_BOX (menu), point_name[j]);
+	gtk_combo_box_set_active(GTK_COMBO_BOX(menu),0);
+	g_signal_connect (G_OBJECT (menu), "changed",
+			  G_CALLBACK (pointtype_callback_1d), p->objective_list+i);
+	gtk_table_attach(GTK_TABLE(p1->obj_table),menu,3,4,i,i+1,
+			 GTK_SHRINK,GTK_SHRINK,5,0);
+	p1->point_pulldowns[i] = menu;
+      }
+      
+      /* alpha slider */
+      {
+	GtkWidget **sl = calloc(1, sizeof(*sl));
+	sl[0] = slice_new(alpha_callback_1d,p->objective_list+i);
+	
+	gtk_table_attach(GTK_TABLE(p1->obj_table),sl[0],4,5,i,i+1,
+			 GTK_EXPAND|GTK_FILL,0,0,0);
+	
+	p1->alpha_scale[i] = slider_new((Slice **)sl,1,
+					(char *[]){"transparent","solid"},
+					(double []){0.,1.},
+					2,0);
+	
+	slider_set_gradient(p1->alpha_scale[i], &p1->mappings[i]);
+	slice_thumb_set((Slice *)sl[0],1.);
+	
+      }
     }
   }
 
+  /* dim box */
   if(p->dimensions){
+    p1->dim_table = gtk_table_new(p->dimensions,3,0);
+    gtk_box_pack_start(GTK_BOX(p->private->topbox), p1->dim_table, 0,0,4);
+
     p->private->dim_scales = calloc(p->dimensions,sizeof(*p->private->dim_scales));
     p1->dim_xb = calloc(p->dimensions,sizeof(*p1->dim_xb));
     GtkWidget *first_x = NULL;
-  
+    
     for(i=0;i<p->dimensions;i++){
       sushiv_dimension_t *d = p->dimension_list[i].d;
       
@@ -1387,7 +1389,7 @@ void _sushiv_realize_panel1d(sushiv_panel_t *p){
 	gtk_table_attach(GTK_TABLE(p1->dim_table),p1->dim_xb[i],1,2,i,i+1,
 			 0,0,10,0);
       }
-
+      
       p->private->dim_scales[i] = 
 	_sushiv_new_dimension_widget(p->dimension_list+i,center_callback_1d,bracket_callback_1d);
       
@@ -1397,19 +1399,19 @@ void _sushiv_realize_panel1d(sushiv_panel_t *p){
 		       GTK_EXPAND|GTK_FILL,0,0,0);
       
     }
-
+    
     for(i=0;i<p->dimensions;i++)
       if(p1->dim_xb[i])
 	g_signal_connect (G_OBJECT (p1->dim_xb[i]), "toggled",
 			  G_CALLBACK (dimchange_callback_1d), p);
-
+    
     update_x_sel(p);
   }
-
+  
   g_signal_connect (G_OBJECT (p->private->toplevel), "key-press-event",
                     G_CALLBACK (panel1d_keypress), p);
   gtk_window_set_title (GTK_WINDOW (p->private->toplevel), p->name);
-
+  
   gtk_widget_realize(p->private->toplevel);
   gtk_widget_realize(p->private->graph);
   gtk_widget_realize(GTK_WIDGET(p->private->spinner));
