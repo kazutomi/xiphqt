@@ -1587,7 +1587,7 @@ static void _sushiv_realize_panel2d(sushiv_panel_t *p){
 
   // main layout vbox
   p->private->topbox = gtk_vbox_new(0,0);
-  gtk_box_pack_start(GTK_BOX(borderbox), p->private->topbox, 0,0,4);
+  gtk_box_pack_start(GTK_BOX(borderbox), p->private->topbox, 1,1,4);
   gtk_container_set_border_width (GTK_CONTAINER (p->private->toplevel), 1);
 
   /* spinner, top bar */
