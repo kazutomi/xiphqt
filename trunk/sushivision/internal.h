@@ -94,6 +94,8 @@ struct sushiv_panel_internal {
 
   int oversample_n;
   int oversample_d;
+  int def_oversample_n;
+  int def_oversample_d;
 
   // function bundles 
   void (*realize)(sushiv_panel_t *p);
@@ -129,6 +131,7 @@ extern void _sushiv_panel_dirty_map(sushiv_panel_t *p);
 extern void _sushiv_panel_dirty_map_throttled(sushiv_panel_t *p);
 extern void _sushiv_panel_dirty_legend(sushiv_panel_t *p);
 extern void _sushiv_panel_dirty_plot(sushiv_panel_t *p);
+extern void _sushiv_panel_recompute(sushiv_panel_t *p);
 extern void _sushiv_panel_clean_map(sushiv_panel_t *p);
 extern void _sushiv_panel_clean_legend(sushiv_panel_t *p);
 extern void _sushiv_panel_clean_plot(sushiv_panel_t *p);

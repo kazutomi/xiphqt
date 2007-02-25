@@ -573,6 +573,10 @@ static void plot_size_allocate (GtkWidget     *widget,
 
   if (GTK_WIDGET_REALIZED (widget)){
 
+    if(p->wc && 
+       allocation->width == widget->allocation.width &&
+       allocation->height == widget->allocation.height) return;
+
     if(p->wc && !p->resizable)return;
 
     if(p->wc)

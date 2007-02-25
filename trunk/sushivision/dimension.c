@@ -56,6 +56,7 @@ int _sushiv_dimension_scales(sushiv_dimension_t *d,
   if(lo>hi){ // == must be 1 to match scale gen code when width is 0
     pneg = -1;
   }else{
+
     pneg = 1;
   }
   
@@ -71,22 +72,18 @@ int _sushiv_dimension_scales(sushiv_dimension_t *d,
       double ceil = d->scale->val_list[d->scale->vals-1] * dimneg;
       double fl = ((d->flags & SUSHIV_DIM_ZEROINDEX) ? d->scale->val_list[0] : 0.);
       *panel = scalespace_linear(lo, hi, panel_w, spacing, legend);
-      *data = scalespace_linear(lo, hi, data_w, spacing, legend);
-      *iter = scalespace_linear(lo-fl, hi-fl, data_w, spacing, legend);
+      *data = scalespace_linear(lo, hi, data_w, 1, legend);
+      *iter = scalespace_linear(lo-fl, hi-fl, data_w, 1, legend);
 
       /* if possible, the data/iterator scales should cover the entire pane exposed
 	 by the panel scale so long as there's room left to extend them without
 	 overflowing the lo/hi fenceposts */
       while(1){
-	double panel2 = scalespace_value(panel,panel->pixels)*pneg;
-	double data2 = scalespace_value(data,data_w)*pneg;
+	double panel2 = scalespace_value(panel,panel->pixels-1)*pneg;
+	double data2 = scalespace_value(data,data_w-1)*pneg;
 
 	if(data2>=panel2)break;
 	data_w++;
-	if(data2>ceil){
-	  data_w--;
-	  break;
-	}
       }
 
       data->pixels = data_w;

@@ -34,8 +34,8 @@ EX_OBJ    = example_fractal.o example_discrete.o example_chirp.o
 OBJ       = main.o scale.o plot.o slider.o slice.o spinner.c panel.o panel-1d.o panel-2d.o \
 	mapping.o dimension.o function.o objective.o undo.o gtksucks.o
 LIBS      = -lpthread -ldl
-CAIROVER  =  >= 1.0.0
-GTKVER    =  >= 2.8.0
+CAIROVER  =  >= 1.3.14
+GTKVER    =  >= 2.10.0
 GCF       = -std=gnu99 `pkg-config --cflags "gtk+-2.0 $(GTKVER) cairo $(CAIROVER) cairo-ft $(CAIROVER) gthread-2.0"`
 LDF       = -pthread -L/lib -ldl -rdynamic \
 	`pkg-config --libs "gtk+-2.0 $(GTKVER) cairo $(CAIROVER) cairo-ft $(CAIROVER) gthread-2.0"`
