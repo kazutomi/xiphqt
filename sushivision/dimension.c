@@ -235,13 +235,6 @@ static void _sushiv_dimension_center_callback(void *data, int buttonstate){
       _sushiv_panel_undo_suspend(p);
     }
     
-    snprintf(buffer,80,"%.10g",d->bracket[0]);
-    gtk_entry_set_text(GTK_ENTRY(dw->entry[0]),buffer);
-    snprintf(buffer,80,"%.10g",val);
-    gtk_entry_set_text(GTK_ENTRY(dw->entry[1]),buffer);
-    snprintf(buffer,80,"%.10g",d->bracket[1]);
-    gtk_entry_set_text(GTK_ENTRY(dw->entry[2]),buffer);
-    
     if(d->val != val){
       int i;
       
@@ -263,6 +256,13 @@ static void _sushiv_dimension_center_callback(void *data, int buttonstate){
     
     if(buttonstate == 2)
       _sushiv_panel_undo_resume(p);
+
+    snprintf(buffer,80,"%.10g",d->bracket[0]);
+    gtk_entry_set_text(GTK_ENTRY(dw->entry[0]),buffer);
+    snprintf(buffer,80,"%.10g",d->val);
+    gtk_entry_set_text(GTK_ENTRY(dw->entry[1]),buffer);
+    snprintf(buffer,80,"%.10g",d->bracket[1]);
+    gtk_entry_set_text(GTK_ENTRY(dw->entry[2]),buffer);
     
     dw->center_updating = 0;
   }
@@ -291,13 +291,6 @@ static void _sushiv_dimension_bracket_callback(void *data, int buttonstate){
       _sushiv_panel_undo_suspend(p);
     }
 
-    snprintf(buffer,80,"%.10g",lo);
-    gtk_entry_set_text(GTK_ENTRY(dw->entry[0]),buffer);
-    snprintf(buffer,80,"%.10g",d->val);
-    gtk_entry_set_text(GTK_ENTRY(dw->entry[1]),buffer);
-    snprintf(buffer,80,"%.10g",hi);
-    gtk_entry_set_text(GTK_ENTRY(dw->entry[2]),buffer);
-    
     if(d->bracket[0] != lo || d->bracket[1] != hi){
       int i;
 
@@ -322,6 +315,13 @@ static void _sushiv_dimension_bracket_callback(void *data, int buttonstate){
     
     if(buttonstate == 2)
       _sushiv_panel_undo_resume(p);
+    
+    snprintf(buffer,80,"%.10g",d->bracket[0]);
+    gtk_entry_set_text(GTK_ENTRY(dw->entry[0]),buffer);
+    snprintf(buffer,80,"%.10g",d->val);
+    gtk_entry_set_text(GTK_ENTRY(dw->entry[1]),buffer);
+    snprintf(buffer,80,"%.10g",d->bracket[1]);
+    gtk_entry_set_text(GTK_ENTRY(dw->entry[2]),buffer);
     
     dw->bracket_updating = 0;
   }
@@ -522,9 +522,9 @@ static void entry_callback (GtkEntry *entry, Slice *s){
   slice_thumb_set(s, atof(gtk_entry_get_text(entry)));
 }
 
-static gboolean entry_refresh_callback (GtkEntry *entry, GdkEventFocus *event, Slice *s){
+static gboolean entry_refresh_callback (GtkEntry *entry, GdkEventFocus *event, double *v){
   char buffer[80];
-  snprintf(buffer,80,"%.10g",s->thumb_val);
+  snprintf(buffer,80,"%.10g",*v);
   gtk_entry_set_text(entry,buffer);
   return FALSE;
 }
@@ -609,11 +609,11 @@ sushiv_dim_widget_t *_sushiv_new_dimension_widget(sushiv_dimension_list_t *dl,
 			G_CALLBACK (entry_callback), sl[2]);
 
       g_signal_connect (G_OBJECT (dw->entry[0]), "focus-out-event",
-			G_CALLBACK (entry_refresh_callback), sl[0]);
+			G_CALLBACK (entry_refresh_callback), &d->bracket[0]);
       g_signal_connect (G_OBJECT (dw->entry[1]), "focus-out-event",
-			G_CALLBACK (entry_refresh_callback), sl[1]);
+			G_CALLBACK (entry_refresh_callback), &d->val);
       g_signal_connect (G_OBJECT (dw->entry[2]), "focus-out-event",
-			G_CALLBACK (entry_refresh_callback), sl[2]);
+			G_CALLBACK (entry_refresh_callback), &d->bracket[1]);
 
       slice_set_active_callback((Slice *)sl[0], entry_active_callback, dw->entry[0]);
       slice_set_active_callback((Slice *)sl[1], entry_active_callback, dw->entry[1]);
