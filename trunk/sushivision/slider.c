@@ -490,7 +490,7 @@ void slider_expose_slice(Slider *s, int slicenum){
 
     slider_realize(s);
     if(s->flip){
-      cairo_set_source_surface(c,s->foreground,0,slice_width(s,slicenum)-w->allocation.height);
+      cairo_set_source_surface(c,s->foreground,0, slice_width(s,slicenum+1)-total_slice_width(s));
     }else{
       cairo_set_source_surface(c,s->foreground,-slice_width(s,slicenum),0);
     }
