@@ -67,9 +67,9 @@ static void set_text(int inv, cairo_t *c){
 
 static void set_shadow(int inv, cairo_t *c){
   if(inv)
-    cairo_set_source_rgba(c,0.,0.,0.,.5);
+    cairo_set_source_rgba(c,0.,0.,0.,.6);
   else
-    cairo_set_source_rgba(c,1.,1.,1.,.5);
+    cairo_set_source_rgba(c,1.,1.,1.,.8);
 }
 
 static void draw_scales_work(cairo_surface_t *s, int inv_text, int grid,
@@ -293,7 +293,14 @@ static void draw_legend_work(Plot *p, cairo_surface_t *s){
     totalh = texth*n;
     
     x = w - textw - 10;
-    
+
+    // draw the enclosing rectangle
+    cairo_rectangle(c,x-7,5,textw+14,totalh+10);
+    set_shadow(inv,c);
+    cairo_fill_preserve(c);
+    set_text(inv,c);
+    cairo_stroke(c);
+
     for(i=0;i<n;i++){
       cairo_text_extents (c, buffer[i], &extents);
       x = w - extents.width - 10;
@@ -301,9 +308,9 @@ static void draw_legend_work(Plot *p, cairo_surface_t *s){
       cairo_move_to(c,x, y);
       cairo_text_path (c, buffer[i]); 
 
-      set_shadow(inv,c);
-      cairo_set_line_width(c,3);
-      cairo_stroke(c);
+      //set_shadow(inv,c);
+      //cairo_set_line_width(c,3);
+      //cairo_stroke(c);
 
       if(colors[i] == 0xffffffffUL){
 	set_text(inv,c);
