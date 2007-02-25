@@ -30,7 +30,6 @@
 #include <sys/types.h>
 #include <gtk/gtk.h>
 #include <cairo-ft.h>
-#include <gdk/gdkkeysyms.h>
 #include "internal.h"
 
 /* helper functions for performing progressive computation */
@@ -1283,7 +1282,11 @@ static int _sushiv_panel2d_legend_redraw(sushiv_panel_t *p){
   p->private->legend_progress_count++;
   update_legend(p);
   _sushiv_panel_clean_legend(p);
+
+  gdk_threads_leave();
   plot_draw_scales(plot);
+  gdk_threads_enter();
+
   plot_expose_request(plot);
   return 1;
 }
@@ -1568,80 +1571,6 @@ static void panel2d_undo_restore(sushiv_panel_undo_t *u, sushiv_panel_t *p){
   }
 }
 
-static gboolean panel2d_keypress(GtkWidget *widget,
-				 GdkEventKey *event,
-				 gpointer in){
-  sushiv_panel_t *p = (sushiv_panel_t *)in;
-  //  sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
-  
-  // check if the widget with focus is an Entry
-  GtkWidget *focused = gtk_window_get_focus(GTK_WINDOW(widget));
-  int entryp = (focused?GTK_IS_ENTRY(focused):0);
-
-  // don't swallow modified keypresses
-  if(event->state&GDK_MOD1_MASK) return FALSE;
-  if(event->state&GDK_CONTROL_MASK)return FALSE;
-
-  if(entryp){
-    // we still filter, but differently
-    switch(event->keyval){
-    case GDK_BackSpace:
-    case GDK_Home:case GDK_KP_Begin:
-    case GDK_End:case GDK_KP_End:
-    case GDK_Up:case GDK_KP_Up:
-    case GDK_Down:case GDK_KP_Down:
-    case GDK_Left:case GDK_KP_Left:
-    case GDK_Right:case GDK_KP_Right:
-    case GDK_minus:case GDK_KP_Subtract:
-    case GDK_plus:case GDK_KP_Add:
-    case GDK_period:case GDK_KP_Decimal:
-    case GDK_0:case GDK_KP_0:
-    case GDK_1:case GDK_KP_1:
-    case GDK_2:case GDK_KP_2:
-    case GDK_3:case GDK_KP_3:
-    case GDK_4:case GDK_KP_4:
-    case GDK_5:case GDK_KP_5:
-    case GDK_6:case GDK_KP_6:
-    case GDK_7:case GDK_KP_7:
-    case GDK_8:case GDK_KP_8:
-    case GDK_9:case GDK_KP_9:
-    case GDK_Tab:case GDK_KP_Tab:
-    case GDK_ISO_Left_Tab:
-    case GDK_Delete:case GDK_KP_Delete:
-    case GDK_Return:case GDK_ISO_Enter:
-    case GDK_Insert:case GDK_KP_Insert:
-    case GDK_e:case GDK_E:
-      return FALSE;
-    }
-    return TRUE;
-
-  }else{
-        
-    /* non-control keypresses */
-    switch(event->keyval){
-      
-    case GDK_Q:
-    case GDK_q:
-      // quit
-    _sushiv_clean_exit(SIGINT);
-    return TRUE;
-    
-    case GDK_BackSpace:
-      // undo 
-      _sushiv_panel_undo_down(p);
-      return TRUE;
-      
-    case GDK_r:
-    case GDK_space:
-      // redo/forward
-      _sushiv_panel_undo_up(p);
-      return TRUE;
-      
-    } 
-    return FALSE;
-  }
-}
-
 static void _sushiv_realize_panel2d(sushiv_panel_t *p){
   sushiv_panel2d_t *p2 = p->subtype->p2;
   int i;
@@ -1801,10 +1730,6 @@ static void _sushiv_realize_panel2d(sushiv_panel_t *p){
   }
 
   update_xy_availability(p);
-
-  g_signal_connect (G_OBJECT (p->private->toplevel), "key-press-event",
-                    G_CALLBACK (panel2d_keypress), p);
-  gtk_window_set_title (GTK_WINDOW (p->private->toplevel), p->name);
 
   gtk_widget_realize(p->private->toplevel);
   gtk_widget_realize(p->private->graph);

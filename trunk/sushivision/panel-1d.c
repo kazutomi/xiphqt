@@ -30,7 +30,6 @@
 #include <sys/types.h>
 #include <gtk/gtk.h>
 #include <cairo-ft.h>
-#include <gdk/gdkkeysyms.h>
 #include "internal.h"
 
 #define LINETYPES 6
@@ -977,7 +976,11 @@ int _sushiv_panel1d_legend_redraw(sushiv_panel_t *p){
   p->private->legend_progress_count++;
   update_legend(p);
   _sushiv_panel_clean_legend(p);
+
+  gdk_threads_leave();
   plot_draw_scales(plot);
+  gdk_threads_enter();
+
   plot_expose_request(plot);
   return 1;
 }
@@ -1155,39 +1158,6 @@ static void panel1d_undo_restore(sushiv_panel_undo_t *u, sushiv_panel_t *p){
     plot_unset_box(plot);
     p->private->oldbox_active = 0;
   }
-}
-
-static gboolean panel1d_keypress(GtkWidget *widget,
-				 GdkEventKey *event,
-				 gpointer in){
-  sushiv_panel_t *p = (sushiv_panel_t *)in;
-  
-  if(event->state&GDK_MOD1_MASK) return FALSE;
-  if(event->state&GDK_CONTROL_MASK)return FALSE;
-  
-  /* non-control keypresses */
-  switch(event->keyval){
-    
-  case GDK_Q:
-  case GDK_q:
-    // quit
-    _sushiv_clean_exit(SIGINT);
-    return TRUE;
-
-  case GDK_BackSpace:
-    // undo 
-    _sushiv_panel_undo_down(p);
-    return TRUE;
-
-  case GDK_r:
-  case GDK_space:
-    // redo/forward
-    _sushiv_panel_undo_up(p);
-    return TRUE;
-
-  }
-
-  return FALSE;
 }
 
 void _sushiv_realize_panel1d(sushiv_panel_t *p){
@@ -1407,10 +1377,6 @@ void _sushiv_realize_panel1d(sushiv_panel_t *p){
     
     update_x_sel(p);
   }
-  
-  g_signal_connect (G_OBJECT (p->private->toplevel), "key-press-event",
-                    G_CALLBACK (panel1d_keypress), p);
-  gtk_window_set_title (GTK_WINDOW (p->private->toplevel), p->name);
   
   gtk_widget_realize(p->private->toplevel);
   gtk_widget_realize(p->private->graph);
