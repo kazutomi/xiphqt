@@ -1420,6 +1420,8 @@ int sushiv_new_panel_1d(sushiv_instance_t *s,
 
   p->private->undo_log = panel1d_undo_log;
   p->private->undo_restore = panel1d_undo_restore;
+  p->private->def_oversample_n = p->private->oversample_n = 1;
+  p->private->def_oversample_d = p->private->oversample_d = 8;
   
   return 0;
 }

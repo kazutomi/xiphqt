@@ -170,25 +170,21 @@ static void red_a(int val, int mul, lcolor *r){
   val = (val*mul)>>16;
   r->a += val;
   r->r += val;
-  r->g += val>>2;
-  r->b += val>>2;
 }
 
 static void green_a(int val, int mul, lcolor *r){
   if(val<0)return;
   val = (val*mul)>>16;
   r->a += val;
-  r->r += val>>2;
   r->g += val;
-  r->b += val>>2;
 }
 
 static void blue_a(int val, int mul, lcolor *r){
   if(val<0)return;
   val = (val*mul)>>16;
   r->a += val;
-  r->r += val>>2;
-  r->g += val>>2;
+  r->r += val>>4;
+  r->g += val>>4;
   r->b += val;
 }
 
@@ -204,7 +200,6 @@ static void cyan_a(int val, int mul, lcolor *r){
   if(val<0)return;
   val = (val*mul)>>16;
   r->a += val;
-  r->r += val>>2;
   r->g += val;
   r->b += val;
 }
@@ -214,7 +209,6 @@ static void purple_a(int val, int mul, lcolor *r){
   val = (val*mul)>>16;
   r->a += val;
   r->r += val;
-  r->g += val>>2;
   r->b += val;
 }
 

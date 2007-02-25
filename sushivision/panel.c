@@ -30,6 +30,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <gtk/gtk.h>
+#include <gdk/gdkkeysyms.h>
 #include <cairo-ft.h>
 #include "internal.h"
 
@@ -47,7 +48,7 @@ static void decide_text_inv(sushiv_panel_t *p){
 
 static void recompute_if_running(sushiv_panel_t *p){
   if(p->private->realized && p->private->graph)
-    _sushiv_panel_dirty_plot(p);
+    _sushiv_panel_recompute(p);
 }
 
 static void redraw_if_running(sushiv_panel_t *p){
@@ -125,20 +126,111 @@ static void no_scale(sushiv_panel_t *p){
   refg_if_running(p);
 }
 
+static void res_set(sushiv_panel_t *p, int n, int d){
+  if(n != p->private->oversample_n ||
+     d != p->private->oversample_d){
+    p->private->oversample_n = n;
+    p->private->oversample_d = d;
+    _sushiv_panel_update_menus(p);
+    recompute_if_running(p);
+  }
+}
+
+static void res_def(sushiv_panel_t *p){
+  res_set(p,p->private->def_oversample_n,p->private->def_oversample_d);
+}
+static void res_1_32(sushiv_panel_t *p){
+  res_set(p,1,32);
+}
+static void res_1_16(sushiv_panel_t *p){
+  res_set(p,1,16);
+}
+static void res_1_8(sushiv_panel_t *p){
+  res_set(p,1,8);
+}
+static void res_1_4(sushiv_panel_t *p){
+  res_set(p,1,4);
+}
+static void res_1_2(sushiv_panel_t *p){
+  res_set(p,1,2);
+}
+static void res_1_1(sushiv_panel_t *p){
+  res_set(p,1,1);
+}
+static void res_2_1(sushiv_panel_t *p){
+  res_set(p,2,1);
+}
+static void res_4_1(sushiv_panel_t *p){
+  res_set(p,4,1);
+}
+
+static GtkPrintSettings *printset=NULL;
+static void _begin_print_handler (GtkPrintOperation *op,
+				  GtkPrintContext   *context,
+				  gpointer           dummy){
+
+  gtk_print_operation_set_n_pages(op,1);
+
+}
+
+static void _pdf_print_handler(GtkPrintOperation *operation,
+			       GtkPrintContext   *context,
+			       gint               page_nr,
+			       gpointer           user_data){
+
+  cairo_t *c;
+  gdouble w, h;
+  
+  c = gtk_print_context_get_cairo_context (context);
+  w = gtk_print_context_get_width (context);
+  h = gtk_print_context_get_height (context);
+  
+  fprintf(stderr,"%f,%f\n",w,h);
+  cairo_rectangle (c, 0, 0, w, h);
+  
+  cairo_set_source_rgb (c, 1., 1., 1.);
+  cairo_fill (c);
+}
+
+static void _sushiv_panel_print(sushiv_panel_t *p){
+  GtkPrintOperation *op = gtk_print_operation_new ();
+
+  if (printset != NULL) 
+    gtk_print_operation_set_print_settings (op, printset);
+  
+  g_signal_connect (op, "begin-print", 
+		    G_CALLBACK (_begin_print_handler), p);
+  g_signal_connect (op, "draw-page", 
+		    G_CALLBACK (_pdf_print_handler), p);
+
+  GtkPrintOperationResult ret = gtk_print_operation_run (op,GTK_PRINT_OPERATION_ACTION_PRINT_DIALOG,
+							 NULL,NULL);
+  if (ret == GTK_PRINT_OPERATION_RESULT_APPLY){
+    if (printset != NULL)
+      g_object_unref (printset);
+    printset = g_object_ref (gtk_print_operation_get_print_settings (op));
+  }
+  g_object_unref (op);
+}
+
 static menuitem *menu[]={
-  &(menuitem){"Undo","[<i>bksp</i>]",NULL,&_sushiv_panel_undo_down},
-  &(menuitem){"Redo","[<i>space</i>]",NULL,&_sushiv_panel_undo_up},
+  &(menuitem){"Open","[<i>o</i>]",NULL,NULL},
+  &(menuitem){"Save","[<i>s</i>]",NULL,NULL},
+  &(menuitem){"Print/Export","[<i>p</i>]",NULL,&_sushiv_panel_print},
 
   &(menuitem){"",NULL,NULL,NULL},
 
+  &(menuitem){"Undo","[<i>bksp</i>]",NULL,&_sushiv_panel_undo_down},
+  &(menuitem){"Redo","[<i>space</i>]",NULL,&_sushiv_panel_undo_up},
   &(menuitem){"Start zoom box","[<i>enter</i>]",NULL,&wrap_enter},
-  &(menuitem){"Clear readout","[<i>escape</i>]",NULL,&wrap_escape},
+  &(menuitem){"Clear readouts","[<i>escape</i>]",NULL,&wrap_escape},
 
   &(menuitem){"",NULL,NULL,NULL},
 
   &(menuitem){"Background","...",NULL,NULL},
   &(menuitem){"Text color","...",NULL,NULL},
   &(menuitem){"Grid mode","...",NULL,NULL},
+  &(menuitem){"Sampling","...",NULL,NULL},
 
   &(menuitem){"",NULL,NULL,NULL},
 
@@ -167,70 +259,184 @@ static menuitem *menu_scales[]={
   &(menuitem){NULL,NULL,NULL,NULL}
 };
 
+static menuitem *menu_res[]={
+  &(menuitem){"default",NULL,NULL,res_def},
+  &(menuitem){"1:32",NULL,NULL,res_1_32},
+  &(menuitem){"1:16",NULL,NULL,res_1_16},
+  &(menuitem){"1:8",NULL,NULL,res_1_8},
+  &(menuitem){"1:4",NULL,NULL,res_1_4},
+  &(menuitem){"1:2",NULL,NULL,res_1_2},
+  &(menuitem){"1",NULL,NULL,res_1_1},
+  &(menuitem){"2:1",NULL,NULL,res_2_1},
+  &(menuitem){"4:1",NULL,NULL,res_4_1},
+  &(menuitem){NULL,NULL,NULL,NULL}
+};
+
 void _sushiv_panel_update_menus(sushiv_panel_t *p){
 
   // is undo active?
   if(!p->sushi->private->undo_stack ||
      !p->sushi->private->undo_level){
-    gtk_widget_set_sensitive(gtk_menu_get_item(GTK_MENU(p->private->popmenu),0),FALSE);
+    gtk_widget_set_sensitive(gtk_menu_get_item(GTK_MENU(p->private->popmenu),4),FALSE);
   }else{
-    gtk_widget_set_sensitive(gtk_menu_get_item(GTK_MENU(p->private->popmenu),0),TRUE);
+    gtk_widget_set_sensitive(gtk_menu_get_item(GTK_MENU(p->private->popmenu),4),TRUE);
   }
 
   // is redo active?
   if(!p->sushi->private->undo_stack ||
      !p->sushi->private->undo_stack[p->sushi->private->undo_level] ||
      !p->sushi->private->undo_stack[p->sushi->private->undo_level+1]){
-    gtk_widget_set_sensitive(gtk_menu_get_item(GTK_MENU(p->private->popmenu),1),FALSE);
+    gtk_widget_set_sensitive(gtk_menu_get_item(GTK_MENU(p->private->popmenu),5),FALSE);
   }else{
-    gtk_widget_set_sensitive(gtk_menu_get_item(GTK_MENU(p->private->popmenu),1),TRUE);
+    gtk_widget_set_sensitive(gtk_menu_get_item(GTK_MENU(p->private->popmenu),5),TRUE);
   }
 
   // are we starting or enacting a zoom box?
   if(p->private->oldbox_active){ 
-    gtk_menu_alter_item_label(GTK_MENU(p->private->popmenu),3,"Zoom to box");
+    gtk_menu_alter_item_label(GTK_MENU(p->private->popmenu),6,"Zoom to box");
   }else{
-    gtk_menu_alter_item_label(GTK_MENU(p->private->popmenu),3,"Start zoom box");
+    gtk_menu_alter_item_label(GTK_MENU(p->private->popmenu),6,"Start zoom box");
   }
 
   // make sure menu reflects plot configuration
   switch(p->private->bg_type){ 
   case SUSHIV_BG_WHITE:
-    gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),6,menu_bg[0]->left);
+    gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),9,menu_bg[0]->left);
     break;
   case SUSHIV_BG_BLACK:
-    gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),6,menu_bg[1]->left);
+    gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),9,menu_bg[1]->left);
     break;
   default:
-    gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),6,menu_bg[2]->left);
+    gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),9,menu_bg[2]->left);
     break;
   }
 
   switch(PLOT(p->private->graph)->bg_inv){ 
   case 0:
-    gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),7,menu_text[0]->left);
+    gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),10,menu_text[0]->left);
     break;
   default:
-    gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),7,menu_text[1]->left);
+    gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),10,menu_text[1]->left);
     break;
   }
 
   switch(PLOT(p->private->graph)->grid_mode){ 
   case PLOT_GRID_NORMAL:
-    gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),8,menu_scales[0]->left);
+    gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),11,menu_scales[0]->left);
     break;
   case PLOT_GRID_TICS:
-    gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),8,menu_scales[1]->left);
+    gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),11,menu_scales[1]->left);
     break;
   default:
-    gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),8,menu_scales[2]->left);
+    gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),11,menu_scales[2]->left);
     break;
   }
+
+  {
+    char buffer[80];
+    snprintf(buffer,60,"%d:%d",p->private->oversample_n,p->private->oversample_d);
+    if(p->private->def_oversample_n == p->private->oversample_n &&
+       p->private->def_oversample_d == p->private->oversample_d)
+      strcat(buffer," (default)");
+    gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),12,buffer);
+  }
+}
+
+static gboolean panel_keypress(GtkWidget *widget,
+				 GdkEventKey *event,
+				 gpointer in){
+  sushiv_panel_t *p = (sushiv_panel_t *)in;
+  //  sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
+  
+  // check if the widget with focus is an Entry
+  GtkWidget *focused = gtk_window_get_focus(GTK_WINDOW(widget));
+  int entryp = (focused?GTK_IS_ENTRY(focused):0);
+
+  // don't swallow modified keypresses
+  if(event->state&GDK_MOD1_MASK) return FALSE;
+  if(event->state&GDK_CONTROL_MASK)return FALSE;
+
+  switch(event->keyval){
+  case GDK_Home:case GDK_KP_Begin:
+  case GDK_End:case GDK_KP_End:
+  case GDK_Up:case GDK_KP_Up:
+  case GDK_Down:case GDK_KP_Down:
+  case GDK_Left:case GDK_KP_Left:
+  case GDK_Right:case GDK_KP_Right:
+  case GDK_minus:case GDK_KP_Subtract:
+  case GDK_plus:case GDK_KP_Add:
+  case GDK_period:case GDK_KP_Decimal:
+  case GDK_0:case GDK_KP_0:
+  case GDK_1:case GDK_KP_1:
+  case GDK_2:case GDK_KP_2:
+  case GDK_3:case GDK_KP_3:
+  case GDK_4:case GDK_KP_4:
+  case GDK_5:case GDK_KP_5:
+  case GDK_6:case GDK_KP_6:
+  case GDK_7:case GDK_KP_7:
+  case GDK_8:case GDK_KP_8:
+  case GDK_9:case GDK_KP_9:
+  case GDK_Tab:case GDK_KP_Tab:
+  case GDK_ISO_Left_Tab:
+  case GDK_Delete:case GDK_KP_Delete:
+  case GDK_Return:case GDK_ISO_Enter:
+  case GDK_Insert:case GDK_KP_Insert:
+    return FALSE;
+  }
+  
+  if(entryp){
+    // we still filter, but differently
+    switch(event->keyval){
+    case GDK_BackSpace:
+    case GDK_e:case GDK_E:
+      return FALSE;
+    }
+  }
+        
+  /* non-control keypresses */
+  switch(event->keyval){
+
+   case GDK_Escape:
+     plot_do_escape(PLOT(p->private->graph));
+    return TRUE;
+
+  case GDK_Return:
+    plot_do_enter(PLOT(p->private->graph));
+    return TRUE;
+   
+  case GDK_Q:
+  case GDK_q:
+    // quit
+    _sushiv_clean_exit(SIGINT);
+    return TRUE;
+    
+  case GDK_BackSpace:
+    // undo 
+    _sushiv_panel_undo_down(p);
+    return TRUE;
+    
+  case GDK_r:
+  case GDK_space:
+    // redo/forward
+    _sushiv_panel_undo_up(p);
+    return TRUE;
+
+  case GDK_p:
+    _sushiv_panel_print(p);
+    return TRUE;
+  } 
+
+  return FALSE;
 }
 
 void _sushiv_realize_panel(sushiv_panel_t *p){
   if(p && !p->private->realized){
     p->private->realize(p);
+
+    g_signal_connect (G_OBJECT (p->private->toplevel), "key-press-event",
+		      G_CALLBACK (panel_keypress), p);
+    gtk_window_set_title (GTK_WINDOW (p->private->toplevel), p->name);
+
     p->private->realized=1;
 
     // generic things that happen in all panel realizations...
@@ -242,11 +448,13 @@ void _sushiv_realize_panel(sushiv_panel_t *p){
     GtkWidget *bgmenu = gtk_menu_new_twocol(NULL,menu_bg,p);
     GtkWidget *textmenu = gtk_menu_new_twocol(NULL,menu_text,p);
     GtkWidget *scalemenu = gtk_menu_new_twocol(NULL,menu_scales,p);
+    GtkWidget *resmenu = gtk_menu_new_twocol(NULL,menu_res,p);
 
     // not thread safe, we're not threading yet
-    menu[6]->submenu = bgmenu;
-    menu[7]->submenu = textmenu;
-    menu[8]->submenu = scalemenu;
+    menu[9]->submenu = bgmenu;
+    menu[10]->submenu = textmenu;
+    menu[11]->submenu = scalemenu;
+    menu[12]->submenu = resmenu;
 
     p->private->popmenu = gtk_menu_new_twocol(p->private->toplevel, menu, p);
     _sushiv_panel_update_menus(p);
@@ -273,8 +481,20 @@ static int test_throttle_time(sushiv_panel_t *p){
   return 0;  
 }
 
-/* use these to request a render/compute action.  Do panel
-   subtype-specific setup, then wake workers with one of the below */
+
+/* request a recomputation with full setup (eg, linking, scales,
+   etc) */
+void _sushiv_panel_recompute(sushiv_panel_t *p){
+  gdk_threads_enter ();
+  p->private->request_compute(p);
+  gdk_threads_leave ();
+}
+
+/* use these to request a render/compute action after everything has
+   already been set up to perform the op; the above full recompute
+   request will eventually trigger a call here to kick off the actual
+   computation.  Do panel subtype-specific setup, then wake workers
+   with one of the below */
 void _sushiv_panel_dirty_plot(sushiv_panel_t *p){
   gdk_threads_enter ();
   p->private->plot_active = 1;
@@ -355,8 +575,8 @@ int sushiv_panel_oversample(sushiv_instance_t *s,
     return -EINVAL;
   }
 
-  pi->oversample_n = numer;
-  pi->oversample_d = denom;
+  pi->def_oversample_n = pi->oversample_n = numer;
+  pi->def_oversample_d = pi->oversample_d = denom;
   recompute_if_running(p);
   return 0;
 }
@@ -432,8 +652,8 @@ int _sushiv_new_panel(sushiv_instance_t *s,
   p->sushi = s;
   p->private = calloc(1, sizeof(*p->private));
   p->private->spinner = spinner_new();
-  p->private->oversample_n = 1;
-  p->private->oversample_d = 1;
+  p->private->def_oversample_n = p->private->oversample_n = 1;
+  p->private->def_oversample_d = p->private->oversample_d = 1;
 
   i=0;
   while(objectives && objectives[i]>=0)i++;

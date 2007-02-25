@@ -96,7 +96,6 @@ int sushiv_submain(int argc, char *argv[]){
 		      (int []){0,1,-1},
 		      (int []){0,1,2,3,4,-1},
 		      0);
-  sushiv_panel_oversample(s,0,2,1);
 
   return 0;
 }
