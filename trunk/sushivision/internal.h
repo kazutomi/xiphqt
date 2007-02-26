@@ -149,6 +149,4 @@ extern void _sushiv_panel1d_mark_recompute_linked(sushiv_panel_t *p);
 extern void _sushiv_panel1d_update_linked_crosshairs(sushiv_panel_t *p, int xflag, int yflag); 
 extern void _sushiv_panel_update_menus(sushiv_panel_t *p);
 
-extern void render_checks(ucolor *c, int w, int y);
-
 extern sig_atomic_t _sushiv_exiting;

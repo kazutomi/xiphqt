@@ -520,6 +520,21 @@ static int resample_render_y_plane_line(sushiv_panel_t *p, _sushiv_bythread_cach
   return 0;
 }
 
+static void render_checks(ucolor *c, int w, int y){
+  /* default checked background */
+  /* 16x16 'mid-checks' */ 
+  int x,j;
+  
+  int phase = (y>>4)&1;
+  for(x=0;x<w;){
+    u_int32_t phaseval = 0xff505050UL;
+    if(phase) phaseval = 0xff808080UL;
+    for(j=0;j<16 && x<w;j++,x++)
+      c[x].u = phaseval;
+    phase=!phase;
+  }
+}
+
 // enter with lock
 static int render_bg_line(sushiv_panel_t *p, int plot_serialno, int map_serialno){
   sushiv_panel2d_t *p2 = p->subtype->p2;

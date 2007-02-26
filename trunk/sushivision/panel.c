@@ -618,21 +618,6 @@ int sushiv_panel_oversample(sushiv_instance_t *s,
   return 0;
 }
 
-void render_checks(ucolor *c, int w, int y){
-  /* default checked background */
-  /* 16x16 'mid-checks' */ 
-  int x,j;
-  
-  int phase = (y>>4)&1;
-  for(x=0;x<w;){
-    u_int32_t phaseval = 0xff505050UL;
-    if(phase) phaseval = 0xff808080UL;
-    for(j=0;j<16 && x<w;j++,x++)
-      c[x].u = phaseval;
-    phase=!phase;
-  }
-}
-
 int sushiv_panel_background(sushiv_instance_t *s,
 			    int number,
 			    enum sushiv_background bg){

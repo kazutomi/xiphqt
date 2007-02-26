@@ -435,9 +435,13 @@ int plot_print(Plot *p, cairo_t *c, double page_h, void (*datarender)(cairo_t *c
   int inv = p->bg_inv;
   int grid = p->grid_mode;
 
+  gdk_threads_enter(); // double lock
+
   cairo_save(c);
+  cairo_new_path(c);
   cairo_rectangle(c,0,0,pw,ph);
   cairo_clip(c);
+  cairo_new_path(c);
 
   // render the background
   if(datarender)
@@ -496,6 +500,9 @@ int plot_print(Plot *p, cairo_t *c, double page_h, void (*datarender)(cairo_t *c
   cairo_stroke(c);
 
   cairo_restore(c);
+
+  gdk_threads_leave();
+
   return 0;
 }
 
