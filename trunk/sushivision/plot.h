@@ -59,6 +59,7 @@ struct _Plot{
   double selx;
   double sely;
   int cross_active;
+  int legend_active;
 
   double box_x1;
   double box_y1;
@@ -96,6 +97,7 @@ Plot     *plot_new (void (*callback)(void *),void *app_data,
 G_END_DECLS
 
 // the widget subclass half
+int plot_print(Plot *p, cairo_t *c, double page_h, void (*datarender)(cairo_t *c,void *data), void *data);
 void plot_set_bg_invert(Plot *p, int setp);
 void plot_expose_request(Plot *p);
 void plot_expose_request_partial(Plot *p,int x, int y, int w, int h);
@@ -121,6 +123,7 @@ void plot_set_grid(Plot *p, int mode);
 
 void plot_do_enter(Plot *p);
 void plot_do_escape(Plot *p);
+void plot_toggle_legend(Plot *p);
 
 void plot_resizable(Plot *p, int rp);
 

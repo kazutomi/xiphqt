@@ -69,26 +69,33 @@ int _sushiv_dimension_scales(sushiv_dimension_t *d,
   switch(d->type){
   case SUSHIV_DIM_CONTINUOUS:
     {
-      double ceil = d->scale->val_list[d->scale->vals-1] * dimneg;
+      //double ceil = d->scale->val_list[d->scale->vals-1] * dimneg;
       double fl = ((d->flags & SUSHIV_DIM_ZEROINDEX) ? d->scale->val_list[0] : 0.);
       *panel = scalespace_linear(lo, hi, panel_w, spacing, legend);
-      *data = scalespace_linear(lo, hi, data_w, 1, legend);
-      *iter = scalespace_linear(lo-fl, hi-fl, data_w, 1, legend);
 
-      /* if possible, the data/iterator scales should cover the entire pane exposed
-	 by the panel scale so long as there's room left to extend them without
-	 overflowing the lo/hi fenceposts */
-      while(1){
-	double panel2 = scalespace_value(panel,panel->pixels-1)*pneg;
-	double data2 = scalespace_value(data,data_w-1)*pneg;
+      if(panel_w == data_w){
+	
+	*iter = *data = *panel;
 
-	if(data2>=panel2)break;
-	data_w++;
+      }else{
+	*data = scalespace_linear(lo, hi, data_w, 1, legend);
+	*iter = scalespace_linear(lo-fl, hi-fl, data_w, 1, legend);
+	
+	
+	/* if possible, the data/iterator scales should cover the entire pane exposed
+	   by the panel scale so long as there's room left to extend them without
+	   overflowing the lo/hi fenceposts */
+	while(1){
+	  double panel2 = scalespace_value(panel,panel_w-1)*pneg;
+	  double data2 = scalespace_value(data,data_w-1)*pneg;
+	  
+	  if(data2>=panel2)break;
+	  data_w++;
+	}
+	
+	data->pixels = data_w;
+	iter->pixels = data_w;
       }
-
-      data->pixels = data_w;
-      iter->pixels = data_w;
-
     }
     break;
   case SUSHIV_DIM_DISCRETE:
