@@ -91,7 +91,7 @@ static void draw_scales_work(cairo_t *c, int w, int h,
     if(grid == PLOT_GRID_NORMAL){
       cairo_save(c);
       //cairo_set_operator(c,CAIRO_OPERATOR_XOR);       
-      cairo_set_source_rgba(c,.5,.5,7.,.5);
+      cairo_set_source_rgba(c,.7,.7,.7,.3);
       
       i=0;
       x = scale_demark(&xs, &xs_v, i++, NULL);
@@ -446,15 +446,12 @@ int plot_print(Plot *p, cairo_t *c, double page_h, void (*datarender)(cairo_t *c
   // render scales
   draw_scales_work(c,pw,ph,page_h,inv,grid,x,y,xv,yv);
 
-  // render legend
-  draw_legend_work(p,c,pw);
-
   // transient foreground crosshairs
   if(p->cross_active){
     double sx = plot_get_crosshair_xpixel(p);
     double sy = plot_get_crosshair_ypixel(p);
     
-    cairo_set_source_rgba(c,.7,.7,.0,.9);
+    cairo_set_source_rgba(c,1.,1.,0.,.8);
     cairo_set_line_width(c,1.);
     
     if(! (p->flags & PLOT_NO_Y_CROSS)){
@@ -477,19 +474,22 @@ int plot_print(Plot *p, cairo_t *c, double page_h, void (*datarender)(cairo_t *c
     
     cairo_rectangle(c,vals[0],vals[1],vals[2]+1,vals[3]+1);	
     if(p->box_active>1)
-      cairo_set_source_rgba(c,.8,.8,.2,.5);
+      cairo_set_source_rgba(c,1.,1.,.6,.4);
     else
-      cairo_set_source_rgba(c,.7,.7,.5,.4);
+      cairo_set_source_rgba(c,.8,.8,.8,.3);
     cairo_fill(c);
     cairo_rectangle(c,vals[0]+.5,vals[1]+.5,vals[2],vals[3]);
     if(p->box_active>1)
-      cairo_set_source_rgba(c,.8,.8,.2,.9);
+      cairo_set_source_rgba(c,1.,1.,.2,.9);
     else
-      cairo_set_source_rgba(c,.8,.8,.2,.8);
+      cairo_set_source_rgba(c,1.,1.,0,.8);
     cairo_stroke(c);
   }
 
-  // put a border on it if the background is white
+  // render legend
+  draw_legend_work(p,c,pw);
+
+  // put a border on it
   cairo_set_source_rgb(c,0,0,0);
   cairo_set_line_width(c,1.0);
   cairo_rectangle(c,0,0,pw,ph);
@@ -511,16 +511,12 @@ static void plot_draw (Plot *p,
     cairo_rectangle(c,x,y,w,h);
     cairo_fill(c);
     
-    cairo_set_source_surface(c,p->fore,0,0);
-    cairo_rectangle(c,x,y,w,h);
-    cairo_fill(c);
-    
     // transient foreground
     if(p->cross_active){
       double sx = plot_get_crosshair_xpixel(p);
       double sy = plot_get_crosshair_ypixel(p);
 
-      cairo_set_source_rgba(c,.7,.7,.0,.9);
+      cairo_set_source_rgba(c,1.,1.,0.,.8);
       cairo_set_line_width(c,1.);
 
       if(! (p->flags & PLOT_NO_Y_CROSS)){
@@ -542,15 +538,15 @@ static void plot_draw (Plot *p,
 
       cairo_rectangle(c,vals[0],vals[1],vals[2]+1,vals[3]+1);	
       if(p->box_active>1)
-	cairo_set_source_rgba(c,.8,.8,.2,.5);
+	cairo_set_source_rgba(c,1.,1.,.6,.4);
       else
-	cairo_set_source_rgba(c,.7,.7,.5,.4);
+	cairo_set_source_rgba(c,.8,.8,.8,.3);
       cairo_fill(c);
       cairo_rectangle(c,vals[0]+.5,vals[1]+.5,vals[2],vals[3]);
       if(p->box_active>1)
-	cairo_set_source_rgba(c,.8,.8,.2,.9);
+	cairo_set_source_rgba(c,1.,1.,.2,.9);
       else
-	cairo_set_source_rgba(c,.8,.8,.2,.8);
+	cairo_set_source_rgba(c,1.,1.,0,.8);
       cairo_stroke(c);
     }
 
@@ -571,6 +567,11 @@ static void plot_draw (Plot *p,
       cairo_restore(c);
     }
 
+    // main foreground
+    cairo_set_source_surface(c,p->fore,0,0);
+    cairo_rectangle(c,x,y,w,h);
+    cairo_fill(c);
+    
     cairo_destroy(c);
 
     // blit to window
