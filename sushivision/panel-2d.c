@@ -258,7 +258,12 @@ static float resample_helpers_init(scalespace *to, scalespace *from,
       }
 
       del2 %= scaleden;
-      delB[i] = rem; // don't leak 
+      if(rem<0){
+	delA[i] += rem;
+	delB[i] = 0;
+      }else{
+	delB[i] = rem; // don't leak 
+      }
       posB[i] = bin+sizeceil;
 
     }else{

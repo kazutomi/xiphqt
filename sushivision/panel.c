@@ -224,9 +224,20 @@ static void _sushiv_panel_print(sushiv_panel_t *p){
   g_signal_connect (op, "draw-page", 
 		    G_CALLBACK (_print_handler), p);
 
+  GError *err;
   GtkPrintOperationResult ret = gtk_print_operation_run (op,GTK_PRINT_OPERATION_ACTION_PRINT_DIALOG,
-							 NULL,NULL);
-  if (ret == GTK_PRINT_OPERATION_RESULT_APPLY){
+							 NULL,&err);
+
+  if (ret == GTK_PRINT_OPERATION_RESULT_ERROR) {
+    GtkWidget *error_dialog = gtk_message_dialog_new (NULL,0,GTK_MESSAGE_ERROR,
+					   GTK_BUTTONS_CLOSE,
+					   "Error printing file:\n%s",
+					   err->message);
+    g_signal_connect (error_dialog, "response", 
+		      G_CALLBACK (gtk_widget_destroy), NULL);
+    gtk_widget_show (error_dialog);
+    g_error_free (err);
+  }else if (ret == GTK_PRINT_OPERATION_RESULT_APPLY){
     if (printset != NULL)
       g_object_unref (printset);
     printset = g_object_ref (gtk_print_operation_get_print_settings (op));
