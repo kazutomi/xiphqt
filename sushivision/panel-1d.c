@@ -57,22 +57,35 @@ static char *point_name[POINTTYPES+1] = {
   NULL
 };
 
+static void render_checks(cairo_t *c, int w, int h){
+  /* default checked background */
+  /* 16x16 'mid-checks' */ 
+  int x,y;
+
+  cairo_set_source_rgb (c, .5,.5,.5);
+  cairo_paint(c);
+  cairo_set_source_rgb (c, .314,.314,.314);
+
+  for(y=0;y<h;y+=16){
+    int phase = (y>>4)&1;
+    for(x=0;x<w;x+=16){
+      if(phase){
+	cairo_rectangle(c,x,y,16.,16.);
+	cairo_fill(c);
+      }
+      phase=!phase;
+    }
+  }
+}
+
 // called internally, assumes we hold lock
 // redraws the data, does not compute the data
-static void _sushiv_panel1d_remap(sushiv_panel_t *p){
+static int _sushiv_panel1d_remap(sushiv_panel_t *p, cairo_t *c){
   sushiv_panel1d_t *p1 = p->subtype->p1;
   Plot *plot = PLOT(p->private->graph);
-  cairo_surface_t *back = plot->back;
 
   int plot_serialno = p->private->plot_serialno;
   int map_serialno = p->private->map_serialno;
-
-  // render to a temp surface so that we can release the lock occasionally
-  cairo_surface_t *cs = cairo_surface_create_similar(back,CAIRO_CONTENT_COLOR,
-						     cairo_image_surface_get_width(back),
-						     cairo_image_surface_get_height(back));
-  ucolor *lback = (ucolor *)cairo_image_surface_get_data(cs);
-  cairo_t *c = cairo_create(cs);
   int xi,i,j;
   int pw = plot->x.pixels;
   int ph = plot->y.pixels;
@@ -112,14 +125,13 @@ static void _sushiv_panel1d_remap(sushiv_panel_t *p){
     cairo_paint(c);
     break;
   case SUSHIV_BG_CHECKS:
-    for(i=0;i<ph;i++)
-      render_checks(lback+pw*i, pw, i);
+    render_checks(c,pw,ph);
     break;
   }
 
   gdk_threads_enter();
   if(plot_serialno != p->private->plot_serialno ||
-     map_serialno != p->private->map_serialno) goto abort;
+     map_serialno != p->private->map_serialno) return -1;
 
   if(p1->data_vec){
     
@@ -327,24 +339,21 @@ static void _sushiv_panel1d_remap(sushiv_panel_t *p){
 	
 	gdk_threads_enter();
 	if(plot_serialno != p->private->plot_serialno ||
-	   map_serialno != p->private->map_serialno) goto abort;
+	   map_serialno != p->private->map_serialno) return -1;
 	
 
       }
     }
   }
 
-  cairo_surface_destroy(plot->back);
-  plot->back = cs;
-  cairo_destroy(c);
+  return 1;
+}
 
-  _sushiv_panel_clean_map(p);
-  plot_expose_request(plot);
-  return;
+void sushiv_panel1d_print_bg(cairo_t *c, sushiv_panel_t *p){
+  Plot *plot = PLOT(p->private->graph);
 
- abort:
-  cairo_destroy(c);
-  cairo_surface_destroy(cs);
+  if(!plot) return;
+  _sushiv_panel1d_remap(p,c);
 }
 
 static void update_legend(sushiv_panel_t *p){  
@@ -962,7 +971,28 @@ void _maintain_cache_1d(sushiv_panel_t *p, _sushiv_bythread_cache_1d *c, int w){
 int _sushiv_panel1d_map_redraw(sushiv_panel_t *p, _sushiv_bythread_cache *c){
   if(p->private->map_progress_count)return 0;
   p->private->map_progress_count++;
-  _sushiv_panel1d_remap(p);
+
+  // render to a temp surface so that we can release the lock occasionally
+  Plot *plot = PLOT(p->private->graph);
+  cairo_surface_t *back = plot->back;
+  cairo_surface_t *cs = cairo_surface_create_similar(back,CAIRO_CONTENT_COLOR,
+						     cairo_image_surface_get_width(back),
+						     cairo_image_surface_get_height(back));
+  cairo_t *ct = cairo_create(cs);
+  
+  if(_sushiv_panel1d_remap(p,ct) == -1){ // returns -1 on abort
+    cairo_destroy(ct);
+    cairo_surface_destroy(cs);
+  }else{
+    // else complete
+    cairo_surface_destroy(plot->back);
+    plot->back = cs;
+    cairo_destroy(ct);
+    
+    _sushiv_panel_clean_map(p);
+    plot_expose_request(plot);
+  }
+
   return 1;
 }
 
@@ -991,7 +1021,6 @@ int _sushiv_panel1d_compute(sushiv_panel_t *p,
   
   int dw,w,h,i,d;
   int serialno;
-  double x_min, x_max;
   int x_d=-1;
   scalespace sy;
 
@@ -1413,6 +1442,7 @@ int sushiv_new_panel_1d(sushiv_instance_t *s,
   p->private->compute_action = _sushiv_panel1d_compute;
   p->private->request_compute = _mark_recompute_1d;
   p->private->crosshair_action = crosshair_callback;
+  p->private->data_print = sushiv_panel1d_print_bg;
 
   p->private->undo_log = panel1d_undo_log;
   p->private->undo_restore = panel1d_undo_restore;
