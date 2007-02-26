@@ -40,8 +40,7 @@ static void compute_one_data_line_2d(sushiv_panel_t *p,
 				     int dw,
 				     int y,
 				     int x_d, 
-				     double x_min, 
-				     double x_max, 
+				     scalespace sxi,
 				     double *dim_vals, 
 				     _sushiv_bythread_cache_2d *c){
 
@@ -58,7 +57,7 @@ static void compute_one_data_line_2d(sushiv_panel_t *p,
     int *onum = p2->y_obj_to_panel;
     
     /* by function */
-    dim_vals[x_d] = (x_max-x_min) * j / dw + x_min;
+    dim_vals[x_d] = scalespace_value(&sxi,j);   
     for(i=0;i<p2->used_functions;i++){
       (*f)->callback(dim_vals,fout);
       fout += (*f)->outputs;
@@ -248,7 +247,7 @@ static float resample_helpers_init(scalespace *to, scalespace *from,
     if(del2 > scaleden && bin>=0 && bin<dw){
       int rem = total;
 
-      delA[i] = (xymul * (scaleden - del)) / discscale;
+      delA[i] = ((xymul * (scaleden - del)) + (discscale>>1)) / discscale;
       posA[i] = bin;
       rem -= delA[i];
       rem -= xymul*(sizeceil-2);
@@ -704,6 +703,18 @@ static int _sushiv_panel2d_remap(sushiv_panel_t *p, _sushiv_bythread_cache_2d *t
  abort:
   // reset progress to 'start over'
   return 1;
+}
+
+// looks like a cop-out but is actually the correct thing to do; the
+// data *must* be WYSIWYG from panel display.
+void sushiv_panel2d_print_bg(cairo_t *c, sushiv_panel_t *p){
+  Plot *plot = PLOT(p->private->graph);
+
+  if(!plot) return;
+
+  cairo_set_source_surface(c, plot->back,0,0);
+  cairo_paint(c);
+
 }
 
 // call while locked
@@ -1456,8 +1467,8 @@ static int _sushiv_panel2d_compute(sushiv_panel_t *p,
   /* unlock for computation */
   gdk_threads_leave ();
     
-  dim_vals[y_d]= (y_max - y_min) / dh * y + y_min;
-  compute_one_data_line_2d(p, serialno, dw, y, x_d, x_min, x_max, dim_vals, &c->p2);
+  dim_vals[y_d]=scalespace_value(&sy_i, y);
+  compute_one_data_line_2d(p, serialno, dw, y, x_d, sx_i, dim_vals, &c->p2);
 
   gdk_threads_enter ();
 
@@ -1782,7 +1793,7 @@ int sushiv_new_panel_2d(sushiv_instance_t *s,
   p->private->compute_action = _sushiv_panel2d_compute;
   p->private->request_compute = _mark_recompute_2d;
   p->private->crosshair_action = _sushiv_panel2d_crosshairs_callback;
-
+  p->private->data_print = sushiv_panel2d_print_bg;
   p->private->undo_log = panel2d_undo_log;
   p->private->undo_restore = panel2d_undo_restore;
 

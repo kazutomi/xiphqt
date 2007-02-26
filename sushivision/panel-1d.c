@@ -570,8 +570,7 @@ static void update_x_sel(sushiv_panel_t *p){
 static void compute_1d(sushiv_panel_t *p, 
 		       int serialno,
 		       int x_d, 
-		       double x_min, 
-		       double x_max, 
+		       scalespace sxi,
 		       int w, 
 		       double *dim_vals,
 		       _sushiv_bythread_cache_1d *c){
@@ -588,8 +587,7 @@ static void compute_1d(sushiv_panel_t *p,
       
       /* by x */
       for(j=0;j<w;j++){
-
-	dim_vals[x_d] = (x_max-x_min) * j / w + x_min;
+	dim_vals[x_d] = scalespace_value(&sxi,j);
 	c->call[i](dim_vals,fout);
 	fout+=step;
       }
@@ -1024,8 +1022,6 @@ int _sushiv_panel1d_compute(sushiv_panel_t *p,
   double dim_vals[p->sushi->dimensions];
 
   /* get iterator bounds, use iterator scale */
-  x_min = scalespace_value(&sxi,0);
-  x_max = scalespace_value(&sxi,dw);
   x_d = p1->x_d->number;
 
   if(p1->flip){
@@ -1052,7 +1048,7 @@ int _sushiv_panel1d_compute(sushiv_panel_t *p,
   gdk_threads_leave ();
 
   plot_draw_scales(plot);
-  compute_1d(p, serialno, x_d, x_min, x_max, dw, dim_vals, &c->p1);
+  compute_1d(p, serialno, x_d, sxi, dw, dim_vals, &c->p1);
   
   gdk_threads_enter ();
 

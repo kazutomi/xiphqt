@@ -78,6 +78,11 @@ static void wrap_escape(sushiv_panel_t *p){
   plot_do_escape(PLOT(p->private->graph));
 }
 
+static void wrap_legend(sushiv_panel_t *p){
+  plot_toggle_legend(PLOT(p->private->graph));
+  _sushiv_panel_dirty_legend(p);
+}
+
 static int _sushiv_panel_background_i(sushiv_panel_t *p,
 				      enum sushiv_background bg){
   
@@ -173,23 +178,39 @@ static void _begin_print_handler (GtkPrintOperation *op,
 
 }
 
-static void _pdf_print_handler(GtkPrintOperation *operation,
-			       GtkPrintContext   *context,
-			       gint               page_nr,
-			       gpointer           user_data){
+static void _print_handler(GtkPrintOperation *operation,
+			   GtkPrintContext   *context,
+			   gint               page_nr,
+			   gpointer           user_data){
 
   cairo_t *c;
   gdouble w, h;
-  
+  sushiv_panel_t *p = (sushiv_panel_t *)user_data;
+  double pw = p->private->graph->allocation.width;
+  double ph = p->private->graph->allocation.height;
+  double scale;
+
   c = gtk_print_context_get_cairo_context (context);
   w = gtk_print_context_get_width (context);
   h = gtk_print_context_get_height (context);
   
-  fprintf(stderr,"%f,%f\n",w,h);
+  if(w/pw < h/ph)
+    scale = w/pw;
+  else
+    scale = h/ph;
+
   cairo_rectangle (c, 0, 0, w, h);
+
+  cairo_matrix_t m;
+  cairo_get_matrix(c,&m);
+  cairo_matrix_scale(&m,scale,scale);
+  cairo_set_matrix(c,&m);
+
+  plot_print(PLOT(p->private->graph), c, ph*scale, (void(*)(cairo_t *, void *))p->private->data_print, p);
+
   
-  cairo_set_source_rgb (c, 1., 1., 1.);
-  cairo_fill (c);
+  // XXX render objective scales here
+
 }
 
 static void _sushiv_panel_print(sushiv_panel_t *p){
@@ -201,7 +222,7 @@ static void _sushiv_panel_print(sushiv_panel_t *p){
   g_signal_connect (op, "begin-print", 
 		    G_CALLBACK (_begin_print_handler), p);
   g_signal_connect (op, "draw-page", 
-		    G_CALLBACK (_pdf_print_handler), p);
+		    G_CALLBACK (_print_handler), p);
 
   GtkPrintOperationResult ret = gtk_print_operation_run (op,GTK_PRINT_OPERATION_ACTION_PRINT_DIALOG,
 							 NULL,NULL);
@@ -223,7 +244,8 @@ static menuitem *menu[]={
   &(menuitem){"Undo","[<i>bksp</i>]",NULL,&_sushiv_panel_undo_down},
   &(menuitem){"Redo","[<i>space</i>]",NULL,&_sushiv_panel_undo_up},
   &(menuitem){"Start zoom box","[<i>enter</i>]",NULL,&wrap_enter},
-  &(menuitem){"Clear readouts","[<i>escape</i>]",NULL,&wrap_escape},
+  &(menuitem){"Clear selection","[<i>escape</i>]",NULL,&wrap_escape},
+  &(menuitem){"Toggle Legend","[<i>l</i>]",NULL,&wrap_legend},
 
   &(menuitem){"",NULL,NULL,NULL},
 
@@ -301,34 +323,34 @@ void _sushiv_panel_update_menus(sushiv_panel_t *p){
   // make sure menu reflects plot configuration
   switch(p->private->bg_type){ 
   case SUSHIV_BG_WHITE:
-    gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),9,menu_bg[0]->left);
+    gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),10,menu_bg[0]->left);
     break;
   case SUSHIV_BG_BLACK:
-    gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),9,menu_bg[1]->left);
+    gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),10,menu_bg[1]->left);
     break;
   default:
-    gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),9,menu_bg[2]->left);
+    gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),10,menu_bg[2]->left);
     break;
   }
 
   switch(PLOT(p->private->graph)->bg_inv){ 
   case 0:
-    gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),10,menu_text[0]->left);
+    gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),11,menu_text[0]->left);
     break;
   default:
-    gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),10,menu_text[1]->left);
+    gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),11,menu_text[1]->left);
     break;
   }
 
   switch(PLOT(p->private->graph)->grid_mode){ 
   case PLOT_GRID_NORMAL:
-    gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),11,menu_scales[0]->left);
+    gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),12,menu_scales[0]->left);
     break;
   case PLOT_GRID_TICS:
-    gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),11,menu_scales[1]->left);
+    gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),12,menu_scales[1]->left);
     break;
   default:
-    gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),11,menu_scales[2]->left);
+    gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),12,menu_scales[2]->left);
     break;
   }
 
@@ -338,7 +360,7 @@ void _sushiv_panel_update_menus(sushiv_panel_t *p){
     if(p->private->def_oversample_n == p->private->oversample_n &&
        p->private->def_oversample_d == p->private->oversample_d)
       strcat(buffer," (default)");
-    gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),12,buffer);
+    gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),13,buffer);
   }
 }
 
@@ -424,6 +446,10 @@ static gboolean panel_keypress(GtkWidget *widget,
   case GDK_p:
     _sushiv_panel_print(p);
     return TRUE;
+
+  case GDK_l:
+    wrap_legend(p);
+    return TRUE;
   } 
 
   return FALSE;
@@ -451,10 +477,10 @@ void _sushiv_realize_panel(sushiv_panel_t *p){
     GtkWidget *resmenu = gtk_menu_new_twocol(NULL,menu_res,p);
 
     // not thread safe, we're not threading yet
-    menu[9]->submenu = bgmenu;
-    menu[10]->submenu = textmenu;
-    menu[11]->submenu = scalemenu;
-    menu[12]->submenu = resmenu;
+    menu[10]->submenu = bgmenu;
+    menu[11]->submenu = textmenu;
+    menu[12]->submenu = scalemenu;
+    menu[13]->submenu = resmenu;
 
     p->private->popmenu = gtk_menu_new_twocol(p->private->toplevel, menu, p);
     _sushiv_panel_update_menus(p);

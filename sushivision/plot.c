@@ -72,24 +72,17 @@ static void set_shadow(int inv, cairo_t *c){
     cairo_set_source_rgba(c,1.,1.,1.,.8);
 }
 
-static void draw_scales_work(cairo_surface_t *s, int inv_text, int grid,
+static void draw_scales_work(cairo_t *c, int w, int h, 
+			     double page_h,
+			     int inv_text, int grid,
 			     scalespace xs, scalespace ys,
 			     scalespace xs_v, scalespace ys_v){
 
-  int w = cairo_image_surface_get_width(s);
-  int h = cairo_image_surface_get_height(s);
-  cairo_t *c = cairo_create(s);
   int i=0,x,y;
   char buffer[80];
   int y_width=0;
   int x_height=0;
   int off = (grid == PLOT_GRID_TICS?6:0);
-
-  cairo_save(c);
-  cairo_set_operator(c,CAIRO_OPERATOR_CLEAR);
-  cairo_set_source_rgba (c, 1,1,1,1);
-  cairo_paint(c);
-  cairo_restore(c);
 
   // draw all axis lines, then stroke
   if(grid){
@@ -97,7 +90,7 @@ static void draw_scales_work(cairo_surface_t *s, int inv_text, int grid,
     cairo_set_line_width(c,1.);
     if(grid == PLOT_GRID_NORMAL){
       cairo_save(c);
-      cairo_set_operator(c,CAIRO_OPERATOR_XOR);       
+      //cairo_set_operator(c,CAIRO_OPERATOR_XOR);       
       cairo_set_source_rgba(c,.5,.5,7.,.5);
       
       i=0;
@@ -107,7 +100,7 @@ static void draw_scales_work(cairo_surface_t *s, int inv_text, int grid,
 	cairo_line_to(c,x+.5,h);
 	x = scale_demark(&xs, &xs_v, i++, NULL);
       }
-      
+
       i=0;
       y = scale_demark(&ys, &ys_v, i++, NULL);
       while(y < h){
@@ -115,10 +108,11 @@ static void draw_scales_work(cairo_surface_t *s, int inv_text, int grid,
 	cairo_line_to(c,w,y+.5);
 	y = scale_demark(&ys, &ys_v, i++, NULL);
       }
-      
+
       cairo_stroke(c);
       cairo_restore(c);
     }
+
 
     // text number labels
     cairo_select_font_face (c, "Sans",
@@ -156,24 +150,27 @@ static void draw_scales_work(cairo_surface_t *s, int inv_text, int grid,
 
   // set sideways text
   cairo_save(c);
-  cairo_matrix_t m = {0.,-1., 1.,0.,  0.,h};
-  cairo_set_matrix(c,&m);
+  cairo_matrix_t a;
+  cairo_get_matrix(c,&a);
+  cairo_matrix_t b = {0.,-1., 1.,0., 0.,page_h+a.y0+a.y0}; // account for border!
+  cairo_matrix_t d;
+  cairo_matrix_multiply(&d,&a,&b);
+  cairo_set_matrix(c,&d);
 
   // text y scale label
   if(ys.legend){
     cairo_text_extents_t extents;
     cairo_text_extents (c, ys.legend, &extents);
-    
-    cairo_move_to(c,h/2 - extents.width/2+extents.x_bearing, y_width-extents.y_bearing+5+off);
+
+    cairo_move_to(c,h/2 - (extents.width/2 +extents.x_bearing), y_width-extents.y_bearing+5+off);
     set_shadow(inv_text,c);
     cairo_text_path (c, ys.legend);  
     cairo_stroke(c);
     
-    cairo_move_to(c,h/2 - extents.width/2+extents.x_bearing, y_width-extents.y_bearing+5+off);
+    cairo_move_to(c,h/2 - (extents.width/2 +extents.x_bearing), y_width-extents.y_bearing+5+off);
     set_text(inv_text,c);
     cairo_show_text (c, ys.legend);
   }
-
 
   if(grid){
     i=0;
@@ -187,12 +184,12 @@ static void draw_scales_work(cairo_surface_t *s, int inv_text, int grid,
       
       if(x - extents.height > y_width+5 ){
 	
-	cairo_move_to(c,2+off, x+.5-(extents.height/2 + extents.y_bearing));
+	cairo_move_to(c,2+off-extents.x_bearing, x+.5-(extents.height/2 + extents.y_bearing));
 	set_shadow(inv_text,c);
 	cairo_text_path (c, buffer);  
 	cairo_stroke(c);
 	
-	cairo_move_to(c,2+off, x+.5-(extents.height/2 + extents.y_bearing));
+	cairo_move_to(c,2+off-extents.x_bearing, x+.5-(extents.height/2 + extents.y_bearing));
 	set_text(inv_text,c);
 	cairo_show_text (c, buffer);
       }
@@ -207,12 +204,12 @@ static void draw_scales_work(cairo_surface_t *s, int inv_text, int grid,
     cairo_text_extents_t extents;
     cairo_text_extents (c, xs.legend, &extents);
     
-    cairo_move_to(c,w/2 - extents.width/2+extents.x_bearing, h - x_height+ extents.y_bearing-3-off);
+    cairo_move_to(c,w/2 - (extents.width/2 + extents.x_bearing), h - x_height+ extents.y_bearing-3-off);
     set_shadow(inv_text,c);
     cairo_text_path (c, xs.legend);  
     cairo_stroke(c);
     
-    cairo_move_to(c,w/2 - extents.width/2+extents.x_bearing, h - x_height+ extents.y_bearing-3-off);
+    cairo_move_to(c,w/2 - (extents.width/2 + extents.x_bearing), h - x_height+ extents.y_bearing-3-off);
     set_text(inv_text,c);
     cairo_show_text (c, xs.legend);
   }
@@ -244,17 +241,11 @@ static void draw_scales_work(cairo_surface_t *s, int inv_text, int grid,
     }
   
     cairo_stroke(c);
-    cairo_restore(c);
   }
-  
-  cairo_destroy(c);
 }
 
-static void draw_legend_work(Plot *p, cairo_surface_t *s){
-  if(p->legend_entries && p->legend_list){
-    int w = cairo_image_surface_get_width(s);
-    //int h = cairo_image_surface_get_height(s);
-    cairo_t *c = cairo_create(s);
+static void draw_legend_work(Plot *p, cairo_t *c, int w){
+  if(p->legend_entries && p->legend_list && p->legend_active){
     int i;
     int textw=0, texth=0;
     int totalh=0;
@@ -288,14 +279,14 @@ static void draw_legend_work(Plot *p, cairo_surface_t *s){
 	textw = extents.width;
     }
     
-    y = 10+texth;
+    y = 15+texth;
     texth = ceil(texth * 1.2+3);
     totalh = texth*n;
     
-    x = w - textw - 10;
+    x = w - textw - 15;
 
     // draw the enclosing rectangle
-    cairo_rectangle(c,x-7,5,textw+14,totalh+10);
+    cairo_rectangle(c,x-6.5,5.5,textw+15,totalh+15);
     set_shadow(inv,c);
     cairo_fill_preserve(c);
     set_text(inv,c);
@@ -303,11 +294,10 @@ static void draw_legend_work(Plot *p, cairo_surface_t *s){
 
     for(i=0;i<n;i++){
       cairo_text_extents (c, buffer[i], &extents);
-      x = w - extents.width - 10;
+      x = w - extents.width - 15;
       
-      cairo_move_to(c,x, y);
-      cairo_text_path (c, buffer[i]); 
-
+      //cairo_move_to(c,x, y);
+      //cairo_text_path (c, buffer[i]); 
       //set_shadow(inv,c);
       //cairo_set_line_width(c,3);
       //cairo_stroke(c);
@@ -327,10 +317,8 @@ static void draw_legend_work(Plot *p, cairo_surface_t *s){
       y+=texth;
     }
     
-    cairo_destroy(c);
     for(i=0;i<n;i++)
       free(buffer[i]);
-
     
   }
 }
@@ -349,9 +337,17 @@ void plot_draw_scales(Plot *p){
   int grid = p->grid_mode;
   gdk_threads_leave();
   
-  draw_scales_work(s,inv,grid,x,y,xv,yv);
-  draw_legend_work(p,s);
-  
+  cairo_t *c = cairo_create(s);
+  cairo_save(c);
+  cairo_set_operator(c,CAIRO_OPERATOR_CLEAR);
+  cairo_set_source_rgba (c, 1,1,1,1);
+  cairo_paint(c);
+  cairo_restore(c);
+
+  draw_scales_work(c,w,h,h,inv,grid,x,y,xv,yv);
+  draw_legend_work(p,c,w);
+  cairo_destroy(c);
+
   gdk_threads_enter();
   // swap fore/temp
   cairo_surface_t *temp = p->fore;
@@ -428,8 +424,83 @@ static int inside_box(Plot *p, int x, int y){
 	  y <= vals[1]+vals[3]);
 }
 
+int plot_print(Plot *p, cairo_t *c, double page_h, void (*datarender)(cairo_t *c,void *data), void *data){
+  GtkWidget *widget = GTK_WIDGET(p);
+  int pw = widget->allocation.width;
+  int ph = widget->allocation.height;
+  scalespace x = p->x;
+  scalespace y = p->y;
+  scalespace xv = p->x_v;
+  scalespace yv = p->y_v;
+  int inv = p->bg_inv;
+  int grid = p->grid_mode;
+
+  cairo_save(c);
+  cairo_rectangle(c,0,0,pw,ph);
+  cairo_clip(c);
+
+  // render the background
+  if(datarender)
+    datarender(c,data);
+
+  // render scales
+  draw_scales_work(c,pw,ph,page_h,inv,grid,x,y,xv,yv);
+
+  // render legend
+  draw_legend_work(p,c,pw);
+
+  // transient foreground crosshairs
+  if(p->cross_active){
+    double sx = plot_get_crosshair_xpixel(p);
+    double sy = plot_get_crosshair_ypixel(p);
+    
+    cairo_set_source_rgba(c,.7,.7,.0,.9);
+    cairo_set_line_width(c,1.);
+    
+    if(! (p->flags & PLOT_NO_Y_CROSS)){
+      cairo_move_to(c,0,sy+.5);
+      cairo_line_to(c,widget->allocation.width,sy+.5);
+    }
+    
+    if(! (p->flags & PLOT_NO_X_CROSS)){
+      cairo_move_to(c,sx+.5,0);
+      cairo_line_to(c,sx+.5,widget->allocation.height);
+    }
+    cairo_stroke(c);
+  }
+  
+  // transient foreground box
+  if(p->box_active){
+    double vals[4];
+    box_corners(p,vals);
+    cairo_set_line_width(c,1.);
+    
+    cairo_rectangle(c,vals[0],vals[1],vals[2]+1,vals[3]+1);	
+    if(p->box_active>1)
+      cairo_set_source_rgba(c,.8,.8,.2,.5);
+    else
+      cairo_set_source_rgba(c,.7,.7,.5,.4);
+    cairo_fill(c);
+    cairo_rectangle(c,vals[0]+.5,vals[1]+.5,vals[2],vals[3]);
+    if(p->box_active>1)
+      cairo_set_source_rgba(c,.8,.8,.2,.9);
+    else
+      cairo_set_source_rgba(c,.8,.8,.2,.8);
+    cairo_stroke(c);
+  }
+
+  // put a border on it if the background is white
+  cairo_set_source_rgb(c,0,0,0);
+  cairo_set_line_width(c,1.0);
+  cairo_rectangle(c,0,0,pw,ph);
+  cairo_stroke(c);
+
+  cairo_restore(c);
+  return 0;
+}
+
 static void plot_draw (Plot *p,
-		int x, int y, int w, int h){
+		       int x, int y, int w, int h){
 
   GtkWidget *widget = GTK_WIDGET(p);
   
@@ -772,8 +843,13 @@ void plot_do_escape(Plot *p){
   p->button_down=0;
   p->box_active=0;
   p->cross_active=0;
-  plot_legend_clear(p);
+  //plot_legend_clear(p);
   plot_draw_scales(p);
+  plot_expose_request(p);
+}
+
+void plot_toggle_legend(Plot *p){
+  p->legend_active = !p->legend_active;
   plot_expose_request(p);
 }
 
@@ -964,6 +1040,7 @@ Plot *plot_new (void (*callback)(void *),void *app_data,
   p->flags = flags;
   p->grid_mode = PLOT_GRID_NORMAL;
   p->resizable = 1;
+  p->legend_active = 1;
 
   return p;
 }
