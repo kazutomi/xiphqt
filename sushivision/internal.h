@@ -97,6 +97,8 @@ struct sushiv_panel_internal {
   int def_oversample_n;
   int def_oversample_d;
 
+  int menu_cursamp;
+
   // function bundles 
   void (*realize)(sushiv_panel_t *p);
   int (*map_action)(sushiv_panel_t *p, _sushiv_bythread_cache *c);
@@ -104,7 +106,7 @@ struct sushiv_panel_internal {
   int (*compute_action)(sushiv_panel_t *p, _sushiv_bythread_cache *c);
   void (*request_compute)(sushiv_panel_t *p);
   void (*crosshair_action)(sushiv_panel_t *p);
-  void (*data_print)(cairo_t *c, sushiv_panel_t *p);
+  void (*print_action)(sushiv_panel_t *p, cairo_t *c, int w, int h);
 
   void (*undo_log)(sushiv_panel_undo_t *u, sushiv_panel_t *p);
   void (*undo_restore)(sushiv_panel_undo_t *u, sushiv_panel_t *p);

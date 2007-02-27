@@ -76,6 +76,7 @@ static void wrap_enter(sushiv_panel_t *p){
 
 static void wrap_escape(sushiv_panel_t *p){
   plot_do_escape(PLOT(p->private->graph));
+  _sushiv_panel_dirty_legend(p);
 }
 
 static void wrap_legend(sushiv_panel_t *p){
@@ -105,6 +106,33 @@ static void black_bg(sushiv_panel_t *p){
 static void checked_bg(sushiv_panel_t *p){
   _sushiv_panel_background_i(p,SUSHIV_BG_CHECKS);
 }
+static void cycle_bg(sushiv_panel_t *p){
+  switch(p->private->bg_type){
+  case 0:
+    black_bg(p);
+    break;
+  case 1:
+    checked_bg(p);
+    break;
+  default:
+    white_bg(p);
+    break;
+  }
+}
+static void cycleB_bg(sushiv_panel_t *p){
+  switch(p->private->bg_type){
+  case 0:
+    checked_bg(p);
+    break;
+  case 1:
+    white_bg(p);
+    break;
+  default:
+    black_bg(p);
+    break;
+  }
+}
+
 static void black_text(sushiv_panel_t *p){
   plot_set_bg_invert(PLOT(p->private->graph),0);
   _sushiv_panel_update_menus(p);
@@ -115,6 +143,17 @@ static void white_text(sushiv_panel_t *p){
   _sushiv_panel_update_menus(p);
   refg_if_running(p);
 }
+static void cycle_text(sushiv_panel_t *p){
+  switch(PLOT(p->private->graph)->bg_inv){
+  case 0:
+    white_text(p);
+    break;
+  default:
+    black_text(p);
+    break;
+  }
+}
+
 static void grid_scale(sushiv_panel_t *p){
   plot_set_grid(PLOT(p->private->graph),PLOT_GRID_NORMAL);
   _sushiv_panel_update_menus(p);
@@ -130,6 +169,32 @@ static void no_scale(sushiv_panel_t *p){
   _sushiv_panel_update_menus(p);
   refg_if_running(p);
 }
+static void cycle_grid(sushiv_panel_t *p){
+  switch(PLOT(p->private->graph)->grid_mode){
+  case PLOT_GRID_NORMAL:
+    tic_scale(p);
+    break;
+  case PLOT_GRID_TICS:
+    no_scale(p);
+    break;
+  default:
+    grid_scale(p);
+    break;
+  }
+}
+static void cycleB_grid(sushiv_panel_t *p){
+  switch(PLOT(p->private->graph)->grid_mode){
+  case PLOT_GRID_NORMAL:
+    no_scale(p);
+    break;
+  case PLOT_GRID_TICS:
+    grid_scale(p);
+    break;
+  default:
+    tic_scale(p);
+    break;
+  }
+}
 
 static void res_set(sushiv_panel_t *p, int n, int d){
   if(n != p->private->oversample_n ||
@@ -142,31 +207,104 @@ static void res_set(sushiv_panel_t *p, int n, int d){
 }
 
 static void res_def(sushiv_panel_t *p){
+  p->private->menu_cursamp=0;
   res_set(p,p->private->def_oversample_n,p->private->def_oversample_d);
 }
 static void res_1_32(sushiv_panel_t *p){
+  p->private->menu_cursamp=1;
   res_set(p,1,32);
 }
 static void res_1_16(sushiv_panel_t *p){
+  p->private->menu_cursamp=2;
   res_set(p,1,16);
 }
 static void res_1_8(sushiv_panel_t *p){
+  p->private->menu_cursamp=3;
   res_set(p,1,8);
 }
 static void res_1_4(sushiv_panel_t *p){
+  p->private->menu_cursamp=4;
   res_set(p,1,4);
 }
 static void res_1_2(sushiv_panel_t *p){
+  p->private->menu_cursamp=5;
   res_set(p,1,2);
 }
 static void res_1_1(sushiv_panel_t *p){
+  p->private->menu_cursamp=6;
   res_set(p,1,1);
 }
 static void res_2_1(sushiv_panel_t *p){
+  p->private->menu_cursamp=7;
   res_set(p,2,1);
 }
 static void res_4_1(sushiv_panel_t *p){
+  p->private->menu_cursamp=8;
   res_set(p,4,1);
+}
+
+static void cycle_res(sushiv_panel_t *p){
+  switch(p->private->menu_cursamp){
+  case 0:
+    res_1_32(p);
+    break;
+  case 1:
+    res_1_16(p);
+    break;
+  case 2:
+    res_1_8(p);
+    break;
+  case 3:
+    res_1_4(p);
+    break;
+  case 4:
+    res_1_2(p);
+    break;
+  case 5:
+    res_1_1(p);
+    break;
+  case 6:
+    res_2_1(p);
+    break;
+  case 7:
+    res_4_1(p);
+    break;
+  case 8:
+    res_def(p);
+    break;
+  }
+}
+
+static void cycleB_res(sushiv_panel_t *p){
+  switch(p->private->menu_cursamp){
+  case 2:
+    res_1_32(p);
+    break;
+  case 3:
+    res_1_16(p);
+    break;
+  case 4:
+    res_1_8(p);
+    break;
+  case 5:
+    res_1_4(p);
+    break;
+  case 6:
+    res_1_2(p);
+    break;
+  case 7:
+    res_1_1(p);
+    break;
+  case 8:
+    res_2_1(p);
+    break;
+  case 0:
+    res_4_1(p);
+    break;
+  case 1:
+    res_def(p);
+    break;
+  }
 }
 
 static GtkPrintSettings *printset=NULL;
@@ -186,31 +324,12 @@ static void _print_handler(GtkPrintOperation *operation,
   cairo_t *c;
   gdouble w, h;
   sushiv_panel_t *p = (sushiv_panel_t *)user_data;
-  double pw = p->private->graph->allocation.width;
-  double ph = p->private->graph->allocation.height;
-  double scale;
 
   c = gtk_print_context_get_cairo_context (context);
   w = gtk_print_context_get_width (context);
   h = gtk_print_context_get_height (context);
   
-  if(w/pw < h/ph)
-    scale = w/pw;
-  else
-    scale = h/ph;
-
-  cairo_rectangle (c, 0, 0, w, h);
-
-  cairo_matrix_t m;
-  cairo_get_matrix(c,&m);
-  cairo_matrix_scale(&m,scale,scale);
-  cairo_set_matrix(c,&m);
-
-  plot_print(PLOT(p->private->graph), c, ph*scale, (void(*)(cairo_t *, void *))p->private->data_print, p);
-
-  
-  // XXX render objective scales here
-
+  p->private->print_action(p,c,w,h);
 }
 
 static void _sushiv_panel_print(sushiv_panel_t *p){
@@ -273,35 +392,35 @@ static menuitem *menu[]={
 };
 
 static menuitem *menu_bg[]={
-  &(menuitem){"<span foreground=\"white\">white</span>",NULL,NULL,&white_bg},
-  &(menuitem){"<span foreground=\"black\">black</span>",NULL,NULL,&black_bg},
-  &(menuitem){"checks",NULL,NULL,&checked_bg},
+  &(menuitem){"<span foreground=\"white\">white</span>","[<i>b</i>]",NULL,&white_bg},
+  &(menuitem){"<span foreground=\"black\">black</span>","[<i>b</i>]",NULL,&black_bg},
+  &(menuitem){"checks","[<i>b</i>]",NULL,&checked_bg},
   &(menuitem){NULL,NULL,NULL,NULL}
 };
 
 static menuitem *menu_text[]={
-  &(menuitem){"<span foreground=\"black\">dark</span>",NULL,NULL,&black_text},
-  &(menuitem){"<span foreground=\"white\">light</span>",NULL,NULL,&white_text},
+  &(menuitem){"<span foreground=\"black\">dark</span>","[<i>t</i>]",NULL,&black_text},
+  &(menuitem){"<span foreground=\"white\">light</span>","[<i>t</i>]",NULL,&white_text},
   &(menuitem){NULL,NULL,NULL,NULL}
 };
 
 static menuitem *menu_scales[]={
-  &(menuitem){"full",NULL,NULL,grid_scale},
-  &(menuitem){"tics",NULL,NULL,tic_scale},
-  &(menuitem){"none",NULL,NULL,no_scale},
+  &(menuitem){"full","[<i>g</i>]",NULL,grid_scale},
+  &(menuitem){"tics","[<i>g</i>]",NULL,tic_scale},
+  &(menuitem){"none","[<i>g</i>]",NULL,no_scale},
   &(menuitem){NULL,NULL,NULL,NULL}
 };
 
 static menuitem *menu_res[]={
-  &(menuitem){"default",NULL,NULL,res_def},
-  &(menuitem){"1:32",NULL,NULL,res_1_32},
-  &(menuitem){"1:16",NULL,NULL,res_1_16},
-  &(menuitem){"1:8",NULL,NULL,res_1_8},
-  &(menuitem){"1:4",NULL,NULL,res_1_4},
-  &(menuitem){"1:2",NULL,NULL,res_1_2},
-  &(menuitem){"1",NULL,NULL,res_1_1},
-  &(menuitem){"2:1",NULL,NULL,res_2_1},
-  &(menuitem){"4:1",NULL,NULL,res_4_1},
+  &(menuitem){"default","[<i>m</i>]",NULL,res_def},
+  &(menuitem){"1:32","[<i>m</i>]",NULL,res_1_32},
+  &(menuitem){"1:16","[<i>m</i>]",NULL,res_1_16},
+  &(menuitem){"1:8","[<i>m</i>]",NULL,res_1_8},
+  &(menuitem){"1:4","[<i>m</i>]",NULL,res_1_4},
+  &(menuitem){"1:2","[<i>m</i>]",NULL,res_1_2},
+  &(menuitem){"1","[<i>m</i>]",NULL,res_1_1},
+  &(menuitem){"2:1","[<i>m</i>]",NULL,res_2_1},
+  &(menuitem){"4:1","[<i>m</i>]",NULL,res_4_1},
   &(menuitem){NULL,NULL,NULL,NULL}
 };
 
@@ -412,7 +531,6 @@ static gboolean panel_keypress(GtkWidget *widget,
   case GDK_Tab:case GDK_KP_Tab:
   case GDK_ISO_Left_Tab:
   case GDK_Delete:case GDK_KP_Delete:
-  case GDK_Return:case GDK_ISO_Enter:
   case GDK_Insert:case GDK_KP_Insert:
     return FALSE;
   }
@@ -422,19 +540,41 @@ static gboolean panel_keypress(GtkWidget *widget,
     switch(event->keyval){
     case GDK_BackSpace:
     case GDK_e:case GDK_E:
+    case GDK_Return:case GDK_ISO_Enter:
       return FALSE;
     }
   }
         
   /* non-control keypresses */
   switch(event->keyval){
-
+  case GDK_b:
+    cycle_bg(p);
+    return TRUE;
+  case GDK_B:
+    cycleB_bg(p);
+    return TRUE;
+  case GDK_t:case GDK_T:
+    cycle_text(p);
+    return TRUE;
+  case GDK_g:
+    cycle_grid(p);
+    return TRUE;
+  case GDK_G:
+    cycleB_grid(p);
+    return TRUE;
+  case GDK_m:
+    cycle_res(p);
+    return TRUE;
+  case GDK_M:
+    cycleB_res(p);
+    return TRUE;
+    
    case GDK_Escape:
-     plot_do_escape(PLOT(p->private->graph));
+     wrap_escape(p);
     return TRUE;
 
-  case GDK_Return:
-    plot_do_enter(PLOT(p->private->graph));
+  case GDK_Return:case GDK_ISO_Enter:
+    wrap_enter(p);
     return TRUE;
    
   case GDK_Q:

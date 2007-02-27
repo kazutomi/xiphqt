@@ -727,7 +727,7 @@ static int _sushiv_panel2d_remap(sushiv_panel_t *p, _sushiv_bythread_cache_2d *t
 
 // looks like a cop-out but is actually the correct thing to do; the
 // data *must* be WYSIWYG from panel display.
-void sushiv_panel2d_print_bg(cairo_t *c, sushiv_panel_t *p){
+static void sushiv_panel2d_print_bg(sushiv_panel_t *p, cairo_t *c){
   Plot *plot = PLOT(p->private->graph);
 
   if(!plot) return;
@@ -735,6 +735,27 @@ void sushiv_panel2d_print_bg(cairo_t *c, sushiv_panel_t *p){
   cairo_set_source_surface(c, plot->back,0,0);
   cairo_paint(c);
 
+}
+
+static void sushiv_panel2d_print(sushiv_panel_t *p, cairo_t *c, int w, int h){
+  Plot *plot = PLOT(p->private->graph);
+  double pw = p->private->graph->allocation.width;
+  double ph = p->private->graph->allocation.height;
+  double scale;
+
+  if(w/pw < h/ph)
+    scale = w/pw;
+  else
+    scale = h/ph;
+
+  cairo_matrix_t m;
+  cairo_get_matrix(c,&m);
+  cairo_matrix_scale(&m,scale,scale);
+  cairo_set_matrix(c,&m);
+
+  plot_print(plot, c, ph*scale, (void(*)(void *, cairo_t *))sushiv_panel2d_print_bg, p);
+
+  // XXX print objective scales
 }
 
 // call while locked
@@ -815,16 +836,22 @@ static void update_legend(sushiv_panel_t *p){
     int depth = 0;
     plot_legend_clear(plot);
 
-    // add each dimension to the legend
+    // potentially add each dimension to the legend; add axis
+    // dimensions only if crosshairs are active
+
     // display decimal precision relative to display scales
     if(3-p2->x.decimal_exponent > depth) depth = 3-p2->x.decimal_exponent;
     if(3-p2->y.decimal_exponent > depth) depth = 3-p2->y.decimal_exponent;
     for(i=0;i<p->dimensions;i++){
-      snprintf(buffer,320,"%s = %+.*f",
-	       p->dimension_list[i].d->name,
-	       depth,
-	       p->dimension_list[i].d->val);
-      plot_legend_add(plot,buffer);
+      sushiv_dimension_t *d = p->dimension_list[i].d;
+      if( (d!=p2->x_d && d!=p2->y_d) ||
+	  plot->cross_active){
+	snprintf(buffer,320,"%s = %+.*f",
+		 p->dimension_list[i].d->name,
+		 depth,
+		 p->dimension_list[i].d->val);
+	plot_legend_add(plot,buffer);
+      }
     }
     
     // one space 
@@ -1813,7 +1840,7 @@ int sushiv_new_panel_2d(sushiv_instance_t *s,
   p->private->compute_action = _sushiv_panel2d_compute;
   p->private->request_compute = _mark_recompute_2d;
   p->private->crosshair_action = _sushiv_panel2d_crosshairs_callback;
-  p->private->data_print = sushiv_panel2d_print_bg;
+  p->private->print_action = sushiv_panel2d_print;
   p->private->undo_log = panel2d_undo_log;
   p->private->undo_restore = panel2d_undo_restore;
 
