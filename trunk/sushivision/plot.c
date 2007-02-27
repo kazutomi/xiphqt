@@ -286,21 +286,25 @@ static void draw_legend_work(Plot *p, cairo_t *c, int w){
     x = w - textw - 15;
 
     // draw the enclosing rectangle
-    cairo_rectangle(c,x-6.5,5.5,textw+15,totalh+15);
-    set_shadow(inv,c);
-    cairo_fill_preserve(c);
-    set_text(inv,c);
-    cairo_stroke(c);
+    if(p->legend_active==2){
+      cairo_rectangle(c,x-6.5,5.5,textw+15,totalh+15);
+      set_shadow(inv,c);
+      cairo_fill_preserve(c);
+      set_text(inv,c);
+      cairo_stroke(c);
+    }
 
     for(i=0;i<n;i++){
       cairo_text_extents (c, buffer[i], &extents);
       x = w - extents.width - 15;
-      
-      //cairo_move_to(c,x, y);
-      //cairo_text_path (c, buffer[i]); 
-      //set_shadow(inv,c);
-      //cairo_set_line_width(c,3);
-      //cairo_stroke(c);
+
+      if(p->legend_active==1){
+	cairo_move_to(c,x, y);
+	cairo_text_path (c, buffer[i]); 
+	set_shadow(inv,c);
+	cairo_set_line_width(c,3);
+	cairo_stroke(c);
+      }
 
       if(colors[i] == 0xffffffffUL){
 	set_text(inv,c);
@@ -424,7 +428,7 @@ static int inside_box(Plot *p, int x, int y){
 	  y <= vals[1]+vals[3]);
 }
 
-int plot_print(Plot *p, cairo_t *c, double page_h, void (*datarender)(cairo_t *c,void *data), void *data){
+int plot_print(Plot *p, cairo_t *c, double page_h, void (*datarender)(void *, cairo_t *), void *data){
   GtkWidget *widget = GTK_WIDGET(p);
   int pw = widget->allocation.width;
   int ph = widget->allocation.height;
@@ -445,7 +449,7 @@ int plot_print(Plot *p, cairo_t *c, double page_h, void (*datarender)(cairo_t *c
 
   // render the background
   if(datarender)
-    datarender(c,data);
+    datarender(data,c);
 
   // render scales
   draw_scales_work(c,pw,ph,page_h,inv,grid,x,y,xv,yv);
@@ -826,9 +830,10 @@ void plot_do_enter(Plot *p){
   
   if(p->box_active){
     
-    if(p->box_callback)
+    if(p->box_callback){
+      p->box_callback(p->cross_data,0);
       p->box_callback(p->cross_data,1);
-    
+    }
     p->button_down=0;
     p->box_active=0;
   }else{
@@ -857,7 +862,9 @@ void plot_do_escape(Plot *p){
 }
 
 void plot_toggle_legend(Plot *p){
-  p->legend_active = !p->legend_active;
+  p->legend_active++;
+  if (p->legend_active>2)
+    p->legend_active=0;
   plot_expose_request(p);
 }
 
@@ -871,12 +878,6 @@ static gboolean key_press(GtkWidget *widget,
   
   /* non-control keypresses */
   switch(event->keyval){
-  case GDK_Escape:
-    plot_do_escape(p);
-    return TRUE;
-  case GDK_Return:
-    plot_do_enter(p);
-    return TRUE;
 
   case GDK_Left:
     {

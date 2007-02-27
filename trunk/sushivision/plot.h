@@ -97,7 +97,7 @@ Plot     *plot_new (void (*callback)(void *),void *app_data,
 G_END_DECLS
 
 // the widget subclass half
-int plot_print(Plot *p, cairo_t *c, double page_h, void (*datarender)(cairo_t *c,void *data), void *data);
+int plot_print(Plot *p, cairo_t *c, double page_h, void (*datarender)(void *data,cairo_t *c), void *data);
 void plot_set_bg_invert(Plot *p, int setp);
 void plot_expose_request(Plot *p);
 void plot_expose_request_partial(Plot *p,int x, int y, int w, int h);

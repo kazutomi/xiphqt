@@ -349,11 +349,23 @@ static int _sushiv_panel1d_remap(sushiv_panel_t *p, cairo_t *c){
   return 1;
 }
 
-void sushiv_panel1d_print_bg(cairo_t *c, sushiv_panel_t *p){
+static void sushiv_panel1d_print(sushiv_panel_t *p, cairo_t *c, int w, int h){
   Plot *plot = PLOT(p->private->graph);
+  double pw = p->private->graph->allocation.width;
+  double ph = p->private->graph->allocation.height;
+  double scale;
 
-  if(!plot) return;
-  _sushiv_panel1d_remap(p,c);
+  if(w/pw < h/ph)
+    scale = w/pw;
+  else
+    scale = h/ph;
+
+  cairo_matrix_t m;
+  cairo_get_matrix(c,&m);
+  cairo_matrix_scale(&m,scale,scale);
+  cairo_set_matrix(c,&m);
+
+  plot_print(plot, c, ph*scale, (void(*)(void *, cairo_t *))_sushiv_panel1d_remap, p);
 }
 
 static void update_legend(sushiv_panel_t *p){  
@@ -371,14 +383,19 @@ static void update_legend(sushiv_panel_t *p){
 
     // add each dimension to the legend
     for(i=0;i<p->dimensions;i++){
+      sushiv_dimension_t *d = p->dimension_list[i].d;
       // display decimal precision relative to bracket
       //int depth = del_depth(p->dimension_list[i].d->bracket[0],
       //		    p->dimension_list[i].d->bracket[1]) + offset;
-      snprintf(buffer,320,"%s = %+.*f",
-	       p->dimension_list[i].d->name,
-	       depth,
-	       p->dimension_list[i].d->val);
-      plot_legend_add(plot,buffer);
+      if( d!=p1->x_d ||
+	  plot->cross_active){
+	
+	snprintf(buffer,320,"%s = %+.*f",
+		 p->dimension_list[i].d->name,
+		 depth,
+		 p->dimension_list[i].d->val);
+	plot_legend_add(plot,buffer);
+      }
     }
 
     // linked? add the linked dimension value to the legend
@@ -1442,7 +1459,7 @@ int sushiv_new_panel_1d(sushiv_instance_t *s,
   p->private->compute_action = _sushiv_panel1d_compute;
   p->private->request_compute = _mark_recompute_1d;
   p->private->crosshair_action = crosshair_callback;
-  p->private->data_print = sushiv_panel1d_print_bg;
+  p->private->print_action = sushiv_panel1d_print;
 
   p->private->undo_log = panel1d_undo_log;
   p->private->undo_restore = panel1d_undo_restore;
