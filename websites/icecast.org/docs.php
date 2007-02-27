@@ -27,6 +27,9 @@
 <p>
 * <a href="http://rezal404.org/wikini/wakka.php?wiki=IceCast2ToC">French translation of Icecast documentation - by Nicolas Henry</a>
 </p>
+<p>
+* <a href="http://www.radiolivre.org/icecast">Montando um Servidor de Webradio (Portuguese)</a>
+</p>
 </div>
 <div class="roundbottom">
 <img src="/images/corner_bottomleft.jpg" class="corner" style="display: none" />
