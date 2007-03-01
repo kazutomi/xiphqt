@@ -88,11 +88,21 @@ static void draw_scales_work(cairo_t *c, int w, int h,
   if(grid){
 
     cairo_set_line_width(c,1.);
-    if(grid == PLOT_GRID_NORMAL){
+    if(grid & PLOT_GRID_NORMAL){
       cairo_save(c);
       //cairo_set_operator(c,CAIRO_OPERATOR_XOR);       
-      cairo_set_source_rgba(c,.7,.7,.7,.3);
-      
+      switch(grid&0xf00){
+      case 256:
+	cairo_set_source_rgba(c,.9,.9,.9,.4);
+	break;
+      case 512:
+	cairo_set_source_rgba(c,.1,.1,.1,.4);
+	break;
+      default:
+	cairo_set_source_rgba(c,.7,.7,.7,.3);
+	break;
+      }
+
       i=0;
       x = scale_demark(&xs, &xs_v, i++, NULL);
       while(x < w){

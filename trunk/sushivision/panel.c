@@ -84,6 +84,32 @@ static void wrap_legend(sushiv_panel_t *p){
   _sushiv_panel_dirty_legend(p);
 }
 
+static void light_scale(sushiv_panel_t *p){
+  plot_set_grid(PLOT(p->private->graph),PLOT_GRID_LIGHT);
+  _sushiv_panel_update_menus(p);
+  refg_if_running(p);
+}
+static void mid_scale(sushiv_panel_t *p){
+  plot_set_grid(PLOT(p->private->graph),PLOT_GRID_NORMAL);
+  _sushiv_panel_update_menus(p);
+  refg_if_running(p);
+}
+static void dark_scale(sushiv_panel_t *p){
+  plot_set_grid(PLOT(p->private->graph),PLOT_GRID_DARK);
+  _sushiv_panel_update_menus(p);
+  refg_if_running(p);
+}
+static void tic_scale(sushiv_panel_t *p){
+  plot_set_grid(PLOT(p->private->graph),PLOT_GRID_TICS);
+  _sushiv_panel_update_menus(p);
+  refg_if_running(p);
+}
+static void no_scale(sushiv_panel_t *p){
+  plot_set_grid(PLOT(p->private->graph),0);
+  _sushiv_panel_update_menus(p);
+  refg_if_running(p);
+}
+
 static int _sushiv_panel_background_i(sushiv_panel_t *p,
 				      enum sushiv_background bg){
   
@@ -92,6 +118,7 @@ static int _sushiv_panel_background_i(sushiv_panel_t *p,
   pi->bg_type = bg;
   
   decide_text_inv(p);
+  mid_scale(p);
   redraw_if_running(p);
   _sushiv_panel_update_menus(p);
   return 0;
@@ -154,41 +181,38 @@ static void cycle_text(sushiv_panel_t *p){
   }
 }
 
-static void grid_scale(sushiv_panel_t *p){
-  plot_set_grid(PLOT(p->private->graph),PLOT_GRID_NORMAL);
-  _sushiv_panel_update_menus(p);
-  refg_if_running(p);
-}
-static void tic_scale(sushiv_panel_t *p){
-  plot_set_grid(PLOT(p->private->graph),PLOT_GRID_TICS);
-  _sushiv_panel_update_menus(p);
-  refg_if_running(p);
-}
-static void no_scale(sushiv_panel_t *p){
-  plot_set_grid(PLOT(p->private->graph),0);
-  _sushiv_panel_update_menus(p);
-  refg_if_running(p);
-}
 static void cycle_grid(sushiv_panel_t *p){
   switch(PLOT(p->private->graph)->grid_mode){
+  case PLOT_GRID_LIGHT:
+    mid_scale(p);
+    break;
   case PLOT_GRID_NORMAL:
+    dark_scale(p);
+    break;
+  case PLOT_GRID_DARK:
     tic_scale(p);
     break;
   case PLOT_GRID_TICS:
     no_scale(p);
     break;
   default:
-    grid_scale(p);
+    light_scale(p);
     break;
   }
 }
 static void cycleB_grid(sushiv_panel_t *p){
   switch(PLOT(p->private->graph)->grid_mode){
-  case PLOT_GRID_NORMAL:
+  case PLOT_GRID_LIGHT:
     no_scale(p);
     break;
+  case PLOT_GRID_NORMAL:
+    light_scale(p);
+    break;
+  case PLOT_GRID_DARK:
+    mid_scale(p);
+    break;
   case PLOT_GRID_TICS:
-    grid_scale(p);
+    dark_scale(p);
     break;
   default:
     tic_scale(p);
@@ -392,20 +416,22 @@ static menuitem *menu[]={
 };
 
 static menuitem *menu_bg[]={
-  &(menuitem){"<span foreground=\"white\">white</span>","[<i>b</i>]",NULL,&white_bg},
-  &(menuitem){"<span foreground=\"black\">black</span>","[<i>b</i>]",NULL,&black_bg},
+  &(menuitem){"white","[<i>b</i>]",NULL,&white_bg},
+  &(menuitem){"black","[<i>b</i>]",NULL,&black_bg},
   &(menuitem){"checks","[<i>b</i>]",NULL,&checked_bg},
   &(menuitem){NULL,NULL,NULL,NULL}
 };
 
 static menuitem *menu_text[]={
-  &(menuitem){"<span foreground=\"black\">dark</span>","[<i>t</i>]",NULL,&black_text},
-  &(menuitem){"<span foreground=\"white\">light</span>","[<i>t</i>]",NULL,&white_text},
+  &(menuitem){"dark","[<i>t</i>]",NULL,&black_text},
+  &(menuitem){"light","[<i>t</i>]",NULL,&white_text},
   &(menuitem){NULL,NULL,NULL,NULL}
 };
 
 static menuitem *menu_scales[]={
-  &(menuitem){"full","[<i>g</i>]",NULL,grid_scale},
+  &(menuitem){"light","[<i>g</i>]",NULL,light_scale},
+  &(menuitem){"mid","[<i>g</i>]",NULL,mid_scale},
+  &(menuitem){"dark","[<i>g</i>]",NULL,dark_scale},
   &(menuitem){"tics","[<i>g</i>]",NULL,tic_scale},
   &(menuitem){"none","[<i>g</i>]",NULL,no_scale},
   &(menuitem){NULL,NULL,NULL,NULL}
@@ -473,14 +499,20 @@ void _sushiv_panel_update_menus(sushiv_panel_t *p){
   }
 
   switch(PLOT(p->private->graph)->grid_mode){ 
-  case PLOT_GRID_NORMAL:
+  case PLOT_GRID_LIGHT:
     gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),12,menu_scales[0]->left);
     break;
-  case PLOT_GRID_TICS:
+  case PLOT_GRID_NORMAL:
     gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),12,menu_scales[1]->left);
     break;
-  default:
+  case PLOT_GRID_DARK:
     gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),12,menu_scales[2]->left);
+    break;
+  case PLOT_GRID_TICS:
+    gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),12,menu_scales[3]->left);
+    break;
+  default:
+    gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),12,menu_scales[4]->left);
     break;
   }
 

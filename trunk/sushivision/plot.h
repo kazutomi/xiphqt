@@ -132,3 +132,5 @@ void plot_resizable(Plot *p, int rp);
 
 #define PLOT_GRID_NORMAL 4
 #define PLOT_GRID_TICS   8
+#define PLOT_GRID_LIGHT  (256+4)
+#define PLOT_GRID_DARK   (512+4)
