@@ -235,8 +235,8 @@ static void _sushiv_dimension_center_callback(void *data, int buttonstate){
     dw->center_updating = 1;
     
     if(buttonstate == 0){
-      _sushiv_panel_undo_push(p);
-      _sushiv_panel_undo_suspend(p);
+      _sushiv_undo_push(p->sushi);
+      _sushiv_undo_suspend(p->sushi);
     }
     
     if(d->val != val){
@@ -259,7 +259,7 @@ static void _sushiv_dimension_center_callback(void *data, int buttonstate){
     }
     
     if(buttonstate == 2)
-      _sushiv_panel_undo_resume(p);
+      _sushiv_undo_resume(p->sushi);
 
     snprintf(buffer,80,"%.10g",d->bracket[0]);
     gtk_entry_set_text(GTK_ENTRY(dw->entry[0]),buffer);
@@ -291,8 +291,8 @@ static void _sushiv_dimension_bracket_callback(void *data, int buttonstate){
     dw->bracket_updating = 1;
     
     if(buttonstate == 0){
-      _sushiv_panel_undo_push(p);
-      _sushiv_panel_undo_suspend(p);
+      _sushiv_undo_push(p->sushi);
+      _sushiv_undo_suspend(p->sushi);
     }
 
     if(d->bracket[0] != lo || d->bracket[1] != hi){
@@ -318,7 +318,7 @@ static void _sushiv_dimension_bracket_callback(void *data, int buttonstate){
     }
     
     if(buttonstate == 2)
-      _sushiv_panel_undo_resume(p);
+      _sushiv_undo_resume(p->sushi);
     
     snprintf(buffer,80,"%.10g",d->bracket[0]);
     gtk_entry_set_text(GTK_ENTRY(dw->entry[0]),buffer);
@@ -345,8 +345,8 @@ static void _sushiv_dimension_dropdown_callback(GtkWidget *dummy, void *data){
  
     dw->center_updating = 1;
     
-    _sushiv_panel_undo_push(p);
-    _sushiv_panel_undo_suspend(p);
+    _sushiv_undo_push(p->sushi);
+    _sushiv_undo_suspend(p->sushi);
     
     if(d->val != val){
       int i;
@@ -368,7 +368,7 @@ static void _sushiv_dimension_dropdown_callback(GtkWidget *dummy, void *data){
 	w->center_callback(dw->dl);
       }
     }
-    _sushiv_panel_undo_resume(p);
+    _sushiv_undo_resume(p->sushi);
     
     dw->center_updating = 0;
   }

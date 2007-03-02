@@ -884,8 +884,8 @@ static void mapchange_callback_2d(GtkWidget *w,gpointer in){
   sushiv_panel2d_t *p2 = p->subtype->p2;
   int onum = optr - p->objective_list;
 
-  _sushiv_panel_undo_push(p);
-  _sushiv_panel_undo_suspend(p);
+  _sushiv_undo_push(p->sushi);
+  _sushiv_undo_suspend(p->sushi);
 
   mapping_set_func(&p2->mappings[onum],gtk_combo_box_get_active(GTK_COMBO_BOX(w)));
   
@@ -899,7 +899,7 @@ static void mapchange_callback_2d(GtkWidget *w,gpointer in){
   //redraw the plot
   _dirty_map_one_plane(p,onum,1,0,0);
   _sushiv_panel_dirty_map(p);
-  _sushiv_panel_undo_resume(p);
+  _sushiv_undo_resume(p->sushi);
 }
 
 static void map_callback_2d(void *in,int buttonstate){
@@ -910,8 +910,8 @@ static void map_callback_2d(void *in,int buttonstate){
   int onum = optr - p->objective_list;
 
   if(buttonstate == 0){
-    _sushiv_panel_undo_push(p);
-    _sushiv_panel_undo_suspend(p);
+    _sushiv_undo_push(p->sushi);
+    _sushiv_undo_suspend(p->sushi);
   }
 
   // recache alpha del */
@@ -925,7 +925,7 @@ static void map_callback_2d(void *in,int buttonstate){
     _sushiv_panel_dirty_map(p);
   }
   if(buttonstate == 2)
-    _sushiv_panel_undo_resume(p);
+    _sushiv_undo_resume(p->sushi);
 }
 
 static void update_xy_availability(sushiv_panel_t *p){
@@ -1216,8 +1216,8 @@ static void dimchange_callback_2d(GtkWidget *button,gpointer in){
 
   if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button))){
 
-    _sushiv_panel_undo_push(p);
-    _sushiv_panel_undo_suspend(p);
+    _sushiv_undo_push(p->sushi);
+    _sushiv_undo_suspend(p->sushi);
 
     plot_unset_box(PLOT(p->private->graph));
     update_xy_availability(p);
@@ -1226,7 +1226,7 @@ static void dimchange_callback_2d(GtkWidget *button,gpointer in){
     _mark_recompute_2d(p);
     update_crosshairs(p);
 
-    _sushiv_panel_undo_resume(p);
+    _sushiv_undo_resume(p->sushi);
   }
 }
 
@@ -1236,8 +1236,8 @@ static void _sushiv_panel2d_crosshairs_callback(sushiv_panel_t *p){
   double y=PLOT(p->private->graph)->sely;
   int i;
   
-  _sushiv_panel_undo_push(p);
-  _sushiv_panel_undo_suspend(p);
+  _sushiv_undo_push(p->sushi);
+  _sushiv_undo_suspend(p->sushi);
 
   //plot_snap_crosshairs(PLOT(p->private->graph));
 
@@ -1262,7 +1262,7 @@ static void _sushiv_panel2d_crosshairs_callback(sushiv_panel_t *p){
   plot_set_crosshairs(PLOT(p->private->graph),x,y);
 
   _sushiv_panel_dirty_legend(p);
-  _sushiv_panel_undo_resume(p);
+  _sushiv_undo_resume(p->sushi);
 }
 
 static void box_callback(void *in, int state){
@@ -1272,13 +1272,13 @@ static void box_callback(void *in, int state){
   
   switch(state){
   case 0: // box set
-    _sushiv_panel_undo_push(p);
+    _sushiv_undo_push(p->sushi);
     plot_box_vals(plot,p2->oldbox);
     p->private->oldbox_active = plot->box_active;
     break;
   case 1: // box activate
-    _sushiv_panel_undo_push(p);
-    _sushiv_panel_undo_suspend(p);
+    _sushiv_undo_push(p->sushi);
+    _sushiv_undo_suspend(p->sushi);
 
     _sushiv_panel2d_crosshairs_callback(p);
 
@@ -1287,7 +1287,7 @@ static void box_callback(void *in, int state){
     _sushiv_dimension_set_value(p2->y_scale,0,p2->oldbox[2]);
     _sushiv_dimension_set_value(p2->y_scale,2,p2->oldbox[3]);
     p->private->oldbox_active = 0;
-    _sushiv_panel_undo_resume(p);
+    _sushiv_undo_resume(p->sushi);
     break;
   }
   _sushiv_panel_update_menus(p);
@@ -1633,7 +1633,7 @@ static void _sushiv_realize_panel2d(sushiv_panel_t *p){
   sushiv_panel2d_t *p2 = p->subtype->p2;
   int i;
 
-  _sushiv_panel_undo_suspend(p);
+  _sushiv_undo_suspend(p->sushi);
 
   p->private->toplevel = gtk_window_new (GTK_WINDOW_TOPLEVEL);
   g_signal_connect_swapped (G_OBJECT (p->private->toplevel), "delete-event",
@@ -1798,7 +1798,7 @@ static void _sushiv_realize_panel2d(sushiv_panel_t *p){
 			     // insensitive buttons when it realized
 			     // them.  This call will restore them.
 
-  _sushiv_panel_undo_resume(p);
+  _sushiv_undo_resume(p->sushi);
 }
 
 int sushiv_new_panel_2d(sushiv_instance_t *s,

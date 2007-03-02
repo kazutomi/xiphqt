@@ -458,8 +458,8 @@ static void mapchange_callback_1d(GtkWidget *w,gpointer in){
   sushiv_panel1d_t *p1 = p->subtype->p1;
   int onum = optr - p->objective_list;
   
-  _sushiv_panel_undo_push(p);
-  _sushiv_panel_undo_suspend(p);
+  _sushiv_undo_push(p->sushi);
+  _sushiv_undo_suspend(p->sushi);
 
   // update colormap
   // oh, the wasteful
@@ -469,7 +469,7 @@ static void mapchange_callback_1d(GtkWidget *w,gpointer in){
   
   _sushiv_panel_dirty_map(p);
   _sushiv_panel_dirty_legend(p);
-  _sushiv_panel_undo_resume(p);
+  _sushiv_undo_resume(p->sushi);
 }
 
 static void alpha_callback_1d(void * in, int buttonstate){
@@ -479,15 +479,15 @@ static void alpha_callback_1d(void * in, int buttonstate){
   //  int onum = optr - p->objective_list;
 
   if(buttonstate == 0){
-    _sushiv_panel_undo_push(p);
-    _sushiv_panel_undo_suspend(p);
+    _sushiv_undo_push(p->sushi);
+    _sushiv_undo_suspend(p->sushi);
   }
 
   _sushiv_panel_dirty_map(p);
   _sushiv_panel_dirty_legend(p);
 
   if(buttonstate == 2)
-    _sushiv_panel_undo_resume(p);
+    _sushiv_undo_resume(p->sushi);
 }
 
 static void linetype_callback_1d(GtkWidget *w,gpointer in){
@@ -496,14 +496,14 @@ static void linetype_callback_1d(GtkWidget *w,gpointer in){
   sushiv_panel1d_t *p1 = p->subtype->p1;
   int onum = optr - p->objective_list;
   
-  _sushiv_panel_undo_push(p);
-  _sushiv_panel_undo_suspend(p);
+  _sushiv_undo_push(p->sushi);
+  _sushiv_undo_suspend(p->sushi);
 
   // update colormap
   p1->linetype[onum]=gtk_combo_box_get_active(GTK_COMBO_BOX(w));
 
   _sushiv_panel_dirty_map(p);
-  _sushiv_panel_undo_resume(p);
+  _sushiv_undo_resume(p->sushi);
 }
 
 static void pointtype_callback_1d(GtkWidget *w,gpointer in){
@@ -512,14 +512,14 @@ static void pointtype_callback_1d(GtkWidget *w,gpointer in){
   sushiv_panel1d_t *p1 = p->subtype->p1;
   int onum = optr - p->objective_list;
   
-  _sushiv_panel_undo_push(p);
-  _sushiv_panel_undo_suspend(p);
+  _sushiv_undo_push(p->sushi);
+  _sushiv_undo_suspend(p->sushi);
 
   // update colormap
   p1->pointtype[onum]=gtk_combo_box_get_active(GTK_COMBO_BOX(w));
 
   _sushiv_panel_dirty_map(p);
-  _sushiv_panel_undo_resume(p);
+  _sushiv_undo_resume(p->sushi);
 }
 
 static void map_callback_1d(void *in,int buttonstate){
@@ -528,8 +528,8 @@ static void map_callback_1d(void *in,int buttonstate){
   Plot *plot = PLOT(p->private->graph);
   
   if(buttonstate == 0){
-    _sushiv_panel_undo_push(p);
-    _sushiv_panel_undo_suspend(p);
+    _sushiv_undo_push(p->sushi);
+    _sushiv_undo_suspend(p->sushi);
   }
 
   // has new bracketing changed the plot range scale?
@@ -561,7 +561,7 @@ static void map_callback_1d(void *in,int buttonstate){
   //redraw the plot
   _sushiv_panel_dirty_map(p);
   if(buttonstate == 2)
-    _sushiv_panel_undo_resume(p);
+    _sushiv_undo_resume(p->sushi);
 }
 
 static void update_x_sel(sushiv_panel_t *p){
@@ -872,15 +872,15 @@ static void dimchange_callback_1d(GtkWidget *button,gpointer in){
 
   if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button))){
 
-    _sushiv_panel_undo_push(p);
-    _sushiv_panel_undo_suspend(p);
+    _sushiv_undo_push(p->sushi);
+    _sushiv_undo_suspend(p->sushi);
 
     update_x_sel(p);
     update_crosshair(p);
     plot_unset_box(PLOT(p->private->graph));
     _mark_recompute_1d(p);
 
-    _sushiv_panel_undo_resume(p);
+    _sushiv_undo_resume(p->sushi);
   }
 }
 
@@ -911,8 +911,8 @@ static void crosshair_callback(sushiv_panel_t *p){
     link->private->crosshair_action(link);
   }else{
 
-    _sushiv_panel_undo_push(p);
-    _sushiv_panel_undo_suspend(p);
+    _sushiv_undo_push(p->sushi);
+    _sushiv_undo_suspend(p->sushi);
 
     for(i=0;i<p->dimensions;i++){
       sushiv_dimension_t *d = p->dimension_list[i].d;
@@ -922,7 +922,7 @@ static void crosshair_callback(sushiv_panel_t *p){
 	            
       p->private->oldbox_active = 0;
     }
-    _sushiv_panel_undo_resume(p);
+    _sushiv_undo_resume(p->sushi);
   }
 }
 
@@ -933,20 +933,20 @@ static void box_callback(void *in, int state){
   
   switch(state){
   case 0: // box set
-    _sushiv_panel_undo_push(p);
+    _sushiv_undo_push(p->sushi);
     plot_box_vals(plot,p1->oldbox);
     p->private->oldbox_active = plot->box_active;
     break;
   case 1: // box activate
-    _sushiv_panel_undo_push(p);
-    _sushiv_panel_undo_suspend(p);
+    _sushiv_undo_push(p->sushi);
+    _sushiv_undo_suspend(p->sushi);
 
     crosshair_callback(p);
     
     _sushiv_dimension_set_value(p1->x_scale,0,p1->oldbox[0]);
     _sushiv_dimension_set_value(p1->x_scale,2,p1->oldbox[1]);
     p->private->oldbox_active = 0;
-    _sushiv_panel_undo_resume(p);
+    _sushiv_undo_resume(p->sushi);
     break;
   }
   _sushiv_panel_update_menus(p);
@@ -1205,7 +1205,7 @@ static void panel1d_undo_restore(sushiv_panel_undo_t *u, sushiv_panel_t *p){
 void _sushiv_realize_panel1d(sushiv_panel_t *p){
   sushiv_panel1d_t *p1 = p->subtype->p1;
   int i;
-  _sushiv_panel_undo_suspend(p);
+  _sushiv_undo_suspend(p->sushi);
 
   p->private->toplevel = gtk_window_new (GTK_WINDOW_TOPLEVEL);
   g_signal_connect_swapped (G_OBJECT (p->private->toplevel), "delete-event",
@@ -1425,7 +1425,7 @@ void _sushiv_realize_panel1d(sushiv_panel_t *p){
   gtk_widget_realize(GTK_WIDGET(p->private->spinner));
   gtk_widget_show_all(p->private->toplevel);
 
-  _sushiv_panel_undo_resume(p);
+  _sushiv_undo_resume(p->sushi);
 }
 
 int sushiv_new_panel_1d(sushiv_instance_t *s,
