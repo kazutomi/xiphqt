@@ -12,5 +12,5 @@ endif
 
 theoraincludedir = $(includedir)/theora
 
-theorainclude_HEADERS = codec.h theoradec.h $(TH_ENCODER_FILES)
+theorainclude_HEADERS = codec.h theoradec.h theora.h $(TH_ENCODER_FILES)
 
