@@ -175,6 +175,7 @@ AC_OUTPUT([
   examples/Makefile
   theoradec.pc
   theoraenc.pc
+  theoracompat.pc
 ])
 
 AS_AC_EXPAND(LIBDIR, ${libdir})

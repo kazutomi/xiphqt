@@ -4,7 +4,7 @@ else
 ENCODER_LA=
 endif
 
-lib_LTLIBRARIES = libtheoradec.la $(ENCODER_LA)
+lib_LTLIBRARIES = libtheoradec.la libtheoracompat.la $(ENCODER_LA)
 
 INCLUDES = -I $(top_srcdir)/include
 AM_CFLAGS = $(OGG_CFLAGS) $(OPTIMIZATION_CFLAGS)
@@ -44,8 +44,10 @@ noinst_HEADERS = \
 	x86/cpu.h \
 	x86/x86int.h
 
+libtheoracompat_la_SOURCES = \
+	apiwrapper.c
+
 libtheoradec_la_SOURCES = \
-	apiwrapper.c \
 	decinfo.c \
 	decode.c \
 	dequant.c \
