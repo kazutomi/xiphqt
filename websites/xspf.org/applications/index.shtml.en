@@ -240,8 +240,8 @@
             </dd>
 
             <dt>
-              <a id="lasmit"></a><a href=
-              "http://www.lasmit.co.uk/category/xspf-playlist-generator/">PHP
+              <a id="lasmit"></a><a id="php_xspf_playlist_generator"></a><a href=
+              "http://sourceforge.net/projects/php-xspf-gen/">PHP
               XSPF Playlist Generator</a>
             </dt>
             <dd>
