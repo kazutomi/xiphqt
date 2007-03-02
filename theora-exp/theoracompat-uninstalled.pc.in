@@ -1,9 +1,9 @@
 # theora installed pkg-config file
 
-prefix=@prefix@
-exec_prefix=@exec_prefix@
-libdir=@libdir@
-includedir=@includedir@
+prefix=
+exec_prefix=
+libdir=${pcfiledir}/lib
+includedir=${pcfiledir}/include
 
 Name: theoracompat
 Description: Theora video codec compatibility layer (uninstalled)
@@ -11,4 +11,4 @@ Version: @VERSION@
 Requires: ogg >= 1.1.1 theoradec
 Conflicts:
 Libs: ${libdir}/libtheoracompat.la
-Cflags: -I${includedir}
+Cflags: -I${includedir} I${includedir}/theora/compat

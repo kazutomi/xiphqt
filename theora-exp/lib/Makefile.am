@@ -6,7 +6,7 @@ endif
 
 lib_LTLIBRARIES = libtheoradec.la libtheoracompat.la $(ENCODER_LA)
 
-INCLUDES = -I $(top_srcdir)/include
+INCLUDES = -I $(top_srcdir)/include -I $(top_srcdir)/include/theora/compat
 AM_CFLAGS = $(OGG_CFLAGS) $(OPTIMIZATION_CFLAGS)
 
 EXTRA_DIST = \
@@ -46,7 +46,7 @@ noinst_HEADERS = \
 
 libtheoracompat_la_SOURCES = \
 	apiwrapper.c
-
+  
 libtheoradec_la_SOURCES = \
 	decinfo.c \
 	decode.c \

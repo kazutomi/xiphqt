@@ -11,4 +11,4 @@ Version: @VERSION@
 Requires: ogg >= 1.1.1 theoradec
 Conflicts:
 Libs: -L${libdir} -ltheoracompat
-Cflags: -I${includedir}
+Cflags: -I${includedir} -I${includedir}/theora/compat
