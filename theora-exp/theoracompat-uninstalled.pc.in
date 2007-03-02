@@ -6,9 +6,9 @@ libdir=@libdir@
 includedir=@includedir@
 
 Name: theoracompat
-Description: Theora video codec compatibility layer
+Description: Theora video codec compatibility layer (uninstalled)
 Version: @VERSION@
 Requires: ogg >= 1.1.1 theoradec
 Conflicts:
-Libs: -L${libdir} -ltheoracompat
+Libs: ${libdir}/libtheoracompat.la
 Cflags: -I${includedir}

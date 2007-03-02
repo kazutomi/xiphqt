@@ -5,10 +5,10 @@ exec_prefix=@exec_prefix@
 libdir=@libdir@
 includedir=@includedir@
 
-Name: theoracompat
-Description: Theora video codec compatibility layer
+Name: theoraenc
+Description: Theora video codec encoder (uninstalled)
 Version: @VERSION@
 Requires: ogg >= 1.1.1 theoradec
 Conflicts:
-Libs: -L${libdir} -ltheoracompat
+Libs: ${libdir}/libtheoraenc.la
 Cflags: -I${includedir}

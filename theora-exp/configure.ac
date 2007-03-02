@@ -176,6 +176,9 @@ AC_OUTPUT([
   theoradec.pc
   theoraenc.pc
   theoracompat.pc
+  theoradec-uninstalled.pc
+  theoraenc-uninstalled.pc
+  theoracompat-uninstalled.pc
 ])
 
 AS_AC_EXPAND(LIBDIR, ${libdir})
