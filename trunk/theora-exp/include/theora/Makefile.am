@@ -3,6 +3,8 @@
 EXTRA_DIST = \
   theoraenc.h
 
+SUBDIRS = compat
+
 if TH_ENCODER
 TH_ENCODER_FILES= \
   theoraenc.h
@@ -12,5 +14,5 @@ endif
 
 theoraincludedir = $(includedir)/theora
 
-theorainclude_HEADERS = codec.h theoradec.h theora.h $(TH_ENCODER_FILES)
+theorainclude_HEADERS = codec.h theoradec.h $(TH_ENCODER_FILES)
 

@@ -170,8 +170,12 @@ OPTIMIZATION_CFLAGS="-O3 -fforce-addr -fomit-frame-pointer"
 AC_SUBST(OPTIMIZATION_CFLAGS)
 
 AC_OUTPUT([
-  Makefile lib/Makefile 
-  include/Makefile include/theora/Makefile
+  Makefile
+  lib/Makefile
+  include/Makefile
+  include/theora/Makefile
+  include/theora/compat/Makefile
+  include/theora/compat/theora/Makefile
   examples/Makefile
   theoradec.pc
   theoraenc.pc
