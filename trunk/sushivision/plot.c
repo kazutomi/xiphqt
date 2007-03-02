@@ -84,6 +84,8 @@ static void draw_scales_work(cairo_t *c, int w, int h,
   int x_height=0;
   int off = (grid == PLOT_GRID_TICS?6:0);
 
+  cairo_set_miter_limit(c,2.);
+
   // draw all axis lines, then stroke
   if(grid){
 
@@ -143,7 +145,7 @@ static void draw_scales_work(cairo_t *c, int w, int h,
       if(y - extents.height > 0){
 	
 	double yy = y+.5-(extents.height/2 + extents.y_bearing);
-	
+
 	cairo_move_to(c,2+off, yy);
 	set_shadow(inv_text,c);
 	cairo_text_path (c, buffer);  
@@ -278,6 +280,7 @@ static void draw_legend_work(Plot *p, cairo_t *c, int w){
 			    CAIRO_FONT_WEIGHT_NORMAL);
     cairo_set_font_size (c, 10);
     cairo_set_line_width(c,1);
+    cairo_set_miter_limit(c,2.);
     
     /* determine complete x/y extents of text */
     
@@ -862,11 +865,13 @@ void plot_do_enter(Plot *p){
   }
 }
 
-void plot_do_escape(Plot *p){
-  p->button_down=0;
-  p->box_active=0;
-  p->cross_active=0;
-  //plot_legend_clear(p);
+void plot_set_crossactive(Plot *p, int active){
+  if(!active){
+    p->button_down=0;
+    p->box_active=0;
+  }
+
+  p->cross_active=active;
   plot_draw_scales(p);
   plot_expose_request(p);
 }
@@ -875,6 +880,11 @@ void plot_toggle_legend(Plot *p){
   p->legend_active++;
   if (p->legend_active>2)
     p->legend_active=0;
+  plot_expose_request(p);
+}
+
+void plot_set_legendactive(Plot *p, int active){
+  p->legend_active=active;
   plot_expose_request(p);
 }
 

@@ -37,24 +37,23 @@ static void update_all_menus(sushiv_instance_t *s){
   }
 }
 
-void _sushiv_panel_undo_suspend(sushiv_panel_t *p){
-  p->sushi->private->undo_suspend++;
+void _sushiv_undo_suspend(sushiv_instance_t *s){
+  s->private->undo_suspend++;
 }
 
-void _sushiv_panel_undo_resume(sushiv_panel_t *p){
-  p->sushi->private->undo_suspend--;
-  if(p->sushi->private->undo_suspend<0){
+void _sushiv_undo_resume(sushiv_instance_t *s){
+  s->private->undo_suspend--;
+  if(s->private->undo_suspend<0){
     fprintf(stderr,"Internal error: undo suspend refcount count < 0\n");
-    p->sushi->private->undo_suspend=0;
+    s->private->undo_suspend=0;
   }
 }
 
-void _sushiv_panel_undo_log(sushiv_panel_t *p){
-  sushiv_instance_t *s = p->sushi;
+void _sushiv_undo_log(sushiv_instance_t *s){
   sushiv_panel_undo_t *u;
   int i,j;
 
-  if(!p->sushi->private->undo_stack)
+  if(!s->private->undo_stack)
     s->private->undo_stack = calloc(2,s->panels*sizeof(*s->private->undo_stack));
 
   // log into a fresh entry; pop this level and all above it 
@@ -83,27 +82,24 @@ void _sushiv_panel_undo_log(sushiv_panel_t *p){
   // pass off actual population to panels
   for(j=0;j<s->panels;j++)
     if(s->panel_list[j])
-      s->panel_list[j]->private->undo_log(u+j,s->panel_list[j]);
+      _sushiv_panel_undo_log(s->panel_list[j], u+j);
 }
 
-void _sushiv_panel_undo_restore(sushiv_panel_t *p){
-  sushiv_instance_t *s = p->sushi;
+void _sushiv_undo_restore(sushiv_instance_t *s){
   int i;
   
   for(i=0;i<s->panels;i++){
     sushiv_panel_undo_t *u = &s->private->undo_stack[s->private->undo_level][i];
     
-    s->panel_list[i]->private->undo_restore(u,s->panel_list[i]);
+    _sushiv_panel_undo_restore(s->panel_list[i],u);
     plot_expose_request(PLOT(s->panel_list[i]->private->graph));
   }
 }
 
-void _sushiv_panel_undo_push(sushiv_panel_t *p){
-  sushiv_instance_t *s = p->sushi;
-  
+void _sushiv_undo_push(sushiv_instance_t *s){
   if(s->private->undo_suspend)return;
 
-  _sushiv_panel_undo_log(p);
+  _sushiv_undo_log(s);
 
   // realloc stack 
   s->private->undo_stack = 
@@ -115,32 +111,28 @@ void _sushiv_panel_undo_push(sushiv_panel_t *p){
   update_all_menus(s);
 }
 
-void _sushiv_panel_undo_up(sushiv_panel_t *p){
-  sushiv_instance_t *s = p->sushi;
-  
+void _sushiv_undo_up(sushiv_instance_t *s){
   if(!s->private->undo_stack)return;
   if(!s->private->undo_stack[s->private->undo_level])return;
   if(!s->private->undo_stack[s->private->undo_level+1])return;
   
   s->private->undo_level++;
-  _sushiv_panel_undo_suspend(p);
-  _sushiv_panel_undo_restore(p);
-  _sushiv_panel_undo_resume(p);
+  _sushiv_undo_suspend(s);
+  _sushiv_undo_restore(s);
+  _sushiv_undo_resume(s);
   update_all_menus(s);
 }
 
-void _sushiv_panel_undo_down(sushiv_panel_t *p){
-  sushiv_instance_t *s = p->sushi;
-
+void _sushiv_undo_down(sushiv_instance_t *s){
   if(!s->private->undo_stack)return;
   if(!s->private->undo_level)return;
 
   if(!s->private->undo_stack[s->private->undo_level+1])
-    _sushiv_panel_undo_log(p);
+    _sushiv_undo_log(s);
   s->private->undo_level--;
 
-  _sushiv_panel_undo_suspend(p);
-  _sushiv_panel_undo_restore(p);
-  _sushiv_panel_undo_resume(p);
+  _sushiv_undo_suspend(s);
+  _sushiv_undo_restore(s);
+  _sushiv_undo_resume(s);
   update_all_menus(s);
 }

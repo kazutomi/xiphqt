@@ -54,6 +54,16 @@ typedef struct sushiv_panel_undo {
 
   double box[4];
   int box_active;
+
+  int grid_mode;
+  unsigned char cross_mode;
+  unsigned char legend_mode;
+  unsigned char bg_mode;
+  unsigned char text_mode;
+  unsigned char menu_cursamp;
+  int oversample_n;
+  int oversample_d;
+
 } sushiv_panel_undo_t;
 
 typedef union {
@@ -92,12 +102,12 @@ struct sushiv_panel_internal {
 
   time_t last_map_throttle;
 
+  int menu_cursamp;
   int oversample_n;
   int oversample_d;
   int def_oversample_n;
   int def_oversample_d;
 
-  int menu_cursamp;
 
   // function bundles 
   void (*realize)(sushiv_panel_t *p);
@@ -139,13 +149,16 @@ extern void _sushiv_panel_clean_map(sushiv_panel_t *p);
 extern void _sushiv_panel_clean_legend(sushiv_panel_t *p);
 extern void _sushiv_panel_clean_plot(sushiv_panel_t *p);
 
-extern void _sushiv_panel_undo_log(sushiv_panel_t *p);
-extern void _sushiv_panel_undo_push(sushiv_panel_t *p);
-extern void _sushiv_panel_undo_suspend(sushiv_panel_t *p);
-extern void _sushiv_panel_undo_resume(sushiv_panel_t *p);
-extern void _sushiv_panel_undo_restore(sushiv_panel_t *p);
-extern void _sushiv_panel_undo_up(sushiv_panel_t *p);
-extern void _sushiv_panel_undo_down(sushiv_panel_t *p);
+extern void _sushiv_undo_log(sushiv_instance_t *s);
+extern void _sushiv_undo_push(sushiv_instance_t *s);
+extern void _sushiv_undo_suspend(sushiv_instance_t *s);
+extern void _sushiv_undo_resume(sushiv_instance_t *s);
+extern void _sushiv_undo_restore(sushiv_instance_t *s);
+extern void _sushiv_undo_up(sushiv_instance_t *s);
+extern void _sushiv_undo_down(sushiv_instance_t *s);
+
+extern void _sushiv_panel_undo_log(sushiv_panel_t *p, sushiv_panel_undo_t *u);
+extern void _sushiv_panel_undo_restore(sushiv_panel_t *p, sushiv_panel_undo_t *u);
 
 extern void _sushiv_panel1d_mark_recompute_linked(sushiv_panel_t *p); 
 extern void _sushiv_panel1d_update_linked_crosshairs(sushiv_panel_t *p, int xflag, int yflag); 

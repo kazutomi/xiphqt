@@ -70,68 +70,85 @@ static void wrap_exit(sushiv_panel_t *dummy){
   _sushiv_clean_exit(SIGINT);
 }
 
+// precipitated actions perform undo push
 static void wrap_enter(sushiv_panel_t *p){
   plot_do_enter(PLOT(p->private->graph));
 }
 
 static void wrap_escape(sushiv_panel_t *p){
-  plot_do_escape(PLOT(p->private->graph));
+  _sushiv_undo_push(p->sushi);
+  _sushiv_undo_suspend(p->sushi);
+
+  plot_set_crossactive(PLOT(p->private->graph),0);
   _sushiv_panel_dirty_legend(p);
+
+  _sushiv_undo_resume(p->sushi);
 }
 
 static void wrap_legend(sushiv_panel_t *p){
+  _sushiv_undo_push(p->sushi);
+  _sushiv_undo_suspend(p->sushi);
+
   plot_toggle_legend(PLOT(p->private->graph));
   _sushiv_panel_dirty_legend(p);
+
+  _sushiv_undo_resume(p->sushi);
+}
+
+static void set_grid(sushiv_panel_t *p, int mode){
+  _sushiv_undo_push(p->sushi);
+  _sushiv_undo_suspend(p->sushi);
+
+  plot_set_grid(PLOT(p->private->graph),mode);
+  _sushiv_panel_update_menus(p);
+  refg_if_running(p);
+
+  _sushiv_undo_resume(p->sushi);
 }
 
 static void light_scale(sushiv_panel_t *p){
-  plot_set_grid(PLOT(p->private->graph),PLOT_GRID_LIGHT);
-  _sushiv_panel_update_menus(p);
-  refg_if_running(p);
+  set_grid(p,PLOT_GRID_LIGHT);
 }
 static void mid_scale(sushiv_panel_t *p){
-  plot_set_grid(PLOT(p->private->graph),PLOT_GRID_NORMAL);
-  _sushiv_panel_update_menus(p);
-  refg_if_running(p);
+  set_grid(p,PLOT_GRID_NORMAL);
 }
 static void dark_scale(sushiv_panel_t *p){
-  plot_set_grid(PLOT(p->private->graph),PLOT_GRID_DARK);
-  _sushiv_panel_update_menus(p);
-  refg_if_running(p);
+  set_grid(p,PLOT_GRID_DARK);
 }
 static void tic_scale(sushiv_panel_t *p){
-  plot_set_grid(PLOT(p->private->graph),PLOT_GRID_TICS);
-  _sushiv_panel_update_menus(p);
-  refg_if_running(p);
+  set_grid(p,PLOT_GRID_TICS);
 }
 static void no_scale(sushiv_panel_t *p){
-  plot_set_grid(PLOT(p->private->graph),0);
-  _sushiv_panel_update_menus(p);
-  refg_if_running(p);
+  set_grid(p,0);
 }
 
-static int _sushiv_panel_background_i(sushiv_panel_t *p,
-				      enum sushiv_background bg){
+static int set_background(sushiv_panel_t *p,
+			  enum sushiv_background bg){
   
   sushiv_panel_internal_t *pi = p->private;
   
+  _sushiv_undo_push(p->sushi);
+  _sushiv_undo_suspend(p->sushi);
+
   pi->bg_type = bg;
   
   decide_text_inv(p);
   mid_scale(p);
   redraw_if_running(p);
   _sushiv_panel_update_menus(p);
+
+  _sushiv_undo_resume(p->sushi);
   return 0;
 }
 
 static void white_bg(sushiv_panel_t *p){
-  _sushiv_panel_background_i(p,SUSHIV_BG_WHITE);
+  set_background(p,SUSHIV_BG_WHITE);
 }
 static void black_bg(sushiv_panel_t *p){
-  _sushiv_panel_background_i(p,SUSHIV_BG_BLACK);
+  set_background(p,SUSHIV_BG_BLACK);
 }
 static void checked_bg(sushiv_panel_t *p){
-  _sushiv_panel_background_i(p,SUSHIV_BG_CHECKS);
+  set_background(p,SUSHIV_BG_CHECKS);
 }
 static void cycle_bg(sushiv_panel_t *p){
   switch(p->private->bg_type){
@@ -160,15 +177,22 @@ static void cycleB_bg(sushiv_panel_t *p){
   }
 }
 
-static void black_text(sushiv_panel_t *p){
-  plot_set_bg_invert(PLOT(p->private->graph),0);
+static void set_text(sushiv_panel_t *p, int mode){
+  _sushiv_undo_push(p->sushi);
+  _sushiv_undo_suspend(p->sushi);
+
+  plot_set_bg_invert(PLOT(p->private->graph),mode);
   _sushiv_panel_update_menus(p);
   refg_if_running(p);
+
+  _sushiv_undo_resume(p->sushi);
+}
+
+static void black_text(sushiv_panel_t *p){
+  set_text(p,0);
 }
 static void white_text(sushiv_panel_t *p){
-  plot_set_bg_invert(PLOT(p->private->graph),1);
-  _sushiv_panel_update_menus(p);
-  refg_if_running(p);
+  set_text(p,1);
 }
 static void cycle_text(sushiv_panel_t *p){
   switch(PLOT(p->private->graph)->bg_inv){
@@ -220,51 +244,50 @@ static void cycleB_grid(sushiv_panel_t *p){
   }
 }
 
-static void res_set(sushiv_panel_t *p, int n, int d){
+static void res_set(sushiv_panel_t *p, int n, int d, int menu){
   if(n != p->private->oversample_n ||
      d != p->private->oversample_d){
+
+    _sushiv_undo_push(p->sushi);
+    _sushiv_undo_suspend(p->sushi);
+    
+    p->private->menu_cursamp=menu;
     p->private->oversample_n = n;
     p->private->oversample_d = d;
     _sushiv_panel_update_menus(p);
     recompute_if_running(p);
+
+    _sushiv_undo_resume(p->sushi);
   }
 }
 
 static void res_def(sushiv_panel_t *p){
   p->private->menu_cursamp=0;
-  res_set(p,p->private->def_oversample_n,p->private->def_oversample_d);
+  res_set(p,p->private->def_oversample_n,p->private->def_oversample_d,0);
 }
 static void res_1_32(sushiv_panel_t *p){
-  p->private->menu_cursamp=1;
-  res_set(p,1,32);
+  res_set(p,1,32,1);
 }
 static void res_1_16(sushiv_panel_t *p){
-  p->private->menu_cursamp=2;
-  res_set(p,1,16);
+  res_set(p,1,16,2);
 }
 static void res_1_8(sushiv_panel_t *p){
-  p->private->menu_cursamp=3;
-  res_set(p,1,8);
+  res_set(p,1,8,3);
 }
 static void res_1_4(sushiv_panel_t *p){
-  p->private->menu_cursamp=4;
-  res_set(p,1,4);
+  res_set(p,1,4,4);
 }
 static void res_1_2(sushiv_panel_t *p){
-  p->private->menu_cursamp=5;
-  res_set(p,1,2);
+  res_set(p,1,2,5);
 }
 static void res_1_1(sushiv_panel_t *p){
-  p->private->menu_cursamp=6;
-  res_set(p,1,1);
+  res_set(p,1,1,6);
 }
 static void res_2_1(sushiv_panel_t *p){
-  p->private->menu_cursamp=7;
-  res_set(p,2,1);
+  res_set(p,2,1,7);
 }
 static void res_4_1(sushiv_panel_t *p){
-  p->private->menu_cursamp=8;
-  res_set(p,4,1);
+  res_set(p,4,1,8);
 }
 
 static void cycle_res(sushiv_panel_t *p){
@@ -293,7 +316,7 @@ static void cycle_res(sushiv_panel_t *p){
   case 7:
     res_4_1(p);
     break;
-  case 8:
+  default:
     res_def(p);
     break;
   }
@@ -325,7 +348,7 @@ static void cycleB_res(sushiv_panel_t *p){
   case 0:
     res_4_1(p);
     break;
-  case 1:
+  default:
     res_def(p);
     break;
   }
@@ -388,6 +411,13 @@ static void _sushiv_panel_print(sushiv_panel_t *p){
   g_object_unref (op);
 }
 
+static void wrap_undo_down(sushiv_panel_t *p){
+  _sushiv_undo_down(p->sushi);
+}
+static void wrap_undo_up(sushiv_panel_t *p){
+  _sushiv_undo_up(p->sushi);
+}
+
 static menuitem *menu[]={
   &(menuitem){"Open","[<i>o</i>]",NULL,NULL},
   &(menuitem){"Save","[<i>s</i>]",NULL,NULL},
@@ -395,8 +425,8 @@ static menuitem *menu[]={
 
   &(menuitem){"",NULL,NULL,NULL},
 
-  &(menuitem){"Undo","[<i>bksp</i>]",NULL,&_sushiv_panel_undo_down},
-  &(menuitem){"Redo","[<i>space</i>]",NULL,&_sushiv_panel_undo_up},
+  &(menuitem){"Undo","[<i>bksp</i>]",NULL,&wrap_undo_down},
+  &(menuitem){"Redo","[<i>space</i>]",NULL,&wrap_undo_up},
   &(menuitem){"Start zoom box","[<i>enter</i>]",NULL,&wrap_enter},
   &(menuitem){"Clear selection","[<i>escape</i>]",NULL,&wrap_escape},
   &(menuitem){"Toggle Legend","[<i>l</i>]",NULL,&wrap_legend},
@@ -617,13 +647,13 @@ static gboolean panel_keypress(GtkWidget *widget,
     
   case GDK_BackSpace:
     // undo 
-    _sushiv_panel_undo_down(p);
+    _sushiv_undo_down(p->sushi);
     return TRUE;
     
   case GDK_r:
   case GDK_space:
     // redo/forward
-    _sushiv_panel_undo_up(p);
+    _sushiv_undo_up(p->sushi);
     return TRUE;
 
   case GDK_p:
@@ -805,7 +835,7 @@ int sushiv_panel_background(sushiv_instance_t *s,
   }
   
   sushiv_panel_t *p = s->panel_list[number];
-  return _sushiv_panel_background_i(p,bg);
+  return set_background(p,bg);
 }
 
 int _sushiv_new_panel(sushiv_instance_t *s,
@@ -872,3 +902,30 @@ int _sushiv_new_panel(sushiv_instance_t *s,
   return number;
 }
 
+void _sushiv_panel_undo_log(sushiv_panel_t *p, sushiv_panel_undo_t *u){
+  u->cross_mode = PLOT(p->private->graph)->cross_active;
+  u->legend_mode = PLOT(p->private->graph)->legend_active;
+  u->grid_mode = PLOT(p->private->graph)->grid_mode;
+  u->text_mode = PLOT(p->private->graph)->bg_inv;
+  u->bg_mode = p->private->bg_type;
+  u->menu_cursamp = p->private->menu_cursamp;
+  u->oversample_n = p->private->oversample_n;
+  u->oversample_d = p->private->oversample_d;
+
+  // panel-subtype-specific population
+  p->private->undo_log(u,p);
+}
+
+void _sushiv_panel_undo_restore(sushiv_panel_t *p, sushiv_panel_undo_t *u){
+  // go in through setting routines
+  plot_set_crossactive(PLOT(p->private->graph),u->cross_mode);
+  plot_set_legendactive(PLOT(p->private->graph),u->legend_mode);
+  set_background(p, u->bg_mode); // must be first; it can frob grid and test
+  set_text(p, u->text_mode);
+  set_grid(p, u->grid_mode);
+  res_set(p, u->oversample_n, u->oversample_d, u->menu_cursamp);
+
+  // panel-subtype-specific restore
+  p->private->undo_restore(u,p);
+  _sushiv_panel_dirty_legend(p); 
+}

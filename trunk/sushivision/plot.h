@@ -122,8 +122,9 @@ int plot_get_crosshair_ypixel(Plot *p);
 void plot_set_grid(Plot *p, int mode);
 
 void plot_do_enter(Plot *p);
-void plot_do_escape(Plot *p);
+void plot_set_crossactive(Plot *p, int active);
 void plot_toggle_legend(Plot *p);
+void plot_set_legendactive(Plot *p, int active);
 
 void plot_resizable(Plot *p, int rp);
 

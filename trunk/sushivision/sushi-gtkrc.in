@@ -24,7 +24,7 @@ style "button-poppy" {
 	GtkWidget::interior_focus = 0 
 	GtkWidget::internal_padding = 0 
 
-	font_name = "sans"
+	font_name = "sans 8"
 }
 
 style "exp-poppy" {
@@ -54,7 +54,7 @@ style "exp-poppy" {
 	GtkWidget::internal_padding = 0 
 	GtkExpander::expander_size = 14
 
-	font_name = "sans"
+	font_name = "sans 8"
 }
 
 style "slider-poppy" {
@@ -88,7 +88,7 @@ style "entry-poppy" {
 	text[ACTIVE]="#000000"
 	text[PRELIGHT]="#000000" 
 
-	font_name = "sans"
+	font_name = "sans 7"
 }
 
 style "panel" {
@@ -101,7 +101,7 @@ style "panel" {
 	text[ACTIVE]="#000000"
 	text[PRELIGHT]="#000000" 
 
-	font_name = "sans"
+	font_name = "sans 9"
 }
 
 style "panel-text" {
