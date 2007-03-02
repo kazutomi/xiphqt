@@ -1,0 +1,14 @@
+# theora installed pkg-config file
+
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: theoracompat
+Description: Theora video codec
+Version: @VERSION@
+Requires: ogg >= 1.1.1 theoradec
+Conflicts:
+Libs: -L${libdir} -ltheoracompat
+Cflags: -I${includedir}

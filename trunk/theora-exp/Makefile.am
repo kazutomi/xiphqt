@@ -12,7 +12,7 @@ TH_ENCODER_FILES=
 endif
 
 pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = $(TH_ENCODER_FILES) theoradec.pc
+pkgconfig_DATA = $(TH_ENCODER_FILES) theoradec.pc theoracompat.pc
 
 dist-hook:
 	rm -rf `find $(distdir)/doc -name .svn`

@@ -2,8 +2,7 @@
 #include <string.h>
 #include <limits.h>
 #include <ogg/ogg.h>
-/*libtheora header.
-  TODO: We should provide our own copy.*/
+/*libtheora header.*/
 #include <theora/theora.h>
 /*theora-exp header.*/
 #include "theora/theoradec.h"
