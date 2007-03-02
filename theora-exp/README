@@ -55,6 +55,11 @@ It currently generates bitstreams using ALL of the decoder features supported
 There are still a few outstanding bugs, and the HVS model is very experimental.
 The encoder is not built by default.
 
+Compatibility Layer:
+theora-exp comes with a compatibility layer for libtheora so it can be used
+as a drop in replacement(only decoding right now). To do so, just change your
+pkg-config call from "theora" to "theoracompat"
+
 Building:
 On Unix or Cygwin, building through automake is now supported.
 On a fresh checkout, run:
