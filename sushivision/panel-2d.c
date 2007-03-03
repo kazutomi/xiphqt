@@ -732,16 +732,23 @@ static void sushiv_panel2d_print_bg(sushiv_panel_t *p, cairo_t *c){
 
   if(!plot) return;
 
-  cairo_set_source_surface(c, plot->back,0,0);
+  cairo_pattern_t *pattern = cairo_pattern_create_for_surface(plot->back);
+  cairo_pattern_set_filter(pattern, CAIRO_FILTER_NEAREST);
+  cairo_set_source(c,pattern);
   cairo_paint(c);
 
+  cairo_pattern_destroy(pattern);
 }
 
 static void sushiv_panel2d_print(sushiv_panel_t *p, cairo_t *c, int w, int h){
+  sushiv_panel2d_t *p2 = p->subtype->p2;
   Plot *plot = PLOT(p->private->graph);
   double pw = p->private->graph->allocation.width;
   double ph = p->private->graph->allocation.height;
   double scale;
+  int i;
+  double maxlabelw=0;
+  double y;
 
   if(w/pw < h/ph)
     scale = w/pw;
@@ -749,13 +756,53 @@ static void sushiv_panel2d_print(sushiv_panel_t *p, cairo_t *c, int w, int h){
     scale = h/ph;
 
   cairo_matrix_t m;
+  cairo_save(c);
   cairo_get_matrix(c,&m);
   cairo_matrix_scale(&m,scale,scale);
   cairo_set_matrix(c,&m);
-
+  
   plot_print(plot, c, ph*scale, (void(*)(void *, cairo_t *))sushiv_panel2d_print_bg, p);
+  cairo_restore(c);
 
-  // XXX print objective scales
+  // find extents widths for objective scale labels
+  cairo_set_font_size(c,10);
+  for(i=0;i<p->objectives;i++){
+    cairo_text_extents_t ex;
+    sushiv_objective_t *o = p->objective_list[i].o;
+    cairo_text_extents(c, o->name, &ex);
+    if(ex.width > maxlabelw) maxlabelw=ex.width;
+  }
+
+
+  y = ph * scale + 10;
+
+  for(i=0;i<p->objectives;i++){
+    sushiv_objective_t *o = p->objective_list[i].o;
+    Slider *s = p2->range_scales[i];
+    
+    // get scale height
+    double labelh = slider_print_height(s);
+    cairo_text_extents_t ex;
+    cairo_text_extents (c, o->name, &ex);
+
+    int lx = maxlabelw - ex.width;
+    int ly = labelh/2 + ex.height/2;
+    
+    // print objective labels
+    cairo_set_source_rgb(c,0.,0.,0.);
+    cairo_move_to (c, lx,ly+y);
+    cairo_show_text (c, o->name);
+
+    // draw slider
+    // set translation
+    cairo_save(c);
+    cairo_translate (c, maxlabelw + 10, y);
+    slider_print(s, c, w - maxlabelw - 10, labelh);
+    cairo_restore(c);
+
+    y += labelh;
+  }
+
 }
 
 // call while locked
@@ -1684,7 +1731,7 @@ static void _sushiv_realize_panel2d(sushiv_panel_t *p){
       GtkWidget *label = gtk_label_new(o->name);
       gtk_misc_set_alignment(GTK_MISC(label),1.,.5);
       gtk_table_attach(GTK_TABLE(p2->obj_table),label,0,1,i,i+1,
-		       GTK_FILL,0,10,0);
+		       GTK_FILL,0,8,0);
       
       /* mapping pulldown */
       {
@@ -1700,7 +1747,7 @@ static void _sushiv_realize_panel2d(sushiv_panel_t *p){
 	p2->range_pulldowns[i] = menu;
       }
 
-    /* the range mapping slices/slider */ 
+      /* the range mapping slices/slider */ 
       sl[0] = slice_new(map_callback_2d,p->objective_list+i);
       sl[1] = slice_new(map_callback_2d,p->objective_list+i);
       sl[2] = slice_new(map_callback_2d,p->objective_list+i);
@@ -1713,6 +1760,7 @@ static void _sushiv_realize_panel2d(sushiv_panel_t *p){
 		       GTK_EXPAND|GTK_FILL,0,0,0);
       p2->range_scales[i] = slider_new((Slice **)sl,3,o->scale->label_list,o->scale->val_list,
 				       o->scale->vals,SLIDER_FLAG_INDEPENDENT_MIDDLE);
+      gtk_table_set_col_spacing(GTK_TABLE(p2->obj_table),3,5);
 
       slice_thumb_set((Slice *)sl[0],lo);
       slice_thumb_set((Slice *)sl[1],lo);

@@ -74,3 +74,6 @@ extern double slider_get_value(Slider *s, int thumbnum);
 extern void slider_set_value(Slider *s, int thumbnum, double v);
 extern double slider_del_to_val(Slider *s, double del);
 extern void slider_set_quant(Slider *s, double n, double d);
+
+extern void slider_print(Slider *s, cairo_t *c, int w, int h);
+extern double slider_print_height(Slider *s);

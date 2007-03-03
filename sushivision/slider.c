@@ -919,3 +919,135 @@ void slider_set_quant(Slider *s,double num, double denom){
   s->quant_num=num;
   s->quant_denom=denom;
 }
+
+double slider_print_height(Slider *s){
+  return (s->slices[0]->allocation.height - s->ypad*2)*1.2;
+}
+ 
+void slider_print(Slider *s, cairo_t *c, int w, int h){
+  cairo_save(c);
+  double ypad = h*.1;
+  double neg = (s->neg? -1.: 1.);
+
+  // set clip region
+  cairo_rectangle(c,0,ypad,w,h-ypad*2);
+  cairo_clip(c);
+
+  // determine start/end deltas
+  // eliminate label sections that are completely unused
+  int slices = s->num_slices;
+  double lo = (slices>0?SLICE(s->slices[0])->thumb_val:s->label_vals[0]) * neg;
+  double hi = (slices>0?SLICE(s->slices[slices-1])->thumb_val:s->label_vals[s->labels-1]) * neg;
+
+  // alpha could push up the unused area
+  if(slices==3 && SLICE(s->slices[1])->thumb_val*neg>lo)
+    lo = SLICE(s->slices[1])->thumb_val*neg;
+
+  // if lo>hi (due to alpha), show the whole scale empty
+  if(lo>hi){
+    lo = s->label_vals[0]*neg;
+    hi = s->label_vals[s->labels-1]*neg;
+  }
+
+  int firstlabel=0;
+  int lastlabel=s->labels-1;
+  int i;
+
+  for(i=s->labels-2;i>0;i--)
+    if(lo>s->label_vals[i]*neg){
+      firstlabel=i;
+      break;
+    }
+  
+  for(i=1;i<s->labels-1;i++)
+    if(hi<s->label_vals[i]*neg){
+      lastlabel=i;
+      break;
+    }
+      
+  double lodel = 1. / (s->labels-1) * firstlabel;
+  double hidel = 1. / (s->labels-1) * lastlabel;
+  double alphadel = (slices==3 ? 
+		     slider_val_to_del(s,SLICE(s->slices[1])->thumb_val):0.);
+
+  // create background image
+  {
+    cairo_surface_t *image = cairo_image_surface_create(CAIRO_FORMAT_RGB24,w,h);
+    cairo_t *ci = cairo_create(image);
+    int x,y;
+
+    cairo_save(c);
+    cairo_set_source_rgb (ci, .5,.5,.5);
+    cairo_paint(ci);
+    cairo_set_source_rgb (ci, .314,.314,.314);
+    for(y=0;y<=h/2;y+=8){
+      int phase = (y>>3)&1;
+      for(x=0;x<w;x+=8){
+	if(phase)
+	  cairo_rectangle(ci,x,y+h/2.,8.,8.);
+	else
+	  cairo_rectangle(ci,x,h/2.-y-8,8.,8.);
+	cairo_fill(ci);
+	phase=!phase;
+      }
+    }
+
+    for(y=0;y<h;y++){
+      ucolor *line = (ucolor *)cairo_image_surface_get_data(image) + w*y;
+      for(x=0;x<w;x++){
+	double del = (hidel - lodel) / (w-1) * x + lodel;
+	if(del>=alphadel)
+	  line[x].u = mapping_calc(s->gradient, del, line[x].u);
+      }
+    }
+    
+    // composite background with correct resample filter
+    cairo_pattern_t *pattern = cairo_pattern_create_for_surface(image);
+    cairo_pattern_set_filter(pattern, CAIRO_FILTER_NEAREST);
+    cairo_set_source(c,pattern);
+    cairo_rectangle(c,0,0,w,h);
+    cairo_fill(c);
+
+    cairo_destroy(ci);
+    cairo_pattern_destroy(pattern);
+    cairo_surface_destroy(image);
+    cairo_restore(c);
+  }
+
+  // add labels
+  cairo_set_font_size(c,h-ypad*2-3);
+  for(i=firstlabel;i<=lastlabel;i++){
+    double x = (double)(i-firstlabel) / (lastlabel - firstlabel) * (w-1);
+    double y;
+    cairo_text_extents_t ex;
+    
+    cairo_move_to(c,x+.5,ypad);
+    cairo_line_to(c,x+.5,h-ypad);
+    cairo_set_source_rgba(c,0,0,0,.8);
+    cairo_set_line_width(c,1);
+    cairo_stroke(c);
+
+    cairo_text_extents (c, s->label[i], &ex);
+    if(i>firstlabel){
+   
+      x-=2;
+      x-=ex.width;
+ 
+    }else{
+      x+=2;
+    }
+    y = h/2. - ex.y_bearing/2.;
+
+    cairo_set_source_rgba(c,1.,1.,1.,.5);
+    cairo_set_line_width(c,2.5);
+    cairo_move_to (c, x,y);
+    cairo_text_path (c, s->label[i]); 
+    cairo_stroke(c);
+
+    cairo_set_source_rgba(c,0,0,0,1.);
+    cairo_move_to (c, x,y);
+    cairo_show_text (c, s->label[i]); 
+  }
+ 
+  cairo_restore(c);
+}
