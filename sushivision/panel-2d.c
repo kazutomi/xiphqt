@@ -797,7 +797,7 @@ static void sushiv_panel2d_print(sushiv_panel_t *p, cairo_t *c, int w, int h){
     // set translation
     cairo_save(c);
     cairo_translate (c, maxlabelw + 10, y);
-    slider_print(s, c, w - maxlabelw - 10, labelh);
+    slider_print(s, c, pw*scale - maxlabelw - 10, labelh);
     cairo_restore(c);
 
     y += labelh;
