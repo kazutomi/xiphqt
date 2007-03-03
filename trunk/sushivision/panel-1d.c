@@ -1307,7 +1307,7 @@ void _sushiv_realize_panel1d(sushiv_panel_t *p){
       GtkWidget *label = gtk_label_new(o->name);
       gtk_misc_set_alignment(GTK_MISC(label),1.,.5);
       gtk_table_attach(GTK_TABLE(p1->obj_table),label,0,1,i,i+1,
-		       GTK_FILL,0,10,0);
+		       GTK_FILL,0,5,0);
       
       /* mapping pulldown */
       {
@@ -1388,7 +1388,7 @@ void _sushiv_realize_panel1d(sushiv_panel_t *p){
       GtkWidget *label = gtk_label_new(d->name);
       gtk_misc_set_alignment(GTK_MISC(label),1.,.5);
       gtk_table_attach(GTK_TABLE(p1->dim_table),label,0,1,i,i+1,
-		       GTK_FILL,0,10,0);
+		       GTK_FILL,0,5,0);
       
       /* x radio buttons */
       if(!(d->flags & SUSHIV_DIM_NO_X) && !p1->link_x && !p1->link_y){
@@ -1399,7 +1399,7 @@ void _sushiv_realize_panel1d(sushiv_panel_t *p){
 	  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(p1->dim_xb[i]),TRUE);
 	}
 	gtk_table_attach(GTK_TABLE(p1->dim_table),p1->dim_xb[i],1,2,i,i+1,
-			 0,0,10,0);
+			 0,0,3,0);
       }
       
       p->private->dim_scales[i] = 
