@@ -99,7 +99,7 @@
  Ezstream depends on:
 </p>
 
-<ul>
+<ul style="font-size: smaller; margin: 1em 2em">
  <li>
   libshout 2.2.x
   (<a href="http://www.icecast.org/download.php">http://www.icecast.org/download.php</a>)
