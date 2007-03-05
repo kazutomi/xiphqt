@@ -50,6 +50,10 @@
 
 <h3>Download</h3>
 
+<p style="font-size: larger;">
+ Latest version: <b>0.3.0</b>
+<p>
+
 <center>
  <table border=1 cellpadding=5 cellspacing=0 width=90% bordercolor="#000000">
   <tr>
@@ -60,7 +64,8 @@
     Source .tar.gz (all platforms)
    </td>
    <td>
-    <a href="http://downloads.xiph.org/releases/ezstream/ezstream-0.2.1.tar.gz">ezstream-0.2.1.tar.gz</a>
+    <a href="http://downloads.xiph.org/releases/ezstream/ezstream-0.3.0.tar.gz">ezstream-0.3.0.tar.gz</a><br/>
+    MD5: 7704b0a17799f3e8df557cd35a5f897a
    </td>
   </tr>
   <tr>
@@ -68,7 +73,8 @@
     Windows NT/2000/XP binary
    </td>
    <td>
-    <a href="http://downloads.xiph.org/releases/ezstream/ezstream_win32_0.2.1_setup.exe">ezstream_win32_0.2.1_setup.exe</a>
+    <a href="http://downloads.xiph.org/releases/ezstream/ezstream-0.3.0-win32.zip">ezstream-0.3.0-win32.zip</a><br/>
+    MD5: 9c18f8d95fbc032fd3fb26db53b0a28b
    </td>
   </tr>
  </table>
@@ -93,13 +99,11 @@
 </div>
 <div class="newscontent">
 
-<h3>Prerequisites and Installation</h3>
+<h3>Further Information</h3>
 
-<p>
- Ezstream depends on:
-</p>
+<h4>Dependencies</h4>
 
-<ul style="font-size: smaller; margin: 1em 2em">
+<ul style="font-size: smaller; margin: 1em 3em">
  <li>
   libshout 2.2.x
   (<a href="http://www.icecast.org/download.php">http://www.icecast.org/download.php</a>)
@@ -115,13 +119,43 @@
  </li>
 </ul>
 
+<h4>UNIX (Linux, *BSD, Solaris, ...)</h4>
+
 <p>
  On UNIX and UNIX-like systems, such as Linux and *BSD, binary packages for the
  required libraries are usually available.
  To compile ezstream, ensure that the respective <em>-devel</em> packages are
  installed as well, if applicable.
- Further steps are explained in the <em>README</em> and <em>INSTALL</em> files
- inside the distribution package.
+ Further steps, and more, are explained in the <em>README</em> and
+ <em>INSTALL</em> files inside the distribution package.
+</p>
+
+<h4>Windows</h4>
+
+<p>
+ Windows users can simply copy the ezstream.exe file from the binary
+ distribution archive (.ZIP) to any location of their choosing.
+ As of version 0.3.0, the Win32 version of ezstream no longer requires any .DLL
+ files and is entirely self-contained.
+ Because of this simplicity, an installer is no longer provided.
+ Those who wish to be able to run ezstream anywhere on their system, can add
+ the directory that contains ezstream.exe to their user's PATH environment
+ variable.
+</p>
+
+<h4>Even more ...</h4>
+
+<p>
+ Comprehensive documentation of ezstream and its configuration is included in
+ the man page <code>ezstream(1)</code>.
+</p>
+
+<p>
+ Those, who are interested in how ezstream development progresses, can stay
+ informed by occasionally looking at the
+ <a href="http://svn.xiph.org/trunk/ezstream/NEWS">NEWS</a>
+ file.
+ It is kept up-to-date with important changes in ezstream as they happen.
 </p>
 
 </div>
