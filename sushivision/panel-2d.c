@@ -906,18 +906,20 @@ static void update_legend(sushiv_panel_t *p){
 
     // add each active objective plane to the legend
     // choose the value under the crosshairs 
-    for(i=0;i<p->objectives;i++){
-
-      if(!mapping_inactive_p(p2->mappings+i)){
-	compute_result vals;
-	compute_single_point(p,p->objective_list[i].o, plot->selx, plot->sely, &vals);
-
-	if(!isnan(vals.y)){
+    if(plot->cross_active){
+      for(i=0;i<p->objectives;i++){
+	
+	if(!mapping_inactive_p(p2->mappings+i)){
+	  compute_result vals;
+	  compute_single_point(p,p->objective_list[i].o, plot->selx, plot->sely, &vals);
 	  
-	  snprintf(buffer,320,"%s = %f",
-		   p->objective_list[i].o->name,
-		   vals.y);
-	  plot_legend_add(plot,buffer);
+	  if(!isnan(vals.y)){
+	    
+	    snprintf(buffer,320,"%s = %f",
+		     p->objective_list[i].o->name,
+		     vals.y);
+	    plot_legend_add(plot,buffer);
+	  }
 	}
       }
     }
