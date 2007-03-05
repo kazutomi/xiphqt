@@ -213,7 +213,7 @@
 <h3>Release Notes</h3>
 
 <p>
- Ezstream 0.3.0 has been released on February 5th 2007.
+ Ezstream 0.3.0 has been released on March 5th 2007.
 </p>
 
 <p>
