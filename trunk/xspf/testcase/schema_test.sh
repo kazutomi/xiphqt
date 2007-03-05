@@ -9,8 +9,9 @@
 # -----------------------------------------------------------------------------
 # Config
 # -----------------------------------------------------------------------------
-RNG_FILE=xspf-1_0.5.rng
-XSD_FILE=xspf-1_0.2.xsd
+SCHEMA_PATH="../../../websites/xspf.org/validation"
+RNG_FILE="${SCHEMA_PATH}/xspf-1_0.5.rng"
+XSD_FILE="${SCHEMA_PATH}/xspf-1_0.2.xsd"
 PASS_FILES="for_version_1/pass/*.xspf"
 FAIL_FILES="for_version_1/fail/*.xspf"
 LOG_FILE="schema_test_log.txt"
@@ -30,23 +31,31 @@ fi
 rm ${LOG_FILE} &> /dev/null
 
 # -----------------------------------------------------------------------------
+# Version
+# -----------------------------------------------------------------------------
+echo "== XMLStarlet version ==" >> ${LOG_FILE}
+${XML_STARLET} --version >> ${LOG_FILE}
+echo "" >> ${LOG_FILE}
+
+# -----------------------------------------------------------------------------
 # Test RNG
 # -----------------------------------------------------------------------------
 echo "== RNG - Should have failed ==" >> ${LOG_FILE}
-./${XML_STARLET} validate --list-good --relaxng ${RNG_FILE} ${FAIL_FILES} >> ${LOG_FILE}
+${XML_STARLET} validate --list-good --relaxng ${RNG_FILE} ${FAIL_FILES} >> ${LOG_FILE}
 echo "" >> ${LOG_FILE}
 echo "== RNG - Should have passed ==" >> ${LOG_FILE}
-./${XML_STARLET} validate --list-bad --relaxng ${RNG_FILE} ${PASS_FILES} >> ${LOG_FILE}
+${XML_STARLET} validate --list-bad --relaxng ${RNG_FILE} ${PASS_FILES} >> ${LOG_FILE}
 echo "" >> ${LOG_FILE}
 
 # -----------------------------------------------------------------------------
 # Test XSD
 # -----------------------------------------------------------------------------
 echo "== XSD - Should have failed ==" >> ${LOG_FILE}
-./${XML_STARLET} validate --list-good --xsd ${XSD_FILE} ${FAIL_FILES} >> ${LOG_FILE}
+${XML_STARLET} validate --list-good --xsd ${XSD_FILE} ${FAIL_FILES} >> ${LOG_FILE}
 echo "" >> ${LOG_FILE}
 echo "== XSD - Should have passed ==" >> ${LOG_FILE}
-./${XML_STARLET} validate --list-bad --xsd ${XSD_FILE} ${PASS_FILES} >> ${LOG_FILE}
+${XML_STARLET} validate --list-bad --xsd ${XSD_FILE} ${PASS_FILES}
+# >> ${LOG_FILE}
 
 # -----------------------------------------------------------------------------
 # Show log
