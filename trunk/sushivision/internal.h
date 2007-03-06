@@ -47,9 +47,7 @@ union sushiv_panel_subtype {
 // unused for a given panel.
 typedef struct sushiv_panel_undo {
   u_int32_t *mappings;
-
   double *scale_vals[3];
-  double *dim_vals[3];
   
   int x_d;
   int y_d;
@@ -119,6 +117,7 @@ struct sushiv_panel_internal {
   void (*request_compute)(sushiv_panel_t *p);
   void (*crosshair_action)(sushiv_panel_t *p);
   void (*print_action)(sushiv_panel_t *p, cairo_t *c, int w, int h);
+  int (*save_action)(sushiv_panel_t *p, xmlNodePtr pn);
 
   void (*undo_log)(sushiv_panel_undo_t *u, sushiv_panel_t *p);
   void (*undo_restore)(sushiv_panel_undo_t *u, sushiv_panel_t *p);
@@ -172,7 +171,7 @@ extern void _sushiv_panel1d_update_linked_crosshairs(sushiv_panel_t *p, int xfla
 extern void _sushiv_panel_update_menus(sushiv_panel_t *p);
 
 extern int save_main();
-extern int save_panel(sushiv_panel_t *p, xmlNodePtr instance);
+extern int _save_panel(sushiv_panel_t *p, xmlNodePtr instance);
 
 extern sig_atomic_t _sushiv_exiting;
 extern char *filebase;

@@ -1837,6 +1837,65 @@ static void _sushiv_realize_panel2d(sushiv_panel_t *p){
   _sushiv_undo_resume(p->sushi);
 }
 
+static int _save_panel2d(sushiv_panel_t *p, xmlNodePtr pn){  
+  sushiv_panel2d_t *p2 = p->subtype->p2;
+  char buffer[80];
+  int ret=0,i;
+
+  xmlNodePtr n;
+
+  xmlNewProp(pn, (xmlChar *)"type", (xmlChar *)"2d");
+
+  // box
+  xmlNodePtr boxn = xmlNewChild(pn, NULL, (xmlChar *) "box", NULL);
+  if(p->private->oldbox_active){
+    xmlNewProp(boxn, (xmlChar *)"active",(xmlChar *)"yes");
+    snprintf(buffer,sizeof(buffer),"%.20g",p2->oldbox[0]);
+    xmlNewProp(boxn, (xmlChar *)"x1", (xmlChar *)buffer);
+    snprintf(buffer,sizeof(buffer),"%.20g",p2->oldbox[1]);
+    xmlNewProp(boxn, (xmlChar *)"x2", (xmlChar *)buffer);
+    snprintf(buffer,sizeof(buffer),"%.20g",p2->oldbox[2]);
+    xmlNewProp(boxn, (xmlChar *)"y1", (xmlChar *)buffer);
+    snprintf(buffer,sizeof(buffer),"%.20g",p2->oldbox[3]);
+    xmlNewProp(boxn, (xmlChar *)"y2", (xmlChar *)buffer);
+  }else
+    xmlNewProp(boxn, (xmlChar *)"active",(xmlChar *)"no");
+
+  // objective map settings
+  for(i=0;i<p->objectives;i++){
+    sushiv_objective_t *o = p->objective_list[i].o;
+
+    xmlNodePtr on = xmlNewChild(pn, NULL, (xmlChar *) "objective", NULL);
+    snprintf(buffer,sizeof(buffer),"%d",i);
+    xmlNewProp(on, (xmlChar *)"position", (xmlChar *)buffer);
+    snprintf(buffer,sizeof(buffer),"%d",o->number);
+    xmlNewProp(on, (xmlChar *)"number", (xmlChar *)buffer);
+    xmlNewProp(on, (xmlChar *)"name", (xmlChar *)o->name);
+    xmlNewProp(on, (xmlChar *)"type", (xmlChar *)o->output_types);
+    
+    // right now Y is the only type; the below is Y-specific
+    n = xmlNewChild(on, NULL, (xmlChar *) "mapping", NULL);
+    xmlNewProp(n, (xmlChar *)"type", (xmlChar *)mapping_name(p2->mappings[i].mapnum));
+    n = xmlNewChild(on, NULL, (xmlChar *) "y-scale", NULL);
+    snprintf(buffer,sizeof(buffer),"%.20g",slider_get_value(p2->range_scales[i],0));
+    xmlNewProp(n, (xmlChar *)"low-bracket", (xmlChar *)buffer);
+    snprintf(buffer,sizeof(buffer),"%.20g",slider_get_value(p2->range_scales[i],1));
+    xmlNewProp(n, (xmlChar *)"alpha", (xmlChar *)buffer);
+    snprintf(buffer,sizeof(buffer),"%.20g",slider_get_value(p2->range_scales[i],2));
+    xmlNewProp(n, (xmlChar *)"high-bracket", (xmlChar *)buffer);
+  }
+
+  // x/y dim selection
+  n = xmlNewChild(pn, NULL, (xmlChar *) "selected-x", NULL);
+  snprintf(buffer,sizeof(buffer),"%d",p2->x_dnum);
+  xmlNewProp(n, (xmlChar *)"pos", (xmlChar *)buffer);
+  n = xmlNewChild(pn, NULL, (xmlChar *) "selected-y", NULL);
+  snprintf(buffer,sizeof(buffer),"%d",p2->y_dnum);
+  xmlNewProp(n, (xmlChar *)"pos", (xmlChar *)buffer);
+
+  return ret;
+}
+
 int sushiv_new_panel_2d(sushiv_instance_t *s,
 			int number,
 			const char *name, 
@@ -1879,6 +1938,7 @@ int sushiv_new_panel_2d(sushiv_instance_t *s,
   p->private->print_action = sushiv_panel2d_print;
   p->private->undo_log = panel2d_undo_log;
   p->private->undo_restore = panel2d_undo_restore;
+  p->private->save_action = _save_panel2d;
 
   /* set up helper data structures for rendering */
 
@@ -1960,4 +2020,3 @@ int sushiv_new_panel_2d(sushiv_instance_t *s,
 
   return 0;
 }
-

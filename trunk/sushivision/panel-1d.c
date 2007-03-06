@@ -422,7 +422,7 @@ static void update_legend(sushiv_panel_t *p){
 
     // add each active objective to the legend
     // choose the value under the crosshairs 
-    {
+    if(plot->cross_active){
       double val = (p1->flip?plot->sely:plot->selx);
       int bin = rint(scalespace_pixel(&p1->x_v, val));
 
@@ -1129,12 +1129,13 @@ static void panel1d_undo_log(sushiv_panel_undo_t *u, sushiv_panel_t *p){
       (p1->mappings[i].mapnum<<24) | 
       (p1->linetype[i]<<16) |
       (p1->pointtype[i]<<8);
-    u->scale_vals[2][0] = slider_get_value(p1->alpha_scale[i],0);
+    u->scale_vals[2][i] = slider_get_value(p1->alpha_scale[i],0);
   }
 
   u->x_d = p1->x_dnum;
   u->box[0] = p1->oldbox[0];
   u->box[1] = p1->oldbox[1];
+
   u->box_active = p->private->oldbox_active;
   
 }
@@ -1142,7 +1143,6 @@ static void panel1d_undo_log(sushiv_panel_undo_t *u, sushiv_panel_t *p){
 static void panel1d_undo_restore(sushiv_panel_undo_t *u, sushiv_panel_t *p){
   sushiv_panel1d_t *p1 = p->subtype->p1;
   Plot *plot = PLOT(p->private->graph);
-  sushiv_panel_t *link = (p1->link_x?p1->link_x:p1->link_y);
 
   int i;
   
@@ -1161,15 +1161,7 @@ static void panel1d_undo_restore(sushiv_panel_undo_t *u, sushiv_panel_t *p){
   if(p1->dim_xb && u->x_d<p->dimensions && p1->dim_xb[u->x_d])
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(p1->dim_xb[u->x_d]),TRUE);
 
-  /* make sure x_d is set before updating the x_d sliders! */
   update_x_sel(p);
-
-  if(link){
-    /* doesn't matter which widget belonging to the dimension is the one that gets set */
-    _sushiv_dimension_set_value(p1->x_d->private->widget_list[0],0,u->dim_vals[0][p->dimensions]);
-    _sushiv_dimension_set_value(p1->x_d->private->widget_list[0],1,u->dim_vals[1][p->dimensions]);
-    _sushiv_dimension_set_value(p1->x_d->private->widget_list[0],2,u->dim_vals[2][p->dimensions]);
-  }
 
   if(u->box_active){
     p1->oldbox[0] = u->box[0];
@@ -1184,6 +1176,7 @@ static void panel1d_undo_restore(sushiv_panel_undo_t *u, sushiv_panel_t *p){
 
 void _sushiv_realize_panel1d(sushiv_panel_t *p){
   sushiv_panel1d_t *p1 = p->subtype->p1;
+  char buffer[160];
   int i;
   _sushiv_undo_suspend(p->sushi);
 
@@ -1235,7 +1228,6 @@ void _sushiv_realize_panel1d(sushiv_panel_t *p){
   /* may be vertical to the left of the plot or along the bottom if the plot is flipped */
   {
     GtkWidget **sl = calloc(2,sizeof(*sl));
-
     int lo = p1->range_scale->val_list[0];
     int hi = p1->range_scale->val_list[p1->range_scale->vals-1];
 
@@ -1293,8 +1285,14 @@ void _sushiv_realize_panel1d(sushiv_panel_t *p){
       {
 	GtkWidget *menu=gtk_combo_box_new_markup();
 	int j;
-	for(j=0;j<num_solids();j++)
-	  gtk_combo_box_append_text (GTK_COMBO_BOX (menu), solid_name(j));
+	for(j=0;j<num_solids();j++){
+	  if(strcmp(solid_name(j),"inactive"))
+	    snprintf(buffer,sizeof(buffer),"<span foreground=\"%s\">%s</span>",solid_name(j),solid_name(j));
+	  else
+	    snprintf(buffer,sizeof(buffer),"%s",solid_name(j));
+	  
+	  gtk_combo_box_append_text (GTK_COMBO_BOX (menu), buffer);
+	}
 	gtk_combo_box_set_active(GTK_COMBO_BOX(menu),0);
 	g_signal_connect (G_OBJECT (menu), "changed",
 			  G_CALLBACK (mapchange_callback_1d), p->objective_list+i);
@@ -1408,6 +1406,73 @@ void _sushiv_realize_panel1d(sushiv_panel_t *p){
   _sushiv_undo_resume(p->sushi);
 }
 
+
+static int _save_panel1d(sushiv_panel_t *p, xmlNodePtr pn){  
+  sushiv_panel1d_t *p1 = p->subtype->p1;
+  char buffer[80];
+  int ret=0,i;
+
+  xmlNodePtr n;
+
+  xmlNewProp(pn, (xmlChar *)"type", (xmlChar *)"1d");
+
+  // box
+  xmlNodePtr boxn = xmlNewChild(pn, NULL, (xmlChar *) "box", NULL);
+  if(p->private->oldbox_active){
+    xmlNewProp(boxn, (xmlChar *)"active",(xmlChar *)"yes");
+    snprintf(buffer,sizeof(buffer),"%.20g",p1->oldbox[0]);
+    xmlNewProp(boxn, (xmlChar *)"x1", (xmlChar *)buffer);
+    snprintf(buffer,sizeof(buffer),"%.20g",p1->oldbox[1]);
+    xmlNewProp(boxn, (xmlChar *)"x2", (xmlChar *)buffer);
+  }else
+    xmlNewProp(boxn, (xmlChar *)"active",(xmlChar *)"no");
+
+  // objective map settings
+  for(i=0;i<p->objectives;i++){
+    sushiv_objective_t *o = p->objective_list[i].o;
+
+    xmlNodePtr on = xmlNewChild(pn, NULL, (xmlChar *) "objective", NULL);
+    snprintf(buffer,sizeof(buffer),"%d",i);
+    xmlNewProp(on, (xmlChar *)"position", (xmlChar *)buffer);
+    snprintf(buffer,sizeof(buffer),"%d",o->number);
+    xmlNewProp(on, (xmlChar *)"number", (xmlChar *)buffer);
+    xmlNewProp(on, (xmlChar *)"name", (xmlChar *)o->name);
+    xmlNewProp(on, (xmlChar *)"type", (xmlChar *)o->output_types);
+    
+    // right now Y is the only type; the below is Y-specific
+    // solid map 
+    n = xmlNewChild(on, NULL, (xmlChar *) "mapping", NULL);
+    xmlNewProp(n, (xmlChar *)"type", (xmlChar *)solid_name(p1->mappings[i].mapnum));    
+
+    // line type 
+    n = xmlNewChild(on, NULL, (xmlChar *) "line", NULL);
+    xmlNewProp(n, (xmlChar *)"type", (xmlChar *)line_name[p1->linetype[i]]);    
+
+    // point type
+    n = xmlNewChild(on, NULL, (xmlChar *) "point", NULL);
+    xmlNewProp(n, (xmlChar *)"type", (xmlChar *)point_name[p1->pointtype[i]]);    
+
+    // alpha slider
+    n = xmlNewChild(on, NULL, (xmlChar *) "transparency", NULL);
+    snprintf(buffer,sizeof(buffer),"%.20g",slider_get_value(p1->alpha_scale[i],0));
+    xmlNewProp(n, (xmlChar *)"alpha", (xmlChar *)buffer);
+  }
+
+  // y scale
+  n = xmlNewChild(pn, NULL, (xmlChar *) "range", NULL);
+  snprintf(buffer,sizeof(buffer),"%.20g",slider_get_value(p1->range_slider,0));
+  xmlNewProp(n, (xmlChar *)"low-bracket", (xmlChar *)buffer);
+  snprintf(buffer,sizeof(buffer),"%.20g",slider_get_value(p1->range_slider,1));
+  xmlNewProp(n, (xmlChar *)"high-bracket", (xmlChar *)buffer);
+
+  // x/y dim selection
+  n = xmlNewChild(pn, NULL, (xmlChar *) "selected-x", NULL);
+  snprintf(buffer,sizeof(buffer),"%d",p1->x_dnum);
+  xmlNewProp(n, (xmlChar *)"pos", (xmlChar *)buffer);
+
+  return ret;
+}
+
 int sushiv_new_panel_1d(sushiv_instance_t *s,
 			int number,
 			const char *name,
@@ -1440,6 +1505,7 @@ int sushiv_new_panel_1d(sushiv_instance_t *s,
   p->private->request_compute = _mark_recompute_1d;
   p->private->crosshair_action = crosshair_callback;
   p->private->print_action = sushiv_panel1d_print;
+  p->private->save_action = _save_panel1d;
 
   p->private->undo_log = panel1d_undo_log;
   p->private->undo_restore = panel1d_undo_restore;
@@ -1482,4 +1548,3 @@ int sushiv_new_panel_1d_linked(sushiv_instance_t *s,
 
   return 0;
 }
-

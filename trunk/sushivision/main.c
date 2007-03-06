@@ -306,7 +306,7 @@ int main (int argc, char *argv[]){
   return 0;
 }
 
-int save_instance(sushiv_instance_t *s, xmlNodePtr root){
+static int save_instance(sushiv_instance_t *s, xmlNodePtr root){
   if(!s) return 0;
   char buffer[80];
   int i, ret=0;
@@ -320,13 +320,13 @@ int save_instance(sushiv_instance_t *s, xmlNodePtr root){
   
   // dimension values are independent of panel
   for(i=0;i<s->dimensions;i++)
-    ret|=save_dimension(s->dimension_list[i], instance);
+    ret|=_save_dimension(s->dimension_list[i], instance);
   
   // objectives have no independent settings
 
   // panel settings (by panel)
   for(i=0;i<s->panels;i++)
-    ret|=save_panel(s->panel_list[i], instance);
+    ret|=_save_panel(s->panel_list[i], instance);
 
   return ret;
 }

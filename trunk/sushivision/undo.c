@@ -109,11 +109,8 @@ void _sushiv_undo_restore(sushiv_instance_t *s){
   int i;
   sushiv_instance_undo_t *u = s->private->undo_stack[s->private->undo_level];
 
-  // panels
-  for(i=0;i<s->panels;i++)
-    _sushiv_panel_undo_restore(s->panel_list[i],u->panels+i);
-
   // dims 
+  // need to happen first as setting dims can have side effect (like activating crosshairs)
   for(i=0;i<s->dimensions;i++){
     sushiv_dimension_t *d = s->dimension_list[i];
     if(d){
@@ -122,6 +119,14 @@ void _sushiv_undo_restore(sushiv_instance_t *s){
       sushiv_dimension_set_value(s, d->number, 2, u->dim_vals[2][i]);
     }
   }
+
+  // panels
+  for(i=0;i<s->panels;i++){
+    sushiv_panel_t *p = s->panel_list[i];
+    if(p)
+      _sushiv_panel_undo_restore(s->panel_list[i],u->panels+i);
+  }
+
 }
 
 void _sushiv_undo_push(sushiv_instance_t *s){
@@ -164,3 +169,6 @@ void _sushiv_undo_down(sushiv_instance_t *s){
   _sushiv_undo_resume(s);
   update_all_menus(s);
 }
+
+
+// load piggybacks off the undo infrastructure
