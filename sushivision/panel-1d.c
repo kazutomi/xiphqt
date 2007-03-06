@@ -1119,12 +1119,6 @@ static void panel1d_undo_log(sushiv_panel_undo_t *u, sushiv_panel_t *p){
     u->scale_vals[1] =  calloc(1,sizeof(**u->scale_vals));
   if(!u->scale_vals[2])
     u->scale_vals[2] =  calloc(p->objectives,sizeof(**u->scale_vals));
-  if(!u->dim_vals[0])
-    u->dim_vals[0] =  calloc(p->dimensions+1,sizeof(**u->dim_vals)); // +1 for possible linked dim
-  if(!u->dim_vals[1])
-    u->dim_vals[1] =  calloc(p->dimensions+1,sizeof(**u->dim_vals)); // +1 for possible linked dim
-  if(!u->dim_vals[2])
-    u->dim_vals[2] =  calloc(p->dimensions+1,sizeof(**u->dim_vals)); // +1 for possible linked dim
 
   // populate undo
   u->scale_vals[0][0] = slider_get_value(p1->range_slider,0);
@@ -1137,16 +1131,6 @@ static void panel1d_undo_log(sushiv_panel_undo_t *u, sushiv_panel_t *p){
       (p1->pointtype[i]<<8);
     u->scale_vals[2][0] = slider_get_value(p1->alpha_scale[i],0);
   }
-
-  for(i=0;i<p->dimensions;i++){
-    u->dim_vals[0][i] = p->dimension_list[i].d->bracket[0];
-    u->dim_vals[1][i] = p->dimension_list[i].d->val;
-    u->dim_vals[2][i] = p->dimension_list[i].d->bracket[1];
-  }
-
-  u->dim_vals[0][i] = p1->x_d->bracket[0];
-  u->dim_vals[1][i] = p1->x_d->val;
-  u->dim_vals[2][i] = p1->x_d->bracket[1];
 
   u->x_d = p1->x_dnum;
   u->box[0] = p1->oldbox[0];
@@ -1174,12 +1158,6 @@ static void panel1d_undo_restore(sushiv_panel_undo_t *u, sushiv_panel_t *p){
     slider_set_value(p1->alpha_scale[i],0,u->scale_vals[2][i]);
   }
 
-  for(i=0;i<p->dimensions;i++){
-    _sushiv_dimension_set_value(p->private->dim_scales[i],0,u->dim_vals[0][i]);
-    _sushiv_dimension_set_value(p->private->dim_scales[i],1,u->dim_vals[1][i]);
-    _sushiv_dimension_set_value(p->private->dim_scales[i],2,u->dim_vals[2][i]);
-  }
-
   if(p1->dim_xb && u->x_d<p->dimensions && p1->dim_xb[u->x_d])
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(p1->dim_xb[u->x_d]),TRUE);
 
@@ -1194,6 +1172,8 @@ static void panel1d_undo_restore(sushiv_panel_undo_t *u, sushiv_panel_t *p){
   }
 
   if(u->box_active){
+    p1->oldbox[0] = u->box[0];
+    p1->oldbox[1] = u->box[1];
     plot_box_set(plot,u->box);
     p->private->oldbox_active = 1;
   }else{

@@ -34,27 +34,24 @@ EX_OBJ    = example_fractal.o example_discrete.o example_chirp.o
 OBJ       = main.o scale.o plot.o slider.o slice.o spinner.c panel.o panel-1d.o panel-2d.o \
 	mapping.o dimension.o function.o objective.o undo.o gtksucks.o
 LIBS      = -lpthread -ldl
-CAIROVER  =  >= 1.3.14
+CAIROVER  =  >= 1.3.16
 GTKVER    =  >= 2.10.0
-GCF       = -std=gnu99 `pkg-config --cflags "gtk+-2.0 $(GTKVER) cairo $(CAIROVER) cairo-ft $(CAIROVER) gthread-2.0"`
-LDF       = -pthread -L/lib -ldl -rdynamic \
-	`pkg-config --libs "gtk+-2.0 $(GTKVER) cairo $(CAIROVER) cairo-ft $(CAIROVER) gthread-2.0"`
+PKGARG	  = "gtk+-2.0 $(GTKVER) cairo $(CAIROVER) cairo-ft $(CAIROVER) gthread-2.0 libxml-2.0"
+GCF       = -std=gnu99 `pkg-config --cflags $(PKGARG)`
+LDF       = -pthread -L/lib -ldl -rdynamic `pkg-config --libs $(PKGARG)`
 
 all:    
-	pkg-config --cflags "gtk+-2.0 $(GTKVER) cairo $(CAIROVER) gthread-2.0 cairo-ft" \
-		1>/dev/null
+	pkg-config --cflags $(PKGARG) 1>/dev/null
 	$(MAKE) target CFLAGS='-O2 -g $(SOCFLAGS) $(GCF) $(ADD_DEF)'
 	$(MAKE) examples CFLAGS='-O2 -g $(GCF) $(ADD_DEF)'
 
 debug:
-	pkg-config --cflags "gtk+-2.0 $(GTKVER) cairo $(CAIROVER) gthread-2.0 cairo-ft" \
-		1>/dev/null
+	pkg-config --cflags $(PKGARG) 1>/dev/null
 	$(MAKE) target CFLAGS='-g -Wall -W -Wno-unused-parameter -D__NO_MATH_INLINES $(SOCFLAGS) $(GCF) $(ADD_DEF)'
 	$(MAKE) examples CFLAGS='-g -Wall -W -Wno-unused-parameter -D__NO_MATH_INLINES $(GCF) $(ADD_DEF)'
 
 profile:
-	pkg-config --cflags "gtk+-2.0 $(GTKVER) cairo $(CAIROVER) gthread-2.0 freetype2" \
-		1>/dev/null
+	pkg-config --cflags $(PKGARG) 1>/dev/null
 	$(MAKE) examples CFLAGS='-pg -g -O2 $(GCF) $(ADD_DEF)' 
 
 clean:

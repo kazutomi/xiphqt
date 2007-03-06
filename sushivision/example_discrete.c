@@ -39,7 +39,7 @@ static void discrete_objective(double *d, double *ret){
 
 int sushiv_submain(int argc, char *argv[]){
 
-  s=sushiv_new_instance();
+  s=sushiv_new_instance(0,NULL);
 
   sushiv_new_dimension_discrete(s,0,"A",
 				5,(double []){-500,-10,0,10,500},

@@ -183,20 +183,44 @@ static void sushiv_realize_all(void){
 
 /* externally visible interface */
 
-sushiv_instance_t *sushiv_new_instance(void) {
-  sushiv_instance_t *ret=calloc(1,sizeof(*ret));
-  ret->private = calloc(1,sizeof(*ret->private));
+sushiv_instance_t *sushiv_new_instance(int number, char *name) {
+  sushiv_instance_t *ret;
 
-  if(instances){
-    instance_list = realloc(instance_list,(instances+1)*sizeof(*instance_list));
-  }else{
-    instance_list = malloc((instances+1)*sizeof(*instance_list));
+  if(number<0){
+    fprintf(stderr,"Instance number must be >= 0\n");
+    errno = -EINVAL;
+    return NULL;
   }
-  instance_list[instances] = ret;
-  instances++;
   
+  if(number<instances){
+    if(instance_list[number]!=NULL){
+      fprintf(stderr,"Instance number %d already exists\n",number);
+      errno = -EINVAL;
+      return NULL;
+    }
+  }else{
+    if(instances == 0){
+      instance_list = calloc (number+1,sizeof(*instance_list));
+    }else{
+      instance_list = realloc (instance_list,(number+1) * sizeof(*instance_list));
+      memset(instance_list + instances, 0, sizeof(*instance_list)*(number+1 - instances));
+    }
+    instances = number+1; 
+  }
+
+  ret = instance_list[number] = calloc(1, sizeof(**instance_list));
+  ret->private = calloc(1,sizeof(*ret->private));
+  if(name)
+    ret->name = strdup(name);
+
   return ret;
 }
+
+char *appname = NULL;
+char *filename = NULL;
+char *filebase = NULL;
+char *dirname = NULL;
+char *cwdname = NULL;
 
 int main (int argc, char *argv[]){
   int ret;
@@ -217,6 +241,48 @@ int main (int argc, char *argv[]){
   sushiv_realize_all();
   gtk_button3_fixup();
   
+  appname = g_get_prgname ();
+  cwdname = getcwd(NULL,0);
+  dirname = strdup(cwdname);
+  if(argc>1){
+    // file to load specified on commandline
+    filebase = strdup(argv[argc-1]);
+    char *base = strrchr(filebase,'/');
+    
+    // filebase may include a path; pull it off and apply it toward dirname
+    if(base){
+      base[0] = '\0';
+      char *dirbit = strdup(filebase);
+      filebase = base+1;
+      if(g_path_is_absolute(dirbit)){
+	// replace dirname
+	free(dirname);
+	dirname = dirbit;
+      }else{
+	// append to dirname
+	char *buf;
+	asprintf(&buf,"%s/%s",dirname,dirbit);
+	free(dirname);
+	dirname = buf;
+      }
+    }
+    
+    // load the state file
+
+  }else{
+    if(appname){
+      char *base = strrchr(appname,'/');
+      if(!base) 
+	base = appname;
+      else
+	base++;
+
+      asprintf(&filebase, "%s.sushi",base);
+    }else
+      filebase = strdup("default.sushi");
+  }
+  asprintf(&filename,"%s/%s",dirname,filebase);
+
   {
     pthread_t dummy;
     int threads = num_threads;
@@ -226,6 +292,7 @@ int main (int argc, char *argv[]){
 
   signal(SIGINT,_sushiv_clean_exit);
   //signal(SIGSEGV,_sushiv_clean_exit);
+
 
   gtk_main ();
   gdk_threads_leave();
@@ -239,3 +306,50 @@ int main (int argc, char *argv[]){
   return 0;
 }
 
+int save_instance(sushiv_instance_t *s, xmlNodePtr root){
+  if(!s) return 0;
+  char buffer[80];
+  int i, ret=0;
+
+  xmlNodePtr instance = xmlNewChild(root, NULL, (xmlChar *) "instance", NULL);
+
+  snprintf(buffer,sizeof(buffer),"%d",s->number);
+  xmlNewProp(instance, (xmlChar *)"number", (xmlChar *)buffer);
+  if(s->name)
+    xmlNewProp(instance, (xmlChar *)"name", (xmlChar *)s->name);
+  
+  // dimension values are independent of panel
+  for(i=0;i<s->dimensions;i++)
+    ret|=save_dimension(s->dimension_list[i], instance);
+  
+  // objectives have no independent settings
+
+  // panel settings (by panel)
+  for(i=0;i<s->panels;i++)
+    ret|=save_panel(s->panel_list[i], instance);
+
+  return ret;
+}
+
+int save_main(){
+  xmlDocPtr doc = NULL;
+  xmlNodePtr root_node = NULL;
+  int i, ret=0;
+
+  LIBXML_TEST_VERSION;
+
+  doc = xmlNewDoc((xmlChar *)"1.0");
+  root_node = xmlNewNode(NULL, (xmlChar *)appname);
+  xmlDocSetRootElement(doc, root_node);
+
+  // save each instance 
+  for(i=0;i<instances;i++)
+   ret |= save_instance(instance_list[i],root_node);
+
+  xmlSaveFormatFileEnc(filename, doc, "UTF-8", 1);
+
+  xmlFreeDoc(doc);
+  xmlCleanupParser();
+
+  return ret;
+}

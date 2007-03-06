@@ -50,49 +50,77 @@ void _sushiv_undo_resume(sushiv_instance_t *s){
 }
 
 void _sushiv_undo_log(sushiv_instance_t *s){
-  sushiv_panel_undo_t *u;
+  sushiv_instance_undo_t *u;
   int i,j;
 
   if(!s->private->undo_stack)
-    s->private->undo_stack = calloc(2,s->panels*sizeof(*s->private->undo_stack));
+    s->private->undo_stack = calloc(2,sizeof(*s->private->undo_stack));
 
   // log into a fresh entry; pop this level and all above it 
   if(s->private->undo_stack[s->private->undo_level]){
     i=s->private->undo_level;
     while(s->private->undo_stack[i]){
-      for(j=0;j<s->panels;j++){
-	u = s->private->undo_stack[i]+j;
-	if(u->mappings) free(u->mappings);
-	if(u->scale_vals[0]) free(u->scale_vals[0]);
-	if(u->scale_vals[1]) free(u->scale_vals[1]);
-	if(u->scale_vals[2]) free(u->scale_vals[2]);
-	if(u->dim_vals[0]) free(u->dim_vals[0]);
-	if(u->dim_vals[1]) free(u->dim_vals[1]);
-	if(u->dim_vals[2]) free(u->dim_vals[2]);
+      u = s->private->undo_stack[i];
+
+      if(u->dim_vals[0]) free(u->dim_vals[0]);
+      if(u->dim_vals[1]) free(u->dim_vals[1]);
+      if(u->dim_vals[2]) free(u->dim_vals[2]);
+      
+      if(u->panels){
+	for(j=0;j<s->panels;j++){
+	  sushiv_panel_undo_t *pu = u->panels+j;
+	  if(pu->mappings) free(pu->mappings);
+	  if(pu->scale_vals[0]) free(pu->scale_vals[0]);
+	  if(pu->scale_vals[1]) free(pu->scale_vals[1]);
+	  if(pu->scale_vals[2]) free(pu->scale_vals[2]);
+	}
+	free(u->panels);
       }
       free(s->private->undo_stack[i]);
       s->private->undo_stack[i]= NULL;
       i++;
     }
   }
-
-  // alloc new undos
-  u = s->private->undo_stack[s->private->undo_level]= calloc(s->panels,sizeof(*u));
   
-  // pass off actual population to panels
+  // alloc new undos
+  u = s->private->undo_stack[s->private->undo_level] = calloc(1,sizeof(*u));
+  u->panels = calloc(s->panels,sizeof(*u->panels));
+  u->dim_vals[0] = calloc(s->dimensions,sizeof(**u->dim_vals));
+  u->dim_vals[1] = calloc(s->dimensions,sizeof(**u->dim_vals));
+  u->dim_vals[2] = calloc(s->dimensions,sizeof(**u->dim_vals));
+
+  // save dim values
+  for(i=0;i<s->dimensions;i++){
+    sushiv_dimension_t *d = s->dimension_list[i];
+    if(d){
+      u->dim_vals[0][i] = d->bracket[0];
+      u->dim_vals[1][i] = d->val;
+      u->dim_vals[2][i] = d->bracket[1];
+    }
+  }
+
+  // pass off panel population to panels
   for(j=0;j<s->panels;j++)
     if(s->panel_list[j])
-      _sushiv_panel_undo_log(s->panel_list[j], u+j);
+      _sushiv_panel_undo_log(s->panel_list[j], u->panels+j);
 }
 
 void _sushiv_undo_restore(sushiv_instance_t *s){
   int i;
-  
-  for(i=0;i<s->panels;i++){
-    sushiv_panel_undo_t *u = &s->private->undo_stack[s->private->undo_level][i];
-    
-    _sushiv_panel_undo_restore(s->panel_list[i],u);
-    plot_expose_request(PLOT(s->panel_list[i]->private->graph));
+  sushiv_instance_undo_t *u = s->private->undo_stack[s->private->undo_level];
+
+  // panels
+  for(i=0;i<s->panels;i++)
+    _sushiv_panel_undo_restore(s->panel_list[i],u->panels+i);
+
+  // dims 
+  for(i=0;i<s->dimensions;i++){
+    sushiv_dimension_t *d = s->dimension_list[i];
+    if(d){
+      sushiv_dimension_set_value(s, d->number, 0, u->dim_vals[0][i]);
+      sushiv_dimension_set_value(s, d->number, 1, u->dim_vals[1][i]);
+      sushiv_dimension_set_value(s, d->number, 2, u->dim_vals[2][i]);
+    }
   }
 }
 
