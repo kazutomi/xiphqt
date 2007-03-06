@@ -418,9 +418,64 @@ static void wrap_undo_up(sushiv_panel_t *p){
   _sushiv_undo_up(p->sushi);
 }
 
+static void do_save(sushiv_panel_t *p){
+  GtkWidget *dialog = gtk_file_chooser_dialog_new ("Save",
+						   NULL,
+						   GTK_FILE_CHOOSER_ACTION_SAVE,
+						   GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+						   GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
+						   NULL);
+
+  gtk_file_chooser_set_do_overwrite_confirmation (GTK_FILE_CHOOSER (dialog), TRUE);
+  gtk_file_chooser_add_shortcut_folder (GTK_FILE_CHOOSER (dialog), cwdname, NULL);
+  gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER (dialog), dirname);
+  gtk_file_chooser_set_current_name (GTK_FILE_CHOOSER (dialog), filebase);
+
+  if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT){
+    if(filebase)free(filebase);
+    if(filename)free(filename);
+    if(dirname)free(dirname);
+
+    filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
+    dirname = gtk_file_chooser_get_current_folder (GTK_FILE_CHOOSER (dialog));
+    filebase = g_path_get_basename(filename);
+    save_main();
+  }
+
+  gtk_widget_destroy (dialog);
+
+}
+
+static void do_load(sushiv_panel_t *p){
+  GtkWidget *dialog = gtk_file_chooser_dialog_new ("Open",
+						   NULL,
+						   GTK_FILE_CHOOSER_ACTION_OPEN,
+						   GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+						   GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+						   NULL);
+
+  gtk_file_chooser_add_shortcut_folder (GTK_FILE_CHOOSER (dialog), cwdname, NULL);
+  gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER (dialog), dirname);
+
+  if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT){
+    if(filebase)free(filebase);
+    if(filename)free(filename);
+    if(dirname)free(dirname);
+
+    filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
+    dirname = gtk_file_chooser_get_current_folder (GTK_FILE_CHOOSER (dialog));
+    filebase = g_path_get_basename(filename);
+
+    //_sushiv_panel_load();
+  }
+
+  gtk_widget_destroy (dialog);
+
+}
+
 static menuitem *menu[]={
-  &(menuitem){"Open","[<i>o</i>]",NULL,NULL},
-  &(menuitem){"Save","[<i>s</i>]",NULL,NULL},
+  &(menuitem){"Open","[<i>o</i>]",NULL,&do_load},
+  &(menuitem){"Save","[<i>s</i>]",NULL,&do_save},
   &(menuitem){"Print/Export","[<i>p</i>]",NULL,&_sushiv_panel_print},
 
   &(menuitem){"",NULL,NULL,NULL},
@@ -928,4 +983,40 @@ void _sushiv_panel_undo_restore(sushiv_panel_t *p, sushiv_panel_undo_t *u){
   // panel-subtype-specific restore
   p->private->undo_restore(u,p);
   _sushiv_panel_dirty_legend(p); 
+}
+
+int save_panel(sushiv_panel_t *p, xmlNodePtr instance){  
+  if(!p) return 0;
+  char buffer[80];
+  int ret=0;
+
+  xmlNodePtr pn = xmlNewChild(instance, NULL, (xmlChar *) "panel", NULL);
+
+  snprintf(buffer,sizeof(buffer),"%d",p->number);
+  xmlNewProp(pn, (xmlChar *)"number", (xmlChar *)buffer);
+  if(p->name)
+    xmlNewProp(pn, (xmlChar *)"name", (xmlChar *)p->name);
+
+  // let the panel subtype handler fill in type
+  // we're only saving settings independent of subtype
+
+  // background
+  switch(p->private->bg_type){
+  case 0:
+    xmlNewChild(pn, NULL, (xmlChar *) "background", (xmlChar *) "white");
+    break;
+  case 1:
+    xmlNewChild(pn, NULL, (xmlChar *) "background", (xmlChar *) "black");
+    break;
+  case 2:
+    xmlNewChild(pn, NULL, (xmlChar *) "background", (xmlChar *) "checked");
+    break;
+  }
+
+  // box
+  xmlNodePtr boxn = xmlNewChild(pn, NULL, (xmlChar *) "box", NULL);
+  snprintf(buffer,sizeof(buffer),"%d",p->private->oldbox_active);
+  xmlNewProp(boxn, (xmlChar *)"active", (xmlChar *)buffer);
+
+  return ret;
 }

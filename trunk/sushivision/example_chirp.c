@@ -49,7 +49,7 @@ static void chirp(double *d, double *ret){
 
 int sushiv_submain(int argc, char *argv[]){
 
-  s=sushiv_new_instance();
+  s=sushiv_new_instance(0,"chirp");
 
   sushiv_new_dimension(s,0,"initial Hz",
 		       4,(double []){1,10,100,1000},

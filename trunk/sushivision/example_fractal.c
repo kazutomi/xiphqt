@@ -52,7 +52,7 @@ static void fractal_objective(double *d, double *ret){
 
 int sushiv_submain(int argc, char *argv[]){
 
-  s=sushiv_new_instance();
+  s=sushiv_new_instance(0,"fractal");
 
   sushiv_new_dimension(s,0,"Re(c)",
 		       5,(double []){-2.25,-0.75,0,0.25,0.75},

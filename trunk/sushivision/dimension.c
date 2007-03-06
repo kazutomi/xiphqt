@@ -759,3 +759,44 @@ int sushiv_new_dimension_picklist(sushiv_instance_t *s,
   return 0;
 
 }
+
+int save_dimension(sushiv_dimension_t *d, xmlNodePtr instance){  
+  if(!d) return 0;
+  char buffer[80];
+  int ret=0;
+
+  xmlNodePtr dn = xmlNewChild(instance, NULL, (xmlChar *) "dimension", NULL);
+
+  snprintf(buffer,sizeof(buffer),"%d",d->number);
+  xmlNewProp(dn, (xmlChar *)"number", (xmlChar *)buffer);
+  if(d->name)
+    xmlNewProp(dn, (xmlChar *)"name", (xmlChar *)d->name);
+
+  switch(d->type){
+  case SUSHIV_DIM_CONTINUOUS:
+    xmlNewProp(dn, (xmlChar *)"type", (xmlChar *)"continuous");
+    break;
+  case SUSHIV_DIM_DISCRETE:
+    xmlNewProp(dn, (xmlChar *)"type", (xmlChar *)"discrete");
+    break;
+  case SUSHIV_DIM_PICKLIST:
+    xmlNewProp(dn, (xmlChar *)"type", (xmlChar *)"picklist");
+    break;
+  }
+
+  switch(d->type){
+  case SUSHIV_DIM_CONTINUOUS:
+  case SUSHIV_DIM_DISCRETE:
+    snprintf(buffer,sizeof(buffer),"%.20g",d->bracket[0]);
+    xmlNewChild(dn, NULL, (xmlChar *) "low-bracket", (xmlChar *)buffer);
+    snprintf(buffer,sizeof(buffer),"%.20g",d->bracket[1]);
+    xmlNewChild(dn, NULL, (xmlChar *) "high-bracket", (xmlChar *)buffer);
+    
+  case SUSHIV_DIM_PICKLIST:
+    snprintf(buffer,sizeof(buffer),"%.20g",d->val);
+    xmlNewChild(dn, NULL, (xmlChar *) "value", (xmlChar *)buffer);
+    break;
+  }
+
+  return ret;
+}

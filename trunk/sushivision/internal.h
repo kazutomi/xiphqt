@@ -22,6 +22,8 @@
 #include <time.h>
 #include <signal.h>
 #include <gtk/gtk.h>
+#include <libxml/parser.h>
+#include <libxml/tree.h>
 #include "sushivision.h"
 #include "mapping.h"
 #include "slice.h"
@@ -122,10 +124,15 @@ struct sushiv_panel_internal {
   void (*undo_restore)(sushiv_panel_undo_t *u, sushiv_panel_t *p);
 };
 
+typedef struct sushiv_instance_undo {
+  sushiv_panel_undo_t *panels;
+  double *dim_vals[3];
+} sushiv_instance_undo_t;
+
 struct sushiv_instance_internal {
   int undo_level;
   int undo_suspend;
-  sushiv_panel_undo_t **undo_stack;
+  sushiv_instance_undo_t **undo_stack;
 };
 
 extern void _sushiv_realize_panel(sushiv_panel_t *p);
@@ -164,4 +171,11 @@ extern void _sushiv_panel1d_mark_recompute_linked(sushiv_panel_t *p);
 extern void _sushiv_panel1d_update_linked_crosshairs(sushiv_panel_t *p, int xflag, int yflag); 
 extern void _sushiv_panel_update_menus(sushiv_panel_t *p);
 
+extern int save_main();
+extern int save_panel(sushiv_panel_t *p, xmlNodePtr instance);
+
 extern sig_atomic_t _sushiv_exiting;
+extern char *filebase;
+extern char *filename;
+extern char *dirname;
+extern char *cwdname;

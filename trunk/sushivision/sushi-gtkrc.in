@@ -93,8 +93,8 @@ style "entry-poppy" {
 
 style "panel" {
 	bg[NORMAL]="#a0a0a0" 
-	bg[ACTIVE]="#c0f0ff" 
-	bg[PRELIGHT]="#c0f0ff" 
+	bg[ACTIVE]="#80a0ff" 
+	bg[PRELIGHT]="#c0f0ff"  
 
 	text[INSENSITIVE]="#606060"
 	text[NORMAL]="#000000"
@@ -104,11 +104,18 @@ style "panel" {
 	font_name = "sans 9"
 }
 
+style "scale-poppy" {
+	bg[NORMAL]="#80a0ff" 
+	bg[ACTIVE]="#c0c0c0" 
+	bg[PRELIGHT]="#c0f0ff"  
+}
+
 style "panel-text" {
 	font_name = "sans"	
 }
 
 widget "*" style "panel"
+widget "*.GtkScrolledWindow*" style "scale-poppy"
 widget "*.GtkLabel" style "panel-text"
 widget "*.GtkMenu*" style "button-poppy"
 widget "*.GtkComboBox*" style "button-poppy"

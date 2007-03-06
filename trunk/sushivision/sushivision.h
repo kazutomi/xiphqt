@@ -31,6 +31,9 @@ typedef struct sushiv_function sushiv_function_t;
 typedef struct sushiv_instance_internal sushiv_instance_internal_t;
 
 typedef struct sushiv_instance {
+  int number;
+  char *name;
+
   int functions;
   sushiv_function_t **function_list;
 
@@ -160,7 +163,7 @@ struct sushiv_panel {
   sushiv_panel_internal_t *private;
 };
 
-extern sushiv_instance_t *sushiv_new_instance(void);
+extern sushiv_instance_t *sushiv_new_instance(int number, char *name);
 
 extern void scale_free(sushiv_scale_t *s);
 extern sushiv_scale_t *scale_new(unsigned scalevals, 

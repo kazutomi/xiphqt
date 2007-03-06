@@ -1615,12 +1615,6 @@ static void panel2d_undo_log(sushiv_panel_undo_t *u, sushiv_panel_t *p){
     u->scale_vals[1] =  calloc(p->objectives,sizeof(**u->scale_vals));
   if(!u->scale_vals[2])
     u->scale_vals[2] =  calloc(p->objectives,sizeof(**u->scale_vals));
-  if(!u->dim_vals[0])
-    u->dim_vals[0] =  calloc(p->dimensions,sizeof(**u->dim_vals));
-  if(!u->dim_vals[1])
-    u->dim_vals[1] =  calloc(p->dimensions,sizeof(**u->dim_vals));
-  if(!u->dim_vals[2])
-    u->dim_vals[2] =  calloc(p->dimensions,sizeof(**u->dim_vals));
 
   // populate undo
   for(i=0;i<p->objectives;i++){
@@ -1628,12 +1622,6 @@ static void panel2d_undo_log(sushiv_panel_undo_t *u, sushiv_panel_t *p){
     u->scale_vals[0][i] = slider_get_value(p2->range_scales[i],0);
     u->scale_vals[1][i] = slider_get_value(p2->range_scales[i],1);
     u->scale_vals[2][i] = slider_get_value(p2->range_scales[i],2);
-  }
-
-  for(i=0;i<p->dimensions;i++){
-    u->dim_vals[0][i] = p->dimension_list[i].d->bracket[0];
-    u->dim_vals[1][i] = p->dimension_list[i].d->val;
-    u->dim_vals[2][i] = p->dimension_list[i].d->bracket[1];
   }
   
   u->x_d = p2->x_dnum;
@@ -1658,18 +1646,16 @@ static void panel2d_undo_restore(sushiv_panel_undo_t *u, sushiv_panel_t *p){
     slider_set_value(p2->range_scales[i],2,u->scale_vals[2][i]);
   }
 
-  for(i=0;i<p->dimensions;i++){
-    _sushiv_dimension_set_value(p->private->dim_scales[i],0,u->dim_vals[0][i]);
-    _sushiv_dimension_set_value(p->private->dim_scales[i],1,u->dim_vals[1][i]);
-    _sushiv_dimension_set_value(p->private->dim_scales[i],2,u->dim_vals[2][i]);
-  }
-
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(p2->dim_xb[u->x_d]),TRUE);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(p2->dim_yb[u->y_d]),TRUE);
 
   update_xy_availability(p);
 
   if(u->box_active){
+    p2->oldbox[0] = u->box[0];
+    p2->oldbox[1] = u->box[1];
+    p2->oldbox[2] = u->box[2];
+    p2->oldbox[3] = u->box[3];
     plot_box_set(plot,u->box);
     p->private->oldbox_active = 1;
   }else{
