@@ -685,6 +685,13 @@ static gboolean panel_keypress(GtkWidget *widget,
   case GDK_M:
     cycleB_res(p);
     return TRUE;
+
+  case GDK_s:
+    do_save(p);
+    return TRUE;
+  case GDK_o:
+    do_load(p);
+    return TRUE;
     
    case GDK_Escape:
      wrap_escape(p);
@@ -982,15 +989,17 @@ void _sushiv_panel_undo_restore(sushiv_panel_t *p, sushiv_panel_undo_t *u){
 
   // panel-subtype-specific restore
   p->private->undo_restore(u,p);
+
   _sushiv_panel_dirty_legend(p); 
 }
 
-int save_panel(sushiv_panel_t *p, xmlNodePtr instance){  
+int _save_panel(sushiv_panel_t *p, xmlNodePtr instance){  
   if(!p) return 0;
   char buffer[80];
   int ret=0;
 
   xmlNodePtr pn = xmlNewChild(instance, NULL, (xmlChar *) "panel", NULL);
+  xmlNodePtr n;
 
   snprintf(buffer,sizeof(buffer),"%d",p->number);
   xmlNewProp(pn, (xmlChar *)"number", (xmlChar *)buffer);
@@ -1001,22 +1010,81 @@ int save_panel(sushiv_panel_t *p, xmlNodePtr instance){
   // we're only saving settings independent of subtype
 
   // background
+  n = xmlNewChild(pn, NULL, (xmlChar *) "background", NULL);
   switch(p->private->bg_type){
   case 0:
-    xmlNewChild(pn, NULL, (xmlChar *) "background", (xmlChar *) "white");
+    xmlNewProp(n, (xmlChar *)"color", (xmlChar *)"white");
     break;
   case 1:
-    xmlNewChild(pn, NULL, (xmlChar *) "background", (xmlChar *) "black");
+    xmlNewProp(n, (xmlChar *)"color", (xmlChar *)"black");
     break;
   case 2:
-    xmlNewChild(pn, NULL, (xmlChar *) "background", (xmlChar *) "checked");
+    xmlNewProp(n, (xmlChar *)"color", (xmlChar *)"checked");
     break;
   }
 
-  // box
-  xmlNodePtr boxn = xmlNewChild(pn, NULL, (xmlChar *) "box", NULL);
-  snprintf(buffer,sizeof(buffer),"%d",p->private->oldbox_active);
-  xmlNewProp(boxn, (xmlChar *)"active", (xmlChar *)buffer);
+  // grid
+  n = xmlNewChild(pn, NULL, (xmlChar *) "grid", NULL);
+  switch(PLOT(p->private->graph)->grid_mode){
+  case PLOT_GRID_LIGHT:
+    xmlNewProp(n, (xmlChar *)"mode", (xmlChar *)"normal");
+    xmlNewProp(n, (xmlChar *)"color", (xmlChar *)"light");
+    break;
+  case PLOT_GRID_NORMAL:
+    xmlNewProp(n, (xmlChar *)"mode", (xmlChar *)"normal");
+    xmlNewProp(n, (xmlChar *)"color", (xmlChar *)"mid");
+    break;
+  case PLOT_GRID_DARK:
+    xmlNewProp(n, (xmlChar *)"mode", (xmlChar *)"normal");
+    xmlNewProp(n, (xmlChar *)"color", (xmlChar *)"dark");
+    break;
+  case PLOT_GRID_TICS:
+    xmlNewProp(n, (xmlChar *)"mode", (xmlChar *)"tics");
+    break;
+  default:
+    xmlNewProp(n, (xmlChar *)"mode", (xmlChar *)"none");
+    break;
+  }
+
+  // crosshairs
+  xmlNodePtr boxn = xmlNewChild(pn, NULL, (xmlChar *) "crosshairs", NULL);
+  xmlNewProp(boxn, (xmlChar *)"active", 
+	     (xmlChar *) (PLOT(p->private->graph)->cross_active ? "yes" : "no"));
+    
+  // legend
+  n = xmlNewChild(pn, NULL, (xmlChar *) "legend", NULL);
+  switch(PLOT(p->private->graph)->legend_active){
+  case 0: //inactive
+    xmlNewProp(n, (xmlChar *)"mode", (xmlChar *)"none");
+    break;
+  case 1: //shadowed
+    xmlNewProp(n, (xmlChar *)"mode", (xmlChar *)"shadowed");
+    break;
+  case 2: //boxed
+    xmlNewProp(n, (xmlChar *)"mode", (xmlChar *)"boxed");
+    break;
+  }
+
+  // text
+  n = xmlNewChild(pn, NULL, (xmlChar *) "text", NULL);
+  switch(PLOT(p->private->graph)->bg_inv){
+  case 0:
+    xmlNewProp(n, (xmlChar *)"color", (xmlChar *)"white");
+    break;
+  default:
+    xmlNewProp(n, (xmlChar *)"color", (xmlChar *)"black");
+    break;
+  }
+
+  // resample
+  n = xmlNewChild(pn, NULL, (xmlChar *) "sampling", NULL);
+  snprintf(buffer,sizeof(buffer),"%d:%d",
+	   p->private->oversample_n, p->private->oversample_d);
+  xmlNewProp(n, (xmlChar *)"ratio", (xmlChar *)buffer);
+
+  // subtype 
+  if(p->private->save_action)
+    ret |= p->private->save_action(p, pn);
 
   return ret;
 }

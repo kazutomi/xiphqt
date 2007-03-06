@@ -422,15 +422,15 @@ static ucolor (*mixsolid[])(ucolor, ucolor)={
 };
 
 static char *solidnames[]={
-  "<span foreground=\"black\">black</span>",
-  "<span foreground=\"red\">red</span>",
-  "<span foreground=\"green\">green</span>",
-  "<span foreground=\"blue\">blue</span>",
-  "<span foreground=\"yellow\">yellow</span>",
-  "<span foreground=\"cyan\">cyan</span>",
-  "<span foreground=\"purple\">purple</span>",
-  "<span foreground=\"gray\">gray</span>",
-  "<span foreground=\"white\">white</span>",
+  "black",
+  "red",
+  "green",
+  "blue",
+  "yellow",
+  "cyan",
+  "purple",
+  "gray",
+  "white",
   "inactive",
   0
 };
@@ -454,6 +454,7 @@ void solid_setup(mapping *m, float lo, float hi, int funcnum){
 }
 
 void solid_set_func(mapping *m, int funcnum){
+  m->mapnum = funcnum;
   m->mapfunc = mapsolid[funcnum];
   m->mixfunc = mixsolid[funcnum];
 }

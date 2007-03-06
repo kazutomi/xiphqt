@@ -819,10 +819,11 @@ static gboolean mouse_release (GtkWidget        *widget,
     p->selx = scalespace_value(&p->x,event->x);
     p->sely = scalespace_value(&p->y,event->y);
     plot_snap_crosshairs(p);
-    p->cross_active=1;
 
     if(p->crosshairs_callback)
       p->crosshairs_callback(p->cross_data);
+
+    p->cross_active=1;
     plot_expose_request(p);
   }
 

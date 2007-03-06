@@ -760,7 +760,7 @@ int sushiv_new_dimension_picklist(sushiv_instance_t *s,
 
 }
 
-int save_dimension(sushiv_dimension_t *d, xmlNodePtr instance){  
+int _save_dimension(sushiv_dimension_t *d, xmlNodePtr instance){  
   if(!d) return 0;
   char buffer[80];
   int ret=0;
@@ -788,15 +788,16 @@ int save_dimension(sushiv_dimension_t *d, xmlNodePtr instance){
   case SUSHIV_DIM_CONTINUOUS:
   case SUSHIV_DIM_DISCRETE:
     snprintf(buffer,sizeof(buffer),"%.20g",d->bracket[0]);
-    xmlNewChild(dn, NULL, (xmlChar *) "low-bracket", (xmlChar *)buffer);
+    xmlNewProp(dn, (xmlChar *) "low-bracket", (xmlChar *)buffer);
     snprintf(buffer,sizeof(buffer),"%.20g",d->bracket[1]);
-    xmlNewChild(dn, NULL, (xmlChar *) "high-bracket", (xmlChar *)buffer);
+    xmlNewProp(dn, (xmlChar *) "high-bracket", (xmlChar *)buffer);
     
   case SUSHIV_DIM_PICKLIST:
     snprintf(buffer,sizeof(buffer),"%.20g",d->val);
-    xmlNewChild(dn, NULL, (xmlChar *) "value", (xmlChar *)buffer);
+    xmlNewProp(dn, (xmlChar *) "value", (xmlChar *)buffer);
     break;
   }
 
   return ret;
 }
+
