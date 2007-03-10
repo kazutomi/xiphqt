@@ -10,7 +10,7 @@ AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
 
 AM_CONFIG_HEADER([config.h])
-AC_CONFIG_SRCDIR([lib/dct.c])
+AC_CONFIG_SRCDIR([lib/enc/dct.c])
 AM_INIT_AUTOMAKE
 AM_MAINTAINER_MODE
 
@@ -291,7 +291,8 @@ AC_SUBST(DEBUG)
 AC_SUBST(PROFILE)
 
 AC_OUTPUT([
-  Makefile lib/Makefile
+  Makefile 
+  lib/Makefile
   include/Makefile include/theora/Makefile
   examples/Makefile
   doc/Makefile doc/Doxyfile
