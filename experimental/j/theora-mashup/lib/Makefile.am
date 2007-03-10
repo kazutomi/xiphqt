@@ -1,0 +1,113 @@
+INCLUDES = -I$(top_srcdir)/include -I./dec -I./enc
+
+lib_LTLIBRARIES = libtheora.la
+
+encoder_sources = \
+	enc/dct_encode.c \
+	enc/encode.c \
+	enc/encoder_toplevel.c \
+	enc/blockmap.c \
+	enc/comment.c \
+	enc/dct.c \
+	enc/dct_decode.c \
+	enc/decode.c \
+	enc/frarray.c \
+	enc/frinit.c \
+	enc/huffman.c \
+	enc/idct.c \
+	enc/mcomp.c \
+	enc/misc_common.c \
+	enc/pb.c \
+	enc/pp.c \
+	enc/quant.c \
+	enc/reconstruct.c \
+	enc/scan.c \
+	enc/toplevel.c \
+	enc/cpu.c \
+	enc/dsp.c
+	
+decoder_sources = \
+	dec/decinfo.c \
+	dec/decode.c \
+	dec/dequant.c \
+	dec/fragment.c \
+	dec/huffdec.c \
+	dec/idct.c \
+	dec/info.c \
+	dec/internal.c \
+	dec/quant.c \
+	dec/state.c  \
+	dec/apiwrapper.c
+
+if CPU_x86_64
+enc_arch_dir = enc/x86_64
+encoder_arch_sources= \
+	$(arch_dir)/dsp_mmx.c \
+	$(arch_dir)/dsp_mmxext.c \
+	$(arch_dir)/recon_mmx.c \
+	$(arch_dir)/fdct_mmx.c
+
+decoder_x86_sources = \
+		dec/x86/cpu.c \
+		dec/x86/mmxidct.c \
+		dec/x86/mmxfrag.c \
+		dec/x86/mmxstate.c \
+		dec/x86/x86state.c
+else
+if CPU_x86_32
+arch_dir = enc/x86_32
+encoder_arch_sources= \
+	$(arch_dir)/dsp_mmx.c \
+	$(arch_dir)/dsp_mmxext.c \
+	$(arch_dir)/recon_mmx.c \
+	$(arch_dir)/fdct_mmx.c
+
+decoder_x86_sources = \
+	dec/x86/cpu.c \
+	dec/x86/mmxidct.c \
+	dec/x86/mmxfrag.c \
+	dec/x86/mmxstate.c \
+	dec/x86/x86state.c
+endif
+endif
+
+libtheora_la_SOURCES = \
+  $(encoder_arch_sources) \
+	$(encoder_sources) \
+	$(deocder_sources) \
+	$(deocder_x86_sources)
+
+noinst_HEADERS = \
+	enc/block_inline.h \
+	enc/codec_internal.h \
+	enc/encoder_lookup.h \
+	enc/huffman.h \
+	enc/hufftables.h \
+	enc/pp.h \
+	enc/quant_lookup.h \
+	enc/toplevel.h \
+	enc/toplevel_lookup.h \
+	enc/cpu.h \
+	enc/dsp.h \
+	dec/dct.h \
+	dec/decint.h \
+	dec/dequant.h \
+	dec/encint.h \
+	dec/enquant.h \
+	dec/encvbr.h \
+	dec/fdct.h \
+	dec/huffdec.h \
+	dec/huffenc.h \
+	dec/huffman.h \
+	dec/idct.h \
+	dec/internal.h \
+	dec/ocintrin.h \
+	dec/psych.h \
+	dec/quant.h \
+	dec/x86/cpu.h \
+	dec/x86/x86int.h
+	
+
+libtheora_la_CFLAGS = $(OGG_CFLAGS)
+libtheora_la_LDFLAGS = -version-info @V_LIB_CURRENT@:@V_LIB_REVISION@:@V_LIB_AGE@ @SHLIB_VERSION_ARG@
+libtheora_la_LIBADD = $(OGG_LIBS)
