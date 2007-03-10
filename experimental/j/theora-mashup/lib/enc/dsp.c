@@ -16,7 +16,7 @@
  ********************************************************************/
 
 #include <stdlib.h>
-#include "cpu.h"
+#include "enccpu.h"
 #include "dsp.h"
 #include "codec_internal.h"
 

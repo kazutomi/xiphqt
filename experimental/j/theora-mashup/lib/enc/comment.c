@@ -20,10 +20,6 @@
 #include <ctype.h>
 #include "codec_internal.h"
 
-void theora_comment_init(theora_comment *tc){
-  memset(tc,0,sizeof(*tc));
-}
-
 void theora_comment_add(theora_comment *tc,char *comment){
   tc->user_comments=_ogg_realloc(tc->user_comments,
                             (tc->comments+2)*sizeof(*tc->user_comments));
@@ -57,53 +53,3 @@ static int tagcompare(const char *s1, const char *s2, int n){
   return 0;
 }
 
-char *theora_comment_query(theora_comment *tc, char *tag, int count){
-  long i;
-  int found = 0;
-  int taglen = strlen(tag)+1; /* +1 for the = we append */
-  char *fulltag = _ogg_malloc(taglen+ 1);
-
-  strcpy(fulltag, tag);
-  strcat(fulltag, "=");
-
-  for(i=0;i<tc->comments;i++){
-    if(!tagcompare(tc->user_comments[i], fulltag, taglen)){
-      if(count == found){
-        _ogg_free(fulltag);
-        /* We return a pointer to the data, not a copy */
-        return tc->user_comments[i] + taglen;
-      }
-      else
-        found++;
-    }
-  }
-  _ogg_free(fulltag);
-  return NULL; /* didn't find anything */
-}
-
-int theora_comment_query_count(theora_comment *tc, char *tag){
-  int i,count=0;
-  int taglen = strlen(tag)+1; /* +1 for the = we append */
-  char *fulltag = _ogg_malloc(taglen+1);
-  strcpy(fulltag,tag);
-  strcat(fulltag, "=");
-
-  for(i=0;i<tc->comments;i++){
-    if(!tagcompare(tc->user_comments[i], fulltag, taglen))
-      count++;
-  }
-  _ogg_free(fulltag);
-  return count;
-}
-
-void theora_comment_clear(theora_comment *tc){
-  if(tc){
-    long i;
-    for(i=0;i<tc->comments;i++)
-      if(tc->user_comments[i])_ogg_free(tc->user_comments[i]);
-    if(tc->user_comments)_ogg_free(tc->user_comments);
-    if(tc->comment_lengths)_ogg_free(tc->comment_lengths);
-    if(tc->vendor)_ogg_free(tc->vendor);
-    memset(tc,0,sizeof(*tc));
-  }
-}

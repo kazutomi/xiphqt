@@ -10,20 +10,18 @@ encoder_sources = \
 	enc/comment.c \
 	enc/dct.c \
 	enc/dct_decode.c \
-	enc/decode.c \
 	enc/frarray.c \
 	enc/frinit.c \
 	enc/huffman.c \
-	enc/idct.c \
+	enc/encidct.c \
 	enc/mcomp.c \
 	enc/misc_common.c \
 	enc/pb.c \
 	enc/pp.c \
-	enc/quant.c \
+	enc/encquant.c \
 	enc/reconstruct.c \
 	enc/scan.c \
-	enc/toplevel.c \
-	enc/cpu.c \
+	enc/enccpu.c \
 	enc/dsp.c
 	
 decoder_sources = \
@@ -48,11 +46,11 @@ encoder_arch_sources= \
 	$(arch_dir)/fdct_mmx.c
 
 decoder_x86_sources = \
-		dec/x86/cpu.c \
-		dec/x86/mmxidct.c \
-		dec/x86/mmxfrag.c \
-		dec/x86/mmxstate.c \
-		dec/x86/x86state.c
+	dec/x86/cpu.c \
+	dec/x86/mmxidct.c \
+	dec/x86/mmxfrag.c \
+	dec/x86/mmxstate.c \
+	dec/x86/x86state.c
 else
 if CPU_x86_32
 arch_dir = enc/x86_32
@@ -72,10 +70,10 @@ endif
 endif
 
 libtheora_la_SOURCES = \
-  $(encoder_arch_sources) \
-	$(encoder_sources) \
-	$(deocder_sources) \
-	$(deocder_x86_sources)
+	$(decoder_x86_sources) \
+	$(decoder_sources) \
+	$(encoder_arch_sources) \
+	$(encoder_sources)
 
 noinst_HEADERS = \
 	enc/block_inline.h \
@@ -87,7 +85,7 @@ noinst_HEADERS = \
 	enc/quant_lookup.h \
 	enc/toplevel.h \
 	enc/toplevel_lookup.h \
-	enc/cpu.h \
+	enc/enccpu.h \
 	enc/dsp.h \
 	dec/dct.h \
 	dec/decint.h \

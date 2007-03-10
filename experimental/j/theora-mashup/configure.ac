@@ -115,11 +115,15 @@ if test "x${ac_enable_asm}" = xyes; then
 		cpu_x86_32=yes 
 		cpu_optimization="32 bit x86"
 		AC_DEFINE([USE_ASM], [],  [make use of asm optimization])
+		AC_DEFINE([OC_X86ASM], [], [enable x86 assambler optimization])
+		AM_CONDITIONAL(OC_X86ASM,true)
     	;;
 	x86_64)
 		cpu_x86_64=yes
 		cpu_optimization="64 bit x86"
   	AC_DEFINE([USE_ASM], [],  [make use of asm optimization])	
+		AC_DEFINE([OC_X86ASM], [], [enable x86 assambler optimization])
+		AM_CONDITIONAL(OC_X86ASM,true)
     ;;
   esac
 else

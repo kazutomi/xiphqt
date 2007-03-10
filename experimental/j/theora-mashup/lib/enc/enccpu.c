@@ -15,7 +15,7 @@
 
  ********************************************************************/
 
-#include "cpu.h"
+#include "enccpu.h"
 
 void
 cpuid(ogg_int32_t op, ogg_uint32_t *out_eax, ogg_uint32_t *out_ebx, ogg_uint32_t *out_ecx, ogg_uint32_t *out_edx)
