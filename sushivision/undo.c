@@ -49,19 +49,17 @@ void _sushiv_undo_resume(sushiv_instance_t *s){
   }
 }
 
-void _sushiv_undo_log(sushiv_instance_t *s){
+void _sushiv_undo_pop(sushiv_instance_t *s){
   sushiv_instance_undo_t *u;
   int i,j;
-
   if(!s->private->undo_stack)
     s->private->undo_stack = calloc(2,sizeof(*s->private->undo_stack));
-
-  // log into a fresh entry; pop this level and all above it 
+  
   if(s->private->undo_stack[s->private->undo_level]){
     i=s->private->undo_level;
     while(s->private->undo_stack[i]){
       u = s->private->undo_stack[i];
-
+      
       if(u->dim_vals[0]) free(u->dim_vals[0]);
       if(u->dim_vals[1]) free(u->dim_vals[1]);
       if(u->dim_vals[2]) free(u->dim_vals[2]);
@@ -88,7 +86,16 @@ void _sushiv_undo_log(sushiv_instance_t *s){
   u->dim_vals[0] = calloc(s->dimensions,sizeof(**u->dim_vals));
   u->dim_vals[1] = calloc(s->dimensions,sizeof(**u->dim_vals));
   u->dim_vals[2] = calloc(s->dimensions,sizeof(**u->dim_vals));
+}
 
+void _sushiv_undo_log(sushiv_instance_t *s){
+  sushiv_instance_undo_t *u;
+  int i,j;
+
+  // log into a fresh entry; pop this level and all above it 
+  _sushiv_undo_pop(s);
+  u = s->private->undo_stack[s->private->undo_level];
+  
   // save dim values
   for(i=0;i<s->dimensions;i++){
     sushiv_dimension_t *d = s->dimension_list[i];

@@ -760,41 +760,50 @@ int sushiv_new_dimension_picklist(sushiv_instance_t *s,
 
 }
 
+static propmap *typemap[]={
+  &(propmap){"continuous",SUSHIV_DIM_CONTINUOUS, NULL,NULL,NULL},
+  &(propmap){"discrete",SUSHIV_DIM_DISCRETE,     NULL,NULL,NULL},
+  &(propmap){"picklist",SUSHIV_DIM_PICKLIST,     NULL,NULL,NULL},
+  NULL
+};
+
+int _load_dimension(sushiv_dimension_t *d,
+		    sushiv_instance_undo_t *u,
+		    xmlNodePtr dn,
+		    int warn){
+  
+  // check name 
+  xmlCheckPropS(dn,"name",d->name,"Dimension %d name mismatch in save file.",d->number,&warn);
+ 
+  // check type
+  xmlCheckMap(dn,"type",typemap, d->type, "Dimension %d type mismatch in save file.",d->number,&warn);
+
+  // load vals
+  xmlGetPropF(dn,"low-bracket", &u->dim_vals[0][d->number]);
+  xmlGetPropF(dn,"value", &u->dim_vals[1][d->number]);
+  xmlGetPropF(dn,"high-bracket", &u->dim_vals[2][d->number]);
+
+  return warn;
+}
+
 int _save_dimension(sushiv_dimension_t *d, xmlNodePtr instance){  
   if(!d) return 0;
-  char buffer[80];
   int ret=0;
 
   xmlNodePtr dn = xmlNewChild(instance, NULL, (xmlChar *) "dimension", NULL);
 
-  snprintf(buffer,sizeof(buffer),"%d",d->number);
-  xmlNewProp(dn, (xmlChar *)"number", (xmlChar *)buffer);
-  if(d->name)
-    xmlNewProp(dn, (xmlChar *)"name", (xmlChar *)d->name);
-
-  switch(d->type){
-  case SUSHIV_DIM_CONTINUOUS:
-    xmlNewProp(dn, (xmlChar *)"type", (xmlChar *)"continuous");
-    break;
-  case SUSHIV_DIM_DISCRETE:
-    xmlNewProp(dn, (xmlChar *)"type", (xmlChar *)"discrete");
-    break;
-  case SUSHIV_DIM_PICKLIST:
-    xmlNewProp(dn, (xmlChar *)"type", (xmlChar *)"picklist");
-    break;
-  }
+  xmlNewPropI(dn, "number", d->number);
+  xmlNewPropS(dn, "name", d->name);
+  xmlNewMapProp(dn, "type", typemap, d->type);
 
   switch(d->type){
   case SUSHIV_DIM_CONTINUOUS:
   case SUSHIV_DIM_DISCRETE:
-    snprintf(buffer,sizeof(buffer),"%.20g",d->bracket[0]);
-    xmlNewProp(dn, (xmlChar *) "low-bracket", (xmlChar *)buffer);
-    snprintf(buffer,sizeof(buffer),"%.20g",d->bracket[1]);
-    xmlNewProp(dn, (xmlChar *) "high-bracket", (xmlChar *)buffer);
+    xmlNewPropF(dn, "low-bracket", d->bracket[0]);
+    xmlNewPropF(dn, "high-bracket", d->bracket[1]);
     
   case SUSHIV_DIM_PICKLIST:
-    snprintf(buffer,sizeof(buffer),"%.20g",d->val);
-    xmlNewProp(dn, (xmlChar *) "value", (xmlChar *)buffer);
+    xmlNewPropF(dn, "value", d->val);
     break;
   }
 

@@ -131,7 +131,18 @@ void plot_resizable(Plot *p, int rp);
 #define PLOT_NO_X_CROSS 1
 #define PLOT_NO_Y_CROSS 2
 
+#define PLOT_GRID_NONE   0
 #define PLOT_GRID_NORMAL 4
 #define PLOT_GRID_TICS   8
 #define PLOT_GRID_LIGHT  (256+4)
 #define PLOT_GRID_DARK   (512+4)
+
+#define PLOT_GRID_MODEMASK  0x00fc
+#define PLOT_GRID_COLORMASK 0x0f00
+
+#define PLOT_TEXT_DARK 0
+#define PLOT_TEXT_LIGHT 1
+
+#define PLOT_LEGEND_NONE 0
+#define PLOT_LEGEND_SHADOW 1
+#define PLOT_LEGEND_BOX 2

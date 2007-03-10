@@ -19,6 +19,8 @@
  * 
  */
 
+typedef struct sushiv_instance_undo sushiv_instance_undo_t;
+
 #include <time.h>
 #include <signal.h>
 #include <gtk/gtk.h>
@@ -30,12 +32,24 @@
 #include "spinner.h"
 #include "slider.h"
 #include "scale.h"
-#include "gtksucks.h"
 #include "plot.h"
 #include "dimension.h"
 #include "objective.h"
 #include "panel-1d.h"
 #include "panel-2d.h"
+
+// used to glue numeric settings to semantic labels for menus/save files
+typedef struct propmap {
+  char *left;
+  int value;
+
+  char *right;
+  struct propmap **submenu;
+  void (*callback)(sushiv_panel_t *, GtkWidget *);
+} propmap;
+
+#include "xml.h"
+#include "gtksucks.h"
 
 union sushiv_panel_subtype {
   sushiv_panel1d_t *p1;
@@ -118,15 +132,16 @@ struct sushiv_panel_internal {
   void (*crosshair_action)(sushiv_panel_t *p);
   void (*print_action)(sushiv_panel_t *p, cairo_t *c, int w, int h);
   int (*save_action)(sushiv_panel_t *p, xmlNodePtr pn);
+  int (*load_action)(sushiv_panel_t *p, sushiv_panel_undo_t *u, xmlNodePtr pn, int warn);
 
   void (*undo_log)(sushiv_panel_undo_t *u, sushiv_panel_t *p);
   void (*undo_restore)(sushiv_panel_undo_t *u, sushiv_panel_t *p);
 };
 
-typedef struct sushiv_instance_undo {
+struct sushiv_instance_undo {
   sushiv_panel_undo_t *panels;
   double *dim_vals[3];
-} sushiv_instance_undo_t;
+};
 
 struct sushiv_instance_internal {
   int undo_level;
@@ -157,6 +172,7 @@ extern void _sushiv_panel_clean_plot(sushiv_panel_t *p);
 
 extern void _sushiv_undo_log(sushiv_instance_t *s);
 extern void _sushiv_undo_push(sushiv_instance_t *s);
+extern void _sushiv_undo_pop(sushiv_instance_t *s);
 extern void _sushiv_undo_suspend(sushiv_instance_t *s);
 extern void _sushiv_undo_resume(sushiv_instance_t *s);
 extern void _sushiv_undo_restore(sushiv_instance_t *s);
@@ -171,7 +187,10 @@ extern void _sushiv_panel1d_update_linked_crosshairs(sushiv_panel_t *p, int xfla
 extern void _sushiv_panel_update_menus(sushiv_panel_t *p);
 
 extern int save_main();
+extern int load_main();
 extern int _save_panel(sushiv_panel_t *p, xmlNodePtr instance);
+extern int _load_panel(sushiv_panel_t *p, sushiv_panel_undo_t *u, xmlNodePtr instance, int warn);
+extern void first_load_warning(int *);
 
 extern sig_atomic_t _sushiv_exiting;
 extern char *filebase;

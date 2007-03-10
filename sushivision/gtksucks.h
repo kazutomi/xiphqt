@@ -22,22 +22,17 @@
 #ifndef _GTK_SUCKS_H_
 #define _GTK_SUCKS_H_
 
-typedef struct {
-  char *left;
-  char *right;
-  GtkWidget *submenu;
-  void (*callback)(sushiv_panel_t *);
-} menuitem;
-
 extern void gtk_widget_set_sensitive_fixup(GtkWidget *w, gboolean state);
 extern void gtk_widget_remove_events (GtkWidget *widget, gint events);
 extern void gtk_button3_fixup();
 extern void gtk_mutex_fixup();
 extern pthread_mutex_t *gtk_get_mutex();
+
 extern GtkWidget *gtk_menu_new_twocol(GtkWidget *bind, 
-				      menuitem **items,
+				      propmap **items,
 				      void *callback_data);
 extern GtkWidget *gtk_menu_get_item(GtkMenu *m, int pos);
+extern int gtk_menu_item_position(GtkWidget *w);
 extern void gtk_menu_alter_item_label(GtkMenu *m, int pos, char *text);
 extern void gtk_menu_alter_item_right(GtkMenu *m, int pos, char *text);
 extern GtkWidget * gtk_combo_box_new_markup (void);

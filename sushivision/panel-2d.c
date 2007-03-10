@@ -1896,6 +1896,17 @@ static int _save_panel2d(sushiv_panel_t *p, xmlNodePtr pn){
   return ret;
 }
 
+int _load_panel_2d(sushiv_panel_t *d,
+		   sushiv_panel_undo_t *u,
+		   xmlNodePtr pn,
+		   int warn){
+  
+  // check type
+
+
+  return warn;
+}
+
 int sushiv_new_panel_2d(sushiv_instance_t *s,
 			int number,
 			const char *name, 

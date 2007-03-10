@@ -73,3 +73,4 @@ extern sushiv_dim_widget_t *_sushiv_new_dimension_widget(sushiv_dimension_list_t
 							 void (*center_callback)(sushiv_dimension_list_t *),
 							 void (*bracket_callback)(sushiv_dimension_list_t *));
 extern int _save_dimension(sushiv_dimension_t *d, xmlNodePtr instance);
+extern int _load_dimension(sushiv_dimension_t *d, sushiv_instance_undo_t *u, xmlNodePtr dn, int warn);
