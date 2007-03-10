@@ -59,14 +59,14 @@ void plot_set_grid(Plot *p, int mode){
 }
 
 static void set_text(int inv, cairo_t *c){
-  if(inv)
+  if(inv == PLOT_TEXT_LIGHT)
     cairo_set_source_rgba(c,1.,1.,1.,1.);
   else
     cairo_set_source_rgba(c,0.,0.,0.,1.);
 }
 
 static void set_shadow(int inv, cairo_t *c){
-  if(inv)
+  if(inv == PLOT_TEXT_LIGHT)
     cairo_set_source_rgba(c,0.,0.,0.,.6);
   else
     cairo_set_source_rgba(c,1.,1.,1.,.8);

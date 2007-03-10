@@ -23,6 +23,10 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <errno.h>
 #include <math.h>
 #include <signal.h>
@@ -246,30 +250,32 @@ int main (int argc, char *argv[]){
   dirname = strdup(cwdname);
   if(argc>1){
     // file to load specified on commandline
-    filebase = strdup(argv[argc-1]);
-    char *base = strrchr(filebase,'/');
-    
-    // filebase may include a path; pull it off and apply it toward dirname
-    if(base){
-      base[0] = '\0';
-      char *dirbit = strdup(filebase);
-      filebase = base+1;
-      if(g_path_is_absolute(dirbit)){
-	// replace dirname
-	free(dirname);
-	dirname = dirbit;
-      }else{
-	// append to dirname
-	char *buf;
-	asprintf(&buf,"%s/%s",dirname,dirbit);
-	free(dirname);
-	dirname = buf;
+    if(argv[argc-1][0] != '-'){
+      filebase = strdup(argv[argc-1]);
+      char *base = strrchr(filebase,'/');
+      
+      // filebase may include a path; pull it off and apply it toward dirname
+      if(base){
+	base[0] = '\0';
+	char *dirbit = strdup(filebase);
+	filebase = base+1;
+	if(g_path_is_absolute(dirbit)){
+	  // replace dirname
+	  free(dirname);
+	  dirname = dirbit;
+	}else{
+	  // append to dirname
+	  char *buf;
+	  asprintf(&buf,"%s/%s",dirname,dirbit);
+	  free(dirname);
+	  dirname = buf;
+	}
       }
+      asprintf(&filename,"%s/%s",dirname,filebase);
     }
-    
-    // load the state file
+  }
 
-  }else{
+  if(!filename || load_main()){
     if(appname){
       char *base = strrchr(appname,'/');
       if(!base) 
@@ -280,8 +286,8 @@ int main (int argc, char *argv[]){
       asprintf(&filebase, "%s.sushi",base);
     }else
       filebase = strdup("default.sushi");
+    asprintf(&filename,"%s/%s",dirname,filebase);
   }
-  asprintf(&filename,"%s/%s",dirname,filebase);
 
   {
     pthread_t dummy;
@@ -308,15 +314,12 @@ int main (int argc, char *argv[]){
 
 static int save_instance(sushiv_instance_t *s, xmlNodePtr root){
   if(!s) return 0;
-  char buffer[80];
   int i, ret=0;
 
   xmlNodePtr instance = xmlNewChild(root, NULL, (xmlChar *) "instance", NULL);
 
-  snprintf(buffer,sizeof(buffer),"%d",s->number);
-  xmlNewProp(instance, (xmlChar *)"number", (xmlChar *)buffer);
-  if(s->name)
-    xmlNewProp(instance, (xmlChar *)"name", (xmlChar *)s->name);
+  xmlNewPropI(instance, "number", s->number);
+  xmlNewPropS(instance, "name", s->name);
   
   // dimension values are independent of panel
   for(i=0;i<s->dimensions;i++)
@@ -329,6 +332,81 @@ static int save_instance(sushiv_instance_t *s, xmlNodePtr root){
     ret|=_save_panel(s->panel_list[i], instance);
 
   return ret;
+}
+
+void first_load_warning(int *warn){
+  if(!*warn)
+    fprintf(stderr,"\nWARNING: The data file to be opened is not a perfect match to\n"
+	    "%s.\n\nThis may be because the file is for a different version of\n"
+	    "the executable, or because it is is not a save file for \n%s at all.\n\n"
+	    "Specific warnings follow:\n\n",appname,appname);
+  *warn = 1;
+}
+
+static int load_instance(sushiv_instance_t *s, xmlNodePtr in, int warn){
+  int i;
+
+  // piggyback off undo (as it already goes through the trouble of
+  // doing correct unrolling, which can be tricky)
+
+  // if this instance has an undo stack, pop it all.
+  s->private->undo_level=0;
+  _sushiv_undo_pop(s);
+
+  sushiv_instance_undo_t *u = s->private->undo_stack[s->private->undo_level];
+
+  // load dimensions
+  for(i=0;i<s->dimensions;i++){
+    sushiv_dimension_t *d = s->dimension_list[i];
+    if(d){
+      xmlNodePtr dn = xmlGetChildI(in,"dimension","number",d->number);
+      if(dn){ 
+	warn |= _load_dimension(d,u,dn,warn);
+	xmlFreeNode(dn);
+      }else{
+	first_load_warning(&warn);
+	fprintf(stderr,"Could not find data for dimension \"%s\" in save file.\n",
+		d->name);
+      }
+    }
+  }
+
+  // load panels
+  for(i=0;i<s->panels;i++){
+    sushiv_panel_t *p = s->panel_list[i];
+    if(p){
+      xmlNodePtr pn = xmlGetChildI(in,"panel","number",p->number);
+      if(pn){ 
+	warn |= _load_panel(p,u->panels+i,pn,warn);
+	xmlFreeNode(pn);
+      }else{
+	first_load_warning(&warn);
+	fprintf(stderr,"Could not find data for panel \"%s\" in save file.\n",
+		p->name);
+      }
+    }
+  }
+
+  // if any elements are unclaimed, warn 
+  xmlNodePtr node = in->xmlChildrenNode;
+  while(node){
+    if (node->type == XML_ELEMENT_NODE) {
+      xmlChar *name = xmlGetProp(node, (xmlChar *)"name");
+      first_load_warning(&warn);
+      if(name){
+	fprintf(stderr,"Save file contains data for nonexistant object \"%s\".\n",
+		name);
+	xmlFree(name);
+      }else
+	fprintf(stderr,"Save file root node contains an extra unknown elements.\n");
+    }
+    node = node->next;
+  }
+  
+  // effect the loaded values
+  _sushiv_undo_restore(s);
+
+  return warn;
 }
 
 int save_main(){
@@ -344,7 +422,7 @@ int save_main(){
 
   // save each instance 
   for(i=0;i<instances;i++)
-   ret |= save_instance(instance_list[i],root_node);
+    ret |= save_instance(instance_list[i],root_node);
 
   xmlSaveFormatFileEnc(filename, doc, "UTF-8", 1);
 
@@ -352,4 +430,79 @@ int save_main(){
   xmlCleanupParser();
 
   return ret;
+}
+
+int load_main(){
+  xmlDoc *doc = NULL;
+  xmlNode *root = NULL;
+  int fd,warn=0;
+  int i;
+
+  LIBXML_TEST_VERSION;
+
+  fd = open(filename, O_RDONLY);
+  if(fd<0){
+    GtkWidget *dialog = gtk_message_dialog_new (NULL,0,
+						GTK_MESSAGE_ERROR,
+						GTK_BUTTONS_CLOSE,
+						"Error opening file '%s': %s",
+						filename, strerror (errno));
+    gtk_dialog_run (GTK_DIALOG (dialog));
+    gtk_widget_destroy (dialog);
+    return 1;
+  }
+
+  doc = xmlReadFd(fd, NULL, NULL, 0);
+  close(fd);
+
+  if (doc == NULL) {
+    GtkWidget *dialog = gtk_message_dialog_new (NULL,0,
+						GTK_MESSAGE_ERROR,
+						GTK_BUTTONS_CLOSE,
+						"Error parsing file '%s'",
+						filename);
+    gtk_dialog_run (GTK_DIALOG (dialog));
+    gtk_widget_destroy (dialog);
+    return 1;
+  }
+
+  root = xmlDocGetRootElement(doc);
+
+  // load each instance 
+  for(i=0;i<instances;i++){
+    sushiv_instance_t *s = instance_list[i];
+    if(s){
+      xmlNodePtr in = xmlGetChildI(root,"instance","number",s->number);
+      if(in){ 
+	warn |= load_instance(s,in,warn);
+	xmlFreeNode(in);
+      }else{
+	first_load_warning(&warn);
+	fprintf(stderr,"Could not find data for instance \"%s\" in save file.\n",
+		s->name);
+      }
+    }
+  }
+
+  // if any instances are unclaimed, warn 
+  xmlNodePtr node = root->xmlChildrenNode;
+  
+  while(node){
+    if (node->type == XML_ELEMENT_NODE) {
+      char *name = xmlGetPropS(node, "name");
+      first_load_warning(&warn);
+      if(name){
+	fprintf(stderr,"Save file contains data for nonexistant object \"%s\".\n",
+		  name);
+	xmlFree(name);
+      }else
+	fprintf(stderr,"Save file root node contains an extra unknown elements.\n");
+    }
+    node = node->next; 
+  }
+
+  xmlFreeDoc(doc);
+  xmlCleanupParser();
+  
+  return 0;
 }

@@ -35,14 +35,113 @@
 #include "internal.h"
 
 extern void _sushiv_wake_workers(void);
+static void wrap_exit(sushiv_panel_t *dummy, GtkWidget *dummyw);
+static void wrap_bg(sushiv_panel_t *p, GtkWidget *w);
+static void wrap_grid(sushiv_panel_t *p, GtkWidget *w);
+static void wrap_text(sushiv_panel_t *p, GtkWidget *w);
+static void wrap_res(sushiv_panel_t *p, GtkWidget *w);
+static void do_load(sushiv_panel_t *p, GtkWidget *dummy);
+static void do_save(sushiv_panel_t *p, GtkWidget *dummy);
+static void _sushiv_panel_print(sushiv_panel_t *p, GtkWidget *dummy);
+static void wrap_undo_up(sushiv_panel_t *p, GtkWidget *dummy);
+static void wrap_undo_down(sushiv_panel_t *p, GtkWidget *dummy);
+static void wrap_legend(sushiv_panel_t *p, GtkWidget *dummy);
+static void wrap_escape(sushiv_panel_t *p, GtkWidget *dummy);
+static void wrap_enter(sushiv_panel_t *p, GtkWidget *dummy);
+
+static propmap *bgmap[]={
+  &(propmap){"white",SUSHIV_BG_WHITE,   "[<i>b</i>]",NULL,wrap_bg},
+  &(propmap){"black",SUSHIV_BG_BLACK,   "[<i>b</i>]",NULL,wrap_bg},
+  &(propmap){"checks",SUSHIV_BG_CHECKS, "[<i>b</i>]",NULL,wrap_bg},
+  NULL
+};
+
+static propmap *gridmap[]={
+  &(propmap){"light",PLOT_GRID_LIGHT,   "[<i>g</i>]",NULL,wrap_grid},
+  &(propmap){"normal",PLOT_GRID_NORMAL, "[<i>g</i>]",NULL,wrap_grid},
+  &(propmap){"dark",PLOT_GRID_DARK,     "[<i>g</i>]",NULL,wrap_grid},
+  &(propmap){"tics",PLOT_GRID_TICS,     "[<i>g</i>]",NULL,wrap_grid},
+  &(propmap){"none",PLOT_GRID_NONE,     "[<i>g</i>]",NULL,wrap_grid},
+  NULL
+};
+
+static propmap *textmap[]={
+  &(propmap){"dark",PLOT_TEXT_DARK,   "[<i>t</i>]",NULL,wrap_text},
+  &(propmap){"light",PLOT_TEXT_LIGHT, "[<i>t</i>]",NULL,wrap_text},
+  NULL
+};
+
+#define RES_DEF 0
+#define RES_1_32 1
+#define RES_1_16 2
+#define RES_1_8 3
+#define RES_1_4 4
+#define RES_1_2 5
+#define RES_1_1 6
+#define RES_2_1 7
+#define RES_4_1 8
+
+// only used for the menus
+static propmap *resmap[]={
+  &(propmap){"default",RES_DEF,  "[<i>m</i>]",NULL,wrap_res},
+  &(propmap){"1:32",RES_1_32,     "[<i>m</i>]",NULL,wrap_res},
+  &(propmap){"1:16",RES_1_16,     "[<i>m</i>]",NULL,wrap_res},
+  &(propmap){"1:8",RES_1_8,      "[<i>m</i>]",NULL,wrap_res},
+  &(propmap){"1:4",RES_1_4,      "[<i>m</i>]",NULL,wrap_res},
+  &(propmap){"1:2",RES_1_2,      "[<i>m</i>]",NULL,wrap_res},
+  &(propmap){"1",RES_1_1,        "[<i>m</i>]",NULL,wrap_res},
+  &(propmap){"2:1",RES_2_1,      "[<i>m</i>]",NULL,wrap_res},
+  &(propmap){"4:1",RES_4_1,      "[<i>m</i>]",NULL,wrap_res},
+  NULL,
+};
+
+static propmap *crossmap[]={
+  &(propmap){"no",0     ,NULL,NULL,NULL},
+  &(propmap){"yes",1    ,NULL,NULL,NULL},
+  NULL
+};
+
+static propmap *legendmap[]={
+  &(propmap){"none",PLOT_LEGEND_NONE,       NULL,NULL,NULL},
+  &(propmap){"shadowed",PLOT_LEGEND_SHADOW, NULL,NULL,NULL},
+  &(propmap){"boxed",PLOT_LEGEND_BOX,       NULL,NULL,NULL},
+  NULL
+};
+
+static propmap *menu[]={
+  &(propmap){"Open",0,"[<i>o</i>]",NULL,do_load},
+  &(propmap){"Save",1,"[<i>s</i>]",NULL,do_save},
+  &(propmap){"Print/Export",2,"[<i>p</i>]",NULL,_sushiv_panel_print},
+
+  &(propmap){"",3,NULL,NULL,NULL},
+
+  &(propmap){"Undo",4,"[<i>bksp</i>]",NULL,&wrap_undo_down},
+  &(propmap){"Redo",5,"[<i>space</i>]",NULL,&wrap_undo_up},
+  &(propmap){"Start zoom box",6,"[<i>enter</i>]",NULL,&wrap_enter},
+  &(propmap){"Clear selection",7,"[<i>escape</i>]",NULL,&wrap_escape},
+  &(propmap){"Toggle Legend",8,"[<i>l</i>]",NULL,&wrap_legend},
+
+  &(propmap){"",9,NULL,NULL,NULL},
+
+  &(propmap){"Background",10,"...",bgmap,NULL},
+  &(propmap){"Text color",11,"...",textmap,NULL},
+  &(propmap){"Grid mode",12,"...",gridmap,NULL},
+  &(propmap){"Sampling",13,"...",resmap,NULL},
+
+  &(propmap){"",14,NULL,NULL,NULL},
+
+  &(propmap){"Quit",15,"[<i>q</i>]",NULL,&wrap_exit},
+
+  NULL
+};
 
 static void decide_text_inv(sushiv_panel_t *p){
   if(p->private->graph){
     Plot *plot = PLOT(p->private->graph);
     if(p->private->bg_type == SUSHIV_BG_WHITE)
-      plot_set_bg_invert(plot,0);
+      plot_set_bg_invert(plot,PLOT_TEXT_DARK);
     else
-      plot_set_bg_invert(plot,1);
+      plot_set_bg_invert(plot,PLOT_TEXT_LIGHT);
   }
 }
 
@@ -66,16 +165,16 @@ static void refg_if_running(sushiv_panel_t *p){
   }
 }
 
-static void wrap_exit(sushiv_panel_t *dummy){
+static void wrap_exit(sushiv_panel_t *dummy, GtkWidget *dummyw){
   _sushiv_clean_exit(SIGINT);
 }
 
 // precipitated actions perform undo push
-static void wrap_enter(sushiv_panel_t *p){
+static void wrap_enter(sushiv_panel_t *p, GtkWidget *dummy){
   plot_do_enter(PLOT(p->private->graph));
 }
 
-static void wrap_escape(sushiv_panel_t *p){
+static void wrap_escape(sushiv_panel_t *p, GtkWidget *dummy){
   _sushiv_undo_push(p->sushi);
   _sushiv_undo_suspend(p->sushi);
 
@@ -85,7 +184,7 @@ static void wrap_escape(sushiv_panel_t *p){
   _sushiv_undo_resume(p->sushi);
 }
 
-static void wrap_legend(sushiv_panel_t *p){
+static void wrap_legend(sushiv_panel_t *p, GtkWidget *dummy){
   _sushiv_undo_push(p->sushi);
   _sushiv_undo_suspend(p->sushi);
 
@@ -106,20 +205,9 @@ static void set_grid(sushiv_panel_t *p, int mode){
   _sushiv_undo_resume(p->sushi);
 }
 
-static void light_scale(sushiv_panel_t *p){
-  set_grid(p,PLOT_GRID_LIGHT);
-}
-static void mid_scale(sushiv_panel_t *p){
-  set_grid(p,PLOT_GRID_NORMAL);
-}
-static void dark_scale(sushiv_panel_t *p){
-  set_grid(p,PLOT_GRID_DARK);
-}
-static void tic_scale(sushiv_panel_t *p){
-  set_grid(p,PLOT_GRID_TICS);
-}
-static void no_scale(sushiv_panel_t *p){
-  set_grid(p,0);
+static void wrap_grid(sushiv_panel_t *p, GtkWidget *w){
+  int pos = gtk_menu_item_position(w);
+  set_grid(p, gridmap[pos]->value);
 }
 
 static int set_background(sushiv_panel_t *p,
@@ -133,7 +221,7 @@ static int set_background(sushiv_panel_t *p,
   pi->bg_type = bg;
   
   decide_text_inv(p);
-  mid_scale(p);
+  set_grid(p,PLOT_GRID_NORMAL);
   redraw_if_running(p);
   _sushiv_panel_update_menus(p);
 
@@ -141,40 +229,21 @@ static int set_background(sushiv_panel_t *p,
   return 0;
 }
 
-static void white_bg(sushiv_panel_t *p){
-  set_background(p,SUSHIV_BG_WHITE);
+static void wrap_bg(sushiv_panel_t *p, GtkWidget *w){
+  int pos = gtk_menu_item_position(w);
+  set_background(p, bgmap[pos]->value);
 }
-static void black_bg(sushiv_panel_t *p){
-  set_background(p,SUSHIV_BG_BLACK);
-}
-static void checked_bg(sushiv_panel_t *p){
-  set_background(p,SUSHIV_BG_CHECKS);
-}
+
 static void cycle_bg(sushiv_panel_t *p){
-  switch(p->private->bg_type){
-  case 0:
-    black_bg(p);
-    break;
-  case 1:
-    checked_bg(p);
-    break;
-  default:
-    white_bg(p);
-    break;
-  }
+  int menupos = propmap_pos(bgmap, p->private->bg_type) + 1;
+  if(bgmap[menupos] == NULL) menupos = 0;
+  set_background(p, bgmap[menupos]->value);
 }
+
 static void cycleB_bg(sushiv_panel_t *p){
-  switch(p->private->bg_type){
-  case 0:
-    checked_bg(p);
-    break;
-  case 1:
-    white_bg(p);
-    break;
-  default:
-    black_bg(p);
-    break;
-  }
+  int menupos = propmap_pos(bgmap, p->private->bg_type) - 1;
+  if(menupos<0) menupos = propmap_last(bgmap);
+  set_background(p, bgmap[menupos]->value);
 }
 
 static void set_text(sushiv_panel_t *p, int mode){
@@ -188,70 +257,35 @@ static void set_text(sushiv_panel_t *p, int mode){
   _sushiv_undo_resume(p->sushi);
 }
 
-static void black_text(sushiv_panel_t *p){
-  set_text(p,0);
+static void wrap_text(sushiv_panel_t *p, GtkWidget *w){
+  int pos = gtk_menu_item_position(w);
+  set_text(p, textmap[pos]->value);
 }
-static void white_text(sushiv_panel_t *p){
-  set_text(p,1);
-}
+
 static void cycle_text(sushiv_panel_t *p){
-  switch(PLOT(p->private->graph)->bg_inv){
-  case 0:
-    white_text(p);
-    break;
-  default:
-    black_text(p);
-    break;
-  }
+  int menupos = propmap_pos(textmap, PLOT(p->private->graph)->bg_inv) + 1;
+  if(textmap[menupos] == NULL) menupos = 0;
+  set_text(p, textmap[menupos]->value);
 }
 
 static void cycle_grid(sushiv_panel_t *p){
-  switch(PLOT(p->private->graph)->grid_mode){
-  case PLOT_GRID_LIGHT:
-    mid_scale(p);
-    break;
-  case PLOT_GRID_NORMAL:
-    dark_scale(p);
-    break;
-  case PLOT_GRID_DARK:
-    tic_scale(p);
-    break;
-  case PLOT_GRID_TICS:
-    no_scale(p);
-    break;
-  default:
-    light_scale(p);
-    break;
-  }
+  int menupos = propmap_pos(gridmap, PLOT(p->private->graph)->grid_mode) + 1;
+  if(gridmap[menupos] == NULL) menupos = 0;
+  set_grid(p, gridmap[menupos]->value);
 }
 static void cycleB_grid(sushiv_panel_t *p){
-  switch(PLOT(p->private->graph)->grid_mode){
-  case PLOT_GRID_LIGHT:
-    no_scale(p);
-    break;
-  case PLOT_GRID_NORMAL:
-    light_scale(p);
-    break;
-  case PLOT_GRID_DARK:
-    mid_scale(p);
-    break;
-  case PLOT_GRID_TICS:
-    dark_scale(p);
-    break;
-  default:
-    tic_scale(p);
-    break;
-  }
+  int menupos = propmap_pos(gridmap, PLOT(p->private->graph)->grid_mode) - 1;
+  if(menupos<0) menupos = propmap_last(gridmap);
+  set_grid(p, gridmap[menupos]->value);
 }
 
-static void res_set(sushiv_panel_t *p, int n, int d, int menu){
+static void res_set(sushiv_panel_t *p, int n, int d){
   if(n != p->private->oversample_n ||
      d != p->private->oversample_d){
 
     _sushiv_undo_push(p->sushi);
     _sushiv_undo_suspend(p->sushi);
     
-    p->private->menu_cursamp=menu;
     p->private->oversample_n = n;
     p->private->oversample_d = d;
     _sushiv_panel_update_menus(p);
@@ -261,97 +295,55 @@ static void res_set(sushiv_panel_t *p, int n, int d, int menu){
   }
 }
 
-static void res_def(sushiv_panel_t *p){
-  p->private->menu_cursamp=0;
-  res_set(p,p->private->def_oversample_n,p->private->def_oversample_d,0);
+// a little different; the menu value is not the internal setting
+static void res_set_pos(sushiv_panel_t *p, int pos){
+  p->private->menu_cursamp = pos;
+  switch(pos){
+  case RES_DEF:
+    res_set(p,p->private->def_oversample_n,p->private->def_oversample_d);
+    break;
+  case RES_1_32:
+    res_set(p,1,32);
+    break;
+  case RES_1_16:
+    res_set(p,1,16);
+    break;
+  case RES_1_8:
+    res_set(p,1,8);
+    break;
+  case RES_1_4:
+    res_set(p,1,4);
+    break;
+  case RES_1_2:
+    res_set(p,1,2);
+    break;
+  case RES_1_1:
+    res_set(p,1,1);
+    break;
+  case RES_2_1:
+    res_set(p,2,1);
+    break;
+  case RES_4_1:
+    res_set(p,4,1);
+    break;
+  }
 }
-static void res_1_32(sushiv_panel_t *p){
-  res_set(p,1,32,1);
-}
-static void res_1_16(sushiv_panel_t *p){
-  res_set(p,1,16,2);
-}
-static void res_1_8(sushiv_panel_t *p){
-  res_set(p,1,8,3);
-}
-static void res_1_4(sushiv_panel_t *p){
-  res_set(p,1,4,4);
-}
-static void res_1_2(sushiv_panel_t *p){
-  res_set(p,1,2,5);
-}
-static void res_1_1(sushiv_panel_t *p){
-  res_set(p,1,1,6);
-}
-static void res_2_1(sushiv_panel_t *p){
-  res_set(p,2,1,7);
-}
-static void res_4_1(sushiv_panel_t *p){
-  res_set(p,4,1,8);
+
+static void wrap_res(sushiv_panel_t *p, GtkWidget *w){
+  int pos = gtk_menu_item_position(w);
+  res_set_pos(p, resmap[pos]->value);
 }
 
 static void cycle_res(sushiv_panel_t *p){
-  switch(p->private->menu_cursamp){
-  case 0:
-    res_1_32(p);
-    break;
-  case 1:
-    res_1_16(p);
-    break;
-  case 2:
-    res_1_8(p);
-    break;
-  case 3:
-    res_1_4(p);
-    break;
-  case 4:
-    res_1_2(p);
-    break;
-  case 5:
-    res_1_1(p);
-    break;
-  case 6:
-    res_2_1(p);
-    break;
-  case 7:
-    res_4_1(p);
-    break;
-  default:
-    res_def(p);
-    break;
-  }
+  int menupos = propmap_pos(resmap, p->private->menu_cursamp) + 1;
+  if(resmap[menupos] == NULL) menupos = 0;
+  res_set_pos(p, resmap[menupos]->value);
 }
 
 static void cycleB_res(sushiv_panel_t *p){
-  switch(p->private->menu_cursamp){
-  case 2:
-    res_1_32(p);
-    break;
-  case 3:
-    res_1_16(p);
-    break;
-  case 4:
-    res_1_8(p);
-    break;
-  case 5:
-    res_1_4(p);
-    break;
-  case 6:
-    res_1_2(p);
-    break;
-  case 7:
-    res_1_1(p);
-    break;
-  case 8:
-    res_2_1(p);
-    break;
-  case 0:
-    res_4_1(p);
-    break;
-  default:
-    res_def(p);
-    break;
-  }
+  int menupos = propmap_pos(resmap, p->private->menu_cursamp) - 1;
+  if(menupos<0) menupos = propmap_last(resmap);
+  res_set_pos(p, resmap[menupos]->value);
 }
 
 static GtkPrintSettings *printset=NULL;
@@ -379,7 +371,7 @@ static void _print_handler(GtkPrintOperation *operation,
   p->private->print_action(p,c,w,h);
 }
 
-static void _sushiv_panel_print(sushiv_panel_t *p){
+static void _sushiv_panel_print(sushiv_panel_t *p, GtkWidget *dummy){
   GtkPrintOperation *op = gtk_print_operation_new ();
 
   if (printset != NULL) 
@@ -411,14 +403,14 @@ static void _sushiv_panel_print(sushiv_panel_t *p){
   g_object_unref (op);
 }
 
-static void wrap_undo_down(sushiv_panel_t *p){
+static void wrap_undo_down(sushiv_panel_t *p, GtkWidget *dummy){
   _sushiv_undo_down(p->sushi);
 }
-static void wrap_undo_up(sushiv_panel_t *p){
+static void wrap_undo_up(sushiv_panel_t *p, GtkWidget *dummy){
   _sushiv_undo_up(p->sushi);
 }
 
-static void do_save(sushiv_panel_t *p){
+static void do_save(sushiv_panel_t *p, GtkWidget *dummy){
   GtkWidget *dialog = gtk_file_chooser_dialog_new ("Save",
 						   NULL,
 						   GTK_FILE_CHOOSER_ACTION_SAVE,
@@ -446,7 +438,7 @@ static void do_save(sushiv_panel_t *p){
 
 }
 
-static void do_load(sushiv_panel_t *p){
+static void do_load(sushiv_panel_t *p, GtkWidget *dummy){
   GtkWidget *dialog = gtk_file_chooser_dialog_new ("Open",
 						   NULL,
 						   GTK_FILE_CHOOSER_ACTION_OPEN,
@@ -458,82 +450,33 @@ static void do_load(sushiv_panel_t *p){
   gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER (dialog), dirname);
 
   if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT){
-    if(filebase)free(filebase);
-    if(filename)free(filename);
-    if(dirname)free(dirname);
-
+    char *temp_filebase = filebase;
+    char *temp_filename = filename;
+    char *temp_dirname = dirname;
     filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
     dirname = gtk_file_chooser_get_current_folder (GTK_FILE_CHOOSER (dialog));
     filebase = g_path_get_basename(filename);
 
-    //_sushiv_panel_load();
+    if(load_main()){
+
+      free(filebase);
+      free(filename);
+      free(dirname);
+
+      filebase = temp_filebase;
+      filename = temp_filename;
+      dirname = temp_dirname;
+
+    }else{
+      free(temp_filebase);
+      free(temp_filename);
+      free(temp_dirname);
+    }
   }
 
   gtk_widget_destroy (dialog);
 
 }
-
-static menuitem *menu[]={
-  &(menuitem){"Open","[<i>o</i>]",NULL,&do_load},
-  &(menuitem){"Save","[<i>s</i>]",NULL,&do_save},
-  &(menuitem){"Print/Export","[<i>p</i>]",NULL,&_sushiv_panel_print},
-
-  &(menuitem){"",NULL,NULL,NULL},
-
-  &(menuitem){"Undo","[<i>bksp</i>]",NULL,&wrap_undo_down},
-  &(menuitem){"Redo","[<i>space</i>]",NULL,&wrap_undo_up},
-  &(menuitem){"Start zoom box","[<i>enter</i>]",NULL,&wrap_enter},
-  &(menuitem){"Clear selection","[<i>escape</i>]",NULL,&wrap_escape},
-  &(menuitem){"Toggle Legend","[<i>l</i>]",NULL,&wrap_legend},
-
-  &(menuitem){"",NULL,NULL,NULL},
-
-  &(menuitem){"Background","...",NULL,NULL},
-  &(menuitem){"Text color","...",NULL,NULL},
-  &(menuitem){"Grid mode","...",NULL,NULL},
-  &(menuitem){"Sampling","...",NULL,NULL},
-
-  &(menuitem){"",NULL,NULL,NULL},
-
-  &(menuitem){"Quit","[<i>q</i>]",NULL,&wrap_exit},
-
-  &(menuitem){NULL,NULL,NULL,NULL}
-};
-
-static menuitem *menu_bg[]={
-  &(menuitem){"white","[<i>b</i>]",NULL,&white_bg},
-  &(menuitem){"black","[<i>b</i>]",NULL,&black_bg},
-  &(menuitem){"checks","[<i>b</i>]",NULL,&checked_bg},
-  &(menuitem){NULL,NULL,NULL,NULL}
-};
-
-static menuitem *menu_text[]={
-  &(menuitem){"dark","[<i>t</i>]",NULL,&black_text},
-  &(menuitem){"light","[<i>t</i>]",NULL,&white_text},
-  &(menuitem){NULL,NULL,NULL,NULL}
-};
-
-static menuitem *menu_scales[]={
-  &(menuitem){"light","[<i>g</i>]",NULL,light_scale},
-  &(menuitem){"mid","[<i>g</i>]",NULL,mid_scale},
-  &(menuitem){"dark","[<i>g</i>]",NULL,dark_scale},
-  &(menuitem){"tics","[<i>g</i>]",NULL,tic_scale},
-  &(menuitem){"none","[<i>g</i>]",NULL,no_scale},
-  &(menuitem){NULL,NULL,NULL,NULL}
-};
-
-static menuitem *menu_res[]={
-  &(menuitem){"default","[<i>m</i>]",NULL,res_def},
-  &(menuitem){"1:32","[<i>m</i>]",NULL,res_1_32},
-  &(menuitem){"1:16","[<i>m</i>]",NULL,res_1_16},
-  &(menuitem){"1:8","[<i>m</i>]",NULL,res_1_8},
-  &(menuitem){"1:4","[<i>m</i>]",NULL,res_1_4},
-  &(menuitem){"1:2","[<i>m</i>]",NULL,res_1_2},
-  &(menuitem){"1","[<i>m</i>]",NULL,res_1_1},
-  &(menuitem){"2:1","[<i>m</i>]",NULL,res_2_1},
-  &(menuitem){"4:1","[<i>m</i>]",NULL,res_4_1},
-  &(menuitem){NULL,NULL,NULL,NULL}
-};
 
 void _sushiv_panel_update_menus(sushiv_panel_t *p){
 
@@ -562,52 +505,25 @@ void _sushiv_panel_update_menus(sushiv_panel_t *p){
   }
 
   // make sure menu reflects plot configuration
-  switch(p->private->bg_type){ 
-  case SUSHIV_BG_WHITE:
-    gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),10,menu_bg[0]->left);
-    break;
-  case SUSHIV_BG_BLACK:
-    gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),10,menu_bg[1]->left);
-    break;
-  default:
-    gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),10,menu_bg[2]->left);
-    break;
-  }
+  gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),
+			    propmap_label_pos(menu,"Background"),
+			    bgmap[propmap_pos(bgmap,p->private->bg_type)]->left);
 
-  switch(PLOT(p->private->graph)->bg_inv){ 
-  case 0:
-    gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),11,menu_text[0]->left);
-    break;
-  default:
-    gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),11,menu_text[1]->left);
-    break;
-  }
+  gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),
+			    propmap_label_pos(menu,"Text color"),
+			    textmap[propmap_pos(textmap,PLOT(p->private->graph)->bg_inv)]->left);
 
-  switch(PLOT(p->private->graph)->grid_mode){ 
-  case PLOT_GRID_LIGHT:
-    gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),12,menu_scales[0]->left);
-    break;
-  case PLOT_GRID_NORMAL:
-    gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),12,menu_scales[1]->left);
-    break;
-  case PLOT_GRID_DARK:
-    gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),12,menu_scales[2]->left);
-    break;
-  case PLOT_GRID_TICS:
-    gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),12,menu_scales[3]->left);
-    break;
-  default:
-    gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),12,menu_scales[4]->left);
-    break;
-  }
-
-  {
+  gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),
+			    propmap_label_pos(menu,"Grid mode"),
+			    gridmap[propmap_pos(gridmap,PLOT(p->private->graph)->grid_mode)]->left);
+   {
     char buffer[80];
     snprintf(buffer,60,"%d:%d",p->private->oversample_n,p->private->oversample_d);
     if(p->private->def_oversample_n == p->private->oversample_n &&
        p->private->def_oversample_d == p->private->oversample_d)
       strcat(buffer," (default)");
-    gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),13,buffer);
+    gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),
+			      propmap_label_pos(menu,"Sampling"),buffer);
   }
 }
 
@@ -687,18 +603,18 @@ static gboolean panel_keypress(GtkWidget *widget,
     return TRUE;
 
   case GDK_s:
-    do_save(p);
+    do_save(p,NULL);
     return TRUE;
   case GDK_o:
-    do_load(p);
+    do_load(p,NULL);
     return TRUE;
     
    case GDK_Escape:
-     wrap_escape(p);
+     wrap_escape(p,NULL);
     return TRUE;
 
   case GDK_Return:case GDK_ISO_Enter:
-    wrap_enter(p);
+    wrap_enter(p,NULL);
     return TRUE;
    
   case GDK_Q:
@@ -719,11 +635,11 @@ static gboolean panel_keypress(GtkWidget *widget,
     return TRUE;
 
   case GDK_p:
-    _sushiv_panel_print(p);
+    _sushiv_panel_print(p,NULL);
     return TRUE;
 
   case GDK_l:
-    wrap_legend(p);
+    wrap_legend(p,NULL);
     return TRUE;
   } 
 
@@ -744,22 +660,9 @@ void _sushiv_realize_panel(sushiv_panel_t *p){
 
     // text black or white in the plot?
     decide_text_inv(p);
-
-    // panel right-click menus
-    GtkWidget *bgmenu = gtk_menu_new_twocol(NULL,menu_bg,p);
-    GtkWidget *textmenu = gtk_menu_new_twocol(NULL,menu_text,p);
-    GtkWidget *scalemenu = gtk_menu_new_twocol(NULL,menu_scales,p);
-    GtkWidget *resmenu = gtk_menu_new_twocol(NULL,menu_res,p);
-
-    // not thread safe, we're not threading yet
-    menu[10]->submenu = bgmenu;
-    menu[11]->submenu = textmenu;
-    menu[12]->submenu = scalemenu;
-    menu[13]->submenu = resmenu;
-
     p->private->popmenu = gtk_menu_new_twocol(p->private->toplevel, menu, p);
     _sushiv_panel_update_menus(p);
-
+    
   }
 }
 
@@ -781,7 +684,6 @@ static int test_throttle_time(sushiv_panel_t *p){
 
   return 0;  
 }
-
 
 /* request a recomputation with full setup (eg, linking, scales,
    etc) */
@@ -985,7 +887,8 @@ void _sushiv_panel_undo_restore(sushiv_panel_t *p, sushiv_panel_undo_t *u){
   set_background(p, u->bg_mode); // must be first; it can frob grid and test
   set_text(p, u->text_mode);
   set_grid(p, u->grid_mode);
-  res_set(p, u->oversample_n, u->oversample_d, u->menu_cursamp);
+  p->private->menu_cursamp = u->menu_cursamp;
+  res_set(p, u->oversample_n, u->oversample_d);
 
   // panel-subtype-specific restore
   p->private->undo_restore(u,p);
@@ -1001,80 +904,31 @@ int _save_panel(sushiv_panel_t *p, xmlNodePtr instance){
   xmlNodePtr pn = xmlNewChild(instance, NULL, (xmlChar *) "panel", NULL);
   xmlNodePtr n;
 
-  snprintf(buffer,sizeof(buffer),"%d",p->number);
-  xmlNewProp(pn, (xmlChar *)"number", (xmlChar *)buffer);
-  if(p->name)
-    xmlNewProp(pn, (xmlChar *)"name", (xmlChar *)p->name);
+  xmlNewPropI(pn, "number", p->number);
+  xmlNewPropS(pn, "name", p->name);
 
   // let the panel subtype handler fill in type
   // we're only saving settings independent of subtype
 
   // background
   n = xmlNewChild(pn, NULL, (xmlChar *) "background", NULL);
-  switch(p->private->bg_type){
-  case 0:
-    xmlNewProp(n, (xmlChar *)"color", (xmlChar *)"white");
-    break;
-  case 1:
-    xmlNewProp(n, (xmlChar *)"color", (xmlChar *)"black");
-    break;
-  case 2:
-    xmlNewProp(n, (xmlChar *)"color", (xmlChar *)"checked");
-    break;
-  }
+  xmlNewMapProp(n, "color", bgmap, p->private->bg_type);
 
   // grid
   n = xmlNewChild(pn, NULL, (xmlChar *) "grid", NULL);
-  switch(PLOT(p->private->graph)->grid_mode){
-  case PLOT_GRID_LIGHT:
-    xmlNewProp(n, (xmlChar *)"mode", (xmlChar *)"normal");
-    xmlNewProp(n, (xmlChar *)"color", (xmlChar *)"light");
-    break;
-  case PLOT_GRID_NORMAL:
-    xmlNewProp(n, (xmlChar *)"mode", (xmlChar *)"normal");
-    xmlNewProp(n, (xmlChar *)"color", (xmlChar *)"mid");
-    break;
-  case PLOT_GRID_DARK:
-    xmlNewProp(n, (xmlChar *)"mode", (xmlChar *)"normal");
-    xmlNewProp(n, (xmlChar *)"color", (xmlChar *)"dark");
-    break;
-  case PLOT_GRID_TICS:
-    xmlNewProp(n, (xmlChar *)"mode", (xmlChar *)"tics");
-    break;
-  default:
-    xmlNewProp(n, (xmlChar *)"mode", (xmlChar *)"none");
-    break;
-  }
+  xmlNewMapProp(n, "mode", gridmap, PLOT(p->private->graph)->grid_mode);
 
   // crosshairs
-  xmlNodePtr boxn = xmlNewChild(pn, NULL, (xmlChar *) "crosshairs", NULL);
-  xmlNewProp(boxn, (xmlChar *)"active", 
-	     (xmlChar *) (PLOT(p->private->graph)->cross_active ? "yes" : "no"));
-    
+  n = xmlNewChild(pn, NULL, (xmlChar *) "crosshairs", NULL);
+  xmlNewMapProp(n, "active", crossmap, PLOT(p->private->graph)->cross_active);
+
   // legend
   n = xmlNewChild(pn, NULL, (xmlChar *) "legend", NULL);
-  switch(PLOT(p->private->graph)->legend_active){
-  case 0: //inactive
-    xmlNewProp(n, (xmlChar *)"mode", (xmlChar *)"none");
-    break;
-  case 1: //shadowed
-    xmlNewProp(n, (xmlChar *)"mode", (xmlChar *)"shadowed");
-    break;
-  case 2: //boxed
-    xmlNewProp(n, (xmlChar *)"mode", (xmlChar *)"boxed");
-    break;
-  }
+  xmlNewMapProp(n,"mode", legendmap, PLOT(p->private->graph)->legend_active);
 
   // text
   n = xmlNewChild(pn, NULL, (xmlChar *) "text", NULL);
-  switch(PLOT(p->private->graph)->bg_inv){
-  case 0:
-    xmlNewProp(n, (xmlChar *)"color", (xmlChar *)"white");
-    break;
-  default:
-    xmlNewProp(n, (xmlChar *)"color", (xmlChar *)"black");
-    break;
-  }
+  xmlNewMapProp(n,"color", textmap, PLOT(p->private->graph)->bg_inv);
 
   // resample
   n = xmlNewChild(pn, NULL, (xmlChar *) "sampling", NULL);
@@ -1087,4 +941,60 @@ int _save_panel(sushiv_panel_t *p, xmlNodePtr instance){
     ret |= p->private->save_action(p, pn);
 
   return ret;
+}
+
+int _load_panel(sushiv_panel_t *p,
+		sushiv_panel_undo_t *u,
+		xmlNodePtr pn,
+		int warn){
+
+  // check name 
+  xmlCheckPropS(pn,"name",p->name,"Panel %d name mismatch in save file.",p->number,&warn);
+
+  // background
+  u->bg_mode = xmlGetChildMap(pn, "background", "color", bgmap, p->private->bg_type,
+			      "Panel %d unknown background setting", p->number, &warn);
+  // grid
+  u->grid_mode = xmlGetChildMap(pn, "grid", "mode", gridmap, PLOT(p->private->graph)->grid_mode,
+				"Panel %d unknown grid mode setting", p->number, &warn);
+  // crosshairs
+  u->cross_mode = xmlGetChildMap(pn, "crosshairs", "active", crossmap, PLOT(p->private->graph)->cross_active,
+				"Panel %d unknown crosshair setting", p->number, &warn);
+  // legend
+  u->legend_mode = xmlGetChildMap(pn, "legend", "mode", legendmap, PLOT(p->private->graph)->legend_active,
+				"Panel %d unknown legend setting", p->number, &warn);
+  // text
+  u->text_mode = xmlGetChildMap(pn, "text", "color", textmap, PLOT(p->private->graph)->bg_inv,
+				"Panel %d unknown text color setting", p->number, &warn);
+  // resample
+  char *prop = xmlGetChildPropS(pn, "sampling", "ratio");
+  if(!prop){
+    u->oversample_n = p->private->def_oversample_n;
+    u->oversample_d = p->private->def_oversample_d;
+  }else{
+    int res = sscanf(prop,"%d:%d", &u->oversample_n, &u->oversample_d);
+    if(res<2){
+      fprintf(stderr,"Unable to parse sample setting (%s) for panel %d.\n",prop,p->number);
+      u->oversample_n = p->private->def_oversample_n;
+      u->oversample_d = p->private->def_oversample_d;
+    }
+    xmlFree(prop);
+  }
+
+  // subtype 
+  if(p->private->load_action)
+    warn = p->private->load_action(p, u, pn, warn);
+
+  // any unparsed elements? 
+  xmlNodePtr n = pn->xmlChildrenNode;
+  
+  while(n){
+    if (n->type == XML_ELEMENT_NODE) {
+      first_load_warning(&warn);
+      fprintf(stderr,"Unknown option (%s) set for panel %d.\n",n->name,p->number);
+    }
+    n = n->next; 
+  }
+  
+  return warn;
 }

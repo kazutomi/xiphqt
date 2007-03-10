@@ -255,14 +255,14 @@ static gint popup_callback (GtkWidget *widget, GdkEvent *event){
 }
 
 GtkWidget *gtk_menu_new_twocol(GtkWidget *bind, 
-			       menuitem **items,
+			       propmap **items,
 			       void *callback_data){
   
-  menuitem *ptr = *items++;
+  propmap *ptr = *items++;
   GtkWidget *ret = gtk_menu_new();
    
   /* create packable boxes for labels, put left labels in */
-  while(ptr->left){
+  while(ptr){
     GtkWidget *item;
     if(!strcmp(ptr->left,"")){
       // seperator, not item
@@ -289,8 +289,10 @@ GtkWidget *gtk_menu_new_twocol(GtkWidget *bind,
       if(ptr->callback)
 	g_signal_connect_swapped (G_OBJECT (item), "activate",
 				  G_CALLBACK (ptr->callback), callback_data);
-      if(ptr->submenu)
-	gtk_menu_item_set_submenu(GTK_MENU_ITEM(item),ptr->submenu);
+      if(ptr->submenu){
+	GtkWidget *submenu = gtk_menu_new_twocol(ret,ptr->submenu,callback_data);
+	gtk_menu_item_set_submenu(GTK_MENU_ITEM(item),submenu);
+      }
     }
     gtk_widget_show_all(item);
     
@@ -322,6 +324,24 @@ GtkWidget *gtk_menu_get_item(GtkMenu *m, int pos){
   }
 
   return NULL;
+}
+
+int gtk_menu_item_position(GtkWidget *w){
+  //GtkMenuItem *mi = GTK_MENU_ITEM(w);
+  GtkWidget *box = gtk_widget_get_parent(w);
+  GList *l = gtk_container_get_children(GTK_CONTAINER(box));
+  int i = 0;
+
+  while(l){
+    if((GtkWidget *)l->data == w){
+      g_list_free (l);
+      return i;
+    }
+    i++;
+    l = l->next;
+  }
+
+  return 0;
 }
 
 void gtk_menu_alter_item_label(GtkMenu *m, int pos, char *text){
