@@ -25,13 +25,20 @@ extern void xmlNewMapProp(xmlNodePtr n, char *name, propmap **map, int val);
 extern void xmlNewPropF(xmlNodePtr n, char *name, double val);
 extern void xmlNewPropI(xmlNodePtr n, char *name, int val);
 extern void xmlNewPropS(xmlNodePtr n, char *name, char *val);
-extern char *xmlGetPropS(xmlNodePtr n, char *name);
-extern void xmlGetPropF(xmlNodePtr n, char *name, double *val);
+
 extern void xmlCheckPropS(xmlNodePtr n, char *prop, char *val, char *msg, int num, int *warn);
 extern void xmlCheckMap(xmlNodePtr n, char *prop, propmap **map, int val, char *msg, int num, int *warn);
-extern int xmlGetChildMap(xmlNodePtr in, char *prop, char *key, propmap **map, int defaultval, 
+
+extern void xmlGetPropS(xmlNodePtr n, char *name, char **out);
+extern void xmlGetPropF(xmlNodePtr n, char *name, double *out);
+extern void xmlGetChildMap(xmlNodePtr in, char *prop, char *key, propmap **map, int *out,
 			  char *msg, int num, int *warn);
-extern char *xmlGetChildPropS(xmlNodePtr in, char *prop, char *key);
+extern void xmlGetChildPropS(xmlNodePtr in, char *prop, char *key, char **out);
+extern void xmlGetChildPropSPreserve(xmlNodePtr in, char *prop, char *key, char **out);
+extern void xmlGetChildPropF(xmlNodePtr in, char *prop, char *key, double *out);
+extern void xmlGetChildPropFPreserve(xmlNodePtr in, char *prop, char *key, double *out);
+extern void xmlGetChildPropI(xmlNodePtr in, char *prop, char *key, int *out);
+extern void xmlGetChildPropIPreserve(xmlNodePtr in, char *prop, char *key, int *out);
 
 extern int propmap_pos(propmap **map, int val);
 extern int propmap_last(propmap **map);

@@ -27,16 +27,6 @@ typedef struct sushiv_instance_undo sushiv_instance_undo_t;
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 #include "sushivision.h"
-#include "mapping.h"
-#include "slice.h"
-#include "spinner.h"
-#include "slider.h"
-#include "scale.h"
-#include "plot.h"
-#include "dimension.h"
-#include "objective.h"
-#include "panel-1d.h"
-#include "panel-2d.h"
 
 // used to glue numeric settings to semantic labels for menus/save files
 typedef struct propmap {
@@ -48,6 +38,16 @@ typedef struct propmap {
   void (*callback)(sushiv_panel_t *, GtkWidget *);
 } propmap;
 
+#include "mapping.h"
+#include "slice.h"
+#include "spinner.h"
+#include "slider.h"
+#include "scale.h"
+#include "plot.h"
+#include "dimension.h"
+#include "objective.h"
+#include "panel-1d.h"
+#include "panel-2d.h"
 #include "xml.h"
 #include "gtksucks.h"
 
@@ -60,7 +60,7 @@ union sushiv_panel_subtype {
 // for now we use a master undo type which leaves one or two fields
 // unused for a given panel.
 typedef struct sushiv_panel_undo {
-  u_int32_t *mappings;
+  int *mappings;
   double *scale_vals[3];
   
   int x_d;
@@ -70,11 +70,11 @@ typedef struct sushiv_panel_undo {
   int box_active;
 
   int grid_mode;
-  unsigned char cross_mode;
-  unsigned char legend_mode;
-  unsigned char bg_mode;
-  unsigned char text_mode;
-  unsigned char menu_cursamp;
+  int cross_mode;
+  int legend_mode;
+  int bg_mode;
+  int text_mode;
+  int menu_cursamp;
   int oversample_n;
   int oversample_d;
 
