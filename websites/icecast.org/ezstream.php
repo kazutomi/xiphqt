@@ -39,12 +39,14 @@
  input without reencoding and thus requires only very little CPU resources.
  It can also use various external decoders and encoders to reencode from one
  format to another, and stream the result to an Icecast server.
- With reencoding enabled, ezstream is a very flexible source client.
+ Additional features include scriptable playlist and metadata handling.
+ All of its features make ezstream a very flexible source client.
 </p>
 
 <p>
  Supported media formats for streaming are MP3, Ogg Vorbis and Ogg Theora.
- Metadata support is available for MP3 (ID3v1 only) and Ogg Vorbis.
+ Native metadata support includes MP3 (ID3v1 only) and Ogg Vorbis, and many
+ more formats when the optional TagLib support has been compiled in.
 </p>
 
 <p>
@@ -75,7 +77,7 @@
 <h3>Download</h3>
 
 <p style="font-size: larger;">
- Latest version: <b>0.3.0</b>
+ Latest version: <b>0.4.0</b>
  [ <a href="#ez_relnotes_chgs">Changes</a> ]
 <p>
 
@@ -89,8 +91,8 @@
     Source .tar.gz (all platforms)
    </td>
    <td>
-    <a href="http://downloads.xiph.org/releases/ezstream/ezstream-0.3.0.tar.gz">ezstream-0.3.0.tar.gz</a><br/>
-    MD5: 7704b0a17799f3e8df557cd35a5f897a
+    <a href="http://downloads.xiph.org/releases/ezstream/ezstream-0.4.0.tar.gz">ezstream-0.4.0.tar.gz</a><br/>
+    MD5: 6f3699847787a8b0f69b6b5eb5e9c150
    </td>
   </tr>
   <tr>
@@ -98,8 +100,8 @@
     Windows NT/2000/XP binary
    </td>
    <td>
-    <a href="http://downloads.xiph.org/releases/ezstream/ezstream-0.3.0-win32.zip">ezstream-0.3.0-win32.zip</a><br/>
-    MD5: 9c18f8d95fbc032fd3fb26db53b0a28b
+    <a href="http://downloads.xiph.org/releases/ezstream/ezstream-0.4.0-win32.zip">ezstream-0.4.0-win32.zip</a><br/>
+    MD5: 0eb552c9bbca600d68559a28ceb97d13
    </td>
   </tr>
  </table>
@@ -149,6 +151,11 @@
   libxml 2.x
   (<a href="http://xmlsoft.org">http://xmlsoft.org</a>)
  </li>
+ <li>
+  <b>Optional</b>: Taglib 1.x
+  (1.4 or newer recommended, will be used via the libtag_c wrapper)
+  (<a href="http://developer.kde.org/~wheeler/taglib.html">http://developer.kde.org/~wheeler/taglib.html</a>)
+ </li>
 </ul>
 
 <h4>UNIX (Linux, *BSD, Solaris, ...)</h4>
@@ -165,8 +172,8 @@
 <h4>Windows</h4>
 
 <p>
- Windows users can simply copy the ezstream.exe file from the binary
- distribution archive (.ZIP) to any location of their choosing.
+ Windows users can simply copy the <code>ezstream.exe</code> file from the
+ binary distribution archive (.ZIP) to any location of their choosing.
  As of version 0.3.0, the Win32 version of ezstream no longer requires any .DLL
  files and is entirely self-contained.
  Because of this simplicity, an installer is no longer provided.
@@ -213,126 +220,100 @@
 <h3>Release Notes</h3>
 
 <p>
- Ezstream 0.3.0 has been released on March 5th 2007.
+ Ezstream 0.4.0 has been released on March 11th 2007.
 </p>
 
 <p>
- In this version, ezstream received a complete overhaul, with many new
- features, bug fixes, complete documentation, various other cleanups and
- improvements.
- The result is a better, more stable, more portable and more user-friendly
- ezstream that fits in a smaller distribution tarball.
- The binary distribution for Windows also no longer requires any .DLL files to
- function and comes as a stand-alone .EXE file.
+ With version 0.4.0, ezstream gained many new features related to metadata.
+ It can now use TagLib to read more information from media files. Also an
+ external program or script can be used to set a stream's metadata information,
+ which can be customized with a format string.
+ Metadata updates from an external program can be triggered mid-stream with the
+ SIGUSR2 signal. A couple of memory management fixes also went into this
+ release.
 </p>
 
 <h4 id="ez_relnotes_chgs" name="ez_relnotes_chgs">Changes</h4>
 
 <ul style="font-size: smaller; margin: 1em 3em">
  <li>
-  The original author, Ed Zaleski, hands over ezstream maintainership to Moritz
-  Grimm.
- </li>
- <li>
-  New Features:
+  src/util.*:
   <ul>
    <li>
-    Playlist shuffling support, enabled via the new
-    <code>&lt;shuffle&gt;</code> configuration option.
-   </li>
-   <li>
-    Playlist scripting support: Indicate that the executable in
-    <code>&lt;filename&gt;</code> should be run each time to get a new media
-    filename to stream, by setting the new <code>&lt;playlist_program&gt;</code>
-    configuration option to 1.
-   </li>
-   <li>
-    New <code>&lt;stream_once&gt;</code> configuration option, which makes
-    ezstream play a media file or playlist once and then exit.
-   </li>
-   <li>
-    New <code>&lt;reconnect_tries&gt;</code> option to restrict the number of
-    reconnection attempts to a server in case the connection goes down.
-   </li>
-   <li>
-    Add feature to skip the currently streaming track, done by sending the
-    SIGUSR1 signal to the ezstream process.
-   </li>
-   <li>
-    New command line option <code>-q</code>: Suppress standard error output
-    from external de-/encoders.
-   </li>
-   <li>
-    New command line option <code>-v</code>: Produce more verbose output.
-   </li>
-   <li>
-    New "real-time" status display of the stream when both -q and -v are given
-    on the command line.
-   </li>
-   <li>
-    Thorough configuration file checks with helpful error messages.
-   </li>
-   <li>
-    The <code>@M@</code> metadata placeholder is now supported in
-    <code>&lt;decode&gt;</code>.
-   </li>
-   <li>
-    Playlists may now have the '.txt' filename extension in addition to '.m3u'.
+    FIX --
+    The xfree() function did not work as intended due to a programming error.
+    Found, and fix suggested, by Karl Heyes.
    </li>
   </ul>
  </li>
  <li>
-  Fixes:
+  src/playlist.*:
   <ul>
    <li>
-    At least one stack and one heap overflow have been fixed.
+    FIX --
+    An error compareable to the one about xfree() in src/util.* has been fixed.
    </li>
    <li>
-    Several memory leaks have been fixed.
-   </li>
-   <li>
-    Strict checking of the configuration file prevents unexpected behavior and
-    adds another safeguard to prevent crashes.
-   </li>
-   <li>
-    Fixed and more portable signal handling.
+    MISC --
+    Refuse to execute a group- or world-writeable playlist script or program.
    </li>
   </ul>
  </li>
  <li>
-  Miscellaneous, user-visible changes:
+  src/compat.c:
   <ul>
    <li>
+    ADD --
+    Implement a basename() function for Windows that behaves
+    like the ones used on Unix systems.
+   </li>
+  </ul>
+ </li>
+ <li>
+  win32/:
+  <ul>
+   <li>
+    MISC --
+    Remove the rather ugly HTML version of the man page from the distribution,
+    and provide a much better PDF version instead.
+   </li>
+  </ul>
+ </li>
+ <li>
+  various:
+  <ul>
+   <li>
+    ADD --
+    Allow ezstream to use TagLib for reading metadata from media files.
+    TagLib (libtag_c) is now an optional dependency.
    </li>
    <li>
-    Improved documentation. Ezstream now has a comprehensive man page and the
-    README file has been rewritten.
+    ADD --
+    When built with TagLib support, include the song length in the "real-time"
+    information line, if available.
    </li>
    <li>
-    Consistency improvements in the configuration examples. The examples are
-    now also installed.
+    ADD --
+    New <code>&lt;metadata_progname&gt;</code> configuration option, which
+    causes metadata to be read from the output of an external program or script.
    </li>
    <li>
-    The <code>&lt;format&gt;</code> and <code>&lt;match&gt;</code>
-    configuration elements, as well as filename extension matching to detect
-    playlists in the <code>&lt;filename&gt;</code> element, are now case
-    insensitive.
+    ADD --
+    New runtime control via the <code>SIGUSR2</code> signal, which triggers
+    reading of fresh metadata information from
+    <code>&lt;metadata_progname&gt;</code> (metadata is always read at song
+    changes.)
    </li>
    <li>
-    Various improvements in the build system and portability fixes.
+    ADD --
+    New <code>&lt;metadata_format&gt;</code> configuration option, to customize
+    metadata strings when used with the new
+    <code>&lt;metadata_progname&gt;</code> feature.
    </li>
    <li>
-    Consistent and more helpful messages from ezstream. By default, ezstream
-    no longer clutters the screen with lots of output (some information that
-    used to be available needs to be enabled with the new <code>-v</code>
-    command line parameter.)
-   </li>
-   <li>
-    Tweaked metadata string generation: no more lone " - " dashes at the
-    beginning or end of the string.
-   </li>
-   <li>
-    New command line option <code>-V</code>: Print the version number and exit.
+    ADD --
+    New '<code>@a@</code>' and '<code>@t@</code>' placeholders for separate
+    artist and title metadata in de-/encoder commands.
    </li>
   </ul>
  </li>
