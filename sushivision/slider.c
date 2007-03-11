@@ -113,7 +113,8 @@ static void parent_shade(Slider *s, cairo_t *c, int shade){
 }
 
 void slider_draw_background(Slider *s){
-  slider_realize(s);
+  if(!s->realized)return;
+
   int i;
   GtkWidget *parent=gtk_widget_get_parent(s->slices[0]);
   GdkColor *text = &s->slices[0]->style->text[0];
@@ -242,10 +243,10 @@ void slider_realize(Slider *s){
       free(s->backdata);
 
     s->backdata = calloc(w*h,4);
-
-      s->background = cairo_image_surface_create_for_data ((unsigned char *)s->backdata,
-							   CAIRO_FORMAT_RGB24,
-							   w,h,w*4);
+    
+    s->background = cairo_image_surface_create_for_data ((unsigned char *)s->backdata,
+							 CAIRO_FORMAT_RGB24,
+							 w,h,w*4);
     if(s->flip){
       s->foreground = cairo_image_surface_create (CAIRO_FORMAT_RGB24,
 						  h,w);
@@ -259,6 +260,7 @@ void slider_realize(Slider *s){
 
     s->xpad=h*.45;
     if(s->xpad<4)s->xpad=4;
+    s->realized = 1;
     slider_draw_background(s);    
     slider_draw(s);
 
@@ -311,7 +313,7 @@ double slider_val_to_del(Slider *s,double v){
 }
 
 void slider_draw(Slider *s){
-  slider_realize(s);
+  if(!s->realized)return;
 
   int i;
   cairo_t *c;
