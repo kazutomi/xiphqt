@@ -1864,9 +1864,8 @@ static int _save_panel2d(sushiv_panel_t *p, xmlNodePtr pn){
     xmlNewPropS(on, "type", o->output_types);
     
     // right now Y is the only type; the below is Y-specific
-    n = xmlNewChild(on, NULL, (xmlChar *) "mapping", NULL);
-    xmlNewPropS(n, "type", mapping_name(p2->mappings[i].mapnum));
-    n = xmlNewChild(on, NULL, (xmlChar *) "y-scale", NULL);
+    n = xmlNewChild(on, NULL, (xmlChar *) "y-map", NULL);
+    xmlNewPropS(n, "color", mapping_name(p2->mappings[i].mapnum));
     xmlNewPropF(n, "low-bracket", slider_get_value(p2->range_scales[i],0));
     xmlNewPropF(n, "alpha", slider_get_value(p2->range_scales[i],1));
     xmlNewPropF(n, "high-bracket", slider_get_value(p2->range_scales[i],2));
@@ -1916,11 +1915,11 @@ int _load_panel2d(sushiv_panel_t *p,
       
       // right now Y is the only type; the below is Y-specific
       // load maptype, values
-      xmlGetChildMap(on, "mapping", "type", mapping_map(), &u->mappings[i],
+      xmlGetChildPropFPreserve(on, "y-map", "low-bracket", &u->scale_vals[0][i]);
+      xmlGetChildPropFPreserve(on, "y-map", "alpha", &u->scale_vals[1][i]);
+      xmlGetChildPropFPreserve(on, "y-map", "high-bracket", &u->scale_vals[2][i]);
+      xmlGetChildMap(on, "y-map", "color", mapping_map(), &u->mappings[i],
 		     "Panel %d objective unknown mapping setting", p->number, &warn);
-      xmlGetChildPropFPreserve(on, "y-scale", "low-bracket", &u->scale_vals[0][i]);
-      xmlGetChildPropFPreserve(on, "y-scale", "alpha", &u->scale_vals[1][i]);
-      xmlGetChildPropF(on, "y-scale", "high-bracket", &u->scale_vals[2][i]);
 
       xmlFreeNode(on);
     }

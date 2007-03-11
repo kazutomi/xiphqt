@@ -1417,58 +1417,44 @@ static int _save_panel1d(sushiv_panel_t *p, xmlNodePtr pn){
   xmlNewProp(pn, (xmlChar *)"type", (xmlChar *)"1d");
 
   // box
-  xmlNodePtr boxn = xmlNewChild(pn, NULL, (xmlChar *) "box", NULL);
   if(p->private->oldbox_active){
-    xmlNewProp(boxn, (xmlChar *)"active",(xmlChar *)"yes");
-    snprintf(buffer,sizeof(buffer),"%.20g",p1->oldbox[0]);
-    xmlNewProp(boxn, (xmlChar *)"x1", (xmlChar *)buffer);
-    snprintf(buffer,sizeof(buffer),"%.20g",p1->oldbox[1]);
-    xmlNewProp(boxn, (xmlChar *)"x2", (xmlChar *)buffer);
-  }else
-    xmlNewProp(boxn, (xmlChar *)"active",(xmlChar *)"no");
-
+    xmlNodePtr boxn = xmlNewChild(pn, NULL, (xmlChar *) "box", NULL);
+    xmlNewPropF(boxn, (xmlChar *)"x1", p1->oldbox[0]);
+    xmlNewPropF(boxn, (xmlChar *)"x2", p1->oldbox[1]);
+  }
+  
   // objective map settings
   for(i=0;i<p->objectives;i++){
     sushiv_objective_t *o = p->objective_list[i].o;
 
     xmlNodePtr on = xmlNewChild(pn, NULL, (xmlChar *) "objective", NULL);
-    snprintf(buffer,sizeof(buffer),"%d",i);
-    xmlNewProp(on, (xmlChar *)"position", (xmlChar *)buffer);
-    snprintf(buffer,sizeof(buffer),"%d",o->number);
-    xmlNewProp(on, (xmlChar *)"number", (xmlChar *)buffer);
-    xmlNewProp(on, (xmlChar *)"name", (xmlChar *)o->name);
-    xmlNewProp(on, (xmlChar *)"type", (xmlChar *)o->output_types);
+    xmlNewPropI(on, "position", i);
+    xmlNewProp(on, "number", o->number);
+    xmlNewPropS(on, "name", o->name);
+    xmlNewPropS(on, "type", o->output_types);
     
     // right now Y is the only type; the below is Y-specific
     // solid map 
     n = xmlNewChild(on, NULL, (xmlChar *) "mapping", NULL);
-    xmlNewProp(n, (xmlChar *)"type", (xmlChar *)solid_name(p1->mappings[i].mapnum));    
+    xmlNewMapProp(n, "type", solid_map(), p1->mappings[i].mapnum);
 
     // line type 
-    n = xmlNewChild(on, NULL, (xmlChar *) "line", NULL);
-    xmlNewProp(n, (xmlChar *)"type", (xmlChar *)line_name[p1->linetype[i]]);    
-
     // point type
-    n = xmlNewChild(on, NULL, (xmlChar *) "point", NULL);
-    xmlNewProp(n, (xmlChar *)"type", (xmlChar *)point_name[p1->pointtype[i]]);    
-
     // alpha slider
-    n = xmlNewChild(on, NULL, (xmlChar *) "transparency", NULL);
-    snprintf(buffer,sizeof(buffer),"%.20g",slider_get_value(p1->alpha_scale[i],0));
-    xmlNewProp(n, (xmlChar *)"alpha", (xmlChar *)buffer);
+    n = xmlNewChild(on, NULL, (xmlChar *) "y-map", NULL);
+    xmlNewPropS(n, "line", line_name[p1->linetype[i]]);    
+    xmlNewPropS(n, "point", point_name[p1->pointtype[i]]);    
+    xmlNewPropF(n, "alpha", slider_get_value(p1->alpha_scale[i],0));
   }
 
   // y scale
   n = xmlNewChild(pn, NULL, (xmlChar *) "range", NULL);
-  snprintf(buffer,sizeof(buffer),"%.20g",slider_get_value(p1->range_slider,0));
-  xmlNewProp(n, (xmlChar *)"low-bracket", (xmlChar *)buffer);
-  snprintf(buffer,sizeof(buffer),"%.20g",slider_get_value(p1->range_slider,1));
-  xmlNewProp(n, (xmlChar *)"high-bracket", (xmlChar *)buffer);
+  xmlNewPropF(n, "low-bracket", slider_get_value(p1->range_slider,0));
+  xmlNewPropF(n, "high-bracket", slider_get_value(p1->range_slider,1));
 
   // x/y dim selection
   n = xmlNewChild(pn, NULL, (xmlChar *) "selected-x", NULL);
-  snprintf(buffer,sizeof(buffer),"%d",p1->x_dnum);
-  xmlNewProp(n, (xmlChar *)"pos", (xmlChar *)buffer);
+  xmlNewPropI(n, "pos", p1->x_dnum);
 
   return ret;
 }
