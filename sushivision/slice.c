@@ -23,9 +23,7 @@
 #include <math.h>
 #include <string.h>
 #include <gdk/gdkkeysyms.h>
-#include "mapping.h"
-#include "slice.h"
-#include "slider.h"
+#include "internal.h"
 
 static void draw_and_expose(GtkWidget *widget){
   Slice *s=SLICE(widget);

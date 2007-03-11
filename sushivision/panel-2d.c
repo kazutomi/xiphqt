@@ -1839,7 +1839,6 @@ static void _sushiv_realize_panel2d(sushiv_panel_t *p){
 
 static int _save_panel2d(sushiv_panel_t *p, xmlNodePtr pn){  
   sushiv_panel2d_t *p2 = p->subtype->p2;
-  char buffer[80];
   int ret=0,i;
 
   xmlNodePtr n;
@@ -1847,62 +1846,89 @@ static int _save_panel2d(sushiv_panel_t *p, xmlNodePtr pn){
   xmlNewProp(pn, (xmlChar *)"type", (xmlChar *)"2d");
 
   // box
-  xmlNodePtr boxn = xmlNewChild(pn, NULL, (xmlChar *) "box", NULL);
   if(p->private->oldbox_active){
-    xmlNewProp(boxn, (xmlChar *)"active",(xmlChar *)"yes");
-    snprintf(buffer,sizeof(buffer),"%.20g",p2->oldbox[0]);
-    xmlNewProp(boxn, (xmlChar *)"x1", (xmlChar *)buffer);
-    snprintf(buffer,sizeof(buffer),"%.20g",p2->oldbox[1]);
-    xmlNewProp(boxn, (xmlChar *)"x2", (xmlChar *)buffer);
-    snprintf(buffer,sizeof(buffer),"%.20g",p2->oldbox[2]);
-    xmlNewProp(boxn, (xmlChar *)"y1", (xmlChar *)buffer);
-    snprintf(buffer,sizeof(buffer),"%.20g",p2->oldbox[3]);
-    xmlNewProp(boxn, (xmlChar *)"y2", (xmlChar *)buffer);
-  }else
-    xmlNewProp(boxn, (xmlChar *)"active",(xmlChar *)"no");
+    xmlNodePtr boxn = xmlNewChild(pn, NULL, (xmlChar *) "box", NULL);
+    xmlNewPropF(boxn, "x1", p2->oldbox[0]);
+    xmlNewPropF(boxn, "x2", p2->oldbox[1]);
+    xmlNewPropF(boxn, "y1", p2->oldbox[2]);
+    xmlNewPropF(boxn, "y2", p2->oldbox[3]);
+  }
 
   // objective map settings
   for(i=0;i<p->objectives;i++){
     sushiv_objective_t *o = p->objective_list[i].o;
-
     xmlNodePtr on = xmlNewChild(pn, NULL, (xmlChar *) "objective", NULL);
-    snprintf(buffer,sizeof(buffer),"%d",i);
-    xmlNewProp(on, (xmlChar *)"position", (xmlChar *)buffer);
-    snprintf(buffer,sizeof(buffer),"%d",o->number);
-    xmlNewProp(on, (xmlChar *)"number", (xmlChar *)buffer);
-    xmlNewProp(on, (xmlChar *)"name", (xmlChar *)o->name);
-    xmlNewProp(on, (xmlChar *)"type", (xmlChar *)o->output_types);
+    xmlNewPropI(on, "position", i);
+    xmlNewPropI(on, "number", o->number);
+    xmlNewPropS(on, "name", o->name);
+    xmlNewPropS(on, "type", o->output_types);
     
     // right now Y is the only type; the below is Y-specific
     n = xmlNewChild(on, NULL, (xmlChar *) "mapping", NULL);
-    xmlNewProp(n, (xmlChar *)"type", (xmlChar *)mapping_name(p2->mappings[i].mapnum));
+    xmlNewPropS(n, "type", mapping_name(p2->mappings[i].mapnum));
     n = xmlNewChild(on, NULL, (xmlChar *) "y-scale", NULL);
-    snprintf(buffer,sizeof(buffer),"%.20g",slider_get_value(p2->range_scales[i],0));
-    xmlNewProp(n, (xmlChar *)"low-bracket", (xmlChar *)buffer);
-    snprintf(buffer,sizeof(buffer),"%.20g",slider_get_value(p2->range_scales[i],1));
-    xmlNewProp(n, (xmlChar *)"alpha", (xmlChar *)buffer);
-    snprintf(buffer,sizeof(buffer),"%.20g",slider_get_value(p2->range_scales[i],2));
-    xmlNewProp(n, (xmlChar *)"high-bracket", (xmlChar *)buffer);
+    xmlNewPropF(n, "low-bracket", slider_get_value(p2->range_scales[i],0));
+    xmlNewPropF(n, "alpha", slider_get_value(p2->range_scales[i],1));
+    xmlNewPropF(n, "high-bracket", slider_get_value(p2->range_scales[i],2));
   }
 
   // x/y dim selection
-  n = xmlNewChild(pn, NULL, (xmlChar *) "selected-x", NULL);
-  snprintf(buffer,sizeof(buffer),"%d",p2->x_dnum);
-  xmlNewProp(n, (xmlChar *)"pos", (xmlChar *)buffer);
-  n = xmlNewChild(pn, NULL, (xmlChar *) "selected-y", NULL);
-  snprintf(buffer,sizeof(buffer),"%d",p2->y_dnum);
-  xmlNewProp(n, (xmlChar *)"pos", (xmlChar *)buffer);
+  n = xmlNewChild(pn, NULL, (xmlChar *) "axes", NULL);
+  xmlNewPropI(n, "xpos", p2->x_dnum);
+  xmlNewPropI(n, "ypos", p2->y_dnum);
 
   return ret;
 }
 
-int _load_panel_2d(sushiv_panel_t *d,
+int _load_panel2d(sushiv_panel_t *p,
 		   sushiv_panel_undo_t *u,
 		   xmlNodePtr pn,
 		   int warn){
-  
-  // check type
+  int i;
 
+  // check type
+  xmlCheckPropS(pn,"type","2d", "Panel %d type mismatch in save file.",p->number,&warn);
+  
+  // box
+  u->box_active = 0;
+  xmlGetChildPropFPreserve(pn, "box", "x1", &u->box[0]);
+  xmlGetChildPropFPreserve(pn, "box", "x2", &u->box[1]);
+  xmlGetChildPropFPreserve(pn, "box", "y1", &u->box[2]);
+  xmlGetChildPropFPreserve(pn, "box", "y2", &u->box[3]);
+
+  xmlNodePtr n = xmlGetChildS(pn, "box", NULL, NULL);
+  if(n){
+    u->box_active = 1;
+    xmlFree(n);
+  }
+  
+  // objective map settings
+  for(i=0;i<p->objectives;i++){
+    sushiv_objective_t *o = p->objective_list[i].o;
+    xmlNodePtr on = xmlGetChildI(pn, "objective", "position", i);
+    if(!on){
+      first_load_warning(&warn);
+      fprintf(stderr,"No save data found for panel %d objective \"%s\".\n",p->number, o->name);
+    }else{
+      // check name, type
+      xmlCheckPropS(on,"name",o->name, "Objectve position %d name mismatch in save file.",i,&warn);
+      xmlCheckPropS(on,"type",o->output_types, "Objectve position %d type mismatch in save file.",i,&warn);
+      
+      // right now Y is the only type; the below is Y-specific
+      // load maptype, values
+      xmlGetChildMap(on, "mapping", "type", mapping_map(), &u->mappings[i],
+		     "Panel %d objective unknown mapping setting", p->number, &warn);
+      xmlGetChildPropFPreserve(on, "y-scale", "low-bracket", &u->scale_vals[0][i]);
+      xmlGetChildPropFPreserve(on, "y-scale", "alpha", &u->scale_vals[1][i]);
+      xmlGetChildPropF(on, "y-scale", "high-bracket", &u->scale_vals[2][i]);
+
+      xmlFreeNode(on);
+    }
+  }
+
+  // x/y dim selection
+  xmlGetChildPropIPreserve(pn, "axes", "xpos", &u->x_d);
+  xmlGetChildPropI(pn, "axes", "ypos", &u->y_d);
 
   return warn;
 }
@@ -1950,6 +1976,7 @@ int sushiv_new_panel_2d(sushiv_instance_t *s,
   p->private->undo_log = panel2d_undo_log;
   p->private->undo_restore = panel2d_undo_restore;
   p->private->save_action = _save_panel2d;
+  p->private->load_action = _load_panel2d;
 
   /* set up helper data structures for rendering */
 

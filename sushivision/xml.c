@@ -28,8 +28,8 @@
 
 /* a few helpers to make specific libxml2 call patterns more concise */
 
-xmlNodePtr xmlGetChildS(xmlNodePtr n, char *name,char *prop, char *val){
-  xmlNodePtr child = n->xmlChildrenNode;
+xmlNodePtr xmlGetChildSPreserve(xmlNodePtr n, char *name,char *prop, char *val){
+  xmlNodePtr child = (n?n->xmlChildrenNode:NULL);
   while(child){
     // is this the child we want?
     if (child->type == XML_ELEMENT_NODE && !xmlStrcmp(child->name, (const xmlChar *)name)) {
@@ -39,9 +39,6 @@ xmlNodePtr xmlGetChildS(xmlNodePtr n, char *name,char *prop, char *val){
 	if (!prop || !xmlStrcmp(test, (const xmlChar *)val)) {
 	  if(test)
 	    xmlFree(test);
-	  // this is what we want 
-	  // remove it from the tree
-	  xmlUnlinkNode(child);
 
 	  // return it
 	  return child;
@@ -55,10 +52,27 @@ xmlNodePtr xmlGetChildS(xmlNodePtr n, char *name,char *prop, char *val){
   return NULL;
 }
 
+xmlNodePtr xmlGetChildS(xmlNodePtr n, char *name,char *prop, char *val){
+  xmlNodePtr child = (n?xmlGetChildSPreserve(n,name,prop,val):NULL);
+  if(child){
+    // this is what we want 
+    // remove it from the tree
+    xmlUnlinkNode(child);
+  }
+
+  return child;
+}
+
 xmlNodePtr xmlGetChildI(xmlNodePtr n, char *name,char *prop, int val){
   char buffer[80];
   snprintf(buffer,sizeof(buffer),"%d",val);
   return xmlGetChildS(n, name, prop, buffer);
+}
+
+xmlNodePtr xmlGetChildIPreserve(xmlNodePtr n, char *name,char *prop, int val){
+  char buffer[80];
+  snprintf(buffer,sizeof(buffer),"%d",val);
+  return xmlGetChildSPreserve(n, name, prop, buffer);
 }
 
 void xmlNewMapProp(xmlNodePtr n, char *name, propmap **map, int val){
@@ -89,12 +103,13 @@ void xmlNewPropS(xmlNodePtr n, char *name, char *val){
     xmlNewProp(n, (xmlChar *) name, (xmlChar *)val);
 }
 
-char *xmlGetPropS(xmlNodePtr n, char *name){
-  return (char *)xmlGetProp(n, (xmlChar *)name);
+void xmlGetPropS(xmlNodePtr n, char *name, char **value){
+  char *ret = (char *)(n?xmlGetProp(n, (xmlChar *)name):NULL);
+  if(ret) *value=ret;
 }
 
 void xmlGetPropF(xmlNodePtr n, char *name, double *val){
-  xmlChar *v = xmlGetProp(n, (xmlChar *)name);
+  xmlChar *v = (n?xmlGetProp(n, (xmlChar *)name):NULL);
   if(v){
     *val = atof((char *)v);
     xmlFree(v);
@@ -102,7 +117,8 @@ void xmlGetPropF(xmlNodePtr n, char *name, double *val){
 }
 
 void xmlCheckPropS(xmlNodePtr n, char *prop, char *val, char *msg, int num, int *warn){
-  char *testval = xmlGetPropS(n, prop);
+  char *testval = NULL;
+  xmlGetPropS(n, prop, &testval);
   if(testval){
     if(strcmp(val,testval)){
       first_load_warning(warn);
@@ -119,7 +135,8 @@ void xmlCheckPropS(xmlNodePtr n, char *prop, char *val, char *msg, int num, int 
 
 void xmlCheckMap(xmlNodePtr n, char *prop, propmap **map, int val, char *msg, int num, int *warn){
   char *name = NULL;
-  char *testname = xmlGetPropS(n, prop);
+  char *testname = NULL;
+  xmlGetPropS(n, prop, &testname);
   
   // look up our desired value
   propmap *m = *map++;
@@ -153,62 +170,97 @@ void xmlCheckMap(xmlNodePtr n, char *prop, propmap **map, int val, char *msg, in
   }
 }
 
-static int xmlGetMapVal(xmlNodePtr n, char *key, propmap **map){
-  char *valname = (char *)xmlGetProp(n, (xmlChar *)key);
-  if(!valname) return -1;
+static void xmlGetMapVal(xmlNodePtr n, char *key, propmap **map, int *out){
+  char *valname = (char *)(n?xmlGetProp(n, (xmlChar *)key):NULL);
+  if(!valname) return;
   
   propmap *m = *map++;
   while(m){
     if(!strcmp(m->left,valname)){
       xmlFree(valname);
-      return m->value;
+      *out = m->value;
+      return;
     }
     m = *map++;
   }
   xmlFree(valname);
-  return -1;
 }
 
-int xmlGetChildMap(xmlNodePtr in, char *prop, char *key, propmap **map, int default_val, 
-		   char *msg, int num, int *warn){
-  xmlNodePtr n = xmlGetChildS(in, prop, NULL, NULL);
-  if(!n)return default_val;
+void xmlGetChildMap(xmlNodePtr in, char *prop, char *key, propmap **map, int *out,
+		    char *msg, int num, int *warn){
+  xmlNodePtr n = (in?xmlGetChildS(in, prop, NULL, NULL):NULL);
+  if(!n)return;
 
   char *val = (char *)xmlGetProp(n, (xmlChar *)key);
   if(!val){
     xmlFreeNode(n);
-    return default_val;
+    return;
   }
 
-  int ret = xmlGetMapVal(n,key,map);
+  int ret = -1;
+  xmlGetMapVal(n,key,map,&ret);
   if(ret == -1){
     if(msg){
       first_load_warning(warn);
       fprintf(stderr,msg,num);
       fprintf(stderr," (%s).\n", val);
     }
-    ret = default_val;
-  }
+  }else
+    *out = ret;
 
   xmlFree(val);
   xmlFreeNode(n);
-  return ret;
 }
 
-char *xmlGetChildPropS(xmlNodePtr in, char *prop, char *key){
-
-  xmlNodePtr n = xmlGetChildS(in, prop, NULL, NULL);
-  if(!n)return NULL;
-
+void xmlGetChildPropS(xmlNodePtr in, char *prop, char *key, char **out){
+  xmlNodePtr n = (in?xmlGetChildS(in, prop, NULL, NULL):NULL);
+  if(!n)return;
   char *val = (char *)xmlGetProp(n, (xmlChar *)key);
-  if(!val){
-    xmlFreeNode(n);
-    return NULL;
-  }
-  return val;
+  xmlFreeNode(n);
+  if(val) *out = val;
+}
+
+void xmlGetChildPropSPreserve(xmlNodePtr in, char *prop, char *key, char **out){
+  xmlNodePtr n = (in?xmlGetChildSPreserve(in, prop, NULL, NULL):NULL);
+  if(!n)return;
+  char *val = (char *)xmlGetProp(n, (xmlChar *)key);
+  if(val) *out = val;
+}
+
+void xmlGetChildPropF(xmlNodePtr in, char *prop, char *key, double *out){
+  xmlNodePtr n = (in?xmlGetChildS(in, prop, NULL, NULL):NULL);
+  if(!n)return;
+  char *val = (char *)xmlGetProp(n, (xmlChar *)key);
+  xmlFreeNode(n);
+  if(val) *out = atof(val);
+  xmlFree(val);
 }
   
+void xmlGetChildPropFPreserve(xmlNodePtr in, char *prop, char *key, double *out){
+  xmlNodePtr n = (in?xmlGetChildSPreserve(in, prop, NULL, NULL):NULL);
+  if(!n)return;
+  char *val = (char *)xmlGetProp(n, (xmlChar *)key);
+  if(val) *out = atof(val);
+  xmlFree(val);
+}
 
+void xmlGetChildPropI(xmlNodePtr in, char *prop, char *key, int *out){
+  xmlNodePtr n = (in?xmlGetChildS(in, prop, NULL, NULL):NULL);
+  if(!n)return;
+  char *val = (char *)xmlGetProp(n, (xmlChar *)key);
+  xmlFreeNode(n);
+  if(val) *out = atoi(val);
+  xmlFree(val);
+}
+
+void xmlGetChildPropIPreserve(xmlNodePtr in, char *prop, char *key, int *out){
+  xmlNodePtr n = (in?xmlGetChildSPreserve(in, prop, NULL, NULL):NULL);
+  if(!n)return;
+  char *val = (char *)xmlGetProp(n, (xmlChar *)key);
+  if(val) *out = atoi(val);
+  xmlFree(val);
+}
+  
 /* convenience helpers for wielding property maps */
 int propmap_pos(propmap **map, int val){
   int i=0;

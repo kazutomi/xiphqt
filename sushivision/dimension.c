@@ -56,7 +56,6 @@ int _sushiv_dimension_scales(sushiv_dimension_t *d,
   if(lo>hi){ // == must be 1 to match scale gen code when width is 0
     pneg = -1;
   }else{
-
     pneg = 1;
   }
   
@@ -771,13 +770,13 @@ int _load_dimension(sushiv_dimension_t *d,
 		    sushiv_instance_undo_t *u,
 		    xmlNodePtr dn,
 		    int warn){
-  
+
   // check name 
   xmlCheckPropS(dn,"name",d->name,"Dimension %d name mismatch in save file.",d->number,&warn);
- 
+  
   // check type
   xmlCheckMap(dn,"type",typemap, d->type, "Dimension %d type mismatch in save file.",d->number,&warn);
-
+  
   // load vals
   xmlGetPropF(dn,"low-bracket", &u->dim_vals[0][d->number]);
   xmlGetPropF(dn,"value", &u->dim_vals[1][d->number]);

@@ -952,39 +952,38 @@ int _load_panel(sushiv_panel_t *p,
   xmlCheckPropS(pn,"name",p->name,"Panel %d name mismatch in save file.",p->number,&warn);
 
   // background
-  u->bg_mode = xmlGetChildMap(pn, "background", "color", bgmap, p->private->bg_type,
-			      "Panel %d unknown background setting", p->number, &warn);
+  xmlGetChildMap(pn, "background", "color", bgmap, &u->bg_mode,
+		 "Panel %d unknown background setting", p->number, &warn);
   // grid
-  u->grid_mode = xmlGetChildMap(pn, "grid", "mode", gridmap, PLOT(p->private->graph)->grid_mode,
-				"Panel %d unknown grid mode setting", p->number, &warn);
+  xmlGetChildMap(pn, "grid", "mode", gridmap, &u->grid_mode,
+		 "Panel %d unknown grid mode setting", p->number, &warn);
   // crosshairs
-  u->cross_mode = xmlGetChildMap(pn, "crosshairs", "active", crossmap, PLOT(p->private->graph)->cross_active,
-				"Panel %d unknown crosshair setting", p->number, &warn);
+  xmlGetChildMap(pn, "crosshairs", "active", crossmap, &u->cross_mode,
+		 "Panel %d unknown crosshair setting", p->number, &warn);
   // legend
-  u->legend_mode = xmlGetChildMap(pn, "legend", "mode", legendmap, PLOT(p->private->graph)->legend_active,
-				"Panel %d unknown legend setting", p->number, &warn);
+  xmlGetChildMap(pn, "legend", "mode", legendmap, &u->legend_mode,
+		 "Panel %d unknown legend setting", p->number, &warn);
   // text
-  u->text_mode = xmlGetChildMap(pn, "text", "color", textmap, PLOT(p->private->graph)->bg_inv,
-				"Panel %d unknown text color setting", p->number, &warn);
+  xmlGetChildMap(pn, "text", "color", textmap, &u->text_mode,
+		 "Panel %d unknown text color setting", p->number, &warn);
   // resample
-  char *prop = xmlGetChildPropS(pn, "sampling", "ratio");
-  if(!prop){
-    u->oversample_n = p->private->def_oversample_n;
-    u->oversample_d = p->private->def_oversample_d;
-  }else{
+  char *prop = NULL;
+  xmlGetChildPropS(pn, "sampling", "ratio", &prop);
+  if(prop){
     int res = sscanf(prop,"%d:%d", &u->oversample_n, &u->oversample_d);
     if(res<2){
       fprintf(stderr,"Unable to parse sample setting (%s) for panel %d.\n",prop,p->number);
       u->oversample_n = p->private->def_oversample_n;
       u->oversample_d = p->private->def_oversample_d;
     }
+    if(u->oversample_d == 0) u->oversample_d = 1;
     xmlFree(prop);
   }
-
+  
   // subtype 
   if(p->private->load_action)
     warn = p->private->load_action(p, u, pn, warn);
-
+  
   // any unparsed elements? 
   xmlNodePtr n = pn->xmlChildrenNode;
   
@@ -995,6 +994,6 @@ int _load_panel(sushiv_panel_t *p,
     }
     n = n->next; 
   }
-  
+
   return warn;
 }

@@ -349,9 +349,9 @@ static int load_instance(sushiv_instance_t *s, xmlNodePtr in, int warn){
   // piggyback off undo (as it already goes through the trouble of
   // doing correct unrolling, which can be tricky)
 
-  // if this instance has an undo stack, pop it all.
+  // if this instance has an undo stack, pop it all, then log current state into it
   s->private->undo_level=0;
-  _sushiv_undo_pop(s);
+  _sushiv_undo_log(s);
 
   sushiv_instance_undo_t *u = s->private->undo_stack[s->private->undo_level];
 
@@ -360,33 +360,33 @@ static int load_instance(sushiv_instance_t *s, xmlNodePtr in, int warn){
     sushiv_dimension_t *d = s->dimension_list[i];
     if(d){
       xmlNodePtr dn = xmlGetChildI(in,"dimension","number",d->number);
-      if(dn){ 
-	warn |= _load_dimension(d,u,dn,warn);
-	xmlFreeNode(dn);
-      }else{
+      if(!dn){
 	first_load_warning(&warn);
 	fprintf(stderr,"Could not find data for dimension \"%s\" in save file.\n",
 		d->name);
+      }else{
+	warn |= _load_dimension(d,u,dn,warn);
+	xmlFreeNode(dn);
       }
     }
   }
-
+  
   // load panels
   for(i=0;i<s->panels;i++){
     sushiv_panel_t *p = s->panel_list[i];
     if(p){
       xmlNodePtr pn = xmlGetChildI(in,"panel","number",p->number);
-      if(pn){ 
-	warn |= _load_panel(p,u->panels+i,pn,warn);
-	xmlFreeNode(pn);
-      }else{
+      if(!pn){ 
 	first_load_warning(&warn);
 	fprintf(stderr,"Could not find data for panel \"%s\" in save file.\n",
 		p->name);
+      }else{
+	warn |= _load_panel(p,u->panels+i,pn,warn);
+	xmlFreeNode(pn);
       }
     }
   }
-
+  
   // if any elements are unclaimed, warn 
   xmlNodePtr node = in->xmlChildrenNode;
   while(node){
@@ -404,7 +404,9 @@ static int load_instance(sushiv_instance_t *s, xmlNodePtr in, int warn){
   }
   
   // effect the loaded values
+  _sushiv_undo_suspend(s);
   _sushiv_undo_restore(s);
+  _sushiv_undo_resume(s);
 
   return warn;
 }
@@ -473,14 +475,14 @@ int load_main(){
     sushiv_instance_t *s = instance_list[i];
     if(s){
       xmlNodePtr in = xmlGetChildI(root,"instance","number",s->number);
-      if(in){ 
-	warn |= load_instance(s,in,warn);
-	xmlFreeNode(in);
-      }else{
+      if(!in){ 
 	first_load_warning(&warn);
 	fprintf(stderr,"Could not find data for instance \"%s\" in save file.\n",
 		s->name);
       }
+      // load even if no node; need to set fallbacks
+      warn |= load_instance(s,in,warn);
+      if(in)xmlFreeNode(in);
     }
   }
 
@@ -489,7 +491,8 @@ int load_main(){
   
   while(node){
     if (node->type == XML_ELEMENT_NODE) {
-      char *name = xmlGetPropS(node, "name");
+      char *name = NULL;
+      xmlGetPropS(node, "name", &name);
       first_load_warning(&warn);
       if(name){
 	fprintf(stderr,"Save file contains data for nonexistant object \"%s\".\n",

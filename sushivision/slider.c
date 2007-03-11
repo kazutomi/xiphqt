@@ -25,9 +25,7 @@
 #include <string.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
-#include "mapping.h"
-#include "slice.h"
-#include "slider.h"
+#include "internal.h"
 
 static double val_to_pixel(Slider *s, double val);
 
@@ -115,6 +113,7 @@ static void parent_shade(Slider *s, cairo_t *c, int shade){
 }
 
 void slider_draw_background(Slider *s){
+  slider_realize(s);
   int i;
   GtkWidget *parent=gtk_widget_get_parent(s->slices[0]);
   GdkColor *text = &s->slices[0]->style->text[0];
@@ -312,6 +311,8 @@ double slider_val_to_del(Slider *s,double v){
 }
 
 void slider_draw(Slider *s){
+  slider_realize(s);
+
   int i;
   cairo_t *c;
   //int w=s->w;

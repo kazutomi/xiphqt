@@ -72,3 +72,7 @@ extern int num_solids();
 extern char *solid_name(int i);
 extern void solid_setup(mapping *m, float lo, float hi, int funcnum);
 extern void solid_set_func(mapping *m, int funcnum);
+
+extern propmap **mapping_map();
+extern propmap **solid_map();
+

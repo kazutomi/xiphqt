@@ -22,7 +22,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
-#include "mapping.h"
+#include "internal.h"
 
 // val is .16; lcolor has pigment added in the range [0,mul]
 static void scalloped_colorwheel(int val, int mul, lcolor *r){
@@ -309,18 +309,18 @@ static ucolor (*mixfunc[])(ucolor, ucolor)={
   inactive_mix
 };
 
-static char *mapnames[]={
-  "smooth colorwheel",
-  "scalloped colorwheel",
-  "grayscale",
-  "red",
-  "green",
-  "blue",
-  "red overlay",
-  "green overlay",
-  "blue overlay",
-  "inactive",
-0
+static propmap *mapnames[]={
+  &(propmap){"smooth colorwheel",0,    NULL, NULL, NULL},
+  &(propmap){"scalloped colorwheel",1, NULL, NULL, NULL},
+  &(propmap){"grayscale",2,            NULL, NULL, NULL},
+  &(propmap){"red",3,                  NULL, NULL, NULL},
+  &(propmap){"green",4,                NULL, NULL, NULL},
+  &(propmap){"blue",5,                 NULL, NULL, NULL},
+  &(propmap){"red overlay",6,          NULL, NULL, NULL},
+  &(propmap){"green overlay",7,        NULL, NULL, NULL},
+  &(propmap){"blue overlay",8,         NULL, NULL, NULL},
+  &(propmap){"inactive",9,             NULL, NULL, NULL},
+  NULL
 };
 
 int num_mappings(){
@@ -330,7 +330,11 @@ int num_mappings(){
 }
 
 char *mapping_name(int i){
-  return mapnames[i];
+  return mapnames[i]->left;
+}
+
+propmap **mapping_map(){
+  return mapnames;
 }
 
 void mapping_setup(mapping *m, float lo, float hi, int funcnum){
@@ -421,18 +425,18 @@ static ucolor (*mixsolid[])(ucolor, ucolor)={
   inactive_mix
 };
 
-static char *solidnames[]={
-  "black",
-  "red",
-  "green",
-  "blue",
-  "yellow",
-  "cyan",
-  "purple",
-  "gray",
-  "white",
-  "inactive",
-  0
+static propmap *solidnames[]={
+  &(propmap){"black",0,     NULL,NULL,NULL},
+  &(propmap){"red",1,       NULL,NULL,NULL},
+  &(propmap){"green",2,     NULL,NULL,NULL},
+  &(propmap){"blue",3,      NULL,NULL,NULL},
+  &(propmap){"yellow",4,    NULL,NULL,NULL},
+  &(propmap){"cyan",5,      NULL,NULL,NULL},
+  &(propmap){"purple",6,    NULL,NULL,NULL},
+  &(propmap){"gray",7,      NULL,NULL,NULL},
+  &(propmap){"white",8,     NULL,NULL,NULL},
+  &(propmap){"inactive",9,  NULL,NULL,NULL},
+  NULL
 };
 
 int num_solids(){
@@ -442,7 +446,11 @@ int num_solids(){
 }
 
 char *solid_name(int i){
-  return solidnames[i];
+  return solidnames[i]->left;
+}
+
+propmap **solid_map(){
+  return solidnames;
 }
 
 void solid_setup(mapping *m, float lo, float hi, int funcnum){
