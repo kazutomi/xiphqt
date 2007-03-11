@@ -1409,7 +1409,6 @@ void _sushiv_realize_panel1d(sushiv_panel_t *p){
 
 static int _save_panel1d(sushiv_panel_t *p, xmlNodePtr pn){  
   sushiv_panel1d_t *p1 = p->subtype->p1;
-  char buffer[80];
   int ret=0,i;
 
   xmlNodePtr n;
@@ -1419,8 +1418,8 @@ static int _save_panel1d(sushiv_panel_t *p, xmlNodePtr pn){
   // box
   if(p->private->oldbox_active){
     xmlNodePtr boxn = xmlNewChild(pn, NULL, (xmlChar *) "box", NULL);
-    xmlNewPropF(boxn, (xmlChar *)"x1", p1->oldbox[0]);
-    xmlNewPropF(boxn, (xmlChar *)"x2", p1->oldbox[1]);
+    xmlNewPropF(boxn, "x1", p1->oldbox[0]);
+    xmlNewPropF(boxn, "x2", p1->oldbox[1]);
   }
   
   // objective map settings
@@ -1429,7 +1428,7 @@ static int _save_panel1d(sushiv_panel_t *p, xmlNodePtr pn){
 
     xmlNodePtr on = xmlNewChild(pn, NULL, (xmlChar *) "objective", NULL);
     xmlNewPropI(on, "position", i);
-    xmlNewProp(on, "number", o->number);
+    xmlNewPropI(on, "number", o->number);
     xmlNewPropS(on, "name", o->name);
     xmlNewPropS(on, "type", o->output_types);
     
