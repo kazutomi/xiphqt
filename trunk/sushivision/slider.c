@@ -819,6 +819,7 @@ gboolean slider_key_press(Slider *s,GdkEventKey *event,int slicenum){
       
       if(sl->callback){
 	sl->callback(sl->callback_data,0);
+	sl->callback(sl->callback_data,1);
 	sl->callback(sl->callback_data,2);
       }
       slider_draw(s);
@@ -839,6 +840,7 @@ gboolean slider_key_press(Slider *s,GdkEventKey *event,int slicenum){
       
       if(sl->callback){
 	sl->callback(sl->callback_data,0);
+	sl->callback(sl->callback_data,1);
 	sl->callback(sl->callback_data,2);
       }
       slider_draw(s);
