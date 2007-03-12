@@ -101,10 +101,10 @@ end-user download links are provided for convenience:
 
 <tr>
 <td>libflac</td>
-<td>1.1.2</td>
-<td><a href="http://downloads.xiph.org/releases/flac/flac-1.1.2.tar.gz">flac-1.1.2.tar.gz</a></td>
-<td>1.4M</td>
-<td>2bfc127cdda02834d0491ab531a20960</td>
+<td>1.1.4</td>
+<td><a href="http://downloads.xiph.org/releases/flac/flac-1.1.4.tar.gz">flac-1.1.4.tar.gz</a></td>
+<td>1.8M</td>
+<td>3958cbd5b6ed8c14966792538e44223b</td>
 </tr>
 
 <tr>
@@ -116,6 +116,26 @@ end-user download links are provided for convenience:
   482K<br>
 <td>12e136a4c0995068ff134997c84421ed<br/>
   8ebc8207b8fb9934e8efce13b9855c24</td>
+</tr>
+
+<tr>
+<td>libSpiff</td>
+<td>0.6.0rc1</td>
+<td>
+	<a href="http://downloads.xiph.org/releases/xspf/libspiff-0.6.0rc1.tar.bz2">libspiff-0.6.0rc1.tar.bz2</a><br />
+	<a href="http://downloads.xiph.org/releases/xspf/libspiff-0.6.0rc1.tar.gz">libspiff-0.6.0rc1.tar.gz</a><br />
+	<a href="http://downloads.xiph.org/releases/xspf/libspiff-0.6.0rc1.zip">libspiff-0.6.0rc1.zip</a>
+</td>
+<td>
+	164K<br />
+	201K<br />
+	275K
+</td>
+<td>
+	de27cbe1cbc574a4fe622d647647c64e<br />
+	ff276a91e40bc9d480ee0ae2373c8c76<br />
+	10f914c6d0d0c2caa189d06ecc9b4458
+</td>
 </tr>
 
 </table>
