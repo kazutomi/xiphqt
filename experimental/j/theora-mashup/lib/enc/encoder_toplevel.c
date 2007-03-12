@@ -1219,3 +1219,42 @@ void theora_encoder_clear (CP_INSTANCE * cpi){
     _ogg_free(cpi);
   }
 }
+
+/* returns, in seconds, absolute time of current packet in given
+   logical stream */
+double theora_granule_time_enc(theora_state *th,ogg_int64_t granulepos){
+#ifndef THEORA_DISABLE_FLOAT
+  CP_INSTANCE *cpi=(CP_INSTANCE *)(th->internal_encode);
+  PB_INSTANCE *pbi=(PB_INSTANCE *)(th->internal_decode);
+
+  if(cpi)pbi=&cpi->pb;
+
+  if(granulepos>=0){
+    ogg_int64_t iframe=granulepos>>pbi->keyframe_granule_shift;
+    ogg_int64_t pframe=granulepos-(iframe<<pbi->keyframe_granule_shift);
+
+    return (iframe+pframe)*
+      ((double)pbi->info.fps_denominator/pbi->info.fps_numerator);
+
+  }
+#endif
+
+  return(-1); /* negative granulepos or float calculations disabled */
+}
+
+/* returns frame number of current packet in given logical stream */
+ogg_int64_t theora_granule_frame_enc(theora_state *th,ogg_int64_t granulepos){
+  CP_INSTANCE *cpi=(CP_INSTANCE *)(th->internal_encode);
+  PB_INSTANCE *pbi=(PB_INSTANCE *)(th->internal_decode);
+
+  if(cpi)pbi=&cpi->pb;
+
+  if(granulepos>=0){
+    ogg_int64_t iframe=granulepos>>pbi->keyframe_granule_shift;
+    ogg_int64_t pframe=granulepos-(iframe<<pbi->keyframe_granule_shift);
+
+    return (iframe+pframe);
+  }
+
+  return(-1);
+}

@@ -111,6 +111,8 @@ int theora_decode_init(theora_state *_td,theora_info *_ci){
   /*Don't bother to copy the setup info; th_decode_alloc() makes its own copy
      of the stuff it needs.*/
   dapi->decode=th_decode_alloc(&info,api->setup);
+  
+  return(0);
 }
 
 static void th_info2theora_info(theora_info *_ci,const th_info *_info){
@@ -215,10 +217,14 @@ int theora_granule_shift(theora_info *_ci){
 }
 
 ogg_int64_t theora_granule_frame(theora_state *_td,ogg_int64_t _gp){
+  if(_td->internal_encode!=NULL)
+    return theora_granule_time_enc(_td, _gp);
   return th_granule_frame(((th_api_wrapper *)_td->i->codec_setup)->decode,_gp);
 }
 
 double theora_granule_time(theora_state *_td, ogg_int64_t _gp){
+  if(_td->internal_encode!=NULL)
+    return theora_granule_time_enc(_td, _gp);
   return th_granule_time(((th_api_wrapper *)_td->i->codec_setup)->decode,_gp);
 }
 

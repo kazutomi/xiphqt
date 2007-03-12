@@ -5,6 +5,7 @@
 #  include <config.h>
 # endif
 # include "theora/codec.h"
+# include "theora/theora.h"
 # include "ocintrin.h"
 # include "huffman.h"
 # include "quant.h"
@@ -427,5 +428,8 @@ void oc_state_frag_recon_c(oc_theora_state *_state,const oc_fragment *_frag,
  int _pli,ogg_int16_t _dct_coeffs[128],int _last_zzi,int _ncoefs,
  ogg_uint16_t _dc_iquant,const ogg_uint16_t _ac_iquant[64]);
 void oc_restore_fpu_c(void);
+
+extern double theora_granule_time_enc(theora_state *th,ogg_int64_t granulepos);
+extern ogg_int64_t theora_granule_frame_enc(theora_state *th,ogg_int64_t granulepos);
 
 #endif
