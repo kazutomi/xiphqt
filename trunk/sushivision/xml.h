@@ -33,6 +33,8 @@ extern void xmlGetPropS(xmlNodePtr n, char *name, char **out);
 extern void xmlGetPropF(xmlNodePtr n, char *name, double *out);
 extern void xmlGetChildMap(xmlNodePtr in, char *prop, char *key, propmap **map, int *out,
 			  char *msg, int num, int *warn);
+extern void xmlGetChildMapPreserve(xmlNodePtr in, char *prop, char *key, propmap **map, int *out,
+				   char *msg, int num, int *warn);
 extern void xmlGetChildPropS(xmlNodePtr in, char *prop, char *key, char **out);
 extern void xmlGetChildPropSPreserve(xmlNodePtr in, char *prop, char *key, char **out);
 extern void xmlGetChildPropF(xmlNodePtr in, char *prop, char *key, double *out);
