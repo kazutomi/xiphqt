@@ -22,7 +22,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "toplevel_lookup.h"
-#include "toplevel.h"
+#include "internal.h"
 #include "dsp.h"
 
 #define A_TABLE_SIZE        29
@@ -782,9 +782,9 @@ int theora_encode_init(theora_state *th, theora_info *c){
   dsp_static_init (&cpi->dsp);
   memcpy (&cpi->pb.dsp, &cpi->dsp, sizeof(DspFunctions));
 
-  c->version_major=VERSION_MAJOR;
-  c->version_minor=VERSION_MINOR;
-  c->version_subminor=VERSION_SUB;
+  c->version_major=TH_VERSION_MAJOR;
+  c->version_minor=TH_VERSION_MINOR;
+  c->version_subminor=TH_VERSION_SUB;
 
   InitTmpBuffers(&cpi->pb);
   InitPPInstance(&cpi->pp, &cpi->dsp);
@@ -1063,9 +1063,9 @@ int theora_encode_header(theora_state *t, ogg_packet *op){
   oggpackB_write(cpi->oggbuffer,0x80,8);
   _tp_writebuffer(cpi->oggbuffer, "theora", 6);
 
-  oggpackB_write(cpi->oggbuffer,VERSION_MAJOR,8);
-  oggpackB_write(cpi->oggbuffer,VERSION_MINOR,8);
-  oggpackB_write(cpi->oggbuffer,VERSION_SUB,8);
+  oggpackB_write(cpi->oggbuffer,TH_VERSION_MAJOR,8);
+  oggpackB_write(cpi->oggbuffer,TH_VERSION_MINOR,8);
+  oggpackB_write(cpi->oggbuffer,TH_VERSION_SUB,8);
 
   oggpackB_write(cpi->oggbuffer,cpi->pb.info.width>>4,16);
   oggpackB_write(cpi->oggbuffer,cpi->pb.info.height>>4,16);
