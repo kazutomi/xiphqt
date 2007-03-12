@@ -13,7 +13,7 @@
 #pragma warning(disable:4554)
 
 /*This library's version.*/
-# define OC_VENDOR_STRING "derf's experimental encoder library " __DATE__
+# define OC_VENDOR_STRING "Xiph.Org libTheora I 20060526 3 2 0"
 
 /*Theora bitstream version.*/
 # define TH_VERSION_MAJOR (3)

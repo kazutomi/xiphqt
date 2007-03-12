@@ -7,7 +7,6 @@ encoder_sources = \
 	enc/encode.c \
 	enc/encoder_toplevel.c \
 	enc/blockmap.c \
-	enc/comment.c \
 	enc/common.c \
 	enc/dct.c \
 	enc/dct_decode.c \
@@ -84,7 +83,6 @@ noinst_HEADERS = \
 	enc/hufftables.h \
 	enc/pp.h \
 	enc/quant_lookup.h \
-	enc/toplevel.h \
 	enc/toplevel_lookup.h \
 	enc/enccpu.h \
 	enc/dsp.h \

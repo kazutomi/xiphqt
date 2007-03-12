@@ -237,3 +237,11 @@ int theora_comment_query_count(theora_comment *_tc,char *_tag){
 void theora_comment_clear(theora_comment *_tc){
   th_comment_clear((th_comment *)_tc);
 }
+
+void theora_comment_add(theora_comment *_tc,char *_comment){
+  th_comment_add((th_comment *)_tc,_comment);
+}
+
+void theora_comment_add_tag(theora_comment *_tc, char *_tag, char *_value){
+  th_comment_add_tag((th_comment *)_tc,_tag,_value);
+}
