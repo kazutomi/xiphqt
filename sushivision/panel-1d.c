@@ -33,27 +33,27 @@
 #include "internal.h"
 
 #define LINETYPES 6
-static char *line_name[LINETYPES+1] = {
-  "line",
-  "fat line",
-  "fill above",
-  "fill below",
-  "fill to zero",
-  "no line",
+static propmap *line_name[LINETYPES+1] = {
+  &(propmap){"line", 0,          NULL,NULL,NULL},
+  &(propmap){"fat line", 1,      NULL,NULL,NULL},
+  &(propmap){"fill above", 2,    NULL,NULL,NULL},
+  &(propmap){"fill below", 3,    NULL,NULL,NULL},
+  &(propmap){"fill to zero", 4,  NULL,NULL,NULL},
+  &(propmap){"no line", 5,       NULL,NULL,NULL},
   NULL
 };
 
 #define POINTTYPES 9
-static char *point_name[POINTTYPES+1] = {
-  "dot",
-  "cross",
-  "plus",
-  "open circle",
-  "open square",
-  "open triangle",
-  "solid circle",
-  "solid square",
-  "solid triangle",
+static propmap *point_name[POINTTYPES+1] = {
+  &(propmap){"dot", 0,             NULL,NULL,NULL},
+  &(propmap){"cross", 1,           NULL,NULL,NULL},
+  &(propmap){"plus", 2,            NULL,NULL,NULL},
+  &(propmap){"open circle", 3,     NULL,NULL,NULL},
+  &(propmap){"open square", 4,     NULL,NULL,NULL},
+  &(propmap){"open triangle", 5,   NULL,NULL,NULL},
+  &(propmap){"solid circle", 6,    NULL,NULL,NULL},
+  &(propmap){"solid square", 7,    NULL,NULL,NULL},
+  &(propmap){"solid triangle", 8,  NULL,NULL,NULL},
   NULL
 };
 
@@ -1307,7 +1307,7 @@ void _sushiv_realize_panel1d(sushiv_panel_t *p){
 	GtkWidget *menu=gtk_combo_box_new_text();
 	int j;
 	for(j=0;j<LINETYPES;j++)
-	  gtk_combo_box_append_text (GTK_COMBO_BOX (menu), line_name[j]);
+	  gtk_combo_box_append_text (GTK_COMBO_BOX (menu), line_name[j]->left);
 	gtk_combo_box_set_active(GTK_COMBO_BOX(menu),0);
 	g_signal_connect (G_OBJECT (menu), "changed",
 			  G_CALLBACK (linetype_callback_1d), p->objective_list+i);
@@ -1321,7 +1321,7 @@ void _sushiv_realize_panel1d(sushiv_panel_t *p){
 	GtkWidget *menu=gtk_combo_box_new_text();
 	int j;
 	for(j=0;j<POINTTYPES;j++)
-	  gtk_combo_box_append_text (GTK_COMBO_BOX (menu), point_name[j]);
+	  gtk_combo_box_append_text (GTK_COMBO_BOX (menu), point_name[j]->left);
 	gtk_combo_box_set_active(GTK_COMBO_BOX(menu),0);
 	g_signal_connect (G_OBJECT (menu), "changed",
 			  G_CALLBACK (pointtype_callback_1d), p->objective_list+i);
@@ -1433,16 +1433,11 @@ static int _save_panel1d(sushiv_panel_t *p, xmlNodePtr pn){
     xmlNewPropS(on, "type", o->output_types);
     
     // right now Y is the only type; the below is Y-specific
-    // solid map 
-    n = xmlNewChild(on, NULL, (xmlChar *) "mapping", NULL);
-    xmlNewMapProp(n, "type", solid_map(), p1->mappings[i].mapnum);
 
-    // line type 
-    // point type
-    // alpha slider
     n = xmlNewChild(on, NULL, (xmlChar *) "y-map", NULL);
-    xmlNewPropS(n, "line", line_name[p1->linetype[i]]);    
-    xmlNewPropS(n, "point", point_name[p1->pointtype[i]]);    
+    xmlNewMapProp(n, "color", solid_map(), p1->mappings[i].mapnum);
+    xmlNewMapProp(n, "line", line_name, p1->linetype[i]);    
+    xmlNewMapProp(n, "point", point_name, p1->pointtype[i]);    
     xmlNewPropF(n, "alpha", slider_get_value(p1->alpha_scale[i],0));
   }
 
@@ -1452,10 +1447,72 @@ static int _save_panel1d(sushiv_panel_t *p, xmlNodePtr pn){
   xmlNewPropF(n, "high-bracket", slider_get_value(p1->range_slider,1));
 
   // x/y dim selection
-  n = xmlNewChild(pn, NULL, (xmlChar *) "selected-x", NULL);
-  xmlNewPropI(n, "pos", p1->x_dnum);
+  n = xmlNewChild(pn, NULL, (xmlChar *) "axes", NULL);
+  xmlNewPropI(n, "xpos", p1->x_dnum);
 
   return ret;
+}
+
+int _load_panel1d(sushiv_panel_t *p,
+		  sushiv_panel_undo_t *u,
+		  xmlNodePtr pn,
+		  int warn){
+  int i;
+
+  // check type
+  xmlCheckPropS(pn,"type","1d", "Panel %d type mismatch in save file.",p->number,&warn);
+  
+  // box
+  u->box_active = 0;
+  xmlGetChildPropFPreserve(pn, "box", "x1", &u->box[0]);
+  xmlGetChildPropFPreserve(pn, "box", "x2", &u->box[1]);
+
+  xmlNodePtr n = xmlGetChildS(pn, "box", NULL, NULL);
+  if(n){
+    u->box_active = 1;
+    xmlFree(n);
+  }
+  
+  // objective map settings
+  for(i=0;i<p->objectives;i++){
+    sushiv_objective_t *o = p->objective_list[i].o;
+    xmlNodePtr on = xmlGetChildI(pn, "objective", "position", i);
+    if(!on){
+      first_load_warning(&warn);
+      fprintf(stderr,"No save data found for panel %d objective \"%s\".\n",p->number, o->name);
+    }else{
+      // check name, type
+      xmlCheckPropS(on,"name",o->name, "Objectve position %d name mismatch in save file.",i,&warn);
+      xmlCheckPropS(on,"type",o->output_types, "Objectve position %d type mismatch in save file.",i,&warn);
+      
+      // right now Y is the only type; the below is Y-specific
+      // load maptype, values
+      int color = (u->mappings[i]>>24)&0xff;
+      int line = (u->mappings[i]>>16)&0xff;
+      int point = (u->mappings[i]>>8)&0xff;
+
+      xmlGetChildMapPreserve(on, "y-map", "color", solid_map(), &color,
+		     "Panel %d objective unknown mapping setting", p->number, &warn);
+      xmlGetChildMapPreserve(on, "y-map", "line", line_name, &line,
+		     "Panel %d objective unknown mapping setting", p->number, &warn);
+      xmlGetChildMapPreserve(on, "y-map", "point", point_name, &point,
+		     "Panel %d objective unknown mapping setting", p->number, &warn);
+      xmlGetChildPropF(on, "y-map", "alpha", &u->scale_vals[2][i]);
+
+      u->mappings[i] = (color<<24) | (line<<16) | (point<<8);
+
+      xmlFreeNode(on);
+    }
+  }
+
+  // y scale
+  xmlGetChildPropFPreserve(pn, "range", "low-bracket", &u->scale_vals[0][0]);
+  xmlGetChildPropF(pn, "range", "high-bracket", &u->scale_vals[1][0]);
+
+  // x/y dim selection
+  xmlGetChildPropI(pn, "axes", "xpos", &u->x_d);
+
+  return warn;
 }
 
 int sushiv_new_panel_1d(sushiv_instance_t *s,
@@ -1491,6 +1548,7 @@ int sushiv_new_panel_1d(sushiv_instance_t *s,
   p->private->crosshair_action = crosshair_callback;
   p->private->print_action = sushiv_panel1d_print;
   p->private->save_action = _save_panel1d;
+  p->private->load_action = _load_panel1d;
 
   p->private->undo_log = panel1d_undo_log;
   p->private->undo_restore = panel1d_undo_restore;
