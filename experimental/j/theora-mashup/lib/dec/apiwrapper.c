@@ -48,11 +48,15 @@ void theora_info_clear(theora_info *_ci){
 }
 
 void theora_clear(theora_state *_td){
-  if(_td->i!=NULL){
-    theora_info_clear(_td->i);
-    _ogg_free(_td->i);
-    _td->i=NULL;
-  }
+  if(_td->i!=NULL)
+    if(_td->internal_encode==NULL) {
+      theora_info_clear(_td->i);
+      _ogg_free(_td->i);
+      _td->i=NULL;
+    }
+    else {
+      //FIXME: what needs to be freed if theora_state was created by encoder
+    }
 }
 
 static void theora_info2th_info(th_info *_info,const theora_info *_ci){
