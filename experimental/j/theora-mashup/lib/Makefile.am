@@ -115,16 +115,11 @@ noinst_HEADERS = \
 	dec/dct.h \
 	dec/decint.h \
 	dec/dequant.h \
-	dec/encint.h \
 	dec/enquant.h \
-	dec/encvbr.h \
-	dec/fdct.h \
 	dec/huffdec.h \
-	dec/huffenc.h \
 	dec/huffman.h \
 	dec/idct.h \
 	dec/ocintrin.h \
-	dec/psych.h \
 	dec/quant.h \
 	dec/x86/x86int.h
 	
