@@ -1,7 +1,26 @@
-INCLUDES = -I$(top_srcdir)/include -I./dec -I./enc
+INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/lib/dec -I$(top_srcdir)/lib/enc
+
+EXTRA_DIST = Version_script.in \
+        enc/x86_32/dsp_mmx.c \
+        enc/x86_32/dsp_mmxext.c \
+        enc/x86_32/recon_mmx.c \
+        enc/x86_32/fdct_mmx.c \
+        enc/x86_64/dsp_mmx.c \
+        enc/x86_64/dsp_mmxext.c \
+        enc/x86_64/recon_mmx.c \
+        enc/x86_64/fdct_mmx.c \
+        enc/x86_32_vs/dsp_mmx.c \
+        enc/x86_32_vs/fdct_mmx.c \
+        enc/x86_32_vs/recon_mmx.c \
+        enc/dct_encode.c \
+        enc/encode.c \
+        enc/encoder_toplevel.c
 
 lib_LTLIBRARIES = libtheora.la
 
+if THEORA_DISABLE_ENCODE
+encoder_sources =
+else
 encoder_sources = \
 	enc/dct_encode.c \
 	enc/encode.c \
@@ -24,6 +43,26 @@ encoder_sources = \
 	enc/enccpu.c \
 	enc/dsp.c
 	
+if CPU_x86_64
+enc_arch_dir = enc/x86_64
+encoder_arch_sources= \
+	$(arch_dir)/dsp_mmx.c \
+	$(arch_dir)/dsp_mmxext.c \
+	$(arch_dir)/recon_mmx.c \
+	$(arch_dir)/fdct_mmx.c
+else
+if CPU_x86_32
+arch_dir = enc/x86_32
+encoder_arch_sources= \
+	$(arch_dir)/dsp_mmx.c \
+	$(arch_dir)/dsp_mmxext.c \
+	$(arch_dir)/recon_mmx.c \
+	$(arch_dir)/fdct_mmx.c
+endif
+endif
+
+endif
+
 decoder_sources = \
 	dec/decinfo.c \
 	dec/decode.c \
@@ -38,13 +77,6 @@ decoder_sources = \
 	dec/apiwrapper.c
 
 if CPU_x86_64
-enc_arch_dir = enc/x86_64
-encoder_arch_sources= \
-	$(arch_dir)/dsp_mmx.c \
-	$(arch_dir)/dsp_mmxext.c \
-	$(arch_dir)/recon_mmx.c \
-	$(arch_dir)/fdct_mmx.c
-
 decoder_x86_sources = \
 	dec/x86/cpu.c \
 	dec/x86/mmxidct.c \
@@ -53,13 +85,6 @@ decoder_x86_sources = \
 	dec/x86/x86state.c
 else
 if CPU_x86_32
-arch_dir = enc/x86_32
-encoder_arch_sources= \
-	$(arch_dir)/dsp_mmx.c \
-	$(arch_dir)/dsp_mmxext.c \
-	$(arch_dir)/recon_mmx.c \
-	$(arch_dir)/fdct_mmx.c
-
 decoder_x86_sources = \
 	dec/x86/cpu.c \
 	dec/x86/mmxidct.c \
