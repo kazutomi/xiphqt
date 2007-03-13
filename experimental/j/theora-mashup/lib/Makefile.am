@@ -19,7 +19,8 @@ EXTRA_DIST = Version_script.in \
 lib_LTLIBRARIES = libtheora.la
 
 if THEORA_DISABLE_ENCODE
-encoder_sources =
+encoder_sources = \
+	enc/encoder_disabled.c
 else
 encoder_sources = \
 	enc/dct_encode.c \
