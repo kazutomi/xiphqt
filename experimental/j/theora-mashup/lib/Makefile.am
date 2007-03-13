@@ -27,6 +27,7 @@ encoder_sources = \
 	enc/encode.c \
 	enc/encoder_idct.c \
 	enc/encoder_toplevel.c \
+	enc/encoder_quant.c \
 	enc/blockmap.c \
 	enc/common.c \
 	enc/comment.c \
@@ -39,7 +40,6 @@ encoder_sources = \
 	enc/misc_common.c \
 	enc/pb.c \
 	enc/pp.c \
-	enc/encquant.c \
 	enc/reconstruct.c \
 	enc/scan.c \
 	enc/dsp.c
