@@ -3,7 +3,7 @@ AUTOMAKE_OPTIONS = foreign 1.6 dist-zip dist-bzip2
 
 EXTRA_DIST = doc
 
-SUBDIRS = lib include examples
+SUBDIRS = lib include examples tests
 
 if TH_ENCODER
 TH_ENCODER_FILES=theoraenc.pc 
