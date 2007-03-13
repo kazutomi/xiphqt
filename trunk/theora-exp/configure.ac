@@ -177,6 +177,7 @@ AC_OUTPUT([
   include/theora/compat/Makefile
   include/theora/compat/theora/Makefile
   examples/Makefile
+  tests/Makefile
   theoradec.pc
   theoraenc.pc
   theoracompat.pc
