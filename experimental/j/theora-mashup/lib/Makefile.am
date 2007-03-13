@@ -1,4 +1,4 @@
-INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/lib/dec -I$(top_srcdir)/lib/enc
+INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/lib -I$(top_srcdir)/lib/dec -I$(top_srcdir)/lib/enc
 
 EXTRA_DIST = Version_script.in \
         enc/x86_32/dsp_mmx.c \
@@ -25,6 +25,7 @@ else
 encoder_sources = \
 	enc/dct_encode.c \
 	enc/encode.c \
+	enc/encoder_idct.c \
 	enc/encoder_toplevel.c \
 	enc/blockmap.c \
 	enc/common.c \
@@ -34,7 +35,6 @@ encoder_sources = \
 	enc/frarray.c \
 	enc/frinit.c \
 	enc/huffman.c \
-	enc/encidct.c \
 	enc/mcomp.c \
 	enc/misc_common.c \
 	enc/pb.c \
@@ -42,7 +42,6 @@ encoder_sources = \
 	enc/encquant.c \
 	enc/reconstruct.c \
 	enc/scan.c \
-	enc/enccpu.c \
 	enc/dsp.c
 	
 if CPU_x86_64
@@ -80,7 +79,6 @@ decoder_sources = \
 
 if CPU_x86_64
 decoder_x86_sources = \
-	dec/x86/cpu.c \
 	dec/x86/mmxidct.c \
 	dec/x86/mmxfrag.c \
 	dec/x86/mmxstate.c \
@@ -88,7 +86,6 @@ decoder_x86_sources = \
 else
 if CPU_x86_32
 decoder_x86_sources = \
-	dec/x86/cpu.c \
 	dec/x86/mmxidct.c \
 	dec/x86/mmxfrag.c \
 	dec/x86/mmxstate.c \
@@ -97,12 +94,15 @@ endif
 endif
 
 libtheora_la_SOURCES = \
+  cpu.c \
 	$(decoder_x86_sources) \
 	$(decoder_sources) \
 	$(encoder_arch_sources) \
 	$(encoder_sources)
 
 noinst_HEADERS = \
+	cpu.h \
+	internal.h \
 	enc/block_inline.h \
 	enc/codec_internal.h \
 	enc/encoder_lookup.h \
@@ -111,7 +111,6 @@ noinst_HEADERS = \
 	enc/pp.h \
 	enc/quant_lookup.h \
 	enc/toplevel_lookup.h \
-	enc/enccpu.h \
 	enc/dsp.h \
 	dec/dct.h \
 	dec/decint.h \
@@ -124,11 +123,9 @@ noinst_HEADERS = \
 	dec/huffenc.h \
 	dec/huffman.h \
 	dec/idct.h \
-	dec/internal.h \
 	dec/ocintrin.h \
 	dec/psych.h \
 	dec/quant.h \
-	dec/x86/cpu.h \
 	dec/x86/x86int.h
 	
 

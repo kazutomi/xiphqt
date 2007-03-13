@@ -17,7 +17,7 @@
 
 #include "codec_internal.h"
 #include "dsp.h"
-#include "enccpu.h"
+#include "cpu.h"
 
 static void copy8x8__c (unsigned char *src,
 	                unsigned char *dest,
@@ -105,7 +105,7 @@ void dsp_recon_init (DspFunctions *funcs, ogg_uint32_t cpu_flags)
   funcs->recon_inter8x8 = recon_inter8x8__c;
   funcs->recon_inter8x8_half = recon_inter8x8_half__c;
 #if defined(USE_ASM)
-  if (cpu_flags & CPU_X86_MMX) {
+  if (cpu_flags & OC_CPU_X86_MMX) {
     dsp_mmx_recon_init(funcs);
   }
 #endif

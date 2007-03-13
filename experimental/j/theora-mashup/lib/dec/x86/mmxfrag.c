@@ -14,7 +14,7 @@
   Originally written by Rudolf Marek.*/
 #include "x86int.h"
 
-#if defined(OC_X86ASM)
+#if defined(USE_ASM)
 
 static const __attribute__((aligned(8),used)) ogg_int64_t V128=
  0x0080008000800080LL;

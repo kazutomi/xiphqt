@@ -13,9 +13,8 @@
   Originally written by Rudolf Marek.*/
 
 #include "cpu.h"
-#include "x86int.h"
 
-#if defined(OC_X86ASM)
+#if defined(USE_ASM)
 
 ogg_uint32_t oc_cpu_flags_get(void){
   ogg_uint32_t eax;
@@ -88,12 +87,27 @@ inteltest:
     if((edx&0x00800000)==0)return 0;
     flags=OC_CPU_X86_MMX;
     if(edx&0x80000000)flags|=OC_CPU_X86_3DNOW;
+    if(edx&0x40000000)flags|=OC_CPU_X86_3DNOWEXT;
     if(edx&0x00400000)flags|=OC_CPU_X86_MMXEXT;
   }
   else{
     /*Implement me.*/
     flags=0;
   }
+  
+#ifdef DEBUG
+  if (flags) {
+    TH_DEBUG("vectorized instruction sets supported:");
+    if (flags & OC_CPU_X86_MMX)      TH_DEBUG(" mmx");
+    if (flags & OC_CPU_X86_MMXEXT)   TH_DEBUG(" mmxext");
+    if (flags & OC_CPU_X86_SSE)      TH_DEBUG(" sse");
+    if (flags & OC_CPU_X86_SSE2)     TH_DEBUG(" sse2");
+    if (flags & OC_CPU_X86_3DNOW)    TH_DEBUG(" 3dnow");
+    if (flags & OC_CPU_X86_3DNOWEXT) TH_DEBUG(" 3dnowext");
+    TH_DEBUG("\n");
+  }
+#endif
+  
   return flags;
 }
 

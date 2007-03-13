@@ -1,11 +1,11 @@
 #include "x86int.h"
 
-#if defined(OC_X86ASM)
+#if defined(USE_ASM)
 
 #include "cpu.h"
 
 void oc_state_vtable_init_x86(oc_theora_state *_state){
-  _state->cpu_flags=oc_cpu_flags_get();  
+  _state->cpu_flags=oc_cpu_flags_get();
   if(_state->cpu_flags&OC_CPU_X86_MMX){
     _state->opt_vtable.frag_recon_intra=oc_frag_recon_intra_mmx;
     _state->opt_vtable.frag_recon_inter=oc_frag_recon_inter_mmx;

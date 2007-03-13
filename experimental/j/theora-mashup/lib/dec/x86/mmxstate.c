@@ -15,7 +15,7 @@
 #include "x86int.h"
 #include "../internal.h"
 
-#if defined(OC_X86ASM)
+#if defined(USE_ASM)
 
 
 static const __attribute__((aligned(8),used)) int OC_FZIG_ZAGMMX[64]={

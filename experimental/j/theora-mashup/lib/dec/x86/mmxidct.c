@@ -6,7 +6,7 @@
 
 #include "x86int.h"
 
-#if defined(OC_X86ASM)
+#if defined(USE_ASM)
 
 /*These are offsets into the table of constants below.*/
 /*4 masks, in order: low word to high.*/

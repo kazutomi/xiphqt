@@ -16,7 +16,7 @@
  ********************************************************************/
 
 #include <stdlib.h>
-#include "enccpu.h"
+#include "cpu.h"
 #include "dsp.h"
 #include "codec_internal.h"
 
@@ -404,18 +404,18 @@ void dsp_static_init(DspFunctions *funcs)
 {
   ogg_uint32_t cpuflags;
 
-  cpuflags = cpu_init ();
+  cpuflags = oc_cpu_flags_get();
   dsp_init (funcs);
 
   dsp_recon_init (funcs, cpuflags);
   dsp_dct_init (funcs, cpuflags);
 #if defined(USE_ASM)
-  if (cpuflags & CPU_X86_MMX) {
+  if (cpuflags & OC_CPU_X86_MMX) {
     dsp_mmx_init(funcs);
   }
 # ifndef WIN32
   /* This is implemented for win32 yet */
-  if (cpuflags & CPU_X86_MMXEXT) {
+  if (cpuflags & OC_CPU_X86_MMXEXT) {
     dsp_mmxext_init(funcs);
   }
 # endif
