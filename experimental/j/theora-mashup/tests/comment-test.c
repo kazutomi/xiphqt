@@ -29,6 +29,8 @@ test_comments ()
 
   INFO ("+ Querying value of LICENSE");
   value = theora_comment_query (&tc, "LICENSE", 0);
+  printf("foo %s\n", value);
+
   if (strcmp (value, LICENSE))
     FAIL ("Incorrect value for LICENSE");
 

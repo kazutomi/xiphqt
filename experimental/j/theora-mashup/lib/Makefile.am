@@ -28,6 +28,7 @@ encoder_sources = \
 	enc/encoder_toplevel.c \
 	enc/blockmap.c \
 	enc/common.c \
+	enc/comment.c \
 	enc/dct.c \
 	enc/dct_decode.c \
 	enc/frarray.c \
