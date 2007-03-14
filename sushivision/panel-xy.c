@@ -36,9 +36,6 @@
 static propmap *line_name[LINETYPES+1] = {
   &(propmap){"line", 0,          NULL,NULL,NULL},
   &(propmap){"fat line", 1,      NULL,NULL,NULL},
-  &(propmap){"fill above", 2,    NULL,NULL,NULL},
-  &(propmap){"fill below", 3,    NULL,NULL,NULL},
-  &(propmap){"fill to zero", 4,  NULL,NULL,NULL},
   &(propmap){"no line", 5,       NULL,NULL,NULL},
   NULL
 };
@@ -80,8 +77,8 @@ static void render_checks(cairo_t *c, int w, int h){
 
 // called internally, assumes we hold lock
 // redraws the data, does not compute the data
-static int _sushiv_panel1d_remap(sushiv_panel_t *p, cairo_t *c){
-  sushiv_panel1d_t *p1 = p->subtype->p1;
+static int _sushiv_panelxy_remap(sushiv_panel_t *p, cairo_t *c){
+  sushiv_panelxy_t *xy = p->subtype->pxy;
   Plot *plot = PLOT(p->private->graph);
 
   int plot_serialno = p->private->plot_serialno;
@@ -89,25 +86,21 @@ static int _sushiv_panel1d_remap(sushiv_panel_t *p, cairo_t *c){
   int xi,i,j;
   int pw = plot->x.pixels;
   int ph = plot->y.pixels;
-  int dw = p1->data_size;
-  double r = (p1->flip?p1->panel_w:p1->panel_h);
-  
-  scalespace rx = (p1->flip?p1->y:p1->x);
-  scalespace ry = (p1->flip?p1->x:p1->y);
+
   scalespace sx = p1->x;
   scalespace sy = p1->y;
-  scalespace sx_v = p1->x_v;
+  scalespace data_v = p1->data_v;
   scalespace px = plot->x;
   scalespace py = plot->y;
     
   /* do the panel and plot scales match?  If not, redraw the plot
      scales */
   
-  if(memcmp(&rx,&px,sizeof(rx)) ||
-     memcmp(&ry,&py,sizeof(ry))){
+  if(memcmp(&sx,&px,sizeof(sx)) ||
+     memcmp(&sy,&py,sizeof(sy))){
 
-    plot->x = rx;
-    plot->y = ry;
+    plot->x = sx;
+    plot->y = sy;
     
     gdk_threads_leave();
     plot_draw_scales(plot);
@@ -133,116 +126,48 @@ static int _sushiv_panel1d_remap(sushiv_panel_t *p, cairo_t *c){
   if(plot_serialno != p->private->plot_serialno ||
      map_serialno != p->private->map_serialno) return -1;
 
-  if(p1->data_vec){
+  if(xy->data_head){
     
     /* by objective */
     for(j=0;j<p->objectives;j++){
-      if(p1->data_vec[j] && !mapping_inactive_p(p1->mappings+j)){
+      if(xy->data_head[j] && xy->data_length[j] && !mapping_inactive_p(xy->mappings+j)){
 	
-	double alpha = slider_get_value(p1->alpha_scale[j],0);
-	int linetype = p1->linetype[j];
-	int pointtype = p1->pointtype[j];
-	u_int32_t color = mapping_calc(p1->mappings+j,1.,0);
+	int dw = xy->data_length[j];
+	double alpha = slider_get_value(xy->alpha_scale[j],0);
+	int linetype = xy->linetype[j];
+	int pointtype = xy->pointtype[j];
+	u_int32_t color = mapping_calc(xy->mappings+j,1.,0);
       
 	double xv[dw];
 	double yv[dw];
-	double data_vec[dw];
 	
-	memcpy(data_vec,p1->data_vec[j],sizeof(data_vec));
+	// copy the list data over
+	xy_data_t *d = xy->data_head[j];
+	i=0;
+	while(d){
+	  xv[i] = d->xval;
+	  yv[i] = d->yval;
+	  d=d->next;
+	}
 	gdk_threads_leave();
 
 	/* by x */
 	for(xi=0;xi<dw;xi++){
-	  double val = data_vec[xi];
-	  double xpixel = xi;
-	  double ypixel = NAN;
-	  
+	  double xpixel = xv[xi];
+	  double ypixel = yv[xi];
+
 	  /* map data vector bin to x pixel location in the plot */
-	  xpixel = scalespace_pixel(&sx,scalespace_value(&sx_v,xpixel))+.5;
+	  if(!isnan(xpixel))
+	    xpixel = scalespace_pixel(&sx,xpixel)+.5;
 	  
-	  /* map/render result */
-	  if(!isnan(val))
-	    ypixel = scalespace_pixel(&sy,val)+.5;
+	  if(!isnan(ypixel))
+	    ypixel = scalespace_pixel(&sy,ypixel)+.5;
 	  
 	  xv[xi] = xpixel;
 	  yv[xi] = ypixel;
 	}
 	
-	/* draw areas, if any */
-	if(linetype>1 && linetype < 5){
-	  double yA=-1;
-	  if(linetype == 2) /* fill above */
-	    yA= (p1->flip?r:-1);
-	  if(linetype == 3) /* fill below */
-	    yA = (p1->flip?-1:r);
-	  if(linetype == 4) /* fill to zero */
-	    yA = scalespace_pixel(&sy,0.)+.5;
-	  
-	  cairo_set_source_rgba(c,
-				((color>>16)&0xff)/255.,
-				((color>>8)&0xff)/255.,
-				((color)&0xff)/255.,
-				alpha*.75);
-	  
-	  if(!isnan(yv[0])){
-	    if(p1->flip){
-	      cairo_move_to(c,yA,xv[0]+.5);
-	      cairo_line_to(c,yv[0],xv[0]+.5);
-	    }else{
-	      cairo_move_to(c,xv[0]-.5,yA);
-	      cairo_line_to(c,xv[0]-.5,yv[0]);
-	    }
-	  }
-	  
-	  for(i=1;i<dw;i++){
-	    
-	    if(isnan(yv[i])){
-	      if(!isnan(yv[i-1])){
-		/* close off the area */
-		if(p1->flip){
-		  cairo_line_to(c,yv[i-1],xv[i-1]-.5);
-		  cairo_line_to(c,yA,xv[i-1]-.5);
-		}else{
-		  cairo_line_to(c,xv[i-1]+.5,yv[i-1]);
-		  cairo_line_to(c,xv[i-1]+.5,yA);
-		}
-		cairo_close_path(c);
-	      }
-	    }else{
-	      if(isnan(yv[i-1])){
-		if(p1->flip){
-		  cairo_move_to(c,yA,xv[i]+.5);
-		  cairo_line_to(c,yv[i],xv[i]+.5);
-		}else{
-		  cairo_move_to(c,xv[i]-.5,yA);
-		  cairo_line_to(c,xv[i]-.5,yv[i]);
-		}
-	      }else{
-		if(p1->flip){
-		  cairo_line_to(c,yv[i],xv[i]);
-		}else{
-		  cairo_line_to(c,xv[i],yv[i]);
-		}
-	      }
-	    }
-	  }
-	    
-	  if(!isnan(yv[i-1])){
-	    /* close off the area */
-	    if(p1->flip){
-	      cairo_line_to(c,yv[i-1],xv[i-1]-.5);
-	      cairo_line_to(c,yA,xv[i-1]-.5);
-	    }else{
-	      cairo_line_to(c,xv[i-1]+.5,yv[i-1]);
-	      cairo_line_to(c,xv[i-1]+.5,yA);
-	    }
-	    cairo_close_path(c);
-	  }
-	    
-	  cairo_fill(c);
-	}
-	  
-	/* now draw the lines */
+	/* draw lines, if any */
 	if(linetype != 5){
 	  cairo_set_source_rgba(c,
 				((color>>16)&0xff)/255.,
@@ -253,18 +178,12 @@ static int _sushiv_panel1d_remap(sushiv_panel_t *p, cairo_t *c){
 	    cairo_set_line_width(c,2.);
 	  else
 	    cairo_set_line_width(c,1.);
-	    
+	  
 	  for(i=1;i<dw;i++){
-	      
-	    if(!isnan(yv[i-1]) && !isnan(yv[i])){
-		
-	      if(p1->flip){
-		cairo_move_to(c,yv[i-1],xv[i-1]);
-		cairo_line_to(c,yv[i],xv[i]);
-	      }else{
-		cairo_move_to(c,xv[i-1],yv[i-1]);
-		cairo_line_to(c,xv[i],yv[i]);
-	      }
+	    
+	    if(!isnan(yv[i-1]) && !isnan(yv[i])){	
+	      cairo_move_to(c,xv[i-1],yv[i-1]);
+	      cairo_line_to(c,xv[i],yv[i]);
 	      cairo_stroke(c);
 	    }	      
 	  }
@@ -277,20 +196,15 @@ static int _sushiv_panel1d_remap(sushiv_panel_t *p, cairo_t *c){
 	  for(i=0;i<dw;i++){
 	    if(!isnan(yv[i])){
 	      double xx,yy;
-	      if(p1->flip){
-		xx = yv[i];
-		yy = xv[i];
-	      }else{
-		xx = xv[i];
-		yy = yv[i];
-	      }
+	      xx = xv[i];
+	      yy = yv[i];
 
 	      cairo_set_source_rgba(c,
 				    ((color>>16)&0xff)/255.,
 				    ((color>>8)&0xff)/255.,
 				    ((color)&0xff)/255.,
 				    alpha);
-
+	      
 	      switch(pointtype){
 	      case 0: /* pixeldots */
 		cairo_rectangle(c, xx-.5,yy-.5,1,1);
@@ -341,7 +255,7 @@ static int _sushiv_panel1d_remap(sushiv_panel_t *p, cairo_t *c){
 	if(plot_serialno != p->private->plot_serialno ||
 	   map_serialno != p->private->map_serialno) return -1;
 	
-
+	
       }
     }
   }
@@ -349,7 +263,7 @@ static int _sushiv_panel1d_remap(sushiv_panel_t *p, cairo_t *c){
   return 1;
 }
 
-static void sushiv_panel1d_print(sushiv_panel_t *p, cairo_t *c, int w, int h){
+static void sushiv_panelxy_print(sushiv_panel_t *p, cairo_t *c, int w, int h){
   Plot *plot = PLOT(p->private->graph);
   double pw = p->private->graph->allocation.width;
   double ph = p->private->graph->allocation.height;
@@ -365,11 +279,11 @@ static void sushiv_panel1d_print(sushiv_panel_t *p, cairo_t *c, int w, int h){
   cairo_matrix_scale(&m,scale,scale);
   cairo_set_matrix(c,&m);
 
-  plot_print(plot, c, ph*scale, (void(*)(void *, cairo_t *))_sushiv_panel1d_remap, p);
+  plot_print(plot, c, ph*scale, (void(*)(void *, cairo_t *))_sushiv_panelxy_remap, p);
 }
 
 static void update_legend(sushiv_panel_t *p){  
-  sushiv_panel1d_t *p1 = p->subtype->p1;
+  sushiv_panelxy_t *xy = p->subtype->xy;
   Plot *plot = PLOT(p->private->graph);
 
   gdk_threads_enter ();
@@ -379,16 +293,33 @@ static void update_legend(sushiv_panel_t *p){
     char buffer[320];
     plot_legend_clear(plot);
 
-    if(3-p1->x_v.decimal_exponent > depth) depth = 3-p1->x_v.decimal_exponent;
+    if(3-xy->data_v.decimal_exponent > depth) depth = 3-xy->data_v.decimal_exponent;
+    if(3-xy->x.decimal_exponent > depth) depth = 3-xy->x.decimal_exponent;
+    if(3-xy->y.decimal_exponent > depth) depth = 3-xy->y.decimal_exponent;
+
+    // if crosshairs are active, add them to the fun
+    if( plot->cross_active){
+      snprintf(buffer,320,"%s = %+.*f",
+	       xy->x_scale.name,
+	       depth,
+	       xy->x_val);
+      plot_legend_add(plot,buffer);
+      snprintf(buffer,320,"%s = %+.*f",
+	       xy->y_scale.name,
+	       depth,
+	       xy->y_val);
+      plot_legend_add(plot,buffer);
+
+      if(p->dimensions)
+	plot_legend_add(plot,NULL);
+    }
 
     // add each dimension to the legend
     for(i=0;i<p->dimensions;i++){
       sushiv_dimension_t *d = p->dimension_list[i].d;
-      // display decimal precision relative to bracket
-      //int depth = del_depth(p->dimension_list[i].d->bracket[0],
-      //		    p->dimension_list[i].d->bracket[1]) + offset;
-      if( d!=p1->x_d ||
-	  plot->cross_active){
+
+      if(d != xy->x_d ||
+	 plot->cross_active){
 	
 	snprintf(buffer,320,"%s = %+.*f",
 		 p->dimension_list[i].d->name,
@@ -398,64 +329,14 @@ static void update_legend(sushiv_panel_t *p){
       }
     }
 
-    // linked? add the linked dimension value to the legend
-    if(p1->link_x || p1->link_y){
-      sushiv_dimension_t *d;
-      int depth=0;
-      if(p1->link_x)
-	d = p1->link_x->subtype->p2->x_d;
-      else
-	d = p1->link_y->subtype->p2->y_d;
-      
-      // add each dimension to the legend
-      // display decimal precision relative to display scales
-      if(3-p1->x_v.decimal_exponent > depth) depth = 3-p1->x_v.decimal_exponent;
-      snprintf(buffer,320,"%s = %+.*f",
-	       d->name,
-	       depth,
-	       d->val);
-      plot_legend_add(plot,buffer);
-    }
-
-    // one space 
-    plot_legend_add(plot,NULL);
-
-    // add each active objective to the legend
-    // choose the value under the crosshairs 
-    if(plot->cross_active){
-      double val = (p1->flip?plot->sely:plot->selx);
-      int bin = rint(scalespace_pixel(&p1->x_v, val));
-
-      for(i=0;i<p->objectives;i++){
-	if(!mapping_inactive_p(p1->mappings+i)){
-	  u_int32_t color = mapping_calc(p1->mappings+i,1.,0);
-	  
-	  snprintf(buffer,320,"%s",
-		   p->objective_list[i].o->name);
-	  
-	  if(bin>=0 && bin<p1->data_size){
-	    
-	    float val = p1->data_vec[i][bin];
-	    
-	    if(!isnan(val)){
-	      snprintf(buffer,320,"%s = %f",
-		       p->objective_list[i].o->name,
-		       val);
-	    }
-	  }
-	
-	  plot_legend_add_with_color(plot,buffer,color | 0xff000000);
-	}
-      }
-    }
     gdk_threads_leave ();
   }
 }
 
-static void mapchange_callback_1d(GtkWidget *w,gpointer in){
+static void mapchange_callback_xy(GtkWidget *w,gpointer in){
   sushiv_objective_list_t *optr = (sushiv_objective_list_t *)in;
   sushiv_panel_t *p = optr->p;
-  sushiv_panel1d_t *p1 = p->subtype->p1;
+  sushiv_panelxy_t *xy = p->subtype->xy;
   int onum = optr - p->objective_list;
   
   _sushiv_undo_push(p->sushi);
@@ -463,20 +344,18 @@ static void mapchange_callback_1d(GtkWidget *w,gpointer in){
 
   // update colormap
   // oh, the wasteful
-  solid_set_func(&p1->mappings[onum],
-		 gtk_combo_box_get_active(GTK_COMBO_BOX(w)));
-  slider_set_gradient(p1->alpha_scale[onum], &p1->mappings[onum]);
+  int pos = gtk_combo_box_get_active(GTK_COMBO_BOX(w));
+  solid_set_func(&xy->mappings[onum],pos);
+  slider_set_gradient(xy->alpha_scale[onum], &xy->mappings[onum]);
   
   _sushiv_panel_dirty_map(p);
   _sushiv_panel_dirty_legend(p);
   _sushiv_undo_resume(p->sushi);
 }
 
-static void alpha_callback_1d(void * in, int buttonstate){
+static void alpha_callback_xy(void * in, int buttonstate){
   sushiv_objective_list_t *optr = (sushiv_objective_list_t *)in;
   sushiv_panel_t *p = optr->p;
-  //  sushiv_panel1d_t *p1 = p->subtype->p1;
-  //  int onum = optr - p->objective_list;
 
   if(buttonstate == 0){
     _sushiv_undo_push(p->sushi);
@@ -490,10 +369,10 @@ static void alpha_callback_1d(void * in, int buttonstate){
     _sushiv_undo_resume(p->sushi);
 }
 
-static void linetype_callback_1d(GtkWidget *w,gpointer in){
+static void linetype_callback_xy(GtkWidget *w,gpointer in){
   sushiv_objective_list_t *optr = (sushiv_objective_list_t *)in;
   sushiv_panel_t *p = optr->p;
-  sushiv_panel1d_t *p1 = p->subtype->p1;
+  sushiv_panelxy_t *xy = p->subtype->xy;
   int onum = optr - p->objective_list;
   
   _sushiv_undo_push(p->sushi);
@@ -501,16 +380,16 @@ static void linetype_callback_1d(GtkWidget *w,gpointer in){
 
   // update colormap
   int pos = gtk_combo_box_get_active(GTK_COMBO_BOX(w));
-  p1->linetype[onum] = line_name[pos].value;
+  xy->linetype[onum] = line_name[pos].value;
 
   _sushiv_panel_dirty_map(p);
   _sushiv_undo_resume(p->sushi);
 }
 
-static void pointtype_callback_1d(GtkWidget *w,gpointer in){
+static void pointtype_callback_xy(GtkWidget *w,gpointer in){
   sushiv_objective_list_t *optr = (sushiv_objective_list_t *)in;
   sushiv_panel_t *p = optr->p;
-  sushiv_panel1d_t *p1 = p->subtype->p1;
+  sushiv_panelxy_t *xy = p->subtype->xy;
   int onum = optr - p->objective_list;
   
   _sushiv_undo_push(p->sushi);
@@ -518,15 +397,15 @@ static void pointtype_callback_1d(GtkWidget *w,gpointer in){
 
   // update colormap
   int pos = gtk_combo_box_get_active(GTK_COMBO_BOX(w));
-  p1->pointtype[onum] = point_name[pos].value;
+  xy->pointtype[onum] = point_name[pos].value;
 
   _sushiv_panel_dirty_map(p);
   _sushiv_undo_resume(p->sushi);
 }
 
-static void map_callback_1d(void *in,int buttonstate){
+static void map_callback_xy(void *in,int buttonstate){
   sushiv_panel_t *p = (sushiv_panel_t *)in;
-  sushiv_panel1d_t *p1 = p->subtype->p1;
+  sushiv_panel1d_t *xy = p->subtype->xy;
   Plot *plot = PLOT(p->private->graph);
   
   if(buttonstate == 0){
@@ -535,28 +414,29 @@ static void map_callback_1d(void *in,int buttonstate){
   }
 
   // has new bracketing changed the plot range scale?
-  if(p1->range_bracket[0] != slider_get_value(p1->range_slider,0) ||
-     p1->range_bracket[1] != slider_get_value(p1->range_slider,1)){
+  if(xy->x_bracket[0] != slider_get_value(xy->x_slider,0) ||
+     xy->x_bracket[1] != slider_get_value(xy->x_slider,1) ||
+     xy->y_bracket[0] != slider_get_value(xy->y_slider,0) ||
+     xy->y_bracket[1] != slider_get_value(xy->y_slider,1)){
 
     int w = plot->w.allocation.width;
     int h = plot->w.allocation.height;
 
-    p1->range_bracket[0] = slider_get_value(p1->range_slider,0);
-    p1->range_bracket[1] = slider_get_value(p1->range_slider,1);
+    xy->x_bracket[0] = slider_get_value(xy->x_slider,0);
+    xy->x_bracket[1] = slider_get_value(xy->x_slider,1);
+    xy->y_bracket[0] = slider_get_value(xy->y_slider,0);
+    xy->y_bracket[1] = slider_get_value(xy->y_slider,1);
     
-    if(p1->flip)
-      p1->y = scalespace_linear(p1->range_bracket[0],
-				p1->range_bracket[1],
-				w,
-				plot->scalespacing,
-				p1->range_scale->legend);
-    
-    else
-      p1->y = scalespace_linear(p1->range_bracket[1],
-				p1->range_bracket[0],
-				h,
-				plot->scalespacing,
-				p1->range_scale->legend);
+    xy->x = scalespace_linear(xy->x_bracket[1],
+			      xy->x_bracket[0],
+			      w,
+			      plot->scalespacing,
+			      xy->x_scale->legend);
+    xy->y = scalespace_linear(xy->y_bracket[1],
+			      xy->y_bracket[0],
+			      h,
+			      plot->scalespacing,
+			      xy->y_scale->legend);
 
   }
 
@@ -566,24 +446,23 @@ static void map_callback_1d(void *in,int buttonstate){
     _sushiv_undo_resume(p->sushi);
 }
 
-static void update_x_sel(sushiv_panel_t *p){
-  sushiv_panel1d_t *p1 = p->subtype->p1;
+static void update_dim_sel(sushiv_panel_t *p){
+  sushiv_panelxy_t *xy = p->subtype->xy;
   int i;
 
   // enable/disable dimension slider thumbs
-  // enable/disable objective 'point' dropdowns
   for(i=0;i<p->dimensions;i++){
     
-    if(p1->dim_xb[i] &&
-       gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(p1->dim_xb[i]))){
+    if(xy->dim_xb[i] &&
+       gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(xy->dim_xb[i]))){
       
       // set the x dim flag
-      p1->x_d = p->dimension_list[i].d;
-      p1->x_scale = p->private->dim_scales[i];
-      p1->x_dnum = i;
+      xy->x_d = p->dimension_list[i].d;
+      xy->x_widget = p->private->dim_scales[i];
+      xy->x_dnum = i;
     }
-    if(p1->dim_xb[i] &&
-       gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(p1->dim_xb[i]))){
+    if(xy->dim_xb[i] &&
+       gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(xy->dim_xb[i]))){
       // make all thumbs visible 
       _sushiv_dim_widget_set_thumb_active(p->private->dim_scales[i],0,1);
       _sushiv_dim_widget_set_thumb_active(p->private->dim_scales[i],2,1);
@@ -595,7 +474,59 @@ static void update_x_sel(sushiv_panel_t *p){
   } 
 }
 
-static void compute_1d(sushiv_panel_t *p, 
+static void compute_xy_one(sushiv_panel_t *p, 
+			   double *dim_vals,
+			   xy_data_t **out,
+			   _sushiv_bythread_cache_xy *c){
+  sushiv_panelxy_t *xy = p->subtype->xy;
+  double work[w];
+  int i,j,fn=p->sushi->functions;
+
+  /* by function */
+  for(i=0;i<fn;i++){
+    if(c->call[i]){
+      sushiv_function_t *f = p->sushi->function_list[i];
+      int step = f->outputs;
+      double *fout = c->fout[i];
+      
+      c->call[i](dim_vals,fout);
+    }
+  }
+
+  /* process function output by objective */
+  /* XY panels currently only care about the X and Y output value; in the
+     future, Z, etc may also be relevant */
+  for(i=0;i<p->objectives;i++){
+    sushiv_objective_t *o = p->objective_list[i].o;
+    int xoff = o->private->x_fout;
+    int yoff = o->private->y_fout;
+    sushiv_function_t *xf = o->private->x_func;
+    sushiv_function_t *yf = o->private->y_func;
+XXXX
+    if(xf && yf){
+      int step = f->outputs;
+      double *fout = c->fout[f->number]+offset;
+      
+      /* map result from function output to objective output */
+      for(j=0;j<w;j++){
+	work[j] = *fout;
+	fout+=step;
+      }
+      
+      gdk_threads_enter (); // misuse me as a global mutex
+      if(p->private->plot_serialno == serialno){
+	/* store result in panel */
+	memcpy(p1->data_vec[i],work,w*sizeof(*work));
+	gdk_threads_leave (); // misuse me as a global mutex 
+      }else{
+	gdk_threads_leave (); // misuse me as a global mutex 
+	break;
+      }
+    }
+  }
+}
+
+static void compute_xy(sushiv_panel_t *p, 
 		       int serialno,
 		       int x_d, 
 		       scalespace sxi,

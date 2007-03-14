@@ -901,12 +901,12 @@ static void update_legend(sushiv_panel_t *p){
       }
     }
     
-    // one space 
-    plot_legend_add(plot,NULL);
-
     // add each active objective plane to the legend
     // choose the value under the crosshairs 
     if(plot->cross_active){
+      // one space 
+      plot_legend_add(plot,NULL);
+
       for(i=0;i<p->objectives;i++){
 	
 	if(!mapping_inactive_p(p2->mappings+i)){
