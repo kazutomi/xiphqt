@@ -47,11 +47,13 @@ typedef struct propmap {
 #include "dimension.h"
 #include "objective.h"
 #include "panel-1d.h"
+#include "panel-xy.h"
 #include "panel-2d.h"
 #include "xml.h"
 #include "gtksucks.h"
 
 union sushiv_panel_subtype {
+  sushiv_panelxy_t *pxy;
   sushiv_panel1d_t *p1;
   sushiv_panel2d_t *p2;
 };

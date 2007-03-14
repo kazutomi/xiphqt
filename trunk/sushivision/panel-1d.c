@@ -379,7 +379,7 @@ static void update_legend(sushiv_panel_t *p){
     char buffer[320];
     plot_legend_clear(plot);
 
-    if(-p1->x_v.decimal_exponent > depth) depth = 3-p1->x_v.decimal_exponent;
+    if(3-p1->x_v.decimal_exponent > depth) depth = 3-p1->x_v.decimal_exponent;
 
     // add each dimension to the legend
     for(i=0;i<p->dimensions;i++){
@@ -500,7 +500,8 @@ static void linetype_callback_1d(GtkWidget *w,gpointer in){
   _sushiv_undo_suspend(p->sushi);
 
   // update colormap
-  p1->linetype[onum]=gtk_combo_box_get_active(GTK_COMBO_BOX(w));
+  int pos = gtk_combo_box_get_active(GTK_COMBO_BOX(w));
+  p1->linetype[onum] = line_name[pos].value;
 
   _sushiv_panel_dirty_map(p);
   _sushiv_undo_resume(p->sushi);
@@ -516,7 +517,8 @@ static void pointtype_callback_1d(GtkWidget *w,gpointer in){
   _sushiv_undo_suspend(p->sushi);
 
   // update colormap
-  p1->pointtype[onum]=gtk_combo_box_get_active(GTK_COMBO_BOX(w));
+  int pos = gtk_combo_box_get_active(GTK_COMBO_BOX(w));
+  p1->pointtype[onum] = point_name[pos].value;
 
   _sushiv_panel_dirty_map(p);
   _sushiv_undo_resume(p->sushi);
