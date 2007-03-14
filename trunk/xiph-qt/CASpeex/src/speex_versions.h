@@ -33,9 +33,9 @@
 
 
 #ifdef DEBUG
-#define kCASpeex_adec_Version		(0x00FF0103)
+#define kCASpeex_adec_Version		(0x00FF0104)
 #else
-#define kCASpeex_adec_Version		(0x00000103)
+#define kCASpeex_adec_Version		(0x00000104)
 #endif /* DEBUG */
 
 
