@@ -422,7 +422,7 @@
 					"$(HEADER_SEARCH_PATHS)",
 					../include,
 				);
-				PER_ARCH_CFLAGS_i386 = "-DOC_X86ASM";
+				PER_ARCH_CFLAGS_i386 = "";
 				PER_ARCH_CFLAGS_ppc = "";
 				PREBINDING = NO;
 				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
@@ -477,7 +477,7 @@
 					../../ogg/include,
 				);
 				INSTALL_PATH = /usr/local/lib;
-				PER_ARCH_CFLAGS_i386 = "-DOC_X86ASM";
+				PER_ARCH_CFLAGS_i386 = "";
 				PER_ARCH_CFLAGS_ppc = "";
 				PREBINDING = NO;
 				PRODUCT_NAME = theoradec;
