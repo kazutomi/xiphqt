@@ -130,9 +130,9 @@ static int _sushiv_panelxy_remap(sushiv_panel_t *p, cairo_t *c){
     
     /* by objective */
     for(j=0;j<p->objectives;j++){
-      if(xy->data_head[j] && xy->data_length[j] && !mapping_inactive_p(xy->mappings+j)){
+      if(xy->x_vec[j] && xy->y_vec[j] && !mapping_inactive_p(xy->mappings+j)){
 	
-	int dw = xy->data_length[j];
+	int dw = xy->data_v.pixels;
 	double alpha = slider_get_value(xy->alpha_scale[j],0);
 	int linetype = xy->linetype[j];
 	int pointtype = xy->pointtype[j];
@@ -142,13 +142,8 @@ static int _sushiv_panelxy_remap(sushiv_panel_t *p, cairo_t *c){
 	double yv[dw];
 	
 	// copy the list data over
-	xy_data_t *d = xy->data_head[j];
-	i=0;
-	while(d){
-	  xv[i] = d->xval;
-	  yv[i] = d->yval;
-	  d=d->next;
-	}
+	memcpy(xv,xy->x_vec[j],sizeof(xv));
+	memcpy(yv,xy->y_vec[j],sizeof(yv));
 	gdk_threads_leave();
 
 	/* by x */
@@ -181,7 +176,13 @@ static int _sushiv_panelxy_remap(sushiv_panel_t *p, cairo_t *c){
 	  
 	  for(i=1;i<dw;i++){
 	    
-	    if(!isnan(yv[i-1]) && !isnan(yv[i])){	
+	    if(!isnan(yv[i-1]) && !isnan(yv[i]) &&
+	       !isnan(xv[i-1]) && !isnan(xv[i]) &&
+	       !(xv[i-1] < 0 && xv[i] < 0) &&
+	       !(yv[i-1] < 0 && yv[i] < 0) &&
+	       !(xv[i-1] > pw && xv[i] > pw) &&
+	       !(yv[i-1] > ph && yv[i] > ph)){
+	      
 	      cairo_move_to(c,xv[i-1],yv[i-1]);
 	      cairo_line_to(c,xv[i],yv[i]);
 	      cairo_stroke(c);
@@ -194,7 +195,13 @@ static int _sushiv_panelxy_remap(sushiv_panel_t *p, cairo_t *c){
 	  cairo_set_line_width(c,1.);
 
 	  for(i=0;i<dw;i++){
-	    if(!isnan(yv[i])){
+	    if(!isnan(yv[i]) && 
+	       !isnan(xv[i]) && 
+	       !xv[i]<-10 &&
+	       !yv[i]<-10 &&
+	       !xv[i]-10>pw &&
+	       !yv[i]-10>ph){
+
 	      double xx,yy;
 	      xx = xv[i];
 	      yy = yv[i];
@@ -333,6 +340,96 @@ static void update_legend(sushiv_panel_t *p){
   }
 }
 
+// call with lock
+static double _determine_rerender_metric(sushiv_panel_t *p, int half){
+  sushiv_panelxy_t *xy = p->subtype->xy;
+  int on = p->objectives;
+  double pw = p->private->graph->allocation.width;
+  double ph = p->private->graph->allocation.height;
+  int dw = xy->data_v.pixels;
+  int off = (half?2;1);
+
+  // if this is a discrete data set, size/view changes cannot affect
+  // the data spacing; that's set by the discrete scale
+  if(p->x_d->type != SUSHIV_DIM_CONTINUOUS) return -1;
+
+  double xscale = scalespace_pixel(&xy->x,1.) - scalespace_pixel(&xy->x,0.);
+  double yscale = scalespace_pixel(&xy->y,1.) - scalespace_pixel(&xy->y,0.);
+
+  // by plane, look at the spacing between visible x/y points
+  double max = -1;
+  for(i=0;i<on;i++){
+
+    if(xy->x_vec[j] && xy->y_vec[j] && !mapping_inactive_p(xy->mappings+i)){
+      double xacc = 0;
+      double yacc = 0;
+      double count = 0;
+      double *x = p->x_vec[i];
+      double *y = p->y_vec[i];
+      
+      for(j = off; j+off<=dw, j+=off){
+	if(!isnan(x[i-off]) &&
+	   !isnan(y[i-off]) &&
+	   !isnan(x[i]) &&
+	   !isnan(y[i]) &&
+	   !(x[i-off] < 0 && x[i] < 0) &&
+	   !(y[i-off] < 0 && y[i] < 0) &&
+	   !(x[i-off] > pw && x[i] > pw) &&
+	   !(y[i-off] > ph && y[i] > ph)){
+	  
+	  xacc += (x[i-off]-x[i]) * (x[i-off]-x[i]);
+	  yacc += (y[i-off]-y[i]) * (y[i-off]-y[i]);
+	  count++;
+	}
+      }
+
+      acc = sqrt(xacc*xscale*xscale + yacc*yscale*yscale);
+
+      if(count>0)
+	if(acc/count > max) max = acc/count;
+    }
+  }
+
+  return max;
+
+}
+
+// call while locked
+static int _mark_recompute_by_metric_change(sushiv_panel_t *p, int recursing){
+  // discrete val dimensions are immune to rerender by metric changes
+  if(p->x_d->type != SUSHIV_DIM_CONTINUOUS) return 0; 
+
+  sushiv_panelxy_t *xy = p->subtype->xy;
+  double target = (double) p->private->oversample_n / p->private->oversample_d;
+  double full =  _determine_rerender_metric(p, 0);
+  
+  if(!recursing) xy->request_scaling = 0;
+
+  if(full > target){
+    // we want to halve the sample spacing.  But first make sure we're
+    // not looping due to uncertainties in the metric.
+    if(xy->request_scaling != -1){
+      xy->request_scaling = 1; // double pixels, halve spacing
+      _sushiv_panel_dirty_plot(p); // trigger recompute
+      return 1;
+    }
+  } else {
+    double half =  _determine_rerender_metric(p, 1);
+    if(half < target){
+      // we want to double the sample spacing.  But first make sure we're
+      // not looping due to uncertainties in the metric.
+      if(xy->request_scaling != 1){
+	xy->request_scaling = -1; // halve pixels, double spacing
+	_sushiv_panel_dirty_plot(p); // trigger recompute
+	return 1;
+      }
+    }
+  }
+
+  xy->request_scaling = 0;
+  return 0;
+}
+
 static void mapchange_callback_xy(GtkWidget *w,gpointer in){
   sushiv_objective_list_t *optr = (sushiv_objective_list_t *)in;
   sushiv_panel_t *p = optr->p;
@@ -348,11 +445,14 @@ static void mapchange_callback_xy(GtkWidget *w,gpointer in){
   solid_set_func(&xy->mappings[onum],pos);
   slider_set_gradient(xy->alpha_scale[onum], &xy->mappings[onum]);
   
-  _sushiv_panel_dirty_map(p);
+  // a map view size change may trigger a progressive up/down render,
+  // but will at least cause a remap
+  if(!_mark_recompute_by_metric_change(p,0))
+    _sushiv_panel_dirty_map(p);
   _sushiv_panel_dirty_legend(p);
   _sushiv_undo_resume(p->sushi);
 }
-
+XXX
 static void alpha_callback_xy(void * in, int buttonstate){
   sushiv_objective_list_t *optr = (sushiv_objective_list_t *)in;
   sushiv_panel_t *p = optr->p;
@@ -439,9 +539,14 @@ static void map_callback_xy(void *in,int buttonstate){
 			      xy->y_scale->legend);
 
   }
+XXX
+  // a map view size change may trigger a progressive up/down render,
+  // but will at least cause a remap
+  if(_determine_rerender_by_metric(p))
+    _mark_recompute_xy(p);
+  else
+    _sushiv_panel_dirty_map(p);
 
-  //redraw the plot
-  _sushiv_panel_dirty_map(p);
   if(buttonstate == 2)
     _sushiv_undo_resume(p->sushi);
 }
@@ -474,157 +579,57 @@ static void update_dim_sel(sushiv_panel_t *p){
   } 
 }
 
-static void compute_xy_one(sushiv_panel_t *p, 
-			   double *dim_vals,
-			   xy_data_t **out,
-			   _sushiv_bythread_cache_xy *c){
-  sushiv_panelxy_t *xy = p->subtype->xy;
-  double work[w];
-  int i,j,fn=p->sushi->functions;
-
-  /* by function */
-  for(i=0;i<fn;i++){
-    if(c->call[i]){
-      sushiv_function_t *f = p->sushi->function_list[i];
-      int step = f->outputs;
-      double *fout = c->fout[i];
-      
-      c->call[i](dim_vals,fout);
-    }
-  }
-
-  /* process function output by objective */
-  /* XY panels currently only care about the X and Y output value; in the
-     future, Z, etc may also be relevant */
-  for(i=0;i<p->objectives;i++){
-    sushiv_objective_t *o = p->objective_list[i].o;
-    int xoff = o->private->x_fout;
-    int yoff = o->private->y_fout;
-    sushiv_function_t *xf = o->private->x_func;
-    sushiv_function_t *yf = o->private->y_func;
-XXXX
-    if(xf && yf){
-      int step = f->outputs;
-      double *fout = c->fout[f->number]+offset;
-      
-      /* map result from function output to objective output */
-      for(j=0;j<w;j++){
-	work[j] = *fout;
-	fout+=step;
-      }
-      
-      gdk_threads_enter (); // misuse me as a global mutex
-      if(p->private->plot_serialno == serialno){
-	/* store result in panel */
-	memcpy(p1->data_vec[i],work,w*sizeof(*work));
-	gdk_threads_leave (); // misuse me as a global mutex 
-      }else{
-	gdk_threads_leave (); // misuse me as a global mutex 
-	break;
-      }
-    }
-  }
-}
-
 static void compute_xy(sushiv_panel_t *p, 
-		       int serialno,
 		       int x_d, 
 		       scalespace sxi,
-		       int w, 
 		       double *dim_vals,
+		       double **x_vec,
+		       double **y_vec,
 		       _sushiv_bythread_cache_1d *c){
-  sushiv_panel1d_t *p1 = p->subtype->p1;
-  double work[w];
+  sushiv_panelxy_t *xy = p->subtype->xy;
   int i,j,fn=p->sushi->functions;
+  int w = sxi.pixels;
 
-  /* by function */
-  for(i=0;i<fn;i++){
-    if(c->call[i]){
-      sushiv_function_t *f = p->sushi->function_list[i];
-      int step = f->outputs;
-      double *fout = c->fout[i];
-      
-      /* by x */
-      for(j=0;j<w;j++){
-	dim_vals[x_d] = scalespace_value(&sxi,j);
-	c->call[i](dim_vals,fout);
-	fout+=step;
+  /* by x */
+  for(j=0;j<w;j++){
+    dim_vals[x_d] = scalespace_value(&sxi,j);
+
+    /* by function */
+    for(i=0;i<fn;i++){
+      if(c->call[i]){
+	sushiv_function_t *f = p->sushi->function_list[i];
+	double *fout = c->fout[i];
+      	c->call[i](dim_vals,fout);
       }
     }
-  }
 
-  /* process function output by objective */
-  /* 1d panels currently only care about the Y output value; in the
-     future, Z may also be relevant */
-  for(i=0;i<p->objectives;i++){
-    sushiv_objective_t *o = p->objective_list[i].o;
-    int offset = o->private->y_fout;
-    sushiv_function_t *f = o->private->y_func;
-    if(f){
-      int step = f->outputs;
-      double *fout = c->fout[f->number]+offset;
-      
-      /* map result from function output to objective output */
-      for(j=0;j<w;j++){
-	work[j] = *fout;
-	fout+=step;
-      }
-      
-      gdk_threads_enter (); // misuse me as a global mutex
-      if(p->private->plot_serialno == serialno){
-	/* store result in panel */
-	memcpy(p1->data_vec[i],work,w*sizeof(*work));
-	gdk_threads_leave (); // misuse me as a global mutex 
-      }else{
-	gdk_threads_leave (); // misuse me as a global mutex 
-	break;
-      }
+    /* process function output by objective */
+    /* xy panels currently only care about the XY output values; in the
+       future, Z may also be relevant */
+    for(i=0;i<p->objectives;i++){
+      sushiv_objective_t *o = p->objective_list[i].o;
+      int xoff = o->private->x_fout;
+      int yoff = o->private->y_fout;
+      sushiv_function_t *xf = o->private->x_func;
+      sushiv_function_t *yf = o->private->y_func;
+      x_vec[j] = c->fout[xf->number][xoff];
+      y_vec[j] = c->fout[yf->number][yoff];
     }
   }
 }
 
 // call only from main gtk thread
-void _mark_recompute_1d(sushiv_panel_t *p){
+void _mark_recompute_xy(sushiv_panel_t *p){
   if(!p->private->realized) return;
-  sushiv_panel1d_t *p1 = p->subtype->p1;
+  sushiv_panelxy_t *xy = p->subtype->xy;
   Plot *plot = PLOT(p->private->graph);
   int w = plot->w.allocation.width;
   int h = plot->w.allocation.height;
   int dw = w;
-  sushiv_panel_t *link = (p1->link_x ? p1->link_x : p1->link_y);
-  sushiv_panel2d_t *p2 = (link?link->subtype->p2:NULL);
   int i,j;
 
-  if(p1->link_x){
-    dw = p2->x_v.pixels;
-    p1->x_d = p2->x_d;
-    p1->x_scale = p2->x_scale;
-  }
-  if(p1->link_y){
-    dw = p2->y_v.pixels;
-    p1->x_d = p2->y_d;
-    p1->x_scale = p2->y_scale;
-  }
-
+XXXX
   if(plot && GTK_WIDGET_REALIZED(GTK_WIDGET(plot))){
-    if(p1->flip){
-      dw = _sushiv_dimension_scales(p1->x_d, 
-				    p1->x_d->bracket[1],
-				    p1->x_d->bracket[0],
-				    h,dw * p->private->oversample_n / p->private->oversample_d,
-				    plot->scalespacing,
-				    p1->x_d->name,
-				    &p1->x,
-				    &p1->x_v,
-				    &p1->x_i);
-      
-      p1->y = scalespace_linear(p1->range_bracket[0],
-				p1->range_bracket[1],
-				w,
-				plot->scalespacing,
-				p1->range_scale->legend);
-      
-    }else{
       dw = _sushiv_dimension_scales(p1->x_d, 
 				    p1->x_d->bracket[0],
 				    p1->x_d->bracket[1],

@@ -18,16 +18,6 @@
  *
  * 
  */
-tyedef xy_data_t struct xy_data;
-
-struct xy_data{
-  xy_data_t *p;
-  xy_data_t *n;
-
-  double dimx;
-  double xval;
-  double yval;
-};
 
 typedef struct sushiv_panelxy {
   GtkWidget *graph_table;
@@ -36,9 +26,6 @@ typedef struct sushiv_panelxy {
 
   int panel_w;
   int panel_h;
-
-  xy_data_t **data_head;
-  int *data_length;
 
   // panel x/y don't correspond to dimensions like on other panels
   scalespace x;
@@ -53,9 +40,11 @@ typedef struct sushiv_panelxy {
   double x_val;
   double y_val;
   
-
   scalespace data_v; // the x scale aligned to data vector's bins
   scalespace data_i; // the 'counting' scale used to iterate for compute
+  double **x_vec;
+  double **y_vec;
+  double scale_metric;
 
   mapping *mappings;
   int *linetype;
