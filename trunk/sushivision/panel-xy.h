@@ -31,20 +31,20 @@ typedef struct sushiv_panelxy {
   scalespace x;
   scalespace y;
   double oldbox[4];
-  sushiv_scale_t x_scale;
-  sushiv_scale_t y_scale;
-  Slider x_slider;
-  Slider y_slider;
+  sushiv_scale_t *x_scale;
+  sushiv_scale_t *y_scale;
+  Slider *x_slider;
+  Slider *y_slider;
   double x_bracket[2];
   double y_bracket[2];
-  double x_val;
-  double y_val;
+  int cross_objnum;
   
   scalespace data_v; // the x scale aligned to data vector's bins
   scalespace data_i; // the 'counting' scale used to iterate for compute
   double **x_vec;
   double **y_vec;
-  double scale_metric;
+  int curr_zoom;
+  int prev_zoom;
 
   mapping *mappings;
   int *linetype;

@@ -501,7 +501,7 @@ static void linetype_callback_1d(GtkWidget *w,gpointer in){
 
   // update colormap
   int pos = gtk_combo_box_get_active(GTK_COMBO_BOX(w));
-  p1->linetype[onum] = line_name[pos].value;
+  p1->linetype[onum] = line_name[pos]->value;
 
   _sushiv_panel_dirty_map(p);
   _sushiv_undo_resume(p->sushi);
@@ -518,7 +518,7 @@ static void pointtype_callback_1d(GtkWidget *w,gpointer in){
 
   // update colormap
   int pos = gtk_combo_box_get_active(GTK_COMBO_BOX(w));
-  p1->pointtype[onum] = point_name[pos].value;
+  p1->pointtype[onum] = point_name[pos]->value;
 
   _sushiv_panel_dirty_map(p);
   _sushiv_undo_resume(p->sushi);

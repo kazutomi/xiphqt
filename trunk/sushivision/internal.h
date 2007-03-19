@@ -53,7 +53,7 @@ typedef struct propmap {
 #include "gtksucks.h"
 
 union sushiv_panel_subtype {
-  sushiv_panelxy_t *pxy;
+  sushiv_panelxy_t *xy;
   sushiv_panel1d_t *p1;
   sushiv_panel2d_t *p2;
 };
@@ -84,6 +84,7 @@ typedef struct sushiv_panel_undo {
 
 typedef union {
   _sushiv_bythread_cache_1d p1;
+  _sushiv_bythread_cache_xy xy;
   _sushiv_bythread_cache_2d p2;
 } _sushiv_bythread_cache;
 
