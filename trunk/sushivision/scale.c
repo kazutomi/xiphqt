@@ -204,6 +204,19 @@ double scalespace_value(scalespace *s, double pixel){
   return val * s->m;
 }
 
+void scalespace_double(scalespace *s){
+  // mildly complicated by mantissa being powers of ten
+  if(s->step_val & 0x1){ // ie, not divisible by two
+    s->decimal_exponent--;
+    s->m = pow(10,s->decimal_exponent);
+    s->step_val *= 10;
+    s->first_val *= 10;
+  }
+  s->step_val >>= 1;
+  s->first_pixel <<= 1;
+  s->pixels <<= 1;
+}
+
 double scalespace_pixel(scalespace *s, double val){
   val /= s->m;
   val -= s->first_val;
@@ -246,6 +259,21 @@ long scalespace_scaleoff(scalespace *from, scalespace *to){
   return (2 * from->first_val * from->step_pixel - (2 * from->first_pixel + 1) * from->step_val) 
     * expF * to->step_pixel * from->neg
     - (2 * to->first_val * to->step_pixel - (2 * to->first_pixel + 1) * to->step_val) 
+    * expT * from->step_pixel * to->neg;
+}
+
+long scalespace_scalebin(scalespace *from, scalespace *to){
+  int decF = from->decimal_exponent - to->decimal_exponent;
+  int decT = to->decimal_exponent - from->decimal_exponent;
+  long expF = 1;
+  long expT = 1;
+
+  while(decF-->0) expF *= 10;
+  while(decT-->0) expT *= 10;
+  
+  return (2 * from->first_val * from->step_pixel - (2 * from->first_pixel) * from->step_val) 
+    * expF * to->step_pixel * from->neg
+    - (2 * to->first_val * to->step_pixel - (2 * to->first_pixel) * to->step_val) 
     * expT * from->step_pixel * to->neg;
 }
 
@@ -390,6 +418,7 @@ scalespace scalespace_linear (double lowpoint, double highpoint, int pixels, int
     ret.first_val = first;
     
     ret.first_pixel = rint((first - (lowpoint / ret.m)) * ret.step_pixel / ret.step_val);
+
     ret.neg = neg;
     break;
   }

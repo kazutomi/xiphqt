@@ -32,7 +32,7 @@
 #include <cairo-ft.h>
 #include "internal.h"
 
-#define LINETYPES 6
+#define LINETYPES 3
 static propmap *line_name[LINETYPES+1] = {
   &(propmap){"line", 0,          NULL,NULL,NULL},
   &(propmap){"fat line", 1,      NULL,NULL,NULL},
@@ -109,6 +109,7 @@ static int _sushiv_panelxy_remap(sushiv_panel_t *p, cairo_t *c){
   int xi,i,j;
   int pw = plot->x.pixels;
   int ph = plot->y.pixels;
+  int ret = 1;
 
   scalespace sx = xy->x;
   scalespace sy = xy->y;
@@ -150,23 +151,22 @@ static int _sushiv_panelxy_remap(sushiv_panel_t *p, cairo_t *c){
      map_serialno != p->private->map_serialno) return -1;
 
   if(xy->x_vec && xy->y_vec){
+    int dw = data_v.pixels;
+    double *xv = calloc(dw,sizeof(*xv));
+    double *yv = calloc(dw,sizeof(*yv));	
     
     /* by objective */
     for(j=0;j<p->objectives;j++){
       if(xy->x_vec[j] && xy->y_vec[j] && !mapping_inactive_p(xy->mappings+j)){
 	
-	int dw = data_v.pixels;
 	double alpha = slider_get_value(xy->alpha_scale[j],0);
 	int linetype = xy->linetype[j];
 	int pointtype = xy->pointtype[j];
 	u_int32_t color = mapping_calc(xy->mappings+j,1.,0);
       
-	double xv[dw];
-	double yv[dw];
-	
 	// copy the list data over
-	memcpy(xv,xy->x_vec[j],sizeof(xv));
-	memcpy(yv,xy->y_vec[j],sizeof(yv));
+	memcpy(xv,xy->x_vec[j],dw*sizeof(*xv));
+	memcpy(yv,xy->y_vec[j],dw*sizeof(*yv));
 	gdk_threads_leave();
 
 	/* by x */
@@ -220,10 +220,10 @@ static int _sushiv_panelxy_remap(sushiv_panel_t *p, cairo_t *c){
 	  for(i=0;i<dw;i++){
 	    if(!isnan(yv[i]) && 
 	       !isnan(xv[i]) && 
-	       !xv[i]<-10 &&
-	       !yv[i]<-10 &&
-	       !xv[i]-10>pw &&
-	       !yv[i]-10>ph){
+	       !(xv[i]<-10) &&
+	       !(yv[i]<-10) &&
+	       !(xv[i]-10>pw) &&
+	       !(yv[i]-10>ph)){
 
 	      double xx,yy;
 	      xx = xv[i];
@@ -280,15 +280,21 @@ static int _sushiv_panelxy_remap(sushiv_panel_t *p, cairo_t *c){
 	    }
 	  }
 	}
-	
+      
 	gdk_threads_enter();
 	if(plot_serialno != p->private->plot_serialno ||
-	   map_serialno != p->private->map_serialno) return -1;
+	   map_serialno != p->private->map_serialno){
+	  ret = -1;
+	  break;
+	}
       }
     }
+    
+    free(xv);
+    free(yv);
   }
-
-  return 1;
+  
+  return ret;
 }
 
 static void sushiv_panelxy_print(sushiv_panel_t *p, cairo_t *c, int w, int h){
@@ -375,13 +381,17 @@ static double _determine_rerender_metric(sushiv_panel_t *p, int off){
 
   double xscale = scalespace_pixel(&xy->x,1.) - scalespace_pixel(&xy->x,0.);
   double yscale = scalespace_pixel(&xy->y,1.) - scalespace_pixel(&xy->y,0.);
+  double lox = scalespace_value(&xy->x,0.);
+  double loy = scalespace_value(&xy->y,ph);
+  double hix = scalespace_value(&xy->x,pw);
+  double hiy = scalespace_value(&xy->y,0.);
 
   // by plane, look at the spacing between visible x/y points
   double max = -1;
   int i,j;
   for(i=0;i<on;i++){
 
-    if(xy->x_vec[j] && xy->y_vec[j] && !mapping_inactive_p(xy->mappings+i)){
+    if(xy->x_vec[i] && xy->y_vec[i]){
       double xacc = 0;
       double yacc = 0;
       double count = 0;
@@ -389,25 +399,25 @@ static double _determine_rerender_metric(sushiv_panel_t *p, int off){
       double *y = xy->y_vec[i];
       
       for(j = off; j<dw; j++){
-	if(!isnan(x[i-off]) &&
-	   !isnan(y[i-off]) &&
-	   !isnan(x[i]) &&
-	   !isnan(y[i]) &&
-	   !(x[i-off] < 0 && x[i] < 0) &&
-	   !(y[i-off] < 0 && y[i] < 0) &&
-	   !(x[i-off] > pw && x[i] > pw) &&
-	   !(y[i-off] > ph && y[i] > ph)){
+	if(!isnan(x[j-off]) &&
+	   !isnan(y[j-off]) &&
+	   !isnan(x[j]) &&
+	   !isnan(y[j]) &&
+	   !(x[j-off] < lox && x[j] < lox) &&
+	   !(y[j-off] < loy && y[j] < loy) &&
+	   !(x[j-off] > hix && x[j] > hix) &&
+	   !(y[j-off] > hiy && y[j] > hiy)){
 	  
-	  xacc += (x[i-off]-x[i]) * (x[i-off]-x[i]);
-	  yacc += (y[i-off]-y[i]) * (y[i-off]-y[i]);
+	  xacc += (x[j-off]-x[j]) * (x[j-off]-x[j]);
+	  yacc += (y[j-off]-y[j]) * (y[j-off]-y[j]);
 	  count++;
 	}
       }
 
-      double acc = sqrt(xacc*xscale*xscale + yacc*yscale*yscale);
-
-      if(count>0)
-	if(acc/count > max) max = acc/count;
+      if(count>0){
+	double acc = sqrt((xacc*xscale*xscale + yacc*yscale*yscale)/count);
+	if(acc > max) max = acc;
+      }
     }
   }
 
@@ -417,13 +427,16 @@ static double _determine_rerender_metric(sushiv_panel_t *p, int off){
 
 // call while locked
 static int _mark_recompute_by_metric(sushiv_panel_t *p, int recursing){
+  if(!p->private->realized) return 0;
+
   sushiv_panelxy_t *xy = p->subtype->xy;
 
   // discrete val dimensions are immune to rerender by metric changes
   if(xy->x_d->type != SUSHIV_DIM_CONTINUOUS) return 0; 
 
-  double target = (double) p->private->oversample_n / p->private->oversample_d;
+  double target = (double) p->private->oversample_d / p->private->oversample_n;
   double full =  _determine_rerender_metric(p, 1);
+    double half =  _determine_rerender_metric(p, 2);
 
   if(full > target){
     // we want to halve the sample spacing.  But first make sure we're
@@ -431,15 +444,13 @@ static int _mark_recompute_by_metric(sushiv_panel_t *p, int recursing){
     if(recursing && xy->prev_zoom > xy->curr_zoom) return 0;
 
     // also make sure our zoom level doesn't underflow
-    if(xy->data_v.massaged) return 0; 
+    if(xy->data_v.massaged || xy->curr_zoom>48) return 0; 
 
-    xy->prev_zoom = xy->curr_zoom;
-    xy->curr_zoom++;
+    xy->req_zoom = xy->curr_zoom+1;
 
     _sushiv_panel_dirty_plot(p); // trigger recompute
     return 1;
   } else {
-    double half =  _determine_rerender_metric(p, 2);
     if(half < target){
       // we want to double the sample spacing.  But first make sure we're
       // not looping due to uncertainties in the metric.
@@ -448,8 +459,7 @@ static int _mark_recompute_by_metric(sushiv_panel_t *p, int recursing){
       // also make sure our zoom level doesn't overrflow
       if(xy->curr_zoom == 0) return 0;
 
-      xy->prev_zoom = xy->curr_zoom;
-      xy->curr_zoom--;
+      xy->req_zoom = xy->curr_zoom-1;
       
       _sushiv_panel_dirty_plot(p); // trigger recompute
       return 1;
@@ -457,7 +467,7 @@ static int _mark_recompute_by_metric(sushiv_panel_t *p, int recursing){
     }
   }
 
-  xy->prev_zoom = xy->curr_zoom;
+  xy->req_zoom = xy->prev_zoom = xy->curr_zoom;
   return 0;
 }
 
@@ -481,10 +491,6 @@ static void mapchange_callback_xy(GtkWidget *w,gpointer in){
   // this objective, inactivate the crosshairs.
   if(xy->cross_objnum == onum)
     plot->cross_active = 0;
-
-  // a map view size change may trigger a progressive up/down render,
-  // but will at least cause a remap
-  _mark_recompute_by_metric(p,0);
 
   _sushiv_panel_dirty_map(p);
   _sushiv_panel_dirty_legend(p);
@@ -567,23 +573,22 @@ static void map_callback_xy(void *in,int buttonstate){
     xy->y_bracket[1] = slider_get_value(xy->y_slider,1);
     
   
-    plot->x = xy->x = scalespace_linear(xy->x_bracket[1],
-					xy->x_bracket[0],
-					w,
-					plot->scalespacing,
-					xy->x_scale->legend);
-    plot->y = xy->y = scalespace_linear(xy->y_bracket[1],
-					xy->y_bracket[0],
-					h,
-					plot->scalespacing,
-					xy->y_scale->legend);
-
+    xy->x = scalespace_linear(xy->x_bracket[0],
+			      xy->x_bracket[1],
+			      w,
+			      plot->scalespacing,
+			      xy->x_scale->legend);
+    xy->y = scalespace_linear(xy->y_bracket[1],
+			      xy->y_bracket[0],
+			      h,
+			      plot->scalespacing,
+			      xy->y_scale->legend);
+    
     // a map view size change may trigger a progressive up/down render,
     // but will at least cause a remap
     _mark_recompute_by_metric(p,0);
-    
     _sushiv_panel_dirty_map(p);
-    
+
   }
 
   if(buttonstate == 2)
@@ -676,6 +681,8 @@ static void compute_xy(sushiv_panel_t *p,
 void _mark_recompute_xy(sushiv_panel_t *p){
   if(!p->private->realized) return;
 
+  sushiv_panelxy_t *xy = p->subtype->xy;
+  xy->req_zoom = xy->prev_zoom = xy->curr_zoom;
   _sushiv_panel_dirty_plot(p);
 }
 
@@ -738,6 +745,7 @@ static void center_callback_xy(sushiv_dimension_list_t *dptr){
 
   if(!axisp){
     // mid slider of a non-axis dimension changed, rerender
+    clear_xy_data(p);
     _mark_recompute_xy(p);
   }else{
     // mid slider of an axis dimension changed, move crosshairs
@@ -751,7 +759,7 @@ static void bracket_callback_xy(sushiv_dimension_list_t *dptr){
   sushiv_panelxy_t *xy = p->subtype->xy;
   int axisp = (d == xy->x_d);
     
-  // always need to recompute, amy also need to update zoom
+  // always need to recompute, may also need to update zoom
 
   if(axisp)
     if(!_mark_recompute_by_metric(p,0))
@@ -939,35 +947,42 @@ static int _generate_dimscale_xy(sushiv_dimension_t *d, int zoom, scalespace *v,
   // continuous dimensions are, in some ways, handled like a discrete dim.
   double lo = d->scale->val_list[0];
   double hi = d->scale->val_list[d->scale->vals-1];
-  _sushiv_dimension_scales(d, lo, hi, 2, 2, 1, NULL, &x, v, i);
-  
-  // generate a new low that is quantized to our coarsest grid
-  lo = scalespace_value(v,0);
+  _sushiv_dimension_scales(d, lo, hi, 2, 2, 1, d->name, &x, v, i);
 
-  // choose a new resolution, make new scales 
-
-  //  this is iterative, not direct computation, so that at each level
+  // this is iterative, not direct computation, so that at each level
   // we have a small adjustment (as opposed to one huge adjustment at
-  // the end) as well as more resolution headroom at each level
+  // the end)
   int sofar = 0;
-  while (sofar<zoom){
-    int pixels = v->pixels << 1;
+  int neg = (lo<hi?1:-1);
 
-    _sushiv_dimension_scales(d, lo, hi, pixels, pixels, 1, NULL, &x, v, i);
+  while (sofar<zoom){
+    // double scale resolution
+    scalespace_double(v);
+    scalespace_double(i);
+
     if(v->massaged)return 1;
 
     // clip scales down the the desired part of the range
-    while(v->pixels>2 &&  scalespace_value(v,1) < d->bracket[0]){
-      v->first_pixel--;
-      i->first_pixel--;
+    // an assumption: v->step_pixel == 1 because spacing is 1.  We can
+    // increment first_val instead of first_pixel.
+    while(scalespace_value(v,1)*neg < d->bracket[0]*neg){
+      v->first_val += v->step_val*neg;
+      i->first_val += v->step_val*neg;
       v->pixels--;
       i->pixels--;
     }
 
-    while(v->pixels>2 &&  scalespace_value(v,v->pixels-1) > d->bracket[1]){
+    while(v->pixels>2 &&  scalespace_value(v,v->pixels-1)*neg > d->bracket[1]*neg){
       v->pixels--;
       i->pixels--;
     }
+
+    while(scalespace_value(v,v->pixels-1)*neg < d->bracket[1]*neg){
+      v->pixels++;
+      i->pixels++;
+    }
+
+    sofar++;
   }
 
   return 0;
@@ -983,9 +998,13 @@ static void _rescale_xy(scalespace *old, double **oldx, double **oldy,
   int oldi = 0;
   int j;
 
+  for(j=0;j<objectives;j++)
+    if(!oldx[j] || !oldy[j])
+      return;
+
   long num = scalespace_scalenum(new,old);
-  long den = scalespace_scalenum(new,old);
-  long oldpos = scalespace_scaleoff(new,old);
+  long den = scalespace_scaleden(new,old);
+  long oldpos = -scalespace_scalebin(new,old);
   long newpos = 0;
 
   while(newi < new->pixels && oldi < old->pixels){
@@ -994,19 +1013,22 @@ static void _rescale_xy(scalespace *old, double **oldx, double **oldy,
        oldi >= 0){
       prefilled[newi] = 1;
       for(j=0;j<objectives;j++){
-	if(oldx[j])
-	  newx[j][newi] = oldx[j][oldi];
-	if(oldy[j])
-	  newy[j][newi] = oldy[j][oldi];
+	newx[j][newi] = oldx[j][oldi];
+	newy[j][newi] = oldy[j][oldi];
       }
+      newpos += num;
+      newi++;
+      oldpos += den;
+      oldi++;
+
     }
 
-    while(newi < new->pixels && newi < oldi ){
-      newpos += den;
+    while(newi < new->pixels && newpos < oldpos ){
+      newpos += num;
       newi++;
     }
-    while(oldi < old->pixels && oldi < newi ){
-      oldpos += num;
+    while(oldi < old->pixels && oldpos < newpos ){
+      oldpos += den;
       oldi++;
     }
   }
@@ -1021,6 +1043,8 @@ int _sushiv_panelxy_compute(sushiv_panel_t *p,
   int dw,w,h,i,d;
   int serialno;
   int x_d=-1;
+  int prev_zoom = xy->curr_zoom;
+  int zoom = xy->req_zoom;
 
   scalespace sxv = xy->data_v;
   plot = PLOT(p->private->graph);
@@ -1047,7 +1071,7 @@ int _sushiv_panelxy_compute(sushiv_panel_t *p,
   /* generate a new data_v/data_i */
   scalespace newv;
   scalespace newi;
-  _generate_dimscale_xy(xy->x_d, xy->curr_zoom, &newv, &newi);
+  _generate_dimscale_xy(xy->x_d, zoom, &newv, &newi);
   dw = newv.pixels;
 
   /* compare new/old data scales; pre-fill the data vec with values
@@ -1069,11 +1093,13 @@ int _sushiv_panelxy_compute(sushiv_panel_t *p,
   }
 
   _maintain_cache_xy(p,&c->xy,dw);
+
+  plot->x = xy->x;
+  plot->y = xy->y;
   
   /* unlock for computation */
   gdk_threads_leave ();
 
-  plot_draw_scales(plot);
   compute_xy(p, serialno, x_d, newi, dim_vals, prefilled, new_x_vec, new_y_vec, &c->xy);
   
   gdk_threads_enter ();
@@ -1095,9 +1121,17 @@ int _sushiv_panelxy_compute(sushiv_panel_t *p,
     xy->data_v = newv;
     xy->data_i = newi;
 
-    _sushiv_panel_dirty_map(p);
-    _sushiv_panel_dirty_legend(p);
+    xy->prev_zoom = prev_zoom;
+    xy->curr_zoom = zoom;
+
     _sushiv_panel_clean_plot(p);
+    if(!_mark_recompute_by_metric(p, 1)){
+      _sushiv_panel_dirty_legend(p);
+      _sushiv_panel_dirty_map(p);
+    }else{
+      _sushiv_panel_dirty_map_throttled(p);
+    }
+
   }else{
     for(i=0;i<p->objectives;i++){
       free(new_x_vec[i]);
@@ -1232,53 +1266,46 @@ void _sushiv_realize_panelxy(sushiv_panel_t *p){
   }
 
   /* X range slider */
+  /* Y range slider */
   {
-    GtkWidget **sl = calloc(2,sizeof(*sl));
-    int lo = xy->x_scale->val_list[0];
-    int hi = xy->x_scale->val_list[xy->x_scale->vals-1];
+    GtkWidget **slx = calloc(2,sizeof(*slx));
+    GtkWidget **sly = calloc(2,sizeof(*sly));
 
     /* the range slices/slider */ 
-    sl[0] = slice_new(map_callback_xy,p);
-    sl[1] = slice_new(map_callback_xy,p);
+    slx[0] = slice_new(map_callback_xy,p);
+    slx[1] = slice_new(map_callback_xy,p);
+    sly[0] = slice_new(map_callback_xy,p);
+    sly[1] = slice_new(map_callback_xy,p);
 
-    gtk_table_attach(GTK_TABLE(xy->graph_table),sl[0],1,2,2,3,
+    gtk_table_attach(GTK_TABLE(xy->graph_table),slx[0],1,2,2,3,
 		     GTK_EXPAND|GTK_FILL,0,0,0);
-    gtk_table_attach(GTK_TABLE(xy->graph_table),sl[1],2,3,2,3,
+    gtk_table_attach(GTK_TABLE(xy->graph_table),slx[1],2,3,2,3,
 		     GTK_EXPAND|GTK_FILL,0,0,0);
+    gtk_table_attach(GTK_TABLE(xy->graph_table),sly[0],0,1,1,2,
+		     GTK_SHRINK,GTK_EXPAND|GTK_FILL,0,0);
+    gtk_table_attach(GTK_TABLE(xy->graph_table),sly[1],0,1,0,1,
+		     GTK_SHRINK,GTK_EXPAND|GTK_FILL,0,0);
+    gtk_table_set_col_spacing(GTK_TABLE(xy->graph_table),0,4);
 
-    xy->x_slider = slider_new((Slice **)sl,2,
+    xy->x_slider = slider_new((Slice **)slx,2,
 			      xy->x_scale->label_list,
 			      xy->x_scale->val_list,
 			      xy->x_scale->vals,0);
-    
-    slice_thumb_set((Slice *)sl[0],lo);
-    slice_thumb_set((Slice *)sl[1],hi);
-  }
-
-  /* Y range slider */
-  {
-    GtkWidget **sl = calloc(2,sizeof(*sl));
-    int lo = xy->y_scale->val_list[0];
-    int hi = xy->y_scale->val_list[xy->y_scale->vals-1];
-
-    /* the range slices/slider */ 
-    sl[0] = slice_new(map_callback_xy,p);
-    sl[1] = slice_new(map_callback_xy,p);
-
-    gtk_table_attach(GTK_TABLE(xy->graph_table),sl[0],0,1,1,2,
-		     GTK_SHRINK,GTK_EXPAND|GTK_FILL,0,0);
-    gtk_table_attach(GTK_TABLE(xy->graph_table),sl[1],0,1,0,1,
-		     GTK_SHRINK,GTK_EXPAND|GTK_FILL,0,0);
-    gtk_table_set_col_spacing(GTK_TABLE(xy->graph_table),0,4);
-    
-    xy->y_slider = slider_new((Slice **)sl,2,
+    xy->y_slider = slider_new((Slice **)sly,2,
 			      xy->y_scale->label_list,
 			      xy->y_scale->val_list,
 			      xy->y_scale->vals,
 			      SLIDER_FLAG_VERTICAL);
+    
+    int lo = xy->x_scale->val_list[0];
+    int hi = xy->x_scale->val_list[xy->x_scale->vals-1];
+    slice_thumb_set((Slice *)slx[0],lo);
+    slice_thumb_set((Slice *)slx[1],hi);
 
-    slice_thumb_set((Slice *)sl[0],lo);
-    slice_thumb_set((Slice *)sl[1],hi);
+    lo = xy->y_scale->val_list[0];
+    hi = xy->y_scale->val_list[xy->y_scale->vals-1];
+    slice_thumb_set((Slice *)sly[0],lo);
+    slice_thumb_set((Slice *)sly[1],hi);
   }
 
   /* obj box */

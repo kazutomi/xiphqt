@@ -206,7 +206,6 @@ extern void sushiv_dimension_set_value(sushiv_instance_t *s,
 
 extern int sushiv_new_function(sushiv_instance_t *s,
 			       int number,
-			       int in_vals,
 			       int out_vals,
 			       void(*callback)(double *,double *),
 			       unsigned flags);

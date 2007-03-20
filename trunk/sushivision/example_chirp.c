@@ -77,7 +77,7 @@ int sushiv_submain(int argc, char *argv[]){
   
   sushiv_dimension_set_value(s,1,1,1.0);
 
-  sushiv_new_function(s, 0, 6, 3, chirp, 0);
+  sushiv_new_function(s, 0, 3, chirp, 0);
 
   sushiv_new_objective(s,0,"sin",
 		       2,(double []){-1.5, 1.5},

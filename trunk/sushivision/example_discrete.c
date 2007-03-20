@@ -53,7 +53,7 @@ int sushiv_submain(int argc, char *argv[]){
   sushiv_dimension_set_value(s,1,0,-2);
   sushiv_dimension_set_value(s,1,2,2);
 
-  sushiv_new_function(s, 0, 2, 1, discrete_objective, 0);
+  sushiv_new_function(s, 0, 1, discrete_objective, 0);
 
   sushiv_new_objective(s,0,"test pattern",
 		       2,(double []){0, 1.0},

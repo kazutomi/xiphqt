@@ -27,7 +27,6 @@
 
 int sushiv_new_function(sushiv_instance_t *s,
 			int number,
-			int in_vals,
 			int out_vals,
 			void(*callback)(double *,double *),
 			unsigned flags){
@@ -58,7 +57,6 @@ int sushiv_new_function(sushiv_instance_t *s,
   f->flags = flags;
   f->sushi = s;
   f->callback = callback;
-  f->inputs = in_vals;
   f->outputs = out_vals;
   f->type = SUSHIV_FUNC_BASIC;
 

@@ -43,6 +43,7 @@ typedef struct sushiv_panelxy {
   scalespace data_i; // the 'counting' scale used to iterate for compute
   double **x_vec;
   double **y_vec;
+  int req_zoom;
   int curr_zoom;
   int prev_zoom;
 

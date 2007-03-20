@@ -78,7 +78,7 @@ int sushiv_submain(int argc, char *argv[]){
 				NULL,0);
   sushiv_dimension_set_value(s,4,1,100);
 
-  sushiv_new_function(s, 0, 5, 2, fractal_objective, 0);
+  sushiv_new_function(s, 0, 2, fractal_objective, 0);
 
   sushiv_new_objective(s,0,"outer",
 		       5,(double []){0, .001, .01, .1, 1.0},
