@@ -327,19 +327,23 @@ static void update_legend(sushiv_panel_t *p){
     char buffer[320];
     plot_legend_clear(plot);
 
-    if(3-xy->data_v.decimal_exponent > depth) depth = 3-xy->data_v.decimal_exponent;
     if(3-xy->x.decimal_exponent > depth) depth = 3-xy->x.decimal_exponent;
     if(3-xy->y.decimal_exponent > depth) depth = 3-xy->y.decimal_exponent;
 
     // if crosshairs are active, add them to the fun
     if( plot->cross_active){
+      char *legend = xy->x_scale->legend;
+      if(!strcmp(legend,""))legend = "X";
       snprintf(buffer,320,"%s = %+.*f",
-	       xy->x_scale->legend,
+	       legend,
 	       depth,
 	       plot->selx);
       plot_legend_add(plot,buffer);
+
+      legend = xy->y_scale->legend;
+      if(!strcmp(legend,""))legend = "Y";
       snprintf(buffer,320,"%s = %+.*f",
-	       xy->y_scale->legend,
+	       legend,
 	       depth,
 	       plot->sely);
       plot_legend_add(plot,buffer);
@@ -349,6 +353,7 @@ static void update_legend(sushiv_panel_t *p){
     }
 
     // add each dimension to the legend
+    if(-xy->data_v.decimal_exponent > depth) depth = -xy->data_v.decimal_exponent;
     for(i=0;i<p->dimensions;i++){
       sushiv_dimension_t *d = p->dimension_list[i].d;
 
@@ -728,12 +733,13 @@ static void update_crosshair(sushiv_panel_t *p){
   if(!xy->x_vec[xy->cross_objnum] || !xy->y_vec[xy->cross_objnum])return;
 
   // get bin number of dim value
-  int x_bin = scalespace_pixel(&xy->data_v, xy->x_d->val);
+  int x_bin = rint(scalespace_pixel(&xy->data_v, xy->x_d->val));
   double x = xy->x_vec[xy->cross_objnum][x_bin];
   double y = xy->y_vec[xy->cross_objnum][x_bin];
 
   plot_set_crosshairs(plot,x,y);
-  
+  sushiv_dimension_set_value(p->sushi,xy->x_d->number,1,scalespace_value(&xy->data_v, x_bin));
+
   _sushiv_panel_dirty_legend(p);
 }
 
@@ -769,6 +775,7 @@ static void bracket_callback_xy(sushiv_dimension_list_t *dptr){
 
 static void dimchange_callback_xy(GtkWidget *button,gpointer in){
   sushiv_panel_t *p = (sushiv_panel_t *)in;
+  sushiv_panelxy_t *xy = p->subtype->xy;
 
   if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button))){
 
@@ -783,8 +790,8 @@ static void dimchange_callback_xy(GtkWidget *button,gpointer in){
     update_crosshair(p); // which is to say, deactivate it
     plot_unset_box(PLOT(p->private->graph));
 
-    if(!_mark_recompute_by_metric(p,0))
-      _mark_recompute_xy(p);
+    xy->curr_zoom = xy->prev_zoom = xy->req_zoom = 0;
+    _mark_recompute_xy(p);
 
     _sushiv_undo_resume(p->sushi);
   }
@@ -853,7 +860,12 @@ static void box_callback(void *in, int state){
     _sushiv_undo_suspend(p->sushi);
 
     crosshair_callback(p);
-    map_callback_xy(p,1);
+
+    slider_set_value(xy->x_slider,0,xy->oldbox[0]);
+    slider_set_value(xy->x_slider,1,xy->oldbox[1]);
+    slider_set_value(xy->y_slider,0,xy->oldbox[2]);
+    slider_set_value(xy->y_slider,1,xy->oldbox[3]);
+
     p->private->oldbox_active = 0;
     _sushiv_undo_resume(p->sushi);
     break;

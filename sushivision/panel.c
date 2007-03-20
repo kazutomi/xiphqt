@@ -848,6 +848,12 @@ int _sushiv_new_panel(sushiv_instance_t *s,
   p->objectives = i;
   p->objective_list = malloc(i*sizeof(*p->objective_list));
   for(i=0;i<p->objectives;i++){
+    if(objectives[i]<0 || objectives[i]>=s->objectives ||
+       s->objective_list[objectives[i]] == NULL){
+      fprintf(stderr,"Panel %d: Objective number %d does not exist\n",number, objectives[i]);
+      return -EINVAL;
+    }
+
     sushiv_objective_t *o = s->objective_list[objectives[i]];
     p->objective_list[i].o = o;
     p->objective_list[i].p = p;
@@ -858,6 +864,12 @@ int _sushiv_new_panel(sushiv_instance_t *s,
   p->dimensions = i;
   p->dimension_list = malloc(i*sizeof(*p->dimension_list));
   for(i=0;i<p->dimensions;i++){
+    if(dimensions[i]<0 || dimensions[i]>=s->dimensions ||
+       s->dimension_list[dimensions[i]] == NULL){
+      fprintf(stderr,"Panel %d: Objective number %d does not exist\n",number, objectives[i]);
+      return -EINVAL;
+    }
+
     sushiv_dimension_t *d = s->dimension_list[dimensions[i]];
     p->dimension_list[i].d = d;
     p->dimension_list[i].p = p;
