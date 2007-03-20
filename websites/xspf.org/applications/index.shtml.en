@@ -613,8 +613,9 @@
               "http://libspiff.sourceforge.net/">libSpiff</a> (C++)
             </dt>
             <dd>
-              A cross-platform C++ library for reading and writing XSPF
-              playlist files (both Version 0 and 1). Licensed under the LGPL.
+              The official reference implementation of XSPF by the Xiph.Org Foundation.
+              libSpiff is a cross-platform C++ library for reading and writing XSPF
+              playlist files (both Version 0 and 1). It is licensed under the New BSD license.
               See also <a href="http://libspiff.sourceforge.net/doc/html/"
               title="XSPF C++ library tutorial">libSpiff tutorial</a>.
             </dd>
