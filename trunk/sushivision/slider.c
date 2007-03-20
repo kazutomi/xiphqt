@@ -625,7 +625,7 @@ void slider_vals_bound(Slider *s,int slicenum){
     Slice *sl = SLICE(s->slices[i]);
     Slice *sl2 = SLICE(s->slices[i2]);
     if((sl->thumb_val>sl2->thumb_val)^flip)
-      sl->thumb_val=sl2->thumb_val;
+      slice_thumb_set(sl,sl2->thumb_val);
   }
   
   for(i=slicenum+1; i<s->num_slices;i++){
@@ -637,7 +637,8 @@ void slider_vals_bound(Slider *s,int slicenum){
     Slice *sl = SLICE(s->slices[i]);
     Slice *sl2 = SLICE(s->slices[i2]);
     if((sl->thumb_val<sl2->thumb_val)^flip)
-      sl->thumb_val=sl2->thumb_val;
+      slice_thumb_set(sl,sl2->thumb_val);
+
   }
 }
 
@@ -811,7 +812,9 @@ gboolean slider_key_press(Slider *s,GdkEventKey *event,int slicenum){
   switch(event->keyval){
   case GDK_Left:
     {
-      double x = val_to_pixel(s,sl->thumb_val)-1;
+      double x = val_to_pixel(s,sl->thumb_val);
+      while(sl->thumb_val > s->label_vals[0] &&
+	    sl->thumb_val == slider_pixel_to_val(s,x))x--;
       if(shift)
 	x-=9;
       sl->thumb_val=slider_pixel_to_val(s,x);
@@ -832,7 +835,9 @@ gboolean slider_key_press(Slider *s,GdkEventKey *event,int slicenum){
 
   case GDK_Right:
     {
-      double x = val_to_pixel(s,sl->thumb_val)+1;
+      double x = val_to_pixel(s,sl->thumb_val);
+      while(sl->thumb_val < s->label_vals[s->labels-1] &&
+	    sl->thumb_val == slider_pixel_to_val(s,x))x++;
       if(shift)
 	x+=9;
       sl->thumb_val=slider_pixel_to_val(s,x);

@@ -409,7 +409,7 @@ static void update_legend(sushiv_panel_t *p){
       
       // add each dimension to the legend
       // display decimal precision relative to display scales
-      if(3-p1->x_v.decimal_exponent > depth) depth = 3-p1->x_v.decimal_exponent;
+      
       snprintf(buffer,320,"%s = %+.*f",
 	       d->name,
 	       depth,

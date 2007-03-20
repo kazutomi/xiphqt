@@ -29,11 +29,6 @@ typedef struct {
   GtkWidget *menu;
   GtkWidget *entry[3];
 
-  /* don't rely on intuited state; that could be fragile. If we don't
-     want updates to recurse, be explicit about it! */
-  int center_updating;
-  int bracket_updating;
-
   /* calls with the callback data and a state flag:
      0: begin set
      1: continue set

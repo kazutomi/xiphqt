@@ -224,51 +224,47 @@ static void _sushiv_dimension_center_callback(void *data, int buttonstate){
 
   sushiv_dim_widget_t *dw = (sushiv_dim_widget_t *)data;
 
-  if(!dw->center_updating){
-    sushiv_dimension_t *d = dw->dl->d;
-    sushiv_panel_t *p = dw->dl->p;
-    double val = slider_get_value(dw->scale,1);
-      char buffer[80];
-
-    val = discrete_quantize_val(d,val);
-    dw->center_updating = 1;
-    
-    if(buttonstate == 0){
-      _sushiv_undo_push(p->sushi);
-      _sushiv_undo_suspend(p->sushi);
-    }
-    
-    if(d->val != val){
-      int i;
-      
-      d->val = val;
-            
-      /* dims can be shared amongst multiple widgets; all must be updated */
-      for(i=0;i<d->private->widgets;i++){
-	sushiv_dim_widget_t *w = d->private->widget_list[i];
-	if(w->scale) // all shared widgets had better have scales, but bulletproof in case
-	  slider_set_value(w->scale,1,val);
-      }
-
-      /* dims can be shared amongst multiple widgets; all must get callbacks */
-      for(i=0;i<d->private->widgets;i++){
-	sushiv_dim_widget_t *w = d->private->widget_list[i];
-	w->center_callback(dw->dl);
-      }
-    }
-    
-    if(buttonstate == 2)
-      _sushiv_undo_resume(p->sushi);
-
-    snprintf(buffer,80,"%.10g",d->bracket[0]);
-    gtk_entry_set_text(GTK_ENTRY(dw->entry[0]),buffer);
-    snprintf(buffer,80,"%.10g",d->val);
-    gtk_entry_set_text(GTK_ENTRY(dw->entry[1]),buffer);
-    snprintf(buffer,80,"%.10g",d->bracket[1]);
-    gtk_entry_set_text(GTK_ENTRY(dw->entry[2]),buffer);
-    
-    dw->center_updating = 0;
+  sushiv_dimension_t *d = dw->dl->d;
+  sushiv_panel_t *p = dw->dl->p;
+  double val = slider_get_value(dw->scale,1);
+  char buffer[80];
+  
+  val = discrete_quantize_val(d,val);
+  
+  if(buttonstate == 0){
+    _sushiv_undo_push(p->sushi);
+    _sushiv_undo_suspend(p->sushi);
   }
+  
+  if(d->val != val){
+    int i;
+    
+    d->val = val;
+    
+    /* dims can be shared amongst multiple widgets; all must be updated */
+    for(i=0;i<d->private->widgets;i++){
+      sushiv_dim_widget_t *w = d->private->widget_list[i];
+      if(w->scale) // all shared widgets had better have scales, but bulletproof in case
+	slider_set_value(w->scale,1,val);
+    }
+    
+    /* dims can be shared amongst multiple widgets; all must get callbacks */
+    for(i=0;i<d->private->widgets;i++){
+      sushiv_dim_widget_t *w = d->private->widget_list[i];
+      w->center_callback(dw->dl);
+    }
+  }
+  
+  if(buttonstate == 2)
+    _sushiv_undo_resume(p->sushi);
+  
+  snprintf(buffer,80,"%.10g",d->bracket[0]);
+  gtk_entry_set_text(GTK_ENTRY(dw->entry[0]),buffer);
+  snprintf(buffer,80,"%.10g",d->val);
+  gtk_entry_set_text(GTK_ENTRY(dw->entry[1]),buffer);
+  snprintf(buffer,80,"%.10g",d->bracket[1]);
+  gtk_entry_set_text(GTK_ENTRY(dw->entry[2]),buffer);
+  
   gdk_threads_leave();
 }
 
@@ -277,57 +273,52 @@ static void _sushiv_dimension_bracket_callback(void *data, int buttonstate){
 
   sushiv_dim_widget_t *dw = (sushiv_dim_widget_t *)data;
 
-  if(!dw->bracket_updating){
-    sushiv_dimension_t *d = dw->dl->d;
-    sushiv_panel_t *p = dw->dl->p;
-    double lo = slider_get_value(dw->scale,0);
-    double hi = slider_get_value(dw->scale,2);
-    char buffer[80];
-
-    hi = discrete_quantize_val(d,hi);
-    lo = discrete_quantize_val(d,lo);
-
-    dw->bracket_updating = 1;
-    
-    if(buttonstate == 0){
-      _sushiv_undo_push(p->sushi);
-      _sushiv_undo_suspend(p->sushi);
-    }
-
-    if(d->bracket[0] != lo || d->bracket[1] != hi){
-      int i;
-
-      d->bracket[0] = lo;
-      d->bracket[1] = hi;
-
-      /* dims can be shared amongst multiple widgets; all must be updated */
-      for(i=0;i<d->private->widgets;i++){
-	sushiv_dim_widget_t *w = d->private->widget_list[i];
-	if(w->scale){ // all shared widgets had better have scales, but bulletproof in case
-	  slider_set_value(w->scale,0,lo);
-	  slider_set_value(w->scale,2,hi);
-	}
-      }
-
-      /* dims can be shared amongst multiple widgets; all must get callbacks */
-      for(i=0;i<d->private->widgets;i++){
-	sushiv_dim_widget_t *w = d->private->widget_list[i];
-	w->bracket_callback(dw->dl);
-      }
-    }
-    
-    if(buttonstate == 2)
-      _sushiv_undo_resume(p->sushi);
-    
-    snprintf(buffer,80,"%.10g",d->bracket[0]);
-    gtk_entry_set_text(GTK_ENTRY(dw->entry[0]),buffer);
-    snprintf(buffer,80,"%.10g",d->val);
-    gtk_entry_set_text(GTK_ENTRY(dw->entry[1]),buffer);
-    snprintf(buffer,80,"%.10g",d->bracket[1]);
-    gtk_entry_set_text(GTK_ENTRY(dw->entry[2]),buffer);
-    
-    dw->bracket_updating = 0;
+  sushiv_dimension_t *d = dw->dl->d;
+  sushiv_panel_t *p = dw->dl->p;
+  double lo = slider_get_value(dw->scale,0);
+  double hi = slider_get_value(dw->scale,2);
+  char buffer[80];
+  
+  hi = discrete_quantize_val(d,hi);
+  lo = discrete_quantize_val(d,lo);
+  
+  if(buttonstate == 0){
+    _sushiv_undo_push(p->sushi);
+    _sushiv_undo_suspend(p->sushi);
   }
+  
+  if(d->bracket[0] != lo || d->bracket[1] != hi){
+    int i;
+    
+    d->bracket[0] = lo;
+    d->bracket[1] = hi;
+    
+    /* dims can be shared amongst multiple widgets; all must be updated */
+    for(i=0;i<d->private->widgets;i++){
+      sushiv_dim_widget_t *w = d->private->widget_list[i];
+      if(w->scale){ // all shared widgets had better have scales, but bulletproof in case
+	slider_set_value(w->scale,0,lo);
+	slider_set_value(w->scale,2,hi);
+      }
+    }
+    
+    /* dims can be shared amongst multiple widgets; all must get callbacks */
+    for(i=0;i<d->private->widgets;i++){
+      sushiv_dim_widget_t *w = d->private->widget_list[i];
+      w->bracket_callback(dw->dl);
+    }
+  }
+  
+  if(buttonstate == 2)
+    _sushiv_undo_resume(p->sushi);
+  
+  snprintf(buffer,80,"%.10g",d->bracket[0]);
+  gtk_entry_set_text(GTK_ENTRY(dw->entry[0]),buffer);
+  snprintf(buffer,80,"%.10g",d->val);
+  gtk_entry_set_text(GTK_ENTRY(dw->entry[1]),buffer);
+  snprintf(buffer,80,"%.10g",d->bracket[1]);
+  gtk_entry_set_text(GTK_ENTRY(dw->entry[2]),buffer);
+  
   gdk_threads_leave();
 }
 
@@ -336,41 +327,36 @@ static void _sushiv_dimension_dropdown_callback(GtkWidget *dummy, void *data){
 
   sushiv_dim_widget_t *dw = (sushiv_dim_widget_t *)data;
 
-  if(!dw->center_updating){
-    sushiv_dimension_t *d = dw->dl->d;
-    sushiv_panel_t *p = dw->dl->p;
-    int bin = gtk_combo_box_get_active(GTK_COMBO_BOX(dw->menu));
-    double val = d->scale->val_list[bin];
- 
-    dw->center_updating = 1;
+  sushiv_dimension_t *d = dw->dl->d;
+  sushiv_panel_t *p = dw->dl->p;
+  int bin = gtk_combo_box_get_active(GTK_COMBO_BOX(dw->menu));
+  double val = d->scale->val_list[bin];
     
-    _sushiv_undo_push(p->sushi);
-    _sushiv_undo_suspend(p->sushi);
+  _sushiv_undo_push(p->sushi);
+  _sushiv_undo_suspend(p->sushi);
     
-    if(d->val != val){
-      int i;
-
-      d->val = val;
-      d->bracket[0] = val;
-      d->bracket[1] = val;
-
-      /* dims can be shared amongst multiple widgets; all must be updated */
-      for(i=0;i<d->private->widgets;i++){
-	sushiv_dim_widget_t *w = d->private->widget_list[i];
-	if(w->menu) // all shared widgets had better have scales, but bulletproof in case
-	  gtk_combo_box_set_active(GTK_COMBO_BOX(w->menu),bin);
-      }
-
-      /* dims can be shared amongst multiple widgets; all must get callbacks */
-      for(i=0;i<d->private->widgets;i++){
-	sushiv_dim_widget_t *w = d->private->widget_list[i];
-	w->center_callback(dw->dl);
-      }
+  if(d->val != val){
+    int i;
+    
+    d->val = val;
+    d->bracket[0] = val;
+    d->bracket[1] = val;
+    
+    /* dims can be shared amongst multiple widgets; all must be updated */
+    for(i=0;i<d->private->widgets;i++){
+      sushiv_dim_widget_t *w = d->private->widget_list[i];
+      if(w->menu) // all shared widgets had better have scales, but bulletproof in case
+	gtk_combo_box_set_active(GTK_COMBO_BOX(w->menu),bin);
     }
-    _sushiv_undo_resume(p->sushi);
     
-    dw->center_updating = 0;
+    /* dims can be shared amongst multiple widgets; all must get callbacks */
+    for(i=0;i<d->private->widgets;i++){
+      sushiv_dim_widget_t *w = d->private->widget_list[i];
+      w->center_callback(dw->dl);
+    }
   }
+  _sushiv_undo_resume(p->sushi);
+  
   gdk_threads_leave();
 }
 
