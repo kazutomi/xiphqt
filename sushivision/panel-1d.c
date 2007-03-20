@@ -1095,7 +1095,6 @@ int _sushiv_panel1d_compute(sushiv_panel_t *p,
   /* unlock for computation */
   gdk_threads_leave ();
 
-  plot_draw_scales(plot);
   compute_1d(p, serialno, x_d, sxi, dw, dim_vals, &c->p1);
   
   gdk_threads_enter ();
