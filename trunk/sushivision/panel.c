@@ -34,40 +34,40 @@
 #include <cairo-ft.h>
 #include "internal.h"
 
-extern void _sushiv_wake_workers(void);
-static void wrap_exit(sushiv_panel_t *dummy, GtkWidget *dummyw);
-static void wrap_bg(sushiv_panel_t *p, GtkWidget *w);
-static void wrap_grid(sushiv_panel_t *p, GtkWidget *w);
-static void wrap_text(sushiv_panel_t *p, GtkWidget *w);
-static void wrap_res(sushiv_panel_t *p, GtkWidget *w);
-static void do_load(sushiv_panel_t *p, GtkWidget *dummy);
-static void do_save(sushiv_panel_t *p, GtkWidget *dummy);
-static void _sushiv_panel_print(sushiv_panel_t *p, GtkWidget *dummy);
-static void wrap_undo_up(sushiv_panel_t *p, GtkWidget *dummy);
-static void wrap_undo_down(sushiv_panel_t *p, GtkWidget *dummy);
-static void wrap_legend(sushiv_panel_t *p, GtkWidget *dummy);
-static void wrap_escape(sushiv_panel_t *p, GtkWidget *dummy);
-static void wrap_enter(sushiv_panel_t *p, GtkWidget *dummy);
+extern void _sv_wake_workers(void);
+static void wrap_exit(sv_panel_t *dummy, GtkWidget *dummyw);
+static void wrap_bg(sv_panel_t *p, GtkWidget *w);
+static void wrap_grid(sv_panel_t *p, GtkWidget *w);
+static void wrap_text(sv_panel_t *p, GtkWidget *w);
+static void wrap_res(sv_panel_t *p, GtkWidget *w);
+static void wrap_load(sv_panel_t *p, GtkWidget *dummy);
+static void wrap_save(sv_panel_t *p, GtkWidget *dummy);
+static void _sv_panel_print(sv_panel_t *p, GtkWidget *dummy);
+static void wrap_undo_up(sv_panel_t *p, GtkWidget *dummy);
+static void wrap_undo_down(sv_panel_t *p, GtkWidget *dummy);
+static void wrap_legend(sv_panel_t *p, GtkWidget *dummy);
+static void wrap_escape(sv_panel_t *p, GtkWidget *dummy);
+static void wrap_enter(sv_panel_t *p, GtkWidget *dummy);
 
-static propmap *bgmap[]={
-  &(propmap){"white",SUSHIV_BG_WHITE,   "[<i>b</i>]",NULL,wrap_bg},
-  &(propmap){"black",SUSHIV_BG_BLACK,   "[<i>b</i>]",NULL,wrap_bg},
-  &(propmap){"checks",SUSHIV_BG_CHECKS, "[<i>b</i>]",NULL,wrap_bg},
+static _sv_propmap_t *bgmap[]={
+  &(_sv_propmap_t){"white",SV_BG_WHITE,   "[<i>b</i>]",NULL,wrap_bg},
+  &(_sv_propmap_t){"black",SV_BG_BLACK,   "[<i>b</i>]",NULL,wrap_bg},
+  &(_sv_propmap_t){"checks",SV_BG_CHECKS, "[<i>b</i>]",NULL,wrap_bg},
   NULL
 };
 
-static propmap *gridmap[]={
-  &(propmap){"light",PLOT_GRID_LIGHT,   "[<i>g</i>]",NULL,wrap_grid},
-  &(propmap){"normal",PLOT_GRID_NORMAL, "[<i>g</i>]",NULL,wrap_grid},
-  &(propmap){"dark",PLOT_GRID_DARK,     "[<i>g</i>]",NULL,wrap_grid},
-  &(propmap){"tics",PLOT_GRID_TICS,     "[<i>g</i>]",NULL,wrap_grid},
-  &(propmap){"none",PLOT_GRID_NONE,     "[<i>g</i>]",NULL,wrap_grid},
+static _sv_propmap_t *gridmap[]={
+  &(_sv_propmap_t){"light",_SV_PLOT_GRID_LIGHT,   "[<i>g</i>]",NULL,wrap_grid},
+  &(_sv_propmap_t){"normal",_SV_PLOT_GRID_NORMAL, "[<i>g</i>]",NULL,wrap_grid},
+  &(_sv_propmap_t){"dark",_SV_PLOT_GRID_DARK,     "[<i>g</i>]",NULL,wrap_grid},
+  &(_sv_propmap_t){"tics",_SV_PLOT_GRID_TICS,     "[<i>g</i>]",NULL,wrap_grid},
+  &(_sv_propmap_t){"none",_SV_PLOT_GRID_NONE,     "[<i>g</i>]",NULL,wrap_grid},
   NULL
 };
 
-static propmap *textmap[]={
-  &(propmap){"dark",PLOT_TEXT_DARK,   "[<i>t</i>]",NULL,wrap_text},
-  &(propmap){"light",PLOT_TEXT_LIGHT, "[<i>t</i>]",NULL,wrap_text},
+static _sv_propmap_t *textmap[]={
+  &(_sv_propmap_t){"dark",_SV_PLOT_TEXT_DARK,   "[<i>t</i>]",NULL,wrap_text},
+  &(_sv_propmap_t){"light",_SV_PLOT_TEXT_LIGHT, "[<i>t</i>]",NULL,wrap_text},
   NULL
 };
 
@@ -82,221 +82,221 @@ static propmap *textmap[]={
 #define RES_4_1 8
 
 // only used for the menus
-static propmap *resmap[]={
-  &(propmap){"default",RES_DEF,  "[<i>m</i>]",NULL,wrap_res},
-  &(propmap){"1:32",RES_1_32,     "[<i>m</i>]",NULL,wrap_res},
-  &(propmap){"1:16",RES_1_16,     "[<i>m</i>]",NULL,wrap_res},
-  &(propmap){"1:8",RES_1_8,      "[<i>m</i>]",NULL,wrap_res},
-  &(propmap){"1:4",RES_1_4,      "[<i>m</i>]",NULL,wrap_res},
-  &(propmap){"1:2",RES_1_2,      "[<i>m</i>]",NULL,wrap_res},
-  &(propmap){"1",RES_1_1,        "[<i>m</i>]",NULL,wrap_res},
-  &(propmap){"2:1",RES_2_1,      "[<i>m</i>]",NULL,wrap_res},
-  &(propmap){"4:1",RES_4_1,      "[<i>m</i>]",NULL,wrap_res},
+static _sv_propmap_t *resmap[]={
+  &(_sv_propmap_t){"default",RES_DEF,  "[<i>m</i>]",NULL,wrap_res},
+  &(_sv_propmap_t){"1:32",RES_1_32,     "[<i>m</i>]",NULL,wrap_res},
+  &(_sv_propmap_t){"1:16",RES_1_16,     "[<i>m</i>]",NULL,wrap_res},
+  &(_sv_propmap_t){"1:8",RES_1_8,      "[<i>m</i>]",NULL,wrap_res},
+  &(_sv_propmap_t){"1:4",RES_1_4,      "[<i>m</i>]",NULL,wrap_res},
+  &(_sv_propmap_t){"1:2",RES_1_2,      "[<i>m</i>]",NULL,wrap_res},
+  &(_sv_propmap_t){"1",RES_1_1,        "[<i>m</i>]",NULL,wrap_res},
+  &(_sv_propmap_t){"2:1",RES_2_1,      "[<i>m</i>]",NULL,wrap_res},
+  &(_sv_propmap_t){"4:1",RES_4_1,      "[<i>m</i>]",NULL,wrap_res},
   NULL,
 };
 
-static propmap *crossmap[]={
-  &(propmap){"no",0     ,NULL,NULL,NULL},
-  &(propmap){"yes",1    ,NULL,NULL,NULL},
+static _sv_propmap_t *crossmap[]={
+  &(_sv_propmap_t){"no",0     ,NULL,NULL,NULL},
+  &(_sv_propmap_t){"yes",1    ,NULL,NULL,NULL},
   NULL
 };
 
-static propmap *legendmap[]={
-  &(propmap){"none",PLOT_LEGEND_NONE,       NULL,NULL,NULL},
-  &(propmap){"shadowed",PLOT_LEGEND_SHADOW, NULL,NULL,NULL},
-  &(propmap){"boxed",PLOT_LEGEND_BOX,       NULL,NULL,NULL},
+static _sv_propmap_t *legendmap[]={
+  &(_sv_propmap_t){"none",_SV_PLOT_LEGEND_NONE,       NULL,NULL,NULL},
+  &(_sv_propmap_t){"shadowed",_SV_PLOT_LEGEND_SHADOW, NULL,NULL,NULL},
+  &(_sv_propmap_t){"boxed",_SV_PLOT_LEGEND_BOX,       NULL,NULL,NULL},
   NULL
 };
 
-static propmap *menu[]={
-  &(propmap){"Open",0,"[<i>o</i>]",NULL,do_load},
-  &(propmap){"Save",1,"[<i>s</i>]",NULL,do_save},
-  &(propmap){"Print/Export",2,"[<i>p</i>]",NULL,_sushiv_panel_print},
+static _sv_propmap_t *menu[]={
+  &(_sv_propmap_t){"Open",0,"[<i>o</i>]",NULL,wrap_load},
+  &(_sv_propmap_t){"Save",1,"[<i>s</i>]",NULL,wrap_save},
+  &(_sv_propmap_t){"Print/Export",2,"[<i>p</i>]",NULL,_sv_panel_print},
 
-  &(propmap){"",3,NULL,NULL,NULL},
+  &(_sv_propmap_t){"",3,NULL,NULL,NULL},
 
-  &(propmap){"Undo",4,"[<i>bksp</i>]",NULL,&wrap_undo_down},
-  &(propmap){"Redo",5,"[<i>space</i>]",NULL,&wrap_undo_up},
-  &(propmap){"Start zoom box",6,"[<i>enter</i>]",NULL,&wrap_enter},
-  &(propmap){"Clear selection",7,"[<i>escape</i>]",NULL,&wrap_escape},
-  &(propmap){"Toggle Legend",8,"[<i>l</i>]",NULL,&wrap_legend},
+  &(_sv_propmap_t){"Undo",4,"[<i>bksp</i>]",NULL,&wrap_undo_down},
+  &(_sv_propmap_t){"Redo",5,"[<i>space</i>]",NULL,&wrap_undo_up},
+  &(_sv_propmap_t){"Start zoom box",6,"[<i>enter</i>]",NULL,&wrap_enter},
+  &(_sv_propmap_t){"Clear selection",7,"[<i>escape</i>]",NULL,&wrap_escape},
+  &(_sv_propmap_t){"Toggle Legend",8,"[<i>l</i>]",NULL,&wrap_legend},
 
-  &(propmap){"",9,NULL,NULL,NULL},
+  &(_sv_propmap_t){"",9,NULL,NULL,NULL},
 
-  &(propmap){"Background",10,"...",bgmap,NULL},
-  &(propmap){"Text color",11,"...",textmap,NULL},
-  &(propmap){"Grid mode",12,"...",gridmap,NULL},
-  &(propmap){"Sampling",13,"...",resmap,NULL},
+  &(_sv_propmap_t){"Background",10,"...",bgmap,NULL},
+  &(_sv_propmap_t){"Text color",11,"...",textmap,NULL},
+  &(_sv_propmap_t){"Grid mode",12,"...",gridmap,NULL},
+  &(_sv_propmap_t){"Sampling",13,"...",resmap,NULL},
 
-  &(propmap){"",14,NULL,NULL,NULL},
+  &(_sv_propmap_t){"",14,NULL,NULL,NULL},
 
-  &(propmap){"Quit",15,"[<i>q</i>]",NULL,&wrap_exit},
+  &(_sv_propmap_t){"Quit",15,"[<i>q</i>]",NULL,&wrap_exit},
 
   NULL
 };
 
-static void decide_text_inv(sushiv_panel_t *p){
+static void decide_text_inv(sv_panel_t *p){
   if(p->private->graph){
-    Plot *plot = PLOT(p->private->graph);
-    if(p->private->bg_type == SUSHIV_BG_WHITE)
-      plot_set_bg_invert(plot,PLOT_TEXT_DARK);
+    _sv_plot_t *plot = PLOT(p->private->graph);
+    if(p->private->bg_type == SV_BG_WHITE)
+      _sv_plot_set_bg_invert(plot,_SV_PLOT_TEXT_DARK);
     else
-      plot_set_bg_invert(plot,PLOT_TEXT_LIGHT);
+      _sv_plot_set_bg_invert(plot,_SV_PLOT_TEXT_LIGHT);
   }
 }
 
-static void recompute_if_running(sushiv_panel_t *p){
+static void recompute_if_running(sv_panel_t *p){
   if(p->private->realized && p->private->graph)
-    _sushiv_panel_recompute(p);
+    _sv_panel_recompute(p);
 }
 
-static void redraw_if_running(sushiv_panel_t *p){
+static void redraw_if_running(sv_panel_t *p){
   if(p->private->realized && p->private->graph){
-    plot_draw_scales(PLOT(p->private->graph));
-    _sushiv_panel_dirty_map(p);
-    _sushiv_panel_dirty_legend(p);
+    _sv_plot_draw_scales(PLOT(p->private->graph));
+    _sv_panel_dirty_map(p);
+    _sv_panel_dirty_legend(p);
   }
 }
 
-static void refg_if_running(sushiv_panel_t *p){
+static void refg_if_running(sv_panel_t *p){
   if(p->private->realized && p->private->graph){
-    plot_draw_scales(PLOT(p->private->graph));
-    _sushiv_panel_dirty_legend(p);
+    _sv_plot_draw_scales(PLOT(p->private->graph));
+    _sv_panel_dirty_legend(p);
   }
 }
 
-static void wrap_exit(sushiv_panel_t *dummy, GtkWidget *dummyw){
-  _sushiv_clean_exit(SIGINT);
+static void wrap_exit(sv_panel_t *dummy, GtkWidget *dummyw){
+  _sv_clean_exit(SIGINT);
 }
 
 // precipitated actions perform undo push
-static void wrap_enter(sushiv_panel_t *p, GtkWidget *dummy){
-  plot_do_enter(PLOT(p->private->graph));
+static void wrap_enter(sv_panel_t *p, GtkWidget *dummy){
+  _sv_plot_do_enter(PLOT(p->private->graph));
 }
 
-static void wrap_escape(sushiv_panel_t *p, GtkWidget *dummy){
-  _sushiv_undo_push(p->sushi);
-  _sushiv_undo_suspend(p->sushi);
+static void wrap_escape(sv_panel_t *p, GtkWidget *dummy){
+  _sv_undo_push(p->sushi);
+  _sv_undo_suspend(p->sushi);
 
-  plot_set_crossactive(PLOT(p->private->graph),0);
-  _sushiv_panel_dirty_legend(p);
+  _sv_plot_set_crossactive(PLOT(p->private->graph),0);
+  _sv_panel_dirty_legend(p);
 
-  _sushiv_undo_resume(p->sushi);
+  _sv_undo_resume(p->sushi);
 }
 
-static void wrap_legend(sushiv_panel_t *p, GtkWidget *dummy){
-  _sushiv_undo_push(p->sushi);
-  _sushiv_undo_suspend(p->sushi);
+static void wrap_legend(sv_panel_t *p, GtkWidget *dummy){
+  _sv_undo_push(p->sushi);
+  _sv_undo_suspend(p->sushi);
 
-  plot_toggle_legend(PLOT(p->private->graph));
-  _sushiv_panel_dirty_legend(p);
+  _sv_plot_toggle_legend(PLOT(p->private->graph));
+  _sv_panel_dirty_legend(p);
 
-  _sushiv_undo_resume(p->sushi);
+  _sv_undo_resume(p->sushi);
 }
 
-static void set_grid(sushiv_panel_t *p, int mode){
-  _sushiv_undo_push(p->sushi);
-  _sushiv_undo_suspend(p->sushi);
+static void set_grid(sv_panel_t *p, int mode){
+  _sv_undo_push(p->sushi);
+  _sv_undo_suspend(p->sushi);
 
-  plot_set_grid(PLOT(p->private->graph),mode);
-  _sushiv_panel_update_menus(p);
+  _sv_plot_set_grid(PLOT(p->private->graph),mode);
+  _sv_panel_update_menus(p);
   refg_if_running(p);
 
-  _sushiv_undo_resume(p->sushi);
+  _sv_undo_resume(p->sushi);
 }
 
-static void wrap_grid(sushiv_panel_t *p, GtkWidget *w){
-  int pos = gtk_menu_item_position(w);
+static void wrap_grid(sv_panel_t *p, GtkWidget *w){
+  int pos = _gtk_menu_item_position(w);
   set_grid(p, gridmap[pos]->value);
 }
 
-static int set_background(sushiv_panel_t *p,
-			  enum sushiv_background bg){
+static int set_background(sv_panel_t *p,
+			  enum sv_background bg){
   
-  sushiv_panel_internal_t *pi = p->private;
+  sv_panel_internal_t *pi = p->private;
   
-  _sushiv_undo_push(p->sushi);
-  _sushiv_undo_suspend(p->sushi);
+  _sv_undo_push(p->sushi);
+  _sv_undo_suspend(p->sushi);
 
   pi->bg_type = bg;
   
   decide_text_inv(p);
-  set_grid(p,PLOT_GRID_NORMAL);
+  set_grid(p,_SV_PLOT_GRID_NORMAL);
   redraw_if_running(p);
-  _sushiv_panel_update_menus(p);
+  _sv_panel_update_menus(p);
 
-  _sushiv_undo_resume(p->sushi);
+  _sv_undo_resume(p->sushi);
   return 0;
 }
 
-static void wrap_bg(sushiv_panel_t *p, GtkWidget *w){
-  int pos = gtk_menu_item_position(w);
+static void wrap_bg(sv_panel_t *p, GtkWidget *w){
+  int pos = _gtk_menu_item_position(w);
   set_background(p, bgmap[pos]->value);
 }
 
-static void cycle_bg(sushiv_panel_t *p){
-  int menupos = propmap_pos(bgmap, p->private->bg_type) + 1;
+static void cycle_bg(sv_panel_t *p){
+  int menupos = _sv_propmap_pos(bgmap, p->private->bg_type) + 1;
   if(bgmap[menupos] == NULL) menupos = 0;
   set_background(p, bgmap[menupos]->value);
 }
 
-static void cycleB_bg(sushiv_panel_t *p){
-  int menupos = propmap_pos(bgmap, p->private->bg_type) - 1;
-  if(menupos<0) menupos = propmap_last(bgmap);
+static void cycleB_bg(sv_panel_t *p){
+  int menupos = _sv_propmap_pos(bgmap, p->private->bg_type) - 1;
+  if(menupos<0) menupos = _sv_propmap_last(bgmap);
   set_background(p, bgmap[menupos]->value);
 }
 
-static void set_text(sushiv_panel_t *p, int mode){
-  _sushiv_undo_push(p->sushi);
-  _sushiv_undo_suspend(p->sushi);
+static void set_text(sv_panel_t *p, int mode){
+  _sv_undo_push(p->sushi);
+  _sv_undo_suspend(p->sushi);
 
-  plot_set_bg_invert(PLOT(p->private->graph),mode);
-  _sushiv_panel_update_menus(p);
+  _sv_plot_set_bg_invert(PLOT(p->private->graph),mode);
+  _sv_panel_update_menus(p);
   refg_if_running(p);
 
-  _sushiv_undo_resume(p->sushi);
+  _sv_undo_resume(p->sushi);
 }
 
-static void wrap_text(sushiv_panel_t *p, GtkWidget *w){
-  int pos = gtk_menu_item_position(w);
+static void wrap_text(sv_panel_t *p, GtkWidget *w){
+  int pos = _gtk_menu_item_position(w);
   set_text(p, textmap[pos]->value);
 }
 
-static void cycle_text(sushiv_panel_t *p){
-  int menupos = propmap_pos(textmap, PLOT(p->private->graph)->bg_inv) + 1;
+static void cycle_text(sv_panel_t *p){
+  int menupos = _sv_propmap_pos(textmap, PLOT(p->private->graph)->bg_inv) + 1;
   if(textmap[menupos] == NULL) menupos = 0;
   set_text(p, textmap[menupos]->value);
 }
 
-static void cycle_grid(sushiv_panel_t *p){
-  int menupos = propmap_pos(gridmap, PLOT(p->private->graph)->grid_mode) + 1;
+static void cycle_grid(sv_panel_t *p){
+  int menupos = _sv_propmap_pos(gridmap, PLOT(p->private->graph)->grid_mode) + 1;
   if(gridmap[menupos] == NULL) menupos = 0;
   set_grid(p, gridmap[menupos]->value);
 }
-static void cycleB_grid(sushiv_panel_t *p){
-  int menupos = propmap_pos(gridmap, PLOT(p->private->graph)->grid_mode) - 1;
-  if(menupos<0) menupos = propmap_last(gridmap);
+static void cycleB_grid(sv_panel_t *p){
+  int menupos = _sv_propmap_pos(gridmap, PLOT(p->private->graph)->grid_mode) - 1;
+  if(menupos<0) menupos = _sv_propmap_last(gridmap);
   set_grid(p, gridmap[menupos]->value);
 }
 
-static void res_set(sushiv_panel_t *p, int n, int d){
+static void res_set(sv_panel_t *p, int n, int d){
   if(n != p->private->oversample_n ||
      d != p->private->oversample_d){
 
-    _sushiv_undo_push(p->sushi);
-    _sushiv_undo_suspend(p->sushi);
+    _sv_undo_push(p->sushi);
+    _sv_undo_suspend(p->sushi);
     
     p->private->oversample_n = n;
     p->private->oversample_d = d;
-    _sushiv_panel_update_menus(p);
+    _sv_panel_update_menus(p);
     recompute_if_running(p);
 
-    _sushiv_undo_resume(p->sushi);
+    _sv_undo_resume(p->sushi);
   }
 }
 
 // a little different; the menu value is not the internal setting
-static void res_set_pos(sushiv_panel_t *p, int pos){
+static void res_set_pos(sv_panel_t *p, int pos){
   p->private->menu_cursamp = pos;
   switch(pos){
   case RES_DEF:
@@ -329,20 +329,20 @@ static void res_set_pos(sushiv_panel_t *p, int pos){
   }
 }
 
-static void wrap_res(sushiv_panel_t *p, GtkWidget *w){
-  int pos = gtk_menu_item_position(w);
+static void wrap_res(sv_panel_t *p, GtkWidget *w){
+  int pos = _gtk_menu_item_position(w);
   res_set_pos(p, resmap[pos]->value);
 }
 
-static void cycle_res(sushiv_panel_t *p){
-  int menupos = propmap_pos(resmap, p->private->menu_cursamp) + 1;
+static void cycle_res(sv_panel_t *p){
+  int menupos = _sv_propmap_pos(resmap, p->private->menu_cursamp) + 1;
   if(resmap[menupos] == NULL) menupos = 0;
   res_set_pos(p, resmap[menupos]->value);
 }
 
-static void cycleB_res(sushiv_panel_t *p){
-  int menupos = propmap_pos(resmap, p->private->menu_cursamp) - 1;
-  if(menupos<0) menupos = propmap_last(resmap);
+static void cycleB_res(sv_panel_t *p){
+  int menupos = _sv_propmap_pos(resmap, p->private->menu_cursamp) - 1;
+  if(menupos<0) menupos = _sv_propmap_last(resmap);
   res_set_pos(p, resmap[menupos]->value);
 }
 
@@ -362,7 +362,7 @@ static void _print_handler(GtkPrintOperation *operation,
 
   cairo_t *c;
   gdouble w, h;
-  sushiv_panel_t *p = (sushiv_panel_t *)user_data;
+  sv_panel_t *p = (sv_panel_t *)user_data;
 
   c = gtk_print_context_get_cairo_context (context);
   w = gtk_print_context_get_width (context);
@@ -371,7 +371,7 @@ static void _print_handler(GtkPrintOperation *operation,
   p->private->print_action(p,c,w,h);
 }
 
-static void _sushiv_panel_print(sushiv_panel_t *p, GtkWidget *dummy){
+static void _sv_panel_print(sv_panel_t *p, GtkWidget *dummy){
   GtkPrintOperation *op = gtk_print_operation_new ();
 
   if (printset != NULL) 
@@ -403,14 +403,14 @@ static void _sushiv_panel_print(sushiv_panel_t *p, GtkWidget *dummy){
   g_object_unref (op);
 }
 
-static void wrap_undo_down(sushiv_panel_t *p, GtkWidget *dummy){
-  _sushiv_undo_down(p->sushi);
+static void wrap_undo_down(sv_panel_t *p, GtkWidget *dummy){
+  _sv_undo_down(p->sushi);
 }
-static void wrap_undo_up(sushiv_panel_t *p, GtkWidget *dummy){
-  _sushiv_undo_up(p->sushi);
+static void wrap_undo_up(sv_panel_t *p, GtkWidget *dummy){
+  _sv_undo_up(p->sushi);
 }
 
-static void do_save(sushiv_panel_t *p, GtkWidget *dummy){
+static void wrap_save(sv_panel_t *p, GtkWidget *dummy){
   GtkWidget *dialog = gtk_file_chooser_dialog_new ("Save",
 						   NULL,
 						   GTK_FILE_CHOOSER_ACTION_SAVE,
@@ -419,26 +419,26 @@ static void do_save(sushiv_panel_t *p, GtkWidget *dummy){
 						   NULL);
 
   gtk_file_chooser_set_do_overwrite_confirmation (GTK_FILE_CHOOSER (dialog), TRUE);
-  gtk_file_chooser_add_shortcut_folder (GTK_FILE_CHOOSER (dialog), cwdname, NULL);
-  gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER (dialog), dirname);
-  gtk_file_chooser_set_current_name (GTK_FILE_CHOOSER (dialog), filebase);
+  gtk_file_chooser_add_shortcut_folder (GTK_FILE_CHOOSER (dialog), _sv_cwdname, NULL);
+  gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER (dialog), _sv_dirname);
+  gtk_file_chooser_set_current_name (GTK_FILE_CHOOSER (dialog), _sv_filebase);
 
   if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT){
-    if(filebase)free(filebase);
-    if(filename)free(filename);
-    if(dirname)free(dirname);
+    if(_sv_filebase)free(_sv_filebase);
+    if(_sv_filename)free(_sv_filename);
+    if(_sv_dirname)free(_sv_dirname);
 
-    filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
-    dirname = gtk_file_chooser_get_current_folder (GTK_FILE_CHOOSER (dialog));
-    filebase = g_path_get_basename(filename);
-    save_main();
+    _sv_filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
+    _sv_dirname = gtk_file_chooser_get_current_folder (GTK_FILE_CHOOSER (dialog));
+    _sv_filebase = g_path_get_basename(_sv_filename);
+    _sv_main_save();
   }
 
   gtk_widget_destroy (dialog);
 
 }
 
-static void do_load(sushiv_panel_t *p, GtkWidget *dummy){
+static void wrap_load(sv_panel_t *p, GtkWidget *dummy){
   GtkWidget *dialog = gtk_file_chooser_dialog_new ("Open",
 						   NULL,
 						   GTK_FILE_CHOOSER_ACTION_OPEN,
@@ -446,26 +446,26 @@ static void do_load(sushiv_panel_t *p, GtkWidget *dummy){
 						   GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
 						   NULL);
 
-  gtk_file_chooser_add_shortcut_folder (GTK_FILE_CHOOSER (dialog), cwdname, NULL);
-  gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER (dialog), dirname);
+  gtk_file_chooser_add_shortcut_folder (GTK_FILE_CHOOSER (dialog), _sv_cwdname, NULL);
+  gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER (dialog), _sv_dirname);
 
   if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT){
-    char *temp_filebase = filebase;
-    char *temp_filename = filename;
-    char *temp_dirname = dirname;
-    filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
-    dirname = gtk_file_chooser_get_current_folder (GTK_FILE_CHOOSER (dialog));
-    filebase = g_path_get_basename(filename);
+    char *temp_filebase = _sv_filebase;
+    char *temp_filename = _sv_filename;
+    char *temp_dirname = _sv_dirname;
+    _sv_filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
+    _sv_dirname = gtk_file_chooser_get_current_folder (GTK_FILE_CHOOSER (dialog));
+    _sv_filebase = g_path_get_basename(_sv_filename);
 
-    if(load_main()){
+    if(_sv_main_load()){
 
-      free(filebase);
-      free(filename);
-      free(dirname);
+      free(_sv_filebase);
+      free(_sv_filename);
+      free(_sv_dirname);
 
-      filebase = temp_filebase;
-      filename = temp_filename;
-      dirname = temp_dirname;
+      _sv_filebase = temp_filebase;
+      _sv_filename = temp_filename;
+      _sv_dirname = temp_dirname;
 
     }else{
       free(temp_filebase);
@@ -478,60 +478,60 @@ static void do_load(sushiv_panel_t *p, GtkWidget *dummy){
 
 }
 
-void _sushiv_panel_update_menus(sushiv_panel_t *p){
+void _sv_panel_update_menus(sv_panel_t *p){
 
   // is undo active?
   if(!p->sushi->private->undo_stack ||
      !p->sushi->private->undo_level){
-    gtk_widget_set_sensitive(gtk_menu_get_item(GTK_MENU(p->private->popmenu),4),FALSE);
+    gtk_widget_set_sensitive(_gtk_menu_get_item(GTK_MENU(p->private->popmenu),4),FALSE);
   }else{
-    gtk_widget_set_sensitive(gtk_menu_get_item(GTK_MENU(p->private->popmenu),4),TRUE);
+    gtk_widget_set_sensitive(_gtk_menu_get_item(GTK_MENU(p->private->popmenu),4),TRUE);
   }
 
   // is redo active?
   if(!p->sushi->private->undo_stack ||
      !p->sushi->private->undo_stack[p->sushi->private->undo_level] ||
      !p->sushi->private->undo_stack[p->sushi->private->undo_level+1]){
-    gtk_widget_set_sensitive(gtk_menu_get_item(GTK_MENU(p->private->popmenu),5),FALSE);
+    gtk_widget_set_sensitive(_gtk_menu_get_item(GTK_MENU(p->private->popmenu),5),FALSE);
   }else{
-    gtk_widget_set_sensitive(gtk_menu_get_item(GTK_MENU(p->private->popmenu),5),TRUE);
+    gtk_widget_set_sensitive(_gtk_menu_get_item(GTK_MENU(p->private->popmenu),5),TRUE);
   }
 
   // are we starting or enacting a zoom box?
   if(p->private->oldbox_active){ 
-    gtk_menu_alter_item_label(GTK_MENU(p->private->popmenu),6,"Zoom to box");
+    _gtk_menu_alter_item_label(GTK_MENU(p->private->popmenu),6,"Zoom to box");
   }else{
-    gtk_menu_alter_item_label(GTK_MENU(p->private->popmenu),6,"Start zoom box");
+    _gtk_menu_alter_item_label(GTK_MENU(p->private->popmenu),6,"Start zoom box");
   }
 
   // make sure menu reflects plot configuration
-  gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),
-			    propmap_label_pos(menu,"Background"),
-			    bgmap[propmap_pos(bgmap,p->private->bg_type)]->left);
+  _gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),
+			     _sv_propmap_label_pos(menu,"Background"),
+			     bgmap[_sv_propmap_pos(bgmap,p->private->bg_type)]->left);
 
-  gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),
-			    propmap_label_pos(menu,"Text color"),
-			    textmap[propmap_pos(textmap,PLOT(p->private->graph)->bg_inv)]->left);
+  _gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),
+			     _sv_propmap_label_pos(menu,"Text color"),
+			     textmap[_sv_propmap_pos(textmap,PLOT(p->private->graph)->bg_inv)]->left);
 
-  gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),
-			    propmap_label_pos(menu,"Grid mode"),
-			    gridmap[propmap_pos(gridmap,PLOT(p->private->graph)->grid_mode)]->left);
+  _gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),
+			     _sv_propmap_label_pos(menu,"Grid mode"),
+			     gridmap[_sv_propmap_pos(gridmap,PLOT(p->private->graph)->grid_mode)]->left);
    {
     char buffer[80];
     snprintf(buffer,60,"%d:%d",p->private->oversample_n,p->private->oversample_d);
     if(p->private->def_oversample_n == p->private->oversample_n &&
        p->private->def_oversample_d == p->private->oversample_d)
       strcat(buffer," (default)");
-    gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),
-			      propmap_label_pos(menu,"Sampling"),buffer);
+    _gtk_menu_alter_item_right(GTK_MENU(p->private->popmenu),
+			       _sv_propmap_label_pos(menu,"Sampling"),buffer);
   }
 }
 
 static gboolean panel_keypress(GtkWidget *widget,
 				 GdkEventKey *event,
 				 gpointer in){
-  sushiv_panel_t *p = (sushiv_panel_t *)in;
-  //  sushiv_panel2d_t *p2 = (sushiv_panel2d_t *)p->internal;
+  sv_panel_t *p = (sv_panel_t *)in;
+  //  sv_panel2d_t *p2 = (sv_panel2d_t *)p->internal;
   
   // check if the widget with focus is an Entry
   GtkWidget *focused = gtk_window_get_focus(GTK_WINDOW(widget));
@@ -603,10 +603,10 @@ static gboolean panel_keypress(GtkWidget *widget,
     return TRUE;
 
   case GDK_s:
-    do_save(p,NULL);
+    wrap_save(p,NULL);
     return TRUE;
   case GDK_o:
-    do_load(p,NULL);
+    wrap_load(p,NULL);
     return TRUE;
     
    case GDK_Escape:
@@ -620,22 +620,22 @@ static gboolean panel_keypress(GtkWidget *widget,
   case GDK_Q:
   case GDK_q:
     // quit
-    _sushiv_clean_exit(SIGINT);
+    _sv_clean_exit(SIGINT);
     return TRUE;
     
   case GDK_BackSpace:
     // undo 
-    _sushiv_undo_down(p->sushi);
+    _sv_undo_down(p->sushi);
     return TRUE;
     
   case GDK_r:
   case GDK_space:
     // redo/forward
-    _sushiv_undo_up(p->sushi);
+    _sv_undo_up(p->sushi);
     return TRUE;
 
   case GDK_p:
-    _sushiv_panel_print(p,NULL);
+    _sv_panel_print(p,NULL);
     return TRUE;
 
   case GDK_l:
@@ -646,7 +646,7 @@ static gboolean panel_keypress(GtkWidget *widget,
   return FALSE;
 }
 
-void _sushiv_realize_panel(sushiv_panel_t *p){
+void _sv_panel_realize(sv_panel_t *p){
   if(p && !p->private->realized){
     p->private->realize(p);
 
@@ -660,20 +660,20 @@ void _sushiv_realize_panel(sushiv_panel_t *p){
 
     // text black or white in the plot?
     decide_text_inv(p);
-    p->private->popmenu = gtk_menu_new_twocol(p->private->toplevel, menu, p);
-    _sushiv_panel_update_menus(p);
+    p->private->popmenu = _gtk_menu_new_twocol(p->private->toplevel, menu, p);
+    _sv_panel_update_menus(p);
     
   }
 }
 
-void set_map_throttle_time(sushiv_panel_t *p){
+void _sv_map_set_throttle_time(sv_panel_t *p){
   struct timeval now;
   gettimeofday(&now,NULL);
 
   p->private->last_map_throttle = now.tv_sec*1000 + now.tv_usec/1000;
 }
 
-static int test_throttle_time(sushiv_panel_t *p){
+static int test_throttle_time(sv_panel_t *p){
   struct timeval now;
   long test;
   gettimeofday(&now,NULL);
@@ -687,7 +687,7 @@ static int test_throttle_time(sushiv_panel_t *p){
 
 /* request a recomputation with full setup (eg, linking, scales,
    etc) */
-void _sushiv_panel_recompute(sushiv_panel_t *p){
+void _sv_panel_recompute(sv_panel_t *p){
   gdk_threads_enter ();
   p->private->request_compute(p);
   gdk_threads_leave ();
@@ -698,83 +698,83 @@ void _sushiv_panel_recompute(sushiv_panel_t *p){
    request will eventually trigger a call here to kick off the actual
    computation.  Do panel subtype-specific setup, then wake workers
    with one of the below */
-void _sushiv_panel_dirty_plot(sushiv_panel_t *p){
+void _sv_panel_dirty_plot(sv_panel_t *p){
   gdk_threads_enter ();
   p->private->plot_active = 1;
   p->private->plot_serialno++;
   p->private->plot_progress_count=0;
   p->private->plot_complete_count=0;
   gdk_threads_leave ();
-  _sushiv_wake_workers();
+  _sv_wake_workers();
 }
 
-void _sushiv_panel_dirty_map(sushiv_panel_t *p){
+void _sv_panel_dirty_map(sv_panel_t *p){
   gdk_threads_enter ();
   p->private->map_active = 1;
   p->private->map_serialno++;
   p->private->map_progress_count=0;
   p->private->map_complete_count=0;
   gdk_threads_leave ();
-  _sushiv_wake_workers();
+  _sv_wake_workers();
 }
 
-void _sushiv_panel_dirty_map_throttled(sushiv_panel_t *p){
+void _sv_panel_dirty_map_throttled(sv_panel_t *p){
   gdk_threads_enter ();
   if(!p->private->map_active && test_throttle_time(p)){
-     _sushiv_panel_dirty_map(p);
+     _sv_panel_dirty_map(p);
   }
   gdk_threads_leave ();
 }
 
-void _sushiv_panel_dirty_legend(sushiv_panel_t *p){
+void _sv_panel_dirty_legend(sv_panel_t *p){
   gdk_threads_enter ();
   p->private->legend_active = 1;
   p->private->legend_serialno++;
   p->private->legend_progress_count=0;
   p->private->legend_complete_count=0;
   gdk_threads_leave ();
-  _sushiv_wake_workers();
+  _sv_wake_workers();
 }
 
 /* use these to signal a computation is completed */
-void _sushiv_panel_clean_plot(sushiv_panel_t *p){
+void _sv_panel_clean_plot(sv_panel_t *p){
   gdk_threads_enter ();
   p->private->plot_active = 0;
   gdk_threads_leave ();
 }
 
-void _sushiv_panel_clean_map(sushiv_panel_t *p){
+void _sv_panel_clean_map(sv_panel_t *p){
   gdk_threads_enter ();
   p->private->map_active = 0;
   gdk_threads_leave ();
 }
 
-void _sushiv_panel_clean_legend(sushiv_panel_t *p){
+void _sv_panel_clean_legend(sv_panel_t *p){
   gdk_threads_enter ();
   p->private->legend_active = 0;
   gdk_threads_leave ();
 }
 
-int sushiv_panel_oversample(sushiv_instance_t *s,
+int sv_panel_oversample(sv_instance_t *s,
 			    int number,
 			    int numer,
 			    int denom){
   
   if(number<0){
-    fprintf(stderr,"sushiv_panel_background: Panel number must be >= 0\n");
+    fprintf(stderr,"sv_panel_background: Panel number must be >= 0\n");
     return -EINVAL;
   }
 
   if(number>s->panels || !s->panel_list[number]){
-    fprintf(stderr,"sushiv_panel_background: Panel number %d does not exist\n",number);
+    fprintf(stderr,"sv_panel_background: Panel number %d does not exist\n",number);
     return -EINVAL;
   }
   
-  sushiv_panel_t *p = s->panel_list[number];
-  sushiv_panel_internal_t *pi = p->private;
+  sv_panel_t *p = s->panel_list[number];
+  sv_panel_internal_t *pi = p->private;
 
   if(denom == 0){
-    fprintf(stderr,"sushiv_panel_oversample: A denominator of zero is invalid\n");
+    fprintf(stderr,"sv_panel_oversample: A denominator of zero is invalid\n");
     return -EINVAL;
   }
 
@@ -784,43 +784,46 @@ int sushiv_panel_oversample(sushiv_instance_t *s,
   return 0;
 }
 
-int sushiv_panel_background(sushiv_instance_t *s,
+int sv_panel_background(sv_instance_t *s,
 			    int number,
-			    enum sushiv_background bg){
+			    enum sv_background bg){
 
   if(number<0){
-    fprintf(stderr,"sushiv_panel_background: Panel number must be >= 0\n");
+    fprintf(stderr,"sv_panel_background: Panel number must be >= 0\n");
     return -EINVAL;
   }
 
   if(number>s->panels || !s->panel_list[number]){
-    fprintf(stderr,"sushiv_panel_background: Panel number %d does not exist\n",number);
+    fprintf(stderr,"sv_panel_background: Panel number %d does not exist\n",number);
     return -EINVAL;
   }
   
-  sushiv_panel_t *p = s->panel_list[number];
+  sv_panel_t *p = s->panel_list[number];
   return set_background(p,bg);
 }
 
-int _sushiv_new_panel(sushiv_instance_t *s,
-		      int number,
-		      const char *name, 
-		      int *objectives,
-		      int *dimensions,
-		      unsigned flags){
-  
-  sushiv_panel_t *p;
+sv_panel_t * _sv_panel_new(sv_instance_t *in,
+			   int number,
+			   char *name, 
+			   sv_obj_t **objectives,
+			   sv_dim_t **dimensions,	
+			   unsigned flags){
+
+  sv_instance_t *s = (sv_instance_t *)in; // unwrap 
+  sv_panel_t *p;
   int i;
 
   if(number<0){
     fprintf(stderr,"Panel number must be >= 0\n");
-    return -EINVAL;
+    errno = -EINVAL;
+    return NULL;
   }
 
   if(number<s->panels){
     if(s->panel_list[number]!=NULL){
       fprintf(stderr,"Panel number %d already exists\n",number);
-      return -EINVAL;
+      errno = -EINVAL;
+      return NULL;
     }
   }else{
     if(s->panels == 0){
@@ -839,46 +842,53 @@ int _sushiv_new_panel(sushiv_instance_t *s,
   p->flags = flags;
   p->sushi = s;
   p->private = calloc(1, sizeof(*p->private));
-  p->private->spinner = spinner_new();
+  p->private->spinner = _sv_spinner_new();
   p->private->def_oversample_n = p->private->oversample_n = 1;
   p->private->def_oversample_d = p->private->oversample_d = 1;
 
   i=0;
-  while(objectives && objectives[i]>=0)i++;
+  while(objectives && objectives[i])i++;
   p->objectives = i;
   p->objective_list = malloc(i*sizeof(*p->objective_list));
   for(i=0;i<p->objectives;i++){
-    if(objectives[i]<0 || objectives[i]>=s->objectives ||
-       s->objective_list[objectives[i]] == NULL){
-      fprintf(stderr,"Panel %d: Objective number %d does not exist\n",number, objectives[i]);
-      return -EINVAL;
+    if(objectives[i]->sushi != s){
+      fprintf(stderr,"Panel %d (\"%s\"): Objective number %d (\"%s\") belongs to a differnet instance\n",
+	      number,p->name,objectives[i]->number,objectives[i]->name);
+      errno = -EINVAL;
+      return NULL;
     }
 
-    sushiv_objective_t *o = s->objective_list[objectives[i]];
-    p->objective_list[i].o = o;
+    p->objective_list[i].o = (sv_obj_t *)objectives[i];
     p->objective_list[i].p = p;
   }
 
   i=0;
-  while(dimensions && dimensions[i]>=0)i++;
+  while(dimensions && dimensions[i])i++;
   p->dimensions = i;
   p->dimension_list = malloc(i*sizeof(*p->dimension_list));
   for(i=0;i<p->dimensions;i++){
-    if(dimensions[i]<0 || dimensions[i]>=s->dimensions ||
-       s->dimension_list[dimensions[i]] == NULL){
-      fprintf(stderr,"Panel %d: Objective number %d does not exist\n",number, objectives[i]);
-      return -EINVAL;
+    if(dimensions[i]->sushi != s){
+      fprintf(stderr,"Panel %d (\"%s\"): Dimension number %d (\"%s\") belongs to a differnet instance\n",
+	      number,p->name,dimensions[i]->number,dimensions[i]->name);
+      errno = -EINVAL;
+      return NULL;
     }
 
-    sushiv_dimension_t *d = s->dimension_list[dimensions[i]];
-    p->dimension_list[i].d = d;
+    if(!dimensions[i]->scale){
+      fprintf(stderr,"Panel %d (\"%s\"): Dimension number %d (\"%s\") has a NULL scale\n",
+	      number,p->name,dimensions[i]->number,dimensions[i]->name);
+      errno = -EINVAL;
+      return NULL;
+    }
+
+    p->dimension_list[i].d = (sv_dim_t *)dimensions[i];
     p->dimension_list[i].p = p;
   }
 
-  return number;
+  return p;
 }
 
-void _sushiv_panel_undo_log(sushiv_panel_t *p, sushiv_panel_undo_t *u){
+void _sv_panel_undo_log(sv_panel_t *p, _sv_panel_undo_t *u){
   u->cross_mode = PLOT(p->private->graph)->cross_active;
   u->legend_mode = PLOT(p->private->graph)->legend_active;
   u->grid_mode = PLOT(p->private->graph)->grid_mode;
@@ -892,10 +902,10 @@ void _sushiv_panel_undo_log(sushiv_panel_t *p, sushiv_panel_undo_t *u){
   p->private->undo_log(u,p);
 }
 
-void _sushiv_panel_undo_restore(sushiv_panel_t *p, sushiv_panel_undo_t *u){
+void _sv_panel_undo_restore(sv_panel_t *p, _sv_panel_undo_t *u){
   // go in through setting routines
-  plot_set_crossactive(PLOT(p->private->graph),u->cross_mode);
-  plot_set_legendactive(PLOT(p->private->graph),u->legend_mode);
+  _sv_plot_set_crossactive(PLOT(p->private->graph),u->cross_mode);
+  _sv_plot_set_legendactive(PLOT(p->private->graph),u->legend_mode);
   set_background(p, u->bg_mode); // must be first; it can frob grid and test
   set_text(p, u->text_mode);
   set_grid(p, u->grid_mode);
@@ -905,10 +915,10 @@ void _sushiv_panel_undo_restore(sushiv_panel_t *p, sushiv_panel_undo_t *u){
   // panel-subtype-specific restore
   p->private->undo_restore(u,p);
 
-  _sushiv_panel_dirty_legend(p); 
+  _sv_panel_dirty_legend(p); 
 }
 
-int _save_panel(sushiv_panel_t *p, xmlNodePtr instance){  
+int _sv_panel_save(sv_panel_t *p, xmlNodePtr instance){  
   if(!p) return 0;
   char buffer[80];
   int ret=0;
@@ -916,31 +926,31 @@ int _save_panel(sushiv_panel_t *p, xmlNodePtr instance){
   xmlNodePtr pn = xmlNewChild(instance, NULL, (xmlChar *) "panel", NULL);
   xmlNodePtr n;
 
-  xmlNewPropI(pn, "number", p->number);
-  xmlNewPropS(pn, "name", p->name);
+  _xmlNewPropI(pn, "number", p->number);
+  _xmlNewPropS(pn, "name", p->name);
 
   // let the panel subtype handler fill in type
   // we're only saving settings independent of subtype
 
   // background
   n = xmlNewChild(pn, NULL, (xmlChar *) "background", NULL);
-  xmlNewMapProp(n, "color", bgmap, p->private->bg_type);
+  _xmlNewMapProp(n, "color", bgmap, p->private->bg_type);
 
   // grid
   n = xmlNewChild(pn, NULL, (xmlChar *) "grid", NULL);
-  xmlNewMapProp(n, "mode", gridmap, PLOT(p->private->graph)->grid_mode);
+  _xmlNewMapProp(n, "mode", gridmap, PLOT(p->private->graph)->grid_mode);
 
   // crosshairs
   n = xmlNewChild(pn, NULL, (xmlChar *) "crosshairs", NULL);
-  xmlNewMapProp(n, "active", crossmap, PLOT(p->private->graph)->cross_active);
+  _xmlNewMapProp(n, "active", crossmap, PLOT(p->private->graph)->cross_active);
 
   // legend
   n = xmlNewChild(pn, NULL, (xmlChar *) "legend", NULL);
-  xmlNewMapProp(n,"mode", legendmap, PLOT(p->private->graph)->legend_active);
+  _xmlNewMapProp(n,"mode", legendmap, PLOT(p->private->graph)->legend_active);
 
   // text
   n = xmlNewChild(pn, NULL, (xmlChar *) "text", NULL);
-  xmlNewMapProp(n,"color", textmap, PLOT(p->private->graph)->bg_inv);
+  _xmlNewMapProp(n,"color", textmap, PLOT(p->private->graph)->bg_inv);
 
   // resample
   n = xmlNewChild(pn, NULL, (xmlChar *) "sampling", NULL);
@@ -955,32 +965,32 @@ int _save_panel(sushiv_panel_t *p, xmlNodePtr instance){
   return ret;
 }
 
-int _load_panel(sushiv_panel_t *p,
-		sushiv_panel_undo_t *u,
-		xmlNodePtr pn,
-		int warn){
+int _sv_panel_load(sv_panel_t *p,
+		   _sv_panel_undo_t *u,
+		   xmlNodePtr pn,
+		   int warn){
 
   // check name 
-  xmlCheckPropS(pn,"name",p->name,"Panel %d name mismatch in save file.",p->number,&warn);
+  _xmlCheckPropS(pn,"name",p->name,"Panel %d name mismatch in save file.",p->number,&warn);
 
   // background
-  xmlGetChildMap(pn, "background", "color", bgmap, &u->bg_mode,
-		 "Panel %d unknown background setting", p->number, &warn);
+  _xmlGetChildMap(pn, "background", "color", bgmap, &u->bg_mode,
+		  "Panel %d unknown background setting", p->number, &warn);
   // grid
-  xmlGetChildMap(pn, "grid", "mode", gridmap, &u->grid_mode,
-		 "Panel %d unknown grid mode setting", p->number, &warn);
+  _xmlGetChildMap(pn, "grid", "mode", gridmap, &u->grid_mode,
+		  "Panel %d unknown grid mode setting", p->number, &warn);
   // crosshairs
-  xmlGetChildMap(pn, "crosshairs", "active", crossmap, &u->cross_mode,
-		 "Panel %d unknown crosshair setting", p->number, &warn);
+  _xmlGetChildMap(pn, "crosshairs", "active", crossmap, &u->cross_mode,
+		  "Panel %d unknown crosshair setting", p->number, &warn);
   // legend
-  xmlGetChildMap(pn, "legend", "mode", legendmap, &u->legend_mode,
-		 "Panel %d unknown legend setting", p->number, &warn);
+  _xmlGetChildMap(pn, "legend", "mode", legendmap, &u->legend_mode,
+		  "Panel %d unknown legend setting", p->number, &warn);
   // text
-  xmlGetChildMap(pn, "text", "color", textmap, &u->text_mode,
-		 "Panel %d unknown text color setting", p->number, &warn);
+  _xmlGetChildMap(pn, "text", "color", textmap, &u->text_mode,
+		  "Panel %d unknown text color setting", p->number, &warn);
   // resample
   char *prop = NULL;
-  xmlGetChildPropS(pn, "sampling", "ratio", &prop);
+  _xmlGetChildPropS(pn, "sampling", "ratio", &prop);
   if(prop){
     int res = sscanf(prop,"%d:%d", &u->oversample_n, &u->oversample_d);
     if(res<2){
@@ -1001,7 +1011,7 @@ int _load_panel(sushiv_panel_t *p,
   
   while(n){
     if (n->type == XML_ELEMENT_NODE) {
-      first_load_warning(&warn);
+      _sv_first_load_warning(&warn);
       fprintf(stderr,"Unknown option (%s) set for panel %d.\n",n->name,p->number);
     }
     n = n->next; 

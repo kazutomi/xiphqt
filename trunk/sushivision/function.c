@@ -25,22 +25,25 @@
 #include <errno.h>
 #include "internal.h"
 
-int sushiv_new_function(sushiv_instance_t *s,
-			int number,
-			int out_vals,
-			void(*callback)(double *,double *),
-			unsigned flags){
-  sushiv_function_t *f;
+sv_func_t *sv_func_new(sv_instance_t *in,
+		       int number,
+		       int out_vals,
+		       void(*callback)(double *,double *),
+		       unsigned flags){
+  sv_instance_t *s = (sv_instance_t *)in; // unwrap
+  sv_func_t *f;
 
   if(number<0){
     fprintf(stderr,"Function number must be >= 0\n");
-    return -EINVAL;
+    errno = -EINVAL;
+    return NULL;
   }
 
   if(number<s->functions){
     if(s->function_list[number]!=NULL){
       fprintf(stderr,"Function number %d already exists\n",number);
-      return -EINVAL;
+      errno = -EINVAL;
+      return NULL;
     }
   }else{
     if(s->functions == 0){
@@ -58,7 +61,7 @@ int sushiv_new_function(sushiv_instance_t *s,
   f->sushi = s;
   f->callback = callback;
   f->outputs = out_vals;
-  f->type = SUSHIV_FUNC_BASIC;
+  f->type = SV_FUNC_BASIC;
 
-  return 0;
+  return f;
 }

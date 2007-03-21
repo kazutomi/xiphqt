@@ -21,7 +21,7 @@
 
 #include <sys/types.h>
 
-struct _Slider {
+struct _sv_slider {
   GtkWidget **slices;
   int num_slices;
   int realized;
@@ -32,7 +32,7 @@ struct _Slider {
   cairo_surface_t *foreground;
   int w;
   int h;
-  mapping *gradient;
+  _sv_mapping_t *gradient;
   int xpad;
   int ypad;
 
@@ -46,34 +46,33 @@ struct _Slider {
   double quant_denom;
 };
 
-#define SLIDER_FLAG_INDEPENDENT_MIDDLE 0x1
-#define SLIDER_FLAG_VERTICAL 0x80
+#define _SV_SLIDER_FLAG_INDEPENDENT_MIDDLE 0x1
+#define _SV_SLIDER_FLAG_VERTICAL 0x80
 
-extern void slider_draw_background(Slider *s);
-extern void slider_realize(Slider *s);
-extern void slider_draw(Slider *);
-extern void slider_expose_slice(Slider *s, int slicenum);
-extern void slider_expose(Slider *s);
-extern void slider_size_request_slice(Slider *s,GtkRequisition *requisition);
-extern double slider_pixel_to_val(Slider *slider,double x);
-extern double slider_pixel_to_del(Slider *slider,double x);
-extern double slider_val_to_del(Slider *slider,double v);
-extern void slider_vals_bound(Slider *slider,int slicenum);
-extern int slider_lightme(Slider *slider,int slicenum,int x,int y);
-extern void slider_unlight(Slider *slider);
-extern void slider_button_press(Slider *slider,int slicenum,int x,int y);
-extern void slider_button_release(Slider *s,int slicenum,int x,int y);
-extern void slider_motion(Slider *s,int slicenum,int x,int y);
-extern gboolean slider_key_press(Slider *slider,GdkEventKey *event,int slicenum);
-extern Slider *slider_new(Slice **slices, int num_slices, 
+extern void _sv_slider_realize(_sv_slider_t *s);
+extern void _sv_slider_draw(_sv_slider_t *s);
+extern void _sv_slider_expose_slice(_sv_slider_t *s, int slicenum);
+extern void _sv_slider_expose(_sv_slider_t *s);
+extern void _sv_slider_size_request_slice(_sv_slider_t *s,GtkRequisition *requisition);
+extern double _sv_slider_pixel_to_val(_sv_slider_t *slider,double x);
+extern double _sv_slider_pixel_to_del(_sv_slider_t *slider,double x);
+extern double _sv_slider_val_to_del(_sv_slider_t *slider,double v);
+extern void _sv_slider_vals_bound(_sv_slider_t *slider,int slicenum);
+extern int _sv_slider_lightme(_sv_slider_t *slider,int slicenum,int x,int y);
+extern void _sv_slider_unlight(_sv_slider_t *slider);
+extern void _sv_slider_button_press(_sv_slider_t *slider,int slicenum,int x,int y);
+extern void _sv_slider_button_release(_sv_slider_t *s,int slicenum,int x,int y);
+extern void _sv_slider_motion(_sv_slider_t *s,int slicenum,int x,int y);
+extern gboolean _sv_slider_key_press(_sv_slider_t *slider,GdkEventKey *event,int slicenum);
+extern _sv_slider_t *_sv_slider_new(_sv_slice_t **slices, int num_slices, 
 			  char **labels, double *label_vals, int num_labels,
 			  unsigned flags);
-extern void slider_set_thumb_active(Slider *s, int thumbnum, int activep);
-extern void slider_set_gradient(Slider *s, mapping *m);
-extern double slider_get_value(Slider *s, int thumbnum);
-extern void slider_set_value(Slider *s, int thumbnum, double v);
-extern double slider_del_to_val(Slider *s, double del);
-extern void slider_set_quant(Slider *s, double n, double d);
+extern void _sv_slider_set_thumb_active(_sv_slider_t *s, int thumbnum, int activep);
+extern void _sv_slider_set_gradient(_sv_slider_t *s, _sv_mapping_t *m);
+extern double _sv_slider_get_value(_sv_slider_t *s, int thumbnum);
+extern void _sv_slider_set_value(_sv_slider_t *s, int thumbnum, double v);
+extern double _sv_slider_del_to_val(_sv_slider_t *s, double del);
+extern void _sv_slider_set_quant(_sv_slider_t *s, double n, double d);
 
-extern void slider_print(Slider *s, cairo_t *c, int w, int h);
-extern double slider_print_height(Slider *s);
+extern void _sv_slider_print(_sv_slider_t *s, cairo_t *c, int w, int h);
+extern double _sv_slider_print_height(_sv_slider_t *s);

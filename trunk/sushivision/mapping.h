@@ -27,52 +27,52 @@ typedef struct{
   unsigned char g;
   unsigned char r;
   unsigned char a;
-} ccolor;
+} _sv_ccolor_t;
 #else
 typedef struct{
   unsigned char a;
   unsigned char r;
   unsigned char g;
   unsigned char b;
-} ccolor;
+} _sv_ccolor_t;
 #endif 
 
 typedef union {
-  ccolor c;
+  _sv_ccolor_t c;
   u_int32_t u;
-} ucolor;
+} _sv_ucolor_t;
 
 typedef struct{
   long a;
   long r;
   long g;
   long b;
-} lcolor;
+} _sv_lcolor_t;
 
 typedef struct {
   int mapnum;
   float low;
   float high;
   float i_range;
-  void (*mapfunc)(int val,int mul, lcolor *out);
-  ucolor (*mixfunc)(ucolor in, ucolor mix);
-} mapping;
+  void (*mapfunc)(int val,int mul, _sv_lcolor_t *out);
+  _sv_ucolor_t (*mixfunc)(_sv_ucolor_t in, _sv_ucolor_t mix);
+} _sv_mapping_t;
 
-extern int num_mappings();
-extern char *mapping_name(int i);
-extern void mapping_setup(mapping *m, float lo, float hi, int funcnum);
-extern void mapping_set_lo(mapping *m, float lo);
-extern void mapping_set_hi(mapping *m, float hi);
-extern void mapping_set_func(mapping *m, int funcnum);
-extern float mapping_val(mapping *m, float in);
-extern u_int32_t mapping_calc(mapping *m, float in, u_int32_t mix);
-extern int mapping_inactive_p(mapping *m);
+extern int       _sv_mapping_names();
+extern char     *_sv_mapping_name(int i);
+extern void      _sv_mapping_setup(_sv_mapping_t *m, float lo, float hi, int funcnum);
+extern void      _sv_mapping_set_lo(_sv_mapping_t *m, float lo);
+extern void      _sv_mapping_set_hi(_sv_mapping_t *m, float hi);
+extern void      _sv_mapping_set_func(_sv_mapping_t *m, int funcnum);
+extern float     _sv_mapping_val(_sv_mapping_t *m, float in);
+extern u_int32_t _sv_mapping_calc(_sv_mapping_t *m, float in, u_int32_t mix);
+extern int       _sv_mapping_inactive_p(_sv_mapping_t *m);
 
-extern int num_solids();
-extern char *solid_name(int i);
-extern void solid_setup(mapping *m, float lo, float hi, int funcnum);
-extern void solid_set_func(mapping *m, int funcnum);
+extern int       _sv_solid_names();
+extern char     *_sv_solid_name(int i);
+extern void      _sv_solid_setup(_sv_mapping_t *m, float lo, float hi, int funcnum);
+extern void      _sv_solid_set_func(_sv_mapping_t *m, int funcnum);
 
-extern propmap **mapping_map();
-extern propmap **solid_map();
+extern _sv_propmap_t **_sv_mapping_map();
+extern _sv_propmap_t **_sv_solid_map();
 

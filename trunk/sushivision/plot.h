@@ -28,16 +28,16 @@
 
 G_BEGIN_DECLS
 
-#define PLOT_TYPE            (plot_get_type ())
-#define PLOT(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), PLOT_TYPE, Plot))
-#define PLOT_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), PLOT_TYPE, PlotClass))
+#define PLOT_TYPE            (_sv_plot_get_type ())
+#define PLOT(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), PLOT_TYPE, _sv_plot_t))
+#define PLOT_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), PLOT_TYPE, _sv_plot_class_t))
 #define IS_PLOT(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PLOT_TYPE))
 #define IS_PLOT_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), PLOT_TYPE))
 
-typedef struct _Plot       Plot;
-typedef struct _PlotClass  PlotClass;
+typedef struct _sv_plot       _sv_plot_t;
+typedef struct _sv_plot_class _sv_plot_class_t;
 
-struct _Plot{
+struct _sv_plot{
   GtkWidget w;
   cairo_t         *wc;
   cairo_surface_t *back;
@@ -49,10 +49,10 @@ struct _Plot{
   int resizable;
 
   int scalespacing;
-  scalespace x;
-  scalespace x_v;
-  scalespace y;
-  scalespace y_v;
+  _sv_scalespace_t x;
+  _sv_scalespace_t x_v;
+  _sv_scalespace_t y;
+  _sv_scalespace_t y_v;
   char *namex;
   char *namey;
 
@@ -83,66 +83,66 @@ struct _Plot{
   unsigned flags;
 };
 
-struct _PlotClass{
+struct _sv_plot_class{
   GtkWidgetClass parent_class;
-  void (*plot) (Plot *m);
+  void (*plot) (_sv_plot_t *m);
 };
 
-GType     plot_get_type        (void);
-Plot     *plot_new (void (*callback)(void *),void *app_data,
-		    void (*cross_callback)(void *),void *cross_data,
-		    void (*box_callback)(void *,int),void *box_data,
-		    unsigned flags);
+GType       _sv_plot_get_type        (void);
+_sv_plot_t *_sv_plot_new (void (*callback)(void *),void *app_data,
+			  void (*cross_callback)(void *),void *cross_data,
+			  void (*box_callback)(void *,int),void *box_data,
+			  unsigned flags);
 
 G_END_DECLS
 
 // the widget subclass half
-int plot_print(Plot *p, cairo_t *c, double page_h, void (*datarender)(void *data,cairo_t *c), void *data);
-void plot_set_bg_invert(Plot *p, int setp);
-void plot_expose_request(Plot *p);
-void plot_expose_request_partial(Plot *p,int x, int y, int w, int h);
-void plot_set_x_scale(Plot *p, scalespace x);
-void plot_set_y_scale(Plot *p, scalespace y);
-void plot_set_x_name(Plot *p, char *name);
-void plot_set_y_name(Plot *p, char *name);
-u_int32_t * plot_get_background_line(Plot *p, int num);
-cairo_t *plot_get_background_cairo(Plot *p);
-void plot_set_crosshairs(Plot *p, double x, double y);
-void plot_set_crosshairs_snap(Plot *p, double x, double y);
-void plot_snap_crosshairs(Plot *p);
-void plot_draw_scales(Plot *p);
-void plot_unset_box(Plot *p);
-void plot_box_vals(Plot *p, double ret[4]);
-void plot_box_set(Plot *p, double vals[4]);
-void plot_legend_add(Plot *p, char *entry);
-void plot_legend_add_with_color(Plot *p, char *entry, u_int32_t color);
-void plot_legend_clear(Plot *p);
-int plot_get_crosshair_xpixel(Plot *p);
-int plot_get_crosshair_ypixel(Plot *p);
-void plot_set_grid(Plot *p, int mode);
+int  _sv_plot_print(_sv_plot_t *p, cairo_t *c, double page_h, void (*datarender)(void *data,cairo_t *c), void *data);
+void _sv_plot_set_bg_invert(_sv_plot_t *p, int setp);
+void _sv_plot_expose_request(_sv_plot_t *p);
+void _sv_plot_expose_request_partial(_sv_plot_t *p,int x, int y, int w, int h);
+void _sv_plot_set_x_scale(_sv_plot_t *p, _sv_scalespace_t x);
+void _sv_plot_set_y_scale(_sv_plot_t *p, _sv_scalespace_t y);
+void _sv_plot_set_x_name(_sv_plot_t *p, char *name);
+void _sv_plot_set_y_name(_sv_plot_t *p, char *name);
+u_int32_t * _sv_plot_get_background_line(_sv_plot_t *p, int num);
+cairo_t *_sv_plot_get_background_cairo(_sv_plot_t *p);
+void _sv_plot_set_crosshairs(_sv_plot_t *p, double x, double y);
+void _sv_plot_set_crosshairs_snap(_sv_plot_t *p, double x, double y);
+void _sv_plot_snap_crosshairs(_sv_plot_t *p);
+void _sv_plot_draw_scales(_sv_plot_t *p);
+void _sv_plot_unset_box(_sv_plot_t *p);
+void _sv_plot_box_vals(_sv_plot_t *p, double ret[4]);
+void _sv_plot_box_set(_sv_plot_t *p, double vals[4]);
+void _sv_plot_legend_add(_sv_plot_t *p, char *entry);
+void _sv_plot_legend_add_with_color(_sv_plot_t *p, char *entry, u_int32_t color);
+void _sv_plot_legend_clear(_sv_plot_t *p);
+int  _sv_plot_get_crosshair_xpixel(_sv_plot_t *p);
+int  _sv_plot_get_crosshair_ypixel(_sv_plot_t *p);
+void _sv_plot_set_grid(_sv_plot_t *p, int mode);
 
-void plot_do_enter(Plot *p);
-void plot_set_crossactive(Plot *p, int active);
-void plot_toggle_legend(Plot *p);
-void plot_set_legendactive(Plot *p, int active);
+void _sv_plot_do_enter(_sv_plot_t *p);
+void _sv_plot_set_crossactive(_sv_plot_t *p, int active);
+void _sv_plot_toggle_legend(_sv_plot_t *p);
+void _sv_plot_set_legendactive(_sv_plot_t *p, int active);
 
-void plot_resizable(Plot *p, int rp);
+void _sv_plot_resizable(_sv_plot_t *p, int rp);
 
-#define PLOT_NO_X_CROSS 1
-#define PLOT_NO_Y_CROSS 2
+#define _SV_PLOT_NO_X_CROSS 1
+#define _SV_PLOT_NO_Y_CROSS 2
 
-#define PLOT_GRID_NONE   0
-#define PLOT_GRID_NORMAL 4
-#define PLOT_GRID_TICS   8
-#define PLOT_GRID_LIGHT  (256+4)
-#define PLOT_GRID_DARK   (512+4)
+#define _SV_PLOT_GRID_NONE   0
+#define _SV_PLOT_GRID_NORMAL 4
+#define _SV_PLOT_GRID_TICS   8
+#define _SV_PLOT_GRID_LIGHT  (256+4)
+#define _SV_PLOT_GRID_DARK   (512+4)
 
-#define PLOT_GRID_MODEMASK  0x00fc
-#define PLOT_GRID_COLORMASK 0x0f00
+#define _SV_PLOT_GRID_MODEMASK  0x00fc
+#define _SV_PLOT_GRID_COLORMASK 0x0f00
 
-#define PLOT_TEXT_DARK 0
-#define PLOT_TEXT_LIGHT 1
+#define _SV_PLOT_TEXT_DARK 0
+#define _SV_PLOT_TEXT_LIGHT 1
 
-#define PLOT_LEGEND_NONE 0
-#define PLOT_LEGEND_SHADOW 1
-#define PLOT_LEGEND_BOX 2
+#define _SV_PLOT_LEGEND_NONE 0
+#define _SV_PLOT_LEGEND_SHADOW 1
+#define _SV_PLOT_LEGEND_BOX 2

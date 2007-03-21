@@ -26,7 +26,6 @@
 
 #define MAX_TEETH 100
 
-sushiv_instance_t *s;
 int mult[MAX_TEETH+1][MAX_TEETH+1];
 
 static void inner(double *d, double *ret){
@@ -63,55 +62,52 @@ int factored_mult(int x, int y){
   return y;
 }
 
-int sushiv_submain(int argc, char *argv[]){
+int sv_submain(int argc, char *argv[]){
   int i,j;
   for(i=0;i<=MAX_TEETH;i++)
     for(j=0;j<=MAX_TEETH;j++)
       mult[i][j] = factored_mult(i,j);
 
-  s=sushiv_new_instance(0,"spirograph");
+  sv_instance_t *s = sv_new(0,"spirograph");
 
-  sushiv_new_dimension_discrete(s,0,"ring teeth",
-				2,(double []){11,MAX_TEETH},
-				NULL,1,1,0);
-  sushiv_new_dimension_discrete(s,1,"wheel teeth",
-				2,(double []){7,MAX_TEETH},
-				NULL,1,1,0);
-  sushiv_new_dimension(s,2,"wheel pen",
-		       2,(double []){0,MAX_TEETH},
-		       NULL,0);
-  sushiv_new_dimension(s,3,"trace",
-		       2,(double []){0,1},
-		       NULL,0);
+  sv_dim_t *d0 = sv_dim_new(s,0,"ring teeth",0);
+  sv_dim_make_scale(d0,2,(double []){11,MAX_TEETH},NULL,0);
+  sv_dim_set_discrete(d0,1,1);
 
-  scale_set_scalelabels(s->dimension_list[3]->scale,(char *[]){"start","end"});
+  sv_dim_t *d1 = sv_dim_new(s,1,"wheel teeth",0);
+  sv_dim_make_scale(d1,2,(double []){7,MAX_TEETH},NULL,0);
+  sv_dim_set_discrete(d1,1,1);
+		    
+  sv_dim_t *d2 = sv_dim_new(s,2,"wheel pen",0);
+  sv_dim_make_scale(d2,2,(double []){0,MAX_TEETH},NULL,0);
 
-  sushiv_new_function(s, 0, 2, inner, 0);
-  sushiv_new_function(s, 1, 2, outer, 0);
+  sv_dim_t *d3 = sv_dim_new(s,3,"trace",0);
+  sv_dim_make_scale(d3,2,(double []){0,1},(char *[]){"start","end"},0);
 
-  sushiv_new_objective(s,0,"inner",
-		       0,NULL,
-		       (int []){0,0},
-		       (int []){0,1},
-		       "XY", 0);
+  sv_func_t *f0 = sv_func_new(s, 0, 2, inner, 0);
+  sv_func_t *f1 = sv_func_new(s, 1, 2, outer, 0);
+  
+  sv_obj_t *o0 = sv_obj_new(s,0,"inner",
+			    (sv_func_t *[]){f0,f0},
+			    (int []){0,1},
+			    "XY", 0);
+  
+  sv_obj_t *o1 = sv_obj_new(s,1,"outer",
+			    (sv_func_t *[]){f1,f1},
+			    (int []){0,1},
+			    "XY", 0);
+  
+  sv_scale_t *axis = sv_scale_new(NULL,3,(double []){-MAX_TEETH*3,0,MAX_TEETH*3},NULL,0);
+  
+  sv_panel_new_xy(s,0,"spirograph (TM)",
+		  axis,axis,
+		  (sv_obj_t *[]){o0,o1,NULL},
+		  (sv_dim_t *[]){d3,d0,d1,d2,NULL},
+		  0);
 
-  sushiv_new_objective(s,1,"outer",
-		       0,NULL,
-		       (int []){1,1},
-		       (int []){0,1},
-		       "XY", 0);
-
-  sushiv_scale_t *axis = scale_new(3,(double []){-MAX_TEETH*3,0,MAX_TEETH*3},NULL);
-
-  sushiv_new_panel_xy(s,2,"spirograph (TM)",
-		      axis,axis,
-		      (int []){0,1,-1},
-		      (int []){3,0,1,2,-1},
-		      0);
-
-  sushiv_dimension_set_value(s,0,1,100);
-  sushiv_dimension_set_value(s,1,1,70);
-  sushiv_dimension_set_value(s,2,1,50);
+  sv_dim_set_value(d0,1,100);
+  sv_dim_set_value(d1,1,70);
+  sv_dim_set_value(d2,1,50);
 
   return 0;
 }

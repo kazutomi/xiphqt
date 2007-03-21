@@ -39,34 +39,34 @@ static GtkWidgetClass *parent_class = NULL;
 // data scale is undersampled or discrete), we want the demarks from
 // the data scale (plotted in terms of the panel scale).  In most
 // cases they will be the same, but not always.
-static double scale_demark(scalespace *panel, scalespace *data, int i, char *buffer){
+static double scale_demark(_sv_scalespace_t *panel, _sv_scalespace_t *data, int i, char *buffer){
   if(abs(data->step_val*data->m) > abs(panel->step_val*panel->m)){
-    double x=scalespace_mark(data,i);
-    if(buffer) scalespace_label(data,i,buffer);
-    return scalespace_pixel(panel, scalespace_value(data, x));
+    double x=_sv_scalespace_mark(data,i);
+    if(buffer) _sv_scalespace_label(data,i,buffer);
+    return _sv_scalespace_pixel(panel, _sv_scalespace_value(data, x));
   }else{
-    if(buffer) scalespace_label(panel,i,buffer);
-    return scalespace_mark(panel,i);
+    if(buffer) _sv_scalespace_label(panel,i,buffer);
+    return _sv_scalespace_mark(panel,i);
   }
 }
 
-void plot_set_bg_invert(Plot *p, int setp){
+void _sv_plot_set_bg_invert(_sv_plot_t *p, int setp){
   p->bg_inv = setp;
 }
 
-void plot_set_grid(Plot *p, int mode){
+void _sv_plot_set_grid(_sv_plot_t *p, int mode){
   p->grid_mode = mode;
 }
 
 static void set_text(int inv, cairo_t *c){
-  if(inv == PLOT_TEXT_LIGHT)
+  if(inv == _SV_PLOT_TEXT_LIGHT)
     cairo_set_source_rgba(c,1.,1.,1.,1.);
   else
     cairo_set_source_rgba(c,0.,0.,0.,1.);
 }
 
 static void set_shadow(int inv, cairo_t *c){
-  if(inv == PLOT_TEXT_LIGHT)
+  if(inv == _SV_PLOT_TEXT_LIGHT)
     cairo_set_source_rgba(c,0.,0.,0.,.6);
   else
     cairo_set_source_rgba(c,1.,1.,1.,.8);
@@ -75,14 +75,14 @@ static void set_shadow(int inv, cairo_t *c){
 static void draw_scales_work(cairo_t *c, int w, int h, 
 			     double page_h,
 			     int inv_text, int grid,
-			     scalespace xs, scalespace ys,
-			     scalespace xs_v, scalespace ys_v){
+			     _sv_scalespace_t xs, _sv_scalespace_t ys,
+			     _sv_scalespace_t xs_v, _sv_scalespace_t ys_v){
 
   int i=0,x,y;
   char buffer[80];
   int y_width=0;
   int x_height=0;
-  int off = (grid == PLOT_GRID_TICS?6:0);
+  int off = (grid == _SV_PLOT_GRID_TICS?6:0);
 
   cairo_set_miter_limit(c,2.);
 
@@ -90,7 +90,7 @@ static void draw_scales_work(cairo_t *c, int w, int h,
   if(grid){
 
     cairo_set_line_width(c,1.);
-    if(grid & PLOT_GRID_NORMAL){
+    if(grid & _SV_PLOT_GRID_NORMAL){
       cairo_save(c);
       //cairo_set_operator(c,CAIRO_OPERATOR_XOR);       
       switch(grid&0xf00){
@@ -226,7 +226,7 @@ static void draw_scales_work(cairo_t *c, int w, int h,
     cairo_show_text (c, xs.legend);
   }
 
-  if(grid == PLOT_GRID_TICS){
+  if(grid == _SV_PLOT_GRID_TICS){
     cairo_set_line_width(c,1.);
     set_text(inv_text,c);
     
@@ -256,7 +256,7 @@ static void draw_scales_work(cairo_t *c, int w, int h,
   }
 }
 
-static void draw_legend_work(Plot *p, cairo_t *c, int w){
+static void draw_legend_work(_sv_plot_t *p, cairo_t *c, int w){
   if(p->legend_entries && p->legend_list && p->legend_active){
     int i;
     int textw=0, texth=0;
@@ -340,13 +340,13 @@ static void draw_legend_work(Plot *p, cairo_t *c, int w){
   }
 }
 
-void plot_draw_scales(Plot *p){
+void _sv_plot_draw_scales(_sv_plot_t *p){
   // render into a temporary surface; do it [potentially] outside the global Gtk lock.
   gdk_threads_enter();
-  scalespace x = p->x;
-  scalespace y = p->y;
-  scalespace xv = p->x_v;
-  scalespace yv = p->y_v;
+  _sv_scalespace_t x = p->x;
+  _sv_scalespace_t y = p->y;
+  _sv_scalespace_t xv = p->x_v;
+  _sv_scalespace_t yv = p->y_v;
   int w = GTK_WIDGET(p)->allocation.width;
   int h = GTK_WIDGET(p)->allocation.height;
   cairo_surface_t *s = cairo_image_surface_create(CAIRO_FORMAT_ARGB32,w,h);
@@ -370,23 +370,23 @@ void plot_draw_scales(Plot *p){
   cairo_surface_t *temp = p->fore;
   p->fore = s;
   cairo_surface_destroy(temp);
-  //plot_expose_request(p);
+  //_sv_plot_expose_request(p);
   gdk_threads_leave();
 }
 
-static void plot_init (Plot *p){
+static void _sv_plot_init (_sv_plot_t *p){
   // instance initialization
   p->scalespacing = 50;
-  p->x_v = p->x = scalespace_linear(0.0,1.0,400,p->scalespacing,NULL);
-  p->y_v = p->y = scalespace_linear(0.0,1.0,200,p->scalespacing,NULL);
+  p->x_v = p->x = _sv_scalespace_linear(0.0,1.0,400,p->scalespacing,NULL);
+  p->y_v = p->y = _sv_scalespace_linear(0.0,1.0,200,p->scalespacing,NULL);
 }
 
-static void plot_destroy (GtkObject *object){
+static void _sv_plot_destroy (GtkObject *object){
   if (GTK_OBJECT_CLASS (parent_class)->destroy)
     (*GTK_OBJECT_CLASS (parent_class)->destroy) (object);
 
   GtkWidget *widget = GTK_WIDGET(object);
-  Plot *p = PLOT (widget);
+  _sv_plot_t *p = PLOT (widget);
   // free local resources
   if(p->wc){
     cairo_destroy(p->wc);
@@ -407,31 +407,31 @@ static void plot_destroy (GtkObject *object){
 
 }
 
-static void box_corners(Plot *p, double vals[4]){
+static void box_corners(_sv_plot_t *p, double vals[4]){
   GtkWidget *widget = GTK_WIDGET(p);
-  double x1 = scalespace_pixel(&p->x,p->box_x1);
-  double x2 = scalespace_pixel(&p->x,p->box_x2);
-  double y1 = scalespace_pixel(&p->y,p->box_y1);
-  double y2 = scalespace_pixel(&p->y,p->box_y2);
+  double x1 = _sv_scalespace_pixel(&p->x,p->box_x1);
+  double x2 = _sv_scalespace_pixel(&p->x,p->box_x2);
+  double y1 = _sv_scalespace_pixel(&p->y,p->box_y1);
+  double y2 = _sv_scalespace_pixel(&p->y,p->box_y2);
 
   vals[0] = (x1<x2 ? x1 : x2);
   vals[1] = (y1<y2 ? y1 : y2);
   vals[2] = fabs(x1-x2);
   vals[3] = fabs(y1-y2);
 
-  if(p->flags & PLOT_NO_X_CROSS){
+  if(p->flags & _SV_PLOT_NO_X_CROSS){
     vals[0]=-1;
     vals[2]=widget->allocation.width+2;
   }
   
-  if(p->flags & PLOT_NO_Y_CROSS){
+  if(p->flags & _SV_PLOT_NO_Y_CROSS){
     vals[1]=-1;
     vals[3]=widget->allocation.height+2;
   }
   
 }
 
-static int inside_box(Plot *p, int x, int y){
+static int inside_box(_sv_plot_t *p, int x, int y){
   double vals[4];
   box_corners(p,vals);
   
@@ -441,14 +441,14 @@ static int inside_box(Plot *p, int x, int y){
 	  y <= vals[1]+vals[3]);
 }
 
-int plot_print(Plot *p, cairo_t *c, double page_h, void (*datarender)(void *, cairo_t *), void *data){
+int _sv_plot_print(_sv_plot_t *p, cairo_t *c, double page_h, void (*datarender)(void *, cairo_t *), void *data){
   GtkWidget *widget = GTK_WIDGET(p);
   int pw = widget->allocation.width;
   int ph = widget->allocation.height;
-  scalespace x = p->x;
-  scalespace y = p->y;
-  scalespace xv = p->x_v;
-  scalespace yv = p->y_v;
+  _sv_scalespace_t x = p->x;
+  _sv_scalespace_t y = p->y;
+  _sv_scalespace_t xv = p->x_v;
+  _sv_scalespace_t yv = p->y_v;
   int inv = p->bg_inv;
   int grid = p->grid_mode;
 
@@ -469,18 +469,18 @@ int plot_print(Plot *p, cairo_t *c, double page_h, void (*datarender)(void *, ca
 
   // transient foreground crosshairs
   if(p->cross_active){
-    double sx = plot_get_crosshair_xpixel(p);
-    double sy = plot_get_crosshair_ypixel(p);
+    double sx = _sv_plot_get_crosshair_xpixel(p);
+    double sy = _sv_plot_get_crosshair_ypixel(p);
     
     cairo_set_source_rgba(c,1.,1.,0.,.8);
     cairo_set_line_width(c,1.);
     
-    if(! (p->flags & PLOT_NO_Y_CROSS)){
+    if(! (p->flags & _SV_PLOT_NO_Y_CROSS)){
       cairo_move_to(c,0,sy+.5);
       cairo_line_to(c,widget->allocation.width,sy+.5);
     }
     
-    if(! (p->flags & PLOT_NO_X_CROSS)){
+    if(! (p->flags & _SV_PLOT_NO_X_CROSS)){
       cairo_move_to(c,sx+.5,0);
       cairo_line_to(c,sx+.5,widget->allocation.height);
     }
@@ -523,7 +523,7 @@ int plot_print(Plot *p, cairo_t *c, double page_h, void (*datarender)(void *, ca
   return 0;
 }
 
-static void plot_draw (Plot *p,
+static void _sv_plot_draw (_sv_plot_t *p,
 		       int x, int y, int w, int h){
 
   GtkWidget *widget = GTK_WIDGET(p);
@@ -537,18 +537,18 @@ static void plot_draw (Plot *p,
     
     // transient foreground
     if(p->cross_active){
-      double sx = plot_get_crosshair_xpixel(p);
-      double sy = plot_get_crosshair_ypixel(p);
+      double sx = _sv_plot_get_crosshair_xpixel(p);
+      double sy = _sv_plot_get_crosshair_ypixel(p);
 
       cairo_set_source_rgba(c,1.,1.,0.,.8);
       cairo_set_line_width(c,1.);
 
-      if(! (p->flags & PLOT_NO_Y_CROSS)){
+      if(! (p->flags & _SV_PLOT_NO_Y_CROSS)){
 	cairo_move_to(c,0,sy+.5);
 	cairo_line_to(c,widget->allocation.width,sy+.5);
       }
 
-      if(! (p->flags & PLOT_NO_X_CROSS)){
+      if(! (p->flags & _SV_PLOT_NO_X_CROSS)){
 	cairo_move_to(c,sx+.5,0);
 	cairo_line_to(c,sx+.5,widget->allocation.height);
       }
@@ -606,25 +606,25 @@ static void plot_draw (Plot *p,
   }
 }
 
-static gint plot_expose (GtkWidget      *widget,
+static gint _sv_plot_expose (GtkWidget      *widget,
 			 GdkEventExpose *event){
   if (GTK_WIDGET_REALIZED (widget)){
-    Plot *p = PLOT (widget);
+    _sv_plot_t *p = PLOT (widget);
 
     int x = event->area.x;
     int y = event->area.y;
     int w = event->area.width;
     int h = event->area.height;
 
-    plot_draw(p, x, y, w, h);
+    _sv_plot_draw(p, x, y, w, h);
 
   }
   return FALSE;
 }
 
-static void plot_size_request (GtkWidget *widget,
+static void _sv_plot_size_request (GtkWidget *widget,
 			       GtkRequisition *requisition){
-  Plot *p = PLOT (widget);
+  _sv_plot_t *p = PLOT (widget);
   if(p->resizable || !p->wc){
     requisition->width = 400;
     requisition->height = 200;
@@ -634,7 +634,7 @@ static void plot_size_request (GtkWidget *widget,
   }
 }
 
-static void plot_realize (GtkWidget *widget){
+static void _sv_plot_realize (GtkWidget *widget){
   GdkWindowAttr attributes;
   gint      attributes_mask;
 
@@ -670,9 +670,9 @@ static void plot_realize (GtkWidget *widget){
   gtk_widget_set_double_buffered (widget, FALSE);
 }
 
-static void plot_size_allocate (GtkWidget     *widget,
+static void _sv_plot_size_allocate (GtkWidget     *widget,
 				GtkAllocation *allocation){
-  Plot *p = PLOT (widget);
+  _sv_plot_t *p = PLOT (widget);
 
   if (GTK_WIDGET_REALIZED (widget)){
 
@@ -717,15 +717,15 @@ static void plot_size_allocate (GtkWidget     *widget,
   }
 
   widget->allocation = *allocation;
-  p->x = scalespace_linear(p->x.lo,p->x.hi,widget->allocation.width,p->scalespacing,p->x.legend);
-  p->y = scalespace_linear(p->y.lo,p->y.hi,widget->allocation.height,p->scalespacing,p->y.legend);
-  plot_unset_box(p);
+  p->x = _sv_scalespace_linear(p->x.lo,p->x.hi,widget->allocation.width,p->scalespacing,p->x.legend);
+  p->y = _sv_scalespace_linear(p->y.lo,p->y.hi,widget->allocation.height,p->scalespacing,p->y.legend);
+  _sv_plot_unset_box(p);
   if(p->recompute_callback)p->recompute_callback(p->app_data);
-  //plot_draw_scales(p); geenrally done in callback after scale massaging
+  //_sv_plot_draw_scales(p); geenrally done in callback after scale massaging
 
 }
 
-static void box_check(Plot *p, int x, int y){
+static void box_check(_sv_plot_t *p, int x, int y){
   if(p->box_active){
     double vals[4];
     box_corners(p,vals);
@@ -735,7 +735,7 @@ static void box_check(Plot *p, int x, int y){
     else
       p->box_active = 1;
     
-    plot_expose_request_partial(p,
+    _sv_plot_expose_request_partial(p,
 				(int)(vals[0]),
 				(int)(vals[1]),
 				(int)(vals[2]+3), // account for floor/ceil *and* roundoff potential
@@ -745,12 +745,12 @@ static void box_check(Plot *p, int x, int y){
 
 static gint mouse_motion(GtkWidget        *widget,
 			 GdkEventMotion   *event){
-  Plot *p = PLOT (widget);
+  _sv_plot_t *p = PLOT (widget);
 
   int x = event->x;
   int y = event->y;
-  int bx = scalespace_pixel(&p->x,p->box_x1);
-  int by = scalespace_pixel(&p->y,p->box_y1);
+  int bx = _sv_scalespace_pixel(&p->x,p->box_x1);
+  int by = _sv_scalespace_pixel(&p->y,p->box_y1);
 
   if(p->button_down){
     if(abs(bx - x)>5 ||
@@ -760,15 +760,15 @@ static gint mouse_motion(GtkWidget        *widget,
     if(p->box_active){
       double vals[4];
       box_corners(p,vals);
-      plot_expose_request_partial(p,
+      _sv_plot_expose_request_partial(p,
 				  (int)(vals[0]),
 				  (int)(vals[1]),
 				  (int)(vals[2]+3),  // account for floor/ceil *and* roundoff potential
 				  (int)(vals[3]+3));
     }
     
-    p->box_x2 = scalespace_value(&p->x,x);
-    p->box_y2 = scalespace_value(&p->y,y);
+    p->box_x2 = _sv_scalespace_value(&p->x,x);
+    p->box_y2 = _sv_scalespace_value(&p->y,y);
   }
 
   box_check(p,x,y);
@@ -782,13 +782,13 @@ static gboolean mouse_press (GtkWidget        *widget,
   if (event->button == 3) return FALSE;
   if (event->button == 1){
   
-    Plot *p = PLOT (widget);
+    _sv_plot_t *p = PLOT (widget);
     
     if(p->box_active && inside_box(p,event->x,event->y) && !p->button_down){
       
-      p->selx = scalespace_value(&p->x,event->x);
-      p->sely = scalespace_value(&p->y,event->y);
-      plot_snap_crosshairs(p);
+      p->selx = _sv_scalespace_value(&p->x,event->x);
+      p->sely = _sv_scalespace_value(&p->y,event->y);
+      _sv_plot_snap_crosshairs(p);
       p->cross_active=1;
       
       if(p->box_callback)
@@ -798,8 +798,8 @@ static gboolean mouse_press (GtkWidget        *widget,
       p->box_active=0;
       
     }else{
-      p->box_x2=p->box_x1 = scalespace_value(&p->x,event->x);
-      p->box_y2=p->box_y1 = scalespace_value(&p->y,event->y);
+      p->box_x2=p->box_x1 = _sv_scalespace_value(&p->x,event->x);
+      p->box_y2=p->box_y1 = _sv_scalespace_value(&p->y,event->y);
       p->box_active = 0;
       p->button_down=1; 
     }
@@ -812,19 +812,19 @@ static gboolean mouse_release (GtkWidget        *widget,
 			       GdkEventButton   *event){
   if (event->button == 3) return FALSE;
 
-  Plot *p = PLOT (widget);
-  plot_expose_request(p);
+  _sv_plot_t *p = PLOT (widget);
+  _sv_plot_expose_request(p);
 
   if(!p->box_active && p->button_down){
-    p->selx = scalespace_value(&p->x,event->x);
-    p->sely = scalespace_value(&p->y,event->y);
-    plot_snap_crosshairs(p);
+    p->selx = _sv_scalespace_value(&p->x,event->x);
+    p->sely = _sv_scalespace_value(&p->y,event->y);
+    _sv_plot_snap_crosshairs(p);
 
     if(p->crosshairs_callback)
       p->crosshairs_callback(p->cross_data);
 
     p->cross_active=1;
-    plot_expose_request(p);
+    _sv_plot_expose_request(p);
   }
 
   p->button_down=0;
@@ -839,7 +839,7 @@ static gboolean mouse_release (GtkWidget        *widget,
   return TRUE;
 }
 
-void plot_do_enter(Plot *p){
+void _sv_plot_do_enter(_sv_plot_t *p){
   // if box is active, effect it
   
   if(p->box_active){
@@ -853,8 +853,8 @@ void plot_do_enter(Plot *p){
   }else{
     if(p->button_down){
       GdkEventButton event;
-      event.x = scalespace_pixel(&p->x,p->selx);
-      event.y = scalespace_pixel(&p->y,p->sely);
+      event.x = _sv_scalespace_pixel(&p->x,p->selx);
+      event.y = _sv_scalespace_pixel(&p->y,p->sely);
       
       mouse_release(GTK_WIDGET(p),&event);
     }else{
@@ -866,32 +866,32 @@ void plot_do_enter(Plot *p){
   }
 }
 
-void plot_set_crossactive(Plot *p, int active){
+void _sv_plot_set_crossactive(_sv_plot_t *p, int active){
   if(!active){
     p->button_down=0;
     p->box_active=0;
   }
 
   p->cross_active=active;
-  plot_draw_scales(p);
-  plot_expose_request(p);
+  _sv_plot_draw_scales(p);
+  _sv_plot_expose_request(p);
 }
 
-void plot_toggle_legend(Plot *p){
+void _sv_plot_toggle_legend(_sv_plot_t *p){
   p->legend_active++;
   if (p->legend_active>2)
     p->legend_active=0;
-  plot_expose_request(p);
+  _sv_plot_expose_request(p);
 }
 
-void plot_set_legendactive(Plot *p, int active){
+void _sv_plot_set_legendactive(_sv_plot_t *p, int active){
   p->legend_active=active;
-  plot_expose_request(p);
+  _sv_plot_expose_request(p);
 }
 
-static gboolean key_press(GtkWidget *widget,
-			  GdkEventKey *event){
-  Plot *p = PLOT(widget);
+static gboolean _sv_plot_key_press(GtkWidget *widget,
+				   GdkEventKey *event){
+  _sv_plot_t *p = PLOT(widget);
 
   int shift = (event->state&GDK_SHIFT_MASK);
   if(event->state&GDK_MOD1_MASK) return FALSE;
@@ -902,11 +902,11 @@ static gboolean key_press(GtkWidget *widget,
 
   case GDK_Left:
     {
-      double x = scalespace_pixel(&p->x_v,p->selx)-1;
+      double x = _sv_scalespace_pixel(&p->x_v,p->selx)-1;
       p->cross_active=1;
       if(shift)
 	x-=9;
-      p->selx = scalespace_value(&p->x_v,x);
+      p->selx = _sv_scalespace_value(&p->x_v,x);
       if(p->crosshairs_callback)
 	p->crosshairs_callback(p->cross_data);
 
@@ -916,17 +916,17 @@ static gboolean key_press(GtkWidget *widget,
       }else
 	p->box_active=0;
 
-      plot_expose_request(p);
+      _sv_plot_expose_request(p);
     }
     return TRUE;
 
   case GDK_Right:
     {
-      double x = scalespace_pixel(&p->x_v,p->selx)+1;
+      double x = _sv_scalespace_pixel(&p->x_v,p->selx)+1;
       p->cross_active=1;
       if(shift)
 	x+=9;
-      p->selx = scalespace_value(&p->x_v,x);
+      p->selx = _sv_scalespace_value(&p->x_v,x);
        if(p->crosshairs_callback)
 	p->crosshairs_callback(p->cross_data);
 
@@ -936,17 +936,17 @@ static gboolean key_press(GtkWidget *widget,
       }else
 	p->box_active=0;
 
-      plot_expose_request(p);
+      _sv_plot_expose_request(p);
 
     }
     return TRUE;
   case GDK_Up:
     {
-      double y = scalespace_pixel(&p->y_v,p->sely)-1;
+      double y = _sv_scalespace_pixel(&p->y_v,p->sely)-1;
       p->cross_active=1;
       if(shift)
 	y-=9;
-      p->sely = scalespace_value(&p->y_v,y);
+      p->sely = _sv_scalespace_value(&p->y_v,y);
       if(p->crosshairs_callback)
 	p->crosshairs_callback(p->cross_data);
 
@@ -956,16 +956,16 @@ static gboolean key_press(GtkWidget *widget,
       }else
 	p->box_active=0;
 
-      plot_expose_request(p);
+      _sv_plot_expose_request(p);
     }
     return TRUE;
   case GDK_Down:
     {
-      double y = scalespace_pixel(&p->y_v,p->sely)+1;
+      double y = _sv_scalespace_pixel(&p->y_v,p->sely)+1;
       p->cross_active=1;
       if(shift)
 	y+=9;
-      p->sely = scalespace_value(&p->y_v,y);
+      p->sely = _sv_scalespace_value(&p->y_v,y);
       if(p->crosshairs_callback)
 	p->crosshairs_callback(p->cross_data);
       
@@ -975,7 +975,7 @@ static gboolean key_press(GtkWidget *widget,
       }else
 	p->box_active=0;
       
-      plot_expose_request(p);
+      _sv_plot_expose_request(p);
 
     }
     return TRUE;
@@ -985,23 +985,23 @@ static gboolean key_press(GtkWidget *widget,
   return FALSE;
 }
 
-static gboolean plot_unfocus(GtkWidget        *widget,
+static gboolean _sv_plot_unfocus(GtkWidget        *widget,
 			     GdkEventFocus       *event){
-  Plot *p=PLOT(widget);
+  _sv_plot_t *p=PLOT(widget);
   p->widgetfocus=0;
-  plot_expose_request(p);
+  _sv_plot_expose_request(p);
   return TRUE;
 }
 
-static gboolean plot_refocus(GtkWidget        *widget,
+static gboolean _sv_plot_refocus(GtkWidget        *widget,
 			     GdkEventFocus       *event){
-  Plot *p=PLOT(widget);
+  _sv_plot_t *p=PLOT(widget);
   p->widgetfocus=1;
-  plot_expose_request(p);
+  _sv_plot_expose_request(p);
   return TRUE;
 }
 
-static void plot_class_init (PlotClass * class) {
+static void _sv_plot_class_init (_sv_plot_class_t * class) {
 
   GtkObjectClass *object_class;
   GtkWidgetClass *widget_class;
@@ -1011,56 +1011,56 @@ static void plot_class_init (PlotClass * class) {
 
   parent_class = gtk_type_class (GTK_TYPE_WIDGET);
 
-  object_class->destroy = plot_destroy;
+  object_class->destroy = _sv_plot_destroy;
 
-  widget_class->realize = plot_realize;
-  widget_class->expose_event = plot_expose;
-  widget_class->size_request = plot_size_request;
-  widget_class->size_allocate = plot_size_allocate;
+  widget_class->realize = _sv_plot_realize;
+  widget_class->expose_event = _sv_plot_expose;
+  widget_class->size_request = _sv_plot_size_request;
+  widget_class->size_allocate = _sv_plot_size_allocate;
   widget_class->button_press_event = mouse_press;
   widget_class->button_release_event = mouse_release;
   widget_class->motion_notify_event = mouse_motion;
-  //widget_class->enter_notify_event = plot_enter;
-  //widget_class->leave_notify_event = plot_leave;
-  widget_class->key_press_event = key_press;
+  //widget_class->enter_notify_event = _sv_plot_enter;
+  //widget_class->leave_notify_event = _sv_plot_leave;
+  widget_class->key_press_event = _sv_plot_key_press;
 
-  widget_class->focus_out_event = plot_unfocus;
-  widget_class->focus_in_event = plot_refocus;
+  widget_class->focus_out_event = _sv_plot_unfocus;
+  widget_class->focus_in_event = _sv_plot_refocus;
 
 }
 
-GType plot_get_type (void){
+GType _sv_plot_get_type (void){
 
   static GType plot_type = 0;
 
   if (!plot_type)
     {
       static const GTypeInfo plot_info = {
-        sizeof (PlotClass),
+        sizeof (_sv_plot_class_t),
         NULL,
         NULL,
-        (GClassInitFunc) plot_class_init,
+        (GClassInitFunc) _sv_plot_class_init,
         NULL,
         NULL,
-        sizeof (Plot),
+        sizeof (_sv_plot_t),
         0,
-        (GInstanceInitFunc) plot_init,
+        (GInstanceInitFunc) _sv_plot_init,
 	0
       };
 
       plot_type = g_type_register_static (GTK_TYPE_WIDGET, "Plot",
-                                               &plot_info, 0);
+					  &plot_info, 0);
     }
   
   return plot_type;
 }
 
-Plot *plot_new (void (*callback)(void *),void *app_data,
+_sv_plot_t *_sv_plot_new (void (*callback)(void *),void *app_data,
 		void (*cross_callback)(void *),void *cross_data,
 		void (*box_callback)(void *, int),void *box_data,
 		unsigned flags) {
   GtkWidget *g = GTK_WIDGET (g_object_new (PLOT_TYPE, NULL));
-  Plot *p = PLOT (g);
+  _sv_plot_t *p = PLOT (g);
   p->recompute_callback = callback;
   p->app_data = app_data;
   p->crosshairs_callback = cross_callback;
@@ -1068,14 +1068,14 @@ Plot *plot_new (void (*callback)(void *),void *app_data,
   p->box_callback = box_callback;
   p->box_data = box_data;
   p->flags = flags;
-  p->grid_mode = PLOT_GRID_NORMAL;
+  p->grid_mode = _SV_PLOT_GRID_NORMAL;
   p->resizable = 1;
   p->legend_active = 1;
 
   return p;
 }
 
-void plot_expose_request(Plot *p){
+void _sv_plot_expose_request(_sv_plot_t *p){
   gdk_threads_enter();
 
   GtkWidget *widget = GTK_WIDGET(p);
@@ -1092,7 +1092,7 @@ void plot_expose_request(Plot *p){
   gdk_threads_leave();
 }
 
-void plot_expose_request_partial(Plot *p,int x, int y, int w, int h){
+void _sv_plot_expose_request_partial(_sv_plot_t *p,int x, int y, int w, int h){
   gdk_threads_enter();
 
   GtkWidget *widget = GTK_WIDGET(p);
@@ -1107,45 +1107,45 @@ void plot_expose_request_partial(Plot *p,int x, int y, int w, int h){
   gdk_threads_leave();
 }
 
-void plot_set_crosshairs(Plot *p, double x, double y){
+void _sv_plot_set_crosshairs(_sv_plot_t *p, double x, double y){
   gdk_threads_enter();
 
   p->selx = x;
   p->sely = y;
   p->cross_active=1;
 
-  plot_expose_request(p);
+  _sv_plot_expose_request(p);
   gdk_threads_leave();
 }
 
-void plot_set_crosshairs_snap(Plot *p, double x, double y){
+void _sv_plot_set_crosshairs_snap(_sv_plot_t *p, double x, double y){
   gdk_threads_enter();
-  double xpixel =  rint(scalespace_pixel(&p->x_v,x));
-  double ypixel =  rint(scalespace_pixel(&p->y_v,y));
+  double xpixel =  rint(_sv_scalespace_pixel(&p->x_v,x));
+  double ypixel =  rint(_sv_scalespace_pixel(&p->y_v,y));
 
-  p->selx = scalespace_value(&p->x_v,xpixel);
-  p->sely = scalespace_value(&p->y_v,ypixel);
+  p->selx = _sv_scalespace_value(&p->x_v,xpixel);
+  p->sely = _sv_scalespace_value(&p->y_v,ypixel);
   p->cross_active=1;
 
-  plot_expose_request(p);
+  _sv_plot_expose_request(p);
   gdk_threads_leave();
 }
 
-void plot_snap_crosshairs(Plot *p){
+void _sv_plot_snap_crosshairs(_sv_plot_t *p){
   gdk_threads_enter();
 
-  double xpixel =  rint(scalespace_pixel(&p->x_v,p->selx));
-  double ypixel =  rint(scalespace_pixel(&p->y_v,p->sely));
+  double xpixel =  rint(_sv_scalespace_pixel(&p->x_v,p->selx));
+  double ypixel =  rint(_sv_scalespace_pixel(&p->y_v,p->sely));
 
-  p->selx = scalespace_value(&p->x_v,xpixel);
-  p->sely = scalespace_value(&p->y_v,ypixel);
+  p->selx = _sv_scalespace_value(&p->x_v,xpixel);
+  p->sely = _sv_scalespace_value(&p->y_v,ypixel);
 
-  plot_expose_request(p);
+  _sv_plot_expose_request(p);
   gdk_threads_leave();
 }
 
-int plot_get_crosshair_xpixel(Plot *p){
-  scalespace x;
+int _sv_plot_get_crosshair_xpixel(_sv_plot_t *p){
+  _sv_scalespace_t x;
   double v;
 
   gdk_threads_enter();
@@ -1153,11 +1153,11 @@ int plot_get_crosshair_xpixel(Plot *p){
   v = p->selx;
   gdk_threads_leave();
 
-  return (int)rint(scalespace_pixel(&x,v));
+  return (int)rint(_sv_scalespace_pixel(&x,v));
 }
 
-int plot_get_crosshair_ypixel(Plot *p){
-  scalespace y;
+int _sv_plot_get_crosshair_ypixel(_sv_plot_t *p){
+  _sv_scalespace_t y;
   double v;
 
   gdk_threads_enter();
@@ -1165,16 +1165,16 @@ int plot_get_crosshair_ypixel(Plot *p){
   v = p->sely;
   gdk_threads_leave();
 
-  return (int)rint(scalespace_pixel(&y,v));
+  return (int)rint(_sv_scalespace_pixel(&y,v));
 }
 
-void plot_unset_box(Plot *p){
+void _sv_plot_unset_box(_sv_plot_t *p){
   gdk_threads_enter();
   p->box_active = 0;
   gdk_threads_leave();
 }
 
-void plot_box_vals(Plot *p, double ret[4]){
+void _sv_plot_box_vals(_sv_plot_t *p, double ret[4]){
   gdk_threads_enter();
   int n = p->x.neg;
   
@@ -1187,7 +1187,7 @@ void plot_box_vals(Plot *p, double ret[4]){
   gdk_threads_leave();
 }
 
-void plot_box_set(Plot *p, double vals[4]){
+void _sv_plot_box_set(_sv_plot_t *p, double vals[4]){
   gdk_threads_enter();
 
   p->box_x1=vals[0];
@@ -1196,11 +1196,11 @@ void plot_box_set(Plot *p, double vals[4]){
   p->box_y2=vals[3];
   p->box_active = 1;
   
-  plot_expose_request(p);
+  _sv_plot_expose_request(p);
   gdk_threads_leave();
 }
 
-void plot_legend_clear(Plot *p){
+void _sv_plot_legend_clear(_sv_plot_t *p){
   int i;
   if(p->legend_list){
     for(i=0;i<p->legend_entries;i++)
@@ -1212,11 +1212,11 @@ void plot_legend_clear(Plot *p){
   p->legend_entries=0;
 }
 
-void plot_legend_add(Plot *p, char *entry){
-  plot_legend_add_with_color(p,entry,0xffffffffUL);
+void _sv_plot_legend_add(_sv_plot_t *p, char *entry){
+  _sv_plot_legend_add_with_color(p,entry,0xffffffffUL);
 }
 
-void plot_legend_add_with_color(Plot *p, char *entry, u_int32_t color){
+void _sv_plot_legend_add_with_color(_sv_plot_t *p, char *entry, u_int32_t color){
   if(!p->legend_list || !p->legend_colors){
     p->legend_list = calloc(1, sizeof(*p->legend_list));
     p->legend_colors = calloc(1, sizeof(*p->legend_colors));
@@ -1234,7 +1234,7 @@ void plot_legend_add_with_color(Plot *p, char *entry, u_int32_t color){
   p->legend_colors[p->legend_entries-1] = color;
 }
 
-void plot_resizable(Plot *p, int rp){
+void _sv_plot_resizable(_sv_plot_t *p, int rp){
   GtkWidget *widget = GTK_WIDGET(p);
   if(!rp){
 

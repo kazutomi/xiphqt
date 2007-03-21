@@ -24,8 +24,6 @@
 #include <math.h>
 #include "sushivision.h"
 
-sushiv_instance_t *s;
-
 static void discrete_objective(double *d, double *ret){
 
   int X = rint(d[0]);
@@ -37,43 +35,45 @@ static void discrete_objective(double *d, double *ret){
     ret[0]=1.;
 }
 
-int sushiv_submain(int argc, char *argv[]){
+int sv_submain(int argc, char *argv[]){
 
-  s=sushiv_new_instance(0,NULL);
+  sv_instance_t *s = sv_new(0,NULL);
 
-  sushiv_new_dimension_discrete(s,0,"A",
-				5,(double []){-500,-10,0,10,500},
-				NULL,1,1,0);
-  sushiv_new_dimension_discrete(s,1,"B",
-				5,(double []){-500,-10,0,10,500},
-				NULL,1,1,0);
+  sv_dim_t *d0 = sv_dim_new(s,0,"A",0);
+  sv_dim_make_scale(d0, 5,(double []){-500,-10,0,10,500}, NULL, 0);
+  sv_dim_set_discrete(d0, 1, 1);
 
-  sushiv_dimension_set_value(s,0,0,-2);
-  sushiv_dimension_set_value(s,0,2,2);
-  sushiv_dimension_set_value(s,1,0,-2);
-  sushiv_dimension_set_value(s,1,2,2);
+  sv_dim_t *d1 = sv_dim_new(s,1,"B",0);
+  sv_dim_make_scale(d1, 5,(double []){-500,-10,0,10,500}, NULL, 0);
+  sv_dim_set_discrete(d1, 1, 1);
 
-  sushiv_new_function(s, 0, 1, discrete_objective, 0);
+  sv_dim_set_value(d0,0,-2);
+  sv_dim_set_value(d0,2,2);
+  sv_dim_set_value(d1,0,-2);
+  sv_dim_set_value(d1,2,2);
 
-  sushiv_new_objective(s,0,"test pattern",
-		       2,(double []){0, 1.0},
-		       (int []){0},
-		       (int []){0},
-		       "Y", 0);
+  sv_func_t *f = sv_func_new(s, 0, 1, discrete_objective, 0);
 
-  sushiv_new_panel_2d(s,0,"Discrete data example",
-		      (int []){0,-1},
-		      (int []){0,1,-1},
-		      0);
-
-  sushiv_new_panel_1d_linked(s,1,"X Slice",s->objective_list[0]->scale,
-			     (int []){0,-1},
-			     0,0);
-
-  sushiv_new_panel_1d_linked(s,2,"Y Slice",s->objective_list[0]->scale,
-			     (int []){0,-1},
-			     0,SUSHIV_PANEL_LINK_Y | SUSHIV_PANEL_FLIP);
-
-
+  sv_obj_t *o0 = sv_obj_new(s,0,"test pattern",
+			    (sv_func_t *[]){f},
+			    (int []){0},
+			    "Y",0);
+  sv_obj_make_scale(o0, 2, (double []){0, 1.0}, NULL, 0);
+  
+  sv_panel_t *p2 = sv_panel_new_2d(s,0,"Discrete data example",
+				   (sv_obj_t *[]){o0,NULL},
+				   (sv_dim_t *[]){d0,d1,NULL},
+				   0);
+  
+  sv_panel_t *px = sv_panel_new_1d(s,1,"X Slice", s->objective_list[0]->scale,
+				   (sv_obj_t *[]){o0,NULL},
+				   NULL,0);
+  sv_panel_link_1d(px, p2, SV_PANEL_LINK_X);
+  
+  sv_panel_t *py = sv_panel_new_1d(s,2,"Y Slice", s->objective_list[0]->scale,
+				   (sv_obj_t *[]){o0,NULL},
+				   NULL,SV_PANEL_FLIP);
+  sv_panel_link_1d(py, p2, SV_PANEL_LINK_Y);
+  
   return 0;
 }

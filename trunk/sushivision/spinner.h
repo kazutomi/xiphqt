@@ -28,16 +28,16 @@
 
 G_BEGIN_DECLS
 
-#define SPINNER_TYPE            (spinner_get_type ())
-#define SPINNER(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), SPINNER_TYPE, Spinner))
-#define SPINNER_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), SPINNER_TYPE, SpinnerClass))
+#define SPINNER_TYPE            (_sv_spinner_get_type ())
+#define SPINNER(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), SPINNER_TYPE, _sv_spinner_t))
+#define SPINNER_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), SPINNER_TYPE, _sv_spinner_class_t))
 #define IS_SPINNER(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SPINNER_TYPE))
 #define IS_SPINNER_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), SPINNER_TYPE))
 
-typedef struct _Spinner       Spinner;
-typedef struct _SpinnerClass  SpinnerClass;
+typedef struct _sv_spinner       _sv_spinner_t;
+typedef struct _sv_spinner_class _sv_spinner_class_t;
 
-struct _Spinner{
+struct _sv_spinner{
   GtkWidget w;
   cairo_t         *wc;
   cairo_surface_t *b[9];
@@ -47,16 +47,16 @@ struct _Spinner{
   struct timeval last;
 };
 
-struct _SpinnerClass{
+struct _sv_spinner_class{
   GtkWidgetClass parent_class;
-  void (*spinner) (Spinner *m);
+  void (*spinner) (_sv_spinner_t *m);
 };
 
-GType     spinner_get_type        (void);
-Spinner  *spinner_new (void);
+GType          _sv_spinner_get_type        (void);
+_sv_spinner_t *_sv_spinner_new (void);
 
 G_END_DECLS
 
 // the widget subclass half
-void spinner_set_busy(Spinner *p);
-void spinner_set_idle(Spinner *p);
+void _sv_spinner_set_busy(_sv_spinner_t *p);
+void _sv_spinner_set_idle(_sv_spinner_t *p);

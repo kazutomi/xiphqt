@@ -21,11 +21,11 @@
 
 
 typedef struct {
-  sushiv_dimension_list_t *dl;
+  sv_dim_list_t *dl;
   GtkWidget *t;
 
   /* one or the other */
-  Slider *scale;
+  _sv_slider_t *scale;
   GtkWidget *menu;
   GtkWidget *entry[3];
 
@@ -35,37 +35,37 @@ typedef struct {
      2: end set
      3: programmatic modification
   */
-  void (*center_callback)(sushiv_dimension_list_t *);
-  void (*bracket_callback)(sushiv_dimension_list_t *);
-} sushiv_dim_widget_t;
+  void (*center_callback)(sv_dim_list_t *);
+  void (*bracket_callback)(sv_dim_list_t *);
+} _sv_dim_widget_t;
 
-struct sushiv_dimension_internal {
+struct _sv_dim_internal {
   long discrete_numerator;
   long discrete_denominator;
-
+  
   int widgets;
-  sushiv_dim_widget_t **widget_list;
+  _sv_dim_widget_t **widget_list;
 };
 
-extern int _sushiv_dimension_scales(sushiv_dimension_t *d,
-				    double lo,
-				    double hi,
-				    int panel_w, int data_w,
-				    int spacing,
-				    char *legend,
-				    scalespace *panel, 
-				    scalespace *data, 
-				    scalespace *iter);
-extern int _sushiv_dimension_scales_from_panel(sushiv_dimension_t *d,
-					       scalespace panel,
-					       int data_w,
-					       scalespace *data, 
-					       scalespace *iter);
+extern int _sv_dim_scales(sv_dim_t *d,
+			  double lo,
+			  double hi,
+			  int panel_w, int data_w,
+			  int spacing,
+			  char *legend,
+			  _sv_scalespace_t *panel, 
+			  _sv_scalespace_t *data, 
+			  _sv_scalespace_t *iter);
+extern int _sv_dim_scales_from_panel(sv_dim_t *d,
+				     _sv_scalespace_t panel,
+				     int data_w,
+				     _sv_scalespace_t *data, 
+				     _sv_scalespace_t *iter);
 
-extern void _sushiv_dimension_set_value(sushiv_dim_widget_t *d, int thumb, double val);
-extern void _sushiv_dim_widget_set_thumb_active(sushiv_dim_widget_t *dw, int thumb, int active);
-extern sushiv_dim_widget_t *_sushiv_new_dimension_widget(sushiv_dimension_list_t *dl,   
-							 void (*center_callback)(sushiv_dimension_list_t *),
-							 void (*bracket_callback)(sushiv_dimension_list_t *));
-extern int _save_dimension(sushiv_dimension_t *d, xmlNodePtr instance);
-extern int _load_dimension(sushiv_dimension_t *d, sushiv_instance_undo_t *u, xmlNodePtr dn, int warn);
+extern int _sv_dim_set_value(_sv_dim_widget_t *d, int thumb, double val);
+extern void _sv_dim_widget_set_thumb_active(_sv_dim_widget_t *dw, int thumb, int active);
+extern _sv_dim_widget_t *_sv_dim_widget_new(sv_dim_list_t *dl,   
+					   void (*center_callback)(sv_dim_list_t *),
+					   void (*bracket_callback)(sv_dim_list_t *));
+extern int _sv_dim_save(sv_dim_t *d, xmlNodePtr instance);
+extern int _sv_dim_load(sv_dim_t *d, _sv_instance_undo_t *u, xmlNodePtr dn, int warn);
