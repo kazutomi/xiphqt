@@ -22,22 +22,22 @@
 #ifndef _GTK_SUCKS_H_
 #define _GTK_SUCKS_H_
 
-extern void gtk_widget_set_sensitive_fixup(GtkWidget *w, gboolean state);
-extern void gtk_widget_remove_events (GtkWidget *widget, gint events);
-extern void gtk_button3_fixup();
-extern void gtk_mutex_fixup();
-extern pthread_mutex_t *gtk_get_mutex();
+extern void _gtk_widget_set_sensitive_fixup(GtkWidget *w, gboolean state);
+extern void _gtk_widget_remove_events (GtkWidget *widget, gint events);
+extern void _gtk_button3_fixup();
+extern void _gtk_mutex_fixup();
+extern pthread_mutex_t *_gtk_get_mutex();
 
-extern GtkWidget *gtk_menu_new_twocol(GtkWidget *bind, 
-				      propmap **items,
-				      void *callback_data);
-extern GtkWidget *gtk_menu_get_item(GtkMenu *m, int pos);
-extern int gtk_menu_item_position(GtkWidget *w);
-extern void gtk_menu_alter_item_label(GtkMenu *m, int pos, char *text);
-extern void gtk_menu_alter_item_right(GtkMenu *m, int pos, char *text);
-extern GtkWidget * gtk_combo_box_new_markup (void);
+extern GtkWidget *_gtk_menu_new_twocol(GtkWidget *bind, 
+				       _sv_propmap_t **items,
+				       void *callback_data);
+extern GtkWidget *_gtk_menu_get_item(GtkMenu *m, int pos);
+extern int _gtk_menu_item_position(GtkWidget *w);
+extern void _gtk_menu_alter_item_label(GtkMenu *m, int pos, char *text);
+extern void _gtk_menu_alter_item_right(GtkMenu *m, int pos, char *text);
+extern GtkWidget * _gtk_combo_box_new_markup (void);
 
-extern void gtk_box_freeze_child (GtkBox *box, GtkWidget *child);
-extern void gtk_box_unfreeze_child (GtkBox *box, GtkWidget *child);
+extern void _gtk_box_freeze_child (GtkBox *box, GtkWidget *child);
+extern void _gtk_box_unfreeze_child (GtkBox *box, GtkWidget *child);
 
 #endif

@@ -58,7 +58,7 @@ clean:
 	rm -f *.o *.d *.d.* *.pc gmon.out $(TARGET) sushivision_* sushi-gtkrc.h
 
 distclean: clean
-	rm -f *~
+	rm -f core core.* *~ 
 
 %.d: %.c
 	$(CC) -M $(CFLAGS) $< > $@.$$$$; sed 's,\($*\)\.o[ :]*,\1.o $@ : ,g' < $@.$$$$ > $@; rm -f $@.$$$$

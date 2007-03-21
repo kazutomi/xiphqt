@@ -33,29 +33,29 @@
 #include "internal.h"
 
 #define LINETYPES 3
-static propmap *line_name[LINETYPES+1] = {
-  &(propmap){"line", 0,          NULL,NULL,NULL},
-  &(propmap){"fat line", 1,      NULL,NULL,NULL},
-  &(propmap){"no line", 5,       NULL,NULL,NULL},
+static _sv_propmap_t *line_name[LINETYPES+1] = {
+  &(_sv_propmap_t){"line", 0,          NULL,NULL,NULL},
+  &(_sv_propmap_t){"fat line", 1,      NULL,NULL,NULL},
+  &(_sv_propmap_t){"no line", 5,       NULL,NULL,NULL},
   NULL
 };
 
 #define POINTTYPES 9
-static propmap *point_name[POINTTYPES+1] = {
-  &(propmap){"dot", 0,             NULL,NULL,NULL},
-  &(propmap){"cross", 1,           NULL,NULL,NULL},
-  &(propmap){"plus", 2,            NULL,NULL,NULL},
-  &(propmap){"open circle", 3,     NULL,NULL,NULL},
-  &(propmap){"open square", 4,     NULL,NULL,NULL},
-  &(propmap){"open triangle", 5,   NULL,NULL,NULL},
-  &(propmap){"solid circle", 6,    NULL,NULL,NULL},
-  &(propmap){"solid square", 7,    NULL,NULL,NULL},
-  &(propmap){"solid triangle", 8,  NULL,NULL,NULL},
+static _sv_propmap_t *point_name[POINTTYPES+1] = {
+  &(_sv_propmap_t){"dot", 0,             NULL,NULL,NULL},
+  &(_sv_propmap_t){"cross", 1,           NULL,NULL,NULL},
+  &(_sv_propmap_t){"plus", 2,            NULL,NULL,NULL},
+  &(_sv_propmap_t){"open circle", 3,     NULL,NULL,NULL},
+  &(_sv_propmap_t){"open square", 4,     NULL,NULL,NULL},
+  &(_sv_propmap_t){"open triangle", 5,   NULL,NULL,NULL},
+  &(_sv_propmap_t){"solid circle", 6,    NULL,NULL,NULL},
+  &(_sv_propmap_t){"solid square", 7,    NULL,NULL,NULL},
+  &(_sv_propmap_t){"solid triangle", 8,  NULL,NULL,NULL},
   NULL
 };
 
-static void clear_xy_data(sushiv_panel_t *p){
-  sushiv_panelxy_t *xy = p->subtype->xy;
+static void _sv_panelxy_clear_data(sv_panel_t *p){
+  _sv_panelxy_t *xy = p->subtype->xy;
   int i;
   
   if(xy->x_vec){
@@ -100,9 +100,9 @@ static void render_checks(cairo_t *c, int w, int h){
 
 // called internally, assumes we hold lock
 // redraws the data, does not compute the data
-static int _sushiv_panelxy_remap(sushiv_panel_t *p, cairo_t *c){
-  sushiv_panelxy_t *xy = p->subtype->xy;
-  Plot *plot = PLOT(p->private->graph);
+static int _sv_panelxy_remap(sv_panel_t *p, cairo_t *c){
+  _sv_panelxy_t *xy = p->subtype->xy;
+  _sv_plot_t *plot = PLOT(p->private->graph);
 
   int plot_serialno = p->private->plot_serialno;
   int map_serialno = p->private->map_serialno;
@@ -111,11 +111,11 @@ static int _sushiv_panelxy_remap(sushiv_panel_t *p, cairo_t *c){
   int ph = plot->y.pixels;
   int ret = 1;
 
-  scalespace sx = xy->x;
-  scalespace sy = xy->y;
-  scalespace data_v = xy->data_v;
-  scalespace px = plot->x;
-  scalespace py = plot->y;
+  _sv_scalespace_t sx = xy->x;
+  _sv_scalespace_t sy = xy->y;
+  _sv_scalespace_t data_v = xy->data_v;
+  _sv_scalespace_t px = plot->x;
+  _sv_scalespace_t py = plot->y;
     
   /* do the panel and plot scales match?  If not, redraw the plot
      scales */
@@ -127,21 +127,21 @@ static int _sushiv_panelxy_remap(sushiv_panel_t *p, cairo_t *c){
     plot->y = sy;
     
     gdk_threads_leave();
-    plot_draw_scales(plot);
+    _sv_plot_draw_scales(plot);
   }else
     gdk_threads_leave();
 
   /* blank frame to selected bg */
   switch(p->private->bg_type){
-  case SUSHIV_BG_WHITE:
+  case SV_BG_WHITE:
     cairo_set_source_rgb (c, 1.,1.,1.);
     cairo_paint(c);
     break;
-  case SUSHIV_BG_BLACK:
+  case SV_BG_BLACK:
     cairo_set_source_rgb (c, 0,0,0);
     cairo_paint(c);
     break;
-  case SUSHIV_BG_CHECKS:
+  case SV_BG_CHECKS:
     render_checks(c,pw,ph);
     break;
   }
@@ -157,12 +157,12 @@ static int _sushiv_panelxy_remap(sushiv_panel_t *p, cairo_t *c){
     
     /* by objective */
     for(j=0;j<p->objectives;j++){
-      if(xy->x_vec[j] && xy->y_vec[j] && !mapping_inactive_p(xy->mappings+j)){
+      if(xy->x_vec[j] && xy->y_vec[j] && !_sv_mapping_inactive_p(xy->mappings+j)){
 	
-	double alpha = slider_get_value(xy->alpha_scale[j],0);
+	double alpha = _sv_slider_get_value(xy->alpha_scale[j],0);
 	int linetype = xy->linetype[j];
 	int pointtype = xy->pointtype[j];
-	u_int32_t color = mapping_calc(xy->mappings+j,1.,0);
+	u_int32_t color = _sv_mapping_calc(xy->mappings+j,1.,0);
       
 	// copy the list data over
 	memcpy(xv,xy->x_vec[j],dw*sizeof(*xv));
@@ -176,10 +176,10 @@ static int _sushiv_panelxy_remap(sushiv_panel_t *p, cairo_t *c){
 
 	  /* map data vector bin to x pixel location in the plot */
 	  if(!isnan(xpixel))
-	    xpixel = scalespace_pixel(&sx,xpixel)+.5;
+	    xpixel = _sv_scalespace_pixel(&sx,xpixel)+.5;
 	  
 	  if(!isnan(ypixel))
-	    ypixel = scalespace_pixel(&sy,ypixel)+.5;
+	    ypixel = _sv_scalespace_pixel(&sy,ypixel)+.5;
 	  
 	  xv[xi] = xpixel;
 	  yv[xi] = ypixel;
@@ -271,7 +271,7 @@ static int _sushiv_panelxy_remap(sushiv_panel_t *p, cairo_t *c){
 	      }
 
 	      if(pointtype>0){
-		if(p->private->bg_type == SUSHIV_BG_WHITE)
+		if(p->private->bg_type == SV_BG_WHITE)
 		  cairo_set_source_rgba(c,0.,0.,0.,alpha);
 		else
 		  cairo_set_source_rgba(c,1.,1.,1.,alpha);
@@ -297,8 +297,8 @@ static int _sushiv_panelxy_remap(sushiv_panel_t *p, cairo_t *c){
   return ret;
 }
 
-static void sushiv_panelxy_print(sushiv_panel_t *p, cairo_t *c, int w, int h){
-  Plot *plot = PLOT(p->private->graph);
+static void _sv_panelxy_print(sv_panel_t *p, cairo_t *c, int w, int h){
+  _sv_plot_t *plot = PLOT(p->private->graph);
   double pw = p->private->graph->allocation.width;
   double ph = p->private->graph->allocation.height;
   double scale;
@@ -313,19 +313,19 @@ static void sushiv_panelxy_print(sushiv_panel_t *p, cairo_t *c, int w, int h){
   cairo_matrix_scale(&m,scale,scale);
   cairo_set_matrix(c,&m);
 
-  plot_print(plot, c, ph*scale, (void(*)(void *, cairo_t *))_sushiv_panelxy_remap, p);
+  _sv_plot_print(plot, c, ph*scale, (void(*)(void *, cairo_t *))_sv_panelxy_remap, p);
 }
 
-static void update_legend(sushiv_panel_t *p){  
-  sushiv_panelxy_t *xy = p->subtype->xy;
-  Plot *plot = PLOT(p->private->graph);
+static void _sv_panelxy_update_legend(sv_panel_t *p){  
+  _sv_panelxy_t *xy = p->subtype->xy;
+  _sv_plot_t *plot = PLOT(p->private->graph);
 
   gdk_threads_enter ();
 
   if(plot){
     int i,depth=0;
     char buffer[320];
-    plot_legend_clear(plot);
+    _sv_plot_legend_clear(plot);
 
     if(3-xy->x.decimal_exponent > depth) depth = 3-xy->x.decimal_exponent;
     if(3-xy->y.decimal_exponent > depth) depth = 3-xy->y.decimal_exponent;
@@ -338,7 +338,7 @@ static void update_legend(sushiv_panel_t *p){
 	       legend,
 	       depth,
 	       plot->selx);
-      plot_legend_add(plot,buffer);
+      _sv_plot_legend_add(plot,buffer);
 
       legend = xy->y_scale->legend;
       if(!strcmp(legend,""))legend = "Y";
@@ -346,16 +346,16 @@ static void update_legend(sushiv_panel_t *p){
 	       legend,
 	       depth,
 	       plot->sely);
-      plot_legend_add(plot,buffer);
+      _sv_plot_legend_add(plot,buffer);
 
       if(p->dimensions)
-	plot_legend_add(plot,NULL);
+	_sv_plot_legend_add(plot,NULL);
     }
 
     // add each dimension to the legend
     if(-xy->data_v.decimal_exponent > depth) depth = -xy->data_v.decimal_exponent;
     for(i=0;i<p->dimensions;i++){
-      sushiv_dimension_t *d = p->dimension_list[i].d;
+      sv_dim_t *d = p->dimension_list[i].d;
 
       if(d != xy->x_d ||
 	 plot->cross_active){
@@ -364,7 +364,7 @@ static void update_legend(sushiv_panel_t *p){
 		 p->dimension_list[i].d->name,
 		 depth,
 		 p->dimension_list[i].d->val);
-	plot_legend_add(plot,buffer);
+	_sv_plot_legend_add(plot,buffer);
       }
     }
 
@@ -373,8 +373,8 @@ static void update_legend(sushiv_panel_t *p){
 }
 
 // call with lock
-static double _determine_rerender_metric(sushiv_panel_t *p, int off){
-  sushiv_panelxy_t *xy = p->subtype->xy;
+static double _sv_panelxy_zoom_metric(sv_panel_t *p, int off){
+  _sv_panelxy_t *xy = p->subtype->xy;
   int on = p->objectives;
   double pw = p->private->graph->allocation.width;
   double ph = p->private->graph->allocation.height;
@@ -382,14 +382,14 @@ static double _determine_rerender_metric(sushiv_panel_t *p, int off){
 
   // if this is a discrete data set, size/view changes cannot affect
   // the data spacing; that's set by the discrete scale
-  if(xy->x_d->type != SUSHIV_DIM_CONTINUOUS) return -1;
+  if(xy->x_d->type != SV_DIM_CONTINUOUS) return -1;
 
-  double xscale = scalespace_pixel(&xy->x,1.) - scalespace_pixel(&xy->x,0.);
-  double yscale = scalespace_pixel(&xy->y,1.) - scalespace_pixel(&xy->y,0.);
-  double lox = scalespace_value(&xy->x,0.);
-  double loy = scalespace_value(&xy->y,ph);
-  double hix = scalespace_value(&xy->x,pw);
-  double hiy = scalespace_value(&xy->y,0.);
+  double xscale = _sv_scalespace_pixel(&xy->x,1.) - _sv_scalespace_pixel(&xy->x,0.);
+  double yscale = _sv_scalespace_pixel(&xy->y,1.) - _sv_scalespace_pixel(&xy->y,0.);
+  double lox = _sv_scalespace_value(&xy->x,0.);
+  double loy = _sv_scalespace_value(&xy->y,ph);
+  double hix = _sv_scalespace_value(&xy->x,pw);
+  double hiy = _sv_scalespace_value(&xy->y,0.);
 
   // by plane, look at the spacing between visible x/y points
   double max = -1;
@@ -431,17 +431,16 @@ static double _determine_rerender_metric(sushiv_panel_t *p, int off){
 }
 
 // call while locked
-static int _mark_recompute_by_metric(sushiv_panel_t *p, int recursing){
+static int _sv_panelxy_mark_recompute_by_metric(sv_panel_t *p, int recursing){
   if(!p->private->realized) return 0;
 
-  sushiv_panelxy_t *xy = p->subtype->xy;
+  _sv_panelxy_t *xy = p->subtype->xy;
 
   // discrete val dimensions are immune to rerender by metric changes
-  if(xy->x_d->type != SUSHIV_DIM_CONTINUOUS) return 0; 
+  if(xy->x_d->type != SV_DIM_CONTINUOUS) return 0; 
 
   double target = (double) p->private->oversample_d / p->private->oversample_n;
-  double full =  _determine_rerender_metric(p, 1);
-    double half =  _determine_rerender_metric(p, 2);
+  double full = _sv_panelxy_zoom_metric(p, 1);
 
   if(full > target){
     // we want to halve the sample spacing.  But first make sure we're
@@ -453,9 +452,11 @@ static int _mark_recompute_by_metric(sushiv_panel_t *p, int recursing){
 
     xy->req_zoom = xy->curr_zoom+1;
 
-    _sushiv_panel_dirty_plot(p); // trigger recompute
+    _sv_panel_dirty_plot(p); // trigger recompute
     return 1;
   } else {
+
+    double half = _sv_panelxy_zoom_metric(p, 2);
     if(half < target){
       // we want to double the sample spacing.  But first make sure we're
       // not looping due to uncertainties in the metric.
@@ -466,7 +467,7 @@ static int _mark_recompute_by_metric(sushiv_panel_t *p, int recursing){
 
       xy->req_zoom = xy->curr_zoom-1;
       
-      _sushiv_panel_dirty_plot(p); // trigger recompute
+      _sv_panel_dirty_plot(p); // trigger recompute
       return 1;
       
     }
@@ -476,114 +477,114 @@ static int _mark_recompute_by_metric(sushiv_panel_t *p, int recursing){
   return 0;
 }
 
-static void mapchange_callback_xy(GtkWidget *w,gpointer in){
-  sushiv_objective_list_t *optr = (sushiv_objective_list_t *)in;
-  sushiv_panel_t *p = optr->p;
-  sushiv_panelxy_t *xy = p->subtype->xy;
+static void _sv_panelxy_mapchange_callback(GtkWidget *w,gpointer in){
+  sv_obj_list_t *optr = (sv_obj_list_t *)in;
+  sv_panel_t *p = optr->p;
+  _sv_panelxy_t *xy = p->subtype->xy;
   int onum = optr - p->objective_list;
-  Plot *plot = PLOT(p->private->graph);
+  _sv_plot_t *plot = PLOT(p->private->graph);
 
-  _sushiv_undo_push(p->sushi);
-  _sushiv_undo_suspend(p->sushi);
+  _sv_undo_push(p->sushi);
+  _sv_undo_suspend(p->sushi);
 
   // update colormap
   // oh, the wasteful
   int pos = gtk_combo_box_get_active(GTK_COMBO_BOX(w));
-  solid_set_func(&xy->mappings[onum],pos);
-  slider_set_gradient(xy->alpha_scale[onum], &xy->mappings[onum]);
+  _sv_solid_set_func(&xy->mappings[onum],pos);
+  _sv_slider_set_gradient(xy->alpha_scale[onum], &xy->mappings[onum]);
   
   // if the mapping has become inactive and the crosshairs point to
   // this objective, inactivate the crosshairs.
   if(xy->cross_objnum == onum)
     plot->cross_active = 0;
 
-  _sushiv_panel_dirty_map(p);
-  _sushiv_panel_dirty_legend(p);
+  _sv_panel_dirty_map(p);
+  _sv_panel_dirty_legend(p);
 
-  _sushiv_undo_resume(p->sushi);
+  _sv_undo_resume(p->sushi);
 }
 
-static void alpha_callback_xy(void * in, int buttonstate){
-  sushiv_objective_list_t *optr = (sushiv_objective_list_t *)in;
-  sushiv_panel_t *p = optr->p;
+static void _sv_panelxy_alpha_callback(void * in, int buttonstate){
+  sv_obj_list_t *optr = (sv_obj_list_t *)in;
+  sv_panel_t *p = optr->p;
 
   if(buttonstate == 0){
-    _sushiv_undo_push(p->sushi);
-    _sushiv_undo_suspend(p->sushi);
+    _sv_undo_push(p->sushi);
+    _sv_undo_suspend(p->sushi);
   }
 
-  _sushiv_panel_dirty_map(p);
-  _sushiv_panel_dirty_legend(p);
+  _sv_panel_dirty_map(p);
+  _sv_panel_dirty_legend(p);
 
   if(buttonstate == 2)
-    _sushiv_undo_resume(p->sushi);
+    _sv_undo_resume(p->sushi);
 }
 
-static void linetype_callback_xy(GtkWidget *w,gpointer in){
-  sushiv_objective_list_t *optr = (sushiv_objective_list_t *)in;
-  sushiv_panel_t *p = optr->p;
-  sushiv_panelxy_t *xy = p->subtype->xy;
+static void _sv_panelxy_linetype_callback(GtkWidget *w,gpointer in){
+  sv_obj_list_t *optr = (sv_obj_list_t *)in;
+  sv_panel_t *p = optr->p;
+  _sv_panelxy_t *xy = p->subtype->xy;
   int onum = optr - p->objective_list;
   
-  _sushiv_undo_push(p->sushi);
-  _sushiv_undo_suspend(p->sushi);
+  _sv_undo_push(p->sushi);
+  _sv_undo_suspend(p->sushi);
 
   // update colormap
   int pos = gtk_combo_box_get_active(GTK_COMBO_BOX(w));
   xy->linetype[onum] = line_name[pos]->value;
 
-  _sushiv_panel_dirty_map(p);
-  _sushiv_undo_resume(p->sushi);
+  _sv_panel_dirty_map(p);
+  _sv_undo_resume(p->sushi);
 }
 
-static void pointtype_callback_xy(GtkWidget *w,gpointer in){
-  sushiv_objective_list_t *optr = (sushiv_objective_list_t *)in;
-  sushiv_panel_t *p = optr->p;
-  sushiv_panelxy_t *xy = p->subtype->xy;
+static void _sv_panelxy_pointtype_callback(GtkWidget *w,gpointer in){
+  sv_obj_list_t *optr = (sv_obj_list_t *)in;
+  sv_panel_t *p = optr->p;
+  _sv_panelxy_t *xy = p->subtype->xy;
   int onum = optr - p->objective_list;
   
-  _sushiv_undo_push(p->sushi);
-  _sushiv_undo_suspend(p->sushi);
+  _sv_undo_push(p->sushi);
+  _sv_undo_suspend(p->sushi);
 
   // update colormap
   int pos = gtk_combo_box_get_active(GTK_COMBO_BOX(w));
   xy->pointtype[onum] = point_name[pos]->value;
 
-  _sushiv_panel_dirty_map(p);
-  _sushiv_undo_resume(p->sushi);
+  _sv_panel_dirty_map(p);
+  _sv_undo_resume(p->sushi);
 }
 
-static void map_callback_xy(void *in,int buttonstate){
-  sushiv_panel_t *p = (sushiv_panel_t *)in;
-  sushiv_panelxy_t *xy = p->subtype->xy;
-  Plot *plot = PLOT(p->private->graph);
+static void _sv_panelxy_map_callback(void *in,int buttonstate){
+  sv_panel_t *p = (sv_panel_t *)in;
+  _sv_panelxy_t *xy = p->subtype->xy;
+  _sv_plot_t *plot = PLOT(p->private->graph);
   
   if(buttonstate == 0){
-    _sushiv_undo_push(p->sushi);
-    _sushiv_undo_suspend(p->sushi);
+    _sv_undo_push(p->sushi);
+    _sv_undo_suspend(p->sushi);
   }
 
   // has new bracketing changed the plot range scale?
-  if(xy->x_bracket[0] != slider_get_value(xy->x_slider,0) ||
-     xy->x_bracket[1] != slider_get_value(xy->x_slider,1) ||
-     xy->y_bracket[0] != slider_get_value(xy->y_slider,0) ||
-     xy->y_bracket[1] != slider_get_value(xy->y_slider,1)){
+  if(xy->x_bracket[0] != _sv_slider_get_value(xy->x_slider,0) ||
+     xy->x_bracket[1] != _sv_slider_get_value(xy->x_slider,1) ||
+     xy->y_bracket[0] != _sv_slider_get_value(xy->y_slider,0) ||
+     xy->y_bracket[1] != _sv_slider_get_value(xy->y_slider,1)){
 
     int w = plot->w.allocation.width;
     int h = plot->w.allocation.height;
 
-    xy->x_bracket[0] = slider_get_value(xy->x_slider,0);
-    xy->x_bracket[1] = slider_get_value(xy->x_slider,1);
-    xy->y_bracket[0] = slider_get_value(xy->y_slider,0);
-    xy->y_bracket[1] = slider_get_value(xy->y_slider,1);
+    xy->x_bracket[0] = _sv_slider_get_value(xy->x_slider,0);
+    xy->x_bracket[1] = _sv_slider_get_value(xy->x_slider,1);
+    xy->y_bracket[0] = _sv_slider_get_value(xy->y_slider,0);
+    xy->y_bracket[1] = _sv_slider_get_value(xy->y_slider,1);
     
   
-    xy->x = scalespace_linear(xy->x_bracket[0],
+    xy->x = _sv_scalespace_linear(xy->x_bracket[0],
 			      xy->x_bracket[1],
 			      w,
 			      plot->scalespacing,
 			      xy->x_scale->legend);
-    xy->y = scalespace_linear(xy->y_bracket[1],
+    xy->y = _sv_scalespace_linear(xy->y_bracket[1],
 			      xy->y_bracket[0],
 			      h,
 			      plot->scalespacing,
@@ -591,17 +592,17 @@ static void map_callback_xy(void *in,int buttonstate){
     
     // a map view size change may trigger a progressive up/down render,
     // but will at least cause a remap
-    _mark_recompute_by_metric(p,0);
-    _sushiv_panel_dirty_map(p);
+    _sv_panelxy_mark_recompute_by_metric(p,0);
+    _sv_panel_dirty_map(p);
 
   }
 
   if(buttonstate == 2)
-    _sushiv_undo_resume(p->sushi);
+    _sv_undo_resume(p->sushi);
 }
 
-static void update_dim_sel(sushiv_panel_t *p){
-  sushiv_panelxy_t *xy = p->subtype->xy;
+static void _sv_panelxy_update_xsel(sv_panel_t *p){
+  _sv_panelxy_t *xy = p->subtype->xy;
   int i;
 
   // enable/disable dimension slider thumbs
@@ -618,25 +619,25 @@ static void update_dim_sel(sushiv_panel_t *p){
     if(xy->dim_xb[i] &&
        gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(xy->dim_xb[i]))){
       // make all thumbs visible 
-      _sushiv_dim_widget_set_thumb_active(p->private->dim_scales[i],0,1);
-      _sushiv_dim_widget_set_thumb_active(p->private->dim_scales[i],2,1);
+      _sv_dim_widget_set_thumb_active(p->private->dim_scales[i],0,1);
+      _sv_dim_widget_set_thumb_active(p->private->dim_scales[i],2,1);
     }else{
       // make bracket thumbs invisible */
-      _sushiv_dim_widget_set_thumb_active(p->private->dim_scales[i],0,0);
-      _sushiv_dim_widget_set_thumb_active(p->private->dim_scales[i],2,0);
+      _sv_dim_widget_set_thumb_active(p->private->dim_scales[i],0,0);
+      _sv_dim_widget_set_thumb_active(p->private->dim_scales[i],2,0);
     }
   } 
 }
 
-static void compute_xy(sushiv_panel_t *p, 
-		       int serialno,
-		       int x_d, 
-		       scalespace sxi,
-		       double *dim_vals,
-		       char *prefilled,
-		       double **x_vec,
-		       double **y_vec,
-		       _sushiv_bythread_cache_xy *c){
+static void _sv_panelxy_compute_line(sv_panel_t *p, 
+				     int serialno,
+				     int x_d, 
+				     _sv_scalespace_t sxi,
+				     double *dim_vals,
+				     char *prefilled,
+				     double **x_vec,
+				     double **y_vec,
+				     _sv_bythread_cache_xy_t *c){
 
   int i,j,fn=p->sushi->functions;
   int w = sxi.pixels;
@@ -644,7 +645,7 @@ static void compute_xy(sushiv_panel_t *p,
   /* by x */
   for(j=0;j<w;j++){
     if(!prefilled[j]){
-      dim_vals[x_d] = scalespace_value(&sxi,j);
+      dim_vals[x_d] = _sv_scalespace_value(&sxi,j);
       
       /* by function */
       for(i=0;i<fn;i++){
@@ -658,11 +659,11 @@ static void compute_xy(sushiv_panel_t *p,
       /* xy panels currently only care about the XY output values; in the
 	 future, Z and others may also be relevant */
       for(i=0;i<p->objectives;i++){
-	sushiv_objective_t *o = p->objective_list[i].o;
+	sv_obj_t *o = p->objective_list[i].o;
 	int xoff = o->private->x_fout;
 	int yoff = o->private->y_fout;
-	sushiv_function_t *xf = o->private->x_func;
-	sushiv_function_t *yf = o->private->y_func;
+	sv_func_t *xf = o->private->x_func;
+	sv_func_t *yf = o->private->y_func;
 	x_vec[i][j] = c->fout[xf->number][xoff];
 	y_vec[i][j] = c->fout[yf->number][yoff];
       }
@@ -676,47 +677,47 @@ static void compute_xy(sushiv_panel_t *p,
 	return;
       }
 
-      spinner_set_busy(p->private->spinner);
+      _sv_spinner_set_busy(p->private->spinner);
       gdk_threads_leave();
     }
   }
 }
 
 // call with lock
-void _mark_recompute_xy(sushiv_panel_t *p){
+void _sv_panelxy_mark_recompute(sv_panel_t *p){
   if(!p->private->realized) return;
 
-  sushiv_panelxy_t *xy = p->subtype->xy;
+  _sv_panelxy_t *xy = p->subtype->xy;
   xy->req_zoom = xy->prev_zoom = xy->curr_zoom;
-  _sushiv_panel_dirty_plot(p);
+  _sv_panel_dirty_plot(p);
 }
 
-static void recompute_callback_xy(void *ptr){
-  sushiv_panel_t *p = (sushiv_panel_t *)ptr;
-  sushiv_panelxy_t *xy = p->subtype->xy;
-  Plot *plot = PLOT(p->private->graph);
+static void _sv_panelxy_recompute_callback(void *ptr){
+  sv_panel_t *p = (sv_panel_t *)ptr;
+  _sv_panelxy_t *xy = p->subtype->xy;
+  _sv_plot_t *plot = PLOT(p->private->graph);
   int w = plot->w.allocation.width;
   int h = plot->w.allocation.height;
 
-  plot->x = xy->x = scalespace_linear(xy->x_bracket[0],
+  plot->x = xy->x = _sv_scalespace_linear(xy->x_bracket[0],
 				      xy->x_bracket[1],
 				      w,
 				      plot->scalespacing,
 				      xy->x_scale->legend);
-  plot->y =  xy->y = scalespace_linear(xy->y_bracket[1],
+  plot->y =  xy->y = _sv_scalespace_linear(xy->y_bracket[1],
 				       xy->y_bracket[0],
 				       h,
 				       plot->scalespacing,
 				       xy->y_scale->legend);
 
   // always recompute, but also update zoom
-  if(!_mark_recompute_by_metric(p,0))
-    _mark_recompute_xy(p);
+  if(!_sv_panelxy_mark_recompute_by_metric(p,0))
+    _sv_panelxy_mark_recompute(p);
 }
 
-static void update_crosshair(sushiv_panel_t *p){
-  sushiv_panelxy_t *xy = p->subtype->xy;
-  Plot *plot = PLOT(p->private->graph);
+static void _sv_panelxy_update_crosshair(sv_panel_t *p){
+  _sv_panelxy_t *xy = p->subtype->xy;
+  _sv_plot_t *plot = PLOT(p->private->graph);
 
 
   if(!p->private->realized)return;
@@ -733,78 +734,78 @@ static void update_crosshair(sushiv_panel_t *p){
   if(!xy->x_vec[xy->cross_objnum] || !xy->y_vec[xy->cross_objnum])return;
 
   // get bin number of dim value
-  int x_bin = rint(scalespace_pixel(&xy->data_v, xy->x_d->val));
+  int x_bin = rint(_sv_scalespace_pixel(&xy->data_v, xy->x_d->val));
   double x = xy->x_vec[xy->cross_objnum][x_bin];
   double y = xy->y_vec[xy->cross_objnum][x_bin];
 
-  plot_set_crosshairs(plot,x,y);
-  sushiv_dimension_set_value(p->sushi,xy->x_d->number,1,scalespace_value(&xy->data_v, x_bin));
+  _sv_plot_set_crosshairs(plot,x,y);
+  sv_dim_set_value(xy->x_d,1,_sv_scalespace_value(&xy->data_v, x_bin));
 
-  _sushiv_panel_dirty_legend(p);
+  _sv_panel_dirty_legend(p);
 }
 
-static void center_callback_xy(sushiv_dimension_list_t *dptr){
-  sushiv_dimension_t *d = dptr->d;
-  sushiv_panel_t *p = dptr->p;
-  sushiv_panelxy_t *xy = p->subtype->xy;
+static void _sv_panelxy_center_callback(sv_dim_list_t *dptr){
+  sv_dim_t *d = dptr->d;
+  sv_panel_t *p = dptr->p;
+  _sv_panelxy_t *xy = p->subtype->xy;
   int axisp = (d == xy->x_d);
 
   if(!axisp){
     // mid slider of a non-axis dimension changed, rerender
-    clear_xy_data(p);
-    _mark_recompute_xy(p);
+    _sv_panelxy_clear_data(p);
+    _sv_panelxy_mark_recompute(p);
   }else{
     // mid slider of an axis dimension changed, move crosshairs
-    update_crosshair(p);
+    _sv_panelxy_update_crosshair(p);
   }
 }
 
-static void bracket_callback_xy(sushiv_dimension_list_t *dptr){
-  sushiv_dimension_t *d = dptr->d;
-  sushiv_panel_t *p = dptr->p;
-  sushiv_panelxy_t *xy = p->subtype->xy;
+static void _sv_panelxy_bracket_callback(sv_dim_list_t *dptr){
+  sv_dim_t *d = dptr->d;
+  sv_panel_t *p = dptr->p;
+  _sv_panelxy_t *xy = p->subtype->xy;
   int axisp = (d == xy->x_d);
     
   // always need to recompute, may also need to update zoom
 
   if(axisp)
-    if(!_mark_recompute_by_metric(p,0))
-      _mark_recompute_xy(p);
+    if(!_sv_panelxy_mark_recompute_by_metric(p,0))
+      _sv_panelxy_mark_recompute(p);
   
 }
 
-static void dimchange_callback_xy(GtkWidget *button,gpointer in){
-  sushiv_panel_t *p = (sushiv_panel_t *)in;
-  sushiv_panelxy_t *xy = p->subtype->xy;
+static void _sv_panelxy_dimchange_callback(GtkWidget *button,gpointer in){
+  sv_panel_t *p = (sv_panel_t *)in;
+  _sv_panelxy_t *xy = p->subtype->xy;
 
   if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button))){
 
-    _sushiv_undo_push(p->sushi);
-    _sushiv_undo_suspend(p->sushi);
+    _sv_undo_push(p->sushi);
+    _sv_undo_suspend(p->sushi);
 
-    update_dim_sel(p);
+    _sv_panelxy_update_xsel(p);
     
     // clear data vectors so that none of the data is reused.
-    clear_xy_data(p);
+    _sv_panelxy_clear_data(p);
 
-    update_crosshair(p); // which is to say, deactivate it
-    plot_unset_box(PLOT(p->private->graph));
+    _sv_panelxy_update_crosshair(p); // which is to say, deactivate it
+    _sv_plot_unset_box(PLOT(p->private->graph));
 
     xy->curr_zoom = xy->prev_zoom = xy->req_zoom = 0;
-    _mark_recompute_xy(p);
+    _sv_panelxy_mark_recompute(p);
 
-    _sushiv_undo_resume(p->sushi);
+    _sv_undo_resume(p->sushi);
   }
 }
 
-static void crosshair_callback(sushiv_panel_t *p){
-  sushiv_panelxy_t *xy = p->subtype->xy;
+static void _sv_panelxy_crosshair_callback(sv_panel_t *p){
+  _sv_panelxy_t *xy = p->subtype->xy;
   double x=PLOT(p->private->graph)->selx;
   double y=PLOT(p->private->graph)->sely;
   int i,j;
 
-  _sushiv_undo_push(p->sushi);
-  _sushiv_undo_suspend(p->sushi);
+  _sv_undo_push(p->sushi);
+  _sv_undo_suspend(p->sushi);
   
   // snap crosshairs to the closest plotted x/y point
   int besto=-1;
@@ -812,7 +813,7 @@ static void crosshair_callback(sushiv_panel_t *p){
   double bestdist;
 
   for(i=0;i<p->objectives;i++){
-    if(xy->x_vec[i] && xy->y_vec[i] && !mapping_inactive_p(xy->mappings+i)){
+    if(xy->x_vec[i] && xy->y_vec[i] && !_sv_mapping_inactive_p(xy->mappings+i)){
       for(j=0;j<xy->data_v.pixels;j++){
 	double xd = x - xy->x_vec[i][j];
 	double yd = y - xy->y_vec[i][j];
@@ -834,46 +835,46 @@ static void crosshair_callback(sushiv_panel_t *p){
     PLOT(p->private->graph)->sely = y;
     xy->cross_objnum = besto;
     
-    double dimval = scalespace_value(&xy->data_v, bestbin);
-    sushiv_dimension_set_value(p->sushi,xy->x_d->number,1,dimval);  
+    double dimval = _sv_scalespace_value(&xy->data_v, bestbin);
+    sv_dim_set_value(xy->x_d,1,dimval);  
   }
   
   p->private->oldbox_active = 0;
-  _sushiv_undo_resume(p->sushi);
-  _sushiv_panel_dirty_legend(p);
+  _sv_undo_resume(p->sushi);
+  _sv_panel_dirty_legend(p);
 
 }
 
-static void box_callback(void *in, int state){
-  sushiv_panel_t *p = (sushiv_panel_t *)in;
-  sushiv_panelxy_t *xy = p->subtype->xy;
-  Plot *plot = PLOT(p->private->graph);
+static void _sv_panelxy_box_callback(void *in, int state){
+  sv_panel_t *p = (sv_panel_t *)in;
+  _sv_panelxy_t *xy = p->subtype->xy;
+  _sv_plot_t *plot = PLOT(p->private->graph);
   
   switch(state){
   case 0: // box set
-    _sushiv_undo_push(p->sushi);
-    plot_box_vals(plot,xy->oldbox);
+    _sv_undo_push(p->sushi);
+    _sv_plot_box_vals(plot,xy->oldbox);
     p->private->oldbox_active = plot->box_active;
     break;
   case 1: // box activate
-    _sushiv_undo_push(p->sushi);
-    _sushiv_undo_suspend(p->sushi);
+    _sv_undo_push(p->sushi);
+    _sv_undo_suspend(p->sushi);
 
-    crosshair_callback(p);
+    _sv_panelxy_crosshair_callback(p);
 
-    slider_set_value(xy->x_slider,0,xy->oldbox[0]);
-    slider_set_value(xy->x_slider,1,xy->oldbox[1]);
-    slider_set_value(xy->y_slider,0,xy->oldbox[2]);
-    slider_set_value(xy->y_slider,1,xy->oldbox[3]);
+    _sv_slider_set_value(xy->x_slider,0,xy->oldbox[0]);
+    _sv_slider_set_value(xy->x_slider,1,xy->oldbox[1]);
+    _sv_slider_set_value(xy->y_slider,0,xy->oldbox[2]);
+    _sv_slider_set_value(xy->y_slider,1,xy->oldbox[3]);
 
     p->private->oldbox_active = 0;
-    _sushiv_undo_resume(p->sushi);
+    _sv_undo_resume(p->sushi);
     break;
   }
-  _sushiv_panel_update_menus(p);
+  _sv_panel_update_menus(p);
 }
 
-void _maintain_cache_xy(sushiv_panel_t *p, _sushiv_bythread_cache_xy *c, int w){
+void _sv_panelxy_maintain_cache(sv_panel_t *p, _sv_bythread_cache_xy_t *c, int w){
   
   /* toplevel initialization */
   if(c->fout == 0){
@@ -883,7 +884,7 @@ void _maintain_cache_xy(sushiv_panel_t *p, _sushiv_bythread_cache_xy *c, int w){
     c->call = calloc(p->sushi->functions,sizeof(*c->call));
     c->fout = calloc(p->sushi->functions,sizeof(*c->fout));
     for(i=0;i<p->objectives;i++){
-      sushiv_objective_t *o = p->objective_list[i].o;
+      sv_obj_t *o = p->objective_list[i].o;
       for(j=0;j<o->outputs;j++)
 	c->call[o->function_map[j]]=
 	  p->sushi->function_list[o->function_map[j]]->callback;
@@ -899,19 +900,19 @@ void _maintain_cache_xy(sushiv_panel_t *p, _sushiv_bythread_cache_xy *c, int w){
 }
 
 // subtype entry point for plot remaps; lock held
-int _sushiv_panelxy_map_redraw(sushiv_panel_t *p, _sushiv_bythread_cache *c){
+int _sv_panelxy_map_redraw(sv_panel_t *p, _sv_bythread_cache_t *c){
   if(p->private->map_progress_count)return 0;
   p->private->map_progress_count++;
 
   // render to a temp surface so that we can release the lock occasionally
-  Plot *plot = PLOT(p->private->graph);
+  _sv_plot_t *plot = PLOT(p->private->graph);
   cairo_surface_t *back = plot->back;
   cairo_surface_t *cs = cairo_surface_create_similar(back,CAIRO_CONTENT_COLOR,
 						     cairo_image_surface_get_width(back),
 						     cairo_image_surface_get_height(back));
   cairo_t *ct = cairo_create(cs);
   
-  if(_sushiv_panelxy_remap(p,ct) == -1){ // returns -1 on abort
+  if(_sv_panelxy_remap(p,ct) == -1){ // returns -1 on abort
     cairo_destroy(ct);
     cairo_surface_destroy(cs);
   }else{
@@ -920,46 +921,46 @@ int _sushiv_panelxy_map_redraw(sushiv_panel_t *p, _sushiv_bythread_cache *c){
     plot->back = cs;
     cairo_destroy(ct);
     
-    _sushiv_panel_clean_map(p);
-    plot_expose_request(plot);
+    _sv_panel_clean_map(p);
+    _sv_plot_expose_request(plot);
   }
 
   return 1;
 }
 
 // subtype entry point for legend redraws; lock held
-int _sushiv_panelxy_legend_redraw(sushiv_panel_t *p){
-  Plot *plot = PLOT(p->private->graph);
+int _sv_panelxy_legend_redraw(sv_panel_t *p){
+  _sv_plot_t *plot = PLOT(p->private->graph);
   
   if(p->private->legend_progress_count)return 0;
   p->private->legend_progress_count++;
-  update_legend(p);
-  _sushiv_panel_clean_legend(p);
+  _sv_panelxy_update_legend(p);
+  _sv_panel_clean_legend(p);
 
   gdk_threads_leave();
-  plot_draw_scales(plot);
+  _sv_plot_draw_scales(plot);
   gdk_threads_enter();
 
-  plot_expose_request(plot);
+  _sv_plot_expose_request(plot);
   return 1;
 }
 
 // dim scales are autozoomed; we want the initial values to quantize
 // to the same grid regardless of zoom level or starting bracket as
 // well as only encompass the desired range
-static int _generate_dimscale_xy(sushiv_dimension_t *d, int zoom, scalespace *v, scalespace *i){
-  scalespace x;
+static int _sv_panelxy_generate_dimscale(sv_dim_t *d, int zoom, _sv_scalespace_t *v, _sv_scalespace_t *i){
+  _sv_scalespace_t x;
   
-  if(d->type != SUSHIV_DIM_CONTINUOUS){
+  if(d->type != SV_DIM_CONTINUOUS){
     // non-continuous is unaffected by zoom
-    _sushiv_dimension_scales(d, d->bracket[0], d->bracket[1], 2, 2, 1, d->name, &x, v, i);
+    _sv_dim_scales(d, d->bracket[0], d->bracket[1], 2, 2, 1, d->name, &x, v, i);
     return 0;
   }
 
   // continuous dimensions are, in some ways, handled like a discrete dim.
   double lo = d->scale->val_list[0];
   double hi = d->scale->val_list[d->scale->vals-1];
-  _sushiv_dimension_scales(d, lo, hi, 2, 2, 1, d->name, &x, v, i);
+  _sv_dim_scales(d, lo, hi, 2, 2, 1, d->name, &x, v, i);
 
   // this is iterative, not direct computation, so that at each level
   // we have a small adjustment (as opposed to one huge adjustment at
@@ -969,27 +970,27 @@ static int _generate_dimscale_xy(sushiv_dimension_t *d, int zoom, scalespace *v,
 
   while (sofar<zoom){
     // double scale resolution
-    scalespace_double(v);
-    scalespace_double(i);
+    _sv_scalespace_double(v);
+    _sv_scalespace_double(i);
 
     if(v->massaged)return 1;
 
     // clip scales down the the desired part of the range
     // an assumption: v->step_pixel == 1 because spacing is 1.  We can
     // increment first_val instead of first_pixel.
-    while(scalespace_value(v,1)*neg < d->bracket[0]*neg){
+    while(_sv_scalespace_value(v,1)*neg < d->bracket[0]*neg){
       v->first_val += v->step_val*neg;
       i->first_val += v->step_val*neg;
       v->pixels--;
       i->pixels--;
     }
 
-    while(v->pixels>2 &&  scalespace_value(v,v->pixels-1)*neg > d->bracket[1]*neg){
+    while(v->pixels>2 &&  _sv_scalespace_value(v,v->pixels-1)*neg > d->bracket[1]*neg){
       v->pixels--;
       i->pixels--;
     }
 
-    while(scalespace_value(v,v->pixels-1)*neg < d->bracket[1]*neg){
+    while(_sv_scalespace_value(v,v->pixels-1)*neg < d->bracket[1]*neg){
       v->pixels++;
       i->pixels++;
     }
@@ -1000,9 +1001,9 @@ static int _generate_dimscale_xy(sushiv_dimension_t *d, int zoom, scalespace *v,
   return 0;
 }
 
-static void _rescale_xy(scalespace *old, double **oldx, double **oldy,
-			scalespace *new, double **newx, double **newy,
-			char *prefilled, int objectives){
+static void _sv_panelxy_rescale(_sv_scalespace_t *old, double **oldx, double **oldy,
+				_sv_scalespace_t *new, double **newx, double **newy,
+				char *prefilled, int objectives){
 
   if(!oldx || !oldy)return;
 
@@ -1014,9 +1015,9 @@ static void _rescale_xy(scalespace *old, double **oldx, double **oldy,
     if(!oldx[j] || !oldy[j])
       return;
 
-  long num = scalespace_scalenum(new,old);
-  long den = scalespace_scaleden(new,old);
-  long oldpos = -scalespace_scalebin(new,old);
+  long num = _sv_scalespace_scalenum(new,old);
+  long den = _sv_scalespace_scaleden(new,old);
+  long oldpos = -_sv_scalespace_scalebin(new,old);
   long newpos = 0;
 
   while(newi < new->pixels && oldi < old->pixels){
@@ -1047,10 +1048,10 @@ static void _rescale_xy(scalespace *old, double **oldx, double **oldy,
 }
 
 // subtype entry point for recomputation; lock held
-int _sushiv_panelxy_compute(sushiv_panel_t *p,
-			    _sushiv_bythread_cache *c){
-  sushiv_panelxy_t *xy = p->subtype->xy;
-  Plot *plot;
+int _sv_panelxy_compute(sv_panel_t *p,
+			_sv_bythread_cache_t *c){
+  _sv_panelxy_t *xy = p->subtype->xy;
+  _sv_plot_t *plot;
   
   int dw,w,h,i,d;
   int serialno;
@@ -1058,7 +1059,7 @@ int _sushiv_panelxy_compute(sushiv_panel_t *p,
   int prev_zoom = xy->curr_zoom;
   int zoom = xy->req_zoom;
 
-  scalespace sxv = xy->data_v;
+  _sv_scalespace_t sxv = xy->data_v;
   plot = PLOT(p->private->graph);
 
   dw = sxv.pixels;
@@ -1081,9 +1082,9 @@ int _sushiv_panelxy_compute(sushiv_panel_t *p,
   x_d = xy->x_d->number;
 
   /* generate a new data_v/data_i */
-  scalespace newv;
-  scalespace newi;
-  _generate_dimscale_xy(xy->x_d, zoom, &newv, &newi);
+  _sv_scalespace_t newv;
+  _sv_scalespace_t newi;
+  _sv_panelxy_generate_dimscale(xy->x_d, zoom, &newv, &newi);
   dw = newv.pixels;
 
   /* compare new/old data scales; pre-fill the data vec with values
@@ -1095,16 +1096,16 @@ int _sushiv_panelxy_compute(sushiv_panel_t *p,
     new_x_vec[i] = calloc(dw,sizeof(**new_x_vec));
     new_y_vec[i] = calloc(dw,sizeof(**new_y_vec));
   }
-  _rescale_xy(&sxv,xy->x_vec,xy->y_vec,   
-	      &newv,new_x_vec,new_y_vec,prefilled, p->objectives);
+  _sv_panelxy_rescale(&sxv,xy->x_vec,xy->y_vec,   
+		      &newv,new_x_vec,new_y_vec,prefilled, p->objectives);
 
   // Initialize local dimension value array
   for(i=0;i<p->sushi->dimensions;i++){
-    sushiv_dimension_t *dim = p->sushi->dimension_list[i];
+    sv_dim_t *dim = p->sushi->dimension_list[i];
     dim_vals[i]=dim->val;
   }
 
-  _maintain_cache_xy(p,&c->xy,dw);
+  _sv_panelxy_maintain_cache(p,&c->xy,dw);
 
   plot->x = xy->x;
   plot->y = xy->y;
@@ -1112,14 +1113,14 @@ int _sushiv_panelxy_compute(sushiv_panel_t *p,
   /* unlock for computation */
   gdk_threads_leave ();
 
-  compute_xy(p, serialno, x_d, newi, dim_vals, prefilled, new_x_vec, new_y_vec, &c->xy);
+  _sv_panelxy_compute_line(p, serialno, x_d, newi, dim_vals, prefilled, new_x_vec, new_y_vec, &c->xy);
   
   gdk_threads_enter ();
 
   if(serialno == p->private->plot_serialno){
     // replace data vectors
     p->private->plot_serialno++;
-    clear_xy_data(p);
+    _sv_panelxy_clear_data(p);
     if(!xy->x_vec)
       xy->x_vec = calloc(p->objectives, sizeof(*xy->x_vec));
     if(!xy->y_vec)
@@ -1136,12 +1137,12 @@ int _sushiv_panelxy_compute(sushiv_panel_t *p,
     xy->prev_zoom = prev_zoom;
     xy->curr_zoom = zoom;
 
-    _sushiv_panel_clean_plot(p);
-    if(!_mark_recompute_by_metric(p, 1)){
-      _sushiv_panel_dirty_legend(p);
-      _sushiv_panel_dirty_map(p);
+    _sv_panel_clean_plot(p);
+    if(!_sv_panelxy_mark_recompute_by_metric(p, 1)){
+      _sv_panel_dirty_legend(p);
+      _sv_panel_dirty_map(p);
     }else{
-      _sushiv_panel_dirty_map_throttled(p);
+      _sv_panel_dirty_map_throttled(p);
     }
 
   }else{
@@ -1155,9 +1156,9 @@ int _sushiv_panelxy_compute(sushiv_panel_t *p,
   return 1;
 }
 
-static void panelxy_undo_log(sushiv_panel_undo_t *u, sushiv_panel_t *p){
-  sushiv_panelxy_t *xy = p->subtype->xy;
-  Plot *plot = PLOT(p->private->graph);
+static void _sv_panelxy_undo_log(_sv_panel_undo_t *u, sv_panel_t *p){
+  _sv_panelxy_t *xy = p->subtype->xy;
+  _sv_plot_t *plot = PLOT(p->private->graph);
   int i;
 
   // alloc fields as necessary
@@ -1171,19 +1172,19 @@ static void panelxy_undo_log(sushiv_panel_undo_t *u, sushiv_panel_t *p){
     u->scale_vals[2] =  calloc(p->objectives,sizeof(**u->scale_vals));
 
   // populate undo
-  u->scale_vals[0][0] = slider_get_value(xy->x_slider,0);
-  u->scale_vals[1][0] = slider_get_value(xy->x_slider,1);
+  u->scale_vals[0][0] = _sv_slider_get_value(xy->x_slider,0);
+  u->scale_vals[1][0] = _sv_slider_get_value(xy->x_slider,1);
   u->scale_vals[0][1] = plot->selx;
   u->scale_vals[1][1] = plot->sely;
-  u->scale_vals[0][2] = slider_get_value(xy->y_slider,0);
-  u->scale_vals[1][2] = slider_get_value(xy->y_slider,1);
+  u->scale_vals[0][2] = _sv_slider_get_value(xy->y_slider,0);
+  u->scale_vals[1][2] = _sv_slider_get_value(xy->y_slider,1);
 
   for(i=0;i<p->objectives;i++){
     u->mappings[i] = 
       (xy->mappings[i].mapnum<<24) | 
       (xy->linetype[i]<<16) |
       (xy->pointtype[i]<<8);
-    u->scale_vals[2][i] = slider_get_value(xy->alpha_scale[i],0);
+    u->scale_vals[2][i] = _sv_slider_get_value(xy->alpha_scale[i],0);
   }
 
   u->x_d = xy->x_dnum;
@@ -1196,56 +1197,56 @@ static void panelxy_undo_log(sushiv_panel_undo_t *u, sushiv_panel_t *p){
   
 }
 
-static void panelxy_undo_restore(sushiv_panel_undo_t *u, sushiv_panel_t *p){
-  sushiv_panelxy_t *xy = p->subtype->xy;
-  Plot *plot = PLOT(p->private->graph);
+static void _sv_panelxy_undo_restore(_sv_panel_undo_t *u, sv_panel_t *p){
+  _sv_panelxy_t *xy = p->subtype->xy;
+  _sv_plot_t *plot = PLOT(p->private->graph);
 
   int i;
   
   // go in through widgets
    
-  slider_set_value(xy->x_slider,0,u->scale_vals[0][0]);
-  slider_set_value(xy->x_slider,1,u->scale_vals[1][0]);
+  _sv_slider_set_value(xy->x_slider,0,u->scale_vals[0][0]);
+  _sv_slider_set_value(xy->x_slider,1,u->scale_vals[1][0]);
   plot->selx = u->scale_vals[0][1];
   plot->sely = u->scale_vals[1][1];
-  slider_set_value(xy->y_slider,0,u->scale_vals[0][2]);
-  slider_set_value(xy->y_slider,1,u->scale_vals[1][2]);
+  _sv_slider_set_value(xy->y_slider,0,u->scale_vals[0][2]);
+  _sv_slider_set_value(xy->y_slider,1,u->scale_vals[1][2]);
 
   for(i=0;i<p->objectives;i++){
     gtk_combo_box_set_active(GTK_COMBO_BOX(xy->map_pulldowns[i]), (u->mappings[i]>>24)&0xff );
     gtk_combo_box_set_active(GTK_COMBO_BOX(xy->line_pulldowns[i]), (u->mappings[i]>>16)&0xff );
     gtk_combo_box_set_active(GTK_COMBO_BOX(xy->point_pulldowns[i]), (u->mappings[i]>>8)&0xff );
-    slider_set_value(xy->alpha_scale[i],0,u->scale_vals[2][i]);
+    _sv_slider_set_value(xy->alpha_scale[i],0,u->scale_vals[2][i]);
   }
 
   if(xy->dim_xb && u->x_d<p->dimensions && xy->dim_xb[u->x_d])
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(xy->dim_xb[u->x_d]),TRUE);
 
-  update_dim_sel(p);
-  crosshair_callback(p);
+  _sv_panelxy_update_xsel(p);
+  _sv_panelxy_crosshair_callback(p);
 
   if(u->box_active){
     xy->oldbox[0] = u->box[0];
     xy->oldbox[1] = u->box[1];
     xy->oldbox[2] = u->box[2];
     xy->oldbox[3] = u->box[3];
-    plot_box_set(plot,u->box);
+    _sv_plot_box_set(plot,u->box);
     p->private->oldbox_active = 1;
   }else{
-    plot_unset_box(plot);
+    _sv_plot_unset_box(plot);
     p->private->oldbox_active = 0;
   }
 }
 
-void _sushiv_realize_panelxy(sushiv_panel_t *p){
-  sushiv_panelxy_t *xy = p->subtype->xy;
+static void _sv_panelxy_realize(sv_panel_t *p){
+  _sv_panelxy_t *xy = p->subtype->xy;
   char buffer[160];
   int i;
-  _sushiv_undo_suspend(p->sushi);
+  _sv_undo_suspend(p->sushi);
 
   p->private->toplevel = gtk_window_new (GTK_WINDOW_TOPLEVEL);
   g_signal_connect_swapped (G_OBJECT (p->private->toplevel), "delete-event",
-			    G_CALLBACK (_sushiv_clean_exit), (void *)SIGINT);
+			    G_CALLBACK (_sv_clean_exit), (void *)SIGINT);
 
   // add border to sides with hbox/padding 
   GtkWidget *borderbox =  gtk_hbox_new(0,0);
@@ -1269,9 +1270,9 @@ void _sushiv_realize_panelxy(sushiv_panel_t *p){
     p->private->plotbox = xy->graph_table;
     gtk_box_pack_start(GTK_BOX(p->private->topbox), p->private->plotbox, 1,1,2);
 
-    p->private->graph = GTK_WIDGET(plot_new(recompute_callback_xy,p,
-					    (void *)(void *)crosshair_callback,p,
-					    box_callback,p,0));
+    p->private->graph = GTK_WIDGET(_sv_plot_new(_sv_panelxy_recompute_callback,p,
+					    (void *)(void *)_sv_panelxy_crosshair_callback,p,
+					    _sv_panelxy_box_callback,p,0));
     
     gtk_table_attach(GTK_TABLE(xy->graph_table),p->private->graph,1,3,0,2,
 		     GTK_EXPAND|GTK_FILL,GTK_EXPAND|GTK_FILL,0,1);
@@ -1284,10 +1285,10 @@ void _sushiv_realize_panelxy(sushiv_panel_t *p){
     GtkWidget **sly = calloc(2,sizeof(*sly));
 
     /* the range slices/slider */ 
-    slx[0] = slice_new(map_callback_xy,p);
-    slx[1] = slice_new(map_callback_xy,p);
-    sly[0] = slice_new(map_callback_xy,p);
-    sly[1] = slice_new(map_callback_xy,p);
+    slx[0] = _sv_slice_new(_sv_panelxy_map_callback,p);
+    slx[1] = _sv_slice_new(_sv_panelxy_map_callback,p);
+    sly[0] = _sv_slice_new(_sv_panelxy_map_callback,p);
+    sly[1] = _sv_slice_new(_sv_panelxy_map_callback,p);
 
     gtk_table_attach(GTK_TABLE(xy->graph_table),slx[0],1,2,2,3,
 		     GTK_EXPAND|GTK_FILL,0,0,0);
@@ -1299,25 +1300,25 @@ void _sushiv_realize_panelxy(sushiv_panel_t *p){
 		     GTK_SHRINK,GTK_EXPAND|GTK_FILL,0,0);
     gtk_table_set_col_spacing(GTK_TABLE(xy->graph_table),0,4);
 
-    xy->x_slider = slider_new((Slice **)slx,2,
+    xy->x_slider = _sv_slider_new((_sv_slice_t **)slx,2,
 			      xy->x_scale->label_list,
 			      xy->x_scale->val_list,
 			      xy->x_scale->vals,0);
-    xy->y_slider = slider_new((Slice **)sly,2,
+    xy->y_slider = _sv_slider_new((_sv_slice_t **)sly,2,
 			      xy->y_scale->label_list,
 			      xy->y_scale->val_list,
 			      xy->y_scale->vals,
-			      SLIDER_FLAG_VERTICAL);
+			      _SV_SLIDER_FLAG_VERTICAL);
     
     int lo = xy->x_scale->val_list[0];
     int hi = xy->x_scale->val_list[xy->x_scale->vals-1];
-    slice_thumb_set((Slice *)slx[0],lo);
-    slice_thumb_set((Slice *)slx[1],hi);
+    _sv_slice_thumb_set((_sv_slice_t *)slx[0],lo);
+    _sv_slice_thumb_set((_sv_slice_t *)slx[1],hi);
 
     lo = xy->y_scale->val_list[0];
     hi = xy->y_scale->val_list[xy->y_scale->vals-1];
-    slice_thumb_set((Slice *)sly[0],lo);
-    slice_thumb_set((Slice *)sly[1],hi);
+    _sv_slice_thumb_set((_sv_slice_t *)sly[0],lo);
+    _sv_slice_thumb_set((_sv_slice_t *)sly[1],hi);
   }
 
   /* obj box */
@@ -1335,7 +1336,7 @@ void _sushiv_realize_panelxy(sushiv_panel_t *p){
     xy->alpha_scale = calloc(p->objectives,sizeof(*xy->alpha_scale));
 
     for(i=0;i<p->objectives;i++){
-      sushiv_objective_t *o = p->objective_list[i].o;
+      sv_obj_t *o = p->objective_list[i].o;
       
       /* label */
       GtkWidget *label = gtk_label_new(o->name);
@@ -1345,23 +1346,23 @@ void _sushiv_realize_panelxy(sushiv_panel_t *p){
       
       /* mapping pulldown */
       {
-	GtkWidget *menu=gtk_combo_box_new_markup();
+	GtkWidget *menu=_gtk_combo_box_new_markup();
 	int j;
-	for(j=0;j<num_solids();j++){
-	  if(strcmp(solid_name(j),"inactive"))
-	    snprintf(buffer,sizeof(buffer),"<span foreground=\"%s\">%s</span>",solid_name(j),solid_name(j));
+	for(j=0;j<_sv_solid_names();j++){
+	  if(strcmp(_sv_solid_name(j),"inactive"))
+	    snprintf(buffer,sizeof(buffer),"<span foreground=\"%s\">%s</span>",_sv_solid_name(j),_sv_solid_name(j));
 	  else
-	    snprintf(buffer,sizeof(buffer),"%s",solid_name(j));
+	    snprintf(buffer,sizeof(buffer),"%s",_sv_solid_name(j));
 	  
 	  gtk_combo_box_append_text (GTK_COMBO_BOX (menu), buffer);
 	}
 	gtk_combo_box_set_active(GTK_COMBO_BOX(menu),0);
 	g_signal_connect (G_OBJECT (menu), "changed",
-			  G_CALLBACK (mapchange_callback_xy), p->objective_list+i);
+			  G_CALLBACK (_sv_panelxy_mapchange_callback), p->objective_list+i);
 	gtk_table_attach(GTK_TABLE(xy->obj_table),menu,1,2,i,i+1,
 			 GTK_SHRINK,GTK_SHRINK,5,0);
 	xy->map_pulldowns[i] = menu;
-	solid_setup(&xy->mappings[i],0.,1.,0);
+	_sv_solid_setup(&xy->mappings[i],0.,1.,0);
       }
       
       /* line pulldown */
@@ -1372,7 +1373,7 @@ void _sushiv_realize_panelxy(sushiv_panel_t *p){
 	  gtk_combo_box_append_text (GTK_COMBO_BOX (menu), line_name[j]->left);
 	gtk_combo_box_set_active(GTK_COMBO_BOX(menu),0);
 	g_signal_connect (G_OBJECT (menu), "changed",
-			  G_CALLBACK (linetype_callback_xy), p->objective_list+i);
+			  G_CALLBACK (_sv_panelxy_linetype_callback), p->objective_list+i);
 	gtk_table_attach(GTK_TABLE(xy->obj_table),menu,2,3,i,i+1,
 			 GTK_SHRINK,GTK_SHRINK,5,0);
 	xy->line_pulldowns[i] = menu;
@@ -1386,7 +1387,7 @@ void _sushiv_realize_panelxy(sushiv_panel_t *p){
 	  gtk_combo_box_append_text (GTK_COMBO_BOX (menu), point_name[j]->left);
 	gtk_combo_box_set_active(GTK_COMBO_BOX(menu),0);
 	g_signal_connect (G_OBJECT (menu), "changed",
-			  G_CALLBACK (pointtype_callback_xy), p->objective_list+i);
+			  G_CALLBACK (_sv_panelxy_pointtype_callback), p->objective_list+i);
 	gtk_table_attach(GTK_TABLE(xy->obj_table),menu,3,4,i,i+1,
 			 GTK_SHRINK,GTK_SHRINK,5,0);
 	xy->point_pulldowns[i] = menu;
@@ -1395,18 +1396,18 @@ void _sushiv_realize_panelxy(sushiv_panel_t *p){
       /* alpha slider */
       {
 	GtkWidget **sl = calloc(1, sizeof(*sl));
-	sl[0] = slice_new(alpha_callback_xy,p->objective_list+i);
+	sl[0] = _sv_slice_new(_sv_panelxy_alpha_callback,p->objective_list+i);
 	
 	gtk_table_attach(GTK_TABLE(xy->obj_table),sl[0],4,5,i,i+1,
 			 GTK_EXPAND|GTK_FILL,0,0,0);
 	
-	xy->alpha_scale[i] = slider_new((Slice **)sl,1,
+	xy->alpha_scale[i] = _sv_slider_new((_sv_slice_t **)sl,1,
 					(char *[]){"transparent","solid"},
 					(double []){0.,1.},
 					2,0);
 	
-	slider_set_gradient(xy->alpha_scale[i], &xy->mappings[i]);
-	slice_thumb_set((Slice *)sl[0],1.);
+	_sv_slider_set_gradient(xy->alpha_scale[i], &xy->mappings[i]);
+	_sv_slice_thumb_set((_sv_slice_t *)sl[0],1.);
 	
       }
     }
@@ -1422,7 +1423,7 @@ void _sushiv_realize_panelxy(sushiv_panel_t *p){
     GtkWidget *first_x = NULL;
     
     for(i=0;i<p->dimensions;i++){
-      sushiv_dimension_t *d = p->dimension_list[i].d;
+      sv_dim_t *d = p->dimension_list[i].d;
       
       /* label */
       GtkWidget *label = gtk_label_new(d->name);
@@ -1431,7 +1432,7 @@ void _sushiv_realize_panelxy(sushiv_panel_t *p){
 		       GTK_FILL,0,5,0);
       
       /* x radio buttons */
-      if(!(d->flags & SUSHIV_DIM_NO_X)){
+      if(!(d->flags & SV_DIM_NO_X)){
 	if(first_x)
 	  xy->dim_xb[i] = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(first_x),"X");
 	else{
@@ -1443,7 +1444,7 @@ void _sushiv_realize_panelxy(sushiv_panel_t *p){
       }
       
       p->private->dim_scales[i] = 
-	_sushiv_new_dimension_widget(p->dimension_list+i,center_callback_xy,bracket_callback_xy);
+	_sv_dim_widget_new(p->dimension_list+i,_sv_panelxy_center_callback,_sv_panelxy_bracket_callback);
       
       gtk_table_attach(GTK_TABLE(xy->dim_table),
 		       GTK_WIDGET(p->private->dim_scales[i]->t),
@@ -1455,9 +1456,9 @@ void _sushiv_realize_panelxy(sushiv_panel_t *p){
     for(i=0;i<p->dimensions;i++)
       if(xy->dim_xb[i])
 	g_signal_connect (G_OBJECT (xy->dim_xb[i]), "toggled",
-			  G_CALLBACK (dimchange_callback_xy), p);
+			  G_CALLBACK (_sv_panelxy_dimchange_callback), p);
     
-    update_dim_sel(p);
+    _sv_panelxy_update_xsel(p);
   }
   
   gtk_widget_realize(p->private->toplevel);
@@ -1465,13 +1466,13 @@ void _sushiv_realize_panelxy(sushiv_panel_t *p){
   gtk_widget_realize(GTK_WIDGET(p->private->spinner));
   gtk_widget_show_all(p->private->toplevel);
 
-  _sushiv_undo_resume(p->sushi);
+  _sv_undo_resume(p->sushi);
 }
 
 
-static int _save_panelxy(sushiv_panel_t *p, xmlNodePtr pn){  
-  sushiv_panelxy_t *xy = p->subtype->xy;
-  Plot *plot = PLOT(p->private->graph);
+static int _sv_panelxy_save(sv_panel_t *p, xmlNodePtr pn){  
+  _sv_panelxy_t *xy = p->subtype->xy;
+  _sv_plot_t *plot = PLOT(p->private->graph);
   int ret=0,i;
 
   xmlNodePtr n;
@@ -1481,64 +1482,64 @@ static int _save_panelxy(sushiv_panel_t *p, xmlNodePtr pn){
   // box
   if(p->private->oldbox_active){
     xmlNodePtr boxn = xmlNewChild(pn, NULL, (xmlChar *) "box", NULL);
-    xmlNewPropF(boxn, "x1", xy->oldbox[0]);
-    xmlNewPropF(boxn, "x2", xy->oldbox[1]);
-    xmlNewPropF(boxn, "y1", xy->oldbox[2]);
-    xmlNewPropF(boxn, "y2", xy->oldbox[3]);
+    _xmlNewPropF(boxn, "x1", xy->oldbox[0]);
+    _xmlNewPropF(boxn, "x2", xy->oldbox[1]);
+    _xmlNewPropF(boxn, "y1", xy->oldbox[2]);
+    _xmlNewPropF(boxn, "y2", xy->oldbox[3]);
   }
   
   // objective map settings
   for(i=0;i<p->objectives;i++){
-    sushiv_objective_t *o = p->objective_list[i].o;
+    sv_obj_t *o = p->objective_list[i].o;
 
     xmlNodePtr on = xmlNewChild(pn, NULL, (xmlChar *) "objective", NULL);
-    xmlNewPropI(on, "position", i);
-    xmlNewPropI(on, "number", o->number);
-    xmlNewPropS(on, "name", o->name);
-    xmlNewPropS(on, "type", o->output_types);
+    _xmlNewPropI(on, "position", i);
+    _xmlNewPropI(on, "number", o->number);
+    _xmlNewPropS(on, "name", o->name);
+    _xmlNewPropS(on, "type", o->output_types);
     
     // right now Y is the only type; the below is Y-specific
 
     n = xmlNewChild(on, NULL, (xmlChar *) "y-map", NULL);
-    xmlNewMapProp(n, "color", solid_map(), xy->mappings[i].mapnum);
-    xmlNewMapProp(n, "line", line_name, xy->linetype[i]);    
-    xmlNewMapProp(n, "point", point_name, xy->pointtype[i]);    
-    xmlNewPropF(n, "alpha", slider_get_value(xy->alpha_scale[i],0));
+    _xmlNewMapProp(n, "color", _sv_solid_map(), xy->mappings[i].mapnum);
+    _xmlNewMapProp(n, "line", line_name, xy->linetype[i]);    
+    _xmlNewMapProp(n, "point", point_name, xy->pointtype[i]);    
+    _xmlNewPropF(n, "alpha", _sv_slider_get_value(xy->alpha_scale[i],0));
   }
 
   // x/y scale
   n = xmlNewChild(pn, NULL, (xmlChar *) "range", NULL);
-  xmlNewPropF(n, "x-low-bracket", slider_get_value(xy->x_slider,0));
-  xmlNewPropF(n, "x-high-bracket", slider_get_value(xy->x_slider,1));
-  xmlNewPropF(n, "y-low-bracket", slider_get_value(xy->y_slider,0));
-  xmlNewPropF(n, "y-high-bracket", slider_get_value(xy->y_slider,1));
-  xmlNewPropF(n, "x-cross", plot->selx);
-  xmlNewPropF(n, "y-cross", plot->sely);
+  _xmlNewPropF(n, "x-low-bracket", _sv_slider_get_value(xy->x_slider,0));
+  _xmlNewPropF(n, "x-high-bracket", _sv_slider_get_value(xy->x_slider,1));
+  _xmlNewPropF(n, "y-low-bracket", _sv_slider_get_value(xy->y_slider,0));
+  _xmlNewPropF(n, "y-high-bracket", _sv_slider_get_value(xy->y_slider,1));
+  _xmlNewPropF(n, "x-cross", plot->selx);
+  _xmlNewPropF(n, "y-cross", plot->sely);
 
   // x/y dim selection
   n = xmlNewChild(pn, NULL, (xmlChar *) "axes", NULL);
-  xmlNewPropI(n, "xpos", xy->x_dnum);
+  _xmlNewPropI(n, "xpos", xy->x_dnum);
 
   return ret;
 }
 
-int _load_panelxy(sushiv_panel_t *p,
-		  sushiv_panel_undo_t *u,
-		  xmlNodePtr pn,
-		  int warn){
+int _sv_panelxy_load(sv_panel_t *p,
+		     _sv_panel_undo_t *u,
+		     xmlNodePtr pn,
+		     int warn){
   int i;
 
   // check type
-  xmlCheckPropS(pn,"type","xy", "Panel %d type mismatch in save file.",p->number,&warn);
+  _xmlCheckPropS(pn,"type","xy", "Panel %d type mismatch in save file.",p->number,&warn);
   
   // box
   u->box_active = 0;
-  xmlGetChildPropFPreserve(pn, "box", "x1", &u->box[0]);
-  xmlGetChildPropFPreserve(pn, "box", "x2", &u->box[1]);
-  xmlGetChildPropFPreserve(pn, "box", "y1", &u->box[2]);
-  xmlGetChildPropFPreserve(pn, "box", "y2", &u->box[3]);
+  _xmlGetChildPropFPreserve(pn, "box", "x1", &u->box[0]);
+  _xmlGetChildPropFPreserve(pn, "box", "x2", &u->box[1]);
+  _xmlGetChildPropFPreserve(pn, "box", "y1", &u->box[2]);
+  _xmlGetChildPropFPreserve(pn, "box", "y2", &u->box[3]);
 
-  xmlNodePtr n = xmlGetChildS(pn, "box", NULL, NULL);
+  xmlNodePtr n = _xmlGetChildS(pn, "box", NULL, NULL);
   if(n){
     u->box_active = 1;
     xmlFree(n);
@@ -1546,15 +1547,15 @@ int _load_panelxy(sushiv_panel_t *p,
   
   // objective map settings
   for(i=0;i<p->objectives;i++){
-    sushiv_objective_t *o = p->objective_list[i].o;
-    xmlNodePtr on = xmlGetChildI(pn, "objective", "position", i);
+    sv_obj_t *o = p->objective_list[i].o;
+    xmlNodePtr on = _xmlGetChildI(pn, "objective", "position", i);
     if(!on){
-      first_load_warning(&warn);
+      _sv_first_load_warning(&warn);
       fprintf(stderr,"No save data found for panel %d objective \"%s\".\n",p->number, o->name);
     }else{
       // check name, type
-      xmlCheckPropS(on,"name",o->name, "Objectve position %d name mismatch in save file.",i,&warn);
-      xmlCheckPropS(on,"type",o->output_types, "Objectve position %d type mismatch in save file.",i,&warn);
+      _xmlCheckPropS(on,"name",o->name, "Objectve position %d name mismatch in save file.",i,&warn);
+      _xmlCheckPropS(on,"type",o->output_types, "Objectve position %d type mismatch in save file.",i,&warn);
       
       // right now Y is the only type; the below is Y-specific
       // load maptype, values
@@ -1562,69 +1563,67 @@ int _load_panelxy(sushiv_panel_t *p,
       int line = (u->mappings[i]>>16)&0xff;
       int point = (u->mappings[i]>>8)&0xff;
 
-      xmlGetChildMapPreserve(on, "y-map", "color", solid_map(), &color,
+      _xmlGetChildMapPreserve(on, "y-map", "color", _sv_solid_map(), &color,
 		     "Panel %d objective unknown mapping setting", p->number, &warn);
-      xmlGetChildMapPreserve(on, "y-map", "line", line_name, &line,
+      _xmlGetChildMapPreserve(on, "y-map", "line", line_name, &line,
 		     "Panel %d objective unknown mapping setting", p->number, &warn);
-      xmlGetChildMapPreserve(on, "y-map", "point", point_name, &point,
+      _xmlGetChildMapPreserve(on, "y-map", "point", point_name, &point,
 		     "Panel %d objective unknown mapping setting", p->number, &warn);
-      xmlGetChildPropF(on, "y-map", "alpha", &u->scale_vals[2][i]);
+      _xmlGetChildPropF(on, "y-map", "alpha", &u->scale_vals[2][i]);
 
       u->mappings[i] = (color<<24) | (line<<16) | (point<<8);
 
       xmlFreeNode(on);
     }
   }
-
-  xmlGetChildPropFPreserve(pn, "range", "x-low-bracket", &u->scale_vals[0][0]);
-  xmlGetChildPropFPreserve(pn, "range", "x-high-bracket", &u->scale_vals[1][0]);
-  xmlGetChildPropFPreserve(pn, "range", "y-low-bracket", &u->scale_vals[0][2]);
-  xmlGetChildPropFPreserve(pn, "range", "y-high-bracket", &u->scale_vals[1][2]);
-  xmlGetChildPropFPreserve(pn, "range", "x-cross", &u->scale_vals[0][1]);
-  xmlGetChildPropF(pn, "range", "y-cross", &u->scale_vals[1][1]);
+  
+  _xmlGetChildPropFPreserve(pn, "range", "x-low-bracket", &u->scale_vals[0][0]);
+  _xmlGetChildPropFPreserve(pn, "range", "x-high-bracket", &u->scale_vals[1][0]);
+  _xmlGetChildPropFPreserve(pn, "range", "y-low-bracket", &u->scale_vals[0][2]);
+  _xmlGetChildPropFPreserve(pn, "range", "y-high-bracket", &u->scale_vals[1][2]);
+  _xmlGetChildPropFPreserve(pn, "range", "x-cross", &u->scale_vals[0][1]);
+  _xmlGetChildPropF(pn, "range", "y-cross", &u->scale_vals[1][1]);
 
   // x/y dim selection
-  xmlGetChildPropI(pn, "axes", "xpos", &u->x_d);
+  _xmlGetChildPropI(pn, "axes", "xpos", &u->x_d);
 
   return warn;
 }
 
-int sushiv_new_panel_xy(sushiv_instance_t *s,
-			int number,
-			const char *name,
-			sushiv_scale_t *xscale,
-			sushiv_scale_t *yscale,
-			int *objectives,
-			int *dimensions,	
-			unsigned flags){
+sv_panel_t *sv_panel_new_xy(sv_instance_t *s,
+			    int number,
+			    char *name,
+			    sv_scale_t *xscale,
+			    sv_scale_t *yscale,
+			    sv_obj_t **objectives,
+			    sv_dim_t **dimensions,	
+			    unsigned flags){
 
-  int ret = _sushiv_new_panel(s,number,name,objectives,dimensions,flags);
-  sushiv_panel_t *p;
-  sushiv_panelxy_t *xy;
+  sv_panel_t *p = _sv_panel_new(s,number,name,objectives,dimensions,flags);
+  _sv_panelxy_t *xy;
 
-  if(ret<0)return ret;
-  p = s->panel_list[number];
+  if(!p)return NULL;
   xy = calloc(1, sizeof(*xy));
   p->subtype = calloc(1, sizeof(*p->subtype));
 
   p->subtype->xy = xy;
-  p->type = SUSHIV_PANEL_XY;
-  xy->x_scale = xscale;
-  xy->y_scale = yscale;
-  p->private->bg_type = SUSHIV_BG_WHITE;
+  p->type = SV_PANEL_XY;
+  xy->x_scale = (sv_scale_t *)xscale;
+  xy->y_scale = (sv_scale_t *)yscale;
+  p->private->bg_type = SV_BG_WHITE;
 
-  p->private->realize = _sushiv_realize_panelxy;
-  p->private->map_action = _sushiv_panelxy_map_redraw;
-  p->private->legend_action = _sushiv_panelxy_legend_redraw;
-  p->private->compute_action = _sushiv_panelxy_compute;
-  p->private->request_compute = _mark_recompute_xy;
-  p->private->crosshair_action = crosshair_callback;
-  p->private->print_action = sushiv_panelxy_print;
-  p->private->save_action = _save_panelxy;
-  p->private->load_action = _load_panelxy;
+  p->private->realize = _sv_panelxy_realize;
+  p->private->map_action = _sv_panelxy_map_redraw;
+  p->private->legend_action = _sv_panelxy_legend_redraw;
+  p->private->compute_action = _sv_panelxy_compute;
+  p->private->request_compute = _sv_panelxy_mark_recompute;
+  p->private->crosshair_action = _sv_panelxy_crosshair_callback;
+  p->private->print_action = _sv_panelxy_print;
+  p->private->save_action = _sv_panelxy_save;
+  p->private->load_action = _sv_panelxy_load;
 
-  p->private->undo_log = panelxy_undo_log;
-  p->private->undo_restore = panelxy_undo_restore;
+  p->private->undo_log = _sv_panelxy_undo_log;
+  p->private->undo_restore = _sv_panelxy_undo_restore;
   p->private->def_oversample_n = p->private->oversample_n = 1;
   p->private->def_oversample_d = p->private->oversample_d = 8;
   

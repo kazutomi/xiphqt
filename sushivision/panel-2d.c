@@ -35,16 +35,16 @@
 /* helper functions for performing progressive computation */
 
 // enter unlocked
-static void compute_one_data_line_2d(sushiv_panel_t *p, 
+static void _sv_panel2d_compute_line(sv_panel_t *p, 
 				     int serialno,
 				     int dw,
 				     int y,
 				     int x_d, 
-				     scalespace sxi,
+				     _sv_scalespace_t sxi,
 				     double *dim_vals, 
-				     _sushiv_bythread_cache_2d *c){
+				     _sv_bythread_cache_2d_t *c){
 
-  sushiv_panel2d_t *p2 = p->subtype->p2;
+  _sv_panel2d_t *p2 = p->subtype->p2;
   int i,j;
   
   /* cache access is unlocked because the cache is private to this
@@ -52,12 +52,12 @@ static void compute_one_data_line_2d(sushiv_panel_t *p,
 
   for(j=0;j<dw;j++){
     double *fout = c->fout;
-    sushiv_function_t **f = p2->used_function_list;
+    sv_func_t **f = p2->used_function_list;
     int *obj_y_off = p2->y_fout_offset;
     int *onum = p2->y_obj_to_panel;
     
     /* by function */
-    dim_vals[x_d] = scalespace_value(&sxi,j);   
+    dim_vals[x_d] = _sv_scalespace_value(&sxi,j);   
     for(i=0;i<p2->used_functions;i++){
       (*f)->callback(dim_vals,fout);
       fout += (*f)->outputs;
@@ -69,7 +69,7 @@ static void compute_one_data_line_2d(sushiv_panel_t *p,
     
     /* slider map */
     for(i=0;i<p2->y_obj_num;i++){
-      float val = (float)slider_val_to_del(p2->range_scales[*onum++], c->fout[*obj_y_off++]);
+      float val = (float)_sv_slider_val_to_del(p2->range_scales[*onum++], c->fout[*obj_y_off++]);
       if(isnan(val)){
 	c->y_map[i][j] = -1;
       }else{
@@ -94,13 +94,13 @@ static void compute_one_data_line_2d(sushiv_panel_t *p,
 }
 
 // call with lock
-static void clear_pane(sushiv_panel_t *p){
+static void _sv_panel2d_clear_pane(sv_panel_t *p){
 
-  sushiv_panel2d_t *p2 = p->subtype->p2;
+  _sv_panel2d_t *p2 = p->subtype->p2;
   int pw = p2->x.pixels;
   int ph = p2->y.pixels;
   int i;
-  Plot *plot = PLOT(p->private->graph);
+  _sv_plot_t *plot = PLOT(p->private->graph);
   
   for(i=0;i<p2->y_obj_num;i++){
     // map is freed and nulled to avoid triggering a fast-scale on an empty data pane
@@ -141,9 +141,9 @@ typedef struct{
 
 // used by the legend code. this lets us get away with having only a mapped display pane
 // call with lock
-static void compute_single_point(sushiv_panel_t *p,sushiv_objective_t *o, double x, double y, compute_result *out){
+static void _sv_panel2d_compute_point(sv_panel_t *p,sv_obj_t *o, double x, double y, compute_result *out){
   double dim_vals[p->sushi->dimensions];
-  sushiv_panel2d_t *p2 = p->subtype->p2;
+  _sv_panel2d_t *p2 = p->subtype->p2;
   int i,j;
   int pflag=0;
   int eflag=0;
@@ -153,7 +153,7 @@ static void compute_single_point(sushiv_panel_t *p,sushiv_objective_t *o, double
   int y_d = p2->y_d->number;
 
   for(i=0;i<p->sushi->dimensions;i++){
-    sushiv_dimension_t *dim = p->sushi->dimension_list[i];
+    sv_dim_t *dim = p->sushi->dimension_list[i];
     dim_vals[i]=dim->val;
   }
 
@@ -166,7 +166,7 @@ static void compute_single_point(sushiv_panel_t *p,sushiv_objective_t *o, double
 
   // compute
   for(i=0;i<p->sushi->functions;i++){
-    sushiv_function_t *f = p->sushi->function_list[i];
+    sv_func_t *f = p->sushi->function_list[i];
     int compflag = 0;
     double fout[f->outputs];
     double val;
@@ -216,17 +216,17 @@ static void compute_single_point(sushiv_panel_t *p,sushiv_objective_t *o, double
 
 /* functions that perform actual graphical rendering */
 
-static float resample_helpers_init(scalespace *to, scalespace *from,
-				   unsigned char *delA, unsigned char *delB, 
-				   int *posA, int *posB,
-				   int xymul){
+static float _sv_panel2d_resample_helpers_init(_sv_scalespace_t *to, _sv_scalespace_t *from,
+					       unsigned char *delA, unsigned char *delB, 
+					       int *posA, int *posB,
+					       int xymul){
   int i;
   int dw = from->pixels;
   int pw = to->pixels;
 
-  long scalenum = scalespace_scalenum(to,from);
-  long scaleden = scalespace_scaleden(to,from);
-  long del = scalespace_scaleoff(to,from);
+  long scalenum = _sv_scalespace_scalenum(to,from);
+  long scaleden = _sv_scalespace_scaleden(to,from);
+  long del = _sv_scalespace_scaleoff(to,from);
   int bin = del / scaleden;
   del -= bin * scaleden; 
   int discscale = (scaleden>scalenum?scalenum:scaleden);
@@ -290,8 +290,8 @@ static float resample_helpers_init(scalespace *to, scalespace *from,
 /* x resample helpers are put in the per-thread cache because locking it would
    be relatively expensive. */
 // call while locked
-static void resample_helpers_manage_x(sushiv_panel_t *p, _sushiv_bythread_cache_2d *c){
-  sushiv_panel2d_t *p2 = p->subtype->p2;
+static void _sv_panel2d_resample_helpers_manage_x(sv_panel_t *p, _sv_bythread_cache_2d_t *c){
+  _sv_panel2d_t *p2 = p->subtype->p2;
   if(p->private->plot_serialno != c->serialno){
     int pw = p2->x.pixels;
     c->serialno = p->private->plot_serialno;
@@ -309,14 +309,14 @@ static void resample_helpers_manage_x(sushiv_panel_t *p, _sushiv_bythread_cache_
     c->xdelB = calloc(pw,sizeof(*c->xdelB));
     c->xnumA = calloc(pw,sizeof(*c->xnumA));
     c->xnumB = calloc(pw,sizeof(*c->xnumB));
-    c->xscalemul = resample_helpers_init(&p2->x, &p2->x_v, c->xdelA, c->xdelB, c->xnumA, c->xnumB, 17);
+    c->xscalemul = _sv_panel2d_resample_helpers_init(&p2->x, &p2->x_v, c->xdelA, c->xdelB, c->xnumA, c->xnumB, 17);
   }
 }
 
 /* y resample is in the panel struct as per-row access is already locked */
 // call while locked
-static void resample_helpers_manage_y(sushiv_panel_t *p){
-  sushiv_panel2d_t *p2 = p->subtype->p2;
+static void _sv_panel2d_resample_helpers_manage_y(sv_panel_t *p){
+  _sv_panel2d_t *p2 = p->subtype->p2;
   if(p->private->plot_serialno != p2->resample_serialno){
     int ph = p2->y.pixels;
     p2->resample_serialno = p->private->plot_serialno;
@@ -334,17 +334,17 @@ static void resample_helpers_manage_y(sushiv_panel_t *p){
     p2->ydelB = calloc(ph,sizeof(*p2->ydelB));
     p2->ynumA = calloc(ph,sizeof(*p2->ynumA));
     p2->ynumB = calloc(ph,sizeof(*p2->ynumB));
-    p2->yscalemul = resample_helpers_init(&p2->y, &p2->y_v, p2->ydelA, p2->ydelB, p2->ynumA, p2->ynumB, 15);
+    p2->yscalemul = _sv_panel2d_resample_helpers_init(&p2->y, &p2->y_v, p2->ydelA, p2->ydelB, p2->ynumA, p2->ynumB, 15);
   }
 }
 
-static inline void l_mapping_calc( void (*m)(int,int, lcolor*), 
-				   int low,
-				   float range,
-				   int in, 
-				   int alpha, 
-				   int mul, 
-				   lcolor *outc){
+static inline void _sv_panel2d_mapping_calc( void (*m)(int,int, _sv_lcolor_t *), 
+					     int low,
+					     float range,
+					     int in, 
+					     int alpha, 
+					     int mul, 
+					     _sv_lcolor_t *outc){
   if(mul && in>=alpha){
     int val = rint((in - low) * range);
     if(val<0)val=0;
@@ -360,10 +360,10 @@ static inline void l_mapping_calc( void (*m)(int,int, lcolor*),
 	    1 == plane fully dispatched (possibly not complete) */
 
 /* enter with lock */
-static int resample_render_y_plane_line(sushiv_panel_t *p, _sushiv_bythread_cache_2d *c, 
-					int plot_serialno, int map_serialno, int y_no){
-
-  sushiv_panel2d_t *p2 = p->subtype->p2;
+static int _sv_panel2d_resample_render_y_plane_line(sv_panel_t *p, _sv_bythread_cache_2d_t *c, 
+						    int plot_serialno, int map_serialno, int y_no){
+  
+  _sv_panel2d_t *p2 = p->subtype->p2;
   int objnum = p2->y_obj_to_panel[y_no]; 
   int *in_data = p2->y_map[y_no];
   int ph = p2->y.pixels;
@@ -389,17 +389,17 @@ static int resample_render_y_plane_line(sushiv_panel_t *p, _sushiv_bythread_cach
   p2->y_next_line++;
 
   /* row [i] needs to be updated; marshal */
-  mapping *map = p2->mappings+objnum;
-  void (*mapfunc)(int,int, lcolor *) = map->mapfunc;
+  _sv_mapping_t *map = p2->mappings+objnum;
+  void (*mapfunc)(int,int, _sv_lcolor_t *) = map->mapfunc;
   int ol_alpha = rint(p2->alphadel[y_no] * 16777216.f);
-  ucolor *panel = p2->y_planes[y_no];
+  _sv_ucolor_t *panel = p2->y_planes[y_no];
   int ol_low = rint(map->low * 16777216.f);
   float ol_range = map->i_range * (1.f/256.f);
 
   int pw = p2->x.pixels;
   int dw = p2->x_v.pixels;
   int dh = p2->y_v.pixels;
-  ccolor work[pw];
+  _sv_ccolor_t work[pw];
 
   if(!panel)
     panel = p2->y_planes[y_no] = calloc(pw*ph, sizeof(**p2->y_planes));
@@ -407,8 +407,8 @@ static int resample_render_y_plane_line(sushiv_panel_t *p, _sushiv_bythread_cach
   if(ph!=dh || pw!=dw){
     /* resampled row computation; may involve multiple data rows */
 
-    resample_helpers_manage_y(p);
-    resample_helpers_manage_x(p,c);
+    _sv_panel2d_resample_helpers_manage_y(p);
+    _sv_panel2d_resample_helpers_manage_x(p,c);
 
     float idel = p2->yscalemul * c->xscalemul;
 
@@ -431,8 +431,8 @@ static int resample_render_y_plane_line(sushiv_panel_t *p, _sushiv_bythread_cach
       
     /* by panel col */
     for(j=0;j<pw;j++){
-	
-      lcolor out = (lcolor){0,0,0,0}; 
+      
+      _sv_lcolor_t out = (_sv_lcolor_t){0,0,0,0}; 
       int xstart = xnumA[j];
       int xend = xnumB[j];
       int dx = xstart;
@@ -443,13 +443,13 @@ static int resample_render_y_plane_line(sushiv_panel_t *p, _sushiv_bythread_cach
       // first line
       if(y<yend){
 	if(dx<xend)
-	  l_mapping_calc(mapfunc, ol_low, ol_range, data[dx++], ol_alpha, ydelA*xA, &out);
+	  _sv_panel2d_mapping_calc(mapfunc, ol_low, ol_range, data[dx++], ol_alpha, ydelA*xA, &out);
 	
 	for(; dx < xend-1; dx++)
-	  l_mapping_calc(mapfunc, ol_low, ol_range, data[dx], ol_alpha, ydelA*17, &out);
+	  _sv_panel2d_mapping_calc(mapfunc, ol_low, ol_range, data[dx], ol_alpha, ydelA*17, &out);
 	
 	if(dx<xend)
-	  l_mapping_calc(mapfunc, ol_low, ol_range, data[dx], ol_alpha, ydelA*xB, &out);
+	  _sv_panel2d_mapping_calc(mapfunc, ol_low, ol_range, data[dx], ol_alpha, ydelA*xB, &out);
 	y++;
       }
 
@@ -458,13 +458,13 @@ static int resample_render_y_plane_line(sushiv_panel_t *p, _sushiv_bythread_cach
 	dx = xstart += dw;
 	xend += dw;
 	if(dx<xend)
-	  l_mapping_calc(mapfunc, ol_low, ol_range, data[dx++], ol_alpha, 15*xA, &out);
+	  _sv_panel2d_mapping_calc(mapfunc, ol_low, ol_range, data[dx++], ol_alpha, 15*xA, &out);
 	
 	for(; dx < xend-1; dx++)
-	  l_mapping_calc(mapfunc, ol_low, ol_range, data[dx], ol_alpha, 255, &out);
+	  _sv_panel2d_mapping_calc(mapfunc, ol_low, ol_range, data[dx], ol_alpha, 255, &out);
 	
 	if(dx<xend)
-	  l_mapping_calc(mapfunc, ol_low, ol_range, data[dx], ol_alpha, 15*xB, &out);
+	  _sv_panel2d_mapping_calc(mapfunc, ol_low, ol_range, data[dx], ol_alpha, 15*xB, &out);
       }
       
       // last line
@@ -472,13 +472,13 @@ static int resample_render_y_plane_line(sushiv_panel_t *p, _sushiv_bythread_cach
 	dx = xstart += dw;
 	xend += dw;
 	if(dx<xend)
-	  l_mapping_calc(mapfunc, ol_low, ol_range, data[dx++], ol_alpha, ydelB*xA, &out);
+	  _sv_panel2d_mapping_calc(mapfunc, ol_low, ol_range, data[dx++], ol_alpha, ydelB*xA, &out);
 	
 	for(; dx < xend-1; dx++)
-	  l_mapping_calc(mapfunc, ol_low, ol_range, data[dx], ol_alpha, ydelB*17, &out);
+	  _sv_panel2d_mapping_calc(mapfunc, ol_low, ol_range, data[dx], ol_alpha, ydelB*17, &out);
 	
 	if(dx<xend)
-	  l_mapping_calc(mapfunc, ol_low, ol_range, data[dx], ol_alpha, ydelB*xB, &out);
+	  _sv_panel2d_mapping_calc(mapfunc, ol_low, ol_range, data[dx], ol_alpha, ydelB*xB, &out);
       }
 
       work[j].a = (u_int32_t)(out.a*idel);
@@ -497,8 +497,8 @@ static int resample_render_y_plane_line(sushiv_panel_t *p, _sushiv_bythread_cach
 
     for(j=0;j<pw;j++){
 
-      lcolor out = (lcolor){0,0,0,0};
-      l_mapping_calc(mapfunc, ol_low, ol_range, data[j], ol_alpha, 255, &out);
+      _sv_lcolor_t out = (_sv_lcolor_t){0,0,0,0};
+      _sv_panel2d_mapping_calc(mapfunc, ol_low, ol_range, data[j], ol_alpha, 255, &out);
 	
       work[j].a = (u_int32_t)(out.a);
       work[j].r = (u_int32_t)(out.r);
@@ -520,7 +520,7 @@ static int resample_render_y_plane_line(sushiv_panel_t *p, _sushiv_bythread_cach
   return 0;
 }
 
-static void render_checks(ucolor *c, int w, int y){
+static void render_checks(_sv_ucolor_t *c, int w, int y){
   /* default checked background */
   /* 16x16 'mid-checks' */ 
   int x,j;
@@ -536,9 +536,9 @@ static void render_checks(ucolor *c, int w, int y){
 }
 
 // enter with lock
-static int render_bg_line(sushiv_panel_t *p, int plot_serialno, int map_serialno){
-  sushiv_panel2d_t *p2 = p->subtype->p2;
-  Plot *plot = PLOT(p->private->graph);
+static int _sv_panel2d_render_bg_line(sv_panel_t *p, int plot_serialno, int map_serialno){
+  _sv_panel2d_t *p2 = p->subtype->p2;
+  _sv_plot_t *plot = PLOT(p->private->graph);
   if(plot_serialno != p->private->plot_serialno ||
      map_serialno != p->private->map_serialno) return -1;
   
@@ -546,8 +546,8 @@ static int render_bg_line(sushiv_panel_t *p, int plot_serialno, int map_serialno
   int pw = p2->x.pixels;
   unsigned char *todo = p2->bg_todo;
   int i = p2->bg_next_line,j;
-  ucolor work_bg[pw];
-  ucolor work_pl[pw];
+  _sv_ucolor_t work_bg[pw];
+  _sv_ucolor_t work_pl[pw];
   int bgmode = p->private->bg_type;
 
   /* find a row that needs to be updated */
@@ -568,11 +568,11 @@ static int render_bg_line(sushiv_panel_t *p, int plot_serialno, int map_serialno
   gdk_threads_leave();
 
   switch(bgmode){
-  case SUSHIV_BG_WHITE:
+  case SV_BG_WHITE:
     for(j=0;j<pw;j++)
       work_bg[j].u = 0xffffffffU;
     break;
-  case SUSHIV_BG_BLACK:
+  case SV_BG_BLACK:
     for(j=0;j<pw;j++)
       work_bg[j].u = 0xff000000U;
     break;
@@ -593,8 +593,8 @@ static int render_bg_line(sushiv_panel_t *p, int plot_serialno, int map_serialno
     
     if(p2->y_planes[o_ynum]){
       int x;
-      ucolor (*mixfunc)(ucolor,ucolor) = p2->mappings[j].mixfunc;
-      ucolor *rect = p2->y_planes[o_ynum] + i*pw;
+      _sv_ucolor_t (*mixfunc)(_sv_ucolor_t,_sv_ucolor_t) = p2->mappings[j].mixfunc;
+      _sv_ucolor_t *rect = p2->y_planes[o_ynum] + i*pw;
       memcpy(work_pl,rect,sizeof(work_pl));
       
       gdk_threads_leave();
@@ -626,11 +626,12 @@ static int render_bg_line(sushiv_panel_t *p, int plot_serialno, int map_serialno
   return 0;
 }
 
-static void _dirty_map_full(sushiv_panel_t *p);
+static void _sv_panel2d_mark_map_full(sv_panel_t *p);
+
 // enter with lock; returns zero if thread should sleep / get distracted
-static int _sushiv_panel2d_remap(sushiv_panel_t *p, _sushiv_bythread_cache_2d *thread_cache){
-  sushiv_panel2d_t *p2 = p->subtype->p2;
-  Plot *plot = PLOT(p->private->graph);
+static int _sv_panel2d_remap(sv_panel_t *p, _sv_bythread_cache_2d_t *thread_cache){
+  _sv_panel2d_t *p2 = p->subtype->p2;
+  _sv_plot_t *plot = PLOT(p->private->graph);
 
   if(!plot) goto abort;
   int ph = plot->y.pixels;
@@ -655,16 +656,16 @@ static int _sushiv_panel2d_remap(sushiv_panel_t *p, _sushiv_bythread_cache_2d *t
     p2->bg_last_line = 0;
 
     if(!p2->partial_remap)
-      _dirty_map_full(p);
+      _sv_panel2d_mark_map_full(p);
   }
 
   /* by plane, by line; each plane renders independently */
   /* Y planes */
   if(p2->y_planetodo){
     if(p2->y_next_plane < p2->y_obj_num){
-      int status = resample_render_y_plane_line(p, thread_cache, 
-						plot_serialno, map_serialno, 
-						p2->y_next_plane);
+      int status = _sv_panel2d_resample_render_y_plane_line(p, thread_cache, 
+							    plot_serialno, map_serialno, 
+							    p2->y_next_plane);
       if(status == -1) goto abort;
       if(status == 1){
 	p2->y_next_plane++;
@@ -693,13 +694,13 @@ static int _sushiv_panel2d_remap(sushiv_panel_t *p, _sushiv_bythread_cache_2d *t
       p->private->map_complete_count = ph; // [ph] lines to render in bg plane
       p2->bg_next_line = 0;
 
-      _sushiv_wake_workers();
+      _sv_wake_workers();
     }
   }
 
   /* mix new background, again line by line */
   if(p2->bg_next_line < ph){
-    int status = render_bg_line(p, plot_serialno, map_serialno);
+    int status = _sv_panel2d_render_bg_line(p, plot_serialno, map_serialno);
     if(status == -1) goto abort;
     if(p->private->map_complete_count)return status;
   }else
@@ -708,7 +709,7 @@ static int _sushiv_panel2d_remap(sushiv_panel_t *p, _sushiv_bythread_cache_2d *t
   // entirely finished.
 
   // remap completed; flush background to screen
-  plot_expose_request_partial (plot,0,p2->bg_first_line,
+  _sv_plot_expose_request_partial (plot,0,p2->bg_first_line,
 			       pw,p2->bg_last_line - p2->bg_first_line);
   gdk_flush();
 
@@ -717,7 +718,7 @@ static int _sushiv_panel2d_remap(sushiv_panel_t *p, _sushiv_bythread_cache_2d *t
 
   // clear 'panel in progress' flag
   p2->partial_remap = 0;
-  _sushiv_panel_clean_map(p);
+  _sv_panel_clean_map(p);
   return 0;
 
  abort:
@@ -727,8 +728,8 @@ static int _sushiv_panel2d_remap(sushiv_panel_t *p, _sushiv_bythread_cache_2d *t
 
 // looks like a cop-out but is actually the correct thing to do; the
 // data *must* be WYSIWYG from panel display.
-static void sushiv_panel2d_print_bg(sushiv_panel_t *p, cairo_t *c){
-  Plot *plot = PLOT(p->private->graph);
+static void _sv_panel2d_print_bg(sv_panel_t *p, cairo_t *c){
+  _sv_plot_t *plot = PLOT(p->private->graph);
 
   if(!plot) return;
 
@@ -740,9 +741,9 @@ static void sushiv_panel2d_print_bg(sushiv_panel_t *p, cairo_t *c){
   cairo_pattern_destroy(pattern);
 }
 
-static void sushiv_panel2d_print(sushiv_panel_t *p, cairo_t *c, int w, int h){
-  sushiv_panel2d_t *p2 = p->subtype->p2;
-  Plot *plot = PLOT(p->private->graph);
+static void _sv_panel2d_print(sv_panel_t *p, cairo_t *c, int w, int h){
+  _sv_panel2d_t *p2 = p->subtype->p2;
+  _sv_plot_t *plot = PLOT(p->private->graph);
   double pw = p->private->graph->allocation.width;
   double ph = p->private->graph->allocation.height;
   double scale;
@@ -761,14 +762,14 @@ static void sushiv_panel2d_print(sushiv_panel_t *p, cairo_t *c, int w, int h){
   cairo_matrix_scale(&m,scale,scale);
   cairo_set_matrix(c,&m);
   
-  plot_print(plot, c, ph*scale, (void(*)(void *, cairo_t *))sushiv_panel2d_print_bg, p);
+  _sv_plot_print(plot, c, ph*scale, (void(*)(void *, cairo_t *))_sv_panel2d_print_bg, p);
   cairo_restore(c);
 
   // find extents widths for objective scale labels
   cairo_set_font_size(c,10);
   for(i=0;i<p->objectives;i++){
     cairo_text_extents_t ex;
-    sushiv_objective_t *o = p->objective_list[i].o;
+    sv_obj_t *o = p->objective_list[i].o;
     cairo_text_extents(c, o->name, &ex);
     if(ex.width > maxlabelw) maxlabelw=ex.width;
   }
@@ -777,11 +778,11 @@ static void sushiv_panel2d_print(sushiv_panel_t *p, cairo_t *c, int w, int h){
   y = ph * scale + 10;
 
   for(i=0;i<p->objectives;i++){
-    sushiv_objective_t *o = p->objective_list[i].o;
-    Slider *s = p2->range_scales[i];
+    sv_obj_t *o = p->objective_list[i].o;
+    _sv_slider_t *s = p2->range_scales[i];
     
     // get scale height
-    double labelh = slider_print_height(s);
+    double labelh = _sv_slider_print_height(s);
     cairo_text_extents_t ex;
     cairo_text_extents (c, o->name, &ex);
 
@@ -797,7 +798,7 @@ static void sushiv_panel2d_print(sushiv_panel_t *p, cairo_t *c, int w, int h){
     // set translation
     cairo_save(c);
     cairo_translate (c, maxlabelw + 10, y);
-    slider_print(s, c, pw*scale - maxlabelw - 10, labelh);
+    _sv_slider_print(s, c, pw*scale - maxlabelw - 10, labelh);
     cairo_restore(c);
 
     y += labelh;
@@ -806,8 +807,8 @@ static void sushiv_panel2d_print(sushiv_panel_t *p, cairo_t *c, int w, int h){
 }
 
 // call while locked
-static void _dirty_map_one_plane(sushiv_panel_t *p, int onum, int y, int z, int v){
-  sushiv_panel2d_t *p2 = p->subtype->p2;
+static void _sv_panel2d_mark_map_plane(sv_panel_t *p, int onum, int y, int z, int v){
+  _sv_panel2d_t *p2 = p->subtype->p2;
   int ph = p2->y.pixels;
 
   if(y && p2->y_planetodo){
@@ -819,9 +820,9 @@ static void _dirty_map_one_plane(sushiv_panel_t *p, int onum, int y, int z, int 
 }
 
 // call while locked 
-static void _dirty_map_one_data_line_y(sushiv_panel_t *p, int line){
+static void _sv_panel2d_mark_map_line_y(sv_panel_t *p, int line){
   // determine all panel lines this y data line affects
-  sushiv_panel2d_t *p2 = p->subtype->p2;
+  _sv_panel2d_t *p2 = p->subtype->p2;
   int ph = p2->y.pixels;
   int pw = p2->x.pixels;
   int dw = p2->x_v.pixels;
@@ -833,7 +834,7 @@ static void _dirty_map_one_data_line_y(sushiv_panel_t *p, int line){
   if(ph!=dh || pw!=dw){
     /* resampled row computation; may involve multiple data rows */
     if(p2->y_planetodo){
-      resample_helpers_manage_y(p);
+      _sv_panel2d_resample_helpers_manage_y(p);
       
       for(i=0;i<ph;i++)
 	if(p2->ynumA[i]<=line &&
@@ -854,8 +855,8 @@ static void _dirty_map_one_data_line_y(sushiv_panel_t *p, int line){
 }
 
 // call while locked
-static void _dirty_map_full(sushiv_panel_t *p){
-  sushiv_panel2d_t *p2 = p->subtype->p2;
+static void _sv_panel2d_mark_map_full(sv_panel_t *p){
+  _sv_panel2d_t *p2 = p->subtype->p2;
   int ph = p2->y.pixels;
   int i,j;
 
@@ -873,15 +874,15 @@ static void _dirty_map_full(sushiv_panel_t *p){
 }
 
 // enter with lock
-static void update_legend(sushiv_panel_t *p){  
-  sushiv_panel2d_t *p2 = p->subtype->p2;
-  Plot *plot = PLOT(p->private->graph);
+static void _sv_panel2d_update_legend(sv_panel_t *p){  
+  _sv_panel2d_t *p2 = p->subtype->p2;
+  _sv_plot_t *plot = PLOT(p->private->graph);
 
   if(plot){
     int i;
     char buffer[320];
     int depth = 0;
-    plot_legend_clear(plot);
+    _sv_plot_legend_clear(plot);
 
     // potentially add each dimension to the legend; add axis
     // dimensions only if crosshairs are active
@@ -890,14 +891,14 @@ static void update_legend(sushiv_panel_t *p){
     if(3-p2->x.decimal_exponent > depth) depth = 3-p2->x.decimal_exponent;
     if(3-p2->y.decimal_exponent > depth) depth = 3-p2->y.decimal_exponent;
     for(i=0;i<p->dimensions;i++){
-      sushiv_dimension_t *d = p->dimension_list[i].d;
+      sv_dim_t *d = p->dimension_list[i].d;
       if( (d!=p2->x_d && d!=p2->y_d) ||
 	  plot->cross_active){
 	snprintf(buffer,320,"%s = %+.*f",
 		 p->dimension_list[i].d->name,
 		 depth,
 		 p->dimension_list[i].d->val);
-	plot_legend_add(plot,buffer);
+	_sv_plot_legend_add(plot,buffer);
       }
     }
     
@@ -905,20 +906,20 @@ static void update_legend(sushiv_panel_t *p){
     // choose the value under the crosshairs 
     if(plot->cross_active){
       // one space 
-      plot_legend_add(plot,NULL);
+      _sv_plot_legend_add(plot,NULL);
 
       for(i=0;i<p->objectives;i++){
 	
-	if(!mapping_inactive_p(p2->mappings+i)){
+	if(!_sv_mapping_inactive_p(p2->mappings+i)){
 	  compute_result vals;
-	  compute_single_point(p,p->objective_list[i].o, plot->selx, plot->sely, &vals);
+	  _sv_panel2d_compute_point(p,p->objective_list[i].o, plot->selx, plot->sely, &vals);
 	  
 	  if(!isnan(vals.y)){
 	    
 	    snprintf(buffer,320,"%s = %f",
 		     p->objective_list[i].o->name,
 		     vals.y);
-	    plot_legend_add(plot,buffer);
+	    _sv_plot_legend_add(plot,buffer);
 	  }
 	}
       }
@@ -926,59 +927,58 @@ static void update_legend(sushiv_panel_t *p){
   }
 }
 
-static void mapchange_callback_2d(GtkWidget *w,gpointer in){
-  sushiv_objective_list_t *optr = (sushiv_objective_list_t *)in;
-  //sushiv_objective_t *o = optr->o;
-  sushiv_panel_t *p = optr->p;
-  sushiv_panel2d_t *p2 = p->subtype->p2;
+static void _sv_panel2d_mapchange_callback(GtkWidget *w,gpointer in){
+  sv_obj_list_t *optr = (sv_obj_list_t *)in;
+  //sv_obj_t *o = optr->o;
+  sv_panel_t *p = optr->p;
+  _sv_panel2d_t *p2 = p->subtype->p2;
   int onum = optr - p->objective_list;
 
-  _sushiv_undo_push(p->sushi);
-  _sushiv_undo_suspend(p->sushi);
+  _sv_undo_push(p->sushi);
+  _sv_undo_suspend(p->sushi);
 
-  mapping_set_func(&p2->mappings[onum],gtk_combo_box_get_active(GTK_COMBO_BOX(w)));
+  _sv_mapping_set_func(&p2->mappings[onum],gtk_combo_box_get_active(GTK_COMBO_BOX(w)));
   
   //redraw the map slider
-  slider_draw_background(p2->range_scales[onum]);
-  slider_draw(p2->range_scales[onum]);
-  slider_expose(p2->range_scales[onum]);
-    
-  _sushiv_panel_dirty_legend(p);
+  _sv_slider_set_gradient(p2->range_scales[onum], &p2->mappings[onum]);
+
+  // in the event the mapping active state changed
+  _sv_panel_dirty_legend(p);
 
   //redraw the plot
-  _dirty_map_one_plane(p,onum,1,0,0);
-  _sushiv_panel_dirty_map(p);
-  _sushiv_undo_resume(p->sushi);
+  _sv_panel2d_mark_map_plane(p,onum,1,0,0);
+  _sv_panel_dirty_map(p);
+  _sv_undo_resume(p->sushi);
 }
 
-static void map_callback_2d(void *in,int buttonstate){
-  sushiv_objective_list_t *optr = (sushiv_objective_list_t *)in;
-  //sushiv_objective_t *o = optr->o;
-  sushiv_panel_t *p = optr->p;
-  sushiv_panel2d_t *p2 = p->subtype->p2;
+static void _sv_panel2d_map_callback(void *in,int buttonstate){
+  sv_obj_list_t *optr = (sv_obj_list_t *)in;
+  //sv_obj_t *o = optr->o;
+  sv_panel_t *p = optr->p;
+  _sv_panel2d_t *p2 = p->subtype->p2;
   int onum = optr - p->objective_list;
 
   if(buttonstate == 0){
-    _sushiv_undo_push(p->sushi);
-    _sushiv_undo_suspend(p->sushi);
+    _sv_undo_push(p->sushi);
+    _sv_undo_suspend(p->sushi);
   }
 
   // recache alpha del */
   p2->alphadel[onum] = 
-    slider_val_to_del(p2->range_scales[onum],
-		      slider_get_value(p2->range_scales[onum],1));
+    _sv_slider_val_to_del(p2->range_scales[onum],
+		      _sv_slider_get_value(p2->range_scales[onum],1));
 
   // redraw the plot on motion
   if(buttonstate == 1){
-    _dirty_map_one_plane(p,onum,1,0,0);
-    _sushiv_panel_dirty_map(p);
+    _sv_panel2d_mark_map_plane(p,onum,1,0,0);
+    _sv_panel_dirty_map(p);
   }
   if(buttonstate == 2)
-    _sushiv_undo_resume(p->sushi);
+    _sv_undo_resume(p->sushi);
 }
 
-static void update_xy_availability(sushiv_panel_t *p){
-  sushiv_panel2d_t *p2 = p->subtype->p2;
+static void _sv_panel2d_update_xysel(sv_panel_t *p){
+  _sv_panel2d_t *p2 = p->subtype->p2;
   int i;
   // update which x/y buttons are pressable */
   // enable/disable dimension slider thumbs
@@ -988,7 +988,7 @@ static void update_xy_availability(sushiv_panel_t *p){
        gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(p2->dim_xb[i]))){
       // make the y insensitive
       if(p2->dim_yb[i])
-	gtk_widget_set_sensitive_fixup(p2->dim_yb[i],FALSE);
+	_gtk_widget_set_sensitive_fixup(p2->dim_yb[i],FALSE);
 
       // set the x dim flag
       p2->x_d = p->dimension_list[i].d;
@@ -997,13 +997,13 @@ static void update_xy_availability(sushiv_panel_t *p){
     }else{
       // if there is a y, make it sensitive 
       if(p2->dim_yb[i])
-	gtk_widget_set_sensitive_fixup(p2->dim_yb[i],TRUE);
+	_gtk_widget_set_sensitive_fixup(p2->dim_yb[i],TRUE);
     }
     if(p2->dim_yb[i] &&
        gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(p2->dim_yb[i]))){
       // make the x insensitive
       if(p2->dim_xb[i])
-	gtk_widget_set_sensitive_fixup(p2->dim_xb[i],FALSE);
+	_gtk_widget_set_sensitive_fixup(p2->dim_xb[i],FALSE);
 
       // set the y dim
       p2->y_d = p->dimension_list[i].d;
@@ -1012,24 +1012,24 @@ static void update_xy_availability(sushiv_panel_t *p){
     }else{
       // if there is a x, make it sensitive 
       if(p2->dim_xb[i])
-	gtk_widget_set_sensitive_fixup(p2->dim_xb[i],TRUE);
+	_gtk_widget_set_sensitive_fixup(p2->dim_xb[i],TRUE);
     }
     if((p2->dim_xb[i] &&
 	gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(p2->dim_xb[i]))) ||
        (p2->dim_yb[i] &&
 	gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(p2->dim_yb[i])))){
       // make all thumbs visible 
-      _sushiv_dim_widget_set_thumb_active(p->private->dim_scales[i],0,1);
-      _sushiv_dim_widget_set_thumb_active(p->private->dim_scales[i],2,1);
+      _sv_dim_widget_set_thumb_active(p->private->dim_scales[i],0,1);
+      _sv_dim_widget_set_thumb_active(p->private->dim_scales[i],2,1);
     }else{
       // make bracket thumbs invisible */
-      _sushiv_dim_widget_set_thumb_active(p->private->dim_scales[i],0,0);
-      _sushiv_dim_widget_set_thumb_active(p->private->dim_scales[i],2,0);
+      _sv_dim_widget_set_thumb_active(p->private->dim_scales[i],0,0);
+      _sv_dim_widget_set_thumb_active(p->private->dim_scales[i],2,0);
     }
   } 
 }
 
-static int v_swizzle(int y, int height){
+static int _v_swizzle(int y, int height){
   int yy = height >> 5;
   if(y < yy)
     return (y<<5)+31;
@@ -1059,12 +1059,12 @@ static int v_swizzle(int y, int height){
 }
 
 // assumes data is locked
-static void fast_scale_x(Spinner *sp,
-			 int *data, 
-			 int w,
-			 int h,
-			 scalespace new,
-			 scalespace old){
+static void _sv_panel2d_fast_scale_x(_sv_spinner_t *sp,
+				     int *data, 
+				     int w,
+				     int h,
+				     _sv_scalespace_t new,
+				     _sv_scalespace_t old){
   int x,y;
   int work[w];
   int mapbase[w];
@@ -1072,10 +1072,10 @@ static void fast_scale_x(Spinner *sp,
   double old_w = old.pixels;
   double new_w = new.pixels;
 
-  double old_lo = scalespace_value(&old,0);
-  double old_hi = scalespace_value(&old,old_w);
-  double new_lo = scalespace_value(&new,0);
-  double new_hi = scalespace_value(&new,new_w);
+  double old_lo = _sv_scalespace_value(&old,0);
+  double old_hi = _sv_scalespace_value(&old,old_w);
+  double new_lo = _sv_scalespace_value(&new,0);
+  double new_hi = _sv_scalespace_value(&new,new_w);
   double newscale = (new_hi-new_lo)/new_w;
   double oldscale = old_w/(old_hi-old_lo);
   for(x=0;x<w;x++){
@@ -1096,7 +1096,7 @@ static void fast_scale_x(Spinner *sp,
 
   for(y=0;y<h;y++){
     int *data_line = data+y*w;
-    spinner_set_busy(sp);
+    _sv_spinner_set_busy(sp);
     for(x=0;x<w;x++){
       if(mapbase[x]<0 || mapbase[x]>=(w-1)){
 	work[x]=-1;
@@ -1115,13 +1115,13 @@ static void fast_scale_x(Spinner *sp,
   }   
 }
 
-static void fast_scale_y(Spinner *sp,
-			 int *olddata, 
-			 int *newdata, 
-			 int oldw,
-			 int neww,
-			 scalespace new,
-			 scalespace old){
+static void _sv_panel2d_fast_scale_y(_sv_spinner_t *sp,
+				     int *olddata, 
+				     int *newdata, 
+				     int oldw,
+				     int neww,
+				     _sv_scalespace_t new,
+				     _sv_scalespace_t old){
   int x,y;
   int w = (oldw<neww?oldw:neww);
 
@@ -1131,10 +1131,10 @@ static void fast_scale_y(Spinner *sp,
   int mapbase[new_h];
   int mapdel[new_h];
 
-  double old_lo = scalespace_value(&old,0);
-  double old_hi = scalespace_value(&old,(double)old_h);
-  double new_lo = scalespace_value(&new,0);
-  double new_hi = scalespace_value(&new,(double)new_h);
+  double old_lo = _sv_scalespace_value(&old,0);
+  double old_hi = _sv_scalespace_value(&old,(double)old_h);
+  double new_lo = _sv_scalespace_value(&new,0);
+  double new_hi = _sv_scalespace_value(&new,(double)new_h);
   double newscale = (new_hi-new_lo)/new_h;
   double oldscale = old_h/(old_hi-old_lo);
   
@@ -1158,7 +1158,7 @@ static void fast_scale_y(Spinner *sp,
   for(y=0;y<new_h;y++){
     int base = mapbase[y];
     int *new_column = &newdata[y*neww];
-    spinner_set_busy(sp);
+    _sv_spinner_set_busy(sp);
 
     if(base<0 || base>=(old_h-1)){
       for(x=0;x<w;x++)
@@ -1179,13 +1179,13 @@ static void fast_scale_y(Spinner *sp,
   }
 }
 
-static void fast_scale(Spinner *sp, 
-		       int *newdata, 
-		       scalespace xnew,
-		       scalespace ynew,
-		       int *olddata,
-		       scalespace xold,
-		       scalespace yold){
+static void _sv_panel2d_fast_scale(_sv_spinner_t *sp, 
+				   int *newdata, 
+				   _sv_scalespace_t xnew,
+				   _sv_scalespace_t ynew,
+				   int *olddata,
+				   _sv_scalespace_t xold,
+				   _sv_scalespace_t yold){
   
   int new_w = xnew.pixels;
   int new_h = ynew.pixels;
@@ -1193,33 +1193,33 @@ static void fast_scale(Spinner *sp,
   int old_h = yold.pixels;
 
   if(new_w > old_w){
-    fast_scale_y(sp,olddata,newdata,old_w,new_w,ynew,yold);
-    fast_scale_x(sp,newdata,new_w,new_h,xnew,xold);
+    _sv_panel2d_fast_scale_y(sp,olddata,newdata,old_w,new_w,ynew,yold);
+    _sv_panel2d_fast_scale_x(sp,newdata,new_w,new_h,xnew,xold);
   }else{
-    fast_scale_x(sp,olddata,old_w,old_h,xnew,xold);
-    fast_scale_y(sp,olddata,newdata,old_w,new_w,ynew,yold);
+    _sv_panel2d_fast_scale_x(sp,olddata,old_w,old_h,xnew,xold);
+    _sv_panel2d_fast_scale_y(sp,olddata,newdata,old_w,new_w,ynew,yold);
   }
 }
 
 // call only from main gtk thread
-static void _mark_recompute_2d(sushiv_panel_t *p){
+static void _sv_panel2d_mark_recompute(sv_panel_t *p){
   if(!p->private->realized) return;
-  Plot *plot = PLOT(p->private->graph);
+  _sv_plot_t *plot = PLOT(p->private->graph);
 
   if(plot && GTK_WIDGET_REALIZED(GTK_WIDGET(plot))){
-    _sushiv_panel1d_mark_recompute_linked(p);   
-    _sushiv_panel_dirty_plot(p);
+    _sv_panel1d_mark_recompute_linked(p);   
+    _sv_panel_dirty_plot(p);
   }
 }
 
-static void update_crosshairs(sushiv_panel_t *p){
-  sushiv_panel2d_t *p2 = p->subtype->p2;
-  Plot *plot = PLOT(p->private->graph);
+static void _sv_panel2d_update_crosshairs(sv_panel_t *p){
+  _sv_panel2d_t *p2 = p->subtype->p2;
+  _sv_plot_t *plot = PLOT(p->private->graph);
   double x=0,y=0;
   int i;
   
   for(i=0;i<p->dimensions;i++){
-    sushiv_dimension_t *d = p->dimension_list[i].d;
+    sv_dim_t *d = p->dimension_list[i].d;
     if(d == p2->x_d)
       x = d->val;
     if(d == p2->y_d)
@@ -1227,77 +1227,77 @@ static void update_crosshairs(sushiv_panel_t *p){
     
   }
   
-  plot_set_crosshairs(plot,x,y);
-  _sushiv_panel1d_update_linked_crosshairs(p,0,0); 
-  _sushiv_panel_dirty_legend(p);
+  _sv_plot_set_crosshairs(plot,x,y);
+  _sv_panel1d_update_linked_crosshairs(p,0,0); 
+  _sv_panel_dirty_legend(p);
 }
 
-static void center_callback_2d(sushiv_dimension_list_t *dptr){
-  sushiv_dimension_t *d = dptr->d;
-  sushiv_panel_t *p = dptr->p;
-  sushiv_panel2d_t *p2 = p->subtype->p2;
-  //Plot *plot = PLOT(p->private->graph);
+static void _sv_panel2d_center_callback(sv_dim_list_t *dptr){
+  sv_dim_t *d = dptr->d;
+  sv_panel_t *p = dptr->p;
+  _sv_panel2d_t *p2 = p->subtype->p2;
+  //_sv_plot_t *plot = PLOT(p->private->graph);
   int axisp = (d == p2->x_d || d == p2->y_d);
 
   if(!axisp){
     // mid slider of a non-axis dimension changed, rerender
-    _mark_recompute_2d(p);
+    _sv_panel2d_mark_recompute(p);
   }else{
     // mid slider of an axis dimension changed, move crosshairs
-    update_crosshairs(p);
-    _sushiv_panel1d_update_linked_crosshairs(p,d==p2->x_d,d==p2->y_d); 
+    _sv_panel2d_update_crosshairs(p);
+    _sv_panel1d_update_linked_crosshairs(p,d==p2->x_d,d==p2->y_d); 
   }
 }
 
-static void bracket_callback_2d(sushiv_dimension_list_t *dptr){
-  sushiv_dimension_t *d = dptr->d;
-  sushiv_panel_t *p = dptr->p;
-  sushiv_panel2d_t *p2 = p->subtype->p2;
+static void _sv_panel2d_bracket_callback(sv_dim_list_t *dptr){
+  sv_dim_t *d = dptr->d;
+  sv_panel_t *p = dptr->p;
+  _sv_panel2d_t *p2 = p->subtype->p2;
   int axisp = (d == p2->x_d || d == p2->y_d);
 
   if(axisp)
-    _mark_recompute_2d(p);
+    _sv_panel2d_mark_recompute(p);
     
 }
 
-static void dimchange_callback_2d(GtkWidget *button,gpointer in){
-  sushiv_panel_t *p = (sushiv_panel_t *)in;
+static void _sv_panel2d_dimchange_callback(GtkWidget *button,gpointer in){
+  sv_panel_t *p = (sv_panel_t *)in;
 
   if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button))){
 
-    _sushiv_undo_push(p->sushi);
-    _sushiv_undo_suspend(p->sushi);
+    _sv_undo_push(p->sushi);
+    _sv_undo_suspend(p->sushi);
 
-    plot_unset_box(PLOT(p->private->graph));
-    update_xy_availability(p);
+    _sv_plot_unset_box(PLOT(p->private->graph));
+    _sv_panel2d_update_xysel(p);
 
-    clear_pane(p);
-    _mark_recompute_2d(p);
-    update_crosshairs(p);
+    _sv_panel2d_clear_pane(p);
+    _sv_panel2d_mark_recompute(p);
+    _sv_panel2d_update_crosshairs(p);
 
-    _sushiv_undo_resume(p->sushi);
+    _sv_undo_resume(p->sushi);
   }
 }
 
-static void _sushiv_panel2d_crosshairs_callback(sushiv_panel_t *p){
-  sushiv_panel2d_t *p2 = p->subtype->p2;
+static void _sv_panel2d_crosshairs_callback(sv_panel_t *p){
+  _sv_panel2d_t *p2 = p->subtype->p2;
   double x=PLOT(p->private->graph)->selx;
   double y=PLOT(p->private->graph)->sely;
   int i;
   
-  _sushiv_undo_push(p->sushi);
-  _sushiv_undo_suspend(p->sushi);
+  _sv_undo_push(p->sushi);
+  _sv_undo_suspend(p->sushi);
 
   //plot_snap_crosshairs(PLOT(p->private->graph));
 
   for(i=0;i<p->dimensions;i++){
-    sushiv_dimension_t *d = p->dimension_list[i].d;
+    sv_dim_t *d = p->dimension_list[i].d;
     if(d == p2->x_d){
-      _sushiv_dimension_set_value(p->private->dim_scales[i],1,x);
+      _sv_dim_set_value(p->private->dim_scales[i],1,x);
     }
 
     if(d == p2->y_d){
-      _sushiv_dimension_set_value(p->private->dim_scales[i],1,y);
+      _sv_dim_set_value(p->private->dim_scales[i],1,y);
     }
     
     p->private->oldbox_active = 0;
@@ -1308,42 +1308,42 @@ static void _sushiv_panel2d_crosshairs_callback(sushiv_panel_t *p){
   x = p2->x_d->val;
   y = p2->y_d->val;
 
-  plot_set_crosshairs(PLOT(p->private->graph),x,y);
+  _sv_plot_set_crosshairs(PLOT(p->private->graph),x,y);
 
-  _sushiv_panel_dirty_legend(p);
-  _sushiv_undo_resume(p->sushi);
+  _sv_panel_dirty_legend(p);
+  _sv_undo_resume(p->sushi);
 }
 
-static void box_callback(void *in, int state){
-  sushiv_panel_t *p = (sushiv_panel_t *)in;
-  sushiv_panel2d_t *p2 = p->subtype->p2;
-  Plot *plot = PLOT(p->private->graph);
+static void _sv_panel2d_box_callback(void *in, int state){
+  sv_panel_t *p = (sv_panel_t *)in;
+  _sv_panel2d_t *p2 = p->subtype->p2;
+  _sv_plot_t *plot = PLOT(p->private->graph);
   
   switch(state){
   case 0: // box set
-    _sushiv_undo_push(p->sushi);
-    plot_box_vals(plot,p2->oldbox);
+    _sv_undo_push(p->sushi);
+    _sv_plot_box_vals(plot,p2->oldbox);
     p->private->oldbox_active = plot->box_active;
     break;
   case 1: // box activate
-    _sushiv_undo_push(p->sushi);
-    _sushiv_undo_suspend(p->sushi);
+    _sv_undo_push(p->sushi);
+    _sv_undo_suspend(p->sushi);
 
-    _sushiv_panel2d_crosshairs_callback(p);
+    _sv_panel2d_crosshairs_callback(p);
 
-    _sushiv_dimension_set_value(p2->x_scale,0,p2->oldbox[0]);
-    _sushiv_dimension_set_value(p2->x_scale,2,p2->oldbox[1]);
-    _sushiv_dimension_set_value(p2->y_scale,0,p2->oldbox[2]);
-    _sushiv_dimension_set_value(p2->y_scale,2,p2->oldbox[3]);
+    _sv_dim_set_value(p2->x_scale,0,p2->oldbox[0]);
+    _sv_dim_set_value(p2->x_scale,2,p2->oldbox[1]);
+    _sv_dim_set_value(p2->y_scale,0,p2->oldbox[2]);
+    _sv_dim_set_value(p2->y_scale,2,p2->oldbox[3]);
     p->private->oldbox_active = 0;
-    _sushiv_undo_resume(p->sushi);
+    _sv_undo_resume(p->sushi);
     break;
   }
-  _sushiv_panel_update_menus(p);
+  _sv_panel_update_menus(p);
 }
 
-void _maintain_compute_cache_2d(sushiv_panel_t *p, _sushiv_bythread_cache_2d *c, int w){
-  sushiv_panel2d_t *p2 = p->subtype->p2;
+void _sv_panel2d_maintain_cache(sv_panel_t *p, _sv_bythread_cache_2d_t *c, int w){
+  _sv_panel2d_t *p2 = p->subtype->p2;
   
   /* toplevel initialization */
   if(c->fout == 0){
@@ -1352,7 +1352,7 @@ void _maintain_compute_cache_2d(sushiv_panel_t *p, _sushiv_bythread_cache_2d *c,
     /* allocate output temporary buffer */
     for(i=0;i<p2->used_functions;i++){
       int fnum = p2->used_function_list[i]->number;
-      sushiv_function_t *f = p->sushi->function_list[fnum];
+      sv_func_t *f = p->sushi->function_list[fnum];
       count += f->outputs;
     }
     c->fout = calloc(count, sizeof(*c->fout));
@@ -1377,41 +1377,41 @@ void _maintain_compute_cache_2d(sushiv_panel_t *p, _sushiv_bythread_cache_2d *c,
 
 
 // subtype entry point for plot remaps; lock held
-static int _sushiv_panel2d_map_redraw(sushiv_panel_t *p, _sushiv_bythread_cache *c){
-  return _sushiv_panel2d_remap(p,&c->p2);
+static int _sv_panel2d_map_redraw(sv_panel_t *p, _sv_bythread_cache_t *c){
+  return _sv_panel2d_remap(p,&c->p2);
 }
 
 // subtype entry point for legend redraws; lock held
-static int _sushiv_panel2d_legend_redraw(sushiv_panel_t *p){
-  Plot *plot = PLOT(p->private->graph);
+static int _sv_panel2d_legend_redraw(sv_panel_t *p){
+  _sv_plot_t *plot = PLOT(p->private->graph);
 
   if(p->private->legend_progress_count)return 0;
   p->private->legend_progress_count++;
-  update_legend(p);
-  _sushiv_panel_clean_legend(p);
+  _sv_panel2d_update_legend(p);
+  _sv_panel_clean_legend(p);
 
   gdk_threads_leave();
-  plot_draw_scales(plot);
+  _sv_plot_draw_scales(plot);
   gdk_threads_enter();
 
-  plot_expose_request(plot);
+  _sv_plot_expose_request(plot);
   return 1;
 }
 
 // subtype entry point for recomputation; lock held
-static int _sushiv_panel2d_compute(sushiv_panel_t *p,
-				   _sushiv_bythread_cache *c){
+static int _sv_panel2d_compute(sv_panel_t *p,
+			       _sv_bythread_cache_t *c){
 
-  sushiv_panel2d_t *p2 = p->subtype->p2;
-  Plot *plot;
+  _sv_panel2d_t *p2 = p->subtype->p2;
+  _sv_plot_t *plot;
   
   int pw,ph,dw,dh,i,d;
   int serialno;
   double x_min, x_max;
   double y_min, y_max;
   int x_d=-1, y_d=-1;
-  scalespace sx,sx_v,sx_i;
-  scalespace sy,sy_v,sy_i;
+  _sv_scalespace_t sx,sx_v,sx_i;
+  _sv_scalespace_t sy,sy_v,sy_i;
 
   plot = PLOT(p->private->graph);
   pw = plot->x.pixels;
@@ -1424,30 +1424,30 @@ static int _sushiv_panel2d_compute(sushiv_panel_t *p,
   if(p->private->plot_progress_count==0){
     int remapflag = 0;
 
-    scalespace old_x = p2->x;
-    scalespace old_y = p2->y;
-    scalespace old_xv = p2->x_v;
-    scalespace old_yv = p2->y_v;
+    _sv_scalespace_t old_x = p2->x;
+    _sv_scalespace_t old_y = p2->y;
+    _sv_scalespace_t old_xv = p2->x_v;
+    _sv_scalespace_t old_yv = p2->y_v;
 
     // generate new scales
-    _sushiv_dimension_scales(p2->x_d, 
-			     p2->x_d->bracket[0],
-			     p2->x_d->bracket[1],
-			     pw,pw * p->private->oversample_n / p->private->oversample_d,
-			     plot->scalespacing,
-			     p2->x_d->name,
-			     &sx,
-			     &sx_v,
-			     &sx_i);
-    _sushiv_dimension_scales(p2->y_d, 
-			     p2->y_d->bracket[1],
-			     p2->y_d->bracket[0],
-			     ph,ph * p->private->oversample_n / p->private->oversample_d,
-			     plot->scalespacing,
-			     p2->y_d->name,
-			     &sy,
-			     &sy_v,
-			     &sy_i);
+    _sv_dim_scales(p2->x_d, 
+		   p2->x_d->bracket[0],
+		   p2->x_d->bracket[1],
+		   pw,pw * p->private->oversample_n / p->private->oversample_d,
+		   plot->scalespacing,
+		   p2->x_d->name,
+		   &sx,
+		   &sx_v,
+		   &sx_i);
+    _sv_dim_scales(p2->y_d, 
+		   p2->y_d->bracket[1],
+		   p2->y_d->bracket[0],
+		   ph,ph * p->private->oversample_n / p->private->oversample_d,
+		   plot->scalespacing,
+		   p2->y_d->name,
+		   &sy,
+		   &sy_v,
+		   &sy_i);
     
     p2->x = sx;
     p2->x_v = sx_v;
@@ -1479,8 +1479,8 @@ static int _sushiv_panel2d_compute(sushiv_panel_t *p,
 	
 	// zoom scale data in map planes as placeholder for render
 	if(oldmap){
-	  fast_scale(p->private->spinner,newmap, sx_v, sy_v,
-		     oldmap,old_xv, old_yv);
+	  _sv_panel2d_fast_scale(p->private->spinner,newmap, sx_v, sy_v,
+				 oldmap,old_xv, old_yv);
 	  free(oldmap);
 	}
 	p2->y_map[i] = newmap; 
@@ -1512,15 +1512,14 @@ static int _sushiv_panel2d_compute(sushiv_panel_t *p,
     }
 
     if(remapflag){
-      _dirty_map_full(p);
-
-      _sushiv_panel_dirty_map(p);
+      _sv_panel2d_mark_map_full(p);
+      _sv_panel_dirty_map(p);
 
       gdk_threads_leave ();      
-      plot_draw_scales(plot); // this should happen outside lock
+      _sv_plot_draw_scales(plot); // this should happen outside lock
       gdk_threads_enter ();      
     }
-    set_map_throttle_time(p); // swallow the first 'throttled' remap which would only be a single line;
+    _sv_map_set_throttle_time(p); // swallow the first 'throttled' remap which would only be a single line;
 
     return 1;
   }else{
@@ -1538,71 +1537,71 @@ static int _sushiv_panel2d_compute(sushiv_panel_t *p,
 
   if(p->private->plot_progress_count>dh) return 0;
 
-  _maintain_compute_cache_2d(p,&c->p2,dw);
+  _sv_panel2d_maintain_cache(p,&c->p2,dw);
   
   d = p->dimensions;
 
   /* render using local dimension array; several threads will be
      computing objectives */
   double dim_vals[p->sushi->dimensions];
-  int y = v_swizzle(p->private->plot_progress_count-1,dh);
+  int y = _v_swizzle(p->private->plot_progress_count-1,dh);
   p->private->plot_progress_count++;
 
-  x_min = scalespace_value(&p2->x_i,0);
-  x_max = scalespace_value(&p2->x_i,dw);
+  x_min = _sv_scalespace_value(&p2->x_i,0);
+  x_max = _sv_scalespace_value(&p2->x_i,dw);
 
-  y_min = scalespace_value(&p2->y_i,0);
-  y_max = scalespace_value(&p2->y_i,dh);
+  y_min = _sv_scalespace_value(&p2->y_i,0);
+  y_max = _sv_scalespace_value(&p2->y_i,dh);
 
   // Initialize local dimension value array
   for(i=0;i<p->sushi->dimensions;i++){
-    sushiv_dimension_t *dim = p->sushi->dimension_list[i];
+    sv_dim_t *dim = p->sushi->dimension_list[i];
     dim_vals[i]=dim->val;
   }
 
   /* unlock for computation */
   gdk_threads_leave ();
     
-  dim_vals[y_d]=scalespace_value(&sy_i, y);
-  compute_one_data_line_2d(p, serialno, dw, y, x_d, sx_i, dim_vals, &c->p2);
+  dim_vals[y_d]=_sv_scalespace_value(&sy_i, y);
+  _sv_panel2d_compute_line(p, serialno, dw, y, x_d, sx_i, dim_vals, &c->p2);
 
   gdk_threads_enter ();
 
   if(p->private->plot_serialno == serialno){
     p->private->plot_complete_count++;
-    _dirty_map_one_data_line_y(p,y);
+    _sv_panel2d_mark_map_line_y(p,y);
     if(p->private->plot_complete_count>=dh){ 
-      _sushiv_panel_dirty_map(p);
-      _sushiv_panel_dirty_legend(p);
-      _sushiv_panel_clean_plot(p);
+      _sv_panel_dirty_map(p);
+      _sv_panel_dirty_legend(p);
+      _sv_panel_clean_plot(p);
     }else
-      _sushiv_panel_dirty_map_throttled(p); 
+      _sv_panel_dirty_map_throttled(p); 
   }
 
   return 1;
 }
 
 // only called for resize events
-static void recompute_callback_2d(void *ptr){
-  sushiv_panel_t *p = (sushiv_panel_t *)ptr;
+static void _sv_panel2d_recompute_callback(void *ptr){
+  sv_panel_t *p = (sv_panel_t *)ptr;
   int i;
 
   gdk_threads_enter ();
-  _mark_recompute_2d(p);
-  _sushiv_panel2d_compute(p,NULL); // initial scale setup
+  _sv_panel2d_mark_recompute(p);
+  _sv_panel2d_compute(p,NULL); // initial scale setup
 
   // temporary: blank background to checks
-  Plot *plot = PLOT(p->private->graph);
+  _sv_plot_t *plot = PLOT(p->private->graph);
   int pw = plot->x.pixels;
   int ph = plot->y.pixels;
   for(i=0;i<ph;i++)
-    render_checks((ucolor *)plot->datarect+pw*i, pw, i);
+    render_checks((_sv_ucolor_t *)plot->datarect+pw*i, pw, i);
   
   gdk_threads_leave();
 }
 
-static void panel2d_undo_log(sushiv_panel_undo_t *u, sushiv_panel_t *p){
-  sushiv_panel2d_t *p2 = p->subtype->p2;
+static void _sv_panel2d_undo_log(_sv_panel_undo_t *u, sv_panel_t *p){
+  _sv_panel2d_t *p2 = p->subtype->p2;
   int i;
 
   // alloc fields as necessary
@@ -1619,9 +1618,9 @@ static void panel2d_undo_log(sushiv_panel_undo_t *u, sushiv_panel_t *p){
   // populate undo
   for(i=0;i<p->objectives;i++){
     u->mappings[i] = p2->mappings[i].mapnum;
-    u->scale_vals[0][i] = slider_get_value(p2->range_scales[i],0);
-    u->scale_vals[1][i] = slider_get_value(p2->range_scales[i],1);
-    u->scale_vals[2][i] = slider_get_value(p2->range_scales[i],2);
+    u->scale_vals[0][i] = _sv_slider_get_value(p2->range_scales[i],0);
+    u->scale_vals[1][i] = _sv_slider_get_value(p2->range_scales[i],1);
+    u->scale_vals[2][i] = _sv_slider_get_value(p2->range_scales[i],2);
   }
   
   u->x_d = p2->x_dnum;
@@ -1633,46 +1632,46 @@ static void panel2d_undo_log(sushiv_panel_undo_t *u, sushiv_panel_t *p){
   u->box_active = p->private->oldbox_active;
 }
 
-static void panel2d_undo_restore(sushiv_panel_undo_t *u, sushiv_panel_t *p){
-  sushiv_panel2d_t *p2 = p->subtype->p2;
-  Plot *plot = PLOT(p->private->graph);
+static void _sv_panel2d_undo_restore(_sv_panel_undo_t *u, sv_panel_t *p){
+  _sv_panel2d_t *p2 = p->subtype->p2;
+  _sv_plot_t *plot = PLOT(p->private->graph);
   int i;
   
   // go in through widgets
   for(i=0;i<p->objectives;i++){
     gtk_combo_box_set_active(GTK_COMBO_BOX(p2->range_pulldowns[i]),u->mappings[i]);
-    slider_set_value(p2->range_scales[i],0,u->scale_vals[0][i]);
-    slider_set_value(p2->range_scales[i],1,u->scale_vals[1][i]);
-    slider_set_value(p2->range_scales[i],2,u->scale_vals[2][i]);
+    _sv_slider_set_value(p2->range_scales[i],0,u->scale_vals[0][i]);
+    _sv_slider_set_value(p2->range_scales[i],1,u->scale_vals[1][i]);
+    _sv_slider_set_value(p2->range_scales[i],2,u->scale_vals[2][i]);
   }
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(p2->dim_xb[u->x_d]),TRUE);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(p2->dim_yb[u->y_d]),TRUE);
 
-  update_xy_availability(p);
+  _sv_panel2d_update_xysel(p);
 
   if(u->box_active){
     p2->oldbox[0] = u->box[0];
     p2->oldbox[1] = u->box[1];
     p2->oldbox[2] = u->box[2];
     p2->oldbox[3] = u->box[3];
-    plot_box_set(plot,u->box);
+    _sv_plot_box_set(plot,u->box);
     p->private->oldbox_active = 1;
   }else{
-    plot_unset_box(plot);
+    _sv_plot_unset_box(plot);
     p->private->oldbox_active = 0;
   }
 }
 
-static void _sushiv_realize_panel2d(sushiv_panel_t *p){
-  sushiv_panel2d_t *p2 = p->subtype->p2;
+static void _sv_panel2d_realize(sv_panel_t *p){
+  _sv_panel2d_t *p2 = p->subtype->p2;
   int i;
 
-  _sushiv_undo_suspend(p->sushi);
+  _sv_undo_suspend(p->sushi);
 
   p->private->toplevel = gtk_window_new (GTK_WINDOW_TOPLEVEL);
   g_signal_connect_swapped (G_OBJECT (p->private->toplevel), "delete-event",
-			    G_CALLBACK (_sushiv_clean_exit), (void *)SIGINT);
+			    G_CALLBACK (_sv_clean_exit), (void *)SIGINT);
  
   // add border to sides with hbox/padding
   GtkWidget *borderbox =  gtk_hbox_new(0,0);
@@ -1692,9 +1691,9 @@ static void _sushiv_realize_panel2d(sushiv_panel_t *p){
 
   /* plotbox, graph */
   {
-    p->private->graph = GTK_WIDGET(plot_new(recompute_callback_2d,p,
-					    (void *)(void *)_sushiv_panel2d_crosshairs_callback,p,
-					    box_callback,p,0)); 
+    p->private->graph = GTK_WIDGET(_sv_plot_new(_sv_panel2d_recompute_callback,p,
+						(void *)(void *)_sv_panel2d_crosshairs_callback,p,
+						_sv_panel2d_box_callback,p,0)); 
     p->private->plotbox = p->private->graph;
     gtk_box_pack_start(GTK_BOX(p->private->topbox), p->private->plotbox, 1,1,2);
   }
@@ -1711,7 +1710,7 @@ static void _sushiv_realize_panel2d(sushiv_panel_t *p){
     p2->mappings = calloc(p->objectives,sizeof(*p2->mappings));
     for(i=0;i<p->objectives;i++){
       GtkWidget **sl = calloc(3,sizeof(*sl));
-      sushiv_objective_t *o = p->objective_list[i].o;
+      sv_obj_t *o = p->objective_list[i].o;
       int lo = o->scale->val_list[0];
       int hi = o->scale->val_list[o->scale->vals-1];
       
@@ -1723,22 +1722,22 @@ static void _sushiv_realize_panel2d(sushiv_panel_t *p){
       
       /* mapping pulldown */
       {
-	GtkWidget *menu=gtk_combo_box_new_markup();
+	GtkWidget *menu=_gtk_combo_box_new_markup();
 	int j;
-	for(j=0;j<num_mappings();j++)
-	  gtk_combo_box_append_text (GTK_COMBO_BOX (menu), mapping_name(j));
+	for(j=0;j<_sv_mapping_names();j++)
+	  gtk_combo_box_append_text (GTK_COMBO_BOX (menu), _sv_mapping_name(j));
 	gtk_combo_box_set_active(GTK_COMBO_BOX(menu),0);
 	g_signal_connect (G_OBJECT (menu), "changed",
-			  G_CALLBACK (mapchange_callback_2d), p->objective_list+i);
+			  G_CALLBACK (_sv_panel2d_mapchange_callback), p->objective_list+i);
 	gtk_table_attach(GTK_TABLE(p2->obj_table),menu,4,5,i,i+1,
 			 GTK_SHRINK,GTK_SHRINK,0,0);
 	p2->range_pulldowns[i] = menu;
       }
 
       /* the range mapping slices/slider */ 
-      sl[0] = slice_new(map_callback_2d,p->objective_list+i);
-      sl[1] = slice_new(map_callback_2d,p->objective_list+i);
-      sl[2] = slice_new(map_callback_2d,p->objective_list+i);
+      sl[0] = _sv_slice_new(_sv_panel2d_map_callback,p->objective_list+i);
+      sl[1] = _sv_slice_new(_sv_panel2d_map_callback,p->objective_list+i);
+      sl[2] = _sv_slice_new(_sv_panel2d_map_callback,p->objective_list+i);
       
       gtk_table_attach(GTK_TABLE(p2->obj_table),sl[0],1,2,i,i+1,
 		       GTK_EXPAND|GTK_FILL,0,0,0);
@@ -1746,15 +1745,15 @@ static void _sushiv_realize_panel2d(sushiv_panel_t *p){
 		       GTK_EXPAND|GTK_FILL,0,0,0);
       gtk_table_attach(GTK_TABLE(p2->obj_table),sl[2],3,4,i,i+1,
 		       GTK_EXPAND|GTK_FILL,0,0,0);
-      p2->range_scales[i] = slider_new((Slice **)sl,3,o->scale->label_list,o->scale->val_list,
-				       o->scale->vals,SLIDER_FLAG_INDEPENDENT_MIDDLE);
+      p2->range_scales[i] = _sv_slider_new((_sv_slice_t **)sl,3,o->scale->label_list,o->scale->val_list,
+				       o->scale->vals,_SV_SLIDER_FLAG_INDEPENDENT_MIDDLE);
       gtk_table_set_col_spacing(GTK_TABLE(p2->obj_table),3,5);
 
-      slice_thumb_set((Slice *)sl[0],lo);
-      slice_thumb_set((Slice *)sl[1],lo);
-      slice_thumb_set((Slice *)sl[2],hi);
-      mapping_setup(&p2->mappings[i],0.,1.,0);
-      slider_set_gradient(p2->range_scales[i], &p2->mappings[i]);
+      _sv_slice_thumb_set((_sv_slice_t *)sl[0],lo);
+      _sv_slice_thumb_set((_sv_slice_t *)sl[1],lo);
+      _sv_slice_thumb_set((_sv_slice_t *)sl[2],hi);
+      _sv_mapping_setup(&p2->mappings[i],0.,1.,0);
+      _sv_slider_set_gradient(p2->range_scales[i], &p2->mappings[i]);
     }
   }
 
@@ -1771,7 +1770,7 @@ static void _sushiv_realize_panel2d(sushiv_panel_t *p){
     p2->dim_yb = calloc(p->dimensions,sizeof(*p2->dim_yb));
     
     for(i=0;i<p->dimensions;i++){
-      sushiv_dimension_t *d = p->dimension_list[i].d;
+      sv_dim_t *d = p->dimension_list[i].d;
       
       /* label */
       GtkWidget *label = gtk_label_new(d->name);
@@ -1780,7 +1779,7 @@ static void _sushiv_realize_panel2d(sushiv_panel_t *p){
 		       GTK_FILL,0,5,0);
       
       /* x/y radio buttons */
-      if(!(d->flags & SUSHIV_DIM_NO_X)){
+      if(!(d->flags & SV_DIM_NO_X)){
 	if(first_x)
 	  p2->dim_xb[i] = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(first_x),"X");
 	else{
@@ -1791,7 +1790,7 @@ static void _sushiv_realize_panel2d(sushiv_panel_t *p){
 			 GTK_SHRINK,0,3,0);
       }
       
-      if(!(d->flags & SUSHIV_DIM_NO_Y)){
+      if(!(d->flags & SV_DIM_NO_Y)){
 	if(first_y)
 	  p2->dim_yb[i] = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(first_y),"Y");
 	else
@@ -1805,7 +1804,7 @@ static void _sushiv_realize_panel2d(sushiv_panel_t *p){
       }
       
       p->private->dim_scales[i] = 
-	_sushiv_new_dimension_widget(p->dimension_list+i,center_callback_2d,bracket_callback_2d);
+	_sv_dim_widget_new(p->dimension_list+i,_sv_panel2d_center_callback,_sv_panel2d_bracket_callback);
       
       gtk_table_attach(GTK_TABLE(p2->dim_table),
 		       p->private->dim_scales[i]->t,
@@ -1816,29 +1815,29 @@ static void _sushiv_realize_panel2d(sushiv_panel_t *p){
     for(i=0;i<p->dimensions;i++){
       if(p2->dim_xb[i])
 	g_signal_connect (G_OBJECT (p2->dim_xb[i]), "toggled",
-			  G_CALLBACK (dimchange_callback_2d), p);
+			  G_CALLBACK (_sv_panel2d_dimchange_callback), p);
       if(p2->dim_yb[i])
 	g_signal_connect (G_OBJECT (p2->dim_yb[i]), "toggled",
-			  G_CALLBACK (dimchange_callback_2d), p);
+			  G_CALLBACK (_sv_panel2d_dimchange_callback), p);
     }
   }
 
-  update_xy_availability(p);
+  _sv_panel2d_update_xysel(p);
 
   gtk_widget_realize(p->private->toplevel);
   gtk_widget_realize(p->private->graph);
   gtk_widget_realize(GTK_WIDGET(p->private->spinner));
   gtk_widget_show_all(p->private->toplevel);
-  update_xy_availability(p); // yes, this was already done; however,
-			     // gtk clobbered the event setup on the
-			     // insensitive buttons when it realized
-			     // them.  This call will restore them.
+  _sv_panel2d_update_xysel(p); // yes, this was already done; however,
+			       // gtk clobbered the event setup on the
+			       // insensitive buttons when it realized
+			       // them.  This call will restore them.
 
-  _sushiv_undo_resume(p->sushi);
+  _sv_undo_resume(p->sushi);
 }
 
-static int _save_panel2d(sushiv_panel_t *p, xmlNodePtr pn){  
-  sushiv_panel2d_t *p2 = p->subtype->p2;
+static int _sv_panel2d_save(sv_panel_t *p, xmlNodePtr pn){  
+  _sv_panel2d_t *p2 = p->subtype->p2;
   int ret=0,i;
 
   xmlNodePtr n;
@@ -1848,54 +1847,54 @@ static int _save_panel2d(sushiv_panel_t *p, xmlNodePtr pn){
   // box
   if(p->private->oldbox_active){
     xmlNodePtr boxn = xmlNewChild(pn, NULL, (xmlChar *) "box", NULL);
-    xmlNewPropF(boxn, "x1", p2->oldbox[0]);
-    xmlNewPropF(boxn, "x2", p2->oldbox[1]);
-    xmlNewPropF(boxn, "y1", p2->oldbox[2]);
-    xmlNewPropF(boxn, "y2", p2->oldbox[3]);
+    _xmlNewPropF(boxn, "x1", p2->oldbox[0]);
+    _xmlNewPropF(boxn, "x2", p2->oldbox[1]);
+    _xmlNewPropF(boxn, "y1", p2->oldbox[2]);
+    _xmlNewPropF(boxn, "y2", p2->oldbox[3]);
   }
 
   // objective map settings
   for(i=0;i<p->objectives;i++){
-    sushiv_objective_t *o = p->objective_list[i].o;
+    sv_obj_t *o = p->objective_list[i].o;
     xmlNodePtr on = xmlNewChild(pn, NULL, (xmlChar *) "objective", NULL);
-    xmlNewPropI(on, "position", i);
-    xmlNewPropI(on, "number", o->number);
-    xmlNewPropS(on, "name", o->name);
-    xmlNewPropS(on, "type", o->output_types);
+    _xmlNewPropI(on, "position", i);
+    _xmlNewPropI(on, "number", o->number);
+    _xmlNewPropS(on, "name", o->name);
+    _xmlNewPropS(on, "type", o->output_types);
     
     // right now Y is the only type; the below is Y-specific
     n = xmlNewChild(on, NULL, (xmlChar *) "y-map", NULL);
-    xmlNewPropS(n, "color", mapping_name(p2->mappings[i].mapnum));
-    xmlNewPropF(n, "low-bracket", slider_get_value(p2->range_scales[i],0));
-    xmlNewPropF(n, "alpha", slider_get_value(p2->range_scales[i],1));
-    xmlNewPropF(n, "high-bracket", slider_get_value(p2->range_scales[i],2));
+    _xmlNewPropS(n, "color", _sv_mapping_name(p2->mappings[i].mapnum));
+    _xmlNewPropF(n, "low-bracket", _sv_slider_get_value(p2->range_scales[i],0));
+    _xmlNewPropF(n, "alpha", _sv_slider_get_value(p2->range_scales[i],1));
+    _xmlNewPropF(n, "high-bracket", _sv_slider_get_value(p2->range_scales[i],2));
   }
 
   // x/y dim selection
   n = xmlNewChild(pn, NULL, (xmlChar *) "axes", NULL);
-  xmlNewPropI(n, "xpos", p2->x_dnum);
-  xmlNewPropI(n, "ypos", p2->y_dnum);
+  _xmlNewPropI(n, "xpos", p2->x_dnum);
+  _xmlNewPropI(n, "ypos", p2->y_dnum);
 
   return ret;
 }
 
-int _load_panel2d(sushiv_panel_t *p,
-		   sushiv_panel_undo_t *u,
-		   xmlNodePtr pn,
-		   int warn){
+int _sv_panel2d_load(sv_panel_t *p,
+		     _sv_panel_undo_t *u,
+		     xmlNodePtr pn,
+		     int warn){
   int i;
 
   // check type
-  xmlCheckPropS(pn,"type","2d", "Panel %d type mismatch in save file.",p->number,&warn);
+  _xmlCheckPropS(pn,"type","2d", "Panel %d type mismatch in save file.",p->number,&warn);
   
   // box
   u->box_active = 0;
-  xmlGetChildPropFPreserve(pn, "box", "x1", &u->box[0]);
-  xmlGetChildPropFPreserve(pn, "box", "x2", &u->box[1]);
-  xmlGetChildPropFPreserve(pn, "box", "y1", &u->box[2]);
-  xmlGetChildPropFPreserve(pn, "box", "y2", &u->box[3]);
+  _xmlGetChildPropFPreserve(pn, "box", "x1", &u->box[0]);
+  _xmlGetChildPropFPreserve(pn, "box", "x2", &u->box[1]);
+  _xmlGetChildPropFPreserve(pn, "box", "y1", &u->box[2]);
+  _xmlGetChildPropFPreserve(pn, "box", "y2", &u->box[3]);
 
-  xmlNodePtr n = xmlGetChildS(pn, "box", NULL, NULL);
+  xmlNodePtr n = _xmlGetChildS(pn, "box", NULL, NULL);
   if(n){
     u->box_active = 1;
     xmlFree(n);
@@ -1903,22 +1902,22 @@ int _load_panel2d(sushiv_panel_t *p,
   
   // objective map settings
   for(i=0;i<p->objectives;i++){
-    sushiv_objective_t *o = p->objective_list[i].o;
-    xmlNodePtr on = xmlGetChildI(pn, "objective", "position", i);
+    sv_obj_t *o = p->objective_list[i].o;
+    xmlNodePtr on = _xmlGetChildI(pn, "objective", "position", i);
     if(!on){
-      first_load_warning(&warn);
+      _sv_first_load_warning(&warn);
       fprintf(stderr,"No save data found for panel %d objective \"%s\".\n",p->number, o->name);
     }else{
       // check name, type
-      xmlCheckPropS(on,"name",o->name, "Objectve position %d name mismatch in save file.",i,&warn);
-      xmlCheckPropS(on,"type",o->output_types, "Objectve position %d type mismatch in save file.",i,&warn);
+      _xmlCheckPropS(on,"name",o->name, "Objectve position %d name mismatch in save file.",i,&warn);
+      _xmlCheckPropS(on,"type",o->output_types, "Objectve position %d type mismatch in save file.",i,&warn);
       
       // right now Y is the only type; the below is Y-specific
       // load maptype, values
-      xmlGetChildPropFPreserve(on, "y-map", "low-bracket", &u->scale_vals[0][i]);
-      xmlGetChildPropFPreserve(on, "y-map", "alpha", &u->scale_vals[1][i]);
-      xmlGetChildPropFPreserve(on, "y-map", "high-bracket", &u->scale_vals[2][i]);
-      xmlGetChildMap(on, "y-map", "color", mapping_map(), &u->mappings[i],
+      _xmlGetChildPropFPreserve(on, "y-map", "low-bracket", &u->scale_vals[0][i]);
+      _xmlGetChildPropFPreserve(on, "y-map", "alpha", &u->scale_vals[1][i]);
+      _xmlGetChildPropFPreserve(on, "y-map", "high-bracket", &u->scale_vals[2][i]);
+      _xmlGetChildMap(on, "y-map", "color", _sv_mapping_map(), &u->mappings[i],
 		     "Panel %d objective unknown mapping setting", p->number, &warn);
 
       xmlFreeNode(on);
@@ -1926,56 +1925,54 @@ int _load_panel2d(sushiv_panel_t *p,
   }
 
   // x/y dim selection
-  xmlGetChildPropIPreserve(pn, "axes", "xpos", &u->x_d);
-  xmlGetChildPropI(pn, "axes", "ypos", &u->y_d);
+  _xmlGetChildPropIPreserve(pn, "axes", "xpos", &u->x_d);
+  _xmlGetChildPropI(pn, "axes", "ypos", &u->y_d);
 
   return warn;
 }
 
-int sushiv_new_panel_2d(sushiv_instance_t *s,
-			int number,
-			const char *name, 
-			int *objectives,
-			int *dimensions,
-			unsigned flags){
+sv_panel_t *sv_panel_new_2d(sv_instance_t *s,
+			    int number,
+			    char *name, 
+			    sv_obj_t **objectives,
+			    sv_dim_t **dimensions,
+			    unsigned flags){
   
   int i,j;
-  int ret = _sushiv_new_panel(s,number,name,objectives,dimensions,flags);
-  sushiv_panel_t *p;
-  sushiv_panel2d_t *p2;
-  int fout_offsets[s->functions];
+  sv_panel_t *p = _sv_panel_new(s,number,name,objectives,dimensions,flags);
+  if(!p)return NULL;
 
-  if(ret<0)return ret;
-  p = s->panel_list[number];
-  p2 = calloc(1, sizeof(*p2));
+  _sv_panel2d_t *p2 = calloc(1, sizeof(*p2));
+  int fout_offsets[s->functions];
+  
   p->subtype = 
     calloc(1, sizeof(*p->subtype)); /* the union is alloced not
 				       embedded as its internal
-				       structure must be hidden */
-  
+				       structure must be hidden */  
   p->subtype->p2 = p2;
-  p->type = SUSHIV_PANEL_2D;
-  p->private->bg_type = SUSHIV_BG_CHECKS;
+  p->type = SV_PANEL_2D;
+  p->private->bg_type = SV_BG_CHECKS;
 
   // verify all the objectives have scales
   for(i=0;i<p->objectives;i++){
     if(!p->objective_list[i].o->scale){
       fprintf(stderr,"All objectives in a 2d panel must have a scale\n");
-      return -EINVAL;
+      errno = -EINVAL;
+      return NULL;
     }
   }
 
-  p->private->realize = _sushiv_realize_panel2d;
-  p->private->map_action = _sushiv_panel2d_map_redraw;
-  p->private->legend_action = _sushiv_panel2d_legend_redraw;
-  p->private->compute_action = _sushiv_panel2d_compute;
-  p->private->request_compute = _mark_recompute_2d;
-  p->private->crosshair_action = _sushiv_panel2d_crosshairs_callback;
-  p->private->print_action = sushiv_panel2d_print;
-  p->private->undo_log = panel2d_undo_log;
-  p->private->undo_restore = panel2d_undo_restore;
-  p->private->save_action = _save_panel2d;
-  p->private->load_action = _load_panel2d;
+  p->private->realize = _sv_panel2d_realize;
+  p->private->map_action = _sv_panel2d_map_redraw;
+  p->private->legend_action = _sv_panel2d_legend_redraw;
+  p->private->compute_action = _sv_panel2d_compute;
+  p->private->request_compute = _sv_panel2d_mark_recompute;
+  p->private->crosshair_action = _sv_panel2d_crosshairs_callback;
+  p->private->print_action = _sv_panel2d_print;
+  p->private->undo_log = _sv_panel2d_undo_log;
+  p->private->undo_restore = _sv_panel2d_undo_restore;
+  p->private->save_action = _sv_panel2d_save;
+  p->private->load_action = _sv_panel2d_load;
 
   /* set up helper data structures for rendering */
 
@@ -1988,14 +1985,14 @@ int sushiv_new_panel_2d(sushiv_instance_t *s,
     memset(fout_offsets,-1,sizeof(fout_offsets));
     
     for(i=0;i<p->objectives;i++){
-      sushiv_objective_t *o = p->objective_list[i].o;
+      sv_obj_t *o = p->objective_list[i].o;
       for(j=0;j<o->outputs;j++)
 	used[o->function_map[j]]=1;
     }
 
     for(i=0;i<fn;i++)
       if(used[i]){
-	sushiv_function_t *f = p->sushi->function_list[i];
+	sv_func_t *f = p->sushi->function_list[i];
 	fout_offsets[i] = offcount;
 	offcount += f->outputs;
 	count++;
@@ -2018,7 +2015,7 @@ int sushiv_new_panel_2d(sushiv_instance_t *s,
     int yobj_count = 0;
 
     for(i=0;i<p->objectives;i++){
-      sushiv_objective_t *o = p->objective_list[i].o;
+      sv_obj_t *o = p->objective_list[i].o;
       if(o->private->y_func) yobj_count++;
     }
 
@@ -2029,7 +2026,7 @@ int sushiv_new_panel_2d(sushiv_instance_t *s,
     
     yobj_count=0;
     for(i=0;i<p->objectives;i++){
-      sushiv_objective_t *o = p->objective_list[i].o;
+      sv_obj_t *o = p->objective_list[i].o;
       if(o->private->y_func){
 	p2->y_obj_list[yobj_count] = o;
 	p2->y_obj_to_panel[yobj_count] = i;
@@ -2045,7 +2042,7 @@ int sushiv_new_panel_2d(sushiv_instance_t *s,
   {
     p2->y_fout_offset = calloc(p2->y_obj_num, sizeof(*p2->y_fout_offset));
     for(i=0;i<p2->y_obj_num;i++){
-      sushiv_objective_t *o = p2->y_obj_list[i];
+      sv_obj_t *o = p2->y_obj_list[i];
       int funcnum = o->private->y_func->number;
       p2->y_fout_offset[i] = fout_offsets[funcnum] + o->private->y_fout;
     }

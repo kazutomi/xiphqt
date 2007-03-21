@@ -19,14 +19,14 @@
  * 
  */
 
-typedef struct sushiv_panel2d {
+typedef struct {
 
   GtkWidget *obj_table;
   GtkWidget *dim_table;
 
   /* only run those functions used by this panel */
   int used_functions;
-  sushiv_function_t **used_function_list;
+  sv_func_t **used_function_list;
 
   unsigned char *bg_todo;
   int bg_next_line;
@@ -36,14 +36,14 @@ typedef struct sushiv_panel2d {
   /**** Y PLANES ******/
   int y_obj_num;
   int **y_map; // indirected, dw*dh
-  ucolor **y_planes; // indirected, dw*dh
+  _sv_ucolor_t **y_planes; // indirected, dw*dh
   unsigned char **y_planetodo; // indirected, dh
   int partial_remap;
 
   int y_next_plane; // which y plane to issue next render
   int y_next_line; // incremented when a line is claimed, per plane [0-ph)
 
-  sushiv_objective_t **y_obj_list; // list of objectives with a y plane
+  sv_obj_t **y_obj_list; // list of objectives with a y plane
   int *y_obj_to_panel; /* maps from position in condensed list to position in full list */
   int *y_obj_from_panel; /* maps from position in full list to position in condensed list */
   int *y_fout_offset; 
@@ -57,32 +57,32 @@ typedef struct sushiv_panel2d {
   float yscalemul;
 
   /* scales and data -> display scale mapping */
-  scalespace x;
-  scalespace x_v;
-  scalespace x_i;
-  scalespace y;
-  scalespace y_v;
-  scalespace y_i;
+  _sv_scalespace_t x;
+  _sv_scalespace_t x_v;
+  _sv_scalespace_t x_i;
+  _sv_scalespace_t y;
+  _sv_scalespace_t y_v;
+  _sv_scalespace_t y_i;
 
   int scales_init;
   double oldbox[4];
 
-  mapping    *mappings;
-  Slider    **range_scales;
+  _sv_mapping_t    *mappings;
+  _sv_slider_t    **range_scales;
   GtkWidget **range_pulldowns;
   double     *alphadel;
 
   GtkWidget **dim_xb;
   GtkWidget **dim_yb;
 
-  sushiv_dimension_t *x_d;
-  sushiv_dimension_t *y_d;
-  sushiv_dim_widget_t *x_scale;
-  sushiv_dim_widget_t *y_scale;
+  sv_dim_t *x_d;
+  sv_dim_t *y_d;
+  _sv_dim_widget_t *x_scale;
+  _sv_dim_widget_t *y_scale;
   int x_dnum; // panel, not global list context
   int y_dnum; // panel, not global list context
 
-} sushiv_panel2d_t;
+} _sv_panel2d_t;
 
 typedef struct {
   double *fout; // [function number * outval_number]
@@ -99,5 +99,5 @@ typedef struct {
   int *xnumB;
   float xscalemul;
   
-} _sushiv_bythread_cache_2d;
+} _sv_bythread_cache_2d_t;
 

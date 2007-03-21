@@ -19,15 +19,15 @@
  * 
  */
 
-struct sushiv_objective_internal {
-  sushiv_function_t *x_func;
-  sushiv_function_t *y_func;
-  sushiv_function_t *z_func;
-  sushiv_function_t *e1_func;
-  sushiv_function_t *e2_func;
-  sushiv_function_t *p1_func;
-  sushiv_function_t *p2_func;
-  sushiv_function_t *m_func;
+struct _sv_obj_internal {
+  sv_func_t *x_func;
+  sv_func_t *y_func;
+  sv_func_t *z_func;
+  sv_func_t *e1_func;
+  sv_func_t *e2_func;
+  sv_func_t *p1_func;
+  sv_func_t *p2_func;
+  sv_func_t *m_func;
 
   int x_fout;
   int y_fout;

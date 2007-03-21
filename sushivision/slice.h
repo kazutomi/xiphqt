@@ -31,21 +31,21 @@
 
 G_BEGIN_DECLS
 
-#define SLICE_TYPE            (slice_get_type ())
-#define SLICE(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), SLICE_TYPE, Slice))
-#define SLICE_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), SLICE_TYPE, SliceClass))
+#define SLICE_TYPE            (_sv_slice_get_type ())
+#define SLICE(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), SLICE_TYPE, _sv_slice_t))
+#define SLICE_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), SLICE_TYPE, _sv_slice_class_t))
 #define IS_SLICE(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SLICE_TYPE))
 #define IS_SLICE_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), SLICE_TYPE))
 
-typedef struct _Slice       Slice;
-typedef struct _SliceClass  SliceClass;
+typedef struct _sv_slice       _sv_slice_t;
+typedef struct _sv_slice_class _sv_slice_class_t;
 
-typedef struct _Slider Slider;
+typedef struct _sv_slider _sv_slider_t;
 
-struct _Slice{
+struct _sv_slice {
   GtkWidget widget;
 
-  Slider *slider;
+  _sv_slider_t *slider;
   int slicenum;
 
   int    thumb_active;
@@ -62,15 +62,15 @@ struct _Slice{
 
 };
 
-struct _SliceClass{
+struct _sv_slice_class{
   GtkWidgetClass parent_class;
-  void (*slice) (Slice *s);
+  void (*slice) (_sv_slice_t *s);
 };
 
-extern GType slice_get_type        (void);
-extern GtkWidget* slice_new (void (*callback)(void *,int), void *data);
-extern void slice_set_active(Slice *s, int activep);
-extern void slice_thumb_set(Slice *s,double v);
-extern void slice_set_active_callback(Slice *s, void (*callback)(void *,int), void *data);
+extern GType      _sv_slice_get_type (void);
+extern GtkWidget* _sv_slice_new (void (*callback)(void *,int), void *data);
+extern void       _sv_slice_set_active(_sv_slice_t *s, int activep);
+extern void       _sv_slice_thumb_set(_sv_slice_t *s,double v);
+extern void       _sv_slice_set_active_callback(_sv_slice_t *s, void (*callback)(void *,int), void *data);
 G_END_DECLS
 #endif

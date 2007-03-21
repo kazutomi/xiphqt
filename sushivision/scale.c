@@ -42,7 +42,7 @@ static int trailing_zeroes(double A){
 }
 
 /* depth, at a minimum, must capture the difference between consecutive scale values */
-int del_depth(double A, double B){
+static int del_depth(double A, double B){
   int depth = 0;
 
   double del = B-A;
@@ -111,7 +111,7 @@ static char *generate_label(double val,int depth){
 
 /* default scale label generation is hard, but fill it in in an ad-hoc
    fashion.  Add flags to help out later */
-char **scale_generate_labels(unsigned scalevals, double *scaleval_list){
+static char **scale_generate_labels(unsigned scalevals, double *scaleval_list){
   unsigned i;
   int depth;
   char **ret;
@@ -145,7 +145,8 @@ char **scale_generate_labels(unsigned scalevals, double *scaleval_list){
   return ret;
 }
 
-void scale_free(sushiv_scale_t *s){
+void sv_scale_free(sv_scale_t *in){
+  sv_scale_t *s = (sv_scale_t *)in;
   int i;
   
   if(s){
@@ -160,10 +161,12 @@ void scale_free(sushiv_scale_t *s){
   }
 }
 
-sushiv_scale_t *scale_new(unsigned scalevals, double *scaleval_list, const char *legend){
+sv_scale_t *sv_scale_new(char *legend, 
+			 unsigned scalevals, double *scaleval_list, char **labels, 
+			 unsigned flags){
   int i;
 
-  sushiv_scale_t *s = NULL;
+  sv_scale_t *s = NULL;
 
   if(scalevals<2){
     fprintf(stderr,"Scale requires at least two scale values.");
@@ -178,33 +181,40 @@ sushiv_scale_t *scale_new(unsigned scalevals, double *scaleval_list, const char 
   for(i=0;i<(int)scalevals;i++)
     s->val_list[i] = scaleval_list[i];
 
-  // generate labels
-  s->label_list = scale_generate_labels(scalevals,scaleval_list);
+  if(labels){
+    // copy labels
+    s->label_list = calloc(scalevals,sizeof(*s->label_list));
+    for(i=0;i<(int)scalevals;i++)
+      if(labels[i]){
+	s->label_list[i] = strdup(labels[i]);
+      }else{
+	s->label_list[i] = strdup("");
+      }
+  }else{
+    // generate labels
+    s->label_list = scale_generate_labels(scalevals,scaleval_list);
+  }
   if(legend)
     s->legend=strdup(legend);
   else
     s->legend=strdup("");
+
+  s->flags = flags;
   return s;
 }
 
-int scale_set_scalelabels(sushiv_scale_t *s, char **scalelabel_list){
-  int i;
-  for(i=0;i<s->vals;i++){
-    if(s->label_list[i])
-      free(s->label_list[i]);
-    s->label_list[i] = strdup(scalelabel_list[i]);
-  }
-  return 0;
+sv_scale_t *sv_scale_copy(sv_scale_t *s){
+  return sv_scale_new(s->legend, s->vals, s->val_list, (char **)s->label_list, s->flags);
 }
 
 /* plot and graph scales */
 
-double scalespace_value(scalespace *s, double pixel){
+double _sv_scalespace_value(_sv_scalespace_t *s, double pixel){
   double val = (double)(pixel-s->first_pixel)*s->step_val/s->step_pixel + s->first_val;
   return val * s->m;
 }
 
-void scalespace_double(scalespace *s){
+void _sv_scalespace_double(_sv_scalespace_t *s){
   // mildly complicated by mantissa being powers of ten
   if(s->step_val & 0x1){ // ie, not divisible by two
     s->decimal_exponent--;
@@ -217,7 +227,7 @@ void scalespace_double(scalespace *s){
   s->pixels <<= 1;
 }
 
-double scalespace_pixel(scalespace *s, double val){
+double _sv_scalespace_pixel(_sv_scalespace_t *s, double val){
   val /= s->m;
   val -= s->first_val;
   val *= s->step_pixel;
@@ -227,11 +237,11 @@ double scalespace_pixel(scalespace *s, double val){
   return val;
 }
 
-double scalespace_scaledel(scalespace *from, scalespace *to){
+double _sv_scalespace_scaledel(_sv_scalespace_t *from, _sv_scalespace_t *to){
   return (double)from->step_val / from->step_pixel * from->m / to->m * to->step_pixel / to->step_val;
 }
 
-long scalespace_scalenum(scalespace *from, scalespace *to){
+long _sv_scalespace_scalenum(_sv_scalespace_t *from, _sv_scalespace_t *to){
   int dec = from->decimal_exponent - to->decimal_exponent;
   long ret = from->step_val * to->step_pixel * from->neg;
   while(dec-->0)
@@ -239,7 +249,7 @@ long scalespace_scalenum(scalespace *from, scalespace *to){
   return ret*2;
 }
 
-long scalespace_scaleden(scalespace *from, scalespace *to){
+long _sv_scalespace_scaleden(_sv_scalespace_t *from, _sv_scalespace_t *to){
   int dec = to->decimal_exponent - from->decimal_exponent;
   long ret = from->step_pixel * to->step_val * to->neg;
   while(dec-->0)
@@ -247,7 +257,7 @@ long scalespace_scaleden(scalespace *from, scalespace *to){
   return ret*2;
 }
 
-long scalespace_scaleoff(scalespace *from, scalespace *to){
+long _sv_scalespace_scaleoff(_sv_scalespace_t *from, _sv_scalespace_t *to){
   int decF = from->decimal_exponent - to->decimal_exponent;
   int decT = to->decimal_exponent - from->decimal_exponent;
   long expF = 1;
@@ -262,7 +272,7 @@ long scalespace_scaleoff(scalespace *from, scalespace *to){
     * expT * from->step_pixel * to->neg;
 }
 
-long scalespace_scalebin(scalespace *from, scalespace *to){
+long _sv_scalespace_scalebin(_sv_scalespace_t *from, _sv_scalespace_t *to){
   int decF = from->decimal_exponent - to->decimal_exponent;
   int decT = to->decimal_exponent - from->decimal_exponent;
   long expF = 1;
@@ -277,13 +287,13 @@ long scalespace_scalebin(scalespace *from, scalespace *to){
     * expT * from->step_pixel * to->neg;
 }
 
-int scalespace_mark(scalespace *s, int num){
+int _sv_scalespace_mark(_sv_scalespace_t *s, int num){
   return s->first_pixel + s->step_pixel*num;
 }
 
-double scalespace_label(scalespace *s, int num, char *buffer){
-  int pixel = scalespace_mark(s,num);
-  double val = scalespace_value(s,pixel);
+double _sv_scalespace_label(_sv_scalespace_t *s, int num, char *buffer){
+  int pixel = _sv_scalespace_mark(s,num);
+  double val = _sv_scalespace_value(s,pixel);
 
   if(s->decimal_exponent<0){
     sprintf(buffer,"%.*f",-s->decimal_exponent,val);
@@ -294,9 +304,9 @@ double scalespace_label(scalespace *s, int num, char *buffer){
 }
 
 // name is *not* copied
-scalespace scalespace_linear (double lowpoint, double highpoint, int pixels, int max_spacing, char *name){
+_sv_scalespace_t _sv_scalespace_linear (double lowpoint, double highpoint, int pixels, int max_spacing, char *name){
   double orange = fabs(highpoint - lowpoint), range;
-  scalespace ret;
+  _sv_scalespace_t ret;
 
   int place;
   int step;

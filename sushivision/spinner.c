@@ -34,7 +34,7 @@ static GtkWidgetClass *parent_class = NULL;
 #define DIA 4
 #define SPA 6
 
-static void spinner_draw(GtkWidget *wg, cairo_surface_t *s,int n){
+static void _sv_spinner_draw(GtkWidget *wg, cairo_surface_t *s,int n){
   cairo_t *c = cairo_create(s);
   int w = cairo_image_surface_get_width(s);
   int h = cairo_image_surface_get_height(s);
@@ -68,17 +68,17 @@ static void spinner_draw(GtkWidget *wg, cairo_surface_t *s,int n){
   }while(i!=n);
 }
 
-static void spinner_init (Spinner *p){
+static void _sv_spinner_init (_sv_spinner_t *p){
   // instance initialization
 }
 
-static void spinner_destroy (GtkObject *object){
+static void _sv_spinner_destroy (GtkObject *object){
   int i;
   if (GTK_OBJECT_CLASS (parent_class)->destroy)
     (*GTK_OBJECT_CLASS (parent_class)->destroy) (object);
 
   GtkWidget *widget = GTK_WIDGET(object);
-  Spinner *p = SPINNER (widget);
+  _sv_spinner_t *p = SPINNER (widget);
   // free local resources
   if(p->wc){
     cairo_destroy(p->wc);
@@ -93,10 +93,10 @@ static void spinner_destroy (GtkObject *object){
   }
 }
 
-static gint spinner_expose (GtkWidget      *widget,
+static gint _sv_spinner_expose (GtkWidget      *widget,
 			    GdkEventExpose *event){
   if (GTK_WIDGET_REALIZED (widget)){
-    Spinner *sp = SPINNER (widget);
+    _sv_spinner_t *sp = SPINNER (widget);
     int frame = (sp->busy?sp->busy_count+1:0);
 
     // blit to window
@@ -110,13 +110,13 @@ static gint spinner_expose (GtkWidget      *widget,
   return FALSE;
 }
 
-static void spinner_size_request (GtkWidget *widget,
+static void _sv_spinner_size_request (GtkWidget *widget,
 				  GtkRequisition *requisition){
   requisition->width = SPA*7 + DIA + 2;
   requisition->height = DIA + 2;
 }
 
-static void spinner_realize (GtkWidget *widget){
+static void _sv_spinner_realize (GtkWidget *widget){
   GdkWindowAttr attributes;
   gint      attributes_mask;
   
@@ -144,9 +144,9 @@ static void spinner_realize (GtkWidget *widget){
   gtk_widget_set_double_buffered (widget, FALSE);
 }
 
-static void spinner_size_allocate (GtkWidget     *widget,
+static void _sv_spinner_size_allocate (GtkWidget     *widget,
 				GtkAllocation *allocation){
-  Spinner *p = SPINNER (widget);
+  _sv_spinner_t *p = SPINNER (widget);
   int i; 
 
   if (GTK_WIDGET_REALIZED (widget)){
@@ -171,44 +171,44 @@ static void spinner_size_allocate (GtkWidget     *widget,
       p->b[i] = cairo_image_surface_create(CAIRO_FORMAT_RGB24,
 					   allocation->width,
 					   allocation->height);
-      spinner_draw(widget, p->b[i],i-1);
+      _sv_spinner_draw(widget, p->b[i],i-1);
     }
   }
 
   widget->allocation = *allocation;
 }
 
-static void spinner_class_init (SpinnerClass * class) {
+static void _sv_spinner_class_init (_sv_spinner_class_t * class) {
   GtkObjectClass *object_class;
   GtkWidgetClass *widget_class;
   object_class = (GtkObjectClass *) class;
   widget_class = (GtkWidgetClass *) class;
   parent_class = gtk_type_class (GTK_TYPE_WIDGET);
 
-  object_class->destroy = spinner_destroy;
-  widget_class->realize = spinner_realize;
-  widget_class->expose_event = spinner_expose;
-  widget_class->size_request = spinner_size_request;
-  widget_class->size_allocate = spinner_size_allocate;
+  object_class->destroy = _sv_spinner_destroy;
+  widget_class->realize = _sv_spinner_realize;
+  widget_class->expose_event = _sv_spinner_expose;
+  widget_class->size_request = _sv_spinner_size_request;
+  widget_class->size_allocate = _sv_spinner_size_allocate;
 
 }
 
-GType spinner_get_type (void){
+GType _sv_spinner_get_type (void){
 
   static GType spinner_type = 0;
 
   if (!spinner_type)
     {
       static const GTypeInfo spinner_info = {
-        sizeof (SpinnerClass),
+        sizeof (_sv_spinner_class_t),
         NULL,
         NULL,
-        (GClassInitFunc) spinner_class_init,
+        (GClassInitFunc) _sv_spinner_class_init,
         NULL,
         NULL,
-        sizeof (Spinner),
+        sizeof (_sv_spinner_t),
         0,
-        (GInstanceInitFunc) spinner_init,
+        (GInstanceInitFunc) _sv_spinner_init,
 	0
       };
 
@@ -219,13 +219,13 @@ GType spinner_get_type (void){
   return spinner_type;
 }
 
-Spinner *spinner_new (){
+_sv_spinner_t *_sv_spinner_new (){
   GtkWidget *g = GTK_WIDGET (g_object_new (SPINNER_TYPE, NULL));
-  Spinner *p = SPINNER (g);
+  _sv_spinner_t *p = SPINNER (g);
   return p;
 }
 
-void spinner_set_busy(Spinner *p){
+void _sv_spinner_set_busy(_sv_spinner_t *p){
   struct timeval now;
   int test;
 
@@ -236,7 +236,7 @@ void spinner_set_busy(Spinner *p){
   if(!p->busy){
     p->busy=1;
     p->last = now;
-    spinner_expose(GTK_WIDGET(p),NULL); // do it now
+    _sv_spinner_expose(GTK_WIDGET(p),NULL); // do it now
   }else{
     
     test = (now.tv_sec - p->last.tv_sec)*1000 + (now.tv_usec - p->last.tv_usec)/1000;
@@ -247,14 +247,14 @@ void spinner_set_busy(Spinner *p){
       if(p->busy_count>7)
 	p->busy_count=0;
       p->last = now;
-      spinner_expose(GTK_WIDGET(p),NULL); // do it now
+      _sv_spinner_expose(GTK_WIDGET(p),NULL); // do it now
     }
   }
 }
 
-void spinner_set_idle(Spinner *p){
+void _sv_spinner_set_idle(_sv_spinner_t *p){
   if(!p)return;
   p->busy=0;
-  spinner_expose(GTK_WIDGET(p),NULL); // do it now
+  _sv_spinner_expose(GTK_WIDGET(p),NULL); // do it now
 }
 

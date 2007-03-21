@@ -25,29 +25,31 @@
 #include <errno.h>
 #include "internal.h"
 
-int sushiv_new_objective(sushiv_instance_t *s,
-			 int number,
-			 const char *name,
-			 unsigned scalevals,
-			 double *scaleval_list,
-			 int *function_map,
-			 int *output_map,
-			 char *output_types,
-			 unsigned flags){
-  sushiv_objective_t *o;
-  sushiv_objective_internal_t *p;
+sv_obj_t *sv_obj_new(sv_instance_t *in,
+		     int number,
+		     char *name,
+		     sv_func_t **function_map,
+		     int *function_output_map,
+		     char *output_type_map,
+		     unsigned flags){
+  
+  sv_instance_t *s = (sv_instance_t *)in; // unwrap
+  sv_obj_t *o;
+  sv_obj_internal_t *p;
   int i;
-  int outputs = strlen(output_types);
+  int outputs = strlen(output_type_map);
 
   if(number<0){
     fprintf(stderr,"Objective number must be >= 0\n");
-    return -EINVAL;
+    errno = -EINVAL;
+    return NULL;
   }
   
   if(number<s->objectives){
     if(s->objective_list[number]!=NULL){
       fprintf(stderr,"Objective number %d already exists\n",number);
-      return -EINVAL;
+    errno = -EINVAL;
+    return NULL;
     }
   }else{
     if(s->objectives == 0){
@@ -64,72 +66,77 @@ int sushiv_new_objective(sushiv_instance_t *s,
 
   /* sanity check the maps */
   for(i=0;i<outputs;i++){
-    if(function_map[i]<0 || 
-       function_map[i]>=s->functions ||
-       !s->function_list[function_map[i]]){
-      fprintf(stderr,"Objectve %d: function %d does not exist.\n",
-	      number,function_map[i]);
-      return -EINVAL;
+    if(!function_map[i]){
+      fprintf(stderr,"Objectve %d (\"%s\"): function %d missing.\n",
+	      number,name,i);
+      errno = -EINVAL;
+      return NULL;
     }
-    if(output_map[i]<0 ||
-       output_map[i]>=s->function_list[function_map[i]]->outputs){
-      fprintf(stderr,"Objectve %d: function %d does not have an output %d.\n",
-	      number,function_map[i],output_map[i]);
-      return -EINVAL;
+    if(function_output_map[i]<0 ||
+       function_output_map[i]>=function_map[i]->outputs){
+      fprintf(stderr,"Objectve %d (\"%s\"): function %d does not have an output %d.\n",
+	      number,name,function_map[i]->number,function_output_map[i]);
+      errno = -EINVAL;
+      return NULL;
     }
-    switch(output_types[i]){
+    switch(output_type_map[i]){
     case 'X':
       if(p->x_func){
 	fprintf(stderr,"Objective %d: More than one X dimension specified.\n",
 		number);
-	return -EINVAL;
+	errno = -EINVAL;
+	return NULL;
       }
-      p->x_fout = output_map[i];
-      p->x_func = s->function_list[function_map[i]];
+      p->x_fout = function_output_map[i];
+      p->x_func = (sv_func_t *)function_map[i];
       break;
 
     case 'Y':
       if(p->y_func){
 	fprintf(stderr,"Objective %d: More than one Y dimension specified.\n",
 		number);
-	return -EINVAL;
+	errno = -EINVAL;
+	return NULL;
       }
-      p->y_fout = output_map[i];
-      p->y_func = s->function_list[function_map[i]];
+      p->y_fout = function_output_map[i];
+      p->y_func = (sv_func_t *)function_map[i];
       break;
 
     case 'Z':
       if(p->z_func){
 	fprintf(stderr,"Objective %d: More than one Z dimension specified.\n",
 		number);
-	return -EINVAL;
+	errno = -EINVAL;
+	return NULL;
       }
-      p->z_fout = output_map[i];
-      p->z_func = s->function_list[function_map[i]];
+      p->z_fout = function_output_map[i];
+      p->z_func = (sv_func_t *)function_map[i];
       break;
 
     case 'M':
       if(p->m_func){
 	fprintf(stderr,"Objective %d: More than one magnitude [M] dimension specified.\n",
 		number);
-	return -EINVAL;
+	errno = -EINVAL;
+	return NULL;
       }
-      p->m_fout = output_map[i];
-      p->m_func = s->function_list[function_map[i]];
+      p->m_fout = function_output_map[i];
+      p->m_func = (sv_func_t *)function_map[i];
       break;
 
     case 'E':
       if(p->e2_func){
 	fprintf(stderr,"Objective %d: More than two error [E] dimensions specified.\n",
 		number);
-	return -EINVAL;
+	errno = -EINVAL;
+	return NULL;
       }
       if(p->e1_func){
-	p->e2_fout = output_map[i];
-	p->e2_func = s->function_list[function_map[i]];
+	p->e2_fout = function_output_map[i];
+	p->e2_func = (sv_func_t *)function_map[i];
       }else{
-	p->e1_fout = output_map[i];
-	p->e1_func = s->function_list[function_map[i]];
+	p->e1_fout = function_output_map[i];
+	p->e1_func = (sv_func_t *)function_map[i];
       }
       break;
 
@@ -137,40 +144,74 @@ int sushiv_new_objective(sushiv_instance_t *s,
       if(p->p2_func){
 	fprintf(stderr,"Objective %d: More than two phase [P] dimensions specified.\n",
 		number);
-	return -EINVAL;
+	errno = -EINVAL;
+	return NULL;
       }
       if(p->p1_func){
-	p->p2_fout = output_map[i];
-	p->p2_func = s->function_list[function_map[i]];
+	p->p2_fout = function_output_map[i];
+	p->p2_func = (sv_func_t *)function_map[i];
       }else{
-	p->p1_fout = output_map[i];
-	p->p1_func = s->function_list[function_map[i]];
+	p->p1_fout = function_output_map[i];
+	p->p1_func = (sv_func_t *)function_map[i];
       }
       break;
 
     default:
       fprintf(stderr,"Objective %d: '%c' is an usupported output type.\n",
-	      number,output_types[i]);
-      return -EINVAL;
+	      number,output_type_map[i]);
+      errno = -EINVAL;
+      return NULL;
     }
   }
 
   o->number = number;
   o->name = strdup(name);
-  o->output_types = strdup(output_types);
-  o->type = SUSHIV_OBJ_BASIC;
+  o->output_types = strdup(output_type_map);
+  o->type = SV_OBJ_BASIC;
   o->outputs = outputs;
   o->flags = flags;
   o->sushi = s;
 
-  if(scalevals>0 && scaleval_list)
-    o->scale=scale_new(scalevals, scaleval_list, name);
-
   /* copy in the maps */
   o->function_map = malloc(outputs * sizeof(*o->function_map));
   o->output_map = malloc(outputs * sizeof(*o->output_map));
-  memcpy(o->function_map,function_map,outputs * sizeof(*o->function_map));
-  memcpy(o->output_map,output_map,outputs * sizeof(*o->output_map));
+  memcpy(o->output_map,function_output_map,outputs * sizeof(*o->output_map));
+  
+  for(i=0;i<outputs;i++)
+    o->function_map[i] = function_map[i]->number;
+  
+  return o;
+}
+
+// XXXX need to recompute after
+// XXXX need to add scale cloning to compute to make this safe in callbacks
+int sv_obj_set_scale(sv_obj_t *in,
+		     sv_scale_t *scale){
+  sv_obj_t *o = (sv_obj_t *)in; // unwrap
+
+  if(o->scale)
+    sv_scale_free(o->scale); // always a deep copy we own
+  
+  o->scale = (sv_scale_t *)sv_scale_copy(scale);
+
+  // redraw the slider
 
   return 0;
+}
+
+// XXXX need to recompute after
+// XXXX need to add scale cloning to compute to make this safe in callbacks
+int sv_obj_make_scale(sv_obj_t *in,
+		      unsigned scalevals, 
+		      double *scaleval_list,
+		      char **scalelabel_list,
+		      unsigned flags){
+  sv_obj_t *o = (sv_obj_t *)in; //unwrap
+
+  sv_scale_t *scale = sv_scale_new(o->name,scalevals,scaleval_list,scalelabel_list,0);
+  if(!scale)return errno;
+
+  int ret = sv_obj_set_scale(o,scale);
+  sv_scale_free(scale);
+  return ret;
 }

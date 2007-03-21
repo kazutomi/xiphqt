@@ -38,18 +38,17 @@ typedef struct {
   int pixels;
   int spacing;
   int massaged; // set if range had to be adjusted to avoid underflows
-} scalespace;
+} _sv_scalespace_t;
 
-int del_depth(double A, double B);
-extern char **scale_generate_labels(unsigned scalevals, double *scaleval_list);
-extern double scalespace_scaledel(scalespace *from, scalespace *to);
-extern long scalespace_scalenum(scalespace *from, scalespace *to);
-extern long scalespace_scaleden(scalespace *from, scalespace *to);
-extern long scalespace_scaleoff(scalespace *from, scalespace *to);
-extern long scalespace_scalebin(scalespace *from, scalespace *to);
-extern double scalespace_value(scalespace *s, double pixel);
-extern double scalespace_pixel(scalespace *s, double val);
-extern int scalespace_mark(scalespace *s, int num);
-extern double scalespace_label(scalespace *s, int num, char *buffer);
-extern scalespace scalespace_linear (double lowpoint, double highpoint, int pixels, int max_spacing,char *name);
-extern void scalespace_double(scalespace *s);
+extern char **_sv_scale_generate_labels(unsigned scalevals, double *scaleval_list);
+extern double _sv_scalespace_scaledel(_sv_scalespace_t *from, _sv_scalespace_t *to);
+extern long _sv_scalespace_scalenum(_sv_scalespace_t *from, _sv_scalespace_t *to);
+extern long _sv_scalespace_scaleden(_sv_scalespace_t *from, _sv_scalespace_t *to);
+extern long _sv_scalespace_scaleoff(_sv_scalespace_t *from, _sv_scalespace_t *to);
+extern long _sv_scalespace_scalebin(_sv_scalespace_t *from, _sv_scalespace_t *to);
+extern double _sv_scalespace_value(_sv_scalespace_t *s, double pixel);
+extern double _sv_scalespace_pixel(_sv_scalespace_t *s, double val);
+extern int _sv_scalespace_mark(_sv_scalespace_t *s, int num);
+extern double _sv_scalespace_label(_sv_scalespace_t *s, int num, char *buffer);
+extern _sv_scalespace_t _sv_scalespace_linear (double lowpoint, double highpoint, int pixels, int max_spacing,char *name);
+extern void _sv_scalespace_double(_sv_scalespace_t *s);

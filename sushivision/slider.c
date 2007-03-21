@@ -27,9 +27,9 @@
 #include <gdk/gdkkeysyms.h>
 #include "internal.h"
 
-static double val_to_pixel(Slider *s, double val);
+static double val_to_pixel(_sv_slider_t *s, double val);
 
-static int total_slice_width(Slider *s){
+static int total_slice_width(_sv_slider_t *s){
   int i;
   int count=0;
   if(s->flip)
@@ -41,7 +41,7 @@ static int total_slice_width(Slider *s){
   return count;
 }
 
-static int slice_width(Slider *s,int slices){
+static int slice_width(_sv_slider_t *s,int slices){
   int i;
   int count=0;
   if(s->flip)
@@ -53,7 +53,7 @@ static int slice_width(Slider *s,int slices){
   return count;
 }
 
-static int total_slice_height(Slider *s){
+static int total_slice_height(_sv_slider_t *s){
   int i;
   int max=0;
   if(s->flip){
@@ -80,10 +80,10 @@ static void rounded_rectangle (cairo_t *c,
   cairo_arc (c, x+radius,   y+radius,   radius, M_PI, M_PI * 1.5);
 }
 
-double shades[] = {1.15, 0.95, 0.896, 0.82, 0.7, 0.665, 0.5, 0.45, 0.4};
+static double shades[] = {1.15, 0.95, 0.896, 0.82, 0.7, 0.665, 0.5, 0.45, 0.4};
 
 static void bg_set(GtkWidget *w, cairo_t *c){
-  Slice *sl = SLICE(w);
+  _sv_slice_t *sl = SLICE(w);
   GdkColor *bg = &w->style->bg[sl->thumb_state?GTK_STATE_ACTIVE:GTK_STATE_NORMAL];
   double shade_r=bg->red/65535.;
   double shade_g=bg->green/65535.;
@@ -93,7 +93,7 @@ static void bg_set(GtkWidget *w, cairo_t *c){
 }
 
 static void fg_shade(GtkWidget *w, cairo_t *c, int shade){
-  Slice *sl = SLICE(w);
+  _sv_slice_t *sl = SLICE(w);
   GdkColor *fg = &w->style->fg[sl->thumb_state?GTK_STATE_ACTIVE:GTK_STATE_NORMAL];
   double shade_r=fg->red*shades[shade]/65535;
   double shade_g=fg->green*shades[shade]/65535;
@@ -102,7 +102,7 @@ static void fg_shade(GtkWidget *w, cairo_t *c, int shade){
   cairo_set_source_rgb (c, shade_r,shade_g,shade_b);
 }
 
-static void parent_shade(Slider *s, cairo_t *c, int shade){
+static void parent_shade(_sv_slider_t *s, cairo_t *c, int shade){
   GtkWidget *parent=gtk_widget_get_parent(s->slices[0]);
   GdkColor *bg = &parent->style->bg[GTK_STATE_NORMAL];
   double shade_r=bg->red*shades[shade]/65535;
@@ -112,9 +112,9 @@ static void parent_shade(Slider *s, cairo_t *c, int shade){
   cairo_set_source_rgb (c, shade_r,shade_g,shade_b);
 }
 
-void slider_draw_background(Slider *s){
+static void _sv_slider_draw_background(_sv_slider_t *s){
   if(!s->realized)return;
-
+  
   int i;
   GtkWidget *parent=gtk_widget_get_parent(s->slices[0]);
   GdkColor *text = &s->slices[0]->style->text[0];
@@ -155,7 +155,7 @@ void slider_draw_background(Slider *s){
     u_int32_t *pixel=s->backdata+ty*s->w;
     
     for(i=tx;i<tx+tw;i++)
-      pixel[i]=mapping_calc(s->gradient,slider_pixel_to_del(s,i), pixel[i]);
+      pixel[i]=_sv_mapping_calc(s->gradient,_sv_slider_pixel_to_del(s,i), pixel[i]);
     
     for(i=ty+1;i<ty+th;i++){
       memcpy(pixel+w,pixel,w*4);
@@ -228,91 +228,7 @@ void slider_draw_background(Slider *s){
   cairo_destroy(c);
 }
 
-void slider_realize(Slider *s){
-  int w = total_slice_width(s);
-  int h = total_slice_height(s);
-  if(s->background == 0 || w != s->w || h != s->h){
-
-    if(s->background)
-      cairo_surface_destroy(s->background);
-
-    if(s->foreground)
-      cairo_surface_destroy(s->foreground);
-
-    if(s->backdata)
-      free(s->backdata);
-
-    s->backdata = calloc(w*h,4);
-    
-    s->background = cairo_image_surface_create_for_data ((unsigned char *)s->backdata,
-							 CAIRO_FORMAT_RGB24,
-							 w,h,w*4);
-    if(s->flip){
-      s->foreground = cairo_image_surface_create (CAIRO_FORMAT_RGB24,
-						  h,w);
-    }else{
-      s->foreground = cairo_image_surface_create (CAIRO_FORMAT_RGB24,
-						  w,h);
-    }
-
-    s->w=w;
-    s->h=h;
-
-    s->xpad=h*.45;
-    if(s->xpad<4)s->xpad=4;
-    s->realized = 1;
-    slider_draw_background(s);    
-    slider_draw(s);
-
-  }
-  s->realized = 1;
-}
-
-static double val_to_pixel(Slider *s,double v){
-  int j;
-  double ret=0;
-  double neg = (s->neg? -1.: 1.);
-  int tx=s->xpad;
-  int tw=s->w - tx*2;
-
-  v*=neg;
-
-  if( v<s->label_vals[0]*neg){
-    ret=0;
-  }else if(v>s->label_vals[s->labels-1]*neg){
-    ret=tw;
-  }else{
-    for(j=0;j<s->labels;j++){
-      if(v>=s->label_vals[j]*neg && v<=s->label_vals[j+1]*neg){
-	v*=neg;
-	double del=(v-s->label_vals[j])/(s->label_vals[j+1]-s->label_vals[j]);
-	double pixlo=rint((double)(j)/(s->labels-1)*tw);
-	double pixhi=rint((double)(j+1)/(s->labels-1)*tw);
-	ret=pixlo*(1.-del)+pixhi*del+tx;
-	break;
-      }
-    }
-  }
-
-  return ret;
-}
-
-double slider_val_to_del(Slider *s,double v){
-  if(isnan(v))return NAN;
-  int j;
-  int flip = (s->neg? 1: 0);
-  
-  for(j=0;j<s->labels;j++){
-    if(((v<=s->label_vals[j+1]) ^ flip) || (j+2)==s->labels){
-      double del=(v-s->label_vals[j])/(s->label_vals[j+1]-s->label_vals[j]);
-      return (j+del)/(s->labels-1);
-    }
-  }
-
-  return NAN;
-}
-
-void slider_draw(Slider *s){
+void _sv_slider_draw(_sv_slider_t *s){
   if(!s->realized)return;
 
   int i;
@@ -335,7 +251,7 @@ void slider_draw(Slider *s){
   // thumbs
   for(i=0;i<s->num_slices;i++){
     GtkWidget *sl = s->slices[i];
-    double x = rint(val_to_pixel(s,((Slice *)(s->slices[i]))->thumb_val))+.5;
+    double x = rint(val_to_pixel(s,((_sv_slice_t *)(s->slices[i]))->thumb_val))+.5;
 
     double rad = 2.;
     
@@ -358,7 +274,7 @@ void slider_draw(Slider *s){
 	cairo_set_line_width(c,1);
 	fg_shade(sl,c,7);
       
-	if(((Slice *)s->slices[i])->thumb_focus)
+	if(((_sv_slice_t *)s->slices[i])->thumb_focus)
 	  cairo_set_source_rgba(c,0,0,0,1);
 
 	cairo_stroke_preserve(c);
@@ -409,7 +325,7 @@ void slider_draw(Slider *s){
 	  cairo_set_line_width(c,1);
 	  cairo_fill_preserve(c);
 	  fg_shade(sl,c,7);
-	  if(((Slice *)s->slices[i])->thumb_focus)
+	  if(((_sv_slice_t *)s->slices[i])->thumb_focus)
 	    cairo_set_source_rgba(c,0,0,0,1);
 	  cairo_stroke_preserve(c);
 	
@@ -443,7 +359,7 @@ void slider_draw(Slider *s){
 	  cairo_set_line_width(c,1);
 	  cairo_fill_preserve(c);
 	  fg_shade(sl,c,7);
-	  if(((Slice *)s->slices[i])->thumb_focus)
+	  if(((_sv_slice_t *)s->slices[i])->thumb_focus)
 	    cairo_set_source_rgba(c,0,0,0,1);
 	  cairo_stroke_preserve(c);
 	
@@ -484,14 +400,98 @@ void slider_draw(Slider *s){
   cairo_destroy(c);
 }
 
-void slider_expose_slice(Slider *s, int slicenum){
-  Slice *slice = (Slice *)(s->slices[slicenum]);
+void _sv_slider_realize(_sv_slider_t *s){
+  int w = total_slice_width(s);
+  int h = total_slice_height(s);
+  if(s->background == 0 || w != s->w || h != s->h){
+
+    if(s->background)
+      cairo_surface_destroy(s->background);
+
+    if(s->foreground)
+      cairo_surface_destroy(s->foreground);
+
+    if(s->backdata)
+      free(s->backdata);
+
+    s->backdata = calloc(w*h,4);
+    
+    s->background = cairo_image_surface_create_for_data ((unsigned char *)s->backdata,
+							 CAIRO_FORMAT_RGB24,
+							 w,h,w*4);
+    if(s->flip){
+      s->foreground = cairo_image_surface_create (CAIRO_FORMAT_RGB24,
+						  h,w);
+    }else{
+      s->foreground = cairo_image_surface_create (CAIRO_FORMAT_RGB24,
+						  w,h);
+    }
+
+    s->w=w;
+    s->h=h;
+
+    s->xpad=h*.45;
+    if(s->xpad<4)s->xpad=4;
+    s->realized = 1;
+    _sv_slider_draw_background(s);    
+    _sv_slider_draw(s);
+
+  }
+  s->realized = 1;
+}
+
+static double val_to_pixel(_sv_slider_t *s,double v){
+  int j;
+  double ret=0;
+  double neg = (s->neg? -1.: 1.);
+  int tx=s->xpad;
+  int tw=s->w - tx*2;
+
+  v*=neg;
+
+  if( v<s->label_vals[0]*neg){
+    ret=0;
+  }else if(v>s->label_vals[s->labels-1]*neg){
+    ret=tw;
+  }else{
+    for(j=0;j<s->labels;j++){
+      if(v>=s->label_vals[j]*neg && v<=s->label_vals[j+1]*neg){
+	v*=neg;
+	double del=(v-s->label_vals[j])/(s->label_vals[j+1]-s->label_vals[j]);
+	double pixlo=rint((double)(j)/(s->labels-1)*tw);
+	double pixhi=rint((double)(j+1)/(s->labels-1)*tw);
+	ret=pixlo*(1.-del)+pixhi*del+tx;
+	break;
+      }
+    }
+  }
+
+  return ret;
+}
+
+double _sv_slider_val_to_del(_sv_slider_t *s,double v){
+  if(isnan(v))return NAN;
+  int j;
+  int flip = (s->neg? 1: 0);
+  
+  for(j=0;j<s->labels;j++){
+    if(((v<=s->label_vals[j+1]) ^ flip) || (j+2)==s->labels){
+      double del=(v-s->label_vals[j])/(s->label_vals[j+1]-s->label_vals[j]);
+      return (j+del)/(s->labels-1);
+    }
+  }
+
+  return NAN;
+}
+
+void _sv_slider_expose_slice(_sv_slider_t *s, int slicenum){
+  _sv_slice_t *slice = (_sv_slice_t *)(s->slices[slicenum]);
   GtkWidget *w = GTK_WIDGET(slice);
   
   if(GTK_WIDGET_REALIZED(w)){
     cairo_t *c = gdk_cairo_create(w->window);
 
-    slider_realize(s);
+    _sv_slider_realize(s);
     if(s->flip){
       cairo_set_source_surface(c,s->foreground,0, slice_width(s,slicenum+1)-total_slice_width(s));
     }else{
@@ -504,13 +504,13 @@ void slider_expose_slice(Slider *s, int slicenum){
   }
 }
 
-void slider_expose(Slider *s){
+void _sv_slider_expose(_sv_slider_t *s){
   int i;
   for(i=0;i<s->num_slices;i++)
-    slider_expose_slice(s,i);
+    _sv_slider_expose_slice(s,i);
 }
 
-void slider_size_request_slice(Slider *s,GtkRequisition *requisition){
+void _sv_slider_size_request_slice(_sv_slider_t *s,GtkRequisition *requisition){
   int maxx=0,x0=0,x1=0,maxy=0,i,w;
   
   // need a dummy surface to find text sizes 
@@ -545,12 +545,12 @@ void slider_size_request_slice(Slider *s,GtkRequisition *requisition){
   cairo_surface_destroy(dummy);
 }
 
-static double slice_adjust_pixel(Slider *s,int slicenum, double x){
+static double slice_adjust_pixel(_sv_slider_t *s,int slicenum, double x){
   double width = slice_width(s,slicenum);
   return x+width;
 }
 
-static double quant(Slider *s, double val){
+static double quant(_sv_slider_t *s, double val){
   if(s->quant_denom!=0.){
     val *= s->quant_denom;
     val /= s->quant_num;
@@ -563,7 +563,7 @@ static double quant(Slider *s, double val){
   return val;
 }
 
-double slider_pixel_to_val(Slider *s,double x){
+double _sv_slider_pixel_to_val(_sv_slider_t *s,double x){
   int tx=s->xpad;
   int tw=s->w - tx*2;
   double del = (double)(x-tx)/tw;
@@ -571,10 +571,10 @@ double slider_pixel_to_val(Slider *s,double x){
     return quant(s,s->label_vals[0]);
   if(del>=1.)
     return quant(s,(s->label_vals[s->labels-1]));
-  return slider_del_to_val(s,del);
+  return _sv_slider_del_to_val(s,del);
 }
 
-double slider_pixel_to_del(Slider *s,double x){
+double _sv_slider_pixel_to_del(_sv_slider_t *s,double x){
   int tx=s->xpad;
   int tw=s->w - tx*2;
   x-=tx;
@@ -587,7 +587,7 @@ double slider_pixel_to_del(Slider *s,double x){
     return x/tw;
 }
 
-double slider_del_to_val(Slider *s, double del){
+double _sv_slider_del_to_val(_sv_slider_t *s, double del){
   int base;
   if(isnan(del))return del;
 
@@ -598,9 +598,9 @@ double slider_del_to_val(Slider *s, double del){
   return quant(s,( (1.-del)*s->label_vals[base] + del*s->label_vals[base+1] ));
 }
 
-void slider_vals_bound(Slider *s,int slicenum){
+void _sv_slider_vals_bound(_sv_slider_t *s,int slicenum){
   int i,flag=-1;
-  Slice *center = SLICE(s->slices[slicenum]);
+  _sv_slice_t *center = SLICE(s->slices[slicenum]);
   double min = (s->neg ? s->label_vals[s->labels-1] : s->label_vals[0]);
   double max = (s->neg ? s->label_vals[0] : s->label_vals[s->labels-1]);
   int flip = (s->neg? 1: 0);
@@ -612,7 +612,7 @@ void slider_vals_bound(Slider *s,int slicenum){
     center->thumb_val = max;
 
   // now make sure other sliders have valid spacing
-  if( (s->flags & SLIDER_FLAG_INDEPENDENT_MIDDLE) &&
+  if( (s->flags & _SV_SLIDER_FLAG_INDEPENDENT_MIDDLE) &&
       s->num_slices == 3)
     flag=1;
   
@@ -622,10 +622,10 @@ void slider_vals_bound(Slider *s,int slicenum){
     if(i2 == flag)i2++;
     if(i2>=s->num_slices)continue;
 
-    Slice *sl = SLICE(s->slices[i]);
-    Slice *sl2 = SLICE(s->slices[i2]);
+    _sv_slice_t *sl = SLICE(s->slices[i]);
+    _sv_slice_t *sl2 = SLICE(s->slices[i2]);
     if((sl->thumb_val>sl2->thumb_val)^flip)
-      slice_thumb_set(sl,sl2->thumb_val);
+      _sv_slice_thumb_set(sl,sl2->thumb_val);
   }
   
   for(i=slicenum+1; i<s->num_slices;i++){
@@ -634,22 +634,22 @@ void slider_vals_bound(Slider *s,int slicenum){
     if(i2 == flag)i2--;
     if(i2<0)continue;
   
-    Slice *sl = SLICE(s->slices[i]);
-    Slice *sl2 = SLICE(s->slices[i2]);
+    _sv_slice_t *sl = SLICE(s->slices[i]);
+    _sv_slice_t *sl2 = SLICE(s->slices[i2]);
     if((sl->thumb_val<sl2->thumb_val)^flip)
-      slice_thumb_set(sl,sl2->thumb_val);
+      _sv_slice_thumb_set(sl,sl2->thumb_val);
 
   }
 }
 
-static int determine_thumb(Slider *s,int slicenum,int x,int y){
+static int determine_thumb(_sv_slider_t *s,int slicenum,int x,int y){
   int i;
   int best=-1;
   float bestdist=s->w+1;
   int n = s->num_slices;
 
   if(s->flip){
-    Slice *sl = SLICE(s->slices[slicenum]);
+    _sv_slice_t *sl = SLICE(s->slices[slicenum]);
     int temp = x;
     x = sl->widget.allocation.height - y -1;
     y = temp;
@@ -657,7 +657,7 @@ static int determine_thumb(Slider *s,int slicenum,int x,int y){
 
   x=slice_adjust_pixel(s,slicenum,x);
   for(i=0;i<n;i++){
-    Slice *sl = SLICE(s->slices[i]);
+    _sv_slice_t *sl = SLICE(s->slices[i]);
     if(sl->thumb_active){
       float tx = val_to_pixel(s,sl->thumb_val) + i - s->num_slices/2;
       float ty = ((n==3 && i==1) ? 0:s->h);
@@ -671,31 +671,31 @@ static int determine_thumb(Slider *s,int slicenum,int x,int y){
   return best;
 }
 
-static int lit_thumb(Slider *s){
+static int lit_thumb(_sv_slider_t *s){
   int i;
   for(i=0;i<s->num_slices;i++){
-    Slice *sl = SLICE(s->slices[i]);
+    _sv_slice_t *sl = SLICE(s->slices[i]);
     if(sl->thumb_state)return i;
   }
   return -1;
 }
 
-void slider_unlight(Slider *s){
+void _sv_slider_unlight(_sv_slider_t *s){
   int i;
   for(i=0;i<s->num_slices;i++){
-    Slice *sl = SLICE(s->slices[i]);
+    _sv_slice_t *sl = SLICE(s->slices[i]);
     if(!sl->thumb_grab)
       sl->thumb_state = 0;
   }
 }
 
-int slider_lightme(Slider *s,int slicenum,int x,int y){
+int _sv_slider_lightme(_sv_slider_t *s,int slicenum,int x,int y){
   int last = lit_thumb(s);
   int best = determine_thumb(s,slicenum,x,y);
   if(last != best){
-    slider_unlight(s);
+    _sv_slider_unlight(s);
     if(best>-1){
-      Slice *sl = SLICE(s->slices[best]);
+      _sv_slice_t *sl = SLICE(s->slices[best]);
       sl->thumb_state=1;
     }
     return 1;
@@ -703,30 +703,30 @@ int slider_lightme(Slider *s,int slicenum,int x,int y){
   return 0;
 }
 
-void slider_button_press(Slider *s,int slicenum,int x,int y){
+void _sv_slider_button_press(_sv_slider_t *s,int slicenum,int x,int y){
   int i;
   for(i=0;i<s->num_slices;i++){
-    Slice *sl = SLICE(s->slices[i]);
+    _sv_slice_t *sl = SLICE(s->slices[i]);
     if(sl->thumb_state){
       sl->thumb_grab=1;
       sl->thumb_focus=1;
       gtk_widget_grab_focus(GTK_WIDGET(sl));
 
       if(sl->callback)sl->callback(sl->callback_data,0);
-      slider_motion(s,slicenum,x,y);
+      _sv_slider_motion(s,slicenum,x,y);
     }else{
       sl->thumb_grab=0;
       sl->thumb_focus=0;
     }
   }
-  slider_draw(s);
-  slider_expose(s);
+  _sv_slider_draw(s);
+  _sv_slider_expose(s);
 }
 
-void slider_button_release(Slider *s,int slicenum,int x,int y){
+void _sv_slider_button_release(_sv_slider_t *s,int slicenum,int x,int y){
   int i;
   for(i=0;i<s->num_slices;i++){
-    Slice *sl = SLICE(s->slices[i]);
+    _sv_slice_t *sl = SLICE(s->slices[i]);
 
     if(sl->thumb_grab){
       sl->thumb_grab=0;
@@ -735,29 +735,29 @@ void slider_button_release(Slider *s,int slicenum,int x,int y){
   }
 }
 
-static void update_gradient(Slider *s){
+static void update_gradient(_sv_slider_t *s){
   if(s->gradient && s->num_slices>1){
-    Slice *sl = SLICE(s->slices[0]);
-    Slice *sh = SLICE(s->slices[s->num_slices-1]);
-    double ldel = slider_val_to_del(s,sl->thumb_val);
-    double hdel = slider_val_to_del(s,sh->thumb_val);
+    _sv_slice_t *sl = SLICE(s->slices[0]);
+    _sv_slice_t *sh = SLICE(s->slices[s->num_slices-1]);
+    double ldel = _sv_slider_val_to_del(s,sl->thumb_val);
+    double hdel = _sv_slider_val_to_del(s,sh->thumb_val);
     
     if(s->gradient->low != ldel ||
        s->gradient->high != hdel){
       
-      mapping_set_lo(s->gradient,ldel);
-      mapping_set_hi(s->gradient,hdel);
-      slider_draw_background(s);
-      slider_draw(s);
+      _sv_mapping_set_lo(s->gradient,ldel);
+      _sv_mapping_set_hi(s->gradient,hdel);
+      _sv_slider_draw_background(s);
+      _sv_slider_draw(s);
     }
-    slider_expose(s);
+    _sv_slider_expose(s);
   }
 }
 
-void slider_motion(Slider *s,int slicenum,int x,int y){
+void _sv_slider_motion(_sv_slider_t *s,int slicenum,int x,int y){
   double altered[s->num_slices];
   int i, grabflag=0;
-  Slice *sl = SLICE(s->slices[slicenum]);
+  _sv_slice_t *sl = SLICE(s->slices[slicenum]);
   int px = (s->flip?sl->widget.allocation.height-y-1 : x);
 
   for(i=0;i<s->num_slices;i++){
@@ -770,8 +770,8 @@ void slider_motion(Slider *s,int slicenum,int x,int y){
     sl = SLICE(s->slices[i]);
     if(sl->thumb_grab){      
       sl->thumb_val=
-	slider_pixel_to_val(s,slice_adjust_pixel(s,slicenum,px));
-      slider_vals_bound(s,i);
+	_sv_slider_pixel_to_val(s,slice_adjust_pixel(s,slicenum,px));
+      _sv_slider_vals_bound(s,i);
       grabflag = 1;
     }
   }
@@ -780,14 +780,14 @@ void slider_motion(Slider *s,int slicenum,int x,int y){
   update_gradient(s);
 
   if(grabflag){
-    slider_draw(s);
-    slider_expose(s);
+    _sv_slider_draw(s);
+    _sv_slider_expose(s);
 
     // call slice callbacks on all slices that were altered; value
     // bounding might have affected slices other than the grabbed one.
 
     for(i=0;i<s->num_slices;i++){
-      Slice *sl = SLICE(s->slices[i]);
+      _sv_slice_t *sl = SLICE(s->slices[i]);
     
       if(sl->thumb_val != altered[i])
 	if(sl->callback)sl->callback(sl->callback_data,1);
@@ -795,15 +795,15 @@ void slider_motion(Slider *s,int slicenum,int x,int y){
 
   }else{
     /* nothing grabbed right now; determine if we're in a thumb's area */
-    if(slider_lightme(s,slicenum,x,y)){
-      slider_draw(s);
-      slider_expose(s);
+    if(_sv_slider_lightme(s,slicenum,x,y)){
+      _sv_slider_draw(s);
+      _sv_slider_expose(s);
     }
   }
 }
 
-gboolean slider_key_press(Slider *s,GdkEventKey *event,int slicenum){
-  Slice *sl = (Slice *)(s->slices[slicenum]);
+gboolean _sv_slider_key_press(_sv_slider_t *s,GdkEventKey *event,int slicenum){
+  _sv_slice_t *sl = (_sv_slice_t *)(s->slices[slicenum]);
   int shift = (event->state&GDK_SHIFT_MASK);
   if(event->state&GDK_MOD1_MASK) return FALSE;
   if(event->state&GDK_CONTROL_MASK)return FALSE;
@@ -814,11 +814,11 @@ gboolean slider_key_press(Slider *s,GdkEventKey *event,int slicenum){
     {
       double x = val_to_pixel(s,sl->thumb_val);
       while(sl->thumb_val > s->label_vals[0] &&
-	    sl->thumb_val == slider_pixel_to_val(s,x))x--;
+	    sl->thumb_val == _sv_slider_pixel_to_val(s,x))x--;
       if(shift)
 	x-=9;
-      sl->thumb_val=slider_pixel_to_val(s,x);
-      slider_vals_bound(s,slicenum);
+      sl->thumb_val=_sv_slider_pixel_to_val(s,x);
+      _sv_slider_vals_bound(s,slicenum);
       // did a gradient get altered?
       update_gradient(s);
       
@@ -827,8 +827,8 @@ gboolean slider_key_press(Slider *s,GdkEventKey *event,int slicenum){
 	sl->callback(sl->callback_data,1);
 	sl->callback(sl->callback_data,2);
       }
-      slider_draw(s);
-      slider_expose(s);
+      _sv_slider_draw(s);
+      _sv_slider_expose(s);
 
     }
     return TRUE;
@@ -837,11 +837,11 @@ gboolean slider_key_press(Slider *s,GdkEventKey *event,int slicenum){
     {
       double x = val_to_pixel(s,sl->thumb_val);
       while(sl->thumb_val < s->label_vals[s->labels-1] &&
-	    sl->thumb_val == slider_pixel_to_val(s,x))x++;
+	    sl->thumb_val == _sv_slider_pixel_to_val(s,x))x++;
       if(shift)
 	x+=9;
-      sl->thumb_val=slider_pixel_to_val(s,x);
-      slider_vals_bound(s,slicenum);
+      sl->thumb_val=_sv_slider_pixel_to_val(s,x);
+      _sv_slider_vals_bound(s,slicenum);
       // did a gradient get altered?
       update_gradient(s);
       
@@ -850,8 +850,8 @@ gboolean slider_key_press(Slider *s,GdkEventKey *event,int slicenum){
 	sl->callback(sl->callback_data,1);
 	sl->callback(sl->callback_data,2);
       }
-      slider_draw(s);
-      slider_expose(s);
+      _sv_slider_draw(s);
+      _sv_slider_expose(s);
     }
     return TRUE;
   }
@@ -859,10 +859,10 @@ gboolean slider_key_press(Slider *s,GdkEventKey *event,int slicenum){
   return FALSE; // keep processing
 }
 
-Slider *slider_new(Slice **slices, int num_slices, char **labels, double *label_vals, int num_labels,
-		   unsigned flags){
+_sv_slider_t *_sv_slider_new(_sv_slice_t **slices, int num_slices, char **labels, double *label_vals, int num_labels,
+			     unsigned flags){
   int i;
-  Slider *ret = calloc(1,sizeof(*ret)); 
+  _sv_slider_t *ret = calloc(1,sizeof(*ret)); 
 
   ret->slices = (GtkWidget **)slices;
   ret->num_slices = num_slices;
@@ -891,24 +891,24 @@ Slider *slider_new(Slice **slices, int num_slices, char **labels, double *label_
     ret->neg = 1;
 
   ret->flags=flags;
-  if(flags & SLIDER_FLAG_VERTICAL) ret->flip = 1;
+  if(flags & _SV_SLIDER_FLAG_VERTICAL) ret->flip = 1;
   return ret;
 }
 
-void slider_set_gradient(Slider *s, mapping *m){
+void _sv_slider_set_gradient(_sv_slider_t *s, _sv_mapping_t *m){
   s->gradient = m;
   if(s->realized){
-    slider_draw_background(s);
-    slider_draw(s);
-    slider_expose(s);
+    _sv_slider_draw_background(s);
+    _sv_slider_draw(s);
+    _sv_slider_expose(s);
   }
 }
 
-void slider_set_thumb_active(Slider *s, int thumbnum, int activep){
-  slice_set_active(SLICE(s->slices[thumbnum]),activep);
+void _sv_slider_set_thumb_active(_sv_slider_t *s, int thumbnum, int activep){
+  _sv_slice_set_active(SLICE(s->slices[thumbnum]),activep);
 }
 
-double slider_get_value(Slider *s, int thumbnum){
+double _sv_slider_get_value(_sv_slider_t *s, int thumbnum){
   GtkWidget *w;
   if(thumbnum >= s->num_slices)return 0;
   if(thumbnum < 0)return 0;
@@ -916,25 +916,25 @@ double slider_get_value(Slider *s, int thumbnum){
   return SLICE(w)->thumb_val;
 }
 
-void slider_set_value(Slider *s, int thumbnum, double v){
+void _sv_slider_set_value(_sv_slider_t *s, int thumbnum, double v){
   GtkWidget *w;
   if(thumbnum >= s->num_slices)return;
   if(thumbnum < 0)return;
   w = s->slices[thumbnum];
-  slice_thumb_set(SLICE(w),v);
+  _sv_slice_thumb_set(SLICE(w),v);
   update_gradient(s);
 }
 
-void slider_set_quant(Slider *s,double num, double denom){
+void _sv_slider_set_quant(_sv_slider_t *s,double num, double denom){
   s->quant_num=num;
   s->quant_denom=denom;
 }
 
-double slider_print_height(Slider *s){
+double _sv_slider_print_height(_sv_slider_t *s){
   return (s->slices[0]->allocation.height - s->ypad*2)*1.2;
 }
  
-void slider_print(Slider *s, cairo_t *c, int w, int h){
+void _sv_slider_print(_sv_slider_t *s, cairo_t *c, int w, int h){
   cairo_save(c);
   double ypad = h*.1;
   double neg = (s->neg? -1.: 1.);
@@ -978,7 +978,7 @@ void slider_print(Slider *s, cairo_t *c, int w, int h){
   double lodel = 1. / (s->labels-1) * firstlabel;
   double hidel = 1. / (s->labels-1) * lastlabel;
   double alphadel = (slices==3 ? 
-		     slider_val_to_del(s,SLICE(s->slices[1])->thumb_val):0.);
+		     _sv_slider_val_to_del(s,SLICE(s->slices[1])->thumb_val):0.);
 
   // create background image
   {
@@ -1003,11 +1003,11 @@ void slider_print(Slider *s, cairo_t *c, int w, int h){
     }
 
     for(y=0;y<h;y++){
-      ucolor *line = (ucolor *)cairo_image_surface_get_data(image) + w*y;
+      _sv_ucolor_t *line = (_sv_ucolor_t *)cairo_image_surface_get_data(image) + w*y;
       for(x=0;x<w;x++){
 	double del = (hidel - lodel) / (w-1) * x + lodel;
 	if(del>=alphadel)
-	  line[x].u = mapping_calc(s->gradient, del, line[x].u);
+	  line[x].u = _sv_mapping_calc(s->gradient, del, line[x].u);
       }
     }
     

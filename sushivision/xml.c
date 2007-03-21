@@ -28,7 +28,7 @@
 
 /* a few helpers to make specific libxml2 call patterns more concise */
 
-xmlNodePtr xmlGetChildSPreserve(xmlNodePtr n, char *name,char *prop, char *val){
+xmlNodePtr _xmlGetChildSPreserve(xmlNodePtr n, char *name,char *prop, char *val){
   xmlNodePtr child = (n?n->xmlChildrenNode:NULL);
   while(child){
     // is this the child we want?
@@ -52,8 +52,8 @@ xmlNodePtr xmlGetChildSPreserve(xmlNodePtr n, char *name,char *prop, char *val){
   return NULL;
 }
 
-xmlNodePtr xmlGetChildS(xmlNodePtr n, char *name,char *prop, char *val){
-  xmlNodePtr child = (n?xmlGetChildSPreserve(n,name,prop,val):NULL);
+xmlNodePtr _xmlGetChildS(xmlNodePtr n, char *name,char *prop, char *val){
+  xmlNodePtr child = (n?_xmlGetChildSPreserve(n,name,prop,val):NULL);
   if(child){
     // this is what we want 
     // remove it from the tree
@@ -63,20 +63,20 @@ xmlNodePtr xmlGetChildS(xmlNodePtr n, char *name,char *prop, char *val){
   return child;
 }
 
-xmlNodePtr xmlGetChildI(xmlNodePtr n, char *name,char *prop, int val){
+xmlNodePtr _xmlGetChildI(xmlNodePtr n, char *name,char *prop, int val){
   char buffer[80];
   snprintf(buffer,sizeof(buffer),"%d",val);
-  return xmlGetChildS(n, name, prop, buffer);
+  return _xmlGetChildS(n, name, prop, buffer);
 }
 
-xmlNodePtr xmlGetChildIPreserve(xmlNodePtr n, char *name,char *prop, int val){
+xmlNodePtr _xmlGetChildIPreserve(xmlNodePtr n, char *name,char *prop, int val){
   char buffer[80];
   snprintf(buffer,sizeof(buffer),"%d",val);
-  return xmlGetChildSPreserve(n, name, prop, buffer);
+  return _xmlGetChildSPreserve(n, name, prop, buffer);
 }
 
-void xmlNewMapProp(xmlNodePtr n, char *name, propmap **map, int val){
-  propmap *m = *map++;
+void _xmlNewMapProp(xmlNodePtr n, char *name, _sv_propmap_t **map, int val){
+  _sv_propmap_t *m = *map++;
   while(m){
     if(m->value == val){
       xmlNewProp(n, (xmlChar *)name, (xmlChar *)m->left);
@@ -86,29 +86,29 @@ void xmlNewMapProp(xmlNodePtr n, char *name, propmap **map, int val){
   }
 }
 
-void xmlNewPropF(xmlNodePtr n, char *name, double val){
+void _xmlNewPropF(xmlNodePtr n, char *name, double val){
   char buffer[80];
   snprintf(buffer,sizeof(buffer),"%.20g",val);
   xmlNewProp(n, (xmlChar *) name, (xmlChar *)buffer);
 }
 
-void xmlNewPropI(xmlNodePtr n, char *name, int val){
+void _xmlNewPropI(xmlNodePtr n, char *name, int val){
   char buffer[80];
   snprintf(buffer,sizeof(buffer),"%d",val);
   xmlNewProp(n, (xmlChar *) name, (xmlChar *)buffer);
 }
 
-void xmlNewPropS(xmlNodePtr n, char *name, char *val){
+void _xmlNewPropS(xmlNodePtr n, char *name, char *val){
   if(val)
     xmlNewProp(n, (xmlChar *) name, (xmlChar *)val);
 }
 
-void xmlGetPropS(xmlNodePtr n, char *name, char **value){
+void _xmlGetPropS(xmlNodePtr n, char *name, char **value){
   char *ret = (char *)(n?xmlGetProp(n, (xmlChar *)name):NULL);
   if(ret) *value=ret;
 }
 
-void xmlGetPropF(xmlNodePtr n, char *name, double *val){
+void _xmlGetPropF(xmlNodePtr n, char *name, double *val){
   xmlChar *v = (n?xmlGetProp(n, (xmlChar *)name):NULL);
   if(v){
     *val = atof((char *)v);
@@ -116,30 +116,30 @@ void xmlGetPropF(xmlNodePtr n, char *name, double *val){
   }
 }
 
-void xmlCheckPropS(xmlNodePtr n, char *prop, char *val, char *msg, int num, int *warn){
+void _xmlCheckPropS(xmlNodePtr n, char *prop, char *val, char *msg, int num, int *warn){
   char *testval = NULL;
-  xmlGetPropS(n, prop, &testval);
+  _xmlGetPropS(n, prop, &testval);
   if(testval){
     if(strcmp(val,testval)){
-      first_load_warning(warn);
+      _sv_first_load_warning(warn);
       fprintf(stderr,msg, num);
       fprintf(stderr,"\n\t(found %s, should be %s).\n", testval, val);
     }
     xmlFree(testval);
   }else{
-    first_load_warning(warn);
+    _sv_first_load_warning(warn);
     fprintf(stderr,msg, num);
     fprintf(stderr,"\n\t(null found, should be %s).\n", val);
   }
 }
 
-void xmlCheckMap(xmlNodePtr n, char *prop, propmap **map, int val, char *msg, int num, int *warn){
+void _xmlCheckMap(xmlNodePtr n, char *prop, _sv_propmap_t **map, int val, char *msg, int num, int *warn){
   char *name = NULL;
   char *testname = NULL;
-  xmlGetPropS(n, prop, &testname);
+  _xmlGetPropS(n, prop, &testname);
   
   // look up our desired value
-  propmap *m = *map++;
+  _sv_propmap_t *m = *map++;
   while(m){
     if(m->value == val){
       name = m->left;
@@ -151,30 +151,30 @@ void xmlCheckMap(xmlNodePtr n, char *prop, propmap **map, int val, char *msg, in
   if(testname){
     if(name){
       if(strcmp(name,testname)){
-	first_load_warning(warn);
+	_sv_first_load_warning(warn);
 	fprintf(stderr,msg, num);
 	fprintf(stderr,"\n\t(found %s, should be %s).\n", testname, name);
       }
     }else{
-      first_load_warning(warn);
+      _sv_first_load_warning(warn);
       fprintf(stderr,msg, num);
       fprintf(stderr,"\n\t(found %s, should be null).\n", testname);
     }
     xmlFree(testname);
   }else{
     if(name){
-      first_load_warning(warn);
+      _sv_first_load_warning(warn);
       fprintf(stderr,msg, num);
       fprintf(stderr,"\n\t(null found, should be %s).\n", name);
     }
   }
 }
 
-static void xmlGetMapVal(xmlNodePtr n, char *key, propmap **map, int *out){
+static void _xmlGetMapVal(xmlNodePtr n, char *key, _sv_propmap_t **map, int *out){
   char *valname = (char *)(n?xmlGetProp(n, (xmlChar *)key):NULL);
   if(!valname) return;
   
-  propmap *m = *map++;
+  _sv_propmap_t *m = *map++;
   while(m){
     if(!strcmp(m->left,valname)){
       xmlFree(valname);
@@ -186,11 +186,11 @@ static void xmlGetMapVal(xmlNodePtr n, char *key, propmap **map, int *out){
   xmlFree(valname);
 }
 
-static void xmlGetChildMap_i(xmlNodePtr in, char *prop, char *key, propmap **map, int *out,
+static void _xmlGetChildMap_i(xmlNodePtr in, char *prop, char *key, _sv_propmap_t **map, int *out,
 			     char *msg, int num, int *warn, int pres){
   xmlNodePtr n = (pres ?
-		  (in?xmlGetChildSPreserve(in, prop, NULL, NULL):NULL):
-		  (in?xmlGetChildS(in, prop, NULL, NULL):NULL));
+		  (in?_xmlGetChildSPreserve(in, prop, NULL, NULL):NULL):
+		  (in?_xmlGetChildS(in, prop, NULL, NULL):NULL));
   if(!n)return;
   
   char *val = (char *)xmlGetProp(n, (xmlChar *)key);
@@ -200,10 +200,10 @@ static void xmlGetChildMap_i(xmlNodePtr in, char *prop, char *key, propmap **map
   }
 
   int ret = -1;
-  xmlGetMapVal(n,key,map,&ret);
+  _xmlGetMapVal(n,key,map,&ret);
   if(ret == -1){
     if(msg){
-      first_load_warning(warn);
+      _sv_first_load_warning(warn);
       fprintf(stderr,msg,num);
       fprintf(stderr," (%s).\n", val);
     }
@@ -214,33 +214,33 @@ static void xmlGetChildMap_i(xmlNodePtr in, char *prop, char *key, propmap **map
   if(!pres) xmlFreeNode(n);
 }
 
-void xmlGetChildMap(xmlNodePtr in, char *prop, char *key, propmap **map, int *out,
+void _xmlGetChildMap(xmlNodePtr in, char *prop, char *key, _sv_propmap_t **map, int *out,
 		    char *msg, int num, int *warn){
-  xmlGetChildMap_i(in, prop, key, map, out, msg, num, warn, 0);
+  _xmlGetChildMap_i(in, prop, key, map, out, msg, num, warn, 0);
 }
 
-void xmlGetChildMapPreserve(xmlNodePtr in, char *prop, char *key, propmap **map, int *out,
+void _xmlGetChildMapPreserve(xmlNodePtr in, char *prop, char *key, _sv_propmap_t **map, int *out,
 		    char *msg, int num, int *warn){
-  xmlGetChildMap_i(in, prop, key, map, out, msg, num, warn, 1);
+  _xmlGetChildMap_i(in, prop, key, map, out, msg, num, warn, 1);
 }
 
-void xmlGetChildPropS(xmlNodePtr in, char *prop, char *key, char **out){
-  xmlNodePtr n = (in?xmlGetChildS(in, prop, NULL, NULL):NULL);
+void _xmlGetChildPropS(xmlNodePtr in, char *prop, char *key, char **out){
+  xmlNodePtr n = (in?_xmlGetChildS(in, prop, NULL, NULL):NULL);
   if(!n)return;
   char *val = (char *)xmlGetProp(n, (xmlChar *)key);
   xmlFreeNode(n);
   if(val) *out = val;
 }
 
-void xmlGetChildPropSPreserve(xmlNodePtr in, char *prop, char *key, char **out){
-  xmlNodePtr n = (in?xmlGetChildSPreserve(in, prop, NULL, NULL):NULL);
+void _xmlGetChildPropSPreserve(xmlNodePtr in, char *prop, char *key, char **out){
+  xmlNodePtr n = (in?_xmlGetChildSPreserve(in, prop, NULL, NULL):NULL);
   if(!n)return;
   char *val = (char *)xmlGetProp(n, (xmlChar *)key);
   if(val) *out = val;
 }
 
-void xmlGetChildPropF(xmlNodePtr in, char *prop, char *key, double *out){
-  xmlNodePtr n = (in?xmlGetChildS(in, prop, NULL, NULL):NULL);
+void _xmlGetChildPropF(xmlNodePtr in, char *prop, char *key, double *out){
+  xmlNodePtr n = (in?_xmlGetChildS(in, prop, NULL, NULL):NULL);
   if(!n)return;
   char *val = (char *)xmlGetProp(n, (xmlChar *)key);
   xmlFreeNode(n);
@@ -248,16 +248,16 @@ void xmlGetChildPropF(xmlNodePtr in, char *prop, char *key, double *out){
   xmlFree(val);
 }
   
-void xmlGetChildPropFPreserve(xmlNodePtr in, char *prop, char *key, double *out){
-  xmlNodePtr n = (in?xmlGetChildSPreserve(in, prop, NULL, NULL):NULL);
+void _xmlGetChildPropFPreserve(xmlNodePtr in, char *prop, char *key, double *out){
+  xmlNodePtr n = (in?_xmlGetChildSPreserve(in, prop, NULL, NULL):NULL);
   if(!n)return;
   char *val = (char *)xmlGetProp(n, (xmlChar *)key);
   if(val) *out = atof(val);
   xmlFree(val);
 }
 
-void xmlGetChildPropI(xmlNodePtr in, char *prop, char *key, int *out){
-  xmlNodePtr n = (in?xmlGetChildS(in, prop, NULL, NULL):NULL);
+void _xmlGetChildPropI(xmlNodePtr in, char *prop, char *key, int *out){
+  xmlNodePtr n = (in?_xmlGetChildS(in, prop, NULL, NULL):NULL);
   if(!n)return;
   char *val = (char *)xmlGetProp(n, (xmlChar *)key);
   xmlFreeNode(n);
@@ -265,8 +265,8 @@ void xmlGetChildPropI(xmlNodePtr in, char *prop, char *key, int *out){
   xmlFree(val);
 }
 
-void xmlGetChildPropIPreserve(xmlNodePtr in, char *prop, char *key, int *out){
-  xmlNodePtr n = (in?xmlGetChildSPreserve(in, prop, NULL, NULL):NULL);
+void _xmlGetChildPropIPreserve(xmlNodePtr in, char *prop, char *key, int *out){
+  xmlNodePtr n = (in?_xmlGetChildSPreserve(in, prop, NULL, NULL):NULL);
   if(!n)return;
   char *val = (char *)xmlGetProp(n, (xmlChar *)key);
   if(val) *out = atoi(val);
@@ -274,9 +274,9 @@ void xmlGetChildPropIPreserve(xmlNodePtr in, char *prop, char *key, int *out){
 }
   
 /* convenience helpers for wielding property maps */
-int propmap_pos(propmap **map, int val){
+int _sv_propmap_pos(_sv_propmap_t **map, int val){
   int i=0;
-  propmap *m = *map++;
+  _sv_propmap_t *m = *map++;
   while(m){
     if(m->value == val)
       return i;
@@ -286,9 +286,9 @@ int propmap_pos(propmap **map, int val){
   return 0;
 }
 
-int propmap_last(propmap **map){
+int _sv_propmap_last(_sv_propmap_t **map){
   int i=0;
-  propmap *m = *map++;
+  _sv_propmap_t *m = *map++;
   while(m){
     i++;
     m = *map++;
@@ -296,9 +296,9 @@ int propmap_last(propmap **map){
   return i-1;
 }
 
-int propmap_label_pos(propmap **map, char *label){
+int _sv_propmap_label_pos(_sv_propmap_t **map, char *label){
   int i=0;
-  propmap *m = *map++;
+  _sv_propmap_t *m = *map++;
   while(m){
     if(!strcmp(m->left,label))
       return i;

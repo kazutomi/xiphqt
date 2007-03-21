@@ -25,105 +25,105 @@
 #include <gdk/gdkkeysyms.h>
 #include "internal.h"
 
-static void draw_and_expose(GtkWidget *widget){
-  Slice *s=SLICE(widget);
+static void _sv_slice_draw_and_expose(GtkWidget *widget){
+  _sv_slice_t *s=SLICE(widget);
 
-  slider_draw(s->slider);
-  slider_expose(s->slider);
+  _sv_slider_draw(s->slider);
+  _sv_slider_expose(s->slider);
 }
 
-static gboolean slice_expose(GtkWidget *widget, GdkEventExpose *event ){
-  Slice *s=SLICE(widget);
-  slider_expose_slice(s->slider,s->slicenum);
+static gboolean _sv_slice_expose(GtkWidget *widget, GdkEventExpose *event ){
+  _sv_slice_t *s=SLICE(widget);
+  _sv_slider_expose_slice(s->slider,s->slicenum);
   return FALSE;
 }
 
-static void slice_size_request (GtkWidget *widget,GtkRequisition *requisition){
-  Slice *s=SLICE(widget);
+static void _sv_slice_size_request (GtkWidget *widget,GtkRequisition *requisition){
+  _sv_slice_t *s=SLICE(widget);
   
-  slider_size_request_slice(s->slider,requisition);
+  _sv_slider_size_request_slice(s->slider,requisition);
 }
 
-static gint slice_motion(GtkWidget        *widget,
+static gint _sv_slice_motion(GtkWidget        *widget,
 			 GdkEventMotion   *event){
-  Slice *s=SLICE(widget);
-  slider_motion(s->slider,s->slicenum,event->x,event->y);
+  _sv_slice_t *s=SLICE(widget);
+  _sv_slider_motion(s->slider,s->slicenum,event->x,event->y);
   
   return TRUE;
 }
 
-static gint slice_enter(GtkWidget        *widget,
+static gint _sv_slice_enter(GtkWidget        *widget,
 			GdkEventCrossing *event){
-  Slice *s=SLICE(widget);
-  slider_lightme(s->slider,s->slicenum,event->x,event->y);
-  draw_and_expose(widget);
+  _sv_slice_t *s=SLICE(widget);
+  _sv_slider_lightme(s->slider,s->slicenum,event->x,event->y);
+  _sv_slice_draw_and_expose(widget);
   return TRUE;
 }
 
-static gint slice_leave(GtkWidget        *widget,
+static gint _sv_slice_leave(GtkWidget        *widget,
 			GdkEventCrossing *event){
-  Slice *s=SLICE(widget);
+  _sv_slice_t *s=SLICE(widget);
 
-  slider_unlight(s->slider);
-  slider_draw(s->slider);
-  slider_expose(s->slider);
+  _sv_slider_unlight(s->slider);
+  _sv_slider_draw(s->slider);
+  _sv_slider_expose(s->slider);
 
   return TRUE;
 }
 
-static gboolean slice_button_press(GtkWidget        *widget,
+static gboolean _sv_slice_button_press(GtkWidget        *widget,
 				   GdkEventButton   *event){
-  Slice *s=SLICE(widget);
+  _sv_slice_t *s=SLICE(widget);
   if(event->button == 3)return FALSE;
   
   if(event->button == 1)
-    slider_button_press(s->slider,s->slicenum,event->x,event->y);
+    _sv_slider_button_press(s->slider,s->slicenum,event->x,event->y);
 
   return TRUE;
 }
 
-static gboolean slice_button_release(GtkWidget        *widget,
+static gboolean _sv_slice_button_release(GtkWidget        *widget,
 				     GdkEventButton   *event){
-  Slice *s=SLICE(widget);
+  _sv_slice_t *s=SLICE(widget);
   if(event->button == 3)return FALSE;
 
   if(event->button == 1)
-    slider_button_release(s->slider,s->slicenum,event->x,event->y);
+    _sv_slider_button_release(s->slider,s->slicenum,event->x,event->y);
 
   return TRUE;
 }
 
-static gboolean slice_unfocus(GtkWidget        *widget,
+static gboolean _sv_slice_unfocus(GtkWidget        *widget,
 			      GdkEventFocus       *event){
-  Slice *s=SLICE(widget);
+  _sv_slice_t *s=SLICE(widget);
   if(s->thumb_focus){
     s->thumb_focus=0;
-    draw_and_expose(widget);
+    _sv_slice_draw_and_expose(widget);
   }
   return TRUE;
 }
 
-static gboolean slice_refocus(GtkWidget        *widget,
+static gboolean _sv_slice_refocus(GtkWidget        *widget,
 			      GdkEventFocus       *event){
-  Slice *s=SLICE(widget);
+  _sv_slice_t *s=SLICE(widget);
   if(!s->thumb_focus){
     s->thumb_focus=1;
-    draw_and_expose(widget);
+    _sv_slice_draw_and_expose(widget);
   }
   return TRUE;
 }
 
-static gboolean slice_key_press(GtkWidget *widget,GdkEventKey *event){
-  Slice *s=SLICE(widget);
+static gboolean _sv_slice_key_press(GtkWidget *widget,GdkEventKey *event){
+  _sv_slice_t *s=SLICE(widget);
 
-  return slider_key_press(s->slider,event,s->slicenum);
+  return _sv_slider_key_press(s->slider,event,s->slicenum);
 }
 
-static void slice_state_changed(GtkWidget *w,GtkStateType ps){
-  draw_and_expose(w);
+static void _sv_slice_state_changed(GtkWidget *w,GtkStateType ps){
+  _sv_slice_draw_and_expose(w);
 }
 
-static void slice_realize (GtkWidget *widget){
+static void _sv_slice_realize (GtkWidget *widget){
   GdkWindowAttr attributes;
   gint      attributes_mask;
 
@@ -160,9 +160,9 @@ static void slice_realize (GtkWidget *widget){
   gtk_widget_set_double_buffered (widget, FALSE);
 }
 
-static void slice_size_allocate (GtkWidget     *widget,
+static void _sv_slice_size_allocate (GtkWidget     *widget,
 				 GtkAllocation *allocation){
-  //Slice *s = SLICE (widget);  
+  //_sv_slice_t *s = SLICE (widget);  
   if (GTK_WIDGET_REALIZED (widget)){
     
     gdk_window_move_resize (widget->window, allocation->x, allocation->y, 
@@ -176,44 +176,44 @@ static void slice_size_allocate (GtkWidget     *widget,
 
 static GtkWidgetClass *parent_class = NULL;
 
-static void slice_class_init (SliceClass *class){
+static void _sv_slice_class_init (_sv_slice_class_t *class){
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (class);
   //GtkObjectClass *object_class = GTK_OBJECT_CLASS (class);
 
   parent_class = g_type_class_peek_parent (class);
 
   //object_class->destroy = slice_destroy;
-  widget_class->realize = slice_realize;
-  widget_class->expose_event = slice_expose;
-  widget_class->size_request = slice_size_request;
-  widget_class->size_allocate = slice_size_allocate;
-  widget_class->key_press_event = slice_key_press;
-  widget_class->button_press_event = slice_button_press;
-  widget_class->button_release_event = slice_button_release;
-  widget_class->enter_notify_event = slice_enter;
-  widget_class->leave_notify_event = slice_leave;
-  widget_class->motion_notify_event = slice_motion;
-  widget_class->focus_out_event = slice_unfocus;
-  widget_class->focus_in_event = slice_refocus;
-  widget_class->state_changed = slice_state_changed;
+  widget_class->realize = _sv_slice_realize;
+  widget_class->expose_event = _sv_slice_expose;
+  widget_class->size_request = _sv_slice_size_request;
+  widget_class->size_allocate = _sv_slice_size_allocate;
+  widget_class->key_press_event = _sv_slice_key_press;
+  widget_class->button_press_event = _sv_slice_button_press;
+  widget_class->button_release_event = _sv_slice_button_release;
+  widget_class->enter_notify_event = _sv_slice_enter;
+  widget_class->leave_notify_event = _sv_slice_leave;
+  widget_class->motion_notify_event = _sv_slice_motion;
+  widget_class->focus_out_event = _sv_slice_unfocus;
+  widget_class->focus_in_event = _sv_slice_refocus;
+  widget_class->state_changed = _sv_slice_state_changed;
 }
 
-static void slice_init (Slice *s){
+static void _sv_slice_init (_sv_slice_t *s){
 }
 
-GType slice_get_type (void){
+GType _sv_slice_get_type (void){
   static GType m_type = 0;
   if (!m_type){
     static const GTypeInfo m_info={
-      sizeof (SliceClass),
+      sizeof (_sv_slice_class_t),
       NULL, /* base_init */
       NULL, /* base_finalize */
-      (GClassInitFunc) slice_class_init,
+      (GClassInitFunc) _sv_slice_class_init,
       NULL, /* class_finalize */
       NULL, /* class_data */
-      sizeof (Slice),
+      sizeof (_sv_slice_t),
       0,
-      (GInstanceInitFunc) slice_init,
+      (GInstanceInitFunc) _sv_slice_init,
       0
     };
     
@@ -223,35 +223,35 @@ GType slice_get_type (void){
   return m_type;
 }
 
-GtkWidget* slice_new (void (*callback)(void *,int), void *data){
-  GtkWidget *ret= GTK_WIDGET (g_object_new (slice_get_type (), NULL));
-  Slice *s=SLICE(ret);
+GtkWidget* _sv_slice_new (void (*callback)(void *,int), void *data){
+  GtkWidget *ret= GTK_WIDGET (g_object_new (_sv_slice_get_type (), NULL));
+  _sv_slice_t *s=SLICE(ret);
   s->callback = callback;
   s->callback_data = data;
   s->thumb_active = 1;
   return ret;
 }
 
-void slice_set_active(Slice *s, int activep){
+void _sv_slice_set_active(_sv_slice_t *s, int activep){
   s->thumb_active = activep;
   if(s->active_callback)
     s->active_callback(s->active_callback_data, activep);
-  draw_and_expose(GTK_WIDGET(s));
+  _sv_slice_draw_and_expose(GTK_WIDGET(s));
 }
 
-void slice_thumb_set(Slice *s,double v){
+void _sv_slice_thumb_set(_sv_slice_t *s,double v){
   GtkWidget *w=GTK_WIDGET(s);
   
   if(s->thumb_val != v){
     s->thumb_val=v;
-    slider_vals_bound(s->slider,s->slicenum);
+    _sv_slider_vals_bound(s->slider,s->slicenum);
     
     if(s->callback)s->callback(s->callback_data,1);
-    draw_and_expose(w);
+    _sv_slice_draw_and_expose(w);
   }
 }
 
-void slice_set_active_callback(Slice *s, void (*callback)(void *,int), void *data){
+void _sv_slice_set_active_callback(_sv_slice_t *s, void (*callback)(void *,int), void *data){
   s->active_callback = callback;
   s->active_callback_data = data;
 }

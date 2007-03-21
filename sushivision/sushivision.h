@@ -22,246 +22,288 @@
 #ifndef _SUSHIVISION_
 #define _SUSHIVISION_
   
-typedef struct sushiv_scale sushiv_scale_t;
-typedef struct sushiv_panel sushiv_panel_t;
-typedef struct sushiv_dimension sushiv_dimension_t;
-typedef struct sushiv_objective sushiv_objective_t;
-typedef struct sushiv_function sushiv_function_t;
+typedef struct sv_scale sv_scale_t;
+typedef struct sv_panel sv_panel_t;
+typedef struct sv_dim   sv_dim_t;
+typedef struct sv_obj   sv_obj_t;
+typedef struct sv_func  sv_func_t;
+typedef struct _sv_instance_internal sv_instance_internal_t;
+typedef struct _sv_scale_internal sv_scale_internal_t;
+typedef struct _sv_dim_internal sv_dim_internal_t;
+typedef union  _sv_dim_subtype sv_dim_subtype_t;
+typedef struct _sv_func_internal sv_func_internal_t;
+typedef union  _sv_func_subtype sv_func_subtype_t;
+typedef struct _sv_obj_internal sv_obj_internal_t;
+typedef union  _sv_obj_subtype sv_obj_subtype_t;
+typedef struct _sv_panel_internal sv_panel_internal_t;
+typedef union  _sv_panel_subtype sv_panel_subtype_t;
 
-typedef struct sushiv_instance_internal sushiv_instance_internal_t;
+int sv_submain(int argc, char *argv[]);
+int sv_atexit(void);
+int sv_save(char *filename);
+int sv_load(char *filename);
 
-typedef struct sushiv_instance {
+/* toplevel instances ********************************************/
+
+typedef struct sv_instance {
   int number;
   char *name;
 
   int functions;
-  sushiv_function_t **function_list;
+  sv_func_t **function_list;
 
   int dimensions;
-  sushiv_dimension_t **dimension_list;
+  sv_dim_t **dimension_list;
 
   int objectives;
-  sushiv_objective_t **objective_list;
+  sv_obj_t **objective_list;
 
   int panels;
-  struct sushiv_panel **panel_list;
+  sv_panel_t **panel_list;
 
-  sushiv_instance_internal_t *private;
-} sushiv_instance_t;
+  sv_instance_internal_t *private;
+} sv_instance_t;
 
-struct sushiv_scale{
+sv_instance_t           *sv_new (int number, 
+				 char *name);
+
+/* scales ********************************************************/
+
+struct sv_scale{
   int vals;
   double *val_list;
   char **label_list; 
   char *legend;
+
+  sv_scale_internal_t *private;
+  unsigned flags;
 };
 
-#define SUSHIV_DIM_NO_X 0x100
-#define SUSHIV_DIM_NO_Y 0x200
-#define SUSHIV_DIM_ZEROINDEX 0x1
-#define SUSHIV_DIM_MONOTONIC 0x2
+sv_scale_t        *sv_scale_new (char *legend,
+				 unsigned scalevals, 
+				 double *scaleval_list, 
+				 char **scalelabel_list,
+				 unsigned flags);
 
-typedef struct sushiv_dimension_internal sushiv_dimension_internal_t;
-enum sushiv_dimension_type { SUSHIV_DIM_CONTINUOUS, 
-			     SUSHIV_DIM_DISCRETE, 
-			     SUSHIV_DIM_PICKLIST};
-typedef union sushiv_dimension_subtype sushiv_dimension_subtype_t;
+sv_scale_t       *sv_scale_copy (sv_scale_t *s);
 
-struct sushiv_dimension{ 
+void              sv_scale_free (sv_scale_t *s);
+
+/* dimensions ****************************************************/
+
+#define SV_DIM_NO_X 0x100
+#define SV_DIM_NO_Y 0x200
+#define SV_DIM_ZEROINDEX 0x1
+#define SV_DIM_MONOTONIC 0x2
+
+enum sv_dim_type { SV_DIM_CONTINUOUS, 
+			 SV_DIM_DISCRETE, 
+			 SV_DIM_PICKLIST};
+
+struct sv_dim{ 
   int number;
   char *name;
-  enum sushiv_dimension_type type;
+  enum sv_dim_type type;
 
   double bracket[2];
   double val;
 
-  sushiv_scale_t *scale;
+  sv_scale_t *scale;
   unsigned flags;
   
-  int (*callback)(sushiv_dimension_t *);
-  sushiv_instance_t *sushi;
-  sushiv_dimension_subtype_t *subtype;
-  sushiv_dimension_internal_t *private;
+  int (*callback)(sv_dim_t *);
+  sv_instance_t *sushi;
+  sv_dim_subtype_t *subtype;
+  sv_dim_internal_t *private;
 };
 
-typedef struct sushiv_function_internal sushiv_function_internal_t;
-enum sushiv_function_type { SUSHIV_FUNC_BASIC };
-typedef union sushiv_function_subtype sushiv_function_subtype_t;
+sv_dim_t            *sv_dim_new (sv_instance_t *s, 
+				 int number, 
+				 char *name,
+				 unsigned flags);
 
-struct sushiv_function {
+int            sv_dim_set_scale (sv_dim_t *d,
+				 sv_scale_t *scale);
+
+int           sv_dim_make_scale (sv_dim_t *d,
+				 unsigned scalevals, 
+				 double *scaleval_list, 
+				 char **scalelabel_list,
+				 unsigned flags);
+
+int         sv_dim_set_discrete (sv_dim_t *d,
+				 long quant_numerator,
+				 long quant_denominator);
+
+int         sv_dim_set_picklist (sv_dim_t *d);
+
+int            sv_dim_set_value (sv_dim_t *d,
+				 int thumb, 
+				 double val);
+
+int       sv_dim_callback_value (sv_dim_t *d,
+				 int (*callback)(sv_dim_t *));
+
+/* functions *****************************************************/
+
+enum sv_func_type  { SV_FUNC_BASIC };
+
+struct sv_func {
   int number;
-  enum sushiv_function_type type;
+  enum sv_func_type type;
   int inputs;
   int outputs;
   
   void (*callback)(double *,double *);
   unsigned flags;
 
-  sushiv_instance_t *sushi;
-  sushiv_function_subtype_t *subtype;
-  sushiv_function_internal_t *private;
+  sv_instance_t *sushi;
+  sv_func_subtype_t *subtype;
+  sv_func_internal_t *private;
 };
 
-typedef struct sushiv_objective_internal sushiv_objective_internal_t;
-enum sushiv_objective_type { SUSHIV_OBJ_BASIC };
-typedef union sushiv_objective_subtype sushiv_objective_subtype_t;
+sv_func_t          *sv_func_new (sv_instance_t *s, 
+				 int number,
+				 int out_vals,
+				 void (*function)(double *,double *),
+				 unsigned flags);
 
-struct sushiv_objective { 
+/* objectives ****************************************************/
+
+enum sv_obj_type { SV_OBJ_BASIC };
+
+struct sv_obj { 
   int number;
   char *name;
-  enum sushiv_objective_type type;
+  enum sv_obj_type type;
 
-  sushiv_scale_t *scale;
+  sv_scale_t *scale;
   int outputs;
   int *function_map;
   int *output_map;
   char *output_types;
   unsigned flags;
 
-  sushiv_instance_t *sushi;
-  sushiv_objective_subtype_t *subtype;
-  sushiv_objective_internal_t *private;
+  sv_instance_t *sushi;
+  sv_obj_subtype_t *subtype;
+  sv_obj_internal_t *private;
 };
 
-#define SUSHIV_PANEL_LINK_X 0x1 
-#define SUSHIV_PANEL_LINK_Y 0x2 
-#define SUSHIV_PANEL_FLIP 0x4 
+sv_obj_t            *sv_obj_new (sv_instance_t *s,
+				 int number,
+				 char *name,
+				 sv_func_t **function_map,
+				 int *function_output_map,
+				 char *output_type_map,
+				 unsigned flags);
 
-typedef struct sushiv_panel_internal sushiv_panel_internal_t;
-enum sushiv_panel_type { SUSHIV_PANEL_1D, 
-			 SUSHIV_PANEL_2D, 
-			 SUSHIV_PANEL_XY };
-enum sushiv_background { SUSHIV_BG_WHITE, 
-			 SUSHIV_BG_BLACK, 
-			 SUSHIV_BG_CHECKS };
-typedef union sushiv_panel_subtype sushiv_panel_subtype_t;
+sv_obj_t   *sv_obj_new_defaults (sv_instance_t *s,
+				 int number,
+				 char *name,
+				 sv_func_t *function,
+				 unsigned flags);
+
+int            sv_obj_set_scale (sv_obj_t *d,
+				 sv_scale_t *scale);
+
+int           sv_obj_make_scale (sv_obj_t *d,
+				 unsigned scalevals, 
+				 double *scaleval_list, 
+				 char **scalelabel_list,
+				 unsigned flags);
+
+/* panels ********************************************************/
+
+enum sv_panel_type     { SV_PANEL_1D, 
+			 SV_PANEL_2D, 
+			 SV_PANEL_XY };
+enum sv_background     { SV_BG_WHITE, 
+			 SV_BG_BLACK, 
+			 SV_BG_CHECKS };
+
+#define SV_PANEL_LINK_X 0x1 
+#define SV_PANEL_LINK_Y 0x2 
+#define SV_PANEL_FLIP 0x4 
 
 typedef struct {
-  sushiv_dimension_t *d;
-  sushiv_panel_t *p;
-} sushiv_dimension_list_t;
+  sv_dim_t *d;
+  sv_panel_t *p;
+} sv_dim_list_t;
 
 typedef struct {
-  sushiv_objective_t *o;
-  sushiv_panel_t *p;
-} sushiv_objective_list_t;
+  sv_obj_t *o;
+  sv_panel_t *p;
+} sv_obj_list_t;
  
-struct sushiv_panel {
+struct sv_panel {
   int number;
   char *name;
-  enum sushiv_panel_type type;
+  enum sv_panel_type type;
 
   int dimensions;
-  sushiv_dimension_list_t *dimension_list;
+  sv_dim_list_t *dimension_list;
   int objectives;
-  sushiv_objective_list_t *objective_list;
+  sv_obj_list_t *objective_list;
 
-  sushiv_instance_t *sushi;
+  sv_instance_t *sushi;
   unsigned flags;
 
-  sushiv_panel_subtype_t *subtype;
-  sushiv_panel_internal_t *private;
+  sv_panel_subtype_t *subtype;
+  sv_panel_internal_t *private;
 };
 
-extern sushiv_instance_t *sushiv_new_instance(int number, char *name);
+sv_panel_t     *sv_panel_new_1d (sv_instance_t *s,
+				 int number,
+				 char *name,
+				 sv_scale_t *y_scale,
+				 sv_obj_t **objectives,
+				 sv_dim_t **dimensions,	
+				 unsigned flags);
 
-extern void scale_free(sushiv_scale_t *s);
-extern sushiv_scale_t *scale_new(unsigned scalevals, 
-				 double *scaleval_list, 
-				 const char *legend);
-extern int scale_set_scalelabels(sushiv_scale_t *s, 
-				 char **scalelabel_list);
+sv_panel_t     *sv_panel_new_xy (sv_instance_t *s,
+				 int number,
+				 char *name,
+				 sv_scale_t *x_scale,
+				 sv_scale_t *y_scale,
+				 sv_obj_t **objectives,
+				 sv_dim_t **dimensions,	
+				 unsigned flags);
 
-extern int sushiv_new_dimension(sushiv_instance_t *s,
-				int number,
-				const char *name,
-				unsigned scalevals, 
-				double *scaleval_list,
-				int (*callback)(sushiv_dimension_t *),
-				unsigned flags);
+sv_panel_t     *sv_panel_new_2d (sv_instance_t *s,
+				 int number,
+				 char *name, 
+				 sv_obj_t **objectives,
+				 sv_dim_t **dimensions,
+				 unsigned flags);
 
-extern int sushiv_new_dimension_discrete(sushiv_instance_t *s,
-					 int number,
-					 const char *name,
-					 unsigned scalevals, 
-					 double *scaleval_list,
-					 int (*callback)(sushiv_dimension_t *),
-					 long quant_numerator,
-					 long quant_denominator,
-					 unsigned flags);
+int            sv_panel_link_1d (sv_panel_t *p,
+				 sv_panel_t *panel_2d,
+				 unsigned flags);
 
-extern int sushiv_new_dimension_picklist(sushiv_instance_t *s,
-					 int number,
-					 const char *name,
-					 unsigned pickvals, 
-					 double *pickval_list,
-					 char **pickval_labels,
-					 int (*callback)(sushiv_dimension_t *),
-					 unsigned flags);
+int sv_panel_callback_recompute (sv_panel_t *p,
+				 int (*callback)(sv_panel_t *p));
 
-extern void sushiv_dimension_set_value(sushiv_instance_t *s, 
-				       int dim_number, 
-				       int thumb, 
-				       double val);
+int       sv_panel_set_resample (sv_panel_t *p,
+				 int numerator,
+				 int denominator);
 
-extern int sushiv_new_function(sushiv_instance_t *s,
-			       int number,
-			       int out_vals,
-			       void(*callback)(double *,double *),
-			       unsigned flags);
-  
-extern int sushiv_new_objective(sushiv_instance_t *s,
-				int number,
-				const char *name,
-				unsigned scalevals, 
-				double *scaleval_list,
-				int *function_map,
-				int *function_output_map,
-				char *output_type_map,
-				unsigned flags);
+int     sv_panel_set_background (sv_panel_t *p,
+				 enum sv_background bg);
 
-extern int sushiv_new_panel_2d(sushiv_instance_t *s,
-			       int number,
-			       const char *name, 
-			       int *objectives,
-			       int *dimensions,
-			       unsigned flags);
+int           sv_panel_set_axis (sv_panel_t *p,
+				 char axis,
+				 sv_dim_t *d);
 
-extern int sushiv_new_panel_1d(sushiv_instance_t *s,
-			       int number,
-			       const char *name,
-			       sushiv_scale_t *scale,
-			       int *objectives,
-			       int *dimensions,	
-			       unsigned flags);
+int       sv_panel_get_resample (sv_panel_t *p,
+				 int *numerator,
+				 int *denominator);
 
-extern int sushiv_new_panel_1d_linked(sushiv_instance_t *s,
-				      int number,
-				      const char *name,
-				      sushiv_scale_t *scale,
-				      int *objectives,
-				      int linkee,
-				      unsigned flags);
+int     sv_panel_get_background (sv_panel_t *p,
+				 enum sv_background *bg);
 
-extern int sushiv_new_panel_xy(sushiv_instance_t *s,
-			       int number,
-			       const char *name,
-			       sushiv_scale_t *xscale,
-			       sushiv_scale_t *yscale,
-			       int *objectives,
-			       int *dimensions,	
-			       unsigned flags);
-
-extern int sushiv_panel_oversample(sushiv_instance_t *s,
-				   int number,
-				   int numer,
-				   int denom);
-
-extern int sushiv_panel_background(sushiv_instance_t *s,
-				   int number,
-				   enum sushiv_background bg);
-
-extern int sushiv_submain(int argc, char *argv[]);
-extern int sushiv_atexit(void);
+int           sv_panel_get_axis (sv_panel_t *p,
+				 char axis,
+				 sv_dim_t **d);
+				    
 
 #endif

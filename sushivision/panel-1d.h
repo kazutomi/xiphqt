@@ -19,10 +19,10 @@
  * 
  */
 
-typedef struct sushiv_panel1d {
+typedef struct {
 
-  sushiv_panel_t *link_x;
-  sushiv_panel_t *link_y;
+  sv_panel_t *link_x;
+  sv_panel_t *link_y;
 
   GtkWidget *graph_table;
   GtkWidget *obj_table;
@@ -33,39 +33,39 @@ typedef struct sushiv_panel1d {
   int data_size;
   double **data_vec;
 
-  scalespace y;
+  _sv_scalespace_t y;
 
-  scalespace x;   // the x scale aligned to panel's pixel context
-  scalespace x_v; // the x scale aligned to data vector's bins
-  scalespace x_i; // the 'counting' scale used to iterate for compute
+  _sv_scalespace_t x;   // the x scale aligned to panel's pixel context
+  _sv_scalespace_t x_v; // the x scale aligned to data vector's bins
+  _sv_scalespace_t x_i; // the 'counting' scale used to iterate for compute
 
   int scales_init;
   double oldbox[4];
 
   int flip;
-  sushiv_scale_t *range_scale;
-  Slider *range_slider;
+  sv_scale_t *range_scale;
+  _sv_slider_t *range_slider;
   double range_bracket[2];
   
-  mapping *mappings;
+  _sv_mapping_t *mappings;
   int *linetype;
   int *pointtype;
   GtkWidget **map_pulldowns;
   GtkWidget **line_pulldowns;
   GtkWidget **point_pulldowns;
-  Slider **alpha_scale;
+  _sv_slider_t **alpha_scale;
 
   GtkWidget **dim_xb;
 
-  sushiv_dimension_t *x_d;
-  sushiv_dim_widget_t *x_scale;
+  sv_dim_t *x_d;
+  _sv_dim_widget_t *x_scale;
   int x_dnum; // number of dimension within panel, not global instance
-} sushiv_panel1d_t;
+} _sv_panel1d_t;
 
 typedef struct {
   void (**call)(double *, double *);
   double **fout; // [function number][outval_number*x]
   int storage_width;
 
-} _sushiv_bythread_cache_1d;
+} _sv_bythread_cache_1d_t;
 

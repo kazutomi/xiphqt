@@ -49,14 +49,14 @@
 /* Note that this only works after the widget is realized, as
    realization will clobber the event mask */
 
-void gtk_widget_set_sensitive_fixup(GtkWidget *w, gboolean state){
+void _gtk_widget_set_sensitive_fixup(GtkWidget *w, gboolean state){
   gdk_threads_enter();
   gtk_widget_set_sensitive(w,state);
 
   if(state)
     gtk_widget_add_events (w, GDK_ALL_EVENTS_MASK);
   else
-    gtk_widget_remove_events (w, GDK_ALL_EVENTS_MASK);
+    _gtk_widget_remove_events (w, GDK_ALL_EVENTS_MASK);
   gdk_threads_leave();
 }
 
@@ -85,7 +85,7 @@ static void remove_events_internal (GtkWidget *widget,
 /* gtk provides a 'gtk_widget_add_events' but not a converse to remove
    events.  'gtk_widget_set_events' only works pre-realization, so it
    can't be used instead. */
-void gtk_widget_remove_events (GtkWidget *widget,
+void _gtk_widget_remove_events (GtkWidget *widget,
 			       gint       events){
   
   g_return_if_fail (GTK_IS_WIDGET (widget));
@@ -138,7 +138,7 @@ void gtk_widget_remove_events (GtkWidget *widget,
    initialized and made a copy of the Button's class structure and
    handlers */ 
 
-static gboolean gtk_button_button_press_new (GtkWidget      *widget,
+static gboolean _gtk_button_button_press_new (GtkWidget      *widget,
 					     GdkEventButton *event){
   
   if (event->type == GDK_BUTTON_PRESS){
@@ -158,7 +158,7 @@ static gboolean gtk_button_button_press_new (GtkWidget      *widget,
   return FALSE;
 }
 
-static gboolean gtk_button_button_release_new (GtkWidget      *widget,
+static gboolean _gtk_button_button_release_new (GtkWidget      *widget,
 					       GdkEventButton *event){
   if (event->button == 1) {
     GtkButton *button = GTK_BUTTON (widget);
@@ -170,27 +170,27 @@ static gboolean gtk_button_button_release_new (GtkWidget      *widget,
 }
 
 /* does not currently handle all button types, just the ones we use */
-void gtk_button3_fixup(){
+void _gtk_button3_fixup(){
 
   GtkWidget *bb = gtk_button_new();
   GtkWidgetClass *bc = GTK_WIDGET_GET_CLASS(bb);
-  bc->button_press_event = gtk_button_button_press_new;
-  bc->button_release_event = gtk_button_button_release_new;
+  bc->button_press_event = _gtk_button_button_press_new;
+  bc->button_release_event = _gtk_button_button_release_new;
 
   bb = gtk_radio_button_new(NULL);
   bc = GTK_WIDGET_GET_CLASS(bb);
-  bc->button_press_event = gtk_button_button_press_new;
-  bc->button_release_event = gtk_button_button_release_new;
+  bc->button_press_event = _gtk_button_button_press_new;
+  bc->button_release_event = _gtk_button_button_release_new;
 
   bb = gtk_toggle_button_new();
   bc = GTK_WIDGET_GET_CLASS(bb);
-  bc->button_press_event = gtk_button_button_press_new;
-  bc->button_release_event = gtk_button_button_release_new;
+  bc->button_press_event = _gtk_button_button_press_new;
+  bc->button_release_event = _gtk_button_button_release_new;
 
   bb = gtk_check_button_new();
   bc = GTK_WIDGET_GET_CLASS(bb);
-  bc->button_press_event = gtk_button_button_press_new;
-  bc->button_release_event = gtk_button_button_release_new;
+  bc->button_press_event = _gtk_button_button_press_new;
+  bc->button_release_event = _gtk_button_button_release_new;
  
   // just leak 'em.  they'll go away on exit.
 
@@ -225,14 +225,14 @@ static void recursive_gdk_unlock(void){
   pthread_mutex_unlock(&gdkm);
 }
 
-void gtk_mutex_fixup(){
+void _gtk_mutex_fixup(){
   pthread_mutexattr_init(&gdkma);
   pthread_mutexattr_settype(&gdkma,PTHREAD_MUTEX_RECURSIVE);
   pthread_mutex_init(&gdkm,&gdkma);
   gdk_threads_set_lock_functions(recursive_gdk_lock,recursive_gdk_unlock);
 }
 
-pthread_mutex_t *gtk_get_mutex(void){
+pthread_mutex_t *_gtk_get_mutex(void){
   return &gdkm;
 }
 
@@ -254,11 +254,11 @@ static gint popup_callback (GtkWidget *widget, GdkEvent *event){
   return FALSE;
 }
 
-GtkWidget *gtk_menu_new_twocol(GtkWidget *bind, 
-			       propmap **items,
-			       void *callback_data){
+GtkWidget *_gtk_menu_new_twocol(GtkWidget *bind, 
+				_sv_propmap_t **items,
+				void *callback_data){
   
-  propmap *ptr = *items++;
+  _sv_propmap_t *ptr = *items++;
   GtkWidget *ret = gtk_menu_new();
    
   /* create packable boxes for labels, put left labels in */
@@ -290,7 +290,7 @@ GtkWidget *gtk_menu_new_twocol(GtkWidget *bind,
 	g_signal_connect_swapped (G_OBJECT (item), "activate",
 				  G_CALLBACK (ptr->callback), callback_data);
       if(ptr->submenu){
-	GtkWidget *submenu = gtk_menu_new_twocol(ret,ptr->submenu,callback_data);
+	GtkWidget *submenu = _gtk_menu_new_twocol(ret,ptr->submenu,callback_data);
 	gtk_menu_item_set_submenu(GTK_MENU_ITEM(item),submenu);
       }
     }
@@ -308,7 +308,7 @@ GtkWidget *gtk_menu_new_twocol(GtkWidget *bind,
   return ret;
 }
 
-GtkWidget *gtk_menu_get_item(GtkMenu *m, int pos){
+GtkWidget *_gtk_menu_get_item(GtkMenu *m, int pos){
   int i=0;
   GList *l=gtk_container_get_children (GTK_CONTAINER(m));    
   
@@ -326,7 +326,7 @@ GtkWidget *gtk_menu_get_item(GtkMenu *m, int pos){
   return NULL;
 }
 
-int gtk_menu_item_position(GtkWidget *w){
+int _gtk_menu_item_position(GtkWidget *w){
   //GtkMenuItem *mi = GTK_MENU_ITEM(w);
   GtkWidget *box = gtk_widget_get_parent(w);
   GList *l = gtk_container_get_children(GTK_CONTAINER(box));
@@ -344,11 +344,11 @@ int gtk_menu_item_position(GtkWidget *w){
   return 0;
 }
 
-void gtk_menu_alter_item_label(GtkMenu *m, int pos, char *text){
+void _gtk_menu_alter_item_label(GtkMenu *m, int pos, char *text){
   GList *l;
   GtkWidget *box=NULL;
   GtkWidget *label=NULL;
-  GtkWidget *item = gtk_menu_get_item(m, pos);
+  GtkWidget *item = _gtk_menu_get_item(m, pos);
   if(!item)return;
 
   l=gtk_container_get_children (GTK_CONTAINER(item));    
@@ -366,11 +366,11 @@ void gtk_menu_alter_item_label(GtkMenu *m, int pos, char *text){
   gtk_label_set_markup(GTK_LABEL(label),text);
 }
 
-void gtk_menu_alter_item_right(GtkMenu *m, int pos, char *text){
+void _gtk_menu_alter_item_right(GtkMenu *m, int pos, char *text){
   GList *l;
   GtkWidget *box=NULL;
   GtkWidget *label=NULL;
-  GtkWidget *item = gtk_menu_get_item(m, pos);
+  GtkWidget *item = _gtk_menu_get_item(m, pos);
   if(!item)return;
 
   l=gtk_container_get_children (GTK_CONTAINER(item));    
@@ -392,7 +392,7 @@ void gtk_menu_alter_item_right(GtkMenu *m, int pos, char *text){
 /**********************************************************************/
 /* unlock text combo boxes to support markup as well as straight text */
 
-GtkWidget * gtk_combo_box_new_markup (void){
+GtkWidget *_gtk_combo_box_new_markup (void){
   GtkWidget *combo_box;
   GtkCellRenderer *cell;
   GtkListStore *store;
@@ -423,7 +423,7 @@ GtkWidget * gtk_combo_box_new_markup (void){
    The below lets us freeze/unfreeze an auto-resizing box's
    child at its current size without queueing resize events. */
 
-void gtk_box_freeze_child (GtkBox *box,
+void _gtk_box_freeze_child (GtkBox *box,
 			   GtkWidget *child){
   GList *list;
   GtkBoxChild *child_info = NULL;
@@ -446,7 +446,7 @@ void gtk_box_freeze_child (GtkBox *box,
   }
 }
 
-void gtk_box_unfreeze_child (GtkBox *box,
+void _gtk_box_unfreeze_child (GtkBox *box,
 			     GtkWidget *child){
   GList *list;
   GtkBoxChild *child_info = NULL;
