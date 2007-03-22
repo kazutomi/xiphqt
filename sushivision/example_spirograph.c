@@ -97,8 +97,7 @@ int sv_submain(int argc, char *argv[]){
 			    (int []){0,1},
 			    "XY", 0);
   
-  //sv_scale_t *axis = sv_scale_new(NULL,3,(double []){-MAX_TEETH*3,0,MAX_TEETH*3},NULL,0);
-  sv_scale_t *axis = svm_scale(NULL,3,-MAX_TEETH*3,0,MAX_TEETH*3);
+  sv_scale_t *axis = sv_scale_new(NULL,3,(double []){-MAX_TEETH*3,0,MAX_TEETH*3},NULL,0);
 
   sv_panel_new_xy(s,0,"spirograph (TM)",
 		  axis,axis,

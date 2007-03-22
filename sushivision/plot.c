@@ -91,8 +91,6 @@ static void draw_scales_work(cairo_t *c, int w, int h,
 
     cairo_set_line_width(c,1.);
     if(grid & _SV_PLOT_GRID_NORMAL){
-      cairo_save(c);
-      //cairo_set_operator(c,CAIRO_OPERATOR_XOR);       
       switch(grid&0xf00){
       case 256:
 	cairo_set_source_rgba(c,.9,.9,.9,.4);
@@ -122,7 +120,6 @@ static void draw_scales_work(cairo_t *c, int w, int h,
       }
 
       cairo_stroke(c);
-      cairo_restore(c);
     }
 
 
