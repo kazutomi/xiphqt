@@ -27,7 +27,7 @@ SOLDFLAGS = -shared -nostdlib -Wl,-soname="lib$(NAME).so.$(MAJOR)"
 SRC       = main.c scale.c plot.c slider.c slice.c spinner.c panel.c panel-1d.c panel-2d.c \
 	panel-xy.c mapping.c dimension.c function.c objective.c undo.c gtksucks.c xml.c \
 	example_fractal.c example_discrete.c example_chirp.c example_spirograph.c
-INC       = sushivision.h
+INC       = sushivision.h sushimacro.h
 MAN	  =
 EXAMPLES  = sushivision_fractal sushivision_discrete sushivision_chirp
 EX_OBJ    = example_fractal.o example_discrete.o example_chirp.o example_spirograph.o
