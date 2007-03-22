@@ -142,7 +142,8 @@ int            sv_dim_set_value (sv_dim_t *d,
 				 double val);
 
 int       sv_dim_callback_value (sv_dim_t *d,
-				 int (*callback)(sv_dim_t *));
+				 int (*callback)(sv_dim_t *, void*),
+				 void *callback_data);
 
 /* functions *****************************************************/
 
