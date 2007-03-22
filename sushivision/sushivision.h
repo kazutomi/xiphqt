@@ -85,6 +85,8 @@ sv_scale_t        *sv_scale_new (char *legend,
 				 char **scalelabel_list,
 				 unsigned flags);
 
+#define svm_scale(legend,vals,...) sv_scale_new(legend,vals,(double []){__VA_ARGS__},NULL,0)
+
 sv_scale_t       *sv_scale_copy (sv_scale_t *s);
 
 void              sv_scale_free (sv_scale_t *s);

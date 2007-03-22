@@ -1555,7 +1555,7 @@ sv_panel_t *sv_panel_new_1d(sv_instance_t *s,
   p->private->def_oversample_n = p->private->oversample_n = 1;
   p->private->def_oversample_d = p->private->oversample_d = 8;
   
-  return 0;
+  return p;
 }
 
 int sv_panel_link_1d (sv_panel_t *p,
@@ -1564,20 +1564,20 @@ int sv_panel_link_1d (sv_panel_t *p,
 
 
   if(!p){
-    fprintf(stderr,"Cannot link to a NULL 1d panel\n");
-    errno = -EINVAL;
-    return errno;
-  }
-
-  if(panel_2d->type != SV_PANEL_2D){
-    fprintf(stderr,"Panel %d (\"%s\"): Can only link to a 2d paenl\n",
-	    p->number,p->name);
+    fprintf(stderr,"Cannot link a NULL 1d panel\n");
     errno = -EINVAL;
     return errno;
   }
 
   if(!panel_2d){
     fprintf(stderr,"Panel %d (\"%s\"): Attempted to link NULL panel\n",
+	    p->number,p->name);
+    errno = -EINVAL;
+    return errno;
+  }
+
+  if(panel_2d->type != SV_PANEL_2D){
+    fprintf(stderr,"Panel %d (\"%s\"): Can only link to a 2d paenl\n",
 	    p->number,p->name);
     errno = -EINVAL;
     return errno;

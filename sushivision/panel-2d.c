@@ -2052,5 +2052,5 @@ sv_panel_t *sv_panel_new_2d(sv_instance_t *s,
   p2->y_planetodo = calloc(p2->y_obj_num,sizeof(*p2->y_planetodo));
   p2->y_planes = calloc(p2->y_obj_num,sizeof(*p2->y_planes));
 
-  return 0;
+  return p;
 }
