@@ -57,6 +57,7 @@ int sv_submain(int argc, char *argv[]){
   //		    "Y",0);
   //sv_obj_make_scale(o0, 2, (double []){0, 1.0}, NULL, 0);
   
+  svm_scale_vals(0,1);
   svm_obj_simple(0,"test pattern",f,"Y");
 
   //sv_panel_t *p2 = sv_panel_new_2d(s,0,"Discrete data example",

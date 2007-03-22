@@ -45,6 +45,9 @@ struct _sv_dim_internal {
   
   int widgets;
   _sv_dim_widget_t **widget_list;
+
+  int (*value_callback)(sv_dim_t *d, void *data);
+  void *value_callback_data;
 };
 
 extern int _sv_dim_scales(sv_dim_t *d,

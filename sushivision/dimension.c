@@ -253,6 +253,9 @@ static void _sv_dim_center_callback(void *data, int buttonstate){
       _sv_dim_widget_t *w = d->private->widget_list[i];
       w->center_callback(dw->dl);
     }
+
+    if(d->private->value_callback) 
+      d->private->value_callback(d,d->private->value_callback_data);
   }
   
   if(buttonstate == 2)
@@ -354,6 +357,10 @@ static void _sv_dim_dropdown_callback(GtkWidget *dummy, void *data){
       _sv_dim_widget_t *w = d->private->widget_list[i];
       w->center_callback(dw->dl);
     }
+
+    if(d->private->value_callback) 
+      d->private->value_callback(d,d->private->value_callback_data);
+
   }
   _sv_undo_resume(p->sushi);
   
@@ -425,6 +432,10 @@ int sv_dim_set_value(sv_dim_t *in, int thumb, double val){
       errno = -EINVAL;
       return -EINVAL;
     }
+
+    if(d->private->value_callback) 
+      d->private->value_callback(d,d->private->value_callback_data);
+
   }else
     return _sv_dim_set_value(d->private->widget_list[0],thumb,val);
   return 0;
@@ -694,6 +705,7 @@ int sv_dim_set_scale(sv_dim_t *in,
   
   d->scale = (sv_scale_t *)sv_scale_copy(scale);
 
+  // in the runtime version, don't just blindly reset values!
   d->bracket[0]=scale->val_list[0];
   d->val = 0;
   d->bracket[1]=scale->val_list[d->scale->vals-1];
@@ -795,3 +807,7 @@ int _sv_dim_save(sv_dim_t *d, xmlNodePtr instance){
   return ret;
 }
 
+int sv_dim_callback_value (sv_dim_t *d, int (*callback)(sv_dim_t *, void *), void *data){
+  d->private->value_callback = callback;
+  d->private->value_callback_data = data;
+}

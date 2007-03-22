@@ -98,7 +98,7 @@ examples:  $(OBJ) $(EX_OBJ)
 	$(LD) $(OBJ) example_chirp.o $(CFLAGS) -o sushivision_chirp $(LIBS) $(LDF)
 	$(LD) $(OBJ) example_spirograph.o $(CFLAGS) -o sushivision_spirograph $(LIBS) $(LDF)
 
-install: target
+install: $(TARGET)
 	$(INSTALL) -d -m 0755 $(INCDIR)
 	$(INSTALL) -m 0644 $(INC) $(INCDIR)
 #	$(INSTALL) -d -m 0755 $(MANDIR)
@@ -110,3 +110,4 @@ install: target
 	$(INSTALL) -m 0755 $(TARGET) $(LIBDIR)
 	$(INSTALL) -m 0755 sushivision.pc $(LIBDIR)/pkgconfig
 	$(LDCONFIG)
+	ln -fs $(LIBDIR)/$(TARGET) $(LIBDIR)/lib$(NAME).so
