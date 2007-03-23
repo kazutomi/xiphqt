@@ -379,7 +379,8 @@ static void _sv_panel1d_update_legend(sv_panel_t *p){
     char buffer[320];
     _sv_plot_legend_clear(plot);
 
-    if(3-p1->x_v.decimal_exponent > depth) depth = 3-p1->x_v.decimal_exponent;
+    if(3-_sv_scalespace_decimal_exponent(&p1->x_v) > depth) 
+      depth = 3-_sv_scalespace_decimal_exponent(&p1->x_v);
 
     // add each dimension to the legend
     for(i=0;i<p->dimensions;i++){

@@ -888,8 +888,10 @@ static void _sv_panel2d_update_legend(sv_panel_t *p){
     // dimensions only if crosshairs are active
 
     // display decimal precision relative to display scales
-    if(3-p2->x.decimal_exponent > depth) depth = 3-p2->x.decimal_exponent;
-    if(3-p2->y.decimal_exponent > depth) depth = 3-p2->y.decimal_exponent;
+    if(3-_sv_scalespace_decimal_exponent(&p2->x) > depth) 
+      depth = 3-_sv_scalespace_decimal_exponent(&p2->x);
+    if(3-_sv_scalespace_decimal_exponent(&p2->y) > depth) 
+      depth = 3-_sv_scalespace_decimal_exponent(&p2->y);
     for(i=0;i<p->dimensions;i++){
       sv_dim_t *d = p->dimension_list[i].d;
       if( (d!=p2->x_d && d!=p2->y_d) ||

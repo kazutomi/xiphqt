@@ -207,96 +207,111 @@ sv_scale_t *sv_scale_copy(sv_scale_t *s){
   return sv_scale_new(s->legend, s->vals, s->val_list, (char **)s->label_list, s->flags);
 }
 
-/* plot and graph scales */
+/************************* plot and graph scalespaces *********************/
 
 double _sv_scalespace_value(_sv_scalespace_t *s, double pixel){
-  double val = (double)(pixel-s->first_pixel)*s->step_val/s->step_pixel + s->first_val;
-  return val * s->m;
+  double val = (double)(pixel-s->first_pixel)*s->neg/s->step_pixel + s->first_val;
+  return val * s->expm;
 }
 
 void _sv_scalespace_double(_sv_scalespace_t *s){
-  // mildly complicated by mantissa being powers of ten
-  if(s->step_val & 0x1){ // ie, not divisible by two
-    s->decimal_exponent--;
-    s->m = pow(10,s->decimal_exponent);
-    s->step_val *= 10;
-    s->first_val *= 10;
-  }
-  s->step_val >>= 1;
-  s->first_pixel <<= 1;
-  s->pixels <<= 1;
+  s->two_exponent--;
+  s->expm = pow(5,s->five_exponent) * pow(2,s->two_exponent);
+  s->first_val *= 2;
+  s->first_pixel *= 2;
+  s->pixels *= 2;
 }
 
 double _sv_scalespace_pixel(_sv_scalespace_t *s, double val){
-  val /= s->m;
+  val /= s->expm;
   val -= s->first_val;
   val *= s->step_pixel;
-  val /= s->step_val;
+  val *= s->neg;
   val += s->first_pixel;
 
   return val;
 }
 
 double _sv_scalespace_scaledel(_sv_scalespace_t *from, _sv_scalespace_t *to){
-  return (double)from->step_val / from->step_pixel * from->m / to->m * to->step_pixel / to->step_val;
+  return from->expm * to->step_pixel * from->neg * to->neg / (from->step_pixel * to->expm);
 }
 
 long _sv_scalespace_scalenum(_sv_scalespace_t *from, _sv_scalespace_t *to){
-  int dec = from->decimal_exponent - to->decimal_exponent;
-  long ret = from->step_val * to->step_pixel * from->neg;
-  while(dec-->0)
-    ret *= 10;
+  int five = from->five_exponent - to->five_exponent;
+  int two = from->two_exponent - to->two_exponent;
+  long ret = to->step_pixel;
+  while(two-->0)
+    ret *= 2;
+  while(five-->0)
+    ret *= 5;
   return ret*2;
 }
 
 long _sv_scalespace_scaleden(_sv_scalespace_t *from, _sv_scalespace_t *to){
-  int dec = to->decimal_exponent - from->decimal_exponent;
-  long ret = from->step_pixel * to->step_val * to->neg;
-  while(dec-->0)
-    ret *= 10;
+  int five = to->five_exponent - from->five_exponent;
+  int two = to->two_exponent - from->two_exponent;
+  long ret = from->step_pixel;
+  while(two-->0)
+    ret *= 2;
+  while(five-->0)
+    ret *= 5;
   return ret*2;
 }
 
 long _sv_scalespace_scaleoff(_sv_scalespace_t *from, _sv_scalespace_t *to){
-  int decF = from->decimal_exponent - to->decimal_exponent;
-  int decT = to->decimal_exponent - from->decimal_exponent;
+  int fiveF = from->five_exponent - to->five_exponent;
+  int twoF = from->two_exponent - to->two_exponent;
+  int fiveT = to->five_exponent - from->five_exponent;
+  int twoT = to->two_exponent - from->two_exponent;
   long expF = 1;
   long expT = 1;
 
-  while(decF-->0) expF *= 10;
-  while(decT-->0) expT *= 10;
+  while(twoF-->0) expF *= 2;
+  while(fiveF-->0) expF *= 5;
+  while(twoT-->0) expT *= 2;
+  while(fiveT-->0) expT *= 5;
   
-  return (2 * from->first_val * from->step_pixel - (2 * from->first_pixel + 1) * from->step_val) 
-    * expF * to->step_pixel * from->neg
-    - (2 * to->first_val * to->step_pixel - (2 * to->first_pixel + 1) * to->step_val) 
-    * expT * from->step_pixel * to->neg;
+  return (2 * from->first_val * from->step_pixel * from->neg - (2 * from->first_pixel + 1)) 
+    * expF * to->step_pixel
+
+    - (2 * to->first_val * to->step_pixel * to->neg - (2 * to->first_pixel + 1)) 
+    * expT * from->step_pixel;
 }
 
 long _sv_scalespace_scalebin(_sv_scalespace_t *from, _sv_scalespace_t *to){
-  int decF = from->decimal_exponent - to->decimal_exponent;
-  int decT = to->decimal_exponent - from->decimal_exponent;
+  int fiveF = from->five_exponent - to->five_exponent;
+  int twoF = from->two_exponent - to->two_exponent;
+  int fiveT = to->five_exponent - from->five_exponent;
+  int twoT = to->two_exponent - from->two_exponent;
   long expF = 1;
   long expT = 1;
 
-  while(decF-->0) expF *= 10;
-  while(decT-->0) expT *= 10;
+  while(twoF-->0) expF *= 2;
+  while(fiveF-->0) expF *= 5;
+  while(twoT-->0) expT *= 2;
+  while(fiveT-->0) expT *= 5;
   
-  return (2 * from->first_val * from->step_pixel - (2 * from->first_pixel) * from->step_val) 
-    * expF * to->step_pixel * from->neg
-    - (2 * to->first_val * to->step_pixel - (2 * to->first_pixel) * to->step_val) 
-    * expT * from->step_pixel * to->neg;
+  return (2 * from->first_val * from->step_pixel * from->neg - (2 * from->first_pixel)) 
+    * expF * to->step_pixel
+
+    - (2 * to->first_val * to->step_pixel * to->neg - (2 * to->first_pixel)) 
+    * expT * from->step_pixel;
 }
 
 int _sv_scalespace_mark(_sv_scalespace_t *s, int num){
   return s->first_pixel + s->step_pixel*num;
 }
 
+int _sv_scalespace_decimal_exponent(_sv_scalespace_t *s){
+  return rint(s->two_exponent*.3 + s->five_exponent*.7);
+}
+
 double _sv_scalespace_label(_sv_scalespace_t *s, int num, char *buffer){
   int pixel = _sv_scalespace_mark(s,num);
   double val = _sv_scalespace_value(s,pixel);
-
-  if(s->decimal_exponent<0){
-    sprintf(buffer,"%.*f",-s->decimal_exponent,val);
+  int decimal_exponent = _sv_scalespace_decimal_exponent(s);
+  if(decimal_exponent<0){
+    sprintf(buffer,"%.*f",-decimal_exponent,val);
   }else{
     sprintf(buffer,"%.0f",val);
   }
@@ -308,8 +323,8 @@ _sv_scalespace_t _sv_scalespace_linear (double lowpoint, double highpoint, int p
   double orange = fabs(highpoint - lowpoint), range;
   _sv_scalespace_t ret;
 
-  int place;
-  int step;
+  int five_place;
+  int two_place;
   long long first;
   int neg = (lowpoint>highpoint?-1:1);
 
@@ -320,8 +335,8 @@ _sv_scalespace_t _sv_scalespace_linear (double lowpoint, double highpoint, int p
   ret.lo = lowpoint;
   ret.hi = highpoint;
   ret.init = 1;
-  ret.pixels=pixels;
-  ret.legend=name;
+  ret.pixels = pixels;
+  ret.legend = name;
   ret.spacing = max_spacing;
 
   if(orange < 1e-30*pixels){
@@ -334,43 +349,43 @@ _sv_scalespace_t _sv_scalespace_linear (double lowpoint, double highpoint, int p
 
   while(1){
     range = orange;
-    place = 0;
-    step = 1;
+    five_place = 0;
+    two_place = 0;
 
     while(rint(pixels / range) < max_spacing){
-      place++;
+      five_place++;
+      two_place++;
       range *= .1;
     }
     while(rint(pixels / range) > max_spacing){
-      place--;
+      five_place--;
+      two_place--;
       range *= 10;
     }
     
-    ret.decimal_exponent = place;
-    
     if (rint(pixels / (range*.2)) <= max_spacing){
-      step *= 5;
+      five_place++;
       range *= .2;
     }
     if (rint(pixels / (range*.5)) <= max_spacing){
-      step *= 2;
+      two_place++;
       range *= .5;
     }
 
-    step *= neg;
-    ret.step_val = step;
+    ret.two_exponent = two_place;
+    ret.five_exponent = five_place;
     
     if(pixels == 0. || range == 0.)
       ret.step_pixel = max_spacing;
     else
       ret.step_pixel = rint(pixels / range);
-    ret.m = pow(10,place);
+    ret.expm = pow(2,two_place) * pow(5,five_place);
   
-    first = (long long)(lowpoint/ret.m)/step*step;
+    first = (long long)(lowpoint/ret.expm);
 
-    if(neg){
+    if(neg<0){
       /* overflow check */
-      if(LLONG_MAX * ret.m < highpoint){
+      if(LLONG_MAX * ret.expm < highpoint){
 	lowpoint += orange/2;
 	orange *= 2;
 	highpoint = lowpoint - orange;
@@ -379,7 +394,7 @@ _sv_scalespace_t _sv_scalespace_linear (double lowpoint, double highpoint, int p
       }
     }else{
       /* overflow check */
-      if(LLONG_MAX * ret.m < lowpoint){
+      if(LLONG_MAX * ret.expm < lowpoint){
 	lowpoint -= orange/2;
 	orange *= 2;
 	highpoint = lowpoint + orange;
@@ -388,12 +403,12 @@ _sv_scalespace_t _sv_scalespace_linear (double lowpoint, double highpoint, int p
       }
     }
 
-    while(first * ret.m * neg < lowpoint*neg)
-      first += step;
+    while((first+neg) * ret.expm * neg < lowpoint*neg)
+      first += neg;
     
-    if(neg){
+    if(neg<0){
       /* overflow check */
-      if(LLONG_MIN * ret.m > lowpoint){
+      if(LLONG_MIN * ret.expm > lowpoint){
 	lowpoint += orange/2;
 	orange *= 2;
 	highpoint = lowpoint - orange;
@@ -402,7 +417,7 @@ _sv_scalespace_t _sv_scalespace_linear (double lowpoint, double highpoint, int p
       }
     }else{
       /* overflow check */
-      if(LLONG_MIN * ret.m > highpoint){
+      if(LLONG_MIN * ret.expm > highpoint){
 	lowpoint -= orange/2;
 	orange *= 2;
 	highpoint = lowpoint + orange;
@@ -411,13 +426,13 @@ _sv_scalespace_t _sv_scalespace_linear (double lowpoint, double highpoint, int p
       }
     }
     
-    while(first * ret.m * neg > highpoint*neg)
-      first -= step;
+    while((first-neg) * ret.expm * neg > highpoint*neg)
+      first -= neg;
     
     // make sure the scale display has meaningful sig figs to work with */
     if( first*128/128 != first ||
-	first*16*ret.m == (first*16 +step)*ret.m ||
-	(first*16+step)*ret.m == (first*16 +step*2)*ret.m){
+	first*16*ret.expm == (first*16+neg)*ret.expm ||
+	(first*16+neg)*ret.expm == (first*16+neg*2)*ret.expm){
       lowpoint -= orange/(neg*2);
       orange *= 2;
       highpoint = lowpoint + neg*orange;
@@ -427,7 +442,7 @@ _sv_scalespace_t _sv_scalespace_linear (double lowpoint, double highpoint, int p
 
     ret.first_val = first;
     
-    ret.first_pixel = rint((first - (lowpoint / ret.m)) * ret.step_pixel / ret.step_val);
+    ret.first_pixel = rint((first - (lowpoint / ret.expm)) * ret.step_pixel);
 
     ret.neg = neg;
     break;

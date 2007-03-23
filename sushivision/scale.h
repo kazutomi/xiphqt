@@ -27,12 +27,11 @@ typedef struct {
 
   long long first_val;
   long first_pixel;
-  
-  long step_val;
   long step_pixel;
 
-  int decimal_exponent;
-  double m;
+  int five_exponent;
+  int two_exponent;
+  double expm;
 
   int init;
   int pixels;
@@ -52,3 +51,4 @@ extern int _sv_scalespace_mark(_sv_scalespace_t *s, int num);
 extern double _sv_scalespace_label(_sv_scalespace_t *s, int num, char *buffer);
 extern _sv_scalespace_t _sv_scalespace_linear (double lowpoint, double highpoint, int pixels, int max_spacing,char *name);
 extern void _sv_scalespace_double(_sv_scalespace_t *s);
+extern int _sv_scalespace_decimal_exponent(_sv_scalespace_t *s);
