@@ -810,4 +810,5 @@ int _sv_dim_save(sv_dim_t *d, xmlNodePtr instance){
 int sv_dim_callback_value (sv_dim_t *d, int (*callback)(sv_dim_t *, void *), void *data){
   d->private->value_callback = callback;
   d->private->value_callback_data = data;
+  return 0;
 }

@@ -40,7 +40,7 @@ static GtkWidgetClass *parent_class = NULL;
 // the data scale (plotted in terms of the panel scale).  In most
 // cases they will be the same, but not always.
 static double scale_demark(_sv_scalespace_t *panel, _sv_scalespace_t *data, int i, char *buffer){
-  if(abs(data->step_val*data->m) > abs(panel->step_val*panel->m)){
+  if(data->expm > panel->expm){
     double x=_sv_scalespace_mark(data,i);
     if(buffer) _sv_scalespace_label(data,i,buffer);
     return _sv_scalespace_pixel(panel, _sv_scalespace_value(data, x));

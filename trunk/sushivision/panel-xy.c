@@ -327,8 +327,10 @@ static void _sv_panelxy_update_legend(sv_panel_t *p){
     char buffer[320];
     _sv_plot_legend_clear(plot);
 
-    if(3-xy->x.decimal_exponent > depth) depth = 3-xy->x.decimal_exponent;
-    if(3-xy->y.decimal_exponent > depth) depth = 3-xy->y.decimal_exponent;
+    if(3-_sv_scalespace_decimal_exponent(&xy->x) > depth) 
+      depth = 3-_sv_scalespace_decimal_exponent(&xy->x);
+    if(3-_sv_scalespace_decimal_exponent(&xy->y) > depth) 
+      depth = 3-_sv_scalespace_decimal_exponent(&xy->y);
 
     // if crosshairs are active, add them to the fun
     if( plot->cross_active){
@@ -353,7 +355,9 @@ static void _sv_panelxy_update_legend(sv_panel_t *p){
     }
 
     // add each dimension to the legend
-    if(-xy->data_v.decimal_exponent > depth) depth = -xy->data_v.decimal_exponent;
+    if(-_sv_scalespace_decimal_exponent(&xy->y) > depth) 
+      depth = -_sv_scalespace_decimal_exponent(&xy->y);
+
     for(i=0;i<p->dimensions;i++){
       sv_dim_t *d = p->dimension_list[i].d;
 
@@ -979,8 +983,8 @@ static int _sv_panelxy_generate_dimscale(sv_dim_t *d, int zoom, _sv_scalespace_t
     // an assumption: v->step_pixel == 1 because spacing is 1.  We can
     // increment first_val instead of first_pixel.
     while(_sv_scalespace_value(v,1)*neg < d->bracket[0]*neg){
-      v->first_val += v->step_val*neg;
-      i->first_val += v->step_val*neg;
+      v->first_val += v->neg;
+      i->first_val += v->neg;
       v->pixels--;
       i->pixels--;
     }
