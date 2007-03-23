@@ -761,7 +761,7 @@ int sv_dim_set_picklist(sv_dim_t *in){
   if(!d) return -EINVAL;
 
   d->type = SV_DIM_PICKLIST;
-  
+  d->flags |= SV_DIM_NO_X | SV_DIM_NO_Y;
   return 0;
 }
 
