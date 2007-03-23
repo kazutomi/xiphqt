@@ -12,14 +12,15 @@
     <dc:language>en-gb</dc:language>
     <dc:publisher>Xiph.Org Foundation</dc:publisher>
     <dc:creator>Arek Korbik (mailto:arkadini@gmail.com)</dc:creator>
-    <dc:rights>Copyright &#169; 2005-2006 Xiph.Org Foundation. All rights reserved.</dc:rights>
-    <dc:date>2006-05-08T23:59+00:00</dc:date>
+    <dc:rights>Copyright &#169; 2005-2007 Xiph.Org Foundation. All rights reserved.</dc:rights>
+    <dc:date>2007-03-22T23:59+00:00</dc:date>
     <syn:updatePeriod>daily</syn:updatePeriod>
     <syn:updateFrequency>1</syn:updateFrequency>
     <syn:updateBase>2005-01-01T05:00+00:00</syn:updateBase>
 
     <items>
       <rdf:Seq>
+        <rdf:li resource="http://www.xiph.org/quicktime/index.html#id2007032200" />
         <rdf:li resource="http://www.xiph.org/quicktime/index.html#id2006050800" />
         <rdf:li resource="http://www.xiph.org/quicktime/index.html#id2005122000" />
         <rdf:li resource="http://www.xiph.org/quicktime/index.html#id2005121701" />
@@ -31,6 +32,30 @@
       </rdf:Seq>
     </items>
   </channel>
+
+  <item rdf:about="http://www.xiph.org/quicktime/index.html#id2007032200">
+    <title>XiphQT 0.1.7 released</title>
+    <link>http://www.xiph.org/quicktime/index.html#id2007032200</link>
+    <description>
+      &lt;p&gt;After nearly 11 months of no visible activity we're happy to announce a new release of the Xiph
+        QuickTime Components!&lt;/p&gt;
+      &lt;p&gt;This release introduces the ability to produce Ogg files and encode video and audio content into
+        Theora and Vorbis, respectively. Save directly to Ogg from iMovie or other QuickTime-based application!&lt;/p&gt;
+      &lt;p&gt;Other new features include support for 5.1 multichannel audio (Vorbis and FLAC) in Ogg files and
+        progressive loading. The latter isn't fully finished and we are working on the remaining issue, but
+        it makes opening large files less painful already. See &lt;a href="release_notes.html"&gt;release notes&lt;/a&gt;
+        for the details.&lt;/p&gt;
+      &lt;p&gt;Installation has been simplified. XiphQT now comes in a single, statically-linked component bundle
+        and doesn't require any additional frameworks, so you can simply drag'n'drop to install it. And there
+        are two binary packages available: full and decoders-only.&lt;/p&gt;
+      &lt;p&gt;No Windows binaries are available at the moment, hopefully win32 port will be ready soon.&lt;/p&gt;
+      &lt;p&gt;Also: &lt;a href="http://people.xiph.org/~arek/"&gt;here&lt;/a&gt; you can find fairly up-to-date development
+        snapshots and &lt;a href="http://barelyfocused.net/blog/category/development/xiphqt/"&gt;here&lt;/a&gt; you can
+        find the XiphQT development blog.&lt;/p&gt;
+    </description>
+    <dc:date>2007-03-22T23:59+00:00</dc:date>
+    <dc:creator>Arek</dc:creator>
+  </item>
 
   <item rdf:about="http://www.xiph.org/quicktime/index.html#id2006050800">
     <title>XiphQT 0.1.5 released</title>
