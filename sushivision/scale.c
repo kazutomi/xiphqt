@@ -303,7 +303,12 @@ int _sv_scalespace_mark(_sv_scalespace_t *s, int num){
 }
 
 int _sv_scalespace_decimal_exponent(_sv_scalespace_t *s){
-  return rint(s->two_exponent*.3 + s->five_exponent*.7);
+  double val = s->two_exponent*.3 + s->five_exponent*.7;
+  if(val<0){
+    return (int)floor(val);
+  }else{
+    return (int)ceil(val);
+  }
 }
 
 double _sv_scalespace_label(_sv_scalespace_t *s, int num, char *buffer){
