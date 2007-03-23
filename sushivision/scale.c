@@ -408,7 +408,7 @@ _sv_scalespace_t _sv_scalespace_linear (double lowpoint, double highpoint, int p
       }
     }
 
-    while((first+neg) * ret.expm * neg < lowpoint*neg)
+    while((first+neg) * ret.expm * neg <= lowpoint*neg)
       first += neg;
     
     if(neg<0){

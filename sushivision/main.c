@@ -123,6 +123,12 @@ static void *worker_thread(void *dummy){
 	    // pending computation work?
 	    if(p->private->plot_active){
 	      _sv_spinner_set_busy(p->private->spinner);
+
+	      if(p->private->plot_progress_count==0){    
+		if(p->private->callback_precompute)
+		  p->private->callback_precompute(p,p->private->callback_precompute_data);
+	      }
+
 	      flag |= p->private->compute_action(p,&c[j][i]); // may drop lock internally
 	    }
 	    

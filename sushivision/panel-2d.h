@@ -75,8 +75,6 @@ typedef struct {
   GtkWidget **dim_xb;
   GtkWidget **dim_yb;
 
-  sv_dim_t *x_d;
-  sv_dim_t *y_d;
   _sv_dim_widget_t *x_scale;
   _sv_dim_widget_t *y_scale;
   int x_dnum; // panel, not global list context

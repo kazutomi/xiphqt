@@ -282,7 +282,8 @@ int            sv_panel_link_1d (sv_panel_t *p,
 				 unsigned flags);
 
 int sv_panel_callback_recompute (sv_panel_t *p,
-				 int (*callback)(sv_panel_t *p));
+				 int (*callback)(sv_panel_t *p,void *data),
+				 void *data);
 
 int       sv_panel_set_resample (sv_panel_t *p,
 				 int numerator,
@@ -302,9 +303,7 @@ int       sv_panel_get_resample (sv_panel_t *p,
 int     sv_panel_get_background (sv_panel_t *p,
 				 enum sv_background *bg);
 
-int           sv_panel_get_axis (sv_panel_t *p,
-				 char axis,
-				 sv_dim_t **d);
+sv_dim_t     *sv_panel_get_axis (sv_panel_t *p, char axis);
 				    
 
 #endif

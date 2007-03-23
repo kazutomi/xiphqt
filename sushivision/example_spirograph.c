@@ -27,13 +27,19 @@
 #define MAX_TEETH 100
 
 int mult[MAX_TEETH+1][MAX_TEETH+1];
+sv_dim_t *d0;
+sv_dim_t *d1;
+sv_dim_t *d2;
+sv_dim_t *d3;
+sv_dim_t *d4;
 
 static void inner(double *d, double *ret){
   double R = d[0];
   double r = d[1];
   double p = d[2];
-  double t = d[3]*M_PI*2.*mult[(int)R][(int)r];
-  
+  int factor_p = rint(d[4]);
+  double t = d[3]*M_PI*2. * (factor_p*mult[(int)R][(int)r] + (1.-factor_p)*r);
+
   ret[0] = (R-r) * cos(t) + p * cos((R-r)*t/r);
   ret[1] = (R-r) * sin(t) - p * sin((R-r)*t/r);
 }
@@ -42,8 +48,9 @@ static void outer(double *d, double *ret){
   double R = d[0];
   double r = d[1];
   double p = d[2];
-  double t = d[3]*M_PI*2.*mult[(int)R][(int)r];
-
+  int factor_p = rint(d[4]);
+  double t = d[3]*M_PI*2. * (factor_p*mult[(int)R][(int)r] + (1.-factor_p)*r);
+  
   ret[0] = (R+r) * cos(t) - p * cos((R+r)*t/r);
   ret[1] = (R+r) * sin(t) + p * sin((R+r)*t/r);
 }
@@ -51,8 +58,7 @@ static void outer(double *d, double *ret){
 int factored_mult(int x, int y){
   int d = 2;
   while(d<x){
-    if((x / d * d) == x &&
-       (y / d * d) == y){
+    if((x / d * d) == x && (y / d * d) == y){
       x/=d;
       y/=d;
     }else{
@@ -60,6 +66,28 @@ int factored_mult(int x, int y){
     }
   }
   return y;
+}
+
+// the number of 'spins' we want to have a go at depends on which X
+// dim we're iterating; if we're doing a normal spirograph, we want to
+// factor the 'r' by 'R' and not do redundant loops.  However, the
+// loops aren't 'redundant' when iterating the other dims, so 'r'
+// should not be factored then.
+
+// we store the decision of which to do in a shadow dimension because
+// that way access is properly managed/locked; function computation
+// happens outside of any locks so we need to make sure a protected
+// copy is passed, and this is an easy way.
+int set_mult(sv_panel_t *p, void *user_data){
+  sv_dim_t *d = sv_panel_get_axis(p,'X');
+  
+  if(d->number == 3){
+    // iterating on dim 3; normal spirograph mode
+    sv_dim_set_value(d4, 1, 1.);
+  }else{
+    sv_dim_set_value(d4, 1, 0.);
+  }
+  return 0;
 }
 
 int sv_submain(int argc, char *argv[]){
@@ -70,19 +98,21 @@ int sv_submain(int argc, char *argv[]){
 
   sv_instance_t *s = sv_new(0,"spirograph");
 
-  sv_dim_t *d0 = sv_dim_new(s,0,"ring teeth",0);
+  d0 = sv_dim_new(s,0,"ring teeth",0);
   sv_dim_make_scale(d0,2,(double []){11,MAX_TEETH},NULL,0);
   sv_dim_set_discrete(d0,1,1);
 
-  sv_dim_t *d1 = sv_dim_new(s,1,"wheel teeth",0);
+  d1 = sv_dim_new(s,1,"wheel teeth",0);
   sv_dim_make_scale(d1,2,(double []){7,MAX_TEETH},NULL,0);
   sv_dim_set_discrete(d1,1,1);
 		    
-  sv_dim_t *d2 = sv_dim_new(s,2,"wheel pen",0);
+  d2 = sv_dim_new(s,2,"wheel pen",0);
   sv_dim_make_scale(d2,2,(double []){0,MAX_TEETH},NULL,0);
 
-  sv_dim_t *d3 = sv_dim_new(s,3,"trace",0);
-  sv_dim_make_scale(d3,2,(double []){0,1},(char *[]){"start","end"},0);
+  d3 = sv_dim_new(s,3,"trace",0);
+  sv_dim_make_scale(d3,2,(double []){0,1},(char *[]){"0%","100%"},0);
+
+  d4 = sv_dim_new(s,4,"hidden mult",0);
 
   sv_func_t *f0 = sv_func_new(s, 0, 2, inner, 0);
   sv_func_t *f1 = sv_func_new(s, 1, 2, outer, 0);
@@ -99,15 +129,17 @@ int sv_submain(int argc, char *argv[]){
   
   sv_scale_t *axis = sv_scale_new(NULL,3,(double []){-MAX_TEETH*3,0,MAX_TEETH*3},NULL,0);
 
-  sv_panel_new_xy(s,0,"spirograph (TM)",
-		  axis,axis,
-		  (sv_obj_t *[]){o0,o1,NULL},
-		  (sv_dim_t *[]){d3,d0,d1,d2,NULL},
-		  0);
-
+  sv_panel_t *p = sv_panel_new_xy(s,0,"spirograph (TM)",
+				  axis,axis,
+				  (sv_obj_t *[]){o0,o1,NULL},
+				  (sv_dim_t *[]){d3,d0,d1,d2,NULL},
+				  0);
+  
   sv_dim_set_value(d0,1,100);
   sv_dim_set_value(d1,1,70);
   sv_dim_set_value(d2,1,50);
+
+  sv_panel_callback_recompute(p,set_mult,NULL);
 
   return 0;
 }

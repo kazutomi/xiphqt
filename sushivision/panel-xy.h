@@ -57,7 +57,6 @@ typedef struct {
 
   GtkWidget **dim_xb;
 
-  sv_dim_t *x_d;
   _sv_dim_widget_t *x_widget;
   int x_dnum; // number of dimension within panel, not global instance
 } _sv_panelxy_t;

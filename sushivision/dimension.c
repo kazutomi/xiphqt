@@ -71,9 +71,11 @@ int _sv_dim_scales(sv_dim_t *d,
     {
       //double ceil = d->scale->val_list[d->scale->vals-1] * dimneg;
       double fl = ((d->flags & SV_DIM_ZEROINDEX) ? d->scale->val_list[0] : 0.);
-      *panel = _sv_scalespace_linear(lo, hi, panel_w, spacing, legend);
 
-      if(panel_w == data_w){
+      if(panel)
+	*panel = _sv_scalespace_linear(lo, hi, panel_w, spacing, legend);
+
+      if(panel && panel_w == data_w){
 	
 	*iter = *data = *panel;
 
@@ -81,18 +83,19 @@ int _sv_dim_scales(sv_dim_t *d,
 	*data = _sv_scalespace_linear(lo, hi, data_w, 1, legend);
 	*iter = _sv_scalespace_linear(lo-fl, hi-fl, data_w, 1, legend);
 	
-	
-	/* if possible, the data/iterator scales should cover the entire pane exposed
-	   by the panel scale so long as there's room left to extend them without
-	   overflowing the lo/hi fenceposts */
-	while(1){
-	  double panel2 = _sv_scalespace_value(panel,panel_w-1)*pneg;
-	  double data2 = _sv_scalespace_value(data,data_w-1)*pneg;
-	  
-	  if(data2>=panel2)break;
-	  data_w++;
+	if(panel){
+	  /* if possible, the data/iterator scales should cover the entire pane exposed
+	     by the panel scale so long as there's room left to extend them without
+	     overflowing the lo/hi fenceposts */
+	  while(1){
+	    double panel2 = _sv_scalespace_value(panel,panel_w-1)*pneg;
+	    double data2 = _sv_scalespace_value(data,data_w-1)*pneg;
+	    
+	    if(data2>=panel2)break;
+	    data_w++;
+	  }
 	}
-	
+
 	data->pixels = data_w;
 	iter->pixels = data_w;
       }
@@ -121,32 +124,37 @@ int _sv_dim_scales(sv_dim_t *d,
 	if(hi_i < ceil_i)hi_i = ceil_i;
       }
 
-      *panel = _sv_scalespace_linear((double)(lo_i-pneg*.4) * d->private->discrete_numerator / 
-				     d->private->discrete_denominator,
-				     (double)(hi_i+pneg*.4) * d->private->discrete_numerator / 
-				     d->private->discrete_denominator,
-				     panel_w, spacing, legend);
+      if(panel){
+	*panel = _sv_scalespace_linear((double)(lo_i-pneg*.4) * d->private->discrete_numerator / 
+				       d->private->discrete_denominator,
+				       (double)(hi_i+pneg*.4) * d->private->discrete_numerator / 
+				       d->private->discrete_denominator,
+				       panel_w, spacing, legend);
 
-      /* if possible, the data/iterator scales should cover the entire pane exposed
-	 by the panel scale so long as there's room left to extend them without
-	 overflowing the lo/hi fenceposts */
-      double panel1 = _sv_scalespace_value(panel,0)*pneg;
-      double panel2 = _sv_scalespace_value(panel,panel->pixels)*pneg;
-      double data1 = (double)(lo_i-.49*pneg) * d->private->discrete_numerator / 
-	d->private->discrete_denominator*pneg;
-      double data2 = (double)(hi_i-.51*pneg) * d->private->discrete_numerator / 
-	d->private->discrete_denominator*pneg;
-      
-      while(data1 > panel1 && lo_i*dimneg > floor_i*dimneg){
-	lo_i -= pneg;
-	data1 = (double)(lo_i-.49*pneg) * d->private->discrete_numerator / 
+	/* if possible, the data/iterator scales should cover the entire pane exposed
+	   by the panel scale so long as there's room left to extend them without
+	   overflowing the lo/hi fenceposts */
+	double panel1 = _sv_scalespace_value(panel,0)*pneg;
+	double panel2 = _sv_scalespace_value(panel,panel->pixels)*pneg;
+	double data1 = (double)(lo_i-.49*pneg) * d->private->discrete_numerator / 
 	  d->private->discrete_denominator*pneg;
-      }
-      
-      while(data2 < panel2 && hi_i*dimneg <= ceil_i*dimneg){ // inclusive upper
-	hi_i += pneg;
-	data2 = (double)(hi_i-.51*pneg) * d->private->discrete_numerator / 
+	double data2 = (double)(hi_i-.51*pneg) * d->private->discrete_numerator / 
 	  d->private->discrete_denominator*pneg;
+	
+	while(data1 > panel1 && lo_i*dimneg > floor_i*dimneg){
+	  lo_i -= pneg;
+	  data1 = (double)(lo_i-.49*pneg) * d->private->discrete_numerator / 
+	    d->private->discrete_denominator*pneg;
+	}
+	
+	while(data2 < panel2 && hi_i*dimneg <= ceil_i*dimneg){ // inclusive upper
+	  hi_i += pneg;
+	  data2 = (double)(hi_i-.51*pneg) * d->private->discrete_numerator / 
+	    d->private->discrete_denominator*pneg;
+	}
+	
+      }else{
+	hi_i += pneg; // because upper bound is inclusive, and this val is one-past
       }
 
       /* cosmetic adjustment complete, generate the scales */

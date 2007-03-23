@@ -1019,3 +1019,25 @@ int _sv_panel_load(sv_panel_t *p,
 
   return warn;
 }
+
+int sv_panel_callback_recompute (sv_panel_t *p,
+				 int (*callback)(sv_panel_t *p,void *data),
+				 void *data){
+
+  p->private->callback_precompute = callback;
+  p->private->callback_precompute_data = data;
+  return 0;
+}
+
+sv_dim_t *sv_panel_get_axis(sv_panel_t *p, char axis){
+  switch(axis){
+
+  case 'x': case 'X':
+    return p->private->x_d;
+
+  case 'y': case 'Y':
+    return p->private->y_d;
+  }
+  
+  return NULL;
+}
