@@ -388,7 +388,7 @@ static void _sv_panel1d_update_legend(sv_panel_t *p){
       // display decimal precision relative to bracket
       //int depth = del_depth(p->dimension_list[i].d->bracket[0],
       //		    p->dimension_list[i].d->bracket[1]) + offset;
-      if( d!=p1->x_d ||
+      if( d!=p->private->x_d ||
 	  plot->cross_active){
 	
 	snprintf(buffer,320,"%s = %+.*f",
@@ -404,9 +404,9 @@ static void _sv_panel1d_update_legend(sv_panel_t *p){
       sv_dim_t *d;
       int depth=0;
       if(p1->link_x)
-	d = p1->link_x->subtype->p2->x_d;
+	d = p1->link_x->private->x_d;
       else
-	d = p1->link_y->subtype->p2->y_d;
+	d = p1->link_y->private->y_d;
       
       // add each dimension to the legend
       // display decimal precision relative to display scales
@@ -579,7 +579,7 @@ static void _sv_panel1d_update_xsel(sv_panel_t *p){
        gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(p1->dim_xb[i]))){
       
       // set the x dim flag
-      p1->x_d = p->dimension_list[i].d;
+      p->private->x_d = p->dimension_list[i].d;
       p1->x_scale = p->private->dim_scales[i];
       p1->x_dnum = i;
     }
@@ -667,23 +667,23 @@ void _sv_panel1d_mark_recompute(sv_panel_t *p){
 
   if(p1->link_x){
     dw = p2->x_v.pixels;
-    p1->x_d = p2->x_d;
+    p->private->x_d = link->private->x_d;
     p1->x_scale = p2->x_scale;
   }
   if(p1->link_y){
     dw = p2->y_v.pixels;
-    p1->x_d = p2->y_d;
+    p->private->x_d = link->private->y_d;
     p1->x_scale = p2->y_scale;
   }
 
   if(plot && GTK_WIDGET_REALIZED(GTK_WIDGET(plot))){
     if(p1->flip){
-      dw = _sv_dim_scales(p1->x_d, 
-			  p1->x_d->bracket[1],
-			  p1->x_d->bracket[0],
+      dw = _sv_dim_scales(p->private->x_d, 
+			  p->private->x_d->bracket[1],
+			  p->private->x_d->bracket[0],
 			  h,dw * p->private->oversample_n / p->private->oversample_d,
 			  plot->scalespacing,
-			  p1->x_d->name,
+			  p->private->x_d->name,
 			  &p1->x,
 			  &p1->x_v,
 			  &p1->x_i);
@@ -695,12 +695,12 @@ void _sv_panel1d_mark_recompute(sv_panel_t *p){
 				    p1->range_scale->legend);
       
     }else{
-      dw = _sv_dim_scales(p1->x_d, 
-				    p1->x_d->bracket[0],
-				    p1->x_d->bracket[1],
+      dw = _sv_dim_scales(p->private->x_d, 
+				    p->private->x_d->bracket[0],
+				    p->private->x_d->bracket[1],
 				    w,dw * p->private->oversample_n / p->private->oversample_d,
 				    plot->scalespacing,
-				    p1->x_d->name,
+				    p->private->x_d->name,
 				    &p1->x,
 				    &p1->x_v,
 				    &p1->x_i);
@@ -786,13 +786,13 @@ static void _sv_panel1d_update_crosshair(sv_panel_t *p){
   if(link){
     for(i=0;i<link->dimensions;i++){
       sv_dim_t *d = link->dimension_list[i].d;
-      if(d == p1->x_d)
+      if(d == p->private->x_d)
 	x = link->dimension_list[i].d->val;
     }
   }else{
     for(i=0;i<p->dimensions;i++){
       sv_dim_t *d = p->dimension_list[i].d;
-      if(d == p1->x_d)
+      if(d == p->private->x_d)
 	x = p->dimension_list[i].d->val;
     }
   }
@@ -810,7 +810,7 @@ static void _sv_panel1d_update_crosshair(sv_panel_t *p){
   for(i=0;i<p->dimensions;i++){
     sv_dim_t *d = p->dimension_list[i].d;
     _sv_panel1d_t *p1 = p->subtype->p1;
-    if(d == p1->x_d){
+    if(d == p->private->x_d){
       if(p1->flip)
 	d->val = _sv_scalespace_value(&plot->x,_sv_plot_get_crosshair_ypixel(plot));
       else
@@ -847,8 +847,7 @@ void _sv_panel1d_update_linked_crosshairs(sv_panel_t *p, int xflag, int yflag){
 static void _sv_panel1d_center_callback(sv_dim_list_t *dptr){
   sv_dim_t *d = dptr->d;
   sv_panel_t *p = dptr->p;
-  _sv_panel1d_t *p1 = p->subtype->p1;
-  int axisp = (d == p1->x_d);
+  int axisp = (d == p->private->x_d);
 
   if(!axisp){
     // mid slider of a non-axis dimension changed, rerender
@@ -862,8 +861,7 @@ static void _sv_panel1d_center_callback(sv_dim_list_t *dptr){
 static void _sv_panel1d_bracket_callback(sv_dim_list_t *dptr){
   sv_dim_t *d = dptr->d;
   sv_panel_t *p = dptr->p;
-  _sv_panel1d_t *p1 = p->subtype->p1;
-  int axisp = d == p1->x_d;
+  int axisp = d == p->private->x_d;
     
   if(axisp)
     _sv_panel1d_mark_recompute(p);
@@ -919,8 +917,7 @@ static void _sv_panel1d_crosshair_callback(sv_panel_t *p){
 
     for(i=0;i<p->dimensions;i++){
       sv_dim_t *d = p->dimension_list[i].d;
-      _sv_panel1d_t *p1 = p->subtype->p1;
-      if(d == p1->x_d)
+      if(d == p->private->x_d)
 	_sv_dim_set_value(p->private->dim_scales[i],1,x);
 	            
       p->private->oldbox_active = 0;
@@ -1071,7 +1068,7 @@ int _sv_panel1d_compute(sv_panel_t *p,
   double dim_vals[p->sushi->dimensions];
 
   /* get iterator bounds, use iterator scale */
-  x_d = p1->x_d->number;
+  x_d = p->private->x_d->number;
 
   if(p1->flip){
     plot->x = sy;

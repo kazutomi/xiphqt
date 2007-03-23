@@ -97,6 +97,9 @@ struct _sv_panel_internal {
   _sv_spinner_t *spinner;
   GtkWidget *popmenu;
 
+  sv_dim_t *x_d;
+  sv_dim_t *y_d;
+
   enum sv_background bg_type;
   _sv_dim_widget_t **dim_scales;
   int oldbox_active;
@@ -125,6 +128,9 @@ struct _sv_panel_internal {
   int oversample_d;
   int def_oversample_n;
   int def_oversample_d;
+
+  int (*callback_precompute)(sv_panel_t *,void*);
+  void *callback_precompute_data;
 
   // function bundles 
   void (*realize)(sv_panel_t *p);

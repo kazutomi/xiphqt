@@ -143,14 +143,13 @@ typedef struct{
 // call with lock
 static void _sv_panel2d_compute_point(sv_panel_t *p,sv_obj_t *o, double x, double y, compute_result *out){
   double dim_vals[p->sushi->dimensions];
-  _sv_panel2d_t *p2 = p->subtype->p2;
   int i,j;
   int pflag=0;
   int eflag=0;
 
   // fill in dimensions
-  int x_d = p2->x_d->number;
-  int y_d = p2->y_d->number;
+  int x_d = p->private->x_d->number;
+  int y_d = p->private->y_d->number;
 
   for(i=0;i<p->sushi->dimensions;i++){
     sv_dim_t *dim = p->sushi->dimension_list[i];
@@ -894,7 +893,7 @@ static void _sv_panel2d_update_legend(sv_panel_t *p){
       depth = 3-_sv_scalespace_decimal_exponent(&p2->y);
     for(i=0;i<p->dimensions;i++){
       sv_dim_t *d = p->dimension_list[i].d;
-      if( (d!=p2->x_d && d!=p2->y_d) ||
+      if( (d!=p->private->x_d && d!=p->private->y_d) ||
 	  plot->cross_active){
 	snprintf(buffer,320,"%s = %+.*f",
 		 p->dimension_list[i].d->name,
@@ -993,7 +992,7 @@ static void _sv_panel2d_update_xysel(sv_panel_t *p){
 	_gtk_widget_set_sensitive_fixup(p2->dim_yb[i],FALSE);
 
       // set the x dim flag
-      p2->x_d = p->dimension_list[i].d;
+      p->private->x_d = p->dimension_list[i].d;
       p2->x_scale = p->private->dim_scales[i];
       p2->x_dnum = i;
     }else{
@@ -1008,7 +1007,7 @@ static void _sv_panel2d_update_xysel(sv_panel_t *p){
 	_gtk_widget_set_sensitive_fixup(p2->dim_xb[i],FALSE);
 
       // set the y dim
-      p2->y_d = p->dimension_list[i].d;
+      p->private->y_d = p->dimension_list[i].d;
       p2->y_scale = p->private->dim_scales[i];
       p2->y_dnum = i;
     }else{
@@ -1215,16 +1214,15 @@ static void _sv_panel2d_mark_recompute(sv_panel_t *p){
 }
 
 static void _sv_panel2d_update_crosshairs(sv_panel_t *p){
-  _sv_panel2d_t *p2 = p->subtype->p2;
   _sv_plot_t *plot = PLOT(p->private->graph);
   double x=0,y=0;
   int i;
   
   for(i=0;i<p->dimensions;i++){
     sv_dim_t *d = p->dimension_list[i].d;
-    if(d == p2->x_d)
+    if(d == p->private->x_d)
       x = d->val;
-    if(d == p2->y_d)
+    if(d == p->private->y_d)
       y = d->val;
     
   }
@@ -1237,9 +1235,7 @@ static void _sv_panel2d_update_crosshairs(sv_panel_t *p){
 static void _sv_panel2d_center_callback(sv_dim_list_t *dptr){
   sv_dim_t *d = dptr->d;
   sv_panel_t *p = dptr->p;
-  _sv_panel2d_t *p2 = p->subtype->p2;
-  //_sv_plot_t *plot = PLOT(p->private->graph);
-  int axisp = (d == p2->x_d || d == p2->y_d);
+  int axisp = (d == p->private->x_d || d == p->private->y_d);
 
   if(!axisp){
     // mid slider of a non-axis dimension changed, rerender
@@ -1247,15 +1243,14 @@ static void _sv_panel2d_center_callback(sv_dim_list_t *dptr){
   }else{
     // mid slider of an axis dimension changed, move crosshairs
     _sv_panel2d_update_crosshairs(p);
-    _sv_panel1d_update_linked_crosshairs(p,d==p2->x_d,d==p2->y_d); 
+    _sv_panel1d_update_linked_crosshairs(p,d==p->private->x_d,d==p->private->y_d); 
   }
 }
 
 static void _sv_panel2d_bracket_callback(sv_dim_list_t *dptr){
   sv_dim_t *d = dptr->d;
   sv_panel_t *p = dptr->p;
-  _sv_panel2d_t *p2 = p->subtype->p2;
-  int axisp = (d == p2->x_d || d == p2->y_d);
+  int axisp = (d == p->private->x_d || d == p->private->y_d);
 
   if(axisp)
     _sv_panel2d_mark_recompute(p);
@@ -1282,7 +1277,6 @@ static void _sv_panel2d_dimchange_callback(GtkWidget *button,gpointer in){
 }
 
 static void _sv_panel2d_crosshairs_callback(sv_panel_t *p){
-  _sv_panel2d_t *p2 = p->subtype->p2;
   double x=PLOT(p->private->graph)->selx;
   double y=PLOT(p->private->graph)->sely;
   int i;
@@ -1294,11 +1288,11 @@ static void _sv_panel2d_crosshairs_callback(sv_panel_t *p){
 
   for(i=0;i<p->dimensions;i++){
     sv_dim_t *d = p->dimension_list[i].d;
-    if(d == p2->x_d){
+    if(d == p->private->x_d){
       _sv_dim_set_value(p->private->dim_scales[i],1,x);
     }
 
-    if(d == p2->y_d){
+    if(d == p->private->y_d){
       _sv_dim_set_value(p->private->dim_scales[i],1,y);
     }
     
@@ -1307,8 +1301,8 @@ static void _sv_panel2d_crosshairs_callback(sv_panel_t *p){
 
   // dimension setting might have enforced granularity restrictions;
   // have the display reflect that
-  x = p2->x_d->val;
-  y = p2->y_d->val;
+  x = p->private->x_d->val;
+  y = p->private->y_d->val;
 
   _sv_plot_set_crosshairs(PLOT(p->private->graph),x,y);
 
@@ -1419,8 +1413,8 @@ static int _sv_panel2d_compute(sv_panel_t *p,
   pw = plot->x.pixels;
   ph = plot->y.pixels;
   
-  x_d = p2->x_d->number;
-  y_d = p2->y_d->number;
+  x_d = p->private->x_d->number;
+  y_d = p->private->y_d->number;
 
   // beginning of computation init
   if(p->private->plot_progress_count==0){
@@ -1432,21 +1426,21 @@ static int _sv_panel2d_compute(sv_panel_t *p,
     _sv_scalespace_t old_yv = p2->y_v;
 
     // generate new scales
-    _sv_dim_scales(p2->x_d, 
-		   p2->x_d->bracket[0],
-		   p2->x_d->bracket[1],
+    _sv_dim_scales(p->private->x_d, 
+		   p->private->x_d->bracket[0],
+		   p->private->x_d->bracket[1],
 		   pw,pw * p->private->oversample_n / p->private->oversample_d,
 		   plot->scalespacing,
-		   p2->x_d->name,
+		   p->private->x_d->name,
 		   &sx,
 		   &sx_v,
 		   &sx_i);
-    _sv_dim_scales(p2->y_d, 
-		   p2->y_d->bracket[1],
-		   p2->y_d->bracket[0],
+    _sv_dim_scales(p->private->y_d, 
+		   p->private->y_d->bracket[1],
+		   p->private->y_d->bracket[0],
 		   ph,ph * p->private->oversample_n / p->private->oversample_d,
 		   plot->scalespacing,
-		   p2->y_d->name,
+		   p->private->y_d->name,
 		   &sy,
 		   &sy_v,
 		   &sy_i);
@@ -1521,6 +1515,7 @@ static int _sv_panel2d_compute(sv_panel_t *p,
       _sv_plot_draw_scales(plot); // this should happen outside lock
       gdk_threads_enter ();      
     }
+
     _sv_map_set_throttle_time(p); // swallow the first 'throttled' remap which would only be a single line;
 
     return 1;

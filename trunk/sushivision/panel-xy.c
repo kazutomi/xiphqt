@@ -361,7 +361,7 @@ static void _sv_panelxy_update_legend(sv_panel_t *p){
     for(i=0;i<p->dimensions;i++){
       sv_dim_t *d = p->dimension_list[i].d;
 
-      if(d != xy->x_d ||
+      if(d != p->private->x_d ||
 	 plot->cross_active){
 	
 	snprintf(buffer,320,"%s = %+.*f",
@@ -386,7 +386,7 @@ static double _sv_panelxy_zoom_metric(sv_panel_t *p, int off){
 
   // if this is a discrete data set, size/view changes cannot affect
   // the data spacing; that's set by the discrete scale
-  if(xy->x_d->type != SV_DIM_CONTINUOUS) return -1;
+  if(p->private->x_d->type != SV_DIM_CONTINUOUS) return -1;
 
   double xscale = _sv_scalespace_pixel(&xy->x,1.) - _sv_scalespace_pixel(&xy->x,0.);
   double yscale = _sv_scalespace_pixel(&xy->y,1.) - _sv_scalespace_pixel(&xy->y,0.);
@@ -441,7 +441,7 @@ static int _sv_panelxy_mark_recompute_by_metric(sv_panel_t *p, int recursing){
   _sv_panelxy_t *xy = p->subtype->xy;
 
   // discrete val dimensions are immune to rerender by metric changes
-  if(xy->x_d->type != SV_DIM_CONTINUOUS) return 0; 
+  if(p->private->x_d->type != SV_DIM_CONTINUOUS) return 0; 
 
   double target = (double) p->private->oversample_d / p->private->oversample_n;
   double full = _sv_panelxy_zoom_metric(p, 1);
@@ -616,7 +616,7 @@ static void _sv_panelxy_update_xsel(sv_panel_t *p){
        gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(xy->dim_xb[i]))){
       
       // set the x dim flag
-      xy->x_d = p->dimension_list[i].d;
+      p->private->x_d = p->dimension_list[i].d;
       xy->x_widget = p->private->dim_scales[i];
       xy->x_dnum = i;
     }
@@ -645,6 +645,7 @@ static void _sv_panelxy_compute_line(sv_panel_t *p,
 
   int i,j,fn=p->sushi->functions;
   int w = sxi.pixels;
+
 
   /* by x */
   for(j=0;j<w;j++){
@@ -738,12 +739,12 @@ static void _sv_panelxy_update_crosshair(sv_panel_t *p){
   if(!xy->x_vec[xy->cross_objnum] || !xy->y_vec[xy->cross_objnum])return;
 
   // get bin number of dim value
-  int x_bin = rint(_sv_scalespace_pixel(&xy->data_v, xy->x_d->val));
+  int x_bin = rint(_sv_scalespace_pixel(&xy->data_v, p->private->x_d->val));
   double x = xy->x_vec[xy->cross_objnum][x_bin];
   double y = xy->y_vec[xy->cross_objnum][x_bin];
 
   _sv_plot_set_crosshairs(plot,x,y);
-  sv_dim_set_value(xy->x_d,1,_sv_scalespace_value(&xy->data_v, x_bin));
+  sv_dim_set_value(p->private->x_d,1,_sv_scalespace_value(&xy->data_v, x_bin));
 
   _sv_panel_dirty_legend(p);
 }
@@ -751,8 +752,7 @@ static void _sv_panelxy_update_crosshair(sv_panel_t *p){
 static void _sv_panelxy_center_callback(sv_dim_list_t *dptr){
   sv_dim_t *d = dptr->d;
   sv_panel_t *p = dptr->p;
-  _sv_panelxy_t *xy = p->subtype->xy;
-  int axisp = (d == xy->x_d);
+  int axisp = (d == p->private->x_d);
 
   if(!axisp){
     // mid slider of a non-axis dimension changed, rerender
@@ -767,8 +767,7 @@ static void _sv_panelxy_center_callback(sv_dim_list_t *dptr){
 static void _sv_panelxy_bracket_callback(sv_dim_list_t *dptr){
   sv_dim_t *d = dptr->d;
   sv_panel_t *p = dptr->p;
-  _sv_panelxy_t *xy = p->subtype->xy;
-  int axisp = (d == xy->x_d);
+  int axisp = (d == p->private->x_d);
     
   // always need to recompute, may also need to update zoom
 
@@ -816,16 +815,18 @@ static void _sv_panelxy_crosshair_callback(sv_panel_t *p){
   int bestbin=-1;
   double bestdist;
 
-  for(i=0;i<p->objectives;i++){
-    if(xy->x_vec[i] && xy->y_vec[i] && !_sv_mapping_inactive_p(xy->mappings+i)){
-      for(j=0;j<xy->data_v.pixels;j++){
-	double xd = x - xy->x_vec[i][j];
-	double yd = y - xy->y_vec[i][j];
-	double dist = xd*xd + yd*yd;
-	if(besto==-1 || dist<bestdist){
-	  besto = i;
-	  bestbin = j;
-	  bestdist = dist;
+  if(xy->x_vec && xy->y_vec){
+    for(i=0;i<p->objectives;i++){
+      if(xy->x_vec[i] && xy->y_vec[i] && !_sv_mapping_inactive_p(xy->mappings+i)){
+	for(j=0;j<xy->data_v.pixels;j++){
+	  double xd = x - xy->x_vec[i][j];
+	  double yd = y - xy->y_vec[i][j];
+	  double dist = xd*xd + yd*yd;
+	  if(besto==-1 || dist<bestdist){
+	    besto = i;
+	    bestbin = j;
+	    bestdist = dist;
+	  }
 	}
       }
     }
@@ -835,13 +836,15 @@ static void _sv_panelxy_crosshair_callback(sv_panel_t *p){
     x = xy->x_vec[besto][bestbin];
     y = xy->y_vec[besto][bestbin];
 
-    PLOT(p->private->graph)->selx = x;
-    PLOT(p->private->graph)->sely = y;
     xy->cross_objnum = besto;
     
     double dimval = _sv_scalespace_value(&xy->data_v, bestbin);
-    sv_dim_set_value(xy->x_d,1,dimval);  
+    sv_dim_set_value(p->private->x_d,1,dimval);  
   }
+  
+
+  PLOT(p->private->graph)->selx = x;
+  PLOT(p->private->graph)->sely = y;
   
   p->private->oldbox_active = 0;
   _sv_undo_resume(p->sushi);
@@ -953,18 +956,17 @@ int _sv_panelxy_legend_redraw(sv_panel_t *p){
 // to the same grid regardless of zoom level or starting bracket as
 // well as only encompass the desired range
 static int _sv_panelxy_generate_dimscale(sv_dim_t *d, int zoom, _sv_scalespace_t *v, _sv_scalespace_t *i){
-  _sv_scalespace_t x;
   
   if(d->type != SV_DIM_CONTINUOUS){
     // non-continuous is unaffected by zoom
-    _sv_dim_scales(d, d->bracket[0], d->bracket[1], 2, 2, 1, d->name, &x, v, i);
+    _sv_dim_scales(d, d->bracket[0], d->bracket[1], 2, 2, 1, d->name, NULL, v, i);
     return 0;
   }
 
   // continuous dimensions are, in some ways, handled like a discrete dim.
   double lo = d->scale->val_list[0];
   double hi = d->scale->val_list[d->scale->vals-1];
-  _sv_dim_scales(d, lo, hi, 2, 2, 1, d->name, &x, v, i);
+  _sv_dim_scales(d, lo, hi, 2, 2, 1, d->name, NULL, v, i);
 
   // this is iterative, not direct computation, so that at each level
   // we have a small adjustment (as opposed to one huge adjustment at
@@ -1083,12 +1085,12 @@ int _sv_panelxy_compute(sv_panel_t *p,
   double dim_vals[p->sushi->dimensions];
 
   /* get iterator bounds, use iterator scale */
-  x_d = xy->x_d->number;
+  x_d = p->private->x_d->number;
 
   /* generate a new data_v/data_i */
   _sv_scalespace_t newv;
   _sv_scalespace_t newi;
-  _sv_panelxy_generate_dimscale(xy->x_d, zoom, &newv, &newi);
+  _sv_panelxy_generate_dimscale(p->private->x_d, zoom, &newv, &newi);
   dw = newv.pixels;
 
   /* compare new/old data scales; pre-fill the data vec with values
@@ -1631,6 +1633,6 @@ sv_panel_t *sv_panel_new_xy(sv_instance_t *s,
   p->private->def_oversample_n = p->private->oversample_n = 1;
   p->private->def_oversample_d = p->private->oversample_d = 8;
   
-  return 0;
+  return p;
 }
 
