@@ -725,11 +725,9 @@ void _sv_panel1d_mark_recompute(sv_panel_t *p){
 	}
       }
     }
-    
+
     p1->data_size = dw;
-    p1->panel_w = w;
-    p1->panel_h = h;
-    
+
     if(!p1->data_vec){
       // allocate it
 
@@ -744,6 +742,14 @@ void _sv_panel1d_mark_recompute(sv_panel_t *p){
       for(j=0;j<dw;j++)
 	p1->data_vec[i][j]=NAN;
 
+    if(p1->panel_w != w || p1->panel_h != h){
+      p->private->map_progress_count=0;
+      _sv_panel1d_map_redraw(p, NULL);
+    }
+
+    p1->panel_w = w;
+    p1->panel_h = h;
+    
     _sv_panel_dirty_plot(p);
   }
 }

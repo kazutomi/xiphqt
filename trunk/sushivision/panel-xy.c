@@ -715,6 +715,14 @@ static void _sv_panelxy_recompute_callback(void *ptr){
 				       plot->scalespacing,
 				       xy->y_scale->legend);
 
+  if(xy->panel_w != w || xy->panel_h != h){
+    p->private->map_progress_count=0;
+    _sv_panelxy_map_redraw(p, NULL);
+  }
+  
+  xy->panel_w = w;
+  xy->panel_h = h;
+
   // always recompute, but also update zoom
   if(!_sv_panelxy_mark_recompute_by_metric(p,0))
     _sv_panelxy_mark_recompute(p);

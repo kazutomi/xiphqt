@@ -98,6 +98,8 @@ examples:  $(OBJ) $(EX_OBJ)
 	$(LD) $(OBJ) example_chirp.o $(CFLAGS) -o sushivision_chirp $(LIBS) $(LDF)
 	$(LD) $(OBJ) example_spirograph.o $(CFLAGS) -o sushivision_spirograph $(LIBS) $(LDF)
 
+$(TARGET): all
+
 install: $(TARGET)
 	$(INSTALL) -d -m 0755 $(INCDIR)
 	$(INSTALL) -m 0644 $(INC) $(INCDIR)
