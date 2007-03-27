@@ -1,7 +1,7 @@
 /*
     Copyright (C) 2004 Kor Nielsen
     Pulse driver code copyright (C) 2006 Lennart Poettering
-    Unholy union copyright (C) 2007 Monty and Redhat Inc.
+    Unholy union copyright (C) 2007 Monty and Red Hat, Inc.
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
