@@ -20,7 +20,7 @@
 #endif
 
 #include "toplevel_lookup.h"
-#include "toplevel.h"
+#include "codec_internal.h"
 
 int theora_encode_init(theora_state *th, theora_info *c){
   return OC_DISABLED;
