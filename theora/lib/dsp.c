@@ -16,8 +16,6 @@
  ********************************************************************/
 
 #include <stdlib.h>
-#include "cpu.h"
-#include "dsp.h"
 #include "codec_internal.h"
 
 #define DSP_OP_AVG(a,b) ((((int)(a)) + ((int)(b)))/2)

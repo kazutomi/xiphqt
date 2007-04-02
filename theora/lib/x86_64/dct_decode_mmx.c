@@ -11,23 +11,19 @@
  ********************************************************************
 
   function:
-  last mod: $Id$
+  last mod: $Id: dsp_mmx.c 12440 2007-02-06 16:36:26Z j $
 
  ********************************************************************/
-#ifndef CPU_H
-#define CPU_H
+
+#include <stdlib.h>
 
 #include "codec_internal.h"
 
-//extern ogg_uint32_t cpu_flags;
+#if defined(USE_ASM)
 
-#define CPU_X86_MMX	(1<<0)
-#define CPU_X86_3DNOW	(1<<1)
-#define CPU_X86_MMXEXT	(1<<2)
-#define CPU_X86_SSE	(1<<3)
-#define CPU_X86_SSE2	(1<<4)
-#define CPU_X86_3DNOWEXT (1<<5)
+/* nothing implemented right now */
+void dsp_mmx_dct_decode_init(DspFunctions *funcs)
+{
+}
 
-ogg_uint32_t cpu_init (void);
-
-#endif
+#endif /* USE_ASM */

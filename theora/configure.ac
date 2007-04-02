@@ -24,7 +24,7 @@ AC_SUBST(V_LIB_REVISION)
 AC_SUBST(V_LIB_AGE)
 
 dnl Extra linker options (for version script)
-SHLIB_VERSION_ARG=""
+THEORA_LDFLAGS=""
 
 dnl --------------------------------------------------  
 dnl Check for programs
@@ -115,7 +115,10 @@ if test "x${ac_enable_asm}" = xyes; then
 		cpu_x86_32=yes 
 		cpu_optimization="32 bit x86"
 		AC_DEFINE([USE_ASM], [],  [make use of asm optimization])
-    	;;
+		if test "x$target_vendor" = "xapple"; then
+			THEORA_LDFLAGS="$THEORA_LDFLAGS  -Wl,-read_only_relocs,suppress"
+		fi
+		;;
 	x86_64)
 		cpu_x86_64=yes
 		cpu_optimization="64 bit x86"
@@ -125,6 +128,7 @@ if test "x${ac_enable_asm}" = xyes; then
 else
   cpu_optimization="disabled"
 fi
+
 AM_CONDITIONAL([CPU_x86_64], [test x$cpu_x86_64 = xyes])
 AM_CONDITIONAL([CPU_x86_32], [test x$cpu_x86_32 = xyes])
 
@@ -132,19 +136,20 @@ AM_CONDITIONAL([CPU_x86_32], [test x$cpu_x86_32 = xyes])
 AC_PROG_LD
 AC_PROG_LD_GNU
 if test "x$lt_cv_prog_gnu_ld" = "xyes"; then
-   SHLIB_VERSION_ARG="Wl,--version-script=Version_script"
+	SHLIB_VERSION_ARG="-Wl,--version-script=Version_script"
 
-   dnl Set extra linker options
-   case "$target_os" in
+	dnl Set extra linker options
+	case "$target_os" in
 	linux* | solaris* )
 		SHLIB_VERSION_ARG="-Wl,--version-script=Version_script"
 		;;
 	*)
 		;;
-   esac
+	esac
+	THEORA_LDFLAGS="$THEORA_LDFLAGS SHLIB_VERSION_ARG"
 fi
 
-AC_SUBST(SHLIB_VERSION_ARG)
+AC_SUBST(THEORA_LDFLAGS)
 
 dnl --------------------------------------------------
 dnl Checks for support libraries and headers

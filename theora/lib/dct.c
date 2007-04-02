@@ -16,8 +16,6 @@
  ********************************************************************/
 
 #include "codec_internal.h"
-#include "dsp.h"
-#include "cpu.h"
 
 static ogg_int32_t xC1S7 = 64277;
 static ogg_int32_t xC2S6 = 60547;
@@ -257,6 +255,8 @@ static void fdct_short__c ( ogg_int16_t * InputData, ogg_int16_t * OutputData ){
 void dsp_dct_init (DspFunctions *funcs, ogg_uint32_t cpu_flags)
 {
   funcs->fdct_short = fdct_short__c;
+  dsp_dct_decode_init(funcs, cpu_flags);
+  dsp_idct_init(funcs, cpu_flags);
 #if defined(USE_ASM)
   if (cpu_flags & CPU_X86_MMX) {
     dsp_mmx_fdct_init(funcs);

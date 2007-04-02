@@ -18,7 +18,8 @@
 #ifndef DSP_H
 #define DSP_H
 
-#include <theora/theora.h>
+#include "theora/theora.h"
+#include "cpu.h"
 
 typedef struct
 {
@@ -77,10 +78,27 @@ typedef struct
   ogg_uint32_t (*inter8x8_err_xy2)(unsigned char *SrcData, ogg_uint32_t SrcStride,
 		                 unsigned char *RefDataPtr1,
 			         unsigned char *RefDataPtr2, ogg_uint32_t RefStride);
+			         
+  void (*FilterHoriz) (unsigned char * PixelPtr,
+                ogg_int32_t LineLength, ogg_int16_t *BoundingValuePtr);
+
+  void (*FilterVert) (unsigned char * PixelPtr,
+                 ogg_int32_t LineLength, ogg_int16_t *BoundingValuePtr);
+
+   void (*IDctSlow) (ogg_int16_t *InputData, 
+                  ogg_int16_t *QuantMatrix, ogg_int16_t *OutputData);
+
+    void (*IDct3) (ogg_int16_t *InputData, 
+                   ogg_int16_t *QuantMatrix, ogg_int16_t *OutputData);
+                   
+    void (*IDct10) (ogg_int16_t *InputData, 
+                  ogg_int16_t *QuantMatrix, ogg_int16_t *OutputData);
 } DspFunctions;
 
 extern void dsp_dct_init(DspFunctions *funcs, ogg_uint32_t cpu_flags);
 extern void dsp_recon_init (DspFunctions *funcs, ogg_uint32_t cpu_flags);
+extern void dsp_dct_decode_init(DspFunctions *funcs, ogg_uint32_t cpu_flags);
+extern void dsp_idct_init(DspFunctions *funcs, ogg_uint32_t cpu_flags);
 
 void dsp_init(DspFunctions *funcs);
 void dsp_static_init(DspFunctions *funcs);
@@ -89,6 +107,8 @@ extern void dsp_mmx_init(DspFunctions *funcs);
 extern void dsp_mmxext_init(DspFunctions *funcs);
 extern void dsp_mmx_fdct_init(DspFunctions *funcs);
 extern void dsp_mmx_recon_init(DspFunctions *funcs);
+extern void dsp_mmx_dct_decode_init(DspFunctions *funcs);
+extern void dsp_mmx_idct_init(DspFunctions *funcs);
 #endif
 
 #define dsp_save_fpu(funcs) (funcs.save_fpu ())
@@ -132,5 +152,19 @@ extern void dsp_mmx_recon_init(DspFunctions *funcs);
 #define dsp_inter8x8_err_xy2(funcs,ptr1,str1,ptr2,ptr3,str2) \
 	(funcs.inter8x8_err_xy2 (ptr1,str1,ptr2,ptr3,str2))
 
+#define dsp_FilterHoriz(funcs, ptr1, ptr2, ptr3) \
+  (funcs.FilterHoriz(ptr1, ptr2, ptr3))
+
+#define dsp_FilterVert(funcs, ptr1, ptr2, ptr3) \
+  (funcs.FilterVert(ptr1, ptr2, ptr3))
+
+#define dsp_IDctSlow(funcs, ptr1, ptr2, ptr3) \
+    (funcs.IDctSlow(ptr1, ptr2, ptr3))
+
+#define dsp_IDct3(funcs, ptr1, ptr2, ptr3) \
+    (funcs.IDctSlow(ptr1, ptr2, ptr3))
+
+#define dsp_IDct10(funcs, ptr1, ptr2, ptr3) \
+   (funcs.IDctSlow(ptr1, ptr2, ptr3))
 
 #endif /* DSP_H */
