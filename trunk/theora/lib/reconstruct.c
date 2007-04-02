@@ -16,8 +16,6 @@
  ********************************************************************/
 
 #include "codec_internal.h"
-#include "dsp.h"
-#include "cpu.h"
 
 static void copy8x8__c (unsigned char *src,
 	                unsigned char *dest,

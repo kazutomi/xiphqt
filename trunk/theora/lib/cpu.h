@@ -14,6 +14,8 @@
   last mod: $Id$
 
  ********************************************************************/
+#ifndef CPU_H
+#define CPU_H
 
 #include "codec_internal.h"
 
@@ -28,3 +30,4 @@
 
 ogg_uint32_t cpu_init (void);
 
+#endif

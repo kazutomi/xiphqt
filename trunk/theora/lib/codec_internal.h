@@ -453,7 +453,7 @@ typedef struct PB_INSTANCE {
 
   /* Loop filter bounding values */
   unsigned char  LoopFilterLimits[Q_TABLE_SIZE];
-  ogg_int32_t    FiltBoundingValue[512];
+  ogg_int16_t    FiltBoundingValue[256];
 
   /* Dequantiser and rounding tables */
   ogg_uint32_t   QThreshTable[Q_TABLE_SIZE];
@@ -705,15 +705,6 @@ extern void InitPPInstance(PP_INSTANCE *ppi, DspFunctions *funcs);
 extern int GetFrameType(PB_INSTANCE *pbi);
 extern void InitPBInstance(PB_INSTANCE *pbi);
 extern void ClearPBInstance(PB_INSTANCE *pbi);
-
-
-extern void IDctSlow(  Q_LIST_ENTRY * InputData,
-                       ogg_int16_t *QuantMatrix,
-                       ogg_int16_t * OutputData ) ;
-
-extern void IDct10( Q_LIST_ENTRY * InputData,
-                    ogg_int16_t *QuantMatrix,
-                    ogg_int16_t * OutputData );
 
 extern void IDct1( Q_LIST_ENTRY * InputData,
                    ogg_int16_t *QuantMatrix,
