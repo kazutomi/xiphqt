@@ -610,7 +610,7 @@
 
             <dt>
               <a id="libspiff"></a><a href=
-              "http://libspiff.sourceforge.net/">libSpiff</a> (C++)
+              "http://libspiff.sourceforge.net/">libSpiff</a> (C, C++)
             </dt>
             <dd>
               The official reference implementation of XSPF by the Xiph.Org Foundation.
