@@ -26,6 +26,11 @@
 (Windows)  xml.exe validate -e -r xspf-1_0.5.rng myplaylist.xspf</pre>
       </li>
       <li>
+        <a href="http://libspiff.sourceforge.net/">spiff_check of libSpiff</a> by Sebastian Pipping.  Sample usage of spiff_check:
+        <pre>(Unix)     cat myplaylist.xspf | spiff_check -
+(Windows)  spiff_check - &lt; myplaylist.xspf</pre>
+      </li>
+      <li>
         <s>
           <a href="xspf-1_0.2.xsd">XML Schema for XSPF</a> by Matthias Friedrich.  Sample usage of <a href="http://xmlstar.sourceforge.net/">XMLStarlet</a>:
           <pre>(Unix)     xmlstarlet validate -e -s xspf-1_0.2.xsd myplaylist.xspf
