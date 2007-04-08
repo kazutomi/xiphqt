@@ -551,7 +551,7 @@ void select_Inter_quantiser ( PB_INSTANCE *pbi ){
 void select_UV_quantiser ( PB_INSTANCE *pbi ){
   pbi->fquant_coeffs = pbi->fp_quant_UV_coeffs;
   pbi->fquant_round = pbi->fp_quant_UV_round;
-  pbi->fquant_ZbSize = pbi->fp_quant_UV_round;
+  pbi->fquant_ZbSize = pbi->fp_ZeroBinSize_UV;
 }
 
 void select_InterUV_quantiser ( PB_INSTANCE *pbi ){
