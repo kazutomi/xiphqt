@@ -17,7 +17,6 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include "dsp.h"
 #include "codec_internal.h"
 
 /* Initialises motion compentsation. */

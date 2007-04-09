@@ -1,14 +1,17 @@
 INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/lib -I$(top_srcdir)/lib/dec -I$(top_srcdir)/lib/enc
 
 EXTRA_DIST = Version_script.in \
+        enc/x86_32/dct_decode_mmx.c \
         enc/x86_32/dsp_mmx.c \
         enc/x86_32/dsp_mmxext.c \
         enc/x86_32/recon_mmx.c \
         enc/x86_32/fdct_mmx.c \
+        enc/x86_32/idct_mmx.c \
         enc/x86_64/dsp_mmx.c \
         enc/x86_64/dsp_mmxext.c \
         enc/x86_64/recon_mmx.c \
         enc/x86_64/fdct_mmx.c \
+        enc/x86_64/idct_mmx.c \
         enc/x86_32_vs/dsp_mmx.c \
         enc/x86_32_vs/fdct_mmx.c \
         enc/x86_32_vs/recon_mmx.c \
@@ -46,17 +49,21 @@ encoder_sources = \
 if CPU_x86_64
 enc_arch_dir = enc/x86_64
 encoder_arch_sources= \
+	$(arch_dir)/dct_decode_mmx.c \
 	$(arch_dir)/dsp_mmx.c \
 	$(arch_dir)/dsp_mmxext.c \
 	$(arch_dir)/recon_mmx.c \
+	$(arch_dir)/idct_mmx.c \
 	$(arch_dir)/fdct_mmx.c
 else
 if CPU_x86_32
 arch_dir = enc/x86_32
 encoder_arch_sources= \
+	$(arch_dir)/dct_decode_mmx.c \
 	$(arch_dir)/dsp_mmx.c \
 	$(arch_dir)/dsp_mmxext.c \
 	$(arch_dir)/recon_mmx.c \
+	$(arch_dir)/idct_mmx.c \
 	$(arch_dir)/fdct_mmx.c
 endif
 endif
@@ -124,7 +131,7 @@ noinst_HEADERS = \
 	
 
 libtheora_la_CFLAGS = $(OGG_CFLAGS)
-libtheora_la_LDFLAGS = -version-info @V_LIB_CURRENT@:@V_LIB_REVISION@:@V_LIB_AGE@ @SHLIB_VERSION_ARG@
+libtheora_la_LDFLAGS = -version-info @V_LIB_CURRENT@:@V_LIB_REVISION@:@V_LIB_AGE@ @THEORA_LDFLAGS@
 libtheora_la_LIBADD = $(OGG_LIBS)
 
 debug:

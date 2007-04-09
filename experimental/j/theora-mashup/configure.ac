@@ -24,7 +24,7 @@ AC_SUBST(V_LIB_REVISION)
 AC_SUBST(V_LIB_AGE)
 
 dnl Extra linker options (for version script)
-SHLIB_VERSION_ARG=""
+THEORA_LDFLAGS=""
 
 dnl --------------------------------------------------  
 dnl Check for programs
@@ -115,6 +115,10 @@ if test "x${ac_enable_asm}" = xyes; then
 		cpu_x86_32=yes 
 		cpu_optimization="32 bit x86"
 		AC_DEFINE([USE_ASM], [],  [make use of asm optimization])
+		if test "x$target_vendor" = "xapple"; then
+			THEORA_LDFLAGS="$THEORA_LDFLAGS  -Wl,-read_only_relocs,suppress"
+		fi
+		
 		AC_DEFINE([OC_X86ASM], [], [enable x86 assambler optimization])
 		AM_CONDITIONAL(OC_X86ASM,true)
     	;;
@@ -146,9 +150,10 @@ if test "x$lt_cv_prog_gnu_ld" = "xyes"; then
 	*)
 		;;
    esac
+   THEORA_LDFLAGS="$THEORA_LDFLAGS SHLIB_VERSION_ARG"
 fi
 
-AC_SUBST(SHLIB_VERSION_ARG)
+AC_SUBST(THEORA_LDFLAGS)
 
 dnl --------------------------------------------------
 dnl Checks for support libraries and headers

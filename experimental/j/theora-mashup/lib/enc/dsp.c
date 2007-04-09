@@ -16,8 +16,6 @@
  ********************************************************************/
 
 #include <stdlib.h>
-#include "cpu.h"
-#include "dsp.h"
 #include "codec_internal.h"
 
 #define DSP_OP_AVG(a,b) ((((int)(a)) + ((int)(b)))/2)
@@ -404,7 +402,7 @@ void dsp_static_init(DspFunctions *funcs)
 {
   ogg_uint32_t cpuflags;
 
-  cpuflags = oc_cpu_flags_get();
+  cpuflags = oc_cpu_flags_get ();
   dsp_init (funcs);
 
   dsp_recon_init (funcs, cpuflags);
