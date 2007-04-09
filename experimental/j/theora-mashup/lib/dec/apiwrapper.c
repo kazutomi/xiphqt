@@ -231,7 +231,6 @@ double theora_granule_time(theora_state *_td, ogg_int64_t _gp){
     return theora_granule_time_enc(_td, _gp);
   return th_granule_time(((th_api_wrapper *)_td->i->codec_setup)->decode,_gp);
 }
-/*
 void theora_comment_init(theora_comment *_tc){
   th_comment_init((th_comment *)_tc);
 }
@@ -255,4 +254,3 @@ void theora_comment_add(theora_comment *_tc,char *_comment){
 void theora_comment_add_tag(theora_comment *_tc, char *_tag, char *_value){
   th_comment_add_tag((th_comment *)_tc,_tag,_value);
 }
-*/

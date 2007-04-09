@@ -20,7 +20,6 @@ lib_LTLIBRARIES = libtheora.la
 
 if THEORA_DISABLE_ENCODE
 encoder_sources = \
-	enc/comment.c \
 	enc/encoder_disabled.c
 else
 encoder_sources = \
@@ -31,7 +30,6 @@ encoder_sources = \
 	enc/encoder_quant.c \
 	enc/blockmap.c \
 	enc/common.c \
-	enc/comment.c \
 	enc/dct.c \
 	enc/dct_decode.c \
 	enc/frarray.c \
