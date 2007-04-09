@@ -36,6 +36,9 @@ namespace ogg {
 
             ogg_int64_t packetno( )     { return this->get_data()->packetno; }
             ogg_int64_t granulepos( )   { return this->get_data()->granulepos; } // may want to expose only page granulepos, or this may be useful for encode only.
+            std::string get_bytes( )    { return std::string((char*)this->get_data()->packet, this->get_data()->bytes); }
+            bool bos( )                 { return this->get_data()->b_o_s; }
+            bool eos( )                 { return this->get_data()->e_o_s; }
     };
 
 

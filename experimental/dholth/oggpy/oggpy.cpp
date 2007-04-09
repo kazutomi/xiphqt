@@ -26,6 +26,9 @@ BOOST_PYTHON_MODULE(oggpy)
         .def(init< const ogg::packet& >())
         .def("packetno", &ogg::packet::packetno)
         .def("granulepos", &ogg::packet::granulepos)
+        .def("get_bytes", &ogg::packet::get_bytes)
+        .def("bos", &ogg::packet::bos)
+        .def("eos", &ogg::packet::eos)
     ;
 
     class_< ogg::userpacket, bases< ogg::packet >  >("userpacket", init< const ogg::userpacket& >())
