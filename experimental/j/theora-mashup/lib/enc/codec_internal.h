@@ -23,7 +23,7 @@
 #endif
 
 #include "theora/theora.h"
-#include "huffman.h"
+#include "encoder_huffman.h"
 #include "dsp.h"
 
 #ifndef LIBOGG2

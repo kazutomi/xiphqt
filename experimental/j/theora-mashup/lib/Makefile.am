@@ -28,6 +28,7 @@ else
 encoder_sources = \
 	enc/dct_encode.c \
 	enc/encode.c \
+	enc/encoder_huffman.c \
 	enc/encoder_idct.c \
 	enc/encoder_toplevel.c \
 	enc/encoder_quant.c \
@@ -37,7 +38,6 @@ encoder_sources = \
 	enc/dct_decode.c \
 	enc/frarray.c \
 	enc/frinit.c \
-	enc/huffman.c \
 	enc/mcomp.c \
 	enc/misc_common.c \
 	enc/pb.c \
@@ -112,7 +112,7 @@ noinst_HEADERS = \
 	enc/block_inline.h \
 	enc/codec_internal.h \
 	enc/encoder_lookup.h \
-	enc/huffman.h \
+	enc/encoder_huffman.h \
 	enc/hufftables.h \
 	enc/pp.h \
 	enc/quant_lookup.h \
