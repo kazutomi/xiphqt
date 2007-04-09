@@ -101,14 +101,14 @@ static ogg_uint32_t row_sad8__c (unsigned char *Src1, unsigned char *Src2)
   ogg_uint32_t SadValue1;
 
   SadValue    = DSP_OP_ABS_DIFF (Src1[0], Src2[0]) + 
-	        DSP_OP_ABS_DIFF (Src1[1], Src2[1]) +
-	        DSP_OP_ABS_DIFF (Src1[2], Src2[2]) +
-	        DSP_OP_ABS_DIFF (Src1[3], Src2[3]);
+                DSP_OP_ABS_DIFF (Src1[1], Src2[1]) +
+                DSP_OP_ABS_DIFF (Src1[2], Src2[2]) +
+                DSP_OP_ABS_DIFF (Src1[3], Src2[3]);
 
   SadValue1   = DSP_OP_ABS_DIFF (Src1[4], Src2[4]) + 
-	        DSP_OP_ABS_DIFF (Src1[5], Src2[5]) +
-	        DSP_OP_ABS_DIFF (Src1[6], Src2[6]) +
-	        DSP_OP_ABS_DIFF (Src1[7], Src2[7]);
+                DSP_OP_ABS_DIFF (Src1[5], Src2[5]) +
+                DSP_OP_ABS_DIFF (Src1[6], Src2[6]) +
+                DSP_OP_ABS_DIFF (Src1[7], Src2[7]);
 
   SadValue = ( SadValue > SadValue1 ) ? SadValue : SadValue1;
 
@@ -116,7 +116,7 @@ static ogg_uint32_t row_sad8__c (unsigned char *Src1, unsigned char *Src2)
 }
 
 static ogg_uint32_t col_sad8x8__c (unsigned char *Src1, unsigned char *Src2,
-		                    ogg_uint32_t stride)
+                        ogg_uint32_t stride)
 {
   ogg_uint32_t SadValue[8] = {0,0,0,0,0,0,0,0};
   ogg_uint32_t SadValue2[8] = {0,0,0,0,0,0,0,0};
@@ -162,7 +162,7 @@ static ogg_uint32_t col_sad8x8__c (unsigned char *Src1, unsigned char *Src2,
 }
 
 static ogg_uint32_t sad8x8__c (unsigned char *ptr1, ogg_uint32_t stride1,
-		       	    unsigned char *ptr2, ogg_uint32_t stride2)
+                 unsigned char *ptr2, ogg_uint32_t stride2)
 {
   ogg_uint32_t  i;
   ogg_uint32_t  sad = 0;
@@ -186,8 +186,8 @@ static ogg_uint32_t sad8x8__c (unsigned char *ptr1, ogg_uint32_t stride1,
 }
 
 static ogg_uint32_t sad8x8_thres__c (unsigned char *ptr1, ogg_uint32_t stride1,
-		       		  unsigned char *ptr2, ogg_uint32_t stride2, 
-			   	  ogg_uint32_t thres)
+                 unsigned char *ptr2, ogg_uint32_t stride2, 
+             ogg_uint32_t thres)
 {
   ogg_uint32_t  i;
   ogg_uint32_t  sad = 0;
@@ -214,9 +214,9 @@ static ogg_uint32_t sad8x8_thres__c (unsigned char *ptr1, ogg_uint32_t stride1,
 }
 
 static ogg_uint32_t sad8x8_xy2_thres__c (unsigned char *SrcData, ogg_uint32_t SrcStride,
-		                      unsigned char *RefDataPtr1,
-			              unsigned char *RefDataPtr2, ogg_uint32_t RefStride,
-			              ogg_uint32_t thres)
+                          unsigned char *RefDataPtr1,
+                    unsigned char *RefDataPtr2, ogg_uint32_t RefStride,
+                    ogg_uint32_t thres)
 {
   ogg_uint32_t  i;
   ogg_uint32_t  sad = 0;
@@ -277,7 +277,7 @@ static ogg_uint32_t intra8x8_err__c (unsigned char *DataPtr, ogg_uint32_t Stride
 }
 
 static ogg_uint32_t inter8x8_err__c (unsigned char *SrcData, ogg_uint32_t SrcStride,
-		                 unsigned char *RefDataPtr, ogg_uint32_t RefStride)
+                     unsigned char *RefDataPtr, ogg_uint32_t RefStride)
 {
   ogg_uint32_t  i;
   ogg_uint32_t  XSum=0;
@@ -327,8 +327,8 @@ static ogg_uint32_t inter8x8_err__c (unsigned char *SrcData, ogg_uint32_t SrcStr
 }
 
 static ogg_uint32_t inter8x8_err_xy2__c (unsigned char *SrcData, ogg_uint32_t SrcStride,
-		                     unsigned char *RefDataPtr1,
-				     unsigned char *RefDataPtr2, ogg_uint32_t RefStride)
+                         unsigned char *RefDataPtr1,
+             unsigned char *RefDataPtr2, ogg_uint32_t RefStride)
 {
   ogg_uint32_t  i;
   ogg_uint32_t  XSum=0;

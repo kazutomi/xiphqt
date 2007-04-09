@@ -111,23 +111,23 @@ AC_ARG_ENABLE(asm,
 if test "x${ac_enable_asm}" = xyes; then
   cpu_optimization="no optimization for your platform, please send a patch"
   case $target_cpu in
-	i[[3456]]86)
-		cpu_x86_32=yes 
-		cpu_optimization="32 bit x86"
-		AC_DEFINE([USE_ASM], [],  [make use of asm optimization])
-		if test "x$target_vendor" = "xapple"; then
-			THEORA_LDFLAGS="$THEORA_LDFLAGS  -Wl,-read_only_relocs,suppress"
-		fi
-		
-		AC_DEFINE([OC_X86ASM], [], [enable x86 assambler optimization])
-		AM_CONDITIONAL(OC_X86ASM,true)
-    	;;
-	x86_64)
-		cpu_x86_64=yes
-		cpu_optimization="64 bit x86"
-  	AC_DEFINE([USE_ASM], [],  [make use of asm optimization])	
-		AC_DEFINE([OC_X86ASM], [], [enable x86 assambler optimization])
-		AM_CONDITIONAL(OC_X86ASM,true)
+  i[[3456]]86)
+    cpu_x86_32=yes 
+    cpu_optimization="32 bit x86"
+    AC_DEFINE([USE_ASM], [],  [make use of asm optimization])
+    if test "x$target_vendor" = "xapple"; then
+      THEORA_LDFLAGS="$THEORA_LDFLAGS  -Wl,-read_only_relocs,suppress"
+    fi
+    
+    AC_DEFINE([OC_X86ASM], [], [enable x86 assambler optimization])
+    AM_CONDITIONAL(OC_X86ASM,true)
+      ;;
+  x86_64)
+    cpu_x86_64=yes
+    cpu_optimization="64 bit x86"
+    AC_DEFINE([USE_ASM], [],  [make use of asm optimization])  
+    AC_DEFINE([OC_X86ASM], [], [enable x86 assambler optimization])
+    AM_CONDITIONAL(OC_X86ASM,true)
     ;;
   esac
 else
@@ -144,11 +144,11 @@ if test "x$lt_cv_prog_gnu_ld" = "xyes"; then
 
    dnl Set extra linker options
    case "$target_os" in
-	linux* | solaris* )
-		SHLIB_VERSION_ARG="-Wl,--version-script=Version_script"
-		;;
-	*)
-		;;
+  linux* | solaris* )
+    SHLIB_VERSION_ARG="-Wl,--version-script=Version_script"
+    ;;
+  *)
+    ;;
    esac
    THEORA_LDFLAGS="$THEORA_LDFLAGS SHLIB_VERSION_ARG"
 fi
@@ -214,8 +214,8 @@ dnl check for SDL
 HAVE_SDL=no
 
 AM_PATH_SDL(,[
-	HAVE_SDL=yes
-	SDL_LIBS=`$SDL_CONFIG --libs`
+  HAVE_SDL=yes
+  SDL_LIBS=`$SDL_CONFIG --libs`
 ],AC_MSG_WARN([*** Unable to find SDL -- Not compiling example players ***]))
 
 dnl check for OSS
@@ -242,7 +242,7 @@ AC_ARG_ENABLE(float,
 
 if test "x${ac_enable_float}" != xyes ; then
     AC_DEFINE([THEORA_DISABLE_FLOAT], [], 
-	[Define to exclude floating point code from the build])
+  [Define to exclude floating point code from the build])
 fi
 AM_CONDITIONAL(THEORA_DISABLE_FLOAT, [test "x${ac_enable_float}" != xyes])
 
@@ -255,7 +255,7 @@ AC_ARG_ENABLE(encode,
 
 if test "x${ac_enable_encode}" != xyes ; then
     AC_DEFINE([THEORA_DISABLE_ENCODE], [],
-	[Define to exclude encode support from the build])
+  [Define to exclude encode support from the build])
 else
     if test x$HAVE_VORBIS = xyes; then
       BUILDABLE_EXAMPLES="$BUILDABLE_EXAMPLES encoder_example\$(EXEEXT)"
