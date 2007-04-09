@@ -70,13 +70,12 @@ char *th_comment_query(th_comment *_tc,char *_tag,int _count){
   long i;
   int  found;
   int  tag_len;
-  /*+1 for the '=' we append.*/
-  tag_len=strlen(_tag)+1;
+  tag_len=strlen(_tag);
   found=0;
   for(i=0;i<_tc->comments;i++){
     if(!oc_tagcompare(_tc->user_comments[i],_tag,tag_len)){
       /*We return a pointer to the data, not a copy.*/
-      if(_count==found++)return _tc->user_comments[i]+tag_len;
+      if(_count==found++)return _tc->user_comments[i]+tag_len+1;
     }
   }
   /*Didn't find anything.*/
@@ -87,8 +86,7 @@ int th_comment_query_count(th_comment *_tc,char *_tag){
   long i;
   int  tag_len;
   int  count;
-  /*+1 for the '=' we append.*/
-  tag_len=strlen(_tag)+1;
+  tag_len=strlen(_tag);
   count=0;
   for(i=0;i<_tc->comments;i++){
     if(!oc_tagcompare(_tc->user_comments[i],_tag,tag_len))count++;
