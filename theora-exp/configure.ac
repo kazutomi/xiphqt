@@ -152,6 +152,11 @@ else
     ac_enable_x86asm=no
 fi
 
+DEBUG="-g -Wall -DDEBUG -D__NO_MATH_INLINES"
+PROFILE="-g -p -O3 -DDEBUG";
+AC_SUBST(DEBUG)
+AC_SUBST(PROFILE)
+
 dnl enable experimental encoder
 ac_enable_encode=no
 AC_ARG_ENABLE(encode,

@@ -78,3 +78,9 @@ libtheoraenc_la_SOURCES = \
 
 libtheoraenc_la_LDFLAGS = -version-info @V_LIB_CURRENT@:@V_LIB_REVISION@:@V_LIB_AGE@ @OGG_LIBS@
 
+debug:
+	$(MAKE) all CFLAGS="@DEBUG@" LDFLAGS="-lefence"
+
+profile:
+	$(MAKE) all CFLAGS="@PROFILE@"
+

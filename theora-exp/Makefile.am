@@ -16,3 +16,10 @@ pkgconfig_DATA = $(TH_ENCODER_FILES) theoradec.pc theoracompat.pc
 
 dist-hook:
 	rm -rf `find $(distdir)/doc -name .svn`
+
+
+debug:
+	$(MAKE) all CFLAGS="@DEBUG@"
+
+profile:
+	$(MAKE) all CFLAGS="@PROFILE@"
