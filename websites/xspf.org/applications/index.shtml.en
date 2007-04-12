@@ -293,6 +293,14 @@
             </dd>
 
             <dt>
+              <a id="sift"></a>
+              <a href="http://code.google.com/p/sift/">sift</a>
+            <dt>
+            <dd>
+              <cite>sift provides transformations that convert iTunes library files into other formats or extract useful information from them.</cite>
+            </dd>
+
+            <dt>
               <a id="slimdevices"></a><a href=
               "http://www.slimdevices.com/pi_features.html">Slim Server</a>
             </dt>
