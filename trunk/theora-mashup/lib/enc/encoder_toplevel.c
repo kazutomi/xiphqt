@@ -24,6 +24,7 @@
 #include "toplevel_lookup.h"
 #include "internal.h"
 #include "dsp.h"
+#include "codec_internal.h"
 
 #define A_TABLE_SIZE        29
 #define DF_CANDIDATE_WINDOW 5
@@ -915,6 +916,7 @@ int theora_encode_init(theora_state *th, theora_info *c){
   InitHuffmanSet(&cpi->pb);
 
   /* This makes sure encoder version specific tables are initialised */
+  cpi->pb.encoder_profile = PROFILE_FULL;
   InitQTables(&cpi->pb);
 
   /* Indicate that the next frame to be compressed is the first in the
