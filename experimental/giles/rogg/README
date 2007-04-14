@@ -1,0 +1,19 @@
+== rogg - Raw Ogg file library and utilities ==
+
+rogg is a small library I wrote for manipulating Ogg streams in memory.
+
+This makes it convenient to write certain quick scripts for checking
+and fixing simple bitstream errors in mmap()'d files. 
+
+Examples:
+
+  rogg_aspect will dump and optionally set the pixel aspect ratio
+  stored in an Ogg Theora stream.
+
+  rogg_eosfix will set the end_of_stream flag on the last page
+  of a stream. This is often unset in downloads truncated from
+  an icecast stream.
+
+  rogg_pagedump dumps some basic header information for each page
+  in a stream.
+

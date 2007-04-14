@@ -11,6 +11,8 @@ rogg_UTILS = rogg_pagedump rogg_eosfix rogg_aspect
 
 all : librogg.a $(rogg_UTILS)
 
+EXTRA_DIST = Makefile README
+
 librogg.a : rogg.o
 	$(AR) cr $@ $^
 	ranlib $@
@@ -51,6 +53,7 @@ dist : *.c *.h Makefile
 	if test -d $(distdir); then rm -rf $(distdir); fi
 	-rm -rf $(PACKAGE)-$(VERSION)
 	mkdir $(distdir)
-	cp *.c *.h Makefile $(distdir)/
+	cp *.c *.h $(distdir)/
+	cp $(EXTRA_DIST) $(distdir)/
 	tar czf $(distdir).tar.gz $(distdir)
 	rm -rf $(distdir)
