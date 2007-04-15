@@ -139,6 +139,16 @@
             </dd>
 
             <dt>
+              <a id="herrie"></a><a href=
+              "http://herrie.info/">Herrie</a>
+            </dt>
+            <dd>
+              <cite>Herrie is a minimalistic music player that uses the command
+		line. It is written to support a variety of operating systems,
+		audio subsystems and file formats, including playlists.</cite>
+            </dd>
+
+            <dt>
               <a id="ion"></a><a href=
               "http://openvision.tv/home/home.html">I/ON</a> (Java, runs on
               MacOS X and Windows XP)
