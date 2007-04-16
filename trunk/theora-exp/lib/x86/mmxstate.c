@@ -17,6 +17,10 @@
 
 #if defined(OC_X86ASM)
 
+static const __attribute__((aligned(8),used)) ogg_int64_t OC_V3=
+ 0x0003000300030003LL; 
+static const __attribute__((aligned(8),used)) ogg_int64_t OC_V4=
+ 0x0004000400040004LL; 
 
 static const __attribute__((aligned(8),used)) int OC_FZIG_ZAGMMX[64]={
    0, 8, 1, 2, 9,16,24,17,
@@ -38,7 +42,6 @@ void oc_state_frag_recon_mmx(oc_theora_state *_state,const oc_fragment *_frag,
   int dst_framei;
   int dst_ystride;
   int zzi;
-  int ci;
   /*_last_zzi is subtly different from an actual count of the number of
      coefficients we decoded for this block.
     It contains the value of zzi BEFORE the final token in the block was
@@ -65,41 +68,41 @@ void oc_state_frag_recon_mmx(oc_theora_state *_state,const oc_fragment *_frag,
     Needless to say we inherited this approach from VP3.*/
   /*Special case only having a DC component.*/
   if(_last_zzi<2){
-    ogg_int16_t p;
+    ogg_uint16_t p;
     /*Why is the iquant product rounded in this case and no others?
       Who knows.*/
     p=(ogg_int16_t)((ogg_int32_t)_frag->dc*_dc_iquant+15>>5);
-    /*for(ci=0;ci<64;ci++)res_buf[ci]=p;*/
-    /*This could also be done with MMX 2.*/
+    /*Fill res_buf with p.*/
     __asm__ __volatile__(
-     "  movzwl    %1,   %%eax\n\t"
-     "  movd   %%eax,   %%mm0\n\t" /* XXXX XXXX 0000 AAAA */
-     "  movq   %%mm0,   %%mm1\n\t" /* XXXX XXXX 0000 AAAA */
-     "  pslld    $16,   %%mm1\n\t" /* XXXX XXXX AAAA 0000 */
-     "  por    %%mm0,   %%mm1\n\t" /* XXXX XXXX AAAA AAAA */
-     "  movq   %%mm1,   %%mm0\n\t" /* XXXX XXXX AAAA AAAA */
-     "  psllq    $32,   %%mm1\n\t" /* AAAA AAAA 0000 0000 */
-     "  por    %%mm1,   %%mm0\n\t" /* AAAA AAAA AAAA AAAA */
-     "  movq   %%mm0,    (%0)\n\t"
-     "  movq   %%mm0,   8(%0)\n\t"
-     "  movq   %%mm0,  16(%0)\n\t"
-     "  movq   %%mm0,  24(%0)\n\t"
-     "  movq   %%mm0,  32(%0)\n\t"
-     "  movq   %%mm0,  40(%0)\n\t"
-     "  movq   %%mm0,  48(%0)\n\t"
-     "  movq   %%mm0,  56(%0)\n\t"
-     "  movq   %%mm0,  64(%0)\n\t"
-     "  movq   %%mm0,  72(%0)\n\t"
-     "  movq   %%mm0,  80(%0)\n\t"
-     "  movq   %%mm0,  88(%0)\n\t"
-     "  movq   %%mm0,  96(%0)\n\t"
-     "  movq   %%mm0, 104(%0)\n\t"
-     "  movq   %%mm0, 112(%0)\n\t"
-     "  movq   %%mm0, 120(%0)\n\t"
-     :
-     :"r" (res_buf),
-      "r" (p)
-     :"memory"
+      /*mm0=0000 0000 0000 AAAA*/
+      "movd %[p],%%mm0\n\t"
+      /*mm1=0000 0000 0000 AAAA*/
+      "movd %[p],%%mm1\n\t"
+      /*mm0=0000 0000 AAAA 0000*/
+      "pslld $16,%%mm0\n\t"
+      /*mm0=0000 0000 AAAA AAAA*/
+      "por %%mm1,%%mm0\n\t"
+      /*mm0=AAAA AAAA AAAA AAAA*/
+      "punpcklwd %%mm0,%%mm0\n\t"
+      "movq %%mm0,(%[res_buf])\n\t"
+      "movq %%mm0,8(%[res_buf])\n\t"
+      "movq %%mm0,16(%[res_buf])\n\t"
+      "movq %%mm0,24(%[res_buf])\n\t"
+      "movq %%mm0,32(%[res_buf])\n\t"
+      "movq %%mm0,40(%[res_buf])\n\t"
+      "movq %%mm0,48(%[res_buf])\n\t"
+      "movq %%mm0,56(%[res_buf])\n\t"
+      "movq %%mm0,64(%[res_buf])\n\t"
+      "movq %%mm0,72(%[res_buf])\n\t"
+      "movq %%mm0,80(%[res_buf])\n\t"
+      "movq %%mm0,88(%[res_buf])\n\t"
+      "movq %%mm0,96(%[res_buf])\n\t"
+      "movq %%mm0,104(%[res_buf])\n\t"
+      "movq %%mm0,112(%[res_buf])\n\t"
+      "movq %%mm0,120(%[res_buf])\n\t"
+      :
+      :[res_buf]"r"(res_buf),[p]"r"((unsigned)p)
+      :"memory"
     );
   }
   else{
@@ -108,26 +111,26 @@ void oc_state_frag_recon_mmx(oc_theora_state *_state,const oc_fragment *_frag,
     /*First zero the buffer.*/
     /*On K7, etc., this could be replaced with movntq and sfence.*/
     __asm__ __volatile__(
-     "  pxor %%mm0,   %%mm0\n\t"
-     "  movq %%mm0,    (%0)\n\t"
-     "  movq %%mm0,   8(%0)\n\t"
-     "  movq %%mm0,  16(%0)\n\t"
-     "  movq %%mm0,  24(%0)\n\t"
-     "  movq %%mm0,  32(%0)\n\t"
-     "  movq %%mm0,  40(%0)\n\t"
-     "  movq %%mm0,  48(%0)\n\t"
-     "  movq %%mm0,  56(%0)\n\t"
-     "  movq %%mm0,  64(%0)\n\t"
-     "  movq %%mm0,  72(%0)\n\t"
-     "  movq %%mm0,  80(%0)\n\t"
-     "  movq %%mm0,  88(%0)\n\t"
-     "  movq %%mm0,  96(%0)\n\t"
-     "  movq %%mm0, 104(%0)\n\t"
-     "  movq %%mm0, 112(%0)\n\t"
-     "  movq %%mm0, 120(%0)\n\t"
-     :
-     :"r" (res_buf)
-     :"memory"
+      "pxor %%mm0,%%mm0\n\t"
+      "movq %%mm0,(%[res_buf])\n\t"
+      "movq %%mm0,8(%[res_buf])\n\t"
+      "movq %%mm0,16(%[res_buf])\n\t"
+      "movq %%mm0,24(%[res_buf])\n\t"
+      "movq %%mm0,32(%[res_buf])\n\t"
+      "movq %%mm0,40(%[res_buf])\n\t"
+      "movq %%mm0,48(%[res_buf])\n\t"
+      "movq %%mm0,56(%[res_buf])\n\t"
+      "movq %%mm0,64(%[res_buf])\n\t"
+      "movq %%mm0,72(%[res_buf])\n\t"
+      "movq %%mm0,80(%[res_buf])\n\t"
+      "movq %%mm0,88(%[res_buf])\n\t"
+      "movq %%mm0,96(%[res_buf])\n\t"
+      "movq %%mm0,104(%[res_buf])\n\t"
+      "movq %%mm0,112(%[res_buf])\n\t"
+      "movq %%mm0,120(%[res_buf])\n\t"
+      :
+      :[res_buf]"r"(res_buf)
+      :"memory"
     );
     res_buf[0]=(ogg_int16_t)((ogg_int32_t)_frag->dc*_dc_iquant);
     /*This is planned to be rewritten in MMX.*/
@@ -137,12 +140,8 @@ void oc_state_frag_recon_mmx(oc_theora_state *_state,const oc_fragment *_frag,
       res_buf[OC_FZIG_ZAGMMX[zzi]]=(ogg_int16_t)((ogg_int32_t)_dct_coeffs[zzi]*
        _ac_iquant[ci]);
     }
-    if(_last_zzi<10){
-      oc_idct8x8_10_mmx(res_buf);
-    }
-    else{
-      oc_idct8x8_mmx(res_buf);
-    }
+    if(_last_zzi<10)oc_idct8x8_10_mmx(res_buf);
+    else oc_idct8x8_mmx(res_buf);
   }
   /*Fill in the target buffer.*/
   dst_framei=_state->ref_frame_idx[OC_FRAME_SELF];
@@ -184,9 +183,9 @@ void oc_state_frag_copy_mmx(const oc_theora_state *_state,const int *_fragis,
   const int *fragi;
   const int *fragi_end;
   int        dst_framei;
-  int        dst_ystride;
+  long       dst_ystride;
   int        src_framei;
-  int        src_ystride;
+  long       src_ystride;
   dst_framei=_state->ref_frame_idx[_dst_frame];
   src_framei=_state->ref_frame_idx[_src_frame];
   dst_ystride=_state->ref_frame_bufs[dst_framei][_pli].ystride;
@@ -196,69 +195,401 @@ void oc_state_frag_copy_mmx(const oc_theora_state *_state,const int *_fragis,
     oc_fragment   *frag;
     unsigned char *dst;
     unsigned char *src;
+    long           esi;
     frag=_state->frags+*fragi;
     dst=frag->buffer[dst_framei];
     src=frag->buffer[src_framei];
-#if (defined(__amd64__) || defined(__x86_64__))
     __asm__ __volatile__(
-     "  lea         (%3, %3, 2), %%rsi   \n\t"  /* esi=src_stride*3 */
-     "  movq        (%1),        %%mm0   \n\t"  /* src */
-     "  lea         (%2, %2, 2), %%rdi   \n\t"  /* edi=dst_stride*3 */
-     "  movq        (%1, %3),    %%mm1   \n\t"  /* src+1x stride */
-     "  movq        (%1, %3, 2), %%mm2   \n\t"  /* src+2x stride */
-     "  movq        (%1, %%rsi), %%mm3   \n\t"  /* src+3x stride */
-     "  movq        %%mm0,       (%0)    \n\t"  /* dst */
-     "  movq        %%mm1,       (%0, %2)\n\t"  /* dst+dst_stride */
-     "  lea         (%1,%3,4),   %1      \n\t"  /* pointer to next 4 */
-     "  movq        %%mm2,       (%0, %2, 2)      \n\t"  /*dst+2x dst_stride */
-     "  movq        %%mm3,       (%0, %%rdi)      \n\t"  /* 3x */
-     "  lea         (%0,%2,4),   %0      \n\t"  /* pointer to next 4 */
-     "  movq        (%1),        %%mm0   \n\t"  /* src */
-     "  movq        (%1, %3),    %%mm1   \n\t"  /* src+1x stride */
-     "  movq        (%1, %3, 2), %%mm2   \n\t"  /* src+2x stride */
-     "  movq        (%1, %%rsi), %%mm3   \n\t"  /* src+3x stride */
-     "  movq        %%mm0,       (%0)    \n\t"  /* dst */
-     "  movq        %%mm1,       (%0, %2)\n\t"  /* dst+dst_stride */
-     "  movq        %%mm2,       (%0, %2, 2)     \n\t"  /* dst+2x dst_stride */
-     "  movq        %%mm3,       (%0, %%rdi)     \n\t"  /* 3x */
-     :"+r" (dst) /* 0 */
-     :"r" (src),  /* 1 */
-      "r" ((long)dst_ystride), /* 2 */
-      "r" ((long)src_ystride) /* 3 */
-     :"memory", "rsi","rdi"
+      /*src+0*src_ystride*/
+      "movq (%[src]),%%mm0\n\t"
+      /*esi=src_ystride*3*/
+      "lea (%[src_ystride],%[src_ystride],2),%[s]\n\t"
+      /*src+1*src_ystride*/
+      "movq (%[src],%[src_ystride]),%%mm1\n\t"
+      /*src+2*src_ystride*/
+      "movq (%[src],%[src_ystride],2),%%mm2\n\t"
+      /*src+3*src_ystride*/
+      "movq (%[src],%[s]),%%mm3\n\t"
+      /*dst+0*dst_ystride*/
+      "movq %%mm0,(%[dst])\n\t"
+      /*esi=dst_ystride*3*/
+      "lea (%[dst_ystride],%[dst_ystride],2),%[s]\n\t"
+      /*dst+1*dst_ystride*/
+      "movq %%mm1,(%[dst],%[dst_ystride])\n\t"
+      /*Pointer to next 4.*/
+      "lea (%[src],%[src_ystride],4),%[src]\n\t"
+      /*dst+2*dst_ystride*/
+      "movq %%mm2,(%[dst],%[dst_ystride],2)\n\t"
+      /*dst+3*dst_ystride*/
+      "movq %%mm3,(%[dst],%[s])\n\t"
+      /*Pointer to next 4.*/
+      "lea (%[dst],%[dst_ystride],4),%[dst]\n\t"
+      /*src+0*src_ystride*/
+      "movq (%[src]),%%mm0\n\t"
+      /*esi=src_ystride*3*/
+      "lea (%[src_ystride],%[src_ystride],2),%[s]\n\t"
+      /*src+1*src_ystride*/
+      "movq (%[src],%[src_ystride]),%%mm1\n\t"
+      /*src+2*src_ystride*/
+      "movq (%[src],%[src_ystride],2),%%mm2\n\t"
+      /*src+3*src_ystride*/
+      "movq (%[src],%[s]),%%mm3\n\t"
+      /*dst+0*dst_ystride*/
+      "movq %%mm0,(%[dst])\n\t"
+      /*esi=dst_ystride*3*/
+      "lea (%[dst_ystride],%[dst_ystride],2),%[s]\n\t"
+      /*dst+1*dst_ystride*/
+      "movq %%mm1,(%[dst],%[dst_ystride])\n\t"
+      /*dst+2*dst_ystride*/
+      "movq %%mm2,(%[dst],%[dst_ystride],2)\n\t"
+      /*dst+3*dst_ystride*/
+      "movq %%mm3,(%[dst],%[s])\n\t"
+      :[s]"=&S"(esi)
+      :[dst]"r"(dst),[src]"r"(src),[dst_ystride]"r"(dst_ystride),
+       [src_ystride]"r"(src_ystride)
+      :"memory"
     );
   }
-#else
-    __asm__ __volatile__(
-     "  lea         (%3, %3, 2), %%esi   \n\t"  /* esi=src_stride*3 */
-     "  movq        (%1),        %%mm0   \n\t"  /* src */
-     "  lea         (%2, %2, 2), %%edi   \n\t"  /* edi=dst_stride*3 */
-     "  movq        (%1, %3),    %%mm1   \n\t"  /* src+1x stride */
-     "  movq        (%1, %3, 2), %%mm2   \n\t"  /* src+2x stride */
-     "  movq        (%1, %%esi), %%mm3   \n\t"  /* src+3x stride */
-     "  movq        %%mm0,       (%0)    \n\t"  /* dst */
-     "  movq        %%mm1,       (%0, %2)\n\t"  /* dst+dst_stride */
-     "  lea         (%1,%3,4),   %1      \n\t"  /* pointer to next 4 */
-     "  movq        %%mm2,       (%0, %2, 2)      \n\t"  /*dst+2x dst_stride */
-     "  movq        %%mm3,       (%0, %%edi)      \n\t"  /* 3x */
-     "  lea         (%0,%2,4),   %0      \n\t"  /* pointer to next 4 */
-     "  movq        (%1),        %%mm0   \n\t"  /* src */
-     "  movq        (%1, %3),    %%mm1   \n\t"  /* src+1x stride */
-     "  movq        (%1, %3, 2), %%mm2   \n\t"  /* src+2x stride */
-     "  movq        (%1, %%esi), %%mm3   \n\t"  /* src+3x stride */
-     "  movq        %%mm0,       (%0)    \n\t"  /* dst */
-     "  movq        %%mm1,       (%0, %2)\n\t"  /* dst+dst_stride */
-     "  movq        %%mm2,       (%0, %2, 2)     \n\t"  /* dst+2x dst_stride */
-     "  movq        %%mm3,       (%0, %%edi)     \n\t"  /* 3x */
-     :"+r" (dst) /* 0 */
-     :"r" (src),  /* 1 */
-      "r" (dst_ystride), /* 2 */
-      "r" (src_ystride) /* 3 */
-     :"memory", "esi","edi"
-    );
-  }
-#endif
   /*This needs to be removed when decode specific functions are implemented:*/
   __asm__ __volatile__("emms\n\t");
 }
+
+static void loop_filter_v(unsigned char *_pix,int _ystride,int *_bv){
+  long esi;
+  long edi;
+  _pix-=_ystride*2;
+  __asm__ __volatile__(
+    /*mm0=0*/
+    "pxor %%mm0,%%mm0\n\t"
+    /*mm7=_pix[0...8]*/
+    "movq (%[pix]),%%mm7\n\t"
+    /*esi=_ystride*3*/
+    "lea (%[ystride],%[ystride],2),%[s]\n\t"
+    /*mm4=_pix[0...8+_ystride*3]*/
+    "movq (%[pix],%[s]),%%mm4\n\t"
+    /*mm6=_pix[0...8]*/
+    "movq %%mm7,%%mm6\n\t"
+    /*Expand unsigned _pix[0...3] to 16 bits.*/
+    "punpcklbw %%mm0,%%mm6\n\t"
+    "movq %%mm4,%%mm5\n\t"
+    /*Expand unsigned _pix[4...8] to 16 bits.*/
+    "punpckhbw %%mm0,%%mm7\n\t"
+    /*Expand other arrays too.*/
+    "punpcklbw %%mm0,%%mm4\n\t"
+    "punpckhbw %%mm0,%%mm5\n\t"
+    /*mm7:mm6=_p[0...8]-_p[0...8+_ystride*3]:*/
+    "psubw %%mm4,%%mm6\n\t"
+    "psubw %%mm5,%%mm7\n\t"
+    /*mm5=mm4=_pix[0...8+_ystride]*/
+    "movq (%[pix],%[ystride]),%%mm4\n\t"
+    /*mm1=mm3=mm2=_pix[0..8]+_ystride*2]*/
+    "movq (%[pix],%[ystride],2),%%mm2\n\t"
+    "movq %%mm4,%%mm5\n\t"
+    "movq %%mm2,%%mm3\n\t"
+    "movq %%mm2,%%mm1\n\t"
+    /*Expand these arrays.*/
+    "punpckhbw %%mm0,%%mm5\n\t"
+    "punpcklbw %%mm0,%%mm4\n\t" 
+    "punpckhbw %%mm0,%%mm3\n\t"
+    "punpcklbw %%mm0,%%mm2\n\t"
+    /*Preload...*/
+    "movq %[OC_V3],%%mm0\n\t"
+    /*mm3:mm2=_pix[0...8+_ystride*2]-_pix[0...8+_ystride]*/
+    "psubw %%mm5,%%mm3\n\t" 
+    "psubw %%mm4,%%mm2\n\t" 
+    /*Scale by 3.*/
+    "pmullw %%mm0,%%mm3\n\t"
+    "pmullw %%mm0,%%mm2\n\t"
+    /*Preload...*/
+    "movq %[OC_V4],%%mm0\n\t"
+    /*f=mm3:mm2==_pix[0...8]-_pix[0...8+_ystride*3]+
+       3*(_pix[0...8+_ystride*2]-_pix[0...8+_ystride])*/
+    "paddw %%mm7,%%mm3\n\t"
+    "paddw %%mm6,%%mm2\n\t"
+    /*Add 4.*/
+    "paddw %%mm0,%%mm3\n\t"
+    "paddw %%mm0,%%mm2\n\t"
+    /*"Divide" by 8.*/
+    "psraw $3,%%mm3\n\t"
+    "psraw $3,%%mm2\n\t"
+    /*Now perform mm7:m6=_bv[(f+4>>3)]*/
+    /*First the low part:*/
+    /*pextrw requires MMX+/SSE.
+    "pextrw $0,%%mm2,%%esi\n\t"
+    "pextrw $1,%%mm2,%%edi\n\t"*/
+    /*We duplicate the value and pull out of two registers in parallel;
+       perhaps we should not bother with just MMX, since any processor with
+       multiply MMX units will also have SSE, and should be using that
+       instead.*/
+    "movq %%mm2,%%mm0\n\t"
+    "psrlq $16,%%mm2\n\t"
+    "movd %%mm0,%%esi\n\t"
+    "movd %%mm2,%%edi\n\t"
+    "psrlq $32,%%mm0\n\t"
+    "movsx %%si,%[s]\n\t"
+    "psrlq $32,%%mm2\n\t"
+    "movsx %%di,%[d]\n\t"
+    /*pinsrw requires MMX+/SSE.
+    "pinsrw $0,(%[bv],%[s],4),%%mm6\n\t"
+    "pinsrw $1,(%[bv],%[d],4),%%mm6\n\t"
+    "pextrw $2,%%mm2,%%esi\n\t"
+    "pextrw $3,%%mm2,%%edi\n\t"*/
+    "movd (%[bv],%[s],4),%%mm6\n\t"
+    "movd %%mm0,%%esi\n\t"
+    "movd (%[bv],%[d],4),%%mm0\n\t"
+    "movd %%mm2,%%edi\n\t"
+    "movsx %%si,%[s]\n\t"
+    "movsx %%di,%[d]\n\t"
+    /*"pinsrw $2,(%[bv],%%esi,4),%%mm6\n\t"
+    "pinsrw $3,(%[bv],%%edi,4),%%mm6\n\t"*/
+    "movd (%[bv],%[s],4),%%mm2\n\t"
+    "pslld $16,%%mm2\n\t"
+    "por %%mm2,%%mm6\n\t"
+    "movd (%[bv],%[d],4),%%mm2\n\t"
+    "pslld $16,%%mm2\n\t"
+    "por %%mm2,%%mm0\n\t"
+    "punpcklwd %%mm0,%%mm6\n\t"
+    /*Do it again for the high part:*/
+    /*"pextrw $0,%%mm3,%%esi\n\t" 
+    "pextrw $1,%%mm3,%%edi\n\t"*/
+    "movq %%mm3,%%mm0\n\t"
+    "psrlq $16,%%mm3\n\t"
+    "movd %%mm0,%%esi\n\t"
+    "movd %%mm3,%%edi\n\t"
+    "psrlq $32,%%mm0\n\t"
+    "movsx %%si,%[s]\n\t"
+    "psrlq $32,%%mm3\n\t"
+    "movsx %%di,%[d]\n\t"
+    /*"pinsrw $0,(%[bv],%%esi,4),%%mm7\n\t"
+    "pinsrw $1,(%[bv],%%edi,4),%%mm7\n\t"
+    "pextrw $2,%%mm3,%%esi\n\t"
+    "pextrw $3,%%mm3,%%edi\n\t"*/
+    "movd (%[bv],%[s],4),%%mm7\n\t"
+    "movd %%mm0,%%esi\n\t"
+    "movd (%[bv],%[d],4),%%mm0\n\t"
+    "movd %%mm3,%%edi\n\t"
+    "movsx %%si,%[s]\n\t"
+    "movsx %%di,%[d]\n\t"
+    /*"pinsrw $2,(%[bv],%%esi,4),%%mm7\n\t"
+    "pinsrw $3, (%[bv],%%edi,4),%%mm7\n\t"*/
+    "movd (%[bv],%[s],4),%%mm2\n\t"
+    "movd (%[bv],%[d],4),%%mm3\n\t"
+    "pslld $16,%%mm2\n\t"
+    "pslld $16,%%mm3\n\t"
+    "por %%mm2,%%mm7\n\t"
+    "por %%mm3,%%mm0\n\t"
+    "punpcklwd %%mm0,%%mm7\n\t"
+    /*mm7:mm6 now contain the final values of f.*/
+    /*_pix[0...8+_ystride]+=f*/
+    "paddw %%mm6,%%mm4\n\t"
+    "paddw %%mm7,%%mm5\n\t"
+    /*Re-expand _pix[0...8+_ystride*2], since we didn't have enough registers
+       to keep the whole thing around.*/
+    "pxor %%mm0,%%mm0\n\t"
+    "movq %%mm1,%%mm2\n\t"
+    "punpcklbw %%mm0,%%mm1\n\t"
+    "punpckhbw %%mm0,%%mm2\n\t"
+    /*_pix[0...8+_ystride*2]-=f*/
+    "psubw %%mm6,%%mm1\n\t"
+    "psubw %%mm7,%%mm2\n\t"
+    /*Pack it back into 8 bits and write it back out.*/
+    "packuswb %%mm2,%%mm1\n\t"
+    "packuswb %%mm5,%%mm4\n\t"
+    "movq %%mm1,(%[pix],%[ystride],2)\n\t"
+    "movq %%mm4,(%[pix],%[ystride])\n\t"
+    :[s]"=&S"(esi),[d]"=&D"(edi)
+    :[pix]"r"(_pix),[ystride]"r"((long)_ystride),[bv]"r"(_bv),
+     [OC_V3]"m"(OC_V3),[OC_V4]"m"(OC_V4)
+    :"memory"
+  );
+}
+
+/*This code implements the bulk of loop_filter_h().
+  Data are striped p0 p1 p2 p3 ... p0 p1 p2 p3 ..., so in order to load all
+   four p0's to one register we must transpose the values in four mmx regs.
+  When half is done we repeat this for the rest.
+  TODO: some instruction stalls can be avoided.*/
+static void loop_filter_h4(unsigned char *_pix,long _ystride,const int *_bv){
+  long esi;
+  long edi;
+  __asm__ __volatile__(
+    /*esi=_ystride*3*/
+    "lea (%[ystride],%[ystride],2),%[s]\n\t"
+    /*x x x x 3 2 1 0*/
+    "movd (%[pix]),%%mm0\n\t"
+    /*x x x x 7 6 5 4*/
+    "movd (%[pix],%[ystride]),%%mm1\n\t"
+    /*x x x x B A 9 8*/
+    "movd (%[pix],%[ystride],2),%%mm2\n\t"
+    /*x x x x F E D C*/
+    "movd (%[pix],%[s]),%%mm3\n\t"
+    /*mm0=7 3 6 2 5 1 4 0*/
+    "punpcklbw %%mm1,%%mm0\n\t"
+    /*mm2=F B E A D 9 C 8*/
+    "punpcklbw %%mm3,%%mm2\n\t"
+    /*mm1=7 3 6 2 5 1 4 0*/
+    "movq %%mm0,%%mm1\n\t"
+    /*mm1=D 9 5 1 C 8 4 0*/
+    "punpcklwd %%mm2,%%mm1\n\t"
+    /*mm0=F B 7 3 E A 6 2*/
+    "punpckhwd %%mm2,%%mm0\n\t"
+    "pxor %%mm7,%%mm7\n\t"
+    /*mm5=D 9 5 1 C 8 4 0*/
+    "movq %%mm1,%%mm5\n\t"
+    /*mm5=x D x 9 x 5 x 1==pix[1]*/
+    "punpckhbw %%mm7,%%mm5\n\t"
+    /*mm1=x C x 8 x 4 x 0==pix[0]*/
+    "punpcklbw %%mm7,%%mm1\n\t"
+    /*mm3=F B 7 3 E A 6 2*/
+    "movq %%mm0,%%mm3\n\t"
+    /*mm3=x F x B x 7 x 3==pix[3]*/
+    "punpckhbw %%mm7,%%mm3\n\t"
+    /*mm0=x E x A x 6 x 2==pix[2]*/
+    "punpcklbw %%mm7,%%mm0\n\t"
+    /*mm1=mm1-mm3==pix[0]-pix[3]*/
+    "psubw %%mm3,%%mm1\n\t"
+    /*Save a copy of pix[2] for later.*/
+    "movq %%mm0,%%mm4\n\t"
+    /*mm0=mm0-mm5==pix[2]-pix[1]*/
+    "psubw %%mm5,%%mm0\n\t"
+    /*Scale by 3.*/
+    "pmullw %[OC_V3],%%mm0\n\t"
+    /*f=mm1==_pix[0]-_pix[3]+ 3*(_pix[2]-_pix[1])*/
+    "paddw %%mm0,%%mm1\n\t"
+    /*Add 4.*/
+    "paddw %[OC_V4],%%mm1\n\t"
+    /*"Divide" by 8.*/
+    "psraw $3,%%mm1\n\t"
+    /*Now perform mm0=_bv[(f+4>>3)]*/
+    /*pextrw requires MMX+/SSE.
+    "pextrw $0,%%mm1,%%esi\n\t"
+    "pextrw $1,%%mm1,%%edi\n\t"*/
+    "movd %%mm1,%%esi\n\t"
+    "psrlq $16,%%mm1\n\t"
+    "movd %%mm1,%%edi\n\t"
+    "movsx %%si,%[s]\n\t"
+    "psrlq $16,%%mm1\n\t"
+    "movsx %%di,%[d]\n\t"
+    /*pinsrw requires MMX+/SSE.
+    "pinsrw $0,(%[bv],%%esi,4),%%mm0\n\t"
+    "pextrw $2,%%mm1,%%esi\n\t"
+    "pinsrw $1,(%[bv],%%edi,4),%%mm0\n\t"
+    "pextrw $3,%%mm1,%%edi\n\t"*/
+    "movd (%[bv],%[s],4),%%mm0\n\t"
+    "movd %%mm1,%%esi\n\t"
+    "movd (%[bv],%[d],4),%%mm2\n\t"
+    "psrlq $16,%%mm1\n\t"
+    "movsx %%si,%[s]\n\t"
+    "movd %%mm1,%%edi\n\t"
+    /*"pinsrw $2,(%[bv],%%esi,4),%%mm0\n\t"
+    "pinsrw $3,(%[bv],%%edi,4),%%mm0\n\t"*/
+    "movd (%[bv],%[s],4),%%mm3\n\t"
+    "movsx %%di,%[d]\n\t"
+    "pslld $16,%%mm3\n\t"
+    "movd (%[bv],%[d],4),%%mm6\n\t"
+    "por %%mm3,%%mm0\n\t"
+    "pslld $16,%%mm6\n\t"
+    "por %%mm6,%%mm2\n\t"
+    "punpcklwd %%mm2,%%mm0\n\t"
+    /*_pix[1]+=f;*/
+    "paddw %%mm0,%%mm5\n\t"
+    /*_pix[2]-=f;*/
+    "psubw %%mm0,%%mm4\n\t"
+    /*mm5=x x x x D 9 5 1*/
+    "packuswb %%mm7,%%mm5\n\t"
+    /*mm4=x x x x E A 6 2*/
+    "packuswb %%mm7,%%mm4\n\t"
+    /*mm5=E D A 9 6 5 2 1*/
+    "punpcklbw %%mm4,%%mm5\n\t"
+    /*esi=6 5 2 1*/
+    "movd %%mm5,%%esi\n\t"
+    "movw %%si,1(%[pix])\n\t"
+    /*Why is there such a big stall here?*/
+    "psrlq $32,%%mm5\n\t"
+    "shrl $16,%%esi\n\t"
+    "movw %%si,1(%[pix],%[ystride])\n\t"
+    /*esi=E D A 9*/
+    "movd %%mm5,%%esi\n\t"
+    "lea (%[ystride],%[ystride],2),%[d]\n\t"
+    "movw %%si,(%[pix],%[ystride])\n\t"
+    "shrl $16,%%esi\n\t"
+    "movw %%si,1(%[pix],%[d])\n\t"
+    :[s]"=&S"(esi),[d]"=&D"(edi),
+     [pix]"+r"(_pix),[ystride]"+r"(_ystride),[bv]"+r"(_bv)
+    :[OC_V3]"m"(OC_V3),[OC_V4]"m"(OC_V4)
+    :"memory"
+  );
+}
+
+static void loop_filter_h(unsigned char *_pix,int _ystride,int *_bv){
+  _pix-=2;
+  loop_filter_h4(_pix,_ystride,_bv);
+  _pix+=_ystride*4;
+  loop_filter_h4(_pix,_ystride,_bv);
+}
+
+/*We copy the whole function because the MMX routines will be inlined 4 times,
+   and we do just a single emms call at the end.
+  Originally _bv pointer would also not be offset by 256 to get rid of a sign
+   extension instruction, but it turns out this is still needed on x86-64 to
+   avoid a partial register stall, and is needed even on x86-32 once we
+   eliminate the MMX+/SSE-specific pextrw/pinsrw instructions.*/
+
+/*Apply the loop filter to a given set of fragment rows in the given plane.
+  The filter may be run on the bottom edge, affecting pixels in the next row of
+   fragments, so this row also needs to be available.
+  _bv:        The bounding values array.
+  _refi:      The index of the frame buffer to filter.
+  _pli:       The color plane to filter.
+  _fragy0:    The Y coordinate of the first fragment row to filter.
+  _fragy_end: The Y coordinate of the fragment row to stop filtering at.*/
+void oc_state_loop_filter_frag_rows_mmx(oc_theora_state *_state,int *_bv,
+ int _refi,int _pli,int _fragy0,int _fragy_end){
+  th_img_plane  *iplane;
+  oc_fragment_plane *fplane;
+  oc_fragment       *frag_top;
+  oc_fragment       *frag0;
+  oc_fragment       *frag;
+  oc_fragment       *frag_end;
+  oc_fragment       *frag0_end;
+  oc_fragment       *frag_bot;
+  _bv+=256;
+  iplane=_state->ref_frame_bufs[_refi]+_pli;
+  fplane=_state->fplanes+_pli;
+  /*The following loops are constructed somewhat non-intuitively on purpose.
+    The main idea is: if a block boundary has at least one coded fragment on
+     it, the filter is applied to it.
+    However, the order that the filters are applied in matters, and VP3 chose
+     the somewhat strange ordering used below.*/
+  frag_top=_state->frags+fplane->froffset;
+  frag0=frag_top+_fragy0*fplane->nhfrags;
+  frag0_end=frag0+(_fragy_end-_fragy0)*fplane->nhfrags;
+  frag_bot=_state->frags+fplane->froffset+fplane->nfrags;
+  while(frag0<frag0_end){
+    frag=frag0;
+    frag_end=frag+fplane->nhfrags;
+    while(frag<frag_end){
+      if(frag->coded){
+        if(frag>frag0){
+          loop_filter_h(frag->buffer[_refi],iplane->ystride,_bv);
+        }
+        if(frag0>frag_top){
+          loop_filter_v(frag->buffer[_refi],iplane->ystride,_bv);
+        }
+        if(frag+1<frag_end&&!(frag+1)->coded){
+          loop_filter_h(frag->buffer[_refi]+8,iplane->ystride,_bv);
+        }
+        if(frag+fplane->nhfrags<frag_bot&&!(frag+fplane->nhfrags)->coded){
+          loop_filter_v((frag+fplane->nhfrags)->buffer[_refi],
+           iplane->ystride,_bv);
+        }
+      }
+      frag++;
+    }
+    frag0+=fplane->nhfrags;
+  }
+  /*This needs to be removed when decode specific functions are implemented:*/
+  __asm__ __volatile__("emms\n\t");
+}
+
 #endif

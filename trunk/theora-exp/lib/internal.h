@@ -241,6 +241,8 @@ typedef struct{
   void (*state_frag_recon)(oc_theora_state *_state,const oc_fragment *_frag,
    int _pli,ogg_int16_t _dct_coeffs[128],int _last_zzi,int _ncoefs,
    ogg_uint16_t _dc_iquant,const ogg_uint16_t _ac_iquant[64]);
+  void (*state_loop_filter_frag_rows)(oc_theora_state *_state,int *_bv,
+   int _refi,int _pli,int _fragy0,int _fragy_end);
   void (*restore_fpu)(void);
 }oc_base_opt_vtable;
 
@@ -391,8 +393,6 @@ int oc_state_get_mv_offsets(oc_theora_state *_state,int *_offset0,
 
 int oc_state_loop_filter_init(oc_theora_state *_state,int *_bv);
 void oc_state_loop_filter(oc_theora_state *_state,int _frame);
-void oc_state_loop_filter_frag_rows(oc_theora_state *_state,int *_bv,
- int _refi,int _pli,int _fragy0,int _fragy_end);
 #if defined(OC_DUMP_IMAGES)
 int oc_state_dump_frame(const oc_theora_state *_state,int _frame,
  const char *_suf);
@@ -411,6 +411,8 @@ void oc_state_frag_copy(const oc_theora_state *_state,const int *_fragis,
 void oc_state_frag_recon(oc_theora_state *_state,const oc_fragment *_frag,
  int _pli,ogg_int16_t _dct_coeffs[128],int _last_zzi,int _ncoefs,
  ogg_uint16_t _dc_iquant,const ogg_uint16_t _ac_iquant[64]);
+void oc_state_loop_filter_frag_rows(oc_theora_state *_state,int *_bv,
+ int _refi,int _pli,int _fragy0,int _fragy_end);
 void oc_restore_fpu(const oc_theora_state *_state);
 
 /*Default pure-C implementations.*/
@@ -426,6 +428,8 @@ void oc_state_frag_copy_c(const oc_theora_state *_state,const int *_fragis,
 void oc_state_frag_recon_c(oc_theora_state *_state,const oc_fragment *_frag,
  int _pli,ogg_int16_t _dct_coeffs[128],int _last_zzi,int _ncoefs,
  ogg_uint16_t _dc_iquant,const ogg_uint16_t _ac_iquant[64]);
+void oc_state_loop_filter_frag_rows_c(oc_theora_state *_state,int *_bv,
+ int _refi,int _pli,int _fragy0,int _fragy_end);
 void oc_restore_fpu_c(void);
 
 #endif
