@@ -36,7 +36,7 @@ echo \
 && echo "<td>" \
 && echo "	"`du libspiff-$1.tar.bz2 | sed -r "s/\s+.+//"`"K<br />" \
 && echo "	"`du libspiff-$1.tar.gz | sed -r "s/\s++.+//"`"K<br />" \
-&& echo "	"`du libspiff-$1.zip | sed -r "s/\s+.+//"` \
+&& echo "	"`du libspiff-$1.zip | sed -r "s/\s+.+//"`"K" \
 && echo "</td>" \
 && echo "<td>" \
 && echo "	"`md5sum libspiff-$1.tar.bz2 | sed -r "s/  .+//"`"<br />" \
