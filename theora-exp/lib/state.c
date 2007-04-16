@@ -513,6 +513,8 @@ void oc_state_vtable_init_c(oc_theora_state *_state){
   _state->opt_vtable.frag_recon_inter2=oc_frag_recon_inter2_c;
   _state->opt_vtable.state_frag_copy=oc_state_frag_copy_c;
   _state->opt_vtable.state_frag_recon=oc_state_frag_recon_c;
+  _state->opt_vtable.state_loop_filter_frag_rows=
+   oc_state_loop_filter_frag_rows_c;
   _state->opt_vtable.restore_fpu=oc_restore_fpu_c;
 }
 
@@ -950,15 +952,12 @@ static void loop_filter_v(unsigned char *_pix,int _ystride,int *_bv){
 
 /*Initialize the bounding values array used by the loop filter.
   _bv: Storage for the array.
-       The total array size should be 512, but this pointer should point to the
-         256th entry, as that is more convenient for the filter functions.
   Return: 0 on success, or a non-zero value if no filtering need be applied.*/
 int oc_state_loop_filter_init(oc_theora_state *_state,int *_bv){
   int flimit;
   int i;
   flimit=_state->loop_filter_limits[_state->qis[0]];
   if(flimit==0)return 1;
-  _bv-=256;
   memset(_bv,0,sizeof(_bv[0])*512);
   for(i=0;i<flimit;i++){
     _bv[256-i-flimit]=i-flimit;
@@ -979,7 +978,13 @@ int oc_state_loop_filter_init(oc_theora_state *_state,int *_bv){
   _fragy_end: The Y coordinate of the fragment row to stop filtering at.*/
 void oc_state_loop_filter_frag_rows(oc_theora_state *_state,int *_bv,
  int _refi,int _pli,int _fragy0,int _fragy_end){
-  th_img_plane  *iplane;
+  _state->opt_vtable.state_loop_filter_frag_rows(_state,_bv,_refi,_pli,
+   _fragy0,_fragy_end);
+}
+
+void oc_state_loop_filter_frag_rows_c(oc_theora_state *_state,int *_bv,
+ int _refi,int _pli,int _fragy0,int _fragy_end){
+  th_img_plane      *iplane;
   oc_fragment_plane *fplane;
   oc_fragment       *frag_top;
   oc_fragment       *frag0;
@@ -987,6 +992,7 @@ void oc_state_loop_filter_frag_rows(oc_theora_state *_state,int *_bv,
   oc_fragment       *frag_end;
   oc_fragment       *frag0_end;
   oc_fragment       *frag_bot;
+  _bv+=256;
   iplane=_state->ref_frame_bufs[_refi]+_pli;
   fplane=_state->fplanes+_pli;
   /*The following loops are constructed somewhat non-intuitively on purpose.
@@ -1029,9 +1035,9 @@ void oc_state_loop_filter(oc_theora_state *_state,int _frame){
   int framei;
   int pli;
   framei=_state->ref_frame_idx[_frame];
-  if(oc_state_loop_filter_init(_state,bounding_values+256))return;
+  if(oc_state_loop_filter_init(_state,bounding_values))return;
   for(pli=0;pli<3;pli++){
-    oc_state_loop_filter_frag_rows(_state,bounding_values+256,
+    oc_state_loop_filter_frag_rows(_state,bounding_values,
      framei,pli,0,_state->fplanes[pli].nvfrags);
   }
 }

@@ -104,7 +104,6 @@ int oc_mode_scheme_chooser_cost(oc_mode_scheme_chooser *_chooser,int _mode){
   si=1;
   best_bits+=mode_bits;
   do{
-    scheme1=_chooser->scheme_list[si];
     /*For any scheme except 0, we can just use the bit cost of the mode's rank
        in that scheme.*/
     if(scheme1!=0){
@@ -125,10 +124,10 @@ int oc_mode_scheme_chooser_cost(oc_mode_scheme_chooser *_chooser,int _mode){
       scheme_bits=_chooser->scheme_bits[0]+OC_MODE_CODESA[ri].nbits;
     }
     if(scheme_bits<best_bits)best_bits=scheme_bits;
-    si++;
+    if(++si>=8)break;
+    scheme1=_chooser->scheme_list[si];
   }
-  while(si<8&&_chooser->scheme_bits[_chooser->scheme_list[si]]-
-   _chooser->scheme_bits[scheme0]<=6);
+  while(_chooser->scheme_bits[scheme1]-_chooser->scheme_bits[scheme0]<=6);
   return best_bits-_chooser->scheme_bits[scheme0];
 }
 
