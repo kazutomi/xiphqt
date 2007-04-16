@@ -1362,7 +1362,7 @@ static void oc_dec_pipeline_init(oc_dec_ctx *_dec,
   memset(_pipe->pred_last,0,sizeof(_pipe->pred_last));
   /*Initialize the bounding value array for the loop filter.*/
   _pipe->loop_filter=!oc_state_loop_filter_init(&_dec->state,
-   _pipe->bounding_values+256);
+   _pipe->bounding_values);
   /*Initialize any buffers needed for post-processing.
     We also save the current post-processing level, to guard against the user
      changing it from a callback.*/
