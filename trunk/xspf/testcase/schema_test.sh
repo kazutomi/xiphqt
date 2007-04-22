@@ -1,9 +1,7 @@
 #!/bin/bash
 # -----------------------------------------------------------------------------
-# Written by Sebastian Pipping <dllmain@xiph.org>
+# Written by Sebastian Pipping <sping@xiph.org>
 # License is Public Domain.
-#
-# 2007-03-03
 # -----------------------------------------------------------------------------
 
 
