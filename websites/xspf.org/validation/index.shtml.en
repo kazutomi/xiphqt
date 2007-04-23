@@ -21,9 +21,14 @@
         <a href="http://xspf.binera.de/">Online XSPF validator</a> by Sebastian Pipping.
       </li>
       <li>
-        <a href="xspf-1_0.5.rng">Relax NG Schema for XSPF</a> by Matthias Friedrich.  Sample usage of <a href="http://xmlstar.sourceforge.net/">XMLStarlet</a>:
+        <a href="xspf-1_0.5.rng">Relax NG (XML) Schema for XSPF</a> by Matthias Friedrich.  Sample usage of <a href="http://xmlstar.sourceforge.net/">XMLStarlet</a>:
         <pre>(Unix)     xmlstarlet validate -e -r xspf-1_0.5.rng myplaylist.xspf
 (Windows)  xml.exe validate -e -r xspf-1_0.5.rng myplaylist.xspf</pre>
+      </li>
+      <li>
+        <a href="xspf-1_0.5.rnc">Relax NG (Compact) Schema for XSPF</a> by Matthias Friedrich.  Sample usage of <a href="http://www.davidashen.net/rnv.html">RNV</a>:
+        <pre>(Unix)     rnv xspf-1_0.5.rnc myplaylist.xspf
+(Windows)  rnv xspf-1_0.5.rnc myplaylist.xspf</pre>
       </li>
       <li>
         <a href="http://libspiff.sourceforge.net/">spiff_check of libSpiff</a> by Sebastian Pipping.  Sample usage of spiff_check:
