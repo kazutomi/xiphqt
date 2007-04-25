@@ -28,6 +28,7 @@ else
 	XML_STARLET=xmlstarlet
 fi
 RNV=./rnv
+XMLLINT=xmllint
 
 
 
@@ -59,7 +60,7 @@ echo "" >> ${LOG_FILE}
 # -----------------------------------------------------------------------------
 # Test RNC
 # -----------------------------------------------------------------------------
-echo "== Relax NG Compact - Should have failed ==" >> ${LOG_FILE}
+echo "== Relax NG Compact - RNV - Should have failed ==" >> ${LOG_FILE}
 for i in ${FAIL_FILES}; do
 	if ${RNV} ${RNC_FILE} $i &>/dev/null ; then
 		echo $i >> ${LOG_FILE}
@@ -67,7 +68,7 @@ for i in ${FAIL_FILES}; do
 done
 echo "" >> ${LOG_FILE}
 
-echo "== Relax NG Compact - Should have passed ==" >> ${LOG_FILE}
+echo "== Relax NG Compact - RNV - Should have passed ==" >> ${LOG_FILE}
 for i in ${PASS_FILES}; do
 	if ! ${RNV} ${RNC_FILE} $i &>/dev/null ; then
 		echo $i >> ${LOG_FILE}
@@ -80,26 +81,58 @@ echo "" >> ${LOG_FILE}
 # -----------------------------------------------------------------------------
 # Test RNG
 # -----------------------------------------------------------------------------
-echo "== Relax NG XML - Should have failed ==" >> ${LOG_FILE}
+echo "== Relax NG XML - XMLStarlet - Should have failed ==" >> ${LOG_FILE}
 ${XML_STARLET} validate --err --list-good --relaxng ${RNG_FILE} ${FAIL_FILES} 1>> ${LOG_FILE} 2>> /dev/null
 echo "" >> ${LOG_FILE}
 
-echo "== Relax NG XML - Should have passed ==" >> ${LOG_FILE}
+echo "== Relax NG XML - XMLStarlet - Should have passed ==" >> ${LOG_FILE}
 ${XML_STARLET} validate --err --list-bad --relaxng ${RNG_FILE} ${PASS_FILES} 1>> ${LOG_FILE} 2>> /dev/null
 echo "" >> ${LOG_FILE}
 
+echo "== Relax NG XML - xmllint - Should have failed ==" >> ${LOG_FILE}
+for i in ${FAIL_FILES}; do
+	if ${XMLLINT} --relaxng ${RNG_FILE} --noout $i &>/dev/null ; then
+		echo $i >> ${LOG_FILE}
+	fi
+done
+echo "" >> ${LOG_FILE}
+
+echo "== Relax NG XML - xmllint - Should have passed ==" >> ${LOG_FILE}
+for i in ${PASS_FILES}; do
+	if ! ${XMLLINT} --relaxng ${RNG_FILE} --noout $i &>/dev/null ; then
+		echo $i >> ${LOG_FILE}
+	fi
+done
+echo "" >> ${LOG_FILE}
+
 
 
 # -----------------------------------------------------------------------------
-# Test XSD
+# Test XSD/WXS
 # -----------------------------------------------------------------------------
-echo "== W3C XML Schema - Should have failed ==" >> ${LOG_FILE}
+echo "== W3C XML Schema - XMLStarlet - Should have failed ==" >> ${LOG_FILE}
 ${XML_STARLET} validate --err --list-good --xsd ${XSD_FILE} ${FAIL_FILES} 1>> ${LOG_FILE} 2>> /dev/null
 echo "" >> ${LOG_FILE}
 
-echo "== W3C XML Schema - Should have passed ==" >> ${LOG_FILE}
+echo "== W3C XML Schema - XMLStarlet - Should have passed ==" >> ${LOG_FILE}
 ${XML_STARLET} validate --err --list-bad --xsd ${XSD_FILE} ${PASS_FILES} 1>> ${LOG_FILE} 2>> /dev/null
-# echo "" >> ${LOG_FILE}
+echo "" >> ${LOG_FILE}
+
+echo "== W3C XML Schema - xmllint - Should have failed ==" >> ${LOG_FILE}
+for i in ${FAIL_FILES}; do
+	if ${XMLLINT} --schema ${XSD_FILE} --noout $i &>/dev/null ; then
+		echo $i >> ${LOG_FILE}
+	fi
+done
+echo "" >> ${LOG_FILE}
+
+echo "== W3C XML Schema - xmllint - Should have passed ==" >> ${LOG_FILE}
+for i in ${PASS_FILES}; do
+	if ! ${XMLLINT} --schema ${XSD_FILE} --noout $i &>/dev/null ; then
+		echo $i >> ${LOG_FILE}
+	fi
+done
+echo "" >> ${LOG_FILE}
 
 
 
