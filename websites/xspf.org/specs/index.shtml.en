@@ -34,6 +34,11 @@
     <li><code>date</code> changed from ISO 8601 to xsd:dateTime.</li>
     <li><code>version</code> incremented.</li>
   </ul>
+
+  <h2>See also</h2>
+  <ul>
+    <li><a href="http://wiki.xiph.org/index.php/XSPF_v1_Notes_and_Errata">XSPF v1 Notes and Errata</a></li>
+  </ul>
   
   <p>Because it is easy to make mistakes, those who create XSPF documents should check their output against <a href="/validation/">a validator</a>.</p>
 
