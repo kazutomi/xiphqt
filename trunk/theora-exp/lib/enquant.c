@@ -729,22 +729,21 @@ const th_quant_info OC_DEF_QUANT_INFO[4]={
 };
 
 
-void oc_quant_params_pack(oggpack_buffer *_opb,
- const th_quant_info *_qinfo){
+void oc_quant_params_pack(oggpack_buffer *_opb,const th_quant_info *_qinfo){
   const th_quant_ranges *qranges;
   const th_quant_base   *base_mats[2*3*64];
-  int                        indices[2][3][64];
-  int                        nbase_mats;
-  int                        nbits;
-  int                        ci;
-  int                        qi;
-  int                        qri;
-  int                        qti;
-  int                        pli;
-  int                        qtj;
-  int                        plj;
-  int                        bmi;
-  int                        i;
+  int                    indices[2][3][64];
+  int                    nbase_mats;
+  int                    nbits;
+  int                    ci;
+  int                    qi;
+  int                    qri;
+  int                    qti;
+  int                    pli;
+  int                    qtj;
+  int                    plj;
+  int                    bmi;
+  int                    i;
   /*323 bits for the defaults.*/
   /*Unlike the scale tables, we can't assume the maximum value will be in
      index 0, so search for it here.*/

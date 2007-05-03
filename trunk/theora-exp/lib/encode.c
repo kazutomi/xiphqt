@@ -37,10 +37,6 @@ const int OC_DCT_VAL_CAT_SIZES[6]={2,4,8,16,32,512};
    of the different DCT value category tokens.*/
 const int OC_DCT_VAL_CAT_SHIFTS[6]={1,2,3,4,5,9};
 
-/*Whether or not each mode has a motion vector associated with it.
-  Otherwise, the mode is assumed to use the 0,0 vector.*/
-const int OC_MODE_HAS_MV[OC_NMODES]={0,0,1,1,1,1,0,1};
-
 /*The Huffman codes used for motion vectors.*/
 const th_huff_code OC_MV_CODES[2][63]={
   /*Scheme 1: VLC code.*/
@@ -598,11 +594,11 @@ void oc_enc_merge_eob_runs(oc_enc_ctx *_enc){
   _token_counts_y: Returns the token counts for the Y' plane.
   _token_counts_c: Returns the token counts for the Cb and Cr planes.*/
 static void oc_enc_count_tokens(oc_enc_ctx *_enc,int _zzi_start,int _zzi_end,
- int _token_counts_y[32],int _token_counts_c[32]){
+ int _token_counts_y[TH_NDCT_TOKENS],int _token_counts_c[TH_NDCT_TOKENS]){
   int zzi;
   int ti;
-  memset(_token_counts_y,0,sizeof(_token_counts_y[0])*32);
-  memset(_token_counts_c,0,sizeof(_token_counts_c[0])*32);
+  memset(_token_counts_y,0,sizeof(_token_counts_y[0])*TH_NDCT_TOKENS);
+  memset(_token_counts_c,0,sizeof(_token_counts_c[0])*TH_NDCT_TOKENS);
   for(zzi=_zzi_start;zzi<_zzi_end;zzi++){
     for(ti=_enc->dct_token_offs[0][zzi];ti<_enc->dct_token_offs[1][zzi];ti++){
       _token_counts_y[_enc->dct_tokens[zzi][ti]]++;
@@ -617,14 +613,14 @@ static void oc_enc_count_tokens(oc_enc_ctx *_enc,int _zzi_start,int _zzi_end,
 /*Computes the number of bits used for each of the potential Huffman codes for
    the given list of token counts.
   The bits are added to whatever the current bit counts are.*/
-static void oc_enc_count_bits(oc_enc_ctx *_enc,int _hgi,const int _token_counts[32],
- int _bit_counts[16]){
+static void oc_enc_count_bits(oc_enc_ctx *_enc,int _hgi,
+ const int _token_counts[TH_NDCT_TOKENS],int _bit_counts[16]){
   int huffi;
   int huff_base;
   int token;
   huff_base=_hgi<<4;
   for(huffi=huff_base;huffi<huff_base+16;huffi++){
-    for(token=0;token<32;token++){
+    for(token=0;token<TH_NDCT_TOKENS;token++){
       _bit_counts[huffi-huff_base]+=
        _token_counts[token]*_enc->huff_codes[huffi][token].nbits;
     }
@@ -655,8 +651,8 @@ static void oc_enc_huff_group_pack(oc_enc_ctx *_enc,int _zzi_start,
     ebi=_enc->extra_bits_offs[zzi];
     for(pli=0;pli<3;pli++){
       const th_huff_code *huff_codes;
-      int                     token;
-      int                     ti_end;
+      int                 token;
+      int                 ti_end;
       /*Step 2: Write the tokens using these tables.*/
       huff_codes=_enc->huff_codes[_huff_idxs[pli]];
       /*Note: dct_token_offs[3] is really the ndct_tokens table.
@@ -677,12 +673,12 @@ static void oc_enc_huff_group_pack(oc_enc_ctx *_enc,int _zzi_start,
 }
 
 static void oc_enc_residual_tokens_pack(oc_enc_ctx *_enc){
-  static const int OC_HUFF_LIST_MIN[5]={0,1,6,15,28};
-  static const int OC_HUFF_LIST_MAX[5]={1,6,15,28,64};
+  static const int  OC_HUFF_LIST_MIN[6]={0,1,6,15,28,64};
+  static const int *OC_HUFF_LIST_MAX=OC_HUFF_LIST_MIN+1;
   int bits_y[16];
   int bits_c[16];
-  int token_counts_y[32];
-  int token_counts_c[32];
+  int token_counts_y[TH_NDCT_TOKENS];
+  int token_counts_c[TH_NDCT_TOKENS];
   int huff_idxs[5][3];
   int huffi_y;
   int huffi_c;
@@ -729,10 +725,10 @@ static void oc_enc_residual_tokens_pack(oc_enc_ctx *_enc){
 
 static void oc_enc_mb_modes_pack(oc_enc_ctx *_enc){
   const th_huff_code *codes;
-  const int              *mode_ranks;
-  int                    *coded_mbi;
-  int                    *coded_mbi_end;
-  int                     scheme;
+  const int          *mode_ranks;
+  int                *coded_mbi;
+  int                *coded_mbi_end;
+  int                 scheme;
   scheme=_enc->mode_scheme_chooser.scheme_list[0];
   oggpackB_write(&_enc->opb,scheme,3);
   if(scheme==0){
@@ -753,7 +749,7 @@ static void oc_enc_mb_modes_pack(oc_enc_ctx *_enc){
   coded_mbi_end=coded_mbi+_enc->state.ncoded_mbis;
   for(;coded_mbi<coded_mbi_end;coded_mbi++){
     const th_huff_code *code;
-    oc_mb                  *mb;
+    oc_mb              *mb;
     mb=_enc->state.mbs+*coded_mbi;
     code=codes+mode_ranks[mb->mode];
     oggpackB_write(&_enc->opb,code->pattern,code->nbits);
@@ -1114,6 +1110,8 @@ static void oc_enc_clear(oc_enc_ctx *_enc){
   oc_free_2d(_enc->dct_tokens);
   _ogg_free(_enc->mbinfo);
   _ogg_free(_enc->frinfo);
+  oggpackB_writeclear(&_enc->opb_coded_flags);
+  oggpackB_writeclear(&_enc->opb);
   _ogg_free(_enc->block_coded_flags);
   oc_state_clear(&_enc->state);
 }
@@ -1342,17 +1340,14 @@ void th_encode_free(th_enc_ctx *_enc){
 
 
 
-typedef th_huff_code theora_huff_table[TH_NDCT_TOKENS];
-
-int th_encode_ctl(th_enc_ctx *_enc,int _req,void *_buf,
- size_t _buf_sz){
+int th_encode_ctl(th_enc_ctx *_enc,int _req,void *_buf,size_t _buf_sz){
   switch(_req){
     case TH_ENCCTL_SET_HUFFMAN_CODES:{
       if(_buf==NULL&&_buf_sz!=0||_buf!=NULL&&
        _buf_sz!=sizeof(th_huff_code)*TH_NHUFFMAN_TABLES*TH_NDCT_TOKENS){
         return TH_EINVAL;
       }
-      return oc_enc_set_huffman_codes(_enc,(theora_huff_table *)_buf);
+      return oc_enc_set_huffman_codes(_enc,(const th_huff_table *)_buf);
     }break;
     case TH_ENCCTL_SET_QUANT_PARAMS:{
       if(_buf==NULL&&_buf_sz!=0||
@@ -1437,14 +1432,20 @@ int th_encode_ctl(th_enc_ctx *_enc,int _req,void *_buf,
   }
 }
 
+int th_encode_flushheader(th_enc_ctx *_enc,th_comment *_tc,ogg_packet *_op){
+  return oc_state_flushheader(&_enc->state,&_enc->packet_state,&_enc->opb,
+   &_enc->qinfo,(const th_huff_table *)_enc->huff_codes,th_version_string(),
+   _tc,_op);
+}
+
 int th_encode_ycbcr_in(th_enc_ctx *_enc,th_ycbcr_buffer _img){
   th_ycbcr_buffer img;
-  int                 y_avail[3];
-  int                 cwidth;
-  int                 cheight;
-  int                 ret;
-  int                 rfi;
-  int                 pli;
+  int             y_avail[3];
+  int             cwidth;
+  int             cheight;
+  int             ret;
+  int             rfi;
+  int             pli;
   /*Step 1: validate parameters.*/
   if(_enc==NULL||_img==NULL)return TH_EFAULT;
   if(_enc->packet_state==OC_PACKET_DONE)return TH_EINVAL;

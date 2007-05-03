@@ -196,8 +196,8 @@ typedef struct th_cqi_cfg{
  *                 This may be <tt>NULL</tt>, in which case the current VBR
  *                  configuration is unchanged.
  *                 The default is to use the QI setting passed in via the
- *                  #th_info struct when the encoder was initialized, with
- *                  a full range of admissible quantizers.
+ *                  #th_info struct when the encoder was initialized, with a
+ *                  full range of admissible quantizers.
  * \retval OC_EFAULT \a _enc_ctx is <tt>NULL</tt>.
  * \retval TH_EINVAL The configuration parameters do not meet one of their
  *                    stated requirements, \a _buf is <tt>NULL</tt> and
@@ -253,8 +253,8 @@ typedef struct th_enc_ctx    th_enc_ctx;
  *
  * The functions are listed in the order they are used in a typical encode.
  * The basic steps are:
- * - Fill in a #th_info structure with details on the format of the video
- *    you wish to encode.
+ * - Fill in a #th_info structure with details on the format of the video you
+ *    wish to encode.
  * - Allocate a #th_enc_ctx handle with th_encode_alloc().
  * - Perform any additional encoder configuration required with
  *    th_encode_ctl().
@@ -262,13 +262,12 @@ typedef struct th_enc_ctx    th_enc_ctx;
  *    packets.
  * - For each uncompressed frame:
  *   - Submit the uncompressed frame via th_encode_ycbcr_in()
- *   - Repeatedly call th_encode_packetout() to retrieve any video data
- *      packets that are ready.
+ *   - Repeatedly call th_encode_packetout() to retrieve any video data packets
+ *      that are ready.
  * - Call th_encode_free() to release all encoder memory.*/
 /*@{*/
 /**Allocates an encoder instance.
- * \param _info A #th_info struct filled with the desired encoding
- *               parameters.
+ * \param _info A #th_info struct filled with the desired encoding parameters.
  * \return The initialized #th_enc_ctx handle.
  * \retval NULL If the encoding parameters were invalid.*/
 extern th_enc_ctx *th_encode_alloc(const th_info *_info);
@@ -280,8 +279,7 @@ extern th_enc_ctx *th_encode_alloc(const th_info *_info);
  *                 for details.
  * \param _buf    The parameters for this control code.
  * \param _buf_sz The size of the parameter buffer.*/
-extern int th_encode_ctl(th_enc_ctx *_enc,int _req,void *_buf,
- size_t _buf_sz);
+extern int th_encode_ctl(th_enc_ctx *_enc,int _req,void *_buf,size_t _buf_sz);
 /**Outputs the next header packet.
  * This should be called repeatedly after encoder initialization until it
  *  returns 0 in order to get all of the header packets, in order, before
@@ -309,8 +307,7 @@ extern int th_encode_flushheader(th_enc_ctx *_enc,
  * \retval TH_EINVAL The buffer size does not match the frame size the encoder
  *                    was initialized with, or encoding has already
  *                    completed.*/
-extern int th_encode_ycbcr_in(th_enc_ctx *_enc,
- th_ycbcr_buffer _ycbcr);
+extern int th_encode_ycbcr_in(th_enc_ctx *_enc,th_ycbcr_buffer _ycbcr);
 /**Retrieves encoded video data packets.
  * This should be called repeatedly after each frame is submitted to flush any
  *  encoded packets, until it returns 0.
@@ -334,8 +331,7 @@ extern int th_encode_ycbcr_in(th_enc_ctx *_enc,
  * \retval 0        No packet was produced, and no more encoded video data
  *                   remains.
  * \retval TH_FAULT \a _enc or \a _op was <tt>NULL</tt>.*/
-extern int th_encode_packetout(th_enc_ctx *_enc,int _last,
- ogg_packet *_op);
+extern int th_encode_packetout(th_enc_ctx *_enc,int _last,ogg_packet *_op);
 /**Frees an allocated encoder instance.
  * \param _enc A #th_enc_ctx handle.*/
 extern void th_encode_free(th_enc_ctx *_enc);

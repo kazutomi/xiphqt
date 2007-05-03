@@ -18,8 +18,7 @@ extern const th_quant_info OC_DEF_QUANT_INFO[4];
 
 
 
-void oc_quant_params_pack(oggpack_buffer *_opb,
- const th_quant_info *_qinfo);
+void oc_quant_params_pack(oggpack_buffer *_opb,const th_quant_info *_qinfo);
 void oc_enquant_tables_init(oc_quant_table *_dequant[2][3],
  oc_quant_table *_enquant[2][3],const th_quant_info *_qinfo);
 

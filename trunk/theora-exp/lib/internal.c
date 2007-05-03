@@ -322,7 +322,7 @@ void **oc_calloc_2d(size_t _height,size_t _width,size_t _sz){
   return (void **)ret;
 }
 
-void oc_free_2d(void **_ptr){
+void oc_free_2d(void *_ptr){
   _ogg_free(_ptr);
 }
 
@@ -331,8 +331,7 @@ void oc_free_2d(void **_ptr){
   _dst: The destination buffer.
         This can be the same as _src.
   _src: The source buffer.*/
-void oc_ycbcr_buffer_flip(th_ycbcr_buffer _dst,
- const th_ycbcr_buffer _src){
+void oc_ycbcr_buffer_flip(th_ycbcr_buffer _dst,const th_ycbcr_buffer _src){
   int pli;
   for(pli=0;pli<3;pli++){
     _dst[pli].width=_src[pli].width;

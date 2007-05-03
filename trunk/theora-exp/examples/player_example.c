@@ -25,17 +25,23 @@
    A simple 'demux and write back streams' would have been easier,
    it's true. */
 
-#define _GNU_SOURCE
-#define _LARGEFILE_SOURCE
-#define _LARGEFILE64_SOURCE
-#define _FILE_OFFSET_BITS 64
-
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
-
-#ifndef _REENTRANT
-# define _REENTRANT
+#if !defined(_REENTRANT)
+#define _REENTRANT
+#endif
+#if !defined(_GNU_SOURCE)
+#define _GNU_SOURCE
+#endif
+#if !defined(_LARGEFILE_SOURCE)
+#define _LARGEFILE_SOURCE
+#endif
+#if !defined(_LARGEFILE64_SOURCE)
+#define _LARGEFILE64_SOURCE
+#endif
+#if !defined(_FILE_OFFSET_BITS)
+#define _FILE_OFFSET_BITS 64
 #endif
 
 #include <stdio.h>
@@ -83,10 +89,10 @@ ogg_sync_state   oy;
 ogg_page         og;
 ogg_stream_state vo;
 ogg_stream_state to;
-th_info      ti;
-th_comment   tc;
-th_setup_info *ts;
-th_dec_ctx    *td;
+th_info          ti;
+th_comment       tc;
+th_setup_info   *ts;
+th_dec_ctx      *td;
 vorbis_info      vi;
 vorbis_dsp_state vd;
 vorbis_block     vb;
@@ -583,7 +589,7 @@ int main(int argc,char *argv[]){
     dump_comments(&tc);
     th_decode_ctl(td,TH_DECCTL_GET_PPLEVEL_MAX,&pp_level_max,
      sizeof(pp_level_max));
-    pp_level=pp_level_max;
+    pp_level=1;
     th_decode_ctl(td,TH_DECCTL_SET_PPLEVEL,&pp_level,sizeof(pp_level));
     pp_inc=0;
   }else{

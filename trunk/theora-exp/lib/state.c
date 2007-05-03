@@ -445,7 +445,7 @@ static void oc_state_frarray_clear(oc_theora_state *_state){
    factor of 2 on the appropriate sides.
   _enc: The encoding context to store the buffers in.*/
 static void oc_state_ref_bufs_init(oc_theora_state *_state){
-  th_info   *info;
+  th_info       *info;
   unsigned char *ref_frame_data;
   size_t         yplane_sz;
   size_t         cplane_sz;
@@ -586,10 +586,10 @@ void oc_state_clear(oc_theora_state *_state){
 void oc_state_borders_fill_rows(oc_theora_state *_state,int _refi,int _pli,
  int _y0,int _yend){
   th_img_plane *iplane;
-  unsigned char    *apix;
-  unsigned char    *bpix;
-  unsigned char    *epix;
-  int               hpadding;
+  unsigned char*apix;
+  unsigned char*bpix;
+  unsigned char*epix;
+  int           hpadding;
   hpadding=OC_UMV_PADDING>>(_pli!=0&&!(_state->info.pixel_fmt&1));
   iplane=_state->ref_frame_bufs[_refi]+_pli;
   apix=iplane->data+_y0*iplane->ystride;
@@ -612,12 +612,12 @@ void oc_state_borders_fill_rows(oc_theora_state *_state,int _refi,int _pli,
   _pli:       The color plane.*/
 void oc_state_borders_fill_caps(oc_theora_state *_state,int _refi,int _pli){
   th_img_plane *iplane;
-  unsigned char    *apix;
-  unsigned char    *bpix;
-  unsigned char    *epix;
-  int               hpadding;
-  int               vpadding;
-  int               fullw;
+  unsigned char*apix;
+  unsigned char*bpix;
+  unsigned char*epix;
+  int           hpadding;
+  int           vpadding;
+  int           fullw;
   hpadding=OC_UMV_PADDING>>(_pli!=0&&!(_state->info.pixel_fmt&1));
   vpadding=OC_UMV_PADDING>>(_pli!=0&&!(_state->info.pixel_fmt&2));
   iplane=_state->ref_frame_bufs[_refi]+_pli;
@@ -630,19 +630,6 @@ void oc_state_borders_fill_caps(oc_theora_state *_state,int _refi,int _pli){
     memcpy(bpix+iplane->ystride,bpix,fullw);
     apix-=iplane->ystride;
     bpix+=iplane->ystride;
-  }
-}
-
-/*Duplicates the pixels on the border of the given reference image out into
-   the surrounding padding for use by unrestricted motion vectors.
-  _state: The context containing the reference buffers.
-  _refi:  The index of the reference buffer to pad.*/
-void oc_state_borders_fill(oc_theora_state *_state,int _refi){
-  int pli;
-  for(pli=0;pli<3;pli++){
-    oc_state_borders_fill_rows(_state,_refi,pli,0,
-     _state->ref_frame_bufs[_refi][pli].height);
-    oc_state_borders_fill_caps(_state,_refi,pli);
   }
 }
 
@@ -664,7 +651,7 @@ void oc_state_fill_buffer_ptrs(oc_theora_state *_state,int _buf_idx,
      memcpy(_state->input,_img,sizeof(th_ycbcr_buffer));
   }
   for(pli=0;pli<3;pli++){
-    th_img_plane  *iplane;
+    th_img_plane      *iplane;
     oc_fragment_plane *fplane;
     oc_fragment       *frag;
     oc_fragment       *vfrag_end;
