@@ -8,6 +8,7 @@ LIBTHEORADEC_TARGET = libtheoradec.a
 DUMP_VIDEO_TARGET = dump_video
 PLAYER_EXAMPLE_TARGET = player_example
 ENCODER_EXAMPLE_TARGET = encoder_example
+REHUFF_EXAMPLE_TARGET = rehuff
 # The compiler to use
 CC = gcc
 # The command to use to generate dependency information
@@ -20,9 +21,11 @@ CINCLUDE = `sdl-config --cflags` -D_REENTRANT
 # Extra compilation flags.
 # You may get speed increases by including flags such as -O2 or -O3 or
 #  -ffast-math, or additional flags, depending on your system and compiler.
+# The correct -march=<architecture> flag will also generate much better code
+#  on newer architectures.
+CFLAGS = -O3 -Wall -Wno-parentheses -fomit-frame-pointer -fforce-addr -finline-functions -DOC_X86ASM
 # The -g flag will generally include debugging information.
-CFLAGS = -O3 -fforce-addr -fomit-frame-pointer -DOC_X86ASM
-#CFLAGS = -g
+#CFLAGS = -g -Wall -Wno-parentheses
 # Libraries to link with, and the location of library files.
 # Add -lpng -lz if you want to use -DOC_DUMP_IMAGES.
 LIBS = -logg -lvorbis -lvorbisenc `sdl-config --libs`
@@ -95,6 +98,32 @@ psych.h \
 DUMP_VIDEO_CSOURCES = dump_video.c
 ENCODER_EXAMPLE_CSOURCES = encoder_example.c
 PLAYER_EXAMPLE_CSOURCES = player_example.c
+#rehuff links staticaly directly to these objects, since it uses symbols which
+# we may not want to publicly export from the libraries.
+#This is pretty ugly; feel free to try to clean it up.
+REHUFF_EXAMPLE_CSOURCES = rehuff.c
+REHUFF_CSOURCES = \
+decinfo.c \
+decode.c \
+dequant.c \
+encinfo.c \
+enquant.c \
+fragment.c \
+huffdec.c \
+huffenc.c \
+idct.c \
+info.c \
+internal.c \
+quant.c \
+recode.c \
+state.c \
+$(if $(findstring -DOC_X86ASM,${CFLAGS}), \
+x86/mmxstate.c \
+x86/x86state.c \
+x86/mmxidct.c \
+x86/mmxfrag.c \
+x86/cpu.c \
+)
 
 # Create object file list.
 LIBTHEORADEC_OBJS:= ${LIBTHEORADEC_CSOURCES:%.c=${WORKDIR}/%.o}
@@ -102,8 +131,11 @@ LIBTHEORAENC_OBJS:= ${LIBTHEORAENC_CSOURCES:%.c=${WORKDIR}/%.o}
 DUMP_VIDEO_OBJS:= ${DUMP_VIDEO_CSOURCES:%.c=${WORKDIR}/%.o}
 ENCODER_EXAMPLE_OBJS:= ${ENCODER_EXAMPLE_CSOURCES:%.c=${WORKDIR}/%.o}
 PLAYER_EXAMPLE_OBJS:= ${PLAYER_EXAMPLE_CSOURCES:%.c=${WORKDIR}/%.o}
+REHUFF_EXAMPLE_OBJS:= ${REHUFF_EXAMPLE_CSOURCES:%.c=${WORKDIR}/%.o} \
+ ${REHUFF_CSOURCES:%.c=${WORKDIR}/%.o}
 ALL_OBJS:= ${LIBTHEORADEC_OBJS} ${LIBTHEORAENC_OBJS} \
- ${DUMP_VIDEO_OBJS} ${ENCODER_EXAMPLE_OBJS} ${PLAYER_EXAMPLE_OBJS}
+ ${DUMP_VIDEO_OBJS} ${ENCODER_EXAMPLE_OBJS} ${PLAYER_EXAMPLE_OBJS} \
+ ${REHUFF_EXAMPLE_OBJS}
 # Create the dependency file list
 ALL_DEPS:= ${ALL_OBJS:%.o=%.d}
 # Prepend source path to file names.
@@ -114,16 +146,21 @@ LIBTHEORAENC_CHEADERS:= ${LIBTHEORAENC_CHEADERS:%=${LIBSRCDIR}/%}
 DUMP_VIDEO_CSOURCES:= ${DUMP_VIDEO_CSOURCES:%=${BINSRCDIR}/%}
 ENCODER_EXAMPLE_CSOURCES:= ${ENCODER_EXAMPLE_CSOURCES:%=${BINSRCDIR}/%}
 PLAYER_EXAMPLE_CSOURCES:= ${PLAYER_EXAMPLE_CSOURCES:%=${BINSRCDIR}/%}
+REHUFF_EXAMPLE_CSOURCES:= ${REHUFF_EXAMPLE_CSOURCES:%=${BINSRCDIR}/%} \
+ ${REHUFF_CSOURCES:%=${LIBSRCDIR}/%}
 ALL_CSOURCES:= ${LIBTHEORADEC_CSOURCES} ${LIBTHEORAENC_CSOURCES} \
- ${DUMP_VIDEO_CSOURCES} ${ENCODER_EXAMPLE_CSOURCES} ${PLAYER_EXAMPLE_CSOURCES}
+ ${DUMP_VIDEO_CSOURCES} ${ENCODER_EXAMPLE_CSOURCES} \
+ ${PLAYER_EXAMPLE_CSOURCES} ${REHUFF_EXAMPLE_CSOURCES}
 # Prepand target path to file names.
 LIBTHEORADEC_TARGET:= ${TARGETLIBDIR}/${LIBTHEORADEC_TARGET}
 LIBTHEORAENC_TARGET:= ${TARGETLIBDIR}/${LIBTHEORAENC_TARGET}
 DUMP_VIDEO_TARGET:= ${TARGETBINDIR}/${DUMP_VIDEO_TARGET}
 ENCODER_EXAMPLE_TARGET:= ${TARGETBINDIR}/${ENCODER_EXAMPLE_TARGET}
 PLAYER_EXAMPLE_TARGET:= ${TARGETBINDIR}/${PLAYER_EXAMPLE_TARGET}
+REHUFF_EXAMPLE_TARGET:= ${TARGETBINDIR}/${REHUFF_EXAMPLE_TARGET}
 ALL_TARGETS:= ${LIBTHEORADEC_TARGET} ${LIBTHEORAENC_TARGET} \
- ${DUMP_VIDEO_TARGET} ${ENCODER_EXAMPLE_TARGET} ${PLAYER_EXAMPLE_TARGET}
+ ${DUMP_VIDEO_TARGET} ${ENCODER_EXAMPLE_TARGET} ${PLAYER_EXAMPLE_TARGET} \
+ ${REHUFF_EXAMPLE_TARGET}
 
 # Targets:
 # Everything (default)
@@ -157,6 +194,11 @@ ${PLAYER_EXAMPLE_TARGET}: ${PLAYER_EXAMPLE_OBJS} ${LIBTHEORADEC_TARGET}
 	${CC} ${CFLAGS} -o $@ ${PLAYER_EXAMPLE_OBJS} ${LIBS} \
          ${LIBTHEORADEC_TARGET}
 
+# rehuff
+${REHUFF_EXAMPLE_TARGET}: ${REHUFF_EXAMPLE_OBJS}
+	mkdir -p ${TARGETBINDIR}
+	${CC} ${CFLAGS} -o $@ ${REHUFF_EXAMPLE_OBJS} ${LIBS}
+
 # Remove all targets.
 clean:
 	-rm ${ALL_OBJS} ${ALL_DEPS} ${ALL_TARGETS}
@@ -183,4 +225,4 @@ ${WORKDIR}/%.o : ${BINSRCDIR}/%.c
 	${CC} ${CINCLUDE} ${CFLAGS} -c -o $@ $<
 
 # Include header file dependencies
-include ${ALL_DEPS}
+-include ${ALL_DEPS}
