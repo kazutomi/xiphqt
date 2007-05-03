@@ -10,7 +10,9 @@
 # include "quant.h"
 
 /*Thank you Microsoft, I know the order of operations.*/
-#pragma warning(disable:4554)
+# if defined(_MSCVER)
+#  pragma warning(disable:4554)
+# endif
 
 /*This library's version.*/
 # define OC_VENDOR_STRING "derf's experimental encoder library " __DATE__
@@ -106,6 +108,8 @@ typedef struct oc_theora_state oc_theora_state;
 typedef int oc_sb_map[4][4];
 /*A map from a macro block to fragment numbers.*/
 typedef int oc_mb_map[3][4];
+/*A motion vector.*/
+typedef char oc_mv[2];
 
 
 
@@ -200,7 +204,7 @@ typedef struct{
     For fragments completely inside or outside this region, this is NULL.*/
   oc_border_info *border;
   /*The motion vector used for this fragment.*/
-  char            mv[2];
+  oc_mv           mv;
 }oc_fragment;
 
 
@@ -251,7 +255,7 @@ typedef struct{
 /*Common state information between the encoder and decoder.*/
 struct oc_theora_state{
   /*The stream information.*/
-  th_info           info;
+  th_info               info;
   /*Table for shared accelerated functions.*/
   oc_base_opt_vtable    opt_vtable;
   /*CPU flags to detect the presence of extended instruction sets.*/
@@ -293,7 +297,7 @@ struct oc_theora_state{
   /*A copy of the image data used to fill the input pointers in each fragment.
     If the data pointers or strides change, these input pointers must be
      re-populated.*/
-  th_ycbcr_buffer   input;
+  th_ycbcr_buffer       input;
   /*The number of unique border patterns.*/
   int                   nborders;
   /*The storage for the border info for all border fragments.
@@ -302,7 +306,7 @@ struct oc_theora_state{
   /*The index of the buffers being used for each OC_FRAME_* reference frame.*/
   int                   ref_frame_idx[3];
   /*The actual buffers used for the previously decoded frames.*/
-  th_ycbcr_buffer   ref_frame_bufs[3];
+  th_ycbcr_buffer       ref_frame_bufs[3];
   /*The storage for the reference frame buffers.*/
   unsigned char        *ref_frame_data;
   /*The frame number of the last keyframe.*/
@@ -333,8 +337,8 @@ struct oc_theora_state{
   _lmbmv: The luma macro-block level motion vector to fill in for use in
            prediction.
   _lbmvs: The luma block-level motion vectors.*/
-typedef void (*oc_set_chroma_mvs_func)(char _cbmvs[4][2],
- const char _lbmvs[4][2]);
+typedef void (*oc_set_chroma_mvs_func)(oc_mv _cbmvs[4],
+ const oc_mv _lbmvs[4]);
 
 
 
@@ -368,10 +372,9 @@ extern const oc_set_chroma_mvs_func OC_SET_CHROMA_MVS_TABLE[TH_PF_NFORMATS];
 int oc_ilog(unsigned _v);
 void **oc_malloc_2d(size_t _height,size_t _width,size_t _sz);
 void **oc_calloc_2d(size_t _height,size_t _width,size_t _sz);
-void oc_free_2d(void **_ptr);
+void oc_free_2d(void *_ptr);
 
-void oc_ycbcr_buffer_flip(th_ycbcr_buffer _dst,
- const th_ycbcr_buffer _src);
+void oc_ycbcr_buffer_flip(th_ycbcr_buffer _dst,const th_ycbcr_buffer _src);
 
 int oc_dct_token_skip(int _token,int _extra_bits);
 

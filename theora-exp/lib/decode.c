@@ -213,7 +213,8 @@ static int oc_dec_init(oc_dec_ctx *_dec,const th_info *_info,
   int ret;
   ret=oc_state_init(&_dec->state,_info);
   if(ret<0)return ret;
-  oc_huff_trees_copy(_dec->huff_tables,_setup->huff_tables);
+  oc_huff_trees_copy(_dec->huff_tables,
+   (const oc_huff_node *const *)_setup->huff_tables);
   for(qti=0;qti<2;qti++)for(pli=0;pli<3;pli++){
     _dec->state.dequant_tables[qti][pli]=
      _dec->state.dequant_table_data[qti][pli];
@@ -580,13 +581,13 @@ static int oc_clc_mv_comp_unpack(oggpack_buffer *_opb){
 static void oc_dec_mv_unpack_and_frag_modes_fill(oc_dec_ctx *_dec){
   oc_set_chroma_mvs_func  set_chroma_mvs;
   oc_mv_comp_unpack_func  mv_comp_unpack;
+  oc_mv                   last_mv[2];
+  oc_mv                   cbmvs[4];
   oc_mb                  *mb;
   oc_mb                  *mb_end;
   const int              *map_idxs;
   long                    val;
   int                     map_nidxs;
-  char                    last_mv[2][2];
-  char                    cbmvs[4][2];
   set_chroma_mvs=OC_SET_CHROMA_MVS_TABLE[_dec->state.info.pixel_fmt];
   theora_read1(&_dec->opb,&val);
   mv_comp_unpack=val?oc_clc_mv_comp_unpack:oc_vlc_mv_comp_unpack;
@@ -597,13 +598,14 @@ static void oc_dec_mv_unpack_and_frag_modes_fill(oc_dec_ctx *_dec){
   mb_end=mb+_dec->state.nmbs;
   for(;mb<mb_end;mb++)if(mb->mode!=OC_MODE_INVALID){
     oc_fragment *frag;
-    char         mbmv[2];
+    oc_mv        mbmv;
     int          coded[13];
     int          codedi;
     int          ncoded;
     int          mapi;
     int          mapii;
     int          fragi;
+    int          mode;
     /*Search for at least one coded fragment.*/
     ncoded=mapii=0;
     do{
@@ -613,17 +615,18 @@ static void oc_dec_mv_unpack_and_frag_modes_fill(oc_dec_ctx *_dec){
     }
     while(++mapii<map_nidxs);
     if(ncoded<=0)continue;
-    switch(mb->mode){
+    mode=mb->mode;
+    switch(mode){
       case OC_MODE_INTER_MV_FOUR:{
-        char lbmvs[4][2];
-        int  bi;
+        oc_mv lbmvs[4];
+        int   bi;
         /*Mark the tail of the list, so we don't accidentally go past it.*/
         coded[ncoded]=-1;
         for(bi=codedi=0;bi<4;bi++){
           if(coded[codedi]==bi){
             codedi++;
             frag=_dec->state.frags+mb->map[0][bi];
-            frag->mbmode=mb->mode;
+            frag->mbmode=mode;
             frag->mv[0]=lbmvs[bi][0]=(char)(*mv_comp_unpack)(&_dec->opb);
             frag->mv[1]=lbmvs[bi][1]=(char)(*mv_comp_unpack)(&_dec->opb);
           }
@@ -636,12 +639,12 @@ static void oc_dec_mv_unpack_and_frag_modes_fill(oc_dec_ctx *_dec){
           last_mv[0][1]=lbmvs[coded[codedi-1]][1];
         }
         if(codedi<ncoded){
-          (*set_chroma_mvs)(cbmvs,lbmvs);
+          (*set_chroma_mvs)(cbmvs,(const oc_mv *)lbmvs);
           for(;codedi<ncoded;codedi++){
             mapi=coded[codedi];
             bi=mapi&3;
             frag=_dec->state.frags+mb->map[mapi>>2][bi];
-            frag->mbmode=mb->mode;
+            frag->mbmode=mode;
             frag->mv[0]=cbmvs[bi][0];
             frag->mv[1]=cbmvs[bi][1];
           }
@@ -673,12 +676,12 @@ static void oc_dec_mv_unpack_and_frag_modes_fill(oc_dec_ctx *_dec){
     }
     /*4MV mode fills in the fragments itself.
       For all other modes we can use this common code.*/
-    if(mb->mode!=OC_MODE_INTER_MV_FOUR){
+    if(mode!=OC_MODE_INTER_MV_FOUR){
       for(codedi=0;codedi<ncoded;codedi++){
         mapi=coded[codedi];
         fragi=mb->map[mapi>>2][mapi&3];
         frag=_dec->state.frags+fragi;
-        frag->mbmode=mb->mode;
+        frag->mbmode=mode;
         frag->mv[0]=mbmv[0];
         frag->mv[1]=mbmv[1];
       }
@@ -1588,9 +1591,8 @@ static void oc_filter_vedge(unsigned char *_dst,int _dst_ystride,
   }
 }
 
-static void oc_dec_deblock_frag_rows(oc_dec_ctx *_dec,
- th_img_plane *_dst,th_img_plane *_src,int _pli,int _fragy0,
- int _fragy_end){
+static void oc_dec_deblock_frag_rows(oc_dec_ctx *_dec,th_img_plane *_dst,
+ th_img_plane *_src,int _pli,int _fragy0,int _fragy_end){
   oc_fragment_plane   *fplane;
   int                 *variance;
   unsigned char       *dc_qi;
@@ -1789,7 +1791,7 @@ static void oc_dering_block(unsigned char *_idata,int _ystride,int _b,
 
 static void oc_dec_dering_frag_rows(oc_dec_ctx *_dec,th_img_plane *_img,
  int _pli,int _fragy0,int _fragy_end){
-  th_img_plane  *iplane;
+  th_img_plane      *iplane;
   oc_fragment_plane *fplane;
   oc_fragment       *frag;
   int               *variance;
@@ -1848,8 +1850,7 @@ static void oc_dec_dering_frag_rows(oc_dec_ctx *_dec,th_img_plane *_img,
 
 
 
-th_dec_ctx *th_decode_alloc(const th_info *_info,
- const th_setup_info *_setup){
+th_dec_ctx *th_decode_alloc(const th_info *_info,const th_setup_info *_setup){
   oc_dec_ctx *dec;
   if(_info==NULL||_setup==NULL)return NULL;
   dec=_ogg_malloc(sizeof(*dec));
@@ -1921,7 +1922,7 @@ int th_decode_packetin(th_dec_ctx *_dec,const ogg_packet *_op,
     Only proceed if we have a non-empty packet.*/
   if(_op->bytes!=0){
     oc_dec_pipeline_state pipe;
-    th_ycbcr_buffer   stripe_buf;
+    th_ycbcr_buffer       stripe_buf;
     int                   stripe_fragy;
     int                   refi;
     int                   pli;
@@ -1936,12 +1937,12 @@ int th_decode_packetin(th_dec_ctx *_dec,const ogg_packet *_op,
      (_dec->state.ref_frame_idx[OC_FRAME_GOLD]<0||
      _dec->state.ref_frame_idx[OC_FRAME_PREV]<0)){
       th_info *info;
-      size_t       yplane_sz;
-      size_t       cplane_sz;
-      int          yhstride;
-      int          yvstride;
-      int          chstride;
-      int          cvstride;
+      size_t   yplane_sz;
+      size_t   cplane_sz;
+      int      yhstride;
+      int      yvstride;
+      int      chstride;
+      int      cvstride;
       /*We're decoding an INTER frame, but have no initialized reference
          buffers (i.e., decoding did not start on a key frame).
         We initialize them to a solid gray here.*/

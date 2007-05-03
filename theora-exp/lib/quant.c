@@ -43,10 +43,10 @@ void oc_dequant_tables_init(oc_quant_table *_dequant[2][3],
     }
     for(qi=qri=0;qri<=_qinfo->qi_ranges[qti][pli].nranges;qri++){
       th_quant_base base;
-      ogg_uint32_t      q;
-      int               qi_start;
-      int               qi_end;
-      int               ci;
+      ogg_uint32_t  q;
+      int           qi_start;
+      int           qi_end;
+      int           ci;
       memcpy(base,_qinfo->qi_ranges[qti][pli].base_matrices[qri],
        sizeof(base));
       qi_start=qi;

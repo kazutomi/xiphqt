@@ -71,16 +71,14 @@ extern "C" {
 /**Sets the striped decode callback function.
  * If set, this function will be called as each piece of a frame is fully
  *  decoded in th_decode_packetin().
- * You can pass in a #th_stripe_callback with
- *  th_stripe_callback#stripe_decoded set to <tt>NULL</tt> to disable the
- *  callbacks at any point.
+ * You can pass in a #th_stripe_callback with th_stripe_callback#stripe_decoded
+ *  set to <tt>NULL</tt> to disable the callbacks at any point.
  * Enabling striped decode does not prevent you from calling
  *  th_decode_ycbcr_out() after the frame is fully decoded.
  *
  * \param[in]  _buf #th_stripe_callback: The callback parameters.
  * \retval TH_EFAULT  \a _dec_ctx or \a _buf is <tt>NULL</tt>.
- * \retval TH_EINVAL  \a _buf_sz is not
- *                     <tt>sizeof(th_stripe_callback)</tt>.*/
+ * \retval TH_EINVAL  \a _buf_sz is not <tt>sizeof(th_stripe_callback)</tt>.*/
 #define TH_DECCTL_SET_STRIPE_CB (7)
 /*@}*/
 
@@ -99,8 +97,8 @@ extern "C" {
  *  format and the number of post-processing filters enabled, and may not even
  *  be constant for the entire frame.
  * If a non-<tt>NULL</tt> \a _granpos pointer is passed to
- *  th_decode_packetin(), the granule position for the frame will be stored
- *  in it before the first callback is made.
+ *  th_decode_packetin(), the granule position for the frame will be stored in
+ *  it before the first callback is made.
  * If an entire frame is dropped (a 0-byte packet), then no callbacks will be
  *  made at all for that frame.
  * \param _ctx       An application-provided context pointer.
@@ -160,8 +158,7 @@ typedef struct th_setup_info th_setup_info;
  * The basic steps are:
  * - Parse the header packets by repeatedly calling th_decode_headerin().
  * - Allocate a #th_dec_ctx handle with th_decode_alloc().
- * - Call th_setup_free() to free any memory used for codec setup
- *    information.
+ * - Call th_setup_free() to free any memory used for codec setup information.
  * - Perform any additional decoder configuration with th_decode_ctl().
  * - For each video data packet:
  *   - Submit the packet to the decoder via th_decode_packetin().
@@ -273,8 +270,7 @@ extern int th_decode_packetin(th_dec_ctx *_dec,const ogg_packet *_op,
  *                subsequent frames are decoded.
  * \retval 0 Success
  */
-extern int th_decode_ycbcr_out(th_dec_ctx *_dec,
- th_ycbcr_buffer _ycbcr);
+extern int th_decode_ycbcr_out(th_dec_ctx *_dec,th_ycbcr_buffer _ycbcr);
 /**Frees an allocated decoder instance.
  * \param _dec A #th_dec_ctx handle.*/
 extern void th_decode_free(th_dec_ctx *_dec);

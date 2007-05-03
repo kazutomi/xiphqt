@@ -464,8 +464,7 @@ static void oc_seg_sum_moment_row(float *_xrow,float *_x2row,
   _iplane: The image plane to sum the moments over.
            This should already be adjusted to cover only the visible
             frame, and not the full encoded frame.*/
-static void oc_seg_sum_moments(oc_seg_ctx *_seg,
- const th_img_plane *_iplane){
+static void oc_seg_sum_moments(oc_seg_ctx *_seg,const th_img_plane *_iplane){
   const unsigned char *ypix;
   int                  ymax;
   int                  y;
@@ -507,7 +506,7 @@ static void oc_seg_sum_moments(oc_seg_ctx *_seg,
   _twidth:  The width of the region in the table.
   _theight: The height of the region in the table.
   Return: The sum of the appropriate value over the given region.*/
-static float oc_seg_sum_region(const float **_sums,int _tx,int _ty,
+static float oc_seg_sum_region(/*const*/ float **_sums,int _tx,int _ty,
  int _twidth,int _theight){
   return _sums[_ty][_tx]-_sums[_ty][_tx+_twidth]-
    _sums[_ty+_theight][_tx]+_sums[_ty+_theight][_tx+_twidth];
@@ -1344,8 +1343,7 @@ static void oc_seg_splitmerge_is(oc_seg_ctx *_seg,
   _iplane:  The image plane the block is contained in.*/
 static void oc_seg_splitmerge_bs(oc_seg_ctx *_seg,
  int _x0,int _y0,int _width,int _height,int _level,
- int _area,float _sumx,float _sumx2,float _bic,
- const th_img_plane *_iplane){
+ int _area,float _sumx,float _sumx2,float _bic,const th_img_plane *_iplane){
   const unsigned char *ypix;
   int                  size;
   int                  y;
@@ -1465,8 +1463,7 @@ static void oc_seg_splitmerge_it(oc_seg_ctx *_seg,
   _iplane: The image plane the block is contained in.*/
 static void oc_seg_splitmerge_bt(oc_seg_ctx *_seg,
  int _x0,int _y0,int _width,int _height,int _level,
- int _area,float _sumx,float _sumx2,float _bic,
- const th_img_plane *_iplane){
+ int _area,float _sumx,float _sumx2,float _bic,const th_img_plane *_iplane){
   float sumx[4];
   float sumx2[4];
   float bic[4];
@@ -2110,10 +2107,10 @@ static float oc_impmap_mb_weight(oc_impmap_ctx *_impmap,int _mbi){
 }
 static void oc_impmap_fill(oc_impmap_ctx *_impmap,float _duration){
   th_img_plane yplane;
-  float            imp_sum;
-  int              img_offset;
-  int              nmbs;
-  int              mbi;
+  float        imp_sum;
+  int          img_offset;
+  int          nmbs;
+  int          mbi;
   /*Segment the Y plane.*/
   /*TODO: Use the same oc_border_info structure as everyone else.
     This would make future integration of an alpha mask easier.*/
@@ -2245,7 +2242,7 @@ static void oc_impmap_pipe_init(oc_enc_pipe_stage *_stage,oc_enc_ctx *_enc){
 
 
 oc_impmap_ctx *oc_impmap_alloc(oc_enc_ctx *_enc){
-  th_info   *info;
+  th_info       *info;
   oc_impmap_ctx *impmap;
   int            edge_sz;
   int            width;

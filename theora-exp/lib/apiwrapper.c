@@ -89,6 +89,7 @@ static void theora_info2th_info(th_info *_info,const theora_info *_ci){
 int theora_decode_init(theora_state *_td,theora_info *_ci){
   th_api_wrapper *api;
   th_api_wrapper *dapi;
+  theora_info    *ci;
   th_info         info;
   /*We don't need these two fields.*/
   _td->internal_encode=NULL;
@@ -97,11 +98,10 @@ int theora_decode_init(theora_state *_td,theora_info *_ci){
   api=(th_api_wrapper *)_ci->codec_setup;
   /*Make our own copy of the info struct, since its lifetime should be
      independent of the one we were passed in.*/
-  _td->i=(theora_info *)_ogg_malloc(sizeof(*_td->i));
-  *_td->i=*_ci;
+  ci=(theora_info *)_ogg_malloc(sizeof(*_td->i));
+  *ci=*_ci;
   /*Also make our own copy of the wrapper.*/
   dapi=(th_api_wrapper *)_ogg_calloc(1,sizeof(*dapi));
-  _td->i->codec_setup=dapi;
   /*Convert the info struct now instead of saving the the one we decoded with
      theora_decode_header(), since the user might have modified values (i.e.,
      color space, aspect ratio, etc. can be specified from a higher level).
@@ -111,6 +111,14 @@ int theora_decode_init(theora_state *_td,theora_info *_ci){
   /*Don't bother to copy the setup info; th_decode_alloc() makes its own copy
      of the stuff it needs.*/
   dapi->decode=th_decode_alloc(&info,api->setup);
+  if(dapi->decode==NULL){
+    _ogg_free(ci);
+    _ogg_free(dapi);
+    return OC_EINVAL;
+  }
+  _td->i=ci;
+  _td->i->codec_setup=dapi;
+  return 0;
 }
 
 static void th_info2theora_info(theora_info *_ci,const th_info *_info){

@@ -4,13 +4,14 @@
 # include "theora/theoraenc.h"
 # include "internal.h"
 
+typedef th_huff_code                  th_huff_table[TH_NDCT_TOKENS];
 typedef struct oc_enc_pipe_stage      oc_enc_pipe_stage;
 typedef struct oc_fragment_enc_info   oc_fragment_enc_info;
 typedef struct oc_mb_enc_info         oc_mb_enc_info;
 typedef struct oc_mode_scheme_chooser oc_mode_scheme_chooser;
 typedef struct oc_enc_vbr_ctx         oc_enc_vbr_ctx;
 typedef struct oc_mcenc_ctx           oc_mcenc_ctx;
-typedef struct th_enc_ctx         oc_enc_ctx;
+typedef struct th_enc_ctx             oc_enc_ctx;
 
 # include "fdct.h"
 # include "huffenc.h"
@@ -129,19 +130,19 @@ struct oc_mode_scheme_chooser{
      alphabet used by each scheme.
     The first entry points to the dynamic scheme0_ranks, while the remaining
      7 point to the constant entries stored in OC_MODE_SCHEMES.*/
-  const int              *mode_ranks[8];
+  const int          *mode_ranks[8];
   /*The ranks for each mode when coded with scheme 0.
     These are optimized so that the more frequent modes have lower ranks.*/
-  int                     scheme0_ranks[OC_NMODES];
+  int                 scheme0_ranks[OC_NMODES];
   /*The list of modes, sorted in descending order of frequency, that
      corresponds to the ranks above.*/
-  int                     scheme0_list[OC_NMODES];
+  int                 scheme0_list[OC_NMODES];
   /*The number of times each mode has been chosen so far.*/
-  int                     mode_counts[OC_NMODES];
+  int                 mode_counts[OC_NMODES];
   /*The list of mode coding schemes, sorted in ascending order of bit cost.*/
-  int                     scheme_list[8];
+  int                 scheme_list[8];
   /*The number of bits used by each mode coding scheme.*/
-  int                     scheme_bits[8];
+  int                 scheme_bits[8];
 };
 
 
@@ -211,9 +212,9 @@ struct th_enc_ctx{
   /*The bounding value array used for the loop filter.*/
   int                      bounding_values[512];
   /*The huffman tables in use.*/
-  th_huff_code         huff_codes[TH_NHUFFMAN_TABLES][TH_NDCT_TOKENS];
+  th_huff_code             huff_codes[TH_NHUFFMAN_TABLES][TH_NDCT_TOKENS];
   /*The quantization parameters in use.*/
-  th_quant_info        qinfo;
+  th_quant_info            qinfo;
   /*Pointers to the quantization tables in use.*/
   oc_quant_table          *enquant_tables[2][3];
   /*Storage for the actual quantization tables.*/
@@ -235,7 +236,6 @@ struct th_enc_ctx{
 extern const int OC_MODE_SCHEMES[7][OC_NMODES];
 extern const int OC_DCT_VAL_CAT_SIZES[6];
 extern const int OC_DCT_VAL_CAT_SHIFTS[6];
-extern const int OC_MODE_HAS_MV[OC_NMODES];
 extern const th_huff_code OC_MV_CODES[2][63];
 
 /*The number of fractional bits in bitrate statistics.*/
@@ -263,6 +263,11 @@ int oc_sad8_halfpel(const unsigned char *_cur,int _cur_stride,
 int oc_sad8_halfpel_border(const unsigned char *_cur,int _cur_stride,
  const unsigned char *_ref0,const unsigned char *_ref1,int _ref_stride,
  ogg_int64_t _mask);
+
+int oc_state_flushheader(oc_theora_state *_state,int *_packet_state,
+ oggpack_buffer *_opb,const th_quant_info *_qinfo,
+ const th_huff_code _codes[TH_NHUFFMAN_TABLES][TH_NDCT_TOKENS],
+ const char *_vendor,th_comment *_tc,ogg_packet *_op);
 
 void oc_mode_scheme_chooser_init(oc_mode_scheme_chooser *_chooser);
 void oc_mode_scheme_chooser_reset(oc_mode_scheme_chooser *_chooser);

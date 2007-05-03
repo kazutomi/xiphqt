@@ -18,10 +18,21 @@
 /* By Mauricio Piacentini (mauricio at xiph.org) */
 /*  simply dump decoded YUV data, for verification of theora bitstream */
 
+#if !defined(_REENTRANT)
+#define _REENTRANT
+#endif
+#if !defined(_GNU_SOURCE)
 #define _GNU_SOURCE
+#endif
+#if !defined(_LARGEFILE_SOURCE)
 #define _LARGEFILE_SOURCE
+#endif
+#if !defined(_LARGEFILE64_SOURCE)
 #define _LARGEFILE64_SOURCE
+#endif
+#if !defined(_FILE_OFFSET_BITS)
 #define _FILE_OFFSET_BITS 64
+#endif
 
 #include <stdio.h>
 #include <unistd.h>
@@ -63,10 +74,10 @@ ogg_sync_state     oy;
 ogg_page           og;
 ogg_stream_state   vo;
 ogg_stream_state   to;
-th_info        ti;
-th_comment     tc;
-th_setup_info *ts;
-th_dec_ctx    *td;
+th_info            ti;
+th_comment         tc;
+th_setup_info     *ts;
+th_dec_ctx        *td;
 
 int              theora_p=0;
 int              theora_processing_headers;
@@ -105,7 +116,7 @@ static void stripe_decoded(th_ycbcr_buffer _dst,th_ycbcr_buffer _src,
 
 static void open_video(void){
   th_stripe_callback cb;
-  int                    pli;
+  int                pli;
   /*Here we allocate a buffer so we can use the striped decode feature.
     There's no real reason to do this in this application, because we want to
      write to the file top-down, but the frame gets decoded bottom up, so we
@@ -194,25 +205,25 @@ int main(int argc,char *argv[]){
     switch(c){
     case 'o':
       if(!strcmp(optarg,"-")){
-	outfile=fopen(optarg,"wb");
-	if(outfile==NULL){
-	  fprintf(stderr,"Unable to open output file '%s'\n", optarg);
-	  exit(1);
-	}
+        outfile=fopen(optarg,"wb");
+        if(outfile==NULL){
+          fprintf(stderr,"Unable to open output file '%s'\n", optarg);
+          exit(1);
+        }
       }else{
-	outfile=stdout;
+        outfile=stdout;
       }
       break;
-      
+
     case 'r':
-	raw=1;
-	break;
-	
+        raw=1;
+        break;
+
     case 'f':
       fps_only = 1;
       outfile = NULL;
       break;
-      
+
     default:
       usage();
     }
@@ -364,34 +375,34 @@ int main(int argc,char *argv[]){
           videobuf_time=th_granule_time(td,videobuf_granulepos);
           videobuf_ready=1;
           frames++;
-	  if(fps_only)
-	    ftime(&after);
+          if(fps_only)
+            ftime(&after);
         }
-	
+
       }else
         break;
     }
 
     if(fps_only && (videobuf_ready || fps_only==2)){
-      long ms = 
-	after.time*1000.+after.millitm-
-	(last.time*1000.+last.millitm);
-      
-      if(ms>500 || fps_only==1 || 
-	 (feof(infile) && !videobuf_ready)){
-	float file_fps = (float)ti.fps_numerator/ti.fps_denominator;
-	fps_only=2;
-	
-	ms = after.time*1000.+after.millitm-
-	  (start.time*1000.+start.millitm);
-	
-	fprintf(stderr,"\rframe:%d rate:%.2fx           ",
-		frames, 
-		frames*1000./(ms*file_fps));
-	memcpy(&last,&after,sizeof(last));
+      long ms =
+        after.time*1000.+after.millitm-
+        (last.time*1000.+last.millitm);
+
+      if(ms>500 || fps_only==1 ||
+         (feof(infile) && !videobuf_ready)){
+        float file_fps = (float)ti.fps_numerator/ti.fps_denominator;
+        fps_only=2;
+
+        ms = after.time*1000.+after.millitm-
+          (start.time*1000.+start.millitm);
+
+        fprintf(stderr,"\rframe:%d rate:%.2fx           ",
+                frames,
+                frames*1000./(ms*file_fps));
+        memcpy(&last,&after,sizeof(last));
       }
     }
-    
+
     if(!videobuf_ready  && feof(infile))break;
 
     if(!videobuf_ready ){
@@ -402,7 +413,7 @@ int main(int argc,char *argv[]){
       }
     }
     /* dumpvideo frame, and get new one */
-    else 
+    else
       if(outfile)video_write();
 
     videobuf_ready=0;

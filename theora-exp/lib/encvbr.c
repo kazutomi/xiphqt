@@ -840,7 +840,7 @@ static int oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
   oc_fragment            *frag;
   oc_mb                  *mb;
   oc_mb_enc_info         *mbinfo;
-  char                    last_mv[2][2];
+  oc_mv                   last_mv[2];
   int                    *uncoded_fragi;
   int                    *uncoded_fragi_end;
   int                     best_qii;
@@ -868,8 +868,8 @@ static int oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
     mb=_enc->state.mbs+mbi;
     if(mb->mode!=OC_MODE_INVALID){
       oc_fragment_enc_info *efrag;
-      char                  bmvs[2][4][2];
-      char                  mbmv[2];
+      oc_mv                 bmvs[2][4];
+      oc_mv                 mbmv;
       int                   err[OC_NMODES][12];
       int                   bits[OC_NMODES];
       int                   coded[13];
@@ -885,6 +885,7 @@ static int oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
       int                   mbgmvbitsa;
       int                   mb4mvbitsa;
       int                   mb4mvbitsb;
+      int                   mode;
       int                   fti;
       int                   qti;
       int                   bi;
@@ -978,7 +979,7 @@ static int oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
       /*Otherwise, add this to the coded MB list.*/
       _enc->state.coded_mbis[_enc->state.ncoded_mbis++]=mbi;
       /*Compute the chroma MVs for the 4MV mode.*/
-      (*set_chroma_mvs)(bmvs[1],bmvs[0]);
+      (*set_chroma_mvs)(bmvs[1],(const oc_mv *)bmvs[0]);
       /*Do a MV search against the golden frame.*/
       oc_mcenc_search_1mv(_enc->mcenc,mb-_enc->state.mbs,OC_FRAME_GOLD);
       /*We are now ready to do mode decision for this macro block.
@@ -1097,14 +1098,14 @@ static int oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
       bits[OC_MODE_INTER_MV_FOUR]+=OC_MINI(mvbitsa+mb4mvbitsa,
        mvbitsb+mb4mvbitsb)-OC_MINI(mvbitsa,mvbitsb);
       /*Finally, pick the mode with the cheapest estimated bit cost.*/
-      mb->mode=0;
-      for(modei=1;modei<OC_NMODES;modei++)if(bits[modei]<bits[mb->mode]){
+      mode=0;
+      for(modei=1;modei<OC_NMODES;modei++)if(bits[modei]<bits[mode]){
         /*Do not select 4MV mode when not all the luma blocks are coded when
            we're in VP3 compatibility mode.*/
         if(_enc->vp3_compatible&&modei==OC_MODE_INTER_MV_FOUR&&ncoded_luma<4){
           continue;
         }
-        mb->mode=modei;
+        mode=modei;
       }
 #if defined(OC_BITRATE_STATS)
       /*Remember the error for the mode we selected in each fragment.*/
@@ -1112,7 +1113,7 @@ static int oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
         mapi=coded[codedi];
         fragi=mb->map[mapi>>2][mapi&3];
         efrag=_enc->frinfo+fragi;
-        efrag->eerror=err[mb->mode][mapi];
+        efrag->eerror=err[mode][mapi];
       }
 #endif
       /*Go back and store the selected qi index corresponding to the selected
@@ -1123,13 +1124,14 @@ static int oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
         frag=_enc->state.frags+fragi;
         efrag=_enc->frinfo+fragi;
         efrag->qii=(unsigned char)
-         frag_qii[codedi][OC_INTER_FRAME][mb->mode!=0];
+         frag_qii[codedi][OC_INTER_FRAME][mode!=0];
         frag->qi=_enc->qis[OC_INTER_FRAME][efrag->qii];
       }
-      inter_bits+=bits[mb->mode];
+      inter_bits+=bits[mode];
       intra_bits+=mbintrabits+(1<<OC_BIT_SCALE-1)>>OC_BIT_SCALE;
-      oc_mode_scheme_chooser_update(&_enc->mode_scheme_chooser,mb->mode);
-      switch(mb->mode){
+      oc_mode_scheme_chooser_update(&_enc->mode_scheme_chooser,mode);
+      mb->mode=mode;
+      switch(mode){
         case OC_MODE_INTER_MV:{
           mvbitsa+=mbpmvbitsa;
           mvbitsb+=12;
@@ -1168,42 +1170,31 @@ static int oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
           mbmv[0]=mbinfo->mvs[0][OC_FRAME_GOLD][0];
           mbmv[1]=mbinfo->mvs[0][OC_FRAME_GOLD][1];
         }break;
+        default:mbmv[0]=mbmv[1]=0;break;
       }
-      if(OC_MODE_HAS_MV[mb->mode]){
-        /*Special case 4MV mode.
-          MVs are stored in bmvs.*/
-        if(mb->mode==OC_MODE_INTER_MV_FOUR){
-          for(codedi=0;codedi<ncoded;codedi++){
-            mapi=coded[codedi];
-            pli=mapi>>2;
-            bi=mapi&3;
-            fragi=mb->map[pli][bi];
-            frag=_enc->state.frags+fragi;
-            frag->mbmode=mb->mode;
-            frag->mv[0]=bmvs[!!pli][bi][0];
-            frag->mv[1]=bmvs[!!pli][bi][1];
-          }
-        }
-        /*For every other mode with a MV, it is stored in mbmv.*/
-        else{
-          for(codedi=0;codedi<ncoded;codedi++){
-            mapi=coded[codedi];
-            fragi=mb->map[mapi>>2][mapi&3];
-            frag=_enc->state.frags+fragi;
-            frag->mbmode=mb->mode;
-            frag->mv[0]=mbmv[0];
-            frag->mv[1]=mbmv[1];
-          }
+      /*Special case 4MV mode.
+        MVs are stored in bmvs.*/
+      if(mode==OC_MODE_INTER_MV_FOUR){
+        for(codedi=0;codedi<ncoded;codedi++){
+          mapi=coded[codedi];
+          pli=mapi>>2;
+          bi=mapi&3;
+          fragi=mb->map[pli][bi];
+          frag=_enc->state.frags+fragi;
+          frag->mbmode=mode;
+          frag->mv[0]=bmvs[!!pli][bi][0];
+          frag->mv[1]=bmvs[!!pli][bi][1];
         }
       }
-      /*For modes with no MV, ensure 0,0 is stored in each fragment.*/
+      /*For every other mode, the MV is stored in mbmv.*/
       else{
         for(codedi=0;codedi<ncoded;codedi++){
           mapi=coded[codedi];
           fragi=mb->map[mapi>>2][mapi&3];
           frag=_enc->state.frags+fragi;
-          frag->mbmode=mb->mode;
-          frag->mv[0]=frag->mv[1]=0;
+          frag->mbmode=mode;
+          frag->mv[0]=mbmv[0];
+          frag->mv[1]=mbmv[1];
         }
       }
     }

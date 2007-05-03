@@ -136,8 +136,7 @@ typedef struct{
  *  as indicated by th_info#pixel_fmt.
  * The width and height of the Y' plane must be multiples of 16.
  * They may need to be cropped for display, using the rectangle specified by
- *  th_info#pic_x, th_info#pic_y, th_info#pic_width, and
- *  th_info#pic_height.
+ *  th_info#pic_x, th_info#pic_y, th_info#pic_width, and th_info#pic_height.
  * All samples are 8 bits.
  * \note The term YUV often used to describe a colorspace is ambiguous.
  * The exact parameters of the RGB to YUV conversion process aside, in many
@@ -451,8 +450,7 @@ extern ogg_uint32_t th_version_number(void);
 /**Converts a granule position to an absolute frame number.
  * The granule position is interpreted in the context of a given
  *  #th_enc_ctx or #th_dec_ctx handle (either will suffice).
- * \param _encdec  A previously allocated #th_enc_ctx or #th_dec_ctx
- *                  handle.
+ * \param _encdec  A previously allocated #th_enc_ctx or #th_dec_ctx handle.
  * \param _granpos The granule position to convert.
  * \returns The absolute frame number corresponding to \a _granpos.
  * \retval -1 The given granule position was invalid (i.e. negative).*/
@@ -460,8 +458,7 @@ extern ogg_int64_t th_granule_frame(void *_encdec,ogg_int64_t _granpos);
 /**Converts a granule position to an absolute time in seconds.
  * The granule position is interpreted in the context of a given
  *  #th_enc_ctx or #th_dec_ctx handle (either will suffice).
- * \param _encdec  A previously allocated #th_enc_ctx or #th_dec_ctx
- *                  handle.
+ * \param _encdec  A previously allocated #th_enc_ctx or #th_dec_ctx handle.
  * \param _granpos The granule position to convert.
  * \return The absolute time in seconds corresponding to \a _granpos.
  * \retval -1 The given granule position was invalid (i.e. negative).*/
@@ -498,30 +495,27 @@ extern int th_packet_iskeyframe(ogg_packet *_op);
  * \param _info The #th_info struct to initialize.*/
 extern void th_info_init(th_info *_info);
 /**Clears a #th_info structure.
- * This should be called on a #th_info structure after it is no longer
- *  needed.
+ * This should be called on a #th_info structure after it is no longer needed.
  * \param _info The #th_info struct to clear.*/
 extern void th_info_clear(th_info *_info);
 
 /**Initialize a #th_comment structure.
- * This should be called on a freshly allocated #th_comment structure
- *  before attempting to use it.
+ * This should be called on a freshly allocated #th_comment structure before
+ *  attempting to use it.
  * \param _tc The #th_comment struct to initialize.*/
 extern void th_comment_init(th_comment *_tc);
 /**Add a comment to an initialized #th_comment structure.
- * \note Neither th_comment_add() nor th_comment_add_tag() support
- *  comments containing null values, although the bitstream format does
- *  support them.
- * To add such comments you will need to manipulate the #th_comment
- *  structure directly.
+ * \note Neither th_comment_add() nor th_comment_add_tag() support comments
+ *  containing null values, although the bitstream format does support them.
+ * To add such comments you will need to manipulate the #th_comment structure
+ *  directly.
  * \param _tc      The #th_comment struct to add the comment to.
  * \param _comment Must be a null-terminated UTF-8 string containing the
  *                  comment in "TAG=the value" form.*/
 extern void th_comment_add(th_comment *_tc, char *_comment);
 /**Add a comment to an initialized #th_comment structure.
- * \note Neither th_comment_add() nor th_comment_add_tag() support
- *  comments containing null values, although the bitstream format does
- *  support them.
+ * \note Neither th_comment_add() nor th_comment_add_tag() support comments
+ *  containing null values, although the bitstream format does support them.
  * To add such comments you will need to manipulate the #th_comment
  *  structure directly.
  * \param _tc  The #th_comment struct to add the comment to.
@@ -537,8 +531,8 @@ extern void th_comment_add_tag(th_comment *_tc,char *_tag,char *_val);
  *                value, so an index is required to retrieve them all.
  *               The order in which these values appear is significant and
  *                should be preserved.
- *               Use th_comment_query_count() to get the legal range for
- *                the \a _count parameter.
+ *               Use th_comment_query_count() to get the legal range for the
+ *                \a _count parameter.
  * \return A pointer to the queried tag's value.
  *         This points directly to data in the #th_comment structure.
  *         It should not be modified or freed by the application, and
@@ -547,8 +541,8 @@ extern void th_comment_add_tag(th_comment *_tc,char *_tag,char *_val);
 extern char *th_comment_query(th_comment *_tc,char *_tag,int _count);
 /**Look up the number of instances of a tag.
  * Call this first when querying for a specific tag and then iterate over the
- *  number of instances with separate calls to th_comment_query() to
- *  retrieve all the values for that tag in order.
+ *  number of instances with separate calls to th_comment_query() to retrieve
+ *  all the values for that tag in order.
  * \param _tc    An initialized #th_comment structure.
  * \param _tag   The tag to look up.
  * \return The number on instances of this particular tag.*/

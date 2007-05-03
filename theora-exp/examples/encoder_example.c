@@ -16,13 +16,21 @@
 
  ********************************************************************/
 
-#define _GNU_SOURCE
 #if !defined(_REENTRANT)
 #define _REENTRANT
 #endif
+#if !defined(_GNU_SOURCE)
+#define _GNU_SOURCE
+#endif
+#if !defined(_LARGEFILE_SOURCE)
 #define _LARGEFILE_SOURCE
+#endif
+#if !defined(_LARGEFILE64_SOURCE)
 #define _LARGEFILE64_SOURCE
+#endif
+#if !defined(_FILE_OFFSET_BITS)
 #define _FILE_OFFSET_BITS 64
+#endif
 
 #include <stdio.h>
 #include <unistd.h>
@@ -923,7 +931,7 @@ int fetch_and_process_video(FILE *video,ogg_page *videopage,
   /* You'll go to Hell for using static variables */
   static int                 state=-1;
   static unsigned char      *yuvframe[3];
-  static th_ycbcr_buffer ycbcr;
+  static th_ycbcr_buffer     ycbcr;
   ogg_packet                 op;
   int                        pic_sz;
   int                        frame_c_w;
@@ -1061,9 +1069,9 @@ int main(int argc,char *argv[]){
   ogg_page         og; /* one Ogg bitstream page.  Vorbis packets are inside */
   ogg_packet       op; /* one raw packet of data for decode */
 
-  th_enc_ctx  *td;
-  th_info      ti;
-  th_comment   tc;
+  th_enc_ctx      *td;
+  th_info          ti;
+  th_comment       tc;
 
   vorbis_info      vi; /* struct that stores all the static vorbis bitstream
                           settings */
