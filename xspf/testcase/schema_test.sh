@@ -15,8 +15,10 @@ RNC_1_FILE="${SCHEMA_PATH}/xspf-1_0.5.rnc"
 RNG_1_FILE="${SCHEMA_PATH}/xspf-0_0.5.rng"
 RNG_1_FILE="${SCHEMA_PATH}/xspf-1_0.5.rng"
 XSD_FILE="${SCHEMA_PATH}/xspf-1_0.2.xsd"
-PASS_1_FILES="for_version_1/pass/*.xspf"
+FAIL_0_FILES="for_version_0/fail/*.xspf"
+PASS_0_FILES="for_version_0/pass/*.xspf"
 FAIL_1_FILES="for_version_1/fail/*.xspf"
+PASS_1_FILES="for_version_1/pass/*.xspf"
 LOG_FILE="schema_test_log.txt"
 
 
@@ -31,6 +33,7 @@ else
 fi
 RNV=rnv
 XMLLINT=xmllint
+SPIFF_CHECK=spiff_check
 
 
 
@@ -48,6 +51,7 @@ echo "= Versions =" >> ${LOG_FILE}
 echo "RNV "`${RNV} -v 2>&1 | grep version | sed -r "s/rnv version (.+)/\1/"` >> ${LOG_FILE}
 echo "xmllint #"`${XMLLINT} --version 2>&1 | grep version | sed -r "s/[^0-9]+//"` >> ${LOG_FILE}
 echo "XMLStarlet "`${XML_STARLET} --version` >> ${LOG_FILE}
+echo "spiff_check "`${SPIFF_CHECK} --version | sed -r "s/[^0-9]+//"` >> ${LOG_FILE}
 echo "" >> ${LOG_FILE}
 
 
@@ -73,11 +77,11 @@ done
 echo "" >> ${LOG_FILE}
 
 echo "===== Should have passed =====" >> ${LOG_FILE}
-for i in ${PASS_0_FILES}; do
-	if ! ${RNV} ${RNC_0_FILE} $i &>/dev/null ; then
-		echo $i >> ${LOG_FILE}
-	fi
-done
+#for i in ${PASS_0_FILES}; do
+#	if ! ${RNV} ${RNC_0_FILE} $i &>/dev/null ; then
+#		echo $i >> ${LOG_FILE}
+#	fi
+#done
 echo "" >> ${LOG_FILE}
 
 
@@ -92,7 +96,7 @@ ${XML_STARLET} validate --err --list-good --relaxng ${RNG_0_FILE} ${FAIL_0_FILES
 echo "" >> ${LOG_FILE}
 
 echo "===== Should have passed =====" >> ${LOG_FILE}
-${XML_STARLET} validate --err --list-bad --relaxng ${RNG_0_FILE} ${PASS_0_FILES} 1>> ${LOG_FILE} 2>> /dev/null
+#${XML_STARLET} validate --err --list-bad --relaxng ${RNG_0_FILE} ${PASS_0_FILES} 1>> ${LOG_FILE} 2>> /dev/null
 echo "" >> ${LOG_FILE}
 
 
@@ -109,11 +113,37 @@ done
 echo "" >> ${LOG_FILE}
 
 echo "===== Should have passed =====" >> ${LOG_FILE}
-for i in ${PASS_0_FILES}; do
-	if ! ${XMLLINT} --relaxng ${RNG_0_FILE} --noout $i &>/dev/null ; then
-		echo $i >> ${LOG_FILE}
+#for i in ${PASS_0_FILES}; do
+#	if ! ${XMLLINT} --relaxng ${RNG_0_FILE} --noout $i &>/dev/null ; then
+#		echo $i >> ${LOG_FILE}
+#	fi
+#done
+echo "" >> ${LOG_FILE}
+
+
+
+echo "=== Without schema ===" >> ${LOG_FILE}
+echo "" >> ${LOG_FILE}
+
+echo "==== ${SPIFF_CHECK} ====" >> ${LOG_FILE}
+echo "" >> ${LOG_FILE}
+
+echo "===== Should have failed =====" >> ${LOG_FILE}
+for i in ${FAIL_0_FILES}; do
+	OUTPUT=`cat $i | ${SPIFF_CHECK} -`
+	if [ "${OUTPUT}" == "Valid XSPF-0." ]; then
+		echo $i
 	fi
 done
+echo "" >> ${LOG_FILE}
+
+echo "===== Should have passed =====" >> ${LOG_FILE}
+#for i in ${PASS_0_FILES}; do
+#	OUTPUT=`cat $i | ${SPIFF_CHECK} -`
+#	if [ "${OUTPUT}" != "Valid XSPF-0." ]; then
+#		echo $i
+#	fi
+#done
 echo "" >> ${LOG_FILE}
 
 
@@ -208,6 +238,32 @@ echo "===== Should have passed =====" >> ${LOG_FILE}
 for i in ${PASS_1_FILES}; do
 	if ! ${XMLLINT} --schema ${XSD_FILE} --noout $i &>/dev/null ; then
 		echo $i >> ${LOG_FILE}
+	fi
+done
+echo "" >> ${LOG_FILE}
+
+
+
+echo "=== Without schema ===" >> ${LOG_FILE}
+echo "" >> ${LOG_FILE}
+
+echo "==== ${SPIFF_CHECK} ====" >> ${LOG_FILE}
+echo "" >> ${LOG_FILE}
+
+echo "===== Should have failed =====" >> ${LOG_FILE}
+for i in ${FAIL_1_FILES}; do
+	OUTPUT=`cat $i | ${SPIFF_CHECK} -`
+	if [ "${OUTPUT}" == "Valid XSPF-1." ]; then
+		echo $i
+	fi
+done
+echo "" >> ${LOG_FILE}
+
+echo "===== Should have passed =====" >> ${LOG_FILE}
+for i in ${PASS_1_FILES}; do
+	OUTPUT=`cat $i | ${SPIFF_CHECK} -`
+	if [ "${OUTPUT}" != "Valid XSPF-1." ]; then
+		echo $i
 	fi
 done
 echo "" >> ${LOG_FILE}
