@@ -1,7 +1,15 @@
+-------------------------------------------------------------------------------
+--  Description: Do the iDCTSlow job.
+-------------------------------------------------------------------------------
+
 library std;
 library ieee;
+library work;
+
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use work.all;
+
 
 entity IDctSlow is
   port (Clk,
@@ -20,6 +28,24 @@ end entity IDctSlow;
 
 
 architecture rtl of IDctSlow is
+  component dual_syncram
+    generic (
+      DEPTH : positive := 64;             -- How many slots
+      DATA_WIDTH : positive := 16;        -- How many bits per slot
+      ADDR_WIDTH : positive := 6          -- = ceil(log2(DEPTH))
+      );
+    port (
+      clk : in std_logic;
+      wr_e  : in std_logic;
+      wr_addr : in unsigned(ADDR_WIDTH-1 downto 0);
+      wr_data : in signed(DATA_WIDTH-1 downto 0);
+      rd1_addr : in unsigned(ADDR_WIDTH-1 downto 0);
+      rd1_data : out signed(DATA_WIDTH-1 downto 0);
+      rd2_addr : in unsigned(ADDR_WIDTH-1 downto 0);
+      rd2_data : out signed(DATA_WIDTH-1 downto 0)
+      );
+  end component;
+
   
   subtype ogg_int_16_t is signed(15 downto 0);
   subtype ogg_int_32_t is signed(31 downto 0);
@@ -92,7 +118,7 @@ architecture rtl of IDctSlow is
 begin
   
   -- Data matrix 8 x 8 x 16 bits
-  mem : entity work.dual_syncram
+  mem : dual_syncram
      generic map( DEPTH => 64, DATA_WIDTH => 16, ADDR_WIDTH => 6 )
      port map(clk, mem_we, mem_waddr, mem_wdata, mem_raddr1, mem_rdata1, mem_raddr2, mem_rdata2 );
   
@@ -292,30 +318,31 @@ begin
     
     
   begin
-    if( Reset_n = '0' ) then
-       state <= readIn;
-       idct_state <= idct_st1;
-       wout_state <= wout_st1;
-       s_in_request <= '0';
-       count <= 0;
-       s_out_valid <= '0';
-       row_loop <= '1';
-       mem_we <= '0';
+    
+    if(clk'event and clk = '1') then
+      if( Reset_n = '0' ) then
+        state <= readIn;
+        idct_state <= idct_st1;
+        wout_state <= wout_st1;
+        s_in_request <= '0';
+        count <= 0;
+        s_out_valid <= '0';
+        row_loop <= '1';
+        mem_we <= '0';
 
-       mem_waddr <= "000000";
-       mem_wdata <= "0000000000000000";
-       mem_raddr1 <= "000000";
-       mem_raddr2 <= "000000";
-       
-     elsif(clk'event and clk = '1') then
-       mem_we <= '0';
-       case state is
-         when readIn => ReadIn;
-         when idct => Idct;
-         when writeOut => WriteOut;
-         when others => ReadIn; state <= readIn;
-       end case;  
-
+        mem_waddr <= "000000";
+        mem_wdata <= "0000000000000000";
+        mem_raddr1 <= "000000";
+        mem_raddr2 <= "000000";
+      else
+        mem_we <= '0';
+        case state is
+          when readIn => ReadIn;
+          when idct => Idct;
+          when writeOut => WriteOut;
+          when others => ReadIn; state <= readIn;
+        end case;  
+      end if;
      end if;
   end process;
 

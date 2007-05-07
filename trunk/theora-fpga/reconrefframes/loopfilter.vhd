@@ -1,11 +1,15 @@
--- display_fragments memory depth      : ((height/8)*(width/8)*3/2)/4
--- recon_pixel_index_table memory depth: (height/8)*(width/8)*3/2*4
--- FiltBoundingValues memory depth     : 512
--- LastFrameRecon  memory depth        : (3/2*(width + 2*16)*(height + 2*16))/4
+-------------------------------------------------------------------------------
+--  Description: This file implements the loopfilter. A filter that do
+--               a deblocking on the fragments.
+-------------------------------------------------------------------------------
 library std;
 library ieee;
+library work;
+  
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use work.all;
+
 
 entity LoopFilter is
 
@@ -32,6 +36,44 @@ entity LoopFilter is
 end LoopFilter;
 
 architecture a_LoopFilter of LoopFilter is
+  component syncram
+    generic (
+      DEPTH : positive := 64;             -- How many slots
+      DATA_WIDTH : positive := 16;        -- How many bits per slot
+      ADDR_WIDTH : positive := 6          -- = ceil(log2(DEPTH))
+      );
+    port (
+      clk : in std_logic;
+      wr_e  : in std_logic;
+      wr_addr : in unsigned(ADDR_WIDTH-1 downto 0);
+      wr_data : in signed(DATA_WIDTH-1 downto 0);
+      rd_addr : in unsigned(ADDR_WIDTH-1 downto 0);
+      rd_data : out signed(DATA_WIDTH-1 downto 0)
+      );
+  end component;
+
+  component ReconPixelIndex
+    port (Clk,
+          Reset_n       : in  std_logic;
+          
+          in_request    : out std_logic;
+          in_valid      : in  std_logic;
+          in_data       : in  signed(31 downto 0);
+          
+          out_requested : in  std_logic;
+          out_valid     : out std_logic;
+          out_data      : out signed(31 downto 0)
+          );
+  end component;
+
+  component LFLimits
+    port (
+      parameter : in  unsigned(8 downto 0);
+      FLimit    : in  signed(8 downto 0);
+      fbv_value : out signed(9 downto 0));
+  end component;
+
+  
   -- We are using 1024 as the maximum width and height size
   -- = ceil(log2(Maximum Size))
   constant LG_MAX_SIZE    : natural := 10;
@@ -63,11 +105,20 @@ architecture a_LoopFilter of LoopFilter is
   signal fbv_position  : unsigned(8 downto 0);
   signal fbv_value     : signed(9 downto 0);
 
--- ReconPixelIndex signal
+-- ReconPixelIndex signals and constants
   constant RPI_DATA_WIDTH : positive := 32;
   constant RPI_POS_WIDTH : positive := 17;
   signal rpi_position : unsigned(RPI_POS_WIDTH-1 downto 0);
   signal rpi_value    : signed(RPI_DATA_WIDTH-1 downto 0);
+
+  signal s_rpi_in_request    : std_logic;
+  signal s_rpi_in_valid      : std_logic;
+  signal s_rpi_in_data       : signed(31 downto 0);
+        
+  signal s_rpi_out_requested : std_logic;
+  signal s_rpi_out_valid     : std_logic;
+  signal s_rpi_out_data      : signed(31 downto 0);
+
   
 -- Memories
   signal LoopFilterLimits : mem_64_8bits_t;
@@ -118,9 +169,14 @@ architecture a_LoopFilter of LoopFilter is
                         stt_SelectColor, stt_ApplyFilter,
                         stt_CalcDispFragPos,
                         stt_CallFilterHoriz, stt_CalcFilterHoriz,
-                        stt_CallFilterVert, stt_CalcFilterVert);
+                        stt_CallFilterVert, stt_CalcFilterVert,
+                        stt_Calc_RPI_Value);
   signal proc_state : proc_state_t;
   signal back_proc_state : proc_state_t;
+  signal next_proc_state : proc_state_t;
+
+  type calc_rpi_state_t is (stt_calc_rpi1, stt_calc_rpi2);
+  signal calc_rpi_state : calc_rpi_state_t;
 
   type set_bound_val_state_t is (stt_SetBVal1, stt_SetBVal2, stt_SetBVal3, stt_SetBVal4);
   signal set_bound_val_state : set_bound_val_state_t;
@@ -146,7 +202,7 @@ architecture a_LoopFilter of LoopFilter is
                                 stt_ApplyFilter_27, stt_ApplyFilter_28,
                                 stt_ApplyFilter_29, stt_ApplyFilter_30,
                                 stt_ApplyFilter_31, stt_ApplyFilter_32,
-                                stt_ApplyFilter_33);
+                                stt_ApplyFilter_33, stt_ApplyFilter_34);
   signal apply_filter_state : apply_filter_state_t;
   signal next_apply_filter_state : apply_filter_state_t;
 
@@ -162,6 +218,7 @@ architecture a_LoopFilter of LoopFilter is
                               stt_DispFrag17, stt_DispFrag18,
                               stt_DispFrag19, stt_DispFrag20,
                               stt_DispFrag21, stt_DispFrag22);
+                              
   signal disp_frag_state : disp_frag_state_t;
   signal next_disp_frag_state : disp_frag_state_t;
 
@@ -171,7 +228,7 @@ architecture a_LoopFilter of LoopFilter is
   signal calc_disp_frag_state : calc_disp_frag_state_t;
   
 -- Handshake
-  signal count : integer;
+  signal count : integer range 0 to 2097151;
   
   signal s_in_request : std_logic;
 
@@ -213,6 +270,14 @@ architecture a_LoopFilter of LoopFilter is
   signal dpf_rd_addr : unsigned(DPF_ADDR_WIDTH-1 downto 0);
   signal dpf_rd_data : signed(DPF_DATA_WIDTH-1 downto 0);
 
+  
+--   signal T_Pixel1 : ogg_int32_t;
+--   signal T_Pixel2 : ogg_int32_t;
+
+--   signal applyfilter_states : integer;
+--   signal dispfragstates_states : integer;
+
+  
 begin  -- a_LoopFilter
 
   in_request <= s_in_request;
@@ -220,22 +285,53 @@ begin  -- a_LoopFilter
   out_sem_valid <= s_out_sem_valid;
   out_done <= s_out_done;
 
-  mem_64_int32: entity work.syncram
+  mem_64_int32: syncram
     generic map (QTT_DEPTH, QTT_DATA_WIDTH, QTT_ADDR_WIDTH)
     port map (clk, qtt_wr_e, qtt_wr_addr, qtt_wr_data, qtt_rd_addr, qtt_rd_data);
 
-  mem_512_int32_1: entity work.syncram
+  mem_512_int32_1: syncram
     generic map (DPF_DEPTH, DPF_DATA_WIDTH, DPF_ADDR_WIDTH)
     port map (clk, dpf_wr_e, dpf_wr_addr, dpf_wr_data, dpf_rd_addr, dpf_rd_data);
 
-  lflimits0: entity work.lflimits
+  lflimits0: lflimits
     port map (fbv_position, FLimit, fbv_value);
 
-  rpi0: entity work.reconpixelindex
-    generic map (17, 8, 12, 11, 21, 19, 20, 20)
-    port map (rpi_position, HFragments, VFragments, YStride, UVStride,
-              YPlaneFragments, UVPlaneFragments, ReconYDataOffset,
-              ReconUDataOffset, ReconVDataOffset, rpi_value);
+  rpi0: reconpixelindex
+    port map (Clk => Clk,
+              Reset_n => Reset_n,
+              in_request => s_rpi_out_requested,
+              in_valid => s_rpi_out_valid,
+              in_data => s_rpi_out_data,
+
+              out_requested => s_rpi_in_request,
+              out_valid => s_rpi_in_valid,
+              out_data => s_rpi_in_data);
+
+
+  RPI_HandShake: process (count, in_data, in_valid,
+                          state, read_state, proc_state,
+                          calc_rpi_state, rpi_position,
+                          s_in_request)
+  begin  -- process RPI_HandShake
+    s_rpi_out_data <= x"00000000";
+    s_rpi_out_valid <= '0';
+    if (s_in_request = '1') then
+      if (state = readIn and read_state = stt_32bitsData) then
+        if (count >=0 and count <=8) then
+          s_rpi_out_data <= in_data;
+          s_rpi_out_valid <= in_valid;
+        end if;
+      end if;
+    else
+      if (state = proc and
+          proc_state = stt_Calc_RPI_Value and
+          calc_rpi_state = stt_calc_rpi1) then
+        s_rpi_out_data <= resize(signed('0'&rpi_position), 32);
+        s_rpi_out_valid <= '1';
+      end if;
+    end if;
+  end process RPI_HandShake;
+
   
   process (clk)
 -------------------------------------------------------------------------------
@@ -243,6 +339,7 @@ begin  -- a_LoopFilter
 -------------------------------------------------------------------------------
     procedure Read32bitsData is
     begin
+--      assert false report "in_data = "&integer'image(to_integer(in_data)) severity note;
       if (count = 0) then
         HFragments <= unsigned(in_data(LG_MAX_SIZE-3 downto 0));
         count <= count + 1;
@@ -271,6 +368,7 @@ begin  -- a_LoopFilter
         ReconVDataOffset <= unsigned(in_data(MEM_ADDR_WIDTH-1 downto 0));
         count <= count + 1;
       else
+        assert false report "UnitFragments = "&integer'image(to_integer(in_data)) severity note;
         UnitFragmets <= unsigned(in_data(LG_MAX_SIZE*2 downto 0));
 
         MaxDPFCount <= SHIFT_RIGHT(
@@ -284,6 +382,10 @@ begin  -- a_LoopFilter
       end if;
     end procedure Read32bitsData;
 
+-------------------------------------------------------------------------------
+-- Procedure that receives the QThreashTable matrice and keep the data
+-- in a SRAM memory
+-------------------------------------------------------------------------------    
     procedure QThreTab is
     begin
       qtt_wr_e <= '1';
@@ -302,6 +404,10 @@ begin  -- a_LoopFilter
       end if;
     end procedure QThreTab;
 
+-------------------------------------------------------------------------------
+-- Procedure that receives the loop filter limits values and keep the data
+-- in an internal memory
+-------------------------------------------------------------------------------    
     procedure LfLim is
     begin
       qtt_wr_e <= '0';
@@ -318,7 +424,10 @@ begin  -- a_LoopFilter
       end if;
     end procedure LfLim;
 
- 
+-------------------------------------------------------------------------------
+-- Procedure that receives the display fragments matrice and keep the data
+-- in a SRAM memory
+-------------------------------------------------------------------------------    
     procedure DispFrag is
     begin
       dpf_wr_e <= '1';
@@ -335,12 +444,13 @@ begin  -- a_LoopFilter
       end if;
     end procedure DispFrag;
 
-
+-------------------------------------------------------------------------------
+-- Procedure that receives the ThisFrameQualityValue and the Last Reconstructed
+-- Frame offset
+-------------------------------------------------------------------------------    
     procedure ReadOthers is
     begin
-      dpf_wr_e <= '0';
       if (count = 0) then
---        assert false report "lf.ThisFrameQualityValue = "&integer'image(to_integer(in_data)) severity note;
         ThisFrameQualityValue <= in_data;
         count <= count + 1;
       else
@@ -354,7 +464,9 @@ begin  -- a_LoopFilter
       end if;
     end procedure ReadOthers;
     
-    
+-------------------------------------------------------------------------------
+-- Procedure that controls the read state machine
+-------------------------------------------------------------------------------    
     procedure ReadIn is
     begin
       s_out_done <= '0';
@@ -374,9 +486,9 @@ begin  -- a_LoopFilter
       end if;
     end procedure ReadIn;
     
-    -- *****************************************************
-    -- Procedures called when state is proc
-    -- *****************************************************
+-- *****************************************************
+-- Procedures called when state is proc
+-- *****************************************************
 
     procedure ReadMemory is
     begin
@@ -400,6 +512,33 @@ begin  -- a_LoopFilter
       end if;
     end procedure WriteMemory;
 
+    procedure CalcRPIValue is
+    begin
+      case calc_rpi_state is
+        when stt_calc_rpi1 =>
+          -- Wait until ReconPixelIndex can receive the data
+          if (s_rpi_out_requested = '1') then
+            calc_rpi_state <= stt_calc_rpi2;
+          end if;
+
+
+        when others =>
+          -- Wait until ReconPixelIndex returns the value
+          s_rpi_in_request <= '1';
+          if (s_rpi_in_request = '1' and s_rpi_in_valid = '1') then
+            rpi_value <= s_rpi_in_data;
+            s_rpi_in_request <= '0';
+            proc_state <= next_proc_state;
+          end if;
+      end case;
+    end procedure CalcRPIValue;
+    
+-------------------------------------------------------------------------------
+-- Initialize QIndex with 63.
+-- For each element i of qtt in decreasing order, if i >= ThisFrameQualityValue
+-- then stop, else subtract one of the QIndex and read the i-1 element of qtt,
+-- until QIndex = 0
+-------------------------------------------------------------------------------    
     procedure FindQIndex is
     begin
       if (count = 0) then
@@ -421,10 +560,13 @@ begin  -- a_LoopFilter
       end if;
     end procedure FindQIndex;
 
+-------------------------------------------------------------------------------
+-- If LoopFilterLimits[QIndex] is not zero do the loopfiltering in the frame.
+-- The next procedure is SelectColor
+-------------------------------------------------------------------------------
     procedure CalcFLimit is
     begin
       if (LoopFilterLimits(to_integer(QIndex)) /= "00000000000000000000000000000000") then
-
         proc_state <= stt_SelectColor;
         FLimit <= '0' & signed(LoopFilterLimits(to_integer(QIndex)));
       else
@@ -440,6 +582,9 @@ begin  -- a_LoopFilter
       end if;      
     end procedure CalcFLimit;
 
+-------------------------------------------------------------------------------
+-- Adjust some parameters according the plane of color
+-------------------------------------------------------------------------------    
     procedure SelectColor is
     begin
       if (pli = "00") then
@@ -449,7 +594,9 @@ begin  -- a_LoopFilter
         FragsDown <= VFragments;
         Fragment <= "000000000000000000000";
         proc_state <= stt_ApplyFilter;
+        disp_frag_state <= stt_DispFrag1;
         pli <= pli + 1;
+
       elsif (pli = "01") then
 
         FragsAcross <= SHIFT_RIGHT(HFragments, 1);
@@ -458,7 +605,9 @@ begin  -- a_LoopFilter
         FragsDown <= SHIFT_RIGHT(VFragments, 1);
         Fragment <= YPlaneFragments;
         proc_state <= stt_ApplyFilter;
+        disp_frag_state <= stt_DispFrag1;
         pli <= pli + 1;
+        
       elsif (pli = "10") then
 
         FragsAcross <= SHIFT_RIGHT(HFragments, 1);
@@ -467,9 +616,10 @@ begin  -- a_LoopFilter
         FragsDown <= SHIFT_RIGHT(VFragments, 1);
         Fragment <= YPlaneFragments + UVPlaneFragments;
         proc_state <= stt_ApplyFilter;
+        disp_frag_state <= stt_DispFrag1;
         pli <= pli + 1;
       else
---        assert false report "SelectColor 4" severity note;
+        assert false report "SelectColor 4" severity note;
         pli <= "00";
         count <= 0;
         s_out_done <= '1';
@@ -551,7 +701,8 @@ begin  -- a_LoopFilter
         
         Pixel1 := NULL_24bits &
                   signed(Pixel(1)) + fbv_value;
-
+--        T_Pixel1 <= Pixel1;
+        
         out_sem_addr <= lfr_OffSet +
                         resize(
                           SHIFT_RIGHT(
@@ -598,6 +749,8 @@ begin  -- a_LoopFilter
         Pixel2 := NULL_24bits &
                   signed(Pixel(2)) - fbv_value;
 
+--        T_Pixel2 <= Pixel2;
+        
         out_sem_addr <= lfr_OffSet +
                         resize(
                           SHIFT_RIGHT(
@@ -749,7 +902,7 @@ begin  -- a_LoopFilter
 
         Pixel1 := (NULL_24bits &
                    signed(Pixel(1))) + fbv_value;
-
+--        T_Pixel1 <= Pixel1;
         out_sem_addr <= lfr_OffSet +
                         resize(
                           SHIFT_RIGHT(
@@ -796,8 +949,8 @@ begin  -- a_LoopFilter
 
         Pixel2 := (NULL_24bits &
                    signed(Pixel(2))) - fbv_value;
-
-
+--        T_Pixel2 <= Pixel2;
+        
         out_sem_addr <= lfr_OffSet +
                         resize(
                           SHIFT_RIGHT(
@@ -875,7 +1028,9 @@ begin  -- a_LoopFilter
     procedure ApplyFilter is
       variable NextFragment : unsigned(LG_MAX_SIZE*2 downto 0);
     begin
+
       if (apply_filter_state = stt_ApplyFilter_1) then
+--        applyfilter_states <= 1;
         -- ******************************************************
         -- First Row
         -- ******************************************************
@@ -883,6 +1038,7 @@ begin  -- a_LoopFilter
         -- only do 2 prediction if fragment coded and on non intra
         -- or if all fragments are intra
         if (disp_frag_state = stt_DispFrag1) then
+--          dispfragstates_states <= 1;
           -- dpf_rd_addr <= resize(SHIFT_RIGHT(Fragment,5),  DPF_ADDR_WIDTH);
           dpf_rd_addr <= Fragment((4+DPF_ADDR_WIDTH) downto 5);
           dpf_position <= Fragment;
@@ -891,31 +1047,43 @@ begin  -- a_LoopFilter
           next_disp_frag_state <= stt_DispFrag2;
         else
           if (disp_frag_value = '1') then
-            -- Filter right hand border only if the block to the right
-            -- is not coded
-            if (disp_frag_state = stt_DispFrag2) then
-              NextFragment := Fragment + 1;
-              dpf_rd_addr <= NextFragment((4+DPF_ADDR_WIDTH) downto 5);
-              dpf_position <= Fragment + 1;
-              proc_state <= stt_CalcDispFragPos;
-              next_apply_filter_state <= stt_ApplyFilter_1;
-              next_disp_frag_state <= stt_DispFrag3;
-            else
-              if (disp_frag_value = '0') then
-                rpi_position <= resize(Fragment, RPI_POS_WIDTH);
-                DeltaHorizFilter <= x"6";
-                proc_state <= stt_CallFilterHoriz;
-                next_apply_filter_state <= stt_ApplyFilter_2;
-              else
-                apply_filter_state <= stt_ApplyFilter_2;
-              end if;
-            end if;
+            apply_filter_state <= stt_ApplyFilter_34;
           else
             apply_filter_state <= stt_ApplyFilter_3;
           end if;
         end if;
         
+      elsif (apply_filter_state = stt_ApplyFilter_34) then
+--        applyfilter_states <= 34;
+        -- Filter right hand border only if the block to the right
+        -- is not coded
+        if (disp_frag_state = stt_DispFrag2) then
+--          dispfragstates_states <= 2;
+          NextFragment := Fragment + 1;
+          dpf_rd_addr <= NextFragment((4+DPF_ADDR_WIDTH) downto 5);
+          dpf_position <= Fragment + 1;
+          proc_state <= stt_CalcDispFragPos;
+          next_apply_filter_state <= stt_ApplyFilter_34;
+          next_disp_frag_state <= stt_DispFrag3;
+        else
+          if (disp_frag_value = '0') then
+            rpi_position <= resize(Fragment, RPI_POS_WIDTH);
+            -- Horizontal Filter Parameter
+            DeltaHorizFilter <= x"6";
+
+            -- Calculate RPI_Value before continue
+            proc_state <= stt_Calc_RPI_Value;
+            calc_rpi_state <= stt_calc_rpi1;
+            -- Next state after RPI_Value calculation
+            next_proc_state <= stt_CallFilterHoriz;
+            next_apply_filter_state <= stt_ApplyFilter_2;
+          else
+            apply_filter_state <= stt_ApplyFilter_2;
+          end if;
+        end if;
+  
       elsif (apply_filter_state = stt_ApplyFilter_2) then
+--        applyfilter_states <= 2;
         -- Bottom done if next row set
         if (disp_frag_state = stt_DispFrag3) then
           NextFragment := Fragment + LineFragments;
@@ -927,7 +1095,12 @@ begin  -- a_LoopFilter
         else
           if (disp_frag_value = '0') then
             rpi_position <= resize(Fragment +  LineFragments, RPI_POS_WIDTH);
-            proc_state <= stt_CallFilterVert;
+
+            -- Calculate RPI_Value before continue
+            proc_state <= stt_Calc_RPI_Value;
+            calc_rpi_state <= stt_calc_rpi1;
+            -- Next state after RPI_Value calculation
+            next_proc_state <= stt_CallFilterVert;
             next_apply_filter_state <= stt_ApplyFilter_3;
           else
             apply_filter_state <= stt_ApplyFilter_3;
@@ -935,7 +1108,7 @@ begin  -- a_LoopFilter
         end if;
         
       elsif (apply_filter_state = stt_ApplyFilter_3) then
-
+--        applyfilter_states <= 3;
         Fragment <= Fragment + 1;
         CountMiddles <= '0' & x"00001";
         apply_filter_state <= stt_ApplyFilter_4;
@@ -959,8 +1132,15 @@ begin  -- a_LoopFilter
             if (disp_frag_value = '1') then
               -- Filter Left edge always
               rpi_position <= resize(Fragment, RPI_POS_WIDTH);
+              -- Horizontal Filter Parameter
               DeltaHorizFilter <= x"E";
-              proc_state <= stt_CallFilterHoriz;
+              
+              -- Calculate RPI_Value before continue
+              proc_state <= stt_Calc_RPI_Value;
+              calc_rpi_state <= stt_calc_rpi1;
+              -- Next state after RPI_Value calculation
+              next_proc_state <= stt_CallFilterHoriz;
+              
               next_apply_filter_state <= stt_ApplyFilter_5;
             else
               apply_filter_state <= stt_ApplyFilter_7;  -- Increment CountMiddles
@@ -993,8 +1173,14 @@ begin  -- a_LoopFilter
             -- Filter right hand border only if the block to the right is
             -- not coded
             rpi_position <= resize(Fragment, RPI_POS_WIDTH);
+            -- Horizontal Filter Parameter
             DeltaHorizFilter <= x"6";
-            proc_state <= stt_CallFilterHoriz;
+
+            -- Calculate RPI_Value before continue
+            proc_state <= stt_Calc_RPI_Value;
+            calc_rpi_state <= stt_calc_rpi1;
+            -- Next state after RPI_Value calculation
+            next_proc_state <= stt_CallFilterHoriz;
             next_apply_filter_state <= stt_ApplyFilter_6;
 
           else
@@ -1021,7 +1207,12 @@ begin  -- a_LoopFilter
 
             -- Bottom done if next row set
             rpi_position <= resize(Fragment + LineFragments, RPI_POS_WIDTH);
-            proc_state <= stt_CallFilterVert;
+
+            -- Calculate RPI_Value before continue
+            proc_state <= stt_Calc_RPI_Value;
+            calc_rpi_state <= stt_calc_rpi1;
+            -- Next state after RPI_Value calculation
+            next_proc_state <= stt_CallFilterVert;
             next_apply_filter_state <= stt_ApplyFilter_7;
           else
             apply_filter_state <= stt_ApplyFilter_7;
@@ -1054,8 +1245,14 @@ begin  -- a_LoopFilter
           if (disp_frag_value = '1') then
             -- Filter Left edge always
             rpi_position <= resize(Fragment, RPI_POS_WIDTH);
+            -- Horizontal Filter Parameter
             DeltaHorizFilter <= x"E";
-            proc_state <= stt_CallFilterHoriz;
+
+            -- Calculate RPI_Value before continue
+            proc_state <= stt_Calc_RPI_Value;
+            calc_rpi_state <= stt_calc_rpi1;
+            -- Next state after RPI_Value calculation
+            next_proc_state <= stt_CallFilterHoriz;
             next_apply_filter_state <= stt_ApplyFilter_9;
           else
             apply_filter_state <= stt_ApplyFilter_10;
@@ -1077,7 +1274,12 @@ begin  -- a_LoopFilter
           if (disp_frag_value = '0') then
             -- Bottom done if next row set
             rpi_position <= resize(Fragment + LineFragments, RPI_POS_WIDTH);
-            proc_state <= stt_CallFilterVert;
+
+            -- Calculate RPI_Value before continue
+            proc_state <= stt_Calc_RPI_Value;
+            calc_rpi_state <= stt_calc_rpi1;
+            -- Next state after RPI_Value calculation
+            next_proc_state <= stt_CallFilterVert;
             next_apply_filter_state <= stt_ApplyFilter_10;
           else
             apply_filter_state <= stt_ApplyFilter_10;
@@ -1112,7 +1314,12 @@ begin  -- a_LoopFilter
             if (disp_frag_value = '1') then
               -- TopRow is always done
               rpi_position <= resize(Fragment, RPI_POS_WIDTH);
-              proc_state <= stt_CallFilterVert;
+
+              -- Calculate RPI_Value before continue
+              proc_state <= stt_Calc_RPI_Value;
+              calc_rpi_state <= stt_calc_rpi1;
+              -- Next state after RPI_Value calculation
+              next_proc_state <= stt_CallFilterVert;
               next_apply_filter_state <= stt_ApplyFilter_12;
             else
               apply_filter_state <= stt_ApplyFilter_14;  -- Do middle columns
@@ -1142,8 +1349,14 @@ begin  -- a_LoopFilter
             -- Filter right hand border only if the block to the right is
             -- not coded
             rpi_position <= resize(Fragment, RPI_POS_WIDTH);
+            -- Horizontal Filter Parameter
             DeltaHorizFilter <= x"6";
-            proc_state <= stt_CallFilterHoriz;
+
+            -- Calculate RPI_Value before continue
+            proc_state <= stt_Calc_RPI_Value;
+            calc_rpi_state <= stt_calc_rpi1;
+            -- Next state after RPI_Value calculation
+            next_proc_state <= stt_CallFilterHoriz;
             next_apply_filter_state <= stt_ApplyFilter_13;
           else
             apply_filter_state <= stt_ApplyFilter_13;
@@ -1167,7 +1380,12 @@ begin  -- a_LoopFilter
           if (disp_frag_value = '0') then
             -- Bottom done if next row set
             rpi_position <= resize(Fragment + LineFragments, RPI_POS_WIDTH);
-            proc_state <= stt_CallFilterVert;
+
+            -- Calculate RPI_Value before continue
+            proc_state <= stt_Calc_RPI_Value;
+            calc_rpi_state <= stt_calc_rpi1;
+            -- Next state after RPI_Value calculation
+            next_proc_state <= stt_CallFilterVert;
             next_apply_filter_state <= stt_ApplyFilter_14;
           else
             apply_filter_state <= stt_ApplyFilter_14;
@@ -1200,8 +1418,14 @@ begin  -- a_LoopFilter
             if (disp_frag_value = '1') then
               -- Filter Left edge always
               rpi_position <= resize(Fragment, RPI_POS_WIDTH);
+              -- Horizontal Filter Parameter
               DeltaHorizFilter <= x"E";
-              proc_state <= stt_CallFilterHoriz;
+
+              -- Calculate RPI_Value before continue
+              proc_state <= stt_Calc_RPI_Value;
+              calc_rpi_state <= stt_calc_rpi1;
+              -- Next state after RPI_Value calculation
+              next_proc_state <= stt_CallFilterHoriz;
               next_apply_filter_state <= stt_ApplyFilter_16;
             else
               apply_filter_state <= stt_ApplyFilter_19;  -- Increment CountMidCols
@@ -1222,7 +1446,12 @@ begin  -- a_LoopFilter
         
         -- TopRow is always done
         rpi_position <= resize(Fragment, RPI_POS_WIDTH);
-        proc_state <= stt_CallFilterVert;
+
+        -- Calculate RPI_Value before continue
+        proc_state <= stt_Calc_RPI_Value;
+        calc_rpi_state <= stt_calc_rpi1;
+        -- Next state after RPI_Value calculation
+        next_proc_state <= stt_CallFilterVert;
         next_apply_filter_state <= stt_ApplyFilter_17;
 
 
@@ -1244,8 +1473,14 @@ begin  -- a_LoopFilter
         else
           if (disp_frag_value = '0') then
             rpi_position <= resize(Fragment, RPI_POS_WIDTH);
+            -- Horizontal Filter Parameter
             DeltaHorizFilter <= x"6";
-            proc_state <= stt_CallFilterHoriz;
+
+            -- Calculate RPI_Value before continue
+            proc_state <= stt_Calc_RPI_Value;
+            calc_rpi_state <= stt_calc_rpi1;
+            -- Next state after RPI_Value calculation
+            next_proc_state <= stt_CallFilterHoriz;
             next_apply_filter_state <= stt_ApplyFilter_18;
           else
             apply_filter_state <= stt_ApplyFilter_18;
@@ -1269,7 +1504,12 @@ begin  -- a_LoopFilter
         else
           if (disp_frag_value = '0') then
             rpi_position <= resize(Fragment + LineFragments, RPI_POS_WIDTH);
-            proc_state <= stt_CallFilterVert;
+
+            -- Calculate RPI_Value before continue
+            proc_state <= stt_Calc_RPI_Value;
+            calc_rpi_state <= stt_calc_rpi1;
+            -- Next state after RPI_Value calculation
+            next_proc_state <= stt_CallFilterVert;
             next_apply_filter_state <= stt_ApplyFilter_19;
           else
             apply_filter_state <= stt_ApplyFilter_19;
@@ -1298,8 +1538,14 @@ begin  -- a_LoopFilter
           if (disp_frag_value = '1') then
             -- Filter Left edge always
             rpi_position <= resize(Fragment, RPI_POS_WIDTH);
+            -- Horizontal Filter Parameter
             DeltaHorizFilter <= x"E";
-            proc_state <= stt_CallFilterHoriz;
+
+            -- Calculate RPI_Value before continue
+            proc_state <= stt_Calc_RPI_Value;
+            calc_rpi_state <= stt_calc_rpi1;
+            -- Next state after RPI_Value calculation
+            next_proc_state <= stt_CallFilterHoriz;
             next_apply_filter_state <= stt_ApplyFilter_21;
           else
             apply_filter_state <= stt_ApplyFilter_23;
@@ -1312,7 +1558,12 @@ begin  -- a_LoopFilter
 
         -- TopRow is always done
         rpi_position <= resize(Fragment, RPI_POS_WIDTH);
-        proc_state <= stt_CallFilterVert;
+
+        -- Calculate RPI_Value before continue
+        proc_state <= stt_Calc_RPI_Value;
+        calc_rpi_state <= stt_calc_rpi1;
+        -- Next state after RPI_Value calculation
+        next_proc_state <= stt_CallFilterVert;
         next_apply_filter_state <= stt_ApplyFilter_22;
 
         
@@ -1333,7 +1584,12 @@ begin  -- a_LoopFilter
 
           if (disp_frag_value = '0') then
             rpi_position <= resize(Fragment + LineFragments, RPI_POS_WIDTH);
-            proc_state <= stt_CallFilterVert;
+
+            -- Calculate RPI_Value before continue
+            proc_state <= stt_Calc_RPI_Value;
+            calc_rpi_state <= stt_calc_rpi1;
+            -- Next state after RPI_Value calculation
+            next_proc_state <= stt_CallFilterVert;
             next_apply_filter_state <= stt_ApplyFilter_23;
           else
             apply_filter_state <= stt_ApplyFilter_23;
@@ -1367,7 +1623,12 @@ begin  -- a_LoopFilter
           if (disp_frag_value = '1') then
             -- TopRow is always done
             rpi_position <= resize(Fragment, RPI_POS_WIDTH);
-            proc_state <= stt_CallFilterVert;
+
+            -- Calculate RPI_Value before continue
+            proc_state <= stt_Calc_RPI_Value;
+            calc_rpi_state <= stt_calc_rpi1;
+            -- Next state after RPI_Value calculation
+            next_proc_state <= stt_CallFilterVert;
             next_apply_filter_state <= stt_ApplyFilter_25;
           else
             apply_filter_state <= stt_ApplyFilter_26;
@@ -1391,8 +1652,14 @@ begin  -- a_LoopFilter
 
           if (disp_frag_value = '0') then
             rpi_position <= resize(Fragment, RPI_POS_WIDTH);
+            -- Horizontal Filter Parameter
             DeltaHorizFilter <= x"6";
-            proc_state <= stt_CallFilterHoriz;
+
+            -- Calculate RPI_Value before continue
+            proc_state <= stt_Calc_RPI_Value;
+            calc_rpi_state <= stt_calc_rpi1;
+            -- Next state after RPI_Value calculation
+            next_proc_state <= stt_CallFilterHoriz;
             next_apply_filter_state <= stt_ApplyFilter_26;
           else
             apply_filter_state <= stt_ApplyFilter_26;
@@ -1420,9 +1687,15 @@ begin  -- a_LoopFilter
           else
             if (disp_frag_value = '1') then
               -- Filter Left edge always
-              rpi_position <= resize(Fragment, RPI_POS_WIDTH);            
+              rpi_position <= resize(Fragment, RPI_POS_WIDTH);
+              -- Horizontal Filter Parameter
               DeltaHorizFilter <= x"E";
-              proc_state <= stt_CallFilterHoriz;
+
+              -- Calculate RPI_Value before continue
+              proc_state <= stt_Calc_RPI_Value;
+              calc_rpi_state <= stt_calc_rpi1;
+              -- Next state after RPI_Value calculation
+              next_proc_state <= stt_CallFilterHoriz;
               next_apply_filter_state <= stt_ApplyFilter_28;
             else
               apply_filter_state <= stt_ApplyFilter_30;  -- Increment CountMiddles
@@ -1439,7 +1712,12 @@ begin  -- a_LoopFilter
 
         -- TopRow is always done
         rpi_position <= resize(Fragment, RPI_POS_WIDTH);
-        proc_state <= stt_CallFilterVert;
+
+        -- Calculate RPI_Value before continue
+        proc_state <= stt_Calc_RPI_Value;
+        calc_rpi_state <= stt_calc_rpi1;
+        -- Next state after RPI_Value calculation
+        next_proc_state <= stt_CallFilterVert;
         next_apply_filter_state <= stt_ApplyFilter_29;
         
       elsif (apply_filter_state = stt_ApplyFilter_29) then
@@ -1460,8 +1738,14 @@ begin  -- a_LoopFilter
         else
           if (disp_frag_value = '0') then
             rpi_position <= resize(Fragment, RPI_POS_WIDTH);
+            --Horizontal Filter Parameter
             DeltaHorizFilter <= x"6";
-            proc_state <= stt_CallFilterHoriz;
+
+            -- Calculate RPI_Value before continue
+            proc_state <= stt_Calc_RPI_Value;
+            calc_rpi_state <= stt_calc_rpi1;
+            -- Next state after RPI_Value calculation
+            next_proc_state <= stt_CallFilterHoriz;
             next_apply_filter_state <= stt_ApplyFilter_30;
           else
             apply_filter_state <= stt_ApplyFilter_30;
@@ -1493,8 +1777,14 @@ begin  -- a_LoopFilter
           if (disp_frag_value = '1') then
             -- Filter Left edge always
             rpi_position <= resize(Fragment, RPI_POS_WIDTH);
+            -- Horizontal Filter Parameter
             DeltaHorizFilter <= x"E";
-            proc_state <= stt_CallFilterHoriz;
+
+            -- Calculate RPI_Value before continue
+            proc_state <= stt_Calc_RPI_Value;
+            calc_rpi_state <= stt_calc_rpi1;
+            -- Next state after RPI_Value calculation
+            next_proc_state <= stt_CallFilterHoriz;
             next_apply_filter_state <= stt_ApplyFilter_32;
           else
             apply_filter_state <= stt_ApplyFilter_33;
@@ -1507,7 +1797,12 @@ begin  -- a_LoopFilter
 
         -- TopRow is always done
         rpi_position <= resize(Fragment, RPI_POS_WIDTH);
-        proc_state <= stt_CallFilterVert;
+
+        -- Calculate RPI_Value before continue
+        proc_state <= stt_Calc_RPI_Value;
+        calc_rpi_state <= stt_calc_rpi1;
+        -- Next state after RPI_Value calculation
+        next_proc_state <= stt_CallFilterVert;
         next_apply_filter_state <= stt_ApplyFilter_33;
 
 
@@ -1526,6 +1821,7 @@ begin  -- a_LoopFilter
       case proc_state is
         when stt_ReadMemory => ReadMemory;
         when stt_WriteMemory => WriteMemory;
+        when stt_Calc_RPI_Value => CalcRPIValue;
         when stt_FindQIndex => FindQIndex;
         when stt_CalcFLimit => CalcFLimit;
         when stt_SelectColor => SelectColor;
@@ -1540,63 +1836,66 @@ begin  -- a_LoopFilter
     end procedure Proc;
     
   begin  -- process
-    if (Reset_n = '0') then
-      state <= readIn;
-      read_state <= stt_32bitsData;
-      proc_state <= stt_FindQIndex;
-      apply_filter_state <= stt_ApplyFilter_1;
-      calc_filter_state <= stt_CalcFilter1;
 
-      s_in_request <= '0';
-      s_in_sem_request <= '0';
-      count <= 0;
-      pli <=  "00";
-      s_out_sem_valid <= '0';
-      s_out_done <= '0';
+    
+    if (clk'event and clk = '1') then
+      if (Reset_n = '0') then
+        state <= readIn;
+        read_state <= stt_32bitsData;
+        proc_state <= stt_FindQIndex;
+        apply_filter_state <= stt_ApplyFilter_1;
+        calc_filter_state <= stt_CalcFilter1;
+        calc_rpi_state <= stt_calc_rpi1;
+        
+        s_in_request <= '0';
+        s_in_sem_request <= '0';
+        count <= 0;
+        pli <=  "00";
+        s_out_sem_valid <= '0';
+        s_out_done <= '0';
 
-      mem_rd_valid <= '0';
-      
-      CountFilter <= "000";
-      CountColumns <= "000";
-      pixelPtr <= "00000000000000000000";
+        mem_rd_valid <= '0';
+        
+        CountFilter <= "000";
+        CountColumns <= "000";
+        pixelPtr <= "00000000000000000000";
 
-      rpi_position <= '0' & x"0000";
-      HFragments <= x"11";
-      VFragments <= x"00";
-      YStride <= x"000";
-      UVStride <= "000" & x"00";
-      YPlaneFragments <= '0' & x"00000";
-      UVPlaneFragments <= "000" & x"0000";
-      ReconYDataOffset <= x"00000";
-      ReconUDataOffset <= x"00000";
-      ReconVDataOffset <= x"00000";
+        rpi_position <= '0' & x"0000";
+        HFragments <= x"11";
+        VFragments <= x"00";
+        YStride <= x"000";
+        UVStride <= "000" & x"00";
+        YPlaneFragments <= '0' & x"00000";
+        UVPlaneFragments <= "000" & x"0000";
+        ReconYDataOffset <= x"00000";
+        ReconUDataOffset <= x"00000";
+        ReconVDataOffset <= x"00000";
 
 -- FLimits signals initialiation
-      fbv_position <= "000000000";
-      FLimit <= "000000000";
+        fbv_position <= "000000000";
+        FLimit <= "000000000";
 
-      
+        
 -- QThreshTable signal memories
-      qtt_wr_e <= '0';
-      qtt_wr_addr <= "000000";
-      qtt_wr_data <= "00000000000000000000000000000000";
-      qtt_rd_addr <= "000000";
+        qtt_wr_e <= '0';
+        qtt_wr_addr <= "000000";
+        qtt_wr_data <= "00000000000000000000000000000000";
+        qtt_rd_addr <= "000000";
 
 
 --display_fragments signal memories
-      dpf_wr_e <= '0';
-      dpf_wr_addr <= to_unsigned(0, DPF_ADDR_WIDTH);
-      dpf_wr_data <= "00000000000000000000000000000000";
-      dpf_rd_addr <= to_unsigned(0, DPF_ADDR_WIDTH);
-
-      
-    elsif (clk'event and clk = '1') then
-      if (Enable = '1') then
-        case state is
-          when readIn => ReadIn;
-          when proc => Proc;
-          when others => ReadIn; state <= readIn;
-        end case;
+        dpf_wr_e <= '0';
+        dpf_wr_addr <= to_unsigned(0, DPF_ADDR_WIDTH);
+        dpf_wr_data <= "00000000000000000000000000000000";
+        dpf_rd_addr <= to_unsigned(0, DPF_ADDR_WIDTH);
+      else
+        if (Enable = '1') then
+          case state is
+            when readIn => ReadIn;
+            when proc => Proc;
+            when others => ReadIn; state <= readIn;
+          end case;
+        end if;
       end if;
     end if;
   end process;

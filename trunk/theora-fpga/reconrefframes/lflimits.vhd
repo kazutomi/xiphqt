@@ -1,3 +1,8 @@
+-------------------------------------------------------------------------------
+--  Description: This file implements a component that calculate
+--               the filtbounding on-the-fly.
+-------------------------------------------------------------------------------
+
 library std;
 library ieee;
 use ieee.std_logic_1164.all;

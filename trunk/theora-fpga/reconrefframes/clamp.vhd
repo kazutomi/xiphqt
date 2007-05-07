@@ -1,3 +1,9 @@
+-------------------------------------------------------------------------------
+--  Description: If x < 0 then sat receives 0.
+--               If x > 255 then sat receives 255
+--               Else sat receives the eights low-order bits. 
+-------------------------------------------------------------------------------
+
 library std;
 library IEEE;
 use IEEE.numeric_std.all;
