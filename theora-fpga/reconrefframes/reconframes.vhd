@@ -1,7 +1,10 @@
 library std;
 library ieee;
+library work;
+
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use work.all;
 
 entity ReconFrames is
     port (
@@ -28,6 +31,29 @@ entity ReconFrames is
 end ReconFrames;
 
 architecture a_ReconFrames of ReconFrames is
+  component ExpandBlock
+    port (
+      Clk,
+      Reset_n           : in  std_logic;
+      Enable            : in  std_logic;
+      
+      in_request        : out std_logic;
+      in_valid          : in  std_logic;
+      in_data           : in  signed(31 downto 0);
+
+      in_sem_request    : out std_logic;
+      in_sem_valid      : in  std_logic;
+      in_sem_addr       : out unsigned(19 downto 0);
+      in_sem_data       : in  signed(31 downto 0);
+
+      out_sem_requested : in  std_logic;
+      out_sem_valid     : out std_logic;
+      out_sem_addr      : out unsigned(19 downto 0);
+      out_sem_data      : out signed(31 downto 0);
+
+      out_done          : out std_logic);
+  end component;
+
   constant LG_MAX_SIZE    : natural := 10;
   constant MEM_ADDR_WIDTH : natural := 20;
 -------------------------------------------------------------------------------
@@ -59,19 +85,28 @@ architecture a_ReconFrames of ReconFrames is
   signal countExpand : unsigned(LG_MAX_SIZE*2-1 downto 0);
   signal s_in_request : std_logic;
 
-  signal s_in_valid : std_logic;
 -------------------------------------------------------------------------------
 -- States and sub-states
 -------------------------------------------------------------------------------
   type state_t is (stt_Read, stt_Proc);
   signal state : state_t;
   
-  type read_state_t is (stt_read_Others, stt_read_QuantDispFrags);
+  type read_state_t is (stt_read_HFragments,
+                        stt_read_YPlaneFragments,
+                        stt_read_YStride,
+                        stt_read_UVPlaneFragments,
+                        stt_read_UVStride,
+                        stt_read_VFragments,
+                        stt_read_ReconYDataOffset,
+                        stt_read_ReconUDataOffset,
+                        stt_read_ReconVDataOffset,
+                        stt_read_QuantDispFrags,
+                        stt_read_Others);
   signal read_state : read_state_t;
 
 begin  -- a_ReconFrames
 
-  expandblock0: entity work.expandblock
+  expandblock0: expandblock
     port map(clk, reset_n, eb_enable,
              out_eb_request, out_eb_valid, out_eb_data,
              out_eb_DtBuf_request, out_eb_DtBuf_valid, out_eb_DtBuf_addr, out_eb_DtBuf_data,
@@ -95,13 +130,13 @@ begin  -- a_ReconFrames
 -----------------------------------------------------------------------------
   -- Switch the in_request
   -----------------------------------------------------------------------------
-  process(read_state, out_eb_request, in_valid, s_in_valid)
+  process(read_state, out_eb_request, in_valid)
   begin
     s_in_request <= out_eb_request;
     out_eb_valid <= in_valid;
     if (read_state = stt_read_QuantDispFrags) then
       s_in_request <= '1';
-      out_eb_valid <= s_in_valid;
+      out_eb_valid <= '0';
     end if;
   end process;
 
@@ -109,63 +144,98 @@ begin  -- a_ReconFrames
   
   process(clk)
   begin
-    if (Reset_n = '0') then
-      count <= 0;
-      countExpand <= to_unsigned(0, LG_MAX_SIZE*2);
-      eb_enable <= '1';
-      QuantDispFrags <= to_unsigned(0, LG_MAX_SIZE*2);
-      read_state <= stt_read_Others;
-      
-    elsif (clk'event and clk = '1') then
-      out_done <= '0';
-      out_eb_done <= '0';
-      if (Enable = '1') then
-        case state is
+   
+    if (clk'event and clk = '1') then
+      if (Reset_n = '0') then
+        count <= 0;
+        countExpand <= to_unsigned(0, LG_MAX_SIZE*2);
+        eb_enable <= '1';
+        QuantDispFrags <= to_unsigned(0, LG_MAX_SIZE*2);
+        read_state <= stt_read_HFragments;
+      else
+        out_done <= '0';
+        out_eb_done <= '0';
+        if (Enable = '1') then
+          case state is
 
-          when stt_Read =>
+            when stt_Read =>
 
 --            assert false report "rf.in_valid = "&std_logic'image(in_valid) severity note;
 
-            if (s_in_request = '1' and in_valid = '1') then
+              if (s_in_request = '1' and in_valid = '1') then
 --              assert false report "rf.in_data = "&integer'image(to_integer(in_data)) severity note;
-              count <= count + 1;
-              if (count = 8) then
-                read_state <= stt_read_QuantDispFrags;
-                s_in_valid <= '0';
+                count <= count + 1;
+                case read_state is
+                  when stt_read_HFragments =>
+                    read_state <= stt_read_YPlaneFragments;
 
-              elsif (read_state = stt_read_QuantDispFrags) then
---                assert false report "rf.QuantDispFrags = "&integer'image(to_integer(in_data)) severity note;
-                -- One per Frame
-                read_state <= stt_read_Others;
-                QuantDispFrags <= unsigned(in_data(LG_MAX_SIZE*2-1 downto 0));
-              elsif (count = 466) then
-                state <= stt_Proc;
-                count <= 10;
+
+                  when stt_read_YPlaneFragments =>
+                    read_state <= stt_read_YStride;
+
+
+                  when stt_read_YStride =>
+                    read_state <= stt_read_UVPlaneFragments;
+
+
+                  when stt_read_UVPlaneFragments =>
+                    read_state <= stt_read_UVStride;
+
+
+                  when stt_read_UVStride =>
+                    read_state <= stt_read_VFragments;
+
+
+                  when stt_read_VFragments =>
+                    read_state <= stt_read_ReconYDataOffset;
+
+
+                  when stt_read_ReconYDataOffset =>
+                    read_state <= stt_read_ReconUDataOffset;
+
+
+                  when stt_read_ReconUDataOffset =>
+                    read_state <= stt_read_ReconVDataOffset;
+
+
+                  when stt_read_ReconVDataOffset =>
+                    read_state <= stt_read_QuantDispFrags;
+                    
+
+                  when stt_read_QuantDispFrags =>
+                    -- One per Frame
+                    read_state <= stt_read_Others;
+                    QuantDispFrags <= unsigned(in_data(LG_MAX_SIZE*2-1 downto 0));
+
+                  when others =>
+                    if (count = 466) then
+                      state <= stt_Proc;
+                      count <= 10;
+                    end if;
+                end case;
               end if;
-            end if;
 
-
-          when stt_Proc =>
-            if (eb_done = '1') then
-              out_eb_done <= '1';
-              if ((to_integer(countExpand) mod 100) = 0) then
+            when stt_Proc =>
+              if (eb_done = '1') then
+                out_eb_done <= '1';
+                if ((to_integer(countExpand) mod 100) = 0) then
 --                assert false report "Fragmento = "&integer'image(to_integer(countExpand)) severity note;
-              end if;
-              countExpand <= countExpand + 1;
-              state <= stt_Read;
-              if (countExpand = TO_INTEGER(QuantDispFrags-1)) then
-                countExpand <= to_unsigned(0, LG_MAX_SIZE*2);
-                out_done <= '1';
+                end if;
+                countExpand <= countExpand + 1;
+                state <= stt_Read;
+                if (countExpand = TO_INTEGER(QuantDispFrags-1)) then
+                  countExpand <= to_unsigned(0, LG_MAX_SIZE*2);
+                  out_done <= '1';
 
-                s_in_valid <= '0';
-                count <= 9;
-                read_state <= stt_read_QuantDispFrags;
+                  count <= 9;
+                  read_state <= stt_read_QuantDispFrags;
+                end if;
               end if;
-            end if;
-            
-          when others => null;
+              
+            when others => null;
 
-        end case;
+          end case;
+        end if;
       end if;
     end if;
   end process;                   

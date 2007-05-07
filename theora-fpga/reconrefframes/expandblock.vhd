@@ -1,7 +1,10 @@
 library std;
 library ieee;
+library work;
+
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use work.all;
 
 entity ExpandBlock is
   
@@ -29,6 +32,57 @@ entity ExpandBlock is
 end ExpandBlock;
 
 architecture a_ExpandBlock of ExpandBlock is
+  component syncram
+    generic (
+      DEPTH : positive := 64;             -- How many slots
+      DATA_WIDTH : positive := 16;        -- How many bits per slot
+      ADDR_WIDTH : positive := 6          -- = ceil(log2(DEPTH))
+      );
+    port (
+      clk : in std_logic;
+      wr_e  : in std_logic;
+      wr_addr : in unsigned(ADDR_WIDTH-1 downto 0);
+      wr_data : in signed(DATA_WIDTH-1 downto 0);
+      rd_addr : in unsigned(ADDR_WIDTH-1 downto 0);
+      rd_data : out signed(DATA_WIDTH-1 downto 0)
+      );
+  end component;
+
+  component ReconPixelIndex
+    port (Clk,
+          Reset_n       : in  std_logic;
+          
+          in_request    : out std_logic;
+          in_valid      : in  std_logic;
+          in_data       : in  signed(31 downto 0);
+          
+          out_requested : in  std_logic;
+          out_valid     : out std_logic;
+          out_data      : out signed(31 downto 0)
+          );
+  end component;
+
+  component clamp
+    port (
+      x   : in  SIGNED(16 downto 0);
+      sat : out UNSIGNED(7 downto 0));
+  end component;
+
+  component IDctSlow
+    port (Clk,
+          Reset_n : in std_logic;
+          
+          in_request : out std_logic;
+          in_valid : in std_logic;
+          in_data : in signed(15 downto 0);
+          in_quantmat : in signed(15 downto 0);
+          
+          out_requested : in std_logic;
+          out_valid : out std_logic;
+          out_data : out signed(15 downto 0)
+          );
+  end component;
+  
   -- We are using 1024 as the maximum width and height size
   -- = ceil(log2(Maximum Size))
   constant LG_MAX_SIZE    : natural := 10;
@@ -78,7 +132,7 @@ architecture a_ExpandBlock of ExpandBlock is
 
   signal s_in_request : std_logic;
 
-  signal count : integer;
+  signal count : integer range 0 to 511;
 -------------------------------------------------------------------------------
 -- dequant_coeffs Offsets 
 -------------------------------------------------------------------------------
@@ -112,12 +166,20 @@ architecture a_ExpandBlock of ExpandBlock is
 
 
 -------------------------------------------------------------------------------
--- ReconPixelIndex signal and constants
+-- ReconPixelIndex signal
 -------------------------------------------------------------------------------
   constant RPI_DATA_WIDTH : positive := 32;
   constant RPI_POS_WIDTH  : positive := 17;
   signal rpi_position     : unsigned(RPI_POS_WIDTH-1 downto 0);
   signal rpi_value        : signed(RPI_DATA_WIDTH-1 downto 0);
+
+  signal s_rpi_in_request    : std_logic;
+  signal s_rpi_in_valid      : std_logic;
+  signal s_rpi_in_data       : signed(31 downto 0);
+        
+  signal s_rpi_out_requested : std_logic;
+  signal s_rpi_out_valid     : std_logic;
+  signal s_rpi_out_data      : signed(31 downto 0);
 
   
 -------------------------------------------------------------------------------
@@ -141,9 +203,13 @@ architecture a_ExpandBlock of ExpandBlock is
   signal read_state : read_state_t;
 
   type pre_recon_state_t is (stt_PrepIDct, stt_CallIDct, stt_RecIDct,
-                             stt_SelectRecons);
+                             stt_Calc_RPI_Value, stt_SelectRecons);
   signal pre_recon_state : pre_recon_state_t;
 
+  type calc_rpi_state_t is (stt_calc_rpi1, stt_calc_rpi2);
+  signal calc_rpi_state : calc_rpi_state_t;
+
+  
   type select_recons_state_t is (stt_SelectRecons_1, stt_SelectRecons_2,
                                  stt_SelectRecons_3, stt_SelectRecons_4,
                                  stt_SelectRecons_5, stt_SelectRecons_6);
@@ -266,37 +332,69 @@ begin  -- a_ExpandBlock
   in_sem_request <= s_in_sem_request;
   out_sem_valid <= s_out_sem_valid;
 
-  clamp255_0: entity work.clamp port map (sum, sat); 
+  clamp255_0: clamp port map (sum, sat); 
 
-  syncram_384_16: entity work.syncram
+  syncram_384_16: syncram
     generic map (DEPTH => 384, DATA_WIDTH => 16, ADDR_WIDTH => 9)
     port map (clk, dqc_wr_e, dqc_wr_addr, dqc_wr_data,
               dqc_rd_addr, dqc_rd_data);
 
-  syncram_64_16: entity work.syncram
+  syncram_64_16: syncram
     generic map (DEPTH => 64, DATA_WIDTH => 16, ADDR_WIDTH => 6)
     port map (clk, rdb_wr_e, rdb_wr_addr, rdb_wr_data,
               rdb_rd_addr, rdb_rd_data);
 
   
-  mem_64_int16_: entity work.syncram
+  mem_64_int16: syncram
     generic map (64, 16, 6)
     port map (clk, qtl_wr_e, qtl_wr_addr, qtl_wr_data,
               qtl_rd_addr, qtl_rd_data);
 
-  rpi0: entity work.reconpixelindex
-    port map (rpi_position, HFragments, VFragments, YStride, UVStride,
-              YPlaneFragments, UVPlaneFragments, ReconYDataOffset,
-              ReconUDataOffset, ReconVDataOffset, rpi_value);
+  rpi0: reconpixelindex
+    port map (Clk => Clk,
+              Reset_n => Reset_n,
+              in_request => s_rpi_out_requested,
+              in_valid => s_rpi_out_valid,
+              in_data => s_rpi_out_data,
 
-  idctslow0: entity work.IDctSlow
+              out_requested => s_rpi_in_request,
+              out_valid => s_rpi_in_valid,
+              out_data => s_rpi_in_data);
+
+  idctslow0: IDctSlow
     port map(clk, Reset_n,
              out_idct_requested, out_idct_valid, out_idct_data,
              out_idct_quantmat,
              in_idct_request, in_idct_valid, in_idct_data);
 
+
   in_idct_request <= s_in_idct_request;
   out_idct_valid <= s_out_idct_valid;
+
+
+  RPI_HandShake: process (in_data, in_valid,
+                          state, read_state, pre_recon_state,
+                          calc_rpi_state, rpi_position,
+                          s_in_request)
+  begin  -- process RPI_HandShake
+    s_rpi_out_data <= x"00000000";
+    s_rpi_out_valid <= '0';
+    if (s_in_request = '1') then
+      if (state = stt_readIn and read_state = stt_read1) then
+        s_rpi_out_data <= in_data;
+        s_rpi_out_valid <= in_valid;
+      end if;
+    else
+      if (state = stt_PreRecon and
+          pre_recon_state = stt_Calc_RPI_Value and
+          calc_rpi_state = stt_calc_rpi1) then
+        s_rpi_out_data <= resize(signed('0'&rpi_position), 32);
+        s_rpi_out_valid <= '1';
+      end if;
+    end if;
+  end process RPI_HandShake;
+
+  
 
   process (clk)
 -------------------------------------------------------------------------------
@@ -392,19 +490,15 @@ begin  -- a_ExpandBlock
         FragMVect_FragNumber_y <= in_data;
         count <= count + 1;
       elsif (count = 4) then
---        assert false report "eb.FragmentNumber = "&integer'image(to_integer(in_data)) severity note;
         FragmentNumber <= unsigned(in_data);
         count <= count + 1;
       elsif (count = 5) then
---        assert false report "eb.FrameType = "&integer'image(to_integer(in_data)) severity note;
         FrameType <= unsigned(in_data(7 downto 0));
         count <= count + 1;
       elsif (count = 6) then
---        assert false report "eb.GoldenFrameOfs = "&integer'image(to_integer(in_data)) severity note;
         GoldenFrameOfs <= unsigned(in_data(MEM_ADDR_WIDTH-1 downto 0));
         count <= count + 1;
       elsif (count = 7) then
---        assert false report "eb.LastFrameReconOfs = "&integer'image(to_integer(in_data)) severity note;
         LastFrameReconOfs <= unsigned(in_data(MEM_ADDR_WIDTH-1 downto 0));
         count <= count + 1;
       --elsif (count = 8) then
@@ -422,8 +516,7 @@ begin  -- a_ExpandBlock
     procedure ReadIn is
     begin
       s_in_request <= '1';
-      if (s_in_request = '1' and in_valid = '1') then
---        assert false report "eb.in_data = "&integer'image(to_integer(in_data)) severity note;
+      if (s_in_request = '1' and in_valid = '1') then 
         case read_state is
           when stt_read1 => read1;
           when stt_read_dqc => read_dqc;
@@ -469,10 +562,18 @@ begin  -- a_ExpandBlock
           MvModMask <= x"00000003";
 
           -- Select appropriate dequantiser matrix. 
-          if (FragmentNumber < YPlaneFragments + UVPlaneFragments) then
-            dequant_coeffs_Ofs <= INTERU_COEFFS_OFS;
+          if (CodingMode = CODE_INTRA) then
+            if (FragmentNumber < YPlaneFragments + UVPlaneFragments) then
+              dequant_coeffs_Ofs <= U_COEFFS_OFS;
+            else
+              dequant_coeffs_Ofs <= V_COEFFS_OFS;
+            end if;
           else
-            dequant_coeffs_Ofs <= INTERV_COEFFS_OFS;
+            if (FragmentNumber < YPlaneFragments + UVPlaneFragments) then
+              dequant_coeffs_Ofs <= INTERU_COEFFS_OFS;
+            else
+              dequant_coeffs_Ofs <= INTERV_COEFFS_OFS;
+            end if;
           end if;
         end if;
         count <= 0;
@@ -522,27 +623,51 @@ begin  -- a_ExpandBlock
       s_out_idct_valid <= '0';
       s_in_idct_request <= '1';
       if (count = 64) then
-        pre_recon_state <= stt_SelectRecons;
-        select_recons_state <= stt_SelectRecons_1;
+        pre_recon_state <= stt_Calc_RPI_Value;
+        calc_rpi_state <= stt_calc_rpi1;
         count <= 0;
         s_in_idct_request <= '0';
         -- Convert fragment number to a pixel offset in a reconstruction buffer.
         rpi_position <= resize(FragmentNumber, RPI_POS_WIDTH);
-        
-      elsif (s_in_idct_request = '1' and in_idct_valid = '1') then
-        rdb_wr_e <= '1';
-        rdb_wr_addr <= rdb_wr_addr + 1;
-        rdb_wr_data <= in_idct_data;
-        if (count = 0) then
---          assert false report "Receiving IDct" severity note;
-          rdb_wr_addr <= "000000";
-        end if;
-        count <= count + 1;
       else
-        -- Nothing to do
+        if (s_in_idct_request = '1' and in_idct_valid = '1') then
+          rdb_wr_e <= '1';
+          rdb_wr_addr <= rdb_wr_addr + 1;
+          rdb_wr_data <= in_idct_data;
+          if (count = 0) then
+--          assert false report "Receiving IDct" severity note;
+            rdb_wr_addr <= "000000";
+          end if;
+          count <= count + 1;
+        end if;
       end if;
     end procedure RecIDct;
 
+
+    procedure CalcRPIValue is
+    begin
+      case calc_rpi_state is
+        when stt_calc_rpi1 =>
+          -- Wait until ReconPixelIndex can receive the data
+          if (s_rpi_out_requested = '1') then
+            calc_rpi_state <= stt_calc_rpi2;
+          end if;
+
+
+        when others =>
+          -- Wait until ReconPixelIndex returns the value
+          s_rpi_in_request <= '1';
+          if (s_rpi_in_request = '1' and s_rpi_in_valid = '1') then
+            rpi_value <= s_rpi_in_data;
+            s_rpi_in_request <= '0';
+            pre_recon_state <= stt_SelectRecons;
+            select_recons_state <= stt_SelectRecons_1;
+          end if;
+      end case;
+    end procedure CalcRPIValue;
+
+
+    
     procedure SelectRecons is
     begin
       if (select_recons_state = stt_SelectRecons_1) then
@@ -551,6 +676,7 @@ begin  -- a_ExpandBlock
 
         rdb_wr_e <= '0';
         -- Action depends on decode mode.
+--        assert false report "CodingMode1 = "&integer'image(to_integer('0' & CodingMode)) severity note;
         if (CodingMode = CODE_INTER_NO_MV) then
           -- Inter with no motion vector
           
@@ -690,6 +816,7 @@ begin  -- a_ExpandBlock
         when stt_PrepIDct => PrepareToCallIDct;
         when stt_CallIDct => CallIDct;
         when stt_RecIDct => RecIDct;
+        when stt_Calc_RPI_Value => CalcRPIValue;
      -- when stt_SelectRecons = other
         when others => SelectRecons;
       end case;  
@@ -712,7 +839,6 @@ begin  -- a_ExpandBlock
     --   offset_RefPtr2 - Must be zero
     procedure Calculate_ReconIntra is
     begin
---      assert false report "ReconIntra" severity note;
       if (count = 8) then
         out_done <= '1';
         recon_calc_state <= stt_CalcRecon1;
@@ -1089,72 +1215,72 @@ begin  -- a_ExpandBlock
 -------------------------------------------------------------------------------
     procedure EndProc is
     begin
---      if (in_valid = '1') then
-        count <= 0;
-        out_done <= '0';
-        state <= stt_readIn;
---      end if;
+      count <= 0;
+      out_done <= '0';
+      state <= stt_readIn;
     end procedure EndProc;
     
   begin  -- process
-    if (Reset_n = '0') then
-      state <= stt_readIn;
-      read_state <= stt_read1;
-      pre_recon_state <= stt_PrepIDct;
-      select_recons_state <= stt_SelectRecons_1;
-      read_pixel_state <= stt_ReadPixels1;
-      write_recon_state <= stt_WriteRecon1;
-      
-      s_in_request <= '0';
-      s_in_sem_request <= '0';
-      count <= 0;
-      s_out_sem_valid <= '0';
-      out_done <= '0';
+    if (clk'event and clk = '1') then
+      if (Reset_n = '0') then
+        state <= stt_readIn;
+        read_state <= stt_read1;
+        pre_recon_state <= stt_PrepIDct;
+        select_recons_state <= stt_SelectRecons_1;
+        read_pixel_state <= stt_ReadPixels1;
+        write_recon_state <= stt_WriteRecon1;
+        
+        s_in_request <= '0';
+        s_in_sem_request <= '0';
+        count <= 0;
+        s_out_sem_valid <= '0';
+        out_done <= '0';
 
-      s_out_idct_valid <= '0';
-      s_in_idct_request <= '0';
-
-
-      colcount <= 0;
-      sum <= '0' & x"0000";
-      
-      rpi_position <= '0' & x"0000";
-      HFragments <= x"11";
-      VFragments <= x"00";
-      YStride <= x"000";
-      UVStride <= "000" & x"00";
-      YPlaneFragments <= '0' & x"00000";
-      UVPlaneFragments <= "000" & x"0000";
-      ReconYDataOffset <= x"00000";
-      ReconUDataOffset <= x"00000";
-      ReconVDataOffset <= x"00000";
-
-      qtl_wr_e <= '0';
-      qtl_wr_addr <= "000000";
-      qtl_wr_data <= "0000000000000000";
-      qtl_rd_addr <= "000000";
-
-      dqc_wr_e <= '0';
-      dqc_wr_addr <= "000000000";
-      dqc_wr_data <= "0000000000000000";
-      dqc_rd_addr <= "000000000";
-
-      rdb_wr_e <= '0';
-      rdb_wr_addr <= "000000";
-      rdb_wr_data <= "0000000000000000";
-      rdb_rd_addr <= "000000";
+        s_out_idct_valid <= '0';
+        s_in_idct_request <= '0';
 
 
-      dbgSelRecon1 <= '0';
-    elsif (clk'event and clk = '1') then
-      s_in_request <= '0';
-      if (Enable = '1') then
-        case state is
-          when stt_readIn => ReadIn;
-          when stt_PreRecon => PreRecon;
-          when stt_Recon => Recon;
-          when others => EndProc;
-        end case;
+        colcount <= 0;
+        sum <= '0' & x"0000";
+        
+        rpi_position <= '0' & x"0000";
+        HFragments <= x"11";
+        VFragments <= x"00";
+        YStride <= x"000";
+        UVStride <= "000" & x"00";
+        YPlaneFragments <= '0' & x"00000";
+        UVPlaneFragments <= "000" & x"0000";
+        ReconYDataOffset <= x"00000";
+        ReconUDataOffset <= x"00000";
+        ReconVDataOffset <= x"00000";
+
+        qtl_wr_e <= '0';
+        qtl_wr_addr <= "000000";
+        qtl_wr_data <= "0000000000000000";
+        qtl_rd_addr <= "000000";
+
+        dqc_wr_e <= '0';
+        dqc_wr_addr <= "000000000";
+        dqc_wr_data <= "0000000000000000";
+        dqc_rd_addr <= "000000000";
+
+        rdb_wr_e <= '0';
+        rdb_wr_addr <= "000000";
+        rdb_wr_data <= "0000000000000000";
+        rdb_rd_addr <= "000000";
+
+
+        dbgSelRecon1 <= '0';
+      else
+        s_in_request <= '0';
+        if (Enable = '1') then
+          case state is
+            when stt_readIn => ReadIn;
+            when stt_PreRecon => PreRecon;
+            when stt_Recon => Recon;
+            when others => EndProc;
+          end case;
+        end if;
       end if;
     end if;
   end process;

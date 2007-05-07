@@ -37,7 +37,10 @@ architecture behavior of tb_ReconRefFrames is
   signal out_request : std_logic := '0';
   signal out_valid : std_logic;
   signal out_data : signed(31 downto 0);
-
+  signal count_entrada : integer := 0;
+  signal count_saida : integer := 0;
+  signal frames : integer := 0;
+  shared variable flag : std_logic := '0';
 begin  -- behavior
 
   ReconRefFrame0: entity work.reconrefframes
@@ -63,8 +66,9 @@ begin  -- behavior
       else
 
         if( in_requested = '1' )then
-
-          
+          flag := '0';
+--          assert frames < 2 report "2 frames: count_entrada="&integer'image(count_entrada) severity failure;
+          count_entrada <= count_entrada + 1;
           ReadLine( DataInFile, input_line);
           Read( input_line, aux );
 --          assert false report "testbench = "&integer'image(aux) severity note;
@@ -78,8 +82,6 @@ begin  -- behavior
 
 
 
-
-
   Output : process(clk, resetn)
 
     variable output_line	  : line;
@@ -88,9 +90,16 @@ begin  -- behavior
     elsif clk'EVENT and clk = '1' then
       out_request <= '1' after delta;
       if( out_request = '1' and out_valid = '1' )then
+        if (flag = '0') then
+          flag := '1';
+          frames <= frames + 1;
+        end if;
+        count_saida <= count_saida + 1;
         --Write(output_line, now, left, 15);
 	Write(output_line, to_integer(out_data));
 	WriteLine(OutFile, output_line);
+        
+--        assert false report "count_entrada = "&integer'image(count_entrada) severity failure;
       end if;
     end if;
 
