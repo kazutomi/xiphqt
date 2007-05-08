@@ -144,11 +144,11 @@ static int _sv_panel1d_remap(sv_panel_t *p, cairo_t *c){
 	int pointtype = p1->pointtype[j];
 	u_int32_t color = _sv_mapping_calc(p1->mappings+j,1.,0);
       
-	double xv[dw];
-	double yv[dw];
-	double data_vec[dw];
+	double *xv = calloc(dw,sizeof(*xv));
+	double *yv = calloc(dw,sizeof(*yv));
+	double *data_vec = calloc(dw,sizeof(*data_vec));
 	
-	memcpy(data_vec,p1->data_vec[j],sizeof(data_vec));
+	memcpy(data_vec,p1->data_vec[j],sizeof(*data_vec)*dw);
 	gdk_threads_leave();
 
 	/* by x */
@@ -337,6 +337,10 @@ static int _sv_panel1d_remap(sv_panel_t *p, cairo_t *c){
 	  }
 	}
 	
+	free(data_vec);
+	free(xv);
+	free(yv);
+
 	gdk_threads_enter();
 	if(plot_serialno != p->private->plot_serialno ||
 	   map_serialno != p->private->map_serialno) return -1;
