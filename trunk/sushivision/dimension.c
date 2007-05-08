@@ -259,7 +259,7 @@ static void _sv_dim_center_callback(void *data, int buttonstate){
     /* dims can be shared amongst multiple widgets; all must get callbacks */
     for(i=0;i<d->private->widgets;i++){
       _sv_dim_widget_t *w = d->private->widget_list[i];
-      w->center_callback(dw->dl);
+      w->center_callback(d->private->widget_list[i]->dl);
     }
 
     if(d->private->value_callback) 
