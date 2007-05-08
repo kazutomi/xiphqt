@@ -249,6 +249,9 @@ static void _sv_dim_center_callback(void *data, int buttonstate){
     
     d->val = val;
     
+    if(d->private->value_callback) 
+      d->private->value_callback(d,d->private->value_callback_data);
+
     /* dims can be shared amongst multiple widgets; all must be updated */
     for(i=0;i<d->private->widgets;i++){
       _sv_dim_widget_t *w = d->private->widget_list[i];
@@ -259,11 +262,9 @@ static void _sv_dim_center_callback(void *data, int buttonstate){
     /* dims can be shared amongst multiple widgets; all must get callbacks */
     for(i=0;i<d->private->widgets;i++){
       _sv_dim_widget_t *w = d->private->widget_list[i];
-      w->center_callback(d->private->widget_list[i]->dl);
+      w->center_callback(w->dl);
     }
 
-    if(d->private->value_callback) 
-      d->private->value_callback(d,d->private->value_callback_data);
   }
   
   if(buttonstate == 2)
@@ -316,7 +317,7 @@ static void _sv_dim_bracket_callback(void *data, int buttonstate){
     /* dims can be shared amongst multiple widgets; all must get callbacks */
     for(i=0;i<d->private->widgets;i++){
       _sv_dim_widget_t *w = d->private->widget_list[i];
-      w->bracket_callback(dw->dl);
+      w->bracket_callback(w->dl);
     }
   }
   
@@ -353,6 +354,9 @@ static void _sv_dim_dropdown_callback(GtkWidget *dummy, void *data){
     d->bracket[0] = val;
     d->bracket[1] = val;
     
+    if(d->private->value_callback) 
+      d->private->value_callback(d,d->private->value_callback_data);
+
     /* dims can be shared amongst multiple widgets; all must be updated */
     for(i=0;i<d->private->widgets;i++){
       _sv_dim_widget_t *w = d->private->widget_list[i];
@@ -363,11 +367,8 @@ static void _sv_dim_dropdown_callback(GtkWidget *dummy, void *data){
     /* dims can be shared amongst multiple widgets; all must get callbacks */
     for(i=0;i<d->private->widgets;i++){
       _sv_dim_widget_t *w = d->private->widget_list[i];
-      w->center_callback(dw->dl);
+      w->center_callback(w->dl);
     }
-
-    if(d->private->value_callback) 
-      d->private->value_callback(d,d->private->value_callback_data);
 
   }
   _sv_undo_resume(p->sushi);
@@ -653,7 +654,7 @@ _sv_dim_widget_t *_sv_dim_widget_new(sv_dim_list_t *dl,
     d->private->widget_list = calloc (1, sizeof(*d->private->widget_list));
   }else{
     d->private->widget_list = realloc (d->private->widget_list,
-				       d->private->widgets+1 * sizeof(*d->private->widget_list));
+				       (d->private->widgets+1) * sizeof(*d->private->widget_list));
   }
   d->private->widget_list[d->private->widgets] = dw;
   d->private->widgets++;
