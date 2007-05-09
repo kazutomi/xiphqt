@@ -675,6 +675,18 @@
               Set of classes for creating XSPF files from PHP.
             </dd>
 
+            <dt>
+              <a id="xspf_to_jspf"></a>
+              <a href="http://jchris.mfdz.com/jspf/xspf_parser_spec.html">XSPF.toJSPF()</a> (JavaScript)
+            <dt>
+            <dd>
+              <cite>XSPF.toJSPF() is a function for parsing XSPF in Javascript. The resulting
+              Javascript object is easy to use and manipulate to create client-side playlist
+              browsers and media players. The parsed result can also easily be serialized into
+              JSON for easy server-client transport. This allows developers to use one player
+              for handling both XML XSPF and JSON JSPF playlists provided by the server.</cite>
+            </dd>
+
 	    <!-- template for new entries
             <dt>
               <a id="TODOID"></a>
