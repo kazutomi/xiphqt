@@ -488,10 +488,12 @@
               <a id="foafingthemusic"></a><a href="http://foafing-the-music.iua.upf.edu/index.html">Foafing the music</a>
             </dt>
             <dd>
-            A music recommendation system, based on user's profile. Uses the <a href="http://www.foaf-project.org/">FOAF</a> vocabulary to recommend music.
-            Looks promising, but seems to be in an experimental phase at this moment.
-           </dd>
-            
+              A music recommendation system, based on user's profile. Uses the <a href="http://www.foaf-project.org/">FOAF</a> vocabulary to recommend music.
+              Looks promising, but seems to be in an experimental phase at this moment.
+            </dd>
+
+<dt><a id="grabb_it"></a><a href="http://grabb.it/">Grabb.it</a><dt><dd><cite>An online music player that will create playlists for any web page that links to music files. You can remember, download, and share the songs you find.</cite></dd>
+
             <dt>
               <a id="jamendo"></a><a href=
               "http://www.jamendo.com/us/static/concept/">Jamendo</a>
@@ -617,6 +619,9 @@
 <a id="libraries"></a>
 <h1>Libraries</h1>
 <dl>
+
+<dt><a id="haxe_xspf"></a><a href="http://blog.disktree.net/?q=node/47">haXe XSPF</a> (<a href="http://www.haxe.org/intro">haXe</a>)<dt><dd>XSPF support for haXe web applications.</dd>
+
             <dt>
               <a id="jspiff"></a><a href=
               "http://melloware.com/products/jspiff/">JSpiff</a> (Java)
@@ -687,15 +692,11 @@
               for handling both XML XSPF and JSON JSPF playlists provided by the server.</cite>
             </dd>
 
-	    <!-- template for new entries
-            <dt>
-              <a id="TODOID"></a>
-              <a href="TODO-URL">TODONAME</a>
-            <dt>
-            <dd>
-              &lt;TODO&gt;
-            </dd>
-            -->
+<!-- template for new entries
+ON A SINGLE LINE from now one please. Thanks, Sebastian
+<dt><a id="TODOID"></a><a href="TODOURL">TODONAME</a><dt><dd>&lt;TODO&gt;</dd>
+-->
+
 </dl>
 
 <p>Note to application developers: to be included here, write your entry in the format above and email it to <a href="http://lists.musicbrainz.org/mailman/listinfo/playlist">the XSPF mailing list</a>.</p>
