@@ -543,6 +543,8 @@
               artists. Sample songs use custom Flash player which accepts XSPF.
             </dd>
 
+<dt><a id="myplaylist"></a><a href="http://www.myplaylist.biz/">MyPlayList</a><dt><dd><cite>Combining picture playlists built using the Flickr API in XSPF with music playlists both in XSPF format.</cite></dd>
+
             <dt>
               <a id="odeo"></a>
               <a href="http://odeo.com/">Odeo</a>
