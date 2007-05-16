@@ -1,0 +1,256 @@
+
+*** Logfile started
+*** on Wed May 16 08:04:45 2007
+
+[Wed May 16 2007] [08:04:45] Join	You have joined the channel #xiphmeet (n=sping@unaffiliated/sping).
+[Wed May 16 2007] [08:04:45] Topic	The channel topic is "Xiph.org meeting channel | http://wiki.xiph.org/index.php/MonthlyMeeting200703".
+[Wed May 16 2007] [08:04:45] Topic	The topic was set by fishkandy on 03/07/2007 02:44:22 PM.
+[Wed May 16 2007] [08:04:45] Mode	Channel modes: no messages from outside
+[Wed May 16 2007] [08:04:45] Created	This channel was created on 11/26/2006 07:43:32 AM.
+[Wed May 16 2007] [08:06:04] <kfish>	Hi all
+[Wed May 16 2007] [08:06:10] <sping>	hello
+[Wed May 16 2007] [08:06:25] Join	_Ivo has joined this channel (n=chatzill@87-196-212-213.net.novis.pt).
+[Wed May 16 2007] [08:06:44] Topic	kfish sets the channel topic to "Xiph.Org meeting channel | http://wiki.xiph.org/index.php/MonthlyMeeting200705".
+[Wed May 16 2007] [08:06:59] <sping>	_Ivo: hi
+[Wed May 16 2007] [08:07:12] <_Ivo>	hey Sebastian; you did come
+[Wed May 16 2007] [08:07:41] <sping>	yes :-)
+[Wed May 16 2007] [08:07:51] <nessy>	hi
+[Wed May 16 2007] [08:08:27] <_Ivo>	hey
+[Wed May 16 2007] [08:08:39] <sping>	hello silvia
+[Wed May 16 2007] [08:08:46] <_Ivo>	so, everyone, good morning/afternoon/night
+[Wed May 16 2007] [08:08:51] <kfish>	moin
+[Wed May 16 2007] [08:09:05] <_Ivo>	hello conrad
+[Wed May 16 2007] [08:09:10] <_Ivo>	the agenda is here, http://wiki.xiph.org/index.php/MonthlyMeeting200705
+[Wed May 16 2007] [08:09:23] <_Ivo>	please give it a look so we may start
+[Wed May 16 2007] [08:09:38] <_Ivo>	(expecting JM, Monty and Ralph to maybe join meanwhile)
+[Wed May 16 2007] [08:13:04] <_Ivo>	siilvia seems to have edited the agenda for March by mistake
+[Wed May 16 2007] [08:13:23] <_Ivo>	the extension and MIME type discussion is already added on May's agenda
+[Wed May 16 2007] [08:13:49] <nessy>	hi everyone
+[Wed May 16 2007] [08:14:10] <nessy>	sorry, yes - I edited whatever was in the topic :)
+[Wed May 16 2007] [08:14:48] <_Ivo>	there's no problem with that
+[Wed May 16 2007] [08:14:56] <nessy>	just fixing it now
+[Wed May 16 2007] [08:14:57] <_Ivo>	so, anyone up to chair the meeting?
+[Wed May 16 2007] [08:15:01] 	 * nessy is at work and slightly distracted
+[Wed May 16 2007] [08:15:17] <kfish>	_Ivo, you're doing a great job :-)
+[Wed May 16 2007] [08:15:32] <_Ivo>	ha ha, ok
+[Wed May 16 2007] [08:15:41] <sping>	_Ivo: go on
+[Wed May 16 2007] [08:15:54] 	 * nessy agrees
+[Wed May 16 2007] [08:16:05] <_Ivo>	let's wait a bit and see who else joins
+[Wed May 16 2007] [08:16:18] <nessy>	is monty coming?
+[Wed May 16 2007] [08:16:20] Join	imalone has joined this channel (n=ian@bb-87-81-240-193.ukonline.co.uk).
+[Wed May 16 2007] [08:16:25] <nessy>	I hear rillian may be in transit
+[Wed May 16 2007] [08:16:36] <nessy>	hi imalone
+[Wed May 16 2007] [08:16:52] <_Ivo>	hi Ian
+[Wed May 16 2007] [08:17:10] <kfish>	is anyone logging this?
+[Wed May 16 2007] [08:17:44] <imalone>	hi
+[Wed May 16 2007] [08:18:40] <_Ivo>	kfish: I can do that
+[Wed May 16 2007] [08:18:57] <sping>	kfish: i guess my client does, since XX:06
+[Wed May 16 2007] [08:18:58] <_Ivo>	I won't have a place to host it, though
+[Wed May 16 2007] [08:19:19] <sping>	_Ivo: good to have backup
+[Wed May 16 2007] [08:19:27] <kfish>	_Ivo, on the wiki :-)
+[Wed May 16 2007] [08:19:43] <_Ivo>	we usually link to a .txt file
+[Wed May 16 2007] [08:20:00] <sping>	kfish: don't we have previous logs in the repository?
+[Wed May 16 2007] [08:20:10] <_Ivo>	if you post a text log on MediaWiki directly, you have to spend half an hour fixing the formatting
+[Wed May 16 2007] [08:22:56] <kfish>	ok, wanna start?
+[Wed May 16 2007] [08:23:07] <_Ivo>	I suppose so
+[Wed May 16 2007] [08:23:30] <_Ivo>	the first topic is regarding Google Summer of Code Students
+[Wed May 16 2007] [08:23:38] <_Ivo>	is anyone here tutoring someone?
+[Wed May 16 2007] [08:23:46] <kfish>	yeah, me and derf
+[Wed May 16 2007] [08:23:49] <kfish>	derf: awake?
+[Wed May 16 2007] [08:24:07] <kfish>	ok, so we have two GSoC students
+[Wed May 16 2007] [08:24:19] <kfish>	the GSoC program starts May 28
+[Wed May 16 2007] [08:24:26] <kfish>	currently they are in preparation mode
+[Wed May 16 2007] [08:24:44] <_Ivo>	alright
+[Wed May 16 2007] [08:24:46] <sping>	what tasks did they apply for?
+[Wed May 16 2007] [08:24:50] <_Ivo>	what will they work on?
+[Wed May 16 2007] [08:24:52] <kfish>	gah, we have 3 GSoC students
+[Wed May 16 2007] [08:25:17] <kfish>	Ishaan Dalal: Sinusoidal coding for Ghost (mentor: Monty)
+[Wed May 16 2007] [08:25:36] <kfish>	Andre Luiz Nazareth da Costa: Hardware implementation of Theora decoding (mentor: derf)
+[Wed May 16 2007] [08:25:53] <kfish>	Nicholas Mudd: Web-based streaming audio playlist manager/scheduler (mentor: kfish)
+[Wed May 16 2007] [08:26:21] <kfish>	the theora hardware guys have been very active, the assigned project is pretty much done already before starting, so they are expanding the scope or so (afaiu)
+[Wed May 16 2007] [08:26:42] <_Ivo>	that's great.  I have seen some work on the wiki for a while now
+[Wed May 16 2007] [08:26:48] <kfish>	i don't know how the ghost student is going / started, though there's much ghost activity going on
+[Wed May 16 2007] [08:27:13] <kfish>	and i haven't heard from nick mudd yet -- so i sent him an email this morning to ping him
+[Wed May 16 2007] [08:28:23] <_Ivo>	What is the third project, exactly?
+[Wed May 16 2007] [08:28:41] <kfish>	a playlist manager for icecast
+[Wed May 16 2007] [08:28:53] <kfish>	with ... mashupy .. stuff
+[Wed May 16 2007] [08:29:20] <_Ivo>	ah?
+[Wed May 16 2007] [08:29:39] <kfish>	hopefully we can use that to get some better integration with web standards
+[Wed May 16 2007] [08:29:48] <_Ivo>	hopefully
+[Wed May 16 2007] [08:30:02] <_Ivo>	the second topic may take a little more time to discuss
+[Wed May 16 2007] [08:30:07] <nessy>	has he started yet?
+[Wed May 16 2007] [08:31:11] <kfish>	nessy, who?
+[Wed May 16 2007] [08:31:17] <_Ivo>	mudd
+[Wed May 16 2007] [08:31:31] <kfish>	no, no contact yet
+[Wed May 16 2007] [08:32:31] <nessy>	:(
+[Wed May 16 2007] [08:33:03] <_Ivo>	has anyone read the "xiph-oggless" proposal, which we are to discuss next?
+[Wed May 16 2007] [08:33:25] 	 * nessy shakes head
+[Wed May 16 2007] [08:33:33] <kfish>	the mplayer docs? yes
+[Wed May 16 2007] [08:34:08] <_Ivo>	kfish: what is your opinion about it?
+[Wed May 16 2007] [08:34:15] <imalone>	yes, but not enough to have an opinion
+[Wed May 16 2007] [08:35:10] 	 * sping neither
+[Wed May 16 2007] [08:35:18] 	 * nessy is only worried that it may be inconsistent with ogg or annodex encapsulation
+[Wed May 16 2007] [08:35:19] <_Ivo>	it would be great if we would decide either to endorse this or not
+[Wed May 16 2007] [08:35:39] <_Ivo>	this issue has been brought up some times before, so there's an interest in using Xiph codecs outside Ogg
+[Wed May 16 2007] [08:36:03] <nessy>	I think it needs input
+[Wed May 16 2007] [08:36:03] <_Ivo>	and to make sure such implementations are compatible between each other, we should say which way we rather see it happen
+[Wed May 16 2007] [08:36:13] <nessy>	tarkin is mentioned
+[Wed May 16 2007] [08:36:23] <kfish>	what's a summary of the difference between the two proposals?
+[Wed May 16 2007] [08:37:08] <_Ivo>	they are from the same people
+[Wed May 16 2007] [08:37:16] <_Ivo>	and see more or less the same
+[Wed May 16 2007] [08:37:28] <_Ivo>	the one in SVN is far more complete though
+[Wed May 16 2007] [08:37:40] <_Ivo>	see = seem
+[Wed May 16 2007] [08:38:30] <nessy>	kfish: since you read it - is there anything you think is not ok from a xiph perspective?
+[Wed May 16 2007] [08:38:42] <kfish>	well, only that it's not ogg
+[Wed May 16 2007] [08:38:49] <kfish>	other than that, it's fairly straightforward
+[Wed May 16 2007] [08:39:11] <kfish>	smash the headers together, and look for their magic markers to pull them apart again
+[Wed May 16 2007] [08:39:36] <kfish>	that's all it discusses though
+[Wed May 16 2007] [08:39:44] <kfish>	it doesn't cover timestamping through the stream
+[Wed May 16 2007] [08:40:18] <kfish>	if we were to endorse or produce any document about this, i guess we'd have to say how to transform from ogg to other formats and back again
+[Wed May 16 2007] [08:40:40] <_Ivo>	yes, I agree
+[Wed May 16 2007] [08:40:51] <kfish>	which can't be done losslessly (ogg is a lossy container wrt. timestamps), but at least we could specify what to do
+[Wed May 16 2007] [08:41:39] <_Ivo>	kfish: would you be interested in working on this at some point?
+[Wed May 16 2007] [08:44:16] <kfish>	i don't have enough knowledge of other containers -- perhaps we could work together with the mplayer guys or something
+[Wed May 16 2007] [08:44:20] <kfish>	in principle, sure
+[Wed May 16 2007] [08:44:39] <_Ivo>	I'll try to get in touch with them, then
+[Wed May 16 2007] [08:45:01] <_Ivo>	Ralph did put some input on the intial proposal, as seen in http://lists.xiph.org/pipermail/vorbis-dev/2006-July/018505.html
+[Wed May 16 2007] [08:45:57] <_Ivo>	no mention, though, on Ogg transformations
+[Wed May 16 2007] [08:46:25] <_Ivo>	I'm afraid I have not enough knowledge on Ogg internals to help out in this task
+[Wed May 16 2007] [08:47:01] <_Ivo>	shall we move on?  The next issue is regarding the recent MIME/extension discussion
+[Wed May 16 2007] [08:48:03] <_Ivo>	just a last point on the "xiph-oggless" subject, Monty has said on e-mail that:
+[Wed May 16 2007] [08:48:10] <_Ivo>	"Sure.  I'm for offering a blessing, but I want to avoid getting sucked
+[Wed May 16 2007] [08:48:12] <_Ivo>	into battles involving competing specifications that we don't have
+[Wed May 16 2007] [08:48:13] <_Ivo>	anything to do with.  That's not an official worry, just a practical
+[Wed May 16 2007] [08:48:15] <_Ivo>	one.  If there's clear defacto-consensus behind an outside mapping
+[Wed May 16 2007] [08:48:16] <_Ivo>	spec, I have no problem endorsing it."
+[Wed May 16 2007] [08:48:32] <_Ivo>	so, it does make sense to contact the mplayer/ffmpeg people
+[Wed May 16 2007] [08:49:42] <nessy>	if you put kfish and the mplayer guys together, that could help?
+[Wed May 16 2007] [08:50:33] <_Ivo>	If Conrad intends to contact them, it's alright.  If not, I may contact them myself and then direct them to Conrad.
+[Wed May 16 2007] [08:51:56] <_Ivo>	alright, moving on, what does everyone here feel about the current extensions and MIME types proposal?
+[Wed May 16 2007] [08:52:51] <kfish>	i like it ;-)
+[Wed May 16 2007] [08:53:06] <imalone>	ditto
+[Wed May 16 2007] [08:53:30] <_Ivo>	as I understand, we need to register the new MIMEs?  e.g. audio/ogg
+[Wed May 16 2007] [08:53:42] <nessy>	not everything is clear yet
+[Wed May 16 2007] [08:53:49] <nessy>	.oga and .ogv are clear
+[Wed May 16 2007] [08:54:02] <nessy>	.ogg is still under discussion
+[Wed May 16 2007] [08:54:18] <kfish>	nessy, well, .ogg is already registered ;-)
+[Wed May 16 2007] [08:54:56] <_Ivo>	well, .ogg is a file extension
+[Wed May 16 2007] [08:54:57] <nessy>	the mail discussion at the end was about making .ogg for vorbis I files only and deprecating everything elses
+[Wed May 16 2007] [08:55:08] <_Ivo>	yes, I agree with that
+[Wed May 16 2007] [08:55:11] <nessy>	and making a .ogx for random ogg container files
+[Wed May 16 2007] [08:55:20] <nessy>	then we have to change that RFC
+[Wed May 16 2007] [08:55:21] <kfish>	ah ok, that sounds good
+[Wed May 16 2007] [08:55:24] <nessy>	but it's do-able
+[Wed May 16 2007] [08:55:37] <kfish>	my iriver would be happy with that
+[Wed May 16 2007] [08:55:56] <nessy>	without changing the RFC and conformant to everything we have ever said before, .ogg would be possible for any ogg files
+[Wed May 16 2007] [08:56:14] <_Ivo>	yes, most players can only cope with .ogg and the majority of the Ogg files in the wild are Vorbis
+[Wed May 16 2007] [08:57:28] <nessy>	so, what I'd really like to know is whether there is software that expects flac in .ogg or theora in .ogg and breaks otherwise
+[Wed May 16 2007] [08:57:39] <_Ivo>	very little
+[Wed May 16 2007] [08:57:45] <kfish>	nessy, nothing we can't fix (much)
+[Wed May 16 2007] [08:57:53] <_Ivo>	there's few or no theora hardware decoders yet
+[Wed May 16 2007] [08:57:56] <nessy>	no hw players?
+[Wed May 16 2007] [08:58:00] <_Ivo>	and much less for Ogg Flac
+[Wed May 16 2007] [08:58:02] <nessy>	flc?
+[Wed May 16 2007] [08:58:18] <kfish>	lots of hw for flac, not for ogg flac
+[Wed May 16 2007] [08:58:21] <nessy>	ok, then we can safely deprecate .ogg for anything but vorbis I
+[Wed May 16 2007] [08:58:31] <_Ivo>	most or even all hw players for FLAC, expect FLAC by itself
+[Wed May 16 2007] [08:58:36] <kfish>	i think that would cause the fewest surprises
+[Wed May 16 2007] [08:59:02] <nessy>	ok, so what do ppl think about .ogx for random ogg files?
+[Wed May 16 2007] [08:59:09] <kfish>	elite
+[Wed May 16 2007] [08:59:21] <nessy>	multitrack hacked up shit ;)
+[Wed May 16 2007] [08:59:22] <sping>	:-)
+[Wed May 16 2007] [08:59:39] <_Ivo>	I find it alright
+[Wed May 16 2007] [09:00:28] <nessy>	ok, so we have three new extensions
+[Wed May 16 2007] [09:00:36] 	 * nessy can fix up the wiki
+[Wed May 16 2007] [09:00:57] <nessy>	mime-types then will be:
+[Wed May 16 2007] [09:01:03] <nessy>	.ogx - application/ogg
+[Wed May 16 2007] [09:01:11] <nessy>	.ogv - video/ogg
+[Wed May 16 2007] [09:01:16] <nessy>	.oga - audio/ogg
+[Wed May 16 2007] [09:01:49] <_Ivo>	I agree with these
+[Wed May 16 2007] [09:01:50] <nessy>	.ogg - audio/ogg+vorbis ?
+[Wed May 16 2007] [09:02:11] <nessy>	.spx - audio/ogg+speex ?
+[Wed May 16 2007] [09:02:16] <kfish>	ok, and lets spec these out as "Ogg Audio Profile", "Ogg Video Profile" etc., concerning how to deal with multiple tracks etc.
+[Wed May 16 2007] [09:02:34] <kfish>	nessy, the /ogg+ stuff seems right
+[Wed May 16 2007] [09:02:59] <nessy>	sounds good
+[Wed May 16 2007] [09:03:16] <_Ivo>	I'm not sure about that
+[Wed May 16 2007] [09:03:18] <nessy>	somebody needs to fix that old rfc and add these
+[Wed May 16 2007] [09:03:22] <_Ivo>	every one of those would have to be registered
+[Wed May 16 2007] [09:03:26] <nessy>	_Ivo: which part?
+[Wed May 16 2007] [09:03:35] <_Ivo>	the ogg+whatever
+[Wed May 16 2007] [09:03:37] <kfish>	_Ivo, it's doable in one RFC
+[Wed May 16 2007] [09:04:02] <nessy>	_Ivo: the ogg+whatever stuff is only for very specific things
+[Wed May 16 2007] [09:04:09] <_Ivo>	one RFC doesn't make a MIME Type endorsed by IANA, AFAIK
+[Wed May 16 2007] [09:04:14] <kfish>	and we can use the opportunity to fix that typo we found about page/packet numbering
+[Wed May 16 2007] [09:04:33] <_Ivo>	it's just a concern, really.  If it's doable, I'm for it
+[Wed May 16 2007] [09:04:34] <nessy>	in fact, it may not be necessary in the future any more because ppl will use .ogv and .oga
+[Wed May 16 2007] [09:05:00] <nessy>	_Ivo: one RFC does indeed make a MIME Type endorsed by IANA
+[Wed May 16 2007] [09:05:10] <_Ivo>	oh
+[Wed May 16 2007] [09:05:13] <nessy>	that's how we got application/ogg endorsed
+[Wed May 16 2007] [09:05:15] <_Ivo>	alright then
+[Wed May 16 2007] [09:05:19] 	 * nessy wrote that rfc
+[Wed May 16 2007] [09:05:21] <kfish>	we can bundle the proposal together into one rfc, it's a registration
+[Wed May 16 2007] [09:05:24] <_Ivo>	I'm aware
+[Wed May 16 2007] [09:05:30] <nessy>	:)
+[Wed May 16 2007] [09:05:39] <kfish>	we can also send a patch to the /etc/mime-types maintainers ;-)
+[Wed May 16 2007] [09:05:52] <nessy>	yes, I suggest we deprecate that old rfc (or both if necessary) and create a new one that is more comprehensive
+[Wed May 16 2007] [09:06:14] 	 * nessy doesn't have much time atm, so anybody volunteering to help would be most welcome
+[Wed May 16 2007] [09:06:15] <_Ivo>	silvia, will you work on this?
+[Wed May 16 2007] [09:06:34] <_Ivo>	(this is a case of EFB)
+[Wed May 16 2007] [09:06:48] <_Ivo>	alright, we'll talk about this later on the list
+[Wed May 16 2007] [09:07:17] <nessy>	I have to go unfortunately
+[Wed May 16 2007] [09:07:38] <kfish>	me too soon
+[Wed May 16 2007] [09:07:44] <_Ivo>	damn, I'm afraid I'll have to leave in a few minutes as well
+[Wed May 16 2007] [09:07:49] <kfish>	l8r nessy
+[Wed May 16 2007] [09:07:56] Quit	nessy has left this server ("This computer has gone to sleep").
+[Wed May 16 2007] [09:08:12] <_Ivo>	there's still a lot to discuss, what shall we do?
+[Wed May 16 2007] [09:08:21] 	 * sping hopes there's an admin left when we come to xspf
+[Wed May 16 2007] [09:08:27] <kfish>	i've got one comment about the libao thing
+[Wed May 16 2007] [09:08:39] <_Ivo>	kfish: please go ahead
+[Wed May 16 2007] [09:08:47] <_Ivo>	sping: no one will be here
+[Wed May 16 2007] [09:08:57] <_Ivo>	this is most unfortunate
+[Wed May 16 2007] [09:09:05] <kfish>	which is basically that if the guy wants to maintain it, he can have it it :-) https://trac.xiph.org/query?status=new&status=assigned&status=reopened&group=type&component=libao&order=priority
+[Wed May 16 2007] [09:09:22] <_Ivo>	great
+[Wed May 16 2007] [09:09:26] <kfish>	no-one's maintaining it atm, it needs love
+[Wed May 16 2007] [09:09:29] <_Ivo>	doe he have a SVN account?
+[Wed May 16 2007] [09:09:32] <_Ivo>	does*
+[Wed May 16 2007] [09:09:42] <_Ivo>	if not I'll contact Ralph
+[Wed May 16 2007] [09:09:53] <kfish>	:-)
+[Wed May 16 2007] [09:10:32] <_Ivo>	I'll get in touch with the guy over the weekend, or so.
+[Wed May 16 2007] [09:10:56] <_Ivo>	the rest of the agenda will be left undiscussed, I'm afraid
+[Wed May 16 2007] [09:11:04] <_Ivo>	most sorry, Sebastian
+[Wed May 16 2007] [09:11:34] <_Ivo>	Motherfish administration is mostly with Monty, or Mike, or Ralph
+[Wed May 16 2007] [09:11:39] <_Ivo>	and none of them showed up
+[Wed May 16 2007] [09:11:57] 	 * sping did get up earlier for this *sigh*, was fun to watch nevertheless
+[Wed May 16 2007] [09:12:04] <kfish>	:-)
+[Wed May 16 2007] [09:12:18] <kfish>	thanks for chairing Ivo
+[Wed May 16 2007] [09:12:28] <_Ivo>	I'm happy you came for the first time
+[Wed May 16 2007] [09:12:34] <_Ivo>	kfish: thanks, I like to help
+[Wed May 16 2007] [09:13:02] <kfish>	i am at xtech atm
+[Wed May 16 2007] [09:13:10] <kfish>	i will talk to the opera guys etc. about theora support
+[Wed May 16 2007] [09:13:17] <_Ivo>	oh, that's great
+[Wed May 16 2007] [09:13:37] <_Ivo>	I issued a request at WebKit for <video> and Theora support
+[Wed May 16 2007] [09:13:57] <_Ivo>	the Apple people replied they intend to support <video> WITHOUT Theora
+[Wed May 16 2007] [09:14:10] <_Ivo>	I'll try to bring attention on WHATWG to this
+[Wed May 16 2007] [09:14:20] <_Ivo>	as they are not complying with the spec
+[Wed May 16 2007] [09:15:11] <_Ivo>	anyhow, Sebastian, if you did log the meeting, send the log for Ralph to host
+[Wed May 16 2007] [09:15:13] <kfish>	:-|
+[Wed May 16 2007] [09:15:17] <imalone>	Next meeting as normal or try to get one sooner to address XSPF stuff?
+[Wed May 16 2007] [09:15:26] <_Ivo>	unless you have a people.xiph page where you can put it
+[Wed May 16 2007] [09:15:38] <_Ivo>	imalone: we may try that
+[Wed May 16 2007] [09:15:55] <_Ivo>	if everyone is willing to come to another meeting in the same month
+[Wed May 16 2007] [09:15:55] <kfish>	ah good, a response from nick mudd about gsoc -- he's been around on #xiph and #icecast apparently
+[Wed May 16 2007] [09:16:03] <sping>	_Ivo: no people page but since that is mainly admin stuff i guess we could do it off-meeting?
+[Wed May 16 2007] [09:16:23] <_Ivo>	yes
+[Wed May 16 2007] [09:16:28] <_Ivo>	kfish: that's good to hear
+[Wed May 16 2007] [09:17:10] <kfish>	ok, bye all, gotta go
+[Wed May 16 2007] [09:17:13] <imalone>	Okay then, take care all
+[Wed May 16 2007] [09:17:16] <_Ivo>	bye
+[Wed May 16 2007] [09:17:18] Quit	kfish has left this server ("l8r!").
+[Wed May 16 2007] [09:17:18] Quit	imalone has left this server ("Leaving.").
+[Wed May 16 2007] [09:17:19] <_Ivo>	take care
+[Wed May 16 2007] [09:17:28] <sping>	_Ivo: bye!
+[Wed May 16 2007] [09:17:31] <_Ivo>	session is over, then
+[Wed May 16 2007] [09:17:42] 	 * sping saves log
+[Wed May 16 2007] [09:17:55] <_Ivo>	I saved a copy, too
+[Wed May 16 2007] [09:17:58] <_Ivo>	be seeing you
+[Wed May 16 2007] [09:17:59] <sping>	good
