@@ -622,7 +622,7 @@
 <h1>Libraries</h1>
 <dl>
 
-<dt><a id="haxe_xspf"></a><a href="http://blog.disktree.net/?q=node/47">haXe XSPF</a> (<a href="http://www.haxe.org/intro">haXe</a>)<dt><dd>XSPF support for haXe web applications.</dd>
+<dt><a id="haxe_xspf"></a><a href="http://www.xspf.disktree.net/">haXe XSPF</a> (<a href="http://www.haxe.org/intro">haXe</a>)<dt><dd>XSPF support for haXe web applications.</dd>
 
             <dt>
               <a id="jspiff"></a><a href=
