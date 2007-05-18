@@ -141,7 +141,7 @@
 	</dd>
 
 	<dt><a href="downloads.xiph.org/releases/speex/Speex_Delphi_Demo.zip">An Encoder written in Delphi</a></dt>
-	<dd>Smallish Delphi example written by John Villar</dd>
+	<dd>Smallish Delphi example written by John Villar. See also <a href="http://sed-p.net/Speex-pour-Delphi.html">this page</a> for extra information and binaries (in french).</dd>
 </dl>
 
 <h2>Other Implementations &amp; Language Bindings</h2>
