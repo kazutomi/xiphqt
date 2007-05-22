@@ -290,16 +290,16 @@ int add_comment(char *line, TheoraCommenter* com, int raw)
 void usage(void)
 {
 
-  printf (_("vorbiscomment from %s %s\n"
+  printf (_("theoracomment from %s %s\n"
             " by the Xiph.Org Foundation (http://www.xiph.org/)\n\n"), PACKAGE, VERSION);
 
   printf (_("List or edit comments in Ogg Vorbis files.\n"));
   printf ("\n");
 
   printf (_("Usage: \n"
-            "  vorbiscomment [-Vh]\n" 
-            "  vorbiscomment [-lR] file\n"
-            "  vorbiscomment [-R] [-c file] [-t tag] <-a|-w> inputfile [outputfile]\n"));
+            "  theoracomment [-Vh]\n" 
+            "  theoracomment [-lR] file\n"
+            "  theoracomment [-R] [-c file] [-t tag] <-a|-w> inputfile [outputfile]\n"));
   printf ("\n");
 
   printf (_("Listing options\n"));
@@ -324,12 +324,12 @@ void usage(void)
   printf (_("  -V, --version           Display ogg123 version\n"));
   printf ("\n");
 
-  printf (_("If no output file is specified, vorbiscomment will modify the input file. This\n"
+  printf (_("If no output file is specified, theoracomment will modify the input file. This\n"
             "is handled via temporary file, such that the input file is not modified if any\n"
             "errors are encountered during processing.\n"));
   printf ("\n");
 
-  printf (_("vorbiscomment handles comments in the format \"name=value\", one per line. By\n"
+  printf (_("theoracomment handles comments in the format \"name=value\", one per line. By\n"
             "default, comments are written to stdout when listing, and read from stdin when\n"
             "editing. Alternatively, a file can be specified with the -c option, or tags\n"
             "can be given on the commandline with -t \"name=value\". Use of either -c or -t\n"
@@ -337,8 +337,8 @@ void usage(void)
   printf ("\n");
 
   printf (_("Examples:\n"
-            "  vorbiscomment -a in.ogg -c comments.txt\n"
-            "  vorbiscomment -a in.ogg -t \"ARTIST=Some Guy\" -t \"TITLE=A Title\"\n"));
+            "  theoracomment -a in.ogg -c comments.txt\n"
+            "  theoracomment -a in.ogg -t \"ARTIST=Some Guy\" -t \"TITLE=A Title\"\n"));
   printf ("\n");
 
   printf (_("NOTE: Raw mode (--raw, -R) will read and write comments in UTF-8 rather than\n"
@@ -424,7 +424,7 @@ void parse_options(int argc, char *argv[], param_t *param)
 				param->mode = MODE_APPEND;
 				break;
 			case 'V':
-				fprintf(stderr, "vorbiscomment from vorbis-tools " VERSION "\n");
+				fprintf(stderr, "theoracomment from theora-tools " VERSION "\n");
 				exit(0);
 				break;
 			case 'h':
