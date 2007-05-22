@@ -42,6 +42,10 @@ $key = q/sec:Programming-with-Speex/;
 $external_labels{$key} = "$URL/" . q|node7.html|; 
 $noresave{$key} = "$nosave";
 
+$key = q/fig:Acoustic-echo-model/;
+$external_labels{$key} = "$URL/" . q|node4.html|; 
+$noresave{$key} = "$nosave";
+
 $key = q/sub:Preprocessor-options/;
 $external_labels{$key} = "$URL/" . q|node7.html|; 
 $noresave{$key} = "$nosave";
@@ -70,20 +74,20 @@ $key = q/sub:Decoding/;
 $external_labels{$key} = "$URL/" . q|node7.html|; 
 $noresave{$key} = "$nosave";
 
-$key = q/sec:Command-line-encoder_decoder/;
-$external_labels{$key} = "$URL/" . q|node6.html|; 
-$noresave{$key} = "$nosave";
-
 $key = q/sub:Codec-Options/;
 $external_labels{$key} = "$URL/" . q|node7.html|; 
 $noresave{$key} = "$nosave";
 
-$key = q/sec:Feature-description/;
-$external_labels{$key} = "$URL/" . q|node4.html|; 
+$key = q/sec:Getting-help/;
+$external_labels{$key} = "$URL/" . q|node3.html|; 
 $noresave{$key} = "$nosave";
 
-$key = q/sec:Speex-narrowband-mode/;
-$external_labels{$key} = "$URL/" . q|node10.html|; 
+$key = q/sec:Command-line-encoder_decoder/;
+$external_labels{$key} = "$URL/" . q|node6.html|; 
+$noresave{$key} = "$nosave";
+
+$key = q/sec:Feature-description/;
+$external_labels{$key} = "$URL/" . q|node4.html|; 
 $noresave{$key} = "$nosave";
 
 $key = q/sec:Introduction-to-CELP/;
@@ -92,6 +96,10 @@ $noresave{$key} = "$nosave";
 
 $key = q/sub:Echo-Cancellation/;
 $external_labels{$key} = "$URL/" . q|node7.html|; 
+$noresave{$key} = "$nosave";
+
+$key = q/sec:Speex-narrowband-mode/;
+$external_labels{$key} = "$URL/" . q|node10.html|; 
 $noresave{$key} = "$nosave";
 
 1;

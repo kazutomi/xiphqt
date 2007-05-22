@@ -28,31 +28,31 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
 <BODY >
 
 <DIV CLASS="navigation"><!--Navigation Panel-->
-<A NAME="tex2html348"
+<A NAME="tex2html377"
   HREF="node12.html">
 <IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
-<A NAME="tex2html342"
+<A NAME="tex2html371"
   HREF="manual.html">
 <IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
-<A NAME="tex2html336"
+<A NAME="tex2html365"
   HREF="node10.html">
 <IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
-<A NAME="tex2html344"
+<A NAME="tex2html373"
   HREF="node1.html">
 <IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
-<A NAME="tex2html346"
+<A NAME="tex2html375"
   HREF="node17.html">
 <IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
 <BR>
-<B> Next:</B> <A NAME="tex2html349"
+<B> Next:</B> <A NAME="tex2html378"
   HREF="node12.html">FAQ</A>
-<B> Up:</B> <A NAME="tex2html343"
+<B> Up:</B> <A NAME="tex2html372"
   HREF="manual.html">The Speex Codec Manual</A>
-<B> Previous:</B> <A NAME="tex2html337"
+<B> Previous:</B> <A NAME="tex2html366"
   HREF="node10.html">Speex narrowband mode</A>
- &nbsp; <B>  <A NAME="tex2html345"
+ &nbsp; <B>  <A NAME="tex2html374"
   HREF="node1.html">Contents</A></B> 
- &nbsp; <B>  <A NAME="tex2html347"
+ &nbsp; <B>  <A NAME="tex2html376"
   HREF="node17.html">Index</A></B> 
 <BR>
 <BR></DIV>
@@ -61,26 +61,26 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
 <A NAME="CHILD_LINKS"><STRONG>Subsections</STRONG></A>
 
 <UL CLASS="ChildLinks">
-<LI><A NAME="tex2html350"
-  HREF="node11.html#SECTION000111000000000000000">Linear Prediction</A>
-<LI><A NAME="tex2html351"
-  HREF="node11.html#SECTION000112000000000000000">Pitch Prediction</A>
-<LI><A NAME="tex2html352"
-  HREF="node11.html#SECTION000113000000000000000">Excitation Quantization</A>
-<LI><A NAME="tex2html353"
-  HREF="node11.html#SECTION000114000000000000000">Bit allocation</A>
+<LI><A NAME="tex2html379"
+  HREF="node11.html#SECTION001110000000000000000">Linear Prediction</A>
+<LI><A NAME="tex2html380"
+  HREF="node11.html#SECTION001120000000000000000">Pitch Prediction</A>
+<LI><A NAME="tex2html381"
+  HREF="node11.html#SECTION001130000000000000000">Excitation Quantization</A>
+<LI><A NAME="tex2html382"
+  HREF="node11.html#SECTION001140000000000000000">Bit allocation</A>
 </UL>
 <!--End of Table of Child-Links-->
 <HR>
 
-<H1><A NAME="SECTION000110000000000000000"></A><A NAME="627"></A><A NAME="sec:Speex-wideband-mode"></A>
+<H1><A NAME="SECTION001100000000000000000"></A><A NAME="720"></A><A NAME="sec:Speex-wideband-mode"></A>
 <BR>
 Speex wideband mode (sub-band CELP)
 </H1>
 
 <P>
 For wideband, the Speex approach uses a <SPAN  CLASS="textit">q</SPAN>uadrature <SPAN  CLASS="textit">m</SPAN>irror
-<SPAN  CLASS="textit">f</SPAN>ilter<A NAME="632"></A> (QMF) to split the
+<SPAN  CLASS="textit">f</SPAN>ilter<A NAME="725"></A> (QMF) to split the
 band in two. The 16 kHz signal is thus divided into two 8 kHz signals,
 one representing the low band (0-4 kHz), the other the high band (4-8
 kHz). The low band is encoded with the narrowband mode described in
@@ -91,9 +91,9 @@ only the high band encoding is described in this section.
 
 <P>
 
-<H2><A NAME="SECTION000111000000000000000">
+<H1><A NAME="SECTION001110000000000000000">
 Linear Prediction</A>
-</H2>
+</H1>
 
 <P>
 The linear prediction part used for the high-band is very similar
@@ -104,9 +104,9 @@ quantizer (MSVQ). The first level quantizes the 10 coefficients with
 
 <P>
 
-<H2><A NAME="SECTION000112000000000000000">
+<H1><A NAME="SECTION001120000000000000000">
 Pitch Prediction</A>
-</H2>
+</H1>
 
 <P>
 That part is easy: there's no pitch prediction for the high-band.
@@ -118,36 +118,40 @@ is no longer at multiples of the fundamental (pitch).
 
 <P>
 
-<H2><A NAME="SECTION000113000000000000000">
+<H1><A NAME="SECTION001130000000000000000">
 Excitation Quantization</A>
-</H2>
+</H1>
 
 <P>
 The high-band excitation is coded in the same way as for narrowband. 
 
 <P>
 
-<H2><A NAME="SECTION000114000000000000000">
+<H1><A NAME="SECTION001140000000000000000">
 Bit allocation</A>
-</H2>
+</H1>
 
 <P>
 For the wideband mode, the entire narrowband frame is packed before
 the high-band is encoded. The narrowband part of the bit-stream is
 as defined in table <A HREF="#cap:bits-narrowband">3</A>. The high-band follows,
-as described in table <A HREF="#cap:bits-wideband">5</A>. This also means that
-a wideband frame may be correctly decoded by a narrowband decoder
-with the only caveat that if more than one frame is packed in the
-same packet, the decoder will need to skip the high-band parts in
-order to sync with the bit-stream.
+as described in table <A HREF="#cap:bits-wideband">5</A>. For wideband, the
+mode ID is the same as the Speex quality setting and is defined in
+table <A HREF="#tab:wideband-quality"><IMG  ALIGN="BOTTOM" BORDER="1" ALT="[*]" SRC="crossref.png"></A>. This also means that a wideband
+frame may be correctly decoded by a narrowband decoder with the only
+caveat that if more than one frame is packed in the same packet, the
+decoder will need to skip the high-band parts in order to sync with
+the bit-stream.
 
 <P>
 <BR><P></P>
-<DIV ALIGN="CENTER"><A NAME="858"></A>
+<DIV ALIGN="CENTER"><A NAME="966"></A>
 <TABLE>
 <CAPTION><STRONG>Table 5:</STRONG>
 Bit allocation for high-band in wideband mode</CAPTION>
-<TR><TD><TABLE CELLPADDING=3 BORDER="1">
+<TR><TD>
+<DIV ALIGN="CENTER">
+<TABLE CELLPADDING=3 BORDER="1" ALIGN="CENTER">
 <TR><TD ALIGN="CENTER">Parameter</TD>
 <TD ALIGN="CENTER">Update rate</TD>
 <TD ALIGN="CENTER">0</TD>
@@ -205,6 +209,73 @@ Bit allocation for high-band in wideband mode</CAPTION>
 <TD ALIGN="CENTER">352</TD>
 </TR>
 </TABLE>
+</DIV>
+
+<P>
+</TD></TR>
+</TABLE>
+</DIV><P></P>
+<BR>
+
+<P>
+<BR><P></P>
+<DIV ALIGN="CENTER"><A NAME="967"></A>
+<TABLE>
+<CAPTION><STRONG>Table:</STRONG>
+Quality versus bit-rate for the wideband encoder</CAPTION>
+<TR><TD>
+<DIV ALIGN="CENTER">
+<TABLE CELLPADDING=3 BORDER="1" ALIGN="CENTER">
+<TR><TD ALIGN="CENTER">Mode/Quality</TD>
+<TD ALIGN="CENTER">Bit-rate<A NAME="747"></A> (bps)</TD>
+<TD ALIGN="CENTER">Quality/description</TD>
+</TR>
+<TR><TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">3,950</TD>
+<TD ALIGN="CENTER">Barely intelligible (mostly for comfort noise)</TD>
+</TR>
+<TR><TD ALIGN="CENTER">1</TD>
+<TD ALIGN="CENTER">5,750</TD>
+<TD ALIGN="CENTER">Very noticeable artifacts/noise, poor intelligibility</TD>
+</TR>
+<TR><TD ALIGN="CENTER">2</TD>
+<TD ALIGN="CENTER">7,750</TD>
+<TD ALIGN="CENTER">Very noticeable artifacts/noise, good intelligibility</TD>
+</TR>
+<TR><TD ALIGN="CENTER">3</TD>
+<TD ALIGN="CENTER">9,800</TD>
+<TD ALIGN="CENTER">Artifacts/noise sometimes annoying</TD>
+</TR>
+<TR><TD ALIGN="CENTER">4</TD>
+<TD ALIGN="CENTER">12,800</TD>
+<TD ALIGN="CENTER">Artifacts/noise usually noticeable</TD>
+</TR>
+<TR><TD ALIGN="CENTER">5</TD>
+<TD ALIGN="CENTER">16,800</TD>
+<TD ALIGN="CENTER">Artifacts/noise sometimes noticeable</TD>
+</TR>
+<TR><TD ALIGN="CENTER">6</TD>
+<TD ALIGN="CENTER">20,600</TD>
+<TD ALIGN="CENTER">Need good headphones to tell the difference</TD>
+</TR>
+<TR><TD ALIGN="CENTER">7</TD>
+<TD ALIGN="CENTER">23,800</TD>
+<TD ALIGN="CENTER">Need good headphones to tell the difference</TD>
+</TR>
+<TR><TD ALIGN="CENTER">8</TD>
+<TD ALIGN="CENTER">27,800</TD>
+<TD ALIGN="CENTER">Hard to tell the difference even with good headphones</TD>
+</TR>
+<TR><TD ALIGN="CENTER">9</TD>
+<TD ALIGN="CENTER">34,400</TD>
+<TD ALIGN="CENTER">Hard to tell the difference even with good headphones</TD>
+</TR>
+<TR><TD ALIGN="CENTER">10</TD>
+<TD ALIGN="CENTER">42,400</TD>
+<TD ALIGN="CENTER">Completely transparent for voice, good quality music</TD>
+</TR>
+</TABLE>
+</DIV>
 
 <P>
 </TD></TR>
@@ -222,36 +293,36 @@ Bit allocation for high-band in wideband mode</CAPTION>
 
 <DIV CLASS="navigation"><HR>
 <!--Navigation Panel-->
-<A NAME="tex2html348"
+<A NAME="tex2html377"
   HREF="node12.html">
 <IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
-<A NAME="tex2html342"
+<A NAME="tex2html371"
   HREF="manual.html">
 <IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
-<A NAME="tex2html336"
+<A NAME="tex2html365"
   HREF="node10.html">
 <IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
-<A NAME="tex2html344"
+<A NAME="tex2html373"
   HREF="node1.html">
 <IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
-<A NAME="tex2html346"
+<A NAME="tex2html375"
   HREF="node17.html">
 <IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
 <BR>
-<B> Next:</B> <A NAME="tex2html349"
+<B> Next:</B> <A NAME="tex2html378"
   HREF="node12.html">FAQ</A>
-<B> Up:</B> <A NAME="tex2html343"
+<B> Up:</B> <A NAME="tex2html372"
   HREF="manual.html">The Speex Codec Manual</A>
-<B> Previous:</B> <A NAME="tex2html337"
+<B> Previous:</B> <A NAME="tex2html366"
   HREF="node10.html">Speex narrowband mode</A>
- &nbsp; <B>  <A NAME="tex2html345"
+ &nbsp; <B>  <A NAME="tex2html374"
   HREF="node1.html">Contents</A></B> 
- &nbsp; <B>  <A NAME="tex2html347"
+ &nbsp; <B>  <A NAME="tex2html376"
   HREF="node17.html">Index</A></B> </DIV>
 <!--End of Navigation Panel-->
 <ADDRESS>
 Jean-Marc Valin
-2006-08-12
+2007-05-23
 </ADDRESS>
 </BODY>
 </HTML>

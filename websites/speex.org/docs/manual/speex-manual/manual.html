@@ -8,9 +8,9 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
 <HTML>
 <HEAD>
 <TITLE>The Speex Codec Manual
-(version 1.2-beta1)</TITLE>
+Version 1.2 Beta 2</TITLE>
 <META NAME="description" CONTENT="The Speex Codec Manual
-(version 1.2-beta1)">
+Version 1.2 Beta 2">
 <META NAME="keywords" CONTENT="manual">
 <META NAME="resource-type" CONTENT="document">
 <META NAME="distribution" CONTENT="global">
@@ -27,23 +27,23 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
 <BODY >
 
 <DIV CLASS="navigation"><!--Navigation Panel-->
-<A NAME="tex2html16"
+<A NAME="tex2html18"
   HREF="node1.html">
 <IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
 <IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up_g.png"> 
 <IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev_g.png"> 
-<A NAME="tex2html12"
+<A NAME="tex2html14"
   HREF="node1.html">
 <IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
-<A NAME="tex2html14"
+<A NAME="tex2html16"
   HREF="node17.html">
 <IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
 <BR>
-<B> Next:</B> <A NAME="tex2html17"
+<B> Next:</B> <A NAME="tex2html19"
   HREF="node1.html">Contents</A>
- &nbsp; <B>  <A NAME="tex2html13"
-  HREF="node1.html">Contents</A></B> 
  &nbsp; <B>  <A NAME="tex2html15"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html17"
   HREF="node17.html">Index</A></B> 
 <BR>
 <BR></DIV>
@@ -54,13 +54,17 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
 <P>
 
 <P>
-<H1 ALIGN="CENTER">The Speex Codec Manual
-<BR>(version 1.2-beta1)</H1>
-<DIV CLASS="author_info">
+<H1 ALIGN=CENTER>The Speex Codec Manual
+<BR>
+Version 1.2 Beta 2</H1>
+<P ALIGN=CENTER><STRONG>Jean-Marc Valin</STRONG>
+</P>
+<HR>
 
-<P ALIGN="CENTER"><STRONG>Jean-Marc Valin</STRONG></P>
-</DIV>
-Copyright (c) 2002-2006 Jean-Marc Valin/Xiph.org Foundation
+
+
+<P>
+Copyright &#169;2002-2007 Jean-Marc Valin/Xiph.org Foundation
 
 <P>
 Permission is granted to copy, distribute and/or modify this document
@@ -76,228 +80,264 @@ Free Documentation License&#34;.
 <A NAME="CHILD_LINKS"></A>
 
 <UL CLASS="ChildLinks">
-<LI><A NAME="tex2html18"
-  HREF="node1.html">Contents</A>
-<LI><A NAME="tex2html19"
-  HREF="node2.html">List of Tables</A>
 <LI><A NAME="tex2html20"
-  HREF="node3.html">Introduction to Speex</A>
+  HREF="node1.html">Contents</A>
 <LI><A NAME="tex2html21"
+  HREF="node2.html">List of Tables</A>
+<LI><A NAME="tex2html22"
+  HREF="node3.html">Introduction to Speex</A>
+<UL>
+<LI><A NAME="tex2html23"
+  HREF="node3.html#SECTION00310000000000000000">Getting help</A>
+<LI><A NAME="tex2html24"
+  HREF="node3.html#SECTION00320000000000000000">About this document</A>
+</UL>
+<BR>
+<LI><A NAME="tex2html25"
   HREF="node4.html">Codec description</A>
 <UL>
-<LI><A NAME="tex2html22"
-  HREF="node4.html#SECTION00041000000000000000">Concepts</A>
-<LI><A NAME="tex2html23"
-  HREF="node4.html#SECTION00042000000000000000">Sampling rate</A>
-<LI><A NAME="tex2html24"
-  HREF="node4.html#SECTION00043000000000000000">Quality</A>
-<LI><A NAME="tex2html25"
-  HREF="node4.html#SECTION00044000000000000000">Complexity (variable)</A>
 <LI><A NAME="tex2html26"
-  HREF="node4.html#SECTION00045000000000000000">Variable Bit-Rate (VBR)</A>
+  HREF="node4.html#SECTION00410000000000000000">Concepts</A>
+<UL>
 <LI><A NAME="tex2html27"
-  HREF="node4.html#SECTION00046000000000000000">Average Bit-Rate (ABR)</A>
+  HREF="node4.html#SECTION00411000000000000000">Sampling rate</A>
 <LI><A NAME="tex2html28"
-  HREF="node4.html#SECTION00047000000000000000">Voice Activity Detection (VAD)</A>
+  HREF="node4.html#SECTION00412000000000000000">Bit-rate</A>
 <LI><A NAME="tex2html29"
-  HREF="node4.html#SECTION00048000000000000000">Discontinuous Transmission (DTX)</A>
+  HREF="node4.html#SECTION00413000000000000000">Quality (variable)</A>
 <LI><A NAME="tex2html30"
-  HREF="node4.html#SECTION00049000000000000000">Perceptual enhancement</A>
+  HREF="node4.html#SECTION00414000000000000000">Complexity (variable)</A>
 <LI><A NAME="tex2html31"
-  HREF="node4.html#SECTION000410000000000000000">Algorithmic delay</A>
+  HREF="node4.html#SECTION00415000000000000000">Variable Bit-Rate (VBR)</A>
 <LI><A NAME="tex2html32"
-  HREF="node4.html#SECTION000411000000000000000">Codec</A>
+  HREF="node4.html#SECTION00416000000000000000">Average Bit-Rate (ABR)</A>
 <LI><A NAME="tex2html33"
-  HREF="node4.html#SECTION000412000000000000000">Preprocessor</A>
+  HREF="node4.html#SECTION00417000000000000000">Voice Activity Detection (VAD)</A>
 <LI><A NAME="tex2html34"
-  HREF="node4.html#SECTION000413000000000000000">Adaptive Jitter Buffer</A>
+  HREF="node4.html#SECTION00418000000000000000">Discontinuous Transmission (DTX)</A>
 <LI><A NAME="tex2html35"
-  HREF="node4.html#SECTION000414000000000000000">Acoustic Echo Canceller</A>
+  HREF="node4.html#SECTION00419000000000000000">Perceptual enhancement</A>
+<LI><A NAME="tex2html36"
+  HREF="node4.html#SECTION004110000000000000000">Latency and algorithmic delay</A>
+</UL>
+<LI><A NAME="tex2html37"
+  HREF="node4.html#SECTION00420000000000000000">Codec</A>
+<LI><A NAME="tex2html38"
+  HREF="node4.html#SECTION00430000000000000000">Preprocessor</A>
+<LI><A NAME="tex2html39"
+  HREF="node4.html#SECTION00440000000000000000">Adaptive Jitter Buffer</A>
+<LI><A NAME="tex2html40"
+  HREF="node4.html#SECTION00450000000000000000">Acoustic Echo Canceller</A>
 </UL>
 <BR>
-<LI><A NAME="tex2html36"
+<LI><A NAME="tex2html41"
   HREF="node5.html">Compiling</A>
-<LI><A NAME="tex2html37"
+<UL>
+<LI><A NAME="tex2html42"
+  HREF="node5.html#SECTION00510000000000000000">Platforms</A>
+</UL>
+<BR>
+<LI><A NAME="tex2html43"
   HREF="node6.html">Command-line encoder/decoder</A>
 <UL>
-<LI><A NAME="tex2html38"
-  HREF="node6.html#SECTION00061000000000000000"><SPAN  CLASS="textit">speexenc</SPAN></A>
-<LI><A NAME="tex2html39"
-  HREF="node6.html#SECTION00062000000000000000"><SPAN  CLASS="textit">speexdec</SPAN></A>
+<LI><A NAME="tex2html44"
+  HREF="node6.html#SECTION00610000000000000000"><SPAN  CLASS="textit">speexenc</SPAN></A>
+<UL>
+<LI><A NAME="tex2html45"
+  HREF="node6.html#SECTION00611000000000000000">Speex comments</A>
+<LI><A NAME="tex2html46"
+  HREF="node6.html#SECTION00612000000000000000">Raw input options</A>
+</UL>
+<LI><A NAME="tex2html47"
+  HREF="node6.html#SECTION00620000000000000000"><SPAN  CLASS="textit">speexdec</SPAN></A>
 </UL>
 <BR>
-<LI><A NAME="tex2html40"
+<LI><A NAME="tex2html48"
   HREF="node7.html">Programming with Speex (the libspeex API)</A>
 <UL>
-<LI><A NAME="tex2html41"
-  HREF="node7.html#SECTION00071000000000000000">Encoding</A>
-<LI><A NAME="tex2html42"
-  HREF="node7.html#SECTION00072000000000000000">Decoding</A>
-<LI><A NAME="tex2html43"
-  HREF="node7.html#SECTION00073000000000000000">Preprocessor</A>
-<LI><A NAME="tex2html44"
-  HREF="node7.html#SECTION00074000000000000000">Echo Cancellation</A>
-<LI><A NAME="tex2html45"
-  HREF="node7.html#SECTION00075000000000000000">Codec Options (speex_*_ctl)</A>
-<LI><A NAME="tex2html46"
-  HREF="node7.html#SECTION00076000000000000000">Mode queries</A>
-<LI><A NAME="tex2html47"
-  HREF="node7.html#SECTION00077000000000000000">Preprocessor options</A>
-<LI><A NAME="tex2html48"
-  HREF="node7.html#SECTION00078000000000000000">Packing and in-band signalling</A>
+<LI><A NAME="tex2html49"
+  HREF="node7.html#SECTION00710000000000000000">Encoding</A>
+<LI><A NAME="tex2html50"
+  HREF="node7.html#SECTION00720000000000000000">Decoding</A>
+<LI><A NAME="tex2html51"
+  HREF="node7.html#SECTION00730000000000000000">Preprocessor</A>
+<LI><A NAME="tex2html52"
+  HREF="node7.html#SECTION00740000000000000000">Echo Cancellation</A>
+<UL>
+<LI><A NAME="tex2html53"
+  HREF="node7.html#SECTION00741000000000000000">Troubleshooting</A>
+</UL>
+<LI><A NAME="tex2html54"
+  HREF="node7.html#SECTION00750000000000000000">Jitter Buffer</A>
+<UL>
+<LI><A NAME="tex2html55"
+  HREF="node7.html#SECTION00751000000000000000">Generic Jitter Buffer</A>
+<LI><A NAME="tex2html56"
+  HREF="node7.html#SECTION00752000000000000000">Speex Jitter Buffer</A>
+</UL>
+<LI><A NAME="tex2html57"
+  HREF="node7.html#SECTION00760000000000000000">Resampler</A>
+<LI><A NAME="tex2html58"
+  HREF="node7.html#SECTION00770000000000000000">Codec Options (speex_*_ctl)</A>
+<LI><A NAME="tex2html59"
+  HREF="node7.html#SECTION00780000000000000000">Mode queries</A>
+<LI><A NAME="tex2html60"
+  HREF="node7.html#SECTION00790000000000000000">Preprocessor options</A>
+<LI><A NAME="tex2html61"
+  HREF="node7.html#SECTION007100000000000000000">Packing and in-band signalling</A>
 </UL>
 <BR>
-<LI><A NAME="tex2html49"
+<LI><A NAME="tex2html62"
   HREF="node8.html">Formats and standards</A>
 <UL>
-<LI><A NAME="tex2html50"
-  HREF="node8.html#SECTION00081000000000000000">RTP Payload Format </A>
-<LI><A NAME="tex2html51"
-  HREF="node8.html#SECTION00082000000000000000">MIME Type</A>
-<LI><A NAME="tex2html52"
-  HREF="node8.html#SECTION00083000000000000000">Ogg file format</A>
+<LI><A NAME="tex2html63"
+  HREF="node8.html#SECTION00810000000000000000">RTP Payload Format </A>
+<LI><A NAME="tex2html64"
+  HREF="node8.html#SECTION00820000000000000000">MIME Type</A>
+<LI><A NAME="tex2html65"
+  HREF="node8.html#SECTION00830000000000000000">Ogg file format</A>
 </UL>
 <BR>
-<LI><A NAME="tex2html53"
+<LI><A NAME="tex2html66"
   HREF="node9.html">Introduction to CELP Coding</A>
 <UL>
-<LI><A NAME="tex2html54"
-  HREF="node9.html#SECTION00091000000000000000">Source-Filter Model of Speech Prediction</A>
-<LI><A NAME="tex2html55"
-  HREF="node9.html#SECTION00092000000000000000">Linear Prediction (LPC)</A>
-<LI><A NAME="tex2html56"
-  HREF="node9.html#SECTION00093000000000000000">Pitch Prediction</A>
-<LI><A NAME="tex2html57"
-  HREF="node9.html#SECTION00094000000000000000">Innovation Codebook</A>
-<LI><A NAME="tex2html58"
-  HREF="node9.html#SECTION00095000000000000000">Noise Weighting</A>
-<LI><A NAME="tex2html59"
-  HREF="node9.html#SECTION00096000000000000000">Analysis-by-Synthesis</A>
+<LI><A NAME="tex2html67"
+  HREF="node9.html#SECTION00910000000000000000">Source-Filter Model of Speech Prediction</A>
+<LI><A NAME="tex2html68"
+  HREF="node9.html#SECTION00920000000000000000">Linear Prediction (LPC)</A>
+<LI><A NAME="tex2html69"
+  HREF="node9.html#SECTION00930000000000000000">Pitch Prediction</A>
+<LI><A NAME="tex2html70"
+  HREF="node9.html#SECTION00940000000000000000">Innovation Codebook</A>
+<LI><A NAME="tex2html71"
+  HREF="node9.html#SECTION00950000000000000000">Noise Weighting</A>
+<LI><A NAME="tex2html72"
+  HREF="node9.html#SECTION00960000000000000000">Analysis-by-Synthesis</A>
 </UL>
 <BR>
-<LI><A NAME="tex2html60"
+<LI><A NAME="tex2html73"
   HREF="node10.html">Speex narrowband mode</A>
 <UL>
-<LI><A NAME="tex2html61"
-  HREF="node10.html#SECTION000101000000000000000">Whole-Frame Analysis</A>
-<LI><A NAME="tex2html62"
-  HREF="node10.html#SECTION000102000000000000000">Sub-Frame Analysis-by-Synthesis</A>
-<LI><A NAME="tex2html63"
-  HREF="node10.html#SECTION000103000000000000000">Bit allocation</A>
-<LI><A NAME="tex2html64"
-  HREF="node10.html#SECTION000104000000000000000">Perceptual enhancement</A>
+<LI><A NAME="tex2html74"
+  HREF="node10.html#SECTION001010000000000000000">Whole-Frame Analysis</A>
+<LI><A NAME="tex2html75"
+  HREF="node10.html#SECTION001020000000000000000">Sub-Frame Analysis-by-Synthesis</A>
+<LI><A NAME="tex2html76"
+  HREF="node10.html#SECTION001030000000000000000">Bit allocation</A>
+<LI><A NAME="tex2html77"
+  HREF="node10.html#SECTION001040000000000000000">Perceptual enhancement</A>
 </UL>
 <BR>
-<LI><A NAME="tex2html65"
+<LI><A NAME="tex2html78"
   HREF="node11.html">Speex wideband mode (sub-band CELP)</A>
 <UL>
-<LI><A NAME="tex2html66"
-  HREF="node11.html#SECTION000111000000000000000">Linear Prediction</A>
-<LI><A NAME="tex2html67"
-  HREF="node11.html#SECTION000112000000000000000">Pitch Prediction</A>
-<LI><A NAME="tex2html68"
-  HREF="node11.html#SECTION000113000000000000000">Excitation Quantization</A>
-<LI><A NAME="tex2html69"
-  HREF="node11.html#SECTION000114000000000000000">Bit allocation</A>
+<LI><A NAME="tex2html79"
+  HREF="node11.html#SECTION001110000000000000000">Linear Prediction</A>
+<LI><A NAME="tex2html80"
+  HREF="node11.html#SECTION001120000000000000000">Pitch Prediction</A>
+<LI><A NAME="tex2html81"
+  HREF="node11.html#SECTION001130000000000000000">Excitation Quantization</A>
+<LI><A NAME="tex2html82"
+  HREF="node11.html#SECTION001140000000000000000">Bit allocation</A>
 </UL>
 <BR>
-<LI><A NAME="tex2html70"
+<LI><A NAME="tex2html83"
   HREF="node12.html">FAQ</A>
 <UL>
-<LI><A NAME="tex2html71"
-  HREF="node12.html#SECTION000121000000000000000">Vorbis is open-source and patent-free;
-why do we need Speex?</A>
-<LI><A NAME="tex2html72"
-  HREF="node12.html#SECTION000122000000000000000">Isn't there an open-source implementation of the GSM-FR codec? Why
-is Speex necessary?</A>
-<LI><A NAME="tex2html73"
-  HREF="node12.html#SECTION000123000000000000000">Under what license is Speex released?</A>
-<LI><A NAME="tex2html74"
-  HREF="node12.html#SECTION000124000000000000000">Am I allowed to use Speex in commercial software?</A>
-<LI><A NAME="tex2html75"
-  HREF="node12.html#SECTION000125000000000000000">Ogg, Speex, Vorbis, what's the difference?</A>
-<LI><A NAME="tex2html76"
-  HREF="node12.html#SECTION000126000000000000000">What's the extension for Speex?</A>
-<LI><A NAME="tex2html77"
-  HREF="node12.html#SECTION000127000000000000000">Can I use Speex for compressing music?</A>
-<LI><A NAME="tex2html78"
-  HREF="node12.html#SECTION000128000000000000000">I converted some MP3s to Speex and the quality is bad. What's wrong?</A>
-<LI><A NAME="tex2html79"
-  HREF="node12.html#SECTION000129000000000000000">Does Speex run on Windows?</A>
-<LI><A NAME="tex2html80"
-  HREF="node12.html#SECTION0001210000000000000000">Why is encoding so slow compared to decoding?</A>
-<LI><A NAME="tex2html81"
-  HREF="node12.html#SECTION0001211000000000000000">Why is Speex so slow on my iPaq (or insert any platform without an
-FPU)?</A>
-<LI><A NAME="tex2html82"
-  HREF="node12.html#SECTION0001212000000000000000">I'm getting unusual background noise (hiss) when using libspeex in
-my application. How do I fix that?</A>
-<LI><A NAME="tex2html83"
-  HREF="node12.html#SECTION0001213000000000000000">I get very distorted speech when using libspeex in my application.
-What's wrong?</A>
 <LI><A NAME="tex2html84"
-  HREF="node12.html#SECTION0001214000000000000000">How does Speex compare to other proprietary codecs?</A>
+  HREF="node12.html#SECTION001201000000000000000">Vorbis is open-source and patent-free;
+why do we need Speex?</A>
 <LI><A NAME="tex2html85"
-  HREF="node12.html#SECTION0001215000000000000000">Can Speex pass DTMF?</A>
+  HREF="node12.html#SECTION001202000000000000000">Isn't there an open-source implementation of the GSM-FR codec? Why
+is Speex necessary?</A>
 <LI><A NAME="tex2html86"
-  HREF="node12.html#SECTION0001216000000000000000">Can Speex pass V.9x modem signals correctly?</A>
+  HREF="node12.html#SECTION001203000000000000000">Under what license is Speex released?</A>
 <LI><A NAME="tex2html87"
-  HREF="node12.html#SECTION0001217000000000000000">What is your (Jean-Marc) relationship with the University of Sherbrooke
-and how does Speex fit into that?</A>
+  HREF="node12.html#SECTION001204000000000000000">Am I allowed to use Speex in commercial software?</A>
 <LI><A NAME="tex2html88"
-  HREF="node12.html#SECTION0001218000000000000000">CELP, ACELP, what's the difference?</A>
+  HREF="node12.html#SECTION001205000000000000000">Ogg, Speex, Vorbis, what's the difference?</A>
+<LI><A NAME="tex2html89"
+  HREF="node12.html#SECTION001206000000000000000">What's the extension for Speex?</A>
+<LI><A NAME="tex2html90"
+  HREF="node12.html#SECTION001207000000000000000">Can I use Speex for compressing music?</A>
+<LI><A NAME="tex2html91"
+  HREF="node12.html#SECTION001208000000000000000">I converted some MP3s to Speex and the quality is bad. What's wrong?</A>
+<LI><A NAME="tex2html92"
+  HREF="node12.html#SECTION001209000000000000000">Does Speex run on Windows?</A>
+<LI><A NAME="tex2html93"
+  HREF="node12.html#SECTION0012010000000000000000">Why is encoding so slow compared to decoding?</A>
+<LI><A NAME="tex2html94"
+  HREF="node12.html#SECTION0012011000000000000000">Why is Speex so slow on my iPaq (or insert any platform without an
+FPU)?</A>
+<LI><A NAME="tex2html95"
+  HREF="node12.html#SECTION0012012000000000000000">I'm getting unusual background noise (hiss) when using libspeex in
+my application. How do I fix that?</A>
+<LI><A NAME="tex2html96"
+  HREF="node12.html#SECTION0012013000000000000000">I get very distorted speech when using libspeex in my application.
+What's wrong?</A>
+<LI><A NAME="tex2html97"
+  HREF="node12.html#SECTION0012014000000000000000">How does Speex compare to other proprietary codecs?</A>
+<LI><A NAME="tex2html98"
+  HREF="node12.html#SECTION0012015000000000000000">Can Speex pass DTMF?</A>
+<LI><A NAME="tex2html99"
+  HREF="node12.html#SECTION0012016000000000000000">Can Speex pass V.9x modem signals correctly?</A>
+<LI><A NAME="tex2html100"
+  HREF="node12.html#SECTION0012017000000000000000">What is your (Jean-Marc) relationship with the University of Sherbrooke
+and how does Speex fit into that?</A>
+<LI><A NAME="tex2html101"
+  HREF="node12.html#SECTION0012018000000000000000">CELP, ACELP, what's the difference?</A>
 </UL>
 <BR>
-<LI><A NAME="tex2html89"
+<LI><A NAME="tex2html102"
   HREF="node13.html">Sample code</A>
 <UL>
-<LI><A NAME="tex2html90"
-  HREF="node13.html#SECTION000131000000000000000">sampleenc.c</A>
-<LI><A NAME="tex2html91"
-  HREF="node13.html#SECTION000132000000000000000">sampledec.c</A>
+<LI><A NAME="tex2html103"
+  HREF="node13.html#SECTION001310000000000000000">sampleenc.c</A>
+<LI><A NAME="tex2html104"
+  HREF="node13.html#SECTION001320000000000000000">sampledec.c</A>
 </UL>
 <BR>
-<LI><A NAME="tex2html92"
+<LI><A NAME="tex2html105"
   HREF="node14.html">IETF RTP Profile</A>
-<LI><A NAME="tex2html93"
+<LI><A NAME="tex2html106"
   HREF="node15.html">Speex License</A>
-<LI><A NAME="tex2html94"
+<LI><A NAME="tex2html107"
   HREF="node16.html">GNU Free Documentation License</A>
 <UL>
-<LI><A NAME="tex2html95"
-  HREF="node16.html#SECTION000161000000000000000">0. PREAMBLE</A>
-<LI><A NAME="tex2html96"
-  HREF="node16.html#SECTION000162000000000000000">1. APPLICABILITY AND DEFINITIONS</A>
-<LI><A NAME="tex2html97"
-  HREF="node16.html#SECTION000163000000000000000">2. VERBATIM COPYING</A>
-<LI><A NAME="tex2html98"
-  HREF="node16.html#SECTION000164000000000000000">3. COPYING IN QUANTITY</A>
-<LI><A NAME="tex2html99"
-  HREF="node16.html#SECTION000165000000000000000">4. MODIFICATIONS</A>
-<LI><A NAME="tex2html100"
-  HREF="node16.html#SECTION000166000000000000000">5. COMBINING DOCUMENTS</A>
-<LI><A NAME="tex2html101"
-  HREF="node16.html#SECTION000167000000000000000">6. COLLECTIONS OF DOCUMENTS</A>
-<LI><A NAME="tex2html102"
-  HREF="node16.html#SECTION000168000000000000000">7. AGGREGATION WITH INDEPENDENT WORKS</A>
-<LI><A NAME="tex2html103"
-  HREF="node16.html#SECTION000169000000000000000">8. TRANSLATION</A>
-<LI><A NAME="tex2html104"
-  HREF="node16.html#SECTION0001610000000000000000">9. TERMINATION</A>
-<LI><A NAME="tex2html105"
-  HREF="node16.html#SECTION0001611000000000000000">10. FUTURE REVISIONS OF THIS LICENSE</A>
+<LI><A NAME="tex2html108"
+  HREF="node16.html#SECTION001610000000000000000">0. PREAMBLE</A>
+<LI><A NAME="tex2html109"
+  HREF="node16.html#SECTION001620000000000000000">1. APPLICABILITY AND DEFINITIONS</A>
+<LI><A NAME="tex2html110"
+  HREF="node16.html#SECTION001630000000000000000">2. VERBATIM COPYING</A>
+<LI><A NAME="tex2html111"
+  HREF="node16.html#SECTION001640000000000000000">3. COPYING IN QUANTITY</A>
+<LI><A NAME="tex2html112"
+  HREF="node16.html#SECTION001650000000000000000">4. MODIFICATIONS</A>
+<LI><A NAME="tex2html113"
+  HREF="node16.html#SECTION001660000000000000000">5. COMBINING DOCUMENTS</A>
+<LI><A NAME="tex2html114"
+  HREF="node16.html#SECTION001670000000000000000">6. COLLECTIONS OF DOCUMENTS</A>
+<LI><A NAME="tex2html115"
+  HREF="node16.html#SECTION001680000000000000000">7. AGGREGATION WITH INDEPENDENT WORKS</A>
+<LI><A NAME="tex2html116"
+  HREF="node16.html#SECTION001690000000000000000">8. TRANSLATION</A>
+<LI><A NAME="tex2html117"
+  HREF="node16.html#SECTION0016100000000000000000">9. TERMINATION</A>
+<LI><A NAME="tex2html118"
+  HREF="node16.html#SECTION0016110000000000000000">10. FUTURE REVISIONS OF THIS LICENSE</A>
 </UL>
 <BR>
-<LI><A NAME="tex2html106"
+<LI><A NAME="tex2html119"
   HREF="node17.html">Index</A>
-<LI><A NAME="tex2html107"
+<LI><A NAME="tex2html120"
   HREF="node18.html">About this document ...</A>
 </UL>
 <!--End of Table of Child-Links-->
 <BR><HR>
 <ADDRESS>
 Jean-Marc Valin
-2006-08-12
+2007-05-23
 </ADDRESS>
 </BODY>
 </HTML>

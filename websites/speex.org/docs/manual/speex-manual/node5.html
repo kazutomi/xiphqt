@@ -28,43 +28,52 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
 <BODY >
 
 <DIV CLASS="navigation"><!--Navigation Panel-->
-<A NAME="tex2html238"
+<A NAME="tex2html262"
   HREF="node6.html">
 <IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
-<A NAME="tex2html232"
+<A NAME="tex2html256"
   HREF="manual.html">
 <IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
-<A NAME="tex2html226"
+<A NAME="tex2html250"
   HREF="node4.html">
 <IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
-<A NAME="tex2html234"
+<A NAME="tex2html258"
   HREF="node1.html">
 <IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
-<A NAME="tex2html236"
+<A NAME="tex2html260"
   HREF="node17.html">
 <IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
 <BR>
-<B> Next:</B> <A NAME="tex2html239"
+<B> Next:</B> <A NAME="tex2html263"
   HREF="node6.html">Command-line encoder/decoder</A>
-<B> Up:</B> <A NAME="tex2html233"
+<B> Up:</B> <A NAME="tex2html257"
   HREF="manual.html">The Speex Codec Manual</A>
-<B> Previous:</B> <A NAME="tex2html227"
+<B> Previous:</B> <A NAME="tex2html251"
   HREF="node4.html">Codec description</A>
- &nbsp; <B>  <A NAME="tex2html235"
+ &nbsp; <B>  <A NAME="tex2html259"
   HREF="node1.html">Contents</A></B> 
- &nbsp; <B>  <A NAME="tex2html237"
+ &nbsp; <B>  <A NAME="tex2html261"
   HREF="node17.html">Index</A></B> 
 <BR>
 <BR></DIV>
 <!--End of Navigation Panel-->
+<!--Table of Child-Links-->
+<A NAME="CHILD_LINKS"><STRONG>Subsections</STRONG></A>
 
-<H1><A NAME="SECTION00050000000000000000">
+<UL CLASS="ChildLinks">
+<LI><A NAME="tex2html264"
+  HREF="node5.html#SECTION00510000000000000000">Platforms</A>
+</UL>
+<!--End of Table of Child-Links-->
+<HR>
+
+<H1><A NAME="SECTION00500000000000000000">
 Compiling</A>
 </H1>
 
 <P>
-Compiling Speex under UNIX or any platform supported by autoconf (e.g.
-Win32/cygwin) is as easy as typing:
+Compiling Speex under UNIX/Linux or any other platform supported by
+autoconf (e.g. Win32/cygwin) is as easy as typing:
 
 <P>
 
@@ -83,7 +92,8 @@ Win32/cygwin) is as easy as typing:
 <P>
 <DL>
 <DT><STRONG>-prefix=&lt;path&gt;</STRONG></DT>
-<DD>Specifies where to install Speex
+<DD>Specifies the base path for installing Speex
+(e.g. /usr)
 </DD>
 <DT><STRONG>-enable-shared/-disable-shared</STRONG></DT>
 <DD>Whether to compile shared libraries
@@ -93,16 +103,16 @@ Win32/cygwin) is as easy as typing:
 </DD>
 <DT><STRONG>-disable-wideband</STRONG></DT>
 <DD>Disable the wideband part of Speex (typically
-to same space)
+to save space)
 </DD>
 <DT><STRONG>-enable-valgrind</STRONG></DT>
-<DD>Enable extra information when (and only when)
-running with valgrind
+<DD>Enable extra hits for valgrind for debugging
+purposes (do not use by default)
 </DD>
 <DT><STRONG>-enable-sse</STRONG></DT>
 <DD>Enable use of SSE instructions (x86/float only)
 </DD>
-<DT><STRONG>-enable-fixed-point<A NAME="106"></A></STRONG></DT>
+<DT><STRONG>-enable-fixed-point<A NAME="136"></A></STRONG></DT>
 <DD>Compile Speex for a
 processor that does not have a floating point unit (FPU)
 </DD>
@@ -115,7 +125,7 @@ processor that does not have a floating point unit (FPU)
 (gcc only)
 </DD>
 <DT><STRONG>-enable-fixed-point-debug</STRONG></DT>
-<DD>Use only for debugging the fixed-point<A NAME="110"></A>
+<DD>Use only for debugging the fixed-point<A NAME="140"></A>
 code (very slow)
 </DD>
 <DT><STRONG>-enable-epic-48k</STRONG></DT>
@@ -129,47 +139,109 @@ narrowband mode
 <DD>Enable assembly specific to the Blackfin
 DSP architecture (gcc only)
 </DD>
-<DT><STRONG>-enable-16bit-precision</STRONG></DT>
-<DD>Reduces precision to 16 bits in time-critical
-areas (fixed-point only)
+<DT><STRONG>-enable-vorbis-psycho</STRONG></DT>
+<DD>Make the encoder use the Vorbis psycho-acoustic
+model. This is very experimental and may be removed in the future.
 </DD>
 </DL>
+
+<P>
+
+<H1><A NAME="SECTION00510000000000000000">
+Platforms</A>
+</H1>
+
+<P>
+Speex is known to compile and work on a large number of architectures,
+both floating-point and fixed-point. In general, any architecture
+that can natively compute the multiplication of two signed 16-bit
+numbers (32-bit result) and runs at a sufficient clock rate (architecture-dependent)
+is capable of running Speex. Architectures that are <SPAN  CLASS="textbf">known</SPAN>
+to be supported (it probably works on many others) are:
+
+<P>
+
+<UL>
+<LI>x86 &amp; x86-64
+</LI>
+<LI>Power
+</LI>
+<LI>SPARC
+</LI>
+<LI>ARM
+</LI>
+<LI>Blackfin
+</LI>
+<LI>TI C54xx &amp; C55xx
+</LI>
+<LI>TI C6xxx
+</LI>
+<LI>TriMedia (experimental)
+</LI>
+</UL>
+Operating systems on top of which Speex is known to work include (it
+probably works on many others):
+
+<P>
+
+<UL>
+<LI>Linux
+</LI>
+<LI><SPAN CLASS="MATH"><IMG
+ WIDTH="12" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img4.png"
+ ALT="$ \mu$"></SPAN>
+Clinux
+</LI>
+<LI>MacOS X
+</LI>
+<LI>BSD
+</LI>
+<LI>Other UNIX/POSIX variants
+</LI>
+<LI>Symbian
+</LI>
+</UL>
+The source code directory include additional information for compiling
+on certain architectures or operating systems in README.xxx files.
+
+<P>
 
 
 <P>
 
 <DIV CLASS="navigation"><HR>
 <!--Navigation Panel-->
-<A NAME="tex2html238"
+<A NAME="tex2html262"
   HREF="node6.html">
 <IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
-<A NAME="tex2html232"
+<A NAME="tex2html256"
   HREF="manual.html">
 <IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
-<A NAME="tex2html226"
+<A NAME="tex2html250"
   HREF="node4.html">
 <IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
-<A NAME="tex2html234"
+<A NAME="tex2html258"
   HREF="node1.html">
 <IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
-<A NAME="tex2html236"
+<A NAME="tex2html260"
   HREF="node17.html">
 <IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
 <BR>
-<B> Next:</B> <A NAME="tex2html239"
+<B> Next:</B> <A NAME="tex2html263"
   HREF="node6.html">Command-line encoder/decoder</A>
-<B> Up:</B> <A NAME="tex2html233"
+<B> Up:</B> <A NAME="tex2html257"
   HREF="manual.html">The Speex Codec Manual</A>
-<B> Previous:</B> <A NAME="tex2html227"
+<B> Previous:</B> <A NAME="tex2html251"
   HREF="node4.html">Codec description</A>
- &nbsp; <B>  <A NAME="tex2html235"
+ &nbsp; <B>  <A NAME="tex2html259"
   HREF="node1.html">Contents</A></B> 
- &nbsp; <B>  <A NAME="tex2html237"
+ &nbsp; <B>  <A NAME="tex2html261"
   HREF="node17.html">Index</A></B> </DIV>
 <!--End of Navigation Panel-->
 <ADDRESS>
 Jean-Marc Valin
-2006-08-12
+2007-05-23
 </ADDRESS>
 </BODY>
 </HTML>

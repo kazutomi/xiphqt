@@ -28,31 +28,31 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
 <BODY >
 
 <DIV CLASS="navigation"><!--Navigation Panel-->
-<A NAME="tex2html270"
+<A NAME="tex2html295"
   HREF="node8.html">
 <IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
-<A NAME="tex2html264"
+<A NAME="tex2html289"
   HREF="manual.html">
 <IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
-<A NAME="tex2html258"
+<A NAME="tex2html283"
   HREF="node6.html">
 <IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
-<A NAME="tex2html266"
+<A NAME="tex2html291"
   HREF="node1.html">
 <IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
-<A NAME="tex2html268"
+<A NAME="tex2html293"
   HREF="node17.html">
 <IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
 <BR>
-<B> Next:</B> <A NAME="tex2html271"
+<B> Next:</B> <A NAME="tex2html296"
   HREF="node8.html">Formats and standards</A>
-<B> Up:</B> <A NAME="tex2html265"
+<B> Up:</B> <A NAME="tex2html290"
   HREF="manual.html">The Speex Codec Manual</A>
-<B> Previous:</B> <A NAME="tex2html259"
+<B> Previous:</B> <A NAME="tex2html284"
   HREF="node6.html">Command-line encoder/decoder</A>
- &nbsp; <B>  <A NAME="tex2html267"
+ &nbsp; <B>  <A NAME="tex2html292"
   HREF="node1.html">Contents</A></B> 
- &nbsp; <B>  <A NAME="tex2html269"
+ &nbsp; <B>  <A NAME="tex2html294"
   HREF="node17.html">Index</A></B> 
 <BR>
 <BR></DIV>
@@ -61,49 +61,62 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
 <A NAME="CHILD_LINKS"><STRONG>Subsections</STRONG></A>
 
 <UL CLASS="ChildLinks">
-<LI><A NAME="tex2html272"
-  HREF="node7.html#SECTION00071000000000000000">Encoding</A>
-<LI><A NAME="tex2html273"
-  HREF="node7.html#SECTION00072000000000000000">Decoding</A>
-<LI><A NAME="tex2html274"
-  HREF="node7.html#SECTION00073000000000000000">Preprocessor</A>
-<LI><A NAME="tex2html275"
-  HREF="node7.html#SECTION00074000000000000000">Echo Cancellation</A>
+<LI><A NAME="tex2html297"
+  HREF="node7.html#SECTION00710000000000000000">Encoding</A>
+<LI><A NAME="tex2html298"
+  HREF="node7.html#SECTION00720000000000000000">Decoding</A>
+<LI><A NAME="tex2html299"
+  HREF="node7.html#SECTION00730000000000000000">Preprocessor</A>
+<LI><A NAME="tex2html300"
+  HREF="node7.html#SECTION00740000000000000000">Echo Cancellation</A>
 <UL>
-<LI><A NAME="tex2html276"
-  HREF="node7.html#SECTION00074100000000000000">Troubleshooting</A>
+<LI><A NAME="tex2html301"
+  HREF="node7.html#SECTION00741000000000000000">Troubleshooting</A>
 </UL>
 <BR>
-<LI><A NAME="tex2html277"
-  HREF="node7.html#SECTION00075000000000000000">Codec Options (speex_*_ctl)</A>
-<LI><A NAME="tex2html278"
-  HREF="node7.html#SECTION00076000000000000000">Mode queries</A>
-<LI><A NAME="tex2html279"
-  HREF="node7.html#SECTION00077000000000000000">Preprocessor options</A>
-<LI><A NAME="tex2html280"
-  HREF="node7.html#SECTION00078000000000000000">Packing and in-band signalling</A>
+<LI><A NAME="tex2html302"
+  HREF="node7.html#SECTION00750000000000000000">Jitter Buffer</A>
+<UL>
+<LI><A NAME="tex2html303"
+  HREF="node7.html#SECTION00751000000000000000">Generic Jitter Buffer</A>
+<LI><A NAME="tex2html304"
+  HREF="node7.html#SECTION00752000000000000000">Speex Jitter Buffer</A>
+</UL>
+<BR>
+<LI><A NAME="tex2html305"
+  HREF="node7.html#SECTION00760000000000000000">Resampler</A>
+<LI><A NAME="tex2html306"
+  HREF="node7.html#SECTION00770000000000000000">Codec Options (speex_*_ctl)</A>
+<LI><A NAME="tex2html307"
+  HREF="node7.html#SECTION00780000000000000000">Mode queries</A>
+<LI><A NAME="tex2html308"
+  HREF="node7.html#SECTION00790000000000000000">Preprocessor options</A>
+<LI><A NAME="tex2html309"
+  HREF="node7.html#SECTION007100000000000000000">Packing and in-band signalling</A>
 </UL>
 <!--End of Table of Child-Links-->
 <HR>
 
-<H1><A NAME="SECTION00070000000000000000"></A><A NAME="178"></A><A NAME="179"></A><A NAME="sec:Programming-with-Speex"></A>
+<H1><A NAME="SECTION00700000000000000000"></A><A NAME="214"></A><A NAME="215"></A><A NAME="sec:Programming-with-Speex"></A>
 <BR>
 Programming with Speex (the libspeex API)
 </H1>
 
 <P>
 This section explains how to use the Speex API. Examples of code can
-also be found in appendix <A HREF="node13.html#sec:Sample-code">B</A>.
+also be found in Appendix <A HREF="node13.html#sec:Sample-code">B</A> and the complete
+API documentation is included in the Documentation section of the
+Speex website (http://www.speex.org/).
 
 <P>
 
-<H2><A NAME="SECTION00071000000000000000"></A><A NAME="sub:Encoding"></A>
+<H1><A NAME="SECTION00710000000000000000"></A><A NAME="sub:Encoding"></A>
 <BR>
 Encoding
-</H2>
+</H1>
 
 <P>
-In order to encode speech using Speex, you first need to:
+In order to encode speech using Speex, one first needs to:
 
 <P>
 
@@ -111,7 +124,7 @@ In order to encode speech using Speex, you first need to:
 <DT>
 <DD>#include&nbsp;&lt;speex/speex.h&gt;
 </DD>
-</DL>You then need to declare a Speex bit-packing struct
+</DL>Then a Speex bit-packing struct must be declared as:
 
 <P>
 
@@ -119,7 +132,7 @@ In order to encode speech using Speex, you first need to:
 <DT>
 <DD>SpeexBits&nbsp;bits;
 </DD>
-</DL>and a Speex encoder state
+</DL>along with a Speex encoder state
 
 <P>
 
@@ -141,7 +154,7 @@ enc_state&nbsp;=&nbsp;speex_encoder_init(&amp;speex_nb_mode);
 </DL>For wideband coding, <SPAN  CLASS="textit">speex_nb_mode</SPAN> will be replaced by <SPAN  CLASS="textit">speex_wb_mode</SPAN>.
 In most cases, you will need to know the frame size used by the mode
 you are using. You can get that value in the <SPAN  CLASS="textit">frame_size</SPAN> variable
-with:
+(expressed in <SPAN  CLASS="textbf">samples</SPAN>, not bytes) with:
 
 <P>
 
@@ -150,7 +163,20 @@ with:
 <DD>speex_encoder_ctl(enc_state,SPEEX_GET_FRAME_SIZE,&amp;frame_size);
 </DD>
 </DL>In practice, <SPAN  CLASS="textit">frame_size</SPAN> will correspond to 20 ms when using
-8, 16, or 32 kHz sampling rate.
+8, 16, or 32 kHz sampling rate. There are many parameters that can
+be set for the Speex encoder, but the most useful one is the quality
+parameter that controls the quality vs bit-rate tradeoff. This is
+set by:
+
+<P>
+
+<DL COMPACT>
+<DT>
+<DD>speex_encoder_ctl(enc_state,SPEEX_SET_QUALITY,&amp;quality);
+</DD>
+</DL>where <SPAN  CLASS="textit">quality</SPAN> is an integer value ranging from 0 to 10 (inclusively).
+The mapping between quality and bit-rate is described in Fig. <A HREF="#cap:quality_vs_bps">4</A>
+for narrowband.
 
 <P>
 Once the initialization is done, for every input frame:
@@ -202,10 +228,10 @@ speex_encoder_destroy(enc_state);
 
 <P>
 
-<H2><A NAME="SECTION00072000000000000000"></A><A NAME="sub:Decoding"></A>
+<H1><A NAME="SECTION00720000000000000000"></A><A NAME="sub:Decoding"></A>
 <BR>
 Decoding
-</H2>
+</H1>
 
 <P>
 In order to decode speech using Speex, you first need to:
@@ -246,7 +272,7 @@ dec_state&nbsp;=&nbsp;speex_decoder_init(&amp;speex_nb_mode);
 </DL>For wideband decoding, <SPAN  CLASS="textit">speex_nb_mode</SPAN> will be replaced by
 <SPAN  CLASS="textit">speex_wb_mode</SPAN>. If you need to obtain the size of the frames
 that will be used by the decoder, you can get that value in the <SPAN  CLASS="textit">frame_size</SPAN>
-variable with:
+variable (expressed in <SPAN  CLASS="textbf">samples</SPAN>, not bytes) with:
 
 <P>
 
@@ -283,7 +309,7 @@ speex_decode_int(dec_state,&nbsp;&amp;bits,&nbsp;output_frame);
 data received for a frame, <SPAN  CLASS="textit">nbBytes</SPAN> is the size (in bytes) of
 that bit-stream, and <SPAN  CLASS="textit">output_frame</SPAN> is a <SPAN  CLASS="textit">(short *)</SPAN>
 and points to the area where the decoded speech frame will be written.
-A NULL value as the first argument indicates that we don't have the
+A NULL value as the second argument indicates that we don't have the
 bits for the current frame. When a frame is lost, the Speex decoder
 will do its best to &#34;guess&#34; the correct signal.
 
@@ -306,13 +332,13 @@ speex_decoder_destroy(dec_state);
 </DL>
 <P>
 
-<H2><A NAME="SECTION00073000000000000000"></A><A NAME="sub:Preprocessor"></A>
+<H1><A NAME="SECTION00730000000000000000"></A><A NAME="sub:Preprocessor"></A>
 <BR>
 Preprocessor
-</H2>
+</H1>
 
 <P>
-In order to use the Speex preprocessor<A NAME="247"></A>, you first
+In order to use the Speex preprocessor<A NAME="289"></A>, you first
 need to:
 
 <P>
@@ -339,11 +365,9 @@ For each input frame, you need to call:
 
 <DL COMPACT>
 <DT>
-<DD>speex_preprocess(preprocess_state,&nbsp;audio_frame,&nbsp;echo_residue);
+<DD>speex_preprocess_run(preprocess_state,&nbsp;audio_frame);
 </DD>
-</DL>where <TT>audio_frame</TT> is used both as input and output and <TT>echo_residue</TT>
-is either an array filled by the echo canceller, or NULL if the preprocessor
-is used without the echo canceller.
+</DL>where <TT>audio_frame</TT> is used both as input and output.
 
 <P>
 In cases where the output audio is not useful for a certain frame,
@@ -353,7 +377,7 @@ it is possible to use instead:
 
 <DL COMPACT>
 <DT>
-<DD>speex_preprocess_estimate_update(preprocess_state,&nbsp;audio_frame,&nbsp;echo_residue);
+<DD>speex_preprocess_estimate_update(preprocess_state,&nbsp;audio_frame);
 </DD>
 </DL>This call will update all the preprocessor internal state variables
 without computing the output audio, thus saving some CPU cycles.
@@ -382,14 +406,14 @@ The preprocessor state can be destroyed using:
 </DL>
 <P>
 
-<H2><A NAME="SECTION00074000000000000000"></A><A NAME="sub:Echo-Cancellation"></A>
+<H1><A NAME="SECTION00740000000000000000"></A><A NAME="sub:Echo-Cancellation"></A>
 <BR>
 Echo Cancellation
-</H2>
+</H1>
 
 <P>
-The Speex library now includes an echo cancellation<A NAME="266"></A>
-algorithm suitable for Acoustic Echo Cancellation<A NAME="267"></A>
+The Speex library now includes an echo cancellation<A NAME="307"></A>
+algorithm suitable for Acoustic Echo Cancellation<A NAME="308"></A>
 (AEC). In order to use the echo canceller, you first need to
 
 <P>
@@ -409,7 +433,7 @@ algorithm suitable for Acoustic Echo Cancellation<A NAME="267"></A>
 </DL>where <TT>frame_size</TT> is the amount of data (in samples) you
 want to process at once and <TT>filter_length</TT> is the length
 (in samples) of the echo cancelling filter you want to use (also known
-as <SPAN  CLASS="textit">tail length</SPAN><A NAME="276"></A>). It is recommended to
+as <SPAN  CLASS="textit">tail length</SPAN><A NAME="317"></A>). It is recommended to
 use a frame size in the order of 20 ms (or equal to the codec frame
 size) and make sure it is easy to perform an FFT of that size (powers
 of two are better than prime sizes). The recommended tail length is
@@ -425,15 +449,12 @@ Once the echo canceller state is created, audio can be processed by:
 
 <DL COMPACT>
 <DT>
-<DD>speex_echo_cancel(echo_state,&nbsp;input_frame,&nbsp;echo_frame,&nbsp;output_frame,&nbsp;residue);
+<DD>speex_echo_cancellation(echo_state,&nbsp;input_frame,&nbsp;echo_frame,&nbsp;output_frame);
 </DD>
 </DL>where <TT>input_frame</TT> is the audio as captured by the microphone,
 <TT>echo_frame</TT> is the signal that was played in the speaker
 (and needs to be removed) and <TT>output_frame</TT> is the signal
-with echo removed. The <TT>residue</TT> parameter is optional (you
-can set it to NULL) and is used to return the estimated power spectrum
-of the echo residue so it can be removed by the preprocessor (if you
-with to use it). 
+with echo removed. 
 
 <P>
 One important thing to keep in mind is the relationship between <TT>input_frame</TT>
@@ -455,19 +476,28 @@ In the ideal case, you code would look like:
 read_from_soundcard(input_frame,&nbsp;frame_size);
 
 <P>
-speex_echo_cancel(echo_state,&nbsp;input_frame,&nbsp;echo_frame,&nbsp;output_frame,&nbsp;residue);
+speex_echo_cancellation(echo_state,&nbsp;input_frame,&nbsp;echo_frame,&nbsp;output_frame);
 </DD>
-</DL>As stated above, if you wish to further reduce the echo present in
-the signal, you can do so by passing <TT>residue</TT> as the last
-parameter of <TT>speex_preprocess()</TT> function (see Section <A HREF="#sub:Preprocessor">5.3</A>).
+</DL>If you wish to further reduce the echo present in the signal, you
+can do so by <TT>associating the echo canceller to the preprocessor</TT>
+(see Section <A HREF="#sub:Preprocessor">5.3</A>). This is done by calling:
 
 <P>
-As of version 1.2-beta1, there is an alternative, simpler API that
-can be used instead of <SPAN  CLASS="textit">speex_echo_cancel()</SPAN>. When audio capture
-and playback are handled asynchronously (e.g. in different threads
-or using the <SPAN  CLASS="textit">poll()</SPAN> or <SPAN  CLASS="textit">select()</SPAN> system call), it can
-be difficult to keep track of what input_frame comes with what echo_frame.
-Instead, the playback comtext/thread can simply call:
+
+<DL COMPACT>
+<DT>
+<DD>speex_preprocess_ctl(preprocess_state,&nbsp;SPEEX_PREPROCESS_SET_ECHO_STATE,&nbsp;echo_state);
+</DD>
+</DL>in the initialisation.
+
+<P>
+As of version 1.2-beta2, there is an alternative, simpler API that
+can be used instead of <SPAN  CLASS="textit">speex_echo_cancellation()</SPAN>. When audio
+capture and playback are handled asynchronously (e.g. in different
+threads or using the <SPAN  CLASS="textit">poll()</SPAN> or <SPAN  CLASS="textit">select()</SPAN> system call),
+it can be difficult to keep track of what input_frame comes with
+what echo_frame. Instead, the playback comtext/thread can simply
+call:
 
 <P>
 
@@ -482,13 +512,16 @@ calls:
 
 <DL COMPACT>
 <DT>
-<DD>speex_echo_capture(echo_state,&nbsp;input_frame,&nbsp;output_frame,&nbsp;residue);
+<DD>speex_echo_capture(echo_state,&nbsp;input_frame,&nbsp;output_frame);
 </DD>
 </DL>for every frame captured. Internally, <SPAN  CLASS="textit">speex_echo_playback()</SPAN>
 simply buffers the playback frame so it can be used by <SPAN  CLASS="textit">speex_echo_capture()</SPAN>
-to call <SPAN  CLASS="textit">speex_echo_cancel()</SPAN>. When capture and playback are
-done synchronously, <SPAN  CLASS="textit">speex_echo_cancel()</SPAN> is still prefered
-since it gives better control on the exact input/echo timing.
+to call <SPAN  CLASS="textit">speex_echo_cancel()</SPAN>. A side effect of using this
+alternate API is that the playback audio is delayed by two frames,
+which is the normal delay caused by the soundcard. When capture and
+playback are already synchronised, <SPAN  CLASS="textit">speex_echo_cancellation()</SPAN>
+is preferable since it gives better control on the exact input/echo
+timing.
 
 <P>
 The echo cancellation state can be destroyed with:
@@ -511,9 +544,9 @@ can be reused without the need to create another state with:
 </DL>
 <P>
 
-<H3><A NAME="SECTION00074100000000000000">
+<H2><A NAME="SECTION00741000000000000000">
 Troubleshooting</A>
-</H3>
+</H2>
 
 <P>
 There are several things that may prevent the echo canceller from
@@ -548,24 +581,159 @@ Use good audio gear and avoid saturation/clipping.
 </LI>
 </UL>
 Also useful is reading <SPAN  CLASS="textit">Echo Cancellation Demystified</SPAN> by Alexey
-Frunze<A NAME="tex2html1"
-  HREF="footnode.html#foot317"><SUP><SPAN CLASS="arabic">1</SPAN></SUP></A>, which explains the fundamental principles of echo cancellation.
+Frunze<A NAME="tex2html2"
+  HREF="footnode.html#foot358"><SUP><IMG  ALIGN="BOTTOM" BORDER="1" ALT="[*]" SRC="footnote.png"></SUP></A>, which explains the fundamental principles of echo cancellation.
 The details of the algorithm described in the article are different,
 but the general ideas of echo cancellation through adaptive filters
 are the same.
 
 <P>
+As of version 1.2beta2, a new <TT>echo_diagnostic.m</TT> tool is
+included in the source distribution. The first step is to define DUMP_ECHO_CANCEL_DATA
+during the build. This causes the echo canceller to automatically
+save the near-end, far-end and output signals to files (aec_rec.sw
+aec_play.sw and aec_out.sw). These are exactly what the AEC receives
+and outputs. From there, it is necessary to start Octave and type:
 
-<H2><A NAME="SECTION00075000000000000000"></A><A NAME="sub:Codec-Options"></A>
-<BR>
-Codec Options (speex_*_ctl)
+<P>
+
+<DL COMPACT>
+<DT>
+<DD>echo_diagnostic('aec_rec.sw',&nbsp;'aec_play.sw',&nbsp;'aec_diagnostic.sw',&nbsp;1024);
+</DD>
+</DL>The value of 1024 is the filter length and can be changed. There will
+be some (hopefully) useful messages printed and echo cancelled audio
+will be saved to aec_diagnostic.sw . If even that output is bad (almost
+no cancellation) then there is  probably problem with the playback
+or recording process.
+
+<P>
+
+<H1><A NAME="SECTION00750000000000000000">
+Jitter Buffer</A>
+</H1>
+
+<P>
+There are two jitter buffers. Both can be enabled by including:
+
+<P>
+
+<DL COMPACT>
+<DT>
+<DD>#include&nbsp;&lt;speex/speex_jitter.c&gt;
+</DD>
+</DL>
+<P>
+
+<H2><A NAME="SECTION00751000000000000000">
+Generic Jitter Buffer</A>
 </H2>
 
 <P>
+
+<H2><A NAME="SECTION00752000000000000000">
+Speex Jitter Buffer</A>
+</H2>
+
+<P>
+
+<H1><A NAME="SECTION00760000000000000000">
+Resampler</A>
+</H1>
+
+<P>
+As of version 1.2beta2, Speex includes a resampling modules. To make
+use of the resampler, it is necessary to include its header file:
+
+<P>
+
+<DL COMPACT>
+<DT>
+<DD>#include&nbsp;&lt;speex/speex_resampler.h&gt;
+</DD>
+</DL>For each stream that is to be resampled, it is necessary to create
+a resampler state with:
+
+<P>
+
+<DL COMPACT>
+<DT>
+<DD>SpeexResamplerState&nbsp;*resampler;
+
+<P>
+resampler&nbsp;=&nbsp;speex_resampler_init(nb_channels,&nbsp;input_rate,&nbsp;output_rate,&nbsp;quality,&nbsp;&amp;err);
+</DD>
+</DL>where nb_channels is the number of channels that will be used (either
+interleaved or non-interleaved), input_rate is the sampling rate
+of the input stream, output_rate is the sampling rate of the output
+stream and quality is the requested quality setting (0 to 10). The
+quality parameter is useful for controlling the quality/complexity/latency
+tradeoff. Using a higher quality setting means less noise/aliasing,
+a higher complexity and a higher latency. Usually, a quality of 3
+is acceptable for most desktop uses and quality 10 is mostly recommended
+for pro audio work. Quality 0 usually has a decent sound (certainly
+better than using linear interpolation resampling), but artifacts
+may be heard.
+
+<P>
+The actual resampling is performed using
+
+<P>
+
+<DL COMPACT>
+<DT>
+<DD>err&nbsp;=&nbsp;speex_resampler_process_int(resampler,&nbsp;channelID,&nbsp;in,&nbsp;&amp;in_length,&nbsp;out,&nbsp;&amp;out_length);
+</DD>
+</DL>where channelID is the ID of the channel to be processed. For a mono
+stream, use 0. The <SPAN  CLASS="textit">in</SPAN> pointer points to the first sample of
+the input buffer for the selected channel and <SPAN  CLASS="textit">out</SPAN> points to
+the first sample of the output. The size of the input and output buffers
+are specified by <SPAN  CLASS="textit">in_length</SPAN> and <SPAN  CLASS="textit">out_length</SPAN> respectively.
+Upon completion, these values are replaced by the number of samples
+read and written by the resampler. Unless an error occurs, either
+all input samples will be read or all output samples will be written
+to (or both). For floating-point samples, the function speex_resampler_process_float()
+behaves similarly.
+
+<P>
+It is also possible to process multiple channels at once. 
+
+<P>
+
+<H1><A NAME="SECTION00770000000000000000"></A><A NAME="sub:Codec-Options"></A>
+<BR>
+Codec Options (speex_*_ctl)
+</H1>
+
+<P>
+<BLOCKQUOTE>
+<DIV ALIGN="CENTER">
+<SPAN  CLASS="textit">Entities should not be multiplied beyond necessity - William
+of Ockham.</SPAN>
+</DIV></BLOCKQUOTE>
+<P>
+<BLOCKQUOTE>
+<DIV ALIGN="CENTER">
+</DIV>
+</BLOCKQUOTE>
+<P>
+<BLOCKQUOTE>
+<DIV ALIGN="CENTER">
+<SPAN  CLASS="textit">Just because there's an option doesn't mean you have to use
+it - me.</SPAN>
+</DIV></BLOCKQUOTE>
+<P>
+<BLOCKQUOTE>
+<DIV ALIGN="CENTER">
+</DIV>
+</BLOCKQUOTE>
 The Speex encoder and decoder support many options and requests that
 can be accessed through the <SPAN  CLASS="textit">speex_encoder_ctl</SPAN> and <SPAN  CLASS="textit">speex_decoder_ctl</SPAN>
-functions. These functions are similar to the <SPAN  CLASS="textit">ioctl</SPAN> system
-call and their prototypes are:
+functions. Despite that, the defaults are good for many applications
+and <SPAN  CLASS="textbf">optional settings should only be used when one understands
+them and knows that they are needed</SPAN>. A common error is to attempt
+to set many unnecessary settings. These functions are similar to the
+<SPAN  CLASS="textit">ioctl</SPAN> system call and their prototypes are:
 
 <P>
 
@@ -582,15 +750,15 @@ to the encoder or the decoder):
 <P>
 <DL>
 <DT><STRONG>SPEEX_SET_ENH**</STRONG></DT>
-<DD>Set perceptual enhancer<A NAME="332"></A>
+<DD>Set perceptual enhancer<A NAME="402"></A>
 to on (1) or off (0) (integer)
 </DD>
 <DT><STRONG>SPEEX_GET_ENH**</STRONG></DT>
 <DD>Get perceptual enhancer status (integer)
 </DD>
 <DT><STRONG>SPEEX_GET_FRAME_SIZE</STRONG></DT>
-<DD>Get the frame size used for the current
-mode (integer)
+<DD>Get the number of samples per frame for
+the current mode (integer)
 </DD>
 <DT><STRONG>SPEEX_SET_QUALITY*</STRONG></DT>
 <DD>Set the encoder speech quality (integer
@@ -602,46 +770,52 @@ mode (integer)
 </DD>
 <DT><STRONG>SPEEX_SET_MODE*<SPAN CLASS="MATH"><IMG
  WIDTH="12" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
- SRC="img3.png"
- ALT="$\dagger$"></SPAN></STRONG></DT>
-<DD>&nbsp;
+ SRC="img5.png"
+ ALT="$ \dagger$"></SPAN>
+</STRONG></DT>
+<DD>Use the source, Luke!
 </DD>
 <DT><STRONG>SPEEX_GET_MODE*<SPAN CLASS="MATH"><IMG
  WIDTH="12" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
- SRC="img3.png"
- ALT="$\dagger$"></SPAN></STRONG></DT>
-<DD>&nbsp;
+ SRC="img5.png"
+ ALT="$ \dagger$"></SPAN>
+</STRONG></DT>
+<DD>Use the source, Luke!
 </DD>
 <DT><STRONG>SPEEX_SET_LOW_MODE*<SPAN CLASS="MATH"><IMG
  WIDTH="12" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
- SRC="img3.png"
- ALT="$\dagger$"></SPAN></STRONG></DT>
-<DD>&nbsp;
+ SRC="img5.png"
+ ALT="$ \dagger$"></SPAN>
+</STRONG></DT>
+<DD>Use the source, Luke!
 </DD>
 <DT><STRONG>SPEEX_GET_LOW_MODE*<SPAN CLASS="MATH"><IMG
  WIDTH="12" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
- SRC="img3.png"
- ALT="$\dagger$"></SPAN></STRONG></DT>
-<DD>&nbsp;
+ SRC="img5.png"
+ ALT="$ \dagger$"></SPAN>
+</STRONG></DT>
+<DD>Use the source, Luke!
 </DD>
 <DT><STRONG>SPEEX_SET_HIGH_MODE*<SPAN CLASS="MATH"><IMG
  WIDTH="12" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
- SRC="img3.png"
- ALT="$\dagger$"></SPAN></STRONG></DT>
-<DD>&nbsp;
+ SRC="img5.png"
+ ALT="$ \dagger$"></SPAN>
+</STRONG></DT>
+<DD>Use the source, Luke!
 </DD>
 <DT><STRONG>SPEEX_GET_HIGH_MODE*<SPAN CLASS="MATH"><IMG
  WIDTH="12" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
- SRC="img3.png"
- ALT="$\dagger$"></SPAN></STRONG></DT>
-<DD>&nbsp;
+ SRC="img5.png"
+ ALT="$ \dagger$"></SPAN>
+</STRONG></DT>
+<DD>Use the source, Luke!
 </DD>
 <DT><STRONG>SPEEX_SET_VBR*</STRONG></DT>
 <DD>Set variable bit-rate (VBR) to on (1) or off
 (0) (integer)
 </DD>
 <DT><STRONG>SPEEX_GET_VBR*</STRONG></DT>
-<DD>Get variable bit-rate<A NAME="346"></A>
+<DD>Get variable bit-rate<A NAME="416"></A>
 (VBR) status (integer)
 </DD>
 <DT><STRONG>SPEEX_SET_VBR_QUALITY*</STRONG></DT>
@@ -681,7 +855,7 @@ Hz)
 state (zeros all memories)
 </DD>
 <DT><STRONG>SPEEX_SET_VAD*</STRONG></DT>
-<DD>Set voice activity detection<A NAME="357"></A>
+<DD>Set voice activity detection<A NAME="427"></A>
 (VAD) to on (1) or off (0) (integer)
 </DD>
 <DT><STRONG>SPEEX_GET_VAD*</STRONG></DT>
@@ -689,7 +863,7 @@ state (zeros all memories)
 (integer)
 </DD>
 <DT><STRONG>SPEEX_SET_DTX*</STRONG></DT>
-<DD>Set discontinuous transmission<A NAME="360"></A>
+<DD>Set discontinuous transmission<A NAME="430"></A>
 (DTX) to on (1) or off (0) (integer)
 </DD>
 <DT><STRONG>SPEEX_GET_DTX*</STRONG></DT>
@@ -697,7 +871,7 @@ state (zeros all memories)
 (integer)
 </DD>
 <DT><STRONG>SPEEX_SET_ABR*</STRONG></DT>
-<DD>Set average bit-rate<A NAME="363"></A>
+<DD>Set average bit-rate<A NAME="433"></A>
 (ABR) to a value n in bits per second (integer in bps)
 </DD>
 <DT><STRONG>SPEEX_GET_ABR*</STRONG></DT>
@@ -720,18 +894,19 @@ for PLC (integer in percent)
 </DD>
 <DT><STRONG><SPAN CLASS="MATH"><IMG
  WIDTH="12" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
- SRC="img3.png"
- ALT="$\dagger$"></SPAN></STRONG></DT>
+ SRC="img5.png"
+ ALT="$ \dagger$"></SPAN>
+</STRONG></DT>
 <DD>normally only used internally
 </DD>
 </DL>
 
 <P>
 
-<H2><A NAME="SECTION00076000000000000000"></A><A NAME="sub:Mode-queries"></A>
+<H1><A NAME="SECTION00780000000000000000"></A><A NAME="sub:Mode-queries"></A>
 <BR>
 Mode queries
-</H2>
+</H1>
 
 <P>
 Speex modes have a query system similar to the speex_encoder_ctl
@@ -762,10 +937,10 @@ specified through <SPAN  CLASS="textit">ptr</SPAN> (integer in bps).
 
 <P>
 
-<H2><A NAME="SECTION00077000000000000000"></A><A NAME="sub:Preprocessor-options"></A>
+<H1><A NAME="SECTION00790000000000000000"></A><A NAME="sub:Preprocessor-options"></A>
 <BR>
 Preprocessor options
-</H2>
+</H1>
 
 <P>
 <DL>
@@ -816,22 +991,66 @@ on(1) or off(2) (integer)
 <DT><STRONG>SPEEX_PREPROCESS_GET_DEREVERB_DECAY</STRONG></DT>
 <DD>&nbsp;
 </DD>
+<DT><STRONG>SPEEX_PREPROCESS_SET_PROB_START</STRONG></DT>
+<DD>&nbsp;
+</DD>
+<DT><STRONG>SPEEX_PREPROCESS_GET_PROB_START</STRONG></DT>
+<DD>&nbsp;
+</DD>
+<DT><STRONG>SPEEX_PREPROCESS_SET_PROB_CONTINUE</STRONG></DT>
+<DD>&nbsp;
+</DD>
+<DT><STRONG>SPEEX_PREPROCESS_GET_PROB_CONTINUE</STRONG></DT>
+<DD>&nbsp;
+</DD>
+<DT><STRONG>SPEEX_PREPROCESS_SET_NOISE_SUPPRESS</STRONG></DT>
+<DD>Set maximum attenuation
+of the noise in dB (negative number)
+</DD>
+<DT><STRONG>SPEEX_PREPROCESS_GET_NOISE_SUPPRESS</STRONG></DT>
+<DD>Get maximum attenuation
+of the noise in dB (negative number)
+</DD>
+<DT><STRONG>SPEEX_PREPROCESS_SET_ECHO_SUPPRESS</STRONG></DT>
+<DD>Set maximum attenuation
+of the residual echo in dB (negative number)
+</DD>
+<DT><STRONG>SPEEX_PREPROCESS_GET_ECHO_SUPPRESS</STRONG></DT>
+<DD>Set maximum attenuation
+of the residual echo in dB (negative number)
+</DD>
+<DT><STRONG>SPEEX_PREPROCESS_SET_ECHO_SUPPRESS_ACTIVE</STRONG></DT>
+<DD>Set maximum attenuation
+of the echo in dB when near end is active (negative number)
+</DD>
+<DT><STRONG>SPEEX_PREPROCESS_GET_ECHO_SUPPRESS_ACTIVE</STRONG></DT>
+<DD>Set maximum attenuation
+of the echo in dB when near end is active (negative number)
+</DD>
+<DT><STRONG>SPEEX_PREPROCESS_SET_ECHO_STATE</STRONG></DT>
+<DD>Set the associated echo canceller
+for residual echo suppression (NULL for no residual echo suppression)
+</DD>
+<DT><STRONG>SPEEX_PREPROCESS_GET_ECHO_STATE</STRONG></DT>
+<DD>Get the associated echo canceller
+</DD>
 </DL>
 
 <P>
 
-<H2><A NAME="SECTION00078000000000000000"></A><A NAME="400"></A>
+<H1><A NAME="SECTION007100000000000000000"></A><A NAME="482"></A>
 <BR>
 Packing and in-band signalling
-</H2>
+</H1>
 
 <P>
 Sometimes it is desirable to pack more than one frame per packet (or
 other basic unit of storage). The proper way to do it is to call speex_encode
 <SPAN CLASS="MATH"><IMG
  WIDTH="16" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
- SRC="img4.png"
- ALT="$N$"></SPAN> times before writing the stream with speex_bits_write. In cases
+ SRC="img6.png"
+ ALT="$ N$"></SPAN>
+ times before writing the stream with speex_bits_write. In cases
 where the number of frames is not determined by an out-of-band mechanism,
 it is possible to include a terminator code. That terminator consists
 of the code 15 (decimal) encoded with 5 bits, as shown in Table <A HREF="#cap:quality_vs_bps">4</A>.
@@ -852,11 +1071,13 @@ in-band messages are ignored.
 
 <P>
 <BR><P></P>
-<DIV ALIGN="CENTER"><A NAME="829"></A>
+<DIV ALIGN="CENTER"><A NAME="937"></A>
 <TABLE>
 <CAPTION><STRONG>Table 1:</STRONG>
 In-band signalling codes</CAPTION>
-<TR><TD><TABLE CELLPADDING=3 BORDER="1">
+<TR><TD>
+<DIV ALIGN="CENTER">
+<TABLE CELLPADDING=3 BORDER="1" ALIGN="CENTER">
 <TR><TD ALIGN="CENTER">Code</TD>
 <TD ALIGN="CENTER">Size (bits)</TD>
 <TD ALIGN="CENTER">Content</TD>
@@ -927,6 +1148,7 @@ loss</TD>
 <TD ALIGN="CENTER">reserved</TD>
 </TR>
 </TABLE>
+</DIV>
 
 <P>
 </TD></TR>
@@ -946,36 +1168,36 @@ the decoder can skip it if it doesn't know how to interpret it.
 
 <DIV CLASS="navigation"><HR>
 <!--Navigation Panel-->
-<A NAME="tex2html270"
+<A NAME="tex2html295"
   HREF="node8.html">
 <IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
-<A NAME="tex2html264"
+<A NAME="tex2html289"
   HREF="manual.html">
 <IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
-<A NAME="tex2html258"
+<A NAME="tex2html283"
   HREF="node6.html">
 <IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
-<A NAME="tex2html266"
+<A NAME="tex2html291"
   HREF="node1.html">
 <IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
-<A NAME="tex2html268"
+<A NAME="tex2html293"
   HREF="node17.html">
 <IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
 <BR>
-<B> Next:</B> <A NAME="tex2html271"
+<B> Next:</B> <A NAME="tex2html296"
   HREF="node8.html">Formats and standards</A>
-<B> Up:</B> <A NAME="tex2html265"
+<B> Up:</B> <A NAME="tex2html290"
   HREF="manual.html">The Speex Codec Manual</A>
-<B> Previous:</B> <A NAME="tex2html259"
+<B> Previous:</B> <A NAME="tex2html284"
   HREF="node6.html">Command-line encoder/decoder</A>
- &nbsp; <B>  <A NAME="tex2html267"
+ &nbsp; <B>  <A NAME="tex2html292"
   HREF="node1.html">Contents</A></B> 
- &nbsp; <B>  <A NAME="tex2html269"
+ &nbsp; <B>  <A NAME="tex2html294"
   HREF="node17.html">Index</A></B> </DIV>
 <!--End of Navigation Panel-->
 <ADDRESS>
 Jean-Marc Valin
-2006-08-12
+2007-05-23
 </ADDRESS>
 </BODY>
 </HTML>

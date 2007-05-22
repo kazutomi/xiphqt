@@ -42,6 +42,10 @@ $key = q/sec:Programming-with-Speex/;
 $ref_files{$key} = "$dir".q|node7.html|; 
 $noresave{$key} = "$nosave";
 
+$key = q/fig:Acoustic-echo-model/;
+$ref_files{$key} = "$dir".q|node4.html|; 
+$noresave{$key} = "$nosave";
+
 $key = q/sub:Preprocessor-options/;
 $ref_files{$key} = "$dir".q|node7.html|; 
 $noresave{$key} = "$nosave";
@@ -70,20 +74,20 @@ $key = q/sub:Decoding/;
 $ref_files{$key} = "$dir".q|node7.html|; 
 $noresave{$key} = "$nosave";
 
-$key = q/sec:Command-line-encoder_decoder/;
-$ref_files{$key} = "$dir".q|node6.html|; 
-$noresave{$key} = "$nosave";
-
 $key = q/sub:Codec-Options/;
 $ref_files{$key} = "$dir".q|node7.html|; 
 $noresave{$key} = "$nosave";
 
-$key = q/sec:Feature-description/;
-$ref_files{$key} = "$dir".q|node4.html|; 
+$key = q/sec:Getting-help/;
+$ref_files{$key} = "$dir".q|node3.html|; 
 $noresave{$key} = "$nosave";
 
-$key = q/sec:Speex-narrowband-mode/;
-$ref_files{$key} = "$dir".q|node10.html|; 
+$key = q/sec:Command-line-encoder_decoder/;
+$ref_files{$key} = "$dir".q|node6.html|; 
+$noresave{$key} = "$nosave";
+
+$key = q/sec:Feature-description/;
+$ref_files{$key} = "$dir".q|node4.html|; 
 $noresave{$key} = "$nosave";
 
 $key = q/sec:Introduction-to-CELP/;
@@ -92,6 +96,10 @@ $noresave{$key} = "$nosave";
 
 $key = q/sub:Echo-Cancellation/;
 $ref_files{$key} = "$dir".q|node7.html|; 
+$noresave{$key} = "$nosave";
+
+$key = q/sec:Speex-narrowband-mode/;
+$ref_files{$key} = "$dir".q|node10.html|; 
 $noresave{$key} = "$nosave";
 
 1;
