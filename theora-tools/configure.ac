@@ -70,10 +70,13 @@ dnl --------------------------------------------------
 dnl Check for library functions
 dnl --------------------------------------------------
 
-dnl substitue the included getopt if the system doesn't support long options
-AC_CHECK_FUNC(getopt_long, [GETOPT_OBJS=''], [GETOPT_OBJS='getopt.$(OBJEXT) getopt1.$(OBJEXT)'])
+dnl substitute the included getopt if the system doesn't support long options
+AC_CHECK_FUNC(getopt_long,
+              [GETOPT_OBJS=''],
+              [GETOPT_OBJS='getopt.$(OBJEXT) getopt1.$(OBJEXT)'])
 AC_SUBST(GETOPT_OBJS)
 
+AC_CHECK_PROG(HAVE_PKG_CONFIG, pkg-config, yes)
 PKG_CHECK_MODULES(XIPH,ogg >= 1.1 vorbis theora)
 CFLAGS="$CFLGS $XIPH_CFLAGS"
 LIBS="$LIBS $XIPH_LIBS"
@@ -106,6 +109,15 @@ PORTAUDIO_LIBS="-lportaudio -lpthread"
 fi
 AC_SUBST(PORTAUDIO_LIBS)
 
+dnl check for libpng
+HAVE_PNG=no
+if test "x$HAVE_PKG_CONFIG" = "xyes"
+then
+  PKG_CHECK_MODULES(PNG, libpng, HAVE_PNG=yes, HAVE_PNG=no)
+fi
+AC_SUBST(PNG_CFLAGS)
+AC_SUBST(PNG_LIBS)
+
 if test x$HAVE_SDL = xyes -a x$HAVE_OSS = xyes; then
   THEORA123="theora123"
   AC_SUBST(THEORA123)
@@ -113,6 +125,10 @@ fi
 if test x$HAVE_SDL = xyes -a x$HAVE_PORTAUDIO = xyes; then
   SPLAYER="theora_splayer"
   AC_SUBST(SPLAYER)
+fi
+if test x$HAVE_PNG = xyes; then
+  PNG2THEORA="png2theora"
+  AC_SUBST(PNG2THEORA)
 fi
 
 dnl --------------------------------------------------
@@ -133,6 +149,7 @@ AC_CONFIG_FILES([
   theora_transcoder/Makefile
   theora_dumpvideo/Makefile
   theoracomment/Makefile
+  png2theora/Makefile
   debian/Makefile
 ])
 AC_OUTPUT
