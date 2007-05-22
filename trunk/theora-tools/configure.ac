@@ -132,6 +132,7 @@ AC_CONFIG_FILES([
   theoraenc/Makefile
   theora_transcoder/Makefile
   theora_dumpvideo/Makefile
+  theoracomment/Makefile
   debian/Makefile
 ])
 AC_OUTPUT

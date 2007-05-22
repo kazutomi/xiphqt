@@ -2,7 +2,7 @@
 
 AUTOMAKE_OPTIONS = foreign dist-zip
 
-SUBDIRS = debian theora123 theora_splayer theoraenc theora_transcoder theora_dumpvideo
+SUBDIRS = debian theora123 theora_splayer theoraenc theora_transcoder theora_dumpvideo theoracomment
 
 EXTRA_DIST = COPYING autogen.sh win32
 
