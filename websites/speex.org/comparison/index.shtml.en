@@ -16,7 +16,7 @@
 <!--  All your page content goes here  -->
 <h1>Codec Quality Comparison</h1>
 <p> Warning: these are machine-generated results (not from real listeners) and hence should be taken with a grain of salt.</p>
-<p align="center"><a href="nb_codecs.png"><img src="nb_codecs.png" width="505" height="359"></a></p>
+<p align="center"><a href="nb_codecs.png"><img src="nb_codecs_small.png" width="598" height="429"></a></p>
 
 
 <h1>Codec Feature Comparison</h1>
