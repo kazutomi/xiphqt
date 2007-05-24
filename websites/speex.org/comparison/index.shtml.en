@@ -15,7 +15,7 @@
 <!--#include virtual="/ssi/pagetop.include" -->
 <!--  All your page content goes here  -->
 <h1>Codec Quality Comparison</h1>
-<p> Warning: these are PESQ results (not real MOS tests) and hence should be taken with a grain of salt.</p>
+<p> Warning: these are machine-generated results (not from real listeners) and hence should be taken with a grain of salt.</p>
 <p align="center"><a href="nb_codecs.png"><img src="nb_codecs.png" width="505" height="359"></a></p>
 
 
