@@ -28,21 +28,31 @@
 </p>
 
 
-<h2>Current Stable Release (old)</h2>
-<h3 id='one.0.5'>1.0.5</h3>
-<p>
-The main change with this release is that it includes API additions from the 1.1.x branch (while being backward compatible), so that transition from 1.0.x to 1.1.x can be made easier.
-</p>
-
-<ul>
-
-<li><a href="http://downloads.us.xiph.org/releases/speex/speex-1.0.5.tar.gz">Source Code</a></li>
-<li><a href="http://downloads.us.xiph.org/releases/speex/speex-1.0.5-1.i386.rpm">i386 RPM</a></li>
-<li><a href="http://downloads.us.xiph.org/releases/speex/speex-devel-1.0.5-1.i386.rpm">i386 Development RPM</a></li>
-<li><a href="http://downloads.us.xiph.org/releases/speex/speex-1.0.5-1.src.rpm">Source RPM</a></li>
-<li><a href="http://downloads.us.xiph.org/releases/speex/speex_win32_1.0.4_setup.exe">Windows binaries (1.0.4)</a></li>
-</ul>
 <h2>Current <strong style='font-style: italic;'>Unstable</strong> Release (recommended)</h2>
+
+<h3 id='one.1.2beta2'>1.2beta2</h3>
+<p>Again, this new releases brings many improvements. The RAM requirement for 
+wideband has gone down drastically (i.e. more than 2x). A new resampler
+module has been added, providing arbitrary sampling rate conversion -- fast.
+The echo canceller has also been improved. A bug in 1.2beta1 that made the 
+echo canceller unstable has been fixed. The echo canceller should now
+converge faster, be robust and tolerant of incorrect capture-playback
+synchronisation. The preprocessor has also been greatly improved. Not only
+should the quality be better, but it is now fully converted to fixed-point. 
+At last, early TriMedia support (incomplete) has been merged.</p>
+
+<span>Downloads:</span>
+<ul>
+<li><a href="http://downloads.us.xiph.org/releases/speex/speex-1.2beta2.tar.gz">Source Code</a></li>
+<li><a href="http://downloads.us.xiph.org/releases/speex/speex-1.2beta2-1.i386.rpm">i386 RPM</a></li>
+
+<li><a href="http://downloads.us.xiph.org/releases/speex/speex-devel-1.2beta2-1.i386.rpm">i386 Development RPM</a></li>
+<li><a href="http://downloads.us.xiph.org/releases/speex/speex-1.2beta2-1.src.rpm">Source RPM</a></li>
+<li>No Windows binaries -- looking for a maintainer</li>
+</ul>
+
+
+
 <h3 id='one.1.2beta1'>1.2beta1</h3>
 
 <p>This new release brings many significant improvements. The quality has been improved, both at the encoder level and the decoder level. These include enhancer improvements (now on by default), input/output high-pass filters, as well as fixing minor regressions in previous 1.1.x releases. A strange and rare instability problem with pure sinusoids has also been fixed. On top of that, memory use has been greatly reduced, especially for fixed-point and narrowband. The fixed-point narrowband encoder+decoder memory use has been cut by more than half, making it possible to fit both in less than 6 kB of RAM. In general, CPU requirement had gone down, especially for the fixed-point port. The Blackfin port has been speeded up significantly, thanks to David Rowe. There are also a few fixes for the TI C5X DSPs, as well as better support for C++ compilers and crappy MS compilers. Oh, and before anyone starts worrying, the format (bit-stream) itself has not changed, so Speex is still compatible with version 1.0 and will continue to be in the future.</p>
@@ -60,6 +70,24 @@ The main change with this release is that it includes API additions from the 1.1
 <li><a href="http://downloads.us.xiph.org/releases/speex/libspeex-win32-v1.2beta1.zip">Windows binaries (libspeex)</a></li>
 <li><a href="http://downloads.us.xiph.org/releases/speex/speex-tools-win32-v1.2beta1.zip">Windows binaries (tools)</a></li>
 </ul>
+
+
+<h2>Current Stable Release (old)</h2>
+<h3 id='one.0.5'>1.0.5</h3>
+<p>
+The main change with this release is that it includes API additions from the 1.1.x branch (while being backward compatible), so that transition from 1.0.x to 1.1.x can be made easier.
+</p>
+
+<ul>
+
+<li><a href="http://downloads.us.xiph.org/releases/speex/speex-1.0.5.tar.gz">Source Code</a></li>
+<li><a href="http://downloads.us.xiph.org/releases/speex/speex-1.0.5-1.i386.rpm">i386 RPM</a></li>
+<li><a href="http://downloads.us.xiph.org/releases/speex/speex-devel-1.0.5-1.i386.rpm">i386 Development RPM</a></li>
+<li><a href="http://downloads.us.xiph.org/releases/speex/speex-1.0.5-1.src.rpm">Source RPM</a></li>
+<li><a href="http://downloads.us.xiph.org/releases/speex/speex_win32_1.0.4_setup.exe">Windows binaries (1.0.4)</a></li>
+</ul>
+
+
 
 <h2>DirectShow Filters</h2>
 <p>

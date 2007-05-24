@@ -30,6 +30,13 @@
 
 <ul class="descriptivelist">
 	<li>
+		<h3>Speex 1.2beta2: Fixed-point improvements and more</h3>
+		<p class="submitdate">May 24, 2007</p>
+		<div class="description">
+                <p>Again, this new releases brings many improvements. The RAM requirement for wideband has gone down drastically (i.e. more than 2x). A new resampler module has been added, providing arbitrary sampling rate conversion -- fast. The echo canceller has also been improved. A bug in 1.2beta1 that made the  echo canceller unstable has been fixed. The echo canceller should now converge faster, be robust and tolerant of incorrect capture-playback synchronisation. The preprocessor has also been greatly improved. Not only should the quality be better, but it is now fully converted to fixed-point. At last, early TriMedia support (incomplete) has been merged.</p>
+		</div>
+	</li>
+	<li>
 		<h3>Speex 1.2beta1: Better, smaller, faster and more</h3>
 		<p class="submitdate">September 4, 2006</p>
 		<div class="description">
