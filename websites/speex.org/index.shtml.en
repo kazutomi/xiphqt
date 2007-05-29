@@ -66,8 +66,8 @@
 	<abbr title="Voice over IP">VoIP</abbr>, internet audio streaming,
 	data archival (like voice mail), and audio books.
 	Currently, <a href="http://www.linphone.org/">LinPhone</a>,
-	<a href="http://www.openh323.org/">OpenH323</a>, and
-	<a href="http://www.gnomemeeting.org/">GnomeMeeting</a> are some of the
+	<a href="http://www.ekiga.org/">Ekiga</a>, and
+	<a href="http://www.asterisk.org/">Asterisk</a> are some of the
 	projects currently using Speex. For a list of projects with
 	Speex support, visit our 
 	<a href="/software/">Plugins &amp; Software</a> page.
