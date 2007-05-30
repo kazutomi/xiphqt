@@ -62,6 +62,14 @@
 		project page</a>) uses Speex for in-game chat.
 	</dd>
 
+	<dt><a href='http://mumble.sourceforge.net/'>Mumble</a></dt>
+	<dd>
+		Mumble is a voice chat application for gamers. Includes 
+		game linking [voice from other players comes from the 
+	        direction of their characters] and echo cancellation 
+		[so your loudspeakers won't be audible to other players].
+	</dd>
+
 	<dt><a href="http://www.openh323.org/">OpenH323</a></dt>
 	<dd>An open-source H.323 stack</dd>
 <!-- commented out until they get a .sit/.zip with the Speex plugin in it 
