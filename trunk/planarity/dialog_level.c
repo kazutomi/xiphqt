@@ -64,9 +64,9 @@ static void setup_level_buttons(Gameboard *g,int bw, int bh){
   int h=g->g.height;
   buttonstate *states=g->b.states;
 
-  states[0].rollovertext="exit gPlanarity";
-  states[2].rollovertext="reset level";
-  states[10].rollovertext="play level!";
+  states[0].rollovertext=_("exit gPlanarity");
+  states[2].rollovertext=_("reset level");
+  states[10].rollovertext=_("play level!");
 
   states[0].callback = local_quit;
   states[2].callback = local_reset;
@@ -136,7 +136,7 @@ static void draw_levelbox(Gameboard *g){
   set_font(c,18,18,0,1);
   cairo_set_source_rgba (c, TEXT_COLOR);
   
-  render_text_centered(c,"Available Levels", w/2,h/2-LEVELBOX_HEIGHT/2+SCOREHEIGHT/2);
+  render_text_centered(c,_("Available Levels"), w/2,h/2-LEVELBOX_HEIGHT/2+SCOREHEIGHT/2);
 
   cairo_destroy(c);
 }

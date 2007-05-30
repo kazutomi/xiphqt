@@ -29,6 +29,7 @@
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
 
+#include "gettext.h"
 #include "graph.h"
 #include "timer.h"
 #include "gameboard.h"
@@ -50,16 +51,16 @@ void setup_buttonbar(Gameboard *g){
   int w=g->g.width;
   int h=g->g.height;
 
-  states[0].rollovertext="exit gPlanarity";
-  states[1].rollovertext="level selection menu";
-  states[2].rollovertext="reset board";
-  states[3].rollovertext="pause";
-  states[4].rollovertext="help / about";
-  states[5].rollovertext="expand";
-  states[6].rollovertext="shrink";
-  states[7].rollovertext="hide/show lines";
-  states[8].rollovertext="mark intersections";
-  states[9].rollovertext="click when finished!";
+  states[0].rollovertext=_("exit gPlanarity");
+  states[1].rollovertext=_("level selection menu");
+  states[2].rollovertext=_("reset board");
+  states[3].rollovertext=_("pause");
+  states[4].rollovertext=_("help / about");
+  states[5].rollovertext=_("expand");
+  states[6].rollovertext=_("shrink");
+  states[7].rollovertext=_("hide/show lines");
+  states[8].rollovertext=_("mark intersections");
+  states[9].rollovertext=_("click when finished!");
 
   states[0].callback = quit_action;
   states[1].callback = level_action;

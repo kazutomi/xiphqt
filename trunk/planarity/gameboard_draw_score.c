@@ -64,11 +64,11 @@ void draw_score(Gameboard *g){
 
   topbox(g,c,g->g.width,SCOREHEIGHT);
 
-  snprintf(level_string,160,"Level %d: %s",get_level_num()+1,get_level_desc());
-  snprintf(score_string,160,"Score: %d",graphscore_get_raw_score(&g->g));
-  snprintf(mult_string,160,"%d%%",graphscore_get_multiplier_percent(&g->g));
-  snprintf(int_string,160,"Intersections: %ld",g->g.active_intersections);
-  snprintf(obj_string,160,"Objective: %s",graphscore_objective_string(&g->g));
+  snprintf(level_string,160,_("Level %d: %s"),get_level_num()+1,get_level_desc());
+  snprintf(score_string,160,_("Score: %d"),graphscore_get_raw_score(&g->g));
+  snprintf(mult_string,160,_("%d%%"),graphscore_get_multiplier_percent(&g->g));
+  snprintf(int_string,160,_("Intersections: %ld"),g->g.active_intersections);
+  snprintf(obj_string,160,_("Objective: %s"),graphscore_objective_string(&g->g));
 
   set_font(c,xpx,15,0,1);
   cairo_set_source_rgba (c, TEXT_COLOR);

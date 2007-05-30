@@ -31,6 +31,7 @@
 
 #include "graph.h"
 #include "graph_region.h"
+#include "gettext.h"
 
 /* Regions are 'electric fences' for mesh building; used in mesh2 to
    make non-convex shapes */
@@ -455,8 +456,8 @@ static void arc_arc_adj(region_segment *arc, region_segment *next,
     }
   }else{
     // circles shrunk and no longer overlap.  
-    fprintf(stderr,"region overlap adjustment failed in arc_arc_adj; \n"
-	    "  This is an internal error that should never happen.\n");
+    fprintf(stderr,_("region overlap adjustment failed in arc_arc_adj; \n"
+	    "  This is an internal error that should never happen.\n"));
   }
 }
 
