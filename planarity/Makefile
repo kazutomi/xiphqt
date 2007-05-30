@@ -5,12 +5,26 @@
 TARGET  = gPlanarity
 CC      = gcc 
 LD      = gcc
-INSTALL = install
+export INSTALL = install
 STRIP   = strip
 PREFIX  = /usr/local
 BINDIR  = $(PREFIX)/bin
 ETCDIR  = /etc/$(TARGET)
 MANDIR  = $(PREFIX)/man
+#DISABLE_NLS = true
+
+
+# All subdirs with Makefiles
+SUBDIRS =
+
+# By default, enable NLS
+ifeq ($(origin DISABLE_NLS), undefined)
+export GT_DOMAIN = $(TARGET)
+export GT_DIR = $(PREFIX)/share/locale
+ADD_DEF += -DUGT_DOMAIN="$(GT_DOMAIN)" -DUGT_DIR="$(GT_DIR)" -DENABLE_NLS
+SUBDIRS += po
+endif
+
 
 # the very long LIBS entry is to build an executable that will
 # work for on most modern linux distros without any of the
@@ -62,10 +76,15 @@ SLIBS = $(GTK)/libgtk-x11-2.0.a \
 	-lXext -lXrandr $(XINERAMA) -lXcursor -lX11 $(PIXMAN)\
 	-lXft $(PNG)
 
-all:    
+all: all-local all-recursive
+
+all-local:    
 	pkg-config --cflags "gtk+-2.0 $(GTKVER) cairo $(CAIROVER) freetype2" 1>/dev/null
 	$(MAKE) target CFLAGS='-O2 -ffast-math $(GCF) $(ADD_DEF)'
 	$(STRIP) $(TARGET)
+
+all-recursive:
+	for D in $(SUBDIRS); do make -C $$D || exit 1; done
 
 static:    
 	pkg-config --cflags "gtk+-2.0 $(GTKVER) cairo $(CAIROVER) freetype2" 1>/dev/null
@@ -80,8 +99,14 @@ profile:
 	pkg-config --cflags "gtk+-2.0 $(GTKVER) cairo $(CAIROVER) freetype2" 1>/dev/null
 	$(MAKE) target CFLAGS='-pg -g -O2 -ffast-math $(GCF) $(ADD_DEF)" LIBS="$(LIBS) -lgprof-helper'
 
-clean:
+clean: clean-local clean-recursive
+
+clean-local:
 	rm -f $(OBJ) *.d *.d.* gmon.out $(TARGET)
+
+clean-recursive:
+	for D in $(SUBDIRS); do make -C $$D clean || exit 1; done
+
 
 distclean: clean
 	rm -f *~
@@ -105,6 +130,11 @@ static-target: $(OBJ)
 	./touch-version
 	$(LD) $(OBJ) $(CFLAGS) -o $(TARGET) $(SLIBS) $(SLDF) 
 
-install: target
+install: install-local install-recursive
+
+install-local: target
 	$(INSTALL) -d -m 0755 $(BINDIR)
 	$(INSTALL) -m 0755 $(TARGET) $(BINDIR)
+
+install-recursive:
+	for D in $(SUBDIRS); do make -C $$D install || exit 1; done

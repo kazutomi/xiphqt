@@ -367,7 +367,7 @@ cairo_surface_t *gameboard_read_icon(char *filename, char *ext, Gameboard *b){
   cairo_surface_t *s = cairo_image_surface_create_from_png(name);
 
   if(s==NULL || cairo_surface_status(s)!=CAIRO_STATUS_SUCCESS)
-    fprintf(stderr,"ERROR:  Could not load board icon \"%s\"\n",
+    fprintf(stderr,_("ERROR:  Could not load board icon \"%s\"\n"),
 	    name);
 
   cairo_t *c = cairo_create(s);
@@ -433,7 +433,7 @@ int gameboard_write_icon(char *filename, char *ext, Gameboard *b, graph *g,
       draw_intersections(b,g,c,0,0,g->width,g->height);
 
     if(cairo_surface_write_to_png(s,name) != CAIRO_STATUS_SUCCESS){
-      fprintf(stderr,"ERROR:  Could not save board icon \"%s\"\n",
+      fprintf(stderr,_("ERROR:  Could not save board icon \"%s\"\n"),
 	      name);
       return -1;
     }

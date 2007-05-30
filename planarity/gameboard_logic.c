@@ -368,7 +368,7 @@ int gameboard_write(char *basename, Gameboard *g){
   
   f = fopen(name,"wb");
   if(f==NULL){
-    fprintf(stderr,"ERROR:  Could not save board state for \"%s\":\n\t%s\n",
+    fprintf(stderr,_("ERROR:  Could not save board state for \"%s\":\n\t%s\n"),
 	    get_level_desc(),strerror(errno));
     return errno;
   }
@@ -398,7 +398,7 @@ int gameboard_read(char *basename, Gameboard *g){
   
   f = fopen(name,"rb");
   if(f==NULL){
-    fprintf(stderr,"ERROR:  Could not read saved board state for \"%s\":\n\t%s\n",
+    fprintf(stderr,_("ERROR:  Could not read saved board state for \"%s\":\n\t%s\n"),
 	    get_level_desc(),strerror(errno));
     return errno;
   }

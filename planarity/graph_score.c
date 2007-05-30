@@ -29,6 +29,7 @@
 #include <math.h>
 #include "graph.h"
 #include "timer.h"
+#include "gettext.h"
 
 static char objective_string[160];
 
@@ -63,17 +64,17 @@ int graphscore_get_bonus(graph *g){
 
 char *graphscore_objective_string(graph *g){
   if(g->objective == 0)
-    return "zero intersections";
+    return _("zero intersections");
   if(g->objective == 1){
     if(g->objective_lessthan){
-      return "1 intersection or fewer";
+      return _("1 intersection or fewer");
     }else{
-      return "1 intersection";
+      return _("1 intersection");
     }
   }else{
-    snprintf(objective_string,160,"%d intersections%s",
+    snprintf(objective_string,160,_("%d intersections%s"),
 	     g->objective,(g->objective_lessthan?
-			" or fewer":""));
+			_(" or fewer"):""));
     return objective_string;
   }
 }

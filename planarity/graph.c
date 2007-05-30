@@ -30,6 +30,7 @@
 #include <stdlib.h>
 #include <math.h>
 
+#include "gettext.h"
 #include "graph.h"
 #include "random.h"
 #include "timer.h"
@@ -919,7 +920,7 @@ int graph_read(graph *g,FILE *f){
       if(A>=0 && A<g->vertex_num && B>=0 && B<g->vertex_num)
 	add_edge(g,flat[A],flat[B]);
       else
-	fprintf(stderr,"WARNING: edge references out of range vertex in save file\n");
+	fprintf(stderr,_("WARNING: edge references out of range vertex in save file\n"));
     }
     sscanf(line,"int %ld",&g->original_intersections);
   }

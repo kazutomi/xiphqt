@@ -64,8 +64,8 @@ static void setup_pause_buttons(Gameboard *g,int bw, int bh){
   int h=g->g.height;
   buttonstate *states=g->b.states;
 
-  states[0].rollovertext="exit gPlanarity";
-  states[10].rollovertext="resume game!";
+  states[0].rollovertext=_("exit gPlanarity");
+  states[10].rollovertext=_("resume game!");
 
   states[0].callback = local_quit;
   states[10].callback = local_unpause;
@@ -128,10 +128,10 @@ static void draw_pausebox(Gameboard *g){
     set_font(c,18,18,0,1);
     cairo_set_source_rgba (c, TEXT_COLOR);
 
-    render_text_centered(c,"Game Paused", w/2,h/2-PAUSEBOX_HEIGHT/2+SCOREHEIGHT/2);
+    render_text_centered(c,_("Game Paused"), w/2,h/2-PAUSEBOX_HEIGHT/2+SCOREHEIGHT/2);
 
     set_font(c,18,18,0,0);
-    render_bordertext_centered(c,"Time Elapsed:", w/2,h/2-30);
+    render_bordertext_centered(c,_("Time Elapsed:"), w/2,h/2-30);
     render_bordertext_centered(c,time, w/2,h/2);
   }
 
@@ -183,19 +183,19 @@ static void draw_aboutbox(Gameboard *g){
     set_font(c,18,18,0,1);
     cairo_set_source_rgba (c, TEXT_COLOR);
 
-    render_text_centered(c,"gPlanarity", w/2,y);
+    render_text_centered(c,_("gPlanarity"), w/2,y);
 
     set_font(c,18,18,0,0);
     y+=45;
-    render_bordertext_centered(c,"Untangle the mess!", w/2,y);
+    render_bordertext_centered(c,_("Untangle the mess!"), w/2,y);
     y+=30;
 
     set_font(c,13,13,0,0);
-    render_bordertext_centered(c,"Drag verticies to eliminate crossed lines.", w/2,y); y+=16;
-    render_bordertext_centered(c,"The objective may be a complete solution or", w/2,y); y+=16;
-    render_bordertext_centered(c,"getting as close as possible to solving an", w/2,y); y+=16;
-    render_bordertext_centered(c,"unsolvable puzzle.  Work quickly and", w/2,y); y+=16;
-    render_bordertext_centered(c,"exceed the objective for bonus points!", w/2,y); y+=16;
+    render_bordertext_centered(c,_("Drag verticies to eliminate crossed lines."), w/2,y); y+=16;
+    render_bordertext_centered(c,_("The objective may be a complete solution or"), w/2,y); y+=16;
+    render_bordertext_centered(c,_("getting as close as possible to solving an"), w/2,y); y+=16;
+    render_bordertext_centered(c,_("unsolvable puzzle.  Work quickly and"), w/2,y); y+=16;
+    render_bordertext_centered(c,_("exceed the objective for bonus points!"), w/2,y); y+=16;
 
     y+=16;
     cairo_move_to (c, w/2-100,y);
@@ -204,13 +204,13 @@ static void draw_aboutbox(Gameboard *g){
     y+=32;
 
     set_font(c,12,13,0,0);
-    render_bordertext_centered(c,"gPlanarity written by Monty <monty@xiph.org>",w/2,y);y+=17;
-    render_bordertext_centered(c,"as a demonstration of Gtk+/Cairo",w/2,y);y+=32;
+    render_bordertext_centered(c,_("gPlanarity written by Monty <monty@xiph.org>"),w/2,y);y+=17;
+    render_bordertext_centered(c,_("as a demonstration of Gtk+/Cairo"),w/2,y);y+=32;
 
-    render_bordertext_centered(c,"Original Flash version of Planarity by",w/2,y);y+=17;
-    render_bordertext_centered(c,"John Tantalo <john.tantalo@case.edu>",w/2,y);y+=32;
+    render_bordertext_centered(c,_("Original Flash version of Planarity by"),w/2,y);y+=17;
+    render_bordertext_centered(c,_("John Tantalo <john.tantalo@case.edu>"),w/2,y);y+=32;
 
-    render_bordertext_centered(c,"Original game concept by Mary Radcliffe",w/2,y);y+=17;
+    render_bordertext_centered(c,_("Original game concept by Mary Radcliffe"),w/2,y);y+=17;
 
 
     y = h/2+ABOUTBOX_HEIGHT/2-SCOREHEIGHT/2;

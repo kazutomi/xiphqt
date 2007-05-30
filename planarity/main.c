@@ -70,7 +70,7 @@ static int dir_create(char *name){
       // this is ok
       return 0;
     default:
-      fprintf(stderr,"ERROR:  Could not create directory (%s) to save game state:\n\t%s\n",
+      fprintf(stderr,_("ERROR:  Could not create directory (%s) to save game state:\n\t%s\n"),
 	      name,strerror(errno));
       return errno;
     }
@@ -90,7 +90,7 @@ static void clean_exit(int sig){
   signal(sig,SIG_IGN);
   if(sig!=SIGINT)
     fprintf(stderr,
-            "\nTrapped signal %d; saving state and exiting!\n",sig);
+            _("\nTrapped signal %d; saving state and exiting!\n"),sig);
 
   levelstate_write(statedir);
   gtk_main_quit();
@@ -143,10 +143,10 @@ static cairo_font_face_t *init_font(char *list, int slant,int bold){
   fc_pattern = FcFontMatch(0, fc_pattern, 0);
 
   if(!fc_pattern){
-    fprintf(stderr,"\nUnable to find any suitable %s fonts!\n"
-	    "Continuing, but the the results are likely to be poor.\n\n",
+    fprintf(stderr,_("\nUnable to find any suitable %s fonts!\n"
+	    "Continuing, but the the results are likely to be poor.\n\n"),
 
-	    (slant?(bold?"bold italic":"italic"):(bold?"bold":"medium")) );
+	    (slant?(bold?_("bold italic"):_("italic")):(bold?_("bold"):_("medium"))));
   }
 
   FcPatternGetString (fc_pattern, FC_FAMILY, 0, (FcChar8 **)&fontface);
@@ -161,10 +161,10 @@ static cairo_font_face_t *init_font(char *list, int slant,int bold){
 
   FcPatternGetBool(fc_pattern, FC_SCALABLE, 0, &scalable);
   if (scalable != FcTrue) {
-    fprintf(stderr,"\nSelected %s font \"%s\" is not scalable!  This is almost as bad\n"
+    fprintf(stderr,_("\nSelected %s font \"%s\" is not scalable!  This is almost as bad\n"
 	    "as not finding any font at all.  Continuing, but this may look\n"
-	    "very poor indeed.\n\n",
-	    (slant?(bold?"bold italic":"italic"):(bold?"bold":"medium")), fontface);
+	    "very poor indeed.\n\n"),
+	    (slant?(bold?_("bold italic"):_("italic")):(bold?_("bold"):_("medium"))), fontface);
   }
   
   /* Set the hinting behavior we want; only the autohinter is giving
@@ -270,6 +270,12 @@ void set_icons(){
 }
 
 int main(int argc, char *argv[]){
+#ifdef ENABLE_NLS
+  setlocale(LC_ALL, "");
+  textdomain(GT_DOMAIN);
+  bindtextdomain(GT_DOMAIN, GT_DIR);
+#endif
+
   char *homedir = getenv("home");
   if(!homedir)
     homedir = getenv("HOME");
@@ -278,8 +284,9 @@ int main(int argc, char *argv[]){
   if(!homedir)
     homedir = getenv("HOMEDIR");
   if(!homedir){
-    fprintf(stderr,"No homedir environment variable set!  gPlanarity will be\n"
-	    "unable to permanently save any progress or board state.\n");
+    fprintf(stderr,
+        _("No homedir environment variable set!  gPlanarity will be\n"
+	    "unable to permanently save any progress or board state.\n"));
     boarddir=NULL;
     statedir=NULL;
   }else{

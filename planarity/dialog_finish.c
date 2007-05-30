@@ -77,9 +77,9 @@ static void setup_finish_buttons(Gameboard *g,int bw, int bh){
   int h=g->g.height;
   buttonstate *states=g->b.states;
 
-  states[0].rollovertext="exit gPlanarity";
-  states[1].rollovertext="level selection menu";
-  states[10].rollovertext="play next level!";
+  states[0].rollovertext=_("exit gPlanarity");
+  states[1].rollovertext=_("level selection menu");
+  states[10].rollovertext=_("play next level!");
 
   states[0].callback = local_quit;
   states[1].callback = local_level;
@@ -157,15 +157,15 @@ static void draw_finishbox(Gameboard *g){
     cairo_set_source_rgba (c, TEXT_COLOR);
 
     y=h/2-FINISHBOX_HEIGHT/2+SCOREHEIGHT/2;
-    render_text_centered(c,"Level Complete!", w/2,y);y+=45;
+    render_text_centered(c,_("Level Complete!"), w/2,y);y+=45;
 
     set_font(c,16,16,0,0);
 
-    snprintf(buffer,160,"Elapsed: %s",time);
+    snprintf(buffer,160,_("Elapsed: %s"),time);
     render_bordertext_centered(c,buffer, w/2,y);y+=24;
 
 
-    snprintf(buffer,160,"Base score: %d points",graphscore_get_raw_score(&g->g));
+    snprintf(buffer,160,_("Base score: %d points"),graphscore_get_raw_score(&g->g));
     render_bordertext_centered(c,buffer, w/2,y);y+=24;
 
     if(graphscore_get_multiplier_percent(&g->g)>100){
@@ -173,32 +173,32 @@ static void draw_finishbox(Gameboard *g){
       set_font(c,16,16,0,1);
       cairo_set_source_rgba (c, HIGH_COLOR);
       
-      snprintf(buffer,160,"Objective Exceeded! %d%%",graphscore_get_multiplier_percent(&g->g));
+      snprintf(buffer,160,_("Objective Exceeded! %d%%"),graphscore_get_multiplier_percent(&g->g));
       render_bordertext_centered(c,buffer, w/2,y);y+=24;
       cairo_restore(c);
     }
 
-    snprintf(buffer,160,"Time bonus: %d points",time_bonus);
+    snprintf(buffer,160,_("Time bonus: %d points"),time_bonus);
     render_bordertext_centered(c,buffer, w/2,y);y+=35;
 
     set_font(c,16,16,0,1);
 
-    snprintf(buffer,160,"Final score: %d points",graphscore_get_score(&g->g)+time_bonus);
+    snprintf(buffer,160,_("Final score: %d points"),graphscore_get_score(&g->g)+time_bonus);
     render_bordertext_centered(c,buffer, w/2,y);y+=24;
 
     if(graphscore_get_score(&g->g)+time_bonus >= levelstate_get_hiscore()){
       cairo_set_source_rgba (c, HIGH_COLOR);
-      render_bordertext_centered(c,"A high score!", w/2,y);y+=43;
+      render_bordertext_centered(c,_("A high score!"), w/2,y);y+=43;
       cairo_set_source_rgba (c, TEXT_COLOR);
     }else{
-      snprintf(buffer,160,"Previous best: %ld points",levelstate_get_hiscore());
+      snprintf(buffer,160,_("Previous best: %ld points"),levelstate_get_hiscore());
       render_bordertext_centered(c,buffer, w/2,y);y+=43;
     }
 
 
-    render_bordertext_centered(c,"Total score to date:", w/2,y);
+    render_bordertext_centered(c,_("Total score to date:"), w/2,y);
     y+=21;
-    snprintf(buffer,160,"%ld points",levelstate_total_hiscore());
+    snprintf(buffer,160,_("%ld points"),levelstate_total_hiscore());
     render_bordertext_centered(c,buffer, w/2,y);
 
   }

@@ -166,7 +166,7 @@ int levelstate_write(){
 
   f = fopen(name,"wb");
   if(f==NULL){
-    fprintf(stderr,"ERROR:  Could not save game state file \"%s\":\n\t%s\n",
+    fprintf(stderr,_("ERROR:  Could not save game state file \"%s\":\n\t%s\n"),
 	    curr->gm.id,strerror(errno));
     return errno;
   }
@@ -213,7 +213,7 @@ int levelstate_read(){
   f = fopen(name,"rb");
   if(f==NULL){
     if(errno!=ENOENT){ 
-      fprintf(stderr,"ERROR:  Could not read game state file \"%s\":\n\t%s\n",
+      fprintf(stderr,_("ERROR:  Could not read game state file \"%s\":\n\t%s\n"),
 	      curr->gm.id,strerror(errno));
     }
     return errno;
@@ -362,7 +362,7 @@ int get_level_num(){
 }
 
 char *get_level_desc(){
-  return curr->gm.desc;
+  return _(curr->gm.desc);
 }
 
 void levelstate_finish(){

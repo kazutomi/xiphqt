@@ -243,7 +243,7 @@ void render_level_icons(Gameboard *g, cairo_t *c, int ex,int ey, int ew, int eh)
       if(g->d.text1.width==0 || 
 	 (ey<g->d.text1.y+g->d.text1.height && ey2>g->d.text1.y)){
 	
-	snprintf(buffer,160,"Level %d:",get_level_num()+1);
+	snprintf(buffer,160,_("Level %d:"),get_level_num()+1);
 	set_font(c,20,20,0,1);
 	cairo_set_source_rgba (c, TEXT_COLOR);
 	g->d.text1=render_bordertext_centered(c, buffer,w/2,y+45);
@@ -261,10 +261,10 @@ void render_level_icons(Gameboard *g, cairo_t *c, int ex,int ey, int ew, int eh)
 	
 	if(levelstate_get_hiscore()==0){
 	  set_font(c,18,18,1,0);
-	  snprintf(buffer,160,"[not yet completed]");
+	  snprintf(buffer,160,_("[not yet completed]"));
 	}else{
 	  set_font(c,18,18,0,0);
-	  snprintf(buffer,160,"level high score: %ld",levelstate_get_hiscore());
+	  snprintf(buffer,160,_("level high score: %ld"),levelstate_get_hiscore());
 	}
 	
 	cairo_set_source_rgba (c, TEXT_COLOR);
@@ -274,7 +274,7 @@ void render_level_icons(Gameboard *g, cairo_t *c, int ex,int ey, int ew, int eh)
       if(g->d.text4.width==0 || 
 	 (ey<g->d.text4.y+g->d.text4.height && ey2>g->d.text4.y)){
 
-	snprintf(buffer,160,"total score all levels: %ld",levelstate_total_hiscore());
+	snprintf(buffer,160,_("total score all levels: %ld"),levelstate_total_hiscore());
 	
 	set_font(c,18,18,0,0);
 	cairo_set_source_rgba (c, TEXT_COLOR);

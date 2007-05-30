@@ -62,7 +62,7 @@ static void draw_many_intersection(Gameboard *g,cairo_t *c){
   cairo_stroke(c);
 
   set_font(c, 30., 34., 0,1);
-  render_bordertext_centered(c,"rather many, really",x2,y2+r/4);
+  render_bordertext_centered(c,_("rather many, really"),x2,y2+r/4);
 
 }
 

@@ -26,6 +26,7 @@
 
 #include <time.h>
 #include "timer.h"
+#include "gettext.h"
 
 static int paused;
 static time_t begin_time_add;
@@ -47,11 +48,11 @@ char *get_timer_string(){
   int  se = get_timer() - ho*3600 - mi*60;
   
   if(ho){
-    snprintf(timebuffer,160,"%d:%02d:%02d",ho,mi,se);
+    snprintf(timebuffer,160,_("%d:%02d:%02d"),ho,mi,se);
   }else if (mi){
-    snprintf(timebuffer,160,"%d:%02d",mi,se);
+    snprintf(timebuffer,160,_("%d:%02d"),mi,se);
   }else{
-    snprintf(timebuffer,160,"%d seconds",se);
+    snprintf(timebuffer,160,_("%d seconds"),se);
   }
   
   return timebuffer;

@@ -35,9 +35,11 @@
 #include <time.h>
 #include <string.h>
 
+#include "gettext.h"
 #include "graph.h"
 #include "gameboard.h"
 #include "levelstate.h"
+
 
 static GtkWidgetClass *parent_class = NULL;
 
@@ -70,10 +72,10 @@ static gint gameboard_expose (GtkWidget      *widget,
       if(widget->allocation.width != g->resize_w ||
 	 widget->allocation.height != g->resize_h){
 	if(time(NULL) > g->resize_timeout){
-	  fprintf(stderr,"\n\nERROR: The windowmanager appears to be ignoring resize requests.\n"
+	  fprintf(stderr,_("\n\nERROR: The windowmanager appears to be ignoring resize requests.\n"
 		  "This stands a pretty good chance of scrambling any saved board larger\n"
-		  "than the default window size.\n\n"
-		  "Clipping and/or expanding this board to the current window size...\n\n");
+		  "than the default window size.\n\n"));
+    fprintf(stderr,_("Clipping and/or expanding this board to the current window size...\n\n"));
 	  g->resize_w = 0;
 	  g->resize_h = 0;
 	  resize_buttons(g,g->g.width, g->g.height, widget->allocation.width, widget->allocation.height);
@@ -179,12 +181,12 @@ void gameboard_size_allocate (GtkWidget     *widget,
        allocation->height != g->resize_h &&
        g->resize_timeout == 0 ){
 
-      fprintf(stderr,"\n\nERROR: The window size granted by the windowmanager is not the\n"
+      fprintf(stderr,_("\n\nERROR: The window size granted by the windowmanager is not the\n"
 	      "window size gPlanarity requested.  If the windowmanager is\n"
 	      "configured to ignore application sizing requests, this stands\n"
 	      "a pretty good chance of scrambling saved boards later (and\n"
-	      "making everything look funny now).\n\n"
-	      "Clipping and/or expanding this board to the current window size...\n\n");
+	      "making everything look funny now).\n\n"));
+      fprintf(stderr,_("Clipping and/or expanding this board to the current window size...\n\n"));
 
       g->resize_h=0;
       g->resize_w=0;
