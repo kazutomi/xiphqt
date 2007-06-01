@@ -29,7 +29,6 @@ dnl Set build flags based on environment
 dnl --------------------------------------------------
 
 AC_CANONICAL_HOST
-AC_CANONICAL_TARGET
 
 dnl Set some target options
 
