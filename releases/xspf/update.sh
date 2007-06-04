@@ -5,33 +5,36 @@ then
 	exit
 fi
 
+
  
+function downloadLibSpiff() { # $1 version, $2 extension
+	echo "========== libspiff-$1.$2 =========="
+	if [ ! -f "libspiff-$1.$2" ] ; then
+		wget "http://downloads.sourceforge.net/libspiff/libspiff-$1.$2"
+		if [ ! -f "libspiff-$1.$2" ] ; then
+			echo "FAILED on libspiff-$1.$2"
+			exit 1
+		fi	
+	fi
+}
 
-echo "========== libspiff-$1.tar.bz2 =========="
-wget http://downloads.sourceforge.net/libspiff/libspiff-$1.tar.bz2 || (echo "FAILED on libspiff-$1.tar.bz2" && exit 1)
-
-echo
-echo "========== libspiff-$1.tar.gz =========="
-wget http://downloads.sourceforge.net/libspiff/libspiff-$1.tar.gz || (echo "FAILED on libspiff-$1.tar.gz" && exit 1)
-
-echo
-echo "========== libspiff-$1.zip =========="
-wget http://downloads.sourceforge.net/libspiff/libspiff-$1.zip || (echo "FAILED on libspiff-$1.zip" && exit 1)
+function appendChecksum() { # $1 version, $2 extension
+	md5sum libspiff-$1.$2 >> MD5SUMS
+	sha1sum libspiff-$1.$2 >> SHA1SUMS
+}
 
 
+
+echo "========== downloading =========="
+downloadLibSpiff $1 "tar.bz2"
+downloadLibSpiff $1 "tar.gz"
+downloadLibSpiff $1 "zip"
 
 echo
 echo "========== appending checksums =========="
-md5sum libspiff-$1.tar.bz2 >> MD5SUMS
-sha1sum libspiff-$1.tar.bz2 >> SHA1SUMS
-
-md5sum libspiff-$1.tar.gz >> MD5SUMS
-sha1sum libspiff-$1.tar.gz >> SHA1SUMS
-
-md5sum libspiff-$1.zip >> MD5SUMS
-sha1sum libspiff-$1.zip >> SHA1SUMS
-
-
+appendChecksum $1 "tar.bz2"
+appendChecksum $1 "tar.gz"
+appendChecksum $1 "zip"
 
 echo
 echo "========== adding files =========="
