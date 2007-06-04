@@ -120,11 +120,11 @@ end-user download links are provided for convenience:
 
 <tr>
 <td>libSpiff</td>
-<td>0.7.0</td>
+<td>0.7.1</td>
 <td>
-        <a href="http://downloads.xiph.org/releases/xspf/libspiff-0.7.0.tar.bz2">libspiff-0.7.0.tar.bz2</a><br />
-        <a href="http://downloads.xiph.org/releases/xspf/libspiff-0.7.0.tar.gz">libspiff-0.7.0.tar.gz</a><br />
-        <a href="http://downloads.xiph.org/releases/xspf/libspiff-0.7.0.zip">libspiff-0.7.0.zip</a>
+        <a href="http://downloads.xiph.org/releases/xspf/libspiff-0.7.1.tar.bz2">libspiff-0.7.1.tar.bz2</a><br />
+        <a href="http://downloads.xiph.org/releases/xspf/libspiff-0.7.1.tar.gz">libspiff-0.7.1.tar.gz</a><br />
+        <a href="http://downloads.xiph.org/releases/xspf/libspiff-0.7.1.zip">libspiff-0.7.1.zip</a>
 </td>
 <td>
         468K<br />
@@ -132,9 +132,9 @@ end-user download links are provided for convenience:
         788K
 </td>
 <td>
-        d6e236ab060a5ef6f3998ea711d51836<br />
-        fd2f6aecf078f432a145f8225bd93504<br />
-        cdaaba309b9332e70fb56f9b9f4d0c30
+        6eae690a6505b9623ba433f9b8a3391d<br />
+        4456b4c989afe0f1a5ee8e1350334e7c<br />
+        042c8802571e9d92eb3fe43bd7f4311c
 </td>
 </tr>
 
