@@ -1,3 +1,20 @@
+/********************************************************************
+ *                                                                  *
+ * THIS FILE IS PART OF THE OggTheora SOFTWARE CODEC SOURCE CODE.   *
+ * USE, DISTRIBUTION AND REPRODUCTION OF THIS LIBRARY SOURCE IS     *
+ * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
+ * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
+ *                                                                  *
+ * THE Theora SOURCE CODE IS COPYRIGHT (C) 2002-2003                *
+ * by the Xiph.Org Foundation http://www.xiph.org/                  *
+ *                                                                  *
+ ********************************************************************
+
+  function: tool for adding comments to Ogg Theora files
+  last mod: $Id$
+
+ ********************************************************************/
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -15,18 +32,11 @@
 #include <unistd.h>
 #endif
 
-/*
-#include "getopt.h"
 #include "utf8.h"
-#include "i18n.h"
-*/
 
 #define _(str) str
 
 #include "commenter.h"
-
-#define utf8_encode(str, dest) str
-#define utf8_decode(str, dest) str
 
 /* getopt format struct */
 struct option long_options[] = {
