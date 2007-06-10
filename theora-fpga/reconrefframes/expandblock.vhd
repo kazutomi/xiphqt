@@ -27,6 +27,7 @@ entity ExpandBlock is
     out_sem_addr      : out unsigned(19 downto 0);
     out_sem_data      : out signed(31 downto 0);
 
+    in_newframe       : in  std_logic;
     out_done          : out std_logic);
 
 end ExpandBlock;
@@ -199,7 +200,8 @@ architecture a_ExpandBlock of ExpandBlock is
   type state_t is (stt_readIn, stt_PreRecon, stt_Recon, stt_EndProc);
   signal state : state_t;
   
-  type read_state_t is (stt_read1, stt_read_dqc, stt_read_qtl, stt_read2);
+  type read_state_t is (stt_read1, stt_read_uniq_frame_data,
+                        stt_read_dqc, stt_read_qtl, stt_read2);
   signal read_state : read_state_t;
 
   type pre_recon_state_t is (stt_PrepIDct, stt_CallIDct, stt_RecIDct,
@@ -448,12 +450,33 @@ begin  -- a_ExpandBlock
         count <= count + 1;
       elsif (count = 383) then
         count <= 0;
-	read_state <= stt_read_qtl;
+	read_state <= stt_read_uniq_frame_data;
       else
         count <= count + 1;
       end if;
     end procedure read_dqc;
 
+    ---------------------------------------------------------------------------
+    -- Procedure that read the parameters sent one time per frame
+    ---------------------------------------------------------------------------
+    procedure ReadUniqFrameData is
+    begin
+     
+      count <= count + 1;
+      if (count = 0) then
+        FrameType <= unsigned(in_data(7 downto 0));
+      elsif (count = 1) then
+        GoldenFrameOfs <= unsigned(in_data(MEM_ADDR_WIDTH-1 downto 0));
+      elsif (count = 2) then
+        LastFrameReconOfs <= unsigned(in_data(MEM_ADDR_WIDTH-1 downto 0));
+      --elsif (count = 3) then
+      else
+        ThisFrameReconOfs <= unsigned(in_data(MEM_ADDR_WIDTH-1 downto 0));
+        count <= 0;
+        read_state <= stt_read_qtl;
+      end if;
+    end procedure ReadUniqFrameData;
+    
     procedure read_qtl is
     begin
       dqc_wr_e <= '0';
@@ -491,21 +514,8 @@ begin  -- a_ExpandBlock
         count <= count + 1;
       elsif (count = 4) then
         FragmentNumber <= unsigned(in_data);
-        count <= count + 1;
-      elsif (count = 5) then
-        FrameType <= unsigned(in_data(7 downto 0));
-        count <= count + 1;
-      elsif (count = 6) then
-        GoldenFrameOfs <= unsigned(in_data(MEM_ADDR_WIDTH-1 downto 0));
-        count <= count + 1;
-      elsif (count = 7) then
-        LastFrameReconOfs <= unsigned(in_data(MEM_ADDR_WIDTH-1 downto 0));
-        count <= count + 1;
-      --elsif (count = 8) then
-      else
-        ThisFrameReconOfs <= unsigned(in_data(MEM_ADDR_WIDTH-1 downto 0));
         pre_recon_state <= stt_PrepIDct;
-        read_state <= stt_read_dqc;
+        read_state <= stt_read_qtl;
         state <= stt_PreRecon;
         s_in_request <= '0';
         count <= 0;
@@ -519,6 +529,7 @@ begin  -- a_ExpandBlock
       if (s_in_request = '1' and in_valid = '1') then 
         case read_state is
           when stt_read1 => read1;
+          when stt_read_uniq_frame_data => ReadUniqFrameData;
           when stt_read_dqc => read_dqc;
           when stt_read_qtl => read_qtl;
           when others => read2;
@@ -534,7 +545,6 @@ begin  -- a_ExpandBlock
     procedure PrepareToCallIDct is
     begin
       if (count = 0) then
---        assert false report "Preparing IDct call" severity note;
         -- Get coding mode for this block
         if (FrameType = KEY_FRAME) then
           CodingMode <= CODE_INTRA;
@@ -585,7 +595,6 @@ begin  -- a_ExpandBlock
     begin
       if (out_idct_requested = '1') then
         if (count = 0) then
---          assert false report "Calling IDct" severity note;
           qtl_rd_addr <= "000000";
           dqc_rd_addr <= dequant_coeffs_Ofs;
           count <= count + 1;
@@ -635,7 +644,6 @@ begin  -- a_ExpandBlock
           rdb_wr_addr <= rdb_wr_addr + 1;
           rdb_wr_data <= in_idct_data;
           if (count = 0) then
---          assert false report "Receiving IDct" severity note;
             rdb_wr_addr <= "000000";
           end if;
           count <= count + 1;
@@ -671,12 +679,10 @@ begin  -- a_ExpandBlock
     procedure SelectRecons is
     begin
       if (select_recons_state = stt_SelectRecons_1) then
---        assert false report "Selecting Recon 1" severity note;
         dbgSelRecon1 <= '1';
 
         rdb_wr_e <= '0';
         -- Action depends on decode mode.
---        assert false report "CodingMode1 = "&integer'image(to_integer('0' & CodingMode)) severity note;
         if (CodingMode = CODE_INTER_NO_MV) then
           -- Inter with no motion vector
           
@@ -1274,6 +1280,11 @@ begin  -- a_ExpandBlock
       else
         s_in_request <= '0';
         if (Enable = '1') then
+          -- If is a new frame should read the dequantized matrix again.
+          if (in_newframe = '1') then
+            read_state <= stt_read_dqc;
+          end if;
+
           case state is
             when stt_readIn => ReadIn;
             when stt_PreRecon => PreRecon;
