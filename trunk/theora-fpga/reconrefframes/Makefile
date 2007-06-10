@@ -5,6 +5,9 @@ all: clean elaborate
 clamp.o:
 	ghdl -a --ieee=synopsys  clamp.vhd
 
+divider.o:
+	ghdl -a --ieee=synopsys  divider.vhd
+
 reconpixelindex.o:
 	ghdl -a --ieee=synopsys  reconpixelindex.vhd
 
@@ -44,7 +47,7 @@ reconrefframes.o: reconrefframes.vhd
 tb_reconrefframes.o: tb_reconrefframes.vhd
 	ghdl -a --ieee=synopsys  tb_reconrefframes.vhd
 
-elaborate: clamp.o reconpixelindex.o dual_syncram.o idctslow.o syncram.o databuffer.o expandblock.o reconframes.o copyrecon.o lflimits.o loopfilter.o UpdateUMV.o reconrefframes.o tb_reconrefframes.o
+elaborate: clamp.o divider.o reconpixelindex.o dual_syncram.o idctslow.o syncram.o databuffer.o expandblock.o reconframes.o copyrecon.o lflimits.o loopfilter.o UpdateUMV.o reconrefframes.o tb_reconrefframes.o
 	ghdl -e  --ieee=synopsys tb_reconrefframes
 
 
@@ -66,6 +69,13 @@ runvcd: elaborate
 	ghdl -r tb_reconrefframes  --vcd=dump.vcd
 
 	@echo "VCD File wrote: dump.vcd"
+
+runwave: elaborate
+	@echo "Running... wait some minutes"
+	ghdl -r tb_reconrefframes  --wave=dump.ghw
+
+	@echo "GHW File wrote: dump.ghw"
+
 
 clean:
 	$(RM) OUT.DUV *.o *~ tb_reconrefframes *.cf \#*

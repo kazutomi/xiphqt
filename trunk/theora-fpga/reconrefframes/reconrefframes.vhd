@@ -262,41 +262,38 @@ architecture a_ReconRefFrames of ReconRefFrames is
   constant KEY_FRAME : unsigned(7 downto 0) := "00000000";
 
   type state_t is (stt_CleanBuffer,
-                   stt_Send, stt_ReconFrames,
+                   stt_Forward, stt_ReconFrames,
                    stt_CopyRecon, stt_LoopFilter,
                    stt_UpdateUMV, stt_WriteOut);
   signal state : state_t;
   
   
-  type send_state_t is (stt_rec_framesize,
-                        stt_send_uniq_common,
-                        stt_send_uniq_cr_lf,
-                        stt_send_uniq_lf,
-                        stt_send_uniq_uu,
-                        stt_send_rf,
+  type forward_state_t is (stt_rec_framesize,
+                        stt_forward_uniq_common,
+                        stt_forward_uniq_cr_lf,
+                        stt_forward_uniq_lf,
+                        stt_forward_uniq_uu,
+                        stt_forward_uniqperframe_rf,
                         stt_frametype,
-                        stt_send_golden_ofs_rf,
-                        stt_send_last_ofs_rf,
-                        stt_send_this_ofs_rf,
-                        stt_send_dispfrag,
-                        stt_send_source_ofs_cr,
-                        stt_send_dest_ofs_cr,
-                        stt_send_lf,
-                        stt_send_offset_lf,
-                        stt_send_offset_uu,
-                        stt_send_dispfrag_golden,
-                        stt_send_none);
-  signal send_state : send_state_t;
+                        stt_forward_golden_ofs_rf,
+                        stt_forward_last_ofs_rf,
+                        stt_forward_this_ofs_rf,
+                        stt_forward_rf,
+                        stt_forward_dispfrag,
+                        stt_forward_source_ofs_cr,
+                        stt_forward_dest_ofs_cr,
+                        stt_forward_lf,
+                        stt_forward_offset_lf,
+                        stt_forward_offset_uu,
+                        stt_forward_dispfrag_golden,
+                        stt_forward_none);
+  signal forward_state : forward_state_t;
 
   type write_state_t is (stt_write1, stt_write2, stt_write3);
   signal write_state : write_state_t;
 
   signal s_out_valid : std_logic;
   signal s_out_data : signed(31 downto 0);
-
-
-
---  signal dbg_temp : integer := 0;
 
 
 begin  -- a_ReconRefFrames
@@ -339,25 +336,25 @@ begin  -- a_ReconRefFrames
   -----------------------------------------------------------------------------
   -- Switch the in_request
   -----------------------------------------------------------------------------
-  -- If send_state is a state that doesn't need external data then
+  -- If forward_state is a state that doesn't need external data then
   -- in_request will be turned off
-  with send_state select in_request <=
-    '0' when stt_send_golden_ofs_rf,
-    '0' when stt_send_last_ofs_rf,
-    '0' when stt_send_this_ofs_rf,
-    '0' when stt_send_source_ofs_cr,
-    '0' when stt_send_dest_ofs_cr,
-    '0' when stt_send_offset_lf,
-    '0' when stt_send_offset_uu,
-    '0' when stt_send_dispfrag_golden,
-    '0' when stt_send_none,
+  with forward_state select in_request <=
+    '0' when stt_forward_golden_ofs_rf,
+    '0' when stt_forward_last_ofs_rf,
+    '0' when stt_forward_this_ofs_rf,
+    '0' when stt_forward_source_ofs_cr,
+    '0' when stt_forward_dest_ofs_cr,
+    '0' when stt_forward_offset_lf,
+    '0' when stt_forward_offset_uu,
+    '0' when stt_forward_dispfrag_golden,
+    '0' when stt_forward_none,
     s_in_request when others;
   
   -----------------------------------------------------------------------------
-  -- Switch the in_data and the in_valid
+  -- Switch the signals of the in_data and in_valid of the modules
   -----------------------------------------------------------------------------
   process (Reset_n,
-           send_state,
+           forward_state,
            out_rf_request,
            out_cr_request,
            out_lf_request,
@@ -387,10 +384,10 @@ begin  -- a_ReconRefFrames
     -----------------------------------------------------------------------------
     -- Unique Parameters
     -----------------------------------------------------------------------------    
-    if (send_state = stt_rec_framesize) then
+    if (forward_state = stt_rec_framesize) then
       s_in_request <= '1';
       
-    elsif (send_state = stt_send_uniq_common) then
+    elsif (forward_state = stt_forward_uniq_common) then
       s_in_request <= out_rf_request and
                  out_cr_request and
                  out_lf_request and
@@ -400,7 +397,7 @@ begin  -- a_ReconRefFrames
       out_lf_valid <= in_valid;
       out_uu_valid <= in_valid;
 
-    elsif (send_state = stt_send_uniq_cr_lf) then
+    elsif (forward_state = stt_forward_uniq_cr_lf) then
       -------------------------------------------------------------------------
       -- UnitFragment is sent to CopyRecon and LoopFilter and read internaly
       -------------------------------------------------------------------------
@@ -410,47 +407,52 @@ begin  -- a_ReconRefFrames
       out_cr_valid <= in_valid;
       out_lf_valid <= in_valid;
       
-    elsif (send_state = stt_send_uniq_lf) then
+    elsif (forward_state = stt_forward_uniq_lf) then
       s_in_request <= out_lf_request;
       out_lf_valid <= in_valid;
 
-    elsif (send_state = stt_send_uniq_uu) then
+    elsif (forward_state = stt_forward_uniq_uu) then
       s_in_request <= out_uu_request;
       out_uu_valid <= in_valid;
--------------------------------------------------------------------------------
--- ReconFrames Parameters
--------------------------------------------------------------------------------
-    elsif (send_state = stt_send_rf) then
+
+
+    -----------------------------------------------------------------------
+    -- ReconFrames Parameters
+    ---------------------------------------------------------------------------
+    elsif (forward_state = stt_forward_uniqperframe_rf) then
       s_in_request <= out_rf_request;
       out_rf_valid <= in_valid;
 
-    elsif (send_state = stt_frametype) then
+    elsif (forward_state = stt_frametype) then
       -------------------------------------------------------------------------
       -- FrameType is sent to ReconFrames and read internaly
       -------------------------------------------------------------------------
       s_in_request <= out_rf_request;
       out_rf_valid <= in_valid;
---      FrameType <= unsigned(in_data(7 downto 0));
                    
-    elsif (send_state = stt_send_golden_ofs_rf) then
+    elsif (forward_state = stt_forward_golden_ofs_rf) then
       s_in_request <= out_rf_request;
       s_in_valid <= '1';
       out_rf_valid <= '1';
       out_rf_data <= resize('0' & signed(GoldenFrameOfs), 32);
 
-    elsif (send_state = stt_send_last_ofs_rf) then
+    elsif (forward_state = stt_forward_last_ofs_rf) then
       s_in_request <= out_rf_request;
       s_in_valid <= '1';
       out_rf_valid <= '1';
       out_rf_data <= resize('0' & signed(LastFrameReconOfs), 32);
 
-    elsif (send_state = stt_send_this_ofs_rf) then
+    elsif (forward_state = stt_forward_this_ofs_rf) then
       s_in_request <= out_rf_request;
       s_in_valid <= '1';
       out_rf_valid <= '1';
       out_rf_data <= resize('0' & signed(ThisFrameReconOfs), 32);
 
-    elsif (send_state = stt_send_dispfrag) then
+    elsif (forward_state = stt_forward_rf) then
+      s_in_request <= out_rf_request;
+      out_rf_valid <= in_valid;
+
+    elsif (forward_state = stt_forward_dispfrag) then
       s_in_request <= out_cr_request and
                       out_lf_request;
       out_cr_valid <= '0';
@@ -462,35 +464,35 @@ begin  -- a_ReconRefFrames
         assert false report "Somebody doesn't want read" severity note;
       end if;
       
-    elsif (send_state = stt_send_source_ofs_cr) then
+    elsif (forward_state = stt_forward_source_ofs_cr) then
       s_in_request <= out_cr_request;
       s_in_valid <= '1';
       out_cr_valid <= '1';
       out_cr_data <= resize('0' & signed(FrameOfsAuxSrc), 32);
      
-    elsif (send_state = stt_send_dest_ofs_cr) then
+    elsif (forward_state = stt_forward_dest_ofs_cr) then
       s_in_request <= out_cr_request;
       s_in_valid <= '1';
       out_cr_valid <= '1';
       out_cr_data <= resize('0' & signed(FrameOfsAux), 32);
       
-    elsif (send_state = stt_send_lf) then
+    elsif (forward_state = stt_forward_lf) then
       s_in_request <= out_lf_request;
       out_lf_valid <= in_valid;
       
-    elsif (send_state = stt_send_offset_lf) then
+    elsif (forward_state = stt_forward_offset_lf) then
       s_in_request <= out_lf_request;
       s_in_valid <= '1';
       out_lf_valid <= '1';
       out_lf_data <= resize('0' & signed(LastFrameReconOfs), 32);
 
-    elsif (send_state = stt_send_offset_uu) then
+    elsif (forward_state = stt_forward_offset_uu) then
       s_in_request <= out_uu_request;
       s_in_valid <= '1';
       out_uu_valid <= '1';
       out_uu_data <= resize('0' & signed(FrameOfsAux), 32);
 
-    elsif (send_state = stt_send_dispfrag_golden) then
+    elsif (forward_state = stt_forward_dispfrag_golden) then
       -------------------------------------------------------------------------
       -- If it is a key frame then all fragments must be displayed.
       -- In such case all values of display_fragments is one
@@ -511,7 +513,10 @@ begin  -- a_ReconRefFrames
     end if;
   end process;
 
-
+  -----------------------------------------------------------------------------
+  -- Control the module's access to the Data Buffer
+  -- This is just a big multiplexer
+  -----------------------------------------------------------------------------
   process (Reset_n,
            state,
            in_DtBuf_valid,
@@ -662,6 +667,9 @@ begin  -- a_ReconRefFrames
   
   process(clk)
 
+    ---------------------------------------------------------------------------
+    -- Procedure that write zero in all positions of Data Buffer
+    ---------------------------------------------------------------------------
     procedure CleanBuffer is
     begin
       in_rr_DtBuf_valid <= '1';
@@ -676,8 +684,8 @@ begin  -- a_ReconRefFrames
       end if;
 
       if (count = SHIFT_RIGHT(3*FrameSize,2)) then
-        state <= stt_Send;
-        send_state <= stt_send_uniq_common;
+        state <= stt_Forward;
+        forward_state <= stt_forward_uniq_common;
         in_rr_DtBuf_addr <= x"00000";
         count <= 0;
         in_rr_DtBuf_valid <= '0';
@@ -689,42 +697,70 @@ begin  -- a_ReconRefFrames
 -------------------------------------------------------------------------------
 -- Change the states syncronously
 -------------------------------------------------------------------------------
-    procedure SendControl is
+    procedure ForwardControl is
     begin
---      dbg_temp <= dbg_temp + 1;
-      
---    assert false report "s_in_request = "&std_logic'image(s_in_request) severity note;
---    assert false report "in_request = "&std_logic'image(in_request) severity note;
---       assert false report "count = "&integer'image(count) severity note;
---       assert false report "send_state ="&send_state_t'image(send_state) severity NOTE;
       if (s_in_request = '1' and s_in_valid = '1') then
+--        assert false report "forward_state = "&forward_state_t'image(forward_state) severity note;
         count <= 0;
       
-        if (send_state = stt_rec_framesize) then
+        if (forward_state = stt_rec_framesize) then
+          -- The first parameter is FrameType
           FrameSize <= unsigned(in_data(MEM_ADDR_WIDTH-1 downto 0));
+
+          --   This is a hack. On FPGA when reset the module I don't know explain
+          -- why reads the first value as zero.
+          --   Here we are ignoring this zero value. So the first valid value is
+          -- the second one that the module reads. The problem happens on an
+          -- Altera Stratix II.
           if (count = 0) then
             count <= 1;
           else
             count <= 0;
-            send_state <= stt_send_none;
+            forward_state <= stt_forward_none;
             state <= stt_CleanBuffer;
           end if;
+
           
-        elsif (send_state = stt_send_uniq_common) then
+        elsif (forward_state = stt_forward_uniq_common) then
+          -- Define the offsets
           GoldenFrameOfs <= x"00000";
           LastFrameReconOfs <= FrameSize;
           ThisFrameReconOfs <= SHIFT_LEFT(FrameSize, 1);
-         
+       
+    
+          ---------------------------------------------------------------------
+          -- Forward and read the unique values common for all modules
+          ---------------------------------------------------------------------
+          -- if count = 0 then and forward the pbi->HFragments value
+          ---------------------------------------------------------------------
+          -- if count = 1 then read and forward the pbi->YPlaneFragments value
+          ---------------------------------------------------------------------
+          -- if count = 2 then read and forward the pbi->YStride value
+          ---------------------------------------------------------------------
+          -- if count = 3 then read and forward the pbi->UVPlaneFragments value
+          ---------------------------------------------------------------------
+          -- if count = 4 then read and forward the pbi->UVStride value
+          ---------------------------------------------------------------------
+          -- if count = 5 then read and forward the pbi->VFragments value
+          ---------------------------------------------------------------------
+          -- if count = 6 then read and forward the pbi->ReconYDataOffset value
+          ---------------------------------------------------------------------
+          -- if count = 7 then read and forward the pbi->ReconUDataOffset value
+          ---------------------------------------------------------------------
+          -- if count = 8 then read and forward the pbi->ReconVDataOffset value
+          ---------------------------------------------------------------------
           count <= count + 1;
           if (count = 8) then
-            send_state <= stt_send_uniq_cr_lf;
+            forward_state <= stt_forward_uniq_cr_lf;
             count <= 0;
           end if;
-
           
-        elsif (send_state = stt_send_uniq_cr_lf) then
-          send_state <= stt_send_uniq_lf;
+        elsif (forward_state = stt_forward_uniq_cr_lf) then
+          -- Forward the pbi->UnitFragments value to CopyRecon and LoopFilter
+          forward_state <= stt_forward_uniq_lf;
 
+          -- Verify if the pbi-UnitFragments value is some multiple of 32
+          -- because the matrix pbi->display_fragments is package
           MaxDPFCount <= SHIFT_RIGHT(
             unsigned(in_data(LG_MAX_SIZE*2 downto 0)), 5) + 1;
           if (in_data(4 downto 0) = "00000") then
@@ -732,93 +768,159 @@ begin  -- a_ReconRefFrames
               unsigned(in_data(LG_MAX_SIZE*2 downto 0)), 5);
           end if;
 
-          
-        elsif (send_state = stt_send_uniq_lf) then
+        
+        elsif (forward_state = stt_forward_uniq_lf) then
+          ---------------------------------------------------------------------
+          -- Forward the Matrices pbi->QThreshTable and pbi->LoopFilterLimits
+          -- to LoopFilter module
+          ---------------------------------------------------------------------
+          -- For Count = 0 to Count = 63 forward pbi->QThreshTable
+          ---------------------------------------------------------------------
+          -- For Count = 64 to Count = 79 forward pbi->LoopFilterLimits
+          ---------------------------------------------------------------------
           count <= count + 1;
           if (count = 79) then
-            send_state <= stt_send_uniq_uu;
+            forward_state <= stt_forward_uniq_uu;
             count <= 0;
           end if;
         
-        elsif (send_state = stt_send_uniq_uu) then
-          send_state <= stt_send_rf;
-
-        elsif (send_state = stt_send_rf) then
+        elsif (forward_state = stt_forward_uniq_uu) then
+          -- Forward the pbi->info.height value to UpdateUMV module
+          forward_state <= stt_forward_uniqperframe_rf;
+          
+        elsif (forward_state = stt_forward_uniqperframe_rf) then
+          ---------------------------------------------------------------------
+          -- If Count = 0 forward to ReconFrame the QuantDispFrags that is
+          -- equal to pbi->CodedBlockIndex of the software
+          ---------------------------------------------------------------------
+          -- For Count = 1 to Count = 64 forward the
+          -- pbi->dequant_Y_coeffs matrix to ReconFrames
+          -----------------------------------------------------------
+          -- For Count = 65 to Count = 128 forward the
+          -- pbi->dequant_U_coeffs matrix to ReconFrames
+          -----------------------------------------------------------
+          -- For Count = 129 to Count = 192 forward the
+          -- pbi->dequant_V_coeffs matrix to ReconFrames
+          -----------------------------------------------------------
+          -- For Count = 193 to Count = 256 forward the
+          -- dequant_InterY_coeffs matrix to ReconFrames
+          -----------------------------------------------------------
+          -- For Count = 257 to Count = 320 forward the
+          -- dequant_InterU_coeffs matrix to ReconFrames
+          -----------------------------------------------------------
+          -- For Count = 321 to Count = 384 forward the
+          -- dequant_InterV_coeffs matrix to ReconFrames
           count <= count + 1;
-          if (count = 453) then
-            send_state <= stt_frametype;
+          if (count = 384) then
+            forward_state <= stt_frametype;
+            count <= 0;
+          end if;
+          
+        elsif (forward_state = stt_frametype) then
+          -- Forward and read the pbi->FrameType
+          forward_state <= stt_forward_golden_ofs_rf;
+          FrameType <= unsigned(in_data(7 downto 0));
+
+        -----------------------------------------------------------------------
+        --   The three states below is used to forward the three Data Buffer's
+        -- offsets to the modules that need these informations
+        --   The hardware is responsible for the offsets.
+        -----------------------------------------------------------------------
+        elsif (forward_state = stt_forward_golden_ofs_rf) then
+          forward_state <= stt_forward_last_ofs_rf;
+          
+        elsif (forward_state = stt_forward_last_ofs_rf) then
+          forward_state <= stt_forward_this_ofs_rf;
+
+        elsif (forward_state = stt_forward_this_ofs_rf) then
+          forward_state <= stt_forward_rf;
+
+        elsif (forward_state = stt_forward_rf) then
+          -----------------------------------------------------------
+          -- Forward to ReconFrames the parameters below that are
+          -- sent for all fragments
+          -----------------------------------------------------------
+          -- For Count = 0 to Count = 63 forward the
+          -- pbi->QFragData(number of the fragment to be expanded)
+          -- matrix
+          ------------------------------------------------------------
+          -- If Count = 64 forward the
+          -- pbi->FragCodingMethod(number of the fragment to be expanded)
+          -- value
+          -----------------------------------------------------------
+          -- If Count = 65 forward the
+          -- pbi->FragCoefEOB(number of the fragment to be expanded)
+          -- value
+          -----------------------------------------------------------
+          -- If Count = 66 forward the
+          -- (pbi->FragMVect(number of the fragment to be expanded)).x
+          -- value
+          -----------------------------------------------------------
+          -- If Count = 67 forward the
+          -- (pbi->FragMVect(number of the fragment to be expanded)).y
+          -- value
+          -----------------------------------------------------------
+          -- If Count = 68 forward the
+          -- (number of fragment to be expanded)
+          -----------------------------------------------------------
+          count <= count + 1;
+          if (count = 68) then
+            forward_state <= stt_forward_none;
+            state <= stt_ReconFrames;
             count <= 0;
           end if;
 
-          
-        elsif (send_state = stt_frametype) then
-          send_state <= stt_send_golden_ofs_rf;
-          FrameType <= unsigned(in_data(7 downto 0));
-
-        elsif (send_state = stt_send_golden_ofs_rf) then
-          send_state <= stt_send_last_ofs_rf;
-          
-        elsif (send_state = stt_send_last_ofs_rf) then
-          send_state <= stt_send_this_ofs_rf;
-
-        elsif (send_state = stt_send_this_ofs_rf) then
-          send_state <= stt_send_none;
-          state <= stt_ReconFrames;
-  --        assert false report "ReconFrames" severity note;
-
-        elsif (send_state = stt_send_dispfrag or
-               send_state = stt_send_dispfrag_golden) then
---           assert false report "send_state = "&send_state_t'image(send_state) severity note;
+        elsif (forward_state = stt_forward_dispfrag or
+               forward_state = stt_forward_dispfrag_golden) then
+--           assert false report "forward_state = "&forward_state_t'image(forward_state) severity note;
 --           assert false report "Count = "&integer'image(count) severity note;
 --           assert false report "MaxDPFCount = "&integer'image(to_integer(MaxDPFCount)) severity note;
 
           count <= count + 1;
           if (count = MaxDPFCount - 1) then
-            send_state <= stt_send_source_ofs_cr;
+            forward_state <= stt_forward_source_ofs_cr;
             count <= 0;
           end if;
 
-        elsif (send_state = stt_send_source_ofs_cr) then
---           assert false report "send_state = "&send_state_t'image(send_state) severity note;
-          send_state <= stt_send_dest_ofs_cr;
+        elsif (forward_state = stt_forward_source_ofs_cr) then
+--           assert false report "forward_state = "&forward_state_t'image(forward_state) severity note;
+          forward_state <= stt_forward_dest_ofs_cr;
 
-        elsif (send_state = stt_send_dest_ofs_cr) then
---           assert false report "send_state = "&send_state_t'image(send_state) severity note;
-          send_state <= stt_send_none;
+        elsif (forward_state = stt_forward_dest_ofs_cr) then
+--           assert false report "forward_state = "&forward_state_t'image(forward_state) severity note;
+          forward_state <= stt_forward_none;
           state <= stt_CopyRecon;
 
-        elsif (send_state = stt_send_lf) then
-          send_state <= stt_send_offset_lf;
+        elsif (forward_state = stt_forward_lf) then
+          forward_state <= stt_forward_offset_lf;
 
-        elsif (send_state = stt_send_offset_lf) then
-          send_state <= stt_send_none;
+        elsif (forward_state = stt_forward_offset_lf) then
+          forward_state <= stt_forward_none;
           state <= stt_LoopFilter;
 
-
-        elsif (send_state = stt_send_offset_uu) then
+        elsif (forward_state = stt_forward_offset_uu) then
           assert false report "Calling UU" severity note;
-          send_state <= stt_send_none;
+          forward_state <= stt_forward_none;
           state <= stt_UpdateUMV;
         else
           null;
         end if;
       end if;
-    end procedure SendControl;
+    end procedure ForwardControl;
 
     procedure ReconFrames is
     begin
---    assert false report "out_rf_request = "&std_logic'image(out_rf_request) severity note;
+--      assert false report "out_rf_request = "&std_logic'image(out_rf_request) severity note;
       if (rf_done = '1' and rf_eb_done = '1') then
         assert false report "ReconFrames Concluido" severity note;
-        send_state <= stt_send_dispfrag;
-        state <= stt_Send;
+        forward_state <= stt_forward_dispfrag;
+        state <= stt_Forward;
         FrameOfsAux <= LastFrameReconOfs;
         FrameOfsAuxSrc <= ThisFrameReconOfs;
       elsif (rf_eb_done = '1') then
-   
-        send_state <= stt_send_rf;
-        state <= stt_Send;
-        count <= 1;
+        forward_state <= stt_forward_rf;
+        state <= stt_Forward;
+        count <= 0;
       else
         null;
       end if;
@@ -829,14 +931,14 @@ begin  -- a_ReconRefFrames
       if (cr_done = '1') then
         assert false report "CopyRecon Concluido" severity note;
       
-        send_state <= stt_send_lf;
-        state <= stt_Send;
+        forward_state <= stt_forward_lf;
+        state <= stt_Forward;
         CountCopies <= '0';
          if (FrameType = KEY_FRAME and CountCopies = '0') then
            CountCopies <= '1';
          elsif (FrameType = KEY_FRAME and CountCopies = '1') then
-           send_state <= stt_send_offset_uu;
-           state <= stt_Send;
+           forward_state <= stt_forward_offset_uu;
+           state <= stt_Forward;
          else
            null;
          end if;
@@ -847,8 +949,8 @@ begin  -- a_ReconRefFrames
     begin
       if (lf_done = '1') then
         assert false report "LoopFilter Concluido" severity note;
-        send_state <= stt_send_offset_uu;
-        state <= stt_Send;
+        forward_state <= stt_forward_offset_uu;
+        state <= stt_Forward;
       end if;
     end procedure LoopFilter;
 
@@ -859,13 +961,13 @@ begin  -- a_ReconRefFrames
          count <= 0;
          state <= stt_WriteOut;
          write_state <= stt_write1;
-         send_state <= stt_send_none;
+         forward_state <= stt_forward_none;
          CountUpdates <= '0';
          if (FrameType = KEY_FRAME and CountUpdates = '0') then
            FrameOfsAux <= GoldenFrameOfs;
            FrameOfsAuxSrc <= LastFrameReconOfs;
-           send_state <= stt_send_dispfrag_golden;
-           state <= stt_Send;
+           forward_state <= stt_forward_dispfrag_golden;
+           state <= stt_Forward;
            CountUpdates <= '1';
          end if;
       end if;
@@ -886,8 +988,8 @@ begin  -- a_ReconRefFrames
         else
           if (count = FrameSize) then
             count <= 0;
-            send_state <= stt_send_rf;
-            state <= stt_Send;
+            forward_state <= stt_forward_uniqperframe_rf;
+            state <= stt_Forward;
             write_state <= stt_write1;
             out_rr_DtBuf_request <= '0';
             out_rr_DtBuf_addr <= SHIFT_RIGHT(LastFrameReconOfs, 2);
@@ -919,8 +1021,8 @@ begin  -- a_ReconRefFrames
         uu_enable <= '1';
         
         write_state <= stt_write1;
-        send_state <= stt_rec_framesize;
-        state <= stt_Send;
+        forward_state <= stt_rec_framesize;
+        state <= stt_Forward;
 
         
         CountCopies  <= '0';
@@ -934,7 +1036,7 @@ begin  -- a_ReconRefFrames
       else
         case state is
           when stt_CleanBuffer => CleanBuffer;
-          when stt_Send => SendControl;
+          when stt_Forward => ForwardControl;
           when stt_ReconFrames => ReconFrames;
           when stt_CopyRecon => CopyRecon;
           when stt_LoopFilter => LoopFilter;
