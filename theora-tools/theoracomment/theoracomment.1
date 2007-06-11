@@ -1,0 +1,89 @@
+.\" Process this file with
+.\" groff -man -Tascii theoracomment.1
+.\"
+.TH THEORACOMMENT 1 "June 8, 2007" "Xiph.org Foundation" "Theora Tools"
+
+.SH NAME
+theoracomment \- List or edit comments in Ogg Theora files
+
+.SH SYNOPSIS
+.B theoracomment
+.RB [ -l ]
+.I file.ogg
+.br
+.B theoracomment
+.B -a
+.B [ -c commentfile | -t \*(lqname=value\*(rq ]
+.RB [ -q ]
+.I in.ogg
+.I [out.ogg]
+.br
+.B theoracomment
+.B -w
+.B [ -c commentfile | -t \*(lqname=value\*(rq ]
+.RB [ -q ]
+.I in.ogg
+.I [out.ogg]
+
+.SH DESCRIPTION
+.B theoracomment
+Reads, modifies, and appends Ogg Theora audio file metadata tags.
+
+.SH OPTIONS
+.IP "-a, --append"
+Append comments.
+.IP "-c file, --commentfile file"
+Take comments from a file. The file is the same format as is output by the the -l option: one element per line in 'name=value' format.
+.IP "-h, --help"
+Show command help.
+.IP "-l, --list"
+List the comments in the ogg theora file.
+.IP "-q, --quiet"
+Quiet mode.  No messages are displayed.
+.IP "-t 'name=value', --tag 'name=value'"
+Specify a new tag on the command line. Each tag is given as a single string. The part before the '=' is treated as the tag name and the part after as the value.
+.IP "-w, --write"
+Replace comments with the new set given either on the command line with -t or from a file with -c.
+.IP "-R, --raw"
+Read and write comments in UTF-8, rather than converting to the user's character set.
+.IP "-V, --version"
+Display the version of theoracomment.
+
+.\" Examples go here
+.SH EXAMPLES
+
+To just see what comment tags are in a file:
+
+    theoracomment -l file.ogg
+
+To edit those comments:
+
+    theoracomment -l file.ogg > file.txt
+    [edit the comments in file.txt to your satisfaction]
+    theoracomment -w -c file.txt file.ogg newfile.ogg
+
+To simply add a comment:
+
+    theoracomment -a -t 'ARTIST=No One You Know' file.ogg newfile.ogg
+
+.SH TAG FORMAT
+
+See http://xiph.org/ogg/theora/doc/v-comment.html for documentation on the Ogg Theora tag format, including a suggested list of canonical tag names.
+
+.SH AUTHORS
+
+.TP
+Program Authors:
+.br
+Daniel Kraft <d@domob.eu>
+.br
+
+.TP
+Manpage Author:
+.br
+Daniel Kraft <d@domob.eu>
+
+.SH "SEE ALSO"
+
+.PP
+\fBtheoraenc\fR(1)
