@@ -11,3 +11,51 @@ Dependencies :
 - libcgi
 
 Please make sure you have these libraries installed before building the code.
+
+
+Cron Jobs :
+
+There are 3 cron jobs that need to run.
+
+1. yp_clean - this should run every 5 minutes.  It goes through the DB and 
+will purge any hanging entries.
+2. yp_random - I had this running every 30 or 60 mins..It will go through 
+the DB and randomize the rankings.  This will effectively rotate those 
+streams that are listed on the main page.
+3. yp_cachegen - This generates the file yp.xml which needs to be placed in 
+the root of dir.xiph.org.  This is what many app-based stream browsers are 
+using to access the directory data.  Back on MF, this was running every 
+minute.  Currently, the location of the output yp.xml is specified in the 
+source code (right now it's "yp.xml", so it will dump it wherever your CWD 
+happens to be when you run it).  You can change it in the source code by 
+looking for the line : xmlSaveFormatFileEnc("yp.xml", doc, encoding, 
+1);  You could alternatively create a wrapper script that chdirs to the 
+webroot of dir.xiph.org, then runs yp_cachegen.  Your choice.
+
+In all 3 cases, the db connection info is specified in the source code 
+itself, and is set to connect to database "oddsock", using username 
+"oddsock" with NO password.  This has the nice effect of not having to make 
+sure the password to the DB is not committed to SVN.
+
+
+Recreating the DB :
+
+In some cases (on MF) the Mysql DB would get horribly corrupted and the yp 
+database needed to be completly rebuilt.  I have a simple SQL script 
+(icecast2yp/sql/reset_db.sql) that can be run like :
+
+% mysql -uoddsock < icecast2yp/sql/reset_db.sql
+
+This will drop and recreate all the tables in the DB, which will usually 
+clear up any corruption issues.  All the icecast servers are configured to 
+automatically relist in the case that you rip out their listing from 
+underneath them.
+
+You can also use this to create the database schema on a fresh install.
+
+In general, with the 3 cronjobs running, the YP pretty much runs without 
+any intervention....It's run for months on end without a single activity on 
+my part.  And the only things I've had to do maintenance-wise is 
+occasionally run the "reset_db.sql" SQL when Mysql would corrupt the 
+datafiles... ;)
+
