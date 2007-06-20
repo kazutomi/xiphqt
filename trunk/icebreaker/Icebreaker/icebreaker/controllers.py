@@ -7,7 +7,7 @@ from cherrypy import request, response
 # log = logging.getLogger("icebreaker.controllers")
 
 class Root(controllers.RootController):
-    @expose(template="icebreaker.templates.welcome")
+    @expose(template="icebreaker.templates.icebreaker")
     # @identity.require(identity.in_group("admin"))
     def index(self):
         import time
