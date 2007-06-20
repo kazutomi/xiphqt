@@ -11,9 +11,7 @@ class Root(controllers.RootController):
     # @identity.require(identity.in_group("admin"))
     def index(self):
         import time
-        # log.debug("Happy TurboGears Controller Responding For Duty")
-        flash("Your application is now running")
-        return dict(now=time.ctime())
+        return dict(now=time.ctime(), greeting="poooooooooooooooop")
 
     @expose(template="icebreaker.templates.login")
     def login(self, forward_url=None, previous_url=None, *args, **kw):
@@ -45,8 +43,3 @@ class Root(controllers.RootController):
     def logout(self):
         identity.current.logout()
         raise redirect("/")
-
-    @expose(template="icebreaker.templates.icebreaker")
-    def icebreaker(self):
-        import time
-        return dict(greeting="greetings from the controller")
