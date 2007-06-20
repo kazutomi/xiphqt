@@ -15,20 +15,36 @@
         }
     </style>
     <style type="text/css" media="screen">
-@import "${tg.url('/static/css/style.css')}";
+@import "${tg.url('/static/css/screen.css')}";
+@import "${tg.url('/static/css/xiphbar.css')}";
 </style>
 </head>
 
 <body py:match="item.tag=='{http://www.w3.org/1999/xhtml}body'" py:attrs="item.items()">
-    <div py:if="tg.config('identity.on') and not defined('logging_in')" id="pageLogin">
-        <span py:if="tg.identity.anonymous">
-            <a href="${tg.url('/login')}">Login</a>
-        </span>
-        <span py:if="not tg.identity.anonymous">
-            Welcome ${tg.identity.user.display_name}.
-            <a href="${tg.url('/logout')}">Logout</a>
-        </span>
+<div id="xiphbar_outer">
+    <div py:if="tg.config('identity.on') and not defined('logging_in')" id="pageLogin"  border="0" cellpadding="0" cellspacing="0">
+        <table id="xiphbar" border="0" cellpadding="0" cellspacing="0">
+        <tr>
+            <td id="xiphlinks" align="right">
+               <a href="http://www.xiph.org/">Xiph.org</a>
+               <a href="http://www.vorbis.com/">Vorbis</a>
+               <a href="http://www.theora.org/">Theora</a>
+               <a href="http://www.icecast.org/">Icecast</a>
+               <a href="http://www.speex.org/">Speex</a>
+               <a href="http://flac.sourceforge.net/">FLAC</a>
+               <a href="http://www.xspf.org/">XSPF</a>
+               <span py:if="tg.identity.anonymous">
+                   <a href="${tg.url('/login')}">Login</a>
+               </span>
+               <span py:if="not tg.identity.anonymous">
+               Welcome ${tg.identity.user.display_name}.
+                  <a href="${tg.url('/logout')}">Logout</a>
+               </span>
+            </td>
+        </tr>
+        </table>
     </div>
+</div>
     <div id="header">&nbsp;</div>
     <div id="main_content">
     <div id="status_block" class="flash" py:if="value_of('tg_flash', None)" py:content="tg_flash"></div>
@@ -37,11 +53,7 @@
 
     <!-- End of main_content -->
     </div>
-<div id="footer"> <img src="${tg.url('/static/images/under_the_hood_blue.png')}" alt="TurboGears under the hood" />
-  <p>TurboGears is a open source front-to-back web development
-    framework written in Python</p>
-  <p>Copyright &copy; 2007 Kevin Dangoor</p>
-</div>
+
 </body>
 
 </html>
