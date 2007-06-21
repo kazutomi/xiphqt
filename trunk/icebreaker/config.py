@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # Config file for Icebreaker
 
-file_dir=''
+file_dir='../samplemusic/'
 
 #    conn = 'mysql://test:pwd@localhost/testdb'
 #    conn = 'mysql://test:pwd@localhost/testdb?debug=1'
@@ -12,4 +12,4 @@ file_dir=''
 #    conn = DBMConnection('database/')
 #    conn = 'dbm://path/to/database/'
 
-conn = ''
+conn = 'sqlite:///mnt/icebreaker/icebreaker/Icebreaker/devdata.sqlite'
