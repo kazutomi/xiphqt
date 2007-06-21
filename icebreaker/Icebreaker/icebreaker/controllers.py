@@ -2,9 +2,9 @@ from turbogears import controllers, expose, flash
 # from model import *
 from turbogears import identity, redirect
 from cherrypy import request, response
-# from icebreaker import json
-# import logging
-# log = logging.getLogger("icebreaker.controllers")
+from icebreaker import json
+import logging
+log = logging.getLogger("icebreaker.controllers")
 
 class Root(controllers.RootController):
     @expose(template="icebreaker.templates.icebreaker")
@@ -43,3 +43,8 @@ class Root(controllers.RootController):
     def logout(self):
         identity.current.logout()
         raise redirect("/")
+
+    @expose(template="icebreaker.templates.list")
+    def list(self):
+        from model import data
+        return dict(data=data.select())
