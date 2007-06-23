@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://web.resource.org/cc/"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="744.09448819"
+   height="1052.3622047"
+   id="svg2"
+   sodipodi:version="0.32"
+   inkscape:version="0.45.1"
+   sodipodi:docbase="E:\Documents and Settings\Administrator\Desktop"
+   sodipodi:docname="valid_xspf_88x31_2007-06-22.svg"
+   inkscape:output_extension="org.inkscape.output.svg.inkscape"
+   inkscape:export-filename="E:\Documents and Settings\Administrator\Desktop\valid_xspf_88x31_2007-06-22.png"
+   inkscape:export-xdpi="11.511628"
+   inkscape:export-ydpi="11.511628">
+  <defs
+     id="defs4">
+    <linearGradient
+       id="linearGradient12396">
+      <stop
+         style="stop-color:#000000;stop-opacity:1;"
+         offset="0"
+         id="stop12398" />
+      <stop
+         id="stop12404"
+         offset="0.53571427"
+         style="stop-color:#000000;stop-opacity:1;" />
+      <stop
+         style="stop-color:#000000;stop-opacity:0;"
+         offset="1"
+         id="stop12400" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient4600">
+      <stop
+         style="stop-color:#000000;stop-opacity:0.01176471;"
+         offset="0"
+         id="stop11409" />
+      <stop
+         style="stop-color:#000000;stop-opacity:0;"
+         offset="1"
+         id="stop4604" />
+    </linearGradient>
+    <marker
+       inkscape:stockid="TriangleOutM"
+       orient="auto"
+       refY="0.0"
+       refX="0.0"
+       id="TriangleOutM"
+       style="overflow:visible">
+      <path
+         id="path4446"
+         d="M 5.77,0.0 L -2.88,5.0 L -2.88,-5.0 L 5.77,0.0 z "
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1.0pt;marker-start:none"
+         transform="scale(0.4)" />
+    </marker>
+    <marker
+       inkscape:stockid="Dot_s"
+       orient="auto"
+       refY="0.0"
+       refX="0.0"
+       id="Dot_s"
+       style="overflow:visible">
+      <path
+         id="path4479"
+         d="M -2.5,-1.0 C -2.5,1.7600000 -4.7400000,4.0 -7.5,4.0 C -10.260000,4.0 -12.5,1.7600000 -12.5,-1.0 C -12.5,-3.7600000 -10.260000,-6.0 -7.5,-6.0 C -4.7400000,-6.0 -2.5,-3.7600000 -2.5,-1.0 z "
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1.0pt;marker-start:none;marker-end:none"
+         transform="scale(0.2) translate(7.4, 1)" />
+    </marker>
+    <marker
+       inkscape:stockid="Arrow2Mend"
+       orient="auto"
+       refY="0.0"
+       refX="0.0"
+       id="Arrow2Mend"
+       style="overflow:visible;">
+      <path
+         id="path4520"
+         style="font-size:12.0;fill-rule:evenodd;stroke-width:0.62500000;stroke-linejoin:round;"
+         d="M 8.7185878,4.0337352 L -2.2072895,0.016013256 L 8.7185884,-4.0017078 C 6.9730900,-1.6296469 6.9831476,1.6157441 8.7185878,4.0337352 z "
+         transform="scale(0.6) rotate(180) translate(0,0)" />
+    </marker>
+    <marker
+       inkscape:stockid="Arrow1Lend"
+       orient="auto"
+       refY="0.0"
+       refX="0.0"
+       id="Arrow1Lend"
+       style="overflow:visible;">
+      <path
+         id="path4544"
+         d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1.0pt;marker-start:none;"
+         transform="scale(0.8) rotate(180) translate(12.5,0)" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       inkscape:stockid="InfiniteLineStart"
+       id="InfiniteLineStart"
+       refX="0"
+       refY="0"
+       orient="auto">
+      <g
+         id="g4359"
+         transform="translate(-13,0)">
+        <circle
+           id="circle4361"
+           r="0.8"
+           cy="0"
+           cx="3" />
+        <circle
+           id="circle4363"
+           r="0.8"
+           cy="0"
+           cx="6.5" />
+        <circle
+           id="circle4365"
+           r="0.8"
+           cy="0"
+           cx="10" />
+      </g>
+    </marker>
+    <marker
+       style="overflow:visible"
+       inkscape:stockid="InfiniteLineEnd"
+       id="InfiniteLineEnd"
+       refX="0"
+       refY="0"
+       orient="auto">
+      <g
+         id="g4368">
+        <circle
+           id="circle4370"
+           r="0.8"
+           cy="0"
+           cx="3" />
+        <circle
+           id="circle4372"
+           r="0.8"
+           cy="0"
+           cx="6.5" />
+        <circle
+           id="circle4374"
+           r="0.8"
+           cy="0"
+           cx="10" />
+      </g>
+    </marker>
+    <marker
+       inkscape:stockid="Arrow2Lstart"
+       orient="auto"
+       refY="0.0"
+       refX="0.0"
+       id="Arrow2Lstart"
+       style="overflow:visible">
+      <path
+         id="path4529"
+         style="font-size:12.0;fill-rule:evenodd;stroke-width:0.62500000;stroke-linejoin:round"
+         d="M 8.7185878,4.0337352 L -2.2072895,0.016013256 L 8.7185884,-4.0017078 C 6.9730900,-1.6296469 6.9831476,1.6157441 8.7185878,4.0337352 z "
+         transform="scale(1.1) translate(1,0)" />
+    </marker>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient12396"
+       id="linearGradient12402"
+       x1="31.565161"
+       y1="569.35791"
+       x2="489.58559"
+       y2="569.35791"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(0.9784897,0,0,1.2569585,10.54044,-157.80727)" />
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     gridtolerance="10000"
+     guidetolerance="10"
+     objecttolerance="10"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1.4142136"
+     inkscape:cx="345.77374"
+     inkscape:cy="519.33835"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     inkscape:window-width="1024"
+     inkscape:window-height="699"
+     inkscape:window-x="-4"
+     inkscape:window-y="-4" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title>Valid XSPF button 88x31</dc:title>
+        <dc:date>2007-06-22</dc:date>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>Sebastian Pipping</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:publisher>
+          <cc:Agent>
+            <dc:title>Xiph.Org Foundation</dc:title>
+          </cc:Agent>
+        </dc:publisher>
+        <dc:language>English</dc:language>
+        <dc:subject>
+          <rdf:Bag>
+            <rdf:li>XSPF XML Sharable Playlist Format M3U PLS</rdf:li>
+          </rdf:Bag>
+        </dc:subject>
+        <dc:description>W3C-like button to show you care about creating valid XSPFplaylist files</dc:description>
+        <cc:license
+           rdf:resource="http://web.resource.org/cc/PublicDomain" />
+      </cc:Work>
+      <cc:License
+         rdf:about="http://web.resource.org/cc/PublicDomain">
+        <cc:permits
+           rdf:resource="http://web.resource.org/cc/Reproduction" />
+        <cc:permits
+           rdf:resource="http://web.resource.org/cc/Distribution" />
+        <cc:permits
+           rdf:resource="http://web.resource.org/cc/DerivativeWorks" />
+      </cc:License>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <rect
+       style="fill:#000000;fill-opacity:1"
+       id="rect2360"
+       width="688"
+       height="242.36365"
+       x="28.047241"
+       y="404.99927" />
+    <path
+       style="fill:#ffffff;fill-opacity:1;stroke:#b90000;stroke-opacity:1;stroke-width:9.7;stroke-miterlimit:0;stroke-dasharray:none;stroke-linecap:square;stroke-linejoin:round"
+       d="M 36.0625,639.375 C 260.0625,639.375 484.0625,639.375 708.0625,639.375 C 708.0625,563.91667 708.0625,488.45833 708.0625,413 C 484.0625,413 260.0625,413 36.0625,413 C 36.0625,488.45833 36.0625,563.91667 36.0625,639.375 z "
+       id="rect2385" />
+    <path
+       sodipodi:type="arc"
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:14.18713379;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="path3381"
+       sodipodi:cx="405.71429"
+       sodipodi:cy="172.36218"
+       sodipodi:rx="122.85714"
+       sodipodi:ry="122.85714"
+       d="M 528.57143 172.36218 A 122.85714 122.85714 0 1 1  282.85715,172.36218 A 122.85714 122.85714 0 1 1  528.57143 172.36218 z"
+       transform="matrix(0.6976744,0,0,0.6976744,298.51425,408.70124)" />
+    <path
+       style="opacity:1;fill:none;fill-opacity:1;fill-rule:evenodd;stroke:url(#linearGradient12402);stroke-width:7.02240133;stroke-linecap:square;stroke-linejoin:miter;marker-start:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 44.52457,557.85198 L 486.49701,557.85198"
+       id="path3385" />
+    <path
+       style="opacity:1;fill:#ff0909;fill-opacity:1;stroke:#b90000;stroke-width:4.29699993;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 674.25,446.03125 L 651.0625,454.15625 C 633.04373,472.15759 616.96426,491.48641 601.375,510.96875 C 590.89762,524.78203 582.16245,539.20228 574.28125,554.03125 C 573.24359,552.43395 572.241,550.82733 571.21875,549.21875 C 569.05191,546.01018 566.87446,542.82468 564.75,539.59375 C 561.97724,535.84488 559.41967,531.92648 555.78125,528.6875 L 532.125,540.71875 C 536.04642,543.49932 538.37153,547.33956 541,550.9375 C 543.10369,554.18365 545.1848,557.43907 547.28125,560.6875 C 549.69176,563.93356 551.68596,567.36978 553.875,570.71875 C 556.0828,573.68184 557.9981,576.78919 559.9375,579.875 C 571.19114,588.40933 585.57156,573.72948 588.90625,564.40625 C 596.63232,542.82193 608.67245,522.66013 622.28125,503.28125 C 637.95011,483.23916 655.03275,463.83712 674.25,446.03125 z "
+       id="path16313" />
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot2198"
+       transform="translate(-29.287257,-118.66147)"><flowRegion
+         id="flowRegion2200"><rect
+           id="rect2202"
+           width="449.30743"
+           height="44.930744"
+           x="88.388351"
+           y="698.80878" /></flowRegion><flowPara
+         id="flowPara2204"
+         style="font-size:52.79999924px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;font-family:Arial">VALID PLAYLIST</flowPara></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot2396"
+       transform="matrix(1.8161795,0,0,1.8835581,886.84879,120.77903)"
+       style="font-size:79.47827911px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;font-family:Bitstream Vera Sans"><flowRegion
+         id="flowRegion2398"><rect
+           id="rect2400"
+           width="274.28571"
+           height="102.85715"
+           x="-457.14285"
+           y="175.21933"
+           style="font-size:79.47827911px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;font-family:Bitstream Vera Sans" /></flowRegion><flowPara
+         id="flowPara2402"
+         style="font-size:79.47827911px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;font-family:Bitstream Vera Sans">XSPF</flowPara></flowRoot>  </g>
+</svg>

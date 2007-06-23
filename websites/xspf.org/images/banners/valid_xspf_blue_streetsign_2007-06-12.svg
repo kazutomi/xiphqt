@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://web.resource.org/cc/"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="744.09448819"
+   height="1052.3622047"
+   id="svg2"
+   sodipodi:version="0.32"
+   inkscape:version="0.45.1"
+   sodipodi:docbase="E:\Documents and Settings\Administrator\Desktop\optipng-0.5.5-exe"
+   sodipodi:docname="valid_xspf_blue_streetsign_2007-06-12.svg"
+   inkscape:output_extension="org.inkscape.output.svg.inkscape"
+   inkscape:export-filename="C:\Documents and Settings\Administrator\Desktop\valid_xspf.png"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90">
+  <defs
+     id="defs4">
+    <linearGradient
+       inkscape:collect="always"
+       id="linearGradient3921">
+      <stop
+         style="stop-color:#000000;stop-opacity:1;"
+         offset="0"
+         id="stop3923" />
+      <stop
+         style="stop-color:#000000;stop-opacity:0;"
+         offset="1"
+         id="stop3925" />
+    </linearGradient>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3921"
+       id="linearGradient3927"
+       x1="4.0195313"
+       y1="325.85526"
+       x2="346.09375"
+       y2="325.85526"
+       gradientUnits="userSpaceOnUse" />
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     gridtolerance="10000"
+     guidetolerance="10"
+     objecttolerance="10"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.5656854"
+     inkscape:cx="388.4331"
+     inkscape:cy="639.66469"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     inkscape:window-width="1024"
+     inkscape:window-height="699"
+     inkscape:window-x="0"
+     inkscape:window-y="42" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title>Valid XSPF streetsign</dc:title>
+        <dc:date>2007-06-12</dc:date>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>Sebastian Pipping</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:publisher>
+          <cc:Agent>
+            <dc:title>Xiph.Org Foundation</dc:title>
+          </cc:Agent>
+        </dc:publisher>
+        <dc:language>English</dc:language>
+        <dc:subject>
+          <rdf:Bag>
+            <rdf:li>XSPF XML Sharable Playlist Format M3U PLS</rdf:li>
+          </rdf:Bag>
+        </dc:subject>
+        <dc:description>Blue streetsign-like logo. Probably not suited for websites but maybe t-shirts or mugs?</dc:description>
+        <cc:license
+           rdf:resource="http://web.resource.org/cc/PublicDomain" />
+      </cc:Work>
+      <cc:License
+         rdf:about="http://web.resource.org/cc/PublicDomain">
+        <cc:permits
+           rdf:resource="http://web.resource.org/cc/Reproduction" />
+        <cc:permits
+           rdf:resource="http://web.resource.org/cc/Distribution" />
+        <cc:permits
+           rdf:resource="http://web.resource.org/cc/DerivativeWorks" />
+      </cc:License>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       sodipodi:type="arc"
+       style="fill:#000080"
+       id="path2162"
+       sodipodi:cx="232.77075"
+       sodipodi:cy="187.32109"
+       sodipodi:rx="167.81148"
+       sodipodi:ry="167.81148"
+       d="M 400.58223 187.32109 A 167.81148 167.81148 0 1 1  64.959274,187.32109 A 167.81148 167.81148 0 1 1  400.58223 187.32109 z"
+       transform="matrix(1.3503816,0,0,1.3503816,57.717908,273.22614)" />
+    <path
+       sodipodi:type="arc"
+       style="fill:#ffffff"
+       id="path2174"
+       sodipodi:cx="232.77075"
+       sodipodi:cy="187.32109"
+       sodipodi:rx="167.81148"
+       sodipodi:ry="167.81148"
+       d="M 400.58223 187.32109 A 167.81148 167.81148 0 1 1  64.959274,187.32109 A 167.81148 167.81148 0 1 1  400.58223 187.32109 z"
+       transform="matrix(1.3096775,0,0,1.3096775,67.192625,280.85087)" />
+    <path
+       sodipodi:type="arc"
+       style="fill:#000080"
+       id="path2172"
+       sodipodi:cx="232.77075"
+       sodipodi:cy="187.32109"
+       sodipodi:rx="167.81148"
+       sodipodi:ry="167.81148"
+       d="M 400.58223 187.32109 A 167.81148 167.81148 0 1 1  64.959274,187.32109 A 167.81148 167.81148 0 1 1  400.58223 187.32109 z"
+       transform="matrix(1.175075,0,0,1.175075,98.524146,306.06476)" />
+    <path
+       style="fill:#000080;stroke:#000000;stroke-opacity:1"
+       d="M 372.0625 329 C 263.21303 329 174.84374 417.33803 174.84375 526.1875 C 174.84375 538.37814 175.97291 550.29411 178.09375 561.875 L 566 561.875 C 568.12084 550.29411 569.25 538.37814 569.25 526.1875 C 569.25 417.33803 480.91197 329 372.0625 329 z M 213.875 643.875 C 249.83363 692.10612 307.32094 723.37498 372.0625 723.375 C 436.80449 723.375 494.29142 692.10667 530.25 643.875 L 213.875 643.875 z "
+       id="path7293" />
+    <path
+       style="fill:#ffffff"
+       d="M 155.1875 561.875 C 160.05588 591.62885 170.88221 619.40396 186.4375 643.875 L 557.65625 643.875 C 573.21154 619.40396 584.03786 591.62885 588.90625 561.875 L 155.1875 561.875 z "
+       id="path9245" />
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot2178"
+       transform="translate(233.75818,295.67659)"
+       style="stroke:#000000;stroke-opacity:1;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;fill:#000080"><flowRegion
+         id="flowRegion2180"><rect
+           id="rect2182"
+           width="741.61847"
+           height="143.99307"
+           x="4.3306189"
+           y="268.52017"
+           style="stroke:#000000;stroke-opacity:1;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;fill:#000080" /></flowRegion><flowPara
+         id="flowPara2184"
+         style="font-size:80px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000080;font-family:Arial Black;stroke:#000000;stroke-opacity:1;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none">VALID</flowPara></flowRoot>    <path
+       style="fill:#000080;stroke:#000000;stroke-opacity:1;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none"
+       d="M 372.0625 299.5625 C 246.97404 299.5625 145.4375 401.09904 145.4375 526.1875 C 145.4375 651.27596 246.97405 752.78123 372.0625 752.78125 C 497.15096 752.78125 598.65623 651.27596 598.65625 526.1875 C 598.65625 401.09904 497.15097 299.5625 372.0625 299.5625 z M 372.0625 306.40625 C 493.38046 306.40626 591.8125 404.86954 591.8125 526.1875 C 591.81249 647.50546 493.38046 745.96875 372.0625 745.96875 C 250.74454 745.96873 152.28125 647.50546 152.28125 526.1875 C 152.28125 404.86953 250.74454 306.40625 372.0625 306.40625 z "
+       id="path2310" />
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot2164"
+       transform="translate(196.9906,154.974)"
+       style="stroke:#000000;stroke-opacity:1;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-linejoin:round;stroke-linecap:butt"><flowRegion
+         id="flowRegion2166"
+         style="stroke:url(#linearGradient3927)"><rect
+           id="rect2168"
+           width="741.61847"
+           height="143.99307"
+           x="4.3306189"
+           y="268.52017"
+           style="stroke:#000000;stroke-opacity:1;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-linejoin:round;stroke-linecap:butt" /></flowRegion><flowPara
+         id="flowPara2170"
+         style="font-size:120px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;font-family:Arial Black;stroke:#000000;stroke-opacity:1;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-linejoin:round;stroke-linecap:butt">XSPF</flowPara></flowRoot>    <path
+       style="fill:#ffffff"
+       d="M 148.25 561.875 C 152.94489 591.50823 163.35776 619.23472 178.375 643.875 L 186.4375 643.875 C 170.87924 619.39879 160.05425 591.63557 155.1875 561.875 L 148.25 561.875 z M 588.90625 561.875 C 584.04079 591.6365 573.21161 619.39822 557.65625 643.875 L 565.71875 643.875 C 580.7325 619.23472 591.15021 591.50823 595.84375 561.875 L 588.90625 561.875 z "
+       id="rect9239" />
+  </g>
+</svg>
