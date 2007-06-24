@@ -48,3 +48,9 @@ class Root(controllers.RootController):
     def list(self):
         from model import data
         return dict(data=data.select())
+
+    @expose(template="icebreaker.templates.create")
+    def create(self):
+        from model import data
+        return dict(data=data.select())
+        
