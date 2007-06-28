@@ -181,8 +181,8 @@ void extract_modulated_sinusoids(float *x, float *w, float *window, float *ai, f
          float jj = j-len/2+.5;
          cos_table[i][j] = cos(w[i]*jj)*window[j];
          sin_table[i][j] = sin(w[i]*jj)*window[j];
-         tcos_table[i][j] = ((3./len)*(jj))*cos_table[i][j];
-         tsin_table[i][j] = ((3./len)*(jj))*sin_table[i][j];
+         tcos_table[i][j] = ((jj))*cos_table[i][j];
+         tsin_table[i][j] = ((jj))*sin_table[i][j];
          /* The sinusoidal terms */
          tmp1 += cos_table[i][j]*cos_table[i][j];
          tmp2 += sin_table[i][j]*sin_table[i][j];
@@ -190,10 +190,17 @@ void extract_modulated_sinusoids(float *x, float *w, float *window, float *ai, f
          tmp3 += tcos_table[i][j]*tcos_table[i][j];
          tmp4 += tsin_table[i][j]*tsin_table[i][j];
       }
-      cosE[i] = tmp1;
-      sinE[i] = tmp2;
-      costE[i] = tmp3;
-      sintE[i] = tmp4;
+      cosE[i] = sqrt(tmp1);
+      sinE[i] = sqrt(tmp2);
+      costE[i] = sqrt(tmp3);
+      sintE[i] = sqrt(tmp4);
+      for (j=0;j<len;j++)
+      {
+         cos_table[i][j] /= cosE[i];
+         sin_table[i][j] /= sinE[i];
+         tcos_table[i][j] /= costE[i];
+         tsin_table[i][j] /= sintE[i];
+      }
    }
    /* y is the initial approximation of the signal */
    for (j=0;j<len;j++)
@@ -216,12 +223,7 @@ void extract_modulated_sinusoids(float *x, float *w, float *window, float *ai, f
             tmp3 += (x[j]-y[j])*tcos_table[i][j];
             tmp4 += (x[j]-y[j])*tsin_table[i][j];
          }
-         /* Normalize by the energy of each basis function */
-         tmp1 /= cosE[i];
-         //Just in case it's a DC! Must fix that anyway
-         tmp2 /= (.0001+sinE[i]);
-         tmp3 /= (.0001+costE[i]);
-         tmp4 /= (.0001+sintE[i]);
+         
          //tmp3=tmp4 = 0;
 
          /* Update the signal approximation for the next iteration */
@@ -243,6 +245,13 @@ void extract_modulated_sinusoids(float *x, float *w, float *window, float *ai, f
             //printf ("%f %f ", w[i], (float)sqrt(ai[i]*ai[i] + bi[i]*bi[i]));
          }
       }
+   }
+   for (i=0;i<N;i++)
+   {
+      ai[i] /= cosE[i];
+      bi[i] /= sinE[i];
+      ci[i] /= costE[i];
+      di[i] /= sintE[i];
    }
 #if 0
    if (N)
