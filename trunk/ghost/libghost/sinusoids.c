@@ -178,10 +178,11 @@ void extract_modulated_sinusoids(float *x, float *w, float *window, float *ai, f
       float tmp3=0, tmp4=0;
       for (j=0;j<len;j++)
       {
-         cos_table[i][j] = cos(w[i]*j)*window[j];
-         sin_table[i][j] = sin(w[i]*j)*window[j];
-         tcos_table[i][j] = ((3./len)*(j-(len>>1)))*cos_table[i][j];
-         tsin_table[i][j] = ((3./len)*(j-(len>>1)))*sin_table[i][j];
+         float jj = j-len/2+.5;
+         cos_table[i][j] = cos(w[i]*jj)*window[j];
+         sin_table[i][j] = sin(w[i]*jj)*window[j];
+         tcos_table[i][j] = ((3./len)*(jj))*cos_table[i][j];
+         tsin_table[i][j] = ((3./len)*(jj))*sin_table[i][j];
          /* The sinusoidal terms */
          tmp1 += cos_table[i][j]*cos_table[i][j];
          tmp2 += sin_table[i][j]*sin_table[i][j];
@@ -243,6 +244,19 @@ void extract_modulated_sinusoids(float *x, float *w, float *window, float *ai, f
          }
       }
    }
+#if 0
+   if (N)
+   for (i=0;i<1;i++)
+   {
+      float A, phi, dA, dw;
+      A = sqrt(ai[i]*ai[i] + bi[i]*bi[i]);
+      phi = atan2(bi[i], ai[i]);
+      //phi = ai[i]*ai[i] + bi[i]*bi[i];
+      dA = (ci[i]*ai[i] + bi[i]*di[i])/(.1+A);
+      dw = (ci[i]*bi[i] - di[i]*ai[i])/(.1+A*A);
+      printf ("%f %f %f %f %f %f %f %f %f\n", w[i], ai[i], bi[i], ci[i], di[i], A, phi, dA, dw);
+   }
+#endif
    //if(!tata)
       //printf ("0 0 0 0 0\n");
 
