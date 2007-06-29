@@ -1,0 +1,8 @@
+Icebreaker is a playlist authoring and scheduling system designed for use with Icecast and Ices.
+It features a web frontend based on TurboGears. For more information visit http://wiki.xiph.org/index.php/Icebreaker
+
+Requirements:
+
+Python >=2.4 http://www.python.org/download/
+Turbogears >=1.0 http://www.turbogears.org/download/
+Select-shuttle >=1.2 http://cheeseshop.python.org/pypi/Select-Shuttle
