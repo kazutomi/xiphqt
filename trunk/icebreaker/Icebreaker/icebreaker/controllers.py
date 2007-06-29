@@ -53,4 +53,12 @@ class Root(controllers.RootController):
     def create(self):
         from model import data
         return dict(data=data.select())
-        
+        title_available="Tracks"
+        title_selected="Playlist"
+        btn_all_selected="All>>"        
+        btn_all_available="all available"
+        btn_available="available"
+        btn_selected="selected"
+        btn_to_selected="to selected"
+        btn_to_available="to available"
+        name = "Select Shuttle"
