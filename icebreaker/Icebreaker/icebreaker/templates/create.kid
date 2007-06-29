@@ -5,22 +5,9 @@
   <title>Welcome to TurboGears</title>
 </head>
 <body>
-<form xmlns:py="http://purl.org/kid/ns#" name="${name}" action="${action}" method="${method}" class="listform" py:attrs="form_attrs">
-    <div py:for="field in hidden_fields" py:replace="field.display(value_for(field), **params_for(field))" />
-        <ul py:attrs="list_attrs">
-            <li py:for="i, field in enumerate(fields)" class="${i%2 and 'odd' or 'even'}">
-                <label class="fieldlabel" for="${field.field_id}" py:content="field.label" />
-                <span py:replace="field.display(value_for(field), **params_for(field))" />
-                <span py:if="error_for(field)" class="fielderror" py:content="error_for(field)" />
-                <span py:if="field.help_text" class="fieldhelp" py:content="field.help_text" />
-            </li>
-            <li py:content="submit.display(submit_text)" />
-        </ul>
-</form>
 <div xmlns:py='http://purl.org/kid/ns#'>
     <script type="text/javascript">
-    var ${optrans_name} = new OptionTransfer('${name}.${available.name}',
-                                             '${name}.${selected.name}');
+    var ${optrans_name} = new OptionTransfer('${name}.${available.name}', '${name}.${selected.name}');
     ${optrans_name}.setAutoSort(true);
     ${optrans_name}.saveNewLeftOptions('${name}.available_new');
     ${optrans_name}.saveAddedLeftOptions('${name}.available_added');
@@ -47,36 +34,16 @@
         <tr>
           <td class='selectshuttle-left'>${display_field_for(available)}</td>
           <td class='selectshuttle-middle'>
-            <input type="button"
-                   name="btn_selected"
-                   id="${optrans_name}_btn_selected"
-                   py:attrs="value=btn_to_selected"
-                   onclick="${optrans_name}.transferRight()"
-            />
+            <input type="button" name="btn_selected" id="${optrans_name}_btn_selected" py:attrs="value=btn_to_selected" onclick="${optrans_name}.transferRight()" />
             <br />
             <br />
-            <input type="button"
-                   name="btn_all_selected"
-                   id="${optrans_name}_btn_all_selected"
-                   py:attrs="value=btn_all_selected"
-                   onclick="${optrans_name}.transferAllRight()"
-            />
+            <input type="button" name="btn_all_selected" id="${optrans_name}_btn_all_selected" py:attrs="value=btn_all_selected" onclick="${optrans_name}.transferAllRight()" />
             <br />
             <br />
-            <input type="button"
-                   name="btn_all_available"
-                   id="${optrans_name}_btn_all_available"
-                   py:attrs="value=btn_all_available"
-                  onclick="${optrans_name}.transferAllLeft()"
-            />
+            <input type="button" name="btn_all_available" id="${optrans_name}_btn_all_available" py:attrs="value=btn_all_available" onclick="${optrans_name}.transferAllLeft()" />
             <br />
             <br />
-            <input type="button"
-                   name="btn_available"
-                   id="${optrans_name}_btn_available"
-                   py:attrs="value=btn_to_available"
-                   onclick="${optrans_name}.transferLeft()"
-            />
+            <input type="button" name="btn_available" id="${optrans_name}_btn_available" py:attrs="value=btn_to_available" onclick="${optrans_name}.transferLeft()" />
           </td>
           <td class='selectshuttle-right'>${display_field_for(selected)}</td>
         </tr>
