@@ -443,15 +443,10 @@
               software companies.</cite>
             </dd>
 
-	    <!-- template for new entries
-            <dt>
-              <a id="TODOID"></a>
-              <a href="TODO-URL">TODONAME</a>
-            <dt>
-            <dd>
-              &lt;TODO&gt;
-            </dd>
-            -->
+<!-- template for new entries
+ON A SINGLE LINE from now one please. Thanks, Sebastian
+<dt><a id="TODOID"></a><a href="TODOURL">TODONAME</a><dt><dd>&lt;TODO&gt;</dd>
+-->
 </dl>
 
 <a id="websites"></a>
@@ -483,6 +478,8 @@
             <dd>
               A media selling platform.
             </dd>
+
+<dt><a id="digital_archive_streamer"></a><a href="http://waxandwane.org/das/">Digital Archive Streamer</a><dt><dd><cite>An alternative streaming front-end to digital archives of field and 78 rpm recordings. The original archive sites have searching front-ends, but users have to click on each tune individually to play it. Using the DAS site users can create a custom playlist of tunes and stream the entire list. Uses AJAX to display selections as the user types a <a href="http://www.perl.com/doc/manual/html/pod/perlre.html">Perl regular expression</a> for filtering. The back-end is 100% XSPF using <a href="#cpan">XML::XSPF</a> and the user chooses between XSPF, M3U, PLS, or RAM playlist formats for streaming.</cite></dd>
 
             <dt>
               <a id="foafingthemusic"></a><a href="http://foafing-the-music.iua.upf.edu/index.html">Foafing the music</a>
@@ -607,15 +604,10 @@
               Online validator for XSPF documents.
             </dd>
 
-	    <!-- template for new entries
-            <dt>
-              <a id="TODOID"></a>
-              <a href="TODO-URL">TODONAME</a>
-            <dt>
-            <dd>
-              &lt;TODO&gt;
-            </dd>
-            -->
+<!-- template for new entries
+ON A SINGLE LINE from now one please. Thanks, Sebastian
+<dt><a id="TODOID"></a><a href="TODOURL">TODONAME</a><dt><dd>&lt;TODO&gt;</dd>
+-->
 </dl>
 
 <a id="libraries"></a>
