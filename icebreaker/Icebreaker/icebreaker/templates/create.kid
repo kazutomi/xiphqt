@@ -52,19 +52,25 @@
                    id="${optrans_name}_btn_selected"
                    py:attrs="value=btn_to_selected"
                    onclick="${optrans_name}.transferRight()"
-            /><br /><br />
+            />
+            <br />
+            <br />
             <input type="button"
                    name="btn_all_selected"
                    id="${optrans_name}_btn_all_selected"
                    py:attrs="value=btn_all_selected"
                    onclick="${optrans_name}.transferAllRight()"
-            /><br /><br />
+            />
+            <br />
+            <br />
             <input type="button"
                    name="btn_all_available"
                    id="${optrans_name}_btn_all_available"
                    py:attrs="value=btn_all_available"
                   onclick="${optrans_name}.transferAllLeft()"
-            /><br /><br />
+            />
+            <br />
+            <br />
             <input type="button"
                    name="btn_available"
                    id="${optrans_name}_btn_available"

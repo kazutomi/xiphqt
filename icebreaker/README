@@ -4,5 +4,21 @@ It features a web frontend based on TurboGears. For more information visit http:
 Requirements:
 
 Python >=2.4 http://www.python.org/download/
-Turbogears >=1.0 http://www.turbogears.org/download/
+TurboGears >=1.0 http://www.turbogears.org/download/
 Select-shuttle >=1.2 http://cheeseshop.python.org/pypi/Select-Shuttle
+
+Installation/Testing:
+
+Icebreaker is currently in a non-working, incomplete state.
+That said, follow the steps below to get Icebreaker running.
+
+1. Install required packages.
+2. Checkout code from https://svn.xiph.org/trunk/icebreaker
+3. Navigate to the Icebreaker directory, and run:
+	$ python start-icebreaker.py
+   You should then be able to access Icebreaker at http://localhost:8080
+4. See TurboGears docs at http://docs.turbogears.org/1.0/ for the ins and outs of TurboGears.
+5. In the Icebreaker directory, run:
+	$ tg-admin toolbox
+   You will get a nice web interface where you can play around at http://localhost:7654.
+6. 
