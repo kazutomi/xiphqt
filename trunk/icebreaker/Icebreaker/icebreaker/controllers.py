@@ -3,6 +3,7 @@ from turbogears import controllers, expose, flash
 from turbogears import identity, redirect
 from cherrypy import request, response
 from icebreaker import json
+
 import logging
 log = logging.getLogger("icebreaker.controllers")
 
@@ -52,13 +53,18 @@ class Root(controllers.RootController):
     @expose(template="icebreaker.templates.create")
     def create(self):
         from model import data
+        from selectshuttle.widgets import SelectShuttle
         return dict(data=data.select())
-        title_available="Tracks"
-        title_selected="Playlist"
-        btn_all_selected="All>>"        
-        btn_all_available="all available"
-        btn_available="available"
-        btn_selected="selected"
-        btn_to_selected="to selected"
-        btn_to_available="to available"
-        name = "Select Shuttle"
+        form_name="foo"
+        create = SelectShuttle(
+        name="select_shuttle_demo",
+        label = "The shuttle",
+        title_available = "Available options",
+        title_selected = "Selected options",
+        form_reference = "document.forms['%s']" % form_name,
+        # All data should be provided as a list of tuples, in the form of
+        # ("id", "value"). ATM, id should be an int
+        available_options = [(i, "Option %d"%i) for i in xrange(5)],
+        default = dict(selected=[(i, "Option %d"%i) for i in xrange(3)])
+        )
+
