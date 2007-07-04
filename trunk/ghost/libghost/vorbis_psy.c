@@ -107,8 +107,8 @@ static void _analysis_output(char *base,int i,float *v,int n,int bark,int dB){
    b: Bark scale definition (packed 16-bit values)
    f: Power spectral density
    noise: Returns noise masking curve
-   offset: magic (haven't figured it out yet)
-   fixed: no clue
+   offset: controls the floor of the smoothing function
+   fixed: fixed-width window to use for tone masking
 */
 static void bark_noise_hybridmp(int n,const long *b,
                                 const float *f,
@@ -219,7 +219,9 @@ static void bark_noise_hybridmp(int n,const long *b,
     B = tN * tXY - tX * tY;
     /* Variance of the spectrum over the current band */
     D = tN * tXX - tX * tX;
+    /* I think R is a sort of smoothed spectrum value at point x in the spectrum */
     R = (A + x * B) / D;
+    /* There's a floor at zero for tone masking (i.e. don't take inexisting sinusoids into account) */
     if (R < 0.f) R = 0.f;
     
     noise[i] = R - offset;
@@ -234,10 +236,11 @@ static void bark_noise_hybridmp(int n,const long *b,
     noise[i] = R - offset;
   }
   
-  /* Some magic stopping condition */
+  /* If fixed > 0, we start all over again, but using fixed bands on the linear scale 
+     This is used for tone masking */
   if (fixed <= 0) return;
   
-  /* Loop over the first critical band (but x and i are in linear scale) */
+  /* Loop over the first band */
   for (i = 0, x = 0.f;; i++, x += 1.f) {
     hi = i + fixed / 2;
     lo = hi - fixed;
@@ -255,9 +258,10 @@ static void bark_noise_hybridmp(int n,const long *b,
     D = tN * tXX - tX * tX;
     R = (A + x * B) / D;
 
+    /* Compute the minimum of this (linear scale) band and the (previous) Bark-derived estimate */
     if (R - offset < noise[i]) noise[i] = R - offset;
   }
-  /* Loop over the other critical bands (but x and i are in linear scale) */
+  /* Loop over the other bands */
   for ( ;; i++, x += 1.f) {
     
     hi = i + fixed / 2;
@@ -277,7 +281,7 @@ static void bark_noise_hybridmp(int n,const long *b,
     
     if (R - offset < noise[i]) noise[i] = R - offset;
   }
-  /* Fill the rest with what was found for the last critical band */
+  /* Fill the rest with what was found for the last band */
   for ( ; i < n; i++, x += 1.f) {
     R = (A + x * B) / D;
     if (R - offset < noise[i]) noise[i] = R - offset;
@@ -291,14 +295,20 @@ static void _vp_noisemask(VorbisPsy *p,
   int i,n=p->n/2;
   float *work=alloca(n*sizeof(*work));
 
+  /* Compute a sort of smoothed spectrum with a large offset
+     (which means no floor applied) */
   bark_noise_hybridmp(n,p->bark,logfreq,logmask,
 		      140.,-1);
 
+  /* Work is the signal to mask ratio, the sinusoids should stand out */
   for(i=0;i<n;i++)work[i]=logfreq[i]-logmask[i];
 
+  /* Smooth out the signal-to-mask ratio (i.e. smooth out the sinusoids). 
+     I assume this is the tone masking part. */
   bark_noise_hybridmp(n,p->bark,work,logmask,0.,
 		      p->vi->noisewindowfixed);
 
+  /* Set work back to the original noise masking curve */ 
   for(i=0;i<n;i++)work[i]=logfreq[i]-work[i];
   
   {
@@ -316,9 +326,11 @@ static void _vp_noisemask(VorbisPsy *p,
   }
 
   for(i=0;i<n;i++){
+     /* Apply some companding to the tone masking curve (I guess it's non-linear in some way) */
     int dB=logmask[i]+.5;
     if(dB>=NOISE_COMPAND_LEVELS)dB=NOISE_COMPAND_LEVELS-1;
     if(dB<0)dB=0;
+    /* Add the tone masking component to the noise masking one to produce the final masking curve */
     logmask[i]= work[i]+p->vi->noisecompand[dB]+p->noiseoffset[i];
   }
 
