@@ -38,9 +38,34 @@
 #ifndef SPEEX_VERSION
 #define SPEEX_MAJOR_VERSION 1         /**< Major Speex version. */
 #define SPEEX_MINOR_VERSION 1         /**< Minor Speex version. */
-#define SPEEX_MICRO_VERSION 11        /**< Micro Speex version. */
-#define SPEEX_EXTRA_VERSION ".1"        /**< Extra Speex version. */
-#define SPEEX_VERSION "speex-1.1.11.1"  /**< Speex version string. */
+#define SPEEX_MICRO_VERSION 14        /**< Micro Speex version. */
+#define SPEEX_EXTRA_VERSION ""        /**< Extra Speex version. */
+#define SPEEX_VERSION "speex-1.2beta2"  /**< Speex version string. */
+#endif
+
+/* A couple test to catch stupid option combinations */
+#ifdef FIXED_POINT
+
+#ifdef _USE_SSE
+#error SSE is only for floating-point
+#endif
+#if ((defined (ARM4_ASM)||defined (ARM4_ASM)) && defined(BFIN_ASM)) || (defined (ARM4_ASM)&&defined(ARM5E_ASM))
+#error Make up your mind. What CPU do you have?
+#endif
+#ifdef VORBIS_PSYCHO
+#error Vorbis-psy model currently not implemented in fixed-point
+#endif
+
+#else
+
+#if defined (ARM4_ASM) || defined(ARM5E_ASM) || defined(BFIN_ASM)
+#error I suppose you can have a [ARM4/ARM5E/Blackfin] that has float instructions?
+#endif
+#ifdef FIXED_POINT_DEBUG
+#error "Don't you think enabling fixed-point is a good thing to do if you want to debug that?"
+#endif
+
+
 #endif
 
 #include "arch.h"
@@ -50,10 +75,24 @@
 void print_vec(float *vec, int len, char *name);
 #endif
 
-/** Convert big endian */
-spx_uint32_t be_int(spx_uint32_t i);
 /** Convert little endian */
-spx_uint32_t le_int(spx_uint32_t i);
+static inline spx_int32_t le_int(spx_int32_t i)
+{
+#if !defined(__LITTLE_ENDIAN__) && ( defined(WORDS_BIGENDIAN) || defined(__BIG_ENDIAN__) )
+   spx_uint32_t ui, ret;
+   ui = i;
+   ret =  ui>>24;
+   ret |= (ui>>8)&0x0000ff00;
+   ret |= (ui<<8)&0x00ff0000;
+   ret |= (ui<<24);
+   return ret;
+#else
+   return i;
+#endif
+}
+
+#define speex_fatal(str) _speex_fatal(str, __FILE__, __LINE__);
+#define speex_assert(cond) {if (!(cond)) {speex_fatal("assertion failed: " #cond);}}
 
 /** Speex wrapper for calloc. To do your own dynamic allocation, all you need to do is replace this function, speex_realloc and speex_free */
 void *speex_alloc (int size);
@@ -73,26 +112,20 @@ void speex_free_scratch (void *ptr);
 /** Speex wrapper for mem_move */
 void *speex_move (void *dest, void *src, int n);
 
-/** Speex wrapper for memcpy */
-void speex_memcpy_bytes(char *dst, char *src, int nbytes);
+/** Abort with an error message to stderr (internal Speex error) */
+void _speex_fatal(const char *str, const char *file, int line);
 
-/** Speex wrapper for memset */
-void speex_memset_bytes(char *dst, char src, int nbytes);
-
-/** Print error message to stderr */
-void speex_error(const char *str);
-
-/** Print warning message to stderr */
+/** Print warning message to stderr (programming error) */
 void speex_warning(const char *str);
 
 /** Print warning message with integer argument to stderr */
 void speex_warning_int(const char *str, int val);
 
-/** Generate a vector of random numbers */
-void speex_rand_vec(float std, spx_sig_t *data, int len);
+/** Print notification message to stderr */
+void speex_notify(const char *str);
 
 /** Generate a random number */
-spx_word32_t speex_rand(spx_word16_t std, spx_int32_t *seed);
+spx_word16_t speex_rand(spx_word16_t std, spx_int32_t *seed);
 
 /** Speex wrapper for putc */
 void _speex_putc(int ch, void *file);

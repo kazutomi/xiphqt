@@ -3,6 +3,7 @@ Makefile.in
 *.o
 *.lo
 *.la
+*~
 .deps
 .libs
 libtool
@@ -21,4 +22,6 @@ install-sh
 libghost/testghost
 missing
 stamp-h1
+*.kdevelop.pcs
+*.kdevses
 

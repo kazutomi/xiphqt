@@ -10,13 +10,15 @@ lib_LTLIBRARIES = libghost.la
 
 # Sources for compilation in the library
 libghost_la_SOURCES = ghost.c sinusoids.c pitch.c lifting.c \
-	smallft.c fftwrap.c misc.c
+	smallft.c fftwrap.c misc.c vorbis_psy.c lpc.c
 
 #noinst_HEADERS =
 
 libghost_la_LDFLAGS = -version-info @GHOST_LT_CURRENT@:@GHOST_LT_REVISION@:@GHOST_LT_AGE@
 
-noinst_HEADERS = ghost.h pitch.h lifting.h smallft.h fftwrap.h arch.h misc.h
+noinst_HEADERS = ghost.h pitch.h lifting.h smallft.h fftwrap.h \
+	arch.h misc.h vorbis_psy.h lpc.h
+
 noinst_PROGRAMS = testghost
 testghost_SOURCES = testghost.c
 testghost_LDADD = $(top_builddir)/libghost/libghost.la

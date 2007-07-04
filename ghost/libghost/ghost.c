@@ -70,50 +70,6 @@ void iir_mem2(const spx_sig_t *x, const spx_coef_t *den, spx_sig_t *y, int N, in
    }
 }
 
-spx_word32_t _spx_lpc(
-spx_coef_t       *lpc, /* out: [0...p-1] LPC coefficients      */
-const spx_word16_t *ac,  /* in:  [0...p] autocorrelation values  */
-int          p
-                     )
-{
-   int i, j;  
-   spx_word16_t r;
-   spx_word16_t error = ac[0];
-
-   if (ac[0] == 0)
-   {
-      for (i = 0; i < p; i++)
-         lpc[i] = 0;
-      return 0;
-   }
-
-   for (i = 0; i < p; i++) {
-
-      /* Sum up this iteration's reflection coefficient */
-      spx_word32_t rr = NEG32(SHL32(EXTEND32(ac[i + 1]),13));
-      for (j = 0; j < i; j++) 
-         rr = SUB32(rr,MULT16_16(lpc[j],ac[i - j]));
-#ifdef FIXED_POINT
-      r = DIV32_16(rr,ADD16(error,16));
-#else
-      r = rr/(error+.0000003*ac[0]);
-#endif
-      /*  Update LPC coefficients and total error */
-      lpc[i] = r;
-      for (j = 0; j < i>>1; j++)
-      {
-         spx_word16_t tmp  = lpc[j];
-         lpc[j]     = MAC16_16_Q13(lpc[j],r,lpc[i-1-j]);
-         lpc[i-1-j] = MAC16_16_Q13(lpc[i-1-j],r,tmp);
-      }
-      if (i & 1) 
-         lpc[j] = MAC16_16_Q13(lpc[j],lpc[j],r);
-
-      error = SUB16(error,MULT16_16_Q13(r,MULT16_16_Q13(error,r)));
-   }
-   return error;
-}
-
 
 GhostEncState *ghost_encoder_state_new(int sampling_rate)
 {
@@ -125,7 +81,13 @@ GhostEncState *ghost_encoder_state_new(int sampling_rate)
    st->lpc_length = 384;
    st->lpc_order = 40;
    st->pcm_buf = calloc(PCM_BUF_SIZE,sizeof(float));
+#if 0
+   /* pre-analysis window centered around the current frame */
    st->current_frame = st->pcm_buf + PCM_BUF_SIZE/2 - st->length/2;
+#else
+   /* causal pre-analysis window (delayed) */
+   st->current_frame = st->pcm_buf + PCM_BUF_SIZE - st->length;
+#endif
    st->new_pcm = st->pcm_buf + PCM_BUF_SIZE - st->advance;
    
    st->noise_buf = calloc(PCM_BUF_SIZE,sizeof(float));
@@ -180,6 +142,8 @@ void ghost_encode(GhostEncState *st, float *pcm)
       st->pcm_buf[i] = st->pcm_buf[i+st->advance];
    for (i=0;i<st->advance;i++)
       st->new_pcm[i]=pcm[i];
+   /*for (i=0;i<st->advance;i++)
+      st->new_pcm[i]=pcm[i]+10*3.4641f*.001f*(rand()%1000-500);*/
    {
       float wi[SINUSOIDS];
       float x[st->length];
@@ -307,8 +271,9 @@ void ghost_encode(GhostEncState *st, float *pcm)
       /*for (i=0;i<st->advance;i++)
       pcm[i] = st->current_frame[i]-st->new_noise[i];*/
       
+      /* Remove the 0* if you want to include the lpc-generated noise as well */
       for (i=0;i<st->advance;i++)
-         pcm[i] = st->current_frame[i]-st->new_noise[i] + noise[i];
+         pcm[i] = st->current_frame[i]-st->new_noise[i] + 0*noise[i];
       
    }
    
