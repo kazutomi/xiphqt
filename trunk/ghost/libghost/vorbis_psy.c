@@ -400,20 +400,8 @@ void compute_curve(VorbisPsy *psy, float *audio, float *curve)
 
     /* derive a noise curve */
     _vp_noisemask(psy,work,curve);
-#define SIDEL 12
-    for (i=0;i<SIDEL;i++)
-    {
-       curve[i]=curve[SIDEL];
-    }
-#define SIDEH 12
-    for (i=0;i<SIDEH;i++)
-    {
-       curve[(psy->n>>1)-i-1]=curve[(psy->n>>1)-SIDEH];
-    }
     for(i=0;i<((psy->n)>>1);i++)
-       curve[i] = fromdB(1.2*curve[i]+.2*i);
-       //curve[i] = fromdB(0.8*curve[i]+.35*i);
-       //curve[i] = fromdB(0.9*curve[i])*pow(1.0*i+45,1.3);
+       curve[i] = fromdB(2.0*curve[i]);
 }
 
 /* Transform a masking curve (power spectrum) into a pole-zero filter */
