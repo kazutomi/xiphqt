@@ -99,27 +99,45 @@ static void _analysis_output(char *base,int i,float *v,int n,int bark,int dB){
   fclose(of);
 }
 
+/* These comments are an attempt to reverse-engineer Monty's 
+   code for this really cryptic function. Some comments may
+   not be accurate because I (JMV) didn't write this code.
+   
+   n: Number of frequency points
+   b: Bark scale definition (packed 16-bit values)
+   f: Power spectral density
+   noise: Returns noise masking curve
+   offset: magic (haven't figured it out yet)
+   fixed: no clue
+*/
 static void bark_noise_hybridmp(int n,const long *b,
                                 const float *f,
                                 float *noise,
                                 const float offset,
                                 const int fixed){
   
+  /* These are cumulative statistics from DC (0) to frequency i. This makes it
+     possible to find the statistics in any range by just subtracting two values*/
   float *N=alloca(n*sizeof(*N));
   float *X=alloca(n*sizeof(*N));
   float *XX=alloca(n*sizeof(*N));
   float *Y=alloca(n*sizeof(*N));
   float *XY=alloca(n*sizeof(*N));
 
+  /* These are accumulators for the statistics about the spectrum. For example,
+     tXX is \sum_i{x^2_i} */
   float tN, tX, tXX, tY, tXY;
   int i;
 
   int lo, hi;
   float R, A, B, D;
+  /* w is the weight, x is the frequency, y is the spectrum */
   float w, x, y;
 
+  /* Initialise statistics to zero */
   tN = tX = tXX = tY = tXY = 0.f;
 
+  /* Handling the DC separately (not sure why) */
   y = f[0] + offset;
   if (y < 1.f) y = 1.f;
 
@@ -135,11 +153,13 @@ static void bark_noise_hybridmp(int n,const long *b,
   Y[0] = tY;
   XY[0] = tXY;
 
+  /* Loop over all (linear) frequencies */
   for (i = 1, x = 1.f; i < n; i++, x += 1.f) {
     
     y = f[i] + offset;
     if (y < 1.f) y = 1.f;
 
+    /* The statistics are weighted based on the square of the spectrum (no clue why) */
     w = y * y;
     
     tN += w;
@@ -155,12 +175,15 @@ static void bark_noise_hybridmp(int n,const long *b,
     XY[i] = tXY;
   }
   
+  /* Loop over the first critical band (but x and i are in linear scale) */
   for (i = 0, x = 0.f;; i++, x += 1.f) {
     
     lo = b[i] >> 16;
     if( lo>=0 ) break;
     hi = b[i] & 0xffff;
     
+    /* Not sure why the statistics are computed using -lo, probably some
+       kind of "mirroring" effect around the DC. */
     tN = N[hi] + N[-lo];
     tX = X[hi] - X[-lo];
     tXX = XX[hi] + XX[-lo];
@@ -177,26 +200,32 @@ static void bark_noise_hybridmp(int n,const long *b,
     noise[i] = R - offset;
   }
   
+  /* Loop over the other critical bands (but x and i are in linear scale) */
   for ( ;; i++, x += 1.f) {
     
     lo = b[i] >> 16;
     hi = b[i] & 0xffff;
     if(hi>=n)break;
     
+    /* Compute all the statistics over the [lo,hi] interval only */
     tN = N[hi] - N[lo];
     tX = X[hi] - X[lo];
     tXX = XX[hi] - XX[lo];
     tY = Y[hi] - Y[lo];
     tXY = XY[hi] - XY[lo];
     
+    /* These appear to be linear regression coefficients of some kind */
     A = tY * tXX - tX * tXY;
     B = tN * tXY - tX * tY;
+    /* Variance of the spectrum over the current band */
     D = tN * tXX - tX * tX;
     R = (A + x * B) / D;
     if (R < 0.f) R = 0.f;
     
     noise[i] = R - offset;
   }
+  
+  /* Fill the rest with what was found for the last critical band */
   for ( ; i < n; i++, x += 1.f) {
     
     R = (A + x * B) / D;
@@ -205,8 +234,10 @@ static void bark_noise_hybridmp(int n,const long *b,
     noise[i] = R - offset;
   }
   
+  /* Some magic stopping condition */
   if (fixed <= 0) return;
   
+  /* Loop over the first critical band (but x and i are in linear scale) */
   for (i = 0, x = 0.f;; i++, x += 1.f) {
     hi = i + fixed / 2;
     lo = hi - fixed;
@@ -226,6 +257,7 @@ static void bark_noise_hybridmp(int n,const long *b,
 
     if (R - offset < noise[i]) noise[i] = R - offset;
   }
+  /* Loop over the other critical bands (but x and i are in linear scale) */
   for ( ;; i++, x += 1.f) {
     
     hi = i + fixed / 2;
@@ -245,6 +277,7 @@ static void bark_noise_hybridmp(int n,const long *b,
     
     if (R - offset < noise[i]) noise[i] = R - offset;
   }
+  /* Fill the rest with what was found for the last critical band */
   for ( ; i < n; i++, x += 1.f) {
     R = (A + x * B) / D;
     if (R - offset < noise[i]) noise[i] = R - offset;
