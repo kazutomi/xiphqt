@@ -33,6 +33,7 @@
 #define PCM_BUF_SIZE 2048
 
 #define SINUSOIDS 30
+#define MASK_LPC_ORDER 12
 
 void fir_mem2(const spx_sig_t *x, const spx_coef_t *num, spx_sig_t *y, int N, int ord, spx_mem_t *mem)
 {
@@ -79,7 +80,7 @@ GhostEncState *ghost_encoder_state_new(int sampling_rate)
    st->advance = 192;
    st->overlap = 64;
    st->lpc_length = 384;
-   st->lpc_order = 40;
+   st->lpc_order = MASK_LPC_ORDER;
    st->pcm_buf = calloc(PCM_BUF_SIZE,sizeof(float));
 #if 0
    /* pre-analysis window centered around the current frame */
@@ -92,6 +93,8 @@ GhostEncState *ghost_encoder_state_new(int sampling_rate)
    
    st->noise_buf = calloc(PCM_BUF_SIZE,sizeof(float));
    st->new_noise = st->noise_buf + PCM_BUF_SIZE/2 - st->length/2;
+   
+   st->psy = vorbis_psy_init(44100, PCM_BUF_SIZE);
    
    st->analysis_window = calloc(st->length,sizeof(float));
    st->synthesis_window = calloc(st->length,sizeof(float));
@@ -138,10 +141,18 @@ void ghost_encode(GhostEncState *st, float *pcm)
    float gain;
    float pitch;
    float w;
+   float curve[PCM_BUF_SIZE>>1];
+   float awk1[MASK_LPC_ORDER], awk2[MASK_LPC_ORDER];
+   float mask_gain;
+   
    for (i=0;i<PCM_BUF_SIZE-st->advance;i++)
       st->pcm_buf[i] = st->pcm_buf[i+st->advance];
    for (i=0;i<st->advance;i++)
       st->new_pcm[i]=pcm[i];
+   
+   compute_curve(st->psy, st->pcm_buf, curve);
+   mask_gain = curve_to_lpc(st->psy, curve, awk1, awk2, MASK_LPC_ORDER);
+   
    /*for (i=0;i<st->advance;i++)
       st->new_pcm[i]=pcm[i]+10*3.4641f*.001f*(rand()%1000-500);*/
    {
@@ -213,7 +224,8 @@ void ghost_encode(GhostEncState *st, float *pcm)
       noise_psd[st->lpc_length-1] *= noise_psd[st->lpc_length-1];
       spx_ifft_float(st->lpc_fft, noise_psd, noise_ac);
       */
-      for (i=0;i<st->lpc_order+1;i++)
+      
+      /*for (i=0;i<st->lpc_order+1;i++)
       {
          int j;
          double tmp = 0;
@@ -227,7 +239,8 @@ void ghost_encode(GhostEncState *st, float *pcm)
       noise_ac[0] += 1;
       
       float lpc[st->lpc_order];
-      _spx_lpc(lpc, noise_ac, st->lpc_order);
+      _spx_lpc(lpc, noise_ac, st->lpc_order);*/
+      
       /*for (i=0;i<st->lpc_order;i++)
       lpc[i] *= pow(.9,i+1);*/
       /*for (i=0;i<st->lpc_order;i++)
@@ -239,8 +252,8 @@ void ghost_encode(GhostEncState *st, float *pcm)
          for (i=0;i<st->lpc_order+1;i++)
             printf ("%f ", noise_ac[i]);
          printf ("\n");
-         for (i=0;i<st->lpc_order;i++)
-         printf ("%f ", lpc[i]);
+         //for (i=0;i<st->lpc_order;i++)
+         //printf ("%f ", lpc[i]);
          printf ("\n");
          /*for (i=0;i<st->lpc_length;i++)
          printf ("%f ", noise_window[i]);
@@ -254,10 +267,14 @@ void ghost_encode(GhostEncState *st, float *pcm)
          exit(1);
       }
       float noise[st->advance];
-      fir_mem2(st->new_noise, lpc, noise, st->advance, st->lpc_order, st->noise_mem);
+      //for (i=0;i<MASK_LPC_ORDER;i++)
+      //   awk1[i] = 0;
+      fir_mem2(st->new_noise, awk1, noise, st->advance, MASK_LPC_ORDER, st->noise_mem);
+      for (i=0;i<st->advance;i++)
+         noise[i] /= mask_gain;
       
       //Replace whitened residual by white noise
-      if (1) {
+      if (0) {
          float ener = 0;
          for (i=0;i<st->advance;i++)
             ener += noise[i]*noise[i];
@@ -266,7 +283,14 @@ void ghost_encode(GhostEncState *st, float *pcm)
             noise[i] = ener*sqrt(12.)*((((float)(rand()))/RAND_MAX)-.5);
       }
       
-      iir_mem2(noise, lpc, noise, st->advance, st->lpc_order, st->noise_mem2);
+      for (i=0;i<st->advance;i++)
+         printf ("%f\n", noise[i]);
+      printf ("\n");
+      for (i=0;i<st->advance;i++)
+         noise[i] = 16*floor(.5+.0625*noise[i]);
+      for (i=0;i<st->advance;i++)
+         noise[i] *= mask_gain;
+      iir_mem2(noise, awk1, noise, st->advance, MASK_LPC_ORDER, st->noise_mem2);
       
       /*for (i=0;i<st->advance;i++)
       pcm[i] = st->current_frame[i]-st->new_noise[i];*/

@@ -450,11 +450,12 @@ void compute_curve(VorbisPsy *psy, float *audio, float *curve)
 }
 
 /* Transform a masking curve (power spectrum) into a pole-zero filter */
-void curve_to_lpc(VorbisPsy *psy, float *curve, float *awk1, float *awk2, int ord)
+float curve_to_lpc(VorbisPsy *psy, float *curve, float *awk1, float *awk2, int ord)
 {
    int i;
    float ac[psy->n];
    float tmp;
+   float mean_ratio=0;
    int len = psy->n >> 1;
    for (i=0;i<2*len;i++)
       ac[i] = 0;
@@ -489,8 +490,11 @@ void curve_to_lpc(VorbisPsy *psy, float *curve, float *awk1, float *awk2, int or
    ac[len] = ac[2*len-1]*ac[2*len-1];
    /* Compute correction required */
    for (i=0;i<len;i++)
+   {
+      mean_ratio += curve[i]*ac[i];
       curve[i] = 1. / (1e-6f+curve[i]*ac[i]);
-
+   }
+   mean_ratio /= len;
    for (i=0;i<2*len;i++)
       ac[i] = 0;
    for (i=1;i<len;i++)
@@ -506,6 +510,7 @@ void curve_to_lpc(VorbisPsy *psy, float *curve, float *awk1, float *awk2, int or
       tmp *= .99;
       awk2[i] *= tmp;
    }
+   return sqrt(mean_ratio);
 #endif
 }
 
