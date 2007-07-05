@@ -89,6 +89,6 @@ typedef struct {
 VorbisPsy *vorbis_psy_init(int rate, int size);
 void vorbis_psy_destroy(VorbisPsy *psy);
 void compute_curve(VorbisPsy *psy, float *audio, float *curve);
-void curve_to_lpc(VorbisPsy *psy, float *curve, float *awk1, float *awk2, int ord);
+float curve_to_lpc(VorbisPsy *psy, float *curve, float *awk1, float *awk2, int ord);
 
 #endif

@@ -23,6 +23,8 @@
 #ifndef _GHOST_H
 #define _GHOST_H
 
+#include "vorbis_psy.h"
+
 typedef struct {
    float *pcm_buf;
    float *new_pcm;
@@ -36,6 +38,8 @@ typedef struct {
    float *syn_memory;
    float *noise_mem;
    float *noise_mem2;
+   
+   VorbisPsy *psy;
    
    float *noise_buf;
    float *new_noise;
