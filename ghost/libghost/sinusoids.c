@@ -164,22 +164,28 @@ void extract_sinusoids(float *x, float *w, float *window, float *ai, float *bi, 
 */
 void extract_modulated_sinusoids(float *x, float *w, float *window, float *ai, float *bi, float *ci, float *di, float *y, int N, int len)
 {
-   float cos_table[N][len];
-   float sin_table[N][len];
-   float tcos_table[N][len];
-   float tsin_table[N][len];
+   int L2 = len/2;
+   float cos_table[N][L2];
+   float sin_table[N][L2];
+   float tcos_table[N][L2];
+   float tsin_table[N][L2];
    float cosE[N], sinE[N];
    float costE[N], sintE[N];
    float e[len];
+   /* Symmetric and anti-symmetric components of the error */
+   float sym[L2], anti[L2];
+   
    int i,j, iter;
    /* Build a table for the four basis functions at each frequency: cos(x), sin(x), x*cos(x), x*sin(x)*/
    for (i=0;i<N;i++)
    {
       float tmp1=0, tmp2=0;
       float tmp3=0, tmp4=0;
-      for (j=0;j<len;j++)
+      /* Only need to compute the tables for half the length because of the symmetry.
+         Eventually, we'll have to replace the cos/sin with rotations */
+      for (j=0;j<L2;j++)
       {
-         float jj = j-len/2+.5;
+         float jj = j+.5;
          cos_table[i][j] = cos(w[i]*jj)*window[j];
          sin_table[i][j] = sin(w[i]*jj)*window[j];
          tcos_table[i][j] = ((jj))*cos_table[i][j];
@@ -191,11 +197,13 @@ void extract_modulated_sinusoids(float *x, float *w, float *window, float *ai, f
          tmp3 += tcos_table[i][j]*tcos_table[i][j];
          tmp4 += tsin_table[i][j]*tsin_table[i][j];
       }
-      cosE[i] = sqrt(tmp1);
-      sinE[i] = sqrt(tmp2);
-      costE[i] = sqrt(tmp3);
-      sintE[i] = sqrt(tmp4);
-      for (j=0;j<len;j++)
+      /* double the energy because we only computed one half */
+      cosE[i] = sqrt(2*tmp1);
+      sinE[i] = sqrt(2*tmp2);
+      costE[i] = sqrt(2*tmp3);
+      sintE[i] = sqrt(2*tmp4);
+      /* Normalise the basis (should multiply by the inverse instead) */
+      for (j=0;j<L2;j++)
       {
          cos_table[i][j] /= cosE[i];
          sin_table[i][j] /= sinE[i];
@@ -208,6 +216,14 @@ void extract_modulated_sinusoids(float *x, float *w, float *window, float *ai, f
       y[j] = 0;
    for (j=0;j<len;j++)
       e[j] = x[j];
+   /* Split the error into a symmetric component and an anti-symmetric component. 
+      This speeds every thing up by a factor of 2 */
+   for (j=0;j<L2;j++)
+   {
+      sym[j] = e[j+L2]+e[L2-j-1];
+      anti[j] = e[j+L2]-e[L2-j-1];
+   }
+   
    for (i=0;i<N;i++)
       ai[i] = bi[i] = ci[i] = di[i] = 0;
    int tata=0;
@@ -218,41 +234,28 @@ void extract_modulated_sinusoids(float *x, float *w, float *window, float *ai, f
       {
          float tmp1=0, tmp2=0;
          float tmp3=0, tmp4=0;
-         /* (Sort of) project the residual on the four basis functions */
-         for (j=0;j<len;j++)
-            tmp1 += e[j]*cos_table[i][j];
-         for (j=0;j<len;j++)
-            e[j] -= tmp1*cos_table[i][j];
-
-         for (j=0;j<len;j++)
-            tmp2 += e[j]*sin_table[i][j];
-         for (j=0;j<len;j++)
-            e[j] -= tmp2*sin_table[i][j];
-
-         for (j=0;j<len;j++)
-            tmp3 += e[j]*tcos_table[i][j];
-         for (j=0;j<len;j++)
-            e[j] -= tmp3*tcos_table[i][j];
-
-         for (j=0;j<len;j++)
-            tmp4 += e[j]*tsin_table[i][j];
-         for (j=0;j<len;j++)
-            e[j] -= tmp4*tsin_table[i][j];
-#if 0
-         for (j=0;j<len;j++)
-         {
-            tmp1 += (x[j]-y[j])*cos_table[i][j];
-            tmp2 += (x[j]-y[j])*sin_table[i][j];
-            tmp3 += (x[j]-y[j])*tcos_table[i][j];
-            tmp4 += (x[j]-y[j])*tsin_table[i][j];
-         }
+         /* For each of the four basis functions, project the residual (symmetric or 
+            anti-symmetric) onto the basis function, then update the residual. */
+         for (j=0;j<L2;j++)
+            tmp1 += sym[j]*cos_table[i][j];
+         for (j=0;j<L2;j++)
+            sym[j] -= (2*tmp1)*cos_table[i][j];
          
-         /* Update the signal approximation for the next iteration */
-         for (j=0;j<len;j++)
-         {
-            y[j] += tmp1*cos_table[i][j] + tmp2*sin_table[i][j] + tmp3*tcos_table[i][j] + tmp4*tsin_table[i][j];
-         }
-#endif
+         for (j=0;j<L2;j++)
+            tmp2 += anti[j]*sin_table[i][j];
+         for (j=0;j<L2;j++)
+            anti[j] -= (2*tmp2)*sin_table[i][j];
+
+         for (j=0;j<L2;j++)
+            tmp3 += anti[j]*tcos_table[i][j];
+         for (j=0;j<L2;j++)
+            anti[j] -= (2*tmp3)*tcos_table[i][j];
+
+         for (j=0;j<L2;j++)
+            tmp4 += sym[j]*tsin_table[i][j];
+         for (j=0;j<L2;j++)
+            sym[j] -= (2*tmp4)*tsin_table[i][j];
+         
          ai[i] += tmp1;
          bi[i] += tmp2;
          ci[i] += tmp3;
@@ -265,6 +268,11 @@ void extract_modulated_sinusoids(float *x, float *w, float *window, float *ai, f
       bi[i] /= sinE[i];
       ci[i] /= costE[i];
       di[i] /= sintE[i];
+   }
+   for (j=0;j<L2;j++)
+   {
+      e[j+L2] = .5*(sym[j]+anti[j]);
+      e[L2-j-1] = .5*(sym[j]-anti[j]);
    }
    for (j=0;j<len;j++)
       y[j] = x[j]-e[j];
