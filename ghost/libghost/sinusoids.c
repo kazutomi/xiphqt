@@ -170,6 +170,7 @@ void extract_modulated_sinusoids(float *x, float *w, float *window, float *ai, f
    float tsin_table[N][len];
    float cosE[N], sinE[N];
    float costE[N], sintE[N];
+   float e[len];
    int i,j, iter;
    /* Build a table for the four basis functions at each frequency: cos(x), sin(x), x*cos(x), x*sin(x)*/
    for (i=0;i<N;i++)
@@ -205,6 +206,8 @@ void extract_modulated_sinusoids(float *x, float *w, float *window, float *ai, f
    /* y is the initial approximation of the signal */
    for (j=0;j<len;j++)
       y[j] = 0;
+   for (j=0;j<len;j++)
+      e[j] = x[j];
    for (i=0;i<N;i++)
       ai[i] = bi[i] = ci[i] = di[i] = 0;
    int tata=0;
@@ -217,6 +220,26 @@ void extract_modulated_sinusoids(float *x, float *w, float *window, float *ai, f
          float tmp3=0, tmp4=0;
          /* (Sort of) project the residual on the four basis functions */
          for (j=0;j<len;j++)
+            tmp1 += e[j]*cos_table[i][j];
+         for (j=0;j<len;j++)
+            e[j] -= tmp1*cos_table[i][j];
+
+         for (j=0;j<len;j++)
+            tmp2 += e[j]*sin_table[i][j];
+         for (j=0;j<len;j++)
+            e[j] -= tmp2*sin_table[i][j];
+
+         for (j=0;j<len;j++)
+            tmp3 += e[j]*tcos_table[i][j];
+         for (j=0;j<len;j++)
+            e[j] -= tmp3*tcos_table[i][j];
+
+         for (j=0;j<len;j++)
+            tmp4 += e[j]*tsin_table[i][j];
+         for (j=0;j<len;j++)
+            e[j] -= tmp4*tsin_table[i][j];
+#if 0
+         for (j=0;j<len;j++)
          {
             tmp1 += (x[j]-y[j])*cos_table[i][j];
             tmp2 += (x[j]-y[j])*sin_table[i][j];
@@ -224,26 +247,16 @@ void extract_modulated_sinusoids(float *x, float *w, float *window, float *ai, f
             tmp4 += (x[j]-y[j])*tsin_table[i][j];
          }
          
-         //tmp3=tmp4 = 0;
-
          /* Update the signal approximation for the next iteration */
          for (j=0;j<len;j++)
          {
             y[j] += tmp1*cos_table[i][j] + tmp2*sin_table[i][j] + tmp3*tcos_table[i][j] + tmp4*tsin_table[i][j];
          }
+#endif
          ai[i] += tmp1;
          bi[i] += tmp2;
          ci[i] += tmp3;
          di[i] += tmp4;
-         if (iter==4)
-         {
-            if (w[i] > .49 && w[i] < .53 && !tata)
-            {
-               //printf ("%f %f %f %f %f\n", w[i], ai[i], bi[i], ci[i], di[i]);
-               tata = 1;
-            }
-            //printf ("%f %f ", w[i], (float)sqrt(ai[i]*ai[i] + bi[i]*bi[i]));
-         }
       }
    }
    for (i=0;i<N;i++)
@@ -253,6 +266,9 @@ void extract_modulated_sinusoids(float *x, float *w, float *window, float *ai, f
       ci[i] /= costE[i];
       di[i] /= sintE[i];
    }
+   for (j=0;j<len;j++)
+      y[j] = x[j]-e[j];
+
 #if 0
    if (N)
    for (i=0;i<1;i++)
