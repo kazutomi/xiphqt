@@ -221,10 +221,10 @@ void extract_modulated_sinusoids(float *x, float *w, float *window, float *ai, f
       /* Normalise the basis (should multiply by the inverse instead) */
       for (j=0;j<L2;j++)
       {
-         cos_table[i][j] /= cosE[i];
-         sin_table[i][j] /= sinE[i];
-         tcos_table[i][j] /= costE[i];
-         tsin_table[i][j] /= sintE[i];
+         cos_table[i][j] *= (1.f/cosE[i]);
+         sin_table[i][j] *= (1.f/sinE[i]);
+         tcos_table[i][j] *= (1.f/costE[i]);
+         tsin_table[i][j] *= (1.f/sintE[i]);
       }
    }
    /* y is the initial approximation of the signal */
