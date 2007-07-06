@@ -33,10 +33,10 @@
 #include <math.h>
 #include "smallft.h"
 
-static int drfti1(int n, double *wa, int *ifac){
+static int drfti1(int n, float *wa, int *ifac){
   static int ntryh[2] = { 4,2 };
-  static double tpi = 6.28318530717958648f;
-  double arg,argh,argld,fi;
+  static float tpi = 6.28318530717958648f;
+  float arg,argh,argld,fi;
   int ntry=0,i,j=-1;
   int k1, l1, l2, ib;
   int ld, ii, ip, is, nq, nr;
@@ -89,7 +89,7 @@ static int drfti1(int n, double *wa, int *ifac){
     for (j=0;j<ipm;j++){
       ld+=l1;
       i=is;
-      argld=(double)ld*argh;
+      argld=(float)ld*argh;
       fi=0.;
       for (ii=2;ii<ido;ii+=2){
 	fi+=1.;
@@ -104,14 +104,14 @@ static int drfti1(int n, double *wa, int *ifac){
   return 0;
 }
 
-static int fdrffti(int n, double *wsave, int *ifac){
+static int fdrffti(int n, float *wsave, int *ifac){
   if (n == 1) return 0;
   return drfti1(n, wsave, ifac);
 }
 
-static void dradf2(int ido,int l1,double *cc,double *ch,double *wa1){
+static void dradf2(int ido,int l1,float *cc,float *ch,float *wa1){
   int i,k;
-  double ti2,tr2;
+  float ti2,tr2;
   int t0,t1,t2,t3,t4,t5,t6;
 
   t1=0;
@@ -164,11 +164,11 @@ static void dradf2(int ido,int l1,double *cc,double *ch,double *wa1){
   }
 }
 
-static void dradf4(int ido,int l1,double *cc,double *ch,double *wa1,
-	    double *wa2,double *wa3){
-  static double hsqt2 = .70710678118654752f;
+static void dradf4(int ido,int l1,float *cc,float *ch,float *wa1,
+	    float *wa2,float *wa3){
+  static float hsqt2 = .70710678118654752f;
   int i,k,t0,t1,t2,t3,t4,t5,t6;
-  double ci2,ci3,ci4,cr2,cr3,cr4,ti1,ti2,ti3,ti4,tr1,tr2,tr3,tr4;
+  float ci2,ci3,ci4,cr2,cr3,cr4,ti1,ti2,ti3,ti4,tr1,tr2,tr3,tr4;
   t0=l1*ido;
   
   t1=t0;
@@ -266,7 +266,7 @@ static void dradf4(int ido,int l1,double *cc,double *ch,double *wa1,
   }
 }
 
-static void drftf1(int n,double *c,double *ch,double *wa,int *ifac){
+static void drftf1(int n,float *c,float *ch,float *wa,int *ifac){
   int i,k1,l1,l2;
   int na,kh,nf;
   int ip,iw,ido,idl1,ix2,ix3;
@@ -313,8 +313,8 @@ static void drftf1(int n,double *c,double *ch,double *wa,int *ifac){
   for(i=0;i<n;i++)c[i]=ch[i];
 }
 
-void drft_forward(drft_lookup *l,double *data){
-  double work[l->n];
+void drft_forward(drft_lookup *l,float *data){
+  float work[l->n];
   if(l->n==1)return;
   drftf1(l->n,data,work,l->trigcache,l->splitcache);
 }
