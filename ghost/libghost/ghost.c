@@ -283,9 +283,9 @@ void ghost_encode(GhostEncState *st, float *pcm)
             noise[i] = ener*sqrt(12.)*((((float)(rand()))/RAND_MAX)-.5);
       }
       
-      for (i=0;i<st->advance;i++)
+      /*for (i=0;i<st->advance;i++)
          printf ("%f\n", noise[i]);
-      printf ("\n");
+      printf ("\n");*/
       for (i=0;i<st->advance;i++)
          noise[i] = 16*floor(.5+.0625*noise[i]);
       for (i=0;i<st->advance;i++)
@@ -295,9 +295,8 @@ void ghost_encode(GhostEncState *st, float *pcm)
       /*for (i=0;i<st->advance;i++)
       pcm[i] = st->current_frame[i]-st->new_noise[i];*/
       
-      /* Remove the 0* if you want to include the lpc-generated noise as well */
       for (i=0;i<st->advance;i++)
-         pcm[i] = st->current_frame[i]-st->new_noise[i] + 0*noise[i];
+         pcm[i] = st->current_frame[i]-st->new_noise[i] /*+ noise[i]*/;
       
    }
    
