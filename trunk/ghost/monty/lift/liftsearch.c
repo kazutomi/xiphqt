@@ -6,13 +6,13 @@
 #include "smallft.h"
 
 int fixed_bits = 12;
+int order = 14;
 int num_coefficients = 14;
-int p_delay = 2;
-int q_delay = 3;
+int p_delay, q_delay, r_delay, s_delay;
 double TB = .1;
 
-#define MAX_PZ 32
-#define FS 256
+#define MAX_PZ 64
+#define FS 512
 drft_lookup fft;
 
 typedef struct local_minimum{
@@ -48,37 +48,54 @@ int log_minimum(int *c, double cost){
   for(j=0;j<num_coefficients;j++) mc[j] = c[j];
   minimum_list_size++;
 
-  return minimum_list_size-1;
-}
+  fprintf(stderr,"\rfinal cost: %f                                    \n",cost);
 
-double fixed_to_double(int f){
-  return f*pow(2.,(double)-fixed_bits);
+  return minimum_list_size-1;
 }
 
 typedef struct {
   int n;
-  double a[MAX_PZ]; // normalized filter; a[0] is actually a_1
-  double b[MAX_PZ+1]; 
+  double scale[MAX_PZ];
+  double iir[MAX_PZ];
+  double fir[MAX_PZ+1]; 
   double pre[MAX_PZ*2]; 
 } iir_t;
 
+
+//Direct form
 double Az2(iir_t *f, double v){
   double iir = v;
   int i;
   int n = f->n;
 
   for(i=0;i<n;i++)
-    iir -= f->pre[i*2+1] * f->a[i];
+    iir -= f->pre[i*2+1] * f->iir[i];
 
-  double fir = f->b[0] * iir;
+  double fir = f->fir[0] * iir;
   for(i=0;i<n;i++)
-    fir += f->pre[i*2+1] * f->b[i+1];
+    fir += f->pre[i*2+1] * f->fir[i+1];
 
   for(i = n*2-1; i>0; i--)
     f->pre[i] = f->pre[i-1];
   f->pre[0] = iir;
 
   return fir;
+}
+
+// Cascade form
+double Cz2(iir_t *f, double v){
+  int i;
+  int n = f->n;
+
+  v*=f->scale[n-1];
+  for(i=0;i<n;i++){
+    double iir = v - f->pre[i*2] * f->iir[i];
+    v = iir + f->pre[i*2] * f->fir[i];
+    
+    f->pre[i*2] = f->pre[i*2+1];
+    f->pre[i*2+1] = iir;
+  }
+  return v;
 }
 
 void mag_e(double *d){
@@ -93,30 +110,57 @@ void mag_e(double *d){
 
 }
 
-int lift_run(int *c, double *lp, double *hp, int dump){
-  iir_t P;
-  iir_t Q;
+void lift_run(double *c, double *lp, double *hp, int dump){
+  iir_t P,Q,R,S;
   int i,j;
-  int offset = (abs(p_delay) + abs(q_delay))*2+3;
-  int ret = 0;
+  int offset = (abs(p_delay) + abs(q_delay))*2+1;
 
   memset(&P,0,sizeof(P));
   memset(&Q,0,sizeof(Q));
+  //memset(&R,0,sizeof(R));
+  //memset(&S,0,sizeof(S));
+
   lp[offset] = 1.;
   hp[offset+1] = 1.;
+  P.n = Q.n = order;
 
-  P.n = Q.n = ((num_coefficients/2) -1)/2;
+#if 1
 
-  for(i=0,j=0; i<P.n; i++, j++)
-    P.a[i] = fixed_to_double(c[j]);
-  for(i=0; i<P.n+1; i++, j++)
-    P.b[i] = fixed_to_double(c[j]);
+  j=0;
+  for(i=0; i<P.n; i++)
+    Q.iir[i] = P.iir[i] = c[j++];
+  for(i=0; i<P.n; i++)
+    Q.fir[i] = P.fir[i] = c[--j];
+  Q.fir[i] = P.fir[i] = 1.;
 
-  for(i=0; i<Q.n; i++, j++)
-    Q.a[i] = fixed_to_double(c[j]);
-  for(i=0; i<Q.n+1; i++, j++)
-    Q.b[i] = fixed_to_double(c[j]);
+#else
 
+  j=0;
+  for(i=0; i<P.n; i++)
+    P.iir[i] = c[j++];
+  for(i=0; i<P.n+1; i++)
+    P.fir[i] = c[j++];
+  for(i=0; i<Q.n; i++)
+    Q.iir[i] = c[j++];
+  for(i=0; i<Q.n+1; i++)
+    Q.fir[i] = c[j++];
+  //for(i=0; i<R.n; i++)
+  //  R.iir[i] = c[j++];
+  //for(i=0; i<R.n+1; i++)
+  //  R.fir[i] = c[j++];
+  //for(i=0; i<S.n; i++)
+  //  S.iir[i] = c[j++];
+  //for(i=0; i<S.n+1; i++)
+  //  S.fir[i] = c[j++];
+#endif
+
+  /*i=0; j=0;
+  if(r_delay>0) i += r_delay*2;
+  if(r_delay<0) j += -r_delay*2;
+  
+  for(; i<FS && j<FS; i++, j++)
+  hp[j] -= Az2(&R, lp[i]);*/
+  
   i=0; j=0;
   if(p_delay>0) i += p_delay*2;
   if(p_delay<0) j += -p_delay*2;
@@ -131,62 +175,58 @@ int lift_run(int *c, double *lp, double *hp, int dump){
   for(; i<FS && j<FS; i++, j++)
     lp[j] += .5*Az2(&Q, hp[i]);
 
-  // check for "stable enough"
-  for(i=0;i<16;i++)
-    if(todB(lp[FS-i-1])>-120 ||
-       todB(hp[FS-i-1])>-120){
-      ret=1;
-      if(dump)
-	fprintf(stderr,"warning, insufficiently stable filter!\n");
-      break;
+
+  /*i=0; j=0;
+  if(s_delay>0) i += s_delay*2;
+  if(s_delay<0) j += -s_delay*2;
+
+  for(; i<FS && j<FS; i++, j++)
+  lp[j] += .5*Az2(&S, hp[i]);*/
+ 
+  if(dump){
+    for(i=0; i<64; i++){
+      if(todB(hp[FS-i-1])>-100 ||
+	 todB(lp[FS-i-1])>-100){
+	fprintf(stderr,"Warning: Insufficiently stable filter!\n");
+	break;
+      }
+      if(todB(hp[FS-i-1])>-120 ||
+	 todB(lp[FS-i-1])>-120){
+	fprintf(stderr,"Warning: Gibbs ringing overflow!\n");
+	break;
+      }
     }
+  }
+
 
   // energy 
   mag_e(hp);
   mag_e(lp);
 
   if(dump){
-    fprintf(stdout,"Filter result: \n");
 
-    fprintf(stdout,"  P: (");
-    for(i=0;i<P.n+1;i++)
-      fprintf(stdout,"%s%f",(i==0?"":", "),P.b[i]);
-    fprintf(stdout,") / (1");
-    for(i=0;i<P.n;i++)
-      fprintf(stdout,", %f",P.a[i]);
-    fprintf(stdout,")\n");
-
-    fprintf(stdout,"  Q: (");
-    for(i=0;i<Q.n+1;i++)
-      fprintf(stdout,"%s%f",(i==0?"":", "),Q.b[i]);
-    fprintf(stdout,") / (1");
+    fprintf(stderr,"  a: ( ");
     for(i=0;i<Q.n;i++)
-      fprintf(stdout,", %f",Q.a[i]);
-    fprintf(stdout,")\n");
+      fprintf(stderr,"%f ",Q.iir[i]);
+    fprintf(stderr,")\n");
+    
 
-    fprintf(stdout,"  response: {\n");
     for(i=0;i<=FS/2;i++)
       fprintf(stdout,"%f %f\n",(double)i/FS, todB(lp[i])/2);
     fprintf(stdout,"\n");
     for(i=0;i<=FS/2;i++)
       fprintf(stdout,"%f %f\n",(double)i/FS, todB(hp[i])/2);
-    fprintf(stdout,"}\n\n");
+    fprintf(stdout,"\n");
+    
   }
 
 }
 
 
-double lift_cost(int *c){
+double lift_cost(double *c){
   double *hp = calloc (FS,sizeof(*hp));
   double *lp = calloc (FS,sizeof(*lp));
   int i;
-
-  iir_t P,Q;
-
-  memset(&P,0,sizeof(P));
-  memset(&Q,0,sizeof(Q));
-
-  P.n = Q.n = ((num_coefficients/2) -1)/2;
 
   lift_run(c, lp, hp, 0);
 
@@ -198,8 +238,16 @@ double lift_cost(int *c){
   // energy in stopband
   for(i=TBhi; i<=FS/2; i++)
     cost += lp[i];
-  for(i=0; i<=TBlo; i++)
+  for(i=0; i<TBlo; i++)
     cost += hp[i]*.25;
+
+  // overshoot energy
+  /*for(i=0; i<=FS/2; i++){
+    if(lp[i]>2.)
+      cost += lp[i]-2.;
+    if(hp[i]>8.)
+      cost += (hp[i]*.25-2.);
+      }*/
 
   // deviation from 0dB in passband
   //for(i=0; i<=TBlo; i++)
@@ -218,180 +266,12 @@ double lift_cost(int *c){
   free(hp);
   free(lp);
   
-  return todB(sqrt(cost/(FS-TBhi+TBlo)));
+  return cost*cost;//(FS/2-TBhi + TBlo);
 }
 
-void drft_sub(double *p, double *n, double *out){
-  int i;
-  for(i=0;i<FS;i++)
-    out[i] = p[i] - n[i];
-}
-
-void drft_add(double *p, double *n, double *out){
-  int i;
-  for(i=0;i<FS;i++)
-    out[i] = p[i] + n[i];
-}
-
-void drft_ediv(double *n, double *d, double *out){
-  int i;
-  for(i=0;i<=FS/2;i++)
-    out[i] = n[i] / d[i];
-}
-
-void drft_mul(double *a, double *b, double *out){
-  int i;
-  out[0] = a[0] * b[0];
-  out[FS-1] = a[FS-1] * b[FS-1];
-
-  for(i=2;i<FS-1;i+=2){
-    double ra = a[i-1];
-    double rb = b[i-1];
-    double ia = a[i];
-    double ib = b[i];
-
-    out[i-1] = ra*rb - ia*ib;
-    out[i] = ra*ib + ia*rb;
-  }
-}
-
-void drft_energy(double *d){
-  int i;
-
-  d[0] = d[0]*d[0];
-  for(i=2;i<FS;i+=2)
-    d[i>>1] =d[i-1]*d[i-1] + d[i]*d[i];
-  d[FS/2] = d[FS-1]*d[FS-1];
-}
-
-
-// Directly compute response magnitude of upper/lower branches from
-// filter coefficients.  Much more complicated, but also doesn't care about
-// relative filter stability (which may be desirable or undesirable
-// depending) and can use much shorter eval vectors.
-double lift_cost2(int *c){
-  double *pn = calloc (FS,sizeof(*pn));
-  double *pd = calloc (FS,sizeof(*pd));
-  double *qn = calloc (FS,sizeof(*qn));
-  double *qd = calloc (FS,sizeof(*qd));
-  double *zM = calloc (FS,sizeof(*zM));
-  double *one = calloc (FS,sizeof(*one));
-  int i,j,k;
-
-  int n = ((num_coefficients/2) -1)/2;
-
-  /*P.n = Q.n = n;
-  for(i=0,j=0; i<P.n; i++, j++)
-    P.a[i] = fixed_to_double(c[j]);
-  for(i=0; i<P.n+1; i++, j++)
-    P.b[i] = fixed_to_double(c[j]);
-
-  for(i=0; i<Q.n; i++, j++)
-    Q.a[i] = fixed_to_double(c[j]);
-  for(i=0; i<Q.n+1; i++, j++)
-    Q.b[i] = fixed_to_double(c[j]);
-  */
-
-  /* set up response computation of highpass section */
-  /* D(z) */
-  i=0; j=0;
-  pd[j] += 1; j+=2;
-  for(i=0;i<n;i++,j+=2)
-    pd[j] += fixed_to_double(c[i]); //P.a
-
-  /* N(z)z^M where M>=0 */
-  i=0; j=0;
-  if(p_delay<0) j -= p_delay*2;
-  for(i=0;i<n+1;i++,j+=2)
-    pn[j] += fixed_to_double(c[i+n]); // P.b
-
-  /* z^M (shift case for M<0) */
-  if(p_delay>0)
-    zM[1+p_delay*2] = 1.;
-  else
-    zM[1] = 1.;
-
-  /* 1 */
-  one[0] = 1.;
-
-  drft_forward(&fft,pn);
-  drft_forward(&fft,pd);
-  drft_forward(&fft,zM);
-  drft_forward(&fft,one);
-
-  drft_mul(zM,pd,zM);
-
-  drft_mul(pd,one,pd);
-  drft_mul(pn,one,pn);
-  drft_sub(zM,pn,pn);
-
-  /* now the lowpass */
-
-  /* D(z) */
-  i=0; j=0;
-  qd[j] += 1; j+=2;
-  for(i=0;i<n;i++,j+=2)
-    qd[j] += fixed_to_double(c[i+2*n+1]); //Q.a
-
-  /* N(z)z^M where M>=0 */
-  i=0; j=0;
-  if(q_delay+p_delay<0) j -= (q_delay+p_delay)*2;
-  for(i=0;i<n+1;i++,j+=2)
-    qn[j] += .5*fixed_to_double(c[i+3*n+1]); // Q.b
-
-  /* z^M (shift case for M<0) */
-  memset(zM,0,FS*sizeof(*zM));
-  if(p_delay+q_delay>0)
-    zM[p_delay*2+q_delay*2] = 1.;
-  else
-    zM[0] = 1.;
-
-  drft_forward(&fft,qn);
-  drft_forward(&fft,qd);
-  drft_forward(&fft,zM);
-
-  drft_mul(pn,qn,qn);
-  drft_mul(pd,qd,qd);
-
-  drft_mul(zM,qd,zM);
-
-  drft_mul(qd,one,qd);
-  drft_mul(qn,one,qn);
-  drft_add(zM,qn,qn);
-
-
-
-  drft_energy(pn);
-  drft_energy(pd);
-  drft_energy(qn);
-  drft_energy(qd);
-  drft_ediv(pn,pd,pn);
-  drft_ediv(qn,qd,qn);
-
-  fprintf(stdout,"  test2 hp response: {\n");
-  for(i=0;i<=FS/2;i++)
-    fprintf(stdout,"%f %f\n",(double)i/FS, todB(pn[i])/2);
-  fprintf(stdout,"}\n\n");
-
-  fprintf(stdout,"  test2 lp response: {\n");
-  for(i=0;i<=FS/2;i++)
-    fprintf(stdout,"%f %f\n",(double)i/FS, todB(qn[i])/2);
-  fprintf(stdout,"}\n\n");
-
-  free(pn);
-  free(pd);
-  free(qn);
-  free(qd);
-  free(zM);
-  free(one);
-  
-}
-
-
-void lift_dump(int *c){
+void lift_dump(double *c){
   double *hp = calloc (FS,sizeof(*hp));
   double *lp = calloc (FS,sizeof(*lp));
-  int i;
 
   lift_run(c, lp, hp, 1);
 
@@ -399,28 +279,28 @@ void lift_dump(int *c){
   free(lp);
 }
 
-int walk_to_minimum(int *c){
+int walk_to_minimum_A(double *c, double ep){
   int last_change = num_coefficients-1;
   int cur_dim = 0;
   double cost = lift_cost(c);
 
   while(1){
-    c[cur_dim]++;
+    double val = c[cur_dim];
+    c[cur_dim] = val+ep;
     double up_cost = lift_cost(c);
-    c[cur_dim]-=2;
+    c[cur_dim] = val-ep;
     double down_cost = lift_cost(c);
-    c[cur_dim]++;
+    c[cur_dim] = val;
 
     if(up_cost<cost && up_cost<down_cost){
-      c[cur_dim]++;
+      c[cur_dim]+=ep;
       last_change = cur_dim;
       cost = up_cost;
       
     }else if (down_cost<cost){
-      c[cur_dim]--;
+      c[cur_dim]-=ep;
       last_change = cur_dim;
       cost = down_cost;
-
     }else{
       if(cur_dim == last_change)break;
     }
@@ -429,11 +309,108 @@ int walk_to_minimum(int *c){
     if(cur_dim >= num_coefficients)
       cur_dim = 0;
 
-    fprintf(stderr,"\rwalking... current cost: %g    ",cost);
+    fprintf(stderr,"\rwalking A... current cost: %g    ",todB(cost)/2);
   }
-  fprintf(stderr,"\rfinal cost: %f                                    \n",cost);
+  fprintf(stderr,"\n");
+  return 0;
+}
 
-  log_minimum(c,cost);
+int walk_to_minimum_CSD(double *c, double ep){
+  double prev[num_coefficients]; 
+  double r[num_coefficients]; 
+  double rr[num_coefficients]; 
+  int have_prev = 0;
+  int flag = 1;
+  double ep2 = 1./(1<<24);
+  double mul=1.;
+  while(flag){
+    int i;
+    flag = 0;
+
+    // compute gradient
+    double d[num_coefficients];
+    double mag = 0;
+    for(i=0;i<num_coefficients;i++){
+      double val = c[i];
+      c[i] = val + ep2;
+      d[i] = lift_cost(c);
+      c[i] = val - ep2;
+      d[i] -= lift_cost(c);
+      c[i] = val;
+      d[i] *= .5;
+      mag += d[i]*d[i];
+    }
+
+    if(mag == 0) return 0;
+    mag = sqrt(mag);
+
+    // normalize gradient to |ep|
+    for(i=0;i<num_coefficients;i++)
+      d[i] *= ep/mag;
+    
+    // walk this line
+    memcpy(r,c,sizeof(r));
+    double cost = lift_cost(r);
+    while(1){
+      for(i=0;i<num_coefficients;i++)
+	r[i] -= d[i]*mul;
+      double test_cost = lift_cost(r);
+      if(test_cost < cost){
+	cost = test_cost;
+	flag = 1;
+	mul *= 1.5;
+	if(mul>32)mul=32;
+      }else{
+	for(i=0;i<num_coefficients;i++)
+	  r[i] += d[i]*mul;
+	if(mul<1)break;
+	mul *=.5;
+      }
+    }
+    
+    /*if(have_prev){
+      mag = 0;
+      for(i=0;i<num_coefficients;i++){
+	d[i] = prev[i] - (c[i]+r[i])*.5;
+	mag += d[i]*d[i];
+      }
+      for(i=0;i<num_coefficients;i++)
+	d[i] /= mag;
+      
+      // walk conditioned line
+      memcpy(rr,prev,sizeof(rr));
+      double r_cost = lift_cost(rr);
+      while(1){
+	for(i=0;i<num_coefficients;i++)
+	  rr[i] -= d[i]*mul;
+	double test_cost = lift_cost(rr);
+	if(test_cost < r_cost){
+	  r_cost = test_cost;
+	  mul *= 2;
+	  if(mul>32)mul=32;
+	}else{
+	  for(i=0;i<num_coefficients;i++)
+	    rr[i] += d[i]*mul;
+	  mul *=.5;
+	  if(mul<1./(1<<6))break;
+	}
+      }
+      
+      if(r_cost < cost){
+	flag = 1;
+	memcpy(r,rr,sizeof(rr));
+	cost = r_cost;
+	}
+	}*/
+    
+    memcpy(prev,c,sizeof(prev));
+    memcpy(c,r,sizeof(r));
+    have_prev = 1;
+    
+    fprintf(stderr,"\rwalking CSD... current cost: %g    ",todB(cost)/2);
+  }
+  fprintf(stderr,"\n");
+  return 0;
 }
 
 double n_choose_m(int n, int m){
@@ -461,48 +438,99 @@ double def_a(int n, int sub, int delay){
   return ret;
 }
 
+void set_maxflat(double *fc){
+  int i, j;
+  for(i=0,j=0;i<order;i++,j++)
+    fc[j] = def_a(order, i, order-1)+(drand48()-.5)*.01;
+
+  //for(i=0;i<order;i++,j++)
+  //  fc[j] = def_a(order, order-i-1, order-1)+(drand48()-.5)*.01;
+  //fc[j++]=1.;
+  //for(i=0;i<order;i++,j++)
+  //  fc[j] = def_a(order, i, order-1)+(drand48()-.5)*.01;
+  //for(i=0;i<order;i++,j++)
+  //  fc[j] = def_a(order, order-i-1, order-1)+(drand48()-.5)*.01;
+  //fc[j++]=1.;
+}
+
 int main(int argc, char *argv[]){
-  int *c;
-  double *fc;
-  int i,j;
 
   drft_init(&fft,FS);
 
-  int order = 8;
-  num_coefficients = (order*2+1)*2;
-  TB = .1;
-  p_delay = 7;
-  q_delay = 8;
-
-  c = alloca(num_coefficients * sizeof(*c));
-  fc = alloca(num_coefficients * sizeof(*fc));
-
-  fixed_bits = 8;
-  for(i=0,j=0;i<order;i++,j++)
-    fc[j] = def_a(order, i, order-1);
-  for(i=0;i<order;i++,j++)
-    fc[j] = def_a(order, order-i-1, order-1);
-  fc[j++]=1.;
-  for(i=0;i<order;i++,j++)
-    fc[j] = def_a(order, i, order-1);
-  for(i=0;i<order;i++,j++)
-    fc[j] = def_a(order, order-i-1, order-1);
-  fc[j++]=1.;
+  order = 16;
+  num_coefficients = order;//(order*2+1)*2;
+  TB = .20;
+  p_delay = 15;
+  q_delay = 16;
+  r_delay = 0;
+  s_delay = 0;
   
-  for(i=0;i<num_coefficients;i++)
-    c[i] = rint(fc[i] * pow(2, fixed_bits));
+  //double *fc = calloc(num_coefficients, sizeof(*fc));
 
-  walk_to_minimum(c);  
+  //set_maxflat(fc);
+  //num_coefficients = (order*2+1)*2;
 
-  for(j=9;j<=16;j++){
-    fixed_bits = j;
-    for(i=0;i<num_coefficients;i++)
-      c[i] <<=1;
-    walk_to_minimum(c);
-  }
+  //walk_to_minimum_A(fc,1./(1<<10));  
+  //walk_to_minimum_A(fc,1./(1<<12));  
+  //walk_to_minimum_A(fc,1./(1<<14));  
+  //walk_to_minimum_A(fc,1./(1<<16));  
+  //walk_to_minimum_A(fc,1./(1<<18));  
+    
+  //lift_dump(fc);
+  //fflush(stdout);
 
-  lift_dump(c);
-  lift_cost2(c);
+  double fc[16]={ 0.494814, -0.117399, 0.053387, -0.029044, 0.016904, -0.010041, 
+		  0.005928, -0.003415, 0.001890, -0.000988, 0.000478, -0.000208,
+		  0.000078, -0.000022, 0.000003, 0.000001 };
+
+  //set_maxflat(fc);
+  //walk_to_minimum_CSD(fc,1./(1<<16));  
+  //lift_dump(fc);
+  //fflush(stdout);
+  //walk_to_minimum_CSD(fc,1./(1<<17));  
+  //lift_dump(fc);
+  //fflush(stdout);
+  //walk_to_minimum_CSD(fc,1./(1<<18));  
+  //lift_dump(fc);
+  //fflush(stdout);
+  //walk_to_minimum_CSD(fc,1./(1<<20));  
+  //walk_to_minimum_CSD(fc,1./(1<<21));  
+  //lift_dump(fc);
+  //fflush(stdout);
+  //walk_to_minimum_CSD(fc,1./(1<<22));  
+  //lift_dump(fc);
+  //fflush(stdout);
+  //walk_to_minimum_CSD(fc,1./(1<<24));  
+  //lift_dump(fc);
+  //fflush(stdout);
+  walk_to_minimum_CSD(fc,1./(1<<26));  
+  //lift_dump(fc);
+  //fflush(stdout);
+  walk_to_minimum_CSD(fc,1./(1<<28));  
+  //lift_dump(fc);
+  //fflush(stdout);
+  walk_to_minimum_CSD(fc,1./(1<<30));  
+  //lift_dump(fc);
+  //fflush(stdout);
+
+
+  lift_dump(fc);
 
   return 0;
 }
+
+#if 0
+Good ones so far:
+
+16/.21
+  a: ( 0.494814 -0.117399 0.053387 -0.029044 0.016904 -0.010041 0.005928 -0.003415 0.001890 -0.000988 0.000478 -0.000208 0.000078 -0.000022 0.000003 0.000001 )
+  a: ( 0.494801 -0.117383 0.053372 -0.029035 0.016902 -0.010047 0.005942 -0.003436 0.001913 -0.001012 0.000500 -0.000225 0.000090 -0.000030 0.000007 -0.000001 )
+16/.19
+  a: ( 0.495075 -0.117772 0.053811 -0.029476 0.017309 -0.010393 0.006214 -0.003631 0.002040 -0.001083 0.000531 -0.000232 0.000085 -0.000021 0.000000 0.000003 )
+16/.16
+  a: ( 0.496384 -0.119662 0.056015 -0.031800 0.019595 -0.012518 0.008089 -0.005205 0.003295 -0.002031 0.001205 -0.000679 0.000357 -0.000170 0.000070 -0.000022 )
+16/.16
+  a: ( 0.496302 -0.119542 0.055873 -0.031647 0.019441 -0.012371 0.007955 -0.005087 0.003196 -0.001951 0.001144 -0.000635 0.000327 -0.000152 0.000060 -0.000017 )
+
+
+#endif

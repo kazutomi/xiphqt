@@ -77,7 +77,7 @@ static int drfti1(int n, double *wa, int *ifac){
   nfm1=nf-1;
   l1=1;
 
-  if(nfm1==0)return;
+  if(nfm1==0)return -1;
 
   for (k1=0;k1<nfm1;k1++){
     ip=ifac[k1+2];
