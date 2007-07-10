@@ -2,6 +2,8 @@
 # Config file for Icebreaker
 
 file_dir='../samplemusic/'
+LOGFILE='icebreaker.log'
+PIDFILE='icebreaker.pid'
 
 #    conn = 'mysql://test:pwd@localhost/testdb'
 #    conn = 'mysql://test:pwd@localhost/testdb?debug=1'
