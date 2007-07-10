@@ -1,3 +1,4 @@
+
 library std;
 library ieee;
 library work;
@@ -128,7 +129,7 @@ begin  -- a_ReconFrames
       out_sem_addr      => in_eb_DtBuf_addr,
       out_sem_data      => in_eb_DtBuf_data,
 
-      in_newframe       => s_out_done,
+      in_newframe       => s_out_done,  -- Avoid latch
       out_done          => eb_done
     );
 
