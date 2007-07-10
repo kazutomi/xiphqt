@@ -5,23 +5,9 @@
   <title>Welcome to TurboGears</title>
 </head>
 <body>
-<?python
-from selectshuttle.widgets import SelectShuttle
-form_name="foo"
-create = SelectShuttle(
-name="select_shuttle_demo",
-label = "The shuttle",
-title_available = "Available options",
-title_selected = "Selected options",
-form_reference = "document.forms['%s']" % form_name,
-# All data should be provided as a list of tuples, in the form of
-# ("id", "value"). ATM, id should be an int
-available_options = [(i, "Option %d"%i) for i in xrange(5)],
-default = dict(selected=[(i, "Option %d"%i) for i in xrange(3)])
-)
-?>
+
 <div>
-    <form action="%s/post_data" name="%s" method="POST">
+    <form action="${full_class_name}/post_data" name="${form_name}" method="POST">
         ${create.display()}
         <br />
         <input type="submit" value="Submit" />
