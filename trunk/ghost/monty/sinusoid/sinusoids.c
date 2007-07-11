@@ -10,7 +10,7 @@
  *                                                                  *
  ********************************************************************
 
- function: research-grade sinusoidal extraction sode
+ function: research-grade sinusoidal extraction code
  last mod: $Id$
 
  ********************************************************************/
@@ -22,94 +22,77 @@
 #include <stdlib.h>
 #include <string.h>
 
-/* f: input; log magnitude (decibel scale) of input spectrum */
-
-void level_mean(float *f,float *out,int n, float lowindow, float hiwindow, int min, int rate){
-  float nevent[n];
-  float devent[n];
-
-  float nadd = 0.f;
-  float dadd = 0.f;
-  float nacc = 0.f;
-  float dacc = 0.f;
-
+void level_mean(float *f, float *out, int n,
+		int lowindow, int hiwindow, int min, int rate){
+  int bark[n],i;
   float binwidth = rate*.5f/n; 
   float ibinwidth = 1.f/binwidth;
 
-  int head=-1;
-  int tail=-1;
-  int i;
+  for(i=0;i<n;i++)
+    bark[i] = rint(toBark(i*binwidth) * 1024);
+
+  float nacc = 0.f;
+  float nadd = 0.f;
+  float dacc = 0.f;
+  float dadd = 0.f;
   
-  memset(nevent,0,sizeof(nevent));
-  memset(devent,0,sizeof(devent));
-
-  /* init case for hi-side window */
-  int lo;
-  int hi = rint(fromBark(hiwindow)*ibinwidth);
-  if(hi<min)hi=min;
-
-  for(head=0;head<hi;head++){
-    float de = 1./hi;
-    float nu = f[head]*de;
-
-    nevent[head] -= nu;
-    devent[head] -= de;
-
-    nadd += nu;
-    dadd += de;
-    
-    nacc +=nadd;
-    dacc +=dadd;
-  }
+  int hihead=0;
+  int hitail=0;
+  int lohead=0;
+  int lotail=0;
 
   for(i=0;i<n;i++){
-    float bark = toBark(i*binwidth);
-    hi = rint(fromBark(bark+hiwindow)*ibinwidth)-i;
-    if(bark>lowindow)
-      lo = i-rint(fromBark(bark-lowindow)*ibinwidth);
-    else
-      lo = rint(fromBark(lowindow)*ibinwidth);
-    if(hi<min)hi=min;
-    if(lo<min)lo=min;
 
-    /* high side window*/
-    for(;head<i+hi;head++){
-      if(head<n){
-	float de = 1./hi;
-	float nu = f[head]*de;
+    for( ; hihead<n && (bark[hihead]<=bark[i]+hiwindow || hihead<i+min);hihead++){
+      int c = hihead-i+1;
+      float d = (c<min?1./min:1./c);
 
-	nevent[i+hi] -= nu;
-	devent[i+hi] -= de;
-	
-	nadd += nu;
-	dadd += de;
+      nadd += f[hihead]*d;
+      dadd += d;
 
+      while(c<min){
+	nacc += f[hihead]*d;
+	dacc += d;
+	c++;
       }
     }
 
-    /* low side window */
-    {
-      float de = 1./lo;
-      float nu = f[i]*de;
-
-      if(i+lo<n){
-	nevent[i+lo] += nu;
-	devent[i+lo] += de;
-      }
-      if(i<n){
-	nevent[i] -= nu;
-	devent[i] -= de;
-      }
-    }
-
-    nadd += nevent[i];
-    dadd += devent[i];
-    
     nacc += nadd;
     dacc += dadd;
 
-    out[i] = nacc/dacc; 
+    if(lohead<n){
+      while(lohead<n && (bark[lohead]<=bark[i]+lowindow || lohead<i+min))
+	lohead++;
+    }else
+      lohead++;
+
+    {
+      int c = lohead-i;
+      float d = 1./c;
+      nadd -= f[i]*d;
+      dadd -= d;
+    }
+
+    for( ;lotail<i && bark[lotail]<bark[i]-lowindow && lotail<=i-min; lotail++){
+      int c = i-lotail;
+      float d = 1./c;
+      nadd += f[lotail]*d;
+      dadd += d;
+    }
+    
+    while( hitail<i && bark[hitail]<bark[i]-hiwindow && hitail<=i-min)
+      hitail++;
+
+    {
+      int c = i-hitail+1;
+      float d = (c<min?1./min:1./c);
+      nadd -= f[i]*d;
+      dadd -= d;
+    }
+
+    out[i] = nacc / dacc;
   }
+
 }
 
 

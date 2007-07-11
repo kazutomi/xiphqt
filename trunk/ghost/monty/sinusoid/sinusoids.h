@@ -15,4 +15,4 @@
 
  ********************************************************************/
 
-extern void level_mean(float *f,float *out,int n, float lowindow, float hiwindow, int min, int rate);
+extern void level_mean(float *f,float *out,int n, int lowindow, int hiwindow, int min, int rate);
