@@ -1,0 +1,6 @@
+# Use mod_rewrite to enable execution of python script
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+  RewriteRule ^$ check.py [L]
+</IfModule>
