@@ -99,7 +99,7 @@ int main(int argc, char **argv){
       mag_dB(fft_buf,BLOCK_SIZE*2);
       dump_vec(fft_buf,BLOCK_SIZE+1,"logmag",frame);
 
-      level_mean(fft_buf,weight,BLOCK_SIZE+1, 1.f,1.f, 10, 44100);
+      level_mean(fft_buf,weight,BLOCK_SIZE+1, 512,1024, 15, 44100);
       dump_vec(weight,BLOCK_SIZE+1,"weight",frame);
 
     }
