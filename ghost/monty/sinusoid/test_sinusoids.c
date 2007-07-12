@@ -27,6 +27,24 @@ static void dump_vec(float *data, int n, char *base, int i){
 
 }
 
+static void dump_vec2(float *x, float *y, int n, char *base, int i){
+  char *filename;
+  FILE *f;
+
+  asprintf(&filename,"%s_%d.m",base,i);
+  f=fopen(filename,"w");
+  
+  for(i=0;i<n;i++){
+    fprintf(f,"%f -120\n",
+	    x[i]);
+    fprintf(f,"%f %f\n\n",
+	    x[i],y[i]);
+  }
+
+  fclose(f);
+
+}
+
 #define A0 .35875f
 #define A1 .48829f
 #define A2 .14128f
@@ -43,12 +61,12 @@ void blackmann_harris(float *out, float *in, int n){
   }
 }
 
-void mag_dB(float *d, int n){
+void mag_dB(float *log,float *d, int n){
   int i;
-  d[0] = todB(d[0]*d[0])*.5;
+  log[0] = todB(d[0]*d[0])*.5;
   for(i=2;i<n;i+=2)
-    d[i>>1] = todB(d[i-1]*d[i-1] + d[i]*d[i])*.5;
-  d[n/2] = todB(d[n-1]*d[n-1])*.5;
+    log[i>>1] = todB(d[i-1]*d[i-1] + d[i]*d[i])*.5;
+  log[n/2] = todB(d[n-1]*d[n-1])*.5;
 }
 
 int main(int argc, char **argv){
@@ -75,7 +93,7 @@ int main(int argc, char **argv){
   */
 
   while (1){
-    int i;
+    int i,j;
     memmove(float_in,float_in+BLOCK_SIZE,sizeof(*float_in)*BLOCK_SIZE);
     fread(short_in, sizeof(short), BLOCK_SIZE, fin);
       
@@ -85,23 +103,89 @@ int main(int argc, char **argv){
       float_in[i+BLOCK_SIZE] = short_in[i] * .000030517578125;
 
     {
+
       /* generate a log spectrum */
       float fft_buf[BLOCK_SIZE*2];
+      float log_fft[BLOCK_SIZE+1];
       float weight[BLOCK_SIZE+1];
 
-      blackmann_harris(fft_buf, float_in, BLOCK_SIZE*2);
-      //dump_vec(float_in,BLOCK_SIZE*2,"data",frame);
-      dump_vec(fft_buf,BLOCK_SIZE*2,"win_data",frame);
-      drft_forward(&fft, fft_buf);
-      for(i=0;i<BLOCK_SIZE*2;i++)fft_buf[i] *= 2./BLOCK_SIZE;
-      //dump_vec(fft_buf,BLOCK_SIZE*2,"fft",frame);
+      memcpy(fft_buf,float_in,sizeof(float_in));
 
-      mag_dB(fft_buf,BLOCK_SIZE*2);
-      dump_vec(fft_buf,BLOCK_SIZE+1,"logmag",frame);
+      // polish the strongest peaks from weighting
+      if(frame==220){
+	float w[BLOCK_SIZE];
+	float Aout[BLOCK_SIZE]={0};
+	float Wout[BLOCK_SIZE]={0};
+	float Pout[BLOCK_SIZE]={0};
+	float delAout[BLOCK_SIZE]={0};
+	float delWout[BLOCK_SIZE]={0};
+	float y[BLOCK_SIZE*2];
 
-      level_mean(fft_buf,weight,BLOCK_SIZE+1, 512,1024, 15, 44100);
-      dump_vec(weight,BLOCK_SIZE+1,"weight",frame);
+	//for(j=0;j<50;j++){
+	j=BLOCK_SIZE;
+	  blackmann_harris(fft_buf, fft_buf, BLOCK_SIZE*2);
+	  //if(j==0)
+	    dump_vec(float_in,BLOCK_SIZE*2,"data",frame);
+	  drft_forward(&fft, fft_buf);
+	  for(i=0;i<BLOCK_SIZE*2;i++)fft_buf[i] *= 2./BLOCK_SIZE;
 
+	  mag_dB(log_fft,fft_buf,BLOCK_SIZE*2);
+	  //if(j==0)
+	    dump_vec(log_fft,BLOCK_SIZE+1,"logmag",frame);
+
+	  window_weight(log_fft,weight,BLOCK_SIZE+1, 2.f, 512,256, 30, 44100);
+	  
+	  // largest weighted
+	  /*int best=-120;
+	  int besti=-1;
+	  for(i=0;i<BLOCK_SIZE+1;i++)
+	    if(weight[i]>best){
+	      besti = i;
+	      best = weight[i];
+	    }
+	  w[j] = M_PI*besti/BLOCK_SIZE;
+	  */
+
+	  for(i=0;i<j;i++)
+	    w[i] = i;//M_PI*(i)/j;
+
+
+	  blackmann_harris(fft_buf, float_in, BLOCK_SIZE*2);
+	  dump_vec(fft_buf,BLOCK_SIZE*2,"win",frame);
+	  extract_modulated_sinusoids2(fft_buf, w, Aout, Wout, Pout, delAout, delWout, y, j, BLOCK_SIZE*2);
+
+	  //for(i=0;i<j;i++){
+	  //float A = sqrt(a[i]*a[i] + b[i]*b[i]);
+	  //w[i] += (c[i]*b[i] - d[i]*a[i])/(A*A);
+	  //}
+
+	  memcpy(fft_buf,float_in,sizeof(float_in));
+	  for(i=0;i<BLOCK_SIZE*2;i++)
+	    fft_buf[i] -= y[i];
+
+	  //dump_vec(float_in,BLOCK_SIZE*2,"exdata",frame);
+	  dump_vec(y,BLOCK_SIZE*2,"extract",frame);
+	  //}
+
+	  for(i=0;i<j;i++){
+	    //float A = sqrt(a[i]*a[i] + b[i]*b[i]);
+	    Aout[i]=todB(Aout[i]);
+	    Wout[i] /= BLOCK_SIZE;
+	  }
+	    
+	  dump_vec2(Wout,Aout,j,"ex",frame);
+	  
+	  //dump_vec(float_in,BLOCK_SIZE*2,"exdata",frame);
+	  dump_vec(y,BLOCK_SIZE*2,"extract",frame);
+	
+	blackmann_harris(fft_buf, fft_buf, BLOCK_SIZE*2);
+	drft_forward(&fft, fft_buf);
+	for(i=0;i<BLOCK_SIZE*2;i++)fft_buf[i] *= 2./BLOCK_SIZE;
+	mag_dB(log_fft,fft_buf,BLOCK_SIZE*2);
+	dump_vec(log_fft,BLOCK_SIZE+1,"exlogmag",frame);
+	
+	
+      }
     }
 
 

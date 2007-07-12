@@ -15,4 +15,10 @@
 
  ********************************************************************/
 
-extern void level_mean(float *f,float *out,int n, int lowindow, int hiwindow, int min, int rate);
+extern void window_weight(float *logf, float *out, int n, float flatbias,
+			  int lowindow, int hiwindow, int min, int rate);
+
+extern void extract_modulated_sinusoids(float *x, float *w, float *ai, float *bi, float *ci, float *di, float *y, int N, int len);
+ 
+extern void extract_modulated_sinusoids2(float *x, float *w, float *Aout, float *Wout, float *Pout, 
+					 float *delAout, float *delWout, float *y, int N, int len);
