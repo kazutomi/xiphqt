@@ -22,8 +22,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-void level_mean(float *f, float *out, int n,
-		int lowindow, int hiwindow, int min, int rate){
+void window_weight(float *logf, float *out, int n, float flatbias,
+		   int lowindow, int hiwindow, int min, int rate){
   int bark[n],i;
   float binwidth = rate*.5f/n; 
   float ibinwidth = 1.f/binwidth;
@@ -31,8 +31,11 @@ void level_mean(float *f, float *out, int n,
   for(i=0;i<n;i++)
     bark[i] = rint(toBark(i*binwidth) * 1024);
 
-  float nacc = 0.f;
-  float nadd = 0.f;
+  float gacc = 0.f;
+  float gadd = 0.f;
+  float aacc = 0.f;
+  float aadd = 0.f;
+
   float dacc = 0.f;
   float dadd = 0.f;
   
@@ -47,17 +50,20 @@ void level_mean(float *f, float *out, int n,
       int c = hihead-i+1;
       float d = (c<min?1./min:1./c);
 
-      nadd += f[hihead]*d;
+      gadd += logf[hihead]*d;
+      aadd += fromdB(logf[hihead])*d;
       dadd += d;
 
       while(c<min){
-	nacc += f[hihead]*d;
+	gacc += logf[hihead]*d;
+	aacc += fromdB(logf[hihead])*d;
 	dacc += d;
 	c++;
       }
     }
 
-    nacc += nadd;
+    aacc += aadd;
+    gacc += gadd;
     dacc += dadd;
 
     if(lohead<n){
@@ -69,14 +75,16 @@ void level_mean(float *f, float *out, int n,
     {
       int c = lohead-i;
       float d = 1./c;
-      nadd -= f[i]*d;
+      gadd -= logf[i]*d;
+      aadd -= fromdB(logf[i])*d;
       dadd -= d;
     }
 
     for( ;lotail<i && bark[lotail]<bark[i]-lowindow && lotail<=i-min; lotail++){
       int c = i-lotail;
       float d = 1./c;
-      nadd += f[lotail]*d;
+      gadd += logf[lotail]*d;
+      aadd += fromdB(logf[lotail])*d;
       dadd += d;
     }
     
@@ -86,67 +94,19 @@ void level_mean(float *f, float *out, int n,
     {
       int c = i-hitail+1;
       float d = (c<min?1./min:1./c);
-      nadd -= f[i]*d;
+      gadd -= logf[i]*d;
+      aadd -= fromdB(logf[i])*d;
       dadd -= d;
     }
 
-    out[i] = nacc / dacc;
+    { 
+      float arith = todB(aacc / dacc);
+      float geom = gacc / dacc;
+      out[i] = logf[i] - arith + flatbias*(arith-geom);
+    }
+
   }
 
-}
-
-
-
-void extract_sinusoids(float *x, float *w, float *window, float *ai, float *bi, float *y, int N, int len)
-{
-   float cos_table[N][len];
-   float sin_table[N][len];
-   float cosE[N], sinE[N];
-   int i,j, iter;
-   for (i=0;i<N;i++)
-   {
-      float tmp1=0, tmp2=0;
-      for (j=0;j<len;j++)
-      {
-         cos_table[i][j] = cos(w[i]*j)*window[j];
-         sin_table[i][j] = sin(w[i]*j)*window[j];
-         tmp1 += cos_table[i][j]*cos_table[i][j];
-         tmp2 += sin_table[i][j]*sin_table[i][j];
-      }
-      cosE[i] = tmp1;
-      sinE[i] = tmp2;
-   }
-   for (j=0;j<len;j++)
-      y[j] = 0;
-   for (i=0;i<N;i++)
-      ai[i] = bi[i] = 0;
-
-   for (iter=0;iter<5;iter++)
-   {
-      for (i=0;i<N;i++)
-      {
-         float tmp1=0, tmp2=0;
-         for (j=0;j<len;j++)
-         {
-            tmp1 += (x[j]-y[j])*cos_table[i][j];
-            tmp2 += (x[j]-y[j])*sin_table[i][j];
-         }
-         tmp1 /= cosE[i];
-         //Just in case it's a DC! Must fix that anyway
-         tmp2 /= (.0001+sinE[i]);
-         for (j=0;j<len;j++)
-         {
-            y[j] += tmp1*cos_table[i][j] + tmp2*sin_table[i][j];
-         }
-         ai[i] += tmp1;
-         bi[i] += tmp2;
-         if (iter==4)
-         {
-            printf ("%f %f ", w[i], (float)sqrt(ai[i]*ai[i] + bi[i]*bi[i]));
-         }
-      }
-   }
-   printf ("\n");
 }
 
 /* Models the signal as modulated sinusoids 
@@ -161,15 +121,23 @@ void extract_sinusoids(float *x, float *w, float *window, float *ai, float *bi, 
  * N is the number of sinusoids
  * len is the frame size
 */
-void extract_modulated_sinusoids(float *x, float *w, float *window, float *ai, float *bi, float *ci, float *di, float *y, int N, int len)
+void extract_modulated_sinusoids(float *x, float *w, float *ai, float *bi, float *ci, float *di, float *y, int N, int len)
 {
-   float cos_table[N][len];
-   float sin_table[N][len];
-   float tcos_table[N][len];
-   float tsin_table[N][len];
-   float cosE[N], sinE[N];
-   float costE[N], sintE[N];
+  float *cos_table[N];
+  float *sin_table[N];
+  float *tcos_table[N];
+  float *tsin_table[N];
+  float cosE[N], sinE[N];
+  float costE[N], sintE[N];
    int i,j, iter;
+
+  for(i=0;i<N;i++){
+    cos_table[i] = malloc(sizeof(**cos_table)*len);
+    sin_table[i] = malloc(sizeof(**sin_table)*len);
+    tcos_table[i] = malloc(sizeof(**tcos_table)*len);
+    tsin_table[i] = malloc(sizeof(**tsin_table)*len);
+  }
+
    /* Build a table for the four basis functions at each frequency: cos(x), sin(x), x*cos(x), x*sin(x)*/
    for (i=0;i<N;i++)
    {
@@ -177,9 +145,9 @@ void extract_modulated_sinusoids(float *x, float *w, float *window, float *ai, f
       float tmp3=0, tmp4=0;
       for (j=0;j<len;j++)
       {
-         float jj = j-len/2+.5;
-         cos_table[i][j] = cos(w[i]*jj)*window[j];
-         sin_table[i][j] = sin(w[i]*jj)*window[j];
+         float jj = j-len/2.+.5;
+         cos_table[i][j] = cos(w[i]*jj);
+         sin_table[i][j] = sin(w[i]*jj);
          tcos_table[i][j] = ((jj))*cos_table[i][j];
          tsin_table[i][j] = ((jj))*sin_table[i][j];
          /* The sinusoidal terms */
@@ -269,4 +237,70 @@ void extract_modulated_sinusoids(float *x, float *w, float *window, float *ai, f
       //printf ("0 0 0 0 0\n");
 
    //printf ("\n");
+
+  for(i=0;i<N;i++){
+    free(cos_table[i]);
+    free(sin_table[i]);
+    free(tcos_table[i]);
+    free(tsin_table[i]);
+  }
+
+
+}
+
+void compute_sinusoids(float *Aout, float *Wout, float *Pout, 
+		       float *delAout, float *delWout, float *y, int N, int len){
+  int i,j;
+  double ilen = 1./len;
+
+  for(j=0;j<len;j++){
+    double jj = (j-len*.5+.5)*ilen;
+    y[j]=0.;
+    for(i=0;i<N;i++){
+      double A = Aout[i] + delAout[i]*jj;
+      double W = Wout[i] + delWout[i]*jj;
+      y[j] += A*cos(M_2_PI*jj*W+Pout[i]);
+    }
+  }
+}
+
+// brute-force, simultaneous nonlinear system CG, meant to be a 'high anchor' of possible numeric performance 
+void extract_modulated_sinusoids2(float *x, float *w, float *Aout, float *Wout, float *Pout, 
+				 float *delAout, float *delWout, float *y, int N, int len){
+  int i,j;
+  double ilen = 1./len;
+
+  /* w contains our frequency seeds; initialize Wout, Pout, Aout from this data */
+  /* delAout and delPout start at zero */
+  for(i=0;i<N;i++){
+    double re = 0.;
+    double im = 0.;
+
+    for(j=0;j<len;j++){
+      double jj = M_2_PI*(j-len*.5+.5)*ilen*w[i];
+      double s = sin(jj);
+      double c = cos(jj);
+      im += s*x[j];
+      re += c*x[j];
+    }
+
+    double ph = 0;
+    double m = hypot(re,im);
+    if(m!=0.){
+      if(im>0){
+        ph = acos(re/m)/M_PI;
+      }else{
+        ph = -acos(re/m)/M_PI;
+      }
+    }
+
+    Aout[i] = 2*m*ilen;
+    Pout[i] = ph;
+    Wout[i] = w[i];
+    delAout[i] = 0.f;
+    delWout[i] = 0.f;
+  }
+
+  compute_sinusoids(Aout,Wout,Pout,delAout,delWout,y,N,len);
+
 }
