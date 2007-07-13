@@ -124,6 +124,11 @@ class playlists(SQLObject):
     name = StringCol()
     description = StringCol()
     position = IntCol()
-    day = StringCol()
-    time = StringCol()
+    monday = lfl
+    tuesday = lfl
+    wednesday = lfl
+    thursday = lfl
+    friday = lfl
+    saturday = lfl
+    sunday = lfl
     current = BoolCol()
