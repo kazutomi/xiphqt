@@ -9,7 +9,6 @@ from time import strptime
 # Import variables from config file.
 execfile('config.py')
 
-# NOT FINISHED, NEED TO RE-DO
 class playlists(SQLObject):
     _connection = conn
     name = StringCol()
@@ -53,10 +52,10 @@ def main():
         # make days in columns
         # time in tuples per playlist
     
-        n=datetime.now().strftime("%H:%M:%S")
-        s = #time in schedule
-        # Placeholder, not real formatting
-        f=datetime.time(datetime(*strptime(s, "%H:%M")[0:6]))
+        n=datetime.now().strftime("%H:%M")
+        s = #time from playlists
+        # convert string time to real time object
+        f=datetime.time(datetime(*strptime(s, "%H:%M")[0:6])).strftime("%H:%M")
 
         # use timedelta
         #if no list
