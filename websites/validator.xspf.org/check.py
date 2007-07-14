@@ -177,8 +177,8 @@ elif form.has_key("url"): ### and form.has_key("submitUrl")
     except ValueError:
         intro = """<b style="color:red">Invalid URL.</b><br><br>"""
 
-    except urllib2.HTTPError:
-        # 404 or similar
+    except urllib2.URLError:
+        # 404, non-existent host, IPv6 (not supported), ...
         intro = """<b style="color:red">Could not download from URL.</b><br><br>"""
 
     if input != "":
