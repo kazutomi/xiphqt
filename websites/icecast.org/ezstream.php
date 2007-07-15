@@ -78,7 +78,7 @@
 <h3>Download</h3>
 
 <p style="font-size: larger;">
- Latest version: <b>0.4.0</b>
+ Latest version: <b>0.4.1</b>
  [ <a href="#ez_relnotes_chgs">Changes</a> ]
 <p>
 
@@ -92,8 +92,8 @@
     Source .tar.gz (all platforms)
    </td>
    <td>
-    <a href="http://downloads.xiph.org/releases/ezstream/ezstream-0.4.0.tar.gz">ezstream-0.4.0.tar.gz</a><br/>
-    MD5: 6f3699847787a8b0f69b6b5eb5e9c150
+    <a href="http://downloads.xiph.org/releases/ezstream/ezstream-0.4.1.tar.gz">ezstream-0.4.1.tar.gz</a><br/>
+    MD5: fc19922159b1a2164c129726cd36bd5a
    </td>
   </tr>
   <tr>
@@ -101,8 +101,8 @@
     Windows NT/2000/XP binary
    </td>
    <td>
-    <a href="http://downloads.xiph.org/releases/ezstream/ezstream-0.4.0-win32.zip">ezstream-0.4.0-win32.zip</a><br/>
-    MD5: 0eb552c9bbca600d68559a28ceb97d13
+    <a href="http://downloads.xiph.org/releases/ezstream/ezstream-0.4.1-win32.zip">ezstream-0.4.1-win32.zip</a><br/>
+    MD5: 906053c87aae0962b7bf1bb09f16f287
    </td>
   </tr>
  </table>
@@ -228,100 +228,31 @@
 <h3>Release Notes</h3>
 
 <p>
- Ezstream 0.4.0 has been released on March 11th 2007.
+ Ezstream 0.4.1 has been released on July 15th 2007.
 </p>
 
 <p>
- With version 0.4.0, ezstream gained many new features related to metadata.
- It can now use TagLib to read more information from media files. Also an
- external program or script can be used to set a stream's metadata information,
- which can be customized with a format string.
- Metadata updates from an external program can be triggered mid-stream with the
- SIGUSR2 signal. A couple of memory management fixes also went into this
- release.
+ Version 0.4.1 is a maintenance release that fixes a resource leak.
 </p>
 
 <h4 id="ez_relnotes_chgs" name="ez_relnotes_chgs">Changes</h4>
 
 <ul style="font-size: smaller; margin: 1em 3em">
  <li>
-  src/util.*:
+  src/ezstream.c:
   <ul>
    <li>
     FIX --
-    The xfree() function did not work as intended due to a programming error.
-    Found, and fix suggested, by Karl Heyes.
+    Plug a file descriptor leak when using the -q parameter.
    </li>
   </ul>
  </li>
  <li>
-  src/playlist.*:
+  Documentation:
   <ul>
    <li>
     FIX --
-    An error compareable to the one about xfree() in src/util.* has been fixed.
-   </li>
-   <li>
-    MISC --
-    Refuse to execute a group- or world-writeable playlist script or program.
-   </li>
-  </ul>
- </li>
- <li>
-  src/compat.c:
-  <ul>
-   <li>
-    ADD --
-    Implement a basename() function for Windows that behaves
-    like the ones used on Unix systems.
-   </li>
-  </ul>
- </li>
- <li>
-  win32/:
-  <ul>
-   <li>
-    MISC --
-    Remove the rather ugly HTML version of the man page from the distribution,
-    and provide a much better PDF version instead.
-   </li>
-  </ul>
- </li>
- <li>
-  various:
-  <ul>
-   <li>
-    ADD --
-    Allow ezstream to use TagLib for reading metadata from media files.
-    TagLib (libtag_c) is now an optional dependency.
-   </li>
-   <li>
-    ADD --
-    When built with TagLib support, include the song length in the "real-time"
-    information line, if available.
-   </li>
-   <li>
-    ADD --
-    New <code>&lt;metadata_progname&gt;</code> configuration option, which
-    causes metadata to be read from the output of an external program or script.
-   </li>
-   <li>
-    ADD --
-    New runtime control via the <code>SIGUSR2</code> signal, which triggers
-    reading of fresh metadata information from
-    <code>&lt;metadata_progname&gt;</code> (metadata is always read at song
-    changes.)
-   </li>
-   <li>
-    ADD --
-    New <code>&lt;metadata_format&gt;</code> configuration option, to customize
-    metadata strings when used with the new
-    <code>&lt;metadata_progname&gt;</code> feature.
-   </li>
-   <li>
-    ADD --
-    New '<code>@a@</code>' and '<code>@t@</code>' placeholders for separate
-    artist and title metadata in de-/encoder commands.
+    Minor spelling/consistency fixes.
    </li>
   </ul>
  </li>
