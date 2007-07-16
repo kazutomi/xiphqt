@@ -50,16 +50,20 @@ def main():
         #check playlists table for list
 
         # make days in columns
-        # time in tuples per playlist
+        # time in tuples per playlist :: make in [start:stop],[start:stop] form?
     
         n=datetime.now().strftime("%H:%M")
-        s = #time from playlists
+        start = #time from playlists :: compare to current time, use timedelta
+        stop = #time from playlists :: find way to make it stick
         # convert string time to real time object
-        f=datetime.time(datetime(*strptime(s, "%H:%M")[0:6])).strftime("%H:%M")
+        start1=datetime.time(datetime(*strptime(start, "%H:%M")[0:6])).strftime("%H:%M")
+        stop1=datetime.time(datetime(*strptime(stop, "%H:%M")[0:6])).strftime("%H:%M")
+        # set a boolean to 'list'  
 
-        # use timedelta
-        #if no list
+        #### Move this to list script
+        #if list not true
         #    shuffle from files
+
         #change 0 for current list to 1
 
 
