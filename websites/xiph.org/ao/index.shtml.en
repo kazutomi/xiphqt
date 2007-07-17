@@ -19,14 +19,14 @@ supports:
   <li>Null output (handy for testing without a sound device)</li>
   <li>WAV files</li>
   <li>AU files</li>
-  <li>OSS (Open Sound System, used on Linux and FreeBSD</li>
+  <li>OSS (Open Sound System, used on Linux and FreeBSD)</li>
   <li>ALSA (Advanced Linux Sound Architecture)</li>
   <li>polypaudio (next generation GNOME sound server)</li>
   <li>esd (EsounD or Enlightened Sound Daemon)</li>
   <li>AIX</li>
   <li>Sun/NetBSD/OpenBSD</li>
   <li>IRIX</li>
-  <li>NAS (Network Audio Server</li>
+  <li>NAS (Network Audio Server)</li>
 </ul>
 <p>
 Please report bugs at <a href="http://trac.xiph.org/">trac.xiph.org</a>
@@ -34,25 +34,37 @@ or email them to Stan Seibert
 &lt;<a href="mailto:volsung@xiph.org">volsung@xiph.org</a>&gt;.
 </p>
 
+<h2 id="release0.8.8">Release 0.8.8 - May 24, 2007</h2>
+<ul>
+	<li>Source code: <a href="libao-0.8.8.tar.gz">libao-0.8.8.tar.gz</a></li>
+</ul>
+
+<h3 id="changes0.8.8">Changelog</h3>
+<ul>
+  <li>New win32 driver</li>
+  <li>Few fixes and changes in autotools and configuration files</li>
+  <li>Pulseaudio plugin replaces polyp</li>
+</ul>
+
+<hr/>
+
 <h2 id="release0.8.6">Release 0.8.6 - January 11, 2005</h2>
 <ul>
-	<li>Source code: <a href="http://downloads.xiph.org/releases/ao/libao-0.8.6.tar.gz">libao-0.8.6.tar.gz</a></li>
+	<li>Source code: <a href="libao-0.8.6.tar.gz">libao-0.8.6.tar.gz</a></li>
 </ul>
 
 <h3 id="changes0.8.6">Changelog</h3>
 <ul>
   <li>New Polypaudio driver (libao-polyp 0.4)
-    contributed by Lennart Poettering</li>
+    contributed by Lennart Poettering)</li>
   <li>Use esd_close() in the esd driver</li>
   <li>Broaden sample rate tolerance in the OSS driver for nForce
     compatibility</li>
 </ul>
 
-<hr/>
-
 <h2 id="release0.8.5">Release 0.8.5 - March 19, 2004</h2>
 <ul>
-	<li>Source code: <a href="http://downloads.xiph.org/releases/ao/libao-0.8.5.tar.gz">libao-0.8.5.tar.gz</a></li>
+	<li>Source code: <a href="libao-0.8.5.tar.gz">libao-0.8.5.tar.gz</a></li>
 	<li>RedHat 9: <a href="bin/redhat9/libao-0.8.5-3.rh90.i386.rpm">libao-0.8.5-3.rh90.i386.rpm</a></li>
 	<li>RedHat 9 Development: <a href="bin/redhat9/libao-devel-0.8.5-3.rh90.i386.rpm">libao-devel-0.8.5-3.rh90.i386.rpm</a></li>
 	<li>Fedora Core 1: <a href="bin/rhfc1/libao-0.8.5-3.rhfc1.i386.rpm">libao-0.8.5-3.rhfc1.i386.rpm</a></li>
@@ -70,7 +82,7 @@ or email them to Stan Seibert
 
 <h2 id="release0.8.4">Release 0.8.4 - October 5, 2003</h2>
 <ul>
-	<li>Source code: <a href="http://downloads.xiph.org/releases/ao/libao-0.8.4.tar.gz">libao-0.8.4.tar.gz</a></li>
+	<li>Source code: <a href="libao-0.8.4.tar.gz">libao-0.8.4.tar.gz</a></li>
 </ul>
 <h3>RedHat 9</h3>
 <p>Note that the RedHat RPMS only have support for OSS, esd, and aRts
