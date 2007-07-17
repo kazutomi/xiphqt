@@ -78,7 +78,7 @@
 <h3>Download</h3>
 
 <p style="font-size: larger;">
- Latest version: <b>0.4.1</b>
+ Latest version: <b>0.4.2</b>
  [ <a href="#ez_relnotes_chgs">Changes</a> ]
 <p>
 
@@ -92,8 +92,8 @@
     Source .tar.gz (all platforms)
    </td>
    <td>
-    <a href="http://downloads.xiph.org/releases/ezstream/ezstream-0.4.1.tar.gz">ezstream-0.4.1.tar.gz</a><br/>
-    MD5: fc19922159b1a2164c129726cd36bd5a
+    <a href="http://downloads.xiph.org/releases/ezstream/ezstream-0.4.2.tar.gz">ezstream-0.4.2.tar.gz</a><br/>
+    MD5: d556698d8f4f18f9ff54ca31becd35f0
    </td>
   </tr>
   <tr>
@@ -101,8 +101,8 @@
     Windows NT/2000/XP binary
    </td>
    <td>
-    <a href="http://downloads.xiph.org/releases/ezstream/ezstream-0.4.1-win32.zip">ezstream-0.4.1-win32.zip</a><br/>
-    MD5: 906053c87aae0962b7bf1bb09f16f287
+    <a href="http://downloads.xiph.org/releases/ezstream/ezstream-0.4.2-win32.zip">ezstream-0.4.2-win32.zip</a><br/>
+    MD5: 0b96b5eab703d1774a372270faa527bd
    </td>
   </tr>
  </table>
@@ -228,11 +228,12 @@
 <h3>Release Notes</h3>
 
 <p>
- Ezstream 0.4.1 has been released on July 15th 2007.
+ Ezstream 0.4.2 has been released on July 17th 2007.
 </p>
 
 <p>
- Version 0.4.1 is a maintenance release that fixes a resource leak.
+ Version 0.4.2 is a maintenance release that fixes the
+ <code>&lt;stream_once/&gt;</code> option when used with playlists.
 </p>
 
 <h4 id="ez_relnotes_chgs" name="ez_relnotes_chgs">Changes</h4>
@@ -243,16 +244,8 @@
   <ul>
    <li>
     FIX --
-    Plug a file descriptor leak when using the -q parameter.
-   </li>
-  </ul>
- </li>
- <li>
-  Documentation:
-  <ul>
-   <li>
-    FIX --
-    Minor spelling/consistency fixes.
+    Make <code>&lt;stream_once/&gt;</code> work with playlists, too.
+    Problem found by Geoff Shang &lt;geoff at quitelikely dot com&gt;.
    </li>
   </ul>
  </li>
