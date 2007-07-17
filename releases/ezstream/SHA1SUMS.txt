@@ -10,6 +10,8 @@ afe8933b041704403da274537644235ac1e16fd5  ezstream-0.1.1.tar.gz
 27697076dec5fd42e59e81c338f3bc04a9efb1a9  ezstream-0.4.0-win32.zip
 1e03fb5bf591fdd442062d58a83ef69ddd67ddbc  ezstream-0.4.1.tar.gz
 3d555af04805dd8276822d8fb35b5ca748d1c7f5  ezstream-0.4.1-win32.zip
+d42e3b9ff28afb6ac9bc91832d6a85b855e3735a  ezstream-0.4.2.tar.gz
+1fb23d31e0695433cdb4e45701801a047e65f127  ezstream-0.4.2-win32.zip
 7cfbf260aa0f7bd15343bb4f26ce96a3f4b55e12  ezstream_win32_0.1.0_setup.exe
 bca48d46c9179460ed5dca8e76e72dc121a2830a  ezstream_win32_0.1.1_setup.exe
 651b8a0297de8ce3fecf9d47c42af4d5fbe11f39  ezstream_win32_0.2.0_setup.exe
