@@ -14,13 +14,13 @@ class playlists(SQLObject):
     name = StringCol()
     description = StringCol()
     position = IntCol()
-    monday = lfl
-    tuesday = lfl
-    wednesday = lfl
-    thursday = lfl
-    friday = lfl
-    saturday = lfl
-    sunday = lfl
+    monday = StringCol()
+    tuesday = StringCol()
+    wednesday = StringCol()
+    thursday = StringCol()
+    friday = StringCol()
+    saturday = StringCol()
+    sunday = StringCol()
     current = BoolCol()
 
 class Log:
@@ -44,20 +44,23 @@ def main():
     #change all 1's to 0 in current
     while BLAH
         #check date/time
-        n=datetime.now()
-        #DAY OF WEEK
+        n=datetime.now().strftime("%H:%M")
+        #find day of week
         d=datetime.weekday(n)
         #check playlists table for list
+        #put in a loop, iterate through the database and parse all times, comparing starts.
+
+            start = #time from playlists :: compare to current time, use timedelta
+            stop = #time from playlists :: find way to make it stick
+            # convert string time to real time object
+            start1=datetime.time(datetime(*strptime(start, "%H:%M")[0:6])).strftime("%H:%M")
+            stop1=datetime.time(datetime(*strptime(stop, "%H:%M")[0:6])).strftime("%H:%M")
 
         # make days in columns
         # time in tuples per playlist :: make in [start:stop],[start:stop] form?
     
-        n=datetime.now().strftime("%H:%M")
-        start = #time from playlists :: compare to current time, use timedelta
-        stop = #time from playlists :: find way to make it stick
-        # convert string time to real time object
-        start1=datetime.time(datetime(*strptime(start, "%H:%M")[0:6])).strftime("%H:%M")
-        stop1=datetime.time(datetime(*strptime(stop, "%H:%M")[0:6])).strftime("%H:%M")
+
+
         # set a boolean to 'list'  
 
         #### Move this to list script
