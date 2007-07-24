@@ -198,7 +198,7 @@ typedef struct th_cqi_cfg{
  *                 The default is to use the QI setting passed in via the
  *                  #th_info struct when the encoder was initialized, with a
  *                  full range of admissible quantizers.
- * \retval OC_EFAULT \a _enc_ctx is <tt>NULL</tt>.
+ * \retval TH_EFAULT \a _enc_ctx is <tt>NULL</tt>.
  * \retval TH_EINVAL The configuration parameters do not meet one of their
  *                    stated requirements, \a _buf is <tt>NULL</tt> and
  *                    \a _buf_sz is not zero, or \a _buf is non-<tt>NULL</tt>
@@ -216,7 +216,7 @@ typedef struct th_cqi_cfg{
  *                  configuration is unchanged.
  *                 The default is to use the QI setting passed in via the
  *                  #th_info struct when the encoder was initialized.
- * \retval OC_EFAULT \a _enc_ctx is <tt>NULL</tt>.
+ * \retval TH_EFAULT \a _enc_ctx is <tt>NULL</tt>.
  * \retval TH_EINVAL \a _buf_sz is not <tt>sizeof(#th_cqi_cfg)</tt>.
  * \retval TH_IMPL   Not supported by this implementation.*/
 #define TH_ENCCTL_SETUP_CQI (18)
