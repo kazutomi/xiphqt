@@ -414,9 +414,10 @@
             <dd>
               Probably the best known of the many forks of <a href=
               "#Musicplayer">Musicplayer</a>, enhanced with a number of
-              features. See also <a href=
-              "http://blog.geekkid.net/projects/playlist-creator/">the online customization
-              tool</a> for this player and the previous version which is now
+              features. See also the <a href=
+              "http://blog.lacymorrow.com/projects/xspf-jukebox/xspf-customizer/">online customization
+              tool</a> and the <a href="http://blog.lacymorrow.com/projects/xspf-jukebox/embed-generator/">
+              embed generator</a> for this player and the previous version which is now
               called <a href="http://blog.geekkid.net/projects/xspf-wmp/">XSPF WMP</a>.
             </dd>
 
