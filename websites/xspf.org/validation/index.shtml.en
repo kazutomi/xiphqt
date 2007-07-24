@@ -18,7 +18,7 @@
     <ol>
 
       <li style="margin-bottom: 1em;">
-        <a href="http://xspf.binera.de/">Online XSPF validator</a> by Sebastian Pipping.
+        <a href="http://validator.xspf.org/">Online XSPF validator</a> by Sebastian Pipping.
       </li>
       <li style="margin-bottom: 1em;">
         <a href="xspf-1_0.5.rng">Relax NG (XML) Schema for XSPF-1</a> by Matthias Friedrich.  Sample usage of <a href="http://xmlstar.sourceforge.net/">XMLStarlet</a>:
