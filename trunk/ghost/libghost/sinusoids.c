@@ -98,6 +98,79 @@ void find_sinusoids(float *psd, float *w, int *N, int length)
    //printf ("\n");
 }
 
+#define MP_RES 4096
+#define MP_LEN 256
+/* This is a trivial matching pursuit implementation. It's awfully slow, so beware */
+void extract_sinusoids_mp(float *x, float *w, float *y, int N, int len)
+{
+   static float cos_table[MP_RES][MP_LEN];
+   static float sin_table[MP_RES][MP_LEN];
+   static float sinE[MP_RES];
+   static float cosE[MP_RES];
+   static init = 0;
+   float res[len];
+   int i,j;
+   if (!init)
+   {
+      for (i=0;i<MP_RES;i++)
+      {
+         sinE[i] = 0;
+         cosE[i] = 0;
+         for (j=0;j<MP_LEN;j++)
+         {
+            float jj=j-(MP_LEN/2)+.5;
+            cos_table[i][j] = cos((M_PI*(float)i/(float)MP_RES)*jj);
+            sin_table[i][j] = sin((M_PI*(float)i/(float)MP_RES)*jj);
+            cosE[i] += cos_table[i][j]*cos_table[i][j];
+            sinE[i] += sin_table[i][j]*sin_table[i][j];
+         }
+      }
+      init = 1;
+   }
+   
+   for (i=0;i<len;i++)
+      res[i] = x[i];
+   //Loop on all sinusoids we want to extract
+   for (i=0;i<N;i++)
+   {
+      int k;
+      float best_fit=-1;
+      int best_id=1;
+      float best_gainC=0;
+      float best_gainS=0;
+      float fit = 0;
+      
+      //Find best sinusoid
+      for (j=1;j<MP_RES/4-1;j++)
+      {
+         float sumC = 0, sumS = 0;
+         for (k=0;k<len;k++)
+         {
+            sumC += res[k]*cos_table[j][k];
+            sumS += res[k]*sin_table[j][k];
+         }
+         fit = sumC/cosE[j]*sumC + sumS/sinE[j]*sumS;
+         if (fit > best_fit)
+         {
+            best_id = j;
+            best_fit = fit;
+            best_gainC = sumC/cosE[j];
+            best_gainS = sumS/sinE[j];
+         }
+      }
+      
+      w[i] = M_PI*best_id/MP_RES;
+            
+      //Remove the sinusoid we found
+      for (k=0;k<len;k++)
+         res[k] = res[k] - best_gainC*cos_table[best_id][k] - best_gainS*sin_table[best_id][k];
+      //printf ("%d %f %f\n", best_id, best_gainC, best_gainS);      
+   }
+   for (i=0;i<len;i++)
+      y[i] = x[i] - res[i];
+
+}
+
 void extract_sinusoids(float *x, float *w, float *window, float *ai, float *bi, float *y, int N, int len)
 {
    float cos_table[N][len];
