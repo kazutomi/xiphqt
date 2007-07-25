@@ -1,0 +1,70 @@
+# -*-Perl-*-
+
+# the best beginning module example.  Very simple, uses the standard hooks.
+
+# instances allowed: one 
+
+# (single instance modules would be silly to use more than one of
+# anyway, so we use package local storage.  This is faster and places
+# less artificial load on the machine than doing everything through
+# the object hash)
+
+package MGMmodule::loadav;
+use vars qw($xpath $widget $graph);
+
+sub module_init{
+    my$this=shift;
+    my$toplevel=$this->{"toplevel"};
+    my$xclass=$this->{"xclass"};
+    
+    unless (open(PROC,"</proc/loadavg")){
+	$toplevel->optionAdd("$xclass*active",'false',21);
+    }
+    $toplevel->optionAdd("$xclass.order", 2,21);
+    $this;
+}
+
+sub module_instance{
+    my$this=shift;
+    my$toplevel=$this->{"toplevel"};
+    return undef if(defined($xpath));
+    $xpath=$this->{"xpath"};
+    # modify defaults
+    $toplevel->optionAdd("$xpath*scalerefresh",2000,21); # 2s
+    $toplevel->optionAdd("$xpath.bar.0.label", "Load average",21);
+    $toplevel->optionAdd("$xpath.bar.1.label", "Load (5min)",21);
+    $toplevel->optionAdd("$xpath.bar.2.label", "Load (15min)",21);
+    $toplevel->optionAdd("$xpath.scalewidadj", 220,21);  # narrower
+    $toplevel->optionAdd("$xpath.scalelenadj", 60,21);   # shorter
+    
+    my($minx,$miny)=&MGM::Graph::calcxysize($this,1024*1024*512,' proc(s)',3);
+    
+    $toplevel->optionAdd("$xpath.minx",        $minx,21);      
+    $toplevel->optionAdd("$xpath.miny",        $miny,21);          
+    $this;
+}
+
+sub module_run{
+    my$this=shift;
+    
+    $graph=MGM::Graph->new($this,num=>3,prompt=>' proc(s)');
+    $widget=$graph->{"widget"};        # must return the widget
+}
+
+sub module_update{ 
+    my$this=shift;
+    if(open(PROC,"</proc/loadavg")){
+	sysread PROC, $_, 1024;
+	if(m/^([0123456789\.]+)\s*([0123456789\.]+)\s*([0123456789\.]+)/){
+	    $graph->set($1,$2,$3);
+	}
+	close PROC;
+    }
+}
+
+sub destroy{
+    undef $xpath;
+}
+
+bless {};
+
