@@ -1,0 +1,14 @@
+Source: ao-python
+Section: interpreters
+Priority: optional
+Maintainer: Christopher L Cheney <ccheney@debian.org>
+Build-Depends: debhelper (>> 2.0.0), libao-dev (>> 1.0beta4), python-base, python-distutils
+Standards-Version: 3.5.2.0
+
+Package: ao-python
+Architecture: any
+Depends: ${shlibs:Depends}
+Description: A Python interface to the Audio Output library
+ This module makes the libao (Audio Output) functions available
+ in Python. With this module you can write Python applications
+ that use the cross platform audio output library.

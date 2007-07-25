@@ -1,0 +1,9 @@
+ao-python (0.0.2-1) unstable; urgency=low
+
+  * Initial Release.
+
+ -- Christopher L Cheney <ccheney@debian.org>  Sat, 17 Feb 2001 23:38:12 -0600
+
+Local variables:
+mode: debian-changelog
+End:

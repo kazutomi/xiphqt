@@ -1,0 +1,3 @@
+include ChangeLog README COPYING AUTHORS NEWS setup.py test.py config_unix.py prebuild.sh
+recursive-include src/ *.c *.h
+recursive-include debian
