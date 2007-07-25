@@ -59,18 +59,18 @@ end-user download links are provided for convenience:
 
 <tr>
 <td>libvorbis</td>
-<td>1.1.2</td>
+<td>1.2.0</td>
 <td>
-	<a href="http://downloads.xiph.org/releases/vorbis/libvorbis-1.1.2.tar.gz">libvorbis-1.1.2.tar.gz</a><br/>
-	<a href="http://downloads.xiph.org/releases/vorbis/libvorbis-1.1.2.zip">libvorbis-1.1.2.zip</a>
+	<a href="http://downloads.xiph.org/releases/vorbis/libvorbis-1.2.0.tar.gz">libvorbis-1.2.0.tar.gz</a><br/>
+	<a href="http://downloads.xiph.org/releases/vorbis/libvorbis-1.2.0.zip">libvorbis-1.2.0.zip</a>
 </td>
 <td>
-	1.3M<br/>
-	1.5M
+	1.5M<br/>
+	1.7M
 </td>
 <td>
-	37847626b8e1b53ae79a34714c7b3211<br/>
-	e014f9bc80de7cf70ab7d42eb6e29402
+	478646358c49f34aedcce58948793619<br/>
+	ceae7e999ed18469418a1e971d7029d9
 </td>
 </tr>
 
