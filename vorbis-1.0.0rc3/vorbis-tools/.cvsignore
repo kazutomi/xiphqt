@@ -1,0 +1,11 @@
+*.tar.gz
+*.zip
+Makefile
+config.status
+libtool
+config.cache
+config.log
+configure
+Makefile.in
+config.h.in
+aclocal.m4

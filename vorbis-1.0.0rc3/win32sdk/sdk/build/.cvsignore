@@ -1,0 +1,9 @@
+Debug
+Release
+*.plg
+*.ncb
+*.aps
+*.mak
+*.dep
+out.ogg
+out.pcm
