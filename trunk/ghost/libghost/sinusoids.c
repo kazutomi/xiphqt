@@ -71,7 +71,7 @@ void find_sinusoids(float *psd, float *w, int *N, int length)
          }
       }
       //printf ("%f ", sinusoidism[tmp_id]);
-      if (sinusoidism[tmp_id]<50)
+      if (sinusoidism[tmp_id]<60)
       {
          *N=i;
          break;
@@ -235,7 +235,7 @@ void extract_sinusoids(float *x, float *w, float *window, float *ai, float *bi, 
  * N is the number of sinusoids
  * len is the frame size
 */
-void extract_modulated_sinusoids(float *x, float *w, float *window, float *ai, float *bi, float *ci, float *di, float *y, int N, int len)
+void extract_modulated_sinusoids(float *x, float *w, float *window, float *A, float *phi, float *dA, float *dw, float *y, int N, int len)
 {
    int L2 = len/2;
    float cos_table[N][L2];
@@ -247,8 +247,17 @@ void extract_modulated_sinusoids(float *x, float *w, float *window, float *ai, f
    float e[len];
    /* Symmetric and anti-symmetric components of the error */
    float sym[L2], anti[L2];
+   float ai[N], bi[N], ci[N], di[N];
+   float w0[N];
+   int i,j, iter, nonlin;
+   static count = 0;
+   count++;
+   for (i=0;i<N;i++)
+      w0[i] = w[i];
    
-   int i,j, iter;
+   /* Iterate on the non-linear part (frequency) a couple times */
+   for (nonlin=0;nonlin<5;nonlin++)
+   {
    /* Build a table for the four basis functions at each frequency: cos(x), sin(x), x*cos(x), x*sin(x)*/
    for (i=0;i<N;i++)
    {
@@ -316,7 +325,7 @@ void extract_modulated_sinusoids(float *x, float *w, float *window, float *ai, f
    for (i=0;i<N;i++)
       ai[i] = bi[i] = ci[i] = di[i] = 0;
    int tata=0;
-   /* This is an iterative solution -- much quicker than inverting a matrix */
+   /* This is an iterative linear solution -- much quicker than inverting a matrix */
    for (iter=0;iter<5;iter++)
    {
       for (i=0;i<N;i++)
@@ -366,21 +375,22 @@ void extract_modulated_sinusoids(float *x, float *w, float *window, float *ai, f
    for (j=0;j<len;j++)
       y[j] = x[j]-e[j];
 
-#if 0
-   if (N)
-   for (i=0;i<1;i++)
+   for (i=0;i<N;i++)
    {
-      float A, phi, dA, dw;
-      A = sqrt(ai[i]*ai[i] + bi[i]*bi[i]);
-      phi = atan2(bi[i], ai[i]);
+      //float A, phi, dA, dw;
+      A[i] = sqrt(ai[i]*ai[i] + bi[i]*bi[i]);
+      phi[i] = atan2(bi[i], ai[i]);
       //phi = ai[i]*ai[i] + bi[i]*bi[i];
-      dA = (ci[i]*ai[i] + bi[i]*di[i])/(.1+A);
-      dw = (ci[i]*bi[i] - di[i]*ai[i])/(.1+A*A);
-      printf ("%f %f %f %f %f %f %f %f %f\n", w[i], ai[i], bi[i], ci[i], di[i], A, phi, dA, dw);
+      dA[i] = (ci[i]*ai[i] + bi[i]*di[i])/(.01f+A[i]);
+      dw[i] = (ci[i]*bi[i] - di[i]*ai[i])/(.01f+A[i]*A[i]);
+      //printf ("%f %f %f %f %f %f %f %f %f\n", w[i], ai[i], bi[i], ci[i], di[i], A, phi, dA, dw);
+      w[i] = w[i] + .4*dw[i];
+      if (w[i] > w0[i]+.025)
+         w[i] = w0[i]+.025;
+      if (w[i] < w0[i]-.025)
+         w[i] = w0[i]-.025;
+      //if (nonlin == 4)
+      //   printf("%d %f %f %f %f %f %f %f %f %f %f\n", count, w[i], ai[i], bi[i], ci[i], di[i], A[i], phi[i], dA[i], dw[i], w0[i]);
    }
-#endif
-   //if(!tata)
-      //printf ("0 0 0 0 0\n");
-
-   //printf ("\n");
+   }
 }
