@@ -1,10 +1,13 @@
 #!/usr/bin/python
 # ------------------------------------------------------------------------------
 # Written by Sebastian Pipping <webmaster@hartwork.org>
-# Licensed under GNU General Public License http://www.gnu.org/copyleft/gpl.html
+# Licensed under LGPL (GNU Lesser General Public License)
+# http://www.gnu.org/licenses/lgpl.html
 #
 # NOTE: Python 2.4 or later requiered for current line attribute of Expat parser
 #
+# 2007-07-25
+#   * Changes: License changed from GPL to LGPL
 # 2007-02-18
 #   * Added: License header for source code release
 # 2007-01-20
