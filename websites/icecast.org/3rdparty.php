@@ -21,6 +21,7 @@
 <tr><td>Orban Opticodec-PC</td><td>Windows</td><td><a href="http://www.orban.com/orban/products/stream/1010_overview.html">http://www.orban.com/</a></td></tr>
 <tr><td>freej</td><td>Unix</td><td><a href="http://freej.org">http://freej.org/</a></td></tr>
 <tr><td>Traktor DJ Studio 3</td><td>MacOS X, Windows XP</td><td><a href="http://www.native-instruments.com/index.php?id=traktor3_us">Native Instruments</a></td></tr>
+<tr><td>Savonet/Liquidsoap</td><td>Unix, Windows</td><td><a href="http://savonet.sourceforge.net/">http://savonet.sourceforge.net/</a></td></tr>
 </table>
 </center>
 </div>
