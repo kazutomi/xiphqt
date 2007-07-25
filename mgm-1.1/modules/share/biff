@@ -1,0 +1,108 @@
+# -*-Perl-*-
+
+# instances allowed: one 
+
+# (single instance modules would be silly to use more than one of
+# anyway, so we use package local storage.  This is faster and places
+# less artificial load on the machine than doing everything through
+# the object hash)
+
+use Tk;
+package MGMmodule::biff;
+use vars qw($maildrop $xpath $graph $widget $lastmod $mailcount);
+
+sub module_init{
+    my$this=shift;
+    my$toplevel=$this->{"toplevel"};
+    my$xclass=$this->{"xclass"};
+
+    $maildrop=$this->{"widget"}->optionGet("maildrop","");
+    
+    if(!defined($maildrop)){
+        # Look for $MAIL first
+        $maildrop = $ENV{MAIL};
+        if(!defined($maildrop)){
+            # Looks like $MAIL wasn't defined.  We'll guess where the mail
+            # goes.
+	    my$name=getpwuid($<);
+	    if(!defined($name)){
+	        print "Couldn't get username when looking for maildrop.\n";
+	        $toplevel->optionAdd("$xclass.active", 0,21);
+	      1;
+	    }else{
+	        if(-r "/var/spool/mail/"){
+		    $maildrop="/var/spool/mail/$name";
+	        }else{
+		    if(-r "/var/mail/"){
+		        $maildrop="/var/mail/$name";
+		    }else{
+		    print "Couldn't find maildrop directory\n";
+		        $toplevel->optionAdd("$xclass.active", 0,21);
+		    }
+	         }
+	     }
+         }
+    }
+    $toplevel->optionAdd("$xclass.order", 200,21);
+    $this;
+}
+
+sub module_instance{
+    my$this=shift;
+    my$toplevel=$this->{"toplevel"};
+    return undef if(defined($xpath));
+    $xpath=$this->{"xpath"};
+
+    # modify defaults
+    $toplevel->optionAdd("$xpath*scalerefresh",5000,21); # slower
+    $toplevel->optionAdd("$xpath*scalereturn",0,21);
+    $toplevel->optionAdd("$xpath*label", "mail",21);
+    $toplevel->optionAdd("$xpath.scalewidadj", 80,21);   # narrower
+    $toplevel->optionAdd("$xpath.scalelenadj", 100,21);   # shorter
+    $toplevel->optionAdd("$xpath.bar.0.litbackground", '#cccccc',21);
+    
+    my($minx,$miny)=&MGM::Graph::calcxysize($this,1024*1024*512,' msgs',1);
+
+    $toplevel->optionAdd("$xpath.minx",        $minx,21);      
+    $toplevel->optionAdd("$xpath.miny",        $miny,21);      
+
+    $mailcount=0;
+    $lastmod=0;
+    $this;
+}
+
+sub module_run{
+    my$this=shift;
+    
+    $graph=MGM::Graph->new($this,num=>1,prompt=>' msgs',
+				     minscale=>4);
+    $this->module_update;
+    $widget=$graph->{"widget"};        # must return the widget
+}
+
+sub module_update{ 
+    my$this=shift;
+    my$modtime=(stat $maildrop)[9];
+    if(defined($modtime)){
+	if($modtime!=$lastmod){
+	    $mailcount=0;
+	    if (open(PROC,"<$maildrop")){
+		while(<PROC>){
+		    $mailcount++ if(m/^From /);
+		}
+		close PROC;
+	    }
+	    $lastmod=$modtime;
+	}
+	$graph->set($mailcount);
+    }else{
+	$graph->set(0);
+    }
+}
+
+sub destroy{
+    undef $xpath;
+}
+
+bless {};
+

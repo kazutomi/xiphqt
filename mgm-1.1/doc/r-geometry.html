@@ -1,0 +1,136 @@
+<title>  xiph.org: MGM manual </title>
+
+<STYLE>
+<!--
+        BODY  {font-family: Verdana, Arial, Helvetica; 
+               font-size: 12pt;
+               background-color: #ffffff}
+-->
+</STYLE>
+
+<body bgcolor="#ffffff" link="#208b8b" vlink="#000080">
+
+<p align=center><img src="mgm-small.gif"><br>
+[ <a href="index.html">home</a> | <a href="faq.html">FAQ</a> | <a href="down.html">download</a> | <a href="trouble.html">troubleshooting</a> | <a href="docs.html">manual</a> | <a href="http://www.xiph.org/cvs.html">cvs</a> | <a href="mail.html">mailing lists</a> ]<p>
+<hr>
+
+<h1>Resource: geometry</h1>
+<h2>applicability</h2>
+
+Toplevel only
+
+<h2>possible settings</h2>
+Standard X geometry format (egs., 300x100, 35x400-0+0)<br>
+default computed from overall configuration<p>
+
+<h2>description</h2>
+
+The geometry resource is used to force a specific height/width and/or
+screen placement for the MGM window.  It is possible to set a height
+or width below the minimums MGM woudl otherwise allow; in this case,
+MGM will generally break.<p>
+
+<h2>default geometry computation</h2>
+
+The default geometry depends on the graph orientation (set using <a
+href=r-bars.html>bars</a>), the stack direction (set using <a
+href=r-stack.html>stack</a>), the number of active modules (modules
+may be enabled or disabled using <a href=r-active.html>active</a>),
+relative module length and width adjustmants (set using <a
+href=r-scalelendadj.html>scalelenadj</a> and <a
+href=r-scalewidadj.html>scalewidadj</a>) and the global adjustment
+setting to pixel settings (set using <a
+href=r-lendemand.html>lendemand</a> and <a
+href=widdemand.html>widdemand</a>).<p>
+
+Geometry and placement are computed using only active modules.  Scale
+length and width adjustments are collected for all modules in order to
+find the global adjustments.  The global adjustment is either the
+maximum of the local adjustments or the sum of them; for example, an
+MGM with vertical bars that are stacked horizontally (the bars are
+side-by-side), the global scale length adjustment is the maximum of
+the individual module length adjustment settings, and the global width
+adjustment is the sum of the individual width adjustments.  Visualize
+this for a second until it's obvious why; the x size of the window
+described above is the sum of the widths of the graphs and the y size
+is as high as the tallest.<p>
+
+The same process is used to find the global minimum x and y sizes from
+the local minimum x and y specified by each module.  MGM enforces at each
+step that the computed geometries are not less than the minimum
+settings specified by individual modules (unless the geometry is
+forced to a smaller-than-minimum size by frobbing the minx, miny or
+geometry resources).<p>
+
+After computing the global length and width adjustment settings, the
+adjustment values are mapped to actual pixel width and height by
+multiplying with the lendemand and widdemand values, dividing by 100,
+and mapping length/width to x and y depeneding on graph orientation
+(vertical bars will map width to x and length to y.  Horizontal bars
+map length to x and width to y).<p>
+
+Module placement is determined after the global x and y sizes are
+known. MGM determines 'excess' x and y values by subtracting the
+global minimum x and y values from the actual mapped x and y values.
+This excess is then added to the minimum x and y settings of each
+module as determined by the scalelenadj and scalewidadj settings for
+that module.  (remember that 'width' and 'length' map to x,y or y,x
+depending on graph orientation).  For example, in a graph with
+vertical bars, the size of a specific module can be computed as
+follows:<p>
+
+<pre>
+module_x=(global_actual_x-global_minimum_x)/global_scalewidadj*
+          local_scalewidadj<br>
+module_y=(global_actual_y-global_minimum_y)/global_scalelenadj*
+          local_scalelenadj<br>
+</pre>
+
+One last note; the minimum actual length and width adjustments as used
+internally are both 1; this prevents division by zero problems when
+using a single module that uses adjustments of zero.<p.
+
+<h2>tricks</h2> The complicated (but still farily lean) process above
+is designed to give decent default sizing and placement.  It can be
+hard to tweak for specific purposes.<p>
+
+It is possible to force each module to a specific, exact size
+completely overriding the automatic placement.  This is done by
+setting the scalelenadj and scalewidadj to zero and specifying an
+exact size using minx and miny for each module.<p>
+
+<h2>see also</h2>
+<a href=r-active.html>active</a>, 
+<a href=r-bars.html>bars</a>, 
+<a href=r-lendemand.html>lendemand</a>, 
+<a href=r-minx.html>minx</a>, 
+<a href=r-miny.html>miny</a>, 
+<a href=r-scalelenadj.html>scalelenadj</a>, 
+<a href=r-scalewidadj.html>scalewidadj</a>, 
+<a href=r-stack.html>stack</a>, 
+<a href=r-widdemand.html>widdemand</a>
+<p>
+
+<hr>
+<a href="http://www.xiph.org/">
+<img src="white-xifish.gif" align=left border=0>
+</a>
+<p>
+<font size=-2 color=#505050>
+
+MGM will not get your whites whiter or your colors brighter.  It will,
+however, sit there and look spiffy while sucking down a major
+honking wad of RAM.<p>
+
+MGM, Xiphophorus and their logos are trademarks (tm) of
+<a href="http://www.xiph.org/">Xiphophorus</a>.  These pages are
+copyright (C) 1994-1999 Xiphophorus. All rights reserved.<p>
+
+</body>
+
+
+
+
+
+
+
