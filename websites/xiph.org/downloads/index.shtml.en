@@ -120,10 +120,10 @@ end-user download links are provided for convenience:
 
 <tr>
 <td>libflac</td>
-<td>1.1.4</td>
-<td><a href="http://downloads.xiph.org/releases/flac/flac-1.1.4.tar.gz">flac-1.1.4.tar.gz</a></td>
-<td>1.8M</td>
-<td>3958cbd5b6ed8c14966792538e44223b</td>
+<td>1.2.0</td>
+<td><a href="http://downloads.xiph.org/releases/flac/flac-1.2.0.tar.gz">flac-1.2.0.tar.gz</a></td>
+<td>1.9M</td>
+<td>ea176bfb291707b46a537b091c226ae7</td>
 </tr>
 
 <tr>
