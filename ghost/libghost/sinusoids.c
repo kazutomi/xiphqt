@@ -71,7 +71,7 @@ void find_sinusoids(float *psd, float *w, int *N, int length)
          }
       }
       //printf ("%f ", sinusoidism[tmp_id]);
-      if (sinusoidism[tmp_id]<60)
+      if (sinusoidism[tmp_id]<50)
       {
          *N=i;
          break;
@@ -255,8 +255,13 @@ void extract_modulated_sinusoids(float *x, float *w, float *window, float *A, fl
    for (i=0;i<N;i++)
       w0[i] = w[i];
    
+   for (i=0;i<N;i++)
+      A[i] = dA[i] = phi[i] = dw[i] = 0;
+   for (i=0;i<N;i++)
+      ai[i] = bi[i] = ci[i] = di[i] = 0;
+   
    /* Iterate on the non-linear part (frequency) a couple times */
-   for (nonlin=0;nonlin<5;nonlin++)
+   for (nonlin=0;nonlin<3;nonlin++)
    {
    /* Build a table for the four basis functions at each frequency: cos(x), sin(x), x*cos(x), x*sin(x)*/
    for (i=0;i<N;i++)
@@ -266,7 +271,8 @@ void extract_modulated_sinusoids(float *x, float *w, float *window, float *A, fl
       float rotR, rotI;
       rotR = cos(w[i]);
       rotI = sin(w[i]);
-      /* Computing sin/cos table using complex rotations */
+      /* Computing sin/cos table using complex rotations.
+         Only need to compute the tables for half the length because of the symmetry.*/
       cos_table[i][0] = cos(.5*w[i]);
       sin_table[i][0] = sin(.5*w[i]);
       for (j=1;j<L2;j++)
@@ -277,8 +283,8 @@ void extract_modulated_sinusoids(float *x, float *w, float *window, float *A, fl
          cos_table[i][j] = re;
          sin_table[i][j] = im;
       }
-      /* Only need to compute the tables for half the length because of the symmetry.
-         Eventually, we'll have to replace the cos/sin with rotations */
+      /* Compute energy of basis functions. There may be a closed-form solution for that
+         or we could tabulate it. */
       for (j=0;j<L2;j++)
       {
          float jj = j+.5;
@@ -315,18 +321,29 @@ void extract_modulated_sinusoids(float *x, float *w, float *window, float *A, fl
    for (j=0;j<len;j++)
       e[j] = x[j];
    /* Split the error into a symmetric component and an anti-symmetric component. 
-      This speeds everything up by a factor of 2 */
+   This speeds everything up by a factor of 2 */
    for (j=0;j<L2;j++)
    {
       sym[j] = e[j+L2]+e[L2-j-1];
       anti[j] = e[j+L2]-e[L2-j-1];
    }
-   
+
+   /* Start the linear optimisation where we left last time */
    for (i=0;i<N;i++)
-      ai[i] = bi[i] = ci[i] = di[i] = 0;
-   int tata=0;
-   /* This is an iterative linear solution -- much quicker than inverting a matrix */
-   for (iter=0;iter<5;iter++)
+   {
+      ai[i] = A[i]*cos(phi[i]);
+      bi[i] = -A[i]*sin(phi[i]);
+      ci[i] = dA[i]*cos(phi[i]);
+      di[i] = -dA[i]*sin(phi[i]);
+      for (j=0;j<L2;j++)
+         sym[j] -= (2*ai[i])*cos_table[i][j];
+      for (j=0;j<L2;j++)
+         anti[j] -= (2*ai[i])*sin_table[i][j];
+   }
+   
+   /* This is an iterative linear solution -- much quicker than inverting a matrix.
+      It's pretty much the Gauss-Seidel algorithm */
+   for (iter=0;iter<2;iter++)
    {
       for (i=0;i<N;i++)
       {
@@ -375,20 +392,30 @@ void extract_modulated_sinusoids(float *x, float *w, float *window, float *A, fl
    for (j=0;j<len;j++)
       y[j] = x[j]-e[j];
 
+   /* Update real sinusoid parameters */
    for (i=0;i<N;i++)
    {
       //float A, phi, dA, dw;
       A[i] = sqrt(ai[i]*ai[i] + bi[i]*bi[i]);
-      phi[i] = atan2(bi[i], ai[i]);
-      //phi = ai[i]*ai[i] + bi[i]*bi[i];
+      if (fabs(ai[i])+fabs(bi[i])<.01)
+         phi[i] = 0;
+      else
+         phi[i] = atan2(-bi[i], ai[i]);
       dA[i] = (ci[i]*ai[i] + bi[i]*di[i])/(.01f+A[i]);
       dw[i] = (ci[i]*bi[i] - di[i]*ai[i])/(.01f+A[i]*A[i]);
       //printf ("%f %f %f %f %f %f %f %f %f\n", w[i], ai[i], bi[i], ci[i], di[i], A, phi, dA, dw);
-      w[i] = w[i] + .4*dw[i];
+      /* Update the frequency with only a fraction of the dw term to prevent instabilities */
+      w[i] = w[i] + .5*dw[i];
+      /* Make sure we didn't deviate too much from the original frequency */
       if (w[i] > w0[i]+.025)
          w[i] = w0[i]+.025;
       if (w[i] < w0[i]-.025)
          w[i] = w0[i]-.025;
+      //Prevent stupid frequencies (i.e. outsite of ]0,pi[
+      if (w[i] < .002)
+         w[i] = .002;
+      if (w[i] > M_PI-.01)
+         w[i] = M_PI-.01;
       //if (nonlin == 4)
       //   printf("%d %f %f %f %f %f %f %f %f %f %f\n", count, w[i], ai[i], bi[i], ci[i], di[i], A[i], phi[i], dA[i], dw[i], w0[i]);
    }
