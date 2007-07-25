@@ -1,0 +1,113 @@
+# -*-Perl-*-
+
+# instances allowed: one 
+
+# (single instance modules would be silly to use more than one of
+# anyway, so we use package local storage.  This is faster and places
+# less artificial load on the machine than doing everything through
+# the object hash)
+
+package MGMmodule::diskstat;
+use vars qw($xpath @rsectors @wsectors @prevr @prevw $widget $graph 
+	    $numdisks $lastmod);
+
+# class init
+sub module_init{
+    my$this=shift;
+    my$toplevel=$this->{"toplevel"};
+    my$xclass=$this->{"xclass"};
+
+    # how many disks?  Call read once to init
+    $numdisks=0;
+    $this->read_proc;
+    map{$numdisks++ if ($rsectors[$_] || $wsectors[$_])}(0..$#rsectors);
+
+    if(!$numdisks){
+	$toplevel->optionAdd("$xclass.active",'false',21);   
+    } 
+    $toplevel->optionAdd("$xclass.order",1,21);   
+    $this;
+}
+
+# instance init
+sub module_instance{
+    my$this=shift;
+    my$toplevel=$this->{"toplevel"};
+    return undef if(defined($xpath));
+    $xpath=$this->{"xpath"};
+
+    # modify defaults
+    for(my$i=0;$i<$numdisks;$i++){
+	$toplevel->optionAdd("$xpath.bar.".($i*2).".label", 
+			     "disk$i read",21);
+	$toplevel->optionAdd("$xpath.bar.".($i*2+1).".label", 
+			     "disk$i write",21);
+	$toplevel->optionAdd("$xpath.bar.".($i*2).".litbackground", 
+			     '#e7ad74',21);
+	$toplevel->optionAdd("$xpath.bar.".($i*2+1).".litbackground", 
+			     '#ade774',21);
+    }
+    $toplevel->optionAdd("$xpath.scalewidadj", 150*$numdisks,21);  # narrower
+    $toplevel->optionAdd("$xpath.scalereturn", 120,21);
+    # this relies on the above defaults
+
+    my($minx,$miny)=MGM::Graph::calcxysize($this,1024*1024*512,
+					   ' sect/s',$numdisks*2);
+    
+    $toplevel->optionAdd("$xpath.minx",        $minx,21);      
+    $toplevel->optionAdd("$xpath.miny",        $miny,21);      
+    $this;
+}
+
+# instance widget build
+sub module_run{
+    my$this=shift;
+    
+    $graph=MGM::Graph->new($this,num=>$numdisks*2,
+			   prompt=>' sect/s',
+			   minscale=>128);
+
+    $lastmod=-1;
+    $widget=$graph->{"widget"};        # must return the widget
+}
+
+sub read_proc{
+    # now uses the 00helper to save on opens 
+
+    @rsectors=split ' ',$MGMmodule::helperST::proc{"disk_rblk"};
+    @wsectors=split ' ',$MGMmodule::helperST::proc{"disk_wblk"};
+}
+
+sub module_update{ 
+    my$this=shift;
+
+    # don't update unless the helper has
+    if($lastmod!=$MGMmodule::helperST::lastmod){
+	my$time=$MGMmodule::helperST::lastmod;
+	$this->read_proc;
+	if(defined(@prevr)){
+	    my @vals;
+	    
+	    for(my$i=0;$i<=$#rsectors;$i++){
+		if ($rsectors[$i] or $wsectors[$i]){
+		    my$r=($rsectors[$i]-$prevr[$i])/($time-$lastmod)*100;
+		    my$w=($wsectors[$i]-$prevw[$i])/($time-$lastmod)*100;
+		    push @vals, $r, $w;
+		}
+	    }
+	    
+	    # don't be clever and only call set if values change; set must
+	    # be called each refresh period or the graph will get
+	    # confused.
+	    
+	    $graph->set(@vals);
+	}
+	
+	@prevr=@rsectors;
+	@prevw=@wsectors;
+	$lastmod=$time;
+    }
+}
+
+bless {};
+

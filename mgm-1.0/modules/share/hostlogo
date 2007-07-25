@@ -1,0 +1,140 @@
+# -*-Perl-*-
+
+# this module doesn't follow the standard widget hooks.  It shows a
+# few things that must be handled explicitly when one isn't mostly
+# just calling MGM::Graph->new()
+
+# instances allowed: multiple
+
+use Tk;
+package MGMmodule::hostlogo;
+
+# called once to initialize the module.  The xpath here is a Class.
+sub module_init{
+    my$this=shift;
+    my$toplevel=$this->{"toplevel"};
+    my$xclass=$this->{"xclass"};
+
+    my$hostname=`hostname`;
+    chop$hostname;
+    $hostname=~s{^([^\.]+).*}{$1};
+    $this->{"hostname"}=$hostname;
+    $toplevel->optionAdd("$xclass.order",               0,20);
+    $this;
+}
+
+# called to build an instance.  The xpath here is a name path.
+sub module_instance{
+    my$this=shift;
+    my$widget=$this->{"widget"};
+    my$xpath=$this->{"xpath"};
+
+    $widget->optionAdd("$xpath.scalewidadj", 100,21);
+    $widget->optionAdd("$xpath.scalelenadj", 60,21); 
+    $widget->optionAdd("$xpath.scalejustify", 0,20);      
+    $widget->optionAdd("$xpath.borderwidth", 1,20);      
+
+    # use our font and find the labelsize...
+    my$testlabel=$this->{"widget"}->Label(-text=>$this->{"hostname"},
+					 -borderwidth=>0,
+					 -padx=>1,-pady=>1);
+    
+    my$textheight=$this->{"textheight"}=$testlabel->reqheight;
+    my$textwidth=$this->{"textwidth"}=$testlabel->reqwidth;
+    $testlabel->destroy;
+    my$borderwidth=$this->{"borderwidth"}=$widget->optionGet('borderwidth','');
+    $this->{"relief"}=$widget->optionGet('relief','');
+    
+
+    # load the logo in the instance init in case the user has selected
+    # something different per instance
+
+    # not completely implemented
+    my$logofile=$widget->optionGet("logopixmap","");
+    $logofile="$main::libdir/fishframe.xpm" if(!defined($logofile));
+    my$logo=$this->{"logo"}=$widget->Pixmap(-file => $logofile);
+
+    my$logoframes=$this->{"logoframes"}=1;
+    my$logowidth=$this->{"logowidth"}=$logo->width;
+    my$logoheight=$this->{"logoheight"}=$logo->height;
+
+    # is this an animated pixmap?
+    if(open(XPM,"$logofile")){	
+	while(<XPM>){
+	    if(m{nimated:\s*(\d+)x(\d+)x(\d+)\@(\d+)}){
+		$logoframes=$this->{"logoframes"}=$3;
+		$logowidth=$this->{"logowidth"}=$1;
+		$logoheight=$this->{"logoheight"}=$2;
+		$widget->optionAdd("$xpath.scalerefresh",$4,21);
+	    }else{
+		last if(m/char/);
+	    }
+	}
+	close XPM;
+    }
+    if($logoframes==0){
+	$widget->optionAdd("$xpath.scalerefresh",0,21);
+    }
+    
+    my$minx=($logowidth>$textwidth?$logowidth:$textwidth)+$borderwidth*2;
+    my$miny=$logoheight+$textheight+$borderwidth*2;
+    $widget->optionAdd("$xpath.minx", $minx,21);      
+    $widget->optionAdd("$xpath.miny", $miny,21);      
+
+    $this;
+}
+
+sub module_run{
+    my$this=shift;
+
+    my$width=$this->{"width"};
+    my$height=$this->{"height"};
+    my$toplevel=$this->{"toplevel"};
+
+    my$logowidth=$this->{"logowidth"};
+    my$textwidth=$this->{"textwidth"};
+    my$logoheight=$this->{"logoheight"};
+    my$textheight=$this->{"textheight"};
+    my$logopad=($width-$logowidth)/2;
+    my$textpad=($width-$textwidth)/2;
+    my$vpad=($height-$logoheight-$textheight)/2;
+
+    my$widget=$toplevel->Frame(-class=>$this->{"name"},
+			       Name=>$this->{"sequence"},
+			       highlightthickness=>0,
+			       borderwidth=>$this->{"borderwidth"},
+			       relief=>$this->{"relief"},
+			       width=>$width,height=>$height);
+    $this->{"logowidget"}=$widget->Canvas(borderwidth=>0,
+					  highlightthickness=>0,
+					  width=>$this->{"logowidth"},
+					  height=>$this->{"logoheight"})->
+					      place('-x'=>$logopad,
+						    '-y'=>$vpad,-anchor=>'nw',
+						    -bordermode=>'outside');
+    $this->{"logowidget"}->createImage(0,0,-image=>$this->{"logo"},
+				       -anchor=>'ne',-tags=>["logo"]);
+    
+    $widget->Label(-text=>$this->{"hostname"},
+		   -borderwidth=>0,
+		   -padx=>1,-pady=>1)->
+		       place('-x'=>$textpad,'-y'=>$vpad+$this->{"logoheight"},
+			     -anchor=>'nw',-bordermode=>'outside');
+    $this->{"counter"}=0;
+#    $this->module_update;
+    $this->{"widget"}=$widget;
+}
+
+sub module_update{
+    my($this)=@_;
+
+    my$counter=$this->{"counter"}+1;
+    my$logowidth=$this->{"logowidth"};
+    my$logoframes=$this->{"logoframes"};
+    if($counter>=$logoframes){$counter=0;}
+    my$math=$logowidth*$logoframes-$counter*$logowidth;
+    $this->{"logowidget"}->coords('logo',$math,0);
+    $this->{"counter"}=$counter;
+}
+
+bless {};
