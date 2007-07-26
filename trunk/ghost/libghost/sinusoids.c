@@ -224,16 +224,16 @@ void extract_sinusoids(float *x, float *w, float *window, float *ai, float *bi, 
 }
 
 /* Models the signal as modulated sinusoids 
- * x is the signal
- * w are the frequencies
+ * x      is the signal
+ * w      are the initial frequencies
  * window is the analysis window (you can use a rectangular window)
- * ai are the cos(x) coefficients
- * bi are the sin(x) coefficients
- * ci are the x*cos(x) coefficients
- * di are the x*sin(x) coefficients
- * y is the approximated signal by summing all the params
- * N is the number of sinusoids
- * len is the frame size
+ * A      has the amplitude of the sinusoids
+ * phi    has the phase of the sinusoids (centered in the middle of the frame)
+ * dA     has the amplitude derivative (centered in the middle of the frame)
+ * dw     has the frequency offset of the last iteration
+ * y      is the approximated signal by summing all the params
+ * N      is the number of sinusoids
+ * len    is the frame size
 */
 void extract_modulated_sinusoids(float *x, float *w, float *window, float *A, float *phi, float *dA, float *dw, float *y, int N, int len)
 {
@@ -242,8 +242,8 @@ void extract_modulated_sinusoids(float *x, float *w, float *window, float *A, fl
    float sin_table[N][L2];
    float tcos_table[N][L2];
    float tsin_table[N][L2];
-   float cosE[N], sinE[N];
-   float costE[N], sintE[N];
+   float cosE[N], sinE[N], costE[N], sintE[N];
+   float cosE_1[N], sinE_1[N], costE_1[N], sintE_1[N];
    float e[len];
    /* Symmetric and anti-symmetric components of the error */
    float sym[L2], anti[L2];
@@ -260,8 +260,9 @@ void extract_modulated_sinusoids(float *x, float *w, float *window, float *A, fl
    for (i=0;i<N;i++)
       ai[i] = bi[i] = ci[i] = di[i] = 0;
    
+   nonlin = 3;
    /* Iterate on the non-linear part (frequency) a couple times */
-   for (nonlin=0;nonlin<3;nonlin++)
+   while (1)
    {
    /* Build a table for the four basis functions at each frequency: cos(x), sin(x), x*cos(x), x*sin(x)*/
    for (i=0;i<N;i++)
@@ -306,40 +307,44 @@ void extract_modulated_sinusoids(float *x, float *w, float *window, float *A, fl
       sinE[i] = sqrt(2*tmp2);
       costE[i] = sqrt(2*tmp3);
       sintE[i] = sqrt(2*tmp4);
+      cosE_1[i] = 1.f/cosE[i];
+      sinE_1[i] = 1.f/sinE[i];
+      costE_1[i] = 1.f/costE[i];
+      sintE_1[i] = 1.f/sintE[i];
       /* Normalise the basis (should multiply by the inverse instead) */
       for (j=0;j<L2;j++)
       {
-         cos_table[i][j] *= (1.f/cosE[i]);
-         sin_table[i][j] *= (1.f/sinE[i]);
-         tcos_table[i][j] *= (1.f/costE[i]);
-         tsin_table[i][j] *= (1.f/sintE[i]);
+         cos_table[i][j] *= cosE_1[i];
+         sin_table[i][j] *= sinE_1[i];
+         tcos_table[i][j] *= costE_1[i];
+         tsin_table[i][j] *= sintE_1[i];
       }
    }
-   /* y is the initial approximation of the signal */
-   for (j=0;j<len;j++)
-      y[j] = 0;
-   for (j=0;j<len;j++)
-      e[j] = x[j];
+
    /* Split the error into a symmetric component and an anti-symmetric component. 
    This speeds everything up by a factor of 2 */
    for (j=0;j<L2;j++)
    {
-      sym[j] = e[j+L2]+e[L2-j-1];
-      anti[j] = e[j+L2]-e[L2-j-1];
+      sym[j] = x[j+L2]+x[L2-j-1];
+      anti[j] = x[j+L2]-x[L2-j-1];
    }
 
    /* Start the linear optimisation where we left last time */
    for (i=0;i<N;i++)
    {
-      ai[i] = A[i]*cos(phi[i]);
-      bi[i] = -A[i]*sin(phi[i]);
-      ci[i] = dA[i]*cos(phi[i]);
-      di[i] = -dA[i]*sin(phi[i]);
+      ai[i] = A[i]*cos(phi[i])*cosE[i];
+      bi[i] = -A[i]*sin(phi[i])*sinE[i];
+      ci[i] = dA[i]*cos(phi[i])*costE[i];
+      di[i] = -dA[i]*sin(phi[i])*sintE[i];
       for (j=0;j<L2;j++)
-         sym[j] -= (2*ai[i])*cos_table[i][j];
+         sym[j] -= (2*ai[i])*cos_table[i][j] + (2*di[i])*tsin_table[i][j];
       for (j=0;j<L2;j++)
-         anti[j] -= (2*ai[i])*sin_table[i][j];
+         anti[j] -= (2*bi[i])*sin_table[i][j] + (2*ci[i])*tcos_table[i][j];
    }
+   
+   /* Stop condition. We stop here, just after updating the error using the new frequency */
+   if (nonlin-- <= 0)
+      break;
    
    /* This is an iterative linear solution -- much quicker than inverting a matrix.
       It's pretty much the Gauss-Seidel algorithm */
@@ -379,25 +384,18 @@ void extract_modulated_sinusoids(float *x, float *w, float *window, float *A, fl
    }
    for (i=0;i<N;i++)
    {
-      ai[i] /= cosE[i];
-      bi[i] /= sinE[i];
-      ci[i] /= costE[i];
-      di[i] /= sintE[i];
+      ai[i] *= cosE_1[i];
+      bi[i] *= sinE_1[i];
+      ci[i] *= costE_1[i];
+      di[i] *= sintE_1[i];
    }
-   for (j=0;j<L2;j++)
-   {
-      e[j+L2] = .5*(sym[j]+anti[j]);
-      e[L2-j-1] = .5*(sym[j]-anti[j]);
-   }
-   for (j=0;j<len;j++)
-      y[j] = x[j]-e[j];
 
    /* Update real sinusoid parameters */
    for (i=0;i<N;i++)
    {
       //float A, phi, dA, dw;
       A[i] = sqrt(ai[i]*ai[i] + bi[i]*bi[i]);
-      if (fabs(ai[i])+fabs(bi[i])<.01)
+      if (A[i]<.01)
          phi[i] = 0;
       else
          phi[i] = atan2(-bi[i], ai[i]);
@@ -420,4 +418,13 @@ void extract_modulated_sinusoids(float *x, float *w, float *window, float *A, fl
       //   printf("%d %f %f %f %f %f %f %f %f %f %f\n", count, w[i], ai[i], bi[i], ci[i], di[i], A[i], phi[i], dA[i], dw[i], w0[i]);
    }
    }
+   
+   for (j=0;j<L2;j++)
+   {
+      e[j+L2] = .5*(sym[j]+anti[j]);
+      e[L2-j-1] = .5*(sym[j]-anti[j]);
+   }
+   for (j=0;j<len;j++)
+      y[j] = x[j]-e[j];
+
 }
