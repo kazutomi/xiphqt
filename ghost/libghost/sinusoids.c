@@ -264,159 +264,159 @@ void extract_modulated_sinusoids(float *x, float *w, float *window, float *A, fl
    /* Iterate on the non-linear part (frequency) a couple times */
    while (1)
    {
-   /* Build a table for the four basis functions at each frequency: cos(x), sin(x), x*cos(x), x*sin(x)*/
-   for (i=0;i<N;i++)
-   {
-      float tmp1=0, tmp2=0;
-      float tmp3=0, tmp4=0;
-      float rotR, rotI;
-      rotR = cos(w[i]);
-      rotI = sin(w[i]);
-      /* Computing sin/cos table using complex rotations.
-         Only need to compute the tables for half the length because of the symmetry.*/
-      cos_table[i][0] = cos(.5*w[i]);
-      sin_table[i][0] = sin(.5*w[i]);
-      for (j=1;j<L2;j++)
-      {
-         float re, im;
-         re = cos_table[i][j-1]*rotR - sin_table[i][j-1]*rotI;
-         im = sin_table[i][j-1]*rotR + cos_table[i][j-1]*rotI;
-         cos_table[i][j] = re;
-         sin_table[i][j] = im;
-      }
-      /* Compute energy of basis functions. There may be a closed-form solution for that
-         or we could tabulate it. */
-      for (j=0;j<L2;j++)
-      {
-         float jj = j+.5;
-         /*cos_table[i][j] = cos(w[i]*jj)*window[j];
-         sin_table[i][j] = sin(w[i]*jj)*window[j];*/
-         tcos_table[i][j] = jj*cos_table[i][j];
-         tsin_table[i][j] = jj*sin_table[i][j];
-         /* The sinusoidal terms */
-         tmp1 += cos_table[i][j]*cos_table[i][j];
-         tmp2 += sin_table[i][j]*sin_table[i][j];
-         /* The modulation terms */
-         tmp3 += tcos_table[i][j]*tcos_table[i][j];
-         tmp4 += tsin_table[i][j]*tsin_table[i][j];
-      }
-      /* Double the energy because we only computed one half.
-         Eventually, we should be computing/tabulating these values directly
-         as a function of w[i]. */
-      cosE[i] = sqrt(2*tmp1);
-      sinE[i] = sqrt(2*tmp2);
-      costE[i] = sqrt(2*tmp3);
-      sintE[i] = sqrt(2*tmp4);
-      cosE_1[i] = 1.f/cosE[i];
-      sinE_1[i] = 1.f/sinE[i];
-      costE_1[i] = 1.f/costE[i];
-      sintE_1[i] = 1.f/sintE[i];
-      /* Normalise the basis (should multiply by the inverse instead) */
-      for (j=0;j<L2;j++)
-      {
-         cos_table[i][j] *= cosE_1[i];
-         sin_table[i][j] *= sinE_1[i];
-         tcos_table[i][j] *= costE_1[i];
-         tsin_table[i][j] *= sintE_1[i];
-      }
-   }
-
-   /* Split the error into a symmetric component and an anti-symmetric component. 
-   This speeds everything up by a factor of 2 */
-   for (j=0;j<L2;j++)
-   {
-      sym[j] = x[j+L2]+x[L2-j-1];
-      anti[j] = x[j+L2]-x[L2-j-1];
-   }
-
-   /* Start the linear optimisation where we left last time */
-   for (i=0;i<N;i++)
-   {
-      ai[i] = A[i]*cos(phi[i])*cosE[i];
-      bi[i] = -A[i]*sin(phi[i])*sinE[i];
-      ci[i] = dA[i]*cos(phi[i])*costE[i];
-      di[i] = -dA[i]*sin(phi[i])*sintE[i];
-      for (j=0;j<L2;j++)
-         sym[j] -= (2*ai[i])*cos_table[i][j] + (2*di[i])*tsin_table[i][j];
-      for (j=0;j<L2;j++)
-         anti[j] -= (2*bi[i])*sin_table[i][j] + (2*ci[i])*tcos_table[i][j];
-   }
-   
-   /* Stop condition. We stop here, just after updating the error using the new frequency */
-   if (nonlin-- <= 0)
-      break;
-   
-   /* This is an iterative linear solution -- much quicker than inverting a matrix.
-      It's pretty much the Gauss-Seidel algorithm */
-   for (iter=0;iter<2;iter++)
-   {
+      /* Build a table for the four basis functions at each frequency: cos(x), sin(x), x*cos(x), x*sin(x)*/
       for (i=0;i<N;i++)
       {
          float tmp1=0, tmp2=0;
          float tmp3=0, tmp4=0;
-         /* For each of the four basis functions, project the residual (symmetric or 
-            anti-symmetric) onto the basis function, then update the residual. */
+         float rotR, rotI;
+         rotR = cos(w[i]);
+         rotI = sin(w[i]);
+         /* Computing sin/cos table using complex rotations.
+            Only need to compute the tables for half the length because of the symmetry.*/
+         cos_table[i][0] = cos(.5*w[i]);
+         sin_table[i][0] = sin(.5*w[i]);
+         for (j=1;j<L2;j++)
+         {
+            float re, im;
+            re = cos_table[i][j-1]*rotR - sin_table[i][j-1]*rotI;
+            im = sin_table[i][j-1]*rotR + cos_table[i][j-1]*rotI;
+            cos_table[i][j] = re;
+            sin_table[i][j] = im;
+         }
+         /* Compute energy of basis functions. There may be a closed-form solution for that
+            or we could tabulate it. */
          for (j=0;j<L2;j++)
-            tmp1 += sym[j]*cos_table[i][j];
+         {
+            float jj = j+.5;
+            /*cos_table[i][j] = cos(w[i]*jj)*window[j];
+               sin_table[i][j] = sin(w[i]*jj)*window[j];*/
+            tcos_table[i][j] = jj*cos_table[i][j];
+            tsin_table[i][j] = jj*sin_table[i][j];
+            /* The sinusoidal terms */
+            tmp1 += cos_table[i][j]*cos_table[i][j];
+            tmp2 += sin_table[i][j]*sin_table[i][j];
+            /* The modulation terms */
+            tmp3 += tcos_table[i][j]*tcos_table[i][j];
+            tmp4 += tsin_table[i][j]*tsin_table[i][j];
+         }
+         /* Double the energy because we only computed one half.
+            Eventually, we should be computing/tabulating these values directly
+            as a function of w[i]. */
+         cosE[i] = sqrt(2*tmp1);
+         sinE[i] = sqrt(2*tmp2);
+         costE[i] = sqrt(2*tmp3);
+         sintE[i] = sqrt(2*tmp4);
+         cosE_1[i] = 1.f/cosE[i];
+         sinE_1[i] = 1.f/sinE[i];
+         costE_1[i] = 1.f/costE[i];
+         sintE_1[i] = 1.f/sintE[i];
+         /* Normalise the basis (should multiply by the inverse instead) */
          for (j=0;j<L2;j++)
-            sym[j] -= (2*tmp1)*cos_table[i][j];
-         
-         for (j=0;j<L2;j++)
-            tmp2 += anti[j]*sin_table[i][j];
-         for (j=0;j<L2;j++)
-            anti[j] -= (2*tmp2)*sin_table[i][j];
-
-         for (j=0;j<L2;j++)
-            tmp3 += anti[j]*tcos_table[i][j];
-         for (j=0;j<L2;j++)
-            anti[j] -= (2*tmp3)*tcos_table[i][j];
-
-         for (j=0;j<L2;j++)
-            tmp4 += sym[j]*tsin_table[i][j];
-         for (j=0;j<L2;j++)
-            sym[j] -= (2*tmp4)*tsin_table[i][j];
-         
-         ai[i] += tmp1;
-         bi[i] += tmp2;
-         ci[i] += tmp3;
-         di[i] += tmp4;
+         {
+            cos_table[i][j] *= cosE_1[i];
+            sin_table[i][j] *= sinE_1[i];
+            tcos_table[i][j] *= costE_1[i];
+            tsin_table[i][j] *= sintE_1[i];
+         }
       }
-   }
-   for (i=0;i<N;i++)
-   {
-      ai[i] *= cosE_1[i];
-      bi[i] *= sinE_1[i];
-      ci[i] *= costE_1[i];
-      di[i] *= sintE_1[i];
-   }
 
-   /* Update real sinusoid parameters */
-   for (i=0;i<N;i++)
-   {
-      //float A, phi, dA, dw;
-      A[i] = sqrt(ai[i]*ai[i] + bi[i]*bi[i]);
-      if (A[i]<.01)
-         phi[i] = 0;
-      else
-         phi[i] = atan2(-bi[i], ai[i]);
-      dA[i] = (ci[i]*ai[i] + bi[i]*di[i])/(.01f+A[i]);
-      dw[i] = (ci[i]*bi[i] - di[i]*ai[i])/(.01f+A[i]*A[i]);
-      //printf ("%f %f %f %f %f %f %f %f %f\n", w[i], ai[i], bi[i], ci[i], di[i], A, phi, dA, dw);
-      /* Update the frequency with only a fraction of the dw term to prevent instabilities */
-      w[i] = w[i] + .5*dw[i];
-      /* Make sure we didn't deviate too much from the original frequency */
-      if (w[i] > w0[i]+.025)
-         w[i] = w0[i]+.025;
-      if (w[i] < w0[i]-.025)
-         w[i] = w0[i]-.025;
-      //Prevent stupid frequencies (i.e. outsite of ]0,pi[
-      if (w[i] < .002)
-         w[i] = .002;
-      if (w[i] > M_PI-.01)
-         w[i] = M_PI-.01;
-      //if (nonlin == 4)
-      //   printf("%d %f %f %f %f %f %f %f %f %f %f\n", count, w[i], ai[i], bi[i], ci[i], di[i], A[i], phi[i], dA[i], dw[i], w0[i]);
-   }
+      /* Split the error into a symmetric component and an anti-symmetric component. 
+         This speeds everything up by a factor of 2 */
+      for (j=0;j<L2;j++)
+      {
+         sym[j] = x[j+L2]+x[L2-j-1];
+         anti[j] = x[j+L2]-x[L2-j-1];
+      }
+
+      /* Start the linear optimisation where we left last time */
+      for (i=0;i<N;i++)
+      {
+         ai[i] = A[i]*cos(phi[i])*cosE[i];
+         bi[i] = -A[i]*sin(phi[i])*sinE[i];
+         ci[i] = dA[i]*cos(phi[i])*costE[i];
+         di[i] = -dA[i]*sin(phi[i])*sintE[i];
+         for (j=0;j<L2;j++)
+            sym[j] -= (2*ai[i])*cos_table[i][j] + (2*di[i])*tsin_table[i][j];
+         for (j=0;j<L2;j++)
+            anti[j] -= (2*bi[i])*sin_table[i][j] + (2*ci[i])*tcos_table[i][j];
+      }
+   
+      /* Stop condition. We stop here, just after updating the error using the new frequency */
+      if (nonlin-- <= 0)
+         break;
+   
+      /* This is an iterative linear solution -- much quicker than inverting a matrix.
+         It's pretty much the Gauss-Seidel algorithm */
+      for (iter=0;iter<2;iter++)
+      {
+         for (i=0;i<N;i++)
+         {
+            float tmp1=0, tmp2=0;
+            float tmp3=0, tmp4=0;
+            /* For each of the four basis functions, project the residual (symmetric or 
+               anti-symmetric) onto the basis function, then update the residual. */
+            for (j=0;j<L2;j++)
+               tmp1 += sym[j]*cos_table[i][j];
+            for (j=0;j<L2;j++)
+               sym[j] -= (2*tmp1)*cos_table[i][j];
+         
+            for (j=0;j<L2;j++)
+               tmp2 += anti[j]*sin_table[i][j];
+            for (j=0;j<L2;j++)
+               anti[j] -= (2*tmp2)*sin_table[i][j];
+
+            for (j=0;j<L2;j++)
+               tmp3 += anti[j]*tcos_table[i][j];
+            for (j=0;j<L2;j++)
+               anti[j] -= (2*tmp3)*tcos_table[i][j];
+
+            for (j=0;j<L2;j++)
+               tmp4 += sym[j]*tsin_table[i][j];
+            for (j=0;j<L2;j++)
+               sym[j] -= (2*tmp4)*tsin_table[i][j];
+         
+            ai[i] += tmp1;
+            bi[i] += tmp2;
+            ci[i] += tmp3;
+            di[i] += tmp4;
+         }
+      }
+      for (i=0;i<N;i++)
+      {
+         ai[i] *= cosE_1[i];
+         bi[i] *= sinE_1[i];
+         ci[i] *= costE_1[i];
+         di[i] *= sintE_1[i];
+      }
+
+      /* Update real sinusoid parameters */
+      for (i=0;i<N;i++)
+      {
+         //float A, phi, dA, dw;
+         A[i] = sqrt(ai[i]*ai[i] + bi[i]*bi[i]);
+         if (A[i]<.01)
+            phi[i] = 0;
+         else
+            phi[i] = atan2(-bi[i], ai[i]);
+         dA[i] = (ci[i]*ai[i] + bi[i]*di[i])/(.01f+A[i]);
+         dw[i] = (ci[i]*bi[i] - di[i]*ai[i])/(.01f+A[i]*A[i]);
+         //printf ("%f %f %f %f %f %f %f %f %f\n", w[i], ai[i], bi[i], ci[i], di[i], A, phi, dA, dw);
+         /* Update the frequency with only a fraction of the dw term to prevent instabilities */
+         w[i] = w[i] + .5*dw[i];
+         /* Make sure we didn't deviate too much from the original frequency */
+         if (w[i] > w0[i]+.025)
+            w[i] = w0[i]+.025;
+         if (w[i] < w0[i]-.025)
+            w[i] = w0[i]-.025;
+         //Prevent stupid frequencies (i.e. outsite of ]0,pi[
+         if (w[i] < .002)
+            w[i] = .002;
+         if (w[i] > M_PI-.01)
+            w[i] = M_PI-.01;
+         //if (nonlin == 4)
+         //   printf("%d %f %f %f %f %f %f %f %f %f %f\n", count, w[i], ai[i], bi[i], ci[i], di[i], A[i], phi[i], dA[i], dw[i], w0[i]);
+      }
    }
    
    for (j=0;j<L2;j++)
