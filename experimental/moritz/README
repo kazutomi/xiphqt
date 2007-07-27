@@ -1,0 +1,9 @@
+Code in this directory and below it, while publicly visible, is
+_unreleased_ unless specifically noted otherwise (with a license in the
+code file(s)). Please do not use unreleased code, as there might be 3rd
+party copyright involved. Only released code is guaranteed to have a
+clean legal status.
+
+Everything here is highly experimental, probably very buggy, and there
+be dragons, likely to utterly break your FOSS-powered baby-mulching
+machines and other things.
