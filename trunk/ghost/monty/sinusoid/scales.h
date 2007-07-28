@@ -21,7 +21,7 @@
 #define MAX(a,b)  ((a)>(b) ? (a):(b))
 
 static inline float todB(float x){
-  return log(x*x+1e-80f)*4.34294480f;
+  return log(x*x+1e-24f)*4.34294480f;
 }
 
 static inline float fromdB(float x){
