@@ -85,11 +85,11 @@ int main(int argc, char **argv){
   fout = fopen(argv[2], "w");
 
   /*
-  for(i=0;i<BLOCK_SIZE*2;i++)
+    for(i=0;i<BLOCK_SIZE*2;i++)
     float_in[i]=1.;
-  blackmann_harris(float_in, float_in, BLOCK_SIZE*2);
-  dump_vec(float_in,BLOCK_SIZE*2,"window",0);
-  memset(float_in,0,sizeof(float_in));
+    blackmann_harris(float_in, float_in, BLOCK_SIZE*2);
+    dump_vec(float_in,BLOCK_SIZE*2,"window",0);
+    memset(float_in,0,sizeof(float_in));
   */
 
   while (1){
@@ -109,90 +109,100 @@ int main(int argc, char **argv){
       float log_fft[BLOCK_SIZE+1];
       float weight[BLOCK_SIZE+1];
 
-      memcpy(fft_buf,float_in,sizeof(float_in));
-
       // polish the strongest peaks from weighting
       if(frame==220){
 	float w[BLOCK_SIZE];
 	float Aout[BLOCK_SIZE]={0};
-	float Wout[BLOCK_SIZE]={0};
 	float Pout[BLOCK_SIZE]={0};
-	float delAout[BLOCK_SIZE]={0};
-	float delWout[BLOCK_SIZE]={0};
+	float dAout[BLOCK_SIZE]={0};
+	float Wout[BLOCK_SIZE]={0};
+	float ddAout[BLOCK_SIZE]={0};
+	float dWout[BLOCK_SIZE]={0};
 	float y[BLOCK_SIZE*2];
 
-	//for(j=0;j<50;j++){
-	j=BLOCK_SIZE;
-	  blackmann_harris(fft_buf, fft_buf, BLOCK_SIZE*2);
-	  //if(j==0)
-	    dump_vec(float_in,BLOCK_SIZE*2,"data",frame);
-	  drft_forward(&fft, fft_buf);
-	  for(i=0;i<BLOCK_SIZE*2;i++)fft_buf[i] *= 2./BLOCK_SIZE;
+	blackmann_harris(fft_buf, float_in, BLOCK_SIZE*2);
+	dump_vec(float_in,BLOCK_SIZE*2,"data",frame);
+	drft_forward(&fft, fft_buf);
+	for(i=0;i<BLOCK_SIZE*2;i++)fft_buf[i] *= 1./BLOCK_SIZE;
 
-	  mag_dB(log_fft,fft_buf,BLOCK_SIZE*2);
-	  //if(j==0)
-	    dump_vec(log_fft,BLOCK_SIZE+1,"logmag",frame);
+	mag_dB(log_fft,fft_buf,BLOCK_SIZE*2);
+	dump_vec(log_fft,BLOCK_SIZE+1,"logmag",frame);
+	
+	window_weight(log_fft,weight,BLOCK_SIZE+1, 0.f, 512,256, 30, 44100);
+	dump_vec(weight,BLOCK_SIZE+1,"weight",frame);
 
-	  window_weight(log_fft,weight,BLOCK_SIZE+1, 2.f, 512,256, 30, 44100);
+	j=1;
+	w[0]=.0306*BLOCK_SIZE;
+
+	//for(j=0;j<BLOCK_SIZE;j++)
+	//w[j] = j+.5;
 	  
-	  // largest weighted
-	  /*int best=-120;
+	/* largest weighted
+	   int best=-120;
 	  int besti=-1;
-	  for(i=0;i<BLOCK_SIZE+1;i++)
-	    if(weight[i]>best){
-	      besti = i;
-	      best = weight[i];
+	  for(i=0;i<BLOCK_SIZE+1;i++){
+	  float v = log_fft[i] - weight[i];
+	    if(v>best){
+	    besti = i;
+	      best = v;
+	      }
 	    }
-	  w[j] = M_PI*besti/BLOCK_SIZE;
+	  //w[j] = M_PI*besti/BLOCK_SIZE;
 	  */
 
-	  for(i=0;i<j;i++)
-	    w[i] = i;//M_PI*(i)/j;
+	//blackmann_harris(fft_buf, float_in, BLOCK_SIZE*2);
+	extract_modulated_sinusoidsB(float_in, w, Aout, Wout, Pout, dAout, dWout, ddAout, y, j, BLOCK_SIZE*2);
+	w[0]=Wout[0];
+	extract_modulated_sinusoidsB(float_in, w, Aout, Wout, Pout, dAout, dWout, ddAout, y, j, BLOCK_SIZE*2);
+	w[0]=Wout[0];
+	extract_modulated_sinusoidsB(float_in, w, Aout, Wout, Pout, dAout, dWout, ddAout, y, j, BLOCK_SIZE*2);
+	w[0]=Wout[0];
+	extract_modulated_sinusoidsB(float_in, w, Aout, Wout, Pout, dAout, dWout, ddAout, y, j, BLOCK_SIZE*2);
+	w[0]=Wout[0];
+	extract_modulated_sinusoidsB(float_in, w, Aout, Wout, Pout, dAout, dWout, ddAout, y, j, BLOCK_SIZE*2);
+	w[0]=Wout[0];
+	extract_modulated_sinusoidsB(float_in, w, Aout, Wout, Pout, dAout, dWout, ddAout, y, j, BLOCK_SIZE*2);
 
 
-	  blackmann_harris(fft_buf, float_in, BLOCK_SIZE*2);
-	  dump_vec(fft_buf,BLOCK_SIZE*2,"win",frame);
-	  extract_modulated_sinusoids2(fft_buf, w, Aout, Wout, Pout, delAout, delWout, y, j, BLOCK_SIZE*2);
-
-	  //for(i=0;i<j;i++){
-	  //float A = sqrt(a[i]*a[i] + b[i]*b[i]);
-	  //w[i] += (c[i]*b[i] - d[i]*a[i])/(A*A);
-	  //}
-
-	  memcpy(fft_buf,float_in,sizeof(float_in));
-	  for(i=0;i<BLOCK_SIZE*2;i++)
-	    fft_buf[i] -= y[i];
-
-	  //dump_vec(float_in,BLOCK_SIZE*2,"exdata",frame);
-	  dump_vec(y,BLOCK_SIZE*2,"extract",frame);
-	  //}
-
-	  for(i=0;i<j;i++){
-	    //float A = sqrt(a[i]*a[i] + b[i]*b[i]);
-	    Aout[i]=todB(Aout[i]);
-	    Wout[i] /= BLOCK_SIZE;
-	  }
-	    
-	  dump_vec2(Wout,Aout,j,"ex",frame);
-	  
-	  //dump_vec(float_in,BLOCK_SIZE*2,"exdata",frame);
-	  dump_vec(y,BLOCK_SIZE*2,"extract",frame);
+	//for(i=0;i<j;i++)
+	//w[i]=Wout[i];
 	
+	for(i=0;i<BLOCK_SIZE*2;i++)
+	  fft_buf[i] = float_in[i] - y[i];
+	
+	dump_vec(fft_buf,BLOCK_SIZE*2,"res",0);
+
 	blackmann_harris(fft_buf, fft_buf, BLOCK_SIZE*2);
 	drft_forward(&fft, fft_buf);
-	for(i=0;i<BLOCK_SIZE*2;i++)fft_buf[i] *= 2./BLOCK_SIZE;
+	for(i=0;i<BLOCK_SIZE*2;i++)fft_buf[i] *= 1./BLOCK_SIZE;
 	mag_dB(log_fft,fft_buf,BLOCK_SIZE*2);
-	dump_vec(log_fft,BLOCK_SIZE+1,"exlogmag",frame);
+	
+	dump_vec(log_fft,BLOCK_SIZE+1,"exlogmag",0);
+	
+	for(i=0;i<j;i++){
+	  Aout[i]=todB(Aout[i]);
+	  dAout[i]=todB(dAout[i]);
+	  ddAout[i]=todB(ddAout[i]);
+	  w[i] /= BLOCK_SIZE;
+	}
+	  
+	dump_vec2(w,Aout,j,"ex",0);
+	dump_vec2(w,dAout,j,"dA",0);
+	dump_vec2(w,ddAout,j,"ddA",0);
+	dump_vec2(w,dWout,j,"dW",0);
+	dump_vec(y,BLOCK_SIZE*2,"extract",0);
 	
 	
       }
+      
     }
-
-
+  
+    
+    
     //fwrite(short_in, sizeof(short), BLOCK_SIZE, fout);
     frame++;
-   }
-
-   return 0;
+  }
+  
+  return 0;
 }
 
