@@ -42,6 +42,27 @@
 # undef XALLOC_SILENT
 #endif /* XALLOC_DEBUG && XALLOC_SILENT */
 
+#ifdef THREAD_SAFE
+# include <pthread.h>
+static pthread_mutex_t	 xalloc_mutex;
+static pthread_mutex_t	 strerror_mutex;
+# define XALLOC_LOCK(mtx) do {						\
+	int error;							\
+	if ((error = pthread_mutex_lock(&mtx)) != 0)			\
+		_xalloc_error(error, "XALLOC: Internal error in %s:%u: pthread_mutex_lock()", \
+			      __FILE__, __LINE__);			\
+} while (0)
+# define XALLOC_UNLOCK(mtx) do {					\
+	int error;							\
+	if ((error = pthread_mutex_unlock(&mtx)) != 0)			\
+		_xalloc_error(error, "XALLOC: Internal error in %s:%u: pthread_mutex_unlock()", \
+			      __FILE__, __LINE__);			\
+} while (0)
+#else
+# define XALLOC_LOCK(mtx)	((void)0)
+# define XALLOC_UNLOCK(mtx)	((void)0)
+#endif /* THREAD_SAFE */
+
 #ifdef XALLOC_DEBUG
 # ifdef HAVE_SYS_TREE_H
 #  include <sys/tree.h>
@@ -148,8 +169,13 @@ _xalloc_error(int errnum, const char *fmt, ...)
 	va_start(ap, fmt);
 #ifndef XALLOC_SILENT
 	vfprintf(debug_output, fmt, ap);
-	if (errnum > 0)
+	if (errnum > 0) {
+		if (xalloc_initialized)
+			XALLOC_LOCK(strerror_mutex);
 		vfprintf(debug_output, ": %s\n", strerror(errnum));
+		if (xalloc_initialized)
+			XALLOC_UNLOCK(strerror_mutex);
+	}
 	fflush(debug_output);
 #endif /* !XALLOC_SILENT */
 	va_end(ap);
@@ -278,6 +304,10 @@ _xalloc_vasprintf(char **str_p, const char *fmt, va_list ap, size_t *strsiz)
 void
 xalloc_initialize(void)
 {
+#ifdef THREAD_SAFE
+	int	err;
+#endif /* THREAD_SAFE */
+
 	if (xalloc_initialized)
 		_xalloc_fatal("XALLOC: xalloc_initialize(): Xalloc library already initialized\n");
 
@@ -288,6 +318,13 @@ xalloc_initialize(void)
 	xalloc_peak = 0;
 	xalloc_freed = 0;
 
+#ifdef THREAD_SAFE
+	if ((err = pthread_mutex_init(&strerror_mutex, NULL)) != 0)
+		_xalloc_error(err, "XALLOC: xalloc_initialize(): Initializing xalloc_mutex");
+	if ((err = pthread_mutex_init(&xalloc_mutex, NULL)) != 0)
+		_xalloc_error(err, "XALLOC: xalloc_initialize(): Initializing strerror_mutex");
+#endif /* THREAD_SAFE */
+
 	xalloc_initialized = 1;
 }
 
@@ -295,7 +332,7 @@ void
 xalloc_initialize_debug(unsigned int level, FILE *output)
 {
 	if (xalloc_initialized)
-		_xalloc_fatal("XALLOC: xalloc_initialize(): Xalloc library already initialized\n");
+		_xalloc_fatal("XALLOC: xalloc_initialize_debug(): Xalloc library already initialized\n");
 
 	if ((debug_level = level) > XALLOC_DBGLVL_MAX)
 		debug_level = XALLOC_DBGLVL_MAX;
@@ -320,9 +357,11 @@ xalloc_set_functions(void *(*malloc_func)(size_t),
 	    realloc_func == NULL)
 		_xalloc_fatal("XALLOC: xalloc_set_functions(): Bad argument(s)\n");
 
+	XALLOC_LOCK(xalloc_mutex);
 	real_malloc = malloc_func;
 	real_calloc = calloc_func;
 	real_realloc = realloc_func;
+	XALLOC_UNLOCK(xalloc_mutex);
 }
 
 void
@@ -335,6 +374,8 @@ xalloc_shutdown(void)
 	if (debug_level > 0) {
 		struct memory	*mem, *mem_next;
 		size_t		 leaked_bytes = 0;
+
+		XALLOC_LOCK(xalloc_mutex);
 
 		for (mem = RB_MIN(memory_tree, &memory_tree_head);
 		     mem != NULL;
@@ -369,8 +410,19 @@ xalloc_shutdown(void)
 				     (unsigned long)xalloc_allocated,
 				     (unsigned long)xalloc_peak,
 				     (unsigned long)xalloc_freed);
+
+		XALLOC_UNLOCK(xalloc_mutex);
 	}
 #endif /* XALLOC_DEBUG */
+
+#ifdef THREAD_SAFE
+	if (pthread_mutex_destroy(&xalloc_mutex) != 0)
+		_xalloc_fatal("XALLOC: Internal error: xalloc_shutdown(): xalloc_mutex %p cannot be destroyed\n",
+			      xalloc_mutex);
+	if (pthread_mutex_destroy(&strerror_mutex) != 0)
+		_xalloc_fatal("XALLOC: Internal error: xalloc_shutdown(): strerror_mutex %p cannot be destroyed\n",
+			      xalloc_mutex);
+#endif /* THREAD_SAFE */
 
 	xalloc_initialized = 0;
 }
@@ -402,10 +454,12 @@ xmalloc_c(size_t size, const char *file, unsigned int line)
 		if ((mem->allocated_by = _xalloc_strdup(file)) == NULL)
 			_xalloc_error(errno, "XALLOC: Internal error");
 		mem->allocated_in_line = line;
+		XALLOC_LOCK(xalloc_mutex);
 		RB_INSERT(memory_tree, &memory_tree_head, mem);
 		xalloc_allocated += size;
 		if (xalloc_allocated > xalloc_peak)
 			xalloc_peak = xalloc_allocated;
+		XALLOC_UNLOCK(xalloc_mutex);
 	}
 #endif /* XALLOC_DEBUG */
 
@@ -444,10 +498,12 @@ xcalloc_c(size_t nmemb, size_t size, int may_fail,
 		if ((mem->allocated_by = _xalloc_strdup(file)) == NULL)
 			_xalloc_error(errno, "XALLOC: Internal error");
 		mem->allocated_in_line = line;
+		XALLOC_LOCK(xalloc_mutex);
 		RB_INSERT(memory_tree, &memory_tree_head, mem);
 		xalloc_allocated += nmemb * size;
 		if (xalloc_allocated > xalloc_peak)
 			xalloc_peak = xalloc_allocated;
+		XALLOC_UNLOCK(xalloc_mutex);
 	}
 #endif /* XALLOC_DEBUG */
 
@@ -491,6 +547,7 @@ xrealloc_c(void *ptr, size_t nmemb, size_t size,
 #ifdef XALLOC_DEBUG
 		struct memory	find_mem;
 
+		XALLOC_LOCK(xalloc_mutex);
 		if (debug_level > 0) {
 			find_mem.ptr = ptr;
 			if ((mem = RB_FIND(memory_tree, &memory_tree_head, &find_mem)) == NULL)
@@ -498,6 +555,7 @@ xrealloc_c(void *ptr, size_t nmemb, size_t size,
 					      file, line, ptr);
 			RB_REMOVE(memory_tree, &memory_tree_head, mem);
 		}
+		XALLOC_UNLOCK(xalloc_mutex);
 #endif /* XALLOC_DEBUG */
 		ret = real_realloc(ptr, nsiz);
 #ifdef XALLOC_DEBUG
@@ -520,12 +578,14 @@ xrealloc_c(void *ptr, size_t nmemb, size_t size,
 
 #ifdef XALLOC_DEBUG
 	if (debug_level > 0) {
+		XALLOC_LOCK(xalloc_mutex);
 		xalloc_allocated -= mem->size;
 		xalloc_allocated += nsiz;
 		if (xalloc_allocated > xalloc_peak)
 			xalloc_peak = xalloc_allocated;
 		mem->size = nsiz;
 		RB_INSERT(memory_tree, &memory_tree_head, mem);
+		XALLOC_UNLOCK(xalloc_mutex);
 	}
 #endif /* XALLOC_DEBUG */
 
@@ -568,6 +628,7 @@ xfree_c(void **ptr_p, const char *file, unsigned int line)
 	if (debug_level > 0) {
 		struct memory	*mem = NULL, find_mem;
 
+		XALLOC_LOCK(xalloc_mutex);
 		find_mem.ptr = *ptr_p;
 		if ((mem = RB_FIND(memory_tree, &memory_tree_head, &find_mem)) == NULL)
 			_xalloc_fatal("XALLOC: xfree(): %s:%u: Junk pointer %p not accounted for\n",
@@ -598,6 +659,7 @@ xfree_c(void **ptr_p, const char *file, unsigned int line)
 			RB_REMOVE(memory_tree, &memory_tree_head, mem);
 			_memory_free(&mem);
 		}
+		XALLOC_UNLOCK(xalloc_mutex);
 	}
 
 	free(*ptr_p);
@@ -639,10 +701,12 @@ xasprintf_c(const char *file, unsigned int line,
 		if ((mem->allocated_by = _xalloc_strdup(file)) == NULL)
 			_xalloc_error(errno, "XALLOC: Internal error");
 		mem->allocated_in_line = line;
+		XALLOC_LOCK(xalloc_mutex);
 		RB_INSERT(memory_tree, &memory_tree_head, mem);
 		xalloc_allocated += strsiz;
 		if (xalloc_allocated > xalloc_peak)
 			xalloc_peak = xalloc_allocated;
+		XALLOC_UNLOCK(xalloc_mutex);
 	}
 #endif /* XALLOC_DEBUG */
 

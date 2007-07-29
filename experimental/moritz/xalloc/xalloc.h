@@ -50,6 +50,10 @@
 /* The default output stream for messages: */
 #define XALLOC_DEFAULT_OUTPUT	stderr
 
+#if (defined(_REENTRANT) || defined(_POSIX_THREADS)) && !defined(THREAD_SAFE)
+# define THREAD_SAFE		1
+#endif
+
 
 /*
  * Library initialization and shutdown.

@@ -3,12 +3,13 @@ PROG =		xalloc-test
 SRC =		main.c xalloc.c
 OBJ =		main.o xalloc.o
 
+THREADS =	-pthread
 CC ?=		gcc
 CFLAGS ?=	-O2 -pipe
-CFLAGS +=	-DHAVE_CONFIG_H=1 -fstrict-aliasing -Wall -W -ansi -pedantic -Wwrite-strings -Wpointer-arith
+CFLAGS +=	-DHAVE_CONFIG_H=1 -fstrict-aliasing -Wall -W -ansi -pedantic -Wwrite-strings -Wpointer-arith $(THREADS)
 DEBUG ?=	-g -ggdb
 INCLUDEFLAGS =	-I../compat
-LDFLAGS =	
+LDFLAGS =	$(THREADS)
 
 
 all: depend $(PROG)
