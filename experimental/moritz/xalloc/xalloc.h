@@ -39,13 +39,13 @@
  * defined.
  *
  * Define XALLOC_WITH_XASPRINTF to expose the xasprintf() interface. Doing
- * so will require libxalloc to be compiled with a C99 compiler, and work
- * only on systems with (v)asprintf() or a modern (v)snprintf(). MS Windows
- * is supported.
+ * so will require libxalloc to be compiled with a compiler that supports C99
+ * variadic macros, and work only on systems with vasprintf() or vsnprintf(),
+ * and MS Windows.
  */
-/* #define XALLOC_DEBUG 1 */
+#define XALLOC_DEBUG 1
 /* #define XALLOC_SILENT 1 */
-/* #define XALLOC_WITH_XASPRINTF 1 */
+#define XALLOC_WITH_XASPRINTF 1
 
 /* The default output stream for messages: */
 #define XALLOC_DEFAULT_OUTPUT	stderr
@@ -115,8 +115,8 @@ do {									\
 #endif /* XALLOC_DEBUG */
 
 #ifdef XALLOC_WITH_XASPRINTF
-# define xasprintf(s, f, va...) 					\
-        xasprintf_c(__FILE__, __LINE__, s, f , ##va)
+# define xasprintf(s, f, ...)						\
+	xasprintf_c(__FILE__, __LINE__, s, f, __VA_ARGS__)
 int	xasprintf_c(const char * /* file */, unsigned int /* line */,
 		    char ** /* string pointer */, const char * /* format */,
 		    ...);
