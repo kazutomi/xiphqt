@@ -71,7 +71,7 @@ void	xalloc_initialize_debug(unsigned int, FILE *);
 void	_xalloc_warn(const char *, ...);
 #endif /* XALLOC_DEBUG */
 
-void	_xalloc_error(const char *, ...);
+void	_xalloc_error(int, const char *, ...);
 void	_xalloc_fatal(const char *, ...);
 void	_xalloc_debug_printf(unsigned int, const char *, ...);
 char *	_xalloc_strdup(const char *);
@@ -138,7 +138,7 @@ _xalloc_warn(const char *fmt, ...)
 }
 
 void
-_xalloc_error(const char *fmt, ...)
+_xalloc_error(int errnum, const char *fmt, ...)
 {
 	va_list ap;
 
@@ -148,6 +148,8 @@ _xalloc_error(const char *fmt, ...)
 	va_start(ap, fmt);
 #ifndef XALLOC_SILENT
 	vfprintf(debug_output, fmt, ap);
+	if (errnum > 0)
+		vfprintf(debug_output, ": %s\n", strerror(errnum));
 	fflush(debug_output);
 #endif /* !XALLOC_SILENT */
 	va_end(ap);
@@ -386,22 +388,19 @@ xmalloc_c(size_t size, const char *file, unsigned int line)
 			      file, line);
 
 	if ((ret = real_malloc(size)) == NULL)
-		_xalloc_error("XALLOC: xmalloc(): %s:%u: Allocating %lu bytes: %s\n",
-			      file, line, (unsigned long)(size),
-			      strerror(errno));
+		_xalloc_error(errno, "XALLOC: xmalloc(): %s:%u: Allocating %lu bytes",
+			      file, line, (unsigned long)(size));
 
 #ifdef XALLOC_DEBUG
 	if (debug_level > 0) {
 		struct memory	*mem;
 
 		if ((mem = real_calloc(1, sizeof(struct memory))) == NULL)
-			_xalloc_error("XALLOC: Internal error: %s\n",
-				      strerror(errno));
+			_xalloc_error(errno, "XALLOC: Internal error");
 		mem->ptr = ret;
 		mem->size = size;
 		if ((mem->allocated_by = _xalloc_strdup(file)) == NULL)
-			_xalloc_error("XALLOC: Internal error: %s\n",
-				      strerror(errno));
+			_xalloc_error(errno, "XALLOC: Internal error");
 		mem->allocated_in_line = line;
 		RB_INSERT(memory_tree, &memory_tree_head, mem);
 		xalloc_allocated += size;
@@ -431,22 +430,19 @@ xcalloc_c(size_t nmemb, size_t size, int may_fail,
 			      file, line);
  
 	if ((ret = real_calloc(nmemb, size)) == NULL && may_fail == 0)
-		_xalloc_error("XALLOC: xcalloc(): %s:%u: Allocating %lu bytes: %s\n",
-			      file, line, (unsigned long)(nmemb * size),
-			      strerror(errno));
+		_xalloc_error(errno, "XALLOC: xcalloc(): %s:%u: Allocating %lu bytes",
+			      file, line, (unsigned long)(nmemb * size));
 
 #ifdef XALLOC_DEBUG
 	if (ret != NULL && debug_level > 0) {
 		struct memory	*mem;
 
 		if ((mem = real_calloc(1, sizeof(struct memory))) == NULL)
-			_xalloc_error("XALLOC: Internal error: %s\n",
-				      strerror(errno));
+			_xalloc_error(errno, "XALLOC: Internal error");
 		mem->ptr = ret;
 		mem->size = nmemb * size;
 		if ((mem->allocated_by = _xalloc_strdup(file)) == NULL)
-			_xalloc_error("XALLOC: Internal error: %s\n",
-				      strerror(errno));
+			_xalloc_error(errno, "XALLOC: Internal error");
 		mem->allocated_in_line = line;
 		RB_INSERT(memory_tree, &memory_tree_head, mem);
 		xalloc_allocated += nmemb * size;
@@ -484,12 +480,10 @@ xrealloc_c(void *ptr, size_t nmemb, size_t size,
 #ifdef XALLOC_DEBUG
 		if (debug_level > 0) {
 			if ((mem = real_calloc(1, sizeof(struct memory))) == NULL)
-				_xalloc_error("XALLOC: Internal error: %s\n",
-					      strerror(errno));
+				_xalloc_error(errno, "XALLOC: Internal error");
 			mem->ptr = ret;
 			if ((mem->allocated_by = _xalloc_strdup(file)) == NULL)
-				_xalloc_error("XALLOC: Internal error: %s\n",
-					      strerror(errno));
+				_xalloc_error(errno, "XALLOC: Internal error");
 			mem->allocated_in_line = line;
 		}
 #endif /* XALLOC_DEBUG */
@@ -514,17 +508,15 @@ xrealloc_c(void *ptr, size_t nmemb, size_t size,
 				mem->reallocated_by = NULL;
 			}
 			if ((mem->reallocated_by = _xalloc_strdup(file)) == NULL)
-				_xalloc_error("XALLOC: Internal error: %s\n",
-					      strerror(errno));
+				_xalloc_error(errno, "XALLOC: Internal error");
 			mem->reallocated_in_line = line;
 		}
 #endif /* XALLOC_DEBUG */
 	}
 
 	if (ret == NULL)
-		_xalloc_error("XALLOC: xrealloc(): %s:%u: (Re)allocating %lu bytes: %s\n",
-			      file, line, (unsigned long)(nmemb * size),
-			      strerror(errno));
+		_xalloc_error(errno, "XALLOC: xrealloc(): %s:%u: (Re)allocating %lu bytes",
+			      file, line, (unsigned long)(nmemb * size));
 
 #ifdef XALLOC_DEBUG
 	if (debug_level > 0) {
@@ -551,9 +543,8 @@ xstrdup_c(const char *str, const char *file, unsigned int line)
 
 	len = strlen(str) + 1;
 	if ((nstr = xcalloc_c(len, sizeof(char), 0, file, line)) == NULL)
-		_xalloc_error("XALLOC: xstrdup(): %s:%u: Allocating %lu bytes: %s\n",
-			      file, line, (unsigned long)(len),
-			      strerror(errno));
+		_xalloc_error(errno, "XALLOC: xstrdup(): %s:%u: Allocating %lu bytes: %s\n",
+			      file, line, (unsigned long)(len));
 	memcpy(nstr, str, len);
 	return (nstr);
 }
@@ -601,8 +592,7 @@ xfree_c(void **ptr_p, const char *file, unsigned int line)
 		mem->size = 0;
 		if (debug_level > 1) {
 			if ((mem->freed_by = _xalloc_strdup(file)) == NULL)
-				_xalloc_error("XALLOC: Internal error: %s\n",
-					      strerror(errno));
+				_xalloc_error(errno, "XALLOC: Internal error");
 			mem->freed_in_line = line;
 		} else {
 			RB_REMOVE(memory_tree, &memory_tree_head, mem);
@@ -635,21 +625,19 @@ xasprintf_c(const char *file, unsigned int line,
 	ret = _xalloc_vasprintf(str_p, fmt, ap, &strsiz);
 	va_end(ap);
 	if (ret == -1)
-		_xalloc_error("XALLOC: xasprintf(): %s:%u: Allocating %lu bytes: %s\n",
-			      file, line, strsiz, strerror(errno));
+		_xalloc_error(errno, "XALLOC: xasprintf(): %s:%u: Allocating %lu bytes",
+			      file, line, strsiz);
 
 #ifdef XALLOC_DEBUG
 	if (debug_level > 0) {
 		struct memory	*mem;
 
 		if ((mem = real_calloc(1, sizeof(struct memory))) == NULL)
-			_xalloc_error("XALLOC: Internal error: %s\n",
-				      strerror(errno));
+			_xalloc_error(errno, "XALLOC: Internal error");
 		mem->ptr = *str_p;
 		mem->size = strsiz;
 		if ((mem->allocated_by = _xalloc_strdup(file)) == NULL)
-			_xalloc_error("XALLOC: Internal error: %s\n",
-				      strerror(errno));
+			_xalloc_error(errno, "XALLOC: Internal error");
 		mem->allocated_in_line = line;
 		RB_INSERT(memory_tree, &memory_tree_head, mem);
 		xalloc_allocated += strsiz;
