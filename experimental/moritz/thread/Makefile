@@ -9,7 +9,7 @@ LIBOBJ =	thread.o
 THREADS =	-pthread
 CC ?=		gcc
 CFLAGS ?=	-O2 -pipe
-CFLAGS +=	-DHAVE_CONFIG_H=1 -DTHREAD_DEBUG=1 -DXALLOC_DEBUG=1 -DXALLOC_WITH_XASPRINTF=1 -fstrict-aliasing -Wall -ansi -pedantic -Wwrite-strings -Wpointer-arith -Wformat=2 $(THREADS)
+CFLAGS +=	-DHAVE_CONFIG_H=1 -DTHREAD_DEBUG=1 -DXALLOC_DEBUG=1 -DXALLOC_WITH_XASPRINTF=1 -fstrict-aliasing -Wall -W -ansi -pedantic -Wwrite-strings -Wpointer-arith -Wformat=2 $(THREADS)
 DEBUG ?=	-g -ggdb
 INCLUDEFLAGS =	-I../compat -I../xalloc -pthread
 LDFLAGS =	-L. -L../xalloc -lxalloc -lthread $(THREADS)
@@ -29,7 +29,7 @@ $(LIB): $(LIBOBJ)
 	ar cru $(LIB) $(LIBOBJ)
 	ranlib $(LIB)
 
-$(PROG): $(OBJ)
+$(PROG): $(LIB) $(OBJ)
 	$(CC) $(DEBUG) $(OBJ) $(LDFLAGS) -o $(PROG)
 
 clean:

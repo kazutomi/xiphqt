@@ -71,7 +71,7 @@ void	thread_initialize_debug(unsigned int, FILE *);
 # endif /* THREAD_DIE_SILENT */
 #endif /* !THREAD_DEBUG */
 
-void	_thread_fatal(const char *, ...);
+void	_thread_fatal(int, const char *, ...);
 void	_thread_debug_printf(unsigned int, const char *, ...);
 void	_init_mutexes(void);
 void	_catch_signals(void);
@@ -150,15 +150,12 @@ RB_HEAD(rwlock_tree, rwlock) rwlock_tree_head = RB_INITIALIZER(&rwlock_tree_head
 RB_GENERATE(rwlock_tree, rwlock, entry, _rwlock_cmp)
 
 
-extern char	*__progname;
-
-
 static int		 thread_initialized = 0;
 static int		 next_thread_id = 0;
 static int		 next_mutex_id = 0;
 static int		 next_cond_id = 0;
 static int		 next_rwlock_id = 0;
-static int		 debug_level = 0;
+static unsigned int	 debug_level = 0;
 static FILE		*debug_output = NULL;
 static struct mutex	*threadtree_mutex;
 static struct mutex	*mutextree_mutex;
@@ -168,7 +165,7 @@ static struct mutex	*library_mutex;
 
 
 void
-_thread_fatal(const char *fmt, ...)
+_thread_fatal(int errnum, const char *fmt, ...)
 {
 #ifndef THREAD_DIE_SILENT
 	va_list ap;
@@ -182,6 +179,9 @@ _thread_fatal(const char *fmt, ...)
 				       va_start(ap, fmt);
 				       vfprintf(debug_output, fmt, ap);
 				       va_end(ap);
+				       if (errnum > 0)
+					       fprintf(debug_output, ": %s\n",
+						       strerror(errnum));
 				       fflush(debug_output);
 			       }
 			      );
@@ -189,6 +189,8 @@ _thread_fatal(const char *fmt, ...)
 		va_start(ap, fmt);
 		vfprintf(debug_output, fmt, ap);
 		va_end(ap);
+		if (errnum > 0)
+			fprintf(debug_output, ": %s\n", strerror(errnum));
 		fflush(debug_output);
 	}
 #endif /* !THREAD_DIE_SILENT */
@@ -293,8 +295,7 @@ _catch_signals(void)
 	sigaddset(&ss, SIGTERM);
 
 	if ((error = pthread_sigmask(SIG_UNBLOCK, &ss, NULL)) != 0)
-		_thread_fatal("%s: pthread_sigmask(): %s\n",
-			      __progname, strerror(error));
+		_thread_fatal(error, "THREAD: pthread_sigmask()");
 #endif /* !WIN32 */
 }
 
@@ -315,8 +316,7 @@ _block_signals(void)
 	sigdelset(&ss, SIGSEGV);
 	sigdelset(&ss, SIGBUS);
 	if ((error = pthread_sigmask(SIG_BLOCK, &ss, NULL)) != 0)
-		_thread_fatal("%s: pthread_sigmask(): %s\n",
-			      __progname, strerror(error));
+		_thread_fatal(error, "THREAD: pthread_sigmask()");
 #endif /* !WIN32 */
 }
 
@@ -386,8 +386,7 @@ _thread_start_routine(void *arg)
 	_mutex_unlock(threadtree_mutex);
 
 	if ((error = pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL)) != 0)
-		_thread_fatal("%s: pthread_setcancelstate(): %s\n",
-			      __progname, strerror(error));
+		_thread_fatal(error, "THREAD: pthread_setcancelstate()");
 
 	xfree(start);
 
@@ -410,8 +409,7 @@ _mutex_init(struct mutex *mutex)
 
 	mutex->sys_mutex = PTHREAD_MUTEX_INITIALIZER;
 	if ((error = pthread_mutex_init(&mutex->sys_mutex, NULL)) != 0)
-		_thread_fatal("%s: pthread_mutex_init(): %s\n",
-			      __progname, strerror(error));
+		_thread_fatal(error, "THREAD: pthread_mutex_init()");
 }
 
 void
@@ -420,8 +418,7 @@ _mutex_lock(struct mutex *mutex)
 	int	error;
 
 	if ((error = pthread_mutex_lock(&mutex->sys_mutex)) != 0)
-		_thread_fatal("%s: pthread_mutex_lock(): %s\n",
-			      __progname, strerror(error));
+		_thread_fatal(error, "THREAD: pthread_mutex_lock()");
 	mutex->state = MUTEX_LOCKED;
 }
 
@@ -431,8 +428,7 @@ _mutex_unlock(struct mutex *mutex)
 	int	error;
 
 	if ((error = pthread_mutex_unlock(&mutex->sys_mutex)) != 0)
-		_thread_fatal("%s: pthread_mutex_unlock(): %s\n",
-			      __progname, strerror(error));
+		_thread_fatal(error, "THREAD: pthread_mutex_unlock()");
 	mutex->state = MUTEX_UNLOCKED;
 }
 
@@ -492,8 +488,7 @@ thread_initialize(void)
 	struct thread	*thread;
 
 	if (thread_initialized)
-		_thread_fatal("%s: thread_init(): Internal error: Thread library already initialized\n",
-			      __progname);
+		_thread_fatal(0, "THREAD: Internal error: thread_init(): Thread library already initialized\n");
 
 	if (debug_output == NULL)
 		debug_output = THREAD_DEFAULT_OUTPUT;
@@ -530,8 +525,7 @@ thread_shutdown(void)
 	_thread_debug_printf(3, "======> SHUTDOWN thread\n");
 
 	if (!thread_initialized)
-		_thread_fatal("%s: thread_shutdown(): Internal error: Thread library not initialized\n",
-			      __progname);
+		_thread_fatal(0, "THREAD: thread_shutdown(): Thread library not initialized\n");
 
 	for (rwlock = RB_MIN(rwlock_tree, &rwlock_tree_head);
 	     rwlock != NULL;
@@ -566,29 +560,24 @@ thread_shutdown(void)
 	}
 
 	if ((error = pthread_mutex_destroy(&library_mutex->sys_mutex)) != 0)
-		_thread_fatal("%s: pthread_mutex_destroy(%s): %s\n",
-			      __progname, library_mutex->name,
-			      strerror(error));
+		_thread_fatal(error, "THREAD: pthread_mutex_destroy(%s)",
+			      library_mutex->name);
 	_mutex_free(&library_mutex);
 	if ((error = pthread_mutex_destroy(&rwlocktree_mutex->sys_mutex)) != 0)
-		_thread_fatal("%s: pthread_mutex_destroy(%s): %s\n",
-			      __progname, rwlocktree_mutex->name,
-			      strerror(error));
+		_thread_fatal(error, "THREAD: pthread_mutex_destroy(%s)",
+			      rwlocktree_mutex->name);
 	_mutex_free(&rwlocktree_mutex);
 	if ((error = pthread_mutex_destroy(&condtree_mutex->sys_mutex)) != 0)
-		_thread_fatal("%s: pthread_mutex_destroy(%s): %s\n",
-			      __progname, condtree_mutex->name,
-			      strerror(error));
+		_thread_fatal(error, "THREAD: pthread_mutex_destroy(%s)",
+			      condtree_mutex->name);
 	_mutex_free(&condtree_mutex);
 	if ((error = pthread_mutex_destroy(&threadtree_mutex->sys_mutex)) != 0)
-		_thread_fatal("%s: pthread_mutex_destroy(%s): %s\n",
-			      __progname, threadtree_mutex->name,
-			      strerror(error));
+		_thread_fatal(error, "THREAD: pthread_mutex_destroy(%s)",
+			      threadtree_mutex->name);
 	_mutex_free(&threadtree_mutex);
 	if ((error = pthread_mutex_destroy(&mutextree_mutex->sys_mutex)) != 0)
-		_thread_fatal("%s: pthread_mutex_destroy(%s): %s\n",
-			      __progname, mutextree_mutex->name,
-			      strerror(error));
+		_thread_fatal(error, "THREAD: pthread_mutex_destroy(%s)",
+			      mutextree_mutex->name);
 	_mutex_free(&mutextree_mutex);
 
 	thread_initialized = 0;
@@ -608,8 +597,7 @@ thread_create_c(const char *name, void *(*start_routine)(void *),
 	size_t			 stacksize;
 
 	if (!thread_initialized)
-		_thread_fatal("%s: thread_create(): Internal error: Thread library not initialized\n",
-			      __progname);
+		_thread_fatal(0, "THREAD: thread_create(): Thread library not initialized\n");
 
 	_thread_debug_printf(3, "======> CREATE THREAD: %s:%u: '%s' (%stached)\n",
 			     file, line, name, detached ? "de" : "at");
@@ -622,8 +610,8 @@ thread_create_c(const char *name, void *(*start_routine)(void *),
 	thread = xcalloc(1, sizeof(struct thread));
 	thread_start = xcalloc(1, sizeof(struct thread_start));
 	if ((error = pthread_attr_init(&attr)) != 0)
-		_thread_fatal("%s: pthread_attr_init(%s): %s\n",
-			      __progname, name, strerror(error));
+		_thread_fatal(error, "THREAD: pthread_attr_init(%s)",
+			      name);
 
 	_mutex_lock(threadtree_mutex);
 	thread->id = next_thread_id++;
@@ -639,25 +627,24 @@ thread_create_c(const char *name, void *(*start_routine)(void *),
 	thread_start->thread = thread;
 
 	if ((error = pthread_attr_setstacksize(&attr, stacksize)) != 0)
-		_thread_fatal("%s: pthread_attr_setstacksize(%s): %s\n",
-			      __progname, name, strerror(error));
+		_thread_fatal(error, "THREAD: pthread_attr_setstacksize(%s)",
+			      name);
 	if ((error = pthread_attr_setinheritsched(&attr, PTHREAD_INHERIT_SCHED)) != 0)
-		_thread_fatal("%s: pthread_attr_setinheritsched(%s): %s\n",
-			      __progname, name, strerror(error));
+		_thread_fatal(error, "THREAD: pthread_attr_setinheritsched(%s)",
+			      name);
 	if (thread->detached) {
 		if ((error = pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED)) != 0)
-			_thread_fatal("%s: pthread_attr_setdetachstate(%s): %s\n",
-				      __progname, name, strerror(error));
+			_thread_fatal(error, "THREAD: pthread_attr_setdetachstate(%s)",
+				      name);
 	}
 
 	if ((error = pthread_create(&thread->sys_thread, &attr,
 				    _thread_start_routine, thread_start)) != 0)
-		_thread_fatal("%s: pthread_create(%s): %s\n",
-			      __progname, name, strerror(error));
+		_thread_fatal(error, "THREAD: pthread_create(%s)",
+			      name);
 
 	if ((error = pthread_attr_destroy(&attr)) != 0)
-		_thread_fatal("%s: pthread_attr_destroy(): %s\n",
-			      __progname, strerror(error));
+		_thread_fatal(error, "THREAD: pthread_attr_destroy()");
 
 	_thread_debug_printf(4, "======> CREATE THREAD done: '%s'(%d)\n",
 			     thread->name, thread->id);
@@ -672,8 +659,7 @@ thread_self_c(const char *file, unsigned int line)
 	pthread_t	 sys_thread;
 
 	if (!thread_initialized)
-		_thread_fatal("%s: thread_self(): Internal error: Thread library not initialized\n",
-			      __progname);
+		_thread_fatal(0, "THREAD: thread_self(): Thread library not initialized\n");
 
 	sys_thread = pthread_self();
 
@@ -685,8 +671,8 @@ thread_self_c(const char *file, unsigned int line)
 	_mutex_unlock(threadtree_mutex);
 
 	if (thread == NULL)
-		_thread_fatal("%s: thread_self(): In %s:%u: No thread exist (anymore)\n",
-			      __progname, file, line);
+		_thread_fatal(0, "THREAD: thread_self(): In %s:%u: No thread exist (anymore)\n",
+			      file, line);
 
 	return (thread);
 }
@@ -697,8 +683,7 @@ thread_rename(const char *name)
 	struct thread	*thread;
 
 	if (!thread_initialized)
-		_thread_fatal("%s: thread_rename(): Internal error: Thread library not initialized\n",
-			      __progname);
+		_thread_fatal(0, "THREAD: thread_rename(): Thread library not initialized\n");
 
 	thread = thread_self();
 	if (thread->name != NULL)
@@ -714,12 +699,10 @@ thread_join_c(struct thread **thread_p, const char *file, unsigned int line)
 	void		*ret;
 
 	if (!thread_initialized)
-		_thread_fatal("%s: thread_join(): Internal error: Thread library not initialized\n",
-			      __progname);
+		_thread_fatal(0, "THREAD: thread_join(): Thread library not initialized\n");
 
 	if (thread_p == NULL || (thread = *thread_p) == NULL || thread == NULL)
-		_thread_fatal("%s: thread_join(): Internal error: Bad argument\n",
-			      __progname);
+		_thread_fatal(0, "THREAD: thread_join(): Bad argument\n");
 
 	_thread_debug_printf(3, "======> THREAD JOIN: %s:%u: '%s'(%d) (from %s:%u, age %ds)\n",
 			     file, line, thread->name, thread->id,
@@ -727,8 +710,7 @@ thread_join_c(struct thread **thread_p, const char *file, unsigned int line)
 			     (int)(time(NULL) - thread->create_time));
 
 	if ((error = pthread_join(thread->sys_thread, &ret)) != 0)
-		_thread_fatal("%s: pthread_join(): %s\n",
-			      __progname, strerror(error));
+		_thread_fatal(error, "THREAD: pthread_join()");
 
 	_mutex_lock(threadtree_mutex);
 	RB_REMOVE(thread_tree, &thread_tree_head, thread);
@@ -744,8 +726,7 @@ thread_exit_c(int val, const char *file, unsigned int line)
 	struct thread	*thread;
 
 	if (!thread_initialized)
-		_thread_fatal("%s: thread_exit(): Internal error: Thread library not initialized\n",
-			      __progname);
+		_thread_fatal(0, "THREAD: thread_exit(): Thread library not initialized\n");
 
 	thread = thread_self();
 
@@ -788,8 +769,7 @@ thread_mutex_create_c(const char *name, const char *file, unsigned int line)
 	struct thread	*thread = NULL;
 
 	if (!thread_initialized)
-		_thread_fatal("%s: thread_mutex_create(): Internal error: Thread library not initialized\n",
-			      __progname);
+		_thread_fatal(0, "THREAD: thread_mutex_create(): Thread library not initialized\n");
 
 	thread = thread_self();
 	_thread_debug_printf(3, "======> CREATE MUTEX: %s:%u: %s\n",
@@ -820,12 +800,10 @@ thread_mutex_lock_c(struct mutex *mutex, const char *file, unsigned int line)
 	struct thread	*thread;
 
 	if (!thread_initialized)
-		_thread_fatal("%s: thread_mutex_lock(): Internal error: Thread library not initialized\n",
-			      __progname);
+		_thread_fatal(0, "THREAD: thread_mutex_lock(): Thread library not initialized\n");
 
 	if (mutex == NULL)
-		_thread_fatal("%s: thread_mutex_lock(): Internal error: Bad argument\n",
-			      __progname);
+		_thread_fatal(0, "THREAD: thread_mutex_lock(): Bad argument\n");
 
 	thread = thread_self();
 	_thread_debug_printf(3, "======> LOCK MUTEX: %s:%u: '%s'(%d) thread '%s'%d\n",
@@ -868,12 +846,10 @@ thread_mutex_unlock_c(struct mutex *mutex, const char *file, unsigned int line)
 	struct thread	*thread;
 
 	if (!thread_initialized)
-		_thread_fatal("%s: thread_mutex_unlock(): Internal error: Thread library not initialized\n",
-			      __progname);
+		_thread_fatal(0, "THREAD: thread_mutex_unlock(): Thread library not initialized\n");
 
 	if (mutex == NULL)
-		_thread_fatal("%s: thread_mutex_unlock(): Internal error: Bad argument\n",
-			      __progname);
+		_thread_fatal(0, "THREAD: thread_mutex_unlock(): Bad argument\n");
 
 	thread = thread_self();
 	_thread_debug_printf(3, "======> UNLOCK MUTEX: %s:%u: '%s'(%d) thread '%s'(%d)\n",
@@ -912,12 +888,10 @@ thread_mutex_destroy_c(struct mutex **mutex_p,
 	int		 error;
 
 	if (!thread_initialized)
-		_thread_fatal("%s: thread_mutex_destroy(): Internal error: Thread library not initialized\n",
-			      __progname);
+		_thread_fatal(0, "THREAD: thread_mutex_destroy(): Thread library not initialized\n");
 
 	if (mutex_p == NULL || (mutex = *mutex_p) == NULL || mutex == NULL)
-		_thread_fatal("%s: thread_mutex_destroy(): Internal error: Bad argument\n",
-			      __progname);
+		_thread_fatal(0, "THREAD: thread_mutex_destroy(): Bad argument\n");
 
 	thread = thread_self();
 	_thread_debug_printf(3, "======> MUTEX DESTROY: %s:%u: '%s'(%d) (from %s:%u, age %ds) thread '%s'(%d)\n",
@@ -932,8 +906,7 @@ thread_mutex_destroy_c(struct mutex **mutex_p,
 				     mutex->line);
 
 	if ((error = pthread_mutex_destroy(&mutex->sys_mutex)) != 0)
-		_thread_fatal("%s: pthread_mutex_destroy(): %s\n",
-			      __progname, strerror(error));
+		_thread_fatal(error, "THREAD: pthread_mutex_destroy()");
 	_mutex_lock(mutextree_mutex);
 	RB_REMOVE(mutex_tree, &mutex_tree_head, mutex);
 	_mutex_free(mutex_p);
@@ -949,8 +922,7 @@ thread_cond_create_c(const char *name, const char *file, unsigned int line)
 	int		 error;
 
 	if (!thread_initialized)
-		_thread_fatal("%s: thread_cond_create(): Internal error: Thread library not initialized\n",
-			      __progname);
+		_thread_fatal(0, "THREAD: thread_cond_create(): Thread library not initialized\n");
 
 	_thread_debug_printf(3, "======> CREATE COND: %s:%u: %s\n",
 			     file, line, name);
@@ -961,11 +933,9 @@ thread_cond_create_c(const char *name, const char *file, unsigned int line)
 	cond->creator = xstrdup(file);
 	cond->line = line;
 	if ((error = pthread_cond_init(&cond->sys_cond, NULL)) != 0)
-		_thread_fatal("%s: pthread_cond_init(): %s\n",
-			      __progname, strerror(error));
+		_thread_fatal(error, "THREAD: pthread_cond_init()");
 	if ((error = pthread_mutex_init(&cond->cond_mutex, NULL)) != 0)
-		_thread_fatal("%s: pthread_mutex_init(): %s\n",
-			      __progname, strerror(error));
+		_thread_fatal(error, "THREAD: pthread_mutex_init()");
 	_mutex_lock(condtree_mutex);
 	cond->id = next_cond_id++;
 	RB_INSERT(cond_tree, &cond_tree_head, cond);
@@ -983,19 +953,16 @@ thread_cond_signal_c(struct cond *cond, const char *file, unsigned int line)
 	int	error;
 
 	if (!thread_initialized)
-		_thread_fatal("%s: thread_cond_signal(): Internal error: Thread library not initialized\n",
-			      __progname);
+		_thread_fatal(0, "THREAD: thread_cond_signal(): Thread library not initialized\n");
 
 	if (cond == NULL)
-		_thread_fatal("%s: thread_cond_signal(): Internal error: Bad argument\n",
-			      __progname);
+		_thread_fatal(0, "THREAD: thread_cond_signal(): Bad argument\n");
 
 	_thread_debug_printf(3, "======> SIGNAL COND: %s:%u: '%s'(%d)\n",
 			     file, line, cond->name, cond->id);
 
 	if ((error = pthread_cond_signal(&cond->sys_cond)) != 0)
-		_thread_fatal("%s: pthread_cond_signal(): %s\n",
-			      __progname, strerror(error));
+		_thread_fatal(error, "THREAD: pthread_cond_signal()");
 }
 
 void
@@ -1004,19 +971,16 @@ thread_cond_broadcast_c(struct cond *cond, const char *file, unsigned int line)
 	int	error;
 
 	if (!thread_initialized)
-		_thread_fatal("%s: thread_cond_broadcast(): Internal error: Thread library not initialized\n",
-			      __progname);
+		_thread_fatal(0, "THREAD: thread_cond_broadcast(): Thread library not initialized\n");
 
 	if (cond == NULL)
-		_thread_fatal("%s: thread_cond_broadcast(): Internal error: Bad argument\n",
-			      __progname);
+		_thread_fatal(0, "THREAD: thread_cond_broadcast(): Bad argument\n");
 
 	_thread_debug_printf(3, "======> BROADCAST COND: %s:%u: '%s'(%d)\n",
 			     file, line, cond->name, cond->id);
 
 	if ((error = pthread_cond_broadcast(&cond->sys_cond)) != 0)
-		_thread_fatal("%s: pthread_cond_broadcast(): %s\n",
-			      __progname, strerror(error));
+		_thread_fatal(error, "THREAD: pthread_cond_broadcast()");
 }
 
 void
@@ -1025,26 +989,21 @@ thread_cond_wait_c(struct cond *cond, const char *file, unsigned int line)
 	int	error;
 
 	if (!thread_initialized)
-		_thread_fatal("%s: thread_cond_wait(): Internal error: Thread library not initialized\n",
-			      __progname);
+		_thread_fatal(0, "THREAD: thread_cond_wait(): Thread library not initialized\n");
 
 	if (cond == NULL)
-		_thread_fatal("%s: thread_cond_wait(): Internal error: Bad argument\n",
-			      __progname);
+		_thread_fatal(0, "THREAD: thread_cond_wait(): Bad argument\n");
 
 	_thread_debug_printf(3, "======> COND WAIT: %s:%u: '%s'(%d)\n",
 			     file, line, cond->name, cond->id);
 
 	if ((error = pthread_mutex_lock(&cond->cond_mutex)) != 0)
-		_thread_fatal("%s: pthread_mutex_lock(): %s\n",
-			      __progname, strerror(error));
+		_thread_fatal(error, "THREAD: pthread_mutex_lock()");
 	if ((error = pthread_cond_wait(&cond->sys_cond,
 				       &cond->cond_mutex)) != 0)
-		_thread_fatal("%s: pthread_cond_wait(): %s\n",
-			      __progname, strerror(error));
+		_thread_fatal(error, "THREAD: pthread_cond_wait()");
 	if ((error = pthread_mutex_unlock(&cond->cond_mutex)) != 0)
-		_thread_fatal("%s: pthread_mutex_unlock(): %s\n",
-			      __progname, strerror(error));
+		_thread_fatal(error, "THREAD: pthread_mutex_unlock()");
 
 	_thread_debug_printf(4, "======> COND WAIT done: '%s'(%d)\n",
 			     cond->name, cond->id);
@@ -1058,12 +1017,10 @@ thread_cond_timedwait_c(struct cond *cond, unsigned int ms,
 	struct timespec tv;
 
 	if (!thread_initialized)
-		_thread_fatal("%s: thread_cond_timedwait(): Internal error: Thread library not initialized\n",
-			      __progname);
+		_thread_fatal(0, "THREAD: thread_cond_timedwait(): Thread library not initialized\n");
 
 	if (cond == NULL)
-		_thread_fatal("%s: thread_cond_timedwait(): Internal error: Bad argument\n",
-			      __progname);
+		_thread_fatal(0, "THREAD: thread_cond_timedwait(): Bad argument\n");
 
 	_thread_debug_printf(3, "======> COND TIMEDWAIT (%ums): %s:%u: '%s'(%d)\n",
 			     ms, file, line, cond->name, cond->id);
@@ -1072,15 +1029,12 @@ thread_cond_timedwait_c(struct cond *cond, unsigned int ms,
 	tv.tv_nsec = (ms - tv.tv_sec * 1000) * 1000000;
 
 	if ((error = pthread_mutex_lock(&cond->cond_mutex)) != 0)
-		_thread_fatal("%s: pthread_mutex_lock(): %s\n",
-			      __progname, strerror(error));
+		_thread_fatal(error, "THREAD: pthread_mutex_lock()");
 	if ((error = pthread_cond_timedwait(&cond->sys_cond, &cond->cond_mutex,
 					    &tv)) != 0)
-		_thread_fatal("%s: pthread_cond_wait(): %s\n",
-			      __progname, strerror(error));
+		_thread_fatal(error, "THREAD: pthread_cond_wait()");
 	if ((error = pthread_mutex_unlock(&cond->cond_mutex)) != 0)
-		_thread_fatal("%s: pthread_mutex_unlock(): %s\n",
-			      __progname, strerror(error));
+		_thread_fatal(error, "THREAD: pthread_mutex_unlock()");
 
 	_thread_debug_printf(4, "======> COND TIMEDWAIT (%ums) done: '%s'(%d)\n",
 			     ms, cond->name, cond->id);
@@ -1094,12 +1048,10 @@ thread_cond_destroy_c(struct cond **cond_p,
 	struct cond	*cond = NULL;
 
 	if (!thread_initialized)
-		_thread_fatal("%s: thread_cond_destroy(): Internal error: Thread library not initialized\n",
-			      __progname);
+		_thread_fatal(0, "THREAD: thread_cond_destroy(): Thread library not initialized\n");
 
 	if (cond_p == NULL || (cond = *cond_p) == NULL || cond == NULL)
-		_thread_fatal("%s: thread_cond_destroy(): Internal error: Bad argument\n",
-			      __progname);
+		_thread_fatal(0, "THREAD: thread_cond_destroy(): Bad argument\n");
 
 	_thread_debug_printf(3, "======> COND DESTROY: %s:%u: '%s'(%d) (from %s:%u, age %ds)\n",
 			     file, line, cond->name, cond->id, cond->creator,
@@ -1107,11 +1059,9 @@ thread_cond_destroy_c(struct cond **cond_p,
 			     (int)(time(NULL) - cond->create_time));
 
 	if ((error = pthread_mutex_destroy(&cond->cond_mutex)) != 0)
-		_thread_fatal("%s: pthread_mutex_destroy(): %s\n",
-			      __progname, strerror(error));
+		_thread_fatal(error, "THREAD: pthread_mutex_destroy()");
 	if ((error = pthread_cond_destroy(&cond->sys_cond)) != 0)
-		_thread_fatal("%s: pthread_cond_destroy(): %s\n",
-			      __progname, strerror(error));
+		_thread_fatal(error, "THREAD: pthread_cond_destroy()");
 	_mutex_lock(condtree_mutex);
 	RB_REMOVE(cond_tree, &cond_tree_head, cond);
 	_cond_free(cond_p);
@@ -1127,8 +1077,7 @@ thread_rwlock_create_c(const char *name, const char *file, unsigned int line)
 	int		 error;
 
 	if (!thread_initialized)
-		_thread_fatal("%s: thread_rwlock_create(): Internal error: Thread library not initialized\n",
-			      __progname);
+		_thread_fatal(0, "THREAD: thread_rwlock_create(): Thread library not initialized\n");
 
 	_thread_debug_printf(3, "======> CREATE RWLOCK: %s:%u: %s\n",
 			     file, line, name);
@@ -1139,8 +1088,7 @@ thread_rwlock_create_c(const char *name, const char *file, unsigned int line)
 	rwlock->creator = xstrdup(file);
 	rwlock->line = line;
 	if ((error = pthread_rwlock_init(&rwlock->sys_rwlock, NULL)) != 0)
-		_thread_fatal("%s: pthread_rwlock_init(): %s\n",
-			      __progname, strerror(error));
+		_thread_fatal(error, "THREAD: pthread_rwlock_init()");
 	_mutex_lock(rwlocktree_mutex);
 	rwlock->id = next_rwlock_id++;
 	RB_INSERT(rwlock_tree, &rwlock_tree_head, rwlock);
@@ -1159,15 +1107,16 @@ thread_rwlock_rlock_c(struct rwlock *rwlock,
 	int	error;
 
 	if (!thread_initialized)
-		_thread_fatal("%s: thread_rwlock_rlock(): Internal error: Thread library not initialized\n",
-			      __progname);
+		_thread_fatal(0, "THREAD: thread_rwlock_rlock(): Thread library not initialized\n");
+
+	if (rwlock == NULL)
+		_thread_fatal(0, "THREAD: thread_rwlock_rlock(): Bad argument\n");
 
 	_thread_debug_printf(3, "======> RWLOCK READ: %s:%u: '%s'(%d)\n",
 			     file, line, rwlock->name, rwlock->id);
 
 	if ((error = pthread_rwlock_rdlock(&rwlock->sys_rwlock)) != 0)
-		_thread_fatal("%s: pthread_rwlock_rdlock(): %s\n",
-			      __progname, strerror(error));
+		_thread_fatal(error, "THREAD: pthread_rwlock_rdlock()");
 }
 
 void
@@ -1177,15 +1126,16 @@ thread_rwlock_wlock_c(struct rwlock *rwlock,
 	int	error;
 
 	if (!thread_initialized)
-		_thread_fatal("%s: thread_rwlock_wlock(): Internal error: Thread library not initialized\n",
-			      __progname);
+		_thread_fatal(0, "THREAD: thread_rwlock_wlock(): Thread library not initialized\n");
+
+	if (rwlock == NULL)
+		_thread_fatal(0, "THREAD: thread_rwlock_wlock(): Bad argument\n");
 
 	_thread_debug_printf(3, "======> RWLOCK WRITE: %s:%u: '%s'(%d)\n",
 			     file, line, rwlock->name, rwlock->id);
 
 	if ((error = pthread_rwlock_wrlock(&rwlock->sys_rwlock)) != 0)
-		_thread_fatal("%s: pthread_rwlock_wrlock(): %s\n",
-			      __progname, strerror(error));
+		_thread_fatal(error, "THREAD: pthread_rwlock_wrlock()");
 }
 
 void
@@ -1195,15 +1145,16 @@ thread_rwlock_unlock_c(struct rwlock *rwlock,
 	int	error;
 
 	if (!thread_initialized)
-		_thread_fatal("%s: thread_rwlock_unlock(): Internal error: Thread library not initialized\n",
-			      __progname);
+		_thread_fatal(0, "THREAD: thread_rwlock_unlock(): Thread library not initialized\n");
+
+	if (rwlock == NULL)
+		_thread_fatal(0, "THREAD: thread_rwlock_unlock(): Bad argument\n");
 
 	_thread_debug_printf(3, "======> RWLOCK UNLOCK: %s:%u: '%s'(%d)\n",
 			     file, line, rwlock->name, rwlock->id);
 
 	if ((error = pthread_rwlock_unlock(&rwlock->sys_rwlock)) != 0)
-		_thread_fatal("%s: pthread_rwlock_unlock(): %s\n",
-			      __progname, strerror(error));
+		_thread_fatal(error, "THREAD: pthread_rwlock_unlock()");
 }
 
 void
@@ -1214,12 +1165,10 @@ thread_rwlock_destroy_c(struct rwlock **rwlock_p,
 	int		 error;
 
 	if (!thread_initialized)
-		_thread_fatal("%s: thread_rwlock_destroy(): Internal error: Thread library not initialized\n",
-			      __progname);
+		_thread_fatal(0, "THREAD: thread_rwlock_destroy(): Thread library not initialized\n");
 
 	if (rwlock_p == NULL || (rwlock = *rwlock_p) == NULL || rwlock == NULL)
-		_thread_fatal("%s: thread_rwlock_destroy(): Internal error: Bad argument\n",
-			      __progname);
+		_thread_fatal(0, "THREAD: thread_rwlock_destroy(): Bad argument\n");
 
 	_thread_debug_printf(3, "======> RWLOCK DESTROY: %s:%u: '%s'(%d) (from %s:%u, age %ds)\n",
 			     file, line, rwlock->name, rwlock->id,
@@ -1227,8 +1176,7 @@ thread_rwlock_destroy_c(struct rwlock **rwlock_p,
 			     (int)(time(NULL) - rwlock->create_time));
 
 	if ((error = pthread_rwlock_destroy(&rwlock->sys_rwlock)) != 0)
-		_thread_fatal("%s: pthread_rwlock_destroy(): %s\n",
-			      __progname, strerror(error));
+		_thread_fatal(error, "THREAD: pthread_rwlock_destroy()");
 	_mutex_lock(rwlocktree_mutex);
 	RB_REMOVE(rwlock_tree, &rwlock_tree_head, rwlock);
 	_rwlock_free(rwlock_p);
@@ -1241,8 +1189,7 @@ void
 thread_sleep_ms(unsigned int ms)
 {
 	if (!thread_initialized)
-		_thread_fatal("%s: thread_sleep(): Internal error: Thread library not initialized\n",
-			      __progname);
+		_thread_fatal(0, "THREAD: thread_sleep(): Thread library not initialized\n");
 
 #ifdef WIN32
 	Sleep(ms);
@@ -1272,8 +1219,7 @@ void
 thread_library_lock(void)
 {
 	if (!thread_initialized)
-		_thread_fatal("%s: thread_library_lock(): Internal error: Thread library not initialized\n",
-			      __progname);
+		_thread_fatal(0, "THREAD: thread_library_lock(): Thread library not initialized\n");
 
 	_mutex_lock(library_mutex);
 }
@@ -1282,8 +1228,7 @@ void
 thread_library_unlock(void)
 {
 	if (!thread_initialized)
-		_thread_fatal("%s: thread_library_unlock(): Internal error: Thread library not initialized\n",
-			      __progname);
+		_thread_fatal(0, "THREAD: thread_library_unlock(): Thread library not initialized\n");
 
 	_mutex_unlock(library_mutex);
 }
