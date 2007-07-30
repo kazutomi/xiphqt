@@ -428,7 +428,7 @@ xalloc_shutdown(void)
 			      xalloc_mutex);
 	if (pthread_mutex_destroy(&strerror_mutex) != 0)
 		_xalloc_fatal("XALLOC: Internal error: xalloc_shutdown(): strerror_mutex %p cannot be destroyed\n",
-			      xalloc_mutex);
+			      strerror_mutex);
 #endif /* THREAD_SAFE */
 
 	xalloc_initialized = 0;
