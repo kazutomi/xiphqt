@@ -407,7 +407,6 @@ _mutex_init(struct mutex *mutex)
 {
 	int	error;
 
-	mutex->sys_mutex = PTHREAD_MUTEX_INITIALIZER;
 	if ((error = pthread_mutex_init(&mutex->sys_mutex, NULL)) != 0)
 		_thread_fatal(error, "THREAD: pthread_mutex_init()");
 }
