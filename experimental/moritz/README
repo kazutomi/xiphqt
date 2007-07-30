@@ -7,3 +7,12 @@ clean legal status.
 Everything here is highly experimental, probably very buggy, and there
 be dragons, likely to utterly break your FOSS-powered baby-mulching
 machines and other things.
+
+
+Contents:
+ * misc/: Miscellaneous stuff.
+ * compat/: Contains required things that are not available everywhere.
+ * xalloc/: *alloc() wrapper library.
+   - Depends on: compat/ (optional), pthreads (optional)
+ * thread/: Threading and syncronization library, similar to libicethread.
+   - Depends on: xalloc/, compat/, pthreads
