@@ -526,6 +526,13 @@ thread_shutdown(void)
 	if (!thread_initialized)
 		_thread_fatal(0, "THREAD: thread_shutdown(): Thread library not initialized\n");
 
+	thread_initialized = 0;
+
+	_mutex_lock(threadtree_mutex);
+	_mutex_lock(mutextree_mutex);
+	_mutex_lock(condtree_mutex);
+	_mutex_lock(rwlocktree_mutex);
+
 	for (rwlock = RB_MIN(rwlock_tree, &rwlock_tree_head);
 	     rwlock != NULL;
 	     rwlock = rwlock_next) {
@@ -558,6 +565,11 @@ thread_shutdown(void)
 		_thread_free(&thread);
 	}
 
+	_mutex_unlock(rwlocktree_mutex);
+	_mutex_unlock(condtree_mutex);
+	_mutex_unlock(mutextree_mutex);
+	_mutex_unlock(threadtree_mutex);
+
 	if ((error = pthread_mutex_destroy(&library_mutex->sys_mutex)) != 0)
 		_thread_fatal(error, "THREAD: pthread_mutex_destroy(%s)",
 			      library_mutex->name);
@@ -578,8 +590,6 @@ thread_shutdown(void)
 		_thread_fatal(error, "THREAD: pthread_mutex_destroy(%s)",
 			      mutextree_mutex->name);
 	_mutex_free(&mutextree_mutex);
-
-	thread_initialized = 0;
 
 	_thread_debug_printf(4, "======> SHUTDOWN thread done\n");
 }
