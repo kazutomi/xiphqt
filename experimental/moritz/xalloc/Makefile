@@ -29,7 +29,7 @@ $(LIB): $(LIBOBJ)
 	ar cru $(LIB) $(LIBOBJ)
 	ranlib $(LIB)
 
-$(PROG): $(OBJ)
+$(PROG): $(LIB) $(OBJ)
 	$(CC) $(DEBUG) $(OBJ) $(LDFLAGS) -o $(PROG)
 
 clean:
