@@ -4,8 +4,12 @@
 # Licensed under LGPL (GNU Lesser General Public License)
 # http://www.gnu.org/licenses/lgpl.html
 #
-# NOTE: Python 2.4 or later requiered for current line attribute of Expat parser
+# NOTE: Python 2.4 or later required for current line attribute of Expat parser
 #
+# 2007-07-30
+#   * Some HTML and CSS fixes by Ivo Emanuel Gonçalves <justivo@gmail.com>
+#     (probably should remove those bloody tables, but I can't see
+#     through the sea of Python.  Not without my Python-reading glasses)
 # 2007-07-25
 #   * Changes: License changed from GPL to LGPL
 # 2007-02-18
@@ -38,17 +42,19 @@ print                               # blank line, end of headers
 
 
 print """
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+            "http://www.w3.org/TR/html4/strict.dtd">
 <html>
 	<head>
-		<title>XSPF Validator</title>
-		<style>
+		<title>XSPF Validator &mdash; Validate your playlists</title>
+		<style type="text/html">
 			body {
 				background-color:rgb(230,230,230);
-				margin:0px;
+				margin:0;
 			}
 
 			body, td, h1, h2, h3, h4 {
-				font-family:"Verdana";
+				font-family:Verdana, sans-serif;
 			}
 
 			a {
@@ -79,7 +85,7 @@ print """
 				background-color:rgb(180,180,180);
 				font-size:1px;
 				height:2px;
-				padding:0px;
+				padding:0;
 				line-height:1px;
 			}
 			span.invalid {
@@ -97,7 +103,7 @@ print """
 
 			td.lineNumber {
 				background-color:rgb(222,222,222);
-				font-family:"Courier new";
+				font-family:"Courier New", monospace;
 				text-align:right;
 				vertical-align:top;
 				padding-top:3px;
@@ -109,10 +115,10 @@ print """
 					background-color:rgb(0,0,0);
 					font-size:1pt;
 					width:1px;
-					padding:0px;
+					padding:0;
 			}
 			td.lineOdd {
-				font-family:"Courier new";
+				font-family:"Courier New", monospace;
 				background-color:rgb(236,236,236);
 				padding-top:3px;
 				padding-bottom:3px;
@@ -120,7 +126,7 @@ print """
 				padding-right:8px;
 			}
 			td.lineEven {
-				font-family:"Courier new";
+				font-family:"Courier New", monospace;
 				background-color:rgb(250,250,250);
 				padding-top:3px;
 				padding-bottom:3px;
@@ -128,7 +134,7 @@ print """
 				padding-right:8px;
 			}
 			td.lineBad {
-				font-family:"Courier new";
+				font-family:"Courier New", monospace;
 				background-color:rgb(255,188,188);
 				padding-top:3px;
 				padding-bottom:3px;
@@ -148,9 +154,9 @@ print """
 	</head>
 	<body>
 		<!-- CENTERING -->
-		<table width="100%" height="100%">
+		<table style="width:100%;">
 			<tr>
-				<td align="center" valign="center" style="padding:10px">
+				<td align="center" valign="middle" style="padding:10px">
 					<!-- BORDER -->"""
 
 
@@ -178,14 +184,14 @@ elif form.has_key("url"): ### and form.has_key("submitUrl")
         file = urllib2.urlopen(url)
         input = file.read()
     except ValueError:
-        intro = """<b style="color:red">Invalid URL.</b><br><br>"""
+        intro = """<b style="color:red;">Invalid URL.</b><br><br>"""
 
     except urllib2.URLError:
         # 404, non-existent host, IPv6 (not supported), ...
         intro = """<b style="color:red">Could not download from URL.</b><br><br>"""
 
     if input != "":
-        intro = "Validating data from URL<br><b><i><a href=\"" + url + "\" target=\"_blank\" class=\"blackLink\">" + url + "</a></i></b><br><br>"
+        intro = "Validating data from URL<br><b><i><a href=\"" + url + "\" class=\"blackLink\">" + url + "</a></i></b><br><br>"
 
 
 
@@ -204,11 +210,11 @@ if input != "":
 if input == "":
     # Formular 600
     print """
-					<table cellpadding="0" cellspacing="0" width="600" style="border:1px solid rgb(180,180,180); background-color:white">"""
+					<table cellpadding="0" cellspacing="0" width="600" style="border:1px solid rgb(180,180,180); background-color:#FFFFFF;">"""
 else:
     # Results 800
     print """
-					<table cellpadding="0" cellspacing="0" width="750" style="border:1px solid rgb(180,180,180); background-color:white">"""
+					<table cellpadding="0" cellspacing="0" width="750" style="border:1px solid rgb(180,180,180); background-color:#FFFFFF;">"""
 
 print """
 						<tr>"""
@@ -226,15 +232,15 @@ if input == "":
 else:
     # Results full width
     print """
-							<td style="padding-top:60px; padding-bottom:50px">
+							<td style="padding-top:60px; padding-bottom:50px;">
 								<!-- CONTENT -->
-								<table width="100%">"""
+								<table style="width:100%;">"""
 
 
 
 print """
 									<tr>
-										<td style="padding-bottom: 20px;" align="center"><img src="xspflogo-1.5.gif" width="297" height="83" border="0" /></td>
+										<td style="padding-bottom: 20px;" align="center"><img src="xspflogo-1.5.gif" style="width:297px; height:83px; border:0;" alt=""></td>
 									</tr>"""
 
 
@@ -243,7 +249,7 @@ if input == "":
     if intro != "":
         print """
 									<tr>
-										<td width="100%" align="center">"""
+										<td style="width:100%;" align="center">"""
         print intro
         print """
 									</tr>"""
@@ -251,7 +257,7 @@ if input == "":
     # Formular
     print """
 									<tr>
-										<td style="padding-bottom:16px">
+										<td style="padding-bottom:16px;">
 											Validate a Spiff playlist from ...
 										</td>
 									</tr>
@@ -273,14 +279,14 @@ if input == "":
 										</td>
 									</tr>
 									<tr>
-										<td style="padding-bottom:20px">
+										<td style="padding-bottom:20px;">
 											<input name="submitUploaded" value="Submit" type="submit">
 										</td>
 									</tr>
 									<tr>
 										<td>
 											Pasted text<br>
-											<textarea cols="60" rows="5" name="pasted" size="60" style="width: 350px;"></textarea>
+											<textarea cols="60" rows="5" name="pasted" style="width: 350px;"></textarea>
 										</td>
 									</tr>
 									<tr>
@@ -1085,19 +1091,20 @@ print """
 							</td>
 						</tr>
 						<tr>
-							<td align="center" style="padding-left:6px; padding-right:6px">
-								<table cellpadding="0" cellspacing="0" width="100%" height="1" style="background-color:rgb(180,180,180)">
+							<td align="center" style="padding-left:6px; padding-right:6px;">
+								<table cellpadding="0" cellspacing="0" style="width:100%;" height="1" style="background-color:rgb(180,180,180);">
 									<tr>
-										<td style="font-size:1px; line-height:1px">&nbsp;</td>
+										<td style="font-size:1px; line-height:1px;">&nbsp;</td>
 									</tr>
 								</table>
 							</td>
+						</tr>
 						<tr>
-						<tr>
-							<td align="center" style="font-size:9pt; padding-top:2px; padding-bottom:5px">
-								<a href="http://www.hartwork.org/" target="_blank">Hartwork Project</a>&nbsp;&nbsp;&nbsp;
-								<a href="http://libspiff.sourceforge.net/" target="_blank">libSpiff</a>&nbsp;&nbsp;&nbsp;
-								<a href="http://www.xspf.org/specs/" target="_blank">XSPF Spec</a>&nbsp;&nbsp;&nbsp;
+							<td align="center" style="font-size:9pt; padding-top:2px; padding-bottom:5px;">
+								<a href="https://svn.xiph.org/websites/validator.xspf.org/check.py">Source Code for Validator</a>&nbsp;&nbsp;&nbsp;
+								<a href="http://www.hartwork.org/">Hartwork Project</a>&nbsp;&nbsp;&nbsp;
+								<a href="http://libspiff.sourceforge.net/">libSpiff</a>&nbsp;&nbsp;&nbsp;
+								<a href="http://xspf.org/xspf-v1.html">XSPF Spec</a>&nbsp;&nbsp;&nbsp;
 							</td>
 						</tr>
 					</table>
