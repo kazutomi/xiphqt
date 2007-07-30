@@ -1,0 +1,40 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libxalloc", "libxalloc.vcproj", "{ED9F1811-718B-40CE-95FA-E9409F77D8F0}"
+	ProjectSection(ProjectDependencies) = postProject
+		{0ACFE379-35EA-4FDC-B0F1-40C9D0E7EE2B} = {0ACFE379-35EA-4FDC-B0F1-40C9D0E7EE2B}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pthread", "..\..\pthreads\pthread.vcproj", "{0ACFE379-35EA-4FDC-B0F1-40C9D0E7EE2B}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfiguration) = preSolution
+		Debug = Debug
+		Debug Static = Debug Static
+		Release = Release
+		Release Static = Release Static
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{ED9F1811-718B-40CE-95FA-E9409F77D8F0}.Debug.ActiveCfg = Debug|Win32
+		{ED9F1811-718B-40CE-95FA-E9409F77D8F0}.Debug.Build.0 = Debug|Win32
+		{ED9F1811-718B-40CE-95FA-E9409F77D8F0}.Debug Static.ActiveCfg = Debug|Win32
+		{ED9F1811-718B-40CE-95FA-E9409F77D8F0}.Debug Static.Build.0 = Debug|Win32
+		{ED9F1811-718B-40CE-95FA-E9409F77D8F0}.Release.ActiveCfg = Release|Win32
+		{ED9F1811-718B-40CE-95FA-E9409F77D8F0}.Release.Build.0 = Release|Win32
+		{ED9F1811-718B-40CE-95FA-E9409F77D8F0}.Release Static.ActiveCfg = Release|Win32
+		{ED9F1811-718B-40CE-95FA-E9409F77D8F0}.Release Static.Build.0 = Release|Win32
+		{0ACFE379-35EA-4FDC-B0F1-40C9D0E7EE2B}.Debug.ActiveCfg = Debug|Win32
+		{0ACFE379-35EA-4FDC-B0F1-40C9D0E7EE2B}.Debug.Build.0 = Debug|Win32
+		{0ACFE379-35EA-4FDC-B0F1-40C9D0E7EE2B}.Debug Static.ActiveCfg = Debug Static|Win32
+		{0ACFE379-35EA-4FDC-B0F1-40C9D0E7EE2B}.Debug Static.Build.0 = Debug Static|Win32
+		{0ACFE379-35EA-4FDC-B0F1-40C9D0E7EE2B}.Release.ActiveCfg = Release|Win32
+		{0ACFE379-35EA-4FDC-B0F1-40C9D0E7EE2B}.Release.Build.0 = Release|Win32
+		{0ACFE379-35EA-4FDC-B0F1-40C9D0E7EE2B}.Release Static.ActiveCfg = Release Static|Win32
+		{0ACFE379-35EA-4FDC-B0F1-40C9D0E7EE2B}.Release Static.Build.0 = Release Static|Win32
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal

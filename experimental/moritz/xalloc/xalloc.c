@@ -67,7 +67,7 @@ static pthread_mutex_t	 strerror_mutex;
 # ifdef HAVE_SYS_TREE_H
 #  include <sys/tree.h>
 # else
-#  include "compat/sys/tree.h"
+#  include "sys/tree.h"
 # endif
 
 int	_memory_cmp(void *, void *);
@@ -117,7 +117,11 @@ _memory_cmp(void *arg_a, void *arg_b)
 	struct memory	*a = (struct memory *)arg_a;
 	struct memory	*b = (struct memory *)arg_b;
 
-	return ((int)a->ptr - (int)b->ptr);
+	if (a->ptr < b->ptr)
+		return (-1);
+	else if (a->ptr > b->ptr)
+		return (1);
+	return (0);
 }
 
 void

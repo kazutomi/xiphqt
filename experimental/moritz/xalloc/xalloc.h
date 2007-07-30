@@ -43,9 +43,9 @@
  * variadic macros, and work only on systems with vasprintf() or vsnprintf(),
  * and MS Windows.
  */
-#define XALLOC_DEBUG 1
+/* #define XALLOC_DEBUG 1 */
 /* #define XALLOC_SILENT 1 */
-#define XALLOC_WITH_XASPRINTF 1
+/* #define XALLOC_WITH_XASPRINTF 1 */
 
 /* The default output stream for messages: */
 #define XALLOC_DEFAULT_OUTPUT	stderr
