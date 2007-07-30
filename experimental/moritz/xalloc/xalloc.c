@@ -104,6 +104,7 @@ static unsigned int	  debug_level = 0;
 static FILE		 *debug_output = NULL;
 static int		  xalloc_initialized = 0;
 static size_t		  xalloc_allocated;
+static size_t		  xalloc_total;
 static size_t		  xalloc_peak;
 static size_t		  xalloc_freed;
 static void *		(*real_malloc)(size_t) = NULL;
@@ -319,6 +320,7 @@ xalloc_initialize(void)
 	real_calloc = calloc;
 	real_realloc = realloc;
 	xalloc_allocated = 0;
+	xalloc_total = 0;
 	xalloc_peak = 0;
 	xalloc_freed = 0;
 
@@ -410,10 +412,11 @@ xalloc_shutdown(void)
 				      (unsigned long)leaked_bytes,
 				      (unsigned long)xalloc_allocated);
 
-		_xalloc_debug_printf(1, "XALLOC: STATS: leaked: %lu bytes, peak allocation: %lu bytes (freed: %lu bytes)\n",
+		_xalloc_debug_printf(1, "XALLOC: STATS: leaked: %lu bytes, peak allocation: %lu bytes (freed/total: %lu/%lu bytes)\n",
 				     (unsigned long)xalloc_allocated,
 				     (unsigned long)xalloc_peak,
-				     (unsigned long)xalloc_freed);
+				     (unsigned long)xalloc_freed,
+				     (unsigned long)xalloc_total);
 
 		XALLOC_UNLOCK(xalloc_mutex);
 	}
@@ -461,6 +464,7 @@ xmalloc_c(size_t size, const char *file, unsigned int line)
 		XALLOC_LOCK(xalloc_mutex);
 		RB_INSERT(memory_tree, &memory_tree_head, mem);
 		xalloc_allocated += size;
+		xalloc_total += size;
 		if (xalloc_allocated > xalloc_peak)
 			xalloc_peak = xalloc_allocated;
 		XALLOC_UNLOCK(xalloc_mutex);
@@ -505,6 +509,7 @@ xcalloc_c(size_t nmemb, size_t size, int may_fail,
 		XALLOC_LOCK(xalloc_mutex);
 		RB_INSERT(memory_tree, &memory_tree_head, mem);
 		xalloc_allocated += nmemb * size;
+		xalloc_total += nmemb * size;
 		if (xalloc_allocated > xalloc_peak)
 			xalloc_peak = xalloc_allocated;
 		XALLOC_UNLOCK(xalloc_mutex);
@@ -582,9 +587,14 @@ xrealloc_c(void *ptr, size_t nmemb, size_t size,
 
 #ifdef XALLOC_DEBUG
 	if (debug_level > 0) {
+		ssize_t diff = nsiz - mem->size;
+
 		XALLOC_LOCK(xalloc_mutex);
-		xalloc_allocated -= mem->size;
-		xalloc_allocated += nsiz;
+		xalloc_allocated += diff;
+		if (diff < 0)
+			xalloc_freed += -diff;
+		else
+			xalloc_total += diff;
 		if (xalloc_allocated > xalloc_peak)
 			xalloc_peak = xalloc_allocated;
 		mem->size = nsiz;
@@ -708,6 +718,7 @@ xasprintf_c(const char *file, unsigned int line,
 		XALLOC_LOCK(xalloc_mutex);
 		RB_INSERT(memory_tree, &memory_tree_head, mem);
 		xalloc_allocated += strsiz;
+		xalloc_total += strsiz;
 		if (xalloc_allocated > xalloc_peak)
 			xalloc_peak = xalloc_allocated;
 		XALLOC_UNLOCK(xalloc_mutex);
