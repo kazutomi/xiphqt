@@ -288,11 +288,13 @@ _catch_signals(void)
 	 * These signals should only be accepted by the signal handling thread
 	 * (main thread.)
 	 */
-	sigaddset(&ss, SIGHUP);
 	sigaddset(&ss, SIGCHLD);
+	sigaddset(&ss, SIGHUP);
 	sigaddset(&ss, SIGINT);
 	sigaddset(&ss, SIGPIPE);
 	sigaddset(&ss, SIGTERM);
+	sigaddset(&ss, SIGUSR1);
+	sigaddset(&ss, SIGUSR2);
 
 	if ((error = pthread_sigmask(SIG_UNBLOCK, &ss, NULL)) != 0)
 		_thread_fatal(error, "THREAD: pthread_sigmask()");
@@ -311,10 +313,11 @@ _block_signals(void)
 	/*
 	 * These are the only signals that sub-threads may receive.
 	 */
-	sigdelset(&ss, SIGKILL);
-	sigdelset(&ss, SIGSTOP);
-	sigdelset(&ss, SIGSEGV);
 	sigdelset(&ss, SIGBUS);
+	sigdelset(&ss, SIGFPE);
+	sigdelset(&ss, SIGKILL);
+	sigdelset(&ss, SIGSEGV);
+	sigdelset(&ss, SIGSTOP);
 	if ((error = pthread_sigmask(SIG_BLOCK, &ss, NULL)) != 0)
 		_thread_fatal(error, "THREAD: pthread_sigmask()");
 #endif /* !WIN32 */
