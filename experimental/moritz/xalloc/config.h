@@ -1,3 +1,4 @@
+#define _GNU_SOURCE		1
 #define HAVE_SYS_TYPES_H	1
 #define HAVE_SYS_TREE_H 	1
 #define HAVE_ASPRINTF		1

@@ -1,3 +1,4 @@
+#define _GNU_SOURCE		1
 #define HAVE_SYS_TYPES_H	1
 #define HAVE_NANOSLEEP		1
 #define HAVE_POLL_H		1
