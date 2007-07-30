@@ -14,5 +14,5 @@ Contents:
  * compat/: Contains required things that are not available everywhere.
  * xalloc/: *alloc() wrapper library.
    - Depends on: compat/ (optional), pthreads (optional)
- * thread/: Threading and syncronization library, similar to libicethread.
+ * thread/: Threading and synchronization library, similar to libicethread.
    - Depends on: xalloc/, compat/, pthreads

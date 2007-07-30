@@ -1,5 +1,5 @@
 /*
- * libthread - Cross platform thread and syncronization library, with
+ * libthread - Cross platform thread and synchronization library, with
  *             extensive error checking and debugging facility.
  *             Uses POSIX threads (libpthread, or pthread-win32 on
  *             Windows.)
