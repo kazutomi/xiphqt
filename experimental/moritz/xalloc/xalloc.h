@@ -42,6 +42,9 @@
  * so will require libxalloc to be compiled with a compiler that supports C99
  * variadic macros, and work only on systems with vasprintf() or vsnprintf(),
  * and MS Windows.
+ *
+ * Note that none of the x*_c() functions should be used directly, unless it
+ * is ensured that /file/ is a const char * to a real string constant.
  */
 /* #define XALLOC_DEBUG 1 */
 /* #define XALLOC_SILENT 1 */

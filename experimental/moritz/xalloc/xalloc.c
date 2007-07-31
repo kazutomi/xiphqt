@@ -76,11 +76,11 @@ struct memory {
 	RB_ENTRY(memory) entry;
 	void		*ptr;
 	size_t		 size;
-	char		*allocated_by;
+	const char	*allocated_by;
 	unsigned int	 allocated_in_line;
-	char		*reallocated_by;
+	const char	*reallocated_by;
 	unsigned int	 reallocated_in_line;
-	char		*freed_by;
+	const char	*freed_by;
 	unsigned int	 freed_in_line;
 };
 RB_HEAD(memory_tree, memory) memory_tree_head = RB_INITIALIZER(&memory_tree_head);
@@ -95,7 +95,6 @@ void	_xalloc_warn(const char *, ...);
 void	_xalloc_error(int, const char *, ...);
 void	_xalloc_fatal(const char *, ...);
 void	_xalloc_debug_printf(unsigned int, const char *, ...);
-char *	_xalloc_strdup(const char *);
 #ifdef XALLOC_WITH_XASPRINTF
 int	_xalloc_vasprintf(char **, const char *, va_list, size_t *);
 #endif /* XALLOC_WITH_XASPRINTF */
@@ -110,6 +109,7 @@ static size_t		  xalloc_freed;
 static void *		(*real_malloc)(size_t) = NULL;
 static void *		(*real_calloc)(size_t, size_t) = NULL;
 static void *		(*real_realloc)(void *, size_t) = NULL;
+static const char	 *unknown_file = "<unknown>";
 
 #ifdef XALLOC_DEBUG
 int
@@ -130,20 +130,14 @@ _memory_free(struct memory **mem_p)
 {
 	struct memory	*mem = *mem_p;
 
-	if (mem->allocated_by != NULL) {
-		free(mem->allocated_by);
+	if (mem->allocated_by != NULL)
 		mem->allocated_by = NULL;
-	}
-	if (mem->reallocated_by != NULL) {
-		free(mem->reallocated_by);
+	if (mem->reallocated_by != NULL)
 		mem->reallocated_by = NULL;
-	}
-	if (mem->freed_by != NULL) {
-		free(mem->freed_by);
+	if (mem->freed_by != NULL)
 		mem->freed_by = NULL;
-	}
 	free(mem);
-	mem = NULL;
+	*mem_p = NULL;
 }
 #endif /* XALLOC_DEBUG */
 
@@ -220,19 +214,6 @@ _xalloc_debug_printf(unsigned int level, const char *fmt, ...)
 	fflush(debug_output);
 #endif /* XALLOC_DEBUG */
 	va_end(ap);
-}
-
-char *
-_xalloc_strdup(const char *str)
-{
-	size_t	 len;
-	char	*nstr;
-
-	len = strlen(str) + 1;
-	if ((nstr = real_calloc(len, sizeof(char))) == NULL)
-		return (NULL);
-	memcpy(nstr, str, len);
-	return (nstr);
 }
 
 #ifdef XALLOC_WITH_XASPRINTF
@@ -444,11 +425,12 @@ xmalloc_c(size_t size, const char *file, unsigned int line)
 
 	if (size == 0)
 		_xalloc_fatal("XALLOC: xmalloc(): %s:%u: Zero size\n",
-			      file, line);
+			      file ? file : unknown_file, line);
 
 	if ((ret = real_malloc(size)) == NULL)
 		_xalloc_error(errno, "XALLOC: xmalloc(): %s:%u: Allocating %lu bytes",
-			      file, line, (unsigned long)(size));
+			      file ? file : unknown_file, line,
+			      (unsigned long)(size));
 
 #ifdef XALLOC_DEBUG
 	if (debug_level > 0) {
@@ -458,8 +440,10 @@ xmalloc_c(size_t size, const char *file, unsigned int line)
 			_xalloc_error(errno, "XALLOC: Internal error");
 		mem->ptr = ret;
 		mem->size = size;
-		if ((mem->allocated_by = _xalloc_strdup(file)) == NULL)
-			_xalloc_error(errno, "XALLOC: Internal error");
+		if (file)
+			mem->allocated_by = file;
+		else
+			mem->allocated_by = unknown_file;
 		mem->allocated_in_line = line;
 		XALLOC_LOCK(xalloc_mutex);
 		RB_INSERT(memory_tree, &memory_tree_head, mem);
@@ -485,15 +469,16 @@ xcalloc_c(size_t nmemb, size_t size, int may_fail,
 
 	if (nmemb == 0 || size == 0)
 		_xalloc_fatal("XALLOC: xcalloc(): %s:%u: Zero size\n",
-			      file, line);
+			      file ? file : unknown_file, line);
 
 	if (SIZE_T_MAX / nmemb < size)
 		_xalloc_fatal("XALLOC: xcalloc(): %s:%u: Integer overflow (nmemb * size > SIZE_T_MAX)\n",
-			      file, line);
+			      file ? file : unknown_file, line);
  
 	if ((ret = real_calloc(nmemb, size)) == NULL && may_fail == 0)
 		_xalloc_error(errno, "XALLOC: xcalloc(): %s:%u: Allocating %lu bytes",
-			      file, line, (unsigned long)(nmemb * size));
+			      file ? file : unknown_file, line,
+			      (unsigned long)(nmemb * size));
 
 #ifdef XALLOC_DEBUG
 	if (ret != NULL && debug_level > 0) {
@@ -503,8 +488,10 @@ xcalloc_c(size_t nmemb, size_t size, int may_fail,
 			_xalloc_error(errno, "XALLOC: Internal error");
 		mem->ptr = ret;
 		mem->size = nmemb * size;
-		if ((mem->allocated_by = _xalloc_strdup(file)) == NULL)
-			_xalloc_error(errno, "XALLOC: Internal error");
+		if (file)
+			mem->allocated_by = file;
+		else
+			mem->allocated_by = unknown_file;
 		mem->allocated_in_line = line;
 		XALLOC_LOCK(xalloc_mutex);
 		RB_INSERT(memory_tree, &memory_tree_head, mem);
@@ -534,11 +521,11 @@ xrealloc_c(void *ptr, size_t nmemb, size_t size,
 
 	if (nmemb == 0 || size == 0)
 		_xalloc_fatal("XALLOC: xrealloc(): %s:%u: Zero size\n",
-			      file, line);
+			      file ? file : unknown_file, line);
 
 	if (SIZE_T_MAX / nmemb < size)
 		_xalloc_fatal("XALLOC: xrealloc(): %s:%u: Integer overflow (nmemb * size > SIZE_T_MAX)\n",
-			      file, line);
+			      file ? file : unknown_file, line);
 
 	if (ptr == NULL) {
 		ret = real_malloc(nsiz);
@@ -547,8 +534,10 @@ xrealloc_c(void *ptr, size_t nmemb, size_t size,
 			if ((mem = real_calloc(1, sizeof(struct memory))) == NULL)
 				_xalloc_error(errno, "XALLOC: Internal error");
 			mem->ptr = ret;
-			if ((mem->allocated_by = _xalloc_strdup(file)) == NULL)
-				_xalloc_error(errno, "XALLOC: Internal error");
+			if (file)
+				mem->allocated_by = file;
+			else
+				mem->allocated_by = unknown_file;
 			mem->allocated_in_line = line;
 		}
 #endif /* XALLOC_DEBUG */
@@ -561,7 +550,8 @@ xrealloc_c(void *ptr, size_t nmemb, size_t size,
 			find_mem.ptr = ptr;
 			if ((mem = RB_FIND(memory_tree, &memory_tree_head, &find_mem)) == NULL)
 				_xalloc_fatal("XALLOC: xrealloc(): %s:%u: Junk pointer %p not accounted for\n",
-					      file, line, ptr);
+					      file ? file : unknown_file,
+					      line, ptr);
 			RB_REMOVE(memory_tree, &memory_tree_head, mem);
 		}
 		XALLOC_UNLOCK(xalloc_mutex);
@@ -570,12 +560,10 @@ xrealloc_c(void *ptr, size_t nmemb, size_t size,
 #ifdef XALLOC_DEBUG
 		if (debug_level > 0) {
 			mem->ptr = ret;
-			if (mem->reallocated_by != NULL) {
-				free(mem->reallocated_by);
-				mem->reallocated_by = NULL;
-			}
-			if ((mem->reallocated_by = _xalloc_strdup(file)) == NULL)
-				_xalloc_error(errno, "XALLOC: Internal error");
+			if (file)
+				mem->reallocated_by = file;
+			else
+				mem->reallocated_by = unknown_file;
 			mem->reallocated_in_line = line;
 		}
 #endif /* XALLOC_DEBUG */
@@ -583,7 +571,8 @@ xrealloc_c(void *ptr, size_t nmemb, size_t size,
 
 	if (ret == NULL)
 		_xalloc_error(errno, "XALLOC: xrealloc(): %s:%u: (Re)allocating %lu bytes",
-			      file, line, (unsigned long)(nmemb * size));
+			      file ? file : unknown_file, line,
+			      (unsigned long)(nmemb * size));
 
 #ifdef XALLOC_DEBUG
 	if (debug_level > 0) {
@@ -618,7 +607,8 @@ xstrdup_c(const char *str, const char *file, unsigned int line)
 	len = strlen(str) + 1;
 	if ((nstr = xcalloc_c(len, sizeof(char), 0, file, line)) == NULL)
 		_xalloc_error(errno, "XALLOC: xstrdup(): %s:%u: Allocating %lu bytes: %s\n",
-			      file, line, (unsigned long)(len));
+			      file ? file : unknown_file, line,
+			      (unsigned long)(len));
 	memcpy(nstr, str, len);
 	return (nstr);
 }
@@ -635,7 +625,7 @@ xfree_c(void **ptr_p, const char *file, unsigned int line)
 
 	if (*ptr_p == NULL) {
 		_xalloc_warn("XALLOC: xfree(): Warning: %s:%u: Freeing NULL pointer\n",
-			     file, line);
+			     file ? file : unknown_file, line);
 		return;
 	}
 
@@ -646,18 +636,20 @@ xfree_c(void **ptr_p, const char *file, unsigned int line)
 		find_mem.ptr = *ptr_p;
 		if ((mem = RB_FIND(memory_tree, &memory_tree_head, &find_mem)) == NULL)
 			_xalloc_fatal("XALLOC: xfree(): %s:%u: Junk pointer %p not accounted for\n",
-				      file, line, *ptr_p);
+				      file ? file : unknown_file, line,
+				      *ptr_p);
 
 		if (mem->freed_by != NULL) {
-                        _xalloc_debug_printf(2, "XALLOC: DOUBLE FREE in %s:%u: allocated in %s:%u, ",
-                                             file, line, mem->allocated_by,
+			_xalloc_debug_printf(2, "XALLOC: DOUBLE FREE in %s:%u: allocated in %s:%u, ",
+					     file ? file : unknown_file, line,
+					     mem->allocated_by,
 					     mem->allocated_in_line);
 			if (mem->reallocated_by != NULL)
 				_xalloc_debug_printf(2, "last reallocated in %s:%u, ",
 						     mem->reallocated_by,
 						     mem->reallocated_in_line);
-                        _xalloc_debug_printf(2, "already freed in %s:%u\n",
-                                             mem->freed_by,
+			_xalloc_debug_printf(2, "already freed in %s:%u\n",
+					     mem->freed_by,
 					     mem->freed_in_line);
 			abort();
 		}
@@ -666,8 +658,10 @@ xfree_c(void **ptr_p, const char *file, unsigned int line)
 		xalloc_allocated -= mem->size;
 		mem->size = 0;
 		if (debug_level > 1) {
-			if ((mem->freed_by = _xalloc_strdup(file)) == NULL)
-				_xalloc_error(errno, "XALLOC: Internal error");
+			if (file)
+				mem->freed_by = file;
+			else
+				mem->freed_by = unknown_file;
 			mem->freed_in_line = line;
 		} else {
 			RB_REMOVE(memory_tree, &memory_tree_head, mem);
@@ -702,7 +696,7 @@ xasprintf_c(const char *file, unsigned int line,
 	va_end(ap);
 	if (ret == -1)
 		_xalloc_error(errno, "XALLOC: xasprintf(): %s:%u: Allocating %lu bytes",
-			      file, line, strsiz);
+			      file ? file : unknown_file, line, strsiz);
 
 #ifdef XALLOC_DEBUG
 	if (debug_level > 0) {
@@ -712,8 +706,10 @@ xasprintf_c(const char *file, unsigned int line,
 			_xalloc_error(errno, "XALLOC: Internal error");
 		mem->ptr = *str_p;
 		mem->size = strsiz;
-		if ((mem->allocated_by = _xalloc_strdup(file)) == NULL)
-			_xalloc_error(errno, "XALLOC: Internal error");
+		if (file)
+			mem->allocated_by = file;
+		else
+			mem->allocated_by = unknown_file;
 		mem->allocated_in_line = line;
 		XALLOC_LOCK(xalloc_mutex);
 		RB_INSERT(memory_tree, &memory_tree_head, mem);
