@@ -111,10 +111,10 @@ GhostEncState *ghost_encoder_state_new(int sampling_rate)
    }
    for (i=0;i<st->overlap;i++)
    {
-      //st->analysis_window[i] = .5-.5*cos(M_PI*i/st->overlap);
-      //st->analysis_window[st->length-i-1] = .5-.5*cos(M_PI*(i+1)/st->overlap);
-      st->analysis_window[i] = ((float)i)/st->overlap;
-      st->analysis_window[st->length-i-1] = ((float)i+1)/st->overlap;
+      //st->analysis_window[i] = .5-.5*cos(M_PI*(i+.5)/st->overlap);
+      //st->analysis_window[st->length-i-1] = .5-.5*cos(M_PI*(i+.5)/st->overlap);
+      st->analysis_window[i] = ((float)i+.5)/st->overlap;
+      st->analysis_window[st->length-i-1] = ((float)i+.5)/st->overlap;
    }
 #if 1
    for (i=0;i<st->lpc_length;i++)
