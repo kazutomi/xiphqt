@@ -131,11 +131,11 @@ int main(int argc, char **argv){
 	window_weight(log_fft,weight,BLOCK_SIZE+1, 0.f, 512,256, 30, 44100);
 	dump_vec(weight,BLOCK_SIZE+1,"weight",frame);
 
-	j=1;
-	w[0]=.0306*BLOCK_SIZE;
+	//j=1;
+	//w[0]=.135*BLOCK_SIZE;
 
-	//for(j=0;j<BLOCK_SIZE;j++)
-	//w[j] = j+.5;
+	for(j=0;j<BLOCK_SIZE;j++)
+	w[j] = j+.5;
 	  
 	/* largest weighted
 	   int best=-120;
@@ -150,7 +150,7 @@ int main(int argc, char **argv){
 	  //w[j] = M_PI*besti/BLOCK_SIZE;
 	  */
 
-	//blackmann_harris(fft_buf, float_in, BLOCK_SIZE*2);
+	//blackmann_harris(float_in, float_in, BLOCK_SIZE*2);
 	extract_modulated_sinusoidsB(float_in, w, Aout, Wout, Pout, dAout, dWout, ddAout, y, j, BLOCK_SIZE*2);
 	w[0]=Wout[0];
 	extract_modulated_sinusoidsB(float_in, w, Aout, Wout, Pout, dAout, dWout, ddAout, y, j, BLOCK_SIZE*2);

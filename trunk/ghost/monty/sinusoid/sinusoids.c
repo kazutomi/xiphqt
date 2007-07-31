@@ -251,7 +251,7 @@ void extract_modulated_sinusoids(float *x, float *w,
   
   for(i=0;i<N;i++){
     float A = hypot(ai[i],bi[i]);
-    double P;
+    float P;
     if(A!=0.){
       if(bi[i]>0){
         P = -acos(ai[i]/A);
@@ -271,6 +271,31 @@ void extract_modulated_sinusoids(float *x, float *w,
   
 }
 
+#define A0 .35875f
+#define A1 .48829f
+#define A2 .14128f
+#define A3 .01168f
+
+static void blackmann_harris(float *d, int n){
+  int i;
+  float scale = 2*M_PI/n;
+
+  for(i=0;i<n;i++){
+    float i5 = i+.5;
+    d[i] = A0 - A1*cos(scale*i5) + A2*cos(scale*i5*2) - A3*cos(scale*i5*3);
+  }
+}
+
+static void hanning(float *d, int n){
+  int i;
+  float scale = 2*M_PI/n;
+
+  for(i=0;i<n;i++){
+    float i5 = i+.5;
+    d[i] = .5-.5*cos(scale*i5);
+  }
+}
+
 /* Models the signal as modulated sinusoids 
  * x is the signal
  * w are the frequencies
@@ -286,6 +311,7 @@ void extract_modulated_sinusoidsB(float *x, float *w,
 				  float *Aout, float *Wout, float *Pout, 
 				  float *dAout, float *dWout, float *ddAout, 
 				  float *y, int N, int len){
+  float window[len];
   float *cos_table[N];
   float *sin_table[N];
   float *tcos_table[N];
@@ -302,7 +328,12 @@ void extract_modulated_sinusoidsB(float *x, float *w,
   float ei[N];
   float fi[N];
   int i,j, iter;
-  
+
+  hanning(window,len);
+  //  for (j=0;j<len;j++){
+  //window[j] *= window[j];
+  //window[j] *= window[j];
+  //}  
   /* Build a table for the four basis functions at each frequency */
   for (i=0;i<N;i++){
     float tmpa=0;
@@ -386,12 +417,12 @@ void extract_modulated_sinusoidsB(float *x, float *w,
       for (j=0;j<len;j++){
 	float jj = j-len/2.+.5;
 	
-	tmpa += (x[j]-y[j]) * cos_table[i][j];
-	tmpb += (x[j]-y[j]) * sin_table[i][j];
-	tmpc += (x[j]-y[j]) * tcos_table[i][j];
-	tmpd += (x[j]-y[j]) * tsin_table[i][j];
-	tmpe += (x[j]-y[j]) * ttcos_table[i][j];
-	tmpf += (x[j]-y[j]) * ttsin_table[i][j];
+	tmpa += (x[j]-y[j]) * cos_table[i][j] * window[j];
+	tmpb += (x[j]-y[j]) * sin_table[i][j] * window[j];
+	tmpc += (x[j]-y[j]) * tcos_table[i][j] * window[j];
+	tmpd += (x[j]-y[j]) * tsin_table[i][j] * window[j];
+	//tmpe += (x[j]-y[j]) * ttcos_table[i][j];
+	//tmpf += (x[j]-y[j]) * ttsin_table[i][j];
 	
       }
       
@@ -429,7 +460,7 @@ void extract_modulated_sinusoidsB(float *x, float *w,
   
   for(i=0;i<N;i++){
     float A = hypot(ai[i],bi[i]);
-    double P;
+    float P;
     
     free(cos_table[i]);
     free(sin_table[i]);
@@ -460,14 +491,14 @@ void extract_modulated_sinusoidsB(float *x, float *w,
 static void compute_sinusoids(float *A, float *W, float *P, 
 			      float *delA, float *delW, float *y, int N, int len){
   int i,j;
-  double ilen = 1./len;
+  float ilen = 1./len;
 
   for(j=0;j<len;j++){
-    double jj = (j-len*.5+.5)*ilen;
+    float jj = (j-len*.5+.5)*ilen;
     y[j]=0.;
     for(i=0;i<N;i++){
-      double a = A[i] + delA[i]*jj;
-      double w = W[i] + delW[i]*jj;
+      float a = A[i] + delA[i]*jj;
+      float w = W[i] + delW[i]*jj;
       y[j] += a*cos(2.*M_PI*jj*w+P[i]);
     }
   }
@@ -545,7 +576,7 @@ void extract_modulated_sinusoidsLSQR(float *x, float *w,
       tmp3 += tcos_table[i][j]*tcos_table[i][j];
       tmp4 += tsin_table[i][j]*tsin_table[i][j];
     }
-    /* Double the energy because we only computed one half.
+    /* Float the energy because we only computed one half.
        Eventually, we should be computing/tabulating these values directly
        as a function of w[i]. */
     cosE[i] = sqrt(2*tmp1);
@@ -748,7 +779,7 @@ void extract_modulated_sinusoidsLSQR(float *x, float *w,
 
   for(i=0;i<N;i++){
     float A = hypot(ai[i],bi[i]);
-    double P;
+    float P;
 
     free(cos_table[i]);
     free(sin_table[i]);
