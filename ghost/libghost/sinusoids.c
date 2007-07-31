@@ -260,7 +260,7 @@ void extract_modulated_sinusoids(float *x, float *w, float *window, float *A, fl
    for (i=0;i<N;i++)
       ai[i] = bi[i] = ci[i] = di[i] = 0;
    
-   nonlin = 3;
+   nonlin = 10;
    /* Iterate on the non-linear part (frequency) a couple times */
    while (1)
    {
@@ -352,7 +352,7 @@ void extract_modulated_sinusoids(float *x, float *w, float *window, float *A, fl
    
       /* This is an iterative linear solution -- much quicker than inverting a matrix.
          It's pretty much the Gauss-Seidel algorithm */
-      for (iter=0;iter<2;iter++)
+      for (iter=0;iter<1;iter++)
       {
          for (i=0;i<N;i++)
          {
@@ -407,7 +407,7 @@ void extract_modulated_sinusoids(float *x, float *w, float *window, float *A, fl
          dw[i] = (ci[i]*bi[i] - di[i]*ai[i])/(.01f+A[i]*A[i]);
          //printf ("%f %f %f %f %f %f %f %f %f\n", w[i], ai[i], bi[i], ci[i], di[i], A, phi, dA, dw);
          /* Update the frequency with only a fraction of the dw term to prevent instabilities */
-         w[i] = w[i] + .5*dw[i];
+         w[i] = w[i] + dw[i];
          /* Make sure we didn't deviate too much from the original frequency */
          if (w[i] > w0[i]+.025)
             w[i] = w0[i]+.025;

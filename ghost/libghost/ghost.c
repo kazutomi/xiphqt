@@ -111,10 +111,12 @@ GhostEncState *ghost_encoder_state_new(int sampling_rate)
    }
    for (i=0;i<st->overlap;i++)
    {
-      //st->analysis_window[i] = .5-.5*cos(M_PI*(i+.5)/st->overlap);
-      //st->analysis_window[st->length-i-1] = .5-.5*cos(M_PI*(i+.5)/st->overlap);
-      st->analysis_window[i] = ((float)i+.5)/st->overlap;
-      st->analysis_window[st->length-i-1] = ((float)i+.5)/st->overlap;
+      st->synthesis_window[i] = st->analysis_window[i] = sqrt(.5-.5*cos(M_PI*(i+.5)/st->overlap));
+      st->synthesis_window[st->length-i-1] = st->analysis_window[st->length-i-1] = sqrt(.5-.5*cos(M_PI*(i+.5)/st->overlap));
+      //st->analysis_window[i] = ((float)i+.5)/st->overlap;
+      //st->analysis_window[st->length-i-1] = ((float)i+.5)/st->overlap;
+      //st->synthesis_window[i] = ((float)i+.5)/st->overlap;
+      //st->synthesis_window[st->length-i-1] = ((float)i+.5)/st->overlap;
    }
 #if 1
    for (i=0;i<st->lpc_length;i++)
@@ -141,8 +143,6 @@ void ghost_encode(GhostEncState *st, float *pcm)
 {
    int i;
    float gain;
-   float pitch;
-   float w;
    float curve[PCM_BUF_SIZE>>1];
    float awk1[MASK_LPC_ORDER], awk2[MASK_LPC_ORDER];
    float mask_gain;
@@ -184,6 +184,8 @@ void ghost_encode(GhostEncState *st, float *pcm)
       for (i=0;i<st->length;i++)
          x[i] = st->analysis_window[i]*st->current_frame[i];
       //extract_sinusoids(x, wi, st->window, ai, bi, y, SINUSOIDS, st->length);
+      //nb_sinusoids=1;
+      //wi[0] = 0.42745;
       extract_modulated_sinusoids(x, wi, st->analysis_window, ai, bi, ci, di, y, nb_sinusoids, st->length);
       
       /*for (i=0;i<st->length;i++)
