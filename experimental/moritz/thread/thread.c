@@ -95,7 +95,7 @@ struct thread {
 	int		 id;
 	char		*name;
 	time_t		 create_time;
-	char		*creator;
+	const char	*creator;
 	unsigned int	 line;
 	int		 detached;
 	pthread_t	 sys_thread;
@@ -117,7 +117,7 @@ struct mutex {
 	char		*name;
 	int		 state;
 	time_t		 create_time;
-	char		*creator;
+	const char	*creator;
 	unsigned int	 line;
 	pthread_mutex_t  sys_mutex;
 };
@@ -129,7 +129,7 @@ struct cond {
 	int		 id;
 	char		*name;
 	time_t		 create_time;
-	char		*creator;
+	const char	*creator;
 	unsigned int	 line;
 	pthread_mutex_t  cond_mutex;
 	pthread_cond_t	 sys_cond;
@@ -142,7 +142,7 @@ struct rwlock {
 	int		 id;
 	char		*name;
 	time_t		 create_time;
-	char		*creator;
+	const char	*creator;
 	unsigned int	 line;
 	pthread_rwlock_t sys_rwlock;
 };
@@ -162,6 +162,7 @@ static struct mutex	*mutextree_mutex;
 static struct mutex	*condtree_mutex;
 static struct mutex	*rwlocktree_mutex;
 static struct mutex	*library_mutex;
+static const char	*unknown_file = "<unknown>";
 
 
 void
@@ -234,7 +235,7 @@ _init_mutexes(void)
 	mutextree_mutex->name = xstrdup("Mutex-Tree Mutex");
 	mutextree_mutex->state = MUTEX_NEVERLOCKED;
 	mutextree_mutex->create_time = time(NULL);
-	mutextree_mutex->creator = xstrdup(__FILE__);
+	mutextree_mutex->creator = __FILE__;
 	mutextree_mutex->line = __LINE__;
 	_mutex_init(mutextree_mutex);
 
@@ -243,7 +244,7 @@ _init_mutexes(void)
 	threadtree_mutex->name = xstrdup("Thread-Tree Mutex");
 	threadtree_mutex->state = MUTEX_NEVERLOCKED;
 	threadtree_mutex->create_time = time(NULL);
-	threadtree_mutex->creator = xstrdup(__FILE__);
+	threadtree_mutex->creator = __FILE__;
 	threadtree_mutex->line = __LINE__;
 	_mutex_init(threadtree_mutex);
 
@@ -252,7 +253,7 @@ _init_mutexes(void)
 	condtree_mutex->name = xstrdup("Cond-Tree Mutex");
 	condtree_mutex->state = MUTEX_NEVERLOCKED;
 	condtree_mutex->create_time = time(NULL);
-	condtree_mutex->creator = xstrdup(__FILE__);
+	condtree_mutex->creator = __FILE__;
 	condtree_mutex->line = __LINE__;
 	_mutex_init(condtree_mutex);
 
@@ -261,7 +262,7 @@ _init_mutexes(void)
 	rwlocktree_mutex->name = xstrdup("RWLock-Tree Mutex");
 	rwlocktree_mutex->state = MUTEX_NEVERLOCKED;
 	rwlocktree_mutex->create_time = time(NULL);
-	rwlocktree_mutex->creator = xstrdup(__FILE__);
+	rwlocktree_mutex->creator = __FILE__;
 	rwlocktree_mutex->line = __LINE__;
 	_mutex_init(rwlocktree_mutex);
 
@@ -270,7 +271,7 @@ _init_mutexes(void)
 	library_mutex->name = xstrdup("Library Call Mutex");
 	library_mutex->state = MUTEX_NEVERLOCKED;
 	library_mutex->create_time = time(NULL);
-	library_mutex->creator = xstrdup(__FILE__);
+	library_mutex->creator = __FILE__;
 	library_mutex->line = __LINE__;
 	_mutex_init(library_mutex);
 }
@@ -367,7 +368,7 @@ _thread_free(struct thread **thread_p)
 	if (thread->name != NULL)
 		xfree(thread->name);
 	if (thread->creator != NULL)
-		xfree(thread->creator);
+		thread->creator = NULL;
 	xfree(*thread_p);
 }
 
@@ -442,7 +443,7 @@ _mutex_free(struct mutex **mutex_p)
 	if (mutex->name != NULL)
 		xfree(mutex->name);
 	if (mutex->creator != NULL)
-		xfree(mutex->creator);
+		mutex->creator = NULL;
 	xfree(*mutex_p);
 }
 
@@ -454,7 +455,7 @@ _cond_free(struct cond **cond_p)
 	if (cond->name != NULL)
 		xfree(cond->name);
 	if (cond->creator != NULL)
-		xfree(cond->creator);
+		cond->creator = NULL;
 	xfree(*cond_p);
 }
 
@@ -466,7 +467,7 @@ _rwlock_free(struct rwlock **rwlock_p)
 	if (rwlock->name != NULL)
 		xfree(rwlock->name);
 	if (rwlock->creator != NULL)
-		xfree(rwlock->creator);
+		rwlock->creator = NULL;
 	xfree(*rwlock_p);
 }
 
@@ -503,7 +504,7 @@ thread_initialize(void)
 	thread->id = next_thread_id++;
 	thread->name = xstrdup("Main Thread");
 	thread->create_time = time(NULL);
-	thread->creator = xstrdup(__FILE__);
+	thread->creator = __FILE__;
 	thread->line = __LINE__;
 	thread->sys_thread = pthread_self();
 	RB_INSERT(thread_tree, &thread_tree_head, thread);
@@ -612,7 +613,8 @@ thread_create_c(const char *name, void *(*start_routine)(void *),
 		_thread_fatal(0, "THREAD: thread_create(): Thread library not initialized\n");
 
 	_thread_debug_printf(3, "======> CREATE THREAD: %s:%u: '%s' (%stached)\n",
-			     file, line, name, detached ? "de" : "at");
+			     file ? file : unknown_file, line,
+			     name, detached ? "de" : "at");
 
 	if (stack > 0)
 		stacksize = stack;
@@ -630,7 +632,10 @@ thread_create_c(const char *name, void *(*start_routine)(void *),
 	_mutex_unlock(threadtree_mutex);
 	thread->name = xstrdup(name);
 	thread->create_time = time(NULL);
-	thread->creator = xstrdup(file);
+	if (file)
+		thread->creator = file;
+	else
+		thread->creator = unknown_file;
 	thread->line = line;
 	thread->detached = detached;
 
@@ -684,7 +689,7 @@ thread_self_c(const char *file, unsigned int line)
 
 	if (thread == NULL)
 		_thread_fatal(0, "THREAD: thread_self(): In %s:%u: No thread exist (anymore)\n",
-			      file, line);
+			      file ? file : unknown_file, line);
 
 	return (thread);
 }
@@ -717,8 +722,8 @@ thread_join_c(struct thread **thread_p, const char *file, unsigned int line)
 		_thread_fatal(0, "THREAD: thread_join(): Bad argument\n");
 
 	_thread_debug_printf(3, "======> THREAD JOIN: %s:%u: '%s'(%d) (from %s:%u, age %ds)\n",
-			     file, line, thread->name, thread->id,
-			     thread->creator, thread->line,
+			     file ? file : unknown_file, line, thread->name,
+			     thread->id, thread->creator, thread->line,
 			     (int)(time(NULL) - thread->create_time));
 
 	if ((error = pthread_join(thread->sys_thread, &ret)) != 0)
@@ -743,8 +748,8 @@ thread_exit_c(int val, const char *file, unsigned int line)
 	thread = thread_self();
 
 	_thread_debug_printf(3, "======> THREAD EXIT: %s:%u: '%s'(%d) (from %s:%u, age %ds)\n",
-			     file, line, thread->name, thread->id,
-			     thread->creator, thread->line,
+			     file ? file : unknown_file, line, thread->name,
+			     thread->id, thread->creator, thread->line,
 			     (int)(time(NULL) - thread->create_time));
 
 #ifdef THREAD_CHECK_MUTEXES
@@ -756,7 +761,12 @@ thread_exit_c(int val, const char *file, unsigned int line)
 			if (mutex->state == MUTEX_LOCKED &&
 			    mutex->thread_id == thread->id)
 				_thread_debug_printf(1, "#> THREAD EXIT: Thread '%s'(%d) from %s:%u exiting in %s:%u without unlocking mutex '%s'(%d)\n",
-						     thread->name, thread->id, thread->creator, thread->line, file, line, mutex->name, mutex->id);
+						     thread->name, thread->id,
+						     thread->creator,
+						     thread->line,
+						     file ? file : unknown_file,
+						     line, mutex->name,
+						     mutex->id);
 		}
 		_mutex_unlock(mutextree_mutex);
 	}
@@ -785,14 +795,17 @@ thread_mutex_create_c(const char *name, const char *file, unsigned int line)
 
 	thread = thread_self();
 	_thread_debug_printf(3, "======> CREATE MUTEX: %s:%u: %s\n",
-			     file, line, name);
+			     file ? file : unknown_file, line, name);
 
 	mutex = xcalloc(1, sizeof(struct mutex));
 	mutex->thread_id = thread->id;
 	mutex->name = xstrdup(name);
 	mutex->state = MUTEX_NEVERLOCKED;
 	mutex->create_time = time(NULL);
-	mutex->creator = xstrdup(file);
+	if (file)
+		mutex->creator = file;
+	else
+		mutex->creator = unknown_file;
 	mutex->line = line;
 	_mutex_init(mutex);
 	_mutex_lock(mutextree_mutex);
@@ -819,8 +832,8 @@ thread_mutex_lock_c(struct mutex *mutex, const char *file, unsigned int line)
 
 	thread = thread_self();
 	_thread_debug_printf(3, "======> LOCK MUTEX: %s:%u: '%s'(%d) thread '%s'%d\n",
-			     file, line, mutex->name, mutex->id,
-			     thread->name, thread->id);
+			     file ? file : unknown_file, line, mutex->name,
+			     mutex->id, thread->name, thread->id);
 
 #ifdef THREAD_CHECK_MUTEXES
 	if (debug_level > 0) {
@@ -834,7 +847,12 @@ thread_mutex_lock_c(struct mutex *mutex, const char *file, unsigned int line)
 				locks++;
 				if (mtx->id == mutex->id)
 					_thread_debug_printf(1, "#> LOCK MUTEX: DEADLOCK DETECTED! Thread '%s'(%d) locks mutex '%s'(%d) twice in %s:%u\n",
-							     thread->name, thread->id, mutex->name, mutex->id, file, line);
+							     thread->name,
+							     thread->id,
+							     mutex->name,
+							     mutex->id,
+							     file ? file : unknown_file,
+							     line);
 			}
 		}
 		_mutex_unlock(mutextree_mutex);
@@ -865,8 +883,8 @@ thread_mutex_unlock_c(struct mutex *mutex, const char *file, unsigned int line)
 
 	thread = thread_self();
 	_thread_debug_printf(3, "======> UNLOCK MUTEX: %s:%u: '%s'(%d) thread '%s'(%d)\n",
-			     file, line, mutex->name, mutex->id,
-			     thread->name, thread->id);
+			     file ? file : unknown_file, line, mutex->name,
+			     mutex->id, thread->name, thread->id);
 
 #ifdef THREAD_CHECK_MUTEXES
 	if (debug_level > 0) {
@@ -878,7 +896,10 @@ thread_mutex_unlock_c(struct mutex *mutex, const char *file, unsigned int line)
 			    mtx->thread_id != thread->id &&
 			    mtx->id == mutex->id)
 				_thread_debug_printf(1, "#> UNLOCK MUTEX: ILLEGAL UNLOCK! Thread '%s'(%d) tries to unlock mutex '%s'(%d) without owning it in %s:%u\n",
-						     thread->name, thread->id, mutex->name, mutex->id, file, line);
+						     thread->name, thread->id,
+						     mutex->name, mutex->id,
+						     file ? file : unknown_file,
+						     line);
 		}
 		_mutex_unlock(mutextree_mutex);
 	}
@@ -907,8 +928,8 @@ thread_mutex_destroy_c(struct mutex **mutex_p,
 
 	thread = thread_self();
 	_thread_debug_printf(3, "======> MUTEX DESTROY: %s:%u: '%s'(%d) (from %s:%u, age %ds) thread '%s'(%d)\n",
-			     file, line, mutex->name, mutex->id,
-			     mutex->creator, mutex->line,
+			     file ? file : unknown_file, line, mutex->name,
+			     mutex->id, mutex->creator, mutex->line,
 			     (int)(time(NULL) - mutex->create_time),
 			     thread->name, thread->id);
 
@@ -937,12 +958,15 @@ thread_cond_create_c(const char *name, const char *file, unsigned int line)
 		_thread_fatal(0, "THREAD: thread_cond_create(): Thread library not initialized\n");
 
 	_thread_debug_printf(3, "======> CREATE COND: %s:%u: %s\n",
-			     file, line, name);
+			     file ? file : unknown_file, line, name);
 
 	cond = xcalloc(1, sizeof(struct cond));
 	cond->name = xstrdup(name);
 	cond->create_time = time(NULL);
-	cond->creator = xstrdup(file);
+	if (file)
+		cond->creator = file;
+	else
+		cond->creator = unknown_file;
 	cond->line = line;
 	if ((error = pthread_cond_init(&cond->sys_cond, NULL)) != 0)
 		_thread_fatal(error, "THREAD: pthread_cond_init()");
@@ -971,7 +995,8 @@ thread_cond_signal_c(struct cond *cond, const char *file, unsigned int line)
 		_thread_fatal(0, "THREAD: thread_cond_signal(): Bad argument\n");
 
 	_thread_debug_printf(3, "======> SIGNAL COND: %s:%u: '%s'(%d)\n",
-			     file, line, cond->name, cond->id);
+			     file ? file : unknown_file, line,
+			     cond->name, cond->id);
 
 	if ((error = pthread_cond_signal(&cond->sys_cond)) != 0)
 		_thread_fatal(error, "THREAD: pthread_cond_signal()");
@@ -989,7 +1014,8 @@ thread_cond_broadcast_c(struct cond *cond, const char *file, unsigned int line)
 		_thread_fatal(0, "THREAD: thread_cond_broadcast(): Bad argument\n");
 
 	_thread_debug_printf(3, "======> BROADCAST COND: %s:%u: '%s'(%d)\n",
-			     file, line, cond->name, cond->id);
+			     file ? file : unknown_file, line,
+			     cond->name, cond->id);
 
 	if ((error = pthread_cond_broadcast(&cond->sys_cond)) != 0)
 		_thread_fatal(error, "THREAD: pthread_cond_broadcast()");
@@ -1007,7 +1033,8 @@ thread_cond_wait_c(struct cond *cond, const char *file, unsigned int line)
 		_thread_fatal(0, "THREAD: thread_cond_wait(): Bad argument\n");
 
 	_thread_debug_printf(3, "======> COND WAIT: %s:%u: '%s'(%d)\n",
-			     file, line, cond->name, cond->id);
+			     file ? file : unknown_file, line,
+			     cond->name, cond->id);
 
 	if ((error = pthread_mutex_lock(&cond->cond_mutex)) != 0)
 		_thread_fatal(error, "THREAD: pthread_mutex_lock()");
@@ -1035,7 +1062,8 @@ thread_cond_timedwait_c(struct cond *cond, unsigned int ms,
 		_thread_fatal(0, "THREAD: thread_cond_timedwait(): Bad argument\n");
 
 	_thread_debug_printf(3, "======> COND TIMEDWAIT (%ums): %s:%u: '%s'(%d)\n",
-			     ms, file, line, cond->name, cond->id);
+			     ms, file ? file : unknown_file, line,
+			     cond->name, cond->id);
 
 	tv.tv_sec = ms / 1000;
 	tv.tv_nsec = (ms - tv.tv_sec * 1000) * 1000000;
@@ -1066,8 +1094,8 @@ thread_cond_destroy_c(struct cond **cond_p,
 		_thread_fatal(0, "THREAD: thread_cond_destroy(): Bad argument\n");
 
 	_thread_debug_printf(3, "======> COND DESTROY: %s:%u: '%s'(%d) (from %s:%u, age %ds)\n",
-			     file, line, cond->name, cond->id, cond->creator,
-			     cond->line,
+			     file ? file : unknown_file, line, cond->name,
+			     cond->id, cond->creator, cond->line,
 			     (int)(time(NULL) - cond->create_time));
 
 	if ((error = pthread_mutex_destroy(&cond->cond_mutex)) != 0)
@@ -1092,12 +1120,15 @@ thread_rwlock_create_c(const char *name, const char *file, unsigned int line)
 		_thread_fatal(0, "THREAD: thread_rwlock_create(): Thread library not initialized\n");
 
 	_thread_debug_printf(3, "======> CREATE RWLOCK: %s:%u: %s\n",
-			     file, line, name);
+			     file ? file : unknown_file, line, name);
 
 	rwlock = xcalloc(1, sizeof(struct rwlock));
 	rwlock->name = xstrdup(name);
 	rwlock->create_time = time(NULL);
-	rwlock->creator = xstrdup(file);
+	if (file)
+		rwlock->creator = file;
+	else
+		rwlock->creator = unknown_file;
 	rwlock->line = line;
 	if ((error = pthread_rwlock_init(&rwlock->sys_rwlock, NULL)) != 0)
 		_thread_fatal(error, "THREAD: pthread_rwlock_init()");
@@ -1125,7 +1156,8 @@ thread_rwlock_rlock_c(struct rwlock *rwlock,
 		_thread_fatal(0, "THREAD: thread_rwlock_rlock(): Bad argument\n");
 
 	_thread_debug_printf(3, "======> RWLOCK READ: %s:%u: '%s'(%d)\n",
-			     file, line, rwlock->name, rwlock->id);
+			     file ? file : unknown_file, line,
+			     rwlock->name, rwlock->id);
 
 	if ((error = pthread_rwlock_rdlock(&rwlock->sys_rwlock)) != 0)
 		_thread_fatal(error, "THREAD: pthread_rwlock_rdlock()");
@@ -1144,7 +1176,8 @@ thread_rwlock_wlock_c(struct rwlock *rwlock,
 		_thread_fatal(0, "THREAD: thread_rwlock_wlock(): Bad argument\n");
 
 	_thread_debug_printf(3, "======> RWLOCK WRITE: %s:%u: '%s'(%d)\n",
-			     file, line, rwlock->name, rwlock->id);
+			     file ? file : unknown_file, line,
+			     rwlock->name, rwlock->id);
 
 	if ((error = pthread_rwlock_wrlock(&rwlock->sys_rwlock)) != 0)
 		_thread_fatal(error, "THREAD: pthread_rwlock_wrlock()");
@@ -1163,7 +1196,8 @@ thread_rwlock_unlock_c(struct rwlock *rwlock,
 		_thread_fatal(0, "THREAD: thread_rwlock_unlock(): Bad argument\n");
 
 	_thread_debug_printf(3, "======> RWLOCK UNLOCK: %s:%u: '%s'(%d)\n",
-			     file, line, rwlock->name, rwlock->id);
+			     file ? file : unknown_file, line,
+			     rwlock->name, rwlock->id);
 
 	if ((error = pthread_rwlock_unlock(&rwlock->sys_rwlock)) != 0)
 		_thread_fatal(error, "THREAD: pthread_rwlock_unlock()");
@@ -1183,8 +1217,8 @@ thread_rwlock_destroy_c(struct rwlock **rwlock_p,
 		_thread_fatal(0, "THREAD: thread_rwlock_destroy(): Bad argument\n");
 
 	_thread_debug_printf(3, "======> RWLOCK DESTROY: %s:%u: '%s'(%d) (from %s:%u, age %ds)\n",
-			     file, line, rwlock->name, rwlock->id,
-			     rwlock->creator, rwlock->line,
+			     file ? file : unknown_file, line, rwlock->name,
+			     rwlock->id, rwlock->creator, rwlock->line,
 			     (int)(time(NULL) - rwlock->create_time));
 
 	if ((error = pthread_rwlock_destroy(&rwlock->sys_rwlock)) != 0)

@@ -35,6 +35,9 @@
  * Define THREAD_CHECK_MUTEXES to perform additional checks on mutexes.
  * To make libthread abort() silently and never output anything, define
  * THREAD_DIE_SILENT (will be undefined if THREAD_DEBUG is defined.)
+ *
+ * Note that none of the x*_c() functions should be used directly, unless it
+ * is ensured that /file/ is a const char * to a real string constant.
  */
 /* #define THREAD_DEBUG		1 */
 /* #define THREAD_CHECK_MUTEXES	1 */
