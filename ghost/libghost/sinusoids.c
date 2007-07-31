@@ -284,6 +284,10 @@ void extract_modulated_sinusoids(float *x, float *w, float *window, float *A, fl
             cos_table[i][j] = re;
             sin_table[i][j] = im;
          }
+         for (j=0;j<L2;j++)
+            cos_table[i][j] *= window[j+L2];
+         for (j=0;j<L2;j++)
+            sin_table[i][j] *= window[j+L2];
          /* Compute energy of basis functions. There may be a closed-form solution for that
             or we could tabulate it. */
          for (j=0;j<L2;j++)

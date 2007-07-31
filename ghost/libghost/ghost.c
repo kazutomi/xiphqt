@@ -32,7 +32,7 @@
 
 #define PCM_BUF_SIZE 2048
 
-#define SINUSOIDS 30
+#define SINUSOIDS 5
 #define MASK_LPC_ORDER 12
 
 void fir_mem2(const spx_sig_t *x, const spx_coef_t *num, spx_sig_t *y, int N, int ord, spx_mem_t *mem)
@@ -82,7 +82,7 @@ GhostEncState *ghost_encoder_state_new(int sampling_rate)
    st->lpc_length = 384;
    st->lpc_order = MASK_LPC_ORDER;
    st->pcm_buf = calloc(PCM_BUF_SIZE,sizeof(float));
-#if 0
+#if 1
    /* pre-analysis window centered around the current frame */
    st->current_frame = st->pcm_buf + PCM_BUF_SIZE/2 - st->length/2;
 #else
@@ -111,8 +111,10 @@ GhostEncState *ghost_encoder_state_new(int sampling_rate)
    }
    for (i=0;i<st->overlap;i++)
    {
-      st->synthesis_window[i] = .5-.5*cos(M_PI*i/st->overlap);
-      st->synthesis_window[st->length-i-1] = .5-.5*cos(M_PI*(i+1)/st->overlap);
+      //st->analysis_window[i] = .5-.5*cos(M_PI*i/st->overlap);
+      //st->analysis_window[st->length-i-1] = .5-.5*cos(M_PI*(i+1)/st->overlap);
+      st->analysis_window[i] = ((float)i)/st->overlap;
+      st->analysis_window[st->length-i-1] = ((float)i+1)/st->overlap;
    }
 #if 1
    for (i=0;i<st->lpc_length;i++)
@@ -194,11 +196,11 @@ void ghost_encode(GhostEncState *st, float *pcm)
       for (i=0;i<st->overlap;i++)
       {
          st->new_noise[i] = st->new_noise[i]*st->synthesis_window[i+st->length-st->overlap] + 
-               (st->current_frame[i]-y[i])*st->synthesis_window[i];
+               (x[i]-y[i])*st->synthesis_window[i];
       }
       for (i=st->overlap;i<st->length;i++)
       {
-         st->new_noise[i] = st->current_frame[i]-y[i];
+         st->new_noise[i] = x[i]-y[i];
       }
       
       /*for (i=0;i<st->overlap;i++)
@@ -296,7 +298,7 @@ void ghost_encode(GhostEncState *st, float *pcm)
       pcm[i] = st->current_frame[i]-st->new_noise[i];*/
       
       for (i=0;i<st->advance;i++)
-         pcm[i] = st->current_frame[i]-st->new_noise[i] /*+ noise[i]*/;
+         pcm[i] = /*st->current_frame[i]-*/st->new_noise[i] /*+ noise[i]*/;
       
    }
    
