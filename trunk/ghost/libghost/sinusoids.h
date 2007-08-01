@@ -24,7 +24,7 @@
 #define _SINUSOIDS_H
 
 void find_sinusoids(float *psd, float *w, int *N, int length);
-
+void extract_sinusoids_mp(float *x, float *w, float *window, float *y, int N, int len);
 void extract_sinusoids(float *x, float *w, float *window, float *ai, float *bi, float *y, int N, int len);
 
 void extract_modulated_sinusoids(float *x, float *w, float *window, float *ai, float *bi, float *ci, float *di, float *y, int N, int len);
