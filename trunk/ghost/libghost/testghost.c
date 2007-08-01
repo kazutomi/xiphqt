@@ -102,7 +102,14 @@ int main(int argc, char **argv)
          float_in[i] = short_in[i];
       ghost_encode(state, float_in);
       for (i=0;i<BLOCK_SIZE;i++)
-         short_in[i] = float_in[i];
+      {
+         if (float_in[i] > 32767)
+            short_in[i] = 32767;
+         else if (float_in[i] < -32768)
+            short_in[i] = -32768;
+         else 
+            short_in[i] = float_in[i];
+      }
       fwrite(short_in, sizeof(short), BLOCK_SIZE, fout);
    }
    ghost_encoder_state_destroy(state);
