@@ -84,12 +84,12 @@ struct memory {
 	unsigned int	 freed_in_line;
 };
 RB_HEAD(memory_tree, memory) memory_tree_head = RB_INITIALIZER(&memory_tree_head);
-RB_GENERATE(memory_tree, memory, entry, _memory_cmp)
+RB_PROTOTYPE(memory_tree, memory, entry, _memory_cmp)
 
 void	_memory_free(struct memory **);
+void	_xalloc_warn(const char *, ...);
 #else
 void	xalloc_initialize_debug(unsigned int, FILE *);
-void	_xalloc_warn(const char *, ...);
 #endif /* XALLOC_DEBUG */
 
 void	_xalloc_error(int, const char *, ...);
@@ -112,6 +112,8 @@ static void *		(*real_realloc)(void *, size_t) = NULL;
 static const char	 *unknown_file = "<unknown>";
 
 #ifdef XALLOC_DEBUG
+RB_GENERATE(memory_tree, memory, entry, _memory_cmp)
+
 int
 _memory_cmp(void *arg_a, void *arg_b)
 {
