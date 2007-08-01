@@ -10,6 +10,8 @@
 #include "xalloc.h"
 #include "thread.h"
 
+void *	hello(void *);
+
 void *
 hello(void *arg)
 {

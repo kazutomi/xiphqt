@@ -101,7 +101,7 @@ struct thread {
 	pthread_t	 sys_thread;
 };
 RB_HEAD(thread_tree, thread) thread_tree_head = RB_INITIALIZER(&thread_tree_head);
-RB_GENERATE(thread_tree, thread, entry, _thread_cmp)
+RB_PROTOTYPE(thread_tree, thread, entry, _thread_cmp)
 
 struct thread_start {
 	void *		(*start_routine)(void *);
@@ -122,7 +122,7 @@ struct mutex {
 	pthread_mutex_t  sys_mutex;
 };
 RB_HEAD(mutex_tree, mutex) mutex_tree_head = RB_INITIALIZER(&mutex_tree_head);
-RB_GENERATE(mutex_tree, mutex, entry, _mutex_cmp)
+RB_PROTOTYPE(mutex_tree, mutex, entry, _mutex_cmp)
 
 struct cond {
 	RB_ENTRY(cond)	 entry;
@@ -135,7 +135,7 @@ struct cond {
 	pthread_cond_t	 sys_cond;
 };
 RB_HEAD(cond_tree, cond) cond_tree_head = RB_INITIALIZER(&cond_tree_head);
-RB_GENERATE(cond_tree, cond, entry, _cond_cmp)
+RB_PROTOTYPE(cond_tree, cond, entry, _cond_cmp)
 
 struct rwlock {
 	RB_ENTRY(rwlock) entry;
@@ -147,7 +147,7 @@ struct rwlock {
 	pthread_rwlock_t sys_rwlock;
 };
 RB_HEAD(rwlock_tree, rwlock) rwlock_tree_head = RB_INITIALIZER(&rwlock_tree_head);
-RB_GENERATE(rwlock_tree, rwlock, entry, _rwlock_cmp)
+RB_PROTOTYPE(rwlock_tree, rwlock, entry, _rwlock_cmp)
 
 
 static int		 thread_initialized = 0;
@@ -164,6 +164,11 @@ static struct mutex	*rwlocktree_mutex;
 static struct mutex	*library_mutex;
 static const char	*unknown_file = "<unknown>";
 
+
+RB_GENERATE(thread_tree, thread, entry, _thread_cmp)
+RB_GENERATE(mutex_tree, mutex, entry, _mutex_cmp)
+RB_GENERATE(cond_tree, cond, entry, _cond_cmp)
+RB_GENERATE(rwlock_tree, rwlock, entry, _rwlock_cmp)
 
 void
 _thread_fatal(int errnum, const char *fmt, ...)

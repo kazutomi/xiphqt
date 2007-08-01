@@ -27,6 +27,10 @@
 #ifndef __THREAD_H__
 #define __THREAD_H__
 
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+
 /*
  * Define THREAD_DEBUG to get the thread_debug_initialize_debug() function,
  * which enables debugging output of /level/s between 0 and 4, inclusive.
