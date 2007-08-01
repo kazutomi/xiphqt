@@ -32,7 +32,7 @@
 
 #define PCM_BUF_SIZE 2048
 
-#define SINUSOIDS 5
+#define SINUSOIDS 30
 #define MASK_LPC_ORDER 12
 
 void fir_mem2(const spx_sig_t *x, const spx_coef_t *num, spx_sig_t *y, int N, int ord, spx_mem_t *mem)
@@ -113,8 +113,16 @@ GhostEncState *ghost_encoder_state_new(int sampling_rate)
    {
       st->synthesis_window[i] = st->analysis_window[i] = sqrt(.5-.5*cos(M_PI*(i+.5)/st->overlap));
       st->synthesis_window[st->length-i-1] = st->analysis_window[st->length-i-1] = sqrt(.5-.5*cos(M_PI*(i+.5)/st->overlap));
+      
+      //st->analysis_window[i] = .5-.5*cos(M_PI*(i+.5)/st->overlap);
+      //st->analysis_window[st->length-i-1] = .5-.5*cos(M_PI*(i+.5)/st->overlap);
+            
+      //st->synthesis_window[i] = .5-.5*cos(M_PI*(i+.5)/st->overlap);
+      //st->synthesis_window[st->length-i-1] = .5-.5*cos(M_PI*(i+.5)/st->overlap);
+
       //st->analysis_window[i] = ((float)i+.5)/st->overlap;
       //st->analysis_window[st->length-i-1] = ((float)i+.5)/st->overlap;
+      
       //st->synthesis_window[i] = ((float)i+.5)/st->overlap;
       //st->synthesis_window[st->length-i-1] = ((float)i+.5)/st->overlap;
    }
@@ -186,8 +194,19 @@ void ghost_encode(GhostEncState *st, float *pcm)
       //extract_sinusoids(x, wi, st->window, ai, bi, y, SINUSOIDS, st->length);
       //nb_sinusoids=1;
       //wi[0] = 0.42745;
+      /*nb_sinusoids=5;
+      for (i=0;i<nb_sinusoids;i++)
+      {
+         scanf("%f", wi+i);
+         wi[i] = (M_PI/256)*floor(.5+wi[i]*256/M_PI);
+      }*/
+      //extract_sinusoids_mp_constrained(x, wi, st->analysis_window, y, nb_sinusoids, st->length);
       extract_modulated_sinusoids(x, wi, st->analysis_window, ai, bi, ci, di, y, nb_sinusoids, st->length);
-      
+      /*for (i=0;i<nb_sinusoids;i++)
+      {
+         printf("%f ", wi[i]);
+      }
+      printf ("\n");*/
       /*for (i=0;i<st->length;i++)
       y[i] *= st->synthesis_window[i];*/
 
