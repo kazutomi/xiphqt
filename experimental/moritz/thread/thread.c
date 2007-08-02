@@ -31,11 +31,7 @@
 #ifdef HAVE_SYS_TYPES_H
 # include <sys/types.h>
 #endif
-#ifdef HAVE_SYS_TREE_H
-# include <sys/tree.h>
-#else
-# include "sys/tree.h"
-#endif /* HAVE_SYS_TREE_H */
+#include <sys/tree.h>
 
 #include <errno.h>
 #ifdef HAVE_POLL_H

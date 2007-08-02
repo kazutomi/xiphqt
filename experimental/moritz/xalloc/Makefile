@@ -6,12 +6,13 @@ OBJ =		main.o
 LIBSRC =	xalloc.c
 LIBOBJ =	xalloc.o
 
+COMPAT_INCLUDES = -I../compat
 THREADS =	-pthread
 CC ?=		gcc
 CFLAGS ?=	-O2 -pipe
 CFLAGS +=	-DHAVE_CONFIG_H=1 -DXALLOC_DEBUG=1 -DXALLOC_WITH_XASPRINTF=1 -fstrict-aliasing -Wall -W -ansi -pedantic -Wwrite-strings -Wpointer-arith -Wmissing-prototypes -Wstrict-prototypes $(THREADS)
 DEBUG ?=	-g -ggdb
-INCLUDEFLAGS =	-I../compat
+INCLUDEFLAGS =	$(COMPAT_INCLUDES)
 LDFLAGS =	-L. -lxalloc $(THREADS)
 
 

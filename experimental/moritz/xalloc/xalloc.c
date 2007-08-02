@@ -64,11 +64,7 @@ static pthread_mutex_t	 strerror_mutex;
 #endif /* THREAD_SAFE */
 
 #ifdef XALLOC_DEBUG
-# ifdef HAVE_SYS_TREE_H
-#  include <sys/tree.h>
-# else
-#  include "sys/tree.h"
-# endif
+# include <sys/tree.h>
 
 int	_memory_cmp(void *, void *);
 
