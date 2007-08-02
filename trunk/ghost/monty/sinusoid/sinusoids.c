@@ -297,17 +297,125 @@ static void hanning(float *d, int n){
 }
 
 /* Models the signal as modulated sinusoids 
- * x is the signal
- * w are the frequencies
- * ai are the cos(x) coefficients
- * bi are the sin(x) coefficients
- * ci are the x*cos(x) coefficients
- * di are the x*sin(x) coefficients
- * y is the approximated signal by summing all the params
- * N is the number of sinusoids
- * len is the frame size
+ * x  : input signal
+ * w  : input  window (such as Hanning)
+ * A  : output vector of amplitudes
+ * W  : input/output vector of frequencies
+ * P  : output phase vector
+ * dA : output amplitude modulation 
+ * dW : input/output frequency modulation; null to prevent conv.
+ * N  : input number of sinusoids
+ * len: input frame size
 */
-void extract_modulated_sinusoidsB(float *x, float *w, 
+
+void extract_modulated_sinusoids_nonlinear(float *x, float *window, 
+					   float *A, float *W, float *P, 
+					   float *dA, float *dW, 
+					   float *y, int N, int len){
+  float scale = 2.*M_PI/len ;
+  float iscale = len/(2.*M_PI);
+  int i,j;
+  float cwork[len];
+  float swork[len];
+
+  memset(y,0,sizeof(*y)*len);
+
+  for (i=0;i<N;i++){
+    
+    float aP=0, bP=0, cP=0;
+    float dP=0, eP=0, fP=0;
+    float aE=0, bE=0, cE=0;
+    float dE=0, eE=0, fE=0;
+    float ldW = (dW?dW[i]:0.f);
+    
+    for(j=0;j<len;j++){
+      float jj = j-len/2.+.5;
+      float jj2 = jj*jj;
+      float jj4 = jj2*jj2;
+      float c = cos((W[i]*scale + ldW*scale*jj)*jj);
+      float s = sin((W[i]*scale + ldW*scale*jj)*jj);
+      float cw = c*window[j];
+      float sw = s*window[j];
+      float ccw = cw*c;
+      float ssw = sw*s;
+
+      aE += ccw;
+      bE += ssw;
+      cE += ccw*jj2;
+      dE += ssw*jj2;
+      eE += ccw*jj4;
+      fE += ssw*jj4;
+      
+      aP += (x[j]-y[j]) * cw;
+      bP += (x[j]-y[j]) * sw;
+      cP += (x[j]-y[j]) * cw * jj;
+      dP += (x[j]-y[j]) * sw * jj;
+
+      cwork[j] = c;
+      swork[j] = s;
+    }
+
+    aP = (aE>0.f ? aP/aE : 0.f);
+    bP = (bE>0.f ? bP/bE : 0.f);
+    cP = (cE>0.f ? cP/cE : 0.f);
+    dP = (dE>0.f ? dP/dE : 0.f);
+
+    for(j=0;j<len;j++){
+      float jj = j-len/2.+.5;
+      float jj2 = jj*jj;
+      float cw = cwork[j]*window[j];
+      float sw = swork[j]*window[j];
+
+      y[j] += aP*cwork[j];
+      y[j] += bP*swork[j];
+      y[j] += cP*jj*cwork[j];
+      y[j] += dP*jj*swork[j];
+
+      if(dW){
+	eP += (x[j]-y[j]) * cw * jj2;
+	fP += (x[j]-y[j]) * sw * jj2;
+      }
+    }
+
+    if(dW){
+      
+      eP = (eE>0.f ? eP/eE : 0.f);
+      fP = (fE>0.f ? fP/fE : 0.f);
+      
+      for(j=0;j<len;j++){
+	float jj = j-len/2.+.5;
+	float jj2 = jj*jj;
+	
+	y[j] += eP*jj2*cwork[j];
+	y[j] += fP*jj2*swork[j];
+      }
+    }
+
+
+    {
+      float lA2 = aP*aP + bP*bP;
+      float lA = sqrt(aP*aP + bP*bP);
+      float lP;
+      
+      if(lA!=0.){
+	if(bP>0){
+	  lP = -acos(aP/lA);
+	}else{
+	  lP = acos(aP/lA);
+	}
+      }else
+	lP=0.;
+    
+      A[i] = lA;
+      P[i]  = lP;
+      dA[i] = (cP*aP + bP*dP)/lA;
+      W[i]  += (cP*bP - dP*aP)/lA2*iscale;
+      if(dW)dW[i] += (eP*bP - fP*aP)/lA2*iscale;
+    }
+  }
+}
+
+void extract_modulated_sinusoidsB(float *x, float *w,
 				  float *Aout, float *Wout, float *Pout, 
 				  float *dAout, float *dWout, float *ddAout, 
 				  float *y, int N, int len){
@@ -330,10 +438,7 @@ void extract_modulated_sinusoidsB(float *x, float *w,
   int i,j, iter;
 
   hanning(window,len);
-  //  for (j=0;j<len;j++){
-  //window[j] *= window[j];
-  //window[j] *= window[j];
-  //}  
+
   /* Build a table for the four basis functions at each frequency */
   for (i=0;i<N;i++){
     float tmpa=0;
@@ -353,8 +458,8 @@ void extract_modulated_sinusoidsB(float *x, float *w,
     for (j=0;j<len;j++){
       float jj = j-len/2.+.5;
 
-      float c = cos((2.*M_PI*w[i]/len)*jj);
-      float s = sin((2.*M_PI*w[i]/len)*jj);
+      float c = cos((2.*M_PI*w[i]/len + 2.*M_PI*dWout[i]/len*jj)*jj);
+      float s = sin((2.*M_PI*w[i]/len + 2.*M_PI*dWout[i]/len*jj)*jj);
 
       cos_table[i][j] = c;
       sin_table[i][j] = s;
@@ -364,16 +469,16 @@ void extract_modulated_sinusoidsB(float *x, float *w,
       ttsin_table[i][j] = jj*jj*s;
 
       /* The sinusoidal terms */
-      tmpa += cos_table[i][j]*cos_table[i][j];
-      tmpb += sin_table[i][j]*sin_table[i][j];
+      tmpa += cos_table[i][j]*cos_table[i][j]*window[j];
+      tmpb += sin_table[i][j]*sin_table[i][j]*window[j];
 
       /* The modulation terms */
-      tmpc += tcos_table[i][j]*tcos_table[i][j];
-      tmpd += tsin_table[i][j]*tsin_table[i][j];
+      tmpc += tcos_table[i][j]*tcos_table[i][j]*window[j];
+      tmpd += tsin_table[i][j]*tsin_table[i][j]*window[j];
 
       /* The second order modulations */
-      tmpe += ttcos_table[i][j]*ttcos_table[i][j];
-      tmpf += ttsin_table[i][j]*ttsin_table[i][j];
+      tmpe += ttcos_table[i][j]*ttcos_table[i][j]*window[j];
+      tmpf += ttsin_table[i][j]*ttsin_table[i][j]*window[j];
 
     }
 
@@ -421,9 +526,10 @@ void extract_modulated_sinusoidsB(float *x, float *w,
 	tmpb += (x[j]-y[j]) * sin_table[i][j] * window[j];
 	tmpc += (x[j]-y[j]) * tcos_table[i][j] * window[j];
 	tmpd += (x[j]-y[j]) * tsin_table[i][j] * window[j];
-	//tmpe += (x[j]-y[j]) * ttcos_table[i][j];
-	//tmpf += (x[j]-y[j]) * ttsin_table[i][j];
-	
+	if(iter>0){
+	  tmpe += (x[j]-y[j]) * ttcos_table[i][j] * window[j];
+	  tmpf += (x[j]-y[j]) * ttsin_table[i][j] * window[j];
+	}
       }
       
       /* Update the signal approximation for the next iteration */
@@ -483,7 +589,7 @@ void extract_modulated_sinusoidsB(float *x, float *w,
     dAout[i] = (ci[i]*ai[i] + bi[i]*di[i])/A;
     Wout[i] = w[i] + ((ci[i]*bi[i] - di[i]*ai[i])/(A*A)/(2.*M_PI))*len;
     ddAout[i] = (ei[i]*ai[i] + bi[i]*fi[i])/A;
-    dWout[i] = ((ei[i]*bi[i] - fi[i]*ai[i])/(A*A)/(2.*M_PI))*len;
+    dWout[i] += ((ei[i]*bi[i] - fi[i]*ai[i])/(A*A)/(2.*M_PI))*len;
   }
   
 }
@@ -502,302 +608,4 @@ static void compute_sinusoids(float *A, float *W, float *P,
       y[j] += a*cos(2.*M_PI*jj*w+P[i]);
     }
   }
-}
-
-/* Models the signal as modulated sinusoids 
- * x is the signal
- * w are the frequencies
- * window is the analysis window (you can use a rectangular window)
- * ai are the cos(x) coefficients
- * bi are the sin(x) coefficients
- * ci are the x*cos(x) coefficients
- * di are the x*sin(x) coefficients
- * y is the approximated signal by summing all the params
- * N is the number of sinusoids
- * len is the frame size
-*/
-
-void extract_modulated_sinusoidsLSQR(float *x, float *w, 
-				 float *Aout, float *Wout, float *Pout, float *dAout, float *dWout, float *ddAout,
-				 float *y, int N, int len){
-  float *cos_table[N];
-  float *sin_table[N];
-  float *tcos_table[N];
-  float *tsin_table[N];
-  float cosE[N], sinE[N];
-  float costE[N], sintE[N];
-  float ai[N];
-  float bi[N];
-  float ci[N];
-  float di[N];
-  int i,j, iter;
-  
-  float e[len];
-  /* Symmetric and anti-symmetric components of the error */
-  int L2 = len/2;
-  float sym[L2], anti[L2];
-
-  for(i=0;i<N;i++){
-    cos_table[i] = malloc(sizeof(**cos_table)*len);
-    sin_table[i] = malloc(sizeof(**sin_table)*len);
-    tcos_table[i] = malloc(sizeof(**tcos_table)*len);
-    tsin_table[i] = malloc(sizeof(**tsin_table)*len);
-  }
-
-  /* Build a table for the four basis functions at each frequency: cos(x), sin(x), x*cos(x), x*sin(x)*/
-  for (i=0;i<N;i++){
-    float tmp1=0, tmp2=0;
-    float tmp3=0, tmp4=0;
-    float rotR, rotI;
-    rotR = cos(2*M_PI*w[i]/len);
-    rotI = sin(2*M_PI*w[i]/len);
-    /* Computing sin/cos table using complex rotations */
-    cos_table[i][0] = cos(M_PI*w[i]/len);
-    sin_table[i][0] = sin(M_PI*w[i]/len);
-    for (j=1;j<L2;j++){
-      float re, im;
-      re = cos_table[i][j-1]*rotR - sin_table[i][j-1]*rotI;
-      im = sin_table[i][j-1]*rotR + cos_table[i][j-1]*rotI;
-      cos_table[i][j] = re;
-      sin_table[i][j] = im;
-    }
-    /* Only need to compute the tables for half the length because of the symmetry.
-       Eventually, we'll have to replace the cos/sin with rotations */
-    for (j=0;j<L2;j++){
-      float jj = j+.5;
-      /*cos_table[i][j] = cos(w[i]*jj)*window[j];
-	sin_table[i][j] = sin(w[i]*jj)*window[j];*/
-      tcos_table[i][j] = jj*cos_table[i][j];
-      tsin_table[i][j] = jj*sin_table[i][j];
-      /* The sinusoidal terms */
-      tmp1 += cos_table[i][j]*cos_table[i][j];
-      tmp2 += sin_table[i][j]*sin_table[i][j];
-      /* The modulation terms */
-      tmp3 += tcos_table[i][j]*tcos_table[i][j];
-      tmp4 += tsin_table[i][j]*tsin_table[i][j];
-    }
-    /* Float the energy because we only computed one half.
-       Eventually, we should be computing/tabulating these values directly
-       as a function of w[i]. */
-    cosE[i] = sqrt(2*tmp1);
-    sinE[i] = sqrt(2*tmp2);
-    costE[i] = sqrt(2*tmp3);
-    sintE[i] = sqrt(2*tmp4);
-    /* Normalise the basis (should multiply by the inverse instead) */
-    for (j=0;j<L2;j++){
-      cos_table[i][j] *= (1.f/cosE[i]);
-      sin_table[i][j] *= (1.f/sinE[i]);
-      tcos_table[i][j] *= (1.f/costE[i]);
-      tsin_table[i][j] *= (1.f/sintE[i]);
-    }
-  }
-  /* y is the initial approximation of the signal */
-  for (j=0;j<len;j++)
-    y[j] = 0;
-  for (j=0;j<len;j++)
-    e[j] = x[j];
-  /* Split the error into a symmetric component and an anti-symmetric component. 
-     This speeds everything up by a factor of 2 */
-  for (j=0;j<L2;j++){
-    sym[j] = e[j+L2]+e[L2-j-1];
-    anti[j] = e[j+L2]-e[L2-j-1];
-  }
-  
-  for (i=0;i<N;i++)
-    ai[i] = bi[i] = ci[i] = di[i] = 0;
-  
-  /* y is the initial approximation of the signal */
-  for (j=0;j<len;j++)
-    y[j] = 0;
-  for (j=0;j<len;j++)
-    e[j] = x[j];
-  /* Split the error into a symmetric component and an anti-symmetric component. 
-     This speeds everything up by a factor of 2 */
-  for (j=0;j<L2;j++){
-    sym[j] = e[j+L2]+e[L2-j-1];
-    anti[j] = e[j+L2]-e[L2-j-1];
-  }
-  
-  for (i=0;i<N;i++)
-    ai[i] = bi[i] = ci[i] = di[i] = 0;{
-    float va[N];
-    float vb[N];
-    float vc[N];
-    float vd[N];
-    float wa[N];
-    float wb[N];
-    float wc[N];
-    float wd[N];
-    float alpha;
-    float beta;
-    float theta;
-    float phi;
-    float phibar;
-    float rho;
-    float rhobar;
-    float c;
-    float s;
-    /*beta*u=e*/
-    beta = phibar = 0;
-    for (j=0;j<L2;j++)
-      beta += sym[j]*sym[j] + anti[j]*anti[j];
-    phibar = beta = sqrtf(0.5f*beta);
-    if (beta > 0){
-      for (j=0;j<L2;j++){
-	sym[j] *= (1.f/beta);
-	anti[j] *= (1.f/beta);
-      }
-      /*alpha*v=A^T.u*/
-      alpha = 0;
-      for (i=0;i<N;i++)	{
-	va[i] = 0;
-	for (j=0;j<L2;j++)
-	  va[i] += sym[j]*cos_table[i][j];
-	vb[i] = 0;
-	for (j=0;j<L2;j++)
-	  vb[i] += anti[j]*sin_table[i][j];
-	vc[i] = 0;
-	for (j=0;j<L2;j++)
-	  vc[i] += anti[j]*tcos_table[i][j];
-	vd[i] = 0;
-	for (j=0;j<L2;j++)
-	  vd[i] += sym[j]*tsin_table[i][j];
-	alpha += va[i]*va[i]+vb[i]*vb[i]+vc[i]*vc[i]+vd[i]*vd[i];
-      }
-      if (alpha > 0){
-	alpha = sqrtf(alpha);
-	for (i=0;i<N;i++){
-	  wa[i] = va[i] *= (1.f/alpha);
-	  wb[i] = vb[i] *= (1.f/alpha);
-	  wc[i] = vc[i] *= (1.f/alpha);
-	  wd[i] = vd[i] *= (1.f/alpha);
-	}
-	phibar = beta;
-	rhobar = alpha;
-	for (iter=0;iter<5;iter++){
-	  float p;
-	  float q;
-	  /*beta*u=A.v-alpha*u*/
-	  beta = 0;
-	  for (j=0;j<L2;j++){
-	    float da;
-	    float ds;
-	    ds = da = 0;
-	    for (i=0;i<N;i++){
-	      ds += va[i]*cos_table[i][j] + vd[i]*tsin_table[i][j];
-	      da += vb[i]*sin_table[i][j] + vc[i]*tcos_table[i][j];
-	    }
-	    sym[j] = 2*ds-alpha*sym[j];
-	    anti[j] = 2*da-alpha*anti[j];
-	    beta += sym[j]*sym[j] + anti[j]*anti[j];
-	  }
-	  if (beta <= 0) break;
-	  beta = sqrtf(0.5f*beta);
-	  for (j=0;j<L2;j++){
-	    sym[j] *= (1.f/beta);
-	    anti[j] *= (1.f/beta);
-	  }
-	  /*alpha*v=A^T.u-beta*v*/
-	  alpha = 0;
-	  for (i=0;i<N;i++){
-	    float v0;
-	    float v1;
-	    float v2;
-	    float v3;
-	    v0 = 0;
-	    for (j=0;j<L2;j++)
-	      v0 += sym[j]*cos_table[i][j];
-	    v1 = 0;
-	    for (j=0;j<L2;j++)
-	      v1 += anti[j]*sin_table[i][j];
-	    v2 = 0;
-	    for (j=0;j<L2;j++)
-	      v2 += anti[j]*tcos_table[i][j];
-	    v3 = 0;
-	    for (j=0;j<L2;j++)
-	      v3 += sym[j]*tsin_table[i][j];
-	    va[i] = v0 - beta*va[i];
-	    vb[i] = v1 - beta*vb[i];
-	    vc[i] = v2 - beta*vc[i];
-	    vd[i] = v3 - beta*vd[i];
-	    alpha += va[i]*va[i]+vb[i]*vb[i]+vc[i]*vc[i]+vd[i]*vd[i];
-	  }
-	  if (alpha <= 0) break;
-	  alpha = sqrtf(alpha);
-	  for (i=0;i<N;i++){
-	    va[i] *= (1.f/alpha);
-	    vb[i] *= (1.f/alpha);
-	    vc[i] *= (1.f/alpha);
-	    vd[i] *= (1.f/alpha);
-	  }
-	  rho = hypotf(rhobar,beta);
-	  c = rhobar/rho;
-	  s = beta/rho;
-	  theta = s*alpha;
-	  rhobar = -c*alpha;
-	  phi = c*phibar;
-	  phibar = s*phibar;
-	  p = phi/rho;
-	  q = theta/rho;
-	  for (i=0;i<N;i++){
-	    ai[i] += wa[i]*p;
-	    bi[i] += wb[i]*p;
-	    ci[i] += wc[i]*p;
-	    di[i] += wd[i]*p;
-	    wa[i] = va[i] - wa[i]*q;
-	    wb[i] = vb[i] - wb[i]*q;
-	    wc[i] = vc[i] - wc[i]*q;
-	    wd[i] = vd[i] - wd[i]*q;
-	  }
-	}
-      }
-    }
-    fprintf(stderr,"LSQR sq. err. = %lg\n",phibar*phibar);
-    phibar *= 0.5f;
-    for (j=0;j<L2;j++){
-      e[j+L2] = phibar*(sym[j]+anti[j]);
-      e[L2-j-1] = phibar*(sym[j]-anti[j]);
-    }
-  }
-  for (j=0;j<L2;j++){
-    float da;
-    float ds;
-    ds = da = 0;
-    for (i=0;i<N;i++){
-      ds += ai[i]*cos_table[i][j] + di[i]*tsin_table[i][j];
-      da += bi[i]*sin_table[i][j] + ci[i]*tcos_table[i][j];
-    }
-    y[j+L2] = ds+da;
-    y[L2-j-1] = ds-da;
-  }
-  for (i=0;i<N;i++){
-    ai[i] /= cosE[i];
-    bi[i] /= sinE[i];
-    ci[i] /= costE[i];
-    di[i] /= sintE[i];
-  }
-
-  for(i=0;i<N;i++){
-    float A = hypot(ai[i],bi[i]);
-    float P;
-
-    free(cos_table[i]);
-    free(sin_table[i]);
-
-    if(A!=0.){
-      if(bi[i]>0){
-        P = -acos(ai[i]/A);
-      }else{
-        P = acos(ai[i]/A);
-      }
-    }else
-      P=0.;
-    
-    Aout[i] = A;
-    Pout[i] = P;
-    dAout[i] = (ci[i]*ai[i] + bi[i]*di[i])/A;
-    Wout[i] = w[i] + ((ci[i]*bi[i] - di[i]*ai[i])/(A*A)/(2.*M_PI))*len;
-   
-  }
-
 }

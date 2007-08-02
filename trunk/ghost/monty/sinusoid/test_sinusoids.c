@@ -10,7 +10,9 @@
 #define BLOCK_SIZE 1024
 
 static float float_in[BLOCK_SIZE*2];
+static float float_out[262144];
 static short short_in[BLOCK_SIZE];
+static int outcount=0;
 
 static void dump_vec(float *data, int n, char *base, int i){
   char *filename;
@@ -60,6 +62,27 @@ void blackmann_harris(float *out, float *in, int n){
     out[i] = in[i]*w;
   }
 }
+
+static void hanning(float *out, float *in, int n){
+  int i;
+  float scale = 2*M_PI/n;
+
+  for(i=0;i<n;i++){
+    float i5 = i+.5;
+    out[i] = in[i]*(.5-.5*cos(scale*i5));
+  }
+}
+
+static void hanningW(float *out, int n){
+  int i;
+  float scale = 2*M_PI/n;
+
+  for(i=0;i<n;i++){
+    float i5 = i+.5;
+    out[i] = (.5-.5*cos(scale*i5));
+  }
+}
+
 
 void mag_dB(float *log,float *d, int n){
   int i;
@@ -112,13 +135,14 @@ int main(int argc, char **argv){
       // polish the strongest peaks from weighting
       if(frame==220){
 	float w[BLOCK_SIZE];
+	float Wout[BLOCK_SIZE];
 	float Aout[BLOCK_SIZE]={0};
 	float Pout[BLOCK_SIZE]={0};
 	float dAout[BLOCK_SIZE]={0};
-	float Wout[BLOCK_SIZE]={0};
 	float ddAout[BLOCK_SIZE]={0};
 	float dWout[BLOCK_SIZE]={0};
 	float y[BLOCK_SIZE*2];
+	float window[BLOCK_SIZE*2];
 
 	blackmann_harris(fft_buf, float_in, BLOCK_SIZE*2);
 	dump_vec(float_in,BLOCK_SIZE*2,"data",frame);
@@ -131,11 +155,12 @@ int main(int argc, char **argv){
 	window_weight(log_fft,weight,BLOCK_SIZE+1, 0.f, 512,256, 30, 44100);
 	dump_vec(weight,BLOCK_SIZE+1,"weight",frame);
 
-	//j=1;
-	//w[0]=.135*BLOCK_SIZE;
+	j=2;
+	w[0]=.0306*BLOCK_SIZE;
+	w[1]=.136*BLOCK_SIZE;
 
-	for(j=0;j<BLOCK_SIZE;j++)
-	w[j] = j+.5;
+	//for(j=0;j<BLOCK_SIZE;j++)
+	//w[j] = j+.5;
 	  
 	/* largest weighted
 	   int best=-120;
@@ -151,10 +176,13 @@ int main(int argc, char **argv){
 	  */
 
 	//blackmann_harris(float_in, float_in, BLOCK_SIZE*2);
-	extract_modulated_sinusoidsB(float_in, w, Aout, Wout, Pout, dAout, dWout, ddAout, y, j, BLOCK_SIZE*2);
-	w[0]=Wout[0];
-	extract_modulated_sinusoidsB(float_in, w, Aout, Wout, Pout, dAout, dWout, ddAout, y, j, BLOCK_SIZE*2);
-	w[0]=Wout[0];
+	/*hanningW(window,BLOCK_SIZE*2);
+	extract_modulated_sinusoids_nonlinear(float_in, window, Aout, w, Pout, dAout, dWout, y, j, BLOCK_SIZE*2);
+	extract_modulated_sinusoids_nonlinear(float_in, window, Aout, w, Pout, dAout, dWout, y, j, BLOCK_SIZE*2);
+	extract_modulated_sinusoids_nonlinear(float_in, window, Aout, w, Pout, dAout, dWout, y, j, BLOCK_SIZE*2);
+	extract_modulated_sinusoids_nonlinear(float_in, window, Aout, w, Pout, dAout, dWout, y, j, BLOCK_SIZE*2);
+	extract_modulated_sinusoids_nonlinear(float_in, window, Aout, w, Pout, dAout, dWout, y, j, BLOCK_SIZE*2);*/
+
 	extract_modulated_sinusoidsB(float_in, w, Aout, Wout, Pout, dAout, dWout, ddAout, y, j, BLOCK_SIZE*2);
 	w[0]=Wout[0];
 	extract_modulated_sinusoidsB(float_in, w, Aout, Wout, Pout, dAout, dWout, ddAout, y, j, BLOCK_SIZE*2);
@@ -168,11 +196,11 @@ int main(int argc, char **argv){
 	//w[i]=Wout[i];
 	
 	for(i=0;i<BLOCK_SIZE*2;i++)
-	  fft_buf[i] = float_in[i] - y[i];
+	  fft_buf[i] = float_in[i]-y[i];
 	
 	dump_vec(fft_buf,BLOCK_SIZE*2,"res",0);
 
-	blackmann_harris(fft_buf, fft_buf, BLOCK_SIZE*2);
+	hanning(fft_buf, fft_buf, BLOCK_SIZE*2);
 	drft_forward(&fft, fft_buf);
 	for(i=0;i<BLOCK_SIZE*2;i++)fft_buf[i] *= 1./BLOCK_SIZE;
 	mag_dB(log_fft,fft_buf,BLOCK_SIZE*2);
@@ -182,17 +210,30 @@ int main(int argc, char **argv){
 	for(i=0;i<j;i++){
 	  Aout[i]=todB(Aout[i]);
 	  dAout[i]=todB(dAout[i]);
-	  ddAout[i]=todB(ddAout[i]);
 	  w[i] /= BLOCK_SIZE;
 	}
 	  
 	dump_vec2(w,Aout,j,"ex",0);
 	dump_vec2(w,dAout,j,"dA",0);
-	dump_vec2(w,ddAout,j,"ddA",0);
 	dump_vec2(w,dWout,j,"dW",0);
 	dump_vec(y,BLOCK_SIZE*2,"extract",0);
 	
-	
+	//for (i=0;i<BLOCK_SIZE*2;i++)
+	//  float_out[i+outcount] += fft_buf[i];
+	//outcount+=BLOCK_SIZE;
+
+	//if(outcount+BLOCK_SIZE*2>262144){
+
+	//	  hanning(float_out, float_out, 262144);
+	//drft_init(&fft, 262144);
+	//drft_forward(&fft, float_out);
+	//for(i=0;i<262144;i++)float_out[i] *= 1./262144;
+
+	//mag_dB(float_out,float_out,262144);
+	//dump_vec(float_out,262144/2,"res",0);
+	//exit(0);
+
+	//}
       }
       
     }

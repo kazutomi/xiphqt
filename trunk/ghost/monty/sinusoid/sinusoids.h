@@ -20,12 +20,13 @@ extern void window_weight(float *logf, float *out, int n, float flatbias,
 
 extern void extract_modulated_sinusoids(float *x, float *w, float *Aout, float *Wout, float *Pout, 
 					float *delAout, float *delWout, float *ddAout, float *y, int N, int len);
-extern void extract_modulated_sinusoidsLSQR(float *x, float *w, float *Aout, float *Wout, float *Pout, 
-					    float *delAout, float *delWout, float *ddAout, float *y, int N, int len);
 
-extern void extract_modulated_sinusoids2(float *x, float *w, float *Aout, float *Wout, float *Pout, 
-					 float *delAout, float *delWout, float *y, int N, int len);
 extern void extract_modulated_sinusoidsB(float *x, float *w, 
 					 float *Aout, float *Wout, float *Pout, 
 					 float *dAout, float *dWout, float *ddAout, 
 					 float *y, int N, int len);
+
+extern void extract_modulated_sinusoids_nonlinear(float *x, float *window, 
+						  float *A, float *W, float *P, 
+						  float *dA, float *dW, 
+						  float *y, int N, int len);
