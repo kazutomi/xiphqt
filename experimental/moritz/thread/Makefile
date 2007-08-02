@@ -11,7 +11,7 @@ THREADS =	-pthread
 CC ?=		gcc
 CFLAGS ?=	-O2 -pipe
 CFLAGS +=	-DHAVE_CONFIG_H=1 -fstrict-aliasing -Wall -W -ansi -pedantic -Wwrite-strings -Wpointer-arith -Wmissing-prototypes -Wstrict-prototypes $(THREADS)
-#CFLAGS +=	-DTHREAD_DEBUG=1
+CFLAGS +=	-DTHREAD_DEBUG=1
 CFLAGS +=	-DTHREAD_CHECK_MUTEXES=1
 CFLAGS +=	-DXALLOC_WITH_XASPRINTF=1
 DEBUG ?=	-g -ggdb
