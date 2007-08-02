@@ -61,12 +61,10 @@ typedef struct rwlock	*rwlock_t;
  * Library initialization and shutdown.
  */
 
-void		thread_initialize(void);
-#ifdef THREAD_DEBUG
-/* Output stream defaults to standard error, if NULL. */
+#define thread_initialize()					\
+	thread_initialize_debug(0, NULL)
 void		thread_initialize_debug(unsigned int /* level */,
 					FILE * /* output stream */);
-#endif /* THREAD_DEBUG */
 void		thread_shutdown(void);
 
 

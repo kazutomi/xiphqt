@@ -13,7 +13,10 @@
 int
 main(void)
 {
-	char *foo, *bar, *baz, *bla;
+	char *foo, *bar, *baz;
+#ifdef XALLOC_WITH_XASPRINTF
+	char *bla;
+#endif
 
 #ifdef XALLOC_DEBUG
 	xalloc_initialize_debug(2, NULL);
@@ -25,7 +28,9 @@ main(void)
 	bar = xcalloc(12, sizeof(char));
 	baz = xmalloc(80);
 	baz = xrealloc(baz, 100, sizeof(char));
+#ifdef XALLOC_WITH_XASPRINTF
 	xasprintf(&bla, "Blabla? Blah-%d!", 1000);
+#endif
 	xfree(foo);
 	xfree(baz);
 

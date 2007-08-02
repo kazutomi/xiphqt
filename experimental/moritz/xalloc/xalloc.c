@@ -83,11 +83,9 @@ RB_HEAD(memory_tree, memory) memory_tree_head = RB_INITIALIZER(&memory_tree_head
 RB_PROTOTYPE(memory_tree, memory, entry, _memory_cmp)
 
 void	_memory_free(struct memory **);
-void	_xalloc_warn(const char *, ...);
-#else
-void	xalloc_initialize_debug(unsigned int, FILE *);
 #endif /* XALLOC_DEBUG */
 
+void	_xalloc_warn(const char *, ...);
 void	_xalloc_error(int, const char *, ...);
 void	_xalloc_fatal(const char *, ...);
 void	_xalloc_debug_printf(unsigned int, const char *, ...);
@@ -286,7 +284,7 @@ _xalloc_vasprintf(char **str_p, const char *fmt, va_list ap, size_t *strsiz)
 #endif /* XALLOC_WITH_XASPRINTF */
 
 void
-xalloc_initialize(void)
+xalloc_initialize_debug(unsigned int level, FILE *output)
 {
 #ifdef THREAD_SAFE
 	int	err;
@@ -294,6 +292,13 @@ xalloc_initialize(void)
 
 	if (xalloc_initialized)
 		_xalloc_fatal("XALLOC: xalloc_initialize(): Xalloc library already initialized\n");
+
+	if ((debug_level = level) > XALLOC_DBGLVL_MAX)
+		debug_level = XALLOC_DBGLVL_MAX;
+	if (output == NULL)
+		debug_output = XALLOC_DEFAULT_OUTPUT;
+	else
+		debug_output = output;
 
 	real_malloc = malloc;
 	real_calloc = calloc;
@@ -311,22 +316,6 @@ xalloc_initialize(void)
 #endif /* THREAD_SAFE */
 
 	xalloc_initialized = 1;
-}
-
-void
-xalloc_initialize_debug(unsigned int level, FILE *output)
-{
-	if (xalloc_initialized)
-		_xalloc_fatal("XALLOC: xalloc_initialize_debug(): Xalloc library already initialized\n");
-
-	if ((debug_level = level) > XALLOC_DBGLVL_MAX)
-		debug_level = XALLOC_DBGLVL_MAX;
-	if (output == NULL)
-		debug_output = XALLOC_DEFAULT_OUTPUT;
-	else
-		debug_output = output;
-
-	xalloc_initialize();
 }
 
 void
@@ -611,7 +600,6 @@ xstrdup_c(const char *str, const char *file, unsigned int line)
 	return (nstr);
 }
 
-#ifdef XALLOC_DEBUG
 void
 xfree_c(void **ptr_p, const char *file, unsigned int line)
 {
@@ -627,6 +615,7 @@ xfree_c(void **ptr_p, const char *file, unsigned int line)
 		return;
 	}
 
+#ifdef XALLOC_DEBUG
 	if (debug_level > 0) {
 		struct memory	*mem = NULL, find_mem;
 
@@ -667,12 +656,16 @@ xfree_c(void **ptr_p, const char *file, unsigned int line)
 		}
 		XALLOC_UNLOCK(xalloc_mutex);
 	}
+#endif /* XALLOC_DEBUG */
 
 	free(*ptr_p);
+#ifdef XALLOC_DEBUG
 	if (debug_level <= 1)
-		*ptr_p = NULL;
-}
 #endif /* XALLOC_DEBUG */
+	{
+		*ptr_p = NULL;
+	}
+}
 
 #ifdef XALLOC_WITH_XASPRINTF
 int
@@ -684,10 +677,10 @@ xasprintf_c(const char *file, unsigned int line,
 	size_t	strsiz = 0;
 
 	if (!xalloc_initialized)
-		_xalloc_fatal("XALLOC: xfree(): Xalloc library not initialized\n");
+		_xalloc_fatal("XALLOC: xasprintf(): Xalloc library not initialized\n");
 
 	if (str_p == NULL || fmt == NULL)
-		_xalloc_fatal("XALLOC: xfree(): Bad argument(s)\n");
+		_xalloc_fatal("XALLOC: xasprintf(): Bad argument(s)\n");
 
 	va_start(ap, fmt);
 	ret = _xalloc_vasprintf(str_p, fmt, ap, &strsiz);
@@ -696,7 +689,7 @@ xasprintf_c(const char *file, unsigned int line,
 		_xalloc_error(errno, "XALLOC: xasprintf(): %s:%u: Allocating %lu bytes",
 			      file ? file : unknown_file, line, strsiz);
 
-#ifdef XALLOC_DEBUG
+# ifdef XALLOC_DEBUG
 	if (debug_level > 0) {
 		struct memory	*mem;
 
@@ -717,7 +710,7 @@ xasprintf_c(const char *file, unsigned int line,
 			xalloc_peak = xalloc_allocated;
 		XALLOC_UNLOCK(xalloc_mutex);
 	}
-#endif /* XALLOC_DEBUG */
+# endif /* XALLOC_DEBUG */
 
 	return (ret);
 }

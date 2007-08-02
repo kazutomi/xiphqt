@@ -59,13 +59,9 @@
 #define MUTEX_NEVERLOCKED	-1
 
 #define THREAD_DBGLVL_MAX	 4
-#ifndef THREAD_DEBUG
-void	thread_initialize_debug(unsigned int, FILE *);
-#else
-# ifdef THREAD_DIE_SILENT
-#  undef THREAD_DIE_SILENT
-# endif /* THREAD_DIE_SILENT */
-#endif /* !THREAD_DEBUG */
+#if defined(THREAD_DEBUG) && defined(THREAD_DIE_SILENT)
+# undef THREAD_DIE_SILENT
+#endif /* THREAD_DEBUG && THREAD_DIE_SILENT */
 
 void	_thread_fatal(int, const char *, ...);
 void	_thread_debug_printf(unsigned int, const char *, ...);
@@ -185,8 +181,7 @@ _thread_fatal(int errnum, const char *fmt, ...)
 					       fprintf(debug_output, ": %s\n",
 						       strerror(errnum));
 				       fflush(debug_output);
-			       }
-			      );
+			       });
 	else {
 		va_start(ap, fmt);
 		vfprintf(debug_output, fmt, ap);
@@ -202,28 +197,25 @@ _thread_fatal(int errnum, const char *fmt, ...)
 void
 _thread_debug_printf(unsigned int level, const char *fmt, ...)
 {
-#ifdef THREAD_DEBUG
-	va_list 		ap;
+	va_list ap;
 
 	if (level > debug_level)
 		return;
 
+	va_start(ap, fmt);
+#ifdef THREAD_DEBUG
 	if (thread_initialized)
 		THREAD_PROTECT(
 			       {
-				       va_start(ap, fmt);
 				       vfprintf(debug_output, fmt, ap);
-				       va_end(ap);
 				       fflush(debug_output);
-			       }
-			      );
+			       });
 	else {
-		va_start(ap, fmt);
 		vfprintf(debug_output, fmt, ap);
-		va_end(ap);
 		fflush(debug_output);
 	}
 #endif /* THREAD_DEBUG */
+	va_end(ap);
 }
 
 void
@@ -476,26 +468,17 @@ _rwlock_free(struct rwlock **rwlock_p)
 void
 thread_initialize_debug(unsigned int level, FILE *output)
 {
+	struct thread	*thread;
+
+	if (thread_initialized)
+		_thread_fatal(0, "THREAD: Internal error: thread_initialize(): Thread library already initialized\n");
+
 	if ((debug_level = level) > THREAD_DBGLVL_MAX)
 		debug_level = THREAD_DBGLVL_MAX;
 	if (output == NULL)
 		debug_output = THREAD_DEFAULT_OUTPUT;
 	else
 		debug_output = output;
-
-	thread_initialize();
-}
-
-void
-thread_initialize(void)
-{
-	struct thread	*thread;
-
-	if (thread_initialized)
-		_thread_fatal(0, "THREAD: Internal error: thread_init(): Thread library already initialized\n");
-
-	if (debug_output == NULL)
-		debug_output = THREAD_DEFAULT_OUTPUT;
 
 	_init_mutexes();
 

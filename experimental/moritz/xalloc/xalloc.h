@@ -25,8 +25,9 @@
 #define __XALLOC_H__
 
 /*
- * Define XALLOC_DEBUG to compile the debugging features and expose the
- * xalloc_initialize_debug() interface. The debugging levels are
+ * Define XALLOC_DEBUG to compile the debugging features. Doing so will make
+ * this library more expensive in every case, but not change its (visible)
+ * behavior unless the debugging level is set > 0. The debugging levels are:
  *   0: disable debugging
  *   1: enable most debugging features
  *   2: additionally enable double-free checking
@@ -41,7 +42,7 @@
  * Define XALLOC_WITH_XASPRINTF to expose the xasprintf() interface. Doing
  * so will require libxalloc to be compiled with a compiler that supports C99
  * variadic macros, and work only on systems with vasprintf() or vsnprintf(),
- * and MS Windows.
+ * and MS Windows. Note that doing so constitutes an incompatible ABI change!
  *
  * Note that none of the x*_c() functions should be used directly, unless it
  * is ensured that /file/ is a const char * to a real string constant.
@@ -62,17 +63,16 @@
  * Library initialization and shutdown.
  */
 
-void	xalloc_initialize(void);
-
-#ifdef XALLOC_DEBUG
+#define xalloc_initialize()						\
+	xalloc_initialize_debug(0, NULL)
 void	xalloc_initialize_debug(unsigned int /* level */,
 				FILE * /* output stream */);
-#endif /* XALLOC_DEBUG */
 
 void	xalloc_set_functions(void *(*)(size_t) /* malloc function */,
 			     void *(*)(size_t, size_t) /* calloc function */,
 			     void *(*)(void *, size_t) /* realloc function */);
 
+/* Memory leak checks happen during shutdown! */
 void	xalloc_shutdown(void);
 
 
@@ -102,24 +102,10 @@ void *	xrealloc_c(void *, size_t /* nmemb */, size_t /* size */,
 char *	xstrdup_c(const char *,
 		  const char * /* file */, unsigned int /* line */);
 
-#ifdef XALLOC_DEBUG
-# define xfree(p)							\
+#define xfree(p)							\
 	xfree_c((void *)&(p), __FILE__, __LINE__)
 void	xfree_c(void **,
 		const char * /* file */, unsigned int /* line */);
-#else /* XALLOC_DEBUG */
-void	_xalloc_warn(const char *, ...);
-
-# define xfree(p)							\
-do {									\
-	if ((p) == NULL) {						\
-		_xalloc_warn("XALLOC: xfree(): Warning: Freeing NULL pointer\n"); \
-		break;							\
-	}								\
-	free(p);							\
-	(p) = NULL;							\
-} while (0)
-#endif /* XALLOC_DEBUG */
 
 #ifdef XALLOC_WITH_XASPRINTF
 # define xasprintf(s, f, ...)						\

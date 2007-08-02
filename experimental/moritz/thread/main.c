@@ -23,14 +23,12 @@ int
 main(void)
 {
 	thread_t thread;
-	char *foo, *bar, *baz, *bla;
-
-#ifdef XALLOC_DEBUG
-	xalloc_initialize_debug(1, stdout);
-#else
-	xalloc_initialize();
+	char *foo, *bar, *baz;
+#ifdef XALLOC_WITH_XASPRINTF
+	char *bla;
 #endif
 
+	xalloc_initialize_debug(1, stdout);
 #ifdef THREAD_DEBUG
 	thread_initialize_debug(3, stdout);
 #else
@@ -46,7 +44,9 @@ main(void)
 	baz = xmalloc(80);
 	baz = xrealloc(baz, 200, sizeof(char));
 	baz = xrealloc(baz, 100, sizeof(char));
+#ifdef XALLOC_WITH_XASPRINTF
 	xasprintf(&bla, "Blabla? Blah-%d!", 1000);
+#endif
 	xfree(foo);
 	xfree(baz);
 	xfree(baz);
