@@ -105,6 +105,7 @@ static size_t		  xalloc_freed;
 static void *		(*real_malloc)(size_t) = NULL;
 static void *		(*real_calloc)(size_t, size_t) = NULL;
 static void *		(*real_realloc)(void *, size_t) = NULL;
+static void		(*real_free)(void *) = NULL;
 static const char	 *unknown_file = "<unknown>";
 
 #ifdef XALLOC_DEBUG
@@ -134,7 +135,7 @@ _memory_free(struct memory **mem_p)
 		mem->reallocated_by = NULL;
 	if (mem->freed_by != NULL)
 		mem->freed_by = NULL;
-	free(mem);
+	real_free(mem);
 	*mem_p = NULL;
 }
 #endif /* XALLOC_DEBUG */
@@ -251,7 +252,7 @@ _xalloc_vasprintf(char **str_p, const char *fmt, va_list ap, size_t *strsiz)
 			int	 pret;
 
 			if ((tbuf = real_realloc(buf, *strsiz)) == NULL) {
-				free(buf);
+				real_free(buf);
 				return (-1);
 			}
 			buf = tbuf;
@@ -261,7 +262,7 @@ _xalloc_vasprintf(char **str_p, const char *fmt, va_list ap, size_t *strsiz)
 			if (pret > 0 && pret < (int)*strsiz)
 				break;
 			if ((int)(*strsiz *= 2) < 0) {
-				free(buf);
+				real_free(buf);
 				return (-1);
 			}
 		}
@@ -305,6 +306,7 @@ xalloc_initialize_debug(unsigned int level, FILE *output)
 	real_malloc = malloc;
 	real_calloc = calloc;
 	real_realloc = realloc;
+	real_free = free;
 	xalloc_allocated = 0;
 	xalloc_total = 0;
 	xalloc_peak = 0;
@@ -323,7 +325,8 @@ xalloc_initialize_debug(unsigned int level, FILE *output)
 void
 xalloc_set_functions(void *(*malloc_func)(size_t),
 		     void *(*calloc_func)(size_t, size_t),
-		     void *(*realloc_func)(void *, size_t))
+		     void *(*realloc_func)(void *, size_t),
+		     void (*free_func)(void *))
 {
 	if (!xalloc_initialized)
 		_xalloc_fatal("XALLOC: xalloc_set_functions(): Xalloc library not initialized\n");
@@ -337,6 +340,7 @@ xalloc_set_functions(void *(*malloc_func)(size_t),
 	real_malloc = malloc_func;
 	real_calloc = calloc_func;
 	real_realloc = realloc_func;
+	real_free = free_func;
 	XALLOC_UNLOCK(xalloc_mutex);
 }
 
@@ -372,7 +376,7 @@ xalloc_shutdown(void)
 				_xalloc_debug_printf(1, "leaks %lu bytes\n",
 						     (unsigned long)mem->size);
 				leaked_bytes += mem->size;
-				free(mem->ptr);
+				real_free(mem->ptr);
 			}
 
 			_memory_free(&mem);
@@ -693,7 +697,7 @@ xfree_c(void **ptr_p, const char *file, unsigned int line)
 	}
 #endif /* XALLOC_DEBUG */
 
-	free(*ptr_p);
+	real_free(*ptr_p);
 #ifdef XALLOC_DEBUG
 	if (debug_level <= 1)
 #endif /* XALLOC_DEBUG */
