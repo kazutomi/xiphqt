@@ -71,6 +71,7 @@ int	_memory_cmp(void *, void *);
 struct memory {
 	RB_ENTRY(memory) entry;
 	void		*ptr;
+	unsigned int	 id;
 	size_t		 size;
 	const char	*allocated_by;
 	unsigned int	 allocated_in_line;
@@ -95,6 +96,7 @@ int	_xalloc_vasprintf(char **, const char *, va_list, size_t *);
 
 static unsigned int	  debug_level = 0;
 static FILE		 *debug_output = NULL;
+static unsigned int	  xalloc_next_id = 0;
 static int		  xalloc_initialized = 0;
 static size_t		  xalloc_allocated;
 static size_t		  xalloc_total;
@@ -358,8 +360,9 @@ xalloc_shutdown(void)
 			RB_REMOVE(memory_tree, &memory_tree_head, mem);
 
 			if (mem->freed_by == NULL) {
-				_xalloc_debug_printf(1, "XALLOC: MEMORY LEAK (%p): allocated in %s:%u, ",
+				_xalloc_debug_printf(1, "XALLOC: MEMORY LEAK (%p:%u): allocated in %s:%u, ",
 						     mem->ptr,
+						     mem->id,
 						     mem->allocated_by,
 						     mem->allocated_in_line);
 				if (mem->reallocated_by != NULL)
@@ -421,7 +424,7 @@ xmalloc_c(size_t size, const char *file, unsigned int line)
 
 #ifdef XALLOC_DEBUG
 	if (debug_level > 0) {
-		struct memory	*mem;
+		struct memory	*mem, *mem_exists;
 
 		if ((mem = real_calloc(1, sizeof(struct memory))) == NULL)
 			_xalloc_error(errno, "XALLOC: Internal error");
@@ -433,7 +436,16 @@ xmalloc_c(size_t size, const char *file, unsigned int line)
 			mem->allocated_by = unknown_file;
 		mem->allocated_in_line = line;
 		XALLOC_LOCK(xalloc_mutex);
-		RB_INSERT(memory_tree, &memory_tree_head, mem);
+		mem->id = ++xalloc_next_id;
+		if ((mem_exists = RB_INSERT(memory_tree, &memory_tree_head, mem)) != NULL) {
+			/* Freed pointer is being reused: */
+			if (mem_exists->id != 0)
+				_xalloc_fatal("XALLOC: Internal error: Assertion (mem_exists->id == 0) in %s:%u failed!\n",
+					      __FILE__, __LINE__);
+			RB_REMOVE(memory_tree, &memory_tree_head, mem_exists);
+			_memory_free(&mem_exists);
+			RB_INSERT(memory_tree, &memory_tree_head, mem);
+		}
 		xalloc_allocated += size;
 		xalloc_total += size;
 		if (xalloc_allocated > xalloc_peak)
@@ -469,7 +481,7 @@ xcalloc_c(size_t nmemb, size_t size, int may_fail,
 
 #ifdef XALLOC_DEBUG
 	if (ret != NULL && debug_level > 0) {
-		struct memory	*mem;
+		struct memory	*mem, *mem_exists;
 
 		if ((mem = real_calloc(1, sizeof(struct memory))) == NULL)
 			_xalloc_error(errno, "XALLOC: Internal error");
@@ -481,7 +493,16 @@ xcalloc_c(size_t nmemb, size_t size, int may_fail,
 			mem->allocated_by = unknown_file;
 		mem->allocated_in_line = line;
 		XALLOC_LOCK(xalloc_mutex);
-		RB_INSERT(memory_tree, &memory_tree_head, mem);
+		mem->id = ++xalloc_next_id;
+		if ((mem_exists = RB_INSERT(memory_tree, &memory_tree_head, mem)) != NULL) {
+			/* Freed pointer is being reused: */
+			if (mem_exists->id != 0)
+				_xalloc_fatal("XALLOC: Internal error: Assertion (mem_exists->id == 0) in %s:%u failed!\n",
+					      __FILE__, __LINE__);
+			RB_REMOVE(memory_tree, &memory_tree_head, mem_exists);
+			_memory_free(&mem_exists);
+			RB_INSERT(memory_tree, &memory_tree_head, mem);
+		}
 		xalloc_allocated += nmemb * size;
 		xalloc_total += nmemb * size;
 		if (xalloc_allocated > xalloc_peak)
@@ -521,6 +542,9 @@ xrealloc_c(void *ptr, size_t nmemb, size_t size,
 			if ((mem = real_calloc(1, sizeof(struct memory))) == NULL)
 				_xalloc_error(errno, "XALLOC: Internal error");
 			mem->ptr = ret;
+			XALLOC_LOCK(xalloc_mutex);
+			mem->id = ++xalloc_next_id;
+			XALLOC_UNLOCK(xalloc_mutex);
 			if (file)
 				mem->allocated_by = file;
 			else
@@ -563,7 +587,8 @@ xrealloc_c(void *ptr, size_t nmemb, size_t size,
 
 #ifdef XALLOC_DEBUG
 	if (debug_level > 0) {
-		ssize_t diff = nsiz - mem->size;
+		struct memory	*mem_exists;
+		ssize_t 	 diff = nsiz - mem->size;
 
 		XALLOC_LOCK(xalloc_mutex);
 		xalloc_allocated += diff;
@@ -574,7 +599,15 @@ xrealloc_c(void *ptr, size_t nmemb, size_t size,
 		if (xalloc_allocated > xalloc_peak)
 			xalloc_peak = xalloc_allocated;
 		mem->size = nsiz;
-		RB_INSERT(memory_tree, &memory_tree_head, mem);
+		if ((mem_exists = RB_INSERT(memory_tree, &memory_tree_head, mem)) != NULL) {
+			/* Freed pointer is being reused: */
+			if (mem_exists->id != 0)
+				_xalloc_fatal("XALLOC: Internal error: Assertion (mem_exists->id == 0) in %s:%u failed!\n",
+					      __FILE__, __LINE__);
+			RB_REMOVE(memory_tree, &memory_tree_head, mem_exists);
+			_memory_free(&mem_exists);
+			RB_INSERT(memory_tree, &memory_tree_head, mem);
+		}
 		XALLOC_UNLOCK(xalloc_mutex);
 	}
 #endif /* XALLOC_DEBUG */
@@ -626,8 +659,9 @@ xfree_c(void **ptr_p, const char *file, unsigned int line)
 				      file ? file : unknown_file, line,
 				      *ptr_p);
 
-		if (mem->freed_by != NULL) {
-			_xalloc_debug_printf(2, "XALLOC: DOUBLE FREE in %s:%u: allocated in %s:%u, ",
+		if (mem->freed_by != NULL && mem->id == 0) {
+			_xalloc_debug_printf(2, "XALLOC: DOUBLE FREE of pointer %p in %s:%u: allocated in %s:%u, ",
+					     mem->ptr,
 					     file ? file : unknown_file, line,
 					     mem->allocated_by,
 					     mem->allocated_in_line);
@@ -643,6 +677,7 @@ xfree_c(void **ptr_p, const char *file, unsigned int line)
 
 		xalloc_freed += mem->size;
 		xalloc_allocated -= mem->size;
+		mem->id = 0;
 		mem->size = 0;
 		if (debug_level > 1) {
 			if (file)
@@ -691,7 +726,7 @@ xasprintf_c(const char *file, unsigned int line,
 
 # ifdef XALLOC_DEBUG
 	if (debug_level > 0) {
-		struct memory	*mem;
+		struct memory	*mem, *mem_exists;
 
 		if ((mem = real_calloc(1, sizeof(struct memory))) == NULL)
 			_xalloc_error(errno, "XALLOC: Internal error");
@@ -703,7 +738,16 @@ xasprintf_c(const char *file, unsigned int line,
 			mem->allocated_by = unknown_file;
 		mem->allocated_in_line = line;
 		XALLOC_LOCK(xalloc_mutex);
-		RB_INSERT(memory_tree, &memory_tree_head, mem);
+		mem->id = ++xalloc_next_id;
+		if ((mem_exists = RB_INSERT(memory_tree, &memory_tree_head, mem)) != NULL) {
+			/* Freed pointer is being reused: */
+			if (mem_exists->id != 0)
+				_xalloc_fatal("XALLOC: Internal error: Assertion (mem_exists->id == 0) in %s:%u failed!\n",
+					      __FILE__, __LINE__);
+			RB_REMOVE(memory_tree, &memory_tree_head, mem_exists);
+			_memory_free(&mem_exists);
+			RB_INSERT(memory_tree, &memory_tree_head, mem);
+		}
 		xalloc_allocated += strsiz;
 		xalloc_total += strsiz;
 		if (xalloc_allocated > xalloc_peak)
