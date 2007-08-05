@@ -32,12 +32,12 @@ July 1. All bitstreams encoded since will remain compatible
 with future releases.
 </p>
 
-<h2>Source</h2>
+<a name="source"><h2>Source</h2></a>
 
 <ul>
   <li>The <strong>libtheora</strong> reference implementation provides
       the standard encoder and decoder under a BSD license.
-      [<a href="http://downloads.xiph.org/releases/theora/libtheora-1.0alpha6.tar.gz">libtheora-1.0alpha6</a>]
+      [<a href="http://downloads.xiph.org/releases/theora/libtheora-1.0alpha7.tar.gz">libtheora-1.0alpha7</a>]
       [<a href="http://svn.xiph.org/trunk/theora/">SVN trunk</a>]
   </li>
   <li>The <strong>theora-exp</strong> project is a from-scratch 
@@ -54,7 +54,7 @@ with future releases.
   <li><a href="http://www.libsdl.org/">libSDL 1.2</a> or later for the playback example</li>
  </ul>
 
-<h2>Documentation</h2>
+<a name="documentation"><h2>Documentation</h2></a>
 
 <ul>
   <li><a href="faq/">Frequently Asked Questions</a></li>
