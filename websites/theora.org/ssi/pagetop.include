@@ -1,12 +1,12 @@
 <div id="thepage">
 
-<--
+<!--
 <div id="xiphlogo">
   <a href="http://www.xiph.org/"><img src="/images/logos/fish_xiph_org.png" alt="Fish Logo and Xiph.org"/></a>
 </div>
 //-->
 
-<h1>Theora.org</h1>
+<h1 style="color:black;font-size:large;margin:1.5cm">Theora.org</h1>
 
 <div id="navbar">
 
