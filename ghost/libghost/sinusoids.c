@@ -437,8 +437,7 @@ void extract_modulated_sinusoids(float *x, float *w, float *window, float *A, fl
          for (i=0;i<N;i++)
          {
             float tmp1=0, tmp2=0;
-            float tmp3=0, tmp4=0;
-            /* For each of the four basis functions, project the residual (symmetric or 
+            /* For the first two of the four basis functions, project the residual (symmetric or 
                anti-symmetric) onto the basis function, then update the residual. */
             for (j=0;j<L2;j++)
                tmp1 += sym[j]*cos_table[i][j];
@@ -450,6 +449,14 @@ void extract_modulated_sinusoids(float *x, float *w, float *window, float *A, fl
             for (j=0;j<L2;j++)
                anti[j] -= (2*tmp2)*sin_table[i][j];
 
+            ai[i] += tmp1;
+            bi[i] += tmp2;
+         }
+         for (i=0;i<N;i++)
+         {
+            float tmp3=0, tmp4=0;
+            /* For the last two of the four basis functions, project the residual (symmetric or 
+            anti-symmetric) onto the basis function, then update the residual. */
             for (j=0;j<L2;j++)
                tmp3 += anti[j]*tcos_table[i][j];
             for (j=0;j<L2;j++)
@@ -459,9 +466,7 @@ void extract_modulated_sinusoids(float *x, float *w, float *window, float *A, fl
                tmp4 += sym[j]*tsin_table[i][j];
             for (j=0;j<L2;j++)
                sym[j] -= (2*tmp4)*tsin_table[i][j];
-         
-            ai[i] += tmp1;
-            bi[i] += tmp2;
+            
             ci[i] += tmp3;
             di[i] += tmp4;
          }
