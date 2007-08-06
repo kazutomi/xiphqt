@@ -16,8 +16,8 @@ libghost_la_SOURCES = adpcm.c fftwrap.c ghost.c lifting.c lpc.c misc.c pitch.c \
 
 libghost_la_LDFLAGS = -version-info @GHOST_LT_CURRENT@:@GHOST_LT_REVISION@:@GHOST_LT_AGE@
 
-noinst_HEADERS = ghost.h pitch.h lifting.h smallft.h fftwrap.h \
-	arch.h misc.h vorbis_psy.h lpc.h
+noinst_HEADERS = adpcm.h arch.h fftwrap.h ghost.h lifting.h lpc.h misc.h \
+	pitch.h smallft.h vorbis_psy.h
 
 noinst_PROGRAMS = testghost
 testghost_SOURCES = testghost.c
