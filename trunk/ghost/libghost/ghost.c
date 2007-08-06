@@ -33,7 +33,7 @@
 #define PCM_BUF_SIZE 2048
 
 #define SINUSOIDS 30
-#define MASK_LPC_ORDER 12
+#define MASK_LPC_ORDER 10
 
 void fir_mem2(const spx_sig_t *x, const spx_coef_t *num, spx_sig_t *y, int N, int ord, spx_mem_t *mem)
 {
@@ -139,6 +139,8 @@ GhostEncState *ghost_encoder_state_new(int sampling_rate)
    st->lpc_fft = spx_fft_init(st->lpc_length);
    for (i=0;i<PCM_BUF_SIZE;i++)
       st->big_window[i] = .5-.5*cos(2*M_PI*(i+1)/PCM_BUF_SIZE);
+   
+   st->adpcm = adpcm_init(8);
    return st;
 }
 
@@ -154,6 +156,7 @@ void ghost_encode(GhostEncState *st, float *pcm)
    float curve[PCM_BUF_SIZE>>1];
    float awk1[MASK_LPC_ORDER], awk2[MASK_LPC_ORDER];
    float mask_gain;
+   int q[st->advance];
    
    for (i=0;i<PCM_BUF_SIZE-st->advance;i++)
       st->pcm_buf[i] = st->pcm_buf[i+st->advance];
@@ -310,7 +313,12 @@ void ghost_encode(GhostEncState *st, float *pcm)
          printf ("%f\n", noise[i]);
       printf ("\n");*/
       for (i=0;i<st->advance;i++)
-         noise[i] = 16*floor(.5+.0625*noise[i]);
+         noise[i] = noise[i]/16;
+      adpcm_quant(st->adpcm, noise, q, st->advance);
+      //for (i=0;i<st->advance;i++)
+      //   printf ("%f %d\n", noise[i], q[i]);
+      for (i=0;i<st->advance;i++)
+         noise[i] = 16*noise[i];
       for (i=0;i<st->advance;i++)
          noise[i] *= mask_gain;
       iir_mem2(noise, awk1, noise, st->advance, MASK_LPC_ORDER, st->noise_mem2);
@@ -319,7 +327,7 @@ void ghost_encode(GhostEncState *st, float *pcm)
       pcm[i] = st->current_frame[i]-st->new_noise[i];*/
       
       for (i=0;i<st->advance;i++)
-         pcm[i] = /*st->current_frame[i]-*/st->new_noise[i] /*+ noise[i]*/;
+         pcm[i] = st->current_frame[i]-st->new_noise[i] /*+ noise[i]*/;
       
    }
    

@@ -21,12 +21,17 @@
 */
 
 #include <math.h>
+#include <assert.h>
+#include <stdlib.h>
+#include "adpcm.h"
 
-typedef struct {
+struct ADPCMState_ {
    int N;
    float *coef;
    float *mem;
-} ADPCMState;
+   float E;
+   float alpha;
+};
 
 ADPCMState *adpcm_init(int N)
 {
@@ -40,26 +45,49 @@ ADPCMState *adpcm_init(int N)
       st->coef[i] = 0;
       st->mem[i] = 0;
    }
+   st->E = 1;
+   st->alpha = .3/N;
+   return st;
 }
+
+#define MIN(a,b) ((a) < (b) ? (a) : (b)) 
 
 void adpcm_quant(ADPCMState *st, float *x, int *q, int len)
 {
    int i,j;
    int N=st->N;
    float *a = st->coef;
-
+   float *mem = st->mem;
+   float mu=.05;
+   
    for (i=0;i<len;i++)
    {
       float p = 0;
+      float e;
       /* Prediction: conceptual code, this will segfault (or worse) */
-      for (j=0;j<N;j++)
+      for (j=i;j<N;j++)
+         p += a[j]*mem[j-i];
+      for (j=0;j<MIN(i,N);j++)
          p += a[j]*x[i-j-1];
+      
       /* Difference */
-      q[i] = rint(x[i]-p);
+      e = x[i]-p;
+      q[i] = rint(e);
       x[i] = q[i]+p;
+      
+      /* Energy update */
+      st->E = (1-st->alpha)*st->E + st->alpha*x[i]*x[i];
+      if (st->E < 1)
+         st->E = 1;
+      
       /* Adaptation: conceptual code, this will segfault (or worse) */
-      for (j=0;j<N;j++)
-         a[j] += q[i]*q[i-j-1]/(q[i]*q[i]); 
+      for (j=i;j<N;j++)
+         a[j] += mu*e*mem[j-i]/st->E;
+      for (j=0;j<MIN(i,N);j++)
+         a[j] += mu*e*x[i-j-1]/st->E;
    }
+   assert(len >= N);
+   for (i=0;i<N;i++)
+      mem[i] = x[len-i-1];
 }
 

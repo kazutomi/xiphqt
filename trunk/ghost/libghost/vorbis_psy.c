@@ -465,6 +465,7 @@ float curve_to_lpc(VorbisPsy *psy, float *curve, float *awk1, float *awk2, int o
    ac[2*len-1] = curve[len-1];
    
    spx_drft_backward(&psy->lookup, ac);
+   ac[0] *= 1.0003;
    _spx_lpc(awk1, ac, ord);
    tmp = 1.;
    for (i=0;i<ord;i++)

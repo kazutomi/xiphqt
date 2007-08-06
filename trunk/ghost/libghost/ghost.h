@@ -24,6 +24,7 @@
 #define _GHOST_H
 
 #include "vorbis_psy.h"
+#include "adpcm.h"
 
 typedef struct {
    float *pcm_buf;
@@ -53,6 +54,7 @@ typedef struct {
    
    void *big_fft;
    void *lpc_fft;
+   ADPCMState *adpcm;
 } GhostEncState;
 
 GhostEncState *ghost_encoder_state_new(int sampling_rate);
