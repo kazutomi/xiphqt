@@ -22,30 +22,44 @@
 
 #include <math.h>
 
-void adpcm_quant(float *x, float *a, int *q, int N, int len)
+typedef struct {
+   int N;
+   float *coef;
+   float *mem;
+} ADPCMState;
+
+ADPCMState *adpcm_init(int N)
+{
+   int i;
+   ADPCMState *st = malloc(sizeof(ADPCMState));
+   st->N = N;
+   st->coef = malloc(N*sizeof(float));
+   st->mem = malloc(N*sizeof(float));
+   for (i=0;i<N;i++)
+   {
+      st->coef[i] = 0;
+      st->mem[i] = 0;
+   }
+}
+
+void adpcm_quant(ADPCMState *st, float *x, int *q, int len)
 {
    int i,j;
+   int N=st->N;
+   float *a = st->coef;
+
    for (i=0;i<len;i++)
    {
       float p = 0;
       /* Prediction: conceptual code, this will segfault (or worse) */
       for (j=0;j<N;j++)
-         p += a[j]*q[i-j-1];
+         p += a[j]*x[i-j-1];
       /* Difference */
       q[i] = rint(x[i]-p);
+      x[i] = q[i]+p;
       /* Adaptation: conceptual code, this will segfault (or worse) */
       for (j=0;j<N;j++)
          a[j] += q[i]*q[i-j-1]/(q[i]*q[i]); 
-   }
-}
-
-void adpcm_unquant(int *q, float *a, float *x, int len)
-{
-   int i;
-   for (i=0;i<len;i++)
-   {
-      float p = 0;
-      x[i] = q[i]+p;
    }
 }
 
