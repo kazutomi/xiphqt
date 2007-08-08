@@ -2,12 +2,6 @@
 JVorbis Todo Checklist
 ----------------------
 
-package management
-----------------------
-cutback on mass imports - have every instance complete class paths
-log4j - figure out best way make this deployable within the .jar library
-
-
 libvorbis
 ----------------------
 // DONE - Vorbis Comment support added into header
