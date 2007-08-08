@@ -271,21 +271,6 @@ void extract_modulated_sinusoids(float *x, float *w,
   
 }
 
-#define A0 .35875f
-#define A1 .48829f
-#define A2 .14128f
-#define A3 .01168f
-
-static void blackmann_harris(float *d, int n){
-  int i;
-  float scale = 2*M_PI/n;
-
-  for(i=0;i<n;i++){
-    float i5 = i+.5;
-    d[i] = A0 - A1*cos(scale*i5) + A2*cos(scale*i5*2) - A3*cos(scale*i5*3);
-  }
-}
-
 static void hanning(float *d, int n){
   int i;
   float scale = 2*M_PI/n;
@@ -296,31 +281,32 @@ static void hanning(float *d, int n){
   }
 }
 
-/* Models the signal as modulated sinusoids 
- * x  : input signal
- * w  : input  window (such as Hanning)
- * A  : output vector of amplitudes
- * W  : input/output vector of frequencies
- * P  : output phase vector
- * dA : output amplitude modulation 
- * dW : input/output frequency modulation; null to prevent conv.
- * N  : input number of sinusoids
- * len: input frame size
-*/
+static void compute_sinusoid(float A, float W, float P, 
+			     float delA, float delW, 
+			     float *y, int len){
+  int i,j;
+  float ilen = 1./len;
 
-void extract_modulated_sinusoids_nonlinear(float *x, float *window, 
-					   float *A, float *W, float *P, 
-					   float *dA, float *dW, 
-					   float *y, int N, int len){
+  for(j=0;j<len;j++){
+    float jj = (j-len*.5+.5)*ilen;
+    float a = A + delA*jj;
+    float w = W + delW*jj;
+    y[j] += a*cos(2.*M_PI*jj*w+P);
+  }
+}
+
+int extract_sinusoids_iteration(float *x, float *window, 
+				float *A, float *W, float *P, 
+				float *dA, float *dW, 
+				float *y, int N, int len){
+
   float scale = 2.*M_PI/len ;
   float iscale = len/(2.*M_PI);
-  int i,j;
+  int i,j,flag=0;
   float cwork[len];
   float swork[len];
 
-  memset(y,0,sizeof(*y)*len);
-
-  for (i=0;i<N;i++){
+  for(i=0;i<N;i++){
     
     float aP=0, bP=0, cP=0;
     float dP=0, eP=0, fP=0;
@@ -328,6 +314,9 @@ void extract_modulated_sinusoids_nonlinear(float *x, float *window,
     float dE=0, eE=0, fE=0;
     float ldW = (dW?dW[i]:0.f);
     
+    if(A[i]!=0. || dA[i]!=0.)
+      compute_sinusoid(-A[i],W[i],P[i],-dA[i],dW[i],y,len);
+
     for(j=0;j<len;j++){
       float jj = j-len/2.+.5;
       float jj2 = jj*jj;
@@ -348,8 +337,6 @@ void extract_modulated_sinusoids_nonlinear(float *x, float *window,
       
       aP += (x[j]-y[j]) * cw;
       bP += (x[j]-y[j]) * sw;
-      cP += (x[j]-y[j]) * cw * jj;
-      dP += (x[j]-y[j]) * sw * jj;
 
       cwork[j] = c;
       swork[j] = s;
@@ -357,45 +344,35 @@ void extract_modulated_sinusoids_nonlinear(float *x, float *window,
 
     aP = (aE>0.f ? aP/aE : 0.f);
     bP = (bE>0.f ? bP/bE : 0.f);
+
+    for(j=0;j<len;j++){
+      float jj = j-len/2.+.5;
+
+      cP += (x[j]-y[j]-aP*cwork[j]) * cwork[j] * window[j] * jj;
+      dP += (x[j]-y[j]-bP*cwork[j]) * swork[j] * window[j] * jj;      
+    }
+
     cP = (cE>0.f ? cP/cE : 0.f);
     dP = (dE>0.f ? dP/dE : 0.f);
 
     for(j=0;j<len;j++){
       float jj = j-len/2.+.5;
       float jj2 = jj*jj;
-      float cw = cwork[j]*window[j];
-      float sw = swork[j]*window[j];
 
-      y[j] += aP*cwork[j];
-      y[j] += bP*swork[j];
-      y[j] += cP*jj*cwork[j];
-      y[j] += dP*jj*swork[j];
+      eP += (x[j]-y[j]-(aP+cP*jj)*cwork[j]) * cwork[j]*window[j] * jj2;
+      fP += (x[j]-y[j]-(bP+dP*jj)*swork[j]) * swork[j]*window[j] * jj2;
 
-      if(dW){
-	eP += (x[j]-y[j]) * cw * jj2;
-	fP += (x[j]-y[j]) * sw * jj2;
-      }
     }
-
-    if(dW){
-      
-      eP = (eE>0.f ? eP/eE : 0.f);
-      fP = (fE>0.f ? fP/fE : 0.f);
-      
-      for(j=0;j<len;j++){
-	float jj = j-len/2.+.5;
-	float jj2 = jj*jj;
-	
-	y[j] += eP*jj2*cwork[j];
-	y[j] += fP*jj2*swork[j];
-      }
-    }
-
-
+    
+    eP = (eE>0.f ? eP/eE : 0.f);
+    fP = (fE>0.f ? fP/fE : 0.f);
+    
     {
       float lA2 = aP*aP + bP*bP;
       float lA = sqrt(aP*aP + bP*bP);
       float lP;
+      float lW;
+      float ldW;
       
       if(lA!=0.){
 	if(bP>0){
@@ -405,14 +382,41 @@ void extract_modulated_sinusoids_nonlinear(float *x, float *window,
 	}
       }else
 	lP=0.;
+
+      lW  = (cP*bP - dP*aP)/lA2*iscale;
+      ldW = (eP*bP - fP*aP)/lA2*iscale;
+
+      if( fabs(lW)>.001 || fabs(ldW)>.001) flag=1;
     
       A[i] = lA;
       P[i]  = lP;
       dA[i] = (cP*aP + bP*dP)/lA;
-      W[i]  += (cP*bP - dP*aP)/lA2*iscale;
-      if(dW)dW[i] += (eP*bP - fP*aP)/lA2*iscale;
+      W[i]  += lW;
+      dW[i] += ldW;
     }
+
+    compute_sinusoid(A[i],W[i],P[i],dA[i],dW[i],y,len);
+
   }
+
+  return flag;
+}
+
+void extract_modulated_sinusoids_nonlinear(float *x, float *w,
+				 float *A, float *W, float *P, 
+				 float *dA, float *dW, 
+				 float *y, int N, int len){
+  float window[len];
+  hanning(window,len);
+  memset(y,0,sizeof(*y)*len);
+  memset(A,0,sizeof(*A)*N);
+  memset(P,0,sizeof(*A)*N);
+  memset(dA,0,sizeof(*A)*N);
+  memset(dW,0,sizeof(*A)*N);
+  int count=5;
+
+  while(extract_sinusoids_iteration(x, window, A, W, P, dA, dW, y, N, len) && --count);
+    
 }
 
 void extract_modulated_sinusoidsB(float *x, float *w,
@@ -594,18 +598,3 @@ void extract_modulated_sinusoidsB(float *x, float *w,
   
 }
 
-static void compute_sinusoids(float *A, float *W, float *P, 
-			      float *delA, float *delW, float *y, int N, int len){
-  int i,j;
-  float ilen = 1./len;
-
-  for(j=0;j<len;j++){
-    float jj = (j-len*.5+.5)*ilen;
-    y[j]=0.;
-    for(i=0;i<N;i++){
-      float a = A[i] + delA[i]*jj;
-      float w = W[i] + delW[i]*jj;
-      y[j] += a*cos(2.*M_PI*jj*w+P[i]);
-    }
-  }
-}
