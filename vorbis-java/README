@@ -40,7 +40,6 @@ This source distribution includes libvorbis and an example
 encoder to demonstrate use of libvorbis as well as
 documentation on the Ogg Vorbis audio coding format.
 
-You'll need libogg (distributed separately) to compile this library.
 A more comprehensive set of Java utilities WILL BE available in the vorbis-tools
 package.
 
