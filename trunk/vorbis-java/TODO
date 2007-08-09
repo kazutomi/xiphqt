@@ -25,8 +25,6 @@ add low quality support from aoTuV - http://www.geocities.jp/aoyoume/aotuv/
 
 OOP classes
 
-merge same classes into combined packages : http://jarticles.com/package/package_eng.html
-
 Get rid of floor1_func, res0_func, map0_func
 		_floor_P
 		_residue_P
