@@ -6,6 +6,10 @@
 #
 # NOTE: Python 2.4 or later required for current line attribute of Expat parser
 #
+# 2007-08-09 // Sebastian Pipping <webmaster@hartwork.org>
+#   * Fixed: Ivo's changes repaired to have same look again
+#       I use tables when pixel-exact layout is need since
+#       CSS support in browsers is not good enough yet
 # 2007-07-30
 #   * Some HTML and CSS fixes by Ivo Emanuel Gonçalves <justivo@gmail.com>
 #     (probably should remove those bloody tables, but I can't see
@@ -42,12 +46,10 @@ print                               # blank line, end of headers
 
 
 print """
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
-            "http://www.w3.org/TR/html4/strict.dtd">
 <html>
 	<head>
 		<title>XSPF Validator &mdash; Validate your playlists</title>
-		<style type="text/html">
+		<style type="text/css">
 			body {
 				background-color:rgb(230,230,230);
 				margin:0;
@@ -154,7 +156,7 @@ print """
 	</head>
 	<body>
 		<!-- CENTERING -->
-		<table style="width:100%;">
+		<table height="100%" style="width:100%">
 			<tr>
 				<td align="center" valign="middle" style="padding:10px">
 					<!-- BORDER -->"""
@@ -1092,7 +1094,7 @@ print """
 						</tr>
 						<tr>
 							<td align="center" style="padding-left:6px; padding-right:6px;">
-								<table cellpadding="0" cellspacing="0" style="width:100%;" height="1" style="background-color:rgb(180,180,180);">
+								<table cellpadding="0" cellspacing="0" height="1" style="width:100%; background-color:rgb(180,180,180);">
 									<tr>
 										<td style="font-size:1px; line-height:1px;">&nbsp;</td>
 									</tr>
