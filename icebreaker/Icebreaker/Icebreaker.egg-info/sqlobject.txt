@@ -1,2 +1,0 @@
-db_module=icebreaker.model
-history_dir=$base/icebreaker/sqlobject-history
