@@ -18,6 +18,11 @@
 extern void window_weight(float *logf, float *out, int n, float flatbias,
 			  int lowindow, int hiwindow, int min, int rate);
 
+extern int extract_sinusoids(float *x, 
+			     float *A, float *W, float *P, 
+			     float *dA, float *dW, 
+			     float *y, int N, int len, int count);
+
 extern void extract_modulated_sinusoids(float *x, float *w, float *Aout, float *Wout, float *Pout, 
 					float *delAout, float *delWout, float *ddAout, float *y, int N, int len);
 

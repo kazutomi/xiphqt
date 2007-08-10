@@ -15,6 +15,7 @@
 
  ********************************************************************/
 
+#define _GNU_SOURCE
 #include <math.h>
 #include "sinusoids.h"
 #include "scales.h"
@@ -180,7 +181,7 @@ void extract_modulated_sinusoids(float *x, float *w,
       ai[i] = bi[i] = ci[i] = di[i] = 0;
    int tata=0;
    /* This is an iterative solution -- much quicker than inverting a matrix */
-   for (iter=0;iter<5;iter++)
+   for (iter=0;iter<50;iter++)
    {
       for (i=0;i<N;i++)
       {
@@ -281,142 +282,153 @@ static void hanning(float *d, int n){
   }
 }
 
-static void compute_sinusoid(float A, float W, float P, 
-			     float delA, float delW, 
-			     float *y, int len){
-  int i,j;
-  float ilen = 1./len;
+int extract_sinusoids(float *x, 
+		      float *A, float *W, float *P, 
+		      float *dA, float *dW, 
+		      float *y, int N, int len, int count){
 
-  for(j=0;j<len;j++){
-    float jj = (j-len*.5+.5)*ilen;
-    float a = A + delA*jj;
-    float w = W + delW*jj;
-    y[j] += a*cos(2.*M_PI*jj*w+P);
-  }
-}
-
-int extract_sinusoids_iteration(float *x, float *window, 
-				float *A, float *W, float *P, 
-				float *dA, float *dW, 
-				float *y, int N, int len){
-
-  float scale = 2.*M_PI/len ;
+  float scale = 2.*M_PI/len;
   float iscale = len/(2.*M_PI);
-  int i,j,flag=0;
+  float ilen = 1./len;
+  int i,j,flag=1;
   float cwork[len];
   float swork[len];
-
-  for(i=0;i<N;i++){
-    
-    float aP=0, bP=0, cP=0;
-    float dP=0, eP=0, fP=0;
-    float aE=0, bE=0, cE=0;
-    float dE=0, eE=0, fE=0;
-    float ldW = (dW?dW[i]:0.f);
-    
-    if(A[i]!=0. || dA[i]!=0.)
-      compute_sinusoid(-A[i],W[i],P[i],-dA[i],dW[i],y,len);
-
-    for(j=0;j<len;j++){
-      float jj = j-len/2.+.5;
-      float jj2 = jj*jj;
-      float jj4 = jj2*jj2;
-      float c = cos((W[i]*scale + ldW*scale*jj)*jj);
-      float s = sin((W[i]*scale + ldW*scale*jj)*jj);
-      float cw = c*window[j];
-      float sw = s*window[j];
-      float ccw = cw*c;
-      float ssw = sw*s;
-
-      aE += ccw;
-      bE += ssw;
-      cE += ccw*jj2;
-      dE += ssw*jj2;
-      eE += ccw*jj4;
-      fE += ssw*jj4;
-      
-      aP += (x[j]-y[j]) * cw;
-      bP += (x[j]-y[j]) * sw;
-
-      cwork[j] = c;
-      swork[j] = s;
-    }
-
-    aP = (aE>0.f ? aP/aE : 0.f);
-    bP = (bE>0.f ? bP/bE : 0.f);
-
-    for(j=0;j<len;j++){
-      float jj = j-len/2.+.5;
-
-      cP += (x[j]-y[j]-aP*cwork[j]) * cwork[j] * window[j] * jj;
-      dP += (x[j]-y[j]-bP*cwork[j]) * swork[j] * window[j] * jj;      
-    }
-
-    cP = (cE>0.f ? cP/cE : 0.f);
-    dP = (dE>0.f ? dP/dE : 0.f);
-
-    for(j=0;j<len;j++){
-      float jj = j-len/2.+.5;
-      float jj2 = jj*jj;
-
-      eP += (x[j]-y[j]-(aP+cP*jj)*cwork[j]) * cwork[j]*window[j] * jj2;
-      fP += (x[j]-y[j]-(bP+dP*jj)*swork[j]) * swork[j]*window[j] * jj2;
-
-    }
-    
-    eP = (eE>0.f ? eP/eE : 0.f);
-    fP = (fE>0.f ? fP/fE : 0.f);
-    
-    {
-      float lA2 = aP*aP + bP*bP;
-      float lA = sqrt(aP*aP + bP*bP);
-      float lP;
-      float lW;
-      float ldW;
-      
-      if(lA!=0.){
-	if(bP>0){
-	  lP = -acos(aP/lA);
-	}else{
-	  lP = acos(aP/lA);
-	}
-      }else
-	lP=0.;
-
-      lW  = (cP*bP - dP*aP)/lA2*iscale;
-      ldW = (eP*bP - fP*aP)/lA2*iscale;
-
-      if( fabs(lW)>.001 || fabs(ldW)>.001) flag=1;
-    
-      A[i] = lA;
-      P[i]  = lP;
-      dA[i] = (cP*aP + bP*dP)/lA;
-      W[i]  += lW;
-      dW[i] += ldW;
-    }
-
-    compute_sinusoid(A[i],W[i],P[i],dA[i],dW[i],y,len);
-
-  }
-
-  return flag;
-}
-
-void extract_modulated_sinusoids_nonlinear(float *x, float *w,
-				 float *A, float *W, float *P, 
-				 float *dA, float *dW, 
-				 float *y, int N, int len){
   float window[len];
+
+  float aprev[N],bprev[N];
+  float cprev[N],dprev[N];
+  float eprev[N],fprev[N];
+
   hanning(window,len);
   memset(y,0,sizeof(*y)*len);
-  memset(A,0,sizeof(*A)*N);
-  memset(P,0,sizeof(*A)*N);
-  memset(dA,0,sizeof(*A)*N);
-  memset(dW,0,sizeof(*A)*N);
-  int count=5;
-
-  while(extract_sinusoids_iteration(x, window, A, W, P, dA, dW, y, N, len) && --count);
+  memset(aprev,0,sizeof(aprev));
+  memset(bprev,0,sizeof(bprev));
+  memset(cprev,0,sizeof(cprev));
+  memset(dprev,0,sizeof(dprev));
+  memset(eprev,0,sizeof(eprev));
+  memset(fprev,0,sizeof(fprev));
+  
+  while(count-- && flag){
+    flag=0;
     
+    for(i=0;i<N;i++){
+      
+      float aP=0, bP=0;
+      float cP=0, dP=0;
+      float eP=0, fP=0;
+      float aE=0, bE=0; 
+      float cE=0, dE=0;
+      float eE=0, fE=0;
+      
+      float aC=cos(P[i]);
+      float aS=sin(P[i]);
+      
+      for(j=0;j<len;j++){
+	float jj = j-len*.5+.5;
+	float jj2 = jj*jj;
+	float jj4 = jj2*jj2;
+	float a = A[i] + dA[i]*jj*ilen;
+	float c = cos((W[i] + dW[i]*jj*ilen)*scale*jj);
+	float s = sin((W[i] + dW[i]*jj*ilen)*scale*jj);
+	float cw = c*window[j];
+	float sw = s*window[j];
+	float ccw = cw*c;
+	float ssw = sw*s;
+	
+	cwork[j] = c;
+	swork[j] = s;
+	y[j] -= aC*a*c - aS*a*s;
+	
+	aE += ccw;
+	bE += ssw;
+	cE += ccw*jj2;
+	dE += ssw*jj2;
+	eE += ccw*jj4;
+	fE += ssw*jj4;
+
+	aP += (x[j]-y[j]) * cw;
+	bP += (x[j]-y[j]) * sw;
+	
+      }
+      
+      aP = (aE>0.f ? aP/aE : 0.f);
+      bP = (bE>0.f ? bP/bE : 0.f);
+      
+      for(j=0;j<len;j++){
+	float jj = j-len/2.+.5;
+	
+	cP += (x[j]-y[j]-aP*cwork[j]) * cwork[j] * window[j] * jj;
+	dP += (x[j]-y[j]-bP*cwork[j]) * swork[j] * window[j] * jj;      
+      }
+      
+      cP = (cE>0.f ? cP/cE : 0.f);
+      dP = (dE>0.f ? dP/dE : 0.f);
+      
+      for(j=0;j<len;j++){
+	float jj = j-len/2.+.5;
+	float jj2 = jj*jj;
+	
+	eP += (x[j]-y[j]-(aP+cP*jj)*cwork[j]) * cwork[j]*window[j] * jj2;
+	fP += (x[j]-y[j]-(bP+dP*jj)*swork[j]) * swork[j]*window[j] * jj2;
+      }
+      
+      eP = (eE>0.f ? eP/eE : 0.f);
+      fP = (fE>0.f ? fP/fE : 0.f);
+      
+      {
+	float lA2 = aP*aP + bP*bP;
+	float lA = sqrt(aP*aP + bP*bP);
+	float lP;
+	
+	if(lA!=0.){
+	  if(bP>0){
+	    lP = -acos(aP/lA);
+	  }else{
+	    lP = acos(aP/lA);
+	  }
+	}else
+	  lP=0.;
+	
+	A[i] = lA;
+	P[i]  = lP;
+	dA[i] = (cP*aP + bP*dP)/lA;
+	W[i]  += (cP*bP - dP*aP)/lA2*iscale*.8;
+	dW[i] += (eP*bP - fP*aP)/lA2*iscale*.8;
+      }
+      
+      if(todB(fabs(aP - aprev[i]))>-120. ||
+	 todB(fabs(bP - bprev[i]))>-120. ||
+	 todB(fabs(cP - cprev[i]))>-120. ||
+	 todB(fabs(dP - dprev[i]))>-120. ||
+	 todB(fabs(eP - eprev[i]))>-120. ||
+	 todB(fabs(fP - fprev[i]))>-120.) flag=1;
+
+      fprintf(stderr,"%.0f %.0f %.0f %.0f %.0f %.0f\n",
+	      todB(fabs(aP - aprev[i])),
+	      todB(fabs(bP - bprev[i])),
+	      todB(fabs(cP - cprev[i])),
+	      todB(fabs(dP - dprev[i])),
+	      todB(fabs(eP - eprev[i])),
+	      todB(fabs(fP - fprev[i])));
+      
+      aprev[i] = aP;
+      bprev[i] = bP;
+      cprev[i] = cP;
+      dprev[i] = dP;
+      eprev[i] = eP;
+      fprev[i] = fP;
+      
+      for(j=0;j<len;j++){
+	float jj = (j-len*.5+.5)*ilen;
+	float a = A[i] + dA[i]*jj;
+	float w = W[i] + dW[i]*jj;
+	y[j] += a*cos(2.*M_PI*jj*w+P[i]);
+      }
+    }
+
+  }
+  fprintf(stderr,"count remaining=%d\n",count);
+  return flag;
 }
 
 void extract_modulated_sinusoidsB(float *x, float *w,
@@ -442,7 +454,7 @@ void extract_modulated_sinusoidsB(float *x, float *w,
   int i,j, iter;
 
   hanning(window,len);
-
+  
   /* Build a table for the four basis functions at each frequency */
   for (i=0;i<N;i++){
     float tmpa=0;
@@ -451,14 +463,14 @@ void extract_modulated_sinusoidsB(float *x, float *w,
     float tmpd=0;
     float tmpe=0;
     float tmpf=0;
-
+    
     cos_table[i]=calloc(len,sizeof(**cos_table));
     sin_table[i]=calloc(len,sizeof(**sin_table));
     tcos_table[i]=calloc(len,sizeof(**tcos_table));
     tsin_table[i]=calloc(len,sizeof(**tsin_table));
     ttcos_table[i]=calloc(len,sizeof(**ttcos_table));
     ttsin_table[i]=calloc(len,sizeof(**ttsin_table));
-
+    
     for (j=0;j<len;j++){
       float jj = j-len/2.+.5;
 
@@ -492,14 +504,14 @@ void extract_modulated_sinusoidsB(float *x, float *w,
     tmpd = sqrt(tmpd);
     tmpe = sqrt(tmpe);
     tmpf = sqrt(tmpf);
-
+    
     cosE[i] = (tmpa>0.f ? 1.f/tmpa : 0.f);
     sinE[i] = (tmpb>0.f ? 1.f/tmpb : 0.f);
     tcosE[i] = (tmpc>0.f ? 1.f/tmpc : 0.f);
     tsinE[i] = (tmpd>0.f ? 1.f/tmpd : 0.f);
     ttcosE[i] = (tmpe>0.f ? 1.f/tmpe : 0.f);
     ttsinE[i] = (tmpf>0.f ? 1.f/tmpf : 0.f);
-
+    
     for(j=0;j<len;j++){
       cos_table[i][j] *= cosE[i];
       sin_table[i][j] *= sinE[i];
@@ -518,14 +530,14 @@ void extract_modulated_sinusoidsB(float *x, float *w,
   
   for (iter=0;iter<5;iter++){
     for (i=0;i<N;i++){
-      
+       
       float tmpa=0, tmpb=0, tmpc=0;
       float tmpd=0, tmpe=0, tmpf=0;
-      
+       
       /* (Sort of) project the residual on the four basis functions */
       for (j=0;j<len;j++){
-	float jj = j-len/2.+.5;
-	
+        float jj = j-len/2.+.5;
+        
 	tmpa += (x[j]-y[j]) * cos_table[i][j] * window[j];
 	tmpb += (x[j]-y[j]) * sin_table[i][j] * window[j];
 	tmpc += (x[j]-y[j]) * tcos_table[i][j] * window[j];
@@ -538,15 +550,12 @@ void extract_modulated_sinusoidsB(float *x, float *w,
       
       /* Update the signal approximation for the next iteration */
       for (j=0;j<len;j++){
-	float jj = j-len/2.+.5;
-	
 	y[j] += tmpa*cos_table[i][j];
 	y[j] += tmpb*sin_table[i][j];
 	y[j] += tmpc*tcos_table[i][j];
 	y[j] += tmpd*tsin_table[i][j];
 	y[j] += tmpe*ttcos_table[i][j];
 	y[j] += tmpf*ttsin_table[i][j];
-	
       }
       
       ai[i] += tmpa;
@@ -555,10 +564,9 @@ void extract_modulated_sinusoidsB(float *x, float *w,
       di[i] += tmpd;
       ei[i] += tmpe;
       fi[i] += tmpf;
-      
     }
   }
-  
+ 
   for (i=0;i<N;i++){
     ai[i] *= cosE[i];
     bi[i] *= sinE[i];
@@ -578,12 +586,12 @@ void extract_modulated_sinusoidsB(float *x, float *w,
     free(tsin_table[i]);
     free(ttcos_table[i]);
     free(ttsin_table[i]);
-     
+    
     if(A!=0.){
       if(bi[i]>0){
 	P = -acos(ai[i]/A);
       }else{
-        P = acos(ai[i]/A);
+	P = acos(ai[i]/A);
       }
     }else
       P=0.;
@@ -597,4 +605,4 @@ void extract_modulated_sinusoidsB(float *x, float *w,
   }
   
 }
-
+    
