@@ -51,7 +51,7 @@ static void fractal_objective(double *d, double *ret){
 int main(int argc, char *argv[]){
 
   // before any gtk, gdk or glib setup
-  sv_init(&argc,&argv);
+  sv_init();
   
   //g_thread_init (NULL);
   //gtk_init (&argc, &argv);

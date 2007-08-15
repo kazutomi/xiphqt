@@ -45,9 +45,9 @@ int sv_save(char *filename);
 int sv_load(char *filename);
 
 /* toplevel ******************************************************/
-extern int sv_init();
-extern int sv_go();
-extern int sv_join();
+extern int sv_init(void);
+extern int sv_go(void);
+extern int sv_join(void);
 
 /* scales ********************************************************/
 
