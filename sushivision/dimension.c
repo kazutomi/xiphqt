@@ -233,15 +233,14 @@ static void _sv_dim_center_callback(void *data, int buttonstate){
   _sv_dim_widget_t *dw = (_sv_dim_widget_t *)data;
 
   sv_dim_t *d = dw->dl->d;
-  sv_panel_t *p = dw->dl->p;
   double val = _sv_slider_get_value(dw->scale,1);
   char buffer[80];
   
   val = discrete_quantize_val(d,val);
   
   if(buttonstate == 0){
-    _sv_undo_push(p->sushi);
-    _sv_undo_suspend(p->sushi);
+    _sv_undo_push();
+    _sv_undo_suspend();
   }
   
   if(d->val != val){
@@ -268,7 +267,7 @@ static void _sv_dim_center_callback(void *data, int buttonstate){
   }
   
   if(buttonstate == 2)
-    _sv_undo_resume(p->sushi);
+    _sv_undo_resume();
   
   snprintf(buffer,80,"%.10g",d->bracket[0]);
   gtk_entry_set_text(GTK_ENTRY(dw->entry[0]),buffer);
@@ -286,7 +285,6 @@ static void _sv_dim_bracket_callback(void *data, int buttonstate){
   _sv_dim_widget_t *dw = (_sv_dim_widget_t *)data;
 
   sv_dim_t *d = dw->dl->d;
-  sv_panel_t *p = dw->dl->p;
   double lo = _sv_slider_get_value(dw->scale,0);
   double hi = _sv_slider_get_value(dw->scale,2);
   char buffer[80];
@@ -295,8 +293,8 @@ static void _sv_dim_bracket_callback(void *data, int buttonstate){
   lo = discrete_quantize_val(d,lo);
   
   if(buttonstate == 0){
-    _sv_undo_push(p->sushi);
-    _sv_undo_suspend(p->sushi);
+    _sv_undo_push();
+    _sv_undo_suspend();
   }
   
   if(d->bracket[0] != lo || d->bracket[1] != hi){
@@ -322,7 +320,7 @@ static void _sv_dim_bracket_callback(void *data, int buttonstate){
   }
   
   if(buttonstate == 2)
-    _sv_undo_resume(p->sushi);
+    _sv_undo_resume();
   
   snprintf(buffer,80,"%.10g",d->bracket[0]);
   gtk_entry_set_text(GTK_ENTRY(dw->entry[0]),buffer);
@@ -340,12 +338,11 @@ static void _sv_dim_dropdown_callback(GtkWidget *dummy, void *data){
   _sv_dim_widget_t *dw = (_sv_dim_widget_t *)data;
 
   sv_dim_t *d = dw->dl->d;
-  sv_panel_t *p = dw->dl->p;
   int bin = gtk_combo_box_get_active(GTK_COMBO_BOX(dw->menu));
   double val = d->scale->val_list[bin];
     
-  _sv_undo_push(p->sushi);
-  _sv_undo_suspend(p->sushi);
+  _sv_undo_push();
+  _sv_undo_suspend();
     
   if(d->val != val){
     int i;
@@ -371,7 +368,7 @@ static void _sv_dim_dropdown_callback(GtkWidget *dummy, void *data){
     }
 
   }
-  _sv_undo_resume(p->sushi);
+  _sv_undo_resume();
   
   gdk_threads_leave();
 }
@@ -662,12 +659,10 @@ _sv_dim_widget_t *_sv_dim_widget_new(sv_dim_list_t *dl,
   return dw;
 };
 
-sv_dim_t *sv_dim_new(sv_instance_t *in,
-		     int number,
+sv_dim_t *sv_dim_new(int number,
 		     char *name,
 		     unsigned flags){
 
-  sv_instance_t *s = (sv_instance_t *)in;
   sv_dim_t *d;
   
   if(number<0){
@@ -676,27 +671,26 @@ sv_dim_t *sv_dim_new(sv_instance_t *in,
     return NULL;
   }
 
-  if(number<s->dimensions){
-    if(s->dimension_list[number]!=NULL){
+  if(number<_sv_dimensions){
+    if(_sv_dimension_list[number]!=NULL){
       fprintf(stderr,"Dimension number %d already exists\n",number);
       errno = -EINVAL;
       return NULL;
     }
   }else{
-    if(s->dimensions == 0){
-      s->dimension_list = calloc (number+1,sizeof(*s->dimension_list));
+    if(_sv_dimensions == 0){
+      _sv_dimension_list = calloc (number+1,sizeof(*_sv_dimension_list));
     }else{
-      s->dimension_list = realloc (s->dimension_list,(number+1) * sizeof(*s->dimension_list));
-      memset(s->dimension_list + s->dimensions, 0, sizeof(*s->dimension_list)*(number + 1 - s->dimensions));
+      _sv_dimension_list = realloc (_sv_dimension_list,(number+1) * sizeof(*_sv_dimension_list));
+      memset(_sv_dimension_list + _sv_dimensions, 0, sizeof(*_sv_dimension_list)*(number + 1 - _sv_dimensions));
     }
-    s->dimensions=number+1;
+    _sv_dimensions=number+1;
   }
 
-  d = s->dimension_list[number] = calloc(1, sizeof(**s->dimension_list));
+  d = _sv_dimension_list[number] = calloc(1, sizeof(**_sv_dimension_list));
   d->number = number;
   d->name = strdup(name);
   d->flags = flags;
-  d->sushi = s;
   d->type = SV_DIM_CONTINUOUS;
   d->private = calloc(1, sizeof(*d->private));
 
@@ -774,7 +768,7 @@ static _sv_propmap_t *typemap[]={
 };
 
 int _sv_dim_load(sv_dim_t *d,
-		 _sv_instance_undo_t *u,
+		 _sv_undo_t *u,
 		 xmlNodePtr dn,
 		 int warn){
 

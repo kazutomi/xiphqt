@@ -28,44 +28,44 @@
 
 /* encapsulates some amount of common undo/redo infrastructure */
 
-static void update_all_menus(sv_instance_t *s){
+static void update_all_menus(){
   int i;
-  if(s->panel_list){
-    for(i=0;i<s->panels;i++)
-      if(s->panel_list[i])
-	_sv_panel_update_menus(s->panel_list[i]);
+  if(_sv_panel_list){
+    for(i=0;i<_sv_panels;i++)
+      if(_sv_panel_list[i])
+	_sv_panel_update_menus(_sv_panel_list[i]);
   }
 }
 
-void _sv_undo_suspend(sv_instance_t *s){
-  s->private->undo_suspend++;
+void _sv_undo_suspend(){
+  _sv_undo_suspended++;
 }
 
-void _sv_undo_resume(sv_instance_t *s){
-  s->private->undo_suspend--;
-  if(s->private->undo_suspend<0){
+void _sv_undo_resume(){
+  _sv_undo_suspended--;
+  if(_sv_undo_suspended<0){
     fprintf(stderr,"Internal error: undo suspend refcount count < 0\n");
-    s->private->undo_suspend=0;
+    _sv_undo_suspended=0;
   }
 }
 
-void _sv_undo_pop(sv_instance_t *s){
-  _sv_instance_undo_t *u;
+void _sv_undo_pop(){
+  _sv_undo_t *u;
   int i,j;
-  if(!s->private->undo_stack)
-    s->private->undo_stack = calloc(2,sizeof(*s->private->undo_stack));
+  if(!_sv_undo_stack)
+    _sv_undo_stack = calloc(2,sizeof(*_sv_undo_stack));
   
-  if(s->private->undo_stack[s->private->undo_level]){
-    i=s->private->undo_level;
-    while(s->private->undo_stack[i]){
-      u = s->private->undo_stack[i];
+  if(_sv_undo_stack[_sv_undo_level]){
+    i=_sv_undo_level;
+    while(_sv_undo_stack[i]){
+      u = _sv_undo_stack[i];
       
       if(u->dim_vals[0]) free(u->dim_vals[0]);
       if(u->dim_vals[1]) free(u->dim_vals[1]);
       if(u->dim_vals[2]) free(u->dim_vals[2]);
       
       if(u->panels){
-	for(j=0;j<s->panels;j++){
+	for(j=0;j<_sv_panels;j++){
 	  _sv_panel_undo_t *pu = u->panels+j;
 	  if(pu->mappings) free(pu->mappings);
 	  if(pu->scale_vals[0]) free(pu->scale_vals[0]);
@@ -74,31 +74,31 @@ void _sv_undo_pop(sv_instance_t *s){
 	}
 	free(u->panels);
       }
-      free(s->private->undo_stack[i]);
-      s->private->undo_stack[i]= NULL;
+      free(_sv_undo_stack[i]);
+      _sv_undo_stack[i]= NULL;
       i++;
     }
   }
   
   // alloc new undos
-  u = s->private->undo_stack[s->private->undo_level] = calloc(1,sizeof(*u));
-  u->panels = calloc(s->panels,sizeof(*u->panels));
-  u->dim_vals[0] = calloc(s->dimensions,sizeof(**u->dim_vals));
-  u->dim_vals[1] = calloc(s->dimensions,sizeof(**u->dim_vals));
-  u->dim_vals[2] = calloc(s->dimensions,sizeof(**u->dim_vals));
+  u = _sv_undo_stack[_sv_undo_level] = calloc(1,sizeof(*u));
+  u->panels = calloc(_sv_panels,sizeof(*u->panels));
+  u->dim_vals[0] = calloc(_sv_dimensions,sizeof(**u->dim_vals));
+  u->dim_vals[1] = calloc(_sv_dimensions,sizeof(**u->dim_vals));
+  u->dim_vals[2] = calloc(_sv_dimensions,sizeof(**u->dim_vals));
 }
 
-void _sv_undo_log(sv_instance_t *s){
-  _sv_instance_undo_t *u;
+void _sv_undo_log(){
+  _sv_undo_t *u;
   int i,j;
 
   // log into a fresh entry; pop this level and all above it 
-  _sv_undo_pop(s);
-  u = s->private->undo_stack[s->private->undo_level];
+  _sv_undo_pop();
+  u = _sv_undo_stack[_sv_undo_level];
   
   // save dim values
-  for(i=0;i<s->dimensions;i++){
-    sv_dim_t *d = s->dimension_list[i];
+  for(i=0;i<_sv_dimensions;i++){
+    sv_dim_t *d = _sv_dimension_list[i];
     if(d){
       u->dim_vals[0][i] = d->bracket[0];
       u->dim_vals[1][i] = d->val;
@@ -107,19 +107,19 @@ void _sv_undo_log(sv_instance_t *s){
   }
 
   // pass off panel population to panels
-  for(j=0;j<s->panels;j++)
-    if(s->panel_list[j])
-      _sv_panel_undo_log(s->panel_list[j], u->panels+j);
+  for(j=0;j<_sv_panels;j++)
+    if(_sv_panel_list[j])
+      _sv_panel_undo_log(_sv_panel_list[j], u->panels+j);
 }
 
-void _sv_undo_restore(sv_instance_t *s){
+void _sv_undo_restore(){
   int i;
-  _sv_instance_undo_t *u = s->private->undo_stack[s->private->undo_level];
+  _sv_undo_t *u = _sv_undo_stack[_sv_undo_level];
 
   // dims 
   // need to happen first as setting dims can have side effect (like activating crosshairs)
-  for(i=0;i<s->dimensions;i++){
-    sv_dim_t *d = s->dimension_list[i];
+  for(i=0;i<_sv_dimensions;i++){
+    sv_dim_t *d = _sv_dimension_list[i];
     if(d){
       sv_dim_set_value(d, 0, u->dim_vals[0][i]);
       sv_dim_set_value(d, 1, u->dim_vals[1][i]);
@@ -128,53 +128,53 @@ void _sv_undo_restore(sv_instance_t *s){
   }
 
   // panels
-  for(i=0;i<s->panels;i++){
-    sv_panel_t *p = s->panel_list[i];
+  for(i=0;i<_sv_panels;i++){
+    sv_panel_t *p = _sv_panel_list[i];
     if(p)
-      _sv_panel_undo_restore(s->panel_list[i],u->panels+i);
+      _sv_panel_undo_restore(_sv_panel_list[i],u->panels+i);
   }
 
 }
 
-void _sv_undo_push(sv_instance_t *s){
-  if(s->private->undo_suspend)return;
+void _sv_undo_push(){
+  if(_sv_undo_suspended)return;
 
-  _sv_undo_log(s);
+  _sv_undo_log();
 
   // realloc stack 
-  s->private->undo_stack = 
-    realloc(s->private->undo_stack,
-	    (s->private->undo_level+3)*sizeof(*s->private->undo_stack));
-  s->private->undo_level++;
-  s->private->undo_stack[s->private->undo_level]=NULL;
-  s->private->undo_stack[s->private->undo_level+1]=NULL;
-  update_all_menus(s);
+  _sv_undo_stack = 
+    realloc(_sv_undo_stack,
+	    (_sv_undo_level+3)*sizeof(*_sv_undo_stack));
+  _sv_undo_level++;
+  _sv_undo_stack[_sv_undo_level]=NULL;
+  _sv_undo_stack[_sv_undo_level+1]=NULL;
+  update_all_menus();
 }
 
-void _sv_undo_up(sv_instance_t *s){
-  if(!s->private->undo_stack)return;
-  if(!s->private->undo_stack[s->private->undo_level])return;
-  if(!s->private->undo_stack[s->private->undo_level+1])return;
+void _sv_undo_up(){
+  if(!_sv_undo_stack)return;
+  if(!_sv_undo_stack[_sv_undo_level])return;
+  if(!_sv_undo_stack[_sv_undo_level+1])return;
   
-  s->private->undo_level++;
-  _sv_undo_suspend(s);
-  _sv_undo_restore(s);
-  _sv_undo_resume(s);
-  update_all_menus(s);
+  _sv_undo_level++;
+  _sv_undo_suspend();
+  _sv_undo_restore();
+  _sv_undo_resume();
+  update_all_menus();
 }
 
-void _sv_undo_down(sv_instance_t *s){
-  if(!s->private->undo_stack)return;
-  if(!s->private->undo_level)return;
+void _sv_undo_down(){
+  if(!_sv_undo_stack)return;
+  if(!_sv_undo_level)return;
 
-  if(!s->private->undo_stack[s->private->undo_level+1])
-    _sv_undo_log(s);
-  s->private->undo_level--;
+  if(!_sv_undo_stack[_sv_undo_level+1])
+    _sv_undo_log();
+  _sv_undo_level--;
 
-  _sv_undo_suspend(s);
-  _sv_undo_restore(s);
-  _sv_undo_resume(s);
-  update_all_menus(s);
+  _sv_undo_suspend();
+  _sv_undo_restore();
+  _sv_undo_resume();
+  update_all_menus();
 }
 
 

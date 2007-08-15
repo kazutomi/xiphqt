@@ -463,8 +463,8 @@ static void _sv_panel1d_mapchange_callback(GtkWidget *w,gpointer in){
   _sv_panel1d_t *p1 = p->subtype->p1;
   int onum = optr - p->objective_list;
   
-  _sv_undo_push(p->sushi);
-  _sv_undo_suspend(p->sushi);
+  _sv_undo_push();
+  _sv_undo_suspend();
 
   // update colormap
   // oh, the wasteful
@@ -474,7 +474,7 @@ static void _sv_panel1d_mapchange_callback(GtkWidget *w,gpointer in){
   
   _sv_panel_dirty_map(p);
   _sv_panel_dirty_legend(p);
-  _sv_undo_resume(p->sushi);
+  _sv_undo_resume();
 }
 
 static void _sv_panel1d_alpha_callback(void * in, int buttonstate){
@@ -484,15 +484,15 @@ static void _sv_panel1d_alpha_callback(void * in, int buttonstate){
   //  int onum = optr - p->objective_list;
 
   if(buttonstate == 0){
-    _sv_undo_push(p->sushi);
-    _sv_undo_suspend(p->sushi);
+    _sv_undo_push();
+    _sv_undo_suspend();
   }
 
   _sv_panel_dirty_map(p);
   _sv_panel_dirty_legend(p);
 
   if(buttonstate == 2)
-    _sv_undo_resume(p->sushi);
+    _sv_undo_resume();
 }
 
 static void _sv_panel1d_linetype_callback(GtkWidget *w,gpointer in){
@@ -501,15 +501,15 @@ static void _sv_panel1d_linetype_callback(GtkWidget *w,gpointer in){
   _sv_panel1d_t *p1 = p->subtype->p1;
   int onum = optr - p->objective_list;
   
-  _sv_undo_push(p->sushi);
-  _sv_undo_suspend(p->sushi);
+  _sv_undo_push();
+  _sv_undo_suspend();
 
   // update colormap
   int pos = gtk_combo_box_get_active(GTK_COMBO_BOX(w));
   p1->linetype[onum] = line_name[pos]->value;
 
   _sv_panel_dirty_map(p);
-  _sv_undo_resume(p->sushi);
+  _sv_undo_resume();
 }
 
 static void _sv_panel1d_pointtype_callback(GtkWidget *w,gpointer in){
@@ -518,15 +518,15 @@ static void _sv_panel1d_pointtype_callback(GtkWidget *w,gpointer in){
   _sv_panel1d_t *p1 = p->subtype->p1;
   int onum = optr - p->objective_list;
   
-  _sv_undo_push(p->sushi);
-  _sv_undo_suspend(p->sushi);
+  _sv_undo_push();
+  _sv_undo_suspend();
 
   // update colormap
   int pos = gtk_combo_box_get_active(GTK_COMBO_BOX(w));
   p1->pointtype[onum] = point_name[pos]->value;
 
   _sv_panel_dirty_map(p);
-  _sv_undo_resume(p->sushi);
+  _sv_undo_resume();
 }
 
 static void _sv_panel1d_map_callback(void *in,int buttonstate){
@@ -535,8 +535,8 @@ static void _sv_panel1d_map_callback(void *in,int buttonstate){
   _sv_plot_t *plot = PLOT(p->private->graph);
   
   if(buttonstate == 0){
-    _sv_undo_push(p->sushi);
-    _sv_undo_suspend(p->sushi);
+    _sv_undo_push();
+    _sv_undo_suspend();
   }
 
   // has new bracketing changed the plot range scale?
@@ -568,7 +568,7 @@ static void _sv_panel1d_map_callback(void *in,int buttonstate){
   //redraw the plot
   _sv_panel_dirty_map(p);
   if(buttonstate == 2)
-    _sv_undo_resume(p->sushi);
+    _sv_undo_resume();
 }
 
 static void _sv_panel1d_update_xsel(sv_panel_t *p){
@@ -609,12 +609,12 @@ static void _sv_panel1d_compute_line(sv_panel_t *p,
 				     _sv_bythread_cache_1d_t *c){
   _sv_panel1d_t *p1 = p->subtype->p1;
   double work[w];
-  int i,j,fn=p->sushi->functions;
+  int i,j,fn=_sv_functions;
 
   /* by function */
   for(i=0;i<fn;i++){
     if(c->call[i]){
-      sv_func_t *f = p->sushi->function_list[i];
+      sv_func_t *f = _sv_function_list[i];
       int step = f->outputs;
       double *fout = c->fout[i];
       
@@ -655,6 +655,35 @@ static void _sv_panel1d_compute_line(sv_panel_t *p,
       }
     }
   }
+}
+
+// subtype entry point for plot remaps; lock held
+int _sv_panel1d_map_redraw(sv_panel_t *p, _sv_bythread_cache_t *c){
+  if(p->private->map_progress_count)return 0;
+  p->private->map_progress_count++;
+
+  // render to a temp surface so that we can release the lock occasionally
+  _sv_plot_t *plot = PLOT(p->private->graph);
+  cairo_surface_t *back = plot->back;
+  cairo_surface_t *cs = cairo_surface_create_similar(back,CAIRO_CONTENT_COLOR,
+						     cairo_image_surface_get_width(back),
+						     cairo_image_surface_get_height(back));
+  cairo_t *ct = cairo_create(cs);
+  
+  if(_sv_panel1d_remap(p,ct) == -1){ // returns -1 on abort
+    cairo_destroy(ct);
+    cairo_surface_destroy(cs);
+  }else{
+    // else complete
+    cairo_surface_destroy(plot->back);
+    plot->back = cs;
+    cairo_destroy(ct);
+    
+    _sv_panel_clean_map(p);
+    _sv_plot_expose_request(plot);
+  }
+
+  return 1;
 }
 
 // call only from main gtk thread
@@ -767,9 +796,8 @@ void _sv_panel1d_mark_recompute_linked(sv_panel_t *p){
   int i;
 
   /* look to see if any 1d panels link to passed in panel */
-  sv_instance_t *s = p->sushi;
-  for(i=0;i<s->panels;i++){
-    sv_panel_t *q = s->panel_list[i];
+  for(i=0;i<_sv_panels;i++){
+    sv_panel_t *q = _sv_panel_list[i];
     if(q != p && q->type == SV_PANEL_1D){
       _sv_panel1d_t *q1 = q->subtype->p1;
       if(q1->link_x == p)
@@ -834,9 +862,8 @@ void _sv_panel1d_update_linked_crosshairs(sv_panel_t *p, int xflag, int yflag){
   int i;
 
   /* look to see if any 1d panels link to passed in panel */
-  sv_instance_t *s = p->sushi;
-  for(i=0;i<s->panels;i++){
-    sv_panel_t *q = s->panel_list[i];
+  for(i=0;i<_sv_panels;i++){
+    sv_panel_t *q = _sv_panel_list[i];
     if(q != p && q->type == SV_PANEL_1D){
       _sv_panel1d_t *q1 = q->subtype->p1;
       if(q1->link_x == p){
@@ -883,15 +910,15 @@ static void _sv_panel1d_dimchange_callback(GtkWidget *button,gpointer in){
 
   if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button))){
 
-    _sv_undo_push(p->sushi);
-    _sv_undo_suspend(p->sushi);
+    _sv_undo_push();
+    _sv_undo_suspend();
 
     _sv_panel1d_update_xsel(p);
     _sv_panel1d_update_crosshair(p);
     _sv_plot_unset_box(PLOT(p->private->graph));
     _sv_panel1d_mark_recompute(p);
 
-    _sv_undo_resume(p->sushi);
+    _sv_undo_resume();
   }
 }
 
@@ -922,8 +949,8 @@ static void _sv_panel1d_crosshair_callback(sv_panel_t *p){
     link->private->crosshair_action(link);
   }else{
 
-    _sv_undo_push(p->sushi);
-    _sv_undo_suspend(p->sushi);
+    _sv_undo_push();
+    _sv_undo_suspend();
 
     for(i=0;i<p->dimensions;i++){
       sv_dim_t *d = p->dimension_list[i].d;
@@ -932,7 +959,7 @@ static void _sv_panel1d_crosshair_callback(sv_panel_t *p){
 	            
       p->private->oldbox_active = 0;
     }
-    _sv_undo_resume(p->sushi);
+    _sv_undo_resume();
   }
 }
 
@@ -943,20 +970,20 @@ static void _sv_panel1d_box_callback(void *in, int state){
   
   switch(state){
   case 0: // box set
-    _sv_undo_push(p->sushi);
+    _sv_undo_push();
     _sv_plot_box_vals(plot,p1->oldbox);
     p->private->oldbox_active = plot->box_active;
     break;
   case 1: // box activate
-    _sv_undo_push(p->sushi);
-    _sv_undo_suspend(p->sushi);
+    _sv_undo_push();
+    _sv_undo_suspend();
 
     _sv_panel1d_crosshair_callback(p);
     
     _sv_dim_set_value(p1->x_scale,0,p1->oldbox[0]);
     _sv_dim_set_value(p1->x_scale,2,p1->oldbox[1]);
     p->private->oldbox_active = 0;
-    _sv_undo_resume(p->sushi);
+    _sv_undo_resume();
     break;
   }
   _sv_panel_update_menus(p);
@@ -969,13 +996,13 @@ void _sv_panel1d_maintain_cache(sv_panel_t *p, _sv_bythread_cache_1d_t *c, int w
     int i,j;
     
     /* determine which functions are actually needed */
-    c->call = calloc(p->sushi->functions,sizeof(*c->call));
-    c->fout = calloc(p->sushi->functions,sizeof(*c->fout));
+    c->call = calloc(_sv_functions,sizeof(*c->call));
+    c->fout = calloc(_sv_functions,sizeof(*c->fout));
     for(i=0;i<p->objectives;i++){
       sv_obj_t *o = p->objective_list[i].o;
       for(j=0;j<o->outputs;j++)
 	c->call[o->function_map[j]]=
-	  p->sushi->function_list[o->function_map[j]]->callback;
+	  _sv_function_list[o->function_map[j]]->callback;
     }
   }
 
@@ -984,43 +1011,14 @@ void _sv_panel1d_maintain_cache(sv_panel_t *p, _sv_bythread_cache_1d_t *c, int w
     int i;
     c->storage_width = w;
 
-    for(i=0;i<p->sushi->functions;i++){
+    for(i=0;i<_sv_functions;i++){
       if(c->call[i]){
 	if(c->fout[i])free(c->fout[i]);
-	c->fout[i] = malloc(w * p->sushi->function_list[i]->outputs *
+	c->fout[i] = malloc(w * _sv_function_list[i]->outputs *
 			    sizeof(**c->fout));
       }
     }
   }
-}
-
-// subtype entry point for plot remaps; lock held
-int _sv_panel1d_map_redraw(sv_panel_t *p, _sv_bythread_cache_t *c){
-  if(p->private->map_progress_count)return 0;
-  p->private->map_progress_count++;
-
-  // render to a temp surface so that we can release the lock occasionally
-  _sv_plot_t *plot = PLOT(p->private->graph);
-  cairo_surface_t *back = plot->back;
-  cairo_surface_t *cs = cairo_surface_create_similar(back,CAIRO_CONTENT_COLOR,
-						     cairo_image_surface_get_width(back),
-						     cairo_image_surface_get_height(back));
-  cairo_t *ct = cairo_create(cs);
-  
-  if(_sv_panel1d_remap(p,ct) == -1){ // returns -1 on abort
-    cairo_destroy(ct);
-    cairo_surface_destroy(cs);
-  }else{
-    // else complete
-    cairo_surface_destroy(plot->back);
-    plot->back = cs;
-    cairo_destroy(ct);
-    
-    _sv_panel_clean_map(p);
-    _sv_plot_expose_request(plot);
-  }
-
-  return 1;
 }
 
 // subtype entry point for legend redraws; lock held
@@ -1075,7 +1073,7 @@ int _sv_panel1d_compute(sv_panel_t *p,
   
   /* render using local dimension array; several threads will be
      computing objectives */
-  double dim_vals[p->sushi->dimensions];
+  double dim_vals[_sv_dimensions];
 
   /* get iterator bounds, use iterator scale */
   x_d = p->private->x_d->number;
@@ -1093,8 +1091,8 @@ int _sv_panel1d_compute(sv_panel_t *p,
   }
 
   // Initialize local dimension value array
-  for(i=0;i<p->sushi->dimensions;i++){
-    sv_dim_t *dim = p->sushi->dimension_list[i];
+  for(i=0;i<_sv_dimensions;i++){
+    sv_dim_t *dim = _sv_dimension_list[i];
     dim_vals[i]=dim->val;
   }
 
@@ -1187,7 +1185,7 @@ void _sv_panel1d_realize(sv_panel_t *p){
   _sv_panel1d_t *p1 = p->subtype->p1;
   char buffer[160];
   int i;
-  _sv_undo_suspend(p->sushi);
+  _sv_undo_suspend();
 
   p->private->toplevel = gtk_window_new (GTK_WINDOW_TOPLEVEL);
   g_signal_connect_swapped (G_OBJECT (p->private->toplevel), "delete-event",
@@ -1413,7 +1411,7 @@ void _sv_panel1d_realize(sv_panel_t *p){
   gtk_widget_realize(GTK_WIDGET(p->private->spinner));
   gtk_widget_show_all(p->private->toplevel);
 
-  _sv_undo_resume(p->sushi);
+  _sv_undo_resume();
 }
 
 
@@ -1525,15 +1523,14 @@ int _sv_panel1d_load(sv_panel_t *p,
   return warn;
 }
 
-sv_panel_t *sv_panel_new_1d(sv_instance_t *s,
-			    int number,
+sv_panel_t *sv_panel_new_1d(int number,
 			    char *name,
 			    sv_scale_t *scale,
 			    sv_obj_t **objectives,
 			    sv_dim_t **dimensions,	
 			    unsigned flags){
   
-  sv_panel_t *p = _sv_panel_new(s,number,name,objectives,dimensions,flags);
+  sv_panel_t *p = _sv_panel_new(number,name,objectives,dimensions,flags);
   _sv_panel1d_t *p1;
 
   if(!p)return p;
@@ -1587,13 +1584,6 @@ int sv_panel_link_1d (sv_panel_t *p,
   if(panel_2d->type != SV_PANEL_2D){
     fprintf(stderr,"Panel %d (\"%s\"): Can only link to a 2d paenl\n",
 	    p->number,p->name);
-    errno = -EINVAL;
-    return errno;
-  }
-
-  if(panel_2d->sushi != p->sushi){
-    fprintf(stderr,"Panel %d (\"%s\"): Cannot link panel number %d (\"%s\") from a differnet instance\n",
-	    p->number,p->name,panel_2d->number, panel_2d->name);
     errno = -EINVAL;
     return errno;
   }

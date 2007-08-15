@@ -25,15 +25,13 @@
 #include <errno.h>
 #include "internal.h"
 
-sv_obj_t *sv_obj_new(sv_instance_t *in,
-		     int number,
+sv_obj_t *sv_obj_new(int number,
 		     char *name,
 		     sv_func_t **function_map,
 		     int *function_output_map,
 		     char *output_type_map,
 		     unsigned flags){
   
-  sv_instance_t *s = (sv_instance_t *)in; // unwrap
   sv_obj_t *o;
   sv_obj_internal_t *p;
   int i;
@@ -45,23 +43,23 @@ sv_obj_t *sv_obj_new(sv_instance_t *in,
     return NULL;
   }
   
-  if(number<s->objectives){
-    if(s->objective_list[number]!=NULL){
+  if(number<_sv_objectives){
+    if(_sv_objective_list[number]!=NULL){
       fprintf(stderr,"Objective number %d already exists\n",number);
     errno = -EINVAL;
     return NULL;
     }
   }else{
-    if(s->objectives == 0){
-      s->objective_list = calloc (number+1,sizeof(*s->objective_list));
+    if(_sv_objectives == 0){
+      _sv_objective_list = calloc (number+1,sizeof(*_sv_objective_list));
     }else{
-      s->objective_list = realloc (s->objective_list,(number+1) * sizeof(*s->objective_list));
-      memset(s->objective_list + s->objectives, 0, sizeof(*s->objective_list)*(number +1 - s->objectives));
+      _sv_objective_list = realloc (_sv_objective_list,(number+1) * sizeof(*_sv_objective_list));
+      memset(_sv_objective_list + _sv_objectives, 0, sizeof(*_sv_objective_list)*(number +1 - _sv_objectives));
     }
-    s->objectives=number+1;
+    _sv_objectives=number+1;
   }
   
-  o = s->objective_list[number] = calloc(1, sizeof(**s->objective_list));
+  o = _sv_objective_list[number] = calloc(1, sizeof(**_sv_objective_list));
   p = o->private = calloc(1,sizeof(*o->private));
 
   /* sanity check the maps */
@@ -170,7 +168,6 @@ sv_obj_t *sv_obj_new(sv_instance_t *in,
   o->type = SV_OBJ_BASIC;
   o->outputs = outputs;
   o->flags = flags;
-  o->sushi = s;
 
   /* copy in the maps */
   o->function_map = malloc(outputs * sizeof(*o->function_map));
