@@ -194,6 +194,8 @@ extern void _sv_undo_restore();
 extern void _sv_undo_up();
 extern void _sv_undo_down();
 
+extern sv_scale_t *_sv_scale_new_v(char *legend, char *first, char *second, va_list ap);
+
 extern sig_atomic_t _sv_exiting;
 extern char *_sv_filebase;
 extern char *_sv_filename;
