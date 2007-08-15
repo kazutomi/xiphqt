@@ -161,50 +161,80 @@ void sv_scale_free(sv_scale_t *in){
   }
 }
 
-sv_scale_t *sv_scale_new(char *legend, 
-			 unsigned scalevals, double *scaleval_list, char **labels, 
-			 unsigned flags){
-  int i;
+sv_scale_t *_sv_scale_new_v(char *legend, char *first, char *second, va_list ap){
+  int i=0;
+  sv_scale_t *s = calloc(1, sizeof(*s));
+  va_list ac;
+  char *arg;
+  int count=0;
 
-  sv_scale_t *s = NULL;
+  va_copy(ac, ap);
+  arg = va_arg(ac, char *);
+  while(arg && arg[0]){
+    count++;
+    arg = va_arg(ac, char *);
+  }
+  va_end(ac);
 
-  if(scalevals<2){
-    fprintf(stderr,"Scale requires at least two scale values.");
-    return NULL;
+  s->vals = count+2;
+  s->val_list = calloc(s->vals,sizeof(*s->val_list));
+  s->label_list = calloc(s->vals,sizeof(*s->label_list));
+
+  arg=first;
+  while(arg && arg[0]){
+    // an argument is a number and potentially a colon followed by an auxiliary label.
+    char *buf = strdup(arg);
+    char *pos = strchr(buf,':');
+    if(pos){
+      s->label_list[i] = strdup(pos+1);
+      *pos='\0';
+      s->val_list[i]=atof(buf);
+      free(buf);
+    }else{
+      s->label_list[i] = buf;
+      s->val_list[i]=atof(buf);
+    }
+    
+    if(arg==first){
+      arg=second;
+    }else{
+      arg=va_arg(ap, char *);
+    }
+    i++;
   }
 
-  s = calloc(1, sizeof(*s));
-  
-  // copy values
-  s->vals = scalevals;
-  s->val_list = calloc(scalevals,sizeof(*s->val_list));
-  for(i=0;i<(int)scalevals;i++)
-    s->val_list[i] = scaleval_list[i];
-
-  if(labels){
-    // copy labels
-    s->label_list = calloc(scalevals,sizeof(*s->label_list));
-    for(i=0;i<(int)scalevals;i++)
-      if(labels[i]){
-	s->label_list[i] = strdup(labels[i]);
-      }else{
-	s->label_list[i] = strdup("");
-      }
-  }else{
-    // generate labels
-    s->label_list = scale_generate_labels(scalevals,scaleval_list);
-  }
   if(legend)
     s->legend=strdup(legend);
   else
     s->legend=strdup("");
 
-  s->flags = flags;
   return s;
 }
 
-sv_scale_t *sv_scale_copy(sv_scale_t *s){
-  return sv_scale_new(s->legend, s->vals, s->val_list, (char **)s->label_list, s->flags);
+sv_scale_t *sv_scale_new(char *legend, char *first, char *second, ...){
+  va_list ap;
+  sv_scale_t *ret;
+
+  va_start(ap, second);
+  ret = _sv_scale_new_v(legend,first,second,ap);
+  va_end(ap);
+  return ret;
+}
+
+sv_scale_t *sv_scale_copy(sv_scale_t *in){
+  sv_scale_t *s = calloc(1, sizeof(*s));
+  int i;
+
+  s->vals = in->vals;
+  s->val_list = calloc(s->vals,sizeof(*s->val_list));
+  s->label_list = calloc(s->vals,sizeof(*s->label_list));
+  s->legend = strdup(in->legend);
+
+  for(i=0;i<s->vals;i++){
+    s->val_list[i]=in->val_list[i];
+    s->label_list[i] = strdup(in->label_list[i]);
+  }
+  return s;
 }
 
 /************************* plot and graph scalespaces *********************/

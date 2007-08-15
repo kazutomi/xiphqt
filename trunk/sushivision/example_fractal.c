@@ -59,23 +59,23 @@ int main(int argc, char *argv[]){
 
 
   sv_dim_t *d0 = sv_dim_new(0, "Re(c)", 0);
-  sv_dim_make_scale(5, (double []){-2.25,-0.75,0,0.25,0.75}, NULL, 0);
+  sv_dim_make_scale("-2.25","-0.75","0","0.25","0.75","");
   
   sv_dim_t *d1 = sv_dim_new(1, "Im(c)", 0);
-  sv_dim_make_scale(5, (double []){-2,-1,0,1,2}, NULL, 0);
+  sv_dim_make_scale("-2","-1","0","1","2","");
 
   sv_dim_t *d2 = sv_dim_new(2, "Re(z0)", 0);
-  sv_dim_make_scale(5, (double []){-2.25,-1,0,1,2.25}, NULL, 0);
+  sv_dim_make_scale("-2.25","-1","0","1","2.25","");
 
   sv_dim_t *d3 = sv_dim_new(3, "Im(z0)", 0);
-  sv_dim_make_scale(5, (double []){-2.25,-1,0,1,2.25}, NULL, 0);
+  sv_dim_make_scale("-2.25","-1","0","1","2.25","");
 
   sv_dim_t *d4 = sv_dim_new(4, "Max Iterations", 0);
-  sv_dim_make_scale(4, (double []){100,1000,10000,100000},
-		    (char *[]){"one hundred",
-			"one thousand",
-			"ten thousand",
-			"one hundred thousand"}, 0);
+  sv_dim_make_scale("100:one hundred",
+		    "1000:one thousand",
+		    "10000:ten thousand",
+		    "100000:one hundred thousand",
+		    "");
 
   sv_dim_set_picklist();
   sv_dim_set_value(100);
@@ -86,13 +86,13 @@ int main(int argc, char *argv[]){
 			    (sv_func_t *[]){f},
 			    (int []){0},
 			    "Y", 0);
-  sv_obj_make_scale(o0, 5, (double []){0, .001, .01, .1, 1.0}, NULL, 0);
+  sv_obj_make_scale(o0, "0", ".001", ".01", ".1", "1.0", "");
   
   sv_obj_t *o1 = sv_obj_new(1,"inner",
 			    (sv_func_t *[]){f},
 			    (int []){1},
 			    "Y", 0);
-  sv_obj_make_scale(o1, 5, (double []){0, .001, .01, .1, 1.0}, NULL, 0);
+  sv_obj_make_scale(o1, "0", ".001", ".01", ".1", "1.0", "");
   
   sv_panel_new_2d(0,"Mandel/Julia Fractal",
 		  (sv_obj_t *[]){o0,o1,NULL},

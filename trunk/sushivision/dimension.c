@@ -732,17 +732,19 @@ int sv_dim_set_scale(sv_scale_t *scale){
 
 // XXXX need to recompute after
 // XXXX need to add scale cloning to compute to make this safe in callbacks
-int sv_dim_make_scale(unsigned scalevals, 
-		      double *scaleval_list,
-		      char **scalelabel_list,
-		      unsigned flags){
+int sv_dim_make_scale(char *first, char *second, ...){
   sv_dim_t *d = sv_dim(0);
+  sv_scale_t *scale;
+  va_list ap;
+  int ret;
+
+  va_start(ap, second);  
   if(!d) return -EINVAL;
-
-  sv_scale_t *scale = sv_scale_new(d->name,scalevals,scaleval_list,scalelabel_list,0);
+  scale = _sv_scale_new_v(d->name,first,second,ap);
   if(!scale)return errno;
-
-  int ret = sv_dim_set_scale(scale);
+  va_end(ap);
+  
+  ret = sv_dim_set_scale(scale);
   sv_scale_free(scale);
   return ret;
 }

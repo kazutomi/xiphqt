@@ -21,7 +21,9 @@
 
 #ifndef _SUSHIVISION_
 #define _SUSHIVISION_
-  
+
+#include <stdarg.h>
+
 typedef struct sv_scale sv_scale_t;
 typedef struct sv_panel sv_panel_t;
 typedef struct sv_dim   sv_dim_t;
@@ -60,10 +62,9 @@ struct sv_scale{
 };
 
 sv_scale_t        *sv_scale_new (char *legend,
-				 unsigned scalevals, 
-				 double *scaleval_list, 
-				 char **scalelabel_list,
-				 unsigned flags);
+				 char *first,
+				 char *second,
+				 ...);
 
 sv_scale_t       *sv_scale_copy (sv_scale_t *s);
 
@@ -104,10 +105,9 @@ sv_dim_t                *sv_dim (char *name);
 
 int            sv_dim_set_scale (sv_scale_t *scale);
 
-int           sv_dim_make_scale (unsigned scalevals, 
-				 double *scaleval_list, 
-				 char **scalelabel_list,
-				 unsigned flags);
+int           sv_dim_make_scale (char *first,
+				 char *second,
+				 ...);
 
 int         sv_dim_set_discrete (long quant_numerator,
 				 long quant_denominator);
@@ -176,14 +176,13 @@ sv_obj_t   *sv_obj_new_defaults (int number,
 				 sv_func_t *function,
 				 unsigned flags);
 
-int            sv_obj_set_scale (sv_obj_t *d,
+int            sv_obj_set_scale (sv_obj_t *o,
 				 sv_scale_t *scale);
 
-int           sv_obj_make_scale (sv_obj_t *d,
-				 unsigned scalevals, 
-				 double *scaleval_list, 
-				 char **scalelabel_list,
-				 unsigned flags);
+int           sv_obj_make_scale (sv_obj_t *o,
+				 char *first,
+				 char *second,
+				 ...);
 
 /* panels ********************************************************/
 
