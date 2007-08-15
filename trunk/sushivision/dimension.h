@@ -71,4 +71,4 @@ extern _sv_dim_widget_t *_sv_dim_widget_new(sv_dim_list_t *dl,
 					   void (*center_callback)(sv_dim_list_t *),
 					   void (*bracket_callback)(sv_dim_list_t *));
 extern int _sv_dim_save(sv_dim_t *d, xmlNodePtr instance);
-extern int _sv_dim_load(sv_dim_t *d, _sv_instance_undo_t *u, xmlNodePtr dn, int warn);
+extern int _sv_dim_load(sv_dim_t *d, _sv_undo_t *u, xmlNodePtr dn, int warn);

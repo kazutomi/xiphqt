@@ -29,8 +29,8 @@ SRC       = main.c scale.c plot.c slider.c slice.c spinner.c panel.c panel-1d.c 
 	example_fractal.c example_discrete.c example_chirp.c example_spirograph.c
 INC       = sushivision.h sushimacro.h
 MAN	  =
-EXAMPLES  = sushivision_fractal sushivision_discrete sushivision_chirp
-EX_OBJ    = example_fractal.o example_discrete.o example_chirp.o example_spirograph.o
+EXAMPLES  = sushivision_fractal #sushivision_discrete sushivision_chirp
+EX_OBJ    = example_fractal.o #example_discrete.o example_chirp.o example_spirograph.o
 OBJ       = main.o scale.o plot.o slider.o slice.o spinner.c panel.o panel-1d.o panel-2d.o \
 	panel-xy.o mapping.o dimension.o function.o objective.o undo.o gtksucks.o xml.o
 LIBS      = -lpthread -ldl
@@ -94,9 +94,9 @@ target:  $(OBJ) examples sushivision.pc
 
 examples:  $(OBJ) $(EX_OBJ)
 	$(LD) $(OBJ) example_fractal.o $(CFLAGS) -o sushivision_fractal $(LIBS) $(LDF)
-	$(LD) $(OBJ) example_discrete.o $(CFLAGS) -o sushivision_discrete $(LIBS) $(LDF)
-	$(LD) $(OBJ) example_chirp.o $(CFLAGS) -o sushivision_chirp $(LIBS) $(LDF)
-	$(LD) $(OBJ) example_spirograph.o $(CFLAGS) -o sushivision_spirograph $(LIBS) $(LDF)
+	#$(LD) $(OBJ) example_discrete.o $(CFLAGS) -o sushivision_discrete $(LIBS) $(LDF)
+	#$(LD) $(OBJ) example_chirp.o $(CFLAGS) -o sushivision_chirp $(LIBS) $(LDF)
+	#$(LD) $(OBJ) example_spirograph.o $(CFLAGS) -o sushivision_spirograph $(LIBS) $(LDF)
 
 $(TARGET): all
 

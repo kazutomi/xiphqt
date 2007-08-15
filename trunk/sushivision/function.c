@@ -25,12 +25,10 @@
 #include <errno.h>
 #include "internal.h"
 
-sv_func_t *sv_func_new(sv_instance_t *in,
-		       int number,
+sv_func_t *sv_func_new(int number,
 		       int out_vals,
 		       void(*callback)(double *,double *),
 		       unsigned flags){
-  sv_instance_t *s = (sv_instance_t *)in; // unwrap
   sv_func_t *f;
 
   if(number<0){
@@ -39,26 +37,25 @@ sv_func_t *sv_func_new(sv_instance_t *in,
     return NULL;
   }
 
-  if(number<s->functions){
-    if(s->function_list[number]!=NULL){
+  if(number<_sv_functions){
+    if(_sv_function_list[number]!=NULL){
       fprintf(stderr,"Function number %d already exists\n",number);
       errno = -EINVAL;
       return NULL;
     }
   }else{
-    if(s->functions == 0){
-      s->function_list = calloc (number+1,sizeof(*s->function_list));
+    if(_sv_functions == 0){
+      _sv_function_list = calloc (number+1,sizeof(*_sv_function_list));
     }else{
-      s->function_list = realloc (s->function_list,(number+1) * sizeof(*s->function_list));
-      memset(s->function_list + s->functions, 0, sizeof(*s->function_list)*(number +1 - s->functions));
+      _sv_function_list = realloc (_sv_function_list,(number+1) * sizeof(*_sv_function_list));
+      memset(_sv_function_list + _sv_functions, 0, sizeof(*_sv_function_list)*(number +1 - _sv_functions));
     }
-    s->functions=number+1;
+    _sv_functions=number+1;
   }
 
-  f = s->function_list[number] = calloc(1, sizeof(**s->function_list));
+  f = _sv_function_list[number] = calloc(1, sizeof(**_sv_function_list));
   f->number = number;
   f->flags = flags;
-  f->sushi = s;
   f->callback = callback;
   f->outputs = out_vals;
   f->type = SV_FUNC_BASIC;

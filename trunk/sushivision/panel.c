@@ -166,7 +166,7 @@ static void refg_if_running(sv_panel_t *p){
 }
 
 static void wrap_exit(sv_panel_t *dummy, GtkWidget *dummyw){
-  _sv_clean_exit(SIGINT);
+  _sv_clean_exit();
 }
 
 // precipitated actions perform undo push
@@ -175,34 +175,34 @@ static void wrap_enter(sv_panel_t *p, GtkWidget *dummy){
 }
 
 static void wrap_escape(sv_panel_t *p, GtkWidget *dummy){
-  _sv_undo_push(p->sushi);
-  _sv_undo_suspend(p->sushi);
+  _sv_undo_push();
+  _sv_undo_suspend();
 
   _sv_plot_set_crossactive(PLOT(p->private->graph),0);
   _sv_panel_dirty_legend(p);
 
-  _sv_undo_resume(p->sushi);
+  _sv_undo_resume();
 }
 
 static void wrap_legend(sv_panel_t *p, GtkWidget *dummy){
-  _sv_undo_push(p->sushi);
-  _sv_undo_suspend(p->sushi);
+  _sv_undo_push();
+  _sv_undo_suspend();
 
   _sv_plot_toggle_legend(PLOT(p->private->graph));
   _sv_panel_dirty_legend(p);
 
-  _sv_undo_resume(p->sushi);
+  _sv_undo_resume();
 }
 
 static void set_grid(sv_panel_t *p, int mode){
-  _sv_undo_push(p->sushi);
-  _sv_undo_suspend(p->sushi);
+  _sv_undo_push();
+  _sv_undo_suspend();
 
   _sv_plot_set_grid(PLOT(p->private->graph),mode);
   _sv_panel_update_menus(p);
   refg_if_running(p);
 
-  _sv_undo_resume(p->sushi);
+  _sv_undo_resume();
 }
 
 static void wrap_grid(sv_panel_t *p, GtkWidget *w){
@@ -215,8 +215,8 @@ static int set_background(sv_panel_t *p,
   
   sv_panel_internal_t *pi = p->private;
   
-  _sv_undo_push(p->sushi);
-  _sv_undo_suspend(p->sushi);
+  _sv_undo_push();
+  _sv_undo_suspend();
 
   pi->bg_type = bg;
   
@@ -225,7 +225,7 @@ static int set_background(sv_panel_t *p,
   redraw_if_running(p);
   _sv_panel_update_menus(p);
 
-  _sv_undo_resume(p->sushi);
+  _sv_undo_resume();
   return 0;
 }
 
@@ -247,14 +247,14 @@ static void cycleB_bg(sv_panel_t *p){
 }
 
 static void set_text(sv_panel_t *p, int mode){
-  _sv_undo_push(p->sushi);
-  _sv_undo_suspend(p->sushi);
+  _sv_undo_push();
+  _sv_undo_suspend();
 
   _sv_plot_set_bg_invert(PLOT(p->private->graph),mode);
   _sv_panel_update_menus(p);
   refg_if_running(p);
 
-  _sv_undo_resume(p->sushi);
+  _sv_undo_resume();
 }
 
 static void wrap_text(sv_panel_t *p, GtkWidget *w){
@@ -283,15 +283,15 @@ static void res_set(sv_panel_t *p, int n, int d){
   if(n != p->private->oversample_n ||
      d != p->private->oversample_d){
 
-    _sv_undo_push(p->sushi);
-    _sv_undo_suspend(p->sushi);
+    _sv_undo_push();
+    _sv_undo_suspend();
     
     p->private->oversample_n = n;
     p->private->oversample_d = d;
     _sv_panel_update_menus(p);
     recompute_if_running(p);
 
-    _sv_undo_resume(p->sushi);
+    _sv_undo_resume();
   }
 }
 
@@ -404,10 +404,10 @@ static void _sv_panel_print(sv_panel_t *p, GtkWidget *dummy){
 }
 
 static void wrap_undo_down(sv_panel_t *p, GtkWidget *dummy){
-  _sv_undo_down(p->sushi);
+  _sv_undo_down();
 }
 static void wrap_undo_up(sv_panel_t *p, GtkWidget *dummy){
-  _sv_undo_up(p->sushi);
+  _sv_undo_up();
 }
 
 static void wrap_save(sv_panel_t *p, GtkWidget *dummy){
@@ -481,17 +481,17 @@ static void wrap_load(sv_panel_t *p, GtkWidget *dummy){
 void _sv_panel_update_menus(sv_panel_t *p){
 
   // is undo active?
-  if(!p->sushi->private->undo_stack ||
-     !p->sushi->private->undo_level){
+  if(!_sv_undo_stack ||
+     !_sv_undo_level){
     gtk_widget_set_sensitive(_gtk_menu_get_item(GTK_MENU(p->private->popmenu),4),FALSE);
   }else{
     gtk_widget_set_sensitive(_gtk_menu_get_item(GTK_MENU(p->private->popmenu),4),TRUE);
   }
 
   // is redo active?
-  if(!p->sushi->private->undo_stack ||
-     !p->sushi->private->undo_stack[p->sushi->private->undo_level] ||
-     !p->sushi->private->undo_stack[p->sushi->private->undo_level+1]){
+  if(!_sv_undo_stack ||
+     !_sv_undo_stack[_sv_undo_level] ||
+     !_sv_undo_stack[_sv_undo_level+1]){
     gtk_widget_set_sensitive(_gtk_menu_get_item(GTK_MENU(p->private->popmenu),5),FALSE);
   }else{
     gtk_widget_set_sensitive(_gtk_menu_get_item(GTK_MENU(p->private->popmenu),5),TRUE);
@@ -620,18 +620,18 @@ static gboolean panel_keypress(GtkWidget *widget,
   case GDK_Q:
   case GDK_q:
     // quit
-    _sv_clean_exit(SIGINT);
+    _sv_clean_exit();
     return TRUE;
     
   case GDK_BackSpace:
     // undo 
-    _sv_undo_down(p->sushi);
+    _sv_undo_down();
     return TRUE;
     
   case GDK_r:
   case GDK_space:
     // redo/forward
-    _sv_undo_up(p->sushi);
+    _sv_undo_up();
     return TRUE;
 
   case GDK_p:
@@ -755,22 +755,21 @@ void _sv_panel_clean_legend(sv_panel_t *p){
   gdk_threads_leave ();
 }
 
-int sv_panel_oversample(sv_instance_t *s,
-			    int number,
-			    int numer,
-			    int denom){
+int sv_panel_oversample(int number,
+			int numer,
+			int denom){
   
   if(number<0){
     fprintf(stderr,"sv_panel_background: Panel number must be >= 0\n");
     return -EINVAL;
   }
 
-  if(number>s->panels || !s->panel_list[number]){
+  if(number>_sv_panels || !_sv_panel_list[number]){
     fprintf(stderr,"sv_panel_background: Panel number %d does not exist\n",number);
     return -EINVAL;
   }
   
-  sv_panel_t *p = s->panel_list[number];
+  sv_panel_t *p = _sv_panel_list[number];
   sv_panel_internal_t *pi = p->private;
 
   if(denom == 0){
@@ -784,32 +783,29 @@ int sv_panel_oversample(sv_instance_t *s,
   return 0;
 }
 
-int sv_panel_background(sv_instance_t *s,
-			    int number,
-			    enum sv_background bg){
+int sv_panel_background(int number,
+			enum sv_background bg){
 
   if(number<0){
     fprintf(stderr,"sv_panel_background: Panel number must be >= 0\n");
     return -EINVAL;
   }
 
-  if(number>s->panels || !s->panel_list[number]){
+  if(number>_sv_panels || !_sv_panel_list[number]){
     fprintf(stderr,"sv_panel_background: Panel number %d does not exist\n",number);
     return -EINVAL;
   }
   
-  sv_panel_t *p = s->panel_list[number];
+  sv_panel_t *p = _sv_panel_list[number];
   return set_background(p,bg);
 }
 
-sv_panel_t * _sv_panel_new(sv_instance_t *in,
-			   int number,
+sv_panel_t * _sv_panel_new(int number,
 			   char *name, 
 			   sv_obj_t **objectives,
 			   sv_dim_t **dimensions,	
 			   unsigned flags){
 
-  sv_instance_t *s = (sv_instance_t *)in; // unwrap 
   sv_panel_t *p;
   int i;
 
@@ -819,28 +815,27 @@ sv_panel_t * _sv_panel_new(sv_instance_t *in,
     return NULL;
   }
 
-  if(number<s->panels){
-    if(s->panel_list[number]!=NULL){
+  if(number<_sv_panels){
+    if(_sv_panel_list[number]!=NULL){
       fprintf(stderr,"Panel number %d already exists\n",number);
       errno = -EINVAL;
       return NULL;
     }
   }else{
-    if(s->panels == 0){
-      s->panel_list = calloc (number+1,sizeof(*s->panel_list));
+    if(_sv_panels == 0){
+      _sv_panel_list = calloc (number+1,sizeof(*_sv_panel_list));
     }else{
-      s->panel_list = realloc (s->panel_list,(number+1) * sizeof(*s->panel_list));
-      memset(s->panel_list + s->panels, 0, sizeof(*s->panel_list)*(number+1 - s->panels));
+      _sv_panel_list = realloc (_sv_panel_list,(number+1) * sizeof(*_sv_panel_list));
+      memset(_sv_panel_list + _sv_panels, 0, sizeof(*_sv_panel_list)*(number+1 - _sv_panels));
     }
-    s->panels = number+1; 
+    _sv_panels = number+1; 
   }
 
-  p = s->panel_list[number] = calloc(1, sizeof(**s->panel_list));
+  p = _sv_panel_list[number] = calloc(1, sizeof(**_sv_panel_list));
 
   p->number = number;
   p->name = strdup(name);
   p->flags = flags;
-  p->sushi = s;
   p->private = calloc(1, sizeof(*p->private));
   p->private->spinner = _sv_spinner_new();
   p->private->def_oversample_n = p->private->oversample_n = 1;
@@ -851,13 +846,6 @@ sv_panel_t * _sv_panel_new(sv_instance_t *in,
   p->objectives = i;
   p->objective_list = malloc(i*sizeof(*p->objective_list));
   for(i=0;i<p->objectives;i++){
-    if(objectives[i]->sushi != s){
-      fprintf(stderr,"Panel %d (\"%s\"): Objective number %d (\"%s\") belongs to a differnet instance\n",
-	      number,p->name,objectives[i]->number,objectives[i]->name);
-      errno = -EINVAL;
-      return NULL;
-    }
-
     p->objective_list[i].o = (sv_obj_t *)objectives[i];
     p->objective_list[i].p = p;
   }
@@ -867,13 +855,6 @@ sv_panel_t * _sv_panel_new(sv_instance_t *in,
   p->dimensions = i;
   p->dimension_list = malloc(i*sizeof(*p->dimension_list));
   for(i=0;i<p->dimensions;i++){
-    if(dimensions[i]->sushi != s){
-      fprintf(stderr,"Panel %d (\"%s\"): Dimension number %d (\"%s\") belongs to a differnet instance\n",
-	      number,p->name,dimensions[i]->number,dimensions[i]->name);
-      errno = -EINVAL;
-      return NULL;
-    }
-
     if(!dimensions[i]->scale){
       fprintf(stderr,"Panel %d (\"%s\"): Dimension number %d (\"%s\") has a NULL scale\n",
 	      number,p->name,dimensions[i]->number,dimensions[i]->name);

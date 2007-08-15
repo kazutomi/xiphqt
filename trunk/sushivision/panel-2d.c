@@ -142,7 +142,7 @@ typedef struct{
 // used by the legend code. this lets us get away with having only a mapped display pane
 // call with lock
 static void _sv_panel2d_compute_point(sv_panel_t *p,sv_obj_t *o, double x, double y, compute_result *out){
-  double dim_vals[p->sushi->dimensions];
+  double dim_vals[_sv_dimensions];
   int i,j;
   int pflag=0;
   int eflag=0;
@@ -151,8 +151,8 @@ static void _sv_panel2d_compute_point(sv_panel_t *p,sv_obj_t *o, double x, doubl
   int x_d = p->private->x_d->number;
   int y_d = p->private->y_d->number;
 
-  for(i=0;i<p->sushi->dimensions;i++){
-    sv_dim_t *dim = p->sushi->dimension_list[i];
+  for(i=0;i<_sv_dimensions;i++){
+    sv_dim_t *dim = _sv_dimension_list[i];
     dim_vals[i]=dim->val;
   }
 
@@ -164,8 +164,8 @@ static void _sv_panel2d_compute_point(sv_panel_t *p,sv_obj_t *o, double x, doubl
   *out = (compute_result){NAN,NAN,NAN,NAN,NAN,NAN,NAN,NAN};
 
   // compute
-  for(i=0;i<p->sushi->functions;i++){
-    sv_func_t *f = p->sushi->function_list[i];
+  for(i=0;i<_sv_functions;i++){
+    sv_func_t *f = _sv_function_list[i];
     int compflag = 0;
     double fout[f->outputs];
     double val;
@@ -935,8 +935,8 @@ static void _sv_panel2d_mapchange_callback(GtkWidget *w,gpointer in){
   _sv_panel2d_t *p2 = p->subtype->p2;
   int onum = optr - p->objective_list;
 
-  _sv_undo_push(p->sushi);
-  _sv_undo_suspend(p->sushi);
+  _sv_undo_push();
+  _sv_undo_suspend();
 
   _sv_mapping_set_func(&p2->mappings[onum],gtk_combo_box_get_active(GTK_COMBO_BOX(w)));
   
@@ -949,7 +949,7 @@ static void _sv_panel2d_mapchange_callback(GtkWidget *w,gpointer in){
   //redraw the plot
   _sv_panel2d_mark_map_plane(p,onum,1,0,0);
   _sv_panel_dirty_map(p);
-  _sv_undo_resume(p->sushi);
+  _sv_undo_resume();
 }
 
 static void _sv_panel2d_map_callback(void *in,int buttonstate){
@@ -960,8 +960,8 @@ static void _sv_panel2d_map_callback(void *in,int buttonstate){
   int onum = optr - p->objective_list;
 
   if(buttonstate == 0){
-    _sv_undo_push(p->sushi);
-    _sv_undo_suspend(p->sushi);
+    _sv_undo_push();
+    _sv_undo_suspend();
   }
 
   // recache alpha del */
@@ -975,7 +975,7 @@ static void _sv_panel2d_map_callback(void *in,int buttonstate){
     _sv_panel_dirty_map(p);
   }
   if(buttonstate == 2)
-    _sv_undo_resume(p->sushi);
+    _sv_undo_resume();
 }
 
 static void _sv_panel2d_update_xysel(sv_panel_t *p){
@@ -1262,8 +1262,8 @@ static void _sv_panel2d_dimchange_callback(GtkWidget *button,gpointer in){
 
   if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button))){
 
-    _sv_undo_push(p->sushi);
-    _sv_undo_suspend(p->sushi);
+    _sv_undo_push();
+    _sv_undo_suspend();
 
     _sv_plot_unset_box(PLOT(p->private->graph));
     _sv_panel2d_update_xysel(p);
@@ -1272,7 +1272,7 @@ static void _sv_panel2d_dimchange_callback(GtkWidget *button,gpointer in){
     _sv_panel2d_mark_recompute(p);
     _sv_panel2d_update_crosshairs(p);
 
-    _sv_undo_resume(p->sushi);
+    _sv_undo_resume();
   }
 }
 
@@ -1281,8 +1281,8 @@ static void _sv_panel2d_crosshairs_callback(sv_panel_t *p){
   double y=PLOT(p->private->graph)->sely;
   int i;
   
-  _sv_undo_push(p->sushi);
-  _sv_undo_suspend(p->sushi);
+  _sv_undo_push();
+  _sv_undo_suspend();
 
   //plot_snap_crosshairs(PLOT(p->private->graph));
 
@@ -1307,7 +1307,7 @@ static void _sv_panel2d_crosshairs_callback(sv_panel_t *p){
   _sv_plot_set_crosshairs(PLOT(p->private->graph),x,y);
 
   _sv_panel_dirty_legend(p);
-  _sv_undo_resume(p->sushi);
+  _sv_undo_resume();
 }
 
 static void _sv_panel2d_box_callback(void *in, int state){
@@ -1317,13 +1317,13 @@ static void _sv_panel2d_box_callback(void *in, int state){
   
   switch(state){
   case 0: // box set
-    _sv_undo_push(p->sushi);
+    _sv_undo_push();
     _sv_plot_box_vals(plot,p2->oldbox);
     p->private->oldbox_active = plot->box_active;
     break;
   case 1: // box activate
-    _sv_undo_push(p->sushi);
-    _sv_undo_suspend(p->sushi);
+    _sv_undo_push();
+    _sv_undo_suspend();
 
     _sv_panel2d_crosshairs_callback(p);
 
@@ -1332,7 +1332,7 @@ static void _sv_panel2d_box_callback(void *in, int state){
     _sv_dim_set_value(p2->y_scale,0,p2->oldbox[2]);
     _sv_dim_set_value(p2->y_scale,2,p2->oldbox[3]);
     p->private->oldbox_active = 0;
-    _sv_undo_resume(p->sushi);
+    _sv_undo_resume();
     break;
   }
   _sv_panel_update_menus(p);
@@ -1348,7 +1348,7 @@ void _sv_panel2d_maintain_cache(sv_panel_t *p, _sv_bythread_cache_2d_t *c, int w
     /* allocate output temporary buffer */
     for(i=0;i<p2->used_functions;i++){
       int fnum = p2->used_function_list[i]->number;
-      sv_func_t *f = p->sushi->function_list[fnum];
+      sv_func_t *f = _sv_function_list[fnum];
       count += f->outputs;
     }
     c->fout = calloc(count, sizeof(*c->fout));
@@ -1540,7 +1540,7 @@ static int _sv_panel2d_compute(sv_panel_t *p,
 
   /* render using local dimension array; several threads will be
      computing objectives */
-  double dim_vals[p->sushi->dimensions];
+  double dim_vals[_sv_dimensions];
   int y = _v_swizzle(p->private->plot_progress_count-1,dh);
   p->private->plot_progress_count++;
 
@@ -1551,8 +1551,8 @@ static int _sv_panel2d_compute(sv_panel_t *p,
   y_max = _sv_scalespace_value(&p2->y_i,dh);
 
   // Initialize local dimension value array
-  for(i=0;i<p->sushi->dimensions;i++){
-    sv_dim_t *dim = p->sushi->dimension_list[i];
+  for(i=0;i<_sv_dimensions;i++){
+    sv_dim_t *dim = _sv_dimension_list[i];
     dim_vals[i]=dim->val;
   }
 
@@ -1664,7 +1664,7 @@ static void _sv_panel2d_realize(sv_panel_t *p){
   _sv_panel2d_t *p2 = p->subtype->p2;
   int i;
 
-  _sv_undo_suspend(p->sushi);
+  _sv_undo_suspend();
 
   p->private->toplevel = gtk_window_new (GTK_WINDOW_TOPLEVEL);
   g_signal_connect_swapped (G_OBJECT (p->private->toplevel), "delete-event",
@@ -1830,7 +1830,7 @@ static void _sv_panel2d_realize(sv_panel_t *p){
 			       // insensitive buttons when it realized
 			       // them.  This call will restore them.
 
-  _sv_undo_resume(p->sushi);
+  _sv_undo_resume();
 }
 
 static int _sv_panel2d_save(sv_panel_t *p, xmlNodePtr pn){  
@@ -1928,19 +1928,18 @@ int _sv_panel2d_load(sv_panel_t *p,
   return warn;
 }
 
-sv_panel_t *sv_panel_new_2d(sv_instance_t *s,
-			    int number,
+sv_panel_t *sv_panel_new_2d(int number,
 			    char *name, 
 			    sv_obj_t **objectives,
 			    sv_dim_t **dimensions,
 			    unsigned flags){
   
   int i,j;
-  sv_panel_t *p = _sv_panel_new(s,number,name,objectives,dimensions,flags);
+  sv_panel_t *p = _sv_panel_new(number,name,objectives,dimensions,flags);
   if(!p)return NULL;
 
   _sv_panel2d_t *p2 = calloc(1, sizeof(*p2));
-  int fout_offsets[s->functions];
+  int fout_offsets[_sv_functions];
   
   p->subtype = 
     calloc(1, sizeof(*p->subtype)); /* the union is alloced not
@@ -1976,7 +1975,7 @@ sv_panel_t *sv_panel_new_2d(sv_instance_t *s,
   /* determine which functions are actually needed; if it's referenced
      by an objective, it's used.  Precache them in dense form. */
   {
-    int fn = p->sushi->functions;
+    int fn = _sv_functions;
     int used[fn],count=0,offcount=0;
     memset(used,0,sizeof(used));
     memset(fout_offsets,-1,sizeof(fout_offsets));
@@ -1989,7 +1988,7 @@ sv_panel_t *sv_panel_new_2d(sv_instance_t *s,
 
     for(i=0;i<fn;i++)
       if(used[i]){
-	sv_func_t *f = p->sushi->function_list[i];
+	sv_func_t *f = _sv_function_list[i];
 	fout_offsets[i] = offcount;
 	offcount += f->outputs;
 	count++;
@@ -2000,7 +1999,7 @@ sv_panel_t *sv_panel_new_2d(sv_instance_t *s,
 
     for(count=0,i=0;i<fn;i++)
      if(used[i]){
-        p2->used_function_list[count]=p->sushi->function_list[i];
+        p2->used_function_list[count]=_sv_function_list[i];
 	count++;
       }
   }

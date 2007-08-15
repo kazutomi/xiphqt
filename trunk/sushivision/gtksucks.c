@@ -210,6 +210,7 @@ void _gtk_button3_fixup(){
 static pthread_mutex_t gdkm;
 static pthread_mutexattr_t gdkma;
 static int depth = 0;
+static int firstunder = 0;
 
 static void recursive_gdk_lock(void){
   pthread_mutex_lock(&gdkm);
@@ -219,10 +220,21 @@ static void recursive_gdk_lock(void){
 static void recursive_gdk_unlock(void){
   depth--;
   if(depth<0){
-    fprintf(stderr,"Internal locking error; refcount < 0. Dumping core for debugging\n");
-    abort();
-  }
-  pthread_mutex_unlock(&gdkm);
+    if(!firstunder){ // annoying detail of gtk locking; in apps that
+      // don't normally use threads, onr does not lock before entering
+      // mainloop; in apps that do thread, the mainloop must be
+      // locked.  We can't tell which situation was in place before
+      // setting up our own threading, so allow one refcount error
+      // which we assume was the unlocked mainloop of a normally
+      // unthreaded gtk app.
+      firstunder++;
+      depth=0;
+    }else{
+      fprintf(stderr,"Internal locking error; refcount < 0. Dumping core for debugging\n");
+      abort();
+    }
+  }else
+    pthread_mutex_unlock(&gdkm);
 }
 
 void _gtk_mutex_fixup(){

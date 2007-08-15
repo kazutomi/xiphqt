@@ -19,7 +19,7 @@
  * 
  */
 
-typedef struct _sv_instance_undo _sv_instance_undo_t;
+typedef struct _sv_undo _sv_undo_t;
 
 #include <time.h>
 #include <signal.h>
@@ -147,26 +147,19 @@ struct _sv_panel_internal {
   void (*undo_restore)(_sv_panel_undo_t *u, sv_panel_t *p);
 };
 
-struct _sv_instance_undo {
+struct _sv_undo {
   _sv_panel_undo_t *panels;
   double *dim_vals[3];
 };
 
-struct _sv_instance_internal {
-  int undo_level;
-  int undo_suspend;
-  _sv_instance_undo_t **undo_stack;
-};
-
-extern void _sv_clean_exit(int sig);
-extern void _sv_wake_workers();
-extern int  _sv_main_save();
-extern int  _sv_main_load();
+extern void _sv_clean_exit(void);
+extern void _sv_wake_workers(void);
+extern int  _sv_main_save(void);
+extern int  _sv_main_load(void);
 extern void _sv_first_load_warning(int *);
 
 
-extern sv_panel_t *_sv_panel_new(sv_instance_t *s,
-				 int number,
+extern sv_panel_t *_sv_panel_new(int number,
 				 char *name, 
 				 sv_obj_t **objectives,
 				 sv_dim_t **dimensions,	
@@ -183,25 +176,38 @@ extern void _sv_panel_clean_plot(sv_panel_t *p);
 extern void _sv_panel_undo_log(sv_panel_t *p, _sv_panel_undo_t *u);
 extern void _sv_panel_undo_restore(sv_panel_t *p, _sv_panel_undo_t *u);
 extern void _sv_panel_update_menus(sv_panel_t *p);
-extern int  _sv_panel_save(sv_panel_t *p, xmlNodePtr instance);
-extern int  _sv_panel_load(sv_panel_t *p, _sv_panel_undo_t *u, xmlNodePtr instance, int warn);
+extern int  _sv_panel_save(sv_panel_t *p, xmlNodePtr n);
+extern int  _sv_panel_load(sv_panel_t *p, _sv_panel_undo_t *u, xmlNodePtr n, int warn);
 
 extern void _sv_panel1d_mark_recompute_linked(sv_panel_t *p); 
 extern void _sv_panel1d_update_linked_crosshairs(sv_panel_t *p, int xflag, int yflag); 
 
 extern void _sv_map_set_throttle_time(sv_panel_t *p);
 
-extern void _sv_undo_log(sv_instance_t *s);
-extern void _sv_undo_push(sv_instance_t *s);
-extern void _sv_undo_pop(sv_instance_t *s);
-extern void _sv_undo_suspend(sv_instance_t *s);
-extern void _sv_undo_resume(sv_instance_t *s);
-extern void _sv_undo_restore(sv_instance_t *s);
-extern void _sv_undo_up(sv_instance_t *s);
-extern void _sv_undo_down(sv_instance_t *s);
+extern void _sv_undo_log();
+extern void _sv_undo_push();
+extern void _sv_undo_pop();
+extern void _sv_undo_suspend();
+extern void _sv_undo_resume();
+extern void _sv_undo_restore();
+extern void _sv_undo_up();
+extern void _sv_undo_down();
 
 extern sig_atomic_t _sv_exiting;
 extern char *_sv_filebase;
 extern char *_sv_filename;
 extern char *_sv_dirname;
 extern char *_sv_cwdname;
+
+extern int _sv_functions;
+extern sv_func_t **_sv_function_list;
+extern int _sv_dimensions;
+extern sv_dim_t **_sv_dimension_list;
+extern int _sv_objectives;
+extern sv_obj_t **_sv_objective_list;
+extern int _sv_panels;
+extern sv_panel_t **_sv_panel_list;
+extern int _sv_undo_level;
+extern int _sv_undo_suspended;
+extern _sv_undo_t **_sv_undo_stack;
+

@@ -27,7 +27,6 @@ typedef struct sv_panel sv_panel_t;
 typedef struct sv_dim   sv_dim_t;
 typedef struct sv_obj   sv_obj_t;
 typedef struct sv_func  sv_func_t;
-typedef struct _sv_instance_internal sv_instance_internal_t;
 typedef struct _sv_scale_internal sv_scale_internal_t;
 typedef struct _sv_dim_internal sv_dim_internal_t;
 typedef union  _sv_dim_subtype sv_dim_subtype_t;
@@ -43,29 +42,10 @@ int sv_atexit(void);
 int sv_save(char *filename);
 int sv_load(char *filename);
 
-/* toplevel instances ********************************************/
-
-typedef struct sv_instance {
-  int number;
-  char *name;
-
-  int functions;
-  sv_func_t **function_list;
-
-  int dimensions;
-  sv_dim_t **dimension_list;
-
-  int objectives;
-  sv_obj_t **objective_list;
-
-  int panels;
-  sv_panel_t **panel_list;
-
-  sv_instance_internal_t *private;
-} sv_instance_t;
-
-sv_instance_t           *sv_new (int number, 
-				 char *name);
+/* toplevel ******************************************************/
+extern int sv_init();
+extern int sv_go();
+extern int sv_join();
 
 /* scales ********************************************************/
 
@@ -112,13 +92,11 @@ struct sv_dim{
   unsigned flags;
   
   int (*callback)(sv_dim_t *);
-  sv_instance_t *sushi;
   sv_dim_subtype_t *subtype;
   sv_dim_internal_t *private;
 };
 
-sv_dim_t            *sv_dim_new (sv_instance_t *s, 
-				 int number, 
+sv_dim_t            *sv_dim_new (int number, 
 				 char *name,
 				 unsigned flags);
 
@@ -158,13 +136,11 @@ struct sv_func {
   void (*callback)(double *,double *);
   unsigned flags;
 
-  sv_instance_t *sushi;
   sv_func_subtype_t *subtype;
   sv_func_internal_t *private;
 };
 
-sv_func_t          *sv_func_new (sv_instance_t *s, 
-				 int number,
+sv_func_t          *sv_func_new (int number,
 				 int out_vals,
 				 void (*function)(double *,double *),
 				 unsigned flags);
@@ -185,21 +161,18 @@ struct sv_obj {
   char *output_types;
   unsigned flags;
 
-  sv_instance_t *sushi;
   sv_obj_subtype_t *subtype;
   sv_obj_internal_t *private;
 };
 
-sv_obj_t            *sv_obj_new (sv_instance_t *s,
-				 int number,
+sv_obj_t            *sv_obj_new (int number,
 				 char *name,
 				 sv_func_t **function_map,
 				 int *function_output_map,
 				 char *output_type_map,
 				 unsigned flags);
 
-sv_obj_t   *sv_obj_new_defaults (sv_instance_t *s,
-				 int number,
+sv_obj_t   *sv_obj_new_defaults (int number,
 				 char *name,
 				 sv_func_t *function,
 				 unsigned flags);
@@ -246,23 +219,20 @@ struct sv_panel {
   int objectives;
   sv_obj_list_t *objective_list;
 
-  sv_instance_t *sushi;
   unsigned flags;
 
   sv_panel_subtype_t *subtype;
   sv_panel_internal_t *private;
 };
 
-sv_panel_t     *sv_panel_new_1d (sv_instance_t *s,
-				 int number,
+sv_panel_t     *sv_panel_new_1d (int number,
 				 char *name,
 				 sv_scale_t *y_scale,
 				 sv_obj_t **objectives,
 				 sv_dim_t **dimensions,	
 				 unsigned flags);
 
-sv_panel_t     *sv_panel_new_xy (sv_instance_t *s,
-				 int number,
+sv_panel_t     *sv_panel_new_xy (int number,
 				 char *name,
 				 sv_scale_t *x_scale,
 				 sv_scale_t *y_scale,
@@ -270,8 +240,7 @@ sv_panel_t     *sv_panel_new_xy (sv_instance_t *s,
 				 sv_dim_t **dimensions,	
 				 unsigned flags);
 
-sv_panel_t     *sv_panel_new_2d (sv_instance_t *s,
-				 int number,
+sv_panel_t     *sv_panel_new_2d (int number,
 				 char *name, 
 				 sv_obj_t **objectives,
 				 sv_dim_t **dimensions,

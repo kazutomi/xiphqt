@@ -45,28 +45,31 @@ sig_atomic_t _sv_exiting=0;
 static int wake_pending = 0;
 static int num_threads;
 
-static int instances=0;
-static sv_instance_t **instance_list;
+int _sv_functions=0;
+sv_func_t **_sv_function_list=NULL;
+int _sv_dimensions=0;
+sv_dim_t **_sv_dimension_list=NULL;
+int _sv_objectives=0;
+sv_obj_t **_sv_objective_list=NULL;
+int _sv_panels=0;
+sv_panel_t **_sv_panel_list=NULL;
+int _sv_undo_level=0;
+int _sv_undo_suspended=0;
+_sv_undo_t **_sv_undo_stack=NULL;
 
 void _sv_wake_workers(){
-  if(instances){
-    pthread_mutex_lock(&m);
-    wake_pending = num_threads;
-    pthread_cond_broadcast(&mc);
-    pthread_mutex_unlock(&m);
-  }
+  pthread_mutex_lock(&m);
+  wake_pending = num_threads;
+  pthread_cond_broadcast(&mc);
+  pthread_mutex_unlock(&m);
 }
 
-void _sv_clean_exit(int sig){
+void _sv_clean_exit(){
   _sv_exiting = 1;
   _sv_wake_workers();
-
-  //signal(sig,SIG_IGN);
-  if(sig!=SIGINT)
-    fprintf(stderr,
-            "\nTrapped signal %d; exiting!\n",sig);
-
-  gtk_main_quit();
+  if(!gtk_main_iteration_do(FALSE)) // side effect: returns true if
+				    // there are no main loops active
+    gtk_main_quit();
 }
 
 static int num_proccies(){
@@ -92,69 +95,58 @@ static int num_proccies(){
 static void *worker_thread(void *dummy){
   /* set up temporary working space for function rendering; this saves
      continuously recreating it in the loop below */
-  _sv_bythread_cache_t **c; // [instance][panel]
-  int i,j;
+  _sv_bythread_cache_t *c=calloc(_sv_panels,sizeof(*c));
+  int i;
   
-  c = calloc(instances,sizeof(*c));
-  for(j=0;j<instances;j++){
-    sv_instance_t *s = instance_list[j];
-    c[j] = calloc(s->panels,sizeof(**c));
-  }
-
   while(1){
     if(_sv_exiting)break;
     
     // look for work
     {
       int flag=0;
-      // by instance
-      for(j=0;j<instances;j++){
-	sv_instance_t *s = instance_list[j];
-				 
-	for(i=0;i<s->panels;i++){
-	  sv_panel_t *p = s->panel_list[i];
+      for(i=0;i<_sv_panels;i++){
+	sv_panel_t *p = _sv_panel_list[i];
 
-	  if(_sv_exiting)break;
-
-	  // pending remap work?
-	  gdk_threads_enter();
-	  if(p && p->private && p->private->realized && p->private->graph){
-
-	    // pending computation work?
-	    if(p->private->plot_active){
-	      _sv_spinner_set_busy(p->private->spinner);
-
-	      if(p->private->plot_progress_count==0){    
-		if(p->private->callback_precompute)
-		  p->private->callback_precompute(p,p->private->callback_precompute_data);
-	      }
-
-	      flag |= p->private->compute_action(p,&c[j][i]); // may drop lock internally
+	if(_sv_exiting)break;
+	
+	// pending remap work?
+	gdk_threads_enter();
+	if(p && p->private && p->private->realized && p->private->graph){
+	  
+	  // pending computation work?
+	  if(p->private->plot_active){
+	    _sv_spinner_set_busy(p->private->spinner);
+	    
+	    if(p->private->plot_progress_count==0){    
+	      if(p->private->callback_precompute)
+		p->private->callback_precompute(p,p->private->callback_precompute_data);
 	    }
 	    
-	    if(p->private->map_active){
-	      int ret = 1;
-	      while(ret){ // favor completing remaps over other ops
-		_sv_spinner_set_busy(p->private->spinner);
-		flag |= ret = p->private->map_action(p,&c[j][i]); // may drop lock internally
-		if(!p->private->map_active)
-		  _sv_map_set_throttle_time(p);
-	      }
-	    }
-	    
-	    // pending legend work?
-	    if(p->private->legend_active){
-	      _sv_spinner_set_busy(p->private->spinner);
-	      flag |= p->private->legend_action(p); // may drop lock internally
-	    }
-	    
-	    if(!p->private->plot_active &&
-	       !p->private->legend_active &&
-	       !p->private->map_active)
-	      _sv_spinner_set_idle(p->private->spinner);
+	    flag |= p->private->compute_action(p,&c[i]); // may drop lock internally
 	  }
-	  gdk_threads_leave ();
+	  
+	  if(p->private->map_active){
+	    int ret = 1;
+	    while(ret){ // favor completing remaps over other ops
+	      _sv_spinner_set_busy(p->private->spinner);
+	      flag |= ret = p->private->map_action(p,&c[i]); // may drop lock internally
+	      if(!p->private->map_active)
+		_sv_map_set_throttle_time(p);
+	    }
+	  }
+	  
+	  // pending legend work?
+	  if(p->private->legend_active){
+	    _sv_spinner_set_busy(p->private->spinner);
+	    flag |= p->private->legend_action(p); // may drop lock internally
+	  }
+	  
+	  if(!p->private->plot_active &&
+	     !p->private->legend_active &&
+	     !p->private->map_active)
+	    _sv_spinner_set_idle(p->private->spinner);
 	}
+	gdk_threads_leave ();
       }
       if(flag==1)continue;
     }
@@ -176,54 +168,13 @@ static char * gtkrc_string(){
   return _SUSHI_GTKRC_STRING;
 }
 
-static void _sv_instance_realize(sv_instance_t *s){
-  int i;
-  for(i=0;i<s->panels;i++)
-    _sv_panel_realize(s->panel_list[i]);
-  for(i=0;i<s->panels;i++)
-    if(s->panel_list[i])
-      s->panel_list[i]->private->request_compute(s->panel_list[i]);
-}
-
 static void _sv_realize_all(void){
   int i;
-  for(i=0;i<instances;i++)
-    _sv_instance_realize(instance_list[i]);
-}
-
-/* externally visible interface */
-
-sv_instance_t *sv_new(int number, char *name) {
-  sv_instance_t *ret;
-
-  if(number<0){
-    fprintf(stderr,"Instance number must be >= 0\n");
-    errno = -EINVAL;
-    return NULL;
-  }
-  
-  if(number<instances){
-    if(instance_list[number]!=NULL){
-      fprintf(stderr,"Instance number %d already exists\n",number);
-      errno = -EINVAL;
-      return NULL;
-    }
-  }else{
-    if(instances == 0){
-      instance_list = calloc (number+1,sizeof(*instance_list));
-    }else{
-      instance_list = realloc (instance_list,(number+1) * sizeof(*instance_list));
-      memset(instance_list + instances, 0, sizeof(*instance_list)*(number+1 - instances));
-    }
-    instances = number+1; 
-  }
-
-  ret = instance_list[number] = calloc(1, sizeof(**instance_list));
-  ret->private = calloc(1,sizeof(*ret->private));
-  if(name)
-    ret->name = strdup(name);
-
-  return ret;
+  for(i=0;i<_sv_panels;i++)
+    _sv_panel_realize(_sv_panel_list[i]);
+  for(i=0;i<_sv_panels;i++)
+    if(_sv_panel_list[i])
+      _sv_panel_list[i]->private->request_compute(_sv_panel_list[i]);
 }
 
 char *_sv_appname = NULL;
@@ -232,21 +183,43 @@ char *_sv_filebase = NULL;
 char *_sv_dirname = NULL;
 char *_sv_cwdname = NULL;
 
-int main (int argc, char *argv[]){
-  int ret;
+static void *event_thread(void *dummy){
 
+  gdk_threads_enter();
+  gtk_main ();
+  gdk_threads_leave();
+  
+  gtk_main_quit(); // in case there's another mainloop in the main app
+
+  return 0;
+}
+
+/* externally visible interface */
+int sv_init(){
+  
   num_threads = num_proccies();
-
   _gtk_mutex_fixup();
-  g_thread_init (NULL);
-  gtk_init (&argc, &argv);
+  gtk_init (NULL,NULL);
+
+  return 0;
+}
+
+int sv_join(){
+  while(!_sv_exiting){
+    pthread_mutex_lock(&m);
+    pthread_cond_wait(&mc,&m);
+    pthread_mutex_unlock(&m);
+  }
+  return 0;
+}
+
+int sv_go(){
+    
+  if (!g_thread_supported ()) g_thread_init (NULL);
   gdk_threads_init ();
   gtk_rc_parse_string(gtkrc_string());
   gtk_rc_add_default_file("sushi-gtkrc");
 
-  ret = sv_submain(argc,argv);
-  if(ret)return ret;
-  
   gdk_threads_enter();
   _sv_realize_all();
   _gtk_button3_fixup();
@@ -254,7 +227,7 @@ int main (int argc, char *argv[]){
   _sv_appname = g_get_prgname ();
   _sv_cwdname = getcwd(NULL,0);
   _sv_dirname = strdup(_sv_cwdname);
-  if(argc>1){
+  /*if(argc>1){
     // file to load specified on commandline
     if(argv[argc-1][0] != '-'){
       _sv_filebase = strdup(argv[argc-1]);
@@ -293,7 +266,7 @@ int main (int argc, char *argv[]){
     }else
       _sv_filebase = strdup("default.sushi");
     asprintf(&_sv_filename,"%s/%s",_sv_dirname,_sv_filebase);
-  }
+    }*/
 
   {
     pthread_t dummy;
@@ -302,42 +275,14 @@ int main (int argc, char *argv[]){
       pthread_create(&dummy, NULL, &worker_thread,NULL);
   }
 
-  signal(SIGINT,_sv_clean_exit);
+  //signal(SIGINT,_sv_clean_exit);
   //signal(SIGSEGV,_sv_clean_exit);
 
-
-  gtk_main ();
-  gdk_threads_leave();
-  
   {
-    int (*optional_exit)(void) = dlsym(RTLD_DEFAULT, "sv_atexit");
-    if(optional_exit)
-      return optional_exit();
+    pthread_t dummy;
+    gdk_threads_leave();
+    return pthread_create(&dummy, NULL, &event_thread,NULL);
   }
-
-  return 0;
-}
-
-static int _sv_instance_save(sv_instance_t *s, xmlNodePtr root){
-  if(!s) return 0;
-  int i, ret=0;
-
-  xmlNodePtr instance = xmlNewChild(root, NULL, (xmlChar *) "instance", NULL);
-
-  _xmlNewPropI(instance, "number", s->number);
-  _xmlNewPropS(instance, "name", s->name);
-  
-  // dimension values are independent of panel
-  for(i=0;i<s->dimensions;i++)
-    ret|=_sv_dim_save(s->dimension_list[i], instance);
-  
-  // objectives have no independent settings
-
-  // panel settings (by panel)
-  for(i=0;i<s->panels;i++)
-    ret|=_sv_panel_save(s->panel_list[i], instance);
-
-  return ret;
 }
 
 void _sv_first_load_warning(int *warn){
@@ -347,74 +292,6 @@ void _sv_first_load_warning(int *warn){
 	    "the executable, or because it is is not a save file for \n%s at all.\n\n"
 	    "Specific warnings follow:\n\n",_sv_appname,_sv_appname);
   *warn = 1;
-}
-
-static int _sv_instance_load(sv_instance_t *s, xmlNodePtr in, int warn){
-  int i;
-
-  // piggyback off undo (as it already goes through the trouble of
-  // doing correct unrolling, which can be tricky)
-
-  // if this instance has an undo stack, pop it all, then log current state into it
-  s->private->undo_level=0;
-  _sv_undo_log(s);
-
-  _sv_instance_undo_t *u = s->private->undo_stack[s->private->undo_level];
-
-  // load dimensions
-  for(i=0;i<s->dimensions;i++){
-    sv_dim_t *d = s->dimension_list[i];
-    if(d){
-      xmlNodePtr dn = _xmlGetChildI(in,"dimension","number",d->number);
-      if(!dn){
-	_sv_first_load_warning(&warn);
-	fprintf(stderr,"Could not find data for dimension \"%s\" in save file.\n",
-		d->name);
-      }else{
-	warn |= _sv_dim_load(d,u,dn,warn);
-	xmlFreeNode(dn);
-      }
-    }
-  }
-  
-  // load panels
-  for(i=0;i<s->panels;i++){
-    sv_panel_t *p = s->panel_list[i];
-    if(p){
-      xmlNodePtr pn = _xmlGetChildI(in,"panel","number",p->number);
-      if(!pn){ 
-	_sv_first_load_warning(&warn);
-	fprintf(stderr,"Could not find data for panel \"%s\" in save file.\n",
-		p->name);
-      }else{
-	warn |= _sv_panel_load(p,u->panels+i,pn,warn);
-	xmlFreeNode(pn);
-      }
-    }
-  }
-  
-  // if any elements are unclaimed, warn 
-  xmlNodePtr node = in->xmlChildrenNode;
-  while(node){
-    if (node->type == XML_ELEMENT_NODE) {
-      xmlChar *name = xmlGetProp(node, (xmlChar *)"name");
-      _sv_first_load_warning(&warn);
-      if(name){
-	fprintf(stderr,"Save file contains data for nonexistant object \"%s\".\n",
-		name);
-	xmlFree(name);
-      }else
-	fprintf(stderr,"Save file root node contains an extra unknown elements.\n");
-    }
-    node = node->next;
-  }
-  
-  // effect the loaded values
-  _sv_undo_suspend(s);
-  _sv_undo_restore(s);
-  _sv_undo_resume(s);
-
-  return warn;
 }
 
 int _sv_main_save(){
@@ -428,9 +305,15 @@ int _sv_main_save(){
   root_node = xmlNewNode(NULL, (xmlChar *)_sv_appname);
   xmlDocSetRootElement(doc, root_node);
 
-  // save each instance 
-  for(i=0;i<instances;i++)
-    ret |= _sv_instance_save(instance_list[i],root_node);
+  // dimension values are independent of panel
+  for(i=0;i<_sv_dimensions;i++)
+    ret|=_sv_dim_save(_sv_dimension_list[i], root_node);
+  
+  // objectives have no independent settings
+
+  // panel settings (by panel)
+  for(i=0;i<_sv_panels;i++)
+    ret|=_sv_panel_save(_sv_panel_list[i], root_node);
 
   xmlSaveFormatFileEnc(_sv_filename, doc, "UTF-8", 1);
 
@@ -476,39 +359,67 @@ int _sv_main_load(){
 
   root = xmlDocGetRootElement(doc);
 
-  // load each instance 
-  for(i=0;i<instances;i++){
-    sv_instance_t *s = instance_list[i];
-    if(s){
-      xmlNodePtr in = _xmlGetChildI(root,"instance","number",s->number);
-      if(!in){ 
+  // piggyback off undo (as it already goes through the trouble of
+  // doing correct unrolling, which can be tricky)
+  
+  // if this instance has an undo stack, pop it all, then log current state into it
+  _sv_undo_level=0;
+  _sv_undo_log();
+  
+  _sv_undo_t *u = _sv_undo_stack[_sv_undo_level];
+
+  // load dimensions
+  for(i=0;i<_sv_dimensions;i++){
+    sv_dim_t *d = _sv_dimension_list[i];
+    if(d){
+      xmlNodePtr dn = _xmlGetChildI(root,"dimension","number",d->number);
+      if(!dn){
 	_sv_first_load_warning(&warn);
-	fprintf(stderr,"Could not find data for instance \"%s\" in save file.\n",
-		s->name);
+	fprintf(stderr,"Could not find data for dimension \"%s\" in save file.\n",
+		d->name);
+      }else{
+	warn |= _sv_dim_load(d,u,dn,warn);
+	xmlFreeNode(dn);
       }
-      // load even if no node; need to set fallbacks
-      warn |= _sv_instance_load(s,in,warn);
-      if(in)xmlFreeNode(in);
     }
   }
-
-  // if any instances are unclaimed, warn 
-  xmlNodePtr node = root->xmlChildrenNode;
   
+  // load panels
+  for(i=0;i<_sv_panels;i++){
+    sv_panel_t *p = _sv_panel_list[i];
+    if(p){
+      xmlNodePtr pn = _xmlGetChildI(root,"panel","number",p->number);
+      if(!pn){ 
+	_sv_first_load_warning(&warn);
+	fprintf(stderr,"Could not find data for panel \"%s\" in save file.\n",
+		p->name);
+      }else{
+	warn |= _sv_panel_load(p,u->panels+i,pn,warn);
+	xmlFreeNode(pn);
+      }
+    }
+  }
+  
+  // if any elements are unclaimed, warn 
+  xmlNodePtr node = root->xmlChildrenNode;
   while(node){
     if (node->type == XML_ELEMENT_NODE) {
-      char *name = NULL;
-      _xmlGetPropS(node, "name", &name);
+      xmlChar *name = xmlGetProp(node, (xmlChar *)"name");
       _sv_first_load_warning(&warn);
       if(name){
 	fprintf(stderr,"Save file contains data for nonexistant object \"%s\".\n",
-		  name);
+		name);
 	xmlFree(name);
       }else
 	fprintf(stderr,"Save file root node contains an extra unknown elements.\n");
     }
-    node = node->next; 
+    node = node->next;
   }
+  
+  // effect the loaded values
+  _sv_undo_suspend();
+  _sv_undo_restore();
+  _sv_undo_resume();
 
   xmlFreeDoc(doc);
   xmlCleanupParser();
