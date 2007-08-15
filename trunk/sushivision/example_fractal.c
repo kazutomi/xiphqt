@@ -59,25 +59,26 @@ int main(int argc, char *argv[]){
 
 
   sv_dim_t *d0 = sv_dim_new(0, "Re(c)", 0);
-  sv_dim_make_scale(d0, 5, (double []){-2.25,-0.75,0,0.25,0.75}, NULL, 0);
+  sv_dim_make_scale(5, (double []){-2.25,-0.75,0,0.25,0.75}, NULL, 0);
   
   sv_dim_t *d1 = sv_dim_new(1, "Im(c)", 0);
-  sv_dim_make_scale(d1, 5, (double []){-2,-1,0,1,2}, NULL, 0);
+  sv_dim_make_scale(5, (double []){-2,-1,0,1,2}, NULL, 0);
 
   sv_dim_t *d2 = sv_dim_new(2, "Re(z0)", 0);
-  sv_dim_make_scale(d2, 5, (double []){-2.25,-1,0,1,2.25}, NULL, 0);
+  sv_dim_make_scale(5, (double []){-2.25,-1,0,1,2.25}, NULL, 0);
 
   sv_dim_t *d3 = sv_dim_new(3, "Im(z0)", 0);
-  sv_dim_make_scale(d3, 5, (double []){-2.25,-1,0,1,2.25}, NULL, 0);
+  sv_dim_make_scale(5, (double []){-2.25,-1,0,1,2.25}, NULL, 0);
 
   sv_dim_t *d4 = sv_dim_new(4, "Max Iterations", 0);
-  sv_dim_make_scale(d4, 4, (double []){100,1000,10000,100000},
+  sv_dim_make_scale(4, (double []){100,1000,10000,100000},
 		    (char *[]){"one hundred",
-				 "one thousand",
-				 "ten thousand",
-				 "one hundred thousand"}, 0);
-  sv_dim_set_picklist(d4);
-  sv_dim_set_value(d4,1,100);
+			"one thousand",
+			"ten thousand",
+			"one hundred thousand"}, 0);
+
+  sv_dim_set_picklist();
+  sv_dim_set_value(100);
 
   sv_func_t *f = sv_func_new(0, 2, fractal_objective, 0);
   
