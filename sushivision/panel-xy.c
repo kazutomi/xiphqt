@@ -781,7 +781,7 @@ static void _sv_panelxy_update_crosshair(sv_panel_t *p){
   double y = xy->y_vec[xy->cross_objnum][x_bin];
 
   _sv_plot_set_crosshairs(plot,x,y);
-  sv_dim_set_value(p->private->x_d,1,_sv_scalespace_value(&xy->data_v, x_bin));
+  _sv_dim_set_thumb(p->private->x_d,1,_sv_scalespace_value(&xy->data_v, x_bin));
 
   _sv_panel_dirty_legend(p);
 }
@@ -876,7 +876,7 @@ static void _sv_panelxy_crosshair_callback(sv_panel_t *p){
     xy->cross_objnum = besto;
     
     double dimval = _sv_scalespace_value(&xy->data_v, bestbin);
-    sv_dim_set_value(p->private->x_d,1,dimval);  
+    _sv_dim_set_thumb(p->private->x_d,1,dimval);  
   }
   
 

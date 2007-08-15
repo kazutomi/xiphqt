@@ -100,27 +100,26 @@ sv_dim_t            *sv_dim_new (int number,
 				 char *name,
 				 unsigned flags);
 
-int            sv_dim_set_scale (sv_dim_t *d,
-				 sv_scale_t *scale);
+sv_dim_t                *sv_dim (char *name);
 
-int           sv_dim_make_scale (sv_dim_t *d,
-				 unsigned scalevals, 
+int            sv_dim_set_scale (sv_scale_t *scale);
+
+int           sv_dim_make_scale (unsigned scalevals, 
 				 double *scaleval_list, 
 				 char **scalelabel_list,
 				 unsigned flags);
 
-int         sv_dim_set_discrete (sv_dim_t *d,
-				 long quant_numerator,
+int         sv_dim_set_discrete (long quant_numerator,
 				 long quant_denominator);
 
-int         sv_dim_set_picklist (sv_dim_t *d);
+int         sv_dim_set_picklist ();
 
-int            sv_dim_set_value (sv_dim_t *d,
-				 int thumb, 
-				 double val);
+int            sv_dim_set_value (double val);
 
-int       sv_dim_callback_value (sv_dim_t *d,
-				 int (*callback)(sv_dim_t *, void*),
+int          sv_dim_set_bracket (double lo,
+				 double hi);
+
+int       sv_dim_callback_value (int (*callback)(sv_dim_t *, void*),
 				 void *callback_data);
 
 /* functions *****************************************************/

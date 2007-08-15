@@ -57,6 +57,8 @@ int _sv_undo_level=0;
 int _sv_undo_suspended=0;
 _sv_undo_t **_sv_undo_stack=NULL;
 
+pthread_key_t   _sv_dim_key;
+
 void _sv_wake_workers(){
   pthread_mutex_lock(&m);
   wake_pending = num_threads;
@@ -67,9 +69,13 @@ void _sv_wake_workers(){
 void _sv_clean_exit(){
   _sv_exiting = 1;
   _sv_wake_workers();
+
+  gdk_threads_enter();
   if(!gtk_main_iteration_do(FALSE)) // side effect: returns true if
 				    // there are no main loops active
     gtk_main_quit();
+  gdk_threads_leave();
+
 }
 
 static int num_proccies(){
@@ -196,7 +202,10 @@ static void *event_thread(void *dummy){
 
 /* externally visible interface */
 int sv_init(){
-  
+  int ret=0;
+  if((ret=pthread_key_create(&_sv_dim_key,NULL)))
+     return ret;
+
   num_threads = num_proccies();
   _gtk_mutex_fixup();
   gtk_init (NULL,NULL);

@@ -1289,11 +1289,11 @@ static void _sv_panel2d_crosshairs_callback(sv_panel_t *p){
   for(i=0;i<p->dimensions;i++){
     sv_dim_t *d = p->dimension_list[i].d;
     if(d == p->private->x_d){
-      _sv_dim_set_value(p->private->dim_scales[i],1,x);
+      _sv_dim_widget_set_thumb(p->private->dim_scales[i],1,x);
     }
 
     if(d == p->private->y_d){
-      _sv_dim_set_value(p->private->dim_scales[i],1,y);
+      _sv_dim_widget_set_thumb(p->private->dim_scales[i],1,y);
     }
     
     p->private->oldbox_active = 0;
@@ -1327,10 +1327,10 @@ static void _sv_panel2d_box_callback(void *in, int state){
 
     _sv_panel2d_crosshairs_callback(p);
 
-    _sv_dim_set_value(p2->x_scale,0,p2->oldbox[0]);
-    _sv_dim_set_value(p2->x_scale,2,p2->oldbox[1]);
-    _sv_dim_set_value(p2->y_scale,0,p2->oldbox[2]);
-    _sv_dim_set_value(p2->y_scale,2,p2->oldbox[3]);
+    _sv_dim_widget_set_thumb(p2->x_scale,0,p2->oldbox[0]);
+    _sv_dim_widget_set_thumb(p2->x_scale,2,p2->oldbox[1]);
+    _sv_dim_widget_set_thumb(p2->y_scale,0,p2->oldbox[2]);
+    _sv_dim_widget_set_thumb(p2->y_scale,2,p2->oldbox[3]);
     p->private->oldbox_active = 0;
     _sv_undo_resume();
     break;

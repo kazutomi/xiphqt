@@ -23,6 +23,7 @@ typedef struct _sv_undo _sv_undo_t;
 
 #include <time.h>
 #include <signal.h>
+#include <pthread.h>
 #include <gtk/gtk.h>
 #include <libxml/parser.h>
 #include <libxml/tree.h>
@@ -210,4 +211,6 @@ extern sv_panel_t **_sv_panel_list;
 extern int _sv_undo_level;
 extern int _sv_undo_suspended;
 extern _sv_undo_t **_sv_undo_stack;
+
+extern pthread_key_t _sv_dim_key;
 

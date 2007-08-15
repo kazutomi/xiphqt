@@ -374,7 +374,7 @@ static void _sv_dim_dropdown_callback(GtkWidget *dummy, void *data){
 }
 
 /* undo/redo have to frob widgets; this is indirected here too */
-int _sv_dim_set_value(_sv_dim_widget_t *dw, int thumb, double val){
+int _sv_dim_widget_set_thumb(_sv_dim_widget_t *dw, int thumb, double val){
   sv_dim_t *d = dw->dl->d;
 
   switch(d->type){
@@ -419,10 +419,7 @@ int _sv_dim_set_value(_sv_dim_widget_t *dw, int thumb, double val){
   return 0;
 }
 
-/* external version with externalish API */
-int sv_dim_set_value(sv_dim_t *in, int thumb, double val){
-  sv_dim_t *d = (sv_dim_t *)in; // unwrap
-
+int _sv_dim_set_thumb(sv_dim_t *d, int thumb, double val){
   if(!d->private->widgets){
     switch(thumb){
     case 0:
@@ -441,10 +438,23 @@ int sv_dim_set_value(sv_dim_t *in, int thumb, double val){
 
     if(d->private->value_callback) 
       d->private->value_callback(d,d->private->value_callback_data);
-
+    
   }else
-    return _sv_dim_set_value(d->private->widget_list[0],thumb,val);
+    return _sv_dim_widget_set_thumb(d->private->widget_list[0],thumb,val);
   return 0;
+}
+
+/* external version with externalish API */
+int sv_dim_set_value(double val){
+  sv_dim_t *d = sv_dim(0);
+  return _sv_dim_set_thumb(d,1,val);
+}
+
+int sv_dim_set_bracket(double lo, double hi){
+  sv_dim_t *d = sv_dim(0);
+  int ret = _sv_dim_widget_set_thumb(d->private->widget_list[0],0,lo);
+  if(!ret) ret = _sv_dim_widget_set_thumb(d->private->widget_list[0],2,hi);
+  return ret;
 }
 
 void _sv_dim_widget_set_thumb_active(_sv_dim_widget_t *dw, int thumb, int active){
@@ -637,7 +647,7 @@ _sv_dim_widget_t *_sv_dim_widget_new(sv_dim_list_t *dl,
       
       gtk_table_attach(GTK_TABLE(dw->t),dw->menu,0,1,0,1,
 		       GTK_EXPAND|GTK_FILL,GTK_SHRINK,0,2);
-      _sv_dim_set_value(dw,1,d->val);
+      _sv_dim_widget_set_thumb(dw,1,d->val);
       //gtk_combo_box_set_active(GTK_COMBO_BOX(dw->menu),0);
     }
     break;
@@ -694,14 +704,16 @@ sv_dim_t *sv_dim_new(int number,
   d->type = SV_DIM_CONTINUOUS;
   d->private = calloc(1, sizeof(*d->private));
 
+  pthread_setspecific(_sv_dim_key, (void *)d);
+
   return d;
 }
 
 // XXXX need to recompute after
 // XXXX need to add scale cloning to compute to make this safe in callbacks
-int sv_dim_set_scale(sv_dim_t *in,
-		     sv_scale_t *scale){
-  sv_dim_t *d = (sv_dim_t *)in; // unwrap
+int sv_dim_set_scale(sv_scale_t *scale){
+  sv_dim_t *d = sv_dim(0);
+  if(!d) return -EINVAL;
 
   if(d->scale)
     sv_scale_free(d->scale); // always a deep copy we own
@@ -720,27 +732,26 @@ int sv_dim_set_scale(sv_dim_t *in,
 
 // XXXX need to recompute after
 // XXXX need to add scale cloning to compute to make this safe in callbacks
-int sv_dim_make_scale(sv_dim_t *in,
-		      unsigned scalevals, 
+int sv_dim_make_scale(unsigned scalevals, 
 		      double *scaleval_list,
 		      char **scalelabel_list,
 		      unsigned flags){
-  sv_dim_t *d = (sv_dim_t *)in; //unwrap
+  sv_dim_t *d = sv_dim(0);
+  if(!d) return -EINVAL;
 
   sv_scale_t *scale = sv_scale_new(d->name,scalevals,scaleval_list,scalelabel_list,0);
   if(!scale)return errno;
 
-  int ret = sv_dim_set_scale(d,scale);
+  int ret = sv_dim_set_scale(scale);
   sv_scale_free(scale);
   return ret;
 }
 
 // XXXX need to recompute after
-int sv_dim_set_discrete(sv_dim_t *in,
-			long quant_numerator,
+int sv_dim_set_discrete(long quant_numerator,
 			long quant_denominator){
   
-  sv_dim_t *d = (sv_dim_t *)in; //unwrap
+  sv_dim_t *d = sv_dim(0);
   if(!d) return -EINVAL;
 
   d->private->discrete_numerator = quant_numerator;
@@ -750,9 +761,9 @@ int sv_dim_set_discrete(sv_dim_t *in,
   return 0;
 }
 
-int sv_dim_set_picklist(sv_dim_t *in){
+int sv_dim_set_picklist(){
   
-  sv_dim_t *d = (sv_dim_t *)in; //unwrap  
+  sv_dim_t *d = sv_dim(0);
   if(!d) return -EINVAL;
 
   d->type = SV_DIM_PICKLIST;
@@ -810,8 +821,28 @@ int _sv_dim_save(sv_dim_t *d, xmlNodePtr instance){
   return ret;
 }
 
-int sv_dim_callback_value (sv_dim_t *d, int (*callback)(sv_dim_t *, void *), void *data){
+int sv_dim_callback_value (int (*callback)(sv_dim_t *, void *), void *data){
+  sv_dim_t *d = sv_dim(0);
+  if(!d) return -EINVAL;
+  
   d->private->value_callback = callback;
   d->private->value_callback_data = data;
   return 0;
+}
+
+sv_dim_t *sv_dim(char *name){
+  int i;
+  
+  if(name == NULL || name == 0 || !strcmp(name,"")){
+    return (sv_dim_t *)pthread_getspecific(_sv_dim_key);
+    
+  }
+  for(i=0;i<_sv_dimensions;i++){
+    sv_dim_t *d=_sv_dimension_list[i];
+    if(d && d->name && !strcmp(name,d->name)){
+      pthread_setspecific(_sv_dim_key, (void *)d);
+      return d;
+    }
+  }
+  return NULL;
 }

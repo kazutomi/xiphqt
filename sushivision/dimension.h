@@ -65,7 +65,8 @@ extern int _sv_dim_scales_from_panel(sv_dim_t *d,
 				     _sv_scalespace_t *data, 
 				     _sv_scalespace_t *iter);
 
-extern int _sv_dim_set_value(_sv_dim_widget_t *d, int thumb, double val);
+extern int _sv_dim_set_thumb(sv_dim_t *d, int thumb, double val);
+extern int _sv_dim_widget_set_thumb(_sv_dim_widget_t *d, int thumb, double val);
 extern void _sv_dim_widget_set_thumb_active(_sv_dim_widget_t *dw, int thumb, int active);
 extern _sv_dim_widget_t *_sv_dim_widget_new(sv_dim_list_t *dl,   
 					   void (*center_callback)(sv_dim_list_t *),

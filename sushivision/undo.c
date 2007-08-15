@@ -121,9 +121,9 @@ void _sv_undo_restore(){
   for(i=0;i<_sv_dimensions;i++){
     sv_dim_t *d = _sv_dimension_list[i];
     if(d){
-      sv_dim_set_value(d, 0, u->dim_vals[0][i]);
-      sv_dim_set_value(d, 1, u->dim_vals[1][i]);
-      sv_dim_set_value(d, 2, u->dim_vals[2][i]);
+      _sv_dim_set_thumb(d, 0, u->dim_vals[0][i]);
+      _sv_dim_set_thumb(d, 1, u->dim_vals[1][i]);
+      _sv_dim_set_thumb(d, 2, u->dim_vals[2][i]);
     }
   }
 
