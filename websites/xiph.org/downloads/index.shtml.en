@@ -154,6 +154,23 @@ end-user download links are provided for convenience:
 </td>
 </tr>
 
+<tr>
+<td>vorbis-java</td>
+<td>1.0.0-beta</td>
+<td>
+        <a href="http://downloads.xiph.org/releases/vorbis-java/vorbis-java-1.0.0-beta.tar.gz">vorbis-java-1.0.0-beta.tar.gz</a><br />
+        <a href="http://downloads.xiph.org/releases/vorbis-java/vorbis-java-1.0.0-beta.zip">vorbis-java-1.0.0-beta.zip</a>
+</td>
+<td>
+        876K<br />
+        1.0M
+</td>
+<td>
+        1648f9bac284a701f87f306e1058f004<br />
+        8ae70d703014b2d9cf51962315d5f891
+</td>
+</tr>
+
 </table>
 
 <p>You may also <a href="http://downloads.xiph.org/releases/">browse</a>
