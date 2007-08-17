@@ -25,6 +25,7 @@
 
 #include "vorbis_psy.h"
 #include "adpcm.h"
+#include "filterbank.h"
 
 typedef struct {
    float *pcm_buf;
@@ -52,7 +53,9 @@ typedef struct {
    int lpc_length;
    int lpc_order;
    
+   FilterBank *bank;
    void *big_fft;
+   void *frame_fft;
    void *lpc_fft;
    ADPCMState *adpcm;
 } GhostEncState;

@@ -29,11 +29,13 @@
 #include "pitch.h"
 #include "sinusoids.h"
 #include "fftwrap.h"
+#include "filterbank.h"
 
 #define PCM_BUF_SIZE 2048
 
 #define SINUSOIDS 30
 #define MASK_LPC_ORDER 10
+#define BARK_BANDS 20
 
 void fir_mem2(const spx_sig_t *x, const spx_coef_t *num, spx_sig_t *y, int N, int ord, spx_mem_t *mem)
 {
@@ -135,7 +137,9 @@ GhostEncState *ghost_encoder_state_new(int sampling_rate)
    for (i=st->lpc_order;i<st->lpc_length;i++)
       st->lpc_window[i] = .5-.5*cos(2*M_PI*(i-st->lpc_order)/(st->lpc_length-st->lpc_order));
 #endif
+   st->bank = filterbank_new(BARK_BANDS, 48000, st->length>>1, 0);
    st->big_fft = spx_fft_init(PCM_BUF_SIZE);
+   st->frame_fft = spx_fft_init(st->length);
    st->lpc_fft = spx_fft_init(st->lpc_length);
    for (i=0;i<PCM_BUF_SIZE;i++)
       st->big_window[i] = .5-.5*cos(2*M_PI*(i+1)/PCM_BUF_SIZE);
@@ -155,7 +159,9 @@ void ghost_encode(GhostEncState *st, float *pcm)
    float gain;
    float curve[PCM_BUF_SIZE>>1];
    float awk1[MASK_LPC_ORDER], awk2[MASK_LPC_ORDER];
+   float X[st->length];
    float mask_gain;
+   float bark[BARK_BANDS];
    int q[st->advance];
    
    for (i=0;i<PCM_BUF_SIZE-st->advance;i++)
@@ -194,6 +200,19 @@ void ghost_encode(GhostEncState *st, float *pcm)
       fprintf (stderr, "\n");*/
       for (i=0;i<st->length;i++)
          x[i] = st->analysis_window[i]*st->current_frame[i];
+      
+      spx_fft_float(st->frame_fft, x, X);
+      X[0] = X[0]*X[0];
+      for (i=1;i<st->length>>1;i++)
+         X[i] = X[2*i-1]*X[2*i-1] + X[2*i]*X[2*i];
+      filterbank_compute_bank32(st->bank, X, bark);
+#if 0
+      for(i=0;i<BARK_BANDS;i++)
+      {
+         printf("%f ", bark[i]);
+      }
+      printf ("\n");
+#endif 
       //extract_sinusoids(x, wi, st->window, ai, bi, y, SINUSOIDS, st->length);
       //nb_sinusoids=1;
       //wi[0] = 0.42745;
