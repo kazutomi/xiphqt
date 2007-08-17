@@ -14,8 +14,8 @@
 <!--#include virtual="/ssi/pagetop.include" -->
 <!--  All your page content goes here  -->
 
-<a id="applications"></a>
-<h1>Applications</h1>
+<a id="applications"></a><!-- Please don't change to "programs" since that might break links -->
+<h1>Programs</h1>
 <dl>
 
             <dt>
@@ -597,19 +597,25 @@ ON A SINGLE LINE from now one please. Thanks, Sebastian
               exports XSPF playlists.
             </dd>
 
-            <dt>
-              <a id="validator"></a><a href="http://xspf.binera.de/">XSPF
-              Validator</a>
-            </dt>
-            <dd>
-              Online validator for XSPF documents.
-            </dd>
 
 <!-- template for new entries
 ON A SINGLE LINE from now one please. Thanks, Sebastian
 <dt><a id="TODOID"></a><a href="TODOURL">TODONAME</a><dt><dd>&lt;TODO&gt;</dd>
 -->
 </dl>
+
+
+
+<a id="tools"></a>
+<h1>Tools</h1><!-- tools specific to XSPF i.e. don't put audio player here. go to programs above instead. -->
+<dl>
+
+<dt><a id="xspf_to_jspf"></a><a href="http://jchris.mfdz.com/static/jspf_parser/xspf_parser_runner.html">XSPF to JSPF Parser</a> (Javascript)<dt><dd>Converts your XSPF files to JSPF ("XSPF on JSON") online.</dd>
+<dt><a id="xspf_validator"></a><a id="validator"></a><a href="http://xspf.binera.de/">XSPF Validator</a></dt><dd>Online validator for XSPF documents.</dd>
+
+</dl>
+
+
 
 <a id="libraries"></a>
 <h1>Libraries</h1>
