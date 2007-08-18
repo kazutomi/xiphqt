@@ -1,0 +1,15 @@
+# libiceadmin pkg-config template
+
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+cppflags=@ICEADMIN_CPPFLAGS@
+cflags_only=@ICEADMIN_CFLAGS@
+
+Name: IceAdmin
+Description: Icecast remote administration library
+Version: @ICEADMIN_VERSION@
+Requires: @ICEADMIN_REQUIRES@
+Libs: -L${libdir} -liceadmin
+Cflags: -I${includedir} @ICEADMIN_CFLAGS@

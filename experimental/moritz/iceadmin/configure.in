@@ -1,0 +1,192 @@
+dnl INITIALIZATION
+
+m4_define(iceadmin_major, 0)
+m4_define(iceadmin_minor, 1)
+m4_define(iceadmin_micro, alpha01)
+m4_define(iceadmin_version,
+  m4_if(iceadmin_micro, 0, iceadmin_major.iceadmin_minor,
+   iceadmin_major.iceadmin_minor.iceadmin_micro))
+
+AC_INIT([IceAdmin], iceadmin_version, [mdgrimm@gmx.net])
+
+LIBICEADMIN_SO_MAJOR="0"
+LIBICEADMIN_SO_MINOR="0"
+
+AC_PREREQ(2.61)
+AC_CONFIG_SRCDIR(lib/libiceadmin.c)
+AC_CONFIG_AUX_DIR(build-aux)
+AM_INIT_AUTOMAKE
+AC_CONFIG_HEADERS(include/config.h)
+AC_CONFIG_LIBOBJ_DIR(lib)
+AM_MAINTAINER_MODE
+AC_USE_SYSTEM_EXTENSIONS
+AC_PROG_CC_STDC
+AC_PROG_LIBTOOL
+AC_DEFINE([LIBICEADMIN_MAJOR], iceadmin_major, [Iceadmin library major version])
+AC_DEFINE([LIBICEADMIN_MINOR], iceadmin_minor, [Iceadmin library minor version])
+AC_DEFINE([LIBICEADMIN_MICRO], iceadmin_micro, [Iceadmin library patch version])
+
+
+dnl SETUP
+
+AC_CANONICAL_HOST
+
+if test -z "$GCC"; then
+	case $host in 
+	*-irix*)
+		XIPH_CPPFLAGS="-fullwarn"
+		;;
+	*-solaris*)
+		XIPH_CPPFLAGS="-v"
+		;;
+	*)
+		;;
+	esac
+else
+	XIPH_CPPFLAGS="-fstrict-aliasing -Wall -W -ansi -pedantic -Wno-unused-parameter -Wwrite-strings -Wpointer-arith -Wsign-compare -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations"
+fi
+
+XALLOC_CPPFLAGS=""
+ia_enable_debug=no
+AC_ARG_ENABLE(debug,
+	AS_HELP_STRING([--enable-debug],
+		[enable memory debugging (default: no)]),
+[case "$enableval" in
+	no) ;;
+	*) ia_enable_debug=yes ;;
+esac], [])
+AC_MSG_CHECKING([whether to enable debugging])
+if test x"$ia_enable_debug" = "xyes"; then
+	XALLOC_CPPFLAGS="-DUSE_XALLOC=1 -DXALLOC_DEBUG=1"
+fi
+AC_MSG_RESULT([$ia_enable_debug])
+
+PKG_PROG_PKG_CONFIG([0.15])
+
+
+dnl MISC SYSTEM CHARACTERISTICS
+
+AC_C_CONST
+AC_TYPE_SIZE_T
+AC_CHECK_MEMBER(struct sockaddr.sa_len,
+	AC_DEFINE(HAVE_SOCKADDR_SA_LEN, 1,
+		[Define whether we have struct sockaddr.sa_len]), ,
+		[ #include <sys/types.h>
+		  #include <sys/socket.h> ]
+)
+
+
+dnl USEFUL HEADERS
+
+AC_CHECK_HEADERS(sys/socket.h netdb.h)
+
+COMPAT_INCLUDES=""
+if test x"$ia_enable_debug" = "xyes"; then
+	AC_CHECK_HEADERS(sys/tree.h)
+	if test x"$ac_cv_header_sys_tree_h" = "xyes"; then
+		AC_MSG_CHECKING([for RB_FOREACH and RB_INSERT in sys/tree.h])
+		AC_EGREP_CPP([yes], [
+#include <sys/tree.h>
+#if defined(RB_FOREACH) && defined(RB_INSERT)
+ yes
+#endif
+		], [
+			AC_MSG_RESULT([yes])
+			AC_DEFINE(HAVE_WORKING_SYS_TREE_H, 1,
+				[Define whether RB_FOREACH is defined in <sys/tree.h>])
+		], [
+			AC_MSG_RESULT([no])
+			COMPAT_INCLUDES="-I\$(top_srcdir)/compat"
+		])
+	else
+		COMPAT_INCLUDES="-I\$(top_srcdir)/compat"
+	fi
+fi
+
+
+dnl LIBRARY FUNCTIONS
+
+AC_REPLACE_FUNCS(strlcat)
+dnl AC_CHECK_FUNCS(getaddrinfo)
+dnl LIBCURL_CHECK_CONFIG([yes], [], [], [
+dnl 	AC_MSG_ERROR([Sorry, libcurl is required.])
+dnl ])
+
+
+dnl CONFIGURE BUILD OPTIONS, 3RD PART LIBRARIES
+
+dnl Check for libxml2
+use_xml2_config="no"
+AC_ARG_WITH(xml2-config,
+	[AS_HELP_STRING([--with-xml2-config=path],
+		[use specific xml2-config in path (default: use pkg-config)])],
+[case "$withval" in
+	no) ;;
+	yes) use_xml2_config="" ;;
+	*) use_xml2_config="$withval" ;;
+esac], [])
+XML2CONFIG=""
+if test x"$use_xml2_config" != "xno"; then
+	if test x"$use_xml2_config" = "x"; then
+		AC_PATH_PROGS(XML2CONFIG, [xml2-config], "")
+	else
+		XML2CONFIG="$use_xml2_config"
+		AC_SUBST(XML2CONFIG)
+	fi
+fi
+XML2_LIBS=""
+XML2_CFLAGS=""
+found_libxml2="no"
+if test x"$XML2CONFIG" = "x"; then
+	PKG_CHECK_MODULES(XML2, libxml-2.0, [found_libxml2="yes"], [
+		AC_PATH_PROGS(XML2CONFIG, [xml2-config], "")
+	])
+fi
+if test x"$XML2CONFIG" != "x" -a x"$found_libxml2" = "xno"; then
+	test -x "$XML2CONFIG" || AC_MSG_ERROR([$XML2CONFIG is not an executable], 1)
+	XML2_LIBS="`$XML2CONFIG --libs`"
+	XML2_CFLAGS="`$XML2CONFIG --cflags`"
+	found_libxml2="yes"
+fi
+if test x"$found_libxml2" = x"no"; then
+	AC_MSG_ERROR([libxml2 is required but could not be found], 1)
+fi
+ac_xml2_save_LIBS="$LIBS"
+ac_xml2_save_CFLAGS="$CFLAGS"
+LIBS="$XML2_LIBS $LIBS"
+CFLAGS="$XML2_CFLAGS $CFLAGS"
+AC_CHECK_FUNC(xmlNewDoc,, [AC_MSG_ERROR([Unable to link with libxml2])])
+LIBS="$ac_xml2_save_LIBS"
+CFLAGS="$ac_xml2_save_CFLAGS"
+
+
+dnl OUTPUT
+
+ICEADMIN_CFLAGS=""
+ICEADMIN_CPPFLAGS=""
+ICEADMIN_VERSION="$PACKAGE_VERSION"
+ICEADMIN_REQUIRES="libxml-2.0"
+AC_SUBST(ICEADMIN_CFLAGS)
+AC_SUBST(ICEADMIN_CPPFLAGS)
+AC_SUBST(ICEADMIN_VERSION)
+AC_SUBST(ICEADMIN_REQUIRES)
+
+AC_SUBST(LIBTOOL_DEPS)
+AC_SUBST(XALLOC_CPPFLAGS)
+AC_SUBST(COMPAT_INCLUDES)
+AC_SUBST(LIBICEADMIN_SO_MAJOR)
+AC_SUBST(LIBICEADMIN_SO_MINOR)
+AC_SUBST(XML2_LIBS)
+AC_SUBST(XML2_CFLAGS)
+AC_SUBST(XIPH_CPPFLAGS)
+
+AC_CONFIG_FILES(Makefile \
+		compat/Makefile \
+		compat/sys/Makefile \
+		doc/Makefile \
+		include/Makefile \
+		lib/Makefile \
+		src/Makefile \
+		iceadmin.pc)
+
+AC_OUTPUT
