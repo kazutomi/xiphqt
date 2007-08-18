@@ -160,11 +160,6 @@ _iceadmin_auth_basic_string(const char *user, const char *pass)
 	return (buf1);
 }
 
-/*
- * Based on b64_ntop() by IBM and ISC, from
- * $OpenBSD: src/lib/libc/net/base64.c,v 1.5 2006/10/21 09:55:03 otto Exp $
- * License is in b64_ntop.txt
- */
 int
 _iceadmin_base64_encode(const char *in, size_t inputlen, char **out_p, size_t *outputlen)
 {
@@ -311,11 +306,6 @@ _iceadmin_read_http_reply(struct iceadmin *iceadmin, int sock, unsigned int *htt
 	return (ICEADMIN_SUCCESS);
 }
 
-/*
- * Based on FreeBSD's strnstr():
- * $FreeBSD: src/lib/libc/string/strnstr.c,v 1.4 2007/01/09 00:28:12 imp Exp $
- * License is in strnstr.txt
- */
 char *
 _iceadmin_strnstr(const char *s, const char *find, size_t slen, size_t *pos_p)
 {

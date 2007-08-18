@@ -26,16 +26,6 @@
 #include "error.h"
 #include "xalloc.h"
 
-#ifndef SA_LEN
-# ifdef HAVE_STRUCT_SOCKADDR_SA_LEN
-#  define SA_LEN(x)	((x)->sa_len)
-# else
-#  define SA_LEN(x)	((x)->sa_family == AF_INET6 ? \
-			sizeof(struct sockaddr_in6) : \
-			sizeof(struct sockaddr_in))
-# endif /* HAVE_STRUCT_SOCKADDR_SA_LEN */
-#endif /* !SA_LEN */
-
 
 char	*_iceadmin_useragent = NULL;
 
@@ -230,7 +220,8 @@ iceadmin_cmd_get_stats(struct iceadmin *iceadmin,
 	if (iceadmin->initialized != 1)
 		return (ICEADMIN_BADHANDLE);
 
-	if (iceadmin_cmd_get_xmlstats(iceadmin, &buf, &bufsize) != ICEADMIN_SUCCESS)
+	if (iceadmin_cmd_get_xmlstats(iceadmin, &buf, &bufsize)
+	    != ICEADMIN_SUCCESS)
 		return (ICEADMIN_ERROR);
 
 	if ((doc = xmlParseMemory(buf, bufsize)) == NULL) {
@@ -241,7 +232,8 @@ iceadmin_cmd_get_stats(struct iceadmin *iceadmin,
 	}
 	xfree(buf);
 
-	if (_iceadmin_format_xmltree(iceadmin, &buf, &bufsize, doc) != ICEADMIN_SUCCESS) {
+	if (_iceadmin_format_xmltree(iceadmin, &buf, &bufsize, doc)
+	    != ICEADMIN_SUCCESS) {
 		xmlFreeDoc(doc);
 		return (ICEADMIN_ERROR);
 	}
@@ -324,7 +316,8 @@ iceadmin_cmd_list_mounts(struct iceadmin *iceadmin,
 	if (iceadmin->initialized != 1)
 		return (ICEADMIN_BADHANDLE);
 
-	if (iceadmin_cmd_list_xmlmounts(iceadmin, &buf, &bufsize) != ICEADMIN_SUCCESS)
+	if (iceadmin_cmd_list_xmlmounts(iceadmin, &buf, &bufsize)
+	    != ICEADMIN_SUCCESS)
 		return (ICEADMIN_ERROR);
 
 	if ((doc = xmlParseMemory(buf, bufsize)) == NULL) {
@@ -335,7 +328,8 @@ iceadmin_cmd_list_mounts(struct iceadmin *iceadmin,
 	}
 	xfree(buf);
 
-	if (_iceadmin_format_xmltree(iceadmin, &buf, &bufsize, doc) != ICEADMIN_SUCCESS) {
+	if (_iceadmin_format_xmltree(iceadmin, &buf, &bufsize, doc)
+	    != ICEADMIN_SUCCESS) {
 		xmlFreeDoc(doc);
 		return (ICEADMIN_ERROR);
 	}
@@ -420,7 +414,8 @@ iceadmin_cmd_list_clients(struct iceadmin *iceadmin,
 	if (iceadmin->mountpoint[0] == '\0')
 		return (ICEADMIN_ERROR);
 
-	if (iceadmin_cmd_list_xmlclients(iceadmin, &buf, &bufsize) != ICEADMIN_SUCCESS)
+	if (iceadmin_cmd_list_xmlclients(iceadmin, &buf, &bufsize)
+	    != ICEADMIN_SUCCESS)
 		return (ICEADMIN_ERROR);
 
 	if ((doc = xmlParseMemory(buf, bufsize)) == NULL) {
@@ -431,7 +426,8 @@ iceadmin_cmd_list_clients(struct iceadmin *iceadmin,
 	}
 	xfree(buf);
 
-	if (_iceadmin_format_xmltree(iceadmin, &buf, &bufsize, doc) != ICEADMIN_SUCCESS) {
+	if (_iceadmin_format_xmltree(iceadmin, &buf, &bufsize, doc)
+	    != ICEADMIN_SUCCESS) {
 		xmlFreeDoc(doc);
 		return (ICEADMIN_ERROR);
 	}
@@ -471,6 +467,116 @@ iceadmin_cmd_list_xmlclients(struct iceadmin *iceadmin,
 					   iceadmin->password);
 	ret = snprintf(static_buf, sizeof(static_buf), "GET %smount=%s HTTP/1.0\r\nUser-Agent: %s\r\n%s\r\n",
 		       PFX_LIST_CLIENTS, enc_mount, _iceadmin_useragent, auth);
+	if (ret < 0 || ret >= (int)sizeof(static_buf)) {
+		_set_error(iceadmin, 0, 0, "Bad request -- too long");
+		xfree(auth);
+		xfree(enc_mount);
+		return (ICEADMIN_ERROR);
+	}
+	xfree(auth);
+	xfree(enc_mount);
+
+	if (write(sock, static_buf, strlen(static_buf)) == -1) {
+		_set_error(iceadmin, 0, errno, "write: [%s]:%s",
+			   iceadmin->hostname, iceadmin->service);
+		close(sock);
+		return (ICEADMIN_ERROR);
+	}
+
+	httpret = 0;
+	if (_iceadmin_read_http_reply(iceadmin, sock, &httpret)
+	    != ICEADMIN_SUCCESS) {
+		close(sock);
+		if (httpret == 400)
+			_set_error(iceadmin, 0, 0, "[%s]:%s: Mountpoint '%s' not found",
+				   iceadmin->hostname, iceadmin->service,
+				   iceadmin->mountpoint);
+		return (ICEADMIN_ERROR);
+	}
+
+	if (_iceadmin_read_xml_data(iceadmin, sock, &buf, &bufsize)
+	    != ICEADMIN_SUCCESS) {
+		close(sock);
+		return (ICEADMIN_ERROR);
+	}
+	close(sock);
+
+	*buf_p = buf;
+	if (bufsize_p != NULL)
+		*bufsize_p = bufsize;
+
+	return (ICEADMIN_SUCCESS);
+}
+
+int
+iceadmin_cmd_auth_list_users(struct iceadmin *iceadmin,
+			     char **buf_p, size_t *bufsize_p)
+{
+	char		*buf;
+	size_t		 bufsize;
+	xmlDocPtr	 doc;
+
+	if (iceadmin == NULL || buf_p == NULL)
+		return (ICEADMIN_ABUSE);
+	if (iceadmin->initialized != 1)
+		return (ICEADMIN_BADHANDLE);
+	if (iceadmin->mountpoint[0] == '\0')
+		return (ICEADMIN_ERROR);
+
+	if (iceadmin_cmd_auth_list_xmlusers(iceadmin, &buf, &bufsize)
+	    != ICEADMIN_SUCCESS)
+		return (ICEADMIN_ERROR);
+
+	if ((doc = xmlParseMemory(buf, bufsize)) == NULL) {
+		_set_error(iceadmin, 0, 0, "[%s]:%s: XML parse error (not well-formed)",
+			   iceadmin->hostname, iceadmin->service);
+		xfree(buf);
+		return (ICEADMIN_ERROR);
+	}
+	xfree(buf);
+
+	if (_iceadmin_format_xmltree(iceadmin, &buf, &bufsize, doc)
+	    != ICEADMIN_SUCCESS) {
+		xmlFreeDoc(doc);
+		return (ICEADMIN_ERROR);
+	}
+	xmlFreeDoc(doc);
+
+	*buf_p = buf;
+	if (bufsize_p != NULL)
+		*bufsize_p = bufsize;
+
+	return (ICEADMIN_SUCCESS);
+}
+
+int
+iceadmin_cmd_auth_list_xmlusers(struct iceadmin *iceadmin,
+				char **buf_p, size_t *bufsize_p)
+{
+	char		*buf, *auth;
+	size_t		 bufsize;
+	int		 sock;
+	char		 static_buf[BUFSIZ];
+	unsigned int	 httpret;
+	int		 ret;
+	char		*enc_mount;
+
+	if (iceadmin == NULL || buf_p == NULL)
+		return (ICEADMIN_ABUSE);
+	if (iceadmin->initialized != 1)
+		return (ICEADMIN_BADHANDLE);
+	if (iceadmin->mountpoint[0] == '\0')
+		return (ICEADMIN_ERROR);
+
+	if (_iceadmin_connect(iceadmin, &sock) != ICEADMIN_SUCCESS)
+		return (ICEADMIN_ERROR);
+
+	enc_mount = _iceadmin_url_encode(iceadmin->mountpoint);
+	auth = _iceadmin_auth_basic_string(iceadmin->username,
+					   iceadmin->password);
+	ret = snprintf(static_buf, sizeof(static_buf), "GET %smount=%s HTTP/1.0\r\nUser-Agent: %s\r\n%s\r\n",
+		       PFX_AUTH_LISTUSERS, enc_mount,
+		       _iceadmin_useragent, auth);
 	if (ret < 0 || ret >= (int)sizeof(static_buf)) {
 		_set_error(iceadmin, 0, 0, "Bad request -- too long");
 		xfree(auth);
@@ -629,7 +735,8 @@ iceadmin_cmd_kill_client(struct iceadmin *iceadmin, unsigned int client_id)
 	}
 	close(sock);
 
-	ret = _iceadmin_get_xml_reply(buf, bufsize, static_buf, sizeof(static_buf));
+	ret = _iceadmin_get_xml_reply(buf, bufsize, static_buf,
+				      sizeof(static_buf));
 	xfree(buf);
 
 	switch (ret) {
@@ -841,7 +948,8 @@ iceadmin_cmd_update_metadata(struct iceadmin *iceadmin, const char *metadata)
 	}
 	close(sock);
 
-	ret = _iceadmin_get_xml_reply(buf, bufsize, static_buf, sizeof(static_buf));
+	ret = _iceadmin_get_xml_reply(buf, bufsize, static_buf,
+				      sizeof(static_buf));
 	xfree(buf);
 
 	switch (ret) {
@@ -930,7 +1038,203 @@ iceadmin_cmd_update_artist_title(struct iceadmin *iceadmin,
 	}
 	close(sock);
 
+	ret = _iceadmin_get_xml_reply(buf, bufsize, static_buf,
+				      sizeof(static_buf));
+	xfree(buf);
+
+	switch (ret) {
+	case 1:
+		/* Okay */
+		break;
+	case 0:
+		_set_error(iceadmin, 0, 0, "[%s]:%s: %s",
+			   iceadmin->hostname, iceadmin->service,
+			   static_buf);
+		return (ICEADMIN_FAILURE);
+	default:
+		_set_error(iceadmin, 0, 0, "[%s]:%s: Bad XML reply",
+			   iceadmin->hostname, iceadmin->service);
+		return (ICEADMIN_ERROR);
+	}
+
+	return (ICEADMIN_SUCCESS);
+}
+
+int
+iceadmin_cmd_auth_adduser(struct iceadmin *iceadmin, const char *username,
+			  const char *password)
+{
+	char		*buf, *auth;
+	size_t		 bufsize;
+	int		 sock;
+	char		 static_buf[BUFSIZ];
+	unsigned int	 httpret;
+	int		 ret;
+	char		*enc_mount, *enc_user, *enc_pass;
+
+	if (iceadmin == NULL || username == NULL || password == NULL)
+		return (ICEADMIN_ABUSE);
+	if (iceadmin->initialized != 1)
+		return (ICEADMIN_BADHANDLE);
+	if (iceadmin->mountpoint[0] == '\0')
+		return (ICEADMIN_ERROR);
+
+	if (_iceadmin_connect(iceadmin, &sock) != ICEADMIN_SUCCESS)
+		return (ICEADMIN_ERROR);
+
+	enc_mount = _iceadmin_url_encode(iceadmin->mountpoint);
+	enc_user = _iceadmin_url_encode(username);
+	enc_pass = _iceadmin_url_encode(password);
+	auth = _iceadmin_auth_basic_string(iceadmin->username,
+					   iceadmin->password);
+	ret = snprintf(static_buf, sizeof(static_buf), "GET %smount=%s&username=%s&password=%s HTTP/1.0\r\nUser-Agent: %s\r\n%s\r\n",
+		       PFX_AUTH_ADDUSER, enc_mount, enc_user, enc_pass,
+		       _iceadmin_useragent, auth);
+	if (ret < 0 || ret >= (int)sizeof(static_buf)) {
+		_set_error(iceadmin, 0, 0, "Bad request -- too long");
+		xfree(auth);
+		xfree(enc_pass);
+		xfree(enc_user);
+		xfree(enc_mount);
+		return (ICEADMIN_ERROR);
+	}
+	xfree(auth);
+	xfree(enc_pass);
+	xfree(enc_user);
+	xfree(enc_mount);
+
+	if (write(sock, static_buf, strlen(static_buf)) == -1) {
+		_set_error(iceadmin, 0, errno, "write: [%s]:%s",
+			   iceadmin->hostname, iceadmin->service);
+		close(sock);
+		return (ICEADMIN_ERROR);
+	}
+
+	httpret = 0;
+	if (_iceadmin_read_http_reply(iceadmin, sock, &httpret)
+	    != ICEADMIN_SUCCESS) {
+		close(sock);
+		switch (httpret) {
+		case 400:
+			_set_error(iceadmin, 0, 0, "[%s]:%s: Mountpoint '%s' not found",
+				   iceadmin->hostname, iceadmin->service,
+				   iceadmin->mountpoint);
+			break;
+		case 404:
+			_set_error(iceadmin, 0, 0, "[%s]:%s: No auth facility configured for mountpoint '%s'",
+				   iceadmin->hostname, iceadmin->service,
+				   iceadmin->mountpoint);
+			break;
+		default:
+			break;
+		}
+		return (ICEADMIN_ERROR);
+	}
+
+	if (_iceadmin_read_xml_data(iceadmin, sock, &buf, &bufsize)
+	    != ICEADMIN_SUCCESS) {
+		close(sock);
+		return (ICEADMIN_ERROR);
+	}
+	close(sock);
+
 	ret = _iceadmin_get_xml_reply(buf, bufsize, static_buf, sizeof(static_buf));
+	xfree(buf);
+
+	switch (ret) {
+	case 1:
+		/* Okay */
+		break;
+	case 0:
+		_set_error(iceadmin, 0, 0, "[%s]:%s: %s",
+			   iceadmin->hostname, iceadmin->service,
+			   static_buf);
+		return (ICEADMIN_FAILURE);
+	default:
+		_set_error(iceadmin, 0, 0, "[%s]:%s: Bad XML reply",
+			   iceadmin->hostname, iceadmin->service);
+		return (ICEADMIN_ERROR);
+	}
+
+	return (ICEADMIN_SUCCESS);
+}
+
+int
+iceadmin_cmd_auth_deluser(struct iceadmin *iceadmin, const char *username)
+{
+	char		*buf, *auth;
+	size_t		 bufsize;
+	int		 sock;
+	char		 static_buf[BUFSIZ];
+	unsigned int	 httpret;
+	int		 ret;
+	char		*enc_mount, *enc_user;
+
+	if (iceadmin == NULL || username == NULL)
+		return (ICEADMIN_ABUSE);
+	if (iceadmin->initialized != 1)
+		return (ICEADMIN_BADHANDLE);
+	if (iceadmin->mountpoint[0] == '\0')
+		return (ICEADMIN_ERROR);
+
+	if (_iceadmin_connect(iceadmin, &sock) != ICEADMIN_SUCCESS)
+		return (ICEADMIN_ERROR);
+
+	enc_mount = _iceadmin_url_encode(iceadmin->mountpoint);
+	enc_user = _iceadmin_url_encode(username);
+	auth = _iceadmin_auth_basic_string(iceadmin->username,
+					   iceadmin->password);
+	ret = snprintf(static_buf, sizeof(static_buf), "GET %smount=%s&username=%s HTTP/1.0\r\nUser-Agent: %s\r\n%s\r\n",
+		       PFX_AUTH_DELUSER, enc_mount, enc_user,
+		       _iceadmin_useragent, auth);
+	if (ret < 0 || ret >= (int)sizeof(static_buf)) {
+		_set_error(iceadmin, 0, 0, "Bad request -- too long");
+		xfree(auth);
+		xfree(enc_user);
+		xfree(enc_mount);
+		return (ICEADMIN_ERROR);
+	}
+	xfree(auth);
+	xfree(enc_user);
+	xfree(enc_mount);
+
+	if (write(sock, static_buf, strlen(static_buf)) == -1) {
+		_set_error(iceadmin, 0, errno, "write: [%s]:%s",
+			   iceadmin->hostname, iceadmin->service);
+		close(sock);
+		return (ICEADMIN_ERROR);
+	}
+
+	httpret = 0;
+	if (_iceadmin_read_http_reply(iceadmin, sock, &httpret)
+	    != ICEADMIN_SUCCESS) {
+		close(sock);
+		switch (httpret) {
+		case 400:
+			_set_error(iceadmin, 0, 0, "[%s]:%s: Mountpoint '%s' not found",
+				   iceadmin->hostname, iceadmin->service,
+				   iceadmin->mountpoint);
+			break;
+		case 404:
+			_set_error(iceadmin, 0, 0, "[%s]:%s: No auth facility configured for mountpoint '%s'",
+				   iceadmin->hostname, iceadmin->service,
+				   iceadmin->mountpoint);
+			break;
+		default:
+			break;
+		}
+		return (ICEADMIN_ERROR);
+	}
+
+	if (_iceadmin_read_xml_data(iceadmin, sock, &buf, &bufsize)
+	    != ICEADMIN_SUCCESS) {
+		close(sock);
+		return (ICEADMIN_ERROR);
+	}
+	close(sock);
+
+	ret = _iceadmin_get_xml_reply(buf, bufsize, static_buf,
+				      sizeof(static_buf));
 	xfree(buf);
 
 	switch (ret) {

@@ -19,6 +19,12 @@
 #define PFX_KILL_CLIENT 	"/admin/killclient?"
 /* Args: mount= */
 #define PFX_KILL_SOURCE 	"/admin/killsource?"
+/* Args: mount= */
+#define PFX_AUTH_LISTUSERS	"/admin/manageauth?"
+/* Args: mount=, username=, password= */
+#define PFX_AUTH_ADDUSER	"/admin/manageauth?action=add&"
+/* Args: mount=, username= */
+#define PFX_AUTH_DELUSER	"/admin/manageauth?action=delete&"
 
 #ifndef BUFSIZ
 # define BUFSIZ 		1024

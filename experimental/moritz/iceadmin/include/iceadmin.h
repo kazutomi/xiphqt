@@ -51,7 +51,7 @@ int	iceadmin_free_c(void ** /* buffer allocated by iceadmin */);
 /*
  * Commands that work without a mountpoint.
  * A buffer is allocated and its size stored. The buffer needs to be freed by
- * the caller.
+ * the caller with iceadmin_free().
  */
 int	iceadmin_cmd_get_stats(iceadmin_t /* handle */,
 			       char ** /* buffer */,
@@ -69,7 +69,7 @@ int	iceadmin_cmd_list_xmlmounts(iceadmin_t /* handle */,
 /*
  * Commands that require a mountpoint.
  * A buffer is allocated and its size stored. The buffer needs to be freed by
- * the caller.
+ * the caller with iceadmin_free().
  */
 int	iceadmin_cmd_list_clients(iceadmin_t /* handle */,
 				  char ** /* buffer */,
@@ -77,6 +77,12 @@ int	iceadmin_cmd_list_clients(iceadmin_t /* handle */,
 int	iceadmin_cmd_list_xmlclients(iceadmin_t /* handle */,
 				     char ** /* buffer */,
 				     size_t * /* buffer size */);
+int	iceadmin_cmd_auth_list_users(iceadmin_t /* handle */,
+				     char ** /* buffer */,
+				     size_t * /* buffer size */);
+int	iceadmin_cmd_auth_list_xmlusers(iceadmin_t /* handle */,
+					char ** /* buffer */,
+					size_t * /* buffer size */);
 
 /*
  * Miscellaneous commands that work on a mountpoint.
@@ -93,6 +99,11 @@ int	iceadmin_cmd_update_metadata(iceadmin_t /* handle */,
 int	iceadmin_cmd_update_artist_title(iceadmin_t /* handle */,
 					 const char * /* artist */,
 					 const char * /* title */);
+int	iceadmin_cmd_auth_adduser(iceadmin_t /* handle */,
+				  const char * /* username */,
+				  const char * /* password */);
+int	iceadmin_cmd_auth_deluser(iceadmin_t /* handle */,
+				  const char * /* username */);
 __END_DECLS
 
 #endif /* __ICEADMIN_H__ */

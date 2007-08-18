@@ -68,12 +68,6 @@ dnl MISC SYSTEM CHARACTERISTICS
 
 AC_C_CONST
 AC_TYPE_SIZE_T
-AC_CHECK_MEMBER(struct sockaddr.sa_len,
-	AC_DEFINE(HAVE_SOCKADDR_SA_LEN, 1,
-		[Define whether we have struct sockaddr.sa_len]), ,
-		[ #include <sys/types.h>
-		  #include <sys/socket.h> ]
-)
 
 
 dnl USEFUL HEADERS
