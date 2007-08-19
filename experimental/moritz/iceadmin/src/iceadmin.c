@@ -3,31 +3,63 @@
 #endif
 
 #include <stdio.h>
+#include <string.h>
 
 #include <iceadmin.h>
-#include <xalloc.h>
+
+#include "cfg.h"
+#include "xalloc.h"
+
+#ifdef HAVE___PROGNAME
+extern char		*__progname;
+#else
+char			*__progname;
+#endif /* HAVE___PROGNAME */
 
 void	init_self(void);
 int	shutdown_self(int);
+char *  get_progname(const char *);
 
 void
 init_self(void)
 {
 	xalloc_initialize_debug(2, stderr);
 	iceadmin_initialize();
+	cfg_initialize();
 }
 
 int
 shutdown_self(int ret)
 {
+	cfg_shutdown();
 	iceadmin_shutdown();
 	xalloc_shutdown();
 
 	return (ret);
 }
 
+char *
+get_progname(const char *argv0)
+{
+#ifdef HAVE___PROGNAME
+	return (strdup(__progname));
+#else
+	char	*p;
+
+	if (argv0 == NULL)
+		return ((char *)"iceadmin");
+	p = strrchr(argv0, PATH_SEPARATOR);
+	if (p == NULL)
+		p = (char *)argv0;
+	else
+		p++;
+
+	return (strdup(p));
+#endif /* HAVE___PROGNAME */
+}
+
 int
-main(void)
+main(int argc, char *argv[])
 {
 	iceadmin_t	 iceadmin;
 	char		 errbuf[256];
@@ -35,81 +67,12 @@ main(void)
 	size_t		 bufsize;
 	int		 ret;
 
+	__progname = get_progname(argv[0]);
+
 	init_self();
 
-	if (iceadmin_new(&iceadmin, "/stream.ogg", "example.domain", "8000", "admin", "hackme") != ICEADMIN_SUCCESS) {
-		iceadmin_get_error(iceadmin, errbuf, sizeof(errbuf));
-		fprintf(stderr, "%s", errbuf);
-		iceadmin_delete(iceadmin);
-		return (shutdown_self(1));
-	}
-
-	if ((ret = iceadmin_cmd_get_stats(iceadmin, &buf, &bufsize)) != ICEADMIN_SUCCESS) {
-		iceadmin_get_error(iceadmin, errbuf, sizeof(errbuf));
-		fprintf(stderr, "Get status: %s", errbuf);
-		if (ret != ICEADMIN_FAILURE) {
-			iceadmin_delete(iceadmin);
-			return (shutdown_self(1));
-		}
-	}
-
-	printf("%s\n", buf);
-	iceadmin_free(buf);
-
-	if ((ret = iceadmin_cmd_list_mounts(iceadmin, &buf, &bufsize)) != ICEADMIN_SUCCESS) {
-		iceadmin_get_error(iceadmin, errbuf, sizeof(errbuf));
-		fprintf(stderr, "List mounts: %s", errbuf);
-		if (ret != ICEADMIN_FAILURE) {
-			iceadmin_delete(iceadmin);
-			return (shutdown_self(1));
-		}
-	}
-
-	printf("%s\n", buf);
-	iceadmin_free(buf);
-
-	if ((ret = iceadmin_cmd_list_clients(iceadmin, &buf, &bufsize)) != ICEADMIN_SUCCESS) {
-		iceadmin_get_error(iceadmin, errbuf, sizeof(errbuf));
-		fprintf(stderr, "List clients: %s", errbuf);
-		if (ret != ICEADMIN_FAILURE) {
-			iceadmin_delete(iceadmin);
-			return (shutdown_self(1));
-		}
-	}
-
-	printf("%s\n", buf);
-	iceadmin_free(buf);
-
-	/*
-	if ((ret = iceadmin_cmd_kill_source(iceadmin)) != ICEADMIN_SUCCESS) {
-		iceadmin_get_error(iceadmin, errbuf, sizeof(errbuf));
-		fprintf(stderr, "Kill source: %s", errbuf);
-		if (ret != ICEADMIN_FAILURE) {
-			iceadmin_delete(iceadmin);
-			return (shutdown_self(1));
-		}
-	}
-	*/
-
-	if ((ret = iceadmin_cmd_kill_client(iceadmin, 354)) != ICEADMIN_SUCCESS) {
-		iceadmin_get_error(iceadmin, errbuf, sizeof(errbuf));
-		fprintf(stderr, "Kill client: %s", errbuf);
-		if (ret != ICEADMIN_FAILURE) {
-			iceadmin_delete(iceadmin);
-			return (shutdown_self(1));
-		}
-	}
-
-	if ((ret = iceadmin_cmd_update_metadata(iceadmin, "Yay! Test!?!?!")) != ICEADMIN_SUCCESS) {
-		iceadmin_get_error(iceadmin, errbuf, sizeof(errbuf));
-		fprintf(stderr, "Update metadata: %s", errbuf);
-		if (ret != ICEADMIN_FAILURE) {
-			iceadmin_delete(iceadmin);
-			return (shutdown_self(1));
-		}
-	}
-
-	iceadmin_delete(iceadmin);
+	if ((ret = cfg_parse_cmdline(argc, argv)) != CONFIG_OKAY)
+		return (shutdown_self(ret));
 
 	return (shutdown_self(0));
 }

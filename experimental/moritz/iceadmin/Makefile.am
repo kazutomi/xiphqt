@@ -1,6 +1,6 @@
 AUTOMAKE_OPTIONS = 1.9 foreign
 
-SUBDIRS =	compat doc include lib src
+SUBDIRS =	compat doc examples include lib src
 
 dist_doc_DATA = COPYING NEWS README
 

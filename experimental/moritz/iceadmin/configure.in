@@ -29,6 +29,16 @@ AC_DEFINE([LIBICEADMIN_MICRO], iceadmin_micro, [Iceadmin library patch version])
 
 dnl SETUP
 
+EXAMPLES_DIR="\$(datadir)/examples/${PACKAGE_TARNAME}"
+AC_ARG_ENABLE(examplesdir,
+	AS_HELP_STRING([--enable-examplesdir=DIR],
+		[example configuration files installation directory (default: DATADIR/examples/iceadmin)]),
+[case "$enableval" in
+	yes) ;;
+	no) AC_MSG_ERROR([Must have an example configuration files install dir.]) ;;
+	*) EXAMPLES_DIR="$enableval" ;;
+esac], [])
+
 AC_CANONICAL_HOST
 
 if test -z "$GCC"; then
@@ -166,6 +176,7 @@ AC_SUBST(ICEADMIN_VERSION)
 AC_SUBST(ICEADMIN_REQUIRES)
 
 AC_SUBST(LIBTOOL_DEPS)
+AC_SUBST(EXAMPLES_DIR)
 AC_SUBST(XALLOC_CPPFLAGS)
 AC_SUBST(COMPAT_INCLUDES)
 AC_SUBST(LIBICEADMIN_SO_MAJOR)
@@ -178,6 +189,7 @@ AC_CONFIG_FILES(Makefile \
 		compat/Makefile \
 		compat/sys/Makefile \
 		doc/Makefile \
+		examples/Makefile \
 		include/Makefile \
 		lib/Makefile \
 		src/Makefile \
