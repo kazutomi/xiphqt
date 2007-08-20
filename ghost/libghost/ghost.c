@@ -216,6 +216,16 @@ void ghost_encode(GhostEncState *st, float *pcm)
       /*for (i=0;i<st->length;i++)
       y[i] *= st->synthesis_window[i];*/
 
+#if 0
+      float z[st->length];
+      for (i=0;i<st->length;i++)
+         z[i] = x[i]-y[i];
+      ceft_encode(st->ceft, z, z);
+      for (i=0;i<st->length;i++)
+         y[i] = y[i]+z[i];
+      
+#endif
+
       for (i = 0;i < st->new_noise-st->noise_buf+st->overlap; i++)
       {
          st->noise_buf[i] = st->noise_buf[i+st->advance];
@@ -295,6 +305,7 @@ void ghost_encode(GhostEncState *st, float *pcm)
          printf ("\n");*/
          exit(1);
       }
+#if 1
       float noise[st->advance];
       //for (i=0;i<MASK_LPC_ORDER;i++)
       //   awk1[i] = 0;
@@ -312,9 +323,6 @@ void ghost_encode(GhostEncState *st, float *pcm)
             noise[i] = ener*sqrt(12.)*((((float)(rand()))/RAND_MAX)-.5);
       }
       
-#if 0
-      ceft_encode(st->ceft, noise, noise);
-#else
       /*for (i=0;i<st->advance;i++)
          printf ("%f\n", noise[i]);
       printf ("\n");*/
