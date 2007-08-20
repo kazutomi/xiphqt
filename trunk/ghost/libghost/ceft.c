@@ -23,8 +23,34 @@
 #include "filterbank.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
+
 #include "fftwrap.h"
 
+/*
+0
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10 11
+12 13
+14 15
+16 17 18 19
+20 21 22 23
+24 25 26 27
+28 29 30 31 32 33
+34 35 36 37 38 39 49 41
+42 43 44 45 46 47 48 49
+50 .. 63   (14)
+64 .. 83   (20)
+84 .. 127  (42)
+*/
 #define BARK_BANDS 20
 
 struct CEFTState_ {
@@ -57,6 +83,8 @@ void ceft_encode(CEFTState *st, float *in, float *out)
 
    filterbank_compute_bank(st->bank, Xps, bark);
    filterbank_compute_psd(st->bank, bark, Xps);
+   for(i=0;i<st->length>>1;i++)
+      Xps[i] = sqrt(Xps[i]);
    X[0] /= Xps[0];
    for (i=1;i<st->length>>1;i++)
    {
@@ -64,12 +92,30 @@ void ceft_encode(CEFTState *st, float *in, float *out)
       X[2*i] /= Xps[i];
    }
    X[st->length-1] /= Xps[(st->length>>1)-1];
-   /*
-   for(i=0;i<st->length;i++)
+   
+   /*for(i=0;i<st->length;i++)
       printf ("%f ", X[i]);
    printf ("\n");
-   */
-   X[0] *= Xps[0];
+*/
+   
+   for(i=0;i<st->length;i++)
+   {
+      float q = 4;
+      if (i<16)
+         q = 8;
+      else if (i<32)
+         q = 4;
+      else if (i<48)
+         q = 2;
+      else
+         q = 1;
+      q=1;
+      int sq = floor(.5+q*X[i]);
+      //printf ("%d ", sq);
+      X[i] = (1.f/q)*sq;
+   }
+   //printf ("\n");
+   X[0]  *= Xps[0];
    for (i=1;i<st->length>>1;i++)
    {
       X[2*i-1] *= Xps[i];
