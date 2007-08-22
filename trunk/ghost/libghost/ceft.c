@@ -27,6 +27,111 @@
 
 #include "fftwrap.h"
 
+float dist(float *a, float *b, int N)
+{
+   float d = 0;
+   int i;
+   for (i=0;i<N;i++)
+   {
+      d += (a[i]-b[i])*(a[i]-b[i]);
+   }
+   return d;
+}
+
+/* First attempt at a near-uniform algebraic quantiser -- failed */
+void alg_quant_fail1(float *x, int N, int K)
+{
+   int i, j, k;
+   int level;
+   float S[N][N];
+   float NN[N][N];
+   float D[N];
+   for (i=0;i<N;i++)
+   {
+      for (j=0;j<N;j++)
+         S[i][j] = 0;
+      if (x[i]>0)
+         S[i][i] = 1;
+      else
+         S[i][i] = -1;
+   }
+   for (i=0;i<N;i++)
+   {
+      x[i] = x[i]/sqrt(N);
+   }
+   
+   for (level = 0;level < K; level++)
+   {
+
+      for (j=0;j<N;j++)
+         for(k=0;k<N;k++)
+            NN[j][k] = -100;
+
+      for (j=0;j<N;j++)
+         D[j] = 1e5;
+
+      for (i=0;i<N;i++)
+      {
+         for (j=0;j<=i;j++)
+         {
+            float E=0;
+            float tmp[N];
+            //printf("ij = %d %d (%f %f %f %f)\n", i, j, S[0][0], S[1][0], S[0][1], S[1][1]);
+            for (k=0;k<N;k++)
+            {
+               //printf("%f %f %d %d %d\n", S[i][k], S[j][k], i, j, k);
+               tmp[k] = (S[i][k]+S[j][k]);
+               E += tmp[k]*tmp[k];
+            }
+            //printf("%d %d ", i, j);
+            //for (k=0;k<N;k++)
+            //   printf("%f ", tmp[k]);
+            //printf("%f\n", E);   
+            E = 1.f/sqrt(E);
+            for (k=0;k<N;k++)
+               tmp[k] *= E;
+            float d = dist(x, tmp, N);
+            //printf("%d %d ", i, j);
+            //for (k=0;k<N;k++)
+            //   printf("%f ", tmp[k]);
+            //printf("%f\n", d);   
+            if (d<D[N-1])
+            {
+               int id = N-1;
+               while (id>0 && d<D[id-1])
+                  id--;
+               //printf ("id = %d (%f < %f)\n", id, d, D[id]);
+               int m;
+               for (m=N-1;m>id;m--)
+               {
+                  for (k=0;k<N;k++)
+                  {
+                     D[m] = D[m-1];
+                     NN[m][k] = NN[m-1][k];
+                  }
+               }
+               for (k=0;k<N;k++)
+               {
+                  NN[id][k] = tmp[k];
+                  D[id] = d;
+               }
+            }
+            //printf ("\n");
+         }
+      }
+      for (j=0;j<N;j++)
+         for(k=0;k<N;k++)
+            S[j][k] = NN[j][k];
+      
+   }
+   
+   for (i=0;i<N;i++)
+   {
+      x[i] = S[0][i]*sqrt(N);
+   }
+}
+
+
 /*
 0
 1
