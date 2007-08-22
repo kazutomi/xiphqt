@@ -131,6 +131,64 @@ void alg_quant_fail1(float *x, int N, int K)
    }
 }
 
+void alg_quant2(float *x, int N, int K)
+{
+   int pulses[N];
+   float sign[N];
+   float y[N];
+   int i,j;
+   
+   float P = sqrt((1.f*N)/K);
+   for (i=0;i<N;i++)
+      pulses[i] = 0;
+   for (i=0;i<N;i++)
+      sign[i] = 0;
+
+   for (i=0;i<N;i++)
+      y[i] = 0;
+   
+   for (i=0;i<K;i++)
+   {
+      int best_id=0;
+      float max_val=-1e10;
+      float p;
+      for (j=0;j<N;j++)
+      {
+         float E = 0;
+         if (pulses[j])
+            p = P*sign[j]*(sqrt(pulses[j]+1)-sqrt(pulses[j]));
+         else if (x[j]>0)
+            p=P;
+         else
+            p=-P;
+         E = x[j]*x[j] - (x[j]-p)*(x[j]-p);
+         if (E>max_val)
+         {
+            max_val = E;
+            best_id = j;
+         }
+      }
+      
+      if (pulses[best_id])
+         p = P*sign[best_id]*(sqrt(pulses[best_id]+1)-sqrt(pulses[best_id]));
+      else if (x[best_id]>0)
+         p=P;
+      else
+         p=-P;
+      y[best_id] += p;
+      x[best_id] -= p;
+      pulses[best_id]++;
+      if (p>0)
+         sign[best_id]=1;
+      else
+         sign[best_id]=-1;
+   }
+   
+   for (i=0;i<N;i++)
+      x[i] = y[i];
+   
+}
+
 
 /*
 0
@@ -230,6 +288,43 @@ void denormalise_bank(float *X, float *bank)
    X[255] = 0;
 }
 
+void quant_bank(float *X)
+{
+   int i;
+   float q=8;
+   X[0] = (1.f/q)*floor(.5+q*X[0]);
+   for (i=1;i<NBANDS;i++)
+   {
+      int j;
+      for (j=qbank[i];j<qbank[i+1];j++)
+      {
+         X[j*2-1] = (1.f/q)*floor(.5+q*X[j*2-1]);
+         X[j*2] = (1.f/q)*floor(.5+q*X[j*2]);
+      }
+   }
+   //FIXME: Kludge
+   X[255] = 0;
+}
+
+void quant_bank2(float *X)
+{
+   int i;
+   float q=8;
+   X[0] = (1.f/q)*floor(.5+q*X[0]);
+   for (i=1;i<NBANDS;i++)
+   {
+      int j;
+      alg_quant2(X+qbank[i]*2-1, 2*(qbank[i+1]-qbank[i]), 1);
+      /*for (j=qbank[i];j<qbank[i+1];j++)
+      {
+         X[j*2-1] = (1.f/q)*floor(.5+q*X[j*2-1]);
+         X[j*2] = (1.f/q)*floor(.5+q*X[j*2]);
+      }*/
+   }
+   //FIXME: Kludge
+   X[255] = 0;
+}
+
 #define BARK_BANDS 20
 
 struct CEFTState_ {
@@ -249,7 +344,7 @@ CEFTState *ceft_init(int len)
 
 void ceft_encode(CEFTState *st, float *in, float *out)
 {
-   float bark[BARK_BANDS];
+   //float bark[BARK_BANDS];
    float Xps[st->length>>1];
    float X[st->length];
    int i;
@@ -284,6 +379,9 @@ void ceft_encode(CEFTState *st, float *in, float *out)
    printf ("\n");
 */
    
+#if 1
+   quant_bank2(X);
+#else
    for(i=0;i<st->length;i++)
    {
       float q = 4;
@@ -303,6 +401,8 @@ void ceft_encode(CEFTState *st, float *in, float *out)
       X[i] = (1.f/q)*(sq);
    }
    printf ("\n");
+#endif
+
 #if 0
    X[0]  *= Xps[0];
    for (i=1;i<st->length>>1;i++)
