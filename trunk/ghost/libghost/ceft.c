@@ -131,6 +131,7 @@ void alg_quant_fail1(float *x, int N, int K)
    }
 }
 
+/* Unit-energy pulse codebook */
 void alg_quant2(float *x, int N, int K)
 {
    int pulses[N];
@@ -186,6 +187,55 @@ void alg_quant2(float *x, int N, int K)
    
    for (i=0;i<N;i++)
       x[i] = y[i];
+   
+}
+
+/* Unit-amplitude pulse codebook */
+void alg_quant3(float *x, int N, int K)
+{
+   float y[N];
+   int i,j;
+   float xy = 0;
+   float yy = 0;
+   float E;
+   for (i=0;i<N;i++)
+      y[i] = 0;
+   
+   for (i=0;i<K;i++)
+   {
+      int best_id=0;
+      float max_val=-1e10;
+      float best_xy=0, best_yy=0;
+      for (j=0;j<N;j++)
+      {
+         float tmp_xy, tmp_yy;
+         float score;
+         tmp_xy = xy + fabs(x[j]);
+         tmp_yy = yy + 2*fabs(y[j]) + 1;
+         score = tmp_xy*tmp_xy/tmp_yy;
+         if (score>max_val)
+         {
+            max_val = score;
+            best_id = j;
+            best_xy = tmp_xy;
+            best_yy = tmp_yy;
+         }
+      }
+      
+      xy = best_xy;
+      yy = best_yy;
+      if (x[best_id]>0)
+         y[best_id] += 1;
+      else
+         y[best_id] -= 1;
+   }
+   
+   E = 0;
+   for (i=0;i<N;i++)
+      E += y[i]*y[i];
+   E = sqrt(E/N);
+   for (i=0;i<N;i++)
+      x[i] = E*y[i];
    
 }
 
@@ -309,19 +359,23 @@ void quant_bank(float *X)
 void quant_bank2(float *X)
 {
    int i;
-   float q=8;
+   float q=32;
    X[0] = (1.f/q)*floor(.5+q*X[0]);
    for (i=1;i<NBANDS;i++)
    {
       int j;
-      alg_quant2(X+qbank[i]*2-1, 2*(qbank[i+1]-qbank[i]), 1);
-      /*for (j=qbank[i];j<qbank[i+1];j++)
-      {
-         X[j*2-1] = (1.f/q)*floor(.5+q*X[j*2-1]);
-         X[j*2] = (1.f/q)*floor(.5+q*X[j*2]);
-      }*/
+      int q=0;
+      if (i < 5)
+         q = 8;
+      else if (i<10)
+         q = 4;
+      else if (i<15)
+         q = 4;
+      else
+         q = 4;
+      alg_quant3(X+qbank[i]*2-1, 2*(qbank[i+1]-qbank[i]), q);
    }
-   //FIXME: Kludge
+   //FIXME: This is a kludge, even though I don't think it really matters much
    X[255] = 0;
 }
 
