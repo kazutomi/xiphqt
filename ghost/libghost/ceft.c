@@ -267,6 +267,13 @@ void alg_quant3(float *x, int N, int K)
 
 #define NBANDS 23 /*or 22 if we discard the small last band*/
 int qbank[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 20, 24, 28, 36, 44, 52, 68, 84, 116, 128};
+#if 0
+#define PBANDS 6
+int pbank[] = {1, 5, 9, 20, 44, 84, 128};
+#else
+#define PBANDS 1
+int pbank[] = {1, 128};
+#endif
 
 #if 0
 void compute_bank(float *ps, float *bank)
@@ -360,7 +367,7 @@ void quant_bank2(float *X)
 {
    int i;
    float q=32;
-   X[0] = (1.f/q)*floor(.5+q*X[0]);
+   //X[0] = (1.f/q)*floor(.5+q*X[0]);
    for (i=1;i<NBANDS;i++)
    {
       int j;
@@ -373,9 +380,80 @@ void quant_bank2(float *X)
          q = 4;
       else
          q = 4;
+      //q = 1;
+      q/=2;
       alg_quant3(X+qbank[i]*2-1, 2*(qbank[i+1]-qbank[i]), q);
    }
    //FIXME: This is a kludge, even though I don't think it really matters much
+   X[255] = 0;
+}
+
+
+void pitch_quant_bank(float *X, float *P)
+{
+   int i;
+   for (i=0;i<PBANDS;i++)
+   {
+      float Sxy=0;
+      int j;
+      float gain;
+      for (j=pbank[i];j<pbank[i+1];j++)
+      {
+         Sxy += X[j*2-1]*P[j*2-1];
+         Sxy += X[j*2]*P[j*2];
+      }
+      gain = Sxy/(2*(pbank[i+1]-pbank[i]));
+      for (j=pbank[i];j<pbank[i+1];j++)
+      {
+         P[j*2-1] *= gain;
+         P[j*2] *= gain;
+      }
+      //printf ("%f ", gain);
+   }
+   P[255] = 0;
+   //printf ("\n");
+}
+
+void pitch_renormalise_bank(float *X, float *P)
+{
+   int i;
+   for (i=1;i<NBANDS;i++)
+   {
+      int j;
+      float Rpp=0;
+      float Rxp=0;
+      float Rxx=0;
+      float gain1, gain2;
+      for (j=qbank[i];j<qbank[i+1];j++)
+      {
+         Rxp += X[j*2-1]*P[j*2-1];
+         Rxp += X[j*2  ]*P[j*2  ];
+         Rpp += P[j*2-1]*P[j*2-1];
+         Rpp += P[j*2  ]*P[j*2  ];
+         Rxx += X[j*2-1]*X[j*2-1];
+         Rxx += X[j*2  ]*X[j*2  ];
+      }
+      Rxx *= .5/(qbank[i+1]-qbank[i]);
+      Rxp *= .5/(qbank[i+1]-qbank[i]);
+      Rpp *= .5/(qbank[i+1]-qbank[i]);
+      gain1 = sqrt(Rxp*Rxp + 1 - Rpp)-Rxp;
+      //gain2 = -sqrt(Rxp*Rxp + 1 - Rpp)-Rxp;
+      //if (fabs(gain2)<fabs(gain1))
+      //   gain1 = gain2;
+      //printf ("%f ", Rxx, Rxp, Rpp, gain);
+      //printf ("%f ", gain1);
+      Rxx = 0;
+      for (j=qbank[i];j<qbank[i+1];j++)
+      {
+         X[j*2-1] = P[j*2-1]+gain1*X[j*2-1];
+         X[j*2  ] = P[j*2  ]+gain1*X[j*2  ];
+         Rxx += X[j*2-1]*X[j*2-1];
+         Rxx += X[j*2  ]*X[j*2  ];
+      }
+      //printf ("%f ", gain1);
+   }
+   //printf ("\n");
+   //FIXME: Kludge
    X[255] = 0;
 }
 
@@ -396,97 +474,60 @@ CEFTState *ceft_init(int len)
    return st;
 }
 
-void ceft_encode(CEFTState *st, float *in, float *out)
+void ceft_encode(CEFTState *st, float *in, float *out, float *pitch, float *window)
 {
    //float bark[BARK_BANDS];
-   float Xps[st->length>>1];
    float X[st->length];
+   float Xp[st->length];
    int i;
-
-   spx_fft_float(st->frame_fft, in, X);
-   
-   Xps[0] = .1+X[0]*X[0];
-   for (i=1;i<st->length>>1;i++)
-      Xps[i] = .1+X[2*i-1]*X[2*i-1] + X[2*i]*X[2*i];
-
-#if 1
    float bank[NBANDS];
+   float pitch_bank[NBANDS];
+   float p[st->length];
+   
+   for (i=0;i<st->length;i++)
+      p[i] = pitch[i]*window[i];
+   
+   spx_fft_float(st->frame_fft, in, X);
+   spx_fft_float(st->frame_fft, p, Xp);
+   
+   /* Bands for the input signal */
    compute_bank(X, bank);
    normalise_bank(X, bank);
-#else
-   filterbank_compute_bank(st->bank, Xps, bark);
-   filterbank_compute_psd(st->bank, bark, Xps);
    
-   for(i=0;i<st->length>>1;i++)
-      Xps[i] = sqrt(Xps[i]);
-   X[0] /= Xps[0];
-   for (i=1;i<st->length>>1;i++)
-   {
-      X[2*i-1] /= Xps[i];
-      X[2*i] /= Xps[i];
-   }
-   X[st->length-1] /= Xps[(st->length>>1)-1];
-#endif
+   /* Bands for the pitch signal */
+   compute_bank(Xp, pitch_bank);
+   normalise_bank(Xp, pitch_bank);
    
    /*for(i=0;i<st->length;i++)
       printf ("%f ", X[i]);
    printf ("\n");
-*/
+   */
+   pitch_quant_bank(X, Xp);
    
-#if 1
+   if (1) {
+      for (i=1;i<st->length;i++)
+         X[i] -= Xp[i];
+      float tmp[NBANDS];
+      compute_bank(X, tmp);
+      normalise_bank(X, tmp);
+      
+   }
+   //Quantise input
    quant_bank2(X);
-#else
-   for(i=0;i<st->length;i++)
-   {
-      float q = 4;
-      if (i<10)
-         q = 8;
-      else if (i<20)
-         q = 4;
-      else if (i<30)
-         q = 2;
-      else if (i<50)
-         q = 1;
-      else
-         q = .5;
-      //q=1;
-      int sq = floor(.5+q*X[i]);
-      printf ("%d ", sq);
-      X[i] = (1.f/q)*(sq);
-   }
-   printf ("\n");
-#endif
 
-#if 0
-   X[0]  *= Xps[0];
-   for (i=1;i<st->length>>1;i++)
-   {
-      X[2*i-1] *= Xps[i];
-      X[2*i] *= Xps[i];
-   }
-   X[st->length-1] *= Xps[(st->length>>1)-1];
-#else
+   //Renormalise the quantised signal back to unity
    float bank2[NBANDS];
    compute_bank(X, bank2);
    normalise_bank(X, bank2);
 
-   denormalise_bank(X, bank);
-#endif
-   
-   
-#if 0
-   for(i=0;i<BARK_BANDS;i++)
-   {
-      printf("%f ", bark[i]);
+   if (1) {
+      pitch_renormalise_bank(X, Xp);
    }
-   printf ("\n");
-#endif 
-   /*
-   for(i=0;i<st->length;i++)
-      printf ("%f ", X[i]);
-   printf ("\n");
-   */
-
+   
+   /* Denormalise back to real power */
+   denormalise_bank(X, bank);
+   
+   //Synthesis
    spx_ifft_float(st->frame_fft, X, out);
 
 }

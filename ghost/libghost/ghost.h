@@ -46,6 +46,7 @@ typedef struct {
    
    float *noise_buf;
    float *new_noise;
+   float *pitch_buf;
    //float *current_noise;
    
    int length;
