@@ -360,7 +360,7 @@
   achieve much greater compression of speech than Vorbis. Vorbis also tends to have a
   latency that is too high for telephony, a common use of speech codecs. Read the
   <a href="http://www.speech.cs.cmu.edu/comp.speech/FAQ3.html">Speech Coding and Compression
-  FAQ</a> for more details. Those looking for an pen-source, patent-free speech codec
+  FAQ</a> for more details. Those looking for an open-source, patent-free speech codec
   should take a look at <a href="http://www.speex.org/">Speex</a>.</p>
   </dd>
 </dl>
