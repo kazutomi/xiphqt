@@ -32,10 +32,10 @@
 #include "filterbank.h"
 
 #define PCM_BUF_SIZE 2048
+#define PITCH_BUF_SIZE 1024
 
 #define SINUSOIDS 30
 #define MASK_LPC_ORDER 10
-
 void fir_mem2(const spx_sig_t *x, const spx_coef_t *num, spx_sig_t *y, int N, int ord, spx_mem_t *mem)
 {
    int i,j;
@@ -93,7 +93,9 @@ GhostEncState *ghost_encoder_state_new(int sampling_rate)
    st->new_pcm = st->pcm_buf + PCM_BUF_SIZE - st->advance;
    
    st->noise_buf = calloc(PCM_BUF_SIZE,sizeof(float));
-   st->new_noise = st->noise_buf + PCM_BUF_SIZE/2 - st->length/2;
+   st->new_noise = st->noise_buf + PCM_BUF_SIZE - st->length;
+   
+   st->pitch_buf = calloc(PITCH_BUF_SIZE,sizeof(float));
    
    st->psy = vorbis_psy_init(44100, PCM_BUF_SIZE);
    
@@ -215,12 +217,39 @@ void ghost_encode(GhostEncState *st, float *pcm)
       printf ("\n");*/
       /*for (i=0;i<st->length;i++)
       y[i] *= st->synthesis_window[i];*/
-
 #if 0
+      float max_score=-1;
+      int pitch_index=0;
+      {
+         int lag, i;
+         for (lag=0;lag<1024-st->length;lag++)
+         {
+            float score;
+            float Sxx=1;
+            float Sxy=0, Syy=1;
+            for (i=0;i<st->length;i++)
+            {
+               Sxx += x[i]*x[i];
+               Sxy += x[i]*st->pitch_buf[i+lag];
+               Syy += st->pitch_buf[i+lag]*st->pitch_buf[i+lag];
+            }
+            score = sqrt(Sxy*Sxy/(Sxx*Syy));
+            if (Sxy<0)
+               score = 0;
+            if (score > max_score)
+            {
+               max_score = score;
+               pitch_index = lag;
+            }
+            //printf ("%f ", score);
+         }
+         //printf ("\n");
+      }
+      //printf ("%f %d ", max_score, pitch_index);
       float z[st->length];
       for (i=0;i<st->length;i++)
          z[i] = x[i]-y[i];
-      ceft_encode(st->ceft, z, z);
+      ceft_encode(st->ceft, z, z, st->pitch_buf+pitch_index, st->analysis_window);
       for (i=0;i<st->length;i++)
          y[i] = y[i]+z[i];
       
@@ -240,6 +269,11 @@ void ghost_encode(GhostEncState *st, float *pcm)
          st->new_noise[i] = x[i]-y[i];
       }
       
+      for (i=0;i<PITCH_BUF_SIZE-st->advance;i++)
+         st->pitch_buf[i] = st->pitch_buf[i+st->advance];
+      for (i=0;i<st->advance;i++)
+         st->pitch_buf[PITCH_BUF_SIZE+i-st->advance] = st->current_frame[i]-st->new_noise[i];
+               
       /*for (i=0;i<st->overlap;i++)
          pcm[i] = st->syn_memory[i]+y[i];
       for (i=st->overlap;i<st->advance;i++)
@@ -305,7 +339,7 @@ void ghost_encode(GhostEncState *st, float *pcm)
          printf ("\n");*/
          exit(1);
       }
-#if 1
+#if 0
       float noise[st->advance];
       //for (i=0;i<MASK_LPC_ORDER;i++)
       //   awk1[i] = 0;

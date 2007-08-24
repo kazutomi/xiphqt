@@ -21,5 +21,5 @@ typedef struct CEFTState_ CEFTState;
 
 CEFTState *ceft_init(int len);
 
-void ceft_encode(CEFTState *st, float *in, float *out);
+void ceft_encode(CEFTState *st, float *in, float *out, float *pitch, float *window);
 
