@@ -67,7 +67,7 @@ void find_pitch(float *x, float *gain, float *pitch, int start, int end, int len
 }
 
 
-void find_spectral_pitch(float *x, float *y, int lag, int len, int *pitch)
+void find_spectral_pitch(float *x, float *y, int lag, int len, int *pitch, float *curve)
 {
    //FIXME: Yuck!!!
    static void *fft;
@@ -90,8 +90,13 @@ void find_spectral_pitch(float *x, float *y, int lag, int len, int *pitch)
    X[0] = X[0]*Y[0];
    for (i=1;i<lag/2;i++)
    {
-      float n = 1.f/(1e3+sqrt((X[2*i-1]*X[2*i-1] + X[2*i  ]*X[2*i  ])*(Y[2*i-1]*Y[2*i-1] + Y[2*i  ]*Y[2*i  ])));
+      float n = 1.f/(1e1+sqrt((X[2*i-1]*X[2*i-1] + X[2*i  ]*X[2*i  ])*(Y[2*i-1]*Y[2*i-1] + Y[2*i  ]*Y[2*i  ])));
       //n = 1;
+      n = 1.f/sqrt(1+curve[i]);
+      if (i>10)
+         n *= .5;
+      if (i>20)
+         n *= .5;
       float tmp = X[2*i-1];
       X[2*i-1] = (X[2*i-1]*Y[2*i-1] + X[2*i  ]*Y[2*i  ])*n;
       X[2*i  ] = (- X[2*i  ]*Y[2*i-1] + tmp*Y[2*i  ])*n;

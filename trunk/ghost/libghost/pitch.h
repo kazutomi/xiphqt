@@ -27,6 +27,6 @@ float inner_prod(float *x, float *y, int len);
 
 void find_pitch(float *x, float *gain, float *pitch, int start, int end, int len);
 
-void find_spectral_pitch(float *x, float *y, int lag, int len, int *pitch);
+void find_spectral_pitch(float *x, float *y, int lag, int len, int *pitch, float *curve);
 
 #endif
