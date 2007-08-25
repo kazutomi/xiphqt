@@ -38,9 +38,9 @@ int main(int argc, char **argv)
 {
    GhostEncState *state;
    FILE *fin, *fout;
-   struct LiftingBasis bas;
-   float x[1200];
-   int i;
+   //struct LiftingBasis bas;
+   //float x[1200];
+   //int i;
    
    if (argc != 3)
    {

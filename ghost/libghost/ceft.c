@@ -240,31 +240,6 @@ void alg_quant3(float *x, int N, int K)
 }
 
 
-/*
-0
-1
-2
-3
-4
-5
-6
-7
-8
-9
-10 11
-12 13
-14 15
-16 17 18 19
-20 21 22 23
-24 25 26 27
-28 29 30 31 32 33
-34 35 36 37 38 39 49 41
-42 43 44 45 46 47 48 49
-50 .. 63   (14)
-64 .. 83   (20)
-84 .. 127  (42)
-*/
-
 #define NBANDS 23 /*or 22 if we discard the small last band*/
 int qbank[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 20, 24, 28, 36, 44, 52, 68, 84, 116, 128};
 #if 0
@@ -366,11 +341,8 @@ void quant_bank(float *X)
 void quant_bank2(float *X)
 {
    int i;
-   float q=32;
-   //X[0] = (1.f/q)*floor(.5+q*X[0]);
    for (i=1;i<NBANDS;i++)
    {
-      int j;
       int q=0;
       if (i < 5)
          q = 8;
@@ -423,7 +395,7 @@ void pitch_renormalise_bank(float *X, float *P)
       float Rpp=0;
       float Rxp=0;
       float Rxx=0;
-      float gain1, gain2;
+      float gain1;
       for (j=qbank[i];j<qbank[i+1];j++)
       {
          Rxp += X[j*2-1]*P[j*2-1];
