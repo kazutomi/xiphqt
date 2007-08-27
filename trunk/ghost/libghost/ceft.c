@@ -240,6 +240,91 @@ void alg_quant3(float *x, int N, int K)
 }
 
 
+void alg_quant4(float *x, int N, int K, float *p)
+{
+   float y[N];
+   int i,j;
+   float xy = 0;
+   float yy = 0;
+   float yp = 0;
+   float E;
+   float Rpp=0;
+   float gain=0;
+   for (j=0;j<N;j++)
+      Rpp += p[j]*p[j];
+   for (i=0;i<N;i++)
+      y[i] = 0;
+   
+   for (i=0;i<K;i++)
+   {
+      int best_id=0;
+      float max_val=-1e10;
+      float best_xy=0, best_yy=0, best_yp = 0;
+      for (j=0;j<N;j++)
+      {
+         float tmp_xy, tmp_yy, tmp_yp;
+         float score;
+         float g;
+         tmp_xy = xy + fabs(x[j]);
+         tmp_yy = yy + 2*fabs(y[j]) + 1;
+         if (x[j]>0)
+            tmp_yp = yp + p[j];
+         else
+            tmp_yp = yp - p[j];
+         g = (sqrt(tmp_yp*tmp_yp + tmp_yy - tmp_yy*Rpp) - tmp_yp)/tmp_yy;
+         //g = 1/sqrt(tmp_yy);
+         score = 2*g*tmp_xy - g*g*tmp_yy;
+         //score = tmp_xy*tmp_xy/tmp_yy;
+         if (score>max_val)
+         {
+            max_val = score;
+            best_id = j;
+            best_xy = tmp_xy;
+            best_yy = tmp_yy;
+            best_yp = tmp_yp;
+            gain = g;
+         }
+         if (0) {
+            float ny[N];
+            int k;
+            for (k=0;k<N;k++)
+               ny[k] = y[k];
+            if (x[j]>0)
+               ny[j] += 1;
+            else
+               ny[j] -= 1;
+            float E = 0;
+            for (k=0;k<N;k++)
+               E += (p[k]+g*ny[k])*(p[k]+g*ny[k]);
+            printf ("(%f %f %f) ", g, tmp_yp, E);
+         }
+      }
+      
+      xy = best_xy;
+      yy = best_yy;
+      yp = best_yp;
+      if (x[best_id]>0)
+         y[best_id] += 1;
+      else
+         y[best_id] -= 1;
+   }
+   if (0) {
+      int k;
+      float E = 0, Ex=0;
+      for (k=0;k<N;k++)
+         E += (p[k]+gain*y[k])*(p[k]+gain*y[k]);
+      for (k=0;k<N;k++)
+         Ex += (x[k]*x[k]);
+      printf ("** %f %f %f ", E, Ex, Rpp);
+   }
+
+   //printf ("\n");
+   for (i=0;i<N;i++)
+      x[i] = p[i]+gain*y[i];
+   
+}
+
+
 #define NBANDS 23 /*or 22 if we discard the small last band*/
 int qbank[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 20, 24, 28, 36, 44, 52, 68, 84, 116, 128};
 
@@ -270,7 +355,8 @@ void compute_bank(float *X, float *bank)
          bank[i] += X[j*2-1]*X[j*2-1];
          bank[i] += X[j*2]*X[j*2];
       }
-      bank[i] = sqrt(.5*bank[i]/(qbank[i+1]-qbank[i]));
+      //bank[i] = sqrt(.5*bank[i]/(qbank[i+1]-qbank[i]));
+      bank[i] = sqrt(bank[i]);
    }
    //FIXME: Kludge
    X[255] = 1;
@@ -352,6 +438,27 @@ void quant_bank2(float *X)
    X[255] = 0;
 }
 
+void quant_bank3(float *X, float *P)
+{
+   int i;
+   for (i=1;i<NBANDS;i++)
+   {
+      int q=0;
+      if (i < 5)
+         q = 8;
+      else if (i<10)
+         q = 4;
+      else if (i<15)
+         q = 4;
+      else
+         q = 4;
+      //q = 1;
+      q/=4;
+      alg_quant4(X+qbank[i]*2-1, 2*(qbank[i+1]-qbank[i]), q, P+qbank[i]*2-1);
+   }
+   //FIXME: This is a kludge, even though I don't think it really matters much
+   X[255] = 0;
+}
 
 void pitch_quant_bank(float *X, float *P)
 {
@@ -359,18 +466,21 @@ void pitch_quant_bank(float *X, float *P)
    for (i=0;i<PBANDS;i++)
    {
       float Sxy=0;
+      float Sxx = 0;
       int j;
       float gain;
       for (j=pbank[i];j<pbank[i+1];j++)
       {
          Sxy += X[j*2-1]*P[j*2-1];
          Sxy += X[j*2]*P[j*2];
+         Sxx += X[j*2-1]*X[j*2-1] + X[j*2]*X[j*2];
       }
-      gain = Sxy/(2*(pbank[i+1]-pbank[i]));
+      gain = Sxy/(1e-10+Sxx);
+      //gain = Sxy/(2*(pbank[i+1]-pbank[i]));
       //if (i<3)
       //gain *= 1+.02*gain;
-      if (gain > .95)
-         gain = .95;
+      if (gain > .9)
+         gain = .9;
       for (j=pbank[i];j<pbank[i+1];j++)
       {
          P[j*2-1] *= gain;
@@ -401,13 +511,20 @@ void pitch_renormalise_bank(float *X, float *P)
          Rxx += X[j*2-1]*X[j*2-1];
          Rxx += X[j*2  ]*X[j*2  ];
       }
-      Rxx *= .5/(qbank[i+1]-qbank[i]);
-      Rxp *= .5/(qbank[i+1]-qbank[i]);
-      Rpp *= .5/(qbank[i+1]-qbank[i]);
-      gain1 = sqrt(Rxp*Rxp + 1 - Rpp)-Rxp;
+      //Rxx *= .5/(qbank[i+1]-qbank[i]);
+      //Rxp *= .5/(qbank[i+1]-qbank[i]);
+      //Rpp *= .5/(qbank[i+1]-qbank[i]);
+      float arg = Rxp*Rxp + 1 - Rpp;
+      if (arg < 0)
+      {
+         printf ("arg: %f %f %f %f\n", arg, Rxp, Rpp, Rxx);
+         arg = 0;
+      }
+      gain1 = sqrt(arg)-Rxp;
       if (Rpp>.9999)
          Rpp = .9999;
-      gain1 = sqrt(1.-Rpp);
+      //gain1 = sqrt(1.-Rpp);
+      
       //gain2 = -sqrt(Rxp*Rxp + 1 - Rpp)-Rxp;
       //if (fabs(gain2)<fabs(gain1))
       //   gain1 = gain2;
@@ -508,12 +625,13 @@ void ceft_encode(CEFTState *st, float *in, float *out, float *pitch, float *wind
       for (i=1;i<st->length;i++)
          X[i] -= Xp[i];
       float tmp[NBANDS];
-      compute_bank(X, tmp);
-      normalise_bank(X, tmp);
+      //compute_bank(X, tmp);
+      //normalise_bank(X, tmp);
       
    }
    //Quantise input
-   quant_bank2(X);
+   quant_bank3(X, Xp);
+   //quant_bank2(X);
 
    //Renormalise the quantised signal back to unity
    float bank2[NBANDS];
@@ -521,7 +639,7 @@ void ceft_encode(CEFTState *st, float *in, float *out, float *pitch, float *wind
    normalise_bank(X, bank2);
 
    if (1) {
-      pitch_renormalise_bank(X, Xp);
+   //   pitch_renormalise_bank(X, Xp);
    }
    compute_bank(X, bank2);
    normalise_bank(X, bank2);
