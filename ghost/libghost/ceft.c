@@ -143,7 +143,6 @@ void alg_quant4(float *x, int N, int K, float *p)
    float xy = 0;
    float yy = 0;
    float yp = 0;
-   float E;
    float Rpp=0;
    float gain=0;
    for (j=0;j<N;j++)
@@ -221,8 +220,8 @@ void alg_quant4(float *x, int N, int K, float *p)
 }
 
 
-#define NBANDS 22 /*or 21 if we discard the small last band*/
-int qbank[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 20, 24, 28, 36, 44, 52, 68, 84, 116, 128};
+#define NBANDS 18 /*or 21 if we discard the small last band*/
+int qbank[] = {1, 2, 4, 6, 8, 10, 12, 14, 16, 20, 24, 28, 36, 44, 52, 68, 84, 116, 128};
 
 
 #if 1
@@ -322,8 +321,8 @@ void quant_bank2(float *X)
          q = 4;
       else
          q = 4;
-      //q = 1;
-      q/=2;
+      q = 1;
+      //q/=2;
       alg_quant3(X+qbank[i]*2-1, 2*(qbank[i+1]-qbank[i]), q);
    }
    //FIXME: This is a kludge, even though I don't think it really matters much
@@ -337,15 +336,15 @@ void quant_bank3(float *X, float *P)
    {
       int q=0;
       if (i < 5)
-         q = 8;
+         q = 3;
       else if (i<10)
-         q = 4;
+         q = 2;
       else if (i<15)
-         q = 4;
+         q = 2;
       else
-         q = 4;
+         q = 1;
       //q = 1;
-      q/=4;
+      //q/=4;
       alg_quant4(X+qbank[i]*2-1, 2*(qbank[i+1]-qbank[i]), q, P+qbank[i]*2-1);
    }
    //FIXME: This is a kludge, even though I don't think it really matters much
@@ -476,7 +475,7 @@ void ceft_encode(CEFTState *st, float *in, float *out, float *pitch, float *wind
       printf ("%f ", in[i]);
    printf ("\n");
 #endif
-                    
+
    spx_fft_float(st->frame_fft, in, X);
    spx_fft_float(st->frame_fft, p, Xp);
    
@@ -484,6 +483,10 @@ void ceft_encode(CEFTState *st, float *in, float *out, float *pitch, float *wind
    compute_bank(X, bank);
    normalise_bank(X, bank);
    
+   /*printf ("%f ", fabs(X[0]));
+   for (i=0;i<NBANDS;i++)
+      printf ("%f ", bank[i]);
+   printf ("\n");*/
    /* Bands for the pitch signal */
    compute_bank(Xp, pitch_bank);
    normalise_bank(Xp, pitch_bank);
