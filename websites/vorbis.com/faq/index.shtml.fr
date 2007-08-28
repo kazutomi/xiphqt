@@ -507,7 +507,7 @@ vorbis-tools) will generally not be accepted.</p>
   <dd><p>Cela a déjà été fait pour le décodeur.</p>
   <p><a href="http://www.xiph.org/ogg/vorbis/">Tremor</a> est une implémentation à
   virgule fixe du décodeur Vorbis qui peut être utilisée sur les puces des lecteurs
-  portables. Cependant, un <em>en</em>codeur à virugle flottante n'a pas encore été écrit.</p>
+  portables. Cependant, un <em>en</em>codeur à virugle fixe n'a pas encore été écrit.</p>
   </dd>
 </dl>
 
