@@ -9,8 +9,8 @@
 #define PFX_LIST_MOUNTS 	"/admin/listmounts"
 /* Args: mount= */
 #define PFX_LIST_CLIENTS	"/admin/listclients?"
-/* Args: mount=, (song= || artist=, title=) */
-#define PFX_UPD_METADATA	"/admin/metadata?mode=updinfo&"
+/* Args: (charset=), mount=, (song= || artist=, title=) */
+#define PFX_UPD_METADATA	"/admin/metadata?charset=UTF-8&mode=updinfo&"
 /* Args: mount=, fallback= */
 #define PFX_UPD_FALLBACK	"/admin/fallbacks?"
 /* Args: mount=, destination= */
