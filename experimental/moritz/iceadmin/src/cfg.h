@@ -1,7 +1,15 @@
 #ifndef __CFG_H__
 #define __CFG_H__
 
-#define DEFAULT_CONFIG_FILE	".iceadminrc"
+#ifndef SYSCONF_DIR
+# define SYSCONF_DIR		"/etc"
+#endif
+#ifndef CONFIG_FILENAME
+# define CONFIG_FILENAME 	"iceadmin.conf"
+#endif
+#ifndef CONFIG_FILENAME_HOME
+# define CONFIG_FILENAME_HOME	".iceadminrc"
+#endif
 
 #define CFG_KEY_HOSTNAME	"hostname"
 #define CFG_KEY_SERVICE 	"service"
@@ -22,10 +30,19 @@
 # define BUFSIZ 		1024
 #endif /* !BUFSIZ */
 
-void	cfg_initialize(void);
-void	cfg_shutdown(void);
+typedef struct server_pref *server_pref_t;
 
-int	cfg_parse_cmdline(int, char *[]);
-void	cfg_print_help(void);
+void		cfg_initialize(void);
+void		cfg_shutdown(void);
+
+int		cfg_parse_cmdopts(int *, char **[]);
+void		cfg_print_help(void);
+
+server_pref_t	cfg_get_server_pref(const char *);
+const char *	cfg_sp_hostname(server_pref_t);
+const char *	cfg_sp_service(server_pref_t);
+const char *	cfg_sp_username(server_pref_t);
+const char *	cfg_sp_password(server_pref_t);
+const char *	cfg_sp_default_mount(server_pref_t);
 
 #endif /* __CFG_H__ */

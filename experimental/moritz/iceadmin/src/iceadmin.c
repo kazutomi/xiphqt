@@ -66,13 +66,19 @@ main(int argc, char *argv[])
 	char		*buf;
 	size_t		 bufsize;
 	int		 ret;
+	extern int	 optind;
+	int		 i;
 
 	__progname = get_progname(argv[0]);
 
 	init_self();
 
-	if ((ret = cfg_parse_cmdline(argc, argv)) != CONFIG_OKAY)
+	if ((ret = cfg_parse_cmdopts(&argc, &argv)) != CONFIG_OKAY)
 		return (shutdown_self(ret));
+
+	for (i = 0; i < argc; i++)
+		printf("%s ", argv[i]);
+	printf("\n");
 
 	return (shutdown_self(0));
 }

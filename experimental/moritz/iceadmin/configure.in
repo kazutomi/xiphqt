@@ -41,19 +41,20 @@ esac], [])
 
 AC_CANONICAL_HOST
 
+XIPH_CPPFLAGS="-DSYSCONF_DIR=\"\\\"${sysconfdir}\\\"\""
 if test -z "$GCC"; then
 	case $host in 
 	*-irix*)
-		XIPH_CPPFLAGS="-fullwarn"
+		XIPH_CPPFLAGS="$XIPH_CPPFLAGS -fullwarn"
 		;;
 	*-solaris*)
-		XIPH_CPPFLAGS="-v"
+		XIPH_CPPFLAGS="$XIPH_CPPFLAGS -v"
 		;;
 	*)
 		;;
 	esac
 else
-	XIPH_CPPFLAGS="-fstrict-aliasing -Wall -W -ansi -pedantic -Wno-unused-parameter -Wwrite-strings -Wpointer-arith -Wsign-compare -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations"
+	XIPH_CPPFLAGS="$XIPH_CPPFLAGS -fstrict-aliasing -Wall -W -ansi -pedantic -Wno-unused-parameter -Wwrite-strings -Wpointer-arith -Wsign-compare -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations"
 fi
 
 XALLOC_CPPFLAGS=""
@@ -82,7 +83,7 @@ AC_TYPE_SIZE_T
 
 dnl USEFUL HEADERS
 
-AC_CHECK_HEADERS(sys/socket.h netdb.h)
+AC_CHECK_HEADERS(sys/socket.h sys/stat.h netdb.h)
 
 COMPAT_INCLUDES=""
 if test x"$ia_enable_debug" = "xyes"; then

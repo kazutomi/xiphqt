@@ -2,6 +2,12 @@
 # include "config.h"
 #endif
 
+#ifdef HAVE_SYS_TYPES_H
+# include <sys/types.h>
+#endif
+#ifdef HAVE_SYS_STAT_H
+# include <sys/stat.h>
+#endif
 #include <sys/tree.h>
 #include <errno.h>
 #include <limits.h>
@@ -52,15 +58,21 @@ static const char *optstring = "c:h";
 void
 _cfg_print_usage(void)
 {
+	fprintf(stderr, "usage: %s [-h] [-c configfile]\n",
+		__progname);
 }
 
 void
 _cfg_print_usagehelp(void)
 {
+	fprintf(stderr, "\n");
+	fprintf(stderr, "  -c configfile  use configuration defaults in configfile\n");
+	fprintf(stderr, "  -h             display this additional help and exit\n");
+	fprintf(stderr, "\n");
 }
 
 int
-cfg_parse_cmdline(int argc, char *argv[])
+cfg_parse_cmdopts(int *argc, char **argv[])
 {
 	extern char	*optarg;
 	extern int	 optind;
@@ -72,12 +84,12 @@ cfg_parse_cmdline(int argc, char *argv[])
 	cfgfile = NULL;
 	cfgfile_name[0] = '\0';
 
-	while ((ch = getopt(argc, argv, optstring)) != -1) {
+	while ((ch = getopt(*argc, *argv, optstring)) != -1) {
+#ifdef S_IROTH
+		struct stat	st;
+#endif /* S_IROTH */
+
 		switch (ch) {
-		case 'h':
-			_cfg_print_usage();
-			_cfg_print_usagehelp();
-			return (0);
 		case 'c':
 			if (cfgfile != NULL) {
 				fprintf(stderr, "%s: Error: Multiple -c arguments given\n",
@@ -86,23 +98,62 @@ cfg_parse_cmdline(int argc, char *argv[])
 				return (2);
 			}
 			snprintf(cfgfile_name, sizeof(cfgfile_name), "%s", optarg);
+#ifdef S_IROTH
+			if (stat(cfgfile_name, &st) != -1 &&
+			    (st.st_mode & S_IROTH)) {
+				fprintf(stderr, "WARNING: %s is world-readable!\n",
+					cfgfile_name);
+			}
+#endif /* S_IROTH */
 			if ((cfgfile = fopen(cfgfile_name, "r")) == NULL) {
-				fprintf(stderr, "%s: %s: %s\n", cfgfile_name,
-					strerror(errno), __progname);
+				fprintf(stderr, "%s: %s: %s\n", __progname,
+					cfgfile_name, strerror(errno));
 				return (2);
 			}
 			break;
+		case 'h':
+			_cfg_print_usage();
+			_cfg_print_usagehelp();
+			return (0);
 		default:
 			_cfg_print_usage();
 			return (2);
 		}
 	}
-	argc -= optind;
-	argv += optind;
+	*argc -= optind;
+	*argv += optind;
 
 	if (cfgfile == NULL && (home = getenv("HOME")) != NULL) {
-		snprintf(cfgfile_name, sizeof(cfgfile_name), "%s/%s", home, DEFAULT_CONFIG_FILE);
-		cfgfile = fopen(cfgfile_name, "r");
+#ifdef S_IROTH
+		struct stat	st;
+#endif /* S_IROTH */
+
+		snprintf(cfgfile_name, sizeof(cfgfile_name), "%s/%s", home, CONFIG_FILENAME_HOME);
+#ifdef S_IROTH
+		if (stat(cfgfile_name, &st) != -1 && (st.st_mode & S_IROTH)) {
+			fprintf(stderr, "WARNING: %s is world-readable!\n",
+				cfgfile_name);
+		}
+#endif /* S_IROTH */
+		if ((cfgfile = fopen(cfgfile_name, "r")) == NULL && errno != ENOENT)
+			fprintf(stderr, "%s: %s: %s\n", __progname,
+				cfgfile_name, strerror(errno));
+	}
+	if (cfgfile == NULL) {
+#ifdef S_IROTH
+		struct stat	st;
+#endif /* S_IROTH */
+
+		snprintf(cfgfile_name, sizeof(cfgfile_name), "%s/%s", SYSCONF_DIR, CONFIG_FILENAME);
+#ifdef S_IROTH
+		if (stat(cfgfile_name, &st) != -1 && (st.st_mode & S_IROTH)) {
+			fprintf(stderr, "WARNING: %s is world-readable!\n",
+				cfgfile_name);
+		}
+#endif /* S_IROTH */
+		if ((cfgfile = fopen(cfgfile_name, "r")) == NULL && errno != ENOENT)
+			fprintf(stderr, "%s: %s: %s\n", __progname,
+				cfgfile_name, strerror(errno));
 	}
 
 	if (_cfg_parse_cfgfile(cfgfile, cfgfile_name) != 0) {
@@ -139,6 +190,51 @@ cfg_print_help(void)
 {
 	_cfg_print_usage();
 	_cfg_print_usagehelp();
+}
+
+struct server_pref *
+cfg_get_server_pref(const char *token)
+{
+	struct server_pref	*srvp, find;
+
+	if (token == NULL || token[0] == '\0')
+		return (NULL);
+
+	find.token = xstrdup(token);
+	srvp = RB_FIND(server_pref_tree, &server_pref_tree_head, &find);
+	xfree(find.token);
+
+	return (srvp);
+}
+
+const char *
+cfg_sp_hostname(struct server_pref *srvp)
+{
+	return ((const char *)srvp->hostname);
+}
+
+const char *
+cfg_sp_service(struct server_pref *srvp)
+{
+	return ((const char *)srvp->service);
+}
+
+const char *
+cfg_sp_username(struct server_pref *srvp)
+{
+	return ((const char *)srvp->username);
+}
+
+const char *
+cfg_sp_password(struct server_pref *srvp)
+{
+	return ((const char *)srvp->password);
+}
+
+const char *
+cfg_sp_default_mount(struct server_pref *srvp)
+{
+	return ((const char *)srvp->default_mount);
 }
 
 int
@@ -511,7 +607,7 @@ _cfg_parse_keyvalue(const char *buf, const char *key, const char *filename,
 
 	/* Skip closing quote. */
 	bp++;
-	/* Whitespaces and comments behind the value are ok, the rest not. */
+	/* Whitespaces and comments behind the value are ok, the rest isn't. */
 	while (*bp != '\0' && (*bp == ' ' || *bp == '\t'))
 		bp++;
 	if (*bp != '\0' && *bp != '#')  {
