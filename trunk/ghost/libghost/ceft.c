@@ -150,6 +150,18 @@ void alg_quant4(float *x, int N, int K, float *p)
    for (i=0;i<N;i++)
       y[i] = 0;
    
+   if (0)
+   {
+      int tmp = N;
+      int b=0;
+      while (tmp>1)
+      {
+         b++;
+         tmp >>= 1;
+      }
+      printf ("%d\n", 1+K*b);
+   }
+   
    for (i=0;i<K;i++)
    {
       int best_id=0;
@@ -220,22 +232,12 @@ void alg_quant4(float *x, int N, int K, float *p)
 }
 
 
-#define NBANDS 18 /*or 21 if we discard the small last band*/
-int qbank[] = {1, 2, 4, 6, 8, 10, 12, 14, 16, 20, 24, 28, 36, 44, 52, 68, 84, 116, 128};
+#define NBANDS 20
+int qbank[] = {1, 2, 3, 4, 5, 6, 8, 10, 12, 14, 16, 20, 24, 28, 36, 44, 52, 68, 84, 116, 128};
 
-
-#if 1
 #define PBANDS 6
 int pbank[] = {1, 5, 9, 20, 44, 84, 128};
-//#define PBANDS 22 /*or 22 if we discard the small last band*/
-//int pbank[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 20, 24, 28, 36, 44, 52, 68, 84, 116, 128};
 
-#else
-
-#define PBANDS 1
-int pbank[] = {1, 128};
-
-#endif
 
 void compute_bank(float *X, float *bank)
 {
@@ -335,11 +337,11 @@ void quant_bank3(float *X, float *P)
    for (i=0;i<NBANDS;i++)
    {
       int q=0;
-      if (i < 5)
-         q = 3;
-      else if (i<10)
+      if (i < 4)
          q = 2;
-      else if (i<15)
+      else if (i<8)
+         q = 2;
+      else if (i<12)
          q = 2;
       else
          q = 1;
@@ -351,7 +353,7 @@ void quant_bank3(float *X, float *P)
    X[255] = 0;
 }
 
-void pitch_quant_bank(float *X, float *P)
+void pitch_quant_bank(float *X, float *P, float *gains)
 {
    int i;
    for (i=0;i<PBANDS;i++)
@@ -372,6 +374,10 @@ void pitch_quant_bank(float *X, float *P)
       //gain *= 1+.02*gain;
       if (gain > .9)
          gain = .9;
+      if (gain < 0)
+         gain = 0;
+
+      gains[i] = gain;
       for (j=pbank[i];j<pbank[i+1];j++)
       {
          P[j*2-1] *= gain;
@@ -464,6 +470,7 @@ void ceft_encode(CEFTState *st, float *in, float *out, float *pitch, float *wind
    float bank[NBANDS];
    float pitch_bank[NBANDS];
    float p[st->length];
+   float gains[PBANDS];
    
    for (i=0;i<st->length;i++)
       p[i] = pitch[i]*window[i];
@@ -483,6 +490,24 @@ void ceft_encode(CEFTState *st, float *in, float *out, float *pitch, float *wind
    compute_bank(X, bank);
    normalise_bank(X, bank);
    
+#if 0
+   float q = .25f;
+   for (i=0;i<NBANDS;i++)
+   {
+      if (i<4)
+         q = .25;
+      else if (i<8)
+         q = .5;
+      else if (i<12)
+         q = 1;
+      else
+         q = 1;
+      int sc = floor(.5 + log(bank[i])/q);
+      printf ("%d ", sc);
+      bank[i] = exp(q * sc);
+   }
+   printf ("\n");
+#endif
    /*printf ("%f ", fabs(X[0]));
    for (i=0;i<NBANDS;i++)
       printf ("%f ", bank[i]);
@@ -494,19 +519,19 @@ void ceft_encode(CEFTState *st, float *in, float *out, float *pitch, float *wind
    
    for(i=0;i<st->length;i++)
       Xbak[i] = X[i];
-   /*for(i=0;i<st->length;i++)
+   for(i=0;i<st->length;i++)
       printf ("%f ", X[i]);
    printf ("\n");
-   */
-   pitch_quant_bank(X, Xp);
    
+   pitch_quant_bank(X, Xp, gains);
+      
    for (i=1;i<st->length;i++)
       X[i] -= Xp[i];
 
-   //Quantise input
+//Quantise input
    quant_bank3(X, Xp);
    //quant_bank2(X);
-
+   
    //pitch_renormalise_bank(X, Xp);
 
 #if 0

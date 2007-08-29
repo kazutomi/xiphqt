@@ -59,6 +59,10 @@ typedef struct {
    void *lpc_fft;
    ADPCMState *adpcm;
    CEFTState *ceft;
+   
+   float preemph_mem;
+   float deemph_mem;
+   float preemph;
 } GhostEncState;
 
 GhostEncState *ghost_encoder_state_new(int sampling_rate);

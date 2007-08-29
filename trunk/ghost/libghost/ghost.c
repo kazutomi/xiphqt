@@ -149,6 +149,10 @@ GhostEncState *ghost_encoder_state_new(int sampling_rate)
    st->adpcm = adpcm_init(8);
    st->ceft = ceft_init(st->length);
 
+   st->preemph = .0;
+   st->preemph_mem = 0;
+   st->deemph_mem = 0;
+   
    return st;
 }
 
@@ -167,8 +171,12 @@ void ghost_encode(GhostEncState *st, float *pcm)
    
    for (i=0;i<PCM_BUF_SIZE-st->advance;i++)
       st->pcm_buf[i] = st->pcm_buf[i+st->advance];
+   
    for (i=0;i<st->advance;i++)
-      st->new_pcm[i]=pcm[i];
+   {
+      st->new_pcm[i]=pcm[i]-st->preemph*st->preemph_mem;
+      st->preemph_mem = pcm[i];
+   }
    
    compute_curve(st->psy, st->pcm_buf, curve);
    mask_gain = curve_to_lpc(st->psy, curve, awk1, awk2, MASK_LPC_ORDER);
@@ -392,8 +400,11 @@ void ghost_encode(GhostEncState *st, float *pcm)
       pcm[i] = st->current_frame[i]-st->new_noise[i];*/
       
       for (i=0;i<st->advance;i++)
-         pcm[i] = st->current_frame[i]-st->new_noise[i] /*+ noise[i]*/;
-      
+      {
+         float tmp = st->current_frame[i]-st->new_noise[i] /*+ noise[i]*/;
+         pcm[i] = tmp + st->preemph*st->deemph_mem;
+         st->deemph_mem = pcm[i];
+      }   
    }
    
 }
