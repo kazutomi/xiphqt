@@ -20,123 +20,26 @@
 */
 
 #include "ceft.h"
-#include "filterbank.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
 
 #include "fftwrap.h"
 
-/* Unit-energy pulse codebook */
-void alg_quant2(float *x, int N, int K)
-{
-   int pulses[N];
-   float sign[N];
-   float y[N];
-   int i,j;
-   
-   float P = sqrt((1.f*N)/K);
-   for (i=0;i<N;i++)
-      pulses[i] = 0;
-   for (i=0;i<N;i++)
-      sign[i] = 0;
 
-   for (i=0;i<N;i++)
-      y[i] = 0;
-   
-   for (i=0;i<K;i++)
-   {
-      int best_id=0;
-      float max_val=-1e10;
-      float p;
-      for (j=0;j<N;j++)
-      {
-         float E = 0;
-         if (pulses[j])
-            p = P*sign[j]*(sqrt(pulses[j]+1)-sqrt(pulses[j]));
-         else if (x[j]>0)
-            p=P;
-         else
-            p=-P;
-         E = x[j]*x[j] - (x[j]-p)*(x[j]-p);
-         if (E>max_val)
-         {
-            max_val = E;
-            best_id = j;
-         }
-      }
-      
-      if (pulses[best_id])
-         p = P*sign[best_id]*(sqrt(pulses[best_id]+1)-sqrt(pulses[best_id]));
-      else if (x[best_id]>0)
-         p=P;
-      else
-         p=-P;
-      y[best_id] += p;
-      x[best_id] -= p;
-      pulses[best_id]++;
-      if (p>0)
-         sign[best_id]=1;
-      else
-         sign[best_id]=-1;
-   }
-   
-   for (i=0;i<N;i++)
-      x[i] = y[i];
-   
-}
+#define NBANDS 19
+int qbank[] =   {1, 2, 3, 4, 5, 6, 8, 10, 12, 14, 16, 20, 24, 28, 36, 44, 52, 68, 84, 116, 128};
+int qpulses[] = {3, 2, 2, 2, 2, 2, 2,  2,  2,  2,  2,  2,  1,  2,  2,  2,  0,  0,  0};
 
-/* Unit-amplitude pulse codebook */
-void alg_quant3(float *x, int N, int K)
-{
-   float y[N];
-   int i,j;
-   float xy = 0;
-   float yy = 0;
-   float E;
-   for (i=0;i<N;i++)
-      y[i] = 0;
-   
-   for (i=0;i<K;i++)
-   {
-      int best_id=0;
-      float max_val=-1e10;
-      float best_xy=0, best_yy=0;
-      for (j=0;j<N;j++)
-      {
-         float tmp_xy, tmp_yy;
-         float score;
-         tmp_xy = xy + fabs(x[j]);
-         tmp_yy = yy + 2*fabs(y[j]) + 1;
-         score = tmp_xy*tmp_xy/tmp_yy;
-         if (score>max_val)
-         {
-            max_val = score;
-            best_id = j;
-            best_xy = tmp_xy;
-            best_yy = tmp_yy;
-         }
-      }
-      
-      xy = best_xy;
-      yy = best_yy;
-      if (x[best_id]>0)
-         y[best_id] += 1;
-      else
-         y[best_id] -= 1;
-   }
-   
-   E = 0;
-   for (i=0;i<N;i++)
-      E += y[i]*y[i];
-   E = sqrt(E/N);
-   for (i=0;i<N;i++)
-      x[i] = E*y[i];
-   
-}
+//int qpulses[] = {3, 3, 3, 3, 3, 3, 3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3};
+//int qpulses[] = {5, 5, 5, 5, 5, 5, 5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5};
+//int qpulses[] = {1, 1, 1, 1, 1, 2, 2,  2,  2,  2,  2,  2,  2,  2,  2,  1,  1,  1,  1};
+
+#define PBANDS 5
+int pbank[] = {1, 4, 8, 16, 28, 44};
 
 
-void alg_quant4(float *x, int N, int K, float *p)
+void alg_quant(float *x, int N, int K, float *p)
 {
    float y[N];
    int i,j;
@@ -231,13 +134,21 @@ void alg_quant4(float *x, int N, int K, float *p)
    
 }
 
-
-#define NBANDS 20
-int qbank[] = {1, 2, 3, 4, 5, 6, 8, 10, 12, 14, 16, 20, 24, 28, 36, 44, 52, 68, 84, 116, 128};
-
-#define PBANDS 6
-int pbank[] = {1, 5, 9, 20, 44, 84, 128};
-
+void noise_quant(float *x, int N, int K, float *p)
+{
+   int i;
+   float E = 1e-10;
+   for (i=0;i<N;i++)
+   {
+      x[i] = (rand()%1000)/500.+1;
+      E += x[i]*x[i];
+   }
+   E = 1./sqrt(E);
+   for (i=0;i<N;i++)
+   {
+      x[i] *= E;
+   }
+}
 
 void compute_bank(float *X, float *bank)
 {
@@ -254,8 +165,6 @@ void compute_bank(float *X, float *bank)
       //bank[i] = sqrt(.5*bank[i]/(qbank[i+1]-qbank[i]));
       bank[i] = sqrt(bank[i]);
    }
-   //FIXME: Kludge
-   X[255] = 1;
 }
 
 void normalise_bank(float *X, float *bank)
@@ -272,7 +181,7 @@ void normalise_bank(float *X, float *bank)
       }
    }
    //FIXME: Kludge
-   X[255] = 0;
+   X[255] = 1;
 }
 
 void denormalise_bank(float *X, float *bank)
@@ -292,62 +201,16 @@ void denormalise_bank(float *X, float *bank)
    X[255] = 0;
 }
 
-void quant_bank(float *X)
-{
-   int i;
-   float q=8;
-   for (i=0;i<NBANDS;i++)
-   {
-      int j;
-      for (j=qbank[i];j<qbank[i+1];j++)
-      {
-         X[j*2-1] = (1.f/q)*floor(.5+q*X[j*2-1]);
-         X[j*2] = (1.f/q)*floor(.5+q*X[j*2]);
-      }
-   }
-   //FIXME: Kludge
-   X[255] = 0;
-}
-
-void quant_bank2(float *X)
+void quant_bank(float *X, float *P)
 {
    int i;
    for (i=0;i<NBANDS;i++)
    {
-      int q=0;
-      if (i < 5)
-         q = 8;
-      else if (i<10)
-         q = 4;
-      else if (i<15)
-         q = 4;
+      int q=qpulses[i];
+      if (q)
+         alg_quant(X+qbank[i]*2-1, 2*(qbank[i+1]-qbank[i]), q, P+qbank[i]*2-1);
       else
-         q = 4;
-      q = 1;
-      //q/=2;
-      alg_quant3(X+qbank[i]*2-1, 2*(qbank[i+1]-qbank[i]), q);
-   }
-   //FIXME: This is a kludge, even though I don't think it really matters much
-   X[255] = 0;
-}
-
-void quant_bank3(float *X, float *P)
-{
-   int i;
-   for (i=0;i<NBANDS;i++)
-   {
-      int q=0;
-      if (i < 4)
-         q = 2;
-      else if (i<8)
-         q = 2;
-      else if (i<12)
-         q = 2;
-      else
-         q = 1;
-      //q = 1;
-      //q/=4;
-      alg_quant4(X+qbank[i]*2-1, 2*(qbank[i+1]-qbank[i]), q, P+qbank[i]*2-1);
+         noise_quant(X+qbank[i]*2-1, 2*(qbank[i+1]-qbank[i]), q, P+qbank[i]*2-1);
    }
    //FIXME: This is a kludge, even though I don't think it really matters much
    X[255] = 0;
@@ -385,6 +248,8 @@ void pitch_quant_bank(float *X, float *P, float *gains)
       }
       //printf ("%f ", gain);
    }
+   for (i=pbank[PBANDS];i<256;i++)
+      P[i] = 0;
    P[255] = 0;
    //printf ("\n");
 }
@@ -443,10 +308,7 @@ void pitch_renormalise_bank(float *X, float *P)
 }
 
 
-#define BARK_BANDS 20
-
 struct CEFTState_ {
-   FilterBank *bank;
    void *frame_fft;
    int length;
 };
@@ -456,7 +318,6 @@ CEFTState *ceft_init(int len)
    CEFTState *st = malloc(sizeof(CEFTState));
    st->length = len;
    st->frame_fft = spx_fft_init(st->length);
-   st->bank = filterbank_new(BARK_BANDS, 48000, st->length>>1, 0);
    return st;
 }
 
@@ -472,22 +333,25 @@ void ceft_encode(CEFTState *st, float *in, float *out, float *pitch, float *wind
    float p[st->length];
    float gains[PBANDS];
    
+   spx_fft_float(st->frame_fft, in, X);
+
+   /* Bands for the input signal */
+   compute_bank(X, bank);
+/*
+   if (rand()%10 ==0 && fabs(X[0]) > 5 && (fabs(X[0]) > 15 || rand() % 10 == 0))
+   {
+      printf ("%f ", 20*log10(5+fabs(X[0])));
+      for (i=0;i<NBANDS;i++)
+         printf ("%f ", 20*log10(5+bank[i]));
+      printf ("\n");
+   }
+   return;
+  */ 
    for (i=0;i<st->length;i++)
       p[i] = pitch[i]*window[i];
    
-#if 0
-   for (i=0;i<st->length;i++)
-      printf ("%f ", p[i]);
-   for (i=0;i<st->length;i++)
-      printf ("%f ", in[i]);
-   printf ("\n");
-#endif
-
-   spx_fft_float(st->frame_fft, in, X);
    spx_fft_float(st->frame_fft, p, Xp);
    
-   /* Bands for the input signal */
-   compute_bank(X, bank);
    normalise_bank(X, bank);
    
 #if 0
@@ -508,29 +372,24 @@ void ceft_encode(CEFTState *st, float *in, float *out, float *pitch, float *wind
    }
    printf ("\n");
 #endif
-   /*printf ("%f ", fabs(X[0]));
-   for (i=0;i<NBANDS;i++)
-      printf ("%f ", bank[i]);
-   printf ("\n");*/
    /* Bands for the pitch signal */
    compute_bank(Xp, pitch_bank);
    normalise_bank(Xp, pitch_bank);
    
-   
+   /*
    for(i=0;i<st->length;i++)
       Xbak[i] = X[i];
    for(i=0;i<st->length;i++)
       printf ("%f ", X[i]);
    printf ("\n");
-   
+   */
    pitch_quant_bank(X, Xp, gains);
       
    for (i=1;i<st->length;i++)
       X[i] -= Xp[i];
 
 //Quantise input
-   quant_bank3(X, Xp);
-   //quant_bank2(X);
+   quant_bank(X, Xp);
    
    //pitch_renormalise_bank(X, Xp);
 
