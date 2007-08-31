@@ -1,0 +1,57 @@
+<!--#include virtual="/ssi/header.include" -->
+<!-- Enter custom page information and styles here -->
+  <title>Theora.org :: documentation - Theora, video for everyone</title>
+<style type="text/css">
+<!--
+.newslist {
+	margin: 0 0 2.64em 0;
+	padding: 0;
+}
+
+.newslist li {
+	margin-bottom: .72em;
+	list-style: none;
+	font-size: .94em;
+	line-height: 1.4;
+}
+
+.newslist a {
+	color: #3366CC;
+}
+
+.xiph {
+	color: #FF9900;
+	font-weight: bold;
+}
+
+.resources ul {
+	margin: 0;
+	padding: 0;
+}
+
+.resources li {
+	margin-bottom: .4em;
+	list-style: none;
+	font-size: .94em;
+	line-height: 1.4;
+}
+-->
+</style>
+</head>
+<body>
+<!--#include virtual="/common/xiphbar.include" -->
+
+<!--#include virtual="/ssi/pagetop.include" -->
+<!--  All your page content goes here  -->
+
+<a name="documentation"><h2>Documentation</h2></a>
+
+<ul>
+  <li><a href="theorafaq.shtml">Frequently Asked Questions</a></li>
+  <li><a href="doc/Theora_I_spec.pdf">Theora I Format Specification</a></li>
+  <li><a href="doc/libtheora-1.0alpha6/">libtheora API reference</a></li>
+  <li><a href="http://people.xiph.org/~tterribe/doc/libtheora-exp/">theora-exp API reference</a>
+</ul>
+
+
+<!--#include virtual="/ssi/pagebottom.include" -->

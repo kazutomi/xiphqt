@@ -1,0 +1,79 @@
+<!--#include virtual="/ssi/header.include" -->
+<!-- Enter custom page information and styles here -->
+  <title>Theora.org :: downloads - Theora, video for everyone</title>
+<style type="text/css">
+<!--
+.newslist {
+	margin: 0 0 2.64em 0;
+	padding: 0;
+}
+
+.newslist li {
+	margin-bottom: .72em;
+	list-style: none;
+	font-size: .94em;
+	line-height: 1.4;
+}
+
+.newslist a {
+	color: #3366CC;
+}
+
+.xiph {
+	color: #FF9900;
+	font-weight: bold;
+}
+
+.resources ul {
+	margin: 0;
+	padding: 0;
+}
+
+.resources li {
+	margin-bottom: .4em;
+	list-style: none;
+	font-size: .94em;
+	line-height: 1.4;
+}
+-->
+</style>
+</head>
+<body>
+<!--#include virtual="/common/xiphbar.include" -->
+
+<!--#include virtual="/ssi/pagetop.include" -->
+<!--  All your page content goes here  -->
+
+<a name="source"><h2>Source</h2></a>
+
+<ul>
+  <li>The <strong>libtheora</strong> reference implementation provides
+      the standard encoder and decoder under a BSD license.
+      [<a href="http://downloads.xiph.org/releases/theora/libtheora-1.0alpha7.tar.gz">libtheora-1.0alpha7</a>]
+      [<a href="http://svn.xiph.org/trunk/theora/">SVN trunk</a>]
+  </li>
+  <li>The <strong>theora-exp</strong> project is a from-scratch 
+      implementation of the complete Theora I decoder and a 
+      more sophisticated but still experimental encoder.
+      [<a href="http://svn.xiph.org/trunk/theora-exp/">SVN trunk</a>]
+  </li>
+</ul>
+
+<p>Both of implementations depend on the following libraries...</p>
+ <ul>
+  <li><a href="http://downloads.xiph.org/releases/ogg/libogg-1.1.3.tar.gz">libogg-1.1.3</a></li>
+  <li><a href="http://downloads.xiph.org/releases/vorbis/libvorbis-1.2.0.tar.gz">libvorbis-1.2.0</a></li>
+  <li><a href="http://www.libsdl.org/">libSDL 1.2</a> or later for the playback example</li>
+ </ul>
+
+<a name="binaries"><h2>Binaries</h2></a>
+ <ul>
+   <li><a href="http://www.v2v.cc/~j/ffmpeg2theora/">ffmpeg2theora</a></li>
+   <li><a href="http://videolan.org/">VLC player</a></li>
+   <li><a href="https://player.helixcommunity.org/2004/downloads/">Helix Player</a></li>
+   <li><a href="http://www.illiminable.com/ogg/">DirectShow plugins</a></li>
+   <li><a href="http://downloads.xiph.org/releases/oggdsf/">DirectShow plugins</a></li>
+ </ul>
+
+
+<!--#include virtual="/ssi/pagebottom.include" -->

@@ -9,27 +9,14 @@
 <div id="navbar">
 
   <ul>
-    <li><a href="http://www.xiph.org/theora/#source">Downloads</a></li>
-  </ul>
-  <ul>
-    <li><a href="http://www.xiph.org/theora/#documentation">Documentation</a></li>
-  </ul>
-  <h3>Binaries</h3>
-  <ul>
-    <li><a href="http://www.v2v.cc/~j/ffmpeg2theora/">ffmpeg2theora</a></li>
-    <li><a href="http://videolan.org/">VLC player</a></li>
-    <li><a href="https://player.helixcommunity.org/2004/downloads/">Helix Player</a></li>
-    <!-- official site is down!
-    <li><a href="http://www.illiminable.com/ogg/">DirectShow plugins</a></li>
-    -->
-    <li><a href="http://downloads.xiph.org/releases/oggdsf/">DirectShow plugins</a></li>
-  </ul>
-  <h3>Content</h3>
-  <ul">
-    <li><a href="http://share.sh.cvut.cz/avc/Theora_demos/">CTU Prague Archive</a></li>
-    <li><a href="http://jroar.jcraft.com:8800/test_theora.m3u">JRoar stream</a></li>
-    <li><a href="http://v2v.cc/">V2V network</a></li>
-    <li><a href="http://www.editingarchive.com/eatv/">EATV</a></li>
+    <li><a href="http://www.theora.org/">News</a></li>
+    <li><a href="theorafaq.shtml">FAQ</a></li>
+    <li><a href="lists.shtml">Discuss</a></li>
+    <li><a href="http://theora.org/torrents/">Torrents</a></li>
+    <li><a href="downloads.shtml">Downloads</a></li>
+    <li><a href="svn.shtml">SVN</a></li>
+    <li><a href="documentation.shtml">Documentation</a></li>
+    <li><a href="content.shtml">Content</a></li>
   </ul>
   <h3>Support us</h3>
   <div style="padding: 0em 0em 0em 0.5em; margin: 1em;">
