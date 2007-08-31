@@ -1,0 +1,104 @@
+<!--#include virtual="/ssi/header.include" -->
+<!-- Enter custom page information and styles here -->
+  <title>Theora.org :: main - Theora, video for everyone</title>
+<style type="text/css">
+<!--
+.newslist {
+	margin: 0 0 2.64em 0;
+	padding: 0;
+}
+
+.newslist li {
+	margin-bottom: .72em;
+	list-style: none;
+	font-size: .94em;
+	line-height: 1.4;
+}
+
+.newslist a {
+	color: #3366CC;
+}
+
+.xiph {
+	color: #FF9900;
+	font-weight: bold;
+}
+
+.resources ul {
+	margin: 0;
+	padding: 0;
+}
+
+.resources li {
+	margin-bottom: .4em;
+	list-style: none;
+	font-size: .94em;
+	line-height: 1.4;
+}
+-->
+</style>
+</head>
+<body>
+<!--#include virtual="/common/xiphbar.include" -->
+
+<!--#include virtual="/ssi/pagetop.include" -->
+<!--  All your page content goes here  -->
+
+<h3>[ Theora Mailing Lists ]</h3>
+<p>
+There are three mailing lists maintained for the Theora project.
+This is the best place to ask questions, contact the developers
+or other users, or otherwise discuss the Theora video codec.
+</p>
+<dl>
+<dt><b>theora@xiph.org</b>
+  [ <a href="http://lists.xiph.org/pipermail/theora/">archive</a>
+  | <a href="http://lists.xiph.org/mailman/listinfo/theora">subscribe</a> ]
+</dt><dd>
+The Theora list is for user discussion relating to the Theora project.
+</dd>
+<dt><b>theora-dev@xiph.org</b>
+  [ <a href="http://lists.xiph.org/pipermail/theora-dev/">archive</a>
+  | <a href="http://lists.xiph.org/mailman/listinfo/theora-dev">subscribe</a> ]
+</dt><dd>
+The Theora-dev list is for discussion and coordination amongst Theora
+development team members.
+</dd>
+<dt><b>theora-codecs@xiph.org</b>
+  [ <a href="http://lists.xiph.org/pipermail/theora-codecs/">archive</a>
+  | <a href="http://lists.xiph.org/mailman/listinfo/theora-codecs">subscribe</a> ]
+</dt><dd>
+The theora-codecs list is for discussion and maintenance of Theora and
+legacy VP3 codecs in Windows and Quicktime formats.
+</dd>
+</dl>
+<p>
+<a href="http://lists.xiph.org/pipermail/">List
+Archives for all Xiph.org projects including Theora</a>
+<br>
+<a href="http://lists.xiph.org/mailman/listinfo/">Subscription
+information for all Xiph.org projects including Theora</a>
+</p>
+
+<h3>[ IRC ]</h3>
+<p>
+There's also an active <a href="http://irchelp.org/">IRC</a> 
+channel for Theora.
+</p><p>
+Join <strong>#theora</strong> on 
+<a href="http://freenode.net/">irc.freenode.net</a>.
+</p>
+
+<h3>[ Wiki ]</h3>
+
+<p>
+You can also document concerns, applications, howto instructions,
+usage, support or anything else related to theora in the 
+<a href="http://wiki.xiph.org/Theora">Xiph.org Wiki</a>. We find this a
+good resource for documenting the outcomes of discussions and keeping
+track of various projects, and anyone can help edit the pages!
+</p>
+</div>
+
+
+<!--#include virtual="/ssi/pagebottom.include" -->

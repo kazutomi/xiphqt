@@ -1,0 +1,135 @@
+<!--#include virtual="/ssi/header.include" -->
+<!-- Enter custom page information and styles here -->
+  <title>Theora.org :: main - Theora, video for everyone</title>
+<style type="text/css">
+<!--
+.newslist {
+	margin: 0 0 2.64em 0;
+	padding: 0;
+}
+
+.newslist li {
+	margin-bottom: .72em;
+	list-style: none;
+	font-size: .94em;
+	line-height: 1.4;
+}
+
+.newslist a {
+	color: #3366CC;
+}
+
+.xiph {
+	color: #FF9900;
+	font-weight: bold;
+}
+
+.resources ul {
+	margin: 0;
+	padding: 0;
+}
+
+.resources li {
+	margin-bottom: .4em;
+	list-style: none;
+	font-size: .94em;
+	line-height: 1.4;
+}
+-->
+</style>
+</head>
+<body>
+<!--#include virtual="/common/xiphbar.include" -->
+
+<!--#include virtual="/ssi/pagetop.include" -->
+<!--  All your page content goes here  -->
+
+<b>[ Theora Developer Mailing list ]</b><p>
+
+The theora-dev@xiph.org mailing list is intended for Ogg Theora
+developers to coordinate devlopment of the Theora specification and
+the Ogg/Theora software libraries.  Please restrict discussion on the
+theora-dev lists to those topics.<p>
+
+Assuming that the email preferences in your web browser are set up
+correctly, the following button sends a subscription request directly
+to xiph.org.  You'll get an email back with the result; the submit
+button does not take you to another page.
+
+    <form enctype="text/plain" action="mailto:majordomo@xiph.org">
+    <b>
+    <input type="hidden" name="# Theora dev list" value="
+subscribe theora-dev">
+    <input type="submit" value="Subscribe to the Theora developers mailing list">
+    </b>
+    </form><p>
+
+Tradiitonal method: send a message containing only the one-word line
+'subscribe' in the body to <a
+href="mailto:theora-dev-request@xiph.org">theora-dev-request@xiph.org</a>.
+Do not send subscription requests directly to the main list; they will
+be silently ignored.<p>
+
+The list is archived on the xiph.org <a
+href="http://www.xiph.org/archives/">mailing list archive</a> page.
+
+<p>
+<b>[ Theora User and General Discussion Mailing List ]</b><p>
+
+Any and all other topics pertaining to Theora are welcome on the
+general purpose discussion list theora@xiph.org.<p>
+
+Assuming that the email preferences in your web browser are set up
+correctly, the following button sends a subscription request directly
+to xiph.org.  You'll get an email back with the result; the submit
+button does not take you to another page.
+
+    <form enctype="text/plain" action="mailto:majordomo@xiph.org">
+    <b>
+    <input type="hidden" name="# Theora discussion list" value="
+subscribe theora">
+    <input type="submit" value="Subscribe to the Theora discussion mailing list">
+    </b>
+    </form><p>
+
+Tradiitonal method: send a message containing only the one-word line
+'subscribe' in the body to <a
+href="mailto:theora-request@xiph.org">theora-request@xiph.org</a>.
+Do not send subscription requests directly to the main list; they will
+be silently ignored.<p>
+
+The list is archived on the xiph.org <a
+href="http://www.xiph.org/archives/">mailing list archive</a> page.<p>
+
+<p>
+<b>[ Theora Codecs Mailing List ]</b><p>
+
+The theora-codecs list is for discussion and maintenance of Theora and
+legacy VP3 codecs in Windows and Quicktime formats. <p>
+                            
+			    Assuming that the email preferences in your web
+browser are set up
+correctly, the following button sends a subscription request directly
+to xiph.org.  You'll get an email back with the result; the submit
+button does not take you to another page.
+
+    <form enctype="text/plain" action="mailto:majordomo@xiph.org">
+        <b>
+	    <input type="hidden" name="# Theora codecs discussion list" value="
+	    subscribe theora">
+	        <input type="submit" value="Subscribe to the Theora Codecs discussion mailing list">
+    </b>
+        </form><p>
+	                          
+				  Tradiitonal method: send a message
+containing only the one-word line
+'subscribe' in the body to <a
+href="mailto:theora-codecs-request@xiph.org">theora-codecs-request@xiph.org</a>.
+Do not send subscription requests directly to the main list; they will
+be silently ignored.<p>
+
+The list is archived on the xiph.org <a
+href="http://www.xiph.org/archives/">mailing list archive</a> page.<p>
+
+
+<!--#include virtual="/ssi/pagebottom.include" -->
