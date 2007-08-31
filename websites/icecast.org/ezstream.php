@@ -78,7 +78,7 @@
 <h3>Download</h3>
 
 <p style="font-size: larger;">
- Latest version: <b>0.4.3</b>
+ Latest version: <b>0.5.0</b>
  [ <a href="#ez_relnotes_chgs">Changes</a> ]
 <p>
 
@@ -92,8 +92,8 @@
     Source .tar.gz (all platforms)
    </td>
    <td>
-    <a href="http://downloads.xiph.org/releases/ezstream/ezstream-0.4.3.tar.gz">ezstream-0.4.3.tar.gz</a><br/>
-    MD5: 84935a7020945a5843538c74377778c1
+    <a href="http://downloads.xiph.org/releases/ezstream/ezstream-0.5.0.tar.gz">ezstream-0.5.0.tar.gz</a><br/>
+    MD5: 8a76193100febdda666874f7eb8b07cb
    </td>
   </tr>
   <tr>
@@ -101,8 +101,8 @@
     Windows NT/2000/XP binary
    </td>
    <td>
-    <a href="http://downloads.xiph.org/releases/ezstream/ezstream-0.4.3-win32.zip">ezstream-0.4.3-win32.zip</a><br/>
-    MD5: dd104fca2bf614b290edd50728411a1d
+    <a href="http://downloads.xiph.org/releases/ezstream/ezstream-0.5.0-win32.zip">ezstream-0.5.0-win32.zip</a><br/>
+    MD5: 4168037653adbf15f09c0548a1aff30e
    </td>
   </tr>
  </table>
@@ -155,8 +155,12 @@
  </li>
  <li>
   <b>Optional</b>: Taglib 1.x
-  (1.4 or newer recommended, will be used via the libtag_c wrapper)
+  (1.4 or newer recommended, used via the libtag_c wrapper)
   (<a href="http://developer.kde.org/~wheeler/taglib.html">http://developer.kde.org/~wheeler/taglib.html</a>)
+ </li>
+ <li>
+  <b>Optional</b>: GNU libiconv (or iconv() in libc)
+  (<a href="http://www.gnu.org/software/libiconv/">http://www.gnu.org/software/libiconv/</a>)
  </li>
 </ul>
 
@@ -228,13 +232,14 @@
 <h3>Release Notes</h3>
 
 <p>
- Ezstream 0.4.3 has been released on July 24th 2007.
+ Ezstream 0.5.0 has been released on August 31st 2007.
 </p>
 
 <p>
- Version 0.4.3 is another minor bugfix release.
- The file descriptor leak, partially fixed in version 0.4.1, is now properly
- taken care of.
+ This release's focus is about a bugfix concerning MP3 metadata in streams
+ and several under-the-hood improvements, including a minor new feature.
+ Except for remote control via signals, the Windows binary distribution is
+ now feature-complete.
 </p>
 
 <h4 id="ez_relnotes_chgs" name="ez_relnotes_chgs">Changes</h4>
@@ -245,10 +250,58 @@
   <ul>
    <li>
     FIX --
-    Plug the file descriptor leak, partially fixed in version 0.4.1, for good
-    - it affected more than just the -q use case.
+    The special case of streaming MP3 files without reencoding had been lost,
+    causing such streams to have no metadata.
+    This has been fixed.
+    (Ticket #1225)
+   </li>
+   <li>
+    MISC --
+    Handle SIGINT and SIGTERM to perform a clean shutdown.
    </li>
   </ul>
+ </li>
+ <li>
+  various:
+  <ul>
+   <li>
+    NEW --
+    A new convenience feature has been added, to allow automatic normalization
+    of metadata strings.
+    Useful if the majority of files come from a broken encoder/tagging program.
+    Disabled by default, this feature can be enabled with the new
+    <code>-n</code> command line parameter.
+   </li>
+   <li>
+    NEW --
+    Enable Unicode support in TagLib and convert metadata strings to the
+    current locale (<code>LC_CTYPE</code>) before displaying them on the
+    console.
+    Unsupported characters are displayed as <code>?</code> on the console,
+    which does not affect the actual metadata itself.
+    This feature requires iconv() via libc, if available, or GNU libiconv.
+   </li>
+   <li>
+    NEW --
+    Support gettimeofday() functionality on all platforms, including Windows.
+    The "real-time status line" when using the <code>-q</code> and
+    <code>-v</code> parameters is now complete everywhere.
+   </li>
+   <li>
+    MISC --
+    Add new <code>--enable-debug</code> configuration option to the configure
+    script, which enables (also new) memory debugging features.
+    (Not interesting for non-developers.)
+   </li>
+   <li>
+    MISC --
+    Various small code cleanups.
+   </li>
+  </ul>
+ </li>
+ <li>
+  The Windows build of ezstream now supports reading metadata from files with
+  TagLib.
  </li>
 </ul>
 
