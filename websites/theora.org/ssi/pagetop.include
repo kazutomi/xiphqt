@@ -18,7 +18,7 @@
     <li><a href="documentation.shtml">Documentation</a></li>
     <li><a href="content.shtml">Content</a></li>
   </ul>
-  <h3>Support us</h3>
+  <h5>Support us</h5>
   <div style="padding: 0em 0em 0em 0.5em; margin: 1em;">
     &nbsp;
     <form name="_xclick" action="https://www.paypal.com/cgi-bin/webscr" method="post">
