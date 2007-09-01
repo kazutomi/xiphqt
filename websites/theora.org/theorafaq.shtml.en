@@ -85,7 +85,6 @@
 <a href="#misc"><b>Misc and Credits</b></a>
 <ul>
 	<li><a href="#50">Who's in charge of Theora development?</a></li>
-	<li><a href="#51">Who designed this website? </a></li>
 	<li><a href="#52">Who is the webmaster of this site?</a></li>
 	<li><a href="#53">Who maintains The Glorious Theora FAQ?</a></li>
 	<li><a href="#54">When was this FAQ last updated?</a></li>
@@ -386,15 +385,6 @@ responsible for all aspects of the development. On2 will provide both
 monetary and technical support to Xiph.org throughout the project. On2 is
 also providing the source code of their implementation of the VP3 codec as
 well as some of their video tools.  
-</div>
-<br>
-<br>
-<a name="51"></a>
-<b>Q. Who designed this website?</b><br>
-<div class="txt">
-This website is based on a design called 'Nutrition,' available for public
-download from <a href="http://www.oswd.org/">Open Source Web Design</a>. 
-The original author is known by the nickname of 'BrAInDeD-'.  
 </div>
 <br>
 <br>
