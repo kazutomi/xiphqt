@@ -19,10 +19,9 @@
     <li><a href="documentation.shtml">Documentation</a></li>
     <li><a href="content.shtml">Content</a></li>
   </ul>
-  <h5>Support us</h5>
-  <div style="padding: 0em 0em 0em 0.5em; margin: 0.5em;">
-    &nbsp;
-    <form name="_xclick" action="https://www.paypal.com/cgi-bin/webscr" method="post">
+  <br>
+  <p style="font-weight:bold;font-size:small">Support us
+    <form name="_xclick" action="https://www.paypal.com/cgi-bin/webscr" method="post" style="padding-top:0.25em">
       <input type="hidden" name="cmd" value="_xclick">
       <input type="hidden" name="business" value="donate@xiph.org">
       <input type="hidden" name="item_name" value="theora donation">
@@ -30,7 +29,7 @@
       <input type="hidden" name="amount" value="10.00">
       <input type="image" src="http://www.paypal.com/en_US/i/btn/x-click-but04.gif" name="submit" alt="Make a donation via PayPal">
     </form>
-  </div>
+  </p>
 
 </div>
 
