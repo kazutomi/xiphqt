@@ -45,11 +45,10 @@
 <!--  All your page content goes here  -->
 
 <h3>Content</h3>
-<ul>
-<li><a href="http://share.sh.cvut.cz/avc/Theora_demos/">CTU Prague Archive</a></li>
-<li><a href="http://jroar.jcraft.com:8800/test_theora.m3u">JRoar stream</a></li>
-<li><a href="http://v2v.cc/">V2V network</a></li>
-<li><a href="http://www.editingarchive.com/eatv/">EATV</a></li>
-</ul>
+The <a href="http://wiki.xiph.org">xiph.org wiki</a> has an incomplete list of sites offering Theora content:
+<a href="http://wiki.xiph.org/index.php/List_of_Theora_videos">List of Theora videos</a>.
+
+<h3>Torrents</h3>
+<a href="http://theora.org/torrents/">Torrents for (old) demo content</a>
 
 <!--#include virtual="/ssi/pagebottom.include" -->
