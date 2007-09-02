@@ -29,15 +29,22 @@
 
 #define NBANDS 19
 int qbank[] =   {1, 2, 3, 4, 5, 6, 8, 10, 12, 14, 16, 20, 24, 28, 36, 44, 52, 68, 84, 116, 128};
-int qpulses[] = {3, 2, 2, 2, 2, 2, 2,  2,  2,  2,  2,  2,  1,  2,  2,  2,  0,  0,  0};
+//int qpulses[] = {3, 2, 2, 2, 2, 2, 2,  2,  2,  1,  1,  1,  1,  2,  2,  0,  0,  0,  0};
+int qpulses[] = {3, 2, 2, 2, 2, 2, 2,  2,  2,  2,  2,  2,  2,  2,  2,  0,  0,  0,  0};
 
-//int qpulses[] = {3, 3, 3, 3, 3, 3, 3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3};
+//int qpulses[] = {3, 3, 2, 2, 2, 2, 2,  2,  2,  2,  3,  2,  2,  2,  3,  0,  0,  0,  0};
+
 //int qpulses[] = {5, 5, 5, 5, 5, 5, 5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5};
 //int qpulses[] = {1, 1, 1, 1, 1, 2, 2,  2,  2,  2,  2,  2,  2,  2,  2,  1,  1,  1,  1};
 
-#define PBANDS 5
-int pbank[] = {1, 4, 8, 16, 28, 44};
+//#define PBANDS 5
+//int pbank[] = {1, 4, 10, 16, 28, 44};
 
+#define PBANDS 5
+int pbank[] = {1, 3, 6, 12, 18, 44};
+
+//#define PBANDS NBANDS
+//#define pbank qbank
 
 void alg_quant(float *x, int N, int K, float *p)
 {
@@ -235,10 +242,10 @@ void pitch_quant_bank(float *X, float *P, float *gains)
       //gain = Sxy/(2*(pbank[i+1]-pbank[i]));
       //if (i<3)
       //gain *= 1+.02*gain;
-      if (gain > .9)
-         gain = .9;
-      if (gain < 0)
-         gain = 0;
+      if (gain > .90)
+         gain = .90;
+      if (gain < 0.0)
+         gain = 0.0;
 
       gains[i] = gain;
       for (j=pbank[i];j<pbank[i+1];j++)
@@ -338,15 +345,15 @@ void ceft_encode(CEFTState *st, float *in, float *out, float *pitch, float *wind
    /* Bands for the input signal */
    compute_bank(X, bank);
 /*
-   if (rand()%10 ==0 && fabs(X[0]) > 5 && (fabs(X[0]) > 15 || rand() % 10 == 0))
+   if (rand()%10 ==0 && fabs(X[0]) > 2 && (fabs(X[0]) > 10 || rand() % 5 == 0))
    {
-      printf ("%f ", 20*log10(5+fabs(X[0])));
+      printf ("%f ", 20*log10(1+fabs(X[0])));
       for (i=0;i<NBANDS;i++)
-         printf ("%f ", 20*log10(5+bank[i]));
+         printf ("%f ", 20*log10(1+bank[i]));
       printf ("\n");
    }
-   return;
-  */ 
+   return;*/
+  
    for (i=0;i<st->length;i++)
       p[i] = pitch[i]*window[i];
    
@@ -354,24 +361,57 @@ void ceft_encode(CEFTState *st, float *in, float *out, float *pitch, float *wind
    
    normalise_bank(X, bank);
    
-#if 0
-   float q = .25f;
+   float in_bank[NBANDS+1];
+   float qbank[NBANDS+1];
+   static float last_err[NBANDS+1];
+
+   in_bank[0] = 20*log10(fabs(X[0])+1);
    for (i=0;i<NBANDS;i++)
    {
-      if (i<4)
-         q = .25;
-      else if (i<8)
-         q = .5;
-      else if (i<12)
-         q = 1;
+      in_bank[i+1] = 20*log10(bank[i]+1) + .4*last_err[i+1];
+   }
+   for (i=0;i<NBANDS+1;i++)
+      qbank[i] = in_bank[i];
+   
+   //quantise_bands(in_bank, qbank, NBANDS+1);
+
+#if 0
+   float q = .25f;
+   for (i=0;i<NBANDS+1;i++)
+   {
+      if (i<1)
+         q = 1.;
+      else if (i<4)
+         q = 2.;
+      else if (i<5)
+         q = 3.;
+      else if (i<10)
+         q = 4.;
+      else if (i<14)
+         q = 5.;
       else
-         q = 1;
-      int sc = floor(.5 + log(bank[i])/q);
+         q = 6.;
+      int sc = floor(.5 + (in_bank[i]-qbank[i])/q);
       printf ("%d ", sc);
-      bank[i] = exp(q * sc);
+      qbank[i] = q * sc;
    }
    printf ("\n");
 #endif
+   
+   for (i=0;i<NBANDS+1;i++)
+      printf ("%f ", in_bank[i]-qbank[i]);
+   printf ("\n");
+   
+   
+   for (i=0;i<NBANDS+1;i++)
+      last_err[i] = qbank[i]-in_bank[i];
+   
+   for (i=0;i<NBANDS;i++)
+   {
+      bank[i] = pow(10,qbank[i+1]/20)-1;
+      if (bank[i] < .1)
+         bank[i] = .1;
+   }
    /* Bands for the pitch signal */
    compute_bank(Xp, pitch_bank);
    normalise_bank(Xp, pitch_bank);
@@ -388,7 +428,7 @@ void ceft_encode(CEFTState *st, float *in, float *out, float *pitch, float *wind
    for (i=1;i<st->length;i++)
       X[i] -= Xp[i];
 
-//Quantise input
+   //Quantise input
    quant_bank(X, Xp);
    
    //pitch_renormalise_bank(X, Xp);
