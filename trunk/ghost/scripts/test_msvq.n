@@ -1,0 +1,108 @@
+#!/usr/bin/env batchflow
+<?xml version="1.0"?>
+<Document>
+  <Network type="subnet" name="MAIN">
+    <Node name="node_LoadFile_1" type="LoadFile" x="10.000000" y="-3.000000">
+      <Parameter name="FILENAME" type="subnet_param" value="ARG1" description=""/>
+    </Node>
+    <Node name="node_LOOP0_1" type="LOOP0" x="286.000000" y="118.000000">
+      <Parameter name="DOWHILE" type="int" value="" description=""/>
+    </Node>
+    <Node name="node_LoadFile_2" type="LoadFile" x="12.000000" y="62.000000">
+      <Parameter name="FILENAME" type="string" value="band1.vq" description=""/>
+    </Node>
+    <Node name="node_LoadFile_3" type="LoadFile" x="14.000000" y="93.000000">
+      <Parameter name="FILENAME" type="string" value="band2.vq" description=""/>
+    </Node>
+    <Node name="node_LoadFile_4" type="LoadFile" x="16.000000" y="126.000000">
+      <Parameter name="FILENAME" type="string" value="band3a.vq" description=""/>
+    </Node>
+    <Node name="node_LoadFile_5" type="LoadFile" x="18.000000" y="174.000000">
+      <Parameter name="FILENAME" type="string" value="band3b.vq" description=""/>
+    </Node>
+    <Node name="node_LoadFile_6" type="LoadFile" x="16.000000" y="221.000000">
+      <Parameter name="FILENAME" type="string" value="band3c.vq" description=""/>
+    </Node>
+    <Node name="node_Constant_1" type="Constant" x="-27.000000" y="284.000000">
+      <Parameter name="VALUE" type="subnet_param" value="ARG2" description="The value"/>
+    </Node>
+    <Node name="node_Discard_1" type="Discard" x="416.000000" y="119.000000"/>
+    <Node name="node_OutputStream_1" type="OutputStream" x="136.000000" y="287.000000">
+      <Parameter name="TYPE" type="string" value="" description="Type of stream: stream, fd, or FILE (default stream)"/>
+    </Node>
+    <Link from="node_LoadFile_2" output="OUTPUT" to="node_LOOP0_1" input="VQ"/>
+    <Link from="node_LoadFile_1" output="OUTPUT" to="node_LOOP0_1" input="INPUT"/>
+    <Link from="node_LoadFile_3" output="OUTPUT" to="node_LOOP0_1" input="VQ2"/>
+    <Link from="node_LoadFile_4" output="OUTPUT" to="node_LOOP0_1" input="VQ_3"/>
+    <Link from="node_LoadFile_5" output="OUTPUT" to="node_LOOP0_1" input="VQ_4"/>
+    <Link from="node_LoadFile_6" output="OUTPUT" to="node_LOOP0_1" input="VQ_5"/>
+    <Link from="node_LOOP0_1" output="OUTPUT" to="node_Discard_1" input="INPUT"/>
+    <Link from="node_OutputStream_1" output="OUTPUT" to="node_LOOP0_1" input="STREAM"/>
+    <Link from="node_Constant_1" output="VALUE" to="node_OutputStream_1" input="INPUT"/>
+    <NetOutput name="OUTPUT" node="node_Discard_1" terminal="OUTPUT" object_type="NilObject" description="Always return a NilObject"/>
+  </Network>
+  <Network type="iterator" name="LOOP0">
+    <Node name="node_UnPack_1" type="UnPack" x="-207.000000" y="89.000000"/>
+    <Node name="node_VQuantize_1" type="VQuantize" x="51.000000" y="102.000000"/>
+    <Node name="node_Sub_1" type="Sub" x="196.000000" y="65.000000"/>
+    <Node name="node_VQuantize_2" type="VQuantize" x="349.000000" y="112.000000"/>
+    <Node name="node_Sub_2" type="Sub" x="532.000000" y="70.000000"/>
+    <Node name="node_Select_1" type="Select" x="667.000000" y="-81.000000">
+      <Parameter name="START" type="int" value="9" description=""/>
+      <Parameter name="END" type="int" value="19" description=""/>
+    </Node>
+    <Node name="node_Select_2" type="Select" x="657.000000" y="85.000000">
+      <Parameter name="START" type="int" value="3" description=""/>
+      <Parameter name="END" type="int" value="8" description=""/>
+    </Node>
+    <Node name="node_Select_3" type="Select" x="658.000000" y="198.000000">
+      <Parameter name="START" type="int" value="0" description=""/>
+      <Parameter name="END" type="int" value="2" description=""/>
+    </Node>
+    <Node name="node_Sub_3" type="Sub" x="1003.000000" y="-75.000000"/>
+    <Node name="node_Sub_4" type="Sub" x="1026.000000" y="82.000000"/>
+    <Node name="node_Sub_5" type="Sub" x="1087.000000" y="203.000000"/>
+    <Node name="node_VQuantize_3" type="VQuantize" x="834.000000" y="275.000000"/>
+    <Node name="node_VQuantize_4" type="VQuantize" x="832.000000" y="11.000000"/>
+    <Node name="node_VQuantize_5" type="VQuantize" x="859.000000" y="132.000000"/>
+    <Node name="node_Concat_1" type="Concat" x="1328.000000" y="160.000000"/>
+    <Node name="node_Concat_2" type="Concat" x="1303.000000" y="-4.000000"/>
+    <Node name="node_Save_1" type="Save" x="1473.000000" y="-2.000000">
+      <Parameter name="PRETTY_PRINT" type="bool" value="true" description="If we want to print human readable output (and Matlab)"/>
+    </Node>
+    <Link from="node_UnPack_1" output="OUTPUT" to="node_VQuantize_1" input="INPUT"/>
+    <Link from="node_VQuantize_1" output="OUTPUT" to="node_Sub_1" input="INPUT2"/>
+    <Link from="node_UnPack_1" output="OUTPUT" to="node_Sub_1" input="INPUT1"/>
+    <Link from="node_VQuantize_2" output="OUTPUT" to="node_Sub_2" input="INPUT2"/>
+    <Link from="node_Sub_1" output="OUTPUT" to="node_VQuantize_2" input="INPUT"/>
+    <Link from="node_Sub_1" output="OUTPUT" to="node_Sub_2" input="INPUT1"/>
+    <Link from="node_Sub_2" output="OUTPUT" to="node_Select_1" input="INPUT"/>
+    <Link from="node_Sub_2" output="OUTPUT" to="node_Select_2" input="INPUT"/>
+    <Link from="node_Sub_2" output="OUTPUT" to="node_Select_3" input="INPUT"/>
+    <Link from="node_Select_1" output="OUTPUT" to="node_Sub_3" input="INPUT1"/>
+    <Link from="node_Select_1" output="OUTPUT" to="node_VQuantize_4" input="INPUT"/>
+    <Link from="node_Select_2" output="OUTPUT" to="node_Sub_4" input="INPUT1"/>
+    <Link from="node_Concat_1" output="OUTPUT" to="node_Concat_2" input="INPUT1"/>
+    <Link from="node_Select_3" output="OUTPUT" to="node_VQuantize_3" input="INPUT"/>
+    <Link from="node_VQuantize_3" output="OUTPUT" to="node_Sub_5" input="INPUT2"/>
+    <Link from="node_VQuantize_4" output="OUTPUT" to="node_Sub_3" input="INPUT2"/>
+    <Link from="node_VQuantize_5" output="OUTPUT" to="node_Sub_4" input="INPUT2"/>
+    <Link from="node_Select_3" output="OUTPUT" to="node_Sub_5" input="INPUT1"/>
+    <Link from="node_Select_2" output="OUTPUT" to="node_VQuantize_5" input="INPUT"/>
+    <Link from="node_Concat_2" output="OUTPUT" to="node_Save_1" input="OBJECT"/>
+    <Link from="node_Sub_5" output="OUTPUT" to="node_Concat_1" input="INPUT1"/>
+    <Link from="node_Sub_4" output="OUTPUT" to="node_Concat_1" input="INPUT2"/>
+    <Link from="node_Sub_3" output="OUTPUT" to="node_Concat_2" input="INPUT2"/>
+    <NetInput name="INPUT" node="node_UnPack_1" terminal="INPUT" object_type="any" description="No description available"/>
+    <NetCondition name="CONDITION" node="node_UnPack_1" terminal="NOT_END"/>
+    <NetInput name="VQ" node="node_VQuantize_1" terminal="VQ" object_type="any" description="No description available"/>
+    <NetInput name="VQ2" node="node_VQuantize_2" terminal="VQ" object_type="any" description="No description available"/>
+    <NetInput name="VQ_3" node="node_VQuantize_3" terminal="VQ" object_type="any" description="No description available"/>
+    <NetInput name="VQ_4" node="node_VQuantize_5" terminal="VQ" object_type="any" description="No description available"/>
+    <NetInput name="VQ_5" node="node_VQuantize_4" terminal="VQ" object_type="any" description="No description available"/>
+    <NetInput name="STREAM" node="node_Save_1" terminal="STREAM" object_type="Stream" description="The output stream where to save"/>
+    <NetOutput name="OUTPUT" node="node_Save_1" terminal="OUTPUT" object_type="any" description="The input object"/>
+  </Network>
+  <Parameter name="ARG1" type="" value=""/>
+  <Parameter name="ARG2" type="" value=""/>
+</Document>
