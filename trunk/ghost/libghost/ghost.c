@@ -229,41 +229,13 @@ void ghost_encode(GhostEncState *st, float *pcm)
       /*for (i=0;i<st->length;i++)
       y[i] *= st->synthesis_window[i];*/
 #if 0
-      float max_score=-1;
       int pitch_index=0;
-      {
-         int lag, i;
-         for (lag=0;lag<1024-st->length;lag++)
-         {
-            float score;
-            float Sxx=1;
-            float Sxy=0, Syy=1;
-            for (i=0;i<st->length;i++)
-            {
-               Sxx += x[i]*x[i];
-               Sxy += x[i]*st->pitch_buf[i+lag];
-               Syy += st->pitch_buf[i+lag]*st->pitch_buf[i+lag];
-            }
-            score = sqrt(Sxy*Sxy/(Sxx*Syy));
-            if (Sxy<0)
-               score = 0;
-            if (score > max_score)
-            {
-               max_score = score;
-               pitch_index = lag;
-            }
-            //printf ("%f ", score);
-         }
-         //printf ("\n");
-      }
-      int fpitch = -2;
       float curve2[512];
       for (i=0;i<512;i++)
          curve2[i] = curve[(PCM_BUF_SIZE>>1)*i/512];
 
-      find_spectral_pitch(x, st->pitch_buf, 1024, st->length, &fpitch, curve2);
+      find_spectral_pitch(x, st->pitch_buf, 1024, st->length, &pitch_index, curve2);
       //printf ("%f %d %d\n", max_score, pitch_index, fpitch);
-      pitch_index = fpitch;
       
       float z[st->length];
       for (i=0;i<st->length;i++)
