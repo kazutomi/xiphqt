@@ -1,10 +1,10 @@
 </div><!-- content -->
 
 <div id="copyright">
-  <p>The Xiph Fish Logo and the Vorbis.com many-fish logos are 
+  <p>The Xiph Fish Logo and the theora.org logo are 
   trademarks (&trade;) of Xiph.Org.<br/>
 
-  These pages &copy; 1994 - 2005 Xiph.Org. All rights reserved.</p>
+  These pages &copy; 1994 - 2007 Xiph.Org. All rights reserved.</p>
 
   <p style="color:#FFFFFF;"><!--#config timefmt="%B %d, %Y" -->Last Modified: <!--#echo var="LAST_MODIFIED" --></p>
 </div>
