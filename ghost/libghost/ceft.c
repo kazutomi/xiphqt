@@ -60,6 +60,26 @@ void alg_quant(float *x, int N, int K, float *p)
    for (i=0;i<N;i++)
       y[i] = 0;
    
+   float boost[N];
+   for (i=0;i<N;i++)
+      boost[i] = 0;
+   if (K==1)
+   {
+      float centre;
+      float Sxw = 0, Sw = 1e-10;
+      for (i=0;i<N/2;i++)
+      {
+         float weight = x[2*i]*x[2*i] + x[2*i+1]*x[2*i+1];
+         Sxw += i*weight;
+         Sw  += weight;
+      }
+      centre = Sxw/Sw;
+      centre = floor(centre)+(rand()&1);
+      //printf ("%d ", (int)centre);
+      for (i=0;i<N/2;i++)
+         boost[2*i] = boost[2*i+1] = (1.f/N)*(N-fabs(i-centre));
+   }
+   
    if (0)
    {
       int tmp = N;
@@ -90,7 +110,7 @@ void alg_quant(float *x, int N, int K, float *p)
             tmp_yp = yp - p[j];
          g = (sqrt(tmp_yp*tmp_yp + tmp_yy - tmp_yy*Rpp) - tmp_yp)/tmp_yy;
          //g = 1/sqrt(tmp_yy);
-         score = 2*g*tmp_xy - g*g*tmp_yy;
+         score = 2*g*tmp_xy - g*g*tmp_yy + boost[j];
          //score = tmp_xy*tmp_xy/tmp_yy;
          if (score>max_val)
          {
@@ -117,6 +137,8 @@ void alg_quant(float *x, int N, int K, float *p)
          }
       }
       
+      //if (K==1)
+      //   printf ("%d\n", best_id/2);
       xy = best_xy;
       yy = best_yy;
       yp = best_yp;
@@ -134,7 +156,6 @@ void alg_quant(float *x, int N, int K, float *p)
          Ex += (x[k]*x[k]);
       printf ("** %f %f %f ", E, Ex, Rpp);
    }
-
    //printf ("\n");
    for (i=0;i<N;i++)
       x[i] = p[i]+gain*y[i];
@@ -147,7 +168,7 @@ void noise_quant(float *x, int N, int K, float *p)
    float E = 1e-10;
    for (i=0;i<N;i++)
    {
-      x[i] = (rand()%1000)/500.+1;
+      x[i] = (rand()%1000)/500.-1;
       E += x[i]*x[i];
    }
    E = 1./sqrt(E);
@@ -207,13 +228,90 @@ void denormalise_bank(float *X, float *bank)
    //FIXME: Kludge
    X[255] = 0;
 }
+void crappy_fft(float *X, int len, int R, int dir)
+{
+   int i, j;
+   float fact = 2*M_PI/(len>>1);
+   float out[len];
+   for (i=0;i<len>>1;i++)
+   {
+      out[2*i] = 0;
+      out[2*i+1] = 0;
+      for (j=0;j<len>>1;j++)
+      {
+         float c, d;
+         c = cos(fact*j*i);
+         if (dir == 1)
+            d = -sin(fact*j*i);
+         else
+            d = -sin(fact*j*i);
+            
+         out[2*i  ] += c*X[2*j] + d*X[2*j+1];
+         out[2*i+1] += d*X[2*j] + c*X[2*j+1];
+      }
+   }
+   for (i=0;i<len;i++)
+      X[i] = out[i]/sqrt(len/2);
+}
 
-void quant_bank(float *X, float *P)
+void crappy_rfft(float *X, int len, int R, int dir)
+{
+   int N=len*2;
+   float x[N];
+   int i;
+   if (dir>0)
+   {
+      for (i=0;i<len;i++)
+      {
+         x[2*i] = X[i];
+         x[2*i+1] = 0;
+      }
+      crappy_fft(x, N, R, 1);
+      for (i=0;i<len;i++)
+         X[i] = x[i];
+      X[1] = x[len];
+   } else {
+      for (i=1;i<len>>1;i++)
+      {
+         x[2*i] = X[2*i];
+         x[2*i+1] = X[2*i+1];
+         x[2*(len-i)] = X[2*i];
+         x[2*(len-i)+1] = X[2*i+1];
+      }
+      x[len] = X[1];
+      x[len+1] = 0;
+      x[1] = 0;
+      x[0] = X[0];
+      crappy_fft(x, N, R, -1);
+      for (i=0;i<len;i++)
+         X[i] = x[2*i];
+   }
+}
+
+void random_rotation(float *X, int R, int dir)
 {
    int i;
    for (i=0;i<NBANDS;i++)
    {
-      int q=qpulses[i];
+      crappy_rfft(X+qbank[i]*2-1, 2*(qbank[i+1]-qbank[i]), R+i, dir);
+      //rotate_vect(X+qbank[i]*2-1, 2*(qbank[i+1]-qbank[i]), R+i, dir);
+   }
+}
+
+
+void quant_bank(float *X, float *P, float centre)
+{
+   int i;
+   for (i=0;i<NBANDS;i++)
+   {
+      int q;
+      /*if (centre < 5)
+         q =qpulses3[i];
+      else if (centre < 8)
+         q =qpulses2[i];
+      else
+         q =qpulses[i];*/
+      q =qpulses[i];
       if (q)
          alg_quant(X+qbank[i]*2-1, 2*(qbank[i+1]-qbank[i]), q, P+qbank[i]*2-1);
       else
@@ -328,6 +426,16 @@ CEFTState *ceft_init(int len)
    return st;
 }
 
+float norm2(float *x, int len)
+{
+   float E=0;
+   int i;
+   for (i=0;i<len;i++)
+      E += x[i]*x[i];
+   return E;
+}
+
+
 void ceft_encode(CEFTState *st, float *in, float *out, float *pitch, float *window)
 {
    //float bark[BARK_BANDS];
@@ -339,6 +447,7 @@ void ceft_encode(CEFTState *st, float *in, float *out, float *pitch, float *wind
    float pitch_bank[NBANDS];
    float p[st->length];
    float gains[PBANDS];
+   float mask[NBANDS];
    
    spx_fft_float(st->frame_fft, in, X);
 
@@ -352,8 +461,32 @@ void ceft_encode(CEFTState *st, float *in, float *out, float *pitch, float *wind
          printf ("%f ", 20*log10(1+bank[i]));
       printf ("\n");
    }
-   return;*/
-  
+   return;
+  */
+#if 0
+   float tmp = 1.+X[0]*X[0];
+   for (i=0;i<NBANDS;i++)
+   {
+      tmp = 1. + .1*tmp + bank[i]*bank[i];
+      mask[i] = bank[i]*bank[i]/tmp;
+      printf ("%f ", 10*log10(mask[i]));
+   }
+   printf ("\n");
+#endif
+   
+   float centre=0;
+#if 0
+   float Sxw = 0, Sw = 0;
+   for (i=0;i<NBANDS;i++)
+   {
+      printf ("%f ", 20*log10(bank[i]));
+      Sxw += i*sqrt(bank[i]);
+      Sw  += sqrt(bank[i]);
+   }
+   centre = Sxw/Sw;
+            //printf ("%f\n", Sxw/Sw);
+#endif         
+   
    for (i=0;i<st->length;i++)
       p[i] = pitch[i]*window[i];
    
@@ -398,9 +531,9 @@ void ceft_encode(CEFTState *st, float *in, float *out, float *pitch, float *wind
    printf ("\n");
 #endif
    
-   for (i=0;i<NBANDS+1;i++)
+   /*for (i=0;i<NBANDS+1;i++)
       printf ("%f ", in_bank[i]-qbank[i]);
-   printf ("\n");
+   printf ("\n");*/
    
    
    for (i=0;i<NBANDS+1;i++)
@@ -423,14 +556,19 @@ void ceft_encode(CEFTState *st, float *in, float *out, float *pitch, float *wind
       printf ("%f ", X[i]);
    printf ("\n");
    */
+   
+   //random_rotation(X, 10, -1);
+   //random_rotation(Xp, 10, -1);
+   
    pitch_quant_bank(X, Xp, gains);
       
    for (i=1;i<st->length;i++)
       X[i] -= Xp[i];
 
    //Quantise input
-   quant_bank(X, Xp);
+   quant_bank(X, Xp, centre);
    
+   //random_rotation(X, 10, 1);
    //pitch_renormalise_bank(X, Xp);
 
 #if 0
