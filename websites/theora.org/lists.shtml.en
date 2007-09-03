@@ -44,7 +44,7 @@
 <!--#include virtual="/ssi/pagetop.include" -->
 <!--  All your page content goes here  -->
 
-<h3>[ Theora Mailing Lists ]</h3>
+<h3>Theora Mailing Lists</h3>
 <p>
 There are three mailing lists maintained for the Theora project.
 This is the best place to ask questions, contact the developers
@@ -80,7 +80,7 @@ Archives for all Xiph.org projects including Theora</a>
 information for all Xiph.org projects including Theora</a>
 </p>
 
-<h3>[ IRC ]</h3>
+<h3>IRC</h3>
 <p>
 There's also an active <a href="http://irchelp.org/">IRC</a> 
 channel for Theora.
@@ -89,7 +89,7 @@ Join <strong>#theora</strong> on
 <a href="http://freenode.net/">irc.freenode.net</a>.
 </p>
 
-<h3>[ Wiki ]</h3>
+<h3>Wiki</h3>
 
 <p>
 You can also document concerns, applications, howto instructions,
@@ -98,7 +98,11 @@ usage, support or anything else related to theora in the
 good resource for documenting the outcomes of discussions and keeping
 track of various projects, and anyone can help edit the pages!
 </p>
-</div>
 
+
+<h3>Reporting bugs</h3>
+<p>
+Shall you encounter problems you can file bug reports over at the <a href="https://trac.xiph.org/">Xiph.org bug tracker</a>.
+</p>
 
 <!--#include virtual="/ssi/pagebottom.include" -->

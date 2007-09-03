@@ -50,7 +50,7 @@
   <li>The <strong>libtheora</strong> reference implementation provides
       the standard encoder and decoder under a BSD license.
       [<a href="http://downloads.xiph.org/releases/theora/libtheora-1.0alpha7.tar.gz">libtheora-1.0alpha7</a>]
-      [<a href="http://svn.xiph.org/trunk/theora/">SVN trunk</a>]
+      [<a href="svn.shtml">SVN information page</a>]
   </li>
   <li>The <strong>theora-exp</strong> project is a from-scratch 
       implementation of the complete Theora I decoder and a 
@@ -69,10 +69,12 @@
 <a name="binaries"><h2>Binaries</h2></a>
  <ul>
    <li><a href="http://www.v2v.cc/~j/ffmpeg2theora/">ffmpeg2theora</a></li>
+   <li><a href="http://www.illiminable.com/ogg/">DirectShow plugins</a></li>
+   <li><a href="http://xiph.org/quicktime/">Xiph QuickTime components</a></li>
    <li><a href="http://videolan.org/">VLC player</a></li>
    <li><a href="https://player.helixcommunity.org/2004/downloads/">Helix Player</a></li>
-   <li><a href="http://www.illiminable.com/ogg/">DirectShow plugins</a></li>
  </ul>
 
+The Wiki contains a <a href="http://wiki.xiph.org/index.php/TheoraSoftwareEncoders">list of Theora encoders</a> and <a href="http://wiki.xiph.org/index.php/TheoraSoftwarePlayers">Theora players</a>.
 
 <!--#include virtual="/ssi/pagebottom.include" -->
