@@ -26,11 +26,15 @@
 
 #include "fftwrap.h"
 
+#define NBANDS 15
+int qbank[] =   {1, 2, 4, 6, 8, 12, 16, 20, 24, 28, 36, 44, 52, 68, 84, 116, 128};
+int qpulses[] = {3, 3, 2, 2, 3,  3,  2,  2,  1,  2,  2,  0,  0,  0,  0};
+//int qpulses[] = {5, 5, 3, 3, 3,  3,  2,  2,  2,  3,  3,  0,  0,  0,  0};
 
-#define NBANDS 19
-int qbank[] =   {1, 2, 3, 4, 5, 6, 8, 10, 12, 14, 16, 20, 24, 28, 36, 44, 52, 68, 84, 116, 128};
+//#define NBANDS 19
+//int qbank[] =   {1, 2, 3, 4, 5, 6, 8, 10, 12, 14, 16, 20, 24, 28, 36, 44, 52, 68, 84, 116, 128};
+//int qpulses[] = {3, 2, 2, 2, 2, 2, 2,  2,  2,  2,  2,  2,  2,  2,  2,  0,  0,  0,  0};
 //int qpulses[] = {3, 2, 2, 2, 2, 2, 2,  2,  2,  1,  1,  1,  1,  2,  2,  0,  0,  0,  0};
-int qpulses[] = {3, 2, 2, 2, 2, 2, 2,  2,  2,  2,  2,  2,  2,  2,  2,  0,  0,  0,  0};
 
 //int qpulses[] = {3, 3, 2, 2, 2, 2, 2,  2,  2,  2,  3,  2,  2,  2,  3,  0,  0,  0,  0};
 
@@ -41,7 +45,7 @@ int qpulses[] = {3, 2, 2, 2, 2, 2, 2,  2,  2,  2,  2,  2,  2,  2,  2,  0,  0,  0
 //int pbank[] = {1, 4, 10, 16, 28, 44};
 
 #define PBANDS 5
-int pbank[] = {1, 3, 6, 12, 18, 44};
+int pbank[] = {1, 4, 8, 12, 18, 44};
 
 //#define PBANDS NBANDS
 //#define pbank qbank
@@ -448,21 +452,42 @@ void ceft_encode(CEFTState *st, float *in, float *out, float *pitch, float *wind
    float p[st->length];
    float gains[PBANDS];
    float mask[NBANDS];
-   
+   static float obank[NBANDS+1];
    spx_fft_float(st->frame_fft, in, X);
 
    /* Bands for the input signal */
    compute_bank(X, bank);
-/*
+
+   for (i=0;i<st->length;i++)
+      p[i] = pitch[i]*window[i];
+   
+   spx_fft_float(st->frame_fft, p, Xp);
+   
+   /* Bands for the pitch signal */
+   compute_bank(Xp, pitch_bank);
+#if 0
    if (rand()%10 ==0 && fabs(X[0]) > 2 && (fabs(X[0]) > 10 || rand() % 5 == 0))
    {
-      printf ("%f ", 20*log10(1+fabs(X[0])));
+      /*printf ("%f ", 20*log10(1+fabs(X[0])));
       for (i=0;i<NBANDS;i++)
          printf ("%f ", 20*log10(1+bank[i]));
+      for (i=0;i<NBANDS+1;i++)
+         printf ("%f ", obank[i]);
+      printf ("%f ", 20*log10(1+fabs(Xp[0])));
+      for (i=0;i<NBANDS;i++)
+         printf ("%f ", 20*log10(1+pitch_bank[i]));
+      printf (" \n");*/
+      for (i=0;i<NBANDS;i++)
+         printf ("%f ", 20*log10(1+bank[i])-.9*obank[i+1]);
       printf ("\n");
+
    }
+   obank[0] = 20*log10(1+fabs(X[0]));
+   for (i=0;i<NBANDS;i++)
+      obank[i+1] = 20*log10(1+bank[i]);
    return;
-  */
+#endif
+                       
 #if 0
    float tmp = 1.+X[0]*X[0];
    for (i=0;i<NBANDS;i++)
@@ -487,26 +512,22 @@ void ceft_encode(CEFTState *st, float *in, float *out, float *pitch, float *wind
             //printf ("%f\n", Sxw/Sw);
 #endif         
    
-   for (i=0;i<st->length;i++)
-      p[i] = pitch[i]*window[i];
-   
-   spx_fft_float(st->frame_fft, p, Xp);
    
    normalise_bank(X, bank);
    
    float in_bank[NBANDS+1];
    float qbank[NBANDS+1];
    static float last_err[NBANDS+1];
+   static float last_bank[NBANDS+1];
 
-   in_bank[0] = 20*log10(fabs(X[0])+1);
    for (i=0;i<NBANDS;i++)
    {
-      in_bank[i+1] = 20*log10(bank[i]+1) + .4*last_err[i+1];
+      in_bank[i] = 20*log10(bank[i]+1) + .6*last_err[i+1] - .9*last_bank[i];
    }
-   for (i=0;i<NBANDS+1;i++)
+   for (i=0;i<NBANDS;i++)
       qbank[i] = in_bank[i];
    
-   //quantise_bands(in_bank, qbank, NBANDS+1);
+   //quantise_bands(in_bank, qbank, NBANDS);
 
 #if 0
    float q = .25f;
@@ -536,17 +557,22 @@ void ceft_encode(CEFTState *st, float *in, float *out, float *pitch, float *wind
    printf ("\n");*/
    
    
-   for (i=0;i<NBANDS+1;i++)
+   for (i=0;i<NBANDS;i++)
       last_err[i] = qbank[i]-in_bank[i];
    
    for (i=0;i<NBANDS;i++)
    {
-      bank[i] = pow(10,qbank[i+1]/20)-1;
+      qbank[i] += .9*last_bank[i];
+      if (qbank[i]<0)
+         qbank[i] = 0;
+      bank[i] = pow(10,(qbank[i])/20)-1;
       if (bank[i] < .1)
          bank[i] = .1;
    }
-   /* Bands for the pitch signal */
-   compute_bank(Xp, pitch_bank);
+   for (i=0;i<NBANDS;i++)
+      last_bank[i] = qbank[i];
+
+
    normalise_bank(Xp, pitch_bank);
    
    /*
