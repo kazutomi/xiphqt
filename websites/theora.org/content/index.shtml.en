@@ -1,42 +1,6 @@
 <!--#include virtual="/ssi/header.include" -->
 <!-- Enter custom page information and styles here -->
   <title>Theora.org :: content - Theora, video for everyone</title>
-<style type="text/css">
-<!--
-.newslist {
-	margin: 0 0 2.64em 0;
-	padding: 0;
-}
-
-.newslist li {
-	margin-bottom: .72em;
-	list-style: none;
-	font-size: .94em;
-	line-height: 1.4;
-}
-
-.newslist a {
-	color: #3366CC;
-}
-
-.xiph {
-	color: #FF9900;
-	font-weight: bold;
-}
-
-.resources ul {
-	margin: 0;
-	padding: 0;
-}
-
-.resources li {
-	margin-bottom: .4em;
-	list-style: none;
-	font-size: .94em;
-	line-height: 1.4;
-}
--->
-</style>
 </head>
 <body>
 <!--#include virtual="/common/xiphbar.include" -->
