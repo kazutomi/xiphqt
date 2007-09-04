@@ -361,7 +361,7 @@ how exactly that's intended to work...</p>
 <p>We're pleased to announce a new release of the libtheora reference
 implemenation. This is an incremental update over alpha 4, to draw
 a line under recent work before we start adding optimization work.
-</p><p>
+</p>
 <p>There are two important bugfixes as well, so we recommend upgrading
 to everyone. This release is source and binary compatible with 
 1.0 alpha 4.</p>
