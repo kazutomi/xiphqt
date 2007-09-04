@@ -19,10 +19,10 @@ modifications, and improvements in said Software; and to use,
 distribute, and sell said changes as well as applications for other
 fields of use.</i>
 <p>
-                        <b>[ Theora SVN ]</b><br>
-			<br>Xiph.org development projects are available to the public through read-only
+                        <b>[ Theora SVN ]</b><br/>
+			<br/>Xiph.org development projects are available to the public through read-only
 			Subversion (SVN) access.
-			<br>
+			<br/>
 			<p><b>Accessing SVN at Xiph.org</b>
 			<p>Access to Xiph.org can be handled basically two ways:
                         <p>
@@ -52,7 +52,7 @@ fields of use.</i>
 			can be obtained by changing the <tt>theora</tt> module name in the 
 			lines above to <tt>vp32</tt>, as in '<tt>svn co http://svn.xiph.org/trunk/vp32</tt>'.
 
-			<br><p><br>
+			<br/><p><br/>
 </div>
 
 
