@@ -59,7 +59,7 @@ Systems</a>. Way to go guys.</p>
 <p>A link should be available on the <a 
 href="http://www.jukola2007.net/">front page</a> when the stream is live 
 (2007 June 16-17). More information about the webcast is 
-<a href="http://www.jukola2007.net/virkia/jukola.nsf/sp?Open&cid=content445C0C">available 
+<a href="http://www.jukola2007.net/virkia/jukola.nsf/sp?Open&amp;cid=content445C0C">available 
 in Finnish</a>.</p>
 
 <h3>2007 June 7 - HTML5 video now!</h3>
@@ -440,7 +440,7 @@ try out the code.</p>
 <h3>2005 Mar 24 - Fedora Conference Video</h3>
 
 <p>Video from the <a href="http://fedoraproject.org/fudcon/">Fedora 
-Users & Develper Conference</a> last month in Boston is up in Theora 
+Users &amp; Develper Conference</a> last month in Boston is up in Theora 
 format. The files <a href="http://fedoraproject.org/wiki/FUDConVideos">are 
 available here</a>, or you can get a complete torrents of the 
 <a href="http://torrent.linux.duke.edu/FUDCon-devel-videos.torrent">Developer</a> 
@@ -612,7 +612,7 @@ login as root, and then enter the command "./setup.sh".  Katiuska can be downloa
 </p>
 
 <h3>2004 Nov 20 - Windows installer for RealPlayer plugins</h3>
-<p>A Windows installer for version 0.5 of the Helix Theora & 
+<p>A Windows installer for version 0.5 of the Helix Theora &amp; 
 Vorbis plugins for RealPlayer 10/10.5 and RealOne Player has been released. There are no code
 changes from the 0.5 zip file that was posted earlier. This just replaces the
 zip file with an installer. You can get the installer at:</p>
@@ -637,8 +637,8 @@ feedback.</i></p>
 <p>New versions of the Helix Theora and Vorbis plugins are now available for 
 RealPlayer 10.  The major feature of this release is adding chaining support.</p>
 The new plugins can be downloaded at: <br>
-<a href="https://helixcommunity.org/project/showfiles.php?group_id=7&release_id=361"> 
-https://helixcommunity.org/project/showfiles.php?group_id=7&release_id=361</a>
+<a href="https://helixcommunity.org/project/showfiles.php?group_id=7&amp;release_id=361"> 
+https://helixcommunity.org/project/showfiles.php?group_id=7&amp;release_id=361</a>
 <br>
 
 <h3>2004 Oct 29 - Kino 0.7.4 exports in Theora format</h3>
@@ -700,7 +700,7 @@ will allow viewing of Theora format video inside web browsing windows. <br>
 
 <h3>2004 Aug 28 - kfile_theora 0.2 announced</h3>
 
-<p>kfile_theora is a KDE kfile plugin that will display infos about Theora video files in konqueror & meta data dialog.<br>
+<p>kfile_theora is a KDE kfile plugin that will display infos about Theora video files in konqueror &amp; meta data dialog.<br>
  Currently gives info about size, length, quality and some audio settings.<br>
  Requires libogg, libvorbis and libtheora.
  </p>
