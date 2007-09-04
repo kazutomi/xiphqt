@@ -28,8 +28,16 @@
 
 #define NBANDS 15
 int qbank[] =   {1, 2, 4, 6, 8, 12, 16, 20, 24, 28, 36, 44, 52, 68, 84, 116, 128};
-int qpulses[] = {3, 3, 2, 2, 3,  3,  2,  2,  1,  2,  2,  0,  0,  0,  0};
-//int qpulses[] = {5, 5, 3, 3, 3,  3,  2,  2,  2,  3,  3,  0,  0,  0,  0};
+//int qpulses[] = {2, 2, 2, 2, 2,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1};
+//int qpulses[] = {2, 2, 2, 2, 2,  2,  1,  1,  1,  1,  0,  0,  0,  0,  0};
+int qpulses[] = {2, 3, 2, 2, 3,  2,  2,  2,  1,  2,  1,  0,  0,  0,  0};
+
+//int qpulses[] = {5, 5, 5, 5, 5,  5,  2,  2,  1,  2,  1,  0,  0,  0,  0};
+//int qpulses[] = {2, 3, 2, 2, 3,  2,  5,  5,  5,  5,  5,  5,  0,  0,  0};
+
+
+//int qpulses[] = {4, 4, 3, 3, 3,  3,  3,  2,  2,  3,  2,  2,  0,  0,  0};
+//int qpulses[] = {5, 5, 5, 5, 5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5};
 
 //#define NBANDS 19
 //int qbank[] =   {1, 2, 3, 4, 5, 6, 8, 10, 12, 14, 16, 20, 24, 28, 36, 44, 52, 68, 84, 116, 128};
@@ -45,7 +53,7 @@ int qpulses[] = {3, 3, 2, 2, 3,  3,  2,  2,  1,  2,  2,  0,  0,  0,  0};
 //int pbank[] = {1, 4, 10, 16, 28, 44};
 
 #define PBANDS 5
-int pbank[] = {1, 4, 8, 12, 18, 44};
+int pbank[] = {1, 4, 8, 12, 20, 44};
 
 //#define PBANDS NBANDS
 //#define pbank qbank
@@ -67,7 +75,7 @@ void alg_quant(float *x, int N, int K, float *p)
    float boost[N];
    for (i=0;i<N;i++)
       boost[i] = 0;
-   if (K==1)
+   if (0&&K==1)
    {
       float centre;
       float Sxw = 0, Sw = 1e-10;
@@ -232,6 +240,16 @@ void denormalise_bank(float *X, float *bank)
    //FIXME: Kludge
    X[255] = 0;
 }
+
+float norm2(float *x, int len)
+{
+   float E=0;
+   int i;
+   for (i=0;i<len;i++)
+      E += x[i]*x[i];
+   return E;
+}
+
 void crappy_fft(float *X, int len, int R, int dir)
 {
    int i, j;
@@ -263,6 +281,8 @@ void crappy_rfft(float *X, int len, int R, int dir)
    int N=len*2;
    float x[N];
    int i;
+   /*for (i=0;i<len;i++)
+      printf ("%f ", X[i]);*/
    if (dir>0)
    {
       for (i=0;i<len;i++)
@@ -271,16 +291,17 @@ void crappy_rfft(float *X, int len, int R, int dir)
          x[2*i+1] = 0;
       }
       crappy_fft(x, N, R, 1);
-      for (i=0;i<len;i++)
-         X[i] = x[i];
+      for (i=2;i<len;i++)
+         X[i] = sqrt(2)*x[i];
       X[1] = x[len];
+      X[0] = x[0];
    } else {
       for (i=1;i<len>>1;i++)
       {
-         x[2*i] = X[2*i];
-         x[2*i+1] = X[2*i+1];
-         x[2*(len-i)] = X[2*i];
-         x[2*(len-i)+1] = X[2*i+1];
+         x[2*i] = sqrt(.5)*X[2*i];
+         x[2*i+1] = sqrt(.5)*X[2*i+1];
+         x[2*(len-i)] = sqrt(.5)*X[2*i];
+         x[2*(len-i)+1] = -sqrt(.5)*X[2*i+1];
       }
       x[len] = X[1];
       x[len+1] = 0;
@@ -290,16 +311,95 @@ void crappy_rfft(float *X, int len, int R, int dir)
       for (i=0;i<len;i++)
          X[i] = x[2*i];
    }
+   /*printf ("  ");
+   for (i=0;i<len;i++)
+      printf ("%f ", X[i]);
+   printf ("\n");*/
+}
+
+void exp_rotation(float *X, int len, float theta, int dir)
+{
+   int i;
+   float c, s;
+   c = cos(theta);
+   s = sin(theta);
+   if (dir > 0)
+   {
+      for (i=0;i<(len/2)-1;i++)
+      {
+         float x1, x2;
+         x1 = X[2*i];
+         x2 = X[2*i+2];
+         X[2*i] = c*x1 - s*x2;
+         X[2*i+2] = c*x2 + s*x1;
+         
+         x1 = X[2*i+1];
+         x2 = X[2*i+3];
+         X[2*i+1] = c*x1 - s*x2;
+         X[2*i+3] = c*x2 + s*x1;
+      }
+      for (i=(len/2)-3;i>=0;i--)
+      {
+         float x1, x2;
+         x1 = X[2*i];
+         x2 = X[2*i+2];
+         X[2*i] = c*x1 - s*x2;
+         X[2*i+2] = c*x2 + s*x1;
+         
+         x1 = X[2*i+1];
+         x2 = X[2*i+3];
+         X[2*i+1] = c*x1 - s*x2;
+         X[2*i+3] = c*x2 + s*x1;
+      }
+
+   } else {
+      for (i=0;i<(len/2)-2;i++)
+      {
+         float x1, x2;
+         x1 = X[2*i];
+         x2 = X[2*i+2];
+         X[2*i] = c*x1 + s*x2;
+         X[2*i+2] = c*x2 - s*x1;
+         
+         x1 = X[2*i+1];
+         x2 = X[2*i+3];
+         X[2*i+1] = c*x1 + s*x2;
+         X[2*i+3] = c*x2 - s*x1;
+      }
+      
+      for (i=(len/2)-2;i>=0;i--)
+      {
+         float x1, x2;
+         x1 = X[2*i];
+         x2 = X[2*i+2];
+         X[2*i] = c*x1 + s*x2;
+         X[2*i+2] = c*x2 - s*x1;
+         
+         x1 = X[2*i+1];
+         x2 = X[2*i+3];
+         X[2*i+1] = c*x1 + s*x2;
+         X[2*i+3] = c*x2 - s*x1;
+      }
+   }
 }
 
 void random_rotation(float *X, int R, int dir)
 {
    int i;
-   for (i=0;i<NBANDS;i++)
+   for (i=0;i<NBANDS-4;i++)
    {
-      crappy_rfft(X+qbank[i]*2-1, 2*(qbank[i+1]-qbank[i]), R+i, dir);
+      //crappy_rfft(X+qbank[i]*2-1, 2*(qbank[i+1]-qbank[i]), R+i, dir);
+      //printf ("%f ", norm2(X+qbank[i]*2-1, 2*(qbank[i+1]-qbank[i])));
       //rotate_vect(X+qbank[i]*2-1, 2*(qbank[i+1]-qbank[i]), R+i, dir);
+      
+      float theta;
+      if (qbank[i+1]-qbank[i] < 12)
+         theta = .25;
+      else
+         theta = .5;
+      exp_rotation(X+qbank[i]*2-1, 2*(qbank[i+1]-qbank[i]), theta, dir);
    }
+   //printf ("\n");
 }
 
 
@@ -448,14 +548,6 @@ CEFTState *ceft_init(int len)
    return st;
 }
 
-float norm2(float *x, int len)
-{
-   float E=0;
-   int i;
-   for (i=0;i<len;i++)
-      E += x[i]*x[i];
-   return E;
-}
 
 
 void ceft_encode(CEFTState *st, float *in, float *out, float *pitch, float *window)
@@ -621,8 +713,8 @@ void ceft_encode(CEFTState *st, float *in, float *out, float *pitch, float *wind
    printf ("\n");
    */
    
-   //random_rotation(X, 10, -1);
-   //random_rotation(Xp, 10, -1);
+   random_rotation(X, 10, -1);
+   random_rotation(Xp, 10, -1);
    
    compute_pitch_gain(X, Xp, gains);
    quantise_pitch(gains, PBANDS);
@@ -634,7 +726,7 @@ void ceft_encode(CEFTState *st, float *in, float *out, float *pitch, float *wind
    //Quantise input
    quant_bank(X, Xp, centre);
    
-   //random_rotation(X, 10, 1);
+   random_rotation(X, 10, 1);
    //pitch_renormalise_bank(X, Xp);
 
 #if 0
@@ -643,7 +735,8 @@ void ceft_encode(CEFTState *st, float *in, float *out, float *pitch, float *wind
       err += (Xbak[i] - X[i])*(Xbak[i] - X[i]);
    printf ("%f\n", err);
 #endif
-   
+   //printf ("\n");
+
    /* Denormalise back to real power */
    denormalise_bank(X, bank);
    
