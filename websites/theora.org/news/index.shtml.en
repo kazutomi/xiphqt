@@ -908,61 +908,57 @@ The main differences over alpha 2:
 We hope there were be no more incompatible bitstream changes, but as
 with previous alpha releases we make no promises that the format will
 not change again.
-</p><p>
-Experimental playback support is now available (separately) for
+</p>
+
+<p>Experimental playback support is now available (separately) for
 Helix/Realplayer 10, Xine and mplayer; you might look at those if you
 want a more full-featured player. Be sure to use an alpha-3 compatible
-version. 
-</p>
+version.</p>
 
 <h3>Source now in subversion</h3>
 <p class="newsdate">2004 March 20</p>
 
-<p>
-We've switched our version control system to <a 
-href="http://subversion.tigris.org/">subversion</a>
-from cvs, along with all the other Xiph.Org Foundation projects.
-</p><p>
-Please make a fresh checkout if you're following the
+<p>We've switched our version control system to 
+<a href="http://subversion.tigris.org/">subversion</a>
+from cvs, along with all the other Xiph.Org Foundation projects.</p>
+
+<p>Please make a fresh checkout if you're following the
 development tree:</p>
 <blockquote>
 <tt>svn checkout http://svn.xiph.org/trunk/theora</tt>
 </blockquote>
-<p>
-as cvs is no longer updated. You can also mount the
-dav url directly on your desktop for read-only access.
-</p>
-<p>
-See our <a href="/svn/">instruction page</a> for details.
+<p>as cvs is no longer updated. You can also mount the
+dav url directly on your desktop for read-only access.</p>
+
+<p>See our <a href="/svn/">instruction page</a> for details.
 You can find more information about this great new tool at
 <a href="http://svnbook.red-bean.com/">definitive reference book's</a>
-website.
-</p>
+website.</p>
 
 <h3>Status update</h3>
 <p class="newsdate">2004 January 26</p>
 
-<p>
-There hasn't been much progress of late. Derf has been working on a new encoder, and in doing so
+<p>There hasn't been much progress of late. Derf has been working on a new encoder, and in doing so
 came up with some suggested bitstreams changes to increase the scope for future encoder
 improvements. These will be integrated into the reference encoder and released as 'alpha 3' for
-testing.
-<p>
-The main hold-up for the beta release is still a draft spec. Everyone's waiting for this because
+testing.</p>
+
+<p>The main hold-up for the beta release is still a draft spec. Everyone's waiting for this because
 it means the format will be frozen and encoded files will be supported by future versions of the
 reference implementation. So if you want to help things along pull out the code and help with the
-documentation, or donate something to help pay for the work.
-<p>
-<div align="center"> <form id="_xclick" action="https://www.paypal.com/cgi-bin/webscr" method="post">
-<input type="hidden" name="cmd" value="_xclick" />
-<input type="hidden" name="business" value="donate@xiph.org" />
-<input type="hidden" name="item_name" value="theora donation" />
-<input type="hidden" name="currency_code" value="USD" />
-<input type="hidden" name="amount" value="10.00" />
-<input type="image"
+documentation, or donate something to help pay for the work.</p>
+
+<div align="center">
+ <form id="_xclick" action="https://www.paypal.com/cgi-bin/webscr" method="post">
+  <input type="hidden" name="cmd" value="_xclick" />
+  <input type="hidden" name="business" value="donate@xiph.org" />
+  <input type="hidden" name="item_name" value="theora donation" />
+  <input type="hidden" name="currency_code" value="USD" />
+  <input type="hidden" name="amount" value="10.00" />
+  <input type="image"
 	src="http://www.paypal.com/en_US/i/btn/x-click-but04.gif"
 	name="submit" alt="Make a donation via PayPal" />
-</form>
+ </form>
 </div>
 
 <h3>Theora alpha 2 release</h3>
