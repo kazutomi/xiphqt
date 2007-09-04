@@ -325,7 +325,7 @@ void quant_bank(float *X, float *P, float centre)
    X[255] = 0;
 }
 
-void pitch_quant_bank(float *X, float *P, float *gains)
+void compute_pitch_gain(float *X, float *P, float *gains)
 {
    int i;
    for (i=0;i<PBANDS;i++)
@@ -350,18 +350,36 @@ void pitch_quant_bank(float *X, float *P, float *gains)
          gain = 0.0;
 
       gains[i] = gain;
+   }
+   for (i=pbank[PBANDS];i<256;i++)
+      P[i] = 0;
+   P[255] = 0;
+   /*if (rand()%10 == 0)
+   {
+      for (i=0;i<PBANDS;i++)
+         printf ("%f ", gains[i]*gains[i]);
+      printf ("\n");
+   }*/
+}
+
+void pitch_quant_bank(float *X, float *P, float *gains)
+{
+   int i;
+   for (i=0;i<PBANDS;i++)
+   {
+      int j;
       for (j=pbank[i];j<pbank[i+1];j++)
       {
-         P[j*2-1] *= gain;
-         P[j*2] *= gain;
+         P[j*2-1] *= gains[i];
+         P[j*2] *= gains[i];
       }
       //printf ("%f ", gain);
    }
    for (i=pbank[PBANDS];i<256;i++)
       P[i] = 0;
    P[255] = 0;
-   //printf ("\n");
 }
+
 
 void pitch_renormalise_bank(float *X, float *P)
 {
@@ -522,7 +540,7 @@ void ceft_encode(CEFTState *st, float *in, float *out, float *pitch, float *wind
 
    for (i=0;i<NBANDS;i++)
    {
-      in_bank[i] = 20*log10(bank[i]+1) + .6*last_err[i+1] - .9*last_bank[i];
+      in_bank[i] = 20*log10(bank[i]+1) + .0*last_err[i+1] - .9*last_bank[i];
    }
    for (i=0;i<NBANDS;i++)
       qbank[i] = in_bank[i];
@@ -586,6 +604,8 @@ void ceft_encode(CEFTState *st, float *in, float *out, float *pitch, float *wind
    //random_rotation(X, 10, -1);
    //random_rotation(Xp, 10, -1);
    
+   compute_pitch_gain(X, Xp, gains);
+   quantise_pitch(gains, PBANDS);
    pitch_quant_bank(X, Xp, gains);
       
    for (i=1;i<st->length;i++)
