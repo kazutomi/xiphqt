@@ -54,9 +54,9 @@ fees or vendor lock-in associated with other formats.
 </p>
 
 <p>
-Theora scales from postage stamp to HD resolution and
-beyond, and is considered particularly competitive at low
-bitrates. It is in the same class as MPEG-4/DiVX, and like
+Theora scales from postage stamp to HD resolution, and is 
+considered particularly competitive at low bitrates. 
+It is in the same class as MPEG-4/DiVX, and like
 the <a href="http://xiph.org/vorbis/">Vorbis audio codec</a>
 it has lots of room for improvement as encoder technology
 develops.
