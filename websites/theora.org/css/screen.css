@@ -130,6 +130,11 @@ li {
 	color: #3366CC;
 }
 
+,newsdate p {
+	font-size: 85%;
+	color: #555;
+}
+
 .xiph {
 	color: #FF9900;
 	font-weight: bold;
