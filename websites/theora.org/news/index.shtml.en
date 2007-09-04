@@ -949,7 +949,7 @@ reference implementation. So if you want to help things along pull out the code 
 documentation, or donate something to help pay for the work.</p>
 
 <div align="center">
- <form id="_xclick" action="https://www.paypal.com/cgi-bin/webscr" method="post">
+ <form action="https://www.paypal.com/cgi-bin/webscr" method="post">
   <input type="hidden" name="cmd" value="_xclick" />
   <input type="hidden" name="business" value="donate@xiph.org" />
   <input type="hidden" name="item_name" value="theora donation" />
