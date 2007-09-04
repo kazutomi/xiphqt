@@ -924,7 +924,7 @@ from cvs, along with all the other Xiph.Org Foundation projects.</p>
 <p>Please make a fresh checkout if you're following the
 development tree:</p>
 <blockquote>
-<tt>svn checkout http://svn.xiph.org/trunk/theora</tt>
+<p><tt>svn checkout http://svn.xiph.org/trunk/theora</tt></p>
 </blockquote>
 <p>as cvs is no longer updated. You can also mount the
 dav url directly on your desktop for read-only access.</p>
@@ -947,7 +947,7 @@ it means the format will be frozen and encoded files will be supported by future
 reference implementation. So if you want to help things along pull out the code and help with the
 documentation, or donate something to help pay for the work.</p>
 
-<div align="center">
+<div style="align: center;">
  <form action="https://www.paypal.com/cgi-bin/webscr" method="post">
   <div class="paypal">
   <input type="hidden" name="cmd" value="_xclick" />
