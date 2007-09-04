@@ -8,13 +8,14 @@
 <!--#include virtual="/ssi/pagetop.include" -->
 <!--  All your page content goes here  -->
 
-<a name="documentation"><h2>Documentation</h2></a>
+<a name="documentation" />
+<h2>Documentation</h2>
 
 <ul>
   <li><a href="/faq/">Frequently Asked Questions</a></li>
   <li><a href="/doc/Theora_I_spec.pdf">Theora I Format Specification</a></li>
   <li><a href="/doc/libtheora-1.0alpha6/">libtheora API reference</a></li>
-  <li><a href="http://people.xiph.org/~tterribe/doc/libtheora-exp/">theora-exp API reference</a>
+  <li><a href="http://people.xiph.org/~tterribe/doc/libtheora-exp/">theora-exp API reference</a></li>
 </ul>
 
 
