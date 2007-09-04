@@ -781,16 +781,16 @@ RealPlayer</a> to watch them!</p>
 
 <p>
 In honor of our slashdotting, we've made torrents available for
-<a href="torrents/cc-theora-small.torrent">small</a> and
-<a href="torrents/cc-theora-large.torrent">large</a> versions of
+<a href="/torrents/cc-theora-small.torrent">small</a> and
+<a href="/torrents/cc-theora-large.torrent">large</a> versions of
 the top three winning promotion videos for the <a href="http://creativecommons.org/">Creative
 Commons</a> licenses, encoded in theora. Free content in a free format.
 </p><p>
 We also have a feature film, <a href="http://fourthwall.creativecommons.org/">David Ball's</a>
 edgy relationship drama <a
 href="http://fourthwall.creativecommons.org/honey/"><em>Honey</em></a>.
-You can download both <a href="torrents/Honey-small.torrent">small</a> and
-<a href="torrents/Honey-large.torrent">large</a> versions via bittorrent.
+You can download both <a href="/torrents/Honey-small.torrent">small</a> and
+<a href="/torrents/Honey-large.torrent">large</a> versions via bittorrent.
 These are distributed under an <a
 href="http://creativecommons.org/licenses/by-nd-nc/1.0/">Attribution-NoDerivs-NonCommercial</a>
 license.
@@ -871,7 +871,7 @@ as cvs is no longer updated. You can also mount the
 dav url directly on your desktop for read-only access.
 </p>
 <p>
-See our <a href="svn.html">instruction page</a> for details.
+See our <a href="/svn/">instruction page</a> for details.
 You can find more information about this great new tool at
 <a href="http://svnbook.red-bean.com/">definitive reference book's</a>
 website.
@@ -907,7 +907,7 @@ planned changes to the bitsteams format.</p>
 <p>
 This is more of an internal milestone than a public release, but we are
 making a <a href="/files/libtheora-1.0alpha2.tar.gz">source tarball</a> available
-for convenience. Nevertheless we recommend using the <a href="svn.html">svn</a> version if possible. This release also requires svn libogg and libvorbis to compile; you might try the <a href="http://www.xiph.org/ogg/vorbis/download/vorbis_nightly_svn.tgz">svn nightly tarball</a> if you don't
+for convenience. Nevertheless we recommend using the <a href="/svn/">svn</a> version if possible. This release also requires svn libogg and libvorbis to compile; you might try the <a href="http://www.xiph.org/ogg/vorbis/download/vorbis_nightly_svn.tgz">svn nightly tarball</a> if you don't
 already have these checked out. You will need to build and install the 'ogg' and 'vorbis' modules.
 
 <h3>May 8, 2003 - VP3 Legacy Codec binaries</h3>
@@ -929,17 +929,17 @@ and no one has stepped up to act as maintainer in the meantime. We've been worki
 on a <a href="http://wiki.xiph.org/TheoraTodo">wiki todo</a> for theora and for
 <a href="http://wiki.xiph.org/">xiph generally</a>. So feel free to look (and contribute)
 there.
-<p>
-<p><b>January 13th, 2003 - Test Suite</b></p>
+
+<h3>January 13th, 2003 - Test Suite</h3>
 <p>
 We've posted a <a href="http://www.theora.org/test/test.zip">test suite</a> for your encoding pleasure.
 Feel free to post comments and questions to the Theora
-<a href="http://www.theora.org/lists.html">mailing lists.</a>
-<p><br>
-<b>December 16th, 2002 - Robot Roll Call</b><br>
+<a href="/discuss/">mailing lists.</a>
+
+<h3>December 16th, 2002 - Robot Roll Call</h3>
 <p>
 The first part of Theora Alpha Two, the delicious Video Layer FAQ is now 
-available on the <a href="http://www.theora.org/theorafaq.html">FAQ</a> 
+available on the <a href="/faq/">FAQ</a> 
 page, written by Dan Miller. The second part is libogg hacking, the 
 results of which will be posted just a little after December 27th. Alpha 
 Two is really more of an informational release than a big downloadable 
@@ -958,19 +958,19 @@ from the VP3 codebase at its heart.
 Theora will be released in June of 2003, with three major milestones, the 
 first being released today, September 25th, 2002. Today's piece is 
 available for download in the 'theora' module of the Xiph.Org Foundation<a 
-href="http://www.theora.org/svn.html">SVN</a> repository, as 
+href="/svn/">SVN</a> repository, as 
 well as a UNIX tarball available <a 
 href="http://www.xiph.org/ogg/vorbis/download/theora_svn_snapshot.tgz">here</a>. 
 <p>
 There's a lot of useful information under the hood, so please have a
 look around by using the navigation links at the top of the page. If
 there's anything you think that we need on this page, please <a
-href="http://www.theora.org/contact.html">contact us</a> and let us
+href="/contact/">contact us</a> and let us
 know what you'd like to
 see.
 <p>
 For the legal terms on the usage of the VP3 codec, please check out the
-<a href="http://www.theora.org/svn.html">SVN</a> page. If you would like 
+<a href="/svn/">SVN</a> page. If you would like 
 to help sponsor the development of Theora and other open technologies from
 the Xiph.Org Foundation, please consider a donation! More information is 
 available at <a 
