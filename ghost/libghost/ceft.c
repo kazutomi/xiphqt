@@ -212,8 +212,8 @@ void normalise_bank(float *X, float *bank)
          X[j*2]   *= x;
       }
    }
-   //FIXME: Kludge
-   X[255] = 1;
+   for (i=2*qbank[NBANDS]-1;i<256;i++)
+      X[i] = 0;
 }
 
 void denormalise_bank(float *X, float *bank)
@@ -533,10 +533,10 @@ void ceft_encode(CEFTState *st, float *in, float *out, float *pitch, float *wind
    
    normalise_bank(X, bank);
    
-   float in_bank[NBANDS+1];
-   float qbank[NBANDS+1];
-   static float last_err[NBANDS+1];
-   static float last_bank[NBANDS+1];
+   float in_bank[NBANDS];
+   float qbank[NBANDS];
+   static float last_err[NBANDS];
+   static float last_bank[NBANDS];
 
    for (i=0;i<NBANDS;i++)
    {
@@ -590,7 +590,27 @@ void ceft_encode(CEFTState *st, float *in, float *out, float *pitch, float *wind
    for (i=0;i<NBANDS;i++)
       last_bank[i] = qbank[i];
 
-
+   {
+      float sign;
+      int id;
+      float q = .25;
+      if (X[0]<0)
+         sign = -1;
+      else
+         sign = 1;
+      id = floor(.5+20/q*log10(1+fabs(X[0])));
+      if (id < 0)
+         id = 0;
+      if (id > 255)
+      {
+         printf("%d %f\n", id, X[0]);
+         id = 255;
+      }
+      //printf ("%d %f ", id, X[0]);
+      X[0] = sign*pow(10,(q*id)/20)-1;
+      //printf ("%f\n", X[0]);
+   }
+   
    normalise_bank(Xp, pitch_bank);
    
    /*
