@@ -102,7 +102,8 @@ track of various projects, and anyone can help edit the pages!
 
 <h3>Reporting bugs</h3>
 <p>
-Shall you encounter problems you can file bug reports over at the <a href="https://trac.xiph.org/">Xiph.org bug tracker</a>.
+Should you encounter problems you can file a report over at the 
+<a href="https://trac.xiph.org/">Xiph.org bug tracker</a>.
 </p>
 
 <!--#include virtual="/ssi/pagebottom.include" -->
