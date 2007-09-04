@@ -293,11 +293,11 @@ implemenation. This is an incremental update over alpha 5, consisting
 primarily of bug fixes and a merge of the encoder optimizations from the 
 theora-mmx branch.</p>
 
-<blockquote>
-    <a href="http://downloads.xiph.org/releases/theora/libtheora-1.0alpha6.tar.bz2">libtheora-1.0alpha6.tar.bz2</a><br/>
-    <a href="http://downloads.xiph.org/releases/theora/libtheora-1.0alpha6.tar.gz">libtheora-1.0alpha6.tar.gz</a><br/>
-    <a href="http://downloads.xiph.org/releases/theora/libtheora-1.0alpha6.zip">libtheora-1.0alpha6.zip</a>
-</blockquote>
+<ul>
+    <li><a href="http://downloads.xiph.org/releases/theora/libtheora-1.0alpha6.tar.bz2">libtheora-1.0alpha6.tar.bz2</a></li>
+    <li><a href="http://downloads.xiph.org/releases/theora/libtheora-1.0alpha6.tar.gz">libtheora-1.0alpha6.tar.gz</a></li>
+    <li><a href="http://downloads.xiph.org/releases/theora/libtheora-1.0alpha6.zip">libtheora-1.0alpha6.zip</a></li>
+</ul>
 
 <p><strong>Changes since the 1.0 alpha 5 release:</strong></p>
 <ul>
@@ -365,15 +365,15 @@ a line under recent work before we start adding optimization work.
 <p>There are two important bugfixes as well, so we recommend upgrading
 to everyone. This release is source and binary compatible with 
 1.0 alpha 4.</p>
-<blockquote>
- <a href="http://downloads.xiph.org/releases/theora/libtheora-1.0alpha5.tar.bz2">
-  libtheora-1.0alpha5.tar.bz2</a><br/>
- <a href="http://downloads.xiph.org/releases/theora/libtheora-1.0alpha5.tar.gz">
-  libtheora-1.0alpha5.tar.gz</a><br/>
- <a href="http://downloads.xiph.org/releases/theora/libtheora-1.0alpha5.zip">
-  libtheora-1.0alpha5.zip
-</a>
-</blockquote>
+<ul>
+ <li><a href="http://downloads.xiph.org/releases/theora/libtheora-1.0alpha5.tar.bz2">
+  libtheora-1.0alpha5.tar.bz2</a></li>
+ <li><a href="http://downloads.xiph.org/releases/theora/libtheora-1.0alpha5.tar.gz">
+  libtheora-1.0alpha5.tar.gz</a></li>
+ <li><a href="http://downloads.xiph.org/releases/theora/libtheora-1.0alpha5.zip">
+  libtheora-1.0alpha5.zip</a></li>
+</ul>
+
 <p>Changes since the 1.0 alpha 4 release:</p>
 <ul>
  <li>Fixed bitrate management bugs that caused popping and encode
@@ -589,15 +589,15 @@ Merry Christmas and a Happy New Year from everyone at Fluendo !
 implemenation. This is an incremental update over alpha 3, in support
 of <a href="http://icecast.org/">Icecast's</a> use of some new utility
 calls to provide theora streaming support.</p>
-<blockquote>
-<a href="http://downloads.xiph.org/releases/theora/libtheora-1.0alpha4.tar.bz2">
-  libtheora-1.0alpha4.tar.bz2
-</a><br/><a href="http://downloads.xiph.org/releases/theora/libtheora-1.0alpha4.tar.gz">
-  libtheora-1.0alpha4.tar.gz
-</a><br/><a href="http://downloads.xiph.org/releases/theora/libtheora-1.0alpha4.zip">
-  libtheora-1.0alpha4.zip
-</a>
+<ul>
+ <li><a href="http://downloads.xiph.org/releases/theora/libtheora-1.0alpha4.tar.bz2">
+  libtheora-1.0alpha4.tar.bz2</a></li>
+ <li><a href="http://downloads.xiph.org/releases/theora/libtheora-1.0alpha4.tar.gz">
+  libtheora-1.0alpha4.tar.gz</a></li>
+ <li><a href="http://downloads.xiph.org/releases/theora/libtheora-1.0alpha4.zip">
+  libtheora-1.0alpha4.zip</a></li>
 </blockquote>
+
 <p>Changes since the alpha3 release:</p>
 <ul>
  <li>first draft of the Theora I Format Specification</li>
@@ -880,17 +880,16 @@ So go ahead, there's no reason to delay adopting a free alternative any more!
 <p>
 We're pleased to announce the alpha 3 release of the theora reference
 implementation.</p>
-<blockquote>
-<a href="http://theora.org/files/libtheora-1.0alpha3.tar.bz2">
-    http://theora.org/files/libtheora-1.0alpha3.tar.bz2
-</a><br/><a href="http://theora.org/files/libtheora-1.0alpha3.tar.gz">
-    http://theora.org/files/libtheora-1.0alpha3.tar.gz
-</a><br/><a href="http://theora.org/files/libtheora-1.0alpha3.zip">
-    http://theora.org/files/libtheora-1.0alpha3.zip</a>
-</blockquote>
-<p>
-The main differences over alpha 2:
-</p>
+<ul>
+  <li><a href="http://theora.org/files/libtheora-1.0alpha3.tar.bz2">
+    http://theora.org/files/libtheora-1.0alpha3.tar.bz2</a></li>
+  <li><a href="http://theora.org/files/libtheora-1.0alpha3.tar.gz">
+    http://theora.org/files/libtheora-1.0alpha3.tar.gz</a></li>
+  <li><a href="http://theora.org/files/libtheora-1.0alpha3.zip">
+    http://theora.org/files/libtheora-1.0alpha3.zip</a></li>
+</ul>
+
+<p>The main differences over alpha 2:</p>
 <ul>
 <li>    The encoded image has been flipped to match the sense used in VP3,
     with the origin at the lower left. This allows lossless transcoding
@@ -950,6 +949,7 @@ documentation, or donate something to help pay for the work.</p>
 
 <div align="center">
  <form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+  <div class="paypal">
   <input type="hidden" name="cmd" value="_xclick" />
   <input type="hidden" name="business" value="donate@xiph.org" />
   <input type="hidden" name="item_name" value="theora donation" />
@@ -958,6 +958,7 @@ documentation, or donate something to help pay for the work.</p>
   <input type="image"
 	src="http://www.paypal.com/en_US/i/btn/x-click-but04.gif"
 	name="submit" alt="Make a donation via PayPal" />
+ </div>
  </form>
 </div>
 
