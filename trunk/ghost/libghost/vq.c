@@ -20,6 +20,8 @@
 */
 
 //#include "../work/bands_quant.c"
+#include "pitch_quant.h"
+#include <math.h>
 
 struct VQuantiser_ {
    int len;
@@ -98,5 +100,15 @@ int quantise_bands(float *in, float *out, int len)
    }
 
 }
-
 #endif
+
+void quantise_pitch(float *gains, int len)
+{
+   int i, id;
+   float g2[len];
+   for (i=0;i<len;i++)
+      g2[i] = gains[i]*gains[i];
+   id = vq_index(g2, cdbk_pitch, len, 32);
+   for (i=0;i<len;i++)
+      gains[i] = sqrt(cdbk_pitch[id*len+i]);
+}
