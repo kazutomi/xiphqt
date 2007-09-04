@@ -8,7 +8,7 @@
 <!--#include virtual="/ssi/pagetop.include" -->
 <!--  All your page content goes here  -->
 
-<a name="source"><h2>Source</h2></a>
+<h2><a name="source">Source</a></h2>
 
 <ul>
   <li>The <strong>libtheora</strong> reference implementation provides
@@ -30,7 +30,7 @@
   <li><a href="http://www.libsdl.org/">libSDL 1.2</a> or later for the playback example</li>
  </ul>
 
-<a name="binaries"><h2>Binaries</h2></a>
+<h2><a name="binaries">Binaries</a></h2>
  <ul>
    <li><a href="http://www.v2v.cc/~j/ffmpeg2theora/">ffmpeg2theora</a></li>
    <li><a href="http://www.illiminable.com/ogg/">DirectShow plugins</a></li>
