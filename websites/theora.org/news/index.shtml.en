@@ -1013,46 +1013,44 @@ Feel free to post comments and questions to the Theora
 <h3>Robot Roll Call</h3>
 <p class="newsdate">2002 December 16</p>
 
-<p>
-The first part of Theora Alpha Two, the delicious Video Layer FAQ is now 
+<p>The first part of Theora Alpha Two, the delicious Video Layer FAQ is now 
 available on the <a href="/faq/">FAQ</a> 
 page, written by Dan Miller. The second part is libogg hacking, the 
 results of which will be posted just a little after December 27th. Alpha 
 Two is really more of an informational release than a big downloadable 
-install-fest, so don't fire up the testbeds just yet.
-<p>
-Welcome to theora.org, the official website for Theora, a video
+install-fest, so don't fire up the testbeds just yet.</p>
+
+<p>Welcome to theora.org, the official website for Theora, a video
 codec and integration project maintained and supported by the <a
 href="http://www.xiph.org">Xiph.Org Foundation</a> for the benefit of
-all humankind.
-<p>
-What is Theora? Theora will be a video codec that builds upon On2's VP3 
+all humankind.</p>
+
+<p>What is Theora? Theora will be a video codec that builds upon On2's VP3 
 codec. While <a href="http://www.vorbis.com">Vorbis</a> has reached 
 1.0, Theora is currently being integrated into the Ogg multimedia framework, as well as being optimized 
-from the VP3 codebase at its heart.  
-<p>
-Theora will be released in June of 2003, with three major milestones, the 
+from the VP3 codebase at its heart.</p>
+
+<p>Theora will be released in June of 2003, with three major milestones, the 
 first being released today, September 25th, 2002. Today's piece is 
 available for download in the 'theora' module of the Xiph.Org Foundation<a 
 href="/svn/">SVN</a> repository, as 
 well as a UNIX tarball available <a 
-href="http://www.xiph.org/ogg/vorbis/download/theora_svn_snapshot.tgz">here</a>. 
-<p>
-There's a lot of useful information under the hood, so please have a
+href="http://www.xiph.org/ogg/vorbis/download/theora_svn_snapshot.tgz">here</a>.</p>
+
+<p>There's a lot of useful information under the hood, so please have a
 look around by using the navigation links at the top of the page. If
 there's anything you think that we need on this page, please <a
 href="/contact/">contact us</a> and let us
-know what you'd like to
-see.
-<p>
-For the legal terms on the usage of the VP3 codec, please check out the
+know what you'd like to see.</p>
+
+<p>For the legal terms on the usage of the VP3 codec, please check out the
 <a href="/svn/">SVN</a> page. If you would like 
 to help sponsor the development of Theora and other open technologies from
 the Xiph.Org Foundation, please consider a donation! More information is 
 available at <a 
-href="http://www.xiph.org/donate/">this link</a>.
-<p>
-Thanks for stopping by, and happy hacking!
+href="http://www.xiph.org/donate/">this link</a>.</p>
+
+<p>Thanks for stopping by, and happy hacking!</p>
 
 
 <!--#include virtual="/ssi/pagebottom.include" -->
