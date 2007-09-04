@@ -197,7 +197,7 @@ and the libtheora encoder_example.</p>
 
 <p>A release with the modification is <a href="http://ronja.twibright.com/utils/vncrec/">available here</a>.</p>
 
-<p>Thanks for this, clock!</a>
+<p>Thanks for this, clock!</p>
 
 <h3>Theora on TI DM642 DSP</h3>
 <p class="newsdate">Posted 2006 December 1</p>
@@ -366,11 +366,11 @@ a line under recent work before we start adding optimization work.
 to everyone. This release is source and binary compatible with 
 1.0 alpha 4.</p>
 <blockquote>
-<a href="http://downloads.xiph.org/releases/theora/libtheora-1.0alpha5.tar.bz2">
-  libtheora-1.0alpha5.tar.bz2
-</a><br/><a href="http://downloads.xiph.org/releases/theora/libtheora-1.0alpha5.tar.gz">
-  libtheora-1.0alpha5.tar.gz
-</a><br/><a href="http://downloads.xiph.org/releases/theora/libtheora-1.0alpha5.zip">
+ <a href="http://downloads.xiph.org/releases/theora/libtheora-1.0alpha5.tar.bz2">
+  libtheora-1.0alpha5.tar.bz2</a><br/>
+ <a href="http://downloads.xiph.org/releases/theora/libtheora-1.0alpha5.tar.gz">
+  libtheora-1.0alpha5.tar.gz</a><br/>
+ <a href="http://downloads.xiph.org/releases/theora/libtheora-1.0alpha5.zip">
   libtheora-1.0alpha5.zip
 </a>
 </blockquote>
