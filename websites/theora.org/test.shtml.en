@@ -58,13 +58,13 @@ Theora scales from postage stamp to HD resolution and
 beyond, and is considered particularly competitive at low
 bitrates. It is in the same class as MPEG-4/DiVX, and like
 the <a href="http://xiph.org/vorbis/">Vorbis audio codec</a>
-it has lots of room for improvement and encoder technology
+it has lots of room for improvement as encoder technology
 develops.
 </p>
 
 <p>
 The bitstream format for Theora I was frozen Thursday, 2004 
-July 1. All bitstreams encoded since will remain compatible
+July 1. All bitstreams encoded since that date will remain compatible
 with future releases.
 </p>
 
