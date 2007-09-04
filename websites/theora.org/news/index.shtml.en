@@ -97,12 +97,9 @@ href="http://flossmanuals.net/">FLOSS Manuals</a>.</p>
 As in past
 years LAC2007 will be streamed live in Vorbis and Theora via 
 Icecast. If you would like to watch or listen to the streams please check 
-out the conference wiki streaming page:
-<blockquote>
-<a href="http://www.medienwissenschaft.hu-berlin.de/lawici/index.php/Live_Streaming">
-http://www.medienwissenschaft.hu-berlin.de/lawici/index.php/Live_Streaming
-</a>
-</blockquote>
+out the conference wiki 
+<a href="http://www.medienwissenschaft.hu-berlin.de/lawici/index.php/Live_Streaming">streaming 
+page</a>.
 </p>
 <p>Information on the conference itself, including talks, abstracts, 
 schedule and procedings: 
@@ -270,12 +267,11 @@ to digg</a>.</p>
 <p>This release contains build fixes from the alpha6 release. There are
 no new features. The new MMX asm is enabled by default, and a problem 
 with that same code on SELinux machines has been fixed.</p>
-<p><blockquote>
+<blockquote>
   <a href="http://downloads.xiph.org/releases/theora/libtheora-1.0alpha7.tar.bz2">libtheora-1.0alpha7.tar.bz2</a><br/>
   <a href="http://downloads.xiph.org/releases/theora/libtheora-1.0alpha7.tar.gz">libtheora-1.0alpha7.tar.gz</a><br/>
   <a href="http://downloads.xiph.org/releases/theora/libtheora-1.0alpha7.zip">libtheora-1.0alpha7.zip</a>
 </blockquote>
-</p>
 
 <h3>Cinelerra supports distributed theora encoding</h3>
 <p class="newsdate">2006 May 31</p>
