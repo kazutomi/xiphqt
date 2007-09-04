@@ -8,6 +8,22 @@
 <!--#include virtual="/ssi/pagetop.include" -->
 <!--  All your page content goes here  -->
 
+<h3>2007 September 5 - Website Redesign</h3>
+
+<p>Maik Merten has kindly ported theora.org to match the look and feel 
+of the <a href="http://xiph.org/">Xiph.org</a> website. We hope you like 
+it!</p>
+
+<h3>2007 August 21 - Theora in SVG</h3>
+
+<p>Chris Double, who has been working on support for the HTML5 
+<tt>&lt;video&gt;</tt> tag for Mozilla Firefox, posted an amazing
+demo using Theora video as a live image texture in an SVG image.</p>
+
+<p>You can move, rotate, and resize multiple videos playing at once.
+Looks really cool. Check out the video 
+<a href="http://www.bluishcoder.co.nz/video_svg_demo.ogg">here</a>.</p>
+
 <h3>2007 June 17 - Debconf 7 webcasts</h3>
 
 <p><a href="http://debconf7.debconf.org/">DebConf(7)</a> is happening 
