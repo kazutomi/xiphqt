@@ -953,62 +953,63 @@ it means the format will be frozen and encoded files will be supported by future
 reference implementation. So if you want to help things along pull out the code and help with the
 documentation, or donate something to help pay for the work.
 <p>
-<div align="center"> <form name="_xclick" action="https://www.paypal.com/cgi-bin/webscr"
-method="post">
-<input type="hidden" name="cmd" value="_xclick">
-<input type="hidden" name="business" value="donate@xiph.org">
-<input type="hidden" name="item_name" value="theora donation">
-<input type="hidden" name="currency_code" value="USD">
-<input type="hidden" name="amount" value="10.00">
-<input type="image" src="http://www.paypal.com/en_US/i/btn/x-click-but04.gif"
-name="submit" alt="Make a donation via PayPal">
+<div align="center"> <form id="_xclick" action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_xclick" />
+<input type="hidden" name="business" value="donate@xiph.org" />
+<input type="hidden" name="item_name" value="theora donation" />
+<input type="hidden" name="currency_code" value="USD" />
+<input type="hidden" name="amount" value="10.00" />
+<input type="image"
+	src="http://www.paypal.com/en_US/i/btn/x-click-but04.gif"
+	name="submit" alt="Make a donation via PayPal" />
 </form>
 </div>
 
 <h3>Theora alpha 2 release</h3>
 <p class="newsdate">2003 June 9</p>
 
-<p>
-The libtheora reference implementation has reached its 'alpha 2' milestone.
+<p>The libtheora reference implementation has reached its 'alpha 2' milestone.
 A lot of bugs have been fixed and new features added, including all the
 planned changes to the bitsteams format.</p>
-<p>
-This is more of an internal milestone than a public release, but we are
-making a <a href="/files/libtheora-1.0alpha2.tar.gz">source tarball</a> available
-for convenience. Nevertheless we recommend using the <a href="/svn/">svn</a> version if possible. This release also requires svn libogg and libvorbis to compile; you might try the <a href="http://www.xiph.org/ogg/vorbis/download/vorbis_nightly_svn.tgz">svn nightly tarball</a> if you don't
-already have these checked out. You will need to build and install the 'ogg' and 'vorbis' modules.
+
+<p>This is more of an internal milestone than a public release, but we are
+making a <a href="/files/libtheora-1.0alpha2.tar.gz">source tarball</a> 
+available for convenience. Nevertheless we recommend using the 
+<a href="/svn/">svn</a> version if possible. This release also requires svn
+libogg and libvorbis to compile; you might try the 
+<a href="http://www.xiph.org/ogg/vorbis/download/vorbis_nightly_svn.tgz">svn nightly tarball</a>
+if you don't already have these checked out. You will need to build and 
+install the 'ogg' and 'vorbis' modules.</p>
 
 <h3>VP3 Legacy Codec binaries</h3>
 <p class="newsdate">2003 May 8</p>
 
-<p>
-Mauricio Piacentini has been maintaining the original VP32 sources upon which theora is
+<p>Mauricio Piacentini has been maintaining the original VP32 sources upon which theora is
 based. He's pooling his efforts with Xiph a bit and has decided to keep his work in xiph.org
 svn, in the 'vp32' module where the code was originally released. We hope this will help
-concentrate efforts related to theora and bring additional focus to both projects.
-<p>
-He is also making his binary builds for Quicktime 6 and Video for Windows available on
+concentrate efforts related to theora and bring additional focus to both 
+projects.</p>
+
+<p>He is also making his binary builds for Quicktime 6 and Video for Windows available on
 this site. Please visit the <a href="http://people.xiph.org/~mauricio/">legacy VP3 page</a>
-for file links and complete information.
+for file links and complete information.</p>
 
 <h3>Status update</h3>
 <p class="newsdate">2007 May 7</p>
 
-<p>
-Things have been slow for some time, so we just wanted to say what's been happening. 
+<p>Things have been slow for some time, so we just wanted to say what's been happening. 
 Monty's been busy with unrelated contract work since finishing the zero-copy libogg,
 and no one has stepped up to act as maintainer in the meantime. We've been working
 on a <a href="http://wiki.xiph.org/TheoraTodo">wiki todo</a> for theora and for
 <a href="http://wiki.xiph.org/">xiph generally</a>. So feel free to look (and contribute)
-there.
+there.</p>
 
 <h3>Test Suite</h3>
 <p class="newsdate">2003 January 13</p>
 
-<p>
-We've posted a <a href="http://www.theora.org/test/test.zip">test suite</a> for your encoding pleasure.
+<p>We've posted a <a href="http://www.theora.org/test/test.zip">test suite</a> for your encoding pleasure.
 Feel free to post comments and questions to the Theora
-<a href="/discuss/">mailing lists.</a>
+<a href="/discuss/">mailing lists.</a></p>
 
 <h3>Robot Roll Call</h3>
 <p class="newsdate">2002 December 16</p>
@@ -1026,29 +1027,27 @@ href="http://www.xiph.org">Xiph.Org Foundation</a> for the benefit of
 all humankind.</p>
 
 <p>What is Theora? Theora will be a video codec that builds upon On2's VP3 
-codec. While <a href="http://www.vorbis.com">Vorbis</a> has reached 
-1.0, Theora is currently being integrated into the Ogg multimedia framework, as well as being optimized 
-from the VP3 codebase at its heart.</p>
+codec. While <a href="http://www.vorbis.com">Vorbis</a> has reached 1.0,
+Theora is currently being integrated into the Ogg multimedia framework,
+as well as being optimized from the VP3 codebase at its heart.</p>
 
 <p>Theora will be released in June of 2003, with three major milestones, the 
 first being released today, September 25th, 2002. Today's piece is 
 available for download in the 'theora' module of the Xiph.Org Foundation<a 
-href="/svn/">SVN</a> repository, as 
-well as a UNIX tarball available <a 
-href="http://www.xiph.org/ogg/vorbis/download/theora_svn_snapshot.tgz">here</a>.</p>
+href="/svn/">SVN</a> repository, as well as a UNIX tarball available 
+<a href="http://www.xiph.org/ogg/vorbis/download/theora_svn_snapshot.tgz">here</a>.</p>
 
 <p>There's a lot of useful information under the hood, so please have a
 look around by using the navigation links at the top of the page. If
-there's anything you think that we need on this page, please <a
-href="/contact/">contact us</a> and let us
+there's anything you think that we need on this page, please 
+<a href="/contact/">contact us</a> and let us
 know what you'd like to see.</p>
 
 <p>For the legal terms on the usage of the VP3 codec, please check out the
 <a href="/svn/">SVN</a> page. If you would like 
 to help sponsor the development of Theora and other open technologies from
 the Xiph.Org Foundation, please consider a donation! More information is 
-available at <a 
-href="http://www.xiph.org/donate/">this link</a>.</p>
+available at <a href="http://www.xiph.org/donate/">this link</a>.</p>
 
 <p>Thanks for stopping by, and happy hacking!</p>
 
