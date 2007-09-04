@@ -30,10 +30,11 @@
 int qbank[] =   {1, 2, 4, 6, 8, 12, 16, 20, 24, 28, 36, 44, 52, 68, 84, 116, 128};
 //int qpulses[] = {2, 2, 2, 2, 2,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1};
 //int qpulses[] = {2, 2, 2, 2, 2,  2,  1,  1,  1,  1,  0,  0,  0,  0,  0};
-int qpulses[] = {2, 3, 2, 2, 3,  2,  2,  2,  1,  2,  1,  0,  0,  0,  0};
+//int qpulses[] = {2, 3, 2, 2, 3,  2,  2,  2,  1,  2,  1,  0,  0,  0,  0};
+int qpulses[] = {3, 4, 3, 2, 3,  2,  2,  2,  1,  2,  1,  0,  0,  0,  0};
 
 //int qpulses[] = {5, 5, 5, 5, 5,  5,  2,  2,  1,  2,  1,  0,  0,  0,  0};
-//int qpulses[] = {2, 3, 2, 2, 3,  2,  5,  5,  5,  5,  5,  5,  0,  0,  0};
+//int qpulses[] = {5, 5, 2, 2, 3,  2,  5,  5,  5,  5,  5,  5,  0,  0,  0};
 
 
 //int qpulses[] = {4, 4, 3, 3, 3,  3,  3,  2,  2,  3,  2,  2,  0,  0,  0};
@@ -425,9 +426,18 @@ void quant_bank(float *X, float *P, float centre)
    X[255] = 0;
 }
 
-void compute_pitch_gain(float *X, float *P, float *gains)
+void compute_pitch_gain(float *X, float *P, float *gains, float *bank)
 {
    int i;
+   float w[256];
+   for (i=0;i<NBANDS;i++)
+   {
+      int j;
+      for (j=qbank[i];j<qbank[i+1];j++)
+         w[j] = bank[i];
+   }
+
+   
    for (i=0;i<PBANDS;i++)
    {
       float Sxy=0;
@@ -436,9 +446,9 @@ void compute_pitch_gain(float *X, float *P, float *gains)
       float gain;
       for (j=pbank[i];j<pbank[i+1];j++)
       {
-         Sxy += X[j*2-1]*P[j*2-1];
-         Sxy += X[j*2]*P[j*2];
-         Sxx += X[j*2-1]*X[j*2-1] + X[j*2]*X[j*2];
+         Sxy += X[j*2-1]*P[j*2-1]*w[j];
+         Sxy += X[j*2]*P[j*2]*w[j];
+         Sxx += X[j*2-1]*X[j*2-1]*w[j] + X[j*2]*X[j*2]*w[j];
       }
       gain = Sxy/(1e-10+Sxx);
       //gain = Sxy/(2*(pbank[i+1]-pbank[i]));
@@ -716,7 +726,7 @@ void ceft_encode(CEFTState *st, float *in, float *out, float *pitch, float *wind
    random_rotation(X, 10, -1);
    random_rotation(Xp, 10, -1);
    
-   compute_pitch_gain(X, Xp, gains);
+   compute_pitch_gain(X, Xp, gains, bank);
    quantise_pitch(gains, PBANDS);
    pitch_quant_bank(X, Xp, gains);
       
