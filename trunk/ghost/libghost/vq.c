@@ -19,7 +19,7 @@
    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-//#include "../work/bands_quant.c"
+#include "bands_quant.h"
 #include "pitch_quant.h"
 #include <math.h>
 
@@ -58,7 +58,6 @@ int vq_index(float *in, const float *codebook, int len, int entries)
    return best_index;
 }
 
-#if 0
 int quantise_bands(float *in, float *out, int len)
 {
    float err[len];
@@ -100,7 +99,6 @@ int quantise_bands(float *in, float *out, int len)
    }
 
 }
-#endif
 
 void quantise_pitch(float *gains, int len)
 {

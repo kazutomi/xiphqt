@@ -31,7 +31,8 @@ int qbank[] =   {1, 2, 4, 6, 8, 12, 16, 20, 24, 28, 36, 44, 52, 68, 84, 116, 128
 //int qpulses[] = {2, 2, 2, 2, 2,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1};
 //int qpulses[] = {2, 2, 2, 2, 2,  2,  1,  1,  1,  1,  0,  0,  0,  0,  0};
 //int qpulses[] = {2, 3, 2, 2, 3,  2,  2,  2,  1,  2,  1,  0,  0,  0,  0};
-int qpulses[] = {3, 4, 3, 2, 3,  2,  2,  2,  1,  2,  1,  0,  0,  0,  0};
+//int qpulses[] = {3, 4, 3, 2, 3,  2,  2,  2,  1,  2,  1,  0,  0,  0,  0};
+int qpulses[] = {3, 4, 4, 3, 3,  2,  2,  2,  2,  2,  2,  0,  0,  0,  0};
 
 //int qpulses[] = {5, 5, 5, 5, 5,  5,  2,  2,  1,  2,  1,  0,  0,  0,  0};
 //int qpulses[] = {5, 5, 2, 2, 3,  2,  5,  5,  5,  5,  5,  5,  0,  0,  0};
@@ -599,6 +600,9 @@ void ceft_encode(CEFTState *st, float *in, float *out, float *pitch, float *wind
       printf (" \n");*/
       for (i=0;i<NBANDS;i++)
          printf ("%f ", 20*log10(1+bank[i])-.9*obank[i+1]);
+      /*printf ("%f ", 20*log10(1+fabs(X[0])));
+      for (i=0;i<NBANDS;i++)
+         printf ("%f ", 20*log10(1+bank[i]));*/
       printf ("\n");
 
    }
@@ -647,7 +651,7 @@ void ceft_encode(CEFTState *st, float *in, float *out, float *pitch, float *wind
    for (i=0;i<NBANDS;i++)
       qbank[i] = in_bank[i];
    
-   //quantise_bands(in_bank, qbank, NBANDS);
+   quantise_bands(in_bank, qbank, NBANDS);
 
 #if 0
    float q = .25f;
@@ -695,7 +699,7 @@ void ceft_encode(CEFTState *st, float *in, float *out, float *pitch, float *wind
    {
       float sign;
       int id;
-      float q = .25;
+      float q = 2.;
       if (X[0]<0)
          sign = -1;
       else
@@ -703,10 +707,10 @@ void ceft_encode(CEFTState *st, float *in, float *out, float *pitch, float *wind
       id = floor(.5+20/q*log10(1+fabs(X[0])));
       if (id < 0)
          id = 0;
-      if (id > 255)
+      if (id > 32)
       {
          printf("%d %f\n", id, X[0]);
-         id = 255;
+         id = 32;
       }
       //printf ("%d %f ", id, X[0]);
       X[0] = sign*pow(10,(q*id)/20)-1;
