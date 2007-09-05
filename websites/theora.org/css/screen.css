@@ -101,6 +101,11 @@ h3 {
   font-size: 1.1em;
 }
 
+p.newsdate {
+  font-size:smaller;
+  margin-top:-5px;
+}
+
 li {
   line-height: 1.4;
 }
