@@ -403,25 +403,6 @@ static void _sv_panel1d_update_legend(sv_panel_t *p){
       }
     }
 
-    // linked? add the linked dimension value to the legend
-    if(p1->link_x || p1->link_y){
-      sv_dim_t *d;
-      int depth=0;
-      if(p1->link_x)
-	d = p1->link_x->private->x_d;
-      else
-	d = p1->link_y->private->y_d;
-      
-      // add each dimension to the legend
-      // display decimal precision relative to display scales
-      
-      snprintf(buffer,320,"%s = %+.*f",
-	       d->name,
-	       depth,
-	       d->val);
-      _sv_plot_legend_add(plot,buffer);
-    }
-
     // one space 
     _sv_plot_legend_add(plot,NULL);
 
@@ -694,20 +675,7 @@ void _sv_panel1d_mark_recompute(sv_panel_t *p){
   int w = plot->w.allocation.width;
   int h = plot->w.allocation.height;
   int dw = w;
-  sv_panel_t *link = (p1->link_x ? p1->link_x : p1->link_y);
-  _sv_panel2d_t *p2 = (link?link->subtype->p2:NULL);
   int i,j;
-
-  if(p1->link_x){
-    dw = p2->x_v.pixels;
-    p->private->x_d = link->private->x_d;
-    p1->x_scale = p2->x_scale;
-  }
-  if(p1->link_y){
-    dw = p2->y_v.pixels;
-    p->private->x_d = link->private->y_d;
-    p1->x_scale = p2->y_scale;
-  }
 
   if(plot && GTK_WIDGET_REALIZED(GTK_WIDGET(plot))){
     if(p1->flip){
@@ -729,52 +697,52 @@ void _sv_panel1d_mark_recompute(sv_panel_t *p){
       
     }else{
       dw = _sv_dim_scales(p->private->x_d, 
-				    p->private->x_d->bracket[0],
-				    p->private->x_d->bracket[1],
-				    w,dw * p->private->oversample_n / p->private->oversample_d,
-				    plot->scalespacing,
-				    p->private->x_d->name,
-				    &p1->x,
-				    &p1->x_v,
-				    &p1->x_i);
-
+			  p->private->x_d->bracket[0],
+			  p->private->x_d->bracket[1],
+			  w,dw * p->private->oversample_n / p->private->oversample_d,
+			  plot->scalespacing,
+			  p->private->x_d->name,
+			  &p1->x,
+			  &p1->x_v,
+			  &p1->x_i);
+      
       p1->y = _sv_scalespace_linear(p1->range_bracket[1],
-				p1->range_bracket[0],
-				h,
-				plot->scalespacing,
-				p1->range_scale->legend);
+				    p1->range_bracket[0],
+				    h,
+				    plot->scalespacing,
+				    p1->range_scale->legend);
     }
-
+    
     if(p1->data_size != dw){
       if(p1->data_vec){
-
+	
 	// make new vec
 	int i;
 	for(i=0;i<p->objectives;i++){
 	  double *new_vec = malloc(dw * sizeof(**p1->data_vec));
-
+	  
 	  free(p1->data_vec[i]);
 	  p1->data_vec[i] = new_vec;
 	}
       }
     }
-
+    
     p1->data_size = dw;
-
+    
     if(!p1->data_vec){
       // allocate it
-
+      
       p1->data_vec = calloc(p->objectives,sizeof(*p1->data_vec));
       for(i=0;i<p->objectives;i++)
 	p1->data_vec[i] = malloc(dw*sizeof(**p1->data_vec));
       
     }
-
+    
     // blank it 
     for(i=0;i<p->objectives;i++)
       for(j=0;j<dw;j++)
 	p1->data_vec[i][j]=NAN;
-
+    
     if(p1->panel_w != w || p1->panel_h != h){
       p->private->map_progress_count=0;
       _sv_panel1d_map_redraw(p, NULL);
@@ -792,59 +760,28 @@ static void _sv_panel1d_recompute_callback(void *ptr){
   _sv_panel1d_mark_recompute(p);
 }
 
-void _sv_panel1d_mark_recompute_linked(sv_panel_t *p){
-  int i;
-
-  /* look to see if any 1d panels link to passed in panel */
-  for(i=0;i<_sv_panels;i++){
-    sv_panel_t *q = _sv_panel_list[i];
-    if(q != p && q->type == SV_PANEL_1D){
-      _sv_panel1d_t *q1 = q->subtype->p1;
-      if(q1->link_x == p)
-	_sv_panel1d_mark_recompute(q);
-      else{
-	if(q1->link_y == p)
-	  _sv_panel1d_mark_recompute(q);
-      }
-    }
-  }
-}
-
 static void _sv_panel1d_update_crosshair(sv_panel_t *p){
   _sv_panel1d_t *p1 = p->subtype->p1;
-  sv_panel_t *link=p1->link_x;
   _sv_plot_t *plot = PLOT(p->private->graph);
   double x=0;
   int i;
-
+  
   if(!p->private->realized)return;
   
-  if(p1->link_y)link=p1->link_y;
-
-  if(link){
-    for(i=0;i<link->dimensions;i++){
-      sv_dim_t *d = link->dimension_list[i].d;
-      if(d == p->private->x_d)
-	x = link->dimension_list[i].d->val;
-    }
-  }else{
-    for(i=0;i<p->dimensions;i++){
-      sv_dim_t *d = p->dimension_list[i].d;
-      if(d == p->private->x_d)
-	x = p->dimension_list[i].d->val;
-    }
+  for(i=0;i<p->dimensions;i++){
+    sv_dim_t *d = p->dimension_list[i].d;
+    if(d == p->private->x_d)
+      x = p->dimension_list[i].d->val;
   }
-  
+
   if(p1->flip)
     _sv_plot_set_crosshairs(plot,0,x);
   else
     _sv_plot_set_crosshairs(plot,x,0);
   
-  // in independent panels, crosshairs snap to a pixel position; the
+  // crosshairs snap to a pixel position; the
   // cached dimension value should be accurate with respect to the
-  // crosshairs.  in linked panels, the crosshairs snap to a pixel
-  // position in the master panel; that is handled in the master, not
-  // here.
+  // crosshairs. 
   for(i=0;i<p->dimensions;i++){
     sv_dim_t *d = p->dimension_list[i].d;
     _sv_panel1d_t *p1 = p->subtype->p1;
@@ -856,29 +793,6 @@ static void _sv_panel1d_update_crosshair(sv_panel_t *p){
     }
   }
   _sv_panel_dirty_legend(p);
-}
-
-void _sv_panel1d_update_linked_crosshairs(sv_panel_t *p, int xflag, int yflag){
-  int i;
-
-  /* look to see if any 1d panels link to passed in panel */
-  for(i=0;i<_sv_panels;i++){
-    sv_panel_t *q = _sv_panel_list[i];
-    if(q != p && q->type == SV_PANEL_1D){
-      _sv_panel1d_t *q1 = q->subtype->p1;
-      if(q1->link_x == p){
-	_sv_panel1d_update_crosshair(q);
-	if(yflag)
-	  q->private->request_compute(q);
-      }else{
-	if(q1->link_y == p){
-	  _sv_panel1d_update_crosshair(q);
-	  if(xflag)
-	    q->private->request_compute(q);
-	}
-      }
-    }
-  }
 }
 
 static void _sv_panel1d_center_callback(sv_dim_list_t *dptr){
@@ -924,42 +838,23 @@ static void _sv_panel1d_dimchange_callback(GtkWidget *button,gpointer in){
 
 static void _sv_panel1d_crosshair_callback(sv_panel_t *p){
   _sv_panel1d_t *p1 = p->subtype->p1;
-  sv_panel_t *link = p1->link_x;
   double x=PLOT(p->private->graph)->selx;
   int i;
 
   if(p1->flip)
     x=PLOT(p->private->graph)->sely;
-  if(p1->link_y)
-    link=p1->link_y;
   
   _sv_panel_dirty_legend(p);
 
-  if(p1->link_x){
-    // make it the master panel's problem.
-    _sv_plot_set_crosshairs_snap(PLOT(link->private->graph),
-			     x,
-			     PLOT(link->private->graph)->sely);
-    link->private->crosshair_action(link);
-  }else if (p1->link_y){
-    // make it the master panel's problem.
-    _sv_plot_set_crosshairs_snap(PLOT(link->private->graph),
-			     PLOT(link->private->graph)->selx,
-			     x);
-    link->private->crosshair_action(link);
-  }else{
-
-    _sv_undo_push();
-    _sv_undo_suspend();
-
-    for(i=0;i<p->dimensions;i++){
-      sv_dim_t *d = p->dimension_list[i].d;
-      if(d == p->private->x_d)
-	_sv_dim_widget_set_thumb(p->private->dim_scales[i],1,x);
-	            
-      p->private->oldbox_active = 0;
-    }
-    _sv_undo_resume();
+  _sv_undo_push();
+  _sv_undo_suspend();
+  
+  for(i=0;i<p->dimensions;i++){
+    sv_dim_t *d = p->dimension_list[i].d;
+    if(d == p->private->x_d)
+      _sv_dim_widget_set_thumb(p->private->dim_scales[i],1,x);
+    
+    p->private->oldbox_active = 0;
   }
 }
 
@@ -1377,7 +1272,7 @@ void _sv_panel1d_realize(sv_panel_t *p){
 		       GTK_FILL,0,5,0);
       
       /* x radio buttons */
-      if(!(d->flags & SV_DIM_NO_X) && !p1->link_x && !p1->link_y){
+      if(!(d->flags & SV_DIM_NO_X)){
 	if(first_x)
 	  p1->dim_xb[i] = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(first_x),"X");
 	else{
@@ -1561,39 +1456,4 @@ sv_panel_t *sv_panel_new_1d(int number,
   p->private->def_oversample_d = p->private->oversample_d = 8;
   
   return p;
-}
-
-int sv_panel_link_1d (sv_panel_t *p,
-		      sv_panel_t *panel_2d,
-		      unsigned flags){
-
-
-  if(!p){
-    fprintf(stderr,"Cannot link a NULL 1d panel\n");
-    errno = -EINVAL;
-    return errno;
-  }
-
-  if(!panel_2d){
-    fprintf(stderr,"Panel %d (\"%s\"): Attempted to link NULL panel\n",
-	    p->number,p->name);
-    errno = -EINVAL;
-    return errno;
-  }
-
-  if(panel_2d->type != SV_PANEL_2D){
-    fprintf(stderr,"Panel %d (\"%s\"): Can only link to a 2d paenl\n",
-	    p->number,p->name);
-    errno = -EINVAL;
-    return errno;
-  }
-
-  _sv_panel1d_t *p1 = p->subtype->p1;
-
-  if(flags && SV_PANEL_LINK_Y)
-    p1->link_y = (sv_panel_t *)panel_2d;
-  else
-    p1->link_x = (sv_panel_t *)panel_2d;
-
-  return 0;
 }

@@ -29,6 +29,25 @@ typedef struct _sv_undo _sv_undo_t;
 #include <libxml/tree.h>
 #include "sushivision.h"
 
+typedef struct {
+  char *name;
+  char *label;
+
+  int n;
+  char **options;
+  double *values;
+} _sv_token;
+
+typedef struct {
+  int n;
+  _sv_token **list;
+} _sv_tokenlist;
+
+extern void _sv_token_free(_sv_token *t);
+extern void _sv_tokenlist_free(_sv_tokenlist *l);
+extern _sv_token *_sv_tokenize(char *in);
+extern _sv_tokenlist *_sv_tokenlistize(char *in);
+
 // used to glue numeric settings to semantic labels for menus/save files
 typedef struct _sv_propmap _sv_propmap_t;
 struct _sv_propmap {
@@ -180,8 +199,6 @@ extern void _sv_panel_update_menus(sv_panel_t *p);
 extern int  _sv_panel_save(sv_panel_t *p, xmlNodePtr n);
 extern int  _sv_panel_load(sv_panel_t *p, _sv_panel_undo_t *u, xmlNodePtr n, int warn);
 
-extern void _sv_panel1d_mark_recompute_linked(sv_panel_t *p); 
-extern void _sv_panel1d_update_linked_crosshairs(sv_panel_t *p, int xflag, int yflag); 
 
 extern void _sv_map_set_throttle_time(sv_panel_t *p);
 

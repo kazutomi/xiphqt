@@ -26,125 +26,11 @@
 #include <fontconfig/fontconfig.h>
 #include <stdio.h>
 #include <limits.h>
+#include <ctype.h>
 #include "sushivision.h"
 #include "scale.h"
 
 /* slider scales */
-static int trailing_zeroes(double A){
-  int count=0;
-  int64_t iA = (A<0 ? floor(-A) : floor(A));;
-  if(iA==0)return 0;
-  while(!(iA%10)){
-    count++;
-    iA/=10;
-  }
-  return count;
-}
-
-/* depth, at a minimum, must capture the difference between consecutive scale values */
-static int del_depth(double A, double B){
-  int depth = 0;
-
-  double del = B-A;
-  if(del<0)del=-del;
-  if(del != 0){
-    if(del<1){
-      float testdel=del;
-      while(testdel<1){
-	depth++;
-	testdel = del * pow(10,depth);
-      }
-    }else{
-      float testdel=del;
-      while(testdel>10){
-	depth--;
-	testdel = del / pow(10,-depth);
-      }
-    }
-  }
-  return depth;
-}
-
-static int abs_depth(double A){
-  int depth = 0;
-
-  if(A<0)A=-A;
-  if(A != 0){
-    if(A<1){
-      /* first ratchet down to find the beginning */
-      while(A * pow(10.,depth) < 1)
-	depth++;
-
-      /* look for trailing zeroes; assume a reasonable max depth */
-      depth+=5;
-
-      A*=pow(10.,depth);
-      int zero0 = trailing_zeroes(A);
-      int zeroN = trailing_zeroes(A-1);
-      int zeroP = trailing_zeroes(A+1);
-
-      if(zero0 >= zeroN && zero0 >= zeroP)
-	depth -= zero0;
-      else if(zeroN >= zero0 && zeroN >= zeroP)
-	depth -= zeroN;
-      else 
-	depth -=zeroP;
-
-    }else
-      // Max at five sig figs, less if trailing zeroes... */
-      depth= 5-trailing_zeroes(A*100000.);
-  }
-
-  return depth;
-}
-
-static char *generate_label(double val,int depth){
-  char *ret;
-  
-  if(depth>0){
-    asprintf(&ret,"%.*f",depth,val);
-  }else{
-    asprintf(&ret,"%ld",(long)val);
-  }
-  return ret;
-}
-
-/* default scale label generation is hard, but fill it in in an ad-hoc
-   fashion.  Add flags to help out later */
-static char **scale_generate_labels(unsigned scalevals, double *scaleval_list){
-  unsigned i;
-  int depth;
-  char **ret;
-
-  // default behavior; display each scale label at a uniform decimal
-  // depth.  Begin by finding the smallest significant figure in any
-  // label.  Since they're being passed in explicitly, they'll be
-  // pre-hinted to the app's desires. Deal with rounding. */
-
-  if(scalevals<2){
-    fprintf(stderr,"Scale requires at least two scale values.");
-    return NULL;
-  }
-
-  depth = del_depth(scaleval_list[0],scaleval_list[1]);
-
-  for(i=2;i<scalevals;i++){
-    int val = del_depth(scaleval_list[i-1],scaleval_list[i]);
-    if(val>depth)depth=val;
-  }
-  
-  for(i=0;i<scalevals;i++){
-    int val = abs_depth(scaleval_list[i]);
-    if(val>depth)depth=val;
-  }
-  
-  ret = calloc(scalevals,sizeof(*ret));
-  for(i=0;i<scalevals;i++)
-    ret[i] = generate_label(scaleval_list[i],depth);
-  
-  return ret;
-}
-
 void sv_scale_free(sv_scale_t *in){
   sv_scale_t *s = (sv_scale_t *)in;
   int i;
@@ -161,45 +47,52 @@ void sv_scale_free(sv_scale_t *in){
   }
 }
 
-sv_scale_t *_sv_scale_new_v(char *legend, char *first, char *second, va_list ap){
+sv_scale_t *sv_scale_new(char *arg){
   int i=0;
-  sv_scale_t *s = calloc(1, sizeof(*s));
-  va_list ac;
-  char *arg;
-  int count=0;
+  _sv_tokenlist *t= _sv_tokenlistize(format);
 
-  va_copy(ac, ap);
-  arg = va_arg(ac, char *);
-  while(arg && arg[0]){
-    count++;
-    arg = va_arg(ac, char *);
+  // sanity check the tokenization
+  if(!t){
+    fprintf(stderr,"sushivision: Unable to parse scale argument \"%s\".\n",arg);
+    return NULL;
   }
-  va_end(ac);
 
-  s->vals = count+2;
+  if(t->n != 1)
+    fprintf(stderr,"sushivision: Ignoring excess arguments to scale.\n");
+
+  if(
+  
+  sv_scale_t *s = calloc(1, sizeof(*s));
+  s->vals = count;
   s->val_list = calloc(s->vals,sizeof(*s->val_list));
   s->label_list = calloc(s->vals,sizeof(*s->label_list));
 
-  arg=first;
-  while(arg && arg[0]){
-    // an argument is a number and potentially a colon followed by an auxiliary label.
+  arg=format;
+  while(arg && *arg){
     char *buf = strdup(arg);
-    char *pos = strchr(buf,':');
+    char *pos = strchr(buf,';');
+    while(pos && *(pos-1)=='\\')
+      pos = strchr(pos+1,';');
+    if(!pos){
+      arg=NULL;
+    }else{
+      arg+=pos-buf+1;
+      pos[0]=0;
+    }
+
+    // an argument is a number and potentially a colon followed by an auxiliary label.
+    pos = strchr(buf,':');
     if(pos){
-      s->label_list[i] = strdup(pos+1);
+      // we have a colon (label)
+      s->label_list[i] = strdup(trim(pos+1));
       *pos='\0';
-      s->val_list[i]=atof(buf);
-      free(buf);
     }else{
-      s->label_list[i] = buf;
-      s->val_list[i]=atof(buf);
+      // we have only a number
+      s->label_list[i] = strdup(trim(buf));
     }
+    s->val_list[i]=atof_portable(buf);
+    free(buf);
     
-    if(arg==first){
-      arg=second;
-    }else{
-      arg=va_arg(ap, char *);
-    }
     i++;
   }
 
@@ -209,16 +102,6 @@ sv_scale_t *_sv_scale_new_v(char *legend, char *first, char *second, va_list ap)
     s->legend=strdup("");
 
   return s;
-}
-
-sv_scale_t *sv_scale_new(char *legend, char *first, char *second, ...){
-  va_list ap;
-  sv_scale_t *ret;
-
-  va_start(ap, second);
-  ret = _sv_scale_new_v(legend,first,second,ap);
-  va_end(ap);
-  return ret;
 }
 
 sv_scale_t *sv_scale_copy(sv_scale_t *in){
@@ -231,7 +114,7 @@ sv_scale_t *sv_scale_copy(sv_scale_t *in){
   s->legend = strdup(in->legend);
 
   for(i=0;i<s->vals;i++){
-    s->val_list[i]=in->val_list[i];
+    s->val_list[i] = in->val_list[i];
     s->label_list[i] = strdup(in->label_list[i]);
   }
   return s;

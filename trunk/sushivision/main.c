@@ -195,7 +195,12 @@ static void *event_thread(void *dummy){
   gtk_main ();
   gdk_threads_leave();
   
-  gtk_main_quit(); // in case there's another mainloop in the main app
+// in case there's another mainloop in the main app
+  gdk_threads_enter();
+  if(!gtk_main_iteration_do(FALSE)) // side effect: returns true if
+				    // there are no main loops active
+    gtk_main_quit();
+  gdk_threads_leave();
 
   return 0;
 }

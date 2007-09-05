@@ -199,22 +199,16 @@ int sv_obj_set_scale(sv_obj_t *in,
 // XXXX need to recompute after
 // XXXX need to add scale cloning to compute to make this safe in callbacks
 int sv_obj_make_scale(sv_obj_t *in,
-		      char *first,
-		      char *second,
-		      ...){
+		      char *format){
 
   sv_obj_t *o = (sv_obj_t *)in; //unwrap
   sv_scale_t *scale;
-  va_list ap;
   int ret;
 
-  va_start(ap, second);  
   if(!o) return -EINVAL;
-  scale = _sv_scale_new_v(o->name,first,second,ap);
+  scale = sv_scale_new(o->name,format);
   if(!scale)return errno;
-  va_end(ap);
 
-  ret = sv_obj_set_scale(o,scale);
-  sv_scale_free(scale);
+  o->scale = scale;
   return ret;
 }

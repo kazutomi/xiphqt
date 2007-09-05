@@ -1208,7 +1208,6 @@ static void _sv_panel2d_mark_recompute(sv_panel_t *p){
   _sv_plot_t *plot = PLOT(p->private->graph);
 
   if(plot && GTK_WIDGET_REALIZED(GTK_WIDGET(plot))){
-    _sv_panel1d_mark_recompute_linked(p);   
     _sv_panel_dirty_plot(p);
   }
 }
@@ -1228,7 +1227,6 @@ static void _sv_panel2d_update_crosshairs(sv_panel_t *p){
   }
   
   _sv_plot_set_crosshairs(plot,x,y);
-  _sv_panel1d_update_linked_crosshairs(p,0,0); 
   _sv_panel_dirty_legend(p);
 }
 
@@ -1243,7 +1241,6 @@ static void _sv_panel2d_center_callback(sv_dim_list_t *dptr){
   }else{
     // mid slider of an axis dimension changed, move crosshairs
     _sv_panel2d_update_crosshairs(p);
-    _sv_panel1d_update_linked_crosshairs(p,d==p->private->x_d,d==p->private->y_d); 
   }
 }
 

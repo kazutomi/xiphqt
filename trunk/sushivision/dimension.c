@@ -38,7 +38,7 @@
    third the same as the second, but over the absolute range [0 - n)
    such that discrete dimensions will count from 0 in iteration. */
 /* data_w ignored except in the continuous case, where it may be used
-   to generate linked or over/undersampled data scales. */
+   to generate over/undersampled data scales. */
 
 int _sv_dim_scales(sv_dim_t *d,
 		   double lo,
@@ -718,7 +718,7 @@ int sv_dim_set_scale(sv_scale_t *scale){
   if(d->scale)
     sv_scale_free(d->scale); // always a deep copy we own
   
-  d->scale = (sv_scale_t *)sv_scale_copy(scale);
+  d->scale = sv_scale_copy(scale);
 
   // in the runtime version, don't just blindly reset values!
   d->bracket[0]=scale->val_list[0];
@@ -732,20 +732,19 @@ int sv_dim_set_scale(sv_scale_t *scale){
 
 // XXXX need to recompute after
 // XXXX need to add scale cloning to compute to make this safe in callbacks
-int sv_dim_make_scale(char *first, char *second, ...){
+int sv_dim_make_scale(char *format){
   sv_dim_t *d = sv_dim(0);
   sv_scale_t *scale;
-  va_list ap;
   int ret;
 
-  va_start(ap, second);  
   if(!d) return -EINVAL;
-  scale = _sv_scale_new_v(d->name,first,second,ap);
+  scale = sv_scale_new(d->name,format);
   if(!scale)return errno;
-  va_end(ap);
   
-  ret = sv_dim_set_scale(scale);
-  sv_scale_free(scale);
+  d->scale = scale;
+  d->bracket[0]=scale->val_list[0];
+  d->val = 0;
+  d->bracket[1]=scale->val_list[d->scale->vals-1];
   return ret;
 }
 

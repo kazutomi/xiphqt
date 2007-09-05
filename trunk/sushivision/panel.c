@@ -685,7 +685,7 @@ static int test_throttle_time(sv_panel_t *p){
   return 0;  
 }
 
-/* request a recomputation with full setup (eg, linking, scales,
+/* request a recomputation with full setup (eg, scales,
    etc) */
 void _sv_panel_recompute(sv_panel_t *p){
   gdk_threads_enter ();
@@ -803,10 +803,11 @@ int sv_panel_background(int number,
 sv_panel_t * _sv_panel_new(int number,
 			   char *name, 
 			   sv_obj_t **objectives,
-			   sv_dim_t **dimensions,	
+			   char *dimensions,
 			   unsigned flags){
 
   sv_panel_t *p;
+  char **dim_tokens;
   int i;
 
   if(number<0){
@@ -851,18 +852,28 @@ sv_panel_t * _sv_panel_new(int number,
   }
 
   i=0;
-  while(dimensions && dimensions[i])i++;
+  dim_tokens = _sv_tokenize(dimensions,';',1);
+  while(dim_tokens && dim_tokens[i])i++;
   p->dimensions = i;
   p->dimension_list = malloc(i*sizeof(*p->dimension_list));
   for(i=0;i<p->dimensions;i++){
-    if(!dimensions[i]->scale){
-      fprintf(stderr,"Panel %d (\"%s\"): Dimension number %d (\"%s\") has a NULL scale\n",
-	      number,p->name,dimensions[i]->number,dimensions[i]->name);
+    sv_dim_t *d = sv_dim(dim_tokensi[i]);
+
+    if(!d){
+      fprintf(stderr,"Panel %d (\"%s\"): Dimension \"%s\" does not exist\n",
+	      number,p->name,dim_tokens[i]);
       errno = -EINVAL;
       return NULL;
     }
 
-    p->dimension_list[i].d = (sv_dim_t *)dimensions[i];
+    if(!dimensions[i]->scale){
+      fprintf(stderr,"Panel %d (\"%s\"): Dimension number \"%s\" has a NULL scale\n",
+	      number,p->name,dimensions[i]->name);
+      errno = -EINVAL;
+      return NULL;
+    }
+
+    p->dimension_list[i].d = d;
     p->dimension_list[i].p = p;
   }
 
