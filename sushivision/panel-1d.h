@@ -21,9 +21,6 @@
 
 typedef struct {
 
-  sv_panel_t *link_x;
-  sv_panel_t *link_y;
-
   GtkWidget *graph_table;
   GtkWidget *obj_table;
   GtkWidget *dim_table;

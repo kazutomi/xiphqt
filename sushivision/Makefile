@@ -26,13 +26,14 @@ SOLDFLAGS = -shared -nostdlib -Wl,-soname="lib$(NAME).so.$(MAJOR)"
 
 SRC       = main.c scale.c plot.c slider.c slice.c spinner.c panel.c panel-1d.c panel-2d.c \
 	panel-xy.c mapping.c dimension.c function.c objective.c undo.c gtksucks.c xml.c \
-	example_fractal.c example_discrete.c example_chirp.c example_spirograph.c
+	tokens.c example_fractal.c example_discrete.c example_chirp.c example_spirograph.c
 INC       = sushivision.h sushimacro.h
 MAN	  =
 EXAMPLES  = sushivision_fractal #sushivision_discrete sushivision_chirp
 EX_OBJ    = example_fractal.o #example_discrete.o example_chirp.o example_spirograph.o
 OBJ       = main.o scale.o plot.o slider.o slice.o spinner.c panel.o panel-1d.o panel-2d.o \
-	panel-xy.o mapping.o dimension.o function.o objective.o undo.o gtksucks.o xml.o
+	panel-xy.o mapping.o dimension.o function.o objective.o undo.o gtksucks.o xml.o \
+	tokens.c
 LIBS      = -lpthread -ldl
 CAIROVER  =  >= 1.4.1
 GTKVER    =  >= 2.10.0

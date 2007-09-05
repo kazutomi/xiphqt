@@ -22,8 +22,6 @@
 #ifndef _SUSHIVISION_
 #define _SUSHIVISION_
 
-#include <stdarg.h>
-
 typedef struct sv_scale sv_scale_t;
 typedef struct sv_panel sv_panel_t;
 typedef struct sv_dim   sv_dim_t;
@@ -62,9 +60,7 @@ struct sv_scale{
 };
 
 sv_scale_t        *sv_scale_new (char *legend,
-				 char *first,
-				 char *second,
-				 ...);
+				 char *format);
 
 sv_scale_t       *sv_scale_copy (sv_scale_t *s);
 
@@ -105,9 +101,7 @@ sv_dim_t                *sv_dim (char *name);
 
 int            sv_dim_set_scale (sv_scale_t *scale);
 
-int           sv_dim_make_scale (char *first,
-				 char *second,
-				 ...);
+int           sv_dim_make_scale (char *format);
 
 int         sv_dim_set_discrete (long quant_numerator,
 				 long quant_denominator);
@@ -180,9 +174,7 @@ int            sv_obj_set_scale (sv_obj_t *o,
 				 sv_scale_t *scale);
 
 int           sv_obj_make_scale (sv_obj_t *o,
-				 char *first,
-				 char *second,
-				 ...);
+				 char *format);
 
 /* panels ********************************************************/
 
@@ -193,8 +185,6 @@ enum sv_background     { SV_BG_WHITE,
 			 SV_BG_BLACK, 
 			 SV_BG_CHECKS };
 
-#define SV_PANEL_LINK_X 0x1 
-#define SV_PANEL_LINK_Y 0x2 
 #define SV_PANEL_FLIP 0x4 
 
 typedef struct {
@@ -242,10 +232,6 @@ sv_panel_t     *sv_panel_new_2d (int number,
 				 char *name, 
 				 sv_obj_t **objectives,
 				 sv_dim_t **dimensions,
-				 unsigned flags);
-
-int            sv_panel_link_1d (sv_panel_t *p,
-				 sv_panel_t *panel_2d,
 				 unsigned flags);
 
 int sv_panel_callback_recompute (sv_panel_t *p,
