@@ -669,51 +669,80 @@ _sv_dim_widget_t *_sv_dim_widget_new(sv_dim_list_t *dl,
   return dw;
 };
 
-sv_dim_t *sv_dim_new(int number,
-		     char *name,
-		     unsigned flags){
-
+sv_dim_t *sv_dim_new(char *name){
+  int number;
   sv_dim_t *d;
+  int i;
+
   _sv_token *decl = _sv_tokenize_declparam(name);
   
   if(!decl){
     fprintf(stderr,"sushivision: Unable to parse dimension name \"%s\".\n",name);
     errno = -EINVAL;
-    //XXXX leak
     return NULL;
   }
 
-  if(number<0){
-    fprintf(stderr,"Dimension number must be >= 0\n");
-    errno = -EINVAL;
-    //XXXX leak
-    return NULL;
-  }
-
-  if(number<_sv_dimensions){
-    if(_sv_dimension_list[number]!=NULL){
-      fprintf(stderr,"Dimension number %d already exists\n",number);
-      errno = -EINVAL;
-      //XXXleak
-      return NULL;
-    }
+  if(_sv_dimensions == 0){
+    number=0;
+    _sv_dimension_list = calloc (number+1,sizeof(*_sv_dimension_list));
+    _sv_dimensions=1;
   }else{
-    if(_sv_dimensions == 0){
-      _sv_dimension_list = calloc (number+1,sizeof(*_sv_dimension_list));
-    }else{
-      _sv_dimension_list = realloc (_sv_dimension_list,(number+1) * sizeof(*_sv_dimension_list));
-      memset(_sv_dimension_list + _sv_dimensions, 0, sizeof(*_sv_dimension_list)*(number + 1 - _sv_dimensions));
+    for(number=0;number<_sv_dimensions;number++)
+      if(!_sv_dimension_list[number])break;
+    if(number==_sv_dimensions){
+      _sv_dimensions=number+1;
+      _sv_dimension_list = realloc (_sv_dimension_list,_sv_dimensions * sizeof(*_sv_dimension_list));
     }
-    _sv_dimensions=number+1;
   }
-
+  
   d = _sv_dimension_list[number] = calloc(1, sizeof(**_sv_dimension_list));
   d->number = number;
   d->name = strdup(decl->name);
   d->legend = strdup(decl->label);
-  d->flags = flags;
   d->type = SV_DIM_CONTINUOUS;
   d->private = calloc(1, sizeof(*d->private));
+
+  // parse decllist
+  for(i=0;i<decl->n;i++){
+    char *f=decl->values[i]->s;
+    double v=decl->values[i]->v;
+ 
+    if(!strcmp(f,"continuous")){
+      d->type = SV_DIM_CONTINUOUS;
+
+    }else if(!strcmp(f,"picklist")){
+      d->type = SV_DIM_PICKLIST;
+
+    }else if(!strcmp(f,"discrete")){
+      d->type = SV_DIM_DISCRETE;
+
+    }else if(!strcmp(f,"picklist")){
+      d->type = SV_DIM_PICKLIST;
+      d->flags |= SV_DIM_NO_X | SV_DIM_NO_Y;
+
+    }else if(!strcmp(f,"numerator")){
+      if(isnan(v)){
+	fprintf(stderr,"sushivision: Missing numerator value in \"%s\"\n.",name);
+      }else{
+	d->type = SV_DIM_PICKLIST;
+	d->private->discrete_numerator = v;
+      }
+
+    }else if(!strcmp(f,"denominator")){
+      if(isnan(v)){
+	fprintf(stderr,"sushivision: Missing denominator value in \"%s\"\n.",name);
+      }else if(v==0){
+	fprintf(stderr,"sushivision: denominator value may not be zero\n.",name);
+      }else{
+	d->type = SV_DIM_PICKLIST;
+	d->private->discrete_denominator = v;
+      }
+
+    }else{
+      fprintf(stderr,"sushivision: Unknown parameter \"%s\" for dimension \"%s\".\n",
+	      f,d->name);
+    }
+  }
 
   pthread_setspecific(_sv_dim_key, (void *)d);
 
@@ -771,30 +800,6 @@ int sv_dim_make_scale(char *format){
   d->val = 0;
   d->bracket[1]=scale->val_list[d->scale->vals-1];
   return ret;
-}
-
-// XXXX need to recompute after
-int sv_dim_set_discrete(long quant_numerator,
-			long quant_denominator){
-  
-  sv_dim_t *d = sv_dim(0);
-  if(!d) return -EINVAL;
-
-  d->private->discrete_numerator = quant_numerator;
-  d->private->discrete_denominator = quant_denominator;
-  d->type = SV_DIM_DISCRETE;
-  
-  return 0;
-}
-
-int sv_dim_set_picklist(){
-  
-  sv_dim_t *d = sv_dim(0);
-  if(!d) return -EINVAL;
-
-  d->type = SV_DIM_PICKLIST;
-  d->flags |= SV_DIM_NO_X | SV_DIM_NO_Y;
-  return 0;
 }
 
 static _sv_propmap_t *typemap[]={
