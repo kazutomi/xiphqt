@@ -30,12 +30,16 @@ typedef struct _sv_undo _sv_undo_t;
 #include "sushivision.h"
 
 typedef struct {
+  char *s;
+  double v;
+} _sv_tokenval;
+
+typedef struct {
   char *name;
   char *label;
 
   int n;
-  char **options;
-  double *values;
+  _sv_tokenval **values;
 } _sv_token;
 
 typedef struct {
@@ -43,10 +47,33 @@ typedef struct {
   _sv_token **list;
 } _sv_tokenlist;
 
+// name           string
+// labelname      name[:string]
+// displayvalue   number[:string]
+// flag           string
+// parameter      {flag|string=number}
+// parameterlist  paramentry[, paramentry[...]]
+// valuelist      displayvalue[, displayvalue[...]]
+// declparam      label(parameterlist)
+// nameparam      name(parameterlist)
+// namelist       nameparam[, nameparam[...]]
+
+extern char *_sv_tokenize_string(char *in);
+extern _sv_tokenval *_sv_tokenize_number(char *in);
+extern _sv_token *_sv_tokenize_name(char *in);
+extern _sv_token *_sv_tokenize_labelname(char *in);
+extern _sv_tokenval *_sv_tokenize_displayvalue(char *in);
+extern _sv_tokenval *_sv_tokenize_flag(char *in);
+extern _sv_tokenval *_sv_tokenize_parameter(char *in);
+extern _sv_token *_sv_tokenize_parameterlist(char *in);
+extern _sv_token *_sv_tokenize_valuelist(char *in);
+extern _sv_token *_sv_tokenize_nameparam(char *in);
+extern _sv_token *_sv_tokenize_declparam(char *in);
+extern _sv_tokenlist *_sv_tokenize_namelist(char *in);
+extern void _sv_tokenval_free(_sv_tokenval *t);
 extern void _sv_token_free(_sv_token *t);
 extern void _sv_tokenlist_free(_sv_tokenlist *l);
-extern _sv_token *_sv_tokenize(char *in);
-extern _sv_tokenlist *_sv_tokenlistize(char *in);
+extern char *_sv_tokenize_escape(char *a);
 
 // used to glue numeric settings to semantic labels for menus/save files
 typedef struct _sv_propmap _sv_propmap_t;
@@ -182,7 +209,7 @@ extern void _sv_first_load_warning(int *);
 extern sv_panel_t *_sv_panel_new(int number,
 				 char *name, 
 				 sv_obj_t **objectives,
-				 sv_dim_t **dimensions,	
+				 char *dimensionlist,	
 				 unsigned flags);
 extern void _sv_panel_realize(sv_panel_t *p);
 extern void _sv_panel_dirty_map(sv_panel_t *p);

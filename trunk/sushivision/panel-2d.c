@@ -896,7 +896,7 @@ static void _sv_panel2d_update_legend(sv_panel_t *p){
       if( (d!=p->private->x_d && d!=p->private->y_d) ||
 	  plot->cross_active){
 	snprintf(buffer,320,"%s = %+.*f",
-		 p->dimension_list[i].d->name,
+		 p->dimension_list[i].d->legend,
 		 depth,
 		 p->dimension_list[i].d->val);
 	_sv_plot_legend_add(plot,buffer);
@@ -1428,7 +1428,7 @@ static int _sv_panel2d_compute(sv_panel_t *p,
 		   p->private->x_d->bracket[1],
 		   pw,pw * p->private->oversample_n / p->private->oversample_d,
 		   plot->scalespacing,
-		   p->private->x_d->name,
+		   p->private->x_d->legend,
 		   &sx,
 		   &sx_v,
 		   &sx_i);
@@ -1437,7 +1437,7 @@ static int _sv_panel2d_compute(sv_panel_t *p,
 		   p->private->y_d->bracket[0],
 		   ph,ph * p->private->oversample_n / p->private->oversample_d,
 		   plot->scalespacing,
-		   p->private->y_d->name,
+		   p->private->y_d->legend,
 		   &sy,
 		   &sy_v,
 		   &sy_i);
@@ -1767,7 +1767,7 @@ static void _sv_panel2d_realize(sv_panel_t *p){
       sv_dim_t *d = p->dimension_list[i].d;
       
       /* label */
-      GtkWidget *label = gtk_label_new(d->name);
+      GtkWidget *label = gtk_label_new(d->legend);
       gtk_misc_set_alignment(GTK_MISC(label),1.,.5);
       gtk_table_attach(GTK_TABLE(p2->dim_table),label,0,1,i,i+1,
 		       GTK_FILL,0,5,0);
@@ -1928,11 +1928,11 @@ int _sv_panel2d_load(sv_panel_t *p,
 sv_panel_t *sv_panel_new_2d(int number,
 			    char *name, 
 			    sv_obj_t **objectives,
-			    sv_dim_t **dimensions,
+			    char *dimensionlist,
 			    unsigned flags){
   
   int i,j;
-  sv_panel_t *p = _sv_panel_new(number,name,objectives,dimensions,flags);
+  sv_panel_t *p = _sv_panel_new(number,name,objectives,dimensionlist,flags);
   if(!p)return NULL;
 
   _sv_panel2d_t *p2 = calloc(1, sizeof(*p2));

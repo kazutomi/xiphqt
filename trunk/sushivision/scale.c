@@ -28,7 +28,7 @@
 #include <limits.h>
 #include <ctype.h>
 #include "sushivision.h"
-#include "scale.h"
+#include "internal.h"
 
 /* slider scales */
 void sv_scale_free(sv_scale_t *in){
@@ -47,59 +47,34 @@ void sv_scale_free(sv_scale_t *in){
   }
 }
 
-sv_scale_t *sv_scale_new(char *arg){
+sv_scale_t *sv_scale_new(char *name, char *vals){
   int i=0;
-  _sv_tokenlist *t= _sv_tokenlistize(format);
+  _sv_token *decl= _sv_tokenize_declparam(name);
+  _sv_token *list= _sv_tokenize_valuelist(vals);
 
   // sanity check the tokenization
-  if(!t){
-    fprintf(stderr,"sushivision: Unable to parse scale argument \"%s\".\n",arg);
+  if(!decl){
+    fprintf(stderr,"sushivision: Unable to parse scale argument \"%s\".\n",name);
+    return NULL;
+  }
+  if(!list){
+    fprintf(stderr,"sushivision: Unable to parse scale argument \"%s\".\n",vals);
     return NULL;
   }
 
-  if(t->n != 1)
-    fprintf(stderr,"sushivision: Ignoring excess arguments to scale.\n");
-
-  if(
-  
   sv_scale_t *s = calloc(1, sizeof(*s));
-  s->vals = count;
+  s->vals = list->n;
   s->val_list = calloc(s->vals,sizeof(*s->val_list));
   s->label_list = calloc(s->vals,sizeof(*s->label_list));
 
-  arg=format;
-  while(arg && *arg){
-    char *buf = strdup(arg);
-    char *pos = strchr(buf,';');
-    while(pos && *(pos-1)=='\\')
-      pos = strchr(pos+1,';');
-    if(!pos){
-      arg=NULL;
-    }else{
-      arg+=pos-buf+1;
-      pos[0]=0;
-    }
-
-    // an argument is a number and potentially a colon followed by an auxiliary label.
-    pos = strchr(buf,':');
-    if(pos){
-      // we have a colon (label)
-      s->label_list[i] = strdup(trim(pos+1));
-      *pos='\0';
-    }else{
-      // we have only a number
-      s->label_list[i] = strdup(trim(buf));
-    }
-    s->val_list[i]=atof_portable(buf);
-    free(buf);
-    
-    i++;
+  for(i=0;i<s->vals;i++){
+    s->label_list[i] = strdup(list->values[i]->s);
+    s->val_list[i] = list->values[i]->v;
   }
 
-  if(legend)
-    s->legend=strdup(legend);
-  else
-    s->legend=strdup("");
+  s->legend=strdup(decl->label);
+  _sv_token_free(decl);
+  _sv_token_free(list);
 
   return s;
 }

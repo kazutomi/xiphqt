@@ -59,8 +59,8 @@ struct sv_scale{
   unsigned flags;
 };
 
-sv_scale_t        *sv_scale_new (char *legend,
-				 char *format);
+sv_scale_t        *sv_scale_new (char *name,
+				 char *values);
 
 sv_scale_t       *sv_scale_copy (sv_scale_t *s);
 
@@ -80,6 +80,7 @@ enum sv_dim_type { SV_DIM_CONTINUOUS,
 struct sv_dim{ 
   int number;
   char *name;
+  char *legend;
   enum sv_dim_type type;
 
   double bracket[2];
@@ -217,7 +218,7 @@ sv_panel_t     *sv_panel_new_1d (int number,
 				 char *name,
 				 sv_scale_t *y_scale,
 				 sv_obj_t **objectives,
-				 sv_dim_t **dimensions,	
+				 char *dimensions,	
 				 unsigned flags);
 
 sv_panel_t     *sv_panel_new_xy (int number,
@@ -225,13 +226,13 @@ sv_panel_t     *sv_panel_new_xy (int number,
 				 sv_scale_t *x_scale,
 				 sv_scale_t *y_scale,
 				 sv_obj_t **objectives,
-				 sv_dim_t **dimensions,	
+				 char *dimensions,	
 				 unsigned flags);
 
 sv_panel_t     *sv_panel_new_2d (int number,
 				 char *name, 
 				 sv_obj_t **objectives,
-				 sv_dim_t **dimensions,
+				 char *dimensions,
 				 unsigned flags);
 
 int sv_panel_callback_recompute (sv_panel_t *p,
