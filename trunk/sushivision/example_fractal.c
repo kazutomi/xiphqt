@@ -59,19 +59,19 @@ int main(int argc, char *argv[]){
 
   // "name:label(arg,arg,arg...)"
 
-  sv_dim_t *d0 = sv_dim_new("rc:Re\\(c\\)");
+  sv_dim_new("rc:Re\\(c\\)");
   sv_dim_make_scale("-2.25, -0.75, 0, 0.25, 0.75");
   
-  sv_dim_t *d1 = sv_dim_new("ic:Im\\(c\\)");
+  sv_dim_new("ic:Im\\(c\\)");
   sv_dim_make_scale("-2,-1,0,1,2");
 
-  sv_dim_t *d2 = sv_dim_new("rz:Re\\(z0\\)");
+  sv_dim_new("rz:Re\\(z0\\)");
   sv_dim_make_scale("-2.25, -1, 0, 1, 2.25");
 
-  sv_dim_t *d3 = sv_dim_new("iz:Im\\(z0\\)");
+  sv_dim_new("iz:Im\\(z0\\)");
   sv_dim_make_scale("-2.25, -1, 0, 1, 2.25");
 
-  sv_dim_t *d4 = sv_dim_new("it:Max Iterations(picklist)");
+  sv_dim_new("it:Max Iterations(picklist)");
   sv_dim_make_scale("100:one hundred,"
 		    "1000:one thousand,"
 		    "10000:ten thousand,"

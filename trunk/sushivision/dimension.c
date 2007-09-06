@@ -701,6 +701,8 @@ sv_dim_t *sv_dim_new(char *name){
   d->legend = strdup(decl->label);
   d->type = SV_DIM_CONTINUOUS;
   d->private = calloc(1, sizeof(*d->private));
+  d->private->discrete_numerator = 1;
+  d->private->discrete_denominator = 1;
 
   // parse decllist
   for(i=0;i<decl->n;i++){
@@ -732,7 +734,7 @@ sv_dim_t *sv_dim_new(char *name){
       if(isnan(v)){
 	fprintf(stderr,"sushivision: Missing denominator value in \"%s\"\n.",name);
       }else if(v==0){
-	fprintf(stderr,"sushivision: denominator value may not be zero\n.",name);
+	fprintf(stderr,"sushivision: denominator value may not be zero\n.");
       }else{
 	d->type = SV_DIM_PICKLIST;
 	d->private->discrete_denominator = v;
@@ -763,9 +765,15 @@ int sv_dim_set_scale(sv_scale_t *scale){
 
   // in the runtime version, don't just blindly reset values!
   d->bracket[0]=scale->val_list[0];
-  d->val = 0;
   d->bracket[1]=scale->val_list[d->scale->vals-1];
 
+  if(d->bracket[0] < d->bracket[1]){
+    if(d->val<d->bracket[0])d->val=d->bracket[0];
+    if(d->val>d->bracket[1])d->val=d->bracket[1];
+  }else{
+    if(d->val>d->bracket[0])d->val=d->bracket[0];
+    if(d->val<d->bracket[1])d->val=d->bracket[1];
+  }
   // redraw the slider
 
   return 0;
@@ -797,8 +805,15 @@ int sv_dim_make_scale(char *format){
   
   d->scale = scale;
   d->bracket[0]=scale->val_list[0];
-  d->val = 0;
   d->bracket[1]=scale->val_list[d->scale->vals-1];
+
+  if(d->bracket[0] < d->bracket[1]){
+    if(d->val<d->bracket[0])d->val=d->bracket[0];
+    if(d->val>d->bracket[1])d->val=d->bracket[1];
+  }else{
+    if(d->val>d->bracket[0])d->val=d->bracket[0];
+    if(d->val<d->bracket[1])d->val=d->bracket[1];
+  }
   return ret;
 }
 
