@@ -1,0 +1,9 @@
+Redirect permanent /index.html http://www.theora.org/
+Redirect permanent /theorafaq.html http://www.theora.org/faq/
+Redirect permanent /svn.html http://www.theora.org/svn/
+Redirect permanent /lists.html http://www.theora.org/discuss/
+Redirect permanent /vmail.html http://www.theora.org/discuss/
+Redirect permanent /contact.html http://www.theora.org/discuss/
+Redirect permanent /download.html http://www.theora.org/downloads/
+Redirect permanent /vp3.html http://www.theora.org/downloads/
+
