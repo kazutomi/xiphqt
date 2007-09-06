@@ -29,20 +29,29 @@
 #include <math.h>
 #include "internal.h"
 
+// not a true recursive parser as there's no arbitrary nesting.
+
+void _sv_tokenval_free(_sv_tokenval *v){
+  if(v){
+    if(v->s)free(v->s);
+    free(v);
+  }
+}
+
 void _sv_token_free(_sv_token *t){
   if(t){
     if(t->name)free(t->name);
     if(t->label)free(t->label);
-    if(t->options){
+    if(t->values){
       int i;
       for(i=0;i<t->n;i++)
-	if(t->options[i])free(t->options[i]);
-      free(t->options);
+	if(t->values[i])_sv_tokenval_free(t->values[i]);
+      free(t->values);
     }
-    if(t->values)free(t->values);
     free(t);
   }
 }
+
 
 void _sv_tokenlist_free(_sv_tokenlist *l){
   if(l){
@@ -129,14 +138,18 @@ static float atof_portable(char *number){
 }
 
 static char *trim(char *in){
-  char *end;
+  char *head=in;
+  char *tail=in;
   if(!in)return NULL;
 
-  while(*in && isspace(*in))in++;
-  end=in;
-  while(*end)end++;
-  while(end>in && (*end==0 || isspace(*end)))end--;
-  if(*end)end[1]='\0';
+  while(*head && isspace(*head))head++;
+  while(*head){
+    *tail = *head;
+    tail++;
+    head++;
+  }
+  while(tail>in && isspace(*(tail-1)))tail--;
+  *tail=0;
 
   return in;
 }
@@ -163,6 +176,45 @@ static char *unescape(char *a){
   }
 
   return a;
+}
+
+char *_sv_tokenize_escape(char *a){
+  char *head=a;
+  char *tail;
+  char *ret;
+  int count=0;
+  
+  while(head && *head){
+    if(*head==':' ||
+       *head==',' ||
+       *head=='(' ||
+       *head==')' ||
+       isspace(*head) ||
+       *head=='\\')
+      count++;
+    count++;
+    head++;
+  }
+
+  head=a;
+  ret=tail=calloc(count+1,sizeof(*tail));
+  
+  while(head && *head){
+    if(*head==':' ||
+       *head==',' ||
+       *head=='(' ||
+       *head==')' ||
+       isspace(*head) ||
+       *head=='\\'){
+      *tail='\\';
+      tail++;
+    }
+    *tail=*head;
+    tail++;
+    head++;
+  }
+
+  return ret;
 }
 
 // split at unescaped, unenclosed seperator
@@ -277,70 +329,266 @@ static char *unwrap(char *a){
   return NULL;
 }
 
-// name:label(flag,param=val)
-// name:label(val:label, val:label...)
-_sv_token *_sv_tokenize(char *in){
+// a string is any C string of characters not containing unescaped
+// parens, commas, colons.  Preceeding and trailing spaces are
+// stripped (escaped spaces are never stripped).  Thus, parsing a
+// string consists only of stripping spaces and checking for illegal
+// characters.
+char *_sv_tokenize_string(char *in){
   if(!in)return NULL;
   char *a = strdup(in);
-
-  // single arg; ignore anything following a level 0 comma
-  if(split(a,','))
-    fprintf(stderr,"sushivision: ignoring trailing garbage after \"%s\".\n",a);
+  char *ret = NULL;
   
-  // split name/label/args
-  char *label=split(a,':');
-  if(!label)label=a;
-  char *p=unwrap(label);
+  // ignore anything following a comma
+  if(split(a,','))
+    fprintf(stderr,"sushivision: ignoring trailing garbage \"%s\".\n",a);
+  
+  // ignore anything following a colon
+  if(split(a,':'))
+    fprintf(stderr,"sushivision: ignoring trailing garbage after \"%s\".\n",a);
+
+  // complain about unescaped parens
+  if(unwrap(a))
+    fprintf(stderr,"sushivision: ignoring garbage after \"%s\".\n",a);
 
   if(*a=='\0')goto done;
 
-  _sv_token *ret=calloc(1,sizeof(*ret));
-  ret->name = strdup(trim(unescape(a)));
-  ret->label = strdup(trim(unescape(label)));
-
-  if(p){
-    int i;
-    ret->n = splitcount(p,',');
-    ret->options = calloc(ret->n,sizeof(*ret->options));
-    ret->values = calloc(ret->n,sizeof(*ret->values));
-    
-    for(i=0;i<ret->n;i++){
-      char *next = split(p,',');
-      if(p){
-	if(*p){
-	  // may have param=val or val:label syntax
-	  if(splitcount(p,':')>1){
-	    
-	    if(splitcount(p,'=')>1){
-	      fprintf(stderr,"sushivision: parameter \"%s\" contains both \":\" and \"=\"; \"=\" ignored.\n",p);
-	    }
-	    char *label = split(p,':');
-	    ret->options[i]=strdup(trim(unescape(label)));
-	    ret->values[i]=atof_portable(trim(unescape(p)));
-	    
-	  }else if(splitcount(p,'=')>1){
-	    
-	    char *val = split(p,'=');
-	    ret->options[i]=strdup(trim(unescape(p)));
-	    ret->values[i]=atof_portable(trim(unescape(val)));
-	    
-	  }else{
-	    ret->options[i]=strdup(trim(unescape(p)));
-	    ret->values[i]=atof_portable(trim(unescape(ret->options[i])));
-	  }
-	}else{
-	  ret->values[i]=NAN;
-	}
-      }
-      p=next;
-    } 
-  }
+  ret = strdup(trim(unescape(a)));
+  
  done:
   free(a);
   return ret;
 }
 
-_sv_tokenlist *_sv_tokenlistize(char *in){
+// a number is a standard printf format floating point number string
+// representation.  It may not contain any characters (aside from
+// trailing/preceeding spaces) that are not part of the number
+// representation.
+_sv_tokenval *_sv_tokenize_number(char *in){
+  if(!in)return NULL;
+  char *a = strdup(in);
+  _sv_tokenval *ret=NULL;
+
+  a = trim(unescape(a));
+  if(*a=='\0')goto done;
+
+  ret=calloc(1,sizeof(*ret));
+  ret->s = strdup(a);
+  ret->v = atof_portable(a);
+
+ done:
+
+  free(a);
+  return ret;
+}
+
+_sv_token *_sv_tokenize_name(char *in){
+  _sv_token *ret = NULL;
+  char *s = _sv_tokenize_string(in);
+  if(!s)return NULL;
+
+  ret=calloc(1,sizeof(*ret));
+  ret->name = s;
+  return ret;
+}
+
+_sv_token *_sv_tokenize_labelname(char *in){
+  if(!in)return NULL;
+  char *a = strdup(in);
+  _sv_token *ret = NULL;
+
+  // split name/label
+  char *l=split(a,':');
+  ret = _sv_tokenize_name(a);
+  if(!ret)goto done;
+
+  if(!l){
+    ret->label = strdup(ret->name);
+  }else{
+    char *label = _sv_tokenize_string(l);
+    if(!label)
+      ret->label = strdup("");
+    else
+      ret->label = label;
+  }
+  
+ done:
+  free(a);
+  return ret;
+}
+
+_sv_tokenval *_sv_tokenize_displayvalue(char *in){
+  if(!in)return NULL;
+  char *a = strdup(in);
+  _sv_tokenval *ret = NULL;
+
+  // split value/label
+  char *l=split(a,':');
+  ret = _sv_tokenize_number(a);
+  if(!ret)goto done;
+
+  if(l){
+    char *label = _sv_tokenize_string(l);
+    if(ret->s) free(ret->s);
+    if(!label)
+      ret->s = strdup("");
+    else
+      ret->s = label;
+  }
+  
+ done:
+  free(a);
+  return ret;
+}
+
+_sv_tokenval *_sv_tokenize_flag(char *in){
+  _sv_tokenval *ret = NULL;
+  char *s = _sv_tokenize_string(in);
+  if(!s)return NULL;
+
+  ret=calloc(1,sizeof(*ret));
+  ret->s = s;
+  ret->v = NAN;
+  return ret;
+}
+
+_sv_tokenval *_sv_tokenize_parameter(char *in){
+
+  if(!in)return NULL;
+  char *a = strdup(in);
+  _sv_tokenval *ret = NULL;
+
+  // split value/label
+  char *l=split(a,'=');
+  if(!l){
+    ret = _sv_tokenize_flag(a);
+  }else{
+    ret = _sv_tokenize_number(l);
+    if(ret){
+      char *label = _sv_tokenize_string(a);
+      if(ret->s) free(ret->s);
+      if(!label)
+	ret->s = strdup("");
+      else
+	ret->s = label;
+    }
+  }
+  
+  free(a);
+  return ret;
+}
+
+_sv_token *_sv_tokenize_parameterlist(char *in){
+  if(!in)return NULL;
+
+  char *l=strdup(in);
+  in=l;
+
+  int i,n = splitcount(l,',');
+  _sv_token *ret = calloc(1,sizeof(*ret));
+
+  ret->n = n;
+  ret->values = calloc(n,sizeof(*ret->values));
+
+  for(i=0;i<n;i++){
+    char *next = split(l,',');
+    ret->values[i] = _sv_tokenize_parameter(l);
+    l=next;
+  }
+  free(in);
+
+  return ret;
+}
+
+_sv_token *_sv_tokenize_valuelist(char *in){
+  if(!in)return NULL;
+
+  char *l=strdup(in);
+  in=l;
+
+  int i,n = splitcount(l,',');
+  _sv_token *ret = calloc(1,sizeof(*ret));
+
+  ret->n = n;
+  ret->values = calloc(n,sizeof(*ret->values));
+
+  for(i=0;i<n;i++){
+    char *next = split(l,',');
+    ret->values[i] = _sv_tokenize_displayvalue(l);
+    l=next;
+  }
+  free(in);
+
+  return ret;
+}
+
+_sv_token *_sv_tokenize_nameparam(char *in){
+  _sv_token *ret = NULL;
+  char *a=strdup(in);
+  char *p;
+  if(!a)return NULL;
+
+  // single arg; ignore anything following a level 0 comma
+  if(split(a,','))
+    fprintf(stderr,"sushivision: ignoring trailing garbage after \"%s\".\n",a);
+  
+  // split name/args
+  p=unwrap(a);
+
+  if(*a=='\0')goto done;
+  ret = _sv_tokenize_name(a);
+
+  if(p){
+    _sv_token *l = _sv_tokenize_parameterlist(p);
+    if(l){
+      ret->n = l->n;
+      ret->values =  l->values;
+      
+      l->n = 0;
+      l->values = 0;
+      _sv_token_free(l);
+    }
+  }
+
+ done:
+  free(a);
+  return ret;
+}
+
+_sv_token *_sv_tokenize_declparam(char *in){
+  _sv_token *ret = NULL;
+  char *a=strdup(in);
+  char *p;
+  if(!a)return NULL;
+
+  // single arg; ignore anything following a level 0 comma
+  if(split(a,','))
+    fprintf(stderr,"sushivision: ignoring trailing garbage after \"%s\".\n",a);
+  
+  // split name/args
+  p=unwrap(a);
+
+  if(*a=='\0')goto done;
+  ret = _sv_tokenize_labelname(a);
+
+  if(p){
+    _sv_token *l = _sv_tokenize_parameterlist(p);
+    if(l){
+      ret->n = l->n;
+      ret->values =  l->values;
+      
+      l->n = 0;
+      l->values = 0;
+      _sv_token_free(l);
+    }
+  }
+
+ done:
+  free(a);
+  return ret;
+}
+
+_sv_tokenlist *_sv_tokenize_namelist(char *in){
   if(!in)return NULL;
 
   char *l=strdup(in);
@@ -354,56 +602,11 @@ _sv_tokenlist *_sv_tokenlistize(char *in){
 
   for(i=0;i<n;i++){
     char *next = split(l,',');
-    ret->list[i] = _sv_tokenize(l);
+    ret->list[i] = _sv_tokenize_nameparam(l);
     l=next;
   }
   free(in);
-
+  
   return ret;
 }
 
-#if 0
-
-int main(int argc, char **argv){
-  int i;
-  for(i=1;i<argc;i++){
-    _sv_tokenlist *ret=_sv_tokenlistize(argv[i]);
-    fprintf(stderr,"parsing arglist %d:\n\n",i);
-    if(!ret)
-      fprintf(stderr,"NULL");
-    else{
-      int j;
-      fprintf(stderr,"arguments: %d",ret->n);
-      for(j=0;j<ret->n;j++){
-	fprintf(stderr,"\n\tname=%s, label=%s ",
-		ret->list[j]->name,
-		ret->list[j]->label);
-	if(ret->list[j]->n){
-	  int k;
-	  fprintf(stderr,"(");
-	  for(k=0;k<ret->list[j]->n;k++){
-	    if(k>0)
-	      fprintf(stderr,", ");
-	    if(ret->list[j]->options[k]){
-	      if(*ret->list[j]->options[k]){
-		fprintf(stderr,"%s",ret->list[j]->options[k]);
-	      }else{
-		fprintf(stderr,"\"\"");
-	      }
-	    }else{
-	      fprintf(stderr,"NULL");
-	    }
-	    fprintf(stderr,"=%g",ret->list[j]->values[k]);
-	  }
-	  fprintf(stderr,")");
-	}
-      }
-    }
-    fprintf(stderr,"\n\n");
-    _sv_tokenlist_free(ret);
-  }
-
-  return 0;
-}
-
-#endif

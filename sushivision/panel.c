@@ -803,11 +803,11 @@ int sv_panel_background(int number,
 sv_panel_t * _sv_panel_new(int number,
 			   char *name, 
 			   sv_obj_t **objectives,
-			   char *dimensions,
+			   char *dimensionlist,
 			   unsigned flags){
 
   sv_panel_t *p;
-  char **dim_tokens;
+  _sv_tokenlist *dim_tokens;
   int i;
 
   if(number<0){
@@ -852,24 +852,26 @@ sv_panel_t * _sv_panel_new(int number,
   }
 
   i=0;
-  dim_tokens = _sv_tokenize(dimensions,';',1);
-  while(dim_tokens && dim_tokens[i])i++;
-  p->dimensions = i;
-  p->dimension_list = malloc(i*sizeof(*p->dimension_list));
+  dim_tokens = _sv_tokenize_namelist(dimensionlist);
+  p->dimensions = dim_tokens->n;
+  p->dimension_list = malloc(p->dimensions*sizeof(*p->dimension_list));
   for(i=0;i<p->dimensions;i++){
-    sv_dim_t *d = sv_dim(dim_tokensi[i]);
+    char *name = dim_tokens->list[i]->name;
+    sv_dim_t *d = sv_dim(name);
 
     if(!d){
       fprintf(stderr,"Panel %d (\"%s\"): Dimension \"%s\" does not exist\n",
-	      number,p->name,dim_tokens[i]);
+	      number,p->name,name);
       errno = -EINVAL;
+      //XXX leak
       return NULL;
     }
 
-    if(!dimensions[i]->scale){
-      fprintf(stderr,"Panel %d (\"%s\"): Dimension number \"%s\" has a NULL scale\n",
-	      number,p->name,dimensions[i]->name);
+    if(!d->scale){
+      fprintf(stderr,"Panel %d (\"%s\"): Dimension \"%s\" has a NULL scale\n",
+	      number,p->name,name);
       errno = -EINVAL;
+      //XXX leak
       return NULL;
     }
 

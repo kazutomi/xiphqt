@@ -674,10 +674,19 @@ sv_dim_t *sv_dim_new(int number,
 		     unsigned flags){
 
   sv_dim_t *d;
+  _sv_token *decl = _sv_tokenize_declparam(name);
   
+  if(!decl){
+    fprintf(stderr,"sushivision: Unable to parse dimension name \"%s\".\n",name);
+    errno = -EINVAL;
+    //XXXX leak
+    return NULL;
+  }
+
   if(number<0){
     fprintf(stderr,"Dimension number must be >= 0\n");
     errno = -EINVAL;
+    //XXXX leak
     return NULL;
   }
 
@@ -685,6 +694,7 @@ sv_dim_t *sv_dim_new(int number,
     if(_sv_dimension_list[number]!=NULL){
       fprintf(stderr,"Dimension number %d already exists\n",number);
       errno = -EINVAL;
+      //XXXleak
       return NULL;
     }
   }else{
@@ -699,13 +709,15 @@ sv_dim_t *sv_dim_new(int number,
 
   d = _sv_dimension_list[number] = calloc(1, sizeof(**_sv_dimension_list));
   d->number = number;
-  d->name = strdup(name);
+  d->name = strdup(decl->name);
+  d->legend = strdup(decl->label);
   d->flags = flags;
   d->type = SV_DIM_CONTINUOUS;
   d->private = calloc(1, sizeof(*d->private));
 
   pthread_setspecific(_sv_dim_key, (void *)d);
 
+  _sv_token_free(decl);
   return d;
 }
 
@@ -736,9 +748,22 @@ int sv_dim_make_scale(char *format){
   sv_dim_t *d = sv_dim(0);
   sv_scale_t *scale;
   int ret;
+  char *name=_sv_tokenize_escape(d->name);
+  char *label=_sv_tokenize_escape(d->legend);
+  char *arg=calloc(strlen(name)+strlen(label)+2,sizeof(*arg));
 
-  if(!d) return -EINVAL;
-  scale = sv_scale_new(d->name,format);
+  strcat(arg,name);
+  strcat(arg,":");
+  strcat(arg,label);
+  free(name);
+  free(label);
+
+  if(!d){
+    free(arg);
+    return -EINVAL;
+  }
+  scale = sv_scale_new(arg,format);
+  free(arg);
   if(!scale)return errno;
   
   d->scale = scale;
