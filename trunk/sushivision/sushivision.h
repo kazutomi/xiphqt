@@ -94,20 +94,13 @@ struct sv_dim{
   sv_dim_internal_t *private;
 };
 
-sv_dim_t            *sv_dim_new (int number, 
-				 char *name,
-				 unsigned flags);
+sv_dim_t            *sv_dim_new (char *decl);
 
 sv_dim_t                *sv_dim (char *name);
 
 int            sv_dim_set_scale (sv_scale_t *scale);
 
 int           sv_dim_make_scale (char *format);
-
-int         sv_dim_set_discrete (long quant_numerator,
-				 long quant_denominator);
-
-int         sv_dim_set_picklist ();
 
 int            sv_dim_set_value (double val);
 
