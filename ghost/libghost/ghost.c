@@ -31,10 +31,10 @@
 #include "fftwrap.h"
 #include "filterbank.h"
 
-#define PCM_BUF_SIZE 2048
+#define PCM_BUF_SIZE 512
 #define PITCH_BUF_SIZE 1024
 
-#define SINUSOIDS 30
+#define SINUSOIDS 0
 #define MASK_LPC_ORDER 10
 void fir_mem2(const spx_sig_t *x, const spx_coef_t *num, spx_sig_t *y, int N, int ord, spx_mem_t *mem)
 {
@@ -149,7 +149,7 @@ GhostEncState *ghost_encoder_state_new(int sampling_rate)
    st->adpcm = adpcm_init(8);
    st->ceft = ceft_init(st->length);
 
-   st->preemph = .0;
+   st->preemph = .8;
    st->preemph_mem = 0;
    st->deemph_mem = 0;
    
@@ -228,7 +228,7 @@ void ghost_encode(GhostEncState *st, float *pcm)
       printf ("\n");*/
       /*for (i=0;i<st->length;i++)
       y[i] *= st->synthesis_window[i];*/
-#if 0
+#if 1
       int pitch_index=0;
       float curve2[512];
       for (i=0;i<512;i++)
