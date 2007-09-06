@@ -496,9 +496,8 @@ void compute_pitch_gain(float *X, float *P, float *gains, float *bank)
 
       gains[i] = gain;
    }
-   for (i=pbank[PBANDS];i<256;i++)
+   for (i=pbank[PBANDS]*2-1;i<256;i++)
       P[i] = 0;
-   P[255] = 0;
    /*if (rand()%10 == 0)
    {
       for (i=0;i<PBANDS;i++)
@@ -520,9 +519,8 @@ void pitch_quant_bank(float *X, float *P, float *gains)
       }
       //printf ("%f ", gain);
    }
-   for (i=pbank[PBANDS];i<256;i++)
+   for (i=pbank[PBANDS]*2-1;i<256;i++)
       P[i] = 0;
-   P[255] = 0;
 }
 
 
