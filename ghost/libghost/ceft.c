@@ -26,30 +26,28 @@
 
 #include "fftwrap.h"
 
+/* Number of bands to consider, excliding the DC */
 #define NBANDS 15
-int qbank[] =   {1, 2, 4, 6, 8, 12, 16, 20, 24, 28, 36, 44, 52, 68, 84, 116, 128};
-//int qpulses[] = {2, 2, 2, 2, 2,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1};
-//int qpulses[] = {2, 2, 2, 2, 2,  2,  1,  1,  1,  1,  0,  0,  0,  0,  0};
-//int qpulses[] = {2, 3, 2, 2, 3,  2,  2,  2,  1,  2,  1,  0,  0,  0,  0};
-//int qpulses[] = {3, 4, 3, 2, 3,  2,  2,  2,  1,  2,  1,  0,  0,  0,  0};
 
+/* Start frequency of each band. The two extra elements are for the end of the last band (+1) and the end of the array itself */
+int qbank[] =   {1, 2, 4, 6, 8, 12, 16, 20, 24, 28, 36, 44, 52, 68, 84, 116, 128};
+
+/* Number of pulses in each band. The number of bits for each band with a non-zero
+   number of pulses is equal to  (1 + nb_pulses * log2 (2 * width_of_band) )  */
 //32 kbps
-int qpulses[] = {3, 4, 4, 3, 3,  2,  2,  2,  2,  2,  2,  0,  0,  0,  0};
+int qpulses[] = {3, 4, 4, 3, 3,  2,  2,  2,  2,  2,  2,  0,  0,  0,  0}; //85 bits
 
 //44 kbps
-//int qpulses[] = {4, 7, 6, 4, 4,  3,  3,  3,  3,  3,  3,  3,  0,  0,  0};
-
-//int qpulses[] = {5, 5, 5, 5, 5,  5,  2,  2,  1,  2,  1,  0,  0,  0,  0};
-//int qpulses[] = {5, 5, 2, 2, 3,  2,  5,  5,  5,  5,  5,  5,  0,  0,  0};
+//int qpulses[] = {4, 7, 6, 4, 4,  3,  3,  3,  3,  3,  3,  3,  0,  0,  0}; //134 bits
 
 
-//int qpulses[] = {4, 4, 3, 3, 3,  3,  3,  2,  2,  3,  2,  2,  0,  0,  0};
-//int qpulses[] = {5, 5, 5, 5, 5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5};
-
-
+/* Number of bands only for the pitch prediction */
 #define PBANDS 5
+/* Start frequency of each band */
 int pbank[] = {1, 4, 8, 12, 20, 44};
 
+/* Algebraic pulse-base quantiser. The signal x is replaced by the sum of the pitch 
+   a combination of pulses such that its norm is still equal to 1 */
 void alg_quant(float *x, int N, int K, float *p)
 {
    float y[N];
@@ -107,6 +105,9 @@ void alg_quant(float *x, int N, int K, float *p)
    
 }
 
+/* Improved algebraic pulse-base quantiser. The signal x is replaced by the sum of the pitch 
+   a combination of pulses such that its norm is still equal to 1. The only difference with 
+   the quantiser above is that the search is more complete. */
 void alg_quant2(float *x, int N, int K, float *p)
 {
    int L = 5;
@@ -215,6 +216,7 @@ void alg_quant2(float *x, int N, int K, float *p)
    
 }
 
+/* Just replace the band with noise of unit energy */
 void noise_quant(float *x, int N, int K, float *p)
 {
    int i;
@@ -231,6 +233,7 @@ void noise_quant(float *x, int N, int K, float *p)
    }
 }
 
+/* Compute the energy in each of the bands */
 void compute_bank(float *X, float *bank)
 {
    int i;
@@ -243,11 +246,11 @@ void compute_bank(float *X, float *bank)
          bank[i] += X[j*2-1]*X[j*2-1];
          bank[i] += X[j*2]*X[j*2];
       }
-      //bank[i] = sqrt(.5*bank[i]/(qbank[i+1]-qbank[i]));
       bank[i] = sqrt(bank[i]);
    }
 }
 
+/* Normalise each band such that the energy is one. */
 void normalise_bank(float *X, float *bank)
 {
    int i;
@@ -265,6 +268,7 @@ void normalise_bank(float *X, float *bank)
       X[i] = 0;
 }
 
+/* De-normalise the energy to produce the synthesis from the unit-energy bands */
 void denormalise_bank(float *X, float *bank)
 {
    int i;
@@ -282,6 +286,7 @@ void denormalise_bank(float *X, float *bank)
    X[255] = 0;
 }
 
+/* L2-norm of a vector */
 float norm2(float *x, int len)
 {
    float E=0;
@@ -291,6 +296,7 @@ float norm2(float *x, int len)
    return E;
 }
 
+/* Really crappy DFT for test purposes. May be harmful to young children */
 void crappy_fft(float *X, int len, int R, int dir)
 {
    int i, j;
@@ -317,6 +323,7 @@ void crappy_fft(float *X, int len, int R, int dir)
       X[i] = out[i]/sqrt(len/2);
 }
 
+/* Really crappy real-value DFT for test purposes. May be harmful to young children */
 void crappy_rfft(float *X, int len, int R, int dir)
 {
    int N=len*2;
@@ -358,6 +365,7 @@ void crappy_rfft(float *X, int len, int R, int dir)
    printf ("\n");*/
 }
 
+/* Applies a series of rotations so that pulses are spread like a two-sided exponential */
 void exp_rotation(float *X, int len, float theta, int dir)
 {
    int i;
@@ -424,6 +432,7 @@ void exp_rotation(float *X, int len, float theta, int dir)
    }
 }
 
+/* Apply a rotation to all bands to spread the effect of pulses */
 void random_rotation(float *X, int R, int dir)
 {
    int i;
@@ -443,7 +452,7 @@ void random_rotation(float *X, int R, int dir)
    //printf ("\n");
 }
 
-
+/* Quantise the normalised signal in each band */
 void quant_bank(float *X, float *P, float centre)
 {
    int i;
@@ -466,6 +475,7 @@ void quant_bank(float *X, float *P, float centre)
    X[255] = 0;
 }
 
+/* Compute the best gain for each "pitch band" */
 void compute_pitch_gain(float *X, float *P, float *gains, float *bank)
 {
    int i;
@@ -511,6 +521,7 @@ void compute_pitch_gain(float *X, float *P, float *gains, float *bank)
    }*/
 }
 
+/* Apply the (quantised) gain to each "pitch band" */
 void pitch_quant_bank(float *X, float *P, float *gains)
 {
    int i;
@@ -528,7 +539,8 @@ void pitch_quant_bank(float *X, float *P, float *gains)
       P[i] = 0;
 }
 
-
+/* Scales the pulse-codebook entry in each band such that unit-energy is conserved when 
+   adding the pitch */
 void pitch_renormalise_bank(float *X, float *P)
 {
    int i;
@@ -597,7 +609,7 @@ CEFTState *ceft_init(int len)
 }
 
 
-
+/* Main CEFT encoder function */
 void ceft_encode(CEFTState *st, float *in, float *out, float *pitch, float *window)
 {
    //float bark[BARK_BANDS];
@@ -611,18 +623,23 @@ void ceft_encode(CEFTState *st, float *in, float *out, float *pitch, float *wind
    float gains[PBANDS];
    float mask[NBANDS];
    static float obank[NBANDS+1];
+   
+   /* FFT of windowed input signal */
    spx_fft_float(st->frame_fft, in, X);
 
-   /* Bands for the input signal */
+   /* Compute energy for each bands in the input signal */
    compute_bank(X, bank);
 
+   /* Apply a window and FFT to the (already-delayed) pitch signal */
    for (i=0;i<st->length;i++)
       p[i] = pitch[i]*window[i];
    
    spx_fft_float(st->frame_fft, p, Xp);
    
-   /* Bands for the pitch signal */
+   /* Compute energy for each bands in the pitch signal */
    compute_bank(Xp, pitch_bank);
+   
+   /* Enable to dump data for training purposes */
 #if 0
    if (rand()%10 ==0 && fabs(X[0]) > 2 && (fabs(X[0]) > 10 || rand() % 5 == 0))
    {
@@ -673,14 +690,16 @@ void ceft_encode(CEFTState *st, float *in, float *out, float *pitch, float *wind
             //printf ("%f\n", Sxw/Sw);
 #endif         
    
-   
+   /* Normalise each band to have unit energy */
    normalise_bank(X, bank);
    
+   /* All the following is for quantisation of the energy in each band */
    float in_bank[NBANDS];
    float qbank[NBANDS];
    static float last_err[NBANDS];
    static float last_bank[NBANDS];
 
+   /* Apply energy predictor */
    for (i=0;i<NBANDS;i++)
    {
       in_bank[i] = 20*log10(bank[i]+1) + .0*last_err[i+1] - .9*last_bank[i];
@@ -688,6 +707,7 @@ void ceft_encode(CEFTState *st, float *in, float *out, float *pitch, float *wind
    for (i=0;i<NBANDS;i++)
       qbank[i] = in_bank[i];
    
+   /* Vecctor-quantise the prediction error */
    quantise_bands(in_bank, qbank, NBANDS);
 
 #if 0
@@ -721,6 +741,7 @@ void ceft_encode(CEFTState *st, float *in, float *out, float *pitch, float *wind
    for (i=0;i<NBANDS;i++)
       last_err[i] = qbank[i]-in_bank[i];
    
+   /* Undo the prediction */
    for (i=0;i<NBANDS;i++)
    {
       qbank[i] += .9*last_bank[i];
@@ -733,6 +754,7 @@ void ceft_encode(CEFTState *st, float *in, float *out, float *pitch, float *wind
    for (i=0;i<NBANDS;i++)
       last_bank[i] = qbank[i];
 
+   /* This is for quantisation of the DC. That is done independently from everything else */
    {
       float sign;
       int id;
@@ -754,6 +776,7 @@ void ceft_encode(CEFTState *st, float *in, float *out, float *pitch, float *wind
       //printf ("%f\n", X[0]);
    }
    
+   /* Normalise the pitch signal to have unit energy. */
    normalise_bank(Xp, pitch_bank);
    
    /*
@@ -764,19 +787,22 @@ void ceft_encode(CEFTState *st, float *in, float *out, float *pitch, float *wind
    printf ("\n");
    */
    
+   /* Apply spreading on input signal and pitch spectrum */
    random_rotation(X, 10, -1);
    random_rotation(Xp, 10, -1);
    
    compute_pitch_gain(X, Xp, gains, bank);
    quantise_pitch(gains, PBANDS);
    pitch_quant_bank(X, Xp, gains);
-      
+   
+   /* Subtract the pitch prediction from the signal to encode */
    for (i=1;i<st->length;i++)
       X[i] -= Xp[i];
 
    //Quantise input
    quant_bank(X, Xp, centre);
    
+   /* Undo the pulse spreading */
    random_rotation(X, 10, 1);
    //pitch_renormalise_bank(X, Xp);
 
