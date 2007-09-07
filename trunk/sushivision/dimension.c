@@ -677,7 +677,7 @@ sv_dim_t *sv_dim_new(char *name){
   _sv_token *decl = _sv_tokenize_declparam(name);
   
   if(!decl){
-    fprintf(stderr,"sushivision: Unable to parse dimension name \"%s\".\n",name);
+    fprintf(stderr,"sushivision: Unable to parse dimension declaration \"%s\".\n",name);
     errno = -EINVAL;
     return NULL;
   }

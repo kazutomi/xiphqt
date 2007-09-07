@@ -1421,11 +1421,11 @@ int _sv_panel1d_load(sv_panel_t *p,
 sv_panel_t *sv_panel_new_1d(int number,
 			    char *name,
 			    sv_scale_t *scale,
-			    sv_obj_t **objectives,
+			    char *objectivelist,
 			    char *dimensionlist,	
 			    unsigned flags){
   
-  sv_panel_t *p = _sv_panel_new(number,name,objectives,dimensionlist,flags);
+  sv_panel_t *p = _sv_panel_new(number,name,objectivelist,dimensionlist,flags);
   _sv_panel1d_t *p1;
 
   if(!p)return p;

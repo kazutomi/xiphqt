@@ -80,20 +80,20 @@ int main(int argc, char *argv[]){
 
   sv_func_t *f = sv_func_new(0, 2, fractal_objective, 0);
   
-  sv_obj_t *o0 = sv_obj_new(0,"outer",
-			    (sv_func_t *[]){f},
-			    (int []){0},
-			    "Y", 0);
-  sv_obj_make_scale(o0, "0, .001, .01, .1, 1.0");
+  sv_obj_new("outer",
+	     (sv_func_t *[]){f},
+	     (int []){0},
+	     "Y");
+  sv_obj_make_scale("0, .001, .01, .1, 1.0");
   
-  sv_obj_t *o1 = sv_obj_new(1,"inner",
-			    (sv_func_t *[]){f},
-			    (int []){1},
-			    "Y", 0);
-  sv_obj_make_scale(o1, "0, .001, .01, .1, 1.0");
+  sv_obj_new("inner",
+	     (sv_func_t *[]){f},
+	     (int []){1},
+	     "Y");
+  sv_obj_make_scale("0, .001, .01, .1, 1.0");
   
   sv_panel_new_2d(0,"Mandel/Julia Fractal",
-		  (sv_obj_t *[]){o0,o1,NULL},
+		  "inner, outer",
 		  "rc,ic,rz,iz,it",
 		  0);
   

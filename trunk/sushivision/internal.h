@@ -208,7 +208,7 @@ extern void _sv_first_load_warning(int *);
 
 extern sv_panel_t *_sv_panel_new(int number,
 				 char *name, 
-				 sv_obj_t **objectives,
+				 char *objectivelist,
 				 char *dimensionlist,	
 				 unsigned flags);
 extern void _sv_panel_realize(sv_panel_t *p);
@@ -259,4 +259,5 @@ extern int _sv_undo_suspended;
 extern _sv_undo_t **_sv_undo_stack;
 
 extern pthread_key_t _sv_dim_key;
+extern pthread_key_t _sv_obj_key;
 

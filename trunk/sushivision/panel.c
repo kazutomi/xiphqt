@@ -802,12 +802,13 @@ int sv_panel_background(int number,
 
 sv_panel_t * _sv_panel_new(int number,
 			   char *name, 
-			   sv_obj_t **objectives,
+			   char *objectivelist,
 			   char *dimensionlist,
 			   unsigned flags){
 
   sv_panel_t *p;
   _sv_tokenlist *dim_tokens;
+  _sv_tokenlist *obj_tokens;
   int i;
 
   if(number<0){
@@ -843,11 +844,12 @@ sv_panel_t * _sv_panel_new(int number,
   p->private->def_oversample_d = p->private->oversample_d = 1;
 
   i=0;
-  while(objectives && objectives[i])i++;
-  p->objectives = i;
-  p->objective_list = malloc(i*sizeof(*p->objective_list));
+  obj_tokens = _sv_tokenize_namelist(objectivelist);
+  p->objectives = obj_tokens->n;
+  p->objective_list = malloc(p->objectives*sizeof(*p->objective_list));
   for(i=0;i<p->objectives;i++){
-    p->objective_list[i].o = (sv_obj_t *)objectives[i];
+    char *name = obj_tokens->list[i]->name;
+    p->objective_list[i].o = sv_obj(name);
     p->objective_list[i].p = p;
   }
 
@@ -879,6 +881,8 @@ sv_panel_t * _sv_panel_new(int number,
     p->dimension_list[i].p = p;
   }
 
+  _sv_tokenlist_free(obj_tokens);
+  _sv_tokenlist_free(dim_tokens);
   return p;
 }
 

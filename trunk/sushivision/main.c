@@ -58,6 +58,7 @@ int _sv_undo_suspended=0;
 _sv_undo_t **_sv_undo_stack=NULL;
 
 pthread_key_t   _sv_dim_key;
+pthread_key_t   _sv_obj_key;
 
 void _sv_wake_workers(){
   pthread_mutex_lock(&m);
