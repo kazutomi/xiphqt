@@ -44,8 +44,8 @@ typedef struct {
 } ices_vorbis_in_t;
 
 /* -- static prototypes -- */
-static int ices_vorbis_readpcm (input_stream_t* self, size_t len,
-				int16_t* left, int16_t* right);
+static long ices_vorbis_readpcm (input_stream_t* self, size_t len,
+				 int16_t* left, int16_t* right);
 static int ices_vorbis_close (input_stream_t* self);
 static void in_vorbis_parse (input_stream_t* self);
 static void in_vorbis_set_metadata (ices_vorbis_in_t* vorbis_data);
@@ -133,13 +133,13 @@ ices_vorbis_open (input_stream_t* self, char* buf, size_t len)
   return 0;
 }
 
-static int
+static long
 ices_vorbis_readpcm (input_stream_t* self, size_t olen, int16_t* left,
 		     int16_t* right)
 {
   ices_vorbis_in_t* vorbis_data = (ices_vorbis_in_t*) self->data;
   int link;
-  int len;
+  long len;
   int i;
 
   /* refill buffer if necessary */
