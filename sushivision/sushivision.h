@@ -139,6 +139,7 @@ enum sv_obj_type { SV_OBJ_BASIC };
 struct sv_obj { 
   int number;
   char *name;
+  char *legend;
   enum sv_obj_type type;
 
   sv_scale_t *scale;
@@ -152,23 +153,16 @@ struct sv_obj {
   sv_obj_internal_t *private;
 };
 
-sv_obj_t            *sv_obj_new (int number,
-				 char *name,
+sv_obj_t            *sv_obj_new (char *decl,
 				 sv_func_t **function_map,
 				 int *function_output_map,
-				 char *output_type_map,
-				 unsigned flags);
+				 char *output_type_map);
 
-sv_obj_t   *sv_obj_new_defaults (int number,
-				 char *name,
-				 sv_func_t *function,
-				 unsigned flags);
+sv_obj_t                *sv_obj (char *name);
 
-int            sv_obj_set_scale (sv_obj_t *o,
-				 sv_scale_t *scale);
+int            sv_obj_set_scale (sv_scale_t *scale);
 
-int           sv_obj_make_scale (sv_obj_t *o,
-				 char *format);
+int           sv_obj_make_scale (char *format);
 
 /* panels ********************************************************/
 
@@ -210,7 +204,7 @@ struct sv_panel {
 sv_panel_t     *sv_panel_new_1d (int number,
 				 char *name,
 				 sv_scale_t *y_scale,
-				 sv_obj_t **objectives,
+				 char *objectives,
 				 char *dimensions,	
 				 unsigned flags);
 
@@ -218,13 +212,13 @@ sv_panel_t     *sv_panel_new_xy (int number,
 				 char *name,
 				 sv_scale_t *x_scale,
 				 sv_scale_t *y_scale,
-				 sv_obj_t **objectives,
+				 char *objectives,
 				 char *dimensions,	
 				 unsigned flags);
 
 sv_panel_t     *sv_panel_new_2d (int number,
 				 char *name, 
-				 sv_obj_t **objectives,
+				 char *objectives,
 				 char *dimensions,
 				 unsigned flags);
 

@@ -25,38 +25,35 @@
 #include <errno.h>
 #include "internal.h"
 
-sv_obj_t *sv_obj_new(int number,
-		     char *name,
+sv_obj_t *sv_obj_new(char *name,
 		     sv_func_t **function_map,
 		     int *function_output_map,
-		     char *output_type_map,
-		     unsigned flags){
+		     char *output_type_map){
   
   sv_obj_t *o;
   sv_obj_internal_t *p;
   int i;
   int outputs = strlen(output_type_map);
-
-  if(number<0){
-    fprintf(stderr,"Objective number must be >= 0\n");
+  int number;
+  _sv_token *decl = _sv_tokenize_declparam(name);
+  
+  if(!decl){
+    fprintf(stderr,"sushivision: Unable to parse objective declaration \"%s\".\n",name);
     errno = -EINVAL;
     return NULL;
   }
-  
-  if(number<_sv_objectives){
-    if(_sv_objective_list[number]!=NULL){
-      fprintf(stderr,"Objective number %d already exists\n",number);
-    errno = -EINVAL;
-    return NULL;
-    }
+
+  if(_sv_objectives == 0){
+    number=0;
+    _sv_objective_list = calloc (number+1,sizeof(*_sv_objective_list));
+    _sv_objectives=1;
   }else{
-    if(_sv_objectives == 0){
-      _sv_objective_list = calloc (number+1,sizeof(*_sv_objective_list));
-    }else{
-      _sv_objective_list = realloc (_sv_objective_list,(number+1) * sizeof(*_sv_objective_list));
-      memset(_sv_objective_list + _sv_objectives, 0, sizeof(*_sv_objective_list)*(number +1 - _sv_objectives));
+    for(number=0;number<_sv_objectives;number++)
+      if(!_sv_objective_list[number])break;
+    if(number==_sv_objectives){
+      _sv_objectives=number+1;
+      _sv_objective_list = realloc (_sv_objective_list,_sv_objectives * sizeof(*_sv_objective_list));
     }
-    _sv_objectives=number+1;
   }
   
   o = _sv_objective_list[number] = calloc(1, sizeof(**_sv_objective_list));
@@ -163,12 +160,12 @@ sv_obj_t *sv_obj_new(int number,
   }
 
   o->number = number;
-  o->name = strdup(name);
+  o->name = strdup(decl->name);
+  o->legend = strdup(decl->label);
   o->output_types = strdup(output_type_map);
   o->type = SV_OBJ_BASIC;
   o->outputs = outputs;
-  o->flags = flags;
-
+  
   /* copy in the maps */
   o->function_map = malloc(outputs * sizeof(*o->function_map));
   o->output_map = malloc(outputs * sizeof(*o->output_map));
@@ -177,14 +174,16 @@ sv_obj_t *sv_obj_new(int number,
   for(i=0;i<outputs;i++)
     o->function_map[i] = function_map[i]->number;
   
+  pthread_setspecific(_sv_obj_key, (void *)o);
+  _sv_token_free(decl);
+
   return o;
 }
 
 // XXXX need to recompute after
 // XXXX need to add scale cloning to compute to make this safe in callbacks
-int sv_obj_set_scale(sv_obj_t *in,
-		     sv_scale_t *scale){
-  sv_obj_t *o = (sv_obj_t *)in; // unwrap
+int sv_obj_set_scale(sv_scale_t *scale){
+  sv_obj_t *o = sv_obj(0);
 
   if(o->scale)
     sv_scale_free(o->scale); // always a deep copy we own
@@ -198,17 +197,46 @@ int sv_obj_set_scale(sv_obj_t *in,
 
 // XXXX need to recompute after
 // XXXX need to add scale cloning to compute to make this safe in callbacks
-int sv_obj_make_scale(sv_obj_t *in,
-		      char *format){
-
-  sv_obj_t *o = (sv_obj_t *)in; //unwrap
+int sv_obj_make_scale(char *format){
+  sv_obj_t *o = sv_obj(0);
   sv_scale_t *scale;
   int ret;
 
-  if(!o) return -EINVAL;
-  scale = sv_scale_new(o->name,format);
+  char *name=_sv_tokenize_escape(o->name);
+  char *label=_sv_tokenize_escape(o->legend);
+  char *arg=calloc(strlen(name)+strlen(label)+2,sizeof(*arg));
+
+  strcat(arg,name);
+  strcat(arg,":");
+  strcat(arg,label);
+  free(name);
+  free(label);
+
+  if(!o){
+    free(arg);
+    return -EINVAL;
+  }
+  scale = sv_scale_new(arg,format);
+  free(arg);
   if(!scale)return errno;
 
   o->scale = scale;
   return ret;
+}
+
+sv_obj_t *sv_obj(char *name){
+  int i;
+  
+  if(name == NULL || name == 0 || !strcmp(name,"")){
+    return (sv_obj_t *)pthread_getspecific(_sv_obj_key);
+    
+  }
+  for(i=0;i<_sv_objectives;i++){
+    sv_obj_t *o=_sv_objective_list[i];
+    if(o && o->name && !strcmp(name,o->name)){
+      pthread_setspecific(_sv_obj_key, (void *)o);
+      return o;
+    }
+  }
+  return NULL;
 }

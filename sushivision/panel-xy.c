@@ -1608,11 +1608,11 @@ sv_panel_t *sv_panel_new_xy(int number,
 			    char *name,
 			    sv_scale_t *xscale,
 			    sv_scale_t *yscale,
-			    sv_obj_t **objectives,
+			    char *objectivelist,
 			    char *dimensionlist,	
 			    unsigned flags){
 
-  sv_panel_t *p = _sv_panel_new(number,name,objectives,dimensionlist,flags);
+  sv_panel_t *p = _sv_panel_new(number,name,objectivelist,dimensionlist,flags);
   _sv_panelxy_t *xy;
 
   if(!p)return NULL;
