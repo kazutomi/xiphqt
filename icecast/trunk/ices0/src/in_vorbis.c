@@ -150,6 +150,9 @@ ices_vorbis_readpcm (input_stream_t* self, size_t olen, int16_t* left,
 			  sizeof (vorbis_data->buf), ICES_OV_BE, SAMPLESIZE, 1, &link)) <= 0) {
 	if (len == OV_HOLE) {
 	  ices_log_error ("Skipping bad vorbis data");
+	} else if (len < 0) {
+	  ices_log_error ("ov_read returned an error: %d", len);
+	  return 0;
 	} else
 	  return len;
       }
