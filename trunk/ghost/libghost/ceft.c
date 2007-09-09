@@ -35,6 +35,7 @@ int qbank[] =   {1, 2, 4, 6, 8, 12, 16, 20, 24, 28, 36, 44, 52, 68, 84, 116, 128
 /* Number of pulses in each band. The number of bits for each band with a non-zero
    number of pulses is equal to  (1 + nb_pulses * log2 (2 * width_of_band) )  */
 //32 kbps
+#define WAVEFORM_END 44
 int qpulses[] = {3, 4, 4, 3, 3,  2,  2,  2,  2,  2,  2,  0,  0,  0,  0}; //85 bits
 
 //44 kbps
@@ -224,6 +225,25 @@ void noise_quant(float *x, int N, int K, float *p)
    for (i=0;i<N;i++)
    {
       x[i] = (rand()%1000)/500.-1;
+      E += x[i]*x[i];
+   }
+   E = 1./sqrt(E);
+   for (i=0;i<N;i++)
+   {
+      x[i] *= E;
+   }
+}
+
+/* Just replace the band with the replicated spectrum */
+void sbr_quant(float *x, int N, int K, float *p)
+{
+   int i;
+   float *sbr = x+WAVEFORM_END-N;
+
+   float E = 1e-10;
+   for (i=0;i<N;i++)
+   {
+      x[i] = sbr[i];
       E += x[i]*x[i];
    }
    E = 1./sqrt(E);
@@ -469,7 +489,7 @@ void quant_bank(float *X, float *P, float centre)
       if (q)
          alg_quant2(X+qbank[i]*2-1, 2*(qbank[i+1]-qbank[i]), q, P+qbank[i]*2-1);
       else
-         noise_quant(X+qbank[i]*2-1, 2*(qbank[i+1]-qbank[i]), q, P+qbank[i]*2-1);
+         sbr_quant(X+qbank[i]*2-1, 2*(qbank[i+1]-qbank[i]), q, P+qbank[i]*2-1);
    }
    //FIXME: This is a kludge, even though I don't think it really matters much
    X[255] = 0;
