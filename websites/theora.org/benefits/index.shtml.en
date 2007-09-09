@@ -1,0 +1,62 @@
+<!--#include virtual="/ssi/header.include" -->
+<!-- Enter custom page information and styles here -->
+  <title>Theora.org :: benefits - Theora, video for everyone</title>
+</head>
+<body>
+<!--#include virtual="/common/xiphbar.include" -->
+
+<!--#include virtual="/ssi/pagetop.include" -->
+<!--  All your page content goes here  -->
+
+<h1>Theora benefits</h1>
+
+<h2>Licensing</h2>
+<p>
+Theora comes without licensing fees. Neither commercial nor private use will make you owe money to us.
+The Theora specification is in the public domain, its reference implementation is open source and subject
+to a license which permits inclusion in commercial products. On2, which owns patents that apply to the
+technical foundations of Theora, granted an unrevocable free license regarding those patents.
+</p>
+
+<p>
+MPEG-4, on the other hand, is covered by patents that do generate licensing costs. According to the
+<a href="http://www.mpegla.com/avc/AVC_TermsSummary.pdf">licensing terms published by MPEG-LA</a> MPEG-4 Part 10
+(AVC) the encoder/decoder technology can cost as much as $4.25 million (2007-2008) to $5 million (2009-2010).
+If a particular product is only shipped as often as 100.000 times no encoder/decoder licensing costs emerge. Note, however,
+that to run a successful internet content business 100.000 allowed "free" software downloads depending on
+circumstances are aggregated pretty fast - without any guarantee that each software download generates a paying
+customer refinancing your future licensing costs. Even MPEG content distribution may itself generates fees.
+</p>
+
+<p>
+To make matters worse every MPEG video stream needs to be coupled with MPEG audio technology, which introduces additional costs. Ogg Theora,
+OTOH, can e.g. use Ogg Vorbis, Ogg Speex or Ogg FLAC as audio codec - all of which itself are free.
+</p>
+
+<h2>Ogg Theora is suited for internet content delivery</h2>
+<p>
+Ogg Theora, as every member of the Ogg family, can be streamed pretty easily. Existing solutions do exist
+(e.g. <a href="http://www.icecast.org">Icecast</a> or <a href="http://www.flumotion.net/">Flumotion streaming server</a>)
+that have a proven track record and itself are free and open.
+</p>
+
+<p>
+Of course Ogg Theora also can be streamed from virtually any HTTP server, making it easy to provide static streams.
+</p>
+
+<p>
+On the technological side Ogg Theora is well engineered for low-bitrate streaming. Its in-loop deblocking filter
+is pretty efficient at preventing a distracting, blocky look of the encoded content. Thus perceived video
+quality usually degrades gracefully as bitrate decreases, much in contrast to compression schemes still widely used
+such as MPEG-4 Part 2 (best known for DivX and XviD), H.263 (often used as video codec for Flash video) or Windows Media Video 8.
+</p>
+
+<h2>Ogg Theora is cross-platform</h2>
+<p>Basically every major Linux distribution ships with support for Ogg Theora by default. The licensing terms of MPEG or e.g. VC-1
+make those compression schemes inherently incompatible with the idea of truly free open source software. If you want to
+target the growing number of Linux users shipping your content as Ogg Theora is a good idea.</p>
+
+<p>Apart from the Linux platform, where Ogg Theora is considered "standard", there also exist easy to install solutions for
+Windows and Mac OS, making authoring and consuming of Ogg Theora encoded content easy.</p>
+
+<!--#include virtual="/ssi/pagebottom.include" -->
