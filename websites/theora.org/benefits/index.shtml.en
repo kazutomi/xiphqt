@@ -10,7 +10,7 @@
 
 <h1>Theora benefits</h1>
 
-<h2>Licensing</h2>
+<h2>Ogg Theora is free</h2>
 <p>
 Theora comes without licensing fees. Neither commercial nor private use will make you owe money to us.
 The Theora specification is in the public domain, its reference implementation is open source and subject
@@ -23,14 +23,13 @@ MPEG-4, on the other hand, is covered by patents that do generate licensing cost
 <a href="http://www.mpegla.com/avc/AVC_TermsSummary.pdf">licensing terms published by MPEG-LA</a> MPEG-4 Part 10
 (AVC) the encoder/decoder technology can cost as much as $4.25 million (2007-2008) to $5 million (2009-2010).
 If a particular product is only shipped as often as 100.000 times no encoder/decoder licensing costs emerge. Note, however,
-that to run a successful internet content business 100.000 allowed "free" software downloads depending on
-circumstances are aggregated pretty fast - without any guarantee that each software download generates a paying
-customer refinancing your future licensing costs. Even MPEG content distribution may itself generates fees.
+that to run a successful internet content business 100.000 allowed "free" software downloads are aggregated pretty
+fast depending on circumstances - without any guarantee that each software download generates a paying
+customer refinancing your future licensing costs. Even MPEG content distribution may itself generate fees.
 </p>
 
 <p>
-To make matters worse every MPEG video stream needs to be coupled with MPEG audio technology, which introduces additional costs. Ogg Theora,
-OTOH, can e.g. use Ogg Vorbis, Ogg Speex or Ogg FLAC as audio codec - all of which itself are free.
+To make matters worse every MPEG video stream needs to be coupled with MPEG audio technology, which introduces additional costs. Ogg Theora can e.g. use Ogg Vorbis, Ogg Speex or Ogg FLAC as audio codec - all of which are free and open.
 </p>
 
 <h2>Ogg Theora is suited for internet content delivery</h2>
@@ -51,7 +50,6 @@ is pretty efficient at preventing a distracting, blocky look of the encoded cont
 quality usually degrades gracefully as bitrate decreases, much in contrast to compression schemes still widely used
 such as MPEG-4 Part 2 (best known for DivX and XviD), H.263 (often used as video codec for Flash video) or Windows Media Video 8.
 </p>
-
 
 
 <h2>Ogg Theora is cross-platform</h2>
