@@ -45,11 +45,14 @@ Of course Ogg Theora also can be streamed from virtually any HTTP server, making
 </p>
 
 <p>
+<img src="/images/loop-filter-comparison.png" alt="loop-filter comparison"/>
 On the technological side Ogg Theora is well engineered for low-bitrate streaming. Its in-loop deblocking filter
 is pretty efficient at preventing a distracting, blocky look of the encoded content. Thus perceived video
 quality usually degrades gracefully as bitrate decreases, much in contrast to compression schemes still widely used
 such as MPEG-4 Part 2 (best known for DivX and XviD), H.263 (often used as video codec for Flash video) or Windows Media Video 8.
 </p>
+
+
 
 <h2>Ogg Theora is cross-platform</h2>
 <p>Basically every major Linux distribution ships with support for Ogg Theora by default. The licensing terms of MPEG or e.g. VC-1
