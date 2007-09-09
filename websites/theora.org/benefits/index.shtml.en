@@ -45,7 +45,7 @@ Of course Ogg Theora also can be streamed from virtually any HTTP server, making
 </p>
 
 <p>
-<img src="/images/loop-filter-comparison.png" alt="loop-filter comparison"/>
+<img src="/images/loop-filter-comparison.png" alt="loop-filter comparison" style="clear:both"/>
 On the technological side Ogg Theora is well engineered for low-bitrate streaming. Its in-loop deblocking filter
 is pretty efficient at preventing a distracting, blocky look of the encoded content. Thus perceived video
 quality usually degrades gracefully as bitrate decreases, much in contrast to compression schemes still widely used
