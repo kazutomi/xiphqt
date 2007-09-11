@@ -19,23 +19,18 @@
  * 
  */
 
-struct _sv_obj_internal {
-  sv_func_t *x_func;
-  sv_func_t *y_func;
-  sv_func_t *z_func;
-  sv_func_t *e1_func;
-  sv_func_t *e2_func;
-  sv_func_t *p1_func;
-  sv_func_t *p2_func;
-  sv_func_t *m_func;
+struct _sv_obj { 
+  int number;
+  char *name;
+  char *legend;
 
-  int x_fout;
-  int y_fout;
-  int z_fout;
-  int e1_fout;
-  int e2_fout;
-  int p1_fout;
-  int p2_fout;
-  int m_fout;
+  sv_scale_t *scale;
+
+  void (*function)(double *,double *);
+  int inputs;
+  sv_dim_t **input_dims;
+  int outputs;
+  int *output_axes;
+
+  int flags;
 };
-

@@ -610,3 +610,25 @@ _sv_tokenlist *_sv_tokenize_namelist(char *in){
   return ret;
 }
 
+_sv_tokenlist *_sv_tokenize_noparamlist(char *in){
+  if(!in)return NULL;
+
+  char *l=strdup(in);
+  in=l;
+
+  int i,n = splitcount(l,',');
+  _sv_tokenlist *ret = calloc(1,sizeof(*ret));
+
+  ret->n = n;
+  ret->list = calloc(n,sizeof(*ret->list));
+
+  for(i=0;i<n;i++){
+    char *next = split(l,',');
+    ret->list[i] = _sv_tokenize_name(l);
+    l=next;
+  }
+  free(in);
+  
+  return ret;
+}
+

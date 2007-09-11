@@ -78,23 +78,15 @@ int main(int argc, char *argv[]){
 		    "100000:one hundred thousand");
   sv_dim_set_value(100);
 
-  sv_func_t *f = sv_func_new(0, 2, fractal_objective, 0);
-  
-  sv_obj_new("outer",
-	     (sv_func_t *[]){f},
-	     (int []){0},
-	     "Y");
+  sv_obj_new("outer",fractal_objective,"rc,ic,rz,iz,it", "Z,*");
   sv_obj_make_scale("0, .001, .01, .1, 1.0");
   
-  sv_obj_new("inner",
-	     (sv_func_t *[]){f},
-	     (int []){1},
-	     "Y");
+  sv_obj_new("inner",fractal_objective,"rc,ic,rz,iz,it", "*,Z");
   sv_obj_make_scale("0, .001, .01, .1, 1.0");
   
   sv_panel_new_2d(0,"Mandel/Julia Fractal",
 		  "inner, outer",
-		  "rc,ic,rz,iz,it",
+		  "rc(X,Y), ic(X,Y), rz(X,Y), iz(X,Y), it",
 		  0);
   
   sv_go();

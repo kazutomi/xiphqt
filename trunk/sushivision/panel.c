@@ -849,7 +849,7 @@ sv_panel_t * _sv_panel_new(int number,
   p->objective_list = malloc(p->objectives*sizeof(*p->objective_list));
   for(i=0;i<p->objectives;i++){
     char *name = obj_tokens->list[i]->name;
-    p->objective_list[i].o = sv_obj(name);
+    p->objective_list[i].o = _sv_obj(name);
     p->objective_list[i].p = p;
   }
 

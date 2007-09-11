@@ -25,15 +25,10 @@
 typedef struct sv_scale sv_scale_t;
 typedef struct sv_panel sv_panel_t;
 typedef struct sv_dim   sv_dim_t;
-typedef struct sv_obj   sv_obj_t;
-typedef struct sv_func  sv_func_t;
+typedef struct _sv_obj   sv_obj_t;
 typedef struct _sv_scale_internal sv_scale_internal_t;
 typedef struct _sv_dim_internal sv_dim_internal_t;
 typedef union  _sv_dim_subtype sv_dim_subtype_t;
-typedef struct _sv_func_internal sv_func_internal_t;
-typedef union  _sv_func_subtype sv_func_subtype_t;
-typedef struct _sv_obj_internal sv_obj_internal_t;
-typedef union  _sv_obj_subtype sv_obj_subtype_t;
 typedef struct _sv_panel_internal sv_panel_internal_t;
 typedef union  _sv_panel_subtype sv_panel_subtype_t;
 
@@ -110,55 +105,14 @@ int          sv_dim_set_bracket (double lo,
 int       sv_dim_callback_value (int (*callback)(sv_dim_t *, void*),
 				 void *callback_data);
 
-/* functions *****************************************************/
-
-enum sv_func_type  { SV_FUNC_BASIC };
-
-struct sv_func {
-  int number;
-  enum sv_func_type type;
-  int inputs;
-  int outputs;
-  
-  void (*callback)(double *,double *);
-  unsigned flags;
-
-  sv_func_subtype_t *subtype;
-  sv_func_internal_t *private;
-};
-
-sv_func_t          *sv_func_new (int number,
-				 int out_vals,
-				 void (*function)(double *,double *),
-				 unsigned flags);
-
 /* objectives ****************************************************/
 
-enum sv_obj_type { SV_OBJ_BASIC };
+int                  sv_obj_new (char *decl,
+				 void (*function)(double *,double *),
+				 char *input_map,
+				 char *output_map);
 
-struct sv_obj { 
-  int number;
-  char *name;
-  char *legend;
-  enum sv_obj_type type;
-
-  sv_scale_t *scale;
-  int outputs;
-  int *function_map;
-  int *output_map;
-  char *output_types;
-  unsigned flags;
-
-  sv_obj_subtype_t *subtype;
-  sv_obj_internal_t *private;
-};
-
-sv_obj_t            *sv_obj_new (char *decl,
-				 sv_func_t **function_map,
-				 int *function_output_map,
-				 char *output_type_map);
-
-sv_obj_t                *sv_obj (char *name);
+int                      sv_obj (char *name);
 
 int            sv_obj_set_scale (sv_scale_t *scale);
 

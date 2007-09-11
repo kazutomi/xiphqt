@@ -471,17 +471,21 @@ static double val_to_pixel(_sv_slider_t *s,double v){
 
 double _sv_slider_val_to_del(_sv_slider_t *s,double v){
   if(isnan(v))return NAN;
-  int j;
+  int j=s->labels-2;
   int flip = (s->neg? 1: 0);
+  double del;
   
-  for(j=0;j<s->labels;j++){
-    if(((v<=s->label_vals[j+1]) ^ flip) || (j+2)==s->labels){
-      double del=(v-s->label_vals[j])/(s->label_vals[j+1]-s->label_vals[j]);
-      return (j+del)/(s->labels-1);
-    }
+  if((v>s->label_vals[j+1]) ^ flip){
+    del=(v-s->label_vals[j])/(s->label_vals[j+1]-s->label_vals[j]);
+    return (j+del)/(s->labels-1);
+  }else{
+    j=0;
+    while(1)
+      if((v<=s->label_vals[++j]) ^ flip)break;
+    --j;
+    del=(v-s->label_vals[j])/(s->label_vals[j+1]-s->label_vals[j]);
+    return (j+del)/(s->labels-1);
   }
-
-  return NAN;
 }
 
 void _sv_slider_expose_slice(_sv_slider_t *s, int slicenum){

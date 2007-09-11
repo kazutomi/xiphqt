@@ -25,22 +25,30 @@
 #include <errno.h>
 #include "internal.h"
 
-sv_obj_t *sv_obj_new(char *name,
-		     sv_func_t **function_map,
-		     int *function_output_map,
-		     char *output_type_map){
-  
-  sv_obj_t *o;
-  sv_obj_internal_t *p;
-  int i;
-  int outputs = strlen(output_type_map);
+int _sv_objectives=0;
+sv_obj_t **_sv_objective_list=NULL;
+
+static char *objective_axismap[]={
+  "X","Y","Z"
+};
+
+#define map_axes ((int)sizeof(objective_axismap)/(int)sizeof(*objective_axismap))
+
+int sv_obj_new(char *name,
+	       void(*function)(double *,double *),
+	       char *input_map,
+	       char *output_map){
+
+  sv_obj_t *o = NULL;
+  int i,j;
   int number;
   _sv_token *decl = _sv_tokenize_declparam(name);
+  _sv_tokenlist *in = NULL;
+  _sv_tokenlist *out = NULL;
   
   if(!decl){
     fprintf(stderr,"sushivision: Unable to parse objective declaration \"%s\".\n",name);
-    errno = -EINVAL;
-    return NULL;
+    goto err;
   }
 
   if(_sv_objectives == 0){
@@ -57,133 +65,82 @@ sv_obj_t *sv_obj_new(char *name,
   }
   
   o = _sv_objective_list[number] = calloc(1, sizeof(**_sv_objective_list));
-  p = o->private = calloc(1,sizeof(*o->private));
+  o->name = strdup(decl->name);
+  o->legend = strdup(decl->label);
+  o->number = number;
+  o->function = function;
 
-  /* sanity check the maps */
-  for(i=0;i<outputs;i++){
-    if(!function_map[i]){
-      fprintf(stderr,"Objectve %d (\"%s\"): function %d missing.\n",
-	      number,name,i);
-      errno = -EINVAL;
-      return NULL;
+  /* parse and sanity check the maps */
+  in = _sv_tokenize_noparamlist(input_map);
+  out = _sv_tokenize_noparamlist(output_map);
+  
+  /* input dimensions */
+  if(!in){
+    fprintf(stderr,"sushivision: Unable to parse objective \"%s\" dimenension list \"%s\".\n",
+	    o->name,input_map);
+    goto err;
+  }
+      
+  o->inputs = in->n;
+  o->input_dims = calloc(in->n,sizeof(*o->input_dims));
+  for(i=0;i<in->n;i++){
+    sv_dim_t *id = sv_dim(in->list[i]->name);
+    if(!id){
+      fprintf(stderr,"sushivision: Dimension \"%s\" does not exist in declaration of objective \"%s\".\n",
+	      in->list[i]->name,o->name);
+      goto err;
     }
-    if(function_output_map[i]<0 ||
-       function_output_map[i]>=function_map[i]->outputs){
-      fprintf(stderr,"Objectve %d (\"%s\"): function %d does not have an output %d.\n",
-	      number,name,function_map[i]->number,function_output_map[i]);
-      errno = -EINVAL;
-      return NULL;
-    }
-    switch(output_type_map[i]){
-    case 'X':
-      if(p->x_func){
-	fprintf(stderr,"Objective %d: More than one X dimension specified.\n",
-		number);
-	errno = -EINVAL;
-	return NULL;
-      }
-      p->x_fout = function_output_map[i];
-      p->x_func = (sv_func_t *)function_map[i];
-      break;
+    o->input_dims[i] = id;
+  }
 
-    case 'Y':
-      if(p->y_func){
-	fprintf(stderr,"Objective %d: More than one Y dimension specified.\n",
-		number);
-	errno = -EINVAL;
-	return NULL;
-      }
-      p->y_fout = function_output_map[i];
-      p->y_func = (sv_func_t *)function_map[i];
-      break;
+  /* output axes */
+  o->outputs = out->n;
+  o->output_axes = malloc(map_axes * sizeof(*o->output_axes));
+  for(i=0;i<map_axes;i++)
+    o->output_axes[i]=-1;
 
-    case 'Z':
-      if(p->z_func){
-	fprintf(stderr,"Objective %d: More than one Z dimension specified.\n",
-		number);
-	errno = -EINVAL;
-	return NULL;
-      }
-      p->z_fout = function_output_map[i];
-      p->z_func = (sv_func_t *)function_map[i];
-      break;
+  for(i=0;i<out->n;i++){
+    char *s = out->list[i]->name;
+    if(!s || !strcasecmp(s,"*")){
+      // output unused by objective
+      // do nothing
+    }else{
+      for(j=0;j<map_axes;j++){
+	if(!strcasecmp(s,objective_axismap[j])){
 
-    case 'M':
-      if(p->m_func){
-	fprintf(stderr,"Objective %d: More than one magnitude [M] dimension specified.\n",
-		number);
-	errno = -EINVAL;
-	return NULL;
+	  if(o->output_axes[j] != -1){
+	    fprintf(stderr,"sushivision: Objective \"%s\" declares multiple %s axis outputs.\n",
+		    o->name,objective_axismap[j]);
+	    goto err;
+	  }
+	  o->output_axes[j] = i;
+	}
       }
-      p->m_fout = function_output_map[i];
-      p->m_func = (sv_func_t *)function_map[i];
-      break;
-
-    case 'E':
-      if(p->e2_func){
-	fprintf(stderr,"Objective %d: More than two error [E] dimensions specified.\n",
-		number);
-	errno = -EINVAL;
-	return NULL;
+      if(j==map_axes){
+	fprintf(stderr,"sushivision: No such output axis \"%s\" in declaration of objective \"%s\"\n",
+		s,o->name);
       }
-      if(p->e1_func){
-	p->e2_fout = function_output_map[i];
-	p->e2_func = (sv_func_t *)function_map[i];
-      }else{
-	p->e1_fout = function_output_map[i];
-	p->e1_func = (sv_func_t *)function_map[i];
-      }
-      break;
-
-    case 'P':
-      if(p->p2_func){
-	fprintf(stderr,"Objective %d: More than two phase [P] dimensions specified.\n",
-		number);
-	errno = -EINVAL;
-	return NULL;
-      }
-      if(p->p1_func){
-	p->p2_fout = function_output_map[i];
-	p->p2_func = (sv_func_t *)function_map[i];
-      }else{
-	p->p1_fout = function_output_map[i];
-	p->p1_func = (sv_func_t *)function_map[i];
-      }
-      break;
-
-    default:
-      fprintf(stderr,"Objective %d: '%c' is an usupported output type.\n",
-	      number,output_type_map[i]);
-      errno = -EINVAL;
-      return NULL;
     }
   }
 
-  o->number = number;
-  o->name = strdup(decl->name);
-  o->legend = strdup(decl->label);
-  o->output_types = strdup(output_type_map);
-  o->type = SV_OBJ_BASIC;
-  o->outputs = outputs;
-  
-  /* copy in the maps */
-  o->function_map = malloc(outputs * sizeof(*o->function_map));
-  o->output_map = malloc(outputs * sizeof(*o->output_map));
-  memcpy(o->output_map,function_output_map,outputs * sizeof(*o->output_map));
-  
-  for(i=0;i<outputs;i++)
-    o->function_map[i] = function_map[i]->number;
-  
   pthread_setspecific(_sv_obj_key, (void *)o);
-  _sv_token_free(decl);
 
-  return o;
+  _sv_token_free(decl);
+  _sv_tokenlist_free(in);
+  _sv_tokenlist_free(out);
+
+  return 0;
+
+ err:
+  // XXXXX
+
+  return -EINVAL;
 }
 
 // XXXX need to recompute after
 // XXXX need to add scale cloning to compute to make this safe in callbacks
 int sv_obj_set_scale(sv_scale_t *scale){
-  sv_obj_t *o = sv_obj(0);
+  sv_obj_t *o = _sv_obj(0);
 
   if(o->scale)
     sv_scale_free(o->scale); // always a deep copy we own
@@ -198,7 +155,7 @@ int sv_obj_set_scale(sv_scale_t *scale){
 // XXXX need to recompute after
 // XXXX need to add scale cloning to compute to make this safe in callbacks
 int sv_obj_make_scale(char *format){
-  sv_obj_t *o = sv_obj(0);
+  sv_obj_t *o = _sv_obj(0);
   sv_scale_t *scale;
   int ret;
 
@@ -224,7 +181,7 @@ int sv_obj_make_scale(char *format){
   return ret;
 }
 
-sv_obj_t *sv_obj(char *name){
+sv_obj_t *_sv_obj(char *name){
   int i;
   
   if(name == NULL || name == 0 || !strcmp(name,"")){
@@ -239,4 +196,10 @@ sv_obj_t *sv_obj(char *name){
     }
   }
   return NULL;
+}
+
+int sv_obj(char *name){
+  sv_obj_t *o = _sv_obj(name);
+  if(o)return 0;
+  return -EINVAL;
 }
