@@ -19,34 +19,42 @@
  * 
  */
 
+#define PLANE_Z 1
+ 
+union {
+  _sv_planez_t z;
+} _sv_plane_t;
+
+typedef struct {
+  // common
+  int plane_type;
+  int working;
+  sv_obj_t *o;
+  _sv_plane_t *share_next;
+  _sv_plane_t *share_prev;
+  
+  // subtype 
+  float         *data;   // native data size
+  int32_t       *map;    // native data size
+  _sv_ucolor_t  *buffer; // resampled data size;
+
+  unsigned char *line_status; 
+  int            progress;
+} _sv_planez_t;
+
 typedef struct {
 
   GtkWidget *obj_table;
   GtkWidget *dim_table;
-
-  /* only run those functions used by this panel */
-  int used_functions;
-  sv_func_t **used_function_list;
 
   unsigned char *bg_todo;
   int bg_next_line;
   int bg_first_line;
   int bg_last_line;
 
-  /**** Y PLANES ******/
-  int y_obj_num;
-  int **y_map; // indirected, dw*dh
-  _sv_ucolor_t **y_planes; // indirected, dw*dh
-  unsigned char **y_planetodo; // indirected, dh
-  int partial_remap;
-
-  int y_next_plane; // which y plane to issue next render
-  int y_next_line; // incremented when a line is claimed, per plane [0-ph)
-
-  sv_obj_t **y_obj_list; // list of objectives with a y plane
-  int *y_obj_to_panel; /* maps from position in condensed list to position in full list */
-  int *y_obj_from_panel; /* maps from position in full list to position in condensed list */
-  int *y_fout_offset; 
+  int planes;
+  _sv_plane_t **plane_list;
+  int next_plane; 
   
   /* cached resampling helpers */
   int resample_serialno;
@@ -83,10 +91,8 @@ typedef struct {
 } _sv_panel2d_t;
 
 typedef struct {
-  double *fout; // [function number * outval_number]
-
-  int **y_map; // [y_obj_list[i]][px]
-  int storage_width;
+  double *fout; 
+  int fout_size;
 
   /* cached resampling helpers; x is here becasue locking overhead
      would be prohibitive to share between threads */
@@ -96,6 +102,5 @@ typedef struct {
   int *xnumA;
   int *xnumB;
   float xscalemul;
-  
-} _sv_bythread_cache_2d_t;
 
+} _sv_bythread_cache_2d_t;

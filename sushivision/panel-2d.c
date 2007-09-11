@@ -80,7 +80,7 @@ static void _sv_panel2d_compute_line(sv_panel_t *p,
     }
   }
 
-  gdk_threads_enter ();
+  gdk_lock ();
   if(p->private->plot_serialno == serialno){
     for(j=0;j<p2->y_obj_num;j++){
       int *d = p2->y_map[j] + y*dw;
@@ -90,7 +90,7 @@ static void _sv_panel2d_compute_line(sv_panel_t *p,
       
     }
   }
-  gdk_threads_leave ();
+  gdk_unlock ();
 }
 
 // call with lock
@@ -132,11 +132,6 @@ typedef struct{
   double x;
   double y;
   double z;
-  double e1;
-  double e2;
-  double p1;
-  double p2;
-  double m;
 } compute_result;
 
 // used by the legend code. this lets us get away with having only a mapped display pane
@@ -156,7 +151,7 @@ static void _sv_panel2d_compute_point(sv_panel_t *p,sv_obj_t *o, double x, doubl
     dim_vals[i]=dim->val;
   }
 
-  gdk_threads_leave ();
+  gdk_unlock ();
 
   dim_vals[x_d] = x;
   dim_vals[y_d] = y;
@@ -209,7 +204,7 @@ static void _sv_panel2d_compute_point(sv_panel_t *p,sv_obj_t *o, double x, doubl
       }
     }
   }
-  gdk_threads_enter ();
+  gdk_lock ();
 
 }
 
@@ -421,7 +416,7 @@ static int _sv_panel2d_resample_render_y_plane_line(sv_panel_t *p, _sv_bythread_
 
     memcpy(data,in_data+ystart*dw,sizeof(data));
 
-    gdk_threads_leave();
+    gdk_unlock();
 
     unsigned char *xdelA = c->xdelA;
     unsigned char *xdelB = c->xdelB;
@@ -492,7 +487,7 @@ static int _sv_panel2d_resample_render_y_plane_line(sv_panel_t *p, _sv_bythread_
 
     int data[dw];
     memcpy(data,in_data+i*dw,sizeof(data));
-    gdk_threads_leave();      
+    gdk_unlock();      
 
     for(j=0;j<pw;j++){
 
@@ -506,7 +501,7 @@ static int _sv_panel2d_resample_render_y_plane_line(sv_panel_t *p, _sv_bythread_
     }
   }
 
-  gdk_threads_enter ();  
+  gdk_lock ();  
   if(plot_serialno != p->private->plot_serialno ||
      map_serialno != p->private->map_serialno)
     return -1;
@@ -564,7 +559,7 @@ static int _sv_panel2d_render_bg_line(sv_panel_t *p, int plot_serialno, int map_
   p2->bg_next_line++;
 
   /* gray background checks */
-  gdk_threads_leave();
+  gdk_unlock();
 
   switch(bgmode){
   case SV_BG_WHITE:
@@ -584,7 +579,7 @@ static int _sv_panel2d_render_bg_line(sv_panel_t *p, int plot_serialno, int map_
   for(j=0;j<p->objectives;j++){
     int o_ynum = p2->y_obj_from_panel[j];
     
-    gdk_threads_enter();
+    gdk_lock();
     if(plot_serialno != p->private->plot_serialno ||
        map_serialno != p->private->map_serialno) return -1;
 
@@ -596,11 +591,11 @@ static int _sv_panel2d_render_bg_line(sv_panel_t *p, int plot_serialno, int map_
       _sv_ucolor_t *rect = p2->y_planes[o_ynum] + i*pw;
       memcpy(work_pl,rect,sizeof(work_pl));
       
-      gdk_threads_leave();
+      gdk_unlock();
       for(x=0;x<pw;x++)
 	work_bg[x] = mixfunc(work_pl[x],work_bg[x]);
     }else
-      gdk_threads_leave();
+      gdk_unlock();
 
     /**** mix Z plane */
     
@@ -608,7 +603,7 @@ static int _sv_panel2d_render_bg_line(sv_panel_t *p, int plot_serialno, int map_
 
   }
 
-  gdk_threads_enter();
+  gdk_lock();
   if(plot_serialno != p->private->plot_serialno ||
      map_serialno != p->private->map_serialno) return -1;
 
@@ -1383,9 +1378,9 @@ static int _sv_panel2d_legend_redraw(sv_panel_t *p){
   _sv_panel2d_update_legend(p);
   _sv_panel_clean_legend(p);
 
-  gdk_threads_leave();
+  gdk_unlock();
   _sv_plot_draw_scales(plot);
-  gdk_threads_enter();
+  gdk_lock();
 
   _sv_plot_expose_request(plot);
   return 1;
@@ -1508,9 +1503,9 @@ static int _sv_panel2d_compute(sv_panel_t *p,
       _sv_panel2d_mark_map_full(p);
       _sv_panel_dirty_map(p);
 
-      gdk_threads_leave ();      
+      gdk_unlock ();      
       _sv_plot_draw_scales(plot); // this should happen outside lock
-      gdk_threads_enter ();      
+      gdk_lock ();      
     }
 
     _sv_map_set_throttle_time(p); // swallow the first 'throttled' remap which would only be a single line;
@@ -1554,12 +1549,12 @@ static int _sv_panel2d_compute(sv_panel_t *p,
   }
 
   /* unlock for computation */
-  gdk_threads_leave ();
+  gdk_unlock ();
     
   dim_vals[y_d]=_sv_scalespace_value(&sy_i, y);
   _sv_panel2d_compute_line(p, serialno, dw, y, x_d, sx_i, dim_vals, &c->p2);
 
-  gdk_threads_enter ();
+  gdk_lock ();
 
   if(p->private->plot_serialno == serialno){
     p->private->plot_complete_count++;
@@ -1580,7 +1575,7 @@ static void _sv_panel2d_recompute_callback(void *ptr){
   sv_panel_t *p = (sv_panel_t *)ptr;
   int i;
 
-  gdk_threads_enter ();
+  gdk_lock ();
   _sv_panel2d_mark_recompute(p);
   _sv_panel2d_compute(p,NULL); // initial scale setup
 
@@ -1591,7 +1586,7 @@ static void _sv_panel2d_recompute_callback(void *ptr){
   for(i=0;i<ph;i++)
     render_checks((_sv_ucolor_t *)plot->datarect+pw*i, pw, i);
   
-  gdk_threads_leave();
+  gdk_unlock();
 }
 
 static void _sv_panel2d_undo_log(_sv_panel_undo_t *u, sv_panel_t *p){
