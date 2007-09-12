@@ -29,7 +29,9 @@ customer refinancing your future licensing costs. Even MPEG content distribution
 </p>
 
 <p>
-To make matters worse every MPEG video stream needs to be coupled with MPEG audio technology, which introduces additional costs. Theora can e.g. use Ogg Vorbis, Ogg Speex or Ogg FLAC as audio codec - all of which are free and open.
+To make matters worse every MPEG video stream needs to be coupled with MPEG audio technology, which introduces additional costs.
+Theora can e.g. use <a href="http://www.vorbis.com">Vorbis</a>, <a href="http://www.speex.org">Speex</a> or
+<a href="http://flac.sourceforge.net/">FLAC</a> as audio codec - all of which are free and open.
 </p>
 
 <h2>Theora is suited for internet content delivery</h2>
