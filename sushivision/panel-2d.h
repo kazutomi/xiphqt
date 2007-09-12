@@ -19,44 +19,116 @@
  * 
  */
 
+// plane mutex policy:  
+//
+//  gdk_m -> panel_m -> obj_m -> dim_m -> scale_m
+//  |
+//  -> z.status_m -> bg.status_m -> z.data_m -> z.image_m -> bg.image_m 
+
 #define PLANE_Z 1
  
-union {
-  _sv_planez_t z;
-} _sv_plane_t;
+typedef union  _sv_plane _sv_plane_t;
+typedef struct _sv_plane_proto _sv_plane_proto_t;
+typedef struct _sv_plane_bg _sv_plane_bg_t;
+typedef struct _sv_plane_z _sv_plane_z_t;
 
-typedef struct {
-  // common
+struct _sv_plane_proto {
+  // in common with all plane types
   int plane_type;
   int working;
   sv_obj_t *o;
   _sv_plane_t *share_next;
   _sv_plane_t *share_prev;
-  
-  // subtype 
-  float         *data;   // native data size
-  int32_t       *map;    // native data size
-  _sv_ucolor_t  *buffer; // resampled data size;
 
-  unsigned char *line_status; 
-  int            progress;
-} _sv_planez_t;
+};
+
+// bg plane mutex policy: [mutexes from one other plane] -> image -> status -> [back to other plane]
+struct _sv_plane_bg {
+  // in common with all plane types
+  int plane_type;
+  int working;
+  sv_obj_t *o;
+  _sv_plane_t *share_next;
+  _sv_plane_t *share_prev;
+
+   _sv_ucolor_t  *image; // panel size
+  int             image_serialno;
+  pthread_mutex_t image_m; 
+
+  // concurrency tracking
+  unsigned char  *line_status; // rendering flags
+  int             progress; // round-robin indicator
+  pthread_mutex_t status_m;
+};
+
+struct sv_zmap {
+
+  double *label_vals;
+  int labels;
+  int neg;
+  double al;
+  double lo;
+  double hi;
+  double lodel;
+  double *labeldelB;
+  double *labelvalB;
+
+};
+
+// z-plane mutex policy: data -> image plane -> [bg mutextes] -> status
+struct _sv_plane_z {
+  // in common with all plane types
+  int plane_type;
+  int working;
+  sv_obj_t *o;
+  _sv_plane_t *share_next;
+  _sv_plane_t *share_prev;
+  pthread_mutex_t planem;
+
+  // subtype 
+  // objective data
+  float          *data;   // data size
+  int             data_serialno; 
+  pthread_mutex_t data_m;
+
+  // image plane
+  _sv_ucolor_t   *image; // panel size;
+  int             image_serialno;
+  struct sv_zmap  image_map;
+  pthread_mutex_t image_m;
+
+  // concurrency tracking
+  unsigned char  *line_status; // rendering flags
+  int             progress; // round-robin indicator
+  pthread_mutex_t status_m;
+
+  // ui elements; use gdk lock
+  _sv_mapping_t   *mapping;
+  _sv_slider_t    *scale;
+  GtkWidget       *range_pulldown;
+  double           alphadel;
+
+};
+
+union {
+  _sv_plane_proto_t proto;
+  _sv_plane_bg_t bg;
+
+  _sv_plane_z_t z;
+} _sv_plane;
 
 typedef struct {
 
   GtkWidget *obj_table;
   GtkWidget *dim_table;
 
-  unsigned char *bg_todo;
-  int bg_next_line;
-  int bg_first_line;
-  int bg_last_line;
+  _sv_plane_t *bg;
 
   int planes;
   _sv_plane_t **plane_list;
   int next_plane; 
   
-  /* cached resampling helpers */
+  /* cached z-plane resampling helpers */
   int resample_serialno;
   unsigned char *ydelA;
   unsigned char *ydelB;
@@ -75,16 +147,11 @@ typedef struct {
   int scales_init;
   double oldbox[4];
 
-  _sv_mapping_t    *mappings;
-  _sv_slider_t    **range_scales;
-  GtkWidget **range_pulldowns;
-  double     *alphadel;
+  GtkWidget **dim_xb; // X axis selector buttons
+  GtkWidget **dim_yb; // Y axis selector buttons
 
-  GtkWidget **dim_xb;
-  GtkWidget **dim_yb;
-
-  _sv_dim_widget_t *x_scale;
-  _sv_dim_widget_t *y_scale;
+  _sv_dim_widget_t *x_scale; // pointer to current X axis dimwidget
+  _sv_dim_widget_t *y_scale; // pointer to current Y axis dimwidget
   int x_dnum; // panel, not global list context
   int y_dnum; // panel, not global list context
 

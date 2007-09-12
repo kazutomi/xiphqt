@@ -49,30 +49,25 @@ typedef struct{
   long b;
 } _sv_lcolor_t;
 
+
 typedef struct {
   int mapnum;
   float low;
   float high;
   float i_range;
-  void (*mapfunc)(int val,int mul, _sv_lcolor_t *out);
-  _sv_ucolor_t (*mixfunc)(_sv_ucolor_t in, _sv_ucolor_t mix);
+  
 } _sv_mapping_t;
+
 
 extern int       _sv_mapping_names();
 extern char     *_sv_mapping_name(int i);
-extern void      _sv_mapping_setup(_sv_mapping_t *m, float lo, float hi, int funcnum);
-extern void      _sv_mapping_set_lo(_sv_mapping_t *m, float lo);
-extern void      _sv_mapping_set_hi(_sv_mapping_t *m, float hi);
-extern void      _sv_mapping_set_func(_sv_mapping_t *m, int funcnum);
-extern float     _sv_mapping_val(_sv_mapping_t *m, float in);
-extern u_int32_t _sv_mapping_calc(_sv_mapping_t *m, float in, u_int32_t mix);
-extern int       _sv_mapping_inactive_p(_sv_mapping_t *m);
 
 extern int       _sv_solid_names();
 extern char     *_sv_solid_name(int i);
-extern void      _sv_solid_setup(_sv_mapping_t *m, float lo, float hi, int funcnum);
-extern void      _sv_solid_set_func(_sv_mapping_t *m, int funcnum);
 
-extern _sv_propmap_t **_sv_mapping_map();
-extern _sv_propmap_t **_sv_solid_map();
-
+extern void (*mapfunc[])(int, int, _sv_lcolor_t *);
+extern _sv_ucolor_t (*mixfunc[])(_sv_ucolor_t, _sv_ucolor_t);
+extern _sv_propmap_t *mapnames[];
+extern void (*mapsolid[])(int, int, _sv_lcolor_t *);
+extern _sv_ucolor_t (*mixsolid[])(_sv_ucolor_t, _sv_ucolor_t);
+extern _sv_propmap_t *solidnames[];

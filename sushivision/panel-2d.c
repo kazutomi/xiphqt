@@ -35,14 +35,17 @@
 /* helper functions for performing progressive computation */
 
 // enter unlocked
-static void _sv_panel2d_compute_line(sv_panel_t *p, 
-				     int serialno,
-				     int dw,
-				     int y,
-				     int x_d, 
-				     _sv_scalespace_t sxi,
-				     double *dim_vals, 
-				     _sv_bythread_cache_2d_t *c){
+static void _sv_planez_compute_line(sv_panel_t *p, 
+				    _sv_planez_t *z,
+
+				    int serialno,
+
+				    int dw,
+				    int y,
+				    int x_d, 
+				    _sv_scalespace_t sxi,
+				    double *dim_vals, 
+				    _sv_bythread_cache_2d_t *c){
 
   _sv_panel2d_t *p2 = p->subtype->p2;
   int i,j;
