@@ -507,13 +507,6 @@ double _sv_slider_val_to_mapdel(_sv_slider_t *s,double v){
   }
 
   return v*s->labeldelB[j] + s->labelvalB[j];
-
-  //labeldelB[j] = labeldel[j] * idelrange;
-  //labelvalB[j] = (j-label_vals[j]*s->labeldel[j]-s->lodel)*s->idelrange;
-
-
-
-  //return (j + (v-s->label_vals[j])*s->labeldel[j] - s->lodel) * s->idelrange;
 }
 
 void _sv_slider_expose_slice(_sv_slider_t *s, int slicenum){

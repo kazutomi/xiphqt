@@ -34,31 +34,35 @@ static void _sv_mapping_scalloped_colorwheel(int val, int mul, _sv_lcolor_t *r){
   r->a += mul; 
 
   switch(category){
-  case 0:
-    r->g += val; break;
-  case 1:
-    r->r += val; r->g += val; break;
-  case 2:
-    r->r += val; r->g += val>>1; break;
-  case 3:
-    r->r += val; break;
-  case 4:
-    r->r += val; r->b += (val*3+2)>>2; break;
-  case 5:
-    r->r += (val*3+2)>>2; r->b += val; break;
-  case 6:
-    r->r += val>>1; r->b += val; break;
-  case 7:
+  case 0: // indigo
+    r->r += val>>2; r->b += (val*3)>>2; break;
+  case 1: // deep blue
     r->b += val; break;
-  case 8:
-    r->g += (val*3+2)>>2; r->b += val; break;
-  case 9:
-    r->g += val; r->b+=val; break;
-  case 10:
-    r->r += val>>1; r->g += val; r->b += val; break;
-  case 11:
+  case 2: // light blue 
+    r->g = (val*3) >> 2; r->b += val; break;
+
+  case 3: // cyan
+    r->g += val; r->b += (val*3)>>2; break;
+  case 4: // spring green
+    r->g += val; r->b+=val>>2; break;
+
+  case 5: //yellow green 
+    r->r += val>>1; r->g += val; break;
+  case 6: //yellow
+    r->r += val; r->g += val; break;
+  case 7: // orange
+    r->r += val; r->g += val>>1; break;
+  case 8: // red
+    r->r += val; break;
+  case 9: // magenta
+    r->r += val; r->b += (val*3+2)>>2; break;
+
+
+  case 10: // pink
+    r->b += val; r->g += (val*3)>>2; r->r += val; break;
+  case 11: // gray 
     r->r += val; r->g += val; r->b += val; break;
-  default:
+  default: // white
     r->r += mul; r->g += mul; r->b += mul; break;
   }
 }
@@ -66,53 +70,57 @@ static void _sv_mapping_scalloped_colorwheel(int val, int mul, _sv_lcolor_t *r){
 static void _sv_mapping_smooth_colorwheel(int val, int mul, _sv_lcolor_t *r){
   if(val<0)return;
   r->a += mul;
+
+  // green -> yellow -> red   -> magenta -> blue -> cyan    -> white
+  // blue  -> cyan   -> green -> yellow  -> red  -> magenta -> white
+
   if(val < 37450){ // 4/7
     if(val < 18725){ // 2/7
       if(val < 9363){ // 1/7
 
-	// 0->1, 0->g
-	r->g+=(7L*val*mul)>>16;
+	// 0->1, 0->b
+	r->b+=(7L*val*mul)>>16;
 	
       }else{
 
-	// 1->2, g->rg
-	r->r+=((7L*val - 65536)*mul)>>16;
-	r->g+=mul;
+	// 1->2, b->bg
+	r->g+=((7L*val - 65536)*mul)>>16;
+	r->b+=mul;
 	
       }
     }else{
       if(val < 28087){ // 3/7
 
-	// 2->3, rg->r
-	r->r+=mul;
-	r->g+=((196608 - 7L*val)*mul)>>16;
+	// 2->3, bg->g
+	r->g+=mul;
+	r->b+=((196608 - 7L*val)*mul)>>16;
 	
       }else{
 
-	// 3->4, r->rb
-	r->r+=mul;
-	r->b+=((7L*val - 196608)*mul)>>16;
+	// 3->4, g->gr
+	r->g+=mul;
+	r->r+=((7L*val - 196608)*mul)>>16;
 
       }
     }
   }else{
     if(val < 46812){ // 5/7
 
-      // 4->5, rb->b
-      r->r+=((327680 - 7L*val)*mul)>>16;
-      r->b+=mul;
+      // 4->5, gr->r
+      r->g+=((327680 - 7L*val)*mul)>>16;
+      r->r+=mul;
       
     }else{
       if(val < 56174){ // 6/7
 
-	// 5->6, b->bg
-	r->g+=((7L*val - 327680)*mul)>>16;
-	r->b+=mul;
+	// 5->6, r->br
+	r->b+=((7L*val - 327680)*mul)>>16;
+	r->r+=mul;
 	
       }else{
-	// 6->7, bg->rgb
-	r->r+=((7L*val - 393216)*mul)>>16;
-	r->g+=mul;
+	// 6->7, rb->rgb
+	r->g+=((7L*val - 393216)*mul)>>16;
+	r->r+=mul;
 	r->b+=mul;
 	
       }
@@ -120,7 +128,7 @@ static void _sv_mapping_smooth_colorwheel(int val, int mul, _sv_lcolor_t *r){
   }
 }
 
-static void _sv_mapping_white(int val, int mul, _sv_lcolor_t *r){
+static void _sv_mapping_grayscale(int val, int mul, _sv_lcolor_t *r){
   if(val<0)return;
   val = (val*mul)>>16;
   r->a += mul;
@@ -283,10 +291,10 @@ static _sv_ucolor_t _sv_mapping_inactive_mix(_sv_ucolor_t in, _sv_ucolor_t bg){
   return bg;
 }
 
-static void (*mapfunc[])(int, int, _sv_lcolor_t *)={
+void (*mapfunc[])(int, int, _sv_lcolor_t *)={
   _sv_mapping_smooth_colorwheel,
   _sv_mapping_scalloped_colorwheel,
-  _sv_mapping_white,
+  _sv_mapping_grayscale,
   _sv_mapping_red,
   _sv_mapping_green,
   _sv_mapping_blue,
@@ -296,7 +304,7 @@ static void (*mapfunc[])(int, int, _sv_lcolor_t *)={
   _sv_mapping_inactive
 };
 
-static _sv_ucolor_t (*mixfunc[])(_sv_ucolor_t, _sv_ucolor_t)={
+_sv_ucolor_t (*mixfunc[])(_sv_ucolor_t, _sv_ucolor_t)={
   _sv_mapping_normal_mix,
   _sv_mapping_normal_mix,
   _sv_mapping_normal_mix,
@@ -309,7 +317,7 @@ static _sv_ucolor_t (*mixfunc[])(_sv_ucolor_t, _sv_ucolor_t)={
   _sv_mapping_inactive_mix
 };
 
-static _sv_propmap_t *mapnames[]={
+_sv_propmap_t *mapnames[]={
   &(_sv_propmap_t){"smooth colorwheel",0,    NULL, NULL, NULL},
   &(_sv_propmap_t){"scalloped colorwheel",1, NULL, NULL, NULL},
   &(_sv_propmap_t){"grayscale",2,            NULL, NULL, NULL},
@@ -333,73 +341,7 @@ char *_sv_mapping_name(int i){
   return mapnames[i]->left;
 }
 
-_sv_propmap_t **_sv_mapping_map(){
-  return mapnames;
-}
-
-void _sv_mapping_setup(_sv_mapping_t *m, float lo, float hi, int funcnum){
-  m->low = lo;
-  m->high = hi;
-  m->i_range = 1./(hi-lo);
-  m->mapfunc = mapfunc[funcnum];
-  m->mixfunc = mixfunc[funcnum];
-}
-
-void _sv_mapping_set_lo(_sv_mapping_t *m, float lo){
-  m->low = lo;
-  if(m->high-m->low>0.)
-    m->i_range = 1./(m->high-m->low);
-  else
-    m->i_range=0;
-}
-
-void _sv_mapping_set_hi(_sv_mapping_t *m, float hi){
-  m->high=hi;
-  if(m->high-m->low>0.)
-    m->i_range = 1./(m->high-m->low);
-  else
-    m->i_range=0;
-}
-
-void _sv_mapping_set_func(_sv_mapping_t *m, int funcnum){
-  m->mapnum = funcnum;
-  m->mapfunc = mapfunc[funcnum];
-  m->mixfunc = mixfunc[funcnum];
-}
-
-float _sv_mapping_val(_sv_mapping_t *m, float in){
-  if(m->i_range==0){
-    return NAN;
-  }else{
-    return (in - m->low) * m->i_range;
-  }
-}
-
-u_int32_t _sv_mapping_calc(_sv_mapping_t *m, float in, u_int32_t mix){
-  _sv_lcolor_t outc = {0,0,0,0};
-  
-  if(m->i_range==0){
-    if(in<=m->low)
-      m->mapfunc(0,255,&outc);
-    else
-      m->mapfunc(256*256,255,&outc);
-  }else{
-    float val = (in - m->low) * m->i_range;
-    if(val<0.f)val=0.f;
-    if(val>1.f)val=1.f;
-    m->mapfunc(rint(val*65536.f),255,&outc);
-  }
-
-  return m->mixfunc( (_sv_ucolor_t)(u_int32_t)((outc.a<<24) + (outc.r<<16) + (outc.g<<8) + outc.b),
-		     (_sv_ucolor_t)mix).u | 0xff000000;
-}
-
-int _sv_mapping_inactive_p(_sv_mapping_t *m){
-  if(m->mapfunc == _sv_mapping_inactive)return 1;
-  return 0;
-}
-
-static void (*mapsolid[])(int, int, _sv_lcolor_t *)={
+void (*mapsolid[])(int, int, _sv_lcolor_t *)={
   _sv_mapping_black_a,
   _sv_mapping_red_a,
   _sv_mapping_green_a,
@@ -412,7 +354,7 @@ static void (*mapsolid[])(int, int, _sv_lcolor_t *)={
   _sv_mapping_inactive
 };
 
-static _sv_ucolor_t (*mixsolid[])(_sv_ucolor_t, _sv_ucolor_t)={
+_sv_ucolor_t (*mixsolid[])(_sv_ucolor_t, _sv_ucolor_t)={
   _sv_mapping_normal_mix,
   _sv_mapping_normal_mix,
   _sv_mapping_normal_mix,
@@ -425,7 +367,7 @@ static _sv_ucolor_t (*mixsolid[])(_sv_ucolor_t, _sv_ucolor_t)={
   _sv_mapping_inactive_mix
 };
 
-static _sv_propmap_t *solidnames[]={
+_sv_propmap_t *solidnames[]={
   &(_sv_propmap_t){"black",0,     NULL,NULL,NULL},
   &(_sv_propmap_t){"red",1,       NULL,NULL,NULL},
   &(_sv_propmap_t){"green",2,     NULL,NULL,NULL},
@@ -449,20 +391,11 @@ char *_sv_solid_name(int i){
   return solidnames[i]->left;
 }
 
-_sv_propmap_t **_sv_solid_map(){
-  return solidnames;
-}
+u_int32_t _sv_mapping_calc(_sv_mapping_t *m, float val, u_int32_t mix){
+  _sv_lcolor_t outc = {0,0,0,0};
+  
+  m->mapfunc(rint(val*65536.f),255,&outc);
 
-void _sv_solid_setup(_sv_mapping_t *m, float lo, float hi, int funcnum){
-  m->low = lo;
-  m->high = hi;
-  m->i_range = 1./(hi-lo);
-  m->mapfunc = mapsolid[funcnum];
-  m->mixfunc = mixsolid[funcnum];
-}
-
-void _sv_solid_set_func(_sv_mapping_t *m, int funcnum){
-  m->mapnum = funcnum;
-  m->mapfunc = mapsolid[funcnum];
-  m->mixfunc = mixsolid[funcnum];
+  return m->mixfunc( (_sv_ucolor_t)(u_int32_t)((outc.a<<24) + (outc.r<<16) + (outc.g<<8) + outc.b),
+		     (_sv_ucolor_t)mix).u | 0xff000000;
 }

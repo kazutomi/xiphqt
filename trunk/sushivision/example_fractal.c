@@ -76,7 +76,7 @@ int main(int argc, char *argv[]){
 		    "1000:one thousand,"
 		    "10000:ten thousand,"
 		    "100000:one hundred thousand");
-  sv_dim_set_value(100);
+  sv_dim_set_value(10000);
 
   sv_obj_new("outer",fractal_objective,"rc,ic,rz,iz,it", "Z,*");
   sv_obj_make_scale("0, .001, .01, .1, 1.0");
