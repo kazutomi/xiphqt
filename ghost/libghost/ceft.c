@@ -36,11 +36,13 @@ int qbank[] =   {1, 2, 4, 6, 8, 12, 16, 20, 24, 28, 36, 44, 52, 68, 84, 116, 128
    number of pulses is equal to  (1 + nb_pulses * log2 (2 * width_of_band) )  */
 //32 kbps
 #define WAVEFORM_END 44
-int qpulses[] = {3, 4, 4, 3, 3,  2,  2,  2,  2,  2,  2,  0,  0,  0,  0}; //85 bits
+int qpulses[] = {4, 4, 4, 3, 3,  2,  2,  2,  2,  2,  2,  0,  0,  0,  0}; //86 bits
+//int qpulses[] = {3, 4, 4, 3, 4,  3,  2,  2,  2,  3,  0,  0,  0,  0,  0}; //86 bits
 
 //44 kbps
 //int qpulses[] = {4, 7, 6, 4, 4,  3,  3,  3,  3,  3,  3,  3,  0,  0,  0}; //134 bits
-
+//int qpulses[] = {4, 5, 5, 4, 4,  3,  4,  3,  3,  3,  2,  2,  2,  0,  0}; //134 bits
+//#define WAVEFORM_END 52
 
 /* Number of bands only for the pitch prediction */
 #define PBANDS 5
@@ -463,10 +465,12 @@ void random_rotation(float *X, int R, int dir)
       //rotate_vect(X+qbank[i]*2-1, 2*(qbank[i+1]-qbank[i]), R+i, dir);
       
       float theta;
-      if (qbank[i+1]-qbank[i] < 12)
+      /*if (qbank[i+1]-qbank[i] < 12)
          theta = .25;
       else
-         theta = .5;
+         theta = .5;*/
+      //theta = 0*asin(pow(.0001,1.f/(qbank[i+1]-qbank[i])));
+      theta = .25;
       exp_rotation(X+qbank[i]*2-1, 2*(qbank[i+1]-qbank[i]), theta, dir);
    }
    //printf ("\n");
