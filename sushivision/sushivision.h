@@ -106,7 +106,6 @@ int       sv_dim_callback_value (int (*callback)(sv_dim_t *, void*),
 				 void *callback_data);
 
 /* objectives ****************************************************/
-
 int                  sv_obj_new (char *decl,
 				 void (*function)(double *,double *),
 				 char *input_map,
