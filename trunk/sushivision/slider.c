@@ -154,7 +154,14 @@ static void _sv_slider_draw_background(_sv_slider_t *s){
     // this happens 'under' cairo
     u_int32_t *pixel=s->backdata+ty*s->w;
     
-    for(i=tx;i<tx+tw;i++)
+    for(i=tx;i<tx+tw;i++){
+      _sv_lcolor_t outc = {0,0,0,0};
+  
+      s->mapfunc(rint(val*65536.f),255,&outc);
+
+  return m->mixfunc( (_sv_ucolor_t)(u_int32_t)((outc.a<<24) + (outc.r<<16) + (outc.g<<8) + outc.b),
+		     (_sv_ucolor_t)mix).u | 0xff000000;
+
       pixel[i]=_sv_mapping_calc(s->gradient,_sv_slider_pixel_to_mapdel(s,i), pixel[i]);
     
     for(i=ty+1;i<ty+th;i++){

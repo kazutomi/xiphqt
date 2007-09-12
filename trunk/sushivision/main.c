@@ -483,7 +483,7 @@ int sv_init(){
   if((ret=pthread_key_create(&_sv_obj_key,NULL)))
     return ret;
   
-  num_threads = num_proccies();
+  num_threads = ((num_proccies()*3)>>2);
 
   pthread_mutexattr_init(&gdk_ma);
   pthread_mutexattr_settype(&gdk_ma,PTHREAD_MUTEX_RECURSIVE);

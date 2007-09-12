@@ -32,11 +32,38 @@
 #include <cairo-ft.h>
 #include "internal.h"
 
-/* helper functions for performing progressive computation */
+/* helper functions for performing progressive computation and rendering */
+
+static void _sv_plane2d_set_recompute(_sv_plane2d_t *z){
+  pthread_mutex_lock(z->data_m);
+
+}
+
+static void _sv_plane2d_set_remap(){
+
+}
+
+static int _sv_plane2d_xscale_one(){
+
+}
+
+static int _sv_plane2d_yscale_one(){
+
+}
+
+static int _sv_plane2d_compute_one(){
+
+}
+
+static int _sv_plane2d_map_one(){
+
+}
+
+// work order: resize/fast scale -> compute -> plane_render -> composite
 
 // enter unlocked
 static void _sv_planez_compute_line(sv_panel_t *p, 
-				    _sv_planez_t *z,
+				    _sv_plane2d_t *z,
 
 				    int serialno,
 
