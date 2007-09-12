@@ -155,7 +155,7 @@ static void _sv_slider_draw_background(_sv_slider_t *s){
     u_int32_t *pixel=s->backdata+ty*s->w;
     
     for(i=tx;i<tx+tw;i++)
-      pixel[i]=_sv_mapping_calc(s->gradient,_sv_slider_pixel_to_del(s,i), pixel[i]);
+      pixel[i]=_sv_mapping_calc(s->gradient,_sv_slider_pixel_to_mapdel(s,i), pixel[i]);
     
     for(i=ty+1;i<ty+th;i++){
       memcpy(pixel+w,pixel,w*4);
@@ -471,21 +471,49 @@ static double val_to_pixel(_sv_slider_t *s,double v){
 
 double _sv_slider_val_to_del(_sv_slider_t *s,double v){
   if(isnan(v))return NAN;
-  int j=s->labels-2;
-  int flip = (s->neg? 1: 0);
-  double del;
-  
-  if((v>s->label_vals[j+1]) ^ flip){
-    del=(v-s->label_vals[j])/(s->label_vals[j+1]-s->label_vals[j]);
-    return (j+del)/(s->labels-1);
+  int j=s->labels-1;
+
+  if(s->neg){
+    while(--j)
+      if(v<=s->label_vals[j])break;
   }else{
-    j=0;
-    while(1)
-      if((v<=s->label_vals[++j]) ^ flip)break;
-    --j;
-    del=(v-s->label_vals[j])/(s->label_vals[j+1]-s->label_vals[j]);
-    return (j+del)/(s->labels-1);
+    while(--j)
+      if(v>s->label_vals[j])break;
   }
+  return (j + (v-s->label_vals[j])*s->labeldel[j])*s->labelinv;
+}
+
+
+double _sv_slider_val_to_mapdel(_sv_slider_t *s,double v){
+  int j=s->labels-1;
+  if(isnan(v))return NAN;
+  
+  if(s->neg){
+
+    if(v > s->al)return NAN;
+    if(v >= s->lo)return 0.;
+    if(v <= s->hi)return 1.;
+    while(--j)
+      if(v<=s->label_vals[j])break;
+
+  }else{
+
+    if(v < s->al)return NAN;
+    if(v <= s->lo)return 0.;
+    if(v >= s->hi)return 1.;
+    while(--j)
+      if(v>s->label_vals[j])break;
+
+  }
+
+  return v*s->labeldelB[j] + s->labelvalB[j];
+
+  //labeldelB[j] = labeldel[j] * idelrange;
+  //labelvalB[j] = (j-label_vals[j]*s->labeldel[j]-s->lodel)*s->idelrange;
+
+
+
+  //return (j + (v-s->label_vals[j])*s->labeldel[j] - s->lodel) * s->idelrange;
 }
 
 void _sv_slider_expose_slice(_sv_slider_t *s, int slicenum){
@@ -589,6 +617,16 @@ double _sv_slider_pixel_to_del(_sv_slider_t *s,double x){
     return 1.;
   }else
     return x/tw;
+}
+
+double _sv_slider_pixel_to_mapdel(_sv_slider_t *s,double x){
+  int tx=s->xpad;
+  int tw=s->w - tx*2;
+  x = ((x-tx)/tw - s->lodel)*s->idelrange;
+
+  if (x<=0.) return 0.;
+  if (x>=1.) return 1.;
+  return x;
 }
 
 double _sv_slider_del_to_val(_sv_slider_t *s, double del){
@@ -740,15 +778,30 @@ void _sv_slider_button_release(_sv_slider_t *s,int slicenum,int x,int y){
 }
 
 static void update_gradient(_sv_slider_t *s){
-  if(s->gradient && s->num_slices>1){
+  if(s->gradient && s->num_slices==3){
     _sv_slice_t *sl = SLICE(s->slices[0]);
-    _sv_slice_t *sh = SLICE(s->slices[s->num_slices-1]);
+    _sv_slice_t *sa = SLICE(s->slices[1]);
+    _sv_slice_t *sh = SLICE(s->slices[2]);
     double ldel = _sv_slider_val_to_del(s,sl->thumb_val);
     double hdel = _sv_slider_val_to_del(s,sh->thumb_val);
     
+    s->al = sa->thumb_val;
+
     if(s->gradient->low != ldel ||
        s->gradient->high != hdel){
-      
+      int j;
+
+      s->lo = sl->thumb_val;
+      s->hi = sh->thumb_val;
+      s->idelrange = 1./(hdel-ldel);
+      s->lodel = ldel;
+
+      for(j=0;j<s->labels-1;j++){
+	s->labeldelB[j] = s->labeldel[j] * s->idelrange * s->labelinv;
+	s->labelvalB[j] = (j-s->label_vals[j]*s->labeldel[j]-
+			   s->lodel*(s->labels-1))*s->idelrange*s->labelinv;
+      }
+
       _sv_mapping_set_lo(s->gradient,ldel);
       _sv_mapping_set_hi(s->gradient,hdel);
       _sv_slider_draw_background(s);
@@ -896,6 +949,23 @@ _sv_slider_t *_sv_slider_new(_sv_slice_t **slices, int num_slices, char **labels
 
   ret->flags=flags;
   if(flags & _SV_SLIDER_FLAG_VERTICAL) ret->flip = 1;
+
+  ret->labelinv = 1./(ret->labels-1);
+  ret->labeldel = calloc(ret->labels-1,sizeof(*ret->labeldel));
+  for(i=0;i<ret->labels-1;i++)
+    ret->labeldel[i] = 1./(ret->label_vals[i+1]-ret->label_vals[i]);
+  ret->lo = ret->label_vals[0];
+  ret->hi = ret->label_vals[ret->labels-1];
+  ret->lodel = 0.;
+  ret->idelrange = 1.;
+
+  ret->labeldelB = calloc(ret->labels-1,sizeof(*ret->labeldelB));
+  ret->labelvalB = calloc(ret->labels-1,sizeof(*ret->labelvalB));
+  for(i=0;i<ret->labels-1;i++){
+    ret->labeldelB[i] = ret->labeldel[i] * ret->labelinv;
+    ret->labelvalB[i] = (i-ret->label_vals[i]*ret->labeldel[i])*ret->labelinv;
+  }
+
   return ret;
 }
 
