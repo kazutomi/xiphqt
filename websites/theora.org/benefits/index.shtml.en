@@ -10,7 +10,7 @@
 
 <h1>Theora benefits</h1>
 
-<h2>Ogg Theora is free</h2>
+<h2>Theora is free</h2>
 <p>
 Theora comes without licensing fees. Neither commercial nor private use will make you owe money to us.
 The Theora specification is in the public domain, its reference implementation is open source and subject
@@ -29,35 +29,40 @@ customer refinancing your future licensing costs. Even MPEG content distribution
 </p>
 
 <p>
-To make matters worse every MPEG video stream needs to be coupled with MPEG audio technology, which introduces additional costs. Ogg Theora can e.g. use Ogg Vorbis, Ogg Speex or Ogg FLAC as audio codec - all of which are free and open.
+To make matters worse every MPEG video stream needs to be coupled with MPEG audio technology, which introduces additional costs. Theora can e.g. use Ogg Vorbis, Ogg Speex or Ogg FLAC as audio codec - all of which are free and open.
 </p>
 
-<h2>Ogg Theora is suited for internet content delivery</h2>
+<h2>Theora is suited for internet content delivery</h2>
 <p>
-Ogg Theora, as every member of the Ogg family, can be streamed pretty easily. Existing solutions do exist
+Theora, as every member of the Ogg family, can be streamed pretty easily. Existing solutions do exist
 (e.g. <a href="http://www.icecast.org">Icecast</a> or <a href="http://www.flumotion.net/">Flumotion streaming server</a>)
 that have a proven track record and itself are free and open.
 </p>
 
 <p>
-Of course Ogg Theora also can be streamed from virtually any HTTP server, making it easy to provide static streams.
+Of course Theora also can be streamed from virtually any HTTP server, making it easy to provide static streams.
 </p>
 
 <p>
 <img src="/images/loop-filter-comparison.png" alt="loop-filter comparison" style="display:block;margin-left:auto;margin-right:auto"/>
-On the technological side Ogg Theora is well engineered for low-bitrate streaming. Its in-loop deblocking filter
+On the technological side Theora is well engineered for low-bitrate streaming. Its in-loop deblocking filter
 is pretty efficient at preventing a distracting, blocky look of the encoded content. Thus perceived video
-quality usually degrades gracefully as bitrate decreases, much in contrast to compression schemes still widely used
-such as MPEG-4 Part 2 (best known for DivX and XviD), H.263 (often used as video codec for Flash video) or Windows Media Video 8.
+quality usually degrades gracefully as bitrate decreases, which is an essential property for any video codec targeting 
+web video.
 </p>
 
 
-<h2>Ogg Theora is cross-platform</h2>
-<p>Basically every major Linux distribution ships with support for Ogg Theora by default. The licensing terms of MPEG or e.g. VC-1
+<h2>Theora is cross-platform</h2>
+<p>Basically every major Linux distribution ships with support for Theora by default. The licensing terms of MPEG or e.g. VC-1
 make those compression schemes inherently incompatible with the idea of truly free open source software. If you want to
-target the growing number of Linux users shipping your content as Ogg Theora is a good idea.</p>
+target the growing number of Linux users shipping your content as Theora is a good idea.</p>
 
-<p>Apart from the Linux platform, where Ogg Theora is considered "standard", there also exist easy to install solutions for
-Windows and Mac OS, making authoring and consuming of Ogg Theora encoded content easy.</p>
+<p>Apart from the Linux platform, where Theora is considered "standard", there also exist easy to install solutions for
+Windows and Mac OS, making authoring and consuming of Theora encoded content easy.</p>
+
+<h2>Theora is reliable</h2>
+<p>In contrast to proprietary codecs with no public documentation available Theora is subject of a specification which
+is available to everone at any time without restrictions. The open source nature of Theora makes it very unlikely it'll
+simply disappear, which may happen to proprietary codecs once their developers decide to leave the codec business.</p>
 
 <!--#include virtual="/ssi/pagebottom.include" -->
