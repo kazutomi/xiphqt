@@ -42,6 +42,17 @@ struct _sv_slider {
   int neg;
   int flags;
   
+  // computation helpers
+  double labelinv;
+  double *labeldel;
+  double al;
+  double lo;
+  double hi;
+  double lodel;
+  double idelrange;
+  double *labeldelB;
+  double *labelvalB;
+
   double quant_num;
   double quant_denom;
 };
@@ -56,7 +67,9 @@ extern void _sv_slider_expose(_sv_slider_t *s);
 extern void _sv_slider_size_request_slice(_sv_slider_t *s,GtkRequisition *requisition);
 extern double _sv_slider_pixel_to_val(_sv_slider_t *slider,double x);
 extern double _sv_slider_pixel_to_del(_sv_slider_t *slider,double x);
+extern double _sv_slider_pixel_to_mapdel(_sv_slider_t *s,double x);
 extern double _sv_slider_val_to_del(_sv_slider_t *slider,double v);
+extern double _sv_slider_val_to_mapdel(_sv_slider_t *slider,double v);
 extern void _sv_slider_vals_bound(_sv_slider_t *slider,int slicenum);
 extern int _sv_slider_lightme(_sv_slider_t *slider,int slicenum,int x,int y);
 extern void _sv_slider_unlight(_sv_slider_t *slider);
