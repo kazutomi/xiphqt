@@ -1,12 +1,8 @@
-NOTICE: 56 lines x 73 characters per page; no RFC number yet
 
 
 
 
 
-Network Working Group                                Xiph.Org Foundation
-Request for Comments: xxxx                                September 2007
-Category: Informational
 
 
                        Ogg Multimedia Media Types
@@ -23,8 +19,8 @@ Copyright Notice
 
 Abstract
 
-   This document describes the registration of media types for the
-   Ogg Multimedia container and conformance requirements for
+   This document describes the registration of media types for
+   the Ogg container format and conformance requirements for
    implementations of these types.
 
 Table of Contents
@@ -49,16 +45,14 @@ Table of Contents
 
 
 
-Xiph.Org Foundation                Informational                [Page 1]
-
-RFC xxxx            Ogg Multimedia Media Types            September 2007
+
 
 
 1.  Introduction
 
    This memo describes media types for the Ogg container format.
    Refer to "Introduction" in [RFC3533] and "Overview" in [Ogg] for
-   background information on this multimedia container format.
+   background information on this encapsulation format.
 
    Multimedia streams, such as Vorbis and Theora, have historically
    been interchanged using the application/ogg media type as defined by
@@ -94,7 +88,7 @@ RFC xxxx            Ogg Multimedia Media Types            September 2007
 
    Use of the "application" top-level type for this kind of content is
    known to be problematic.  This document thus defines application/ogg
-   but marks it for non-video, non-audio streams only.
+   but marks it for non-video, non-audio content.
 
    The media types,
 
@@ -102,144 +96,63 @@ RFC xxxx            Ogg Multimedia Media Types            September 2007
       * audio/ogg
 
    which are also defined in this document, are intended for common use
-   and should be used when dealing with A/V streams.
+   and should be used when dealing with video and/or audio content.
 
+X.  Encoding Considerations
 
-Xiph.Org Foundation                Informational                [Page 2]
-
-RFC xxxx            Ogg Multimedia Media Types            September 2007
+   Ogg content is binary data, and must be encoded for non-binary
+   transport; the base64 [RFC2397] encoding is suitable for EMail.
 
+   Note that Ogg content does not compress easily using traditional
+   lossless compression schemes.
 
 5.  Security Considerations
 
    Refer to [RFC3552] for a discussion of terminology used in this
-   section.  Examples in this section and discussions of interactions of
-   host environments with scripts and extensions to [ECMA] are to be
-   understood as non-exhaustive and of a purely illustrative nature.
+   section.
 
-   The programming language defined in [ECMA] is not intended to be
-   computationally self-sufficient, rather it is expected that the
-   computational environment provides facilities to programs to enable
+   The Ogg encapsulation format is a container format and only
+   encapsulates content (such as Vorbis-encoded audio).  It does not
+   provide for any generic encryption or signing of itself or its
+   contained content bitstreams.  However, it encapsulates any kind of
+   content bitstream as long as there is a codec for it, and is thus
+   able to contain encrypted and signed content data.  It is also
+   possible to add an external security mechanism that encrypts or signs
+   an Ogg physical bitstream and thus provides content confidentiality
+   and authenticity.
 
+   As Ogg encapsulates binary data, it is possible to include executable
+   content in an Ogg bitstream.  This may be an issue with applications
+   that are implemented using Ogg, specifically when Ogg is used for
+   streaming or file transfer in a networking scenario.  An application
+   decoding Ogg and its encapsulated content bitstreams has to ensure
+   correct handling of manipulated bitstreams, of buffer overflows, and
+   similar issues.  Executable content in an Ogg bitstream SHOULD never
+   be sent and MUST not be executed if it is received.
 
+                                 NOTE
 
-
-Xiph.Org Foundation                Informational                [Page 6]
-
-RFC xxxx            Ogg Multimedia Media Types            September 2007
-
-
-   specific functionality.  Such facilities constitute unknown factors
-   and are thus considered out of the scope of this document.
-
-   Derived programming languages are permitted to include additional
-   functionality that is not described in [ECMA]; such functionality
-   constitutes an unknown factor and is thus considered out of the scope
-   of this document.  In particular, extensions to [ECMA] defined for
-   the JavaScript programming language are not discussed in this
-   document.
-
-   Uncontrolled execution of scripts can be exceedingly dangerous.
-   Implementations that execute scripts MUST give consideration to their
-   application's threat models and those of the individual features they
-   implement; in particular, they MUST ensure that untrusted content is
-   not executed in an unprotected environment.
-
-   Specifications for host environment facilities and for derived
-   programming languages should include security considerations.  If an
-   implementation supports such facilities, the respective security
-   considerations apply.  In particular, if scripts can be referenced
-   from or included in specific document formats, the considerations for
-   the embedding or referencing document format apply.
-
-   For example, scripts embedded in application/xhtml+xml [RFC3236]
-   documents could be enabled through the host environment to manipulate
-   the document instance, which could cause the retrieval of remote
-   resources; security considerations regarding retrieval of remote
-   resources of the embedding document would apply in this case.
-
-   This circumstance can further be used to make information, that is
-   normally only available to the script, available to a web server by
-   encoding the information in the resource identifier of the resource,
-   which can further enable eavesdropping attacks.  Implementation of
-   such facilities is subject to the security considerations of the host
-   environment, as discussed above.
-
-   The facilities defined in [ECMA] do not include provisions for input
-   of external data, output of computed results, or modification of
-   aspects of the host environment.  An implementation of only the
-   facilities defined in [ECMA] is not considered to support dangerous
-   operations.
-
-   The programming language defined in [ECMA] does include facilities to
-   loop, cause computationally complex operations, or consume large
-   amounts of memory; this includes, but is not limited to, facilities
-   that allow dynamically generated source text to be executed (e.g.,
-   the eval() function); uncontrolled execution of such features can
-   cause denial of service, which implementations MUST protect against.
-
-
-
-Xiph.Org Foundation                Informational                [Page 7]
-
-RFC xxxx            Ogg Multimedia Media Types            September 2007
-
-
-   A host environment can provide facilities to access external input.
-   Scripts that pass such input to the eval() function or similar
-   language features can be vulnerable to code injection attacks.
-   Scripts are expected to protect against such attacks.
-
-   A host environment can provide facilities to output computed results
-   in a user-visible manner.  For example, host environments supporting
-   a graphical user interface can provide facilities that enable scripts
-   to present certain messages to the user.  Implementations MUST take
-   steps to avoid confusion of the origin of such messages.  In general,
-   the security considerations for the host environment apply in such a
-   case as discussed above.
-
-   Implementations are required to support the UTF-8 character encoding
-   scheme; the security considerations of [RFC3629] apply.  Additional
-   character encoding schemes may be supported; support for such schemes
-   is subject to the security considerations of those schemes.
-
-   Source text is expected to be in Unicode Normalization Form C.
-   Scripts and implementations MUST consider security implications of
-   unnormalized source text and data.  For a detailed discussion of such
-   implications refer to the security considerations in [RFC3629].
-
-   Scripts can be executed in an environment that is vulnerable to code
-   injection attacks.  For example, a CGI script [RFC3875] echoing user
-   input could allow the inclusion of untrusted scripts that could be
-   executed in an otherwise trusted environment.  This threat scenario
-   is subject to security considerations that are out of the scope of
-   this document.
+      The requirement that such content not be executed on receipt
+      is especially important since situations exist where content
+      will be generated independently and therefore could contain
+      executable content that the sender is unaware of.
 
    The "data" resource identifier scheme [RFC2397], in combination with
-   the types defined in this document, could be used to cause execution
+   the types defined in this document, might be used to cause execution
    of untrusted scripts through the inclusion of untrusted resource
    identifiers in otherwise trusted content.  Security considerations of
    [RFC2397] apply.
 
-   Implementations can fail to implement a specific security model or
+   Implementations may fail to implement a specific security model or
    other means to prevent possibly dangerous operations.  Such failure
-   could possibly be exploited to gain unauthorized access to a system
+   might possibly be exploited to gain unauthorized access to a system
    or sensitive information; such failure constitutes an unknown factor
    and is thus considered out of the scope of this document.
 
 6.  IANA Considerations
 
-   This document registers two new media types and modifies the existing
-   application/ogg as defined in the following section.
-
-
-
-
-
-Xiph.Org Foundation                Informational                [Page 8]
-
-RFC xxxx            Ogg Multimedia Media Types            September 2007
-
+   This document registers two new media types and redefines the
+   existing application/ogg as defined in the following section.
 
 7.  Ogg Media Types
 
@@ -292,9 +205,7 @@ RFC xxxx            Ogg Multimedia Media Types            September 2007
 
 
 
-Xiph.Org Foundation                Informational                [Page 9]
-
-RFC xxxx            Ogg Multimedia Media Types            September 2007
+
 
 
 7.2.  video/ogg
@@ -348,9 +259,7 @@ RFC xxxx            Ogg Multimedia Media Types            September 2007
 
 
 
-Xiph.Org Foundation               Informational                [Page 10]
-
-RFC xxxx            Ogg Multimedia Media Types            September 2007
+
 
 
 7.3.  audio/ogg
@@ -373,7 +282,7 @@ RFC xxxx            Ogg Multimedia Media Types            September 2007
 
       Magic number(s):             The first four bytes, 0x4f 0x67 0x67
                                    0x53, correspond to the string OggS.
-      File extension(s):           .oga
+      File extension(s):           .oga, .ogg, .spx
       Macintosh File Type Code(s): OggS
 
    Person & email address to contact for further information:
@@ -402,9 +311,7 @@ RFC xxxx            Ogg Multimedia Media Types            September 2007
 
 
 
-Xiph.Org Foundation               Informational                [Page 11]
-
-RFC xxxx            Ogg Multimedia Media Types            September 2007
+
 
 9.  References
 
@@ -457,9 +364,6 @@ RFC xxxx            Ogg Multimedia Media Types            September 2007
 
 
 
-Xiph.Org Foundation               Informational                [Page 13]
-
-RFC xxxx            Ogg Multimedia Media Types            September 2007
 
 
    [RFC2397]      Masinter, L., "The "data" URL scheme", RFC 2397,
@@ -481,12 +385,12 @@ RFC xxxx            Ogg Multimedia Media Types            September 2007
 Authors' Addresses
 
    Ivo Emanuel Goncalves
-   EMail: ivo@xiph.org
+   EMail: justivo@gmail.com
    URI:   http://spreadopenmedia.org
    Note: Please write "Goncalves" with c-cedilla (U+00E7) wherever
    possible, e.g., as "Ivo Emanuel Gon&#231;alves" in HTML and XML.
 
-   Add your name here if you are contributing to the RFC.
+   Add your name here if you are contributing to this document.
 
 
 
@@ -508,9 +412,6 @@ Authors' Addresses
 
 
 
-Xiph.Org Foundation               Informational                [Page 14]
-
-RFC xxxx            Ogg Multimedia Media Types            September 2007
 
 
 Full Copyright Statement
