@@ -32,11 +32,40 @@
 #include <cairo-ft.h>
 #include "internal.h"
 
-/* helper functions for performing progressive computation and rendering */
+/* a panel is essentially four things:
+   
+   A collection of UI widgets
+   A collection of graphical planes
+   Code for managing concurrent data computation for planes
+   Code for managing concurrent rendering operations for planes
+
+*/
+
+
+
+/* from API or GTK thread */
+void _sv_panel_recompute(sv_panel_t *p){
+  gdk_lock(); 
+  
+  // collect and cache the data a panel needs to recompute 
+  // dimension value snapshots
+  // pending axes scalespaces
+
+  // collect and cache the data a panel needs to remap
+  // 
+
+  gdk_unlock();
+}
+
 
 static void _sv_plane2d_set_recompute(_sv_plane2d_t *z){
-  pthread_mutex_lock(z->data_m);
+  pthread_rwlock_wrlock(z->data_m);
+  pthread_rwlock_wrlock(z->image_m);
 
+
+
+  pthread_rwlock_unlock(z->data_m);
+  pthread_rwlock_unlock(z->image_m);
 }
 
 static void _sv_plane2d_set_remap(){

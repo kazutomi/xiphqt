@@ -29,38 +29,6 @@ typedef struct _sv_undo _sv_undo_t;
 #include <libxml/tree.h>
 #include "sushivision.h"
 
-/* locking *****************************************************/
-
-// strict mutex acquisation ordering: 
-// gdk -> panel -> objective -> dimension -> scale
-// functions below check/enforce
-
-extern void _sv_gdk_lock_i(const char *func, int line);
-extern void _sv_gdk_unlock_i(const char *func, int line);
-extern void _sv_panel_lock_i(const char *func, int line);
-extern void _sv_panel_unlock_i(const char *func, int line);
-extern void _sv_objective_lock_i(const char *func, int line);
-extern void _sv_objective_unlock_i(const char *func, int line);
-extern void _sv_dimension_lock_i(const char *func, int line);
-extern void _sv_dimension_unlock_i(const char *func, int line);
-extern void _sv_scale_lock_i(const char *func, int line);
-extern void _sv_scale_unlock_i(const char *func, int line);
-
-#define gdk_lock() _sv_gdk_lock_i(__FUNCTION__,__LINE__);
-#define gdk_unlock() _sv_gdk_lock_i(__FUNCTION__,__LINE__);
-
-#define panel_lock() _sv_panel_lock_i(__FUNCTION__,__LINE__);
-#define panel_unlock() _sv_panel_lock_i(__FUNCTION__,__LINE__);
-
-#define obj_lock() _sv_objective_lock_i(__FUNCTION__,__LINE__);
-#define obj_unlock() _sv_objective_lock_i(__FUNCTION__,__LINE__);
-
-#define dim_lock() _sv_dimension_lock_i(__FUNCTION__,__LINE__);
-#define dim_unlock() _sv_dimension_lock_i(__FUNCTION__,__LINE__);
-
-#define scale_lock() _sv_scale_lock_i(__FUNCTION__,__LINE__);
-#define scale_unlock() _sv_scale_lock_i(__FUNCTION__,__LINE__);
-
 typedef struct {
   char *s;
   double v;

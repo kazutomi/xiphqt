@@ -19,16 +19,8 @@
  * 
  */
 
-// plane mutex policy:  
-//
-//  gdk_m -> panel_m -> obj_m -> dim_m -> scale_m
-//  |
-//  -> z.data_m -> z.image_m -> bg.image_m 
-//  |
-//  -> z.status_m -> bg.status_m
+// plane mutex locking order: forward in plane list, down the plane struct
 
-#define PLANE_Z 1
- 
 typedef union  _sv_plane _sv_plane_t;
 typedef struct _sv_plane_proto _sv_plane_proto_t;
 typedef struct _sv_plane_bg _sv_plane_bg_t;
@@ -36,35 +28,34 @@ typedef struct _sv_plane_2d _sv_plane_2d_t;
 
 struct _sv_plane_proto {
   // in common with all plane types
-  // common fields locked via panel
-  int plane_type;
-  sv_obj_t *o;
-  _sv_plane_t *share_next;
-  _sv_plane_t *share_prev;
+
+  // only GTK/API manipulates the common data
+  // GTK/API read access: GDK lock
+  // GTK/API write access: GDK lock -> panel.memlock(write);
+  // worker read access: panel.memlock(read)
+  int              plane_type;
+  sv_obj_t        *o;
+  _sv_plane_t     *share_next;
+  _sv_plane_t     *share_prev;
   _sv_panel2d_t   *panel;
 };
 
-// bg plane mutex policy: [mutexes from one other plane] -> image -> status -> [back to other plane]
 struct _sv_plane_bg {
-  // in common with all plane types
-  // common fields locked via panel
-  int             plane_type;
-  sv_obj_t       *o;
-  _sv_plane_t    *share_next;
-  _sv_plane_t    *share_prev;
-  _sv_panel2d_t  *panel;
+  int              plane_type;
+  sv_obj_t        *o;
+  _sv_plane_t     *share_next;
+  _sv_plane_t     *share_prev;
+  _sv_panel2d_t   *panel;
 
-  // image data
-   _sv_ucolor_t  *image; // panel size
-  int             image_serialno;
-  int             image_waiting;
-  int             image_incomplete;
-  int             image_nextline;
-  pthread_mutex_t image_m; 
+  // image data and concurrency tracking
+   _sv_ucolor_t   *image; // panel size
+  int              image_serialno;
+  int              image_waiting;
+  int              image_incomplete;
+  int              image_nextline;
+  unsigned char   *image_status; // rendering flags
+  pthread_rwlock_t image_m; 
 
-  // concurrency tracking
-  unsigned char  *line_status; // rendering flags
-  pthread_mutex_t status_m;
 };
 
 struct sv_zmap {
@@ -85,37 +76,41 @@ struct sv_zmap {
 struct _sv_plane_2d {
   // in common with all plane types
   // common fields locked via panel
-  int             plane_type; // == Z
-  sv_obj_t       *o;
-  _sv_plane_t    *share_next;
-  _sv_plane_t    *share_prev;
-  _sv_panel2d_t  *panel;
+  int              plane_type; // == Z
+  sv_obj_t        *o;
+  _sv_plane_t     *share_next;
+  _sv_plane_t     *share_prev;
+  _sv_panel2d_t   *panel;
 
   // subtype 
   // objective data
-  float          *data;              // data size
-  int             data_serialno;     
-  int             xscale_waiting; 
-  int             xscale_incomplete; 
-  int             yscale_waiting;   
-  int             yscale_incomplete;   
-  int             compute_waiting;
-  int             compute_incomplete;
-  int             data_nextline;
-  pthread_mutex_t data_m;
+  float           *data;              // data size
+  _sv_scalespace_t data_x;
+  _sv_scalespace_t data_y;
+  _sv_scalespace_t data_x_it;
+  _sv_scalespace_t data_y_it;
+  int              data_serialno;     
+  int              data_xscale_waiting; 
+  int              data_xscale_incomplete; 
+  int              data_yscale_waiting;   
+  int              data_yscale_incomplete;   
+  int              data_compute_waiting;
+  int              data_compute_incomplete;
+  int              data_nextline;
+  unsigned char   *data_flags;
+  pthread_mutex_t  data_m;
 
   // image plane
-  _sv_ucolor_t   *image; // panel size;
-  int             image_serialno;
-  struct sv_zmap  image_map;
-  int             image_waiting;
-  int             image_incomplete;
-  int             image_nextline;
-  pthread_mutex_t image_m;
-
-  // concurrency tracking
-  unsigned char  *lineflags; // rendering flags
-  pthread_mutex_t status_m;
+  _sv_ucolor_t    *image; // panel size;
+  int              image_serialno;
+  _sv_scalespace_t image_x;
+  _sv_scalespace_t image_y;
+  struct sv_zmap   image_map;
+  int              image_waiting;
+  int              image_incomplete;
+  int              image_nextline;
+  unsigned char   *image_flags;
+  pthread_mutex_t  image_m;
 
   // ui elements; use gdk lock
   _sv_mapping_t   *mapping;
@@ -133,6 +128,8 @@ union {
 } _sv_plane;
 
 typedef struct {
+  pthread_rwlock_t memlock;  
+  pthread_rwlock_t datalock; 
 
   GtkWidget *obj_table;
   GtkWidget *dim_table;

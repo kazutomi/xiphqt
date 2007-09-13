@@ -39,277 +39,48 @@
 #include "internal.h"
 #include "sushi-gtkrc.h"
 
-// strict mutex acquisation ordering: gdk -> panel -> objective -> dimension -> scale
-typedef struct {
-  int holding_gdk;
+// The locking model in sushivision is as simple as possible given the
+// computational and rendering concurrency.
 
-  int holding_panel;
-  const char *func_panel;
-  int line_panel;
+// All API and GTK/GDK access is locked by a single recursive mutex
+// installed into GDK.
 
-  int holding_obj;
-  const char *func_obj;
-  int line_obj;
+// Worker threads exist to handle high latency tasks asynchronously.
+// Tasks fall into three categories: data computation, plane
+// rendering, and scale/legend rendering.  The worker threads (with
+// one exception) never touch the main GDK mutex; any data protected
+// by the main mutex needed for a task is pulled out and encapsulated
+// when that task is set up from a GTK or API call.  The one exception
+// is expose requests after rendering; in this case, the worker waits
+// until it can drop all locks (usually as the very last step), does
+// so, and then issues an expose request locked by GDK.
 
-  int holding_dim;
-  const char *func_dim;
-  int line_dim;
+// All data objects that can be touched simultaneously by API/GTK/GDK
+// and the worker threads must also be locked.  This includes the
+// global panel list, each panel, each plane within the panel (and
+// subunits of the planes), the plot widget's canvas buffer, and the
+// plot widget's other render access.  Plot widget access is guarded
+// by standard mutexes.  The panel lists, panels and planes require
+// greater concurrency and use read/write mutexes.
 
-  int holding_scale;
-  const char *func_scale;
-  int line_scale;
+// lock acquisition order must move to the right:
+// GDK -> panel_list -> panel -> plane, plane_internal -> plot_main -> plot_bg 
+// 
+// Multiple panels (if needed) must be locked in order of list
+// Multiple planes (if needed) must be locked in order of list
+// Each plane type has an internal order for locking internal subunits 
 
-} mutexcheck;
+// Memory pointers/structures are protected by a r/w lock that is held
+// by any thread 'entering the abstraction' for the duration the
+// thread is assuming the structure will continue to exist.  It is
+// held even during long-latency operations to guarantee memory
+// consistency.
 
-static pthread_mutex_t panel_m = PTHREAD_MUTEX_INITIALIZER;
-static pthread_mutex_t obj_m = PTHREAD_MUTEX_INITIALIZER;
-static pthread_mutex_t dim_m = PTHREAD_MUTEX_INITIALIZER;
-static pthread_mutex_t scale_m = PTHREAD_MUTEX_INITIALIZER;
-static pthread_key_t   _sv_mutexcheck_key;
+// The data inside a memory structure is protected by a second r/w
+// lock inside the structure that is dropped when possible during
+// long-duration operations.
 
-/**********************************************************************/
-/* GDK uses whatever default mutex type offered by the system, and
-   this usually means non-recursive ('fast') mutextes.  The problem
-   with this is that gdk_threads_enter() and gdk_threads_leave()
-   cannot be used in any call originating from the main loop, but are
-   required in calls from idle handlers and other threads. In effect
-   we would need seperate identical versions of each widget method,
-   one locked, one unlocked, depending on where the call originated.
-   Eliminate this problem by installing a recursive mutex. */
-
-static pthread_mutex_t gdk_m;
-static pthread_mutexattr_t gdk_ma;
-static int gdk_firstunder = 0;
-
-void _sv_gdk_lock_i(const char *func, int line){
-  mutexcheck *check = pthread_getspecific(_sv_mutexcheck_key);
-  const char *m=NULL;
-  const char *f=NULL;
-  int l=-1;
-  
-  if(!check){
-    check = calloc(1,sizeof(*check));
-    pthread_setspecific(_sv_mutexcheck_key, (void *)check);
-  }
-
-  if(check->holding_panel){ m="panel"; f=check->func_panel; l=check->line_panel; }
-  if(check->holding_obj){ m="objective"; f=check->func_obj; l=check->line_obj; }
-  if(check->holding_dim){ m="dimension"; f=check->func_dim; l=check->line_dim; }
-  if(check->holding_scale){ m="scale"; f=check->func_scale; l=check->line_scale; }
-    
-  if(f){
-    if(func)
-      fprintf(stderr,"sushivision: Out of order locking error.\n"
-	      "\tTrying to acquire gdk lock in %s line %d,\n"
-	      "\t%s lock already held from %s line %d.\n",
-	      func,line,m,f,l);
-    else
-      fprintf(stderr,"sushivision: Out of order locking error.\n"
-	      "\tTrying to acquire gdk lock, %s lock already held\n"
-	      "\tfrom %s line %d.\n",
-	      m,f,l);
-  }
-
-  pthread_mutex_lock(&gdk_m);
-  check->holding_gdk++;
-
-}
-
-void _sv_gdk_unlock_i(const char *func, int line){
-  mutexcheck *check = pthread_getspecific(_sv_mutexcheck_key);
-
-  if(!check){
-    if(!gdk_firstunder){ // annoying detail of gtk locking; in apps that
-      // don't normally use threads, one does not lock before entering
-      // mainloop; in apps that do thread, the mainloop must be
-      // locked.  We can't tell which situation was in place before
-      // setting up our own threading, so allow one refcount error
-      // which we assume was the unlocked mainloop of a normally
-      // unthreaded gtk app.
-      check = calloc(1,sizeof(*check));
-      pthread_setspecific(_sv_mutexcheck_key, (void *)check);
-      gdk_firstunder++;
-    }else{
-      if(func)
-	fprintf(stderr,"sushivision: locking error.\n"
-		"\tTrying to unlock gdk when no gdk lock held\n"
-		"\tin %s line %d.\n",
-		func,line);
-      else
-	fprintf(stderr,"sushivision: locking error.\n"
-		"\tTrying to unlock gdk when no gdk lock held.\n");
-      
-    }
-  }else{
-    check->holding_gdk--;
-    pthread_mutex_unlock(&gdk_m);
-  }
-}
-
-// dumbed down version to pass into gdk
-static void replacement_gdk_lock(void){
-  _sv_gdk_lock_i(NULL,-1);
-}
-
-static void replacement_gdk_unlock(void){
-  _sv_gdk_unlock_i(NULL,-1);
-}
-
-static mutexcheck *lockcheck(){
-  mutexcheck *check = pthread_getspecific(_sv_mutexcheck_key);
-  if(!check){
-    check = calloc(1,sizeof(*check));
-    pthread_setspecific(_sv_mutexcheck_key, (void *)check);
-  }
-  return check;
-}
-
-void _sv_panel_lock_i(const char *func, int line){
-  mutexcheck *check = lockcheck();
-  const char *m=NULL, *f=NULL;
-  int l=-1;
-  
-  if(check->holding_obj){ m="objective"; f=check->func_obj; l=check->line_obj; }
-  if(check->holding_dim){ m="dimension"; f=check->func_dim; l=check->line_dim; }
-  if(check->holding_scale){ m="scale"; f=check->func_scale; l=check->line_scale; }
-    
-  if(f)
-    fprintf(stderr,"sushivision: Out of order locking error.\n"
-	    "\tTrying to acquire panel lock in %s line %d,\n"
-	    "\t%s lock already held from %s line %d.\n",
-	    func,line,m,f,l);
-
-  pthread_mutex_lock(&panel_m);
-  check->holding_panel++;
-  check->func_panel = func;
-  check->line_panel = line;
-
-}
-
-void _sv_panel_unlock_i(const char *func, int line){
-  mutexcheck *check = pthread_getspecific(_sv_mutexcheck_key);
-  
-  if(!check || check->holding_panel<1){
-    fprintf(stderr,"sushivision: locking error.\n"
-	    "\tTrying to unlock panel when no panel lock held\n"
-	    "\tin %s line %d.\n",
-	    func,line);
-  }else{
-
-    check->holding_panel--;
-    check->func_panel = "(unknown)";
-    check->line_panel = -1;
-    pthread_mutex_unlock(&panel_m);
-
-  }
-}
-
-void _sv_objective_lock_i(const char *func, int line){
-  mutexcheck *check = lockcheck();
-  const char *m=NULL, *f=NULL;
-  int l=-1;
-  
-  if(check->holding_dim){ m="dimension"; f=check->func_dim; l=check->line_dim; }
-  if(check->holding_scale){ m="scale"; f=check->func_scale; l=check->line_scale; }
-    
-  if(f)
-    fprintf(stderr,"sushivision: Out of order locking error.\n"
-	    "\tTrying to acquire objective lock in %s line %d,\n"
-	    "\t%s lock already held from %s line %d.\n",
-	    func,line,m,f,l);
-
-  pthread_mutex_lock(&obj_m);
-  check->holding_obj++;
-  check->func_obj = func;
-  check->line_obj = line;
-
-}
-
-void _sv_objective_unlock_i(const char *func, int line){
-  mutexcheck *check = pthread_getspecific(_sv_mutexcheck_key);
-  
-  if(!check || check->holding_obj<1){
-    fprintf(stderr,"sushivision: locking error.\n"
-	    "\tTrying to unlock objective when no objective lock held\n"
-	    "\tin %s line %d.\n",
-	    func,line);
-  }else{
-
-    check->holding_obj--;
-    check->func_obj = "(unknown)";
-    check->line_obj = -1;
-    pthread_mutex_unlock(&obj_m);
-
-  }
-}
-
-void _sv_dimension_lock_i(const char *func, int line){
-  mutexcheck *check = lockcheck();
-  const char *m=NULL, *f=NULL;
-  int l=-1;
-  
-  if(check->holding_scale){ m="scale"; f=check->func_scale; l=check->line_scale; }
-    
-  if(f)
-    fprintf(stderr,"sushivision: Out of order locking error.\n"
-	    "\tTrying to acquire dimension lock in %s line %d,\n"
-	    "\t%s lock already held from %s line %d.\n",
-	    func,line,m,f,l);
-
-  pthread_mutex_lock(&dim_m);
-  check->holding_dim++;
-  check->func_dim = func;
-  check->line_dim = line;
-
-}
-
-void _sv_dimension_unlock_i(const char *func, int line){
-  mutexcheck *check = pthread_getspecific(_sv_mutexcheck_key);
-  
-  if(!check || check->holding_dim<1){
-    fprintf(stderr,"sushivision: locking error.\n"
-	    "\tTrying to unlock dimension when no dimension lock held\n"
-	    "\tin %s line %d.\n",
-	    func,line);
-  }else{
-
-    check->holding_dim--;
-    check->func_dim = "(unknown)";
-    check->line_dim = -1;
-    pthread_mutex_unlock(&dim_m);
-
-  }
-}
-
-void _sv_scale_lock_i(const char *func, int line){
-  mutexcheck *check = lockcheck();
-  
-  pthread_mutex_lock(&scale_m);
-  check->holding_scale++;
-  check->func_scale = func;
-  check->line_scale = line;
-
-}
-
-void _sv_scale_unlock_i(const char *func, int line){
-  mutexcheck *check = pthread_getspecific(_sv_mutexcheck_key);
-  
-  if(!check || check->holding_scale<1){
-    fprintf(stderr,"sushivision: locking error.\n"
-	    "\tTrying to unlock scale when no scale lock held\n"
-	    "\tin %s line %d.\n",
-	    func,line);
-  }else{
-
-    check->holding_scale--;
-    check->func_scale = "(unknown)";
-    check->line_scale = -1;
-    pthread_mutex_unlock(&scale_m);
-
-  }
-}
-
-// mutex condm is only for protecting the condvar
+// mutex condm is only for protecting the worker condvar
 static pthread_mutex_t worker_condm = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t worker_cond = PTHREAD_COND_INITIALIZER;
 sig_atomic_t _sv_exiting=0;
@@ -338,12 +109,12 @@ void _sv_clean_exit(){
   _sv_exiting = 1;
   _sv_wake_workers();
 
-  gdk_lock();
+  _gdk_lock();
   if(!gtk_main_iteration_do(FALSE)) // side effect: returns true if
 				    // there are no main loops active
     gtk_main_quit();
   
-  gdk_unlock();
+  _gdk_unlock();
 }
 
 static int num_proccies(){
@@ -485,11 +256,7 @@ int sv_init(){
   
   num_threads = ((num_proccies()*3)>>2);
 
-  pthread_mutexattr_init(&gdk_ma);
-  pthread_mutexattr_settype(&gdk_ma,PTHREAD_MUTEX_RECURSIVE);
-  pthread_mutex_init(&gdk_m,&gdk_ma);
-  gdk_threads_set_lock_functions(replacement_gdk_lock,
-				 replacement_gdk_unlock);
+  _gtk_mutex_fixup();
   gtk_init (NULL,NULL);
 
   return 0;

@@ -196,6 +196,54 @@ void _gtk_button3_fixup(){
 }
 
 /**********************************************************************/
+/* fixup number 3: GDK uses whatever default mutex type offered by the
+   system, and this usually means non-recursive ('fast') mutextes.
+   The problem with this is that gdk_threads_enter() and
+   gdk_threads_leave() cannot be used in any call originating from the
+   main loop, but are required in calls from idle handlers and other
+   threads. In effect we would need seperate identical versions of
+   each widget method, one locked, one unlocked, depending on where
+   the call originated.  Eliminate this problem by installing a
+   recursive mutex. */
+
+static pthread_mutex_t gdkm;
+static pthread_mutexattr_t gdkma;
+static int depth = 0;
+static int firstunder = 0;
+
+void gdk_lock(void){
+  pthread_mutex_lock(&gdkm);
+  depth++;
+}
+
+void gdk_unlock(void){
+  depth--;
+  if(depth<0){
+    if(!firstunder){ // annoying detail of gtk locking; in apps that
+      // don't normally use threads, onr does not lock before entering
+      // mainloop; in apps that do thread, the mainloop must be
+      // locked.  We can't tell which situation was in place before
+      // setting up our own threading, so allow one refcount error
+      // which we assume was the unlocked mainloop of a normally
+      // unthreaded gtk app.
+      firstunder++;
+      depth=0;
+    }else{
+      fprintf(stderr,"Internal locking error; refcount < 0. Dumping core for debugging\n");
+      abort();
+    }
+  }else
+    pthread_mutex_unlock(&gdkm);
+}
+
+void _gtk_mutex_fixup(){
+  pthread_mutexattr_init(&gdkma);
+  pthread_mutexattr_settype(&gdkma,PTHREAD_MUTEX_RECURSIVE);
+  pthread_mutex_init(&gdkm,&gdkma);
+  gdk_threads_set_lock_functions(gdk_lock,gdk_unlock);
+}
+
+/**********************************************************************/
 /* Not really a fixup; generate menus that declare what the keyboard
    shortcuts are */
 
