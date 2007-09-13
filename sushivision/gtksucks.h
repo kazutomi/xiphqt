@@ -24,9 +24,7 @@
 
 extern void _gtk_widget_set_sensitive_fixup(GtkWidget *w, gboolean state);
 extern void _gtk_widget_remove_events (GtkWidget *widget, gint events);
-extern void _gtk_button3_fixup();
-extern void _gtk_mutex_fixup();
-extern pthread_mutex_t *_gtk_get_mutex();
+extern void _gtk_button3_fixup(void);
 
 extern GtkWidget *_gtk_menu_new_twocol(GtkWidget *bind, 
 				       _sv_propmap_t **items,
@@ -39,5 +37,9 @@ extern GtkWidget * _gtk_combo_box_new_markup (void);
 
 extern void _gtk_box_freeze_child (GtkBox *box, GtkWidget *child);
 extern void _gtk_box_unfreeze_child (GtkBox *box, GtkWidget *child);
+
+extern void _gtk_mutex_fixup(void);
+extern void _gdk_lock(void);
+extern void _gdk_unlock(void);
 
 #endif
