@@ -35,19 +35,28 @@ int qbank[] =   {1, 2, 4, 6, 8, 12, 16, 20, 24, 28, 36, 44, 52, 68, 84, 116, 128
 /* Number of pulses in each band. The number of bits for each band with a non-zero
    number of pulses is equal to  (1 + nb_pulses * log2 (2 * width_of_band) )  */
 //32 kbps
-#define WAVEFORM_END 44
-int qpulses[] = {4, 4, 4, 3, 3,  2,  2,  2,  2,  2,  2,  0,  0,  0,  0}; //86 bits
+//#define WAVEFORM_END 36
+//int qpulses[] = {4, 4, 4, 3, 3,  2,  2,  2,  2,  2,  2,  0,  0,  0,  0}; //86 bits
 //int qpulses[] = {3, 4, 4, 3, 4,  3,  2,  2,  2,  3,  0,  0,  0,  0,  0}; //86 bits
 
 //44 kbps
 //int qpulses[] = {4, 7, 6, 4, 4,  3,  3,  3,  3,  3,  3,  3,  0,  0,  0}; //134 bits
 //int qpulses[] = {4, 5, 5, 4, 4,  3,  4,  3,  3,  3,  2,  2,  2,  0,  0}; //134 bits
-//#define WAVEFORM_END 52
+//int qpulses[] = {4, 5, 5, 4, 3,  3,  3,  4,  4,  4,  3,  3,  0,  0,  0}; //134 bits
+//int qpulses[] = {4, 6, 5, 4, 4,  4,  3,  4,  4,  4,  4,  0,  0,  0,  0}; //a: 134 bits
+//int qpulses[] = {4, 5, 5, 4, 3,  3,  3,  4,  4,  4,  3,  3,  0,  0,  0}; //b: 134 bits
+
+int qpulses[] = {4, 5, 4, 4, 3,  3,  3,  3,  3,  4,  4,  4,  0,  0,  0}; //c: 134 bits
+#define WAVEFORM_END 52
 
 /* Number of bands only for the pitch prediction */
 #define PBANDS 5
 /* Start frequency of each band */
-int pbank[] = {1, 4, 8, 12, 20, 44};
+int pbank[] = {1, 4, 8, 12, 20, WAVEFORM_END};
+
+/* FIXME: This is a horrible kludge */
+static float sbr_array[2*WAVEFORM_END-1];
+static float *sbr_ptr = NULL;
 
 /* Algebraic pulse-base quantiser. The signal x is replaced by the sum of the pitch 
    a combination of pulses such that its norm is still equal to 1 */
@@ -240,14 +249,19 @@ void noise_quant(float *x, int N, int K, float *p)
 void sbr_quant(float *x, int N, int K, float *p)
 {
    int i;
-   float *sbr = x+WAVEFORM_END-N;
-
+   //float *sbr = sbr_array+2*(WAVEFORM_END)-1 -N;
    float E = 1e-10;
-   for (i=0;i<N;i++)
+   for (i=0;i<N/2;i++)
    {
-      x[i] = sbr[i];
-      E += x[i]*x[i];
+      x[2*i] = sbr_ptr[0];
+      x[2*i+1] = -sbr_ptr[1];
+      sbr_ptr -= 2;
+      if (sbr_ptr < sbr_array + 2*10-1)
+         sbr_ptr = sbr_array + 2*WAVEFORM_END - 3;
    }
+   for (i=0;i<N;i++)
+      E += x[i]*x[i];
+   
    E = 1./sqrt(E);
    for (i=0;i<N;i++)
    {
@@ -284,8 +298,10 @@ void normalise_bank(float *X, float *bank)
       {
          X[j*2-1] *= x;
          X[j*2]   *= x;
+         //printf ("%f ", (X[j*2-1]*X[j*2-1] + X[j*2]*X[j*2])*(qbank[i+1]-qbank[i]));
       }
    }
+   //printf ("\n");
    for (i=2*qbank[NBANDS]-1;i<256;i++)
       X[i] = 0;
 }
@@ -490,10 +506,17 @@ void quant_bank(float *X, float *P, float centre)
       else
          q =qpulses[i];*/
       q =qpulses[i];
-      if (q)
+      if (q) {
+         int j;
          alg_quant2(X+qbank[i]*2-1, 2*(qbank[i+1]-qbank[i]), q, P+qbank[i]*2-1);
-      else
+         for (j=qbank[i]*2-1;j<qbank[i+1]*2-1;j++)
+         {
+            sbr_array[j] = X[j]*sqrt(qbank[i+1]-qbank[i]);
+         }
+         sbr_ptr = sbr_array+2*WAVEFORM_END-3;
+      } else {
          sbr_quant(X+qbank[i]*2-1, 2*(qbank[i+1]-qbank[i]), q, P+qbank[i]*2-1);
+      }
    }
    //FIXME: This is a kludge, even though I don't think it really matters much
    X[255] = 0;
@@ -843,6 +866,5 @@ void ceft_encode(CEFTState *st, float *in, float *out, float *pitch, float *wind
    
    //Synthesis
    spx_ifft_float(st->frame_fft, X, out);
-
 }
 
