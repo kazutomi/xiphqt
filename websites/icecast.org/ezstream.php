@@ -78,7 +78,7 @@
 <h3>Download</h3>
 
 <p style="font-size: larger;">
- Latest version: <b>0.5.0</b>
+ Latest version: <b>0.5.1</b>
  [ <a href="#ez_relnotes_chgs">Changes</a> ]
 <p>
 
@@ -92,8 +92,8 @@
     Source .tar.gz (all platforms)
    </td>
    <td>
-    <a href="http://downloads.xiph.org/releases/ezstream/ezstream-0.5.0.tar.gz">ezstream-0.5.0.tar.gz</a><br/>
-    MD5: 8a76193100febdda666874f7eb8b07cb
+    <a href="http://downloads.xiph.org/releases/ezstream/ezstream-0.5.1.tar.gz">ezstream-0.5.1.tar.gz</a><br/>
+    MD5: 1821f4c6c89415c0341a246decf50c57
    </td>
   </tr>
   <tr>
@@ -101,8 +101,8 @@
     Windows NT/2000/XP binary
    </td>
    <td>
-    <a href="http://downloads.xiph.org/releases/ezstream/ezstream-0.5.0-win32.zip">ezstream-0.5.0-win32.zip</a><br/>
-    MD5: 4168037653adbf15f09c0548a1aff30e
+    <a href="http://downloads.xiph.org/releases/ezstream/ezstream-0.5.1-win32.zip">ezstream-0.5.1-win32.zip</a><br/>
+    MD5: c26d675996e3fedaf129ca5f57160e6f
    </td>
   </tr>
  </table>
@@ -232,76 +232,39 @@
 <h3>Release Notes</h3>
 
 <p>
- Ezstream 0.5.0 has been released on August 31st 2007.
+ Ezstream 0.5.1 has been released on September 16th 2007.
 </p>
 
 <p>
- This release's focus is about a bugfix concerning MP3 metadata in streams
- and several under-the-hood improvements, including a minor new feature.
- Except for remote control via signals, the Windows binary distribution is
- now feature-complete.
+ Version 0.5.1 is a minor bugfix release.
+ A crash when dealing with empty playlist files has been resolved.
 </p>
 
 <h4 id="ez_relnotes_chgs" name="ez_relnotes_chgs">Changes</h4>
 
 <ul style="font-size: smaller; margin: 1em 3em">
  <li>
-  src/ezstream.c:
+  src/playlist.c:
   <ul>
    <li>
     FIX --
-    The special case of streaming MP3 files without reencoding had been lost,
-    causing such streams to have no metadata.
-    This has been fixed.
-    (Ticket #1225)
-   </li>
-   <li>
-    MISC --
-    Handle SIGINT and SIGTERM to perform a clean shutdown.
+    Fix a segmentation fault in <code>playlist_*_next()</code> when trying to
+    access empty playlists.
+    (Ticket #1240)
    </li>
   </ul>
  </li>
  <li>
-  various:
+  src/ezstream.c:
   <ul>
    <li>
-    NEW --
-    A new convenience feature has been added, to allow automatic normalization
-    of metadata strings.
-    Useful if the majority of files come from a broken encoder/tagging program.
-    Disabled by default, this feature can be enabled with the new
-    <code>-n</code> command line parameter.
-   </li>
-   <li>
-    NEW --
-    Enable Unicode support in TagLib and convert metadata strings to the
-    current locale (<code>LC_CTYPE</code>) before displaying them on the
-    console.
-    Unsupported characters are displayed as <code>?</code> on the console,
-    which does not affect the actual metadata itself.
-    This feature requires iconv() via libc, if available, or GNU libiconv.
-   </li>
-   <li>
-    NEW --
-    Support gettimeofday() functionality on all platforms, including Windows.
-    The "real-time status line" when using the <code>-q</code> and
-    <code>-v</code> parameters is now complete everywhere.
-   </li>
-   <li>
     MISC --
-    Add new <code>--enable-debug</code> configuration option to the configure
-    script, which enables (also new) memory debugging features.
-    (Not interesting for non-developers.)
-   </li>
-   <li>
-    MISC --
-    Various small code cleanups.
+    Issue a warning in verbose mode when dealing with an empty playlist file.
+    This also makes it more obvious what is going on when a user makes
+    ezstream spin on an empty playlist with <code>&lt;stream_once/&gt;</code>
+    set to <code>0</code>.
    </li>
   </ul>
- </li>
- <li>
-  The Windows build of ezstream now supports reading metadata from files with
-  TagLib.
  </li>
 </ul>
 
