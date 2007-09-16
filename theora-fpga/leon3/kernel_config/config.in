@@ -1,0 +1,91 @@
+mainmenu_name 'SnapGear Embedded Linux Configuration'
+mainmenu_option next_comment
+comment 'Vendor/Product Selection'
+comment 'Select the Vendor you wish to target'
+choice 'Vendor' "gaisler CONFIG_DEFAULTS_GAISLER \
+SnapGear CONFIG_DEFAULTS_SNAPGEAR \
+" SnapGear
+comment 'Select the Product you wish to target'
+if [ "$CONFIG_DEFAULTS_GAISLER" = "y" ]; then
+choice 'gaisler Products' "leon2 CONFIG_DEFAULTS_GAISLER_LEON2 \
+leon2mmu CONFIG_DEFAULTS_GAISLER_LEON2MMU \
+leon3 CONFIG_DEFAULTS_GAISLER_LEON3 \
+leon3mmu CONFIG_DEFAULTS_GAISLER_LEON3MMU \
+" leon2
+fi
+if [ "$CONFIG_DEFAULTS_SNAPGEAR" = "y" ]; then
+choice 'SnapGear Products' "LITE300 CONFIG_DEFAULTS_SNAPGEAR_LITE300 \
+LITE CONFIG_DEFAULTS_SNAPGEAR_LITE \
+PRO CONFIG_DEFAULTS_SNAPGEAR_PRO \
+SE2910-Intel CONFIG_DEFAULTS_SNAPGEAR_SE2910_INTEL \
+SE3400 CONFIG_DEFAULTS_SNAPGEAR_SE3400 \
+SE4000 CONFIG_DEFAULTS_SNAPGEAR_SE4000 \
+SME530 CONFIG_DEFAULTS_SNAPGEAR_SME530 \
+SME550 CONFIG_DEFAULTS_SNAPGEAR_SME550 \
+SME570 CONFIG_DEFAULTS_SNAPGEAR_SME570 \
+SOHO+ CONFIG_DEFAULTS_SNAPGEAR_SOHO_ \
+" LITE300
+fi
+comment 'Select the options for a selected Product'
+
+mainmenu_name 'Gaisler/Leon2/3/mmu options'
+mainmenu_option next_comment
+comment 'Gaisler/Leon2/3/mmu options'
+
+source vendors/gaisler/common/config.in
+
+endmenu
+#mainmenu_name 'Gaisler/Leon2mmu options'
+#mainmenu_option next_comment
+#comment 'Gaisler/Leon2mmu options'
+#
+#source vendors/gaisler/common/config.in
+#
+#endmenu
+
+
+#mainmenu_name 'Gaisler/Leon2/mmu options'
+#mainmenu_option next_comment
+#comment 'Gaisler/Leon2/mmu options'
+#
+#source vendors/gaisler/common/config.in
+#
+#endmenu
+#mainmenu_name 'Gaisler/Leon3mmu options'
+#mainmenu_option next_comment
+#comment 'Gaisler/Leon3mmu options'
+#
+#source vendors/gaisler/common/config.in
+#
+#endmenu
+
+endmenu
+mainmenu_option next_comment
+comment 'Kernel/Library/Defaults Selection'
+choice 'Kernel Version' "linux-2.0.x CONFIG_DEFAULTS_KERNEL_2_0 \
+linux-2.6.21.1 CONFIG_DEFAULTS_KERNEL_2_6_21_1 \
+" linux-2.6.21.1
+choice 'Libc Version' "glibc-from-compiler CONFIG_DEFAULTS_LIBC_GLIBC_FROM_COMPILER \
+microLibc CONFIG_DEFAULTS_LIBC_MICROLIBC \
+uClibc CONFIG_DEFAULTS_LIBC_UCLIBC \
+none CONFIG_DEFAULTS_LIBC_NONE \
+" none
+bool 'Default all settings (lose changes)'	CONFIG_DEFAULTS_OVERRIDE
+bool 'Customize Kernel Settings'			CONFIG_DEFAULTS_KERNEL
+bool 'Customize Vendor/User Settings'		CONFIG_DEFAULTS_VENDOR
+bool 'Update Default Vendor Settings'		CONFIG_DEFAULTS_VENDOR_UPDATE
+endmenu
+
+
+
+mainmenu_option next_comment
+comment 'Template Configurations'
+if [ "$CONFIG_DEFAULTS_GAISLER_LEON3MMU" = "y" ]; then
+choice 'Templates for leon3mmu' " \
+none CONFIG_TEMPLATE_LEON3MMU_NONE \
+nfs_root CONFIG_TEMPLATE_LEON3MMU_NFS_ROOT \
+vga_ps2 CONFIG_TEMPLATE_LEON3MMU_VGA_PS2 \
+" none
+fi
+bool 'Update configurations with above selection'			CONFIG_TEMPLATES_UPDATE
+endmenu

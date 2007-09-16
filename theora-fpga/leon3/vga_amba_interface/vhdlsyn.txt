@@ -1,0 +1,6 @@
+theora_hardware.vhd
+theora_amba_interface.vhd
+interface_vga.vhd
+interfacevga.vhd
+tsyncram.vhd
+YCbCr2RGB.vhd
