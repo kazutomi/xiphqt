@@ -21,10 +21,11 @@ int oc_state_flushheader(oc_theora_state *_state,int *_packet_state,
  oggpack_buffer *_opb,const th_quant_info *_qinfo,
  const th_huff_code _codes[TH_NHUFFMAN_TABLES][TH_NDCT_TOKENS],
  const char *_vendor,th_comment *_tc,ogg_packet *_op){
-  if(_state==NULL||_op==NULL)return TH_EFAULT;
+  if(_op==NULL)return TH_EFAULT;
   switch(*_packet_state){
     /*Codec info header.*/
     case OC_PACKET_INFO_HDR:{
+      if(_state==NULL)return TH_EFAULT;
       oggpackB_reset(_opb);
       /*Mark this packet as the info header.*/
       oggpackB_write(_opb,0x80,8);

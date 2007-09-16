@@ -435,4 +435,28 @@ void oc_state_loop_filter_frag_rows_c(oc_theora_state *_state,int *_bv,
  int _refi,int _pli,int _fragy0,int _fragy_end);
 void oc_restore_fpu_c(void);
 
+/*We need a way to call a few enocder functions without introducing a link-time
+   dependency into the decoder, while still allowing the old alpha API which
+   does not distinguish between encoder and decoder objects to be used.
+  We do this by placing a function table at the start of the encoder object
+   which can dispatch into the encoder library.*/
+/*We don't ship theora.h, so we don't want to include it to force theora_state
+   to be defined; thus it is replaced by void * below.*/
+typedef void (*oc_state_clear_func)(void *_th);
+typedef int (*oc_state_control_func)(void *th,int req,
+ void *buf,size_t buf_sz);
+typedef ogg_int64_t (*oc_state_granule_frame_func)(void *_th,
+ ogg_int64_t _granulepos);
+typedef double (*oc_state_granule_time_func)(void *_th,
+ ogg_int64_t _granulepos);
+
+typedef struct oc_state_dispatch_vtbl oc_state_dispatch_vtbl;
+
+struct oc_state_dispatch_vtbl{
+  oc_state_clear_func         clear;
+  oc_state_control_func       control;
+  oc_state_granule_frame_func granule_frame;
+  oc_state_granule_time_func  granule_time;
+};
+
 #endif

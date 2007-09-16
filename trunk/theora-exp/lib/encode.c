@@ -1433,6 +1433,7 @@ int th_encode_ctl(th_enc_ctx *_enc,int _req,void *_buf,size_t _buf_sz){
 }
 
 int th_encode_flushheader(th_enc_ctx *_enc,th_comment *_tc,ogg_packet *_op){
+  if(_enc==NULL)return TH_EFAULT;
   return oc_state_flushheader(&_enc->state,&_enc->packet_state,&_enc->opb,
    &_enc->qinfo,(const th_huff_table *)_enc->huff_codes,th_version_string(),
    _tc,_op);

@@ -39,6 +39,7 @@ WORKDIR = objs
 # C source file lists
 
 LIBTHEORABASE_CHEADERS = \
+apiwrapper.h \
 dct.h \
 idct.h \
 huffman.h \
@@ -49,6 +50,7 @@ quant.h \
 
 LIBTHEORADEC_CSOURCES = \
 apiwrapper.c \
+decapiwrapper.c \
 decinfo.c \
 decode.c \
 dequant.c \
@@ -75,6 +77,7 @@ huffdec.h \
 
 LIBTHEORAENC_CSOURCES = \
 bitrate.c \
+encapiwrapper.c \
 encinfo.c \
 encode.c \
 enquant.c \

@@ -26,6 +26,7 @@ X86ASM_FILES = \
 endif
 
 noinst_HEADERS = \
+	apiwrapper.h \
 	dct.h \
 	decint.h \
 	dequant.h \
@@ -45,8 +46,10 @@ noinst_HEADERS = \
 	x86/x86int.h
 
 libtheoracompat_la_SOURCES = \
-	apiwrapper.c
-  
+	apiwrapper.c \
+	decapiwrapper.c
+#	encapiwrapper.c
+
 libtheoradec_la_SOURCES = \
 	decinfo.c \
 	decode.c \
