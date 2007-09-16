@@ -89,7 +89,7 @@ typedef struct th_cqi_cfg{
  * <tt>NULL</tt> may be specified to revert to the default tables.
  *
  * \param[in] _buf <tt>#th_huff_code[#TH_NHUFFMAN_TABLES][#TH_NDCT_TOKENS]</tt>
- * \retval TH_FAULT  \a _enc_ctx is <tt>NULL</tt>.
+ * \retval TH_EFAULT \a _enc_ctx is <tt>NULL</tt>.
  * \retval TH_EINVAL Encoding has already begun or one or more of the given
  *                     tables is not full or prefix-free, \a _buf is
  *                     <tt>NULL</tt> and \a _buf_sz is not zero, or \a _buf is
@@ -108,7 +108,7 @@ typedef struct th_cqi_cfg{
  *  \a pli, and \a ci does not increase as \a qi increases.
  *
  * \param[in] _buf #th_quant_info
- * \retval TH_FAULT  \a _enc_ctx is <tt>NULL</tt>.
+ * \retval TH_EFAULT \a _enc_ctx is <tt>NULL</tt>.
  * \retval TH_EINVAL Encoding has already begun, the quantization parameters
  *                    do not meet one of the above stated conditions, \a _buf
  *                    is <tt>NULL</tt> and \a _buf_sz is not zero, or \a _buf
@@ -125,7 +125,7 @@ typedef struct th_cqi_cfg{
  * \param[in]  _buf <tt>ogg_uint32_t</tt>: The maximum distance between key
  *                   frames.
  * \param[out] _buf <tt>ogg_uint32_t</tt>: The actual maximum distance set.
- * \retval TH_FAULT  \a _enc_ctx or \a _buf is <tt>NULL</tt>.
+ * \retval TH_EFAULT \a _enc_ctx or \a _buf is <tt>NULL</tt>.
  * \retval TH_EINVAL \a _buf_sz is not <tt>sizeof(ogg_uint32_t)</tt>.
  * \retval TH_IMPL   Not supported by this implementation.*/
 #define TH_ENCCTL_SET_KEYFRAME_FREQUENCY_FORCE (4)
@@ -153,7 +153,7 @@ typedef struct th_cqi_cfg{
  *                   4:2:0, the picture region is smaller than the full frame,
  *                   or if encoding has begun, preventing the quantization
  *                   tables and codebooks from being set.
- * \retval TH_FAULT  \a _enc_ctx or \a _buf is <tt>NULL</tt>.
+ * \retval TH_EFAULT \a _enc_ctx or \a _buf is <tt>NULL</tt>.
  * \retval TH_EINVAL \a _buf_sz is not <tt>sizeof(int)</tt>.
  * \retval TH_IMPL   Not supported by this implementation.*/
 #define TH_ENCCTL_SET_VP3_COMPATIBLE (10)
@@ -166,7 +166,7 @@ typedef struct th_cqi_cfg{
  *  the current encoding mode (VBR vs. CQI, etc.).
  *
  * \param[out] _buf int: The maximum encoding speed level.
- * \retval TH_FAULT  \a _enc_ctx or \a _buf is <tt>NULL</tt>.
+ * \retval TH_EFAULT \a _enc_ctx or \a _buf is <tt>NULL</tt>.
  * \retval TH_EINVAL \a _buf_sz is not <tt>sizeof(int)</tt>.
  * \retval TH_IMPL   Not supported by this implementation in the current
  *                    encoding mode.*/
@@ -176,7 +176,7 @@ typedef struct th_cqi_cfg{
  *
  * \param[in] _buf int: The new encoding speed level.
  *                      0 is slowest, larger values use less CPU.
- * \retval TH_FAULT  \a _enc_ctx or \a _buf is <tt>NULL</tt>.
+ * \retval TH_EFAULT \a _enc_ctx or \a _buf is <tt>NULL</tt>.
  * \retval TH_EINVAL \a _buf_sz is not <tt>sizeof(int)</tt>, or the
  *                    encoding speed level is out of bounds.
  *                   The maximum encoding speed level may be
@@ -295,15 +295,15 @@ extern int th_encode_ctl(th_enc_ctx *_enc,int _req,void *_buf,size_t _buf_sz);
  *                   next encoder function is called.
  * \return A positive value indicates that a header packet was successfully
  *          produced.
- * \retval 0        No packet was produced, and no more header packets remain.
- * \retval TH_FAULT \a _enc, \a _comments, or \a _op was <tt>NULL</tt>.*/
+ * \retval 0         No packet was produced, and no more header packets remain.
+ * \retval TH_EFAULT \a _enc, \a _comments, or \a _op was <tt>NULL</tt>.*/
 extern int th_encode_flushheader(th_enc_ctx *_enc,
  th_comment *_comments,ogg_packet *_op);
 /**Submits an uncompressed frame to the encoder.
  * \param _enc   A #th_enc_ctx handle.
  * \param _ycbcr A buffer of Y'CbCr data to encode.
  * \retval 0         Success.
- * \retval TH_FAULT  \a _enc or \a _ycbcr is <tt>NULL</tt>.
+ * \retval TH_EFAULT \a _enc or \a _ycbcr is <tt>NULL</tt>.
  * \retval TH_EINVAL The buffer size does not match the frame size the encoder
  *                    was initialized with, or encoding has already
  *                    completed.*/
@@ -328,9 +328,9 @@ extern int th_encode_ycbcr_in(th_enc_ctx *_enc,th_ycbcr_buffer _ycbcr);
  *               encoder function is called.
  * \return A positive value indicates that a video data packet was successfully
  *          produced.
- * \retval 0        No packet was produced, and no more encoded video data
- *                   remains.
- * \retval TH_FAULT \a _enc or \a _op was <tt>NULL</tt>.*/
+ * \retval 0         No packet was produced, and no more encoded video data
+ *                    remains.
+ * \retval TH_EFAULT \a _enc or \a _op was <tt>NULL</tt>.*/
 extern int th_encode_packetout(th_enc_ctx *_enc,int _last,ogg_packet *_op);
 /**Frees an allocated encoder instance.
  * \param _enc A #th_enc_ctx handle.*/
