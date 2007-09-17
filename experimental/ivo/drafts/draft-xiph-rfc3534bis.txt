@@ -38,17 +38,32 @@ Table of Contents
 
 1.  Introduction
 
-   This memo describes media types for the Ogg container format.
-   Refer to "Introduction" in [RFC3533] and "Overview" in [Ogg] for
-   background information on this encapsulation format.
+   This memo describes media types for Ogg, a data encapsulation format
+   defined by the Xiph.Org Foundation.  Refer to "Introduction" in
+   [RFC3533] and "Overview" in [Ogg] for background information on this
+   container format.
 
-   Multimedia streams, such as Vorbis and Theora, have historically
-   been interchanged using the application/ogg media type as defined by
-   [RFC3534].  This document obsoletes [RFC3534] and defines three
-   media types for different multimedia streams in Ogg to reflect this
-   usage in the IANA media type registry, to foster interoperability by
-   defining underspecified aspects, and to provide general security
-   considerations.
+   Binary data contained in Ogg, such as Vorbis and Theora, has
+   historically been interchanged using the application/ogg media type
+   as defined by [RFC3534].  This document obsoletes [RFC3534] and
+   defines three media types for different multimedia streams in Ogg to
+   reflect this usage in the IANA media type registry, to foster
+   interoperability by defining underspecified aspects, and to provide
+   general security considerations.
+
+   The Ogg container format is known to contain Theora or Dirac video,
+   and Speex narrow-band speech, Speex wide-band speech, Vorbis or FLAC
+   audio.  As Ogg encapsulates binary data, it is possible to include
+   any other type of video, audio, or text format.
+
+   While, raw packets from these codecs may be used directly by transport
+   mechanisms that provide their own framing and packet-separation
+   mechanisms (such as UDP datagrams or RTP), Ogg is a solution for
+   stream based storage (such as files) and transport (such as TCP
+   streams or pipes).  The media types defined in this document are
+   needed to correctly identify such files when they are served over
+   HTTP, included in multi-part documents, or used in other places where
+   MIME [MIME1] types are used.
 
 2.  Conformance and Document Conventions
 
@@ -86,14 +101,25 @@ Table of Contents
    which are also defined in this document, are intended for common use
    and should be used when dealing with video and/or audio content.
 
-   Updates of this document may introduce optional parameters;
-   implementations MUST consider the impact of such an update.
+   This registration applies to all files defined as using the Ogg
+   container format.
+
+   Although unlikely, ongoing work related to this registration may
+   introduce optional parameters in future revisions of this document.
+   One example area of effort may introduce a parameter that would
+   allow for codecs in use within the media type to be asserted and
+   determined without examination of the file.  Implementations MUST
+   consider the impact of such an update.
 
 X.  Encoding Considerations
 
-   Ogg encapsulated content is binary data, and must be encoded for
-   non-binary transport; the base64 [RFC2397] encoding is suitable
-   for EMail.
+   Ogg encapsulated content is binary data and should be transmitted in
+   a suitable encoding without CR/LF conversion, 7-bit stripping etc.;
+   base64 [RFC2397] is a suitable encoding.
+
+   Note that the media types described in this document are used only
+   for files; separate types are used for real-time transfer, such as
+   for the RTP payload formats for Theora video and Speex audio.
 
    Note that most Ogg encapsulated content does not compress easily
    using traditional lossless compression schemes.
@@ -103,15 +129,18 @@ X.  Encoding Considerations
    Refer to [RFC3552] for a discussion of terminology used in this
    section.
 
-   The Ogg encapsulation format is a container format and only
-   encapsulates content (such as Vorbis-encoded audio).  It does not
-   provide for any generic encryption or signing of itself or its
-   contained content bitstreams.  However, it encapsulates any kind of
-   content bitstream as long as there is a codec for it, and is thus
-   able to contain encrypted and signed content data.  It is also
-   possible to add an external security mechanism that encrypts or signs
-   an Ogg physical bitstream and thus provides content confidentiality
-   and authenticity.
+   The Ogg encapsulation format is a container and only a carrier of
+   content (such as audio, video, and displayable text data) with a
+   very rigid definition, this format in itself is not more vulnerable
+   than any other content framing mechanism.
+
+   Ogg does not provide for any generic encryption or signing
+   of itself or its contained content bitstreams.  However, it
+   encapsulates any kind of content bitstream as long as there is a
+   codec for it, and is thus able to contain encrypted and signed
+   content data.  It is also possible to add an external security
+   mechanism that encrypts or signs an Ogg physical bitstream and
+   thus provides content confidentiality and authenticity.
 
    As Ogg encapsulates binary data, it is possible to include executable
    content in an Ogg bitstream.  This may be an issue with applications
@@ -126,14 +155,26 @@ X.  Encoding Considerations
 
       The requirement that such content not be executed on receipt
       is especially important since situations exist where content
-      will be generated independently and therefore could contain
+      will be generated independently and therefore might contain
       executable content that the sender is unaware of.
 
-   The "data" resource identifier scheme [RFC2397], in combination with
-   the types defined in this document, might be used to cause execution
-   of untrusted scripts through the inclusion of untrusted resource
-   identifiers in otherwise trusted content.  Security considerations of
-   [RFC2397] apply.
+   It is possible to author malicious files, which attempt to call for
+   an excessively large picture size, high sampling-rate audio, etc.
+   Clients SHOULD protect themselves against this kind of attack.
+
+   It should be noted that selected metadata fields may encompass
+   information partly intended to protect the media against unauthorized
+   use or distribution.  In this case, the intention is that alteration
+   or removal of the data in the field would be treated as an offense
+   under national agreements based on World Intellectual Property
+   Organization (WIPO) treaties.
+
+   Ogg has an extensible structure, so that it is theoretically
+   possible that metadata fields or media formats might be defined in
+   the future which might be used to induce particular actions on the
+   part of the recipient, thus presenting additional security risks.
+   However, this type of capability is currently not supported in the
+   referenced specification.
 
    Implementations may fail to implement a specific security model or
    other means to prevent possibly dangerous operations.  Such failure
@@ -145,12 +186,12 @@ X.  Interoperability Considerations
 
    The Ogg container format is device-, platform- and vendor-neutral
    and has proved to be widely implementable across different computing
-   platforms, including through a wide range of encoders and decoders.
-   A broadly portable reference implementation [libogg] is available
-   under a BSD license.
+   platforms, including a wide range of encoders and decoders. A broadly
+   portable reference implementation [libogg] is available under a BSD
+   license.
 
    The Ogg container format is not patented and may be implemented by
-   third parties without patent considerations.
+   third parties without intellectual property concerns.
 
    The Xiph.Org Foundation has defined the specification,
    interoperability, and conformance, and conducts regular
@@ -192,34 +233,13 @@ X.  Interoperability Considerations
 
       Macintosh File Type Code(s): OggS
 
-   Person & email address to contact for further information:
+   Person & Email address to contact for further information:
       See Author's Address section.
 
    Intended usage:          COMMON
    Restrictions on usage:   n/a
    Author:                  See Author's Address section.
    Change controller:       The Xiph.Org Foundation.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 7.2.  video/ogg
 
@@ -244,36 +264,13 @@ X.  Interoperability Considerations
       File extension(s):           .ogv
       Macintosh File Type Code(s): OggS
 
-   Person & email address to contact for further information:
+   Person & Email address to contact for further information:
       See Author's Address section.
 
    Intended usage:          COMMON
    Restrictions on usage:   n/a
    Author:                  See Author's Address section.
    Change controller:       The Xiph.Org Foundation.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 7.3.  audio/ogg
 
@@ -292,6 +289,10 @@ X.  Interoperability Considerations
       Audio and video streaming and conferencing tools.
 
    Additional information:
+      The type "audio/ogg" MAY be used for files containing audio
+      but no visual presentation.  Files served under this type MUST
+      NOT contain any visual material. (Note that timed text is visually
+      presented and is considered to be visual material).
 
       Magic number(s):             The first four bytes, 0x4f 0x67 0x67
                                    0x53, correspond to the string OggS.
@@ -307,33 +308,13 @@ X.  Interoperability Considerations
          Ogg MUST use the .oga file extension, even when multiplexed
          with Vorbis or Speex-encoded audio.
 
-   Person & email address to contact for further information:
+   Person & Email address to contact for further information:
       See Author's Address section.
 
    Intended usage:          COMMON
    Restrictions on usage:   n/a
    Author:                  See Author's Address section.
    Change controller:       The Xiph.Org Foundation.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 9.  References
 
@@ -342,34 +323,12 @@ X.  Interoperability Considerations
 Author's Address
 
    Ivo Emanuel Goncalves
-   EMail: justivo@gmail.com
-   URI:   http://spreadopenmedia.org
+   Email: justivo@gmail.com
+   URI:   xmpp:justivo@gmail.com
    Note: Please write "Goncalves" with c-cedilla (U+00E7) wherever
    possible, e.g., as "Ivo Emanuel Gon&#231;alves" in HTML and XML.
 
    Add your name here if you are contributing to this document.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 Full Copyright Statement
 
@@ -401,4 +360,4 @@ Full Copyright Statement
 
 
 
-Xiph.Org Foundation               Informational                [Page 15]
+Xiph.Org Foundation               Informational                [Page XX]
