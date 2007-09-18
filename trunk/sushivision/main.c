@@ -59,26 +59,21 @@
 // and the worker threads must also be locked.  This includes the
 // global panel list, each panel, each plane within the panel (and
 // subunits of the planes), the plot widget's canvas buffer, and the
-// plot widget's other render access.  Plot widget access is guarded
-// by standard mutexes.  The panel lists, panels and planes require
-// greater concurrency and use read/write mutexes.
+// plot widget's other render access.  Most access is guarded by
+// standard mutexes and synchronization serial numbers; however these
+// internal synchronization structures (which exist inside panels and
+// planes) must themselves be guarded against asynchronous destruction
+// while worker threads are 'inside' panels and planes.  For this
+// reason, planes and the master plane list are also protected by rw
+// locks which are read-locked by the worker threads to signify 'in
+// use'.
 
 // lock acquisition order must move to the right:
-// GDK -> panel_list -> panel -> plane, plane_internal -> plot_main -> plot_bg 
+// GDK -> panel_list -> panel -> plane locks -> plot_main -> plot_data
 // 
 // Multiple panels (if needed) must be locked in order of list
 // Multiple planes (if needed) must be locked in order of list
 // Each plane type has an internal order for locking internal subunits 
-
-// Memory pointers/structures are protected by a r/w lock that is held
-// by any thread 'entering the abstraction' for the duration the
-// thread is assuming the structure will continue to exist.  It is
-// held even during long-latency operations to guarantee memory
-// consistency.
-
-// The data inside a memory structure is protected by a second r/w
-// lock inside the structure that is dropped when possible during
-// long-duration operations.
 
 // mutex condm is only for protecting the worker condvar
 static pthread_mutex_t worker_condm = PTHREAD_MUTEX_INITIALIZER;

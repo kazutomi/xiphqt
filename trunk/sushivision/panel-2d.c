@@ -32,30 +32,297 @@
 #include <cairo-ft.h>
 #include "internal.h"
 
-/* a panel is essentially four things:
+/* a panel is essentially:
    
-   A collection of UI widgets
-   A collection of graphical planes
-   Code for managing concurrent data computation for planes
-   Code for managing concurrent rendering operations for planes
-
+  1) a repository for planes
+  2) code for welding the planes together
+  3) a repository for dim widgets
+  4) code for welding UI elements together.
 */
-
-
-
+   
 /* from API or GTK thread */
 void _sv_panel_recompute(sv_panel_t *p){
   gdk_lock(); 
-  
-  // collect and cache the data a panel needs to recompute 
-  // dimension value snapshots
-  // pending axes scalespaces
 
-  // collect and cache the data a panel needs to remap
-  // 
+  // 1) write lock panel.computelock
+  // 2) cache plot scales
+  // 3) cache dim state
+  // 4) cache axis selections
+  // 5) increment compute_serialno
+  // 6) release lock
+  // 7) wake workers
+
+  // worker thread process order; each step performed for all panels,
+  // proceed to next step only if no panels are still in the previous
+  // step:
+
+  // > recompute setup         0       
+  // > bg realloc/scale        1
+  // > bg scale render         2
+  // > bg legend render        3
+  // > bg expose               4
+  // > data realloc            5   
+  // > data yscale             6
+  // > data xscale             7
+  // > image realloc           8
+  // > image render work       9
+  // > bg render from planes  10 
+  // > data computation work  11
+  // > idle                  100
+
+  // recompute begins from 0
+  // relegend begins from 3
+  // remap begins from 4
+
+  // Yes, that's right-- UI output comes first (UI is never dead, even
+  // briefly, and that includes graphs), however progressive UI work
+  // (map and bg render) is purposely throttled.
+
+  // Note: wake_workers after completing a serialized operation that
+  // should be followed by a parallelized operation.
+
+  // locking order: 
+  //   GDK -> 
+  //   panellist.activelock -> 
+  //   panel.activelock ->
+  //   panel.planelock -> 
+  //   panel.panellock ->
+  //   panel.datalock -> 
+
+
+  // worker thread pseudocode, for each panel:
+  
+  // > lock panel.panellock
+  // > if panel.busy
+  //   > release panel.panellock
+  //   > return (status_busy)
+  // > if panel.recompute_pending
+  //   > panel.busy = 1 
+  //   > panel.recompute_pending = 0
+  //   > panel.comp_serialno++
+  //   > localize data to generate scales
+  // > release panel.compute_m
+
+  // > if panel.busy == 1 (can only be set here if we're beginning a recompute)
+  //   (recompute setup)
+  //   > drop panel.status_m
+  //     (because this case is the only way the serialno can be upped
+  //     and busy prevents any other threads from getting into
+  //     recompute setup, we don't need to hold the status lock to
+  //     update status fields here)
+
+  //   > for each plane in panel
+  //
+  //     2D planes:
+  //     > ++plane.map_serialno
+  //     > plane.data_realloc = 1
+  //     > plane.data_xscale = 1
+  //     > plane.data_yscale = 1
+  //     > plane.image_realloc = 1
+  //     > clear all plane.image_flags
+
+  //     > write lock plane.data_m
+  //     > compute/store new pending scales
+  //     > drop plane.data_m write lock
+  //   > bg.resize = 1
+  //   > plane.busy = 0
+  //   > drop plane_status_m 
+  //   > return (status_working)
+
+  // (bg operations)
+
+  // > if bg.comp_serialno != serialno
+
+  // > if bg.task == 2
+
+  //   > if bg.task == 3
+
+
+  // > if earliest_task < "data_realloc" then earliest_task = "data_realloc"
+  // > if earliest_task < "map_render"
+  //
+  //   (realloc/xscale/yscale)
+  //   > for each plane in panel, in order
+  //
+  //     2D planes:
+  //     > if(plane.task == 4)
+  //     > if(plane.task == 5)
+  //     > if(plane.task == 6)
+
+  // > if earliest_task < "map_render" the earliest_task = "map_render"
+  // > if earliest_task == #map_render
+  // > for each plane in panel, in order
+  //   2D planes:
+  //   > if(plane.task == 7)
+
+  // > for each plane in panel, in order
+  //   2D planes:
+  //   > if(plane.task == 8)
+  
+  // > drop plane_status_m
+  // > return (status_idle)
+
+
+
+
+
+
+
+  // map order within worker thread:
+  // > for each plane
+  //   2D planes:
+  //   > lock plane.image_status_m
+  //   > local mapno = map_serialno
+  //   > if image_serialno != local serialno
+  //     > read lock panel.computelock
+  //     > local serialno = compute_serialno (avoid race)
+  //     > image_serialno = compute_serialno
+  //     > mapno = ++map_serialno
+  //     > compute new pending image scales
+  //     > drop panel.computelock read lock
+  //     > image_throttled = 0
+  //     > image_next = -1
+  //     > clear all image_flags
+  //     > write lock plane.image_m
+  //     > drop plane.image_status_m 
+  //     > resize/scale image plane
+  //     > drop plane.image_m write lock
+  //     > GDK lock; expose; GDK unlock
+  //     > return (status_working)
+  //
+  //   > if image_next > -1
+  //     > if image_throttled
+  //       > if throttle period not elapsed
+  //         > drop plane.image_status_m 
+  //         > return (status_idle)
+  //     > scan image_flags forward from image_next
+  //     > if found a set flag:
+  //       > image_next = line number
+  //       > image_flags[line] = 0
+  //       > drop plane.image_status_m
+  //       > read lock plane.data_m
+  //       > render new line into local vector
+  //       > unlock plane.data_m
+  //       > lock plane.image_status_m
+  //       > if mapno = map_serialno
+
+  //         > read lock plane.image_m 
+  //         (not write lock; write access is serialized by status
+  //         checks, and a premature read by the background renderer
+  //         is gauarnteed to be corrected)
+  //         > write rendered line to plane
+  //         > drop plane.image_m read lock
+  //         > dirty background line; issue throttled bg flush
+  //       > drop plane.image_status_loc
+  //       > return (status_working)
+  //     (All mapping work to date completed)
+
+
+
+  // when all mapping work in all planes is finished, issue immediate/complete bg flush
+
+
+
+  // compute order within worker thread:
+  // > for each plane
+  //   2D planes:
+  //   > lock plane.data_status_m
+  //   > if data_serialno != local serialno
+  //     > read lock panel.computelock
+  //     > local serialno = compute_serialno (avoid race)
+  //     > data_serialno = compute_serialno
+  //     > compute new pending scales
+  //     > drop panel.computelock read lock 
+  //     > data_task=1 (realloc)
+  //     > data_waiting = 0
+  //     > data_incomplete = 1
+  //     > write lock plane.data_m
+  //     > drop plane.data_status_m
+  //     > store pending scales
+  //     > reallocate / copy
+  //     > drop plane.data_m write lock
+  //     > lock plane.data_status_m
+  //     > if local_serialno == data_serialno
+  //       > data_task=2 (xscale)
+  //       > data_waiting = data_lines
+  //       > data_incomplete = data_lines
+  //       > data_next = 0
+  //       > wake workers
+  //     > unlock plane.data_status_m
+  //     > return (status_working)
+  //
+  //   > if data_waiting>0
+  //       > data_waiting--
+  //       > if data_task == xscale
+  //         > local current=data_next++
+  //         > read lock plane.data_m
+  //         > drop plane.data_status_m 
+  //         > fast_xscale current line 
+  //         > drop plane.data_m read lock
+  //         > write lock plane.data_status_m 
+  //         > if local_serialno == data_serialno
+  //           > data_incomplete--
+  //           > if data_incomplete == 0
+  //             > data_task=3 (yscale)
+  //             > data_waiting = data_width
+  //             > data_incomplete = data_width
+  //             > data_next = 0
+  //             > wake workers 
+  //         > drop plane.data_status_m write lock
+  //         > return (status_working)
+  //       > if data_task == yscale
+  //         > local current=data_next++
+  //         > read lock plane.data_m
+  //         > drop plane.data_status_m 
+  //         > fast_yscale current line 
+  //         > drop plane.data_m read lock
+  //         > write lock plane.data_status_m 
+  //         > if local_serialno == data_serialno
+  //           > data_incomplete--
+  //           > if data_incomplete == 0
+  //             > data_task=4 (compute)
+  //             > data_waiting = data_lines
+  //             > data_incomplete = data_lines
+  //             > data_next = 0
+  //             > drop plane.data_status_m write lock
+  //             > mark all map lines in need of refresh
+  //             > wake workers 
+  //             > return (status_working)
+  //         > drop plane.data_status_m write lock
+  //         > return (status_working)
+  //       > if data_task == compute
+  //         > local current=data_next++
+  //         > map local current to y
+  //         > read lock plane.data_m
+  //         > drop plane.data_status_m 
+  //         > fast_yscale current line 
+  //         > drop plane.data_m read lock
+  //         > write lock plane.data_status_m 
+  //         > if local_serialno == data_serialno
+  //           > data_incomplete--
+  //           > if data_incomplete == 0
+  //             > data_task=4 (compute)
+  //             > data_waiting = data_lines
+  //             > data_incomplete = data_lines
+  //             > data_next = 0
+  //             > drop plane.data_status_m write lock
+  //             > mark all map lines in need of refresh
+  //             > wake workers 
+  //             > return (status_working)
+  //         > drop plane.data_status_m write lock
+  //         > return (status_working)
+
+
+
+  //   return (status_idle)
+
+
+
 
   gdk_unlock();
 }
+
+
 
 
 static void _sv_plane2d_set_recompute(_sv_plane2d_t *z){
