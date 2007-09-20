@@ -1,30 +1,76 @@
-#!/usr/bin/python
-# ------------------------------------------------------------------------------
-# Written by Sebastian Pipping <webmaster@hartwork.org>
-# Licensed under LGPL (GNU Lesser General Public License)
-# http://www.gnu.org/licenses/lgpl.html
+#! /usr/bin/python
+# coding: utf-8
+# -----------------------------------------------------------------------
+# Online XSPF Validator
+# Copyright (C) 2007, Sebastian Pipping / Xiph.Org Foundation
 #
-# NOTE: Python 2.4 or later required for current line attribute of Expat parser
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 3 of the License, or (at your option) any later version.
 #
-# 2007-08-09 // Sebastian Pipping <webmaster@hartwork.org>
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public
+# License along with this library; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+#
+# Sebastian Pipping, sping@xiph.org
+#
+# -----------------------------------------------------------------------
+# REQUIREMENTS
+# -----------------------------------------------------------------------
+# * Python 2.4 or later (for current line attribute of Expat parser)
+# * Ft.Lib.Uri of 4Suite (http://4suite.org/)
+#   (package python-4suite-xml in Debian testing/unstable)
+#
+# -----------------------------------------------------------------------
+# HISTORY
+# -----------------------------------------------------------------------
+# 2007-09-21 -- Sebastian Pipping <webmaster@hartwork.org>
+#
+#   * Added: RFC 3986 URI validation
+#   * Changed: Code re-licensed under LGPLv3 (LGPL-Any before) to be
+#       able to use 4Suite's Apache-licensed URI validation code
+#       (http://www.gnu.org/licenses/lgpl-3.0.html)
+#
+# 2007-08-09 -- Sebastian Pipping <webmaster@hartwork.org>
+#
 #   * Fixed: Ivo's changes repaired to have same look again
 #       I use tables when pixel-exact layout is need since
 #       CSS support in browsers is not good enough yet
-# 2007-07-30
+#
+# 2007-07-30 -- Ivo Emanuel Gonçalves <justivo@gmail.com>
+#
 #   * Some HTML and CSS fixes by Ivo Emanuel Gonçalves <justivo@gmail.com>
-#     (probably should remove those bloody tables, but I can't see
-#     through the sea of Python.  Not without my Python-reading glasses)
-# 2007-07-25
+#       (probably should remove those bloody tables, but I can't see
+#       through the sea of Python.  Not without my Python-reading glasses)
+#
+# 2007-07-25 -- Sebastian Pipping <webmaster@hartwork.org>
+#
 #   * Changes: License changed from GPL to LGPL
-# 2007-02-18
+#       (http://www.gnu.org/licenses/lgpl-2.1.html)
+#
+# 2007-02-18 -- Sebastian Pipping <webmaster@hartwork.org>
+#
 #   * Added: License header for source code release
-# 2007-01-20
+#
+# 2007-01-20 -- Sebastian Pipping <webmaster@hartwork.org>
+#
 #   * Changed: URI checking removed until proper parser available
-# 2007-01-09
+#
+# 2007-01-09 -- Sebastian Pipping <webmaster@hartwork.org>
+#
 #   * Fixed: No highlighting on XML error bug fixed
-# 2006-10-09
+#
+# 2006-10-09 -- Sebastian Pipping <webmaster@hartwork.org>
+#
 #   * Changed: "Valid" now on the top
-# 2006-10-04
+#
+# 2006-10-04 -- Sebastian Pipping <webmaster@hartwork.org>
 # ------------------------------------------------------------------------------
 
 import cgi
@@ -33,6 +79,13 @@ import urllib2
 import sys
 import xml.parsers.expat
 import re
+
+try:
+    from Ft.Lib import Uri
+except ImportError:
+    print "ERROR: Package 'Ft.Lib' is missing. On Debian testing/unstable run:\n" \
+            "sudo apt-get install python-4suite-xml"
+    sys.exit(1)
 
 print "Content-Type: text/html"     # HTML is following
 print                               # blank line, end of headers
@@ -364,7 +417,6 @@ else:
     firstTrackDuration = True
     firstTrack = True
 
-    uriRegex = re.compile("^[a-zA-Z0-9.+-]+:")
     dateRegex = re.compile("^(-?\\d\\d\\d\\d)-(0[1-9]|1[0-2])-(0[1-9]|1[0-9]|2[0-9]|3[0-1])T([0-1][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])(\\.\\d+)?([+-](((0[0-9]|1[0-3]):[0-5][0-9])|14:00)|Z)?$")
 
     checker = xml.parsers.expat.ParserCreate()
@@ -1000,7 +1052,7 @@ def handleCharacters(s):
 
 
 def isUri(text):
-    return True # 2007-01-20, TODO, OLD: globals()["uriRegex"].match(text)
+    return Uri.MatchesUriRefSyntax(text)
 
 
 
