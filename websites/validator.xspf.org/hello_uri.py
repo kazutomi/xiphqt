@@ -1,3 +1,5 @@
+#! /usr/bin/python
+# -----------------------------------------------------------------------
 # Online XSPF Validator
 # Copyright (C) 2007, Sebastian Pipping / Xiph.Org Foundation
 #
@@ -16,13 +18,15 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #
 # Sebastian Pipping, sping@xiph.org
+# -----------------------------------------------------------------------
 
+import sys
 try:
     from Ft.Lib import Uri
 except ImportError:
-    print "Package 'Ft.Lib' is missing.\n" \
-            "On Debian run 'sudo apt-get install python-4suite-xml'."
-    exit
+    print "ERROR: Package 'Ft.Lib' is missing. On Debian testing/unstable run:\n" \
+            "sudo apt-get install python-4suite-xml"
+    sys.exit(1)
 
 
 def checkUri(candidate):
