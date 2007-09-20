@@ -26,17 +26,20 @@ Table of Contents
    1. Introduction ....................................................2
    2. Conformance and Document Conventions ............................2
    3. Deployed Media Types and Compatibility ..........................2
-   4. Encoding Considerations .........................................
+   4. Encoding Considerations .........................................X
    5. Security Considerations .........................................6
-   6. Interoperability Considerations .................................
+   6. Interoperability Considerations .................................X
    7. IANA Considerations .............................................8
    8. Ogg Media Types .................................................9
       8.1. application/ogg ............................................9
       8.2. video/ogg .................................................10
       8.3. audio/ogg .................................................11
-   10. References ....................................................13
-      10.1. Normative References .....................................13
-      10.2. Informative References ...................................13
+   9. References .....................................................13
+      9.1. Normative References ......................................13
+      9.2. Informative References ....................................13
+   10. Copying Conditions ............................................XX
+       Author's Address ..............................................XX
+       Intellectual Property and Copyright Statements ................XX
 
 1.  Introduction
 
@@ -53,10 +56,10 @@ Table of Contents
    interoperability by defining underspecified aspects, and to provide
    general security considerations.
 
-   The Ogg container format is known to contain [Theora] or Dirac video,
-   and [Speex] narrow-band speech, Speex wide-band speech, [Vorbis] or
-   [FLAC] audio.  As Ogg encapsulates binary data, it is possible to
-   include any other type of video, audio, or text format.
+   The Ogg container format is known to contain Theora or Dirac video,
+   and Speex narrow-band speech, Speex wide-band speech, Vorbis or FLAC
+   audio.  As Ogg encapsulates binary data, it is possible to include
+   any other type of video, audio, or text format.
 
    While raw packets from these codecs may be used directly by transport
    mechanisms that provide their own framing and packet-separation
@@ -122,9 +125,10 @@ Table of Contents
       in a suitable encoding without CR/LF conversion, 7-bit stripping
       etc.; base64 [RFC2397] is a suitable encoding.
 
-      Media types described in this document are used only for files;
-      separate types are used for real-time transfer, such as for the
-      RTP payload formats for [Theora] video and [Speex] audio.
+      Media types described in this document are used for stream based
+      storage (such as files) and transport (such as TCP streams or
+      pipes); separate types are used for real-time transfer, such as
+      for the RTP payload formats for Theora video and Speex audio.
 
       Note that most Ogg encapsulated content does not compress easily
       using traditional lossless compression schemes.
@@ -242,7 +246,8 @@ Table of Contents
       audio/ogg types.  [RFC3534] defines the file extension .ogg for
       application/ogg, which this document deprecates in favor of .ogx.
       Files served under the application/ogg type SHOULD use the .ogx
-      file extension.
+      file extension and SHOULD contain an Ogg Skeleton track to
+      identify all contained logical bitstreams.
 
    Author:                  See Author's Address section.
    Change controller:       The Xiph.Org Foundation.
@@ -328,13 +333,27 @@ Table of Contents
    Author:                  See Author's Address section.
    Change controller:       The Xiph.Org Foundation.
 
-10.  References
+9.  References
 
 
+
+10. Copying Conditions
+
+   The author(s) agree to grant third parties the irrevocable
+   right to copy, use and distribute the work, with
+   or without modification, in any medium, without royalty,
+   provided that, unless separate permission is granted,
+   redistributed modified works do not contain misleading
+   author, version, name of work, or endorsement information.
 
 Author's Address
 
    Ivo Emanuel Goncalves
+   Xiph.Org Foundation
+   1408 Adams St. NE
+   Albuquerque, NM 87110,
+   United States
+
    Email: justivo@gmail.com
    URI:   xmpp:justivo@gmail.com
 
@@ -357,9 +376,31 @@ Full Copyright Statement
    INFORMATION HEREIN WILL NOT INFRINGE ANY RIGHTS OR ANY IMPLIED
    WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
 
-   The author(s) agree to grant third parties the irrevocable right to
-   copy, use and distribute the work, with or without modification, in
-   any medium, without royalty, provided that, unless separate
-   permission is granted, redistributed modified works do not contain
-   misleading author, version, name of work, or endorsement information.
+Intellectual Property
 
+   The IETF takes no position regarding the validity or scope of any
+   Intellectual Property Rights or other rights that might be claimed to
+   pertain to the implementation or use of the technology described in
+   this document or the extent to which any license under such rights
+   might or might not be available; nor does it represent that it has
+   made any independent effort to identify any such rights.  Information
+   on the procedures with respect to rights in RFC documents can be
+   found in BCP 78 and BCP 79.
+
+   Copies of IPR disclosures made to the IETF Secretariat and any
+   assurances of licenses to be made available, or the result of an
+   attempt made to obtain a general license or permission for the use of
+   such proprietary rights by implementers or users of this
+   specification can be obtained from the IETF on-line IPR repository at
+   http://ietf.org/ipr.
+
+   The IETF invites any interested party to bring to its attention any
+   copyrights, patents or patent applications, or other proprietary
+   rights that may cover technology that may be required to implement
+   this standard.  Please address the information to the IETF at
+   ietf-ipr@ietf.org.
+
+Acknowledgement
+
+   Funding for the RFC Editor function is provided by the IETF
+   Administrative Support Activity (IASA).
