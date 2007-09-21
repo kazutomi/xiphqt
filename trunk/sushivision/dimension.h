@@ -20,10 +20,17 @@
  */
 
 
+#define SV_DIM_NO_X 0x100
+#define SV_DIM_NO_Y 0x200
+
+enum sv_dim_type { SV_DIM_CONTINUOUS, 
+		   SV_DIM_DISCRETE, 
+		   SV_DIM_PICKLIST};
+
 typedef struct {
   sv_dim_list_t *dl;
   GtkWidget *t;
-
+  
   /* one or the other */
   _sv_slider_t *scale;
   GtkWidget *menu;
@@ -39,16 +46,46 @@ typedef struct {
   void (*bracket_callback)(sv_dim_list_t *);
 } _sv_dim_widget_t;
 
-struct _sv_dim_internal {
-  long discrete_numerator;
-  long discrete_denominator;
+typedef struct sv_dim_data{ 
+
+  char *legend;
+  enum sv_dim_type type;
+
+  double floor;
+  double lo;
+  double val;
+  fouble hi;
+  double ceil;
   
+  long numerator;
+  long denominator;
+
+  unsigned flags;
+  
+} sv_dim_data_t;
+
+typedef struct sv_dim_lookup{ 
+
+  sv_scale_t *scale;
+  
+  int (*callback)(sv_dim_t *);
+
   int widgets;
   _sv_dim_widget_t **widget_list;
 
   int (*value_callback)(sv_dim_t *d, void *data);
   void *value_callback_data;
+
+} sv_dim_lookup_t;
+
+struct sv_dim{ 
+  int number;
+  char *name;
+  
+  sv_dim_data_t data;
+  sv_dim_look_t look;
 };
+
 
 extern int _sv_dim_scales(sv_dim_t *d,
 			  double lo,

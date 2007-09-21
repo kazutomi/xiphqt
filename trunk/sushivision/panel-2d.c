@@ -84,56 +84,46 @@
 // GDK/API; it is already called implicitly in the main loop whenever
 // a task step completes.
 
+static void payload_free(sv_dim_data_t *dd, int dims){
+  for(i=0;i<dims;i++)
+    _sv_dim_data_clear(dd+i);
+  free(dd);
+}
+
+static int image_resize(sv_plane_t *pl, 
+			sv_panel_t *p){
+  return pl->c.image_resize(pl, p);
+}
+
+static int data_resize(sv_plane_t *pl, 
+		       sv_panel_t *p){
+  return pl->c.data_resize(pl, p);
+}
+
+static int image_work(sv_plane_t *pl, 
+		      sv_panel_t *p){
+  return pl->c.image_work(pl, p);
+}
+
+static int data_work(sv_plane_t *pl, 
+		     sv_panel_t *p){
+  return pl->c.data_work(pl, p);
+}
+
 #define STATUS_IDLE 0
 #define STATUS_BUSY 1
 #define STATUS_WORKING 2
 
-typedef struct {
-  int               panel_w;
-  int               panel_h;
-  
-  char             *x_legend;
-  char             *y_legend;
-  int               x_dim;
-  int               y_dim;
-  int               dims;
-  double           *dim_lo;
-  double           *dim_v;
-  double           *dim_hi;
-  
-
-
-} recompute_payload_t;
-
-static void recompute_payload_free(recompute_payload_t *payload){
-
-
-
-}
-
-// called from GDK/API; assumes GDK lock held 
-static void recompute_payload_create(recompute_payload_t *payload){
-
-
-
-}
-
-
-
-
-
 static int plane_loop(sv_panel_t *p, int *next, 
 		      int(*function)(_sv_plane_t *, 
-				     sv_panel_t *, 
-				     int serialno)){
+				     sv_panel_t *)){
   int finishedflag=1;
   int last = *next;
-  int i = last;
   int serialno = p->serialno;
   do{
-    int status = function(p->plane_list[i],p,serialno);
-    if(++i>=p->planes)i=0;
-    *next=i;
+    int i = *next++;
+    if(*next>=p->planes)*next=0;
+    int status = function(p->plane_list[i],p);
     if(status == STATUS_WORKING) return STATUS_WORKING;
     if(status != STATUS_IDLE) finishedflag=0;
   }while(i!=last);
@@ -169,7 +159,13 @@ int _sv_panel_work(sv_panel_t *p){
 
   // recomute setup
   if(p->recompute_pending){
-    recompute_payload_t *payload = p->recompute_payload;
+    int dims = p->recompute_dims;
+    sv_dim_data_t *payload = p->recompute_payload;
+    p->w = p->recompute_w;
+    p->h = p->recompute_h;
+    p->x_dim = p->recompute_xdim;
+    p->y_dim = p->recompute_ydim;
+
     p->recompute_pending=0;
     p->recompute_payload=NULL;
     pthread_mutex_unlock(p->payload_m);
@@ -181,13 +177,16 @@ int _sv_panel_work(sv_panel_t *p){
     p->relegend=1;
     p->bgrender=0;
     p->image_next_plane=0;
+    
+    bg->c.recompute_setup(p->bg, p, payload, dims);
 
     for(i=0;i<p->planes;i++)
-      p->plane_list[i]->recompute_setup(p->plane_list[i], p, payload);
+      p->plane_list[i]->c.recompute_setup(p->plane_list[i], p, payload, dims);
 
     pthread_mutex_unlock(p->status_m);
     pthread_rwlock_unlock(p->panel_m);
-    recompute_payload_free(payload);
+    payload_free(payload,dims);
+
     return STATUS_WORKING;
   }
 
@@ -201,7 +200,7 @@ int _sv_panel_work(sv_panel_t *p){
 
   // image resize
   if(p->image_resize){
-    status = plane_loop(p,&p->image_next_plane,plane_resize);
+    status = plane_loop(p,&p->image_next_plane,image_resize);
     if(status == STATUS_WORKING) return done_working(p);
     if(status == STATUS_IDLE){
       p->image_resize = 0;

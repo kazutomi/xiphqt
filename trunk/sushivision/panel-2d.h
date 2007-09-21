@@ -19,146 +19,15 @@
  * 
  */
 
-// plane mutex locking order: forward in plane list, down the plane struct
-
-typedef union  _sv_plane _sv_plane_t;
-typedef struct _sv_plane_proto _sv_plane_proto_t;
-typedef struct _sv_plane_bg _sv_plane_bg_t;
-typedef struct _sv_plane_2d _sv_plane_2d_t;
-
-struct _sv_plane_proto {
-  // in common with all plane types
-
-  // only GTK/API manipulates the common data
-  // GTK/API read access: GDK lock
-  // GTK/API write access: GDK lock -> panel.memlock(write);
-  // worker read access: panel.memlock(read)
-  int              plane_type;
-  sv_obj_t        *o;
-  _sv_plane_t     *share_next;
-  _sv_plane_t     *share_prev;
-  _sv_panel2d_t   *panel;
-};
-
-struct _sv_plane_bg {
-  int              plane_type;
-  sv_obj_t        *o;
-  _sv_plane_t     *share_next;
-  _sv_plane_t     *share_prev;
-  _sv_panel2d_t   *panel;
-
-  // image data and concurrency tracking
-   _sv_ucolor_t   *image; // panel size
-  int              image_serialno;
-  int              image_waiting;
-  int              image_incomplete;
-  int              image_nextline;
-  unsigned char   *image_status; // rendering flags
-  pthread_rwlock_t image_m; 
-
-};
-
-struct sv_zmap {
-
-  double *label_vals;
-  int labels;
-  int neg;
-  double al;
-  double lo;
-  double hi;
-  double lodel;
-  double *labeldelB;
-  double *labelvalB;
-
-};
-
-// z-plane mutex policy: data -> image plane -> [bg mutextes] -> status
-struct _sv_plane_2d {
-  // in common with all plane types
-  // common fields locked via panel
-  int              plane_type; // == Z
-  sv_obj_t        *o;
-  _sv_plane_t     *share_next;
-  _sv_plane_t     *share_prev;
-  _sv_panel2d_t   *panel;
-
-  // subtype 
-  // objective data
-
-  // although we lock/protect the data and image memory allocation, we
-  // generally don't write-lock updates to the data/image planes.
-  // Because any write operation finishes with a status update that
-  // flushes changes out to the next stage and all data flows in only
-  // one direction in the rendering pipeline, any inconsistent/stale
-  // data is corrected as soon as complete data is available.  
-
-  float           *data;              // data size
-  _sv_scalespace_t data_x;
-  _sv_scalespace_t data_y;
-  _sv_scalespace_t data_x_it;
-  _sv_scalespace_t data_y_it;
-  _sv_ucolor_t    *image; // panel size;
-  _sv_scalespace_t image_x;
-  _sv_scalespace_t image_y;
-
-  // a data read lock is also used for coordinated non-exclusive
-  // writes to different parts of the array; data flow is set up such
-  // that reading inconsistent data/image values is only ever cosmetic
-  // and temporary; event ordering will always guarantee consistent
-  // values are flushed forward when a write is completed.  write
-  // locking is only used to enforce serialized access to prevent
-  // structural or control inconsistency.
-  pthread_rwlock_t  data_m; 
-
-  int              map_serialno;
-  int              task;
-  int              data_waiting; 
-  int              data_incomplete; 
-  int              data_next;
-  int              image_next;
-  int             *image_flags;
-  // status locked by panel
-
-  // resampling helpers; locked via data_lock/data_serialno
-  unsigned char   *resample_xdelA;
-  unsigned char   *resample_xdelB;
-  int             *resample_xnumA;
-  int             *resample_xnumB;
-  float            resample_xscalemul;
-
-  unsigned char   *resample_ydelA;
-  unsigned char   *resample_ydelB;
-  int             *resample_ynumA;
-  int             *resample_ynumB;
-  float           *resample_yscalemul;
-
-  // ui elements; use gdk lock
-  _sv_mapping_t   *mapping;
-  _sv_slider_t    *scale;
-  GtkWidget       *range_pulldown;
-  double           alphadel;
-
-};
-
-union {
-  _sv_plane_proto_t proto;
-  _sv_plane_bg_t bg;
-
-  _sv_plane_2d_t p2d;
-} _sv_plane;
-
 typedef struct {
-  pthread_rwlock_t activelock; 
-  pthread_mutex_t  panellock;
-  int              busy;
-
+  pthread_rwlock_t panel_m;
+  pthread_mutex_t  status_m;
+  pthread_mutex_t  payload_m;
+  
   // pending computation payload
   int               recompute_pending;
-  _sv_scalespace_t  plot_x;
-  _sv_scalespace_t  plot_y;
-  double           *dim_lo;
-  double           *dim_v;
-  double           *dim_hi;
+  int               recompute_dims;
+  sv_dim_data_t    *recompute_payload;
 
   // composite 'background' plane
   _sv_plane_bg_t *bg;

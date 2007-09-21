@@ -20,7 +20,6 @@
  */
 
 typedef struct {
-  char *legend;
   double lo;
   double hi;
   int neg;
@@ -39,7 +38,6 @@ typedef struct {
   int massaged; // set if range had to be adjusted to avoid underflows
 } _sv_scalespace_t;
 
-extern char **_sv_scale_generate_labels(unsigned scalevals, double *scaleval_list);
 extern double _sv_scalespace_scaledel(_sv_scalespace_t *from, _sv_scalespace_t *to);
 extern long _sv_scalespace_scalenum(_sv_scalespace_t *from, _sv_scalespace_t *to);
 extern long _sv_scalespace_scaleden(_sv_scalespace_t *from, _sv_scalespace_t *to);
@@ -49,6 +47,6 @@ extern double _sv_scalespace_value(_sv_scalespace_t *s, double pixel);
 extern double _sv_scalespace_pixel(_sv_scalespace_t *s, double val);
 extern int _sv_scalespace_mark(_sv_scalespace_t *s, int num);
 extern double _sv_scalespace_label(_sv_scalespace_t *s, int num, char *buffer);
-extern _sv_scalespace_t _sv_scalespace_linear (double lowpoint, double highpoint, int pixels, int max_spacing,char *name);
+extern _sv_scalespace_t _sv_scalespace_linear (double lowpoint, double highpoint, int pixels, int max_spacing);
 extern void _sv_scalespace_double(_sv_scalespace_t *s);
 extern int _sv_scalespace_decimal_exponent(_sv_scalespace_t *s);
