@@ -32,31 +32,33 @@
 #include <cairo-ft.h>
 #include "internal.h"
 
-// panel.panel_m: rwlock, protects panel and plane heaps
-// panel.payload_m: mutex, protects panel request payloads
+// panel.panel_m: rwlock, protects all panel and plane heaps
+// panel.payload_m: mutex, protects panel/plane request payloads
 // panel.status_m: mutex, protects status variables
 
 // Plane data in the panels is protected as follows:
-// Modifications of pointers, heap allocations, etc are protected by 
-//   write-locking panel_m.
-// Both read and write access to the contents of plane.data and 
-//   plane.image are protected by read-locking panel_m; reads may happen 
-//   at any time, writes are checked only that they've not been superceded 
-//   by a later request.  Writes are not locked against reads at all; a 
-//   read from inconsistent state will always be immediately replaced by 
-//   consistent data as a write operation also results in a flush after 
-//   it's finished.
+//
+//   Modifications of pointers, heap allocations, etc are protected by 
+//     write-locking panel_m.
+//
+//   Both read and write access to the contents of plane.data and 
+//     plane.image are protected by read-locking panel_m; reads may happen 
+//     at any time, writes are checked only that they've not been superceded 
+//     by a later request.  Writes are not locked against reads at all; a 
+//     read from inconsistent state is temporary and cosmetic only. It will 
+//     always be immediately replaced by complete/correct data when the write
+//     finishes and triggers a flush.
 
-// comp_serialno is used to verify process consistency forward from a
-// recompute request; anytime a thread is dispatched and drops its
-// status lock while performing a task with latency, it compares the
-// serialno that dispatched it to the current serialno when
-// rendezvousing with the panel state.
+//   comp_serialno is used to to verify 'freshness' of operations; anytime a 
+//     thread needs to synchronize with panel/plane data before continuing 
+//     (read or write), it compares the serialno that dispatched it to the 
+//     current serialno.  A mismatch immediately aborts the task in progress 
+//     with STATUS_WORKING.
 
-// map_serialno performs the same task with respect to remap requests
-// for a given plane.
+//   map_serialno performs the same task with respect to remap requests
+//     for a given plane.
 
-// lock order: panel_m -> status_m -> payload_m
+// lock order: panel_m -> status_m -> payload_m 
 
 // worker thread process order:
 
@@ -64,76 +66,213 @@
 // > images resize
 // > scale render
 // > legend render
-// > join on images_resize
 // > bg render
 // > expose
-// > data realloc       
-// > data yscale        
-// > data xscale        
+// > data resize
 // > image map render (throttleable)
 // > computation work 
 // > idle             
+
+// proceed to later steps only if there's no work immediately
+// dispatchable from earlier steps.
 
 // UI output comes first (UI is never dead, even briefly, and that
 // includes graphs), however progressive UI work is purposely
 // throttled.
 
-// any task/step that can shunt threads around itself while busy must
-// wake_workers() when complete to make sure that any threads that
-// were sleeping while waiting for available work go looking for work
-// again after implicit joins.
+// wake_workers() only explicitly needed when triggering tasks via
+// GDK/API; it is already called implicitly in the main loop whenever
+// a task step completes.
 
-// worker thread pseudocode for each panel:
-// > read lock panel
-// > lock status
-// > lock payload 
-// 
-// (RECOMPUTE SETUP)
-// > if panel.recompute_pending
-//   > panel.recompute_pending = 0
-//   > localize data to generate scales
-//   > unlock payload
-//   > ++panel.comp_serialno
-//   > panel.image_resize = 1
-//   > panel.data_resize = 1
-//   > panel.rescale = 1
-//   > panel.relegend = 1
-//   > for each plane in panel:
-//     > plane_recompute_setup(), eg:
-//     > ++plane.map_serialno;
-//     > plane.image_resize = 1
-//     > plane.image_waiting = 1
-//     > compute/save pending data/map scales
-//   > unlock all
-//   > return working
-//
-// > if legend_pending 
-// >   panel.relegend = 1
-//
-// > unlock payload
-//
-// > local serialno = panel.comp_serialno
-// > if panel.image_resize
-//   > scan from next_plane through entire list:
-//     > ret = plane_resize()
-//     > if ret == working [it did something] 
-//       > unlock all
-//       > wake_workers
-//       > return working
-//     > if ret == busy or idle, keep scanning
-//   > if all panels reported idle (which means resize complete)
-//     > panel.image_resize = 0
-//     > wake_workers
-//
+#define STATUS_IDLE 0
+#define STATUS_BUSY 1
+#define STATUS_WORKING 2
 
-// > if panel.relegend
-//   > panel.relegend=0
-//   > etc
+typedef struct {
+  int               panel_w;
+  int               panel_h;
+  
+  char             *x_legend;
+  char             *y_legend;
+  int               x_dim;
+  int               y_dim;
+  int               dims;
+  double           *dim_lo;
+  double           *dim_v;
+  double           *dim_hi;
+  
 
-// > if panel.rescale
-//   > panel.rescale=0
-//   > etc
 
+} recompute_payload_t;
+
+static void recompute_payload_free(recompute_payload_t *payload){
+
+
+
+}
+
+// called from GDK/API; assumes GDK lock held 
+static void recompute_payload_create(recompute_payload_t *payload){
+
+
+
+}
+
+
+
+
+
+static int plane_loop(sv_panel_t *p, int *next, 
+		      int(*function)(_sv_plane_t *, 
+				     sv_panel_t *, 
+				     int serialno)){
+  int finishedflag=1;
+  int last = *next;
+  int i = last;
+  int serialno = p->serialno;
+  do{
+    int status = function(p->plane_list[i],p,serialno);
+    if(++i>=p->planes)i=0;
+    *next=i;
+    if(status == STATUS_WORKING) return STATUS_WORKING;
+    if(status != STATUS_IDLE) finishedflag=0;
+  }while(i!=last);
+
+  if(finishedflag)
+    return STATUS_IDLE;
+  return STATUS_BUSY;
+}
+
+static int done_working(sv_panel_t *p){
+  pthread_mutex_unlock(p->status_m);
+  pthread_rwlock_unlock(p->panel_m);
+  return STATUS_WORKING;
+}
+
+static int done_busy(sv_panel_t *p){
+  pthread_mutex_unlock(p->status_m);
+  pthread_rwlock_unlock(p->panel_m);
+  return STATUS_BUSY;
+}
+
+static int done_idle(sv_panel_t *p){
+  pthread_mutex_unlock(p->status_m);
+  pthread_rwlock_unlock(p->panel_m);
+  return STATUS_IDLE;
+}
+
+int _sv_panel_work(sv_panel_t *p){
+  int i,serialno,status;
+  pthread_rwlock_rdlock(p->panel_m);
+  pthread_mutex_lock(p->status_m);
+  pthread_mutex_lock(p->payload_m);
+
+  // recomute setup
+  if(p->recompute_pending){
+    recompute_payload_t *payload = p->recompute_payload;
+    p->recompute_pending=0;
+    p->recompute_payload=NULL;
+    pthread_mutex_unlock(p->payload_m);
+
+    p->comp_serialno++;
+    p->image_resize=1;
+    p->data_resize=1;
+    p->rescale=1;
+    p->relegend=1;
+    p->bgrender=0;
+    p->image_next_plane=0;
+
+    for(i=0;i<p->planes;i++)
+      p->plane_list[i]->recompute_setup(p->plane_list[i], p, payload);
+
+    pthread_mutex_unlock(p->status_m);
+    pthread_rwlock_unlock(p->panel_m);
+    recompute_payload_free(payload);
+    return STATUS_WORKING;
+  }
+
+  if(p->relegend_pending){
+    p->relegend=1;
+    p->relegend_pending=0;
+  }
+
+  pthread_mutex_unlock(p->payload_m);
+  serialno = p->comp_serialno;
+
+  // image resize
+  if(p->image_resize){
+    status = plane_loop(p,&p->image_next_plane,plane_resize);
+    if(status == STATUS_WORKING) return done_working(p);
+    if(status == STATUS_IDLE){
+      p->image_resize = 0;
+      p->bgrender = 1;
+    }
+  }
+
+  // legend regeneration
+  if(p->relegend){
+    if(bg_legend(p) == STATUS_IDLE){
+      p->expose=1;
+      p->relegend=0;
+    }
+    return done_working(p);
+  }
+
+  // axis scale redraw
+  if(p->rescale){
+    if(bg_scale(p) == STATUS_IDLE){
+      p->expose=1;
+      p->rescale=0;
+    }
+    return done_working(p);
+  }
+
+  // need to join on image resizing before proceeding to background redraw
+  if(p->image_resize)
+    return done_busy(p);
+  
+  // bg render
+  if(p->bgrender){
+    if(bg_render(p) == STATUS_IDLE){
+      p->expose=1;
+      p->bgrender=0;
+    }
+    return done_working(p);
+  }    
+  
+  // expose
+  if(p->expose &&
+     !p->relegend &&
+     !p->rescale &&
+     !p->bgrender){
+    // wait till all these ops are done
+    bg_expose(p);
+    return done_working(p);
+  }    
+
+  // data resize
+  if(p->data_resize){
+    status = plane_loop(p,&p->data_next_plane,data_resize);
+    if(status == STATUS_WORKING) return done_working(p);
+    if(status == STATUS_IDLE) p->data_resize = 0;
+  }
+
+  // need to join on data resizing before proceeding to map/compute work
+  if(p->data_resize)
+    return done_busy(p);
+  
+  // image map render
+  if(p->map_render){
+    status = plane_loop(p,&p->image_next_plane,map_work);
+    if(status == STATUS_WORKING) return done_working(p);
+    if(status == STATUS_IDLE) p->map_render = 0;
+  }
+  
+  // computation work 
+  status = plane_loop(p,&p->data_next_plane,compute);
+  if(status == STATUS_WORKING) return done_working(p);
+  return done_idle(p);
+}
 
 
 

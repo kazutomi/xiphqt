@@ -39,41 +39,27 @@
 #include "internal.h"
 #include "sushi-gtkrc.h"
 
-// The locking model in sushivision is as simple as possible given the
-// computational and rendering concurrency.
-
 // All API and GTK/GDK access is locked by a single recursive mutex
 // installed into GDK.
 
 // Worker threads exist to handle high latency tasks asynchronously.
-// Tasks fall into three categories: data computation, plane
-// rendering, and scale/legend rendering.  The worker threads (with
-// one exception) never touch the main GDK mutex; any data protected
-// by the main mutex needed for a task is pulled out and encapsulated
-// when that task is set up from a GTK or API call.  The one exception
-// is expose requests after rendering; in this case, the worker waits
-// until it can drop all locks (usually as the very last step), does
-// so, and then issues an expose request locked by GDK.
+// The worker threads (with one exception) never touch the main GDK
+// mutex; any data protected by the main mutex needed for a worker
+// task is pulled out and encapsulated when that task is set up from a
+// GTK or API call.  The one exception to worker threads and the GDK
+// lock is expose requests after rendering; in this case, the worker
+// waits until it can drop all locks, does so, and then issues an
+// expose request locked by GDK.
 
-// All data objects that can be touched simultaneously by API/GTK/GDK
-// and the worker threads must also be locked.  This includes the
-// global panel list, each panel, each plane within the panel (and
-// subunits of the planes), the plot widget's canvas buffer, and the
-// plot widget's other render access.  Most access is guarded by
-// standard mutexes and synchronization serial numbers; however these
-// internal synchronization structures (which exist inside panels and
-// planes) must themselves be guarded against asynchronous destruction
-// while worker threads are 'inside' panels and planes.  For this
-// reason, planes and the master plane list are also protected by rw
-// locks which are read-locked by the worker threads to signify 'in
-// use'.
+// All data object memory strutures that are used by the worker
+// threads and can be manipulated by API/GTK/GDK and the worker
+// threads re locked by r/w locks; any thread 'inside' the abstraction
+// read-locks the memory while it is in use.  GDK/API access
+// write-locks this memory to manipulate it (allocation, deallocation,
+// structural mutation).
 
 // lock acquisition order must move to the right:
-// GDK -> panel_list -> panel -> plane locks -> plot_main -> plot_data
-// 
-// Multiple panels (if needed) must be locked in order of list
-// Multiple planes (if needed) must be locked in order of list
-// Each plane type has an internal order for locking internal subunits 
+// GDK -> panel_list -> panel locks -> plot_main -> plot_data
 
 // mutex condm is only for protecting the worker condvar
 static pthread_mutex_t worker_condm = PTHREAD_MUTEX_INITIALIZER;
@@ -132,6 +118,7 @@ static int num_proccies(){
   return num;
 }
 
+/// XXXXXX call wake_workers after any panel_call that returns STATUS_WORKING
 static void *worker_thread(void *dummy){
   /* set up temporary working space for function rendering; this saves
      continuously recreating it in the loop below */
@@ -193,10 +180,10 @@ static void *worker_thread(void *dummy){
     
     // nothing to do, wait
     pthread_mutex_lock(&worker_condm);
-    if(!wake_pending)
+    while(!wake_pending)
       pthread_cond_wait(&worker_cond,&worker_condm);
-    else
-      wake_pending--;
+
+    wake_pending--;
     pthread_mutex_unlock(&worker_condm);
   }
   
