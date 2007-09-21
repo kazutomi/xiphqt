@@ -32,303 +32,43 @@
 #include <cairo-ft.h>
 #include "internal.h"
 
-// panel.panel_m: rwlock, protects all panel and plane heaps
-// panel.payload_m: mutex, protects panel/plane request payloads
-// panel.status_m: mutex, protects status variables
-
-// Plane data in the panels is protected as follows:
-//
-//   Modifications of pointers, heap allocations, etc are protected by 
-//     write-locking panel_m.
-//
-//   Both read and write access to the contents of plane.data and 
-//     plane.image are protected by read-locking panel_m; reads may happen 
-//     at any time, writes are checked only that they've not been superceded 
-//     by a later request.  Writes are not locked against reads at all; a 
-//     read from inconsistent state is temporary and cosmetic only. It will 
-//     always be immediately replaced by complete/correct data when the write
-//     finishes and triggers a flush.
-
-//   comp_serialno is used to to verify 'freshness' of operations; anytime a 
-//     thread needs to synchronize with panel/plane data before continuing 
-//     (read or write), it compares the serialno that dispatched it to the 
-//     current serialno.  A mismatch immediately aborts the task in progress 
-//     with STATUS_WORKING.
-
-//   map_serialno performs the same task with respect to remap requests
-//     for a given plane.
-
-// lock order: panel_m -> status_m -> payload_m 
-
-// worker thread process order:
-
-// > recompute setup
-// > images resize
-// > scale render
-// > legend render
-// > bg render
-// > expose
-// > data resize
-// > image map render (throttleable)
-// > computation work 
-// > idle             
-
-// proceed to later steps only if there's no work immediately
-// dispatchable from earlier steps.
-
-// UI output comes first (UI is never dead, even briefly, and that
-// includes graphs), however progressive UI work is purposely
-// throttled.
-
-// wake_workers() only explicitly needed when triggering tasks via
-// GDK/API; it is already called implicitly in the main loop whenever
-// a task step completes.
-
-static void payload_free(sv_dim_data_t *dd, int dims){
-  for(i=0;i<dims;i++)
-    _sv_dim_data_clear(dd+i);
-  free(dd);
-}
-
-static int image_resize(sv_plane_t *pl, 
-			sv_panel_t *p){
-  return pl->c.image_resize(pl, p);
-}
-
-static int data_resize(sv_plane_t *pl, 
-		       sv_panel_t *p){
-  return pl->c.data_resize(pl, p);
-}
-
-static int image_work(sv_plane_t *pl, 
-		      sv_panel_t *p){
-  return pl->c.image_work(pl, p);
-}
-
-static int data_work(sv_plane_t *pl, 
-		     sv_panel_t *p){
-  return pl->c.data_work(pl, p);
-}
-
-#define STATUS_IDLE 0
-#define STATUS_BUSY 1
-#define STATUS_WORKING 2
-
-static int plane_loop(sv_panel_t *p, int *next, 
-		      int(*function)(_sv_plane_t *, 
-				     sv_panel_t *)){
-  int finishedflag=1;
-  int last = *next;
-  int serialno = p->serialno;
-  do{
-    int i = *next++;
-    if(*next>=p->planes)*next=0;
-    int status = function(p->plane_list[i],p);
-    if(status == STATUS_WORKING) return STATUS_WORKING;
-    if(status != STATUS_IDLE) finishedflag=0;
-  }while(i!=last);
-
-  if(finishedflag)
-    return STATUS_IDLE;
-  return STATUS_BUSY;
-}
-
-static int done_working(sv_panel_t *p){
-  pthread_mutex_unlock(p->status_m);
-  pthread_rwlock_unlock(p->panel_m);
-  return STATUS_WORKING;
-}
-
-static int done_busy(sv_panel_t *p){
-  pthread_mutex_unlock(p->status_m);
-  pthread_rwlock_unlock(p->panel_m);
-  return STATUS_BUSY;
-}
-
-static int done_idle(sv_panel_t *p){
-  pthread_mutex_unlock(p->status_m);
-  pthread_rwlock_unlock(p->panel_m);
-  return STATUS_IDLE;
-}
-
-int _sv_panel_work(sv_panel_t *p){
-  int i,serialno,status;
-  pthread_rwlock_rdlock(p->panel_m);
-  pthread_mutex_lock(p->status_m);
-  pthread_mutex_lock(p->payload_m);
-
-  // recomute setup
-  if(p->recompute_pending){
-    int dims = p->recompute_dims;
-    sv_dim_data_t *payload = p->recompute_payload;
-    p->w = p->recompute_w;
-    p->h = p->recompute_h;
-    p->x_dim = p->recompute_xdim;
-    p->y_dim = p->recompute_ydim;
-
-    p->recompute_pending=0;
-    p->recompute_payload=NULL;
-    pthread_mutex_unlock(p->payload_m);
-
-    p->comp_serialno++;
-    p->image_resize=1;
-    p->data_resize=1;
-    p->rescale=1;
-    p->relegend=1;
-    p->bgrender=0;
-    p->image_next_plane=0;
-    
-    bg->c.recompute_setup(p->bg, p, payload, dims);
-
-    for(i=0;i<p->planes;i++)
-      p->plane_list[i]->c.recompute_setup(p->plane_list[i], p, payload, dims);
-
-    pthread_mutex_unlock(p->status_m);
-    pthread_rwlock_unlock(p->panel_m);
-    payload_free(payload,dims);
-
-    return STATUS_WORKING;
-  }
-
-  if(p->relegend_pending){
-    p->relegend=1;
-    p->relegend_pending=0;
-  }
-
-  pthread_mutex_unlock(p->payload_m);
-  serialno = p->comp_serialno;
-
-  // image resize
-  if(p->image_resize){
-    status = plane_loop(p,&p->image_next_plane,image_resize);
-    if(status == STATUS_WORKING) return done_working(p);
-    if(status == STATUS_IDLE){
-      p->image_resize = 0;
-      p->bgrender = 1;
-    }
-  }
-
-  // legend regeneration
-  if(p->relegend){
-    if(bg_legend(p) == STATUS_IDLE){
-      p->expose=1;
-      p->relegend=0;
-    }
-    return done_working(p);
-  }
-
-  // axis scale redraw
-  if(p->rescale){
-    if(bg_scale(p) == STATUS_IDLE){
-      p->expose=1;
-      p->rescale=0;
-    }
-    return done_working(p);
-  }
-
-  // need to join on image resizing before proceeding to background redraw
-  if(p->image_resize)
-    return done_busy(p);
+// called from worker thread
+static void recompute_setup(sv_plane2d_t *pl, sv_panel_t *p, 
+			    sv_dim_data_t *payload, int dims){
   
-  // bg render
-  if(p->bgrender){
-    if(bg_render(p) == STATUS_IDLE){
-      p->expose=1;
-      p->bgrender=0;
-    }
-    return done_working(p);
-  }    
-  
-  // expose
-  if(p->expose &&
-     !p->relegend &&
-     !p->rescale &&
-     !p->bgrender){
-    // wait till all these ops are done
-    bg_expose(p);
-    return done_working(p);
-  }    
+  pl->image_serialno++;
+  pl->image_x = _sv_dim_panelscale(payload + x_dim, p->w, 0);
+  pl->image_y = _sv_dim_panelscale(payload + y_dim, p->h, 1);
 
-  // data resize
-  if(p->data_resize){
-    status = plane_loop(p,&p->data_next_plane,data_resize);
-    if(status == STATUS_WORKING) return done_working(p);
-    if(status == STATUS_IDLE) p->data_resize = 0;
-  }
+}
 
-  // need to join on data resizing before proceeding to map/compute work
-  if(p->data_resize)
-    return done_busy(p);
-  
-  // image map render
-  if(p->map_render){
-    status = plane_loop(p,&p->image_next_plane,map_work);
-    if(status == STATUS_WORKING) return done_working(p);
-    if(status == STATUS_IDLE) p->map_render = 0;
-  }
-  
-  // computation work 
-  status = plane_loop(p,&p->data_next_plane,compute);
-  if(status == STATUS_WORKING) return done_working(p);
-  return done_idle(p);
+
+// called from worker thread
+static int image_work(sv_plane2d_t *pl, sv_panel_t *p){
+
+
+}
+
+// called from worker thread
+static int data_work(sv_plane2d_t *pl, sv_panel_t *p){
+
+
+}
+
+// called from GTK/API
+static void plane_remap(sv_plane2d_t *pl, sv_panel_t *p){
+
+
+}
+
+sv_plane_t *sv_plane2d_new(){
+
+
 }
 
 
 
 
-
-
-   
-/* from API or GTK thread */
-void _sv_panel_recompute(sv_panel_t *p){
-  gdk_lock(); 
-
-  // 1) write lock panel.computelock
-  // 2) cache plot scales
-  // 3) cache dim state
-  // 4) cache axis selections
-  // 5) increment compute_serialno
-  // 6) release lock
-  // 7) wake workers
-
-
-  gdk_unlock();
-}
-
-
-
-
-static void _sv_plane2d_set_recompute(_sv_plane2d_t *z){
-  pthread_rwlock_wrlock(z->data_m);
-  pthread_rwlock_wrlock(z->image_m);
-
-
-
-  pthread_rwlock_unlock(z->data_m);
-  pthread_rwlock_unlock(z->image_m);
-}
-
-static void _sv_plane2d_set_remap(){
-
-}
-
-static int _sv_plane2d_xscale_one(){
-
-}
-
-static int _sv_plane2d_yscale_one(){
-
-}
-
-static int _sv_plane2d_compute_one(){
-
-}
-
-static int _sv_plane2d_map_one(){
-
-}
-
-// work order: resize/fast scale -> compute -> plane_render -> composite
 
 // enter unlocked
 static void _sv_planez_compute_line(sv_panel_t *p, 

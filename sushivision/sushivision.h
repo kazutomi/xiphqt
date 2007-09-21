@@ -63,32 +63,6 @@ void              sv_scale_free (sv_scale_t *s);
 
 /* dimensions ****************************************************/
 
-#define SV_DIM_NO_X 0x100
-#define SV_DIM_NO_Y 0x200
-#define SV_DIM_ZEROINDEX 0x1
-#define SV_DIM_MONOTONIC 0x2
-
-enum sv_dim_type { SV_DIM_CONTINUOUS, 
-			 SV_DIM_DISCRETE, 
-			 SV_DIM_PICKLIST};
-
-struct sv_dim{ 
-  int number;
-  char *name;
-  char *legend;
-  enum sv_dim_type type;
-
-  double bracket[2];
-  double val;
-
-  sv_scale_t *scale;
-  unsigned flags;
-  
-  int (*callback)(sv_dim_t *);
-  sv_dim_subtype_t *subtype;
-  sv_dim_internal_t *private;
-};
-
 sv_dim_t            *sv_dim_new (char *decl);
 
 sv_dim_t                *sv_dim (char *name);

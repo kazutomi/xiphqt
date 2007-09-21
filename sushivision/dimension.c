@@ -26,174 +26,152 @@
 #include <math.h>
 #include "internal.h"
 
-/* modules attempts to encapsulate and hide differences between the
-   different types of dimensions with respect to widgets, iterators,
-   shared dimensions */
+void _sv_dim_data_copy(sv_dim_data_t *dd,sv_dim_data_t *copy){
 
-/* A panel that supports discrete dimensions must deal with up to
-   three different scales for the discrete axis; the first is
-   pixel-oriented to the actually displayed panel, the second covers
-   the same range but is oriented to integer bin numbers in the
-   underlying data vector (often the same as the display), and the
-   third the same as the second, but over the absolute range [0 - n)
-   such that discrete dimensions will count from 0 in iteration. */
-/* data_w ignored except in the continuous case, where it may be used
-   to generate over/undersampled data scales. */
 
-int _sv_dim_scales(sv_dim_t *d,
-		   double lo,
-		   double hi,
-		   int panel_w, int data_w,
-		   int spacing,
-		   char *legend,
-		   _sv_scalespace_t *panel, 
-		   _sv_scalespace_t *data, 
-		   _sv_scalespace_t *iter){
+
+}
+
+void _sv_dim_data_clear(sv_dim_data_t *dd){
+
+}
+
+/* A panel must deal with two different scales for an axis; the first
+   is pixel-oriented to the actually displayed panel, the second
+   covers the same range but is oriented to integer bin numbers in the
+   underlying data vector (same as the display for continuous,
+   differnet for discrete) */
+
+_sv_scalespace_t _sv_dim_panelscale(sv_dim_data_t *dd,
+				    int panel_w, int flip){
   
-  /* the panel scales may be reversed (the easiest way to do y)
-     and/or the dimension may have an inverted scale. */
-  int pneg, dimneg;
+  int pneg=1, dimneg=1, spacing = 50;
+  double lo=dd->lo, hi=dd->hi;
+  _sv_scalespace_t ret={0};
   
-  if(lo>hi){ // == must be 1 to match scale gen code when width is 0
-    pneg = -1;
-  }else{
-    pneg = 1;
-  }
-  
-  if(d->scale->val_list[0] > d->scale->val_list[d->scale->vals-1]){
-    dimneg = -1;
-  }else{
-    dimneg = 1;
-  }
-      
-  switch(d->type){
+  if(lo>hi) pneg = -1;
+  if(dd->floor > dd->ceil) dimneg = -1;
+  if(flip) pneg = -pneg;
+
+  switch(dd->type){
   case SV_DIM_CONTINUOUS:
-    {
-      //double ceil = d->scale->val_list[d->scale->vals-1] * dimneg;
-      double fl = ((d->flags & SV_DIM_ZEROINDEX) ? d->scale->val_list[0] : 0.);
-
-      if(panel)
-	*panel = _sv_scalespace_linear(lo, hi, panel_w, spacing, legend);
-
-      if(panel && panel_w == data_w){
-	
-	*iter = *data = *panel;
-
-      }else{
-	*data = _sv_scalespace_linear(lo, hi, data_w, 1, legend);
-	*iter = _sv_scalespace_linear(lo-fl, hi-fl, data_w, 1, legend);
-	
-	if(panel){
-	  /* if possible, the data/iterator scales should cover the entire pane exposed
-	     by the panel scale so long as there's room left to extend them without
-	     overflowing the lo/hi fenceposts */
-	  while(1){
-	    double panel2 = _sv_scalespace_value(panel,panel_w-1)*pneg;
-	    double data2 = _sv_scalespace_value(data,data_w-1)*pneg;
-	    
-	    if(data2>=panel2)break;
-	    data_w++;
-	  }
-	}
-
-	data->pixels = data_w;
-	iter->pixels = data_w;
-      }
-    }
+    ret=_sv_scalespace_linear(lo, hi, panel_w, spacing);
     break;
+
   case SV_DIM_DISCRETE:
-    {
-      /* return a scale that when iterated will only hit values
-	 quantized to the discrete base */
-      /* what is the absolute base? */
-      int floor_i =  rint(d->scale->val_list[0] * d->private->discrete_denominator / 
-			  d->private->discrete_numerator);
-      int ceil_i =  rint(d->scale->val_list[d->scale->vals-1] * d->private->discrete_denominator / 
-			 d->private->discrete_numerator);
-      
-      int lo_i =  floor(lo * d->private->discrete_denominator / 
-			d->private->discrete_numerator);
-      int hi_i =  floor(hi * d->private->discrete_denominator / 
-			d->private->discrete_numerator);
+    
+    int lo_i =  rint(lo * dd->denominator / dd->numerator);
+    int hi_i =  rint(hi * dd->denominator / dd->numerator);
 
-      if(floor_i < ceil_i){
-	if(lo_i < floor_i)lo_i = floor_i;
-	if(hi_i > ceil_i)hi_i = ceil_i;
-      }else{
-	if(lo_i > floor_i)lo_i = floor_i;
-	if(hi_i < ceil_i)hi_i = ceil_i;
-      }
-
-      if(panel){
-	*panel = _sv_scalespace_linear((double)(lo_i-pneg*.4) * d->private->discrete_numerator / 
-				       d->private->discrete_denominator,
-				       (double)(hi_i+pneg*.4) * d->private->discrete_numerator / 
-				       d->private->discrete_denominator,
-				       panel_w, spacing, legend);
-
-	/* if possible, the data/iterator scales should cover the entire pane exposed
-	   by the panel scale so long as there's room left to extend them without
-	   overflowing the lo/hi fenceposts */
-	double panel1 = _sv_scalespace_value(panel,0)*pneg;
-	double panel2 = _sv_scalespace_value(panel,panel->pixels)*pneg;
-	double data1 = (double)(lo_i-.49*pneg) * d->private->discrete_numerator / 
-	  d->private->discrete_denominator*pneg;
-	double data2 = (double)(hi_i-.51*pneg) * d->private->discrete_numerator / 
-	  d->private->discrete_denominator*pneg;
-	
-	while(data1 > panel1 && lo_i*dimneg > floor_i*dimneg){
-	  lo_i -= pneg;
-	  data1 = (double)(lo_i-.49*pneg) * d->private->discrete_numerator / 
-	    d->private->discrete_denominator*pneg;
-	}
-	
-	while(data2 < panel2 && hi_i*dimneg <= ceil_i*dimneg){ // inclusive upper
-	  hi_i += pneg;
-	  data2 = (double)(hi_i-.51*pneg) * d->private->discrete_numerator / 
-	    d->private->discrete_denominator*pneg;
-	}
-	
-      }else{
-	hi_i += pneg; // because upper bound is inclusive, and this val is one-past
-      }
-
-      /* cosmetic adjustment complete, generate the scales */
-      data_w = abs(hi_i-lo_i);
-      if(!(d->flags & SV_DIM_ZEROINDEX))
-	floor_i = 0;
-      
-      *data = _sv_scalespace_linear((double)lo_i * d->private->discrete_numerator / 
-				    d->private->discrete_denominator,
-				    (double)hi_i * d->private->discrete_numerator / 
-				    d->private->discrete_denominator,
-				    data_w, 1, legend);
-      
-      if(d->flags & SV_DIM_MONOTONIC)
-	*iter = _sv_scalespace_linear(lo_i - floor_i, hi_i - floor_i,
-				      data_w, 1, legend);
-      else
-	*iter = _sv_scalespace_linear((double)(lo_i - floor_i) * 
-				      d->private->discrete_numerator / 
-				      d->private->discrete_denominator,
-				      (double)(hi_i - floor_i) * 
-				      d->private->discrete_numerator / 
-				      d->private->discrete_denominator,
-				      data_w, 1, legend);
-      break;
-    }
+    ret = _sv_scalespace_linear((lo_i-pneg*.4) * dd->numerator / dd->denominator,
+				(hi_i+pneg*.4) * dd->numerator / dd->denominator,
+				panel_w, spacing);    
     break;
   case SV_DIM_PICKLIST:
     fprintf(stderr,"ERROR: Cannot iterate over picklist dimension!\n"
 	    "\tA picklist dimension may not be a panel axis.\n");
-    data_w = 0;
+    break;
+
+  default:
+    fprintf(stderr,"ERROR: Unsupporrted dimension type in dimension_datascale.\n");
+    break;
+
+  }
+
+  return ret;
+}
+
+_sv_scalespace_t _sv_dim_datascale(sv_dim_data_t *dd,
+				   _sv_scalespace_t *panel,
+				   int data_w,
+				   int floor){
+  
+  /* the panel scales may be reversed (the easiest way to do y)
+     and/or the dimension may have an inverted scale. */
+  int pneg=1, dimneg=1;
+  int panel_w = (panel?panel->pixels:0);
+  _sv_scalespace_t ret={0};
+  double lo=dd->lo, hi=dd->hi;
+
+  if(lo>hi) pneg = -1;
+  if(dd->floor > dd->ceil) dimneg = -1;
+  if(flip) pneg = -pneg;
+      
+  switch(dd->type){
+  case SV_DIM_CONTINUOUS:
+
+    ret = _sv_scalespace_linear(lo, hi, data_w, 1);
+    
+    if(panel  && data_w != panel_w){
+	
+      /* if possible, the data/iterator scales should cover the entire pane exposed
+	 by the panel scale so long as there's room left to extend them without
+	 overflowing the lo/hi fenceposts */
+      while(1){
+	double panel2 = _sv_scalespace_value(panel,panel_w-1)*pneg;
+	double data2 = _sv_scalespace_value(data,data_w-1)*pneg;
+	
+	if(data2>=panel2)break;
+	data_w++;
+      }
+      
+      data->pixels = data_w;
+    }
+    break;
+    
+  case SV_DIM_DISCRETE:
+    
+    /* return a scale that when iterated will only hit values
+       quantized to the discrete base */
+    /* what is the absolute base? */
+    int floor_i =  rint(dd->floor * dd->denominator / dd->numerator);
+    int ceil_i =  rint(dd->ceil * dd->denominator / dd->numerator);
+    
+    int lo_i =  rint(lo * dd->denominator / dd->numerator);
+    int hi_i =  rint(hi * dd->denominator / dd->numerator);
+
+    if(panel){
+      /* if possible, the data scale should cover the entire pane
+	 exposed by the panel scale so long as there's room left to
+	 extend them without overflowing the lo/hi fenceposts */
+      double panel1 = _sv_scalespace_value(panel,0)*pneg;
+      double panel2 = _sv_scalespace_value(panel,panel->pixels)*pneg;
+      double data1 = (double)(lo_i-.49*pneg) * dd->numerator / dd->denominator*pneg;
+      double data2 = (double)(hi_i-.51*pneg) * dd->numerator / dd->denominator*pneg;
+	
+      while(data1 > panel1 && lo_i*dimneg > floor_i*dimneg){
+	lo_i -= pneg;
+	data1 = (double)(lo_i-.49*pneg) * dd->numerator / dd->denominator*pneg;
+      }
+      
+      while(data2 < panel2 && hi_i*dimneg <= ceil_i*dimneg){ // inclusive upper
+	hi_i += pneg;
+	data2 = (double)(hi_i-.51*pneg) * dd->numerator / dd->denominator*pneg;
+      }
+      
+    }else{
+      hi_i += pneg; // because upper bound is inclusive, and this val is one-past
+    }
+
+    /* cosmetic adjustment complete, generate the scales */
+    data_w = abs(hi_i-lo_i);
+    
+    ret = _sv_scalespace_linear((double)lo_i * dd->numerator / dd->denominator,
+				(double)hi_i * dd->numerator / dd->denominator,
+				data_w, 1);
+    
+    break;
+
+  case SV_DIM_PICKLIST:
+    fprintf(stderr,"ERROR: Cannot iterate over picklist dimension!\n"
+	    "\tA picklist dimension may not be a panel axis.\n");
     break;
   default:
     fprintf(stderr,"ERROR: Unsupporrted dimension type in dimension_datascale.\n");
-    data_w = 0;
     break;
   }
   
-  return data_w;
+  return ret;
 }
 
 int _sv_dim_scales_from_panel(sv_dim_t *d,
@@ -214,15 +192,15 @@ int _sv_dim_scales_from_panel(sv_dim_t *d,
 			iter);
 }
 
-static double discrete_quantize_val(sv_dim_t *d, double val){
+static double quantize_val(sv_dim_t *d, double val){
   if(d->type == SV_DIM_DISCRETE){
-    val *= d->private->discrete_denominator;
-    val /= d->private->discrete_numerator;
+    val *= d->private->denominator;
+    val /= d->private->numerator;
     
     val = rint(val);
     
-    val *= d->private->discrete_numerator;
-    val /= d->private->discrete_denominator;
+    val *= d->private->numerator;
+    val /= d->private->denominator;
   }
   return val;
 }
@@ -236,7 +214,7 @@ static void _sv_dim_center_callback(void *data, int buttonstate){
   double val = _sv_slider_get_value(dw->scale,1);
   char buffer[80];
   
-  val = discrete_quantize_val(d,val);
+  val = quantize_val(d,val);
   
   if(buttonstate == 0){
     _sv_undo_push();
@@ -289,8 +267,8 @@ static void _sv_dim_bracket_callback(void *data, int buttonstate){
   double hi = _sv_slider_get_value(dw->scale,2);
   char buffer[80];
   
-  hi = discrete_quantize_val(d,hi);
-  lo = discrete_quantize_val(d,lo);
+  hi = quantize_val(d,hi);
+  lo = quantize_val(d,lo);
   
   if(buttonstate == 0){
     _sv_undo_push();
@@ -382,13 +360,13 @@ int _sv_dim_widget_set_thumb(_sv_dim_widget_t *dw, int thumb, double val){
     _sv_slider_set_value(dw->scale,thumb,val);
     break;
   case SV_DIM_DISCRETE:
-    val *= d->private->discrete_denominator;
-    val /= d->private->discrete_numerator;
+    val *= d->private->denominator;
+    val /= d->private->numerator;
 
     val = rint(val);
 
-    val *= d->private->discrete_numerator;
-    val /= d->private->discrete_denominator;
+    val *= d->private->numerator;
+    val /= d->private->denominator;
 
     _sv_slider_set_value(dw->scale,thumb,val);
     break;
@@ -423,13 +401,13 @@ int _sv_dim_set_thumb(sv_dim_t *d, int thumb, double val){
   if(!d->private->widgets){
     switch(thumb){
     case 0:
-      d->bracket[0] = discrete_quantize_val(d,val);
+      d->bracket[0] = quantize_val(d,val);
       break;
     case 1:
-      d->val = discrete_quantize_val(d,val);
+      d->val = quantize_val(d,val);
       break;
     case 2:
-      d->bracket[1] = discrete_quantize_val(d,val);
+      d->bracket[1] = quantize_val(d,val);
       break;
     default:
       errno = -EINVAL;
@@ -602,7 +580,7 @@ _sv_dim_widget_t *_sv_dim_widget_new(sv_dim_list_t *dl,
       dw->scale = _sv_slider_new((_sv_slice_t **)sl,3,d->scale->label_list,d->scale->val_list,
 				 d->scale->vals,0);
       if(d->type == SV_DIM_DISCRETE)
-	_sv_slider_set_quant(dw->scale,d->private->discrete_numerator,d->private->discrete_denominator);
+	_sv_slider_set_quant(dw->scale,d->private->numerator,d->private->denominator);
 
       _sv_slice_thumb_set((_sv_slice_t *)sl[0],v[0]);
       _sv_slice_thumb_set((_sv_slice_t *)sl[1],v[1]);
@@ -701,8 +679,8 @@ sv_dim_t *sv_dim_new(char *name){
   d->legend = strdup(decl->label);
   d->type = SV_DIM_CONTINUOUS;
   d->private = calloc(1, sizeof(*d->private));
-  d->private->discrete_numerator = 1;
-  d->private->discrete_denominator = 1;
+  d->private->numerator = 1;
+  d->private->denominator = 1;
 
   // parse decllist
   for(i=0;i<decl->n;i++){
@@ -727,7 +705,7 @@ sv_dim_t *sv_dim_new(char *name){
 	fprintf(stderr,"sushivision: Missing numerator value in \"%s\"\n.",name);
       }else{
 	d->type = SV_DIM_PICKLIST;
-	d->private->discrete_numerator = v;
+	d->private->numerator = v;
       }
 
     }else if(!strcmp(f,"denominator")){
@@ -737,7 +715,7 @@ sv_dim_t *sv_dim_new(char *name){
 	fprintf(stderr,"sushivision: denominator value may not be zero\n.");
       }else{
 	d->type = SV_DIM_PICKLIST;
-	d->private->discrete_denominator = v;
+	d->private->denominator = v;
       }
 
     }else{
