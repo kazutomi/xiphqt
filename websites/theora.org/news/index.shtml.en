@@ -8,6 +8,17 @@
 <!--#include virtual="/ssi/pagetop.include" -->
 <!--  All your page content goes here  -->
 
+<h3>Theora 1.0 beta1 released</h3>
+<p class="newsdate">2007 September 22</p>
+<p>Moving out of alpha status Theora is now available as version 1.0 beta1. This release features
+many changes since alpha7 - for example the beta1 decoder is a complete rewrite supporting the
+whole Theora specification.</p>
+<ul>
+<li><a href="http://downloads.xiph.org/releases/theora/libtheora-1.0beta1.tar.bz2">libtheora-1.0beta1.tar.bz2</li>
+<li><a href="http://downloads.xiph.org/releases/theora/libtheora-1.0beta1.tar.gz">libtheora-1.0beta1.tar.gz</a>
+<li><a href="http://downloads.xiph.org/releases/theora/libtheora-1.0beta1.zip">libtheora-1.0beta1.zip</a>
+</ul>
+
 <h3>Website Redesign</h3>
 <p class="newsdate">2007 September 5</p>
 
