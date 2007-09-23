@@ -108,6 +108,7 @@
 <dl>
 
 <!-- NOTE: One line per entry makes it sortable! Dummy entry for copy-and-paste at EOF. -->
+<dt><a id="cl_xspf"></a><a href="http://www.cliki.net/cl-xspf">cl-xspf</a> (Common Lisp)</dt><dd>A Common Lisp API for writing XSPF playlists.</dd>
 <dt><a id="haxe_xspf"></a><a href="http://www.xspf.disktree.net/">haXe XSPF</a> (<a href="http://www.haxe.org/intro">haXe</a>)</dt><dd>XSPF support for haXe web applications.</dd>
 <dt><a id="jspiff"></a><a href="http://melloware.com/products/jspiff/">JSpiff</a> (Java)</dt><dd>JSpiff is a Java API for reading and writing XSPF ("Spiff") open XML playlists using JAXP or JAXB.</dd>
 <dt><a id="libspiff"></a><a href="http://libspiff.sourceforge.net/">libSpiff</a> (C, C++)</dt><dd>The official reference implementation of XSPF by the Xiph.Org Foundation. libSpiff is a cross-platform C++ library for reading and writing XSPF playlist files (both Version 0 and 1). It is licensed under the New BSD license. See also <a href="http://libspiff.sourceforge.net/doc/html/" title="XSPF C++ library tutorial">libSpiff tutorial</a>.</dd>
