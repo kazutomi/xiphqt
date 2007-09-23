@@ -46,7 +46,6 @@ Of course Theora also can be streamed from virtually any HTTP server, making it 
 </p>
 
 <p>
-<img src="/images/loop-filter-comparison.png" alt="loop-filter comparison" style="display:block;margin-left:auto;margin-right:auto"/>
 On the technological side Theora is well engineered for low-bitrate streaming. Its in-loop deblocking filter
 is pretty efficient at preventing a distracting, blocky look of the encoded content. Thus perceived video
 quality usually degrades gracefully as bitrate decreases, which is an essential property for any video codec targeting 
