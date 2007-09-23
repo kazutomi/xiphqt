@@ -14,7 +14,7 @@
 <ul>
 	<li><a href="#10">What is Theora?</a></li>
 	<li><a href="#11">Why use Theora?</a></li>
-	<li><a href="#12">What other video formats will Theora compete with?</a></li>
+	<li><a href="#12">What other video formats does Theora compete with?</a></li>
 	<li><a href="#13">What is Ogg? What is Vorbis? What is xiph.org?</a></li>
 	<li><a href="#14">What is the license for Theora?</a></li>
 	<li><a href="#15">Why the name 'Theora?'</a></li>
@@ -31,11 +31,10 @@
 <br/>
 <a href="#development"><b>Development</b></a>
 <ul>
-	<li><a href="#30">When will it all be finished? Can I use it right now?</a></li>
-	<li><a href="#31">What is an Alpha Release?</a></li>
+	<li><a href="#30">Can I use it right now?</a></li>
 	<li><a href="#32">What is Tarkin? </a></li>
 	<li><a href="#33">How can I help with development?</a></li>
-	<li><a href="#34"> How will Ogg Theora interoperate with [insert your favorite media architecture]?</a></li>
+	<li><a href="#34">How does Ogg Theora interoperate with [insert your favorite media architecture]?</a></li>
 	<li><a href="#35">How can I donate to these amazing projects?</a></li>
 </ul>
 <br/>
@@ -81,7 +80,7 @@ It's open and free. Do you need more reasons?
 <br/>
 <br/>
 <a name="12"></a>
-<b>Q. What other video formats will Theora compete with?</b><br/>
+<b>Q. What other video formats does Theora compete with?</b><br/>
 <div class="txt">
   Theora is targeted at competing with MPEG-4 (e.g., XviD and DivX), 
 RealVideo, Windows Media Video, and similar lower-bitrate video 
@@ -209,33 +208,13 @@ from the On2 patents.
 <br/>
 <br/>
 <a name="30"></a>
-<b>Q. When will it all be finished? Can I use it right now?</b><br/>
+<b>Q. Can I use it right now?</b><br/>
 <div class="txt">
 The bitstream format is frozen since the release of Theora alpha 3. So, files produced by 
 the alpha 3 reference encoder will be supported by all future decoders. This means
 you can safely use Theora to encode your content right now.
-</div>
-<br/>
-<br/>
-<a name="31"></a>
-<b>Q. What is an Alpha Release?</b><br/>
-<div class="txt">
-Typically when software is created at a software company, it goes through a number of stages 
-before it's released out to the world. You've probably heard of 'beta-testing' before. That's 
-when people take code that has been deemed 'not quite ready' and are testing it out so that 
-the authors can fix bugs where necessary. 
-<br/>
-'Alpha' code usually is strictly for internal development only, which is to say, 'No one sees this code, 
-it's not even close to being done yet.' At the Xiph.org Foundation, we release everything we do 
-so that people can help us move the codebase forward by reporting bugs and submitting patches. 
-<br/>
-We encourage and depend on the open-source developer community to get
-involved early. We release Alpha builds to give people a chance
-to see what's cooking, and perhaps to add some ingredients of their own. If
-you think you have the right stuff, please join the party at
-<a href="/discussion/">www.Theora.org/discussion/</a>. 
 <br/><br/>
-While Theora is labelled alpha/beta it has been in production use in many systems for over 3 years and is completely safe to adopt.
+While Theora is labelled beta it has been in production use in many systems for over 3 years and is completely safe to adopt.
 </div>
 <br/>
 <br/>
@@ -260,7 +239,7 @@ Head on over to the <a href="http://www.Theora.org/svn.html">SVN</a>
 <br/>
 <br/>
 <a name="34"></a>
-<b>Q. How will Ogg Theora interoperate with [insert your favorite media architecture]?</b><br/>
+<b>Q. How does Ogg Theora interoperate with [insert your favorite media architecture]?</b><br/>
 <div class="txt">
  As the Ogg Vorbis format has gained acceptance, components have become
 available to play Ogg files on practically all of the major media players.
@@ -292,6 +271,9 @@ href="http://www.helixcommunity.org">helix player</a> and <a
 href="http://www.videolan.org/">VideoLAN</a> supports Theora. 
 Directshow <a href="http://www.illiminable.com/ogg/">filters</a>
 are also available for use on Windows platform.
+<br/><br/>
+There's a <a href="http://wiki.xiph.org/index.php/TheoraSoftwarePlayers">more complete list of players</a>
+available at the xiph.org wiki.
 </div>
 <br/>
 <br/>
@@ -372,7 +354,7 @@ eternally grateful.
 <br/>
 <a name="54"></a>
 <b>Q. When was this FAQ last updated?</b><br/>
- September 4th, 2007 by Maik Merten. 
+ September 23rd, 2007 by Maik Merten. 
 <br/>
 <br/>
 
