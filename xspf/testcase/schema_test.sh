@@ -34,6 +34,7 @@ fi
 RNV=rnv
 XMLLINT=xmllint
 SPIFF_CHECK=spiff_check
+CHECK_PY=../../../websites/validator.xspf.org/check.py
 
 
 
@@ -52,6 +53,7 @@ echo "RNV "`${RNV} -v 2>&1 | grep version | sed -r "s/rnv version (.+)/\1/"` >> 
 echo "xmllint #"`${XMLLINT} --version 2>&1 | grep version | sed -r "s/[^0-9]+//"` >> ${LOG_FILE}
 echo "XMLStarlet "`${XML_STARLET} --version` >> ${LOG_FILE}
 echo "spiff_check "`${SPIFF_CHECK} --version | sed -r "s/[^0-9]+//"` >> ${LOG_FILE}
+echo "check.py r"`svn info ${CHECK_PY} | grep "Revision:" | sed -r "s/Revision: (.+)/\1/"` >> ${LOG_FILE}
 echo "" >> ${LOG_FILE}
 
 
@@ -109,7 +111,7 @@ echo "===== XSPF-0, without schema, spiff_check, should have failed =====" >> ${
 for i in ${FAIL_0_FILES}; do
 	OUTPUT=`cat $i | ${SPIFF_CHECK} -`
 	if [ "${OUTPUT}" == "Valid XSPF-0." ]; then
-		echo $i
+		echo $i >> ${LOG_FILE}
 	fi
 done
 echo "" >> ${LOG_FILE}
@@ -118,7 +120,25 @@ echo "===== XSPF-0, without schema, spiff_check, should have passed =====" >> ${
 #for i in ${PASS_0_FILES}; do
 #	OUTPUT=`cat $i | ${SPIFF_CHECK} -`
 #	if [ "${OUTPUT}" != "Valid XSPF-0." ]; then
-#		echo $i
+#		echo $i >> ${LOG_FILE}
+#	fi
+#done
+echo "" >> ${LOG_FILE}
+
+
+
+echo "===== XSPF-0, without schema, check.py, should have failed =====" >> ${LOG_FILE}
+for i in ${FAIL_0_FILES}; do
+	if ${CHECK_PY} --shell $i &>/dev/null ; then
+		echo $i >> ${LOG_FILE}
+	fi
+done
+echo "" >> ${LOG_FILE}
+
+echo "===== XSPF-0, without schema, check.py, should have passed =====" >> ${LOG_FILE}
+#for i in ${PASS_0_FILES}; do
+#	if ! ${CHECK_PY} --shell $i &>/dev/null ; then
+#		echo $i >> ${LOG_FILE}
 #	fi
 #done
 echo "" >> ${LOG_FILE}
@@ -203,7 +223,7 @@ echo "===== XSPF-1, without schema, spiff_check, should have failed =====" >> ${
 for i in ${FAIL_1_FILES}; do
 	OUTPUT=`cat $i | ${SPIFF_CHECK} -`
 	if [ "${OUTPUT}" == "Valid XSPF-1." ]; then
-		echo $i
+		echo $i >> ${LOG_FILE}
 	fi
 done
 echo "" >> ${LOG_FILE}
@@ -212,7 +232,25 @@ echo "===== XSPF-1, without schema, spiff_check, should have passed =====" >> ${
 for i in ${PASS_1_FILES}; do
 	OUTPUT=`cat $i | ${SPIFF_CHECK} -`
 	if [ "${OUTPUT}" != "Valid XSPF-1." ]; then
-		echo $i
+		echo $i >> ${LOG_FILE}
+	fi
+done
+echo "" >> ${LOG_FILE}
+
+
+
+echo "===== XSPF-1, without schema, check.py, should have failed =====" >> ${LOG_FILE}
+for i in ${FAIL_1_FILES}; do
+	if ${CHECK_PY} --shell $i &>/dev/null ; then
+		echo $i >> ${LOG_FILE}
+	fi
+done
+echo "" >> ${LOG_FILE}
+
+echo "===== XSPF-1, without schema, check.py, should have passed =====" >> ${LOG_FILE}
+for i in ${PASS_1_FILES}; do
+	if ! ${CHECK_PY} --shell $i &>/dev/null ; then
+		echo $i >> ${LOG_FILE}
 	fi
 done
 echo "" >> ${LOG_FILE}
@@ -223,3 +261,4 @@ echo "" >> ${LOG_FILE}
 # Show log
 # -----------------------------------------------------------------------------
 cat ${LOG_FILE}
+
