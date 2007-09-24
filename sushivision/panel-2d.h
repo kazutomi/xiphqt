@@ -22,12 +22,15 @@
 typedef struct {
   pthread_rwlock_t panel_m;
   pthread_mutex_t  status_m;
-  pthread_mutex_t  payload_m;
   
-  // pending computation payload
+  // request payload (locked by status)
   int               recompute_pending;
-  int               recompute_dims;
-  sv_dim_data_t    *recompute_payload;
+  int               dims;
+  int               w;
+  int               h;
+  int               xdim;
+  int               ydim;
+  sv_dim_data_t    *dim_data;
 
   // composite 'background' plane
   _sv_plane_bg_t *bg;

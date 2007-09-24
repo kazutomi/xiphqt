@@ -33,7 +33,6 @@
 #include "internal.h"
 
 // panel.panel_m: rwlock, protects all panel and plane heaps
-// panel.payload_m: mutex, protects panel/plane request payloads
 // panel.status_m: mutex, protects status variables
 
 // Plane data in the panels is protected as follows:
@@ -57,8 +56,6 @@
 
 //   map_serialno performs the same task with respect to remap requests
 //     for a given plane.
-
-// lock order: panel_m -> status_m -> payload_m 
 
 // worker thread process order:
 
@@ -155,21 +152,10 @@ int _sv_panel_work(sv_panel_t *p){
   int i,serialno,status;
   pthread_rwlock_rdlock(p->panel_m);
   pthread_mutex_lock(p->status_m);
-  pthread_mutex_lock(p->payload_m);
 
   // recomute setup
   if(p->recompute_pending){
-    int dims = p->recompute_dims;
-    sv_dim_data_t *payload = p->recompute_payload;
-    p->w = p->recompute_w;
-    p->h = p->recompute_h;
-    p->x_dim = p->recompute_xdim;
-    p->y_dim = p->recompute_ydim;
-
     p->recompute_pending=0;
-    p->recompute_payload=NULL;
-    pthread_mutex_unlock(p->payload_m);
-
     p->comp_serialno++;
     p->image_resize=1;
     p->data_resize=1;
@@ -178,14 +164,13 @@ int _sv_panel_work(sv_panel_t *p){
     p->bgrender=0;
     p->image_next_plane=0;
     
-    bg->c.recompute_setup(p->bg, p, payload, dims);
+    bg->c.recompute_setup(p->bg, p);
 
     for(i=0;i<p->planes;i++)
-      p->plane_list[i]->c.recompute_setup(p->plane_list[i], p, payload, dims);
+      p->plane_list[i]->c.recompute_setup(p->plane_list[i], p);
 
     pthread_mutex_unlock(p->status_m);
     pthread_rwlock_unlock(p->panel_m);
-    payload_free(payload,dims);
 
     return STATUS_WORKING;
   }
@@ -195,7 +180,6 @@ int _sv_panel_work(sv_panel_t *p){
     p->relegend_pending=0;
   }
 
-  pthread_mutex_unlock(p->payload_m);
   serialno = p->comp_serialno;
 
   // image resize
