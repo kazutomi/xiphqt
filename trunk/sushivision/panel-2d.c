@@ -215,7 +215,7 @@ int _sv_panel_work(sv_panel_t *p){
     return done_busy(p);
   
   // bg render
-  if(p->bgrender){
+  if(p->bg_render){
     if(bg_render(p) == STATUS_IDLE){
       p->expose=1;
       p->bgrender=0;
@@ -258,51 +258,6 @@ int _sv_panel_work(sv_panel_t *p){
 }
 
 
-
-
-
-
-   
-/* from API or GTK thread */
-void _sv_panel_recompute(sv_panel_t *p){
-  gdk_lock(); 
-
-  // 1) write lock panel.computelock
-  // 2) cache plot scales
-  // 3) cache dim state
-  // 4) cache axis selections
-  // 5) increment compute_serialno
-  // 6) release lock
-  // 7) wake workers
-
-
-  gdk_unlock();
-}
-
-
-
-
-static void _sv_plane2d_set_recompute(_sv_plane2d_t *z){
-  pthread_rwlock_wrlock(z->data_m);
-  pthread_rwlock_wrlock(z->image_m);
-
-
-
-  pthread_rwlock_unlock(z->data_m);
-  pthread_rwlock_unlock(z->image_m);
-}
-
-static void _sv_plane2d_set_remap(){
-
-}
-
-static int _sv_plane2d_xscale_one(){
-
-}
-
-static int _sv_plane2d_yscale_one(){
-
-}
 
 static int _sv_plane2d_compute_one(){
 
