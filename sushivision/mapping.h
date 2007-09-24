@@ -27,27 +27,27 @@ typedef struct{
   unsigned char g;
   unsigned char r;
   unsigned char a;
-} _sv_ccolor_t;
+} sv_ccolor_t;
 #else
 typedef struct{
   unsigned char a;
   unsigned char r;
   unsigned char g;
   unsigned char b;
-} _sv_ccolor_t;
+} sv_ccolor_t;
 #endif 
 
 typedef union {
-  _sv_ccolor_t c;
+  sv_ccolor_t c;
   u_int32_t u;
-} _sv_ucolor_t;
+} sv_ucolor_t;
 
 typedef struct{
   long a;
   long r;
   long g;
   long b;
-} _sv_lcolor_t;
+} sv_lcolor_t;
 
 
 typedef struct {
@@ -56,7 +56,7 @@ typedef struct {
   float high;
   float i_range;
   
-} _sv_mapping_t;
+} sv_mapping_t;
 
 
 extern int       _sv_mapping_names();
@@ -65,9 +65,9 @@ extern char     *_sv_mapping_name(int i);
 extern int       _sv_solid_names();
 extern char     *_sv_solid_name(int i);
 
-extern void (*mapfunc[])(int, int, _sv_lcolor_t *);
-extern _sv_ucolor_t (*mixfunc[])(_sv_ucolor_t, _sv_ucolor_t);
-extern _sv_propmap_t *mapnames[];
-extern void (*mapsolid[])(int, int, _sv_lcolor_t *);
-extern _sv_ucolor_t (*mixsolid[])(_sv_ucolor_t, _sv_ucolor_t);
-extern _sv_propmap_t *solidnames[];
+extern void (*mapfunc[])(int, int, sv_lcolor_t *);
+extern sv_ucolor_t (*mixfunc[])(sv_ucolor_t, sv_ucolor_t);
+extern sv_propmap_t *mapnames[];
+extern void (*mapsolid[])(int, int, sv_lcolor_t *);
+extern sv_ucolor_t (*mixsolid[])(sv_ucolor_t, sv_ucolor_t);
+extern sv_propmap_t *solidnames[];

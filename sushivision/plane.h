@@ -108,7 +108,7 @@ struct sv_plane_2d {
   unsigned char   *resample_ydelB;
   int             *resample_ynumA;
   int             *resample_ynumB;
-  float           *resample_yscalemul;
+  float            resample_yscalemul;
 
   // ui elements; use gdk lock
   sv_mapping_t    *mapping;
