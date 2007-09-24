@@ -229,7 +229,9 @@ valid = False
 intro = ""
 input = ""
 
+shellMode = False
 if (len(sys.argv) == 3) and (sys.argv[1] == "--shell"):
+    shellMode = True
     try:
         f = open(sys.argv[2])
         try:
@@ -240,7 +242,7 @@ if (len(sys.argv) == 3) and (sys.argv[1] == "--shell"):
         pass
 
     if input != "":
-        intro = "Validating pasted text<br><br>"
+        intro = "Validating local file<br><b><i>" + sys.argv[2] + "</i></b><br><br>"
 
 else:
     form = cgi.FieldStorage()
@@ -1227,8 +1229,9 @@ print """
 
 
 
-if valid:
-    sys.exit(0)
+if shellMode:
+    if valid:
+        sys.exit(0)
 
-else:
-    sys.exit(1)
+    else:
+        sys.exit(1)
