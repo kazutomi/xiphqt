@@ -44,8 +44,7 @@ struct sv_plane_common {
   sv_plane_t      *share_prev;
   sv_panel_t      *panel;
 
-  void (*recompute_setup)(sv_plane_t *, sv_panel_t *, 
-			  sv_dim_data_t *, int dims);
+  void (*recompute_setup)(sv_plane_t *, sv_panel_t *);
   int (*image_resize)(sv_plane_t *, sv_panel_t *);
   int (*data_resize)(sv_plane_t *, sv_panel_t *);
   int (*image_work)(sv_plane_t *, sv_panel_t *);
@@ -74,15 +73,25 @@ struct sv_plane_2d {
 
   // data
   float           *data;  
-  sv_ucolor_t     *image; // panel size;
+  float           *pending_data;  
+  sv_ucolor_t     *image;
+  sv_ucolor_t     *pending_image;
+  int             *map;
 
   // status 
   sv_scalespace_t  data_x;
   sv_scalespace_t  data_y;
-  int              image_serialno;
+  sv_scalespace_t  pending_data_x;
+  sv_scalespace_t  pending_data_y;
   int              data_waiting; 
   int              data_incomplete; 
+  int              data_task;
   int              data_next;
+
+  int              image_serialno;
+  sv_scalespace_t  image_x; 
+  sv_scalespace_t  image_y;
+  int              image_task;
   int              image_next;
   int             *image_flags;
   

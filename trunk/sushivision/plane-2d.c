@@ -33,60 +33,560 @@
 #include "internal.h"
 
 // called from worker thread
-static void recompute_setup(sv_plane2d_t *pl, sv_panel_t *p, 
-			    sv_dim_data_t *payload, int dims){
-  sv_dim_data_t *ddx = payload+p->x_dim;
-  sv_dim_data_t *ddy = payload+p->y_dim;
+static void recompute_setup(sv_plane_t *in, sv_panel_t *p){
+  sv_plane_2d_t *pl = (sv_plane_2d_t *)in;
+  sv_dim_data_t *ddx = p->dim_data+p->x_dim;
+  sv_dim_data_t *ddy = p->dim_data+p->y_dim;
   int w = p->bg->image_x->pixels;
   int h = p->bg->image_y->pixels;
 
+  pl->pending_data_x = 
+    _sv_dim_datascale(ddx, p->bg->image_x, 
+		      w * p->oversample_n / p->oversample_d, 0);
+  pl->pending_data_y = 
+    _sv_dim_datascale(ddy, p->bg->image_y, 
+		      h * p->oversample_n / p->oversample_d, 1);
+  
   pl->image_serialno++;
-  pl->data_x = _sv_dim_datascale(payload + x_dim, p->bg->image_x, 
-				 w * p->oversample_n / p->oversample_d, 0);
-  pl->data_y = _sv_dim_datascale(payload + y_dim, p->bg->image_y, 
-				 h * p->oversample_n / p->oversample_d, 1);
-
   pl->data_waiting=0;
   pl->data_incomplete=0;
   pl->data_next=0;
-  pl->image_next=0;
+
+  pl->image_task=0;
 
 }
 
+static void fast_scale_map(int *map,
+			   sv_scalespace_t new,
+			   sv_scalespace_t old){
+  int i;
+  double old_n = old.pixels;
+  double new_n = new.pixels;
+
+  double old_lo = _sv_scalespace_value(&old,0);
+  double old_hi = _sv_scalespace_value(&old,old_n);
+  double new_lo = _sv_scalespace_value(&new,0);
+  double new_hi = _sv_scalespace_value(&new,new_n);
+  double newscale = (new_hi-new_lo)/new_n;
+  double oldscale = old_n/(old_hi-old_lo);
+  for(i=0;i<new_n;i++){
+    double val = i*newscale+new_lo;
+    map[i] = (int)floor((val-old_lo)*oldscale);
+  }
+}
+
+static void fast_scale_imagex(sv_ucolor_t *data, 
+			      sv_scalespace_t new,
+			      sv_scalespace_t old,
+			      int *map){
+  int i;
+  sv_ucolor_t work[new_w];
+
+  for(i=0;i<new.pixels;i++){
+    int base = map[i];
+    if(base<0 || base>=old.pixels){
+      work[i]=NAN;
+    }else{
+      work[i]=data[base];
+    }      
+  }
+  memcpy(data,work,new.pixels*sizeof(*work));
+}
+
+static void fast_scale_imagey(sv_ucolor_t *olddata, 
+			      sv_ucolor_t *newdata, 
+			      int new_w,
+			      int old_w,
+			      sv_scalespace_t new,
+			      sv_scalespace_t old,
+			      int *map){
+  int i;
+
+  for(i=0;i<new.pixels;i++){
+    int base = map[i];
+    if(base<0 || base>=old.pixels){
+      *newdata=NAN;
+    }else{
+      *newdata=olddata[base*old_w];
+    }
+    newdata+=new_w;
+  }
+}
+
+static void fast_scale_datax(float *data, 
+			     sv_scalespace_t new,
+			     sv_scalespace_t old,
+			     int *map){
+  int i;
+  float work[new_w];
+
+  for(i=0;i<new.pixels;i++){
+    int base = map[i];
+    if(base<0 || base>=old.pixels){
+      work[i]=NAN;
+    }else{
+      work[i]=data[base];
+    }      
+  }
+  memcpy(data,work,new.pixels*sizeof(*work));
+}
+
+static void fast_scale_imagey(float *olddata, 
+			      float *newdata, 
+			      int new_w,
+			      int old_w,
+			      sv_scalespace_t new,
+			      sv_scalespace_t old,
+			      int *map){
+  int i;
+
+  for(i=0;i<new.pixels;i++){
+    int base = map[i];
+    if(base<0 || base>=old.pixels){
+      *newdata=NAN;
+    }else{
+      *newdata=olddata[base*old_w];
+    }
+    newdata+=new_w;
+  }
+}
+
+
 // called from worker thread
-static int image_resize(sv_plane2d_t *pl, sv_panel_t *p){
+static int image_resize(sv_plane_t *in, sv_panel_t *p){
+  sv_plane_2d_t *pl = (sv_plane_2d_t *)in;
+  sv_scalespace_t newx = p->bg->image_x;
+  sv_scalespace_t newy = p->bg->image_y;
+  sv_scalespace_t oldx = pl->image_x;
+  sv_scalespace_t oldy = pl->image_y;
+  int new_w = newx.pixels;
+  int new_h = newy.pixels;
+  int old_w = oldx.pixels;
+  int old_h = oldy.pixels;
+  int serialno = p->comp_serialno;
 
+  if(pl->image_task==-1) return STATUS_BUSY;
 
+  if(pl->image_task==0){ // realloc
+    sv_ucolor_t *old_image = NULL;
+    sv_ucolor_t *image = NULL;
+    int *old_map = NULL;
+    int *map = NULL;
+    pl->image_task = -1;
+
+    // drop locks while alloc()ing/free()ing
+    
+    pthread_mutex_unlock(pl->status_m);
+    pthread_rwlock_unlock(pl->panel_m);
+
+    image = calloc(new_w*new_h,sizeof(*image));
+    map = calloc(max(new_h,new_w),sizeof(*map));
+    if(new_w > old_w){
+      fast_scale_map(map,new_h,newy,oldy);
+    }else{
+      fast_scale_map(map,old_w,newx,oldx);
+    }
+
+    pthread_rwlock_wrlock(pl->panel_m);
+    pthread_mutex_lock(pl->status_m);
+
+    if(p->comp_serialno == serialno){
+
+      old_image = pl->pending_image;
+      old_map = pl->map;
+      pl->pending_image = image;
+      pl->map = map;
+      pl->image_task = 1;
+      pl->image_next=0;
+      
+      if(new_w > old_w){
+	// y then x
+	pl->image_waiting=old_w;
+	pl->image_incomplete=old_w;
+      }else{
+	// x then y
+	pl->image_waiting=old_h;
+	pl->image_incomplete=old_h;
+      }      
+      image = NULL;
+      map = NULL;
+    }
+
+    pthread_mutex_unlock(pl->status_m);
+    pthread_rwlock_unlock(pl->panel_m);
+      
+    if(old_map)free(old_map);
+    if(map)free(map);
+    if(old_image)free(old_image);
+    if(image)free(image);
+      
+    pthread_rwlock_rdlock(pl->panel_m);
+    pthread_mutex_lock(pl->status_m);
+
+    return STATUS_WORKING;
+  }
+
+  if(pl->image_task==1){ // scale first dim
+    int next = pl->image_next++;
+    if(pl->image_waiting==0)return STATUS_BUSY;
+    pl->image_waiting--;
+
+    if(new_w > old_w){
+      // y then x
+      pthread_mutex_unlock(pl->status_m);
+      fast_scale_imagey(olddata+next,newdata+next,new_w,old_w,newy,oldy,pl->map);
+      pthread_mutex_lock(pl->status_m);
+      if(p->comp_serialno == serialno){
+	if(--pl->image_incomplete==0){
+
+	  pl->image_task=-1;
+	  pthread_mutex_unlock(pl->status_m);
+	  fast_scale_map(map,new_w,newx,oldx);
+	  pthread_mutex_lock(pl->status_m);
+
+	  if(p->comp_serialno == serialno){
+	    pl->image_waiting=new_h;
+	    pl->image_incomplete=new_h;
+	    pl->image_task=2;
+	    pl->image_next=0;
+	  }
+	}
+      }
+    }else{
+      // x then y
+      pthread_mutex_unlock(pl->status_m);
+      fast_scale_imagex(olddata+next*old_w,newx,oldx,pl->map);
+      pthread_mutex_lock(pl->status_m);
+      if(p->comp_serialno == serialno){
+	if(--pl->image_incomplete==0){
+
+	  pl->image_task=-1;
+	  pthread_mutex_unlock(pl->status_m);
+	  fast_scale_map(map,new_h,newy,oldy);
+	  pthread_mutex_lock(pl->status_m);
+
+	  if(p->comp_serialno == serialno){
+	    pl->image_waiting=new_w;
+	    pl->image_incomplete=new_w;
+	    pl->image_task=2;
+	    pl->image_next=0;
+	  }
+	}
+      }
+    }
+    return STATUS_WORKING;    
+  }
+
+  if(pl->image_task==2){ // scale first dim
+    int next = pl->image_next++;
+    if(pl->image_waiting==0)return STATUS_BUSY;
+    pl->image_waiting--;
+
+    if(new_w > old_w){
+      // now x
+      pthread_mutex_unlock(pl->status_m);
+      fast_scale_imagex(newdata+next*new_w,newx,oldx,pl->map);
+      pthread_mutex_lock(pl->status_m);
+      if(p->comp_serialno == serialno){
+	if(--pl->image_incomplete==0)
+	  pl->image_task=3;
+      }
+    }else{
+      // now y
+      pthread_mutex_unlock(pl->status_m);
+      fast_scale_imagey(olddata+next,newdata+next,new_w,old_w,newy,oldy,pl->map);
+      pthread_mutex_lock(pl->status_m);
+      if(p->comp_serialno == serialno){
+	if(--pl->image_incomplete==0)
+	  pl->image_task=3;
+      }
+    }
+    return STATUS_WORKING;    
+  }
+
+  if(pl->image_task==3){ // commit new data 
+    int *oldflags = NULL;
+    int *newflags = NULL;
+    int *map = NULL;
+
+    pthread_mutex_unlock(pl->status_m);
+    pthread_rwlock_unlock(pl->panel_m);
+
+    newflags = calloc(new_h,sizeof(*newflags));
+
+    pthread_rwlock_wrlock(pl->panel_m);
+    pthread_mutex_lock(pl->status_m);
+
+    if(p->comp_serialno == serialno){
+      pl->image_x = p->bg->image_x;
+      pl->image_y = p->bg->image_y;
+      oldflags = pl->imageflags;
+      pl->imageflags = newflags;
+      pl->image_task = 4;
+      map = pl->map;
+      pl->map = NULL;
+      newflags = NULL;
+    }
+      
+    pthread_mutex_unlock(pl->status_m);
+    pthread_rwlock_unlock(pl->panel_m);
+
+    if(map)free(map);
+    if(oldflags)free(oldflags);
+    if(newflags)free(newflags);
+
+    pthread_rwlock_rdlock(pl->panel_m);
+    pthread_mutex_lock(pl->status_m);
+    return STATUS_WORKING;
+  }
+
+  return STATUS_IDLE;
 }
 
 // called from worker thread
-static int data_resize(sv_plane2d_t *pl, sv_panel_t *p){
+static int data_resize(sv_plane_t *in, sv_panel_t *p){
+  sv_plane_2d_t *pl = (sv_plane_2d_t *)in;
+  sv_scalespace_t newx = pl->pending_data_x;
+  sv_scalespace_t newy = pl->pending_data_y;
+  sv_scalespace_t oldx = pl->data_x;
+  sv_scalespace_t oldy = pl->data_y;
+  int new_w = newx.pixels;
+  int new_h = newy.pixels;
+  int old_w = oldx.pixels;
+  int old_h = oldy.pixels;
+  int serialno = p->comp_serialno;
 
+  if(pl->data_task==-1) return STATUS_BUSY;
 
+  if(pl->data_task==0){ // realloc
+    float *old_data = NULL;
+    float *data = NULL;
+    int *old_map = NULL;
+    int *map = NULL;
+    pl->data_task = -1;
+
+    // drop locks while alloc()ing/free()ing
+    
+    pthread_mutex_unlock(pl->status_m);
+    pthread_rwlock_unlock(pl->panel_m);
+
+    data = calloc(new_w*new_h,sizeof(*data));
+    map = calloc(max(new_h,new_w),sizeof(*map));
+    if(new_w > old_w){
+      fast_scale_map(map,new_h,newy,oldy);
+    }else{
+      fast_scale_map(map,old_w,newx,oldx);
+    }
+
+    pthread_rwlock_wrlock(pl->panel_m);
+    pthread_mutex_lock(pl->status_m);
+
+    if(p->comp_serialno == serialno){
+
+      old_data = pl->pending_data;
+      old_map = pl->map;
+      pl->pending_data = data;
+      pl->map = map;
+      pl->data_task = 1;
+      pl->data_next=0;
+      
+      if(new_w > old_w){
+	// y then x
+	pl->data_waiting=old_w;
+	pl->data_incomplete=old_w;
+      }else{
+	// x then y
+	pl->data_waiting=old_h;
+	pl->data_incomplete=old_h;
+      }      
+      data = NULL;
+      map = NULL;
+    }
+
+    pthread_mutex_unlock(pl->status_m);
+    pthread_rwlock_unlock(pl->panel_m);
+      
+    if(old_map)free(old_map);
+    if(map)free(map);
+    if(old_data)free(old_data);
+    if(data)free(data);
+      
+    pthread_rwlock_rdlock(pl->panel_m);
+    pthread_mutex_lock(pl->status_m);
+
+    return STATUS_WORKING;
+  }
+
+  if(pl->data_task==1){ // scale first dim
+    int next = pl->data_next++;
+    if(pl->data_waiting==0)return STATUS_BUSY;
+    pl->data_waiting--;
+
+    if(new_w > old_w){
+      // y then x
+      pthread_mutex_unlock(pl->status_m);
+      fast_scale_datay(olddata+next,newdata+next,new_w,old_w,newy,oldy,pl->map);
+      pthread_mutex_lock(pl->status_m);
+      if(p->comp_serialno == serialno){
+	if(--pl->data_incomplete==0){
+
+	  pl->data_task=-1;
+	  pthread_mutex_unlock(pl->status_m);
+	  fast_scale_map(map,new_w,newx,oldx);
+	  pthread_mutex_lock(pl->status_m);
+
+	  if(p->comp_serialno == serialno){
+	    pl->data_waiting=new_h;
+	    pl->data_incomplete=new_h;
+	    pl->data_task=2;
+	    pl->data_next=0;
+	  }
+	}
+      }
+    }else{
+      // x then y
+      pthread_mutex_unlock(pl->status_m);
+      fast_scale_datax(olddata+next*old_w,newx,oldx,pl->map);
+      pthread_mutex_lock(pl->status_m);
+      if(p->comp_serialno == serialno){
+	if(--pl->data_incomplete==0){
+
+	  pl->data_task=-1;
+	  pthread_mutex_unlock(pl->status_m);
+	  fast_scale_map(map,new_h,newy,oldy);
+	  pthread_mutex_lock(pl->status_m);
+
+	  if(p->comp_serialno == serialno){
+	    pl->data_waiting=new_w;
+	    pl->data_incomplete=new_w;
+	    pl->data_task=2;
+	    pl->data_next=0;
+	  }
+	}
+      }
+    }
+    return STATUS_WORKING;    
+  }
+
+  if(pl->data_task==2){ // scale first dim
+    int next = pl->data_next++;
+    if(pl->data_waiting==0)return STATUS_BUSY;
+    pl->data_waiting--;
+
+    if(new_w > old_w){
+      // now x
+      pthread_mutex_unlock(pl->status_m);
+      fast_scale_datax(newdata+next*new_w,newx,oldx,pl->map);
+      pthread_mutex_lock(pl->status_m);
+      if(p->comp_serialno == serialno){
+	if(--pl->data_incomplete==0)
+	  pl->data_task=3;
+      }
+    }else{
+      // now y
+      pthread_mutex_unlock(pl->status_m);
+      fast_scale_datay(olddata+next,newdata+next,new_w,old_w,newy,oldy,pl->map);
+      pthread_mutex_lock(pl->status_m);
+      if(p->comp_serialno == serialno){
+	if(--pl->data_incomplete==0)
+	  pl->data_task=3;
+      }
+    }
+    return STATUS_WORKING;    
+  }
+
+  if(pl->data_task==3){ // commit new data 
+    int *map = NULL;
+
+    pthread_mutex_unlock(pl->status_m);
+    pthread_rwlock_unlock(pl->panel_m);
+
+    pthread_rwlock_wrlock(pl->panel_m);
+    pthread_mutex_lock(pl->status_m);
+
+    if(p->comp_serialno == serialno){
+      pl->data_x = p->bg->data_x;
+      pl->data_y = p->bg->data_y;
+      pl->data_task = 4;
+      map = pl->map;
+      pl->map = NULL;
+    }
+      
+    pthread_mutex_unlock(pl->status_m);
+    pthread_rwlock_unlock(pl->panel_m);
+
+    if(map)free(map);
+
+    pthread_rwlock_rdlock(pl->panel_m);
+    pthread_mutex_lock(pl->status_m);
+    return STATUS_WORKING;
+  }
+
+  return STATUS_IDLE;
 }
 
 // called from worker thread
-static int image_work(sv_plane2d_t *pl, sv_panel_t *p){
+static int image_work(sv_plane_t *in, sv_panel_t *p){
+  sv_plane_2d_t *pl = (sv_plane_2d_t *)in;
 
-
+  
+  
 }
 
 // called from worker thread
-static int data_work(sv_plane2d_t *pl, sv_panel_t *p){
+static int data_work(sv_plane_t *in, sv_panel_t *p){
+  sv_plane_2d_t *pl = (sv_plane_2d_t *)in;
 
 
 }
 
 // called from GTK/API
-static void plane_remap(sv_plane2d_t *pl, sv_panel_t *p){
+static void plane_remap(sv_plane_t *in, sv_panel_t *p){
+  sv_plane_2d_t *pl = (sv_plane_2d_t *)in;
 
 
 }
 
+// called from GTK/API
+static void plane_free(sv_plane_t *pl){
+  sv_plane_2d_t *pl = (sv_plane_2d_t *)in;
 
+  if(pl){
+    if(pl->data)free(pl->data);
+    if(pl->image)free(pl->image);
+    if(pl->image_flags)free(pl->image_flags);
+    
+    if(pl->resample_xdelA)free(pl->resample_xdelA);
+    if(pl->resample_xdelB)free(pl->resample_xdelB);
+    if(pl->resample_xnumA)free(pl->resample_xnumA);
+    if(pl->resample_xnumB)free(pl->resample_xnumB);
+    if(pl->resample_xscalemul)free(pl->resample_xscalemul);
+    
+    if(pl->resample_ydelA)free(pl->resample_ydelA);
+    if(pl->resample_ydelB)free(pl->resample_ydelB);
+    if(pl->resample_ynumA)free(pl->resample_ynumA);
+    if(pl->resample_ynumB)free(pl->resample_ynumB);
+    if(pl->resample_yscalemul)free(pl->resample_yscalemul);
+    
+    if(pl->mapping)_sv_mapping_free(pl->mapping);
+    if(pl->scale)_sv_slider_free(pl->scale);
+    if(pl->range_pulldown)gtk_widget_destroy(pl->range_pulldown);
+  
+    free(pl);
+  }
+}
 
-
-
+sv_plane_t *sv_plane_2d_new(){
+  sv_plane_2d_t *ret = calloc(1,sizeof(*ret));
+  ret->recompute_setup = recompute_setup;
+  ret->image_resize = image_resize;
+  ret->data_resize = data_resize;
+  ret->image_work = image_work;
+  ret->data_work = data_work;
+  ret->plane_remap = plane_remap;
+  ret->plane_free = plane_free;
+  return (sv_plane_t *)ret;
+}
 
 
 // enter unlocked
@@ -925,164 +1425,6 @@ static void _sv_panel2d_mark_map_full(sv_panel_t *p){
   }
 }
 
-// enter with lock
-static void _sv_panel2d_update_legend(sv_panel_t *p){  
-  _sv_panel2d_t *p2 = p->subtype->p2;
-  _sv_plot_t *plot = PLOT(p->private->graph);
-
-  if(plot){
-    int i;
-    char buffer[320];
-    int depth = 0;
-    _sv_plot_legend_clear(plot);
-
-    // potentially add each dimension to the legend; add axis
-    // dimensions only if crosshairs are active
-
-    // display decimal precision relative to display scales
-    if(3-_sv_scalespace_decimal_exponent(&p2->x) > depth) 
-      depth = 3-_sv_scalespace_decimal_exponent(&p2->x);
-    if(3-_sv_scalespace_decimal_exponent(&p2->y) > depth) 
-      depth = 3-_sv_scalespace_decimal_exponent(&p2->y);
-    for(i=0;i<p->dimensions;i++){
-      sv_dim_t *d = p->dimension_list[i].d;
-      if( (d!=p->private->x_d && d!=p->private->y_d) ||
-	  plot->cross_active){
-	snprintf(buffer,320,"%s = %+.*f",
-		 p->dimension_list[i].d->legend,
-		 depth,
-		 p->dimension_list[i].d->val);
-	_sv_plot_legend_add(plot,buffer);
-      }
-    }
-    
-    // add each active objective plane to the legend
-    // choose the value under the crosshairs 
-    if(plot->cross_active){
-      // one space 
-      _sv_plot_legend_add(plot,NULL);
-
-      for(i=0;i<p->objectives;i++){
-	
-	if(!_sv_mapping_inactive_p(p2->mappings+i)){
-	  compute_result vals;
-	  _sv_panel2d_compute_point(p,p->objective_list[i].o, plot->selx, plot->sely, &vals);
-	  
-	  if(!isnan(vals.y)){
-	    
-	    snprintf(buffer,320,"%s = %f",
-		     p->objective_list[i].o->name,
-		     vals.y);
-	    _sv_plot_legend_add(plot,buffer);
-	  }
-	}
-      }
-    }
-  }
-}
-
-static void _sv_panel2d_mapchange_callback(GtkWidget *w,gpointer in){
-  sv_obj_list_t *optr = (sv_obj_list_t *)in;
-  //sv_obj_t *o = optr->o;
-  sv_panel_t *p = optr->p;
-  _sv_panel2d_t *p2 = p->subtype->p2;
-  int onum = optr - p->objective_list;
-
-  _sv_undo_push();
-  _sv_undo_suspend();
-
-  _sv_mapping_set_func(&p2->mappings[onum],gtk_combo_box_get_active(GTK_COMBO_BOX(w)));
-  
-  //redraw the map slider
-  _sv_slider_set_gradient(p2->range_scales[onum], &p2->mappings[onum]);
-
-  // in the event the mapping active state changed
-  _sv_panel_dirty_legend(p);
-
-  //redraw the plot
-  _sv_panel2d_mark_map_plane(p,onum,1,0,0);
-  _sv_panel_dirty_map(p);
-  _sv_undo_resume();
-}
-
-static void _sv_panel2d_map_callback(void *in,int buttonstate){
-  sv_obj_list_t *optr = (sv_obj_list_t *)in;
-  //sv_obj_t *o = optr->o;
-  sv_panel_t *p = optr->p;
-  _sv_panel2d_t *p2 = p->subtype->p2;
-  int onum = optr - p->objective_list;
-
-  if(buttonstate == 0){
-    _sv_undo_push();
-    _sv_undo_suspend();
-  }
-
-  // recache alpha del */
-  p2->alphadel[onum] = 
-    _sv_slider_val_to_del(p2->range_scales[onum],
-		      _sv_slider_get_value(p2->range_scales[onum],1));
-
-  // redraw the plot on motion
-  if(buttonstate == 1){
-    _sv_panel2d_mark_map_plane(p,onum,1,0,0);
-    _sv_panel_dirty_map(p);
-  }
-  if(buttonstate == 2)
-    _sv_undo_resume();
-}
-
-static void _sv_panel2d_update_xysel(sv_panel_t *p){
-  _sv_panel2d_t *p2 = p->subtype->p2;
-  int i;
-  // update which x/y buttons are pressable */
-  // enable/disable dimension slider thumbs
-
-  for(i=0;i<p->dimensions;i++){
-    if(p2->dim_xb[i] &&
-       gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(p2->dim_xb[i]))){
-      // make the y insensitive
-      if(p2->dim_yb[i])
-	_gtk_widget_set_sensitive_fixup(p2->dim_yb[i],FALSE);
-
-      // set the x dim flag
-      p->private->x_d = p->dimension_list[i].d;
-      p2->x_scale = p->private->dim_scales[i];
-      p2->x_dnum = i;
-    }else{
-      // if there is a y, make it sensitive 
-      if(p2->dim_yb[i])
-	_gtk_widget_set_sensitive_fixup(p2->dim_yb[i],TRUE);
-    }
-    if(p2->dim_yb[i] &&
-       gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(p2->dim_yb[i]))){
-      // make the x insensitive
-      if(p2->dim_xb[i])
-	_gtk_widget_set_sensitive_fixup(p2->dim_xb[i],FALSE);
-
-      // set the y dim
-      p->private->y_d = p->dimension_list[i].d;
-      p2->y_scale = p->private->dim_scales[i];
-      p2->y_dnum = i;
-    }else{
-      // if there is a x, make it sensitive 
-      if(p2->dim_xb[i])
-	_gtk_widget_set_sensitive_fixup(p2->dim_xb[i],TRUE);
-    }
-    if((p2->dim_xb[i] &&
-	gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(p2->dim_xb[i]))) ||
-       (p2->dim_yb[i] &&
-	gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(p2->dim_yb[i])))){
-      // make all thumbs visible 
-      _sv_dim_widget_set_thumb_active(p->private->dim_scales[i],0,1);
-      _sv_dim_widget_set_thumb_active(p->private->dim_scales[i],2,1);
-    }else{
-      // make bracket thumbs invisible */
-      _sv_dim_widget_set_thumb_active(p->private->dim_scales[i],0,0);
-      _sv_dim_widget_set_thumb_active(p->private->dim_scales[i],2,0);
-    }
-  } 
-}
-
 static int _v_swizzle(int y, int height){
   int yy = height >> 5;
   if(y < yy)
@@ -1110,282 +1452,6 @@ static int _v_swizzle(int y, int height){
 
   y -= yy;
   return y<<1;
-}
-
-// assumes data is locked
-static void _sv_panel2d_fast_scale_x(_sv_spinner_t *sp,
-				     int *data, 
-				     int w,
-				     int h,
-				     _sv_scalespace_t new,
-				     _sv_scalespace_t old){
-  int x,y;
-  int work[w];
-  int mapbase[w];
-  int mapdel[w];
-  double old_w = old.pixels;
-  double new_w = new.pixels;
-
-  double old_lo = _sv_scalespace_value(&old,0);
-  double old_hi = _sv_scalespace_value(&old,old_w);
-  double new_lo = _sv_scalespace_value(&new,0);
-  double new_hi = _sv_scalespace_value(&new,new_w);
-  double newscale = (new_hi-new_lo)/new_w;
-  double oldscale = old_w/(old_hi-old_lo);
-  for(x=0;x<w;x++){
-    double xval = (x)*newscale+new_lo;
-    double map = ((xval-old_lo)*oldscale);
-    int base = (int)floor(map);
-    int del = rint((map - floor(map))*64.f);
-    /* hack to overwhelm roundoff error; this is inside a purely
-       temporary cosmetic approximation anyway*/
-    if(base>0 && del==0){
-      mapbase[x]=base-1;
-      mapdel[x]=64;
-    }else{
-      mapbase[x]=base;
-      mapdel[x]=del;
-    }
-  }
-
-  for(y=0;y<h;y++){
-    int *data_line = data+y*w;
-    _sv_spinner_set_busy(sp);
-    for(x=0;x<w;x++){
-      if(mapbase[x]<0 || mapbase[x]>=(w-1)){
-	work[x]=-1;
-      }else{
-	int base = mapbase[x];
-	int A = data_line[base];
-	int B = data_line[base+1];
-	if(A<0 || B<0)
-	  work[x]=-1;
-	else
-	  work[x]= A + (((B - A)*mapdel[x])>>6);
-	
-      }
-    }
-    memcpy(data_line,work,w*(sizeof(*work)));
-  }   
-}
-
-static void _sv_panel2d_fast_scale_y(_sv_spinner_t *sp,
-				     int *olddata, 
-				     int *newdata, 
-				     int oldw,
-				     int neww,
-				     _sv_scalespace_t new,
-				     _sv_scalespace_t old){
-  int x,y;
-  int w = (oldw<neww?oldw:neww);
-
-  int old_h = old.pixels;
-  int new_h = new.pixels;
-
-  int mapbase[new_h];
-  int mapdel[new_h];
-
-  double old_lo = _sv_scalespace_value(&old,0);
-  double old_hi = _sv_scalespace_value(&old,(double)old_h);
-  double new_lo = _sv_scalespace_value(&new,0);
-  double new_hi = _sv_scalespace_value(&new,(double)new_h);
-  double newscale = (new_hi-new_lo)/new_h;
-  double oldscale = old_h/(old_hi-old_lo);
-  
-  for(y=0;y<new_h;y++){
-    double yval = (y)*newscale+new_lo;
-    double map = ((yval-old_lo)*oldscale);
-    int base = (int)floor(map);
-    int del = rint((map - floor(map))*64.);
-    /* hack to overwhelm roundoff error; this is inside a purely
-       temporary cosmetic approximation anyway */
-    if(base>0 && del==0){
-      mapbase[y]=base-1;
-      mapdel[y]=64;
-    }else{
-      mapbase[y]=base;
-      mapdel[y]=del;
-    }
-  }
-
-  
-  for(y=0;y<new_h;y++){
-    int base = mapbase[y];
-    int *new_column = &newdata[y*neww];
-    _sv_spinner_set_busy(sp);
-
-    if(base<0 || base>=(old_h-1)){
-      for(x=0;x<w;x++)
-	new_column[x] = -1;
-    }else{
-      int del = mapdel[y];
-      int *old_column = &olddata[base*oldw];
-
-      for(x=0;x<w;x++){
-	int A = old_column[x];
-	int B = old_column[x+oldw];
-	if(A<0 || B<0)
-	  new_column[x]=-1;
-	else
-	  new_column[x]= A + (((B-A)*del)>>6);
-      }
-    }
-  }
-}
-
-static void _sv_panel2d_fast_scale(_sv_spinner_t *sp, 
-				   int *newdata, 
-				   _sv_scalespace_t xnew,
-				   _sv_scalespace_t ynew,
-				   int *olddata,
-				   _sv_scalespace_t xold,
-				   _sv_scalespace_t yold){
-  
-  int new_w = xnew.pixels;
-  int new_h = ynew.pixels;
-  int old_w = xold.pixels;
-  int old_h = yold.pixels;
-
-  if(new_w > old_w){
-    _sv_panel2d_fast_scale_y(sp,olddata,newdata,old_w,new_w,ynew,yold);
-    _sv_panel2d_fast_scale_x(sp,newdata,new_w,new_h,xnew,xold);
-  }else{
-    _sv_panel2d_fast_scale_x(sp,olddata,old_w,old_h,xnew,xold);
-    _sv_panel2d_fast_scale_y(sp,olddata,newdata,old_w,new_w,ynew,yold);
-  }
-}
-
-// call only from main gtk thread
-static void _sv_panel2d_mark_recompute(sv_panel_t *p){
-  if(!p->private->realized) return;
-  _sv_plot_t *plot = PLOT(p->private->graph);
-
-  if(plot && GTK_WIDGET_REALIZED(GTK_WIDGET(plot))){
-    _sv_panel_dirty_plot(p);
-  }
-}
-
-static void _sv_panel2d_update_crosshairs(sv_panel_t *p){
-  _sv_plot_t *plot = PLOT(p->private->graph);
-  double x=0,y=0;
-  int i;
-  
-  for(i=0;i<p->dimensions;i++){
-    sv_dim_t *d = p->dimension_list[i].d;
-    if(d == p->private->x_d)
-      x = d->val;
-    if(d == p->private->y_d)
-      y = d->val;
-    
-  }
-  
-  _sv_plot_set_crosshairs(plot,x,y);
-  _sv_panel_dirty_legend(p);
-}
-
-static void _sv_panel2d_center_callback(sv_dim_list_t *dptr){
-  sv_dim_t *d = dptr->d;
-  sv_panel_t *p = dptr->p;
-  int axisp = (d == p->private->x_d || d == p->private->y_d);
-
-  if(!axisp){
-    // mid slider of a non-axis dimension changed, rerender
-    _sv_panel2d_mark_recompute(p);
-  }else{
-    // mid slider of an axis dimension changed, move crosshairs
-    _sv_panel2d_update_crosshairs(p);
-  }
-}
-
-static void _sv_panel2d_bracket_callback(sv_dim_list_t *dptr){
-  sv_dim_t *d = dptr->d;
-  sv_panel_t *p = dptr->p;
-  int axisp = (d == p->private->x_d || d == p->private->y_d);
-
-  if(axisp)
-    _sv_panel2d_mark_recompute(p);
-    
-}
-
-static void _sv_panel2d_dimchange_callback(GtkWidget *button,gpointer in){
-  sv_panel_t *p = (sv_panel_t *)in;
-
-  if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button))){
-
-    _sv_undo_push();
-    _sv_undo_suspend();
-
-    _sv_plot_unset_box(PLOT(p->private->graph));
-    _sv_panel2d_update_xysel(p);
-
-    _sv_panel2d_clear_pane(p);
-    _sv_panel2d_mark_recompute(p);
-    _sv_panel2d_update_crosshairs(p);
-
-    _sv_undo_resume();
-  }
-}
-
-static void _sv_panel2d_crosshairs_callback(sv_panel_t *p){
-  double x=PLOT(p->private->graph)->selx;
-  double y=PLOT(p->private->graph)->sely;
-  int i;
-  
-  _sv_undo_push();
-  _sv_undo_suspend();
-
-  //plot_snap_crosshairs(PLOT(p->private->graph));
-
-  for(i=0;i<p->dimensions;i++){
-    sv_dim_t *d = p->dimension_list[i].d;
-    if(d == p->private->x_d){
-      _sv_dim_widget_set_thumb(p->private->dim_scales[i],1,x);
-    }
-
-    if(d == p->private->y_d){
-      _sv_dim_widget_set_thumb(p->private->dim_scales[i],1,y);
-    }
-    
-    p->private->oldbox_active = 0;
-  }
-
-  // dimension setting might have enforced granularity restrictions;
-  // have the display reflect that
-  x = p->private->x_d->val;
-  y = p->private->y_d->val;
-
-  _sv_plot_set_crosshairs(PLOT(p->private->graph),x,y);
-
-  _sv_panel_dirty_legend(p);
-  _sv_undo_resume();
-}
-
-static void _sv_panel2d_box_callback(void *in, int state){
-  sv_panel_t *p = (sv_panel_t *)in;
-  _sv_panel2d_t *p2 = p->subtype->p2;
-  _sv_plot_t *plot = PLOT(p->private->graph);
-  
-  switch(state){
-  case 0: // box set
-    _sv_undo_push();
-    _sv_plot_box_vals(plot,p2->oldbox);
-    p->private->oldbox_active = plot->box_active;
-    break;
-  case 1: // box activate
-    _sv_undo_push();
-    _sv_undo_suspend();
-
-    _sv_panel2d_crosshairs_callback(p);
-
-    _sv_dim_widget_set_thumb(p2->x_scale,0,p2->oldbox[0]);
-    _sv_dim_widget_set_thumb(p2->x_scale,2,p2->oldbox[1]);
-    _sv_dim_widget_set_thumb(p2->y_scale,0,p2->oldbox[2]);
-    _sv_dim_widget_set_thumb(p2->y_scale,2,p2->oldbox[3]);
-    p->private->oldbox_active = 0;
-    _sv_undo_resume();
-    break;
-  }
-  _sv_panel_update_menus(p);
 }
 
 void _sv_panel2d_maintain_cache(sv_panel_t *p, _sv_bythread_cache_2d_t *c, int w){
@@ -1647,68 +1713,6 @@ static void _sv_panel2d_recompute_callback(void *ptr){
   gdk_unlock();
 }
 
-static void _sv_panel2d_undo_log(_sv_panel_undo_t *u, sv_panel_t *p){
-  _sv_panel2d_t *p2 = p->subtype->p2;
-  int i;
-
-  // alloc fields as necessary
-  
-  if(!u->mappings)
-    u->mappings =  calloc(p->objectives,sizeof(*u->mappings));
-  if(!u->scale_vals[0])
-    u->scale_vals[0] =  calloc(p->objectives,sizeof(**u->scale_vals));
-  if(!u->scale_vals[1])
-    u->scale_vals[1] =  calloc(p->objectives,sizeof(**u->scale_vals));
-  if(!u->scale_vals[2])
-    u->scale_vals[2] =  calloc(p->objectives,sizeof(**u->scale_vals));
-
-  // populate undo
-  for(i=0;i<p->objectives;i++){
-    u->mappings[i] = p2->mappings[i].mapnum;
-    u->scale_vals[0][i] = _sv_slider_get_value(p2->range_scales[i],0);
-    u->scale_vals[1][i] = _sv_slider_get_value(p2->range_scales[i],1);
-    u->scale_vals[2][i] = _sv_slider_get_value(p2->range_scales[i],2);
-  }
-  
-  u->x_d = p2->x_dnum;
-  u->y_d = p2->y_dnum;
-  u->box[0] = p2->oldbox[0];
-  u->box[1] = p2->oldbox[1];
-  u->box[2] = p2->oldbox[2];
-  u->box[3] = p2->oldbox[3];
-  u->box_active = p->private->oldbox_active;
-}
-
-static void _sv_panel2d_undo_restore(_sv_panel_undo_t *u, sv_panel_t *p){
-  _sv_panel2d_t *p2 = p->subtype->p2;
-  _sv_plot_t *plot = PLOT(p->private->graph);
-  int i;
-  
-  // go in through widgets
-  for(i=0;i<p->objectives;i++){
-    gtk_combo_box_set_active(GTK_COMBO_BOX(p2->range_pulldowns[i]),u->mappings[i]);
-    _sv_slider_set_value(p2->range_scales[i],0,u->scale_vals[0][i]);
-    _sv_slider_set_value(p2->range_scales[i],1,u->scale_vals[1][i]);
-    _sv_slider_set_value(p2->range_scales[i],2,u->scale_vals[2][i]);
-  }
-
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(p2->dim_xb[u->x_d]),TRUE);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(p2->dim_yb[u->y_d]),TRUE);
-
-  _sv_panel2d_update_xysel(p);
-
-  if(u->box_active){
-    p2->oldbox[0] = u->box[0];
-    p2->oldbox[1] = u->box[1];
-    p2->oldbox[2] = u->box[2];
-    p2->oldbox[3] = u->box[3];
-    _sv_plot_box_set(plot,u->box);
-    p->private->oldbox_active = 1;
-  }else{
-    _sv_plot_unset_box(plot);
-    p->private->oldbox_active = 0;
-  }
-}
 
 static void _sv_panel2d_realize(sv_panel_t *p){
   _sv_panel2d_t *p2 = p->subtype->p2;
@@ -1883,220 +1887,3 @@ static void _sv_panel2d_realize(sv_panel_t *p){
   _sv_undo_resume();
 }
 
-static int _sv_panel2d_save(sv_panel_t *p, xmlNodePtr pn){  
-  _sv_panel2d_t *p2 = p->subtype->p2;
-  int ret=0,i;
-
-  xmlNodePtr n;
-
-  xmlNewProp(pn, (xmlChar *)"type", (xmlChar *)"2d");
-
-  // box
-  if(p->private->oldbox_active){
-    xmlNodePtr boxn = xmlNewChild(pn, NULL, (xmlChar *) "box", NULL);
-    _xmlNewPropF(boxn, "x1", p2->oldbox[0]);
-    _xmlNewPropF(boxn, "x2", p2->oldbox[1]);
-    _xmlNewPropF(boxn, "y1", p2->oldbox[2]);
-    _xmlNewPropF(boxn, "y2", p2->oldbox[3]);
-  }
-
-  // objective map settings
-  for(i=0;i<p->objectives;i++){
-    sv_obj_t *o = p->objective_list[i].o;
-    xmlNodePtr on = xmlNewChild(pn, NULL, (xmlChar *) "objective", NULL);
-    _xmlNewPropI(on, "position", i);
-    _xmlNewPropI(on, "number", o->number);
-    _xmlNewPropS(on, "name", o->name);
-    _xmlNewPropS(on, "type", o->output_types);
-    
-    // right now Y is the only type; the below is Y-specific
-    n = xmlNewChild(on, NULL, (xmlChar *) "y-map", NULL);
-    _xmlNewPropS(n, "color", _sv_mapping_name(p2->mappings[i].mapnum));
-    _xmlNewPropF(n, "low-bracket", _sv_slider_get_value(p2->range_scales[i],0));
-    _xmlNewPropF(n, "alpha", _sv_slider_get_value(p2->range_scales[i],1));
-    _xmlNewPropF(n, "high-bracket", _sv_slider_get_value(p2->range_scales[i],2));
-  }
-
-  // x/y dim selection
-  n = xmlNewChild(pn, NULL, (xmlChar *) "axes", NULL);
-  _xmlNewPropI(n, "xpos", p2->x_dnum);
-  _xmlNewPropI(n, "ypos", p2->y_dnum);
-
-  return ret;
-}
-
-int _sv_panel2d_load(sv_panel_t *p,
-		     _sv_panel_undo_t *u,
-		     xmlNodePtr pn,
-		     int warn){
-  int i;
-
-  // check type
-  _xmlCheckPropS(pn,"type","2d", "Panel %d type mismatch in save file.",p->number,&warn);
-  
-  // box
-  u->box_active = 0;
-  _xmlGetChildPropFPreserve(pn, "box", "x1", &u->box[0]);
-  _xmlGetChildPropFPreserve(pn, "box", "x2", &u->box[1]);
-  _xmlGetChildPropFPreserve(pn, "box", "y1", &u->box[2]);
-  _xmlGetChildPropFPreserve(pn, "box", "y2", &u->box[3]);
-
-  xmlNodePtr n = _xmlGetChildS(pn, "box", NULL, NULL);
-  if(n){
-    u->box_active = 1;
-    xmlFree(n);
-  }
-  
-  // objective map settings
-  for(i=0;i<p->objectives;i++){
-    sv_obj_t *o = p->objective_list[i].o;
-    xmlNodePtr on = _xmlGetChildI(pn, "objective", "position", i);
-    if(!on){
-      _sv_first_load_warning(&warn);
-      fprintf(stderr,"No save data found for panel %d objective \"%s\".\n",p->number, o->name);
-    }else{
-      // check name, type
-      _xmlCheckPropS(on,"name",o->name, "Objectve position %d name mismatch in save file.",i,&warn);
-      _xmlCheckPropS(on,"type",o->output_types, "Objectve position %d type mismatch in save file.",i,&warn);
-      
-      // right now Y is the only type; the below is Y-specific
-      // load maptype, values
-      _xmlGetChildPropFPreserve(on, "y-map", "low-bracket", &u->scale_vals[0][i]);
-      _xmlGetChildPropFPreserve(on, "y-map", "alpha", &u->scale_vals[1][i]);
-      _xmlGetChildPropFPreserve(on, "y-map", "high-bracket", &u->scale_vals[2][i]);
-      _xmlGetChildMap(on, "y-map", "color", _sv_mapping_map(), &u->mappings[i],
-		     "Panel %d objective unknown mapping setting", p->number, &warn);
-
-      xmlFreeNode(on);
-    }
-  }
-
-  // x/y dim selection
-  _xmlGetChildPropIPreserve(pn, "axes", "xpos", &u->x_d);
-  _xmlGetChildPropI(pn, "axes", "ypos", &u->y_d);
-
-  return warn;
-}
-
-sv_panel_t *sv_panel_new_2d(int number,
-			    char *name, 
-			    char *objectivelist,
-			    char *dimensionlist,
-			    unsigned flags){
-  
-  int i,j;
-  sv_panel_t *p = _sv_panel_new(number,name,objectivelist,dimensionlist,flags);
-  if(!p)return NULL;
-
-  _sv_panel2d_t *p2 = calloc(1, sizeof(*p2));
-  int fout_offsets[_sv_functions];
-  
-  p->subtype = 
-    calloc(1, sizeof(*p->subtype)); /* the union is alloced not
-				       embedded as its internal
-				       structure must be hidden */  
-  p->subtype->p2 = p2;
-  p->type = SV_PANEL_2D;
-  p->private->bg_type = SV_BG_CHECKS;
-
-  // verify all the objectives have scales
-  for(i=0;i<p->objectives;i++){
-    if(!p->objective_list[i].o->scale){
-      fprintf(stderr,"All objectives in a 2d panel must have a scale\n");
-      errno = -EINVAL;
-      return NULL;
-    }
-  }
-
-  p->private->realize = _sv_panel2d_realize;
-  p->private->map_action = _sv_panel2d_map_redraw;
-  p->private->legend_action = _sv_panel2d_legend_redraw;
-  p->private->compute_action = _sv_panel2d_compute;
-  p->private->request_compute = _sv_panel2d_mark_recompute;
-  p->private->crosshair_action = _sv_panel2d_crosshairs_callback;
-  p->private->print_action = _sv_panel2d_print;
-  p->private->undo_log = _sv_panel2d_undo_log;
-  p->private->undo_restore = _sv_panel2d_undo_restore;
-  p->private->save_action = _sv_panel2d_save;
-  p->private->load_action = _sv_panel2d_load;
-
-  /* set up helper data structures for rendering */
-
-  /* determine which functions are actually needed; if it's referenced
-     by an objective, it's used.  Precache them in dense form. */
-  {
-    int fn = _sv_functions;
-    int used[fn],count=0,offcount=0;
-    memset(used,0,sizeof(used));
-    memset(fout_offsets,-1,sizeof(fout_offsets));
-    
-    for(i=0;i<p->objectives;i++){
-      sv_obj_t *o = p->objective_list[i].o;
-      for(j=0;j<o->outputs;j++)
-	used[o->function_map[j]]=1;
-    }
-
-    for(i=0;i<fn;i++)
-      if(used[i]){
-	sv_func_t *f = _sv_function_list[i];
-	fout_offsets[i] = offcount;
-	offcount += f->outputs;
-	count++;
-      }
-
-    p2->used_functions = count;
-    p2->used_function_list = calloc(count, sizeof(*p2->used_function_list));
-
-    for(count=0,i=0;i<fn;i++)
-     if(used[i]){
-        p2->used_function_list[count]=_sv_function_list[i];
-	count++;
-      }
-  }
-
-  /* set up computation/render helpers for Y planes */
-
-  /* set up Y object mapping index */
-  {
-    int yobj_count = 0;
-
-    for(i=0;i<p->objectives;i++){
-      sv_obj_t *o = p->objective_list[i].o;
-      if(o->private->y_func) yobj_count++;
-    }
-
-    p2->y_obj_num = yobj_count;
-    p2->y_obj_list = calloc(yobj_count, sizeof(*p2->y_obj_list));
-    p2->y_obj_to_panel = calloc(yobj_count, sizeof(*p2->y_obj_to_panel));
-    p2->y_obj_from_panel = calloc(p->objectives, sizeof(*p2->y_obj_from_panel));
-    
-    yobj_count=0;
-    for(i=0;i<p->objectives;i++){
-      sv_obj_t *o = p->objective_list[i].o;
-      if(o->private->y_func){
-	p2->y_obj_list[yobj_count] = o;
-	p2->y_obj_to_panel[yobj_count] = i;
-	p2->y_obj_from_panel[i] = yobj_count;
-	yobj_count++;
-      }else
-	p2->y_obj_from_panel[i] = -1;
-      
-    }
-  }
-  
-  /* set up function Y output value demultiplex helper */
-  {
-    p2->y_fout_offset = calloc(p2->y_obj_num, sizeof(*p2->y_fout_offset));
-    for(i=0;i<p2->y_obj_num;i++){
-      sv_obj_t *o = p2->y_obj_list[i];
-      int funcnum = o->private->y_func->number;
-      p2->y_fout_offset[i] = fout_offsets[funcnum] + o->private->y_fout;
-    }
-  }
-
-  p2->y_map = calloc(p2->y_obj_num,sizeof(*p2->y_map));
-  p2->y_planetodo = calloc(p2->y_obj_num,sizeof(*p2->y_planetodo));
-  p2->y_planes = calloc(p2->y_obj_num,sizeof(*p2->y_planes));
-
-  return p;
-}
