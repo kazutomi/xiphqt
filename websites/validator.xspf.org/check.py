@@ -30,6 +30,10 @@
 # -----------------------------------------------------------------------
 # HISTORY
 # -----------------------------------------------------------------------
+# 2007-09-24 -- Sebastian Pipping <webmaster@hartwork.org>
+#
+#   * Fixed: Another bug in whitespace handling
+#
 # 2007-09-21 -- Sebastian Pipping <webmaster@hartwork.org>
 #
 #   * Fixed: Whitespace handling fixes copied over from libSpiff
@@ -905,6 +909,16 @@ def handleEndOne(name):
 
 def handleEndTwo(name):
     stackTop = globals()["stack"][len(globals()["stack"]) - 1]
+
+    # Collapse elements
+    # NOTE: whitespace in the middle of <dateTime>,
+    # <nonNegativeInteger>, and <anyURI> is illegal anyway
+    # which is why we we only cut head and tail here
+    if stackTop in [TAG_PLAYLIST_INFO, TAG_PLAYLIST_LOCATION, \
+            TAG_PLAYLIST_IDENTIFIER, TAG_PLAYLIST_IMAGE, TAG_PLAYLIST_DATE, \
+            TAG_PLAYLIST_LICENSE, TAG_PLAYLIST_LINK, TAG_PLAYLIST_META]:
+        globals()["accum"] = globals()["accum"].strip()
+
     if stackTop == TAG_PLAYLIST_DATE:
         if not isDateTime(globals()["accum"]):
             fail("Content of <i>date</i> is not a dateTime.")
@@ -943,6 +957,15 @@ def handleEndTwo(name):
     
 def handleEndThree(name):
     stackTop = globals()["stack"][len(globals()["stack"]) - 1]
+
+    # Collapse elements
+    # NOTE: whitespace in the middle of <dateTime>,
+    # <nonNegativeInteger>, and <anyURI> is illegal anyway
+    # which is why we we only cut head and tail here
+    if stackTop in [TAG_PLAYLIST_ATTRIBUTION_IDENTIFIER, \
+            TAG_PLAYLIST_ATTRIBUTION_LOCATION]:
+        globals()["accum"] = globals()["accum"].strip()
+
     if stackTop == TAG_PLAYLIST_ATTRIBUTION_IDENTIFIER:
         if not isUri(globals()["accum"]):
             fail("Content of <i>identifier</i> is not a URI.")
@@ -967,6 +990,21 @@ def handleEndThree(name):
     
 def handleEndFour(name):
     stackTop = globals()["stack"][len(globals()["stack"]) - 1]
+
+    # Collapse elements
+    # NOTE: whitespace in the middle of <dateTime>,
+    # <nonNegativeInteger>, and <anyURI> is illegal anyway
+    # which is why we we only cut head and tail here
+    if stackTop in [TAG_PLAYLIST_TRACKLIST_TRACK_LOCATION, \
+            TAG_PLAYLIST_TRACKLIST_TRACK_IDENTIFIER, \
+            TAG_PLAYLIST_TRACKLIST_TRACK_INFO, \
+            TAG_PLAYLIST_TRACKLIST_TRACK_IMAGE, \
+            TAG_PLAYLIST_TRACKLIST_TRACK_TRACKNUM, \
+            TAG_PLAYLIST_TRACKLIST_TRACK_DURATION, \
+            TAG_PLAYLIST_TRACKLIST_TRACK_LINK, \
+            TAG_PLAYLIST_TRACKLIST_TRACK_META]:
+        globals()["accum"] = globals()["accum"].strip()
+
     if stackTop == TAG_PLAYLIST_TRACKLIST_TRACK_DURATION:
         if not globals()["accum"].isdigit():
             fail("Content of <i>duration</i> is not an unsigned integer.")
@@ -1032,47 +1070,23 @@ def handleCharacters(s):
                 fail("No character data allowed")
 
     elif level == 2:
-        if stackTop in [TAG_PLAYLIST_TRACKLIST, TAG_PLAYLIST_ATTRIBUTION]:
+        if stackTop in [TAG_PLAYLIST_TRACKLIST, \
+                TAG_PLAYLIST_ATTRIBUTION]:
             if s.strip() != "":
                 fail("No character data allowed")
-
-        elif stackTop in [TAG_PLAYLIST_INFO, TAG_PLAYLIST_LOCATION, \
-                TAG_PLAYLIST_IDENTIFIER, TAG_PLAYLIST_IMAGE, TAG_PLAYLIST_DATE, \
-                TAG_PLAYLIST_LICENSE, TAG_PLAYLIST_LINK, TAG_PLAYLIST_META]:
-            # Collapse elements
-            # NOTE: whitespace in the middle of <dateTime>,
-            # <nonNegativeInteger>, and <anyURI> is illegal anyway
-            # which is why we we only cut head and tail here
-            globals()["accum"] += s.strip()
 
         else:
             globals()["accum"] += s
 
     elif level == 3:
-        if stackTop in [TAG_PLAYLIST_ATTRIBUTION_IDENTIFIER, TAG_PLAYLIST_ATTRIBUTION_LOCATION]:
-            globals()["accum"] += s.strip()
-
-        elif (stackTop == TAG_PLAYLIST_TRACKLIST_TRACK):
+        if (stackTop == TAG_PLAYLIST_TRACKLIST_TRACK):
             if s.strip() != "":
                 fail("No character data allowed")
+
         else:
             globals()["accum"] += s
             
     elif level == 4:
-        if stackTop in [TAG_PLAYLIST_TRACKLIST_TRACK_LOCATION, \
-                TAG_PLAYLIST_TRACKLIST_TRACK_IDENTIFIER, \
-                TAG_PLAYLIST_TRACKLIST_TRACK_INFO, \
-                TAG_PLAYLIST_TRACKLIST_TRACK_IMAGE, \
-                TAG_PLAYLIST_TRACKLIST_TRACK_TRACKNUM, \
-                TAG_PLAYLIST_TRACKLIST_TRACK_DURATION, \
-                TAG_PLAYLIST_TRACKLIST_TRACK_LINK, \
-                TAG_PLAYLIST_TRACKLIST_TRACK_META]:
-            globals()["accum"] += s.strip()
-
-        else:
-            globals()["accum"] += s
-        
-    else:
         globals()["accum"] += s
 
 
