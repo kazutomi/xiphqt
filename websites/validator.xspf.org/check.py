@@ -33,6 +33,7 @@
 # 2007-09-24 -- Sebastian Pipping <webmaster@hartwork.org>
 #
 #   * Fixed: Another bug in whitespace handling
+#   * Added: Finally made testable from the command line
 #
 # 2007-09-21 -- Sebastian Pipping <webmaster@hartwork.org>
 #
@@ -93,7 +94,7 @@ try:
 except ImportError:
     print "ERROR: Package 'Ft.Lib' is missing. On Debian testing/unstable run:\n" \
             "sudo apt-get install python-4suite-xml"
-    sys.exit(1)
+    sys.exit(2)
 
 print "Content-Type: text/html"     # HTML is following
 print                               # blank line, end of headers
@@ -223,38 +224,54 @@ print """
 					<!-- BORDER -->"""
 
 
-intro = ""
 
+valid = False
+intro = ""
 input = ""
-form = cgi.FieldStorage()
-if form.has_key("pasted") and form.has_key("submitPasted"):
-    input = form.getlist("pasted")[0]
+
+if (len(sys.argv) == 3) and (sys.argv[1] == "--shell"):
+    try:
+        f = open(sys.argv[2])
+        try:
+            input = f.read()
+        finally:
+            f.close()
+    except IOError:
+        pass
+
     if input != "":
         intro = "Validating pasted text<br><br>"
+
+else:
+    form = cgi.FieldStorage()
+    if form.has_key("pasted") and form.has_key("submitPasted"):
+        input = form.getlist("pasted")[0]
+        if input != "":
+            intro = "Validating pasted text<br><br>"
         
-elif form.has_key("uploaded") and form.has_key("submitUploaded"):
-    uploaded = form["uploaded"]
-    if uploaded.file:
-        input = uploaded.file.read()
+    elif form.has_key("uploaded") and form.has_key("submitUploaded"):
+        uploaded = form["uploaded"]
+        if uploaded.file:
+            input = uploaded.file.read()
 
-    if input != "":
-        intro = "Validating uploaded file<br><b><i>" + uploaded.filename + "</i></b><br><br>"
+        if input != "":
+            intro = "Validating uploaded file<br><b><i>" + uploaded.filename + "</i></b><br><br>"
 
-elif form.has_key("url"): ### and form.has_key("submitUrl")
-    url = form.getlist("url")[0]
+    elif form.has_key("url"): ### and form.has_key("submitUrl")
+        url = form.getlist("url")[0]
 
-    try:
-        file = urllib2.urlopen(url)
-        input = file.read()
-    except ValueError:
-        intro = """<b style="color:red;">Invalid URL.</b><br><br>"""
+        try:
+            file = urllib2.urlopen(url)
+            input = file.read()
+        except ValueError:
+            intro = """<b style="color:red;">Invalid URL.</b><br><br>"""
 
-    except urllib2.URLError:
-        # 404, non-existent host, IPv6 (not supported), ...
-        intro = """<b style="color:red">Could not download from URL.</b><br><br>"""
+        except urllib2.URLError:
+            # 404, non-existent host, IPv6 (not supported), ...
+            intro = """<b style="color:red">Could not download from URL.</b><br><br>"""
 
-    if input != "":
-        intro = "Validating data from URL<br><b><i><a href=\"" + url + "\" class=\"blackLink\">" + url + "</a></i></b><br><br>"
+        if input != "":
+            intro = "Validating data from URL<br><b><i><a href=\"" + url + "\" class=\"blackLink\">" + url + "</a></i></b><br><br>"
 
 
 
@@ -1207,3 +1224,11 @@ print """
 		</table>
 	</body>
 </html>"""
+
+
+
+if valid:
+    sys.exit(0)
+
+else:
+    sys.exit(1)
