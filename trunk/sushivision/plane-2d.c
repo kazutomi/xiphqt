@@ -109,19 +109,84 @@ static float slow_scale_map(sv_scalespace_t *to, sv_scalespace_t *from,
   return (float)xymul/total;
 }
 
+typedef struct {
+  int n;
+  int neg;
+  float al;
+  float lo;
+  float hi;
+  float *vals;
+  float *muls;
+  float *offs;
+} slider_map;
+
+void slidermap_init(slidermap_t *m, sv_slider_t *s){
+  sv_slice_t *sl = SLICE(s->slices[0]);
+  sv_slice_t *sa = SLICE(s->slices[1]);
+  sv_slice_t *sh = SLICE(s->slices[2]);
+  float ldel = _sv_slider_val_to_del(s,sl->thumb_val);
+  float hdel = _sv_slider_val_to_del(s,sh->thumb_val);
+
+  m->n = s->labels;
+  m->neg = s->neg;
+  m->lo = sl->thumb_val;
+  m->al = sa->thumb_val;
+  m->hi = sh->thumb_val;
+  
+  if(m->vals)free(m->vals);
+  if(m->muls)free(m->muls);
+  if(m->offs)free(m->offs);
+
+  m->vals = calloc(m->n,sizeof(*m->vals));
+  m->muls = calloc(m->n-1,sizeof(*m->muls));
+  m->offs = calloc(m->n-1,sizeof(*m->offs));
+  
+  for(j=0;j<m->n-1;j++){
+    float labeldel = 1./(s->label_vals[j+1]-s->label_vals[j]);
+    m->muls[j] = labeldel * s->idelrange * s->labelinv;
+    m->offs[j] = (j-s->label_vals[j]*s->labeldel-
+		       s->lodel*(s->labels-1))*s->idelrange*s->labelinv;
+    m->vals[j] = s->vals[j];
+  }
+  m->vals[j] = s->vals[j];
+
+}
+
+double slider_to_mapdel(slider_map *s,float v){
+  int j=s->n-1;
+
+  if(isnan(v))return NAN;
+  
+  if(s->neg){
+
+    if(v > s->al)return NAN;
+    if(v >= s->lo)return 0.;
+    if(v <= s->hi)return 1.;
+    while(--j)
+      if(v<=s->vals[j])break;
+
+  }else{
+
+    if(v < s->al)return NAN;
+    if(v <= s->lo)return 0.;
+    if(v >= s->hi)return 1.;
+    while(--j)
+      if(v>s->vals[j])break;
+
+  }
+
+  return v*s->muls[j] + s->offs[j];
+}
+
 static void slow_scale(sv_plane_t *pl, 
 		       sv_ucolor_t *work,
-		       sv_scalespace_t dx, sv_scalespace_t dy,
-		       sv_scalespace_t ix, sv_scalespace_t iy,
+		       int dw, int dh,
+		       int iw, int ih,
 		       void (*mapfunc)(int,int, _sv_lcolor_t *), 
 		       float alpha, int i){
 
   // sv_slider_t *scale= pl->scale; XXXXXXXXXXXx
   sv_ucolor_t *image = pl->image;
-  int iw = ix.pixels;
-  int ih = iy.pixels;
-  int dw = dx.pixels;
-  int dh = dy.pixels;
   sv_ccolor_t *cwork = work;
 
   if(ih!=dh || iw!=dw){
@@ -784,6 +849,14 @@ static int image_work(sv_plane_t *in, sv_panel_t *p){
       pl->waiting--;
       pthread_mutex_unlock(pl->status_m);
       
+
+      slow_scale(pl, work, 
+		 
+		 sv_scalespace_t dx, sv_scalespace_t dy,
+		       sv_scalespace_t ix, sv_scalespace_t iy,
+		       void (*mapfunc)(int,int, _sv_lcolor_t *), 
+		       float alpha, int i){
+
       map_one_line(pl,p,i,work);
 
       pthread_mutex_lock(pl->status_m);
