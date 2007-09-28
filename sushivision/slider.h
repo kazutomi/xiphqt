@@ -43,15 +43,8 @@ struct _sv_slider {
   int flags;
   
   // computation helpers
-  double labelinv;
-  double *labeldel;
-  double al;
-  double lo;
-  double hi;
   double lodel;
   double idelrange;
-  double *labeldelB;
-  double *labelvalB;
 
   double quant_num;
   double quant_denom;

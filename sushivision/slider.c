@@ -159,8 +159,8 @@ static void _sv_slider_draw_background(_sv_slider_t *s){
   
       s->mapfunc(rint(val*65536.f),255,&outc);
 
-  return m->mixfunc( (_sv_ucolor_t)(u_int32_t)((outc.a<<24) + (outc.r<<16) + (outc.g<<8) + outc.b),
-		     (_sv_ucolor_t)mix).u | 0xff000000;
+      //return m->mixfunc( (_sv_ucolor_t)(u_int32_t)((outc.a<<24) + (outc.r<<16) + (outc.g<<8) + outc.b),
+      //	     (_sv_ucolor_t)mix).u | 0xff000000;
 
       pixel[i]=_sv_mapping_calc(s->gradient,_sv_slider_pixel_to_mapdel(s,i), pixel[i]);
     
@@ -487,7 +487,9 @@ double _sv_slider_val_to_del(_sv_slider_t *s,double v){
     while(--j)
       if(v>s->label_vals[j])break;
   }
-  return (j + (v-s->label_vals[j])*s->labeldel[j])*s->labelinv;
+  return (j + (v-s->label_vals[j])/
+	  (s->label_vals[j+1]-s->label_vals[j]))/
+    (ret->labels-1);
 }
 
 
@@ -791,16 +793,8 @@ static void update_gradient(_sv_slider_t *s){
        s->gradient->high != hdel){
       int j;
 
-      s->lo = sl->thumb_val;
-      s->hi = sh->thumb_val;
       s->idelrange = 1./(hdel-ldel);
       s->lodel = ldel;
-
-      for(j=0;j<s->labels-1;j++){
-	s->labeldelB[j] = s->labeldel[j] * s->idelrange * s->labelinv;
-	s->labelvalB[j] = (j-s->label_vals[j]*s->labeldel[j]-
-			   s->lodel*(s->labels-1))*s->idelrange*s->labelinv;
-      }
 
       _sv_mapping_set_lo(s->gradient,ldel);
       _sv_mapping_set_hi(s->gradient,hdel);
@@ -950,21 +944,10 @@ _sv_slider_t *_sv_slider_new(_sv_slice_t **slices, int num_slices, char **labels
   ret->flags=flags;
   if(flags & _SV_SLIDER_FLAG_VERTICAL) ret->flip = 1;
 
-  ret->labelinv = 1./(ret->labels-1);
-  ret->labeldel = calloc(ret->labels-1,sizeof(*ret->labeldel));
-  for(i=0;i<ret->labels-1;i++)
-    ret->labeldel[i] = 1./(ret->label_vals[i+1]-ret->label_vals[i]);
   ret->lo = ret->label_vals[0];
   ret->hi = ret->label_vals[ret->labels-1];
   ret->lodel = 0.;
   ret->idelrange = 1.;
-
-  ret->labeldelB = calloc(ret->labels-1,sizeof(*ret->labeldelB));
-  ret->labelvalB = calloc(ret->labels-1,sizeof(*ret->labelvalB));
-  for(i=0;i<ret->labels-1;i++){
-    ret->labeldelB[i] = ret->labeldel[i] * ret->labelinv;
-    ret->labelvalB[i] = (i-ret->label_vals[i]*ret->labeldel[i])*ret->labelinv;
-  }
 
   return ret;
 }
