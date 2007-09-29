@@ -246,13 +246,13 @@ int _sv_panel_work(sv_panel_t *p){
   
   // image map render
   if(p->map_render){
-    status = plane_loop(p,&p->image_next_plane,map_work);
+    status = plane_loop(p,&p->image_next_plane,image_work);
     if(status == STATUS_WORKING) return done_working(p);
     if(status == STATUS_IDLE) p->map_render = 0;
   }
   
   // computation work 
-  status = plane_loop(p,&p->data_next_plane,compute);
+  status = plane_loop(p,&p->data_next_plane,data_work);
   if(status == STATUS_WORKING) return done_working(p);
   return done_idle(p);
 }

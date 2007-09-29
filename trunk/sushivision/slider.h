@@ -32,23 +32,34 @@ struct _sv_slider {
   cairo_surface_t *foreground;
   int w;
   int h;
-  _sv_mapping_t *gradient;
+  int gradient;
   int xpad;
   int ypad;
 
   char **label;
-  double *label_vals;
+  float *label_vals;
   int labels;
   int neg;
   int flags;
   
   // computation helpers
-  double lodel;
-  double idelrange;
+  float lodel;
+  float idelrange;
 
-  double quant_num;
-  double quant_denom;
+  float quant_num;
+  float quant_denom;
 };
+
+typedef struct {
+  int n;
+  int neg;
+  float al;
+  float lo;
+  float hi;
+  float *vals;
+  float *muls;
+  float *offs;
+} slider_map_t;
 
 #define _SV_SLIDER_FLAG_INDEPENDENT_MIDDLE 0x1
 #define _SV_SLIDER_FLAG_VERTICAL 0x80
@@ -58,11 +69,11 @@ extern void _sv_slider_draw(_sv_slider_t *s);
 extern void _sv_slider_expose_slice(_sv_slider_t *s, int slicenum);
 extern void _sv_slider_expose(_sv_slider_t *s);
 extern void _sv_slider_size_request_slice(_sv_slider_t *s,GtkRequisition *requisition);
-extern double _sv_slider_pixel_to_val(_sv_slider_t *slider,double x);
-extern double _sv_slider_pixel_to_del(_sv_slider_t *slider,double x);
-extern double _sv_slider_pixel_to_mapdel(_sv_slider_t *s,double x);
-extern double _sv_slider_val_to_del(_sv_slider_t *slider,double v);
-extern double _sv_slider_val_to_mapdel(_sv_slider_t *slider,double v);
+extern float _sv_slider_pixel_to_val(_sv_slider_t *slider,float x);
+extern float _sv_slider_pixel_to_del(_sv_slider_t *slider,float x);
+extern float _sv_slider_pixel_to_mapdel(_sv_slider_t *s,float x);
+extern float _sv_slider_val_to_del(_sv_slider_t *slider,float v);
+extern float _sv_slider_val_to_mapdel(_sv_slider_t *slider,float v);
 extern void _sv_slider_vals_bound(_sv_slider_t *slider,int slicenum);
 extern int _sv_slider_lightme(_sv_slider_t *slider,int slicenum,int x,int y);
 extern void _sv_slider_unlight(_sv_slider_t *slider);
@@ -71,14 +82,19 @@ extern void _sv_slider_button_release(_sv_slider_t *s,int slicenum,int x,int y);
 extern void _sv_slider_motion(_sv_slider_t *s,int slicenum,int x,int y);
 extern gboolean _sv_slider_key_press(_sv_slider_t *slider,GdkEventKey *event,int slicenum);
 extern _sv_slider_t *_sv_slider_new(_sv_slice_t **slices, int num_slices, 
-			  char **labels, double *label_vals, int num_labels,
+			  char **labels, float *label_vals, int num_labels,
 			  unsigned flags);
 extern void _sv_slider_set_thumb_active(_sv_slider_t *s, int thumbnum, int activep);
-extern void _sv_slider_set_gradient(_sv_slider_t *s, _sv_mapping_t *m);
-extern double _sv_slider_get_value(_sv_slider_t *s, int thumbnum);
-extern void _sv_slider_set_value(_sv_slider_t *s, int thumbnum, double v);
-extern double _sv_slider_del_to_val(_sv_slider_t *s, double del);
-extern void _sv_slider_set_quant(_sv_slider_t *s, double n, double d);
+extern void _sv_slider_set_gradient(_sv_slider_t *s, int m);
+extern float _sv_slider_get_value(_sv_slider_t *s, int thumbnum);
+extern void _sv_slider_set_value(_sv_slider_t *s, int thumbnum, float v);
+extern float _sv_slider_del_to_val(_sv_slider_t *s, float del);
+extern void _sv_slider_set_quant(_sv_slider_t *s, float n, float d);
 
 extern void _sv_slider_print(_sv_slider_t *s, cairo_t *c, int w, int h);
-extern double _sv_slider_print_height(_sv_slider_t *s);
+extern float _sv_slider_print_height(_sv_slider_t *s);
+extern void _sv_slidermap_init(slider_map_t *m, sv_slider_t *s);
+extern void _sv_slidermap_partial_update(slider_map_t *m, sv_slider_t *s);
+extern void _sv_slidermap_clear(slider_map_t *m);
+extern float _sv_slidermap_to_mapdel(slider_map_t *s,float v);
+

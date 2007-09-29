@@ -77,6 +77,7 @@ struct sv_plane_2d {
   sv_ucolor_t     *image;
   sv_ucolor_t     *pending_image;
   int             *map;
+  slider_map_t     scale;
 
   // status 
   sv_scalespace_t  data_x;
@@ -93,10 +94,10 @@ struct sv_plane_2d {
   sv_scalespace_t  image_y;
   int              image_task;
   int              image_next;
+  int              image_mapnum;
   int             *image_flags;
+  int              image_remap_request;
   
-  // remap payload
-
   // resampling helpers
   unsigned char   *resample_xdelA;
   unsigned char   *resample_xdelB;
@@ -112,7 +113,7 @@ struct sv_plane_2d {
 
   // ui elements; use gdk lock
   sv_mapping_t    *mapping;
-  sv_slider_t     *scale;
+  sv_slider_t     *scale_widget;
   GtkWidget       *range_pulldown;
   double           alphadel;
 
