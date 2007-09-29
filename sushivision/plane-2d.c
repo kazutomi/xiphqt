@@ -109,83 +109,13 @@ static float slow_scale_map(sv_scalespace_t *to, sv_scalespace_t *from,
   return (float)xymul/total;
 }
 
-typedef struct {
-  int n;
-  int neg;
-  float al;
-  float lo;
-  float hi;
-  float *vals;
-  float *muls;
-  float *offs;
-} slider_map;
-
-void slidermap_init(slidermap_t *m, sv_slider_t *s){
-  sv_slice_t *sl = SLICE(s->slices[0]);
-  sv_slice_t *sa = SLICE(s->slices[1]);
-  sv_slice_t *sh = SLICE(s->slices[2]);
-  float ldel = _sv_slider_val_to_del(s,sl->thumb_val);
-  float hdel = _sv_slider_val_to_del(s,sh->thumb_val);
-
-  m->n = s->labels;
-  m->neg = s->neg;
-  m->lo = sl->thumb_val;
-  m->al = sa->thumb_val;
-  m->hi = sh->thumb_val;
-  
-  if(m->vals)free(m->vals);
-  if(m->muls)free(m->muls);
-  if(m->offs)free(m->offs);
-
-  m->vals = calloc(m->n,sizeof(*m->vals));
-  m->muls = calloc(m->n-1,sizeof(*m->muls));
-  m->offs = calloc(m->n-1,sizeof(*m->offs));
-  
-  for(j=0;j<m->n-1;j++){
-    float labeldel = 1./(s->label_vals[j+1]-s->label_vals[j]);
-    m->muls[j] = labeldel * s->idelrange * s->labelinv;
-    m->offs[j] = (j-s->label_vals[j]*s->labeldel-
-		       s->lodel*(s->labels-1))*s->idelrange*s->labelinv;
-    m->vals[j] = s->vals[j];
-  }
-  m->vals[j] = s->vals[j];
-
-}
-
-double slider_to_mapdel(slider_map *s,float v){
-  int j=s->n-1;
-
-  if(isnan(v))return NAN;
-  
-  if(s->neg){
-
-    if(v > s->al)return NAN;
-    if(v >= s->lo)return 0.;
-    if(v <= s->hi)return 1.;
-    while(--j)
-      if(v<=s->vals[j])break;
-
-  }else{
-
-    if(v < s->al)return NAN;
-    if(v <= s->lo)return 0.;
-    if(v >= s->hi)return 1.;
-    while(--j)
-      if(v>s->vals[j])break;
-
-  }
-
-  return v*s->muls[j] + s->offs[j];
-}
-
 static void slow_scale(sv_plane_t *pl, 
 		       sv_ucolor_t *work,
 		       int dw, int dh,
 		       int iw, int ih,
 		       void (*mapfunc)(int,int, _sv_lcolor_t *), 
-		       float alpha, int i){
-
-  // sv_slider_t *scale= pl->scale; XXXXXXXXXXXx
+		       int i){
+  
   sv_ucolor_t *image = pl->image;
   sv_ccolor_t *cwork = work;
 
@@ -208,8 +138,11 @@ static void slow_scale(sv_plane_t *pl,
     int *xnumA = pl->resample_xnumA;
     int *xnumB = pl->resample_xnumB;
 
+    // although the slider map is only locked against heap changes,
+    // the calculation is well formed such that data inconsistencies
+    // are guaranteed to be cosmetic only and short lived.
     for(j=0;j<lh*dw;j++)
-      data[j] = _sv_slider_val_to_mapdel(scale, in_data[j])*65535.f;
+      data[j] = _sv_slidermap_to_mapdel(pl->scale, in_data[j])*65535.f;
           
     /* by panel col */
     for(j=0;j<pw;j++){
@@ -445,7 +378,7 @@ static int image_resize(sv_plane_t *in, sv_panel_t *p){
     }
 
     pthread_rwlock_wrlock(pl->panel_m);
-    pthread_mutex_lock(pl->status_m);
+    //pthread_mutex_lock(pl->status_m); don't need two exclusive locks!
 
     if(p->comp_serialno == serialno){
       
@@ -467,7 +400,7 @@ static int image_resize(sv_plane_t *in, sv_panel_t *p){
       map = NULL;
     }
 
-    pthread_mutex_unlock(pl->status_m);
+    //pthread_mutex_unlock(pl->status_m);
     pthread_rwlock_unlock(pl->panel_m);
       
     if(map)free(map);
@@ -592,7 +525,7 @@ static int image_resize(sv_plane_t *in, sv_panel_t *p){
     yscalemul = slow_scale_map(newy, pl->pending_data_y, ydelA, ydelB, ynumA, ynumB, 15);
  
     pthread_rwlock_wrlock(pl->panel_m);
-    pthread_mutex_lock(pl->status_m);
+    //pthread_mutex_lock(pl->status_m);
 
     if(p->comp_serialno == serialno){
       pl->image_x = p->bg->image_x;
@@ -617,7 +550,7 @@ static int image_resize(sv_plane_t *in, sv_panel_t *p){
       pl->image_incomplete=0;
     }
       
-    pthread_mutex_unlock(pl->status_m);
+    //pthread_mutex_unlock(pl->status_m);
     pthread_rwlock_unlock(pl->panel_m);
 
     if(map)free(map);
@@ -676,7 +609,7 @@ static int data_resize(sv_plane_t *in, sv_panel_t *p){
     }
 
     pthread_rwlock_wrlock(pl->panel_m);
-    pthread_mutex_lock(pl->status_m);
+    //pthread_mutex_lock(pl->status_m);
 
     if(p->comp_serialno == serialno){
 
@@ -700,7 +633,7 @@ static int data_resize(sv_plane_t *in, sv_panel_t *p){
       map = NULL;
     }
 
-    pthread_mutex_unlock(pl->status_m);
+    //pthread_mutex_unlock(pl->status_m);
     pthread_rwlock_unlock(pl->panel_m);
       
     if(old_map)free(old_map);
@@ -801,7 +734,7 @@ static int data_resize(sv_plane_t *in, sv_panel_t *p){
     pthread_rwlock_unlock(pl->panel_m);
 
     pthread_rwlock_wrlock(pl->panel_m);
-    pthread_mutex_lock(pl->status_m);
+    //pthread_mutex_lock(pl->status_m);
 
     if(p->comp_serialno == serialno){
       pl->data_x = p->bg->data_x;
@@ -813,7 +746,7 @@ static int data_resize(sv_plane_t *in, sv_panel_t *p){
       pl->map = NULL;
     }
       
-    pthread_mutex_unlock(pl->status_m);
+    //pthread_mutex_unlock(pl->status_m);
     pthread_rwlock_unlock(pl->panel_m);
 
     if(map)free(map);
@@ -845,21 +778,18 @@ static int image_work(sv_plane_t *in, sv_panel_t *p){
     if(pl->image_next>=h)pl->image_next=0;
 
     if(pl->image_flags[i]){
+      sv_scalespace_t dx = pl->data_x;
+      sv_scalespace_t dy = pl->data_y;
+      sv_scalespace_t ix = pl->image_x;
+      sv_scalespace_t iy = pl->image_y;
+      void (*mapping)(int, int, _sv_lcolor_t *)=mapfunc[pl->image_mapnum];
       pl->image_flags[i]=0;
       pl->waiting--;
+
       pthread_mutex_unlock(pl->status_m);
-      
-
-      slow_scale(pl, work, 
-		 
-		 sv_scalespace_t dx, sv_scalespace_t dy,
-		       sv_scalespace_t ix, sv_scalespace_t iy,
-		       void (*mapfunc)(int,int, _sv_lcolor_t *), 
-		       float alpha, int i){
-
-      map_one_line(pl,p,i,work);
-
+      slow_scale(dx,dy,ix,iy,mapping,i);
       pthread_mutex_lock(pl->status_m);
+
       if(p->comp_serialno == serialno &&
 	 pl->map_serialno == mapno){
 	
@@ -884,13 +814,67 @@ static int image_work(sv_plane_t *in, sv_panel_t *p){
 static int data_work(sv_plane_t *in, sv_panel_t *p){
   sv_plane_2d_t *pl = (sv_plane_2d_t *)in;
 
+  // each plane is associated with a single objective, however
+  // multiple objectives may be associated with a given computation.
+  // This is an optimization for dealing with multiple display
+  // ojectives drawing from different output values of the exact same
+  // input computation.  The plane types sharing a computation may be
+  // different, but the input dimension value vector will be identical.
+
+  // if this is a 'slave' plane in the computation chain, return idle;
+  // some other plane is doing the calculation for us.
+  if(pl->c.share_prev)return STATUS_IDLE;
+
+  // marshal iterators, dimension value vector
+
+
+
+  
+
 
 }
 
 // called from GTK/API
 static void plane_remap(sv_plane_t *in, sv_panel_t *p){
   sv_plane_2d_t *pl = (sv_plane_2d_t *)in;
+  int i,flag=1;
 
+  // check to see if scale vals have changed or just scale settings
+  // scalemap is strictly read-only in the worker threads, so there's
+  // no need to lock this comparison beyond the GDK lock.
+  if(pl->scale.n == pl->scale_widget->labels){
+    flag=0;
+    for(i=0;i<pl->scale.n;i++)
+      if(pl->scale.vals[i] != pl->scale_widget->label_vals[i]){
+	flag=1;
+	break;
+      }
+  }
+  if(flag){
+    // the actual scale changed so updating the cached information
+    // requires complete write locking for heap work
+    pthread_rwlock_wrlock(pl->panel_m);
+ 
+    _sv_slidermap_clear(&pl->slider);
+    _sv_slidermap_init(&pl->slider,&pl->slider_widget);
+
+    wake_workers();
+  }else{
+    // no scale change
+    pthread_mutex_lock(pl->status_m);
+    _sv_slidermap_partial_update(&pl->slider,&pl->slider_widget);
+  }
+
+  p->map_render=1;
+  for(i=0;i<pl->image_y.pixels;i++)
+    pl->image_flags[i]=1;
+  pl->image_mapnum = gtk_combo_box_get_active(GTK_COMBO_BOX(pl->range_rulldown));
+
+  if(flag){
+    pthread_rwlock_unlock(pl->panel_m);
+  }else{
+    pthread_mutex_unlock(pl->status_m);
+  }
 
 }
 
@@ -918,7 +902,9 @@ static void plane_free(sv_plane_t *pl){
     if(pl->mapping)_sv_mapping_free(pl->mapping);
     if(pl->scale)_sv_slider_free(pl->scale);
     if(pl->range_pulldown)gtk_widget_destroy(pl->range_pulldown);
-  
+ 
+    _sv_slidermap_clear(&pl->slider);
+ 
     free(pl);
   }
 }
@@ -934,6 +920,13 @@ sv_plane_t *sv_plane_2d_new(){
   ret->plane_free = plane_free;
   return (sv_plane_t *)ret;
 }
+
+
+
+
+
+
+
 
 
 // enter unlocked
