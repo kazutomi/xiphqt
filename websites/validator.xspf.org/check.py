@@ -30,6 +30,10 @@
 # -----------------------------------------------------------------------
 # HISTORY
 # -----------------------------------------------------------------------
+# 2007-10-03 -- Sebastian Pipping <webmaster@hartwork.org>
+#
+#   * Added: Button embedding how-to
+#
 # 2007-09-24 -- Sebastian Pipping <webmaster@hartwork.org>
 #
 #   * Fixed: Another bug in whitespace handling
@@ -1167,7 +1171,41 @@ if input != "":
 
     if valid:
         print """
-											<span class="valid">Valid</span>"""
+											<span class="valid">Valid</span>
+
+											<br>
+											<br>
+
+											<br>
+											
+											<h3>Congratulations!</h3>
+											<p style="text-align:justify">
+											<em>You care about interoperability and that shows: The content you provided is valid XSPF!</em><br />
+											<br />
+											To show you care and to promote XSPF, you may add this button to any page that serves
+											valid XSPF files. Here is HTML code that you can use to add the button:
+											</p>
+											
+											<center>
+												<!-- Two elements with horizintal space in between -->
+												<table border="0" cellpadding="0" cellspacing="10" style="margin-top:20px;margin-bottom:20px">
+													<tr>
+														<td>
+															<!-- Square border around the the button image -->
+															<table border="0" cellpadding="0" cellspacing="1" width="104" height="104" style="background-color:rgb(230,230,230);">
+																<tr>
+																	<!-- Button image demo -->
+																	<td valign="center" align="center" bgcolor="#ffffff"><img src="http://svn.xiph.org/websites/xspf.org/images/banners/valid-xspf.png" width="88" height="31" style="border:0" alt="Valid XSPF Playlist" title="This sexy button could promote XSPF on your website!"></td>
+																</tr>
+															</table>
+														</td>
+														<!-- Embed code -->
+														<td><textarea readonly style="width:410px;height:104px;background-color:rgb(250,250,250);"><a href="http://validator.xspf.org/referrer/"><img src="valid-xspf.png" width="88" height="31" style="border:0" alt="Valid XSPF Playlist" title="This website produces valid XSPF playlist files." /></a></textarea></td>
+													</tr>
+												</table>
+											</center>
+
+											Well done, please come back soon!"""
     else:
         print """
 											<span class="invalid">Invalid</span>"""
