@@ -30,6 +30,10 @@
 # -----------------------------------------------------------------------
 # HISTORY
 # -----------------------------------------------------------------------
+# 2007-10-04 -- Sebastian Pipping <webmaster@hartwork.org>
+#
+#   * Changed: Link bar updated
+#
 # 2007-10-03 -- Sebastian Pipping <webmaster@hartwork.org>
 #
 #   * Added: Button embedding how-to
@@ -1252,8 +1256,8 @@ print """
 						</tr>
 						<tr>
 							<td align="center" style="font-size:9pt; padding-top:2px; padding-bottom:5px;">
-								<a href="https://svn.xiph.org/websites/validator.xspf.org/check.py">Source Code for Validator</a>&nbsp;&nbsp;&nbsp;
-								<a href="http://www.hartwork.org/">Hartwork Project</a>&nbsp;&nbsp;&nbsp;
+								<a href="https://trac.xiph.org/browser/websites/validator.xspf.org">Source Code</a>&nbsp;&nbsp;&nbsp;
+								<a href="https://trac.xiph.org/browser/trunk/xspf/testcase">Test Cases</a>&nbsp;&nbsp;&nbsp;
 								<a href="http://libspiff.sourceforge.net/">libSpiff</a>&nbsp;&nbsp;&nbsp;
 								<a href="http://xspf.org/xspf-v1.html">XSPF Spec</a>&nbsp;&nbsp;&nbsp;
 							</td>
