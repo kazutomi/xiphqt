@@ -57,16 +57,17 @@ Table of Contents
    general security considerations.
 
    The Ogg container format is known to contain Theora or Dirac video,
-   and Speex narrow-band speech, Speex wide-band speech, Vorbis or FLAC
-   audio.  As Ogg encapsulates binary data, it is possible to include
-   any other type of video, audio, or text format.
+   and Speex (narrow-band and wide-band speech), Vorbis or FLAC audio.
+   As Ogg encapsulates binary data, it is possible to include any other
+   type of video, audio, image, text or, generally speaking, any time-
+   -continuously sampled data.
 
-   While raw packets from these codecs may be used directly by transport
-   mechanisms that provide their own framing and packet-separation
-   mechanisms (such as UDP datagrams or RTP), Ogg is a solution for
-   stream based storage (such as files) and transport (such as TCP
-   streams or pipes).  The media types defined in this document are
-   needed to correctly identify such files when they are served over
+   While raw packets from these data sources may be used directly by
+   transport mechanisms that provide their own framing and packet-
+   -separation mechanisms (such as UDP datagrams or RTP), Ogg is a
+   solution for stream based storage (such as files) and transport (such
+   as TCP streams or pipes).  The media types defined in this document
+   are needed to correctly identify such files when they are served over
    HTTP, included in multi-part documents, or used in other places
    where MIME [MIME1] types are used.
 
@@ -96,7 +97,8 @@ Table of Contents
 
    Use of the "application" top-level type for this kind of content is
    known to be problematic.  This document thus defines application/ogg
-   but marks it for non-standard visual and audio material.
+   but marks it for complex data (visual, audio, or otherwise), which is
+   not suited for either the video/ogg or audio/ogg types.
 
    The media types,
 
@@ -104,9 +106,14 @@ Table of Contents
       * audio/ogg
 
    which are also defined in this document, are intended for common use
-   and should be used when dealing with visual and/or audio content.
-   This registration applies to all files defined as using the Ogg
+   and SHOULD be used when dealing with visual and/or audio content.
+   This registration applies to any data encapsulated in the Ogg
    container format.
+   
+   This document defines strict processing rules for each media type to
+   foster more interoperable processing.  It is recommended that
+   implementations that identify a logical stream which they cannot
+   decode should ignore it, while decoding the ones they can.
 
    Although unlikely, ongoing work related to this registration may
    introduce optional parameters in future revisions of this document.
@@ -117,21 +124,18 @@ Table of Contents
 
 4.  Encoding Considerations
 
-   Binary: The content consists of unrestricted sequence of octets.
+   Binary: The content consists of an unrestricted sequence of octets.
 
                                  NOTE
 
       Ogg encapsulated content is binary data and should be transmitted
       in a suitable encoding without CR/LF conversion, 7-bit stripping
-      etc.; base64 [RFC2397] is a suitable encoding.
+      etc.; base64 [RFC2397] is a suitable encoding for Email.
 
       Media types described in this document are used for stream based
       storage (such as files) and transport (such as TCP streams or
       pipes); separate types are used for real-time transfer, such as
       for the RTP payload formats for Theora video and Speex audio.
-
-      Note that most Ogg encapsulated content does not compress easily
-      using traditional lossless compression schemes.
 
 5.  Security Considerations
 
@@ -140,7 +144,7 @@ Table of Contents
 
    The Ogg encapsulation format is a container and only a carrier of
    content (such as audio, video, and displayable text data) with a
-   very rigid definition, this format in itself is not more vulnerable
+   very rigid definition.  This format in itself is not more vulnerable
    than any other content framing mechanism.
 
    Ogg does not provide for any generic encryption or signing
@@ -152,24 +156,18 @@ Table of Contents
    thus provides content confidentiality and authenticity.
 
    As Ogg encapsulates binary data, it is possible to include executable
-   content in an Ogg bitstream.  This may be an issue with applications
-   that are implemented using Ogg, specifically when Ogg is used for
-   streaming or file transfer in a networking scenario.  An application
-   decoding Ogg and its encapsulated content bitstreams has to ensure
-   correct handling of manipulated bitstreams, of buffer overflows, and
-   similar issues.  Executable content in an Ogg bitstream SHOULD never
-   be sent and MUST not be executed if it is received.
+   content in an Ogg bitstream.  Implementations SHOULD NOT execute such
+   content without prior validation of its origin by the end-user.  This
+   may be an issue with applications that are implemented using Ogg,
+   specifically when Ogg is used for streaming or file transfer in a
+   networking scenario.  An implementation decoding Ogg and its
+   encapsulated content streams has to ensure correct handling of
+   manipulated bitstreams, of buffer overflows, and similar issues.
 
-                                 NOTE
-
-      The requirement that such content not be executed on receipt
-      is especially important since situations exist where content
-      will be generated independently and therefore might contain
-      executable content that the sender is unaware of.
-
-   It is possible to author malicious files, which attempt to call for
-   an excessively large picture size, high sampling-rate audio, etc.
-   Clients SHOULD protect themselves against this kind of attack.
+   It is also possible to author malicious files, which attempt to call
+   for an excessively large picture size, high sampling-rate audio, etc.
+   Implementations SHOULD protect themselves against this kind of
+   attack.
 
    Ogg has an extensible structure, so that it is theoretically
    possible that metadata fields or media formats might be defined in
@@ -197,7 +195,7 @@ Table of Contents
    and has proved to be widely implementable across different computing
    platforms through a wide range of encoders and decoders. A broadly
    portable reference implementation [libogg] is available under the new
-   BSD license.
+   BSD license, which is a Free Software license.
 
    The Ogg container format is not patented and may be implemented by
    third parties without intellectual property concerns.
@@ -222,9 +220,9 @@ Table of Contents
    Encoding considerations: See section 4.
    Security considerations: See section 5.
    Interoperability considerations:
-      None, except as noted in section 6.
+      None, as noted in section 6.
 
-   Published specification: [Ogg]
+   Published specification: [Ogg], [Skeleton], [RFC3533]
    Applications which use this media type:
       Scientific and other applications which require various
       multiplexed signals or streams of data.
@@ -234,7 +232,7 @@ Table of Contents
          The first four bytes, 0x4f 0x67 0x67 0x53, correspond to the
          string "OggS".
       File extension(s):           .ogx
-      Macintosh File Type Code(s): OggS
+      Macintosh File Type Code(s): OggX
 
    Person & Email address to contact for further information:
       See Author's Address section.
@@ -244,10 +242,12 @@ Table of Contents
       The type application/ogg SHOULD only be used on situations where
       it is not appropriate to serve content under the video/ogg or
       audio/ogg types.  [RFC3534] defines the file extension .ogg for
-      application/ogg, which this document deprecates in favor of .ogx.
-      Files served under the application/ogg type SHOULD use the .ogx
-      file extension and SHOULD contain an Ogg Skeleton track to
-      identify all contained logical bitstreams.
+      application/ogg, which this document deprecates in favor of .ogx
+      due to concerns where some implementations may expect .ogg to be
+      solely Vorbis-encoded audio.  Data served under the
+      application/ogg type SHOULD use the .ogx file extension and MUST
+      contain an Ogg Skeleton logical stream to identify all other
+      contained logical streams.
 
    Author:                  See Author's Address section.
    Change controller:       The Xiph.Org Foundation.
@@ -261,11 +261,11 @@ Table of Contents
    Encoding considerations: See section 4.
    Security considerations: See section 5.
    Interoperability considerations:
-      None, except as noted in section 6.
+      None, as noted in section 6.
 
-   Published specification: [Ogg]
+   Published specification: [Ogg], [Skeleton], [RFC3533]
    Applications which use this media type:
-      Multimedia applications, including hardware-based, streaming, and
+      Multimedia applications, including device-based, streaming, and
       conferencing tools.
 
    Additional information:
@@ -274,7 +274,7 @@ Table of Contents
          string "OggS".
 
       File extension(s):           .ogv
-      Macintosh File Type Code(s): OggS
+      Macintosh File Type Code(s): OggV
 
    Person & Email address to contact for further information:
       See Author's Address section.
@@ -282,7 +282,10 @@ Table of Contents
    Intended usage:          COMMON
    Restrictions on usage:
       The type "video/ogg" MAY be used for files containing visual,
-      audio, or timed text material.  Applications interacting with
+      audio, or timed text material.  It is intended for simple visual
+      material where the type "application/ogg" may not be appropriate.
+      Data served under the type "video/ogg" SHOULD contain an Ogg
+      Skeleton logical stream.  Implementations interacting with
       the type "video/ogg" SHOULD support multiplexed streams.
 
    Author:                  See Author's Address section.
@@ -297,11 +300,11 @@ Table of Contents
    Encoding considerations: See section 4.
    Security considerations: See section 5.
    Interoperability considerations:
-      None, except as noted in section 6.
+      None, as noted in section 6.
 
-   Published specification: [Ogg]
+   Published specification: [Ogg], [Skeleton], [RFC3533]
    Applications which use this media type:
-      Multimedia applications, including hardware-based, streaming, and
+      Multimedia applications, including device-based, streaming, and
       conferencing tools.
 
    Additional information:
@@ -310,25 +313,24 @@ Table of Contents
          string "OggS".
 
       File extension(s):           .oga, .ogg, .spx
-      Macintosh File Type Code(s): OggS
+      Macintosh File Type Code(s): OggA
 
    Person & Email address to contact for further information:
       See Author's Address section.
 
    Intended usage:          COMMON
    Restrictions on usage:
-      The type "audio/ogg" MAY be used for files containing audio but
-      no visual presentation.  Files served under this type MUST NOT
-      contain any visual material.  Note that timed text is visually
-      presented and is considered to be visual material.  Applications
-      interacting with the type "audio/ogg" MAY support multiplexed
-      streams in Ogg.  Note that only Vorbis-encoded audio SHOULD use
-      the .ogg file extension, while only Speex-encoded audio SHOULD use
-      the .spx file extension.  This requirement is to ensure
-      backwards-compatibility with existing applications.  Other audio
-      formats encapsulated in Ogg SHOULD use the .oga file extension,
-      even when multiplexed with Vorbis or Speex-encoded audio
-      bitstreams.
+      The type "audio/ogg" MAY be used for files containing audio
+      material.  However, files served under this type MUST NOT contain
+      any visual material.  Although three file extensions are defined
+      for this type, the restriction that files served under the
+      "audio/ogg" type SHOULD have an Ogg Skeleton logical stream only
+      apply when dealing with files using the .oga extension.  The .ogg
+      and .spx file extensions are a specialization that require no
+      Skeleton due to concerns of backwards-compatibility with existing
+      implementations.  Use of the .oga file extension is then the
+      preferred method of distributing audio material under the
+      "audio/ogg" type.
 
    Author:                  See Author's Address section.
    Change controller:       The Xiph.Org Foundation.
@@ -392,7 +394,7 @@ Intellectual Property
    attempt made to obtain a general license or permission for the use of
    such proprietary rights by implementers or users of this
    specification can be obtained from the IETF on-line IPR repository at
-   http://ietf.org/ipr.
+   http://www.ietf.org/ipr.
 
    The IETF invites any interested party to bring to its attention any
    copyrights, patents or patent applications, or other proprietary
