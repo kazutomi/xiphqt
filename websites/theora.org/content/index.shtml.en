@@ -9,8 +9,13 @@
 <!--  All your page content goes here  -->
 
 <h3>Content</h3>
-The <a href="http://wiki.xiph.org">xiph.org wiki</a> has an incomplete list of sites offering Theora content:
-<a href="http://wiki.xiph.org/index.php/List_of_Theora_videos">List of Theora videos</a>.
+<p>The <a href="http://wiki.xiph.org">xiph.org wiki</a> has an 
+incomplete list of sites offering Theora content:
+<a href="http://wiki.xiph.org/index.php/List_of_Theora_videos">List of 
+Theora videos</a>.</p>
+
+<p>A <a href="http://v2v.cc/~j/theora_testsuite/">small test suite</a> 
+is available for more systematic testing.</p>
 
 
 <!--#include virtual="/ssi/pagebottom.include" -->
