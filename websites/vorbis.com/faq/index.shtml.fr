@@ -186,7 +186,7 @@
     <li>PopCap Games (Alchemy)</li>
     <li>EA Games (Harry Potter and the Chamber of Secrets)</li>
   </ul>
-  <p>Intéressé&nbsp;? visitez notre <a href="http://www.xiph.org/ogg/vorbis/">site pour
+  <p>Intéressé&nbsp;? visitez notre <a href="http://www.xiph.org/vorbis/">site pour
   développeurs</a>.</p>
   </dd>
 
@@ -400,7 +400,7 @@
   <dt><a href="#_comments" id="comments">Ogg Vorbis permet-il d'afficher des informations
   sur les chansons (titre, artiste) quand le fichier est lu ou streamé&nbsp;?</a></dt>
   <dd><p>Oui, Vorbis inclut un
-  <a href="http://www.xiph.org/ogg/vorbis/doc/v-comment.html">champ de commentaires complet
+  <a href="http://www.xiph.org/vorbis/doc/v-comment.html">champ de commentaires complet
   et flexible</a> pour les informations sur la chanson et l'artiste, ainsi que d'autres
   données relatives au morceau. L'encodeur officiel, oggenc, vous permet de spécifier ces
   informations au moment de l'encodage. D'autres outils vous permettent également d'éditer
@@ -505,7 +505,7 @@ vorbis-tools) will generally not be accepted.</p>
   <dt><a href="#_fpsupport" id="fpsupport">Est-il possible de porter l'encodeur/décodeur
   Vorbis pour une plateforme sans gestion de virgule flottante&nbsp;?</a></dt>
   <dd><p>Cela a déjà été fait pour le décodeur.</p>
-  <p><a href="http://www.xiph.org/ogg/vorbis/">Tremor</a> est une implémentation à
+  <p><a href="http://www.xiph.org/vorbis/">Tremor</a> est une implémentation à
   virgule fixe du décodeur Vorbis qui peut être utilisée sur les puces des lecteurs
   portables. Cependant, un <em>en</em>codeur à virgule fixe n'a pas encore été écrit.</p>
   </dd>

@@ -183,7 +183,7 @@
 
     <li>EA Games (Harry Potter and the Chamber of Secrets)</li>
   </ul>
-  <p>Interested? see our <a href='http://www.xiph.org/ogg/vorbis/'>developer site</a>.</p>
+  <p>Interested? see our <a href='http://www.xiph.org/vorbis/'>developer site</a>.</p>
   </dd>
 
   <dt><a href="#_company" id="company">I run a music label. Why should I be interested?</a></dt>
@@ -373,7 +373,7 @@
   <dt><a href="#_comments" id="comments">Does Ogg Vorbis have the capability to show song
   titles and artist information when the file is played or streamed?</a></dt>
   <dd><p>Yes, Vorbis includes a
-  <a href="http://www.xiph.org/ogg/vorbis/doc/v-comment.html">flexible, complete comment
+  <a href="http://www.xiph.org/vorbis/doc/v-comment.html">flexible, complete comment
   field</a> for song and artist info, as well as other track data. The official encoder,
   oggenc, allows you to enter comment info at encode time. Other tools tools also let
   you enter and edit track data.</p>
@@ -472,7 +472,7 @@ vorbis-tools) will generally not be accepted.</p>
   <dt><a href="#_fpsupport" id="fpsupport">Is it feasible to port the Vorbis decoder/encoder
   to a platform without floating point support?</a></dt>
   <dd><p>It's been done for the decoder.</p>
-  <p><a href='http://www.xiph.org/ogg/vorbis/'>Tremor</a> is a fixed-point implementation
+  <p><a href='http://www.xiph.org/vorbis/'>Tremor</a> is a fixed-point implementation
   of the Vorbis decoder suitable for chips found on portable devices. However, a fixed-point
   <em>en</em>coder has not been written.</p>
   </dd>
