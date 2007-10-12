@@ -13,11 +13,11 @@
 <ul>
   <li>The <strong>libtheora</strong> reference implementation provides
       the standard encoder and decoder under a BSD license.
-      [<a href="http://downloads.xiph.org/releases/theora/libtheora-1.0beta1.tar.gz">libtheora-1.0beta1</a>]
+      [<a href="http://downloads.xiph.org/releases/theora/libtheora-1.0beta2.tar.gz">libtheora-1.0beta2</a>]
       [<a href="/svn/">SVN information page</a>]
   </li>
   <li>The <strong>theora-exp</strong> project is a from-scratch 
-      implementation of the complete Theora I decoder and a 
+      implementation of the complete Theora decoder and a 
       more sophisticated but still experimental encoder.
       [<a href="http://svn.xiph.org/trunk/theora-exp/">SVN trunk</a>]
   </li>
