@@ -361,7 +361,7 @@ int fetch_and_process_audio(FILE *audio,ogg_page *audiopage,
   return audioflag;
 }
 
-int theora_transcode_packetout( TC_INSTANCE *ttc, int last_p, ogg_packet *op){
+int vp32theora_packetout( TC_INSTANCE *ttc, int last_p, ogg_packet *op){
 
   long bytes=ttc->in_bytecount;
 
@@ -394,7 +394,7 @@ void TranscodeFirstFrame(TC_INSTANCE *ttc){
   ttc->LastKeyFrame = 1;
 }
 
-int theora_transcode_bufferin( TC_INSTANCE *ttc, int isKeyFrame, char * bytes, int bytecount){
+int vp32theora_bufferin( TC_INSTANCE *ttc, int isKeyFrame, char * bytes, int bytecount){
 
   /*transcode: record keyframe flag*/
   ttc->ThisIsKeyFrame = isKeyFrame;
@@ -567,13 +567,13 @@ int fetch_and_process_video(FILE *video,ogg_page *videopage,
          for compression and pull out the packet */
 
       //theora_encode_YUVin(td,&yuv);
-      theora_transcode_bufferin( ttc, frameiskey[0], vp3frame[0], framebytecount[0]);
+      vp32theora_bufferin( ttc, frameiskey[0], vp3frame[0], framebytecount[0]);
 
       /* if there's only one frame, it's the last in the stream */
       if(state<2)
-        theora_transcode_packetout(ttc,1,&op);
+        vp32theora_packetout(ttc,1,&op);
       else
-        theora_transcode_packetout(ttc,0,&op);
+        vp32theora_packetout(ttc,0,&op);
 
       ogg_stream_packetin(to,&op);
 
@@ -590,20 +590,6 @@ int fetch_and_process_video(FILE *video,ogg_page *videopage,
     }
   }
   return videoflag;
-}
-
-/* returns, in seconds, absolute time of current packet in given
-   logical stream */
-double transcode_granule_time(TC_INSTANCE *ttc,ogg_int64_t granulepos){
-  if(granulepos>=0){
-    ogg_int64_t iframe=granulepos>>ttc->keyframe_granule_shift;
-    ogg_int64_t pframe=granulepos-(iframe<<ttc->keyframe_granule_shift);
-
-    return (iframe+pframe)*
-      ((double)ttc->fps_denominator/ttc->fps_numerator);
-
-  }
-  return(-1);
 }
 
 int main(int argc,char *argv[]){
@@ -857,7 +843,7 @@ int main(int argc,char *argv[]){
       double audiotime=
         audioflag?vorbis_granule_time(&vd,ogg_page_granulepos(&audiopage)):-1;
       double videotime=
-        videoflag?transcode_granule_time(&ttc,ogg_page_granulepos(&videopage)):-1;
+        videoflag?theora_granule_time(&ttc,ogg_page_granulepos(&videopage)):-1;
 
       if(!audioflag){
         audio_or_video=1;
