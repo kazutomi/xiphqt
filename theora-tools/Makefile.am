@@ -4,7 +4,7 @@ AUTOMAKE_OPTIONS = foreign dist-zip
 
 SUBDIRS = theoraenc theoracomment png2theora
 
-EXTRA_DIST = COPYING autogen.sh win32
+EXTRA_DIST = COPYING autogen.sh
 
 debug:
 	$(MAKE) all CFLAGS="@DEBUG@"
