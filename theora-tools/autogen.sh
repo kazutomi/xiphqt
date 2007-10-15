@@ -11,6 +11,7 @@ test -z "$srcdir" && srcdir=.
 cd "$srcdir"
 DIE=0
 
+echo "checking for autoconf... "
 (autoconf --version) < /dev/null > /dev/null 2>&1 || {
         echo
         echo "You must have autoconf installed to compile $package."
@@ -19,16 +20,79 @@ DIE=0
         DIE=1
 }
 
-(automake --version) < /dev/null > /dev/null 2>&1 || {
+VERSIONGREP="sed -e s/.*[^0-9\.]\([0-9][0-9]*\.[0-9][0-9]*\).*/\1/"
+VERSIONMKMAJ="sed -e s/\([0-9][0-9]*\)[^0-9].*/\\1/"
+VERSIONMKMIN="sed -e s/.*[0-9][0-9]*\.//"
+
+# do we need automake?
+if test -r Makefile.am; then
+  AM_OPTIONS=`fgrep AUTOMAKE_OPTIONS Makefile.am`
+  AM_NEEDED=`echo $AM_OPTIONS | $VERSIONGREP`
+  if test x"$AM_NEEDED" = "x$AM_OPTIONS"; then
+    AM_NEEDED=""
+  fi
+  if test -z $AM_NEEDED; then
+    echo -n "checking for automake... "
+    AUTOMAKE=automake
+    ACLOCAL=aclocal
+    if ($AUTOMAKE --version < /dev/null > /dev/null 2>&1); then
+      echo "yes"
+    else
+      echo "no"
+      AUTOMAKE=
+    fi
+  else
+    echo -n "checking for automake $AM_NEEDED or later... "
+    majneeded=`echo $AM_NEEDED | $VERSIONMKMAJ`
+    minneeded=`echo $AM_NEEDED | $VERSIONMKMIN`
+    for am in automake automake-$AM_NEEDED automake$AM_NEEDED \
+	automake automake-1.7 automake-1.8 automake-1.9 automake-1.10; do
+      ($am --version < /dev/null > /dev/null 2>&1) || continue
+      ver=`$am --version < /dev/null | head -n 1 | $VERSIONGREP`
+      maj=`echo $ver | $VERSIONMKMAJ`
+      min=`echo $ver | $VERSIONMKMIN`
+      if test $maj -eq $majneeded -a $min -ge $minneeded; then
+        AUTOMAKE=$am
+        echo $AUTOMAKE
+        break
+      fi
+    done
+    test -z $AUTOMAKE &&  echo "no"
+    echo -n "checking for aclocal $AM_NEEDED or later... "
+    for ac in aclocal-$AM_NEEDED aclocal$AM_NEEDED \
+	aclocal aclocal-1.7 aclocal-1.8 aclocal-1.9 aclocal-1.10; do
+      ($ac --version < /dev/null > /dev/null 2>&1) || continue
+      ver=`$ac --version < /dev/null | head -n 1 | $VERSIONGREP`
+      maj=`echo $ver | $VERSIONMKMAJ`
+      min=`echo $ver | $VERSIONMKMIN`
+      if test $maj -eq $majneeded -a $min -ge $minneeded; then
+        ACLOCAL=$ac
+        echo $ACLOCAL
+        break
+      fi
+    done
+    test -z $ACLOCAL && echo "no"
+  fi
+  test -z $AUTOMAKE || test -z $ACLOCAL && {
         echo
         echo "You must have automake installed to compile $package."
-	echo "Download the appropriate package for your system,"
-	echo "or get the source from one of the GNU ftp sites"
-	echo "listed in http://www.gnu.org/order/ftp.html"
-        DIE=1
-}
+        echo "Download the appropriate package for your distribution,"
+        echo "or get the source tarball at ftp://ftp.gnu.org/pub/gnu/"
+        exit 1
+  }
+fi
 
-(libtoolize --version) < /dev/null > /dev/null 2>&1 || {
+echo -n "checking for libtool... "
+for LIBTOOLIZE in libtoolize glibtoolize nope; do
+  ($LIBTOOLIZE --version) < /dev/null > /dev/null 2>&1 && break
+done
+if test x$LIBTOOLIZE = xnope; then
+  echo "nope."
+  LIBTOOLIZE=libtoolize
+else
+  echo $LIBTOOLIZE
+fi
+($LIBTOOLIZE --version) < /dev/null > /dev/null 2>&1 || {
 	echo
 	echo "You must have libtool installed to compile $package."
 	echo "Download the appropriate package for your system,"
@@ -48,40 +112,16 @@ fi
 
 echo "Generating configuration files for $package, please wait...."
 
-test -f aclocal.m4 && rm aclocal.m4
-echo -n "looking for our m4 macros... "
-aclocaldirs="$srcdir `aclocal --print-ac-dir` \
-        /usr/local/share/aclocal* /usr/local/aclocal* \
-        /sw/share/aclocal* /usr/share/aclocal*"
-for dir in $aclocaldirs; do
-  test -d "$dir" && if ! test -z "`ls $dir | grep .m4`"; then
-    if test ! -z "`fgrep XIPH_PATH_OGG $dir/*.m4`"; then
-      echo $dir
-      ACLOCAL_FLAGS="-I $dir $ACLOCAL_FLAGS"
-      break
-    fi
-  fi
-done
-if test -z "$ACLOCAL_FLAGS"; then
-  echo "nope."
-  echo
-  echo "Please install the ogg and vorbis libraries, or add the"
-  echo "location of ogg.m4 to ACLOCAL_FLAGS in the environment."
-  echo
-  exit 1
-fi
-
-
-echo "  aclocal $ACLOCAL_FLAGS"
-aclocal $ACLOCAL_FLAGS
+echo "  $ACLOCAL $ACLOCAL_FLAGS"
+$ACLOCAL $ACLOCAL_FLAGS || exit 1
+echo "  $LIBTOOLIZE --automake"
+$LIBTOOLIZE --automake || exit 1
 echo "  autoheader"
-autoheader
-echo "  libtoolize --automake"
-libtoolize --automake
-echo "  automake --add-missing $AUTOMAKE_FLAGS"
-automake --add-missing $AUTOMAKE_FLAGS 
+autoheader || exit 1
+echo "  $AUTOMAKE --add-missing $AUTOMAKE_FLAGS"
+$AUTOMAKE --add-missing $AUTOMAKE_FLAGS || exit 1
 echo "  autoconf"
-autoconf
+autoconf || exit 1
 
 cd $olddir
-$srcdir/configure "$@" && echo
+$srcdir/configure --enable-maintainer-mode "$@" && echo
