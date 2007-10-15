@@ -80,29 +80,9 @@ PKG_CHECK_MODULES(XIPH,ogg >= 1.1 vorbis theora)
 CFLAGS="$CFLGS $XIPH_CFLAGS"
 LIBS="$LIBS $XIPH_LIBS"
 
-PKG_CHECK_MODULES(VORBISENC,vorbisenc)
+PKG_CHECK_MODULES(VORBISENC, vorbisenc)
 AC_SUBST(VORBISENC_CFLAGS)
 AC_SUBST(VORBISENC_LIBS)
-
-PKG_CHECK_MODULES(SDL,sdl, HAVE_SDL="yes", HAVE_SDL="no")
-AC_SUBST(SDL_CFLAGS)
-AC_SUBST(SDL_LIBS)
-
-AC_CHECK_HEADERS([sys/soundcard.h soundcard.h machine/soundcard.h],[
-  HAVE_OSS=yes
-  break
-])
-
-AC_CHECK_LIB(portaudio, Pa_OpenStream, [
-  AC_CHECK_HEADER(portaudio.h, [HAVE_PORTAUDIO=yes])
-  ],,[-lpthread]
-)
-if test "x$HAVE_PORTAUDIO" != xyes; then
-  AC_MSG_WARN([portaudio not found -- not compiling splayer example])
-else
-PORTAUDIO_LIBS="-lportaudio -lpthread"
-fi
-AC_SUBST(PORTAUDIO_LIBS)
 
 dnl check for libpng
 HAVE_PNG=no
@@ -113,14 +93,6 @@ fi
 AC_SUBST(PNG_CFLAGS)
 AC_SUBST(PNG_LIBS)
 
-if test x$HAVE_SDL = xyes -a x$HAVE_OSS = xyes; then
-  THEORA123="theora123"
-  AC_SUBST(THEORA123)
-fi
-if test x$HAVE_SDL = xyes -a x$HAVE_PORTAUDIO = xyes; then
-  SPLAYER="theora_splayer"
-  AC_SUBST(SPLAYER)
-fi
 if test x$HAVE_PNG = xyes; then
   PNG2THEORA="png2theora"
   AC_SUBST(PNG2THEORA)
@@ -138,13 +110,8 @@ AC_SUBST(PROFILE)
 
 AC_CONFIG_FILES([
   Makefile
-  theora123/Makefile
-  theora_splayer/Makefile
   theoraenc/Makefile
-  theora_transcoder/Makefile
-  theora_dumpvideo/Makefile
   theoracomment/Makefile
   png2theora/Makefile
-  debian/Makefile
 ])
 AC_OUTPUT
