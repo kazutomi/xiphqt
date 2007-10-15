@@ -113,5 +113,6 @@ AC_CONFIG_FILES([
   theoraenc/Makefile
   theoracomment/Makefile
   png2theora/Makefile
+  vp32theora/Makefile
 ])
 AC_OUTPUT

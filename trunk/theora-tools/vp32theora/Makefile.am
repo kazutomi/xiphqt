@@ -2,11 +2,9 @@
 
 AUTOMAKE_OPTIONS = foreign
 
-bin_PROGRAMS = theora_transcoder avi2vp3
+noinst_PROGRAMS = vp32theora avi2vp3
 
-LDADD = -ltheora -logg -lvorbis -lm
-
-theora_transcoder_SOURCES = theora_transcoder.c
-theora_transcoder_LDADD = $(LDADD) -lvorbisenc
+vp32theora_SOURCES = theora_transcoder.c
+vp32theora_LDADD = -ltheora -lvorbisenc -lvorbis -logg -lm
 
 avi2vp3_SOURCES = avi2vp3.c avilib.c avilib.h
