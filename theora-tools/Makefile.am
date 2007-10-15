@@ -2,7 +2,7 @@
 
 AUTOMAKE_OPTIONS = foreign dist-zip dist-bzip2
 
-SUBDIRS = theoraenc theoracomment png2theora
+SUBDIRS = theoraenc theoracomment png2theora vp32theora
 
 EXTRA_DIST = COPYING autogen.sh
 
