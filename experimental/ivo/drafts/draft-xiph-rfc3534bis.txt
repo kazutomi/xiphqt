@@ -25,10 +25,10 @@ Table of Contents
 
    1. Introduction ....................................................2
    2. Conformance and Document Conventions ............................2
-   3. Deployed Media Types and Compatibility ..........................2
-   4. Encoding Considerations .........................................X
+   3. Deployed Media Types and Compatibility ..........................3
+   4. Encoding Considerations .........................................5
    5. Security Considerations .........................................6
-   6. Interoperability Considerations .................................X
+   6. Interoperability Considerations .................................7
    7. IANA Considerations .............................................8
    8. Ogg Media Types .................................................9
       8.1. application/ogg ............................................9
@@ -37,9 +37,9 @@ Table of Contents
    9. References .....................................................13
       9.1. Normative References ......................................13
       9.2. Informative References ....................................13
-   10. Copying Conditions ............................................XX
-       Author's Address ..............................................XX
-       Intellectual Property and Copyright Statements ................XX
+   10. Copying Conditions ............................................14
+       Author's Address ..............................................14
+       Intellectual Property and Copyright Statements ................15
 
 1.  Introduction
 
@@ -56,11 +56,11 @@ Table of Contents
    interoperability by defining underspecified aspects, and to provide
    general security considerations.
 
-   The Ogg container format is known to contain Theora or Dirac video,
-   and Speex (narrow-band and wide-band speech), Vorbis or FLAC audio.
-   As Ogg encapsulates binary data, it is possible to include any other
-   type of video, audio, image, text or, generally speaking, any time-
-   -continuously sampled data.
+   The Ogg container format is known to contain [Theora] or [Dirac]
+   video, and [Speex] (narrow-band and wide-band speech), [Vorbis] or
+   [FLAC] audio.  As Ogg encapsulates binary data, it is possible to
+   include any other type of video, audio, image, text or, generally
+   speaking, any time-continuously sampled data.
 
    While raw packets from these data sources may be used directly by
    transport mechanisms that provide their own framing and packet-
@@ -112,7 +112,7 @@ Table of Contents
    
    This document defines strict processing rules for each media type to
    foster more interoperable processing.  It is recommended that
-   implementations that identify a logical stream which they cannot
+   implementations that identify a logical bitstream which they cannot
    decode should ignore it, while decoding the ones they can.
 
    Although unlikely, ongoing work related to this registration may
@@ -195,7 +195,7 @@ Table of Contents
    and has proved to be widely implementable across different computing
    platforms through a wide range of encoders and decoders. A broadly
    portable reference implementation [libogg] is available under the new
-   BSD license, which is a Free Software license.
+   (3-clause) BSD license, which is a Free Software license.
 
    The Ogg container format is not patented and may be implemented by
    third parties without intellectual property concerns.
@@ -235,7 +235,7 @@ Table of Contents
       Macintosh File Type Code(s): OggX
 
    Person & Email address to contact for further information:
-      See Author's Address section.
+      See "Author's Address" section.
 
    Intended usage:          COMMON
    Restrictions on usage:
@@ -246,10 +246,10 @@ Table of Contents
       due to concerns where some implementations may expect .ogg to be
       solely Vorbis-encoded audio.  Data served under the
       application/ogg type SHOULD use the .ogx file extension and MUST
-      contain an Ogg Skeleton logical stream to identify all other
-      contained logical streams.
+      contain an Ogg Skeleton logical bitstream to identify all other
+      contained logical bitstreams.
 
-   Author:                  See Author's Address section.
+   Author:                  See "Author's Address" section.
    Change controller:       The Xiph.Org Foundation.
 
 8.2.  video/ogg
@@ -277,7 +277,7 @@ Table of Contents
       Macintosh File Type Code(s): OggV
 
    Person & Email address to contact for further information:
-      See Author's Address section.
+      See "Author's Address" section.
 
    Intended usage:          COMMON
    Restrictions on usage:
@@ -285,10 +285,10 @@ Table of Contents
       audio, or timed text material.  It is intended for simple visual
       material where the type "application/ogg" may not be appropriate.
       Data served under the type "video/ogg" SHOULD contain an Ogg
-      Skeleton logical stream.  Implementations interacting with
+      Skeleton logical bitstream.  Implementations interacting with
       the type "video/ogg" SHOULD support multiplexed streams.
 
-   Author:                  See Author's Address section.
+   Author:                  See "Author's Address" section.
    Change controller:       The Xiph.Org Foundation.
 
 8.3.  audio/ogg
@@ -316,7 +316,7 @@ Table of Contents
       Macintosh File Type Code(s): OggA
 
    Person & Email address to contact for further information:
-      See Author's Address section.
+      See "Author's Address" section.
 
    Intended usage:          COMMON
    Restrictions on usage:
@@ -324,20 +324,71 @@ Table of Contents
       material.  However, files served under this type MUST NOT contain
       any visual material.  Although three file extensions are defined
       for this type, the restriction that files served under the
-      "audio/ogg" type SHOULD have an Ogg Skeleton logical stream only
-      apply when dealing with files using the .oga extension.  The .ogg
-      and .spx file extensions are a specialization that require no
+      "audio/ogg" type SHOULD have an Ogg Skeleton logical bitstream
+	  only apply when dealing with files using the .oga extension.  The
+	  .ogg and .spx file extensions are a specialization that require no
       Skeleton due to concerns of backwards-compatibility with existing
       implementations.  Use of the .oga file extension is then the
       preferred method of distributing audio material under the
       "audio/ogg" type.
 
-   Author:                  See Author's Address section.
+   Author:                  See "Author's Address" section.
    Change controller:       The Xiph.Org Foundation.
 
 9.  References
 
+9.1.  Normative References
 
+   [Ogg]          Xiph.Org Foundation, published specifications in "Ogg
+                  bitstream documentation": "Ogg logical and physical
+				  bitstream overview", "Ogg logical bitstream framing",
+				  "Ogg multi-stream multiplexing",
+				  <http://xiph.org/ogg/doc>.
+
+   [Skeleton]     Pfeiffer, S., Parker, C., and Pang, A., "The Annodex
+                  exchange format for time-continuous bitstreams",
+				  section 4, "The Ogg Skeleton logical bitstream", March
+				  2005.
+
+   [MIME1]        Freed, N. and N. Borenstein, "Multipurpose Internet
+                  Mail Extensions (MIME) Part One: Format of Internet
+				  Message Bodies", RFC 2045, November 1996.
+
+   [RFC3533]      Pfeiffer, S., "The Ogg Encapsulation Format Version
+                  0", RFC 3533, May 2003.
+
+   [RFC3534]      Walleij, L., "The application/ogg Media Type", RFC
+                  3534, May 2003.
+
+   [RFC2119]      Bradner, S., "Key words for use in RFCs to Indicate
+                  Requirement Levels", BCP 14, RFC 2119, March 1997.
+
+   [RFC3552]      Rescorla, E. and B. Korver, "Guidelines for Writing
+                  RFC Text on Security Considerations", BCP 72, RFC
+                  3552, July 2003.
+
+9.2.  Informative References
+
+   [Theora]       Xiph.Org Foundation, "Theora Specification", October
+                  2007, <http://theora.org/doc/Theora_spec.pdf>.
+
+   [Dirac]        Dirac Group, "Dirac Specification",
+                  <http://dirac.sourceforge.net/specification.html>.
+
+   [Speex]        Valin, J., "The Speex Codec Manual", February 2002,
+                  <http://speex.org/docs/manual/speex-manual>.
+
+   [Vorbis]       Xiph.Org Foundation, "Vorbis I Specification", July
+                  2004, <http://xiph.org/vorbis/doc/Vorbis_I_spec.html>.
+
+   [FLAC]         Coalson, J., "The FLAC Format",
+                  <http://flac.sourceforge.net/format.html>.
+
+   [RFC2397]      Masinter, L., "The "data" URL scheme", RFC 2397,
+                  August 1998.
+
+   [libogg]       Xiph.Org Foundation, "The libogg API", June 2000,
+                  <http://xiph.org/ogg/doc/libogg>.
 
 10. Copying Conditions
 
