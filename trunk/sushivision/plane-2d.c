@@ -125,7 +125,7 @@ static void slow_scale(sv_plane_t *pl,
     float idel = pl->resample_yscalemul * pl->resample_xscalemul;
     
     /* by column */
-    /* XXXXX by row would be far more efficient... */
+    /* XXXXX by row should be more efficient... */
     int ydelA=pl->resample_ydelA[i];
     int ydelB=pl->resample_ydelB[i];
     int ystart=pl->resample_ynumA[i];
@@ -320,29 +320,138 @@ static void fast_scale_datay(float *olddata,
   }
 }
 
-
-// called from worker thread
-static void recompute_setup(sv_plane_t *in, sv_panel_t *p){
-  sv_plane_2d_t *pl = (sv_plane_2d_t *)in;
-  sv_dim_data_t *ddx = p->dim_data+p->x_dim;
-  sv_dim_data_t *ddy = p->dim_data+p->y_dim;
+int _sv_plane_recompute_setup_common(sv_plane_t *pl){
+  sv_plane_common_t *c = &pl->c;
+  sv_panel_t *p = c->panel;
   int w = p->bg->image_x->pixels;
   int h = p->bg->image_y->pixels;
-
-  pl->pending_data_x = 
-    _sv_dim_datascale(ddx, p->bg->image_x, 
-		      w * p->oversample_n / p->oversample_d, 0);
-  pl->pending_data_y = 
-    _sv_dim_datascale(ddy, p->bg->image_y, 
-		      h * p->oversample_n / p->oversample_d, 1);
+  sv_scalespace_t pending_scales[pl->c.axes];
+  double pending_input[pl->o->inputs];
+  int flag=0;
   
-  pl->image_serialno++;
-  pl->data_waiting=0;
-  pl->data_incomplete=0;
-  pl->data_next=0;
+  // generate new pending scales
+  for(i=0;i<pl->c.axes;i++){
+    int axisnum = c->axis_list[i];
+    int dimnum = p->axis_dims[axisnum];
 
-  pl->image_task=0;
+    // check that dims are actually set 
+    // should only come up if dimensions are declared to provide an
+    // axis, but there are too few dims to actually populate all
+    // declared axes.
+    if(dimnum<0){
+      fprintf(stderr,"sushivision: Panel \"%s\" has not set the %s axis\n"
+	      "\tfor objective \"%s\".\n",
+	      p->name,p->axis_names[axisnum],o->name);
+      pending_scales[i] = {0};
+    }else{
 
+      switch(axisnum){
+      case 0: // X
+	pending_scales[i] = 
+	  _sv_dim_datascale(p->dim_data+dimnum, p->bg->image_x, 
+			    w * p->oversample_n / p->oversample_d, 0);
+	break;
+	
+      case 1: // Y
+	pending_scales[i] = 
+	  _sv_dim_datascale(p->dim_data+dimnum, p->bg->image_y, 
+			    h * p->oversample_n / p->oversample_d, 1);
+	break;
+	
+      case 2: // Z
+	fprintf(stderr,"Z axis unimplemented!\n");
+	pending_scales[i] = {0};
+	break;
+	
+      default: // all auxiliary scales 
+	fprintf(stderr,"auxiliary axes unimplemented!\n");
+	pending_scales[i] = {0};
+	break;
+      }
+    }
+  }
+
+  // precompute non-iteration values in function input vector
+  for(i=0;i<pl->o->inputs;i++){
+    int dim = pl->o->input_dims[i]; 
+    for(j=0;j<pl->c.axes;j++)
+      if(dim == p->axis_dims[pl->c.axis_list[j]])
+	pending_input[i]=NAN;
+      else
+	pending_input[i]=p->dim_data[dim].val;
+  }
+	  
+  // Do we really need to recompute?  Check dims and axes for changes.
+  // Any changes, we must recompute.  
+
+  // check that the axes dimensions have not changed
+  //for(i=0;i<pl->c.axes;i++)
+  //if(pl->c.axis_dims[i] != p->axis_dims[pl->c.axis_list[i]]){
+  //  flag=1;
+  //  break;
+  //}
+
+  // check that the axes scales have not changed
+  if(!flag)
+    for(i=0;i<pl->c.axes;i++)
+      if(_sv_scalecmp(c->data_scales+i,pending_scales+i)){
+	flag = 1;
+	break;
+      }
+  
+  // check whether dimension values have changed.
+  // the fact that axis dim values are NAN allows this to double as a
+  // check that the axes dims have not changed.
+  if(!flag)
+    for(i=0;i<pl->o->inputs;i++)
+      if(pending_input[i] != c->dim_input[i]){
+	flag=1;
+	break;
+      }
+
+  if(flag){
+    memcpy(c->dim_input,pending_input,sizeof(pending_input));
+    memcpy(c->pending_data_scales,pending_scales,sizeof(pending_scales));
+  }
+	
+  return flag;
+}
+
+int _sv_plane_resize_check(sv_plane_t *in){
+  sv_plane_common_t *c = &pl->c;
+  sv_panel_t *p = c->panel;
+  int w = p->bg->image_x->pixels;
+  int h = p->bg->image_y->pixels;
+  
+  if(c->image_x.pixels != w || c->image_y.pixels != y) return 1;
+  return 0;
+}
+
+// called from worker thread 
+static void recompute_setup(sv_plane_t *in){
+  sv_plane_2d_t *pl = (sv_plane_2d_t *)in;
+  sv_panel_t *p = pl->panel;
+
+  int flag=_sv_plane_recompute_presetup(in);
+
+  // Do we really need to recompute? 
+  if(flag){
+    pl->data_task=0;
+    pl->data_outstanding=0;
+    pl->data_next=0;
+  }
+
+  // Regardless of recomputation, we check for remap (eg, resizing the
+  // plane of a fixed size data set requires a rerender, but not a
+  // recompute)
+
+  flag|=_sv_plane_resize_check(in);
+
+  if(flag){
+    pl->image_serialno++;
+    pl->image_outstanding=0;
+    pl->image_task=0;
+  }
 }
 
 // called from worker thread
@@ -389,12 +498,10 @@ static int image_resize(sv_plane_t *in, sv_panel_t *p){
       
       if(new_w > old_w){
 	// y then x
-	pl->image_waiting=old_w;
-	pl->image_incomplete=old_w;
+	pl->image_outstanding=0;
       }else{
 	// x then y
-	pl->image_waiting=old_h;
-	pl->image_incomplete=old_h;
+	pl->image_outstanding=0;
       }      
       image = NULL;
       map = NULL;
@@ -413,78 +520,96 @@ static int image_resize(sv_plane_t *in, sv_panel_t *p){
   }
 
   if(pl->image_task==1){ // scale first dim
-    int next = pl->image_next++;
-    if(pl->image_waiting==0)return STATUS_BUSY;
-    pl->image_waiting--;
-
     if(new_w > old_w){
       // y then x
-      pthread_mutex_unlock(pl->status_m);
-      fast_scale_imagey(olddata+next,newdata+next,new_w,old_w,newy,oldy,pl->map);
-      pthread_mutex_lock(pl->status_m);
-      if(p->comp_serialno == serialno){
-	if(--pl->image_incomplete==0){
 
-	  pl->image_task=-1;
-	  pthread_mutex_unlock(pl->status_m);
-	  fast_scale_map(map,new_w,newx,oldx);
-	  pthread_mutex_lock(pl->status_m);
+      int next = pl->image_next;
+      if(next >= oldx){
+	if(pl->image_outstanding) return STATUS_BUSY;
 
-	  if(p->comp_serialno == serialno){
-	    pl->image_waiting=new_h;
-	    pl->image_incomplete=new_h;
-	    pl->image_task=2;
-	    pl->image_next=0;
-	  }
+	pl->image_task=-1;
+	pthread_mutex_unlock(pl->status_m);
+	fast_scale_map(map,new_w,newx,oldx);
+	pthread_mutex_lock(pl->status_m);
+	
+	if(p->comp_serialno == serialno){
+	  pl->image_task=2;
+	  pl->image_next=0;
 	}
+      }else{
+
+	pl->image_next++;
+	pl->image_outstanding++;
+	
+	pthread_mutex_unlock(pl->status_m);
+	fast_scale_imagey(olddata+next,newdata+next,new_w,old_w,newy,oldy,pl->map);
+	pthread_mutex_lock(pl->status_m);
+	
+	if(p->comp_serialno == serialno)
+	  pl->image_outstanding--;
       }
     }else{
       // x then y
-      pthread_mutex_unlock(pl->status_m);
-      fast_scale_imagex(olddata+next*old_w,newx,oldx,pl->map);
-      pthread_mutex_lock(pl->status_m);
-      if(p->comp_serialno == serialno){
-	if(--pl->image_incomplete==0){
 
-	  pl->image_task=-1;
-	  pthread_mutex_unlock(pl->status_m);
-	  fast_scale_map(map,new_h,newy,oldy);
-	  pthread_mutex_lock(pl->status_m);
-
-	  if(p->comp_serialno == serialno){
-	    pl->image_waiting=new_w;
-	    pl->image_incomplete=new_w;
-	    pl->image_task=2;
-	    pl->image_next=0;
-	  }
+      int next = pl->image_next;
+      if(next >= oldy){
+	if(pl->image_outstanding) return STATUS_BUSY;
+	  
+	pl->image_task=-1;
+	pthread_mutex_unlock(pl->status_m);
+	fast_scale_map(map,new_w,newy,oldy);
+	pthread_mutex_lock(pl->status_m);
+	
+	if(p->comp_serialno == serialno){
+	  pl->image_task=2;
+	  pl->image_next=0;
 	}
+      }else{
+
+	pl->image_next++;
+	pl->image_outstanding++;
+
+	pthread_mutex_unlock(pl->status_m);
+	fast_scale_imagex(olddata+next*old_w,newx,oldx,pl->map);
+	pthread_mutex_lock(pl->status_m);
+	if(p->comp_serialno == serialno)
+	  pl->image_outstanding--;
       }
     }
     return STATUS_WORKING;    
   }
 
-  if(pl->image_task==2){ // scale first dim
-    int next = pl->image_next++;
-    if(pl->image_waiting==0)return STATUS_BUSY;
-    pl->image_waiting--;
-
+  if(pl->image_task==2){ // scale second dim
     if(new_w > old_w){
       // now x
-      pthread_mutex_unlock(pl->status_m);
-      fast_scale_imagex(newdata+next*new_w,newx,oldx,pl->map);
-      pthread_mutex_lock(pl->status_m);
-      if(p->comp_serialno == serialno){
-	if(--pl->image_incomplete==0)
+
+      int next = pl->image_next;
+      if(next >= newy){
+	if(pl->image_outstanding) return STATUS_BUSY;
+	if(p->comp_serialno == serialno)
 	  pl->image_task=3;
+      }else{
+	pthread_mutex_unlock(pl->status_m);
+	fast_scale_imagex(newdata+next*new_w,newx,oldx,pl->map);
+	pthread_mutex_lock(pl->status_m);
+	if(p->comp_serialno == serialno)
+	  pl->image_outstanding--;
       }
+
     }else{
       // now y
-      pthread_mutex_unlock(pl->status_m);
-      fast_scale_imagey(olddata+next,newdata+next,new_w,old_w,newy,oldy,pl->map);
-      pthread_mutex_lock(pl->status_m);
-      if(p->comp_serialno == serialno){
-	if(--pl->image_incomplete==0)
+
+      int next = pl->image_next;
+      if(next >= newx){
+	if(pl->image_outstanding) return STATUS_BUSY;
+	if(p->comp_serialno == serialno)
 	  pl->image_task=3;
+      }else{
+	pthread_mutex_unlock(pl->status_m);
+	fast_scale_imagey(olddata+next,newdata+next,new_w,old_w,newy,oldy,pl->map);
+	pthread_mutex_lock(pl->status_m);
+	if(p->comp_serialno == serialno)
+	  pl->image_outstanding--;
       }
     }
     return STATUS_WORKING;    
@@ -546,13 +671,12 @@ static int image_resize(sv_plane_t *in, sv_panel_t *p){
       pl->resample_yscalemul = yscalemul;
 
       pl->image_task = 4;
-      pl->image_waiting=0;
-      pl->image_incomplete=0;
+      pl->image_outstanding=0;
     }
       
     //pthread_mutex_unlock(pl->status_m);
     pthread_rwlock_unlock(pl->panel_m);
-
+    
     if(map)free(map);
     if(flags)free(flags);
 
@@ -569,7 +693,7 @@ static int image_resize(sv_plane_t *in, sv_panel_t *p){
     pthread_mutex_lock(pl->status_m);
     return STATUS_WORKING;
   }
-
+  
   return STATUS_IDLE;
 }
 
@@ -648,83 +772,105 @@ static int data_resize(sv_plane_t *in, sv_panel_t *p){
   }
 
   if(pl->data_task==1){ // scale first dim
-    int next = pl->data_next++;
-    if(pl->data_waiting==0)return STATUS_BUSY;
-    pl->data_waiting--;
-
     if(new_w > old_w){
       // y then x
-      pthread_mutex_unlock(pl->status_m);
-      fast_scale_datay(olddata+next,newdata+next,new_w,old_w,newy,oldy,pl->map);
-      pthread_mutex_lock(pl->status_m);
-      if(p->comp_serialno == serialno){
-	if(--pl->data_incomplete==0){
 
-	  pl->data_task=-1;
-	  pthread_mutex_unlock(pl->status_m);
-	  fast_scale_map(map,new_w,newx,oldx);
-	  pthread_mutex_lock(pl->status_m);
+      int next = pl->data_next;
+      if(next >= oldx){
+	if(pl->data_outstanding)return STATUS_BUSY;
 
-	  if(p->comp_serialno == serialno){
-	    pl->data_waiting=new_h;
-	    pl->data_incomplete=new_h;
-	    pl->data_task=2;
-	    pl->data_next=0;
-	  }
+	pl->data_task=-1;
+	pthread_mutex_unlock(pl->status_m);
+	fast_scale_map(map,new_w,newx,oldx);
+	pthread_mutex_lock(pl->status_m);
+	
+	if(p->comp_serialno == serialno){
+	  pl->data_task=2;
+	  pl->data_next=0;
 	}
+      }else{
+
+	pl->data_next++;
+	pl->data_outstanding++;
+
+	pthread_mutex_unlock(pl->status_m);
+	fast_scale_datay(olddata+next,newdata+next,new_w,old_w,newy,oldy,pl->map);
+	pthread_mutex_lock(pl->status_m);
+	if(p->comp_serialno == serialno)
+	  pl->data_outstanding--;
       }
     }else{
       // x then y
-      pthread_mutex_unlock(pl->status_m);
-      fast_scale_datax(olddata+next*old_w,newx,oldx,pl->map);
-      pthread_mutex_lock(pl->status_m);
-      if(p->comp_serialno == serialno){
-	if(--pl->data_incomplete==0){
 
-	  pl->data_task=-1;
-	  pthread_mutex_unlock(pl->status_m);
-	  fast_scale_map(map,new_h,newy,oldy);
-	  pthread_mutex_lock(pl->status_m);
+      int next = pl->data_next;
+      if(next >= oldy){
+	if(pl->data_outstanding)return STATUS_BUSY;
 
-	  if(p->comp_serialno == serialno){
-	    pl->data_waiting=new_w;
-	    pl->data_incomplete=new_w;
-	    pl->data_task=2;
-	    pl->data_next=0;
-	  }
+	pl->data_task=-1;
+	pthread_mutex_unlock(pl->status_m);
+	fast_scale_map(map,new_w,newy,oldy);
+	pthread_mutex_lock(pl->status_m);
+	
+	if(p->comp_serialno == serialno){
+	  pl->data_task=2;
+	  pl->data_next=0;
 	}
+      }else{
+
+	pl->data_next++;
+	pl->data_outstanding++;
+
+	pthread_mutex_unlock(pl->status_m);
+	fast_scale_datax(olddata+next*old_w,newx,oldx,pl->map);
+	pthread_mutex_lock(pl->status_m);
+	if(p->comp_serialno == serialno)
+
+	if(--pl->data_incomplete==0)
+	  pl->data_outstanding--;
       }
     }
     return STATUS_WORKING;    
   }
 
-  if(pl->data_task==2){ // scale first dim
-    int next = pl->data_next++;
-    if(pl->data_waiting==0)return STATUS_BUSY;
-    pl->data_waiting--;
-
+  if(pl->data_task==2){ // scale second dim
     if(new_w > old_w){
       // now x
-      pthread_mutex_unlock(pl->status_m);
-      fast_scale_datax(newdata+next*new_w,newx,oldx,pl->map);
-      pthread_mutex_lock(pl->status_m);
-      if(p->comp_serialno == serialno){
-	if(--pl->data_incomplete==0)
+
+      int next = pl->data_next;
+      if(next >= newy){
+	if(pl->data_outstanding)return STATUS_BUSY;
+	if(p->comp_serialno == serialno)
 	  pl->data_task=3;
+      }else{
+	pl->data_next++;
+	pl->data_outstanding++;
+	pthread_mutex_unlock(pl->status_m);
+	fast_scale_datax(newdata+next*new_w,newx,oldx,pl->map);
+	pthread_mutex_lock(pl->status_m);
+	if(p->comp_serialno == serialno)
+	  pl->data_outstanding--;
       }
     }else{
       // now y
-      pthread_mutex_unlock(pl->status_m);
-      fast_scale_datay(olddata+next,newdata+next,new_w,old_w,newy,oldy,pl->map);
-      pthread_mutex_lock(pl->status_m);
-      if(p->comp_serialno == serialno){
-	if(--pl->data_incomplete==0)
+
+      int next = pl->data_next;
+      if(next >= newx){
+	if(pl->data_outstanding)return STATUS_BUSY;
+	if(p->comp_serialno == serialno)
 	  pl->data_task=3;
+      }else{
+	pl->data_next++;
+	pl->data_outstanding++;
+	pthread_mutex_unlock(pl->status_m);
+	fast_scale_datay(olddata+next,newdata+next,new_w,old_w,newy,oldy,pl->map);
+	pthread_mutex_lock(pl->status_m);
+	if(p->comp_serialno == serialno)
+	  pl->data_outstanding--;
       }
     }
     return STATUS_WORKING;    
   }
-
+  
   if(pl->data_task==3){ // commit new data 
     int *map = NULL;
 
@@ -740,8 +886,7 @@ static int data_resize(sv_plane_t *in, sv_panel_t *p){
       pl->data_x = p->bg->data_x;
       pl->data_y = p->bg->data_y;
       pl->data_task = 4;
-      pl->data_waiting = new_h;
-      pl->data_incomplete = new_h;
+      pl->data_outstanding=0;
       map = pl->map;
       pl->map = NULL;
     }
@@ -766,17 +911,17 @@ static int image_work(sv_plane_t *in, sv_panel_t *p){
   int h = pl->image_y.pixels;
   int w = pl->image_x.pixels;
   int last = pl->image_next;
-  int mapno = pl->map_serialno;
+  int mapno = pl->image_serialno;
   int i;
   sv_ucolor_t work[w];
 
-  if(pl->waiting == 0) return STATUS_IDLE;
+  if(pl->image_task != 4) return STATUS_IDLE;
   
   do{
     i = pl->image_next;
     pl->image_next++;
     if(pl->image_next>=h)pl->image_next=0;
-
+    
     if(pl->image_flags[i]){
       sv_scalespace_t dx = pl->data_x;
       sv_scalespace_t dy = pl->data_y;
@@ -784,57 +929,207 @@ static int image_work(sv_plane_t *in, sv_panel_t *p){
       sv_scalespace_t iy = pl->image_y;
       void (*mapping)(int, int, _sv_lcolor_t *)=mapfunc[pl->image_mapnum];
       pl->image_flags[i]=0;
-      pl->waiting--;
+      pl->image_outstanding++;
 
       pthread_mutex_unlock(pl->status_m);
       slow_scale(dx,dy,ix,iy,mapping,i);
       pthread_mutex_lock(pl->status_m);
-
-      if(p->comp_serialno == serialno &&
-	 pl->map_serialno == mapno){
-	
+      
+      if(pl->image_serialno == mapno){
+	pl->image_outstanding--;
 	p->bg->image_flags[i] = 1;
-
-	if(pl->incomplete-- == 0){
+	if(pl->image_task == 5) // idled while we were working; bg render is waiting for us
 	  p->bg_render = 1;
-	  p->map_render = 0;
-	}
       }
+
       return STATUS_WORKING;
     }
   }while(i!=last);
-  
-  // shouldn't get here...
-  pl->waiting = 0;
-  fprintf(stderr,"sushivision: image render found no work despite status flags\n");
+
+  pl->image_task = 5;
+  if(!pl->image_outstanding)
+    p->bg_render = 1;
+
   return STATUS_IDLE;
+}
+
+static int vswizzle(int y, int height){
+  int yy = height >> 5;
+  if(y < yy)
+    return (y<<5)+31;
+
+  y -= yy;
+  yy = (height+16) >> 5;
+  if(y < yy)
+    return (y<<5)+15;
+
+  y -= yy;
+  yy = (height+8) >> 4;
+  if(y < yy)
+    return (y<<4)+7;
+
+  y -= yy;
+  yy = (height+4) >> 3;
+  if(y < yy)
+    return (y<<3)+3;
+
+  y -= yy;
+  yy = (height+2) >> 2;
+  if(y < yy)
+    return (y<<2)+1;
+
+  y -= yy;
+  return y<<1;
+}
+
+static void data_demultiplex_2d(sv_plane_t *in,sv_panel_t *p,double *output,
+				int w, int xoff, int yoff, int n){
+  sv_plane_2d_t *pl = (sv_plane_2d_t *)in;
+  int i,on=pl->o->outputs;
+  float *data_line = pl->data+w*yoff+xoff;
+  output += pl->data_z_output;
+
+  for(i=0;i<n;i++){
+    *data_line++ = *output;
+    output+=on;
+  }
 }
 
 // called from worker thread
 static int data_work(sv_plane_t *in, sv_panel_t *p){
   sv_plane_2d_t *pl = (sv_plane_2d_t *)in;
+  int serialno = p->comp_serialno;
+  int next = pl->data_next;
+  int i,j; 
 
   // each plane is associated with a single objective, however
   // multiple objectives may be associated with a given computation.
   // This is an optimization for dealing with multiple display
   // ojectives drawing from different output values of the exact same
   // input computation.  The plane types sharing a computation may be
-  // different, but the input dimension value vector will be identical.
+  // different, but the input dimension value vector and input axes
+  // will be identical.
 
   // if this is a 'slave' plane in the computation chain, return idle;
   // some other plane is doing the calculation for us.
-  if(pl->c.share_prev)return STATUS_IDLE;
+  if(pl->c.share_prev)return STATUS_IDLE; 
+  if(pl->data_task != 4)return STATUS_IDLE;
+  if(next >= pl->data_y.pixels){
+    // not the same thing as completion; a computation may yet be
+    // outstanding.  Simply mark this plane so that there are no
+    // further dispatch attempts
+    pl->data_task = 5;
+    return STATUS_IDLE; 
+  }
+  pl->data_next++;
 
-  // marshal iterators, dimension value vector
+  // marshal iterators, dimension value vectors
+  int outputs = pl->o->outputs;
+  double input[pl->o->inputs];
+  int xpos = -1;
+  int yline = vswizzle(next);
+  sv_scalespace_t dx = pl->data_x;
+  int dw = dx.pixels;
+  int dh = pl->data_y.pixels;
+  int iw = pl->image_x.pixels;
+  int ih = pl->image_y.pixels;
 
+  for(i=0;i<pl->o->inputs;i++){
+    int dim = pl->o->input_dims[i]; // dim setup in an objective is immutable
+    if(dim == p->ydim){
+      input[i] = _sv_scalespace_value(&pl->data_y,yline);   
+    }else 
+      input[i] = p->dim_data[dim].val;
+    
+    if(dim == p->xdim) xpos = i;
+  }
 
+  // drop status lock and compute.  Writes to the data plane are not
+  // locked because we still hold the panel concurrent lock; changes
+  // to the computational parameters (and heap) can't happen.  Reads
+  // from the data array may get inconsistent information, but a
+  // completed line flushes which causes a new read to replace the
+  // inconsistent one.
 
+  pl->data_outstanding++;
+  pthread_mutex_unlock(pl->status_m);
   
+  int sofar = 0;
+  int step = (1024+outputs-1)/outputs; // at least one
+  sv_plane_t *slave;
+  while(sofar < w){
+    int this_step = (step>w-sofar?w-sofar:step);
+    double output[outputs*step];
+    double *outptr=output;
+    slave = pl->c.share.next;
 
+    // compute
+    for(i=0;i<this_step;i++){
+      // set x val
+      input[xpos] = _sv_scalespace_value(&dx,i+sofar);   
+      pl->o->function(input,outptr); // func setup in an objective is immutable
+      outptr+=outputs;
+    }
 
+    // demultiplex
+    data_demultiplex_2d(pl,p,output,yline,sofar,this_step);
+    while(slave){
+      slave->data_demultiplex_2d(slave,p,output,yline,sofar,this_step);
+      slave = slave->c.share_next;
+    }
+    sofar+= this_step;
+  }
+
+  pthread_mutex_lock(pl->status_m);
+  if(p->comp_serialno != serialno)return STATUS_WORKING;
+
+  pl->data_outstanding--;
+  
+  // determine all image lines this y data line affects
+  slave = pl;
+  while(slave){
+    if(ih!=dh || iw!=dw){
+      /* resampled row computation; may involve multiple data rows */
+      for(i=0;i<ih;i++)
+	if(pl->resample_ynumA[i]<=yline && pl->resample_ynumB[i]>yline)
+	  pl->image_flags[i]=1;
+    }else
+      pl->image_flags[yline]=1;  
+    slave = slave->c.share_next;
+  }
+
+  pl->image_task = 4;
+
+  if(pl->data_next>=dh){
+    pl->data_task = 5; 
+    if(!pl->data_outstanding) {
+      // immediate image render 
+      p->map_render = 1;
+    }
+  }
+
+  // throttled image render
+  if(p->map_render==0){
+    // no render currently in progress
+    struct timeval now;
+    gettimeofday(&now,NULL);
+    
+    if(p->map_throttle_last.tv_sec==0){
+      p->map_throttle_last=now;
+    }else{
+      long test = (now.tv_sec - p->map_throttle_last.tv_sec)*1000 + 
+	(now.tv_usec - p->map_throttle_last.tv_usec)/1000;
+      if(test>500)
+	// first request since throttle
+	p->map_render=1;
+    }
+  }
+
+  return STATUS_WORKING;
+  
 }
 
-// called from GTK/API
+// called from GTK/API for map scale changes
 static void plane_remap(sv_plane_t *in, sv_panel_t *p){
   sv_plane_2d_t *pl = (sv_plane_2d_t *)in;
   int i,flag=1;
@@ -869,6 +1164,8 @@ static void plane_remap(sv_plane_t *in, sv_panel_t *p){
   for(i=0;i<pl->image_y.pixels;i++)
     pl->image_flags[i]=1;
   pl->image_mapnum = gtk_combo_box_get_active(GTK_COMBO_BOX(pl->range_rulldown));
+  p->image_serialno++;
+  p->image_outstanding=0;
 
   if(flag){
     pthread_rwlock_unlock(pl->panel_m);
@@ -922,356 +1219,6 @@ sv_plane_t *sv_plane_2d_new(){
 }
 
 
-
-
-
-
-
-
-
-// enter unlocked
-static void _sv_planez_compute_line(sv_panel_t *p, 
-				    _sv_plane2d_t *z,
-
-				    int serialno,
-
-				    int dw,
-				    int y,
-				    int x_d, 
-				    _sv_scalespace_t sxi,
-				    double *dim_vals, 
-				    _sv_bythread_cache_2d_t *c){
-
-  _sv_panel2d_t *p2 = p->subtype->p2;
-  int i,j;
-  
-  /* cache access is unlocked because the cache is private to this
-     worker thread */
-
-  for(j=0;j<dw;j++){
-    double *fout = c->fout;
-    sv_func_t **f = p2->used_function_list;
-    int *obj_y_off = p2->y_fout_offset;
-    int *onum = p2->y_obj_to_panel;
-    
-    /* by function */
-    dim_vals[x_d] = _sv_scalespace_value(&sxi,j);   
-    for(i=0;i<p2->used_functions;i++){
-      (*f)->callback(dim_vals,fout);
-      fout += (*f)->outputs;
-      f++;
-    }
-    
-    /* process function output by plane type/objective */
-    /* 2d panels currently only care about the Y output value */
-    
-    /* slider map */
-    for(i=0;i<p2->y_obj_num;i++){
-      float val = (float)_sv_slider_val_to_del(p2->range_scales[*onum++], c->fout[*obj_y_off++]);
-      if(isnan(val)){
-	c->y_map[i][j] = -1;
-      }else{
-	if(val<0)val=0;
-	if(val>1)val=1;
-	c->y_map[i][j] = rint(val * (256.f*256.f*256.f));
-      }
-    }
-  }
-
-  gdk_lock ();
-  if(p->private->plot_serialno == serialno){
-    for(j=0;j<p2->y_obj_num;j++){
-      int *d = p2->y_map[j] + y*dw;
-      int *td = c->y_map[j];
-      
-      memcpy(d,td,dw*sizeof(*d));
-      
-    }
-  }
-  gdk_unlock ();
-}
-
-typedef struct{
-  double x;
-  double y;
-  double z;
-} compute_result;
-
-// used by the legend code. this lets us get away with having only a mapped display pane
-// call with lock
-static void _sv_panel2d_compute_point(sv_panel_t *p,sv_obj_t *o, double x, double y, compute_result *out){
-  double dim_vals[_sv_dimensions];
-  int i,j;
-  int pflag=0;
-  int eflag=0;
-
-  // fill in dimensions
-  int x_d = p->private->x_d->number;
-  int y_d = p->private->y_d->number;
-
-  for(i=0;i<_sv_dimensions;i++){
-    sv_dim_t *dim = _sv_dimension_list[i];
-    dim_vals[i]=dim->val;
-  }
-
-  gdk_unlock ();
-
-  dim_vals[x_d] = x;
-  dim_vals[y_d] = y;
-
-  *out = (compute_result){NAN,NAN,NAN,NAN,NAN,NAN,NAN,NAN};
-
-  // compute
-  for(i=0;i<_sv_functions;i++){
-    sv_func_t *f = _sv_function_list[i];
-    int compflag = 0;
-    double fout[f->outputs];
-    double val;
-
-    // compute and demultiplex output
-    for(j=0;j<o->outputs;j++){
-      if(o->function_map[j] == i){
-
-	if(!compflag) f->callback(dim_vals,fout);
-	compflag = 1;
-	
-	val = fout[o->output_map[j]];
-	switch(o->output_types[j]){
-	case 'X':
-	  out->x = val;
-	  break;
-	case 'Y':
-	  out->y = val;
-	  break;
-	case 'Z':
-	  out->z = val;
-	  break;
-	case 'E':
-	  if(eflag)
-	    out->e2 = val;
-	  else
-	    out->e1 = val;
-	  eflag = 1;
-	  break;
-	case 'P':
-	  if(pflag)
-	    out->p2 = val;
-	  else
-	    out->p1 = val;
-	  pflag = 1;
-	  break;
-	case 'M':
-	  out->m = val;
-	  break;
-	}
-      }
-    }
-  }
-  gdk_lock ();
-
-}
-
-// enter with lock; returns zero if thread should sleep / get distracted
-static int _sv_panel2d_remap(sv_panel_t *p, _sv_bythread_cache_2d_t *thread_cache){
-  _sv_panel2d_t *p2 = p->subtype->p2;
-  _sv_plot_t *plot = PLOT(p->private->graph);
-
-  if(!plot) goto abort;
-  int ph = plot->y.pixels;
-  int pw = plot->x.pixels;
-  
-  int plot_serialno = p->private->plot_serialno; 
-  int map_serialno = p->private->map_serialno; 
-
-  /* brand new remap indicated by the generic progress indicator being set to 0 */
-  if(p->private->map_progress_count == 0){
-
-    p->private->map_progress_count = 1; // 'in progress'
-    p->private->map_complete_count = p2->y_obj_num * ph; // count down to 0; 0 indicates completion
-
-    // set up Y plane rendering
-    p2->y_next_plane = 0;
-    p2->y_next_line = 0;
-
-    // bg mix
-    p2->bg_next_line = 0;
-    p2->bg_first_line = ph;
-    p2->bg_last_line = 0;
-
-    if(!p2->partial_remap)
-      _sv_panel2d_mark_map_full(p);
-  }
-
-  /* by plane, by line; each plane renders independently */
-  /* Y planes */
-  if(p2->y_planetodo){
-    if(p2->y_next_plane < p2->y_obj_num){
-      int status = _sv_panel2d_resample_render_y_plane_line(p, thread_cache, 
-							    plot_serialno, map_serialno, 
-							    p2->y_next_plane);
-      if(status == -1) goto abort;
-      if(status == 1){
-	p2->y_next_plane++;
-	p2->y_next_line = 0;
-      }
-      return 1;
-    }
-  }else{
-    p->private->map_complete_count = 0;
-  }
-
-  /* renders have been completely dispatched, but are they complete? */
-  /* the below is effectively a a thread join */
-  if(p2->bg_next_line == 0){
-
-    // join still needs to complete....
-    if(p->private->map_complete_count){
-      // nonzero complete count, not finished.  returning zero will cause
-      // this worker thread to sleep or go on to do other things.
-      return 0; 
-    }else{
-      // zero complete count, the planes are done; we can begin
-      // background render.  At least one thread is guaranteed to get
-      // here, which is enough; we can now wake the others [if they were
-      // asleep] and have them look for work here. */
-      p->private->map_complete_count = ph; // [ph] lines to render in bg plane
-      p2->bg_next_line = 0;
-
-      _sv_wake_workers();
-    }
-  }
-
-  /* mix new background, again line by line */
-  if(p2->bg_next_line < ph){
-    int status = _sv_panel2d_render_bg_line(p, plot_serialno, map_serialno);
-    if(status == -1) goto abort;
-    if(p->private->map_complete_count)return status;
-  }else
-    return 0; // nothing left to dispatch
-
-  // entirely finished.
-
-  // remap completed; flush background to screen
-  _sv_plot_expose_request_partial (plot,0,p2->bg_first_line,
-			       pw,p2->bg_last_line - p2->bg_first_line);
-  gdk_flush();
-
-  // clean bg todo list
-  memset(p2->bg_todo,0,ph*sizeof(*p2->bg_todo));
-
-  // clear 'panel in progress' flag
-  p2->partial_remap = 0;
-  _sv_panel_clean_map(p);
-  return 0;
-
- abort:
-  // reset progress to 'start over'
-  return 1;
-}
-
-// call while locked 
-static void _sv_panel2d_mark_map_line_y(sv_panel_t *p, int line){
-  // determine all panel lines this y data line affects
-  _sv_panel2d_t *p2 = p->subtype->p2;
-  int ph = p2->y.pixels;
-  int pw = p2->x.pixels;
-  int dw = p2->x_v.pixels;
-  int dh = p2->y_v.pixels;
-  int i,j;
-
-  p2->partial_remap = 1;
-
-  if(ph!=dh || pw!=dw){
-    /* resampled row computation; may involve multiple data rows */
-    if(p2->y_planetodo){
-      _sv_panel2d_resample_helpers_manage_y(p);
-      
-      for(i=0;i<ph;i++)
-	if(p2->ynumA[i]<=line &&
-	   p2->ynumB[i]>line){
-	  
-	  for(j=0;j<p2->y_obj_num;j++)
-	    if(p2->y_planetodo[j])
-	      p2->y_planetodo[j][i]=1;
-      }
-    }
-  }else{
-    if(p2->y_planetodo)
-      if(line>=0 && line<ph)
-	for(j=0;j<p2->y_obj_num;j++)
-	  if(p2->y_planetodo[j])
-	    p2->y_planetodo[j][line]=1;
-  }
-}
-
-static int _v_swizzle(int y, int height){
-  int yy = height >> 5;
-  if(y < yy)
-    return (y<<5)+31;
-
-  y -= yy;
-  yy = (height+16) >> 5;
-  if(y < yy)
-    return (y<<5)+15;
-
-  y -= yy;
-  yy = (height+8) >> 4;
-  if(y < yy)
-    return (y<<4)+7;
-
-  y -= yy;
-  yy = (height+4) >> 3;
-  if(y < yy)
-    return (y<<3)+3;
-
-  y -= yy;
-  yy = (height+2) >> 2;
-  if(y < yy)
-    return (y<<2)+1;
-
-  y -= yy;
-  return y<<1;
-}
-
-void _sv_panel2d_maintain_cache(sv_panel_t *p, _sv_bythread_cache_2d_t *c, int w){
-  _sv_panel2d_t *p2 = p->subtype->p2;
-  
-  /* toplevel initialization */
-  if(c->fout == 0){
-    int i,count=0;
-    
-    /* allocate output temporary buffer */
-    for(i=0;i<p2->used_functions;i++){
-      int fnum = p2->used_function_list[i]->number;
-      sv_func_t *f = _sv_function_list[fnum];
-      count += f->outputs;
-    }
-    c->fout = calloc(count, sizeof(*c->fout));
-
-    /* objective line buffer index */
-    c->y_map = calloc(p2->y_obj_num,sizeof(*c->y_map));
-    for(i=0;i<p2->y_obj_num;i++)
-      c->y_map[i] = calloc(w,sizeof(**c->y_map));
-    c->storage_width = w;
-  }
-  
-  /* anytime the data width changes */
-  if(c->storage_width != w){
-    int i;
-    c->storage_width = w;
-    
-    for(i=0;i<p2->y_obj_num;i++)
-      c->y_map[i] = realloc(c->y_map[i],w*sizeof(**c->y_map));
-
-  }
-}
-
-
-// subtype entry point for plot remaps; lock held
-static int _sv_panel2d_map_redraw(sv_panel_t *p, _sv_bythread_cache_t *c){
-  return _sv_panel2d_remap(p,&c->p2);
-}
-
 // subtype entry point for legend redraws; lock held
 static int _sv_panel2d_legend_redraw(sv_panel_t *p){
   _sv_plot_t *plot = PLOT(p->private->graph);
@@ -1286,190 +1233,6 @@ static int _sv_panel2d_legend_redraw(sv_panel_t *p){
   gdk_lock();
 
   _sv_plot_expose_request(plot);
-  return 1;
-}
-
-// subtype entry point for recomputation; lock held
-static int _sv_panel2d_compute(sv_panel_t *p,
-			       _sv_bythread_cache_t *c){
-
-  _sv_panel2d_t *p2 = p->subtype->p2;
-  _sv_plot_t *plot;
-  
-  int pw,ph,dw,dh,i,d;
-  int serialno;
-  double x_min, x_max;
-  double y_min, y_max;
-  int x_d=-1, y_d=-1;
-  _sv_scalespace_t sx,sx_v,sx_i;
-  _sv_scalespace_t sy,sy_v,sy_i;
-
-  plot = PLOT(p->private->graph);
-  pw = plot->x.pixels;
-  ph = plot->y.pixels;
-  
-  x_d = p->private->x_d->number;
-  y_d = p->private->y_d->number;
-
-  // beginning of computation init
-  if(p->private->plot_progress_count==0){
-    int remapflag = 0;
-
-    _sv_scalespace_t old_x = p2->x;
-    _sv_scalespace_t old_y = p2->y;
-    _sv_scalespace_t old_xv = p2->x_v;
-    _sv_scalespace_t old_yv = p2->y_v;
-
-    // generate new scales
-    _sv_dim_scales(p->private->x_d, 
-		   p->private->x_d->bracket[0],
-		   p->private->x_d->bracket[1],
-		   pw,pw * p->private->oversample_n / p->private->oversample_d,
-		   plot->scalespacing,
-		   p->private->x_d->legend,
-		   &sx,
-		   &sx_v,
-		   &sx_i);
-    _sv_dim_scales(p->private->y_d, 
-		   p->private->y_d->bracket[1],
-		   p->private->y_d->bracket[0],
-		   ph,ph * p->private->oversample_n / p->private->oversample_d,
-		   plot->scalespacing,
-		   p->private->y_d->legend,
-		   &sy,
-		   &sy_v,
-		   &sy_i);
-    
-    p2->x = sx;
-    p2->x_v = sx_v;
-    p2->x_i = sx_i;
-    p2->y = sy;
-    p2->y_v = sy_v;
-    p2->y_i = sy_i;
-
-    plot->x = sx;
-    plot->y = sy;
-    plot->x_v = sx_v;
-    plot->y_v = sy_v;
-
-    p->private->plot_progress_count++;
-    p->private->plot_serialno++; // we're about to free the old data rectangles
-
-    // realloc/fast scale the current data contents if appropriate
-    if(memcmp(&sx_v,&old_xv,sizeof(sx_v)) || memcmp(&sy_v,&old_yv,sizeof(sy_v))){
-      
-      // maintain data planes
-      for(i=0;i<p2->y_obj_num;i++){
-	// allocate new storage
-	int *newmap = calloc(sx_v.pixels*sy_v.pixels,sizeof(*newmap));
-	int *oldmap = p2->y_map[i];
-	int j;
-	
-	for(j=0;j<sx_v.pixels*sy_v.pixels;j++)
-	  newmap[j]=-1;
-	
-	// zoom scale data in map planes as placeholder for render
-	if(oldmap){
-	  _sv_panel2d_fast_scale(p->private->spinner,newmap, sx_v, sy_v,
-				 oldmap,old_xv, old_yv);
-	  free(oldmap);
-	}
-	p2->y_map[i] = newmap; 
-      }
-      remapflag = 1;
-    }
-
-    // realloc render planes if appropriate
-    if(memcmp(&sx,&old_x,sizeof(sx)) || memcmp(&sy,&old_y,sizeof(sy))){
-      for(i=0;i<p2->y_obj_num;i++){
-
-	// y planes
-	if(p2->y_planes[i])
-	  free(p2->y_planes[i]);
-	p2->y_planes[i] = calloc(sx.pixels*sy.pixels,sizeof(**p2->y_planes));
-
-	// todo lists
-	if(p2->y_planetodo[i])
-	  free(p2->y_planetodo[i]);
-	p2->y_planetodo[i] = calloc(sy.pixels,sizeof(**p2->y_planetodo));
-	
-      }
-
-      if(p2->bg_todo)
-	free(p2->bg_todo);
-      p2->bg_todo=calloc(ph,sizeof(*p2->bg_todo));
-      
-      remapflag = 1;
-    }
-
-    if(remapflag){
-      _sv_panel2d_mark_map_full(p);
-      _sv_panel_dirty_map(p);
-
-      gdk_unlock ();      
-      _sv_plot_draw_scales(plot); // this should happen outside lock
-      gdk_lock ();      
-    }
-
-    _sv_map_set_throttle_time(p); // swallow the first 'throttled' remap which would only be a single line;
-
-    return 1;
-  }else{
-    sx = p2->x;
-    sx_v = p2->x_v;
-    sx_i = p2->x_i;
-    sy = p2->y;
-    sy_v = p2->y_v;
-    sy_i = p2->y_i;
-    serialno = p->private->plot_serialno; 
-  }
-
-  dw = sx_v.pixels;
-  dh = sy_v.pixels;
-
-  if(p->private->plot_progress_count>dh) return 0;
-
-  _sv_panel2d_maintain_cache(p,&c->p2,dw);
-  
-  d = p->dimensions;
-
-  /* render using local dimension array; several threads will be
-     computing objectives */
-  double dim_vals[_sv_dimensions];
-  int y = _v_swizzle(p->private->plot_progress_count-1,dh);
-  p->private->plot_progress_count++;
-
-  x_min = _sv_scalespace_value(&p2->x_i,0);
-  x_max = _sv_scalespace_value(&p2->x_i,dw);
-
-  y_min = _sv_scalespace_value(&p2->y_i,0);
-  y_max = _sv_scalespace_value(&p2->y_i,dh);
-
-  // Initialize local dimension value array
-  for(i=0;i<_sv_dimensions;i++){
-    sv_dim_t *dim = _sv_dimension_list[i];
-    dim_vals[i]=dim->val;
-  }
-
-  /* unlock for computation */
-  gdk_unlock ();
-    
-  dim_vals[y_d]=_sv_scalespace_value(&sy_i, y);
-  _sv_panel2d_compute_line(p, serialno, dw, y, x_d, sx_i, dim_vals, &c->p2);
-
-  gdk_lock ();
-
-  if(p->private->plot_serialno == serialno){
-    p->private->plot_complete_count++;
-    _sv_panel2d_mark_map_line_y(p,y);
-    if(p->private->plot_complete_count>=dh){ 
-      _sv_panel_dirty_map(p);
-      _sv_panel_dirty_legend(p);
-      _sv_panel_clean_plot(p);
-    }else
-      _sv_panel_dirty_map_throttled(p); 
-  }
-
   return 1;
 }
 
