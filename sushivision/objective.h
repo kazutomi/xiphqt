@@ -28,7 +28,7 @@ struct _sv_obj {
 
   void (*function)(double *,double *);
   int inputs;
-  sv_dim_t **input_dims;
+  int *input_dims;
   int outputs;
   int *output_axes;
 

@@ -23,32 +23,32 @@ typedef union  sv_plane sv_plane_t;
 typedef struct sv_plane_bg sv_plane_bg_t;
 typedef struct sv_plane_2d sv_plane_2d_t;
 
-struct sv_zmap {
-
-  double *label_vals;
-  int labels;
-  int neg;
-  double al;
-  double lo;
-  double hi;
-  double lodel;
-  double *labeldelB;
-  double *labelvalB;
-
-};
-
 struct sv_plane_common {
   int              plane_type;
   sv_obj_t        *o;
   sv_plane_t      *share_next;
   sv_plane_t      *share_prev;
   sv_panel_t      *panel;
+  int             *axis_list;
+  int             *axis_dims;
+  double          *dim_input; // function input vector (without iterator values)
+  sv_scalespace_t *pending_data_scales;
+  sv_scalespace_t *data_scales;
+  sv_scalespace_t  image_x;
+  sv_scalespace_t  image_y;
+  int              axes;
 
-  void (*recompute_setup)(sv_plane_t *, sv_panel_t *);
-  int (*image_resize)(sv_plane_t *, sv_panel_t *);
-  int (*data_resize)(sv_plane_t *, sv_panel_t *);
-  int (*image_work)(sv_plane_t *, sv_panel_t *);
-  int (*data_work)(sv_plane_t *, sv_panel_t *);
+  void (*recompute_setup)(sv_plane_t *);
+  int (*image_resize)(sv_plane_t *);
+  int (*data_resize)(sv_plane_t *);
+  int (*image_work)(sv_plane_t *);
+  int (*data_work)(sv_plane_t *);
+
+  void (*plane_remap)(sv_plane_t *);
+  void (*plane_free)(sv_plane_t *);
+
+  void (*demultiplex_2d)(sv_plane_t *, double *out, int dw, int x, int y, int n);
+
 } sv_plane_common_t;
 
 struct sv_plane_bg {
@@ -71,7 +71,10 @@ struct sv_plane_bg {
 struct sv_plane_2d {
   sv_plane_common_t c;
 
-  // data
+  // cached/helper 
+  int              data_z_output; 
+
+  // data; access unlocked
   float           *data;  
   float           *pending_data;  
   sv_ucolor_t     *image;
@@ -80,23 +83,16 @@ struct sv_plane_2d {
   slider_map_t     scale;
 
   // status 
-  sv_scalespace_t  data_x;
-  sv_scalespace_t  data_y;
-  sv_scalespace_t  pending_data_x;
-  sv_scalespace_t  pending_data_y;
-  int              data_waiting; 
-  int              data_incomplete; 
-  int              data_task;
+  int              data_outstanding; 
+  int              data_task; /* -1 busy, 0 realloc, 1 resizeA, 2 resizeB, 3 commit, 4 working, 5 idle */
   int              data_next;
 
   int              image_serialno;
-  sv_scalespace_t  image_x; 
-  sv_scalespace_t  image_y;
-  int              image_task;
+  int              image_outstanding;
+  int              image_task; /* -1 busy, 0 realloc, 1 resizeA, 2 resizeB, 3 commit, 4 working, 5 idle */
   int              image_next;
   int              image_mapnum;
   int             *image_flags;
-  int              image_remap_request;
   
   // resampling helpers
   unsigned char   *resample_xdelA;

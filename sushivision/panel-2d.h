@@ -23,25 +23,28 @@ typedef struct {
   pthread_rwlock_t panel_m;
   pthread_mutex_t  status_m;
   
-  // request payload (locked by status)
+  // mem and data locked by status_m
   int               recompute_pending;
-  int               dims;
-  int               w;
+  int               dims; 
+  int               w; 
   int               h;
-  int               xdim;
-  int               ydim;
   sv_dim_data_t    *dim_data;
 
-  // composite 'background' plane
-  _sv_plane_bg_t *bg;
+  // axis 0 == X 
+  // axis 1 == Y 
+  // axis 2 == Z
+  // >2 == auxiliary axes
+  char            **axis_names;
+  int              *axis_dims;
+  int               axes;
 
-  // objective planes
+  // locked by panel_m
+  _sv_plane_bg_t *bg; // composite background plane
+
   int planes;
   _sv_plane_t **plane_list;
   int next_plane; 
-  pthread_mutex_t  planelock; // locks plane status, not data
-  
-  // UI elements
+
   GtkWidget *obj_table;
   GtkWidget *dim_table;
 
@@ -52,8 +55,7 @@ typedef struct {
 
   _sv_dim_widget_t *x_scale; // pointer to current X axis dimwidget
   _sv_dim_widget_t *y_scale; // pointer to current Y axis dimwidget
-  int x_dnum; // panel, not global list context
-  int y_dnum; // panel, not global list context
+  //_sv_dim_widget_t *z_scale; // pointer to current Z axis dimwidget
 
 } _sv_panel2d_t;
 

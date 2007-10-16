@@ -154,6 +154,11 @@ int _sv_panel_work(sv_panel_t *p){
   pthread_mutex_lock(p->status_m);
 
   // recomute setup
+
+  // plane recompute calls will do nothing if recomputation is not
+  // required.  Even if computation not required, will still request
+  // an image resize; the image resize code will later noop if there's
+  // no need to resize either.
   if(p->recompute_pending){
     p->recompute_pending=0;
     p->comp_serialno++;
@@ -183,6 +188,8 @@ int _sv_panel_work(sv_panel_t *p){
   serialno = p->comp_serialno;
 
   // image resize
+
+  // again, each plane checks to see if a resize is really necessary.  If not, does nothing.
   if(p->image_resize){
     status = plane_loop(p,&p->image_next_plane,image_resize);
     if(status == STATUS_WORKING) return done_working(p);
