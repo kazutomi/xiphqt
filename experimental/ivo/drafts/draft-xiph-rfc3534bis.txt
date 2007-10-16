@@ -109,7 +109,7 @@ Table of Contents
    and SHOULD be used when dealing with visual and/or audio content.
    This registration applies to any data encapsulated in the Ogg
    container format.
-   
+
    This document defines strict processing rules for each media type to
    foster more interoperable processing.  It is recommended that
    implementations that identify a logical bitstream which they cannot
@@ -325,8 +325,8 @@ Table of Contents
       any visual material.  Although three file extensions are defined
       for this type, the restriction that files served under the
       "audio/ogg" type SHOULD have an Ogg Skeleton logical bitstream
-	  only apply when dealing with files using the .oga extension.  The
-	  .ogg and .spx file extensions are a specialization that require no
+      only apply when dealing with files using the .oga extension.  The
+      .ogg and .spx file extensions are a specialization that require no
       Skeleton due to concerns of backwards-compatibility with existing
       implementations.  Use of the .oga file extension is then the
       preferred method of distributing audio material under the
@@ -341,18 +341,18 @@ Table of Contents
 
    [Ogg]          Xiph.Org Foundation, published specifications in "Ogg
                   bitstream documentation": "Ogg logical and physical
-				  bitstream overview", "Ogg logical bitstream framing",
-				  "Ogg multi-stream multiplexing",
-				  <http://xiph.org/ogg/doc>.
+                  bitstream overview", "Ogg logical bitstream framing",
+                  "Ogg multi-stream multiplexing",
+                  <http://xiph.org/ogg/doc>.
 
    [Skeleton]     Pfeiffer, S., Parker, C., and Pang, A., "The Annodex
                   exchange format for time-continuous bitstreams",
-				  section 4, "The Ogg Skeleton logical bitstream", March
-				  2005.
+                  section 4, "The Ogg Skeleton logical bitstream", March
+                  2005.
 
    [MIME1]        Freed, N. and N. Borenstein, "Multipurpose Internet
                   Mail Extensions (MIME) Part One: Format of Internet
-				  Message Bodies", RFC 2045, November 1996.
+                  Message Bodies", RFC 2045, November 1996.
 
    [RFC3533]      Pfeiffer, S., "The Ogg Encapsulation Format Version
                   0", RFC 3533, May 2003.
