@@ -60,32 +60,31 @@ int main(int argc, char *argv[]){
   // "name:label(arg,arg,arg...)"
 
   sv_dim_new("rc:Re\\(c\\)");
-  sv_dim_make_scale("-2.25, -0.75, 0, 0.25, 0.75");
+  sv_dim_scale("-2.25, -0.75, 0, 0.25, 0.75");
   
   sv_dim_new("ic:Im\\(c\\)");
-  sv_dim_make_scale("-2,-1,0,1,2");
+  sv_dim_scale("-2,-1,0,1,2");
 
   sv_dim_new("rz:Re\\(z0\\)");
-  sv_dim_make_scale("-2.25, -1, 0, 1, 2.25");
+  sv_dim_scale("-2.25, -1, 0, 1, 2.25");
 
   sv_dim_new("iz:Im\\(z0\\)");
-  sv_dim_make_scale("-2.25, -1, 0, 1, 2.25");
+  sv_dim_scale("-2.25, -1, 0, 1, 2.25");
 
   sv_dim_new("it:Max Iterations(picklist)");
-  sv_dim_make_scale("100:one hundred,"
-		    "1000:one thousand,"
-		    "10000:ten thousand,"
-		    "100000:one hundred thousand");
-  sv_dim_set_value(10000);
+  sv_dim_scale("100:one hundred,"
+	       "1000:one thousand,"
+	       "10000:ten thousand,"
+	       "100000:one hundred thousand");
+  sv_dim_value(10000);
 
   sv_obj_new("fractal",fractal_objective,"rc,ic,rz,iz,it", "outer,inner");
-  sv_obj_make_scale("outer","0, .001, .01, .1, 1.0");
-  sv_obj_make_scale("inner","0, .001, .01, .1, 1.0");
+  sv_obj_scale("outer","0, .001, .01, .1, 1.0");
+  sv_obj_scale("inner","0, .001, .01, .1, 1.0");
   
-  sv_panel_new_2d(0,"Mandel/Julia Fractal",
-		  "fractal(2d,Z=inner), fractal(2d,Z=outer)",
-		  "rc(X,Y), ic(X,Y), rz(X,Y), iz(X,Y), it",
-		  0);
+  sv_panel_new("Mandel/Julia Fractal",
+	       "fractal(2d,Z=inner), fractal(2d)",
+	       "rc(X,Y), ic(X,Y), rz(X,Y), iz(X,Y), it");
   
   sv_go();
   sv_join();
