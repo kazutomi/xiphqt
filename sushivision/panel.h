@@ -19,16 +19,19 @@
  * 
  */
 
-typedef struct {
+struct sv_panel {
   pthread_rwlock_t panel_m;
   pthread_mutex_t  status_m;
-  
-  // mem and data locked by status_m
-  int               recompute_pending;
-  int               dims; 
-  int               w; 
-  int               h;
-  sv_dim_data_t    *dim_data;
+
+  int number;
+  char *name;
+  char *legend;
+
+  int dimensions;
+  int *dimension_list;
+
+  int objectives;
+  int *objective_list;
 
   // axis 0 == X 
   // axis 1 == Y 
@@ -38,30 +41,26 @@ typedef struct {
   int              *axis_dims;
   int               axes;
 
-  // locked by panel_m
-  _sv_plane_bg_t *bg; // composite background plane
+  // mem and data locked by status_m
+  int               recompute_pending;
+  int               dims; 
+  int               w; 
+  int               h;
+  sv_dim_data_t    *dim_data;
 
+  // locked by panel_m
+  sv_plane_bg_t *bg; // composite background plane
   int planes;
-  _sv_plane_t **plane_list;
+  sv_plane_t **plane_list;
   int next_plane; 
 
+  // UI objects
   GtkWidget *obj_table;
   GtkWidget *dim_table;
 
-  double oldbox[4];
+  //sv_dimwidget_t *dw;
+  //sv_objwidget_t *ow;
 
-  GtkWidget **dim_xb; // X axis selector buttons
-  GtkWidget **dim_yb; // Y axis selector buttons
+  double selectbox[4]; // x1,y1,x2,y2
 
-  _sv_dim_widget_t *x_scale; // pointer to current X axis dimwidget
-  _sv_dim_widget_t *y_scale; // pointer to current Y axis dimwidget
-  //_sv_dim_widget_t *z_scale; // pointer to current Z axis dimwidget
-
-} _sv_panel2d_t;
-
-typedef struct {
-  double *fout; 
-  int fout_size;
-
-
-} _sv_bythread_cache_2d_t;
+} sv_panel_t;
