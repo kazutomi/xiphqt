@@ -417,13 +417,12 @@ int _sv_plane_recompute_setup_common(sv_plane_t *pl){
   return flag;
 }
 
-int _sv_plane_resize_check(sv_plane_t *in){
+int _sv_plane_resample_setup_common(sv_plane_t *in){
   sv_plane_common_t *c = &pl->c;
   sv_panel_t *p = c->panel;
-  int w = p->bg->image_x->pixels;
-  int h = p->bg->image_y->pixels;
-  
-  if(c->image_x.pixels != w || c->image_y.pixels != y) return 1;
+
+  if(_sv_scalecmp(&c->image_x,&p->bg->image_x) ||
+     _sv_scalecmp(&c->image_y,&p->bg->image_y)) return 1;
   return 0;
 }
 
@@ -445,7 +444,7 @@ static void recompute_setup(sv_plane_t *in){
   // plane of a fixed size data set requires a rerender, but not a
   // recompute)
 
-  flag|=_sv_plane_resize_check(in);
+  flag|=_sv_plane_resample_setup_common(in);
 
   if(flag){
     pl->image_serialno++;
@@ -669,7 +668,7 @@ static int image_resize(sv_plane_t *in, sv_panel_t *p){
       swapp(&ynumB,&pl->resample_ynumB);
       pl->resample_xscalemul = xscalemul;
       pl->resample_yscalemul = yscalemul;
-
+      bg_rerender_full(p);
       pl->image_task = 4;
       pl->image_outstanding=0;
     }
@@ -883,8 +882,8 @@ static int data_resize(sv_plane_t *in, sv_panel_t *p){
     //pthread_mutex_lock(pl->status_m);
 
     if(p->comp_serialno == serialno){
-      pl->data_x = p->bg->data_x;
-      pl->data_y = p->bg->data_y;
+      pl->data_x = pl->pending_data_x;
+      pl->data_y = pl->pending_data_y;
       pl->data_task = 4;
       pl->data_outstanding=0;
       map = pl->map;
@@ -914,7 +913,8 @@ static int image_work(sv_plane_t *in, sv_panel_t *p){
   int mapno = pl->image_serialno;
   int i;
   sv_ucolor_t work[w];
-
+  
+  if(pl->image_task == 5 && pl->image_outstanding) return STATUS_BUSY;
   if(pl->image_task != 4) return STATUS_IDLE;
   
   do{
@@ -937,19 +937,14 @@ static int image_work(sv_plane_t *in, sv_panel_t *p){
       
       if(pl->image_serialno == mapno){
 	pl->image_outstanding--;
-	p->bg->image_flags[i] = 1;
-	if(pl->image_task == 5) // idled while we were working; bg render is waiting for us
-	  p->bg_render = 1;
+	bg_rerender_line(p,i);
       }
-
       return STATUS_WORKING;
     }
   }while(i!=last);
-
+  
   pl->image_task = 5;
-  if(!pl->image_outstanding)
-    p->bg_render = 1;
-
+  if(pl->image_outstanding) return STATUS_BUSY;
   return STATUS_IDLE;
 }
 
@@ -1012,15 +1007,13 @@ static int data_work(sv_plane_t *in, sv_panel_t *p){
 
   // if this is a 'slave' plane in the computation chain, return idle;
   // some other plane is doing the calculation for us.
+
   if(pl->c.share_prev)return STATUS_IDLE; 
-  if(pl->data_task != 4)return STATUS_IDLE;
-  if(next >= pl->data_y.pixels){
-    // not the same thing as completion; a computation may yet be
-    // outstanding.  Simply mark this plane so that there are no
-    // further dispatch attempts
-    pl->data_task = 5;
-    return STATUS_IDLE; 
-  }
+  if(pl->data_task == 4)
+    if(next >= pl->data_y.pixels) 
+      pl->data_task = 5;
+  if(pl->data_task == 5 && pl->data_outstanding) return STATUS_BUSY;
+  if(pl->data_task != 4) return STATUS_IDLE;
   pl->data_next++;
 
   // marshal iterators, dimension value vectors

@@ -112,10 +112,6 @@ static int data_work(sv_plane_t *pl,
   return pl->c.data_work(pl, p);
 }
 
-#define STATUS_IDLE 0
-#define STATUS_BUSY 1
-#define STATUS_WORKING 2
-
 static int plane_loop(sv_panel_t *p, int *next, 
 		      int(*function)(_sv_plane_t *, 
 				     sv_panel_t *)){
@@ -161,9 +157,8 @@ int _sv_panel_work(sv_panel_t *p){
   // recomute setup
 
   // plane recompute calls will do nothing if recomputation is not
-  // required.  Even if computation not required, will still request
-  // an image resize; the image resize code will later noop if there's
-  // no need to resize either.
+  // required.  Even if computation not required, may still request
+  // an image resize/resample
   if(p->recompute_pending){
     p->recompute_pending=0;
     p->comp_serialno++;
@@ -174,7 +169,7 @@ int _sv_panel_work(sv_panel_t *p){
     p->bgrender=0;
     p->image_next_plane=0;
     
-    bg->c.recompute_setup(p->bg, p);
+    bg_recompute_setup(p);
 
     for(i=0;i<p->planes;i++)
       p->plane_list[i]->c.recompute_setup(p->plane_list[i], p);
@@ -192,15 +187,22 @@ int _sv_panel_work(sv_panel_t *p){
 
   serialno = p->comp_serialno;
 
-  // image resize
+  // bg/image resize
+  // image resizes assume bg resize has completed
+  if(p->bg_resize){
+    status = bg_resize(p);
+    if(status == STATUS_WORKING) return done_working(p);
+    if(status == STATUS_BUSY) return done_busy(p);
+    p->bg_resize=0;
+  }
 
-  // again, each plane checks to see if a resize is really necessary.  If not, does nothing.
+  // image resize
   if(p->image_resize){
     status = plane_loop(p,&p->image_next_plane,image_resize);
     if(status == STATUS_WORKING) return done_working(p);
     if(status == STATUS_IDLE){
       p->image_resize = 0;
-      p->bgrender = 1;
+      p->bg_render = 1;
     }
   }
 
@@ -230,7 +232,7 @@ int _sv_panel_work(sv_panel_t *p){
   if(p->bg_render){
     if(bg_render(p) == STATUS_IDLE){
       p->expose=1;
-      p->bgrender=0;
+      p->bg_render=0;
     }
     return done_working(p);
   }    
@@ -260,714 +262,16 @@ int _sv_panel_work(sv_panel_t *p){
   if(p->map_render){
     status = plane_loop(p,&p->image_next_plane,image_work);
     if(status == STATUS_WORKING) return done_working(p);
-    if(status == STATUS_IDLE) p->map_render = 0;
+    if(status == STATUS_IDLE){
+      p->map_render = 0;
+      p->bg_render = 1;
+    }
   }
   
   // computation work 
   status = plane_loop(p,&p->data_next_plane,data_work);
   if(status == STATUS_WORKING) return done_working(p);
   return done_idle(p);
-}
-
-
-
-static int _sv_plane2d_compute_one(){
-
-}
-
-static int _sv_plane2d_map_one(){
-
-}
-
-// work order: resize/fast scale -> compute -> plane_render -> composite
-
-// enter unlocked
-static void _sv_planez_compute_line(sv_panel_t *p, 
-				    _sv_plane2d_t *z,
-
-				    int serialno,
-
-				    int dw,
-				    int y,
-				    int x_d, 
-				    _sv_scalespace_t sxi,
-				    double *dim_vals, 
-				    _sv_bythread_cache_2d_t *c){
-
-  _sv_panel2d_t *p2 = p->subtype->p2;
-  int i,j;
-  
-  /* cache access is unlocked because the cache is private to this
-     worker thread */
-
-  for(j=0;j<dw;j++){
-    double *fout = c->fout;
-    sv_func_t **f = p2->used_function_list;
-    int *obj_y_off = p2->y_fout_offset;
-    int *onum = p2->y_obj_to_panel;
-    
-    /* by function */
-    dim_vals[x_d] = _sv_scalespace_value(&sxi,j);   
-    for(i=0;i<p2->used_functions;i++){
-      (*f)->callback(dim_vals,fout);
-      fout += (*f)->outputs;
-      f++;
-    }
-    
-    /* process function output by plane type/objective */
-    /* 2d panels currently only care about the Y output value */
-    
-    /* slider map */
-    for(i=0;i<p2->y_obj_num;i++){
-      float val = (float)_sv_slider_val_to_del(p2->range_scales[*onum++], c->fout[*obj_y_off++]);
-      if(isnan(val)){
-	c->y_map[i][j] = -1;
-      }else{
-	if(val<0)val=0;
-	if(val>1)val=1;
-	c->y_map[i][j] = rint(val * (256.f*256.f*256.f));
-      }
-    }
-  }
-
-  gdk_lock ();
-  if(p->private->plot_serialno == serialno){
-    for(j=0;j<p2->y_obj_num;j++){
-      int *d = p2->y_map[j] + y*dw;
-      int *td = c->y_map[j];
-      
-      memcpy(d,td,dw*sizeof(*d));
-      
-    }
-  }
-  gdk_unlock ();
-}
-
-// call with lock
-static void _sv_panel2d_clear_pane(sv_panel_t *p){
-
-  _sv_panel2d_t *p2 = p->subtype->p2;
-  int pw = p2->x.pixels;
-  int ph = p2->y.pixels;
-  int i;
-  _sv_plot_t *plot = PLOT(p->private->graph);
-  
-  for(i=0;i<p2->y_obj_num;i++){
-    // map is freed and nulled to avoid triggering a fast-scale on an empty data pane
-    if(p2->y_map[i])
-      free(p2->y_map[i]);
-    p2->y_map[i]=NULL;
-
-    // free y_planes so that initial remap doesn't waste time on mix
-    // op; they are recreated during remap at the point the y_todo
-    // vector indicates something to do
-    if(p2->y_planes[i])
-      free(p2->y_planes[i]);
-    p2->y_planes[i] = NULL;
-
-    // work vector is merely cleared
-    memset(p2->y_planetodo[i], 0, ph*sizeof(**p2->y_planetodo));
-  }
-
-  // clear the background surface 
-  if(plot->datarect)
-    memset(plot->datarect, 0, ph*pw*sizeof(*plot->datarect));
-
-  // the bg is not marked to be refreshed; computation setup will do
-  // that as part of the fast_scale, even if the fast_scale is
-  // short-circuited to a noop.
-}
-
-typedef struct{
-  double x;
-  double y;
-  double z;
-} compute_result;
-
-// used by the legend code. this lets us get away with having only a mapped display pane
-// call with lock
-static void _sv_panel2d_compute_point(sv_panel_t *p,sv_obj_t *o, double x, double y, compute_result *out){
-  double dim_vals[_sv_dimensions];
-  int i,j;
-  int pflag=0;
-  int eflag=0;
-
-  // fill in dimensions
-  int x_d = p->private->x_d->number;
-  int y_d = p->private->y_d->number;
-
-  for(i=0;i<_sv_dimensions;i++){
-    sv_dim_t *dim = _sv_dimension_list[i];
-    dim_vals[i]=dim->val;
-  }
-
-  gdk_unlock ();
-
-  dim_vals[x_d] = x;
-  dim_vals[y_d] = y;
-
-  *out = (compute_result){NAN,NAN,NAN,NAN,NAN,NAN,NAN,NAN};
-
-  // compute
-  for(i=0;i<_sv_functions;i++){
-    sv_func_t *f = _sv_function_list[i];
-    int compflag = 0;
-    double fout[f->outputs];
-    double val;
-
-    // compute and demultiplex output
-    for(j=0;j<o->outputs;j++){
-      if(o->function_map[j] == i){
-
-	if(!compflag) f->callback(dim_vals,fout);
-	compflag = 1;
-	
-	val = fout[o->output_map[j]];
-	switch(o->output_types[j]){
-	case 'X':
-	  out->x = val;
-	  break;
-	case 'Y':
-	  out->y = val;
-	  break;
-	case 'Z':
-	  out->z = val;
-	  break;
-	case 'E':
-	  if(eflag)
-	    out->e2 = val;
-	  else
-	    out->e1 = val;
-	  eflag = 1;
-	  break;
-	case 'P':
-	  if(pflag)
-	    out->p2 = val;
-	  else
-	    out->p1 = val;
-	  pflag = 1;
-	  break;
-	case 'M':
-	  out->m = val;
-	  break;
-	}
-      }
-    }
-  }
-  gdk_lock ();
-
-}
-
-/* functions that perform actual graphical rendering */
-
-static float _sv_panel2d_resample_helpers_init(_sv_scalespace_t *to, _sv_scalespace_t *from,
-					       unsigned char *delA, unsigned char *delB, 
-					       int *posA, int *posB,
-					       int xymul){
-  int i;
-  int dw = from->pixels;
-  int pw = to->pixels;
-
-  long scalenum = _sv_scalespace_scalenum(to,from);
-  long scaleden = _sv_scalespace_scaleden(to,from);
-  long del = _sv_scalespace_scaleoff(to,from);
-  int bin = del / scaleden;
-  del -= bin * scaleden; 
-  int discscale = (scaleden>scalenum?scalenum:scaleden);
-  int total = xymul*scalenum/discscale;
-
-  for(i=0;i<pw;i++){
-    long del2 = del + scalenum;
-    int sizeceil = (del2 + scaleden - 1)/ scaleden; // ceiling
-    int sizefloor = del2 / scaleden;
-
-    while(bin<0 && del2>scaleden){
-      bin++;
-      del = 0;
-      del2 -= scaleden;
-      sizeceil--;
-    }
-    
-    if(del2 > scaleden && bin>=0 && bin<dw){
-      int rem = total;
-
-      delA[i] = ((xymul * (scaleden - del)) + (discscale>>1)) / discscale;
-      posA[i] = bin;
-      rem -= delA[i];
-      rem -= xymul*(sizeceil-2);
-
-      while(bin+sizeceil>dw){
-	sizeceil--;
-	del2=0;
-      }
-
-      del2 %= scaleden;
-      if(rem<0){
-	delA[i] += rem;
-	delB[i] = 0;
-      }else{
-	delB[i] = rem; // don't leak 
-      }
-      posB[i] = bin+sizeceil;
-
-    }else{
-      if(bin<0 || bin>=dw){
-	delA[i] = 0;
-	posA[i] = 0;
-	delB[i] = 0;
-	posB[i] = 0;
-      }else{
-	delA[i] = xymul;
-	posA[i] = bin;
-	delB[i] = 0;
-	posB[i] = bin+1;
-	if(del2 == scaleden)del2=0;
-      }
-    }
-
-    bin += sizefloor;
-    del = del2;
-  }
-  return (float)xymul/total;
-}
-
-/* x resample helpers are put in the per-thread cache because locking it would
-   be relatively expensive. */
-// call while locked
-static void _sv_panel2d_resample_helpers_manage_x(sv_panel_t *p, _sv_bythread_cache_2d_t *c){
-  _sv_panel2d_t *p2 = p->subtype->p2;
-  if(p->private->plot_serialno != c->serialno){
-    int pw = p2->x.pixels;
-    c->serialno = p->private->plot_serialno;
-
-    if(c->xdelA)
-      free(c->xdelA);
-    if(c->xdelB)
-      free(c->xdelB);
-    if(c->xnumA)
-      free(c->xnumA);
-    if(c->xnumB)
-      free(c->xnumB);
-    
-    c->xdelA = calloc(pw,sizeof(*c->xdelA));
-    c->xdelB = calloc(pw,sizeof(*c->xdelB));
-    c->xnumA = calloc(pw,sizeof(*c->xnumA));
-    c->xnumB = calloc(pw,sizeof(*c->xnumB));
-    c->xscalemul = _sv_panel2d_resample_helpers_init(&p2->x, &p2->x_v, c->xdelA, c->xdelB, c->xnumA, c->xnumB, 17);
-  }
-}
-
-/* y resample is in the panel struct as per-row access is already locked */
-// call while locked
-static void _sv_panel2d_resample_helpers_manage_y(sv_panel_t *p){
-  _sv_panel2d_t *p2 = p->subtype->p2;
-  if(p->private->plot_serialno != p2->resample_serialno){
-    int ph = p2->y.pixels;
-    p2->resample_serialno = p->private->plot_serialno;
-
-    if(p2->ydelA)
-      free(p2->ydelA);
-    if(p2->ydelB)
-      free(p2->ydelB);
-    if(p2->ynumA)
-      free(p2->ynumA);
-    if(p2->ynumB)
-      free(p2->ynumB);
-    
-    p2->ydelA = calloc(ph,sizeof(*p2->ydelA));
-    p2->ydelB = calloc(ph,sizeof(*p2->ydelB));
-    p2->ynumA = calloc(ph,sizeof(*p2->ynumA));
-    p2->ynumB = calloc(ph,sizeof(*p2->ynumB));
-    p2->yscalemul = _sv_panel2d_resample_helpers_init(&p2->y, &p2->y_v, p2->ydelA, p2->ydelB, p2->ynumA, p2->ynumB, 15);
-  }
-}
-
-static inline void _sv_panel2d_mapping_calc( void (*m)(int,int, _sv_lcolor_t *), 
-					     int low,
-					     float range,
-					     int in, 
-					     int alpha, 
-					     int mul, 
-					     _sv_lcolor_t *outc){
-  if(mul && in>=alpha){
-    int val = rint((in - low) * range);
-    if(val<0)val=0;
-    if(val>65536)val=65536;
-    m(val,mul,outc);
-  }
-}
-
-/* the data rectangle is data width/height mapped deltas.  we render
-   and subsample at the same time. */
-/* return: -1 == abort
-            0 == more work to be done in this plane
-	    1 == plane fully dispatched (possibly not complete) */
-
-/* enter with lock */
-static int _sv_panel2d_resample_render_y_plane_line(sv_panel_t *p, _sv_bythread_cache_2d_t *c, 
-						    int plot_serialno, int map_serialno, int y_no){
-  
-  _sv_panel2d_t *p2 = p->subtype->p2;
-  int objnum = p2->y_obj_to_panel[y_no]; 
-  int *in_data = p2->y_map[y_no];
-  int ph = p2->y.pixels;
-
-  if(!in_data || !c){
-    p->private->map_complete_count -= ph;
-    return 1;
-  }
-
-  unsigned char *todo = p2->y_planetodo[y_no];
-  int i = p2->y_next_line;
-  int j;
-
-  /* find a row that needs to be updated */
-  while(i<ph && !todo[i]){
-    p->private->map_complete_count--;
-    p2->y_next_line++;
-    i++;
-  }
-
-  if(i == ph) return 1;
-
-  p2->y_next_line++;
-
-  /* row [i] needs to be updated; marshal */
-  _sv_mapping_t *map = p2->mappings+objnum;
-  void (*mapfunc)(int,int, _sv_lcolor_t *) = map->mapfunc;
-  int ol_alpha = rint(p2->alphadel[y_no] * 16777216.f);
-  _sv_ucolor_t *panel = p2->y_planes[y_no];
-  int ol_low = rint(map->low * 16777216.f);
-  float ol_range = map->i_range * (1.f/256.f);
-
-  int pw = p2->x.pixels;
-  int dw = p2->x_v.pixels;
-  int dh = p2->y_v.pixels;
-  _sv_ccolor_t work[pw];
-
-  if(!panel)
-    panel = p2->y_planes[y_no] = calloc(pw*ph, sizeof(**p2->y_planes));
-
-  if(ph!=dh || pw!=dw){
-    /* resampled row computation; may involve multiple data rows */
-
-    _sv_panel2d_resample_helpers_manage_y(p);
-    _sv_panel2d_resample_helpers_manage_x(p,c);
-
-    float idel = p2->yscalemul * c->xscalemul;
-
-    /* by column */
-    int ydelA=p2->ydelA[i];
-    int ydelB=p2->ydelB[i];
-    int ystart=p2->ynumA[i];
-    int yend=p2->ynumB[i];
-    int lh = yend - ystart;
-    int data[lh*dw];
-
-    memcpy(data,in_data+ystart*dw,sizeof(data));
-
-    gdk_unlock();
-
-    unsigned char *xdelA = c->xdelA;
-    unsigned char *xdelB = c->xdelB;
-    int *xnumA = c->xnumA;
-    int *xnumB = c->xnumB;
-      
-    /* by panel col */
-    for(j=0;j<pw;j++){
-      
-      _sv_lcolor_t out = (_sv_lcolor_t){0,0,0,0}; 
-      int xstart = xnumA[j];
-      int xend = xnumB[j];
-      int dx = xstart;
-      int xA = xdelA[j];
-      int xB = xdelB[j];
-      int y = ystart;
-
-      // first line
-      if(y<yend){
-	if(dx<xend)
-	  _sv_panel2d_mapping_calc(mapfunc, ol_low, ol_range, data[dx++], ol_alpha, ydelA*xA, &out);
-	
-	for(; dx < xend-1; dx++)
-	  _sv_panel2d_mapping_calc(mapfunc, ol_low, ol_range, data[dx], ol_alpha, ydelA*17, &out);
-	
-	if(dx<xend)
-	  _sv_panel2d_mapping_calc(mapfunc, ol_low, ol_range, data[dx], ol_alpha, ydelA*xB, &out);
-	y++;
-      }
-
-      // mid lines
-      for(;y<yend-1;y++){
-	dx = xstart += dw;
-	xend += dw;
-	if(dx<xend)
-	  _sv_panel2d_mapping_calc(mapfunc, ol_low, ol_range, data[dx++], ol_alpha, 15*xA, &out);
-	
-	for(; dx < xend-1; dx++)
-	  _sv_panel2d_mapping_calc(mapfunc, ol_low, ol_range, data[dx], ol_alpha, 255, &out);
-	
-	if(dx<xend)
-	  _sv_panel2d_mapping_calc(mapfunc, ol_low, ol_range, data[dx], ol_alpha, 15*xB, &out);
-      }
-      
-      // last line
-      if(y<yend){
-	dx = xstart += dw;
-	xend += dw;
-	if(dx<xend)
-	  _sv_panel2d_mapping_calc(mapfunc, ol_low, ol_range, data[dx++], ol_alpha, ydelB*xA, &out);
-	
-	for(; dx < xend-1; dx++)
-	  _sv_panel2d_mapping_calc(mapfunc, ol_low, ol_range, data[dx], ol_alpha, ydelB*17, &out);
-	
-	if(dx<xend)
-	  _sv_panel2d_mapping_calc(mapfunc, ol_low, ol_range, data[dx], ol_alpha, ydelB*xB, &out);
-      }
-
-      work[j].a = (u_int32_t)(out.a*idel);
-      work[j].r = (u_int32_t)(out.r*idel);
-      work[j].g = (u_int32_t)(out.g*idel);
-      work[j].b = (u_int32_t)(out.b*idel);
-      
-    }
-
-  }else{
-    /* non-resampling render */
-
-    int data[dw];
-    memcpy(data,in_data+i*dw,sizeof(data));
-    gdk_unlock();      
-
-    for(j=0;j<pw;j++){
-
-      _sv_lcolor_t out = (_sv_lcolor_t){0,0,0,0};
-      _sv_panel2d_mapping_calc(mapfunc, ol_low, ol_range, data[j], ol_alpha, 255, &out);
-	
-      work[j].a = (u_int32_t)(out.a);
-      work[j].r = (u_int32_t)(out.r);
-      work[j].g = (u_int32_t)(out.g);
-      work[j].b = (u_int32_t)(out.b);
-    }
-  }
-
-  gdk_lock ();  
-  if(plot_serialno != p->private->plot_serialno ||
-     map_serialno != p->private->map_serialno)
-    return -1;
-  memcpy(panel+i*pw,work,sizeof(work));
-  p2->bg_todo[i] = 1;
-  p2->y_planetodo[y_no][i] = 0;
-
-  // must be last; it indicates completion
-  p->private->map_complete_count--;
-  return 0;
-}
-
-static void render_checks(_sv_ucolor_t *c, int w, int y){
-  /* default checked background */
-  /* 16x16 'mid-checks' */ 
-  int x,j;
-  
-  int phase = (y>>4)&1;
-  for(x=0;x<w;){
-    u_int32_t phaseval = 0xff505050UL;
-    if(phase) phaseval = 0xff808080UL;
-    for(j=0;j<16 && x<w;j++,x++)
-      c[x].u = phaseval;
-    phase=!phase;
-  }
-}
-
-// enter with lock
-static int _sv_panel2d_render_bg_line(sv_panel_t *p, int plot_serialno, int map_serialno){
-  _sv_panel2d_t *p2 = p->subtype->p2;
-  _sv_plot_t *plot = PLOT(p->private->graph);
-  if(plot_serialno != p->private->plot_serialno ||
-     map_serialno != p->private->map_serialno) return -1;
-  
-  int ph = p2->y.pixels;
-  int pw = p2->x.pixels;
-  unsigned char *todo = p2->bg_todo;
-  int i = p2->bg_next_line,j;
-  _sv_ucolor_t work_bg[pw];
-  _sv_ucolor_t work_pl[pw];
-  int bgmode = p->private->bg_type;
-
-  /* find a row that needs to be updated */
-  while(i<ph && !todo[i]){
-    p->private->map_complete_count--;
-    p2->bg_next_line++;
-    i++;
-  }
-
-  if(i == ph)
-    goto done;
-
-  if(i < p2->bg_first_line) p2->bg_first_line = i;
-  if(i+1 > p2->bg_last_line) p2->bg_last_line = i+1;
-  p2->bg_next_line++;
-
-  /* gray background checks */
-  gdk_unlock();
-
-  switch(bgmode){
-  case SV_BG_WHITE:
-    for(j=0;j<pw;j++)
-      work_bg[j].u = 0xffffffffU;
-    break;
-  case SV_BG_BLACK:
-    for(j=0;j<pw;j++)
-      work_bg[j].u = 0xff000000U;
-    break;
-  default:
-    render_checks(work_bg,pw,i);
-    break;
-  }
-
-  /* by objective */
-  for(j=0;j<p->objectives;j++){
-    int o_ynum = p2->y_obj_from_panel[j];
-    
-    gdk_lock();
-    if(plot_serialno != p->private->plot_serialno ||
-       map_serialno != p->private->map_serialno) return -1;
-
-    /**** mix Y plane */
-    
-    if(p2->y_planes[o_ynum]){
-      int x;
-      _sv_ucolor_t (*mixfunc)(_sv_ucolor_t,_sv_ucolor_t) = p2->mappings[j].mixfunc;
-      _sv_ucolor_t *rect = p2->y_planes[o_ynum] + i*pw;
-      memcpy(work_pl,rect,sizeof(work_pl));
-      
-      gdk_unlock();
-      for(x=0;x<pw;x++)
-	work_bg[x] = mixfunc(work_pl[x],work_bg[x]);
-    }else
-      gdk_unlock();
-
-    /**** mix Z plane */
-    
-    /**** mix vector plane */
-
-  }
-
-  gdk_lock();
-  if(plot_serialno != p->private->plot_serialno ||
-     map_serialno != p->private->map_serialno) return -1;
-
-    // rendered a line, get it on the screen */
-  
-  memcpy(plot->datarect+pw*i, work_bg, sizeof(work_bg));
-
-  p->private->map_complete_count--;
-
- done:
-  if(p->private->map_complete_count)
-    return 1; // not done yet
-
-  return 0;
-}
-
-static void _sv_panel2d_mark_map_full(sv_panel_t *p);
-
-// enter with lock; returns zero if thread should sleep / get distracted
-static int _sv_panel2d_remap(sv_panel_t *p, _sv_bythread_cache_2d_t *thread_cache){
-  _sv_panel2d_t *p2 = p->subtype->p2;
-  _sv_plot_t *plot = PLOT(p->private->graph);
-
-  if(!plot) goto abort;
-  int ph = plot->y.pixels;
-  int pw = plot->x.pixels;
-  
-  int plot_serialno = p->private->plot_serialno; 
-  int map_serialno = p->private->map_serialno; 
-
-  /* brand new remap indicated by the generic progress indicator being set to 0 */
-  if(p->private->map_progress_count == 0){
-
-    p->private->map_progress_count = 1; // 'in progress'
-    p->private->map_complete_count = p2->y_obj_num * ph; // count down to 0; 0 indicates completion
-
-    // set up Y plane rendering
-    p2->y_next_plane = 0;
-    p2->y_next_line = 0;
-
-    // bg mix
-    p2->bg_next_line = 0;
-    p2->bg_first_line = ph;
-    p2->bg_last_line = 0;
-
-    if(!p2->partial_remap)
-      _sv_panel2d_mark_map_full(p);
-  }
-
-  /* by plane, by line; each plane renders independently */
-  /* Y planes */
-  if(p2->y_planetodo){
-    if(p2->y_next_plane < p2->y_obj_num){
-      int status = _sv_panel2d_resample_render_y_plane_line(p, thread_cache, 
-							    plot_serialno, map_serialno, 
-							    p2->y_next_plane);
-      if(status == -1) goto abort;
-      if(status == 1){
-	p2->y_next_plane++;
-	p2->y_next_line = 0;
-      }
-      return 1;
-    }
-  }else{
-    p->private->map_complete_count = 0;
-  }
-
-  /* renders have been completely dispatched, but are they complete? */
-  /* the below is effectively a a thread join */
-  if(p2->bg_next_line == 0){
-
-    // join still needs to complete....
-    if(p->private->map_complete_count){
-      // nonzero complete count, not finished.  returning zero will cause
-      // this worker thread to sleep or go on to do other things.
-      return 0; 
-    }else{
-      // zero complete count, the planes are done; we can begin
-      // background render.  At least one thread is guaranteed to get
-      // here, which is enough; we can now wake the others [if they were
-      // asleep] and have them look for work here. */
-      p->private->map_complete_count = ph; // [ph] lines to render in bg plane
-      p2->bg_next_line = 0;
-
-      _sv_wake_workers();
-    }
-  }
-
-  /* mix new background, again line by line */
-  if(p2->bg_next_line < ph){
-    int status = _sv_panel2d_render_bg_line(p, plot_serialno, map_serialno);
-    if(status == -1) goto abort;
-    if(p->private->map_complete_count)return status;
-  }else
-    return 0; // nothing left to dispatch
-
-  // entirely finished.
-
-  // remap completed; flush background to screen
-  _sv_plot_expose_request_partial (plot,0,p2->bg_first_line,
-			       pw,p2->bg_last_line - p2->bg_first_line);
-  gdk_flush();
-
-  // clean bg todo list
-  memset(p2->bg_todo,0,ph*sizeof(*p2->bg_todo));
-
-  // clear 'panel in progress' flag
-  p2->partial_remap = 0;
-  _sv_panel_clean_map(p);
-  return 0;
-
- abort:
-  // reset progress to 'start over'
-  return 1;
 }
 
 // looks like a cop-out but is actually the correct thing to do; the
@@ -1048,73 +352,6 @@ static void _sv_panel2d_print(sv_panel_t *p, cairo_t *c, int w, int h){
     y += labelh;
   }
 
-}
-
-// call while locked
-static void _sv_panel2d_mark_map_plane(sv_panel_t *p, int onum, int y, int z, int v){
-  _sv_panel2d_t *p2 = p->subtype->p2;
-  int ph = p2->y.pixels;
-
-  if(y && p2->y_planetodo){
-    int y_no = p2->y_obj_from_panel[onum];
-    if(y_no>=0 && p2->y_planetodo[y_no])
-      memset(p2->y_planetodo[y_no],1,ph * sizeof(**p2->y_planetodo));
-  }
-  p2->partial_remap = 1;
-}
-
-// call while locked 
-static void _sv_panel2d_mark_map_line_y(sv_panel_t *p, int line){
-  // determine all panel lines this y data line affects
-  _sv_panel2d_t *p2 = p->subtype->p2;
-  int ph = p2->y.pixels;
-  int pw = p2->x.pixels;
-  int dw = p2->x_v.pixels;
-  int dh = p2->y_v.pixels;
-  int i,j;
-
-  p2->partial_remap = 1;
-
-  if(ph!=dh || pw!=dw){
-    /* resampled row computation; may involve multiple data rows */
-    if(p2->y_planetodo){
-      _sv_panel2d_resample_helpers_manage_y(p);
-      
-      for(i=0;i<ph;i++)
-	if(p2->ynumA[i]<=line &&
-	   p2->ynumB[i]>line){
-	  
-	  for(j=0;j<p2->y_obj_num;j++)
-	    if(p2->y_planetodo[j])
-	      p2->y_planetodo[j][i]=1;
-      }
-    }
-  }else{
-    if(p2->y_planetodo)
-      if(line>=0 && line<ph)
-	for(j=0;j<p2->y_obj_num;j++)
-	  if(p2->y_planetodo[j])
-	    p2->y_planetodo[j][line]=1;
-  }
-}
-
-// call while locked
-static void _sv_panel2d_mark_map_full(sv_panel_t *p){
-  _sv_panel2d_t *p2 = p->subtype->p2;
-  int ph = p2->y.pixels;
-  int i,j;
-
-  p2->partial_remap = 1;
-
-  if(p2->y_planetodo){
-    for(j=0;j<p2->y_obj_num;j++){
-      if(p2->y_planetodo[j]){
-	for(i=0;i<ph;i++){
-	  p2->y_planetodo[j][i]=1;
-	}
-      }
-    }
-  }
 }
 
 // enter with lock
@@ -1304,177 +541,6 @@ static int _v_swizzle(int y, int height){
   return y<<1;
 }
 
-// assumes data is locked
-static void _sv_panel2d_fast_scale_x(_sv_spinner_t *sp,
-				     int *data, 
-				     int w,
-				     int h,
-				     _sv_scalespace_t new,
-				     _sv_scalespace_t old){
-  int x,y;
-  int work[w];
-  int mapbase[w];
-  int mapdel[w];
-  double old_w = old.pixels;
-  double new_w = new.pixels;
-
-  double old_lo = _sv_scalespace_value(&old,0);
-  double old_hi = _sv_scalespace_value(&old,old_w);
-  double new_lo = _sv_scalespace_value(&new,0);
-  double new_hi = _sv_scalespace_value(&new,new_w);
-  double newscale = (new_hi-new_lo)/new_w;
-  double oldscale = old_w/(old_hi-old_lo);
-  for(x=0;x<w;x++){
-    double xval = (x)*newscale+new_lo;
-    double map = ((xval-old_lo)*oldscale);
-    int base = (int)floor(map);
-    int del = rint((map - floor(map))*64.f);
-    /* hack to overwhelm roundoff error; this is inside a purely
-       temporary cosmetic approximation anyway*/
-    if(base>0 && del==0){
-      mapbase[x]=base-1;
-      mapdel[x]=64;
-    }else{
-      mapbase[x]=base;
-      mapdel[x]=del;
-    }
-  }
-
-  for(y=0;y<h;y++){
-    int *data_line = data+y*w;
-    _sv_spinner_set_busy(sp);
-    for(x=0;x<w;x++){
-      if(mapbase[x]<0 || mapbase[x]>=(w-1)){
-	work[x]=-1;
-      }else{
-	int base = mapbase[x];
-	int A = data_line[base];
-	int B = data_line[base+1];
-	if(A<0 || B<0)
-	  work[x]=-1;
-	else
-	  work[x]= A + (((B - A)*mapdel[x])>>6);
-	
-      }
-    }
-    memcpy(data_line,work,w*(sizeof(*work)));
-  }   
-}
-
-static void _sv_panel2d_fast_scale_y(_sv_spinner_t *sp,
-				     int *olddata, 
-				     int *newdata, 
-				     int oldw,
-				     int neww,
-				     _sv_scalespace_t new,
-				     _sv_scalespace_t old){
-  int x,y;
-  int w = (oldw<neww?oldw:neww);
-
-  int old_h = old.pixels;
-  int new_h = new.pixels;
-
-  int mapbase[new_h];
-  int mapdel[new_h];
-
-  double old_lo = _sv_scalespace_value(&old,0);
-  double old_hi = _sv_scalespace_value(&old,(double)old_h);
-  double new_lo = _sv_scalespace_value(&new,0);
-  double new_hi = _sv_scalespace_value(&new,(double)new_h);
-  double newscale = (new_hi-new_lo)/new_h;
-  double oldscale = old_h/(old_hi-old_lo);
-  
-  for(y=0;y<new_h;y++){
-    double yval = (y)*newscale+new_lo;
-    double map = ((yval-old_lo)*oldscale);
-    int base = (int)floor(map);
-    int del = rint((map - floor(map))*64.);
-    /* hack to overwhelm roundoff error; this is inside a purely
-       temporary cosmetic approximation anyway */
-    if(base>0 && del==0){
-      mapbase[y]=base-1;
-      mapdel[y]=64;
-    }else{
-      mapbase[y]=base;
-      mapdel[y]=del;
-    }
-  }
-
-  
-  for(y=0;y<new_h;y++){
-    int base = mapbase[y];
-    int *new_column = &newdata[y*neww];
-    _sv_spinner_set_busy(sp);
-
-    if(base<0 || base>=(old_h-1)){
-      for(x=0;x<w;x++)
-	new_column[x] = -1;
-    }else{
-      int del = mapdel[y];
-      int *old_column = &olddata[base*oldw];
-
-      for(x=0;x<w;x++){
-	int A = old_column[x];
-	int B = old_column[x+oldw];
-	if(A<0 || B<0)
-	  new_column[x]=-1;
-	else
-	  new_column[x]= A + (((B-A)*del)>>6);
-      }
-    }
-  }
-}
-
-static void _sv_panel2d_fast_scale(_sv_spinner_t *sp, 
-				   int *newdata, 
-				   _sv_scalespace_t xnew,
-				   _sv_scalespace_t ynew,
-				   int *olddata,
-				   _sv_scalespace_t xold,
-				   _sv_scalespace_t yold){
-  
-  int new_w = xnew.pixels;
-  int new_h = ynew.pixels;
-  int old_w = xold.pixels;
-  int old_h = yold.pixels;
-
-  if(new_w > old_w){
-    _sv_panel2d_fast_scale_y(sp,olddata,newdata,old_w,new_w,ynew,yold);
-    _sv_panel2d_fast_scale_x(sp,newdata,new_w,new_h,xnew,xold);
-  }else{
-    _sv_panel2d_fast_scale_x(sp,olddata,old_w,old_h,xnew,xold);
-    _sv_panel2d_fast_scale_y(sp,olddata,newdata,old_w,new_w,ynew,yold);
-  }
-}
-
-// call only from main gtk thread
-static void _sv_panel2d_mark_recompute(sv_panel_t *p){
-  if(!p->private->realized) return;
-  _sv_plot_t *plot = PLOT(p->private->graph);
-
-  if(plot && GTK_WIDGET_REALIZED(GTK_WIDGET(plot))){
-    _sv_panel_dirty_plot(p);
-  }
-}
-
-static void _sv_panel2d_update_crosshairs(sv_panel_t *p){
-  _sv_plot_t *plot = PLOT(p->private->graph);
-  double x=0,y=0;
-  int i;
-  
-  for(i=0;i<p->dimensions;i++){
-    sv_dim_t *d = p->dimension_list[i].d;
-    if(d == p->private->x_d)
-      x = d->val;
-    if(d == p->private->y_d)
-      y = d->val;
-    
-  }
-  
-  _sv_plot_set_crosshairs(plot,x,y);
-  _sv_panel_dirty_legend(p);
-}
-
 static void _sv_panel2d_center_callback(sv_dim_list_t *dptr){
   sv_dim_t *d = dptr->d;
   sv_panel_t *p = dptr->p;
@@ -1580,45 +646,6 @@ static void _sv_panel2d_box_callback(void *in, int state){
   _sv_panel_update_menus(p);
 }
 
-void _sv_panel2d_maintain_cache(sv_panel_t *p, _sv_bythread_cache_2d_t *c, int w){
-  _sv_panel2d_t *p2 = p->subtype->p2;
-  
-  /* toplevel initialization */
-  if(c->fout == 0){
-    int i,count=0;
-    
-    /* allocate output temporary buffer */
-    for(i=0;i<p2->used_functions;i++){
-      int fnum = p2->used_function_list[i]->number;
-      sv_func_t *f = _sv_function_list[fnum];
-      count += f->outputs;
-    }
-    c->fout = calloc(count, sizeof(*c->fout));
-
-    /* objective line buffer index */
-    c->y_map = calloc(p2->y_obj_num,sizeof(*c->y_map));
-    for(i=0;i<p2->y_obj_num;i++)
-      c->y_map[i] = calloc(w,sizeof(**c->y_map));
-    c->storage_width = w;
-  }
-  
-  /* anytime the data width changes */
-  if(c->storage_width != w){
-    int i;
-    c->storage_width = w;
-    
-    for(i=0;i<p2->y_obj_num;i++)
-      c->y_map[i] = realloc(c->y_map[i],w*sizeof(**c->y_map));
-
-  }
-}
-
-
-// subtype entry point for plot remaps; lock held
-static int _sv_panel2d_map_redraw(sv_panel_t *p, _sv_bythread_cache_t *c){
-  return _sv_panel2d_remap(p,&c->p2);
-}
-
 // subtype entry point for legend redraws; lock held
 static int _sv_panel2d_legend_redraw(sv_panel_t *p){
   _sv_plot_t *plot = PLOT(p->private->graph);
@@ -1633,190 +660,6 @@ static int _sv_panel2d_legend_redraw(sv_panel_t *p){
   gdk_lock();
 
   _sv_plot_expose_request(plot);
-  return 1;
-}
-
-// subtype entry point for recomputation; lock held
-static int _sv_panel2d_compute(sv_panel_t *p,
-			       _sv_bythread_cache_t *c){
-
-  _sv_panel2d_t *p2 = p->subtype->p2;
-  _sv_plot_t *plot;
-  
-  int pw,ph,dw,dh,i,d;
-  int serialno;
-  double x_min, x_max;
-  double y_min, y_max;
-  int x_d=-1, y_d=-1;
-  _sv_scalespace_t sx,sx_v,sx_i;
-  _sv_scalespace_t sy,sy_v,sy_i;
-
-  plot = PLOT(p->private->graph);
-  pw = plot->x.pixels;
-  ph = plot->y.pixels;
-  
-  x_d = p->private->x_d->number;
-  y_d = p->private->y_d->number;
-
-  // beginning of computation init
-  if(p->private->plot_progress_count==0){
-    int remapflag = 0;
-
-    _sv_scalespace_t old_x = p2->x;
-    _sv_scalespace_t old_y = p2->y;
-    _sv_scalespace_t old_xv = p2->x_v;
-    _sv_scalespace_t old_yv = p2->y_v;
-
-    // generate new scales
-    _sv_dim_scales(p->private->x_d, 
-		   p->private->x_d->bracket[0],
-		   p->private->x_d->bracket[1],
-		   pw,pw * p->private->oversample_n / p->private->oversample_d,
-		   plot->scalespacing,
-		   p->private->x_d->legend,
-		   &sx,
-		   &sx_v,
-		   &sx_i);
-    _sv_dim_scales(p->private->y_d, 
-		   p->private->y_d->bracket[1],
-		   p->private->y_d->bracket[0],
-		   ph,ph * p->private->oversample_n / p->private->oversample_d,
-		   plot->scalespacing,
-		   p->private->y_d->legend,
-		   &sy,
-		   &sy_v,
-		   &sy_i);
-    
-    p2->x = sx;
-    p2->x_v = sx_v;
-    p2->x_i = sx_i;
-    p2->y = sy;
-    p2->y_v = sy_v;
-    p2->y_i = sy_i;
-
-    plot->x = sx;
-    plot->y = sy;
-    plot->x_v = sx_v;
-    plot->y_v = sy_v;
-
-    p->private->plot_progress_count++;
-    p->private->plot_serialno++; // we're about to free the old data rectangles
-
-    // realloc/fast scale the current data contents if appropriate
-    if(memcmp(&sx_v,&old_xv,sizeof(sx_v)) || memcmp(&sy_v,&old_yv,sizeof(sy_v))){
-      
-      // maintain data planes
-      for(i=0;i<p2->y_obj_num;i++){
-	// allocate new storage
-	int *newmap = calloc(sx_v.pixels*sy_v.pixels,sizeof(*newmap));
-	int *oldmap = p2->y_map[i];
-	int j;
-	
-	for(j=0;j<sx_v.pixels*sy_v.pixels;j++)
-	  newmap[j]=-1;
-	
-	// zoom scale data in map planes as placeholder for render
-	if(oldmap){
-	  _sv_panel2d_fast_scale(p->private->spinner,newmap, sx_v, sy_v,
-				 oldmap,old_xv, old_yv);
-	  free(oldmap);
-	}
-	p2->y_map[i] = newmap; 
-      }
-      remapflag = 1;
-    }
-
-    // realloc render planes if appropriate
-    if(memcmp(&sx,&old_x,sizeof(sx)) || memcmp(&sy,&old_y,sizeof(sy))){
-      for(i=0;i<p2->y_obj_num;i++){
-
-	// y planes
-	if(p2->y_planes[i])
-	  free(p2->y_planes[i]);
-	p2->y_planes[i] = calloc(sx.pixels*sy.pixels,sizeof(**p2->y_planes));
-
-	// todo lists
-	if(p2->y_planetodo[i])
-	  free(p2->y_planetodo[i]);
-	p2->y_planetodo[i] = calloc(sy.pixels,sizeof(**p2->y_planetodo));
-	
-      }
-
-      if(p2->bg_todo)
-	free(p2->bg_todo);
-      p2->bg_todo=calloc(ph,sizeof(*p2->bg_todo));
-      
-      remapflag = 1;
-    }
-
-    if(remapflag){
-      _sv_panel2d_mark_map_full(p);
-      _sv_panel_dirty_map(p);
-
-      gdk_unlock ();      
-      _sv_plot_draw_scales(plot); // this should happen outside lock
-      gdk_lock ();      
-    }
-
-    _sv_map_set_throttle_time(p); // swallow the first 'throttled' remap which would only be a single line;
-
-    return 1;
-  }else{
-    sx = p2->x;
-    sx_v = p2->x_v;
-    sx_i = p2->x_i;
-    sy = p2->y;
-    sy_v = p2->y_v;
-    sy_i = p2->y_i;
-    serialno = p->private->plot_serialno; 
-  }
-
-  dw = sx_v.pixels;
-  dh = sy_v.pixels;
-
-  if(p->private->plot_progress_count>dh) return 0;
-
-  _sv_panel2d_maintain_cache(p,&c->p2,dw);
-  
-  d = p->dimensions;
-
-  /* render using local dimension array; several threads will be
-     computing objectives */
-  double dim_vals[_sv_dimensions];
-  int y = _v_swizzle(p->private->plot_progress_count-1,dh);
-  p->private->plot_progress_count++;
-
-  x_min = _sv_scalespace_value(&p2->x_i,0);
-  x_max = _sv_scalespace_value(&p2->x_i,dw);
-
-  y_min = _sv_scalespace_value(&p2->y_i,0);
-  y_max = _sv_scalespace_value(&p2->y_i,dh);
-
-  // Initialize local dimension value array
-  for(i=0;i<_sv_dimensions;i++){
-    sv_dim_t *dim = _sv_dimension_list[i];
-    dim_vals[i]=dim->val;
-  }
-
-  /* unlock for computation */
-  gdk_unlock ();
-    
-  dim_vals[y_d]=_sv_scalespace_value(&sy_i, y);
-  _sv_panel2d_compute_line(p, serialno, dw, y, x_d, sx_i, dim_vals, &c->p2);
-
-  gdk_lock ();
-
-  if(p->private->plot_serialno == serialno){
-    p->private->plot_complete_count++;
-    _sv_panel2d_mark_map_line_y(p,y);
-    if(p->private->plot_complete_count>=dh){ 
-      _sv_panel_dirty_map(p);
-      _sv_panel_dirty_legend(p);
-      _sv_panel_clean_plot(p);
-    }else
-      _sv_panel_dirty_map_throttled(p); 
-  }
-
   return 1;
 }
 
@@ -2170,14 +1013,155 @@ int _sv_panel2d_load(sv_panel_t *p,
   return warn;
 }
 
-sv_panel_t *sv_panel_new_2d(int number,
-			    char *name, 
-			    char *objectivelist,
-			    char *dimensionlist,
-			    unsigned flags){
+
+void _sv_panel_realize(sv_panel_t *p){
+  if(p && !p->private->realized){
+    p->private->realize(p);
+
+    g_signal_connect (G_OBJECT (p->private->toplevel), "key-press-event",
+		      G_CALLBACK (panel_keypress), p);
+    gtk_window_set_title (GTK_WINDOW (p->private->toplevel), p->name);
+
+    p->private->realized=1;
+
+    // generic things that happen in all panel realizations...
+
+    // text black or white in the plot?
+    decide_text_inv(p);
+    p->private->popmenu = _gtk_menu_new_twocol(p->private->toplevel, menu, p);
+    _sv_panel_update_menus(p);
+    
+  }
+}
+
+int sv_panel_background(int number,
+			enum sv_background bg){
+
+  if(number<0){
+    fprintf(stderr,"sv_panel_background: Panel number must be >= 0\n");
+    return -EINVAL;
+  }
+
+  if(number>_sv_panels || !_sv_panel_list[number]){
+    fprintf(stderr,"sv_panel_background: Panel number %d does not exist\n",number);
+    return -EINVAL;
+  }
   
+  sv_panel_t *p = _sv_panel_list[number];
+  return set_background(p,bg);
+}
+
+sv_panel_t *_sv_panel(char *name){
+  int i;
+  
+  if(name == NULL || name == 0 || !strcmp(name,"")){
+    return (sv_panel_t *)pthread_getspecific(_sv_panel_key);
+  }
+
+  for(i=0;i<_sv_panels;i++){
+    sv_panel_t *p=_sv_panel_list[i];
+    if(p && p->name && !strcmp(name,p->name)){
+      pthread_setspecific(_sv_panel_key, (void *)p);
+      return p;
+    }
+  }
+  return NULL;
+}
+
+int sv_panel(char *name){
+  sv_panel_t *p = _sv_panel(name);
+  if(p)return 0;
+  return -EINVAL;
+}
+
+sv_panel_t *sv_panel_new(char *name, 
+			 char *objlist,
+			 char *dimlist){
+
+  sv_panel_t *p = NULL;
+  int number;
+  sv_token *decl = _sv_tokenize_declparam(name);
+  sv_tokenlist *dim_tokens = NULL;
+  sv_tokenlist *obj_tokens = NULL;  
   int i,j;
-  sv_panel_t *p = _sv_panel_new(number,name,objectivelist,dimensionlist,flags);
+
+  if(!decl){
+    fprintf(stderr,"sushivision: Unable to parse panel declaration \"%s\".\n",name);
+    goto err;
+  }
+
+  // panel and panel list manipulation must be locked
+  gdk_threads_enter();
+  pthread_rwlock_wrlock(panellist_m);
+
+  if(_sv_panels == 0){
+    number=0;
+    _sv_panel_list = calloc (number+1,sizeof(*_sv_panel_list));
+    _sv_panels=1;
+  }else{
+    for(number=0;number<_sv_panels;number++)
+      if(!_sv_panel_list[number])break;
+    if(number==_sv_panels){
+      _sv_panels=number+1;
+      _sv_panel_list = realloc (_sv_panel_list,_sv_panels * sizeof(*_sv_panel_list));
+    }
+  }
+  
+  p = _sv_panel_list[number] = calloc(1, sizeof(**_sv_panel_list));
+  p->name = strdup(decl->name);
+  p->legend = strdup(decl->label);
+  p->number = number;
+  p->spinner = _sv_spinner_new();
+
+  // parse and sanity check the maps 
+  i=0;
+  obj_tokens = _sv_tokenize_namelist(objectivelist);
+  p->objectives = obj_tokens->n;
+  p->objective_list = malloc(p->objectives*sizeof(*p->objective_list));
+  for(i=0;i<p->objectives;i++){
+    char *name = obj_tokens->list[i]->name;
+    p->objective_list[i].o = _sv_obj(name);
+    p->objective_list[i].p = p;
+  }
+
+  i=0;
+  dim_tokens = _sv_tokenize_namelist(dimensionlist);
+  p->dimensions = dim_tokens->n;
+  p->dimension_list = malloc(p->dimensions*sizeof(*p->dimension_list));
+  for(i=0;i<p->dimensions;i++){
+    char *name = dim_tokens->list[i]->name;
+    sv_dim_t *d = sv_dim(name);
+
+    if(!d){
+      fprintf(stderr,"Panel %d (\"%s\"): Dimension \"%s\" does not exist\n",
+	      number,p->name,name);
+      errno = -EINVAL;
+      //XXX leak
+      return NULL;
+    }
+
+    if(!d->scale){
+      fprintf(stderr,"Panel %d (\"%s\"): Dimension \"%s\" has a NULL scale\n",
+	      number,p->name,name);
+      errno = -EINVAL;
+      //XXX leak
+      return NULL;
+    }
+
+    p->dimension_list[i].d = d;
+    p->dimension_list[i].p = p;
+  }
+
+  _sv_tokenlist_free(obj_tokens);
+  _sv_tokenlist_free(dim_tokens);
+  return p;
+}
+
+
+
+
+
+
   if(!p)return NULL;
 
   _sv_panel2d_t *p2 = calloc(1, sizeof(*p2));
@@ -2294,121 +1278,7 @@ sv_panel_t *sv_panel_new_2d(int number,
 }
 
 
-void _sv_panel_realize(sv_panel_t *p){
-  if(p && !p->private->realized){
-    p->private->realize(p);
 
-    g_signal_connect (G_OBJECT (p->private->toplevel), "key-press-event",
-		      G_CALLBACK (panel_keypress), p);
-    gtk_window_set_title (GTK_WINDOW (p->private->toplevel), p->name);
-
-    p->private->realized=1;
-
-    // generic things that happen in all panel realizations...
-
-    // text black or white in the plot?
-    decide_text_inv(p);
-    p->private->popmenu = _gtk_menu_new_twocol(p->private->toplevel, menu, p);
-    _sv_panel_update_menus(p);
-    
-  }
-}
-
-int sv_panel_background(int number,
-			enum sv_background bg){
-
-  if(number<0){
-    fprintf(stderr,"sv_panel_background: Panel number must be >= 0\n");
-    return -EINVAL;
-  }
-
-  if(number>_sv_panels || !_sv_panel_list[number]){
-    fprintf(stderr,"sv_panel_background: Panel number %d does not exist\n",number);
-    return -EINVAL;
-  }
-  
-  sv_panel_t *p = _sv_panel_list[number];
-  return set_background(p,bg);
-}
-
-sv_panel_t *sv_panel_new(char *decl, 
-			 char *objlist,
-			 char *dimlist){
-
-  sv_panel_t *p;
-  sv_tokenlist *dim_tokens;
-  sv_tokenlist *obj_tokens;
-  int i;
-
-
-  if(number<_sv_panels){
-    if(_sv_panel_list[number]!=NULL){
-      fprintf(stderr,"Panel number %d already exists\n",number);
-      errno = -EINVAL;
-      return NULL;
-    }
-  }else{
-    if(_sv_panels == 0){
-      _sv_panel_list = calloc (number+1,sizeof(*_sv_panel_list));
-    }else{
-      _sv_panel_list = realloc (_sv_panel_list,(number+1) * sizeof(*_sv_panel_list));
-      memset(_sv_panel_list + _sv_panels, 0, sizeof(*_sv_panel_list)*(number+1 - _sv_panels));
-    }
-    _sv_panels = number+1; 
-  }
-
-  p = _sv_panel_list[number] = calloc(1, sizeof(**_sv_panel_list));
-
-  p->number = number;
-  p->name = strdup(name);
-  p->flags = flags;
-  p->private = calloc(1, sizeof(*p->private));
-  p->private->spinner = _sv_spinner_new();
-  p->private->def_oversample_n = p->private->oversample_n = 1;
-  p->private->def_oversample_d = p->private->oversample_d = 1;
-
-  i=0;
-  obj_tokens = _sv_tokenize_namelist(objectivelist);
-  p->objectives = obj_tokens->n;
-  p->objective_list = malloc(p->objectives*sizeof(*p->objective_list));
-  for(i=0;i<p->objectives;i++){
-    char *name = obj_tokens->list[i]->name;
-    p->objective_list[i].o = _sv_obj(name);
-    p->objective_list[i].p = p;
-  }
-
-  i=0;
-  dim_tokens = _sv_tokenize_namelist(dimensionlist);
-  p->dimensions = dim_tokens->n;
-  p->dimension_list = malloc(p->dimensions*sizeof(*p->dimension_list));
-  for(i=0;i<p->dimensions;i++){
-    char *name = dim_tokens->list[i]->name;
-    sv_dim_t *d = sv_dim(name);
-
-    if(!d){
-      fprintf(stderr,"Panel %d (\"%s\"): Dimension \"%s\" does not exist\n",
-	      number,p->name,name);
-      errno = -EINVAL;
-      //XXX leak
-      return NULL;
-    }
-
-    if(!d->scale){
-      fprintf(stderr,"Panel %d (\"%s\"): Dimension \"%s\" has a NULL scale\n",
-	      number,p->name,name);
-      errno = -EINVAL;
-      //XXX leak
-      return NULL;
-    }
-
-    p->dimension_list[i].d = d;
-    p->dimension_list[i].p = p;
-  }
-
-  _sv_tokenlist_free(obj_tokens);
-  _sv_tokenlist_free(dim_tokens);
-  return p;
-}
 
 void _sv_panel_undo_log(sv_panel_t *p, _sv_panel_undo_t *u){
   u->cross_mode = PLOT(p->private->graph)->cross_active;
@@ -2551,15 +1421,3 @@ int sv_panel_callback_recompute (sv_panel_t *p,
   return 0;
 }
 
-sv_dim_t *sv_panel_get_axis(sv_panel_t *p, char axis){
-  switch(axis){
-
-  case 'x': case 'X':
-    return p->private->x_d;
-
-  case 'y': case 'Y':
-    return p->private->y_d;
-  }
-  
-  return NULL;
-}
