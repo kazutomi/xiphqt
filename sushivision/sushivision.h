@@ -29,8 +29,11 @@ typedef struct sv_obj   sv_obj_t;
 /* toplevel ******************************************************/
 
 extern int sv_init(void);
-extern int sv_go(void);
+extern int sv_exit(void);
+extern int sv_wake(void);
 extern int sv_join(void);
+extern int sv_suspend(int);
+extern int sv_unsuspend(void);
 extern int sv_save(char *filename);
 extern int sv_load(char *filename);
 

@@ -59,44 +59,14 @@
 // structural mutation).
 
 // lock acquisition order must move to the right:
-// GDK -> panel_list -> panel locks -> plot_main -> plot_data
+// GDK -> panel_m -> status_m -> plot_m
 
 // mutex condm is only for protecting the worker condvar
 static pthread_mutex_t worker_condm = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t worker_cond = PTHREAD_COND_INITIALIZER;
-sig_atomic_t _sv_exiting=0;
+static sig_atomic_t sv_exiting=0;
 static int wake_pending = 0;
 static int num_threads;
-
-int _sv_dimensions=0;
-sv_dim_t **_sv_dimension_list=NULL;
-int _sv_panels=0;
-sv_panel_t **_sv_panel_list=NULL;
-int _sv_undo_level=0;
-int _sv_undo_suspended=0;
-_sv_undo_t **_sv_undo_stack=NULL;
-
-pthread_key_t   _sv_dim_key;
-pthread_key_t   _sv_obj_key;
-
-void _sv_wake_workers(){
-  pthread_mutex_lock(&worker_condm);
-  wake_pending = num_threads;
-  pthread_cond_broadcast(&worker_cond);
-  pthread_mutex_unlock(&worker_condm);
-}
-
-void _sv_clean_exit(){
-  _sv_exiting = 1;
-  _sv_wake_workers();
-
-  _gdk_lock();
-  if(!gtk_main_iteration_do(FALSE)) // side effect: returns true if
-				    // there are no main loops active
-    gtk_main_quit();
-  
-  _gdk_unlock();
-}
 
 static int num_proccies(){
   FILE *f = fopen("/proc/cpuinfo","r");
@@ -118,65 +88,27 @@ static int num_proccies(){
   return num;
 }
 
-/// XXXXXX call wake_workers after any panel_call that returns STATUS_WORKING
 static void *worker_thread(void *dummy){
-  /* set up temporary working space for function rendering; this saves
-     continuously recreating it in the loop below */
-  _sv_bythread_cache_t *c=calloc(_sv_panels,sizeof(*c));
-  int i;
-  
   while(1){
-    if(_sv_exiting)break;
-    
-    // look for work
-    {
-      int flag=0;
-      for(i=0;i<_sv_panels;i++){
-	sv_panel_t *p = _sv_panel_list[i];
+    int i,flag=0;
+    if(sv_exiting)break;
 
-	if(_sv_exiting)break;
+    pthread_rwlock_rdlock(panellist_m);
+    for(i=0;i<_sv_panels;i++){
+      sv_panel_t *p = _sv_panel_list[i];
+      
+      if(sv_exiting)break;
 	
-	// pending remap work?
-	gdk_lock();
-	if(p && p->private && p->private->realized && p->private->graph){
-	  
-	  // pending computation work?
-	  if(p->private->plot_active){
-	    _sv_spinner_set_busy(p->private->spinner);
-	    
-	    if(p->private->plot_progress_count==0){    
-	      if(p->private->callback_precompute)
-		p->private->callback_precompute(p,p->private->callback_precompute_data);
-	    }
-	    
-	    flag |= p->private->compute_action(p,&c[i]); // may drop lock internally
-	  }
-	  
-	  if(p->private->map_active){
-	    int ret = 1;
-	    while(ret){ // favor completing remaps over other ops
-	      _sv_spinner_set_busy(p->private->spinner);
-	      flag |= ret = p->private->map_action(p,&c[i]); // may drop lock internally
-	      if(!p->private->map_active)
-		_sv_map_set_throttle_time(p);
-	    }
-	  }
-	  
-	  // pending legend work?
-	  if(p->private->legend_active){
-	    _sv_spinner_set_busy(p->private->spinner);
-	    flag |= p->private->legend_action(p); // may drop lock internally
-	  }
-	  
-	  if(!p->private->plot_active &&
-	     !p->private->legend_active &&
-	     !p->private->map_active)
-	    _sv_spinner_set_idle(p->private->spinner);
+      if(p){
+	int ret = _sv_panel_work(p);
+	if(ret == STATUS_WORKING){
+	  flag = 1;
+	  sv_wake(); // result of this completion might have
+	             // generated more work
 	}
-	gdk_unlock ();
       }
-      if(flag==1)continue;
     }
+    if(flag==1)continue;
     
     // nothing to do, wait
     pthread_mutex_lock(&worker_condm);
@@ -191,7 +123,7 @@ static void *worker_thread(void *dummy){
   return 0;
 }
 
-static char * gtkrc_string(){
+static char *gtkrc_string(){
   return _SUSHI_GTKRC_STRING;
 }
 
@@ -210,30 +142,30 @@ char *_sv_filebase = NULL;
 char *_sv_dirname = NULL;
 char *_sv_cwdname = NULL;
 
-static void *event_thread(void *dummy){
+static void *eventloop(void *dummy){
 
   gdk_lock();
   gtk_main ();
   gdk_unlock();
   
-// in case there's another mainloop in the main app
+  // in case there's another mainloop in the main app
   gdk_lock();
   if(!gtk_main_iteration_do(FALSE)) // side effect: returns true if
 				    // there are no main loops active
     gtk_main_quit();
   gdk_unlock();
-
+  
   return 0;
 }
 
 /* externally visible interface */
-int sv_init(){
+int sv_init(void){
   int ret=0;
-  if((ret=pthread_key_create(&_sv_mutexcheck_key,NULL)))
-    return ret;
   if((ret=pthread_key_create(&_sv_dim_key,NULL)))
     return ret;
   if((ret=pthread_key_create(&_sv_obj_key,NULL)))
+    return ret;
+  if((ret=pthread_key_create(&_sv_panel_key,NULL)))
     return ret;
   
   num_threads = ((num_proccies()*3)>>2);
@@ -241,73 +173,31 @@ int sv_init(){
   _gtk_mutex_fixup();
   gtk_init (NULL,NULL);
 
-  return 0;
-}
-
-int sv_join(){
-  while(!_sv_exiting){
-    pthread_mutex_lock(&worker_condm);
-    pthread_cond_wait(&worker_cond,&worker_condm);
-    pthread_mutex_unlock(&worker_condm);
-  }
-  return 0;
-}
-
-int sv_go(){
-    
-  if (!g_thread_supported ()) g_thread_init (NULL);
-  gdk_threads_init ();
-  gtk_rc_parse_string(gtkrc_string());
-  gtk_rc_add_default_file("sushi-gtkrc");
-
-  gdk_lock();
-  _sv_realize_all();
-  _gtk_button3_fixup();
-  
   _sv_appname = g_get_prgname ();
   _sv_cwdname = getcwd(NULL,0);
   _sv_dirname = strdup(_sv_cwdname);
-  /*if(argc>1){
-    // file to load specified on commandline
-    if(argv[argc-1][0] != '-'){
-      _sv_filebase = strdup(argv[argc-1]);
-      char *base = strrchr(_sv_filebase,'/');
-      
-      // filebase may include a path; pull it off and apply it toward dirname
-      if(base){
-	base[0] = '\0';
-	char *dirbit = strdup(_sv_filebase);
-	_sv_filebase = base+1;
-	if(g_path_is_absolute(dirbit)){
-	  // replace dirname
-	  free(_sv_dirname);
-	  _sv_dirname = dirbit;
-	}else{
-	  // append to dirname
-	  char *buf;
-	  asprintf(&buf,"%s/%s",_sv_dirname,dirbit);
-	  free(_sv_dirname);
-	  _sv_dirname = buf;
-	}
-      }
-      asprintf(&_sv_filename,"%s/%s",_sv_dirname,_sv_filebase);
-    }
-  }
 
-  if(!_sv_filename || _sv_main_load()){
-    if(_sv_appname){
-      char *base = strrchr(_sv_appname,'/');
-      if(!base) 
-	base = _sv_appname;
-      else
-	base++;
+  if(_sv_appname){
+    char *base = strrchr(_sv_appname,'/');
+    if(!base) 
+      base = _sv_appname;
+    else
+      base++;
 
-      asprintf(&_sv_filebase, "%s.sushi",base);
-    }else
-      _sv_filebase = strdup("default.sushi");
-    asprintf(&_sv_filename,"%s/%s",_sv_dirname,_sv_filebase);
-    }*/
+    asprintf(&_sv_filebase, "%s.sushi",base);
+  }else
+    _sv_filebase = strdup("unnamed.sushi");
+  asprintf(&_sv_filename,"%s/%s",_sv_dirname,_sv_filebase);
 
+  if (!g_thread_supported ()) g_thread_init (NULL);
+  gdk_threads_init ();
+
+  gtk_rc_parse_string(gtkrc_string());
+  gtk_rc_add_default_file("sushi-gtkrc");
+
+  _gtk_button3_fixup();
+
+  // worker threads
   {
     pthread_t dummy;
     int threads = num_threads;
@@ -315,15 +205,44 @@ int sv_go(){
       pthread_create(&dummy, NULL, &worker_thread,NULL);
   }
 
-  //signal(SIGINT,_sv_clean_exit);
-  //signal(SIGSEGV,_sv_clean_exit);
-
-  gdk_unlock();
-  
+  // event thread for panels in the event the app we're injected into
+  // has no gtk main loop
   {
     pthread_t dummy;
     return pthread_create(&dummy, NULL, &event_thread,NULL);
   }
+
+  return 0;
+}
+
+int sv_join(void){
+  while(!sv_exiting){
+    pthread_mutex_lock(&worker_condm);
+    pthread_cond_wait(&worker_cond,&worker_condm);
+    pthread_mutex_unlock(&worker_condm);
+  }
+  return 0;
+}
+
+int sv_wake(void){
+  pthread_mutex_lock(&worker_condm);
+  wake_pending = num_threads;
+  pthread_cond_broadcast(&worker_cond);
+  pthread_mutex_unlock(&worker_condm);
+  return 0;
+}
+
+int sv_exit(void){
+  sv_exiting = 1;
+  sv_wake();
+
+  gdk_threads_enter();
+  if(!gtk_main_iteration_do(FALSE)) // side effect: returns true if
+				    // there are no main loops active
+    gtk_main_quit();
+  
+  gdk_threads_leave();
+  return 0;
 }
 
 void _sv_first_load_warning(int *warn){
@@ -335,7 +254,31 @@ void _sv_first_load_warning(int *warn){
   *warn = 1;
 }
 
-int _sv_main_save(){
+static void set_internal_filename(char *filename){
+  // save the filename for internal menu seeding purposes
+  char *base = strrchr(filename,'/');
+  
+  // filename may include a path; pull it off and apply it toward dirname
+  if(base){
+    base[0] = '\0';
+    char *dirbit = strdup(_sv_filebase);
+    _sv_filebase = base+1;
+    if(g_path_is_absolute(dirbit)){
+      // replace dirname
+      free(_sv_dirname);
+      _sv_dirname = dirbit;
+    }else{
+      // append to dirname
+      char *buf;
+      asprintf(&buf,"%s/%s",_sv_dirname,dirbit);
+      free(_sv_dirname);
+      _sv_dirname = buf;
+    }
+  }
+  asprintf(&_sv_filename,"%s/%s",_sv_dirname,_sv_filebase);
+}
+
+int sv_save(char *filename){
   xmlDocPtr doc = NULL;
   xmlNodePtr root_node = NULL;
   int i, ret=0;
@@ -356,7 +299,9 @@ int _sv_main_save(){
   for(i=0;i<_sv_panels;i++)
     ret|=_sv_panel_save(_sv_panel_list[i], root_node);
 
-  xmlSaveFormatFileEnc(_sv_filename, doc, "UTF-8", 1);
+  ret|=xmlSaveFormatFileEnc(filename, doc, "UTF-8", 1);
+
+  if(ret==0) set_internal_filename(filename);
 
   xmlFreeDoc(doc);
   xmlCleanupParser();
@@ -364,7 +309,7 @@ int _sv_main_save(){
   return ret;
 }
 
-int _sv_main_load(){
+int sv_load(filename){
   xmlDoc *doc = NULL;
   xmlNode *root = NULL;
   int fd,warn=0;
@@ -395,6 +340,7 @@ int _sv_main_load(){
 						_sv_filename);
     gtk_dialog_run (GTK_DIALOG (dialog));
     gtk_widget_destroy (dialog);
+    errno = -EINVAL;
     return 1;
   }
 
@@ -465,5 +411,7 @@ int _sv_main_load(){
   xmlFreeDoc(doc);
   xmlCleanupParser();
   
+  if(ret==0) set_internal_filename(filename);
+
   return 0;
 }

@@ -33,6 +33,9 @@
 #include <cairo-ft.h>
 #include "internal.h"
 
+int _sv_panels=0;
+sv_panel_t **_sv_panel_list=NULL;
+pthread_rwlock_t panellist_m;
 
 // panel.panel_m: rwlock, protects all panel and plane heaps
 // panel.status_m: mutex, protects status variables

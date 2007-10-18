@@ -27,6 +27,7 @@
 
 int _sv_objectives=0;
 sv_obj_t **_sv_objective_list=NULL;
+pthread_key_t   _sv_obj_key;
 
 static char *objective_axismap[]={
   "X","Y","Z"
