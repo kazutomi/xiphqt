@@ -19,6 +19,10 @@
  * 
  */
 
+#define STATUS_IDLE 0
+#define STATUS_BUSY 1
+#define STATUS_WORKING 2
+
 struct sv_panel {
   pthread_rwlock_t panel_m;
   pthread_mutex_t  status_m;
@@ -57,6 +61,7 @@ struct sv_panel {
   // UI objects
   GtkWidget *obj_table;
   GtkWidget *dim_table;
+  sv_spinner_t *spinner;
 
   //sv_dimwidget_t *dw;
   //sv_objwidget_t *ow;

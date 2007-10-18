@@ -64,9 +64,12 @@
 // mutex condm is only for protecting the worker condvar
 static pthread_mutex_t worker_condm = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t worker_cond = PTHREAD_COND_INITIALIZER;
-static sig_atomic_t sv_exiting=0;
+static pthread_cond_t idle_cond = PTHREAD_COND_INITIALIZER;
+static sig_atomic_t _sv_exiting=0;
+static sig_atomic_t _sv_running=0;
 static int wake_pending = 0;
-static int num_threads;
+static int idling = 0;
+static int num_threads=0;
 
 static int num_proccies(){
   FILE *f = fopen("/proc/cpuinfo","r");
@@ -91,20 +94,26 @@ static int num_proccies(){
 static void *worker_thread(void *dummy){
   while(1){
     int i,flag=0;
-    if(sv_exiting)break;
-
-    pthread_rwlock_rdlock(panellist_m);
-    for(i=0;i<_sv_panels;i++){
-      sv_panel_t *p = _sv_panel_list[i];
-      
-      if(sv_exiting)break;
+    if(_sv_exiting)break;
+    if(_sv_running){
+      pthread_rwlock_rdlock(panellist_m);
+      for(i=0;i<_sv_panels;i++){
+	sv_panel_t *p = _sv_panel_list[i];
+	int ret;
 	
-      if(p){
-	int ret = _sv_panel_work(p);
-	if(ret == STATUS_WORKING){
-	  flag = 1;
-	  sv_wake(); // result of this completion might have
-	             // generated more work
+	if(_sv_exiting)break;
+	if(!_sv_running)break;
+	
+	if(p){
+	  _sv_spinner_set_busy(p->spinner);
+	  ret = _sv_panel_work(p);
+	  if(ret == STATUS_WORKING){
+	    flag = 1;
+	    sv_wake(); // result of this completion might have
+	    // generated more work
+	  }
+	  if(ret == STATUS_IDLE)
+	    _sv_spinner_set_idle(p->spinner);
 	}
       }
     }
@@ -112,9 +121,12 @@ static void *worker_thread(void *dummy){
     
     // nothing to do, wait
     pthread_mutex_lock(&worker_condm);
+    idling++;
+    pthread_cond_signal(&idle_cond);
     while(!wake_pending)
       pthread_cond_wait(&worker_cond,&worker_condm);
-
+    
+    idling--;
     wake_pending--;
     pthread_mutex_unlock(&worker_condm);
   }
@@ -125,15 +137,6 @@ static void *worker_thread(void *dummy){
 
 static char *gtkrc_string(){
   return _SUSHI_GTKRC_STRING;
-}
-
-static void _sv_realize_all(void){
-  int i;
-  for(i=0;i<_sv_panels;i++)
-    _sv_panel_realize(_sv_panel_list[i]);
-  for(i=0;i<_sv_panels;i++)
-    if(_sv_panel_list[i])
-      _sv_panel_list[i]->private->request_compute(_sv_panel_list[i]);
 }
 
 char *_sv_appname = NULL;
@@ -205,8 +208,8 @@ int sv_init(void){
       pthread_create(&dummy, NULL, &worker_thread,NULL);
   }
 
-  // event thread for panels in the event the app we're injected into
-  // has no gtk main loop
+  // eventloop for panels (in the event we're injected into an app
+  // with no gtk main loop; multiple such loops can coexist)
   {
     pthread_t dummy;
     return pthread_create(&dummy, NULL, &event_thread,NULL);
@@ -216,7 +219,7 @@ int sv_init(void){
 }
 
 int sv_join(void){
-  while(!sv_exiting){
+  while(!_sv_exiting){
     pthread_mutex_lock(&worker_condm);
     pthread_cond_wait(&worker_cond,&worker_condm);
     pthread_mutex_unlock(&worker_condm);
@@ -225,15 +228,18 @@ int sv_join(void){
 }
 
 int sv_wake(void){
-  pthread_mutex_lock(&worker_condm);
-  wake_pending = num_threads;
-  pthread_cond_broadcast(&worker_cond);
-  pthread_mutex_unlock(&worker_condm);
+  if(_sv_running){
+    pthread_mutex_lock(&worker_condm);
+    wake_pending = num_threads;
+    pthread_cond_broadcast(&worker_cond);
+    pthread_mutex_unlock(&worker_condm);
+  }
   return 0;
 }
 
 int sv_exit(void){
-  sv_exiting = 1;
+  _sv_exiting = 1;
+  _sv_running = 1;
   sv_wake();
 
   gdk_threads_enter();
@@ -243,6 +249,24 @@ int sv_exit(void){
   
   gdk_threads_leave();
   return 0;
+}
+
+int sv_suspend(int block){
+  _sv_running=0;
+  if(block){
+    // block until all worker threads idle
+    while(idling < num_threads){
+      pthread_mutex_lock(&worker_condm);
+      pthread_cond_wait(&idle_cond,&worker_condm);
+      pthread_mutex_unlock(&worker_condm);
+    }
+  }
+  return 0;
+}
+
+int sv_resume(void){
+  _sv_running=1;
+  sv_wake();
 }
 
 void _sv_first_load_warning(int *warn){
@@ -279,14 +303,24 @@ static void set_internal_filename(char *filename){
 }
 
 int sv_save(char *filename){
-  xmlDocPtr doc = NULL;
-  xmlNodePtr root_node = NULL;
   int i, ret=0;
+  int fd;
 
   LIBXML_TEST_VERSION;
 
-  doc = xmlNewDoc((xmlChar *)"1.0");
-  root_node = xmlNewNode(NULL, (xmlChar *)_sv_appname);
+  fd = open(_sv_filename, O_RDWR|O_CREAT, 0660);
+  if(fd<0){
+    ret = 1;
+    goto done;
+  }
+
+  gdk_threads_enter();
+
+  xmlSaveCtxtPtr xmlptr = 
+    xmlSaveToFd (fd, "UTF-8",  XML_SAVE_FORMAT);
+  
+  xmlDocPtr doc = xmlNewDoc((xmlChar *)"1.0");
+  xmlNodePtr root_node = xmlNewNode(NULL, (xmlChar *)_sv_appname);
   xmlDocSetRootElement(doc, root_node);
 
   // dimension values are independent of panel
@@ -299,13 +333,21 @@ int sv_save(char *filename){
   for(i=0;i<_sv_panels;i++)
     ret|=_sv_panel_save(_sv_panel_list[i], root_node);
 
-  ret|=xmlSaveFormatFileEnc(filename, doc, "UTF-8", 1);
+  if(xmlSaveDoc(xmlptr,doc)<0)
+    ret=1;
 
+  if(xmlSaveClose(xmlptr)<0)
+    ret=1;
+  
+  close(fd);
+  
   if(ret==0) set_internal_filename(filename);
-
+  
   xmlFreeDoc(doc);
   xmlCleanupParser();
 
+  gdk_threads_leave();
+ done:
   return ret;
 }
 
@@ -318,38 +360,23 @@ int sv_load(filename){
   LIBXML_TEST_VERSION;
 
   fd = open(_sv_filename, O_RDONLY);
-  if(fd<0){
-    GtkWidget *dialog = gtk_message_dialog_new (NULL,0,
-						GTK_MESSAGE_ERROR,
-						GTK_BUTTONS_CLOSE,
-						"Error opening file '%s': %s",
-						_sv_filename, strerror (errno));
-    gtk_dialog_run (GTK_DIALOG (dialog));
-    gtk_widget_destroy (dialog);
-    return 1;
-  }
+  if(fd<0) return 1;
 
   doc = xmlReadFd(fd, NULL, NULL, 0);
   close(fd);
 
   if (doc == NULL) {
-    GtkWidget *dialog = gtk_message_dialog_new (NULL,0,
-						GTK_MESSAGE_ERROR,
-						GTK_BUTTONS_CLOSE,
-						"Error parsing file '%s'",
-						_sv_filename);
-    gtk_dialog_run (GTK_DIALOG (dialog));
-    gtk_widget_destroy (dialog);
     errno = -EINVAL;
     return 1;
   }
-
+  
   root = xmlDocGetRootElement(doc);
-
+  
   // piggyback off undo (as it already goes through the trouble of
   // doing correct unrolling, which can be tricky)
   
   // if this instance has an undo stack, pop it all, then log current state into it
+  gdk_threads_enter();
   _sv_undo_level=0;
   _sv_undo_log();
   
@@ -370,7 +397,7 @@ int sv_load(filename){
       }
     }
   }
-  
+
   // load panels
   for(i=0;i<_sv_panels;i++){
     sv_panel_t *p = _sv_panel_list[i];
@@ -403,15 +430,17 @@ int sv_load(filename){
     node = node->next;
   }
   
+  if(ret==0) set_internal_filename(filename);
+
   // effect the loaded values
   _sv_undo_suspend();
   _sv_undo_restore();
   _sv_undo_resume();
+  gdk_threads_leave();
 
   xmlFreeDoc(doc);
   xmlCleanupParser();
   
-  if(ret==0) set_internal_filename(filename);
 
   return 0;
 }

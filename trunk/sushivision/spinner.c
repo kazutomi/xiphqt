@@ -94,10 +94,12 @@ static void _sv_spinner_destroy (GtkObject *object){
 }
 
 static gint _sv_spinner_expose (GtkWidget      *widget,
-			    GdkEventExpose *event){
+				GdkEventExpose *event){
   if (GTK_WIDGET_REALIZED (widget)){
     _sv_spinner_t *sp = SPINNER (widget);
+    pthread_mutex_lock(spinner->spinner_m);
     int frame = (sp->busy?sp->busy_count+1:0);
+    pthread_mutex_unlock(spinner->spinner_m);
 
     // blit to window
     if(sp->b && sp->b[frame]){
@@ -219,42 +221,49 @@ GType _sv_spinner_get_type (void){
   return spinner_type;
 }
 
-_sv_spinner_t *_sv_spinner_new (){
+static void *spinthread(sv_spinner_t *spinner){
+  pthread_mutex_lock(spinner->spinner_m);
+  while(p->busy_pending){
+    pthread_mutex_unlock(spinner->spinner_m);
+    gdk_threads_enter();
+    _sv_spinner_expose(GTK_WIDGET(p),NULL);
+    gdk_threads_leave();
+    usleep(100000);
+    pthread_mutex_lock(spinner->spinner_m);
+    p->busy_count++;
+    if(p->busy_count>7)
+      p->busy_count=0;
+  }
+
+  spinner->busy=0;
+  pthread_mutex_unlock(spinner->spinner_m);
+  _sv_spinner_expose(GTK_WIDGET(p),NULL); 
+  return 0;
+}
+
+sv_spinner_t *_sv_spinner_new (){
   GtkWidget *g = GTK_WIDGET (g_object_new (SPINNER_TYPE, NULL));
-  _sv_spinner_t *p = SPINNER (g);
+  sv_spinner_t *p = SPINNER (g);
+  p->spinner_m = PTHREAD_MUTEX_INITIALIZER;
   return p;
 }
 
 void _sv_spinner_set_busy(_sv_spinner_t *p){
-  struct timeval now;
-  int test;
-
   if(!p)return;
-
-  gettimeofday(&now,NULL);
-  
+  pthread_mutex_lock(spinner->spinner_m);
   if(!p->busy){
+    pthread_t dummy;
     p->busy=1;
-    p->last = now;
-    _sv_spinner_expose(GTK_WIDGET(p),NULL); // do it now
-  }else{
-    
-    test = (now.tv_sec - p->last.tv_sec)*1000 + (now.tv_usec - p->last.tv_usec)/1000;
-    if(test>100) {
-
-      p->busy_count++;
-      
-      if(p->busy_count>7)
-	p->busy_count=0;
-      p->last = now;
-      _sv_spinner_expose(GTK_WIDGET(p),NULL); // do it now
-    }
+    p->busy_pending=1;
+    pthread_create(&dummy, NULL, &spinthread, NULL);
   }
+  pthread_mutex_unlock(spinner->spinner_m);
 }
 
 void _sv_spinner_set_idle(_sv_spinner_t *p){
   if(!p)return;
-  p->busy=0;
-  _sv_spinner_expose(GTK_WIDGET(p),NULL); // do it now
+  pthread_mutex_lock(spinner->spinner_m);
+  p->busy_pending=0;
+  pthread_mutex_unlock(spinner->spinner_m);
 }
 
