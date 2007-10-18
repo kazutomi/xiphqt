@@ -26,6 +26,10 @@
 #include <errno.h>
 #include "internal.h"
 
+int _sv_undo_level=0;
+int _sv_undo_suspended=0;
+sv_undo_t **_sv_undo_stack=NULL;
+
 /* encapsulates some amount of common undo/redo infrastructure */
 
 static void update_all_menus(){

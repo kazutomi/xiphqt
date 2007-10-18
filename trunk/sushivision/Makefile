@@ -24,14 +24,14 @@ MANDIR    = $(PREFIX)/man
 SOCFLAGS  = -fPIC
 SOLDFLAGS = -shared -nostdlib -Wl,-soname="lib$(NAME).so.$(MAJOR)"
 
-SRC       = main.c mapping.c scale.c plot.c slider.c slice.c spinner.c objective.c panel.c \
+SRC       = toplevel.c mapping.c scale.c plot.c slider.c slice.c spinner.c objective.c panel.c \
 	plane-2d.c dimension.c function.c undo.c gtksucks.c xml.c \
 	tokens.c example_fractal.c example_discrete.c example_chirp.c example_spirograph.c
 INC       = sushivision.h sushimacro.h
 MAN	  =
 EXAMPLES  = sushivision_fractal #sushivision_discrete sushivision_chirp
 EX_OBJ    = example_fractal.o #example_discrete.o example_chirp.o example_spirograph.o
-OBJ       = main.o mapping.o scale.o plot.o slider.o slice.o spinner.c objective.o panel.o \
+OBJ       = toplevel.o mapping.o scale.o plot.o slider.o slice.o spinner.c objective.o panel.o \
 	plane-2d.o dimension.o function.o undo.o gtksucks.o xml.o tokens.c
 LIBS      = -lpthread -ldl
 CAIROVER  =  >= 1.4.1

@@ -26,6 +26,10 @@
 #include <math.h>
 #include "internal.h"
 
+int _sv_dimensions=0;
+sv_dim_t **_sv_dimension_list=NULL;
+pthread_key_t   _sv_dim_key;
+
 void _sv_dim_data_copy(sv_dim_data_t *dd,sv_dim_data_t *copy){
 
 
