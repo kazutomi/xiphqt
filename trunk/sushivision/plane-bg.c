@@ -74,14 +74,80 @@ void bg_resize(sv_panel_t *p){
 }
 
 int bg_legend(sv_panel_t *p){
+  sv_planebg_t *bg = &p->bg;
+  sv_plot_t *plot = p->plot;
+  int serialno = p->legend_serialno;
 
+  if(plot){
+    int i,j;
+    char buffer[320];
+    int depth = 0;
 
+    pthread_mutex_unlock(p->status_m);
+    _sv_plot_legend_clear(plot);
+    pthread_mutex_lock(p->status_m);
+    if(serialno != p->legend_serialno)return STATUS_WORKING;
+
+    // potentially add each dimension to the legend; add axis
+    // dimensions only if crosshairs are active
+
+    // display decimal precision relative to display scales
+    if(3-_sv_scalespace_decimal_exponent(&bg->image_x) > depth) 
+      depth = 3-_sv_scalespace_decimal_exponent(&bg->image_x);
+    if(3-_sv_scalespace_decimal_exponent(&bg->image_y) > depth) 
+      depth = 3-_sv_scalespace_decimal_exponent(&bg->image_y);
+    for(i=0;i<p->dimensions;i++){
+      sv_dim_data_t *d = p->dim_data+i;
+      int flag=0;
+      for(j=0;j<p->axes;j++)
+	if(p->axis_dims[j] != i &&
+	   (j<=2 || !p->cross_active)){
+	  flag=1;
+	  break;
+	}
+
+      if(!flag){
+	snprintf(buffer,320,"%s = %+.*f",
+		 d->legend,
+		 depth,
+		 d->val);
+	pthread_mutex_unlock(p->status_m);
+	_sv_plot_legend_add(plot,buffer);
+	pthread_mutex_lock(p->status_m);
+	if(serialno != p->legend_serialno)return STATUS_WORKING;
+      }
+    }
+    
+    // add each active objective plane to the legend
+    // choose the value under the crosshairs 
+    if(plot->cross_active){
+      // ask each plane for entries...
+      int firstflag=0;
+      for(i=0;i<p->planes;i++){
+	int retflag=p->plane_list[i]->legend(p->plane_list[i],buffer,320);
+	pthread_mutex_unlock(p->status_m);
+	if(retflag && !firstflag)
+	  _sv_plot_legend_add(plot,NULL);
+	firstflag|=retflag;
+	_sv_plot_legend_add(plot,buffer);
+	pthread_mutex_lock(p->status_m);
+	if(serialno != p->legend_serialno)return STATUS_WORKING;
+      }
+    }
+  }
+
+  pthread_mutex_unlock(p->status_m);
+  _sv_plot_draw_legend(plot);
+  pthread_mutex_lock(p->status_m);
+  if(serialno != p->legend_serialno)return STATUS_WORKING;
+
+  return STATUS_IDLE;
 }
 
 int bg_scale(sv_panel_t *p){
-      gdk_unlock ();      
+
       _sv_plot_draw_scales(plot); // this should happen outside lock
-      gdk_lock ();      
+
 
 
 }
@@ -262,6 +328,12 @@ static void _sv_panel2d_update_legend(sv_panel_t *p){
       }
     }
   }
+
+  XXXXXX outside lock
+  _sv_plot_draw_legend(plot);
+
+
+
 }
 
 // subtype entry point for legend redraws; lock held

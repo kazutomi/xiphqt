@@ -162,8 +162,10 @@ int _sv_panel_work(sv_panel_t *p){
   if(p->recompute_pending){
     p->recompute_pending=0;
     p->comp_serialno++;
+    p->legend_serialno++;
     p->image_resize=1;
     p->data_resize=1;
+    p->data_work=1;
     p->rescale=1;
     p->relegend=1;
     p->bgrender=0;
@@ -208,19 +210,17 @@ int _sv_panel_work(sv_panel_t *p){
 
   // legend regeneration
   if(p->relegend){
-    if(bg_legend(p) == STATUS_IDLE){
-      p->expose=1;
-      p->relegend=0;
-    }
+    p->relegend=0; // must be unset before relegend
+    bg_legend(p);
+    p->expose=1;
     return done_working(p);
   }
 
   // axis scale redraw
   if(p->rescale){
-    if(bg_scale(p) == STATUS_IDLE){
-      p->expose=1;
-      p->rescale=0;
-    }
+    p->rescale=0; // must be unset before rescale
+    bg_scale(p);
+    p->expose=1;
     return done_working(p);
   }
 
@@ -243,6 +243,7 @@ int _sv_panel_work(sv_panel_t *p){
      !p->rescale &&
      !p->bgrender){
     // wait till all these ops are done
+    p->expose = 0;
     bg_expose(p);
     return done_working(p);
   }    
@@ -269,8 +270,34 @@ int _sv_panel_work(sv_panel_t *p){
   }
   
   // computation work 
-  status = plane_loop(p,&p->data_next_plane,data_work);
-  if(status == STATUS_WORKING) return done_working(p);
+  if(p->data_work){
+    status = plane_loop(p,&p->data_next_plane,data_work);
+    if(status == STATUS_WORKING){
+
+      // throttled image render
+      if(p->map_render==0){
+	// no render currently in progress
+	struct timeval now;
+	gettimeofday(&now,NULL);
+	
+	if(p->map_throttle_last.tv_sec==0){
+	  p->map_throttle_last=now;
+	}else{
+	  long test = (now.tv_sec - p->map_throttle_last.tv_sec)*1000 + 
+	    (now.tv_usec - p->map_throttle_last.tv_usec)/1000;
+	  if(test>500)
+	    // first request since throttle
+	    p->map_render=1;
+	}
+      }
+      return done_working(p);
+    }
+    if(status == STATUS_IDLE){
+      p->map_render = 1;
+      p->relegend = 1;
+      p->data_work = 0;
+    }
+  }
   return done_idle(p);
 }
 
