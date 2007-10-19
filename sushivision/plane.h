@@ -34,20 +34,23 @@ struct sv_plane_common {
   double          *dim_input; // function input vector (without iterator values)
   sv_scalespace_t *pending_data_scales;
   sv_scalespace_t *data_scales;
+
+  sv_ucolor_t     *image;
+  sv_ucolor_t    (*mix[])(sv_ucolor_t, sv_ucolor_t);
   sv_scalespace_t  image_x;
   sv_scalespace_t  image_y;
   int              axes;
 
   void (*recompute_setup)(sv_plane_t *);
-  int (*image_resize)(sv_plane_t *);
-  int (*data_resize)(sv_plane_t *);
-  int (*image_work)(sv_plane_t *);
-  int (*data_work)(sv_plane_t *);
+  int  (*image_resize)(sv_plane_t *);
+  int  (*data_resize)(sv_plane_t *);
+  int  (*image_work)(sv_plane_t *);
+  int  (*data_work)(sv_plane_t *); 
 
   void (*plane_remap)(sv_plane_t *);
   void (*plane_free)(sv_plane_t *);
 
-  void (*demultiplex_2d)(sv_plane_t *, double *out, int dw, int x, int y, int n);
+  void (*demultiplex)(sv_plane_t *, double *out, int dw, int x, int y, int n);
 
 } sv_plane_common_t;
 
@@ -55,16 +58,11 @@ struct sv_plane_bg {
   sv_plane_common_t c;
 
   // image data and concurrency tracking
-  sv_ucolor_t    *image;
 
   // status
-  int              image_serialno;
-  int              image_waiting;
-  int              image_incomplete;
+  int              image_outstanding;
   int              image_nextline;
-  sv_scalespace_t  image_x;
-  sv_scalespace_t  image_y;
-  unsigned char   *image_status; // rendering flags
+  unsigned char   *image_flags;
 
 };
 
@@ -77,7 +75,6 @@ struct sv_plane_2d {
   // data; access unlocked
   float           *data;  
   float           *pending_data;  
-  sv_ucolor_t     *image;
   sv_ucolor_t     *pending_image;
   int             *map;
   slider_map_t     scale;
@@ -92,7 +89,7 @@ struct sv_plane_2d {
   int              image_task; /* -1 busy, 0 realloc, 1 resizeA, 2 resizeB, 3 commit, 4 working, 5 idle */
   int              image_next;
   int              image_mapnum;
-  int             *image_flags;
+  unsigned char   *image_flags;
   
   // resampling helpers
   unsigned char   *resample_xdelA;

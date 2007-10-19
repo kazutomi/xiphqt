@@ -34,9 +34,6 @@ struct sv_panel {
   int dimensions;
   int *dimension_list;
 
-  int objectives;
-  int *objective_list;
-
   // axis 0 == X 
   // axis 1 == Y 
   // axis 2 == Z
@@ -59,6 +56,7 @@ struct sv_panel {
   int next_plane; 
 
   // UI objects
+  sv_plot_t *plot;
   GtkWidget *obj_table;
   GtkWidget *dim_table;
   sv_spinner_t *spinner;

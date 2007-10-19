@@ -1093,31 +1093,6 @@ static int data_work(sv_plane_t *in, sv_panel_t *p){
 
   pl->image_task = 4;
 
-  if(pl->data_next>=dh){
-    pl->data_task = 5; 
-    if(!pl->data_outstanding) {
-      // immediate image render 
-      p->map_render = 1;
-    }
-  }
-
-  // throttled image render
-  if(p->map_render==0){
-    // no render currently in progress
-    struct timeval now;
-    gettimeofday(&now,NULL);
-    
-    if(p->map_throttle_last.tv_sec==0){
-      p->map_throttle_last=now;
-    }else{
-      long test = (now.tv_sec - p->map_throttle_last.tv_sec)*1000 + 
-	(now.tv_usec - p->map_throttle_last.tv_usec)/1000;
-      if(test>500)
-	// first request since throttle
-	p->map_render=1;
-    }
-  }
-
   return STATUS_WORKING;
   
 }
