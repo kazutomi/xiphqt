@@ -36,7 +36,7 @@ struct sv_plane_common {
   sv_scalespace_t *data_scales;
 
   sv_ucolor_t     *image;
-  sv_ucolor_t    (*mix[])(sv_ucolor_t, sv_ucolor_t);
+  sv_ucolor_t    (*mix)(sv_ucolor_t, sv_ucolor_t);
   sv_scalespace_t  image_x;
   sv_scalespace_t  image_y;
   int              axes;
@@ -52,18 +52,23 @@ struct sv_plane_common {
 
   void (*demultiplex)(sv_plane_t *, double *out, int dw, int x, int y, int n);
 
+  GtkWidget *(plane_label)(sv_plane_t *);
+  GtkWidget *(plane_obj)(sv_plane_t *);
+
 } sv_plane_common_t;
 
 struct sv_plane_bg {
   sv_plane_common_t c;
-
-  // image data and concurrency tracking
 
   // status
   int              image_outstanding;
   int              image_nextline;
   unsigned char   *image_flags;
 
+  int              expose_top;
+  int              expose_bottom;
+
+  char *bg;
 };
 
 struct sv_plane_2d {

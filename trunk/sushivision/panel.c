@@ -245,7 +245,8 @@ int _sv_panel_work(sv_panel_t *p){
     // wait till all these ops are done
     p->expose = 0;
     bg_expose(p);
-    return done_working(p);
+    // bg_expose does not reclaim loks before exit
+    return STATUS_WORKING;
   }    
 
   // data resize

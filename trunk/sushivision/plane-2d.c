@@ -1174,6 +1174,21 @@ static void plane_free(sv_plane_t *pl){
   }
 }
 
+GtkWidget *_sv_plane_2d_label_widget(sv_plane2d_t *pl){
+  GtkWidget *label = gtk_label_new(o->name);
+  gtk_misc_set_alignment(GTK_MISC(label),1.,.5);
+  return label;
+}
+
+
+GtkWidget *_sv_plane_2d_obj_widget(sv_plane2d_t *pl){
+  GtkWidget *table = gtk_table_new
+
+
+}
+
+
+
 sv_plane_t *sv_plane_2d_new(){
   sv_plane_2d_t *ret = calloc(1,sizeof(*ret));
   ret->recompute_setup = recompute_setup;
@@ -1183,61 +1198,19 @@ sv_plane_t *sv_plane_2d_new(){
   ret->data_work = data_work;
   ret->plane_remap = plane_remap;
   ret->plane_free = plane_free;
+
+  ret->plane_label = _sv_plane_2d_label_widget;
+  ret->plane_obj = _sv_plane_2d_obj_widget;
+
   return (sv_plane_t *)ret;
 }
 
-
-// subtype entry point for legend redraws; lock held
-static int _sv_panel2d_legend_redraw(sv_panel_t *p){
-  _sv_plot_t *plot = PLOT(p->private->graph);
-
-  if(p->private->legend_progress_count)return 0;
-  p->private->legend_progress_count++;
-  _sv_panel2d_update_legend(p);
-  _sv_panel_clean_legend(p);
-
-  gdk_unlock();
-  _sv_plot_draw_scales(plot);
-  gdk_lock();
-
-  _sv_plot_expose_request(plot);
-  return 1;
-}
 
 static void _sv_panel2d_realize(sv_panel_t *p){
   _sv_panel2d_t *p2 = p->subtype->p2;
   int i;
 
-  _sv_undo_suspend();
 
-  p->private->toplevel = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-  g_signal_connect_swapped (G_OBJECT (p->private->toplevel), "delete-event",
-			    G_CALLBACK (_sv_clean_exit), (void *)SIGINT);
- 
-  // add border to sides with hbox/padding
-  GtkWidget *borderbox =  gtk_hbox_new(0,0);
-  gtk_container_add (GTK_CONTAINER (p->private->toplevel), borderbox);
-
-  // main layout vbox
-  p->private->topbox = gtk_vbox_new(0,0);
-  gtk_box_pack_start(GTK_BOX(borderbox), p->private->topbox, 1,1,4);
-  gtk_container_set_border_width (GTK_CONTAINER (p->private->toplevel), 1);
-
-  /* spinner, top bar */
-  {
-    GtkWidget *hbox = gtk_hbox_new(0,0);
-    gtk_box_pack_start(GTK_BOX(p->private->topbox), hbox, 0,0,0);
-    gtk_box_pack_end(GTK_BOX(hbox),GTK_WIDGET(p->private->spinner),0,0,0);
-  }
-
-  /* plotbox, graph */
-  {
-    p->private->graph = GTK_WIDGET(_sv_plot_new(_sv_panel2d_recompute_callback,p,
-						(void *)(void *)_sv_panel2d_crosshairs_callback,p,
-						_sv_panel2d_box_callback,p,0)); 
-    p->private->plotbox = p->private->graph;
-    gtk_box_pack_start(GTK_BOX(p->private->topbox), p->private->plotbox, 1,1,2);
-  }
 
   /* obj box */
   {
@@ -1256,8 +1229,7 @@ static void _sv_panel2d_realize(sv_panel_t *p){
       int hi = o->scale->val_list[o->scale->vals-1];
       
       /* label */
-      GtkWidget *label = gtk_label_new(o->name);
-      gtk_misc_set_alignment(GTK_MISC(label),1.,.5);
+
       gtk_table_attach(GTK_TABLE(p2->obj_table),label,0,1,i,i+1,
 		       GTK_FILL,0,8,0);
       
