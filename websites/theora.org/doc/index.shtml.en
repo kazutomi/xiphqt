@@ -13,7 +13,7 @@
 
 <ul>
   <li><a href="/faq/">Frequently Asked Questions</a></li>
-  <li><a href="/doc/Theora_spec.pdf">Theora Format Specification</a></li>
+  <li><a href="/doc/Theora.pdf">Theora Format Specification</a></li>
   <li><a href="/doc/libtheora-1.0beta1/">libtheora API reference</a></li>
   <li><a href="http://people.xiph.org/~tterribe/doc/libtheora-exp/">theora-exp API reference</a></li>
 </ul>
