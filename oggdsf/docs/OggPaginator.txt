@@ -1,1 +1,0 @@
-* Need a reset method to put it in initial state again.
