@@ -78,7 +78,7 @@
 <h3>Download</h3>
 
 <p style="font-size: larger;">
- Latest version: <b>0.5.1</b>
+ Latest version: <b>0.5.2</b>
  [ <a href="#ez_relnotes_chgs">Changes</a> ]
 <p>
 
@@ -92,8 +92,8 @@
     Source .tar.gz (all platforms)
    </td>
    <td>
-    <a href="http://downloads.xiph.org/releases/ezstream/ezstream-0.5.1.tar.gz">ezstream-0.5.1.tar.gz</a><br/>
-    MD5: 1821f4c6c89415c0341a246decf50c57
+    <a href="http://downloads.xiph.org/releases/ezstream/ezstream-0.5.2.tar.gz">ezstream-0.5.2.tar.gz</a><br/>
+    MD5: 5f608530cdd9748f7556b5b1e0b77d85
    </td>
   </tr>
   <tr>
@@ -101,8 +101,8 @@
     Windows NT/2000/XP binary
    </td>
    <td>
-    <a href="http://downloads.xiph.org/releases/ezstream/ezstream-0.5.1-win32.zip">ezstream-0.5.1-win32.zip</a><br/>
-    MD5: c26d675996e3fedaf129ca5f57160e6f
+    <a href="http://downloads.xiph.org/releases/ezstream/ezstream-0.5.2-win32.zip">ezstream-0.5.2-win32.zip</a><br/>
+    MD5: 48e69e9ede02024844b95b784dbd5ccb
    </td>
   </tr>
  </table>
@@ -232,37 +232,69 @@
 <h3>Release Notes</h3>
 
 <p>
- Ezstream 0.5.1 has been released on September 16th 2007.
+ Ezstream 0.5.2 has been released on November 4th 2007.
 </p>
 
 <p>
- Version 0.5.1 is a minor bugfix release.
- A crash when dealing with empty playlist files has been resolved.
+ Version 0.5.2 is a bugfix release.
+ It unbreaks most use cases with regard to streaming from standard input and
+ contains documentation improvements.
 </p>
 
 <h4 id="ez_relnotes_chgs" name="ez_relnotes_chgs">Changes</h4>
 
 <ul style="font-size: smaller; margin: 1em 3em">
  <li>
-  src/playlist.c:
+  src/ezstream.c:
   <ul>
    <li>
     FIX --
-    Fix a segmentation fault in <code>playlist_*_next()</code> when trying to
-    access empty playlists.
-    (Ticket #1240)
+    Fix a crash that occurs when streaming from standard input without using a
+    script or program that supplies metadata information.
+    (Ticket #1247)
+   </li>
+   <li>
+    FIX --
+    Similar to the fix for #1247, properly initialize another variable.
+    The result is a cosmetic fix for the &quot;real-time&quot; status line when
+    streaming from standard input.
+   </li>
+   <li>
+    MISC --
+    Provide a useful error message when there's no more data to read from
+    standard input instead of talking about scary, bad file descriptors.
+   </li>
+   <li>
+    MISC --
+    Further prettify the output to make more sense when streaming from standard
+    input.
    </li>
   </ul>
  </li>
  <li>
-  src/ezstream.c:
+  src/xalloc.c:
   <ul>
    <li>
+    FIX --
+    A rare, possible crash has been fixed in an error path.
+   </li>
+  </ul>
+ </li>
+ <li>
+  examples/*:
+  <ul>
+   <li>
+    NEW --
+    Add an example configuration for streaming from standard input.
+   </li>
+   <li>
     MISC --
-    Issue a warning in verbose mode when dealing with an empty playlist file.
-    This also makes it more obvious what is going on when a user makes
-    ezstream spin on an empty playlist with <code>&lt;stream_once/&gt;</code>
-    set to <code>0</code>.
+    Improve reencoding examples to make them more easily usable with fewer
+    changes.
+   </li>
+   <li>
+    MISC --
+    Reenconding example files have been renamed.
    </li>
   </ul>
  </li>
