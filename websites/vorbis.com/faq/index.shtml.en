@@ -161,12 +161,9 @@
         quality level, but it'll take up less space</li>
         <li><strong>or</strong> you can have your music collection take
         up about the same amount of space, but have it sound better.</li>
-    </ul>
-    </li>
-
-    <li>Vorbis already enjoys widespread player support and
-    work is underway to play Vorbis files on portable hardware.</li>
-  </ul><p/>
+        <li>Vorbis already enjoys widespread support in audio software and
+        many digital portable players support it as well.</li>
+    </ul><p/>
   </dd>
 
   <dt><a href="#_dev" id="dev">I'm a developer. Why should I be interested?</a></dt>
@@ -180,7 +177,6 @@
     <li>Croteam (Serious Sam: The Second Encounter)</li>
     <li>Pyrogon (Candy Cruncher)</li>
     <li>PopCap Games (Alchemy)</li>
-
     <li>EA Games (Harry Potter and the Chamber of Secrets)</li>
   </ul>
   <p>Interested? see our <a href='http://www.xiph.org/vorbis/'>developer site</a>.</p>
