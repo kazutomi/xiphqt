@@ -21,7 +21,7 @@ supports:
   <li>AU files</li>
   <li>OSS (Open Sound System, used on Linux and FreeBSD)</li>
   <li>ALSA (Advanced Linux Sound Architecture)</li>
-  <li>polypaudio (next generation GNOME sound server)</li>
+  <li>PulseAudio (next generation GNOME sound server)</li>
   <li>esd (EsounD or Enlightened Sound Daemon)</li>
   <li>AIX</li>
   <li>Sun/NetBSD/OpenBSD</li>
@@ -43,7 +43,7 @@ or email them to Stan Seibert
 <ul>
   <li>New win32 driver</li>
   <li>Few fixes and changes in autotools and configuration files</li>
-  <li>Pulseaudio plugin replaces polyp</li>
+  <li>PulseAudio plugin replaces polyp</li>
 </ul>
 
 <hr/>
