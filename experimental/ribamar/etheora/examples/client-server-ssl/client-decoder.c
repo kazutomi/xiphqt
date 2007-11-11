@@ -25,6 +25,56 @@
 #include <SDL/SDL.h>
 #include <SDL/SDL_endian.h>
 
+#define OVERLAY 1
+
+
+static void video_write(SDL_Surface *screen, SDL_Overlay *yuv_overlay, 
+	yuv_buffer *yuv, SDL_Rect rect){
+	int i;
+	/*int crop_offset;*/
+
+	/* Lock SDL_yuv_overlay */
+	if ( SDL_MUSTLOCK(screen) ) {
+		if ( SDL_LockSurface(screen) < 0 ) return;
+	}
+	if (SDL_LockYUVOverlay(yuv_overlay) < 0) return;
+
+	/* let's draw the data (*yuv[3]) on a SDL screen (*screen) */
+	/* deal with border stride */
+	/* reverse u and v for SDL */
+	/* and crop input properly, respecting the encoded frame rect */
+	/* crop_offset=ti.offset_x+yuv.y_stride*ti.offset_y; */
+	for(i=0;i<yuv_overlay->h;i++)
+		/* copy y*/
+		memcpy(yuv_overlay->pixels[0]+yuv_overlay->pitches[0]*i,
+				yuv->y /*+crop_offset*/ +yuv->y_stride*i,
+				yuv_overlay->w);
+	/* crop_offset=(ti.offset_x/2)+(yuv.uv_stride)*(ti.offset_y/2); */
+	for(i=0;i<yuv_overlay->h/2;i++){
+		/* copy v */
+		memcpy(yuv_overlay->pixels[1]+yuv_overlay->pitches[1]*i,
+				yuv->v+ /* crop_offset */ +yuv->uv_stride*i,
+				yuv_overlay->w/2);
+		/* copy u */
+		memcpy(yuv_overlay->pixels[2]+yuv_overlay->pitches[2]*i,
+				yuv->u+/* crop_offset+ */yuv->uv_stride*i,
+				yuv_overlay->w/2);
+	}
+
+	/* Unlock SDL_yuv_overlay */
+	if ( SDL_MUSTLOCK(screen) ) {
+		SDL_UnlockSurface(screen);
+	}
+	SDL_UnlockYUVOverlay(yuv_overlay);
+
+
+	/* Show, baby, show! */
+	SDL_DisplayYUVOverlay(yuv_overlay, &rect);
+
+}
+
+
+
 
 int main(int argc, char **args){
 	int i, j; 
@@ -33,7 +83,10 @@ int main(int argc, char **args){
 	float r, g, b; 
 	SDL_Surface *scr; 
 	SDL_Event sev; 
-
+#ifdef OVERLAY
+	SDL_Rect rect; 
+	SDL_Overlay *yuv_overlay;
+#endif
 	/* opening video input file and file to print debuf info. as 
 	   always, sockets could be used. Degub.txt can have a fast 
 	   increase, you may want open a null device file as 
@@ -62,23 +115,49 @@ int main(int argc, char **args){
 	}
 
 	/*sdl stuff - setting video operation. */
-	scr = SDL_SetVideoMode(etheora_get_width(&ec), etheora_get_height(&ec),
-		16, SDL_SWSURFACE);
-		/*8, SDL_SWSURFACE);*/
-	if (scr == NULL){
-		fprintf(stderr, "Can't start video: %s.\n",  SDL_GetError()); 
+	if(SDL_Init(SDL_INIT_VIDEO) < 0){
+		fprintf(stderr, "Can't start SDL: %s.\n",  SDL_GetError()); 
 		return 3; 
 	}
+	scr = SDL_SetVideoMode(etheora_get_width(&ec), etheora_get_height(&ec),
+		/*0, SDL_SWSURFACE | SDL_ANYFORMAT);*/
+		16, SDL_SWSURFACE); /*TODO: isn't this plat. dependent? */
+	if (scr == NULL){
+		fprintf(stderr, "Can't set video: %s.\n",  SDL_GetError()); 
+		return 4; 
+	}
 	fprintf(stderr, "Bytes per pixel: %i.\n", scr->format->BytesPerPixel); 
+#ifdef OVERLAY
+	yuv_overlay = SDL_CreateYUVOverlay(etheora_get_width(&ec), etheora_get_height(&ec),
+			SDL_YV12_OVERLAY, scr);
+	if ( yuv_overlay == NULL ) {
+		fprintf(stderr, "SDL: Couldn't create SDL_yuv_overlay: %s\n",
+				SDL_GetError());
+		return 5; 
+	}
+	if ( yuv_overlay->hw_overlay == 1) {
+		fprintf(stderr, "Using hardware acceleration.\n"); 
+	}
+	else{
+		fprintf(stderr, "NOT using Hardware acceleration.\n"); 
+	}
 
+	rect.x = 0;
+	rect.y = 0;
+	rect.w = etheora_get_width(&ec); 
+	rect.h = etheora_get_height(&ec); 
 
+	SDL_DisplayYUVOverlay(yuv_overlay, &rect);
+#endif
+
+	SDL_WaitEvent(&sev); 
 	/*getting next frame from decoder or a window quit act.*/
 	while( !etheora_dec_nextframe(&ec) && sev.type != SDL_QUIT ){
 
 		/*sdl stuff - locking the screen so we can draw in the sdl
 		 * memory without changes appearing in  the screen. */
+#ifndef OVERLAY
 		if(SDL_MUSTLOCK(scr)) SDL_LockSurface(scr); 
-		SDL_WaitEvent(&sev); 
 
 		/*now we can read the frame buffer data. */
 		for( i = 0; i < etheora_get_width(&ec); i++)
@@ -88,20 +167,19 @@ int main(int argc, char **args){
 				etheora_dec_rgb_read(&ec, i, j, 
 					 &r, &g, &b);  
 
-				/* HERE YOU MAY DO WHAT YOU WANT
-				  WITH THE PIXEL. */
-				  /*
-				  *((Uint8 *)scr->pixels + j*scr->pitch/1 + i) = 
-				  SDL_MapRGB(scr->format, (Uint8)r, (Uint8)g, (Uint8)b); 
-				  */
-				  *((Uint16 *)scr->pixels + j*scr->pitch/2 + i) = 
-				  SDL_MapRGB(scr->format, (Uint8)r, (Uint8)g, (Uint8)b); 
+				  /* sdl - drawing the pixel. */
+				  *((Uint16 *)scr->pixels + j*scr->pitch/2 + i)=
+					  SDL_MapRGB(scr->format, (Uint8)r, 
+					  		(Uint8)g, (Uint8)b); 
 
 			}
 
-		/*sdl stuff - unlocking screen/drawing. */
+		/* sdl stuff - unlocking screen/drawing. */
 		if(SDL_MUSTLOCK(scr)) SDL_UnlockSurface(scr); 
-		/* if(sev.type == SDL_KEYDOWN) SDL_Quit(); */
+#else 
+		video_write(scr, yuv_overlay, &ec.yuv,  rect);
+
+#endif 
 		SDL_Delay(10); 
 		SDL_Flip(scr); 
 		/*or SDL_UpdateRect(screen, 0, 0, width, height);*/
