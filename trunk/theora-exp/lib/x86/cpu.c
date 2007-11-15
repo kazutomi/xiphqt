@@ -23,7 +23,7 @@ ogg_uint32_t oc_cpu_flags_get(void){
   ogg_uint32_t ecx;
   ogg_uint32_t edx;
   ogg_uint32_t flags;
-#if (defined(__amd64__) || defined(__x86_64__))
+#if (defined(__amd64__)||defined(__x86_64__))
 # define cpuid(_op,_eax,_ebx,_ecx,_edx) \
   __asm__ __volatile__( \
    "push %%rbx\n\t" \
