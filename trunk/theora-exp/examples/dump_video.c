@@ -150,7 +150,7 @@ static void video_write(void){
   /*Uncomment the following to do normal, non-striped decoding.
   th_ycbcr_buffer ycbcr;
   th_decode_ycbcr_out(td,ycbcr);*/
-  fprintf(outfile, "FRAME\n");
+  if(!raw)fprintf(outfile, "FRAME\n");
 
   for(pli=0;pli<3;pli++){
     for(i=0;i<ycbcr[pli].height;i++){
@@ -204,7 +204,7 @@ int main(int argc,char *argv[]){
   while((c=getopt_long(argc,argv,optstring,options,&long_option_index))!=EOF){
     switch(c){
     case 'o':
-      if(!strcmp(optarg,"-")){
+      if(strcmp(optarg,"-")!=0){
         outfile=fopen(optarg,"wb");
         if(outfile==NULL){
           fprintf(stderr,"Unable to open output file '%s'\n", optarg);
