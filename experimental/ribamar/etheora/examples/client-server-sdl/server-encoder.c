@@ -3,8 +3,8 @@
 /*a very simple theora video encoder using etheora api.
   play with etheora_enc_rgb_draw() r, g, b parameters and get
   different videos. 
-  this example is a server which accepts a connection from a single
-  client, and sends it ogg data. 
+  this example is a server which accepts a connection from
+  clients, and sends it ogg data. 
   
   usage: ./server-encoder [port] 
   port - a tcp port where to listen incomming connections. it not
@@ -83,6 +83,7 @@ int main(int argc, char **args){
 		fprintf(stderr, "usage: \n%s [PORT]\n", args[0]);
 		return 1; 
 	}
+
 while(1){ /* forked while */
 	if( (fout_fd = accept(sock, 0, 0) ) < 0 ){
 		fprintf(stderr, "Can't accept connection.\n");

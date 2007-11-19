@@ -34,7 +34,7 @@
 #include <netdb.h>
 
 
-#define YUV_DECODING 1
+//#define YUV_DECODING 1
 //#define OVERLAY 1
 
 int tcp_socket_connect(char *host, int port, FILE *finfo){
@@ -240,7 +240,7 @@ int main(int argc, char **args){
 
 				  Uint32 a = 0; 
 				  a = (Uint32) 0
-				  	 // + (((Uint32)y) << 2) 
+				  	  + (((Uint32)y) << 3)*0
 				  	  + (((Uint32)y) << 2) 
 					  + (((Uint32)u) << 1) 
 					  + (((Uint32)v) << 0); 

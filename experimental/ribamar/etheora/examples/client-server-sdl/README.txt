@@ -1,6 +1,6 @@
 
 this example features 2 programs: a server that encodes some data and accepts
-a connection from a client and a client that connects to that server, get 
+a connection from clients and a client that connects to that server, get 
 data and draw it into an SDL window. 
 
 
