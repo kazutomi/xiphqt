@@ -3,30 +3,77 @@
 /*
   a bit more sofisticated theora video decoder using etheora. this 
   example is an client which reads data from a (encoder) server. data
-  is read from the server though an SSL layer. Video is outputted 
+  is read from the server though a socket. Video is outputted 
   into an SDL window. 
 
   note this doesn't have a good performance yet and can't deal with 
-  the real fps rate. 
+  the real fps rate. Its performance is improved by defining OVERLAY, 
+  however, as of this writing (19-nov-2007) etheora doesn't provide
+  a good way to use overlays. 
 
   usage: 
-  ./client-decoder [file.ogv] 
-  file.ogv: file to read video input. if none is passed, data is read
-  from standard input.
+  ./client-decoder server_hostname server_port
 
   build command line example (with gcc): 
   gcc client-decoder.c path/to/etheora.c  -I/path/to/etheora.h/dir \
-  		-ltheora -lssl -lSDL -o client-decoder
+  		-ltheora -lSDL -o client-decoder
 
 */
 
 #include <etheora.h>
 #include <stdio.h>
+#include <unistd.h>
 #include <SDL/SDL.h>
 #include <SDL/SDL_endian.h>
 
-#define OVERLAY 1
+/*tcp includes*/
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netinet/tcp.h>
+#include <netdb.h>
 
+
+#define RGB_DECODING 1
+//#define YUV_DECODING 1
+//#define OVERLAY 1
+
+int tcp_socket_connect(char *host, int port, FILE *finfo){
+        struct hostent *h;
+        int sock;
+        struct sockaddr_in addr;
+
+	/* getting the host address. */
+        if(! (h = gethostbyname(host)) ){
+                fprintf(finfo, "Couldn't resolve host.\n");
+                return -1;
+        }
+
+	/* getting a socket. */
+        if((sock = socket(AF_INET,SOCK_STREAM, IPPROTO_TCP)) < 0){
+                fprintf(finfo, "Couldn't create socket.\n");
+                return -2;
+        }
+
+	/* connecting to the address. */
+        memset(&addr, '\0', sizeof(addr));
+        addr.sin_family = AF_INET;
+        addr.sin_addr = *(struct in_addr*) h->h_addr_list[0];
+        addr.sin_port = htons(port);
+
+        if(connect(sock, (struct sockaddr *)&addr, sizeof(addr)) < 0){
+                fprintf(finfo, "Couldn't connect socket.\n");
+                return -3;
+        }
+
+        return sock;
+}
+
+
+
+
+
+/*taken from theora player_example.c, but not cropping it yet. */
 
 static void video_write(SDL_Surface *screen, SDL_Overlay *yuv_overlay, 
 	yuv_buffer *yuv, SDL_Rect rect){
@@ -74,36 +121,47 @@ static void video_write(SDL_Surface *screen, SDL_Overlay *yuv_overlay,
 }
 
 
-
-
 int main(int argc, char **args){
-	int i, j; 
+	int i, j, sock; 
 	etheora_ctx ec; 
 	FILE *finfo, *fin; 
-	float r, g, b; 
+#if YUV_DECODING
+	unsigned char r, g, b; 
+#else
+	float r, g, b;
+#endif
 	SDL_Surface *scr; 
 	SDL_Event sev; 
 #ifdef OVERLAY
 	SDL_Rect rect; 
 	SDL_Overlay *yuv_overlay;
 #endif
+
 	/* opening video input file and file to print debuf info. as 
 	   always, sockets could be used. Degub.txt can have a fast 
 	   increase, you may want open a null device file as 
 	   /dev/null. */
 	finfo = fopen("Debug.txt", "w"); 
-	if(argc > 1) {
-		fin = fopen(args[1], "r"); 
+	fprintf(stderr, "debug info in Debug.txt.\n"); 
+
+	if(argc > 2){
+		if( (sock = tcp_socket_connect(args[1], 
+					atoi(args[2]), stderr)) < 0){
+			fprintf(stderr, "Can't create socket.\n"); 
+			return 1; 
+		}
 	}
-	else {
-		fin = stdin; 
-		fprintf(stderr, "opening standard input as video file. \n"); 
+	else{
+		fprintf(stderr, "usage: \n%s host port\n", args[0]); 
+		return 1; 
 	}
+
+	/* getting the FILE * from the socket. */
+	fin = fdopen(sock, "r"); 
 	if(fin == NULL || finfo == NULL){
 		fprintf(stderr, "Debug.txt or input file couldn't be open.\n"); 
 		return 1; 
 	}
-	fprintf(stderr, "debug info in Debug.txt.\n"); 
 
 	/* configuring decoder. */
 	etheora_dec_setup(&ec, fin, finfo);
@@ -127,6 +185,7 @@ int main(int argc, char **args){
 		return 4; 
 	}
 	fprintf(stderr, "Bytes per pixel: %i.\n", scr->format->BytesPerPixel); 
+
 #ifdef OVERLAY
 	yuv_overlay = SDL_CreateYUVOverlay(etheora_get_width(&ec), etheora_get_height(&ec),
 			SDL_YV12_OVERLAY, scr);
@@ -164,14 +223,24 @@ int main(int argc, char **args){
 			for( j = 0; j < etheora_get_height(&ec); j++){
 				/* or use etheora_dec_yuv draw() to 
 			           read in yuv colorspace.*/
+#if YUV_DECODING
+				etheora_dec_yuv_read(&ec, i, j, 
+					 &r, &g, &b);  
+#else
 				etheora_dec_rgb_read(&ec, i, j, 
 					 &r, &g, &b);  
+#endif 
 
 				  /* sdl - drawing the pixel. */
 				  *((Uint16 *)scr->pixels + j*scr->pitch/2 + i)=
+#if YUV_DECODING
+					  SDL_MapRGB(scr->format, (Uint8)r, 
+					  		(Uint8)g, (Uint8)b); 
+#else
 					  SDL_MapRGB(scr->format, (Uint8)r, 
 					  		(Uint8)g, (Uint8)b); 
 
+#endif 
 			}
 
 		/* sdl stuff - unlocking screen/drawing. */
@@ -198,3 +267,16 @@ int main(int argc, char **args){
 }
 
 
+#if 0
+	if(argc > 1) {
+		fin = fopen(args[1], "r"); 
+	}
+	else {
+		fin = stdin; 
+		fprintf(stderr, "opening standard input as video file. \n"); 
+	}
+	if(fin == NULL || finfo == NULL){
+		fprintf(stderr, "Debug.txt or input file couldn't be open.\n"); 
+		return 1; 
+	}
+#endif 
