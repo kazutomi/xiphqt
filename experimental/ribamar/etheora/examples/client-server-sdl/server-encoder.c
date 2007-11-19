@@ -3,6 +3,8 @@
 /*a very simple theora video encoder using etheora api.
   play with etheora_enc_rgb_draw() r, g, b parameters and get
   different videos. 
+  this example is a server which accepts a connection from a single
+  client, and sends it ogg data. 
   
   usage: ./server-encoder [port] 
   port - a tcp port where to listen incomming connections. it not
@@ -25,7 +27,7 @@
 #include <netdb.h>
 
 
-#define NUMBER_OF_FRAMES 200 /* video with 20 frames.*/
+#define NUMBER_OF_FRAMES 200 /* video with 200 frames.*/
 #define PORT 4443  /* tcp port where to listen. */
 
 int tcp_listen(FILE *finfo, int port) {

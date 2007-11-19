@@ -1,7 +1,7 @@
 /*Copyright, 2007, by Ribamar Santarosa, ribamar@gmail.com */
 
 /*
-  a bit more sofisticated theora video decoder using etheora. this 
+  a simple theora video decoder using etheora. this 
   example is an client which reads data from a (encoder) server. data
   is read from the server though a socket. Video is outputted 
   into an SDL window. 
