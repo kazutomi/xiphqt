@@ -67,7 +67,7 @@ int tcp_listen(FILE *finfo, int port) {
 
 
 int main(int argc, char **args){
-	int f, i, j, sock_fd, port; 
+	int f, i, j, sock, fout_fd, port; 
 	etheora_ctx ec; 
 	char *vendor = "etheora/libtheora"; 
 	FILE *finfo, *fout; 
@@ -77,20 +77,23 @@ int main(int argc, char **args){
 	   increase, you may want open a null device file as 
 	   /dev/null. */
 
-	finfo = fopen("Debug.txt", "w"); 
-	fprintf(stderr, "debug info in Debug.txt.\n"); 
-
 	/* listening. */
 	(argc > 1) ? (port = atoi(args[1])) : (port = PORT); 
-	if( (sock_fd = tcp_listen(stderr, port)) < 0 ){
+	if( (sock = tcp_listen(stderr, port)) < 0 ){
 		fprintf(stderr, "usage: \n%s [PORT]\n", args[0]);
 		return 1; 
 	}
-	if( (sock_fd = accept(sock_fd, 0, 0) ) < 0 ){
+while(1){ /* forked while */
+	if( (fout_fd = accept(sock, 0, 0) ) < 0 ){
 		fprintf(stderr, "Can't accept connection.\n");
 		return 1;
 	}
-	fout = fdopen(sock_fd, "w");
+	if(fork()) continue; 
+
+	finfo = fopen("Debug.txt", "w"); 
+	fprintf(stderr, "debug info in Debug.txt.\n"); 
+
+	fout = fdopen(fout_fd, "w");
 	if(fout == NULL || finfo == NULL){
 		fprintf(stderr, "Debug.txt or output file"
 			" couldn't be open.\n");
@@ -143,17 +146,8 @@ int main(int argc, char **args){
 
 	fprintf(stderr, "video generated. \n"); 
 	return 0; 
+} /* forked while */
 
 }
 
 
-#if 0
-	if(argc > 1) {
-		fout = fopen(args[1], "w");
-		fprintf(stderr, "opening %s to write video file . \n", args[1]);
-	}
-	else {  
-		fout = stdout;
-		fprintf(stderr, "opening standard output to write video file. \n");
-	}
-#endif 

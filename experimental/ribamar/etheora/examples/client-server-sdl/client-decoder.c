@@ -34,8 +34,7 @@
 #include <netdb.h>
 
 
-#define RGB_DECODING 1
-//#define YUV_DECODING 1
+#define YUV_DECODING 1
 //#define OVERLAY 1
 
 int tcp_socket_connect(char *host, int port, FILE *finfo){
@@ -126,7 +125,7 @@ int main(int argc, char **args){
 	etheora_ctx ec; 
 	FILE *finfo, *fin; 
 #if YUV_DECODING
-	unsigned char r, g, b; 
+	unsigned char y, u, v; 
 #else
 	float r, g, b;
 #endif
@@ -225,18 +224,36 @@ int main(int argc, char **args){
 			           read in yuv colorspace.*/
 #if YUV_DECODING
 				etheora_dec_yuv_read(&ec, i, j, 
-					 &r, &g, &b);  
+					 &y, &u, &v);  
 #else
 				etheora_dec_rgb_read(&ec, i, j, 
 					 &r, &g, &b);  
 #endif 
 
 				  /* sdl - drawing the pixel. */
-				  *((Uint16 *)scr->pixels + j*scr->pitch/2 + i)=
 #if YUV_DECODING
-					  SDL_MapRGB(scr->format, (Uint8)r, 
-					  		(Uint8)g, (Uint8)b); 
+				  /*
+				  *((Uint16 *)scr->pixels + j*scr->pitch/2 + i)=
+					  SDL_MapRGB(scr->format, (Uint8)y, 
+					  		(Uint8)u, (Uint8)v); 
+			           */
+
+				  Uint32 a = 0; 
+				  a = (Uint32) 0
+				  	 // + (((Uint32)y) << 2) 
+				  	  + (((Uint32)y) << 2) 
+					  + (((Uint32)u) << 1) 
+					  + (((Uint32)v) << 0); 
+				  *((Uint16 *)scr->pixels + j*scr->pitch/2 + i)= a; 
+				  
+				  /*
+				  *((Uint16 *)(scr->pixels[0]+ scr->pitch[0]*i)) = y;  
+				  *((Uint16 *)scr->pixels[1]+ scr->pitch[1]*i) = v;
+				  *((Uint16 *)scr->pixels[2]+ scr->pitch[2]*i) = u; 
+				  */
+
 #else
+				  *((Uint16 *)scr->pixels + j*scr->pitch/2 + i)=
 					  SDL_MapRGB(scr->format, (Uint8)r, 
 					  		(Uint8)g, (Uint8)b); 
 
