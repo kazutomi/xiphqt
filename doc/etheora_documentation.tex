@@ -171,7 +171,7 @@ printf("vendor name: %s\n", ec.tc.vendor);
 \item Loop to obtain all frames. When \texttt{etheora\_dec\_nextframe()}
 returns \textit{not zero} it can't read more data. 
 \begin{verbatim}
-while(etheora_dec_nextframe(&ec)){
+while(!etheora_dec_nextframe(&ec)){
            ...
 }
 \end{verbatim}
