@@ -23,12 +23,16 @@
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 
+#define YUV_DECODING 1
 
 
 int main(int argc, char **args){
 	int i, j; 
 	etheora_ctx ec; 
 	FILE *finfo, *fin; 
+#ifdef YUV_DECODING
+	unsigned char y, u, v; 
+#endif 
 	float r, g, b; 
 	IplImage *image;
 
@@ -70,10 +74,17 @@ int main(int argc, char **args){
 		/*now we can read the frame buffer data. */
 		for( i = 0; i < etheora_get_width(&ec); i++)
 			for( j = 0; j < etheora_get_height(&ec); j++){
-				/* or use etheora_dec_yuv draw() to 
-			           read in yuv colorspace.*/
+#ifdef YUV_DECODING
+				etheora_dec_yuv_read(&ec, i, j, 
+					 &y, &u, &v);  
+
+				etheora_pixel_yuv2rgb(y, u, v, &r, &g, &b); 
+				etheora_pixel_rgb_reescale(&r, &g, &b); 
+#else
 				etheora_dec_rgb_read(&ec, i, j, 
 					 &r, &g, &b);  
+#endif
+
 
 				/* opencv stuff - drawing the pixel in the
 				   opencv image. */
