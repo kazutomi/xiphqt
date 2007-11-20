@@ -34,7 +34,7 @@
 #include <netdb.h>
 
 
-//#define YUV_DECODING 1
+#define YUV_DECODING 1
 //#define OVERLAY 1
 
 int tcp_socket_connect(char *host, int port, FILE *finfo){
@@ -126,9 +126,8 @@ int main(int argc, char **args){
 	FILE *finfo, *fin; 
 #if YUV_DECODING
 	unsigned char y, u, v; 
-#else
-	float r, g, b;
 #endif
+	float r, g, b;
 	SDL_Surface *scr; 
 	SDL_Event sev; 
 #ifdef OVERLAY
@@ -178,7 +177,8 @@ int main(int argc, char **args){
 	}
 	scr = SDL_SetVideoMode(etheora_get_width(&ec), etheora_get_height(&ec),
 		/*0, SDL_SWSURFACE | SDL_ANYFORMAT);*/
-		16, SDL_SWSURFACE); /*TODO: isn't this plat. dependent? */
+		0, SDL_SWSURFACE); /*TODO: isn't this plat. dependent? */
+		/*32, SDL_SWSURFACE);  */
 	if (scr == NULL){
 		fprintf(stderr, "Can't set video: %s.\n",  SDL_GetError()); 
 		return 4; 
@@ -218,13 +218,20 @@ int main(int argc, char **args){
 		if(SDL_MUSTLOCK(scr)) SDL_LockSurface(scr); 
 
 		/*now we can read the frame buffer data. */
-		for( i = 0; i < etheora_get_width(&ec); i++)
-			for( j = 0; j < etheora_get_height(&ec); j++){
+		/*
+		for( i = 0; i+4 < etheora_get_width(&ec); i++)
+			for( j = 0; j+4 < etheora_get_height(&ec); j++){
+		*/
+		for( i = 0; i < etheora_get_width(&ec);  i = i+1)
+			for( j = 0; j < etheora_get_height(&ec); j = j + 1){
 				/* or use etheora_dec_yuv draw() to 
 			           read in yuv colorspace.*/
 #if YUV_DECODING
 				etheora_dec_yuv_read(&ec, i, j, 
 					 &y, &u, &v);  
+				etheora_pixel_yuv2rgb(y, u, v, &r, &g, &b);
+				etheora_pixel_rgb_reescale(&r, &g, &b);
+
 #else
 				etheora_dec_rgb_read(&ec, i, j, 
 					 &r, &g, &b);  
@@ -237,16 +244,37 @@ int main(int argc, char **args){
 					  SDL_MapRGB(scr->format, (Uint8)y, 
 					  		(Uint8)u, (Uint8)v); 
 			           */
-
 				  Uint32 a = 0; 
 				  a = (Uint32) 0
-				  	  + (((Uint32)y) << 3)*0
-				  	  + (((Uint32)y) << 2) 
-					  + (((Uint32)u) << 1) 
-					  + (((Uint32)v) << 0); 
-				  *((Uint16 *)scr->pixels + j*scr->pitch/2 + i)= a; 
+				  	  + (((Uint32)y)*1 << 3*8)
+				  	  + (((Uint32)r)*1 << 2*8) 
+					  + (((Uint32)g)*1 << 1*8) 
+					  + (((Uint32)b)*1 << 0*8); 
+
+				  *((Uint32 *)scr->pixels + (j*scr->pitch)/4 + i)
+				  	= a; 
 				  
 				  /*
+				  Uint16 a = 0; 
+				  a = (Uint16) 0 + ((y)*1 << 1*8); 
+				  if( i % 2 )   a += u; 
+				  else a += v; 
+				  if( i % 2 ){
+					  a = (Uint16) u + ((y)*1 << 1*8); 
+				  }
+				  else{
+					  a = (Uint16) v + ((y)*1 << 1*8); 
+				  }
+				  Uint16 a = 0; 
+				  a = (Uint16) 0 + ((y)*1 << 1*8); 
+				  if( i % 2 )   a += 0; 
+				  else a += 0; 
+				  a = (Uint32) 0
+				  	  + ((y)*1 << 3)
+				  	  + ((y)*0 << 1) 
+					  + ((u)*0 << 2) 
+					  + ((v)*0 << 0); 
+				  	  + (((Uint32)y)*0 << 2) 
 				  *((Uint16 *)(scr->pixels[0]+ scr->pitch[0]*i)) = y;  
 				  *((Uint16 *)scr->pixels[1]+ scr->pitch[1]*i) = v;
 				  *((Uint16 *)scr->pixels[2]+ scr->pitch[2]*i) = u; 
@@ -283,17 +311,3 @@ int main(int argc, char **args){
 	return 0; 
 }
 
-
-#if 0
-	if(argc > 1) {
-		fin = fopen(args[1], "r"); 
-	}
-	else {
-		fin = stdin; 
-		fprintf(stderr, "opening standard input as video file. \n"); 
-	}
-	if(fin == NULL || finfo == NULL){
-		fprintf(stderr, "Debug.txt or input file couldn't be open.\n"); 
-		return 1; 
-	}
-#endif 
