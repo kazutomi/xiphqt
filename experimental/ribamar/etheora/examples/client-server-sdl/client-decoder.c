@@ -175,10 +175,14 @@ int main(int argc, char **args){
 		fprintf(stderr, "Can't start SDL: %s.\n",  SDL_GetError()); 
 		return 3; 
 	}
+#ifdef OVERLAY
 	scr = SDL_SetVideoMode(etheora_get_width(&ec), etheora_get_height(&ec),
 		/*0, SDL_SWSURFACE | SDL_ANYFORMAT);*/
-		0, SDL_SWSURFACE); /*TODO: isn't this plat. dependent? */
-		/*32, SDL_SWSURFACE);  */
+		16, SDL_SWSURFACE); /*TODO: isn't this plat. dependent? */
+#else 
+	scr = SDL_SetVideoMode(etheora_get_width(&ec), etheora_get_height(&ec),
+		0, SDL_SWSURFACE); 
+#endif
 	if (scr == NULL){
 		fprintf(stderr, "Can't set video: %s.\n",  SDL_GetError()); 
 		return 4; 
@@ -218,12 +222,8 @@ int main(int argc, char **args){
 		if(SDL_MUSTLOCK(scr)) SDL_LockSurface(scr); 
 
 		/*now we can read the frame buffer data. */
-		/*
-		for( i = 0; i+4 < etheora_get_width(&ec); i++)
-			for( j = 0; j+4 < etheora_get_height(&ec); j++){
-		*/
-		for( i = 0; i < etheora_get_width(&ec);  i = i+1)
-			for( j = 0; j < etheora_get_height(&ec); j = j + 1){
+		for( i = 0; i < etheora_get_width(&ec);  i++)
+			for( j = 0; j < etheora_get_height(&ec); j++){
 				/* or use etheora_dec_yuv draw() to 
 			           read in yuv colorspace.*/
 #if YUV_DECODING
@@ -239,11 +239,6 @@ int main(int argc, char **args){
 
 				  /* sdl - drawing the pixel. */
 #if YUV_DECODING
-				  /*
-				  *((Uint16 *)scr->pixels + j*scr->pitch/2 + i)=
-					  SDL_MapRGB(scr->format, (Uint8)y, 
-					  		(Uint8)u, (Uint8)v); 
-			           */
 				  Uint32 a = 0; 
 				  a = (Uint32) 0
 				  	  + (((Uint32)y)*1 << 3*8)
@@ -254,34 +249,9 @@ int main(int argc, char **args){
 				  *((Uint32 *)scr->pixels + (j*scr->pitch)/4 + i)
 				  	= a; 
 				  
-				  /*
-				  Uint16 a = 0; 
-				  a = (Uint16) 0 + ((y)*1 << 1*8); 
-				  if( i % 2 )   a += u; 
-				  else a += v; 
-				  if( i % 2 ){
-					  a = (Uint16) u + ((y)*1 << 1*8); 
-				  }
-				  else{
-					  a = (Uint16) v + ((y)*1 << 1*8); 
-				  }
-				  Uint16 a = 0; 
-				  a = (Uint16) 0 + ((y)*1 << 1*8); 
-				  if( i % 2 )   a += 0; 
-				  else a += 0; 
-				  a = (Uint32) 0
-				  	  + ((y)*1 << 3)
-				  	  + ((y)*0 << 1) 
-					  + ((u)*0 << 2) 
-					  + ((v)*0 << 0); 
-				  	  + (((Uint32)y)*0 << 2) 
-				  *((Uint16 *)(scr->pixels[0]+ scr->pitch[0]*i)) = y;  
-				  *((Uint16 *)scr->pixels[1]+ scr->pitch[1]*i) = v;
-				  *((Uint16 *)scr->pixels[2]+ scr->pitch[2]*i) = u; 
-				  */
 
 #else
-				  *((Uint16 *)scr->pixels + j*scr->pitch/2 + i)=
+				  *((Uint32 *)scr->pixels + j*scr->pitch/4 + i)=
 					  SDL_MapRGB(scr->format, (Uint8)r, 
 					  		(Uint8)g, (Uint8)b); 
 
