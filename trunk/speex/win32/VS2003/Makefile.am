@@ -5,4 +5,4 @@
 
 SUBDIRS = libspeex libspeexdsp speexenc speexdec tests
 
-EXTRA_DIST = 
+EXTRA_DIST = libspeex.sln
