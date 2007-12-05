@@ -1640,7 +1640,6 @@ int  etheora_enc_finish(etheora_ctx *ec){
 		return ETHEORA_ERR_WRITE_FAILED; 
 	etheora_flushpage(&ec->ess.streams[0], &page,	
 			ec->fogg, ec->finfo); 
-	theora_info_clear(&ec->ti); 
 	theora_comment_clear(&ec->tc); 
 	theora_clear(&ec->ts); 
 	etheora_freeyuv(&ec->yuv); 
@@ -1720,6 +1719,7 @@ int  etheora_dec_start(etheora_ctx *ec){
 
         if(etheora_decode_init(&ec->ts, &ec->ti))
 		return ETHEORA_ERR_CANT_START; 
+
 
 	return 0; 
 }
