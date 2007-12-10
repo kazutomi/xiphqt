@@ -30,6 +30,21 @@
 
 <h2>Current <strong style='font-style: italic;'>Unstable</strong> Release (recommended)</h2>
 
+<h3 id='one.1.2beta3'>1.2beta3</h3>
+<p>The most obvious change in this release is that all the non-codec components (preprocessor,
+echo cancellation, jitter buffer) have been moved to a new <i>libspeexdsp</i> library. 
+Other changes include a new jitter buffer algorithm and resampler improvements/fixes. This is also
+the first release where libspeex can be built without any floating point support. To do this,
+the float compatibility API must be disabled (--disable-float-api or DISABLE_FLOAT_API) and
+the VBR feature must be disabled (--disable-vbr or DISABLE_VBR).</p>
+
+<span>Downloads:</span>
+<ul>
+<li><a href="http://downloads.xiph.org/releases/speex/speex-1.2beta3.tar.gz">Source Code</a></li>
+<li>Windows binaries soon</li>
+</ul>
+
+
 <h3 id='one.1.2beta2'>1.2beta2</h3>
 <p>Again, this new releases brings many improvements. The RAM requirement for 
 wideband has gone down drastically (i.e. more than 2x). A new resampler
@@ -52,27 +67,7 @@ At last, early TriMedia support (incomplete) has been merged.</p>
 </ul>
 
 
-
-<h3 id='one.1.2beta1'>1.2beta1</h3>
-
-<p>This new release brings many significant improvements. The quality has been improved, both at the encoder level and the decoder level. These include enhancer improvements (now on by default), input/output high-pass filters, as well as fixing minor regressions in previous 1.1.x releases. A strange and rare instability problem with pure sinusoids has also been fixed. On top of that, memory use has been greatly reduced, especially for fixed-point and narrowband. The fixed-point narrowband encoder+decoder memory use has been cut by more than half, making it possible to fit both in less than 6 kB of RAM. In general, CPU requirement had gone down, especially for the fixed-point port. The Blackfin port has been speeded up significantly, thanks to David Rowe. There are also a few fixes for the TI C5X DSPs, as well as better support for C++ compilers and crappy MS compilers. Oh, and before anyone starts worrying, the format (bit-stream) itself has not changed, so Speex is still compatible with version 1.0 and will continue to be in the future.</p>
-<p>Non-codec improvements include a extension (easier to use) to the echo canceller API and a Speex-independent version of the jitter buffer. The echo canceller should also be more robust to saturation in the capture path. Last, but not least, the documentation has been updated.</p>
-
-
-<span>Downloads:</span>
-
-<ul>
-<li><a href="http://downloads.us.xiph.org/releases/speex/speex-1.2beta1.tar.gz">Source Code</a></li>
-<li><a href="http://downloads.us.xiph.org/releases/speex/speex-1.2beta1-1.i386.rpm">i386 RPM</a></li>
-
-<li><a href="http://downloads.us.xiph.org/releases/speex/speex-devel-1.2beta1-1.i386.rpm">i386 Development RPM</a></li>
-<li><a href="http://downloads.us.xiph.org/releases/speex/speex-1.2beta1-1.src.rpm">Source RPM</a></li>
-<li><a href="http://downloads.us.xiph.org/releases/speex/libspeex-win32-v1.2beta1.zip">Windows binaries (libspeex)</a></li>
-<li><a href="http://downloads.us.xiph.org/releases/speex/speex-tools-win32-v1.2beta1.zip">Windows binaries (tools)</a></li>
-</ul>
-
-
-<h2>Current Stable Release (old)</h2>
+<h2>Current Stable Release (old, not recommended)</h2>
 <h3 id='one.0.5'>1.0.5</h3>
 <p>
 The main change with this release is that it includes API additions from the 1.1.x branch (while being backward compatible), so that transition from 1.0.x to 1.1.x can be made easier.
