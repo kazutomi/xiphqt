@@ -5,7 +5,7 @@ Network Working Group                                       I. Goncalves
 Internet-Draft                                               S. Pfeiffer
 Obsoletes: 3534 (if approved)                              C. Montgomery
 Intended status: Standards Track                                    Xiph
-Expires: May 14, 2008                                  November 11, 2007
+Expires: June 5, 2008                                   December 3, 2007
 
 
                             Ogg Media Types
@@ -34,7 +34,7 @@ Status of This Memo
    The list of Internet-Draft Shadow Directories can be accessed at
    http://www.ietf.org/shadow.html.
 
-   This Internet-Draft will expire on May 14, 2008.
+   This Internet-Draft will expire on June 5, 2008.
 
 Copyright Notice
 
@@ -52,9 +52,9 @@ Abstract
 
 
 
-Goncalves, et al.         Expires May 14, 2008                  [Page 1]
+Goncalves, et al.         Expires June 5, 2008                  [Page 1]
 
-Internet-Draft               Ogg Media Types               November 2007
+Internet-Draft               Ogg Media Types               December 2007
 
 
 Table of Contents
@@ -108,9 +108,9 @@ Table of Contents
 
 
 
-Goncalves, et al.         Expires May 14, 2008                  [Page 2]
+Goncalves, et al.         Expires June 5, 2008                  [Page 2]
 
-Internet-Draft               Ogg Media Types               November 2007
+Internet-Draft               Ogg Media Types               December 2007
 
 
 1.  Introduction
@@ -164,9 +164,9 @@ Internet-Draft               Ogg Media Types               November 2007
 
 
 
-Goncalves, et al.         Expires May 14, 2008                  [Page 3]
+Goncalves, et al.         Expires June 5, 2008                  [Page 3]
 
-Internet-Draft               Ogg Media Types               November 2007
+Internet-Draft               Ogg Media Types               December 2007
 
 
    implementations are "unconditionally compliant".
@@ -220,9 +220,9 @@ Internet-Draft               Ogg Media Types               November 2007
 
 
 
-Goncalves, et al.         Expires May 14, 2008                  [Page 4]
+Goncalves, et al.         Expires June 5, 2008                  [Page 4]
 
-Internet-Draft               Ogg Media Types               November 2007
+Internet-Draft               Ogg Media Types               December 2007
 
 
    o  Media types described in this document are used for stream based
@@ -276,9 +276,9 @@ Internet-Draft               Ogg Media Types               November 2007
 
 
 
-Goncalves, et al.         Expires May 14, 2008                  [Page 5]
+Goncalves, et al.         Expires June 5, 2008                  [Page 5]
 
-Internet-Draft               Ogg Media Types               November 2007
+Internet-Draft               Ogg Media Types               December 2007
 
 
    and is thus considered out of the scope of this document.
@@ -332,9 +332,9 @@ Internet-Draft               Ogg Media Types               November 2007
 
 
 
-Goncalves, et al.         Expires May 14, 2008                  [Page 6]
+Goncalves, et al.         Expires June 5, 2008                  [Page 6]
 
-Internet-Draft               Ogg Media Types               November 2007
+Internet-Draft               Ogg Media Types               December 2007
 
 
    Magic number(s): The first four bytes, 0x4f 0x67 0x67 0x53,
@@ -388,9 +388,9 @@ Internet-Draft               Ogg Media Types               November 2007
 
 
 
-Goncalves, et al.         Expires May 14, 2008                  [Page 7]
+Goncalves, et al.         Expires June 5, 2008                  [Page 7]
 
-Internet-Draft               Ogg Media Types               November 2007
+Internet-Draft               Ogg Media Types               December 2007
 
 
    Additional information:
@@ -444,9 +444,9 @@ Internet-Draft               Ogg Media Types               November 2007
 
 
 
-Goncalves, et al.         Expires May 14, 2008                  [Page 8]
+Goncalves, et al.         Expires June 5, 2008                  [Page 8]
 
-Internet-Draft               Ogg Media Types               November 2007
+Internet-Draft               Ogg Media Types               December 2007
 
 
    Additional information:
@@ -500,9 +500,9 @@ Internet-Draft               Ogg Media Types               November 2007
 
 
 
-Goncalves, et al.         Expires May 14, 2008                  [Page 9]
+Goncalves, et al.         Expires June 5, 2008                  [Page 9]
 
-Internet-Draft               Ogg Media Types               November 2007
+Internet-Draft               Ogg Media Types               December 2007
 
 
    [RFC2119]   Bradner, S., "Key words for use in RFCs to Indicate
@@ -552,16 +552,16 @@ Internet-Draft               Ogg Media Types               November 2007
                draft-barbato-avt-rtp-theora>.
 
    [VoRTP]     Barbato, L., "RTP Payload Format for Vorbis Encoded
-               Audio", June 2007, <http://www.ietf.org/internet-drafts/
+               Audio", November 2007, <http://www.ietf.org/
 
 
 
-Goncalves, et al.         Expires May 14, 2008                 [Page 10]
+Goncalves, et al.         Expires June 5, 2008                 [Page 10]
 
-Internet-Draft               Ogg Media Types               November 2007
+Internet-Draft               Ogg Media Types               December 2007
 
 
-               draft-ietf-avt-rtp-vorbis-07.txt>.
+               internet-drafts/draft-ietf-avt-rtp-vorbis-08.txt>.
 
    [SpRTP]     Herlein, G., Valin, J., Heggestad, A., and A. Moizard,
                "RTP Payload Format for the Speex Codec", July 2007,
@@ -612,9 +612,9 @@ Authors' Addresses
 
 
 
-Goncalves, et al.         Expires May 14, 2008                 [Page 11]
+Goncalves, et al.         Expires June 5, 2008                 [Page 11]
 
-Internet-Draft               Ogg Media Types               November 2007
+Internet-Draft               Ogg Media Types               December 2007
 
 
 Full Copyright Statement
@@ -668,5 +668,5 @@ Acknowledgement
 
 
 
-Goncalves, et al.         Expires May 14, 2008                 [Page 12]
+Goncalves, et al.         Expires June 5, 2008                 [Page 12]
 
