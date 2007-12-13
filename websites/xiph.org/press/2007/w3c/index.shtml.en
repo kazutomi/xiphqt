@@ -8,7 +8,7 @@
 <!--#include virtual="/ssi/pagetop.include" -->
 <!--  All your page content goes here  -->
 
-<h2>December 12, 2007: Xiph.Org Statement Regarding the HTML5 Draft and the Ogg Codec Set</h2>
+<h1>December 12, 2007: Xiph.Org Statement Regarding the HTML5 Draft and the Ogg Codec Set</h1>
 
 <p>Ogg provides a baseline of fully unencumbered, fully open, fully
 documented, fully royalty-free codecs that are lighter-weight than the
@@ -51,25 +51,26 @@ to adopt the unencumbered technology as the baseline.</p>
 
 <p>
 <ol>
-<li><a href="http://commons.wikimedia.org/wiki/Commons:File_types">http://commons.wikimedia.org/wiki/Commons:File_types</a>
+<li><a href="http://commons.wikimedia.org/wiki/Commons:File_types">http://commons.wikimedia.org/wiki/Commons:File_types</a><br>
 
-<li><a href="http://www.amazon.com/s?ie=UTF8&rh=n%3A172630%2Cp_4%3ASamsung%2Cp_supported_standards%3AOgg%20Vorbis&page=1">http://www.amazon.com/s?ie=UTF8&rh=n%3A172630%2Cp_4%3ASamsung%2Cp_supported_standards%3AOgg%20Vorbis&page=1</a>
+<li><a href="http://www.amazon.com/s?ie=UTF8&rh=n%3A172630%2Cp_4%3ASamsung%2Cp_supported_standards%3AOgg%20Vorbis&page=1">http://www.amazon.com/s?ie=UTF8&rh=n%3A172630%2Cp_4%3ASamsung%2Cp_supported_standards%3AOgg%20Vorbis&page=1</a><br>
 
 <li>eg, Halo: <a href="http://www.postneo.com/2003/10/14/halo-for-pc-uses-ogg-vorbis">http://www.postneo.com/2003/10/14/halo-for-pc-uses-ogg-vorbis</a>
 <br>Specific features requested by the Halo team were added to the Vorbis
-source tree in commits 4387, 4393, 4404, 4419 and 5222.
+source tree in commits 4387, 4393, 4404, 4419 and 5222.<br>
 
-<li> _Lucent Technologies, Inc. V. Gateway, Inc._, 2007 Wl 2900484
-(S.D.Cal. Oct 01, 2007)
+<li><i>Lucent Technologies, Inc. V. Gateway, Inc.</i>, 2007 Wl 2900484
+(S.D.Cal. Oct 01, 2007)<br>
 
-<li> _Multimedia Patent Trust v. Microsoft Corp._, 2007 WL 2696675
-(S.D.Cal.,2007)
+<li><i>Multimedia Patent Trust v. Microsoft Corp.</i>, 2007 WL 2696675
+(S.D.Cal.,2007)<br>
 
-<li> "Moreover, The Mpeg LA sublicensee agreement explicitly warns that
+<li>"Moreover, The Mpeg LA sublicensee agreement explicitly warns that
 the MPEG LA pool does not necessarily include all the patents
 necessary to practice the technology and that sublicensee signs the
-agreement aware of such risks." _Lucent Technologies, Inc. V. Gateway,
-Inc._, 2007 Wl 2900484 (S.D.Cal. Oct 01, 2007)
+agreement aware of such risks." <br><i>_Lucent Technologies, Inc. V. Gateway,
+Inc.</i>, 2007 Wl 2900484 (S.D.Cal. Oct 01, 2007)<br>
+
 </ol>
 </p>
 
