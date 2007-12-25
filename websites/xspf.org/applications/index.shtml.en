@@ -86,6 +86,7 @@
 <dt><a id="playr"></a><a href="http://playr.hubmed.org/">Playr</a> (web)</dt><dd>A web-based tool for screen-scraping web pages and emitting the results as a playlist. Says Playr creator Alf Eaton: <cite>There's a Flash/XSPF bookmarklet on the front page -- which you can use to directly play any page containing linked MP3s -- as well as 'Flash' links on the New Playlists page.</cite></dd> 
 <dt><a id="plurn"></a><a href="http://plurn.com/app/About/">Plurn</a> (web)</dt><dd>A web-based playlist community modeled after Webjay.</dd> 
 <dt><a id="projectopus"></a><a href="http://projectopus.com/">Project Opus</a></dt><dd>A music community site which makes playlists available in XSPF.</dd> 
+<dt><a id="seeqpod"></a><a href="http://www.seeqpod.com/">Seeqpod Playabale Search</a></dt><dd>Audio and video search engine with online playlists. XSPF is used in the <a href="http://www.seeqpod.com/api/">SeeqPod REST API</a>.</dd>
 <dt><a id="ultraPh0nZ"></a><a href="http://www.draftlight.net/dnex/mp3player/free/">ultraPh0nZ FMP256</a> (web)</dt><dd>A Flash application for playing music in web pages. Skinnable and slick.</dd> 
 <dt><a id="webjay"></a><a id="Webjay"></a><a href="http://webjay.org/">Webjay</a> (web)</dt><dd>A playlist community site and playlist authoring tool which exports XSPF playlists.</dd> 
 
