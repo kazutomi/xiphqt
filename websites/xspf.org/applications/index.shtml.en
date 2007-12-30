@@ -100,7 +100,7 @@
 
 <!-- NOTE: One line per entry makes it sortable! Dummy entry for copy-and-paste at EOF. -->
 <dt><a id="xspf_to_jspf"></a><a href="http://jchris.mfdz.com/static/jspf_parser/xspf_parser_runner.html">XSPF to JSPF Parser</a> (Javascript)</dt><dd>Converts your XSPF files to <a href="http://wiki.xiph.org/index.php/JSPF_Draft">JSPF</a> ("XSPF on JSON") online.</dd>
-<dt><a id="xspf_validator"></a><a id="validator"></a><a href="http://xspf.binera.de/">XSPF Validator</a></dt><dd>Online validator for XSPF documents.</dd>
+<dt><a id="xspf_validator"></a><a id="validator"></a><a href="http://validator.xspf.org/">XSPF Validator</a></dt><dd>Online validator for XSPF documents.</dd>
 
 </dl>
 
