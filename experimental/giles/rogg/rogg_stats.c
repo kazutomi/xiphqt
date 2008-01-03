@@ -147,7 +147,6 @@ int main(int argc, char *argv[])
         dbytes += header.length;
 	if (verbose) {
 	  print_header_info(stdout, &header);
-	  fprintf(stdout, "\n");
 	}
 	q += header.length;
       }
