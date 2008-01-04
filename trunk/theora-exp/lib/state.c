@@ -529,6 +529,7 @@ void oc_state_vtable_init(oc_theora_state *_state){
 
 
 int oc_state_init(oc_theora_state *_state,const th_info *_info){
+  int old_granpos;
   /*First validate the parameters.*/
   if(_info==NULL)return TH_EFAULT;
   /*The width and height of the encoded frame must be multiples of 16.
@@ -564,8 +565,15 @@ int oc_state_init(oc_theora_state *_state,const th_info *_info){
   if(_info->keyframe_granule_shift<0||_info->keyframe_granule_shift>31){
     _state->info.keyframe_granule_shift=31;
   }
-  _state->keyframe_num=0;
-  _state->curframe_num=-1;
+  _state->keyframe_num=1;
+  _state->curframe_num=0;
+  /*3.2.0 streams mark the frame index instead of the frame count.
+    This was changed with stream version 3.2.1 to conform to other Ogg
+     codecs.
+    We subtract an extra one from the frame number for old streams.*/
+  old_granpos=!TH_VERSION_CHECK(_info,3,2,1);
+  _state->curframe_num-=old_granpos;
+  _state->keyframe_num-=old_granpos;
   return 0;
 }
 
@@ -1132,7 +1140,7 @@ ogg_int64_t th_granule_frame(void *_encdec,ogg_int64_t _granpos){
     ogg_int64_t pframe;
     iframe=_granpos>>state->info.keyframe_granule_shift;
     pframe=_granpos-(iframe<<state->info.keyframe_granule_shift);
-    return iframe+pframe;
+    return iframe+pframe-TH_VERSION_CHECK(&state->info,3,2,1);
   }
   return -1;
 }
@@ -1141,11 +1149,7 @@ double th_granule_time(void *_encdec,ogg_int64_t _granpos){
   oc_theora_state *state;
   state=(oc_theora_state *)_encdec;
   if(_granpos>=0){
-    ogg_int64_t iframe;
-    ogg_int64_t pframe;
-    iframe=_granpos>>state->info.keyframe_granule_shift;
-    pframe=_granpos-(iframe<<state->info.keyframe_granule_shift);
-    return (iframe+pframe)*(
+    return (th_granule_frame(_encdec,_granpos)+1)*(
      (double)state->info.fps_denominator/state->info.fps_numerator);
   }
   return -1;
