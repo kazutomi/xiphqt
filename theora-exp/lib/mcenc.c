@@ -254,8 +254,8 @@ static int oc_mcenc_ysad_halfpel_mbrefine(oc_mcenc_ctx *_mcenc,
        (_vec[0]<<1)+dx,(_vec[1]<<1)+dy,ref_ystride,0);
       However, it should also be much faster, as it involves no multiplies and
        doesn't have to handle chroma vectors.*/
-    xmask=((_vec[0]<<1)+OC_SQUARE_DX[site]>>6)^(dx>>1);
-    ymask=((_vec[1]<<1)+OC_SQUARE_DY[site]>>6)^(dy>>1);
+    xmask=-((((_vec[0]<<1)+dx)^dx)<0);
+    ymask=-((((_vec[1]<<1)+dy)^dy)<0);
     mvoffset0=mvoffset_base+(dx&xmask)+(offset_y[site]&ymask);
     mvoffset1=mvoffset_base+(dx&~xmask)+(offset_y[site]&~ymask);
     err=oc_sad16_halfpel(frags,mb_map,cur_ystride,ref_ystride,mvoffset0,
@@ -308,8 +308,8 @@ static int oc_mcenc_ysad_halfpel_brefine(oc_mcenc_ctx *_mcenc,
        (_vec[0]<<1)+dx,(_vec[1]<<1)+dy,ref_ystride,0);
       However, it should also be much faster, as it involves no multiplies and
        doesn't have to handle chroma vectors.*/
-    xmask=((_vec[0]<<1)+OC_SQUARE_DX[site]>>6)^(dx>>1);
-    ymask=((_vec[1]<<1)+OC_SQUARE_DY[site]>>6)^(dy>>1);
+    xmask=-((((_vec[0]<<1)+dx)^dx)<0);
+    ymask=-((((_vec[1]<<1)+dy)^dy)<0);
     mvoffset0=mvoffset_base+(dx&xmask)+(offset_y[site]&ymask);
     mvoffset1=mvoffset_base+(dx&~xmask)+(offset_y[site]&~ymask);
     if(frag->border==NULL){
