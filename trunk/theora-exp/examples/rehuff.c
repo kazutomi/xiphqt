@@ -307,7 +307,7 @@ ogg_int64_t tok_vecs_fpc(oc_tok_vec *_vecs,long _nvecs,int _nfreqs,
       }
     }
   }
-  fprintf(stderr,"After FPC: %lli wasted bits.\n",ret);
+  fprintf(stderr,"After FPC: %lli wasted bits.\n",(long long)ret);
   return ret;
 }
 
@@ -351,7 +351,7 @@ ogg_int64_t tok_vecs_kmeans(oc_tok_vec *_vecs,long _nvecs,int _nfreqs,
     if(_vecs[vi].idx!=old_idx)converged=0;
     ret+=_vecs[vi].dist;
   }
-  fprintf(stderr,"After K-means: %lli wasted bits.\n",ret);
+  fprintf(stderr,"After K-means: %lli wasted bits.\n",(long long int)ret);
   *_converged=converged;
   return ret;
 }
