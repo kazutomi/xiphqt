@@ -56,30 +56,6 @@ const float OC_YCbCr_SCALE[3]={
 
 
 
-/*Allocates a 2-dimesional array of the given size.
-  _height: The number of columns.
-  _row:    The number of rows.
-  _sz:     The size of each element.*/
-static void **alloc_2d(size_t _height,size_t _width,size_t _sz){
-  size_t  colsz;
-  size_t  datsz;
-  char   *ret;
-  colsz=_height*sizeof(void *);
-  datsz=_sz*_width*_height;
-  ret=(char *)malloc(datsz+colsz);
-  if(ret!=NULL){
-    size_t   rowsz;
-    size_t   i;
-    void   **p;
-    char    *datptr;
-    p=(void **)ret;
-    i=_height;
-    rowsz=_sz*_width;
-    for(datptr=ret+colsz;i-->0;p++,datptr+=rowsz)*p=(void *)datptr;
-  }
-  return (void **)ret;
-}
-
 /*cos(n*pi/2) (resp. sin(m*pi/2)) accurate to 16 bits.*/
 #define OC_C1S7D (64277.0/65536)
 #define OC_C2S6D (60547.0/65536)

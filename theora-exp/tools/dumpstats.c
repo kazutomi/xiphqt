@@ -29,7 +29,7 @@ int main(void){
   int   modei;
   int   erri;
   in=fopen("modedec.stats","rb");
-  if(in==NULL)return;
+  if(in==NULL)return -1;
   fread(OC_RES_BITRATE_ACCUM,sizeof(OC_RES_BITRATE_ACCUM),1,in);
   fread(OC_RES_BITRATE_SAMPLES,sizeof(OC_RES_BITRATE_SAMPLES),1,in);
   /*Update the current bitrate statistics in use.*/
@@ -66,4 +66,5 @@ int main(void){
     else printf("  }\n");
   }
   printf("};\n");
+  return 0;
 }
