@@ -627,9 +627,7 @@ static OCHuffEntry *huff_list_create(const int _freqs[32]){
   int          i;
   root=NULL;
   for(i=0;i<32;i++){
-    OCHuffEntry **pnext;
-    OCHuffEntry  *entry;
-    OCHuffEntry  *search;
+    OCHuffEntry *entry;
     /*Create a new entry for this value.*/
     entry=(OCHuffEntry *)calloc(1,sizeof(*root));
     entry->children[0]=entry->children[1]=NULL;
