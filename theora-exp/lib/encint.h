@@ -210,7 +210,7 @@ struct th_enc_ctx{
     This is determined each frame, based on the quantizer it is encoded with.*/
   int                      loop_filter_enabled;
   /*The bounding value array used for the loop filter.*/
-  int                      bounding_values[512];
+  int                      bounding_values[256];
   /*The huffman tables in use.*/
   th_huff_code             huff_codes[TH_NHUFFMAN_TABLES][TH_NDCT_TOKENS];
   /*The quantization parameters in use.*/
