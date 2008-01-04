@@ -1288,7 +1288,7 @@ static int oc_vbr_pipe_end(oc_enc_pipe_stage *_stage){
   oc_enc_ctx *enc;
   int         ret;
   enc=_stage->enc;
-  if(enc->state.curframe_num==0||
+  if(enc->state.curframe_num==1||
    enc->state.curframe_num-enc->state.keyframe_num>=
    enc->keyframe_frequency_force){
     enc->state.frame_type=OC_INTRA_FRAME;

@@ -1048,15 +1048,15 @@ static void oc_rec_residual_tokens_pack(oc_rec_ctx *_rec,
 
 
 th_rec_ctx *th_recode_alloc(const th_info *_info,const th_setup_info *_setup){
-  oc_rec_ctx *dec;
+  oc_rec_ctx *rec;
   if(_info==NULL||_setup==NULL)return NULL;
-  dec=_ogg_malloc(sizeof(*dec));
-  if(oc_rec_init(dec,_info,_setup)<0){
-    _ogg_free(dec);
+  rec=_ogg_malloc(sizeof(*rec));
+  if(oc_rec_init(rec,_info,_setup)<0){
+    _ogg_free(rec);
     return NULL;
   }
-  dec->state.curframe_num=0;
-  return dec;
+  rec->state.curframe_num++;
+  return rec;
 }
 
 void th_recode_free(th_rec_ctx *_rec){
