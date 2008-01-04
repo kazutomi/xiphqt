@@ -23,9 +23,13 @@ CINCLUDE = `sdl-config --cflags` -D_REENTRANT
 #  -ffast-math, or additional flags, depending on your system and compiler.
 # The correct -march=<architecture> flag will also generate much better code
 #  on newer architectures.
-CFLAGS = -O3 -Wall -Wno-parentheses -fomit-frame-pointer -fforce-addr -finline-functions -DOC_X86ASM
+CFLAGS = -Wall -Wno-parentheses
+CFLAGS += -DOC_X86ASM
+CFLAGS += -O3 -fomit-frame-pointer -fforce-addr -finline-functions
+#CFLAGS += -ftree-vectorize -ftree-vectorizer-verbose=9
+#CFLAGS += -march=core2
 # The -g flag will generally include debugging information.
-#CFLAGS = -g -Wall -Wno-parentheses
+#CFLAGS += -g
 # Libraries to link with, and the location of library files.
 # Add -lpng -lz if you want to use -DOC_DUMP_IMAGES.
 LIBS = -logg -lvorbis -lvorbisenc `sdl-config --libs`
@@ -202,13 +206,17 @@ ${REHUFF_EXAMPLE_TARGET}: ${REHUFF_EXAMPLE_OBJS}
 	mkdir -p ${TARGETBINDIR}
 	${CC} ${CFLAGS} -o $@ ${REHUFF_EXAMPLE_OBJS} ${LIBS}
 
+# Assembly listing
+ALL_ASM := ${ALL_OBJS:%.o=%.s}
+asm: ${ALL_ASM}
+
 # Remove all targets.
 clean:
 	-rm ${ALL_OBJS} ${ALL_DEPS} ${ALL_TARGETS}
 	-rmdir ${WORKDIR}
 
 # Make everything depend on changes in the Makefile
-${ALL_OBJS} ${ALL_DEPS} ${ALL_TARGETS} : Makefile
+${ALL_OBJS} ${ALL_DEPS} ${ALL_TARGETS} ${ALL_ASM} : Makefile
 
 # Specify which targets are phony for GNU make
 .PHONY : all clean
@@ -220,9 +228,15 @@ ${WORKDIR}/%.d : ${LIBSRCDIR}/%.c
 ${WORKDIR}/%.d : ${BINSRCDIR}/%.c
 	mkdir -p ${dir $@}
 	${MAKEDEPEND} ${CINCLUDE} ${CFLAGS} $< -MT ${@:%.d=%.o} > $@
+${WORKDIR}/%.s : ${LIBSRCDIR}/%.c
+	mkdir -p ${dir $@}
+	${CC} ${CINCLUDE} ${CFLAGS} -S -o $@ $<
 ${WORKDIR}/%.o : ${LIBSRCDIR}/%.c
 	mkdir -p ${dir $@}
 	${CC} ${CINCLUDE} ${CFLAGS} -c -o $@ $<
+${WORKDIR}/%.s : ${BINSRCDIR}/%.c
+	mkdir -p ${dir $@}
+	${CC} ${CINCLUDE} ${CFLAGS} -S -o $@ $<
 ${WORKDIR}/%.o : ${BINSRCDIR}/%.c
 	mkdir -p ${dir $@}
 	${CC} ${CINCLUDE} ${CFLAGS} -c -o $@ $<
