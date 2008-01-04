@@ -628,8 +628,8 @@ static void oc_dec_mv_unpack_and_frag_modes_fill(oc_dec_ctx *_dec){
             codedi++;
             frag=_dec->state.frags+mb->map[0][bi];
             frag->mbmode=mode;
-            frag->mv[0]=lbmvs[bi][0]=(char)(*mv_comp_unpack)(&_dec->opb);
-            frag->mv[1]=lbmvs[bi][1]=(char)(*mv_comp_unpack)(&_dec->opb);
+            frag->mv[0]=lbmvs[bi][0]=(signed char)(*mv_comp_unpack)(&_dec->opb);
+            frag->mv[1]=lbmvs[bi][1]=(signed char)(*mv_comp_unpack)(&_dec->opb);
           }
           else lbmvs[bi][0]=lbmvs[bi][1]=0;
         }
@@ -654,8 +654,8 @@ static void oc_dec_mv_unpack_and_frag_modes_fill(oc_dec_ctx *_dec){
       case OC_MODE_INTER_MV:{
         last_mv[1][0]=last_mv[0][0];
         last_mv[1][1]=last_mv[0][1];
-        mbmv[0]=last_mv[0][0]=(char)(*mv_comp_unpack)(&_dec->opb);
-        mbmv[1]=last_mv[0][1]=(char)(*mv_comp_unpack)(&_dec->opb);
+        mbmv[0]=last_mv[0][0]=(signed char)(*mv_comp_unpack)(&_dec->opb);
+        mbmv[1]=last_mv[0][1]=(signed char)(*mv_comp_unpack)(&_dec->opb);
       }break;
       case OC_MODE_INTER_MV_LAST:{
         mbmv[0]=last_mv[0][0];
@@ -670,8 +670,8 @@ static void oc_dec_mv_unpack_and_frag_modes_fill(oc_dec_ctx *_dec){
         last_mv[0][1]=mbmv[1];
       }break;
       case OC_MODE_GOLDEN_MV:{
-        mbmv[0]=(char)(*mv_comp_unpack)(&_dec->opb);
-        mbmv[1]=(char)(*mv_comp_unpack)(&_dec->opb);
+        mbmv[0]=(signed char)(*mv_comp_unpack)(&_dec->opb);
+        mbmv[1]=(signed char)(*mv_comp_unpack)(&_dec->opb);
       }break;
       default:mbmv[0]=mbmv[1]=0;break;
     }
@@ -910,12 +910,12 @@ static int oc_dec_dc_coeff_unpack(oc_dec_ctx *_dec,int _huff_idxs[3],
       run_counts[63]+=eobs;
       token=oc_huff_token_decode(&_dec->opb,
        _dec->huff_tables[_huff_idxs[pli]]);
-      _dec->dct_tokens[0][ti++]=(char)token;
+      _dec->dct_tokens[0][ti++]=(unsigned char)token;
       neb=OC_DCT_TOKEN_EXTRA_BITS[token];
       if(neb){
         theora_read(&_dec->opb,neb,&val);
         eb=(int)val;
-        _dec->extra_bits[0][ebi++]=(ogg_int16_t)eb;
+        _dec->extra_bits[0][ebi++]=(ogg_uint16_t)eb;
       }
       else eb=0;
       skip=oc_dct_token_skip(token,eb);
@@ -982,12 +982,12 @@ static int oc_dec_ac_coeff_unpack(oc_dec_ctx *_dec,int _zzi,int _huff_idxs[3],
       run_counts[63]+=_eobs;
       token=oc_huff_token_decode(&_dec->opb,
        _dec->huff_tables[_huff_idxs[pli]]);
-      _dec->dct_tokens[_zzi][ti++]=(char)token;
+      _dec->dct_tokens[_zzi][ti++]=(unsigned char)token;
       neb=OC_DCT_TOKEN_EXTRA_BITS[token];
       if(neb){
         theora_read(&_dec->opb,neb,&val);
         eb=(int)val;
-        _dec->extra_bits[_zzi][ebi++]=(ogg_int16_t)eb;
+        _dec->extra_bits[_zzi][ebi++]=(ogg_uint16_t)eb;
       }
       else eb=0;
       skip=oc_dct_token_skip(token,eb);

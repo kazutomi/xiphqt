@@ -752,7 +752,7 @@ static int oc_rec_dc_coeff_unpack(oc_rec_ctx *_rec,int _huff_idxs[3],
       run_counts[63]+=eobs;
       token=oc_huff_token_decode(&_rec->dec_opb,
        _rec->dec_huff_tables[_huff_idxs[pli]]);
-      _rec->dct_tokens[0][ti++]=(char)token;
+      _rec->dct_tokens[0][ti++]=(unsigned char)token;
       _tok_hists[pli][token]++;
       neb=OC_DCT_TOKEN_EXTRA_BITS[token];
       if(neb){
@@ -823,7 +823,7 @@ static int oc_rec_ac_coeff_unpack(oc_rec_ctx *_rec,int _zzi,int _huff_idxs[3],
       run_counts[63]+=_eobs;
       token=oc_huff_token_decode(&_rec->dec_opb,
        _rec->dec_huff_tables[_huff_idxs[pli]]);
-      _rec->dct_tokens[_zzi][ti++]=(char)token;
+      _rec->dct_tokens[_zzi][ti++]=(unsigned char)token;
       _tok_hists[pli][token]++;
       neb=OC_DCT_TOKEN_EXTRA_BITS[token];
       if(neb){

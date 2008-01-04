@@ -593,11 +593,11 @@ void oc_state_clear(oc_theora_state *_state){
   _yend: The Y coordinate of the row to stop padding at.*/
 void oc_state_borders_fill_rows(oc_theora_state *_state,int _refi,int _pli,
  int _y0,int _yend){
-  th_img_plane *iplane;
-  unsigned char*apix;
-  unsigned char*bpix;
-  unsigned char*epix;
-  int           hpadding;
+  th_img_plane  *iplane;
+  unsigned char *apix;
+  unsigned char *bpix;
+  unsigned char *epix;
+  int            hpadding;
   hpadding=OC_UMV_PADDING>>(_pli!=0&&!(_state->info.pixel_fmt&1));
   iplane=_state->ref_frame_bufs[_refi]+_pli;
   apix=iplane->data+_y0*iplane->ystride;
@@ -619,13 +619,13 @@ void oc_state_borders_fill_rows(oc_theora_state *_state,int _refi,int _pli,
   _refi:      The index of the reference buffer to pad.
   _pli:       The color plane.*/
 void oc_state_borders_fill_caps(oc_theora_state *_state,int _refi,int _pli){
-  th_img_plane *iplane;
-  unsigned char*apix;
-  unsigned char*bpix;
-  unsigned char*epix;
-  int           hpadding;
-  int           vpadding;
-  int           fullw;
+  th_img_plane  *iplane;
+  unsigned char *apix;
+  unsigned char *bpix;
+  unsigned char *epix;
+  int            hpadding;
+  int            vpadding;
+  int            fullw;
   hpadding=OC_UMV_PADDING>>(_pli!=0&&!(_state->info.pixel_fmt&1));
   vpadding=OC_UMV_PADDING>>(_pli!=0&&!(_state->info.pixel_fmt&2));
   iplane=_state->ref_frame_bufs[_refi]+_pli;

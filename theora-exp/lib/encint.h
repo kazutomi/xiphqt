@@ -109,9 +109,9 @@ struct oc_mb_enc_info{
      golden frame, which can be used to judge constant velocity and constant
      acceleration.
     Uninitialized MVs are (0,0).*/
-  char          mvs[3][2][2];
+  oc_mv         mvs[3][2];
   /*Per-block motion vectors for this frame against the previous frame.*/
-  char          bmvs[4][2];
+  oc_mv         bmvs[4];
   /*Minimum motion estimation error from the analysis stage.*/
   int           aerror;
   /*Minimum 4V motion estimation error from the analysis stage.*/
