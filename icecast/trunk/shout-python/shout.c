@@ -385,11 +385,16 @@ static PyObject* pshoutobj_close(ShoutObject* self) {
 static PyObject* pshoutobj_send(ShoutObject* self, PyObject* args) {
   const unsigned char* data;
   size_t len;
+  int res;
 
   if (!PyArg_ParseTuple(args, "s#", &data, &len))
     return NULL;
 
-  if (shout_send(self->conn, data, len) != SHOUTERR_SUCCESS) {
+  Py_BEGIN_ALLOW_THREADS
+  res = shout_send(self->conn, data, len);
+  Py_END_ALLOW_THREADS
+
+  if (res != SHOUTERR_SUCCESS) { 
     PyErr_SetString(ShoutError, shout_get_error(self->conn));
 
     return NULL;
@@ -399,7 +404,9 @@ static PyObject* pshoutobj_send(ShoutObject* self, PyObject* args) {
 }
 
 static PyObject* pshoutobj_sync(ShoutObject* self) {
+  Py_BEGIN_ALLOW_THREADS
   shout_sync(self->conn);
+  Py_END_ALLOW_THREADS
 
   return Py_BuildValue("i", 1);
 }
