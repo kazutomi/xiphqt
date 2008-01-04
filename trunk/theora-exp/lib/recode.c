@@ -510,6 +510,7 @@ void oc_rec_mb_modes_unpack(oc_rec_ctx *_rec){
       If the bitstream doesn't contain each index exactly once, it's likely
        corrupt and the rest of the packet is garbage anyway, but this way we
        won't crash, and we'll decode SOMETHING.*/
+    /*LOOP VECTORIZES.*/
     for(mi=0;mi<OC_NMODES;mi++)scheme0_alphabet[mi]=OC_MODE_INTER_NOMV;
     for(mi=0;mi<OC_NMODES;mi++){
       theora_read(&_rec->dec_opb,3,&val);

@@ -620,6 +620,7 @@ static void oc_enc_vbr_residual_tokenize(oc_enc_ctx *_enc){
   int    pli;
   int    zzi;
   /*Clear any existing DCT tokens.*/
+  /*LOOP VECTORIZES.*/
   for(zzi=0;zzi<64;zzi++){
     _enc->ndct_tokens[zzi]=_enc->nextra_bits[zzi]=0;
     _enc->extra_bits_offs[zzi]=0;
@@ -1065,6 +1066,7 @@ static int oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
       }
       /*Bit costs are stored in the table with extra precision.
         Round them down to whole bits here.*/
+      /*LOOP VECTORIZES.*/
       for(modei=0;modei<OC_NMODES;modei++){
         bits[modei]=bits[modei]+(1<<OC_BIT_SCALE-1)>>OC_BIT_SCALE;
       }
