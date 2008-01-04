@@ -146,16 +146,16 @@ static void open_video(void){
 static void video_write(void){
   int pli;
   int i;
-
   /*Uncomment the following to do normal, non-striped decoding.
   th_ycbcr_buffer ycbcr;
   th_decode_ycbcr_out(td,ycbcr);*/
-  if(!raw)fprintf(outfile, "FRAME\n");
-
-  for(pli=0;pli<3;pli++){
-    for(i=0;i<ycbcr[pli].height;i++){
-      fwrite(ycbcr[pli].data+ycbcr[pli].ystride*i, 1,
-       ycbcr[pli].width, outfile);
+  if(outfile){
+    if(!raw)fprintf(outfile, "FRAME\n");
+    for(pli=0;pli<3;pli++){
+      for(i=0;i<ycbcr[pli].height;i++){
+        fwrite(ycbcr[pli].data+ycbcr[pli].ystride*i, 1,
+         ycbcr[pli].width, outfile);
+      }
     }
   }
 }
@@ -413,8 +413,7 @@ int main(int argc,char *argv[]){
       }
     }
     /* dumpvideo frame, and get new one */
-    else
-      if(outfile)video_write();
+    else video_write();
 
     videobuf_ready=0;
   }
