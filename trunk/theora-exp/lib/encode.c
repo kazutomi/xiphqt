@@ -453,18 +453,17 @@ static void oc_enc_frag_inter_fdct(oc_enc_ctx *_enc,const oc_fragment *_frag,
   int            src_ystride;
   int            ref_ystride;
   int            ref_framei;
-  int            mvoffset0;
-  int            mvoffset1;
+  int            mvoffsets[2];
   int            y;
   int            x;
   src_ystride=_enc->state.input[_pli].ystride;
   ref_framei=_enc->state.ref_frame_idx[OC_FRAME_FOR_MODE[_frag->mbmode]];
   ref_ystride=_enc->state.ref_frame_bufs[ref_framei][_pli].ystride;
   src=_frag->buffer[OC_FRAME_IO];
-  if(oc_state_get_mv_offsets(&_enc->state,&mvoffset0,&mvoffset1,
+  if(oc_state_get_mv_offsets(&_enc->state,mvoffsets,
    _frag->mv[0],_frag->mv[1],ref_ystride,_pli)>1){
-    ref0=_frag->buffer[ref_framei]+mvoffset0;
-    ref1=_frag->buffer[ref_framei]+mvoffset1;
+    ref0=_frag->buffer[ref_framei]+mvoffsets[0];
+    ref1=_frag->buffer[ref_framei]+mvoffsets[1];
     if(_frag->border!=NULL){
       ogg_int64_t mask;
       mask=_frag->border->mask;
@@ -493,7 +492,7 @@ static void oc_enc_frag_inter_fdct(oc_enc_ctx *_enc,const oc_fragment *_frag,
     }
   }
   else{
-    ref0=_frag->buffer[ref_framei]+mvoffset0;
+    ref0=_frag->buffer[ref_framei]+mvoffsets[0];
     if(_frag->border!=NULL){
       ogg_int64_t mask;
       mask=_frag->border->mask;
@@ -1136,32 +1135,31 @@ int oc_enc_frag_sad(oc_enc_ctx *_enc,oc_fragment *_frag,int _dx,
   int cur_ystride;
   int ref_ystride;
   int ref_framei;
-  int mvoffset0;
-  int mvoffset1;
+  int mvoffsets[2];
   cur_ystride=_enc->state.input[_pli].ystride;
   ref_framei=_enc->state.ref_frame_idx[_frame];
   ref_ystride=_enc->state.ref_frame_bufs[ref_framei][_pli].ystride;
-  if(oc_state_get_mv_offsets(&_enc->state,&mvoffset0,&mvoffset1,_dx,_dy,
+  if(oc_state_get_mv_offsets(&_enc->state,mvoffsets,_dx,_dy,
    ref_ystride,_pli)>1){
     if(_frag->border==NULL){
       return oc_sad8_halfpel(_frag->buffer[OC_FRAME_IO],cur_ystride,
-       _frag->buffer[ref_framei]+mvoffset0,
-       _frag->buffer[ref_framei]+mvoffset1,ref_ystride);
+       _frag->buffer[ref_framei]+mvoffsets[0],
+       _frag->buffer[ref_framei]+mvoffsets[1],ref_ystride);
     }
     else{
       return oc_sad8_halfpel_border(_frag->buffer[OC_FRAME_IO],cur_ystride,
-       _frag->buffer[ref_framei]+mvoffset0,
-       _frag->buffer[ref_framei]+mvoffset1,ref_ystride,_frag->border->mask);
+       _frag->buffer[ref_framei]+mvoffsets[0],
+       _frag->buffer[ref_framei]+mvoffsets[1],ref_ystride,_frag->border->mask);
     }
   }
   else{
     if(_frag->border==NULL){
       return oc_sad8_fullpel(_frag->buffer[OC_FRAME_IO],cur_ystride,
-       _frag->buffer[ref_framei]+mvoffset0,ref_ystride);
+       _frag->buffer[ref_framei]+mvoffsets[0],ref_ystride);
     }
     else{
       return oc_sad8_fullpel_border(_frag->buffer[OC_FRAME_IO],
-       cur_ystride,_frag->buffer[ref_framei]+mvoffset0,ref_ystride,
+       cur_ystride,_frag->buffer[ref_framei]+mvoffsets[0],ref_ystride,
        _frag->border->mask);
     }
   }
