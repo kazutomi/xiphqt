@@ -216,6 +216,7 @@ int count_tokens(const int *_freqs,int _nfreqs){
   int ti;
   int c;
   c=0;
+  /*LOOP VECTORIZES.*/
   for(ti=0;ti<_nfreqs;ti++)c+=_freqs[ti];
   return c;
 }
