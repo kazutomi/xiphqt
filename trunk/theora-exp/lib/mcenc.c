@@ -346,7 +346,7 @@ static int oc_mcenc_ysad_halfpel_brefine(oc_mcenc_ctx *_mcenc,
   _error4mv: Returns sum of the prediction error for the individual block
               motion vectors.*/
 static void oc_mcenc_search(oc_mcenc_ctx *_mcenc,int _mbi,int _frame,
- char _bmvs[4][2],int *_error,int *_error4mv){
+ oc_mv _bmvs[4],int *_error,int *_error4mv){
   oc_mb_enc_info *embs;
   oc_mb_enc_info *emb;
   oc_mb          *mb;
@@ -541,14 +541,14 @@ static void oc_mcenc_search(oc_mcenc_ctx *_mcenc,int _mbi,int _frame,
   }
   *_error=oc_mcenc_ysad_halfpel_mbrefine(_mcenc,_mbi,best_vec,best_err,
    ref_framei);
-  emb->mvs[0][_frame][0]=(char)best_vec[0];
-  emb->mvs[0][_frame][1]=(char)best_vec[1];
+  emb->mvs[0][_frame][0]=(signed char)best_vec[0];
+  emb->mvs[0][_frame][1]=(signed char)best_vec[1];
   *_error4mv=0;
   for(bi=0;bi<4;bi++){
     (*_error4mv)+=oc_mcenc_ysad_halfpel_brefine(_mcenc,_mbi,bi,
      best_block_vec[bi],best_block_err[bi],ref_framei);
-    _bmvs[bi][0]=(char)best_block_vec[bi][0];
-    _bmvs[bi][1]=(char)best_block_vec[bi][1];
+    _bmvs[bi][0]=(signed char)best_block_vec[bi][0];
+    _bmvs[bi][1]=(signed char)best_block_vec[bi][1];
   }
 }
 
@@ -672,8 +672,8 @@ int oc_mcenc_search_1mv(oc_mcenc_ctx *_mcenc,int _mbi,int _frame){
   }
   best_err=oc_mcenc_ysad_halfpel_mbrefine(_mcenc,_mbi,best_vec,best_err,
    ref_framei);
-  emb->mvs[0][_frame][0]=(char)best_vec[0];
-  emb->mvs[0][_frame][1]=(char)best_vec[1];
+  emb->mvs[0][_frame][0]=(signed char)best_vec[0];
+  emb->mvs[0][_frame][1]=(signed char)best_vec[1];
   return best_err;
 }
 
