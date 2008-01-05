@@ -1,0 +1,47 @@
+MP3 header is 32 bits
+
+   0                   1                   2                   3
+   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  |        sync word      |V| L |E| rate  |frq|P|R| mode  |C|O|EM |
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+sync word = 1111 1111 111x (x is zero for MPEG 2.5 VBR extension)
+V (version) 1 = MPEG
+L (layer) 01 = layer 3
+E (error protection flag) 1 = no crc
+rate (bitrate enum)
+frq (sampling frequency enum)
+P (padded frame flag) 0 = no padding
+R (reserved or unknown bit)
+mode (joint stereo mode)
+C (copyright flag)
+O (original/copy flag) 1 = original
+EM (emphasis) 00 = none
+
+bitrate is a 4 bit enum, with a lookup table that varies by version 
+according to the following table
+
+version: MPEG-1 Layer 1 Layer 2 Layer 3 MPEG-2 LSF Layer 1 Layer 2/3	
+enum:
+0000=0          0       0       0               0		0
+0001=1          32k     32k     32k             32k		8k
+0010=2		64k     48k     40k		48k		16k
+0011=3		96k	56k	48k		56k		24k
+0100=4		128k	64k	56k		64k		32k
+0101=5		160k	80k	64k		80k		40k
+0110=6		192k	96k	80k		96k		48k
+0111=7		224k	112k	96k		112k		56k
+1000=8		256k	128k	112k		128k		64k
+1001=9		288k	160k	128k		144k		80k
+1010=10		320k	192k	160k		160k		96k
+1011=11		352k	224k	196k		176k		112k
+1100=12		384k	256k	224k		192k		128k
+1101=13		416k	320k	256k		224k		144k
+1110=14		448k	384k	320k		256k		160k
+1111=15		n/a	n/a	n/a		n/a		n/a
+
+In summary, for values v in the header from 1-14, the bitrate is:
+MPEG-1 layer 1: 32*v
+MPEG-1 layer 2: various
+MPEG-1 layer 3: various
