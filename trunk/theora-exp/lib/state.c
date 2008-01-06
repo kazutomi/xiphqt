@@ -724,8 +724,8 @@ int oc_state_get_mv_offsets(oc_theora_state *_state,int _offsets[2],
      appropriate amount, always truncating _away_ from zero.*/
   /*These two variables decide whether we are in half- or quarter-pixel
      precision in each component.*/
-  xprec=1+(!(_state->info.pixel_fmt&1)&!!_pli);
-  yprec=1+(!(_state->info.pixel_fmt&2)&!!_pli);
+  xprec=1+(!(_state->info.pixel_fmt&1)&&_pli);
+  yprec=1+(!(_state->info.pixel_fmt&2)&&_pli);
   /*These two variables are either 0 if all the fractional bits are 0 or 1 if
      any of them are non-zero.*/
   xfrac=!!(_dx&(1<<xprec)-1);
