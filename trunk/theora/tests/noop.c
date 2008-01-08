@@ -15,48 +15,29 @@
 
  ********************************************************************/
 
-#include <theora/theora.h>
+#include <theora/theoraenc.h>
 
 #include "tests.h"
 
 static int
 noop_test_encode ()
 {
-  theora_info ti;
-  theora_state th;
+  th_info ti;
+  th_enc_ctx *te;
 
   INFO ("+ Initializing theora_info struct");
-  theora_info_init (&ti);
+  th_info_init (&ti);
 
-  INFO ("+ Initializing theora_state for encoding");
-  if (theora_encode_init (&th, &ti) != OC_DISABLED) {
-    INFO ("+ Clearing theora_state");
-    theora_clear (&th);
-  }
-
-  INFO ("+ Clearing theora_info struct");
-  theora_info_clear (&ti);
-
-  return 0;
-}
-
-static int
-noop_test_decode ()
-{
-  theora_info ti;
-  theora_state th;
-
-  INFO ("+ Initializing theora_info struct");
-  theora_info_init (&ti);
-
-  INFO ("+ Initializing theora_state for decoding");
-  theora_decode_init (&th, &ti);
-
-  INFO ("+ Clearing theora_state");
-  theora_clear (&th);
+  INFO ("+ Allocating encoder context");
+  te = th_encode_alloc(&ti);
+  if (te == NULL)
+    FAIL("td_encode_alloc returned a null pointer");
 
   INFO ("+ Clearing theora_info struct");
-  theora_info_clear (&ti);
+  th_info_clear (&ti);
+
+  INFO ("+ Freeing encoder context");
+  th_encode_free(te);
 
   return 0;
 }
@@ -64,18 +45,16 @@ noop_test_decode ()
 static int
 noop_test_comments ()
 {
-  theora_comment tc;
+  th_comment tc;
 
-  theora_comment_init (&tc);
-  theora_comment_clear (&tc);
+  th_comment_init (&tc);
+  th_comment_clear (&tc);
 
   return 0;
 }
 
 int main(int argc, char *argv[])
 {
-  /*noop_test_decode ();*/
-
   noop_test_encode ();
 
   noop_test_comments ();
