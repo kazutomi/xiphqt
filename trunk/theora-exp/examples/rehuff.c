@@ -933,6 +933,8 @@ int main(int _argc,char **_argv){
     optind++;
   }
   if(infile==NULL&&outfile==NULL||optind<_argc)usage();
+  if(infile==NULL)infile=stdin;
+  if(outfile==NULL)outfile=stdout;
   if(fseek(infile,0,SEEK_END)==-1||fseek(infile,0,SEEK_SET)==-1){
     fprintf(stderr,"Cannot seek on input file.\n");
     exit(1);
