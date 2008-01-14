@@ -1,6 +1,6 @@
 /* log.c
  * - Functions for logging in ices
- * Copyright (c) 2000 Alexander Haväng
+ * Copyright (c) 2000 Alexander Havï¿½ng
  * Copyright (c) 2001 Brendan Cully
  *
  * This program is free software; you can redistribute it and/or
@@ -19,6 +19,7 @@
  *
  */
 
+#include <time.h>
 #include "definitions.h"
 
 extern ices_config_t ices_config;
@@ -144,8 +145,21 @@ ices_log_get_error (void)
 static void
 ices_log_string (char *format, char *string)
 {
+        char *buff;
+        struct tm *logtime;
+        time_t nowtime;
+
+        buff = (char *) malloc ((sizeof (char) * 20) + sizeof (format) + 1);
+        memset (buff, 0x00, sizeof (buff));
+
+        nowtime = time (NULL);
+        logtime = localtime (&nowtime);
+        sprintf (buff, "%4d-%2d-%2d %2d:%2d:%2d %s", logtime->tm_year + 1900,
+          logtime->tm_mon + 1, logtime->tm_mday, logtime->tm_hour,
+          logtime->tm_min, logtime->tm_sec, format);
+
 	if (ices_config.logfile) {
-		fprintf (ices_config.logfile, format, string);
+		fprintf (ices_config.logfile, buff, string);
 #ifndef HAVE_SETLINEBUF
 		fflush (ices_config.logfile);
 #endif
@@ -153,8 +167,10 @@ ices_log_string (char *format, char *string)
 	
 	/* Don't log to console when daemonized */
 	if (!ices_config.daemon) {
-		fprintf (stdout, format, string);
+		fprintf (stdout, buff, string);
 	}
+
+        free (buff);
 }
 
 /* Open the ices logfile, create it if needed */
