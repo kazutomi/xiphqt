@@ -2,7 +2,7 @@
 # Run this to set up the build system: configure, makefiles, etc.
 # (based on the version in enlightenment's cvs)
 
-package="theora"
+package="theora-exp"
 
 ACLOCAL_FLAGS="-I m4"
 
