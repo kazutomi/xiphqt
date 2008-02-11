@@ -13,8 +13,8 @@
 <link rel="stylesheet" type="text/css" href="/xiphcommon/xiphbar.css" />
 <? include "xiphcommon/xiphbar.include"; ?>
 <table width="100%" border=0 cellpadding=0 cellspacing=0 bgcolor=black>
-<tr><td colspan=3><img alt="Icecast Logo" src="images/icecast.png"></td></tr>
-<tr><td colspan=3 bgcolor="#7B96C6" height=3><img alt="Icecast Logo" src="images/blue.png" height=3></td></tr>
+<tr><td colspan=3><img alt="Icecast Logo" src="/images/icecast.png"></td></tr>
+<tr><td colspan=3 bgcolor="#7B96C6" height=3><img alt="Icecast Logo" src="/images/blue.png" height=3></td></tr>
 <tr>
 <td colspan=3 bgcolor="black">
 	<center>
@@ -34,7 +34,7 @@
 	</table>
 	</center>
 </td></tr>
-<tr><td colspan=3 bgcolor="#7B96C6" height=3><img alt="Icecast Logo" src="images/blue.png" height=3></td></tr>
+<tr><td colspan=3 bgcolor="#7B96C6" height=3><img alt="Icecast Logo" src="/images/blue.png" height=3></td></tr>
 <tr><td colspan=3><br><br></td></tr>
 <tr>
 <?
@@ -287,8 +287,8 @@ function buildStreamLine($server_name,$listen_url, $genre, $listeners, $descript
 	}
 	$streamLine = '
 	<tr>
-		<td class="streamtd_alt" width=75 valign="middle" bgcolor="'.$bgcolor.'" ><center>'.$clustertext.'<a href="listen.php?pid='.$playlist_id.'&file=listen.m3u" alt="'.$server_type.'" title="'.$server_type.'" class="listen_a"><div id="listen">'.$server_type.'</div></a></center></td>
-		<td class="streamtd_alt" bgcolor="'.$bgcolor.'">'.$description_tag.'Now playing on <a class="streamtd_alt_2" href="listen.php?pid='.$playlist_id.'&file=listen.m3u">'.$mountpoint.'</a> :&nbsp;&nbsp;<font color=yellow>'.substr($current_song, 0, 100).'</font></td>
+		<td class="streamtd_alt" width=75 valign="middle" bgcolor="'.$bgcolor.'" ><center>'.$clustertext.'<a href="/listen.php?pid='.$playlist_id.'&file=listen.m3u" alt="'.$server_type.'" title="'.$server_type.'" class="listen_a"><div id="listen">'.$server_type.'</div></a></center></td>
+		<td class="streamtd_alt" bgcolor="'.$bgcolor.'">'.$description_tag.'Now playing on <a class="streamtd_alt_2" href="/listen.php?pid='.$playlist_id.'&file=listen.m3u">'.$mountpoint.'</a> :&nbsp;&nbsp;<font color=yellow>'.substr($current_song, 0, 100).'</font></td>
 		<td class="streamtd_alt" width=75 bgcolor="'.$bgcolor.'"> <center><font color=white>'.substr($genre, 0, 30).'</font></td>
 		<td class="streamtd_alt" width=150 bgcolor="'.$bgcolor.'"><center>'.$audio_info.'</td>
 	</tr>
