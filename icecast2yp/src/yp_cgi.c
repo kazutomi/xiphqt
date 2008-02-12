@@ -103,6 +103,8 @@ int main(int argc, char * argv[])
 			if (ptmp) {
 				strncpy(server_name, ptmp, sizeof(server_name)-1);
 				free(ptmp);
+                if (xmlCheckUTF8 ((unsigned char *)server_name) == 0)
+                    server_name [0] = '\0';
 			}
 			
 		}
@@ -113,6 +115,8 @@ int main(int argc, char * argv[])
 			if (ptmp) {
 				strncpy(genre, ptmp, sizeof(genre)-1);
 				free(ptmp);
+                if (xmlCheckUTF8 ((unsigned char *)genre) == 0)
+                    genre [0] = '\0';
 			}
 		}
 		if (cgi_param("cpswd") != NULL) {
@@ -131,6 +135,8 @@ int main(int argc, char * argv[])
 			if (ptmp) {
 				strncpy(desc, cgi_param("desc"), sizeof(desc)-1);
 				free(ptmp);
+                if (xmlCheckUTF8 ((unsigned char *)desc) == 0)
+                    desc [0] = '\0';
 			}
 		}
 		if (cgi_param("url") != NULL) {
@@ -153,8 +159,18 @@ int main(int argc, char * argv[])
 						p1 = listenurl + strlen("http://localhost");
 						use_listingIP = 1;
 					}
+					if (!strncmp(listenurl, "http://127.", strlen("http://127."))) {
+						p1 = listenurl + strlen("http://127.");
+						p1 = strchr(p1, ':');
+						use_listingIP = 1;
+					}
 					if (!strncmp(listenurl, "http://192.168.", strlen("http://192.168."))) {
 						p1 = listenurl + strlen("http://192.168.");
+						p1 = strchr(p1, ':');
+						use_listingIP = 1;
+					}
+					if (!strncmp(listenurl, "http://(null)", strlen("http://(null)"))) {
+						p1 = listenurl + strlen("http://(null)");
 						p1 = strchr(p1, ':');
 						use_listingIP = 1;
 					}
@@ -306,6 +322,9 @@ int main(int argc, char * argv[])
 			if (ptmp) {
 				strncpy(st, ptmp, sizeof(st)-1);
 				free(ptmp);
+                /* non UTF8 chars, allow touch to work but use a blank string */
+                if (xmlCheckUTF8 ((unsigned char *)st) == 0)
+                    st [0] = '\0';
 			}
 		}
 		if (cgi_param("listeners") != NULL) {
