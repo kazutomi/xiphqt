@@ -7,7 +7,8 @@ prefix = /usr/local
 
 OPTS = -g -O2 -Wall
 
-rogg_UTILS = rogg_pagedump rogg_eosfix rogg_aspect rogg_stats
+rogg_UTILS = rogg_pagedump rogg_eosfix rogg_crcfix \
+	rogg_aspect rogg_stats
 
 all : librogg.a $(rogg_UTILS)
 
@@ -18,6 +19,9 @@ librogg.a : rogg.o
 	ranlib $@
 
 rogg_eosfix : rogg_eosfix.o librogg.a
+	$(CC) $(CFLAGS) -o $@ $^
+
+rogg_crcfix : rogg_crcfix.o librogg.a
 	$(CC) $(CFLAGS) -o $@ $^
 
 rogg_pagedump : rogg_pagedump.o librogg.a
