@@ -8,8 +8,8 @@
 
   note this doesn't have a good performance yet and can't deal with 
   the real fps rate. Its performance is improved by defining OVERLAY, 
-  however, as of this writing (19-nov-2007) etheora doesn't provide
-  a good way to use overlays. 
+  however, as of this writing (19-nov-2007) etheora doesn't provide 
+  yet a good way to use overlays. 
 
   usage: 
   ./client-decoder server_hostname server_port
@@ -35,7 +35,7 @@
 
 
 #define YUV_DECODING 1
-//#define OVERLAY 1
+#define OVERLAY 1
 
 int tcp_socket_connect(char *host, int port, FILE *finfo){
         struct hostent *h;
@@ -72,7 +72,7 @@ int tcp_socket_connect(char *host, int port, FILE *finfo){
 
 
 
-/*taken from theora player_example.c, but not cropping it yet. */
+/*taken from theora player_example.c, but not cropping yet. */
 
 static void video_write(SDL_Surface *screen, SDL_Overlay *yuv_overlay, 
 	yuv_buffer *yuv, SDL_Rect rect){
@@ -124,7 +124,7 @@ int main(int argc, char **args){
 	int i, j, sock; 
 	etheora_ctx ec; 
 	FILE *finfo, *fin; 
-#if YUV_DECODING
+#ifdef YUV_DECODING
 	unsigned char y, u, v; 
 #endif
 	float r, g, b;
@@ -190,7 +190,8 @@ int main(int argc, char **args){
 	fprintf(stderr, "Bytes per pixel: %i.\n", scr->format->BytesPerPixel); 
 
 #ifdef OVERLAY
-	yuv_overlay = SDL_CreateYUVOverlay(etheora_get_width(&ec), etheora_get_height(&ec),
+	yuv_overlay = SDL_CreateYUVOverlay(etheora_get_width(&ec), 
+			etheora_get_height(&ec),
 			SDL_YV12_OVERLAY, scr);
 	if ( yuv_overlay == NULL ) {
 		fprintf(stderr, "SDL: Couldn't create SDL_yuv_overlay: %s\n",
@@ -220,25 +221,29 @@ int main(int argc, char **args){
 		 * memory without changes appearing in  the screen. */
 #ifndef OVERLAY
 		if(SDL_MUSTLOCK(scr)) SDL_LockSurface(scr); 
+#endif /* TODO: not original*/
 
 		/*now we can read the frame buffer data. */
 		for( i = 0; i < etheora_get_width(&ec);  i++)
 			for( j = 0; j < etheora_get_height(&ec); j++){
-				/* or use etheora_dec_yuv draw() to 
-			           read in yuv colorspace.*/
-#if YUV_DECODING
+#ifdef YUV_DECODING
 				etheora_dec_yuv_read(&ec, i, j, 
 					 &y, &u, &v);  
 				etheora_pixel_yuv2rgb(y, u, v, &r, &g, &b);
 				etheora_pixel_rgb_reescale(&r, &g, &b);
+				etheora_pixel_rgb_unreescale(&r, &g, &b);
+				etheora_enc_rgb_draw(&ec, i, j, r, g, b); 
+				//etheora_enc_yuv_draw(&ec, i, j, y, u, v); 
 
 #else
+				/* or use etheora_dec_yuv draw() to 
+			           read in yuv colorspace.*/
 				etheora_dec_rgb_read(&ec, i, j, 
 					 &r, &g, &b);  
 #endif 
 
 				  /* sdl - drawing the pixel. */
-#if YUV_DECODING
+#ifdef YUV_DECODING
 				  Uint32 a = 0; 
 				  a = (Uint32) 0
 				  	  + (((Uint32)y)*1 << 3*8)
@@ -258,6 +263,7 @@ int main(int argc, char **args){
 #endif 
 			}
 
+#ifndef OVERLAY /* TODO: not original*/
 		/* sdl stuff - unlocking screen/drawing. */
 		if(SDL_MUSTLOCK(scr)) SDL_UnlockSurface(scr); 
 #else 
