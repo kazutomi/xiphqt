@@ -53,7 +53,7 @@ vorbis structures needed:
  buffer = vorbis_analysis_buffer()
 
 /* this buffer is a matrix where data read from the WAV file must be
-put. */
+put. see below in reading data from WAV how to fill this buffer. */
 
 
 /* tell the library how much we actually submitted */
@@ -82,5 +82,41 @@ put. */
  vorbis_dsp_clear(&vd);
  vorbis_comment_clear(&vc);
  vorbis_info_clear(&vi);
+
+
+
+reading an wave file: 
+http://ccrma.stanford.edu/courses/422/projects/WaveFormat/
+
+the fields we're interested in are (for configuring
+vorbis_encode_init...()): 
+
+- SampleRate (little endian) 24th byte (starting from zero). 4 bytes of
+data.  (eg 44100 Hz)
+
+- NumChannels 22nd byte (sf0). little endian. 2 bytes of data. (eg Stereo = 2) 
+
+- BitsPerSample 34th byte (sf0). little.  2 bytes of data. (eg 16 bits)
+
+- BlockAlign: can be calculated ( NumChannels * BitsPerSample/8 ) or
+  read: 32nd byte (sf0). little endian. 2 bytes of data. 
+
+
+understanding the 
+ float **buffer = vorbis_analysis_buffer()
+
+buffer[0..(numChannels -1)][0..(i-1)] where i is the 
+second parameter (buffer size) of vorbis_analysis_buffer(), which is
+an arbitrarily set value. 
+
+see numChannels below, when we learn to read the wav files. 
+
+the number 4 used several times in the code for the  vorbis encode_example.c 
+is the wav parameter BlockAlign. 
+
+everything now needed to get the correct  buffer value (for each
+channel) now is to convert from little to big endian and, finally,
+divide the result by 2^(BitsPerSample - 1). 
+
 
 
