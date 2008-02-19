@@ -138,7 +138,7 @@ void ec_enc_done(ec_enc *_this){
     }
   }
   /*If we have a buffered byte...*/
-  if(_this->rem>=0){
+  if(_this->rem>=0||_this->ext>0){
     unsigned char *buf;
     long           i;
     /*Flush it into the output buffer.*/
