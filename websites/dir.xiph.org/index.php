@@ -1,4 +1,17 @@
-<? $nopad = 1; ?>
+<?
+if (empty ($_GET))
+{
+    // 2 minutes of cache time
+    if (file_exists ('/tmp/dir.xiph.org.index_cache.html') && filemtime ('/tmp/dir.xiph.org.index_cache.html') >= (mktime () - 120))
+    {
+        header('X-Using-Cache: yes');
+        readfile ('/tmp/dir.xiph.org.index_cache.html');
+        exit ();
+    }
+    ob_start ();
+}
+$nopad = 1;
+?>
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
    "http://www.w3.org/TR/html4/loose.dtd">
@@ -484,3 +497,14 @@ Total Servers: <? print getTotalServers(); ?>
 </table>
 </body>
 </html>
+
+<?
+if (empty($_GET))
+{
+    $data = ob_get_contents();
+    ob_end_flush();
+    $fp = fopen('/tmp/dir.xiph.org.index_cache.html', 'w');
+    fwrite($fp, $data);
+    fclose($fp);
+}
+?>
