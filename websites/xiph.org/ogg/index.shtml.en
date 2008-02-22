@@ -49,6 +49,7 @@ following areas:</p>
 <li><a href="/ogg/doc/oggstream.html">General structural overview</a></li>
 <li><a href="/ogg/doc/framing.html">Detailed header and parsing specification</a></li>
 <li><a href="/ogg/doc/ogg-multiplex.html">Issues and practices for multiplexed Ogg streams</a></li>
+<li><a href="/ogg/doc/skeleton.html">The Ogg Skeleton Metadata Bitstream</a></li>
 </ul>
 
 <p>The recommended MIME type for Ogg files and network streams is 
