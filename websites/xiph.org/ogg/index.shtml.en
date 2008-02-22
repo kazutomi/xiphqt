@@ -52,8 +52,7 @@ following areas:</p>
 <li><a href="/ogg/doc/skeleton.html">The Ogg Skeleton Metadata Bitstream</a></li>
 </ul>
 
-<p>The recommended MIME type for Ogg files and network streams is 
-<tt>application/ogg</tt>.</p>
+<p>The recommended MIME type for Ogg files and network streams depends on content.  For video, audio, and applications there's <tt>video/ogg</tt>, <tt>audio/ogg</tt> and <tt>application/ogg</tt> respectively.</p>
 
 <ul>
 <li><a href="/ogg/doc/libogg/">API Documentation for the libogg reference implementation</a></li>
