@@ -42,6 +42,9 @@ void LogMessage(int type, char *source, int line, char *fmt, ...) {
 	int parseableOutput = 0;
 	char    timeStamp[255];
 
+	if (type > globalErrorType) 
+        return;
+
 	memset(timeStamp, '\000', sizeof(timeStamp));
 
 	time(&t);
@@ -68,7 +71,7 @@ void LogMessage(int type, char *source, int line, char *fmt, ...) {
 	}
 
 
-	if (type <= globalErrorType) {
+    {
 		va_start(parms, fmt);
 
 		if (filep == 0) {
