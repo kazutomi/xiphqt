@@ -70,7 +70,7 @@
 			<ul>
 				<li><a href="/ogg/">Ogg:</a> Media container.  This is our native format and the recommended container for all Xiph codecs.</li>
 				<li><a href="http://svn.xiph.org/trunk/speex/doc/draft-ietf-avt-rtp-speex-00.txt">Speex RTP:</a> RTP payload format for voice</li>
-				<li><a href="http://svn.xiph.org/trunk/vorbis/doc/draft-ietf-avt-rtp-vorbis-06.txt">Vorbis RTP:</a> RTP payload format for audio</li>
+				<li><a href="http://svn.xiph.org/trunk/vorbis/doc/draft-ietf-avt-rtp-vorbis-09.txt">Vorbis RTP:</a> RTP payload format for audio</li>
 				<li><a href="http://svn.xiph.org/trunk/theora/doc/draft-ietf-avt-rtp-theora-00.txt">Theora RTP:</a> RTP payload format for video</li>
 			</ul>
 
