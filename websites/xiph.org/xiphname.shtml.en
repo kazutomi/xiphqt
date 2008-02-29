@@ -17,7 +17,7 @@
 <h1>What's in a name?</h1>
 
 <h2>
-	<a href="index.html">
+	<a href="/">
 		<img src="/images/logos/white-xifish.gif" alt="Xiph.Org"/>
 		<img src="/images/logos/xiphword2.gif" alt=""/>
 	</a>
@@ -44,7 +44,7 @@ favor [ksif]. Either is acceptable.
 
 
 <h2>
-	<a href="/ogg/index.html">
+	<a href="/ogg/">
 		<img src="/images/logos/white-ogg.gif" alt="OggSquish"/>
 		<img src="/images/logos/oggword2.gif" alt=""/>
 	</a>
@@ -111,7 +111,7 @@ J&ouml;rmungandr...  See, it all makes sense.
 </p>
 
 <h2>
-	<a href="ogg/vorbis/index.html">
+	<a href="/vorbis/">
 		<img src="/images/logos/white-ogg.gif" alt="Ogg Vorbis"/>
 		<img src="/images/logos/vorbisword2.gif" alt=""/>
 	</a>
@@ -124,7 +124,7 @@ significance, but it's an indirect, uninteresting story.
 </p>
 
 <p>
-<a href="ogg/vorbis/index.html">Ogg Vorbis</a> (pronouned [vōr'bĭs]) was the first CODEC in
+<a href="/vorbis/">Ogg Vorbis</a> (pronouned [vōr'bĭs]) was the first CODEC in
 developed as part of the Xiph.org multimedia project, begun
 immediately after <a href="about.html#fraunhofer">Fraunhofer issued
 its 'Letter of Infringement' to freeware MP3 encoder efforts</a>.
@@ -133,7 +133,7 @@ and has historically achieved comparable or better quality.
 </p>
 
 <h2>
-	<a href="paranoia/index.html">
+	<a href="/paranoia/">
 		<img src="/images/logos/white-para.gif" alt="paranoia IV"/>
 		<img src="/images/logos/paraword2.gif" alt=""/>
 	</a>
@@ -151,7 +151,7 @@ correction engines to cdparanoia series 10.
 </p>
 
 <h2>
-	<a href="paranoia/index.html">
+	<a href="/paranoia/">
 		<img src="/images/logos/white-para.gif" alt="cdparanoia"/>
 		<img src="/images/logos/cdparaword2.gif" alt=""/>
 	</a>
