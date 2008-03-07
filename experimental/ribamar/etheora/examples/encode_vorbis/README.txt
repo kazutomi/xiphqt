@@ -109,7 +109,7 @@ buffer[0..(numChannels -1)][0..(i-1)] where i is the
 second parameter (buffer size) of vorbis_analysis_buffer(), which is
 an arbitrarily set value. 
 
-see numChannels below, when we learn to read the wav files. 
+see numChannels above, when we learn to read the wav files. 
 
 the number 4 used several times in the code for the  vorbis encode_example.c 
 is the wav parameter BlockAlign. 
@@ -117,6 +117,35 @@ is the wav parameter BlockAlign.
 everything now needed to get the correct  buffer value (for each
 channel) now is to convert from little to big endian and, finally,
 divide the result by 2^(BitsPerSample - 1). 
+
+
+
+---- 
+
+embedding vorbis in theora: 
+
+Headers:
+
+theora: _encode_init, _comment_init
+vorbis: _encode_init, _comment_init, _analysis_init, _block_init
+theora: _encode_header,  with: ogg_stream_packetin, ogg_stream_pageout, fwrite
+	_encode_comment, with: ogg_stream_packetin (to be flushed)
+	_encode_tables,  with: ogg_stream_packetin (to be flushed)
+vorbis: _analysis_headerout (1,2,3), with: ogg_stream_packetin (1), ogg_stream_pageout, fwrite
+	ogg_stream_packetin (2) (to be flushed)
+	ogg_stream_packetin (3) (to be flushed)
+theora: ogg_stream_flush, fwrite
+vorbis: ogg_stream_flush, fwrite
+
+Frames data: 
+
+submit video data and audio data to encode, while not getting a video
+or audio page. when a page is gotten, fwrite it. Even running
+linearly the code, we should think these processes (of submitting and 
+encoding video and audio) run in parallel. So, we must consider the 
+possibility of two pages being generated at 'the same time'. In this 
+case, we must fwrite first the one which has the lesser
+_granule_time(). 
 
 
 
