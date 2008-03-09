@@ -211,18 +211,16 @@ int etheora_filltinfo_nooffset(theora_info *ti,
 	ti->frame_width = frame_width;
 	ti->frame_height = frame_height;
 	ti->offset_x = ti->offset_y = 0;
-	ti->aspect_numerator = frame_width;
-	ti->aspect_denominator = frame_height;
+	ti->aspect_numerator = 1;
+	ti->aspect_denominator = 1;
 	if(aspect ==  ETHEORA_ASPECT_NORMAL){
-		ti->aspect_numerator = 4;
-		ti->aspect_denominator = 3;
+		ti->aspect_numerator = 4 * frame_height;
+		ti->aspect_denominator = 3 * frame_width;
 	}
 	if(aspect ==  ETHEORA_ASPECT_WIDE_SCREEN){
-		ti->aspect_numerator = 16;
-		ti->aspect_denominator = 9;
+		ti->aspect_numerator = 16 * frame_height;
+		ti->aspect_denominator = 9 * frame_width;
 	}
-		ti->aspect_numerator = 1;
-		ti->aspect_denominator = 1;
 	ti->fps_numerator = fps_numerator;
 	ti->fps_denominator = fps_denominator;
 	ti->colorspace = ETHEORA_TINFO_COLORSPACE;  //OC_CS_UNSPECIFIED;

@@ -46,7 +46,8 @@ int main(int argc, char **args){
 	fprintf(stderr, "debug info in Debug.txt.\n"); 
 
 	/* configuring encoder: 640x480 video 12/1 frames per second. */
-	etheora_enc_setup(&ec, 640, 480, ETHEORA_ASPECT_NORMAL, 
+	//etheora_enc_setup(&ec, 640, 480, ETHEORA_ASPECT_NORMAL, 
+	etheora_enc_setup(&ec, 640, 480, ETHEORA_ASPECT_WIDE_SCREEN, 
 				12, 1, fout, finfo);
 
 	/* last chance to change theora parameters before encoding.
