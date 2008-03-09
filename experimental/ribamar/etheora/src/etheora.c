@@ -221,6 +221,8 @@ int etheora_filltinfo_nooffset(theora_info *ti,
 		ti->aspect_numerator = 16;
 		ti->aspect_denominator = 9;
 	}
+		ti->aspect_numerator = 1;
+		ti->aspect_denominator = 1;
 	ti->fps_numerator = fps_numerator;
 	ti->fps_denominator = fps_denominator;
 	ti->colorspace = ETHEORA_TINFO_COLORSPACE;  //OC_CS_UNSPECIFIED;
