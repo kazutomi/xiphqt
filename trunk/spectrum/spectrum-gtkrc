@@ -1,0 +1,78 @@
+style "button-poppy" {
+
+	font_name = "sans 8"
+	GtkButton::relief = none
+
+	GtkButton::focus-padding = 0
+	GtkButton::focus-line-width = 1
+	GtkButton::interior-focus = 0
+}
+
+style "panel" {
+	bg[NORMAL]="#c0c0ce" 
+	bg[ACTIVE]="#e0f0ff" 
+	bg[PRELIGHT]="#e0f0ff" 
+
+	text[NORMAL]="#000000"
+	text[ACTIVE]="#000000"
+	text[PRELIGHT]="#000000" 
+
+	fg[NORMAL]="#000000"
+	fg[ACTIVE]="#000000"
+	fg[PRELIGHT]="#000000" 
+
+}
+
+style "panel-text" {
+	font_name = "sans bold 7"
+}
+
+style "scale-text" {
+	font_name = "sans 7"
+}
+
+style "readout" {
+	font_name = "sans 8"
+}
+
+style "frame-label" {
+	font_name = "sans bold 10"
+}
+
+style "small-readout" {
+	base[NORMAL]="#ffffff" 
+	base[ACTIVE]="#ffffff" 
+	bg[NORMAL]="#ffffff" 
+	bg[ACTIVE]="#ffffff" 
+	text[NORMAL]="#606060"
+	font_name = "Fixed, Nimbus Mono L, Courier, Monospace 8"	
+}
+
+style "quitbutton" {
+	bg[NORMAL]="#d0d0d0"
+	bg[PRELIGHT]="#ffc0c0"
+	bg[ACTIVE]="#ffc0c0"
+	font_name = "sans 8"	
+	GtkButton::focus-padding = 0
+	GtkButton::focus-line-width = 1
+	GtkButton::interior-focus = 0
+}
+
+widget "*" style "panel"
+widget "*.GtkLabel" style "panel-text"
+widget "*.Plot" style "scale-text"
+widget "*.framelabel" style "frame-label"
+
+widget "*.GtkEntry" style "readout"
+widget "*.GtkMenu*" style "button-poppy"
+widget "*.GtkComboBox*" style "button-poppy"
+widget "*.GtkToggleButton*" style "button-poppy"
+widget "*.GtkButton*" style "button-poppy"
+widget "*.quitbutton" style "quitbutton"
+widget "*.quitbutton.GtkLabel" style "quitbutton"
+widget "*.readout" style "readout"
+
+
+
+
+
