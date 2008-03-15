@@ -68,22 +68,7 @@ static void compute_metadata(GtkWidget *widget){
 
   /* find the places to plot the x grid lines according to scale */
   switch(p->scale){
-  case 0: /* linear; 2kHz spacing */
-    {
-      float lfreq;
-      for(i=0;i<11;i++){
-	lfreq=i*2000.;
-	p->xgrid[i]=rint(lfreq/20000. * (width-1))+p->padx;
-      }
-	
-      p->xgrids=11;
-      p->xtics=0;
-      while((lfreq=(p->xtics+1)*500.)<20000.)
-	p->xtic[p->xtics++]=rint(lfreq/20000. * (width-1))+p->padx;
-    }
-    break;
-    
-  case 1: /* log */
+  case 0: /* log */
     {
       double lfreqs[6]={1.,10.,100.,1000.,10000.,100000};
       double tfreqs[37]={5.,6.,7.,8.,9.,20.,30.,40.,50.,60.,70.,80.,90.
@@ -99,7 +84,7 @@ static void compute_metadata(GtkWidget *widget){
     }
     
     break;
-  case 2: /* ISO log */
+  case 1: /* ISO log */
     {
       double lfreqs[10]={31.,63.,125.,250.,500.,1000.,2000.,4000.,8000.,16000.};
       double tfreqs[20]={25.,40.,50.,80.,100.,160.,200.,315.,400.,630.,800.,
@@ -113,6 +98,21 @@ static void compute_metadata(GtkWidget *widget){
     }
 
     break;
+  case 2: /* linear; 2kHz spacing */
+    {
+      float lfreq;
+      for(i=0;i<11;i++){
+	lfreq=i*2000.;
+	p->xgrid[i]=rint(lfreq/20000. * (width-1))+p->padx;
+      }
+	
+      p->xgrids=11;
+      p->xtics=0;
+      while((lfreq=(p->xtics+1)*500.)<20000.)
+	p->xtic[p->xtics++]=rint(lfreq/20000. * (width-1))+p->padx;
+    }
+    break;
+    
   }
 
 }
@@ -229,13 +229,13 @@ static void draw(GtkWidget *widget){
     PangoLayout **proper;
     switch(p->scale){
     case 0:
-      proper=p->lin_layout;
-      break;
-    case 1:
       proper=p->log_layout;
       break;
-    case 2:
+    case 1:
       proper=p->iso_layout;
+      break;
+    case 2:
+      proper=p->lin_layout;
       break;
     }
     for(i=0;i<p->xgrids;i++){
@@ -759,11 +759,6 @@ GtkWidget* plot_new (int size, int groups, int *channels, int *rate){
   p->ch_active=calloc(ch,sizeof(*p->ch_active));
   p->ch_process=calloc(ch,sizeof(*p->ch_process));
 
-  /*
-    p->cal=calloc(p->ch,sizeof(*p->cal));
-    for(i=0;i<p->ch;i++)
-      p->cal[i]=calloc(p->datasize,sizeof(**p->cal));
-  */
   plot_clear(p);
   return ret;
 }
@@ -775,15 +770,16 @@ void plot_refresh (Plot *p, int *process){
   int height=GTK_WIDGET(p)->allocation.height-p->pady;
   float **data;
   
+  if(!p->ydata)return;
+
   if(process)
     memcpy(p->ch_process,process,p->total_ch*sizeof(*process));
   
-  data = process_fetch(p->scale,p->mode,p->link,
+  data = process_fetch(p->res, p->scale, p->mode, p->link, 
 		       p->ch_process,width,&ymax,&pmax,&pmin);
   
-  if(p->ydata)
-    for(i=0;i<p->total_ch;i++)
-      memcpy(p->ydata[i],data[i],width*sizeof(**p->ydata));
+  for(i=0;i<p->total_ch;i++)
+    memcpy(p->ydata[i],data[i],width*sizeof(**p->ydata));
 
   /* graph limit updates are conditional depending on mode/link */
   if(pmax<12)pmax=12;
@@ -811,9 +807,29 @@ void plot_refresh (Plot *p, int *process){
   //if(pmax<p->pmax)pmax=p->pmax;
   //if(pmin>p->pmin)pmin=p->pmin;
 
-  /* time damp decay */
+  /* scale regression is conditional and damped. Start the timer/run
+     the timer while any one scale measure should be dropping by more
+     than 50px. If any peaks occur above, reset timer.  Once timer
+     runs out, drop 5px per frame */
+#define PXTHRESH 25
+#define PXDEL 10
+#define TIMERFRAMES 20
+  if(p->ymax>ymax){
+    float oldzero = (height-1)/p->depth*p->ymax;
+    float newzero = (height-1)/p->depth*ymax;
 
-
+    fprintf(stderr,"old=%f, new=%f, timer=%d\n",oldzero,newzero,p->scaletimer);
+    if(newzero+PXTHRESH<oldzero){
+      if(p->scaletimer){
+	p->scaletimer--;
+      }else{
+	p->ymax = (oldzero-PXDEL)*p->depth/(height-1);
+      }
+    }else{
+      p->scaletimer = TIMERFRAMES;
+    }
+  }else
+    p->scaletimer = TIMERFRAMES;
 
   /* finally, align phase/response zeros on phase graphs */
   if(ymax>-140){
@@ -851,7 +867,7 @@ void plot_refresh (Plot *p, int *process){
   if(pmax>180)pmax=180;
   if(pmin<-180)pmin=-180;
   
-  p->ymax=ymax;
+  if(ymax>p->ymax)p->ymax=ymax;
   p->pmax=pmax;
   p->pmin=pmin;
 }
@@ -865,7 +881,7 @@ void plot_clear (Plot *p){
     for(i=0;i<p->total_ch;i++)
       for(j=0;j<width;j++)
 	p->ydata[i][j]=NAN;
-  p->ymax=-140;
+  p->ymax=p->depth-140;
   p->pmax=12.;
   p->pmin=-12.;
   draw_and_expose(widget);
@@ -875,8 +891,9 @@ float **plot_get (Plot *p){
   return(p->ydata);
 }
 
-void plot_setting (Plot *p, int scale, int mode, int link, int depth){
+void plot_setting (Plot *p, int res, int scale, int mode, int link, int depth){
   GtkWidget *widget=GTK_WIDGET(p);
+  p->res=res;
   p->scale=scale;
   p->mode=mode;
   p->depth=depth;

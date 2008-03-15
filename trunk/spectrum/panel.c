@@ -48,7 +48,8 @@ static struct panel {
   
 } p;
 
-int plot_scale=1;
+int plot_res=0;
+int plot_scale=0;
 int plot_mode=0;
 int plot_link=0;
 int plot_hold=0;
@@ -151,7 +152,7 @@ static void depthchange(GtkWidget *widget,struct panel *p){
     plot_depth=140;
     break;
   }
-  plot_setting(PLOT(p->plot),plot_scale,plot_mode,plot_link,plot_depth);
+  plot_setting(PLOT(p->plot),plot_res,plot_scale,plot_mode,plot_link,plot_depth);
 }
 
 static void set_fg(GtkWidget *c, gpointer in){
@@ -334,21 +335,26 @@ static void chlabels(GtkWidget *widget,struct panel *p){
 
 }
 
+static void reschange(GtkWidget *widget,struct panel *p){
+  plot_res=gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
+  plot_setting(PLOT(p->plot),plot_res,plot_scale,plot_mode,plot_link,plot_depth);
+}
+
 static void scalechange(GtkWidget *widget,struct panel *p){
   plot_scale=gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
-  plot_setting(PLOT(p->plot),plot_scale,plot_mode,plot_link,plot_depth);
+  plot_setting(PLOT(p->plot),plot_res,plot_scale,plot_mode,plot_link,plot_depth);
 }
 
 static void modechange(GtkWidget *widget,struct panel *p){
   plot_mode=gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
   replot(p);
-  plot_setting(PLOT(p->plot),plot_scale,plot_mode,plot_link,plot_depth);
+  plot_setting(PLOT(p->plot),plot_res,plot_scale,plot_mode,plot_link,plot_depth);
 }
 
 static void linkchange(GtkWidget *widget,struct panel *p){
   plot_link=gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
   replot(p);
-  plot_setting(PLOT(p->plot),plot_scale,plot_mode,plot_link,plot_depth);
+  plot_setting(PLOT(p->plot),plot_res,plot_scale,plot_mode,plot_link,plot_depth);
   chlabels(widget,p);
 }
 
@@ -520,11 +526,22 @@ void panel_create(struct panel *panel){
   /* scale */
   {
     GtkWidget *menu=gtk_combo_box_new_text();
-    char *entries[]={"linear","log","ISO log"};
+    char *entries[]={"screen resolution","1/24th octave","1/12th octave","1/3 octave"};
+    for(i=0;i<4;i++)
+      gtk_combo_box_append_text (GTK_COMBO_BOX (menu), entries[i]);
+    gtk_combo_box_set_active(GTK_COMBO_BOX(menu),plot_res);
+    gtk_box_pack_start(GTK_BOX(bbox),menu,0,0,0);
+    g_signal_connect (G_OBJECT (menu), "changed",
+		      G_CALLBACK (reschange), panel);
+  }
+
+  {
+    GtkWidget *menu=gtk_combo_box_new_text();
+    char *entries[]={"log scale","ISO log scale","linear scale"};
     for(i=0;i<3;i++)
       gtk_combo_box_append_text (GTK_COMBO_BOX (menu), entries[i]);
     gtk_combo_box_set_active(GTK_COMBO_BOX(menu),plot_scale);
-    plot_setting(PLOT(panel->plot),plot_scale,plot_mode,plot_link,plot_depth);
+    plot_setting(PLOT(panel->plot),plot_res,plot_scale,plot_mode,plot_link,plot_depth);
     gtk_box_pack_start(GTK_BOX(bbox),menu,0,0,0);
     
     g_signal_connect (G_OBJECT (menu), "changed",
