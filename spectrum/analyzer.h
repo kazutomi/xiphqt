@@ -113,9 +113,9 @@ extern sig_atomic_t acc_loop;
 extern sig_atomic_t process_active;
 extern sig_atomic_t process_exit;
 
-#define LINKS 8
+#define LINKS 10
 static char *link_entries[LINKS]={"independent","summed",".1\xCE\xA9 shunt","1\xCE\xA9 shunt","10\xCE\xA9 shunt",
-			   "resp/phase","THD","THD+N"};
+				  "resp/phase","THD","THD-2","THD+N","THD-2+N"};
 #define LINK_INDEPENDENT  0
 #define LINK_SUMMED       1
 #define LINK_IMPEDENCE_p1 2
@@ -123,7 +123,9 @@ static char *link_entries[LINKS]={"independent","summed",".1\xCE\xA9 shunt","1\x
 #define LINK_IMPEDENCE_10 4
 #define LINK_PHASE        5
 #define LINK_THD          6
-#define LINK_THDN         7
+#define LINK_THD2         7
+#define LINK_THDN         8
+#define LINK_THDN2        9
 
 #endif
 

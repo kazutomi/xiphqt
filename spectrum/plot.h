@@ -84,11 +84,17 @@ struct _Plot{
   float pmax;
   float pmin;
 
+  float disp_depth;
+  float disp_ymax;
+  float disp_pmax;
+  float disp_pmin;
+
   float padx;
   float phax;
   float pady;
 
-  int scaletimer;
+  int ymaxtimer;
+  int phtimer;
 };
 
 struct _PlotClass{

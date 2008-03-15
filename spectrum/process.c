@@ -50,12 +50,10 @@ float **feedback_work;
 float *process_work;
 
 float **feedback_acc;
-float **feedback_av;
 float **feedback_max;
 float **feedback_instant;
 
 float **ph_acc;
-float **ph_av;
 float **ph_max;
 float **ph_instant;
 
@@ -414,12 +412,10 @@ int input_load(void){
   feedback_work=calloc(total_ch,sizeof(*feedback_work));
 
   feedback_acc=malloc(total_ch*sizeof(*feedback_acc));
-  feedback_av=malloc(total_ch*sizeof(*feedback_av));
   feedback_max=malloc(total_ch*sizeof(*feedback_max));
   feedback_instant=malloc(total_ch*sizeof(*feedback_instant));
 
   ph_acc=malloc(total_ch*sizeof(*ph_acc));
-  ph_av=malloc(total_ch*sizeof(*ph_av));
   ph_max=malloc(total_ch*sizeof(*ph_max));
   ph_instant=malloc(total_ch*sizeof(*ph_instant));
   
@@ -428,12 +424,10 @@ int input_load(void){
     blockbuffer[i]=calloc(blocksize,sizeof(**blockbuffer));
 
     feedback_acc[i]=calloc(blocksize/2+1,sizeof(**feedback_acc));
-    feedback_av[i]=calloc(blocksize/2+1,sizeof(**feedback_av));
     feedback_max[i]=calloc(blocksize/2+1,sizeof(**feedback_max));
     feedback_instant[i]=calloc(blocksize/2+1,sizeof(**feedback_instant));
 
     ph_acc[i]=calloc(blocksize+2,sizeof(**ph_acc));
-    ph_av[i]=calloc(blocksize+2,sizeof(**ph_av));
     ph_max[i]=calloc(blocksize+2,sizeof(**ph_max));
     ph_instant[i]=calloc(blocksize+2,sizeof(**ph_instant));
   }
@@ -650,13 +644,11 @@ void rundata_clear(){
   for(i=0;i<total_ch;i++){
     feedback_count[i]=0;
     memset(feedback_acc[i],0,(blocksize/2+1)*sizeof(**feedback_acc));
-    memset(feedback_av[i],0,(blocksize/2+1)*sizeof(**feedback_av));
     memset(feedback_max[i],0,(blocksize/2+1)*sizeof(**feedback_max));
     memset(feedback_instant[i],0,(blocksize/2+1)*sizeof(**feedback_instant));
 
     for(j=0;j<blocksize+2;j++){
       ph_acc[i][j]=0;
-      ph_av[i][j]=0;
       ph_max[i][j]=0;
       ph_instant[i][j]=0;
     }
@@ -748,22 +740,10 @@ static int process(){
 	      ph_max[i][j]=pR;
 	      ph_max[i][j+1]=pI;
 	    }
-
-	    if(feedback_count[i]>=100){
-	      ph_av[i][j]*=.99;
-	      ph_av[i][j+1]*=.99;
-	    }
-
-	    ph_av[i][j]+=.1*pR;
-	    ph_av[i][j+1]+=.1*pI;
-	    
 	  }
 	  
 	  feedback_instant[i][j>>1]=sqM;
 	  feedback_acc[i][j>>1]+=sqM;
-	  if(feedback_count[i]>=100)
-	    feedback_av[i][j>>1]*=.99;
-	  feedback_av[i][j>>1]+=.1*sqM;
 	  
 	  if(feedback_max[i][j>>1]<sqM)
 	    feedback_max[i][j>>1]=sqM;
@@ -968,15 +948,11 @@ float **process_fetch(int res, int scale, int mode, int link,
     data=feedback_instant;
     ph=ph_instant;
     break;
-  case 1: /* independent / average */
-    data=feedback_av;
-    ph=ph_av;
-    break;
-  case 2: /* independent / max */
+  case 1: /* independent / max */
     data=feedback_max;
     ph=ph_max;
     break;
-  case 3:
+  case 2:
     data=feedback_acc;
     ph=ph_acc;
     break;
@@ -1123,6 +1099,7 @@ float **process_fetch(int res, int scale, int mode, int link,
 	float *r = data[ch];
 	float *m = data[ch+1];
 	float *p = ph[ch+1];
+	float mag[width];
 
 	if(feedback_count[ch]==0){
 	  memset(om,0,width*sizeof(*om));
@@ -1130,7 +1107,7 @@ float **process_fetch(int res, int scale, int mode, int link,
 	}else{
 	  /* two vectors only; response and phase */
 	  /* response */
-	  if(active[ch]){
+	  if(active[ch] || active[ch+1]){
 	    for(i=0;i<width;i++){
 	      int first=floor(L[i]);
 	      int last=floor(H[i]);
@@ -1155,10 +1132,10 @@ float **process_fetch(int res, int scale, int mode, int link,
 		sumM+=m[last]*del;
 	      }
 
-	      if(sumR > 1e-8){
+	      mag[i] = todB_a(&sumR)*.5;
+	      if(active[ch] && sumR > 1e-8){
 		sumM /= sumR;
 		om[i] = todB_a(&sumM)*.5;
-		if(om[i]>*ymax)*ymax = om[i];
 	      }else{
 		om[i] = NAN;
 	      }
@@ -1193,10 +1170,47 @@ float **process_fetch(int res, int scale, int mode, int link,
 
 	      if(sumR*sumR+sumI*sumI > 1e-16){
 		op[i] = atan2(sumI,sumR)*57.29;
-		if(op[i]>*pmax)*pmax=op[i];
-		if(op[i]<*pmin)*pmin=op[i];
 	      }else{
 		op[i]=NAN;
+	      }
+	    }
+	  }
+
+	  /* scan the resulting buffers for marginal data that would
+	     produce spurious output. Specifically we look for sharp
+	     falloffs of > 30dB or an original test magnitude under
+	     -40dB. */
+#define binspan 5
+	  if(active[ch] || active[ch+1]){
+	    int max = -140;
+	    for(i=0;i<width;i++)
+	      if(!isnan(mag[i]) && mag[i]>max)max=mag[i];
+	    
+	    for(i=0;i<width;i++){
+	      if(!isnan(mag[i])){
+		if(mag[i]<max-40 || mag[i]<-70){
+		  int j=i-binspan;
+		  if(j<0)j=0;
+		  for(;j<i;j++){
+		    om[j]=NAN;
+		    op[j]=NAN;
+		  }
+		  for(;j<width;j++){
+		    if(mag[j]>max-40 && mag[j]>-70)break;
+		    om[j]=NAN;
+		    op[j]=NAN;
+		  }
+		  i=j+3;
+		  for(;j<i && j<width;j++){
+		    om[j]=NAN;
+		    op[j]=NAN;
+		  }
+		}
+		if(om[i]>*ymax)*ymax = om[i];
+		if(!isnan(op[i])){
+		  if(op[i]>*pmax)*pmax = op[i];
+		  if(op[i]<*pmin)*pmin = op[i];
+		}
 	      }
 	    }
 	  }
