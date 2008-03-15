@@ -63,6 +63,7 @@ float **xmappingL;
 float **xmappingH;
 int metascale = -1;
 int metawidth = -1;
+int metares = -1;
 
 sig_atomic_t acc_clear=0;
 sig_atomic_t acc_rewind=0;
@@ -861,15 +862,15 @@ void process_dump(int mode){
 
 }
 
-float **process_fetch(int scale, int mode,int link, int *active, int width, 
+float **process_fetch(int res, int scale, int mode, int link, 
+		      int *active, int width, 
 		      float *ymax, float *pmax, float *pmin){
   int ch,ci,i,j,fi;
   float **data;
   float **ph;
 
   /* are our scale mappings up to date? */
-  if(scale != metascale || width != metawidth){
-
+  if(res != metares || scale != metascale || width != metawidth){
     if(!xmappingL) xmappingL = calloc(inputs, sizeof(*xmappingL));
     if(!xmappingH) xmappingH = calloc(inputs, sizeof(*xmappingH));
 
@@ -889,33 +890,60 @@ float **process_fetch(int scale, int mode,int link, int *active, int width,
 
       metascale = scale;
       metawidth = width;
+      metares = res;
 
+      
       /* generate new numbers */
-      switch(scale){
-      case 0: /* linear */
-	for(i=0;i<width;i++){
-	  float lfreq=(i-1.)*20000./(width-1);
-	  float hfreq=(i+1.)*20000./(width-1);
-	  xmappingL[fi][i]=lfreq/(rate[fi]*.5)*(blocksize/2);
-	  xmappingH[fi][i]=hfreq/(rate[fi]*.5)*(blocksize/2);
+      for(i=0;i<width;i++){
+	float off=0;
+	float loff=1.;
+	float hoff=1.;
+	float lfreq,hfreq;
+
+	switch(res){
+	case 0: /* screen-resolution */
+	  off=1.;
+	  break;
+	case 1: /* 1/24th octave */
+	  loff = .95918945710913818816;
+	  hoff = 1.04254690518999138632;
+	  break;
+	case 2: /* 1/12th octave */
+	  loff = .94387431268169349664;
+	  hoff = 1.05946309435929526455;
+	  break;
+	case 3: /* 1/3th octave */
+	  loff = .79370052598409973738;
+	  hoff = 1.25992104989487316475;
+	  break;
 	}
-	break;
-      case 1: /* log */
-	for(i=0;i<width;i++){
-	  float lfreq= pow(10.,(i-1.)/(width-1)*(log10(100000.)-log10(5.))+log10(5.));
-	  float hfreq= pow(10.,(i+1.)/(width-1)*(log10(100000.)-log10(5.))+log10(5.));
-	  xmappingL[fi][i]=lfreq/(rate[fi]*.5)*(blocksize/2);
-	  xmappingH[fi][i]=hfreq/(rate[fi]*.5)*(blocksize/2);
+
+	switch(scale){
+	case 0: /* log */
+	  lfreq= pow(10.,(i-off)/(width-1)
+		     * (log10(100000.)-log10(5.))
+		     + log10(5.)) * loff;
+	  hfreq= pow(10.,(i+off)/(width-1)
+		     * (log10(100000.)-log10(5.))
+		     + log10(5.)) * hoff;
+	  break;
+	case 1: /* ISO */
+	  lfreq= pow(2.,(i-off)/(width-1)
+		     * (log2(20000.)-log2(25.))
+		     + log2(25.)) * loff;
+	  hfreq= pow(2.,(i+off)/(width-1)
+		     * (log2(20000.)-log2(25.))
+		     + log2(25.)) *hoff;
+	  break;
+	case 2: /* screen-resolution linear */
+	  lfreq=(i-off)*20000./(width-1)*loff;
+	  hfreq=(i+off)*20000./(width-1)*hoff;
+	  break;
 	}
-	break;
-      case 2: /* iso log */
-	for(i=0;i<width;i++){
-	  float lfreq= pow(2.,(i-1.)/(width-1)*(log2(20000.)-log2(25.))+log2(25.));
-	  float hfreq= pow(2.,(i+1.)/(width-1)*(log2(20000.)-log2(25.))+log2(25.));
-	  xmappingL[fi][i]=lfreq/(rate[fi]*.5)*(blocksize/2);
-	  xmappingH[fi][i]=hfreq/(rate[fi]*.5)*(blocksize/2);
-	}
-	break;
+
+	xmappingL[fi][i]=lfreq/(rate[fi]*.5)*(blocksize/2);
+	xmappingH[fi][i]=hfreq/(rate[fi]*.5)*(blocksize/2);
+
       }
       
       for(i=0;i<width;i++){
