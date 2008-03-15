@@ -53,7 +53,7 @@ int plot_scale=0;
 int plot_mode=0;
 int plot_link=0;
 int plot_hold=0;
-int plot_depth=45;
+int plot_depth=90;
 int plot_last_update=0;
 int *active;
 
@@ -139,16 +139,19 @@ static void dump(GtkWidget *widget,struct panel *p){
 static void depthchange(GtkWidget *widget,struct panel *p){
   int choice=gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
   switch(choice){
-  case 0: /* 20dB */
+  case 0: /* 10dB */
+    plot_depth=10;
+    break;
+  case 1: /* 20dB */
     plot_depth=20;
     break;
-  case 1: /* 45dB */
+  case 2: /* 45dB */
     plot_depth=45;
     break;
-  case 2: /* 90dB */
+  case 3: /* 90dB */
     plot_depth=90;
     break;
-  case 3: /*140dB */
+  case 4: /*140dB */
     plot_depth=140;
     break;
   }
@@ -526,7 +529,7 @@ void panel_create(struct panel *panel){
   /* scale */
   {
     GtkWidget *menu=gtk_combo_box_new_text();
-    char *entries[]={"screen resolution","1/24th octave","1/12th octave","1/3 octave"};
+    char *entries[]={"single-pixel","1/24th octave","1/12th octave","1/3 octave"};
     for(i=0;i<4;i++)
       gtk_combo_box_append_text (GTK_COMBO_BOX (menu), entries[i]);
     gtk_combo_box_set_active(GTK_COMBO_BOX(menu),plot_res);
@@ -551,10 +554,10 @@ void panel_create(struct panel *panel){
   /* depth */
   {
     GtkWidget *menu=gtk_combo_box_new_text();
-    char *entries[]={"20dB","45dB","90dB","140dB"};
-    for(i=0;i<4;i++)
+    char *entries[]={"10dB","20dB","45dB","90dB","140dB"};
+    for(i=0;i<5;i++)
       gtk_combo_box_append_text (GTK_COMBO_BOX (menu), entries[i]);
-    gtk_combo_box_set_active(GTK_COMBO_BOX(menu),1);
+    gtk_combo_box_set_active(GTK_COMBO_BOX(menu),3);
     gtk_box_pack_start(GTK_BOX(bbox),menu,0,0,0);
     
     g_signal_connect (G_OBJECT (menu), "changed",
@@ -564,8 +567,8 @@ void panel_create(struct panel *panel){
   /* mode */
   {
     GtkWidget *menu=gtk_combo_box_new_text();
-    char *entries[]={"instant","slowav","maximum","accumulate"};
-    for(i=0;i<4;i++)
+    char *entries[]={"realtime","maximum","accumulate"};
+    for(i=0;i<3;i++)
       gtk_combo_box_append_text (GTK_COMBO_BOX (menu), entries[i]);
     gtk_combo_box_set_active(GTK_COMBO_BOX(menu),plot_mode);
     gtk_box_pack_start(GTK_BOX(bbox),menu,0,0,0);
@@ -679,6 +682,9 @@ static gboolean async_event_handle(GIOChannel *channel,
     pthread_mutex_unlock(&feedback_mutex);
     replot(panel);
     plot_draw(PLOT(panel->plot));
+
+    while (gtk_events_pending())
+      gtk_main_iteration();
   }else
     pthread_mutex_unlock(&feedback_mutex);
 
