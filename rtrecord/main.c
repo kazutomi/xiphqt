@@ -97,6 +97,12 @@ buffer_meta dma_data[2] = {
 };
 channel_meta *pcm_data[2];
 
+void exit_handler(int sig){
+  signal(sig,SIG_IGN);
+  write(ttypipe[1],"q",1);
+  exiting = 1;  
+}
+
 /* used to redirect the real tty input into the pipe that ncurses
    thinks is the tty */
 void *tty_thread(void *dummy){
@@ -805,7 +811,9 @@ int main(int argc,char *argv[]){
   pthread_create(&ui_thread_id,NULL,ui_thread,NULL);
   main_thread_id=pthread_self();
 
-  //signal(SIGINT,SIG_IGN);
+  signal(SIGINT,exit_handler);
+  signal(SIGSEGV,exit_handler);
+  signal(SIGPIPE,exit_handler);
 
 
   if(!quiet)
