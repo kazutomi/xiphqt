@@ -842,6 +842,10 @@ void process_dump(int mode){
 
 }
 
+/* how many bins to 'trim' off the edge of calculated data when we
+   know we've hit a boundary of marginal measurement */
+#define binspan 5
+
 float **process_fetch(int res, int scale, int mode, int link, 
 		      int *active, int width, 
 		      float *ymax, float *pmax, float *pmin){
@@ -1042,10 +1046,10 @@ float **process_fetch(int res, int scale, int mode, int link,
     case LINK_IMPEDENCE_10:
       {
 	float shunt = (link == LINK_IMPEDENCE_p1?.1:(link == LINK_IMPEDENCE_1?1:10));
+	float *r = feedback_work[ch];
 
 	for(ci=0;ci<channels[fi];ci++){
 	  float *y = feedback_work[ci+ch];
-	  float *r = feedback_work[ch];
 	  float *m = data[ch+ci];
 	  
 	  if(ci==0 || active[ch+ci]){
@@ -1070,7 +1074,7 @@ float **process_fetch(int res, int scale, int mode, int link,
 
 	      if(ci==0){
 		/* stash the reference in the work vector */
-		y[i]=sum;
+		r[i]=sum;
 	      }else{
 		/* the shunt */
 		/* 'r' collected at source, 'sum' across the shunt */
@@ -1079,13 +1083,49 @@ float **process_fetch(int res, int scale, int mode, int link,
 		
 		if(S>(1e-5) && V>S){
 		  y[i] = shunt*(V-S)/S;
-		  if(y[i]>*ymax)*ymax=y[i];
 		}else{
 		  y[i] = NAN;
 		}
 	      }
 	    }
 	  }
+	}
+	    
+	/* scan the resulting buffers for marginal data that would
+	   produce spurious output. Specifically we look for sharp
+	   falloffs of > 40dB or an original test magnitude under
+	   -70dB. */
+	{
+	  float max = -140;
+	  for(i=0;i<width;i++){
+	    float v = r[i] = todB_a(r+i)*.5;
+	    if(v>max)max=v;
+	  }
+
+	  for(ci=1;ci<channels[fi];ci++){
+	    if(active[ch+ci]){
+	      float *y = feedback_work[ci+ch];	      
+	      for(i=0;i<width;i++){
+		if(r[i]<max-40 || r[i]<-70){
+		  int j=i-binspan;
+		  if(j<0)j=0;
+		  for(;j<i;j++)
+		    y[j]=NAN;
+		  for(;j<width;j++){
+		    if(r[j]>max-40 && r[j]>-70)break;
+		    y[j]=NAN;
+		  }
+		  i=j+3;
+		  for(;j<i && j<width;j++){
+		    y[j]=NAN;
+		  }
+		}
+		if(!isnan(y[i]) && y[i]>*ymax)*ymax = y[i];
+	      }
+	    }
+ 	  }
+	  fprintf(stderr,"ymax=%f\n",*ymax);
+
 	}
       }
       break;
@@ -1178,9 +1218,8 @@ float **process_fetch(int res, int scale, int mode, int link,
 
 	  /* scan the resulting buffers for marginal data that would
 	     produce spurious output. Specifically we look for sharp
-	     falloffs of > 30dB or an original test magnitude under
-	     -40dB. */
-#define binspan 5
+	     falloffs of > 40dB or an original test magnitude under
+	     -70dB. */
 	  if(active[ch] || active[ch+1]){
 	    int max = -140;
 	    for(i=0;i<width;i++)
