@@ -802,7 +802,10 @@ void plot_refresh (Plot *p, int *process){
   case LINK_IMPEDENCE_p1:
   case LINK_IMPEDENCE_1:
   case LINK_IMPEDENCE_10:
-    ymax *=1.8;
+    if(ymax<12)
+      ymax=12;
+    else
+      ymax *=1.8;
     break;
   }
 
