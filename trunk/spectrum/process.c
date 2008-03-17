@@ -46,12 +46,19 @@ pthread_mutex_t feedback_mutex=PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 int feedback_increment=0;
 
 float *feedback_count;
-float **feedback_work;
+float **plot_data;
+float *plot_floor=NULL;
+float **work_floor=NULL;
 float *process_work;
 
 float **feedback_acc;
 float **feedback_max;
 float **feedback_instant;
+
+/* Gentlemen, power up the Variance hammer */
+float **floor_y;
+float **floor_yy;
+int floor_count;
 
 float **ph_acc;
 float **ph_max;
@@ -62,6 +69,7 @@ float **xmappingH;
 int metascale = -1;
 int metawidth = -1;
 int metares = -1;
+int metanoise = 0;
 
 sig_atomic_t acc_clear=0;
 sig_atomic_t acc_rewind=0;
@@ -409,11 +417,13 @@ int input_load(void){
   blockbuffer=malloc(total_ch*sizeof(*blockbuffer));
   process_work=calloc(blocksize+2,sizeof(*process_work));
   feedback_count=calloc(total_ch,sizeof(*feedback_count));
-  feedback_work=calloc(total_ch,sizeof(*feedback_work));
+  plot_data=calloc(total_ch,sizeof(*plot_data));
 
   feedback_acc=malloc(total_ch*sizeof(*feedback_acc));
   feedback_max=malloc(total_ch*sizeof(*feedback_max));
   feedback_instant=malloc(total_ch*sizeof(*feedback_instant));
+  floor_y=malloc(total_ch*sizeof(*floor_y));
+  floor_yy=malloc(total_ch*sizeof(*floor_yy));
 
   ph_acc=malloc(total_ch*sizeof(*ph_acc));
   ph_max=malloc(total_ch*sizeof(*ph_max));
@@ -423,6 +433,8 @@ int input_load(void){
   for(i=0;i<total_ch;i++){
     blockbuffer[i]=calloc(blocksize,sizeof(**blockbuffer));
 
+    floor_y[i]=calloc(blocksize/2+1,sizeof(**floor_y));
+    floor_yy[i]=calloc(blocksize/2+1,sizeof(**floor_yy));
     feedback_acc[i]=calloc(blocksize/2+1,sizeof(**feedback_acc));
     feedback_max[i]=calloc(blocksize/2+1,sizeof(**feedback_max));
     feedback_instant[i]=calloc(blocksize/2+1,sizeof(**feedback_instant));
@@ -656,10 +668,13 @@ void rundata_clear(){
   acc_clear=0;
 }
 
+extern int plot_noise;
+
 /* return 0 on EOF, 1 otherwise */
 static int process(){
   int fi,i,j,ch;
   int eof_all;
+  int noise=plot_noise;  
 
   /* for each file, FOR SCIENCE! */
   for(fi=0;fi<inputs;fi++){
@@ -715,6 +730,11 @@ static int process(){
 	  float sqI = I*I;
 	  float sqM = sqR+sqI;
 
+	  if(noise==1){
+	    floor_yy[i][j>>1]+=sqM*sqM;
+	    floor_y[i][j>>1]+=sqM;
+	  }
+	  
 	  /* deal with phase accumulate/rotate */
 	  if(i==ch){
 	    /* normalize/store ref for later rotation */
@@ -756,6 +776,8 @@ static int process(){
     }
     ch+=channels[fi];
   }
+  if(noise==1)
+    floor_count++;
   feedback_increment++;
   write(eventpipe[1],"",1);
   return 1;
@@ -842,21 +864,34 @@ void process_dump(int mode){
 
 }
 
+void clear_noise_floor(){
+  int i;
+  for(i=0;i<total_ch;i++){
+    memset(floor_y[i],0,(blocksize/2+1)*sizeof(**floor_y));
+    memset(floor_yy[i],0,(blocksize/2+1)*sizeof(**floor_yy));
+  }
+  floor_count=0;
+}
+
 /* how many bins to 'trim' off the edge of calculated data when we
    know we've hit a boundary of marginal measurement */
 #define binspan 5
 
 float **process_fetch(int res, int scale, int mode, int link, 
 		      int *active, int width, 
-		      float *ymax, float *pmax, float *pmin){
+		      float *ymax, float *pmax, float *pmin,
+		      float **yfloor,int noise){
   int ch,ci,i,j,fi;
   float **data;
   float **ph;
+
+  *yfloor=NULL;
 
   /* are our scale mappings up to date? */
   if(res != metares || scale != metascale || width != metawidth){
     if(!xmappingL) xmappingL = calloc(inputs, sizeof(*xmappingL));
     if(!xmappingH) xmappingH = calloc(inputs, sizeof(*xmappingH));
+    metanoise=-1;
 
     for(fi=0;fi<inputs;fi++){
 
@@ -939,13 +974,93 @@ float **process_fetch(int res, int scale, int mode, int link,
     }
 
     for(i=0;i<total_ch;i++)
-      if(feedback_work[i]){
-	feedback_work[i] = realloc(feedback_work[i],(width+1)*sizeof(**feedback_work));
+      if(plot_data[i]){
+	plot_data[i] = realloc(plot_data[i],(width+1)*sizeof(**plot_data));
       }else{
-	feedback_work[i] = malloc((width+1)*sizeof(**feedback_work));
+	plot_data[i] = malloc((width+1)*sizeof(**plot_data));
       }
   }
+
+  /* 'illustrate' the noise floor */
+  if(noise){
+    switch(link){
+    case LINK_INDEPENDENT:
+    case LINK_SUMMED:
+    case LINK_SUB_FROM:
+    case LINK_SUB_REF:	
       
+      if(plot_floor)
+	plot_floor=realloc(plot_floor,(width+1)*sizeof(*plot_floor));
+      else
+	plot_floor=calloc((width+1),sizeof(*plot_floor));
+      if(!work_floor)
+	work_floor = calloc(total_ch,sizeof(*work_floor));
+
+      if(metanoise!=link){
+	float *y = plot_floor;
+	float d = 1./floor_count;
+	int ch=0;
+	metanoise=link;
+	for(i=0;i<width;i++)
+	  y[i]=-300;
+	
+	for(fi=0;fi<inputs;fi++){
+	  float *L = xmappingL[fi];
+	  float *H = xmappingH[fi];
+	  
+	  for(ci=0;ci<channels[fi];ci++){
+	    float *fy = floor_y[ci+ch];
+	    float *fyy = floor_yy[ci+ch];
+	    float *w;
+	    if(work_floor[ci+ch])
+	      w = work_floor[ci+ch] = realloc(work_floor[ci+ch],(width+1)*sizeof(**work_floor));
+	    else
+	      w = work_floor[ci+ch] = calloc((width+1),sizeof(**work_floor));
+	    
+	    for(i=0;i<width;i++){
+	      int first=floor(L[i]);
+	      int last=floor(H[i]);
+	      float esum;
+	      float vsum;
+	      float v = fyy[first] - fy[first]*fy[first]*d;
+
+	      if(first==last){
+		float del=H[i]-L[i];
+		esum=fy[first]*del;
+		vsum=v*del;
+	      }else{
+		float del=1.-(L[i]-first);
+		esum=fy[first]*del;
+		vsum=v*del;
+		
+		for(j=first+1;j<last;j++){
+		  v = fyy[j] - fy[j]*fy[j]*d;
+		  esum+=fy[j];
+		  vsum+=v;
+		}
+
+		v = fyy[last] - fy[last]*fy[last]*d;
+		del=(H[i]-last);
+		esum+=fy[last]*del;
+		vsum+=v*del;
+	      }
+	      
+	      esum*=d;
+	      w[i] = esum+sqrt(vsum);
+	      w[i] = todB_a(w+i)*.5;
+
+	      if(w[i]>y[i])y[i]=w[i];
+	    }
+	  }
+	  ch+=channels[fi];
+	}
+      }
+      *yfloor=plot_floor;
+      break; 
+    }
+  }else
+    metanoise=-1;
+  
   /* mode selects the base data set */
   switch(mode){    
   case 0: /* independent / instant */
@@ -974,7 +1089,7 @@ float **process_fetch(int res, int scale, int mode, int link,
     case LINK_INDEPENDENT:
       
       for(ci=0;ci<channels[fi];ci++){
-	float *y = feedback_work[ci+ch];
+	float *y = plot_data[ci+ch];
 	float *m = data[ci+ch];
 	if(active[ch+ci]){
 	  for(i=0;i<width;i++){
@@ -1006,7 +1121,7 @@ float **process_fetch(int res, int scale, int mode, int link,
 
     case LINK_SUMMED:
       {
-	float *y = feedback_work[ch];
+	float *y = plot_data[ch];
 	memset(y,0,(width+1)*sizeof(*y));
       
 	for(ci=0;ci<channels[fi];ci++){
@@ -1041,15 +1156,101 @@ float **process_fetch(int res, int scale, int mode, int link,
       }
       break;
       
+    case LINK_SUB_FROM:
+      {
+	float *y = plot_data[ch];
+	if(active[ch]==0){
+	  for(i=0;i<width;i++)
+	    y[i]=-300;
+	}else{
+	  for(ci=0;ci<channels[fi];ci++){
+	    float *m = data[ci+ch];
+	    if(ci==0 || active[ch+ci]){
+	      for(i=0;i<width;i++){
+		int first=floor(L[i]);
+		int last=floor(H[i]);
+		float sum;
+		
+		if(first==last){
+		  float del=H[i]-L[i];
+		  sum=m[first]*del;
+		}else{
+		  float del=1.-(L[i]-first);
+		  sum=m[first]*del;
+		  
+		  for(j=first+1;j<last;j++)
+		    sum+=m[j];
+		  
+		  del=(H[i]-last);
+		  sum+=m[last]*del;
+		}
+		
+		if(ci==0){
+		  y[i]=sum;
+		}else{
+		  y[i]-=sum;
+		}
+	      }
+	    }
+	  }
+	  
+	  for(i=0;i<width;i++){
+	    float v = (y[i]>0?y[i]:0);
+	    float sum=todB_a(&v)*.5;
+	    if(sum>*ymax)*ymax=sum;
+	    y[i]=sum;	  
+	  }
+	}
+      }
+      break;
+    case LINK_SUB_REF:
+      {
+	float *r = plot_data[ch];
+	for(ci=0;ci<channels[fi];ci++){
+	  float *y = plot_data[ch+ci];
+	  float *m = data[ci+ch];
+	  if(ci==0 || active[ch+ci]){
+	    for(i=0;i<width;i++){
+	      int first=floor(L[i]);
+	      int last=floor(H[i]);
+	      float sum;
+	      
+	      if(first==last){
+		float del=H[i]-L[i];
+		sum=m[first]*del;
+	      }else{
+		float del=1.-(L[i]-first);
+		sum=m[first]*del;
+		
+		for(j=first+1;j<last;j++)
+		  sum+=m[j];
+		
+		del=(H[i]-last);
+		sum+=m[last]*del;
+	      }
+	      
+	      if(ci==0){
+		r[i]=sum;
+	      }else{
+		sum=(r[i]>sum?0.f:sum-r[i]);
+		y[i]=todB_a(&sum)*.5;
+		if(y[i]>*ymax)*ymax=y[i];
+	      }
+	    }
+	  }
+	}
+      }
+      break;
+      
     case LINK_IMPEDENCE_p1:
     case LINK_IMPEDENCE_1:
     case LINK_IMPEDENCE_10:
       {
 	float shunt = (link == LINK_IMPEDENCE_p1?.1:(link == LINK_IMPEDENCE_1?1:10));
-	float *r = feedback_work[ch];
+	float *r = plot_data[ch];
 
 	for(ci=0;ci<channels[fi];ci++){
-	  float *y = feedback_work[ci+ch];
+	  float *y = plot_data[ci+ch];
 	  float *m = data[ch+ci];
 	  
 	  if(ci==0 || active[ch+ci]){
@@ -1104,7 +1305,7 @@ float **process_fetch(int res, int scale, int mode, int link,
 
 	  for(ci=1;ci<channels[fi];ci++){
 	    if(active[ch+ci]){
-	      float *y = feedback_work[ci+ch];	      
+	      float *y = plot_data[ci+ch];	      
 	      for(i=0;i<width;i++){
 		if(r[i]<max-40 || r[i]<-70){
 		  int j=i-binspan;
@@ -1124,8 +1325,6 @@ float **process_fetch(int res, int scale, int mode, int link,
 	      }
 	    }
  	  }
-	  fprintf(stderr,"ymax=%f\n",*ymax);
-
 	}
       }
       break;
@@ -1133,8 +1332,8 @@ float **process_fetch(int res, int scale, int mode, int link,
     case LINK_PHASE: /* response/phase */
 
       if(channels[fi]>=2){
-	float *om = feedback_work[ch];
-	float *op = feedback_work[ch+1];
+	float *om = plot_data[ch];
+	float *op = plot_data[ch+1];
 
 	float *r = data[ch];
 	float *m = data[ch+1];
@@ -1258,16 +1457,17 @@ float **process_fetch(int res, int scale, int mode, int link,
       break;
 
     case LINK_THD: /* THD */
-      break;
-      
+    case LINK_THD2: /* THD-2 */
     case LINK_THDN: /* THD+N */
+    case LINK_THDN2: /* THD+N-2 */
+
+
       break;
       
     }
     ch+=channels[fi];
   }
 
-  return feedback_work;
-
+  return plot_data;
 }
 

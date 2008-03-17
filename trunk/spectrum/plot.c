@@ -210,6 +210,22 @@ static void draw(GtkWidget *widget){
     gdk_draw_rectangle(p->backing,gc,1,padx,0,width-padx,height-p->pady+1);
   }
 
+  /* draw the noise floor if active */
+  if(p->floor){
+    GdkColor rgb = {0,0xd000,0xd000,0xd000};
+    gdk_gc_set_rgb_fg_color(p->drawgc,&rgb);
+    
+    for(i=0;i<width-padx;i++){
+      float val=p->floor[i];
+      int y;
+
+      /* No noise floor is passed back for display in the modes where it's irrelevant */
+      y= rint((height-p->pady-1)/p->disp_depth*(p->disp_ymax-val));
+      if(y<height-p->pady)
+	gdk_draw_line(p->backing,p->drawgc,padx+i,y,padx+i,height-p->pady-1);
+    }
+  }
+
   /* draw the light x grid */
   {
     int i;
@@ -444,7 +460,7 @@ static void draw(GtkWidget *widget){
   }
   
   /* draw actual data */
-  {
+  if(p->ydata){
     int cho=0;
     int gi;
     for(gi=0;gi<p->groups;gi++){
@@ -537,9 +553,8 @@ static gboolean expose( GtkWidget *widget, GdkEventExpose *event ){
 
 static void size_request (GtkWidget *widget,GtkRequisition *requisition){
   Plot *p=PLOT(widget);
-  /* no smaller than 800x600 */
   requisition->width = 800;
-  requisition->height = 600;
+  requisition->height = 440;
   int axisy=0,axisx=0,pady=0,padx=0,phax=0,px,py,i;
 
   /* find max lin layout */
@@ -618,7 +633,6 @@ static void size_request (GtkWidget *widget,GtkRequisition *requisition){
 
 static gboolean configure(GtkWidget *widget, GdkEventConfigure *event){
   Plot *p=PLOT(widget);
-  int i;
 
   if (p->backing)
     g_object_unref(p->backing);
@@ -628,15 +642,8 @@ static gboolean configure(GtkWidget *widget, GdkEventConfigure *event){
 			      widget->allocation.height,
 			      -1);
 
-  if(p->ydata){
-    for(i=0;i<p->total_ch;i++)free(p->ydata[i]);
-    free(p->ydata);
-  }
-
-  p->ydata=malloc(p->total_ch*sizeof(*p->ydata));
-  for(i=0;i<p->total_ch;i++)
-    p->ydata[i]=
-      calloc(widget->allocation.width,sizeof(**p->ydata));
+  p->ydata=NULL;
+  p->configured=1;
   
   compute_metadata(widget);
   plot_refresh(p,NULL);
@@ -765,22 +772,25 @@ GtkWidget* plot_new (int size, int groups, int *channels, int *rate){
 }
 
 void plot_refresh (Plot *p, int *process){
-  int i;
   float ymax,pmax,pmin;
   int width=GTK_WIDGET(p)->allocation.width-p->padx;
   int height=GTK_WIDGET(p)->allocation.height-p->pady;
   float **data;
-  
-  if(!p->ydata)return;
+  float *floor;
+
+  if(!p->configured)return;
 
   if(process)
     memcpy(p->ch_process,process,p->total_ch*sizeof(*process));
   
   data = process_fetch(p->res, p->scale, p->mode, p->link, 
-		       p->ch_process,width,&ymax,&pmax,&pmin);
+		       p->ch_process,width,&ymax,&pmax,&pmin,&floor,p->noise);
   
-  for(i=0;i<p->total_ch;i++)
-    memcpy(p->ydata[i],data[i],width*sizeof(**p->ydata));
+  p->ydata=data;
+  if(floor)
+    p->floor=floor;
+  else
+    p->floor=NULL;
 
   /* graph limit updates are conditional depending on mode/link */
   pmax+=5;
@@ -809,59 +819,64 @@ void plot_refresh (Plot *p, int *process){
     break;
   }
 
-  //if(p->ymax>ymax)ymax=p->ymax;
-  //if(pmax<p->pmax)pmax=p->pmax;
-  //if(pmin>p->pmin)pmin=p->pmin;
-
-  /* scale regression is conditional and damped. Start the timer/run
-     the timer while any one scale measure should be dropping by more
-     than 50px. If any peaks occur above, reset timer.  Once timer
-     runs out, drop 5px per frame */
+  if(p->mode == 0){
+    /* "Instantaneous' mode scale regression is conditional and
+       damped. Start the timer/run the timer while any one scale measure
+       should be dropping by more than 50px. If any peaks occur above,
+       reset timer.  Once timer runs out, drop 5px per frame */
 #define PXTHRESH 25
 #define PXDEL 10.
 #define TIMERFRAMES 20
-  if(p->ymax>ymax){
-    float oldzero = (height-1)/p->depth*p->ymax;
-    float newzero = (height-1)/p->depth*ymax;
-
-    if(newzero+PXTHRESH<oldzero){
-      if(p->ymaxtimer){
-	p->ymaxtimer--;
+    if(p->ymax>ymax){
+      float oldzero = (height-1)/p->depth*p->ymax;
+      float newzero = (height-1)/p->depth*ymax;
+      
+      if(newzero+PXTHRESH<oldzero){
+	if(p->ymaxtimer){
+	  p->ymaxtimer--;
+	}else{
+	  p->ymax = (oldzero-PXDEL)*p->depth/(height-1);
+	}
       }else{
-	p->ymax = (oldzero-PXDEL)*p->depth/(height-1);
+	p->ymaxtimer = TIMERFRAMES;
       }
-    }else{
+    }else
       p->ymaxtimer = TIMERFRAMES;
-    }
-  }else
-    p->ymaxtimer = TIMERFRAMES;
-
-  if(p->pmax>pmax || p->pmin<pmin){
-    float newmax = (height-1)/(p->pmax-p->pmin)*(p->pmax-pmax);
-    float newmin = (height-1)/(p->pmax-p->pmin)*(pmin-p->pmin);
-
-    if(newmax>PXTHRESH || newmin>PXTHRESH){
-      if(p->phtimer){
-	p->phtimer--;
+    
+    if(p->pmax>pmax || p->pmin<pmin){
+      float newmax = (height-1)/(p->pmax-p->pmin)*(p->pmax-pmax);
+      float newmin = (height-1)/(p->pmax-p->pmin)*(pmin-p->pmin);
+      
+      if(newmax>PXTHRESH || newmin>PXTHRESH){
+	if(p->phtimer){
+	  p->phtimer--;
+	}else{
+	  if(newmax>PXTHRESH)
+	    p->pmax -= PXDEL/(height-1)*(p->pmax-p->pmin);
+	  if(newmin>PXTHRESH)
+	    p->pmin += PXDEL/(height-1)*(p->pmax-p->pmin);
+	}
       }else{
-	if(newmax>PXTHRESH)
-	  p->pmax -= PXDEL/(height-1)*(p->pmax-p->pmin);
-	if(newmin>PXTHRESH)
-	  p->pmin += PXDEL/(height-1)*(p->pmax-p->pmin);
+	p->phtimer = TIMERFRAMES;
       }
-    }else{
+    }else
       p->phtimer = TIMERFRAMES;
-    }
-  }else
-    p->phtimer = TIMERFRAMES;
-
+  }
+    
   if(ymax<p->depth-140.)ymax=p->depth-140.;
   if(ymax>140.)ymax=140.;
   if(pmax>180)pmax=180;
   if(pmin<-180)pmin=-180;  
-  if(ymax>p->ymax)p->ymax=ymax;
-  if(pmax>p->pmax)p->pmax=pmax;
-  if(pmin<p->pmin)p->pmin=pmin;
+
+  if(p->mode == 0){
+    if(ymax>p->ymax)p->ymax=ymax;
+    if(pmax>p->pmax)p->pmax=pmax;
+    if(pmin<p->pmin)p->pmin=pmin;
+  }else{
+    p->ymax=ymax;
+    p->pmax=pmax;
+    p->pmin=pmin;
+  }
 
   p->disp_depth = p->depth;
   p->disp_ymax = p->ymax;
@@ -915,13 +930,14 @@ float **plot_get (Plot *p){
   return(p->ydata);
 }
 
-void plot_setting (Plot *p, int res, int scale, int mode, int link, int depth){
+void plot_setting (Plot *p, int res, int scale, int mode, int link, int depth, int noise){
   GtkWidget *widget=GTK_WIDGET(p);
   p->res=res;
   p->scale=scale;
   p->mode=mode;
   p->depth=depth;
   p->link=link;
+  p->noise=noise;
 
   p->ymax=-140;
   p->pmax=0;
