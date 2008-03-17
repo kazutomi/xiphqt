@@ -55,7 +55,9 @@ struct _Plot{
   PangoLayout **imp_layout;
   PangoLayout **phase_layout;
 
+  int configured;
   float **ydata;
+  float *floor;
 
   int groups;
   int *ch;
@@ -67,6 +69,7 @@ struct _Plot{
   int link;
   int scale;
   int res;
+  int noise;
   int *rate;
 
   int xgrid[11];
@@ -106,7 +109,7 @@ struct _PlotClass{
 GType          plot_get_type        (void);
 GtkWidget*     plot_new             (int n, int inputs, int *channels, int *rate);
 void	       plot_refresh         (Plot *m, int *process);
-void	       plot_setting         (Plot *m, int res, int scale, int mode, int link, int depth);
+void	       plot_setting         (Plot *m, int res, int scale, int mode, int link, int depth, int noise);
 void	       plot_draw            (Plot *m);
 void	       plot_clear           (Plot *m);
 int 	       plot_width           (Plot *m);

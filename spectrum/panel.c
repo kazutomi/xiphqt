@@ -54,6 +54,7 @@ int plot_mode=0;
 int plot_link=0;
 int plot_hold=0;
 int plot_depth=90;
+int plot_noise=0;
 int plot_last_update=0;
 int *active;
 
@@ -135,6 +136,27 @@ static void dump(GtkWidget *widget,struct panel *p){
   process_dump(plot_mode);
 }
 
+static void noise(GtkWidget *widget,struct panel *p){
+  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))){
+    if(plot_noise){
+      plot_noise=0;
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget),0);
+      clear_noise_floor();
+      plot_setting(PLOT(p->plot),plot_res,plot_scale,plot_mode,plot_link,plot_depth,0);
+    }else{
+      plot_noise=1;
+      plot_setting(PLOT(p->plot),plot_res,plot_scale,plot_mode,plot_link,plot_depth,0);
+    }
+  }else{
+    if(plot_noise){
+      gtk_button_set_label(GTK_BUTTON(widget),"clear _noise floor");
+      plot_noise=2;
+      plot_setting(PLOT(p->plot),plot_res,plot_scale,plot_mode,plot_link,plot_depth,1);
+    }else
+      gtk_button_set_label(GTK_BUTTON(widget),"sample _noise floor");
+  }
+}
+
 
 static void depthchange(GtkWidget *widget,struct panel *p){
   int choice=gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
@@ -155,7 +177,7 @@ static void depthchange(GtkWidget *widget,struct panel *p){
     plot_depth=140;
     break;
   }
-  plot_setting(PLOT(p->plot),plot_res,plot_scale,plot_mode,plot_link,plot_depth);
+  plot_setting(PLOT(p->plot),plot_res,plot_scale,plot_mode,plot_link,plot_depth,plot_noise);
 }
 
 static void set_fg(GtkWidget *c, gpointer in){
@@ -168,6 +190,17 @@ static void set_fg(GtkWidget *c, gpointer in){
   /* buttons usually have internal labels */
   if(GTK_IS_CONTAINER(c))
     gtk_container_forall (GTK_CONTAINER(c),set_fg,in);
+}
+
+static void set_via_active(struct panel *p, int *active, int *bactive){
+  int fi,i;
+  int ch=0;
+  for(fi=0;fi<inputs;fi++){
+    for(i=ch;i<ch+channels[fi];i++)
+      gtk_widget_set_sensitive(p->chbuttons[i],1);
+    ch+=channels[fi];
+  }
+  plot_set_active(PLOT(p->plot),active,bactive);  
 }
 
 static void chlabels(GtkWidget *widget,struct panel *p){
@@ -187,6 +220,9 @@ static void chlabels(GtkWidget *widget,struct panel *p){
   case LINK_IMPEDENCE_10:
   case LINK_THD:
   case LINK_THDN:
+  case LINK_THD2:
+  case LINK_THDN2:
+  case LINK_SUB_REF:
 
     /*  first channel in each group insensitive/inactive, used as a reference */
     ch=0;
@@ -205,11 +241,8 @@ static void chlabels(GtkWidget *widget,struct panel *p){
     plot_set_active(PLOT(p->plot),active,bactive);
     break;    
 
-
   case LINK_SUMMED: /* summing mode */
-
-    /* sum mode is a special case; all the data comes on first vector of
-       the group if any elements of the group are active at all */
+  case LINK_SUB_FROM: /* subtract channels from reference */
     ch=0;
     for(fi=0;fi<inputs;fi++){
       int any=0;
@@ -221,15 +254,11 @@ static void chlabels(GtkWidget *widget,struct panel *p){
       ch+=channels[fi];
     }
 
-    /* fall through */
+    set_via_active(p,active,bactive);
+    break;
+
   case LINK_INDEPENDENT: /* normal/independent mode */
-    ch=0;
-    for(fi=0;fi<inputs;fi++){
-      for(i=ch;i<ch+channels[fi];i++)
-	gtk_widget_set_sensitive(p->chbuttons[i],1);
-      ch+=channels[fi];
-    }
-    plot_set_active(PLOT(p->plot),active,bactive);
+    set_via_active(p,active,bactive);
     break;    
 
   case LINK_PHASE: /* response/phase */
@@ -257,15 +286,31 @@ static void chlabels(GtkWidget *widget,struct panel *p){
   switch(plot_link){
   case LINK_THD:
   case LINK_THDN:
+  case LINK_THD2:
+  case LINK_THDN2:
   case LINK_IMPEDENCE_p1:
   case LINK_IMPEDENCE_1:
   case LINK_IMPEDENCE_10:
-
+  case LINK_SUB_REF:
     ch=0;
     for(fi=0;fi<inputs;fi++){
       for(i=ch;i<ch+channels[fi];i++){
 	if(i==ch){
 	  gtk_button_set_label(GTK_BUTTON(p->chbuttons[i]),"reference");
+	}else{
+	  sprintf(buf,"channel %d", i-ch);
+	  gtk_button_set_label(GTK_BUTTON(p->chbuttons[i]),buf);
+	}
+      }
+      ch+=channels[fi];
+    }
+    break;    
+  case LINK_SUB_FROM:
+    ch=0;
+    for(fi=0;fi<inputs;fi++){
+      for(i=ch;i<ch+channels[fi];i++){
+	if(i==ch){
+	  gtk_button_set_label(GTK_BUTTON(p->chbuttons[i]),"output");
 	}else{
 	  sprintf(buf,"channel %d", i-ch);
 	  gtk_button_set_label(GTK_BUTTON(p->chbuttons[i]),buf);
@@ -311,6 +356,7 @@ static void chlabels(GtkWidget *widget,struct panel *p){
   /* set colors */
   switch(plot_link){
   case LINK_SUMMED:
+  case LINK_SUB_FROM:
     ch=0;
     for(fi=0;fi<inputs;fi++){
       GdkColor rgb = chcolor(ch);
@@ -340,24 +386,24 @@ static void chlabels(GtkWidget *widget,struct panel *p){
 
 static void reschange(GtkWidget *widget,struct panel *p){
   plot_res=gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
-  plot_setting(PLOT(p->plot),plot_res,plot_scale,plot_mode,plot_link,plot_depth);
+  plot_setting(PLOT(p->plot),plot_res,plot_scale,plot_mode,plot_link,plot_depth,plot_noise);
 }
 
 static void scalechange(GtkWidget *widget,struct panel *p){
   plot_scale=gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
-  plot_setting(PLOT(p->plot),plot_res,plot_scale,plot_mode,plot_link,plot_depth);
+  plot_setting(PLOT(p->plot),plot_res,plot_scale,plot_mode,plot_link,plot_depth,plot_noise);
 }
 
 static void modechange(GtkWidget *widget,struct panel *p){
   plot_mode=gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
   replot(p);
-  plot_setting(PLOT(p->plot),plot_res,plot_scale,plot_mode,plot_link,plot_depth);
+  plot_setting(PLOT(p->plot),plot_res,plot_scale,plot_mode,plot_link,plot_depth,plot_noise);
 }
 
 static void linkchange(GtkWidget *widget,struct panel *p){
   plot_link=gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
   replot(p);
-  plot_setting(PLOT(p->plot),plot_res,plot_scale,plot_mode,plot_link,plot_depth);
+  plot_setting(PLOT(p->plot),plot_res,plot_scale,plot_mode,plot_link,plot_depth,plot_noise);
   chlabels(widget,p);
 }
 
@@ -544,7 +590,7 @@ void panel_create(struct panel *panel){
     for(i=0;i<3;i++)
       gtk_combo_box_append_text (GTK_COMBO_BOX (menu), entries[i]);
     gtk_combo_box_set_active(GTK_COMBO_BOX(menu),plot_scale);
-    plot_setting(PLOT(panel->plot),plot_res,plot_scale,plot_mode,plot_link,plot_depth);
+    plot_setting(PLOT(panel->plot),plot_res,plot_scale,plot_mode,plot_link,plot_depth,plot_noise);
     gtk_box_pack_start(GTK_BOX(bbox),menu,0,0,0);
     
     g_signal_connect (G_OBJECT (menu), "changed",
@@ -645,6 +691,14 @@ void panel_create(struct panel *panel){
     GtkWidget *button=gtk_button_new_with_mnemonic("_dump data");
     gtk_widget_add_accelerator (button, "activate", panel->group, GDK_d, 0, 0);
     g_signal_connect (G_OBJECT (button), "clicked", G_CALLBACK (dump), panel);
+    gtk_box_pack_start(GTK_BOX(bbox),button,0,0,0);
+  }
+
+  /* noise floor */
+  {
+    GtkWidget *button=gtk_toggle_button_new_with_mnemonic("sample _noise floor");
+    gtk_widget_add_accelerator (button, "activate", panel->group, GDK_n, 0, 0);
+    g_signal_connect (G_OBJECT (button), "toggled", G_CALLBACK (noise), panel);
     gtk_box_pack_start(GTK_BOX(bbox),button,0,0,0);
   }
 

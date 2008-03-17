@@ -85,9 +85,11 @@ extern int input_load();
 extern void *process_thread(void *dummy);
 extern void process_dump(int mode);
 extern void rundata_clear();
+extern void clear_noise_floor();
 extern float **process_fetch(int res, int scale, int mode, int link, 
 			     int *active, int width, 
-			     float *ymax, float *pmax, float *pmin);
+			     float *ymax, float *pmax, float *pmin,
+			     float **floor, int noise);
 
 extern int inputs;
 extern int total_ch;
@@ -113,19 +115,23 @@ extern sig_atomic_t acc_loop;
 extern sig_atomic_t process_active;
 extern sig_atomic_t process_exit;
 
-#define LINKS 10
-static char *link_entries[LINKS]={"independent","summed",".1\xCE\xA9 shunt","1\xCE\xA9 shunt","10\xCE\xA9 shunt",
-				  "resp/phase","THD","THD-2","THD+N","THD-2+N"};
+#define LINKS 12
+static char *link_entries[LINKS]={"independent","sum","subtract ref","subtract from",
+				  "imp .1\xCE\xA9 shunt","imp 1\xCE\xA9 shunt",
+				  "imp 10\xCE\xA9 shunt",
+				  "response/phase","THD","THD (-2nd)","THD+N","THD+N (-2nd)"};
 #define LINK_INDEPENDENT  0
 #define LINK_SUMMED       1
-#define LINK_IMPEDENCE_p1 2
-#define LINK_IMPEDENCE_1  3
-#define LINK_IMPEDENCE_10 4
-#define LINK_PHASE        5
-#define LINK_THD          6
-#define LINK_THD2         7
-#define LINK_THDN         8
-#define LINK_THDN2        9
+#define LINK_SUB_REF      2
+#define LINK_SUB_FROM     3
+#define LINK_IMPEDENCE_p1 4
+#define LINK_IMPEDENCE_1  5
+#define LINK_IMPEDENCE_10 6
+#define LINK_PHASE        7
+#define LINK_THD          8
+#define LINK_THD2         9
+#define LINK_THDN        10
+#define LINK_THDN2       11
 
 #endif
 
