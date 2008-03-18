@@ -249,7 +249,7 @@ int vorbis_book_unpack(ogg2pack_buffer *opb,codebook *s){
     }
     break;
   default:
-    if(codebook_p)
+    if(warn_p || codebook_p || headerinfo_p)
       printf("WARN codebk: Illegal entry encoding %lu.  Codebook is corrupt.\n",
 	     ret);
     /* EOF */
@@ -259,13 +259,25 @@ int vorbis_book_unpack(ogg2pack_buffer *opb,codebook *s){
   if(codebook_p)
     printf("             Dims           : %d\n",s->dim);
 
+  if(s->dim==0 && (warn_p || codebook_p || headerinfo_p))
+    printf("WARN codebk: Codebook has dimension of zero.\n"
+	   "             Not illegal but probably not correct.\n");
+
+  if(s->entries==0 && (warn_p || codebook_p || headerinfo_p))
+    printf("WARN codebk: Codebook has zero entries.  Not illegal\n"
+	   "             but probably not correct.\n");
+
+  if(s->used_entries==0 && (warn_p || codebook_p || headerinfo_p))
+    printf("WARN codebk: Codebook has zero used entries.  Not \n"
+	   "             illegal but probably not correct.\n");
+
   /* Do we have a mapping to unpack? */
   ogg2pack_read(opb,4,&maptype);
   if(maptype>0){
     unsigned long q_min,q_del,q_bits,q_seq;
 
     if(maptype==1){
-      quantvals=_book_maptype1_quantvals(s);
+      quantvals=(s->dim==0?0:_book_maptype1_quantvals(s));
     }else{
       quantvals=s->entries*s->dim;
     }
