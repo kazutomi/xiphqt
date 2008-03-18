@@ -315,11 +315,19 @@ int vorbis_info_headerin(vorbis_info *vi,ogg2_packet *op){
     {
       unsigned long temp[6];
       unsigned long packtype;
-      int i;
+      int i,err;
 
-      ogg2pack_read(opb,8,&packtype);
+      err=ogg2pack_read(opb,8,&packtype);
       for(i=0;i<6;i++)
-	ogg2pack_read(opb,8,temp+i);
+	err|=ogg2pack_read(opb,8,temp+i);
+      
+      if(err && syncp){
+	if(headerinfo_p || warn_p)
+	  printf("WARN header: EOP reading packet identification when\n"
+		 "             Expecting a Vorbis stream header. Stream not\n"
+		 "             decodable as Vorbis I.\n\n");
+	return(-1);
+      }
       
       if(temp[0]!='v' ||
 	 temp[1]!='o' ||
