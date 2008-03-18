@@ -74,10 +74,15 @@ static int _make_words(char *l,
 		   "             Codebook is invalid.\n\n");
 	  return -1; /* overpopulated tree! */
 	}
-	
+
 	/* chase the tree as far as it's already populated, fill in past */
 	for(j=0;j<length-1;j++){
 	  ogg_int16_t bit=(entry>>(length-j-1))&1;
+	  if(chase*2+1 >= (b->used_entries-1)*2){
+	    printf("WARN codebk: Malformed [underpopulated] Huffman tree.\n"
+		   "             Codebook is invalid.\n\n");
+	    return -1;
+	  }
 	  if(chase>=top){ 
 	    top++;
 	    b->dec_table[chase*2]=top;
@@ -251,6 +256,8 @@ int vorbis_book_unpack(ogg2pack_buffer *opb,codebook *s){
     goto err;
   }
 
+  if(codebook_p)
+    printf("             Dims           : %d\n",s->dim);
 
   /* Do we have a mapping to unpack? */
   ogg2pack_read(opb,4,&maptype);
