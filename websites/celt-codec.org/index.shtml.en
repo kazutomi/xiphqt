@@ -22,17 +22,21 @@
 </p>
 <h2>The Technology</h2>
 <p>
-	CELT stands for "Code-Excited Lapped Transform". The code features:
+	CELT stands for "Code-Excited Lapped Transform". It applies some of the CELP principles,
+        but does everything in the frequency domain, which removes some of the limitations of CELP.
+        CELT is suitable for both speech and music and currently features:
 </p>
 <ul>
+	<li>Ultra-low latency (typically from 3 to 9 ms) </li>
 	<li>Full audio bandwidth (44.1 kHz and 48 kHz)</li>
 	<li>Stereo support</li>
 	<li>Packet loss concealment</li>
 	<li>Constant bit-rates from 32 kbps to 128 kbps and above</li>
-	<li>Fixed-point port</li>
+	<li>A fixed-point version of the encoder and decoder</li>
 </ul>
 <p>
-	Note that CELT is not meant to replace either Speex or Vorbis.
+	The CELT codec is meant to close the gap between Vorbis and Speex for applications
+	where both high quality audio and low delay are desired.
 
 </p>
 <h2>Getting Involved</h2>
