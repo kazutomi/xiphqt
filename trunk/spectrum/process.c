@@ -770,7 +770,7 @@ static int process(){
 	  
 	}
 	feedback_count[i]++;
-       
+	
 	pthread_mutex_unlock(&feedback_mutex);
       }
     }
@@ -893,6 +893,15 @@ float **process_fetch(int res, int scale, int mode, int link,
     if(!xmappingH) xmappingH = calloc(inputs, sizeof(*xmappingH));
     metanoise=-1;
 
+    if(!work_floor)
+      work_floor = calloc(total_ch,sizeof(*work_floor));
+    for(i=0;i<total_ch;i++){
+      if(work_floor[i])
+	work_floor[i] = realloc(work_floor[i],(width+1)*sizeof(**work_floor));
+      else
+	work_floor[i] = calloc((width+1),sizeof(**work_floor));
+    }
+
     for(fi=0;fi<inputs;fi++){
 
       /* if mapping preexists, resize it */
@@ -983,83 +992,73 @@ float **process_fetch(int res, int scale, int mode, int link,
 
   /* 'illustrate' the noise floor */
   if(noise){
-    switch(link){
-    case LINK_INDEPENDENT:
-    case LINK_SUMMED:
-    case LINK_SUB_FROM:
-    case LINK_SUB_REF:	
+    if(plot_floor)
+      plot_floor=realloc(plot_floor,(width+1)*sizeof(*plot_floor));
+    else
+      plot_floor=calloc((width+1),sizeof(*plot_floor));
+    
+    if(metanoise!=link){
+      float *y = plot_floor;
+      int ch=0;
+      metanoise=link;
+      for(i=0;i<width;i++)
+	y[i]=-300;
       
-      if(plot_floor)
-	plot_floor=realloc(plot_floor,(width+1)*sizeof(*plot_floor));
-      else
-	plot_floor=calloc((width+1),sizeof(*plot_floor));
-      if(!work_floor)
-	work_floor = calloc(total_ch,sizeof(*work_floor));
-
-      if(metanoise!=link){
-	float *y = plot_floor;
+      for(fi=0;fi<inputs;fi++){
+	float *L = xmappingL[fi];
+	float *H = xmappingH[fi];
 	float d = 1./floor_count;
-	int ch=0;
-	metanoise=link;
-	for(i=0;i<width;i++)
-	  y[i]=-300;
 	
-	for(fi=0;fi<inputs;fi++){
-	  float *L = xmappingL[fi];
-	  float *H = xmappingH[fi];
+	for(ci=0;ci<channels[fi];ci++){
+	  float *fy = floor_y[ci+ch];
+	  float *fyy = floor_yy[ci+ch];
+	  float *w = work_floor[ci+ch];
 	  
-	  for(ci=0;ci<channels[fi];ci++){
-	    float *fy = floor_y[ci+ch];
-	    float *fyy = floor_yy[ci+ch];
-	    float *w;
-	    if(work_floor[ci+ch])
-	      w = work_floor[ci+ch] = realloc(work_floor[ci+ch],(width+1)*sizeof(**work_floor));
-	    else
-	      w = work_floor[ci+ch] = calloc((width+1),sizeof(**work_floor));
+	  for(i=0;i<width;i++){
+	    int first=floor(L[i]);
+	    int last=floor(H[i]);
+	    float esum;
+	    float vsum;
+	    float v = fyy[first]*floor_count - fy[first]*fy[first];
 	    
-	    for(i=0;i<width;i++){
-	      int first=floor(L[i]);
-	      int last=floor(H[i]);
-	      float esum;
-	      float vsum;
-	      float v = fyy[first] - fy[first]*fy[first]*d;
-
-	      if(first==last){
-		float del=H[i]-L[i];
-		esum=fy[first]*del;
-		vsum=v*del;
-	      }else{
-		float del=1.-(L[i]-first);
-		esum=fy[first]*del;
-		vsum=v*del;
-		
-		for(j=first+1;j<last;j++){
-		  v = fyy[j] - fy[j]*fy[j]*d;
-		  esum+=fy[j];
-		  vsum+=v;
-		}
-
-		v = fyy[last] - fy[last]*fy[last]*d;
-		del=(H[i]-last);
-		esum+=fy[last]*del;
-		vsum+=v*del;
+	    if(first==last){
+	      float del=H[i]-L[i];
+	      esum=fy[first]*del;
+	      vsum=v*del;
+	    }else{
+	      float del=1.-(L[i]-first);
+	      esum=fy[first]*del;
+	      vsum=v*del;
+	      
+	      for(j=first+1;j<last;j++){
+		v = fyy[j]*floor_count - fy[j]*fy[j];
+		esum+=fy[j];
+		vsum+=v;
 	      }
 	      
-	      esum*=d;
-	      w[i] = esum+sqrt(vsum);
-	      w[i] = todB_a(w+i)*.5;
-
-	      if(w[i]>y[i])y[i]=w[i];
+	      v = fyy[last]*floor_count - fy[last]*fy[last];
+	      del=(H[i]-last);
+	      esum+=fy[last]*del;
+	      vsum+=v*del;
 	    }
+	    vsum = 10*sqrt(vsum)*d;
+	    esum*=d;
+	    w[i] = esum+vsum*10;
+	    esum = todB_a(w+i)*.5;
+	    
+	    if(esum>y[i])y[i]=esum;
 	  }
-	  ch+=channels[fi];
 	}
+	ch+=channels[fi];
       }
-      *yfloor=plot_floor;
-      break; 
     }
-  }else
+    if(link == LINK_INDEPENDENT && mode==0)
+      *yfloor=plot_floor;
+  }else{
+    for(i=0;i<total_ch;i++)
+      memset(work_floor[i],0,width*sizeof(**work_floor));
     metanoise=-1;
+  }
   
   /* mode selects the base data set */
   switch(mode){    
@@ -1076,7 +1075,7 @@ float **process_fetch(int res, int scale, int mode, int link,
     ph=ph_acc;
     break;
   }
-
+  
   ch=0;
   *ymax = -150.;
   *pmax = -180.;
@@ -1336,7 +1335,9 @@ float **process_fetch(int res, int scale, int mode, int link,
 	float *op = plot_data[ch+1];
 
 	float *r = data[ch];
+	float *rn = work_floor[ch];
 	float *m = data[ch+1];
+	float *mn = work_floor[ch+1];
 	float *p = ph[ch+1];
 	float mag[width];
 
@@ -1370,9 +1371,9 @@ float **process_fetch(int res, int scale, int mode, int link,
 		sumR+=r[last]*del;
 		sumM+=m[last]*del;
 	      }
-
-	      mag[i] = todB_a(&sumR)*.5;
-	      if(active[ch] && sumR > 1e-8){
+	      
+	      if(sumR>rn[i] && sumM>mn[i]){
+		mag[i] = todB_a(&sumR)*.5;
 		sumM /= sumR;
 		om[i] = todB_a(&sumM)*.5;
 	      }else{
@@ -1407,67 +1408,60 @@ float **process_fetch(int res, int scale, int mode, int link,
 		sumI+=p[(last<<1)+1]*del;
 	      }
 
-	      if(sumR*sumR+sumI*sumI > 1e-16){
+	      if(!isnan(om[i])){
 		op[i] = atan2(sumI,sumR)*57.29;
 	      }else{
 		op[i]=NAN;
 	      }
 	    }
 	  }
-
+	  
 	  /* scan the resulting buffers for marginal data that would
 	     produce spurious output. Specifically we look for sharp
 	     falloffs of > 40dB or an original test magnitude under
 	     -70dB. */
 	  if(active[ch] || active[ch+1]){
-	    int max = -140;
-	    for(i=0;i<width;i++)
-	      if(!isnan(mag[i]) && mag[i]>max)max=mag[i];
-	    
 	    for(i=0;i<width;i++){
-	      if(!isnan(mag[i])){
-		if(mag[i]<max-40 || mag[i]<-70){
-		  int j=i-binspan;
-		  if(j<0)j=0;
-		  for(;j<i;j++){
-		    om[j]=NAN;
-		    op[j]=NAN;
-		  }
-		  for(;j<width;j++){
-		    if(mag[j]>max-40 && mag[j]>-70)break;
-		    om[j]=NAN;
-		    op[j]=NAN;
-		  }
-		  i=j+3;
-		  for(;j<i && j<width;j++){
-		    om[j]=NAN;
-		    op[j]=NAN;
-		  }
+	      if(isnan(om[i])){
+		int j=i-binspan;
+		if(j<0)j=0;
+		for(;j<i;j++){
+		  om[j]=NAN;
+		  op[j]=NAN;
 		}
-		if(om[i]>*ymax)*ymax = om[i];
-		if(!isnan(op[i])){
-		  if(op[i]>*pmax)*pmax = op[i];
-		  if(op[i]<*pmin)*pmin = op[i];
+		for(;j<width;j++){
+		  if(!isnan(om[j]))break;
+		  om[j]=NAN;
+		  op[j]=NAN;
+		}
+		i=j+3;
+		for(;j<i && j<width;j++){
+		  om[j]=NAN;
+		  op[j]=NAN;
 		}
 	      }
+	      if(om[i]>*ymax)*ymax = om[i];
+	      if(op[i]>*pmax)*pmax = op[i];
+	      if(op[i]<*pmin)*pmin = op[i];
+	      
 	    }
 	  }
 	}
       }
       break;
-
+      
     case LINK_THD: /* THD */
     case LINK_THD2: /* THD-2 */
     case LINK_THDN: /* THD+N */
     case LINK_THDN2: /* THD+N-2 */
-
-
+      
+      
       break;
       
     }
     ch+=channels[fi];
   }
-
+  
   return plot_data;
 }
 
