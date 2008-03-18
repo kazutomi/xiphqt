@@ -1,0 +1,22 @@
+<div id="thepage">
+<div id="logos">
+	<a href="http://www.celt-codec.org/">CELT</a>
+</div>
+
+<div id="navbar">
+	<ul>
+		<li id="home_"><a href="/">Home</a></li>
+		<li id="news_"><a href="/news/">News</a></li>
+		<li id="samples_"><a href="/samples/">Samples</a></li>
+		<li id="downloads_"><a href="/downloads/">Downloads</a></li>
+		<li id="docs_"><a href="/docs/">Documentation</a></li>
+		<li id="contact_"><a href="/contact/">Contact</a></li>
+	</ul>
+</div>
+
+<div id="banners">
+	<!-- Visualize a banner here. <img src="/images/banners/try_it.png" alt="Try it out!"/> -->
+</div>
+
+<div id="main">
+<div id="content">
