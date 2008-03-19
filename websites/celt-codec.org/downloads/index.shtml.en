@@ -1,0 +1,51 @@
+<!--#include virtual="/ssi/header.include" -->
+<!--  Enter custom page information and styles here -->
+
+<title>The CELT ultra-low delay audio codec: Downloads</title>
+<style type="text/css">
+<!--
+#navlink_ a {
+	text-decoration: underline !important;
+}
+-->
+</style>
+</head>
+<body>
+<!--#include virtual="/common/xiphbar.include" -->
+<!--#include virtual="/ssi/pagetop.include" -->
+<!--  All your page content goes here  -->
+<h1>Downloads</h1>
+<p>
+	Keep in mind that CELT is still a work in progress. Neither the API/ABI,
+	nor the bit-stream are stable. Also, while we do not expect it to set your
+	house on fire, we cannot guarantee that it won't. So be warned! That being
+        said, we're interested in feedback (bug reports, feature requests, comments)
+        from people trying to use it.
+</p>
+
+
+<h2>Latest <strong style='font-style: italic;'>development</strong> release</h2>
+
+<h3 id='zero.3.0'>0.3.0</h3>
+<p>In this release, all the code is now converted to fixed-point. </p>
+
+<ul>
+<li><a href="http://downloads.us.xiph.org/releases/celt/celt-0.3.0.tar.gz">celt-0.3.0.tar.gz</a></li>
+</ul>
+
+
+<h2>Older development releases</h2>
+<p>
+These are older releases, provided mainly for historical reasons.
+</p>
+
+<ul>
+
+<li><a href="http://downloads.us.xiph.org/releases/celt/celt-0.0.1.tar.gz">celt-0.0.1.tar.gz</a></li>
+<li><a href="http://downloads.us.xiph.org/releases/celt/celt-0.0.2.tar.gz">celt-0.0.2.tar.gz</a></li>
+<li><a href="http://downloads.us.xiph.org/releases/celt/celt-0.1.0.tar.gz">celt-0.1.0.tar.gz</a></li>
+<li><a href="http://downloads.us.xiph.org/releases/celt/celt-0.2.0.tar.gz">celt-0.2.0.tar.gz</a></li>
+</ul>
+
+
+<!--#include virtual="/ssi/pagebottom.include" -->
