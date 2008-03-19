@@ -89,7 +89,6 @@
 				<li><a href="/paranoia/">CD Paranoia</a> Robust CD audio extraction </li>
 				<li><a href="http://icecast.org/">Icecast:</a> Streaming server</li>
 				<li><a href="http://icecast.org/ices.php">Ices:</a> Source client for Icecast Server</li>
-				<li><a href="http://wiki.xiph.org/IceShare">IceShare:</a> P2P for content distribution</li>
 			</ul>
 
 			<h3>Codecs</h3>
@@ -99,7 +98,6 @@
 				<li><a href="http://theora.org/">Theora:</a> Video codec</li>
 				<li><a href="http://flac.sourceforge.net">FLAC:</a> Free Lossless Audio Codec</li>
 				<li><a href="http://speex.org/">Speex:</a> Speech codec</li>
-				<li><a href="http://wiki.xiph.org/OggWrit">OggWrit:</a> Text phrase codec (subtitles)</li>
 				<li><a href="http://wiki.xiph.org/Metadata">Ogg Metadata:</a> Arbitrary metadata format</li>
 			</ul>
 		</div>
