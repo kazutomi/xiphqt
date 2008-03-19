@@ -1,7 +1,8 @@
 <div id="thepage">
-<div id="logos">
-	<a href="http://www.celt-codec.org/">CELT</a>
+<div id="xiphlogo">
+  <a href="http://www.xiph.org/"><img src="/images/logos/fish_xiph_org.png" alt="Fish Logo and Xiph.org"/></a>
 </div>
+
 
 <div id="navbar">
 	<ul>
