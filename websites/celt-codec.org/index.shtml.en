@@ -15,7 +15,7 @@
 <!--#include virtual="/ssi/pagetop.include" -->
 <!--  All your page content goes here  -->
 
-<h1>CELT, An ultra-low delay audio codec</h1>
+<h1>The CELT ultra-low delay audio codec</h1>
 <h2>Overview</h2>
 <p>
 	The CELT codec is an experimental audio codec for use in low-delay communication.
