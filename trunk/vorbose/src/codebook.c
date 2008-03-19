@@ -162,9 +162,10 @@ int vorbis_book_unpack(ogg2pack_buffer *opb,codebook *s){
   memset(s,0,sizeof(*s));
   ogg2pack_read(opb,24,&ret);
   if(ogg2pack_eop(opb))goto eop;
-  if(ret!=0x564342 && (warn_p || codebook_p || headerinfo_p)){
-    printf("WARN codebk: Sync sequence (0x%lx) incorrect (!=0x564342)\n"
-	   "             Corrupt codebook.\n",ret);
+  if(ret!=0x564342){
+    if (warn_p || codebook_p || headerinfo_p)
+      printf("WARN codebk: Sync sequence (0x%lx) incorrect (!=0x564342)\n"
+	     "             Corrupt codebook.\n",ret);
     goto err;
   }
 
@@ -174,6 +175,13 @@ int vorbis_book_unpack(ogg2pack_buffer *opb,codebook *s){
   ogg2pack_read(opb,24,&ret);
   s->entries=ret;
 
+  if(_ilog(s->dim)+_ilog(s->entries)>24){
+    if(warn_p || codebook_p || headerinfo_p)
+      printf("WARN codebk: codebook dims*entries overflows 24 bit range\n");
+    
+    goto err;
+  }
+
   /* codeword ordering.... length ordered or unordered? */
   ogg2pack_read(opb,1,&ret);
   if(ogg2pack_eop(opb))goto eop;
@@ -181,7 +189,7 @@ int vorbis_book_unpack(ogg2pack_buffer *opb,codebook *s){
   switch(ret){
   case 0:
     /* unordered */
-    lengthlist=alloca(sizeof(*lengthlist)*s->entries);
+    lengthlist=malloc(sizeof(*lengthlist)*s->entries);
 
     /* allocated but unused entries? */
     if(ogg2pack_read1(opb)){
@@ -230,7 +238,7 @@ int vorbis_book_unpack(ogg2pack_buffer *opb,codebook *s){
       ogg2pack_read(opb,5,&length);
       length++;
       s->used_entries=s->entries;
-      lengthlist=alloca(sizeof(*lengthlist)*s->entries);
+      lengthlist=malloc(sizeof(*lengthlist)*s->entries);
       
       for(i=0;i<s->entries;){
 	unsigned long num;
@@ -317,8 +325,10 @@ int vorbis_book_unpack(ogg2pack_buffer *opb,codebook *s){
 
   if(_make_words(lengthlist,s)) goto err;
 
+  if(lengthlist)free(lengthlist);
   return 0;
  eop:
+  if(lengthlist)free(lengthlist);
   if(codebook_p || headerinfo_p || warn_p)
     printf("WARN codebk: Premature EOP while parsing codebook.\n");
  err:
