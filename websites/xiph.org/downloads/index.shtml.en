@@ -11,7 +11,7 @@
 <h1 style="margin-top: 0;">End-User Downloads</h1>
 
 <p>
-Xiph.org does not primarily create software for the end-user.
+The Xiph.Org Foundation does not primarily create software for the end-user.
 Usually, we create specifications, reference implementations, libraries,
 and documentation for all of the above. We try to make it easy for
 developers to include support for the Xiph family of codecs. The following 
@@ -80,14 +80,18 @@ end-user download links are provided for convenience:
 <td>
 	<a href="http://downloads.xiph.org/releases/vorbis/vorbis-tools-1.2.0.tar.gz">vorbis-tools-1.2.0.tar.gz</a><br/>
 	<a href="http://downloads.xiph.org/releases/vorbis/vorbis-tools-1.2.0.7z">vorbis-tools-1.2.0.7z</a>
+<br/>
+	<a href="http://downloads.xiph.org/releases/vorbis/vorbis-tools-win32-bin.7z">vorbis-tools 1.2.0 (win32 binaries)</a>
 </td>
 <td>
 	1.0MK<br/>
-	527K
+	527K<br/>
+	349K
 </td>
 <td>
 	df976d24e51ef3d87cd462edf747bf9a<br/>
-	57fd2a6e446b3d906bf5199962b9ccfd
+	57fd2a6e446b3d906bf5199962b9ccfd<br/>
+	530f79112f5a12f60a878ebd62013521
 </td>
 </tr>
 
