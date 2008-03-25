@@ -4,6 +4,7 @@
 
 
 #include <theora/theora.h>
+#include <vorbis/vorbisenc.h>
 #include <ogg/ogg.h>
 #include <stdio.h> 
 
@@ -171,7 +172,17 @@ struct etheora_context {
         /* fout - a file to print the ogg packets. 
            note it may be a socket stream.*/
         FILE *fogg; 
-/* TODO: compute pixel callback function too!*/
+/* TODO: compute pixel callback function too! 
+ * Note: i think it's unecessary*/
+	/*audio data:*/
+	char audio; 
+	vorbis_info vi; 
+	vorbis_comment vc; 
+	vorbis_dsp_state vds; 
+	vorbis_block vb; 
+	long n_channels; 
+	long sample_rate; 
+	float audio_quality; 
 }; 
 
 typedef struct etheora_context etheora_ctx; 
@@ -186,6 +197,9 @@ int  etheora_enc_setup(etheora_ctx *ec,
 		ogg_uint32_t frame_width, ogg_uint32_t frame_height, 
 		etheora_aspect aspect, ogg_uint32_t  fps_numerator, 
 		ogg_uint32_t  fps_denominator, FILE *fout, FILE *finfo); 
+
+int  etheora_enc_audio_append(etheora_ctx *ec, long n_channels, 
+	long sample_rate);
 
 int  etheora_enc_start(etheora_ctx *ec); 
 

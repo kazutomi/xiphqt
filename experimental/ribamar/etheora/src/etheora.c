@@ -221,6 +221,7 @@ int etheora_filltinfo_nooffset(theora_info *ti,
 		ti->aspect_numerator = 16 * frame_height;
 		ti->aspect_denominator = 9 * frame_width;
 	}
+
 	ti->fps_numerator = fps_numerator;
 	ti->fps_denominator = fps_denominator;
 	ti->colorspace = ETHEORA_TINFO_COLORSPACE;  //OC_CS_UNSPECIFIED;
@@ -1499,6 +1500,7 @@ int  etheora_enc_setup(etheora_ctx *ec,
        }
        else return ETHEORA_ERR_NULL_ARGUMENT; 
 
+	ec->audio = 0; 
        if(etheora_filltinfo_nooffset(&ec->ti,
                 frame_width,
                 frame_height,
@@ -1511,13 +1513,41 @@ int  etheora_enc_setup(etheora_ctx *ec,
 	
 }
 
+/* 
+etheora_enc_audio_append(): tells the library that the video 
+to be encoded is going to have audio too. 
+
+usually called: 
+after  etheora_enc_setup() 
+before etheora_enc_start() 
+
+arguments: 
+ec: pointer to an etheora context. 
+n_channels:  number of audio channels to be encoded. 
+sample_rate: sampling rate of the source audio (Hz). 
+quality: desired quality level
+*/
+
+int  etheora_enc_audio_append(etheora_ctx *ec, long n_channels,
+        long sample_rate){
+	/* sanity test.*/
+	if (ec == NULL) return ETHEORA_ERR_NULL_ARGUMENT; 
+	ec->audio = 1; 
+	ec->n_channels = n_channels; 
+	ec->sample_rate = sample_rate; 
+	ec->audio_quality = 0.4; 
+	return 0; 
+}
+
+
 /*
 etheora_enc_start():
 starts the encoding process. effectively allocate memory for frame buffer
 (ec->yuv) and write video headers to ec->fogg.  
+TODO: write audio headers being implemented. 
 
 usually called: 
-after  etheora_enc_setup() 
+after  etheora_enc_setup() or etheora_enc_audio_append()
 before etheora_enc_yuv_draw() or  etheora_enc_rgb_draw()
 
 arguments: 
@@ -1533,6 +1563,7 @@ ETHEORA_ERR_MALLOC, can't allocate memory.
 ETHEORA_ERR_CANT_START, theora encoder refuses to start 
 		(theora_encode_init()).
 ETHEORA_ERR_CANT_WRITE_HEADER, can't write headers to file. 
+TODO: update comments to consider audio implementation. 
 */
 
 int  etheora_enc_start(etheora_ctx *ec){
@@ -1540,8 +1571,8 @@ int  etheora_enc_start(etheora_ctx *ec){
 	/*sanity test.*/
 	if(ec == NULL) return ETHEORA_ERR_NULL_ARGUMENT;
 
-	/*TODO: currently, only video stream supported. */
-	if(etheora_streams_states_init(&ec->ess, 1))
+	/*TODO: currently, audio stream being implemented. */
+	if(etheora_streams_states_init(&ec->ess, 2))
 		return ETHEORA_ERR_MALLOC; 
 
 	if(etheora_fillyuv(&ec->ti, &ec->yuv, ec->finfo))
@@ -1549,6 +1580,19 @@ int  etheora_enc_start(etheora_ctx *ec){
 
 	if(etheora_encode_init(&ec->ts, &ec->ti))
 		return ETHEORA_ERR_CANT_START; 
+	
+	if(ec->audio){
+		vorbis_info_init(&ec->vi); 
+
+		/* TODO: implement every mode (VBR, CBR, ABR). */
+		if( vorbis_encode_init_vbr(&ec->vi, ec->n_channels, 
+			ec->sample_rate, ec->audio_quality))
+			return ETHEORA_ERR_CANT_START;
+
+		vorbis_comment_init(&ec->vc); 
+		vorbis_analysis_init(&ec->vds, &ec->vi); 
+		vorbis_block_init(&ec->vds, &ec->vb); 
+	}
 
 	if(etheora_writeheaders(&ec->ts,
 				&ec->ess.streams[0],

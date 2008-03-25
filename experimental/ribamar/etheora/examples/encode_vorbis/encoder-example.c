@@ -9,7 +9,7 @@
   is printed to standard output. 
 
   build command line example (with gcc): 
-  gcc encoder-example.c etheora.c  -I. -ltheora -o encoder-example
+  gcc encoder-example.c etheora.c  -I. -ltheora -lvorbisenc -o encoder-example
 */
 
 #include <etheora.h>
@@ -51,13 +51,15 @@ int main(int argc, char **args){
 
 	/* last chance to change theora parameters before encoding.
 	   the experienced user can change ec.ti parameters or edit
-	   the ec.tc structure. */
+	   the ec.tc structure or audio parameters. */
 	ec.ti.target_bitrate = 200000; /*200 kbps*/
 	ec.tc.vendor = vendor; 
+	ec.audio_quality = 1.0; /* -0.1 smaller file, worst quality;
+				    1.0 bigger file, best quality. */
 
 	/* start the encoder. */
-	if (etheora_enc_start(&ec)){
-		fprintf(stderr, "Can't start.\n"); 
+	if (f = etheora_enc_start(&ec)){
+		fprintf(stderr, "Can't start (err=%d).\n", f); 
 		return 2; 
 	}
 
