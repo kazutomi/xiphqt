@@ -36,7 +36,17 @@ class GstPlayer:
     # \param videowidget - VideoWidget class.
     def __init__(self, videowidget):
         self.playing = False
+	bin = gst.Bin('my-bin')
+	self.textoverlay = gst.element_factory_make('textoverlay')
+	bin.add(self.textoverlay)
+	pad = self.textoverlay.get_pad("video_sink")
+	ghostpad = gst.GhostPad("sink", pad)
+	bin.add_pad(ghostpad)
+	videosink = gst.element_factory_make('autovideosink')
+	bin.add(videosink)
+	gst.element_link_many(self.textoverlay, videosink)
         self.player = gst.element_factory_make("playbin", "player")
+	self.player.set_property("video-sink", bin)
         self.videowidget = videowidget
 
         bus = self.player.get_bus()
@@ -79,6 +89,16 @@ class GstPlayer:
     def set_location(self, location):
         self.player.set_state(gst.STATE_NULL)
         self.player.set_property('uri', location)
+
+#==============================================================================
+    ## Set Subtitle Text
+    # Set subtitle text to be overlayed.
+    # \param text - Text (may have pango tags) 
+    # \param font - Pango FontDescrition for the text
+    def set_subtitle_text(self, text, font=None):
+	if font:
+	    self.textoverlay.set_property('subtitle-font-desc', font)
+	self.textoverlay.set_property('text', text)
 
 #==============================================================================
     ## Get location.
