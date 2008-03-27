@@ -17,6 +17,7 @@ pygst.require('0.10')
 
 import gst
 import gobject
+import gtk
 import os.path
 from gst.extend.pygobject import gsignal
 import gst.interfaces
