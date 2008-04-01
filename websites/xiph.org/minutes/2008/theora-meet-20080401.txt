@@ -1,0 +1,467 @@
+Apr 01 11:02:21 <xiphmont_>	Ivo called the meeting, but never said anything about an agenda
+Apr 01 11:02:26 <xiphmont_>	did one appear on the Wiki?
+Apr 01 11:02:30 <kfish>	nup
+Apr 01 11:02:46 <kfish>	i just made up a blank wiki page an hour ago
+Apr 01 11:02:52 <xiphmont_>	OK, then I'll suggest the following:
+Apr 01 11:03:08 <xiphmont_>	1) Roadblocks left to Theora 1.0
+Apr 01 11:03:11 <xiphmont_>	b) release engineering
+Apr 01 11:03:17 <xiphmont_>	c) Theora logo
+Apr 01 11:03:26 <xiphmont_>	...feel free to chime in.
+Apr 01 11:03:53 <xiphmont_>	The last meeting didn't happen because I wanted Ralph to be able to attend, but we never got an ack from Ralph about this one
+Apr 01 11:03:59 <xiphmont_>	No wonder given the time :-P
+Apr 01 11:04:25 <xiphmont_>	"Ivo, 5am is a bit early for the west coast people with kids."  "OK, 7am"
+Apr 01 11:04:31 <xiphmont_>	:-
+Apr 01 11:04:40 <xiphmont_>	anyway
+Apr 01 11:04:57 -->	mvrable (n=mvrable@turin.ucsd.edu) has joined #xiphmeet
+Apr 01 11:05:24 <xiphmont_>	Derf, kfish: How much of the 1.0 process does Ralph actually own at this point?
+Apr 01 11:05:32 <maikmerten>	I'd be interested in an enthusiastic report about the crazy fun you had with the obscure parts of the VP3 spec ;-)
+Apr 01 11:05:36 <xiphmont_>	I've not really gotten much feedback from him and he's not here.
+Apr 01 11:05:50 <xiphmont_>	Oh, sure, d) Thusnelda
+Apr 01 11:06:23 <xiphmont_>	and why not 3) Nokia, SFLC, patents
+Apr 01 11:06:27 <xiphmont_>	er e)
+Apr 01 11:06:36 <kfish>	1, b, c, d, 3 :-)
+Apr 01 11:06:43 <maikmerten>	well, I guess there's nothing really fixed yet, but perhaps you have some thoughts about future revisions of current codecs
+Apr 01 11:06:54 <maikmerten>	(as in spec revisions)
+Apr 01 11:07:06 <xiphmont_>	kfish: frosted butts
+Apr 01 11:07:30 <Criffer>	vi) what's happening with html 5?
+Apr 01 11:07:38 <xiphmont_>	maikmerten: as for future codec stuff, I'd like that some other meeting.  This is about pushing theora out.
+Apr 01 11:07:48 <maikmerten>	xiphmont_, makes sense
+Apr 01 11:07:50 <kfish>	xiphmont_, i'll stick to corn flakes, thanks anyway
+Apr 01 11:07:55 <xiphmont_>	Criffer: subvariant of e) but sure.
+Apr 01 11:08:24 <xiphmont_>	Right, let's begin
+Apr 01 11:08:29 <xiphmont_>	1/a)
+Apr 01 11:08:35 <maikmerten>	(I'd like to throw in that if I disappear in like 50 minutes there's nothing to worry about)
+Apr 01 11:08:40 <kfish>	http://wiki.xiph.org/index.php/TheoraMeeting200804#Agenda
+Apr 01 11:08:44 <maikmerten>	(because, well, I'll be on the road again)
+Apr 01 11:08:52 <xiphmont_>	What work currently actually remains to the Theora 1.0 release?  What was unfinished/broken in the last rc?
+Apr 01 11:09:01 <xiphmont_>	maikmerten: Noted
+Apr 01 11:09:06 -->	andrewchew (n=andrew@c-24-6-211-203.hsd1.ca.comcast.net) has joined #xiphmeet
+Apr 01 11:09:20 <xiphmont_>	Thusnelda is *not* part of the 1.0 roadmap.  It is immediate post-1.0
+Apr 01 11:09:29 <xiphmont_>	The changes are too big to toss in now that we're at rc.
+Apr 01 11:09:51 <xiphmont_>	Sadly, Ralph is not here and I fear most of this state resides with him.
+Apr 01 11:10:00 <xiphmont_>	Derf, kfish, do you know?
+Apr 01 11:10:13 <maikmerten>	any chance there may be a pre-beta we can point at during the 1.0 media buzz, as a showcase of the future awesomeness?
+Apr 01 11:10:21 <kfish>	i don't
+Apr 01 11:10:39 <xiphmont_>	maikmerten: Of Thusnelda?
+Apr 01 11:11:14 <maikmerten>	I'm not aware (that doesn't mean anything) of any specific 1.0 blockers. The decoder is fine, and nobody will touch the encoder with Thusnelda shaping up in the background ;-)
+Apr 01 11:11:17 <maikmerten>	xiphmont_, aye
+Apr 01 11:11:24 <xiphmont_>	maikmerten: Not yet.  Not for... maybe a month or so.  I was hoping it would go stright to the mainline branch once Theora 1.0 happened.
+Apr 01 11:11:39 <maikmerten>	xiphmont_, ah, okay
+Apr 01 11:11:44 <xiphmont_>	kfish: Damn.
+Apr 01 11:11:50 <xiphmont_>	derf: You awake mon?
+Apr 01 11:12:08 <xiphmont_>	[This was not a great time for a meeting for the US people]
+Apr 01 11:12:16 <kfish>	is http://wiki.xiph.org/index.php/TheoraTodo up to date?
+Apr 01 11:12:21 <portavales>	maikmerten, I have the same opinion, People will be afraid to work in the current encoder if the Thusnelda is going to substitute it some day 
+Apr 01 11:12:43 <maikmerten>	I think it may make sense to point out that 1.0 is "just a stability release, 100% productivity, set in stone, stable like nothing else" and that we'll have like 300% better efficiency in 1.1 ;-)
+Apr 01 11:12:54 <xiphmont_>	People have already submitted some patches for Thusnelda.  And I want it on mainline as asoon as possible.  Theora 1.0 should have happened already :-P
+Apr 01 11:13:02 <portavales>	I was experimenting on parallelizing the encoder, but  think I should wait for the thusnelda to work on it again
+Apr 01 11:13:15 <maikmerten>	aye, but I don't consider this a bad thing
+Apr 01 11:13:24 <maikmerten>	if a horse is dead you should abandon it
+Apr 01 11:13:28 <maikmerten>	and it's better to make a clear cut
+Apr 01 11:13:32 <xiphmont_>	kfish, sweet, I didn't actually *know* about that page.
+Apr 01 11:13:40 <portavales>	maikmerten, yes
+Apr 01 11:13:43 <xiphmont_>	Damn wikis.  No sitemap, no functional search.
+Apr 01 11:14:00 <maikmerten>	so pushing Thusnelda to mainline immediately after 1.0 "just makes sense"
+Apr 01 11:14:46 <xiphmont_>	Assuming timing works out, yes.  Thusnelda is getting close to useful.
+Apr 01 11:15:01 <xiphmont_>	It is certainly much faster.
+Apr 01 11:15:20 <maikmerten>	aye, if OLPC would actually ship Thunsnelda even as-is would be an "enabler"
+Apr 01 11:15:28 <xiphmont_>	OK, so the TheoraTodo page isn;t really about 1.0
+Apr 01 11:15:33 <portavales>	nice
+Apr 01 11:16:06 <xiphmont_>	It is, perhaps, entirely possible it all comes down to releng for 1.0?  Damn, well, I guess I have to talk to Ralph after all.
+Apr 01 11:16:25 <xiphmont_>	So I guess this turns out to be a community relations meeting rather than internal planning meeting :-|
+Apr 01 11:16:36 <maikmerten>	"releng" doesn't parse here :(
+Apr 01 11:16:41 <xiphmont_>	I was hoping for a loose schedule.  Oops, oh well.
+Apr 01 11:16:43 <Criffer>	"Update RTP mapping spec" -- isn't the RTP spec finalised?
+Apr 01 11:16:47 <xiphmont_>	Release Engineering
+Apr 01 11:16:57 <maikmerten>	thanks
+Apr 01 11:17:02 <xiphmont_>	Criffer: that page is a pastiche.
+Apr 01 11:17:18 <xiphmont_>	Old content, lots of little update patches to it
+Apr 01 11:17:30 <kfish>	https://trac.xiph.org/query?status=new&status=assigned&status=reopened&group=component&component=Theora+-+documentation&component=Theora+-+examples&component=Theora+-+libtheora&component=XiphQT+-+QuickTime+Components&component=ffmpeg2theora&component=website+-+theora&order=priority
+Apr 01 11:17:54 <xiphmont_>	Kfish rocks the Casbah
+Apr 01 11:18:12 <xiphmont_>	"French translation of Theora FAQ: P1"
+Apr 01 11:18:39 <maikmerten>	translate.google.com ;-)
+Apr 01 11:18:43 <andrewchew>	I would be happy seeing a planned date for the next rc.  I'd like to use that stuff that woshisname did with the MSVC-compatible assembly.
+Apr 01 11:19:01 <adams77>	i can help there, fluent in french
+Apr 01 11:19:24 <xiphmont_>	I was more commenting on the stereotypical French chutzpah.
+Apr 01 11:19:26 <kfish>	andrewchew, can you test those patches?
+Apr 01 11:19:39 <adams77>	lol :)
+Apr 01 11:20:10 <andrewchew>	Absolutely.  I've already done some limited testing on the patches as far as decoding.
+Apr 01 11:20:14 <xiphmont_>	wow, that's alot of QT bugs.  OK.  The core bugs I can sink my teeth into.
+Apr 01 11:20:27 <xiphmont_>	QT not as much sadly
+Apr 01 11:20:35 <xiphmont_>	I think it's time to buy a Mac.
+Apr 01 11:20:47 *	xiphmont_ shakes fist at Steve Jobs, the rat
+Apr 01 11:20:52 <andrewchew>	I would just like an "official" build before I fold it into my project for general consumption amongst my dev team.
+Apr 01 11:20:52 <kfish>	heh
+Apr 01 11:21:49 <kfish>	andrewchew, sure, and we need some feedback that the patches work etc. before rolling it into an official build ;-)
+Apr 01 11:21:50 <xiphmont_>	OK, aside from QT the list doesn't look *too* bad.
+Apr 01 11:22:26 <xiphmont_>	I'll assume the buglist is a todo before next release.  And again, need to talk to Ralph before potentially self-owning any tasks.
+Apr 01 11:22:29 <andrewchew>	Ah, I see :)  I didn't know people were waiting for that.
+Apr 01 11:22:44 <xiphmont_>	let's move to releng (b)
+Apr 01 11:23:10 <kfish>	xiphmont_, i don't think ralph will be offended if you fix random bugs from trac :-)
+Apr 01 11:23:16 <andrewchew>	kfish, we can take this offline perhaps.  I don't want to derail the meeting.
+Apr 01 11:23:33 <xiphmont_>	No, I don;t think so either.   i mean in terms of applying the Lever Of Simulated Management in getting tasks done.
+Apr 01 11:23:59 <xiphmont_>	andrewchew: so far there's only two threads, it's not out of hand.  DOn't worry about it... yet :-)\
+Apr 01 11:24:14 <xiphmont_>	Were the rc releases binary releases too or just source?
+Apr 01 11:24:37 <maikmerten>	I don't think there were official binaries for anything
+Apr 01 11:24:48 <maikmerten>	derf did some windows compiles
+Apr 01 11:24:51 <xiphmont_>	[and were we planning a big binary release off 1.0?  What plugins, etc, do we actually offer for Theora?]
+Apr 01 11:24:59 <andrewchew>	Okay :)  Well then, what can I do to push those patches into mainline?  What level of validation do you need?
+Apr 01 11:25:01 <maikmerten>	so Win32 devs can have ASM optimizations
+Apr 01 11:25:01 <kfish>	andrewchew, not much to discuss there, if the patches work or need fiddling just say so (on theora-dev), any news is good news
+Apr 01 11:25:23 <maikmerten>	but they never went "official" because apparently nobody was able to test them
+Apr 01 11:26:02 <xiphmont_>	well, there are illi's filters and getting the source pushed into, eg, ffmpeg2theora and libavcodec....
+Apr 01 11:26:22 <maikmerten>	I think fresh directshow filters and QT components would make sense as "plugins" - but I'm afraid directshow is out of reach :(
+Apr 01 11:26:40 <kfish>	so it would be good if we had someone to do win32 testing and builds in general ...
+Apr 01 11:27:05 <xiphmont_>	we keep having win32 people drift in and out.
+Apr 01 11:27:13 <xiphmont_>	....or get hired by Microsoft.
+Apr 01 11:27:17 <kfish>	lol
+Apr 01 11:27:42 <andrewchew>	I suppose there is at least one person using the assembly patch (the original developer).  All I really use is the decoder, and video codec is not my domain of expertise so I don't know how to test it to ensure the proper code coverage.
+Apr 01 11:27:46 <xiphmont_>	OK, we need to recruit win32 folks.  again :-)
+Apr 01 11:28:04 <xiphmont_>	that is always my big question with releng.
+Apr 01 11:28:14 <xiphmont_>	I don't personally have multiplatform coverage anymore.
+Apr 01 11:28:26 <xiphmont_>	Oh, BTW... oggenc...
+Apr 01 11:28:35 <xiphmont_>	does it... you know... do Video now?
+Apr 01 11:28:45 <xiphmont_>	I've always used encoder_example :-D
+Apr 01 11:29:23 -->	nessy (n=nessy@124-171-12-58.dyn.iinet.net.au) has joined #xiphmeet
+Apr 01 11:29:39 <maikmerten>	well, I guess the URL may say something: http://svn.xiph.org/trunk/vorbis-tools/oggenc/
+Apr 01 11:29:44 <andrewchew>	No idea.  My project involves converting using ffmpeg2theora, and the playing back the resulting videos.
+Apr 01 11:29:47 <kfish>	xiphmont_, no, just audio
+Apr 01 11:29:50 <maikmerten>	(that is if oggenc didn't fork somewhere else)
+Apr 01 11:30:06 <kfish>	nah, people tend to use ffmpeg2theora
+Apr 01 11:30:34 <maikmerten>	yup, ffmpeg2theora is the "Theora enabler application"
+Apr 01 11:30:43 <xiphmont_>	ok, that's fine
+Apr 01 11:30:56 <xiphmont_>	should be corrected at some point, but is fine for now.
+Apr 01 11:31:11 <xiphmont_>	1.0 is  a status-quo release.  Then we blow it all up again.
+Apr 01 11:31:12 <xiphmont_>	:-)
+Apr 01 11:31:27 <xiphmont_>	c) Theora logo
+Apr 01 11:31:36 -->	_Ivo (n=ivo@89-180-167-31.net.novis.pt) has joined #xiphmeet
+Apr 01 11:31:44 <xiphmont_>	Ah, there's Mr. Sleepyhead.
+Apr 01 11:31:50 <xiphmont_>	Hello Ivo
+Apr 01 11:31:56 <_Ivo>	sorry.  really late
+Apr 01 11:31:59 <andrewchew>	fwiw, for at least certain applications, theora actually seems production-worthy.
+Apr 01 11:32:01 <maikmerten>	the current "logo" thing was a miserable try on my side
+Apr 01 11:32:05 <_Ivo>	(hello everyone)
+Apr 01 11:32:09 <maikmerten>	(hi!)
+Apr 01 11:32:17 <xiphmont_>	OK, hellos are out of the way
+Apr 01 11:32:18 <andrewchew>	I can't speak for general use, as my use for it is, I am sure, not comprehensive.
+Apr 01 11:32:30 <maikmerten>	I won't even try to get everybody to consider it to be "official" in any way
+Apr 01 11:32:30 <xiphmont_>	Let's back up just a bit.
+Apr 01 11:32:36 <xiphmont_>	Ivo:
+Apr 01 11:33:11 <xiphmont_>	Do you have any stste from Ralph on work remaining in 1.0 before release or the status of 'release engineering' helpers, like folks ready to do win32 builds?
+Apr 01 11:33:25 <xiphmont_>	I don't personally even know whtat the plugin and tool support is on non-*NIX platforms.
+Apr 01 11:34:06 <_Ivo>	the only problem I see in Theora in non-Nix is the lack of a non-graphic encoder
+Apr 01 11:34:23 <xiphmont_>	that is the answer to a slightly different question....
+Apr 01 11:34:53 <xiphmont_>	!.0 isn;t going to be any all-new tools.  We're at rc right now, I need to know we can build and release what we have.
+Apr 01 11:34:57 <_Ivo>	well, illi's filters and VLC are pretty much the only option in windows for theora playback
+Apr 01 11:35:36 <xiphmont_>	We can still contact illi.  Do we have any contact with the VLC folks?
+Apr 01 11:35:38 <_Ivo>	the quicktime's windows component is very old and the less said about the helix player, the better
+Apr 01 11:35:39 <maikmerten>	I assume the Helix plugins did bitrot into a smelly state?
+Apr 01 11:36:11 <maikmerten>	oh, about VLC: I think their Theora encoding support is still vastly broken (broken muxer)
+Apr 01 11:36:19 <nessy>	illi cannot work on xiph stuff any more - he is now part of the silverlight team at MX
+Apr 01 11:36:19 <_Ivo>	yes.  the guy behind them started last year improving a bit the Theora part, but it's still not released
+Apr 01 11:36:26 <xiphmont_>	maikmerten: worth noting.  So we need to contact them anyway.
+Apr 01 11:36:26 <nessy>	s/MX/MS/
+Apr 01 11:36:45 <nessy>	we need a new maintainer for illi's filters
+Apr 01 11:36:49 <xiphmont_>	nessy: Ah, he can't even build?  Ouch.
+Apr 01 11:36:49 <_Ivo>	we actually need to find a new maintainer for the DS filters and for XiphQT
+Apr 01 11:37:03 <maikmerten>	huh? XiphQT is unmaintained?
+Apr 01 11:37:05 <_Ivo>	regarding XiphQT I have been thinking of contacting the Perian team
+Apr 01 11:37:13 <_Ivo>	maik, pretty much
+Apr 01 11:37:26 <maikmerten>	oh, that's a pity
+Apr 01 11:37:55 <xiphmont_>	_Ivo, more details... Perian team?
+Apr 01 11:38:01 <_Ivo>	if the ffmpeg people were more helpful, they could cover the Windows filters for us
+Apr 01 11:38:18 <maikmerten>	but right, if Perian is the "kitchen sink solution to decode everything, used by everybody" having them support Theora may be a nice effort
+Apr 01 11:38:24 <_Ivo>	but codec packs that use ffmpeg only have support for Vorbis
+Apr 01 11:38:30 <xiphmont_>	the ffmpeg people, at least the ones around us, have been being friendly and helpful.
+Apr 01 11:38:39 <maikmerten>	http://perian.org/
+Apr 01 11:38:52 <_Ivo>	xiphmont_: http://perian.org/
+Apr 01 11:38:52 <nessy>	I was intending to send an email to our lists asking for volunteer new maintainers with windows experience
+Apr 01 11:39:15 <xiphmont_>	OK, we need to start lining up new maintainers and releng people immediately then.
+Apr 01 11:39:19 <_Ivo>	nessy: I'm afraid that's unlikely to work
+Apr 01 11:39:25 <xiphmont_>	That is the real 1.0 blocker as far as I can tell.
+Apr 01 11:39:52 <_Ivo>	well 1.0 is the library really.  we are talking now about third-party implementations
+Apr 01 11:40:06 <_Ivo>	which are important... but not a blocker
+Apr 01 11:40:14 <xiphmont_>	yes, and it sounds like the library may hit 1.0 before other things catch up.
+Apr 01 11:40:38 <nessy>	_Ivo: we may have interested lurkers on the mailing list which we don't know about - should at least try it
+Apr 01 11:40:48 <_Ivo>	that would actually build trust on Theora and then they would likely catch up
+Apr 01 11:40:49 <xiphmont_>	A few years back I experimented with only doing source releases to try to make releng the rest of the world's problem, but that didn't go so well.
+Apr 01 11:41:08 <_Ivo>	nessy: sure
+Apr 01 11:41:15 <xiphmont_>	_Ivo: No, a release that people can't use is frustrating to early adopters and causes immediate bad buzz.
+Apr 01 11:42:12 <_Ivo>	j's not there.  I would like to ask him if he's planning to release a new ffmpeg2theora soon...
+Apr 01 11:42:18 <xiphmont_>	Anyway, it's clear what needs to be done... even if we don't know how to do it.  I will also troll my local programming resouerces for fresh minions.
+Apr 01 11:42:38 <xiphmont_>	Yes, we're missing Ralph and j, the two people we needed most :-|
+Apr 01 11:42:45 <_Ivo>	anyway, I'm sure I have missed a lot before getting here.  Aside the third-party tools, what essentially is considered a problem?
+Apr 01 11:43:01 <xiphmont_>	_Ivo: Ralph is west coast and lives on business hours.  he's not going to be able to make 7am meetings.
+Apr 01 11:43:29 <xiphmont_>	_Ivo: We went over the bug list and a discussion of tools, most of which just got rehashed in more detail.
+Apr 01 11:43:33 <xiphmont_>	I think you're caught up.
+Apr 01 11:44:10 <xiphmont_>	getting back to the agenda iten when Ivo arrived:
+Apr 01 11:44:21 <xiphmont_>	c) logo
+Apr 01 11:44:54 <maikmerten>	well, it's rather clear that the current placeholder on theora.org won't make it into canon
+Apr 01 11:44:56 <xiphmont_>	We never *had* an official theora logo.  It was the one unfinished bit in Melissa's original stack.  I have a lead on another graphic designer to finish it up with my oversight.
+Apr 01 11:45:07 <xiphmont_>	maikmerten: Eh, it's not clear it's a bad idea.
+Apr 01 11:45:21 <_Ivo>	you know, considering you want to call it all (Theora/Vorbis/etc) Ogg, the fish is likely what people think when they wonder about a Theora logo
+Apr 01 11:45:25 <xiphmont_>	in fact, it's kinda grown on me.
+Apr 01 11:45:50 <xiphmont_>	_Ivo, yes, there's always been that.  The graphic artists always bang their heads hard on that.
+Apr 01 11:45:55 <maikmerten>	the current placeholder has the interesting property of looking even better in black/white: http://people.xiph.org/~maikmerten/theoralogo-bw.png
+Apr 01 11:46:07 <maikmerten>	(yay, let device makers print it onto their boxes)
+Apr 01 11:46:13 <andrewchew>	What about the sample that just went out by email not too long ago?  By Felipe?
+Apr 01 11:46:16 <xiphmont_>	maikmerten: That won't fly in the US.
+Apr 01 11:46:26 <portavales>	yesterday
+Apr 01 11:46:27 <_Ivo>	maik, no offense, but it's just a fish with a film strip behind it
+Apr 01 11:46:29 <andrewchew>	http://lampiao.lsc.ic.unicamp.br/~portavales/theora_logo/fish_and_film.png
+Apr 01 11:46:31 <portavales>	I just redraw the same idea
+Apr 01 11:46:48 <xiphmont_>	maikmerten: cultural ugliness, brings to mind 'blackface' a very ugly racial stereotype from last century.
+Apr 01 11:46:53 <andrewchew>	Oh.  Portavales.  Your logo :)
+Apr 01 11:47:08 <maikmerten>	_Ivo, hey, I am *for* replacing the current thing :)
+Apr 01 11:47:20 <_Ivo>	and portavales, I'm gonna be mean, but your logo makes the fish look like it's on drugs
+Apr 01 11:47:33 <portavales>	uhauhauhhuauhauhauh
+Apr 01 11:47:33 <xiphmont_>	portavales: uh, no :-)
+Apr 01 11:47:35 <maikmerten>	_Ivo, so I have no problem with people telling me it's ugly :)
+Apr 01 11:47:43 <maikmerten>	xiphmont_, oh, never thought of that
+Apr 01 11:48:09 <xiphmont_>	maikmerten: np, every culture is going to have its gotchas.
+Apr 01 11:48:17 <kfish>	portavales, i like the happy fish
+Apr 01 11:48:18 <maikmerten>	aye
+Apr 01 11:48:28 <_Ivo>	you know, video/audio codecs are pretty much always just text
+Apr 01 11:48:45 <kfish>	we're free software, we can have anime eyes if we wants
+Apr 01 11:48:57 <_Ivo>	MP3, Xvid... tipically just text that goes well on a chromatic plastic of a dvd player
+Apr 01 11:48:59 <xiphmont_>	back on topic
+Apr 01 11:49:08 <maikmerten>	well, I'd also like a "happy mood fish" instead of a "stunned by technology fish" - but the latter is xiph.org's logo
+Apr 01 11:49:25 <xiphmont_>	Logo is my baby, I get to say :-)
+Apr 01 11:49:41 <xiphmont_>	This is one case where I'm going to be the yappy little dog. 
+Apr 01 11:49:54 <Criffer>	I like the b&w version - if you just make it an outline instead of filled.
+Apr 01 11:50:02 <xiphmont_>	But seriously, I've been given the resources of a vis designer, I'm pinging him in person today.
+Apr 01 11:50:08 <portavales>	ehhehehhe, we should think about another idea for a therora logo, without fish
+Apr 01 11:50:11 <xiphmont_>	Criffer: Aye, that would fix it.
+Apr 01 11:50:22 <_Ivo>	oh someone's asking about the Theora in GIMP project in the mailing list.  yay
+Apr 01 11:50:32 <xiphmont_>	portavales: yes, the original logo attempt was a cat sitting on a television.
+Apr 01 11:50:35 <maikmerten>	to be 100% in line with the other codecs Theora shouldn't use the fish *at all*
+Apr 01 11:50:41 <maikmerten>	wait, that's not true
+Apr 01 11:50:46 <fpoibaf>	(hi) there are also the text logos from http://www.marevalo.net/OggLogos/ 
+Apr 01 11:50:47 <maikmerten>	Vorbis has four fishes
+Apr 01 11:51:03 <maikmerten>	(or is that the logo for vorbis.com, not Vorbis The Amazing Codec?)
+Apr 01 11:51:18 <_Ivo>	everything but the snake and the norse god with the hammer
+Apr 01 11:51:20 <_Ivo>	scary stuff
+Apr 01 11:51:31 <_Ivo>	and the smiling elephant, jesus
+Apr 01 11:51:40 <xiphmont_>	Well, the problem is that our well known logo is the xiph logo, and no one ever liked the other logos, so they always used the fish.  The fish is our Brand.
+Apr 01 11:51:56 <_Ivo>	brand recognition is important
+Apr 01 11:52:14 <nessy>	give the fish a video camera in hand
+Apr 01 11:52:18 <maikmerten>	yup, so I guess we moved away from "Cat on Television" for Theora?
+Apr 01 11:52:29 <xiphmont_>	well, the fish on a film frame was not a bad idea.  Canon or now.
+Apr 01 11:52:33 <xiphmont_>	s/now/no/
+Apr 01 11:52:38 <xiphmont_>	Anyway...
+Apr 01 11:52:39 <maikmerten>	(did I mention I love the Speex logo - it makes *sense* and looks good)
+Apr 01 11:52:45 <xiphmont_>	It's not going to be decided here
+Apr 01 11:52:52 <_Ivo>	the parrot?  yes, I guess it does
+Apr 01 11:53:03 <xiphmont_>	I wanted to mention it was back on my plate and I was going to handle it, that's all.
+Apr 01 11:53:09 <portavales>	maikmerten, yes, that is a good logo idea
+Apr 01 11:53:21 <kfish>	xiphmont_, awesome
+Apr 01 11:53:25 <nessy>	good luck, xiphmont_
+Apr 01 11:53:28 <_Ivo>	regarding logos, though, I have to ask (again) to consider making them available under a non-restrictive CC license so the people in Wikimedia can use them
+Apr 01 11:53:29 <nessy>	good logos are hard
+Apr 01 11:53:30 <xiphmont_>	there will be time for feedback :-)
+Apr 01 11:53:39 <maikmerten>	sounds fine
+Apr 01 11:53:46 <xiphmont_>	_Ivo: yeah, we need a better logo policy than we have.
+Apr 01 11:54:09 <xiphmont_>	I need to get a comment on trademark law though.
+Apr 01 11:54:13 <nessy>	is our logo policy published anywhere?
+Apr 01 11:54:35 <xiphmont_>	"Logos are ours. All rights reserved"
+Apr 01 11:54:57 <xiphmont_>	Which is the standard boilerplate, but not really aligned with how we'd like them used.
+Apr 01 11:55:28 <xiphmont_>	We want to prevent companies from using the logos for nefarious or sloppy purposes, but that's all.
+Apr 01 11:55:42 <xiphmont_>	_Ivo, would the CC license give us that leverage?
+Apr 01 11:56:11 <_Ivo>	it doesn't protect trademark, because it's another beast altogether... but when it forces attribution and share-alike...
+Apr 01 11:56:18 <nessy>	why don't we attach some kind of certification to the logo when used in conjunction with products rather than content?
+Apr 01 11:56:20 <xiphmont_>	Hrm.
+Apr 01 11:56:21 <_Ivo>	in certain ways it prevent most cases of abuse
+Apr 01 11:56:42 <_Ivo>	nessy: the Xvid people do something similar, which makes it likely a good idea
+Apr 01 11:57:24 <xiphmont_>	well, we do need a simple, less restrictive 'license' that allows most people to feel comfortable to just grab and use the logos.
+Apr 01 11:57:33 <xiphmont_>	The intent was never to lock them down and control them.
+Apr 01 11:57:48 <xiphmont_>	Nor do we need registered trademeark protection, common mark is enough.
+Apr 01 11:57:57 <_Ivo>	go with CC-BY-SA is my recommendation.
+Apr 01 11:57:59 <xiphmont_>	eg, enough that we don't lose our own marks.
+Apr 01 11:59:13 <_Ivo>	(that's a GPL-like license)
+Apr 01 11:59:15 <xiphmont_>	Yeah
+Apr 01 11:59:31 <Criffer>	I think a trademark which can be attached to a codec implementation *only* if the implementation is compliant to the spec is a good idea.
+Apr 01 11:59:38 <xiphmont_>	Ok, that's the proposal, I'll study it.  If I don't find a compelling reason not to, we'll do that.
+Apr 01 11:59:48 <xiphmont_>	What Criffer said.
+Apr 01 11:59:49 <Criffer>	ie the logo implies compatibility.
+Apr 01 11:59:52 <nessy>	but only to put next to content or open source encoding/decoding software
+Apr 01 12:00:14 <nessy>	commercial use requires compatibility testing
+Apr 01 12:00:19 <xiphmont_>	we all understand the issues, and I agree our current license is and always was too restrictive.
+Apr 01 12:00:24 <nessy>	i.e. certification
+Apr 01 12:00:28 <nessy>	that's my recommendation :)
+Apr 01 12:00:41 <xiphmont_>	nessy: well, part of the problem is that we don't actually offer a documented certification program :-|
+Apr 01 12:00:43 <_Ivo>	man, I really wish I understood qt4. I'd have loved to propose an all-everything encoder wrapper multiplatform for all opf our projects
+Apr 01 12:00:44 <portavales>	idea: we should open a thread where everybody posts a Theora logo sketch (to just represent the idea), it can be hand-made or just random lines on the screen, but just to find a good idea, later someone with designer skills could draw the final art
+Apr 01 12:01:01 <_Ivo>	think OggDropXPd but for theora and speex too
+Apr 01 12:01:07 <xiphmont_>	portavales: no.  It's been a disaster in the past.
+Apr 01 12:01:17 <_Ivo>	but it's too big of a project for me to mentor in GSoC
+Apr 01 12:01:35 <xiphmont_>	portavales: the problem is that every geek thinks he can draw/design (myself included).  And they can't.  And they get defensive about it.
+Apr 01 12:01:47 <nessy>	xiphmont_: http://validator.annodex.org/
+Apr 01 12:01:57 <xiphmont_>	_Ivo: you know, that's not a bad idea.
+Apr 01 12:01:58 <portavales>	xiphmont_, hehehehhe Agreed
+Apr 01 12:02:00 <nessy>	is a start at least
+Apr 01 12:02:20 <Criffer>	I can so draw! :)
+Apr 01 12:02:22 <xiphmont_>	nessy: what does it use as a backend?
+Apr 01 12:02:23 <_Ivo>	xiphmont_: not at all.  I have been thinking about it since last year
+Apr 01 12:02:34 <nessy>	oggzvalidate
+Apr 01 12:02:37 <xiphmont_>	ah
+Apr 01 12:02:40 <nessy>	ask kfish for details
+Apr 01 12:03:02 <xiphmont_>	kfish, nessy: you might want to have a look at some of the recent commits to Vorbose to detect a bunch of codebook attacks I just fixed in Vorbis.
+Apr 01 12:03:06 <kfish>	http://validator.annodex.org/about.html
+Apr 01 12:03:33 <kfish>	xiphmont_, ah, so we could run vorbis streams through vorbose?
+Apr 01 12:03:40 <xiphmont_>	Maybe I should get up to speed on oggzvalidate and start using that/committing to that instead.
+Apr 01 12:03:43 <Criffer>	Does compliance to theora imply pixel-accuracy? (like h.264)
+Apr 01 12:03:57 <Criffer>	ie drift is not allowed.
+Apr 01 12:03:57 <xiphmont_>	Criffer: in the case of theora, yes.
+Apr 01 12:04:10 <_Ivo>	xiphmont_: on your question above regarding VLC.  bugs for the non-working files in the Theora testsuite and the lack of Skeleton have already been filed
+Apr 01 12:04:12 <xiphmont_>	Because of the delta coding nature, drift accumulates.
+Apr 01 12:04:27 *	maikmerten has to leave in 3 minutes and would like to thank everybody for this nice meeting. He'll read the logs (logs?) once at home
+Apr 01 12:04:33 <xiphmont_>	Vorbis does not accumulate error, so bit-accuracy is not required.
+Apr 01 12:04:59 <xiphmont_>	Back on agenda
+Apr 01 12:05:03 <xiphmont_>	d) Thusnelda
+Apr 01 12:05:06 <Criffer>	xiphmont_: ?
+Apr 01 12:05:17 <xiphmont_>	Most of the updates have been written up and blogged about already.
+Apr 01 12:05:29 <xiphmont_>	Criffer: context?
+Apr 01 12:05:43 <Criffer>	Sorry, I think you just answered by question "yes" then "no".
+Apr 01 12:05:43 <_Ivo>	(is the patent FUD in agenda too?  we should address that and hear about updates if possible)
+Apr 01 12:05:57 <xiphmont_>	_Ivo, yes, it is
+Apr 01 12:06:03 <--	maikmerten has quit ("running to catch my train")
+Apr 01 12:06:34 <xiphmont_>	Criffer: non-bit-perfect reproduction in theora will accumulate and spread.  Error is cumulative due to delta coding.
+Apr 01 12:06:42 <xiphmont_>	So minor mistakes will blow up over time.
+Apr 01 12:06:52 <xiphmont_>	Theora is a purely integer codec.
+Apr 01 12:07:13 <nessy>	(on the side: here's what debian does with licenses on logo http://www.debian.org/logos/)
+Apr 01 12:07:15 <xiphmont_>	Vorbis has a very deep representational range and decoders are not required to be bit perfect.
+Apr 01 12:07:20 <Criffer>	Indeed. Which is why I asked if bit-accuracy is a requirement for compliance. If not, then periodic i-frames are needed.
+Apr 01 12:07:44 <xiphmont_>	Well, Theora has a max I-frame spacing anyway
+Apr 01 12:07:53 <xiphmont_>	nessy: thanks
+Apr 01 12:08:41 <xiphmont_>	Thusnelda is plodding along, it's my primary development task right now along with Vorbis bug fixes.
+Apr 01 12:08:49 <xiphmont_>	latest update was here:
+Apr 01 12:09:02 <xiphmont_>	http://web.mit.edu/xiphmont/Public/theora/demo2.html
+Apr 01 12:09:10 <xiphmont_>	A few bugs have been fixed since.
+Apr 01 12:09:21 <portavales>	xiphmont_, are you the main developer of thusnelda ?
+Apr 01 12:09:26 <xiphmont_>	Thusnelda is not on the Theora 1.0 timeline.  It will go to mainline after Theora 1.0
+Apr 01 12:09:38 <xiphmont_>	portavales: yes. with derf shadowing in the background.
+Apr 01 12:09:50 <xiphmont_>	derf is the primary brains behind the work, but I'm doing the coding.
+Apr 01 12:10:14 <_Ivo>	xiphmont_: if thusnelda could still be in 1.0, people would be likely more excited about 1.0
+Apr 01 12:10:14 <xiphmont_>	There's not much else to say about it right now-- it's on track.
+Apr 01 12:10:32 <xiphmont_>	_Ivo, 1.0 is at rc.  The change set is far too large for that to be realistic.
+Apr 01 12:10:38 <_Ivo>	it would give a sense of completeness
+Apr 01 12:10:43 <_Ivo>	yes, you are right
+Apr 01 12:10:47 <xiphmont_>	Thusnelda is also not ready for use.
+Apr 01 12:11:07 <nessy>	is there some sort of a deadline when thusnelda is expecte to be complete?
+Apr 01 12:11:37 <portavales>	xiphmont_, If somebody give the directives I can do coding also, to help
+Apr 01 12:12:13 <xiphmont_>	nessy: Thusnelda has a two-part devel strategy.  the 'Theora compliant' part and the 'break spec and move beyond' part.
+Apr 01 12:12:47 <xiphmont_>	the '1.0' part is to be complete in a month or two I hope.
+Apr 01 12:12:54 <nessy>	ah cool!
+Apr 01 12:12:54 <xiphmont_>	er the 'compliant' part.
+Apr 01 12:13:01 <nessy>	understood :)
+Apr 01 12:13:04 <xiphmont_>	I *hope*./
+Apr 01 12:13:12 <nessy>	sure, I understand
+Apr 01 12:13:23 <_Ivo>	can you give more details on how/what would it break the spec?
+Apr 01 12:13:29 <Criffer>	Break the spec?
+Apr 01 12:13:38 <_Ivo>	"move beyond"
+Apr 01 12:14:04 <nessy>	shouldn't break decoders, I would expect?
+Apr 01 12:14:29 <_Ivo>	so do I
+Apr 01 12:15:01 -->	xiphmont (n=xiphmont@c-66-31-203-53.hsd1.ma.comcast.net) has joined #xiphmeet
+Apr 01 12:15:21 <_Ivo>	well, I guess he ghosted
+Apr 01 12:15:39 <nessy>	what was the last thing you read, xiphmont?
+Apr 01 12:15:44 <xiphmont>	sorry
+Apr 01 12:15:54 <_Ivo>	*insert comcast joke here*
+Apr 01 12:16:38 <xiphmont>	The idea is that eventually I want to try experimental things in Thusnelda that would 'etend' the spec.  Essentially become  a Theora 1.5.
+Apr 01 12:16:45 <xiphmont>	extend
+Apr 01 12:16:54 <xiphmont>	that's on the six-month timeframe
+Apr 01 12:17:18 <_Ivo>	would that break existing decoders?
+Apr 01 12:17:24 <xiphmont>	and that also depends on whether or not we expect Theora to continue to be a little brother to dirac.  Right now, I am expecting that to be the case.
+Apr 01 12:17:36 <xiphmont>	Extention would eventually break current decoders.
+Apr 01 12:17:45 <xiphmont>	We wouldn't do that unless it was "totally worth it"
+Apr 01 12:17:55 <xiphmont>	...and I expect it will be.
+Apr 01 12:18:08 <kfish>	i think the word for that is 2.0 :-)
+Apr 01 12:18:15 <xiphmont>	fine Theora II
+Apr 01 12:18:21 <_Ivo>	yes
+Apr 01 12:18:30 <Criffer>	VP3.2?
+Apr 01 12:18:36 *	nessy needs to get sleep soon (2am here and I have a 8am meeting)
+Apr 01 12:18:41 <_Ivo>	VP2000
+Apr 01 12:18:55 <_Ivo>	(good night nessy)
+Apr 01 12:19:12 <Criffer>	VP8, just to screw with On2 a bit.
+Apr 01 12:20:00 <_Ivo>	so... last time I talked with derf or was it Ralph regarding 1.0
+Apr 01 12:20:14 <_Ivo>	one of the big issues was documenation.  has the situation improved?
+Apr 01 12:20:20 <_Ivo>	documentation*
+Apr 01 12:20:25 <xiphmont>	what specifically?
+Apr 01 12:20:28 <kfish>	api docs?
+Apr 01 12:20:29 <xiphmont>	Spec, or...?
+Apr 01 12:20:45 <xiphmont>	Oh, right, derf's API rewrite
+Apr 01 12:20:45 <_Ivo>	just "documentation".  I really don't know.  I'd say the two
+Apr 01 12:21:01 <kfish>	yeah, that's not documented, and there's no examples iirc
+Apr 01 12:21:05 <xiphmont>	Spec is long done and we fix the niggling stray bugs when we find them, like in Vorbis.
+Apr 01 12:21:12 <kfish>	ie. the existing examples use the old api
+Apr 01 12:21:14 <_Ivo>	so it's the API, then
+Apr 01 12:21:19 <xiphmont>	Derf's API-- I'll ask him when he wakes up.
+Apr 01 12:22:23 <xiphmont>	e) HTML5/patents
+Apr 01 12:22:26 <_Ivo>	maybe portavales can help with it.  he seems willing to help speed up the process
+Apr 01 12:22:34 <_Ivo>	oh boy
+Apr 01 12:22:41 <Criffer>	/Jingle ?
+Apr 01 12:22:44 <kfish>	ok, so no other technical issues?
+Apr 01 12:22:46 <xiphmont>	Hm, maybe he can... portavales? :-)
+Apr 01 12:22:54 <portavales>	yes
+Apr 01 12:22:55 <portavales>	Sure
+Apr 01 12:22:57 <portavales>	:-)
+Apr 01 12:22:59 <_Ivo>	Criffer: ?  XMPP Jingle?
+Apr 01 12:23:04 <xiphmont>	great.  You report to me and Derf :-)
+Apr 01 12:23:12 <portavales>	ok
+Apr 01 12:23:24 <Criffer>	Another spec which apparently SHOULD support theora...
+Apr 01 12:23:31 <_Ivo>	The Jingle people are using Theora RTP
+Apr 01 12:23:41 <_Ivo>	or planing to, I still don't know the details
+Apr 01 12:23:50 <Criffer>	And there was some mention of the RTP spec being updated?
+Apr 01 12:23:51 <_Ivo>	I talked once with the big kahuna of their project
+Apr 01 12:24:22 <xiphmont>	Offline, we're over an hour as it is.....
+Apr 01 12:24:24 <_Ivo>	the Theora RTP spec is not dead... it's just sleeping
+Apr 01 12:24:42 <xiphmont>	well, a spec that's not gettingused is probably not getting used for a reason... :-(
+Apr 01 12:25:10 <_Ivo>	we need to revise it.  Check for problems and improve where needed
+Apr 01 12:25:17 <xiphmont>	patents etc: All I have to say in public is that I'm still talking to the SFLC, but there's a few days of alg time between each response, so the going is slow.
+Apr 01 12:25:19 <Criffer>	I'm not aware of anyone yet supporting video with Jingle.
+Apr 01 12:25:20 <_Ivo>	I guess that would fall in "documentation", too
+Apr 01 12:25:37 <kfish>	xiphmont, cool
+Apr 01 12:27:10 <xiphmont>	Hrm, we overran nessy's attendance time, she's probably thr only one who had anyting to add to HTML 5.
+Apr 01 12:27:31 <xiphmont>	W3C is still deadlocked, Nokia is still maneuvering.  Wenger is being very persustent.
+Apr 01 12:27:53 <xiphmont>	But no actual news. at least none that isn't only interesting to a lawyer.
+Apr 01 12:28:01 <_Ivo>	(trolls with an agenda usually are persistent)
+Apr 01 12:28:12 <xiphmont>	Criffer, was there anything specific you wanted to know?
+Apr 01 12:28:50 <Criffer>	Just what's happening basically.
+Apr 01 12:28:51 <_Ivo>	Criffer wants to know when will the RTP Theora spec be updated.  He is also not aware that Jingle is using/planning to use it already
+Apr 01 12:29:03 <_Ivo>	(I guess)
+Apr 01 12:29:14 <xiphmont>	_Ivo, no from before you got here :-)
+Apr 01 12:29:21 <_Ivo>	oh
+Apr 01 12:29:25 <xiphmont>	I think we're done.
+Apr 01 12:29:30 <Criffer>	_Ivo: I am aware there is a plan/spec for Jingle/RTP/Theora. I'm not aware of any existing implementation.
+Apr 01 12:29:32 <xiphmont>	With the Official Agenda
+Apr 01 12:29:41 <xiphmont>	Do we have f) Other?
+Apr 01 12:29:49 <_Ivo>	roadmap planning?
+Apr 01 12:29:57 <xiphmont>	Can't without Ralph/j.
+Apr 01 12:30:04 <_Ivo>	dang
+Apr 01 12:30:29 <xiphmont>	Getting at very least Ralph in the room for this one is more important than having me in the room.
+Apr 01 12:30:50 <xiphmont>	Thus the earlier comments about it being too early a scheduled time for him.
+Apr 01 12:31:07 <xiphmont>	That said, meeting wasn;t a waste.  But we don't have a solid roadmap.
+Apr 01 12:31:12 <_Ivo>	I expected him or someone from west coast to propose a better time
+Apr 01 12:31:17 <xiphmont>	We need to recruit new cross-platform minions for releng.
+Apr 01 12:31:33 <xiphmont>	Ralph is also travelling IIRC.
+Apr 01 12:32:12 <_Ivo>	so we'll need to have a part 2?  or will the roadmap be discussed informally when you guys ctach up in IRC?
+Apr 01 12:32:15 <xiphmont>	We need to finish API docs (portvales owns, Derf and I are his oracles)
+Apr 01 12:32:22 <xiphmont>	We need a part 2.
+Apr 01 12:32:26 <_Ivo>	ok
+Apr 01 12:32:31 <portavales>	ok
+Apr 01 12:32:39 <xiphmont>	We will Keep having These Damn Mettings Until Theora Gets Released.
+Apr 01 12:32:43 <xiphmont>	That is the threat.
+Apr 01 12:32:58 <xiphmont>	I have the logo work to deal with and SFLC to continue
+Apr 01 12:33:21 <xiphmont>	I will also rattle the bars on the local starving coder bars for fresh meat to do Oggdrop coding
+Apr 01 12:33:41 <xiphmont>	Derf is commanded to eventually Wake Up.
+Apr 01 12:33:49 <_Ivo>	oh yeah, I can report that: forget about the Shuttleworth Foundation.  It's been almost two months since their last reply.
+Apr 01 12:33:59 <Criffer>	xiphmont: I don't think you answered my question about decoder compliance.
+Apr 01 12:34:15 <xiphmont>	Criffer, OH!  I'm not identified
+Apr 01 12:34:28 <xiphmont>	freakin FN
+Apr 01 12:37:03 <xiphmont>	OK, we're done.  _Ivo, we'll need another meeting Ralph actually attends :-)
+Apr 01 12:37:05 <_Ivo>	well, essentially, I guess that's it then.  We'll wait for Ralph to get back to plan (yet) another roadmap meeting
+Apr 01 12:37:13 <_Ivo>	yep yep
+Apr 01 12:37:48 <_Ivo>	(someone logged all of this, right?)
+Apr 01 12:37:51 <xiphmont>	Yes
+Apr 01 12:38:49 <_Ivo>	alright
+Apr 01 12:39:17 <_Ivo>	thanks to everyone who attended
+Apr 01 12:39:21 <_Ivo>	and see you next time
