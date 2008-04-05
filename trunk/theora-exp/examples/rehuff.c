@@ -698,7 +698,7 @@ static int queue_page(stream_ctx *_sos,int _nsos,ogg_page *_og){
 
 static void usage(void){
   fprintf(stderr,"Usage: rehuff [-s <statsout.txt> ] "
-   "<infile.ogg> <outfile.ogg>\n");
+   "<infile.ogv> <outfile.ogv>\n");
   exit(-1);
 }
 
