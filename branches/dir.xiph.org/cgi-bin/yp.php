@@ -168,10 +168,10 @@ switch ($_REQUEST['action'])
 			// Increment the "total servers" key in memcache
 			if (!$memcache->increment('servers_total'))
  			{
-				$memcache->set('servers_total', 1);
+				$memcache->set(ENVIRONMENT.'_servers_total', 1);
 			}
 			$ct_id = content_type_lookup($media_type);
-			$ct_key = 'servers_'.intval($ct_id);
+			$ct_key = ENVIRONMENT.'_servers_'.intval($ct_id);
 			if (!$memcache->increment($ct_key))
 			{
 				$memcache->set($ct_key, 1);

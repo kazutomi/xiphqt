@@ -59,7 +59,7 @@ if ($keyword !== false)
 		$search_in = implode(', ', $search_in);
 	    
 		// Get the data from the Memcache server
-		if (($results = $memcache->get('prod_search_'.$search_string_hash)) === false)
+		if (($results = $memcache->get(ENVIRONMENT.'_search_'.$search_string_hash)) === false)
 		{
 			// Cache miss. Now query the database.
 			try
@@ -86,7 +86,7 @@ if ($keyword !== false)
 			}
 		
 			// Cache the resultset
-			$memcache->set('prod_search_'.$search_string_hash, $results,
+			$memcache->set(ENVIRONMENT.'_search_'.$search_string_hash, $results,
 			               false, 60);
 		}
 	    
@@ -113,24 +113,27 @@ if ($keyword !== false)
 $tpl->display("head.tpl");
 
 // Display the results
-$tpl->assign('servers_total', $memcache->get('servers_total'));
-$tpl->assign('servers_mp3', $memcache->get('servers_'.CONTENT_TYPE_MP3));
-$tpl->assign('servers_vorbis', $memcache->get('servers_'.CONTENT_TYPE_OGG_VORBIS));
-$tpl->assign('tag_cloud', $memcache->get('prod_tagcloud'));
+$tpl->assign('servers_total', $memcache->get(ENVIRONMENT.'_servers_total'));
+$tpl->assign('servers_mp3', $memcache->get(ENVIRONMENT.'_servers_'.CONTENT_TYPE_MP3));
+$tpl->assign('servers_vorbis', $memcache->get(ENVIRONMENT.'_servers_'.CONTENT_TYPE_OGG_VORBIS));
+$tpl->assign('tag_cloud', $memcache->get(ENVIRONMENT.'_tagcloud'));
 $tpl->display('search.tpl');
 
 // Footer
-$tpl->assign('generation_time', (microtime(true) - $begin_time) * 1000);
-$tpl->assign('sql_queries', isset($db) ? $db->queries : 0);
-if (isset($db))
+if (ENVIRONMENT != 'prod')
 {
-	$tpl->assign('sql_debug', $db->log);	
-}
-$tpl->assign('mc_gets', isset($memcache) ? $memcache->gets : 0);
-$tpl->assign('mc_sets', isset($memcache) ? $memcache->sets : 0);
-if (isset($memcache))
-{
-    $tpl->assign('mc_debug', $memcache->log);
+	$tpl->assign('generation_time', (microtime(true) - $begin_time) * 1000);
+	$tpl->assign('sql_queries', isset($db) ? $db->queries : 0);
+	if (isset($db))
+	{
+		$tpl->assign('sql_debug', $db->log);	
+	}
+	$tpl->assign('mc_gets', isset($memcache) ? $memcache->gets : 0);
+	$tpl->assign('mc_sets', isset($memcache) ? $memcache->sets : 0);
+	if (isset($memcache))
+	{
+		$tpl->assign('mc_debug', $memcache->log);
+	}
 }
 $tpl->display('foot.tpl');
 

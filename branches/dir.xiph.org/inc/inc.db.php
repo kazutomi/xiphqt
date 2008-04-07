@@ -4,7 +4,7 @@
  * Connection parameters for dir.xiph.org
  **/
 
-if (ENVIRONEMENT == 'preprod')
+if (ENVIRONMENT == 'preprod')
 {
 	define('CP_DB_HOST', 'localhost');
 	define('CP_DB_USER', 'dir_xiph_org_t');
@@ -17,6 +17,10 @@ elseif (ENVIRONMENT == 'prod')
 	define('CP_DB_USER', 'dir_xiph_org');
 	define('CP_DB_PASS', '5wCjLEVmAJnmM');
 	define('CP_DB_NAME', 'dir_xiph_org');
+}
+else
+{
+	die("Unable to do this on test atm.\n");
 }
 
 /**

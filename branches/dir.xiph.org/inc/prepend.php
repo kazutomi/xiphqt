@@ -3,7 +3,11 @@
 class BadIDException extends Exception { }
 class EnvironmentUndefinedException extends Exception { }
 
-if ($_SERVER['SERVER_NAME'] == 'directory-test.radiopytagor.net')
+if (getenv('ENVIRONMENT') !== false)
+{
+	define('ENVIRONMENT', strtolower(getenv('ENVIRONMENT')));
+}
+elseif ($_SERVER['SERVER_NAME'] == 'directory-test.radiopytagor.net')
 {
 	define('ENVIRONMENT', 'preprod');
 }
