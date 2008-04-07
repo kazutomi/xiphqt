@@ -1,6 +1,6 @@
 <?php
 
-include_once(dirname(__FILE__).'/inc/prepend.php');
+include_once(dirname(__FILE__).'/../inc/prepend.php');
 
 // Do we have enough data?
 if (!array_key_exists('action', $_REQUEST))
