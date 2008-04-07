@@ -87,7 +87,7 @@ switch ($_REQUEST['action'])
 		// MySQL Connection
 		$db = DirXiphOrgDBC::getInstance();
 		
-		// Look for the mountpoint
+		// Look for the mountpoint (same listen URL)
 		$server_id = $sid = null;
 		$query = 'SELECT `id`, `mountpoint_id` FROM `server` WHERE `listen_url` = "%s";';
 		$query = sprintf($query, mysql_real_escape_string($listen_url));
@@ -103,7 +103,22 @@ switch ($_REQUEST['action'])
 			$server_id = $res->current('id');
 			$server = Server::retrieveByPk($server_id);
 		}
-		catch(SQLNoResultException $e)
+		catch (SQLNoResultException $e)
+		{
+			// The mountpoint doesn't exist yet in our database (it's OK)
+		}
+		
+		// Look for the mountpoint, bis (different listen URL, same stream name)
+		$query = 'SELECT `id` FROM `mountpoint` WHERE `stream_name` = "%s";';
+		$query = sprintf($query, mysql_real_escape_string($stream_name));
+		try
+		{
+			// The mountpoint exists, only a different server.
+			$res = $db->singleQuery($query);
+			$mp_id = $res->current('id');
+			$mp = Mountpoint::retrieveByPk($mp_id);
+		}
+		catch (SQLNoResultException $e)
 		{
 			// The mountpoint doesn't exist yet in our database (it's OK)
 		}
