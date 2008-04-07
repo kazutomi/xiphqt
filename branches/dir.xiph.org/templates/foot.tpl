@@ -1,4 +1,5 @@
 			<div id="copyright">
+{if $smarty.const.ENVIRONMENT != 'prod'}
 				<p>Generated in {$generation_time} ms.</p>
 				<p>Executed {$sql_queries} SQL queries.</p>
 {if !empty($sql_debug)}
@@ -17,6 +18,7 @@
 					<li>[{$query.time} ms] [{$query.type|upper}] {if $query.type|upper == 'GET'}[{if $query.hit}HIT{else}MISS{/if}]{/if} {$query.key}</li>
 {/foreach}
 				</ul>
+{/if}
 {/if}
 			</div>
 		</div>
