@@ -22,7 +22,7 @@ if (array_key_exists('PATH_INFO', $_SERVER))
 	$search_string_hash = jenkins_hash_hex($search_string);
 	
 	// Get the data from the Memcache server
-	if (($results = $memcache->get('prod_search_genre_'.$search_string_hash)) === false)
+	if (($results = $memcache->get(ENVIRONMENT.'_search_genre_'.$search_string_hash)) === false)
 	{
 		// Database connection
 		$db = DirXiphOrgDBC::getInstance();
@@ -48,7 +48,7 @@ if (array_key_exists('PATH_INFO', $_SERVER))
 		}
 	
 		// Cache the resultset
-		$memcache->set('prod_search_genre_'.$search_string_hash, $results, false, 60);
+		$memcache->set(ENVIRONMENT.'_search_genre_'.$search_string_hash, $results, false, 60);
 	}
 	
 	if ($results !== false && $results !== array())
@@ -70,7 +70,7 @@ if (array_key_exists('PATH_INFO', $_SERVER))
 else
 {
 	// Tag cloud
-	$tpl->assign('tag_cloud', $memcache->get('prod_tagcloud'));
+	$tpl->assign('tag_cloud', $memcache->get(ENVIRONMENT.'_tagcloud'));
 	$tpl->assign('display_tag_cloud', true);
 }
 
@@ -78,24 +78,27 @@ else
 $tpl->display("head.tpl");
 
 // Display the results
-$tpl->assign('servers_total', $memcache->get('servers_total'));
-$tpl->assign('servers_mp3', $memcache->get('servers_'.CONTENT_TYPE_MP3));
-$tpl->assign('servers_vorbis', $memcache->get('servers_'.CONTENT_TYPE_OGG_VORBIS));
-$tpl->assign('tag_cloud', $memcache->get('prod_tagcloud'));
+$tpl->assign('servers_total', $memcache->get(ENVIRONMENT.'_servers_total'));
+$tpl->assign('servers_mp3', $memcache->get(ENVIRONMENT.'_servers_'.CONTENT_TYPE_MP3));
+$tpl->assign('servers_vorbis', $memcache->get(ENVIRONMENT.'_servers_'.CONTENT_TYPE_OGG_VORBIS));
+$tpl->assign('tag_cloud', $memcache->get(ENVIRONMENT.'_tagcloud'));
 $tpl->display('search.tpl');
 
 // Footer
-$tpl->assign('generation_time', (microtime(true) - $begin_time) * 1000);
-$tpl->assign('sql_queries', isset($db) ? $db->queries : 0);
-if (isset($db))
+if (ENVIRONMENT != 'prod')
 {
-	$tpl->assign('sql_debug', $db->log);	
-}
-$tpl->assign('mc_gets', isset($memcache) ? $memcache->gets : 0);
-$tpl->assign('mc_sets', isset($memcache) ? $memcache->sets : 0);
-if (isset($memcache))
-{
-    $tpl->assign('mc_debug', $memcache->log);
+	$tpl->assign('generation_time', (microtime(true) - $begin_time) * 1000);
+	$tpl->assign('sql_queries', isset($db) ? $db->queries : 0);
+	if (isset($db))
+	{
+		$tpl->assign('sql_debug', $db->log);	
+	}
+	$tpl->assign('mc_gets', isset($memcache) ? $memcache->gets : 0);
+	$tpl->assign('mc_sets', isset($memcache) ? $memcache->sets : 0);
+	if (isset($memcache))
+	{
+		$tpl->assign('mc_debug', $memcache->log);
+	}
 }
 $tpl->display('foot.tpl');
 

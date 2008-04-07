@@ -70,7 +70,7 @@ include_once(dirname(__FILE__).'/inc/prepend.php');
 $memcache = DirXiphOrgMCC::getInstance();
 
 // Check the memcache server
-$playlist = $memcache->get('prod_playlist_'.$p_id);
+$playlist = $memcache->get(ENVIRONMENT.'_playlist_'.$p_id);
 if ($playlist === false)
 {
 	// Database connection
@@ -92,7 +92,7 @@ if ($playlist === false)
 		}
 		
 		// Store into memcache
-		$memcache->set('prod_playlist_'.$p_id, $playlist, 60);
+		$memcache->set(ENVIRONMENT.'_playlist_'.$p_id, $playlist, 60);
 	}
 	catch (SQLNoResultException $e)
 	{

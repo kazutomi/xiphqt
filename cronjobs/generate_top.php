@@ -1,14 +1,7 @@
 <?php
 
-// Classes
-include_once(dirname(__FILE__).'/../inc/class.db.php');
-include_once(dirname(__FILE__).'/../inc/class.mc.php');
-include_once(dirname(__FILE__).'/../inc/class.izterator.php');
-include_once(dirname(__FILE__).'/../inc/class.izteratorbuilder.php');
-
 // Inclusions
-include_once(dirname(__FILE__).'/../inc/inc.db.php');
-include_once(dirname(__FILE__).'/../inc/inc.mc.php');
+include_once(dirname(__FILE__).'/../inc/prepend.php');
 
 // Database connection
 $db = DirXiphOrgDBC::getInstance();
