@@ -4,10 +4,20 @@
  * Connection parameters for dir.xiph.org
  **/
 
-define('CP_DB_HOST', 'localhost');
-define('CP_DB_USER', 'dir_xiph_org_t');
-define('CP_DB_PASS', '6.NvxjR7B5j3Q');
-define('CP_DB_NAME', 'dir_xiph_org_test');
+if (ENVIRONEMENT == 'preprod')
+{
+	define('CP_DB_HOST', 'localhost');
+	define('CP_DB_USER', 'dir_xiph_org_t');
+	define('CP_DB_PASS', '6.NvxjR7B5j3Q');
+	define('CP_DB_NAME', 'dir_xiph_org_test');
+}
+elseif (ENVIRONMENT == 'prod')
+{
+	define('CP_DB_HOST', 'localhost');
+	define('CP_DB_USER', 'dir_xiph_org');
+	define('CP_DB_PASS', '5wCjLEVmAJnmM');
+	define('CP_DB_NAME', 'dir_xiph_org');
+}
 
 /**
  * Database connection class with semi-hard-coded (?!) login and stuff.
