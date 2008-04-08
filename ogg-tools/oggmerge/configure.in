@@ -1,7 +1,9 @@
 dnl process this file with autoconf to generate the configure script
 
 AC_INIT(oggmerge.c)
-AM_INIT_AUTOMAKE(oggmerge,0.9)
+AM_INIT_AUTOMAKE(oggmerge,1.0)
+
+AC_CONFIG_HEADERS(config.h)
 
 AC_PROG_CC
 
@@ -16,6 +18,21 @@ dnl Check for libraries
 #AC_CHECK_LIB(png, png_check_sig)
 #AC_CHECK_LIB(jpeg, jpeg_set_defaults)
 #AC_CHECK_LIB(mng, mng_readdisplay)
+AC_CHECK_LIB(oggkate, kate_ogg_decode_headerin,[have_kate=yes],[have_kate=no],-lkate -logg)
+AC_CHECK_LIB(speex, speex_packet_to_header,[have_speex=yes],[have_speex=no],-logg)
+AC_CHECK_LIB(theora, theora_decode_init,,,-logg)
+
+if test "x$have_kate" == "xyes"
+then
+  LIBS="$LIBS -loggkate -lkate -logg"
+  AC_DEFINE([HAVE_KATE],[1],[Define if you have libkate])
+fi
+
+if test "x$have_speex" == "xyes"
+then
+  LIBS="$LIBS -lspeex -logg"
+  AC_DEFINE([HAVE_SPEEX],[1],[Define if you have libspeex])
+fi
 
 dnl Check for headers
 AC_HEADER_STDC()

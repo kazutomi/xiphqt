@@ -64,6 +64,7 @@ typedef struct {
 	u_int64_t		packetno;
 	unsigned char		*chunk;
 	unsigned long		length;
+	int                     old_style;
 } mng_state_t;
 
 /* allocates and initializes local storage for a particular
@@ -71,7 +72,7 @@ typedef struct {
  *
  * returns 1 on success, 0 on failure
  */
-int mng_state_init(oggmerge_state_t *state, int serialno)
+int mng_state_init(oggmerge_state_t *state, int serialno, int old_style)
 {
 	mng_state_t	*local;
 	ogg_stream_state *os;
@@ -89,6 +90,7 @@ int mng_state_init(oggmerge_state_t *state, int serialno)
 		local->packetno = 0;	/* number of 'next' packet */
 		local->chunk = NULL;
 		local->length = 0;
+		local->old_style = old_style;
 		
 		/* save our local data inside the oggmerge state */
 		state->private = local;
@@ -112,8 +114,8 @@ int mng_state_close(oggmerge_state_t *state)
         if (state == NULL) return 0;	/* nothing to do */
 
         local = (mng_state_t *)state->private;
-                                                      
-        if (local != NULL) {                          
+
+        if (local != NULL) {
                 ogg_stream_destroy(local->os);
 		state->private = NULL;
 		free(local);
@@ -333,4 +335,12 @@ oggmerge_page_t *mng_page_out(oggmerge_state_t *state)
 	}
 	
 	return om;
+}
+
+int mng_fisbone_out(oggmerge_state_t *state, ogg_packet *op)
+{
+    fprintf(stderr, "Skeleton unsupported for MNG stream\n");
+    exit(-1);
+
+    return 0;
 }

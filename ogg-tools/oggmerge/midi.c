@@ -5,6 +5,8 @@
 */
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <ogg/ogg.h>
 
 #include "oggmerge.h"
@@ -49,6 +51,7 @@ typedef struct {
 	midi_page_t *pages;
 	int serialno;
 	ogg_int64_t old_granulepos;
+	int old_style;
 	// timing information
 	int ticks;
 	long tempo;
@@ -63,7 +66,7 @@ typedef struct {
 
 static int _process_data(midi_state_t *midistate);
 
-int midi_state_init(oggmerge_state_t *state, int serialno)
+int midi_state_init(oggmerge_state_t *state, int serialno, int old_style)
 {
 	midi_state_t *midistate;
 
@@ -84,6 +87,7 @@ int midi_state_init(oggmerge_state_t *state, int serialno)
 		midistate->frames = 0;
 		midistate->smtpe = 0;
 		midistate->current = 0;
+		midistate->old_style = old_style;
 		state->private = (void *)midistate;
 		return 1;
 	}
@@ -326,12 +330,13 @@ static oggmerge_page_t *_make_oggmerge_page(ogg_page *og, u_int64_t timestamp)
 static u_int64_t _make_timestamp(midi_state_t *midistate, ogg_int64_t granulepos)
 {
 	u_int64_t timestamp;
+	ogg_int64_t gp = midistate->old_style?midistate->old_granulepos:granulepos;
 
 	if (midistate->smtpe) {
-		timestamp = (double)midistate->old_granulepos * ((double)(midistate->frames * midistate->ticks) / (double)1000000);
+		timestamp = (double)gp * ((double)(midistate->frames * midistate->ticks) / (double)1000000);
 	} else {
 		// tempo is in us/quartnernote
-		timestamp = (double)midistate->old_granulepos * (double)midistate->tempo / (double)midistate->ticks;
+		timestamp = (double)gp * (double)midistate->tempo / (double)midistate->ticks;
 	}
 
 	midistate->old_granulepos = granulepos;
@@ -725,3 +730,10 @@ static int _process_data(midi_state_t *midistate)
 	return EMOREDATA;
 }
 
+int midi_fisbone_out(oggmerge_state_t *state, ogg_packet *op)
+{
+    fprintf(stderr, "Skeleton unsupported for MIDI stream\n");
+    exit(-1);
+
+    return 0;
+}

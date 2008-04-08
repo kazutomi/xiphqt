@@ -21,10 +21,15 @@ oggmerge -- utility for splicing together ogg bitstreams
 
 #include <ogg/ogg.h>
 
+#include "config.h"
 #include "oggmerge.h"
 #include "vorbis.h"
 #include "midi.h"
 #include "mng.h"
+#include "kate.h"
+#include "theora.h"
+#include "speex.h"
+#include "skeleton.h"
 
 #define VERSIONINFO "oggmerge v" VERSION "\n"
 
@@ -40,10 +45,12 @@ static void _usage(void)
 		"oggmerge [-o <outfile> | --output=<outfile>] <file1> <file2> [<file3> ...]\n"
 		"  Any of the file arguments can be '-' for stdin/out\n"
 		"  Other options:\n"
-		"         -h, --help     this help\n"
-		"         -v, --verbose  verbose status\n"
-		"         -q, --quiet    suppress status output\n"
-		"         --version      print version information\n"
+		"         -h, --help          this help\n"
+		"         -v, --verbose       verbose status\n"
+		"         -q, --quiet         suppress status output\n"
+		"         -O, --old-style     use old style sorting method (use previous packet's granulepos)\n"
+		"         -s, --skeleton      adds a Skeleton track to the output\n"
+		"         --version           print version information\n"
 	);
 }
 
@@ -54,6 +61,8 @@ static void _set_defaults(void)
 	params.out = NULL;
 	params.input = NULL;
 	params.verbose = 1;
+        params.old_style = 0;
+        params.skeleton = 0;
 }
 
 struct option long_options[] = {
@@ -63,6 +72,8 @@ struct option long_options[] = {
 	{"help", 0, NULL, '?'},
 	{"version", 0, NULL, 'V'},
 	{"output", 1, NULL, 'o'},
+	{"old-style", 0, NULL, 'O'},
+	{"skeleton", 0, NULL, 's'},
 	{NULL, 0, NULL, 0}
 };
 
@@ -71,7 +82,7 @@ static void _parse_args(int argc, char **argv)
 	int ret;
 	int option_index = 1;
 
-	while ((ret = getopt_long(argc, argv, "qvh?Vo:", long_options, &option_index)) != -1) {
+	while ((ret = getopt_long(argc, argv, "qvh?VOso:", long_options, &option_index)) != -1) {
 		switch (ret) {
 		case 0:
 			fprintf(stderr, "Internal error parsing command line options.\n");
@@ -100,6 +111,12 @@ static void _parse_args(int argc, char **argv)
 			}
 			params.outfile = (char *)strdup(optarg);
 			break;
+                case 'O':
+                        params.old_style = 1;
+                        break;
+                case 's':
+                        params.skeleton = 1;
+                        break;
 		default:
 			_usage();
 			exit(0);
@@ -115,14 +132,45 @@ static int _get_type(char *filename)
 	if (ext == NULL) return TYPEUNKNOWN;
 
 	/* should be smarter and check file magic */
+	/* yes, it would, wouldn't it ? let's do the bare minimum though :) */
 
-	if (strcasecmp(ext, ".ogg") == 0)
-		return TYPEVORBIS;
+        /* simpler than adding the list of full extensions, esp if others in og[^gvax] start to be used too */
+	if (strncasecmp(ext, ".og",3) == 0 && !ext[4] && strchr("gGvVaAxX",ext[3])) {
+                int offset=28; /* 27 for header, 1 for small packet lacing */
+                char buf[64];
+                FILE *f=fopen(filename,"r");
+                if (!f) return TYPEUNKNOWN;
+                memset(buf,0,sizeof(buf)); /* avoid looking at stale data for small files */
+                fread(buf,1,sizeof(buf),f);
+                fclose(f);
+                if (!memcmp(buf+offset,"\001vorbis",7)) return TYPEVORBIS;
+                if (!memcmp(buf+offset,"\200kate\0\0\0\0",9)) return TYPEKATE;
+                if (!memcmp(buf+offset,"\200theora",7)) return TYPETHEORA;
+                if (!memcmp(buf+offset,"Speex   ",8)) return TYPESPEEX;
+                return TYPEUNKNOWN;
+        }
 	else if (strcasecmp(ext, ".mid") == 0)
 		return TYPEMIDI;
 	else if (strcasecmp(ext, ".mng") == 0)
 		return TYPEMNG;
+	else if (strcasecmp(ext, ".spx") == 0)
+		return TYPESPEEX;
 	return TYPEUNKNOWN;
+}
+
+static const char *_get_file_type_name(int type)
+{
+  switch (type) {
+    default: return "Er, not sure, code's broken";
+    case TYPESKELETON: return "Skeleton";
+    case TYPEUNKNOWN: return "Unknown";
+    case TYPEVORBIS: return "Vorbis";
+    case TYPEMIDI: return "MIDI";
+    case TYPEMNG: return "MNG";
+    case TYPEKATE: return "Kate";
+    case TYPETHEORA: return "Theora";
+    case TYPESPEEX: return "Speex";
+  }
 }
 
 static void _add_file(filelist_t *file)
@@ -138,6 +186,12 @@ static void _add_file(filelist_t *file)
 	}
 }
 
+static void _prepend_file(filelist_t *file)
+{
+        file->next = params.input;
+	params.input = file;
+}
+
 static int _unique_serialno(int serialno)
 {
 	filelist_t *file;
@@ -148,6 +202,172 @@ static int _unique_serialno(int serialno)
 		file = file->next;
 	}
 	return 1;
+}
+
+/* copied and adapted from ffmpeg2theora (GPL too) */
+#define SKELETON_VERSION_MAJOR 3
+#define SKELETON_VERSION_MINOR 0
+#define FISHEAD_IDENTIFIER "fishead\0"
+#define FISBONE_IDENTIFIER "fisbone\0"
+#define FISBONE_SIZE 52
+#define FISBONE_MESSAGE_HEADER_OFFSET 44
+
+static void write16le(unsigned char *ptr,ogg_uint16_t v)
+{
+  ptr[0]=v&0xff;
+  ptr[1]=(v>>8)&0xff;
+}
+
+static void write32le(unsigned char *ptr,ogg_uint32_t v)
+{
+  ptr[0]=v&0xff;
+  ptr[1]=(v>>8)&0xff;
+  ptr[2]=(v>>16)&0xff;
+  ptr[3]=(v>>24)&0xff;
+}
+
+static void write64le(unsigned char *ptr,ogg_int64_t v)
+{
+  ogg_uint32_t hi=v>>32;
+  ptr[0]=v&0xff;
+  ptr[1]=(v>>8)&0xff;
+  ptr[2]=(v>>16)&0xff;
+  ptr[3]=(v>>24)&0xff;
+  ptr[4]=hi&0xff;
+  ptr[5]=(hi>>8)&0xff;
+  ptr[6]=(hi>>16)&0xff;
+  ptr[7]=(hi>>24)&0xff;
+}
+
+static void _add_fishead_packet (ogg_packet *op) {
+
+    if (!op) return;
+    memset (op, 0, sizeof (*op));
+
+    op->packet = _ogg_calloc (64, sizeof(unsigned char));
+    if (op->packet == NULL) return;
+
+    memset (op->packet, 0, 64);
+    memcpy (op->packet, FISHEAD_IDENTIFIER, 8); /* identifier */
+    write16le(op->packet+8, SKELETON_VERSION_MAJOR); /* version major */
+    write16le(op->packet+10, SKELETON_VERSION_MINOR); /* version minor */
+    write64le(op->packet+12, (ogg_int64_t)0); /* presentationtime numerator */
+    write64le(op->packet+20, (ogg_int64_t)1000); /* presentationtime denominator */
+    write64le(op->packet+28, (ogg_int64_t)0); /* basetime numerator */
+    write64le(op->packet+36, (ogg_int64_t)1000); /* basetime denominator */
+    /* both the numerator are zero hence handled by the memset */
+    write32le(op->packet+44, 0); /* UTC time, set to zero for now */
+
+    op->b_o_s = 1; /* its the first packet of the stream */
+    op->e_o_s = 0; /* its not the last packet of the stream */
+    op->bytes = 64; /* length of the packet in bytes */
+}
+
+void add_fisbone_packet (ogg_packet *op,
+                         ogg_uint32_t serial,
+                         const char *content_type, int headers, int preroll,
+                         int gshift, ogg_int64_t gnum, ogg_int64_t gden)
+{
+    int n;
+    size_t ctlen;
+    size_t plen;
+
+    if (!content_type) return;
+
+    if (params.verbose>=2)
+        printf("adding fisbone for %s\n",content_type);
+
+    ctlen = strlen(content_type);
+    plen = FISBONE_SIZE+16+ctlen; /* 16 is strlen "Content-Type: \r\n" */
+
+    memset (op, 0, sizeof (*op));
+    op->packet = _ogg_calloc (plen, sizeof(unsigned char));
+    if (op->packet == NULL) return;
+
+    memset (op->packet, 0, plen);
+    /* it will be the fisbone packet for the theora video */
+    memcpy (op->packet, FISBONE_IDENTIFIER, 8); /* identifier */
+    write32le(op->packet+8, FISBONE_MESSAGE_HEADER_OFFSET); /* offset of the message header fields */
+    write32le(op->packet+12, serial); /* serialno of the theora stream */
+    write32le(op->packet+16, headers); /* number of header packets */
+    /* granulerate, temporal resolution of the bitstream in samples/microsecond */
+    write64le(op->packet+20, gnum); /* granulrate numerator */
+    write64le(op->packet+28, gden); /* granulrate denominator */
+    write64le(op->packet+36, 0); /* start granule */
+    write32le(op->packet+44, preroll); /* preroll, for theora its 0 */
+    *(op->packet+48) = gshift; /* granule shift */
+    sprintf(op->packet+FISBONE_SIZE, "Content-Type: %s\r\n", content_type); /* message header field, Content-Type */
+
+    op->b_o_s = 0;
+    op->e_o_s = 0;
+    op->bytes = plen; /* size of the packet in bytes */
+}
+
+static void _add_fishtail_packet(ogg_packet *op)
+{
+    if (!op) return;
+
+    /* build and add the e_o_s packet */
+    memset (op, 0, sizeof (*op));
+    op->b_o_s = 0;
+    op->e_o_s = 1; /* its the e_o_s packet */
+    op->granulepos = 0;
+    op->bytes = 0; /* e_o_s packet is an empty packet */
+}
+
+static void _fill_filelist(filelist_t *file)
+{
+    file->fp = NULL;
+    switch (file->type) {
+    case TYPESKELETON:
+            file->state_init = skeleton_state_init;
+            file->data_in = skeleton_data_in;
+            file->page_out = skeleton_page_out;
+            file->fisbone_out = skeleton_fisbone_out;
+            break;
+    case TYPEVORBIS:
+            file->state_init = vorbis_state_init;
+            file->data_in = vorbis_data_in;
+            file->page_out = vorbis_page_out;
+            file->fisbone_out = vorbis_fisbone_out;
+            break;
+    case TYPEKATE:
+            file->state_init = kate_state_init;
+            file->data_in = kate_data_in;
+            file->page_out = kate_page_out;
+            file->fisbone_out = kate_fisbone_out;
+            break;
+    case TYPESPEEX:
+            file->state_init = speex_state_init;
+            file->data_in = speex_data_in;
+            file->page_out = speex_page_out;
+            file->fisbone_out = speex_fisbone_out;
+            break;
+    case TYPETHEORA:
+            file->state_init = theora_state_init;
+            file->data_in = theora_data_in;
+            file->page_out = theora_page_out;
+            file->fisbone_out = theora_fisbone_out;
+            break;
+    case TYPEMIDI:
+            file->state_init = midi_state_init;
+            file->data_in = midi_data_in;
+            file->page_out = midi_page_out;
+            file->fisbone_out = midi_fisbone_out;
+            break;
+    case TYPEMNG:
+            file->state_init = mng_state_init;
+            file->data_in = mng_data_in;
+            file->page_out = mng_page_out;
+            file->fisbone_out = mng_fisbone_out;
+            break;
+    }
+
+    file->serialno = 0;
+    file->status = EMOREDATA;
+    file->page = NULL;
+    file->next = NULL;
+    file->fisbone_done = 0;
 }
 
 #define BUFSIZE 1024
@@ -162,6 +382,7 @@ int main(int argc, char **argv)
 	int serialno;
 	int first_pages = 1;
 	ogg_page *page;
+	int fishtail_done = 0;
 	char buf[BUFSIZE];
 
 	srand(time(NULL));
@@ -192,32 +413,31 @@ int main(int argc, char **argv)
 			fprintf(stderr, "Error: File %s has unknown type.\n", file->name);
 			return 1;
 		}
+                else {
+                  if (params.verbose>=1) printf("%s: %s\n",file->name,_get_file_type_name(file->type));
+                }
 
-		file->fp = NULL;
-		switch (file->type) {
-		case TYPEVORBIS:
-			file->state_init = vorbis_state_init;
-			file->data_in = vorbis_data_in;
-			file->page_out = vorbis_page_out;
-			break;
-		case TYPEMIDI:
-			file->state_init = midi_state_init;
-			file->data_in = midi_data_in;
-			file->page_out = midi_page_out;
-			break;
-		case TYPEMNG:
-			file->state_init = mng_state_init;
-			file->data_in = mng_data_in;
-			file->page_out = mng_page_out;
-		}
 
-		file->serialno = 0;
-		file->status = EMOREDATA;
-		file->page = NULL;
-		file->next = NULL;
+		_fill_filelist(file);
 
 		_add_file(file);
 	}
+
+        /* If skeleton is requested, add a new stream for it at the start */
+        if (params.skeleton) {
+		file = (filelist_t *)malloc(sizeof(filelist_t));
+		if (file == NULL) {
+			fprintf(stderr, "Error: Memory error.\n");
+			return 1;
+		}
+
+		file->name = NULL;
+		file->type = TYPESKELETON;
+
+                _fill_filelist(file);
+
+                _prepend_file(file);
+        }
 
 	/* open output file */
 	if (params.outfile == NULL) {
@@ -234,11 +454,13 @@ int main(int argc, char **argv)
 	/* open all files and prepare for processing */
 	file = params.input;
 	while (file) {
-		fprintf(stderr, "Opening %s for reading...\n", file->name);
-		file->fp = fopen(file->name, "r");
-		if (file->fp == NULL) {
-			fprintf(stderr, "Error: Couldn't open input file %s.\n", file->name);
-			return 1;
+                if (file->type != TYPESKELETON) {
+                    if (params.verbose>=2) printf("Opening %s for reading...\n", file->name);
+                    file->fp = fopen(file->name, "r");
+                    if (file->fp == NULL) {
+                          fprintf(stderr, "Error: Couldn't open input file %s.\n", file->name);
+                         return 1;
+                    }
 		}
 		
 		do {
@@ -246,10 +468,18 @@ int main(int argc, char **argv)
 		} while (!_unique_serialno(serialno));
 		file->serialno = serialno;
 
-		file->state_init(&file->state, file->serialno);
+		file->state_init(&file->state, file->serialno, params.old_style);
 
 		file = file->next;
 	}
+
+        /* a fishead first if skeleton is required */
+        if (params.skeleton) {
+            ogg_packet op;
+            _add_fishead_packet(&op);
+            skeleton_packetin(&params.input->state, &op, FISHEAD);
+            _ogg_free (op.packet);
+        }
 
 	/* let her rip! */
 	while (1) {
@@ -260,21 +490,44 @@ int main(int argc, char **argv)
 		while (file) {
 			if (file->page == NULL) {
 				while ((file->page = file->page_out(&file->state)) == NULL && file->status == EMOREDATA) {
-					if (feof(file->fp)) {
-						file->status = 0;
-						break;
-					}
-					bytes = fread(buf, 1, BUFSIZE, file->fp);
-					file->status = file->data_in(&file->state, buf, bytes);
-					if (file->status < 0 && file->status != EMOREDATA) {
-						fprintf(stderr, "Error: Packetizer error on file %s.\n", file->name);
-						return 1;
-					}
+                                    bytes = 0;
+                                    if (file->type != TYPESKELETON) {
+					    if (feof(file->fp)) {
+						    file->status = 0;
+						    break;
+					    }
+					    bytes = fread(buf, 1, BUFSIZE, file->fp);
+                                    }
+				    file->status = file->data_in(&file->state, buf, bytes);
+                                    if (file->type != TYPESKELETON) {
+				        if (file->status < 0 && file->status != EMOREDATA) {
+					    fprintf(stderr, "Error: Packetizer error on file %s.\n", file->name);
+					    return 1;
+                                        }
+				    }
 				}
+                                /* now that we have at least the BOS packet, we can get a skeleton packet is required */
+                                if (params.skeleton && !file->fisbone_done) {
+                                        ogg_packet op;
+                                        if (!file->fisbone_out(&file->state, &op)) {
+                                              skeleton_packetin(&params.input->state, &op, FISBONE);
+                                              _ogg_free (op.packet);
+                                              file->fisbone_done = 1;
+                                        }
+                                }
 			}
 
 			file = file->next;
 		}
+
+                /* a fishtail last, but before any data packet, if skeleton is required */
+                if (params.skeleton && !fishtail_done) {
+                    ogg_packet op;
+                    _add_fishtail_packet(&op);
+                    skeleton_packetin(&params.input->state, &op, FISHTAIL);
+                    _ogg_free (op.packet);
+                    fishtail_done = 1;
+                }
 
 		/* Step 1.5: Write out the first page of each stream
 		** because headers must come together before any
@@ -288,6 +541,7 @@ int main(int argc, char **argv)
 					fprintf(stderr, "Error: File %s didn't produce a header page.\n", file->name);
 					return 1;
 				}
+                                if (params.verbose>=2) printf("writing header page for %08x: %s\n",file->serialno,file->name);
 
 				page = file->page->og;
 
@@ -335,6 +589,8 @@ int main(int argc, char **argv)
 		if (winner->page == NULL) break;
 
 		/* Step 3: Write out the winning page */
+                if (params.verbose>=2)
+                  printf("writing winning page (%s, timestamp %lld)\n",winner->name,winner->page->timestamp);
 		page = winner->page->og;
 
 		bytes = fwrite(page->header, 1, page->header_len, params.out);
@@ -358,13 +614,11 @@ int main(int argc, char **argv)
 
 	file = params.input;
 	while (file) {
-		fclose(file->fp);
+                if (file->fp)
+                    fclose(file->fp);
 		file = file->next;
 	}
 	fclose(params.out);
 
 	return 0;
 }
-
-
-
