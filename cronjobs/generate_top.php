@@ -79,7 +79,7 @@ catch (SQLNoResultException $e)
 }
 
 // array_slice($data, 0, MAX_STREAMS_ON_HOMEPAGE)
-$memcache->set('prod_home_top', $data, false, 120) or die("Unable to save data on the Memcache server.\n");
+$memcache->set(ENVIRONMENT.'_home_top', $data, false, 120) or die("Unable to save data on the Memcache server.\n");
 echo("OK.\n");
 
 ?>

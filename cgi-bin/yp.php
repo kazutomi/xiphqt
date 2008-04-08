@@ -166,7 +166,7 @@ switch ($_REQUEST['action'])
 		if ($mp instanceOf Mountpoint && $server instanceOf Server)
 		{
 			// Increment the "total servers" key in memcache
-			if (!$memcache->increment('servers_total'))
+			if (!$memcache->increment(ENVIRONMENT.'_servers_total'))
  			{
 				$memcache->set(ENVIRONMENT.'_servers_total', 1);
 			}
@@ -263,8 +263,8 @@ switch ($_REQUEST['action'])
 			if ($res)
 			{
 				// Decrement the servers keys in memcache
-				$memcache->decrement('servers_total');
-				$memcache->decrement('servers_'.intval($media_type));
+				$memcache->decrement(ENVIRONMENT.'_servers_total');
+				$memcache->decrement(ENVIRONMENT.'_servers_'.intval($media_type));
 				
 				// Decrement the tag cloud values
 /*				$query = 'UPDATE `tag_cloud` SET `tag_usage` = `tag_usage` - 1 WHERE `tag_name` IN (SELECT `tag_id` FROM `mountpoints_tags` WHERE `mountpoint_id` = %d);';

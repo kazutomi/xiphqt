@@ -17,7 +17,7 @@ $memcache = DirXiphOrgMCC::getInstance();
 // Old stuff that "timeouted"
 $db->noReturnQuery('DELETE FROM `server` WHERE `last_touched_at` <= DATE_SUB(NOW(), INTERVAL 30 MINUTE);');
 $nb = $db->affected_rows;
-$memcache->decrement('servers', $nb);
+$memcache->decrement(ENVIRONMENT.'_servers', $nb);
 
 // Useless mountpoint
 try
