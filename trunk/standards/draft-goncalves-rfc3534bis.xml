@@ -6,7 +6,7 @@
 <?rfc symrefs="yes" ?>
 <?rfc rfcedstyle="yes" ?>
 
-<rfc ipr="full3978" docName="draft-goncalves-rfc3534bis-02" obsoletes="3534" category="std">
+<rfc ipr="full3978" docName="draft-goncalves-rfc3534bis-03" obsoletes="3534" category="std">
 	<front>
 		<title>Ogg Media Types</title>
 		<author initials="I.E." surname="Goncalves" fullname="Ivo Emanuel Goncalves">
@@ -37,7 +37,7 @@
 				<uri>http://xiph.org</uri>
 			</address>
 		</author>
-		<date day="4" month="April" year="2008"/>
+		<date day="8" month="April" year="2008"/>
 		<area>Internet</area>
 		<keyword>I-D</keyword>
 		<keyword>Internet-Draft</keyword>
@@ -46,7 +46,7 @@
 		<keyword>Video</keyword>
 		<keyword>Audio</keyword>
 		<abstract>
-			<t>This document describes the registration of media types for the <xref target="RFC3533">Ogg</xref> container format and conformance requirements for implementations of these types.</t>
+			<t>This document describes the registration of media types for the Ogg container format and conformance requirements for implementations of these types.</t>
 		</abstract>
 	</front>
 	<middle>
@@ -100,7 +100,7 @@
 			<t>The Xiph.Org Foundation has defined the specification, interoperability, and conformance, and conducts regular interoperability testing.</t>
 		</section>
 		<section title="IANA Considerations">
-			<t>This document registers two new media types and redefines the existing application/ogg as defined in the following section.</t>
+			<t>In accordance with the procedures set forth in <xref target="RFC4288"/>, this document registers two new media types and redefines the existing application/ogg as defined in the following section.</t>
 		</section>
 		<section title="Ogg Media Types">
 			<section title="application/ogg">
@@ -111,7 +111,7 @@
 				<t>Encoding considerations: See section 5.</t>
 				<t>Security considerations: See section 6.</t>
 				<t>Interoperability considerations: None, as noted in section 7.</t>
-				<t>Published specification: <xref target="RFC3533"/></t>
+				<t>Published specification: RFC 3533</t>
 				<t>Applications which use this media type: Scientific and other applications which require various multiplexed signals or streams of data.</t>
 				<t>Additional information:</t>
 				<t>Magic number(s): The first four bytes, 0x4f 0x67 0x67 0x53, correspond to the string "OggS".</t>
@@ -134,7 +134,7 @@
 				<t>Encoding considerations: See section 5.</t>
 				<t>Security considerations: See section 6.</t>
 				<t>Interoperability considerations: None, as noted in section 7.</t>
-				<t>Published specification: <xref target="RFC3533"/></t>
+				<t>Published specification: RFC 3533</t>
 				<t>Applications which use this media type: Multimedia applications, including hardware-based, streaming, and conferencing tools.</t>
 				<t>Additional information:</t>
 				<t>Magic number(s): The first four bytes, 0x4f 0x67 0x67 0x53, correspond to the string "OggS".</t>
@@ -154,7 +154,7 @@
 				<t>Encoding considerations: See section 5.</t>
 				<t>Security considerations: See section 6.</t>
 				<t>Interoperability considerations: None, as noted in section 7.</t>
-				<t>Published specification: <xref target="RFC3533"/></t>
+				<t>Published specification: RFC 3533</t>
 				<t>Applications which use this media type: Multimedia applications, including hardware-based, streaming, and conferencing tools.</t>
 				<t>Additional information:</t>
 				<t>Magic number(s): The first four bytes, 0x4f 0x67 0x67 0x53, correspond to the string "OggS".</t>
@@ -183,16 +183,6 @@
 				</front>
 				<seriesInfo name="RFC" value="3533"/>
 			</reference>
-			<reference anchor="RFC3534">
-				<front>
-					<title>The application/ogg Media Type</title>
-					<author initials="L." surname="Walleij" fullname="Linus Walleij">
-						<organization abbrev="Xiph">Xiph.Org Foundation</organization>
-					</author>
-					<date month="May" year="2003"/>
-				</front>
-				<seriesInfo name="RFC" value="3534"/>
-			</reference>
 			<reference anchor="RFC2045">
 				<front>
 					<title>Multipurpose Internet Mail Extensions (MIME) Part One: Format of Internet Message Bodies</title>
@@ -216,6 +206,18 @@
 				<seriesInfo name="BCP" value="14"/>
 				<seriesInfo name="RFC" value="2119"/>
 			</reference>
+			<reference anchor="RFC4288">
+				<front>
+					<title>Media Type Specifications and Registration Procedures</title>
+					<author initials="N." surname="Freed" fullname="Ned Freed">
+						<organization>Sun Microsystems</organization>
+					</author>John C. Klensin
+					<author initials="J." surname="Klensin" fullname="John C. Klensin"/>
+					<date month="December" year="2005"/>
+				</front>
+				<seriesInfo name="BCP" value="13"/>
+				<seriesInfo name="RFC" value="4288"/>
+			</reference>
 		</references>
 		<references title="Informative References">
 			<reference anchor="Ogg" target="http://xiph.org/ogg/doc">
@@ -225,6 +227,16 @@
 						<organization abbrev="Xiph">Xiph.Org Foundation</organization>
 					</author>
 				</front>
+			</reference>
+			<reference anchor="RFC3534">
+				<front>
+					<title>The application/ogg Media Type</title>
+					<author initials="L." surname="Walleij" fullname="Linus Walleij">
+						<organization abbrev="Xiph">Xiph.Org Foundation</organization>
+					</author>
+					<date month="May" year="2003"/>
+				</front>
+				<seriesInfo name="RFC" value="3534"/>
 			</reference>
 			<reference anchor="Theora" target="http://theora.org/doc/Theora_spec.pdf">
 				<front>
