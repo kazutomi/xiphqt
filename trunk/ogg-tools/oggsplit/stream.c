@@ -18,6 +18,7 @@ const char *magic_vorbis = "\x01vorbis";
 const char *magic_theora = "\x80theora";
 const char *magic_speex  = "Speex";
 const char *magic_flac   = "fLaC";
+const char *magic_kate   = "\x80kate\0\0\0\0";
 
 int stream_ctrl_init(stream_ctrl_t *sc)
 {
@@ -57,6 +58,8 @@ stream_t *stream_ctrl_stream_new(stream_ctrl_t *sc, ogg_page *og)
     stream->type=STREAM_TYPE_SPEEX;
   else if(strncmp(og->body, magic_flac, strlen(magic_flac))==0)
     stream->type=STREAM_TYPE_FLAC;
+  else if(strncmp(og->body, magic_kate, sizeof(magic_kate)-1)==0)
+    stream->type=STREAM_TYPE_KATE;
   else
     stream->type=STREAM_TYPE_UNKNOWN;
 
@@ -111,6 +114,9 @@ const char* stream_type_name(stream_t *stream)
     break;
   case STREAM_TYPE_FLAC:
     return "flac";
+    break;
+  case STREAM_TYPE_KATE:
+    return "kate";
     break;
   case STREAM_TYPE_UNKNOWN:
   default:

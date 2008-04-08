@@ -20,6 +20,7 @@
 #define STREAM_TYPE_THEORA    0x02
 #define STREAM_TYPE_SPEEX     0x03
 #define STREAM_TYPE_FLAC      0x04
+#define STREAM_TYPE_KATE      0x05
 
 typedef struct {
   int    serial;

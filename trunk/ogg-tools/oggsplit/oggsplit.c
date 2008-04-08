@@ -15,7 +15,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software Foundation,
- * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
+ * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
 #include <stdio.h>
@@ -42,7 +42,7 @@ const char *broken_ogg = \
 "  a flaw in the tool used to produce the file. If you believe this\n"
 "  is the case, make sure to report it to the author/maintainer of\n"
 "  that tool. Also note that as a consequence, some or all of the\n"
-"  files procuduces by this invocation of OggSplit may also be\n"
+"  files produced by this invocation of OggSplit may also be\n"
 "  invalid Ogg files.\n\n";
 
 const char *optstring="cgno:uVh";
