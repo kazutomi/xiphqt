@@ -166,3 +166,18 @@ table.servers-list td.tune-in p.format {
 .inline-tags li {
     display: inline;
 }
+
+/* Pager */
+.pager {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.pager li {
+    display: inline;
+}
+
+.pager li a.active {
+    font-weight: bold;
+}

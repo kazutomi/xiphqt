@@ -43,4 +43,18 @@
 						</tr>
 {/foreach}
 					</table>
+{if !empty($results_pages)}
+                                        <ul class="pager">
+{if $results_page_no != 1}
+						<li><a href="?page={$results_page_no-2}">«</a></li>
+{/if}
+{foreach item=page from=$results_pages}
+                                                <li><a{if $page == $results_page_no} class="active"{/if} href="?page={$page-1}">{$page}</a></li>
+{/foreach}
+{if $results_page_no != $results_pages_total}
+                                                <li><a href="?page={$results_page_no}">»</a></li>
+{/if}
+
+                                        </ul>
+{/if}
 {/if}
