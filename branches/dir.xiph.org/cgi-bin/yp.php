@@ -10,6 +10,7 @@ if (!array_key_exists('action', $_REQUEST))
 }
 
 // Log the request
+/*/
 if (defined('DEBUG'))
 {
 	$fp = fopen('/tmp/dxo_'.md5(microtime()).'.test', 'w');
@@ -21,6 +22,9 @@ if (defined('DEBUG'))
 	ob_end_clean();
 	fwrite($fp, $data);
 }
+//*/
+$debug_data = print_r($_REQUEST, true);
+//*/
 
 try
 {
@@ -44,8 +48,12 @@ switch ($_REQUEST['action'])
 			    header("YPResponse: 0");
 			    header("YPMessage: Not enough arguments.");
 			    header("SID: -1");
+/*/
 				if (defined('DEBUG'))
 			    	fwrite($fp, "\YPResponse: 0\nYPMessage: Not enough arguments.\nSID: -1");
+//*/
+				$debug_data .= "\YPResponse: 0\nYPMessage: Not enough arguments.\nSID: -1";
+//*/
 		    }
 		}
 		// Remote IP
@@ -67,8 +75,8 @@ switch ($_REQUEST['action'])
 		}
 		// Genre, space-normalized
 		$genre = $_REQUEST['genre'];
-		$genre = str_replace(array('+', '-', '*', '<', '>', '~', '"', '(', ')', '|', '!', '?'),
-							 array('', '', '', '', '', '', '', '', '', '', '', '', ''),
+		$genre = str_replace(array('+', '-', '*', '<', '>', '~', '"', '(', ')', '|', '!', '?', ',', ';', ':'),
+							 array('', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''),
 							 $genre);
 		$genre = preg_replace('/\s+/', ' ', $genre);
 		$genre_list = array_slice(explode(' ', $genre), 0, 10);
@@ -145,8 +153,12 @@ switch ($_REQUEST['action'])
 				Tag::massTagMountpoint($mp, $genre_list);
 			}
 		}
+/*/
 		if (defined('DEBUG'))
 			fwrite($fp, "Affected mountpoint ID: ".$mp_id."\n");
+//*/
+		$debug_data .= "Affected mountpoint ID: ".$mp_id."\n";
+//*/
 		
 		// Server
 		if ($mp instanceOf Mountpoint && !$server_id)
@@ -159,8 +171,12 @@ switch ($_REQUEST['action'])
 		    
 		    $server_id = $server->save();
 		}
+/*/
 		if (defined('DEBUG'))
 			fwrite($fp, "Affected server ID: ".$server_id."\n");
+//*/
+		$debug_data .= "Affected server ID: ".$server_id."\n";
+//*/
 		
 		// Tags and stuff
 		if ($mp instanceOf Mountpoint && $server instanceOf Server)
@@ -182,8 +198,12 @@ switch ($_REQUEST['action'])
 			header("YPMessage: Successfully added.");
 			header("SID: ".$sid);
 			header("TouchFreq: 250");
+/*/
 			if (defined('DEBUG'))
-				fwrite($fp, "YPResponse: 1\nYPMessage: Successfully added.\nSID: ".$sid."\nTouchFreq: 60");
+				fwrite($fp, "YPResponse: 1\nYPMessage: Successfully added.\nSID: ".$sid."\nTouchFreq: 250");
+//*/
+			$debug_data .=  "YPResponse: 1\nYPMessage: Successfully added.\nSID: ".$sid."\nTouchFreq: 250";
+//*/
 		}
 		else
 		{
@@ -191,8 +211,12 @@ switch ($_REQUEST['action'])
 			header("YPResponse: 0");
 			header("YPMessage: Error occured while processing your request.");
 			header("SID: -1");
+/*/
 			if (defined('DEBUG'))
 				fwrite($fp, "\YPResponse: 0\nYPMessage: Error occured while processing your request.\nSID: -1");
+//*/
+			$debug_data .= "\YPResponse: 0\nYPMessage: Error occured while processing your request.\nSID: -1";
+//*/
 		}
 		
 		break;
@@ -215,26 +239,36 @@ switch ($_REQUEST['action'])
 		// Update the data
 		$query = 'UPDATE `server` SET `current_song` = "%s", `listeners` = %d, `last_touched_from` = INET_ATON("%s"), `last_touched_at` = NOW() WHERE `sid` = "%s";';
 		$query = sprintf($query, mysql_real_escape_string($current_song), $listeners, mysql_real_escape_string($ip), mysql_real_escape_string($sid));
+/*/
 		if (defined('DEBUG'))
-		{
 		    fwrite($fp, $query."\n");
-		}
+//*/
+		$debug_data .= $query."\n";
+//*/
 		$res = $db->noReturnQuery($query);
 		if ($res && $db->affected_rows > 0)
 		{
 			// Return success
 			header("YPResponse: 1");
 			header("YPMessage: Updated server info.");
+/*/
 			if (defined('DEBUG'))
 				fwrite($fp, "\nYPResponse: 1\nYPMessage: Updated server info.");
+//*/
+			$debug_data .= "\nYPResponse: 1\nYPMessage: Updated server info.";
+//*/
 		}
 		else
 		{
 			// Return failure
 			header("YPResponse: 0");
 			header("YPMessage: SID does not exist.");
+/*/
 			if (defined('DEBUG'))
 				fwrite($fp, "\nYPResponse: 0\nYPMessage: SID does not exist.\n");
+//*/
+			$debug_data .= "\nYPResponse: 0\nYPMessage: SID does not exist.\n";
+//*/
 		}
 		
 		break;
@@ -274,16 +308,24 @@ switch ($_REQUEST['action'])
 				// Return success
 				header("YPResponse: 1");
 				header("YPMessage: Deleted server info.");
+/*/
 				if (defined('DEBUG'))
 					fwrite($fp, "\nYPResponse: 1\nYPMessage: Deleted server info.");
+//*/
+				$debug_data .= "\nYPResponse: 1\nYPMessage: Deleted server info.";
+//*/
 			}
 			else
 			{
 				// Return failure
 				header("YPResponse: 0");
 				header("YPMessage: Error occured while processing your request.");
+/*/
 				if (defined('DEBUG'))
 					fwrite($fp, "\YPResponse: 0\nYPMessage: Error occured while processing your request.");
+//*/
+				$debug_data .= "\YPResponse: 0\nYPMessage: Error occured while processing your request.";
+//*/
 			}
 			
 /*			if ($cluster_id != null)
@@ -311,26 +353,44 @@ switch ($_REQUEST['action'])
 			// Return failure
 			header("YPResponse: 0");
 			header("YPMessage: SID does not exist.");
+/*/
 			if (defined('DEBUG'))
 				fwrite($fp, "\nYPResponse: 0\nYPMessage: SID does not exist.");
+//*/
+			$debug_data .= "\nYPResponse: 0\nYPMessage: SID does not exist.";
+//*/
 		}
 		
 		break;
 	default:
+/*/
 		if (defined('DEBUG'))
 			fwrite($fp, "\nUnrecognized action '".$_REQUEST['action']."'");
+//*/
+		$debug_data .= "\nUnrecognized action '".$_REQUEST['action']."'";
+//*/
 }
 }
 catch (SQLException $e)
 {
+/*/
 	if (defined('DEBUG'))
 		fwrite($fp, "\nMySQL Error: ".$e->getMessage());
+//*/
+	$debug_data .= "\nMySQL Error: ".$e->getMessage();
+//*/		
 }
 
+/*/
 if (defined('DEBUG'))
 {
 	fwrite($fp, "\n");
 	fclose($fp);
 }
+//*/
+$sql = 'INSERT INTO `yp_log` (`log_data`) VALUES ("%s");';
+$sql = sprintf($sql, mysql_real_escape_string($debug_data));
+$db->noReturnQuery($sql);
+//*/
 
 ?>
