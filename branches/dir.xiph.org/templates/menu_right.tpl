@@ -26,7 +26,7 @@
 {if !empty($tag_cloud)}
 							<ul class="tag-cloud">
 {foreach item=tag from=$tag_cloud}
-								<li class="popularity-{$tag.popularity}"><span class="context">{$tag.tag_usage} streams tagged with </span><a href="{$root_url}/by_genre/{$tag.tag_name|capitalize|escape}" class="tag">{$tag.tag_name|capitalize|escape}</a></li>
+								<li class="popularity-{$tag.popularity}"><span class="context">{$tag.tag_usage} streams tagged with </span><a href="{$root_url}/by_genre/{$tag.tag_name|capitalize:true|escape}" class="tag">{$tag.tag_name|capitalize:true|escape}</a></li>
 {/foreach}
 							</ul>
 {else}
