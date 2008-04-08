@@ -53,18 +53,36 @@ if (array_key_exists('PATH_INFO', $_SERVER))
 	
 	if ($results !== false && $results !== array())
 	{
-	    $n_results = count($results);
-		$results_pages = $n_results / MAX_RESULTS_PER_PAGE;
-		if ($page_n > $results_pages)
-		{
-		    $page_n = 0;
-		}
-		$offset = $page_n * MAX_RESULTS_PER_PAGE;
-	    $results = array_slice($results, $offset,
-	                                     MAX_RESULTS_PER_PAGE);
-		$tpl->assign_by_ref('results', $results);
-		$tpl->assign_by_ref('results_pages', $results_pages);
-		$tpl->assign_by_ref('results_page_no', $page_n);
+                $n_results = count($results);
+                $results_pages = ceil($n_results / MAX_RESULTS_PER_PAGE);
+                if ($page_n > $results_pages)
+                {
+                    $page_n = 0;
+                }
+                $pages = array();
+                if ($results_pages < PAGES_IN_PAGER)
+                {
+                    $pages = range(1, $results_pages);
+                }
+                elseif ($page_n > PAGES_IN_PAGER)
+                {
+                    $pages = range($page_n + 1 - PAGES_IN_PAGER, $pages_n + 1 + PAGES_IN_PAGER);
+                }
+                elseif ($page_n + PAGES_IN_PAGER > $results_pages)
+                {
+                    $pages = range($results_pages - PAGES_IN_PAGER, $results_pages);
+                }
+                else
+                {
+                    $pages = range(1, PAGES_IN_PAGER);
+                }
+                $offset = $page_n * MAX_RESULTS_PER_PAGE;
+                $results = array_slice($results, $offset,
+                                       MAX_RESULTS_PER_PAGE);
+                $tpl->assign_by_ref('results', $results);
+                $tpl->assign_by_ref('results_pages', $pages);
+                $tpl->assign_by_ref('results_pages_total', $results_pages);
+                $tpl->assign('results_page_no', $page_n + 1);
 	}
 }
 else

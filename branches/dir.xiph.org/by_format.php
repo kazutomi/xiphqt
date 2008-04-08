@@ -2,7 +2,15 @@
 
 include_once(dirname(__FILE__).'/inc/prepend.php');
 
+// Memcache connection
+$memcache = DirXiphOrgMCC::getInstance();
+
 // Get the args
+$page_n = array_key_exists('page', $_GET) ? intval($_GET['page']) : 0;
+if ($page_n > (MAX_SEARCH_RESULTS / MAX_RESULTS_PER_PAGE))
+{   
+    $page_n = 0;
+}
 if (array_key_exists('PATH_INFO', $_SERVER))
 {
 	$search_string = preg_replace('|^/([^\s/]+).*$|', '$1', $_SERVER['PATH_INFO']);
@@ -10,10 +18,7 @@ if (array_key_exists('PATH_INFO', $_SERVER))
 	$tpl->assign('search_keyword', str_replace('_', ' ', $search_string));
 	$search_string = preg_replace('/[^A-Za-z0-9+_\-]/', '_', $search_string);
 	$search_string_hash = jenkins_hash_hex($search_string);
-	
-	// Memcache connection
-    $memcache = DirXiphOrgMCC::getInstance();
-	
+		
 	// Get the data from the Memcache server
 	if (($results = $memcache->get(ENVIRONMENT.'_search_format_'.$search_string_hash)) === false)
 	{
@@ -45,18 +50,36 @@ if (array_key_exists('PATH_INFO', $_SERVER))
 	
 	if ($results !== false && $results !== array())
 	{
-	    $n_results = count($results);
-		$results_pages = $n_results / MAX_RESULTS_PER_PAGE;
-		if ($page_n > $results_pages)
+		$n_results = count($results);
+		$results_pages = ceil($n_results / MAX_RESULTS_PER_PAGE);
+                if ($page_n > $results_pages)
+                {
+                    $page_n = 0;
+                }
+		$pages = array();
+		if ($results_pages < PAGES_IN_PAGER)
 		{
-		    $page_n = 0;
+		    $pages = range(1, $results_pages);
 		}
-		$offset = $page_n * MAX_RESULTS_PER_PAGE;
-	    $results = array_slice($results, $offset,
-	                                     MAX_RESULTS_PER_PAGE);
-		$tpl->assign_by_ref('results', $results);
-		$tpl->assign_by_ref('results_pages', $results_pages);
-		$tpl->assign_by_ref('results_page_no', $page_n);
+                elseif ($page_n > PAGES_IN_PAGER)
+                {
+                    $pages = range($page_n + 1 - PAGES_IN_PAGER, $pages_n + 1 + PAGES_IN_PAGER);
+                }
+		elseif ($page_n + PAGES_IN_PAGER > $results_pages)
+		{
+		    $pages = range($results_pages - PAGES_IN_PAGER, $results_pages);
+		}
+                else
+                {
+                    $pages = range(1, PAGES_IN_PAGER);
+                }
+                $offset = $page_n * MAX_RESULTS_PER_PAGE;
+                $results = array_slice($results, $offset,
+                                       MAX_RESULTS_PER_PAGE);
+                $tpl->assign_by_ref('results', $results);
+                $tpl->assign_by_ref('results_pages', $pages);
+		$tpl->assign_by_ref('results_pages_total', $results_pages);
+                $tpl->assign('results_page_no', $page_n + 1);
 	}
 }
 else

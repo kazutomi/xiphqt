@@ -30,6 +30,7 @@ if (ENVIRONMENT != 'prod')
 
 define('MAX_RESULTS_PER_PAGE', 20);
 define('MAX_SEARCH_RESULTS', 100);
+define('PAGES_IN_PAGER', 5);
 
 $begin_time = microtime(true);
 
