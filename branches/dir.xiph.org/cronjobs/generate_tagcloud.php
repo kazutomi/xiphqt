@@ -47,7 +47,7 @@ function add_popularity($s)
 $res = array_map('add_popularity', $res);
 var_dump($res);
 // Save into memcache
-$memcache->set('prod_tagcloud', $res, 0, 600); // 10 mins
+$memcache->set(ENVIRONMENT.'_tagcloud', $res, 0, 600); // 10 mins
 echo "OK.\n";
 
 ?>
