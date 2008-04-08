@@ -109,8 +109,8 @@ switch ($_REQUEST['action'])
 		}
 		
 		// Look for the mountpoint, bis (different listen URL, same stream name)
-		$query = 'SELECT `id` FROM `mountpoint` WHERE `stream_name` = "%s";';
-		$query = sprintf($query, mysql_real_escape_string($stream_name));
+		$query = 'SELECT `id` FROM `mountpoint` WHERE `stream_name` = "%s" AND `media_type_id` = %d AND `bitrate` = %d;';
+		$query = sprintf($query, mysql_real_escape_string($stream_name), content_type_lookup($media_type), mysql_real_escape_string($bitrate));
 		try
 		{
 			// The mountpoint exists, only a different server.
