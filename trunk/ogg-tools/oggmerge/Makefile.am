@@ -6,8 +6,9 @@ SUBDIRS = testfiles tools
 
 bin_PROGRAMS = oggmerge
 
-oggmerge_SOURCES = oggmerge.c vorbis.c midi.c mng.c\
-			oggmerge.h vorbis.h midi.h mng.h
+oggmerge_SOURCES = oggmerge.c vorbis.c midi.c mng.c kate.c theora.c speex.c skeleton.c \
+			oggmerge.h vorbis.h midi.h mng.h kate.h theora.h speex.h skeleton.h
+
 EXTRA_oggmerge_SOURCES = getopt.c getopt1.c getopt.h
 
 oggmerge_CFLAGS = $(OGG_CFLAGS) $(VORBIS_CFLAGS)

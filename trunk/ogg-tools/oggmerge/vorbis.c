@@ -4,6 +4,8 @@
 */
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <ogg/ogg.h>
 #include <vorbis/codec.h>
 
@@ -22,12 +24,13 @@ typedef struct {
 	int first_page;
 	unsigned long samplerate;
 	vorbis_page_t *pages;
+	int old_style;
 } vorbis_state_t;
 
 static void _add_vorbis_page(vorbis_state_t *vstate, ogg_page *og);
 
 
-int vorbis_state_init(oggmerge_state_t *state, int serialno)
+int vorbis_state_init(oggmerge_state_t *state, int serialno, int old_style)
 {
 	vorbis_state_t *vstate;
 
@@ -40,6 +43,8 @@ int vorbis_state_init(oggmerge_state_t *state, int serialno)
 	vstate->first_page = 1;
 	vstate->samplerate = 0;
 	vstate->old_granulepos = 0;
+        vstate->pages = NULL;
+        vstate->old_style = old_style;
 
 	// NOTE: we just ignore serialno for now
 	// until a future libogg supports ogg_page_set_serialno
@@ -71,7 +76,7 @@ int vorbis_data_in(oggmerge_state_t *state, char *buffer, unsigned long size)
 	while ((ret = ogg_sync_pageout(&vstate->oy, &og)) == 1) {
 		if (vstate->first_page) {
 			vstate->first_page = 0;
-			ogg_stream_init(&os, ogg_page_serialno(&og));
+			ogg_stream_init(&os, vstate->serialno=ogg_page_serialno(&og));
 			vorbis_info_init(&vi);
 			vorbis_comment_init(&vc);
 			if (ogg_stream_pagein(&os, &og) < 0) {
@@ -149,12 +154,15 @@ static ogg_page *_copy_ogg_page(ogg_page *og)
 static u_int64_t _make_timestamp(vorbis_state_t *vstate, ogg_int64_t granulepos)
 {
 	u_int64_t stamp;
+	ogg_int64_t gp=vstate->old_style?vstate->old_granulepos:granulepos;
 	
 	if (vstate->samplerate == 0) return 0;
 	
-	stamp = (double)vstate->old_granulepos * (double)1000000 / (double)vstate->samplerate;
+	stamp = (double)gp * (double)1000000 / (double)vstate->samplerate;
 
-	vstate->old_granulepos = granulepos;
+        if (granulepos>=0) {
+          vstate->old_granulepos = granulepos;
+        }
 
 	return stamp;
 }
@@ -164,10 +172,17 @@ static void _add_vorbis_page(vorbis_state_t *vstate, ogg_page *og)
 	oggmerge_page_t *page;
 	vorbis_page_t *vpage, *temp;
 
+        if (ogg_page_serialno(og)!=vstate->serialno) {
+          fprintf(stderr,"Error: oggmerge does not support merging multiplexed streams\n");
+          return;
+        }
+
 	// build oggmerge page
 	page = (oggmerge_page_t *)malloc(sizeof(oggmerge_page_t));
 	page->og = _copy_ogg_page(og);
-	page->timestamp = _make_timestamp(vstate, ogg_page_granulepos(og));
+	page->timestamp = -1;
+        if (ogg_page_granulepos(og)>=0)
+            page->timestamp = _make_timestamp(vstate, ogg_page_granulepos(og));
 	
 	// build vorbis page
 	vpage = (vorbis_page_t *)malloc(sizeof(vorbis_page_t));
@@ -192,16 +207,14 @@ static void _add_vorbis_page(vorbis_state_t *vstate, ogg_page *og)
 	}
 }
 
+int vorbis_fisbone_out(oggmerge_state_t *state, ogg_packet *op)
+{
+    vorbis_state_t *vstate = (vorbis_state_t *)state->private;
 
+    int gshift = 0;
+    ogg_int64_t gnum = vstate->samplerate;
+    ogg_int64_t gden = 1;
+    add_fisbone_packet(op, vstate->serialno, "audio/vorbis", 3, 2, gshift, gnum, gden);
 
-
-
-
-
-
-
-
-
-
-
-
+    return 0;
+}

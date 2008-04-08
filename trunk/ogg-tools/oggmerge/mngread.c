@@ -68,7 +68,7 @@ int mngconvert(param_t *param)
 	int	err = 0;
 
 	/* check the signature */
-	err = fread(sig, sizeof(*sig), 8, param->in);
+	err = fread(sig, sizeof(*sig), 8, param->input);
 	sig[8] = '\0';
 	if (strncmp((const char *)sig, MNG_SIGNATURE, 8) != 0) {
 		fprintf(stderr, "not a mng file!");
