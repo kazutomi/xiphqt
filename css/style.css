@@ -53,8 +53,10 @@ h2 {
 .tag-cloud .popularity-3 { font-size: 1.3em !important; }
 .tag-cloud .popularity-4 { font-size: 1.4em !important; }
 .tag-cloud .popularity-5 { font-size: 1.5em !important; }
-.tag-cloud .popularity-3 a, .tag-cloud .popularity-4 a,
-.tag-cloud .popularity-5 a { font-weight: normal !important; }
+.tag-cloud .popularity-2 a, .tag-cloud .popularity-3 a,
+.tag-cloud .popularity-4 a, .tag-cloud .popularity-5 a {
+	font-weight: normal !important;
+}
 
 /* Servers list */
 table.servers-list {
