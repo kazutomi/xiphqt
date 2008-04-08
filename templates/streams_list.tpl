@@ -7,7 +7,7 @@
 {/if}
 							<td class="description">
 								<p class="stream-name">
-									<span class="name">{if $stream->getUrl() != ''}<a href="{$stream->getUrl()|escape}">{/if}{$stream->getStreamName()|escape}{if $stream->getUrl() != ''}</a>{/if}</span>
+									<span class="name">{if $stream->getUrl() != ''}<a href="{if substr($stream->getUrl(), 0, 4) == 'http'}{$stream->getUrl()|escape}{else}http://{$stream->getUrl()|escape}{/if}">{/if}{$stream->getStreamName()|escape}{if $stream->getUrl() != ''}</a>{/if}</span>
 									<span class="listeners">[{$stream->getListeners()|intval}&nbsp;listener{if (($stream->getListeners()|intval) != 1)}s{/if}]</span>
 								</p>
 {*if $stream->getIcon()}
@@ -24,7 +24,7 @@
                                 <div class="stream-tags"><strong>Tags:</strong>
                                     <ul class="inline-tags">
 {foreach item=tag_name key=tag_id from=$tags}
-                                        <li><a href="{$root_url}/by_genre/{$tag_name|capitalize|escape}">{$tag_name|capitalize|escape}</a></li>
+                                        <li><a href="{$root_url}/by_genre/{$tag_name|capitalize:true|escape}">{$tag_name|capitalize|escape}</a></li>
 {/foreach}
                                     </ul>
                                 </div>
