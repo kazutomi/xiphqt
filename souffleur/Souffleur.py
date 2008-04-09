@@ -15,16 +15,12 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 
-#import oggStreams
-#from gstfile import GstFile
 from GPlayer import VideoWidget
 from GPlayer import GstPlayer
 from Subtitles import Subtitles
-#from datetime import time
 import sys
+import os
 
-from streams import Media
-from streams import Stream
 from MediaInfo import MediaInfo
 from SouffleurXML import ProjectXML
 
@@ -50,7 +46,6 @@ except:
 import gst
 
 class Souffleur:
-#    gladefile=""
     def __init__(self):
         """
         In this init we are going to display the main
@@ -66,33 +61,26 @@ class Souffleur:
         
         self.Subtitle = None
         self.Subtitles = []
-        self.curSub = -1
-        self.scroll = 0
+	# Current subtitle being edited
+	self.cur_edit_sub_iter = None
+
+        #self.scroll = 0
         self.videoWidgetGst = None
         self.player = None
         self.t_duration = 0
-        
         self.media = []
-        self.lastID=0
-        #self.videoWidget=VideoWidget();
-        #gtk.glade.set_custom_handler(self.videoWidget, VideoWidget())
 
-        #gtk.glade.set_custom_handler(self.custom_handler)
-        self.wTree=gtk.glade.XML (gladefile,windowname)
+        self.wTree=gtk.glade.XML(gladefile,windowname)
         self.gladefile = gladefile
-        # we only have two callbacks to register, but
-        # you could register any number, or use a
-        # special class that automatically
-        # registers all callbacks. If you wanted to pass
-        # an argument, you would use a tuple like this:
-        # dic = { "on button1_clicked" : (self.button1_clicked, arg1,arg2) , ...
-        #dic = { "on_button1_clicked" : self.button1_clicked, \
-        #	"gtk_main_quit" : (gtk.mainquit) }
         dic = { "gtk_main_quit" : (gtk.main_quit),\
             "on_main_file_quit_activate": (gtk.main_quit), \
             "on_main_file_open_activate": self.mainFileOpen, \
             "on_TOOL_PLAY_clicked": self.playerPlay,\
             "on_TOOL_STOP_clicked": self.playerStop,\
+            "on_TOOL_SEEK_FORWARD_clicked": self.playerSeekForward,\
+            "on_TOOL_SEEK_REWIND_clicked": self.playerSeekRewind,\
+            "on_TOOL_HIDE_STREAMS_clicked": self.cb_hideStreamsPane,\
+            "on_TOOL_HIDE_SUBLIST_clicked": self.cb_hideSubPane,\
             "on_MEDIA_ADJUSTMENT_button_press_event": self.buttonPressAdjustment,\
             "on_MEDIA_ADJUSTMENT_button_release_event": self.buttonReleaseAdjustment,\
             "on_MEDIA_ADJUSTMENT_change_value": self.changeValueAdjustment,\
@@ -100,26 +88,39 @@ class Souffleur:
             "on_main_file_save_activate": self.cb_onSaveMenu,\
             "on_main_file_save_as_activate": self.cb_onSaveAsMenu,\
             "on_main_file_new_activate": self.cb_onNewMenu,\
-            "on_TOOL_FIRST_clicked": self.cb_onToolFirst,\
-            "on_TOOL_LAST_clicked": self.cb_onToolLast,\
-            "on_MAIN_VIEW_STREAMS_activate": self.cb_onStreamsWindow,\
-            "on_MAIN_VIEW_SUBTITLES_activate": self.cb_onSubtitleWindow,\
-            "on_LIST_SUBS_cursor_changed": self.cb_onSubsListSelect}
+            "on_MAIN_VIEW_STREAMS_PANE_activate": self.cb_showStreamsPane,\
+            "on_MAIN_VIEW_SUBTITLES_activate": self.cb_showSubtitlePane,\
+            "on_TOOL_DEL_STREAM_clicked": self.cb_delStream,\
+	    "on_TOOL_MOD_STREAM_clicked": self.cb_modStream,\
+	    "on_TOOL_NEW_STREAM_clicked": self.cb_newStream,\
+	    "on_TOOL_ADD_STREAM_clicked": self.cb_addNewStream,\
+	    "on_LIST_SUBS_button_release_event": self.cb_onSubsListSelect,\
+	    "on_LIST_SUBS_button_press_event": self.cb_onSubsListSelect,\
+	    "on_txt_subedit_key_release_event": self.cb_onSubtitleEdit,\
+	    "on_TOOL_SAVE_STREAM_clicked": self.cb_saveStream,\
+	    "on_TOOL_DEL_SUBS_clicked": self.cb_subDel,\
+	    "on_TOOL_OUT_SUB_clicked": self.cb_subOut,\
+	    "on_TOOL_IN_SUB_clicked": self.cb_subIn,\
+	    "on_TOOL_INS_B4_SUB_clicked": self.cb_onSubInsB4,\
+	    "on_TOOL_INS_AFTER_SUB_clicked": self.cb_onSubInsAfter,\
+	    "on_TOOL_IN_SUB_clicked": self.cb_subIn}
         self.wTree.signal_autoconnect (dic)
         
+	self.windowMainWindow=self.wTree.get_widget("MAIN_WINDOW")
         self.windowProjectOpen=None
         self.windowProjectSO=None
         self.PFileName=None
         self.windowMediaOpen=None
-        self.windowStreams=gtk.glade.XML (self.gladefile,"STREAM_WINDOW")
-        dic = {"on_TOOL_DEL_STREAM_clicked": self.cb_delStream,\
-                "on_TOOL_MOD_STREAM_clicked": self.cb_modStream,\
-                "on_TOOL_SAVE_STREAM_clicked": self.cb_saveStream,\
-                "on_TOOL_ADD_STREAM_clicked": self.cb_addNewStream,\
-                "on_STREAM_WINDOW_delete_event": self.cb_StreamWindowDelete}
-        self.windowStreams.signal_autoconnect (dic)
+        #self.windowStreams=gtk.glade.XML (self.gladefile,"STREAM_WINDOW")
+        #dic = {"on_TOOL_DEL_STREAM_clicked": self.cb_delStream,\
+        #        "on_TOOL_MOD_STREAM_clicked": self.cb_modStream,\
+        #        "on_TOOL_NEW_STREAM_clicked": self.cb_newStream,\
+        #        "on_TOOL_ADD_STREAM_clicked": self.cb_addNewStream,\
+        #        "on_STREAM_WINDOW_delete_event": self.cb_StreamWindowDelete}
+        #self.windowStreams.signal_autoconnect (dic)
         ### Setup LIST_STREAMS
-        LIST = self.windowStreams.get_widget("LIST_STREAMS")
+        #LIST = self.windowStreams.get_widget("LIST_STREAMS")
+        LIST = self.wTree.get_widget("LIST_STREAMS")
         if LIST:
             self.streamsTreeStore = gtk.TreeStore(gobject.TYPE_STRING, gobject.TYPE_UINT)
             LIST.set_model(self.streamsTreeStore)
@@ -127,12 +128,20 @@ class Souffleur:
             tvcolumn = gtk.TreeViewColumn('Streams', cell, text = 0)
             LIST.append_column(tvcolumn)
         
-        self.windowSubsList=gtk.glade.XML (self.gladefile,"SUBS_LIST")
-        dic = {"on_LIST_SUBS_cursor_changed": self.cb_onSubsListSelect,\
-                "on_TOOL_SAVE_STREAM_clicked": self.cb_saveStream,\
-                "on_SUBS_LIST_delete_event": self.cb_onSubsWindowDelete}
-        self.windowSubsList.signal_autoconnect (dic)
-        SUBLIST = self.windowSubsList.get_widget("LIST_SUBS")
+        #self.windowSubsList=gtk.glade.XML (self.gladefile,"SUBS_LIST")
+        #dic = {"on_LIST_SUBS_cursor_changed": self.cb_onSubsListSelect,\
+        #        "on_TOOL_SAVE_STREAM_clicked": self.cb_saveStream,\
+        #        "on_TOOL_DEL_SUBS_clicked": self.cb_subDel,\
+        #        "on_TOOL_OUT_SUB_clicked": self.cb_subOut,\
+        #        "on_TOOL_IN_SUB_clicked": self.cb_subIn,\
+        #        "on_TOOL_INS_B4_SUB_clicked": self.cb_onSubInsB4,\
+        #        "on_TOOL_INS_AFTER_SUB_clicked": self.cb_onSubInsAfter,\
+        #        "on_TOOL_IN_SUB_clicked": self.cb_subIn,\
+        #        "on_SUBS_LIST_delete_event": self.cb_onSubsWindowDelete}
+        #self.windowSubsList.signal_autoconnect (dic)
+        #SUBLIST = self.windowSubsList.get_widget("LIST_SUBS")
+        SUBLIST = self.wTree.get_widget("LIST_SUBS")
+	SUBLIST.add_events(gtk.gdk._2BUTTON_PRESS)
         if SUBLIST:
             self.subsListStore = gtk.ListStore(gobject.TYPE_UINT,
                                                 gobject.TYPE_UINT,
@@ -149,26 +158,148 @@ class Souffleur:
             tvcolumn = gtk.TreeViewColumn('End', cell, text = 2)
             SUBLIST.append_column(tvcolumn)
             cell = gtk.CellRendererText()
-	    cell.set_property('editable', True)
             tvcolumn = gtk.TreeViewColumn('Text', cell, text = 3)
 	    tvcolumn.set_resizable(True)
             SUBLIST.append_column(tvcolumn)
-        WND=self.windowStreams.get_widget("STREAM_WINDOW")
-        WND.hide()
-        WND=self.windowSubsList.get_widget("SUBS_LIST")
-        WND.hide()
+        #WND=self.windowStreams.get_widget("STREAM_WINDOW")
+        #WND.hide()
+        #WND=self.windowSubsList.get_widget("SUBS_LIST")
+        #WND.hide()
         ### Main window setup
         self.videoWidget = self.wTree.get_widget("VIDEO_OUT_PUT")
         self.adjustment = self.wTree.get_widget("MEDIA_ADJUSTMENT")
-        self.SubEdit = self.wTree.get_widget("VIEW_SUB")
         self.labelHour = self.wTree.get_widget("LABEL_HOUR")
         self.labelMin = self.wTree.get_widget("LABEL_MIN")
         self.labelSec = self.wTree.get_widget("LABEL_SEC")
         self.labelMSec = self.wTree.get_widget("LABEL_MSEC")
-        self.subStartTime = self.wTree.get_widget("SUB_START_TIME")
-        self.subEndTime = self.wTree.get_widget("SUB_END_TIME")
         self.playButton = self.wTree.get_widget("TOOL_PLAY")
+	self.lbl_cur_fps = self.wTree.get_widget("lbl_cur_fps")
+	self.streams_pane = self.wTree.get_widget("streams_pane")
+	self.subtitle_pane = self.wTree.get_widget("subtitle_pane")
+	self.txt_subedit = self.wTree.get_widget("txt_subedit")
+	self.subList = SUBLIST
+	#self.windowMainWindow.maximize()
         return
+#==============================================================================
+    def cb_hideSubPane(self, widget):
+	"""
+	    Hide the subtitles pane
+	"""
+	self.subtitle_pane.hide()
+	return
+#==============================================================================
+    def cb_hideStreamsPane(self, widget):
+	"""
+	    Hide the streams pane
+	"""
+	self.streams_pane.hide()
+	return
+#==============================================================================
+    def cb_showStreamsPane(self, widget):
+	"""
+	    Hide the streams pane
+	"""
+	self.streams_pane.show()
+	return
+#==============================================================================
+    def cb_onSubInsB4(self, widget):
+	"""
+	    Insert new subtitle before current selected
+	"""
+	subsList = self.wTree.get_widget("LIST_SUBS")
+	selection = subsList.get_selection()
+	result = selection.get_selected()
+	if result:
+            model, iter = result
+	    if self.subsListStore.iter_is_valid(iter):
+		cur, sTime, eTime = self.subsListStore.get(iter, 0, 1, 2)
+		self.Subtitle.subAdd(sTime-1,sTime-2,'',None,1)
+		self.subsListStore.insert_before(iter, (cur, sTime-1, sTime-2, 'New subtitle...'))
+		self.reorder_SubsListStore()
+	return
+#==============================================================================
+    def cb_onSubInsAfter(self, widget):
+	"""
+	    Insert new subtitle after current selected
+	"""
+	subsList = self.wTree.get_widget("LIST_SUBS")
+	selection = subsList.get_selection()
+	result = selection.get_selected()
+	if result:
+            model, iter = result
+	    if self.subsListStore.iter_is_valid(iter):
+		cur, sTime, eTime = self.subsListStore.get(iter, 0, 1, 2)
+		self.Subtitle.subAdd(eTime+1,eTime+2,'',None,1)
+		cur += 1
+		self.subsListStore.insert_after(iter, (cur, eTime+1, eTime+2, 'New subtitle...'))
+		self.reorder_SubsListStore()
+	return
+#==============================================================================
+    def reorder_SubsListStore(self):
+	"""
+	    Reorder the subs listStore when added or deleted
+	"""
+	iter = self.subsListStore.get_iter_first()
+	cur = 0
+	while iter is not None:
+	    if iter is not None:
+		self.subsListStore.set_value(iter, 0, cur)
+		cur += 1
+		iter = self.subsListStore.iter_next(iter)
+#==============================================================================
+    def cb_subDel(self, widget):
+	"""
+	    Delete a subtile from the list store and from memory
+	"""
+	subsList = self.wTree.get_widget("LIST_SUBS")
+	selection = subsList.get_selection()
+	result = selection.get_selected()
+	if result:
+            model, iter = result
+	    subKey = self.subsListStore.get(iter, 1)
+            self.Subtitle.subDel(subKey[0])
+	    model.remove(iter)
+	    self.reorder_SubsListStore()
+#==============================================================================
+    def cb_subOut(self, widget):
+	"""
+	    Set subtitle endtime
+	"""
+	if self.player:
+	    subsList = self.windowSubsList.get_widget("LIST_SUBS")
+	    selection = subsList.get_selection()
+	    result = selection.get_selected()
+	    if result:
+		model, iter = result
+		subKey, end_time = self.subsListStore.get(iter, 1, 2)
+		try:
+		    self.Subtitle.getSub(subKey).end_time = self.p_position/1000000
+		    self.Subtitle.subUpdate(subKey)
+		except:
+		    print "Error while setting subtitle timecode"
+		    return
+		self.subsListStore.set(iter,2,self.p_position/1000000)
+	return True
+#==============================================================================
+    def cb_subIn(self, widget):
+	"""
+	    Set subtitle start time
+	"""
+	if self.player:
+	    subsList = self.windowSubsList.get_widget("LIST_SUBS")
+	    selection = subsList.get_selection()
+	    result = selection.get_selected()
+	    if result:
+		model, iter = result
+		subKey = self.subsListStore.get(iter, 1)
+		try:
+		    self.Subtitle.getSub(subKey[0]).start_time = self.p_position/1000000
+		    self.Subtitle.subUpdate(subKey[0])
+		except:
+		    print "Error while setting subtitle timecode"
+		    return
+		self.subsListStore.set(iter,1,self.p_position/1000000)
+	return True
 #==============================================================================
     def cb_onSubsWindowDelete(self, widget, event):
         widget.hide()
@@ -183,22 +314,16 @@ class Souffleur:
             WND=self.windowSubsList.get_widget("SUBS_LIST")
             WND.show()
 #==============================================================================
+    def cb_showSubtitlePane(self, menu):
+	"""
+	   Show subtitle pane
+	"""
+	self.subtitle_pane.show()
+#==============================================================================
     def cb_onStreamsWindow(self, menu):
         if self.windowStreams:
             WND=self.windowStreams.get_widget("STREAM_WINDOW")
             WND.show()
-#==============================================================================
-    def cb_onToolLast(self, widget):
-        if self.Subtitle:
-            time = self.Subtitle.subKeys[-1]
-            self.player.set_subtitle_text(self.Subtitle.getSub(time).text)
-            self.player.seek(time*1000000)
-#==============================================================================
-    def cb_onToolFirst(self, widget):
-        if self.Subtitle:
-            time = self.Subtitle.subKeys[0]
-            self.player.set_subtitle_text(self.Subtitle.getSub(time).text)
-            self.player.seek(time*1000000)
 #==============================================================================
     def getSubtitle(self, source):
         for i in self.Subtitles:
@@ -223,45 +348,76 @@ class Souffleur:
             tSubtitle.subSave(mInfo.source, 1)
 #==============================================================================
     def cb_modStream(self, widget):
-        if not self.windowStreams:
-            return
+	# We have removed the window
+        #if not self.windowStreams:
+        #    return
         if not self.streamsTreeStore:
             return
-        TView = self.windowStreams.get_widget("LIST_STREAMS")
+        #TView = self.windowStreams.get_widget("LIST_STREAMS")
+        TView = self.wTree.get_widget("LIST_STREAMS")
         TSelec = TView.get_selection()
         TModel, TIter = TSelec.get_selected()
         if not TIter:
             return
-        N=TModel.get_value(TIter, 1)
-        mInfo = self.media[N]
-        if "subtitle" in mInfo.MIME:
-            self.setSubtitle(mInfo.Streams[0].ID)
+        N=TModel.get_value(TIter, 0)
+	# FIXME: We should actually get the selected subtitle
+	if "Subtitle" in N:
+	    self.setSubtitle()
 #==============================================================================
-    def setSubtitle(self, source):
-        for i in self.Subtitles:
-            if i.subSource==source:
-                self.Subtitle=i
-		#if self.player:
-		#    self.play_toggled()
-                break
+    def cb_newStream(self, widget):
+	"""
+	   Create a new subtitle
+	"""
+	print "Create a new stream"
+	#TODO: Lets popup something that will let us choose sub type
+	return
+#==============================================================================
+    def setSubtitle(self):
         if self.Subtitle:
-            if (self.windowStreams):
-                WND=self.windowSubsList.get_widget("SUBS_LIST")
-                WND.show()
+	    # We have removed the window for now
+            #if (self.windowStreams):
+            #    WND=self.windowSubsList.get_widget("SUBS_LIST")
+            #    WND.show()
             self.subsWindowUpdate()
 #==============================================================================
     def updateStreamWindow(self):
+	#FIXME: This should be more complete and better handled
+	# Maybe all streams must be on the same list/dict
         if not self.streamsTreeStore:
             return
         self.streamsTreeStore.clear()
+	for sub in self.Subtitles:
+            iter = self.streamsTreeStore.append(None)
+	    self.streamsTreeStore.set(iter, 0, "Subtitle: "+ sub.filename, 1, self.Subtitles.index(sub))
+	    child = self.streamsTreeStore.append(iter)
+	    self.streamsTreeStore.set(child, 0, "Type: " + sub.subType, \
+		    1, self.Subtitles.index(sub))
         for mInfo in self.media:
             iter = self.streamsTreeStore.append(None)
-            self.streamsTreeStore.set(iter, 0, mInfo.MIME + " ("+mInfo.source+")", 1, self.media.index(mInfo))
-            for i in mInfo.Streams:
+            self.streamsTreeStore.set(iter, 0, mInfo.source, 1, self.media.index(mInfo))
+	    if mInfo.has_video:
                 child = self.streamsTreeStore.append(iter)
-                self.streamsTreeStore.set(child, 0, i.MIME + " ("+i.Name+")", 1, self.media.index(mInfo))
+		self.streamsTreeStore.set(child, 0, "Mimetype: " + mInfo.MIME.split("/")[1], \
+			1, self.media.index(mInfo))
+                child = self.streamsTreeStore.append(iter)
+		self.streamsTreeStore.set(child, 0, "Resolution: %dx%d "% (mInfo.videoWidth, mInfo.videoHeight), \
+			1, self.media.index(mInfo))
+                child = self.streamsTreeStore.append(iter)
+		self.streamsTreeStore.set(child, 0, ("Framerate: %.2f" % mInfo.framerate), \
+			1, self.media.index(mInfo))
+                child = self.streamsTreeStore.append(iter)
+		self.streamsTreeStore.set(child, 0, ("Length: %s s" % mInfo.videoLengthS), \
+			1, self.media.index(mInfo))
+                child = self.streamsTreeStore.append(iter)
+		self.streamsTreeStore.set(child, 0, ("Frames: %d" % (mInfo.videoLengthS/(1/mInfo.framerate))), \
+			1, self.media.index(mInfo))
+                child = self.streamsTreeStore.append(iter)
 #==============================================================================
     def cb_delStream(self, widget):
+	"""
+	    Remove a stream from the current project
+	"""
+	#FIXME: We broke this ...
         if not self.windowStreams:
             return
         if not self.streamsTreeStore:
@@ -272,7 +428,6 @@ class Souffleur:
         if not TIter:
             return
         N=TModel.get_value(TIter, 1)
-        del self.media[N]
         self.updateStreamWindow()
 #==============================================================================
     def cb_openMediaCancel(self, widget):
@@ -286,11 +441,21 @@ class Souffleur:
         URI=WND.get_uri()
 	self.TEST_SUB_URI = URI
         WND.hide()
-        MI = MediaInfo(URI, FN, self.lastID)
-        MI.run()
-        tMedia = MI.getMedia()
-        MI=None
-        self.addMedia(tMedia)
+
+	extension = os.path.splitext(FN)[1]
+	tmpSub = Subtitles(FN)
+	if extension in tmpSub.getSupportedTypes():
+	    #TODO: We should improve the way we check subtitles
+	    tmpSub.subLoad(FN)
+	    self.Subtitle = tmpSub
+	    self.Subtitles.append(tmpSub)
+	    self.updateStreamWindow()
+	else:
+	    #TODO: Check if it is media or throw error
+	    MI = MediaInfo(FN, URI)
+	    # Lets poll for information
+	    gobject.timeout_add(30, self.addMedia, MI)
+
 #==============================================================================
     def cb_addNewStream(self, widget):
         if(self.windowMediaOpen==None):
@@ -311,43 +476,89 @@ class Souffleur:
             WND=self.windowStreams.get_widget("STREAM_WINDOW")
             WND.show()
 #==============================================================================
-    def cb_onSubsListSelect(self, widget):
-        Row=None
-        Selection = widget.get_selection()
-        if Selection==None:
-            return
-        Model, Rows = Selection.get_selected_rows()
-        if Rows != None:
-            Row = Model[Rows[0][0]]
-            if self.Subtitle:
-                Sub = self.Subtitle.subs[Row[1]]
+    def cb_onSubsListSelect(self, widget, event):
+	"""
+	    Do the proper thing when subtitle is selected
+	    2 clicks seeks de video to its timecode
+	    1 click edits on the TextView
+	"""
+	#FIXME: Something nasty happens on the selection of the subtitle
+	# Only happens the first time and throws an exception
+	Row=None
+	Selection = widget.get_selection()
+	if Selection==None:
+	    return
+	Model, Rows = Selection.get_selected_rows()
+	if Rows != None:
+	    Row = Model[Rows[0][0]]
+	    if self.Subtitle:
+		Sub = self.Subtitle.subs[Row[1]]
+	if event.type == gtk.gdk._2BUTTON_PRESS and event.button == 1:
+	    if self.player:
+		B=0;
 		self.player.set_subtitle_text(Sub.text)
-                if self.player:
-                    B=0;
-                    if self.player.is_playing():
-                        B=1
-                        self.play_toggled()
-                    real = long(Row[1]) # in ns
-                    self.player.seek(real*1000000)
-                    # allow for a preroll
-                    self.player.get_state(timeout=50*gst.MSECOND) # 50 ms
-                    if B==1:
-                        self.play_toggled()
+		if self.player.is_playing():
+		    B=1
+		    self.play_toggled()
+		real = long(Row[1]) # in ns
+		self.player.seek(real*1000000)
+		# allow for a preroll
+		self.player.get_state(timeout=50*gst.MSECOND) # 50 ms
+		if B==1:
+		    self.play_toggled()
+	if event.type == gtk.gdk.BUTTON_RELEASE:
+	    model, self.cur_edit_sub_iter =  Selection.get_selected() 
+	    self.setSubtitleEdit(Sub.text)
+#==============================================================================
+    def cb_onSubTextEdited(self, cell, path, new_text):
+	"""
+	    Callback to change subtitle when subtitle text was changed
+	"""
+	iter = self.subsListStore.get_iter(path)
+	subKey, ETime, Text = self.subsListStore.get(iter, 1, 2, 3)
+	subtitle = self.Subtitle.getSub(subKey)
+	if subtitle.text != new_text:
+	    subAttr = subtitle.Attributes
+	    self.Subtitle.subDel(subKey)
+	    self.Subtitle.subAdd(subKey,ETime,new_text,subAttr,1)
+	    self.subsListStore.set(iter,3,new_text)
+
+        return True
+#==============================================================================
+    def cb_onSubtitleEdit(self, widget, event):
+	"""
+	    Updates the subtile list in realtime
+	"""
+	id, subKey, ETime = self.subsListStore.get(self.cur_edit_sub_iter, 0, 1, 2)
+	#self.Subtitle.subDel(subKey)
+	text = self.txt_subedit.get_buffer().get_property('text')
+	self.Subtitle.updateText(subKey,text)
+	#self.Subtitle.subAdd(subKey,ETime,text,None,0)
+	self.subsListStore.set(self.cur_edit_sub_iter, 3, text) 
+	return
+#==============================================================================
+    def setSubtitleEdit(self,sub):
+	"""
+	    Set the subtitle to be edited
+	"""
+	buf = self.txt_subedit.get_buffer()
+	buf.set_text(sub)
 #==============================================================================
     def subsWindowUpdate(self):
         if not self.Subtitle:
             return
-        if self.windowSubsList:
-            self.subsListStore.clear()
-	    j=0
-            for i in self.Subtitle.subKeys:
-                S=self.Subtitle.subs[i]
-                iter = self.subsListStore.append(None)
-                self.subsListStore.set(iter,0, j, 
-					    1, int(S.start_time),
-                                            2, int(S.end_time),
-                                            3, str(S.text))
-		j +=1
+	# We have removed the window for now
+        #if self.windowSubsList:
+	self.subsListStore.clear()
+	j=0
+	for i in self.Subtitle.subKeys:
+	    S=self.Subtitle.subs[i]
+	    iter = self.subsListStore.append(None)
+	    self.subsListStore.set(iter,0, j, 
+					1, int(S.start_time),
+					2, int(S.end_time),
+					3, str(S.text))
+	    j +=1
 #==============================================================================
     def saveProject(self):
         if not self.PFileName:
@@ -407,38 +618,6 @@ class Souffleur:
             else:
                 WND.show()
 #==============================================================================
-    def cb_subDel(self, widget):
-        if (self.Subtitle != None) and (self.curSub != -1):
-            self.Subtitle.subDel(self.curSub)
-#==============================================================================
-    def cb_subChangeSave(self, widget):
-        if (self.Subtitle != None):
-            if (self.curSub != -1):
-                BUF = self.SubEdit.get_buffer()
-                TEXT = BUF.get_text(BUF.get_start_iter(), BUF.get_end_iter())
-                self.Subtitle.subs[int(self.curSub)].text = str(TEXT)
-                self.Subtitle.subs[int(self.curSub)].end_time=self.subEndTime.get_value_as_int()
-                if self.Subtitle.subs[int(self.curSub)].start_time!=self.subStartTime.get_value_as_int():
-                    newTime=self.subStartTime.get_value_as_int()
-                    self.Subtitle.subs[int(self.curSub)].start_time=newTime
-                    self.Subtitle.subUpdate(int(self.curSub))
-                    self.curSub = newTime
-                #for i in self.Subtitles:
-                #    if i.subSource == self.Subtitle.subSource:
-                #        self.Subtitles[self.Subtitles.index(i)]=self.Subtitle
-                self.subsWindowUpdate()
-            else:
-                self.subAdd()
-#==============================================================================
-    def subAdd(self):
-        ST = self.subStartTime.get_value()
-        ET = self.subEndTime.get_value()
-        BUF = self.SubEdit.get_buffer()
-        Text = BUF.get_text(BUF.get_start_iter(), BUF.get_end_iter())
-        if (( ST > 0 ) and ( ET > ST ) and ( Text != "" )):
-            self.Subtitle.subAdd(ST, ET, Text, None, 1)
-            self.curSub = ST
-#==============================================================================
     def cb_setSubStartTime(self, widget):
         self.subStartTime.set_value(self.p_position/1000000)
 #==============================================================================
@@ -478,6 +657,34 @@ class Souffleur:
     def playerPlay(self, widget):
         if self.player:
             self.play_toggled()
+#==============================================================================
+    def playerSlowMotion(self, widget):
+	"""
+	    Put the current playing video in slow motion
+	"""
+	#TODO: Implement it
+	pass
+#==============================================================================
+    def playerFastForward(self, widget):
+	"""
+	    Put the current playing video in FastForward 
+	"""
+	#TODO: Implement it
+	pass
+#==============================================================================
+    def playerSeekForward(self, widget):
+	"""
+	    Jump some time beyond current position
+	"""
+	#TODO: Implement it
+	pass
+#==============================================================================
+    def playerSeekRewind(self, widget):
+	"""
+	    Jump back som time
+	"""
+	#TODO: Implement it
+	pass
 #==============================================================================
     def mainFileOpen(self, widget):
         if(self.windowProjectOpen==None):
@@ -528,23 +735,22 @@ class Souffleur:
     def addMedia(self, mInfo):
         if not mInfo:
             return
-        N=len(self.media)
+	# Frist, wait for media discovery 
+	if mInfo.poll():
+	    return True 
+	mInfo = mInfo.getMedia()
         self.media.append(mInfo)
-        self.lastID = mInfo.lastID
         self.updateStreamWindow()
-        if "subtitle" in mInfo.MIME:
-	    tSubtitle = Subtitles()
-	    tSubtitle.subLoad(mInfo.source, mInfo.Streams[0].ID)
-	    self.Subtitles.append(tSubtitle)
-        else:
-            self.videoWidgetGst=VideoWidget(self.videoWidget)
-            self.player=GstPlayer(self.videoWidgetGst)
-            self.player.set_location("file://"+mInfo.source)
-            if self.videoWidget.flags() & gtk.REALIZED:
-                self.play_toggled()
-            else:
-                self.videoWidget.connect_after('realize',
-                                           lambda *x: self.play_toggled())
+	#Set videoWidget sizes according to media standards
+	self.videoWidget.set_size_request(mInfo.videoWidth, mInfo.videoHeight)
+	self.videoWidgetGst=VideoWidget(self.videoWidget)
+	self.player=GstPlayer(self.videoWidgetGst)
+	self.player.set_location("file://"+mInfo.source)
+	if self.videoWidget.flags() & gtk.REALIZED:
+	    self.play_toggled()
+	else:
+	    self.videoWidget.connect_after('realize',
+				       lambda *x: self.play_toggled())
         return
 #==============================================================================
     def play_toggled(self):
@@ -579,15 +785,25 @@ class Souffleur:
             if self.player.is_playing():
                 if TText:
 		    self.player.set_subtitle_text(TText.text)
+		    #TODO: Select the current playing subtitle
+		    # Careful with any processor intesive tasks here
+		    # !!!Critical loop!!!
                 else:
 		    self.player.set_subtitle_text('')
+		    # Unselect what is not being played
+		    Selection = self.subList.get_selection()
+		    if Selection:
+			Selection.unselect_all()
         if (self.p_position != gst.CLOCK_TIME_NONE):# and (not self.scroll):
             value = self.p_position
             self.adjustment.set_value(value)
         self.labelHour.set_text("%02d"%Hour)
         self.labelMin.set_text("%02d"%Min)
         self.labelSec.set_text("%02d"%Sec)
+	#BUG: We are not displaying that correctly
         self.labelMSec.set_text("%09d"%MSec)
+	#FIXME: We should know which media is playing
+	self.lbl_cur_fps.set_text("%d"%(MSec/1/self.media[0].framerate))
         return True
 #==============================================================================
 #	MAIN:
