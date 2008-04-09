@@ -4,9 +4,6 @@
 
 import xml.dom.minidom
 
-from streams import Media
-from streams import Stream
-
 from Subtitles import Sub
 from Subtitles import Subtitles
 
