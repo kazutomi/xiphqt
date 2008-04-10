@@ -12,7 +12,7 @@ $db = DirXiphOrgDBC::getInstance();
 $memcache = DirXiphOrgMCC::getInstance();
 
 // Old stuff that "timeouted"
-$res = $db->selectQuery('SELECT * FROM `server` WHERE `checked` = 0;');
+$res = $db->selectQuery('SELECT `id`, `listen_url` FROM `server` WHERE `checked` = 0;');
 while (!$res->endOf())
 {
     try
@@ -84,11 +84,20 @@ while (!$res->endOf())
         {
             throw new ToDeleteException();
         }
-    }
+        
+        // If we're here, everything's ok.
+        $sql = 'UPDATE `server` SET `checked` = 1, `checked_at` = NOW() WHERE `id` = %d;';
+        $sql = sprintf($sql, $res->current('id'));
+        $db->noReturnQuery($sql);
+    } 
     catch (ToDeleteException $e)
     {
         // TODO: remove the stream
         echo("Delete it! ".$res->current('listen_url')."\n");
+        
+        $sql = 'UPDATE `server` SET `checked` = 1, `checked_at` = NOW() WHERE `id` = %d;';
+        $sql = sprintf($sql, $res->current('id'));
+        $db->noReturnQuery($sql);
     }
     
     $res->next();
