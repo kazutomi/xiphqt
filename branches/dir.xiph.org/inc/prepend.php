@@ -52,5 +52,6 @@ include_once(dirname(__FILE__).'/inc.templating.php');
 // Libs
 include_once(dirname(__FILE__).'/lib.uuidgen.php');
 include_once(dirname(__FILE__).'/lib.dir.php');
+include_once(dirname(__FILE__).'/lib.utils.php');
 
 ?>
