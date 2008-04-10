@@ -18,7 +18,7 @@ elseif ($_SERVER['SERVER_NAME'] == 'directory.radiopytagor.net'
 }
 else
 {
-	define('ENVIRONEMENT', 'test');
+	define('ENVIRONMENT', 'test');
 }
 //define('DEBUG', 'true');
 
@@ -50,6 +50,7 @@ include_once(dirname(__FILE__).'/inc.mc.php');
 include_once(dirname(__FILE__).'/inc.templating.php');
 
 // Libs
+include_once(dirname(__FILE__).'/lib.genfile.php');
 include_once(dirname(__FILE__).'/lib.uuidgen.php');
 include_once(dirname(__FILE__).'/lib.dir.php');
 include_once(dirname(__FILE__).'/lib.utils.php');
