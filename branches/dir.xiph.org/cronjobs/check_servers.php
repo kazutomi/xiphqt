@@ -27,7 +27,8 @@ while (!$res->endOf())
         // Now, verify!
         if (empty($url['scheme']) || $url['scheme'] != 'http'
             || !array_key_exists('host', $url)
-            || !preg_match('/^.*[A-Za-z0-9\-]+\.[A-Za-z0-9]+$/', $url['host']))
+            || !preg_match('/^.*[A-Za-z0-9\-]+\.[A-Za-z0-9]+$/', $url['host'])
+            || preg_match('/^(10\.|192\.168\.|127\.)/', $url['host']))
         {
             throw new ToDeleteException();
         }
