@@ -28,7 +28,7 @@ function content_type_lookup($content_type)
 	}
 	
 	// MP3
-	elseif ($content_type == "audio/mpeg" || $content_type == "audio/x-mpeg")
+	elseif ($content_type == "audio/mpeg" || $content_type == "audio/x-mpeg" || $content_type == 'application/mp3')
 	{
 		return CONTENT_TYPE_MP3;
 	}

@@ -114,25 +114,20 @@ class Mountpoint
 		$db = DirXiphOrgDBC::getInstance();
 		
 		// Query
-        $query = "SELECT * FROM `%s` WHERE `id` = %d;";
-        $query = sprintf($query, $this->table_name, $this->mountpoint_id);
         try
         {
+            $query = "SELECT * FROM `%s` WHERE `id` = %d;";
+            $query = sprintf($query, $this->table_name, $this->mountpoint_id);
             $m = $db->singleQuery($query);
+            
+            $this->loadFromArray($m->array_data[0]);
+            
+            return true;
         }
         catch (SQLNoResultException $e)
         {
             return false;
         }
-        
-        if (!$m)
-        {
-            return false;
-        }
-        
-        $this->loadFromArray($m->array_data[0]);
-        
-        return true;
     }
     
     /**

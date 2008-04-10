@@ -45,9 +45,9 @@ function add_popularity($s)
 	return $s;
 }
 $res = array_map('add_popularity', $res);
-var_dump($res);
-// Save into memcache
-$memcache->set(ENVIRONMENT.'_tagcloud', $res, 0, 600); // 10 mins
+
+// Save into a genfile
+genfile::write(genfile::makeGenfileName('tagcloud'), $res) or die("Unable to save data in a genfile.\n");
 echo "OK.\n";
 
 ?>
