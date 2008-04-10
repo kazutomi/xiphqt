@@ -10,8 +10,8 @@ $db = DirXiphOrgDBC::getInstance();
 $memcache = DirXiphOrgMCC::getInstance();
 
 // Base query
-$query_pattern = 'SELECT COUNT(id) AS `count` FROM `mountpoint` WHERE %s;';
-$where_pattern = '`media_type_id` = "%s"';
+$query_pattern = 'SELECT COUNT(*) AS `count` FROM `server` AS s INNER JOIN `mountpoint` AS m ON m.`id` = s.`mountpoint_id` WHERE %s;';
+$where_pattern = 'm.`media_type_id` = "%s"';
 
 // MP3
 $where = sprintf($where_pattern, CONTENT_TYPE_MP3);

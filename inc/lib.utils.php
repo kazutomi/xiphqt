@@ -3,9 +3,9 @@
 class utils
 {
     /**
-     * Détecte si une chaîne est en UTF8
+     * Returns true if the string is correct UTF-8
      */
-    public static function is_utf8($str)
+    public static function is_UTF8($str)
     {
         if (preg_match('%^(?:
              [\x09\x0A\x0D\x20-\x7E]            # ASCII

@@ -1,18 +1,37 @@
 <?php
 
-class BadIDException extends Exception { }
-class EnvironmentUndefinedException extends Exception { }
+class DXOException extends Exception
+{
+    public function setErrorLine($el)
+    {
+        $this->line = $el;
+    }
+    
+    public function setErrorFile($ef)
+    {
+        $this->file = $ef;
+    }
+}
+
+class BadIDException extends DXOException { }
+class EnvironmentUndefinedException extends DXOException { }
+
+class APIException extends DXOException { }
+class ServerRefusedAPIException extends APIException { }
+class NoSuchSIDAPIException extends APIException { }
 
 if (getenv('ENVIRONMENT') !== false)
 {
 	define('ENVIRONMENT', strtolower(getenv('ENVIRONMENT')));
 }
-elseif ($_SERVER['SERVER_NAME'] == 'directory-test.radiopytagor.net')
+elseif (array_key_exists('SERVER_NAME', $_SERVER)
+        && $_SERVER['SERVER_NAME'] == 'directory-test.radiopytagor.net')
 {
 	define('ENVIRONMENT', 'preprod');
 }
-elseif ($_SERVER['SERVER_NAME'] == 'directory.radiopytagor.net'
-		|| $_SERVER['SERVER_NAME'] == 'dir.xiph.org')
+elseif (array_key_exists('SERVER_NAME', $_SERVER)
+        && ($_SERVER['SERVER_NAME'] == 'directory.radiopytagor.net'
+       		|| $_SERVER['SERVER_NAME'] == 'dir.xiph.org'))
 {
 	define('ENVIRONMENT', 'prod');
 }
@@ -34,6 +53,8 @@ define('PAGES_IN_PAGER', 5);
 
 $begin_time = microtime(true);
 
+include_once(dirname(__FILE__).'/lib.errors.php');
+
 // Classes
 include_once(dirname(__FILE__).'/prepend.php');
 include_once(dirname(__FILE__).'/class.db.php');
@@ -54,5 +75,6 @@ include_once(dirname(__FILE__).'/lib.genfile.php');
 include_once(dirname(__FILE__).'/lib.uuidgen.php');
 include_once(dirname(__FILE__).'/lib.dir.php');
 include_once(dirname(__FILE__).'/lib.utils.php');
+include_once(dirname(__FILE__).'/lib.apilog.php');
 
 ?>

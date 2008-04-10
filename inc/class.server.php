@@ -3,7 +3,7 @@
 class Server
 {
     protected $server_id;
-    protected $table_name = 'server';
+    protected static $table_name = 'server';
     protected $cache_expiration = 60;
     public $loaded = false;
     
@@ -65,6 +65,30 @@ class Server
     }
     
     /**
+     * Retrieves the server from the db.
+     * 
+     * @return Server or false if an error occured.
+     */
+    public static function retrieveBySID($sid)
+    {
+        // MySQL Connection
+		$db = DirXiphOrgDBC::getInstance();
+		
+		try
+		{
+		    $sql = "SELECT `id` FROM %s WHERE `sid` = '%s';";
+		    $sql = sprintf($sql, self::$table_name, mysql_real_escape_string($sid));
+		    $res = $db->singleQuery($sql);
+	    }
+	    catch (SQLNoResultException $e)
+		{
+		    return false;
+		}
+		
+		return self::retrieveByPk(intval($res->current('id')));
+    }
+    
+    /**
      * Saves the server into the database.
      * 
      * @return integer
@@ -78,7 +102,7 @@ class Server
         $query = 'INSERT INTO `%1$s` (`mountpoint_id`, `sid`, `current_song`, `listen_url`, `listeners`, `last_touched_at`, `last_touched_from`) '
 			    .'VALUES (%2$d, "%3$s", %4$s, "%5$s", %6$d, %7$s, INET_ATON("%8$s")) '
 			    .'ON DUPLICATE KEY UPDATE `mountpoint_id` = %2$d, `sid` = "%3$s", `current_song` = %4$s, `listen_url` = "%5$s", `listeners` = %6$d, `last_touched_at` = %7$s, `last_touched_from` = INET_ATON("%8$s");';
-	    $query = sprintf($query, $this->table_name,
+	    $query = sprintf($query, self::$table_name,
 	                             $this->mountpoint_id,
 							     mysql_real_escape_string($this->sid),
 							     ($this->current_song != null) ? '"'.mysql_real_escape_string($this->current_song).'"' : 'NULL',
@@ -102,18 +126,20 @@ class Server
 		$db = DirXiphOrgDBC::getInstance();
 		
 		// Query
-        $query = "SELECT `mountpoint_id`, `sid`, `current_song`, `listen_url`, `listeners`, `last_touched_at`, INET_NTOA(`last_touched_from`) AS `last_touched_from` FROM `%s` WHERE `id` = %d;";
-        $query = sprintf($query, $this->table_name, $this->server_id);
-        $m = $db->singleQuery($query);
-        
-        if (!$m)
+		try
+		{
+            $query = "SELECT `mountpoint_id`, `sid`, `current_song`, `listen_url`, `listeners`, `last_touched_at`, INET_NTOA(`last_touched_from`) AS `last_touched_from` FROM `%s` WHERE `id` = %d;";
+            $query = sprintf($query, self::$table_name, $this->server_id);
+            $m = $db->singleQuery($query);
+            
+            $this->loadFromArray($m->array_data[0]);
+            
+            return true;
+        }
+        catch (SQLNoResultException $e)
         {
             return false;
         }
-        
-        $this->loadFromArray($m->array_data);
-        
-        return true;
     }
     
     /**
