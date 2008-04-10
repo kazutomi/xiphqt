@@ -9,7 +9,7 @@ $memcache = DirXiphOrgMCC::getInstance();
 $tpl->display("head.tpl");
 
 // Get the data from the Memcache server
-$top = $memcache->get(ENVIRONMENT.'_home_top');
+$top = genfile::get(genfile::makeGenfileName('home_top'));
 $top = array_map(array('Mountpoint', 'retrieveByPk'), $top);
 $tpl->assign('data', $top);
 $tpl->assign('servers_total', $memcache->get(ENVIRONMENT.'_servers_total'));

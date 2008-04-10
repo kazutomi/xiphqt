@@ -20,7 +20,11 @@ elseif (ENVIRONMENT == 'prod')
 }
 else
 {
-	die("Unable to do this on test atm.\n");
+//	die("Unable to do this on test atm.\n");
+	define('CP_DB_HOST', 'localhost');
+	define('CP_DB_USER', 'dir_xiph_org_t');
+	define('CP_DB_PASS', 'pSqvUfzxL5qXz.UH');
+	define('CP_DB_NAME', 'dir_xiph_org_test');
 }
 
 /**
