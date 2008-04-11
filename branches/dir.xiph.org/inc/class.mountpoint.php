@@ -206,7 +206,8 @@ class Mountpoint
 		            .'`description` = %3$s, `url` = %4$s, `listeners` = %5$d, '
 		            .'`current_song` = %6$s, `media_type_id` = %7$d, '
 		            .'`bitrate` = "%8$s", `channels` = %9$s, '
-		            .'`samplerate` = %10$s, `cluster_password` = %11$s;';
+		            .'`samplerate` = %10$s, `cluster_password` = %11$s '
+		            .'WHERE `id` = %12$d;';
         }
 	    $query = sprintf($query, self::$table_name,
 	                             mysql_real_escape_string($this->stream_name),
@@ -218,7 +219,8 @@ class Mountpoint
 							     mysql_real_escape_string($this->bitrate),
 							     ($this->channels != null) ? intval($this->channels) : 'NULL',
 							     ($this->samplerate != null) ? intval($this->samplerate) : 'NULL',
-							     ($this->cluster_password != null) ? '"'.mysql_real_escape_string($this->cluster_password).'"' : 'NULL');
+							     ($this->cluster_password != null) ? '"'.mysql_real_escape_string($this->cluster_password).'"' : 'NULL',
+							     intval($this->mountpoint_id));
 							     
 	    if ($this->mountpoint_id == 0)
 	    {
