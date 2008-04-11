@@ -13,6 +13,7 @@ define('REQUEST_REFUSED', -1);
 define('SERVER_REFUSED_MISSING_ARG', 0);
 define('SERVER_REFUSED_PARSE_ERROR', 1);
 define('SERVER_REFUSED_ILLEGAL_URL', 2);
+define('SERVER_REFUSED_DUPLICATE',   3);
 
 // Do we have enough data?
 if (!array_key_exists('action', $_REQUEST))
@@ -62,8 +63,8 @@ switch ($_REQUEST['action'])
 		    // Genre, space-normalized
 		    $genre = mb_convert_encoding($_REQUEST['genre'], 'UTF-8',
                                          'UTF-8,ISO-8859-1,auto');
-		    $genre = str_replace(array('+', '-', '*', '<', '>', '~', '"', '(', ')', '|', '!', '?', ',', ';', ':'),
-							     array('', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''),
+		    $genre = str_replace(array('+', '-', '*', '<', '>', '~', '"', '(', ')', '|', '!', '?', ',', ';', ':', '/'),
+							     array(' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '),
 							     $genre);
 		    $genre = preg_replace('/\s+/', ' ', $genre);
 		    $genre_list = array_slice(explode(' ', $genre), 0, 10);
@@ -82,7 +83,7 @@ switch ($_REQUEST['action'])
                 || !preg_match('/^.*[A-Za-z0-9\-]+\.[A-Za-z0-9]+$/', $url['host'])
                 || preg_match('/^(10\.|192\.168\.|127\.)/', $url['host']))
             {
-                throw new ServerRefusedAPIException('Illegal listen_url.', SERVER_REFUSED_ILLEGAL_URL, $listen_url);
+                throw new ServerRefusedAPIException('Illegal listen_url. Incorrect <hostname>.', SERVER_REFUSED_ILLEGAL_URL, $listen_url);
             }
 		
 		    // Cluster password
@@ -92,47 +93,17 @@ switch ($_REQUEST['action'])
 		    // URL
 		    $url = array_key_exists('url', $_REQUEST) ? $_REQUEST['url'] : null;
 		
-		    // MySQL Connection
-		    $db = DirXiphOrgDBC::getInstance();
-		
-		    // Look for the mountpoint (same listen URL)
-		    $server_id = $sid = null;
-		    $query = 'SELECT `id`, `mountpoint_id` FROM `server` WHERE `listen_url` = "%s";';
-		    $query = sprintf($query, mysql_real_escape_string($listen_url));
-		    $mp_id = $server_id = false; // MySQL auto-increment keys can't be 0
-		    $mp = $server = null;
-		    try
+		    // Look for the server (same listen URL)
+		    $server = Server::retrieveByListenUrl($listen_url);
+		    if ($server instanceOf Server)
 		    {
-			    // The mountpoint exists yet. Either an error from the Icecast server, or
-			    // we didn't wipe out old stuff fast enough.
-			    $res = $db->singleQuery($query);
-			    $mp_id = $res->current('mountpoint_id');
-			    $mp = Mountpoint::retrieveByPk($mp_id);
-			    $server_id = $res->current('id');
-			    $server = Server::retrieveByPk($server_id);
-		    }
-		    catch (SQLNoResultException $e)
-		    {
-			    // The mountpoint doesn't exist yet in our database (it's OK)
+		        throw new ServerRefusedAPIException('Entry already in the YP.', SERVER_REFUSED_DUPLICATE, $listen_url);
 		    }
 	        
-		    // Look for the mountpoint, bis (different listen URL, same stream name)
-		    $query = 'SELECT `id` FROM `mountpoint` WHERE `stream_name` = "%s" AND `media_type_id` = %d AND `bitrate` = %d;';
-		    $query = sprintf($query, mysql_real_escape_string($stream_name), content_type_lookup($media_type), mysql_real_escape_string($bitrate));
-		    try
-		    {
-			    // The mountpoint exists, only a different server.
-			    $res = $db->singleQuery($query);
-			    $mp_id = $res->current('id');
-			    $mp = Mountpoint::retrieveByPk($mp_id);
-		    }
-		    catch (SQLNoResultException $e)
-		    {
-			    // The mountpoint doesn't exist yet in our database (it's OK)
-		    }
-		
-		    // SID
-		    $sid = UUIDGen::generate();
+		    // Look for the mountpoint (different listen URL, same stream name)
+            $mountpoint = Mountpoint::findSimilar($stream_name,
+                                                  content_type_lookup($media_type),
+                                                  $bitrate);
 		
 		    // Mountpoint
 		    if (!($mp instanceOf Mountpoint))
@@ -149,6 +120,9 @@ switch ($_REQUEST['action'])
 			
 			    if ($mp_id !== false)
 			    {
+		            $mp->incrementCounter(Mountpoint::COUNTER_TOTAL);
+		            $mp->incrementCounter(Mountpoint::COUNTER_MEDIA_TYPE);
+		            
 			        // Log
 			        APILog::mountpointAdded(true, $mp_id, $listen_url);
 			        
@@ -163,9 +137,12 @@ switch ($_REQUEST['action'])
 			        APILog::mountpointAdded(false, $mp_id, $listen_url);
 			    }
 		    }
-		
+		    
+		    // SID
+		    $sid = UUIDGen::generate();
+		    
 		    // Server
-		    if ($mp instanceOf Mountpoint && !$server_id)
+		    if ($mp instanceOf Mountpoint)
 		    {
 		        $server = new Server(0, false, true);
 		        $server->setMountpointId($mp_id);
@@ -189,21 +166,9 @@ switch ($_REQUEST['action'])
 		        }
 		    }
 	        
-		    // Tags and stuff
+		    // Final response
 		    if ($mp instanceOf Mountpoint && $server instanceOf Server)
 		    {
-			    // Increment the "total servers" key in memcache
-			    if (!$memcache->increment(ENVIRONMENT.'_servers_total'))
-     			{
-				    $memcache->set(ENVIRONMENT.'_servers_total', 1);
-			    }
-			    $ct_id = content_type_lookup($media_type);
-			    $ct_key = ENVIRONMENT.'_servers_'.intval($ct_id);
-			    if (!$memcache->increment($ct_key))
-			    {
-				    $memcache->set($ct_key, 1);
-			    }
-			
 			    // Return success
 			    header("YPResponse: 1");
 			    header("YPMessage: Successfully added.");
@@ -259,7 +224,7 @@ switch ($_REQUEST['action'])
 			        throw new APIException("Not enough arguments.");
 		        }
 		    }
-		
+		    
 		    // SID
 		    $sid = preg_replace('/[^A-F0-9\-]/', '', strtoupper ($_REQUEST['sid']));
 		    // Remote IP
@@ -277,19 +242,21 @@ switch ($_REQUEST['action'])
 		    $max_listeners = array_key_exists('max_listeners', $_REQUEST)
         		             ? intval($_REQUEST['max_listeners']) : 0;
 		
-		    // MySQL Connection
-		    $db = DirXiphOrgDBC::getInstance();
-		
-		    // Update the data
+		    // Find the server
 		    $server = Server::retrieveBySID($sid);
 		    if (!($server instanceOf Server))
 		    {
 		        throw new NoSuchSIDAPIException();
 		    }
-		    $query = 'UPDATE `server` SET `current_song` = "%s", `listeners` = %d, `last_touched_from` = INET_ATON("%s"), `last_touched_at` = NOW() WHERE `sid` = "%s";';
-		    $query = sprintf($query, mysql_real_escape_string($current_song), $listeners, mysql_real_escape_string($ip), mysql_real_escape_string($sid));
-		    $res = $db->noReturnQuery($query);
-		    if ($res && $db->affected_rows > 0)
+		    
+		    // Update the data
+		    $server->setCurrentSong($current_song);
+		    $server->setListeners($listeners);
+		    $server->setLastTouchedFrom($ip);
+		    $server->setLastTouchedAt();
+		    $res = $server->save();
+		    
+		    if ($res !== false)
 		    {
 			    // Return success
 			    header("YPResponse: 1");
@@ -301,7 +268,13 @@ switch ($_REQUEST['action'])
 		    }
 		    else
 		    {
-		        throw new NoSuchSIDAPIException();
+			    // Return success
+			    header("YPResponse: 1");
+			    header("YPMessage: Unable to save new server data.");
+			    
+                // Log stuff
+                APILog::request(REQUEST_TOUCH, false, $server->getListenUrl(),
+                                $server->getId(), $server->getMountpointId());
 		    }
 		}
 		catch (NoSuchSIDAPIException $e)
@@ -344,61 +317,57 @@ switch ($_REQUEST['action'])
 			        throw new APIException("Not enough arguments.");
 		        }
 		    }
-		
+		    
 		    // SID
 		    $sid = preg_replace('/[^a-f0-9\-]/', '', strtolower($_REQUEST['sid']));
-		
-		    // MySQL Connection
-		    $db = DirXiphOrgDBC::getInstance();
-		
-		    // Remove the data
+		    
+		    // Find the server
 		    $server = Server::retrieveBySID($sid);
 		    if (!($server instanceOf Server))
 		    {
 		        throw new NoSuchSIDAPIException();
 		    }
-		    $query = 'SELECT s.`id`, s.`mountpoint_id`, m.`media_type_id` FROM `server` AS s INNER JOIN `mountpoint` AS m ON s.`mountpoint_id` = m.`id` WHERE s.`sid` = "%s";';
-		    $query = sprintf($query, mysql_real_escape_string($sid));
-		    try
+	        
+		    // Remove the data
+		    $mp_id = $server->getMountpointId();
+		    $server_id = $server->getId();
+		    $listen_url = $server->getListenUrl();
+	        $res = $server->remove();
+	        APILog::serverRemoved($res, $server_id, $mp_id, $listen_url);
+		    if ($res)
 		    {
-			    $res = $db->selectQuery($query);
-			    $server_id = $res->current('id');
-			    $mp_id = $res->current('mountpoint_id');
-			    $media_type = $res->current('media_type_id');
-			
-			    // Remove server
-			    $query = 'DELETE FROM `server` WHERE `id` = %d;';
-			    $query = sprintf($query, $server_id);
-			    $res = $db->singleQuery($query);
-			
-			    if ($res)
-			    {
-				    // Decrement the servers keys in memcache
-				    $memcache->decrement(ENVIRONMENT.'_servers_total');
-				    $memcache->decrement(ENVIRONMENT.'_servers_'.intval($media_type));
-				
-				    // Return success
-				    header("YPResponse: 1");
-				    header("YPMessage: Deleted server info.");
-				    
-                    // Log stuff
-                    APILog::request(REQUEST_REMOVE, true, $server->getListenUrl(),
-                                    $server->getId(), $server->getMountpointId());
-			    }
-			    else
-			    {
-				    // Return failure
-				    header("YPResponse: 0");
-				    header("YPMessage: Error occured while processing your request.");
-				    
-                    // Log stuff
-                    APILog::request(REQUEST_REMOVE, false, $server->getListenUrl(),
-                                    $server->getId(), $server->getMountpointId());
-			    }
+		        $mountpoint = Mountpoint::retrieveByPk($mp_id);
+		        if (!$mountpoint->hasLinkedServers())
+		        {
+		            $res = $mountpoint->remove();
+		            $mountpoint->decrementCounter(Mountpoint::COUNTER_TOTAL);
+		            $mountpoint->decrementCounter(Mountpoint::COUNTER_MEDIA_TYPE);
+		            
+		            // Log stuff
+		            APILog::mountpointRemoved($res, $mp_id, $listen_url);
+		        }
+	        }
+		    
+		    // Output final status
+		    if ($res)
+		    {
+			    // Return success
+			    header("YPResponse: 1");
+			    header("YPMessage: Deleted server info.");
+			    
+                // Log stuff
+                APILog::request(REQUEST_REMOVE, true, $server->getListenUrl(),
+                                $server->getId(), $server->getMountpointId());
 		    }
-		    catch (SQLNoResultException $e)
+		    else
 		    {
-			    throw new NoSuchSIDAPIException();
+			    // Return failure
+			    header("YPResponse: 0");
+			    header("YPMessage: Error occured while processing your request.");
+			    
+                // Log stuff
+                APILog::request(REQUEST_REMOVE, false, $server->getListenUrl(),
+                                $server->getId(), $server->getMountpointId());
 		    }
 		}
 		catch (NoSuchSIDAPIException $e)
@@ -410,8 +379,20 @@ switch ($_REQUEST['action'])
             // Log stuff
             APILog::request(REQUEST_REMOVE, false, $listen_url,
                             $server_id !== false ? $server_id : null,
-                            $mountpoint_id !== false ? $mountpoint_id : null);
+                            $mp_id !== false ? $mp_id : null);
 		}
+	    catch (APIException $e)
+	    {
+		    // Return failure
+		    header("YPResponse: 0");
+		    header("YPMessage: Touch impossible. Reason: ".$e->getMessage());
+		    header("SID: -1");
+		    
+            // Log stuff
+            APILog::request(REQUEST_REMOVE, false, $listen_url,
+                            $server_id !== false ? $server_id : null,
+                            $mp_id !== false ? $mp_id : null);
+	    }
 		
 		break;
 }

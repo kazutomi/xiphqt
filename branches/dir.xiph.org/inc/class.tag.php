@@ -118,6 +118,26 @@ class Tag
 	        }
 		}
     }
+    
+    /**
+     * Delete the mountpoint-to-tags associations for a given mountpoint (plus
+     * decrement the tag cloud).
+     */
+    public static function deleteMountpointTags($mountpoint_id)
+    {
+        // MySQL Connection
+	    $db = DirXiphOrgDBC::getInstance();
+	    
+	    $sql = 'UPDATE `tag_cloud` SET `tag_usage` = `tag_usage` - 1 WHERE `tag_id` IN (SELECT `tag_id` FROM `mountpoints_tags` WHERE `mountpoint_id` = %d);';
+	    $sql = sprintf($sql, intval($mountpoint_id));
+	    $res0 = $db->noReturnQuery($sql);
+	    
+	    $sql = "DELETE FROM `mountpoints_tags` WHERE `mountpoint_id` = %d;";
+	    $sql = sprintf($sql, intval($mountpoint_id));
+	    $res1 = $db->noReturnQuery($sql);
+	    
+	    return $res0 && $res1;
+    }
 }
 
 ?>
