@@ -1,6 +1,6 @@
 <?php
 
-define('ERROR_RECIPIENT', 'balbinus@orbus.fr');
+define('ERROR_RECIPIENT', 'annie.dupont1137@gmail.com');
 define('ERROR_SENDER', 'bug');
 
 function mail_error($mail_to, $mail_from,
