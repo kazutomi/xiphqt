@@ -14,15 +14,19 @@ class APILog
                              $listen_url !== null ? sprintf('%u', crc32($listen_url)) : 0,
                              $server_id, $mountpoint_id);
         $db->noReturnQuery($sql);
-        
-/*        mail_error('annie.dupont1137@gmail.com', 'log-api',
-                   $result, __FILE__, 0);*/
     }
     
     public static function serverAdded($ok, $server_id, $mountpoint_id,
                                        $listen_url)
     {
-        self::log($ok ?'Server added' : 'Server add failed',
+        self::log($ok ? 'Server added' : 'Server add failed',
+                  $listen_url, $server_id, $mountpoint_id);
+    }
+    
+    public static function serverRemoved($ok, $server_id, $mountpoint_id,
+                                         $listen_url)
+    {
+        self::log($ok ? 'Server removed' : 'Server removal failed',
                   $listen_url, $server_id, $mountpoint_id);
     }
     
@@ -30,6 +34,13 @@ class APILog
                                            $listen_url = null)
     {
         self::log($ok ? 'Mountpoint added' : 'Mountpoint add failed',
+                  $listen_url, null, $mountpoint_id);
+    }
+    
+    public static function mountpointRemoved($ok, $mountpoint_id,
+                                             $listen_url = null)
+    {
+        self::log($ok ? 'Mountpoint removed' : 'Mountpoint removal failed',
                   $listen_url, null, $mountpoint_id);
     }
     

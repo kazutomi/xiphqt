@@ -2,7 +2,7 @@
 
 class Server
 {
-    protected $server_id;
+    protected $server_id = 0;
     protected static $table_name = 'server';
     protected $cache_expiration = 60;
     public $loaded = false;
@@ -14,6 +14,7 @@ class Server
     protected $listeners;
     protected $last_touched_at;
     protected $last_touched_from;
+    protected $checked;
     
     public function __construct($server_id, $force_reload = false, $no_load = false)
     {
@@ -76,7 +77,7 @@ class Server
 		
 		try
 		{
-		    $sql = "SELECT `id` FROM %s WHERE `sid` = '%s';";
+		    $sql = "SELECT `id` FROM `%s` WHERE `sid` = '%s';";
 		    $sql = sprintf($sql, self::$table_name, mysql_real_escape_string($sid));
 		    $res = $db->singleQuery($sql);
 	    }
@@ -86,6 +87,84 @@ class Server
 		}
 		
 		return self::retrieveByPk(intval($res->current('id')));
+    }
+    
+    /**
+     * Retrieves the server from the db.
+     * 
+     * @return Server or false if an error occured.
+     */
+    public static function retrieveByListenUrl($url)
+    {
+        // MySQL Connection
+		$db = DirXiphOrgDBC::getInstance();
+		
+		try
+		{
+		    $sql = "SELECT `id` FROM `%s` WHERE `listen_url` = '%s';";
+		    $sql = sprintf($sql, self::$table_name, mysql_real_escape_string($url));
+		    $res = $db->singleQuery($sql);
+	    }
+	    catch (SQLNoResultException $e)
+		{
+		    return false;
+		}
+		
+		return self::retrieveByPk(intval($res->current('id')));
+    }
+    
+    /**
+     * Retrieves servers by mountpoint_id.
+     * 
+     * @param int $mp_id
+     * @param bool $load_servers If set to true, will return only a list of IDs.
+     * @return array
+     */
+    public static function retrieveByMountpointId($mp_id, $load_servers = true)
+    {
+        // MySQL Connection
+		$db = DirXiphOrgDBC::getInstance();
+		
+		try
+		{
+		    $sql = "SELECT `id` FROM `%s` WHERE `mountpoint_id` = %d;";
+		    $sql = sprintf($sql, self::$table_name, $mp_id);
+		    $res = $db->selectQuery($sql);
+	    }
+	    catch (SQLNoResultException $e)
+		{
+		    return false;
+		}
+		
+		$data = array();
+		while (!$res->endOf())
+		{
+		    if ($load_servers)
+		    {
+    		    $data[] = self::retrieveByPk(intval($res->current('id')));
+		    }
+		    else
+		    {
+		        $data[] = intval($res->current('id'));
+		    }
+		    
+		    $res->next();
+		}
+		
+		return $data;
+    }
+    
+    /**
+     * Deletes the server from both the database and the cache.
+     * 
+     * @return bool
+     */
+    public function remove()
+    {
+        $res0 = $this->removeFromDb();
+        $res1 = $this->removeFromCache();
+        
+        return $res0 && $res1;
     }
     
     /**
@@ -99,9 +178,23 @@ class Server
 		$db = DirXiphOrgDBC::getInstance();
 		
 		// Query
-        $query = 'INSERT INTO `%1$s` (`mountpoint_id`, `sid`, `current_song`, `listen_url`, `listeners`, `last_touched_at`, `last_touched_from`) '
-			    .'VALUES (%2$d, "%3$s", %4$s, "%5$s", %6$d, %7$s, INET_ATON("%8$s")) '
-			    .'ON DUPLICATE KEY UPDATE `mountpoint_id` = %2$d, `sid` = "%3$s", `current_song` = %4$s, `listen_url` = "%5$s", `listeners` = %6$d, `last_touched_at` = %7$s, `last_touched_from` = INET_ATON("%8$s");';
+		$query = '';
+		if ($this->server_id == 0)
+		{
+            $query = 'INSERT INTO `%1$s` (`mountpoint_id`, `sid`, '
+                    .'`current_song`, `listen_url`, `listeners`, '
+                    .'`last_touched_at`, `last_touched_from`, `checked`) '
+	    		    .'VALUES (%2$d, "%3$s", %4$s, "%5$s", %6$d, %7$s, '
+	    		    .'INET_ATON("%8$s"), %9$d);';
+	    }
+	    else
+	    {
+    		$query = 'UPDATE `%1$s` SET `mountpoint_id` = %2$d, `sid` = "%3$s", '
+    		        .'`current_song` = %4$s, `listen_url` = "%5$s", '
+    		        .'`listeners` = %6$d, `last_touched_at` = %7$s, '
+    		        .'`last_touched_from` = INET_ATON("%8$s"), '
+    		        .'`checked` = %9$d;';
+        }
 	    $query = sprintf($query, self::$table_name,
 	                             $this->mountpoint_id,
 							     mysql_real_escape_string($this->sid),
@@ -109,8 +202,21 @@ class Server
 							     mysql_real_escape_string($this->listen_url),
 							     ($this->listeners != null) ? $this->listeners : 0,
 							     ($this->last_touched_at != null) ? '"'.mysql_real_escape_string($this->last_touched_at).'"' : 'NOW()',
-							     mysql_real_escape_string($this->last_touched_from));
-	    $server_id = $db->insertQuery($query);
+							     mysql_real_escape_string($this->last_touched_from),
+							     ($this->checked != null) ? $this->checked : 0);
+	    
+		if ($this->server_id == 0)
+		{
+	        $server_id = $db->insertQuery($query);
+	        if ($server_id !== false)
+	        {
+	            $this->server_id = $server_id;
+	        }
+        }
+        else
+        {
+            $server_id = $db->noReturnQuery($query);
+        }
 	    
 	    return $server_id;
     }
@@ -128,7 +234,7 @@ class Server
 		// Query
 		try
 		{
-            $query = "SELECT `mountpoint_id`, `sid`, `current_song`, `listen_url`, `listeners`, `last_touched_at`, INET_NTOA(`last_touched_from`) AS `last_touched_from` FROM `%s` WHERE `id` = %d;";
+            $query = "SELECT `mountpoint_id`, `sid`, `current_song`, `listen_url`, `listeners`, `last_touched_at`, INET_NTOA(`last_touched_from`) AS `last_touched_from`, `checked` FROM `%s` WHERE `id` = %d;";
             $query = sprintf($query, self::$table_name, $this->server_id);
             $m = $db->singleQuery($query);
             
@@ -140,6 +246,25 @@ class Server
         {
             return false;
         }
+    }
+    
+    /**
+     * Remove the data from the database.
+     * 
+     * @return boolean
+     */
+    protected function removeFromDb()
+    {
+        // MySQL Connection
+		$db = DirXiphOrgDBC::getInstance();
+		
+		// Query
+        $query = 'DELETE FROM `%s` WHERE `id` = %d;';
+	    $query = sprintf($query, self::$table_name,
+	                             $this->server_id);
+	    $res = $db->noReturnQuery($query);
+	    
+	    return (bool) $res;
     }
     
     /**
@@ -174,6 +299,20 @@ class Server
         }
         
         return $this->loadFromArray($a);
+    }
+    
+    /**
+     * Remove the data from the cache.
+     * 
+     * @return boolean.
+     */
+    protected function removeFromCache()
+    {
+        // Memcache connection
+        $cache = DirXiphOrgMCC::getInstance();
+        
+        $a = $cache->delete($this->getCacheKey());
+        return ($a === true);
     }
     
     /**
@@ -215,6 +354,7 @@ class Server
         $this->listeners = intval($a['listeners']);
         $this->last_touched_at = $a['last_touched_at'];
         $this->last_touched_from = $a['last_touched_from'];
+        $this->checked = $a['checked'];
         
         $this->loaded = true;
         
@@ -237,6 +377,7 @@ class Server
         $a['listeners'] = intval($this->listeners);
         $a['last_touched_at'] = $this->last_touched_at;
         $a['last_touched_from'] = $this->last_touched_from;
+        $a['checked'] = $this->checked;
         
         return $a;
     }
@@ -319,6 +460,27 @@ class Server
     public function getLastTouchedFrom()
     {
         return $this->last_touched_from;
+    }
+    
+    public function setChecked($c)
+    {
+        $this->checked = intval($c);
+    }
+    
+    /**
+     * @return int
+     */
+    public function getChecked()
+    {
+        return $this->checked;
+    }
+    
+    /**
+     * @return bool
+     */
+    public function isChecked()
+    {
+        return (bool) $this->checked;
     }
 }
 
