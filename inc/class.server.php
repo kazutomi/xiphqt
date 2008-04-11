@@ -193,7 +193,7 @@ class Server
     		        .'`current_song` = %4$s, `listen_url` = "%5$s", '
     		        .'`listeners` = %6$d, `last_touched_at` = %7$s, '
     		        .'`last_touched_from` = INET_ATON("%8$s"), '
-    		        .'`checked` = %9$d;';
+    		        .'`checked` = %9$d WHERE `id` = %10$d;';
         }
 	    $query = sprintf($query, self::$table_name,
 	                             $this->mountpoint_id,
@@ -203,7 +203,8 @@ class Server
 							     ($this->listeners != null) ? $this->listeners : 0,
 							     ($this->last_touched_at != null) ? '"'.mysql_real_escape_string($this->last_touched_at).'"' : 'NOW()',
 							     mysql_real_escape_string($this->last_touched_from),
-							     ($this->checked != null) ? $this->checked : 0);
+							     ($this->checked != null) ? $this->checked : 0,
+							     intval($this->server_id));
 	    
 		if ($this->server_id == 0)
 		{
