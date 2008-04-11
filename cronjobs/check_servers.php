@@ -5,6 +5,21 @@ include_once(dirname(__FILE__).'/../inc/prepend.php');
 
 class ToDeleteException extends Exception { }
 
+// Lock
+if (!defined('ENVIRONMENT'))
+{
+    throw new EnvironmentUndefinedException();
+}
+$lock_file = '/tmp/'.ENVIRONMENT.'_check_servers.lock';
+if (file_exists($lock_file))
+{
+    die("Another instance is already running.\n");
+}
+else
+{
+    touch($lock_file);
+}
+
 // Database connection
 $db = DirXiphOrgDBC::getInstance();
 
@@ -111,5 +126,7 @@ catch (SQLNoResultException $e)
 {
     echo "OK.\n";
 }
+
+unlink($lock_file);
 
 ?>
