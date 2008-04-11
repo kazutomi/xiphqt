@@ -17,7 +17,30 @@ class BadIDException extends DXOException { }
 class EnvironmentUndefinedException extends DXOException { }
 
 class APIException extends DXOException { }
-class ServerRefusedAPIException extends APIException { }
+class ServerRefusedAPIException extends APIException
+{
+    protected $listen_url = false;
+    
+    public function __construct($errstr, $errno, $listen_url = null)
+    {
+        if ($listen_url !== null)
+        {
+            $this->listen_url = $listen_url;
+        }
+        
+        parent::__construct($errstr, $errno);
+    }
+    
+    public function getListenUrl()
+    {
+        return $this->listen_url;
+    }
+    
+    public function setListenUrl($url)
+    {
+        $this->listen_url = $url;
+    }
+}
 class NoSuchSIDAPIException extends APIException { }
 
 if (getenv('ENVIRONMENT') !== false)

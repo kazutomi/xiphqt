@@ -10,6 +10,10 @@ define('REQUEST_OK', 1);
 define('REQUEST_FAILED', 0);
 define('REQUEST_REFUSED', -1);
 
+define('SERVER_REFUSED_MISSING_ARG', 0);
+define('SERVER_REFUSED_PARSE_ERROR', 1);
+define('SERVER_REFUSED_ILLEGAL_URL', 2);
+
 // Do we have enough data?
 if (!array_key_exists('action', $_REQUEST))
 {
@@ -33,7 +37,7 @@ switch ($_REQUEST['action'])
 		    {
 		        if (!array_key_exists($a, $_REQUEST))
 		        {
-			        throw new ServerRefusedAPIException('Not enough arguments.');
+			        throw new ServerRefusedAPIException('Not enough arguments.', SERVER_REFUSED_MISSING_ARG);
 		        }
 		    }
 		    // Remote IP
@@ -71,14 +75,14 @@ switch ($_REQUEST['action'])
             $url = @parse_url($listen_url);
             if (!$url)
             {
-                throw new ServerRefusedAPIException('Could not parse listen_url.');
+                throw new ServerRefusedAPIException('Could not parse listen_url.', SERVER_REFUSED_PARSE_ERROR, $listen_url);
             }
             if (empty($url['scheme']) || $url['scheme'] != 'http'
                 || !array_key_exists('host', $url)
                 || !preg_match('/^.*[A-Za-z0-9\-]+\.[A-Za-z0-9]+$/', $url['host'])
                 || preg_match('/^(10\.|192\.168\.|127\.)/', $url['host']))
             {
-                throw new ServerRefusedAPIException('Illegal listen_url.');
+                throw new ServerRefusedAPIException('Illegal listen_url.', SERVER_REFUSED_ILLEGAL_URL, $listen_url);
             }
 		
 		    // Cluster password
@@ -231,6 +235,7 @@ switch ($_REQUEST['action'])
 		    header("SID: -1");
 		    
             // Log stuff
+            APILog::serverRefused($e->getCode(), $e->getListenUrl());
             APILog::request(REQUEST_ADD, REQUEST_REFUSED, $listen_url,
                             $server_id !== false ? $server_id : null,
                             $mp_id !== false ? $mp_id : null);
