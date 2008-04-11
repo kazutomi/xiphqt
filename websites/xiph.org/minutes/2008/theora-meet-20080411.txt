@@ -1,0 +1,285 @@
+[06:56] <xiphmont__> meeting time-ish
+[06:56] <rillianbis> yo
+[06:56] --> r2d has joined this channel (n=nico@83-159-93-59.dsl.tiscali.fr).
+[06:56] <rillianbis> xiphmont__: four aussie beers then? I've had two glasses of wine!
+[06:56] <rillianbis> hi r2d
+[06:57] <r2d> hi
+[06:57] <xiphmont__> no, no... no drunken meetings.  And no, the four beers was a joke.
+[06:57] <rillianbis> maikmerten: you awake?
+[06:58] <rillianbis> _Ivo: are you chairing?
+[06:58] <maikmerten> sure
+[06:58] <xiphmont__> I'm just an accessory here.
+[06:58] <xiphmont__> I'd prefer not to chair this time.
+[06:58] <_Ivo> I will do it, then
+[06:58] <xiphmont__> thanks Ivo
+[06:59] <_Ivo> I tried to assemble an agenda, http://wiki.xiph.org/index.php/TheoraMeeting20080411
+[07:00] <_Ivo> I forgot to add "discuss the MSVC patches"
+[07:01] <_Ivo> anyway, let's start by the final roadblocks.
+[07:02] <rillianbis> so as of an hour ago we pass 'make check'
+[07:02] <_Ivo> progress
+[07:02] <rillianbis> I really don't think the new api is ready for freeze
+[07:02] <rillianbis> especially the encode side
+[07:02] <rillianbis> but I suppose we could call it a buggy 1.0
+[07:02] <xiphmont__> no, 1.0 doesn;t have performance to offer, so it better have stability ;-)
+[07:03] <_Ivo> besides the documentation lack (did anyone start working on that part yet), what is wrong with the API?
+[07:03] <xiphmont__> [not here]
+[07:03] <maikmerten> (is the new API actually important for this "legacy 1.0 - it's all about stability" release?)
+[07:05] <rillianbis> maikmerten: derf thought so
+[07:05] <maikmerten> if the new API is considered "unstable" this at least get rid of the "examples used the old API" blocker ;-)
+[07:05] <rillianbis> I don't think the new api is essential
+[07:06] <rillianbis> but the idea is that we should start transitioning people
+[07:06] <_Ivo> yes
+[07:06] <rillianbis> also, ubuntu is already shipping the new libraries
+[07:06] <rillianbis> so I think we should just say it's subject to change
+[07:06] <rillianbis> maikmerten: and yes, that shouldn't be a blocker
+[07:07] <rillianbis> of course, currently it's only encoder_example that uses the new api...
+[07:07] --> kfish has joined this channel (n=conrad@60-56-210-121.eonet.ne.jp).
+[07:08] <_Ivo> rillian, you said the encoding part of the API isn't ready.  Might as well report now what isn't working
+[07:10] <rillianbis> well, I think the initialization should be more robust and fill in more missing fields
+[07:10] <rillianbis> but my main concern is that it just hasn't had enough review
+[07:10] <rillianbis> so I don't think it's stable the way the old api is stable, having been in use for years
+[07:10] <rillianbis> As I said, I don't know that that has to hold up the release.
+[07:11] <_Ivo> ok
+[07:11] <_Ivo> the beta todo page suggests a solution for the API transition
+[07:11] <rillianbis> does anyone understand teh mmx/selinux bug?
+[07:11] <_Ivo> "Instead we can provide theora_control() switches for this, and mark the theora_info struct entries as deprecated to encourage transition."
+[07:12] <rillianbis> ah, that
+[07:13] <rillianbis> well, we've decided to provide both apis with libtheoraenc/dec, so I think it's better to just make it a new code/old code thing
+[07:15] <rillianbis> I guess we could apply the patches from 1266
+[07:15] <rillianbis> and call that beta3
+[07:15] <_Ivo> all right.  what is the deal with selinux?  that's supposed to be a security thingy, why would theora be causing problems with it?
+[07:16] <rillianbis> as I understand it, the old encoder's mmx code uses too many registers
+[07:16] <xiphmont__> yep
+[07:16] <rillianbis> which requires the linker to do some more editing than selinux likes
+[07:16] <maikmerten> so selinux is firing a false alarm?
+[07:17] <xiphmont__> it is also the case the code should be corrected-- for example it will only build correctly if optimization is enabled.
+[07:17] <xiphmont__> Otherwise it uses more registers than is actually available and compile fails completely.
+[07:17] <xiphmont__> s/is/are/
+[07:17] <xiphmont__> so we should probably treat it as our bug regardless.
+[07:18] <rillianbis> maikmerten: it's a "false alarm" because the code isn't malicious
+[07:18] <_Ivo> ok, does the 1266 patch address this, or is it another problems altogether?
+[07:18] <rillianbis> xiphmont__: I don't suppose you'd like to 'just do that'
+[07:18] <_Ivo> problem*
+[07:18] <xiphmont__> rillianbis, 'touche', not sure I'mcapable
+[07:18] <rillianbis> either yourself, or checking the patches on https://trac.xiph.org/ticket/1266
+[07:18] <maikmerten> yup, so it's more like "their" problem (which of course isn't a viable attitude as it will bit *our* users)
+[07:19] <maikmerten> s/bit/bite
+[07:19] <xiphmont__> I could certainly *try*
+[07:19] <rillianbis> maikmerten: yes, especially when some distros have it on by default
+[07:19] <xiphmont__> I don;t even have an SSE reference though :-)
+[07:20] <rillianbis> well, it if fixes the bug, doesn't change the output and compiles with -fPIC, that would be enough, no?
+[07:20] <xiphmont__> OK, I'll go buy a book.
+[07:21] <rillianbis> s/-fPIC/-fomit-frame-pointer
+[07:21] <xiphmont__> -vomit-frame-pointer
+[07:21] <rillianbis> xiphmont__: sure. there are reasonable references on intel's site too
+[07:21] <xiphmont__> OK
+[07:21] <rillianbis> I find the inline asm syntax the mysterious part
+[07:21] <xiphmont__> inline asm syntax I can do
+[07:22] <xiphmont__> Does this hit the VC assembly too?
+[07:22] <rillianbis> I've no idea if they have a similar bug
+[07:22] <rillianbis> the patch is just mmx
+[07:22] <rillianbis> I'm unclear how it's gaining a register, actually
+[07:23] <rillianbis> they seem to just be using di instead of ax
+[07:24] <xiphmont__> heh
+[07:25] <xiphmont__> Fix attempt is first on the list tomorrow morning
+[07:25] <andrew__> The problem is just on SELinux, or potentially any other Linux, yeah?  Why not leave the VC patch alone, as it's not an issue on Windows.
+[07:25] <_Ivo> I think the question was IF it was affecting Windows
+[07:25] <xiphmont__> yes
+[07:25] <xiphmont__> in some way
+[07:26] <_Ivo> if it isn't, nobody's going to modify what isn't broken
+[07:26] <xiphmont__> prolly not
+[07:26] <xiphmont__> but you can never tell in open source
+[07:26] <rillianbis> they took off the MANGLE macro, which I assume breaks macos
+[07:26] <_Ivo> (Vista is weird, but selinux takes the cake on paranoia)
+[07:27] <rillianbis> andrew__: we need to get the MSVC patch in, but it's orthogonal to this issue
+[07:27] <rillianbis> and the release, absent a win32 maintainer
+[07:28] <rillianbis> silvia got a bite fishing for a new directshow person, so hopefully we'll have someone to verify these things in the nearish future
+[07:28] <xiphmont__> *sweet*
+[07:29] <maikmerten> sweet indeed
+[07:29] <rillianbis> _Ivo: so, I think we release a new beta after the selinux thing is fixed
+[07:29] <_Ivo> ETA?
+[07:29] <rillianbis> and if no one notices anything further, we can do 1.0 a few weeks later
+[07:30] <rillianbis> we're blocked on the selinux/frame-pointer thing
+[07:30] <maikmerten> by the way, whenever we mention 1.0... should we stress that 1.0 will be for stability, not for performance and already start talking about 1.1?
+[07:30] <rillianbis> maikmerten: yes
+[07:30] <rillianbis> well, we should stress it's for stability
+[07:30] <_Ivo> and if you are doing a beta, you might as well add the VS stuff even if we are not yet sure if it's a perfect solution
+[07:31] <rillianbis> and start talking about 1.1 once the thusnelda performance is actually better :)
+[07:31] <xiphmont__> Thusnelda is not far off.
+[07:31] <rillianbis> rock
+[07:31] <xiphmont__> in the sense that the changes can be merged back soon
+[07:32] <maikmerten> well, no idea (layman here), but thusnelda apparently is rather "ringy"
+[07:32] <maikmerten> but I think quantization wasn't touched yet, so this wouldn't be unexpected
+[07:32] <xiphmont__> thusnelda is missing two pieces necessary to make it practical
+[07:32] <rillianbis> _Ivo: sure. I just don't think the VS stuff should block release
+[07:33] <maikmerten> well, anyway, a beta 3 smells like a good idea
+[07:33] <_Ivo> rillianbis: which is why it should get in beta now instead of waiting for this win32 guy who hasn't even confirmed he will be able to check on theora stuff
+[07:34] <xiphmont__> release early, release oftewn
+[07:34] <xiphmont__> we need to get back into practice
+[07:34] <_Ivo> something like that, which reminds me that we need a new ffmpeg2theora out ASAP
+[07:36] <rillianbis> in other news, commandline handbrake now does theora. hopefully the next mac release will too
+[07:36] <rillianbis> thanks to saintdev
+[07:36] <maikmerten> yay
+[07:36] <_Ivo> progress
+[07:36] <rillianbis> _Ivo: we ready to move on?
+[07:37] <_Ivo> I suppose.  I'm wondering if you could provide an ETA for beta3
+[07:37] <andrew__> Is there a verdict on what to do with the VS patch?
+[07:38] <andrew__> As maikmerten says, if there's going to be a beta3, would be nice to get it in there for some wider testing.  Can always be reverted at 1.0 if it doesn't work out, I suppose.
+[07:39] <rillianbis> andrew__: ah, you're Andrew Chew who forwarded the email?
+[07:39] <xiphmont__> [I don;t know what the patch is supposed to be, I have no opinion to offer.... but testing is good ;-]
+[07:39] <rillianbis> can you test these things?
+[07:39] <andrew__> Yes :P
+[07:39] <rillianbis> sorry, took a while to connect
+[07:39] <_Ivo> xiphmont__: http://lists.xiph.org/pipermail/theora-dev/2007-December/003497.html
+[07:39] <andrew__> Yes, as soon as it's in, I will migrate to it immediately.
+[07:39] <rillianbis> yes, that's enough to go ahead and put it in mainline
+[07:40] <_Ivo> andrew__: having a win32 guy able to test these things make the process go much faster
+[07:40] <andrew__> That's great :)  I'll also urge Nils to migrate to beta3 to get another tester on this.
+[07:41] <_Ivo> rillian, you seem to be looking into older tickets.  Could you make a brief assessment of 1328, 1338, and 1336?
+[07:42] <_Ivo> just to confirm if there's anything worthwile to go into beta3
+[07:42] <xiphmont__> I'll deal with seeing how it affects Thusnelda.
+[07:42] <xiphmont__> [the horror of forks]
+[07:43] <rillianbis> andrew__: I'm trying to merge now. the vcproject stuff is out of date, so I'll probably punt on that the rest I'll commit
+[07:44] <andrew__> That's fine, thanks
+[07:44] <rillianbis> 1328 should be fixed, but isn't important
+[07:44] <andrew__> Actually, if you merge that, I can try to fix the vcproject stuff and provide a patch.  Say, this weekend
+[07:44] <rillianbis> 1338 I don't know about
+[07:44] <rillianbis> derf could do it in half an hour :)
+[07:45] <xiphmont__> let me look
+[07:45] <xiphmont__> ah, this one
+[07:45] <rillianbis> 1336 should be fixed
+[07:46] <rillianbis> th_encode_dupframe_in()?
+[07:46] <rillianbis> th_encode_dupframe)?
+[07:46] <xiphmont__> there's another API request as well, to ask for rate/quality changes on the fly
+[07:46] <xiphmont__> adding that to the new API through the control() call is easy enough
+[07:46] <xiphmont__> or whatever
+[07:47] <rillianbis> xiphmont__: right. that's more an encoder feature and shouldn't affect api
+[07:47] <xiphmont__> ...did it really want a dupre encoded frame or a drop frame?
+[07:47] <rillianbis> xiphmont__: the theory is that if you know you need to insert a duplicate frame, it's nice to be able to tell the encoder you're doing that to save time
+[07:48] <rillianbis> e.g. when you're correcting for clock drift
+[07:48] <rillianbis> much more so if you're doing thomasvs' "simulating variable framerate" thing where most frames are duplicates
+[07:48] <xiphmont__> ok, sure
+[07:48] <xiphmont__> 'anyway'
+[07:49] <xiphmont__> If that's a blocker, you can give it to me.
+[07:49] <rillianbis> in theory the encoder can just turn around and emit a zero-length packet, but if you'd set the "VP3_COMPATIBLE" profile, it should probably emit a non-intra-no-mv packet, which is also cheap
+[07:50] <rillianbis> and of course, if you're at a forced keyframe you have to reencode the previous buffer
+[07:50] <xiphmont__> Oh, right.  VP3 compat
+[07:50] <xiphmont__> sure
+[07:50] <maikmerten> I thought that contract did already expire ;-)
+[07:50] <rillianbis> it's a blocker if a stable theoraenc api is a blocker
+[07:50] <xiphmont__> BTW... we might want to officially fuck VP3 compat soon.
+[07:50] <_Ivo> whatever's needed for improvement
+[07:50] <rillianbis> xiphmont__: I really think you should maintain a compatability mode
+[07:51] <xiphmont__> *adding* calls is not 'unstable'
+[07:51] <rillianbis> it can be no better than the current libtheora
+[07:51] <rillianbis> xiphmont__: sure
+[07:51] <xiphmont__> rillianbis, there are reasons to throw off VP3 compat, and they're not technical.
+[07:51] <rillianbis> but there's a big installed base that doesn't have the rewritten decoder yet
+[07:51] <rillianbis> xiphmont__: oh?
+[07:51] <xiphmont__> unfortunately, it's not a discussion to have here.
+[07:52] <rillianbis> ok, later
+[07:52] <xiphmont__> [it was part of conversations that were not public]
+[07:52] <_Ivo> [I thought they were supposed to be now]
+[07:52] <xiphmont__> but visibly breaking the installed VP3 base might have more 'unexpected' benefit than you might think ;-)
+[07:52] <maikmerten> well, it would kill off the alpha installation base
+[07:53] <xiphmont__> yes
+[07:53] <_Ivo> anyway, at some point Theora would have to break compatibility with VP3.
+[07:53] <-- rillian has left this server (Nick collision from services.).
+[07:53] *** rillianbis is now known as rillian.
+[07:53] <xiphmont__> thusnelda will break it *hard* anyway
+[07:53] <xiphmont__> thusnelda already shatters the old decoders.
+[07:53] --> rillian_ has joined this channel (n=giles@mist.thaumas.net).
+[07:53] <_Ivo> older versions of the library will be available for those few cases that require VP3 compatibility
+[07:54] <maikmerten> anyway, it may be wise to ask the annodex people about progress on their "Netscape" plugin and their ActiveX thingie
+[07:54] --> Venus_Mars has joined this channel (n=nithin@203.78.217.176).
+[07:54] <kfish> maikmerten, oggplay?
+[07:54] <maikmerten> just so web-authors have a reliable way to embedd Theora content
+[07:54] <_Ivo> maikmerten: only kfish is here, and he's directly involved
+[07:54] <maikmerten> kfish, ah, hi, sorry, didn't notice you
+[07:54] <_Ivo> isn't*
+[07:55] <maikmerten> anyway, I think the oggplay plugin can be more robust than Java ever can be
+[07:55] <maikmerten> either the applet is buggy (it is) or the Java plugin is a mess (it is)
+[07:55] <_Ivo> from personal experience, they both are
+[07:55] <_Ivo> but oggplay doesn't seem any better right now (AFAIK)
+[07:56] <maikmerten> so if we can cover Firefox/Opera/Konqueror on the one side and Internet Explorer on the other side with non-Java technology that may be better than riding that dead Java applet horse
+[07:56] <kfish> _Ivo, if you have bugs to report please do so
+[07:56] <_Ivo> in time, I will
+[07:57] <maikmerten> the plan for Internet Explorer is a bit vague
+[07:57] <maikmerten> there's a two years old posting about how more information about an ActiveX thingie will be posted later on
+[07:57] <maikmerten> but that's about it
+[07:57] <kfish> http://annodex.org/wiki/Committee/Meetings/2008_03_11#6._Update_on_CSIRO.2FFunnelback_communications
+[07:57] <_Ivo> rillian: I can't find the first part of this message, http://lists.xiph.org/pipermail/theora-dev/2008-January/003520.html Do you still remember what was broken here?
+[07:58] <maikmerten> oooh, thanks
+[07:59] <_Ivo> kfish: fresh news are good, thanks
+[07:59] <rillian> _Ivo: I'm not sure. I think it was a bug in the progress bar. I think it got fixed
+[08:00] <_Ivo> goodie.  Much less bugs than expected
+[08:01] <_Ivo> All right, moving on to one of the next items in agenda
+[08:01] <_Ivo> eTheora, I guess
+[08:01] <kfish> ribamar is not here
+[08:01] <_Ivo> anyone played around with it yet?  Ribamar has started working on audio part lately
+[08:02] <rillian> I haven't looked at it in a while
+[08:02] <rillian> hi Venus_Mars
+[08:02] <rillian> is he getting any users?
+[08:03] <_Ivo> I don't know.
+[08:03] <kfish> i'd like to encourage that to turn into a high level encode+mux library
+[08:03] <kfish> ie. something like liboggplay, but for encoding
+[08:03] <kfish> it'd be useful for many things, like some of the other soc projects
+[08:03] <maikmerten> (well, one potential customer for eTheora would be the Darkplaces game engine, which would start recording gameplay videos once eTheora happens to also have sound)
+[08:04] <kfish> cool
+[08:04] <_Ivo> indeed
+[08:04] <maikmerten> (Darkplaces is used in Nexuiz, the all-GPL deathmatch game)
+[08:04] <kfish> (awesome)
+[08:05] <_Ivo> I will email him this part of the log.
+[08:06] <_Ivo> The logo issue is an item, too.  Has there been new developments since the last meeting?
+[08:07] <xiphmont__> yes.
+[08:07] <xiphmont__> But none worth reporting yet
+[08:07] <xiphmont__> In the sense I have had one session with the graphic artist to discuss the logo.
+[08:08] <_Ivo> cool
+[08:08] <xiphmont__> [he is also a redhat employee, one cube down in fact]
+[08:09] <maikmerten> if you want to give him a shock treatment just point him to my home dir on people.xiph.org
+[08:09] <xiphmont__> I did something like that already
+[08:10] <_Ivo> now he cannot unseen what he has seen
+[08:11] <_Ivo> moving on to ffmpeg2theora
+[08:11] <xiphmont__> that's... ungrammatical but scans nicely.
+[08:11] <_Ivo> j isn't here, so, not really much that we can go over.  I'd realy like to help him figure out the last couple of bugs that were reported on Trac, and then get a new release out.
+[08:13] <_Ivo> since people consider it the only proper Theora encoder, having in top shape would be a priority
+[08:15] <_Ivo> finally, I have been in contact with Henrik Olsson who's interested in my GSoC proposal to build a qt4 wrapper around the different encoders.  I'd say things are looking good here.
+[08:15] <maikmerten> oh, that's nice to hear
+[08:15] <rillian> yes, it looked like an interesting project
+[08:15] <rillian> I was hoping we could pursuade arkadini to host
+[08:15] <rillian> mentor, i mean
+[08:16] <_Ivo> yes, that is the only issue pending: there's no mentor
+[08:16] <kfish> Qt gui, not quicktime
+[08:16] <rillian> kfish: no overlap then?
+[08:16] <kfish> completely unrelated to quicktime
+[08:16] <rillian> I thought silvia suggested it, and assumed she knew what she was talking about
+[08:17] <kfish> just a qt gui to select a file and encode it
+[08:17] <rillian> ah
+[08:17] <kfish> both topics were discussed at the last theora meeting, hence the confusion
+[08:17] <_Ivo> yeah, and Qt is cross platform
+[08:17] <rillian> so we can only half mentor that, unless one of use is hiding some Qt expertise
+[08:17] <_Ivo> so it would be a nice way to have a GUI encoder for everything Xiph in one place, working across every system
+[08:17] <kfish> i think it's a useful project, but too trivial for gsoc
+[08:17] <rillian> I'm temped to volunteer, but I don't really have time this summer :(
+[08:19] <_Ivo> kfish: why would you say it is trivial?  getting it right will be a complex task
+[08:19] <rillian> and you can do dirac if the theora part works
+[08:20] <rillian> can we wrap up soon?
+[08:20] <_Ivo> yes
+[08:20] <_Ivo> last item in agenda is the first one: release date.  so if everything goes well, 1.0 will be out a few weeks after beta3
+[08:20] <_Ivo> but we still don't know when beta3 will be out
+[08:22] <_Ivo> I guess maybe just share thoughts on how much time will be expected to get it out is enough to cover the topic.
+[08:22] <rillian> well, monty said he would try the selinux problem tomorrow
+[08:22] <xiphmont__> yes
+[08:22] <_Ivo> basically, if I got it right, is about committing the VS patches and look into the selinux issue
+[08:22] <_Ivo> which is a good thing
+[08:23] <rillian> I'm merging the VS patch to cpu.c, but if I don't get it done tonight, it will probably be a week
+[08:23] <_Ivo> all right, we'll say beta3 is out in one week.
+[08:24] <rillian> _Ivo: thanks for organizing!
+[08:24] <_Ivo> thanks.  I pulled an all nighter to be here
+[08:25] <_Ivo> and thanks to everyone else who joined, too.
+[08:25] <rillian> yes, thanks everyone
+[08:25] <kfish> thanks _Ivo
+[08:25] <rillian> cheers
+[08:25] <_Ivo> I'll be posting the log soon
+[08:26] <xiphmont__> 'night all.  Thank you Ivo.
+[08:26] <andrew__> Thanks everyone!
