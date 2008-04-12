@@ -186,7 +186,8 @@ static void huff_codes_print(const char *_symbol,
   int ti;
   int tj;
   maxlen=0;
-  printf("th_huff_code %s[TH_NHUFFMAN_TABLES][TH_NDCT_TOKENS]={",_symbol);
+  fprintf(stderr,"th_huff_code %s[TH_NHUFFMAN_TABLES][TH_NDCT_TOKENS]={",
+   _symbol);
   for(ti=0;ti<TH_NHUFFMAN_TABLES;ti++){
     for(tj=0;tj<TH_NDCT_TOKENS;tj++){
       if(_codes[ti][tj].nbits>maxlen)maxlen=_codes[ti][tj].nbits;
@@ -194,16 +195,17 @@ static void huff_codes_print(const char *_symbol,
   }
   maxlen=maxlen+3>>2;
   for(ti=0;ti<TH_NHUFFMAN_TABLES;ti++){
-    if(ti>0)printf(",");
-    printf("\n  {");
+    if(ti>0)fprintf(stderr,",");
+    fprintf(stderr,"\n  {");
     for(tj=0;tj<TH_NDCT_TOKENS;tj++){
-      if(tj>0)printf(",");
-      if((tj&3)==0)printf("\n    ");
-      printf("{0x%0*X,%2i}",maxlen,_codes[ti][tj].pattern,_codes[ti][tj].nbits);
+      if(tj>0)fprintf(stderr,",");
+      if((tj&3)==0)fprintf(stderr,"\n    ");
+      fprintf(stderr,"{0x%0*X,%2i}",maxlen,
+       _codes[ti][tj].pattern,_codes[ti][tj].nbits);
     }
-    printf("\n  }");
+    fprintf(stderr,"\n  }");
   }
-  printf("\n};\n");
+  fprintf(stderr,"\n};\n");
 }
 
 
@@ -992,7 +994,8 @@ int main(int _argc,char **_argv){
           rehuffs[ri].processing_headers=th_decode_headerin(&rehuffs[ri].ti,
            &rehuffs[ri].tc,&rehuffs[ri].ts,&op);
           if(rehuffs[ri].processing_headers<0){
-            printf("Error parsing Theora stream headers; corrupt stream?\n");
+            fprintf(stderr,
+             "Error parsing Theora stream headers; corrupt stream?\n");
             exit(1);
           }
           else if(rehuffs[ri].processing_headers>0){
