@@ -12,14 +12,14 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="Debug"
-			IntermediateDirectory="Debug"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\..\libogg\include;..\..\..\include;..\..\..\..\libvorbis\include;."
+				AdditionalIncludeDirectories="..\..\..\..\libogg\include;..\..\..\include;..\..\..\..\libvorbis\include;..\.."
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;HAVE_CONFIG_H"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
@@ -32,8 +32,10 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="libogg.lib libvorbis.lib"
 				OutputFile="$(OutDir)/vorbiscomment.exe"
 				LinkIncremental="2"
+				AdditionalLibraryDirectories="..\..\..\..\libogg\win32\VS2003\$(ConfigurationName);..\..\..\..\libvorbis\win32\VS2003\$(ConfigurationName)"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile="$(OutDir)/vorbiscomment.pdb"
 				SubSystem="1"
@@ -61,8 +63,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="Release"
-			IntermediateDirectory="Release"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
 			CharacterSet="2"
 			WholeProgramOptimization="TRUE">
@@ -72,7 +74,7 @@
 				GlobalOptimizations="TRUE"
 				FavorSizeOrSpeed="1"
 				OptimizeForProcessor="2"
-				AdditionalIncludeDirectories="..\..\..\..\libogg\include;..\..\..\include;..\..\..\..\libvorbis\include;."
+				AdditionalIncludeDirectories="..\..\..\..\libogg\include;..\..\..\include;..\..\..\..\libvorbis\include;..\.."
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;HAVE_CONFIG_H"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
@@ -83,8 +85,10 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="libogg.lib libvorbis.lib"
 				OutputFile="$(OutDir)/vorbiscomment.exe"
 				LinkIncremental="1"
+				AdditionalLibraryDirectories="..\..\..\..\libogg\win32\VS2003\$(ConfigurationName);..\..\..\..\libvorbis\win32\VS2003\$(ConfigurationName)"
 				GenerateDebugInformation="TRUE"
 				SubSystem="1"
 				OptimizeReferences="2"
