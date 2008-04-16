@@ -8,6 +8,25 @@
 <!--#include virtual="/ssi/pagetop.include" -->
 <!--  All your page content goes here  -->
 
+<h3>Theora 1.0 beta3 released</h3>
+<p class="newsdate">2008 April 16</p>
+<p>This is the third beta release toward our first stable implementation 
+of the reference library.
+
+<ul>
+<li><a href="http://downloads.xiph.org/releases/theora/libtheora-1.0beta3.tar.bz2">libtheora-1.0beta3.tar.bz2</a></li>
+<li><a href="http://downloads.xiph.org/releases/theora/libtheora-1.0beta3.tar.gz">libtheora-1.0beta3.tar.gz</a></li>
+<li><a href="http://downloads.xiph.org/releases/theora/libtheora-1.0beta3.zip">libtheora-1.0beta3.zip</a></li>
+</ul>
+
+<p>This release includes new separate encoder and decoder 
+libraries supporting the new-style API based on theora-exp. Also 
+included are assembly optimizations for gcc and MSVC builds, better
+documentation, general robustness and bug fixes.
+
+<p>Thanks to everyone who contributed to this release. Please give it a 
+try and report any remaining issues.
+
 <h3>Theora 1.0 beta2 released</h3>
 <p class="newsdate">2007 October 12</p>
 <p>This is the second beta release toward, following three weeks after 
