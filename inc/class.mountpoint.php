@@ -123,9 +123,9 @@ class Mountpoint
     public function remove()
     {
         $res0 = $this->removeFromDb();
-        $res1 = $this->removeFromCache();
+        $this->removeFromCache();
         
-        return $res0 && $res1;
+        return $res0;
     }
     
     /**

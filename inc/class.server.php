@@ -58,9 +58,9 @@ class Server
      * 
      * @return Server or false if an error occured.
      */
-    public static function retrieveByPk($pk)
+    public static function retrieveByPk($pk, $force_reload = false)
     {
-        $s = new Server($pk);
+        $s = new Server($pk, $force_reload);
         
         return ($s->loaded ? $s : false);
     }
@@ -70,7 +70,7 @@ class Server
      * 
      * @return Server or false if an error occured.
      */
-    public static function retrieveBySID($sid)
+    public static function retrieveBySID($sid, $force_reload = false)
     {
         // MySQL Connection
 		$db = DirXiphOrgDBC::getInstance();
@@ -86,7 +86,7 @@ class Server
 		    return false;
 		}
 		
-		return self::retrieveByPk(intval($res->current('id')));
+		return self::retrieveByPk(intval($res->current('id')), $force_reload);
     }
     
     /**
@@ -162,9 +162,9 @@ class Server
     public function remove()
     {
         $res0 = $this->removeFromDb();
-        $res1 = $this->removeFromCache();
+        $this->removeFromCache();
         
-        return $res0 && $res1;
+        return $res0;
     }
     
     /**

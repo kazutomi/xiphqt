@@ -25,6 +25,16 @@ if (!array_key_exists('action', $_REQUEST))
 // Memcache connection
 $memcache = DirXiphOrgMCC::getInstance();
 
+function clean_string($str)
+{
+    $str = mb_ereg_replace('[[:cntrl:]]', '', $str);
+    $str = utils::is_utf8($str) ? $str : utf8_encode($str);
+    $str = mb_convert_encoding($str, 'UTF-8', 'UTF-8,ISO-8859-1,auto');
+    $str = trim($str);
+    
+    return $str;
+}
+
 // Then process it
 switch ($_REQUEST['action'])
 {
@@ -45,10 +55,9 @@ switch ($_REQUEST['action'])
 		    $ip = array_key_exists('REMOTE_ADDR', $_SERVER)
 		            ? $_SERVER['REMOTE_ADDR'] : null;
 		    // Stream name
-		    $stream_name = mb_convert_encoding($_REQUEST['sn'], 'UTF-8',
-                                               'UTF-8,ISO-8859-1,auto');
+		    $stream_name = clean_string($_REQUEST['sn']);
 		    // Media type
-		    $media_type = $_REQUEST['type'];
+		    $media_type = strtolower(clean_string($_REQUEST['type']));
 		    if (array_key_exists('stype', $_REQUEST))
 		    {
 			    if (preg_match('/vorbis/i', $_REQUEST['stype']))
@@ -61,17 +70,16 @@ switch ($_REQUEST['action'])
 			    }
 		    }
 		    // Genre, space-normalized
-		    $genre = mb_convert_encoding($_REQUEST['genre'], 'UTF-8',
-                                         'UTF-8,ISO-8859-1,auto');
+		    $genre = clean_string($_REQUEST['genre']);
 		    $genre = str_replace(array('+', '-', '*', '<', '>', '~', '"', '(', ')', '|', '!', '?', ',', ';', ':', '/'),
 							     array(' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '),
 							     $genre);
 		    $genre = preg_replace('/\s+/', ' ', $genre);
 		    $genre_list = array_slice(explode(' ', $genre), 0, 10);
 		    // Bitrate
-		    $bitrate = $_REQUEST['b'];
+		    $bitrate = clean_string($_REQUEST['b']);
 		    // Listen URL
-		    $listen_url = $_REQUEST['listenurl'];
+		    $listen_url = clean_string($_REQUEST['listenurl']);
             // Verify the URL
             $url = @parse_url($listen_url);
             if (!$url)
@@ -87,11 +95,17 @@ switch ($_REQUEST['action'])
             }
 		
 		    // Cluster password
-		    $cluster_password = array_key_exists('cpswd', $_REQUEST) ? $_REQUEST['cpswd'] : null;
+		    $cluster_password = array_key_exists('cpswd', $_REQUEST)
+		                            ? clean_string($_REQUEST['cpswd'])
+		                            : null;
 		    // Description
-		    $description = array_key_exists('desc', $_REQUEST) ? $_REQUEST['desc'] : null;
+		    $description = array_key_exists('desc', $_REQUEST)
+	                        ? clean_string($_REQUEST['desc'])
+	                        : null;
 		    // URL
-		    $url = array_key_exists('url', $_REQUEST) ? $_REQUEST['url'] : null;
+		    $url = array_key_exists('url', $_REQUEST)
+		            ? clean_string($_REQUEST['url'])
+		            : null;
 		
 		    // Look for the server (same listen URL)
 		    $server = Server::retrieveByListenUrl($listen_url);
@@ -226,24 +240,23 @@ switch ($_REQUEST['action'])
 		    }
 		    
 		    // SID
-		    $sid = preg_replace('/[^A-F0-9\-]/', '', strtoupper ($_REQUEST['sid']));
+		    $sid = preg_replace('/[^A-F0-9\-]/', '', strtoupper(clean_string($_REQUEST['sid'])));
 		    // Remote IP
 		    $ip = array_key_exists('REMOTE_ADDR', $_SERVER)
 		            ? $_SERVER['REMOTE_ADDR'] : null;
 		    // Song title
 		    $current_song = array_key_exists('st', $_REQUEST)
-		                    ? mb_convert_encoding($_REQUEST['st'], 'UTF-8',
-                                                  'UTF-8,ISO-8859-1,auto')
-                            : null;
+		                        ? clean_string($_REQUEST['st'])
+                                : null;
 		    // Listeners
 		    $listeners = array_key_exists('listeners', $_REQUEST)
-		                 ? intval($_REQUEST['listeners']) : 0;
+    		                 ? intval($_REQUEST['listeners']) : 0;
 		    // Max listeners
 		    $max_listeners = array_key_exists('max_listeners', $_REQUEST)
         		             ? intval($_REQUEST['max_listeners']) : 0;
 		
 		    // Find the server
-		    $server = Server::retrieveBySID($sid);
+		    $server = Server::retrieveBySID($sid, true);
 		    if (!($server instanceOf Server))
 		    {
 		        throw new NoSuchSIDAPIException();

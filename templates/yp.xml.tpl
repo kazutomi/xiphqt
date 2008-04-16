@@ -8,7 +8,11 @@
         <bitrate>{$stream.bitrate|escape}</bitrate>
         <channels>{$stream.channels|intval}</channels>
         <samplerate>{$stream.samplerate|intval}</samplerate>
+{if !empty($stream.genre)}
         <genre>{$stream.genre|force_utf8|escape}</genre>
+{else}
+        <genre>various</genre>
+{/if}
         <current_song>{$stream.current_song|force_utf8|escape}</current_song>
     </entry>
 {/foreach}
