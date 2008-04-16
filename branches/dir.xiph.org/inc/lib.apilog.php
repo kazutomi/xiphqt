@@ -6,14 +6,28 @@ class APILog
                                $server_id = null, $mountpoint_id = null)
     {
         $db = DirXiphOrgDBC::getInstance();
-        $sql = 'INSERT INTO `api_log` (`message`, `remote_ip`, `listen_url_hash`, `server_id`, `mountpoint_id`) '
-              .'VALUES ("%s", INET_ATON("%s"), %u, %d, %d);';
-        $sql = sprintf($sql, mysql_real_escape_string($result),
-                             array_key_exists('REMOTE_ADDR', $_SERVER)
-                                ? $_SERVER['REMOTE_ADDR'] : '127.0.0.1',
-                             $listen_url !== null ? sprintf('%u', crc32($listen_url)) : 0,
-                             $server_id, $mountpoint_id);
-        $db->noReturnQuery($sql);
+        
+        try
+        {
+            $db->noReturnQuery('SELECT 0 INTO @prev_id;');
+            $db->noReturnQuery('UPDATE api_log_cpt SET `id_log` = ((`id_log` MOD 10000) + 1) WHERE @prev_id := `id_log;`');
+            $res = $db->singleQuery('SELECT @prev_id AS id;');
+            $id = $res->current('id');
+            
+            $sql = 'REPLACE INTO `api_log` (`id`, `message`, `remote_ip`, `listen_url_hash`, `server_id`, `mountpoint_id`) '
+                  .'VALUES (%d, "%s", INET_ATON("%s"), "%s", %d, %d);';
+            $sql = sprintf($sql, $id,
+                                 mysql_real_escape_string($result),
+                                 array_key_exists('REMOTE_ADDR', $_SERVER)
+                                    ? $_SERVER['REMOTE_ADDR'] : '127.0.0.1',
+                                 $listen_url !== null ? md5($listen_url) : 0,
+                                 $server_id, $mountpoint_id);
+            $db->noReturnQuery($sql);
+        }
+        catch (SQLNoResultException $e)
+        {
+            throw new APIException("Unable to get a new api_log id.");
+        }
     }
     
     public static function serverAdded($ok, $server_id, $mountpoint_id,
