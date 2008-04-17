@@ -118,7 +118,7 @@ switch ($_REQUEST['action'])
             $mountpoint = Mountpoint::findSimilar($stream_name,
                                                   content_type_lookup($media_type),
                                                   $bitrate);
-		
+		    
 		    // Mountpoint
 		    if (!($mp instanceOf Mountpoint))
 		    {
@@ -241,6 +241,10 @@ switch ($_REQUEST['action'])
 		    
 		    // SID
 		    $sid = preg_replace('/[^A-F0-9\-]/', '', strtoupper(clean_string($_REQUEST['sid'])));
+		    if ($sid == '-1')
+		    {
+		        throw new NoSuchSIDAPIException();
+		    }
 		    // Remote IP
 		    $ip = array_key_exists('REMOTE_ADDR', $_SERVER)
 		            ? $_SERVER['REMOTE_ADDR'] : null;
@@ -254,7 +258,7 @@ switch ($_REQUEST['action'])
 		    // Max listeners
 		    $max_listeners = array_key_exists('max_listeners', $_REQUEST)
         		             ? intval($_REQUEST['max_listeners']) : 0;
-		
+		    
 		    // Find the server
 		    $server = Server::retrieveBySID($sid, true);
 		    if (!($server instanceOf Server))
