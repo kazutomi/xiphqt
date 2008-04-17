@@ -332,6 +332,8 @@ static u_int64_t _make_timestamp(midi_state_t *midistate, ogg_int64_t granulepos
 	u_int64_t timestamp;
 	ogg_int64_t gp = midistate->old_style?midistate->old_granulepos:granulepos;
 
+	if (gp == -1) return -1;
+
 	if (midistate->smtpe) {
 		timestamp = (double)gp * ((double)(midistate->frames * midistate->ticks) / (double)1000000);
 	} else {

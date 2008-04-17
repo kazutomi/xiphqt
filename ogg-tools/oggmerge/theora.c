@@ -164,6 +164,7 @@ static u_int64_t _make_timestamp(theora_state_t *tstate, ogg_int64_t granulepos)
         ogg_int64_t gp = tstate->old_style?tstate->old_granulepos:granulepos;
 	
 	if (tstate->fps_denominator == 0) return 0;
+	if (gp == -1) return -1;
 	
         iframe=gp>>tstate->granule_shift;
         pframe=gp-(iframe<<tstate->granule_shift);
@@ -191,7 +192,7 @@ static void _add_theora_page(theora_state_t *tstate, ogg_page *og)
 	page = (oggmerge_page_t *)malloc(sizeof(oggmerge_page_t));
 	page->og = _copy_ogg_page(og);
 	page->timestamp = -1;
-        if (ogg_page_granulepos(og)>=0)
+        //if (ogg_page_granulepos(og)>=0)
             page->timestamp = _make_timestamp(tstate, ogg_page_granulepos(og));
 	
 	// build theora page

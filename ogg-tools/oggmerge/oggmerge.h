@@ -9,7 +9,7 @@
 
 typedef struct {
 	ogg_page *og;
-	u_int64_t timestamp;
+	int64_t timestamp;
 } oggmerge_page_t;
 
 typedef struct {

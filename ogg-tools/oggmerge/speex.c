@@ -176,6 +176,7 @@ static u_int64_t _make_timestamp(speex_state_t *sstate, ogg_int64_t granulepos)
         ogg_int64_t gp=sstate->old_style?sstate->old_granulepos:granulepos;
 	
 	if (sstate->rate == 0) return 0;
+	if (gp == -1) return -1;
 	
 	stamp = (double)gp * (double)1000000 / (double)sstate->rate;
 
