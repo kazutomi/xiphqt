@@ -157,6 +157,7 @@ static u_int64_t _make_timestamp(vorbis_state_t *vstate, ogg_int64_t granulepos)
 	ogg_int64_t gp=vstate->old_style?vstate->old_granulepos:granulepos;
 	
 	if (vstate->samplerate == 0) return 0;
+	if (gp == -1) return -1;
 	
 	stamp = (double)gp * (double)1000000 / (double)vstate->samplerate;
 

@@ -199,6 +199,7 @@ static u_int64_t _make_timestamp(kate_state_t *kstate, ogg_int64_t granulepos)
 	u_int64_t base, offset, stamp;
 	
 	if (kstate->granule_denominator == 0) return 0;
+	if (granulepos == -1) return -1;
 	
         base = granulepos>>kstate->granule_shift;
         offset = granulepos-(base<<kstate->granule_shift);
