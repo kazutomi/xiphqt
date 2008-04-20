@@ -26,8 +26,8 @@
 		<author initials="S." surname="Pfeiffer" fullname="Silvia Pfeiffer">
 			<organization abbrev="Xiph">Xiph.Org Foundation</organization>
 			<address>
-				<phone>+61 2 8012 0937</phone>
 				<email>silvia@annodex.net</email>
+				<uri>http://annodex.net/</uri>
 			</address>
 		</author>
 		<author initials="C." surname="Montgomery" fullname="Christopher Montgomery">
@@ -57,7 +57,7 @@
 			<t>The Ogg container format is known to contain <xref target="Theora"/> or <xref target="Dirac"/> video, <xref target="Speex"/> (narrow-band and wide-band speech), <xref target="Vorbis"/> or <xref target="FLAC"/> audio, and <xref target="CMML"/> timed text/metadata.  As Ogg encapsulates binary data, it is possible to include any other type of video, audio, image, text or, generally speaking, any time-continuously sampled data.</t>
 			<t>While raw packets from these data sources may be used directly by transport mechanisms that provide their own framing and packet-separation mechanisms (such as UDP datagrams or RTP), Ogg is a solution for stream based storage (such as files) and transport (such as TCP streams or pipes).  The media types defined in this document are needed to correctly identify such content when it is served over HTTP, included in multi-part documents, or used in other places where <xref target="RFC2045">media types</xref> are used.</t>
 		</section>
-		<section title="Changes since RFC 3543">
+		<section title="Changes since RFC 3534">
 			<t>
 				<list style="symbols">
 					<t>The type "application/ogg" is redefined.</t>
@@ -84,7 +84,7 @@
 				</list>
 			</t>
 			<t>which are intended for common use and SHOULD be used when dealing with video or audio content respectively.  This document also obsoletes the <xref target="RFC3534"/> definition of application/ogg and marks it for complex data (e.g. multitrack visual, audio, textual and other time-continuously sampled data), which is not clearly video or audio data and thus not suited for either the video/ogg or audio/ogg types.  Refer to the following section for more details.</t>
-			<t>An Ogg bitstream generally consists of one or more logical bitstreams that each consist of a series of header and data pages packetising time-continuous binary data <xref target="RFC3533"/>.  The content types of the logical bitstreams may be identified without decoding the header pages of the logical bitstreams through use of a <xref target="Skeleton"/> bitstream.  Using Ogg Skeleton is REQUIRED for content served under the application/ogg type and RECOMMENDED for video/ogg and audio/ogg, as it is a type of identifier space used to describe the different encapsulated data.</t>
+			<t>An Ogg bitstream generally consists of one or more logical bitstreams that each consist of a series of header and data pages packetising time-continuous binary data <xref target="RFC3533"/>.  The content types of the logical bitstreams may be identified without decoding the header pages of the logical bitstreams through use of a <xref target="Skeleton"/> bitstream.  Using Ogg Skeleton is REQUIRED for content served under the application/ogg type and RECOMMENDED for video/ogg and audio/ogg, as Skeleton contains identifiers to describe the different encapsulated data.</t>
 			<t>Furthermore, it is RECOMMENDED that implementations that identify a logical bitstream which they cannot decode SHOULD ignore it, while continuing to decode the ones they can.  Such precaution ensures backward and forward compatibility with existing and future data.</t>
 			<t>These media types can optionally use the codecs parameter described in <xref target="RFC4281"/>.  Possible examples include:</t>
 			<t>	
@@ -96,7 +96,7 @@
 			</t>
 		</section>
 		<section title="Relation Between the Media Types">
-			<t>As stated in the previous section, this document describes three media types which are targeted at different data encapsulated in Ogg.  Since Ogg is capable of encapsulate any kind of data, the multiple usage scenarios have revealed interoperability issues between implementations when dealing with content served solely under the application/ogg type.</t>
+			<t>As stated in the previous section, this document describes three media types which are targeted at different data encapsulated in Ogg.  Since Ogg is capable of encapsulating any kind of data, the multiple usage scenarios have revealed interoperability issues between implementations when dealing with content served solely under the application/ogg type.</t>
 			<t>While this document does redefine the earlier definition of application/ogg, this media type will continue to embrace the widest net possible of content with the video/ogg and audio/ogg types being smaller subsets of it.  However, the video/ogg and audio/ogg types take precedence in a subset of the usages, specifically when serving multimedia content that is not complex enough to warrant the use of application/ogg.  Following this line of thought, the audio/ogg type is an even smaller subset within video/ogg, as it is not intended to refer to visual content.</t>
 			<t>As such, the application/ogg type is the recommended choice to serve content aimed at scientific and other applications that require various multiplexed signals or streams of continuous data.  For bitstreams containing visual, timed text, or any other type of material that requires a visual interface, but which is not complex enough to warrant serving under application/ogg, the video/ogg type is recommended.  In situations where the Ogg bitstream predominantly contains audio data, it is recommended to use the audio/ogg type.</t>
 		</section>
@@ -105,7 +105,7 @@
 			<t>Note:</t>
 			<list style="symbols">
 				<t>Ogg encapsulated content is binary data and should be transmitted in a suitable encoding without CR/LF conversion, 7-bit stripping, etc.; <xref target="RFC4648">base64</xref> is generally preferred for binary-to-text encoding.</t>
-				<t>Media types described in this document are used for stream based storage (such as files) and transport (such as TCP streams or pipes); separate types are used for real-time transfer, such as for the RTP payload formats of <xref target="ThRTP">Theora</xref> video, and <xref target="VoRTP">Vorbis</xref> or <xref target="SpRTP">Speex</xref> audio, as well as for identification of the encapsulated data within Ogg.</t>
+				<t>Media types described in this document are used for stream based storage (such as files) and transport (such as TCP streams or pipes); separate types are used to identify codecs such as in real-time applications for the RTP payload formats of <xref target="ThRTP">Theora</xref> video, and <xref target="VoRTP">Vorbis</xref> or <xref target="SpRTP">Speex</xref> audio. These mime types are also used in Skeleton for identification of the encapsulated data within Ogg.</t>
 			</list>
 		</section>
 		<section title="Security Considerations">
@@ -186,7 +186,7 @@
       				<t>Macintosh File Type Code(s): OggA</t>
 				<t>Person &amp; Email address to contact for further information: See "Authors' Addresses" section.</t>
 				<t>Intended usage: COMMON</t>
-				<t>Restrictions on usage: The type "audio/ogg" SHOULD be used when the Ogg bitstream predominantly contains audio data.  Content served under the "audio/ogg" type SHOULD have an Ogg Skeleton logical bitstream if they use the .oga extension.  The .ogg and .spx file extensions are a specialization that require no Skeleton due to concerns of backwards-compatibility with existing implementations.  Use of the .oga file extension is the preferred method of distributing audio data under the "audio/ogg" type.</t>
+				<t>Restrictions on usage: The type "audio/ogg" SHOULD be used when the Ogg bitstream predominantly contains audio data.  Content served under the "audio/ogg" type SHOULD have an Ogg Skeleton logical bitstream if they use the .oga extension.  The .ogg and .spx file extensions are a specialization that require no Skeleton due to concerns of backwards-compatibility with existing implementations.  In particular, .ogg is used for Ogg files that contain only a Vorbis track (see [Vorbis] I specification), while .spx files are used for Ogg files that contain only a Speex track (see [Speex]). Use of the .oga file extension is the preferred method of distributing audio data under the "audio/ogg" type.</t>
 				<t>Author: See "Authors' Addresses" section.</t>
 				<t>Change controller: The Xiph.Org Foundation.</t>
 			</section>
