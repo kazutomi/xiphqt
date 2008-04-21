@@ -36,15 +36,15 @@ Status of This Memo
 
    This Internet-Draft will expire on October 21, 2008.
 
+Copyright Notice
+
+   Copyright (C) The IETF Trust (2008).
+
 Abstract
 
    This document describes the registration of media types for the Ogg
    container format and conformance requirements for implementations of
    these types.
-
-
-
-
 
 
 
@@ -61,7 +61,7 @@ Table of Contents
 
    1.     Introduction  . . . . . . . . . . . . . . . . . . . . . . .  3
    2.     Changes since RFC 3534  . . . . . . . . . . . . . . . . . .  3
-   3.     Conformance and Document Conventions  . . . . . . . . . . .  4
+   3.     Conformance and Document Conventions  . . . . . . . . . . .  3
    4.     Deployed Media Types and Compatibility  . . . . . . . . . .  4
    5.     Relation Between the Media Types  . . . . . . . . . . . . .  5
    6.     Encoding Considerations . . . . . . . . . . . . . . . . . .  5
@@ -73,8 +73,8 @@ Table of Contents
    10.2.  video/ogg . . . . . . . . . . . . . . . . . . . . . . . . .  8
    10.3.  audio/ogg . . . . . . . . . . . . . . . . . . . . . . . . .  9
    11.    Copying Conditions  . . . . . . . . . . . . . . . . . . . . 10
-   12.    References  . . . . . . . . . . . . . . . . . . . . . . . . 11
-   12.1.  Normative References  . . . . . . . . . . . . . . . . . . . 11
+   12.    References  . . . . . . . . . . . . . . . . . . . . . . . . 10
+   12.1.  Normative References  . . . . . . . . . . . . . . . . . . . 10
    12.2.  Informative References  . . . . . . . . . . . . . . . . . . 11
 
 
@@ -147,27 +147,12 @@ Internet-Draft               Ogg Media Types                  April 2008
 2.  Changes since RFC 3534
 
    o  The type "application/ogg" is redefined.
-
    o  The types "video/ogg" and "audio/ogg" are defined.
-
    o  New file extensions are defined.
-
    o  New Macintosh file type codes are defined.
-
    o  The codecs parameter is defined for optional use.
-
    o  The Ogg Skeleton extension becomes a recommended addition for
       content served under the new types.
-
-
-
-
-
-
-Goncalves, et al.       Expires October 21, 2008                [Page 3]
-
-Internet-Draft               Ogg Media Types                  April 2008
-
 
 3.  Conformance and Document Conventions
 
@@ -176,6 +161,13 @@ Internet-Draft               Ogg Media Types                  April 2008
    document are to be interpreted as described in BCP 14, [RFC2119] and
    indicate requirement levels for compliant implementations.
    Requirements apply to all implementations unless otherwise stated.
+
+
+
+Goncalves, et al.       Expires October 21, 2008                [Page 3]
+
+Internet-Draft               Ogg Media Types                  April 2008
+
 
    An implementation is a software module that supports one of the media
    types defined in this document.  Software modules may support
@@ -198,7 +190,6 @@ Internet-Draft               Ogg Media Types                  April 2008
    audio content.  This document thus defines the media types,
 
    o  video/ogg
-
    o  audio/ogg
 
    which are intended for common use and SHOULD be used when dealing
@@ -217,14 +208,6 @@ Internet-Draft               Ogg Media Types                  April 2008
    bitstream.  Using Ogg Skeleton is REQUIRED for content served under
    the application/ogg type and RECOMMENDED for video/ogg and audio/ogg,
    as Skeleton contains identifiers to describe the different
-
-
-
-Goncalves, et al.       Expires October 21, 2008                [Page 4]
-
-Internet-Draft               Ogg Media Types                  April 2008
-
-
    encapsulated data.
 
    Furthermore, it is RECOMMENDED that implementations that identify a
@@ -235,10 +218,15 @@ Internet-Draft               Ogg Media Types                  April 2008
    These media types can optionally use the codecs parameter described
    in [RFC4281].  Possible examples include:
 
+
+
+Goncalves, et al.       Expires October 21, 2008                [Page 4]
+
+Internet-Draft               Ogg Media Types                  April 2008
+
+
    o  application/ogg; codecs="theora, cmml, ecmascript"
-
    o  video/ogg; codecs="theora, vorbis"
-
    o  audio/ogg; codecs=speex
 
 5.  Relation Between the Media Types
@@ -262,17 +250,29 @@ Internet-Draft               Ogg Media Types                  April 2008
 
    As such, the application/ogg type is the recommended choice to serve
    content aimed at scientific and other applications that require
-   various multiplexed signals or streams of continuous data.  For
-   bitstreams containing visual, timed text, or any other type of
-   material that requires a visual interface, but which is not complex
-   enough to warrant serving under application/ogg, the video/ogg type
-   is recommended.  In situations where the Ogg bitstream predominantly
-   contains audio data, it is recommended to use the audio/ogg type.
+   various multiplexed signals or streams of continuous data, with or
+   without scriptable control of content.  For bitstreams containing
+   visual, timed text, and any other type of material that requires a
+   visual interface, but which is not complex enough to warrant serving
+   under application/ogg, the video/ogg type is recommended.  In
+   situations where the Ogg bitstream predominantly contains audio data
+   (lyrics, metadata, or cover art notwithstanding), it is recommended
+   to use the audio/ogg type.
 
 6.  Encoding Considerations
 
    Binary: The content consists of an unrestricted sequence of octets.
 
+   Note:
+   o  Ogg encapsulated content is binary data and should be transmitted
+      in a suitable encoding without CR/LF conversion, 7-bit stripping,
+      etc.; base64 [RFC4648] is generally preferred for binary-to-text
+      encoding.
+   o  Media types described in this document are used for stream based
+      storage (such as files) and transport (such as TCP streams or
+      pipes); separate types are used to identify codecs such as in
+      real-time applications for the RTP payload formats of Theora
+      [ThRTP] video, Vorbis [VoRTP] or Speex [SpRTP] audio, as well as
 
 
 
@@ -281,20 +281,8 @@ Goncalves, et al.       Expires October 21, 2008                [Page 5]
 Internet-Draft               Ogg Media Types                  April 2008
 
 
-   Note:
-
-   o  Ogg encapsulated content is binary data and should be transmitted
-      in a suitable encoding without CR/LF conversion, 7-bit stripping,
-      etc.; base64 [RFC4648] is generally preferred for binary-to-text
-      encoding.
-
-   o  Media types described in this document are used for stream based
-      storage (such as files) and transport (such as TCP streams or
-      pipes); separate types are used to identify codecs such as in
-      real-time applications for the RTP payload formats of Theora
-      [ThRTP] video, and Vorbis [VoRTP] or Speex [SpRTP] audio.  These
-      mime types are also used in Skeleton for identification of the
-      encapsulated data within Ogg.
+      for identification of encapsulated data within Ogg through
+      Skeleton.
 
 7.  Security Considerations
 
@@ -329,14 +317,6 @@ Internet-Draft               Ogg Media Types                  April 2008
    kind of attack.
 
    Ogg has an extensible structure, so that it is theoretically possible
-
-
-
-Goncalves, et al.       Expires October 21, 2008                [Page 6]
-
-Internet-Draft               Ogg Media Types                  April 2008
-
-
    that metadata fields or media formats might be defined in the future
    which might be used to induce particular actions on the part of the
    recipient, thus presenting additional security risks.  However, this
@@ -348,6 +328,14 @@ Internet-Draft               Ogg Media Types                  April 2008
    might possibly be exploited to gain unauthorized access to a system
    or sensitive information; such failure constitutes an unknown factor
    and is thus considered out of the scope of this document.
+
+
+
+
+Goncalves, et al.       Expires October 21, 2008                [Page 6]
+
+Internet-Draft               Ogg Media Types                  April 2008
+
 
 8.  Interoperability Considerations
 
@@ -385,14 +373,6 @@ Internet-Draft               Ogg Media Types                  April 2008
 
    Encoding considerations: See section 6.
 
-
-
-
-Goncalves, et al.       Expires October 21, 2008                [Page 7]
-
-Internet-Draft               Ogg Media Types                  April 2008
-
-
    Security considerations: See section 7.
 
    Interoperability considerations: None, as noted in section 8.
@@ -405,11 +385,18 @@ Internet-Draft               Ogg Media Types                  April 2008
 
    Additional information:
 
+
+
+
+Goncalves, et al.       Expires October 21, 2008                [Page 7]
+
+Internet-Draft               Ogg Media Types                  April 2008
+
+
    Magic number(s): The first four bytes, 0x4f 0x67 0x67 0x53,
    correspond to the string "OggS".
 
    File extension(s): .ogx
-
       RFC 3534 defined the file extension .ogg for application/ogg,
       which this document obsoletes in favor of .ogx due to concerns
       where, historically, some implementations expect .ogg files to be
@@ -441,14 +428,6 @@ Internet-Draft               Ogg Media Types                  April 2008
 
    Required parameters: none
 
-
-
-
-Goncalves, et al.       Expires October 21, 2008                [Page 8]
-
-Internet-Draft               Ogg Media Types                  April 2008
-
-
    Optional parameters: codecs, as defined in RFC 4281.
 
    Encoding considerations: See section 6.
@@ -461,6 +440,14 @@ Internet-Draft               Ogg Media Types                  April 2008
 
    Applications which use this media type: Multimedia applications,
    including embedded, streaming, and conferencing tools.
+
+
+
+
+Goncalves, et al.       Expires October 21, 2008                [Page 8]
+
+Internet-Draft               Ogg Media Types                  April 2008
+
 
    Additional information:
 
@@ -498,13 +485,6 @@ Internet-Draft               Ogg Media Types                  April 2008
 
    Required parameters: none
 
-
-
-Goncalves, et al.       Expires October 21, 2008                [Page 9]
-
-Internet-Draft               Ogg Media Types                  April 2008
-
-
    Optional parameters: codecs, as defined in RFC 4281.
 
    Encoding considerations: See section 6.
@@ -517,6 +497,13 @@ Internet-Draft               Ogg Media Types                  April 2008
 
    Applications which use this media type: Multimedia applications,
    including embedded, streaming, and conferencing tools.
+
+
+
+Goncalves, et al.       Expires October 21, 2008                [Page 9]
+
+Internet-Draft               Ogg Media Types                  April 2008
+
 
    Additional information:
 
@@ -535,14 +522,12 @@ Internet-Draft               Ogg Media Types                  April 2008
    Restrictions on usage: The type "audio/ogg" SHOULD be used when the
    Ogg bitstream predominantly contains audio data.  Content served
    under the "audio/ogg" type SHOULD have an Ogg Skeleton logical
-   bitstream if they use the .oga extension.  The .ogg and .spx file
-   extensions are a specialization that require no Skeleton due to
-   concerns of backwards-compatibility with existing implementations.
-   In particular, .ogg is used for Ogg files that contain only a Vorbis
-   track (see [Vorbis] I specification), while .spx files are used for
-   Ogg files that contain only a Speex track (see [Speex]).  Use of the
-   .oga file extension is the preferred method of distributing audio
-   data under the "audio/ogg" type.
+   bitstream when using the default .oga file extension.  The .ogg and
+   .spx file extensions are a specialization that require no Skeleton
+   due to concerns of backwards-compatibility with existing
+   implementations.  In particular, .ogg is used for Ogg files that
+   contain only a Vorbis bitstream, while .spx files is used for Ogg
+   files that contain only a Speex bitstream.
 
    Author: See "Authors' Addresses" section.
 
@@ -553,14 +538,6 @@ Internet-Draft               Ogg Media Types                  April 2008
    The authors agree to grant third parties the irrevocable right to
    copy, use and distribute the work, with or without modification, in
    any medium, without royalty, provided that, unless separate
-
-
-
-Goncalves, et al.       Expires October 21, 2008               [Page 10]
-
-Internet-Draft               Ogg Media Types                  April 2008
-
-
    permission is granted, redistributed modified works do not contain
    misleading author, version, name of work, or endorsement information.
 
@@ -576,6 +553,14 @@ Internet-Draft               Ogg Media Types                  April 2008
                Bodies", RFC 2045, November 1996.
 
    [RFC2119]   Bradner, S., "Key words for use in RFCs to Indicate
+
+
+
+Goncalves, et al.       Expires October 21, 2008               [Page 10]
+
+Internet-Draft               Ogg Media Types                  April 2008
+
+
                Requirement Levels", BCP 14, RFC 2119, March 1997.
 
    [RFC4281]   Gellens, R., Singer, D., and P. Frojdh, "The Codecs
@@ -609,14 +594,6 @@ Internet-Draft               Ogg Media Types                  April 2008
                <http://xiph.org/vorbis/doc/Vorbis_I_spec.html>.
 
    [FLAC]      Coalson, J., "The FLAC Format",
-
-
-
-Goncalves, et al.       Expires October 21, 2008               [Page 11]
-
-Internet-Draft               Ogg Media Types                  April 2008
-
-
                <http://flac.sourceforge.net/format.html>.
 
    [CMML]      Pfeiffer, S., Parker, C., and A. Pang, "The Continuous
@@ -632,6 +609,14 @@ Internet-Draft               Ogg Media Types                  April 2008
 
    [ThRTP]     Barbato, L., "RTP Payload Format for Theora Encoded
                Video", July 2006,
+
+
+
+Goncalves, et al.       Expires October 21, 2008               [Page 11]
+
+Internet-Draft               Ogg Media Types                  April 2008
+
+
                <http://tools.ietf.org/html/
                draft-barbato-avt-rtp-theora>.
 
@@ -662,17 +647,6 @@ Authors' Addresses
    URI:   xmpp:justivo@gmail.com
 
 
-
-
-
-
-
-
-Goncalves, et al.       Expires October 21, 2008               [Page 12]
-
-Internet-Draft               Ogg Media Types                  April 2008
-
-
    Silvia Pfeiffer
    Xiph.Org Foundation
 
@@ -694,37 +668,7 @@ Internet-Draft               Ogg Media Types                  April 2008
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Goncalves, et al.       Expires October 21, 2008               [Page 13]
+Goncalves, et al.       Expires October 21, 2008               [Page 12]
 
 Internet-Draft               Ogg Media Types                  April 2008
 
@@ -769,6 +713,10 @@ Intellectual Property
    this standard.  Please address the information to the IETF at
    ietf-ipr@ietf.org.
 
+Acknowledgement
+
+   Funding for the RFC Editor function is provided by the IETF
+   Administrative Support Activity (IASA).
 
 
 
@@ -776,9 +724,5 @@ Intellectual Property
 
 
 
-
-
-
-
-Goncalves, et al.       Expires October 21, 2008               [Page 14]
+Goncalves, et al.       Expires October 21, 2008               [Page 13]
 
