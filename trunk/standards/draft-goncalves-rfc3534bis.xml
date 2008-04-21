@@ -6,7 +6,7 @@
 <?rfc symrefs="yes" ?>
 <?rfc rfcedstyle="yes" ?>
 
-<rfc ipr="full3978" docName="draft-goncalves-rfc3534bis-04" obsoletes="3534" category="std">
+<rfc ipr="full3978" docName="draft-goncalves-rfc3534bis-05" obsoletes="3534" category="std">
 	<front>
 		<title>Ogg Media Types</title>
 		<author initials="I.E." surname="Goncalves" fullname="Ivo Emanuel Goncalves">
@@ -37,7 +37,7 @@
 				<uri>http://xiph.org</uri>
 			</address>
 		</author>
-		<date day="19" month="April" year="2008"/>
+		<date day="21" month="April" year="2008"/>
 		<area>Internet</area>
 		<keyword>I-D</keyword>
 		<keyword>Internet-Draft</keyword>
