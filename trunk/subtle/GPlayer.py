@@ -25,7 +25,7 @@ import gst.interfaces
 import gtk
 
 ## \file GPlayer.py
-# Documentation for GPlayer module of Souffleur project.
+# Documentation for GPlayer module of Subtle project.
 # \todo Add better seeking.
 
 

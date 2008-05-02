@@ -4,7 +4,7 @@
 <glade-interface>
   <widget class="GtkWindow" id="MAIN_WINDOW">
     <property name="visible">True</property>
-    <property name="title" translatable="yes">Souffleur</property>
+    <property name="title" translatable="yes">Subtle</property>
     <property name="window_position">GTK_WIN_POS_CENTER</property>
     <signal name="destroy" handler="gtk_main_quit"/>
     <child>
@@ -595,7 +595,7 @@
                       <widget class="GtkHScale" id="MEDIA_ADJUSTMENT">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
-                        <property name="adjustment">0 0 100 0.10000000149 0 0</property>
+                        <property name="adjustment">0.20000000298000001 0 100 0.10000000149 0 0</property>
                         <property name="draw_value">False</property>
                         <signal name="button_press_event" handler="on_MEDIA_ADJUSTMENT_button_press_event"/>
                         <signal name="change_value" handler="on_MEDIA_ADJUSTMENT_change_value"/>
@@ -627,28 +627,51 @@
                     <property name="visible">True</property>
                     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                     <child>
-                      <widget class="GtkToolbar" id="toolbar1">
+                      <widget class="GtkHBox" id="hbox3">
                         <property name="visible">True</property>
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                        <property name="toolbar_style">GTK_TOOLBAR_ICONS</property>
-                        <property name="icon_size">GTK_ICON_SIZE_MENU</property>
                         <child>
-                          <widget class="GtkToolButton" id="TOOL_HIDE_SUBEDIT1">
+                          <widget class="GtkToolbar" id="toolbar1">
                             <property name="visible">True</property>
                             <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                            <property name="stock_id">gtk-close</property>
+                            <property name="toolbar_style">GTK_TOOLBAR_ICONS</property>
+                            <property name="icon_size">GTK_ICON_SIZE_MENU</property>
+                            <child>
+                              <widget class="GtkToolButton" id="TOOL_HIDE_SUBEDIT1">
+                                <property name="visible">True</property>
+                                <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+                                <property name="stock_id">gtk-close</property>
+                              </widget>
+                              <packing>
+                                <property name="expand">False</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <widget class="GtkToolButton" id="TOOL_DETACH_SUBEDIT1">
+                                <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+                                <property name="stock_id">gtk-leave-fullscreen</property>
+                              </widget>
+                              <packing>
+                                <property name="expand">False</property>
+                              </packing>
+                            </child>
                           </widget>
-                          <packing>
-                            <property name="expand">False</property>
-                          </packing>
                         </child>
                         <child>
-                          <widget class="GtkToolButton" id="TOOL_DETACH_SUBEDIT1">
+                          <widget class="GtkToggleButton" id="tgl_mode">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
                             <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                            <property name="stock_id">gtk-leave-fullscreen</property>
+                            <property name="label" translatable="yes">Online Mode</property>
+                            <property name="response_id">0</property>
+                            <property name="active">True</property>
+                            <signal name="toggled" handler="on_tgl_mode_toggled"/>
                           </widget>
                           <packing>
                             <property name="expand">False</property>
+                            <property name="fill">False</property>
+                            <property name="position">1</property>
                           </packing>
                         </child>
                       </widget>
@@ -671,6 +694,7 @@
                               <widget class="GtkTextView" id="txt_subedit">
                                 <property name="height_request">35</property>
                                 <property name="visible">True</property>
+                                <property name="sensitive">False</property>
                                 <property name="can_focus">True</property>
                                 <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                                 <property name="justification">GTK_JUSTIFY_CENTER</property>
@@ -1161,6 +1185,66 @@
                 <property name="use_stock">True</property>
                 <property name="response_id">-5</property>
                 <signal name="clicked" handler="on_PROJECT_BUTTON_OK_clicked"/>
+              </widget>
+              <packing>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </widget>
+          <packing>
+            <property name="expand">False</property>
+            <property name="pack_type">GTK_PACK_END</property>
+          </packing>
+        </child>
+      </widget>
+    </child>
+  </widget>
+  <widget class="GtkDialog" id="NEW_SUBTITLE">
+    <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+    <property name="border_width">5</property>
+    <property name="window_position">GTK_WIN_POS_CENTER_ON_PARENT</property>
+    <property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>
+    <property name="has_separator">False</property>
+    <child internal-child="vbox">
+      <widget class="GtkVBox" id="dialog-vbox3">
+        <property name="visible">True</property>
+        <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+        <property name="spacing">2</property>
+        <child>
+          <widget class="GtkIconView" id="iconview1">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+          </widget>
+          <packing>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child internal-child="action_area">
+          <widget class="GtkHButtonBox" id="dialog-action_area3">
+            <property name="visible">True</property>
+            <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+            <property name="layout_style">GTK_BUTTONBOX_END</property>
+            <child>
+              <widget class="GtkButton" id="button1">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+                <property name="label" translatable="yes">gtk-ok</property>
+                <property name="use_stock">True</property>
+                <property name="response_id">0</property>
+              </widget>
+            </child>
+            <child>
+              <widget class="GtkButton" id="btnOK">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+                <property name="label" translatable="yes">gtk-cancel</property>
+                <property name="use_stock">True</property>
+                <property name="response_id">0</property>
               </widget>
               <packing>
                 <property name="position">1</property>
