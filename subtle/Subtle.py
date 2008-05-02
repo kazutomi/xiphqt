@@ -22,7 +22,7 @@ import sys
 import os
 
 from MediaInfo import MediaInfo
-from SouffleurXML import ProjectXML
+from SubtleXML import ProjectXML
 
 try:
     import pygtk
@@ -45,13 +45,16 @@ except:
 #Also, we know we are running GTK v2
 import gst
 
-class Souffleur:
+ONLINE_MODE = 1
+EDITING_MODE = 0
+
+class Subtle:
     def __init__(self):
         """
         In this init we are going to display the main
-        Souffleur window
+        Subtle window
         """
-        gladefile="souffleur.glade"
+        gladefile="subtle.glade"
         windowname="MAIN_WINDOW"
         
         self.update_id = -1
@@ -63,6 +66,9 @@ class Souffleur:
         self.Subtitles = []
 	# Current subtitle being edited
 	self.cur_edit_sub_iter = None
+	#Current editing mode
+	## Refer to globals for values
+	self.mode = ONLINE_MODE
 
         #self.scroll = 0
         self.videoWidgetGst = None
@@ -97,6 +103,7 @@ class Souffleur:
 	    "on_LIST_SUBS_button_release_event": self.cb_onSubsListSelect,\
 	    "on_LIST_SUBS_button_press_event": self.cb_onSubsListSelect,\
 	    "on_txt_subedit_key_release_event": self.cb_onSubtitleEdit,\
+	    "on_tgl_mode_toggled": self.cb_onModeChanged,\
 	    "on_TOOL_SAVE_STREAM_clicked": self.cb_saveStream,\
 	    "on_TOOL_DEL_SUBS_clicked": self.cb_subDel,\
 	    "on_TOOL_OUT_SUB_clicked": self.cb_subOut,\
@@ -109,6 +116,7 @@ class Souffleur:
 	self.windowMainWindow=self.wTree.get_widget("MAIN_WINDOW")
         self.windowProjectOpen=None
         self.windowProjectSO=None
+	self.windowNewSubFile=None
         self.PFileName=None
         self.windowMediaOpen=None
         #self.windowStreams=gtk.glade.XML (self.gladefile,"STREAM_WINDOW")
@@ -177,9 +185,26 @@ class Souffleur:
 	self.streams_pane = self.wTree.get_widget("streams_pane")
 	self.subtitle_pane = self.wTree.get_widget("subtitle_pane")
 	self.txt_subedit = self.wTree.get_widget("txt_subedit")
+	self.tgl_mode = self.wTree.get_widget("tgl_mode")
 	self.subList = SUBLIST
 	#self.windowMainWindow.maximize()
         return
+#==============================================================================
+    def cb_onModeChanged(self, widget):
+	"""
+	    Change from online mode to editing mode
+	    and vice versa
+	"""
+	# Online mode
+	if self.tgl_mode.get_active():
+	    self.mode = ONLINE_MODE
+	    self.txt_subedit.set_sensitive(False)
+	    return
+	# Editing mode
+	else:
+	    self.mode = EDITING_MODE
+	    self.txt_subedit.set_sensitive(True)
+	    return
 #==============================================================================
     def cb_hideSubPane(self, widget):
 	"""
@@ -368,8 +393,20 @@ class Souffleur:
 	"""
 	   Create a new subtitle
 	"""
-	print "Create a new stream"
 	#TODO: Lets popup something that will let us choose sub type
+        if(self.windowNewSubFile==None):
+            self.windowNewSubFile=gtk.glade.XML (self.gladefile,"NEW_SUBTITLE")
+            #dic={"on_OPEN_BUTTON_CANCEL_clicked": self.cb_openMediaCancel,\
+            #    "on_OPEN_BUTTON_OPEN_clicked": self.cb_openMediaOpen }
+            #self.windowMediaOpen.signal_autoconnect(dic)
+            WND=self.windowNewSubFile.get_widget("NEW_SUBTITLE")
+	    WND.show()
+        else:
+            WND=self.windowNewSubFile.get_widget("NEW_SUBTITLE")
+            if not WND:
+                self.windowNewSubFile=None
+            else:
+                WND.show()
 	return
 #==============================================================================
     def setSubtitle(self):
@@ -490,6 +527,8 @@ class Souffleur:
 	    return
 	Model, Rows = Selection.get_selected_rows()
 	if Rows != None:
+	    #FIXME: Buggy solution!! Has something to do with
+	    # button press release event generated...
 	    Row = Model[Rows[0][0]]
 	    if self.Subtitle:
 		Sub = self.Subtitle.subs[Row[1]]
@@ -607,7 +646,7 @@ class Souffleur:
             OKB.set_label("gtk-save")
             OKB.set_use_stock(True)
             Filter=gtk.FileFilter()
-            Filter.set_name("Souffleur project file")
+            Filter.set_name("Subtle project file")
             Filter.add_pattern("*.spf")
             WND.add_filter(Filter)
         else:
@@ -681,7 +720,7 @@ class Souffleur:
 #==============================================================================
     def playerSeekRewind(self, widget):
 	"""
-	    Jump back som time
+	    Jump back some time
 	"""
 	#TODO: Implement it
 	pass
@@ -698,7 +737,7 @@ class Souffleur:
             OKB.set_label("gtk-open")
             OKB.set_use_stock(True)
             Filter=gtk.FileFilter()
-            Filter.set_name("Souffleur project file")
+            Filter.set_name("Subtle project file")
             Filter.add_pattern("*.spf")
             WND.add_filter(Filter)
         else:
@@ -785,15 +824,20 @@ class Souffleur:
             if self.player.is_playing():
                 if TText:
 		    self.player.set_subtitle_text(TText.text)
-		    #TODO: Select the current playing subtitle
-		    # Careful with any processor intesive tasks here
-		    # !!!Critical loop!!!
+		    # Select current playing subtitle
+		    if self.mode == ONLINE_MODE:
+			Selection = self.subList.get_selection() 
+			#FIXME: This sometimes bugs ... Why??
+			Selection.select_path(TText.number-1)
+			self.setSubtitleEdit(TText.text)
                 else:
 		    self.player.set_subtitle_text('')
-		    # Unselect what is not being played
-		    Selection = self.subList.get_selection()
-		    if Selection:
-			Selection.unselect_all()
+		    if self.mode == ONLINE_MODE:
+			self.setSubtitleEdit('')
+			# Unselect what is not being played
+			Selection = self.subList.get_selection()
+			if Selection:
+			    Selection.unselect_all()
         if (self.p_position != gst.CLOCK_TIME_NONE):# and (not self.scroll):
             value = self.p_position
             self.adjustment.set_value(value)
@@ -808,5 +852,5 @@ class Souffleur:
 #==============================================================================
 #	MAIN:
 #==============================================================================
-souffleur=Souffleur()
+subtle=Subtle()
 gtk.main()

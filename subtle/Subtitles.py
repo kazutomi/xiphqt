@@ -19,6 +19,7 @@ class Sub:
         self.start_time=None
         self.end_time=None
         self.Attributes=None
+	self.number=None
 
 #==============================================================================
     ## Check subtitle time.
@@ -112,6 +113,7 @@ class Subtitles:
     # Load SRT formated subtitles from given string.
     # \param DATA - string of SRT subtitles.
     def _subSRTLoadFromString(self, DATA):
+	num_sub = 0
         if (string.find(DATA, "\r\n")==-1):
             DATA=string.split(DATA,"\n")
         else:
@@ -138,9 +140,11 @@ class Subtitles:
             ET=int(Timing[17:19])*3600000+int(Timing[20:22])*60000+int(Timing[23:25])*1000+int(Timing[26:29])
             
             TS=Sub()
+	    num_sub += 1
             TS.text=Text
             TS.start_time=ST
             TS.end_time=ET
+	    TS.number = num_sub
             self.subs[int(ST)]=TS
         self.updateKeys()
 
