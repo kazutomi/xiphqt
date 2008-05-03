@@ -19,7 +19,7 @@
 
 <p>XSPF is the XML format for sharing playlists.</p>
 <ul>
-<li>It is <em>open</em> -- No proprietary lock-in.</li>
+<li>It is <em>free</em> and <em>open</em> -- No proprietary lock-in.</li>
 <li>It is <em>portable</em> -- You should be able to send a playlist to your friend and have it work.</li>
 <li>It is <em>well-engineered</em> -- Most playlist formats get the easy things wrong.</li>
 </ul>
