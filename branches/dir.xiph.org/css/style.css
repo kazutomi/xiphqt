@@ -3,8 +3,16 @@
 	padding-left: 3em;
 }
 
+#navbar {
+	width: 150px;
+}
+
 #navbar h3 {
 	font-size: 0.9em;
+}
+
+#content {
+	margin-left: 160px;
 }
 
 h2 {

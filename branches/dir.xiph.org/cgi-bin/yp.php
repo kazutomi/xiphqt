@@ -46,7 +46,7 @@ switch ($_REQUEST['action'])
 		    $mandatory_args = array('sn', 'type', 'genre', 'b', 'listenurl');
 		    foreach ($mandatory_args as $a)
 		    {
-		        if (!array_key_exists($a, $_REQUEST))
+		        if (!array_key_exists($a, $_REQUEST) || empty($_REQUEST[$a]))
 		        {
 			        throw new ServerRefusedAPIException('Not enough arguments.', SERVER_REFUSED_MISSING_ARG);
 		        }
@@ -60,13 +60,13 @@ switch ($_REQUEST['action'])
 		    $media_type = strtolower(clean_string($_REQUEST['type']));
 		    if (array_key_exists('stype', $_REQUEST))
 		    {
-			    if (preg_match('/vorbis/i', $_REQUEST['stype']))
-			    {
-				    $media_type .= '+vorbis';
-			    }
 			    if (preg_match('/theora/i', $_REQUEST['stype']))
 			    {
 				    $media_type .= '+theora';
+			    }
+			    elseif (preg_match('/vorbis/i', $_REQUEST['stype']))
+			    {
+				    $media_type .= '+vorbis';
 			    }
 		    }
 		    // Genre, space-normalized
@@ -228,7 +228,7 @@ switch ($_REQUEST['action'])
 		    $mandatory_args = array('sid');
 		    foreach ($mandatory_args as $a)
 		    {
-		        if (!array_key_exists($a, $_REQUEST))
+		        if (!array_key_exists($a, $_REQUEST) || empty($_REQUEST[$a]))
 		        {
 			        // Return failure
 			        header("YPResponse: 0");
@@ -324,7 +324,7 @@ switch ($_REQUEST['action'])
 		    $mandatory_args = array('sid');
 		    foreach ($mandatory_args as $a)
 		    {
-		        if (!array_key_exists($a, $_REQUEST))
+		        if (!array_key_exists($a, $_REQUEST) || empty($_REQUEST[$a]))
 		        {
 			        // Return failure
 			        header("YPResponse: 0");
