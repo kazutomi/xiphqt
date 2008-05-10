@@ -6,25 +6,40 @@
 
 if (ENVIRONMENT == 'preprod')
 {
-	define('CP_DB_HOST', 'localhost');
-	define('CP_DB_USER', 'dir_xiph_org_t');
-	define('CP_DB_PASS', '6.NvxjR7B5j3Q');
-	define('CP_DB_NAME', 'dir_xiph_org_test');
+	define('DATA_DB_HOST', 'localhost');
+	define('DATA_DB_USER', 'dir_xiph_org_t');
+	define('DATA_DB_PASS', '6.NvxjR7B5j3Q');
+	define('DATA_DB_NAME', 'dir_xiph_org_test');
+	
+	define('LOG_DB_HOST', 'theetete.radiopytagor.org');
+	define('LOG_DB_USER', 'dir_xiph_org_t');
+	define('LOG_DB_PASS', 'y2V1ydXuXwLKg');
+	define('LOG_DB_NAME', 'dir_xiph_org_test');
 }
 elseif (ENVIRONMENT == 'prod')
 {
-	define('CP_DB_HOST', 'localhost');
-	define('CP_DB_USER', 'dir_xiph_org');
-	define('CP_DB_PASS', '5wCjLEVmAJnmM');
-	define('CP_DB_NAME', 'dir_xiph_org');
+	define('DATA_DB_HOST', 'localhost');
+	define('DATA_DB_USER', 'dir_xiph_org');
+	define('DATA_DB_PASS', '5wCjLEVmAJnmM');
+	define('DATA_DB_NAME', 'dir_xiph_org';
+	
+	define('LOG_DB_HOST', 'theetete.radiopytagor.org');
+	define('LOG_DB_USER', 'dir_xiph_org');
+	define('LOG_DB_PASS', 'xf0M1E1cup0FM');
+	define('LOG_DB_NAME', 'dir_xiph_org');
 }
 else
 {
 //	die("Unable to do this on test atm.\n");
-	define('CP_DB_HOST', 'localhost');
-	define('CP_DB_USER', 'dir_xiph_org_t');
-	define('CP_DB_PASS', 'pSqvUfzxL5qXz.UH');
-	define('CP_DB_NAME', 'dir_xiph_org_test');
+	define('DATA_DB_HOST', 'localhost');
+	define('DATA_DB_USER', 'dir_xiph_org_t');
+	define('DATA_DB_PASS', 'pSqvUfzxL5qXz.UH');
+	define('DATA_DB_NAME', 'dir_xiph_org_test');
+	
+	define('LOG_DB_HOST', 'localhost');
+	define('LOG_DB_USER', 'dir_xiph_org_t');
+	define('LOG_DB_PASS', 'pSqvUfzxL5qXz.UH');
+	define('LOG_DB_NAME', 'dir_xiph_org_test');
 }
 
 /**
@@ -41,7 +56,7 @@ class DirXiphOrgDBC extends DatabaseConnection
 	*/
 	protected function __construct()
 	{
-		parent::__construct(CP_DB_HOST, CP_DB_USER, CP_DB_PASS, CP_DB_NAME);
+		parent::__construct(DATA_DB_HOST, DATA_DB_USER, DATA_DB_PASS, DATA_DB_NAME);
 	}
 	
 	public function query($sql)
@@ -76,6 +91,17 @@ class DirXiphOrgDBC extends DatabaseConnection
 		}
 		
 		return self::$instance;
+	}
+}
+
+class DirXiphOrgLogDBC extends DirXiphOrgDBC
+{
+	/**
+	* Constructor.
+	*/
+	protected function __construct()
+	{
+		parent::__construct(LOG_DB_HOST, LOG_DB_USER, LOG_DB_PASS, LOG_DB_NAME);
 	}
 }
 
