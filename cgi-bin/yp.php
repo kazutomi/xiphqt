@@ -52,8 +52,8 @@ switch ($_REQUEST['action'])
 		        }
 		    }
 		    // Remote IP
-                    $ip = array_key_exists('HTTP_X_FORWARDED_FOR', $_SERVER)
-			   ? $_SERVER['HTTP_X_FORWARDED_FOR']
+            $ip = array_key_exists('HTTP_X_FORWARDED_FOR', $_SERVER)
+				   ? $_SERVER['HTTP_X_FORWARDED_FOR']
                            : array_key_exists('REMOTE_ADDR', $_SERVER)
 		              ? $_SERVER['REMOTE_ADDR'] : null;
 		    // Stream name
@@ -248,8 +248,10 @@ switch ($_REQUEST['action'])
 		        throw new NoSuchSIDAPIException();
 		    }
 		    // Remote IP
-		    $ip = array_key_exists('REMOTE_ADDR', $_SERVER)
-		            ? $_SERVER['REMOTE_ADDR'] : null;
+            $ip = array_key_exists('HTTP_X_FORWARDED_FOR', $_SERVER)
+				   ? $_SERVER['HTTP_X_FORWARDED_FOR']
+                           : array_key_exists('REMOTE_ADDR', $_SERVER)
+		              ? $_SERVER['REMOTE_ADDR'] : null;
 		    // Song title
 		    $current_song = array_key_exists('st', $_REQUEST)
 		                        ? clean_string($_REQUEST['st'])

@@ -21,7 +21,7 @@ elseif (ENVIRONMENT == 'prod')
 	define('DATA_DB_HOST', 'localhost');
 	define('DATA_DB_USER', 'dir_xiph_org');
 	define('DATA_DB_PASS', '5wCjLEVmAJnmM');
-	define('DATA_DB_NAME', 'dir_xiph_org';
+	define('DATA_DB_NAME', 'dir_xiph_org');
 	
 	define('LOG_DB_HOST', 'theetete.radiopytagor.org');
 	define('LOG_DB_USER', 'dir_xiph_org');
