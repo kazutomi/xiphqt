@@ -10,7 +10,7 @@ class APILog
         try
         {
             $db->noReturnQuery('SELECT 0 INTO @prev_id;');
-            $db->noReturnQuery('UPDATE api_log_cpt SET `id_log` = ((`id_log` MOD 10000) + 1) WHERE @prev_id := `id_log;`');
+            $db->noReturnQuery('UPDATE api_log_cpt SET `id_log` = ((`id_log` MOD 10000) + 1) WHERE @prev_id := `id_log`;');
             $res = $db->singleQuery('SELECT @prev_id AS id;');
             $id = $res->current('id');
             

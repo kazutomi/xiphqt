@@ -110,7 +110,7 @@ if ($keyword !== false)
         	        }
                 	elseif ($page_n + PAGES_IN_PAGER > $results_pages)
         	        {
-	                    $pages = range($results_pages - PAGES_IN_PAGER, $results_pages);
+	                    $pages = range($results_pages - PAGES_IN_PAGER + 1, $results_pages);
                 	}
         	        else
 	                {

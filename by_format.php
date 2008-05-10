@@ -67,7 +67,7 @@ if (array_key_exists('PATH_INFO', $_SERVER))
                 }
 		elseif ($page_n + PAGES_IN_PAGER > $results_pages)
 		{
-		    $pages = range($results_pages - PAGES_IN_PAGER, $results_pages);
+		    $pages = range($results_pages - PAGES_IN_PAGER + 1, $results_pages);
 		}
                 else
                 {
