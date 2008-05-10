@@ -18,8 +18,10 @@ class APILog
                   .'VALUES (%d, "%s", INET_ATON("%s"), "%s", %d, %d);';
             $sql = sprintf($sql, $id,
                                  mysql_real_escape_string($result),
-                                 array_key_exists('REMOTE_ADDR', $_SERVER)
-                                    ? $_SERVER['REMOTE_ADDR'] : '127.0.0.1',
+                                 array_key_exists('HTTP_X_FORWARDED_FOR', $_SERVER)
+								   ? $_SERVER['HTTP_X_FORWARDED_FOR']
+								           : array_key_exists('REMOTE_ADDR', $_SERVER)
+									  ? $_SERVER['REMOTE_ADDR'] : '127.0.0.1',
                                  $listen_url !== null ? md5($listen_url) : 0,
                                  $server_id, $mountpoint_id);
             $db->noReturnQuery($sql);
@@ -79,7 +81,7 @@ class APILog
     
     public static function serverRefused($reason, $listen_url = false)
     {
-        $db = DirXiphOrgDBC::getInstance();
+        $db = DirXiphOrgLogDBC::getInstance();
         
 /*        try
         {
@@ -90,10 +92,12 @@ class APILog
             
             $sql = 'INSERT INTO `refused_log_%s` (`reason`, `remote_ip`, `listen_url`, `listen_url_hash`) '
               .'VALUES (%d, INET_ATON("%s"), "%s", %u);';
-             $sql = sprintf($sql, date('Ymd'),
-                                  intval($reason),
-                                  array_key_exists('REMOTE_ADDR', $_SERVER)
-                                   ? $_SERVER['REMOTE_ADDR'] : '127.0.0.1',
+            $sql = sprintf($sql, date('Ymd'),
+                                 intval($reason),
+                                 array_key_exists('HTTP_X_FORWARDED_FOR', $_SERVER)
+								   ? $_SERVER['HTTP_X_FORWARDED_FOR']
+								           : array_key_exists('REMOTE_ADDR', $_SERVER)
+									  ? $_SERVER['REMOTE_ADDR'] : '127.0.0.1',
                                  $listen_url != false ? mysql_real_escape_string($listen_url) : '',
                                  $listen_url != false ? sprintf('%u', crc32($listen_url)) : 0);
             $db->noReturnQuery($sql);
