@@ -94,14 +94,52 @@ class DirXiphOrgDBC extends DatabaseConnection
 	}
 }
 
-class DirXiphOrgLogDBC extends DirXiphOrgDBC
+class DirXiphOrgLogDBC extends DatabaseConnection
 {
+    private static $instance;
+	public $queries = 0;
+	public $log = array();
+	
 	/**
 	* Constructor.
 	*/
 	protected function __construct()
 	{
 		parent::__construct(LOG_DB_HOST, LOG_DB_USER, LOG_DB_PASS, LOG_DB_NAME);
+	}
+	
+	public function query($sql)
+	{
+		$this->queries++;
+		$start = microtime(true);
+		
+		$res = parent::query($sql);
+		$nb = $this->affectedRows();
+		
+		$time = (microtime(true) - $start) * 1000;
+		$this->log[] = array('query'=>$sql,
+		                     'time'=>round($time, 3),
+		                     'rows'=>$nb);
+		
+		return $res;
+	}
+	
+	/**
+	 * Returns an instance of the DatabaseConnection.
+	 */
+	public static function getInstance($force_new = false, $auto_connect = true)
+	{ 
+		if (!isset(self::$instance) || $force_new)
+		{
+			self::$instance = new DirXiphOrgLogDBC();
+		}
+		
+		if ($auto_connect)
+		{
+		    self::$instance->connect();
+		}
+		
+		return self::$instance;
 	}
 }
 
