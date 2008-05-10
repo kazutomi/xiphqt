@@ -117,9 +117,9 @@ switch ($_REQUEST['action'])
 		    }
 	        
 		    // Look for the mountpoint (different listen URL, same stream name)
-            $mountpoint = Mountpoint::findSimilar($stream_name,
-                                                  content_type_lookup($media_type),
-                                                  $bitrate);
+            $mp = Mountpoint::findSimilar($stream_name,
+                                          content_type_lookup($media_type),
+                                          $bitrate);
 		    
 		    // Mountpoint
 		    if (!($mp instanceOf Mountpoint))
