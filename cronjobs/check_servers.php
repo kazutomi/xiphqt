@@ -114,9 +114,17 @@ try
             // TODO: remove the stream
             echo("Delete it! ".$res->current('listen_url')."\n");
             
-            $sql = 'UPDATE `server` SET `checked` = 2, `checked_at` = NOW() WHERE `id` = %d;';
+/*            $sql = 'UPDATE `server` SET `checked` = 2, `checked_at` = NOW() WHERE `id` = %d;';
             $sql = sprintf($sql, $res->current('id'));
-            $db->noReturnQuery($sql);
+            $db->noReturnQuery($sql);*/
+            $server = Server::retrieveByPk($res->current('id'));
+            $mp_id = $server->getMountpointId();
+            $mountpoint = Mountpoint::retrieveByPk($mp_id);
+            $server->remove();
+            if (!$mountpoint->hasLinkedServers())
+            {
+            	$mountpoint->remove();
+            }
         }
         
         $res->next();

@@ -10,10 +10,32 @@ $db = DirXiphOrgDBC::getInstance();
 $memcache = DirXiphOrgMCC::getInstance();
 
 // Old stuff that "timeouted"
-$db->noReturnQuery('DELETE FROM `server` WHERE `last_touched_at` <= DATE_SUB(NOW(), INTERVAL 10 MINUTE);');
+try
+{
+	$toDelete = $db->selectQuery('SELECT `id` FROM `server` WHERE `last_touched_at` <= DATE_SUB(NOW(), INTERVAL 10 MINUTE);');
+	
+	while (!$toDelete->endOf())
+	{
+        $server = Server::retrieveByPk($res->current('id'));
+        $mp_id = $server->getMountpointId();
+        $mountpoint = Mountpoint::retrieveByPk($mp_id);
+        $server->remove();
+        if (!$mountpoint->hasLinkedServers())
+        {
+        	$mountpoint->remove();
+        }
+		
+		// Next!
+		$toDelete->next();
+	}
+}
+catch (SQLNoResultException $e)
+{
+	// it's ok, everything's clean.
+}
 
 // Useless mountpoint
-try
+/*try
 {
     $toDelete = $db->selectQuery('SELECT m.`id` AS `mountpoint_id`, s.`id` FROM `mountpoint` AS m LEFT OUTER JOIN `server` AS s ON m.`id` = s.`mountpoint_id` HAVING s.`id` IS NULL;');
     while (!$toDelete->endOf())
@@ -37,12 +59,12 @@ try
 }
 catch (SQLNoResultException $e)
 {
-}
+}*/
 
 // Now prune the tags
-$sql = 'DELETE FROM `tag` WHERE `id` IN (SELECT `tag_id` FROM `tag_cloud` WHERE `tag_usage` <= 0);';
+/*$sql = 'DELETE FROM `tag` WHERE `id` IN (SELECT `tag_id` FROM `tag_cloud` WHERE `tag_usage` <= 0);';
 $db->noReturnQuery($sql);
-$sql = 'DELETE FROM `tag_cloud` WHERE `tag_usage` <= 0;';
+$sql = 'DELETE FROM `tag_cloud` WHERE `tag_usage` <= 0;'; // impossible since the field is UNSIGNED :(
 $db->noReturnQuery($sql);
 try
 {
@@ -60,6 +82,6 @@ try
 }
 catch (SQLNoResultException $e)
 {
-}
+}*/
 
 ?>
