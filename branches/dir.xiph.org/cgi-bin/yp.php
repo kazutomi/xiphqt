@@ -48,12 +48,14 @@ switch ($_REQUEST['action'])
 		    {
 		        if (!array_key_exists($a, $_REQUEST) || empty($_REQUEST[$a]))
 		        {
-			        throw new ServerRefusedAPIException('Not enough arguments.', SERVER_REFUSED_MISSING_ARG);
+			        throw new ServerRefusedAPIException('Not enough arguments.', SERVER_REFUSED_MISSING_ARG, $a);
 		        }
 		    }
 		    // Remote IP
-		    $ip = array_key_exists('REMOTE_ADDR', $_SERVER)
-		            ? $_SERVER['REMOTE_ADDR'] : null;
+                    $ip = array_key_exists('HTTP_X_FORWARDED_FOR', $_SERVER)
+			   ? $_SERVER['HTTP_X_FORWARDED_FOR']
+                           : array_key_exists('REMOTE_ADDR', $_SERVER)
+		              ? $_SERVER['REMOTE_ADDR'] : null;
 		    // Stream name
 		    $stream_name = clean_string($_REQUEST['sn']);
 		    // Media type
