@@ -5,18 +5,18 @@ class APILog
     public static function log($result, $listen_url = null,
                                $server_id = null, $mountpoint_id = null)
     {
-        $db = DirXiphOrgDBC::getInstance();
+        $db = DirXiphOrgLogDBC::getInstance();
         
-        try
+/*        try
         {
             $db->noReturnQuery('SELECT 0 INTO @prev_id;');
             $db->noReturnQuery('UPDATE api_log_cpt SET `id_log` = ((`id_log` MOD 10000) + 1) WHERE @prev_id := `id_log`;');
             $res = $db->singleQuery('SELECT @prev_id AS id;');
-            $id = $res->current('id');
+            $id = $res->current('id');*/
             
-            $sql = 'REPLACE INTO `api_log` (`id`, `message`, `remote_ip`, `listen_url_hash`, `server_id`, `mountpoint_id`) '
-                  .'VALUES (%d, "%s", INET_ATON("%s"), "%s", %d, %d);';
-            $sql = sprintf($sql, $id,
+            $sql = 'INSERT INTO `api_log_%s` (`message`, `remote_ip`, `listen_url_hash`, `server_id`, `mountpoint_id`) '
+                  .'VALUES ("%s", INET_ATON("%s"), "%s", %d, %d);';
+            $sql = sprintf($sql, date('Ymd'),
                                  mysql_real_escape_string($result),
                                  array_key_exists('HTTP_X_FORWARDED_FOR', $_SERVER)
 								   ? $_SERVER['HTTP_X_FORWARDED_FOR']
@@ -25,11 +25,11 @@ class APILog
                                  $listen_url !== null ? md5($listen_url) : 0,
                                  $server_id, $mountpoint_id);
             $db->noReturnQuery($sql);
-        }
+/*        }
         catch (SQLNoResultException $e)
         {
             throw new APIException("Unable to get a new api_log id.");
-        }
+        }*/
     }
     
     public static function serverAdded($ok, $server_id, $mountpoint_id,
