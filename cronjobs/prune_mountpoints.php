@@ -16,7 +16,7 @@ try
 	
 	while (!$toDelete->endOf())
 	{
-        $server = Server::retrieveByPk($res->current('id'));
+        $server = Server::retrieveByPk($toDelete->current('id'));
         $mp_id = $server->getMountpointId();
         $mountpoint = Mountpoint::retrieveByPk($mp_id);
         $server->remove();

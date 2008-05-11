@@ -88,7 +88,7 @@ try
                 }
                 while (trim($data) != '' && $r < 10);
                 
-                // Extremely dangerous, desactivated.
+                // Extremely dangerous, disabled.
 /*              if (!array_key_exists('server', $headers)
                     || !stristr($headers['server'], 'icecast'))
                 {
@@ -119,12 +119,13 @@ try
             $db->noReturnQuery($sql);*/
             $server = Server::retrieveByPk($res->current('id'));
             $mp_id = $server->getMountpointId();
-            $mountpoint = Mountpoint::retrieveByPk($mp_id);
-            $server->remove();
-            if (!$mountpoint->hasLinkedServers())
-            {
-            	$mountpoint->remove();
-            }
+	        $mountpoint = Mountpoint::retrieveByPk($mp_id);
+	        $server->remove();
+	        if ($mountpoint instanceOf Mountpoint
+	        	&& !$mountpoint->hasLinkedServers())
+	        {
+	        	$mountpoint->remove();
+	        }
         }
         
         $res->next();
