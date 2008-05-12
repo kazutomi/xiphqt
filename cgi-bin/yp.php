@@ -302,7 +302,7 @@ switch ($_REQUEST['action'])
 		{
 		    // Return failure
 		    header("YPResponse: 0");
-		    header("YPMessage: SID does not exist.");
+		    header("YPMessage: SID does not exist. Check your firewall, your server may be unreachable from outside.");
 		    
             // Log stuff
             APILog::request(REQUEST_TOUCH, false, null, null, null);
