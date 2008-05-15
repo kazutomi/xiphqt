@@ -8,6 +8,7 @@
 	<ul>
 		<li id="home_"><a href="/">Home</a></li>
 		<li id="news_"><a href="/news/">News</a></li>
+		<li id="comparison"><a href="/comparison/">Comparison</a></li>
 		<li id="samples_"><a href="/samples/">Samples</a></li>
 		<li id="downloads_"><a href="/downloads/">Downloads</a></li>
 		<li id="docs_"><a href="/docs/">Documentation</a></li>
