@@ -1,0 +1,118 @@
+<!--#include virtual="/ssi/header.include" -->
+<!--  Enter custom page information and styles here -->
+
+<title>The CELT ultra-low delay audio codec</title>
+<style type="text/css">
+<!--
+#navlink_ a {
+	text-decoration: underline !important;
+}
+-->
+</style>
+</head>
+<body>
+<!--#include virtual="/common/xiphbar.include" -->
+<!--#include virtual="/ssi/pagetop.include" -->
+<!--  All your page content goes here  -->
+<h1>Codec Quality Comparison</h1>
+<p> These are the results of MUSHRA tests with 10 listeners. The first graph is for the 48 kbit/s listening test.</p>
+<p align="center"><a href="results48.png"><img src="results48.png" width="500" height="350"></a></p>
+<p> The second graph is for the 64 kbit/s listening test. Note that G.722.1C is still at 48 kbit/s in that test because it is the highest bit-rate it supports.</p>
+<p align="center"><a href="results64.png"><img src="results64.png" width="500" height="350"></a></p>
+
+
+<h1>Codec Feature Comparison</h1>
+<table border="2" cellpadding="2" width="100%">
+	<thead>
+		<tr>
+			<th>Codec</th>
+			<th>Rate (kHz)</th>
+
+			<th>bitrate (kbps)</th>
+			<th>delay frame+lookahead (ms)</th>
+			<th><a href="#multiRate">multi-rate</a></th>
+			<th><a href="#plc"><abbr title="packet loss concealment">PLC</abbr></a></th>
+
+			<th><a href="#bitRobust">bit-robust</a></th>
+			<th>license</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr class="CELT">
+			<td>CELT</td>
+
+			<td>44.1, 48</td>
+			<td>
+				24-128    (mono)<br/>
+				40-160    (stereo)
+			</td>
+			<td>
+
+				5.8+2.9   (44.1 kHz)<br/>
+				5.3+2.7   (48 kHz)
+			</td>
+			<td>yes</td>
+			<td>yes</td>
+			<td>yes</td>
+			<td>open-source/<br/>free software</td>
+		</tr>
+		<tr>
+			<td>G.722.1C</td>
+			<td>32</td>
+
+			<td>24, 32, 48</td>
+			<td>20+20</td>
+			<td>?</td>
+			<td>?</td>
+			<td>?</td>
+
+			<td>no charge, but not open-source</td>
+		</tr>
+		<tr>
+			<td>AAC-LD</td>
+			<td>16-48</td>
+			<td>16-128</td>
+			<td>from 10+10 to 50</td>
+
+			<td>yes</td>
+			<td>yes</td>
+			<td>?</td>
+			<td>proprietary</td>
+		</tr>
+		<tr>
+			<td>Fraunhofer ULD</td>
+			<td>32-48</td>
+			<td>48-192?</td>
+
+			<td>&lt;10</td>
+			<td>?</td>
+			<td>limited</td>
+			<td>?</td>
+			<td>proprietary</td>
+
+		</tr>
+	</tbody>
+</table>
+<h2>Definitions</h2>
+<dl>
+	<dt><dfn id="multiRate">multi-rate</dfn></dt>
+	<dd>
+		Allows the codec to change bitrate
+		dynamically, at any moment
+	</dd>
+
+	<dt><dfn id="plc"><abbr title="packet loss concealment">PLC</abbr></dfn></dt>
+	<dd>
+		Packet loss concealment
+	</dd>
+
+	<dt><dfn id="bitRobust">bit-robust</dfn></dt>
+	<dd>
+		Robust to corruption at the bit level,
+		as found on wireless networks
+	</dd>
+
+</dl>
+
+
+<!--#include virtual="/ssi/pagebottom.include" -->
