@@ -1,0 +1,40 @@
+<!--#include virtual="/ssi/header.include" -->
+<!--  Enter custom page information and styles here -->
+
+<title>The CELT ultra-low delay audio codec</title>
+<style type="text/css">
+<!--
+#navlink_ a {
+	text-decoration: underline !important;
+}
+-->
+</style>
+</head>
+<body>
+<!--#include virtual="/common/xiphbar.include" -->
+<!--#include virtual="/ssi/pagetop.include" -->
+
+<h1>CELT Samples: IEEE Trans. ASL</h1>
+<p> These CELT samples use the same encoder and decoder (version 0.3.2) as were used during the MUSHRA listening tests. For copyright reasons, the actual samples are not the same as the ones used in the listening test.</p>
+<h2>48 kbit/s</h2>
+<p>These samples are coded using CELT on a 44.1 kHz signal at a bit-rate of 48 kbit/s.</p>
+
+<ul>
+	<li><a href="audio/original.wav">original</a></li>
+	<li><a href="audio/celt48.wav">CELT 48 kbit/s</a></li>
+</ul>
+
+
+<h2>64 kbit/s</h2>
+<p>These samples are coded using CELT on a 44.1 kHz signal at a bit-rate of 64 kbit/s.</p>
+
+<ul>
+   <li><a href="audio/original.wav">original</a></li>
+   <li><a href="audio/celt64.wav">CELT 64 kbit/s</a></li>
+   <li><a href="audio/celt64plc1.wav">CELT 64 kbit/s with 1% random packet loss</a></li>
+   <li><a href="audio/celt64plc5.wav">CELT 64 kbit/s with 5% random packet loss</a></li>
+   <li><a href="audio/celt64ber.wav">CELT 64 kbit/s with 1e-4 random bit error rate</a></li>
+   <li><a href="audio/celt64secdec.wav">CELT 64 kbit/s with 1e-4 random bit error rate and SECDED protection of the first 64 bits</a></li>
+</ul>
+
+<!--#include virtual="/ssi/pagebottom.include" -->
