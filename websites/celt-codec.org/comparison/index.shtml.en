@@ -63,8 +63,8 @@
 			<td>24, 32, 48</td>
 			<td>20+20</td>
 			<td>?</td>
-			<td>?</td>
-			<td>?</td>
+			<td>yes</td>
+			<td>limited</td>
 
 			<td>no charge, but not open-source</td>
 		</tr>
@@ -77,7 +77,7 @@
 			<td>yes</td>
 			<td>yes</td>
 			<td>?</td>
-			<td>proprietary</td>
+			<td>proprietary, MPEG</td>
 		</tr>
 		<tr>
 			<td>Fraunhofer ULD</td>
@@ -88,7 +88,7 @@
 			<td>?</td>
 			<td>limited</td>
 			<td>?</td>
-			<td>proprietary</td>
+			<td>proprietary, non-standard</td>
 
 		</tr>
 	</tbody>
