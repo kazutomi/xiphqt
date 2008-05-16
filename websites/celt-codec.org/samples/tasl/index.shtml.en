@@ -34,7 +34,7 @@
    <li><a href="audio/celt64plc1.wav">CELT 64 kbit/s with 1% random packet loss</a></li>
    <li><a href="audio/celt64plc5.wav">CELT 64 kbit/s with 5% random packet loss</a></li>
    <li><a href="audio/celt64ber.wav">CELT 64 kbit/s with 1e-4 random bit error rate</a></li>
-   <li><a href="audio/celt64secdec.wav">CELT 64 kbit/s with 1e-4 random bit error rate and SECDED protection of the first 64 bits</a></li>
+   <li><a href="audio/celt64secded.wav">CELT 64 kbit/s with 1e-4 random bit error rate and SECDED protection of the first 64 bits</a></li>
 </ul>
 
 <!--#include virtual="/ssi/pagebottom.include" -->

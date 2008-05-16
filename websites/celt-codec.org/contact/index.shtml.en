@@ -1,0 +1,29 @@
+<!--#include virtual="/ssi/header.include" -->
+<!--  Enter custom page information and styles here -->
+
+<title>The CELT ultra-low delay audio codec: Contact</title>
+<style type="text/css">
+<!--
+#navlink_ a {
+	text-decoration: underline;
+}
+-->
+</style>
+</head>
+<body>
+<!--#include virtual="/common/xiphbar.include" -->
+<!--#include virtual="/ssi/pagetop.include" -->
+<!--  All your page content goes here  -->
+
+<h1>Contact</h1>
+<h2 id="ml">The CELT Development List</h2>
+<p>
+	To be created... In the mean time, please contact the lead developer, <a href="mailto:jean-marc.valin@usherbrooke.ca">Jean-Marc Valin</a>. 
+</p>
+<h2>E-mail</h2>
+<p>
+Have a question about this <b>website</b> (not the software)? Send an e-mail to
+<a href="mailto:webmaster@speex.org">webmaster@speex.org</a>. 
+</p>
+
+<!--#include virtual="/ssi/pagebottom.include" -->

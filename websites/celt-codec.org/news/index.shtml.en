@@ -1,0 +1,52 @@
+<!--#include virtual="/ssi/header.include" -->
+<!--  Enter custom page information and styles here -->
+
+<title>The CELT ultra-low delay audio codec: News</title>
+<style type="text/css">
+<!--
+#news_ a {
+	text-decoration: underline !important;
+}
+-->
+</style>
+</head>
+<body>
+<!--#include virtual="/common/xiphbar.include" -->
+<!--#include virtual="/ssi/pagetop.include" -->
+<!--  All your page content goes here  -->
+
+<h1>Speex News</h1>
+
+<!--
+	<li>
+		<h3></h3>
+		<p class="submitdate"></p>
+		<div class="description">
+			<p></p>
+		</div>
+	</li>
+
+-->
+
+<ul class="descriptivelist">
+
+   <li>
+      <h3>Version 0.3.1 released</h3>
+      <p class="submitdate">26 April, 2008</p>
+      <div class="description">
+                <p>Version 0.3.1 is now released. CELT is now a lot faster and can run in real-time on a PC with less than 10% CPU.</p>
+      </div>
+   </li>
+   
+   <li>
+      <h3>Domain is up</h3>
+      <p class="submitdate">18 March, 2008</p>
+      <div class="description">
+                <p>Just registered celt-codec.com and celt-codec.org for this project. Now working
+                on the website</p>
+      </div>
+   </li>
+</ul>
+
+
+<!--#include virtual="/ssi/pagebottom.include" -->

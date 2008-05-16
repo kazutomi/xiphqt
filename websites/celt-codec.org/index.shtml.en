@@ -55,14 +55,14 @@
 <ul class="descriptivelist">
 	<li>
 		<h3>Version 0.3.1 released</h3>
-		<p class="submitdate">April 26, 2008</p>
+		<p class="submitdate">26 April, 2008</p>
 		<div class="description">
                 <p>Version 0.3.1 is now released. CELT is now a lot faster and can run in real-time on a PC with less than 10% CPU.</p>
 		</div>
 	</li>
 	<li>
 		<h3>Domain is up</h3>
-		<p class="submitdate">March 18, 2008</p>
+		<p class="submitdate">18 March, 2008</p>
 		<div class="description">
                 <p>Just registered celt-codec.com and celt-codec.org for this project. Now working
                 on the website</p>
