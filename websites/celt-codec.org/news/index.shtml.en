@@ -29,6 +29,13 @@
 -->
 
 <ul class="descriptivelist">
+   <li>
+      <h3>Version 0.3.2 released</h3>
+      <p class="submitdate">16 May, 2008</p>
+      <div class="description">
+                <p>Version 0.3.2 is out. This consists mainly of quality tuning. We've also completed some listening tests based on that version for the <a href="/comparison/">Comparison</a> page.</p>
+      </div>
+   </li>
 
    <li>
       <h3>Version 0.3.1 released</h3>

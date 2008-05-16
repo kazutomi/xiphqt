@@ -29,12 +29,11 @@
 
 <h2>Latest <strong style='font-style: italic;'>development</strong> release</h2>
 
-<h3 id='zero.3.1'>0.3.1</h3>
-<p>This new release brings a lot of optimisations. The coded is more than twice faster 
-than it was in version 0.3.0. Few changes otherwise.</p>
+<h3 id='zero.3.2'>0.3.2</h3>
+<p>This new release brings some quality improvements that can be observed in these <a href="/comparison/">listening test results</a>.</p>
 
 <ul>
-<li><a href="http://downloads.us.xiph.org/releases/celt/celt-0.3.1.tar.gz">celt-0.3.1.tar.gz</a></li>
+<li><a href="http://downloads.us.xiph.org/releases/celt/celt-0.3.2.tar.gz">celt-0.3.2.tar.gz</a></li>
 </ul>
 
 
@@ -50,6 +49,7 @@ These are older releases, provided mainly for historical reasons.
 <li><a href="http://downloads.us.xiph.org/releases/celt/celt-0.1.0.tar.gz">celt-0.1.0.tar.gz</a></li>
 <li><a href="http://downloads.us.xiph.org/releases/celt/celt-0.2.0.tar.gz">celt-0.2.0.tar.gz</a></li>
 <li><a href="http://downloads.us.xiph.org/releases/celt/celt-0.3.0.tar.gz">celt-0.3.0.tar.gz</a></li>
+<li><a href="http://downloads.us.xiph.org/releases/celt/celt-0.3.1.tar.gz">celt-0.3.1.tar.gz</a></li>
 </ul>
 
 

@@ -18,7 +18,7 @@
 <h1>The CELT ultra-low delay audio codec</h1>
 <h2>Overview</h2>
 <p>
-	The CELT codec is an experimental audio codec for use in low-delay communication.
+	The CELT codec is an experimental audio codec for use in low-delay speech and audio communication.
 </p>
 <h2>The Technology</h2>
 <p>
@@ -29,6 +29,7 @@
 <ul>
 	<li>Ultra-low latency (typically from 3 to 9 ms) </li>
 	<li>Full audio bandwidth (44.1 kHz and 48 kHz)</li>
+   <li>Support for both voice and music</li>
 	<li>Stereo support</li>
 	<li>Packet loss concealment</li>
 	<li>Constant bit-rates from 32 kbps to 128 kbps and above</li>
@@ -53,6 +54,13 @@
 
 <h2>Headlines</h2>
 <ul class="descriptivelist">
+   <li>
+      <h3>Version 0.3.2 released</h3>
+      <p class="submitdate">16 May, 2008</p>
+      <div class="description">
+                <p>Version 0.3.2 is out. This consists mainly of quality tuning. We've also completed some listening tests based on that version for the <a href="/comparison/">Comparison</a> page.</p>
+      </div>
+   </li>
 	<li>
 		<h3>Version 0.3.1 released</h3>
 		<p class="submitdate">26 April, 2008</p>
