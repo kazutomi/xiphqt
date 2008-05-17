@@ -22,6 +22,8 @@
 <ul>
 	<li><a href="audio/original.wav">original</a></li>
 	<li><a href="audio/celt48.wav">CELT 48 kbit/s</a></li>
+        <li><a href="audio/aac-ld48.wav">AAC-LD 48 kbit/s</a></li>
+        <li><a href="audio/g722_1c48.wav">G.722.1C 48 kbit/s</a></li>
 </ul>
 
 
@@ -31,6 +33,10 @@
 <ul>
    <li><a href="audio/original.wav">original</a></li>
    <li><a href="audio/celt64.wav">CELT 64 kbit/s</a></li>
+   <li><a href="audio/aac-ld64.wav">AAC-LD 64 kbit/s</a></li>
+</ul>
+<p>These samples demonstrate CELT performance with channel errors.</p>
+<ul>
    <li><a href="audio/celt64plc1.wav">CELT 64 kbit/s with 1% random packet loss</a></li>
    <li><a href="audio/celt64plc5.wav">CELT 64 kbit/s with 5% random packet loss</a></li>
    <li><a href="audio/celt64ber.wav">CELT 64 kbit/s with 1e-4 random bit error rate</a></li>
