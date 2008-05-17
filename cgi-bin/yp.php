@@ -172,6 +172,7 @@ switch ($_REQUEST['action'])
 		        {
         		    // Log
         		    APILog::serverAdded(true, $server_id, $mp_id, $listen_url);
+        		    APILog::sidIssued($sid, $server_id, $mp->getId(), $listen_url);
 		        }
 		        else
 		        {
