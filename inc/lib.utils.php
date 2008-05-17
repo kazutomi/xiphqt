@@ -25,6 +25,21 @@ class utils
             return false;
         }
     }
+    
+    public static function getRealIp()
+    {
+        $ip = false;
+        if (array_key_exists('HTTP_X_FORWARDED_FOR', $_SERVER))
+        {
+                $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
+        }
+        elseif (array_key_exists('REMOTE_ADDR', $_SERVER))
+        {
+                $ip = $_SERVER['REMOTE_ADDR'];
+        }
+
+        return $ip;
+    }
 }
 
 ?>
