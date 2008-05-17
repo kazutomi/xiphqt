@@ -92,7 +92,7 @@ class APILog
         $ip = $ip !== false ? $ip : '127.0.0.1';
         
         $sql = 'INSERT INTO `sid_log_%s` (`sid`, `server_id`, `mountpoint_id`, `listen_url`, `listen_url_hash`, `issed_for`) '
-          .'VALUES (%d, %d, "%s", "%s", INET_ATON("%s"));';
+          .'VALUES (%d, %d, %d, "%s", "%s", INET_ATON("%s"));';
         $sql = sprintf($sql, date('Ymd'),
                              $db->escape($sid),
                              intval($server_id),
