@@ -16,11 +16,13 @@ try
 	
 	while (!$toDelete->endOf())
 	{
+	printf("Processing %s... ", $toDelete->current('id'));
         $server = Server::retrieveByPk($toDelete->current('id'));
         $mp_id = $server->getMountpointId();
         $mountpoint = Mountpoint::retrieveByPk($mp_id);
         $server->remove();
-        if (!$mountpoint->hasLinkedServers())
+	echo "ok.\n";
+        if ($mountpoint instanceOf Mountpoint && !$mountpoint->hasLinkedServers())
         {
         	$mountpoint->remove();
         }

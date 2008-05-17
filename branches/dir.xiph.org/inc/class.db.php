@@ -225,6 +225,17 @@ abstract class DataBaseConnection
 	    
 	    return $this->affected_rows;
 	}
+
+	/**
+	 * Returns an escaped string.
+	 * 
+	 * @param string $str The string to escape.
+	 * @return string
+	 */
+	public function escape($str)
+	{
+		return @mysql_real_escape_string($str, $this->db_handle);
+	}
 	
 	/**
 	 * Returns an instance of the DatabaseConnection.

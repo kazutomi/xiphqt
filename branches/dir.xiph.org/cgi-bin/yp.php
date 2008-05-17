@@ -161,7 +161,7 @@ switch ($_REQUEST['action'])
 		    if ($mp instanceOf Mountpoint)
 		    {
 		        $server = new Server(0, false, true);
-		        $server->setMountpointId($mp_id);
+		        $server->setMountpointId($mp->getId());
 		        $server->setSid($sid);
 		        $server->setListenUrl($listen_url);
 		        $server->setLastTouchedFrom($ip);
@@ -355,10 +355,11 @@ switch ($_REQUEST['action'])
 		    $listen_url = $server->getListenUrl();
 	        $res = $server->remove();
 	        APILog::serverRemoved($res, $server_id, $mp_id, $listen_url);
-		    if ($res)
+		    if ($res && $mp_id)
 		    {
 		        $mountpoint = Mountpoint::retrieveByPk($mp_id);
-		        if (!$mountpoint->hasLinkedServers())
+		        if ($mountpoint instanceOf Mountpoint
+			    && !$mountpoint->hasLinkedServers())
 		        {
 		            $res = $mountpoint->remove();
 		            $mountpoint->decrementCounter(Mountpoint::COUNTER_TOTAL);
