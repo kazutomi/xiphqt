@@ -101,6 +101,27 @@ if ($playlist === false)
 	}
 }
 
+// Logging
+try
+{
+	$mountpoint = Mountpoint::retrieveByPk($p_id);
+	if ($mountpoint instanceOf Mountpoint)
+	{
+		$sn = $mountpoint->getStreamName();
+		$db = DirXiphOrgLogDBC::getInstance();
+		$sql = "INSERT INTO `playlist_log_%s` (`mountpoint_id`, `stream_name_hash`, `accessed_by`) "
+		."VALUES (%d, '%s', INET_ATON('%s'));";
+		$sql = sprintf($sql, date('Ymd'), $p_id,
+				$db->escape(hash('md5', $sn)),
+				$db->escape(utils::getRealIp()));
+		$db->query($sql);
+	}
+}
+catch (SQLException $e)
+{
+	// Nothing to do, it's just logging after all...
+}
+
 /******************************************************************************/
 /*                                     VIEW                                   */
 /******************************************************************************/
