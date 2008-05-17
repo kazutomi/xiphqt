@@ -10,15 +10,15 @@ if (!defined('ENVIRONMENT'))
 {
     throw new EnvironmentUndefinedException();
 }
-$lock_file = '/tmp/'.ENVIRONMENT.'_check_servers.lock';
-if (file_exists($lock_file))
+/*$lock_file = '/tmp/'.ENVIRONMENT.'_check_servers.lock';
+if (1 && file_exists($lock_file))
 {
-    die("Another instance is already running.\n");
+   die("Another instance is already running.\n");
 }
 else
 {
     touch($lock_file);
-}
+}*/
 
 // Database connection
 $db = DirXiphOrgDBC::getInstance();
@@ -118,6 +118,8 @@ try
             $sql = sprintf($sql, $res->current('id'));
             $db->noReturnQuery($sql);*/
             $server = Server::retrieveByPk($res->current('id'));
+	    if ($server instanceOf Server)
+	    {
             $mp_id = $server->getMountpointId();
 	        $mountpoint = Mountpoint::retrieveByPk($mp_id);
 	        $server->remove();
@@ -126,6 +128,7 @@ try
 	        {
 	        	$mountpoint->remove();
 	        }
+	    }
         }
         
         $res->next();
@@ -136,6 +139,6 @@ catch (SQLNoResultException $e)
     echo "OK.\n";
 }
 
-unlink($lock_file);
+//unlink($lock_file);
 
 ?>
