@@ -4,7 +4,7 @@ class Server
 {
     protected $server_id = 0;
     protected static $table_name = 'server';
-    protected $cache_expiration = 60;
+    protected static $cache_expiration = 60;
     public $loaded = false;
     
     protected $mountpoint_id;
@@ -125,31 +125,50 @@ class Server
         // MySQL Connection
 		$db = DirXiphOrgDBC::getInstance();
 		
-		try
-		{
-		    $sql = "SELECT `id` FROM `%s` WHERE `mountpoint_id` = %d;";
-		    $sql = sprintf($sql, self::$table_name, $mp_id);
-		    $res = $db->selectQuery($sql);
-	    }
-	    catch (SQLNoResultException $e)
-		{
-		    return false;
-		}
+		// Memcache connection
+		$mc = DirXiphOrgMCC::getInstance();
 		
-		$data = array();
-		while (!$res->endOf())
+		// Try to get from cache
+		$key = self::getListCacheKey('serversbympid_'.$mp_id);
+		$servers = $mc->get($key);
+		if (!$servers)
 		{
-		    if ($load_servers)
+		    // Cache miss, hit the database
+		    try
 		    {
-    		    $data[] = self::retrieveByPk(intval($res->current('id')));
-		    }
-		    else
+		        $sql = "SELECT `id` FROM `%s` WHERE `mountpoint_id` = %d;";
+		        $sql = sprintf($sql, self::$table_name, $mp_id);
+		        $res = $db->selectQuery($sql);
+		        
+		        $servers = array();
+        		while (!$res->endOf())
+        		{
+        		    $servers[] = intval($res->current('id'));
+        		    $res->next();
+    		    }
+    		    
+    		    // Save into cache
+    		    $mc->set($key, $servers, false, self::$cache_expiration);
+	        }
+	        catch (SQLNoResultException $e)
 		    {
-		        $data[] = intval($res->current('id'));
+		        return false;
 		    }
-		    
-		    $res->next();
-		}
+	    }
+		
+		// If we've been asked to load the servers data, do it
+		$data = array();
+		if ($load_servers)
+		{
+            foreach ($servers as $s)
+            {
+		        $data[] = self::retrieveByPk($s);
+		    }
+	    }
+	    else
+	    {
+	        $data =& $servers;
+	    }
 		
 		return $data;
     }
@@ -280,7 +299,7 @@ class Server
         
         $a = $this->__toArray();
         
-        return $cache->set($this->getCacheKey(), $a, false, $this->cache_expiration);
+        return $cache->set($this->getCacheKey(), $a, false, self::$cache_expiration);
     }
     
     /**
@@ -317,7 +336,7 @@ class Server
     }
     
     /**
-     * Builds a cache key for this mountpoint.
+     * Builds a cache key for this server.
      * 
      * @return string
      */
@@ -329,6 +348,21 @@ class Server
         }
         
         return sprintf("%s_server_%d", ENVIRONMENT, $this->server_id);
+    }
+    
+    /**
+     * Builds a cache key for a list of servers.
+     * 
+     * @return string
+     */
+    protected static function getListCacheKey($list_id)
+    {
+        if (!defined('ENVIRONMENT'))
+        {
+            throw new EnvironmentUndefinedException();
+        }
+        
+        return sprintf("%s_serverlist_%s", ENVIRONMENT, jenkins_hash_hex($list_id));
     }
     
     /**

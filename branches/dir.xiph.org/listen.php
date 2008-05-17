@@ -69,57 +69,37 @@ include_once(dirname(__FILE__).'/inc/prepend.php');
 // Memcache connection
 $memcache = DirXiphOrgMCC::getInstance();
 
-// Check the memcache server
-$playlist = $memcache->get(ENVIRONMENT.'_playlist_'.$p_id);
-if ($playlist === false)
+// Get the servers associated with this mountpoint
+$servers = Server::retrieveByMountpointId($this->mountpoint_id, false);
+
+// Build the playlist
+$playlist = array();
+if ($servers !== false && $servers !== array())
 {
-	// Database connection
-	$db = DirXiphOrgDBC::getInstance();
-	
-	// Cache miss, query the database
-	$query = 'SELECT `listen_url` FROM `server` WHERE `mountpoint_id` = %d;';
-	$query = sprintf($query, $p_id);
-	
-	try
-	{
-		$result = $db->selectQuery($query);
-		$playlist = array();
-		
-		while (!$result->endOf())
-		{
-			$playlist[] = $result->current('listen_url');
-			$result->next();
-		}
-		
-		// Store into memcache
-		$memcache->set(ENVIRONMENT.'_playlist_'.$p_id, $playlist, 60);
-	}
-	catch (SQLNoResultException $e)
-	{
-		header('HTTP/1.1 404 Not Found', true);
-		die("No such PID.\n");
-	}
+    foreach ($servers as $s)
+    {
+		$playlist[] = $s->getListenUrl();
+    }
+}		
+else
+{
+    header('HTTP/1.1 404 Not Found', true);
+    die("No such PID.\n");
 }
 
 // Logging
 try
 {
-	$mountpoint = Mountpoint::retrieveByPk($p_id);
-	if ($mountpoint instanceOf Mountpoint)
-	{
-		$sn = $mountpoint->getStreamName();
-		$db = DirXiphOrgLogDBC::getInstance();
-		$sql = "INSERT INTO `playlist_log_%s` (`mountpoint_id`, `stream_name_hash`, `accessed_by`) "
-		."VALUES (%d, '%s', INET_ATON('%s'));";
-		$sql = sprintf($sql, date('Ymd'), $p_id,
-				$db->escape(hash('md5', $sn)),
-				$db->escape(utils::getRealIp()));
-		$db->query($sql);
-	}
+    $mountpoint = Mountpoint::retrieveByPk($p_id);
+    if ($mountpoint instanceOf Mountpoint)
+    {
+        $sn = $mountpoint->getStreamName();
+        statsLog::playlistAccessed($p_id, $sn);
+    }
 }
 catch (SQLException $e)
 {
-	// Nothing to do, it's just logging after all...
+    // Nothing to do, it's just logging after all...
 }
 
 /******************************************************************************/
