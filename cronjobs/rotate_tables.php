@@ -186,4 +186,50 @@ for ($i = 0 ; $i <= 7 ; $i++)
 }
 echo "\n";
 
+/******************************************************************************/
+/**                             SEARCH LOG                                   **/
+/******************************************************************************/
+try
+{
+    printf("Creating search_type index on search_log_%s... ", $yesterday);
+    $start = microtime(true);
+    $sql = 'CREATE INDEX `search_type` ON `search_log_%s` (`search_type`);';
+    $sql = sprintf($sql, $yesterday);
+    $db->query($sql);
+    printf("OK [%.3f s]\n", microtime(true) - $start);
+}
+catch (SQLException $e)
+{
+    echo "[ERROR]\n";
+    
+    // Mail the error...
+    custom_exception_handler($e);
+    
+    // do nothing.
+}
+
+echo "Creating future tables... ";
+$sql_pattern = 'CREATE TABLE IF NOT EXISTS `search_log_%s` LIKE `search_log_template`;';
+for ($i = 0 ; $i <= 7 ; $i++)
+{
+    $date = makeFutureDate('Ymd', $i);
+    echo $date." ";
+    
+    $sql = sprintf($sql_pattern, $date);
+    try
+    {
+        $db->query($sql);
+        echo "[OK]... ";
+    }
+    catch (SQLException $e)
+    {
+        echo "[ERROR] ! ";
+        // Mail the error...
+        custom_exception_handler($e);
+        
+        // do nothing.
+    }
+}
+echo "\n";
+
 ?>
