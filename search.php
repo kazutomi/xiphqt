@@ -53,11 +53,45 @@ if ($keyword !== false)
 			break;
 		}
 	}
-	if ($count > 0)
-	{
-		$search_string_hash = jenkins_hash_hex($search_string);
-		$search_in = implode(', ', $search_in);
-		
+    if ($count > 0)
+    {
+        $search_string_hash = jenkins_hash_hex($search_string);
+        $search_in = implode(', ', $search_in);
+
+        // Get the data from the Memcache server
+        if (($results = $memcache->get(ENVIRONMENT.'_search_'.$search_string_hash)) === false)
+        {
+			// Cache miss. Now query the database.
+			try
+			{
+                $query = 'SELECT * FROM `mountpoint` WHERE `stream_name` LIKE "%1$s" OR `description` LIKE "%1$s" OR `id` IN (SELECT `mountpoint_id` FROM `mountpoints_tags` AS mt INNER JOIN `tag` AS t ON mt.`tag_id` = t.`id` WHERE `tag_name` IN (%2$s)) ORDER BY `listeners` DESC LIMIT %3$d;';
+                $query = sprintf($query,
+                                 mysql_real_escape_string($search_string),
+                                 $search_in,
+                                 MAX_SEARCH_RESULTS);
+                $results = $db->selectQuery($query);
+                $res = array();
+                while (!$results->endOf())
+                {
+                    $mp = Mountpoint::retrieveByPk($results->current('id'));
+                    if ($mp instanceOf Mountpoint)
+                    {
+                        $res[] = $mp;
+                    }
+                    $results->next();
+                }
+                $results = $res;
+			}
+            catch (SQLNoResultException $e)
+            {
+                $results = array();
+            }
+
+            // Cache the resultset
+            $memcache->set(ENVIRONMENT.'_search_'.$search_string_hash, $results,
+                            false, 60);
+        }
+        
 	    // Logging
 	    try
 	    {
@@ -67,38 +101,6 @@ if ($keyword !== false)
 	    {
 	        // Do nothing, it's just logging after all...
 	    }
-	    
-		// Get the data from the Memcache server
-		if (($results = $memcache->get(ENVIRONMENT.'_search_'.$search_string_hash)) === false)
-		{
-			// Cache miss. Now query the database.
-			try
-			{
-//				$query = 'SELECT * FROM `mountpoints` WHERE `stream_name` LIKE "%1$s" OR `description` LIKE "%1$s" OR `genre` LIKE "%1$s" GROUP BY `stream_name`, `cluster_id` ORDER BY `listeners` DESC LIMIT 50;';
-	            $query = 'SELECT * FROM `mountpoint` WHERE `stream_name` LIKE "%1$s" OR `description` LIKE "%1$s" OR `id` IN (SELECT `mountpoint_id` FROM `mountpoints_tags` AS mt INNER JOIN `tag` AS t ON mt.`tag_id` = t.`id` WHERE `tag_name` IN (%2$s)) ORDER BY `listeners` DESC LIMIT %3$d;';
-				$query = sprintf($query,
-				                 mysql_real_escape_string($search_string),
-				                 $search_in,
-				                 MAX_SEARCH_RESULTS);
-//				var_dump($query);
-				$results = $db->selectQuery($query);
-			    $res = array();
-			    while (!$results->endOf())
-			    {
-				    $res[] = Mountpoint::retrieveByPk($results->current('id'));
-				    $results->next();
-			    }
-				$results = $res;
-			}
-			catch (SQLNoResultException $e)
-			{
-				$results = array();
-			}
-		
-			// Cache the resultset
-			$memcache->set(ENVIRONMENT.'_search_'.$search_string_hash, $results,
-			               false, 60);
-		}
 	    
         // Now assign the results to a template var
         if ($results !== false && $results !== array())

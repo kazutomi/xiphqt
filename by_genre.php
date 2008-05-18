@@ -40,7 +40,6 @@ if (array_key_exists('PATH_INFO', $_SERVER))
 		// Cache miss. Now query the database.
 		try
 		{
-//			$query = 'SELECT * FROM `mountpoints` WHERE MATCH `genre` AGAINST ("%s" IN BOOLEAN MODE) GROUP BY `stream_name`, `cluster_id` ORDER BY `listeners` DESC LIMIT 50;';
             $query = 'SELECT m.`id` FROM `mountpoint` AS m INNER JOIN (SELECT mt.mountpoint_id FROM `mountpoints_tags` AS mt INNER JOIN `tag` AS t ON mt.`tag_id` = t.`id` WHERE t.`tag_name` = "%s" ORDER BY NULL) AS mt1 ON m.`id` = mt1.`mountpoint_id` ORDER BY m.`listeners` DESC LIMIT %d;';
 			$query = sprintf($query, mysql_real_escape_string($search_string), MAX_SEARCH_RESULTS);
 			$results = $db->selectQuery($query);
