@@ -26,7 +26,6 @@ if (array_key_exists('PATH_INFO', $_SERVER))
 	}
 	catch (SQLException $e)
 	{
-	    var_dump($e);
 	    // Do nothing, it's just logging after all...
 	}
 		
