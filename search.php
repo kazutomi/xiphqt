@@ -57,6 +57,16 @@ if ($keyword !== false)
 	{
 		$search_string_hash = jenkins_hash_hex($search_string);
 		$search_in = implode(', ', $search_in);
+		
+	    // Logging
+	    try
+	    {
+	        statsLog::keywordsSearched(statsLog::SEARCH_TYPE_FREEFORM, $search_string);
+	    }
+	    catch (SQLException $e)
+	    {
+	        // Do nothing, it's just logging after all...
+	    }
 	    
 		// Get the data from the Memcache server
 		if (($results = $memcache->get(ENVIRONMENT.'_search_'.$search_string_hash)) === false)

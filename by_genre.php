@@ -21,6 +21,16 @@ if (array_key_exists('PATH_INFO', $_SERVER))
 								 $search_string);
 	$search_string_hash = jenkins_hash_hex($search_string);
 	
+	// Logging
+	try
+	{
+	    statsLog::keywordsSearched(statsLog::SEARCH_TYPE_GENRE, $search_string);
+	}
+	catch (SQLException $e)
+	{
+	    // Do nothing, it's just logging after all...
+	}
+	
 	// Get the data from the Memcache server
 	if (($results = $memcache->get(ENVIRONMENT.'_search_genre_'.$search_string_hash)) === false)
 	{
