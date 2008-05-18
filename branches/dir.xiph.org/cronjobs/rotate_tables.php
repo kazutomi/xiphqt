@@ -232,4 +232,50 @@ for ($i = 0 ; $i <= 7 ; $i++)
 }
 echo "\n";
 
+/******************************************************************************/
+/**                                SID LOG                                   **/
+/******************************************************************************/
+try
+{
+    printf("Creating listen_url_hash index on sid_log_%s... ", $yesterday);
+    $start = microtime(true);
+    $sql = 'CREATE INDEX `listen_url_hash` ON `sid_log_%s` (`listen_url_hash`);';
+    $sql = sprintf($sql, $yesterday);
+    $db->query($sql);
+    printf("OK [%.3f s]\n", microtime(true) - $start);
+}
+catch (SQLException $e)
+{
+    echo "[ERROR]\n";
+    
+    // Mail the error...
+    custom_exception_handler($e);
+    
+    // do nothing.
+}
+
+echo "Creating future tables... ";
+$sql_pattern = 'CREATE TABLE IF NOT EXISTS `sid_log_%s` LIKE `sid_log_template`;';
+for ($i = 0 ; $i <= 7 ; $i++)
+{
+    $date = makeFutureDate('Ymd', $i);
+    echo $date." ";
+    
+    $sql = sprintf($sql_pattern, $date);
+    try
+    {
+        $db->query($sql);
+        echo "[OK]... ";
+    }
+    catch (SQLException $e)
+    {
+        echo "[ERROR] ! ";
+        // Mail the error...
+        custom_exception_handler($e);
+        
+        // do nothing.
+    }
+}
+echo "\n";
+
 ?>
