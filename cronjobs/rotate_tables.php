@@ -23,7 +23,18 @@ try
     $sql = sprintf($sql, $yesterday);
     $db->query($sql);
     printf("OK [%.3f s]\n", microtime(true) - $start);
+}
+catch (SQLException $e)
+{
+    echo "[ERROR]\n";
     
+    // Mail the error...
+    custom_exception_handler($e);
+    
+    // do nothing.
+}
+try
+{
     printf("Creating message index on api_log_%s... ", $yesterday);
     $start = microtime(true);
     $sql = 'CREATE INDEX `message` ON `api_log_%s` (`message`, `logged_at`);';
@@ -63,6 +74,7 @@ for ($i = 0 ; $i <= 7 ; $i++)
         // do nothing.
     }
 }
+echo "\n";
 
 /******************************************************************************/
 /**                              PLAYLIST LOG                                **/
@@ -108,5 +120,70 @@ for ($i = 0 ; $i <= 7 ; $i++)
         // do nothing.
     }
 }
+echo "\n";
+
+/******************************************************************************/
+/**                             REFUSED LOG                                  **/
+/******************************************************************************/
+try
+{
+    printf("Creating reason index on refused_log_%s... ", $yesterday);
+    $start = microtime(true);
+    $sql = 'CREATE INDEX `reason` ON `refused_log_%s` (`reason`);';
+    $sql = sprintf($sql, $yesterday);
+    $db->query($sql);
+    printf("OK [%.3f s]\n", microtime(true) - $start);
+}
+catch (SQLException $e)
+{
+    echo "[ERROR]\n";
+    
+    // Mail the error...
+    custom_exception_handler($e);
+    
+    // do nothing.
+}
+try
+{
+    printf("Creating hostname index on refused_log_%s... ", $yesterday);
+    $start = microtime(true);
+    $sql = 'CREATE INDEX `hostname` ON `refused_log_%s` (`listen_url`(11));';
+    $sql = sprintf($sql, $yesterday);
+    $db->query($sql);
+    printf("OK [%.3f s]\n", microtime(true) - $start);
+}
+catch (SQLException $e)
+{
+    echo "[ERROR]\n";
+    
+    // Mail the error...
+    custom_exception_handler($e);
+    
+    // do nothing.
+}
+
+echo "Creating future tables... ";
+$sql_pattern = 'CREATE TABLE IF NOT EXISTS `refused_log_%s` LIKE `refused_log_template`;';
+for ($i = 0 ; $i <= 7 ; $i++)
+{
+    $date = makeFutureDate('Ymd', $i);
+    echo $date." ";
+    
+    $sql = sprintf($sql_pattern, $date);
+    try
+    {
+        $db->query($sql);
+        echo "[OK]... ";
+    }
+    catch (SQLException $e)
+    {
+        echo "[ERROR] ! ";
+        // Mail the error...
+        custom_exception_handler($e);
+        
+        // do nothing.
+    }
+}
+echo "\n";
 
 ?>
