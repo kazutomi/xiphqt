@@ -66,11 +66,8 @@ else
 // Inclusions
 include_once(dirname(__FILE__).'/inc/prepend.php');
 
-// Memcache connection
-$memcache = DirXiphOrgMCC::getInstance();
-
 // Get the servers associated with this mountpoint
-$servers = Server::retrieveByMountpointId($this->mountpoint_id, false);
+$servers = Server::retrieveByMountpointId($p_id);
 
 // Build the playlist
 $playlist = array();

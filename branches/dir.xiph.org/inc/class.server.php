@@ -123,54 +123,56 @@ class Server
     public static function retrieveByMountpointId($mp_id, $load_servers = true)
     {
         // MySQL Connection
-		$db = DirXiphOrgDBC::getInstance();
-		
-		// Memcache connection
-		$mc = DirXiphOrgMCC::getInstance();
-		
-		// Try to get from cache
-		$key = self::getListCacheKey('serversbympid_'.$mp_id);
-		$servers = $mc->get($key);
-		if (!$servers)
-		{
-		    // Cache miss, hit the database
-		    try
-		    {
-		        $sql = "SELECT `id` FROM `%s` WHERE `mountpoint_id` = %d;";
-		        $sql = sprintf($sql, self::$table_name, $mp_id);
-		        $res = $db->selectQuery($sql);
-		        
-		        $servers = array();
-        		while (!$res->endOf())
-        		{
-        		    $servers[] = intval($res->current('id'));
-        		    $res->next();
-    		    }
-    		    
-    		    // Save into cache
-    		    $mc->set($key, $servers, false, self::$cache_expiration);
-	        }
-	        catch (SQLNoResultException $e)
-		    {
-		        return false;
-		    }
-	    }
-		
-		// If we've been asked to load the servers data, do it
-		$data = array();
-		if ($load_servers)
-		{
+        $db = DirXiphOrgDBC::getInstance();
+
+        // Memcache connection
+        $mc = DirXiphOrgMCC::getInstance();
+
+        // Try to get from cache
+        $key = self::getListCacheKey('serversbympid_'.$mp_id);
+        $servers = $mc->get($key);
+        if (!$servers)
+        {
+            // Cache miss, hit the database
+            try
+            {
+                $sql = "SELECT `id` FROM `%s` WHERE `mountpoint_id` = %d;";
+                $sql = sprintf($sql, self::$table_name, $mp_id);
+                $res = $db->selectQuery($sql);
+
+                $servers = array();
+                while (!$res->endOf())
+                {
+                    $servers[] = intval($res->current('id'));
+                    $res->next();
+                }
+
+               // Save into cache
+                $mc->set($key, $servers, false, self::$cache_expiration);
+            }
+            catch (SQLNoResultException $e)
+            {
+                return false;
+            }
+        }
+
+        // If we've been asked to load the servers data, do it
+        $data = array();
+        if ($load_servers)
+        {
             foreach ($servers as $s)
             {
-		        $data[] = self::retrieveByPk($s);
-		    }
-	    }
-	    else
-	    {
-	        $data =& $servers;
-	    }
-		
-		return $data;
+                $server = self::retrieveByPk($s);
+                if ($server instanceOf Server)
+                $data[] = $server;
+            }
+        }
+        else
+        {
+            $data =& $servers;
+        }
+
+        return $data;
     }
     
     /**
