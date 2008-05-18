@@ -24,6 +24,7 @@
 	<li><a href="audio/celt48.wav">CELT 48 kbit/s</a></li>
         <li><a href="audio/aac-ld48.wav">AAC-LD 48 kbit/s</a></li>
         <li><a href="audio/g722_1c48.wav">G.722.1C 48 kbit/s</a></li>
+        <li><a href="audio/mp3_48.wav">MP3 48 kbit/s (<abbr title="lame --lowpass 20000 --resample 44.1 --cbr -b 48 --nores">LAME</abbr>)</a></li>
 </ul>
 
 
@@ -34,6 +35,7 @@
    <li><a href="audio/original.wav">original</a></li>
    <li><a href="audio/celt64.wav">CELT 64 kbit/s</a></li>
    <li><a href="audio/aac-ld64.wav">AAC-LD 64 kbit/s</a></li>
+   <li><a href="audio/mp3_64.wav">MP3 64 kbit/s (<abbr title="lame --lowpass 20000 --resample 44.1 --cbr -b 64 --nores">LAME</abbr>)</a></li>
 </ul>
 <p>These samples demonstrate CELT performance with channel errors.</p>
 <ul>
