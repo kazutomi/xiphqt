@@ -29,67 +29,72 @@ if (array_key_exists('PATH_INFO', $_SERVER))
 	    // Do nothing, it's just logging after all...
 	}
 		
-	// Get the data from the Memcache server
-	if (($results = $memcache->get(ENVIRONMENT.'_search_format_'.$search_string_hash)) === false)
-	{
-		// Database connection
-		$db = DirXiphOrgDBC::getInstance();
-	
-		// Cache miss. Now query the database.
-		try
-		{
-			$query = ' SELECT m.* FROM `mountpoint` AS m INNER JOIN `media_type` AS mty ON m.`media_type_id` = mty.`id` WHERE mty.`media_type_url` = "%s" ORDER BY m.`listeners` DESC LIMIT %d;';
-			$query = sprintf($query, mysql_real_escape_string($search_string), MAX_SEARCH_RESULTS);
-			$results = $db->selectQuery($query);
-			$res = array();
-			while (!$results->endOf())
-			{
-				$res[] = Mountpoint::retrieveByPk($results->current('id'));
-				$results->next();
-			}
-			$results = $res;
-		}
-		catch (SQLNoResultException $e)
-		{
-			$results = array();
-		}
-	
-		// Cache the resultset
-		$memcache->set(ENVIRONMENT.'_search_format_'.$search_string_hash, $results, false, 60);
-	}
-	
+    // Get the data from the Memcache server
+    if (($results = $memcache->get(ENVIRONMENT.'_search_format_'.$search_string_hash)) === false)
+    {
+        // Database connection
+        $db = DirXiphOrgDBC::getInstance();
+
+        // Cache miss. Now query the database.
+        try
+        {
+//			$query = 'SELECT m.* FROM `mountpoint` AS m INNER JOIN `media_type` AS mty ON m.`media_type_id` = mty.`id` WHERE mty.`media_type_url` = "%s" ORDER BY m.`listeners` DESC LIMIT %d;';
+            $query = 'SELECT * FROM `mountpoint` WHERE `media_type_id` = (SELECT `id` FROM `media_type` WHERE `media_type_url` = "%s") ORDER BY `listeners` DESC LIMIT %d;';
+            $query = sprintf($query, mysql_real_escape_string($search_string), MAX_SEARCH_RESULTS);
+            $results = $db->selectQuery($query);
+            $res = array();
+            while (!$results->endOf())
+            {
+                $mp = Mountpoint::retrieveByPk($results->current('id'));
+                if ($mp instanceOf Mountpoint)
+                {
+                    $res[] = $mp;
+                }
+                $results->next();
+            }
+            $results = $res;
+        }
+        catch (SQLNoResultException $e)
+        {
+            $results = array();
+        }
+
+        // Cache the resultset
+        $memcache->set(ENVIRONMENT.'_search_format_'.$search_string_hash, $results, false, 60);
+    }
+
 	if ($results !== false && $results !== array())
 	{
-		$n_results = count($results);
-		$results_pages = ceil($n_results / MAX_RESULTS_PER_PAGE);
-                if ($page_n > $results_pages)
-                {
-                    $page_n = 0;
-                }
-		$pages = array();
-		if ($results_pages < PAGES_IN_PAGER)
-		{
-		    $pages = range(1, $results_pages);
-		}
-                elseif ($page_n > PAGES_IN_PAGER)
-                {
-                    $pages = range($page_n + 1 - PAGES_IN_PAGER, $pages_n + 1 + PAGES_IN_PAGER);
-                }
-		elseif ($page_n + PAGES_IN_PAGER > $results_pages)
-		{
-		    $pages = range($results_pages - PAGES_IN_PAGER + 1, $results_pages);
-		}
-                else
-                {
-                    $pages = range(1, PAGES_IN_PAGER);
-                }
-                $offset = $page_n * MAX_RESULTS_PER_PAGE;
-                $results = array_slice($results, $offset,
-                                       MAX_RESULTS_PER_PAGE);
-                $tpl->assign_by_ref('results', $results);
-                $tpl->assign_by_ref('results_pages', $pages);
-		$tpl->assign_by_ref('results_pages_total', $results_pages);
-                $tpl->assign('results_page_no', $page_n + 1);
+        $n_results = count($results);
+        $results_pages = ceil($n_results / MAX_RESULTS_PER_PAGE);
+        if ($page_n > $results_pages)
+        {
+            $page_n = 0;
+        }
+        $pages = array();
+        if ($results_pages < PAGES_IN_PAGER)
+        {
+            $pages = range(1, $results_pages);
+        }
+        elseif ($page_n > PAGES_IN_PAGER)
+        {
+            $pages = range($page_n + 1 - PAGES_IN_PAGER, $pages_n + 1 + PAGES_IN_PAGER);
+        }
+        elseif ($page_n + PAGES_IN_PAGER > $results_pages)
+        {
+            $pages = range($results_pages - PAGES_IN_PAGER + 1, $results_pages);
+        }
+        else
+        {
+            $pages = range(1, PAGES_IN_PAGER);
+        }
+        $offset = $page_n * MAX_RESULTS_PER_PAGE;
+        $results = array_slice($results, $offset,
+                               MAX_RESULTS_PER_PAGE);
+        $tpl->assign_by_ref('results', $results);
+        $tpl->assign_by_ref('results_pages', $pages);
+        $tpl->assign_by_ref('results_pages_total', $results_pages);
+        $tpl->assign('results_page_no', $page_n + 1);
 	}
 }
 else
