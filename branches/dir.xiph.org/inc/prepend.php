@@ -99,5 +99,6 @@ include_once(dirname(__FILE__).'/lib.uuidgen.php');
 include_once(dirname(__FILE__).'/lib.dir.php');
 include_once(dirname(__FILE__).'/lib.utils.php');
 include_once(dirname(__FILE__).'/lib.apilog.php');
+include_once(dirname(__FILE__).'/lib.statslog.php');
 
 ?>
