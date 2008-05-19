@@ -73,9 +73,12 @@ sub module_update{
 	    my$pos=rindex $_, ":";
 	    if($pos>0){
 		my$key=substr $_,0,$pos;
+		my$vals=$_;
 		$key=~s/^\s*(\S+)\s*/$1/;
-		$net{$key}=substr $_, $pos+1;
-		$active_if++;
+		unless ($key=~m/sit/) {
+		    $net{$key}=substr $vals, $pos+1;
+		    $active_if++;
+		} 
 	    }
 	} split "\n", $data;
     }
