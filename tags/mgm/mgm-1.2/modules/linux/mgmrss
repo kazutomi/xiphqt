@@ -1,0 +1,96 @@
+# -*-Perl-*-
+
+# instances allowed: one 
+
+# (single instance modules would be silly to use more than one of
+# anyway, so we use package local storage.  This is faster and places
+# less artificial load on the machine than doing everything through
+# the object hash)
+
+# Cargo-cult coded from memuse
+
+package MGMmodule::mgmrss;
+use IO::Seekable;
+use vars qw($xpath $widget $graph $mgmuse $memtotal $memuse $swapuse $bars);
+
+sub module_init{
+    my$this=shift;
+    my$toplevel=$this->{"toplevel"};
+    my$xclass=$this->{"xclass"};
+    
+    $this->get_mgmuse;
+    $this->get_memtotal;
+    
+    unless ($memtotal && $mgmuse){
+	$toplevel->optionAdd("$xclass*active",'false',21);
+    }
+    
+    $toplevel->optionAdd("$xclass.order", 101,21);
+    $this;
+}
+
+sub module_instance{
+    my$this=shift;
+    my$toplevel=$this->{"toplevel"};
+    return undef if(defined($xpath));
+    $xpath=$this->{"xpath"};
+    
+    $toplevel->optionAdd("$xpath.bar.0.label", "mgm RSS",21);
+
+    $bars=1;
+
+    my($minx,$miny)=&MGM::Graph::calcxysize($this,100,'% used',$bars);
+    
+    $toplevel->optionAdd("$xpath.minx",        $minx,21);      
+    $toplevel->optionAdd("$xpath.miny",        $miny,21);          
+    $toplevel->optionAdd("$xpath.scalewidadj", 80*$bars,21);  # narrower, like memuse
+    $this;
+}
+
+sub module_run{
+    my$this=shift;
+    
+    $graph=MGM::Graph->new($this,num=>$bars,prompt=>'%',fixed=>1,
+			   rangesetting=>100,rangecurrent=>100);
+    $widget=$graph->{"widget"};        # must return the widget
+}
+
+sub module_update{ 
+    my$this=shift;
+    $this->get_mgmuse; 
+    $graph->set(100 * ($mgmuse/$memtotal));
+}
+
+sub get_mgmuse{
+  if(open(PROC,"/proc/self/status")){
+    while(<PROC>) {
+      if (m/VmRSS:\s+(\d+) kB/) {
+	$mgmuse = 1024 * $1;
+      }
+    }
+    close PROC;
+  }
+}
+
+sub get_memtotal{
+    if(open(PROC,"/proc/meminfo")){
+	<PROC>;
+	$_=<PROC>;
+	if(m/^Mem:\s+(\d+)\s+(\d+)\s+\d+\s+\d+\s+(\d+)\s+(\d+)/){
+	    $memtotal=$1;
+	    $memuse=$2-$3-$4;
+	}else{
+	    $memtotal=0;
+	    $memuse=0;
+	}
+	close PROC;
+    }
+}
+
+
+sub destroy{
+    undef $xpath;
+}
+
+bless {};
+

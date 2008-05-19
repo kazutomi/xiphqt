@@ -1,0 +1,92 @@
+<title>  xiph.org: MGM troubleshooting </title>
+
+<STYLE>
+<!--
+        BODY  {font-family: Verdana, Arial, Helvetica; 
+               font-size: 12pt;
+               background-color: #ffffff}
+-->
+</STYLE>
+
+<body bgcolor="#ffffff" link="#208b8b" vlink="#000080">
+
+<p align=center><img src="mgm.gif"><br>
+<hr>
+
+<p align=center>
+[ <a href="index.html">home</a> | <a href="faq.html">FAQ</a> | <a href="down.html">download</a> | <a href="trouble.html">troubleshooting</a> | <a href="docs.html">manual</a> | <a href="http://www.xiph.org/cvs.html">cvs</a> | <a href="mail.html">mailing lists</a> ]<p>
+<hr>
+
+<h2>Troubleshooting the beast...</h2>
+
+MGM is aimed at skilled users, not the 3l33T3 war3z crowd.<p>
+
+(1f U sp3ll l1k3 th1s, gu3ss wh1ch U R)<p>
+
+MGM was originally a script for my own use, but a few other folks
+liked it (not unintended) so I'm just going to fling it at the world
+at large.  I'm not going to let it become a support load. I'm not
+interested in teaching newbies how to use X resources this time
+around, sorry.<p>
+
+That said, there are a few things that are tricky about using MGM, so
+I might as well save folks the time of slugging through misleading
+problems and list a few of the things that can go wrong below.<p>
+
+<h3>Weird Tk errors</h3>
+
+It turns out Tk doesn't deal well with whitespace in X resources; it
+considers whitespace to be part of the entry, ends up being unable to
+look up colors like "Black ", and then just gives up. If you get
+something like the below:
+
+<pre>
+Use of inherited AUTOLOAD for non-method Tk::MainWindow::_Destroyed() is 
+deprecated at /usr/lib/perl5/Tk/MainWindow.pm line 55.
+Use of uninitialized value at /usr/lib/perl5/Tk/MainWindow.pm line 55.
+821b47c () is not a hash at /usr/lib/perl5/Tk/MainWindow.pm line 55.
+Abort
+</pre>
+
+or
+
+<pre>
+Error eval()ing ->module_run for Netstat: unknown color name "gray      " 
+at /usr/lib/perl5/Tk/Submethods.pm line 37.
+</pre>
+
+Chances are you have whitespace in your MGM resources.  Emacs in
+font-lock mode has the tendency to insert tabs where you least expect.
+Check carefully for this.
+
+<p>
+
+<h3>It runs perfectly for a while then suddenly explodes</h3>
+
+A few modules (diskuse and netstat for now) watch for changes in
+machine configuration and will trigger an update of the whole MGM
+window if, for example, a new filesystem appears in df.<p>
+
+If you're riding the limits of minimum sizing, it's possible that the
+window really needed to be bigger for the extra entry and instead the
+world ended.  Similarly, forcably disabling automatic updates
+(*reconfig: false) can cause things to break as MGM tries to monitor
+devices that no longer exist.  Or, maybe you found a bug.  If you
+did, drop us a line at <a href="mailto:mgm@xiph.org">mgm@xiph.org</a>.
+
+<hr>
+<a href="http://www.xiph.org/">
+<img src="white-xifish.gif" align=left border=0>
+</a>
+<p>
+<font size=-2 color=#505050>
+
+MGM will not get your whites whiter or your colors brighter.  It will,
+however, sit there and look spiffy while sucking down a major
+honking wad of RAM.<p>
+
+MGM, Xiphophorus and their logos are trademarks (tm) of
+<a href="http://www.xiph.org/">Xiphophorus</a>.  These pages are
+copyright (C) 1994-1999 Xiphophorus. All rights reserved.<p>
+
+</body>

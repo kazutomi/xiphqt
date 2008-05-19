@@ -1,0 +1,82 @@
+<title>  xiph.org: MGM manual </title>
+
+<STYLE>
+<!--
+        BODY  {font-family: Verdana, Arial, Helvetica; 
+               font-size: 12pt;
+               background-color: #ffffff}
+-->
+</STYLE>
+
+<body bgcolor="#ffffff" link="#208b8b" vlink="#000080">
+
+<p align=center><img src="mgm-small.gif"><br>
+[ <a href="index.html">home</a> | <a href="faq.html">FAQ</a> | <a href="down.html">download</a> | <a href="trouble.html">troubleshooting</a> | <a href="docs.html">manual</a> | <a href="http://www.xiph.org/cvs.html">cvs</a> | <a href="mail.html">mailing lists</a> ]<p>
+<hr>
+
+<h1>Module: hostlogo</h1>
+
+hostlogo, by default, displays a spinning fish emblem (the xiph.org
+logo) over the machine's hostname.  It can, in fact, display any text
+label and/or XPM (including, obviously, animated XPMs).<p>
+
+<h2>Current platforms</h2>
+All
+
+<h2>Instances</h2>
+multiple allowed
+
+<h2>additional resources</h2>
+
+ipad, label, logopixmap<p>
+
+ipad specifies an internal padding to add to the inside of all four
+module borders.  The padding is added inside any relief.<p>
+
+<a href=r-label.html>label</a> is a standard resource, which hostlogo
+uses to set the default label (the hostname).<p>
+
+'logopixmap' may be set to the filename of any XPM file; this XPM will
+then be displayed instead of the spinning fish.<p>
+
+note that the refresh rate is set inside the XPM at the 'Animated'
+comment.  See lib/fishframe.xpm for an example.  This value may be
+overridden using <a href=r-scalerefresh.html>scalerefresh</a>.<p>
+
+<h2>Resource defaults</h2>
+
+Resource defaults explicitly altered from the global defaults by this
+module:
+
+<ul>
+<li>borderwidth: 1 
+<li>label: (hostname)
+<li>order: 0
+<li>scalejustify: 0
+<li>scalelenadj: 60
+<li>scalewidadj: 100
+</ul>
+
+<hr>
+<a href="http://www.xiph.org/">
+<img src="white-xifish.gif" align=left border=0>
+</a>
+<p>
+<font size=-2 color=#505050>
+
+MGM will not get your whites whiter or your colors brighter.  It will,
+however, sit there and look spiffy while sucking down a major
+honking wad of RAM.<p>
+
+MGM, Xiphophorus and their logos are trademarks (tm) of
+<a href="http://www.xiph.org/">Xiphophorus</a>.  These pages are
+copyright (C) 1994-1999 Xiphophorus. All rights reserved.<p>
+
+</body>
+
+
+
+
+
+
+

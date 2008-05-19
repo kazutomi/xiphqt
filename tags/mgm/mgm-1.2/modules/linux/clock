@@ -1,0 +1,4 @@
+# -*-Perl-*-
+my$ret=do "$main::moddir/share/clock";
+die ($@) unless (defined($ret));
+$ret;
