@@ -1,0 +1,90 @@
+<title>  xiph.org: MGM manual </title>
+
+<STYLE>
+<!--
+        BODY  {font-family: Verdana, Arial, Helvetica; 
+               font-size: 12pt;
+               background-color: #ffffff}
+-->
+</STYLE>
+
+<body bgcolor="#ffffff" link="#208b8b" vlink="#000080">
+
+<p align=center><img src="mgm-small.gif"><br>
+[ <a href="index.html">home</a> | <a href="faq.html">FAQ</a> | <a href="down.html">download</a> | <a href="trouble.html">troubleshooting</a> | <a href="docs.html">manual</a> | <a href="http://www.xiph.org/cvs.html">cvs</a> | <a href="mail.html">mailing lists</a> ]<p>
+<hr>
+
+<h1>Module: battery</h1>
+
+The battery module watches the state of a portable computer's battery
+charge, providing a bargraph readout of charge remaining.  Normally,
+the bargraph uses a fixed 100% scale and a green bar.  Below 30%
+charge, the bar is changed to yellow.  Below 8%, the bar is changed to
+red and the default text changes to read 'battery low'.<p>
+
+<h2>Current platforms</h2>
+Linux<p>
+
+<h2>Instances</h2>
+single only
+
+<h2>additional resources</h2>
+lowbackground, lowforeground, lowlabel, midbackground, midforeground<p>
+
+Below 30%, the bar is reconfigured, by default using a yellow bar and
+the normal <a href=r-litforeground.html>litforeground</a>.
+'midbackground' and 'midforeground' may be used to configure the
+colors.  Similarly, below 8%, the bar normally turns red with white
+text.  'lowforeground' and 'lowbackground' configure these colors.
+Below 8%, the bar text is also changed; 'lowlabel' may set this text
+just as <a href=r-label.html>label</a> sets the text for 8% and above.<p>
+
+<h2>Resource defaults</h2>
+
+Resource defaults explicitly altered from the global defaults by this
+module:
+
+<ul>
+<li>label: battery
+<li>litbackground: #60c060
+<li>lowbackground: #ff4040
+<li>lowforeground: #ffffff
+<li>lowlabel: battery low
+<li>midbackground: #d0d060
+<li>midforeground: same as litforeground
+<li>order: 201
+<li>scalelenadj: 100
+<li>scalerefresh:10000
+<li>scalereturn:1
+<li>scalewidadj: 80
+</ul>
+
+
+<h2>Possible enhancements</h2>
+
+AC on/offline as well as charging status is also available from
+/proc/apm; battery should be enhanced to display these as well.<p>
+
+<hr>
+<a href="http://www.xiph.org/">
+<img src="white-xifish.gif" align=left border=0>
+</a>
+<p>
+<font size=-2 color=#505050>
+
+MGM will not get your whites whiter or your colors brighter.  It will,
+however, sit there and look spiffy while sucking down a major
+honking wad of RAM.<p>
+
+MGM, Xiphophorus and their logos are trademarks (tm) of
+<a href="http://www.xiph.org/">Xiphophorus</a>.  These pages are
+copyright (C) 1994-1999 Xiphophorus. All rights reserved.<p>
+
+</body>
+
+
+
+
+
+
+
