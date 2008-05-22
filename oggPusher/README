@@ -1,0 +1,6 @@
+
+oggPusher http://code.google.com/soc/2008/xiph/appinfo.html?csaid=52F0B5E8C1337BE
+
+OggPusher is a proposed browser extension for converting ffmpeg supported formats of video to ogg format files. A Gui which provides the interface for uploading files, and then shows feedback how much of the file is uploaded. In case of resuming the feedback can be obtained through a XMLHttpRequest call. Server implementation of zero config or Resume functionality is expected. 
+
+	
