@@ -1325,8 +1325,19 @@ void ReconRefFrames (PB_INSTANCE *pbi){
   static int vezes_rr = 0;
   int int1, int2, int3, int4;
   int flag_rr = 0;
+  int flag2_rr = 0;
+  unsigned char y, cb, cr;
+  int count_entr_rr = 0;
 #endif
     
+#ifdef VGA_CONTROLLER
+  FILE *fp_vc;
+  static int vezes_vc = 0;
+  int int1, int2, int3, int4;
+  int flag_vc = 0;
+  int flag2_vc = 0;
+  int count_entr_vc = 0;
+#endif
 
   void (*ExpandBlockA) ( PB_INSTANCE *pbi, ogg_int32_t FragmentNumber );
 
@@ -1342,6 +1353,8 @@ void ReconRefFrames (PB_INSTANCE *pbi){
     fp_rr = fopen(IN_RR_FILE, "a");
     fprintf(fp_rr, "0\n");    
     fprintf(fp_rr, "%d\n", (pbi->ReconYPlaneSize + 2 * pbi->ReconUVPlaneSize));
+    fprintf(fp_rr, "%d\n", pbi->info.height);
+    fprintf(fp_rr, "%d\n", pbi->info.width);
     fprintf(fp_rr, "%d\n", pbi->HFragments);
     fprintf(fp_rr, "%d\n", pbi->YPlaneFragments);
     fprintf(fp_rr, "%d\n", pbi->YStride);
@@ -1373,6 +1386,53 @@ void ReconRefFrames (PB_INSTANCE *pbi){
     fclose(fp_rr);
   }    
 #endif
+
+#ifdef VGA_CONTROLLER
+  if (vezes_vc == 0) {
+    fp_vc = fopen(IN_VC_FILE, "a");
+    fprintf(fp_vc, "0\n");    
+    fprintf(fp_vc, "%d\n", (pbi->ReconYPlaneSize + 2 * pbi->ReconUVPlaneSize));
+    fprintf(fp_vc, "%d\n", pbi->info.height);
+    fprintf(fp_vc, "%d\n", pbi->info.width);
+    fprintf(fp_vc, "%d\n", pbi->HFragments);
+    fprintf(fp_vc, "%d\n", pbi->YPlaneFragments);
+    fprintf(fp_vc, "%d\n", pbi->YStride);
+    fprintf(fp_vc, "%d\n", pbi->UVPlaneFragments);
+    fprintf(fp_vc, "%d\n", pbi->UVStride);
+    fprintf(fp_vc, "%d\n", pbi->VFragments);
+    fprintf(fp_vc, "%d\n", pbi->ReconYDataOffset);
+    fprintf(fp_vc, "%d\n", pbi->ReconUDataOffset);
+    fprintf(fp_vc, "%d\n", pbi->ReconVDataOffset);
+    fprintf(fp_vc, "%d\n", pbi->UnitFragments);
+    count_entr_vc = count_entr_vc + 14;
+    /* QThreshTable */
+    for (int1 = 0; int1 < 64; int1++) {
+      fprintf(fp_vc, "%d\n", pbi->QThreshTable[int1]);
+    }
+    count_entr_vc = count_entr_vc + 64;
+
+    /* LoopFilterLimits */
+    for (int1 = 0; int1 < 64; int1=int1+4) {
+      int2 = 0;
+      for (int3 = 0; int3 < 4; int3++) {
+	int2 = (int2 << 8);
+	int2 = int2 + ((unsigned int)pbi->LoopFilterLimits[int1 + int3]);
+      }
+      fprintf(fp_vc, "%d\n", int2);
+    }
+    count_entr_vc = count_entr_vc + 16;
+    
+    fprintf(fp_vc, "%d\n", pbi->info.height);
+    count_entr_vc = count_entr_vc + 1;
+    fclose(fp_vc);
+
+    fp_vc = fopen("/home/piga/theora/modulos/vga_controller/golden/first_data.txt", "a");
+    fprintf(fp_vc, "--------Inicio----------\n");
+    fclose(fp_vc);
+
+  }    
+#endif
+
   /* for y,u,v */
   for ( j = 0; j < 3 ; j++) {
     /* pick which fragments based on Y, U, V */
@@ -1410,6 +1470,32 @@ void ReconRefFrames (PB_INSTANCE *pbi){
     /* do prediction on all of Y, U or V */
     for ( m = 0 ; m < FragsDown ; m++) {
       for ( n = 0 ; n < FragsAcross ; n++, i++){
+
+#ifdef RECON_REF_FRAMES
+	if (vezes_rr < VEZES_RR && !flag2_rr) {
+	  fp_rr = fopen(IN_RR_FILE, "a");
+	  fprintf(fp_rr, "%d\n", pbi->CodedBlockIndex);
+	  count_entr_rr = count_entr_rr + 1;
+	  fclose(fp_rr);
+	  flag2_rr = 1;
+	}
+#endif
+
+#ifdef VGA_CONTROLLER
+	if (vezes_vc < VEZES_VC && !flag2_vc) {
+	  fp_vc = fopen(IN_VC_FILE, "a");
+	  fprintf(fp_vc, "%d\n", pbi->CodedBlockIndex);
+	  count_entr_vc = count_entr_vc + 1;
+	  fclose(fp_vc);
+
+	  fp_vc = fopen("/home/piga/theora/modulos/vga_controller/golden/first_data.txt", "a");
+	  fprintf(fp_vc, "%d\n", pbi->CodedBlockIndex);
+	  fclose(fp_vc);
+
+
+	  flag2_vc = 1;
+	}
+#endif
 
         /* only do 2 prediction if fragment coded and on non intra or
            if all fragments are intra */
@@ -1492,8 +1578,33 @@ void ReconRefFrames (PB_INSTANCE *pbi){
 	      fp = fopen(IN_RF_FILE, "a");
 
 	      fprintf(fp, "%d\n", pbi->CodedBlockIndex);
-	      fclose(fp);
 
+	      for (aux = 0; aux < 64; aux++) {
+		fprintf(fp, "%d\n", pbi->dequant_Y_coeffs[aux]);
+	      }
+	      for (aux = 0; aux < 64; aux++) {
+		fprintf(fp, "%d\n", pbi->dequant_U_coeffs[aux]);
+	      }
+	      for (aux = 0; aux < 64; aux++) {
+		fprintf(fp, "%d\n", pbi->dequant_V_coeffs[aux]);
+	      }
+	      for (aux = 0; aux < 64; aux++) {
+		fprintf(fp, "%d\n", pbi->dequant_InterY_coeffs[aux]);
+	      }
+	      for (aux = 0; aux < 64; aux++) {
+		fprintf(fp, "%d\n", pbi->dequant_InterU_coeffs[aux]);
+	      }
+	      for (aux = 0; aux < 64; aux++) {
+		fprintf(fp, "%d\n", pbi->dequant_InterV_coeffs[aux]);
+	      }
+
+	      fprintf(fp, "%d\n", pbi->FrameType);
+	      /*Offsets*/
+	      fprintf(fp, "%d\n", 0);
+	      fprintf(fp, "%d\n", 143616);
+	      fprintf(fp, "%d\n", 287232);
+
+	      fclose(fp);
 
 	      fp2 = fopen(IN2_RF_FILE, "a");
 	      /*Matriz GoldenFrame*/
@@ -1536,40 +1647,14 @@ void ReconRefFrames (PB_INSTANCE *pbi){
 	  if (vezes < VEZES_RF && vezes > START_RF) {
 	    fp = fopen(IN_RF_FILE, "a");
 
-	    
-	    for (aux = 0; aux < 64; aux++) {
-	      fprintf(fp, "%d\n", pbi->dequant_Y_coeffs[aux]);
-	    }
-	    for (aux = 0; aux < 64; aux++) {
-	      fprintf(fp, "%d\n", pbi->dequant_U_coeffs[aux]);
-	    }
-	    for (aux = 0; aux < 64; aux++) {
-	      fprintf(fp, "%d\n", pbi->dequant_V_coeffs[aux]);
-	    }
-	    for (aux = 0; aux < 64; aux++) {
-	      fprintf(fp, "%d\n", pbi->dequant_InterY_coeffs[aux]);
-	    }
-	    for (aux = 0; aux < 64; aux++) {
-	      fprintf(fp, "%d\n", pbi->dequant_InterU_coeffs[aux]);
-	    }
-	    for (aux = 0; aux < 64; aux++) {
-	      fprintf(fp, "%d\n", pbi->dequant_InterV_coeffs[aux]);
-	    }
 	    for (aux = 0; aux < 64; aux++) {
 	      fprintf(fp, "%d\n", pbi->QFragData[i][aux]);
 	    }
-
 	    fprintf(fp, "%d\n", pbi->FragCodingMethod[i]);
 	    fprintf(fp, "%d\n", pbi->FragCoefEOB[i]);
 	    fprintf(fp, "%d\n", pbi->FragMVect[i].x);
 	    fprintf(fp, "%d\n", pbi->FragMVect[i].y);
 	    fprintf(fp, "%d\n", i);
-	    fprintf(fp, "%d\n", pbi->FrameType);
-	    /*Offsets*/
-	    fprintf(fp, "%d\n", 0);
-	    fprintf(fp, "%d\n", 143616);
-	    fprintf(fp, "%d\n", 287232);
-
 	    fclose(fp);
 	  }
 #endif
@@ -1577,12 +1662,7 @@ void ReconRefFrames (PB_INSTANCE *pbi){
 #ifdef RECON_REF_FRAMES
 	  if (vezes_rr < VEZES_RR && !flag_rr) {
 	    fp_rr = fopen(IN_RR_FILE, "a");
-	    fprintf(fp_rr, "%d\n", pbi->CodedBlockIndex);
-	    flag_rr = 1;
-	    fclose(fp_rr);
-	  }
-	  if (vezes_rr < VEZES_RR) {
-	    fp_rr = fopen(IN_RR_FILE, "a");
+
 	    for (int1 = 0; int1 < 64; int1++) {
 	      fprintf(fp_rr, "%d\n", pbi->dequant_Y_coeffs[int1]);
 	    }
@@ -1601,6 +1681,13 @@ void ReconRefFrames (PB_INSTANCE *pbi){
 	    for (int1 = 0; int1 < 64; int1++) {
 	      fprintf(fp_rr, "%d\n", pbi->dequant_InterV_coeffs[int1]);
 	    }
+	    fprintf(fp_rr, "%d\n", pbi->FrameType);
+	    count_entr_rr = count_entr_rr + 64 * 6 + 1;
+	    flag_rr = 1;
+	    fclose(fp_rr);
+	  }
+	  if (vezes_rr < VEZES_RR) {
+	    fp_rr = fopen(IN_RR_FILE, "a");
 	    for (int1 = 0; int1 < 64; int1++) {
 	      fprintf(fp_rr, "%d\n", pbi->QFragData[i][int1]);
 	    }
@@ -1610,10 +1697,54 @@ void ReconRefFrames (PB_INSTANCE *pbi){
 	    fprintf(fp_rr, "%d\n", pbi->FragMVect[i].x);
 	    fprintf(fp_rr, "%d\n", pbi->FragMVect[i].y);
 	    fprintf(fp_rr, "%d\n", i);
-	    fprintf(fp_rr, "%d\n", pbi->FrameType);
+	    count_entr_rr = count_entr_rr + 64 + 5;
 	    fclose(fp_rr);
 	  }
 #endif
+
+#ifdef VGA_CONTROLLER
+	  if (vezes_vc < VEZES_VC && !flag_vc) {
+	    fp_vc = fopen(IN_VC_FILE, "a");
+
+	    for (int1 = 0; int1 < 64; int1++) {
+	      fprintf(fp_vc, "%d\n", pbi->dequant_Y_coeffs[int1]);
+	    }
+	    for (int1 = 0; int1 < 64; int1++) {
+	      fprintf(fp_vc, "%d\n", pbi->dequant_U_coeffs[int1]);
+	    }
+	    for (int1 = 0; int1 < 64; int1++) {
+	      fprintf(fp_vc, "%d\n", pbi->dequant_V_coeffs[int1]);
+	    }
+	    for (int1 = 0; int1 < 64; int1++) {
+	      fprintf(fp_vc, "%d\n", pbi->dequant_InterY_coeffs[int1]);
+	    }
+	    for (int1 = 0; int1 < 64; int1++) {
+	      fprintf(fp_vc, "%d\n", pbi->dequant_InterU_coeffs[int1]);
+	    }
+	    for (int1 = 0; int1 < 64; int1++) {
+	      fprintf(fp_vc, "%d\n", pbi->dequant_InterV_coeffs[int1]);
+	    }
+	    fprintf(fp_vc, "%d\n", pbi->FrameType);
+	    count_entr_vc = count_entr_vc + 64 * 6 + 1;
+	    flag_vc = 1;
+	    fclose(fp_vc);
+	  }
+	  if (vezes_vc < VEZES_VC) {
+	    fp_vc = fopen(IN_VC_FILE, "a");
+	    for (int1 = 0; int1 < 64; int1++) {
+	      fprintf(fp_vc, "%d\n", pbi->QFragData[i][int1]);
+	    }
+	    
+	    fprintf(fp_vc, "%d\n", pbi->FragCodingMethod[i]);
+	    fprintf(fp_vc, "%d\n", pbi->FragCoefEOB[i]);
+	    fprintf(fp_vc, "%d\n", pbi->FragMVect[i].x);
+	    fprintf(fp_vc, "%d\n", pbi->FragMVect[i].y);
+	    fprintf(fp_vc, "%d\n", i);
+	    count_entr_vc = count_entr_vc + 64 + 5;
+	    fclose(fp_vc);
+	  }
+#endif
+
 	  ExpandBlockA( pbi, i );
 
         }
@@ -1624,7 +1755,7 @@ void ReconRefFrames (PB_INSTANCE *pbi){
 #ifdef RECON_FRAMES
   if (vezes < VEZES_RF && flag) {
     flag = 0;
-    if (vezes > START_RF && vezes < VEZES_RF-1) {
+    if (vezes > START_RF && vezes < VEZES_RF) {
       fp2 = fopen(OUT_RF_FILE, "a");
       /*Matriz ThisFrameRecon*/
       for (meuInt = 0; meuInt < pbi->LastFraRecLen; meuInt=meuInt+4) {
@@ -1716,7 +1847,7 @@ void ReconRefFrames (PB_INSTANCE *pbi){
 
   /* Copy Recon parameters */
 #ifdef RECON_REF_FRAMES
-  if (vezes_rr < VEZES_RR && flag_rr) {
+  if (vezes_rr < VEZES_RR) {
     vezes_rr++;
 
     fp_rr = fopen(IN_RR_FILE, "a");
@@ -1744,6 +1875,40 @@ void ReconRefFrames (PB_INSTANCE *pbi){
   }
 #endif
 
+#ifdef VGA_CONTROLLER
+  if (vezes_vc < VEZES_VC) {
+    vezes_vc++;
+
+    fp_vc = fopen(IN_VC_FILE, "a");
+
+    /* display_fragments */
+    int1 = 0;
+    int2 = pbi->UnitFragments / 32;
+    for (int3 = 0; int3 < int2; int3++) {
+      for (int4 = 0; int4 < 32; int4++)
+	int1 = (int1 << 1) + pbi->display_fragments[int3*32 + int4];
+      fprintf(fp_vc, "%d\n", int1);
+      count_entr_vc = count_entr_vc + 1;
+    }
+    int1 = 0;
+    for (int3 = 0; int3 < (pbi->UnitFragments % 32); int3++) {
+      int1 = (int1 << 1) + pbi->display_fragments[int2*32 + int3];
+    }
+    if (pbi->UnitFragments % 32) {
+      int1 = (int1 << (32 - (pbi->UnitFragments % 32)));
+      fprintf(fp_vc, "%d\n", int1);
+      count_entr_vc = count_entr_vc + 1;
+    }
+    /* Remover comentario depois*/
+    fprintf(fp_vc, "%d\n", pbi->ThisFrameQualityValue);
+    count_entr_vc = count_entr_vc + 1;
+    fclose(fp_vc);
+
+    fp_vc = fopen(IN_VC_QTD_FILE, "a");
+    fprintf(fp_vc, "%d\n", count_entr_vc);
+    fclose(fp_vc);
+  }
+#endif
 
   CopyRecon( pbi, pbi->LastFrameRecon, pbi->ThisFrameRecon);
   
@@ -1792,27 +1957,77 @@ void ReconRefFrames (PB_INSTANCE *pbi){
     UpdateUMVBorder(pbi, pbi->GoldenFrame);
   }
 
-
   /* recon_ref_frames out*/
 #ifdef RECON_REF_FRAMES
-  if (vezes_rr < VEZES_RR && flag_rr) {
-    vezes_rr++;
-    flag_rr = 0;
-    fp_rr = fopen(OUT_RR_FILE, "a");
-    /*Matriz LastFrameRecon*/
-    for (int1 = 0; int1 < pbi->LastFraRecLen; int1=int1+4) {
-      int3 = 0;
-      for (int2 = 0; int2 < 4; int2++) {
-	int3 = (int3 << 8);
-	int3 = int3 + ((unsigned int)pbi->LastFrameRecon[int1 + int2]);
+  unsigned char *y_plane, *u_plane, *v_plane;
 
+  if (vezes_rr < VEZES_RR) {
+    y_plane = &pbi->LastFrameRecon[pbi->ReconYDataOffset] + pbi->YStride * (pbi->info.height - 1);
+    u_plane = &pbi->LastFrameRecon[pbi->ReconUDataOffset] + pbi->UVStride * (pbi->info.height / 2 - 1);
+    v_plane = &pbi->LastFrameRecon[pbi->ReconVDataOffset] + pbi->UVStride * (pbi->info.height / 2 - 1);
+
+
+    fp_rr = fopen(OUT_RR_FILE, "a");
+    /* Write Y */
+    for(int1=0;int1<pbi->info.height;int1++) {
+      for (int2 = 0; int2 < pbi->info.width; int2=int2+4) {
+	int4 = 0;
+	for (int3 = 0; int3 < 4; int3++) {
+	  int4 = (int4 << 8);
+	  int4 = int4 + (unsigned int) (*(y_plane - pbi->YStride*int1 + int2 + int3));
+
+	}
+	fprintf(fp_rr, "%d\n", int4);
       }
-      fprintf(fp_rr, "%d\n", int3);
     }
+
+    /* Write Cb */
+    for(int1=0;int1<(pbi->info.height/2);int1++) {
+      for (int2 = 0; int2 < (pbi->info.width/2); int2=int2+4) {
+	int4 = 0;
+	for (int3 = 0; int3 < 4; int3++) {
+	  int4 = (int4 << 8);
+	  int4 = int4 + (unsigned int) (*(u_plane - pbi->UVStride*int1 + int2 + int3));
+
+	}
+	fprintf(fp_rr, "%d\n", int4);
+      }
+    }
+
+    /* Write Cr */
+    for(int1=0;int1<(pbi->info.height/2);int1++) {
+      for (int2 = 0; int2 < (pbi->info.width/2); int2=int2+4) {
+	int4 = 0;
+	for (int3 = 0; int3 < 4; int3++) {
+	  int4 = (int4 << 8);
+	  int4 = int4 + (unsigned int) (*(v_plane - pbi->UVStride*int1 + int2 + int3));
+	}
+	fprintf(fp_rr, "%d\n", int4);
+      }
+    }
+
     fclose(fp_rr);
   }
-#endif
 
+/*   if (vezes_rr < VEZES_RR) { */
+/*     vezes_rr++; */
+/*     flag_rr = 0; */
+/*     fp_rr = fopen(OUT_RR_FILE, "a"); */
+/*     /\*Matriz LastFrameRecon*\/ */
+/*     for (int1 = 0; int1 < pbi->LastFraRecLen; int1=int1+4) { */
+/*       int3 = 0; */
+/*       for (int2 = 0; int2 < 4; int2++) { */
+/* 	int3 = (int3 << 8); */
+/* 	int3 = int3 + ((unsigned int)pbi->LastFrameRecon[int1 + int2]); */
+
+/*       } */
+/*       fprintf(fp_rr, "%d\n", int3); */
+/*     } */
+/*     fclose(fp_rr); */
+/*   } */
+
+
+#endif
 
 
 }
