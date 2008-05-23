@@ -1,4 +1,3 @@
-
 library std;
 library ieee;
 library work;
@@ -170,6 +169,7 @@ begin  -- a_ReconFrames
 
 
   process(clk)
+    variable QuantDispFragsIsZero : std_logic;
   begin
    
     if (clk'event and clk = '1') then
@@ -236,7 +236,9 @@ begin  -- a_ReconFrames
                     -- QuantDispFrags is equal to pbi->CodedBlockIndex of the software
                     read_state <= stt_read_Others;
                     QuantDispFrags <= unsigned(in_data(LG_MAX_SIZE*2-1 downto 0));
-
+                    if (in_data(LG_MAX_SIZE*2-1 downto 0) = 0) then
+                      state <= stt_Proc;
+                    end if;
                   when others =>
                     -----------------------------------------------------------
                     -- Forward to ExpandBlock the parameters below that are
@@ -307,11 +309,17 @@ begin  -- a_ReconFrames
               end if;
 
             when stt_Proc =>
-              if (eb_done = '1') then
+              if (QuantDispFrags = 0) then
+                QuantDispFragsIsZero := '1';
+              else
+                QuantDispFragsIsZero := '0';
+              end if;
+              
+              if (eb_done = '1' or QuantDispFragsIsZero = '1') then
                 out_eb_done <= '1';
                 countExpand <= countExpand + 1;
                 state <= stt_Read;
-                if (countExpand = TO_INTEGER(QuantDispFrags-1)) then
+                if (countExpand = TO_INTEGER(QuantDispFrags-1) or QuantDispFragsIsZero = '1') then
                   count <= 9;
                   read_state <= stt_read_QuantDispFrags;
                   countExpand <= to_unsigned(0, LG_MAX_SIZE*2);

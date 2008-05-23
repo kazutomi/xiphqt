@@ -258,6 +258,9 @@ architecture a_ReconRefFrames of ReconRefFrames is
   signal CountCopies  : std_logic;
   signal CountUpdates : std_logic;
   signal count : integer range 0 to 2097151;
+
+  signal count_lines   : integer range 0 to 1023;
+  signal count_columns : integer range 0 to 1023;
   
   constant KEY_FRAME : unsigned(7 downto 0) := "00000000";
 
@@ -269,28 +272,42 @@ architecture a_ReconRefFrames of ReconRefFrames is
   
   
   type forward_state_t is (stt_rec_framesize,
-                        stt_forward_uniq_common,
-                        stt_forward_uniq_cr_lf,
-                        stt_forward_uniq_lf,
-                        stt_forward_uniq_uu,
-                        stt_forward_uniqperframe_rf,
-                        stt_frametype,
-                        stt_forward_golden_ofs_rf,
-                        stt_forward_last_ofs_rf,
-                        stt_forward_this_ofs_rf,
-                        stt_forward_rf,
-                        stt_forward_dispfrag,
-                        stt_forward_source_ofs_cr,
-                        stt_forward_dest_ofs_cr,
-                        stt_forward_lf,
-                        stt_forward_offset_lf,
-                        stt_forward_offset_uu,
-                        stt_forward_dispfrag_golden,
-                        stt_forward_none);
+                           stt_rec_height,
+                           stt_rec_width,
+                           stt_forward_uniq_common,
+                           stt_forward_uniq_cr_lf,
+                           stt_forward_uniq_lf,
+                           stt_forward_uniq_uu,
+                           stt_forward_uniqperframe_rf,
+                           stt_frametype,
+                           stt_forward_golden_ofs_rf,
+                           stt_forward_last_ofs_rf,
+                           stt_forward_this_ofs_rf,
+                           stt_forward_rf,
+                           stt_forward_dispfrag,
+                           stt_forward_source_ofs_cr,
+                           stt_forward_dest_ofs_cr,
+                           stt_forward_lf,
+                           stt_forward_offset_lf,
+                           stt_forward_offset_uu,
+                           stt_forward_dispfrag_golden,
+                           stt_forward_none);
   signal forward_state : forward_state_t;
 
   type write_state_t is (stt_write1, stt_write2, stt_write3);
   signal write_state : write_state_t;
+
+  type plane_write_state_t is (stt_plane_write_Y, stt_plane_write_Cb, stt_plane_write_Cr);
+  signal plane_write_state : plane_write_state_t;
+
+-- Fragment Parameters
+  signal YStride          : unsigned(LG_MAX_SIZE+1 downto 0);
+  signal UVStride         : unsigned(LG_MAX_SIZE   downto 0);
+  signal ReconYDataOffset : unsigned(MEM_ADDR_WIDTH-1 downto 0);
+  signal ReconUDataOffset : unsigned(MEM_ADDR_WIDTH-1 downto 0);
+  signal ReconVDataOffset : unsigned(MEM_ADDR_WIDTH-1 downto 0);
+  signal video_height     : unsigned(9 downto 0);
+  signal video_width      : unsigned(9 downto 0);
 
   signal s_out_valid : std_logic;
   signal s_out_data : signed(31 downto 0);
@@ -385,6 +402,12 @@ begin  -- a_ReconRefFrames
     -- Unique Parameters
     -----------------------------------------------------------------------------    
     if (forward_state = stt_rec_framesize) then
+      s_in_request <= '1';
+
+    elsif (forward_state = stt_rec_height) then
+      s_in_request <= '1';
+
+    elsif (forward_state = stt_rec_width) then
       s_in_request <= '1';
       
     elsif (forward_state = stt_forward_uniq_common) then
@@ -639,8 +662,7 @@ begin  -- a_ReconRefFrames
       out_DtBuf_valid <= '0';
       out_DtBuf_addr <= x"00000";
       out_DtBuf_data <= x"00000000";
-      in_rr_DtBuf_request <= '0';
-      
+
     end if;
 
     if (Reset_n = '0') then
@@ -663,7 +685,6 @@ begin  -- a_ReconRefFrames
       in_cr_DtBuf_request <= '0';
       in_lf_DtBuf_request <= '0';
       in_rf_DtBuf_request <= '0';
-      in_rr_DtBuf_request <= '0';
     end if;
   end process;
 
@@ -710,8 +731,8 @@ begin  -- a_ReconRefFrames
           -- The first parameter is FrameType
           FrameSize <= unsigned(in_data(MEM_ADDR_WIDTH-1 downto 0));
 
-          --   This is a hack. On FPGA when reset the module I don't know explain
-          -- why reads the first value as zero.
+          --   This is a hack. On FPGA when reset the module, I don't know explain
+          -- why, reads the first value as zero.
           --   Here we are ignoring this zero value. So the first valid value is
           -- the second one that the module reads. The problem happens on an
           -- Altera Stratix II.
@@ -719,9 +740,19 @@ begin  -- a_ReconRefFrames
             count <= 1;
           else
             count <= 0;
-            forward_state <= stt_forward_none;
-            state <= stt_CleanBuffer;
+            forward_state <= stt_rec_height;
           end if;
+
+          
+        elsif (forward_state = stt_rec_height) then
+          video_height <= unsigned(in_data(9 downto 0));
+          forward_state <= stt_rec_width;
+
+        elsif (forward_state = stt_rec_width) then
+          video_width <=  unsigned(in_data(9 downto 0));
+          count <= 0;
+          forward_state <= stt_forward_none;
+          state <= stt_CleanBuffer;
 
           
         elsif (forward_state = stt_forward_uniq_common) then
@@ -753,7 +784,20 @@ begin  -- a_ReconRefFrames
           -- if count = 8 then read and forward the pbi->ReconVDataOffset value
           ---------------------------------------------------------------------
           count <= count + 1;
-          if (count = 8) then
+          if (count = 2) then
+            YStride <= unsigned(in_data(LG_MAX_SIZE+1 downto 0));
+
+          elsif (count = 4) then
+            UVStride <= unsigned(in_data(LG_MAX_SIZE   downto 0));
+
+          elsif (count = 6) then
+            ReconYDataOffset <= unsigned(in_data(MEM_ADDR_WIDTH-1 downto 0));
+
+          elsif (count = 7) then
+            ReconUDataOffset <= unsigned(in_data(MEM_ADDR_WIDTH-1 downto 0));
+
+          elsif (count = 8) then
+            ReconVDataOffset <= unsigned(in_data(MEM_ADDR_WIDTH-1 downto 0));
             forward_state <= stt_forward_uniq_cr_lf;
             count <= 0;
           end if;
@@ -814,7 +858,14 @@ begin  -- a_ReconRefFrames
           -- For Count = 321 to Count = 384 forward the
           -- dequant_InterV_coeffs matrix to ReconFrames
           count <= count + 1;
-          if (count = 384) then
+          if (Count = 0) then
+            if (in_data(LG_MAX_SIZE*2-1 downto 0) = 0) then
+              forward_state <= stt_forward_none;
+              state <= stt_ReconFrames;
+              count <= 0;
+              FrameType <= (others => '1');
+            end if;
+          elsif (count = 384) then
             forward_state <= stt_frametype;
             count <= 0;
           end if;
@@ -961,18 +1012,20 @@ begin  -- a_ReconRefFrames
     begin
       if (uu_done = '1') then
         assert false report "UpdateUMV Concluido" severity note;
-         count <= 0;
-         state <= stt_WriteOut;
-         write_state <= stt_write1;
-         forward_state <= stt_forward_none;
-         CountUpdates <= '0';
-         if (FrameType = KEY_FRAME and CountUpdates = '0') then
-           FrameOfsAux <= GoldenFrameOfs;
-           FrameOfsAuxSrc <= LastFrameReconOfs;
-           forward_state <= stt_forward_dispfrag_golden;
-           state <= stt_Forward;
-           CountUpdates <= '1';
-         end if;
+        count_lines <= 0;
+        count_columns <= 0;
+        state <= stt_WriteOut;
+        plane_write_state <= stt_plane_write_Y;
+        write_state <= stt_write1;
+        forward_state <= stt_forward_none;
+        CountUpdates <= '0';
+        if (FrameType = KEY_FRAME and CountUpdates = '0') then
+          FrameOfsAux <= GoldenFrameOfs;
+          FrameOfsAuxSrc <= LastFrameReconOfs;
+          forward_state <= stt_forward_dispfrag_golden;
+          state <= stt_Forward;
+          CountUpdates <= '1';
+        end if;
       end if;
     end procedure UpdateUMV;
 
@@ -984,20 +1037,67 @@ begin  -- a_ReconRefFrames
         out_rr_DtBuf_request <= '1';
         out_rr_DtBuf_addr <= out_rr_DtBuf_addr + 1;
 
-        count <= count + 4;
-        if (count = 0) then
-          assert false report "Writing Data" severity note;
-          out_rr_DtBuf_addr <= SHIFT_RIGHT(LastFrameReconOfs, 2);
-        else
-          if (count = FrameSize) then
-            count <= 0;
-            forward_state <= stt_forward_uniqperframe_rf;
-            state <= stt_Forward;
-            write_state <= stt_write1;
-            out_rr_DtBuf_request <= '0';
-            out_rr_DtBuf_addr <= SHIFT_RIGHT(LastFrameReconOfs, 2);
-          end if;
-        end if;
+        count_columns <= count_columns + 4;
+        case plane_write_state is
+
+          when stt_plane_write_Y =>
+            if (count_columns = 0) then
+              out_rr_DtBuf_addr <= resize(SHIFT_RIGHT(LastFrameReconOfs + ReconYDataOffset + YStride * (video_height - 1) - YStride*(count_lines), 2), MEM_ADDR_WIDTH);
+
+            elsif (count_columns = video_width - 4) then
+              count_columns <= 0;
+              count_lines <= count_lines + 1;
+              if (count_lines = video_height - 1) then
+                count_lines <= 0;
+                plane_write_state <= stt_plane_write_Cb;
+              end if;
+            end if;
+
+          when stt_plane_write_Cb =>
+            if (count_columns = 0) then
+              out_rr_DtBuf_addr <= resize(SHIFT_RIGHT(LastFrameReconOfs + ReconUDataOffset + UVStride * ((video_height/2) - 1) - UVStride*(count_lines), 2), MEM_ADDR_WIDTH);
+              
+            elsif (count_columns = (video_width / 2) - 4) then
+              count_columns <= 0;
+              count_lines <= count_lines + 1;
+              if (count_lines = (video_height / 2) - 1) then
+                count_lines <= 0;
+                plane_write_state <= stt_plane_write_Cr;
+              end if;
+            end if;
+    
+          when stt_plane_write_Cr =>
+            if (count_columns = 0) then
+              out_rr_DtBuf_addr <= resize(SHIFT_RIGHT(LastFrameReconOfs + ReconVDataOffset + UVStride * ((video_height/2) - 1) - UVStride*(count_lines), 2), MEM_ADDR_WIDTH);
+              
+            elsif (count_columns = (video_width / 2) - 4) then
+              count_columns <= 0;
+              count_lines <= count_lines + 1;
+              if (count_lines = (video_height / 2) - 1) then
+                ---------------------------------------------------------------
+                -- Because count_columns, by construction, is always dividable by
+                -- 4, count_columns = 1 is used as a flag that indicate we have
+                -- wrote all the visible frame
+                ---------------------------------------------------------------
+                count_columns <= 1;
+                count_lines <= 0;
+              end if;
+
+            -------------------------------------------------------------------
+            -- If we have already wrote all the visible frame we are done
+            -------------------------------------------------------------------
+            elsif (count_columns = 1) then
+--               count_leo <= count_leo + 1;
+--               assert count_leo /= 2 report "Dois frames" severity FAILURE;
+              assert false report "Teste4" severity note;
+              count_columns <= 0;
+              forward_state <= stt_forward_uniqperframe_rf;
+              plane_write_state <= stt_plane_write_Y;
+              state <= stt_Forward;
+              write_state <= stt_write1;
+              out_rr_DtBuf_request <= '0';
+            end if;
+        end case;
 
       elsif (write_state = stt_write2) then
         if (out_rr_DtBuf_valid = '1') then
@@ -1005,6 +1105,7 @@ begin  -- a_ReconRefFrames
           out_rr_DtBuf_request <= '0';
           write_state <= stt_write3;
         end if;
+        
       else
         s_out_valid <= '1';
         out_data <= s_out_data;
@@ -1022,7 +1123,8 @@ begin  -- a_ReconRefFrames
         cr_enable <= '1';
         lf_enable <= '1';
         uu_enable <= '1';
-        
+
+        plane_write_state <= stt_plane_write_Y;
         write_state <= stt_write1;
         forward_state <= stt_rec_framesize;
         state <= stt_Forward;
