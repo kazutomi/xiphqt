@@ -48,12 +48,12 @@
 				40-160    (stereo)
 			</td>
 			<td>
-				5.8 or lower   (44.1 kHz)<br/>
-				5.3 or lower   (48 kHz)
+				&lt;5.8 (44.1 kHz)<br/>
+				&lt;5.3 (48 kHz)
 			</td>
 			<td>
-				8.7 or lower   (44.1 kHz)<br/>
-				8.0 or lower   (48 kHz)
+				&lt;8.7 (44.1 kHz)<br/>
+				&lt;8.0 (48 kHz)
 			</td>
 			<td>yes</td>
 			<td>yes</td>
