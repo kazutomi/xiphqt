@@ -3,11 +3,12 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 	<head>
 		<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
-		<title>Streaming directory</title>
+		<meta name="description" value="MP3 streams, webradios, Ogg Vorbis streams... If you want to listen to music, free music, this stream directory is the right place for you. Icecast YP is just like Shoutcast.com, featuring radio listings." />
+		<title>Streaming directory -- streams &amp; radios</title>
 		<link rel="icon" href="http://www.icecast.org/favicon.ico" type="image/x-icon"/>
 		<link rel="shortcut icon" href="http://www.icecast.org/favicon.ico" type="image/x-icon"/>
 		<link rel="stylesheet" href="http://www.xiph.org/css/screen.css" type="text/css"/>
-		<link rel="stylesheet" href="/css/style.css" type="text/css" />
+		<link rel="stylesheet" href="/css/style.css?20080525" type="text/css" />
 	</head>
 	<body>
 		<div id="xiphbar_outer" style="@import url(/common/xiphbar.css);">

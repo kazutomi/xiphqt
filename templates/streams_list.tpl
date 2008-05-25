@@ -7,7 +7,7 @@
 {/if}
 							<td class="description">
 								<p class="stream-name">
-									<span class="name">{if $stream->getUrl() != ''}<a href="{if substr($stream->getUrl(), 0, 4) == 'http'}{$stream->getUrl()|escape}{else}http://{$stream->getUrl()|escape}{/if}">{/if}{$stream->getStreamName()|escape}{if $stream->getUrl() != ''}</a>{/if}</span>
+									<span class="name">{if $stream->getUrl() != ''}<a href="{if substr($stream->getUrl(), 0, 4) == 'http'}{$stream->getUrl()|escape}{else}http://{$stream->getUrl()|escape}{/if}" onclick="javascript:pageTracker._trackPageview('/stream/website');">{/if}{$stream->getStreamName()|escape}{if $stream->getUrl() != ''}</a>{/if}</span>
 									<span class="listeners">[{$stream->getListeners()|intval}&nbsp;listener{if (($stream->getListeners()|intval) != 1)}s{/if}]</span>
 								</p>
 {*if $stream->getIcon()}
@@ -24,7 +24,7 @@
                                 <div class="stream-tags"><strong>Tags:</strong>
                                     <ul class="inline-tags">
 {foreach item=tag_name key=tag_id from=$tags}
-                                        <li><a href="{$root_url}/by_genre/{$tag_name|capitalize:true|escape}">{$tag_name|capitalize|escape}</a></li>
+                                        <li><a href="{$root_url}/by_genre/{$tag_name|capitalize:true|escape}" title="{$tag_name|capitalize:true|escape} radios">{$tag_name|capitalize:true|escape}</a></li>
 {/foreach}
                                     </ul>
                                 </div>
@@ -32,10 +32,10 @@
 							</td>
 							<td class="tune-in">
 							    <p class="format">Tune in:</p>
-								<p>[ <a href="{$root_url}/listen/{$stream->getId()}/listen.m3u" title="Listen to '{$stream->getStreamName()|truncate:20:"...":true|escape}'"{* class="tune-in-button"*}>M3U</a> | <a href="{$root_url}/listen/{$stream->getId()}/listen.xspf" title="Listen to '{$stream->getStreamName()|truncate:20:"...":true|escape}'"{* class="tune-in-button"*}>XSPF</a> ]</p>
+								<p>[ <a href="{$root_url}/listen/{$stream->getId()}/listen.m3u" title="Listen to '{$stream->getStreamName()|truncate:20:"...":true|escape}'"{* class="tune-in-button"*} onclick="javascript:pageTracker._trackPageview('/stream/listen/m3u');">M3U</a> | <a href="{$root_url}/listen/{$stream->getId()}/listen.xspf" title="Listen to '{$stream->getStreamName()|truncate:20:"...":true|escape}'"{* class="tune-in-button"*} onClick="javascript:pageTracker._trackPageview('/stream/listen/xspf');">XSPF</a> ]</p>
 {if $stream->getMediaTypeId() != ''}
 								<p class="format"{if $stream->getBitrate() != ''} title="{if is_numeric($stream->getBitrate())}{$stream->getBitrate()|intval} kbps{else}{$stream->getBitrate()}{/if}"{/if}>
-									{$stream->getMediaTypeId()|get_media_type}
+									<a href="{$root_url}/by_format/{$stream->getMediaTypeId()|get_media_type_url}" title="More {$stream->getMediaTypeId()|get_media_type} streams">{$stream->getMediaTypeId()|get_media_type}<span class="stream"> stream</span></a>
 									{*if (!empty($stream.channels) && is_numeric($stream.channels))}{if ($stream.channels == 1)}mono{elseif $stream.channels == 2}stereo{else}{$stream.channels} ch{/if}{/if*}
 								</p>
 {/if}
