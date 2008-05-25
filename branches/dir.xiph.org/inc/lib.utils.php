@@ -37,6 +37,7 @@ class utils
         {
                 $ip = $_SERVER['REMOTE_ADDR'];
         }
+	$ip = preg_replace('/^(([0-9]{1,3}\.){3}[0-9]{1,3}).*$/', '$1', $ip);
 
         return $ip;
     }
