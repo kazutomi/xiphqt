@@ -164,6 +164,12 @@ table.servers-list td.tune-in p.format {
 	font-size: 0.9em;
 }
 
+table.servers-list td.tune-in p.format span.stream {
+        position: absolute;
+        left: -999px;
+        width: 990px;
+}
+
 /* Tag list */
 .inline-tags {
     list-style-type: none;
