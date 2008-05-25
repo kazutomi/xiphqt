@@ -165,6 +165,7 @@ if (ENVIRONMENT != 'prod')
 		$tpl->assign('mc_debug', $memcache->log);
 	}
 }
+$tpl->assign("google_tag", "/search/freeform");
 $tpl->display('foot.tpl');
 
 ?>
