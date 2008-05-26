@@ -37,7 +37,7 @@
 				<uri>http://xiph.org</uri>
 			</address>
 		</author>
-		<date day="19" month="May" year="2008"/>
+		<date day="26" month="May" year="2008"/>
 		<area>Internet</area>
 		<keyword>I-D</keyword>
 		<keyword>Internet-Draft</keyword>
@@ -89,18 +89,22 @@
 			<t>These media types can optionally use the &quot;codecs&quot; parameter described in <xref target="RFC4281"/>.  Codecs encapsulated in Ogg require an 8 byte text identifier at the beginning of the first header page, hence a possible machine-readable method to identify the encapsulated codecs would be through this header.  The following table illustrates how those header values map into strings that SHOULD be used in the &quot;codecs&quot; parameter when dealing with Ogg media types.</t>
 			<figure>
 				<artwork><![CDATA[
-     Codec Identifier           | Codecs Parameter
+     Codec Identifier             | Codecs Parameter
     -----------------------------------------------------------
-     char[8]: '\x01vorbis'      | vorbis
-     char[8]: '\x80theora'      | theora
-     char[8]: 'Speex   '        | speex
-     char[8]: '\177FLAC'        | flac
-     char[8]: 'BBCD\0'          | dirac
-     char[8]: 'OggMIDI\0'       | midi
-     char[8]: 'CMML\0\0\0\0'    | cmml
-     char[8]: 'PCM     '        | pcm
-     char[8]: 'CELT    '        | celt
-     char[8]: 'kate\0\0\0\0'    | kate
+     char[5]: 'BBCD\0'            | dirac
+     char[5]: '\177FLAC'          | flac
+     char[7]: '\x80theora'        | theora
+     char[7]: '\x01vorbis'        | vorbis
+     char[8]: 'Speex   '          | speex
+     char[8]: 'OggMIDI\0'         | midi
+     char[8]: 'CMML\0\0\0\0'      | cmml
+     char[8]: '\211PNG\r\n\032\n' | png
+     char[8]: '\212MNG\r\n\032\n' | mng
+     char[8]: '\213JNG\r\n\032\n' | jng
+     char[8]: 'CELT    '          | celt
+     char[8]: 'PCM     '          | pcm
+     char[9]: '\x80kate\0\0\0\0'  | kate
+     char[9]: 'YUV4MPEG2'         | yuv4mpeg
 				]]></artwork>
 			</figure>
 			<t>Possible examples include:</t>
