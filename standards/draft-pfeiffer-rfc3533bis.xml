@@ -6,7 +6,7 @@
 <?rfc symrefs="yes" ?>
 <?rfc rfcedstyle="yes" ?>
 
-<rfc ipr="full3978" docName="draft-pfeiffer-rfc3533bis-00" obsoletes="3533" category="std" submissionType="IETF" xml:lang="en">
+<rfc ipr="full3978" docName="draft-pfeiffer-rfc3533bis-00" updates="3533" category="std" submissionType="IETF" xml:lang="en">
 	<front>
 		<title>The Ogg Encapsulation Format</title>
 		<author initials="S." surname="Pfeiffer" fullname="Silvia Pfeiffer">
