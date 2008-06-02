@@ -6,7 +6,7 @@
 <?rfc symrefs="yes" ?>
 <?rfc rfcedstyle="yes" ?>
 
-<rfc ipr="full3978" docName="draft-goncalves-rfc3534bis-06" obsoletes="3534" category="std" submissionType="IETF" xml:lang="en">
+<rfc ipr="full3978" docName="draft-goncalves-rfc3534bis-07" obsoletes="3534" category="std" submissionType="IETF" xml:lang="en">
 	<front>
 		<title>Ogg Media Types</title>
 		<author initials="I.E." surname="Goncalves" fullname="Ivo Emanuel Goncalves">
@@ -37,7 +37,7 @@
 				<uri>http://xiph.org</uri>
 			</address>
 		</author>
-		<date day="26" month="May" year="2008"/>
+		<date day="2" month="June" year="2008"/>
 		<area>Internet</area>
 		<keyword>I-D</keyword>
 		<keyword>Internet-Draft</keyword>
@@ -54,7 +54,7 @@
 		<section title="Introduction">
 			<t>This document describes media types for Ogg, a data encapsulation format defined by the Xiph.Org Foundation for public use.  Refer to &quot;Introduction&quot; in <xref target="RFC3533"/> and &quot;Overview&quot; in <xref target="Ogg"/> for background information on this container format.</t>
 			<t>Binary data contained in Ogg, such as Vorbis and Theora, has historically been interchanged using the application/ogg media type as defined by <xref target="RFC3534"/>.  This document obsoletes <xref target="RFC3534"/> and defines three media types for different types of content in Ogg to reflect this usage in the IANA media type registry, to foster interoperability by defining underspecified aspects, and to provide general security considerations.</t>
-			<t>The Ogg container format is known to contain <xref target="Theora"/> or <xref target="Dirac"/> video, <xref target="Speex"/> (narrow-band and wide-band speech), <xref target="Vorbis"/> or <xref target="FLAC"/> audio, and <xref target="CMML"/> timed text/metadata.  As Ogg encapsulates binary data, it is possible to include any other type of video, audio, image, text or, generally speaking, any time-continuously sampled data.</t>
+			<t>The Ogg container format is known to contain <xref target="Theora"/> or <xref target="Dirac"/> video, <xref target="Speex"/> (narrow-band and wide-band) speech, <xref target="Vorbis"/> or <xref target="FLAC"/> audio, and <xref target="CMML"/> timed text/metadata.  As Ogg encapsulates binary data, it is possible to include any other type of video, audio, image, text or, generally speaking, any time-continuously sampled data.</t>
 			<t>While raw packets from these data sources may be used directly by transport mechanisms that provide their own framing and packet-separation mechanisms (such as UDP datagrams or RTP), Ogg is a solution for stream based storage (such as files) and transport (such as TCP streams or pipes).  The media types defined in this document are needed to correctly identify such content when it is served over HTTP, included in multi-part documents, or used in other places where <xref target="RFC2045">media types</xref> are used.</t>
 		</section>
 		<section title="Changes Since RFC 3534">
@@ -86,7 +86,7 @@
 			<t>which are intended for common use and SHOULD be used when dealing with video or audio content respectively.  This document also obsoletes the <xref target="RFC3534"/> definition of application/ogg and marks it for complex data (e.g. multitrack visual, audio, textual and other time-continuously sampled data), which is not clearly video or audio data and thus not suited for either the video/ogg or audio/ogg types.  Refer to the following section for more details.</t>
 			<t>An Ogg bitstream generally consists of one or more logical bitstreams that each consist of a series of header and data pages packetising time-continuous binary data <xref target="RFC3533"/>.  The content types of the logical bitstreams may be identified without decoding the header pages of the logical bitstreams through use of a <xref target="Skeleton"/> bitstream.  Using Ogg Skeleton is REQUIRED for content served under the application/ogg type and RECOMMENDED for video/ogg and audio/ogg, as Skeleton contains identifiers to describe the different encapsulated data.</t>
 			<t>Furthermore, it is RECOMMENDED that implementations that identify a logical bitstream which they cannot decode SHOULD ignore it, while continuing to decode the ones they can.  Such precaution ensures backward and forward compatibility with existing and future data.</t>
-			<t>These media types can optionally use the &quot;codecs&quot; parameter described in <xref target="RFC4281"/>.  Codecs encapsulated in Ogg require an 8 byte text identifier at the beginning of the first header page, hence a possible machine-readable method to identify the encapsulated codecs would be through this header.  The following table illustrates how those header values map into strings that SHOULD be used in the &quot;codecs&quot; parameter when dealing with Ogg media types.</t>
+			<t>These media types can optionally use the &quot;codecs&quot; parameter described in <xref target="RFC4281"/>.  Codecs encapsulated in Ogg require a text identifier at the beginning of the first header page, hence a machine-readable method to identify the encapsulated codecs would be through this header.  The following table illustrates how those header values map into strings that are used in the &quot;codecs&quot; parameter when dealing with Ogg media types.</t>
 			<figure>
 				<artwork><![CDATA[
      Codec Identifier             | Codecs Parameter
@@ -152,17 +152,17 @@
 				<t>Type name: application</t>
 				<t>Subtype name: ogg</t>
 				<t>Required parameters: none</t>
-				<t>Optional parameters: codecs, as defined in RFC 4281.</t>
-				<t>Encoding considerations: See section 6.</t>
-				<t>Security considerations: See section 7.</t>
-				<t>Interoperability considerations: None, as noted in section 8.</t>
+				<t>Optional parameters: codecs, whose syntax is defined in RFC 4281.  See section 4 of RFC &rfc.number; for a list of allowed values.</t>
+				<t>Encoding considerations: See section 6 of RFC &rfc.number;.</t>
+				<t>Security considerations: See section 7 of RFC &rfc.number;.</t>
+				<t>Interoperability considerations: None, as noted in section 8 of RFC &rfc.number;.</t>
 				<t>Published specification: RFC 3533</t>
 				<t>Applications which use this media type: Scientific and otherwise which require various multiplexed signals or streams of data, with or without scriptable control of content.</t>
 				<t>Additional information:</t>
 				<t>Magic number(s): The first four bytes, 0x4f 0x67 0x67 0x53, correspond to the string &quot;OggS&quot;.</t>
 				<t>File extension(s): .ogx</t>
 				<list style="hanging">
-					<t>RFC 3534 defined the file extension .ogg for application/ogg, which this document obsoletes in favor of .ogx due to concerns where, historically, some implementations expect .ogg files to be solely Vorbis-encoded audio.</t>
+					<t>RFC 3534 defined the file extension .ogg for application/ogg, which RFC &rfc.number; obsoletes in favor of .ogx due to concerns where, historically, some implementations expect .ogg files to be solely Vorbis-encoded audio.</t>
 				</list>
 				<t>Macintosh File Type Code(s): OggX</t>
 				<t>Person &amp; Email address to contact for further information: See &quot;Authors' Addresses&quot; section.</t>
@@ -175,10 +175,10 @@
 				<t>Type name: video</t>
 				<t>Subtype name: ogg</t>
 				<t>Required parameters: none</t>
-				<t>Optional parameters: codecs, as defined in RFC 4281.</t>
-				<t>Encoding considerations: See section 6.</t>
-				<t>Security considerations: See section 7.</t>
-				<t>Interoperability considerations: None, as noted in section 8.</t>
+				<t>Optional parameters: codecs, whose syntax is defined in RFC 4281.  See section 4 of RFC &rfc.number; for a list of allowed values.</t>
+				<t>Encoding considerations: See section 6 of RFC &rfc.number;.</t>
+				<t>Security considerations: See section 7 of RFC &rfc.number;.</t>
+				<t>Interoperability considerations: None, as noted in section 8 of RFC &rfc.number;.</t>
 				<t>Published specification: RFC 3533</t>
 				<t>Applications which use this media type: Multimedia applications, including embedded, streaming, and conferencing tools.</t>
 				<t>Additional information:</t>
@@ -195,10 +195,10 @@
 				<t>Type name: audio</t>
 				<t>Subtype name: ogg</t>
 				<t>Required parameters: none</t>
-				<t>Optional parameters: codecs, as defined in RFC 4281.</t>
-				<t>Encoding considerations: See section 6.</t>
-				<t>Security considerations: See section 7.</t>
-				<t>Interoperability considerations: None, as noted in section 8.</t>
+				<t>Optional parameters: codecs, whose syntax is defined in RFC 4281.  See section 4 of RFC &rfc.number; for a list of allowed values.</t>
+				<t>Encoding considerations: See section 6 of RFC &rfc.number;.</t>
+				<t>Security considerations: See section 7 of RFC &rfc.number;.</t>
+				<t>Interoperability considerations: None, as noted in section 8 of RFC &rfc.number;.</t>
 				<t>Published specification: RFC 3533</t>
 				<t>Applications which use this media type: Multimedia applications, including embedded, streaming, and conferencing tools.</t>
 				<t>Additional information:</t>
@@ -212,22 +212,15 @@
 				<t>Change controller: The Xiph.Org Foundation.</t>
 			</section>
 		</section>
+		<section title="Acknowledgements">
+			<t>The authors gratefully acknowledge the contributions of Magnus Westerlund, Alfred Hoenes, and Peter Saint-Andre.</t>
+		</section>
 		<section title="Copying Conditions">
 			<t>The authors agree to grant third parties the irrevocable right to copy, use and distribute the work, with or without modification, in any medium, without royalty, provided that, unless separate permission is granted, redistributed modified works do not contain misleading author, version, name of work, or endorsement information.</t>
 		</section>
 	</middle>
 	<back>
 		<references title="Normative References">
-			<reference anchor="RFC3533">
-				<front>
-					<title>The Ogg Encapsulation Format Version 0</title>
-					<author initials="S." surname="Pfeiffer" fullname="Silvia Pfeiffer">
-						<organization abbrev="Xiph">Xiph.Org Foundation</organization>
-					</author>
-					<date month="May" year="2003"/>
-				</front>
-				<seriesInfo name="RFC" value="3533"/>
-			</reference>
 			<reference anchor="RFC2045">
 				<front>
 					<title>Multipurpose Internet Mail Extensions (MIME) Part One: Format of Internet Message Bodies</title>
@@ -250,6 +243,16 @@
 				</front>
 				<seriesInfo name="BCP" value="14"/>
 				<seriesInfo name="RFC" value="2119"/>
+			</reference>
+			<reference anchor="RFC3533">
+				<front>
+					<title>The Ogg Encapsulation Format Version 0</title>
+					<author initials="S." surname="Pfeiffer" fullname="Silvia Pfeiffer">
+						<organization abbrev="Xiph">Xiph.Org Foundation</organization>
+					</author>
+					<date month="May" year="2003"/>
+				</front>
+				<seriesInfo name="RFC" value="3533"/>
 			</reference>
 			<reference anchor="RFC4281">
 				<front>
@@ -281,6 +284,46 @@
 			</reference>
 		</references>
 		<references title="Informative References">
+			<reference anchor="CMML" target="http://annodex.net/TR/cmml.txt">
+				<front>
+					<title>The Continuous Media Markup Language (CMML)</title>
+					<author initials="S." surname="Pfeiffer" fullname="Silvia Pfeiffer">
+						<organization abbrev="CSIRO">Commonwealth Scientific and Industrial Research Organisation</organization>
+					</author>
+					<author initials="C.D." surname="Parker" fullname="Conrad D. Parker">
+						<organization abbrev="CSIRO">Commonwealth Scientific and Industrial Research Organisation</organization>
+					</author>
+					<author initials="A.T." surname="Pang" fullname="Andre T. Pang">
+						<organization abbrev="CSIRO">Commonwealth Scientific and Industrial Research Organisation</organization>
+					</author>
+					<date month="March" year="2006"/>
+				</front>
+			</reference>
+			<reference anchor="Dirac" target="http://dirac.sourceforge.net/specification.html">
+				<front>
+					<title>Dirac Specification</title>
+					<author>
+						<organization>Dirac Group</organization>
+					</author>
+				</front>
+			</reference>
+			<reference anchor="FLAC" target="http://flac.sourceforge.net/format.html">
+				<front>
+					<title>The FLAC Format</title>
+					<author initials="J." surname="Coalson" fullname="Josh Coalson">
+						<organization abbrev="Xiph">Xiph.Org Foundation</organization>
+					</author>
+				</front>
+			</reference>
+			<reference anchor="libogg" target="http://xiph.org/ogg/doc/libogg">
+				<front>
+					<title>The libogg API</title>
+					<author>
+						<organization abbrev="Xiph">Xiph.Org Foundation</organization>
+					</author>
+					<date month="June" year="2000"/>
+				</front>
+			</reference>
 			<reference anchor="Ogg" target="http://xiph.org/ogg/doc">
 				<front>
 					<title>Ogg bitstream documentation: Ogg logical and physical bitstream overview, Ogg logical bitstream framing, Ogg multi-stream multiplexing</title>
@@ -299,63 +342,29 @@
 				</front>
 				<seriesInfo name="RFC" value="3534"/>
 			</reference>
-			<reference anchor="Theora" target="http://theora.org/doc/Theora_spec.pdf">
+			<reference anchor="RFC3552">
 				<front>
-					<title>Theora Specification</title>
-					<author>
-						<organization abbrev="Xiph">Xiph.Org Foundation</organization>
+					<title>Guidelines for Writing RFC Text on Security Considerations</title>
+					<author initials="E." surname="Rescorla" fullname="Eric Rescorla">
+						<organization>RTFM, Inc.</organization>
 					</author>
-					<date month="October" year="2007"/>
+					<author initials="B." surname="Korver" fullname="Brian Korver">
+						<organization>Xythos Software, Inc.</organization>
+					</author>
+					<date month="July" year="2003"/>
 				</front>
+				<seriesInfo name="BCP" value="72"/>
+				<seriesInfo name="RFC" value="3552"/>
 			</reference>
-			<reference anchor="Dirac" target="http://dirac.sourceforge.net/specification.html">
+			<reference anchor="RFC4648">
 				<front>
-					<title>Dirac Specification</title>
-					<author>
-						<organization>Dirac Group</organization>
+					<title>The Base16, Base32, and Base64 Data Encodings</title>
+					<author initials="S." surname="Josefsson" fullname="Simon Josefsson">
+						<organization>SJD</organization>
 					</author>
+					<date month="October" year="2006"/>
 				</front>
-			</reference>
-			<reference anchor="Speex" target="http://speex.org/docs/manual/speex-manual">
-				<front>
-					<title>The Speex Codec Manual</title>
-					<author initials="J." surname="Valin" fullname="Jean-Marc Valin">
-						<organization abbrev="Xiph">Xiph.Org Foundation</organization>
-					</author>
-					<date month="February" year="2002"/>
-				</front>
-			</reference>
-			<reference anchor="Vorbis" target="http://xiph.org/vorbis/doc/Vorbis_I_spec.html">
-				<front>
-					<title>Vorbis I Specification</title>
-					<author>
-						<organization abbrev="Xiph">Xiph.Org Foundation</organization>
-					</author>
-					<date month="July" year="2004"/>
-				</front>
-			</reference>
-			<reference anchor="FLAC" target="http://flac.sourceforge.net/format.html">
-				<front>
-					<title>The FLAC Format</title>
-					<author initials="J." surname="Coalson" fullname="Josh Coalson">
-						<organization abbrev="Xiph">Xiph.Org Foundation</organization>
-					</author>
-				</front>
-			</reference>
-			<reference anchor="CMML" target="http://annodex.net/TR/cmml.txt">
-				<front>
-					<title>The Continuous Media Markup Language (CMML)</title>
-					<author initials="S." surname="Pfeiffer" fullname="Silvia Pfeiffer">
-						<organization abbrev="CSIRO">Commonwealth Scientific and Industrial Research Organisation</organization>
-					</author>
-					<author initials="C.D." surname="Parker" fullname="Conrad D. Parker">
-						<organization abbrev="CSIRO">Commonwealth Scientific and Industrial Research Organisation</organization>
-					</author>
-					<author initials="A.T." surname="Pang" fullname="Andre T. Pang">
-						<organization abbrev="CSIRO">Commonwealth Scientific and Industrial Research Organisation</organization>
-					</author>
-					<date month="March" year="2006"/>
-				</front>
+				<seriesInfo name="RFC" value="4648"/>
 			</reference>
 			<reference anchor="Skeleton" target="http://xiph.org/ogg/doc/skeleton.html">
 				<front>
@@ -369,32 +378,13 @@
 					<date month="November" year="2007"/>
 				</front>
 			</reference>
-			<reference anchor="RFC4648">
+			<reference anchor="Speex" target="http://speex.org/docs/manual/speex-manual">
 				<front>
-					<title>The Base16, Base32, and Base64 Data Encodings</title>
-					<author initials="S." surname="Josefsson" fullname="Simon Josefsson">
-						<organization>SJD</organization>
-					</author>
-					<date month="October" year="2006"/>
-				</front>
-				<seriesInfo name="RFC" value="4648"/>
-			</reference>
-			<reference anchor="ThRTP" target="http://tools.ietf.org/html/draft-barbato-avt-rtp-theora">
-				<front>
-					<title>RTP Payload Format for Theora Encoded Video</title>
-					<author initials="L." surname="Barbato" fullname="Luca Barbato">
+					<title>The Speex Codec Manual</title>
+					<author initials="J." surname="Valin" fullname="Jean-Marc Valin">
 						<organization abbrev="Xiph">Xiph.Org Foundation</organization>
 					</author>
-					<date month="July" year="2006"/>
-				</front>
-			</reference>
-			<reference anchor="VoRTP" target="http://tools.ietf.org/html/draft-ietf-avt-rtp-vorbis">
-				<front>
-					<title>RTP Payload Format for Vorbis Encoded Audio</title>
-					<author initials="L." surname="Barbato" fullname="Luca Barbato">
-						<organization abbrev="Xiph">Xiph.Org Foundation</organization>
-					</author>
-					<date month="November" year="2007"/>
+					<date month="February" year="2002"/>
 				</front>
 			</reference>
 			<reference anchor="SpRTP" target="http://tools.ietf.org/html/draft-ietf-avt-rtp-speex">
@@ -411,29 +401,45 @@
 					</author>
 					<date month="July" year="2007"/>
 				</front>
+				<seriesInfo name="Work in Progress" value=""/>
 			</reference>
-			<reference anchor="RFC3552">
+			<reference anchor="Theora" target="http://theora.org/doc/Theora_spec.pdf">
 				<front>
-					<title>Guidelines for Writing RFC Text on Security Considerations</title>
-					<author initials="E." surname="Rescorla" fullname="Eric Rescorla">
-						<organization>RTFM, Inc.</organization>
-					</author>
-					<author initials="B." surname="Korver" fullname="Brian Korver">
-						<organization>Xythos Software, Inc.</organization>
-					</author>
-					<date month="July" year="2003"/>
-				</front>
-				<seriesInfo name="BCP" value="72"/>
-				<seriesInfo name="RFC" value="3552"/>
-			</reference>
-			<reference anchor="libogg" target="http://xiph.org/ogg/doc/libogg">
-				<front>
-					<title>The libogg API</title>
+					<title>Theora Specification</title>
 					<author>
 						<organization abbrev="Xiph">Xiph.Org Foundation</organization>
 					</author>
-					<date month="June" year="2000"/>
+					<date month="October" year="2007"/>
 				</front>
+			</reference>
+			<reference anchor="ThRTP" target="http://tools.ietf.org/html/draft-barbato-avt-rtp-theora">
+				<front>
+					<title>RTP Payload Format for Theora Encoded Video</title>
+					<author initials="L." surname="Barbato" fullname="Luca Barbato">
+						<organization abbrev="Xiph">Xiph.Org Foundation</organization>
+					</author>
+					<date month="July" year="2006"/>
+				</front>
+				<seriesInfo name="Work in Progress" value=""/>
+			</reference>
+			<reference anchor="Vorbis" target="http://xiph.org/vorbis/doc/Vorbis_I_spec.html">
+				<front>
+					<title>Vorbis I Specification</title>
+					<author>
+						<organization abbrev="Xiph">Xiph.Org Foundation</organization>
+					</author>
+					<date month="July" year="2004"/>
+				</front>
+			</reference>
+			<reference anchor="VoRTP" target="http://tools.ietf.org/html/draft-ietf-avt-rtp-vorbis">
+				<front>
+					<title>RTP Payload Format for Vorbis Encoded Audio</title>
+					<author initials="L." surname="Barbato" fullname="Luca Barbato">
+						<organization abbrev="Xiph">Xiph.Org Foundation</organization>
+					</author>
+					<date month="November" year="2007"/>
+				</front>
+				<seriesInfo name="Work in Progress" value=""/>
 			</reference>
 		</references>
 	</back>
