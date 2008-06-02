@@ -4,9 +4,100 @@
 <img alt="" src="/images/corner_topleft.jpg" class="corner" style="display: none" />
 </div>
 <div class="newscontent">
+<h3>Icecast Release 2.3.2</h3>
+We are pleased to announce the next release of Icecast. A summary of the changes are listed below
+<br />
+<br />
+<p>Downloads:<br />
+<center>
+<table border=0>
+<tr><td>Source :</td><td><a href="http://downloads.xiph.org/releases/icecast/icecast-2.3.2.tar.gz">icecast-2.3.2.tar.gz</a></td></tr>
+<tr><td>SRPM :</td><td><a href="http://downloads.xiph.org/releases/icecast/icecast-2.3.2-0.src.rpm">icecast-2.3.2-0.src.rpm</a></td></tr>
+<tr><td>Windows Setup :</td><td><a href="http://downloads.xiph.org/releases/icecast/icecast2_win32_2.3.2_setup.exe">icecast2_win32_2.3.2_setup.exe</a></td></tr>
+</table>
+</center>
+<p>
+<br />
+<ul>
+<li>Character set support.
+Most non-Ogg streams (eg MP3) send metadata as Latin1 but it could be in other character sets.  As
+icecast uses UTF-8, we need to convert to UTF-8 so that web pages and stream directories render
+correctly.<br />
+<ul>
+  <li>Allow a per-mount &lt;charset&gt; setting.  For when source clients do not indicate which
+  character set is in use.
+  <li>a charset= parameter to the metadata request.
+  <li>Default for non-Ogg content is now Latin-1 (aka ISO-8859-1).  Ogg content still uses UTF-8.
+</ul><br />
+<li>Authentication
+<ul>
+  <li>Each mountpoint authentication is isolated so one mount authentication does not slow another
+  mountpoint authentication down.
+  <li>XSL pages can require authentication.
+  <li>Add some sanity checks for incorrect settings.
+</ul><br />
+<li>Listening socket update
+<ul>
+  <li>Allow multiple ports to be allocated which allow multiple shoutcast source clients to stream
+  on the same icecast instance.
+  <li>No internal limit on the number of listen sockets that can be used.
+  <li>Allow for a listen socket to be marked SSL capable. While any client could connect on these,
+  the idea is really for /admin requests.
+  <li>allow for a &lt;listen-socket&gt; to bind to ipv4 and ipv6
+</ul><br />
+<li>XSL update
+<ul>
+  <li>XSL pages include an xspf link for non-auth streams.
+  <li>XSL pages in both webroot and adminroot can take a mount= arg to limit which stats are
+  transformed.
+  <li>XSL files can specify the content-type to return to the client. It is no longer fixed to html
+</ul><br />
+<li>Updates for stream directory handling.
+<ul>
+  <li>A stream is not registered with the directory until after the first minute
+  has passed. some streams have been stuck in a connect/disconnect loop.
+  <li>Increase retry time on failure, if the stream add is rejected then it will
+  be down to a misconfiguration so a long retry delay is performed.
+  <li>A YP server that is not responding is ignored for a while
+</ul><br />
+<li>Updates for Win32.  Newer versions of dependency libs (libxml2/libxslt/libcurl etc). Buffer
+overflow fixes when many streams are active
+<li>Accept/Ban IP support.
+Now takes filenames for explicitly accepting or denying requests from specified IP addresses.
+Useful in cases where firewall access is not available.  The files, if defined, are re-read
+automatically if updated.
+<li>A Mountpoint is exported to the slaves even if no mount section is defined for
+it. You can still use the hidden setting to prevent that from happening.
+<li>Relays handle redirection (HTTP 302) if one is received at startup.
+<li>Automatically generate XSPF playlist like we do with M3U, the mountpoint extension is .xspf
+<li>Header updates for proxy handling and certain clients like some shoutcast source clients and
+flash players.
+<li>Added Kate/Skeleton codecs to Ogg handler.
+<li>Various stats cleanups. Added some global stats (server ID, email contact etc).
+<li>The streamlist passed from master to slave had a limited length, so if there were many streams
+then some could of been left out.
+<li>Documentation updates.
+<li>Relay startup/shutdown is cleaner.
+<li>several build cleanups.
+<li>several resource leaks and race conditions fixed
+</ul>
+<div class="poster">
+Posted June 2, 2008 by karl
+</div> 
+</div>
+<div class="roundbottom">
+<img alt="" src="/images/corner_bottomleft.jpg" class="corner" style="display: none" />
+</div>
+</div>	
+<br />
+<br />
+
+<div class="roundcont">
+<div class="roundtop">
+<img alt="" src="/images/corner_topleft.jpg" class="corner" style="display: none" />
+</div>
+<div class="newscontent">
 <h3>Icecast Release 2.3.1</h3>
-<p>We are pleased to announce the next release of Icecast.
-</p>
 <p>
 Downloads:<br></br>
 <center>
@@ -22,7 +113,6 @@ Downloads:<br></br>
 <font color=yellow>
 new tag &lt;logsize&gt; in &lt;logging&gt; state the trigger size (in KB) for cycling the log files.
 </font><br></br>
-<br></br>
 <br></br>
 <font color=yellow>
 new tag &lt;logarchive&gt; in &lt;logging&gt; enable (1) if you want to use a timestamp for an extension when cycling logs.

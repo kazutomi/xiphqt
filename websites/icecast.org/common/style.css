@@ -114,7 +114,7 @@ td {
 	font-weight: bold;
 	font-size: 110%;
 	color: #F8EF64;
-        border-bottom:  3px dashed #000000;
+    border-bottom: 1px solid #000000;
 }
 .example {
 	margin: 10px 0px;
@@ -151,12 +151,13 @@ td {
     color: #F8EF64;
 }
 .poster {
-	margin: 10px 0px;
+	margin: 15px 0px 5px;
+    padding: 5px 0px 0px;
 	display: block;
 	text-decoration: none;
 	font-size: 80%;
 	color: #F8EF64;
-    border-top:  3px dashed #000000;
+    border-top:  1px solid #000000;
 }
 .roundcont p {
 	margin: 10px 50px;
