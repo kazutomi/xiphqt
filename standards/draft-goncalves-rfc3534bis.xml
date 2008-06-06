@@ -124,10 +124,12 @@
 		<section title="Encoding Considerations">
 			<t>Binary: The content consists of an unrestricted sequence of octets.</t>
 			<t>Note:</t>
-			<list style="symbols">
+			<t>
+			  <list style="symbols">
 				<t>Ogg encapsulated content is binary data and should be transmitted in a suitable encoding without CR/LF conversion, 7-bit stripping, etc.; <xref target="RFC4648">base64</xref> is generally preferred for binary-to-text encoding.</t>
 				<t>Media types described in this document are used for stream based storage (such as files) and transport (such as TCP streams or pipes); separate types are used to identify codecs such as in real-time applications for the RTP payload formats of <xref target="ThRTP">Theora</xref> video, <xref target="VoRTP">Vorbis</xref> or <xref target="SpRTP">Speex</xref> audio, as well as for identification of encapsulated data within Ogg through Skeleton.</t>
-			</list>
+			  </list>
+		    </t>
 		</section>
 		<section title="Security Considerations">
 			<t>Refer to <xref target="RFC3552"/> for a discussion of terminology used in this section.</t>
@@ -161,9 +163,11 @@
 				<t>Additional information:</t>
 				<t>Magic number(s): The first four bytes, 0x4f 0x67 0x67 0x53, correspond to the string &quot;OggS&quot;.</t>
 				<t>File extension(s): .ogx</t>
-				<list style="hanging">
+				<t>
+				  <list style="hanging">
 					<t>RFC 3534 defined the file extension .ogg for application/ogg, which RFC &rfc.number; obsoletes in favor of .ogx due to concerns where, historically, some implementations expect .ogg files to be solely Vorbis-encoded audio.</t>
-				</list>
+				  </list>
+				</t>
 				<t>Macintosh File Type Code(s): OggX</t>
 				<t>Person &amp; Email address to contact for further information: See &quot;Authors' Addresses&quot; section.</t>
 				<t>Intended usage: COMMON</t>
@@ -224,11 +228,11 @@
 			<reference anchor="RFC2045">
 				<front>
 					<title>Multipurpose Internet Mail Extensions (MIME) Part One: Format of Internet Message Bodies</title>
-					<author initials="N." surname="Freed" fullname="Ned Freed">
-						<organization>Innosoft International, Inc.</organization>
-					</author>
-					<author initials="N.S." surname="Borenstein" fullname="Nathaniel S. Borenstein">
-					</author>
+						<author initials="N." surname="Freed" fullname="Ned Freed">
+							<organization>Innosoft International, Inc.</organization>
+						</author>
+						<author initials="N.S." surname="Borenstein" fullname="Nathaniel S. Borenstein">
+						</author>
 					<date month="November" year="1996"/>
 				</front>
 				<seriesInfo name="RFC" value="2045"/>
