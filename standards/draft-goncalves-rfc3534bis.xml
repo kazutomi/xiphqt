@@ -104,7 +104,6 @@
      char[8]: 'CELT    '          | celt
      char[8]: 'PCM     '          | pcm
      char[9]: '\x80kate\0\0\0\0'  | kate
-     char[9]: 'YUV4MPEG2'         | yuv4mpeg
 				]]></artwork>
 			</figure>
 			<t>Possible examples include:</t>
@@ -248,16 +247,6 @@
 				<seriesInfo name="BCP" value="14"/>
 				<seriesInfo name="RFC" value="2119"/>
 			</reference>
-			<reference anchor="RFC3533">
-				<front>
-					<title>The Ogg Encapsulation Format Version 0</title>
-					<author initials="S." surname="Pfeiffer" fullname="Silvia Pfeiffer">
-						<organization abbrev="Xiph">Xiph.Org Foundation</organization>
-					</author>
-					<date month="May" year="2003"/>
-				</front>
-				<seriesInfo name="RFC" value="3533"/>
-			</reference>
 			<reference anchor="RFC4281">
 				<front>
 					<title>The Codecs Parameter for &quot;Bucket&quot; Media Types</title>
@@ -335,6 +324,16 @@
 						<organization abbrev="Xiph">Xiph.Org Foundation</organization>
 					</author>
 				</front>
+			</reference>
+			<reference anchor="RFC3533">
+				<front>
+					<title>The Ogg Encapsulation Format Version 0</title>
+					<author initials="S." surname="Pfeiffer" fullname="Silvia Pfeiffer">
+						<organization abbrev="Xiph">Xiph.Org Foundation</organization>
+					</author>
+					<date month="May" year="2003"/>
+				</front>
+				<seriesInfo name="RFC" value="3533"/>
 			</reference>
 			<reference anchor="RFC3534">
 				<front>

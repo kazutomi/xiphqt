@@ -255,7 +255,6 @@ Internet-Draft               Ogg Media Types                   June 2008
         char[8]: 'CELT    '          | celt
         char[8]: 'PCM     '          | pcm
         char[9]: '\x80kate\0\0\0\0'  | kate
-        char[9]: 'YUV4MPEG2'         | yuv4mpeg
 
    Possible examples include:
 
@@ -273,6 +272,7 @@ Internet-Draft               Ogg Media Types                   June 2008
    usage scenarios have revealed interoperability issues between
    implementations when dealing with content served solely under the
    application/ogg type.
+
 
 
 
@@ -608,7 +608,7 @@ Internet-Draft               Ogg Media Types                   June 2008
    [RFC2119]   Bradner, S., "Key words for use in RFCs to Indicate
                Requirement Levels", BCP 14, RFC 2119, March 1997.
 
-   [RFC3533]   Pfeiffer, S., "The Ogg Encapsulation Format Version 0",
+   [RFC4281]   Gellens, R., Singer, D., and P. Frojdh, "The Codecs
 
 
 
@@ -617,9 +617,6 @@ Goncalves, et al.       Expires December 4, 2008               [Page 11]
 Internet-Draft               Ogg Media Types                   June 2008
 
 
-               RFC 3533, May 2003.
-
-   [RFC4281]   Gellens, R., Singer, D., and P. Frojdh, "The Codecs
                Parameter for "Bucket" Media Types", RFC 4281,
                November 2005.
 
@@ -646,6 +643,9 @@ Internet-Draft               Ogg Media Types                   June 2008
                logical and physical bitstream overview, Ogg logical
                bitstream framing, Ogg multi-stream multiplexing",
                <http://xiph.org/ogg/doc>.
+
+   [RFC3533]   Pfeiffer, S., "The Ogg Encapsulation Format Version 0",
+               RFC 3533, May 2003.
 
    [RFC3534]   Walleij, L., "The application/ogg Media Type", RFC 3534,
                May 2003.
