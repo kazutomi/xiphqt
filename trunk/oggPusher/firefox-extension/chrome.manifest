@@ -1,2 +1,2 @@
-content     sample    chrome/content/
-overlay chrome://browser/content/browser.xul chrome://sample/content/sample.xul
+content     oggPusher chrome/content/
+overlay chrome://browser/content/browser.xul chrome://oggPusher/content/sample.xul
