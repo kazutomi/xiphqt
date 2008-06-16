@@ -18,7 +18,7 @@ const char *magic_vorbis = "\x01vorbis";
 const char *magic_theora = "\x80theora";
 const char *magic_speex  = "Speex";
 const char *magic_flac   = "fLaC";
-const char *magic_kate   = "\x80kate\0\0\0\0";
+const char *magic_kate   = "\x80kate\0\0\0";
 
 int stream_ctrl_init(stream_ctrl_t *sc)
 {

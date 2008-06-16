@@ -144,7 +144,7 @@ static int _get_type(char *filename)
                 fread(buf,1,sizeof(buf),f);
                 fclose(f);
                 if (!memcmp(buf+offset,"\001vorbis",7)) return TYPEVORBIS;
-                if (!memcmp(buf+offset,"\200kate\0\0\0\0",9)) return TYPEKATE;
+                if (!memcmp(buf+offset,"\200kate\0\0\0",8)) return TYPEKATE;
                 if (!memcmp(buf+offset,"\200theora",7)) return TYPETHEORA;
                 if (!memcmp(buf+offset,"Speex   ",8)) return TYPESPEEX;
                 return TYPEUNKNOWN;
