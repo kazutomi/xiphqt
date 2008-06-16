@@ -129,7 +129,7 @@ int kate_data_in(oggmerge_state_t *state, char *buffer, unsigned long size)
 				ogg_stream_clear(&os);
                                 return EBADHEADER;
                         }
-                        if (memcmp(op.packet,"\200kate\0\0\0\0",9)) {
+                        if (memcmp(op.packet,"\200kate\0\0\0",8)) {
 				ogg_stream_clear(&os);
                                 return EBADHEADER;
                         }
