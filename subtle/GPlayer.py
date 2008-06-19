@@ -42,18 +42,23 @@ class GstPlayer:
 	pad = self.textoverlay.get_pad("video_sink")
 	ghostpad = gst.GhostPad("sink", pad)
 	bin.add_pad(ghostpad)
+	color = gst.element_factory_make('ffmpegcolorspace')
+	bin.add(color)
+	scale = gst.element_factory_make('videoscale')
+	bin.add(scale)
 	videosink = gst.element_factory_make('autovideosink')
 	bin.add(videosink)
-	gst.element_link_many(self.textoverlay, videosink)
-        self.player = gst.element_factory_make("playbin", "player")
+	gst.element_link_many(self.textoverlay, color, scale, videosink)
+	self.player = gst.element_factory_make("playbin", "player")
 	self.player.set_property("video-sink", bin)
-        self.videowidget = videowidget
+	self.videowidget = videowidget
 
-        bus = self.player.get_bus()
-        bus.enable_sync_message_emission()
-        bus.add_signal_watch()
-        bus.connect('sync-message::element', self.on_sync_message)
-        bus.connect('message', self.on_message)
+	bus = self.player.get_bus()
+	bus.enable_sync_message_emission()
+	bus.add_signal_watch()
+	bus.connect('sync-message::element', self.on_sync_message)
+	bus.connect('message', self.on_message)
+	
 
     ## \var playing
     # Bool variable, TRUE - if media is playing.
