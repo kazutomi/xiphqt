@@ -844,10 +844,9 @@ class Subtle:
         self.labelHour.set_text("%02d"%Hour)
         self.labelMin.set_text("%02d"%Min)
         self.labelSec.set_text("%02d"%Sec)
-	#BUG: We are not displaying that correctly
+	    #BUG: We are not displaying that correctly
         self.labelMSec.set_text("%09d"%MSec)
-	#FIXME: We should know which media is playing
-	self.lbl_cur_fps.set_text("%d"%(MSec/1/self.media[0].framerate))
+        self.lbl_cur_fps.set_text("%.2f"%(self.player.query_frame(self.p_position)))
         return True
 #==============================================================================
 #	MAIN:
