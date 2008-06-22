@@ -19,7 +19,7 @@ class Sub:
         self.start_time=None
         self.end_time=None
         self.Attributes=None
-	self.number=None
+        self.number=None
 
 #==============================================================================
     ## Check subtitle time.
@@ -54,9 +54,9 @@ class Subtitles:
     def __init__(self,FN):
         self.subs={}
         self.subKeys=[]
-	self.filename = FN
-	# TODO: Support more subtitles types
-	self.subType = "SubRip"
+        self.filename = FN
+        # TODO: Support more subtitles types
+        self.subType = "SubRip"
 
 #==============================================================================
     ## Load subtitles.
@@ -76,22 +76,22 @@ class Subtitles:
     # \param FN - file name.
     # \param format - the store format of subtitles. (NOT USED YET)
     def subSave(self, FN, format):
-	FUN=os.open(FN,os.O_WRONLY|os.O_CREAT|os.O_TRUNC)
-	N=1
-	for i in self.subKeys:
-	    SUB = self.subs[int(i)]
-	    Text=str(N)+"\r\n"
-	    Hour, Min, Sec, MSec = self._subTime2SRTtime(SUB.start_time)
-	    Text+="%02d:%02d:%02d,%03d"%(Hour, Min, Sec, MSec)
-	    Text+=" --> "
-	    Hour, Min, Sec, MSec = self._subTime2SRTtime(SUB.end_time)
-	    Text+="%02d:%02d:%02d,%03d"%(Hour, Min, Sec, MSec)+"\r\n"
-	    Text+=SUB.text+"\r\n"
-	    if (SUB.text[-2]!="\r\n"):
-		Text+="\r\n"
-	    os.write(FUN, Text)
-	    N+=1
-	os.close(FUN)
+        FUN=os.open(FN,os.O_WRONLY|os.O_CREAT|os.O_TRUNC)
+        N=1
+        for i in self.subKeys:
+            SUB = self.subs[int(i)]
+            Text=str(N)+"\r\n"
+            Hour, Min, Sec, MSec = self._subTime2SRTtime(SUB.start_time)
+            Text+="%02d:%02d:%02d,%03d"%(Hour, Min, Sec, MSec)
+            Text+=" --> "
+            Hour, Min, Sec, MSec = self._subTime2SRTtime(SUB.end_time)
+            Text+="%02d:%02d:%02d,%03d"%(Hour, Min, Sec, MSec)+"\r\n"
+            Text+=SUB.text+"\r\n"
+            if (SUB.text[-2]!="\r\n"):
+                Text+="\r\n"
+            os.write(FUN, Text)
+            N+=1
+        os.close(FUN)
 
 #==============================================================================
     ## Convert subtitle time to SRT format.
@@ -113,7 +113,7 @@ class Subtitles:
     # Load SRT formated subtitles from given string.
     # \param DATA - string of SRT subtitles.
     def _subSRTLoadFromString(self, DATA):
-	num_sub = 0
+        num_sub = 0
         if (string.find(DATA, "\r\n")==-1):
             DATA=string.split(DATA,"\n")
         else:
@@ -140,11 +140,11 @@ class Subtitles:
             ET=int(Timing[17:19])*3600000+int(Timing[20:22])*60000+int(Timing[23:25])*1000+int(Timing[26:29])
             
             TS=Sub()
-	    num_sub += 1
+            num_sub += 1
             TS.text=Text
             TS.start_time=ST
             TS.end_time=ET
-	    TS.number = num_sub
+            TS.number = num_sub
             self.subs[int(ST)]=TS
         self.updateKeys()
 
@@ -184,10 +184,10 @@ class Subtitles:
     ## Update sub text.
     # Update text for sub.
     def updateText(self, key, text):
-	if key in self.subs.keys():
-	    self.subs[key].text = text
-	else:
-	    print "Subkey %s not found" % key
+        if key in self.subs.keys():
+            self.subs[key].text = text
+        else:
+            print "Subkey %s not found" % key
 
 #==============================================================================
     ## Update subtitle.
@@ -223,4 +223,4 @@ class Subtitles:
     # Get subtitle supported types
     # \return supported subtitle types 
     def getSupportedTypes(self):
-	return [".srt"]
+        return [".srt"]
