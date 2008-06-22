@@ -118,7 +118,7 @@ class GstPlayer:
 			caps = pad.get_negotiated_caps()
 			if caps is not None:
 				framerate = caps[0]['framerate']
-				position = position/1000000000
+				position = float(position)/float(1000000000)
 				self.cur_frame = (float(position)*float(framerate.num))/float(framerate.denom)
 		return self.cur_frame
 
