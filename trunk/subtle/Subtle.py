@@ -1,18 +1,19 @@
 #!/usr/bin/env python
 
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
-# (at your option) any later version.
+#    This file is part of Subtle
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
 #
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 from GPlayer import VideoWidget
@@ -189,7 +190,7 @@ class Subtle:
         self.subList = SUBLIST
         #self.windowMainWindow.maximize()
         return
-#==============================================================================
+
     def cb_onModeChanged(self, widget):
         """
             Change from online mode to editing mode
@@ -205,28 +206,32 @@ class Subtle:
             self.mode = EDITING_MODE
             self.txt_subedit.set_sensitive(True)
             return
-#==============================================================================
+
+
     def cb_hideSubPane(self, widget):
         """
             Hide the subtitles pane
         """
         self.subtitle_pane.hide()
         return
-#==============================================================================
+
+
     def cb_hideStreamsPane(self, widget):
         """
             Hide the streams pane
         """
         self.streams_pane.hide()
         return
-#==============================================================================
+
+
     def cb_showStreamsPane(self, widget):
         """
             Hide the streams pane
         """
         self.streams_pane.show()
         return
-#==============================================================================
+
+
     def cb_onSubInsB4(self, widget):
         """
             Insert new subtitle before current selected
@@ -243,7 +248,8 @@ class Subtle:
                                                     'New subtitle...'))
                 self.reorder_SubsListStore()
         return
-#==============================================================================
+
+
     def cb_onSubInsAfter(self, widget):
         """
             Insert new subtitle after current selected
@@ -261,7 +267,8 @@ class Subtle:
                                                         'New subtitle...'))
                 self.reorder_SubsListStore()
         return
-#==============================================================================
+
+
     def reorder_SubsListStore(self):
         """
             Reorder the subs listStore when added or deleted
@@ -273,7 +280,8 @@ class Subtle:
                 self.subsListStore.set_value(iter, 0, cur)
                 cur += 1
                 iter = self.subsListStore.iter_next(iter)
-#==============================================================================
+
+
     def cb_subDel(self, widget):
         """
             Delete a subtile from the list store and from memory
@@ -287,7 +295,8 @@ class Subtle:
             self.Subtitle.subDel(subKey[0])
             model.remove(iter)
             self.reorder_SubsListStore()
-#==============================================================================
+
+
     def cb_subOut(self, widget):
         """
             Set subtitle endtime
@@ -307,7 +316,8 @@ class Subtle:
                     return
                 self.subsListStore.set(iter,2,self.p_position/1000000)
         return True
-#==============================================================================
+
+
     def cb_subIn(self, widget):
         """
             Set subtitle start time
@@ -327,37 +337,44 @@ class Subtle:
                     return
                 self.subsListStore.set(iter,1,self.p_position/1000000)
         return True
-#==============================================================================
+
+
     def cb_onSubsWindowDelete(self, widget, event):
         widget.hide()
         return True
-#==============================================================================
+
+
     def cb_StreamWindowDelete(self, widget, event):
         widget.hide()
         return True
-#==============================================================================
+
+
     def cb_onSubtitleWindow(self, menu):
         if self.windowSubsList:
             WND=self.windowSubsList.get_widget("SUBS_LIST")
             WND.show()
-#==============================================================================
+
+
     def cb_showSubtitlePane(self, menu):
         """
            Show subtitle pane
         """
         self.subtitle_pane.show()
-#==============================================================================
+
+
     def cb_onStreamsWindow(self, menu):
         if self.windowStreams:
             WND=self.windowStreams.get_widget("STREAM_WINDOW")
             WND.show()
-#==============================================================================
+
+
     def getSubtitle(self, source):
         for i in self.Subtitles:
             if i.subSource==source:
                 return i
         return None
-#==============================================================================
+
+
     def cb_saveStream(self, widget):
         if not self.windowStreams:
             return
@@ -373,7 +390,8 @@ class Subtle:
         if "subtitle" in mInfo.MIME:
             tSubtitle = self.getSubtitle(mInfo.Streams[0].ID)
             tSubtitle.subSave(mInfo.source, 1)
-#==============================================================================
+
+
     def cb_modStream(self, widget):
         # We have removed the window
         #if not self.windowStreams:
@@ -390,7 +408,8 @@ class Subtle:
         # FIXME: We should actually get the selected subtitle
         if "Subtitle" in N:
             self.setSubtitle()
-#==============================================================================
+
+
     def cb_newStream(self, widget):
         """
            Create a new subtitle
@@ -410,7 +429,8 @@ class Subtle:
             else:
                 WND.show()
         return
-#==============================================================================
+
+
     def setSubtitle(self):
         if self.Subtitle:
             # We have removed the window for now
@@ -418,7 +438,8 @@ class Subtle:
             #    WND=self.windowSubsList.get_widget("SUBS_LIST")
             #    WND.show()
             self.subsWindowUpdate()
-#==============================================================================
+
+
     def updateStreamWindow(self):
         #FIXME: This should be more complete and better handled
         # Maybe all streams must be on the same list/dict
@@ -451,7 +472,8 @@ class Subtle:
                 self.streamsTreeStore.set(child, 0, ("Frames: %d" % (mInfo.videoLengthS/(1/mInfo.framerate))), \
                         1, self.media.index(mInfo))
                 child = self.streamsTreeStore.append(iter)
-#==============================================================================
+
+
     def cb_delStream(self, widget):
         """
             Remove a stream from the current project
@@ -468,12 +490,14 @@ class Subtle:
             return
         N=TModel.get_value(TIter, 1)
         self.updateStreamWindow()
-#==============================================================================
+
+
     def cb_openMediaCancel(self, widget):
         if self.windowMediaOpen:
             WND=self.windowMediaOpen.get_widget("OPEN_MEDIA")
             WND.hide()
-#==============================================================================
+
+
     def cb_openMediaOpen(self, widget):
         WND=self.windowMediaOpen.get_widget("OPEN_MEDIA")
         FN=WND.get_filename()
@@ -495,7 +519,7 @@ class Subtle:
             # Lets poll for information
             gobject.timeout_add(30, self.addMedia, MI)
 
-#==============================================================================
+
     def cb_addNewStream(self, widget):
         if(self.windowMediaOpen==None):
             self.windowMediaOpen=gtk.glade.XML (self.gladefile,"OPEN_MEDIA")
@@ -509,18 +533,20 @@ class Subtle:
             else:
                 WND.show()
         return
-#==============================================================================
+
+
     def cb_onNewMenu(self, menu):
         if self.windowStreams:
             WND=self.windowStreams.get_widget("STREAM_WINDOW")
             WND.show()
-#==============================================================================
+
+
     def cb_onSubsListSelect(self, widget, event):
         """
             Do the proper thing when subtitle is selected
             2 clicks seeks de video to its timecode
             1 click edits on the TextView
-"""
+        """
         #FIXME: Something nasty happens on the selection of the subtitle
         # Only happens the first time and throws an exception
         Row=None
@@ -550,7 +576,8 @@ class Subtle:
         if event.type == gtk.gdk.BUTTON_RELEASE:
             model, self.cur_edit_sub_iter =  Selection.get_selected() 
             self.setSubtitleEdit(Sub.text)
-#==============================================================================
+
+
     def cb_onSubTextEdited(self, cell, path, new_text):
         """
             Callback to change subtitle when subtitle text was changed
@@ -565,7 +592,8 @@ class Subtle:
             self.subsListStore.set(iter,3,new_text)
 
         return True
-#==============================================================================
+
+
     def cb_onSubtitleEdit(self, widget, event):
         """
             Updates the subtile list in realtime
@@ -577,14 +605,16 @@ class Subtle:
         #self.Subtitle.subAdd(subKey,ETime,text,None,0)
         self.subsListStore.set(self.cur_edit_sub_iter, 3, text) 
         return
-#==============================================================================
+
+
     def setSubtitleEdit(self,sub):
         """
             Set the subtitle to be edited
         """
         buf = self.txt_subedit.get_buffer()
         buf.set_text(sub)
-#==============================================================================
+
+
     def subsWindowUpdate(self):
         if not self.Subtitle:
             return
@@ -600,7 +630,8 @@ class Subtle:
                                         2, int(S.end_time),
                                         3, str(S.text))
             j +=1
-#==============================================================================
+
+
     def saveProject(self):
         if not self.PFileName:
             return
@@ -617,22 +648,26 @@ class Subtle:
         for i in self.Subtitles:
             PXML.addSubtitle(i)
         PXML.write(self.PFileName)
-#==============================================================================
+
+
     def cb_projectSaveOpen(self, widget):
         WND=self.windowProjectSO.get_widget("SAVE_OPEN_PFILE")
         self.PFileName=WND.get_filename()
         self.saveProject()
         WND.hide()
-#==============================================================================
+
+
     def cb_projectSaveCancel(self, widget):
         if(self.windowProjectSO==None): return
         WND=self.windowProjectSO.get_widget("SAVE_OPEN_PFILE")
         WND.hide()
-#==============================================================================
+
+
     def cb_onSaveAsMenu(self, widget):
         self.PFileName=None
         self.cb_onSaveMenu(widget)
-#==============================================================================
+
+
     def cb_onSaveMenu(self, widget):
         if self.PFileName:
             self.saveProject()
@@ -658,23 +693,29 @@ class Subtle:
                 self.cb_onSaveMenu(widget)
             else:
                 WND.show()
-#==============================================================================
+
+
     def cb_setSubStartTime(self, widget):
         self.subStartTime.set_value(self.p_position/1000000)
-#==============================================================================
+
+
     def cb_setSubEndTime(self, widget):
         self.subEndTime.set_value(self.p_position/1000000)
-#==============================================================================
+
+
     def setSubStartTime(self, time):
         self.subStartTime.set_value(time)
-#==============================================================================
+
+
     def setSubEndTime(self, time):
         self.subEndTime.set_value(time)
-#==============================================================================
+
+
     def exposeEventVideoOut(self, widget, event):
         if self.videoWidgetGst:
             self.videoWidgetGst.do_expose_event(event)
-#==============================================================================
+
+
     def changeValueAdjustment(self, widget, t1, t2):
         #if (not self.scroll):
             real = long(self.adjustment.get_value()) # in ns
@@ -682,51 +723,59 @@ class Subtle:
             # allow for a preroll
             self.player.get_state(timeout=50*gst.MSECOND) # 50 ms
 
-#==============================================================================
+
     def buttonReleaseAdjustment(self, widget, event):
         self.scroll=0
-#==============================================================================
+
+
     def buttonPressAdjustment(self, widget, event):
         self.scroll=1
-#==============================================================================
+
+
     def playerStop(self, widget):
         if self.player:
             if self.player.is_playing():
                 self.play_toggled()
             self.player.stop()
-#==============================================================================
+
+
     def playerPlay(self, widget):
         if self.player:
             self.play_toggled()
-#==============================================================================
+
+
     def playerSlowMotion(self, widget):
         """
             Put the current playing video in slow motion
         """
         #TODO: Implement it
         pass
-#==============================================================================
+
+
     def playerFastForward(self, widget):
         """
             Put the current playing video in FastForward 
         """
         #TODO: Implement it
         pass
-#==============================================================================
+
+
     def playerSeekForward(self, widget):
         """
             Jump some time beyond current position
         """
         #TODO: Implement it
         pass
-#==============================================================================
+
+
     def playerSeekRewind(self, widget):
         """
             Jump back some time
         """
         #TODO: Implement it
         pass
-#==============================================================================
+
+
     def mainFileOpen(self, widget):
         if(self.windowProjectOpen==None):
             self.windowProjectOpen=gtk.glade.XML (self.gladefile,"SAVE_OPEN_PFILE")
@@ -750,13 +799,15 @@ class Subtle:
             else:
                 WND.show()
         return
-#==============================================================================
+
+
     def openFileCancel(self, widget):
         if(self.windowProjectOpen==None): return
         WND=self.windowProjectOpen.get_widget("SAVE_OPEN_PFILE")
         WND.hide()
         return
-#==============================================================================
+
+
     def openFileOpen(self, widget):
         WND=self.windowProjectOpen.get_widget("SAVE_OPEN_PFILE")
         self.PFileName=WND.get_filename()
@@ -772,7 +823,8 @@ class Subtle:
             WND=self.windowStreams.get_widget("STREAM_WINDOW")
             WND.show()
         return
-#==============================================================================
+
+
     def addMedia(self, mInfo):
         if not mInfo:
             return
@@ -793,7 +845,8 @@ class Subtle:
             self.videoWidget.connect_after('realize',
                                        lambda *x: self.play_toggled())
         return
-#==============================================================================
+
+
     def play_toggled(self):
         if self.player.is_playing():
             self.player.pause()
@@ -807,7 +860,8 @@ class Subtle:
                 self.update_id = gobject.timeout_add(self.UPDATE_INTERVAL,
                                                      self.update_scale_cb)
             self.playButton.set_stock_id(gtk.STOCK_MEDIA_PAUSE)
-#==============================================================================
+
+
     def update_scale_cb(self):
         had_duration = self.p_duration != gst.CLOCK_TIME_NONE
         self.p_position, self.p_duration = self.player.query_position()
@@ -846,10 +900,11 @@ class Subtle:
         self.labelHour.set_text("%02d"%Hour)
         self.labelMin.set_text("%02d"%Min)
         self.labelSec.set_text("%02d"%Sec)
-            #BUG: We are not displaying that correctly
+        #FIXME: We are not displaying this correctly
         self.labelMSec.set_text("%09d"%MSec)
-        self.lbl_cur_fps.set_text("%d"%(self.player.query_frame(self.p_position)))
+        self.lbl_cur_fps.set_text("%04d"%(self.player.query_frame(self.p_position)))
         return True
+
 #==============================================================================
 #        MAIN:
 #==============================================================================
