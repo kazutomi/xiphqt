@@ -90,7 +90,8 @@ class GstPlayer:
     def set_subtitle_text(self, text, font=None):
         if font:
             self.textoverlay.set_property('subtitle-font-desc', font)
-            self.textoverlay.set_property('text', text)
+        self.textoverlay.set_property('text', text)
+        return
 
     ## Get location.
     # Get location of the source.
