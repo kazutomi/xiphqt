@@ -86,6 +86,8 @@ class Subtle:
             "on_TOOL_STOP_clicked": self.playerStop,\
             "on_TOOL_SEEK_FORWARD_clicked": self.playerSeekForward,\
             "on_TOOL_SEEK_REWIND_clicked": self.playerSeekRewind,\
+            "on_TOOL_SM_clicked": self.playerSlowMotion,\
+            "on_TOOL_FF_clicked":self.playerFastForward,\
             "on_TOOL_HIDE_STREAMS_clicked": self.cb_hideStreamsPane,\
             "on_TOOL_HIDE_SUBLIST_clicked": self.cb_hideSubPane,\
             "on_MEDIA_ADJUSTMENT_button_press_event": self.buttonPressAdjustment,\
@@ -748,7 +750,8 @@ class Subtle:
         """
             Put the current playing video in slow motion
         """
-        #TODO: Implement it
+        self.player.slow_motion()
+        self.playButton.set_stock_id(gtk.STOCK_MEDIA_PLAY)
         pass
 
 
@@ -756,7 +759,8 @@ class Subtle:
         """
             Put the current playing video in FastForward 
         """
-        #TODO: Implement it
+        self.player.fast_forward()
+        self.playButton.set_stock_id(gtk.STOCK_MEDIA_PLAY)
         pass
 
 
@@ -849,11 +853,14 @@ class Subtle:
 
     def play_toggled(self):
         if self.player.is_playing():
-            self.player.pause()
-            self.playButton.set_stock_id(gtk.STOCK_MEDIA_PLAY)
-            #self.playButton.set_icon_name(gtk.STOCK_MEDIA_PLAY)
-            if gobject.source_remove(self.update_id):
-                    self.update_id = -1
+            if self.player.get_rate() != 1.0:
+                self.player.play()
+                self.playButton.set_stock_id(gtk.STOCK_MEDIA_PAUSE)
+            else:
+                self.player.pause()
+                self.playButton.set_stock_id(gtk.STOCK_MEDIA_PLAY)
+                if gobject.source_remove(self.update_id):
+                        self.update_id = -1
         else:
             self.player.play()
             if self.update_id == -1:

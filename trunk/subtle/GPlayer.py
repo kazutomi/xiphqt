@@ -60,6 +60,7 @@ class GstPlayer:
         bus.connect('sync-message::element', self.on_sync_message)
         bus.connect('message', self.on_message)
         self.cur_frame = 0
+        self.rate = 1.0
         
     def on_sync_message(self, bus, message):
         if message.structure is None:
@@ -76,6 +77,52 @@ class GstPlayer:
             self.playing = False
         elif t == gst.MESSAGE_EOS:
             self.playing = False
+            
+    def fast_forward(self):
+        """
+            Here we will fast forward the stream for as many times
+            as this is called
+        """
+        if self.rate < 8.0:
+            self.rate = self.rate*2.0
+            event = gst.event_new_seek(self.rate, gst.FORMAT_TIME,
+                gst.SEEK_FLAG_FLUSH,
+                gst.SEEK_TYPE_SET, self.query_position()[0],
+                gst.SEEK_TYPE_NONE, 0)
+
+            res = self.player.send_event(event)
+            if res:
+                gst.info("fast forwarding at rate: %f" % self.rate)
+                self.player.set_new_stream_time(0L)
+            else:
+                gst.error("change rate to %f failed" % self.rate)
+        return
+    
+    def slow_motion(self):
+        """
+            Here we will slow motion the stream for as many times
+            as this is called
+        """
+        self.rate = self.rate/2.0
+        event = gst.event_new_seek(self.rate, gst.FORMAT_TIME,
+            gst.SEEK_FLAG_FLUSH,
+            gst.SEEK_TYPE_SET, self.query_position()[0],
+            gst.SEEK_TYPE_NONE, 0)
+
+        res = self.player.send_event(event)
+        if res:
+            gst.info("slowing playback to rate: %f" % self.rate)
+            self.player.set_new_stream_time(0L)
+        else:
+            gst.error("change rate to %f failed" % self.rate)
+
+        return
+        
+    def get_rate(self):
+        """
+            Get the playing rate at the moment
+        """
+        return self.rate
 
     ## Set location.
     # Set location of the source.
@@ -121,7 +168,8 @@ class GstPlayer:
             if caps is not None:
                 framerate = caps[0]['framerate']
                 position = float(position)/float(1000000000)
-                self.cur_frame = (float(position)*float(framerate.num))/float(framerate.denom)
+                self.cur_frame = (float(position)*float(
+                                    framerate.num))/float(framerate.denom)
         return self.cur_frame
 
     ## Seek.
@@ -129,7 +177,7 @@ class GstPlayer:
     # \param location - location to the seek.
     def seek(self, location):
         gst.debug("seeking to %r" % location)
-        event = gst.event_new_seek(1.0, gst.FORMAT_TIME,
+        event = gst.event_new_seek(self.rate, gst.FORMAT_TIME,
             gst.SEEK_FLAG_FLUSH,
             gst.SEEK_TYPE_SET, location,
             gst.SEEK_TYPE_NONE, 0)
@@ -151,14 +199,33 @@ class GstPlayer:
     ## Play.
     # Media play.
     def play(self):
-        gst.info("playing player")
-        self.player.set_state(gst.STATE_PLAYING)
-        self.playing = True
+        """
+            Change the stream state to playing or simply
+            change its playing rate to normal rate
+        """
+        if self.rate != 1.0:
+            self.rate = 1.0
+            event = gst.event_new_seek(self.rate, gst.FORMAT_TIME,
+                gst.SEEK_FLAG_FLUSH,
+                gst.SEEK_TYPE_SET, self.query_position()[0],
+                gst.SEEK_TYPE_NONE, 0)
+
+            res = self.player.send_event(event)
+            if res:
+                gst.info("slowing playback to rate: %f" % self.rate)
+                self.player.set_new_stream_time(0L)
+            else:
+                gst.error("change rate to %f failed" % self.rate)           
+        else:
+            gst.info("playing player")
+            self.player.set_state(gst.STATE_PLAYING)
+            self.playing = True
+        return
 
     ## Stop
     # Media stop.
     def stop(self):
-        self.player.set_state(gst.STATE_NULL)
+        self.player.set_state(gst.STATE_READY)
         self.playing = False
         gst.info("stopped player")
 
