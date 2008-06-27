@@ -9,13 +9,12 @@
 <!-- Other elements go here --> 
 
 	<script type="application/x-javascript" src="chrome://oggPusher/content/op_Window.js"></script>
-
-
      <vbox>	
      	<label value="Locate Files on your computer:" control="browse-button"/>
 	<hbox>
-		<textbox id="file-path" disabled="true" style="width:200px"/>
-      		<button id="browse-button" label="Browse..."/>
+		<textbox id="file-path" control="browse-button" disabled="true" style="width:700px"/>
+      		<button id="browse-button" label="Browse..." oncommand=" opwindowCommon.openFileWindowDialog();"/>
+
 	</hbox>
      </vbox>
 
