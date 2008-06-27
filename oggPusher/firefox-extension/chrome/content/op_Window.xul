@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+
+<window
+    id="op-window"
+    title="oggPusher"
+    orient="horizontal"
+    onclose="onClose()"
+    xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+<!-- Other elements go here --> 
+
+	<script type="application/x-javascript" src="chrome://oggPusher/content/op_Window.js"></script>
+
+
+     <vbox>	
+     	<label value="Locate Files on your computer:" control="browse-button"/>
+	<hbox>
+		<textbox id="file-path" disabled="true" style="width:200px"/>
+      		<button id="browse-button" label="Browse..."/>
+	</hbox>
+     </vbox>
+
+</window>
+
