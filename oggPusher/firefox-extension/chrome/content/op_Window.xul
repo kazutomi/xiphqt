@@ -5,7 +5,6 @@
     id="op-window"
     title="oggPusher"
     orient="horizontal"
-    onclose="onClose()"
     xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 <!-- Other elements go here --> 
 
