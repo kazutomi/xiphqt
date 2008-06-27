@@ -13,7 +13,7 @@
 	      class="menuitem-iconic"  
               insertafter="javascriptConsole,devToolsSeparator"
               label="oggPusher"
-	      oncommand="openDialog();"/>
+	      oncommand="oggPusherCommon.openDialog();"/>
   </menupopup>
 	
   <toolbarpalette id="BrowserToolbarPalette">             
@@ -21,7 +21,7 @@
 		class="toolbarbutton-1"  
 		label="oggPusher" 
 		tooltiptext="Open OggPusher"
-		oncommand="openDialog();"/>            
+		oncommand="oggPusherCommon.openDialog();"/>            
   </toolbarpalette>
 
 
@@ -30,7 +30,7 @@
   	<statusbarpanel id="op_status" src="chrome://oggPusher/content/images/xiph.ico" 
               tooltiptext="open oggPusher" 
               class="statusbarpanel-iconic"
-	      oncommand="openDialog();"/>
+	      oncommand="oggPusherCommon.openDialog();"/>
   </statusbar>
 
 
