@@ -84,10 +84,10 @@ class Subtle:
             "on_main_file_open_activate": self.mainFileOpen, \
             "on_TOOL_PLAY_clicked": self.playerPlay,\
             "on_TOOL_STOP_clicked": self.playerStop,\
-            "on_TOOL_SEEK_FORWARD_clicked": self.playerSeekForward,\
-            "on_TOOL_SEEK_REWIND_clicked": self.playerSeekRewind,\
             "on_TOOL_SM_clicked": self.playerSlowMotion,\
             "on_TOOL_FF_clicked":self.playerFastForward,\
+            "on_TOOL_SEEK_FORWARD_clicked": self.playerSeekForward,\
+            "on_TOOL_SEEK_REWIND_clicked": self.playerSeekRewind,\
             "on_TOOL_HIDE_STREAMS_clicked": self.cb_hideStreamsPane,\
             "on_TOOL_HIDE_SUBLIST_clicked": self.cb_hideSubPane,\
             "on_MEDIA_ADJUSTMENT_button_press_event": self.buttonPressAdjustment,\
@@ -189,6 +189,7 @@ class Subtle:
         self.subtitle_pane = self.wTree.get_widget("subtitle_pane")
         self.txt_subedit = self.wTree.get_widget("txt_subedit")
         self.tgl_mode = self.wTree.get_widget("tgl_mode")
+        self.spin_seek_value = self.wTree.get_widget("spin_seek_value")
         self.subList = SUBLIST
         #self.windowMainWindow.maximize()
         return
@@ -766,18 +767,26 @@ class Subtle:
 
     def playerSeekForward(self, widget):
         """
-            Jump some time beyond current position
+            Jump some time or frames (depends on the subtitle format 
+            we are using) beyond current position
         """
-        #TODO: Implement it
-        pass
+        # TODO: Here we have to add support for more subtitle formats
+        cur_position = self.player.query_position()[0]
+        next_position = cur_position + ( self.spin_seek_value.get_value_as_int()*1000000000 )
+        self.player.seek(next_position)
+        return
 
 
     def playerSeekRewind(self, widget):
         """
-            Jump back some time
+            Jump back some time or frames (depends on the subtitle format
+            we are using)
         """
-        #TODO: Implement it
-        pass
+        # TODO: Here we have to add support for more subtitle formats
+        cur_position = self.player.query_position()[0]
+        next_position = cur_position - ( self.spin_seek_value.get_value_as_int()*1000000000 )
+        self.player.seek(next_position)
+        return
 
 
     def mainFileOpen(self, widget):
