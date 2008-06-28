@@ -1,0 +1,8 @@
+#include "nsISupports.idl"
+
+[scriptable, uuid(166ff10a-ea3c-490a-8c39-d453431bce3a)]
+interface IMyComponent : nsISupports
+{
+  long Add(in long a, in long b);
+};
+
