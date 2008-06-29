@@ -502,26 +502,65 @@ class Subtle:
 
 
     def cb_openMediaOpen(self, widget):
-        # TODO: Change the way we check if it is a subtitle file
-        # or if it is a media file
+        """
+            Callback to open a file
+            We do not add filters here because we
+            want to make subtle as dynamic as possible
+            and the number of supported files is too big and
+            sometimes not extensions based
+        """
         WND=self.windowMediaOpen.get_widget("OPEN_MEDIA")
         FN=WND.get_filename()
         URI=WND.get_uri()
         self.TEST_SUB_URI = URI
         WND.hide()
 
-        extension = os.path.splitext(FN)[1]
-        if extension == ".srt":
-            #TODO: We should improve the way we check subtitles
-            tmpSub = Discoverer.discoverer(FN)
+        tmpSub = Discoverer.discoverer(FN)
+        if tmpSub:
             self.Subtitle = tmpSub
             self.Subtitles.append(tmpSub)
             self.updateStreamWindow()
         else:
-            #TODO: Check if it is media or throw error
             MI = MediaInfo(FN, URI)
             # Lets poll for information
             gobject.timeout_add(30, self.addMedia, MI)
+    
+    def addMedia(self, mInfo):
+        """
+            This is polled untill a media file discover process
+            has ended. When it has, throw error to the user if not
+            supported.
+        """
+        if not mInfo:
+            return
+        # First, wait for media discovery 
+        if mInfo.poll():
+            return True 
+        mInfo = mInfo.getMedia()
+        if mInfo.MIME:
+            self.media.append(mInfo)
+            self.updateStreamWindow()
+            #Set videoWidget sizes according to media standards
+            self.videoWidget.set_size_request(mInfo.videoWidth, \
+                                                mInfo.videoHeight)
+            self.videoWidgetGst=VideoWidget(self.videoWidget)
+            self.player=GstPlayer(self.videoWidgetGst)
+            self.player.set_location("file://"+mInfo.source)
+            if self.videoWidget.flags() & gtk.REALIZED:
+                self.play_toggled()
+            else:
+                self.videoWidget.connect_after('realize',
+                                           lambda *x: self.play_toggled())
+        else:
+            errorDialog = gtk.MessageDialog(self.windowMainWindow, \
+                                            gtk.DIALOG_MODAL, \
+                                            gtk.MESSAGE_ERROR, \
+                                            gtk.BUTTONS_CLOSE, \
+                                            "This file format is not supported.")
+            result = errorDialog.run()
+            if (result == gtk.RESPONSE_CLOSE):
+                errorDialog.destroy()
+        return
 
 
     def cb_addNewStream(self, widget):
@@ -839,29 +878,6 @@ class Subtle:
             WND=self.windowStreams.get_widget("STREAM_WINDOW")
             WND.show()
         return
-
-
-    def addMedia(self, mInfo):
-        if not mInfo:
-            return
-        # Frist, wait for media discovery 
-        if mInfo.poll():
-            return True 
-        mInfo = mInfo.getMedia()
-        self.media.append(mInfo)
-        self.updateStreamWindow()
-        #Set videoWidget sizes according to media standards
-        self.videoWidget.set_size_request(mInfo.videoWidth, mInfo.videoHeight)
-        self.videoWidgetGst=VideoWidget(self.videoWidget)
-        self.player=GstPlayer(self.videoWidgetGst)
-        self.player.set_location("file://"+mInfo.source)
-        if self.videoWidget.flags() & gtk.REALIZED:
-            self.play_toggled()
-        else:
-            self.videoWidget.connect_after('realize',
-                                       lambda *x: self.play_toggled())
-        return
-
 
     def play_toggled(self):
         if self.player.is_playing():

@@ -29,6 +29,8 @@ def discoverer(file):
         supported.
     """
     extension = os.path.splitext(file)[1]
+    # TODO: For text based files we should check using
+    ## regex , not extensions
     if extension == ".srt":
         return SubRip(file)
     return None
