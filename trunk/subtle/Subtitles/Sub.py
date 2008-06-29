@@ -58,5 +58,3 @@ class Sub:
     
     ## \var Attributes
     # A array of attributes of subtitle. (NOT USED YET)
-
-#==============================================================================

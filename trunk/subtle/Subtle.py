@@ -502,6 +502,8 @@ class Subtle:
 
 
     def cb_openMediaOpen(self, widget):
+        # TODO: Change the way we check if it is a subtitle file
+        # or if it is a media file
         WND=self.windowMediaOpen.get_widget("OPEN_MEDIA")
         FN=WND.get_filename()
         URI=WND.get_uri()
@@ -511,7 +513,7 @@ class Subtle:
         extension = os.path.splitext(FN)[1]
         if extension == ".srt":
             #TODO: We should improve the way we check subtitles
-            tmpSub = SubRip.SubRip(FN)
+            tmpSub = Discoverer.discoverer(FN)
             self.Subtitle = tmpSub
             self.Subtitles.append(tmpSub)
             self.updateStreamWindow()
