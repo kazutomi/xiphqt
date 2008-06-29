@@ -1,7 +1,7 @@
-var opwindowCommon={
+var opwindowCommon={leafName:null,
 	openFileWindowDialog:function()
         {
-		alert("Inside openFileWindowDialog");
+		//alert("Inside openFileWindowDialog");
 		try{
                 	const nsIFilePicker = Components.interfaces.nsIFilePicker;
 	                var fp = Components.classes["@mozilla.org/filepicker;1"].createInstance(nsIFilePicker);
@@ -16,6 +16,8 @@ var opwindowCommon={
                 if (rv == nsIFilePicker.returnOK || rv == nsIFilePicker.returnReplace) {
                 	var file = fp.file;
          		var path = fp.file.path;
+			alert(fp.file.leafName);
+			this.leafName = fp.file.leafName;
 			parent.document.getElementById("file-path").value = path;
                 }
          },
@@ -38,7 +40,10 @@ var opwindowCommon={
 	},
 	uploadFile:function()
 	{
-			var filePath = document.getElementById("file-path").value;
+			var textboxObj = document.getElementById("file-path");
+			//alert(textboxObj);
+			var filePath = textboxObj.value;
+			//alert(filePath);
 			var file = Components.classes['@mozilla.org/file/local;1'].createInstance(Components.interfaces.nsILocalFile);
 			file.initWithPath(filePath);
 			var fstream = Components.classes['@mozilla.org/network/file-input-stream;1'].createInstance(Components.interfaces.nsIFileInputStream);
@@ -54,22 +59,22 @@ var opwindowCommon={
 		var boundaryString = 'capitano';
 		var boundary = '--' + boundaryString;
 		var requestbody = boundary + '\n' 
-		+ 'content-Dispostion: form-data; name="fileInput"; filename="'				 + filePath+ '"'+'\n'
+		+ 'Content-Disposition: form-data; name="myfile"; filename="' + this.leafName+ '"'+'\n'
 		+'Content-Type: application/octet-stream'+'\n'
-		+'Content-Transfer-Encoding: binary'+'\n'
 		+ '\n'
 		+ escape(binary.readBytes(binary.available()))
 		+ '\n'
 		+ boundary;
 		
 		
-
+		alert(requestbody);
 
 	        xhr.onreadystatechange = function() { if(this.readyState == 4) {alert(this.responseText)}}
 		xhr.open("POST", "http://www.it.iitb.ac.in/~nithind/post.php", true);
 		xhr.setRequestHeader("Content-Type", "multipart/form-data; boundary=\""+ boundaryString + "\"");
-		//xhr.setRequestHeader("Connection", "close");
+		xhr.setRequestHeader("Connection", "close");
 		xhr.setRequestHeader("Content-length", requestbody.length);
+		alert(requestbody.length);
 		xhr.send(requestbody);
 		
 

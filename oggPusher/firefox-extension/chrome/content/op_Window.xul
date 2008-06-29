@@ -5,6 +5,7 @@
     id="op-window"
     title="oggPusher"
     orient="horizontal"
+    xmlns:html="http://www.w3.org/1999/xhtml"
     xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 <!-- Other elements go here --> 
 
@@ -15,7 +16,9 @@
 		<textbox id="file-path" control="browse-button" disabled="true" style="width:400px"/>
       		<button id="browse-button" label="Browse..." oncommand="opwindowCommon.openFileWindowDialog();"/>
 		<button id="upload-button" label="Upload" oncommand="opwindowCommon.uploadFile();"/>
+		
 	</hbox>
+
      </vbox>
 
 </window>
