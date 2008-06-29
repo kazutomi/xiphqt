@@ -54,15 +54,17 @@ class MediaInfo:
             self.media.MIME = d.mimetype
             if d.is_video:
                 self.media.has_video = True
-                self.media.framerate = float(d.videorate.num)/float(d.videorate.denom)
+                self.media.framerate = float(d.videorate.num) \
+                                       / float(d.videorate.denom)
                 self.media.videoLengthNS = d.videolength
-                self.media.videoLengthS = float(d.videolength)/float(gst.MSECOND)/1000.0
+                self.media.videoLengthS = float(d.videolength) \
+                                          / float(gst.MSECOND)/1000.0
                 self.media.videoCaps = d.videocaps
                 self.media.videoHeight = d.videoheight
                 self.media.videoWidth = d.videowidth
             if d.is_audio:
                 self.media.has_audio = True
-            self.notDone = False
+        self.notDone = False
 
     def poll(self):
         return self.notDone
