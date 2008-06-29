@@ -18,7 +18,7 @@
 
 from GPlayer import VideoWidget
 from GPlayer import GstPlayer
-from Subtitles import Subtitles
+from Subtitles import *
 import sys
 import os
 
@@ -509,10 +509,9 @@ class Subtle:
         WND.hide()
 
         extension = os.path.splitext(FN)[1]
-        tmpSub = Subtitles(FN)
-        if extension in tmpSub.getSupportedTypes():
+        if extension == ".srt":
             #TODO: We should improve the way we check subtitles
-            tmpSub.subLoad(FN)
+            tmpSub = SubRip.SubRip(FN)
             self.Subtitle = tmpSub
             self.Subtitles.append(tmpSub)
             self.updateStreamWindow()
@@ -774,6 +773,7 @@ class Subtle:
         cur_position = self.player.query_position()[0]
         next_position = cur_position + ( self.spin_seek_value.get_value_as_int()*1000000000 )
         self.player.seek(next_position)
+        self.update_scale_cb()
         return
 
 
@@ -786,6 +786,7 @@ class Subtle:
         cur_position = self.player.query_position()[0]
         next_position = cur_position - ( self.spin_seek_value.get_value_as_int()*1000000000 )
         self.player.seek(next_position)
+        self.update_scale_cb()
         return
 
 
@@ -879,7 +880,6 @@ class Subtle:
 
 
     def update_scale_cb(self):
-        had_duration = self.p_duration != gst.CLOCK_TIME_NONE
         self.p_position, self.p_duration = self.player.query_position()
         if self.p_duration != self.t_duration:
             self.t_duration = self.p_duration
