@@ -12,9 +12,9 @@
      <vbox>	
      	<label value="Locate Files on your computer:" control="browse-button"/>
 	<hbox>
-		<textbox id="file-path" control="browse-button" disabled="true" style="width:700px"/>
-      		<button id="browse-button" label="Browse..." oncommand=" opwindowCommon.openFileWindowDialog();"/>
-
+		<textbox id="file-path" control="browse-button" disabled="true" style="width:400px"/>
+      		<button id="browse-button" label="Browse..." oncommand="opwindowCommon.openFileWindowDialog();"/>
+		<button id="upload-button" label="Upload" oncommand="opwindowCommon.uploadFile();"/>
 	</hbox>
      </vbox>
 
