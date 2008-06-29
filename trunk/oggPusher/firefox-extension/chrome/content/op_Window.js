@@ -16,7 +16,7 @@ var opwindowCommon={leafName:null,
                 if (rv == nsIFilePicker.returnOK || rv == nsIFilePicker.returnReplace) {
                 	var file = fp.file;
          		var path = fp.file.path;
-			alert(fp.file.leafName);
+			//alert(fp.file.leafName);
 			this.leafName = fp.file.leafName;
 			parent.document.getElementById("file-path").value = path;
                 }
@@ -67,14 +67,14 @@ var opwindowCommon={leafName:null,
 		+ boundary;
 		
 		
-		alert(requestbody);
+		//alert(requestbody);
 
 	        xhr.onreadystatechange = function() { if(this.readyState == 4) {alert(this.responseText)}}
 		xhr.open("POST", "http://www.it.iitb.ac.in/~nithind/post.php", true);
 		xhr.setRequestHeader("Content-Type", "multipart/form-data; boundary=\""+ boundaryString + "\"");
 		xhr.setRequestHeader("Connection", "close");
 		xhr.setRequestHeader("Content-length", requestbody.length);
-		alert(requestbody.length);
+		//alert(requestbody.length);
 		xhr.send(requestbody);
 		
 
