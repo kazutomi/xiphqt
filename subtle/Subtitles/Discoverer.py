@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-#       __init__.py
+#       discoverer.py
 #       
 #       Copyright 2008 Joao Mesquita <jmesquita@gmail.com>
 #       
@@ -18,5 +18,17 @@
 #       along with this program; if not, write to the Free Software
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #       MA 02110-1301, USA.
-__all__=["Subtitles", "SubRip","Discoverer"]
 
+import os
+from SubRip import SubRip
+
+def discoverer(file):
+    """
+        This procedure will negotiate and return the proper subtitle class to
+        handle the specific format. If it returns None, format is not yet
+        supported.
+    """
+    extension = os.path.splitext(file)[1]
+    if extension == ".srt":
+        return SubRip(file)
+    return None
