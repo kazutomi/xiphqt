@@ -38,7 +38,6 @@ var opwindowCommon={
 	},
 	uploadFile:function()
 	{
-		try{
 			var filePath = document.getElementById("file-path").value;
 			var file = Components.classes['@mozilla.org/file/local;1'].createInstance(Components.interfaces.nsILocalFile);
 			file.initWithPath(filePath);
@@ -46,16 +45,32 @@ var opwindowCommon={
 			fstream.init(file, 1, 1, Components.interfaces.nsIFileInputStream.CLOSE_ON_EOF);
 			var bstream = Components.classes['@mozilla.org/network/buffered-input-stream;1'].createInstance(Components.interfaces.nsIBufferedInputStream);
 			bstream.init(fstream, 4096);
+			var binary = Components.classes["@mozilla.org/binaryinputstream;1"].createInstance(Components.interfaces.nsIBinaryInputStream);
+			binary.setInputStream(fstream);
 			xhr = new XMLHttpRequest();
-		}
-		catch(err){
-			alert(err);
-			return;
-		}
+		
+		
+
+		var boundaryString = 'capitano';
+		var boundary = '--' + boundaryString;
+		var requestbody = boundary + '\n' 
+		+ 'content-Dispostion: form-data; name="fileInput"; filename="'				 + filePath+ '"'+'\n'
+		+'Content-Type: application/octet-stream'+'\n'
+		+'Content-Transfer-Encoding: binary'+'\n'
+		+ '\n'
+		+ escape(binary.readBytes(binary.available()))
+		+ '\n'
+		+ boundary;
+		
+		
+
+
 	        xhr.onreadystatechange = function() { if(this.readyState == 4) {alert(this.responseText)}}
-		xhr.open("POST", "http://localhost/upload.php", true);
-		xhr.setRequestHeader('Content-Type', 'application/octet-stream');
-		xhr.send(bstream);
+		xhr.open("POST", "http://www.it.iitb.ac.in/~nithind/post.php", true);
+		xhr.setRequestHeader("Content-Type", "multipart/form-data; boundary=\""+ boundaryString + "\"");
+		//xhr.setRequestHeader("Connection", "close");
+		xhr.setRequestHeader("Content-length", requestbody.length);
+		xhr.send(requestbody);
 		
 
 	}
