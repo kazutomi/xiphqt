@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-#       __init__.py
+#       Line.py
 #       
 #       Copyright 2008 Joao Mesquita <jmesquita@gmail.com>
 #       
@@ -18,5 +18,30 @@
 #       along with this program; if not, write to the Free Software
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #       MA 02110-1301, USA.
-__all__=["Subtitles", "SubRip","Discoverer","Line"]
 
+
+class Line:
+    """
+        Each line of a subtile will have its own class to control
+        the number of characters and other features
+    """
+    def __init__(self, text):
+        """
+            Each line has its own text
+        """
+        self.text = text
+        self.length = self._count(text)
+
+    def _count(self, text):
+        """
+            We have to make our own count
+            function because of pango markups
+            and end of lines.
+        """
+        j=0
+        for i in text:
+            if i == '\n':
+                continue
+            else:
+                j += 1
+        return j

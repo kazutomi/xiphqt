@@ -18,7 +18,9 @@
 #       along with this program; if not, write to the Free Software
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #       MA 02110-1301, USA.
+import string
 
+from Line import *
 
 class Sub:
     """
@@ -26,35 +28,53 @@ class Sub:
         individually
     """
 
-    def __init__(self):
+    def __init__(self,text):
         """
-            Lets init all the variables
-            This might work more or less like a C struct
+            Init all the variables
         """
-        self.text=""
+        self.lines = []
+        # Start with 1 cos we are only called
+        # when there is at least one line
+        self.nLines = 1
         self.start_time=None
         self.end_time=None
-        self.Attributes=None
         self.number=None
+        self._processText(text)
 
-    ## Check subtitle time.
-    # This function check if subtitle visibility in given time.
-    # \param[in] time - time to check
-    # \return 1 - if visibility in time, 0 - otherwise
     def isInTime(self, time):
+        """
+            Is it time to display a subtitle?
+        """
         if( (time>=self.start_time) and (time<=self.end_time) ):
             return 1
         else:
             return 0
 
-    ## \var text
-    # A variable to store subtitle text
+    def _processText(self,text):
+        """
+            We should parse the full text of a subtitle and divide it
+            line by line.
+            Another getSub method exists to retrieve the full text
+        """
+        lines = text.splitlines(True)
+        self.nLines = len(lines)
+        for i in xrange(0, len(lines)):
+            self.lines.append( Line(lines[i]) )
+        return
     
-    ## \var start_time
-    # A variable to store a start time of visibility of subtitle (in ns).
-    
-    ## \var end_time
-    # A variable to store a end time of visibility of subtitle (in ns).
-    
-    ## \var Attributes
-    # A array of attributes of subtitle. (NOT USED YET)
+    def getSubText(self):
+        """
+            Retrieve the full subtitle text.
+            The data model is yet to be defined.
+        """
+        fullText = ''
+        for i in range(0, self.nLines):
+            fullText += self.lines[i].text
+        return fullText
+        
+    def setSubText(self, text):
+        """
+            Set the subtitle text and this method will rearrange the
+            structure of lines as well as all other attributes.
+        """
+        pass

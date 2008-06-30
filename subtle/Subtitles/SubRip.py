@@ -111,9 +111,9 @@ class SubRip(Subtitles):
             ST=int(Timing[0:2])*3600000+int(Timing[3:5])*60000+int(Timing[6:8])*1000+int(Timing[9:12])
             ET=int(Timing[17:19])*3600000+int(Timing[20:22])*60000+int(Timing[23:25])*1000+int(Timing[26:29])
             
-            TS=Sub()
+            TS=Sub(Text)
             num_sub += 1
-            TS.text=Text
+            #TS.text=Text
             TS.start_time=ST
             TS.end_time=ET
             TS.number = num_sub
