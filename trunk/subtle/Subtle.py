@@ -364,13 +364,6 @@ class Subtle:
         """
         self.subtitle_pane.show()
 
-
-    def cb_onStreamsWindow(self, menu):
-        if self.windowStreams:
-            WND=self.windowStreams.get_widget("STREAM_WINDOW")
-            WND.show()
-
-
     def getSubtitle(self, source):
         for i in self.Subtitles:
             if i.subSource==source:
@@ -379,10 +372,11 @@ class Subtle:
 
 
     def cb_saveStream(self, widget):
-        if not self.windowStreams:
-            return
-        if not self.streamsTreeStore:
-            return
+        """
+            Save a stream. This will be renamed to cb_saveSub
+            since we don't offer video editting (yet)
+        """
+        #TODO: This is broken. How about implementing it correctly?
         TView = self.windowStreams.get_widget("LIST_STREAMS")
         TSelec = TView.get_selection()
         TModel, TIter = TSelec.get_selected()
@@ -618,7 +612,7 @@ class Subtle:
                     self.play_toggled()
         if event.type == gtk.gdk.BUTTON_RELEASE:
             model, self.cur_edit_sub_iter =  Selection.get_selected() 
-            self.setSubtitleEdit(Sub.text)
+            self.setSubtitleEdit( Sub.getSubText() )
 
 
     def cb_onSubTextEdited(self, cell, path, new_text):
@@ -671,7 +665,7 @@ class Subtle:
             self.subsListStore.set(iter,0, j, 
                                         1, int(S.start_time),
                                         2, int(S.end_time),
-                                        3, str(S.text))
+                                        3, str(S.getSubText()))
             j +=1
 
 
