@@ -600,7 +600,7 @@ class Subtle:
         if event.type == gtk.gdk._2BUTTON_PRESS and event.button == 1:
             if self.player:
                 B=0;
-                self.player.set_subtitle_text(Sub.text)
+                self.player.set_subtitle_text(Sub.getSubText())
                 if self.player.is_playing():
                     B=1
                     self.play_toggled()
@@ -907,13 +907,13 @@ class Subtle:
             TText = self.Subtitle.getSub(MSec)
             if self.player.is_playing():
                 if TText:
-                    self.player.set_subtitle_text(TText.text)
+                    self.player.set_subtitle_text( TText.getSubText() )
                     # Select current playing subtitle
                     if self.mode == ONLINE_MODE:
                         Selection = self.subList.get_selection() 
                         #FIXME: This sometimes bugs ... Why??
                         Selection.select_path(TText.number-1)
-                        self.setSubtitleEdit(TText.text)
+                        self.setSubtitleEdit( TText.getSubText() )
                 else:
                     self.player.set_subtitle_text('')
                     if self.mode == ONLINE_MODE:
