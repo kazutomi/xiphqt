@@ -38,10 +38,5 @@ class Line:
             function because of pango markups
             and end of lines.
         """
-        j=0
-        for i in text:
-            if i == '\n':
-                continue
-            else:
-                j += 1
-        return j
+        t = text.strip('\n')
+        return len(t)
