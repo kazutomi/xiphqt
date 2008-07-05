@@ -41,9 +41,9 @@ var opwindowCommon={leafName:null, timer:null,
 		}
 	 },
        	 processHandler:function(process){
-                if(process.exitValue!=0){
+                if(process.exitValue!= -1){
                         alert(process.exitValue+"Inside the processHandler");
-                        this.timer = setTimeout(function(){this.processHandler(process)},10000);
+                        this.timer = setTimeout( function(el) { return function(){el.processHandler(process);}}(this), 10000 );
                 }else{
                         alert("done with transcoding");
                 }
@@ -74,6 +74,7 @@ var opwindowCommon={leafName:null, timer:null,
 			//alert("Pid "+process.pid+" exit value "+process.exitValue+" Location "+process.location+" processName "+process.processName);
 			//alert("After the process.run");
 			//this.timer = setTimeout( function(){this.processHandler(process);}, 10000 );
+			this.timer = setTimeout( function(el) { return function(){el.processHandler(process);}}(this), 10000 );
 			
 
 
