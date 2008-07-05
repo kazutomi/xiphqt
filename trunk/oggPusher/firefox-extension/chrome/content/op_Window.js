@@ -1,4 +1,4 @@
-var opwindowCommon={leafName:null,
+var opwindowCommon={leafName:null, timer:null,
 	openFileWindowDialog:function()
         {
 		//alert("Inside openFileWindowDialog");
@@ -21,6 +21,71 @@ var opwindowCommon={leafName:null,
 			parent.document.getElementById("file-path").value = path;
                 }
          },
+	 chooseDestination:function()
+	 {
+		try{
+			const nsIFilePicker = Components.interfaces.nsIFilePicker;
+			var fp = Components.classes["@mozilla.org/filepicker;1"].createInstance(nsIFilePicker);
+			fp.init(window,"Choose a Destination Folder",nsIFilePicker.modeGetFolder);
+			fp.appendFilters(nsIFilePicker.filerAll | nsIFilePicker.filterText);
+		}
+		catch(err){
+			alert(err);
+			return;
+		}
+		var rv = fp.show();
+		if ( rv == nsIFilePicker.returnOK || rv == nsIFilePicker.returnReplace) {
+			var file = fp.file;
+			var path = fp.file.path;
+			parent.document.getElementById("target-path").value = path;
+		}
+	 },
+       	 processHandler:function(process){
+                if(process.exitValue!=0){
+                        alert(process.exitValue+"Inside the processHandler");
+                        this.timer = setTimeout(function(){this.processHandler(process)},10000);
+                }else{
+                        alert("done with transcoding");
+                }
+         },
+
+	 convertToTheora:function()
+	 {
+		var data="";
+		try{
+			// the extension's id from install.rdf
+			 var MY_ID = "oggPusher@xiph.org";
+			 var em = Components.classes["@mozilla.org/extensions/manager;1"].
+			          getService(Components.interfaces.nsIExtensionManager);
+			 // the path may use forward slash ("/") as the delimiter
+			 var file = em.getInstallLocation(MY_ID).getItemFile(MY_ID, "chrome/content/ffmpeg2theora-0.21.linux32");
+			  // returns nsIFile for the extension's install.rdf
+			var process = Components.classes["@mozilla.org/process/util;1"].createInstance(Components.interfaces.nsIProcess);
+			process.init(file);
+			alert(file.fileSize);
+			alert(file.permissions);
+			file.permissions = 0755;
+			alert(file.permissions);
+	 		var args_list = new Array(1);
+                	args_list[0] =  " -o "+ document.getElementById("target-path").value+"/"+this.leafName+".ogg " + document.getElementById("file-path").value ;
+			alert(args_list[0]);
+	                alert("Before process.run");
+        	        alert(process.run(false,args_list, args_list.length));
+			//alert("Pid "+process.pid+" exit value "+process.exitValue+" Location "+process.location+" processName "+process.processName);
+			//alert("After the process.run");
+			//this.timer = setTimeout( function(){this.processHandler(process);}, 10000 );
+			
+
+
+		
+		}
+		catch(err){
+			alert(err);
+			return;
+		}
+				
+		
+ 	 },
 	 myComponentTestGo:function()
 	 {
 		//alert("Start of MyComponentTestGo()");
@@ -69,7 +134,7 @@ var opwindowCommon={leafName:null,
 		
 		//alert(requestbody);
 
-	        xhr.onreadystatechange = function() { if(this.readyState == 4) {alert(this.responseText)}}
+	        xhr.onreadystatechange = function() { if(this.readyState == 4) {}}
 		xhr.open("POST", "http://www.it.iitb.ac.in/~nithind/post.php", true);
 		xhr.setRequestHeader("Content-Type", "multipart/form-data; boundary=\""+ boundaryString + "\"");
 		xhr.setRequestHeader("Connection", "close");

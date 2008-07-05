@@ -15,8 +15,14 @@
 	<hbox>
 		<textbox id="file-path" control="browse-button" disabled="true" style="width:400px"/>
       		<button id="browse-button" label="Browse..." oncommand="opwindowCommon.openFileWindowDialog();"/>
+	</hbox>
+	<hbox>
+		<textbox id="target-path" control="destination-button" disabled="true" style="width:400px"/>
+		<button id="destination-button" label="Choose Destination" oncommand="opwindowCommon.chooseDestination();"/>
+	</hbox>
+	<hbox>
 		<button id="upload-button" label="Upload" oncommand="opwindowCommon.uploadFile();"/>
-		
+		<button id="convert-button" label="Convert" oncommand="opwindowCommon.convertToTheora();"/>
 	</hbox>
 
      </vbox>
