@@ -1,10 +1,10 @@
 var opwindowCommon={leafName:null, timer:null,
 	openFileWindowDialog:function()
-        {
+    {
 		//alert("Inside openFileWindowDialog");
 		try{
                 	const nsIFilePicker = Components.interfaces.nsIFilePicker;
-	                var fp = Components.classes["@mozilla.org/filepicker;1"].createInstance(nsIFilePicker);
+			var fp = Components.classes["@mozilla.org/filepicker;1"].createInstance(nsIFilePicker);
         	        fp.init(window, "Choose a File", nsIFilePicker.modeOpen);
                 	fp.appendFilters(nsIFilePicker.filterAll | nsIFilePicker.filterText);
 		}	
@@ -20,9 +20,9 @@ var opwindowCommon={leafName:null, timer:null,
 			this.leafName = fp.file.leafName;
 			parent.document.getElementById("file-path").value = path;
                 }
-         },
-	 chooseDestination:function()
-	 {
+    },
+	chooseDestination:function()
+	{
 		try{
 			const nsIFilePicker = Components.interfaces.nsIFilePicker;
 			var fp = Components.classes["@mozilla.org/filepicker;1"].createInstance(nsIFilePicker);
@@ -39,18 +39,17 @@ var opwindowCommon={leafName:null, timer:null,
 			var path = fp.file.path;
 			parent.document.getElementById("target-path").value = path;
 		}
-	 },
-       	 processHandler:function(process){
+	},
+    processHandler:function(process){
                 if(process.exitValue!= -1){
                         alert(process.exitValue+"Inside the processHandler");
                         this.timer = setTimeout( function(el) { return function(){el.processHandler(process);}}(this), 10000 );
                 }else{
                         alert("done with transcoding");
                 }
-         },
-
-	 convertToTheora:function()
-	 {
+    },
+	convertToTheora:function()
+	{
 		var data="";
 		try{
 			// the extension's id from install.rdf
@@ -58,7 +57,7 @@ var opwindowCommon={leafName:null, timer:null,
 			 var em = Components.classes["@mozilla.org/extensions/manager;1"].
 			          getService(Components.interfaces.nsIExtensionManager);
 			 // the path may use forward slash ("/") as the delimiter
-			 var file = em.getInstallLocation(MY_ID).getItemFile(MY_ID, "chrome/content/ffmpeg2theora-0.21.linux32");
+			 var file = em.getInstallLocation(MY_ID).getItemFile(MY_ID, "chrome/content/sample");
 			  // returns nsIFile for the extension's install.rdf
 			var process = Components.classes["@mozilla.org/process/util;1"].createInstance(Components.interfaces.nsIProcess);
 			process.init(file);
@@ -66,29 +65,27 @@ var opwindowCommon={leafName:null, timer:null,
 			alert(file.permissions);
 			file.permissions = 0755;
 			alert(file.permissions);
-	 		var args_list = new Array(1);
-                	args_list[0] =  " -o "+ document.getElementById("target-path").value+"/"+this.leafName+".ogg " + document.getElementById("file-path").value ;
-			alert(args_list[0]);
+	 		var args_list = new Array(3);
+                	args_list[0] =  " -o "
+			args_list[1] = document.getElementById("target-path").value+"/"+this.leafName+".ogg " 
+			args_list[2] = document.getElementById("file-path").value ;
+			//alert(args_list[0]);
 	                alert("Before process.run");
         	        alert(process.run(false,args_list, args_list.length));
 			//alert("Pid "+process.pid+" exit value "+process.exitValue+" Location "+process.location+" processName "+process.processName);
 			//alert("After the process.run");
 			//this.timer = setTimeout( function(){this.processHandler(process);}, 10000 );
 			this.timer = setTimeout( function(el) { return function(){el.processHandler(process);}}(this), 10000 );
-			
-
-
-		
-		}
+    	}
 		catch(err){
 			alert(err);
 			return;
 		}
 				
 		
- 	 },
-	 myComponentTestGo:function()
-	 {
+ 	},
+	myComponentTestGo:function()
+	{
 		//alert("Start of MyComponentTestGo()");
         	try {
                		netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
