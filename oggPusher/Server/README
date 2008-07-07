@@ -3,3 +3,19 @@ http://www.it.iitb.ac.in/~nithind/post.php
 
 the files are supposed to be created in uploads dir in my home directory
 
+
+8/7/2008 For testing purpose i have added two files
+1)upload.php
+
+please place this in /var/www/ the default dir for apache server.
+Also create one directory uploads in /var/www/
+
+2)sample_form.php
+
+This take a file input and submit the action to upload.php
+so the url is http://localhost/upload.php
+If you have placed upload.php in any public server you can edit sample_form.php to replace 
+localhost with the url of your server.
+If the file is uploaded successfully, and message appears
+File is successfully uploaded.
+
