@@ -85,6 +85,18 @@
 <h2>Headlines</h2>
 <ul class="descriptivelist">
 	<li>
+		<h3>Speex 1.2rc1 is out</h3>
+		<p class="submitdate">December 11, 2007</p>
+		<div class="description">
+                <p>This release adds support for acoustic echo cancellation with multiple 
+                microphones and multiple loudspeakers. It also adds an API to decorrelate
+                loudspeaker signals to improve multi-channel performance. In the bugfix
+                department, there are fixes for a few bugs in the echo canceller, jitter 
+                buffer and preprocessor. At this point, the API for 1.2 should be stable
+                and only a few very minor additions are planned.</p>
+		</div>
+	</li>
+	<li>
 		<h3>Speex 1.2beta3 is out</h3>
 		<p class="submitdate">December 11, 2007</p>
 		<div class="description">
@@ -94,28 +106,6 @@
                 the first release where libspeex can be built without any floating point support. To do this,
                 the float compatibility API must be disabled (--disable-float-api or DISABLE_FLOAT_API) and
                 the VBR feature must be disabled (--disable-vbr or DISABLE_VBR).</p>
-		</div>
-	</li>
-	<li>
-		<h3>Speex 1.2beta2: Fixed-point improvements and more</h3>
-		<p class="submitdate">May 24, 2007</p>
-		<div class="description">
-                <p>Again, this new releases brings many improvements. The RAM requirement for wideband has gone down drastically (i.e. more than 2x). A new resampler module has been added, providing arbitrary sampling rate conversion -- fast. The echo canceller has also been improved. A bug in 1.2beta1 that made the  echo canceller unstable has been fixed. The echo canceller should now converge faster, be robust and tolerant of incorrect capture-playback synchronisation. The preprocessor has also been greatly improved. Not only should the quality be better, but it is now fully converted to fixed-point. At last, early TriMedia support (incomplete) has been merged.</p>
-		</div>
-	</li>
-	<li>
-		<h3>Speex 1.2beta1: Better, smaller, faster and more</h3>
-		<p class="submitdate">September 4, 2006</p>
-		<div class="description">
-                <p>This new release brings many significant improvements. The quality has been improved, both at the encoder level and the decoder level. These include enhancer improvements (now on by default), input/output high-pass filters, as well as fixing minor regressions in previous 1.1.x releases. A strange and rare instability problem with pure sinusoids has also been fixed. On top of that, memory use has been greatly reduced, especially for fixed-point and narrowband. The fixed-point narrowband encoder+decoder memory use has been cut by more than half, making it possible to fit both in less than 6 kB of RAM. In general, CPU requirement had gone down, especially for the fixed-point port. The Blackfin port has been speeded up significantly, thanks to David Rowe. There are also a few fixes for the TI C5X DSPs, as well as better support for C++ compilers and crappy MS compilers. Oh, and before anyone starts worrying, the format (bit-stream) itself has not changed, so Speex is still compatible with version 1.0 and will continue to be in the future.</p>
-                <p>Non-codec improvements include a extension (easier to use) to the echo canceller API and a Speex-independent version of the jitter buffer. The echo canceller should also be more robust to saturation in the capture path. Last, but not least, the documentation has been updated.</p>
-		</div>
-	</li>
-	<li>
-		<h3>How the Echo Canceller works</h3>
-		<p class="submitdate">August 7, 2006</p>
-		<div class="description">
-                <p>Always wanted to know how the Speex echo canceller works? <a href='http://people.xiph.org/~jm/papers/valin_taslp2006.pdf'>On Adjusting the Learning Rate in Frequency Domain Echo Cancellation With Double-Talk</a> has just been accepted for <i>IEEE Trans. on Audio, Speech and Language Processing</i>.</p>
 		</div>
 	</li>
 </ul>

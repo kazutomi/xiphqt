@@ -29,6 +29,20 @@
 
 <h2>Current <strong style='font-style: italic;'>Unstable</strong> Release (recommended)</h2>
 
+<h3 id='one.1.2rc1'>1.2rc1</h3>
+<p>This release adds support for acoustic echo cancellation with multiple 
+microphones and multiple loudspeakers. It also adds an API to decorrelate
+loudspeaker signals to improve multi-channel performance. In the bugfix
+department, there are fixes for a few bugs in the echo canceller, jitter 
+buffer and preprocessor. At this point, the API for 1.2 should be stable
+and only a few very minor additions are planned.</p>
+
+<span>Downloads:</span>
+<ul>
+<li><a href="http://downloads.xiph.org/releases/speex/speex-1.2rc1.tar.gz">Source Code</a></li>
+</ul>
+
+
 <h3 id='one.1.2beta3'>1.2beta3</h3>
 <p>The most obvious change in this release is that all the non-codec components (preprocessor,
 echo cancellation, jitter buffer) have been moved to a new <i>libspeexdsp</i> library. 

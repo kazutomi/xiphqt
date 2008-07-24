@@ -30,6 +30,18 @@
 
 <ul class="descriptivelist">
 	<li>
+		<h3>Speex 1.2rc1 is out</h3>
+		<p class="submitdate">December 11, 2007</p>
+		<div class="description">
+                <p>This release adds support for acoustic echo cancellation with multiple 
+                microphones and multiple loudspeakers. It also adds an API to decorrelate
+                loudspeaker signals to improve multi-channel performance. In the bugfix
+                department, there are fixes for a few bugs in the echo canceller, jitter 
+                buffer and preprocessor. At this point, the API for 1.2 should be stable
+                and only a few very minor additions are planned.</p>
+		</div>
+	</li>
+	<li>
 		<h3>Speex 1.2beta3 is out</h3>
 		<p class="submitdate">December 11, 2007</p>
 		<div class="description">
