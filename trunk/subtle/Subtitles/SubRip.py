@@ -21,9 +21,43 @@
 
 import os
 import string
+import re
 
 from Subtitles import Subtitles
 from Sub import *
+
+def discover(file):
+    """
+        Every subtitle should have a discover function
+        and return true if it should handle the requested
+        file.
+    """
+    # This is not the best option since we rely on Linux-only
+    # Make use of file command to check on the file type
+    try:
+        import magic
+    except:
+        print "We need python-magic, otherwise, this format will not be \
+        supported"
+        return
+
+    m = magic.open(magic.MAGIC_COMPRESS | magic.MAGIC_MIME)
+    status = m.load()
+    
+    if m.file(file).split('/')[0] == "text":
+        # Open file and read it
+        fd = open(file, "r")
+        data = fd.read()
+        fd.close()
+    else:
+        return
+    
+    # Test for SubRip by matching the header
+    regex = re.compile("""^(?P<counter>\d+)\s*
+                        ^(?P<ts_from>\d{2}:\d{2}:\d{2},\d{3})\s*-->\s*(?P<ts_to>\d{2}:\d{2}:\d{2},\d{3})\r?""",re.MULTILINE|re.VERBOSE)
+    if regex.match(data):
+        return True
+    return
 
 class SubRip(Subtitles):
     """

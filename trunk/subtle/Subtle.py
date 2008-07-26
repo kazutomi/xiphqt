@@ -550,7 +550,8 @@ class Subtle:
                                             gtk.DIALOG_MODAL, \
                                             gtk.MESSAGE_ERROR, \
                                             gtk.BUTTONS_CLOSE, \
-                                            "This file format is not supported.")
+                                            "This file format is not supported \
+                                            or not detected.")
             result = errorDialog.run()
             if (result == gtk.RESPONSE_CLOSE):
                 errorDialog.destroy()

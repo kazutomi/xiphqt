@@ -20,7 +20,7 @@
 #       MA 02110-1301, USA.
 
 import os
-from SubRip import SubRip
+import SubRip
 
 def discoverer(file):
     """
@@ -28,9 +28,9 @@ def discoverer(file):
         handle the specific format. If it returns None, format is not yet
         supported.
     """
-    extension = os.path.splitext(file)[1]
-    # TODO: For text based files we should check using
-    ## regex , not extensions
-    if extension == ".srt":
-        return SubRip(file)
+    
+    # Test for SubRip
+    if SubRip.discover(file):
+        return SubRip.SubRip(file)
+        
     return None
