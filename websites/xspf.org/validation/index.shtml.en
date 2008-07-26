@@ -21,16 +21,16 @@
         <a href="http://validator.xspf.org/">Online XSPF validator</a> by Sebastian Pipping.
       </li>
       <li style="margin-bottom: 1em;">
-        <a href="xspf-1_0.5.rng">Relax NG (XML) Schema for XSPF-1</a> by Matthias Friedrich.  Sample usage of <a href="http://xmlstar.sourceforge.net/">XMLStarlet</a>:
-        <pre>(Unix)     xmlstarlet validate -e -r xspf-1_0.5.rng myplaylist.xspf
-(Windows)  xml.exe validate -e -r xspf-1_0.5.rng myplaylist.xspf</pre>
-        There also exists a schema for <a href="xspf-0_0.5.rng">XSPF-0</a>, but working with XSPF-1 should be preferred.
+        <a href="xspf-1_0.6.rng">Relax NG (XML) Schema for XSPF-1</a> by Matthias Friedrich.  Sample usage of <a href="http://xmlstar.sourceforge.net/">XMLStarlet</a>:
+        <pre>(Unix)     xmlstarlet validate -e -r xspf-1_0.6.rng myplaylist.xspf
+(Windows)  xml.exe validate -e -r xspf-1_0.6.rng myplaylist.xspf</pre>
+        There also exists a schema for <a href="xspf-0_0.6.rng">XSPF-0</a>, but working with XSPF-1 should be preferred.
       </li>
       <li style="margin-bottom: 1em;">
-        <a href="xspf-1_0.5.rnc">Relax NG (Compact) Schema for XSPF-1</a> by Matthias Friedrich.  Sample usage of <a href="http://sourceforge.net/projects/rnv/">RNV</a>:
-        <pre>(Unix)     rnv xspf-1_0.5.rnc myplaylist.xspf
-(Windows)  rnv xspf-1_0.5.rnc myplaylist.xspf</pre>
-        There also exists a schema for <a href="xspf-0_0.5.rnc">XSPF-0</a>, but working with XSPF-1 should be preferred.
+        <a href="xspf-1_0.6.rnc">Relax NG (Compact) Schema for XSPF-1</a> by Matthias Friedrich.  Sample usage of <a href="http://sourceforge.net/projects/rnv/">RNV</a>:
+        <pre>(Unix)     rnv xspf-1_0.6.rnc myplaylist.xspf
+(Windows)  rnv xspf-1_0.6.rnc myplaylist.xspf</pre>
+        There also exists a schema for <a href="xspf-0_0.6.rnc">XSPF-0</a>, but working with XSPF-1 should be preferred.
       </li>
       <li>
         <a href="http://libspiff.sourceforge.net/">spiff_check of libSpiff</a> by Sebastian Pipping.  Sample usage of spiff_check:
