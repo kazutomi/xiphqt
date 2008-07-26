@@ -30,6 +30,19 @@
 
 <ul class="descriptivelist">
    <li>
+      <h3>Version 0.4.0 released</h3>
+      <p class="submitdate">26 July, 2008</p>
+      <div class="description">
+                <p>Version 0.4.0 is out. This release should greatly improve the handling of transients and reduce 
+                the amount of pre-echo, especially for larger frame sizes. There is now support for frame sizes up
+                to 512 samples for those who don't have extreme delay requirements. The release also brings improved
+                tuning for stereo and a variety of frame sizes and higher bit-rates. The API has been changed 
+                slightly to remove the <i>overlap</i> parameter, which is now automatically selected based on the 
+                frame size.</p>
+      </div>
+   </li>
+
+   <li>
       <h3>Version 0.3.2 released</h3>
       <p class="submitdate">16 May, 2008</p>
       <div class="description">

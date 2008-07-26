@@ -27,7 +27,19 @@
 <p>CELT is hosted in <a href="http://git.or.cz/">Git</a> and you can grab the latest code by typing:</p>
 <p>git clone http://git.xiph.org/celt.git</p>
 
-<h2>Latest <strong style='font-style: italic;'>development</strong> release</h2>
+<h2>Latest <strong style='font-style: italic;'>development</strong> releases</h2>
+
+<h3 id='zero.4.0'>0.4.0</h3>
+<p>This release should greatly improve the handling of transients and reduce the amount of pre-echo, especially
+   for larger frame sizes. There is now support for frame sizes up to 512 samples for those who don't have extreme 
+   delay requirements. The release also brings improved tuning for stereo and a variety of frame sizes 
+   and higher bit-rates. The API has been changed slightly to remove the <i>overlap</i> parameter, which is now
+   automatically selected based on the frame size.
+</p>
+
+<ul>
+<li><a href="http://downloads.us.xiph.org/releases/celt/celt-0.4.0.tar.gz">celt-0.4.0.tar.gz</a></li>
+</ul>
 
 <h3 id='zero.3.2'>0.3.2</h3>
 <p>This new release brings some quality improvements that can be observed in these <a href="/comparison/">listening test results</a>.</p>
