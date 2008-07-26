@@ -10,10 +10,10 @@
 # Config
 # -----------------------------------------------------------------------------
 SCHEMA_PATH="../../../websites/xspf.org/validation"
-RNC_0_FILE="${SCHEMA_PATH}/xspf-0_0.5.rnc"
-RNC_1_FILE="${SCHEMA_PATH}/xspf-1_0.5.rnc"
-RNG_1_FILE="${SCHEMA_PATH}/xspf-0_0.5.rng"
-RNG_1_FILE="${SCHEMA_PATH}/xspf-1_0.5.rng"
+RNC_0_FILE="${SCHEMA_PATH}/xspf-0_0.6.rnc"
+RNC_1_FILE="${SCHEMA_PATH}/xspf-1_0.6.rnc"
+RNG_0_FILE="${SCHEMA_PATH}/xspf-0_0.6.rng"
+RNG_1_FILE="${SCHEMA_PATH}/xspf-1_0.6.rng"
 XSD_FILE="${SCHEMA_PATH}/xspf-1_0.2.xsd"
 FAIL_0_FILES="for_version_0/fail/*.xspf"
 PASS_0_FILES="for_version_0/pass/*.xspf"
