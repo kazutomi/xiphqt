@@ -22,24 +22,28 @@
 import os
 import string
 import re
+import codecs
+
+# This is not the best option since we rely on Linux-only
+# Make use of file command to check on the file type
+try:
+    import magic
+except:
+    print "We need python-magic, otherwise, this format will not be \
+    supported"
+    sys.exit(1)
 
 from Subtitles import Subtitles
 from Sub import *
+
+FRAMERATE=25.00
 
 def discover(file):
     """
         Every subtitle should have a discover function
         and return true if it should handle the requested
         file.
-    """
-    # This is not the best option since we rely on Linux-only
-    # Make use of file command to check on the file type
-    try:
-        import magic
-    except:
-        print "We need python-magic, otherwise, this format will not be \
-        supported"
-        return
+    """ 
 
     m = magic.open(magic.MAGIC_COMPRESS | magic.MAGIC_MIME)
     status = m.load()
@@ -53,9 +57,10 @@ def discover(file):
         return
     
     # Test for SubRip by matching the header
-    regex = re.compile("""^(?P<counter>\d+)\s*
-                        ^(?P<ts_from>\d{2}:\d{2}:\d{2},\d{3})\s*-->\s*(?P<ts_to>\d{2}:\d{2}:\d{2},\d{3})\r?""",re.MULTILINE|re.VERBOSE)
-    if regex.match(data):
+    rawstr = r"""^(?P<counter>\d+)\s*
+                ^(?P<ts_from>\d{2}:\d{2}:\d{2},\d{3})\s*-->\s*(?P<ts_to>\d{2}:\d{2}:\d{2},\d{3})\r?"""
+    regex = re.compile(rawstr,re.MULTILINE| re.VERBOSE)
+    if regex.search(data):
         return True
     return
 
@@ -68,10 +73,15 @@ class SubRip(Subtitles):
     # Load subtitles from file.
     def __init__(self, filename):
         Subtitles.__init__(self,filename)
-        FILE=os.open(filename, os.O_RDONLY)
-        FS=os.fstat(FILE)
-        DATA=os.read(FILE,FS.st_size)
-        os.close(FILE)
+        
+        # Set the file encoding
+        m = magic.open(magic.MAGIC_COMPRESS | magic.MAGIC_MIME)
+        status = m.load()
+        self.encoding = m.file(filename).split('/')[1].split('=')[1]
+        
+        FILE = codecs.open(filename, 'r', self.encoding)
+        DATA = FILE.read()
+        FILE.close()
         
         self.subType="SubRip"
 
@@ -150,6 +160,8 @@ class SubRip(Subtitles):
             #TS.text=Text
             TS.start_time=ST
             TS.end_time=ET
+            TS.start_frame=ST*FRAMERATE/1000
+            TS.end_frame=ET*FRAMERATE/1000
             TS.number = num_sub
             self.subs[int(ST)]=TS
         self.updateKeys()

@@ -37,7 +37,9 @@ class Sub:
         # when there is at least one line
         self.nLines = 1
         self.start_time=None
+        self.start_frame=0
         self.end_time=None
+        self.end_frame=0
         self.number=None
         self._processText(text)
 
