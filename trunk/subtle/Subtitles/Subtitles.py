@@ -41,6 +41,7 @@ class Subtitles:
         self.filename = FN
         # TODO: Support more subtitles types
         self.subType = None
+        self.encoding = None
         return
 
     ## Delete subtitle.

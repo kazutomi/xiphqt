@@ -157,19 +157,27 @@ class Subtle:
             self.subsListStore = gtk.ListStore(gobject.TYPE_UINT,
                                                 gobject.TYPE_UINT,
                                                 gobject.TYPE_UINT,
+                                                gobject.TYPE_UINT,
+                                                gobject.TYPE_UINT,
                                                 gobject.TYPE_STRING)
             SUBLIST.set_model(self.subsListStore)
             cell = gtk.CellRendererText()
             tvcolumn = gtk.TreeViewColumn('#', cell, text = 0)
             SUBLIST.append_column(tvcolumn)
             cell = gtk.CellRendererText()
-            tvcolumn = gtk.TreeViewColumn('Start', cell, text = 1)
+            tvcolumn = gtk.TreeViewColumn('Start Time', cell, text = 1)
             SUBLIST.append_column(tvcolumn)
             cell = gtk.CellRendererText()
-            tvcolumn = gtk.TreeViewColumn('End', cell, text = 2)
+            tvcolumn = gtk.TreeViewColumn('End Time', cell, text = 2)
             SUBLIST.append_column(tvcolumn)
             cell = gtk.CellRendererText()
-            tvcolumn = gtk.TreeViewColumn('Text', cell, text = 3)
+            tvcolumn = gtk.TreeViewColumn('Start Frame', cell, text = 3)
+            SUBLIST.append_column(tvcolumn)
+            cell = gtk.CellRendererText()
+            tvcolumn = gtk.TreeViewColumn('End Frame', cell, text = 4)
+            SUBLIST.append_column(tvcolumn)
+            cell = gtk.CellRendererText()
+            tvcolumn = gtk.TreeViewColumn('Text', cell, text = 5)
             tvcolumn.set_resizable(True)
             SUBLIST.append_column(tvcolumn)
         #WND=self.windowStreams.get_widget("STREAM_WINDOW")
@@ -449,6 +457,9 @@ class Subtle:
             child = self.streamsTreeStore.append(iter)
             self.streamsTreeStore.set(child, 0, "Type: " + sub.subType, \
                     1, self.Subtitles.index(sub))
+            child = self.streamsTreeStore.append(iter)
+            self.streamsTreeStore.set(child, 0, "Encoding: " + sub.encoding, \
+                    1, self.Subtitles.index(sub))
         for mInfo in self.media:
             iter = self.streamsTreeStore.append(None)
             self.streamsTreeStore.set(iter, 0, mInfo.source, 1, self.media.index(mInfo))
@@ -666,7 +677,9 @@ class Subtle:
             self.subsListStore.set(iter,0, j, 
                                         1, int(S.start_time),
                                         2, int(S.end_time),
-                                        3, str(S.getSubText()))
+                                        3, int(S.start_frame),
+                                        4, int(S.end_frame),
+                                        5, str(S.getSubText()))
             j +=1
 
 
@@ -676,10 +689,10 @@ class Subtle:
         if self.PFileName[-4:]!=".spf":
             self.PFileName=self.PFileName+".spf"
         PXML=ProjectXML()
-        PXML.addHeadInfo("title", "Soufleur development version")
+        PXML.addHeadInfo("title", "Subtle development version")
         PXML.addHeadInfo("desc", "This is version current at development stage.")
-        PXML.addHeadInfo("author", "DarakuTenshi")
-        PXML.addHeadInfo("email", "otaky@ukr.net")
+        PXML.addHeadInfo("author", "Joao Mesquita")
+        PXML.addHeadInfo("email", "jmesquita@gmail.com")
         PXML.addHeadInfo("info", "Sample of save function")
         for i in self.media:
             PXML.addMedia(i)

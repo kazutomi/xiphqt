@@ -21,6 +21,7 @@
 
 import os
 import SubRip
+import Softni
 
 def discoverer(file):
     """
@@ -32,5 +33,8 @@ def discoverer(file):
     # Test for SubRip
     if SubRip.discover(file):
         return SubRip.SubRip(file)
+    # Test for Softni
+    if Softni.discover(file):
+        return Softni.Softni(file)
         
     return None
