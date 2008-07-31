@@ -30,6 +30,12 @@
 # -----------------------------------------------------------------------
 # HISTORY
 # -----------------------------------------------------------------------
+# 2008-07-31 -- Sebastian Pipping <webmaster@hartwork.org>
+#
+#   * Fixed: Support for 'xml:base' attribute added
+#   * Fixed: Support for XML namespaces added
+#   * Fixed: Additional invalid root attributes now rejected
+#
 # 2007-10-04 -- Sebastian Pipping <webmaster@hartwork.org>
 #
 #   * Changed: Link bar updated
@@ -454,7 +460,11 @@ else:
 
     dateRegex = re.compile("^(-?\\d\\d\\d\\d)-(0[1-9]|1[0-2])-(0[1-9]|1[0-9]|2[0-9]|3[0-1])T([0-1][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])(\\.\\d+)?([+-](((0[0-9]|1[0-3]):[0-5][0-9])|14:00)|Z)?$")
 
-    checker = xml.parsers.expat.ParserCreate()
+    SPIFF_NS_HOME = "http://xspf.org/ns/0/"
+    SPIFF_NS_SEP_CHAR = " "
+    XML_NS_HOME = "http://www.w3.org/XML/1998/namespace"
+
+    checker = xml.parsers.expat.ParserCreate(None, SPIFF_NS_SEP_CHAR)
 
 
 
@@ -462,6 +472,17 @@ else:
 
 
 errorTable = ""
+
+
+
+def nsXspf(localName):
+    return SPIFF_NS_HOME + SPIFF_NS_SEP_CHAR + localName
+
+
+
+def nsXml(localName):
+    return XML_NS_HOME + SPIFF_NS_SEP_CHAR + localName
+
 
 
 def startErrorTable():
@@ -579,7 +600,6 @@ def fail(text):
 
 def handlePlaylistAttribs(atts):
     versionFound = False
-    xmlnsFound = False
 
     keys = atts.keys()
     for i in range(len(atts)):
@@ -594,16 +614,15 @@ def handlePlaylistAttribs(atts):
                 fail("Version must be <i>0</i> or <i>1</i>, not '" + dummyVersion + "'.")
                 globals()["version"] = 1
             versionFound = True
-        elif name == "xmlns":
-            namespace = atts.values()[i]
-            if namespace != "http://xspf.org/ns/0/":
-                fail("Namespace must be 'http://xspf.org/ns/0/', not '" + namespace + "'.")
-            xmlnsFound = True
+        elif name == nsXml("base"):
+            xmlBase = atts.values()[i]
+            if not isUri(xmlBase):
+                fail("Attribute <i>xml:base</i> is not a URI.")
+        else:
+            fail("Attribute '" + name + "' not allowed.")
             
     if not versionFound:
         fail("Attribute <i>version</i> missing.")
-    if not xmlnsFound:
-        fail("Attribute <i>xmlns</i> missing.")
 
 
 
@@ -643,7 +662,7 @@ def handleMetaLinkAttribs(atts):
 
 
 def handleStartOne(name, atts):
-    if name != "playlist":
+    if name != nsXspf("playlist"):
         # fail("Element '" + name + "' not allowed.")
         fail("Root element must be <i>playlist</i>, not '" + name + "'.")
     else:
@@ -653,7 +672,7 @@ def handleStartOne(name, atts):
 
 
 def handleStartTwo(name, atts):
-    if name == "annotation":
+    if name == nsXspf("annotation"):
         if not globals()["firstPlaylistAnnotation"]:
             fail("Only one <i>annotation</i> allowed for <i>playlist</i>.")
         else:
@@ -661,7 +680,7 @@ def handleStartTwo(name, atts):
         globals()["firstPlaylistAnnotation"] = False
         globals()["stack"].append(TAG_PLAYLIST_ANNOTATION)
 
-    elif name == "attribution":
+    elif name == nsXspf("attribution"):
         if not globals()["firstPlaylistAttribution"]:
             fail("Only one <i>attribution</i> allowed for <i>playlist</i>.")
         else:
@@ -669,7 +688,7 @@ def handleStartTwo(name, atts):
         globals()["firstPlaylistAttribution"] = False
         globals()["stack"].append(TAG_PLAYLIST_ATTRIBUTION)
 
-    elif name == "creator":
+    elif name == nsXspf("creator"):
         if not globals()["firstPlaylistCreator"]:
             fail("Only one <i>creator</i> allowed for <i>playlist</i>.")
         else:
@@ -677,7 +696,7 @@ def handleStartTwo(name, atts):
         globals()["firstPlaylistCreator"] = False
         globals()["stack"].append(TAG_PLAYLIST_CREATOR)
 
-    elif name == "date":
+    elif name == nsXspf("date"):
         if not globals()["firstPlaylistDate"]:
             fail("Only one <i>date</i> allowed for <i>playlist</i>.")
         else:
@@ -685,7 +704,7 @@ def handleStartTwo(name, atts):
         globals()["firstPlaylistDate"] = False
         globals()["stack"].append(TAG_PLAYLIST_DATE)
 
-    elif name == "extension":
+    elif name == nsXspf("extension"):
         if globals()["version"] == 0:
             fail("Element <i>" + name + "</i> not allowed in XSPF-0.")
         else:
@@ -694,7 +713,7 @@ def handleStartTwo(name, atts):
         # Skip extension body
         globals()["skipAbove"] = 2
 
-    elif name == "identifier":
+    elif name == nsXspf("identifier"):
         if not globals()["firstPlaylistIdentifier"]:
             fail("Only one <i>identifier</i> allowed for <i>playlist</i>.")
         else:
@@ -702,7 +721,7 @@ def handleStartTwo(name, atts):
         globals()["firstPlaylistIdentifier"] = False
         globals()["stack"].append(TAG_PLAYLIST_IDENTIFIER)
 
-    elif name == "image":
+    elif name == nsXspf("image"):
         if not globals()["firstPlaylistImage"]:
             fail("Only one <i>image</i> allowed for <i>playlist</i>.")
         else:
@@ -710,7 +729,7 @@ def handleStartTwo(name, atts):
         globals()["firstPlaylistImage"] = False
         globals()["stack"].append(TAG_PLAYLIST_IMAGE)
 
-    elif name == "info":
+    elif name == nsXspf("info"):
         if not globals()["firstPlaylistInfo"]:
             fail("Only one <i>info</i> allowed for <i>playlist</i>.")
         else:
@@ -718,7 +737,7 @@ def handleStartTwo(name, atts):
         globals()["firstPlaylistInfo"] = False
         globals()["stack"].append(TAG_PLAYLIST_INFO)
 
-    elif name == "license":
+    elif name == nsXspf("license"):
         if not globals()["firstPlaylistLicense"]:
             fail("Only one <i>license</i> allowed for <i>playlist</i>.")
         else:
@@ -726,11 +745,11 @@ def handleStartTwo(name, atts):
         globals()["firstPlaylistLicense"] = False
         globals()["stack"].append(TAG_PLAYLIST_LICENSE)
 
-    elif name == "link":
+    elif name == nsXspf("link"):
         handleMetaLinkAttribs(atts)
         globals()["stack"].append(TAG_PLAYLIST_LINK)
 
-    elif name == "location":
+    elif name == nsXspf("location"):
         if not globals()["firstPlaylistLocation"]:
             fail("Only one <i>location</i> allowed for <i>playlist</i>.")
         else:
@@ -738,11 +757,11 @@ def handleStartTwo(name, atts):
         globals()["firstPlaylistLocation"] = False
         globals()["stack"].append(TAG_PLAYLIST_LOCATION)
 
-    elif name == "meta":
+    elif name == nsXspf("meta"):
         handleMetaLinkAttribs(atts)
         globals()["stack"].append(TAG_PLAYLIST_META)
 
-    elif name == "title":
+    elif name == nsXspf("title"):
         if not globals()["firstPlaylistTitle"]:
             fail("Only one <i>title</i> allowed for <i>playlist</i>.")
         else:
@@ -750,7 +769,7 @@ def handleStartTwo(name, atts):
         globals()["firstPlaylistTitle"] = False
         globals()["stack"].append(TAG_PLAYLIST_TITLE)
 
-    elif name == "trackList":
+    elif name == nsXspf("trackList"):
         globals()["firstPlaylistTrackList"]
         if not globals()["firstPlaylistTrackList"]:
             fail("Only one <i>trackList</i> allowed for <i>playlist</i>.")
@@ -771,11 +790,11 @@ def handleStartTwo(name, atts):
 def handleStartThree(name, atts):
     stackTop = globals()["stack"][len(globals()["stack"]) - 1]
     if stackTop == TAG_PLAYLIST_ATTRIBUTION:
-        if name == "identifier":
+        if name == nsXspf("identifier"):
             handleNoAttribs(atts)
             globals()["stack"].append(TAG_PLAYLIST_ATTRIBUTION_IDENTIFIER)
 
-        elif name == "location":
+        elif name == nsXspf("location"):
             handleNoAttribs(atts)
             globals()["stack"].append(TAG_PLAYLIST_ATTRIBUTION_IDENTIFIER)
 
@@ -787,7 +806,7 @@ def handleStartThree(name, atts):
             globals()["skipAbove"] = 3
 
     elif stackTop == TAG_PLAYLIST_TRACKLIST:
-        if name == "track":
+        if name == nsXspf("track"):
             handleNoAttribs(atts)
             globals()["stack"].append(TAG_PLAYLIST_TRACKLIST_TRACK)
 
@@ -809,7 +828,7 @@ def handleStartThree(name, atts):
         
 
 def handleStartFour(name, atts):
-    if name == "album":
+    if name == nsXspf("album"):
         if not globals()["firstTrackAlbum"]:
             fail("Only one <i>album</i> allowed for <i>track</i>.")
         else:
@@ -817,7 +836,7 @@ def handleStartFour(name, atts):
         globals()["firstTrackAlbum"] = False
         globals()["stack"].append(TAG_PLAYLIST_TRACKLIST_TRACK_ALBUM)
 
-    elif name == "annotation":
+    elif name == nsXspf("annotation"):
         if not globals()["firstTrackAnnotation"]:
             fail("Only one <i>annotation</i> allowed for <i>track</i>.")
         else:
@@ -825,7 +844,7 @@ def handleStartFour(name, atts):
         globals()["firstTrackAnnotation"] = False
         globals()["stack"].append(TAG_PLAYLIST_TRACKLIST_TRACK_ANNOTATION)
 
-    elif name == "creator":
+    elif name == nsXspf("creator"):
         if not globals()["firstTrackCreator"]:
             fail("Only one <i>creator</i> allowed for <i>track</i>.")
         else:
@@ -833,7 +852,7 @@ def handleStartFour(name, atts):
         globals()["firstTrackCreator"] = False
         globals()["stack"].append(TAG_PLAYLIST_TRACKLIST_TRACK_CREATOR)
 
-    elif name == "duration":
+    elif name == nsXspf("duration"):
         if not globals()["firstTrackDuration"]:
             fail("Only one <i>duration</i> allowed for <i>track</i>.")
         else:
@@ -841,7 +860,7 @@ def handleStartFour(name, atts):
         globals()["firstTrackDuration"] = False
         globals()["stack"].append(TAG_PLAYLIST_TRACKLIST_TRACK_DURATION)
 
-    elif name == "extension":
+    elif name == nsXspf("extension"):
         if globals()["version"] == 0:
             fail("Element <i>" + name + "</i> not allowed in XSPF-0.")
         else:
@@ -850,11 +869,11 @@ def handleStartFour(name, atts):
         # Skip extension body
         globals()["skipAbove"] = 4
         
-    elif name == "identifier":
+    elif name == nsXspf("identifier"):
         handleNoAttribs(atts)
         globals()["stack"].append(TAG_PLAYLIST_TRACKLIST_TRACK_IDENTIFIER)
 
-    elif name == "image":
+    elif name == nsXspf("image"):
         if not globals()["firstTrackImage"]:
             fail("Only one <i>image</i> allowed for <i>track</i>.")
         else:
@@ -862,7 +881,7 @@ def handleStartFour(name, atts):
         globals()["firstTrackImage"] = False
         globals()["stack"].append(TAG_PLAYLIST_TRACKLIST_TRACK_IMAGE)
 
-    elif name == "info":
+    elif name == nsXspf("info"):
         if not globals()["firstTrackInfo"]:
             fail("Only one <i>info</i> allowed for <i>track</i>.")
         else:
@@ -870,19 +889,19 @@ def handleStartFour(name, atts):
         globals()["firstTrackInfo"] = False
         globals()["stack"].append(TAG_PLAYLIST_TRACKLIST_TRACK_INFO)
 
-    elif name == "link":
+    elif name == nsXspf("link"):
         handleMetaLinkAttribs(atts)
         globals()["stack"].append(TAG_PLAYLIST_TRACKLIST_TRACK_LINK)
 
-    elif name == "location":
+    elif name == nsXspf("location"):
         handleNoAttribs(atts)
         globals()["stack"].append(TAG_PLAYLIST_TRACKLIST_TRACK_LOCATION)
 
-    elif name == "meta":
+    elif name == nsXspf("meta"):
         handleMetaLinkAttribs(atts)
         globals()["stack"].append(TAG_PLAYLIST_TRACKLIST_TRACK_META)
 
-    elif name == "trackNum":
+    elif name == nsXspf("trackNum"):
         if not globals()["firstTrackTrackNum"]:
             fail("Only one <i>trackNum</i> allowed for <i>track</i>.")
         else:
@@ -890,7 +909,7 @@ def handleStartFour(name, atts):
         globals()["firstTrackTrackNum"] = False
         globals()["stack"].append(TAG_PLAYLIST_TRACKLIST_TRACK_TRACKNUM)
 
-    elif name == "title":
+    elif name == nsXspf("title"):
         if not globals()["firstTrackTitle"]:
             fail("Only one <i>title</i> allowed for <i>track</i>.")
         else:
