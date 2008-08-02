@@ -8,10 +8,16 @@
 <!--#include virtual="/ssi/pagetop.include" -->
 <!--  All your page content goes here  -->
 
+<h3>Mozilla commits support for Theora in Firefox</h3>
+<p class="newsdate">2008 August 2</p>
+<p>The Xiph.Org Foundation and the Mozilla Foundation share the common goal of keeping the Web free and open for everyone, so it did not come as a surprise when Mozilla's <a href="//www.0xdeadbeef.com/weblog/?p=492">Chris Blizzard announced</a> that the upcoming Firefox 3.1 will support both Ogg Theora and Vorbis, alongside the HTML 5's &lt;video&gt; element.</p>
+<p>This announcement paves the way for web developers to break away from proprietary media technologies.  For the average user it means posting, hosting and playing video/audio data will become as easy an activity as it currently is for images.  For private companies adopting these open standards it means getting rid off the middle man and his licensing fees.</p>
+<p>With the &lt;video&gt; element and Theora, exciting development possibilities such as <a href="//bluishcoder.co.nz/video_svg_demo.ogg">SVG desktops</a> or <a href="//annodex.net">annotated media</a> will also be possible, creating new ways of interacting with video online.  The adoption rate of this online revolution by other browsers soon joining the effort will help start a new age for multimedia.  Be part of it.</p>
+
 <h3>Theora 1.0 beta3 released</h3>
 <p class="newsdate">2008 April 16</p>
 <p>This is the third beta release toward our first stable implementation 
-of the reference library.
+of the reference library.</p>
 
 <ul>
 <li><a href="http://downloads.xiph.org/releases/theora/libtheora-1.0beta3.tar.bz2">libtheora-1.0beta3.tar.bz2</a></li>
@@ -22,10 +28,10 @@ of the reference library.
 <p>This release includes new separate encoder and decoder 
 libraries supporting the new-style API based on theora-exp. Also 
 included are assembly optimizations for gcc and MSVC builds, better
-documentation, general robustness and bug fixes.
+documentation, general robustness and bug fixes.</p>
 
 <p>Thanks to everyone who contributed to this release. Please give it a 
-try and report any remaining issues.
+try and report any remaining issues.</p>
 
 <h3>Theora 1.0 beta2 released</h3>
 <p class="newsdate">2007 October 12</p>
