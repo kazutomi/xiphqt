@@ -1,9 +1,0 @@
-<?xml version="1.0"?>
-
-<project name="oggPusher" default="createxpi">
-
-  <target name="createxpi">
-    <zip destfile="../oggPusher.xpi" basedir="." includes="**/**"/>
-  </target>
-  
-</project>
