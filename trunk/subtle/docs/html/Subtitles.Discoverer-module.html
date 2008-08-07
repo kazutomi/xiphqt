@@ -97,10 +97,52 @@
     </td>
   </tr>
 </table>
+<!-- ==================== VARIABLES ==================== -->
+<a name="section-Variables"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Variables</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-Variables"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="discover_funcs"></a><span class="summary-name">discover_funcs</span> = <code title="[]">[]</code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="Subtitles.Discoverer-module.html#format_path" class="summary-name">format_path</a> = <code title="'/home/jmesquita/Documents/subtle/Subtitles/Formats'"><code class="variable-quote">'</code><code class="variable-string">/home/jmesquita/Documents/subtle/Subtitles/Form</code><code class="variable-ellipsis">...</code></code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="Subtitles.Discoverer-module.html#modules" class="summary-name">modules</a> = <code title="['/home/jmesquita/Documents/subtle/Subtitles/Formats/Softni.py',
+ '/home/jmesquita/Documents/subtle/Subtitles/Formats/SubRip.py',
+ '/home/jmesquita/Documents/subtle/Subtitles/Formats/__init__.py']"><code class="variable-group">[</code><code class="variable-quote">'</code><code class="variable-string">/home/jmesquita/Documents/subtle/Subtitles/Formats</code><code class="variable-ellipsis">...</code></code>
+    </td>
+  </tr>
+</table>
 <p class="indent-wrapped-lines"><b>Imports:</b>
   <span title="os">os</span>,
-  <a href="Subtitles.SubRip-module.html" title="Subtitles.SubRip">SubRip</a>,
-  <a href="Subtitles.Softni-module.html" title="Subtitles.Softni">Softni</a>
+  <span title="glob">glob</span>,
+  <span title="Subtitles.Subtitles.Formats">Formats</span>,
+  <span title="Subtitles.Formats.__init__">module</span>
 </p><br />
 <!-- ==================== FUNCTION DETAILS ==================== -->
 <a name="section-FunctionDetails"></a>
@@ -142,6 +184,63 @@
 </td></tr></table>
 </div>
 <br />
+<!-- ==================== VARIABLES DETAILS ==================== -->
+<a name="section-VariablesDetails"></a>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Variables Details</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-VariablesDetails"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+</table>
+<a name="format_path"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">format_path</h3>
+  
+  <dl class="fields">
+  </dl>
+  <dl class="fields">
+    <dt>Value:</dt>
+      <dd><table><tr><td><pre class="variable">
+<code class="variable-quote">'</code><code class="variable-string">/home/jmesquita/Documents/subtle/Subtitles/Formats</code><code class="variable-quote">'</code>
+</pre></td></tr></table>
+</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="modules"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">modules</h3>
+  
+  <dl class="fields">
+  </dl>
+  <dl class="fields">
+    <dt>Value:</dt>
+      <dd><table><tr><td><pre class="variable">
+<code class="variable-group">[</code><code class="variable-quote">'</code><code class="variable-string">/home/jmesquita/Documents/subtle/Subtitles/Formats/Softni.py</code><code class="variable-quote">'</code><code class="variable-op">,</code>
+ <code class="variable-quote">'</code><code class="variable-string">/home/jmesquita/Documents/subtle/Subtitles/Formats/SubRip.py</code><code class="variable-quote">'</code><code class="variable-op">,</code>
+ <code class="variable-quote">'</code><code class="variable-string">/home/jmesquita/Documents/subtle/Subtitles/Formats/__init__.py</code><code class="variable-quote">'</code><code class="variable-group">]</code>
+</pre></td></tr></table>
+</dd>
+  </dl>
+</td></tr></table>
+</div>
+<br />
 <!-- ==================== NAVIGATION BAR ==================== -->
 <table class="navbar" border="0" width="100%" cellpadding="0"
        bgcolor="#a0c0ff" cellspacing="0">
@@ -173,7 +272,7 @@
 <table border="0" cellpadding="0" cellspacing="0" width="100%%">
   <tr>
     <td align="left" class="footer">
-    Generated by Epydoc 3.0.1 on Tue Aug  5 23:52:36 2008
+    Generated by Epydoc 3.0.1 on Thu Aug  7 02:27:50 2008
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"
