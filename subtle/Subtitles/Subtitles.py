@@ -42,6 +42,7 @@ class Subtitles:
         # TODO: Support more subtitles types
         self.subType = None
         self.encoding = None
+        self.framerate = None
         return
 
     ## Delete subtitle.

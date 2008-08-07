@@ -19,9 +19,18 @@
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #       MA 02110-1301, USA.
 
-import os
-import SubRip
-import Softni
+import os, glob
+from . import Formats
+
+discover_funcs = []
+
+format_path = os.path.dirname(Formats.__file__)
+modules = glob.glob(os.path.join(format_path, '*.py'))
+for module in modules:
+    module = __import__('Formats.' + os.path.basename(module)[:-3], 
+        globals(), locals(), ['discover'], 1)
+    if hasattr(module, 'discover'):
+        discover_funcs.append(module.discover)
 
 def discoverer(file):
     """
@@ -29,12 +38,14 @@ def discoverer(file):
         handle the specific format. If it returns None, format is not yet
         supported.
     """
-    
-    # Test for SubRip
-    if SubRip.discover(file):
-        return SubRip.SubRip(file)
-    # Test for Softni
-    if Softni.discover(file):
-        return Softni.Softni(file)
-        
-    return None
+
+    for func in discover_funcs:
+        print "Testing this func: %s" % func
+        handle = func(file)
+        if handle is not None:
+            print "I have found a handle: %s" % handle
+            return handle(file)
+    else:
+        print '----'            
+
+

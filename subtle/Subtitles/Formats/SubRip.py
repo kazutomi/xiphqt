@@ -33,8 +33,8 @@ except:
     supported"
     sys.exit(1)
 
-from Subtitles import Subtitles
-from Sub import *
+from .. Subtitles import Subtitles
+from Subtitles.Sub import *
 
 FRAMERATE=25.00
 
@@ -60,8 +60,11 @@ def discover(file):
     rawstr = r"""^(?P<counter>\d+)\s*
                 ^(?P<ts_from>\d{2}:\d{2}:\d{2},\d{3})\s*-->\s*(?P<ts_to>\d{2}:\d{2}:\d{2},\d{3})\r?"""
     regex = re.compile(rawstr,re.MULTILINE| re.VERBOSE)
+    
+    print "BEGIN: Test for SubRip"
     if regex.search(data):
-        return True
+        print "END: Test for SubRip"
+        return SubRip
     return
 
 class SubRip(Subtitles):

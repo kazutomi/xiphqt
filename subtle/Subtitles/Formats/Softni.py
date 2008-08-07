@@ -41,8 +41,8 @@ except:
 
 from random import randint
 
-from Subtitles import Subtitles
-from Sub import *
+from .. Subtitles import Subtitles
+from .. Subtitles import Sub
 
 FRAMERATE=25.00
 
@@ -64,14 +64,13 @@ def discover(file):
     else:
         return
 
-    # Test for SubRip by matching the header
-    rawstr = r"""^(?P<sub>.*\r?\n)*?
-            ^(?P<ts_from>\d{2}:\d{2}:\d{2}.\d{2})\\(?P<ts_to>\d{2}:\d{2}:\d{2}.\d{2})"""
-
+    #: Test for Softni by matching the timecode
+    rawstr = r"""^(?P<ts_from>\d{2}:\d{2}:\d{2}.\d{2})\\(?P<ts_to>\d{2}:\d{2}:\d{2}.\d{2})"""
+    
     regex = re.compile(rawstr,  re.MULTILINE| re.VERBOSE)
 
     if regex.search(data):
-        return True
+        return Softni
     return
     
 class Softni(Subtitles):
@@ -101,13 +100,13 @@ class Softni(Subtitles):
         # We reopen the file here so we can
         # iterate over the lines
         fd = codecs.open(file, "r", self.encoding)
-        str = fd.readlines()
+        contents = fd.readlines()
         fd.close()
         
         # Lets set the data structure like we need it
         info = []
         buffer = ""
-        for line in str:
+        for line in contents:
             if regex.search(line):
                 info.append(tuple([buffer] + line.split('\\')))
                 buffer=""
