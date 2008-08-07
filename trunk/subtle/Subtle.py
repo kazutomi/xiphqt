@@ -543,6 +543,9 @@ class Subtle:
             return True 
         mInfo = mInfo.getMedia()
         if mInfo.MIME:
+            # Set the subtitle framerate
+            if self.Subtitle:
+                self.Subtitle.framerate = mInfo.framerate
             self.media.append(mInfo)
             self.updateStreamWindow()
             #Set videoWidget sizes according to media standards
