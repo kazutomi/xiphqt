@@ -16,35 +16,38 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from GPlayer import VideoWidget
-from GPlayer import GstPlayer
-from Subtitles import *
+# Std modules import
 import sys
 import os
-
-from MediaInfo import MediaInfo
-from SubtleXML import ProjectXML
 
 try:
     import pygtk
     #tell pyGTK, if possible, that we want GTKv2
     pygtk.require("2.0")
-except:
-    #Some distributions come with GTK2, but not pyGTK
-    pass
+except ImportError:
+    print "You need to install PyGTK to run Subtle"
+    sys.exit(1)
+    
 try:
     import gtk
     import gobject
     import gtk.glade
-except:
-    print "You need to install pyGTK or GTKv2 ",
-    print "or set your PYTHONPATH correctly."
-    print "try: export PYTHONPATH=",
-    print "/usr/local/lib/python2.2/site-packages/"
+except ImportError:
+    print "You need to install pyGTK or GTKv2"
     sys.exit(1)
-#now we have both gtk and gtk.glade imported
-#Also, we know we are running GTK v2
-import gst
+
+try:
+    import gst
+except ImportError:
+    print "You need GStreamer python bindings to run Subtle"
+    sys.exit(1)
+
+# Subtle imports
+from Subtle.GPlayer import VideoWidget
+from Subtle.GPlayer import GstPlayer
+from Subtle.Subtitles import Subtitles,Discoverer
+from Subtle.MediaInfo import MediaInfo
+from Subtle.SubtleXML import ProjectXML
 
 ONLINE_MODE = 1
 EDITING_MODE = 0
@@ -55,7 +58,7 @@ class Subtle:
         In this init we are going to display the main
         Subtle window
         """
-        gladefile="subtle.glade"
+        gladefile="Subtle/subtle.glade"
         windowname="MAIN_WINDOW"
         
         self.update_id = -1
