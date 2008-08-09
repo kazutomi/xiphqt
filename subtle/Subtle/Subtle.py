@@ -1,20 +1,23 @@
 #!/usr/bin/env python
-
-#    This file is part of Subtle
 #
-#    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
-#
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
-#
-#    You should have received a copy of the GNU General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
+#       Subtle.py
+#       
+#       Copyright 2008 Joao Mesquita <jmesquita@gmail.com>
+#       
+#       This program is free software; you can redistribute it and/or modify
+#       it under the terms of the GNU General Public License as published by
+#       the Free Software Foundation; either version 3 of the License, or
+#       (at your option) any later version.
+#       
+#       This program is distributed in the hope that it will be useful,
+#       but WITHOUT ANY WARRANTY; without even the implied warranty of
+#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#       GNU General Public License for more details.
+#       
+#       You should have received a copy of the GNU General Public License
+#       along with this program; if not, write to the Free Software
+#       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+#       MA 02110-1301, USA.
 
 # Std modules import
 import sys
@@ -43,11 +46,11 @@ except ImportError:
     sys.exit(1)
 
 # Subtle imports
-from Subtle.GPlayer import VideoWidget
-from Subtle.GPlayer import GstPlayer
-from Subtle.Subtitles import Subtitles,Discoverer
-from Subtle.MediaInfo import MediaInfo
-from Subtle.SubtleXML import ProjectXML
+from GPlayer import VideoWidget
+from GPlayer import GstPlayer
+from Subtitles import Subtitles,Discoverer
+from MediaInfo import MediaInfo
+from SubtleXML import ProjectXML
 
 ONLINE_MODE = 1
 EDITING_MODE = 0
@@ -952,9 +955,3 @@ class Subtle:
         self.labelMSec.set_text("%09d"%MSec)
         self.lbl_cur_fps.set_text("%04d"%(self.player.query_frame(self.p_position)))
         return True
-
-#==============================================================================
-#        MAIN:
-#==============================================================================
-subtle=Subtle()
-gtk.main()
