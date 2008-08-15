@@ -105,10 +105,13 @@ for implementations of these types.  This document obsoletes <xref target="RFC35
      char[8]: '\213JNG\r\n\032\n' | jng
      char[8]: 'CELT    '          | celt
      char[8]: 'PCM     '          | pcm
-     char[9]: '\x80kate\0\0\0\0'  | kate
+     char[8]: '\x80kate\0\0\0'    | kate
      char[9]: 'YUV4MPEG2'         | yuv4mpeg
 				]]></artwork>
 			</figure>
+		<t>
+		The updated version of this table is kept at Xiph.org (see <xref target="Codecs"/>).
+		</t>
 			<t>Possible examples include:</t>
 			<t>
 				<list style="symbols">
@@ -566,18 +569,32 @@ This document describes the commonly used base 64, base 32, and base 16 encoding
 <seriesInfo name="RFC" value="4648"/>
 <format type="TXT" octets="35491" target="ftp://ftp.isi.edu/in-notes/rfc4648.txt"/>
 </reference>	
-			<reference anchor="Skeleton" target="http://xiph.org/ogg/doc/skeleton.html">
-				<front>
-					<title>The Ogg Skeleton Metadata Bitstream</title>
-					<author initials="S." surname="Pfeiffer" fullname="Silvia Pfeiffer">
-						<organization abbrev="Xiph">Xiph.Org Foundation</organization>
-					</author>
-					<author initials="C.D." surname="Parker" fullname="Conrad D. Parker">
-						<organization abbrev="Xiph">Xiph.Org Foundation</organization>
-					</author>
-					<date month="November" year="2007"/>
-				</front>
-			</reference>
+<reference anchor="Skeleton" target="http://xiph.org/ogg/doc/skeleton.html">
+	<front>
+		<title>The Ogg Skeleton Metadata Bitstream</title>
+		<author initials="S." surname="Pfeiffer" fullname="Silvia Pfeiffer">
+			<organization abbrev="Xiph">Xiph.Org Foundation</organization>
+		</author>
+		<author initials="C.D." surname="Parker" fullname="Conrad D. Parker">
+			<organization abbrev="Xiph">Xiph.Org Foundation</organization>
+		</author>
+		<date month="November" year="2007"/>
+	</front>
+</reference>
+
+<reference anchor="Codecs" target="http://wiki.xiph.org/index.php/MIMETypesCodecs">
+	<front>
+		<title> Specification of MIME types and respective codecs parameter </title>
+		<author initials="S." surname="Pfeiffer" fullname="Silvia Pfeiffer">
+			<organization abbrev="Xiph">Xiph.Org Foundation</organization>
+		</author>
+		<author initials="I.E." surname="Goncalves" fullname="Ivo Emanuel Goncalves">
+			<organization abbrev="Xiph">Xiph.Org Foundation</organization>
+		</author>
+		<date month="July" year="2008"/>
+	</front>
+</reference>
+
 			<reference anchor="Speex" target="http://speex.org/docs/manual/speex-manual">
 				<front>
 					<title>The Speex Codec Manual</title>
@@ -603,7 +620,7 @@ This document describes the commonly used base 64, base 32, and base 16 encoding
 				</front>
 				<seriesInfo name="Work in"  value="Progress"/>
 			</reference>
-			<reference anchor="Theora" target="http://theora.org/doc/Theora_spec.pdf">
+			<reference anchor="Theora" target="http://theora.org/doc/Theora.pdf">
 				<front>
 					<title>Theora Specification</title>
 					<author>
