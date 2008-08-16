@@ -466,7 +466,7 @@ This document defines procedures for the specification and registration of media
 				</front>
                                <seriesInfo name='Work in' value='Progress' />
 			</reference>
-			<reference anchor="Dirac" target="http://dirac.sourceforge.net/specification.html">
+			<reference anchor="Dirac" target="http://www.diracvideo.org/specifications/">
 				<front>
 					<title>Dirac Specification</title>
 					<author>
