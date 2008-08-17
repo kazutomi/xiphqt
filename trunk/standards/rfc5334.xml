@@ -106,7 +106,7 @@ for implementations of these types.  This document obsoletes <xref target="RFC35
      char[8]: 'CELT    '          | celt
      char[8]: 'PCM     '          | pcm
      char[8]: '\x80kate\0\0\0'    | kate
-     char[9]: 'YUV4MPEG2'         | yuv4mpeg
+     char[8]: 'YUV4MPEG'          | yuv4mpeg
 				]]></artwork>
 			</figure>
 		<t>
