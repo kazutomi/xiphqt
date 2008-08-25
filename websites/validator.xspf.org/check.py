@@ -2,7 +2,7 @@
 # coding: utf-8
 # -----------------------------------------------------------------------
 # Online XSPF Validator
-# Copyright (C) 2007, Sebastian Pipping / Xiph.Org Foundation
+# Copyright (C) 2007-2008, Sebastian Pipping / Xiph.Org Foundation
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -30,6 +30,13 @@
 # -----------------------------------------------------------------------
 # HISTORY
 # -----------------------------------------------------------------------
+# 2008-08-25 -- Sebastian Pipping <webmaster@hartwork.org>
+#
+#   * Fixed: 'xml:base' attribute now allowed anywhere, was
+#       root node only before
+#   * Fixed: Error "Attribute '<value>' not allowed" was shown
+#       instead of "Attribute '<key>' not allowed".
+#
 # 2008-07-31 -- Sebastian Pipping <webmaster@hartwork.org>
 #
 #   * Fixed: Support for 'xml:base' attribute added
@@ -626,10 +633,16 @@ def handlePlaylistAttribs(atts):
 
 
 
-def handleNoAttribs(atts):
+def handleNoAttribsExceptXmlBase(atts):
     keys = atts.keys()
     for i in range(len(atts)):
-        fail("Attribute '" + atts.values()[i] + "' not allowed.")
+        name = keys[i]
+        if name == nsXml("base"):
+            xmlBase = atts.values()[i]
+            if not isUri(xmlBase):
+                fail("Attribute <i>xml:base</i> is not a URI.")
+        else:
+        	fail("Attribute '" + keys[i] + "' not allowed.")
     
 
 
@@ -640,10 +653,15 @@ def handleExtensionAttribs(atts):
     else:
         for i in range(size):
             name = atts.keys()[i]
-            if name != "application":
+            if name == "application":
+                if not isUri(atts.values()[i]):
+                    fail("Attribute <i>application</i> is not a URI.")
+            elif name == nsXml("base"):
+                xmlBase = atts.values()[i]
+                if not isUri(xmlBase):
+                    fail("Attribute <i>xml:base</i> is not a URI.")
+            else:
                 fail("Attribute '" + name + "' not allowed.")
-            elif not isUri(atts.values()[i]):
-                fail("Attribute <i>application</i> is not a URI.")
                 
 
 
@@ -654,10 +672,15 @@ def handleMetaLinkAttribs(atts):
     else:
         for i in range(size):
             name = atts.keys()[i]
-            if name != "rel":
+            if name == "rel":
+                if not isUri(atts.values()[i]):
+                    fail("Attribute <i>rel</i> is not a URI.")
+            elif name == nsXml("base"):
+                xmlBase = atts.values()[i]
+                if not isUri(xmlBase):
+                    fail("Attribute <i>xml:base</i> is not a URI.")
+            else:
                 fail("Attribute '" + name + "' not allowed.")
-            elif not isUri(atts.values()[i]):
-                fail("Attribute <i>rel</i> is not a URI.")
 
 
 
@@ -676,7 +699,7 @@ def handleStartTwo(name, atts):
         if not globals()["firstPlaylistAnnotation"]:
             fail("Only one <i>annotation</i> allowed for <i>playlist</i>.")
         else:
-            handleNoAttribs(atts)
+            handleNoAttribsExceptXmlBase(atts)
         globals()["firstPlaylistAnnotation"] = False
         globals()["stack"].append(TAG_PLAYLIST_ANNOTATION)
 
@@ -684,7 +707,7 @@ def handleStartTwo(name, atts):
         if not globals()["firstPlaylistAttribution"]:
             fail("Only one <i>attribution</i> allowed for <i>playlist</i>.")
         else:
-            handleNoAttribs(atts)
+            handleNoAttribsExceptXmlBase(atts)
         globals()["firstPlaylistAttribution"] = False
         globals()["stack"].append(TAG_PLAYLIST_ATTRIBUTION)
 
@@ -692,7 +715,7 @@ def handleStartTwo(name, atts):
         if not globals()["firstPlaylistCreator"]:
             fail("Only one <i>creator</i> allowed for <i>playlist</i>.")
         else:
-            handleNoAttribs(atts)
+            handleNoAttribsExceptXmlBase(atts)
         globals()["firstPlaylistCreator"] = False
         globals()["stack"].append(TAG_PLAYLIST_CREATOR)
 
@@ -700,7 +723,7 @@ def handleStartTwo(name, atts):
         if not globals()["firstPlaylistDate"]:
             fail("Only one <i>date</i> allowed for <i>playlist</i>.")
         else:
-            handleNoAttribs(atts)
+            handleNoAttribsExceptXmlBase(atts)
         globals()["firstPlaylistDate"] = False
         globals()["stack"].append(TAG_PLAYLIST_DATE)
 
@@ -717,7 +740,7 @@ def handleStartTwo(name, atts):
         if not globals()["firstPlaylistIdentifier"]:
             fail("Only one <i>identifier</i> allowed for <i>playlist</i>.")
         else:
-            handleNoAttribs(atts)
+            handleNoAttribsExceptXmlBase(atts)
         globals()["firstPlaylistIdentifier"] = False
         globals()["stack"].append(TAG_PLAYLIST_IDENTIFIER)
 
@@ -725,7 +748,7 @@ def handleStartTwo(name, atts):
         if not globals()["firstPlaylistImage"]:
             fail("Only one <i>image</i> allowed for <i>playlist</i>.")
         else:
-            handleNoAttribs(atts)
+            handleNoAttribsExceptXmlBase(atts)
         globals()["firstPlaylistImage"] = False
         globals()["stack"].append(TAG_PLAYLIST_IMAGE)
 
@@ -733,7 +756,7 @@ def handleStartTwo(name, atts):
         if not globals()["firstPlaylistInfo"]:
             fail("Only one <i>info</i> allowed for <i>playlist</i>.")
         else:
-            handleNoAttribs(atts)
+            handleNoAttribsExceptXmlBase(atts)
         globals()["firstPlaylistInfo"] = False
         globals()["stack"].append(TAG_PLAYLIST_INFO)
 
@@ -741,7 +764,7 @@ def handleStartTwo(name, atts):
         if not globals()["firstPlaylistLicense"]:
             fail("Only one <i>license</i> allowed for <i>playlist</i>.")
         else:
-            handleNoAttribs(atts)
+            handleNoAttribsExceptXmlBase(atts)
         globals()["firstPlaylistLicense"] = False
         globals()["stack"].append(TAG_PLAYLIST_LICENSE)
 
@@ -753,7 +776,7 @@ def handleStartTwo(name, atts):
         if not globals()["firstPlaylistLocation"]:
             fail("Only one <i>location</i> allowed for <i>playlist</i>.")
         else:
-            handleNoAttribs(atts)
+            handleNoAttribsExceptXmlBase(atts)
         globals()["firstPlaylistLocation"] = False
         globals()["stack"].append(TAG_PLAYLIST_LOCATION)
 
@@ -765,7 +788,7 @@ def handleStartTwo(name, atts):
         if not globals()["firstPlaylistTitle"]:
             fail("Only one <i>title</i> allowed for <i>playlist</i>.")
         else:
-            handleNoAttribs(atts)
+            handleNoAttribsExceptXmlBase(atts)
         globals()["firstPlaylistTitle"] = False
         globals()["stack"].append(TAG_PLAYLIST_TITLE)
 
@@ -774,7 +797,7 @@ def handleStartTwo(name, atts):
         if not globals()["firstPlaylistTrackList"]:
             fail("Only one <i>trackList</i> allowed for <i>playlist</i>.")
         else:
-            handleNoAttribs(atts)
+            handleNoAttribsExceptXmlBase(atts)
         globals()["firstPlaylistTrackList"] = False
         globals()["stack"].append(TAG_PLAYLIST_TRACKLIST)
 
@@ -791,11 +814,11 @@ def handleStartThree(name, atts):
     stackTop = globals()["stack"][len(globals()["stack"]) - 1]
     if stackTop == TAG_PLAYLIST_ATTRIBUTION:
         if name == nsXspf("identifier"):
-            handleNoAttribs(atts)
+            handleNoAttribsExceptXmlBase(atts)
             globals()["stack"].append(TAG_PLAYLIST_ATTRIBUTION_IDENTIFIER)
 
         elif name == nsXspf("location"):
-            handleNoAttribs(atts)
+            handleNoAttribsExceptXmlBase(atts)
             globals()["stack"].append(TAG_PLAYLIST_ATTRIBUTION_IDENTIFIER)
 
         else:        
@@ -807,7 +830,7 @@ def handleStartThree(name, atts):
 
     elif stackTop == TAG_PLAYLIST_TRACKLIST:
         if name == nsXspf("track"):
-            handleNoAttribs(atts)
+            handleNoAttribsExceptXmlBase(atts)
             globals()["stack"].append(TAG_PLAYLIST_TRACKLIST_TRACK)
 
         else:
@@ -832,7 +855,7 @@ def handleStartFour(name, atts):
         if not globals()["firstTrackAlbum"]:
             fail("Only one <i>album</i> allowed for <i>track</i>.")
         else:
-            handleNoAttribs(atts)
+            handleNoAttribsExceptXmlBase(atts)
         globals()["firstTrackAlbum"] = False
         globals()["stack"].append(TAG_PLAYLIST_TRACKLIST_TRACK_ALBUM)
 
@@ -840,7 +863,7 @@ def handleStartFour(name, atts):
         if not globals()["firstTrackAnnotation"]:
             fail("Only one <i>annotation</i> allowed for <i>track</i>.")
         else:
-            handleNoAttribs(atts)
+            handleNoAttribsExceptXmlBase(atts)
         globals()["firstTrackAnnotation"] = False
         globals()["stack"].append(TAG_PLAYLIST_TRACKLIST_TRACK_ANNOTATION)
 
@@ -848,7 +871,7 @@ def handleStartFour(name, atts):
         if not globals()["firstTrackCreator"]:
             fail("Only one <i>creator</i> allowed for <i>track</i>.")
         else:
-            handleNoAttribs(atts)
+            handleNoAttribsExceptXmlBase(atts)
         globals()["firstTrackCreator"] = False
         globals()["stack"].append(TAG_PLAYLIST_TRACKLIST_TRACK_CREATOR)
 
@@ -856,7 +879,7 @@ def handleStartFour(name, atts):
         if not globals()["firstTrackDuration"]:
             fail("Only one <i>duration</i> allowed for <i>track</i>.")
         else:
-            handleNoAttribs(atts)
+            handleNoAttribsExceptXmlBase(atts)
         globals()["firstTrackDuration"] = False
         globals()["stack"].append(TAG_PLAYLIST_TRACKLIST_TRACK_DURATION)
 
@@ -870,14 +893,14 @@ def handleStartFour(name, atts):
         globals()["skipAbove"] = 4
         
     elif name == nsXspf("identifier"):
-        handleNoAttribs(atts)
+        handleNoAttribsExceptXmlBase(atts)
         globals()["stack"].append(TAG_PLAYLIST_TRACKLIST_TRACK_IDENTIFIER)
 
     elif name == nsXspf("image"):
         if not globals()["firstTrackImage"]:
             fail("Only one <i>image</i> allowed for <i>track</i>.")
         else:
-            handleNoAttribs(atts)
+            handleNoAttribsExceptXmlBase(atts)
         globals()["firstTrackImage"] = False
         globals()["stack"].append(TAG_PLAYLIST_TRACKLIST_TRACK_IMAGE)
 
@@ -885,7 +908,7 @@ def handleStartFour(name, atts):
         if not globals()["firstTrackInfo"]:
             fail("Only one <i>info</i> allowed for <i>track</i>.")
         else:
-            handleNoAttribs(atts)
+            handleNoAttribsExceptXmlBase(atts)
         globals()["firstTrackInfo"] = False
         globals()["stack"].append(TAG_PLAYLIST_TRACKLIST_TRACK_INFO)
 
@@ -894,7 +917,7 @@ def handleStartFour(name, atts):
         globals()["stack"].append(TAG_PLAYLIST_TRACKLIST_TRACK_LINK)
 
     elif name == nsXspf("location"):
-        handleNoAttribs(atts)
+        handleNoAttribsExceptXmlBase(atts)
         globals()["stack"].append(TAG_PLAYLIST_TRACKLIST_TRACK_LOCATION)
 
     elif name == nsXspf("meta"):
@@ -905,7 +928,7 @@ def handleStartFour(name, atts):
         if not globals()["firstTrackTrackNum"]:
             fail("Only one <i>trackNum</i> allowed for <i>track</i>.")
         else:
-            handleNoAttribs(atts)
+            handleNoAttribsExceptXmlBase(atts)
         globals()["firstTrackTrackNum"] = False
         globals()["stack"].append(TAG_PLAYLIST_TRACKLIST_TRACK_TRACKNUM)
 
@@ -913,7 +936,7 @@ def handleStartFour(name, atts):
         if not globals()["firstTrackTitle"]:
             fail("Only one <i>title</i> allowed for <i>track</i>.")
         else:
-            handleNoAttribs(atts)
+            handleNoAttribsExceptXmlBase(atts)
         globals()["firstTrackTitle"] = False
         globals()["stack"].append(TAG_PLAYLIST_TRACKLIST_TRACK_TITLE)
 
