@@ -1,4 +1,4 @@
-var opwindowCommon={leafName:null, timer:null,isOgg:null,
+var opwindowCommon={leafName:null, timer:null,isOgg:null,targetPathToUpload:null,
 	openFileWindowDialog:function()
     {
 		//alert("Inside openFileWindowDialog");
@@ -6,7 +6,11 @@ var opwindowCommon={leafName:null, timer:null,isOgg:null,
            	const nsIFilePicker = Components.interfaces.nsIFilePicker;
 			var fp = Components.classes["@mozilla.org/filepicker;1"].createInstance(nsIFilePicker);
         	fp.init(window, "Choose a File", nsIFilePicker.modeOpen);
-           	fp.appendFilters(nsIFilePicker.filterAll | nsIFilePicker.filterText);
+           	fp.appendFilters(nsIFilePicker.filterAll );
+            fp.appendFilter("Video Files","*.mpeg;*.mpg;*.avi;*.asf;*.flv;*.mov;*.mkv;*.wmv");
+            fp.appendFilter("Audio Files","*.mp3;*.wma");
+            fp.appendFilter("Free Format","*.ogg;*.ogv;*.oga;*.ogx")
+            //fp.appendFilter("mpg","*.mpg");
 		}	
 		catch(err){
 			alert(err);
@@ -20,12 +24,23 @@ var opwindowCommon={leafName:null, timer:null,isOgg:null,
             //alert(fp.file.leafName);
             this.leafName = fp.file.leafName;
 			parent.document.getElementById("file-path").value = path;
+            this.isOggFormat();
             this.appendActionButton();    
             
         }
         
     },
     isOggFormat:function(){
+        var file_name = document.getElementById("file-path").value;
+        var _1 = file_name.lastIndexOf('.');
+        var file_extension = file_name.substr(_1 + 1);
+        if( file_extension == "ogg" || file_extension == "ogx" || file_extension == "ogv" || file_extension == "oga")
+        {
+            this.isOgg = true;
+            this.targetPathToUpload = file_name;
+        }else{
+            this.isOgg = false;        
+        }
         
     },
     appendActionButton:function(){
@@ -34,19 +49,62 @@ var opwindowCommon={leafName:null, timer:null,isOgg:null,
         
         var actionButton = document.getElementById("action-button");
         if(actionButton == null){
-            actionButton = document.createElement("button");
-            actionButton.setAttribute("id","action-button");
-            actionButton.setAttribute("oncommand","actionButtonHandler();");
-            actionButton.setAttribute("image","chrome://oggPusher/content/images/xiph.ico");
-            actionButton.setAttribute("orient","vertical");
-            actionButton.setAttribute("label","Upload Audio/Video");
-            hboxParent.appendChild(actionButton);
+            if(this.isOgg){        
+                actionButton = document.createElement("button");
+                actionButton.setAttribute("id","action-button");
+                actionButton.setAttribute("oncommand","opwindowCommon.actionButtonHandler();");
+                actionButton.setAttribute("image","chrome://oggPusher/content/images/xiph.ico");
+                actionButton.setAttribute("orient","vertical");
+                actionButton.setAttribute("label","Upload Audio/Video");
+                hboxParent.appendChild(actionButton);
+            }
+            else
+            {
+                actionButton = document.createElement("button");
+                actionButton.setAttribute("id","action-button");
+                actionButton.setAttribute("oncommand","opwindowCommon.actionButtonHandler();");
+                actionButton.setAttribute("image","chrome://oggPusher/content/images/xiph.ico");
+                actionButton.setAttribute("orient","vertical");
+                actionButton.setAttribute("label","Transcode & Upload");
+                hboxParent.appendChild(actionButton);
+                
+            }
+        }
+        else
+        {
+            hboxParent.removeChild(actionButton);
+            if(this.isOgg){        
+                actionButton = document.createElement("button");
+                actionButton.setAttribute("id","action-button");
+                actionButton.setAttribute("oncommand","opwindowCommon.actionButtonHandler();");
+                actionButton.setAttribute("image","chrome://oggPusher/content/images/xiph.ico");
+                actionButton.setAttribute("orient","vertical");
+                actionButton.setAttribute("label","Upload Audio/Video");
+                hboxParent.appendChild(actionButton);
+            }
+            else
+            {
+                actionButton = document.createElement("button");
+                actionButton.setAttribute("id","action-button");
+                actionButton.setAttribute("oncommand","opwindowCommon.actionButtonHandler();");
+                actionButton.setAttribute("image","chrome://oggPusher/content/images/xiph.ico");
+                actionButton.setAttribute("orient","vertical");
+                actionButton.setAttribute("label","Transcode & Upload");
+                hboxParent.appendChild(actionButton);
+                
+            }
+                
         }
     },
     actionButtonHandler:function(){
-        
-        
-        
+        if(this.isOgg){
+            this.uploadFile();
+        }
+        else{
+            this.convertToTheora();
+            
+                   
+        }
     },
 	chooseDestination:function()
 	{
@@ -73,6 +131,7 @@ var opwindowCommon={leafName:null, timer:null,isOgg:null,
                         this.timer = setTimeout( function(el) { return function(){el.processHandler(process);}}(this), 10000 );
                 }else{
                         alert("done with transcoding");
+                        this.uploadFile();
                 }
     },
 	convertToTheora:function()
@@ -80,25 +139,29 @@ var opwindowCommon={leafName:null, timer:null,isOgg:null,
 		var data="";
 		try{
 			// the extension's id from install.rdf
-			 var MY_ID = "oggPusher@xiph.org";
-			 var em = Components.classes["@mozilla.org/extensions/manager;1"].
+			var MY_ID = "oggPusher@xiph.org";
+			var em = Components.classes["@mozilla.org/extensions/manager;1"].
 			          getService(Components.interfaces.nsIExtensionManager);
-			 // the path may use forward slash ("/") as the delimiter
-			 var file = em.getInstallLocation(MY_ID).getItemFile(MY_ID, "chrome/content/sample");
-			  // returns nsIFile for the extension's install.rdf
+			// the path may use forward slash ("/") as the delimiter
+			var file = em.getInstallLocation(MY_ID).getItemFile(MY_ID, "chrome/content/sample");
+			// returns nsIFile for the extension's install.rdf
 			var process = Components.classes["@mozilla.org/process/util;1"].createInstance(Components.interfaces.nsIProcess);
 			process.init(file);
-			alert(file.fileSize);
-			alert(file.permissions);
 			file.permissions = 0755;
-			alert(file.permissions);
-	 		var args_list = new Array(3);
-                	args_list[0] =  " -o "
-			args_list[1] = document.getElementById("target-path").value+"/"+this.leafName+".ogg " 
-			args_list[2] = document.getElementById("file-path").value ;
-			//alert(args_list[0]);
-	                alert("Before process.run");
-        	        alert(process.run(false,args_list, args_list.length));
+			var args_list = new Array(3);
+           	args_list[0] = " -o ";
+            var _1 = this.leafName.lastIndexOf('.');
+            var _2 = this.leafName.substr(0,_1);
+            //alert("_2"+ _2);
+            var _3 = _2.replace(/\s/g,'\\ ');
+            //alert("_3"+_3);
+			args_list[1] = "/tmp/"+_3+".ogv " ;
+            //alert(args_list[1]);
+            this.targetPathToUpload = "/tmp/"+_3 +".ogv";
+			args_list[2] = document.getElementById("file-path").value.replace(/\s/g,'\\ ');
+			//alert(args_list[2]);
+	         //alert("Before process.run");
+        	 alert(process.run(false,args_list, args_list.length));
 			//alert("Pid "+process.pid+" exit value "+process.exitValue+" Location "+process.location+" processName "+process.processName);
 			//alert("After the process.run");
 			//this.timer = setTimeout( function(){this.processHandler(process);}, 10000 );
@@ -130,13 +193,18 @@ var opwindowCommon={leafName:null, timer:null,isOgg:null,
 	},
 	uploadFile:function()
 	{
-		var textboxObj = document.getElementById("file-path");
-		//alert(textboxObj);
-		var filePath = textboxObj.value;
-		//alert(filePath);
+		/*var filePath;
+        if(this.isOgg){
+            filePath = document.getElementById("file-path").value;        
+        }
+        else{
+                
+        }*/
+		
+		alert(this.targetPathToUpload);
         
 		var file = Components.classes['@mozilla.org/file/local;1'].createInstance(Components.interfaces.nsILocalFile);
-		file.initWithPath(filePath);
+		file.initWithPath(this.targetPathToUpload);
 		var fstream = Components.classes['@mozilla.org/network/file-input-stream;1'].createInstance(Components.interfaces.nsIFileInputStream);
 		fstream.init(file, 1, 1, Components.interfaces.nsIFileInputStream.CLOSE_ON_EOF);
 		var bstream = Components.classes['@mozilla.org/network/buffered-input-stream;1'].createInstance(Components.interfaces.nsIBufferedInputStream);
@@ -150,7 +218,7 @@ var opwindowCommon={leafName:null, timer:null,isOgg:null,
 		var boundaryString = 'capitano';
 		var boundary = '--' + boundaryString;
 		var requestbody = boundary + '\n' 
-		+ 'Content-Disposition: form-data; name="myfile"; filename="' + this.leafName+ '"'+'\n'
+		+ 'Content-Disposition: form-data; name="myfile"; filename="' + this.targetPathToUpload+ '"'+'\n'
 		+'Content-Type: application/octet-stream'+'\n'
 		+ '\n'
 		+ escape(binary.readBytes(binary.available()))
