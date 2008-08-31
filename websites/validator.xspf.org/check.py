@@ -73,11 +73,9 @@
 #       I use tables when pixel-exact layout is need since
 #       CSS support in browsers is not good enough yet
 #
-# 2007-07-30 -- Ivo Emanuel Gonçalves <justivo@gmail.com>
+# 2007-07-30 -- Ivo Emanuel Gonçalves <justivo gmail.com>
 #
-#   * Some HTML and CSS fixes by Ivo Emanuel Gonçalves <justivo@gmail.com>
-#       (probably should remove those bloody tables, but I can't see
-#       through the sea of Python.  Not without my Python-reading glasses)
+#   * Some HTML and CSS fixes
 #
 # 2007-07-25 -- Sebastian Pipping <webmaster@hartwork.org>
 #
@@ -129,7 +127,7 @@ print                               # blank line, end of headers
 
 
 print """
-<html>
+<html lang="en" dir="ltr">
 	<head>
 		<title>XSPF Validator &mdash; Validate your playlists</title>
 		<style type="text/css">
@@ -271,7 +269,7 @@ else:
         input = form.getlist("pasted")[0]
         if input != "":
             intro = "Validating pasted text<br><br>"
-        
+
     elif form.has_key("uploaded") and form.has_key("submitUploaded"):
         uploaded = form["uploaded"]
         if uploaded.file:
@@ -313,11 +311,11 @@ if input != "":
 if input == "":
     # Formular 600
     print """
-					<table cellpadding="0" cellspacing="0" width="600" style="border:1px solid rgb(180,180,180); background-color:#FFFFFF;">"""
+					<table cellpadding="0" cellspacing="0" width="600" style="border:1px solid rgb(180,180,180); background-color:#FFF;">"""
 else:
     # Results 800
     print """
-					<table cellpadding="0" cellspacing="0" width="750" style="border:1px solid rgb(180,180,180); background-color:#FFFFFF;">"""
+					<table cellpadding="0" cellspacing="0" width="750" style="border:1px solid rgb(180,180,180); background-color:#FFF;">"""
 
 print """
 						<tr>"""
@@ -627,7 +625,7 @@ def handlePlaylistAttribs(atts):
                 fail("Attribute <i>xml:base</i> is not a URI.")
         else:
             fail("Attribute '" + name + "' not allowed.")
-            
+
     if not versionFound:
         fail("Attribute <i>version</i> missing.")
 
@@ -643,7 +641,7 @@ def handleNoAttribsExceptXmlBase(atts):
                 fail("Attribute <i>xml:base</i> is not a URI.")
         else:
         	fail("Attribute '" + keys[i] + "' not allowed.")
-    
+
 
 
 def handleExtensionAttribs(atts):
@@ -662,7 +660,7 @@ def handleExtensionAttribs(atts):
                     fail("Attribute <i>xml:base</i> is not a URI.")
             else:
                 fail("Attribute '" + name + "' not allowed.")
-                
+
 
 
 def handleMetaLinkAttribs(atts):
@@ -821,7 +819,7 @@ def handleStartThree(name, atts):
             handleNoAttribsExceptXmlBase(atts)
             globals()["stack"].append(TAG_PLAYLIST_ATTRIBUTION_IDENTIFIER)
 
-        else:        
+        else:
             fail("Element <i>" + name + "</i> not allowed.")
             globals()["stack"].append(TAG_UNKNOWN)
             # Skip body of forbidden element
@@ -838,7 +836,7 @@ def handleStartThree(name, atts):
             globals()["stack"].append(TAG_UNKNOWN)
             # Skip body of forbidden element
             globals()["skipAbove"] = 3
-            
+
         globals()["firstTrack"] = False
 
     else:
@@ -848,7 +846,7 @@ def handleStartThree(name, atts):
 #        globals()["skipAbove"]
         globals()["skipAbove"] = 3
 
-        
+
 
 def handleStartFour(name, atts):
     if name == nsXspf("album"):
@@ -891,7 +889,7 @@ def handleStartFour(name, atts):
         globals()["stack"].append(TAG_PLAYLIST_TRACKLIST_TRACK_EXTENSION)
         # Skip extension body
         globals()["skipAbove"] = 4
-        
+
     elif name == nsXspf("identifier"):
         handleNoAttribsExceptXmlBase(atts)
         globals()["stack"].append(TAG_PLAYLIST_TRACKLIST_TRACK_IDENTIFIER)
@@ -995,23 +993,23 @@ def handleEndTwo(name):
     elif stackTop == TAG_PLAYLIST_IDENTIFIER:
         if not isUri(globals()["accum"]):
             fail("Content of <i>identifier</i> is not a URI.")
-        
+
     elif stackTop == TAG_PLAYLIST_IMAGE:
         if not isUri(globals()["accum"]):
             fail("Content of <i>image</i> is not a URI.")
-        
+
     elif stackTop == TAG_PLAYLIST_INFO:
         if not isUri(globals()["accum"]):
             fail("Content of <i>info</i> is not a URI.")
-        
+
     elif stackTop == TAG_PLAYLIST_LICENSE:
         if not isUri(globals()["accum"]):
             fail("Content of <i>license</i> is not a URI.")
-        
+
     elif stackTop == TAG_PLAYLIST_LINK:
         if not isUri(globals()["accum"]):
             fail("Content of <i>link</i> is not a URI.")
-        
+
     elif stackTop == TAG_PLAYLIST_LOCATION:
         if not isUri(globals()["accum"]):
             fail("Content of <i>location</i> is not a URI.")
@@ -1023,7 +1021,7 @@ def handleEndTwo(name):
     globals()["accum"] = ""
 
 
-    
+
 def handleEndThree(name):
     stackTop = globals()["stack"][len(globals()["stack"]) - 1]
 
@@ -1042,7 +1040,7 @@ def handleEndThree(name):
     elif stackTop == TAG_PLAYLIST_ATTRIBUTION_LOCATION:
         if not isUri(globals()["accum"]):
             fail("Content of <i>location</i> is not a URI.")
-            
+
     elif stackTop == TAG_PLAYLIST_TRACKLIST_TRACK:
         globals()["firstTrackTitle"] = True
         globals()["firstTrackCreator"] = True
@@ -1056,7 +1054,7 @@ def handleEndThree(name):
     globals()["accum"] = ""
 
 
-    
+
 def handleEndFour(name):
     stackTop = globals()["stack"][len(globals()["stack"]) - 1]
 
@@ -1081,19 +1079,19 @@ def handleEndFour(name):
     elif stackTop == TAG_PLAYLIST_TRACKLIST_TRACK_IDENTIFIER:
         if not isUri(globals()["accum"]):
             fail("Content of <i>identifier</i> is not a URI.")
-    
+
     elif stackTop == TAG_PLAYLIST_TRACKLIST_TRACK_IMAGE:
         if not isUri(globals()["accum"]):
             fail("Content of <i>image</i> is not a URI.")
-        
+
     elif stackTop == TAG_PLAYLIST_TRACKLIST_TRACK_INFO:
         if not isUri(globals()["accum"]):
             fail("Content of <i>info</i> is not a URI.")
-        
+
     elif stackTop == TAG_PLAYLIST_TRACKLIST_TRACK_LINK:
         if not isUri(globals()["accum"]):
             fail("Content of <i>link</i> is not a URI.")
-        
+
     elif stackTop == TAG_PLAYLIST_TRACKLIST_TRACK_LOCATION:
         if not isUri(globals()["accum"]):
             fail("Content of <i>location</i> is not a URI.")
@@ -1131,7 +1129,7 @@ def handleCharacters(s):
     level = len(globals()["stack"])
     if (globals()["skipAbove"] != -1) and (level > globals()["skipAbove"]):
         return
-    
+
     stackTop = stack[len(stack) - 1]
     if level == 1:
         if stackTop == TAG_PLAYLIST:
@@ -1154,7 +1152,7 @@ def handleCharacters(s):
 
         else:
             globals()["accum"] += s
-            
+
     elif level == 4:
         globals()["accum"] += s
 
@@ -1169,7 +1167,7 @@ def isDateTime(text):
     match = globals()["dateRegex"].match(text)
     if not match:
         return False
-    
+
     # Year- and month-specific day check
     year = int(match.group(1))
     month = int(match.group(2))
@@ -1186,7 +1184,7 @@ def isDateTime(text):
     elif month in [4, 6, 9, 11]:
         if day > 30:
             return False
-    
+
     return True
 
 
@@ -1226,8 +1224,8 @@ if input != "":
 											
 											<h3>Congratulations!</h3>
 											<p style="text-align:justify">
-											<em>You care about interoperability and that shows: The content you provided is valid XSPF!</em><br />
-											<br />
+											<em>You care about interoperability and that shows: The content you provided is valid XSPF!</em><br>
+											<br>
 											To show you care and to promote XSPF, you may add this button to any page that serves
 											valid XSPF files. Here is HTML code that you can use to add the button:
 											</p>
@@ -1241,12 +1239,12 @@ if input != "":
 															<table border="0" cellpadding="0" cellspacing="1" width="104" height="104" style="background-color:rgb(230,230,230);">
 																<tr>
 																	<!-- Button image demo -->
-																	<td valign="center" align="center" bgcolor="#ffffff"><img src="http://svn.xiph.org/websites/xspf.org/images/banners/valid-xspf.png" width="88" height="31" style="border:0" alt="Valid XSPF Playlist" title="This sexy button could promote XSPF on your website!"></td>
+																	<td valign="center" align="center" bgcolor="#FFF"><img src="http://svn.xiph.org/websites/xspf.org/images/banners/valid-xspf.png" width="88" height="31" style="border:0" alt="Valid XSPF Playlist" title="This sexy button could promote XSPF on your website!"></td>
 																</tr>
 															</table>
 														</td>
 														<!-- Embed code -->
-														<td><textarea readonly style="width:410px;height:104px;background-color:rgb(250,250,250);"><a href="http://validator.xspf.org/referrer/"><img src="valid-xspf.png" width="88" height="31" style="border:0" alt="Valid XSPF Playlist" title="This website produces valid XSPF playlist files." /></a></textarea></td>
+														<td><textarea readonly style="width:410px;height:104px;background-color:rgb(250,250,250);"><a href="http://validator.xspf.org/referrer/"><img src="valid-xspf.png" width="88" height="31" style="border:0" alt="Valid XSPF Playlist" title="This website produces valid XSPF playlist files."></a></textarea></td>
 													</tr>
 												</table>
 											</center>
