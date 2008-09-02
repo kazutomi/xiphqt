@@ -126,7 +126,7 @@ var opwindowCommon={leafName:null, timer:null,isOgg:null,targetPathToUpload:null
 		}
 	},
     processHandler:function(process){
-                if(process.exitValue!= -1){
+                if(process.exitValue != -1){
                         alert(process.exitValue+"Inside the processHandler");
                         this.timer = setTimeout( function(el) { return function(){el.processHandler(process);}}(this), 10000 );
                 }else{
@@ -161,10 +161,8 @@ var opwindowCommon={leafName:null, timer:null,isOgg:null,targetPathToUpload:null
 			args_list[2] = document.getElementById("file-path").value.replace(/\s/g,'\\ ');
 			//alert(args_list[2]);
 	         //alert("Before process.run");
-        	 alert(process.run(false,args_list, args_list.length));
-			//alert("Pid "+process.pid+" exit value "+process.exitValue+" Location "+process.location+" processName "+process.processName);
-			//alert("After the process.run");
-			//this.timer = setTimeout( function(){this.processHandler(process);}, 10000 );
+        	 var  process_id = process.run(false,args_list, args_list.length);
+			alert(process_id);
 			this.timer = setTimeout( function(el) { return function(){el.processHandler(process);}}(this), 10000 );
     	}
 		catch(err){

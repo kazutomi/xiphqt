@@ -12,10 +12,44 @@
    <script type="application/x-javascript" src="chrome://oggPusher/content/op_Window.js"></script>
    <vbox >	
 	  <label value="Locate Files on your computer:" control="browse-button"/>
-	  <hbox id="op-input">
+	  <hbox id="op-input" align="center">
 	  	 <textbox id="file-path" control="browse-button" disabled="true" style="width:400px"/>
       	 <button id="browse-button" label="Browse..." oncommand="opwindowCommon.openFileWindowDialog();"/>
 	  </hbox>
+      <tabbox>
+         <tabs>
+            <tab label="META-DATA" selected="true"/>
+            <tab label="Encoding"/>
+         </tabs>
+         <tabpanels>
+            <tabpanel id="metadatapanel" orient="vertical">
+               <hbox>
+                  <label value="Artist"  style="width: 90px" /> <textbox id="artist-field"/>
+               </hbox>
+               <hbox>
+                  <label value="Title" style="width: 90px"/> <textbox id="title-field"/>
+               </hbox>
+               <hbox>
+                 <label value="Date" style="width: 90px"/> <textbox id="date-field"/>
+               </hbox>
+               <hbox>
+                 <label value="Location "  style="width: 90px"/> <textbox id="location-field"/>
+               </hbox>
+               <hbox>
+                 <label value="Organisation"  style="width: 90px"/> <textbox id="organisation-field"/>
+               </hbox>
+               <hbox>
+                 <label value="Copyright"  style="width: 90px"/> <textbox id="copyright-field"/>
+               </hbox>
+               <hbox>
+                 <label value="License"  style="width: 90px"/> <textbox id="license-field"/>
+               </hbox>
+            </tabpanel>
+         </tabpanels>
+
+      </tabbox>
+      
+      
 	  <!--<hbox>
 		 <textbox id="target-path" control="destination-button" disabled="true" style="width:400px"/>
 		 <button id="destination-button" label="Choose Destination" oncommand="opwindowCommon.chooseDestination();"/>
