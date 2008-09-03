@@ -76,6 +76,14 @@ echo "spiff_check "`${SPIFF_CHECK} --version | sed -r "s/[^0-9]+//"` >> ${LOG_FI
 if [ ! -f "${CHECK_PY}" ]; then
 	echo "ERROR: check.py missing" ; exit 1
 fi
+"${CHECK_PY}" --shell&>/dev/null
+if [[ $? == 2 ]]; then
+	echo 'check.py sanity check failed:'
+	echo '----------------------------------------------------'
+	"${CHECK_PY}" --shell
+	echo '----------------------------------------------------'
+	exit 1
+fi
 echo "check.py r"`svn info ${CHECK_PY} | grep "Revision:" | sed -r "s/Revision: (.+)/\1/"` >> ${LOG_FILE}
 echo "" >> ${LOG_FILE}
 
