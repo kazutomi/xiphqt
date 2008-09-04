@@ -123,7 +123,6 @@ print "Content-Type: text/html"     # HTML is following
 print                               # blank line, end of headers
 
 
-
 # Get the basename of this script
 # co = sys._getframe().f_code
 # SELFBASE = co.co_filename
@@ -251,7 +250,6 @@ print """
 					<!-- BORDER -->"""
 
 
-
 valid = False
 intro = ""
 input = ""
@@ -307,7 +305,6 @@ else:
                         + "\" class=\"blackLink\">" + cgi.escape(url) + "</a></i></b><br><br>"
 
 
-
 lineHeads = [0]
 if input != "":
     index = -1
@@ -316,7 +313,6 @@ if input != "":
         if index == -1:
             break
         lineHeads.append(index + 1)
-
 
 
 
@@ -331,7 +327,6 @@ else:
 
 print """
 						<tr>"""
-
 
 
 if input == "":
@@ -350,12 +345,10 @@ else:
 								<table style="width:100%;">"""
 
 
-
 print """
 									<tr>
 										<td style="padding-bottom: 20px;" align="center"><img src="xspflogo-1.5.gif" style="width:297px; height:83px; border:0;" alt=""></td>
 									</tr>"""
-
 
 
 if input == "":
@@ -484,22 +477,18 @@ else:
     checker = xml.parsers.expat.ParserCreate(None, SPIFF_NS_SEP_CHAR)
 
 
-
 #############################################################################################
 
 
 errorTable = ""
 
 
-
 def nsXspf(localName):
     return SPIFF_NS_HOME + SPIFF_NS_SEP_CHAR + localName
 
 
-
 def nsXml(localName):
     return XML_NS_HOME + SPIFF_NS_SEP_CHAR + localName
-
 
 
 def startErrorTable():
@@ -511,11 +500,9 @@ def startErrorTable():
 											<tr height="1"><td class="horz">&nbsp;</td><td class="horz">&nbsp;</td><td class="horz">&nbsp;</td><td class="horz">&nbsp;</td></tr>"""
 
 
-
 # line is one-based
 def addError(line, col, error):
     globals()["errorTable"] += "<tr><td class=\"number\"><a href=\"#bad_" + str(line) + "\" class=\"number\">" + str(line) + "</a></td><td class=\"number\">" + str(col) + "</td><td class=\"vert\">&nbsp;</td><td class=\"error\">" + error + "</td></tr>"
-
 
 
 def stopErrorTable():
@@ -530,10 +517,8 @@ def stopErrorTable():
 											<br>"""
 
 
-
 sourceTable = ""
 lastLine = -1
-
 
 
 def startSourceTable():
@@ -541,7 +526,6 @@ def startSourceTable():
         globals()["sourceTable"] = """
 											<h3>Processed input:</h3>
 											<table cellspacing="0">"""
-
 
 
 def stopSourceTable():
@@ -603,7 +587,6 @@ def moreSourceLinesIncluding(lineNumber, badFlag):
     globals()["lastLine"] = lineNumber
 
 
-
 def fail(text):
     globals()["valid"] = False
 
@@ -612,7 +595,6 @@ def fail(text):
 
     startSourceTable()
     moreSourceLinesIncluding(checker.CurrentLineNumber - 1, True)
-
 
 
 def handlePlaylistAttribs(atts):
@@ -642,7 +624,6 @@ def handlePlaylistAttribs(atts):
         fail("Attribute <i>version</i> missing.")
 
 
-
 def handleNoAttribsExceptXmlBase(atts):
     keys = atts.keys()
     for i in range(len(atts)):
@@ -653,7 +634,6 @@ def handleNoAttribsExceptXmlBase(atts):
                 fail("Attribute <i>xml:base</i> is not a URI.")
         else:
         	fail("Attribute '" + keys[i] + "' not allowed.")
-
 
 
 def handleExtensionAttribs(atts):
@@ -674,7 +654,6 @@ def handleExtensionAttribs(atts):
                 fail("Attribute '" + name + "' not allowed.")
 
 
-
 def handleMetaLinkAttribs(atts):
     size = len(atts)
     if size == 0:
@@ -693,7 +672,6 @@ def handleMetaLinkAttribs(atts):
                 fail("Attribute '" + name + "' not allowed.")
 
 
-
 def handleStartOne(name, atts):
     if name != nsXspf("playlist"):
         # fail("Element '" + name + "' not allowed.")
@@ -701,7 +679,6 @@ def handleStartOne(name, atts):
     else:
         handlePlaylistAttribs(atts)
     globals()["stack"].append(TAG_PLAYLIST)
-
 
 
 def handleStartTwo(name, atts):
@@ -819,7 +796,6 @@ def handleStartTwo(name, atts):
         globals()["skipAbove"] = 2
 
 
-
 def handleStartThree(name, atts):
     stackTop = globals()["stack"][len(globals()["stack"]) - 1]
     if stackTop == TAG_PLAYLIST_ATTRIBUTION:
@@ -857,7 +833,6 @@ def handleStartThree(name, atts):
         # Skip body of forbidden element
 #        globals()["skipAbove"]
         globals()["skipAbove"] = 3
-
 
 
 def handleStartFour(name, atts):
@@ -957,7 +932,6 @@ def handleStartFour(name, atts):
         globals()["skipAbove"] = 4
 
 
-
 def handleStart(name, atts):
     newLevel = len(globals()["stack"]) + 1
     if (globals()["skipAbove"] != -1) and (newLevel > globals()["skipAbove"]):
@@ -979,11 +953,9 @@ def handleStart(name, atts):
         globals()["skipAbove"] = 4
 
 
-
 def handleEndOne(name):
     if globals()["firstPlaylistTrackList"]:
         fail("Element <i>trackList</i> missing.")
-
 
 
 def handleEndTwo(name):
@@ -1033,7 +1005,6 @@ def handleEndTwo(name):
     globals()["accum"] = ""
 
 
-
 def handleEndThree(name):
     stackTop = globals()["stack"][len(globals()["stack"]) - 1]
 
@@ -1064,7 +1035,6 @@ def handleEndThree(name):
         globals()["firstTrackDuration"] = True
 
     globals()["accum"] = ""
-
 
 
 def handleEndFour(name):
@@ -1115,7 +1085,6 @@ def handleEndFour(name):
     globals()["accum"] = ""
 
 
-
 def handleEnd(name):
     level = len(globals()["stack"])
     if globals()["skipAbove"] == level:
@@ -1134,7 +1103,6 @@ def handleEnd(name):
         handleEndFour(name)
 
     globals()["stack"].pop()
-
 
 
 def handleCharacters(s):
@@ -1169,10 +1137,8 @@ def handleCharacters(s):
         globals()["accum"] += s
 
 
-
 def isUri(text):
     return Uri.MatchesUriRefSyntax(text)
-
 
 
 def isDateTime(text):
@@ -1200,9 +1166,7 @@ def isDateTime(text):
     return True
 
 
-
 #############################################################################################
-
 
 
 if input != "":
@@ -1280,7 +1244,6 @@ if input != "":
     print sourceTable
 
 
-
     print """	
 										</td>
 									</tr>
@@ -1291,7 +1254,6 @@ else:
     print """	
 								</table>
 								</form>"""
-
 
 
 print """
@@ -1320,7 +1282,6 @@ print """
 		</table>
 	</body>
 </html>"""
-
 
 
 if shellMode:
