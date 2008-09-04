@@ -32,8 +32,10 @@
 # -----------------------------------------------------------------------
 # 2008-09-04 -- Sebastian Pipping <webmaster@hartwork.org>
 #
-#   * Fixed: [Security] Accessing local files was pssible
+#   * Fixed: [Security] Accessing local files was possible
 #              through using file URIs like file:///etc/passwd
+#   * Fixed: [Security] XSS vulnerability existed with URIs
+#              like [..]check.py?uri=[javascript]
 #
 # 2008-08-25 -- Sebastian Pipping <webmaster@hartwork.org>
 #
@@ -282,7 +284,7 @@ else:
             input = uploaded.file.read()
 
         if input != "":
-            intro = "Validating uploaded file<br><b><i>" + uploaded.filename + "</i></b><br><br>"
+            intro = "Validating uploaded file<br><b><i>" + cgi.escape(uploaded.filename) + "</i></b><br><br>"
 
     elif form.has_key("url"): ### and form.has_key("submitUrl")
         url = form.getlist("url")[0]
@@ -297,11 +299,12 @@ else:
                 intro = """<b style="color:red;">Invalid URL.</b><br><br>"""
 
             except urllib2.URLError:
-                # 404, non-existent host, IPv6 (not supported), ...
+                # One of 404, non-existent host, IPv6 (not supported), ...
                 intro = """<b style="color:red">Could not download from URL.</b><br><br>"""
 
             if input != "":
-                intro = "Validating data from URL<br><b><i><a href=\"" + url + "\" class=\"blackLink\">" + url + "</a></i></b><br><br>"
+                intro = "Validating data from URL<br><b><i><a href=\"" + cgi.escape(url, True) \
+                        + "\" class=\"blackLink\">" + cgi.escape(url) + "</a></i></b><br><br>"
 
 
 
