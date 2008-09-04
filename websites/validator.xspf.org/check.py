@@ -30,6 +30,11 @@
 # -----------------------------------------------------------------------
 # HISTORY
 # -----------------------------------------------------------------------
+# 2008-09-04 -- Sebastian Pipping <webmaster@hartwork.org>
+#
+#   * Fixed: [Security] Accessing local files was pssible
+#              through using file URIs like file:///etc/passwd
+#
 # 2008-08-25 -- Sebastian Pipping <webmaster@hartwork.org>
 #
 #   * Fixed: 'xml:base' attribute now allowed anywhere, was
@@ -58,11 +63,8 @@
 #
 # 2007-09-21 -- Sebastian Pipping <webmaster@hartwork.org>
 #
-#   * Fixed: Whitespace handling fixes copied over from libSpiff
-#
-# 2007-09-21 -- Sebastian Pipping <webmaster@hartwork.org>
-#
 #   * Added: RFC 3986 URI validation
+#   * Fixed: Whitespace handling fixes copied over from libSpiff
 #   * Changed: Code re-licensed under LGPLv3 (LGPL-Any before) to be
 #       able to use 4Suite's Apache-licensed URI validation code
 #       (http://www.gnu.org/licenses/lgpl-3.0.html)
@@ -124,6 +126,10 @@ print                               # blank line, end of headers
 # co = sys._getframe().f_code
 # SELFBASE = co.co_filename
 
+
+def isSafeDownloadTarget(candidate):
+    schemeOrNone = Uri.GetScheme(candidate)
+    return (schemeOrNone != None) and (schemeOrNone.lower() == "http")
 
 
 print """
@@ -281,18 +287,21 @@ else:
     elif form.has_key("url"): ### and form.has_key("submitUrl")
         url = form.getlist("url")[0]
 
-        try:
-            file = urllib2.urlopen(url)
-            input = file.read()
-        except ValueError:
-            intro = """<b style="color:red;">Invalid URL.</b><br><br>"""
+        if not isSafeDownloadTarget(url):
+            intro = """<b style="color:red;">Download location not considered safe.<br>Please do <em>not</em> attack this site. Thanks.</b><br><br>"""
+        else:
+            try:
+                file = urllib2.urlopen(url)
+                input = file.read()
+            except ValueError:
+                intro = """<b style="color:red;">Invalid URL.</b><br><br>"""
 
-        except urllib2.URLError:
-            # 404, non-existent host, IPv6 (not supported), ...
-            intro = """<b style="color:red">Could not download from URL.</b><br><br>"""
+            except urllib2.URLError:
+                # 404, non-existent host, IPv6 (not supported), ...
+                intro = """<b style="color:red">Could not download from URL.</b><br><br>"""
 
-        if input != "":
-            intro = "Validating data from URL<br><b><i><a href=\"" + url + "\" class=\"blackLink\">" + url + "</a></i></b><br><br>"
+            if input != "":
+                intro = "Validating data from URL<br><b><i><a href=\"" + url + "\" class=\"blackLink\">" + url + "</a></i></b><br><br>"
 
 
 

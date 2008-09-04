@@ -28,13 +28,26 @@ except ImportError:
             "sudo apt-get install python-4suite-xml"
     sys.exit(1)
 
+print "Content-Type: text/html"     # HTML is following
+print                               # blank line, end of headers
 
-def checkUri(candidate):
+
+def checkValidity(candidate):
     print "* validUri(\"" + candidate + "\") == " \
-            + str(Uri.MatchesUriRefSyntax(candidate))
+            + str(Uri.MatchesUriRefSyntax(candidate)) + "<br>"
+
+def isSafeDownloadTarget(candidate):
+    schemeOrNone = Uri.GetScheme(candidate)
+    return (schemeOrNone != None) and (schemeOrNone.lower() == "http")
+
+def checkSafety(candidate):
+    print "* safeUri(\"" + candidate + "\") == " \
+            + str(isSafeDownloadTarget(candidate)) + "<br>"
 
 
-checkUri("http://www.xiph.org/")
-checkUri("abc%20def")
-checkUri("abc def")
+checkValidity("http://www.xiph.org/")
+checkValidity("abc%20def")
+checkValidity("abc def")
 
+checkSafety("HTTP://www.example.org/")
+checkSafety("ftp://www.example.org/")
