@@ -38,8 +38,18 @@
 #       [..]check.py?uri=[..javascript..]
 #   * Fixed: [SECURITY] XSS vulnerability existed for
 #       certain XSPF input, e.g. in attribute //playlist.version.
-#       The input could either come from file upload or URIs like
+#       This did not require an existing file as the input could
+#       directly passed through URIs like
 #       [..]check.py?pasted=[..javascript..]&submitPasted=Submit
+#   * Fixed: Required attributes 'rel' (<link>/<meta>)
+#        and 'application' (<extention>) were not reported missing
+#        Related test case files from <for_version_1/fail> are:
+#        - playlist-extension-application-missing.xspf
+#        - playlist-link-rel-missing.xspf
+#        - playlist-meta-rel-missing.xspf
+#        - track-extension-application-missing.xspf
+#        - track-link-rel-missing.xspf
+#        - track-meta-rel-missing.xspf
 #
 # 2008-08-25 -- Sebastian Pipping <webmaster@hartwork.org>
 #
@@ -603,7 +613,6 @@ def fail(text):
 
 def handlePlaylistAttribs(atts):
     versionFound = False
-
     keys = atts.keys()
     for i in range(len(atts)):
         name = keys[i]
@@ -642,38 +651,40 @@ def handleNoAttribsExceptXmlBase(atts):
 
 def handleExtensionAttribs(atts):
     size = len(atts)
-    if size == 0:
+    applicationFound = False
+    for i in range(size):
+        name = atts.keys()[i]
+        if name == "application":
+            if not isUri(atts.values()[i]):
+                fail("Attribute <i>application</i> is not a URI.")
+            applicationFound = True
+        elif name == nsXml("base"):
+            xmlBase = atts.values()[i]
+            if not isUri(xmlBase):
+                fail("Attribute <i>xml:base</i> is not a URI.")
+        else:
+            fail("Attribute '" + cgi.escape(name) + "' not allowed.")
+    if not applicationFound:
         fail("Attribute <i>application</i> missing.")
-    else:
-        for i in range(size):
-            name = atts.keys()[i]
-            if name == "application":
-                if not isUri(atts.values()[i]):
-                    fail("Attribute <i>application</i> is not a URI.")
-            elif name == nsXml("base"):
-                xmlBase = atts.values()[i]
-                if not isUri(xmlBase):
-                    fail("Attribute <i>xml:base</i> is not a URI.")
-            else:
-                fail("Attribute '" + cgi.escape(name) + "' not allowed.")
 
 
 def handleMetaLinkAttribs(atts):
     size = len(atts)
-    if size == 0:
+    relFound = False
+    for i in range(size):
+        name = atts.keys()[i]
+        if name == "rel":
+            if not isUri(atts.values()[i]):
+                fail("Attribute <i>rel</i> is not a URI.")
+            relFound = True
+        elif name == nsXml("base"):
+            xmlBase = atts.values()[i]
+            if not isUri(xmlBase):
+                fail("Attribute <i>xml:base</i> is not a URI.")
+        else:
+            fail("Attribute '" + cgi.escape(name) + "' not allowed.")
+    if not relFound:
         fail("Attribute <i>rel</i> missing.")
-    else:
-        for i in range(size):
-            name = atts.keys()[i]
-            if name == "rel":
-                if not isUri(atts.values()[i]):
-                    fail("Attribute <i>rel</i> is not a URI.")
-            elif name == nsXml("base"):
-                xmlBase = atts.values()[i]
-                if not isUri(xmlBase):
-                    fail("Attribute <i>xml:base</i> is not a URI.")
-            else:
-                fail("Attribute '" + cgi.escape(name) + "' not allowed.")
 
 
 def handleStartOne(name, atts):
