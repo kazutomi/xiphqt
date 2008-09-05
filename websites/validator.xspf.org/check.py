@@ -30,6 +30,12 @@
 # -----------------------------------------------------------------------
 # HISTORY
 # -----------------------------------------------------------------------
+# 2008-09-06 -- Sebastian Pipping <webmaster@hartwork.org>
+#
+#   * Fixed: Now closing files properly
+#   * Added: Bring back "https" scheme support unintentionally
+#       removed two days ago
+#
 # 2008-09-04 -- Sebastian Pipping <webmaster@hartwork.org>
 #
 #   * Fixed: [SECURITY] Accessing local files was possible
@@ -144,7 +150,11 @@ print                               # blank line, end of headers
 
 def isSafeDownloadTarget(candidate):
     schemeOrNone = Uri.GetScheme(candidate)
-    return (schemeOrNone != None) and (schemeOrNone.lower() == "http")
+    if schemeOrNone == None:
+        return False
+    scheme = schemeOrNone.lower()
+    allowedSchemes = set(["http", "https"])
+    return scheme in allowedSchemes
 
 
 print """
@@ -277,6 +287,7 @@ if (len(sys.argv) == 3) and (sys.argv[1] == "--shell"):
             input = f.read()
         finally:
             f.close()
+
     except IOError:
         pass
 
@@ -293,7 +304,12 @@ else:
     elif form.has_key("uploaded") and form.has_key("submitUploaded"):
         uploaded = form["uploaded"]
         if uploaded.file:
-            input = uploaded.file.read()
+            try:
+                input = uploaded.file.read()
+            except IOError:
+                pass
+            finally:
+                uploaded.file.close()
 
         if input != "":
             intro = "Validating uploaded file<br><b><i>" + cgi.escape(uploaded.filename) + "</i></b><br><br>"
@@ -306,11 +322,15 @@ else:
         else:
             try:
                 file = urllib2.urlopen(url)
-                input = file.read()
+                try:
+                    input = file.read()
+                finally:
+                    file.close()
+                
             except ValueError:
                 intro = """<b style="color:red;">Invalid URL.</b><br><br>"""
 
-            except urllib2.URLError:
+            except Exception: ### urllib2.URLError:
                 # One of 404, non-existent host, IPv6 (not supported), ...
                 intro = """<b style="color:red">Could not download from URL.</b><br><br>"""
 
