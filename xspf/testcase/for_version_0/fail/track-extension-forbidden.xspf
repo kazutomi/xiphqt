@@ -5,6 +5,6 @@
 			<extension application="http://localhost/valid/url/">
 				<sometag />
 			</extension>
-		<track>
-	<trackList>
+		</track>
+	</trackList>
 </playlist>
