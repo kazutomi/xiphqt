@@ -71,11 +71,8 @@ This command updates your repository to the newest revision.
     <td>icecast</td>
     <td>Icecast streaming server</td>
     </tr><tr>
-    <td>websites </td>
+    <td>websites</td>
     <td>Code for xiph.org and theora.org</td>
-    </tr><tr>
-    <td>websites-ngen </td>
-    <td>Next generation of our websites</td>
     </tr><tr>
     <td>trunk/BlueberryArmageddon </td>
     <td>A CD ripper, written in Perl.</td>
@@ -83,7 +80,7 @@ This command updates your repository to the newest revision.
     <td>trunk/MTG</td>
     <td>MTG is a script to turn PCM files into wav files</td>
     </tr><tr>
-    <td>trunk/Tremor </td>
+    <td>trunk/Tremor</td>
     <td>The source code to the integer-only Ogg Vorbis decode library named
         'Tremor'.</td>
     </tr><tr>
@@ -100,8 +97,9 @@ This command updates your repository to the newest revision.
     <td>Source code for DryIce, a live Ogg stream source client.</td>
     </tr><tr>
     <td>trunk/ezstream</td>
-    <td>Source code of ezstream, a Win32 command line utility to stream mp3 or
-    </td></tr><tr>
+    <td>Source code of ezstream, a Win32 command line utility to stream 
+    Ogg or mp3 to icecast.</td>
+    </tr><tr>
     <td>trunk/ffmpeg2theora</td>
     <td>The source of a video converter from MPEG to theora.</td>
     </tr><tr>
@@ -128,11 +126,11 @@ This command updates your repository to the newest revision.
     <td>trunk/py-ogg2</td>
     <td>Python bindings for libogg2</td>
     </tr><tr>
-    <td>trunk/oggds</td>
-    <td>Source code of the OggVorbis DirectShow filter collection</td>
-    </tr><tr>
     <td>trunk/oggdsf</td>
-    <td>illiminable Ogg Directshow Filters for Speex, Vorbis, Theora and FLAC</td>
+    <td>Ogg Directshow Filters for Speex, Vorbis, Theora and FLAC</td>
+    </tr><tr>
+    <td>trunk/oggds</td>
+    <td>Old OggVorbis DirectShow filter collection</td>
     </tr><tr>
     <td>trunk/positron</td>
     <td>Positron is a synchronization tool for the Neuros portable music
@@ -180,7 +178,8 @@ This command updates your repository to the newest revision.
     <td>The source code for a Vorbis I header/stream information dump tool</td>
     </tr><tr>
     <td>trunk/vp32</td>
-    <td>The source code to ON2's VP3.2 video codec.</td>
+    <td>The source code to ON2's VP3.2 video codec, which became 
+    Theora.</td>
     </tr><tr>
     <td>trunk/w3d</td>
     <td>The source code to another Tarkin video CODEC source experiment.</td>
