@@ -97,7 +97,7 @@ This command updates your repository to the newest revision.
     <td>Source code for DryIce, a live Ogg stream source client.</td>
     </tr><tr>
     <td>trunk/ezstream</td>
-    <td>Source code of ezstream, a Win32 command line utility to stream 
+    <td>Source code of ezstream, a command line utility to stream 
     Ogg or mp3 to icecast.</td>
     </tr><tr>
     <td>trunk/ffmpeg2theora</td>
