@@ -46,7 +46,7 @@ Older releases can be found <a href="http://downloads.xiph.org/releases/icecast"
   <td>Library which can be used to write a source client like ices</td>
   <td><a href="http://downloads.us.xiph.org/releases/libshout/libshout-2.2.2.tar.gz">libshout-2.2.2.tar.gz</a></td>
 </tr>
-<tr><td>shout-python</td><td>Python bindings for libshout 2</td><td><a href="http://downloads.us.xiph.org/releases/libshout/shout-python-0.2.tar.gz">shout-python-0.2.tar.gz</a></td></tr>
+<tr><td>shout-python</td><td>Python bindings for libshout 2</td><td><a href="http://downloads.us.xiph.org/releases/libshout/shout-python-0.2.1.tar.gz">shout-python-0.2.1.tar.gz</a></td></tr>
 <tr><td>shout-perl</td><td>Perl bindings for libshout 2</td><td><a href="http://downloads.us.xiph.org/releases/libshout/Shout-2.1.tar.gz">Shout-2.1.tar.gz</a></td></tr>
 <tr><td>ruby-shout</td><td>Ruby bindings for libshout 2</td><td><a href="http://www.dingoskidneys.com/~jaredj/shout.html">http://www.dingoskidneys.com/~jaredj/shout.html</a></td></tr>
 <tr><td>ocaml-shout</td><td>OCaml bindings for libshout2</td><td><a href="http://savonet.sourceforge.net/">http://savonet.sourceforge.net/</a></td></tr>
