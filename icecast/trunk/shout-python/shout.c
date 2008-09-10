@@ -439,7 +439,7 @@ static PyObject* pshoutobj_set_metadata(ShoutObject* self, PyObject* args) {
   PyObject* val;
   const char* skey;
   const char* sval;
-  ssize_t i = 0;
+  Py_ssize_t i = 0;
   int rc;
 
   if (!(metadata = shout_metadata_new())) {
@@ -577,7 +577,7 @@ static int pshoutobj_set_audio_info(ShoutObjectAttr* attr, ShoutObject* self, Py
   PyObject* val;
   const char* skey;
   const char* sval;
-  ssize_t i = 0;
+  Py_ssize_t i = 0;
   int rc;
 
   if (!PyDict_Check(v)) {
