@@ -57,6 +57,7 @@ static int pshoutobj_setattr(PyObject* self, char* name, PyObject* v);
 
 static PyObject* pshoutobj_open(ShoutObject* self);
 static PyObject* pshoutobj_close(ShoutObject* self);
+static PyObject* pshoutobj_get_connected(ShoutObject* self);
 static PyObject* pshoutobj_send(ShoutObject* self, PyObject* args);
 static PyObject* pshoutobj_sync(ShoutObject* self);
 static PyObject* pshoutobj_delay(ShoutObject* self);
@@ -81,6 +82,7 @@ static char docstring[] = "Shout library v2 interface\n\n"
   "\"host\", \"port\", \"password\" and \"mount\" must be specified).\n\n"
   "Methods:\n"
   "            open() - connect to server\n"
+  "   get_connected() - monitor connection status in nonblocking mode\n"
   "           close() - disconnect from server\n"
   "        send(data) - send audio data to server\n"
   "            sync() - sleep until server needs more data. This is equal to\n"
@@ -185,6 +187,8 @@ static PyMethodDef ShoutObjectMethods[] = {
     "Connect to server." },
   { "close", (PyCFunction)pshoutobj_close, METH_NOARGS,
     "Close connection to server." },
+  { "get_connected", (PyCFunction)pshoutobj_get_connected, METH_NOARGS,
+    "Check for connection progress." },
   { "send", (PyCFunction)pshoutobj_send, METH_VARARGS,
     "Send audio data to server." },
   { "sync", (PyCFunction)pshoutobj_sync, METH_NOARGS,
@@ -363,9 +367,14 @@ static int pshoutobj_setattr(PyObject* self, char* name, PyObject* v) {
 }
 
 static PyObject* pshoutobj_open(ShoutObject* self) {
-  if (shout_open(self->conn) != SHOUTERR_SUCCESS) {
+  int ret;
+  Py_BEGIN_ALLOW_THREADS
+  ret=shout_open(self->conn);
+  Py_END_ALLOW_THREADS
+  if (!((ret == SHOUTERR_SUCCESS)||
+        ((ret==SHOUTERR_BUSY) && shout_get_nonblocking(self->conn)))) {
     PyErr_SetString(ShoutError, shout_get_error(self->conn));
-
+    
     return NULL;
   }
 
@@ -409,6 +418,10 @@ static PyObject* pshoutobj_sync(ShoutObject* self) {
   Py_END_ALLOW_THREADS
 
   return Py_BuildValue("i", 1);
+}
+
+static PyObject* pshoutobj_get_connected(ShoutObject* self) {
+  return Py_BuildValue("i", shout_get_connected(self->conn));
 }
 
 static PyObject* pshoutobj_delay(ShoutObject* self) {
