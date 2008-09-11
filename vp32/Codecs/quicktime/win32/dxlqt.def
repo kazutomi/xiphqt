@@ -1,4 +1,0 @@
-DESCRIPTION "Duck VP30 QuickTime codec" 
-HEAPSIZE 8192 
-EXPORTS 
-CDComponentDispatch
