@@ -82,11 +82,11 @@ src=bug.gif border=0 width=132 height=18 alt="">
 </center>
 
 <p align=left>
-August 6, 2008
+September 11, 2008
 <p align=center>
 <!-- body or table of contents -->
 
-<h1>Known bugs/shortcomings in 10.1</h1>
+<h1>Known bugs/shortcomings in 10.2</h1>
 
 A number of these items are simply bugs in particular drives that
 cdparanoia cannot yet correct or known limitations in the current
@@ -99,13 +99,21 @@ page</a> before <a href="mailto:paranoia-dev@xiph.org">sending mail</a>.<p>
 <ul>
 <li>Some drives that cause the 8-| smilie and '!' mark in the status bar (dropped/duplicated bytes found after first stage verification) will likely also click. The 8-| smilie indicates that the drive is making errors that are difficult to detect. 
 
-<li>Drives that exhibit bimodal overlap behavior will confuse Paranoia's current dynamic overlap management; see the troubleshooting page for a better description of this.
 </ul>
 
 
 <hr>
 
 <h1>Known bugs fixed from previous releases</h1>
+
+<h2>Bugs fixed since alpha 10.1</h2>
+
+<li>Inability to correctly handle caches on a substantial fraction of modern drives, 
+    which resulted in skipping getting through verification.
+<li>Numerous scan, autosense and transport bugs in the SCSI and SGIO layer.
+<li>speed setting only worked for ATAPI drive (not SCSI or drives using SCSI emulation).
+<li>cleanly abort when an SGIO drive ejects media and reports empty; a retry loop is not appreciated in this case.
+
 <h2>Bugs fixed since alpha 9.8</h2>
 <ul>
 <li>Segfault caused by failure to probe a detected SCSI cdrom drive.

@@ -82,48 +82,30 @@ src=bug.gif border=0 width=132 height=18 alt="">
 <hr>
 
 <p align=left>
-August 6, 2008
+September 11, 2008
 <p align=left>
 <!-- body or table of contents -->
 <p align=left>
-<strong>cdparanoia 10.1 final released</strong>
-<p>
+<strong>cdparanoia 10.2 final released</strong>
 
-10.1 is a license tweak release functionally equivalent to 10.0. We've found
-it necessary to drop back to version 2 of the GPL/LGPL for the sake of other
-projects who use the paranoia libraries alongside closed plugins in
-media frameworks.  Although we like much of the new language in version 3 of the GPL,
-we can't move to it if it's going to cut out most of the people who
-need to (or already do) deploy paranoia.
+<p>10.2 is a <b>substantial upgrade</b> release over 10.1.  
 
-<p align=left>
-<strong>cdparanoia 10.0 final released</strong>
-<p>
+<p>10.2 includes a raft of minor bugfixes in device scan, device
+autosense and the transport layer.
 
-This release is mostly intended to keep up with bugfixes and kernel
-changes over the past few years.  Cdparanoia 10 is intended to be the
-last major release of the Paranoia III series (which maintains
-out-of-the-box compatability with linux kernels all the way back to
-Linux 2.0) before restarting development of Paranoia IV, which will be
-a break with the older versions.<p>
+<p>More importantly, 10.2 addresses serious CDROM drive cache
+modelling deficiencies that exist in earlier versions.  In a nutshell,
+a sizable fraction of modern drives exhibit new and exciting readahead
+cache abuses/bugs of which older versions of cdparanoia were not
+fully aware.  This means that skips and cracks could slip through the
+cache management strategy of older versions completely undetected.
+10.2 fully addresses and models these new cache behaviors.
 
-Aside from bugfixes and updates to match the Linux kernel, 10.0
-includes two significant changes:
-<ol>
-
-<li>
-Release 10.0 updates the cdparanoia tool license to the
-GPLv3, and relicenses the cdparanoia libraries (cdda_interface.so and
-cdda_paranoia.so) under the LGPLv3.<p>
-
-<li>When using an MMC drive, cdparanoia attempts to set the DAP bit to
-request that cdrom drives should use hardware interpolation to
-reconstruct over completely destroyed samples.  This should eliminate
-the substantial audible differences some drives produce when playing
-back a disc as audio as opposed to ripping as data.<p>
-</ol>
-
-<p>
+<p>10.2 also includes a cache analysis option (-A) to do a slow and
+thorough offline check of the drive's cache behavior.  The feature
+also dumps a detailed log to assist in debugging should either the
+test or cdparanoia's ripping go awry in any way.  After all... better
+thoroughly safe than sorry.
 
 <p align=left>
 May 6, 2008
