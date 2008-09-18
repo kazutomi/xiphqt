@@ -30,6 +30,12 @@
 # -----------------------------------------------------------------------
 # HISTORY
 # -----------------------------------------------------------------------
+# 2008-09-19 -- Elias Pipping <elias@pipping.org>,
+#               Sebastian Pipping <webmaster@hartwork.org>
+#
+#   * Fixed: Malicious XML detection added
+#       (might turn out to strict or too loose but it's a start)
+#
 # 2008-09-06 -- Sebastian Pipping <webmaster@hartwork.org>
 #
 #   * Fixed: Now closing files properly
@@ -184,6 +190,7 @@ print """
 			}
 			td.number {
 				text-align:right;
+				vertical-align:top;
 				padding-top:3px;
 				padding-bottom:3px;
 				padding-right:8px;
@@ -666,7 +673,7 @@ def handleNoAttribsExceptXmlBase(atts):
             if not isUri(xmlBase):
                 fail("Attribute <i>xml:base</i> is not a URI.")
         else:
-        	fail("Attribute '" + cgi.escape(keys[i]) + "' not allowed.")
+            fail("Attribute '" + cgi.escape(keys[i]) + "' not allowed.")
 
 
 def handleExtensionAttribs(atts):
@@ -1172,6 +1179,59 @@ def handleCharacters(s):
         globals()["accum"] += s
 
 
+entityNameToValueLen = {}
+
+
+def handleEntityDeclaration(entityName, is_parameter_entity, value, base, systemId, publicId, notationName):
+    MAX_LEN_PER_ENTITY_VALUE = 1000
+    MAX_LOOKUP_SUM_PER_ENTITY = 100
+    MAX_LOOKUP_DEPTH_PER_ENTITY = 3
+
+    valueLen = 0
+    lookupSum = 0
+    lookupDepth = 0
+
+    iter = re.finditer("&[^&;]+;", value)
+    lastend = 0
+    try:
+        while True:
+            match = iter.next()
+            start = match.start()
+            end = match.end()
+            valueLen += start - lastend
+
+            entityRefName = value[start + 1: end - 1]
+            entityInfo = entityNameToValueLen[entityRefName]
+            valueLen += entityInfo['valueLen']
+            lookupSum += 1 + entityInfo['lookupSum']
+            lookupDepth = max(1 + entityInfo['lookupDepth'], lookupDepth)
+
+            lastend = end
+    except StopIteration:
+        valueLen += len(value) - lastend
+
+
+    # Panic if necessary
+    keepParsing = False
+    if valueLen > MAX_LEN_PER_ENTITY_VALUE:
+        fail("Entity takes too much space")
+    elif lookupSum > MAX_LOOKUP_SUM_PER_ENTITY:
+        fail("Entity requires too many lookups")
+    elif lookupDepth > MAX_LOOKUP_DEPTH_PER_ENTITY:
+        fail("Entity requires too deep lookup")
+    else:
+        keepParsing = True
+    if not keepParsing:
+        raise Exception("MALICIOUS")
+
+    # Save to map
+    entityNameToValueLen[entityName] = {
+        'valueLen' : valueLen,
+        'lookupSum' : lookupSum,
+        'lookupDepth' : lookupDepth,
+    }
+
+
 def isUri(text):
     return Uri.MatchesUriRefSyntax(text)
 
@@ -1209,13 +1269,23 @@ if input != "":
     checker.StartElementHandler = handleStart
     checker.EndElementHandler = handleEnd
     checker.CharacterDataHandler = handleCharacters
+    checker.EntityDeclHandler = handleEntityDeclaration
 
+    fatal = False
+    reason = ""
     try:
         checker.Parse(input, 1)
     except xml.parsers.expat.ExpatError:
+        reason = "Invalid XML"
+        fatal = True
+    except Exception:
+        reason = "<b style=\"color:red;\">Input considered malicious. Please do <em>not</em> attack this site. Thanks.</b>"
+        fatal = True
+
+    if fatal:
         errorLineOneBased = checker.ErrorLineNumber
         startErrorTable()
-        addError(errorLineOneBased, checker.ErrorColumnNumber, "Invalid XML")
+        addError(errorLineOneBased, checker.ErrorColumnNumber, reason)
         startSourceTable()
         moreSourceLinesIncluding(errorLineOneBased - 1, True)
         valid = False
