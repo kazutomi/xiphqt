@@ -1201,7 +1201,14 @@ def handleEntityDeclaration(entityName, is_parameter_entity, value, base, system
             valueLen += start - lastend
 
             entityRefName = value[start + 1: end - 1]
-            entityInfo = entityNameToValueLen[entityRefName]
+            try:
+                entityInfo = entityNameToValueLen[entityRefName]
+            except KeyError:
+                entityInfo = {
+                    'valueLen' : 1,
+                    'lookupSum' : 0,
+                    'lookupDepth' : 0,
+                }
             valueLen += entityInfo['valueLen']
             lookupSum += 1 + entityInfo['lookupSum']
             lookupDepth = max(1 + entityInfo['lookupDepth'], lookupDepth)
