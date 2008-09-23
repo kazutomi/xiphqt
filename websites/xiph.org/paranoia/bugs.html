@@ -82,7 +82,7 @@ src=bug.gif border=0 width=132 height=18 alt="">
 </center>
 
 <p align=left>
-September 11, 2008
+September 23, 2008
 <p align=center>
 <!-- body or table of contents -->
 
@@ -97,6 +97,9 @@ with, please also check the <a href="trouble.html">troubleshooting
 page</a> before <a href="mailto:paranoia-dev@xiph.org">sending mail</a>.<p>
 
 <ul>
+<li>'private' as a reserved keyword now being enforced by GCC 4.3, causes a build failure (patched in SVN).
+<li>Option -p (output raw in host byte order) consistently gets the byte order backwards on both big and little endian (patched in SVN).
+<li>Density autosense on non-MMC cdrom drives (that is, greater than ten years old) broken for some drives (patched in SVN along with an improvement in autosense order that should correctly probe more ancient drives.)
 <li>Some drives that cause the 8-| smilie and '!' mark in the status bar (dropped/duplicated bytes found after first stage verification) will likely also click. The 8-| smilie indicates that the drive is making errors that are difficult to detect. 
 
 </ul>
