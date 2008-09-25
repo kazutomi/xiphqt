@@ -145,8 +145,9 @@ int main(int argc, char **argv){
     char *filename = argv[optind];
     cairo_pattern_t *pattern;
     cairo_surface_t *ps=cairo_image_surface_create_from_png(filename);
-    if(!ps || cairo_surface_status(ps)!=CAIRO_STATUS_SUCCESS){
-      fprintf(stderr,"CAIRO ERROR: Unable to load PNG file %s.\n\n",filename);
+    cairo_status_t status = cairo_surface_status(ps);
+    if(!ps || status!=CAIRO_STATUS_SUCCESS){
+      fprintf(stderr,"CAIRO ERROR: Unable to load PNG file %s: %s\n\n",filename,cairo_status_to_string(status));
       exit(1);
     }
     ww = cairo_image_surface_get_width(ps);
