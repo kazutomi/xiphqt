@@ -24,7 +24,7 @@ MANDIR    = $(PREFIX)/man
 SRC       = main.c
 MAN	  =
 OBJ       = main.o
-CAIROVER  =  >= 1.4.1
+CAIROVER  =  >= 1.2
 PKGARG	  = "cairo $(CAIROVER) cairo-ft $(CAIROVER) "
 GCF       = -std=gnu99 `pkg-config --cflags $(PKGARG)` -DVERSION="\"$(VERSION)\""
 LDF       = -L/lib `pkg-config --libs $(PKGARG)`

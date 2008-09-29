@@ -29,7 +29,7 @@
 #include <cairo-ft.h>
 #include <cairo-pdf.h>
 
-const char *optstring = "w:h:d:t:mhv";
+const char *optstring = "W:H:r:t:mhvx:y:f:";
 
 struct option options [] = {
   {"width",required_argument,NULL,'W'},
@@ -38,6 +38,9 @@ struct option options [] = {
   {"text",required_argument,NULL,'t'},
   {"help",no_argument,NULL,'h'},
   {"version",no_argument,NULL,'v'},
+  {"x-offset",required_argument,NULL,'x'},
+  {"y-offset",required_argument,NULL,'y'},
+  {"font-size",required_argument,NULL,'f'},
 
   {NULL,0,NULL,0}
 };
@@ -57,6 +60,7 @@ void usage(FILE *f){
 	  "  pnxpdf [options] file1.png [file2.png...] > output.pdf\n\n"
 	  "OPTIONS:\n\n"
 	  "  -h --help           : Display this usage information\n\n"
+	  "  -f --font-size <n>  : Font size (points)\n"
 	  "  -H --height <n>     : Height of each output page; suffix with mm, cm,\n"
 	  "                        in or pt to use various units. default is 11.0in\n\n"
 	  "  -r --resolution <n> : Specify input resolution of each image.  Each\n"
@@ -67,12 +71,22 @@ void usage(FILE *f){
 	  "  -t --text <string>  : string comment to add as a footer to each page\n\n"
 	  "  -v --version        : Output version string and exit\n\n"
 	  "  -W --width <n>      : Width of each output page; suffix with mm, cm,\n"
-	  "                        in or pt to use various units. default is 8.5in\n\n");
+	  "                        in or pt to use various units. default is 8.5in\n"
+	  "  -x --x-offset <n>   : Left or right offset of image center; suffix with\n"
+	  "                        mm, cm, in or pt to use various units.\n\n"
+	  "  -y --y-offset <n>   : Up or down offset of image center; suffix with\n"
+	  "                        mm, cm, in or pt to use various units. Use -y 0\n"
+	  "                        to eliminate text footer from shifting default\n"
+	  "                        center upwards.\n\n");
 }
 
 int main(int argc, char **argv){
   float width=8.5*72.0;
   float height=11.0*72.0;
+  float xoff=0;
+  float yoff=0;
+  float fontsize=-1;
+  int havey=0;
   float dpp=300.0/72.0;
   char *text=NULL;
 
@@ -86,6 +100,8 @@ int main(int argc, char **argv){
     switch(c){
     case 'W':
     case 'H':
+    case 'x':
+    case 'y':
       {
 	float temp;
 	if(strstr(optarg,"cm")){
@@ -97,10 +113,20 @@ int main(int argc, char **argv){
 	}else{
 	  temp=atof(optarg)*72.0;
 	}
-	if(c=='W'){
+	switch(c){
+	case 'W':
 	  width=temp;
-	}else{
+	  break;
+	case 'H':
 	  height=temp;
+	  break;
+	case 'x':
+	  xoff=temp;
+	  break;
+	case 'y':
+	  yoff=temp;
+	  havey=1;
+	  break;
 	}
       }
       break;
@@ -114,6 +140,9 @@ int main(int argc, char **argv){
       }else{
 	dpp=atof(optarg)*.01388888888889;
       }
+      break;
+    case 'f':
+      fontsize=atof(optarg);
       break;
     case 't':
       text=strdup(optarg);
@@ -135,10 +164,17 @@ int main(int argc, char **argv){
     exit(1);
   }
   ct = cairo_create(cs);
-  cairo_set_font_size(ct, height*15./792);
-  if(text)
+  if(fontsize<=0){
+    fontsize=height*15./792.;
+    if(fontsize<5)fontsize=5;
+  }
+  cairo_set_font_size(ct, fontsize);
+  if(text){
     cairo_text_extents(ct, text, &extents);
-
+    if(!havey)
+      yoff = -extents.height-fontsize*4;
+  }
+  
   /* Iterate through PNG files inline */
   while(optind<argc){
     int ww, hh;
@@ -156,10 +192,7 @@ int main(int argc, char **argv){
     cairo_save(ct);
     cairo_scale(ct, 1./dpp, 1./dpp);
     pattern = cairo_pattern_create_for_surface(ps);
-    if(text)
-      cairo_translate(ct,(width*dpp - ww)*.5,((height-extents.height-36)*dpp - hh)*.5);
-    else
-      cairo_translate(ct,(width*dpp - ww)*.5,(height*dpp - hh)*.5);
+    cairo_translate(ct,(width*dpp - (ww-1))*.5,((height+yoff)*dpp - (hh-1))*.5);
     cairo_pattern_set_filter(pattern, CAIRO_FILTER_BEST);
     cairo_set_source(ct,pattern);
     cairo_paint(ct);
@@ -167,9 +200,17 @@ int main(int argc, char **argv){
 
     /* draw comment text */
     if(text){
+      cairo_set_source_rgba(ct, 1,1,1,.75);
+      cairo_move_to(ct, width-extents.width-fontsize*1.5, height-fontsize*1.5);
+      cairo_text_path (ct, text);  
+      cairo_set_line_width(ct,3.);
+      cairo_set_line_join(ct,CAIRO_LINE_JOIN_ROUND);
+      cairo_stroke(ct);
+
       cairo_set_source_rgb(ct, 0,0,0);
-      cairo_move_to(ct, width-extents.width-36, height-36);
+      cairo_move_to(ct, width-extents.width-fontsize*1.5, height-fontsize*1.5);
       cairo_show_text(ct, text);  
+
     }
 
 
