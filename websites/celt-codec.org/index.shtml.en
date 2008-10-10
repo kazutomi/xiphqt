@@ -23,7 +23,7 @@
 </p>
 <h2>The Technology</h2>
 <p>
-	CELT stands for "Code-Excited Lapped Transform". It applies some of the CELP principles,
+	CELT stands for "Constrained Energy Lapped Transform". It applies some of the CELP principles,
         but does everything in the frequency domain, which removes some of the limitations of CELP.
         CELT is suitable for both speech and music and currently features:
 </p>
