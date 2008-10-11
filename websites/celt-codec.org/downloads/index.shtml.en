@@ -29,6 +29,17 @@
 
 <h2>Latest <strong style='font-style: italic;'>development</strong> releases</h2>
 
+<h3 id='zero.5.0'>0.5.0</h3>
+<p>This release includes simplifications to the bit allocation code
+   and includes a new low-complexity mode that can be enabled (without breaking compatibility)
+   on the encoder side. There are several other optimisations and bug fixes included. The API
+   has also been slightly modified, so code using CELT will have to be updated (minor).
+</p>
+
+<ul>
+<li><a href="http://downloads.us.xiph.org/releases/celt/celt-0.5.0.tar.gz">celt-0.5.0.tar.gz</a></li>
+</ul>
+
 <h3 id='zero.4.0'>0.4.0</h3>
 <p>This release should greatly improve the handling of transients and reduce the amount of pre-echo, especially
    for larger frame sizes. There is now support for frame sizes up to 512 samples for those who don't have extreme 

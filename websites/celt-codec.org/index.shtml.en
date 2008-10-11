@@ -56,6 +56,16 @@
 <h2>Headlines</h2>
 <ul class="descriptivelist">
    <li>
+      <h3>Version 0.5.0 released</h3>
+      <p class="submitdate">10 October, 2008</p>
+      <div class="description">
+                <p>Version 0.5.0 is out. This release includes simplifications to the bit allocation code
+                and includes a new low-complexity mode that can be enabled (without breaking compatibility)
+                on the encoder side. There are several other optimisations and bug fixes included. The API
+                has also been slightly modified, so code using CELT will have to be updated (minor).</p>
+      </div>
+   </li>
+   <li>
       <h3>Version 0.4.0 released</h3>
       <p class="submitdate">26 July, 2008</p>
       <div class="description">
