@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="windows-1251"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="9,00"
 	Name="libspeexdsp"
 	ProjectGUID="{03207781-0D1C-4DB3-A71D-45C608F28DBD}"
 	Keyword="Win32Proj"
@@ -210,7 +210,6 @@
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
-				
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
 				ImportLibrary="../../../lib/libspeexdsp.lib"
