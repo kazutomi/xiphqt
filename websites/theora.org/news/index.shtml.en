@@ -8,6 +8,19 @@
 <!--#include virtual="/ssi/pagetop.include" -->
 <!--  All your page content goes here  -->
 
+<h3>Final 1.0 release imminent; 1.0 release candidate 2 now available</h3>
+<p class="newsdate">2008 October 28</p>
+
+<p>The Xiph.Org Foundation is pleased to announce the second release
+candidate of libtheora 1.0.  This second release candidate corrects
+all bugs found in final testing of the first release candidate, and
+will become 1.0 final in one week if no new 'blockers' are found.</p>
+
+<p>Full source downloads of the second release candidate are currently
+at <a
+href="http://downloads.xiph.org/releases/theora">http://downloads.xiph.org/releases/theora</a>.</p>
+
+
 <h3>Mozilla commits support for Theora in Firefox</h3>
 <p class="newsdate">2008 August 2</p>
 <p>The Xiph.Org Foundation and the Mozilla Foundation share the common goal of keeping the Web free and open for everyone, so it did not come as a surprise when Mozilla's <a href="//www.0xdeadbeef.com/weblog/?p=492">Chris Blizzard announced</a> that the upcoming Firefox 3.1 will support both Ogg Theora and Vorbis, alongside the HTML 5's &lt;video&gt; element.</p>
