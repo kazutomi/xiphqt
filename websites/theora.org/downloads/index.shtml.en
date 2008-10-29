@@ -13,7 +13,8 @@
 <ul>
   <li>The <strong>libtheora</strong> reference implementation provides
       the standard encoder and decoder under a BSD license.
-      [<a href="http://downloads.xiph.org/releases/theora/libtheora-1.0beta3.tar.gz">libtheora-1.0beta3</a>]
+      [<a http://downloads.xiph.org/releases/theora/libtheora-1.0RC2.tar.bz2">libtheora-1.0RC2.tar.bz2</a>]
+      [<a http://downloads.xiph.org/releases/theora/libtheora-1.0RC2.zip">libtheora-1.0RC2.zip</a>]
       [<a href="/svn/">SVN information page</a>]
   </li>
 </ul>
