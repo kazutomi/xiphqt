@@ -39,15 +39,16 @@ page format specification, API documentation, example encoder and
 decoder software, and a draft RTP specification for real-time
 streaming.</p>
 
-<p>Theora development does not stop with the 1.0 release.  The
-Xiph.Org Foundation has been working on a next-generation encoder,
-codenamed 'Thusnelda', which has already demonstrated substantial
-quality improvements without breaking backward compatibility.  While
-Theora is already the preferred format for applications where freedom,
-CPU consumption, and cost are important, Thusnelda will make Theora
-more attractive for applications where quality and bit-rate are the
-only considerations.  The new encoder is slated for inclusion in the
-upcoming 1.1 release of Theora.</p>
+<p>Theora development does not stop with the 1.0 release.  With
+sponsorship from Red Hat Inc., Xiph.Org has been working on a
+next-generation encoder, codenamed 'Thusnelda', which has already
+demonstrated substantial quality improvements without breaking
+backward compatibility.  While Theora is already the preferred format
+for applications where freedom, CPU consumption, and cost are
+important, Thusnelda will make Theora more attractive for applications
+where quality and bit-rate are the only considerations.  The new
+encoder is slated for inclusion in the upcoming 1.1 release of
+Theora.</p>
 
 <p>Theora 1.0 is available for download from the following URLs:</p>
 <ul> <li><a
