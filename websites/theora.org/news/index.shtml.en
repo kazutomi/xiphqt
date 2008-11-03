@@ -8,6 +8,17 @@
 <!--#include virtual="/ssi/pagetop.include" -->
 <!--  All your page content goes here  -->
 
+<h3>Xiph.Org announces Theora full public release 1.0</h3>
+<p class="newsdate">2008 November 3</p>
+
+<p>The Xiph.Org Foundation is pleased to announce the 1.0 full public
+release of libtheora. Moreinformation is in the <a
+href="http://www.xiph.org/press/2008/theora-release-1.0/">full press release here</a>.
+
+<p>Complete source downloads of the 1.0 release are currently
+at <a
+href="http://downloads.xiph.org/releases/theora">http://downloads.xiph.org/releases/theora</a>.</p>
+
 <h3>Final 1.0 release imminent; 1.0 release candidate 2 now available</h3>
 <p class="newsdate">2008 October 28</p>
 

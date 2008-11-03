@@ -26,10 +26,11 @@ it has lots of room for improvement as encoder technology
 develops.
 </p>
 
-<p>
+<p> 
+Theora is in full public release as of November 3, 2008.
 The bitstream format for Theora I was frozen Thursday, 2004 
 July 1. All bitstreams encoded since that date will remain compatible
-with future releases.
+with future releases.  
 </p>
 
 
