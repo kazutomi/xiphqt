@@ -48,7 +48,6 @@
 <a href="#misc"><b>Misc and Credits</b></a>
 <ul>
 	<li><a href="#50">Who's in charge of Theora development?</a></li>
-	<li><a href="#52">Who is the webmaster of this site?</a></li>
 	<li><a href="#53">Who maintains The Glorious Theora FAQ?</a></li>
 	<li><a href="#54">When was this FAQ last updated?</a></li>
 </ul>
@@ -134,13 +133,6 @@ played by Amanda Pays.
   Yes and No. Theora is a superset of VP3, so VP3 streams (with minor
 syntactic modifications) can be made into Theora streams without
 recompression (but not vice versa).
-<br/>
- Theora will be almost entirely based upon the VP3 codec designed by On2.
-However, Theora video data will be delivered inside of the Ogg container
-format (with Vorbis for audio), so Ogg Theora files will not be the same as
-VP3 files. There also may be quite a few performance advantages to using
-Theora when 1.0 is complete; While our focus is integration, there will
-certainly be a lot of optimization involved, as well. 
 </div>
 <br/>
 <br/>
@@ -213,8 +205,6 @@ from the On2 patents.
 The bitstream format is frozen since the release of Theora alpha 3. So, files produced by 
 the alpha 3 reference encoder will be supported by all future decoders. This means
 you can safely use Theora to encode your content right now.
-<br/><br/>
-While Theora is labelled beta it has been in production use in many systems for over 3 years and is completely safe to adopt.
 </div>
 <br/>
 <br/>
@@ -324,21 +314,9 @@ Theora plugins</a> or <a href="http://www.mplayerhq.hu/">mplayer for windows</a>
 <a name="50"></a>
 <b>Q. Who's in charge of Theora development?</b><br/>
 <div class="txt">
-The Xiph.org Foundation is the primary developer of Theora, but this is
-mainly an integration issue. The VP3 codec that serves as the base of
+The VP3 codec that serves as the base of
 Theora was written by a company called <a href="http://www.on2.com">On2 Technologies</a>. Xiph.org will be
-responsible for all aspects of the development. On2 will provide both
-monetary and technical support to Xiph.org throughout the project. On2 is
-also providing the source code of their implementation of the VP3 codec as
-well as some of their video tools.  
-</div>
-<br/>
-<br/>
-<a name="52"></a>
-<b>Q. Who is the webmaster of this site?</b><br/>
-<div class="txt">
- That would be <a href="mailto:manuel@xiph.org">Manuel Lora</a>, the greatest webmaster 
-on the face of the planet. 
+responsible for all aspects of on going development.
 </div>
 <br/>
 <br/>
@@ -354,7 +332,7 @@ eternally grateful.
 <br/>
 <a name="54"></a>
 <b>Q. When was this FAQ last updated?</b><br/>
- September 23rd, 2007 by Maik Merten. 
+ November 3rd, 2008 by Greg Maxwell. 
 <br/>
 <br/>
 
