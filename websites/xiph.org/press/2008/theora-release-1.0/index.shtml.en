@@ -1,0 +1,80 @@
+<!--#include virtual="/ssi/header.include" -->
+<!-- Enter custom page information and styles here -->
+  <title>November 3, 2008: Xiph.Org releases Theora 1.0</title>
+</head>
+<body>
+<!--#include virtual="/common/xiphbar.include" -->
+
+<!--#include virtual="/ssi/pagetop.include" -->
+<!--  All your page content goes here  -->
+
+
+<h3>The Xiph.Org Foundation announces the release of Theora 1.0.</h3>
+
+<p>Theora is a video codec with a small CPU footprint that offers easy
+portability and requires no patent royalties.  While the Theora
+bitstream format was standardized in 2004 and our beta releases have
+been used by millions, this 1.0 release is an important milestone
+reflecting the maturity and stability of the Theora codebase.</p>
+
+<p>A number of leading multimedia web groups already support Theora.
+Upcoming releases of Mozilla Firefox, the world's most popular open
+source browser, will support Theora natively, as will releases of the
+multi-platform Opera browser.  Top-10 website Wikipedia uses Theora
+for all of its video.  "Open media formats are critical for ensuring a
+future where everyone can create and share media freely," says Kat
+Walsh, Wikimedia Foundation board member, "and so we congratulate
+Xiph.org on this important achievement."  Theora's success in these
+applications paves the way for wider adoption.</p>
+
+<p>The Theora 1.0 package includes a reference library using the
+revised 3-clause BSD license, allowing use in all software, free or
+proprietary.  The reference library uses a new decoder which supports
+the entire Theora specification and is significantly faster than
+earlier versions.  This high-performance decoder is already used on
+the XO laptop from the OLPC project.</p>
+
+<p>The package also supplies numerous resources for developers: a 190
+page format specification, API documentation, example encoder and
+decoder software, and a draft RTP specification for real-time
+streaming.</p>
+
+<p>Theora development does not stop with the 1.0 release.  The
+Xiph.Org Foundation has been working on a next-generation encoder,
+codenamed 'Thusnelda', which has already demonstrated substantial
+quality improvements without breaking backward compatibility.  While
+Theora is already the preferred format for applications where freedom,
+CPU consumption, and cost are important, Thusnelda will make Theora
+more attractive for applications where quality and bit-rate are the
+only considerations.  The new encoder is slated for inclusion in the
+upcoming 1.1 release of Theora.</p>
+
+<p>Theora 1.0 is available for download from the following URLs:</p>
+<ul> <li><a
+href="http://downloads.xiph.org/releases/theora/libtheora-1.0.tar.gz">http://downloads.xiph.org/releases/theora/libtheora-1.0.tar.gz</a></li>
+<li><a
+href="http://downloads.xiph.org/releases/theora/libtheora-1.0.zip">http://downloads.xiph.org/releases/theora/libtheora-1.0.zip</a></li>
+
+<p>Technical support is available through the official <a
+href="http://lists.xiph.org/mailman/listinfo/theora">general</a> and
+<a
+href="http://lists.xiph.org/mailman/listinfo/theora-dev">developer-specific</a>
+mailing lists.</p>
+
+<p>Theora is mature software; do not be afraid to try it.  This
+release reflects countless hours of debugging, manual code audits and
+fuzz testing.  A scan by the Coverity static analysis tool revealed
+only two defects: one false alarm and the other now fixed.  We would
+like to thank all the volunteers involved in this project throughout
+the years for their hard work.  Your dedication helped improve Theora;
+this release is dedicated to you.</p>
+
+<p> The Xiph.Org Foundation is a not-for-profit corporation dedicated
+to open, unencumbered multimedia technology. Xiph's formats and
+software levels the playing field for digital media so that all
+producers and artists can distribute their work for minimal cost,
+without restriction, regardless of affiliation.  May contain traces of
+nuts.</p>
+
+
+<!--#include virtual="/ssi/pagebottom.include" -->
