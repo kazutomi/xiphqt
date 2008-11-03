@@ -36,7 +36,7 @@ Theora can e.g. use <a href="http://www.vorbis.com">Vorbis</a>, <a href="http://
 
 <h2>Theora is suited for internet content delivery</h2>
 <p>
-Theora, as every member of the Ogg family, can be streamed pretty easily. Existing solutions do exist
+Theora, as every member of the Ogg family, can be streamed easily. Existing solutions do exist
 (e.g. <a href="http://www.icecast.org">Icecast</a> or <a href="http://www.flumotion.net/">Flumotion streaming server</a>)
 that have a proven track record and itself are free and open.
 </p>
@@ -47,7 +47,7 @@ Of course Theora also can be streamed from virtually any HTTP server, making it 
 
 <p>
 On the technological side Theora is well engineered for low-bitrate streaming. Its in-loop deblocking filter
-is pretty efficient at preventing a distracting, blocky look of the encoded content. Thus perceived video
+is efficient at preventing a distracting, blocky look of the encoded content. Thus perceived video
 quality usually degrades gracefully as bitrate decreases, which is an essential property for any video codec targeting 
 web video.
 </p>
