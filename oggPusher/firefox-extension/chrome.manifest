@@ -1,2 +1,0 @@
-content     oggPusher chrome/content/
-overlay chrome://browser/content/browser.xul chrome://oggPusher/content/op_browser.xul
