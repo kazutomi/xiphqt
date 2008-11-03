@@ -299,7 +299,7 @@ For more on the vlc syntax, see: <br/>
 <b>Q. Is there any way to use Theora on Microsoft Windows at this point?</b><br/>
 <div class="txt">
 Yes, you can use your Theora files on windows using <a
-href="http://www.illiminable.com/ogg/">Directshow filters</a>. <a 
+href="http://www.xiph.org/dshow/">Directshow filters</a>. <a 
 href="http://ffdshow.sourceforge.net/">FFdshow</a> also has support for Theora. You 
 can also try <a href="http://www.videolan.org/">vlc</a>, realplayer <a 
 href="https://helixcommunity.org/project/showfiles.php?group_id=7">
