@@ -82,7 +82,7 @@ src=bug.gif border=0 width=132 height=18 alt="">
 <hr>
 
 <p align=left>
-May 16, 2008
+September 12, 2008
 <p align=left>
 <!-- body or table of contents -->
 
@@ -105,25 +105,34 @@ here; look at the <a href="trouble.html">troubleshooting page</a>.<p>
   <li><a href="#portable">Is cdparanoia / Paranoia portable?</a>
   <li><a href="#history">What is Paranoia's history?</a>
   <li><a href="#history">Is cdparanoia/Paranoia related to cdda2wav?</a> 
-  <li><a href="#versions">What are the differences between Paranoia II, III and IV?</a>
+  <li><a href="#versions">What are the differences between Paranoia versions?</a>
   <li><a href="#maillist">Are there cdparanoia mailing lists for users or developers?</a>
-  <li><a href="#devstatus">What is Paranoia IV's current development status?</a>
+  <li><a href="#devstatus">What is Paranoia's current development status?</a>
   </ol>
-<li>Questions about using Paranoia and cdparanoia
+
+<li>General questions about cdparanoia and using it
   <ol>
-  <li><a href="#req">Requirements to run cdparanoia</a>
-  <li><a href="#supp">Does Cdparanoia support ATAPI drives?  SCSI Emulation? USB drives? Parallel port drives?</a>
+  <li><a href="#reqnew">Requirements to run cdparanoia</a>
+  <li><a href="#supp">What drives does cdparanoia support?</a>
   <li><a href="#play">I can play audio CDs perfectly; why is reading the CD into a file so difficult and prone to errors?</a>
   <li><a href="#analog">Does cdparanoia lose quality from the CD recording?</a>
-  <li><a href="#toc">Can cdparanoia detect pregaps? Can it remove the two second gaps between tracks</a>
+  <li><a href="#recommend">What drives are recommended for use with cdparanoia?</a>
+  <li><a href="#cache">What is with the new cache features in 10.2?</a>
+  <li><a href="#toc">Can cdparanoia detect pregaps? Can it remove the two second gaps between tracks?</a>
   <li><a href="#gimme">Why don't you implement CDDB?  A GUI?  Four million other features I want?</a>
   <li><a href="#progbar">The progress meter: What is that weird bargraph during ripping?</a>
   <li><a href="#corr">Do symbols in the progress bar mean a bad rip?</a>
-  <li><a href="#ok">How can I tell if my drive would be OK with regular cdda2wav?</a>
-  <li><a href="#bigbuff">(Linux only) What is the biggest value of SG_BIG_BUFF I can use?</a>
+  <li><a href="#ok">How can I tell if my drive would be OK without Paranoia?</a>
   <li><a href="#diff">Why do the binary files from two reads differ when compared?</a>
-  <li><a href="#cdr">Why does CDParanoia rip files off into WAV format (and other sample formats) but not CDDA format?</a>
+  <li><a href="#cdr">Why does CDParanoia rip files into several formats but not CDDA format?</a>
+  </ol>
 
+<li>Questions about 'vintage' cdparanoia and older Linux kernels (before 2.4)
+  <ol>
+  <li><a href="#upgrade">Why should I upgrade to a newer version?</a>
+  <li><a href="#req">Requirements to run cdparanoia</a>
+  <li><a href="#supp">Does Cdparanoia support ATAPI drives?  SCSI Emulation? USB drives? Parallel port drives?</a>
+  <li><a href="#bigbuff">(Linux only) What is the biggest value of SG_BIG_BUFF I can use?</a>
   </ol>
 </ol>
 <p>
@@ -156,13 +165,13 @@ src=barbottom.gif border=0 width=132 height=18 alt=""></td>
 <a name=cdparanoia>
 <h2>What is cdparanoia?</h2>
 
-Cdparanoia is a Compact Disc Digital Audio (CDDA) extraction tool,
-commonly known on the net as a 'ripper'.  The application is built on
-top of the Paranoia library, which is doing the real work (the
-Paranoia source is included in the cdparanoia source distribution).
-Like the original cdda2wav, cdparanoia package reads audio from the
-CDROM directly as data, with no analog step between, and writes the
-data to a file or pipe in WAV, AIFC or raw 16 bit linear PCM.<p>
+Cdparanoia is a Compact Disc Digital Audio (CDDA) Digital Audio
+Extraction (DAE) tool, commonly known on the net as a 'ripper'.  The
+application is built on top of the Paranoia library, which is doing
+the real work (the Paranoia source is included in the cdparanoia
+source distribution).  Cdparanoia reads audio from the CDROM directly
+as data, with no analog step between, and writes the data to a file or
+pipe in WAV, AIFC or raw 16 bit linear PCM.<p>
 
 Cdparanoia is a bit different than most other CDDA extration tools.
 It contains few-to-no 'extra' features, concentrating only on the
@@ -172,12 +181,11 @@ from inexpensive drives prone to misalignment, frame jitter and loss
 of streaming during atomic reads.  Cdparanoia will also read and
 repair data from CDs that have been damaged in some way.<p>
 
-At the same time, however, cdparanoia turns out to be easy to use and
-administrate; It has no compile time configuration, happily
-autodetecting the CDROM, its type, its interface and other aspects of
-the ripping process at runtime.  A single binary can serve the
-diverse hardware of the do-it-yourself computer laboratory from
-Hell...<p>
+Cdparanoia is easy to use and administrate; It has no compile time
+configuration, happily autodetecting the CDROM, its type, its
+interface and other aspects of the ripping process at runtime.  A
+single binary can serve the diverse hardware of the do-it-yourself
+computer laboratory from Hell.<p>
 
 <hr>
 <a name=usecdparanoia>
@@ -188,17 +196,25 @@ yours is a little less equal than others-- or maybe you just keep your
 CD collection in a box of full of gravel.  Jewel cases are for wimps;
 you know what I'm talking about.<p>
 
-Unfortunately, cdda2wav and readcdda cannot work properly with a large
-number of CDROM drives in the desktop world today.  The most common
-problem is sporadic or regular clicks and pops in the read sample,
-regardless of 'nsector' or 'overlap' settings.  Cdda2wav also cannot
-do anything about scratches (and they can cause cdda2wav to break).
-Cdparanoia is also smarter about probing CDDA support from SCSI and
-IDE-SCSI drives; many drives that do not work at all with cdda2wav,
-readcdda, tosha, etc, will work just fine with cdparanoia.<p>
+Unfortunately, most rippers cannot work properly with a large number
+of CDROM drives in the desktop world today.  The most common problem
+is sporadic or regular clicks and pops in the read sample, regardless
+of options or settings.  The great lesson from coding software for
+CDROMS the past 15 years is that drives that don't have bugs reading
+digital audio are exceptionally rare.  Most drives advertise that they
+support 'error correcting streaming' or 'perfect reconstruction'.  If
+that's true, why is your music collection full of glitches?<p>
 
-<em>Update Note</em> The most recent release of cdda2wav, just
-announced today, adds more error correcting abilities.<p>
+Cdparanoia is also smarter about finding and probing CDDA support from
+drives.  Cdparanoia knows most of the old proprietary CDDA reading
+command sets from the bad old days and can autodetect them all.  Many
+drives, especially older drives, that do not work at all with other
+rippers will work just fine with cdparanoia.<p>
+
+Nor will you need to type in PCI or SCSI bus ids to use your cdroms
+ever again.  OK, that's not so common today, but it was a *killer*
+feature 15 years ago ;-) That alone nearly sent cdda2wav to its grave
+;-)<p>
 
 <hr>
 <a name=paranoia>
@@ -219,8 +235,8 @@ exception.<p>
 <a name=portable>
 <h2>Is cdparanoia / Paranoia portable?</h2>
 
-Paranoia is Linux only (although it runs on all the flavors of linux
-with a 2.0 or later kernel.  It is not only for x86).<p>
+Paranoia is Linux only (although it runs on all the flavors of linux.
+It is not only for i386 or x86_64).<p>
 
 In the past, there was effort to make this library as portable as
 possible across other OS platforms.  As time has worn on, I've come to
@@ -249,30 +265,35 @@ halfbaked subset of the features that work on both.<p>
 <h2>What is Paranoia's history?</h2> 
 <h2>Is cdparanoia/Paranoia related to cdda2wav?</h2> 
 
-Paranoia I/II and cdparanoia began life as a
-set of patches to Heiko Eissfeldt's '<a
+Paranoia I/II and cdparanoia began life as a set of patches to Heiko
+Eissfeldt's '<a
 href="ftp://ftp.gwdg.de/pub/linux/misc/cdda2wav/">cdda2wav</a>'
-application.  Cdparanoia gained its own life as a rewrite of cdda2wav
-in January of 1998 as "Paranoia III".  Paranoia III proved to have an
-inadequate structure for extention and use on other platforms, so
-Paranoia IV began to take form in fall of 1998.<p>
-
-Modern Paranoia no longer has any relation to cdda2wav aside from
-general cooperation in sharing details between the two projects.  In
-fact, cdda2wav itself doesn't look much like the cdda2wav of a year or
-two ago.<p>
+application in late 1994.  Cdparanoia gained its own life as a rewrite
+of cdda2wav in January of 1998 as "Paranoia III". Paranoia has had no
+real relation to cdda2wav since then.<p>
 
 <hr>
 <a name=versions>
-<h2>What are the differences between Paranoia II, III and IV?</h2>
+<h2>What are the differences between Paranoia versions?</h2>
 Paranoia I and II were a set of patches to Heiko Eissfeldt's cdda2wav
 0.8.  These patches did nothing more than add some error checks to the
 standard cdda2wav.  They were inefficient and only worked with some
-drives.<p>
+drives. Paranoia III was the first version to be written seperately from
+cdda2wav in the form of a standalone library.<p>  
 
-Paranoia III was the first version to be written seperately from
-cdda2wav in the form of a standalone library.<p>  It was not terribly
-portable, however, and the API proved to be inadequate for extension.<p>
+The last of the previous generation of cdparanoia was cdparanoia III
+version 9.8 from early 2001, designed for Linux 2.0 through early 2.4.
+At this point, the project met all its original goals and was declared
+'finished'.<p>
+
+Linux kept moving forward, finally unifying CDROM device access across all device types behind a new kernel interface in the 2.6 kernel series (something   
+
+The last cdparanoia 9.x was 9.8, the last of the 9.x versions in 2001 and was designed to support linux
+through early 2.4 kernels.
+
+
+
+<p> 
 
 Paranoia IV is an upcoming generation that intends to improve the
 library API as well as take advantage of new CDROM features that
