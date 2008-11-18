@@ -14,20 +14,6 @@
 <!--#include virtual="/common/xiphbar.include" -->
 <!--#include virtual="/ssi/pagetop.include" -->
 <!--  All your page content goes here  -->
-<h1>Codec Quality Comparison</h1>
-
-<p> These are the results of MUSHRA tests comparing CELT with AAC-LD, G.722.1C and MP3, with 10 listeners. 
-We used version 0.3.2 of the CELT codec with 5.8 ms frames (256 samples) and 2.9 ms (128 samples) look-ahead,
-for a total of 8.7 ms at 44.1 kHz. As for AAC-LD, we used Apple's implementation, which has 11.6 ms frames 
-and 23.2 ms look-ahead, for a total of 34.8 ms delay at 44.1 kHz. The MP3 implementation is LAME in CBR more 
-and is only included for reference purposes only.</p>
-
-<p>The first graph is for the 48 kbit/s listening test.</p>
-<p align="center"><a href="results48.png"><img src="results48.png" width="500" height="350"></a></p>
-<p> The second graph is for the 64 kbit/s listening test. Note that G.722.1C is still at 48 kbit/s in that test because it is the highest bit-rate it supports.</p>
-<p align="center"><a href="results64.png"><img src="results64.png" width="500" height="350"></a></p>
-
-
 <h1>Codec Feature Comparison</h1>
 <table border="2" cellpadding="2" width="100%">
 	<thead>
@@ -114,5 +100,17 @@ and is only included for reference purposes only.</p>
 
 </dl>
 
+<h1>Codec Quality Comparison</h1>
+
+<p> These are the results of MUSHRA tests comparing CELT with AAC-LD, G.722.1C and MP3, with 10 listeners. 
+We used version 0.3.2 of the CELT codec with 5.8 ms frames (256 samples) and 2.9 ms (128 samples) look-ahead,
+for a total of 8.7 ms at 44.1 kHz. As for AAC-LD, we used Apple's implementation, which has 11.6 ms frames 
+and 23.2 ms look-ahead, for a total of 34.8 ms delay at 44.1 kHz. The MP3 implementation is LAME in CBR more 
+and is only included for reference purposes only.</p>
+
+<p>The first graph is for the 48 kbit/s listening test.</p>
+<p align="center"><a href="results48.png"><img src="results48.png" width="500" height="350"></a></p>
+<p> The second graph is for the 64 kbit/s listening test. Note that G.722.1C is still at 48 kbit/s in that test because it is the highest bit-rate it supports.</p>
+<p align="center"><a href="results64.png"><img src="results64.png" width="500" height="350"></a></p>
 
 <!--#include virtual="/ssi/pagebottom.include" -->
