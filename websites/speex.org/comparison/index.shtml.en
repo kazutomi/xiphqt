@@ -102,9 +102,9 @@
 		</tr>
 		
 		<tr>
-			<td>G.722.1 (aka Siren)</td>
+			<td>G.722.1 (Siren7)</td>
 			<td>16</td>
-			<td>24, 32</td>
+			<td>(16) 24, 32</td>
 			<td>20+20</td>
 			<td>yes</td>
 
@@ -112,7 +112,7 @@
 			<td/>
 			<td>yes</td>
 			<td>yes</td>
-			<td>proprietary</td>
+			<td>no charge, but not open-source</td>
 		</tr>
 		
 		<tr>
