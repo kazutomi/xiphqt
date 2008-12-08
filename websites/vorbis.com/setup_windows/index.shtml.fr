@@ -22,7 +22,7 @@ et tous les <a href="http://sourceforge.net/project/showfiles.php?group_id=82303
 DirectShow n'ont pas besoin de ces filtres.</p>
 
 <ul>
-  <li><a href="http://www.illiminable.com/ogg/">Filtres DirectShow Illiminable</a></li>
+  <li><a href="http://xiph.org/dshow/">Filtres DirectShow</a></li>
 </ul>
 
 <h2>Lecteurs :</h2>
