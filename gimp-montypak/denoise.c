@@ -501,7 +501,7 @@ static gboolean denoise_dialog (GimpDrawable *drawable)
 
   if(preview_cache_buffer)
     g_free(preview_cache_buffer);
-
+  preview_cache_buffer=NULL;
   return run;
 }
 
