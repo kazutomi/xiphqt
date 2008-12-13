@@ -27,6 +27,7 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include <gtk/gtk.h>
 #include <libgimp/gimp.h>
 #include <libgimp/gimpui.h>
 
@@ -52,9 +53,9 @@ static void     run   (const gchar      *name,
 static void     denoise        (GimpDrawable *drawable);
 
 static gboolean denoise_dialog (GimpDrawable *drawable);
-static void     denoise_work(int w, int h, int bpp, guchar *buffer, int progress);
+static int      denoise_work(int w, int h, int bpp, guchar *buffer, int progress, int(*interrupt)(void));
 
-static void     preview_update (GimpPreview  *preview);
+static void     preview_update (GtkWidget  *preview, GtkWidget *dialog);
 
 /*
  * Globals...
@@ -89,6 +90,12 @@ static DenoiseParams denoise_params =
 
 static GtkWidget    *preview;
 static GtkObject    *madj[4];
+static guchar *preview_cache_buffer=NULL;
+static int     preview_cache_x;
+static int     preview_cache_y;
+static int     preview_cache_w;
+static int     preview_cache_h;
+
 
 MAIN ()
 
@@ -282,7 +289,7 @@ static void denoise (GimpDrawable *drawable){
   /***************************************/
   buffer = g_new (guchar, w * h * bpp);
   gimp_pixel_rgn_get_rect (&src_rgn, buffer, x1, y1, w, h);
-  denoise_work(w,h,bpp,buffer,1);
+  denoise_work(w,h,bpp,buffer,1,NULL);
   gimp_pixel_rgn_set_rect (&dst_rgn, buffer, x1, y1, w, h);
   /**************************************/
 
@@ -322,6 +329,19 @@ static void dialog_multiscale_callback (GtkWidget *widget,
     gimp_preview_invalidate (GIMP_PREVIEW (preview));
 }
 
+static void dump_cache(GtkWidget *widget, gpointer dummy){
+  if(!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (widget))){
+    if(preview_cache_buffer)
+      g_free(preview_cache_buffer);
+    preview_cache_buffer=NULL;
+  }
+}
+
+static void decache_on_toggle(GtkWidget *widget, gpointer dummy){
+  g_signal_connect (widget, "toggled",
+                    G_CALLBACK (dump_cache),
+		    NULL);
+}
 
 static gboolean denoise_dialog (GimpDrawable *drawable)
 {
@@ -361,7 +381,9 @@ static gboolean denoise_dialog (GimpDrawable *drawable)
 
   g_signal_connect (preview, "invalidated",
                     G_CALLBACK (preview_update),
-                    NULL);
+                    dialog);
+  gtk_container_foreach(GTK_CONTAINER(gimp_preview_get_controls(GIMP_PREVIEW(preview))),
+			decache_on_toggle,NULL);
 
   /* Main filter strength adjust */
   table = gtk_table_new (1, 3, FALSE);
@@ -477,42 +499,101 @@ static gboolean denoise_dialog (GimpDrawable *drawable)
 
   gtk_widget_destroy (dialog);
 
+  if(preview_cache_buffer)
+    g_free(preview_cache_buffer);
+
   return run;
 }
 
-static void preview_update (GimpPreview *preview)
-{
+static int denoise_active_interruptable;
+static int denoise_active_interrupt;
+
+static int check_recompute(){
+  while(gtk_events_pending())
+    gtk_main_iteration ();
+  return denoise_active_interrupt;
+}
+
+static int set_busy(GtkWidget *preview, GtkWidget *dialog){
+  GdkDisplay    *display = gtk_widget_get_display (dialog);
+  GdkCursor     *cursor = gdk_cursor_new_for_display (display, GDK_WATCH);
+  gdk_window_set_cursor(preview->window, cursor);
+  gdk_window_set_cursor(gimp_preview_get_area(GIMP_PREVIEW(preview))->window, cursor);
+  gdk_window_set_cursor(dialog->window, cursor);
+  gdk_cursor_unref(cursor);
+}
+
+static void preview_update (GtkWidget *preview, GtkWidget *dialog){
+
   GimpDrawable *drawable;
   GimpPixelRgn  rgn;            /* previw region */
   gint          x1, y1;
   gint          w,h;
-  guchar       *buffer;
+  guchar       *buffer=NULL;
   gint          bpp;        /* Bytes-per-pixel in image */
 
-
-  gimp_preview_get_position (preview, &x1, &y1);
-  gimp_preview_get_size (preview, &w, &h);
+  /* because we allow async event processing, a stray expose of the
+     GimpPreviewArea will cause it reload the original unfiltered
+     data, which is annoying when doing small parameter tweaks.  Make
+     sure the previous run's data is blitted in if it can be */
   drawable = gimp_drawable_preview_get_drawable (GIMP_DRAWABLE_PREVIEW (preview));
   bpp = gimp_drawable_bpp (drawable->drawable_id);
-  buffer = g_new (guchar, w * h * bpp);
-  gimp_pixel_rgn_init (&rgn, drawable,
-                       x1, y1, w, h,
-                       FALSE, FALSE);
-  gimp_pixel_rgn_get_rect (&rgn, buffer, x1, y1, w, h);
-  denoise_work(w,h,bpp,buffer,0);
-  gimp_preview_draw_buffer (preview, buffer, w*bpp);
-  gimp_drawable_flush (drawable);
+  gimp_preview_get_position (GIMP_PREVIEW(preview), &x1, &y1);
+  gimp_preview_get_size (GIMP_PREVIEW(preview), &w, &h);
 
-  g_free (buffer);
+  if(preview_cache_buffer &&
+     x1 == preview_cache_x &&
+     y1 == preview_cache_y &&
+     w == preview_cache_w &&
+     h == preview_cache_h){
+    
+    gimp_preview_draw_buffer (GIMP_PREVIEW(preview), preview_cache_buffer, w*bpp);
+  }else{
+    g_free(preview_cache_buffer);
+    preview_cache_buffer=NULL;
+  }
+
+  denoise_active_interrupt=1;
+  if(denoise_active_interruptable) return;
+  denoise_active_interruptable = 1;
+
+  while(denoise_active_interrupt){
+    denoise_active_interrupt=0;
+
+    set_busy(preview,dialog);
+
+    gimp_preview_get_position (GIMP_PREVIEW(preview), &x1, &y1);
+    gimp_preview_get_size (GIMP_PREVIEW(preview), &w, &h);
+    gimp_pixel_rgn_init (&rgn, drawable,
+			 x1, y1, w, h,
+			 FALSE, FALSE);
+    if(buffer) g_free (buffer);
+    buffer = g_new (guchar, w * h * bpp);
+    gimp_pixel_rgn_get_rect (&rgn, buffer, x1, y1, w, h);
+    if(!denoise_work(w,h,bpp,buffer,0,check_recompute)){
+      gimp_preview_draw_buffer (GIMP_PREVIEW(preview), buffer, w*bpp);
+      gimp_drawable_flush (drawable);
+    }
+  }
+  
+  if(preview_cache_buffer)
+    g_free(preview_cache_buffer);
+  preview_cache_buffer = buffer;
+  preview_cache_x = x1;
+  preview_cache_y = y1;
+  preview_cache_w = w;
+  preview_cache_h = h;
+
+  denoise_active_interruptable = 0;
 }
 
-static void denoise_work(int width, int height, int planes, guchar *buffer, int pr){
+static int denoise_work(int width, int height, int planes, guchar *buffer, int pr, int(*check)(void)){
   int i;
   double T[16];
 
   for(i=0;i<16;i++)
-      T[i]=denoise_params.filter*.2;
- 
+    T[i]=denoise_params.filter*.2;
+  
   if(denoise_params.multiscale){
     T[0]*=(denoise_params.f1+100)*.01;
     T[1]*=(denoise_params.f2+100)*.01;
@@ -520,8 +601,8 @@ static void denoise_work(int width, int height, int planes, guchar *buffer, int 
     for(i=3;i<16;i++)
       T[i]*=(denoise_params.f4+100)*.01;
   }
-
-  wavelet_filter(width, height, planes, buffer, pr, T, denoise_params.soft);
+  
+  return wavelet_filter(width, height, planes, buffer, pr, T, denoise_params.soft, check);
 
 }
 
