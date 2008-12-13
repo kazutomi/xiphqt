@@ -13,8 +13,9 @@ INSTALL   = install
 STRIP     = strip
 LDCONFIG  = /sbin/ldconfig
 
+TARGETS   = denoise scanclean
 VERSION   = $(MAJOR).$(MINOR).$(SUBMINOR)
-BINDIR    = $(PREFIX)//plug-ins
+BINDIR    = $(PREFIX)/plug-ins
 
 MAN	  =
 PKGARG	  = "gimp-2.0 gimpui-2.0 gtk+-2.0 >= 2.10 "
@@ -34,7 +35,7 @@ profile:
 	$(MAKE) montypak CFLAGS='-g -pg -O2 $(GCF) '
 
 clean:
-	rm -f *.o *.d *.d.* *.pc gmon.out $(TARGET)
+	rm -f *.o *.d *.d.* *.pc gmon.out $(TARGETS)
 
 distclean: clean
 	rm -f core core.* *~ 
@@ -46,7 +47,7 @@ ifeq ($(MAKECMDGOALS),target)
 include $(SRC:.c=.d)
 endif
 
-montypak: denoise scanclean
+montypak: $(TARGETS)
 
 denoise.o: wavelet.c
 
@@ -55,10 +56,9 @@ denoise:  denoise.o
 
 scanclean.o: blur.c
 
-scanclean: scanclean.o wavelet.c blur.c
+scanclean: scanclean.o 
 	$(LD) $< $(CFLAGS) -o $@ $(LIBS) $(LDF)
 
 install: all
 	$(INSTALL) -d -m 0755 $(BINDIR)
-	$(INSTALL) -m 0755 denoise $(BINDIR)
-	$(INSTALL) -m 0755 scanclean $(BINDIR)
+	$(INSTALL) -m 0755 $(TARGETS) $(BINDIR)
