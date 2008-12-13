@@ -77,14 +77,14 @@ typedef struct
   float f2;
   float f3;
   float f4;
-
+  int isomode;
 } DenoiseParams;
 
 static DenoiseParams denoise_params =
 {
-  2, 0, 0,
+  20, 0, 0,
   0.,0.,0.,0.,
-
+  0
 };
 
 static GtkWidget    *preview;
@@ -102,13 +102,13 @@ query (void)
     { GIMP_PDB_INT32,    "run-mode",      "Interactive, non-interactive"      },
     { GIMP_PDB_IMAGE,    "image",         "Input image"                       },
     { GIMP_PDB_DRAWABLE, "drawable",      "Input drawable"                    },
-    { GIMP_PDB_FLOAT,    "filter",        "Global denoise filter strength"    },
+    { GIMP_PDB_FLOAT,    "filter",        "Denoise filter strength"           },
     { GIMP_PDB_INT32,    "soft",          "Use soft thresholding"             },
     { GIMP_PDB_INT32,    "multiscale",    "Enable multiscale adjustment"      },
-    { GIMP_PDB_FLOAT,    "f1",            "Fine detail denoise"               },
-    { GIMP_PDB_FLOAT,    "f2",            "Detail denoise"                    },
-    { GIMP_PDB_FLOAT,    "f3",            "Mid denoise"                       },
-    { GIMP_PDB_FLOAT,    "f4",            "Coarse denoise"                    },
+    { GIMP_PDB_FLOAT,    "f1",            "Fine detail adjust"                },
+    { GIMP_PDB_FLOAT,    "f2",            "Detail adjust"                     },
+    { GIMP_PDB_FLOAT,    "f3",            "Mid adjust"                        },
+    { GIMP_PDB_FLOAT,    "f4",            "Coarse adjust"                     },
   };
 
   gimp_install_procedure (PLUG_IN_PROC,
@@ -302,12 +302,7 @@ static void dialog_soft_callback (GtkWidget *widget,
                           gpointer   data)
 {
   denoise_params.soft = (GTK_TOGGLE_BUTTON (widget)->active);
-  if(denoise_params.filter>0. ||
-     (denoise_params.multiscale && 
-      (denoise_params.f1>0. ||
-       denoise_params.f2>0. ||
-       denoise_params.f3>0. ||
-       denoise_params.f4>0.)))
+  if(denoise_params.filter>0.)
     gimp_preview_invalidate (GIMP_PREVIEW (preview));
 }
 
@@ -320,10 +315,10 @@ static void dialog_multiscale_callback (GtkWidget *widget,
   gimp_scale_entry_set_sensitive(madj[1],denoise_params.multiscale);
   gimp_scale_entry_set_sensitive(madj[2],denoise_params.multiscale);
   gimp_scale_entry_set_sensitive(madj[3],denoise_params.multiscale);
-  if(denoise_params.f1>0. ||
-     denoise_params.f2>0. ||
-     denoise_params.f3>0. ||
-     denoise_params.f4>0.)
+  if(denoise_params.f1!=0. ||
+     denoise_params.f2!=0. ||
+     denoise_params.f3!=0. ||
+     denoise_params.f4!=0.)
     gimp_preview_invalidate (GIMP_PREVIEW (preview));
 }
 
@@ -375,9 +370,9 @@ static gboolean denoise_dialog (GimpDrawable *drawable)
   gtk_widget_show (table);
 
   adj = gimp_scale_entry_new (GTK_TABLE (table), 0, 0,
-                              "_Denoise Master", 300, 0,
+                              "_Denoise", 300, 0,
                               denoise_params.filter,
-                              0, 20, .1, 1, 1,
+                              0, 100, 1, 10, 0,
                               TRUE, 0, 0,
                               NULL, NULL);
   g_signal_connect (adj, "value-changed",
@@ -419,7 +414,7 @@ static gboolean denoise_dialog (GimpDrawable *drawable)
   madj[0] = adj = gimp_scale_entry_new (GTK_TABLE (table), 1, 0,
 				       "_Very fine denoise:", 300, 0,
 				       denoise_params.f1,
-				       0, 20, .1, 1, 1,
+				       -100, +100, 1, 10, 0,
 				       TRUE, 0, 0,
 				       NULL, NULL);
   g_signal_connect (adj, "value-changed",
@@ -433,7 +428,7 @@ static gboolean denoise_dialog (GimpDrawable *drawable)
   madj[1] = adj = gimp_scale_entry_new (GTK_TABLE (table), 1, 1,
 				       "_Fine denoise:", 300, 0,
 				       denoise_params.f2,
-				       0, 20, .1, 1, 1,
+				       -100, 100, 1, 10, 0,
 				       TRUE, 0, 0,
 				       NULL, NULL);
   g_signal_connect (adj, "value-changed",
@@ -447,7 +442,7 @@ static gboolean denoise_dialog (GimpDrawable *drawable)
   madj[2] = adj = gimp_scale_entry_new (GTK_TABLE (table), 1, 2,
 				       "_Mid denoise:", 300, 0,
 				       denoise_params.f3,
-				       0, 20, .1, 1, 1,
+				       -100, 100, 1, 10, 0,
 				       TRUE, 0, 0,
 				       NULL, NULL);
   g_signal_connect (adj, "value-changed",
@@ -459,11 +454,11 @@ static gboolean denoise_dialog (GimpDrawable *drawable)
 
   /* Coarse adjust */
   madj[3] = adj = gimp_scale_entry_new (GTK_TABLE (table), 1, 3,
-                              "_Coarse denoise:", 300, 0,
-                              denoise_params.f4,
-                              0, 20, .1, 1, 1,
-                              TRUE, 0, 0,
-                              NULL, NULL);
+					"_Coarse denoise:", 300, 0,
+					denoise_params.f4,
+					-100, 100, 1, 10, 0,
+					TRUE, 0, 0,
+					NULL, NULL);
   g_signal_connect (adj, "value-changed",
                     G_CALLBACK (gimp_float_adjustment_update),
                     &denoise_params.f4);
@@ -516,13 +511,14 @@ static void denoise_work(int width, int height, int planes, guchar *buffer, int 
   double T[16];
 
   for(i=0;i<16;i++)
-    T[i]=denoise_params.filter;
+      T[i]=denoise_params.filter*.2;
+ 
   if(denoise_params.multiscale){
-    T[0]+=denoise_params.f1;
-    T[1]+=denoise_params.f2;
-    T[2]+=denoise_params.f3;
+    T[0]*=(denoise_params.f1+100)*.01;
+    T[1]*=(denoise_params.f2+100)*.01;
+    T[2]*=(denoise_params.f3+100)*.01;
     for(i=3;i<16;i++)
-      T[i]+=denoise_params.f4;
+      T[i]*=(denoise_params.f4+100)*.01;
   }
 
   wavelet_filter(width, height, planes, buffer, pr, T, denoise_params.soft);
