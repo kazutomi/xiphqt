@@ -716,6 +716,7 @@ static void forward_threshold(m2D lo[4], m2D y[4],
     if(check && check())goto cleanup;
     deconvolve_transpose_padded(temp2[i],tempw[i],sf[i&1][2], pt, pc, check);
     if(check && check())goto cleanup;
+    free_m2D(tempw+i);
     tempw[i] = convolve_padded(temp[i], af[i&1][1], pt, pc, check); /* w6 */
     if(check && check())goto cleanup;
   }
@@ -725,6 +726,7 @@ static void forward_threshold(m2D lo[4], m2D y[4],
   for(i=0;i<4;i++){
     deconvolve_transpose_padded(temp2[i],tempw[i],sf[i&1][1], pt, pc, check);
     if(check && check())goto cleanup;
+    free_m2D(tempw+i);
     tempw[i] = convolve_padded(temp[i], af[i&1][0], pt, pc, check); /* w5 */
     if(check && check())goto cleanup;
     free_m2D(temp+i);
@@ -739,8 +741,10 @@ static void forward_threshold(m2D lo[4], m2D y[4],
     if(check && check())goto cleanup;
     temp[i]   = convolve_transpose_padded(x[i], af[i>>1][1], pt, pc, check);
     if(check && check())goto cleanup;
+    free_m2D(temp2+i);
     temp2[i]  = alloc_m2D(c*2 - FSZ*3 + 2, r);
     if(check && check())goto cleanup;
+    free_m2D(tempw+i);
     tempw[i]  = convolve_padded(temp[i], af[i&1][2], pt, pc, check); /* w4 */
     if(check && check())goto cleanup;
   }
@@ -750,6 +754,7 @@ static void forward_threshold(m2D lo[4], m2D y[4],
   for(i=0;i<4;i++){
     deconvolve_transpose_padded(temp2[i],tempw[i],sf[i&1][2], pt, pc, check);
     if(check && check())goto cleanup;
+    free_m2D(tempw+i);
     tempw[i] = convolve_padded(temp[i], af[i&1][1], pt, pc, check); /* w3 */
     if(check && check())goto cleanup;
   }
@@ -759,6 +764,7 @@ static void forward_threshold(m2D lo[4], m2D y[4],
   for(i=0;i<4;i++){
     deconvolve_transpose_padded(temp2[i],tempw[i],sf[i&1][1], pt, pc, check);
     if(check && check())goto cleanup;
+    free_m2D(tempw+i);
     tempw[i] = convolve_padded(temp[i], af[i&1][0], pt, pc, check); /* w2 */
     if(check && check())goto cleanup;
     free_m2D(temp+i);
@@ -774,8 +780,10 @@ static void forward_threshold(m2D lo[4], m2D y[4],
     temp[i]  = convolve_transpose_padded(x[i], af[i>>1][0], pt, pc, check);
     if(check && check())goto cleanup;
     if(free_input) free_m2D(x+i);
+    free_m2D(temp2+i);
     temp2[i] = alloc_m2D(c*2 - FSZ*3 + 2, r);
     if(check && check())goto cleanup;
+    free_m2D(tempw+i);
     tempw[i] = convolve_padded(temp[i], af[i&1][2], pt, pc, check); /* w1 */
     if(check && check())goto cleanup;
   }
@@ -785,6 +793,7 @@ static void forward_threshold(m2D lo[4], m2D y[4],
   for(i=0;i<4;i++){
     deconvolve_transpose_padded(temp2[i],tempw[i],sf[i&1][2], pt, pc, check);
     if(check && check())goto cleanup;
+    free_m2D(tempw+i);
     tempw[i] = convolve_padded(temp[i], af[i&1][1], pt, pc, check); /* w0 */
     if(check && check())goto cleanup;
   }
@@ -802,7 +811,6 @@ static void forward_threshold(m2D lo[4], m2D y[4],
     if(check && check())goto cleanup;
   }
 
-  return;
  cleanup:
   for(i=0;i<4;i++){
     if(free_input)free_m2D(x+i);
@@ -885,8 +893,9 @@ static m2D transform_threshold(m2D x, int J, double T[16], int soft, int pt, int
   
 }
 
-static int wavelet_filter(int width, int height, int planes, guchar *buffer, int pr, double T[16],int soft,
-			  int (*check)(void)){
+static int wavelet_filter(int width, int height, int planes, guchar *buffer, guchar *mask,
+			  int pr, double T[16],int soft, int (*check)(void)){
+
   int J=4;
   int i,j,p;
   m2D xc={NULL,0,0};
@@ -956,14 +965,28 @@ static int wavelet_filter(int width, int height, int planes, guchar *buffer, int
     if(check && check())goto abort;
 
     /* pull filtered values back out of padded matrix */
-    ptr = buffer+p; 
-    for(i=0;i<height;i++){
-      double *row = yc.x + (i+FSZ-1)*yc.cols + FSZ-1;
-      for(j=0;j<width;j++){
-	int v = row[j]*.5; 
-	if(v>255)v=255;if(v<0)v=0;
-	*ptr = v;
-	ptr+=planes;
+    {
+      int k=0;
+      ptr = buffer+p; 
+      for(i=0;i<height;i++){
+	double *row = yc.x + (i+FSZ-1)*yc.cols + FSZ-1;
+
+	if(mask){
+	  for(j=0;j<width;j++,k++){
+	    double del = mask[k]*.0039215686;
+	    int v = rint(del*row[j]*.5 + (1.-del)* *ptr);
+	    if(v>255)v=255;if(v<0)v=0;
+	    *ptr = v;
+	    ptr+=planes;
+	  }
+	}else{
+	  for(j=0;j<width;j++){
+	    int v = rint(row[j]*.5);
+	    if(v>255)v=255;if(v<0)v=0;
+	    *ptr = v;
+	    ptr+=planes;
+	  }
+	}
       }
     }
     
@@ -975,6 +998,6 @@ static int wavelet_filter(int width, int height, int planes, guchar *buffer, int
  abort:
   free_m2D(&yc);
   free_m2D(&xc);
-  return check();
+  return (check && check());
 }
 
