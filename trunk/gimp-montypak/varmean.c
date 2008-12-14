@@ -79,12 +79,12 @@ static int collect_sub_col(guchar *b, int *s, int *ss, int w, int h, int col, in
   return(y1-y2);
 }
 
-static inline void collect_var(guchar *b, double *v, guchar *m, int w, int h, int n){
+static inline void collect_var(guchar *b, float *v, guchar *m, int w, int h, int n){
   int x,y;
   int sum=0;
   int ssum=0;
   int acc=0;
-  double d = 1;
+  float d = 1;
 
   /* prime */
   for(y=0;y<=n;y++)

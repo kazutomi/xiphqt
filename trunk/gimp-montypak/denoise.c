@@ -37,7 +37,7 @@
 
 #define PLUG_IN_PROC    "plug-in-denoise"
 #define PLUG_IN_BINARY  "denoise"
-#define PLUG_IN_VERSION "28 Oct 2008"
+#define PLUG_IN_VERSION "14 Dec 2008"
 
 /*
  * Local functions...
@@ -667,7 +667,7 @@ static void denoise_pre(GimpDrawable *drawable){
   gint          bpp = gimp_drawable_bpp (drawable->drawable_id);
   guchar       *buffer;
   guchar       *luma;
-  double       *v;
+  float       *v;
   long          d[256];
   int           i,a,a2,med;
 
@@ -680,7 +680,7 @@ static void denoise_pre(GimpDrawable *drawable){
   g_free(buffer);
 
   /* collect var/mean on the luma plane */
-  v = g_new(double,w*h);
+  v = g_new(float,w*h);
   collect_var(luma, v, NULL, w, h, 5);
   g_free(luma);
 
@@ -708,11 +708,11 @@ static void denoise_pre(GimpDrawable *drawable){
 
 static int denoise_work(int width, int height, int planes, guchar *buffer, int pr, int(*check)(void)){
   int i;
-  double T[16];
+  float T[16];
   guchar *mask=NULL;
 
   if(denoise_params.lowlight){
-    double l = denoise_params.lowlight_adj*.01;
+    float l = denoise_params.lowlight_adj*.01;
     int med = variance_median*8;
     if(pr)gimp_progress_init( "Masking luma...");
 
@@ -737,7 +737,7 @@ static int denoise_work(int width, int height, int planes, guchar *buffer, int p
       }else if(mask[i]>=med*2){
 	mask[i]=0;
       }else{
-	double del = (double)(mask[i]-med)/med;
+	float del = (float)(mask[i]-med)/med;
 	mask[i]=255-255*del;
       }
     }
