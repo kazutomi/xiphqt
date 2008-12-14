@@ -14,6 +14,7 @@ STRIP     = strip
 LDCONFIG  = /sbin/ldconfig
 
 TARGETS   = denoise scanclean
+#TARGETS   = denoise scanclean
 VERSION   = $(MAJOR).$(MINOR).$(SUBMINOR)
 BINDIR    = $(PREFIX)/plug-ins
 
