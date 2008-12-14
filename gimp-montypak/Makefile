@@ -49,7 +49,7 @@ endif
 
 montypak: $(TARGETS)
 
-denoise.o: wavelet.c
+denoise.o: wavelet.c varmean.c
 
 denoise:  denoise.o
 	$(LD) $< $(CFLAGS) -o $@ $(LIBS) $(LDF)

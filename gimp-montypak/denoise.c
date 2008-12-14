@@ -51,6 +51,7 @@ static void     run   (const gchar      *name,
                        GimpParam       **returm_vals);
 
 static void     denoise        (GimpDrawable *drawable);
+static void     denoise_pre    (GimpDrawable *drawable);
 
 static gboolean denoise_dialog (GimpDrawable *drawable);
 static int      denoise_work(int w, int h, int bpp, guchar *buffer, int progress, int(*interrupt)(void));
@@ -78,24 +79,27 @@ typedef struct
   float f2;
   float f3;
   float f4;
-  int isomode;
+  int lowlight;
+  float lowlight_adj;
 } DenoiseParams;
 
 static DenoiseParams denoise_params =
 {
   20, 0, 0,
   0.,0.,0.,0.,
-  0
+  0,0.
 };
 
 static GtkWidget    *preview;
 static GtkObject    *madj[4];
+static GtkObject    *ladj[1];
 static guchar *preview_cache_buffer=NULL;
 static int     preview_cache_x;
 static int     preview_cache_y;
 static int     preview_cache_w;
 static int     preview_cache_h;
 
+static int     variance_median=0;
 
 MAIN ()
 
@@ -116,6 +120,9 @@ query (void)
     { GIMP_PDB_FLOAT,    "f2",            "Detail adjust"                     },
     { GIMP_PDB_FLOAT,    "f3",            "Mid adjust"                        },
     { GIMP_PDB_FLOAT,    "f4",            "Coarse adjust"                     },
+    { GIMP_PDB_INT32,    "lowlight",      "Low light noise mode"              },
+    { GIMP_PDB_FLOAT,    "lowlight_adj",  "Low light threshold adj"           },
+
   };
 
   gimp_install_procedure (PLUG_IN_PROC,
@@ -142,9 +149,9 @@ run (const gchar      *name,
      gint             *nreturn_vals,
      GimpParam       **return_vals)
 {
+  static GimpParam   values[1];    /* Return values */
   GimpRunMode        run_mode;  /* Current run mode */
   GimpPDBStatusType  status;    /* Return status */
-  GimpParam         *values;    /* Return values */
   GimpDrawable      *drawable;  /* Current image */
 
   /*
@@ -153,7 +160,6 @@ run (const gchar      *name,
 
   status   = GIMP_PDB_SUCCESS;
   run_mode = param[0].data.d_int32;
-  values = g_new (GimpParam, 1);
 
   *nreturn_vals = 1;
   *return_vals  = values;
@@ -167,6 +173,9 @@ run (const gchar      *name,
 
   drawable = gimp_drawable_get (param[2].data.d_drawable);
   gimp_tile_cache_ntiles (2 * drawable->ntile_cols);
+
+  /* math that has to be done ahead of time */
+  denoise_pre(drawable);
 
   /*
    * See how we will run
@@ -191,7 +200,7 @@ run (const gchar      *name,
       /*
        * Make sure all the arguments are present...
        */
-      if (nparams != 10)
+      if (nparams != 12)
         status = GIMP_PDB_CALLING_ERROR;
       else{
         denoise_params.filter = param[3].data.d_float;
@@ -201,6 +210,8 @@ run (const gchar      *name,
         denoise_params.f2 = param[7].data.d_float;
         denoise_params.f3 = param[8].data.d_float;
         denoise_params.f4 = param[9].data.d_float;
+        denoise_params.lowlight = param[10].data.d_int32;
+        denoise_params.lowlight_adj = param[11].data.d_float;
       }
       break;
 
@@ -273,11 +284,6 @@ static void denoise (GimpDrawable *drawable){
   bpp    = gimp_drawable_bpp (drawable->drawable_id);
 
   /*
-   * Let the user know what we're doing...
-   */
-  gimp_progress_init( "Denoising");
-
-  /*
    * Setup for filter...
    */
 
@@ -327,6 +333,14 @@ static void dialog_multiscale_callback (GtkWidget *widget,
      denoise_params.f3!=0. ||
      denoise_params.f4!=0.)
     gimp_preview_invalidate (GIMP_PREVIEW (preview));
+}
+
+static void dialog_lowlight_callback (GtkWidget *widget,
+				      gpointer   data)
+{
+  denoise_params.lowlight = (GTK_TOGGLE_BUTTON (widget)->active);
+  gimp_scale_entry_set_sensitive(ladj[0],denoise_params.lowlight);
+  gimp_preview_invalidate (GIMP_PREVIEW (preview));
 }
 
 static void dump_cache(GtkWidget *widget, gpointer dummy){
@@ -415,6 +429,38 @@ static gboolean denoise_dialog (GimpDrawable *drawable)
                     G_CALLBACK (dialog_soft_callback),
                     NULL);
 
+  /* Low-light mode */
+  button = gtk_check_button_new_with_mnemonic ("_Low-light noise mode");
+  gtk_box_pack_start (GTK_BOX (main_vbox), button, FALSE, FALSE, 0);
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button),
+                                denoise_params.lowlight);
+  gtk_widget_show (button);
+  g_signal_connect (button, "toggled",
+                    G_CALLBACK (dialog_lowlight_callback),
+                    NULL);
+
+  /* Subadjustments for lowlight mode */
+  table = gtk_table_new (1, 4, FALSE);
+  gtk_table_set_col_spacings (GTK_TABLE (table), 6);
+  gtk_table_set_col_spacing (GTK_TABLE (table), 0, 20);
+  gtk_box_pack_start (GTK_BOX (main_vbox), table, FALSE, FALSE, 0);
+  gtk_widget_show (table);
+
+  /* low light threshold adj */
+  ladj[0] = adj = gimp_scale_entry_new (GTK_TABLE (table), 1, 0,
+				       "_Threshold adjust:", 300, 0,
+					denoise_params.lowlight_adj,
+					-100, +100, 1, 10, 0,
+					TRUE, 0, 0,
+					NULL, NULL);
+  g_signal_connect (adj, "value-changed",
+                    G_CALLBACK (gimp_float_adjustment_update),
+                    &denoise_params.lowlight_adj);
+  g_signal_connect_swapped (adj, "value-changed",
+                            G_CALLBACK (gimp_preview_invalidate),
+                            preview);
+  gimp_scale_entry_set_sensitive(ladj[0],denoise_params.lowlight);
+
   /* multiscale adjust select */
   button = gtk_check_button_new_with_mnemonic ("Multiscale _adjustment");
   gtk_box_pack_start (GTK_BOX (main_vbox), button, FALSE, FALSE, 0);
@@ -425,7 +471,7 @@ static gboolean denoise_dialog (GimpDrawable *drawable)
                     G_CALLBACK (dialog_multiscale_callback),
                     NULL);
 
-  /* Subadjustments for autoclean */
+  /* Subadjustments for multiscale */
   table = gtk_table_new (4, 4, FALSE);
   gtk_table_set_col_spacings (GTK_TABLE (table), 6);
   gtk_table_set_col_spacing (GTK_TABLE (table), 0, 20);
@@ -549,7 +595,8 @@ static void preview_update (GtkWidget *preview, GtkWidget *dialog){
     
     gimp_preview_draw_buffer (GIMP_PREVIEW(preview), preview_cache_buffer, w*bpp);
   }else{
-    g_free(preview_cache_buffer);
+    if(preview_cache_buffer)
+      g_free(preview_cache_buffer);
     preview_cache_buffer=NULL;
   }
 
@@ -587,10 +634,132 @@ static void preview_update (GtkWidget *preview, GtkWidget *dialog){
   denoise_active_interruptable = 0;
 }
 
+#include "varmean.c"
+#define clamp(x) ((x)<0?0:((x)>255?255:(x)))
+
+static void compute_luma(guchar *buffer, guchar *luma, int width, int height, int planes){
+  int i;
+  switch(planes){
+  case 1:
+    memcpy(luma,buffer,sizeof(*luma)*width*height);
+    break;
+  case 2: 
+    for(i=0;i<width*height;i++)
+      luma[i]=buffer[i<<1];
+    break;
+  case 3:
+    for(i=0;i<width*height;i++)
+      luma[i]=buffer[i*3]*.2126 + buffer[i*3+1]*.7152 + buffer[i*3+2]*.0722;
+    break;
+  case 4:
+    for(i=0;i<width*height;i++)
+      luma[i]=buffer[i*4]*.2126 + buffer[i*4+1]*.7152 + buffer[i*4+2]*.0722;
+    break;
+  }
+}
+
+static void denoise_pre(GimpDrawable *drawable){
+  /* find the variance median for the whole image, not just preview, not just the selection */
+
+  GimpPixelRgn  rgn;
+  gint          w = gimp_drawable_width(drawable->drawable_id);
+  gint          h = gimp_drawable_height(drawable->drawable_id);
+  gint          bpp = gimp_drawable_bpp (drawable->drawable_id);
+  guchar       *buffer;
+  guchar       *luma;
+  double       *v;
+  long          d[256];
+  int           i,a,a2,med;
+
+  gimp_pixel_rgn_init (&rgn, drawable,
+                       0, 0, w, h, FALSE, FALSE);
+  buffer = g_new (guchar, w * h * bpp);
+  luma = g_new (guchar, w * h);
+  gimp_pixel_rgn_get_rect (&rgn, buffer, 0, 0, w, h);
+  compute_luma(buffer,luma,w,h,bpp);
+  g_free(buffer);
+
+  /* collect var/mean on the luma plane */
+  v = g_new(double,w*h);
+  collect_var(luma, v, NULL, w, h, 5);
+  g_free(luma);
+
+  a=0,a2=0;
+  memset(d,0,sizeof(d));
+    
+  for(i=0;i<w*h;i++){
+    int val = clamp(sqrt(v[i]));
+    d[val]++;
+  }
+  g_free(v);
+
+  for(i=0;i<256;i++)
+    a+=d[i];
+    
+  variance_median=256;
+  for(i=0;i<256;i++){
+    a2+=d[i];
+    if(a2>=a*.5){
+      variance_median=i+1;
+      break;
+    }
+  }
+}
+
 static int denoise_work(int width, int height, int planes, guchar *buffer, int pr, int(*check)(void)){
   int i;
   double T[16];
+  guchar *mask=NULL;
 
+  if(denoise_params.lowlight){
+    double l = denoise_params.lowlight_adj*.01;
+    int med = variance_median*8;
+    if(pr)gimp_progress_init( "Masking luma...");
+
+    mask = g_new(guchar,width*height);
+    compute_luma(buffer,mask,width,height,planes);
+
+    if(l>0){
+      med += (255-med)*l;
+    }else{
+      med += med*l;
+    }
+
+    if(check && check()){
+      g_free(mask);
+      return 1;
+    } 
+
+    /* adjust luma into mask form */
+    for(i=0;i<width*height;i++){
+      if(mask[i]<med){
+	mask[i]=255;
+      }else if(mask[i]>=med*2){
+	mask[i]=0;
+      }else{
+	double del = (double)(mask[i]-med)/med;
+	mask[i]=255-255*del;
+      }
+    }
+
+    if(check && check()){
+      g_free(mask);
+      return 1;
+    } 
+
+    /* smooth the luma plane */
+    for(i=0;i<16;i++)
+      T[i]=10.;
+    if(wavelet_filter(width, height, 1, mask, NULL, pr, T, denoise_params.soft, check)){
+      g_free(mask);
+      return 1;
+    }
+
+    if(pr)gimp_progress_end();
+  }
+
+  if(pr)gimp_progress_init( "Denoising...");
+  
   for(i=0;i<16;i++)
     T[i]=denoise_params.filter*.2;
   
@@ -602,7 +771,14 @@ static int denoise_work(int width, int height, int planes, guchar *buffer, int p
       T[i]*=(denoise_params.f4+100)*.01;
   }
   
-  return wavelet_filter(width, height, planes, buffer, pr, T, denoise_params.soft, check);
+  if(wavelet_filter(width, height, planes, buffer, mask, pr, T, denoise_params.soft, check)){
+    if(mask)g_free(mask);
+    return 1;
+  }
 
+  if(mask)
+    g_free(mask);
+ 
+  return 0;
 }
 
