@@ -33,7 +33,7 @@
 /* convolution code below assumes FSZ is even */
 #define FSZ 14 
 
-static double analysis_fs[2][3][FSZ]={
+static float analysis_fs[2][3][FSZ]={
   {
     {
       +0.00000000000000,
@@ -136,7 +136,7 @@ static double analysis_fs[2][3][FSZ]={
   }
 };
 
-static double analysis[2][3][FSZ]={
+static float analysis[2][3][FSZ]={
   {
     {
       +0.00000000000000, 
@@ -240,7 +240,7 @@ static double analysis[2][3][FSZ]={
   }
 };
 
-static double synthesis_fs[2][3][FSZ]={
+static float synthesis_fs[2][3][FSZ]={
   {
     {
       +0.00000000000000,
@@ -343,7 +343,7 @@ static double synthesis_fs[2][3][FSZ]={
   }
 };
 
-static double synthesis[2][3][FSZ]={
+static float synthesis[2][3][FSZ]={
   {
     {
       +0.00000000000000, 
@@ -447,7 +447,7 @@ static double synthesis[2][3][FSZ]={
 };
 
 typedef struct {
-  double *x;
+  float *x;
   int rows;
   int cols;
 } m2D;
@@ -469,27 +469,27 @@ static void free_m2D(m2D *c){
   c->x = NULL;
 }
 
-static void complex_threshold(m2D set[4], double T, int soft, int pt, int *pc, int(*check)(void)){
+static void complex_threshold(m2D set[4], float T, int soft, int pt, int *pc, int(*check)(void)){
   int i,j;
   int N = set[0].rows*set[0].cols;
 
   if(T>.01){
-    double TT = T*T;
+    float TT = T*T;
 
     if(soft){
       for(i=0;i<N;){
 	for(j=0;j<set[0].cols;i++,j++){
-	  double v00 = (set[0].x[i] + set[3].x[i]) * .7071067812;
-	  double v11 = (set[0].x[i] - set[3].x[i]) * .7071067812;
-	  double v01 = (set[1].x[i] + set[2].x[i]) * .7071067812;
-	  double v10 = (set[1].x[i] - set[2].x[i]) * .7071067812;
+	  float v00 = (set[0].x[i] + set[3].x[i]) * .7071067812;
+	  float v11 = (set[0].x[i] - set[3].x[i]) * .7071067812;
+	  float v01 = (set[1].x[i] + set[2].x[i]) * .7071067812;
+	  float v10 = (set[1].x[i] - set[2].x[i]) * .7071067812;
 	  
 	  if(v00*v00 + v10*v10 < TT){
 	    v00 = 0.;
 	    v10 = 0.;
 	  }else{
-	    double y = sqrt(v00*v00 + v10*v10);
-	    double scale = y/(y+T);
+	    float y = sqrt(v00*v00 + v10*v10);
+	    float scale = y/(y+T);
 	    v00 *= scale;
 	    v10 *= scale;
 	  }
@@ -497,8 +497,8 @@ static void complex_threshold(m2D set[4], double T, int soft, int pt, int *pc, i
 	    v01 = 0.;
 	    v11 = 0.;
 	  }else{
-	    double y = sqrt(v01*v01 + v11*v11);
-	    double scale = y/(y+T);
+	    float y = sqrt(v01*v01 + v11*v11);
+	    float scale = y/(y+T);
 	    v01 *= scale;
 	    v11 *= scale;
 	  }
@@ -513,10 +513,10 @@ static void complex_threshold(m2D set[4], double T, int soft, int pt, int *pc, i
     }else{
       for(i=0;i<N;){
 	for(j=0;j<set[0].cols;i++,j++){
-	  double v00 = (set[0].x[i] + set[3].x[i]) * .7071067812;
-	  double v11 = (set[0].x[i] - set[3].x[i]) * .7071067812;
-	  double v01 = (set[1].x[i] + set[2].x[i]) * .7071067812;
-	  double v10 = (set[1].x[i] - set[2].x[i]) * .7071067812;
+	  float v00 = (set[0].x[i] + set[3].x[i]) * .7071067812;
+	  float v11 = (set[0].x[i] - set[3].x[i]) * .7071067812;
+	  float v01 = (set[1].x[i] + set[2].x[i]) * .7071067812;
+	  float v10 = (set[1].x[i] - set[2].x[i]) * .7071067812;
 	  
 	  if(v00*v00 + v10*v10 < TT){
 	    v00 = 0.;
@@ -536,13 +536,13 @@ static void complex_threshold(m2D set[4], double T, int soft, int pt, int *pc, i
       } 
     }
   }
-  if(pt)gimp_progress_update((gdouble)((*pc)++)/pt);
+  if(pt)gimp_progress_update((gfloat)((*pc)++)/pt);
 }
 
 /* assume the input is padded, return output that's padded for next stage */
 /* FSZ*2-2 padding, +1 additional padding if vector odd */
 
-static m2D convolve_padded(const m2D x, double *f, int pt, int *pc, int(*check)(void)){
+static m2D convolve_padded(const m2D x, float *f, int pt, int *pc, int(*check)(void)){
   int i,M = x.rows;
   int j,in_N = x.cols;
   int k;
@@ -553,10 +553,10 @@ static m2D convolve_padded(const m2D x, double *f, int pt, int *pc, int(*check)(
   if(check && check())return y;
 
   for(i=0;i<M;i++){
-    double *xrow = x.x+i*in_N;
-    double *yrow = y.x+i*out_N+FSZ-1;
+    float *xrow = x.x+i*in_N;
+    float *yrow = y.x+i*out_N+FSZ-1;
     for(j=0;j<comp_N;j++){
-      double a = 0;
+      float a = 0;
       for(k=0;k<FSZ;k++)
 	a+=xrow[k]*f[FSZ-k-1];
       xrow+=2;
@@ -575,11 +575,11 @@ static m2D convolve_padded(const m2D x, double *f, int pt, int *pc, int(*check)(
     if(check && check())return y;
 
   }
-  if(pt)gimp_progress_update((gdouble)((*pc)++)/pt);
+  if(pt)gimp_progress_update((gfloat)((*pc)++)/pt);
   return y;
 }
 
-static m2D convolve_transpose_padded(const m2D x, double *f, int pt, int *pc, int(*check)(void)){
+static m2D convolve_transpose_padded(const m2D x, float *f, int pt, int *pc, int(*check)(void)){
   int i,M = x.rows;
   int j,in_N = x.cols;
   int k;
@@ -590,10 +590,10 @@ static m2D convolve_transpose_padded(const m2D x, double *f, int pt, int *pc, in
   if(check && check())return y;
 
   for(i=0;i<M;i++){
-    double *xrow = x.x+i*in_N;
-    double *ycol = y.x + i + M*(FSZ-1);
+    float *xrow = x.x+i*in_N;
+    float *ycol = y.x + i + M*(FSZ-1);
     for(j=0;j<comp_N;j++){
-      double a = 0;
+      float a = 0;
       for(k=0;k<FSZ;k++)
 	a+=xrow[k]*f[FSZ-k-1];
       xrow+=2;
@@ -612,7 +612,7 @@ static m2D convolve_transpose_padded(const m2D x, double *f, int pt, int *pc, in
     if(check && check())return y;
 
   }
-  if(pt)gimp_progress_update((gdouble)((*pc)++)/pt);
+  if(pt)gimp_progress_update((gfloat)((*pc)++)/pt);
   return y;
 }
 
@@ -621,7 +621,7 @@ static m2D convolve_transpose_padded(const m2D x, double *f, int pt, int *pc, in
 /* y will often be smaller than a full x expansion due to preceeding
    rounds of padding out to even values; this padding is also
    discarded */
-static void deconvolve_padded(m2D y, m2D x, double *f, int pt, int *pc, int(*check)(void)){
+static void deconvolve_padded(m2D y, m2D x, float *f, int pt, int *pc, int(*check)(void)){
   int i;
   int j,in_N = x.cols;
   int k;
@@ -629,11 +629,11 @@ static void deconvolve_padded(m2D y, m2D x, double *f, int pt, int *pc, int(*che
   int out_M = y.rows;
 
   for(i=0;i<out_M;i++){
-    double *xrow = x.x+i*in_N+FSZ/2;
-    double *yrow = y.x+i*out_N;
+    float *xrow = x.x+i*in_N+FSZ/2;
+    float *yrow = y.x+i*out_N;
 
     for(j=0;j<out_N;j+=2){
-      double a = 0;
+      float a = 0;
       for(k=1;k<FSZ;k+=2)
 	a+=xrow[k>>1]*f[FSZ-k-1];
       yrow[j]+=a;
@@ -646,7 +646,7 @@ static void deconvolve_padded(m2D y, m2D x, double *f, int pt, int *pc, int(*che
     if(check && check()) return;
   }
   
-  if(pt)gimp_progress_update((gdouble)((*pc)++)/pt);
+  if(pt)gimp_progress_update((gfloat)((*pc)++)/pt);
 }
 
 /* discards the padding added by the matching convolution */
@@ -654,7 +654,7 @@ static void deconvolve_padded(m2D y, m2D x, double *f, int pt, int *pc, int(*che
 /* y will often be smaller than a full x expansion due to preceeding
    rounds of padding out to even values; this padding is also
    discarded */
-static void deconvolve_transpose_padded(m2D y, m2D x, double *f, int pt, int *pc, int(*check)(void)){
+static void deconvolve_transpose_padded(m2D y, m2D x, float *f, int pt, int *pc, int(*check)(void)){
   int i;
   int j,in_N = x.cols;
   int k;
@@ -662,10 +662,10 @@ static void deconvolve_transpose_padded(m2D y, m2D x, double *f, int pt, int *pc
   int out_N = y.cols;
 
   for(i=0;i<out_N;i++){
-    double *xrow = x.x+i*in_N+FSZ/2;
-    double *ycol = y.x+i;
+    float *xrow = x.x+i*in_N+FSZ/2;
+    float *ycol = y.x+i;
     for(j=0;j<out_M;j+=2){
-      double a = 0;
+      float a = 0;
       for(k=1;k<FSZ;k+=2)
 	a+=xrow[k>>1]*f[FSZ-k-1];
       ycol[j*out_N]+=a;
@@ -678,13 +678,13 @@ static void deconvolve_transpose_padded(m2D y, m2D x, double *f, int pt, int *pc
     if(check && check()) return;
   }
   
-  if(pt)gimp_progress_update((gdouble)((*pc)++)/pt);
+  if(pt)gimp_progress_update((gfloat)((*pc)++)/pt);
 }
 
 /* consumes and replaces lo if free_input set, otherwise overwrites */
 static void forward_threshold(m2D lo[4], m2D y[4], 
-			      double af[2][3][FSZ], double sf[2][3][FSZ], 
-			      double T, int soft,
+			      float af[2][3][FSZ], float sf[2][3][FSZ], 
+			      float T, int soft,
 			      int free_input, int pt, int *pc, 
 			      int(*check)(void)){
   m2D x[4] = {{NULL,0,0},{NULL,0,0},{NULL,0,0},{NULL,0,0}};
@@ -821,7 +821,7 @@ static void forward_threshold(m2D lo[4], m2D y[4],
 }
 
 /* consumes/replaces lo */
-static void finish_backward(m2D lo[4], m2D y[4], double sf[2][3][FSZ], int pt, int *pc, int(*check)(void)){
+static void finish_backward(m2D lo[4], m2D y[4], float sf[2][3][FSZ], int pt, int *pc, int(*check)(void)){
   int r=lo[0].rows,c=lo[0].cols,i;
   m2D temp = {NULL,0,0};
   
@@ -841,7 +841,7 @@ static void finish_backward(m2D lo[4], m2D y[4], double sf[2][3][FSZ], int pt, i
   }
 }
 
-static m2D transform_threshold(m2D x, int J, double T[16], int soft, int pt, int *pc, int (*check)(void)){
+static m2D transform_threshold(m2D x, int J, float T[16], int soft, int pt, int *pc, int (*check)(void)){
   int i,j;
   m2D partial_y[J][4];
   m2D lo[4];
@@ -869,10 +869,10 @@ static m2D transform_threshold(m2D x, int J, double T[16], int soft, int pt, int
 
   {
     int end = lo[0].rows*lo[0].cols;
-    double *y = lo[0].x;
-    double *p1 = lo[1].x;
-    double *p2 = lo[2].x;
-    double *p3 = lo[3].x;
+    float *y = lo[0].x;
+    float *p1 = lo[1].x;
+    float *p2 = lo[2].x;
+    float *p3 = lo[3].x;
     
     for(j=0;j<end;j++)
       y[j]+=p1[j]+p2[j]+p3[j];
@@ -894,7 +894,7 @@ static m2D transform_threshold(m2D x, int J, double T[16], int soft, int pt, int
 }
 
 static int wavelet_filter(int width, int height, int planes, guchar *buffer, guchar *mask,
-			  int pr, double T[16],int soft, int (*check)(void)){
+			  int pr, float T[16],int soft, int (*check)(void)){
 
   int J=4;
   int i,j,p;
@@ -929,7 +929,7 @@ static int wavelet_filter(int width, int height, int planes, guchar *buffer, guc
     
     /* populate and pad input matrix */
     for(i=0;i<height;i++){
-      double *row=xc.x + (i+FSZ-1)*xc.cols;
+      float *row=xc.x + (i+FSZ-1)*xc.cols;
 
       /* X padding */
       for(j=0;j<FSZ-1;j++)
@@ -948,14 +948,14 @@ static int wavelet_filter(int width, int height, int planes, guchar *buffer, guc
 
     /* Y padding */
     for(i=FSZ-2;i>=0;i--){
-      double *pre=xc.x + (i+1)*xc.cols;
-      double *row=xc.x + i*xc.cols;
+      float *pre=xc.x + (i+1)*xc.cols;
+      float *row=xc.x + i*xc.cols;
       for(j=0;j<xc.cols;j++)
 	row[j]=pre[j];
     }
     for(i=xc.rows-FSZ+1;i<xc.rows;i++){
-      double *pre=xc.x + (i-1)*xc.cols;
-      double *row=xc.x + i*xc.cols;
+      float *pre=xc.x + (i-1)*xc.cols;
+      float *row=xc.x + i*xc.cols;
       for(j=0;j<xc.cols;j++)
 	row[j]=pre[j];
     }
@@ -969,11 +969,11 @@ static int wavelet_filter(int width, int height, int planes, guchar *buffer, guc
       int k=0;
       ptr = buffer+p; 
       for(i=0;i<height;i++){
-	double *row = yc.x + (i+FSZ-1)*yc.cols + FSZ-1;
+	float *row = yc.x + (i+FSZ-1)*yc.cols + FSZ-1;
 
 	if(mask){
 	  for(j=0;j<width;j++,k++){
-	    double del = mask[k]*.0039215686;
+	    float del = mask[k]*.0039215686;
 	    int v = rint(del*row[j]*.5 + (1.-del)* *ptr);
 	    if(v>255)v=255;if(v<0)v=0;
 	    *ptr = v;
