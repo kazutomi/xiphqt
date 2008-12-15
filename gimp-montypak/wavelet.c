@@ -469,7 +469,7 @@ static void free_m2D(m2D *c){
   c->x = NULL;
 }
 
-static void complex_threshold(m2D set[4], float T, int soft, int pt, int *pc, int(*check)(void)){
+static void complex_threshold(m2D set[4], float T, int soft, int pt, int *pc, int pi, int(*check)(void)){
   int i,j;
   int N = set[0].rows*set[0].cols;
 
@@ -536,13 +536,13 @@ static void complex_threshold(m2D set[4], float T, int soft, int pt, int *pc, in
       } 
     }
   }
-  if(pt)gimp_progress_update((gfloat)((*pc)++)/pt);
+  if(pt)gimp_progress_update((gfloat)((*pc)+=pi)/pt);
 }
 
 /* assume the input is padded, return output that's padded for next stage */
 /* FSZ*2-2 padding, +1 additional padding if vector odd */
 
-static m2D convolve_padded(const m2D x, float *f, int pt, int *pc, int(*check)(void)){
+static m2D convolve_padded(const m2D x, float *f, int pt, int *pc, int pi, int(*check)(void)){
   int i,M = x.rows;
   int j,in_N = x.cols;
   int k;
@@ -575,11 +575,11 @@ static m2D convolve_padded(const m2D x, float *f, int pt, int *pc, int(*check)(v
     if(check && check())return y;
 
   }
-  if(pt)gimp_progress_update((gfloat)((*pc)++)/pt);
+  if(pt)gimp_progress_update((gfloat)((*pc)+=pi)/pt);
   return y;
 }
 
-static m2D convolve_transpose_padded(const m2D x, float *f, int pt, int *pc, int(*check)(void)){
+static m2D convolve_transpose_padded(const m2D x, float *f, int pt, int *pc, int pi, int(*check)(void)){
   int i,M = x.rows;
   int j,in_N = x.cols;
   int k;
@@ -612,7 +612,7 @@ static m2D convolve_transpose_padded(const m2D x, float *f, int pt, int *pc, int
     if(check && check())return y;
 
   }
-  if(pt)gimp_progress_update((gfloat)((*pc)++)/pt);
+  if(pt)gimp_progress_update((gfloat)((*pc)+=pi)/pt);
   return y;
 }
 
@@ -621,7 +621,7 @@ static m2D convolve_transpose_padded(const m2D x, float *f, int pt, int *pc, int
 /* y will often be smaller than a full x expansion due to preceeding
    rounds of padding out to even values; this padding is also
    discarded */
-static void deconvolve_padded(m2D y, m2D x, float *f, int pt, int *pc, int(*check)(void)){
+static void deconvolve_padded(m2D y, m2D x, float *f, int pt, int *pc, int pi, int(*check)(void)){
   int i;
   int j,in_N = x.cols;
   int k;
@@ -646,7 +646,7 @@ static void deconvolve_padded(m2D y, m2D x, float *f, int pt, int *pc, int(*chec
     if(check && check()) return;
   }
   
-  if(pt)gimp_progress_update((gfloat)((*pc)++)/pt);
+  if(pt)gimp_progress_update((gfloat)((*pc)+=pi)/pt);
 }
 
 /* discards the padding added by the matching convolution */
@@ -654,7 +654,7 @@ static void deconvolve_padded(m2D y, m2D x, float *f, int pt, int *pc, int(*chec
 /* y will often be smaller than a full x expansion due to preceeding
    rounds of padding out to even values; this padding is also
    discarded */
-static void deconvolve_transpose_padded(m2D y, m2D x, float *f, int pt, int *pc, int(*check)(void)){
+static void deconvolve_transpose_padded(m2D y, m2D x, float *f, int pt, int *pc, int pi, int(*check)(void)){
   int i;
   int j,in_N = x.cols;
   int k;
@@ -678,14 +678,14 @@ static void deconvolve_transpose_padded(m2D y, m2D x, float *f, int pt, int *pc,
     if(check && check()) return;
   }
   
-  if(pt)gimp_progress_update((gfloat)((*pc)++)/pt);
+  if(pt)gimp_progress_update((gfloat)((*pc)+=pi)/pt);
 }
 
 /* consumes and replaces lo if free_input set, otherwise overwrites */
 static void forward_threshold(m2D lo[4], m2D y[4], 
 			      float af[2][3][FSZ], float sf[2][3][FSZ], 
 			      float T, int soft,
-			      int free_input, int pt, int *pc, 
+			      int free_input, int pt, int *pc, int pi, 
 			      int(*check)(void)){
   m2D x[4] = {{NULL,0,0},{NULL,0,0},{NULL,0,0},{NULL,0,0}};
   m2D temp[4] = {{NULL,0,0},{NULL,0,0},{NULL,0,0},{NULL,0,0}};
@@ -699,113 +699,113 @@ static void forward_threshold(m2D lo[4], m2D y[4],
   }
 
   for(i=0;i<4;i++){
-    temp[i]  = convolve_transpose_padded(x[i], af[i>>1][2], pt, pc, check);  
+    temp[i]  = convolve_transpose_padded(x[i], af[i>>1][2], pt, pc, pi, check);  
     if(check && check())goto cleanup;
-    tempw[i] = convolve_padded(temp[i], af[i&1][2], pt, pc, check); /* w 7 */
+    tempw[i] = convolve_padded(temp[i], af[i&1][2], pt, pc, pi, check); /* w 7 */
     if(check && check())goto cleanup;
   }
 
   r = tempw[0].rows;
   c = tempw[0].cols;
-  complex_threshold(tempw, T, soft, pt, pc, check);
+  complex_threshold(tempw, T, soft, pt, pc, pi, check);
   if(check && check())goto cleanup;
 
   for(i=0;i<4;i++){
     temp2[i]=alloc_m2D(c*2 - FSZ*3 + 2, r);
     y[i] = alloc_m2D(temp2[i].rows, temp2[i].cols*2 - FSZ*3 + 2);
     if(check && check())goto cleanup;
-    deconvolve_transpose_padded(temp2[i],tempw[i],sf[i&1][2], pt, pc, check);
+    deconvolve_transpose_padded(temp2[i],tempw[i],sf[i&1][2], pt, pc, pi, check);
     if(check && check())goto cleanup;
     free_m2D(tempw+i);
-    tempw[i] = convolve_padded(temp[i], af[i&1][1], pt, pc, check); /* w6 */
+    tempw[i] = convolve_padded(temp[i], af[i&1][1], pt, pc, pi, check); /* w6 */
     if(check && check())goto cleanup;
   }
-  complex_threshold(tempw, T, soft, pt, pc, check);
+  complex_threshold(tempw, T, soft, pt, pc, pi, check);
   if(check && check())goto cleanup;
 
   for(i=0;i<4;i++){
-    deconvolve_transpose_padded(temp2[i],tempw[i],sf[i&1][1], pt, pc, check);
+    deconvolve_transpose_padded(temp2[i],tempw[i],sf[i&1][1], pt, pc, pi, check);
     if(check && check())goto cleanup;
     free_m2D(tempw+i);
-    tempw[i] = convolve_padded(temp[i], af[i&1][0], pt, pc, check); /* w5 */
+    tempw[i] = convolve_padded(temp[i], af[i&1][0], pt, pc, pi, check); /* w5 */
     if(check && check())goto cleanup;
     free_m2D(temp+i);
   }
-  complex_threshold(tempw, T, soft, pt, pc, check);
+  complex_threshold(tempw, T, soft, pt, pc, pi, check);
   if(check && check())goto cleanup;
 
   for(i=0;i<4;i++){
-    deconvolve_transpose_padded(temp2[i],tempw[i],sf[i&1][0], pt, pc, check);
+    deconvolve_transpose_padded(temp2[i],tempw[i],sf[i&1][0], pt, pc, pi, check);
     if(check && check())goto cleanup;
     free_m2D(tempw+i);
-    deconvolve_padded(y[i],temp2[i],sf[i>>1][2], pt, pc, check);
+    deconvolve_padded(y[i],temp2[i],sf[i>>1][2], pt, pc, pi, check);
     if(check && check())goto cleanup;
     free_m2D(temp2+i);
-    temp[i]   = convolve_transpose_padded(x[i], af[i>>1][1], pt, pc, check);
+    temp[i]   = convolve_transpose_padded(x[i], af[i>>1][1], pt, pc, pi, check);
     if(check && check())goto cleanup;
     temp2[i]  = alloc_m2D(c*2 - FSZ*3 + 2, r);
     if(check && check())goto cleanup;
-    tempw[i]  = convolve_padded(temp[i], af[i&1][2], pt, pc, check); /* w4 */
+    tempw[i]  = convolve_padded(temp[i], af[i&1][2], pt, pc, pi, check); /* w4 */
     if(check && check())goto cleanup;
   }
-  complex_threshold(tempw, T, soft, pt, pc, check);
+  complex_threshold(tempw, T, soft, pt, pc, pi, check);
   if(check && check())goto cleanup;
 
   for(i=0;i<4;i++){
-    deconvolve_transpose_padded(temp2[i],tempw[i],sf[i&1][2], pt, pc, check);
+    deconvolve_transpose_padded(temp2[i],tempw[i],sf[i&1][2], pt, pc, pi, check);
     if(check && check())goto cleanup;
     free_m2D(tempw+i);
-    tempw[i] = convolve_padded(temp[i], af[i&1][1], pt, pc, check); /* w3 */
+    tempw[i] = convolve_padded(temp[i], af[i&1][1], pt, pc, pi, check); /* w3 */
     if(check && check())goto cleanup;
   }
-  complex_threshold(tempw, T, soft, pt, pc, check);
+  complex_threshold(tempw, T, soft, pt, pc, pi, check);
   if(check && check())goto cleanup;
 
   for(i=0;i<4;i++){
-    deconvolve_transpose_padded(temp2[i],tempw[i],sf[i&1][1], pt, pc, check);
+    deconvolve_transpose_padded(temp2[i],tempw[i],sf[i&1][1], pt, pc, pi, check);
     if(check && check())goto cleanup;
     free_m2D(tempw+i);
-    tempw[i] = convolve_padded(temp[i], af[i&1][0], pt, pc, check); /* w2 */
+    tempw[i] = convolve_padded(temp[i], af[i&1][0], pt, pc, pi, check); /* w2 */
     if(check && check())goto cleanup;
     free_m2D(temp+i);
   }
-  complex_threshold(tempw, T, soft, pt, pc, check);
+  complex_threshold(tempw, T, soft, pt, pc, pi, check);
   if(check && check())goto cleanup;
 
   for(i=0;i<4;i++){
-    deconvolve_transpose_padded(temp2[i],tempw[i],sf[i&1][0], pt, pc, check);
+    deconvolve_transpose_padded(temp2[i],tempw[i],sf[i&1][0], pt, pc, pi, check);
     if(check && check())goto cleanup;
     free_m2D(tempw+i);
-    deconvolve_padded(y[i],temp2[i],sf[i>>1][1], pt, pc, check);
+    deconvolve_padded(y[i],temp2[i],sf[i>>1][1], pt, pc, pi, check);
     if(check && check())goto cleanup;
     free_m2D(temp2+i);
-    temp[i]  = convolve_transpose_padded(x[i], af[i>>1][0], pt, pc, check);
+    temp[i]  = convolve_transpose_padded(x[i], af[i>>1][0], pt, pc, pi, check);
     if(check && check())goto cleanup;
     if(free_input) free_m2D(x+i);
     temp2[i] = alloc_m2D(c*2 - FSZ*3 + 2, r);
     if(check && check())goto cleanup;
-    tempw[i] = convolve_padded(temp[i], af[i&1][2], pt, pc, check); /* w1 */
+    tempw[i] = convolve_padded(temp[i], af[i&1][2], pt, pc, pi, check); /* w1 */
     if(check && check())goto cleanup;
   }
-  complex_threshold(tempw, T, soft, pt, pc, check);
+  complex_threshold(tempw, T, soft, pt, pc, pi, check);
   if(check && check())goto cleanup;
 
   for(i=0;i<4;i++){
-    deconvolve_transpose_padded(temp2[i],tempw[i],sf[i&1][2], pt, pc, check);
+    deconvolve_transpose_padded(temp2[i],tempw[i],sf[i&1][2], pt, pc, pi, check);
     if(check && check())goto cleanup;
     free_m2D(tempw+i);
-    tempw[i] = convolve_padded(temp[i], af[i&1][1], pt, pc, check); /* w0 */
+    tempw[i] = convolve_padded(temp[i], af[i&1][1], pt, pc, pi, check); /* w0 */
     if(check && check())goto cleanup;
   }
-  complex_threshold(tempw, T, soft, pt, pc, check);
+  complex_threshold(tempw, T, soft, pt, pc, pi, check);
   if(check && check())goto cleanup;
 
   for(i=0;i<4;i++){
-    deconvolve_transpose_padded(temp2[i],tempw[i],sf[i&1][1], pt, pc, check);
+    deconvolve_transpose_padded(temp2[i],tempw[i],sf[i&1][1], pt, pc, pi, check);
     if(check && check())goto cleanup;
-    deconvolve_padded(y[i],temp2[i],sf[i>>1][0], pt, pc, check);
+    deconvolve_padded(y[i],temp2[i],sf[i>>1][0], pt, pc, pi, check);
     if(check && check())goto cleanup;
-    lo[i] = convolve_padded(temp[i], af[i&1][0], pt, pc, check); /* lo */
+    lo[i] = convolve_padded(temp[i], af[i&1][0], pt, pc, pi, check); /* lo */
     if(check && check())goto cleanup;
     free_m2D(temp+i);
   }
@@ -820,19 +820,19 @@ static void forward_threshold(m2D lo[4], m2D y[4],
 }
 
 /* consumes/replaces lo */
-static void finish_backward(m2D lo[4], m2D y[4], float sf[2][3][FSZ], int pt, int *pc, int(*check)(void)){
+static void finish_backward(m2D lo[4], m2D y[4], float sf[2][3][FSZ], int pt, int *pc, int pi, int(*check)(void)){
   int r=lo[0].rows,c=lo[0].cols,i;
   m2D temp = {NULL,0,0};
   
   for(i=0;i<4;i++){
     temp=alloc_m2D(c*2 - FSZ*3 + 2, r);
-    deconvolve_transpose_padded(temp,lo[i],sf[i&1][0], pt, pc, check);
+    deconvolve_transpose_padded(temp,lo[i],sf[i&1][0], pt, pc, pi, check);
     free_m2D(lo+i);
     if(check && check()){
       free_m2D(&temp);
       return;
     }
-    deconvolve_padded(y[i],temp,sf[i>>1][0], pt, pc, check);
+    deconvolve_padded(y[i],temp,sf[i>>1][0], pt, pc, pi, check);
     free_m2D(&temp);
     lo[i]=y[i];
     y[i]=(m2D){NULL,0,0};
@@ -850,20 +850,21 @@ static m2D transform_threshold(m2D x, int J, float T[16], int soft, int pt, int 
       partial_y[j][i]=(m2D){NULL,0,0};
 
   lo[0] = lo[1] = lo[2] = lo[3] = x;
-  forward_threshold(lo, partial_y[0], analysis_fs, synthesis_fs, T[0], soft, 0, pt, pc, check);
+      
+  forward_threshold(lo, partial_y[0], analysis_fs, synthesis_fs, T[0], soft, 0, pt, pc, (1<<18), check);
   if(check && check()) goto cleanup3;
 
   for(j=1;j<J;j++){
-    forward_threshold(lo, partial_y[j], analysis, synthesis, T[j], soft, 1, pt, pc, check);
+    forward_threshold(lo, partial_y[j], analysis, synthesis, T[j], soft, 1, pt, pc, (1<<(9-j>0?(9-j)*2:1)), check);
     if(check && check()) goto cleanup3;
   }
 
   for(j=J-1;j;j--){
-    finish_backward(lo, partial_y[j], synthesis, pt, pc, check);
+    finish_backward(lo, partial_y[j], synthesis, pt, pc, (1<<(9-j>0?(9-j)*2:1)), check);
     if(check && check()) goto cleanup3;
   }
 
-  finish_backward(lo, partial_y[0], synthesis_fs, pt, pc, check);
+  finish_backward(lo, partial_y[0], synthesis_fs, pt, pc, (1<<18), check);
   if(check && check()) goto cleanup3;
 
   {
@@ -901,8 +902,7 @@ static int wavelet_filter_c(int width, int height, int planes, guchar *buffer,
   m2D xc={NULL,0,0};
   m2D yc={NULL,0,0};
   int pc=0;
-  int pt;
-
+  int pt=0;
   /* we want J to be as 'deep' as the image to eliminate
      splotchiness with deep coarse settings */
   
@@ -914,7 +914,10 @@ static int wavelet_filter_c(int width, int height, int planes, guchar *buffer,
   }
 
   if(J>15)J=15;
-  pt=(pr?J*108*planes:0);
+  if(pr)
+    for(i=0;i<J && i<10;i++)
+      pt+=108*(1<<(9-i>0?(9-i)*2:1));
+  pt*=planes;
   
   /* Input matrix must be pre-padded for first stage convolutions;
      odd->even padding goes on the bottom/right */
@@ -996,7 +999,7 @@ static int wavelet_filter_f(int width, int height, float *buffer,
   m2D xc={NULL,0,0};
   m2D yc={NULL,0,0};
   int pc=0;
-  int pt;
+  int pt=0;
   float *ptr = buffer; 
 
   /* we want J to be as 'deep' as the image to eliminate
@@ -1010,7 +1013,9 @@ static int wavelet_filter_f(int width, int height, float *buffer,
   }
 
   if(J>15)J=15;
-  pt=(pr?J*108:0);
+  if(pr)
+    for(i=0;i<J;i++)
+      pt+=108*(1<<(9-i>0?(9-i)*2:1));
   
   /* Input matrix must be pre-padded for first stage convolutions;
      odd->even padding goes on the bottom/right */
