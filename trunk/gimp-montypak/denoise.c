@@ -703,7 +703,7 @@ static float *compute_smoothed_luma(guchar *buffer, int w, int h, int p,
   float T[16];
   float *luma = g_new(float,w*h);
 
-  if(pr)gimp_progress_init( "Masking luma...");
+  if(pr)gimp_progress_init( "Analyzing luma...");
   
   compute_luma_f(buffer,luma,w,h,p);
   if(check && check()){
@@ -760,12 +760,14 @@ static guchar *compute_filter(guchar *buffer, int w, int h, int p,
 }
 
 static int combine_filter_luma(guchar *buffer, guchar *filtered, float *luma,
-			       int w, int h, int p, int(*check)(void)){
+			       int w, int h, int p, int pr, int(*check)(void)){
   int i,j,k;
   
   if(denoise_params.lowlight){
     float l = denoise_params.lowlight_adj*.01;
     float med = variance_median*(8.f/255.f);
+
+    if(pr)gimp_progress_init( "Merging...");
 
     if(l>0){
       med += (1.-med)*l;
@@ -783,8 +785,13 @@ static int combine_filter_luma(guchar *buffer, guchar *filtered, float *luma,
 	buffer+=p;
 	filtered+=p;
       }
-      if(check && check()) return 1;
+      if(pr)gimp_progress_update((gfloat)(i+w)/(w*h));
+      if(check && check()){
+	if(pr)gimp_progress_end();
+	return 1;
+      }
     }
+    if(pr)gimp_progress_end();
   }else{
     memcpy(buffer,filtered,sizeof(*buffer)*w*h*p);
   }
@@ -868,7 +875,7 @@ static void preview_update (GtkWidget *preview, GtkWidget *dialog){
     /* new blit */
     if(preview_cache_filter && preview_cache_luma){
       if(combine_filter_luma(buffer, preview_cache_filter, 
-			     preview_cache_luma, w, h, bpp, check_recompute))
+			     preview_cache_luma, w, h, bpp, 0, check_recompute))
 	continue; /* interrupted */
 
       if(preview_cache_blit)
@@ -893,7 +900,7 @@ static void denoise_work(int w, int h, int p, guchar *buffer){
   if(denoise_params.lowlight){
     float *l = compute_smoothed_luma(buffer, w, h, p, 1, NULL);
     guchar *f = compute_filter(buffer, w, h, p, 0, 1, NULL);
-    combine_filter_luma(buffer, f, l, w, h, p, NULL);
+    combine_filter_luma(buffer, f, l, w, h, p, 1, NULL);
     g_free(f);
     g_free(l);
   }else{
