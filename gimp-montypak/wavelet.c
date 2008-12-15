@@ -737,14 +737,14 @@ static void forward_threshold(m2D lo[4], m2D y[4],
   for(i=0;i<4;i++){
     deconvolve_transpose_padded(temp2[i],tempw[i],sf[i&1][0], pt, pc, check);
     if(check && check())goto cleanup;
+    free_m2D(tempw+i);
     deconvolve_padded(y[i],temp2[i],sf[i>>1][2], pt, pc, check);
     if(check && check())goto cleanup;
+    free_m2D(temp2+i);
     temp[i]   = convolve_transpose_padded(x[i], af[i>>1][1], pt, pc, check);
     if(check && check())goto cleanup;
-    free_m2D(temp2+i);
     temp2[i]  = alloc_m2D(c*2 - FSZ*3 + 2, r);
     if(check && check())goto cleanup;
-    free_m2D(tempw+i);
     tempw[i]  = convolve_padded(temp[i], af[i&1][2], pt, pc, check); /* w4 */
     if(check && check())goto cleanup;
   }
@@ -775,15 +775,15 @@ static void forward_threshold(m2D lo[4], m2D y[4],
   for(i=0;i<4;i++){
     deconvolve_transpose_padded(temp2[i],tempw[i],sf[i&1][0], pt, pc, check);
     if(check && check())goto cleanup;
+    free_m2D(tempw+i);
     deconvolve_padded(y[i],temp2[i],sf[i>>1][1], pt, pc, check);
     if(check && check())goto cleanup;
+    free_m2D(temp2+i);
     temp[i]  = convolve_transpose_padded(x[i], af[i>>1][0], pt, pc, check);
     if(check && check())goto cleanup;
     if(free_input) free_m2D(x+i);
-    free_m2D(temp2+i);
     temp2[i] = alloc_m2D(c*2 - FSZ*3 + 2, r);
     if(check && check())goto cleanup;
-    free_m2D(tempw+i);
     tempw[i] = convolve_padded(temp[i], af[i&1][2], pt, pc, check); /* w1 */
     if(check && check())goto cleanup;
   }
@@ -808,7 +808,6 @@ static void forward_threshold(m2D lo[4], m2D y[4],
     lo[i] = convolve_padded(temp[i], af[i&1][0], pt, pc, check); /* lo */
     if(check && check())goto cleanup;
     free_m2D(temp+i);
-    if(check && check())goto cleanup;
   }
 
  cleanup:
@@ -893,8 +892,9 @@ static m2D transform_threshold(m2D x, int J, float T[16], int soft, int pt, int 
   
 }
 
-static int wavelet_filter(int width, int height, int planes, guchar *buffer, guchar *mask,
-			  int pr, float T[16],int soft, int (*check)(void)){
+static int wavelet_filter_c(int width, int height, int planes, guchar *buffer,
+			    int pr, float T[16],int soft, int (*check)(void)){
+
 
   int J=4;
   int i,j,p;
@@ -965,34 +965,104 @@ static int wavelet_filter(int width, int height, int planes, guchar *buffer, guc
     if(check && check())goto abort;
 
     /* pull filtered values back out of padded matrix */
-    {
-      int k=0;
-      ptr = buffer+p; 
-      for(i=0;i<height;i++){
-	float *row = yc.x + (i+FSZ-1)*yc.cols + FSZ-1;
-
-	if(mask){
-	  for(j=0;j<width;j++,k++){
-	    float del = mask[k]*.0039215686;
-	    int v = rint(del*row[j]*.5 + (1.-del)* *ptr);
-	    if(v>255)v=255;if(v<0)v=0;
-	    *ptr = v;
-	    ptr+=planes;
-	  }
-	}else{
-	  for(j=0;j<width;j++){
-	    int v = rint(row[j]*.5);
-	    if(v>255)v=255;if(v<0)v=0;
-	    *ptr = v;
-	    ptr+=planes;
-	  }
-	}
+    ptr = buffer+p; 
+    for(i=0;i<height;i++){
+      float *row = yc.x + (i+FSZ-1)*yc.cols + FSZ-1;
+      
+      for(j=0;j<width;j++){
+	int v = rint(row[j]*.5);
+	if(v>255)v=255;if(v<0)v=0;
+	*ptr = v;
+	ptr+=planes;
       }
     }
     
     if(check && check())goto abort;
     free_m2D(&yc);
     if(check && check())goto abort;
+  }
+
+ abort:
+  free_m2D(&yc);
+  free_m2D(&xc);
+  return (check && check());
+}
+
+static int wavelet_filter_f(int width, int height, float *buffer,
+			    int pr, float T[16],int soft, int (*check)(void)){
+
+  int J=4;
+  int i,j;
+  m2D xc={NULL,0,0};
+  m2D yc={NULL,0,0};
+  int pc=0;
+  int pt;
+  float *ptr = buffer; 
+
+  /* we want J to be as 'deep' as the image to eliminate
+     splotchiness with deep coarse settings */
+  
+  while(1){
+    int mult = 1 << (J+1);
+    if(width/mult < 1) break;
+    if(height/mult < 1) break;
+    J++;
+  }
+
+  if(J>15)J=15;
+  pt=(pr?J*108:0);
+  
+  /* Input matrix must be pre-padded for first stage convolutions;
+     odd->even padding goes on the bottom/right */
+
+  xc = alloc_m2D((height+1)/2*2+FSZ*2-2,
+		 (width+1)/2*2+FSZ*2-2),yc;
+  if(check && check())goto abort;
+  
+  /* populate and pad input matrix */
+  for(i=0;i<height;i++){
+    float *row=xc.x + (i+FSZ-1)*xc.cols;
+
+    /* X padding */
+    for(j=0;j<FSZ-1;j++)
+      row[j] = *ptr * .5f;
+
+    /* X filling */
+    for(;j<width+FSZ-1;j++){
+      row[j] = *ptr * .5f;
+      ptr++;
+    }
+    
+    /* X padding */
+    for(;j<xc.cols;j++)
+      row[j] = row[j-1];
+  }
+
+  /* Y padding */
+  for(i=FSZ-2;i>=0;i--){
+    float *pre=xc.x + (i+1)*xc.cols;
+    float *row=xc.x + i*xc.cols;
+    for(j=0;j<xc.cols;j++)
+      row[j]=pre[j];
+  }
+  for(i=xc.rows-FSZ+1;i<xc.rows;i++){
+    float *pre=xc.x + (i-1)*xc.cols;
+    float *row=xc.x + i*xc.cols;
+    for(j=0;j<xc.cols;j++)
+      row[j]=pre[j];
+  }
+
+  if(check && check())goto abort;
+  yc=transform_threshold(xc,J,T,soft,pt,&pc,check);
+  if(check && check())goto abort;
+  
+  /* pull filtered values back out of padded matrix */
+  ptr = buffer;
+  for(i=0;i<height;i++){
+    float *row = yc.x + (i+FSZ-1)*yc.cols + FSZ-1;
+    
+    for(j=0;j<width;j++)
+      *ptr++ = row[j]*.5f;
   }
 
  abort:

@@ -25,7 +25,7 @@ LDF       = -L/lib `pkg-config --libs $(PKGARG)`
 
 all:    
 	pkg-config --cflags $(PKGARG) 1>/dev/null
-	$(MAKE) montypak CFLAGS='-O2 -g $(GCF) '
+	$(MAKE) montypak CFLAGS='-O3 -g $(GCF) '
 
 debug:
 	pkg-config --cflags $(PKGARG) 1>/dev/null
@@ -33,7 +33,7 @@ debug:
 
 profile:
 	pkg-config --cflags $(PKGARG) 1>/dev/null
-	$(MAKE) montypak CFLAGS='-g -pg -O2 $(GCF) '
+	$(MAKE) montypak CFLAGS='-g -pg -O3 $(GCF) '
 
 clean:
 	rm -f *.o *.d *.d.* *.pc gmon.out $(TARGETS)
