@@ -24,7 +24,6 @@
 
 
 #include <string.h>
-#include <string.h>
 #include <stdlib.h>
 
 #include <gtk/gtk.h>
@@ -37,7 +36,7 @@
 
 #define PLUG_IN_PROC    "plug-in-denoise"
 #define PLUG_IN_BINARY  "denoise"
-#define PLUG_IN_VERSION "14 Dec 2008"
+#define PLUG_IN_VERSION "15 Dec 2008"
 
 /*
  * Local functions...
@@ -54,7 +53,7 @@ static void     denoise        (GimpDrawable *drawable);
 static void     denoise_pre    (GimpDrawable *drawable);
 
 static gboolean denoise_dialog (GimpDrawable *drawable);
-static int      denoise_work(int w, int h, int bpp, guchar *buffer, int progress, int(*interrupt)(void));
+static void     denoise_work(int w, int h, int bpp, guchar *buffer);
 
 static void     preview_update (GtkWidget  *preview, GtkWidget *dialog);
 
@@ -91,15 +90,19 @@ static DenoiseParams denoise_params =
 };
 
 static GtkWidget    *preview;
+static GtkToggleButton *preview_toggle=NULL;
 static GtkObject    *madj[4];
 static GtkObject    *ladj[1];
-static guchar *preview_cache_buffer=NULL;
+static guchar *preview_cache_blit=NULL;
+static guchar *preview_cache_filter=NULL;
+static float  *preview_cache_luma=NULL;
 static int     preview_cache_x;
 static int     preview_cache_y;
 static int     preview_cache_w;
 static int     preview_cache_h;
 
 static int     variance_median=0;
+static int     pre_run=0;
 
 MAIN ()
 
@@ -173,9 +176,6 @@ run (const gchar      *name,
 
   drawable = gimp_drawable_get (param[2].data.d_drawable);
   gimp_tile_cache_ntiles (2 * drawable->ntile_cols);
-
-  /* math that has to be done ahead of time */
-  denoise_pre(drawable);
 
   /*
    * See how we will run
@@ -295,7 +295,8 @@ static void denoise (GimpDrawable *drawable){
   /***************************************/
   buffer = g_new (guchar, w * h * bpp);
   gimp_pixel_rgn_get_rect (&src_rgn, buffer, x1, y1, w, h);
-  denoise_work(w,h,bpp,buffer,1,NULL);
+  if(!pre_run) denoise_pre(drawable);
+  denoise_work(w,h,bpp,buffer);
   gimp_pixel_rgn_set_rect (&dst_rgn, buffer, x1, y1, w, h);
   /**************************************/
 
@@ -311,14 +312,28 @@ static void denoise (GimpDrawable *drawable){
   g_free(buffer);
 }
 
-static void dialog_soft_callback (GtkWidget *widget,
-                          gpointer   data)
+static void dialog_filter_callback (GtkWidget *widget,
+				    gpointer   data)
 {
-  denoise_params.soft = (GTK_TOGGLE_BUTTON (widget)->active);
-  if(denoise_params.filter>0.)
-    gimp_preview_invalidate (GIMP_PREVIEW (preview));
+  if(preview_cache_filter)
+    g_free(preview_cache_filter);
+  preview_cache_filter=NULL;
+  if(!preview_toggle->active){
+    if(preview_cache_blit)
+      g_free(preview_cache_blit);
+    preview_cache_blit=NULL;
+  }
 }
 
+static void dialog_soft_callback (GtkWidget *widget,
+				  gpointer   data)
+{
+  denoise_params.soft = (GTK_TOGGLE_BUTTON (widget)->active);
+  if(denoise_params.filter>0.){
+    dialog_filter_callback(widget,data);
+    gimp_preview_invalidate (GIMP_PREVIEW (preview));
+  }
+}
 
 static void dialog_multiscale_callback (GtkWidget *widget,
                           gpointer   data)
@@ -331,8 +346,20 @@ static void dialog_multiscale_callback (GtkWidget *widget,
   if(denoise_params.f1!=0. ||
      denoise_params.f2!=0. ||
      denoise_params.f3!=0. ||
-     denoise_params.f4!=0.)
+     denoise_params.f4!=0.){
+    dialog_filter_callback(widget,data);
     gimp_preview_invalidate (GIMP_PREVIEW (preview));
+  }
+}
+
+static void dialog_luma_callback (GtkWidget *widget,
+				  gpointer   data)
+{
+  if(!preview_toggle->active){
+    if(preview_cache_blit)
+      g_free(preview_cache_blit);
+    preview_cache_blit=NULL;
+  }
 }
 
 static void dialog_lowlight_callback (GtkWidget *widget,
@@ -340,21 +367,22 @@ static void dialog_lowlight_callback (GtkWidget *widget,
 {
   denoise_params.lowlight = (GTK_TOGGLE_BUTTON (widget)->active);
   gimp_scale_entry_set_sensitive(ladj[0],denoise_params.lowlight);
+  dialog_luma_callback(widget,data);
   gimp_preview_invalidate (GIMP_PREVIEW (preview));
 }
 
-static void dump_cache(GtkWidget *widget, gpointer dummy){
-  if(!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (widget))){
-    if(preview_cache_buffer)
-      g_free(preview_cache_buffer);
-    preview_cache_buffer=NULL;
-  }
+static void find_preview_toggle(GtkWidget *widget, gpointer dummy){
+  if(!preview_toggle)
+    preview_toggle = GTK_TOGGLE_BUTTON(widget);
 }
 
-static void decache_on_toggle(GtkWidget *widget, gpointer dummy){
-  g_signal_connect (widget, "toggled",
-                    G_CALLBACK (dump_cache),
-		    NULL);
+static void set_busy(GtkWidget *preview, GtkWidget *dialog){
+  GdkDisplay    *display = gtk_widget_get_display (dialog);
+  GdkCursor     *cursor = gdk_cursor_new_for_display (display, GDK_WATCH);
+  gdk_window_set_cursor(preview->window, cursor);
+  gdk_window_set_cursor(gimp_preview_get_area(GIMP_PREVIEW(preview))->window, cursor);
+  gdk_window_set_cursor(dialog->window, cursor);
+  gdk_cursor_unref(cursor);
 }
 
 static gboolean denoise_dialog (GimpDrawable *drawable)
@@ -397,7 +425,7 @@ static gboolean denoise_dialog (GimpDrawable *drawable)
                     G_CALLBACK (preview_update),
                     dialog);
   gtk_container_foreach(GTK_CONTAINER(gimp_preview_get_controls(GIMP_PREVIEW(preview))),
-			decache_on_toggle,NULL);
+			find_preview_toggle,NULL);
 
   /* Main filter strength adjust */
   table = gtk_table_new (1, 3, FALSE);
@@ -417,6 +445,7 @@ static gboolean denoise_dialog (GimpDrawable *drawable)
   g_signal_connect_swapped (adj, "value-changed",
                             G_CALLBACK (gimp_preview_invalidate),
                             preview);
+  g_signal_connect (adj, "value-changed",G_CALLBACK (dialog_filter_callback),NULL);
 
 
   /* Threshold shape */
@@ -425,9 +454,7 @@ static gboolean denoise_dialog (GimpDrawable *drawable)
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button),
                                 denoise_params.soft);
   gtk_widget_show (button);
-  g_signal_connect (button, "toggled",
-                    G_CALLBACK (dialog_soft_callback),
-                    NULL);
+  g_signal_connect (button, "toggled", G_CALLBACK (dialog_soft_callback), NULL);
 
   /* Low-light mode */
   button = gtk_check_button_new_with_mnemonic ("_Low-light noise mode");
@@ -435,9 +462,7 @@ static gboolean denoise_dialog (GimpDrawable *drawable)
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button),
                                 denoise_params.lowlight);
   gtk_widget_show (button);
-  g_signal_connect (button, "toggled",
-                    G_CALLBACK (dialog_lowlight_callback),
-                    NULL);
+  g_signal_connect (button, "toggled", G_CALLBACK (dialog_lowlight_callback),NULL);
 
   /* Subadjustments for lowlight mode */
   table = gtk_table_new (1, 4, FALSE);
@@ -459,6 +484,7 @@ static gboolean denoise_dialog (GimpDrawable *drawable)
   g_signal_connect_swapped (adj, "value-changed",
                             G_CALLBACK (gimp_preview_invalidate),
                             preview);
+  g_signal_connect (adj, "value-changed",G_CALLBACK (dialog_luma_callback),NULL);
   gimp_scale_entry_set_sensitive(ladj[0],denoise_params.lowlight);
 
   /* multiscale adjust select */
@@ -491,6 +517,7 @@ static gboolean denoise_dialog (GimpDrawable *drawable)
   g_signal_connect_swapped (adj, "value-changed",
                             G_CALLBACK (gimp_preview_invalidate),
                             preview);
+  g_signal_connect (adj,"value-changed",G_CALLBACK(dialog_filter_callback),NULL);
 
   /* detail adjust */
   madj[1] = adj = gimp_scale_entry_new (GTK_TABLE (table), 1, 1,
@@ -505,6 +532,7 @@ static gboolean denoise_dialog (GimpDrawable *drawable)
   g_signal_connect_swapped (adj, "value-changed",
                             G_CALLBACK (gimp_preview_invalidate),
                             preview);
+  g_signal_connect (adj,"value-changed",G_CALLBACK(dialog_filter_callback),NULL);
 
   /* mid adjust */
   madj[2] = adj = gimp_scale_entry_new (GTK_TABLE (table), 1, 2,
@@ -519,6 +547,7 @@ static gboolean denoise_dialog (GimpDrawable *drawable)
   g_signal_connect_swapped (adj, "value-changed",
                             G_CALLBACK (gimp_preview_invalidate),
                             preview);
+  g_signal_connect (adj,"value-changed",G_CALLBACK(dialog_filter_callback),NULL);
 
   /* Coarse adjust */
   madj[3] = adj = gimp_scale_entry_new (GTK_TABLE (table), 1, 3,
@@ -533,6 +562,7 @@ static gboolean denoise_dialog (GimpDrawable *drawable)
   g_signal_connect_swapped (adj, "value-changed",
                             G_CALLBACK (gimp_preview_invalidate),
                             preview);
+  g_signal_connect (adj,"value-changed",G_CALLBACK(dialog_filter_callback),NULL);
 
   gimp_scale_entry_set_sensitive(madj[0],denoise_params.multiscale);
   gimp_scale_entry_set_sensitive(madj[1],denoise_params.multiscale);
@@ -540,14 +570,21 @@ static gboolean denoise_dialog (GimpDrawable *drawable)
   gimp_scale_entry_set_sensitive(madj[3],denoise_params.multiscale);
 
   gtk_widget_show (dialog);
-
   run = (gimp_dialog_run (GIMP_DIALOG (dialog)) == GTK_RESPONSE_OK);
 
   gtk_widget_destroy (dialog);
 
-  if(preview_cache_buffer)
-    g_free(preview_cache_buffer);
-  preview_cache_buffer=NULL;
+  if(preview_cache_blit)
+    g_free(preview_cache_blit);
+  preview_cache_blit=NULL;
+
+  if(preview_cache_filter)
+    g_free(preview_cache_filter);
+  preview_cache_filter=NULL;
+
+  if(preview_cache_luma)
+    g_free(preview_cache_luma);
+  preview_cache_luma=NULL;
   return run;
 }
 
@@ -560,80 +597,6 @@ static int check_recompute(){
   return denoise_active_interrupt;
 }
 
-static int set_busy(GtkWidget *preview, GtkWidget *dialog){
-  GdkDisplay    *display = gtk_widget_get_display (dialog);
-  GdkCursor     *cursor = gdk_cursor_new_for_display (display, GDK_WATCH);
-  gdk_window_set_cursor(preview->window, cursor);
-  gdk_window_set_cursor(gimp_preview_get_area(GIMP_PREVIEW(preview))->window, cursor);
-  gdk_window_set_cursor(dialog->window, cursor);
-  gdk_cursor_unref(cursor);
-}
-
-static void preview_update (GtkWidget *preview, GtkWidget *dialog){
-
-  GimpDrawable *drawable;
-  GimpPixelRgn  rgn;            /* previw region */
-  gint          x1, y1;
-  gint          w,h;
-  guchar       *buffer=NULL;
-  gint          bpp;        /* Bytes-per-pixel in image */
-
-  /* because we allow async event processing, a stray expose of the
-     GimpPreviewArea will cause it reload the original unfiltered
-     data, which is annoying when doing small parameter tweaks.  Make
-     sure the previous run's data is blitted in if it can be */
-  drawable = gimp_drawable_preview_get_drawable (GIMP_DRAWABLE_PREVIEW (preview));
-  bpp = gimp_drawable_bpp (drawable->drawable_id);
-  gimp_preview_get_position (GIMP_PREVIEW(preview), &x1, &y1);
-  gimp_preview_get_size (GIMP_PREVIEW(preview), &w, &h);
-
-  if(preview_cache_buffer &&
-     x1 == preview_cache_x &&
-     y1 == preview_cache_y &&
-     w == preview_cache_w &&
-     h == preview_cache_h){
-    
-    gimp_preview_draw_buffer (GIMP_PREVIEW(preview), preview_cache_buffer, w*bpp);
-  }else{
-    if(preview_cache_buffer)
-      g_free(preview_cache_buffer);
-    preview_cache_buffer=NULL;
-  }
-
-  denoise_active_interrupt=1;
-  if(denoise_active_interruptable) return;
-  denoise_active_interruptable = 1;
-
-  while(denoise_active_interrupt){
-    denoise_active_interrupt=0;
-
-    set_busy(preview,dialog);
-
-    gimp_preview_get_position (GIMP_PREVIEW(preview), &x1, &y1);
-    gimp_preview_get_size (GIMP_PREVIEW(preview), &w, &h);
-    gimp_pixel_rgn_init (&rgn, drawable,
-			 x1, y1, w, h,
-			 FALSE, FALSE);
-    if(buffer) g_free (buffer);
-    buffer = g_new (guchar, w * h * bpp);
-    gimp_pixel_rgn_get_rect (&rgn, buffer, x1, y1, w, h);
-    if(!denoise_work(w,h,bpp,buffer,0,check_recompute)){
-      gimp_preview_draw_buffer (GIMP_PREVIEW(preview), buffer, w*bpp);
-      gimp_drawable_flush (drawable);
-    }
-  }
-  
-  if(preview_cache_buffer)
-    g_free(preview_cache_buffer);
-  preview_cache_buffer = buffer;
-  preview_cache_x = x1;
-  preview_cache_y = y1;
-  preview_cache_w = w;
-  preview_cache_h = h;
-
-  denoise_active_interruptable = 0;
-}
-
 #include "varmean.c"
 #define clamp(x) ((x)<0?0:((x)>255?255:(x)))
 
@@ -641,7 +604,8 @@ static void compute_luma(guchar *buffer, guchar *luma, int width, int height, in
   int i;
   switch(planes){
   case 1:
-    memcpy(luma,buffer,sizeof(*luma)*width*height);
+    for(i=0;i<width*height;i++)
+      luma[i]=buffer[i];
     break;
   case 2: 
     for(i=0;i<width*height;i++)
@@ -658,8 +622,34 @@ static void compute_luma(guchar *buffer, guchar *luma, int width, int height, in
   }
 }
 
+static void compute_luma_f(guchar *buffer, float *luma, int width, int height, int planes){
+  int i;
+  switch(planes){
+  case 1:
+    for(i=0;i<width*height;i++)
+      luma[i]=buffer[i]*(1.f/255.f);
+    break;
+  case 2: 
+    for(i=0;i<width*height;i++)
+      luma[i]=buffer[i<<1]*(1.f/255.f);
+    break;
+  case 3:
+    for(i=0;i<width*height;i++)
+      luma[i]=buffer[i*3]*(.2126f/255.f) + 
+	buffer[i*3+1]*(.7152f/255.f) + 
+	buffer[i*3+2]*(.0722f/255.f);
+    break;
+  case 4:
+    for(i=0;i<width*height;i++)
+      luma[i]=buffer[i*4]*(.2126f/255.f) + 
+	buffer[i*4+1]*(.7152f/255.f) + 
+	buffer[i*4+2]*(.0722f/255.f);
+    break;
+  }
+}
+
+/* find the variance median for the whole image, not just preview, not just the selection */
 static void denoise_pre(GimpDrawable *drawable){
-  /* find the variance median for the whole image, not just preview, not just the selection */
 
   GimpPixelRgn  rgn;
   gint          w = gimp_drawable_width(drawable->drawable_id);
@@ -667,10 +657,11 @@ static void denoise_pre(GimpDrawable *drawable){
   gint          bpp = gimp_drawable_bpp (drawable->drawable_id);
   guchar       *buffer;
   guchar       *luma;
-  float       *v;
+  float        *v;
   long          d[256];
-  int           i,a,a2,med;
-
+  int           i,a,a2;
+  
+  pre_run = 1;
   gimp_pixel_rgn_init (&rgn, drawable,
                        0, 0, w, h, FALSE, FALSE);
   buffer = g_new (guchar, w * h * bpp);
@@ -688,7 +679,7 @@ static void denoise_pre(GimpDrawable *drawable){
   memset(d,0,sizeof(d));
     
   for(i=0;i<w*h;i++){
-    int val = clamp(sqrt(v[i]));
+    int val = clamp(rint(sqrt(v[i])));
     d[val]++;
   }
   g_free(v);
@@ -706,56 +697,43 @@ static void denoise_pre(GimpDrawable *drawable){
   }
 }
 
-static int denoise_work(int width, int height, int planes, guchar *buffer, int pr, int(*check)(void)){
+static float *compute_smoothed_luma(guchar *buffer, int w, int h, int p, 
+				    int pr, int (*check)(void)){
   int i;
   float T[16];
-  guchar *mask=NULL;
+  float *luma = g_new(float,w*h);
 
-  if(denoise_params.lowlight){
-    float l = denoise_params.lowlight_adj*.01;
-    int med = variance_median*8;
-    if(pr)gimp_progress_init( "Masking luma...");
+  if(pr)gimp_progress_init( "Masking luma...");
+  
+  compute_luma_f(buffer,luma,w,h,p);
+  if(check && check()){
+    g_free(luma);
+    return NULL;
+  } 
 
-    mask = g_new(guchar,width*height);
-    compute_luma(buffer,mask,width,height,planes);
-
-    if(l>0){
-      med += (255-med)*l;
-    }else{
-      med += med*l;
-    }
-
-    if(check && check()){
-      g_free(mask);
-      return 1;
-    } 
-
-    /* adjust luma into mask form */
-    for(i=0;i<width*height;i++){
-      if(mask[i]<med){
-	mask[i]=255;
-      }else if(mask[i]>=med*2){
-	mask[i]=0;
-      }else{
-	float del = (float)(mask[i]-med)/med;
-	mask[i]=255-255*del;
-      }
-    }
-
-    if(check && check()){
-      g_free(mask);
-      return 1;
-    } 
-
-    /* smooth the luma plane */
-    for(i=0;i<16;i++)
-      T[i]=10.;
-    if(wavelet_filter(width, height, 1, mask, NULL, pr, T, denoise_params.soft, check)){
-      g_free(mask);
-      return 1;
-    }
-
+  /* smooth the luma plane */
+  for(i=0;i<16;i++)
+    T[i]=10./255.f;
+  if(wavelet_filter_f(w, h, luma, pr, T, denoise_params.soft, check)){
+    g_free(luma);
     if(pr)gimp_progress_end();
+    return NULL;
+  }
+  
+  if(pr)gimp_progress_end();
+  return luma;
+}
+
+static guchar *compute_filter(guchar *buffer, int w, int h, int p, 
+			      int inplace, int pr, int (*check)(void)){
+  int i;
+  float T[16];
+  guchar *filtered;
+  if(inplace){
+    filtered = buffer;
+  }else{
+    filtered = g_new(guchar,w*h*p);
+    memcpy(filtered,buffer,sizeof(*filtered)*w*h*p);
   }
 
   if(pr)gimp_progress_init( "Denoising...");
@@ -771,14 +749,155 @@ static int denoise_work(int width, int height, int planes, guchar *buffer, int p
       T[i]*=(denoise_params.f4+100)*.01;
   }
   
-  if(wavelet_filter(width, height, planes, buffer, mask, pr, T, denoise_params.soft, check)){
-    if(mask)g_free(mask);
-    return 1;
+  if(wavelet_filter_c(w, h, p, filtered, pr, T, denoise_params.soft, check)){
+    if(!inplace)g_free(filtered);
+    if(pr)gimp_progress_end();
+    return NULL;
   }
 
-  if(mask)
-    g_free(mask);
- 
+  if(pr)gimp_progress_end();
+  return filtered;
+}
+
+static int combine_filter_luma(guchar *buffer, guchar *filtered, float *luma,
+			       int w, int h, int p, int(*check)(void)){
+  int i,j,k;
+  
+  if(denoise_params.lowlight){
+    float l = denoise_params.lowlight_adj*.01;
+    float med = variance_median*(8.f/255.f);
+
+    if(l>0){
+      med += (1.-med)*l;
+    }else{
+      med += med*l;
+    }
+  
+    for(i=0;i<w*h;i+=w){
+      for(j=i;j<i+w;j++){
+	float mask = 1.f - (luma[j]-med)/med;
+	if(mask<0.f)mask=0.f;
+	if(mask>1.f)mask=1.f;
+	for(k=0;k<p;k++)
+	  buffer[k] = clamp(rint(filtered[k]*mask + (1.f-mask)*buffer[k]));
+	buffer+=p;
+	filtered+=p;
+      }
+      if(check && check()) return 1;
+    }
+  }else{
+    memcpy(buffer,filtered,sizeof(*buffer)*w*h*p);
+  }
   return 0;
+}
+
+static void preview_update (GtkWidget *preview, GtkWidget *dialog){
+
+  GimpDrawable *drawable;
+  GimpPixelRgn  rgn;            /* previw region */
+  gint          x, y, w, h;
+  gint          bpp;        /* Bytes-per-pixel in image */
+  guchar       *buffer = NULL;
+
+  /* Because we do async event processing in this plugin (so that the
+     UI doesn't freeze during long comutation times), a stray expose
+     of the GimpPreviewArea already queud after this update call
+     causes it to reload the original unfiltered data, which is
+     annoying when doing small parameter tweaks.  Make sure the
+     previous run's data is blitted in if appropriate. */
+  drawable = gimp_drawable_preview_get_drawable (GIMP_DRAWABLE_PREVIEW (preview));
+  bpp = gimp_drawable_bpp (drawable->drawable_id);
+  gimp_preview_get_position (GIMP_PREVIEW(preview), &x, &y);
+  gimp_preview_get_size (GIMP_PREVIEW(preview), &w, &h);
+  if(!pre_run) denoise_pre(drawable);
+
+  if(x == preview_cache_x &&
+     y == preview_cache_y &&
+     w == preview_cache_w &&
+     h == preview_cache_h){
+
+    if(preview_cache_blit)
+      gimp_preview_draw_buffer (GIMP_PREVIEW(preview), preview_cache_blit, w*bpp);
+
+  }else{
+
+    /* the preview pane has shifted; dump all caches */
+
+    if(preview_cache_blit)
+      g_free(preview_cache_blit);
+    preview_cache_blit=NULL;
+
+    if(preview_cache_filter)
+      g_free(preview_cache_filter);
+    preview_cache_filter=NULL;
+
+    if(preview_cache_luma)
+      g_free(preview_cache_luma);
+    preview_cache_luma=NULL;
+
+  }
+
+  denoise_active_interrupt=1;
+  if(denoise_active_interruptable) return;
+  denoise_active_interruptable = 1;
+
+  while(denoise_active_interrupt){
+    denoise_active_interrupt=0;
+    set_busy(preview,dialog);
+
+    gimp_preview_get_position (GIMP_PREVIEW(preview), &x, &y);
+    gimp_preview_get_size (GIMP_PREVIEW(preview), &w, &h);
+    gimp_pixel_rgn_init (&rgn, drawable, x, y, w, h, FALSE, FALSE);
+
+    if(buffer) g_free (buffer);
+    buffer = g_new (guchar, w * h * bpp);
+    gimp_pixel_rgn_get_rect (&rgn, buffer, x, y, w, h);
+
+    /* do we need to compute a smoothed luma plane? */
+    if(preview_cache_luma == NULL){ 
+      preview_cache_luma = compute_smoothed_luma(buffer, w, h, bpp, 0, check_recompute);
+      if(!preview_cache_luma)continue; /* interrupted */
+    }
+
+    /* do we need to filter/refilter the image? */
+    if(preview_cache_filter == NULL){
+      preview_cache_filter = compute_filter(buffer, w, h, bpp, 0, 0, check_recompute);
+      if(!preview_cache_filter)continue; /* interrupted */
+    }
+
+    /* new blit */
+    if(preview_cache_filter && preview_cache_luma){
+      if(combine_filter_luma(buffer, preview_cache_filter, 
+			     preview_cache_luma, w, h, bpp, check_recompute))
+	continue; /* interrupted */
+
+      if(preview_cache_blit)
+	g_free(preview_cache_blit);
+      preview_cache_x = x;
+      preview_cache_y = y;
+      preview_cache_w = w;
+      preview_cache_h = h;
+      preview_cache_blit = buffer;
+      buffer = NULL;
+
+      gimp_preview_draw_buffer (GIMP_PREVIEW(preview), preview_cache_blit, w*bpp);
+      gimp_drawable_flush (drawable);
+    }
+  }
+  
+  if(buffer) g_free(buffer);
+  denoise_active_interruptable = 0;
+}
+
+static void denoise_work(int w, int h, int p, guchar *buffer){
+  if(denoise_params.lowlight){
+    float *l = compute_smoothed_luma(buffer, w, h, p, 1, NULL);
+    guchar *f = compute_filter(buffer, w, h, p, 0, 1, NULL);
+    combine_filter_luma(buffer, f, l, w, h, p, NULL);
+    g_free(f);
+    g_free(l);
+  }else{
+    compute_filter(buffer, w, h, p, 1, 1, NULL);
+  }
 }
 
