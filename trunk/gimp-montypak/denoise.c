@@ -36,7 +36,7 @@
 
 #define PLUG_IN_PROC    "plug-in-denoise"
 #define PLUG_IN_BINARY  "denoise"
-#define PLUG_IN_VERSION "15 Dec 2008"
+#define PLUG_IN_VERSION "17 Dec 2008"
 
 /*
  * Local functions...
@@ -71,7 +71,8 @@ const GimpPlugInInfo PLUG_IN_INFO =
 
 typedef struct
 {
-  float filter;
+  float filterY;
+  float filterC;
   int soft;
   int multiscale;
   float f1;
@@ -84,7 +85,7 @@ typedef struct
 
 static DenoiseParams denoise_params =
 {
-  20, 0, 0,
+  20,30, 0,0,
   0.,0.,0.,0.,
   0,0.
 };
@@ -94,8 +95,9 @@ static GtkToggleButton *preview_toggle=NULL;
 static GtkObject    *madj[4];
 static GtkObject    *ladj[1];
 static guchar *preview_cache_blit=NULL;
-static guchar *preview_cache_filter=NULL;
 static float  *preview_cache_luma=NULL;
+static float  *preview_cache_Pb=NULL;
+static float  *preview_cache_Pr=NULL;
 static int     preview_cache_x;
 static int     preview_cache_y;
 static int     preview_cache_w;
@@ -125,6 +127,7 @@ query (void)
     { GIMP_PDB_FLOAT,    "f4",            "Coarse adjust"                     },
     { GIMP_PDB_INT32,    "lowlight",      "Low light noise mode"              },
     { GIMP_PDB_FLOAT,    "lowlight_adj",  "Low light threshold adj"           },
+    { GIMP_PDB_FLOAT,    "chroma_ratio",  "Chroma smoothing ratio"            },
 
   };
 
@@ -200,18 +203,19 @@ run (const gchar      *name,
       /*
        * Make sure all the arguments are present...
        */
-      if (nparams != 12)
+      if (nparams != 13)
         status = GIMP_PDB_CALLING_ERROR;
       else{
-        denoise_params.filter = param[3].data.d_float;
-	denoise_params.soft   = param[4].data.d_int32;
-	denoise_params.multiscale = param[5].data.d_int32;
-        denoise_params.f1 = param[6].data.d_float;
-        denoise_params.f2 = param[7].data.d_float;
-        denoise_params.f3 = param[8].data.d_float;
-        denoise_params.f4 = param[9].data.d_float;
-        denoise_params.lowlight = param[10].data.d_int32;
-        denoise_params.lowlight_adj = param[11].data.d_float;
+        denoise_params.filterY = param[3].data.d_float;
+        denoise_params.filterC = param[4].data.d_float;
+	denoise_params.soft   = param[5].data.d_int32;
+	denoise_params.multiscale = param[6].data.d_int32;
+        denoise_params.f1 = param[7].data.d_float;
+        denoise_params.f2 = param[8].data.d_float;
+        denoise_params.f3 = param[9].data.d_float;
+        denoise_params.f4 = param[10].data.d_float;
+        denoise_params.lowlight = param[11].data.d_int32;
+        denoise_params.lowlight_adj = param[12].data.d_float;
       }
       break;
 
@@ -312,12 +316,28 @@ static void denoise (GimpDrawable *drawable){
   g_free(buffer);
 }
 
-static void dialog_filter_callback (GtkWidget *widget,
-				    gpointer   data)
+static void dialog_filterY_callback (GtkWidget *widget,
+				     gpointer   data)
 {
-  if(preview_cache_filter)
-    g_free(preview_cache_filter);
-  preview_cache_filter=NULL;
+  if(preview_cache_luma)
+    g_free(preview_cache_luma);
+  preview_cache_luma=NULL;
+  if(!preview_toggle->active){
+    if(preview_cache_blit)
+      g_free(preview_cache_blit);
+    preview_cache_blit=NULL;
+  }
+}
+
+static void dialog_filterC_callback (GtkWidget *widget,
+				     gpointer   data)
+{
+  if(preview_cache_Pb)
+    g_free(preview_cache_Pb);
+  preview_cache_Pb=NULL;
+  if(preview_cache_Pr)
+    g_free(preview_cache_Pr);
+  preview_cache_Pr=NULL;
   if(!preview_toggle->active){
     if(preview_cache_blit)
       g_free(preview_cache_blit);
@@ -329,14 +349,16 @@ static void dialog_soft_callback (GtkWidget *widget,
 				  gpointer   data)
 {
   denoise_params.soft = (GTK_TOGGLE_BUTTON (widget)->active);
-  if(denoise_params.filter>0.){
-    dialog_filter_callback(widget,data);
+  if(denoise_params.filterY>0.)
+    dialog_filterY_callback(widget,data);
+  if(denoise_params.filterC>0.)
+    dialog_filterC_callback(widget,data);
+  if(denoise_params.filterY>0. || denoise_params.filterC>0.)
     gimp_preview_invalidate (GIMP_PREVIEW (preview));
-  }
 }
 
 static void dialog_multiscale_callback (GtkWidget *widget,
-                          gpointer   data)
+					gpointer   data)
 {
   denoise_params.multiscale = (GTK_TOGGLE_BUTTON (widget)->active);
   gimp_scale_entry_set_sensitive(madj[0],denoise_params.multiscale);
@@ -347,12 +369,26 @@ static void dialog_multiscale_callback (GtkWidget *widget,
      denoise_params.f2!=0. ||
      denoise_params.f3!=0. ||
      denoise_params.f4!=0.){
-    dialog_filter_callback(widget,data);
-    gimp_preview_invalidate (GIMP_PREVIEW (preview));
+    if(denoise_params.filterY>0.)
+      dialog_filterY_callback(widget,data);
+    if(denoise_params.filterC>0.)
+      dialog_filterC_callback(widget,data);
+    if(denoise_params.filterY>0. || denoise_params.filterC>0.)
+      gimp_preview_invalidate (GIMP_PREVIEW (preview));
   }
 }
 
-static void dialog_luma_callback (GtkWidget *widget,
+static void dialog_multiadj_callback (GtkWidget *widget,
+				      gpointer data){
+  if(denoise_params.filterY>0.)
+    dialog_filterY_callback(widget,data);
+  if(denoise_params.filterC>0.)
+    dialog_filterC_callback(widget,data);
+  if(denoise_params.filterY>0. || denoise_params.filterC>0.)
+    gimp_preview_invalidate (GIMP_PREVIEW (preview));
+}
+
+static void dialog_mask_callback (GtkWidget *widget,
 				  gpointer   data)
 {
   if(!preview_toggle->active){
@@ -367,7 +403,7 @@ static void dialog_lowlight_callback (GtkWidget *widget,
 {
   denoise_params.lowlight = (GTK_TOGGLE_BUTTON (widget)->active);
   gimp_scale_entry_set_sensitive(ladj[0],denoise_params.lowlight);
-  dialog_luma_callback(widget,data);
+  dialog_mask_callback(widget,data);
   gimp_preview_invalidate (GIMP_PREVIEW (preview));
 }
 
@@ -393,7 +429,7 @@ static gboolean denoise_dialog (GimpDrawable *drawable)
   GtkWidget *button;
   GtkObject *adj;
   gboolean   run;
-
+  gint       planes = gimp_drawable_bpp (drawable->drawable_id);
   gimp_ui_init (PLUG_IN_BINARY, TRUE);
 
   dialog = gimp_dialog_new ("Denoise", PLUG_IN_BINARY,
@@ -427,26 +463,45 @@ static gboolean denoise_dialog (GimpDrawable *drawable)
   gtk_container_foreach(GTK_CONTAINER(gimp_preview_get_controls(GIMP_PREVIEW(preview))),
 			find_preview_toggle,NULL);
 
-  /* Main filter strength adjust */
-  table = gtk_table_new (1, 3, FALSE);
+  /* Filter strength adjust */
+  table = gtk_table_new (1+(planes>2), 3, FALSE);
   gtk_table_set_col_spacings (GTK_TABLE (table), 6);
   gtk_box_pack_start (GTK_BOX (main_vbox), table, FALSE, FALSE, 0);
   gtk_widget_show (table);
 
+  /* Luma denoise */
   adj = gimp_scale_entry_new (GTK_TABLE (table), 0, 0,
-                              "_Denoise", 300, 0,
-                              denoise_params.filter,
+			      (planes>2?"Luma _Denoise":"_Denoise"),
+                              300, 0,
+                              denoise_params.filterY,
                               0, 100, 1, 10, 0,
                               TRUE, 0, 0,
                               NULL, NULL);
   g_signal_connect (adj, "value-changed",
                     G_CALLBACK (gimp_float_adjustment_update),
-                    &denoise_params.filter);
+                    &denoise_params.filterY);
   g_signal_connect_swapped (adj, "value-changed",
                             G_CALLBACK (gimp_preview_invalidate),
                             preview);
-  g_signal_connect (adj, "value-changed",G_CALLBACK (dialog_filter_callback),NULL);
+  g_signal_connect (adj, "value-changed",G_CALLBACK (dialog_filterY_callback),NULL);
 
+
+  /* Chroma filter strength adjust */
+  if(planes>2){
+    adj = gimp_scale_entry_new (GTK_TABLE (table), 0, 1,
+				"_Chroma Denoise", 300, 0,
+				denoise_params.filterC,
+				0, 100, 1, 10, 0,
+				TRUE, 0, 0,
+				NULL, NULL);
+    g_signal_connect (adj, "value-changed",
+                    G_CALLBACK (gimp_float_adjustment_update),
+                    &denoise_params.filterC);
+    g_signal_connect_swapped (adj, "value-changed",
+			      G_CALLBACK (gimp_preview_invalidate),
+			      preview);
+    g_signal_connect (adj, "value-changed",G_CALLBACK (dialog_filterC_callback),NULL);
+  }
 
   /* Threshold shape */
   button = gtk_check_button_new_with_mnemonic ("So_ft thresholding");
@@ -484,7 +539,7 @@ static gboolean denoise_dialog (GimpDrawable *drawable)
   g_signal_connect_swapped (adj, "value-changed",
                             G_CALLBACK (gimp_preview_invalidate),
                             preview);
-  g_signal_connect (adj, "value-changed",G_CALLBACK (dialog_luma_callback),NULL);
+  g_signal_connect (adj, "value-changed",G_CALLBACK (dialog_mask_callback),NULL);
   gimp_scale_entry_set_sensitive(ladj[0],denoise_params.lowlight);
 
   /* multiscale adjust select */
@@ -514,10 +569,7 @@ static gboolean denoise_dialog (GimpDrawable *drawable)
   g_signal_connect (adj, "value-changed",
                     G_CALLBACK (gimp_float_adjustment_update),
                     &denoise_params.f1);
-  g_signal_connect_swapped (adj, "value-changed",
-                            G_CALLBACK (gimp_preview_invalidate),
-                            preview);
-  g_signal_connect (adj,"value-changed",G_CALLBACK(dialog_filter_callback),NULL);
+  g_signal_connect (adj,"value-changed",G_CALLBACK(dialog_multiadj_callback),NULL);
 
   /* detail adjust */
   madj[1] = adj = gimp_scale_entry_new (GTK_TABLE (table), 1, 1,
@@ -529,10 +581,7 @@ static gboolean denoise_dialog (GimpDrawable *drawable)
   g_signal_connect (adj, "value-changed",
                     G_CALLBACK (gimp_float_adjustment_update),
                     &denoise_params.f2);
-  g_signal_connect_swapped (adj, "value-changed",
-                            G_CALLBACK (gimp_preview_invalidate),
-                            preview);
-  g_signal_connect (adj,"value-changed",G_CALLBACK(dialog_filter_callback),NULL);
+  g_signal_connect (adj,"value-changed",G_CALLBACK(dialog_multiadj_callback),NULL);
 
   /* mid adjust */
   madj[2] = adj = gimp_scale_entry_new (GTK_TABLE (table), 1, 2,
@@ -544,11 +593,8 @@ static gboolean denoise_dialog (GimpDrawable *drawable)
   g_signal_connect (adj, "value-changed",
                     G_CALLBACK (gimp_float_adjustment_update),
                     &denoise_params.f3);
-  g_signal_connect_swapped (adj, "value-changed",
-                            G_CALLBACK (gimp_preview_invalidate),
-                            preview);
-  g_signal_connect (adj,"value-changed",G_CALLBACK(dialog_filter_callback),NULL);
-
+  g_signal_connect (adj,"value-changed",G_CALLBACK(dialog_multiadj_callback),NULL);
+  
   /* Coarse adjust */
   madj[3] = adj = gimp_scale_entry_new (GTK_TABLE (table), 1, 3,
 					"_Coarse denoise:", 300, 0,
@@ -559,10 +605,7 @@ static gboolean denoise_dialog (GimpDrawable *drawable)
   g_signal_connect (adj, "value-changed",
                     G_CALLBACK (gimp_float_adjustment_update),
                     &denoise_params.f4);
-  g_signal_connect_swapped (adj, "value-changed",
-                            G_CALLBACK (gimp_preview_invalidate),
-                            preview);
-  g_signal_connect (adj,"value-changed",G_CALLBACK(dialog_filter_callback),NULL);
+  g_signal_connect (adj,"value-changed",G_CALLBACK(dialog_multiadj_callback),NULL);
 
   gimp_scale_entry_set_sensitive(madj[0],denoise_params.multiscale);
   gimp_scale_entry_set_sensitive(madj[1],denoise_params.multiscale);
@@ -578,13 +621,16 @@ static gboolean denoise_dialog (GimpDrawable *drawable)
     g_free(preview_cache_blit);
   preview_cache_blit=NULL;
 
-  if(preview_cache_filter)
-    g_free(preview_cache_filter);
-  preview_cache_filter=NULL;
-
   if(preview_cache_luma)
     g_free(preview_cache_luma);
   preview_cache_luma=NULL;
+  if(preview_cache_Pb)
+    g_free(preview_cache_Pb);
+  preview_cache_Pb=NULL;
+  if(preview_cache_Pr)
+    g_free(preview_cache_Pr);
+  preview_cache_Pr=NULL;
+
   return run;
 }
 
@@ -600,6 +646,12 @@ static int check_recompute(){
 #include "varmean.c"
 #define clamp(x) ((x)<0?0:((x)>255?255:(x)))
 
+#define Kr 0.2126f
+#define Kb 0.0722f
+#define Kg (1.f-Kr-Kb)
+#define Ir (2.f*Kr-2.f)
+#define Ib (2.f*Kb-2.f)
+
 static void compute_luma(guchar *buffer, guchar *luma, int width, int height, int planes){
   int i;
   switch(planes){
@@ -613,40 +665,67 @@ static void compute_luma(guchar *buffer, guchar *luma, int width, int height, in
     break;
   case 3:
     for(i=0;i<width*height;i++)
-      luma[i]=buffer[i*3]*.2126 + buffer[i*3+1]*.7152 + buffer[i*3+2]*.0722;
+      luma[i]=clamp(rint(buffer[i*3]*Kr + 
+			 buffer[i*3+1]*Kg + 
+			 buffer[i*3+2]*Kb));
     break;
   case 4:
     for(i=0;i<width*height;i++)
-      luma[i]=buffer[i*4]*.2126 + buffer[i*4+1]*.7152 + buffer[i*4+2]*.0722;
+      luma[i]=clamp(rint(buffer[i*4]*Kr + 
+			 buffer[i*4+1]*Kg + 
+			 buffer[i*4+2]*Kb));
     break;
   }
 }
 
-static void compute_luma_f(guchar *buffer, float *luma, int width, int height, int planes){
-  int i;
-  switch(planes){
-  case 1:
-    for(i=0;i<width*height;i++)
-      luma[i]=buffer[i]*(1.f/255.f);
-    break;
-  case 2: 
-    for(i=0;i<width*height;i++)
-      luma[i]=buffer[i<<1]*(1.f/255.f);
-    break;
-  case 3:
-    for(i=0;i<width*height;i++)
-      luma[i]=buffer[i*3]*(.2126f/255.f) + 
-	buffer[i*3+1]*(.7152f/255.f) + 
-	buffer[i*3+2]*(.0722f/255.f);
-    break;
-  case 4:
-    for(i=0;i<width*height;i++)
-      luma[i]=buffer[i*4]*(.2126f/255.f) + 
-	buffer[i*4+1]*(.7152f/255.f) + 
-	buffer[i*4+2]*(.0722f/255.f);
-    break;
+static int compute_YPbPr(guchar *buffer, float *luma, float *Pb, float *Pr, 
+			 int width, int height, int planes, int (*check)(void)){
+  int i,j;
+  if(!check && planes>2)
+    gimp_progress_init( "Converting colorspace...");
+
+  for(j=0;j<height*width;j+=width){
+    switch(planes){
+    case 1:
+      for(i=j;i<j+width;i++)
+	if(luma)luma[i]=buffer[i];
+      break;
+    case 2: 
+      for(i=j;i<j+width;i++)
+	if(luma)luma[i]=buffer[i<<1];
+      break;
+    case 3:
+      for(i=j;i<j+width;i++){
+	float Y = buffer[i*3]*Kr + buffer[i*3+1]*Kg + buffer[i*3+2]*Kb;
+	if(luma)luma[i]=Y;
+	if(Pb) Pb[i] = (buffer[i*3+2] - Y) * (.5f / (1.f - Kb));
+	if(Pr) Pr[i] = (buffer[i*3] - Y) * (.5f / (1.f - Kr));
+      }
+      if(!check && planes>2)
+	gimp_progress_update((float)i/(width*height));
+      break;
+    case 4:
+      for(i=j;i<j+width;i++){
+	float Y = buffer[i*4]*Kr + buffer[i*4+1]*Kg + buffer[i*4+2]*Kb;
+	if(luma) luma[i]=Y;
+	if(Pb) Pb[i] = (buffer[i*4+2] - Y) * (.5f / (1.f - Kb));
+	if(Pr) Pr[i] = (buffer[i*4] - Y) * (.5f / (1.f - Kr)); 
+      }
+      if(!check && planes>2)
+	gimp_progress_update((float)i/(width*height));
+      break;
+    }
+
+    if(check && check())return 1;
   }
+  if(!check && planes>2)
+    gimp_progress_end();
+  return 0;
 }
+
+#define computeR(Y,Pb,Pr) ((Y) - Ir*(Pr))
+#define computeG(Y,Pb,Pr) ((Y) + (Ir*Kr/Kg)*(Pr) + (Ib*Kb/Kg)*(Pb))
+#define computeB(Y,Pb,Pr) ((Y) - Ib*(Pb))
 
 /* find the variance median for the whole image, not just preview, not just the selection */
 static void denoise_pre(GimpDrawable *drawable){
@@ -697,103 +776,120 @@ static void denoise_pre(GimpDrawable *drawable){
   }
 }
 
-static float *compute_smoothed_luma(guchar *buffer, int w, int h, int p, 
-				    int pr, int (*check)(void)){
+static int compute_filter(float *buffer, int w, int h, float f, int (*check)(void), char *m){
   int i;
   float T[16];
-  float *luma = g_new(float,w*h);
 
-  if(pr)gimp_progress_init( "Analyzing luma...");
-  
-  compute_luma_f(buffer,luma,w,h,p);
-  if(check && check()){
-    g_free(luma);
-    return NULL;
-  } 
+  if(!buffer)return 1;
 
-  /* smooth the luma plane */
-  for(i=0;i<16;i++)
-    T[i]=10./255.f;
-  if(wavelet_filter_f(w, h, luma, pr, T, denoise_params.soft, check)){
-    g_free(luma);
-    if(pr)gimp_progress_end();
-    return NULL;
+  if(f>0){
+    
+    for(i=0;i<16;i++)
+      T[i]=f*.2;
+    
+    if(denoise_params.multiscale){
+      T[0]*=(denoise_params.f1+100)*.01;
+      T[1]*=(denoise_params.f2+100)*.01;
+      T[2]*=(denoise_params.f3+100)*.01;
+      for(i=3;i<16;i++)
+	T[i]*=(denoise_params.f4+100)*.01;
+      
+      for(i=0;i<16;i++)
+	if(T[i]!=0.f) break;
+      if(i==16) return 0;
+    }
+    
+    if(m)gimp_progress_init(m);
+    i = wavelet_filter(w, h, buffer, (m!=NULL), T, denoise_params.soft, check);
+    if(m)gimp_progress_end();
+    return i;
   }
-  
-  if(pr)gimp_progress_end();
-  return luma;
+  return 0;
 }
 
-static guchar *compute_filter(guchar *buffer, int w, int h, int p, 
-			      int inplace, int pr, int (*check)(void)){
-  int i;
-  float T[16];
-  guchar *filtered;
-  if(inplace){
-    filtered = buffer;
-  }else{
-    filtered = g_new(guchar,w*h*p);
-    memcpy(filtered,buffer,sizeof(*filtered)*w*h*p);
-  }
-
-  if(pr)gimp_progress_init( "Denoising...");
-  
-  for(i=0;i<16;i++)
-    T[i]=denoise_params.filter*.2;
-  
-  if(denoise_params.multiscale){
-    T[0]*=(denoise_params.f1+100)*.01;
-    T[1]*=(denoise_params.f2+100)*.01;
-    T[2]*=(denoise_params.f3+100)*.01;
-    for(i=3;i<16;i++)
-      T[i]*=(denoise_params.f4+100)*.01;
-  }
-  
-  if(wavelet_filter_c(w, h, p, filtered, pr, T, denoise_params.soft, check)){
-    if(!inplace)g_free(filtered);
-    if(pr)gimp_progress_end();
-    return NULL;
-  }
-
-  if(pr)gimp_progress_end();
-  return filtered;
-}
-
-static int combine_filter_luma(guchar *buffer, guchar *filtered, float *luma,
-			       int w, int h, int p, int pr, int(*check)(void)){
-  int i,j,k;
-  
+static int compute_mask(guchar *buffer, float *luma, float *Pb, float *Pr,
+			int w, int h, int p, int(*check)(void)){
+  int i,j;
   if(denoise_params.lowlight){
     float l = denoise_params.lowlight_adj*.01;
-    float med = variance_median*(8.f/255.f);
+    float med = variance_median*8.f;
 
-    if(pr)gimp_progress_init( "Merging...");
+    if(!check)gimp_progress_init( "Masking and unconverting...");
 
     if(l>0){
-      med += (1.-med)*l;
+      med += (255.-med)*l;
     }else{
       med += med*l;
     }
   
-    for(i=0;i<w*h;i+=w){
-      for(j=i;j<i+w;j++){
-	float mask = 1.f - (luma[j]-med)/med;
-	if(mask<0.f)mask=0.f;
-	if(mask>1.f)mask=1.f;
-	for(k=0;k<p;k++)
-	  buffer[k] = clamp(rint(filtered[k]*mask + (1.f-mask)*buffer[k]));
-	buffer+=p;
-	filtered+=p;
+    switch(p){
+    case 1:case 2:
+      for(i=0;i<w*h;i+=w){
+	for(j=i;j<i+w;j++){
+	  float mask = 1.f - (luma[j]-med)/med;
+	  if(mask<0.f)mask=0.f;
+	  if(mask>1.f)mask=1.f;	
+	  buffer[j*p] = clamp(rint(luma[j]*mask + (1.f-mask)*buffer[j*p]));
+	}
+	if(!check)gimp_progress_update((gfloat)(i+w)/(w*h));
+	if(check && check()){
+	  if(!check)gimp_progress_end();
+	  return 1;
+	}
       }
-      if(pr)gimp_progress_update((gfloat)(i+w)/(w*h));
-      if(check && check()){
-	if(pr)gimp_progress_end();
-	return 1;
+      break;
+    case 3:case 4:
+      for(i=0;i<w*h;i+=w){
+	for(j=i;j<i+w;j++){
+	  float mask = 1.f - (luma[j]-med)/med;
+	  if(mask<0.f)mask=0.f;
+	  if(mask>1.f)mask=1.f;	
+	  buffer[j*p]   = clamp(rint(computeR(luma[j],Pb[j],Pr[j])*mask + (1.f-mask)*buffer[j*p]));
+	  buffer[j*p+1] = clamp(rint(computeG(luma[j],Pb[j],Pr[j])*mask + (1.f-mask)*buffer[j*p+1]));
+	  buffer[j*p+2] = clamp(rint(computeB(luma[j],Pb[j],Pr[j])*mask + (1.f-mask)*buffer[j*p+2]));
+	}
+	if(!check)gimp_progress_update((gfloat)(i+w)/(w*h));
+	if(check && check()){
+	  if(!check)gimp_progress_end();
+	  return 1;
+	}
       }
+      break;
     }
-    if(pr)gimp_progress_end();
+    if(!check)gimp_progress_end();
   }else{
-    memcpy(buffer,filtered,sizeof(*buffer)*w*h*p);
+
+    if(!check)gimp_progress_init( "Unconverting...");
+
+    switch(p){
+    case 1:case 2:
+      for(i=0;i<w*h;i+=w){
+	for(j=i;j<i+w;j++){
+	  buffer[j*p] = clamp(rint(luma[j]));
+	}
+	if(!check)gimp_progress_update((gfloat)(i+w)/(w*h));
+	if(check && check()){
+	  if(!check)gimp_progress_end();
+	  return 1;
+	}
+      }
+      break;
+    case 3:case 4:
+      for(i=0;i<w*h;i+=w){
+	for(j=i;j<i+w;j++){
+	  buffer[j*p]   = clamp(rint(computeR(luma[j],Pb[j],Pr[j])));
+	  buffer[j*p+1] = clamp(rint(computeG(luma[j],Pb[j],Pr[j])));
+	  buffer[j*p+2] = clamp(rint(computeB(luma[j],Pb[j],Pr[j])));
+	}
+	if(!check)gimp_progress_update((gfloat)(i+w)/(w*h));
+	if(check && check()){
+	  if(!check)gimp_progress_end();
+	  return 1;
+	}
+      }
+      break;
+    }
+    if(!check)gimp_progress_end();
   }
   return 0;
 }
@@ -834,13 +930,17 @@ static void preview_update (GtkWidget *preview, GtkWidget *dialog){
       g_free(preview_cache_blit);
     preview_cache_blit=NULL;
 
-    if(preview_cache_filter)
-      g_free(preview_cache_filter);
-    preview_cache_filter=NULL;
-
     if(preview_cache_luma)
       g_free(preview_cache_luma);
     preview_cache_luma=NULL;
+
+    if(preview_cache_Pb)
+      g_free(preview_cache_Pb);
+    preview_cache_Pb=NULL;
+
+    if(preview_cache_Pr)
+      g_free(preview_cache_Pr);
+    preview_cache_Pr=NULL;
 
   }
 
@@ -860,36 +960,57 @@ static void preview_update (GtkWidget *preview, GtkWidget *dialog){
     buffer = g_new (guchar, w * h * bpp);
     gimp_pixel_rgn_get_rect (&rgn, buffer, x, y, w, h);
 
-    /* do we need to compute a smoothed luma plane? */
-    if(preview_cache_luma == NULL){ 
-      preview_cache_luma = compute_smoothed_luma(buffer, w, h, bpp, 0, check_recompute);
-      if(!preview_cache_luma)continue; /* interrupted */
-    }
+    /* compute what filtered planes we actually need */
+    {
+      float *tempY = NULL;
+      float *tempPb = NULL;
+      float *tempPr = NULL;
 
-    /* do we need to filter/refilter the image? */
-    if(preview_cache_filter == NULL){
-      preview_cache_filter = compute_filter(buffer, w, h, bpp, 0, 0, check_recompute);
-      if(!preview_cache_filter)continue; /* interrupted */
-    }
+      if(preview_cache_luma == NULL) tempY = g_new(float,w*h);
+      if(bpp > 2 && preview_cache_Pb == NULL) tempPb = g_new(float,w*h);
+      if(bpp > 2 && preview_cache_Pr == NULL) tempPr = g_new(float,w*h);
+ 
+      compute_YPbPr(buffer,tempY,tempPb,tempPr,w,h,bpp, check_recompute);
 
+      if(!compute_filter(tempY, w, h, denoise_params.filterY, check_recompute, NULL)){
+	preview_cache_luma = tempY;
+	tempY = NULL;
+      }
+	
+      if(!compute_filter(tempPb, w, h, denoise_params.filterC, check_recompute, NULL)){
+	preview_cache_Pb = tempPb;
+	tempPb = NULL;
+      }
+
+      if(!compute_filter(tempPr, w, h, denoise_params.filterC, check_recompute, NULL)){
+	preview_cache_Pr = tempPr;
+	tempPr = NULL;
+      }
+
+      if(tempY) g_free(tempY);
+      if(tempPb) g_free(tempPb);
+      if(tempPr) g_free(tempPr);
+
+      if(check_recompute())continue;
+    }
+    
     /* new blit */
-    if(preview_cache_filter && preview_cache_luma){
-      if(combine_filter_luma(buffer, preview_cache_filter, 
-			     preview_cache_luma, w, h, bpp, 0, check_recompute))
-	continue; /* interrupted */
+    if(compute_mask(buffer, preview_cache_luma, preview_cache_Pb, preview_cache_Pr, 
+		    w, h, bpp, check_recompute))
+      continue; /* interrupted */
 
-      if(preview_cache_blit)
-	g_free(preview_cache_blit);
-      preview_cache_x = x;
-      preview_cache_y = y;
-      preview_cache_w = w;
-      preview_cache_h = h;
-      preview_cache_blit = buffer;
-      buffer = NULL;
+    if(preview_cache_blit)
+      g_free(preview_cache_blit);
+    preview_cache_x = x;
+    preview_cache_y = y;
+    preview_cache_w = w;
+    preview_cache_h = h;
+    preview_cache_blit = buffer;
+    buffer = NULL;
 
-      gimp_preview_draw_buffer (GIMP_PREVIEW(preview), preview_cache_blit, w*bpp);
-      gimp_drawable_flush (drawable);
-    }
+    gimp_preview_draw_buffer (GIMP_PREVIEW(preview), preview_cache_blit, w*bpp);
+    gimp_drawable_flush (drawable);
+
   }
   
   if(buffer) g_free(buffer);
@@ -897,14 +1018,20 @@ static void preview_update (GtkWidget *preview, GtkWidget *dialog){
 }
 
 static void denoise_work(int w, int h, int p, guchar *buffer){
-  if(denoise_params.lowlight){
-    float *l = compute_smoothed_luma(buffer, w, h, p, 1, NULL);
-    guchar *f = compute_filter(buffer, w, h, p, 0, 1, NULL);
-    combine_filter_luma(buffer, f, l, w, h, p, 1, NULL);
-    g_free(f);
-    g_free(l);
-  }else{
-    compute_filter(buffer, w, h, p, 1, 1, NULL);
-  }
+  float *Y = g_new(float,w*h);
+  float *Pb = (p<3 ? NULL : g_new(float,w*h));
+  float *Pr = (p<3 ? NULL : g_new(float,w*h));
+ 
+  compute_YPbPr(buffer,Y,Pb,Pr,w,h,p,NULL);
+  compute_filter(Y, w, h, denoise_params.filterY, NULL, (p>2?"Filtering luma...":"Filtering..."));
+  compute_filter(Pb, w, h, denoise_params.filterC, NULL, "Filtering blue difference...");
+  compute_filter(Pr, w, h, denoise_params.filterC, NULL, "Filtering red difference...");
+
+  compute_mask(buffer, Y, Pb, Pr, w, h, p, NULL);
+
+  if(Y)g_free(Y);
+  if(Pb)g_free(Pb);
+  if(Pr)g_free(Pr);
+
 }
 
