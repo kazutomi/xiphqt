@@ -680,7 +680,7 @@ static int collect_sub_col(guchar *b, int *s, int *ss, int w, int h, int col, in
 #include "blur.c"
 
 /* sliding window mean/variance collection */
-#if 0
+#if 1
 static inline void collect_var(guchar *b, double *v, guchar *m, int w, int h, int n){
   int i;
   memcpy(m,b,sizeof(*b)*w*h);
@@ -1037,7 +1037,7 @@ static void scanclean_work(int w, int h, int planes, guchar *buffer, int pr){
     memcpy(filter,buffer,sizeof(*buffer)*w*h);
 
     /* var/mean for Niblack eqs. */
-    collect_var(buffer,variances,means,w,h,20);
+    collect_var(buffer,variances,means,w,h,10);
 
     /* Sauvola thresholding for background construction */
     for(i=0;i<w*h;i++){
@@ -1057,43 +1057,52 @@ static void scanclean_work(int w, int h, int planes, guchar *buffer, int pr){
     /* re-threshold */
     /* Subtly different from the Sauvola method above; although the
        equation looks the same, our threshold is being based on the
-       constructed background, *not* the means. */
+       constructed background, *not* the means. This means that
+       variance is lending some detection positive feedback */
 
     for(i=0;i<w*h;i++){
       foreground[i]=0;
-      if(filter[i] < background[i]*(1+.5*(sqrt(variances[i])/128-1.)))
+      if(filter[i] < background[i]*(1+.77*(sqrt(variances[i])/128-1.)))
 	foreground[i]=3;
     }
 
 
     for(i=0;i<w*h;i++){
       if(!foreground[i])
-	if(filter[i] < background[i]*(1+.15*(sqrt(variances[i])/128-1.)))
+	if(filter[i] < background[i]*(1+.25*(sqrt(variances[i])/128-1.)))
 	  foreground[i]=1;
       
     }
 
-    
-
+    {
+      /* compute global distance */
+      int dn=0;
+      d=0;
+      for(i=0;i<w*h;i++)
+	if(foreground[i]==3){
+	  d+= (means[i]-filter[i])*(means[i]-filter[i]);
+	  dn++;
+	}
+      d/=dn;
+      d=sqrt(d);
+    }
 
     /* flood fill 'sensitive' areas from 'insensitive' areas */
     flood_foreground(foreground, w, h);
 
+
+    for(i=0;i<w*h;i++){
+      if(foreground[i])
+	if(filter[i] > background[i]*(1-.05*(sqrt(variances[i])/128-1.)))
+	  foreground[i]=0;
+      
+    }
+
+
+
+
     /* grow the outer foreground by two */
     //grow_foreground(foreground,w,h);
-
-    {
-      /* compute global distance */
-
-      int dn=0;
-      for(i=0;i<w*h;i++)
-	if(foreground[i]==3){
-	  d+=means[i]-filter[i];
-	  dn++;
-	}
-      
-      d/=dn;
-    }
 
     if(p.autoclean)
     {
@@ -1121,8 +1130,6 @@ static void scanclean_work(int w, int h, int planes, guchar *buffer, int pr){
 
     
 
-    
-
     {      
       //for(i=0;i<w*h;i++){
       //double white = background[i]-(1.-p.white_percent*.01)*d;
@@ -1133,7 +1140,9 @@ static void scanclean_work(int w, int h, int planes, guchar *buffer, int pr){
       //}
 
       for(i=0;i<w*h;i++){
-	if(foreground[i]){
+	if(foreground[i]==3){
+	  filter[i] = 0.;
+	}else if(foreground[i]){
 	  double white = means[i]-d*(1.-(p.white_percent*.01+.5));
 	  double black = means[i]-d + (p.black_percent*.01)*(means[i]-d);
 	  double dd = white-black;
@@ -1147,12 +1156,7 @@ static void scanclean_work(int w, int h, int planes, guchar *buffer, int pr){
     }
 
 
-
-    if(p.autorotate)
-      for(i=0;i<w*h;i++)
-	buffer[i]=sqrt(variances[i]);
-    else
-      memcpy(buffer,filter,sizeof(guchar)*w*h);
+    memcpy(buffer,filter,sizeof(guchar)*w*h);
 
 
   }
