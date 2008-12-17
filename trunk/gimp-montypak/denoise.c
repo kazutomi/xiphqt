@@ -810,6 +810,10 @@ static int compute_filter(float *buffer, int w, int h, float f, int (*check)(voi
 static int compute_mask(guchar *buffer, float *luma, float *Pb, float *Pr,
 			int w, int h, int p, int(*check)(void)){
   int i,j;
+
+  if(!luma) return 1;
+  if(p>2 && (!Pb || !Pr)) return 1;
+
   if(denoise_params.lowlight){
     float l = denoise_params.lowlight_adj*.01;
     float med = variance_median*8.f;
