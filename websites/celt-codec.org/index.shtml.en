@@ -58,6 +58,17 @@
 <h2>Headlines</h2>
 <ul class="descriptivelist">
    <li>
+      <h3>Version 0.5.1 released</h3>
+      <p class="submitdate">17 December, 2008</p>
+      <div class="description">
+                <p>Version 0.5.1 is out. This release fixes a number of issues with 0.5.0. Several cases
+		where the encoder could fail have been fixed, including one that could cause memory 
+		corruption (and possibly a segfault). In addition, the VQ search has been improved,
+		which results in a small CPU reduction, while fixing some quality problems with low
+		frequency tones. Other than that, there should be no significant quality changes.</p>
+      </div>
+   </li>
+   <li>
       <h3>Version 0.5.0 released</h3>
       <p class="submitdate">10 October, 2008</p>
       <div class="description">
