@@ -34,7 +34,8 @@
  * Constants...
  */
 
-#define PLUG_IN_PROC    "plug-in-denoise"
+#define PLUG_IN_PROC    "plug-in-simple-denoise"
+#define PLUG_IN_PROC2   "plug-in-selective-denoise"
 #define PLUG_IN_BINARY  "denoise"
 #define PLUG_IN_VERSION "17 Dec 2008"
 
@@ -53,6 +54,7 @@ static void     denoise        (GimpDrawable *drawable);
 static void     denoise_pre    (GimpDrawable *drawable);
 
 static gboolean denoise_dialog (GimpDrawable *drawable);
+static gboolean denoise_dialog_simple (GimpDrawable *drawable);
 static void     denoise_work(int w, int h, int bpp, guchar *buffer);
 
 static void     preview_update (GtkWidget  *preview, GtkWidget *dialog);
@@ -85,7 +87,7 @@ typedef struct
 
 static DenoiseParams denoise_params =
 {
-  20,30, 0,0,
+  20,20, 0,0,
   0.,0.,0.,0.,
   0,0.
 };
@@ -114,27 +116,34 @@ static void
 query (void)
 {
   static const GimpParamDef   args[] =
-  {
-    { GIMP_PDB_INT32,    "run-mode",      "Interactive, non-interactive"      },
-    { GIMP_PDB_IMAGE,    "image",         "Input image"                       },
-    { GIMP_PDB_DRAWABLE, "drawable",      "Input drawable"                    },
-    { GIMP_PDB_FLOAT,    "filter",        "Denoise filter strength"           },
-    { GIMP_PDB_INT32,    "soft",          "Use soft thresholding"             },
-    { GIMP_PDB_INT32,    "multiscale",    "Enable multiscale adjustment"      },
-    { GIMP_PDB_FLOAT,    "f1",            "Fine detail adjust"                },
-    { GIMP_PDB_FLOAT,    "f2",            "Detail adjust"                     },
-    { GIMP_PDB_FLOAT,    "f3",            "Mid adjust"                        },
-    { GIMP_PDB_FLOAT,    "f4",            "Coarse adjust"                     },
-    { GIMP_PDB_INT32,    "lowlight",      "Low light noise mode"              },
-    { GIMP_PDB_FLOAT,    "lowlight_adj",  "Low light threshold adj"           },
-    { GIMP_PDB_FLOAT,    "chroma_ratio",  "Chroma smoothing ratio"            },
+    {
+      { GIMP_PDB_INT32,    "run-mode",      "Interactive, non-interactive"      },
+      { GIMP_PDB_IMAGE,    "image",         "Input image"                       },
+      { GIMP_PDB_DRAWABLE, "drawable",      "Input drawable"                    },
+      { GIMP_PDB_FLOAT,    "filter",        "Denoise filter strength"           },
+    };
 
-  };
+  static const GimpParamDef   args2[] =
+    {
+      { GIMP_PDB_INT32,    "run-mode",      "Interactive, non-interactive"      },
+      { GIMP_PDB_IMAGE,    "image",         "Input image"                       },
+      { GIMP_PDB_DRAWABLE, "drawable",      "Input drawable"                    },
+      { GIMP_PDB_FLOAT,    "filterY",       "Denoise filter luma strength"      },
+      { GIMP_PDB_FLOAT,    "filterC",       "Denoise filter chroma strength"    },
+      { GIMP_PDB_INT32,    "soft",          "Use soft thresholding"             },
+      { GIMP_PDB_INT32,    "multiscale",    "Enable multiscale adjustment"      },
+      { GIMP_PDB_FLOAT,    "f1",            "Fine detail adjust"                },
+      { GIMP_PDB_FLOAT,    "f2",            "Detail adjust"                     },
+      { GIMP_PDB_FLOAT,    "f3",            "Mid adjust"                        },
+      { GIMP_PDB_FLOAT,    "f4",            "Coarse adjust"                     },
+      { GIMP_PDB_INT32,    "lowlight",      "Low light noise mode"              },
+      { GIMP_PDB_FLOAT,    "lowlight_adj",  "Low light threshold adj"           },
+    };
 
   gimp_install_procedure (PLUG_IN_PROC,
-                          "Denoise filter",
-			  "This plugin uses directional wavelets to remove random "
-			  "noise from an image; at an extreme produces an airbrush-like"
+                          "Simple denoise filter",
+			  "This plugin removes random noise at all scales from "
+			  "an image; at an extreme produces an airbrush-like"
 			  "effect.",
                           "Monty <monty@xiph.org>",
                           "Copyright 2008 by Monty",
@@ -145,7 +154,22 @@ query (void)
                           G_N_ELEMENTS (args), 0,
                           args, NULL);
 
+  gimp_install_procedure (PLUG_IN_PROC2,
+                          "Selective denoise filter",
+			  "This plugin selectively removes remove random "
+			  "noise from an image; at an extreme produces an airbrush-like"
+			  "effect.",
+                          "Monty <monty@xiph.org>",
+                          "Copyright 2008 by Monty",
+                          PLUG_IN_VERSION,
+                          "Selecti_ve Denoise...",
+                          "RGB*, GRAY*",
+                          GIMP_PLUGIN,
+                          G_N_ELEMENTS (args2), 0,
+                          args2, NULL);
+
   gimp_plugin_menu_register (PLUG_IN_PROC, "<Image>/Filters/Montypak");
+  gimp_plugin_menu_register (PLUG_IN_PROC2, "<Image>/Filters/Montypak");
 }
 
 static void
@@ -195,27 +219,41 @@ run (const gchar      *name,
       /*
        * Get information from the dialog...
        */
-      if (!denoise_dialog (drawable))
-        return;
+      if (strcmp (name, PLUG_IN_PROC) == 0){
+	if (!denoise_dialog_simple (drawable))
+	  return;
+      }else{
+	if (!denoise_dialog (drawable))
+	  return;
+      }
       break;
 
     case GIMP_RUN_NONINTERACTIVE:
       /*
        * Make sure all the arguments are present...
        */
-      if (nparams != 13)
-        status = GIMP_PDB_CALLING_ERROR;
-      else{
-        denoise_params.filterY = param[3].data.d_float;
-        denoise_params.filterC = param[4].data.d_float;
-	denoise_params.soft   = param[5].data.d_int32;
-	denoise_params.multiscale = param[6].data.d_int32;
-        denoise_params.f1 = param[7].data.d_float;
-        denoise_params.f2 = param[8].data.d_float;
-        denoise_params.f3 = param[9].data.d_float;
-        denoise_params.f4 = param[10].data.d_float;
-        denoise_params.lowlight = param[11].data.d_int32;
-        denoise_params.lowlight_adj = param[12].data.d_float;
+      if (strcmp (name, PLUG_IN_PROC) == 0){
+	if (nparams != 4)
+	  status = GIMP_PDB_CALLING_ERROR;
+	else{
+	  memset(&denoise_params,0,sizeof(denoise_params));
+	  denoise_params.filterC = denoise_params.filterY = param[3].data.d_float;
+	}
+      }else{
+	if (nparams != 13)
+	  status = GIMP_PDB_CALLING_ERROR;
+	else{
+	  denoise_params.filterY = param[3].data.d_float;
+	  denoise_params.filterC = param[4].data.d_float;
+	  denoise_params.soft   = param[5].data.d_int32;
+	  denoise_params.multiscale = param[6].data.d_int32;
+	  denoise_params.f1 = param[7].data.d_float;
+	  denoise_params.f2 = param[8].data.d_float;
+	  denoise_params.f3 = param[9].data.d_float;
+	  denoise_params.f4 = param[10].data.d_float;
+	  denoise_params.lowlight = param[11].data.d_int32;
+	  denoise_params.lowlight_adj = param[12].data.d_float;
+	}
       }
       break;
 
@@ -314,6 +352,25 @@ static void denoise (GimpDrawable *drawable){
   gimp_drawable_update (drawable->drawable_id, x1, y1, w, h);
 		      
   g_free(buffer);
+}
+
+static void dialog_filterB_callback (GtkWidget *widget,
+				     gpointer   data)
+{
+  if(preview_cache_luma)
+    g_free(preview_cache_luma);
+  preview_cache_luma=NULL;
+  if(preview_cache_Pb)
+    g_free(preview_cache_Pb);
+  preview_cache_Pb=NULL;
+  if(preview_cache_Pr)
+    g_free(preview_cache_Pr);
+  preview_cache_Pr=NULL;
+  if(!preview_toggle->active){
+    if(preview_cache_blit)
+      g_free(preview_cache_blit);
+    preview_cache_blit=NULL;
+  }
 }
 
 static void dialog_filterY_callback (GtkWidget *widget,
@@ -421,8 +478,7 @@ static void set_busy(GtkWidget *preview, GtkWidget *dialog){
   gdk_cursor_unref(cursor);
 }
 
-static gboolean denoise_dialog (GimpDrawable *drawable)
-{
+static gboolean denoise_dialog_simple (GimpDrawable *drawable){
   GtkWidget *dialog;
   GtkWidget *main_vbox;
   GtkWidget *table;
@@ -432,7 +488,95 @@ static gboolean denoise_dialog (GimpDrawable *drawable)
   gint       planes = gimp_drawable_bpp (drawable->drawable_id);
   gimp_ui_init (PLUG_IN_BINARY, TRUE);
 
-  dialog = gimp_dialog_new ("Denoise", PLUG_IN_BINARY,
+  dialog = gimp_dialog_new ("Simple Denoise", PLUG_IN_BINARY,
+                            NULL, 0,
+                            gimp_standard_help_func, PLUG_IN_PROC,
+			    
+                            GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+                            GTK_STOCK_OK,     GTK_RESPONSE_OK,
+			    
+                            NULL);
+  
+  gtk_dialog_set_alternative_button_order (GTK_DIALOG (dialog),
+                                           GTK_RESPONSE_OK,
+                                           GTK_RESPONSE_CANCEL,
+                                           -1);
+
+  gimp_window_set_transient (GTK_WINDOW (dialog));
+
+  main_vbox = gtk_vbox_new (FALSE, 12);
+  gtk_container_set_border_width (GTK_CONTAINER (main_vbox), 12);
+  gtk_container_add (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox), main_vbox);
+  gtk_widget_show (main_vbox);
+
+  preview = gimp_drawable_preview_new (drawable, NULL);
+  gtk_box_pack_start (GTK_BOX (main_vbox), preview, TRUE, TRUE, 0);
+  gtk_widget_show (preview);
+
+  g_signal_connect (preview, "invalidated",
+                    G_CALLBACK (preview_update),
+                    dialog);
+  gtk_container_foreach(GTK_CONTAINER(gimp_preview_get_controls(GIMP_PREVIEW(preview))),
+			find_preview_toggle,NULL);
+
+  /* Filter strength adjust */
+  table = gtk_table_new (1+(planes>2), 3, FALSE);
+  gtk_table_set_col_spacings (GTK_TABLE (table), 6);
+  gtk_box_pack_start (GTK_BOX (main_vbox), table, FALSE, FALSE, 0);
+  gtk_widget_show (table);
+
+  /* denoise */
+  adj = gimp_scale_entry_new (GTK_TABLE (table), 0, 0,
+			      "_Denoise",
+                              300, 0,
+                              denoise_params.filterY,
+                              0, 100, 1, 10, 0,
+                              TRUE, 0, 0,
+                              NULL, NULL);
+  g_signal_connect (adj, "value-changed",
+                    G_CALLBACK (gimp_float_adjustment_update),
+                    &denoise_params.filterY);
+  g_signal_connect (adj, "value-changed",
+                    G_CALLBACK (gimp_float_adjustment_update),
+                    &denoise_params.filterC);
+  g_signal_connect_swapped (adj, "value-changed",
+                            G_CALLBACK (gimp_preview_invalidate),
+                            preview);
+  g_signal_connect (adj, "value-changed",G_CALLBACK (dialog_filterB_callback),NULL);
+
+  gtk_widget_show (dialog);
+  run = (gimp_dialog_run (GIMP_DIALOG (dialog)) == GTK_RESPONSE_OK);
+
+  gtk_widget_destroy (dialog);
+
+  if(preview_cache_blit)
+    g_free(preview_cache_blit);
+  preview_cache_blit=NULL;
+
+  if(preview_cache_luma)
+    g_free(preview_cache_luma);
+  preview_cache_luma=NULL;
+  if(preview_cache_Pb)
+    g_free(preview_cache_Pb);
+  preview_cache_Pb=NULL;
+  if(preview_cache_Pr)
+    g_free(preview_cache_Pr);
+  preview_cache_Pr=NULL;
+
+  return run;
+}
+
+static gboolean denoise_dialog (GimpDrawable *drawable){
+  GtkWidget *dialog;
+  GtkWidget *main_vbox;
+  GtkWidget *table;
+  GtkWidget *button;
+  GtkObject *adj;
+  gboolean   run;
+  gint       planes = gimp_drawable_bpp (drawable->drawable_id);
+  gimp_ui_init (PLUG_IN_BINARY, TRUE);
+
+  dialog = gimp_dialog_new ("Selective Denoise", PLUG_IN_BINARY,
                             NULL, 0,
                             gimp_standard_help_func, PLUG_IN_PROC,
 			    
