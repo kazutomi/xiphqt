@@ -20,8 +20,7 @@
    Unfortunately, there is no CELT manual yet. However, you can find some information about it:
 <ul>
    <li>On <a href="http://jmspeex.livejournal.com/">Jean-Marc Valin's blog</a></li>
-   <li>On Timothy Terriberry's <a href="http://people.xiph.org/~tterribe/notes/cwrs.html">page about CWRS</a></li>
-   <li>On Timothy Terriberry's <a href="http://people.xiph.org/~tterribe/notes/range.html">page about the range encoder</a></li>
+   <li>In the presentation that Timothy Terriberry gave at linux.conf.au 2009 (<a href="celt.pdf">slides</a>, <a href="celt-audio.tar.bz2">audio samples</a>)</li>
 </ul>
 
 </p>
