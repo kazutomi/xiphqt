@@ -1,0 +1,48 @@
+<!--#include virtual="/ssi/header.include" -->
+<!--  Enter custom page information and styles here -->
+
+<title>The CELT ultra-low delay audio codec: Software support</title>
+<style type="text/css">
+<!--
+#navlink_ a {
+	text-decoration: underline !important;
+}
+-->
+</style>
+</head>
+<body>
+<!--#include virtual="/common/xiphbar.include" -->
+<!--#include virtual="/ssi/pagetop.include" -->
+<!--  All your page content goes here  -->
+<h1>Software that uses or supports CELT</h1>
+<h2>Applications</h2>
+
+<dl class="appList">
+
+	<dt><a href="http://www.freeswitch.org/">FreeSWITCH</a></dt>
+	<dd>FreeSWITCH is an open-source VoIP gateway</dd>
+
+	<dt><a href="http://virtualsoundexchange.net/node/21">Soundjack</a></dt>
+	<dd>Network Music Performance (MNP) client application</dd>
+
+	<dt><a href="http://www.jackaudio.org/">jack-audio-connection-kit (netjack)</a></dt>
+	<dd>JACK over a network</dd>
+
+        <dt><a href="http://www.nexgenvoip.org/">NexGenVoIP</a></dt>
+	<dd>A Next Generation Telephone System</dd>
+</dl>
+
+<h2>Frameworks/libraries</h2>
+
+	<dt><a href="http://www.annodex.net/software/liboggz/html/">liboggz</a></dt>
+	<dd>Easy to use Ogg support library</dd>
+
+<h2>Other uses</h2>
+
+<dl class="appList">
+
+	<dt><a href="http://www.radiochnc.com/">Radio CHNC</a></dt>
+	<dd>Studio link made by Jonathan Thibault from <a href="http://navigue.com">Navigue</a> </dd>
+</dl>
+
+<!--#include virtual="/ssi/pagebottom.include" -->
