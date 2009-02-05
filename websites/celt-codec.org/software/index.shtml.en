@@ -20,7 +20,10 @@
 <dl class="appList">
 
 	<dt><a href="http://www.freeswitch.org/">FreeSWITCH</a></dt>
-	<dd>FreeSWITCH is an open-source VoIP gateway</dd>
+	<dd>FreeSWITCH is an open source telephony toolkit, ranging from softphone to softswitch</dd>
+
+	<dt><a href="http://www.ekiga.org/">Ekiga</a></dt>
+	<dd>Ekiga is a VoIP and video conferencing application for GNOME</dd>
 
 	<dt><a href="http://virtualsoundexchange.net/node/21">Soundjack</a></dt>
 	<dd>Network Music Performance (MNP) client application</dd>
