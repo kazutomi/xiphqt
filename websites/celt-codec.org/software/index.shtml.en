@@ -25,6 +25,9 @@
 	<dt><a href="http://www.ekiga.org/">Ekiga</a></dt>
 	<dd>Ekiga is a VoIP and video conferencing application for GNOME</dd>
 
+        <dt><a href="http://gstreamer.freedesktop.org/">GStreamer</a></dt>
+	<dd>GStreamer is a library for constructing graphs of media-handling components</dd>
+
 	<dt><a href="http://virtualsoundexchange.net/node/21">Soundjack</a></dt>
 	<dd>Network Music Performance (MNP) client application</dd>
 
