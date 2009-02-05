@@ -19,26 +19,27 @@
 
 <dl class="appList">
 
-	<dt><a href="http://www.freeswitch.org/">FreeSWITCH</a></dt>
-	<dd>FreeSWITCH is an open source telephony toolkit, ranging from softphone to softswitch</dd>
-
 	<dt><a href="http://www.ekiga.org/">Ekiga</a></dt>
 	<dd>Ekiga is a VoIP and video conferencing application for GNOME</dd>
 
-        <dt><a href="http://gstreamer.freedesktop.org/">GStreamer</a></dt>
-	<dd>GStreamer is a library for constructing graphs of media-handling components</dd>
-
-	<dt><a href="http://virtualsoundexchange.net/node/21">Soundjack</a></dt>
-	<dd>Network Music Performance (MNP) client application</dd>
+	<dt><a href="http://www.freeswitch.org/">FreeSWITCH</a></dt>
+	<dd>FreeSWITCH is an open source telephony toolkit, ranging from softphone to softswitch</dd>
 
 	<dt><a href="http://www.jackaudio.org/">jack-audio-connection-kit (netjack)</a></dt>
 	<dd>JACK over a network</dd>
 
         <dt><a href="http://www.nexgenvoip.org/">NexGenVoIP</a></dt>
 	<dd>A Next Generation Telephone System</dd>
+
+	<dt><a href="http://virtualsoundexchange.net/node/21">Soundjack</a></dt>
+	<dd>Network Music Performance (MNP) client application</dd>
+
 </dl>
 
 <h2>Frameworks/libraries</h2>
+
+        <dt><a href="http://gstreamer.freedesktop.org/">GStreamer</a></dt>
+	<dd>GStreamer is a library for constructing graphs of media-handling components</dd>
 
 	<dt><a href="http://www.annodex.net/software/liboggz/html/">liboggz</a></dt>
 	<dd>Easy to use Ogg support library</dd>
