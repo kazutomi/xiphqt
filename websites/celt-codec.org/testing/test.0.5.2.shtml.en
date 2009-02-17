@@ -1,0 +1,119 @@
+<!--#include virtual="/ssi/header.include" -->
+
+<title>The CELT ultra-low delay audio codec: CELT 0.5.2 automated testing results</title>
+<style type="text/css">
+<!--
+#navlink_ a {
+	text-decoration: underline !important;
+}
+-->
+</style>
+</head>
+<body>
+<!--#include virtual="/common/xiphbar.include" -->
+<!--#include virtual="/ssi/pagetop.include" -->
+<h1>CELT 0.5.2 automated testing results</h1>
+<p>
+	The automated testing routine for CELT involves running roughly 6 months of audio
+	through the CELT encoder and decoder across a wide variety of modes and 
+	configurations. All user accessible modes receive at least some level of coverage.
+	48kHz mono receives automated quality testing of all frame sizes and most reasonable
+	bit-rates. Common configurations receive extensive fuzz testing under valgrind.
+	ARM (OpenMoko), x86_64 (Fedora 10), and x86 (Fedora 10) are used in testing.
+</p>
+<p>	
+	This level of extensive testing is made possible by the large multiple of
+	real-time that CELT operates at on modern computing hardware.
+</p>
+<p>
+	Keep in mind that as of 0.5.2 CELT is still a work in progress. Neither the API/ABI,
+	nor the bit-stream are stable. Also, while we do not expect it to set your
+	house on fire, we cannot guarantee that it won't. Spontaneous combustion is
+	specifically not covered by these tests.
+</p>
+
+<h2>Automated Quality testing</h2>
+<table align="right" border=1>
+<tr><th>Value</th><th>Meaning</th></tr>
+<tr><td>0</td><td>Imperceptible</td></tr>
+<tr><td>-1</td><td>Perceptible but not annoying</td></tr>
+<tr><td>-2</td><td>Slightly annoying</td></tr>
+<tr><td>-3</td><td>Annoying</td></tr>
+<tr><td>-4</td><td>Very annoying</td></tr>
+<tr><td colspan="2"><center><i>Definitions of PEAQ ODG scores</i></center></td></tr>
+</table>
+<p>
+   The quality of CELT 0.5.2 at 48 kHz mono was assessed for 51,848 combinations of bitrate,
+   frame size, and complexity using <a href="http://www-mmsp.ece.mcgill.ca/Documents/Software/Packages/AFsp/PQevalAudio.html">PQEvalAudio</a>,
+   an implementation of <a href="http://en.wikipedia.org/wiki/PEAQ">PEAQ</a>.
+   The PEAQ objective difference grade does not always accurately reflect human opinion but
+   its automated nature permits testing large numbers of configurations. These quality tests 
+   would require over 52 days of continuous listening if conducted with a single human reviewer.
+</p>
+<br style="clear:both;"/>
+<h3>Complexity 9 PQEvalAudio map</h3>
+<p>This illustration demonstrates the quality/bitrate/delay trade-offs available in CELT in full (default) complexity mode. </p>
+<p><center><table width=500><tr><td><a href="052_9_peaqmap.png"><img src="052_9_peaqmap.thumb.png" border=0 width=500 height=298 alt="CELT 0.5.2 Quality Graph"/></a></td></tr>
+<tr><td align="right">Equal-quality contours are drawn at -0.5, -1, -2, and -3.</td></tr></table> </center>
+</p>
+
+<h3>Complexity 1 PQEvalAudio map</h3>
+<p>This illustration demonstrates the quality/bitrate/delay trade-offs available in CELT in low complexity mode. </p>
+<p><center><table width=500><tr><td><a href="052_1_peaqmap.png"><img src="052_1_peaqmap.thumb.png" border=0 width=500 height=298 alt="CELT 0.5.2 Quality Graph"/></a></td></tr>
+<tr><td align="right">Equal-quality contours are drawn at -0.5, -1, -2, and -3.</td></tr></table> </center>
+</p>
+
+<h3>Comparison with CELT 0.5.1 (complexity 9)</h3>
+<p>For each test point the 0.5.1 PQEvalAudio score was subtracted from the CELT 0.5.2 score.
+<p><center><table width=500><tr><td><a href="052-vs-051_9_peaqmap.png"><img src="052-vs-051_9_peaqmap.thumb.png" border=0 width=500 height=298 alt="CELT 0.5.2 Quality Graph"/></a></td></tr>
+<tr><td align="right"><i>Positive (blue) values in the chart indicate improvement according to PQEvalAudio, while negative
+(red) values indicate quality loss.</i></td></tr></table> </center>
+
+<h3>Comparison with CELT 0.5.1 (complexity 1)</h3>
+<p>For each test point the 0.5.1 PQEvalAudio score was subtracted from the CELT 0.5.2 score.
+<p><center><table width=500><tr><td><a href="052-vs-051_1_peaqmap.png"><img src="052-vs-051_1_peaqmap.thumb.png" border=0 width=500 height=294 alt="CELT 0.5.2 Quality Graph"/></a></td></tr>
+<tr><td align="right"><i>Positive (blue) values in the chart indicate improvement according to PQEvalAudio, while negative
+(red) values indicate quality loss.</i></td></tr></table> </center>
+ 
+</p>
+
+<h2>"make check" tests</h2>
+<p>CELT includes a number of unit tests that exercises internal components of CELT. </p>
+<table>
+<tr><th>Test</th><th>x86_64</th><th>x86</th><th>ARM</th></tr>
+<tr><td>cwrs32-test</td><td><font color="green"><b>Pass</b></font></td><td><font color="green"><b>Pass</b></font></td><td>Untested</td></tr>
+<tr><td>dft-test</td><td><font color="green"><b>Pass</b></font></td><td><font color="green"><b>Pass</b></font></td><td>Untested</td></tr>
+<tr><td>ectest</td><td><font color="green"><b>Pass</b></font></td><td><font color="green"><b>Pass</b></font></td><td>Untested</td></tr>
+<tr><td>laplace-test</td><td><font color="green"><b>Pass</b></font></td><td><font color="green"><b>Pass</b></font></td><td>Untested</td></tr>
+<tr><td>mathops-test</td><td><font color="green"><b>Pass</b></font></td><td><font color="green"><b>Pass</b></font></td><td>Untested</td></tr>
+<tr><td>mdct-test</td><td><font color="green"><b>Pass</b></font></td><td><font color="green"><b>Pass</b></font></td><td>Untested</td></tr>
+<tr><td>real-fft-test</td><td><font color="green"><b>Pass</b></font></td><td><font color="green"><b>Pass</b></font></td><td>Untested</td></tr>
+<tr><td>type-test</td><td><font color="green"><b>Pass</b></font></td><td><font color="green"><b>Pass</b></font></td><td>Untested</td></tr>
+</table>
+
+<h2>All modes test</h2>
+A short audio file is run through 27,525,120 CELT configurations (all frame sizes, all
+bytes-per-frame from 8-200, and sample rates from 32000-96000 in 100Hz increments). Because of
+CPU requirements this test is only run only in low complexity mode. In order to pass, these 
+cycles of "testcelt" must complete without error.
+
+<ul>
+<li> x86_64: <font color="green"><b>Pass</b></font>
+<li> x86_64 fixed point: <font color="green"><b>Pass</b></font>
+</ul>
+
+<h2>Popular modes fuzz-test</h2>
+Two hours of audio extracted from several dozen albums and live recordings are run through
+CELT at 32, 44.1, and 48 kHz at frame sizes of 64, 96, 128, 192, 256, 384 and 512 samples and
+at 48, 64, and 128kbit/sec in mono and stereo mode. One tenth of a percent of the encoded bits
+are randomly flipped. In order to pass, these cycles of "testcelt" must complete without error.
+This test is run under valgrind and with assertions enabled for extra error sensitivity.
+
+<ul>
+<li> x86_64: <font color="green"><b>Pass</b></font>
+<li> x86_64 alloca (psedo-stack mode): <font color="green"><b>Pass</b></font>
+<li> x86: <font color="green"><b>Pass</b></font>
+<li> x86 fixed point: <font color="green"><b>Pass</b></font>  
+</ul>
+
+<!--#include virtual="/ssi/pagebottom.include" -->
