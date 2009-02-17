@@ -32,7 +32,7 @@
 		<tr class="CELT">
 			<td>CELT</td>
 
-			<td>44.1, 48</td>
+			<td>32-96</td>
 			<td>
 				24-128    (mono)<br/>
 				40-160    (stereo)
@@ -85,17 +85,10 @@
 </table>
 <h2>Definitions</h2>
 <dl>
-	<dt><dfn id="multiRate">multi-rate</dfn></dt>
-	<dd>
-		Allows the codec to change bitrate
-		dynamically, at any moment
-	</dd>
-
 	<dt><dfn id="Robustness">bit-robust</dfn></dt>
 	<dd>
 		Robust to corruption at the bit level
-		(as found on wireless networks) and to loss of
-		entire packets (as on packet networks)
+		(as found on wireless networks) 
 	</dd>
 
 </dl>

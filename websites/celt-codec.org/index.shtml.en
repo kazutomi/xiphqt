@@ -1,5 +1,4 @@
 <!--#include virtual="/ssi/header.include" -->
-<!--  Enter custom page information and styles here -->
 
 <title>The CELT ultra-low delay audio codec</title>
 <style type="text/css">
@@ -14,12 +13,11 @@
 <body>
 <!--#include virtual="/common/xiphbar.include" -->
 <!--#include virtual="/ssi/pagetop.include" -->
-<!--  All your page content goes here  -->
 
 <h1>The CELT ultra-low delay audio codec</h1>
 <h2>Overview</h2>
 <p>
-	The CELT codec is an experimental audio codec for use in low-delay speech and audio communication.
+	The CELT codec is an experimental codec for use in low-latency audio communication.
 </p>
 <h2>The Technology</h2>
 <p>
@@ -29,24 +27,24 @@
 </p>
 <ul>
 	<li>Ultra-low latency (typically from 3 to 9 ms) </li>
-	<li>Full audio bandwidth (44.1 kHz and 48 kHz)</li>
-   <li>Support for both voice and music</li>
+	<li>Full audio bandwidth (≥20kHz; sample rates from 32 kHz to 96 kHz)</li>
+	<li>Support for both speech and music</li>
+	<li>A quality/bitrate trade-off competitive with widely used high delay codecs</li>
 	<li>Stereo support</li>
 	<li>Packet loss concealment</li>
 	<li>Constant bit-rates from 32 kbps to 128 kbps and above</li>
 	<li>A fixed-point version of the encoder and decoder</li>
 </ul>
 <p>
-	The CELT codec is meant to close the gap between Vorbis and Speex for applications
+	The CELT codec is meant to bridge the gap between Vorbis and Speex for applications
 	where both high quality audio and low delay are desired.
 
 </p>
 <h2>Getting Involved</h2>
 <p>
-	CELT is still in very early phase. At this point, two ways of getting involved are:
+	CELT is still in an early state of development. At this point, two ways of getting involved are:
         helping design the algorithm (requires strong DSP knowledge) or building applications using
-        CELT and maybe help define future directions the codec will take.
-
+        CELT. Your feedback can help define the future direction the codec will take.
 </p>
 <p> 
 	If you have questions or are interested in contributing to the project, you can 
