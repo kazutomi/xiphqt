@@ -32,7 +32,9 @@
 <h3 id='zero.5.2'>0.5.2</h3>
 <p>Version 0.5.2 has just been released with a few fixes over 0.5.1. On top of that,
 the pitch prediction was both improved and simplified. The other main change is a 
-new bit allocation algorithm with better rounding and fine energy allocation.
+new bit allocation algorithm with better rounding and fine energy allocation. These changes
+resulted in considerable quality improvements at the smallest frame sizes. The 
+<a href="../testing/test.0.5.2.shtml.en">0.5.2 testing page</a> has more information.
 </p>
 
 <ul>
