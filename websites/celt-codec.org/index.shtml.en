@@ -56,6 +56,15 @@
 <h2>Headlines</h2>
 <ul class="descriptivelist">
    <li>
+      <h3>Version 0.5.2 released</h3>
+      <p class="submitdate">17 February, 2009</p>
+      <div class="description">
+                <p>Version 0.5.2 has just been released with a few fixes over 0.5.1. On top of that,
+		the pitch prediction was both improved and simplified. The other main change is a 
+		new bit allocation algorithm with better rounding and fine energy allocation.</p>
+      </div>
+   </li>
+   <li>
       <h3>Version 0.5.1 released</h3>
       <p class="submitdate">17 December, 2008</p>
       <div class="description">

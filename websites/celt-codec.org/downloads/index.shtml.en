@@ -29,6 +29,16 @@
 
 <h2>Latest <strong style='font-style: italic;'>development</strong> releases</h2>
 
+<h3 id='zero.5.2'>0.5.2</h3>
+<p>Version 0.5.2 has just been released with a few fixes over 0.5.1. On top of that,
+the pitch prediction was both improved and simplified. The other main change is a 
+new bit allocation algorithm with better rounding and fine energy allocation.
+</p>
+
+<ul>
+<li><a href="http://downloads.us.xiph.org/releases/celt/celt-0.5.2.tar.gz">celt-0.5.2.tar.gz</a></li>
+</ul>
+
 <h3 id='zero.5.1'>0.5.1</h3>
 <p>This release fixes a number of issues with 0.5.0. Several cases
 where the encoder could fail have been fixed, including one that could cause memory 
