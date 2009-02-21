@@ -33,9 +33,9 @@
         There also exists a schema for <a href="xspf-0_0.7.rnc">XSPF-0</a>, but working with XSPF-1 should be preferred.
       </li>
       <li>
-        <a href="http://libspiff.sourceforge.net/">spiff_check of libSpiff</a> by Sebastian Pipping.  Sample usage of spiff_check:
-        <pre>(Unix)     cat myplaylist.xspf | spiff_check -
-(Windows)  spiff_check - &lt; myplaylist.xspf</pre>
+        <a href="http://libspiff.sourceforge.net/">xspf_check of libxspf</a> by Sebastian Pipping.  Sample usage of xspf_check:
+        <pre>(Unix)     cat myplaylist.xspf | xspf_check -
+(Windows)  xspf_check - &lt; myplaylist.xspf</pre>
       </li>
       <li>
         <s>
