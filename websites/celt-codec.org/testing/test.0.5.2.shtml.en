@@ -81,14 +81,14 @@
 <p>CELT includes a number of unit tests that exercises internal components of CELT. </p>
 <table>
 <tr><th>Test</th><th>x86_64</th><th>x86</th><th>ARM</th></tr>
-<tr><td>cwrs32-test</td><td><font color="green"><b>Pass</b></font></td><td><font color="green"><b>Pass</b></font></td><td>Untested</td></tr>
-<tr><td>dft-test</td><td><font color="green"><b>Pass</b></font></td><td><font color="green"><b>Pass</b></font></td><td>Untested</td></tr>
-<tr><td>ectest</td><td><font color="green"><b>Pass</b></font></td><td><font color="green"><b>Pass</b></font></td><td>Untested</td></tr>
-<tr><td>laplace-test</td><td><font color="green"><b>Pass</b></font></td><td><font color="green"><b>Pass</b></font></td><td>Untested</td></tr>
-<tr><td>mathops-test</td><td><font color="green"><b>Pass</b></font></td><td><font color="green"><b>Pass</b></font></td><td>Untested</td></tr>
-<tr><td>mdct-test</td><td><font color="green"><b>Pass</b></font></td><td><font color="green"><b>Pass</b></font></td><td>Untested</td></tr>
-<tr><td>real-fft-test</td><td><font color="green"><b>Pass</b></font></td><td><font color="green"><b>Pass</b></font></td><td>Untested</td></tr>
-<tr><td>type-test</td><td><font color="green"><b>Pass</b></font></td><td><font color="green"><b>Pass</b></font></td><td>Untested</td></tr>
+<tr><td>cwrs32-test</td><td><font color="green"><b>Pass</b></font></td><td><font color="green"><b>Pass</b></font></td><td><font color="green"><b>Pass</b></font></td></tr>
+<tr><td>dft-test</td><td><font color="green"><b>Pass</b></font></td><td><font color="green"><b>Pass</b></font></td><td><font color="green"><b>Pass</b></font></td></tr>
+<tr><td>ectest</td><td><font color="green"><b>Pass</b></font></td><td><font color="green"><b>Pass</b></font></td><td><font color="green"><b>Pass</b></font></td></tr>
+<tr><td>laplace-test</td><td><font color="green"><b>Pass</b></font></td><td><font color="green"><b>Pass</b></font></td><td><font color="green"><b>Pass</b></font></td></tr>
+<tr><td>mathops-test</td><td><font color="green"><b>Pass</b></font></td><td><font color="green"><b>Pass</b></font></td><td><font color="green"><b>Pass</b></font></td></tr>
+<tr><td>mdct-test</td><td><font color="green"><b>Pass</b></font></td><td><font color="green"><b>Pass</b></font></td><td><font color="green"><b>Pass</b></font></td></tr>
+<tr><td>real-fft-test</td><td><font color="green"><b>Pass</b></font></td><td><font color="green"><b>Pass</b></font></td><td><font color="green"><b>Pass</b></font></td></tr>
+<tr><td>type-test</td><td><font color="green"><b>Pass</b></font></td><td><font color="green"><b>Pass</b></font></td><td><font color="green"><b>Pass</b></font></td></tr>
 </table>
 
 <h2>All modes test</h2>
