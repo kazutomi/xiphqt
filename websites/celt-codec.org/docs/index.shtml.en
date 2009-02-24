@@ -25,14 +25,7 @@ vlcActiveX = (IsObject(CreateObject("VideoLAN.VLCPlugin.2")))
    Unfortunately, there is no CELT manual yet. However, you can find some information about it:
 <ul>
    <li>On <a href="http://jmspeex.livejournal.com/">Jean-Marc Valin's blog</a></li>
-   <li>In the presentation that Timothy B. Terriberry gave at <a href="http://linux.conf.au/">linux.conf.au</a> 2009:
-   <br><center><table width=384 border=0><tr><td><video id="lcaceltvideo" width=384 height=288
-   poster="LCA-video-thumb.jpg" controls="true" autoplay="false" duration="3855"
-   src="http://people.xiph.org/~greg/video/linux_conf_au_CELT.ogv"/></td></tr><tr><td align="right"><a
-   href="http://people.xiph.org/~greg/video/linux_conf_au_CELT.ogv">Download
-   video</a>
-   <small>(Ogg/<a href="http://www.theora.org/">Theora</a>; 64 minutes; 81 MiB)</small></a><br/><a href="misc/lca-celt-audio.tar">Audio samples</a> <small>(tar/flac; 3.4 MiB)</small><br/><a href="misc/lca-celt.pdf">Slides</a> <small>(PDF; 2.3 MiB)</small></td></tr></table></center>
-   </li>
+   <li>The celt-codec.org <a href="../presentations/">presentations page</a></li>
 </ul>
 
 </p>
