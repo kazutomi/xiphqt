@@ -1,0 +1,33 @@
+<!--#include virtual="/ssi/header.include" -->
+<!--  Enter custom page information and styles here -->
+
+<title>The CELT ultra-low delay audio codec: Presentations</title>
+<style type="text/css">
+<!--
+#navlink_ a {
+	text-decoration: underline !important;
+}
+-->
+</style>
+<script src="video.js" type="text/javascript"></script>
+<script language="vbScript">
+on error resume next
+vlcActiveX = (IsObject(CreateObject("VideoLAN.VLCPlugin.2")))
+</script>
+</head>
+<body onload="initVideo();">
+<!--#include virtual="/common/xiphbar.include" -->
+<!--#include virtual="/ssi/pagetop.include" -->
+<!--  All your page content goes here  -->
+<h1>Presentations</h1>
+<h2><a href="http://linux.conf.au/">linux.conf.au</a> 2009 &mdash; Timothy B. Terriberry</h2>
+  <table width=384 border=0><tr><td><video id="lcaceltvideo" width=384 height=288
+   poster="LCA-video-thumb.jpg" controls="true" autoplay="false" duration="3855"
+   src="http://people.xiph.org/~greg/video/linux_conf_au_CELT.ogv"/></td></tr><tr><td align="left"><a
+   href="http://people.xiph.org/~greg/video/linux_conf_au_CELT.ogv">Download
+   video</a>
+   <small>(Ogg/<a href="http://www.theora.org/">Theora</a>; 64 minutes; 81 MiB)</small></a><br/><a href="misc/lca-celt-audio.tar">Audio samples</a> <small>(tar/flac; 3.4 MiB)</small><br/><a href="misc/lca-celt.pdf">Slides</a> <small>(PDF; 2.3 MiB)</small></td></tr></table>
+
+
+
+<!--#include virtual="/ssi/pagebottom.include" -->
