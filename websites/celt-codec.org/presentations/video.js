@@ -10,8 +10,9 @@ function initVideo()
 
     var video = document.createElement("video");
 
-    if ((video.canPlayType && video.canPlayType("video/ogg;codecs=\"theora,vorbis\"") ==
-	"probably") || (!video.canPlayType && video.play)) {
+    if ((video.canPlayType
+	 && video.canPlayType("video/ogg;codecs=\"theora,vorbis\"") ==
+	 "probably") || (!video.canPlayType && video.play)) {
 	videoElement = true;
     }
 
@@ -28,12 +29,12 @@ function initVideo()
 		if (navigator.mimeTypes[i].type.indexOf("video/ogg") > -1) {
 		    oggPlugin = true;
 		}
-		if (navigator.mimeTypes[i].type.
-		    indexOf("application/x-vlc-plugin") > -1) {
+		if (navigator.mimeTypes[i].
+		    type.indexOf("application/x-vlc-plugin") > -1) {
 		    vlcPlugin = true;
 		}
-		if (navigator.mimeTypes[i].type.
-		    indexOf("application/x-java-applet") > -1) {
+		if (navigator.mimeTypes[i].
+		    type.indexOf("application/x-java-applet") > -1) {
 		    foundJavaMimeType = true;
 		}
 	    }
@@ -45,7 +46,8 @@ function initVideo()
 	} else {
 	    javaEnabled = navigator.javaEnabled();
 	}
-	var inlinePlayback = vlcActiveX || vlcPlugin || oggPlugin || javaEnabled;
+	var inlinePlayback = vlcActiveX || vlcPlugin || oggPlugin
+	    || javaEnabled;
 
 	var videos = document.getElementsByTagName("video");
 
@@ -62,10 +64,16 @@ function initVideo()
 	    var autoplay = video.getAttribute("autoplay");
 	    var duration = video.getAttribute("duration");
 	    var id = video.getAttribute("id");
-	    if ((autoplay != "true") || (!inlinePlayback))
-		autoplay = "false";
-	    if (controls != "true")
+
+	    if (controls!=null)
+		controls = "true";
+	    else
 		controls = "false";
+
+	    if ((autoplay==null) || !inlinePlayback)
+		autoplay = "false";
+	    else if (autoplay!=null)
+		autoplay = "true";
 
 	    if (autoplay == "false") {
 		autoplay = "true";
@@ -73,7 +81,7 @@ function initVideo()
 		var jsexec = "swapVideo(document.getElementById('"
 		    + posterid + "'),'" + src + "','" +
 		    width + "','" + height + "','" +
-		    controls + "','" + duration + "','" +autoplay+
+		    controls + "','" + duration + "','" + autoplay +
 		    "','" + javaEnabled + "','" +
 		    oggPlugin + "','" + vlcActiveX + "','" + vlcPlugin +
 		    "');";
@@ -128,7 +136,8 @@ function initVideo()
 
 	    } else {
 		swapVideo(video, src, width, height, controls, duration,
-			  autoplay,javaEnabled, oggPlugin, vlcActiveX, vlcPlugin);
+			  autoplay, javaEnabled, oggPlugin, vlcActiveX,
+			  vlcPlugin);
 	    }
 	}
     }
