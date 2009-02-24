@@ -68,6 +68,11 @@ function initVideo() {
 		var height = video.getAttribute("height");
 		var controls = video.getAttribute("controls");
 		var autoplay = video.getAttribute("autoplay");
+		var duration = video.getAttribute("duration");
+		if (autoplay!="true")
+		  autoplay="false";
+		if (controls!="true")
+		  controls="false";
 
 		var parent = video.parentNode;
 		if(videoElement) {
@@ -75,8 +80,9 @@ function initVideo() {
 			videoelem.setAttribute("src", src);
 			videoelem.setAttribute("width", width);
 			videoelem.setAttribute("height", height);
-			if(controls) videoelem.setAttribute("controls",  "true");
-			if(autoplay) videoelem.setAttribute("autoplay",  "true");
+			if(controls) videoelem.setAttribute("controls",  controls);
+			if(autoplay) videoelem.setAttribute("autoplay",  autoplay);
+			if(duration) videoelem.setAttribute("autoplay",  duration);
 			parent.replaceChild(videoelem, video);
 		} else if(javaEnabled) {
 			if (cortadourl=='') {
@@ -109,6 +115,25 @@ function initVideo() {
 			param.setAttribute("name","url");
 			param.setAttribute("value", src);
 			applet.appendChild(param);
+
+			param = document.createElement("param");
+			param.setAttribute("name","autoPlay");
+			param.setAttribute("value", autoplay);
+			applet.appendChild(param);			  
+
+			if (controls=="true") {
+			  param = document.createElement("param");
+			  param.setAttribute("name","showStatus");
+			  param.setAttribute("value", "show");
+			  applet.appendChild(param);			  
+			}
+
+			if (duration) {
+			  param = document.createElement("param");
+			  param.setAttribute("name","duration");
+			  param.setAttribute("value", duration);
+			  applet.appendChild(param);			  
+			}
 
 			parent.replaceChild(applet, video);
 
