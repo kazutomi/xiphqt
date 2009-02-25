@@ -47,6 +47,7 @@ function initVideo()
 	} else {
 	    javaEnabled = navigator.javaEnabled();
 	}
+
 	var inlinePlayback = vlcActiveX || vlcPlugin || oggPlugin
 	    || javaEnabled;
 
@@ -153,7 +154,7 @@ function swapVideo(video, src, width, height, controls, duration, autoplay,
     var containerdiv = document.createElement("div");
     containerdiv.setAttribute("width", width);
     containerdiv.setAttribute("height", height);
-    if (javaEnabled) {
+    if (javaEnabled=="true") {
 	if (cortadourl == '') {
 	    if (src.indexOf('/') != -1)
 		cortadourl = src.substr(0, src.lastIndexOf('/')) + '/';
@@ -205,7 +206,7 @@ function swapVideo(video, src, width, height, controls, duration, autoplay,
 	}
 	containerdiv.appendChild(applet);
 	parent.replaceChild(containerdiv, video);
-    } else if (oggPlugin) {
+    } else if (oggPlugin=="true") {
 	var object = document.createElement("object");
 	object.setAttribute("width", width);
 	object.setAttribute("height", height);
@@ -213,7 +214,7 @@ function swapVideo(video, src, width, height, controls, duration, autoplay,
 	object.setAttribute("type", "video/ogg");
 	containerdiv.appendChild(object);
 	parent.replaceChild(containerdiv, video);
-    } else if (vlcActiveX) {
+    } else if (vlcActiveX=="true") {
 	var span = document.createElement("span");
 	span.innerHTML =
 	    "<object classid='clsid:9BE31822-FDAD-461B-AD51-BE1D1C159921' codebase='http://downloads.videolan.org/pub/videolan/vlc/latest/win32/axvlc.cab' width='"
@@ -223,7 +224,7 @@ function swapVideo(video, src, width, height, controls, duration, autoplay,
 	parent.replaceChild(span, video);
 	containerdiv.appendChild(span);
 	parent.replaceChild(containerdiv, video);
-    } else if (vlcPlugin) {
+    } else if (vlcPlugin=="true") {
 	var span = document.createElement("span");
 	span.innerHTML =
 	    "<object type='application/x-vlc-plugin' id='vlc_element' width='"
