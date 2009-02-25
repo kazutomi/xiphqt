@@ -22,8 +22,9 @@ vlcActiveX = (IsObject(CreateObject("VideoLAN.VLCPlugin.2")))
 <h1>Documentation</h1>
 <h2>Manual</h2>
 <p>
-   Unfortunately, there is no CELT manual yet. However, you can find some information about it:
+   Unfortunately, there is no formal manual for CELT yet. However, you can find some information about it:
 <ul>
+   <li>The <a href="http://git.xiph.org/?p=celt.git;a=blob;f=README;hb=HEAD">README file</a> distributed with libcelt</a> 
    <li>On <a href="http://jmspeex.livejournal.com/">Jean-Marc Valin's blog</a></li>
    <li>The celt-codec.org <a href="../presentations/">presentations page</a></li>
 </ul>
