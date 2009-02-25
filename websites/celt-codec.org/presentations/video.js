@@ -3,7 +3,7 @@ var vlcPlugin = false;
 var videoElement = false;
 var oggPlugin = false;
 var javaEnabled = false;
-var theorahelperurl = "http://www.theora.org/"; 
+var theorahelperurl = "http://www.theora.org/";
 var cortadourl = '';
 
 function initVideo()
@@ -30,12 +30,12 @@ function initVideo()
 		if (navigator.mimeTypes[i].type.indexOf("video/ogg") > -1) {
 		    oggPlugin = true;
 		}
-		if (navigator.mimeTypes[i].
-		    type.indexOf("application/x-vlc-plugin") > -1) {
+		if (navigator.mimeTypes[i].type.
+		    indexOf("application/x-vlc-plugin") > -1) {
 		    vlcPlugin = true;
 		}
-		if (navigator.mimeTypes[i].
-		    type.indexOf("application/x-java-applet") > -1) {
+		if (navigator.mimeTypes[i].type.
+		    indexOf("application/x-java-applet") > -1) {
 		    foundJavaMimeType = true;
 		}
 	    }
@@ -53,9 +53,10 @@ function initVideo()
 	var videos = document.getElementsByTagName("video");
 
 	// replace all video elements with fallbacks
-	for (i = 0; i < videos.length; ++i) {
+	var i = 0;
+	while (videos.length > 0) {
 
-	    var video = videos[i];
+	    var video = videos[0];
 
 	    var src = video.getAttribute("src");
 	    var poster = video.getAttribute("poster");
@@ -66,14 +67,14 @@ function initVideo()
 	    var duration = video.getAttribute("duration");
 	    var id = video.getAttribute("id");
 
-	    if (controls!=null)
+	    if (controls != null)
 		controls = "true";
 	    else
 		controls = "false";
 
-	    if ((autoplay==null) || !inlinePlayback)
+	    if ((autoplay == null) || !inlinePlayback)
 		autoplay = "false";
-	    else if (autoplay!=null)
+	    else if (autoplay != null)
 		autoplay = "true";
 	    if (autoplay == "false") {
 		autoplay = "true";
@@ -115,7 +116,7 @@ function initVideo()
 
 		if (!inlinePlayback) {
 		    var div = document.createElement("div");
-		    div.setAttribute("align","center");
+		    div.setAttribute("align", "center");
 		    div.appendChild(posterobj);
 		    div.appendChild(document.createElement("br"));
 		    small = document.createElement("small");
@@ -140,6 +141,7 @@ function initVideo()
 			  autoplay, javaEnabled, oggPlugin, vlcActiveX,
 			  vlcPlugin);
 	    }
+	    i++;
 	}
     }
 }
