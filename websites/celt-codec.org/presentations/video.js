@@ -3,6 +3,7 @@ var vlcPlugin = false;
 var videoElement = false;
 var oggPlugin = false;
 var javaEnabled = false;
+var theorahelperurl = "http://www.theora.org/"; 
 var cortadourl = '';
 
 function initVideo()
@@ -74,7 +75,6 @@ function initVideo()
 		autoplay = "false";
 	    else if (autoplay!=null)
 		autoplay = "true";
-
 	    if (autoplay == "false") {
 		autoplay = "true";
 		var posterid = id + "_poster_" + i;
@@ -108,27 +108,28 @@ function initVideo()
 		    } else {
 			link.setAttribute("href", src);
 		    }
-		    var text = document.createTextNode("> Play video");
+		    var text = document.createTextNode("> Play video <");
 		    link.appendChild(text);
 		    posterobj.appendChild(link);
 		}
 
 		if (!inlinePlayback) {
 		    var div = document.createElement("div");
-		    div.appendChild(link)
-			small = document.createElement("small");
+		    div.setAttribute("align","center");
+		    div.appendChild(posterobj);
+		    div.appendChild(document.createElement("br"));
+		    small = document.createElement("small");
 		    small.setAttribute("class", "small");
 		    text = document.createTextNode(" (");
 		    small.appendChild(text);
 		    link = document.createElement("a");
-		    link.setAttribute("href", "http://www.theora.org/");
+		    link.setAttribute("href", theorahelperurl);
 		    text = document.createTextNode("Ogg/Theora");
 		    link.appendChild(text);
 		    small.appendChild(link);
 		    text = document.createTextNode(" required)");
 		    small.appendChild(text);
 		    div.appendChild(small);
-		    video.parentNode.replaceChild(div, video);
 		    posterobj = div;
 		}
 
