@@ -49,7 +49,7 @@ void print_header_info(FILE *out, rogg_page_header *header)
   fprintf(out, " Ogg page serial %08x seq %d (%5d bytes)",
 	header->serialno, header->sequenceno, header->length);
   fprintf(out, (header->continued) ? " c" : "  ");
-  fprintf(out, " granule %lld", header->granulepos);
+  fprintf(out, " granule %lld", (long long int)header->granulepos);
   fprintf(out, (header->bos) ? " bos" : "");
   fprintf(out, (header->eos) ? " eos" : "");
   fprintf(out, "\n");
@@ -87,15 +87,15 @@ int main(int argc, char *argv[])
 	fprintf(stdout, "couldn't find ogg data!\n");
     } else {
       if (q > p) {
-	fprintf(stdout, "Skipped %d garbage bytes at the start\n", q-p);
-      } 
+	fprintf(stdout, "Skipped %ld garbage bytes at the start\n", (long)(q-p));
+      }
       while (q < e) {
 	o = rogg_scan(q, e-q);
 	if (o > q) {
-	  fprintf(stdout, "Hole in data! skipped %d bytes\n", o - q);
+	  fprintf(stdout, "Hole in data! skipped %ld bytes\n", (long)(o-q));
 	   q = o;
 	} else if (o == NULL) {
-	  fprintf(stdout, "Skipped %d garbage bytes as the end\n", e-q);
+	  fprintf(stdout, "Skipped %ld garbage bytes as the end\n", (long)(e-q));
 	  break;
 	}
 	rogg_page_parse(q, &header);
