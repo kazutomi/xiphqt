@@ -14,6 +14,12 @@ Examples:
   of a stream. This is often unset in downloads truncated from
   an icecast stream.
 
+  rogg_crcfix will reset the CRCs on all the Ogg pages in a stream.
+  This is mostly useful if the stream has been edited with some non-
+  aware tool.
+
   rogg_pagedump dumps some basic header information for each page
   in a stream.
+
+  rogg_serial changes the serial of a logical ogg stream.
 
