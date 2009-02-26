@@ -1,7 +1,7 @@
 # simple Makefile for rogg and related utilities
 
 PACKAGE = rogg
-VERSION = 0.1
+VERSION = 0.2
 
 prefix = /usr/local
 
