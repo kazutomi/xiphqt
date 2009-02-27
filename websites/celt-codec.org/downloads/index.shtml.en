@@ -33,12 +33,13 @@
 <p>Version 0.5.2 has just been released with a few fixes over 0.5.1. On top of that,
 the pitch prediction was both improved and simplified. The other main change is a 
 new bit allocation algorithm with better rounding and fine energy allocation. These changes
-resulted in considerable quality improvements at the smallest frame sizes. The 
-<a href="../testing/test.0.5.2.shtml">0.5.2 testing page</a> has more information.
+resulted in considerable quality improvements at the smallest frame sizes.
+The <a href="../testing/test.0.5.2.shtml">0.5.2 testing page</a> has more information about this release.
 </p>
 
 <ul>
-<li><a href="http://downloads.us.xiph.org/releases/celt/celt-0.5.2.tar.gz">celt-0.5.2.tar.gz</a></li>
+<li>Source code: <a href="http://downloads.us.xiph.org/releases/celt/celt-0.5.2.tar.gz">celt-0.5.2.tar.gz</a></li>
+<li>Pre-built CLI encoder/decoder: <a href="http://downloads.us.xiph.org/releases/celt/celt_052_tools_win32.zip">celt_052_tools_win32.zip</a> (Windows)
 </ul>
 
 <h3 id='zero.5.1'>0.5.1</h3>
