@@ -46,6 +46,19 @@
         helping design the algorithm (requires strong DSP knowledge) or building applications using
         CELT. Your feedback can help define the future direction the codec will take.
 </p>
+<p>
+        <b>Since CELT is still in development, most new releases (even minor ones) change the bit-stream,
+        so compatibility is not preserved.</b> This instability is why CELT is currently called <i>experimental</i>.
+        The ability to change the format is important in allowing us to make quality improvements while we
+        develop CELT. Once version 1.0 is released the bitstream will be frozen and future revisions will be
+        compatible.
+</p>
+<p>
+	If you are interested in using CELT privately, among people who can coordinate CELT versions, in
+	non-interoperable embedded applications, or are doing software development in preparation for the
+        final version then the instability of the bitstream should not be a problem for you and we'd like your
+	feedback. However, for major public adoption CELT will need to reach 1.0.  
+</p>
 <p> 
 	If you have questions or are interested in contributing to the project, you can 
 	<a href="http://lists.xiph.org/mailman/listinfo/celt-dev/">join the mailing list</a>. 

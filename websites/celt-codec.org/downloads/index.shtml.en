@@ -17,7 +17,10 @@
 <h1>Downloads</h1>
 <p>
 	Keep in mind that CELT is still a work in progress. Neither the API/ABI,
-	nor the bit-stream are stable. Also, while we do not expect it to set your
+	nor the bit-stream are stable. 
+        <b>Since CELT is still in development, most new releases (even minor ones) change the bit-stream, so compatibility is not preserved.</b>
+        Once version 1.0 is released the bitstream will be frozen and future revisions will be compatible.
+        Also, while we do not expect it to set your
 	house on fire, we cannot guarantee that it won't. So be warned! That being
         said, we're interested in feedback (bug reports, feature requests, comments)
         from people trying to use it.
@@ -33,7 +36,8 @@
 <p>Version 0.5.2 has just been released with a few fixes over 0.5.1. On top of that,
 the pitch prediction was both improved and simplified. The other main change is a 
 new bit allocation algorithm with better rounding and fine energy allocation. These changes
-resulted in considerable quality improvements at the smallest frame sizes.
+resulted in considerable quality improvements at the smallest frame sizes. As with most prior releases this
+release breaks compatiblity with older bitstreams.
 The <a href="../testing/test.0.5.2.shtml">0.5.2 testing page</a> has more information about this release.
 </p>
 
