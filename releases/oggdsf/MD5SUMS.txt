@@ -77,3 +77,5 @@ e8982206e14d7a922ff77f0052840531  oggcodecs_0.81.15562-src.7z
 17bdaaadd6b8d0d0cc0652b12e16b6ed  oggcodecs_0.81.15562-win32.exe
 b24d5370b85842313c3cc8f02910b4d6  oggcodecs_0.81.15562-x64.cab
 c40db6b711ee4c2954315b42ae94ea14  oggcodecs_0.81.15562-x64.exe
+6aedaec2de44c02263c2dc9ea0a423dd  dshow-oggenc-0.1-win32.zip
+dbfc7f17bc694f7ba0b628284cf66721  dshow-oggenc-0.1-x64.zip
