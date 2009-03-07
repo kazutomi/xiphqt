@@ -31,6 +31,9 @@
         <dt><a href="http://www.nexgenvoip.org/">NexGenVoIP</a></dt>
 	<dd>A Next Generation Telephone System</dd>
 
+        <dt><a href="http://roaraudio.keep-cool.org/">RoarAudio</a></dt>
+	<dd>A network transparent sound server</dd>
+
 	<dt><a href="http://virtualsoundexchange.net/node/21">Soundjack</a></dt>
 	<dd>Network Music Performance (MNP) client application</dd>
 
