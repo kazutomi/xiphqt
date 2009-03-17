@@ -1,158 +1,188 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="7.10"
+	Version="9,00"
 	Name="ezstream"
-	ProjectGUID="{4C27B249-0C17-4007-9D51-2ED145DF06C2}"
+	ProjectGUID="{43809192-0B8F-4AFE-85E6-C54E265CFB75}"
 	RootNamespace="ezstream"
-	SccProjectName=""
-	SccLocalPath="">
+	TargetFrameworkVersion="131072"
+	>
 	<Platforms>
 		<Platform
-			Name="Win32"/>
+			Name="Win32"
+		/>
 	</Platforms>
+	<ToolFiles>
+	</ToolFiles>
 	<Configurations>
 		<Configuration
-			Name="Release|Win32"
-			OutputDirectory=".\Release"
-			IntermediateDirectory=".\Release"
+			Name="Debug|Win32"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE"
-			CharacterSet="2"
-			WholeProgramOptimization="TRUE">
+			CharacterSet="0"
+			BuildLogFile="$(IntDir)\$(TargetName)-BuildLog.htm"
+			>
 			<Tool
-				Name="VCCLCompilerTool"
-				Optimization="2"
-				GlobalOptimizations="TRUE"
-				InlineFunctionExpansion="1"
-				ImproveFloatingPointConsistency="TRUE"
-				AdditionalIncludeDirectories="../../ogg/include;../../vorbis/include;../../shout/include;../src;../../libxml2/include;../../libiconv/include;../../taglib;.;../compat"
-				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;HAVE_CONFIG_H;HAVE_ICONV;HAVE_TAGLIB"
-				StringPooling="TRUE"
-				ExceptionHandling="FALSE"
-				BasicRuntimeChecks="0"
-				RuntimeLibrary="0"
-				EnableFunctionLevelLinking="FALSE"
-				UsePrecompiledHeader="0"
-				PrecompiledHeaderFile=""
-				AssemblerListingLocation=".\Release/"
-				ObjectFile=".\Release/"
-				ProgramDataBaseFileName=".\Release/"
-				WarningLevel="3"
-				SuppressStartupBanner="TRUE"
-				Detect64BitPortabilityProblems="TRUE"
-				CompileAs="0"/>
+				Name="VCPreBuildEventTool"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
+				Name="VCCustomBuildTool"
+			/>
 			<Tool
-				Name="VCLinkerTool"
-				AdditionalDependencies="WS2_32.lib WinMM.lib"
-				OutputFile=".\Release/ezstream.exe"
-				LinkIncremental="0"
-				SuppressStartupBanner="TRUE"
-				AdditionalLibraryDirectories=""
-				IgnoreDefaultLibraryNames=""
-				ProgramDatabaseFile=".\Release/ezstream.pdb"
-				SubSystem="1"
-				LargeAddressAware="2"
-				SetChecksum="TRUE"
-				TargetMachine="0"/>
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName=".\Release/ezstream.tlb"
-				HeaderFileName=""/>
+			/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCCLCompilerTool"
+				UseUnicodeResponseFiles="false"
+				Optimization="0"
+				EnableIntrinsicFunctions="false"
+				AdditionalIncludeDirectories=".;..\src;taglib-bin\include;libxml2-bin\include;libiconv-bin\include;.\libshout\include;.\libvorbis\include;.\libogg\include;"
+				PreprocessorDefinitions="WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_DEBUG;HAVE_CONFIG_H=1;"
+				StringPooling="true"
+				MinimalRebuild="true"
+				ExceptionHandling="0"
+				BasicRuntimeChecks="3"
+				RuntimeLibrary="3"
+				EnableFunctionLevelLinking="true"
+				RuntimeTypeInfo="false"
+				ObjectFile="$(IntDir)\$(TargetName).obj\"
+				ProgramDataBaseFileName="$(IntDir)\$(TargetName)-vc90.pdb"
+				WarningLevel="3"
+				DebugInformationFormat="4"
+				CompileAs="1"
+			/>
 			<Tool
-				Name="VCPreBuildEventTool"/>
-			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="NDEBUG"
-				Culture="1033"/>
+			/>
 			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
-				Name="VCXMLDataGeneratorTool"/>
+				Name="VCLinkerTool"
+				UseUnicodeResponseFiles="false"
+				AdditionalDependencies="ws2_32.lib .\taglib-bin\lib\tag.lib .\taglib-bin\lib\tag_c.lib libxml2-bin\lib\libxml2_a.lib .\libiconv-bin\lib\libiconv-vc9.lib"
+				GenerateDebugInformation="true"
+				SubSystem="0"
+				LargeAddressAware="2"
+				TargetMachine="1"
+			/>
 			<Tool
-				Name="VCWebDeploymentTool"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
+				Name="VCManifestTool"
+			/>
 			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 		<Configuration
-			Name="Debug|Win32"
-			OutputDirectory=".\Debug"
-			IntermediateDirectory=".\Debug"
+			Name="Release|Win32"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
-			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE"
-			CharacterSet="2">
+			CharacterSet="2"
+			WholeProgramOptimization="1"
+			BuildLogFile="$(IntDir)\$(TargetName)-BuildLog.htm"
+			>
 			<Tool
-				Name="VCCLCompilerTool"
-				Optimization="0"
-				ImproveFloatingPointConsistency="TRUE"
-				AdditionalIncludeDirectories="../../ogg/include;../../vorbis/include;../../shout/include;../src;../../libxml2/include;../../libiconv/include;../../taglib;.;../compat"
-				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;HAVE_CONFIG_H;HAVE_ICONV;HAVE_TAGLIB;XALLOC_DEBUG"
-				ExceptionHandling="FALSE"
-				BasicRuntimeChecks="3"
-				RuntimeLibrary="1"
-				BufferSecurityCheck="TRUE"
-				EnableFunctionLevelLinking="TRUE"
-				UsePrecompiledHeader="0"
-				PrecompiledHeaderThrough=""
-				PrecompiledHeaderFile=""
-				AssemblerListingLocation=".\Debug/"
-				ObjectFile=".\Debug/"
-				ProgramDataBaseFileName=".\Debug/"
-				WarningLevel="3"
-				SuppressStartupBanner="TRUE"
-				Detect64BitPortabilityProblems="TRUE"
-				DebugInformationFormat="4"
-				CompileAs="0"/>
+				Name="VCPreBuildEventTool"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
+				Name="VCCustomBuildTool"
+			/>
 			<Tool
-				Name="VCLinkerTool"
-				AdditionalDependencies="WS2_32.lib WinMM.lib"
-				OutputFile=".\Debug/ezstream.exe"
-				LinkIncremental="0"
-				SuppressStartupBanner="TRUE"
-				AdditionalLibraryDirectories=""
-				IgnoreAllDefaultLibraries="FALSE"
-				IgnoreDefaultLibraryNames=""
-				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile=".\Debug/ezstream.pdb"
-				SubSystem="1"
-				LargeAddressAware="2"
-				TargetMachine="0"/>
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName=".\Debug/ezstream.tlb"
-				HeaderFileName=""/>
+			/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCCLCompilerTool"
+				UseUnicodeResponseFiles="false"
+				Optimization="3"
+				EnableIntrinsicFunctions="false"
+				AdditionalIncludeDirectories=".;..\src;taglib-bin\include;libxml2-bin\include;libiconv-bin\include;.\libshout\include;.\libvorbis\include;.\libogg\include;"
+				PreprocessorDefinitions="WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;NDEBUG;HAVE_CONFIG_H=1;"
+				StringPooling="true"
+				ExceptionHandling="0"
+				RuntimeLibrary="2"
+				EnableFunctionLevelLinking="false"
+				RuntimeTypeInfo="false"
+				ObjectFile="$(IntDir)\$(TargetName).obj\"
+				ProgramDataBaseFileName="$(IntDir)\$(TargetName)-vc90.pdb"
+				WarningLevel="3"
+				DebugInformationFormat="0"
+				CompileAs="1"
+			/>
 			<Tool
-				Name="VCPreBuildEventTool"/>
-			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_DEBUG"
-				Culture="1033"/>
+			/>
 			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
-				Name="VCXMLDataGeneratorTool"/>
+				Name="VCLinkerTool"
+				UseUnicodeResponseFiles="false"
+				AdditionalDependencies="ws2_32.lib .\taglib-bin\lib\tag.lib .\taglib-bin\lib\tag_c.lib libxml2-bin\lib\libxml2_a.lib .\libiconv-bin\lib\libiconv-vc9.lib"
+				GenerateDebugInformation="false"
+				SubSystem="1"
+				LargeAddressAware="2"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				SetChecksum="true"
+				TargetMachine="1"
+			/>
 			<Tool
-				Name="VCWebDeploymentTool"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
+				Name="VCManifestTool"
+			/>
 			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 	</Configurations>
 	<References>
@@ -160,126 +190,105 @@
 	<Files>
 		<Filter
 			Name="Source Files"
-			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat">
+			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
+			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
+			>
 			<File
-				RelativePath="..\src\compat.c">
+				RelativePath="..\src\compat.c"
+				>
 			</File>
 			<File
-				RelativePath="..\src\configfile.c">
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						BasicRuntimeChecks="3"/>
-				</FileConfiguration>
+				RelativePath="..\src\configfile.c"
+				>
 			</File>
 			<File
-				RelativePath="..\src\ezstream.c">
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						BasicRuntimeChecks="3"/>
-				</FileConfiguration>
+				RelativePath="..\src\ezstream.c"
+				>
 			</File>
 			<File
-				RelativePath="..\src\getopt.c">
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						BasicRuntimeChecks="3"/>
-				</FileConfiguration>
+				RelativePath="..\src\getopt.c"
+				>
 			</File>
 			<File
-				RelativePath="..\src\metadata.c">
+				RelativePath="..\src\metadata.c"
+				>
 			</File>
 			<File
-				RelativePath="..\src\playlist.c">
+				RelativePath="..\src\playlist.c"
+				>
 			</File>
 			<File
-				RelativePath="..\src\strlcat.c">
+				RelativePath="..\src\strlcat.c"
+				>
 			</File>
 			<File
-				RelativePath="..\src\strlcpy.c">
+				RelativePath="..\src\strlcpy.c"
+				>
 			</File>
 			<File
-				RelativePath="..\src\strtonum.c">
+				RelativePath="..\src\strtonum.c"
+				>
 			</File>
 			<File
-				RelativePath="..\src\util.c">
+				RelativePath="..\src\util.c"
+				>
 			</File>
 			<File
-				RelativePath="..\src\xalloc.c">
+				RelativePath="..\src\xalloc.c"
+				>
 			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
-			Filter="h;hpp;hxx;hm;inl">
+			Filter="h;hpp;hxx;hm;inl;inc;xsd"
+			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
+			>
 			<File
-				RelativePath="..\src\compat.h">
+				RelativePath="..\src\compat.h"
+				>
 			</File>
 			<File
-				RelativePath=".\config.h">
+				RelativePath="..\src\configfile.h"
+				>
 			</File>
 			<File
-				RelativePath="..\src\configfile.h">
+				RelativePath="..\src\metadata.h"
+				>
 			</File>
 			<File
-				RelativePath="..\src\getopt.h">
+				RelativePath="..\src\playlist.h"
+				>
 			</File>
 			<File
-				RelativePath="..\src\metadata.h">
+				RelativePath="..\src\strfctns.h"
+				>
 			</File>
 			<File
-				RelativePath="..\src\playlist.h">
+				RelativePath="..\src\util.h"
+				>
 			</File>
 			<File
-				RelativePath="..\src\strfctns.h">
+				RelativePath="..\src\xalloc.h"
+				>
 			</File>
-			<File
-				RelativePath="..\src\util.h">
-			</File>
-			<File
-				RelativePath="..\src\xalloc.h">
-			</File>
+			<Filter
+				Name="win32"
+				>
+				<File
+					RelativePath=".\compat.h"
+					>
+				</File>
+				<File
+					RelativePath=".\config.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Resource Files"
-			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe">
+			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
+			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
+			>
 		</Filter>
 	</Files>
 	<Globals>
