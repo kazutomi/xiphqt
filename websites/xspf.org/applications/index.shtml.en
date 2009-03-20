@@ -106,6 +106,7 @@
 <!-- NOTE: One line per entry makes it sortable! Dummy entry for copy-and-paste at EOF. -->
 <dt><a id="fspiff"></a><a href="http://antiklimax.se/projects/fspiff/">fspiff</a></dt><dd>Command line tool to produce an XSPF playlist from M3U or a list of filenames.</dd>
 <dt><a id="xspf_download"></a><a id="xspf-download-0.1.0.py"></a><a href="http://mayhem-chaos.net/stuff/xspf-download-0.1.0.py">xspf-download-0.1.0.py</a> (GNU/Linux)</dt><dd>A Python script that parses XSPF and M3U files and downloads the files to the local harddrive.</dd> 
+<dt><a id="xspf_php"></a></a><a href="http://xspfphp.sourceforge.net/">XSPF.PHP</a></dt><dd>Generates XSPF playlists from MP3 tags.</dd>
 <dt><a id="xspf_playlist_generator"></a><a href="http://emff.sourceforge.net/playlistgenerator/">XSPF playlist generator</a></dt><dd>Live playlist editor/generator implemented in JavaScript</dd>
 <dt><a id="xspf_to_jspf"></a><a href="http://jchris.mfdz.com/static/jspf_parser/xspf_parser_runner.html">XSPF to JSPF Parser</a> (Javascript)</dt><dd>Converts your XSPF files to <a href="http://wiki.xiph.org/index.php/JSPF_Draft">JSPF</a> ("XSPF on JSON") online.</dd>
 <dt><a id="xspf_validator"></a><a id="validator"></a><a href="http://validator.xspf.org/">XSPF Validator</a></dt><dd>Online validator for XSPF documents.</dd>
