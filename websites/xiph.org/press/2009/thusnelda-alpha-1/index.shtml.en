@@ -1,0 +1,68 @@
+<!--#include virtual="/ssi/header.include" -->
+<!-- Enter custom page information and styles here -->
+  <title>March 27, 2009: Xiph.Org releases Theora 1.1alpha1</title>
+</head>
+<body>
+<!--#include virtual="/common/xiphbar.include" -->
+
+<!--#include virtual="/ssi/pagetop.include" -->
+<!--  All your page content goes here  -->
+
+
+<h3>libTheora 1.1 alpha 1 release: next-generation 'Thusnelda' encoder</h3>
+
+<p>Xiph.Org is pleased to announce the first alpha release of the
+rewrite of the Xiph.Org reference encoder for the Theora video format,
+codename "Thusnelda".
+
+<p><ul>
+<li><a href="http://downloads.xiph.org/releases/theora/libtheora-1.1alpha1.tar.bz2">
+ http://downloads.xiph.org/releases/theora/libtheora-1.1alpha1.tar.bz2</a>
+
+<li><a href="http://downloads.xiph.org/releases/theora/libtheora-1.1alpha1.zip">
+ http://downloads.xiph.org/releases/theora/libtheora-1.1alpha1.zip</a>
+
+<li><a href="http://downloads.xiph.org/releases/theora/libtheora-1.1alpha1.tar.gz">
+http://downloads.xiph.org/releases/theora/libtheora-1.1alpha1.tar.gz</a>
+</ul>
+
+<p>Please download, test and give us feedback!
+
+<p>This is an alpha release consisting of substantially new code, and
+so may be unstable. We're making it more widely available at this point
+to facilitate wider testing and flush out unknown issues. The
+primary change is a completely rewritten encoder with vastly improved
+quality vs. bitrate in the default VBR/constant-quality mode, and
+better tracking of the target bitrate in CBR/ABR modes. There are some
+minor changes to the decoder and examples, but the new encoder is the
+reason to try out this release.
+
+<p>As this is an alpha release intended to get new code into the hands
+of testers as quickly as possible, it is shipping with a few known
+caveats that are being fixed:
+
+<ul>
+ <li>GNU autotools and scons builds should work on GNU/Linux/BSD
+systems, including MacOS X
+ <li>The Apple xcode project should work, but doesn't build a separate
+libtheoraenc. Use the legacy libtheora build for now.
+ <li>The xmingw32 build only mostly works.
+ <li>MSVC project files need updating for source code rearrangement.
+ <li>Some minor build fixes haven't been ported from the 1.0 release yet.
+</ul>
+
+<p>Development work for this is still on a separate branch, and will
+remain so until we have some of the build and code reorganization
+issues settled. If you're curious to track the ongoing development,
+please 'svn checkout http://svn.xiph.org/branches/theora-thusnelda/'.
+
+<p>Thanks, and happy hacking!
+
+<p><i> The Xiph.Org Foundation is a not-for-profit corporation dedicated
+to open, unencumbered multimedia technology. Xiph's formats and
+software levels the playing field for digital media so that all
+producers and artists can distribute their work for minimal cost,
+without restriction, regardless of affiliation.  May contain traces of
+nuts.</i></p>
+
+<!--#include virtual="/ssi/pagebottom.include" -->
