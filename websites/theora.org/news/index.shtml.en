@@ -8,6 +8,26 @@
 <!--#include virtual="/ssi/pagetop.include" -->
 <!--  All your page content goes here  -->
 
+<h3>New encoder alpha release</h3>
+<p class="newsdate">2009 March 27</p>
+
+<p>We're pleased to announce the first alpha release of the new theora 
+reference encoder, code name "thusnelda".
+
+<p>This new version offers vastly improved quality/bitrate, making 
+the reference encoder much more competitive with the current generation 
+of encoders for other video formats. Currently in alpha, this code will 
+be released at libtheora-1.1 when stable.
+
+
+<p>If you're comfortable building software, please download the source 
+and give us some feedback.
+
+<ul>
+<li><a href="http://downloads.xiph.org/releases/theora/libtheora-1.1alpha1.tar.bz2">libtheora-1.1alpha1.tar.bz2</a></li>
+<li><a href="http://downloads.xiph.org/releases/theora/libtheora-1.1alpha1.zip">libtheora-1.1alpha1.zip</a></li>
+</ul>
+
 <h3>Xiph.Org announces Theora full public release 1.0</h3>
 <p class="newsdate">2008 November 3</p>
 
