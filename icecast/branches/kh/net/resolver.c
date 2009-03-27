@@ -159,7 +159,7 @@ char *resolver_getname(const char *ip, char *buff, int len)
 
     thread_mutex_lock(&_resolver_mutex);
     if (inet_aton (ip, &addr)) {
-        if ((host=gethostbyaddr (&addr, sizeof (struct in_addr), AF_INET)))
+        if ((host=gethostbyaddr ((void*)&addr, sizeof (struct in_addr), AF_INET)))
         {
             ret = strncpy (buff, host->h_name, len);
             buff [len-1] = '\0';
@@ -203,7 +203,7 @@ void resolver_initialize()
     if (!_initialized)
     {
         _initialized = 1;
-        thread_mutex_create ("resolver", &_resolver_mutex);
+        thread_mutex_create (&_resolver_mutex);
 
         /* keep dns connects (TCP) open */
 #ifdef HAVE_SETHOSTENT
