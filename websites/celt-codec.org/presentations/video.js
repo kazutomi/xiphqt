@@ -164,6 +164,10 @@ function swapVideo(video, src, width, height, controls, duration, autoplay,
 	applet.setAttribute("code", "com.fluendo.player.Cortado.class");
 	applet.setAttribute("archive", cortadourl);
 	applet.setAttribute("width", width);
+
+	if (controls == "true") {
+		height=parseInt(height)+12;
+	}
 	applet.setAttribute("height", height);
 
 	var param = document.createElement("param");

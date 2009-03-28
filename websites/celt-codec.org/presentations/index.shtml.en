@@ -21,10 +21,10 @@ vlcActiveX = (IsObject(CreateObject("VideoLAN.VLCPlugin.2")))
 <!--  All your page content goes here  -->
 <h1>Presentations</h1>
 <h2><a href="http://linux.conf.au/">linux.conf.au</a> 2009 &mdash; Timothy B. Terriberry</h2>
-  <table width="384" border="0"><tr><td><video id="lcaceltvideo" width="384" height="288"
-   poster="LCA-video-thumb.jpg" controls duration="3855"
-   src="http://people.xiph.org/~greg/video/linux_conf_au_CELT.ogv"/></td></tr><tr>
-   <td align="left"><a href="http://people.xiph.org/~greg/video/linux_conf_au_CELT.ogv">Download video</a> <small>(Ogg/<a href="http://www.theora.org/">Theora</a>; 64 minutes; 81 MiB)</small><br/>
+  <table width="496" border="0"><tr><td><video id="lcaceltvideo" width="496" height="272"
+   poster="LCA-video-thumb.jpg" controls duration="3892"
+   src="http://people.xiph.org/~greg/video/linux_conf_au_CELT_2.ogv"/></td></tr><tr>
+   <td align="left"><a href="http://people.xiph.org/~greg/video/linux_conf_au_CELT_2.ogv">Download video</a> <small>(Ogg/<a href="http://www.theora.org/">Theora</a>; 64 minutes; 97 MiB)</small><br/>
    <a href="misc/lca-celt-audio.tar">Audio samples</a> <small>(tar/flac; 3.4 MiB)</small><br/>
    <a href="misc/lca-celt.pdf">Slides</a> <small>(PDF; 2.3 MiB)</small></td></tr></table>
 
