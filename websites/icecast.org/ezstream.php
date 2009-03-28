@@ -30,7 +30,7 @@
 
 <p>
  Ezstream is a command line source client for Icecast media streaming servers.
- It began as the successor of the old "shout" utility, and has since gained
+ It began as the successor of the old &quot;shout&quot; utility, and has since gained
  a lot of useful features.
 </p>
 
@@ -145,12 +145,12 @@
 
 <ul style="font-size: smaller; margin: 1em 3em">
  <li>
-  libshout 2.2.x + libshout dependencies
-  (<a href="http://www.icecast.org/download.php">http://www.icecast.org/download.php</a>)
+  libshout 2.2.x + libshout dependencies<br/>
+  <a href="http://www.icecast.org/download.php">http://www.icecast.org/download.php</a>
  </li>
  <li>
-  libxml 2.x
-  (<a href="http://xmlsoft.org">http://xmlsoft.org</a>)
+  libxml 2.x<br/>
+  <a href="http://xmlsoft.org">http://xmlsoft.org</a>
  </li>
 </ul>
 
@@ -163,13 +163,13 @@
   For reading metadata from Ogg Vorbis files:
   <ul>
    <li>
-    TagLib 1.x (1.4 or newer recommended)
-    (<a href="http://developer.kde.org/~wheeler/taglib.html">http://developer.kde.org/~wheeler/taglib.html</a>)
+    TagLib 1.x (1.4 or newer recommended)<br/>
+    <a href="http://developer.kde.org/~wheeler/taglib.html">http://developer.kde.org/~wheeler/taglib.html</a>
    </li>
    <b>or</b>:
    <li>
-    libvorbis 1.x
-    (<a href="http://www.vorbis.com/">http://www.vorbis.com/</a>)
+    libvorbis 1.x<br/>
+    <a href="http://www.vorbis.com/">http://www.vorbis.com/</a>
    </li>
   </ul>
  </li>
@@ -178,8 +178,8 @@
   <ul>
    <li>
     GNU libiconv, if <code>iconv()</code> is not available in the system C
-    library.
-    (<a href="http://www.gnu.org/software/libiconv/">http://www.gnu.org/software/libiconv/</a>)
+    library.<br/>
+    <a href="http://www.gnu.org/software/libiconv/">http://www.gnu.org/software/libiconv/</a>
    </li>
   </ul>
  </li>
@@ -341,143 +341,28 @@
  In case of problems with ezstream, please make sure to re-read the
  documentation first and double-check your configuration.
  A lot of effort has been put into the <code>ezstream(1)</code> manual, and it
- should -- at least in theory -- answer all questions.
+ should &mdash; at least in theory &mdash; answer all questions.
 </p>
 
 <p>
  Of course, ezstream isn't immune to bugs.
  After
- <a href="https://trac.xiph.org/report/21">checking whether your bug is already known</a>,
+ <a href="https://trac.xiph.org/report/21">checking if your bug is already known</a>,
  or a newer ezstream release fixes your problem, it is much appreciated that you
- <a href="https://trac.xiph.org/newticket?component=ezstream">file your <b>complete</b> bug report</a>
- (see below) with the Xiph.org bug tracker.
+ <a href="https://trac.xiph.org/newticket?component=ezstream">file your bug report</a>
+ with the Xiph.org bug tracker.
 </p>
 
 <p>
- If you encounter one of the following issues, you most definitely found a
- genuine bug:
-</p>
-
-<ul style="font-size: smaller; margin: 1em 3em">
- <li>
-  Ezstream crashes with a segmentation fault (SIGSEGV).
- </li>
- <li>
-  Ezstream aborts with an &quot;Internal error&quot;.
- </li>
- <li>
-  A long-lived ezstream process keeps requiring more and more resources until
-  they run out.
- </li>
- <li>
-  A newer version of ezstream behaves surprisingly different, compared to an
-  earlier release, even though the configuration hasn't changed.
-  Such a behavioral change would have to be clearly intended and noted in the
-  <a href="http://svn.xiph.org/trunk/ezstream/NEWS">NEWS file</a>,
-  or it is considered a bug.
- </li>
- <li>
-  A part of the documentation is missing, unclear, or plain wrong.
- </li>
-</ul>
-
-<p>
- Of course, sensible feature requests are also welcome.
- Please select <em>enhancement</em> in the &quot;Type:&quot; drop-down menu for
- those reports.
-</p>
-
-<h4>The Good Bug Report</h4>
-
-<p>
- Since it's hard to read someone else's mind, especially over the Internet,
- a bug report needs to be "good".
- A good bug report is never too short, and contains all the necessary
- information to allow the developer to research, reproduce, understand and fix
- the problem.
+ Please be as specific and verbose as necessary when submitting a problem
+ report.
+ Also, please include a valid e-Mail address when reporting an issue, in case
+ there are follow-up questions.
 </p>
 
 <p>
- Unless you are able to provide a fix (unified diff with explanation) to your
- problem, please follow this guide as closely as possible:
-</p>
-
-<ul style="font-size: smaller; margin: 1em 3em">
- <li>
-  <em>Be precise.</em><br/>
-  Vague phrases like &quot;It doesn't work&quot;, &quot;It crashes&quot; or
-  &quot;There is a strange problem&quot; are not helpful without a verbose
-  explanation.
-  Do not be afraid of bug reports that seem too lengthy; it's a fact of life.
- </li>
- <li>
-  <em>What are you using?</em><br/>
-  Include information about the ezstream version, your operating system name,
-  version and architecture.
- </li>
- <li>
-  <em>What did you do?</em><br/>
-  Include the exact sequence of steps and events necessary to reproduce the
-  problem.
-  This includes, at the very least:
-   <ul>
-    <li>
-     Any command line options passed to ezstream.
-    </li>
-    <li>
-     The ezstream configuration file, in full. (Please censor passwords and
-     host names, but keep it intact otherwise.)
-    </li>
-   </ul>
- </li>
- <li>
-  <em>What happened?</em><br/>
-  Describe the problem that you're having, including all error and log
-  messages that you might be seeing.
-  In case of a crash or an &quot;Internal error&quot;, if you're up to it,
-  include a gdb backtrace:
-  <ul>
-   <li>
-    Rebuild ezstream with debugging symbols.
-    This can be achieved by building with &quot;<code>DEBUG=-g</code>&quot;
-    in the environment.
-   </li>
-   <li>
-    Reproduce the issue and get a fresh core dump.
-    On some systems, core dumps need to be enabled with
-    &quot;<code>ulimit -c unlimited</code>&quot;.
-   </li>
-   <li>
-    Run <code>gdb(1)</code> with the core dump.
-    The name of the file containing the dump is either
-    <code>ezstream.core</code> or just <code>core</code> (adjust the following
-    command, if necessary):
-    &quot;<code>gdb ezstream ezstream.core</code>&quot;
-   </li>
-   <li>
-    Get the backtrace, by typing &quot;<code>bt full</code>&quot; at the
-    <em>(gdb)</em> prompt.
-   </li>
-   <li>
-    Include the complete backtrace in your problem report.
-    Note that coredump files are only meaningful on the system where ezstream
-    crashed, and are useless elsewhere - do not include the core dump itself
-    in your report.
-   </li>
-  </ul>
- </li>
- <li>
-  <em>Do not diagnose the problem.</em><br/>
-  Or, well, do not do so without including the other information as well.
-  A diagnosis won't lead to a fix unless it can be verified by analyzing all
-  of the symptoms.
-  The only acceptable shortcut is a working patch in the report! :-)
- </li>
-</ul>
-
-<p>
- Good problem reports help make ezstream better, and your efforts are very
- much appreciated!
+ Your contribution and efforts are very much appreciated.
+ Thank you!
 </p>
 
 <h4>Contact</h4>
