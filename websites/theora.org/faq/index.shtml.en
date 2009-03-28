@@ -32,7 +32,8 @@
 <a href="#development"><b>Development</b></a>
 <ul>
 	<li><a href="#30">Can I use it right now?</a></li>
-	<li><a href="#32">What is Tarkin? </a></li>
+	<li><a href="#31">What is Thusnelda?</a></li>
+	<li><a href="#32">What is Tarkin?</a></li>
 	<li><a href="#33">How can I help with development?</a></li>
 	<li><a href="#34">How does Ogg Theora interoperate with [insert your favorite media architecture]?</a></li>
 	<li><a href="#35">How can I donate to these amazing projects?</a></li>
@@ -88,7 +89,7 @@ compression schemes.
 <br/>
 <br/>
 <a name="13"></a>
-<b>Q. What is Ogg? What is Vorbis? What is xiph.org?</b><br/>
+<b>Q. What is Ogg? What is Vorbis? What is Xiph.org?</b><br/>
 <div class="txt">
  <a href="http://www.vorbis.com/">Vorbis</a> is an audio codec, 
 Theora is a video codec. Ogg is the transport layer that both are stored in, 
@@ -172,17 +173,17 @@ with no loss in quality.
 <a name="24"></a>
 <b>Q. Isn't VP3 a patented technology?</b><br/>
 <div class="txt">
- Yes, some portions of the VP3 codec are covered by patents. However, the
-Xiph.org Foundation has negotiated an irrevocable free license to the VP3
-codec for any purpose imaginable on behalf of the public. It is legal to
+ The Xiph.org Foundation has negotiated an irrevocable free license 
+from On2 to the VP3 codec.
+It is legal to
 use VP3 in any way you see fit (unless, of course, you're doing something
 illegal with it in your particular jurisdiction). You are free to download
-VP3, use it free of charge, implement it in a for-sale product, implement
-it in a free product, make changes to the source and distribute those
-changes, or print the source code out and wallpaper your spare room with
-it. 
+VP3 and Theora, use them free of charge, implement them in a for-sale 
+product, implement them in a free product, make changes to the source 
+and distribute those changes, or print the source code out and wallpaper 
+your spare room with it. 
 <br/>
-For more information, check the VP3 Legal Terms on the SVN page
+For more information, check the VP3 Legal Terms on the SVN page.
 </div>
 <br/>
 <br/>
@@ -202,19 +203,26 @@ from the On2 patents.
 <a name="30"></a>
 <b>Q. Can I use it right now?</b><br/>
 <div class="txt">
-The bitstream format is frozen since the release of Theora alpha 3. So, files produced by 
-the alpha 3 reference encoder will be supported by all future decoders. This means
-you can safely use Theora to encode your content right now.
+The bitstream format was frozen after the release of libtheora 1.0 alpha 
+3 in 2004. Files produced by the alpha 3 reference encoder will be 
+supported by all future decoders.
+</div>
+<br/>
+<br/>
+<a name="31"></a>
+<b>Q. What is Thusnelda?</b><br/>
+<div class="txt">
+Thusnelda was the codename of the encoder rewrite subsequent to the 1.0 
+release. It offered significant improvements in output quality.
 </div>
 <br/>
 <br/>
 <a name="32"></a>
 <b>Q. What is Tarkin?</b><br/>
 <div class="txt">
-Tarkin is essentially a proof-of-concept wavelet-based codec. Its
-experimental nature means it will not be ready for general use for some
-time. VP3 is a high-quality codec that can meet today's video needs now, so
-Xiph.org will be focusing its efforts on Theora for the near future. 
+Tarkin was a proof-of-concept wavelet-based codec. It was never ready 
+for general use. Xiph.org is focusing its efforts on Theora and Dirac 
+for the foreseeable future. 
 </div>
 <br/>
 <br/>
@@ -315,8 +323,9 @@ Theora plugins</a> or <a href="http://www.mplayerhq.hu/">mplayer for windows</a>
 <b>Q. Who's in charge of Theora development?</b><br/>
 <div class="txt">
 The VP3 codec that serves as the base of
-Theora was written by a company called <a href="http://www.on2.com">On2 Technologies</a>. Xiph.org will be
-responsible for all aspects of on going development.
+Theora was written by a company called <a href="http://www.on2.com">On2 
+Technologies</a>. Xiph.org is responsible for all aspects of on going 
+development.
 </div>
 <br/>
 <br/>
@@ -332,7 +341,7 @@ eternally grateful.
 <br/>
 <a name="54"></a>
 <b>Q. When was this FAQ last updated?</b><br/>
- November 3rd, 2008 by Greg Maxwell. 
+ March 28th, 2009 by Ralph Giles. 
 <br/>
 <br/>
 
