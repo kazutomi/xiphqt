@@ -78,7 +78,7 @@
 <h3>Download</h3>
 
 <p style="font-size: larger;">
- Latest version: <b>0.5.3</b>
+ Latest version: <b>0.5.4</b>
  [ <a href="#ez_relnotes_chgs">Changes</a> ]
 <p>
 
@@ -92,17 +92,17 @@
     Source .tar.gz (all platforms)
    </td>
    <td>
-    <a href="http://downloads.xiph.org/releases/ezstream/ezstream-0.5.3.tar.gz">ezstream-0.5.3.tar.gz</a><br/>
-    MD5: a07941d52a4705f8d02c9c9ee6e05750
+    <a href="http://downloads.xiph.org/releases/ezstream/ezstream-0.5.4.tar.gz">ezstream-0.5.4.tar.gz</a><br/>
+    MD5: 7a83c5de8410dbf14144945c267e6580
    </td>
   </tr>
   <tr>
    <td>
-    Windows NT/2000/XP binary
+    MS Windows binary (32bit)
    </td>
    <td>
-    <a href="http://downloads.xiph.org/releases/ezstream/ezstream-0.5.3-win32.zip">ezstream-0.5.3-win32.zip</a><br/>
-    MD5: f2e7484bcd3f51a5f30fd10d4649add3
+    <a href="http://downloads.xiph.org/releases/ezstream/ezstream-0.5.4-win32.zip">ezstream-0.5.4-win32.zip</a><br/>
+    MD5: f46c3aa5c443defe0b9eff5565647a07
    </td>
   </tr>
  </table>
@@ -139,28 +139,49 @@
 
 <h4>Dependencies</h4>
 
+<p>
+ Ezstream depends on:
+</p>
+
 <ul style="font-size: smaller; margin: 1em 3em">
  <li>
-  libshout 2.2.x
+  libshout 2.2.x + libshout dependencies
   (<a href="http://www.icecast.org/download.php">http://www.icecast.org/download.php</a>)
- </li>
- <li>
-  Dependencies of libshout, such as libogg, libvorbis, libtheora, etc.
-  (<a href="http://www.vorbis.com/">http://www.vorbis.com/</a> and
-  <a href="http://www.theora.org/">http://www.theora.org/</a>)
  </li>
  <li>
   libxml 2.x
   (<a href="http://xmlsoft.org">http://xmlsoft.org</a>)
  </li>
+</ul>
+
+<p>
+ Ezstream optionally uses:
+</p>
+
+<ul style="font-size: smaller; margin: 1em 3em">
  <li>
-  <b>Optional</b>: Taglib 1.x
-  (1.4 or newer recommended, used via the libtag_c wrapper)
-  (<a href="http://developer.kde.org/~wheeler/taglib.html">http://developer.kde.org/~wheeler/taglib.html</a>)
+  For reading metadata from Ogg Vorbis files:
+  <ul>
+   <li>
+    TagLib 1.x (1.4 or newer recommended)
+    (<a href="http://developer.kde.org/~wheeler/taglib.html">http://developer.kde.org/~wheeler/taglib.html</a>)
+   </li>
+   <b>or</b>:
+   <li>
+    libvorbis 1.x
+    (<a href="http://www.vorbis.com/">http://www.vorbis.com/</a>)
+   </li>
+  </ul>
  </li>
  <li>
-  <b>Optional</b>: GNU libiconv (or iconv() in libc)
-  (<a href="http://www.gnu.org/software/libiconv/">http://www.gnu.org/software/libiconv/</a>)
+  For basic non-ASCII charset support in metadata and filenames:
+  <ul>
+   <li>
+    GNU libiconv, if <code>iconv()</code> is not available in the system C
+    library.
+    (<a href="http://www.gnu.org/software/libiconv/">http://www.gnu.org/software/libiconv/</a>)
+   </li>
+  </ul>
  </li>
 </ul>
 
@@ -186,11 +207,15 @@
 <p>
  Windows users can simply copy the <code>ezstream.exe</code> file from the
  binary distribution archive (.ZIP) to any location of their choosing.
- As of version 0.3.0, the Win32 version of ezstream no longer requires any .DLL
- files and is entirely self-contained.
- Because of this simplicity, an installer is no longer provided.
  Users, who wish to be able to run ezstream anywhere on their system, can add
  the directory that contains ezstream.exe to their PATH environment variable.
+</p>
+
+<p>
+ The ezstream binary release depends on MSVC 2008 runtime libraries.
+ These libraries can be downloaded from Microsoft as the
+ <code>vcredist_x86.exe</code> file, at no cost, and are
+ <a href="http://www.google.com/search?q=vc+2008+redist">easily found via Google</a>.
 </p>
 
 <h4>Even more ...</h4>
@@ -232,23 +257,56 @@
 <h3>Release Notes</h3>
 
 <p>
- Ezstream 0.5.3 has been released on December 1st 2007.
+ Ezstream 0.5.4 has been released on March 28th 2009.
 </p>
 
 <p>
- Version 0.5.3 is a minor bugfix release.
+ Version 0.5.4 is a maintenance and bugfix release.
 </p>
 
 <h4 id="ez_relnotes_chgs" name="ez_relnotes_chgs">Changes</h4>
 
 <ul style="font-size: smaller; margin: 1em 3em">
  <li>
-  src/ezstream.c:
+  <code>compat/sys/tree.*</code>:
   <ul>
    <li>
-    FIX --
-    Prevent (very) long-running ezstream processes from dying without error
-    message by ignoring SIGPIPE where available.
+     MISC &mdash;
+     Update the tree macros to a newer version.
+     The manual, shipped with ezstream for reference, now has a more friendly
+     2-clause BSD license.
+   </li>
+  </ul>
+ <li>
+  various:
+  <ul>
+   <li>
+    FIX &mdash;
+    Add a missing metadata charset conversion, and add charset conversions for
+    filenames.
+    From Roman Donchenko.
+   </li>
+   <li>
+    FIX &mdash;
+    Fix build on MinGW.
+    From Roman Donchenko.
+   </li>
+   <li>
+    MISC &mdash;
+    Overhaul and modernize the build system.
+    Ezstream is now expected to build &quot;out of the box&quot; on more
+    systems without configuration tweaks.
+   </li>
+   <li>
+    FIX &mdash;
+    Adjust the build system to better handle optional dependencies.
+    It is now possible to choose between TagLib and libvorbis for reading Ogg
+    Vorbis metadata, or no Vorbis metadata support at all.
+    (Ticket #<a href="https://trac.xiph.org/ticket/1398"><code>1398</code></a>)
+   </li>
+   <li>
+    MISC &mdash;
+    Miscellaneous code maintenance and a bit of cleaning up.
    </li>
   </ul>
 </ul>
