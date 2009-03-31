@@ -1,0 +1,123 @@
+<!--#include virtual="/ssi/header.include" -->
+<!-- Enter custom page information and styles here -->
+  <title>Xiph.org: Oggz</title>
+</head>
+<body>
+<!--#include virtual="/common/xiphbar.include" -->
+
+<!--#include virtual="/ssi/pagetop.include" -->
+<!--  All your page content goes here  -->
+
+<h1>Oggz</h1>
+
+<p>
+Oggz comprises liboggz and the tool oggz, which provides commands to
+inspect, edit and validate <a href="/ogg/">Ogg</a> files.
+The oggz-chop tool can also be used to serve time ranges of Ogg media
+over HTTP by any web server that supports CGI.
+</p>
+
+<p>
+liboggz is a C library for reading and writing Ogg files and streams.
+It offers various improvements over the reference libogg, including
+support for seeking, validation and timestamp interpretation.
+</p>
+
+<h2>oggz tool</h2>
+
+<pre>
+Usage: oggz <subcommand> [options] filename ...
+
+oggz is a commandline tool for manipulating Ogg files. It supports
+multiplexed files conformant with RFC3533. Oggz can parse headers for
+CELT, CMML, FLAC, Kate, PCM, Speex, Theora and Vorbis, and can read and write
+Ogg Skeleton logical bitstreams.
+
+Commands:
+  help          Display help for a specific subcommand (eg. "oggz help chop")
+
+Reporting:
+  diff          Hexdump the packets of two Ogg files and output differences.
+  dump          Hexdump packets of an Ogg file, or revert an Ogg file from
+                such a hexdump.
+  info          Display information about one or more Ogg files and their
+                bitstreams.
+  scan          Scan an Ogg file and output characteristic landmarks.
+  validate      Validate the Ogg framing of one or more files.
+
+Extraction:
+  rip           Extract one or more logical bitstreams from an Ogg file.
+
+Editing:
+  chop          Extract the part of an Ogg file between given start and/or
+                end times.
+  comment       List or edit comments in an Ogg file.
+  merge         Merge Ogg files together, interleaving pages in order of
+                presentation time.
+  sort          Sort the pages of an Ogg file in order of presentation time.
+
+Miscellaneous:
+  known-codecs  List codecs known by this version of oggz
+</pre>
+
+<p>
+The script <tt>bash-completion/oggz</tt> enables completion of tool options and codec
+names when using the bash shell. Source it from your <tt>.profile</tt>, or install it
+in <tt>/etc/bash_completion.d</tt> to enable it system-wide.
+</p>
+
+<h2>oggz-chop: General usage and CGI installation</h2>
+
+<p>
+oggz-chop extracts the part of an Ogg file between given start and/or end
+times. The output file contains copies of the headers of the input file, and
+all the codec data required to correctly decode the content between the start
+and end times specified on the commandline. For codecs with data dependencies
+like video keyframes, the keyframe prior to the starting time will be included
+in the output.
+</p>
+<p>
+An Apache server can be configured to use oggz-chop to handle all Ogg files
+(or, all Ogg files in a particular directory). An example Apache configuration
+is in the liboggz source tree, along with a script for installing it on a
+Debian server.
+</p>
+<p>
+The oggz-chop binary checks if it is being run as a CGI script (by checking
+some environment variables), and if so acts based on the CGI query parameter
+t=, much like mod_annodex. It accepts all the time specifications that
+mod_annodex accepts (npt and various smpte framerates), and start and end
+times separated by a /.
+</p>
+
+<h2>Dependencies</h2>
+
+<p>
+Oggz depends only on libogg, available in most free software
+distributions, or in source form at: http://xiph.org/downloads/
+</p>
+
+<p>
+Support is built-in for parsing the headers of and seeking to time
+positions in Ogg Dirac, FLAC, Speex, Theora and Vorbis. Oggz is also
+compatible with Annodex streams, and supports seeking on all tracks
+described in an Ogg Skeleton track.
+</p>
+
+<h2>Source</h2>
+
+<p>Checking out the sources<p>
+
+<!--
+This assumes that you begin with an empty working directory:
+
+<blockquote><pre>
+$ git init
+$ git clone git://git.xiph.org/liboggz.git
+</pre></blockquote>
+-->
+
+There is an up-to-date clone of this repo on github:
+<a href="http://github.com/kfish/liboggz/tree/master">http://github.com/kfish/liboggz/tree/master</a>.
+
+<!--#include virtual="/ssi/pagebottom.include" -->

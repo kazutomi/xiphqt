@@ -1,0 +1,94 @@
+<!--#include virtual="/ssi/header.include" -->
+<!-- Enter custom page information and styles here -->
+  <title>Xiph.org: libfishsound</title>
+</head>
+<body>
+<!--#include virtual="/common/xiphbar.include" -->
+
+<!--#include virtual="/ssi/pagetop.include" -->
+<!--  All your page content goes here  -->
+
+<h1>libfishsound</h1>
+
+<p>
+<b>libfishsound</b> provides a simple programming interface for decoding and
+encoding audio data using the Xiph.org codecs (FLAC, Speex and Vorbis).
+</p>
+
+<p>
+libfishsound by itself is designed to handle raw codec streams from a
+lower level layer such as UDP datagrams. When these codecs are used in
+files, they are commonly encapsulated in Ogg to produce Ogg FLAC, Speex
+and Ogg Vorbis files.
+</p>
+
+<p>
+libfishsound is a wrapper around the existing codec libraries and provides
+a consistent, higher-level programming interface. It has been designed for
+use in a wide variety of applications; it has no direct dependencies on
+Ogg encapsulation, though it is most commonly used in conjunction with
+<a href="/oggz/">liboggz</a> to decode or encode FLAC, Speex or Vorbis audio
+tracks in Ogg files, including Ogg Theora and Annodex.
+</p>
+
+<p>
+FishSound has been developed and tested on GNU/Linux, Darwin/MacOSX and
+Win32. It probably also works on other Unix-like systems via GNU autoconf.
+For Win32: nmake Makefiles, Visual Studio .NET 2003 solution files and
+Visual C++ 6.0 workspace files are all provided in the source distribution.
+</p>
+
+<h2>Documentation</h2>
+
+<p>
+Full documentation of the FishSound API, customization and installation,
+and complete examples of Ogg FLAC, Speex and Ogg Vorbis decoding and encoding
+are provided in the source tarball, and can be read online at:
+</p>
+
+<h2>License</h2>
+<p>
+FishSound is Free Software, available under a BSD-style license.
+</p>
+
+<h2>Download</h2>
+
+<ul>
+<li><a
+href="http://www.annodex.net/software/libfishsound/download/libfishsound-0.9.1.tar.gz">libfishsound-0.9.1.tar.gz
+(474 KB, Apr 7 2008)</a>
+</li>
+<li><a
+href="http://www.annodex.net/software/libfishsound/download/libfishsound-0.8.0.tar.gz">libfishsound-0.8.0.tar.gz
+(462 KB, Jun 4 2007)</a></li>
+<li><a href="http://www.annodex.net/software/libfishsound/download/">Archive</a></li>
+<li><a href="http://svn.annodex.net/libfishsound/trunk/release_notes/">Release notes</a></li>
+</ul>
+
+<h2>Source</h2>
+
+<p>Checking out the sources<p>
+
+<!--
+This assumes that you begin with an empty working directory:
+
+<blockquote><pre>
+$ git init
+$ git clone git://git.xiph.org/libfishsound.git
+</pre></blockquote>
+-->
+
+There is an up-to-date clone of this repo on github:
+<a href="http://github.com/kfish/libfishsound/tree/master">http://github.com/kfish/libfishsound/tree/master</a>.
+
+<h2>Dependencies</h2>
+
+<p>
+A full build of libfishsound has dependencies on the libraries provided by <a
+href="http://www.xiph.org/ogg/vorbis/">Vorbis</a> and <a href="http://www.speex.org/">Speex</a>.</p>
+<p>However, libfishound may be customized to only provide support for a
+specific codec, or to only allow encoding or decoding, as described <a
+href="http://www.annodex.net/software/libfishsound/html/group__configuration.html">here</a>.
+</p>
+
+<!--#include virtual="/ssi/pagebottom.include" -->
