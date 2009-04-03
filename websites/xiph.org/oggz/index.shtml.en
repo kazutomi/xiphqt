@@ -108,14 +108,12 @@ described in an Ogg Skeleton track.
 
 <p>Checking out the sources<p>
 
-<!--
 This assumes that you begin with an empty working directory:
 
 <blockquote><pre>
 $ git init
 $ git clone git://git.xiph.org/liboggz.git
 </pre></blockquote>
--->
 
 There is an up-to-date clone of this repo on github:
 <a href="http://github.com/kfish/liboggz/tree/master">http://github.com/kfish/liboggz/tree/master</a>.

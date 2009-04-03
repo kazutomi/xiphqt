@@ -69,14 +69,12 @@ href="http://www.annodex.net/software/libfishsound/download/libfishsound-0.8.0.t
 
 <p>Checking out the sources<p>
 
-<!--
 This assumes that you begin with an empty working directory:
 
 <blockquote><pre>
 $ git init
 $ git clone git://git.xiph.org/libfishsound.git
 </pre></blockquote>
--->
 
 There is an up-to-date clone of this repo on github:
 <a href="http://github.com/kfish/libfishsound/tree/master">http://github.com/kfish/libfishsound/tree/master</a>.
