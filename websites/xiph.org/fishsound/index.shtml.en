@@ -55,14 +55,12 @@ FishSound is Free Software, available under a BSD-style license.
 
 <ul>
 <li><a
-href="http://www.annodex.net/software/libfishsound/download/libfishsound-0.9.1.tar.gz">libfishsound-0.9.1.tar.gz
-(474 KB, Apr 7 2008)</a>
+href="http://www.xiph.net/releases/libfishsound/libfishsound-0.9.2.tar.gz">libfishsound-0.9.2.tar.gz
+(426 KB, Apr 8 2009)</a>
 </li>
+<li><a href="http://www.xiph.org/releases/libfishsound/">Archive</a></li>
 <li><a
-href="http://www.annodex.net/software/libfishsound/download/libfishsound-0.8.0.tar.gz">libfishsound-0.8.0.tar.gz
-(462 KB, Jun 4 2007)</a></li>
-<li><a href="http://www.annodex.net/software/libfishsound/download/">Archive</a></li>
-<li><a href="http://svn.annodex.net/libfishsound/trunk/release_notes/">Release notes</a></li>
+href="http://git.xiph.org/?p=libfishsound.git;a=tree;f=release_notes">Release notes</a></li>
 </ul>
 
 <h2>Source</h2>
