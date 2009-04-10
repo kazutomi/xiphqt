@@ -90,19 +90,17 @@ mod_annodex accepts (npt and various smpte framerates), and start and end
 times separated by a /.
 </p>
 
-<h2>Dependencies</h2>
+<h2>Download</h2>
 
-<p>
-Oggz depends only on libogg, available in most free software
-distributions, or in source form at: http://xiph.org/downloads/
-</p>
-
-<p>
-Support is built-in for parsing the headers of and seeking to time
-positions in Ogg Dirac, FLAC, Speex, Theora and Vorbis. Oggz is also
-compatible with Annodex streams, and supports seeking on all tracks
-described in an Ogg Skeleton track.
-</p>
+<ul>
+<li><a
+href="http://www.xiph.net/releases/liboggz/liboggz-0.9.9.tar.gz">liboggz-0.9.9.tar.gz
+(623 KB, Apr 10 2009)</a>
+</li>
+<li><a href="http://www.xiph.org/releases/liboggz/">Archive</a></li>
+<li><a
+href="http://git.xiph.org/?p=liboggz.git;a=tree;f=release_notes">Release notes</a></li>
+</ul>
 
 <h2>Source</h2>
 
@@ -117,5 +115,19 @@ $ git clone git://git.xiph.org/liboggz.git
 
 There is an up-to-date clone of this repo on github:
 <a href="http://github.com/kfish/liboggz/tree/master">http://github.com/kfish/liboggz/tree/master</a>.
+
+<h2>Dependencies</h2>
+
+<p>
+Oggz depends only on libogg, available in most free software
+distributions, or in source form at: http://xiph.org/downloads/
+</p>
+
+<p>
+Support is built-in for parsing the headers of and seeking to time
+positions in Ogg Dirac, FLAC, Speex, Theora and Vorbis. Oggz is also
+compatible with Annodex streams, and supports seeking on all tracks
+described in an Ogg Skeleton track.
+</p>
 
 <!--#include virtual="/ssi/pagebottom.include" -->
