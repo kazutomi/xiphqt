@@ -23,6 +23,10 @@ It offers various improvements over the reference libogg, including
 support for seeking, validation and timestamp interpretation.
 </p>
 
+<ul>
+<li><a href="http://www.xiph.org/oggz/doc/">API Documentation</a></li>
+</ul>
+
 <h2>oggz tool</h2>
 
 <pre>
