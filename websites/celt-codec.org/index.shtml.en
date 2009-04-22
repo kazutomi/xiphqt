@@ -69,6 +69,26 @@
 <h2>Headlines</h2>
 <ul class="descriptivelist">
    <li>
+      <h3>Compatibility version 0.5.1-1 released</h3>
+      <p class="submitdate">22 April, 2009</p>
+      <div class="description">
+                <p>This is an update of the previous 0.5.1 prerelease;
+                as several software and hardware projects have seen
+                fit to deplot this prerelease version for development
+                and testing, we've released this new version that
+                changes the installation namespace from 'celt' to
+                'celt051' to ease installation and parallel
+                development with other versions of celt without
+                conflict.  Aside from renaming symbols and install
+                locations to 'celt051' there are no other changes from
+                the celt 0.5.1 release.  As with other CELT
+                prereleases, this release is not compatible with
+                either 0.5.0 or earlier, or with 0.5.2 and later.  <p>
+      </div>
+   </li>
+
+
+   <li>
       <h3>Version 0.5.2 released</h3>
       <p class="submitdate">17 February, 2009</p>
       <div class="description">
@@ -80,6 +100,7 @@
 		<a href="../testing/test.0.5.2.shtml">0.5.2 testing page</a> has more information.</p>
       </div>
    </li>
+
    <li>
       <h3>Version 0.5.1 released</h3>
       <p class="submitdate">17 December, 2008</p>

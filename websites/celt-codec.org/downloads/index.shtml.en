@@ -46,6 +46,17 @@ The <a href="../testing/test.0.5.2.shtml">0.5.2 testing page</a> has more inform
 <li>Pre-built CLI encoder/decoder: <a href="http://downloads.us.xiph.org/releases/celt/celt_052_tools_win32.zip">celt_052_tools_win32.zip</a> (Windows)
 </ul>
 
+<h3 id='zero.5.1-1'>0.5.1-1</h3> <p>This is an update of 0.5.1 that
+renames exported library/header symbols and header install locations
+from 'celt*' to 'celt051*' in order to assist in packaging and
+deploying compatability versions of this prerelease alongside later,
+incompatible versions of celt.
+</p>
+
+<ul>
+<li><a href="http://downloads.us.xiph.org/releases/celt/celt-0.5.1-1.tar.gz">celt-0.5.1-1.tar.gz</a></li>
+</ul>
+
 <h3 id='zero.5.1'>0.5.1</h3>
 <p>This release fixes a number of issues with 0.5.0. Several cases
 where the encoder could fail have been fixed, including one that could cause memory 
