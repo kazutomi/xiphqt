@@ -1,0 +1,28 @@
+Individuals and organizations extracting sequences from this archive agree that
+the sequences and all intellectual property rights therein remain the property
+of the respective owners listed below. These materials may only be used for the
+purpose of developing, testing and promulgating technology standards. The
+respective owners make no warranties with respect to the materials and
+expressly disclaim any warranties regarding their fitness for any purpose.
+ 
+Owners of the sequences
+
+City          ABC
+ShuttleStart  NASA
+Raven         NASA
+Night         ABC
+Optis         Demografx
+Cyclists      Demografx
+Harbour       Demografx
+BigShips      ABC
+Sailormen     ABC
+Sheriff       Demografx
+Crew          NASA
+Jets          ABC
+Spincalendar  BBC
+Panslow       BBC
+VintageCar    BBC
+WalkingCouple BBC
+Toys&Calendar BBC
+Preakness     Demografx
+MadCyclist    RWTH Aachen University
