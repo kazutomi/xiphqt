@@ -1,0 +1,7 @@
+- The Online XSPF Validator has moved to *Git*.  The repository is over here:
+  http://git.xiph.org/?p=validator-xspf-org.git;a=summary
+
+- Git works well with *Windows*, please check out msysgit:
+  http://code.google.com/p/msysgit/
+
+Thanks for your attention.
