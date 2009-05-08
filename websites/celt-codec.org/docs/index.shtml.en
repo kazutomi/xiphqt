@@ -46,7 +46,7 @@ vlcActiveX = (IsObject(CreateObject("VideoLAN.VLCPlugin.2")))
 <h2>Papers</h2>
 
 <p>
-The following paper describes version 0.3.2 of the codec. While there are minor differences with the current version (mostly with the bit allocation), most of the paper is still valid.
+The first paper describes version 0.3.2 of the codec, while the second describe the low-complexity mode of version 0.5.1. While there are minor differences with the current version (mostly with the bit allocation), most of the paper is still valid.
 <ul>
    <li>J.-M. Valin, T. B. Terriberry, C. Montgomery, G. Maxwell, <a href="http://people.xiph.org/~jm/papers/celt_tasl.pdf">A High-Quality Speech and Audio Codec With Less Than 10 ms delay</a>, <i>To appear in IEEE Transactions on Audio, Speech and Language Processing</i>, 2009.
    </li>
