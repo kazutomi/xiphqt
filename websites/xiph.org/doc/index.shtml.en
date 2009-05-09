@@ -21,7 +21,9 @@ various Xiph software.
 <ul>
 <li><a href="/ogg/doc/">Ogg</li>
 <li><a href="/vorbis/doc/">Vorbis</li>
-<li><a href="/theora/">Theora</a></li>
+<li><a href="http://theora.org/doc/">Theora</a></li>
+<li><a href="http://flac.sourceforge.net/documentation.html">FLAC</a></li>
+<li><a href="http://www.celt-codec.org/docs/">CELT</a></li>
 <li><a href="/ao/doc/">ao</a></li>
 <li><a href="/oggz/doc/">oggz</a></li>
 <li><a href="/fishsound/doc/">fishsound</a></li>
