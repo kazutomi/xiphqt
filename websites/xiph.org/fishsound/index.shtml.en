@@ -43,8 +43,12 @@ Visual C++ 6.0 workspace files are all provided in the source distribution.
 <p>
 Full documentation of the FishSound API, customization and installation,
 and complete examples of Ogg FLAC, Speex and Ogg Vorbis decoding and encoding
-are provided in the source tarball, and can be read online at:
+are provided in the source tarball, and can be read online:
+<ul>
+<li><a href="http://www.xiph.org/fishsound/doc/">API Documentation</a></li>
+</ul>
 </p>
+
 
 <h2>License</h2>
 <p>

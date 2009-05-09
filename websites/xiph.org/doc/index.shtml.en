@@ -23,6 +23,8 @@ various Xiph software.
 <li><a href="/vorbis/doc/">Vorbis</li>
 <li><a href="/theora/">Theora</a></li>
 <li><a href="/ao/doc/">ao</a></li>
+<li><a href="/oggz/doc/">oggz</a></li>
+<li><a href="/fishsound/doc/">fishsound</a></li>
 </ul>
 
 <!--#include virtual="/ssi/pagebottom.include" -->
