@@ -98,10 +98,10 @@ times separated by a /.
 
 <ul>
 <li><a
-href="http://www.xiph.net/releases/liboggz/liboggz-0.9.9.tar.gz">liboggz-0.9.9.tar.gz
+href="http://downloads.xiph.org/releases/liboggz/liboggz-0.9.9.tar.gz">liboggz-0.9.9.tar.gz
 (623 KB, Apr 10 2009)</a>
 </li>
-<li><a href="http://www.xiph.org/releases/liboggz/">Archive</a></li>
+<li><a href="http://downloads.xiph.org/releases/liboggz/">Archive</a></li>
 <li><a
 href="http://git.xiph.org/?p=liboggz.git;a=tree;f=release_notes">Release notes</a></li>
 </ul>
