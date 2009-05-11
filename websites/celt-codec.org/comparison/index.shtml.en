@@ -83,15 +83,8 @@
 		</tr>
 	</tbody>
 </table>
-<h2>Definitions</h2>
-<dl>
-	<dt><dfn id="Robustness">bit-robust</dfn></dt>
-	<dd>
-		Robust to corruption at the bit level
-		(as found on wireless networks) 
-	</dd>
 
-</dl>
+<p align="center"><a href="codec_chart.png"><img src="codec_chart_small.png" width="516" height="386"></a></p>
 
 <h1>Codec Quality Comparison</h1>
 
