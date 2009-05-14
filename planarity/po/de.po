@@ -1,0 +1,943 @@
+# German translation for gPlananarity.
+# Copyright (C) 2007 Monty
+# This file is distributed under the same license as the gPlanarity package.
+# Petr Pisar <petr.pisar@atlas.cz>, 2007
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: gPlanarity 11496\n"
+"Report-Msgid-Bugs-To: Monty <monty@xiph.org>\n"
+"POT-Creation-Date: 2007-05-21 19:24+0200\n"
+"PO-Revision-Date: 2007-06-03 23:55:00+02\n"
+"Last-Translator: Petr Pisar <petr.pisar@atlas.cz\n"
+"Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#
+# File: ../dialog_finish.c, line: 80
+# File: ../dialog_level.c, line: 67
+# File: ../dialog_pause.c, line: 67
+# File: ../gameboard_logic_buttonbar.c, line: 54
+msgid "exit gPlanarity"
+msgstr "schlieﬂen gPlanarity"
+
+#
+# File: ../dialog_finish.c, line: 81
+# File: ../gameboard_logic_buttonbar.c, line: 55
+msgid "level selection menu"
+msgstr ""
+
+#
+# File: ../dialog_finish.c, line: 82
+msgid "play next level!"
+msgstr ""
+
+#
+# File: ../dialog_finish.c, line: 160
+msgid "Level Complete!"
+msgstr ""
+
+#
+# File: ../dialog_finish.c, line: 164
+#, c-format
+msgid "Elapsed: %s"
+msgstr ""
+
+#
+# File: ../dialog_finish.c, line: 168
+#, c-format
+msgid "Base score: %d points"
+msgstr ""
+
+#
+# File: ../dialog_finish.c, line: 176
+#, c-format
+msgid "Objective Exceeded! %d%%"
+msgstr ""
+
+#
+# File: ../dialog_finish.c, line: 181
+#, c-format
+msgid "Time bonus: %d points"
+msgstr ""
+
+#
+# File: ../dialog_finish.c, line: 186
+#, c-format
+msgid "Final score: %d points"
+msgstr ""
+
+#
+# File: ../dialog_finish.c, line: 191
+msgid "A high score!"
+msgstr ""
+
+#
+# File: ../dialog_finish.c, line: 194
+#, c-format
+msgid "Previous best: %ld points"
+msgstr ""
+
+#
+# File: ../dialog_finish.c, line: 199
+msgid "Total score to date:"
+msgstr ""
+
+#
+# File: ../dialog_finish.c, line: 201
+#, c-format
+msgid "%ld points"
+msgstr ""
+
+#
+# File: ../dialog_level.c, line: 68
+msgid "reset level"
+msgstr ""
+
+#
+# File: ../dialog_level.c, line: 69
+msgid "play level!"
+msgstr ""
+
+#
+# File: ../dialog_level.c, line: 139
+msgid "Available Levels"
+msgstr ""
+
+#
+# File: ../dialog_level_icons.c, line: 246
+#, c-format
+msgid "Level %d:"
+msgstr ""
+
+#
+# File: ../dialog_level_icons.c, line: 264
+#, c-format
+msgid "[not yet completed]"
+msgstr ""
+
+#
+# File: ../dialog_level_icons.c, line: 267
+#, c-format
+msgid "level high score: %ld"
+msgstr ""
+
+#
+# File: ../dialog_level_icons.c, line: 277
+#, c-format
+msgid "total score all levels: %ld"
+msgstr ""
+
+#
+# File: ../dialog_pause.c, line: 68
+msgid "resume game!"
+msgstr ""
+
+#
+# File: ../dialog_pause.c, line: 131
+msgid "Game Paused"
+msgstr ""
+
+#
+# File: ../dialog_pause.c, line: 134
+msgid "Time Elapsed:"
+msgstr ""
+
+#
+# File: ../dialog_pause.c, line: 186
+msgid "gPlanarity"
+msgstr ""
+
+#
+# File: ../dialog_pause.c, line: 190
+msgid "Untangle the mess!"
+msgstr ""
+
+#
+# File: ../dialog_pause.c, line: 194
+msgid "Drag verticies to eliminate crossed lines."
+msgstr ""
+
+#
+# File: ../dialog_pause.c, line: 195
+msgid "The objective may be a complete solution or"
+msgstr ""
+
+#
+# File: ../dialog_pause.c, line: 196
+msgid "getting as close as possible to solving an"
+msgstr ""
+
+#
+# File: ../dialog_pause.c, line: 197
+msgid "unsolvable puzzle.  Work quickly and"
+msgstr ""
+
+#
+# File: ../dialog_pause.c, line: 198
+msgid "exceed the objective for bonus points!"
+msgstr ""
+
+#
+# File: ../dialog_pause.c, line: 207
+msgid "gPlanarity written by Monty <monty@xiph.org>"
+msgstr ""
+
+#
+# File: ../dialog_pause.c, line: 208
+msgid "as a demonstration of Gtk+/Cairo"
+msgstr ""
+
+#
+# File: ../dialog_pause.c, line: 210
+msgid "Original Flash version of Planarity by"
+msgstr ""
+
+#
+# File: ../dialog_pause.c, line: 211
+msgid "John Tantalo <john.tantalo@case.edu>"
+msgstr ""
+
+#
+# File: ../dialog_pause.c, line: 213
+msgid "Original game concept by Mary Radcliffe"
+msgstr ""
+
+#
+# File: ../gameboard.c, line: 75
+#, c-format
+msgid ""
+"\n"
+"\n"
+"ERROR: The windowmanager appears to be ignoring resize requests.\n"
+"This stands a pretty good chance of scrambling any saved board larger\n"
+"than the default window size.\n"
+"\n"
+msgstr ""
+
+#
+# File: ../gameboard.c, line: 78
+# File: ../gameboard.c, line: 189
+#, c-format
+msgid ""
+"Clipping and/or expanding this board to the current window size...\n"
+"\n"
+msgstr ""
+
+#
+# File: ../gameboard.c, line: 184
+#, c-format
+msgid ""
+"\n"
+"\n"
+"ERROR: The window size granted by the windowmanager is not the\n"
+"window size gPlanarity requested.  If the windowmanager is\n"
+"configured to ignore application sizing requests, this stands\n"
+"a pretty good chance of scrambling saved boards later (and\n"
+"making everything look funny now).\n"
+"\n"
+msgstr ""
+
+#
+# File: ../gameboard_draw_intersection.c, line: 65
+msgid "rather many, really"
+msgstr ""
+
+#
+# File: ../gameboard_draw_main.c, line: 370
+#, c-format
+msgid "ERROR:  Could not load board icon \"%s\"\n"
+msgstr ""
+
+#
+# File: ../gameboard_draw_main.c, line: 436
+#, c-format
+msgid "ERROR:  Could not save board icon \"%s\"\n"
+msgstr ""
+
+#
+# File: ../gameboard_draw_score.c, line: 67
+#, c-format
+msgid "Level %d: %s"
+msgstr ""
+
+#
+# File: ../gameboard_draw_score.c, line: 68
+#, c-format
+msgid "Score: %d"
+msgstr ""
+
+#
+# File: ../gameboard_draw_score.c, line: 69
+#, c-format
+msgid "%d%%"
+msgstr ""
+
+#
+# File: ../gameboard_draw_score.c, line: 70
+#, c-format
+msgid "Intersections: %ld"
+msgstr ""
+
+#
+# File: ../gameboard_draw_score.c, line: 71
+#, c-format
+msgid "Objective: %s"
+msgstr ""
+
+#
+# File: ../gameboard_logic_buttonbar.c, line: 56
+msgid "reset board"
+msgstr ""
+
+#
+# File: ../gameboard_logic_buttonbar.c, line: 57
+msgid "pause"
+msgstr ""
+
+#
+# File: ../gameboard_logic_buttonbar.c, line: 58
+msgid "help / about"
+msgstr ""
+
+#
+# File: ../gameboard_logic_buttonbar.c, line: 59
+msgid "expand"
+msgstr ""
+
+#
+# File: ../gameboard_logic_buttonbar.c, line: 60
+msgid "shrink"
+msgstr ""
+
+#
+# File: ../gameboard_logic_buttonbar.c, line: 61
+msgid "hide/show lines"
+msgstr ""
+
+#
+# File: ../gameboard_logic_buttonbar.c, line: 62
+msgid "mark intersections"
+msgstr ""
+
+#
+# File: ../gameboard_logic_buttonbar.c, line: 63
+msgid "click when finished!"
+msgstr ""
+
+#
+# File: ../gameboard_logic.c, line: 371
+#, c-format
+msgid ""
+"ERROR:  Could not save board state for \"%s\":\n"
+"\t%s\n"
+msgstr ""
+
+#
+# File: ../gameboard_logic.c, line: 401
+#, c-format
+msgid ""
+"ERROR:  Could not read saved board state for \"%s\":\n"
+"\t%s\n"
+msgstr ""
+
+#
+# File: ../graph.c, line: 923
+#, c-format
+msgid "WARNING: edge references out of range vertex in save file\n"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 47
+msgid "A Small Beginning"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 48
+msgid "My First Real Level(tm)"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 49
+msgid "My First Mission Impossible(tm)"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 50
+msgid "Larger But Not Harder"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 51
+msgid "The Trick Is It's Easy"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 53
+msgid "Practice Before the Handbasket: One of Three"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 54
+msgid "Practice Before the Handbasket: Two of Three"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 55
+msgid "Practice Before the Handbasket: Three of Three"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 57
+msgid "Tough and Stringy"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 58
+msgid "Threadbare"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 60
+msgid "The Bumpy Circles Are Slightly More Difficult"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 61
+msgid "Three is a Magic Number"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 62
+msgid "Last Call For (Sort of) Triangles (For Now)"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 64
+msgid "Something Only Subtly Different"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 65
+msgid "It Can Roll! Granted, Not Very Well"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 66
+msgid "If You Squint, It's a Round Brick"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 68
+msgid "A New Objective"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 69
+msgid "How Low Can You Go?"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 70
+msgid "Military Industrial Complex"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 72
+msgid "The Hexagon is a Subtle and Wily Beast"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 73
+msgid "No, Really, The Hexagon Puzzles Are Harder"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 74
+msgid "Cursed?  Call 1-800-HEX-A-GON Today!"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 76
+msgid "Round but Straightforward"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 78
+msgid "A Star Is Born... Then Solved"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 79
+msgid "Oh, Rain*bows*..."
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 80
+msgid "Solve Along the Dotted Line"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 81
+msgid "Using All Available Space"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 82
+msgid "Brainfreeze"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 83
+msgid "Tropical Storm Invest"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 85
+msgid "Algorithm: Original/Dense (Order: 8)"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 86
+msgid "Algorithm: Original (Order: 8)"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 87
+msgid "Algorithm: Original/Sparse (Order: 8)"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 88
+msgid "Algorithm: Nasty (Order: 8)"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 89
+msgid "Algorithm: Freeform/4 (Order: 8)"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 90
+msgid "Algorithm: Rogue (Order: 8)"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 91
+msgid "Algorithm: Embed (Order: 8)"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 92
+msgid "Operator"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 94
+msgid "Algorithm: Original/Dense (Order: 9)"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 95
+msgid "Algorithm: Original (Order: 9)"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 96
+msgid "Algorithm: Original/Sparse (Order: 9)"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 97
+msgid "Algorithm: Nasty (Order: 9)"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 98
+msgid "Algorithm: Freeform/4 (Order: 9)"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 99
+msgid "Algorithm: Rogue (Order: 9)"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 100
+msgid "Algorithm: Embed (Order: 9)"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 101
+msgid "The Inside Is Pointy"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 103
+msgid "Algorithm: Original/Dense (Order: 10)"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 104
+msgid "Algorithm: Original (Order: 10)"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 105
+msgid "Algorithm: Original/Sparse (Order: 10)"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 106
+msgid "Algorithm: Nasty (Order: 10)"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 107
+msgid "Algorithm: Freeform/4 (Order: 10)"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 108
+msgid "Algorithm: Rogue (Order: 10)"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 109
+msgid "Algorithm: Embed (Order: 10)"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 110
+msgid "Riches and Good Luck"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 112
+msgid "Algorithm: Original/Dense (Order: 11)"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 113
+msgid "Algorithm: Original (Order: 11)"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 114
+msgid "Algorithm: Original/Sparse (Order: 11)"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 115
+msgid "Algorithm: Nasty (Order: 11)"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 116
+msgid "Algorithm: Freeform/4 (Order: 11)"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 117
+msgid "Algorithm: Rogue (Order: 11)"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 118
+msgid "Algorithm: Embed (Order: 11)"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 119
+msgid "Mmmm... Doughnut"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 121
+msgid "Algorithm: Original/Dense (Order: 12)"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 122
+msgid "Algorithm: Original (Order: 12)"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 123
+msgid "Algorithm: Original/Sparse (Order: 12)"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 124
+msgid "Algorithm: Nasty (Order: 12)"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 125
+msgid "Algorithm: Freeform/4 (Order: 12)"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 126
+msgid "Algorithm: Rogue (Order: 12)"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 127
+msgid "Algorithm: Embed (Order: 12)"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 128
+msgid "Quick and Dirty, or Slow and Steady"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 129
+msgid "Little Fluffy Clouds"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 131
+msgid "Algorithm: Original/Dense (Order: 13)"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 132
+msgid "Algorithm: Original (Order: 13)"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 133
+msgid "Algorithm: Original/Sparse (Order: 13)"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 134
+msgid "Algorithm: Nasty (Order: 13)"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 135
+msgid "Algorithm: Freeform/4 (Order: 13)"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 136
+msgid "Algorithm: Rogue (Order: 13)"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 137
+msgid "Algorithm: Embed (Order: 13)"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 138
+msgid "A Sudden Urge To Go Shopping"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 139
+msgid "Sweet Reward"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 145
+#, c-format
+msgid "Algorithm: Original/Dense (Order: %d)"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 146
+#, c-format
+msgid "Algorithm: Original (Order: %d)"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 147
+#, c-format
+msgid "Algorithm: Original/Sparse (Order: %d)"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 148
+#, c-format
+msgid "Algorithm: Nasty (Order: %d)"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 149
+#, c-format
+msgid "Algorithm: Freeform/4 (Order: %d)"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 150
+#, c-format
+msgid "Algorithm: Rogue (Order: %d)"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 151
+#, c-format
+msgid "Algorithm: Embed (Order: %d)"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 152
+#, c-format
+msgid "Algorithm: Region (Order: %d)"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 196
+# File: ../graph_generate.c, line: 215
+#, c-format
+msgid "Couldn't allocate memory for level name.\n"
+msgstr ""
+
+#
+# File: ../graph_generate.c, line: 210
+#, c-format
+msgid "Couldn't allocate memory for level desciption.\n"
+msgstr ""
+
+#
+# File: ../graph_region.c, line: 459
+#, c-format
+msgid ""
+"region overlap adjustment failed in arc_arc_adj; \n"
+"  This is an internal error that should never happen.\n"
+msgstr ""
+
+#
+# File: ../graph_score.c, line: 67
+msgid "zero intersections"
+msgstr ""
+
+#
+# File: ../graph_score.c, line: 70
+msgid "1 intersection or fewer"
+msgstr ""
+
+#
+# File: ../graph_score.c, line: 72
+msgid "1 intersection"
+msgstr ""
+
+#
+# File: ../graph_score.c, line: 75
+#, c-format
+msgid "%d intersections%s"
+msgstr ""
+
+#
+# File: ../graph_score.c, line: 77
+msgid " or fewer"
+msgstr ""
+
+#
+# File: ../levelstate.c, line: 169
+#, c-format
+msgid ""
+"ERROR:  Could not save game state file \"%s\":\n"
+"\t%s\n"
+msgstr ""
+
+#
+# File: ../levelstate.c, line: 216
+#, c-format
+msgid ""
+"ERROR:  Could not read game state file \"%s\":\n"
+"\t%s\n"
+msgstr ""
+
+#
+# File: ../main.c, line: 73
+#, c-format
+msgid ""
+"ERROR:  Could not create directory (%s) to save game state:\n"
+"\t%s\n"
+msgstr ""
+
+#
+# File: ../main.c, line: 93
+#, c-format
+msgid ""
+"\n"
+"Trapped signal %d; saving state and exiting!\n"
+msgstr ""
+
+#
+# File: ../main.c, line: 146
+#, c-format
+msgid ""
+"\n"
+"Unable to find any suitable %s fonts!\n"
+"Continuing, but the the results are likely to be poor.\n"
+"\n"
+msgstr ""
+
+#
+# File: ../main.c, line: 149
+# File: ../main.c, line: 167
+msgid "bold italic"
+msgstr ""
+
+#
+# File: ../main.c, line: 149
+# File: ../main.c, line: 167
+msgid "italic"
+msgstr ""
+
+#
+# File: ../main.c, line: 149
+# File: ../main.c, line: 167
+msgid "bold"
+msgstr ""
+
+#
+# File: ../main.c, line: 149
+# File: ../main.c, line: 167
+msgid "medium"
+msgstr ""
+
+#
+# File: ../main.c, line: 164
+#, c-format
+msgid ""
+"\n"
+"Selected %s font \"%s\" is not scalable!  This is almost as bad\n"
+"as not finding any font at all.  Continuing, but this may look\n"
+"very poor indeed.\n"
+"\n"
+msgstr ""
+
+#
+# File: ../main.c, line: 288
+#, c-format
+msgid ""
+"No homedir environment variable set!  gPlanarity will be\n"
+"unable to permanently save any progress or board state.\n"
+msgstr ""
+
+#
+# File: ../timer.c, line: 51
+#, c-format
+msgid "%d:%02d:%02d"
+msgstr ""
+
+#
+# File: ../timer.c, line: 53
+#, c-format
+msgid "%d:%02d"
+msgstr ""
+
+#
+# File: ../timer.c, line: 55
+#, c-format
+msgid "%d seconds"
+msgstr ""

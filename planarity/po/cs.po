@@ -1,0 +1,450 @@
+# Czech translation for gPlanarity
+# Copyright (C) 2007
+# This file is distributed under the same license as the gPlanarity package.
+# Petr Pisar <petr.pisar@atlas.cz>, 2007
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: gPlanarity 11496\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2007-05-15 17:41+0200\n"
+"PO-Revision-Date: 2007-05-15 17:58+0200\n"
+"Last-Translator: Petr Pisar <petr.pisar@atlas.cz>\n"
+"Language-Team: Czech <translation-team-cs@lists.sourceforge.net>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../dialog_finish.c:160
+msgid "Level Complete!"
+msgstr "Kolo hotovo!"
+
+#: ../dialog_finish.c:164
+#, c-format
+msgid "Elapsed: %s"
+msgstr "Uplynulo: %s"
+
+#: ../dialog_finish.c:168
+#, c-format
+msgid "Base score: %d points"
+msgstr "Základní skóre: %d bodů"
+
+#: ../dialog_finish.c:176
+#, c-format
+msgid "Objective Exceeded! %d%%"
+msgstr "Úkol překonán! %d%%"
+
+#: ../dialog_finish.c:181
+#, c-format
+msgid "Time bonus: %d points"
+msgstr "Časový bonus: %d bodů"
+
+#: ../dialog_finish.c:186
+#, c-format
+msgid "Final score: %d points"
+msgstr "Konečné skóre: %d bodů"
+
+#: ../dialog_finish.c:191
+msgid "A high score!"
+msgstr "Rekord!"
+
+#: ../dialog_finish.c:194
+#, c-format
+msgid "Previous best: %ld points"
+msgstr "Předchozí nejlepší: %ld bodů"
+
+#: ../dialog_finish.c:199
+msgid "Total score to date:"
+msgstr "Celkové skóre k datu:"
+
+#: ../dialog_finish.c:201
+#, c-format
+msgid "%ld points"
+msgstr "%ld bodů"
+
+#: ../dialog_level.c:67 ../dialog_pause.c:67 ../gameboard_logic_buttonbar.c:54
+msgid "exit gPlanarity"
+msgstr "ukončit gPlanarity"
+
+#: ../dialog_level.c:68
+msgid "reset level"
+msgstr "znovu začít kolo"
+
+#: ../dialog_level.c:69
+msgid "play level!"
+msgstr "hrát kolo!"
+
+#: ../dialog_level.c:139
+msgid "Available Levels"
+msgstr "Dostupná kola"
+
+#: ../dialog_level_icons.c:246
+#, c-format
+msgid "Level %d:"
+msgstr "Kolo %d:"
+
+#: ../dialog_level_icons.c:264
+#, c-format
+msgid "[not yet completed]"
+msgstr "[ještě nedokončeno]"
+
+#: ../dialog_level_icons.c:267
+#, c-format
+msgid "level high score: %ld"
+msgstr "rekord pro kolo: %ld"
+
+#: ../dialog_level_icons.c:277
+#, c-format
+msgid "total score all levels: %ld"
+msgstr "celkové skóre za všechna kola: %ld"
+
+#: ../dialog_pause.c:68
+msgid "resume game!"
+msgstr "pokračovat ve hře!"
+
+#: ../dialog_pause.c:131
+msgid "Game Paused"
+msgstr "Hra zastavena"
+
+#: ../dialog_pause.c:134
+msgid "Time Elapsed:"
+msgstr "Uplynulý čas:"
+
+#: ../dialog_pause.c:186
+msgid "gPlanarity"
+msgstr "gPlanarity"
+
+#: ../dialog_pause.c:190
+msgid "Untangle the mess!"
+msgstr "Rozmotejte šmodrchanec!"
+
+#: ../dialog_pause.c:194
+msgid "Drag verticies to eliminate crossed lines."
+msgstr "Přesunujte vrcholy, abyste odstranili křížící se čáry."
+
+#: ../dialog_pause.c:195
+msgid "The objective may be a complete solution or"
+msgstr "Zadání může být uplné řešení nebo"
+
+#: ../dialog_pause.c:196
+msgid "getting as close as possible to solving an"
+msgstr "dobrání se podoby co nejblížší řešení"
+
+#: ../dialog_pause.c:197
+msgid "unsolvable puzzle.  Work quickly and"
+msgstr "neřešitelného rébusu. Pracujte rychle a"
+
+#: ../dialog_pause.c:198
+msgid "exceed the objective for bonus points!"
+msgstr "získejte body navíc za překonání zadání!"
+
+#: ../dialog_pause.c:207
+msgid "gPlanarity written by Monty <monty@xiph.org>"
+msgstr "gPlanarity napsal Monty <monty@xiph.org>"
+
+#: ../dialog_pause.c:208
+msgid "as a demonstration of Gtk+/Cairo"
+msgstr "jako demo Gtk+/Caira"
+
+#: ../dialog_pause.c:210
+msgid "Original Flash version of Planarity by"
+msgstr "Původní verzi Planarity ve flashy napsal"
+
+#: ../dialog_pause.c:211
+msgid "John Tantalo <john.tantalo@case.edu>"
+msgstr "John Tantalo <john.tantalo@case.edu>"
+
+#: ../dialog_pause.c:213
+msgid "Original game concept by Mary Radcliffe"
+msgstr "Koncepci hry vymysla Mary Radcliffe."
+
+#: ../gameboard.c:75
+#, c-format
+msgid ""
+"\n"
+"\n"
+"ERROR: The windowmanager appears to be ignoring resize requests.\n"
+"This stands a pretty good chance of scrambling any saved board larger\n"
+"than the default window size.\n"
+"\n"
+msgstr ""
+"\n"
+"\n"
+"CHYBA: Zdá se, že správce oken ignoruje požadavky na změnu velikosti okna.\n"
+"Což znamená docela dobrou šanci, že uložená deska větší než výchozí "
+"velikost\n"
+"okna bude poškozená.\n"
+"\n"
+
+#: ../gameboard.c:78 ../gameboard.c:189
+#, c-format
+msgid ""
+"Clipping and/or expanding this board to the current window size...\n"
+"\n"
+msgstr ""
+"Lze očekávat oříznutí a/nebo roztažení takové desky na rozměry okna…\n"
+"\n"
+
+#: ../gameboard.c:184
+#, c-format
+msgid ""
+"\n"
+"\n"
+"ERROR: The window size granted by the windowmanager is not the\n"
+"window size gPlanarity requested.  If the windowmanager is\n"
+"configured to ignore application sizing requests, this stands\n"
+"a pretty good chance of scrambling saved boards later (and\n"
+"making everything look funny now).\n"
+"\n"
+msgstr ""
+"\n"
+"\n"
+"CHYBA: Požadovaná velikost okna gPlanarity a velikost zaručena správcem "
+"oken\n"
+"se liší. Pokud je správce oken nastaven, aby ignoroval požadavky na změnu\n"
+"velikosti okna, je docela dobrá šance na poškození později uložených desek\n"
+"(a na veselý vzhled čehokoliv již od teď).\n"
+"\n"
+
+#: ../gameboard_draw_intersection.c:65
+msgid "rather many, really"
+msgstr "raději mnoho, opravdu"
+
+#: ../gameboard_draw_main.c:370
+#, c-format
+msgid "ERROR:  Could not load board icon \"%s\"\n"
+msgstr "CHYBA: Nelze načíst ikonu desky „%s“\n"
+
+#: ../gameboard_draw_main.c:436
+#, c-format
+msgid "ERROR:  Could not save board icon \"%s\"\n"
+msgstr "CHYBA: nelze uložit ikonu desky „%s“\n"
+
+#: ../gameboard_draw_score.c:67
+#, c-format
+msgid "Level %d: %s"
+msgstr "Kolo %d: %s"
+
+#: ../gameboard_draw_score.c:68
+#, c-format
+msgid "Score: %d"
+msgstr "Skóre: %d"
+
+#: ../gameboard_draw_score.c:69
+#, c-format
+msgid "%d%%"
+msgstr "%d%%"
+
+#: ../gameboard_draw_score.c:70
+#, c-format
+msgid "Intersections: %ld"
+msgstr "Průniků: %ld"
+
+#: ../gameboard_draw_score.c:71
+#, c-format
+msgid "Objective: %s"
+msgstr "Zadání: %s"
+
+#: ../gameboard_logic_buttonbar.c:55
+msgid "level selection menu"
+msgstr "nabídka výběru kol"
+
+#: ../gameboard_logic_buttonbar.c:56
+msgid "reset board"
+msgstr "resetovat desku"
+
+#: ../gameboard_logic_buttonbar.c:57
+msgid "pause"
+msgstr "pauza"
+
+#: ../gameboard_logic_buttonbar.c:58
+msgid "help / about"
+msgstr "nápověda / o programu"
+
+#: ../gameboard_logic_buttonbar.c:59
+msgid "expand"
+msgstr "roztáhnout"
+
+#: ../gameboard_logic_buttonbar.c:60
+msgid "shrink"
+msgstr "smrštit"
+
+#: ../gameboard_logic_buttonbar.c:61
+msgid "hide/show lines"
+msgstr "skrýt/zobrazit čáry"
+
+#: ../gameboard_logic_buttonbar.c:62
+msgid "mark intersections"
+msgstr "označit průniky"
+
+#: ../gameboard_logic_buttonbar.c:63
+msgid "click when finished!"
+msgstr "po dokončení klikněte!"
+
+#: ../gameboard_logic.c:371
+#, c-format
+msgid ""
+"ERROR:  Could not save board state for \"%s\":\n"
+"\t%s\n"
+msgstr ""
+"CHYBA: Nelze uložit stav desky pro „%s“:\n"
+"\t%s\n"
+
+#: ../gameboard_logic.c:401
+#, c-format
+msgid ""
+"ERROR:  Could not read saved board state for \"%s\":\n"
+"\t%s\n"
+msgstr ""
+"CHYBA: Nelze načíst uložený stav desky pro „%s“:\n"
+"\t%s\n"
+
+#: ../graph.c:923
+#, c-format
+msgid "WARNING: edge references out of range vertex in save file\n"
+msgstr "VAROVÁNÍ: hrana odkazuje na vrchol mimo rozsah uložený v souboru\n"
+
+#: ../graph_generate.c:196 ../graph_generate.c:215
+#, c-format
+msgid "Couldn't allocate memory for level name.\n"
+msgstr "Nelze vyhradit paměť pro jméno kola.\n"
+
+#: ../graph_generate.c:210
+#, c-format
+msgid "Couldn't allocate memory for level desciption.\n"
+msgstr "Nelze vyhradit paměť pro popis kola.\n"
+
+#: ../graph_region.c:459
+#, c-format
+msgid ""
+"region overlap adjustment failed in arc_arc_adj; \n"
+"  This is an internal error that should never happen.\n"
+msgstr ""
+"přizpůsobení překrývajících se oblastí selhalo v arc_arc_arj;\n"
+"  Toto je vnitřní chyba a nemělo by k ní nikdy dojít.\n"
+
+#: ../graph_score.c:67
+msgid "zero intersections"
+msgstr "žádné průniky"
+
+#: ../graph_score.c:70
+msgid "1 intersection or fewer"
+msgstr "1 průnik nebo méně"
+
+#: ../graph_score.c:72
+msgid "1 intersection"
+msgstr "1 průnik"
+
+#: ../graph_score.c:75
+#, c-format
+msgid "%d intersections%s"
+msgstr "%d průniků%s"
+
+#: ../graph_score.c:77
+msgid " or fewer"
+msgstr " nebo méně"
+
+#: ../levelstate.c:169
+#, c-format
+msgid ""
+"ERROR:  Could not save game state file \"%s\":\n"
+"\t%s\n"
+msgstr ""
+"CHYBA:  Nelze uložit soubor se stavem hry „%s“:\n"
+"\t%s\n"
+
+#: ../levelstate.c:216
+#, c-format
+msgid ""
+"ERROR:  Could not read game state file \"%s\":\n"
+"\t%s\n"
+msgstr ""
+"CHYBA:  Nelze načíst soubor se stavem hry „%s“:\n"
+"\t%s\n"
+
+#: ../main.c:73
+#, c-format
+msgid ""
+"ERROR:  Could not create directory (%s) to save game state:\n"
+"\t%s\n"
+msgstr ""
+"CHYBA:  Nelze vytvořit adresář (%s) pro ukládání stavu hry:\n"
+"\t%s\n"
+
+#: ../main.c:93
+#, c-format
+msgid ""
+"\n"
+"Trapped signal %d; saving state and exiting!\n"
+msgstr ""
+"\n"
+"Zachycen signál %d; uložím stav a skončím!\n"
+
+#: ../main.c:146
+#, c-format
+msgid ""
+"\n"
+"Unable to find any suitable %s fonts!\n"
+"Continuing, but the the results are likely to be poor.\n"
+"\n"
+msgstr ""
+"\n"
+"Nelze najít žádný vhodný font s %s!\n"
+"Pokračuji, ale výsledek asi bude ošklivý.\n"
+"\n"
+
+#: ../main.c:149 ../main.c:167
+msgid "bold italic"
+msgstr "tučnou kurzívou"
+
+#: ../main.c:149 ../main.c:167
+msgid "italic"
+msgstr "kurzívou"
+
+#: ../main.c:149 ../main.c:167
+msgid "bold"
+msgstr "tučným řezem"
+
+#: ../main.c:149 ../main.c:167
+msgid "medium"
+msgstr "středním řezem"
+
+#: ../main.c:164
+#, c-format
+msgid ""
+"\n"
+"Selected %s font \"%s\" is not scalable!  This is almost as bad\n"
+"as not finding any font at all.  Continuing, but this may look\n"
+"very poor indeed.\n"
+"\n"
+msgstr ""
+"\n"
+"Vybraný font s %s „%s“ není škálovatelný!\n"
+"Toto situace je téměř tak špatná jako když se nenajde font žádný.\n"
+"Pokračuji, ale výsledek bude asi ošklivý\n"
+"\n"
+
+#: ../main.c:288
+#, c-format
+msgid ""
+"No homedir environment variable set!  gPlanarity will be\n"
+"unable to permanently save any progress or board state.\n"
+msgstr ""
+"Žádná proměnná prostředí neudává domovský adresář! gPlanatiry nebude "
+"schopné\n"
+"trvale uložit postup hráče nebo stav hrací desky.\n"
+
+#: ../timer.c:51
+#, c-format
+msgid "%d:%02d:%02d"
+msgstr "%d:%02d:%02d"
+
+#: ../timer.c:53
+#, c-format
+msgid "%d:%02d"
+msgstr "%d:%02d"
+
+#: ../timer.c:55
+#, c-format
+msgid "%d seconds"
+msgstr "%d sekund"
