@@ -6,7 +6,6 @@ TARGET  = gPlanarity
 CC      = gcc 
 LD      = gcc
 export INSTALL = install
-STRIP   = strip
 PREFIX  = /usr/local
 BINDIR  = $(PREFIX)/bin
 ETCDIR  = /etc/$(TARGET)
@@ -85,7 +84,6 @@ all: all-local all-recursive
 all-local:    
 	pkg-config --cflags "gtk+-2.0 $(GTKVER) cairo $(CAIROVER) freetype2" 1>/dev/null
 	$(MAKE) target CFLAGS='-O2 -ffast-math $(GCF) $(ADD_DEF)'
-	$(STRIP) $(TARGET)
 
 all-recursive:
 	for D in $(SUBDIRS); do make -C $$D || exit 1; done
@@ -93,7 +91,6 @@ all-recursive:
 static:    
 	pkg-config --cflags "gtk+-2.0 $(GTKVER) cairo $(CAIROVER) freetype2" 1>/dev/null
 	$(MAKE) static-target CFLAGS='-O2 -ffast-math $(GCF) $(ADD_DEF)'	
-#	$(STRIP) $(TARGET)
 
 debug:
 	pkg-config --cflags "gtk+-2.0 $(GTKVER) cairo $(CAIROVER) freetype2" 1>/dev/null
