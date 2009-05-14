@@ -12,14 +12,14 @@ BINDIR  = $(PREFIX)/bin
 ETCDIR  = /etc/$(TARGET)
 MANDIR  = $(PREFIX)/man
 
-#DISABLE_NLS = true
+DISABLE_NLS = true
 # White space delimited list of locales you want to support. Defaults to all
 # available ones.
 #export WANT_LINGUAS := cs
 
 # All subdirs with Makefiles
 
-SUBDIRS = po
+SUBDIRS = 
 
 # By default, enable NLS
 ifeq ($(origin DISABLE_NLS), undefined)
