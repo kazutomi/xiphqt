@@ -12,7 +12,7 @@ BINDIR  = $(PREFIX)/bin
 ETCDIR  = /etc/$(TARGET)
 MANDIR  = $(PREFIX)/man
 
-DISABLE_NLS = true
+#DISABLE_NLS = true
 # White space delimited list of locales you want to support. Defaults to all
 # available ones.
 #export WANT_LINGUAS := cs
