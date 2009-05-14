@@ -35,7 +35,7 @@
 #include <time.h>
 #include <string.h>
 
-#include "gettext.h"
+#include "nls.h"
 #include "graph.h"
 #include "gameboard.h"
 #include "levelstate.h"

@@ -1,165 +1,177 @@
 # SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
+# Copyright (C) 2007 Monty
+# This file is distributed under the same license as the gPlanarity package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-05-15 17:41+0200\n"
+"Report-Msgid-Bugs-To: Monty <monty@xiph.org>\n"
+"POT-Creation-Date: 2009-05-14 17:11-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
-
-#: ../dialog_finish.c:160
+#
+# File: ../dialog_finish.c, line: 80
+# File: ../dialog_level.c, line: 67
+# File: ../dialog_pause.c, line: 67
+# File: ../gameboard_logic_buttonbar.c, line: 54
+msgid "exit gPlanarity"
+msgstr ""
+#
+# File: ../dialog_finish.c, line: 81
+# File: ../gameboard_logic_buttonbar.c, line: 55
+msgid "level selection menu"
+msgstr ""
+#
+# File: ../dialog_finish.c, line: 82
+msgid "play next level!"
+msgstr ""
+#
+# File: ../dialog_finish.c, line: 160
 msgid "Level Complete!"
 msgstr ""
-
-#: ../dialog_finish.c:164
+#
+# File: ../dialog_finish.c, line: 164
 #, c-format
 msgid "Elapsed: %s"
 msgstr ""
-
-#: ../dialog_finish.c:168
+#
+# File: ../dialog_finish.c, line: 168
 #, c-format
 msgid "Base score: %d points"
 msgstr ""
-
-#: ../dialog_finish.c:176
+#
+# File: ../dialog_finish.c, line: 176
 #, c-format
 msgid "Objective Exceeded! %d%%"
 msgstr ""
-
-#: ../dialog_finish.c:181
+#
+# File: ../dialog_finish.c, line: 181
 #, c-format
 msgid "Time bonus: %d points"
 msgstr ""
-
-#: ../dialog_finish.c:186
+#
+# File: ../dialog_finish.c, line: 186
 #, c-format
 msgid "Final score: %d points"
 msgstr ""
-
-#: ../dialog_finish.c:191
+#
+# File: ../dialog_finish.c, line: 191
 msgid "A high score!"
 msgstr ""
-
-#: ../dialog_finish.c:194
+#
+# File: ../dialog_finish.c, line: 194
 #, c-format
 msgid "Previous best: %ld points"
 msgstr ""
-
-#: ../dialog_finish.c:199
+#
+# File: ../dialog_finish.c, line: 199
 msgid "Total score to date:"
 msgstr ""
-
-#: ../dialog_finish.c:201
+#
+# File: ../dialog_finish.c, line: 201
 #, c-format
 msgid "%ld points"
 msgstr ""
-
-#: ../dialog_level.c:67 ../dialog_pause.c:67 ../gameboard_logic_buttonbar.c:54
-msgid "exit gPlanarity"
-msgstr ""
-
-#: ../dialog_level.c:68
+#
+# File: ../dialog_level.c, line: 68
 msgid "reset level"
 msgstr ""
-
-#: ../dialog_level.c:69
+#
+# File: ../dialog_level.c, line: 69
 msgid "play level!"
 msgstr ""
-
-#: ../dialog_level.c:139
+#
+# File: ../dialog_level.c, line: 139
 msgid "Available Levels"
 msgstr ""
-
-#: ../dialog_level_icons.c:246
+#
+# File: ../dialog_level_icons.c, line: 246
 #, c-format
 msgid "Level %d:"
 msgstr ""
-
-#: ../dialog_level_icons.c:264
+#
+# File: ../dialog_level_icons.c, line: 264
 #, c-format
 msgid "[not yet completed]"
 msgstr ""
-
-#: ../dialog_level_icons.c:267
+#
+# File: ../dialog_level_icons.c, line: 267
 #, c-format
 msgid "level high score: %ld"
 msgstr ""
-
-#: ../dialog_level_icons.c:277
+#
+# File: ../dialog_level_icons.c, line: 277
 #, c-format
 msgid "total score all levels: %ld"
 msgstr ""
-
-#: ../dialog_pause.c:68
+#
+# File: ../dialog_pause.c, line: 68
 msgid "resume game!"
 msgstr ""
-
-#: ../dialog_pause.c:131
+#
+# File: ../dialog_pause.c, line: 131
 msgid "Game Paused"
 msgstr ""
-
-#: ../dialog_pause.c:134
+#
+# File: ../dialog_pause.c, line: 134
 msgid "Time Elapsed:"
 msgstr ""
-
-#: ../dialog_pause.c:186
+#
+# File: ../dialog_pause.c, line: 186
 msgid "gPlanarity"
 msgstr ""
-
-#: ../dialog_pause.c:190
+#
+# File: ../dialog_pause.c, line: 190
 msgid "Untangle the mess!"
 msgstr ""
-
-#: ../dialog_pause.c:194
+#
+# File: ../dialog_pause.c, line: 194
 msgid "Drag verticies to eliminate crossed lines."
 msgstr ""
-
-#: ../dialog_pause.c:195
+#
+# File: ../dialog_pause.c, line: 195
 msgid "The objective may be a complete solution or"
 msgstr ""
-
-#: ../dialog_pause.c:196
+#
+# File: ../dialog_pause.c, line: 196
 msgid "getting as close as possible to solving an"
 msgstr ""
-
-#: ../dialog_pause.c:197
+#
+# File: ../dialog_pause.c, line: 197
 msgid "unsolvable puzzle.  Work quickly and"
 msgstr ""
-
-#: ../dialog_pause.c:198
+#
+# File: ../dialog_pause.c, line: 198
 msgid "exceed the objective for bonus points!"
 msgstr ""
-
-#: ../dialog_pause.c:207
+#
+# File: ../dialog_pause.c, line: 207
 msgid "gPlanarity written by Monty <monty@xiph.org>"
 msgstr ""
-
-#: ../dialog_pause.c:208
+#
+# File: ../dialog_pause.c, line: 208
 msgid "as a demonstration of Gtk+/Cairo"
 msgstr ""
-
-#: ../dialog_pause.c:210
+#
+# File: ../dialog_pause.c, line: 210
 msgid "Original Flash version of Planarity by"
 msgstr ""
-
-#: ../dialog_pause.c:211
+#
+# File: ../dialog_pause.c, line: 211
 msgid "John Tantalo <john.tantalo@case.edu>"
 msgstr ""
-
-#: ../dialog_pause.c:213
+#
+# File: ../dialog_pause.c, line: 213
 msgid "Original game concept by Mary Radcliffe"
 msgstr ""
-
-#: ../gameboard.c:75
+#
+# File: ../gameboard.c, line: 75
 #, c-format
 msgid ""
 "\n"
@@ -169,15 +181,16 @@ msgid ""
 "than the default window size.\n"
 "\n"
 msgstr ""
-
-#: ../gameboard.c:78 ../gameboard.c:189
+#
+# File: ../gameboard.c, line: 78
+# File: ../gameboard.c, line: 189
 #, c-format
 msgid ""
 "Clipping and/or expanding this board to the current window size...\n"
 "\n"
 msgstr ""
-
-#: ../gameboard.c:184
+#
+# File: ../gameboard.c, line: 184
 #, c-format
 msgid ""
 "\n"
@@ -189,168 +202,165 @@ msgid ""
 "making everything look funny now).\n"
 "\n"
 msgstr ""
-
-#: ../gameboard_draw_intersection.c:65
+#
+# File: ../gameboard_draw_intersection.c, line: 65
 msgid "rather many, really"
 msgstr ""
-
-#: ../gameboard_draw_main.c:370
+#
+# File: ../gameboard_draw_main.c, line: 370
 #, c-format
 msgid "ERROR:  Could not load board icon \"%s\"\n"
 msgstr ""
-
-#: ../gameboard_draw_main.c:436
+#
+# File: ../gameboard_draw_main.c, line: 436
 #, c-format
 msgid "ERROR:  Could not save board icon \"%s\"\n"
 msgstr ""
-
-#: ../gameboard_draw_score.c:67
+#
+# File: ../gameboard_draw_score.c, line: 67
 #, c-format
 msgid "Level %d: %s"
 msgstr ""
-
-#: ../gameboard_draw_score.c:68
+#
+# File: ../gameboard_draw_score.c, line: 68
 #, c-format
 msgid "Score: %d"
 msgstr ""
-
-#: ../gameboard_draw_score.c:69
+#
+# File: ../gameboard_draw_score.c, line: 69
 #, c-format
 msgid "%d%%"
 msgstr ""
-
-#: ../gameboard_draw_score.c:70
+#
+# File: ../gameboard_draw_score.c, line: 70
 #, c-format
 msgid "Intersections: %ld"
 msgstr ""
-
-#: ../gameboard_draw_score.c:71
+#
+# File: ../gameboard_draw_score.c, line: 71
 #, c-format
 msgid "Objective: %s"
 msgstr ""
-
-#: ../gameboard_logic_buttonbar.c:55
-msgid "level selection menu"
-msgstr ""
-
-#: ../gameboard_logic_buttonbar.c:56
+#
+# File: ../gameboard_logic_buttonbar.c, line: 56
 msgid "reset board"
 msgstr ""
-
-#: ../gameboard_logic_buttonbar.c:57
+#
+# File: ../gameboard_logic_buttonbar.c, line: 57
 msgid "pause"
 msgstr ""
-
-#: ../gameboard_logic_buttonbar.c:58
+#
+# File: ../gameboard_logic_buttonbar.c, line: 58
 msgid "help / about"
 msgstr ""
-
-#: ../gameboard_logic_buttonbar.c:59
+#
+# File: ../gameboard_logic_buttonbar.c, line: 59
 msgid "expand"
 msgstr ""
-
-#: ../gameboard_logic_buttonbar.c:60
+#
+# File: ../gameboard_logic_buttonbar.c, line: 60
 msgid "shrink"
 msgstr ""
-
-#: ../gameboard_logic_buttonbar.c:61
+#
+# File: ../gameboard_logic_buttonbar.c, line: 61
 msgid "hide/show lines"
 msgstr ""
-
-#: ../gameboard_logic_buttonbar.c:62
+#
+# File: ../gameboard_logic_buttonbar.c, line: 62
 msgid "mark intersections"
 msgstr ""
-
-#: ../gameboard_logic_buttonbar.c:63
+#
+# File: ../gameboard_logic_buttonbar.c, line: 63
 msgid "click when finished!"
 msgstr ""
-
-#: ../gameboard_logic.c:371
+#
+# File: ../gameboard_logic.c, line: 371
 #, c-format
 msgid ""
 "ERROR:  Could not save board state for \"%s\":\n"
 "\t%s\n"
 msgstr ""
-
-#: ../gameboard_logic.c:401
+#
+# File: ../gameboard_logic.c, line: 401
 #, c-format
 msgid ""
 "ERROR:  Could not read saved board state for \"%s\":\n"
 "\t%s\n"
 msgstr ""
-
-#: ../graph.c:923
+#
+# File: ../graph.c, line: 923
 #, c-format
 msgid "WARNING: edge references out of range vertex in save file\n"
 msgstr ""
-
-#: ../graph_generate.c:196 ../graph_generate.c:215
+#
+# File: ../graph_generate.c, line: 196
+# File: ../graph_generate.c, line: 215
 #, c-format
 msgid "Couldn't allocate memory for level name.\n"
 msgstr ""
-
-#: ../graph_generate.c:210
+#
+# File: ../graph_generate.c, line: 210
 #, c-format
 msgid "Couldn't allocate memory for level desciption.\n"
 msgstr ""
-
-#: ../graph_region.c:459
+#
+# File: ../graph_region.c, line: 459
 #, c-format
 msgid ""
 "region overlap adjustment failed in arc_arc_adj; \n"
 "  This is an internal error that should never happen.\n"
 msgstr ""
-
-#: ../graph_score.c:67
+#
+# File: ../graph_score.c, line: 67
 msgid "zero intersections"
 msgstr ""
-
-#: ../graph_score.c:70
+#
+# File: ../graph_score.c, line: 70
 msgid "1 intersection or fewer"
 msgstr ""
-
-#: ../graph_score.c:72
+#
+# File: ../graph_score.c, line: 72
 msgid "1 intersection"
 msgstr ""
-
-#: ../graph_score.c:75
+#
+# File: ../graph_score.c, line: 75
 #, c-format
 msgid "%d intersections%s"
 msgstr ""
-
-#: ../graph_score.c:77
+#
+# File: ../graph_score.c, line: 77
 msgid " or fewer"
 msgstr ""
-
-#: ../levelstate.c:169
+#
+# File: ../levelstate.c, line: 169
 #, c-format
 msgid ""
 "ERROR:  Could not save game state file \"%s\":\n"
 "\t%s\n"
 msgstr ""
-
-#: ../levelstate.c:216
+#
+# File: ../levelstate.c, line: 216
 #, c-format
 msgid ""
 "ERROR:  Could not read game state file \"%s\":\n"
 "\t%s\n"
 msgstr ""
-
-#: ../main.c:73
+#
+# File: ../main.c, line: 73
 #, c-format
 msgid ""
 "ERROR:  Could not create directory (%s) to save game state:\n"
 "\t%s\n"
 msgstr ""
-
-#: ../main.c:93
+#
+# File: ../main.c, line: 93
 #, c-format
 msgid ""
 "\n"
 "Trapped signal %d; saving state and exiting!\n"
 msgstr ""
-
-#: ../main.c:146
+#
+# File: ../main.c, line: 146
 #, c-format
 msgid ""
 "\n"
@@ -358,24 +368,28 @@ msgid ""
 "Continuing, but the the results are likely to be poor.\n"
 "\n"
 msgstr ""
-
-#: ../main.c:149 ../main.c:167
+#
+# File: ../main.c, line: 149
+# File: ../main.c, line: 167
 msgid "bold italic"
 msgstr ""
-
-#: ../main.c:149 ../main.c:167
+#
+# File: ../main.c, line: 149
+# File: ../main.c, line: 167
 msgid "italic"
 msgstr ""
-
-#: ../main.c:149 ../main.c:167
+#
+# File: ../main.c, line: 149
+# File: ../main.c, line: 167
 msgid "bold"
 msgstr ""
-
-#: ../main.c:149 ../main.c:167
+#
+# File: ../main.c, line: 149
+# File: ../main.c, line: 167
 msgid "medium"
 msgstr ""
-
-#: ../main.c:164
+#
+# File: ../main.c, line: 164
 #, c-format
 msgid ""
 "\n"
@@ -384,25 +398,25 @@ msgid ""
 "very poor indeed.\n"
 "\n"
 msgstr ""
-
-#: ../main.c:288
+#
+# File: ../main.c, line: 288
 #, c-format
 msgid ""
 "No homedir environment variable set!  gPlanarity will be\n"
 "unable to permanently save any progress or board state.\n"
 msgstr ""
-
-#: ../timer.c:51
+#
+# File: ../timer.c, line: 51
 #, c-format
 msgid "%d:%02d:%02d"
 msgstr ""
-
-#: ../timer.c:53
+#
+# File: ../timer.c, line: 53
 #, c-format
 msgid "%d:%02d"
 msgstr ""
-
-#: ../timer.c:55
+#
+# File: ../timer.c, line: 55
 #, c-format
 msgid "%d seconds"
 msgstr ""

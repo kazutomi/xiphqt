@@ -29,7 +29,7 @@
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
 
-#include "gettext.h"
+#include "nls.h"
 #include "graph.h"
 #include "timer.h"
 #include "gameboard.h"
