@@ -26,7 +26,7 @@
 
 #include <time.h>
 #include "timer.h"
-#include "gettext.h"
+#include "nls.h"
 
 static int paused;
 static time_t begin_time_add;

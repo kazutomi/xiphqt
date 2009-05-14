@@ -24,6 +24,8 @@
  * 
  */
 
+#include "nls.h"
+
 extern void region_init();
 
 extern int region_intersects(edge *e);

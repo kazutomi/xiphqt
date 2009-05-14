@@ -30,7 +30,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "gettext.h"
+#include "nls.h"
 #include "graph.h"
 #include "random.h"
 #include "timer.h"

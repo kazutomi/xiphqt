@@ -29,7 +29,7 @@
 #include <math.h>
 #include "graph.h"
 #include "timer.h"
-#include "gettext.h"
+#include "nls.h"
 
 static char objective_string[160];
 

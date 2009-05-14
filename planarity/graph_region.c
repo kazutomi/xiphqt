@@ -31,7 +31,7 @@
 
 #include "graph.h"
 #include "graph_region.h"
-#include "gettext.h"
+#include "nls.h"
 
 /* Regions are 'electric fences' for mesh building; used in mesh2 to
    make non-convex shapes */

@@ -29,6 +29,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "nls.h"
+
 extern time_t get_timer();
 extern char *get_timer_string();
 extern void set_timer(time_t off);

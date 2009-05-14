@@ -30,6 +30,8 @@
 #include <gdk/gdk.h>
 #include <time.h>
 
+#include "nls.h"
+
 #define V_RADIUS 8
 #define V_LINE 2
 #define V_LINE_COLOR         0, 0, 0
