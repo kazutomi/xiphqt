@@ -82,7 +82,7 @@ void rogg_read_uint32(unsigned char *p, uint32_t *v);
 void rogg_read_uint16(unsigned char *p, uint16_t *v);
 
 /* scan for the 'OggS' capture pattern */
-unsigned char *rogg_scan(unsigned char *p, int len);
+unsigned char *rogg_scan(unsigned char *p, long len);
 
 /* calculate the length of the page starting at p */
 void rogg_page_get_length(unsigned char *p, int *length);

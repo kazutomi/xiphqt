@@ -110,7 +110,7 @@ void rogg_page_get_length(unsigned char *p, int *length)
 }
 
 /* scan for the capture pattern */
-unsigned char *rogg_scan(unsigned char *p, int len)
+unsigned char *rogg_scan(unsigned char *p, long len)
 {
   unsigned char *end = p + len - 4;
 
