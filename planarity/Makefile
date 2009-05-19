@@ -28,11 +28,6 @@ ADD_DEF += -DUGT_DOMAIN="$(GT_DOMAIN)" -DUGT_DIR="$(GT_DIR)" -DENABLE_NLS
 SUBDIRS += po
 endif
 
-
-# the very long LIBS entry is to build an executable that will
-# work for on most modern linux distros without any of the
-# bleeding-edge GTK 2.7/2.8 libs installed.
-
 SRC  = dialog_finish.c gameboard_logic.c dialog_pause.c gameboard_logic_button.c\
 	gameboard.c gameboard_logic_buttonbar.c gameboard_draw_box.c\
 	gameboard_logic_mouse.c gameboard_draw_button.c gameboard_logic_push.c\
@@ -55,29 +50,8 @@ OBJ  = dialog_finish.o gameboard_logic.o dialog_pause.o gameboard_logic_button.o
 	gameboard_logic_fade.o graph_generate_mesh2.o graph_region.o
 CAIROVER =  >= 1.0.0
 GTKVER   =  >= 2.7.2
-GCF  = `pkg-config --static --cflags "gtk+-2.0 $(GTKVER) cairo $(CAIROVER) freetype2"`
-LDF  = `pkg-config --static --libs "gtk+-2.0 $(GTKVER) cairo $(CAIROVER) freetype2"`
-
-# a build with static Gtk 2.7+ generally requires that all of the Gtk
-# dependencies were built with static dependencies also pointing to
-# the local install
-
-SLDF  = `pkg-config --static --libs-only-L "gtk+-2.0 $(GTKVER) cairo $(CAIROVER) freetype2"`
-GTK   = /usr/local/lib
-EXPAT= /usr/lib/libexpat.a
-XINERAMA = /usr/X11R6/lib/libXinerama.a
-PNG = /usr/lib/libpng.a
-PIXMAN = /usr/lib/libpixman.a
-SLIBS = $(GTK)/libgtk-x11-2.0.a \
-	$(GTK)/libgdk-x11-2.0.a $(GTK)/libgdk_pixbuf-2.0.a \
-	$(GTK)/libpangocairo-1.0.a $(GTK)/libpangoft2-1.0.a \
-	$(GTK)/libpangox-1.0.a $(GTK)/libpangoxft-1.0.a \
-	$(GTK)/libpango-1.0.a $(GTK)/libcairo.a \
-	$(GTK)/libatk-1.0.a $(GTK)/libgmodule-2.0.a \
-	$(GTK)/libgobject-2.0.a $(GTK)/libglib-2.0.a \
-	-lpthread $(EXPAT) -lfreetype -lz -lm -lc \
-	-lXext -lXrandr $(XINERAMA) -lXcursor -lX11 $(PIXMAN)\
-	-lXft $(PNG)
+GCF  = `pkg-config --cflags "gtk+-2.0 $(GTKVER) cairo $(CAIROVER) freetype2"`
+LDF  = `pkg-config --libs "gtk+-2.0 $(GTKVER) cairo $(CAIROVER) freetype2"`
 
 all: all-local all-recursive
 
@@ -87,10 +61,6 @@ all-local:
 
 all-recursive:
 	for D in $(SUBDIRS); do make -C $$D || exit 1; done
-
-static:    
-	pkg-config --cflags "gtk+-2.0 $(GTKVER) cairo $(CAIROVER) freetype2" 1>/dev/null
-	$(MAKE) static-target CFLAGS='-O2 -ffast-math $(GCF) $(ADD_DEF)'	
 
 debug:
 	pkg-config --cflags "gtk+-2.0 $(GTKVER) cairo $(CAIROVER) freetype2" 1>/dev/null
@@ -119,17 +89,9 @@ ifeq ($(MAKECMDGOALS),target)
 include $(SRC:.c=.d)
 endif
 
-ifeq ($(MAKECMDGOALS),static-target)
-include $(SRC:.c=.d)
-endif
-
 target:  $(OBJ) 
 	./touch-version
 	$(LD) $(OBJ) $(CFLAGS) -o $(TARGET) $(LIBS) $(LDF)
-
-static-target: $(OBJ)
-	./touch-version
-	$(LD) $(OBJ) $(CFLAGS) -o $(TARGET) $(SLIBS) $(SLDF) 
 
 install: install-local install-recursive
 
