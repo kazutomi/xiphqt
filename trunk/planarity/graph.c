@@ -867,7 +867,7 @@ int graph_write(graph *g, FILE *f){
 int graph_read(graph *g,FILE *f){
   char *line=NULL,c;
   int i,x,y,ox,oy,sel,A,B;
-  unsigned int n=0;
+  size_t n=0;
   vertex **flat,*v;
   long l;
   
