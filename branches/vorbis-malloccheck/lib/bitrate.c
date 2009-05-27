@@ -79,6 +79,7 @@ int vorbis_bitrate_addblock(vorbis_block *vb){
   vorbis_info           *vi=vd->vi;
   codec_setup_info      *ci=vi->codec_setup;
   bitrate_manager_info  *bi=&ci->bi;
+  int                    ret=0;
 
   int  choice=rint(bm->avgfloat);
   long this_bits=oggpack_bytes(vbi->packetblob[choice])*8;
@@ -90,10 +91,10 @@ int vorbis_bitrate_addblock(vorbis_block *vb){
     /* not a bitrate managed stream, but for API simplicity, we'll
        buffer the packet to keep the code path clean */
     
-    if(bm->vb)return(-1); /* one has been submitted without
+    if(bm->vb) return -1; /* one has been submitted without
                              being claimed */
     bm->vb=vb;
-    return(0);
+    return ret;
   }
 
   bm->vb=vb;
@@ -187,6 +188,7 @@ int vorbis_bitrate_addblock(vorbis_block *vb){
     minsize-=oggpack_bytes(vbi->packetblob[choice]);
     while(minsize-->0)oggpack_write(vbi->packetblob[choice],0,8);
     this_bits=oggpack_bytes(vbi->packetblob[choice])*8;
+    if(oggpack_writecheck(vbi->packetblob[choice]) ret = OV_EFAULT;
 
   }
 
@@ -224,7 +226,7 @@ int vorbis_bitrate_addblock(vorbis_block *vb){
     bm->avg_reservoir+=this_bits-avg_target_bits;
   }
 
-  return(0);
+  return ret;
 }
 
 int vorbis_bitrate_flushpacket(vorbis_dsp_state *vd,ogg_packet *op){

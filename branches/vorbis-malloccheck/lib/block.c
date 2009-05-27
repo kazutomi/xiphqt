@@ -94,6 +94,9 @@ int vorbis_block_init(vorbis_dsp_state *v, vorbis_block *vb){
   if(v->analysisp){
     vorbis_block_internal *vbi=
       vb->internal=_ogg_calloc(1,sizeof(vorbis_block_internal));
+
+    if(!vbi) goto vbi_errout;
+
     vbi->ampmax=-9999;
 
     for(i=0;i<PACKETBLOBS;i++){
@@ -103,11 +106,17 @@ int vorbis_block_init(vorbis_dsp_state *v, vorbis_block *vb){
         vbi->packetblob[i]=
           _ogg_calloc(1,sizeof(oggpack_buffer));
       }
+      if(!vbi->packetblob[i]) goto vbi_errout;
       oggpack_writeinit(vbi->packetblob[i]);
+      if(oggpack_writecheck(vbi->packetblob[i])) goto vbi_errout;
     }    
   }
 
   return(0);
+
+ vbi_errout:
+  vorbis_block_clear(vb);
+  return OV_EFAULT;
 }
 
 void *_vorbis_block_alloc(vorbis_block *vb,long bytes){

@@ -141,7 +141,7 @@ int vorbis_staticbook_pack(const static_codebook *c,oggpack_buffer *opb){
     return(-1);
   }
 
-  return(0);
+  return oggpack_writecheck(opb);
 }
 
 /* unpacks a codebook from the packet buffer into the codebook struct,

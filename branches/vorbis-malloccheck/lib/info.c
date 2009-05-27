@@ -546,14 +546,16 @@ err_out:
 } 
 
 int vorbis_commentheader_out(vorbis_comment *vc,
-                                          ogg_packet *op){
+                             ogg_packet *op){
 
   oggpack_buffer opb;
 
   oggpack_writeinit(&opb);
   if(_vorbis_pack_comment(&opb,vc)) return OV_EIMPL;
+  if(oggpack_writecheck(&opb)) return OV_EFAULT;
 
   op->packet = _ogg_malloc(oggpack_bytes(&opb));
+  if(!op->packet) return OV_EFAULT;
   memcpy(op->packet, opb.buffer, oggpack_bytes(&opb));
 
   op->bytes=oggpack_bytes(&opb);
@@ -584,6 +586,10 @@ int vorbis_analysis_headerout(vorbis_dsp_state *v,
 
   oggpack_writeinit(&opb);
   if(_vorbis_pack_info(&opb,vi))goto err_out;
+  if(oggpack_writecheck(&opb)){
+    ret = OV_EFAULT;
+    goto err_out;
+  }
 
   /* build the packet */
   if(b->header)_ogg_free(b->header);
@@ -600,6 +606,10 @@ int vorbis_analysis_headerout(vorbis_dsp_state *v,
 
   oggpack_reset(&opb);
   if(_vorbis_pack_comment(&opb,vc))goto err_out;
+  if(oggpack_writecheck(&opb)){
+    ret = OV_EFAULT;
+    goto err_out;
+  }
 
   if(b->header1)_ogg_free(b->header1);
   b->header1=_ogg_malloc(oggpack_bytes(&opb));
@@ -615,6 +625,10 @@ int vorbis_analysis_headerout(vorbis_dsp_state *v,
 
   oggpack_reset(&opb);
   if(_vorbis_pack_books(&opb,vi))goto err_out;
+  if(oggpack_writecheck(&opb)){
+    ret = OV_EFAULT;
+    goto err_out;
+  }
 
   if(b->header2)_ogg_free(b->header2);
   b->header2=_ogg_malloc(oggpack_bytes(&opb));

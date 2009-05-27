@@ -498,7 +498,8 @@ static int mapping0_forward(vorbis_block *vb){
       /* this algorithm is hardwired to floor 1 for now; abort out if
          we're *not* floor1.  This won't happen unless someone has
          broken the encode setup lib.  Guard it anyway. */
-      if(ci->floor_type[info->floorsubmap[submap]]!=1)return(-1);
+      if(ci->floor_type[info->floorsubmap[submap]]!=1)
+        return OV_EIMPL;
 
       floor_posts[i][PACKETBLOBS/2]=
         floor1_fit(vb,b->flr[info->floorsubmap[submap]],
@@ -745,7 +746,10 @@ static int mapping0_forward(vorbis_block *vb){
   seq++;
   total+=ci->blocksizes[vb->W]/4+ci->blocksizes[vb->nW]/4;
 #endif
-  return(0);
+
+  if(oggpack_writecheck(opb)) return OV_EFAULT;
+  return 0;
+  
 }
 
 static int mapping0_inverse(vorbis_block *vb,vorbis_info_mapping *l){
