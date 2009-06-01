@@ -1,0 +1,51 @@
+<!--#include virtual="/ssi/header.include" -->
+<!-- Enter custom page information and styles here -->
+  <title>Theora.org :: Cortado - Theora, video for everyone</title>
+</head>
+<body>
+<!--#include virtual="/common/xiphbar.include" -->
+
+<!--#include virtual="/ssi/pagetop.include" -->
+<!--  All your page content goes here  -->
+
+
+<h1>Cortado streaming applet</h1>
+
+<p>
+Cortado is an open-source cross-browser and cross-platform video playback solution based upon Java technology. Leveraging the huge installation base of Java it allows web-authors to deliver Ogg Theora content without having to worry about the media playback setup installed on customers' machines. This enables e.g. Wikipedia to deliver Ogg Theora video content embedded into articles to millions of users. Originally developed at Fluendo, Cortado's latest versions are now maintained by Wikimedia. If you're interested in using free media delivery technology, e.g. to avoid the costs adjunctive to non-free technologies like H.264, and want to reach a big potential user base, Cortado may be solution you've been looking for.
+</p>
+
+<p>
+Note that Cortado also works great as a fallback-solution in the context of HTML5's video- and audio-support.
+</p>
+
+<h2>Getting Cortado</h2>
+
+You can find precompiled binaries of past and current Cortado releases at the <a href="http://downloads.xiph.org/releases/cortado/">Cortado download site</a>. You can fetch the source from <a href="http://git.xiph.org/?p=cortado.git;a=summary">Cortado's Git master copy</a>.
+
+<h2>Usage example</h2>
+
+<p>
+Provided you have a file containing Ogg Theora content named <tt>content.ogv</tt> and a binary of Cortado named <tt>cortado.jar</tt> in the same directory as the content you can embed Cortado by including following HTML-snippet into the source-code of your web-page:
+</p>
+
+<p>
+<code>
+   &lt;applet code="com.fluendo.player.Cortado.class" archive="cortado.jar" width="352" height="288"&gt; <br/>
+   &nbsp;&nbsp;&lt;param name="url" value="content.ogv"/&gt; <br/>
+   &lt;/applet&gt;
+</code>
+</p>
+
+<p>
+There is a multitude of parameters to tailor Cortado to your needs. Please refer to Cortado's documentation for a list of available parameters.
+</p>
+
+<h2>Demos</h2>
+
+<ul>
+<li><a href="http://people.xiph.org/~oggk/elephants_dream/elephantsdream.html">Elephants Dream with subtitles</a></li>
+<li><a href="http://people.xiph.org/~maikmerten/demos/bigbuckbunny-applet.html">Big Buck Bunny Demo</a></li>
+</ul>
+
+<!--#include virtual="/ssi/pagebottom.include" -->
