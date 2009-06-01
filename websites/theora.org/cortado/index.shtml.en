@@ -21,7 +21,13 @@ Note that Cortado also works great as a fallback-solution in the context of HTML
 
 <h2>Getting Cortado</h2>
 
+<p>
 You can find precompiled binaries of past and current Cortado releases at the <a href="http://downloads.xiph.org/releases/cortado/">Cortado download site</a>. You can fetch the source from <a href="http://git.xiph.org/?p=cortado.git;a=summary">Cortado's Git master copy</a>.
+</p>
+
+<p>
+Xiph.org also provides a signed version of Cortado at <a href="http://theora.org/cortado.jar">http://theora.org/cortado.jar</a>. You can directly embed this applet without having a local copy.
+</p>
 
 <h2>Usage example</h2>
 
@@ -38,7 +44,17 @@ Provided you have a file containing Ogg Theora content named <tt>content.ogv</tt
 </p>
 
 <p>
+Alternatively, if you want to always use the latest signed Cortado applet issued by Xiph.org you can specify "http://theora.org/cortado.jar" as archive-parameter. This signed applet will allow playback of remote content.
+</p>
+
+<p>
 There is a multitude of parameters to tailor Cortado to your needs. Please refer to Cortado's documentation for a list of available parameters.
+</p>
+
+<h2>Discussion and bug reporting</h2>
+
+<p>
+You can discuss Cortado on IRC at <a href="irc://irc.freenode.net/theora">#theora</a> and on the <a href="http://lists.xiph.org/mailman/listinfo/theora-dev">theora-dev mailing list</a>. Bug reports are welcome at the <a href="https://trac.xiph.org/newticket?component=Cortado">Xiph.org bugtracker</a>.
 </p>
 
 <h2>Demos</h2>
