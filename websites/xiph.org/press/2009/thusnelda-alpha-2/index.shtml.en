@@ -1,0 +1,74 @@
+<!--#include virtual="/ssi/header.include" -->
+<!-- Enter custom page information and styles here -->
+  <title>May 26, 2009: Xiph.Org releases Theora 1.1alpha2</title>
+</head>
+<body>
+<!--#include virtual="/common/xiphbar.include" -->
+
+<!--#include virtual="/ssi/pagetop.include" -->
+<!--  All your page content goes here  -->
+
+
+<h3>libTheora 1.1 alpha 2 release: next-generation 'Thusnelda' encoder</h3>
+
+<p>Xiph.Org pleased to announce the second alpha release of our next
+generation encoder for the free Theora video format, codename
+"Thusnelda". The second release incorporates a number of changes which
+improve both compression efficiency and execution speed.
+
+<p>This release includes working MSVC project files, but the assembly
+optimization hasn't yet been ported, so performance there will still
+be slow. We recommend the xmingw32 build (cross compiled with gcc) if
+performance on Windows is important.
+
+<p>Source archives are available from the usual location:
+<ul>
+<li><a href="http://downloads.xiph.org/releases/theora/libtheora-1.1alpha2.tar.bz2">http://downloads.xiph.org/releases/theora/libtheora-1.1alpha2.tar.bz2</a>
+<li><a href="http://downloads.xiph.org/releases/theora/libtheora-1.1alpha2.tar.gz">http://downloads.xiph.org/releases/theora/libtheora-1.1alpha2.tar.gz</a>
+<li><a href="http://downloads.xiph.org/releases/theora/libtheora-1.1alpha2.tar.zip">http://downloads.xiph.org/releases/theora/libtheora-1.1alpha2.tar.zip</a>
+</ul>
+
+<p>SHA-1 checksums:
+<pre>
+864872064ea32829f4aff48518248a8e46b16f00  libtheora-1.1alpha2.tar.bz2
+96d2fb96b8729d614b64a437da0e5f0795c7b9f8  libtheora-1.1alpha2.tar.gz
+a8167402c3fe4c7ec2e23dcb255b3e2c016b6f4b  libtheora-1.1alpha2.zip
+</pre>
+
+<p>MD5 checksums:
+<pre>
+ddcdba802154b39072d5182c97153c0e  libtheora-1.1alpha2.tar.bz2
+d98a2f27d1e94ac424f188aff267ecec  libtheora-1.1alpha2.tar.gz
+dcff53c1486a383a979db2f2cfc5a942  libtheora-1.1alpha2.zip
+</pre>
+
+<p>Thanks to everyone whose work made this release possible.
+
+<p> -r
+<br>Xiph.Org
+
+<p><i>This prerelease continues Open and Free Software's commitment to
+accessible media and the public interest.  <a
+href="http://ajaxian.com/archives/why-open-video-matters-and-what-we-are-trying-to-do-about-it">Open
+video matters!</a> Xiph.Org would also like to extend thanks to <a
+href="http://www.redhat.com">Red Hat, Inc.</a>, <a
+href="http://www.wikimedia.org/">Wikimedia</a>, and the <a
+href="http://www.mozilla.org/foundation/">Mozilla Foundation</a> for
+lending mindshare, developers and funding:
+
+<ul>
+<li><a href="http://blog.wikimedia.org/2009/01/26/mozilla-and-wikimedia-join-forces-to-support-open-video/">Mozilla and Wikimedia Join Forces to Support Open Video</a>
+<li><a href="http://shaver.off.net/diary/2009/01/26/advancing-open-video/">Advancing Open Video </a>
+<li><a href="http://blog.mozilla.com/blog/2009/01/26/in-support-of-open-video/">In Support of Open Video</a>
+</ul>
+
+</p></i>
+
+<p><i> The Xiph.Org Foundation is a not-for-profit corporation
+dedicated to open, unencumbered multimedia technology. Xiph's formats
+and software levels the playing field for digital media so that all
+producers and artists can distribute their work for minimal cost,
+without restriction, regardless of affiliation.  May contain traces of
+nuts.</i></p>
+
+<!--#include virtual="/ssi/pagebottom.include" -->
