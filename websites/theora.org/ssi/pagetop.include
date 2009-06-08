@@ -20,18 +20,12 @@
   </ul>
   <br/>
   <p style="font-weight:bold;font-size:small">Support us</p>
-    <form id="_xclick" action="https://www.paypal.com/cgi-bin/webscr" method="post">
+  <a href="href="https://secure.paypal.com/xclick/business=donate@xiph.org&amp;item_name=Donation&amp;item_number=DONATE&amp;return=http://www.theora.org"">
      <div class="paypal" style="padding-top:0.25em">
-      <input type="hidden" name="cmd" value="_xclick" />
-      <input type="hidden" name="business" value="donate@xiph.org" />
-      <input type="hidden" name="item_name" value="theora donation" />
-      <input type="hidden" name="currency_code" value="USD" />
-      <input type="hidden" name="amount" value="10.00" />
-      <input type="image" 
-	src="http://www.paypal.com/en_US/i/btn/x-click-but04.gif"
-        name="submit" alt="Make a donation via PayPal" />
+     <img src="http://www.paypal.com/en_US/i/btn/x-click-but04.gif"
+        alt="Make a donation via PayPal" />
      </div>
-    </form>
+    </a>
 
 
 </div>
