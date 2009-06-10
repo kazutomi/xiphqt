@@ -72,7 +72,7 @@ streamref *streamref_new(streamref *head, rogg_page_header *page)
     ref->last = NULL;
     ref->next = head;
   }
-  
+
   return (ref != NULL) ? ref : head;
 }
 
@@ -155,7 +155,7 @@ int main(int argc, char *argv[])
     }
     p = mmap(0, s.st_size, PROT_READ|PROT_WRITE,
 	MAP_SHARED, f, 0);
-    if (p == NULL) {
+    if (p == MAP_FAILED) {
 	fprintf(stderr, "couldn't mmap '%s'\n", argv[i]);
 	close(f);
 	continue;
@@ -188,7 +188,7 @@ int main(int argc, char *argv[])
 	  /* unset any eos flags */
 	  q[ROGG_OFFSET_FLAGS] &= ~0x04;
 	  rogg_page_update_crc(q);
-	  fprintf(stderr, "Removed eos flag on stream %08x\n", 
+	  fprintf(stderr, "Removed eos flag on stream %08x\n",
 		header.serialno);
         }
 #endif

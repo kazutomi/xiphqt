@@ -76,7 +76,7 @@ int parse_args(int *argc, char *argv[])
       switch (argv[arg][1]) {
 	case 'v':
 	  verbose = 1;
-	  shift = 1; 
+	  shift = 1;
 	  break;
       }
     }
@@ -119,7 +119,7 @@ int main(int argc, char *argv[])
     }
     p = mmap(0, s.st_size, PROT_READ|PROT_WRITE,
 	MAP_SHARED, f, 0);
-    if (p == NULL) {
+    if (p == MAP_FAILED) {
 	fprintf(stderr, "couldn't mmap '%s'\n", argv[i]);
 	close(f);
 	continue;
@@ -132,7 +132,7 @@ int main(int argc, char *argv[])
     } else {
       if (q > p) {
 	fprintf(stdout, "Skipped %d garbage bytes at the start\n", (int)(q-p));
-      } 
+      }
       while (q < e) {
 	o = rogg_scan(q, e-q); /* find the next Ogg page */
 	if (o > q) {

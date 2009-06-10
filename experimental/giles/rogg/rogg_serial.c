@@ -53,7 +53,7 @@ void print_usage(FILE *out, char *name)
   fprintf(stderr, "Script for editing ogg headers\n");
   fprintf(stderr, "%s [-s old:new] <file1.ogg> [<file2.ogg>...]\n",
 	name);
-  fprintf(stderr, 
+  fprintf(stderr,
 		  "    -s old:new  change the serial numer of a logical stream from old to new\n"
 		  "                (use hex values, e.g. 0x89ab4567:0x0123cdef)\n"
 		  "\n");
@@ -120,7 +120,7 @@ int main(int argc, char *argv[])
     }
     p = mmap(0, s.st_size, PROT_READ|PROT_WRITE,
 	MAP_SHARED, f, 0);
-    if (p == NULL) {
+    if (p == MAP_FAILED) {
 	fprintf(stderr, "couldn't mmap '%s'\n", argv[i]);
 	close(f);
 	continue;
@@ -133,7 +133,7 @@ int main(int argc, char *argv[])
     } else {
       if (q > p) {
 	fprintf(stdout, "Skipped %d garbage bytes at the start\n", (int)(q-p));
-      } 
+      }
       while (q < e) {
 	o = rogg_scan(q, e-q); /* find the next Ogg page */
 	if (o > q) {
