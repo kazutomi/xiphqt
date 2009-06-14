@@ -15,10 +15,17 @@
 Cortado is an open-source cross-browser and cross-platform video playback solution based upon Java technology. Leveraging the huge installation base of Java it allows web-authors to deliver Ogg Theora content without having to worry about the media playback setup installed on customers' machines. This enables e.g. Wikipedia to deliver Ogg Theora video content embedded into articles to millions of users. Originally developed at Fluendo, Cortado's latest versions are now maintained by Xiph.org. If you're interested in using free media delivery technology, e.g. to avoid the costs adjunctive to non-free technologies like H.264, and want to reach a big potential user base, Cortado may be the solution you've been looking for.
 </p>
 
+<h2>Using Cortado as a Fallback for HTML5 video</h2>
 <p>
-Note that Cortado also works great as a fallback-solution in the context of HTML5's video- and audio-support.
+Cortado works great as a fallback-solution for using HTML5's audio and video support. The bellow code uses the latest signed Cortado applet issued by Xiph.org and should work with non-html5 browsers like Internet Explorer. 
 </p>
-
+<code>
+   &lt;video src="MyVideo.ogv" width="352" height="288"><br/>
+       &nbsp;&nbsp;&lt;applet code="com.fluendo.player.Cortado.class" archive="http://theora.org/cortado.jar" width="352" height="288"&gt; <br/>
+       &nbsp;&nbsp;&nbsp;&nbsp;&lt;param name="url" value="MyVideo.ogv"/&gt; <br/>
+       &nbsp;&nbsp;&lt;/applet&gt;<br/>
+   &lt;/video&gt;
+</code>
 <h2>Getting Cortado</h2>
 
 <p>
@@ -41,10 +48,6 @@ Provided you have a file containing Ogg Theora content named <tt>content.ogv</tt
    &nbsp;&nbsp;&lt;param name="url" value="content.ogv"/&gt; <br/>
    &lt;/applet&gt;
 </code>
-</p>
-
-<p>
-Alternatively, if you want to always use the latest signed Cortado applet issued by Xiph.org you can specify "http://theora.org/cortado.jar" as archive-parameter. This signed applet will allow playback of remote content.
 </p>
 
 <p>
