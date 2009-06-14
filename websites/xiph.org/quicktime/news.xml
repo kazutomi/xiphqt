@@ -12,14 +12,15 @@
     <dc:language>en-gb</dc:language>
     <dc:publisher>Xiph.Org Foundation</dc:publisher>
     <dc:creator>Arek Korbik (mailto:arkadini@gmail.com)</dc:creator>
-    <dc:rights>Copyright &#169; 2005-2007 Xiph.Org Foundation. All rights reserved.</dc:rights>
-    <dc:date>2007-09-02T19:49+00:00</dc:date>
+    <dc:rights>Copyright &#169; 2005-2009 Xiph.Org Foundation. All rights reserved.</dc:rights>
+    <dc:date>2009-06-14T22:57+00:00</dc:date>
     <syn:updatePeriod>daily</syn:updatePeriod>
     <syn:updateFrequency>1</syn:updateFrequency>
     <syn:updateBase>2005-01-01T05:00+00:00</syn:updateBase>
 
     <items>
       <rdf:Seq>
+        <rdf:li resource="http://www.xiph.org/quicktime/index.html#id2009061400" />
         <rdf:li resource="http://www.xiph.org/quicktime/index.html#id2007090200" />
         <rdf:li resource="http://www.xiph.org/quicktime/index.html#id2007032200" />
         <rdf:li resource="http://www.xiph.org/quicktime/index.html#id2006050800" />
@@ -33,6 +34,25 @@
       </rdf:Seq>
     </items>
   </channel>
+
+  <item rdf:about="http://www.xiph.org/quicktime/index.html#id2009061400">
+    <title>XiphQT 0.1.9 released</title>
+    <link>http://www.xiph.org/quicktime/index.html#id2009061400</link>
+    <description>
+      &lt;p&gt;We're happy to announce XiphQT release 0.1.9!&lt;/p&gt;
+      &lt;p&gt;This is another bugfix release, where fixes are few but
+      significant: reduced memory usage, fixed playback of HD
+      content and fixed compatibility with iMovie '08. As
+      always, &lt;a href="release_notes.html"&gt;release notes&lt;/a&gt;
+      have a bit more details.&lt;/p&gt;
+      &lt;p&gt;Also, the official 0.1.9 builds have been linked
+      against recent versions of codec libraries. Most notably,
+      that means Theora release 1.0, bringing performance
+      improvements, especially in encoding. &lt;/p&gt;
+    </description>
+    <dc:date>2009-06-14T22:57+00:00</dc:date>
+    <dc:creator>Arek</dc:creator>
+  </item>
 
   <item rdf:about="http://www.xiph.org/quicktime/index.html#id2007090200">
     <title>XiphQT 0.1.8 released</title>
