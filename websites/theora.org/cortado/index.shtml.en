@@ -17,7 +17,7 @@ Cortado is an open-source cross-browser and cross-platform video playback soluti
 
 <h2>Using Cortado as a Fallback for HTML5 video</h2>
 <p>
-Cortado works great as a fallback-solution for using HTML5's audio and video support. The bellow code uses the latest signed Cortado applet issued by Xiph.org and should work with non-html5 browsers like Internet Explorer. 
+Cortado works great as a fall-back-solution for using HTML5's audio and video support. This code uses the latest signed Cortado applet issued by Xiph.org and should work with non-html5 browsers like Internet Explorer. 
 </p>
 <code>
    &lt;video src="MyVideo.ogv" width="352" height="288"><br/>
