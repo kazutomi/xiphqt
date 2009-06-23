@@ -1,0 +1,55 @@
+<!--#include virtual="/ssi/header.include" -->
+<!-- Enter custom page information and styles here -->
+  <title>June 24, 2009: Xiph.Org announces libOgg 1.1.4</title>
+</head>
+<body>
+<!--#include virtual="/common/xiphbar.include" -->
+
+<!--#include virtual="/ssi/pagetop.include" -->
+<!--  All your page content goes here  -->
+
+
+<h3>libOgg 1.1.4 released</h3>
+
+
+<p>Xiph.Org is pleased to announce a full release of libogg 1.1.4.
+This full release is code-identical to the preceeding 1.1.4-rc1
+release candidate.
+
+<p>Changes in the new libogg release include:
+
+<ul>
+<li>Updates to documentation, including new API documentation for API
+additions that had been missed in previous releases.
+
+<li>New iovec write interface.
+
+<li>A new asynchronous error reporting interface; rather than the need to
+check for an error return after every call, and internal or usage
+error will simply mark the working state 'not ready' and the error
+status may be checked at the end of a block.  The libogg calls
+in-between become safe no-ops.
+
+<li>Various build fixes intended to keep the autofoo and Windows build
+mechanisms up to date.
+</ul>
+
+<p>This release is ABI and API compatible with previous incarnations of
+libogg.
+
+<p>Tarballs and zipfiles of the official release can be found in the
+usual place at <a href="http://downloads.xiph.org/releases/ogg/">http://downloads.xiph.org/releases/ogg/</a>.
+
+<p>Happy hacking!
+
+<p>Monty
+<br>Xiph.Org
+
+<p><i> The Xiph.Org Foundation is a not-for-profit corporation
+dedicated to open, unencumbered multimedia technology. Xiph's formats
+and software levels the playing field for digital media so that all
+producers and artists can distribute their work for minimal cost,
+without restriction, regardless of affiliation.  May contain traces of
+nuts.</i></p>
+
+<!--#include virtual="/ssi/pagebottom.include" -->
