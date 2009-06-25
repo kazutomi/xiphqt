@@ -81,12 +81,6 @@ int res_unpack(vorbis_info_residue *info,
     for(k=0;k<8;k++){
       if((info->stagemasks[j]>>k)&1){
 	ogg2pack_read(opb,8,&ret);
-	if((signed)ret>=vi->books){
-	  printf("\nWARN header: requested residue book (%lu) greater than\n"
-		 "             highest numbered available codebook (%d)\n\n",
-		 ret,vi->books-1);
-	  goto errout;
-	}
 	info->stagebooks[j*8+k]=ret;
 	if(k+1>info->stages)info->stages=k+1;
 	if(headerinfo_p)
@@ -100,6 +94,31 @@ int res_unpack(vorbis_info_residue *info,
     if(headerinfo_p)
       printf("\n");
   }
+
+  {
+    int flag = 0;
+    for(j=0;j<info->partitions;j++){
+      for(k=0;k<8;k++){
+        if((info->stagemasks[j]>>k)&1){
+          int ret = info->stagebooks[j*8+k];
+          if((signed)ret>=vi->books){
+            printf("\nWARN header: requested residue book (%lu) greater than\n"
+		 "             highest numbered available codebook (%d)\n\n",
+                   ret,vi->books-1);
+            flag=1;
+          }
+          if(vi->book_param[ret].maptype==0){
+            printf("\nWARN header: requested residue book (%lu) has no value mapping!\n"
+                   "             (maptype == 0)\n\n",
+                   ret);
+            flag=1;
+          }
+        }
+      }
+    }
+    if(flag)goto errout;
+  }
+
   if(headerinfo_p)
     printf("             ------------------\n");    
   

@@ -48,8 +48,8 @@ static int _vorbis_unpack_info(vorbis_info *vi,ogg2pack_buffer *opb){
     printf("             Block sizes        : %d/%d samples\n\n",
 	   vi->blocksizes[0],vi->blocksizes[1]);
   }
-  if((warn_p || headerinfo_p) && rate<64000 && vi->blocksizes[1]>2048){
-    printf("WARN header: blocksizes greater than 2048 are limited to\n"
+  if((warn_p || headerinfo_p) && rate<64000 && vi->blocksizes[1]>4096){
+    printf("WARN header: blocksizes greater than 4096 are limited to\n"
 	   "             sample rates over or equal to 64kHz.\n\n");
     ret=1;
   }
