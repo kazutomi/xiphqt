@@ -236,29 +236,42 @@ static int floor1_info_unpack(vorbis_info *vi,
     printf("             post range       : %d bits\n"
 	   "             post values      : ",info->mult);
   
-  count=0;
-  for(j=0,k=0;j<info->partitions;j++){
-    count+=info->class[info->partitionclass[j]].class_dim; 
-    for(;k<count;k++){
-      int t;
-      ogg2pack_read(opb,rangebits,&ret);
-      t=ret;
+  {
+    int postlist[VIF_POSIT+2];
+    postlist[0]=0;
+    postlist[1]=1<<rangebits;
+    count=0;
+    for(j=0,k=0;j<info->partitions;j++){
+      count+=info->class[info->partitionclass[j]].class_dim; 
+      for(;k<count;k++){
+        int t,l;
+        ogg2pack_read(opb,rangebits,&ret);
+        postlist[k+2]=t=ret;
       
-      if(headerinfo_p){
-	if(k!=0 && k%4==0)
-	  printf("\n                                ");
-	printf("%5d",t);
-	if(k+1<count || j+1<info->partitions)
-	  printf(",");
-      }
-      
-      if(t>=(1<<rangebits)){
-	if(headerinfo_p || warn_p)
-	  printf("\nWARN header: Post value (%d) out of range.\n\n",t);
-	goto err;
+        if(headerinfo_p){
+          if(k!=0 && k%4==0)
+            printf("\n                                ");
+          printf("%5d",t);
+          if(k+1<count || j+1<info->partitions)
+            printf(",");
+        }
+        
+        if(t>=(1<<rangebits)){
+          if(headerinfo_p || warn_p)
+            printf("\nWARN header: Post value (%d) out of range.\n\n",t);
+          goto err;
+        }
+
+        for(l=0;l<k;l++)
+          if(postlist[l]==t){
+            if(headerinfo_p || warn_p)
+              printf("\nWARN header: Post value (%d) is repeated.\n\n",t);
+            goto err;
+          }
       }
     }
   }
+
   if(headerinfo_p)
     printf("\n             -----------------\n");
 

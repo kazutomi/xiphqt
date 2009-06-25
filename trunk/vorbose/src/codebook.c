@@ -281,6 +281,7 @@ int vorbis_book_unpack(ogg2pack_buffer *opb,codebook *s){
 
   /* Do we have a mapping to unpack? */
   ogg2pack_read(opb,4,&maptype);
+  s->maptype=maptype;
   if(maptype>0){
     unsigned long q_min,q_del,q_bits,q_seq;
 

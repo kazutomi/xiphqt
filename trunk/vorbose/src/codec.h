@@ -90,6 +90,7 @@ typedef struct codebook{
   int          dim;
   int          entries;
   int          used_entries;
+  int          maptype;
   ogg_int32_t *dec_table;
 } codebook;
 
