@@ -94,21 +94,38 @@ mod_annodex accepts (npt and various smpte framerates), and start and end
 times separated by a /.
 </p>
 
+
 <h2>Download</h2>
+
+<p>
+The latest version is 0.9.9, released Apr 10 2009.
+<ul>
+<li><a
+href="http://git.xiph.org/?p=liboggz.git;a=tree;f=release_notes">Release
+notes</a></li>
+</ul>
+</p>
+
+<h3>Binaries</h3>
+
+<ul>
+<li>Debian: <tt>aptitude install oggz-tools</tt></li>
+<li>Fedora: <tt>yum install liboggz</tt></li>
+<li>Gentoo: <tt>emerge liboggz</tt></li>
+<li><a href="http://people.xiph.org/~j/oggz/">Windows binaries</a></li>
+</ul>
+
+<h3>Source tarballs</h3>
 
 <ul>
 <li><a
 href="http://downloads.xiph.org/releases/liboggz/liboggz-0.9.9.tar.gz">liboggz-0.9.9.tar.gz
-(623 KB, Apr 10 2009)</a>
+(623 kB)</a>
 </li>
 <li><a href="http://downloads.xiph.org/releases/liboggz/">Archive</a></li>
-<li><a
-href="http://git.xiph.org/?p=liboggz.git;a=tree;f=release_notes">Release notes</a></li>
 </ul>
 
-<h2>Source</h2>
-
-<p>Checking out the sources<p>
+<h3>Git</h3>
 
 This assumes that you begin with an empty working directory:
 
@@ -124,7 +141,8 @@ There is an up-to-date clone of this repo on github:
 
 <p>
 Oggz depends only on libogg, available in most free software
-distributions, or in source form at: http://xiph.org/downloads/
+distributions, or in source form at
+<a href="http://xiph.org/downloads/">http://xiph.org/downloads/</a>.
 </p>
 
 <p>
