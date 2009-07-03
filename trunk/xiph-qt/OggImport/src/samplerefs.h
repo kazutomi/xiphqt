@@ -31,6 +31,7 @@
 #if !defined(__samplerefs_h__)
 #define __samplerefs_h__
 
+#include "config.h"
 #include "importer_types.h"
 
 
