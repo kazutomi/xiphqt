@@ -38,6 +38,7 @@ better handling of transients, and better handling of highly tonal signals. In a
 packet loss robustness has been improved through the optional use of independent (intra) frames.
 CELT now supports a larger dynamic range, suitable for encoding 24-bit audio (float version only).
 There is also a very early VBR implementation.
+The <a href="../testing/test.0.6.0.shtml">0.6.0 testing page</a> has more information about this release.
 </p>
 
 <ul>
