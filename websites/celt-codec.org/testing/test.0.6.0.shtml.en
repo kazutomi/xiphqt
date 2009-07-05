@@ -14,7 +14,7 @@
 <!--#include virtual="/ssi/pagetop.include" -->
 <h1>CELT 0.6.0 automated testing results</h1>
 <p>
-	The automated testing routine for CELT involves running roughly 8 months of audio
+	The automated testing routine for CELT involves running roughly 12 months of audio
 	through the CELT encoder and decoder across a wide variety of modes and 
 	configurations. All user accessible modes receive at least some level of coverage.
 	48kHz mono receives automated quality testing of all frame sizes and most reasonable
@@ -63,15 +63,46 @@
 <tr><td align="right">Equal-quality contours are drawn at -0.5, -1, -2, and -3.</td></tr></table> </center>
 </p>
 
-<h3>Comparison with CELT 0.5.2 (complexity 9)</h3>
+<h3>Cross-version PQEvalAudio comparisons</h3>
+<p>PQEvalAudio is run periodically during CELT development to help spot unexpected changes
+which may be perceptually relevant. Sometimes new functionality will introduce quality
+impacting bugs which only impact some configurations.<p/>
+<p>For 0.6.0 this comparative testing appears to show a reduction in performance around
+40kbit/sec at typical frame sizes, but this is actually a case of PQEvalAudio disagreeing with
+actual human listening tests: Towards the end of the 0.6.0 development cycle the codec
+was retuned based on real listening tests and this tuning is responsible for the decline in
+the PQEvalAudio score even though the improvement provided by the tuning is obvious to any
+listener. For comparison graphs are provided comparing 0.6.0 with 9dff0218, a recent version
+the source code repository immediately prior to these tuning changes. 
+<p/>
+<p>Several other quality improvements during the 0.6.0 development cycle were partially offset
+by the introduction of independently coded frames. Now the CELT encoder will automatically
+encode some frames independently of the prior frames. This makes the stream somewhat more
+robust to packet loss. Applications can also request the CELT encoder to produce only
+independent frames, which gives the greatest robustness to packet loss but it requires
+a somewhat higher bitrate to achieve the same quality.</p> 
+
+<h4>Comparison with CELT 0.5.2 (complexity 9)</h4>
 <p>For each test point the 0.5.2 PQEvalAudio score was subtracted from the CELT 0.6.0 score.
 <p><center><table width=500><tr><td><a href="060-vs-052_9_peaqmap.png"><img src="060-vs-052_9_peaqmap.thumb.png" border=0 width=500 height=298 alt="CELT 0.6.0 Quality Graph"/></a></td></tr>
 <tr><td align="right"><i>Positive (blue) values in the chart indicate improvement according to PQEvalAudio, while negative
 (red) values indicate quality loss.</i></td></tr></table> </center>
 
-<h3>Comparison with CELT 0.5.2 (complexity 1)</h3>
+<h4>Comparison with CELT 9dff0218 (complexity 9)</h4>
+<p>For each test point the revision 9dff0218 PQEvalAudio score was subtracted from the CELT 0.6.0 score.
+<p><center><table width=500><tr><td><a href="060-vs-9dff0218_1_peaqmap.png"><img src="060-vs-9dff0218_1_peaqmap.thumb.png" border=0 width=500 height=298 alt="CELT 0.6.0 Quality Graph"/></a></td></tr>
+<tr><td align="right"><i>Positive (blue) values in the chart indicate improvement according to PQEvalAudio, while negative
+(red) values indicate quality loss.</i></td></tr></table> </center>
+
+<h4>Comparison with CELT 0.5.2 (complexity 1)</h4>
 <p>For each test point the 0.5.2 PQEvalAudio score was subtracted from the CELT 0.6.0 score.
-<p><center><table width=500><tr><td><a href="060-vs-052_1_peaqmap.png"><img src="060-vs-052_1_peaqmap.thumb.png" border=0 width=500 height=294 alt="CELT 0.6.0 Quality Graph"/></a></td></tr>
+<p><center><table width=500><tr><td><a href="060-vs-052_9_peaqmap.png"><img src="060-vs-052_9_peaqmap.thumb.png" border=0 width=500 height=294 alt="CELT 0.6.0 Quality Graph"/></a></td></tr>
+<tr><td align="right"><i>Positive (blue) values in the chart indicate improvement according to PQEvalAudio, while negative
+(red) values indicate quality loss.</i></td></tr></table> </center>
+
+<h4>Comparison with CELT 9dff0218 (complexity 1)</h4>
+<p>For each test point the revision 9dff0218 PQEvalAudio score was subtracted from the CELT 0.6.0 score.
+<p><center><table width=500><tr><td><a href="060-vs-9dff0218_1_peaqmap.png"><img src="060-vs-9dff0218_1_peaqmap.thumb.png" border=0 width=500 height=298 alt="CELT 0.6.0 Quality Graph"/></a></td></tr>
 <tr><td align="right"><i>Positive (blue) values in the chart indicate improvement according to PQEvalAudio, while negative
 (red) values indicate quality loss.</i></td></tr></table> </center>
  
@@ -112,7 +143,7 @@ cycles of "testcelt" must complete without error.
 <h2>Popular modes fuzz-test</h2>
 Two hours of audio extracted from several dozen albums and live recordings are run through
 CELT at 32, 44.1, and 48 kHz at frame sizes of 64, 96, 128, 192, 256, 384 and 512 samples and
-at 48, 64, and 128kbit/sec in mono and stereo mode. One tenth of a percent of the encoded bits
+at 48, 64, and 128kbit/sec in mono, stereo mode, and with and without VBR. One tenth of a percent of the encoded bits
 are randomly flipped. In order to pass, these cycles of "testcelt" must complete without error.
 This test is run under valgrind both with the memtest and exp-ptrcheck tools and with assertions enabled for extra error sensitivity.
 
