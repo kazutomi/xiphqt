@@ -41,9 +41,8 @@ There is also a very early VBR implementation.
 </p>
 
 <ul>
-<li>Source code: 
-<a href="http://downloads.us.xiph.org/releases/celt/celt-0.6.0.tar.gz">celt-0.6.0.tar.gz</a>
-<a href="http://downloads.us.xiph.org/releases/celt/celt_060_tools_win32.zip">celt_060_tools_win32.zip</a></li>
+<li>Source code: <a href="http://downloads.us.xiph.org/releases/celt/celt-0.6.0.tar.gz">celt-0.6.0.tar.gz</a></li>
+<li>Pre-built CLI encoder/decoder: <a href="http://downloads.us.xiph.org/releases/celt/celt_060_tools_win32.zip">celt_060_tools_win32.zip</a></li> (Windows)
 </li>
 </ul>
 
