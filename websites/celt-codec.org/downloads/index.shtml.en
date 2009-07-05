@@ -32,6 +32,18 @@
 
 <h2>Latest <strong style='font-style: italic;'>development</strong> releases</h2>
 
+<h3 id='zero.6.0'>0.6.0</h3>
+<p>This release brings in many quality improvements, including better stereo coupling, 
+better handling of transients, and better handling of highly tonal signals. In addition,
+packet loss robustness has been improved through the optional use of independent (intra) frames.
+CELT now supports a larger dynamic range, suitable for encoding 24-bit audio (float version only).
+There is also a very early VBR implementation.
+</p>
+
+<ul>
+<li>Source code: <a href="http://downloads.us.xiph.org/releases/celt/celt-0.6.0.tar.gz">celt-0.6.0.tar.gz</a></li>
+</ul>
+
 <h3 id='zero.5.2'>0.5.2</h3>
 <p>Version 0.5.2 has just been released with a few fixes over 0.5.1. On top of that,
 the pitch prediction was both improved and simplified. The other main change is a 
@@ -56,7 +68,9 @@ release.
 </p>
 
 <ul>
-<li><a href="http://downloads.us.xiph.org/releases/celt/celt-0.5.1.3.tar.gz">celt-0.5.1.3.tar.gz</a></li>
+<li>
+<a href="http://downloads.us.xiph.org/releases/celt/celt-0.5.1.3.tar.gz">celt-0.5.1.3.tar.gz</a></li>
+<a href="http://downloads.us.xiph.org/releases/celt/celt_060_tools_win32.zip">celt_060_tools_win32.zip</a></li>
 </ul>
 
 <h3 id='zero.5.1'>0.5.1</h3>
