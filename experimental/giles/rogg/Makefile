@@ -8,7 +8,7 @@ prefix = /usr/local
 OPTS = -g -O2 -Wall
 
 rogg_UTILS = rogg_pagedump rogg_eosfix rogg_crcfix \
-	rogg_aspect rogg_framerate rogg_stats rogg_serial
+	rogg_aspect rogg_fps rogg_stats rogg_serial
 
 all : librogg.a $(rogg_UTILS)
 
@@ -30,7 +30,7 @@ rogg_pagedump : rogg_pagedump.o librogg.a
 rogg_aspect : rogg_aspect.o librogg.a
 	$(CC) $(CFLAGS) -o $@ $^
 
-rogg_framerate : rogg_framerate.o librogg.a
+rogg_fps : rogg_fps.o librogg.a
 	$(CC) $(CFLAGS) -o $@ $^
 
 rogg_stats : rogg_stats.o librogg.a
