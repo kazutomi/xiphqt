@@ -1,0 +1,44 @@
+<!--#include virtual="/ssi/header.include" -->
+<!-- Enter custom page information and styles here -->
+  <title>July 10, 2009: Xiph.Org releases libVorbis 1.2.3</title>
+</head>
+<body>
+<!--#include virtual="/common/xiphbar.include" -->
+
+<!--#include virtual="/ssi/pagetop.include" -->
+<!--  All your page content goes here  -->
+
+
+<h3>libVorbis 1.2.3 released</h3>
+
+<p>Xiph.Org announces the release of libvorbis-1.2.3.  This is a
+short-cycle bugfix release that incorporates several minor
+improvements as well as one major bugfix over 1.2.2.  This is purely
+an errata release without additional features.
+
+<p>A bug affecting playback of very short files using libvorbisfile
+was found shortly after release 1.2.2.  This bug affects playback of
+Vorbis audio files where all audio packets fit onto a single audio
+page.  Although Vorbisfile will open the file and report a correct
+length, playback results in zero samples.
+
+As libvorbisfile is widely used for sound effects in games, we deemed
+an immediate correction important.  1.2.3 offers a complete fix for
+this problem.
+
+<p>The 1.2.3 release is available from
+<a href="http://downloads.xiph.org/releases/vorbis/">http://downloads.xiph.org/releases/vorbis/</a>
+
+<p>Happy hacking!
+
+<p>Monty
+<br>Xiph.Org
+
+<p><i> The Xiph.Org Foundation is a not-for-profit corporation
+dedicated to open, unencumbered multimedia technology. Xiph's formats
+and software levels the playing field for digital media so that all
+producers and artists can distribute their work for minimal cost,
+without restriction, regardless of affiliation.  May contain traces of
+nuts.</i></p>
+
+<!--#include virtual="/ssi/pagebottom.include" -->
