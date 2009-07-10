@@ -10,6 +10,9 @@ Examples:
   rogg_aspect will dump and optionally set the pixel aspect ratio
   stored in an Ogg Theora stream.
 
+  rogg_fps will dump and optionally set the frame rate
+  stored in an Ogg Theora stream.
+
   rogg_eosfix will set the end_of_stream flag on the last page
   of a stream. This is often unset in downloads truncated from
   an icecast stream.
