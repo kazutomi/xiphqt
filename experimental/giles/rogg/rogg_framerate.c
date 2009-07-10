@@ -25,7 +25,7 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-/* theora aspect-ratio mod script using the rogg library */
+/* theora frame rate mod script using the rogg library */
 
 /* compile with
    gcc -O2 -g -Wall -I. -o rogg_framerate rogg.c rogg_framerate.c
@@ -45,9 +45,9 @@
 #include <rogg.h>
 
 int verbose = 0;
-int rate_set = 0;
-int rate_num = 0;
-int rate_den = 0;
+int fps_set = 0;
+int fps_num = 0;
+int fps_den = 0;
 
 /* big endian accessors for the theora header data */
 int get16(unsigned char *data)
@@ -134,13 +134,12 @@ int parse_args(int *argc, char *argv[])
 	  shift = 1; 
 	  break;
 	case 'f':
-	  rate_set = 1;
+	  fps_set = 1;
 	  /* read frame rate from the next arg */
-	  if (sscanf(argv[arg+1], "%d:%d", &rate_num, &rate_den) !=2 ) 
-{
-	    fprintf(stderr, "Could not parse aspect ratio '%s'.\n", argv[arg+1]);
+	  if (sscanf(argv[arg+1], "%d:%d", &fps_num, &fps_den) !=2 ) {
+	    fprintf(stderr, "Could not parse frame rate '%s'.\n", argv[arg+1]);
 	    fprintf(stderr, "Try something like 25:1 (PAL) or 30000:1001 (NTSC)\n\n");
-	    rate_set = 0;
+	    fps_set = 0;
 	  }
 	  shift = 2;
 	  break;
@@ -220,11 +219,11 @@ int main(int argc, char *argv[])
 	}
 	if (!memcmp(header.data, "\x80theora", 7)) {
 	  print_theora_info(stdout, header.data);
-	  if (rate_set) {
+	  if (fps_set) {
 	    fprintf(stdout, "Setting frame rate to %d:%d\n",
-		rate_num, rate_den);
-	    put32(header.data+22, rate_num); /* numerator */
-	    put32(header.data+26, rate_den); /* denominator */
+		fps_num, fps_den);
+	    put32(header.data+22, fps_num); /* numerator */
+	    put32(header.data+26, fps_den); /* denominator */
 	    rogg_page_update_crc(q);
 	    fprintf(stdout, "New settings:\n");
 	    print_theora_info(stdout, header.data); 
