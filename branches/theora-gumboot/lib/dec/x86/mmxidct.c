@@ -581,7 +581,11 @@ void oc_dequant_idct8x8_mmx(ogg_int16_t _y[64],const ogg_int16_t _x[64],
     ogg_uint16_t p;
     /*We round this dequant product (and not any of the others) because there's
        no iDCT rounding.*/
+#if 0
     p=(ogg_int16_t)(_x[0]*(ogg_int32_t)_dc_quant+15>>5);
+#else
+    p=(ogg_int16_t)(_y[0]*(ogg_int32_t)_dc_quant+15>>5);
+#endif
     /*Fill _y with p.*/
     __asm__ __volatile__(
       /*mm0=0000 0000 0000 AAAA*/
@@ -640,11 +644,13 @@ void oc_dequant_idct8x8_mmx(ogg_int16_t _y[64],const ogg_int16_t _x[64],
     );
 #endif
     /*Dequantize the coefficients.*/
-    _y[0]=(ogg_int16_t)(_x[0]*(int)_dc_quant);
 #if 0
+    _y[0]=(ogg_int16_t)(_x[0]*(int)_dc_quant);
     for(zzi=1;zzi<_ncoefs;zzi++){
       _y[OC_FZIG_ZAG_MMX[zzi]]=(ogg_int16_t)(_x[zzi]*(int)_ac_quant[zzi]);
     }
+#else
+    _y[0]=(ogg_int16_t)(_y[0]*(int)_dc_quant);
 #endif
     /*Then perform the iDCT.*/
     if(_last_zzi<10)oc_idct8x8_10(_y);

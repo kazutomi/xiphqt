@@ -516,6 +516,7 @@ static int oc_enc_block_transform_quantize(oc_enc_ctx *_enc,
  oc_enc_pipeline_state *_pipe,int _pli,ptrdiff_t _fragi,int _overhead_bits,
  oc_rd_metric *_mo,oc_token_checkpoint **_stack){
   OC_ALIGN16(ogg_int16_t buffer[64]);
+  OC_ALIGN16(ogg_int16_t zzbuffer[64]);
   OC_ALIGN16(ogg_int16_t data[64]);
   const ogg_uint16_t  *dequant;
   const oc_iquant     *enquant;
@@ -651,6 +652,7 @@ static int oc_enc_block_transform_quantize(oc_enc_ctx *_enc,
     int d;
     v=buffer[OC_FZIG_ZAG[zzi]];
     d=dequant[zzi];
+    zzbuffer[zzi]=v;
     val=v<<1;
     v=abs(val);
     if(v>=d){
@@ -670,36 +672,43 @@ static int oc_enc_block_transform_quantize(oc_enc_ctx *_enc,
   }
   /*Tokenize.*/
   checkpoint=*_stack;
-  ac_bits=oc_enc_tokenize_ac(_enc,_pli,_fragi,data,dequant,buffer,nonzero+1,
+  ac_bits=oc_enc_tokenize_ac(_enc,_pli,_fragi,data,dequant,zzbuffer,nonzero+1,
    _stack,mb_mode==OC_MODE_INTRA?3:0);
   /*Reconstruct.
     TODO: nonzero may need to be adjusted after tokenization.*/
+#if 0
   oc_dequant_idct8x8(&_enc->state,buffer,data,
    nonzero+1,nonzero+1,dequant[0],(ogg_uint16_t *)dequant);
-  if(mb_mode==OC_MODE_INTRA)oc_enc_frag_recon_intra(_enc,dst,ystride,buffer);
+#else
+//  memcpy(buffer, data, sizeof(buffer));
+  int dc=data[0];
+  oc_dequant_idct8x8(&_enc->state,data,data,
+   nonzero+1,nonzero+1,dequant[0],(ogg_uint16_t *)dequant);
+#endif
+  if(mb_mode==OC_MODE_INTRA)oc_enc_frag_recon_intra(_enc,dst,ystride,data);
   else{
     oc_enc_frag_recon_inter(_enc,dst,
-     nmv_offs==1?ref+mv_offs[0]:dst,ystride,buffer);
+     nmv_offs==1?ref+mv_offs[0]:dst,ystride,data);
   }
 #if !defined(OC_COLLECT_METRICS)
   if(frame_type!=OC_INTRA_FRAME)
 #endif
   {
     /*In retrospect, should we have skipped this block?*/
-    oc_enc_frag_sub(_enc,buffer,src,dst,ystride);
+    oc_enc_frag_sub(_enc,data,src,dst,ystride);
     coded_ssd=coded_dc=0;
     if(borderi<0){
       for(pi=0;pi<64;pi++){
-        coded_ssd+=buffer[pi]*buffer[pi];
-        coded_dc+=buffer[pi];
+        coded_ssd+=data[pi]*data[pi];
+        coded_dc+=data[pi];
       }
     }
     else{
       ogg_int64_t mask;
       mask=_enc->state.borders[borderi].mask;
       for(pi=0;pi<64;pi++,mask>>=1)if(mask&1){
-        coded_ssd+=buffer[pi]*buffer[pi];
-        coded_dc+=buffer[pi];
+        coded_ssd+=data[pi]*data[pi];
+        coded_dc+=data[pi];
       }
     }
     /*Scale to match DCT domain.*/
@@ -736,7 +745,11 @@ static int oc_enc_block_transform_quantize(oc_enc_ctx *_enc,
       _mo->ac_bits+=ac_bits;
     }
   }
+#if 0
   frags[_fragi].dc=data[0];
+#else
+  frags[_fragi].dc=dc;
+#endif
   frags[_fragi].coded=1;
   return 1;
 }
