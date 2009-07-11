@@ -25,6 +25,52 @@
 #define _ogg_offsetof(_type,_field)\
  ((size_t)((char *)&((_type *)0)->_field-(char *)0))
 
+static const unsigned char OC_DCT_TOKEN_MAP_ENTRIES[TH_NDCT_TOKENS]={
+  1,1,1,4,
+  8,1,1,8,
+  1,1,1,1,
+  1,2,2,2,
+  2,4,8,2,
+  2,2,4,2,
+  2,2,2,2,
+  8,2,4,8
+};
+
+static const unsigned char OC_DCT_TOKEN_MAP[TH_NDCT_TOKENS][8]={
+  /*  0 */{17},
+  /*  1 */{18},
+  /*  2 */{19},
+  /*  3 */{20,21,22,23},
+  /*  4 */{24,25,26,27,28,29,30,31},
+  /*  5 */{14},
+  /*  6 */{15},
+  /*  7 */{32,33,34,35,36,37,38,39},
+  /*  8 */{1},
+  /*  9 */{40},
+  /* 10 */{41},
+  /* 11 */{42},
+  /* 12 */{43},
+  /* 13 */{44,45},
+  /* 14 */{46,47},
+  /* 15 */{48,49},
+  /* 16 */{50,51},
+  /* 17 */{52,53,54,55},
+  /* 18 */{56,57,58,59,60,61,62,63},
+  /* 19 */{8,9},
+  /* 20 */{10,11},
+  /* 21 */{12,13},
+  /* 22 */{4,5,6,7},
+  /* 23 */{84,85},
+  /* 24 */{86,87},
+  /* 25 */{88,89},
+  /* 26 */{90,91},
+  /* 27 */{92,93},
+  /* 28 */{64,65,66,67,68,69,70,71},
+  /* 29 */{2,3}, 
+  /* 30 */{80,81,82,83},
+  /* 31 */{72,73,74,75,76,77,78,79},
+};
+
 /*These two functions are really part of the bitpack.c module, but
   they are only used here. Declaring local static versions so they
   can be inlined saves considerable function call overhead.*/
@@ -162,9 +208,36 @@ static int oc_huff_tree_unpack(oggpack_buffer *_opb,
   /*Read a leaf node:*/
   else{
     if(theorapackB_read(_opb,OC_NDCT_TOKEN_BITS,&bits)<0)return TH_EBADHEADER;
+    int tokens=OC_DCT_TOKEN_MAP_ENTRIES[bits];
+    if(tokens>1){
+      int i;
+      if(_nbinodes<tokens+tokens-1)return TH_EBADHEADER;
+      binode->nbits=1;
+      binode->depth=1;
+      binode->nodes[0]=_binodes+nused;
+      binode->nodes[1]=_binodes+nused+1;
+      for(i=2;i<tokens;i<<=1){
+        int j;
+        binode=_binodes+nused;
+        nused+=i;
+        for(j=0;j<i;j++){
+          binode[j].nbits=1;
+          binode[j].depth=1;
+          binode[j].nodes[0]=_binodes+nused+2*j;
+          binode[j].nodes[1]=_binodes+nused+2*j+1;
+        }
+      }
+      for(i=0;i<tokens;i++){
+        binode=_binodes+nused++;
+        binode->nbits=0;
+        binode->depth=1;
+        binode->token=OC_DCT_TOKEN_MAP[bits][i];
+      }
+      return nused;
+    }
     binode->nbits=0;
     binode->depth=1;
-    binode->token=(unsigned char)bits;
+    binode->token=OC_DCT_TOKEN_MAP[bits][0];
   }
   return nused;
 }
@@ -287,10 +360,10 @@ int oc_huff_trees_unpack(oggpack_buffer *_opb,
  oc_huff_node *_nodes[TH_NHUFFMAN_TABLES]){
   int i;
   for(i=0;i<TH_NHUFFMAN_TABLES;i++){
-    oc_huff_node nodes[63];
+    oc_huff_node nodes[63+13*2+4*6+5*14];
     int          ret;
     /*Unpack the full tree into a temporary buffer.*/
-    ret=oc_huff_tree_unpack(_opb,nodes,63);
+    ret=oc_huff_tree_unpack(_opb,nodes,sizeof(nodes)/sizeof(*nodes));
     if(ret<0)return ret;
     _nodes[i]=oc_huff_tree_collapse(nodes);
   }
