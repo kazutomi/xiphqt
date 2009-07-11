@@ -218,7 +218,6 @@ static const int OC_DCT_CODE_WORD[96]={
  OC_DCT_CW_PACK(0, 5, -1, 0),
  OC_DCT_CW_FINISH,           
  OC_DCT_CW_FINISH,           
- OC_DCT_CW_FINISH,           
 };
 #undef OC_DCT_CW_PACK
 
@@ -1308,6 +1307,29 @@ static void oc_dec_dc_unpredict_mcu_plane(oc_dec_ctx *_dec,
    (fragy_end-fragy0)*(ptrdiff_t)nhfrags-ncoded_fragis;
 }
 
+#if 1
+/*This table has been modified from OC_FZIG_ZAG by baking a 4x4 transpose into
+   each quadrant of the destination.*/
+static const unsigned char OC_FZIG_ZAG_MMX[128]={
+   0, 8, 1, 2, 9,16,24,17,
+  10, 3,32,11,18,25, 4,12,
+   5,26,19,40,33,34,41,48,
+  27, 6,13,20,28,21,14, 7,
+  56,49,42,35,43,50,57,36,
+  15,22,29,30,23,44,37,58,
+  51,59,38,45,52,31,60,53,
+  46,39,47,54,61,62,55,63,
+  64,64,64,64,64,64,64,64,
+  64,64,64,64,64,64,64,64,
+  64,64,64,64,64,64,64,64,
+  64,64,64,64,64,64,64,64,
+  64,64,64,64,64,64,64,64,
+  64,64,64,64,64,64,64,64,
+  64,64,64,64,64,64,64,64,
+  64,64,64,64,64,64,64,64,
+};
+#endif
+
 /*Reconstructs all coded fragments in a single MCU (one or two super block
    rows).
   This requires that each coded fragment have a proper macro block mode and
@@ -1338,11 +1360,40 @@ static void oc_dec_frags_recon_mcu_plane(oc_dec_ctx *_dec,
   for(fragii=0;fragii<ncoded_fragis;fragii++){
     /*This array is made twice as large as necessary so that an invalid zero
        run cannot cause a buffer overflow.*/
-    ogg_int16_t dct_coeffs[128];
+    OC_ALIGN8(ogg_int16_t dct_coeffs[128]);
     ptrdiff_t   fragi;
     int         last_zzi;
     int         zzi;
     fragi=coded_fragis[fragii];
+#if 1
+    ogg_uint16_t const*ac_quant;
+    /*First zero the buffer.*/
+    /*On K7, etc., this could be replaced with movntq and sfence.*/
+    __asm__ __volatile__(
+      "pxor %%mm0,%%mm0\n\t"
+      "movq %%mm0,(%[y])\n\t"
+      "movq %%mm0,8(%[y])\n\t"
+      "movq %%mm0,16(%[y])\n\t"
+      "movq %%mm0,24(%[y])\n\t"
+      "movq %%mm0,32(%[y])\n\t"
+      "movq %%mm0,40(%[y])\n\t"
+      "movq %%mm0,48(%[y])\n\t"
+      "movq %%mm0,56(%[y])\n\t"
+      "movq %%mm0,64(%[y])\n\t"
+      "movq %%mm0,72(%[y])\n\t"
+      "movq %%mm0,80(%[y])\n\t"
+      "movq %%mm0,88(%[y])\n\t"
+      "movq %%mm0,96(%[y])\n\t"
+      "movq %%mm0,104(%[y])\n\t"
+      "movq %%mm0,112(%[y])\n\t"
+      "movq %%mm0,120(%[y])\n\t"
+      :
+      :[y]"r"(dct_coeffs)
+      :"memory"
+    );
+    qti=frags[fragi].mb_mode!=OC_MODE_INTRA;
+    ac_quant=_pipe->dequant[_pli][frags[fragi].qii][qti];
+#endif
     /*Decode the AC coefficients.*/
     for(zzi=0;zzi<64;){
       int token;
@@ -1377,8 +1428,13 @@ static void oc_dec_frags_recon_mcu_plane(oc_dec_ctx *_dec,
         coeff=(cw>>OC_DCT_CW_MAG_SHIFT);
         eob_runs[zzi]=eob;
         ti[zzi]=lti;
+#if 0
         while(--rlen>=0)dct_coeffs[zzi++]=0;
         dct_coeffs[zzi]=coeff;
+#else
+        zzi+=rlen;
+        dct_coeffs[OC_FZIG_ZAG_MMX[zzi]]=(ogg_int16_t)(coeff*(int)ac_quant[zzi]);
+#endif
         zzi+=(eob==0);
       }
     }

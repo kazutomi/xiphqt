@@ -27,7 +27,11 @@
 void oc_state_frag_recon_mmx(const oc_theora_state *_state,ptrdiff_t _fragi,
  int _pli,ogg_int16_t _dct_coeffs[64],int _last_zzi,int _ncoefs,
  ogg_uint16_t _dc_quant,const ogg_uint16_t _ac_quant[64]){
+#if 0
   OC_ALIGN8(ogg_int16_t    res_buf[64]);
+#else
+  ogg_int16_t *res_buf = _dct_coeffs;
+#endif
   unsigned char          *dst;
   ptrdiff_t               frag_buf_off;
   int                     ystride;

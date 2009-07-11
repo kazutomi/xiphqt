@@ -613,6 +613,7 @@ void oc_dequant_idct8x8_mmx(ogg_int16_t _y[64],const ogg_int16_t _x[64],
   }
   else{
     int zzi;
+#if 0
     /*First zero the buffer.*/
     /*On K7, etc., this could be replaced with movntq and sfence.*/
     __asm__ __volatile__(
@@ -637,11 +638,14 @@ void oc_dequant_idct8x8_mmx(ogg_int16_t _y[64],const ogg_int16_t _x[64],
       :[y]"r"(_y)
       :"memory"
     );
+#endif
     /*Dequantize the coefficients.*/
     _y[0]=(ogg_int16_t)(_x[0]*(int)_dc_quant);
+#if 0
     for(zzi=1;zzi<_ncoefs;zzi++){
       _y[OC_FZIG_ZAG_MMX[zzi]]=(ogg_int16_t)(_x[zzi]*(int)_ac_quant[zzi]);
     }
+#endif
     /*Then perform the iDCT.*/
     if(_last_zzi<10)oc_idct8x8_10(_y);
     else oc_idct8x8_slow(_y);
