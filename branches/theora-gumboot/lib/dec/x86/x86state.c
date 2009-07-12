@@ -28,7 +28,7 @@ void oc_state_vtable_init_x86(oc_theora_state *_state){
     _state->opt_vtable.frag_recon_intra=oc_frag_recon_intra_mmx;
     _state->opt_vtable.frag_recon_inter=oc_frag_recon_inter_mmx;
     _state->opt_vtable.frag_recon_inter2=oc_frag_recon_inter2_mmx;
-    _state->opt_vtable.dequant_idct8x8=oc_dequant_idct8x8_mmx;
+    _state->opt_vtable.idct8x8=oc_idct8x8_mmx;
     _state->opt_vtable.state_frag_recon=oc_state_frag_recon_mmx;
     _state->opt_vtable.state_frag_copy_list=oc_state_frag_copy_list_mmx;
     _state->opt_vtable.state_loop_filter_frag_rows=

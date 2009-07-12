@@ -208,10 +208,10 @@ struct oc_quant_token{
   int           qc;
 };
 
-#if 1
+#if defined(OC_X86_ASM)
 /*This table has been modified from OC_FZIG_ZAG by baking a 4x4 transpose into
    each quadrant of the destination.*/
-static const unsigned char OC_FZIG_ZAG_MMX[128]={
+static const unsigned char OC_FZIG_ZAG_MMX[64]={
    0, 8, 1, 2, 9,16,24,17,
   10, 3,32,11,18,25, 4,12,
    5,26,19,40,33,34,41,48,
@@ -220,14 +220,6 @@ static const unsigned char OC_FZIG_ZAG_MMX[128]={
   15,22,29,30,23,44,37,58,
   51,59,38,45,52,31,60,53,
   46,39,47,54,61,62,55,63,
-  64,64,64,64,64,64,64,64,
-  64,64,64,64,64,64,64,64,
-  64,64,64,64,64,64,64,64,
-  64,64,64,64,64,64,64,64,
-  64,64,64,64,64,64,64,64,
-  64,64,64,64,64,64,64,64,
-  64,64,64,64,64,64,64,64,
-  64,64,64,64,64,64,64,64,
 };
 #endif
 
@@ -649,7 +641,7 @@ int oc_enc_tokenize_ac(oc_enc_ctx *_enc,int _pli,ptrdiff_t _fragi,
   }
   /*Emit the tokens from the best path through the trellis.*/
   stack=*_stack;
-#if 1
+#if defined(OC_X86_ASM)
   int dc=_qdct[0];
   __asm__ __volatile__(
     "pxor %%mm0,%%mm0\n\t"
@@ -674,6 +666,8 @@ int oc_enc_tokenize_ac(oc_enc_ctx *_enc,int _pli,ptrdiff_t _fragi,
     :"memory"
   );
   _qdct[0]=dc;
+#else
+  memset(_qdct+1,0,63*sizeof(*_qdct));
 #endif
   zzi=1;
   ti=best_flags>>1&1;
@@ -691,11 +685,7 @@ int oc_enc_tokenize_ac(oc_enc_ctx *_enc,int _pli,ptrdiff_t _fragi,
       /*We don't include the actual EOB cost for this block in the return value.
         It will be paid for by the fragment that terminates the EOB run.*/
       bits-=tokens[zzi][ti].bits;
-#if 0
-      for(;zzi<_zzi;zzi++)_qdct[zzi]=0;
-#else
       zzi=_zzi;
-#endif
       break;
     }
     /*Emit pending EOB run if any.*/
@@ -707,11 +697,10 @@ int oc_enc_tokenize_ac(oc_enc_ctx *_enc,int _pli,ptrdiff_t _fragi,
     next=tokens[zzi][ti].next;
     qc=tokens[zzi][ti].qc;
     zzj=(next>>1)-1&63;
-#if 0
-    for(;zzi<zzj;zzi++)_qdct[zzi]=0;
-    _qdct[zzj]=qc;
-#else
+#if defined(OC_X86_ASM)
     _qdct[OC_FZIG_ZAG_MMX[zzj]]=(ogg_int16_t)(qc*(int)_dequant[zzj]);
+#else
+    _qdct[OC_FZIG_ZAG[zzj]]=(ogg_int16_t)(qc*(int)_dequant[zzj]);
 #endif
     zzi=next>>1;
     ti=next&1;

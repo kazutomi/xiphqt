@@ -541,6 +541,7 @@ static int oc_enc_block_transform_quantize(oc_enc_ctx *_enc,
   int                  borderi;
   int                  pi;
   int                  zzi;
+  int                  dc;
   frags=_enc->state.frags;
   frag_offs=_enc->state.frag_buf_offs[_fragi];
   ystride=_enc->state.ref_ystride[_pli];
@@ -674,17 +675,22 @@ static int oc_enc_block_transform_quantize(oc_enc_ctx *_enc,
   checkpoint=*_stack;
   ac_bits=oc_enc_tokenize_ac(_enc,_pli,_fragi,data,dequant,zzbuffer,nonzero+1,
    _stack,mb_mode==OC_MODE_INTRA?3:0);
+  dc=data[0];
   /*Reconstruct.
     TODO: nonzero may need to be adjusted after tokenization.*/
-#if 0
-  oc_dequant_idct8x8(&_enc->state,buffer,data,
-   nonzero+1,nonzero+1,dequant[0],(ogg_uint16_t *)dequant);
-#else
-//  memcpy(buffer, data, sizeof(buffer));
-  int dc=data[0];
-  oc_dequant_idct8x8(&_enc->state,data,data,
-   nonzero+1,nonzero+1,dequant[0],(ogg_uint16_t *)dequant);
-#endif
+  if(nonzero==0){
+    ogg_int16_t p;
+    int ci;
+    /*We round this dequant product (and not any of the others) because there's
+       no iDCT rounding.*/
+    p=(ogg_int16_t)(data[0]*(ogg_int32_t)dequant[0]+15>>5);
+    /*LOOP VECTORIZES.*/
+    for(ci=0;ci<64;ci++)data[ci]=p;
+  }
+  else{
+    data[0]*=dequant[0];
+    oc_idct8x8(&_enc->state,data,nonzero+1,nonzero+1);
+  }
   if(mb_mode==OC_MODE_INTRA)oc_enc_frag_recon_intra(_enc,dst,ystride,data);
   else{
     oc_enc_frag_recon_inter(_enc,dst,
@@ -745,11 +751,7 @@ static int oc_enc_block_transform_quantize(oc_enc_ctx *_enc,
       _mo->ac_bits+=ac_bits;
     }
   }
-#if 0
-  frags[_fragi].dc=data[0];
-#else
   frags[_fragi].dc=dc;
-#endif
   frags[_fragi].coded=1;
   return 1;
 }

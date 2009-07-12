@@ -1307,7 +1307,7 @@ static void oc_dec_dc_unpredict_mcu_plane(oc_dec_ctx *_dec,
    (fragy_end-fragy0)*(ptrdiff_t)nhfrags-ncoded_fragis;
 }
 
-#if 1
+#if defined(OC_X86_ASM)
 /*This table has been modified from OC_FZIG_ZAG by baking a 4x4 transpose into
    each quadrant of the destination.*/
 static const unsigned char OC_FZIG_ZAG_MMX[128]={
@@ -1364,9 +1364,9 @@ static void oc_dec_frags_recon_mcu_plane(oc_dec_ctx *_dec,
     ptrdiff_t   fragi;
     int         last_zzi;
     int         zzi;
-    fragi=coded_fragis[fragii];
-#if 1
     ogg_uint16_t const*ac_quant;
+    fragi=coded_fragis[fragii];
+#if defined(OC_X86_ASM)
     /*First zero the buffer.*/
     /*On K7, etc., this could be replaced with movntq and sfence.*/
     __asm__ __volatile__(
@@ -1391,9 +1391,11 @@ static void oc_dec_frags_recon_mcu_plane(oc_dec_ctx *_dec,
       :[y]"r"(dct_coeffs)
       :"memory"
     );
+#else
+    memset(dct_coeffs,0,64*sizeof(*dct_coeffs));
+#endif
     qti=frags[fragi].mb_mode!=OC_MODE_INTRA;
     ac_quant=_pipe->dequant[_pli][frags[fragi].qii][qti];
-#endif
     /*Decode the AC coefficients.*/
     for(zzi=0;zzi<64;){
       int token;
@@ -1428,12 +1430,11 @@ static void oc_dec_frags_recon_mcu_plane(oc_dec_ctx *_dec,
         coeff=(cw>>OC_DCT_CW_MAG_SHIFT);
         eob_runs[zzi]=eob;
         ti[zzi]=lti;
-#if 0
-        while(--rlen>=0)dct_coeffs[zzi++]=0;
-        dct_coeffs[zzi]=coeff;
-#else
         zzi+=rlen;
+#if defined(OC_X86_ASM)
         dct_coeffs[OC_FZIG_ZAG_MMX[zzi]]=(ogg_int16_t)(coeff*(int)ac_quant[zzi]);
+#else
+        dct_coeffs[OC_FZIG_ZAG[zzi]]=(ogg_int16_t)(coeff*(int)ac_quant[zzi]);
 #endif
         zzi+=(eob==0);
       }
@@ -1442,11 +1443,9 @@ static void oc_dec_frags_recon_mcu_plane(oc_dec_ctx *_dec,
       If it's not, we should report some kind of warning.*/
     zzi=OC_MINI(zzi,64);
     dct_coeffs[0]=(ogg_int16_t)frags[fragi].dc;
-    qti=frags[fragi].mb_mode!=OC_MODE_INTRA;
     /*last_zzi is always initialized.
       If your compiler thinks otherwise, it is dumb.*/
-    oc_state_frag_recon(&_dec->state,fragi,_pli,dct_coeffs,last_zzi,zzi,
-     dc_quant[qti],_pipe->dequant[_pli][frags[fragi].qii][qti]);
+    oc_state_frag_recon(&_dec->state,fragi,_pli,dct_coeffs,last_zzi,zzi,dc_quant[qti]);
   }
   _pipe->coded_fragis[_pli]+=ncoded_fragis;
   /*Right now the reconstructed MCU has only the coded blocks in it.*/

@@ -585,7 +585,7 @@ void oc_state_vtable_init_c(oc_theora_state *_state){
   _state->opt_vtable.frag_recon_intra=oc_frag_recon_intra_c;
   _state->opt_vtable.frag_recon_inter=oc_frag_recon_inter_c;
   _state->opt_vtable.frag_recon_inter2=oc_frag_recon_inter2_c;
-  _state->opt_vtable.dequant_idct8x8=oc_dequant_idct8x8_c;
+  _state->opt_vtable.idct8x8=oc_idct8x8_c;
   _state->opt_vtable.state_frag_recon=oc_state_frag_recon_c;
   _state->opt_vtable.state_frag_copy_list=oc_state_frag_copy_list_c;
   _state->opt_vtable.state_loop_filter_frag_rows=
@@ -855,28 +855,39 @@ int oc_state_get_mv_offsets(const oc_theora_state *_state,int _offsets[2],
 
 void oc_state_frag_recon(const oc_theora_state *_state,ptrdiff_t _fragi,
  int _pli,ogg_int16_t _dct_coeffs[64],int _last_zzi,int _ncoefs,
- ogg_uint16_t _dc_quant,const ogg_uint16_t _ac_quant[64]){
+ ogg_uint16_t _dc_quant){
   _state->opt_vtable.state_frag_recon(_state,_fragi,_pli,_dct_coeffs,
-   _last_zzi,_ncoefs,_dc_quant,_ac_quant);
+   _last_zzi,_ncoefs,_dc_quant);
 }
 
 void oc_state_frag_recon_c(const oc_theora_state *_state,ptrdiff_t _fragi,
  int _pli,ogg_int16_t _dct_coeffs[64],int _last_zzi,int _ncoefs,
- ogg_uint16_t _dc_quant, const ogg_uint16_t _ac_quant[64]){
-  ogg_int16_t    res_buf[64];
+ ogg_uint16_t _dc_quant){
   unsigned char *dst;
   ptrdiff_t      frag_buf_off;
   int            ystride;
   int            mb_mode;
   /*Dequantize and apply the inverse transform.*/
-  oc_dequant_idct8x8(_state,res_buf,_dct_coeffs,
-   _last_zzi,_ncoefs,_dc_quant,_ac_quant);
+  /*Special case only having a DC component.*/
+  if(_last_zzi<2){
+    ogg_int16_t p;
+    int ci;
+    /*We round this dequant product (and not any of the others) because there's
+       no iDCT rounding.*/
+    p=(ogg_int16_t)(_dct_coeffs[0]*(ogg_int32_t)_dc_quant+15>>5);
+    /*LOOP VECTORIZES.*/
+    for(ci=0;ci<64;ci++)_dct_coeffs[ci]=p;
+  }
+  else{
+    _dct_coeffs[0]*=_dc_quant;
+    oc_idct8x8(_state,_dct_coeffs,_last_zzi,_ncoefs);
+  }
   /*Fill in the target buffer.*/
   frag_buf_off=_state->frag_buf_offs[_fragi];
   mb_mode=_state->frags[_fragi].mb_mode;
   ystride=_state->ref_ystride[_pli];
   dst=_state->ref_frame_data[_state->ref_frame_idx[OC_FRAME_SELF]]+frag_buf_off;
-  if(mb_mode==OC_MODE_INTRA)oc_frag_recon_intra(_state,dst,ystride,res_buf);
+  if(mb_mode==OC_MODE_INTRA)oc_frag_recon_intra(_state,dst,ystride,_dct_coeffs);
   else{
     const unsigned char *ref;
     int                  mvoffsets[2];
@@ -886,9 +897,9 @@ void oc_state_frag_recon_c(const oc_theora_state *_state,ptrdiff_t _fragi,
     if(oc_state_get_mv_offsets(_state,mvoffsets,_pli,
      _state->frag_mvs[_fragi][0],_state->frag_mvs[_fragi][1])>1){
       oc_frag_recon_inter2(_state,
-       dst,ref+mvoffsets[0],ref+mvoffsets[1],ystride,res_buf);
+       dst,ref+mvoffsets[0],ref+mvoffsets[1],ystride,_dct_coeffs);
     }
-    else oc_frag_recon_inter(_state,dst,ref+mvoffsets[0],ystride,res_buf);
+    else oc_frag_recon_inter(_state,dst,ref+mvoffsets[0],ystride,_dct_coeffs);
   }
 }
 
