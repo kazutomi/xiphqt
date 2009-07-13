@@ -75,6 +75,7 @@ static const unsigned char OC_DCT_TOKEN_MAP[TH_NDCT_TOKENS][8]={
   they are only used here. Declaring local static versions so they
   can be inlined saves considerable function call overhead.*/
 
+#if !defined(NEW_BITPACK)
 /*Read in bits without advancing the bitptr.
   Here we assume 0<=_bits&&_bits<=32.*/
 static int theorapackB_look(oggpack_buffer *_b,int _bits,long *_ret){
@@ -114,6 +115,62 @@ static void theorapackB_adv(oggpack_buffer *_b,int _bits){
   _b->ptr+=_bits>>3;
   _b->endbyte+=_bits>>3;
   _b->endbit=_bits&7;
+}
+#endif
+
+#define BIT_WINDOW_SIZE 32
+#define BIT_WINDOW_MASK 0xFFFFFFFFUL
+
+#define theorapackB_look(_b,_bits,_ret) (*(_ret)=theorapackC_look(_b,_bits),0)
+#define theorapackB_adv(_b,_bits) theorapackC_adv(_b,_bits)
+
+static unsigned int inline theorapackC_refill(oggpack_buffer *_b,int _bits)
+{
+  int available=_b->endbit;
+  unsigned int window=_b->storage&BIT_WINDOW_MASK;
+  unsigned char const *ptr=_b->ptr;
+  unsigned char const *stop=_b->buffer;
+
+  if (ptr>=stop)
+    available=0x40000000;
+  while(available<=BIT_WINDOW_SIZE-8)
+  {
+    available+=8;
+    window|=*ptr++<<BIT_WINDOW_SIZE-available;
+    if (ptr>=stop)
+      available=0x40000000;
+  }
+  _b->ptr=(unsigned char *)ptr;
+  if (_bits>available)
+    window|=*ptr>>(available&7);
+
+  _b->endbit=available;
+  return window&BIT_WINDOW_MASK;
+}
+
+
+/*Read in bits without advancing the bitptr.
+  Here we assume 0<=_bits&&_bits<=32.*/
+static long theorapackC_look(oggpack_buffer *_b,int _bits){
+  int available=_b->endbit;
+  unsigned int window=_b->storage&BIT_WINDOW_MASK;
+  long result;
+  if(_bits==0)return 0;
+  if(_bits>available)_b->storage=window=theorapackC_refill(_b,_bits);
+  result=window>>(BIT_WINDOW_SIZE-_bits);
+  return result;
+}
+
+/*advance the bitptr*/
+static void theorapackC_adv(oggpack_buffer *_b,int _bits){
+  if(_bits)
+  {
+    unsigned int window=_b->storage&BIT_WINDOW_MASK;
+    window<<=1;
+    window<<=_bits-1;
+    _b->storage=window;
+    _b->endbit-=_bits;
+  }
 }
 
 

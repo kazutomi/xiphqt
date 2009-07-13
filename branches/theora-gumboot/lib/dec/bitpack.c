@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include "bitpack.h"
 
+#if !defined(NEW_BITPACK)
 void theorapackB_readinit(oggpack_buffer *_b,unsigned char *_buf,int _bytes){
   memset(_b,0,sizeof(*_b));
   _b->buffer=_b->ptr=_buf;
@@ -118,4 +119,87 @@ long theorapackB_bits(oggpack_buffer *_b){
 
 unsigned char *theorapackB_get_buffer(oggpack_buffer *_b){
   return _b->buffer;
+}
+#endif
+
+
+#define BIT_WINDOW_SIZE 32
+#define BIT_WINDOW_MASK 0xFFFFFFFFUL
+
+void theorapackC_readinit(oggpack_buffer *_b,unsigned char *_buf,int _bytes,int _bits){
+  memset(_b,0,sizeof(*_b));
+  _b->endbit=-_bits;
+  _b->ptr=_buf;
+  _b->buffer=_buf+_bytes;
+}
+
+static unsigned int inline theorapackC_refill(oggpack_buffer *_b,int _bits)
+{
+  int available=_b->endbit;
+  unsigned int window=_b->storage&BIT_WINDOW_MASK;
+  unsigned char const *ptr=_b->ptr;
+  unsigned char const *stop=_b->buffer;
+
+  if (ptr>=stop)
+    available=0x40000000;
+  while(available<=BIT_WINDOW_SIZE-8)
+  {
+    available+=8;
+    window|=*ptr++<<(BIT_WINDOW_SIZE-available);
+    if (ptr>=stop)
+      available=0x40000000;
+  }
+  _b->ptr=(unsigned char *)ptr;
+  if (_bits>available)
+    window|=*ptr>>(available&7);
+
+  _b->endbit=available;
+  return window&BIT_WINDOW_MASK;
+}
+
+int theorapackC_look1(oggpack_buffer *_b){
+  int available=_b->endbit;
+  unsigned int window=_b->storage&BIT_WINDOW_MASK;
+  if (1>available)_b->storage=window=theorapackC_refill(_b,1);
+  return window>>(BIT_WINDOW_SIZE-1);
+}
+
+void theorapackC_adv1(oggpack_buffer *_b){
+  _b->storage<<=1;
+  _b->endbit--;
+}
+
+/*Here we assume that 0<=_bits&&_bits<=32.*/
+long theorapackC_read(oggpack_buffer *_b,int _bits){
+  int available=_b->endbit;
+  unsigned int window=_b->storage&BIT_WINDOW_MASK;
+  long result;
+  if(_bits==0)return 0;
+  if(_bits>available){
+    window=theorapackC_refill(_b,_bits);
+    available=_b->endbit;
+  }
+  result=window>>(BIT_WINDOW_SIZE-_bits);
+  available-=_bits;
+  window<<=1;
+  window<<=_bits-1;
+  _b->endbit=available;
+  _b->storage=window;
+  return result;
+}
+
+int theorapackC_read1(oggpack_buffer *_b){
+  int available=_b->endbit;
+  unsigned int window=_b->storage&BIT_WINDOW_MASK;
+  int result;
+  if (1>available){
+    window=theorapackC_refill(_b,1);
+    available=_b->endbit;
+  }
+  result=window>>(BIT_WINDOW_SIZE-1);
+  available--;
+  window<<=1;
+  _b->endbit=available;
+  _b->storage=window;
+  return result;
 }
