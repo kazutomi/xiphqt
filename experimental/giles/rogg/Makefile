@@ -6,7 +6,6 @@ VERSION = 0.2
 prefix = /usr/local
 
 OPTS = -g -O2 -Wall
-OPTS = -g -O0 -Wall
 
 rogg_UTILS = rogg_pagedump rogg_eosfix rogg_crcfix \
 	rogg_stats rogg_serial rogg_theora
