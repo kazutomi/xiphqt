@@ -6,9 +6,10 @@ VERSION = 0.2
 prefix = /usr/local
 
 OPTS = -g -O2 -Wall
+OPTS = -g -O0 -Wall
 
 rogg_UTILS = rogg_pagedump rogg_eosfix rogg_crcfix \
-	rogg_aspect rogg_fps rogg_stats rogg_serial
+	rogg_stats rogg_serial rogg_theora
 
 all : librogg.a $(rogg_UTILS)
 
@@ -27,16 +28,13 @@ rogg_crcfix : rogg_crcfix.o librogg.a
 rogg_pagedump : rogg_pagedump.o librogg.a
 	$(CC) $(CFLAGS) -o $@ $^
 
-rogg_aspect : rogg_aspect.o librogg.a
-	$(CC) $(CFLAGS) -o $@ $^
-
-rogg_fps : rogg_fps.o librogg.a
-	$(CC) $(CFLAGS) -o $@ $^
-
 rogg_stats : rogg_stats.o librogg.a
 	$(CC) $(CFLAGS) -o $@ $^
 
 rogg_serial : rogg_serial.o librogg.a
+	$(CC) $(CFLAGS) -o $@ $^
+
+rogg_theora : rogg_theora.o librogg.a
 	$(CC) $(CFLAGS) -o $@ $^
 
 check : all

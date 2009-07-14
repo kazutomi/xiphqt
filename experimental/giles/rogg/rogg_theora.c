@@ -25,10 +25,10 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-/* theora frame rate mod script using the rogg library */
+/* theora header modification script using the rogg library */
 
 /* compile with
-   gcc -O2 -g -Wall -I. -o rogg_framerate rogg.c rogg_framerate.c
+   gcc -O2 -g -Wall -I. -o rogg_theora rogg.c rogg_theora.c
 */
 
 #include <stdio.h>
@@ -45,6 +45,9 @@
 #include <rogg.h>
 
 int verbose = 0;
+int aspect_set = 0;
+int aspect_num = 0;
+int aspect_den = 0;
 int fps_set = 0;
 int fps_num = 0;
 int fps_den = 0;
@@ -109,14 +112,21 @@ void print_theora_info(FILE *out, unsigned char *data)
 
 void print_usage(FILE *out, char *name)
 {
-  fprintf(stderr, "Script for editing theora headers\n");
-  fprintf(stderr, "%s [-v] [-f num:den] <file1.ogg> [<file2.ogg>...]\n",
+  fprintf(stderr, "Script for editing theora headers, in place.\n");
+  fprintf(stderr, "%s [-v] [-a num:den] [-f num:den] <file1.ogg> [<file2.ogg>...]\n",
 	name);
   fprintf(stderr, "    -v          print more information\n"
-		  "    -f num:den  set the frame rate\n"
+		  "    -a num:den  set the pixel aspect ratio\n"
+		  "                common values: \n"
+		  "                        59:54 PAL  (4:3 frame)\n"
+		  "                        10:11 NTSC (4:3 frame)\n"
+		  "                       118:81 PAL  (16:9 frame)\n"
+		  "                        40:33 NTSC (16:9 frame)\n"
+		  "                         1:1  computer source\n"
+		  "    -f num:den  set frame rate\n"
 		  "                common values: \n"
 		  "                        25:1 PAL\n"
-		  "                        30000:1001 NTSC\n"
+		  "                     30000:1001 NTSC\n"
 		  "                        24:1 film\n");
 }
 
@@ -126,6 +136,7 @@ int parse_args(int *argc, char *argv[])
   int shift;
 
   while (arg < *argc) {
+    /* parse recognized options */
     shift = 0;
     if (argv[arg][0] == '-') {
       switch (argv[arg][1]) {
@@ -133,7 +144,17 @@ int parse_args(int *argc, char *argv[])
 	  verbose = 1;
 	  shift = 1; 
 	  break;
-	case 'f':
+	case 'a':
+	  aspect_set = 1;
+	  /* read aspect from the next arg */
+	  if (sscanf(argv[arg+1], "%d:%d", &aspect_num, &aspect_den) !=2 ) {
+	    fprintf(stderr, "Could not parse aspect ratio '%s'.\n", argv[arg+1]);
+	    fprintf(stderr, "Try something like 59:54 (PAL) or 10:11 (NTSC)\n\n");
+	    aspect_set = 0;
+	  }
+	  shift = 2;
+	  break;
+        case 'f':
 	  fps_set = 1;
 	  /* read frame rate from the next arg */
 	  if (sscanf(argv[arg+1], "%d:%d", &fps_num, &fps_den) !=2 ) {
@@ -145,8 +166,15 @@ int parse_args(int *argc, char *argv[])
 	  break;
       }
     }
+
+    /* consume the arguments we've parsed */
     if (shift) {
-      memmove(&argv[arg],&argv[arg+shift],shift*sizeof(*argv));
+      int left = *argc - arg - shift;
+      if (left < 0) {
+	fprintf(stderr, "Interal error parsing argument '%s'.\n", argv[arg]);
+	exit(1);
+      }
+      memmove(&argv[arg], &argv[arg+shift], left*sizeof(*argv));
       *argc -= shift;
     } else {
       arg++;
@@ -219,11 +247,19 @@ int main(int argc, char *argv[])
 	}
 	if (!memcmp(header.data, "\x80theora", 7)) {
 	  print_theora_info(stdout, header.data);
+	  if (aspect_set) {
+	    fprintf(stdout, "Setting aspect ratio to %d:%d\n",
+		aspect_num, aspect_den);
+	    put24(header.data+30, aspect_num); /* numerator */
+	    put24(header.data+33, aspect_den); /* denominator */
+	  }
 	  if (fps_set) {
 	    fprintf(stdout, "Setting frame rate to %d:%d\n",
 		fps_num, fps_den);
 	    put32(header.data+22, fps_num); /* numerator */
 	    put32(header.data+26, fps_den); /* denominator */
+	  }
+	  if (aspect_set || fps_set) {
 	    rogg_page_update_crc(q);
 	    fprintf(stdout, "New settings:\n");
 	    print_theora_info(stdout, header.data); 
