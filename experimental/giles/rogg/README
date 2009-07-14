@@ -7,11 +7,8 @@ and fixing simple bitstream errors in mmap()'d files.
 
 Examples:
 
-  rogg_aspect will dump and optionally set the pixel aspect ratio
-  stored in an Ogg Theora stream.
-
-  rogg_fps will dump and optionally set the frame rate
-  stored in an Ogg Theora stream.
+  rogg_theora will duamp and optionally set the frame rate and
+  the pixel aspect ratio stored in an Ogg Theora stream.
 
   rogg_eosfix will set the end_of_stream flag on the last page
   of a stream. This is often unset in downloads truncated from
@@ -24,5 +21,5 @@ Examples:
   rogg_pagedump dumps some basic header information for each page
   in a stream.
 
-  rogg_serial changes the serial of a logical ogg stream.
+  rogg_serial changes the serial number of a logical ogg stream.
 
