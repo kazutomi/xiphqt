@@ -103,9 +103,9 @@ void print_theora_info(FILE *out, unsigned char *data)
 	get16(data+10)<<4, get16(data+12)<<4);
   fprintf(out, "   display image %dx%d at (%d,%d)\n",
 	get24(data+14), get24(data+17), data[20], data[21]);
-  fprintf(out, "   frame rate %d/%d\n", get32(data+22), get32(data+26));
+  fprintf(out, "   frame rate %d:%d\n", get32(data+22), get32(data+26));
   fprintf(out, "   pixel aspect %d:%d\n", get24(data+30), get24(data+33));
-  fprintf(out, "   colourspace %d\n", data[36]);
+  fprintf(out, "   colour space %d\n", data[36]);
   fprintf(out, "   target bitrate %d\n", get24(data+37));
   fprintf(out, "   quality %d\n", data[40] >> 2);
 }
