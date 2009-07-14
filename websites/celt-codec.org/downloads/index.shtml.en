@@ -32,6 +32,15 @@
 
 <h2>Latest <strong style='font-style: italic;'>development</strong> releases</h2>
 
+<h3 id='zero.6.1'>0.6.1</h3>
+<p>CELT 0.6.1 improves the stereo quality, especially at lower bit-rates. This breaks bit-stream
+compatibility again, but only for stereo this time.
+</p>
+
+<ul>
+<li>Source code: <a href="http://downloads.us.xiph.org/releases/celt/celt-0.6.1.tar.gz">celt-0.6.1.tar.gz</a></li>
+</ul>
+
 <h3 id='zero.6.0'>0.6.0</h3>
 <p>This release brings in many quality improvements, including better stereo coupling, 
 better handling of transients, and better handling of highly tonal signals. In addition,
