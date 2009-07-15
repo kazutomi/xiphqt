@@ -17,7 +17,20 @@
 <h1>The CELT ultra-low delay audio codec</h1>
 <h2>Overview</h2>
 <p>
-	The CELT codec is an experimental codec for use in low-latency audio communication.
+        The CELT codec is a compression algorithm for audio. Like MP3, Vorbis, and 
+        AAC it is suitable for transmitting music with high quality. Unlike these    
+        formats CELT imposes very little delay on the signal, even less than is
+        typical for speech centric formats like Speex, GSM, or G.729.
+</p>
+<p>
+        Using CELT application developers can build software that allows musicians to
+        perform together across the Internet, or simply build great sounding
+        telephony systems. Why shouldn't your telephone sound as good as your
+        stereo?
+</p>
+<p>
+        Like other open and unencumbered technology from the Xiph.Org Foundation CELT
+        requires no royalties and no complicated licensing.
 </p>
 <h2>The Technology</h2>
 <p>
@@ -38,7 +51,6 @@
 <p>
 	The CELT codec is meant to bridge the gap between Vorbis and Speex for applications
 	where both high quality audio and low delay are desired.
-
 </p>
 <h2>Getting Involved</h2>
 <p>
