@@ -51,7 +51,7 @@ Provided you have a file containing Ogg Theora content named <tt>content.ogv</tt
 </p>
 
 <p>
-There is a multitude of parameters to tailor Cortado to your needs. Please refer to Cortado's documentation for <a href="https://git.xiph.org/?p=cortado.git;a=blob;f=README">a list of available parameters</a>.
+There is a multitude of parameters to tailor Cortado to your needs. Please refer to Cortado's documentation for <a href="http://git.xiph.org/?p=cortado.git;a=blob;f=README">a list of available parameters</a>.
 </p>
 
 <h2>Discussion and bug reporting</h2>
