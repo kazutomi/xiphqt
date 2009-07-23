@@ -27,24 +27,24 @@
 static const int OC_VP31_RANGE_SIZES[1]={63};
 static const th_quant_base OC_VP31_BASES_INTRA_Y[2]={
   {
-     16, 11, 10, 16, 24,  40, 51, 61,
-     12, 12, 14, 19, 26,  58, 60, 55,
-     14, 13, 16, 24, 40,  57, 69, 56,
-     14, 17, 22, 29, 51,  87, 80, 62,
-     18, 22, 37, 58, 68, 109,103, 77,
-     24, 35, 55, 64, 81, 104,113, 92,
-     49, 64, 78, 87,103, 121,120,101,
-     72, 92, 95, 98,112, 100,103, 99
+     16, 11, 10, 16, 24, 40, 51, 61,
+     12, 12, 14, 19, 26, 58, 60, 55,
+     14, 13, 16, 24, 40, 57, 69, 56,
+     14, 17, 22, 29, 51, 87, 80, 62,
+     18, 22, 37, 58, 68,109,103, 77,
+     24, 35, 55, 64, 81,104,113, 92,
+     49, 64, 78, 87,103,121,120,101,
+     72, 92, 95, 98,112,100,103, 99
   },
   {
-     16, 11, 10, 16, 24,  40, 51, 61,
-     12, 12, 14, 19, 26,  58, 60, 55,
-     14, 13, 16, 24, 40,  57, 69, 56,
-     14, 17, 22, 29, 51,  87, 80, 62,
-     18, 22, 37, 58, 68, 109,103, 77,
-     24, 35, 55, 64, 81, 104,113, 92,
-     49, 64, 78, 87,103, 121,120,101,
-     72, 92, 95, 98,112, 100,103, 99
+     16, 11, 10, 16, 24, 40, 51, 61,
+     12, 12, 14, 19, 26, 58, 60, 55,
+     14, 13, 16, 24, 40, 57, 69, 56,
+     14, 17, 22, 29, 51, 87, 80, 62,
+     18, 22, 37, 58, 68,109,103, 77,
+     24, 35, 55, 64, 81,104,113, 92,
+     49, 64, 78, 87,103,121,120,101,
+     72, 92, 95, 98,112,100,103, 99
   }
 };
 static const th_quant_base OC_VP31_BASES_INTRA_C[2]={
@@ -133,6 +133,180 @@ const th_quant_info TH_VP31_QUANT_INFO={
       {1,OC_VP31_RANGE_SIZES,OC_VP31_BASES_INTER},
       {1,OC_VP31_RANGE_SIZES,OC_VP31_BASES_INTER},
       {1,OC_VP31_RANGE_SIZES,OC_VP31_BASES_INTER}
+    }
+  }
+};
+
+/*The current default quantization parameters.*/
+static const int OC_DEF_QRANGE_SIZES[3]={32,16,15};
+static const th_quant_base OC_DEF_BASES_INTRA_Y[4]={
+  {
+     15, 15, 15, 15, 15, 15, 15, 15,
+     15, 15, 15, 15, 15, 15, 15, 15,
+     15, 15, 15, 15, 15, 15, 15, 15,
+     15, 15, 15, 15, 15, 15, 15, 15,
+     15, 15, 15, 15, 15, 15, 15, 15,
+     15, 15, 15, 15, 15, 15, 15, 15,
+     15, 15, 15, 15, 15, 15, 15, 15,
+     15, 15, 15, 15, 15, 15, 15, 15,
+  },
+  {
+     15, 12, 12, 15, 18, 20, 20, 21,
+     13, 13, 14, 17, 18, 21, 21, 20,
+     14, 14, 15, 18, 20, 21, 21, 21,
+     14, 16, 17, 19, 20, 21, 21, 21,
+     16, 17, 20, 21, 21, 21, 21, 21,
+     18, 19, 20, 21, 21, 21, 21, 21,
+     20, 21, 21, 21, 21, 21, 21, 21,
+     21, 21, 21, 21, 21, 21, 21, 21
+  },
+  {
+     16, 12, 11, 16, 20, 25, 27, 28,
+     13, 13, 14, 18, 21, 28, 28, 27,
+     14, 13, 16, 20, 25, 28, 28, 28,
+     14, 16, 19, 22, 27, 29, 29, 28,
+     17, 19, 25, 28, 28, 30, 30, 29,
+     20, 24, 27, 28, 29, 30, 30, 29,
+     27, 28, 29, 29, 30, 30, 30, 30,
+     29, 29, 29, 29, 30, 30, 30, 29
+  },
+  {
+     16, 11, 10, 16, 24, 40, 51, 61,
+     12, 12, 14, 19, 26, 58, 60, 55,
+     14, 13, 16, 24, 40, 57, 69, 56,
+     14, 17, 22, 29, 51, 87, 80, 62,
+     18, 22, 37, 58, 68,109,103, 77,
+     24, 35, 55, 64, 81,104,113, 92,
+     49, 64, 78, 87,103,121,120,101,
+     72, 92, 95, 98,112,100,103, 99
+  }
+};
+static const th_quant_base OC_DEF_BASES_INTRA_C[4]={
+  {
+     19, 19, 19, 19, 19, 19, 19, 19,
+     19, 19, 19, 19, 19, 19, 19, 19,
+     19, 19, 19, 19, 19, 19, 19, 19,
+     19, 19, 19, 19, 19, 19, 19, 19,
+     19, 19, 19, 19, 19, 19, 19, 19,
+     19, 19, 19, 19, 19, 19, 19, 19,
+     19, 19, 19, 19, 19, 19, 19, 19,
+     19, 19, 19, 19, 19, 19, 19, 19
+  },
+  {
+     18, 18, 21, 25, 26, 26, 26, 26,
+     18, 20, 22, 26, 26, 26, 26, 26,
+     21, 22, 25, 26, 26, 26, 26, 26,
+     25, 26, 26, 26, 26, 26, 26, 26,
+     26, 26, 26, 26, 26, 26, 26, 26,
+     26, 26, 26, 26, 26, 26, 26, 26,
+     26, 26, 26, 26, 26, 26, 26, 26,
+     26, 26, 26, 26, 26, 26, 26, 26
+  },
+  {
+     17, 18, 22, 31, 36, 36, 36, 36,
+     18, 20, 24, 34, 36, 36, 36, 36,
+     22, 24, 33, 36, 36, 36, 36, 36,
+     31, 34, 36, 36, 36, 36, 36, 36,
+     36, 36, 36, 36, 36, 36, 36, 36,
+     36, 36, 36, 36, 36, 36, 36, 36,
+     36, 36, 36, 36, 36, 36, 36, 36,
+     36, 36, 36, 36, 36, 36, 36, 36
+  },
+  {
+     17, 18, 24, 47, 99, 99, 99, 99,
+     18, 21, 26, 66, 99, 99, 99, 99,
+     24, 26, 56, 99, 99, 99, 99, 99,
+     47, 66, 99, 99, 99, 99, 99, 99,
+     99, 99, 99, 99, 99, 99, 99, 99,
+     99, 99, 99, 99, 99, 99, 99, 99,
+     99, 99, 99, 99, 99, 99, 99, 99,
+     99, 99, 99, 99, 99, 99, 99, 99
+  }
+};
+static const th_quant_base OC_DEF_BASES_INTER[4]={
+  {
+     21, 21, 21, 21, 21, 21, 21, 21,
+     21, 21, 21, 21, 21, 21, 21, 21,
+     21, 21, 21, 21, 21, 21, 21, 21,
+     21, 21, 21, 21, 21, 21, 21, 21,
+     21, 21, 21, 21, 21, 21, 21, 21,
+     21, 21, 21, 21, 21, 21, 21, 21,
+     21, 21, 21, 21, 21, 21, 21, 21,
+     21, 21, 21, 21, 21, 21, 21, 21
+  },
+  {
+     18, 18, 18, 21, 23, 24, 25, 27,
+     18, 18, 21, 23, 24, 25, 27, 28,
+     18, 21, 23, 24, 25, 27, 28, 29,
+     21, 23, 24, 25, 27, 28, 29, 29,
+     23, 24, 25, 27, 28, 29, 29, 29,
+     24, 25, 27, 28, 29, 29, 29, 30,
+     25, 27, 28, 29, 29, 29, 30, 30,
+     27, 28, 29, 29, 29, 30, 30, 30
+  },
+  {
+     17, 17, 17, 20, 23, 26, 28, 32,
+     17, 17, 20, 23, 26, 28, 32, 34,
+     17, 20, 23, 26, 28, 32, 34, 37,
+     20, 23, 26, 28, 32, 34, 37, 37,
+     23, 26, 28, 32, 34, 37, 37, 37,
+     26, 28, 32, 34, 37, 37, 37, 41,
+     28, 32, 34, 37, 37, 37, 41, 42,
+     32, 34, 37, 37, 37, 41, 42, 42
+  },
+  {
+     16, 16, 16, 20, 24, 28, 32, 40,
+     16, 16, 20, 24, 28, 32, 40, 48,
+     16, 20, 24, 28, 32, 40, 48, 64,
+     20, 24, 28, 32, 40, 48, 64, 64,
+     24, 28, 32, 40, 48, 64, 64, 64,
+     28, 32, 40, 48, 64, 64, 64, 96,
+     32, 40, 48, 64, 64, 64, 96,128,
+     40, 48, 64, 64, 64, 96,128,128
+  }
+};
+
+const th_quant_info TH_DEF_QUANT_INFO={
+  {
+    365,348,333,316,300,287,277,265,
+    252,240,229,219,206,197,189,180,
+    171,168,160,153,146,139,132,127,
+    121,115,110,107,101, 97, 94, 89,
+     85, 83, 78, 73, 72, 67, 66, 62,
+     60, 59, 56, 53, 52, 48, 47, 43,
+     42, 40, 36, 35, 34, 33, 31, 30,
+     28, 25, 24, 22, 20, 17, 14, 10
+  },
+  {
+    365,348,333,316,300,287,277,265,
+    252,240,229,219,206,197,189,180,
+    171,168,160,153,146,139,132,127,
+    121,115,110,107,101, 97, 94, 89,
+     85, 83, 78, 73, 72, 67, 66, 62,
+     60, 59, 56, 53, 52, 48, 47, 43,
+     42, 40, 36, 35, 34, 33, 31, 30,
+     28, 25, 24, 22, 20, 17, 14, 10
+  },
+  {
+    30,25,20,20,15,15,14,14,
+    13,13,12,12,11,11,10,10,
+     9, 9, 8, 8, 7, 7, 7, 7,
+     6, 6, 6, 6, 5, 5, 5, 5,
+     4, 4, 4, 4, 3, 3, 3, 3,
+     2, 2, 2, 2, 2, 2, 2, 2,
+     0, 0, 0, 0, 0, 0, 0, 0,
+     0, 0, 0, 0, 0, 0, 0, 0
+  },
+  {
+    {
+      {3,OC_DEF_QRANGE_SIZES,OC_DEF_BASES_INTRA_Y},
+      {3,OC_DEF_QRANGE_SIZES,OC_DEF_BASES_INTRA_C},
+      {3,OC_DEF_QRANGE_SIZES,OC_DEF_BASES_INTRA_C}
+    },
+    {
+      {3,OC_DEF_QRANGE_SIZES,OC_DEF_BASES_INTER},
+      {3,OC_DEF_QRANGE_SIZES,OC_DEF_BASES_INTER},
+      {3,OC_DEF_QRANGE_SIZES,OC_DEF_BASES_INTER}
     }
   }
 };
@@ -843,7 +1017,7 @@ static int oc_enc_set_quant_params(oc_enc_ctx *_enc,
   int qti;
   if(_enc==NULL)return TH_EFAULT;
   if(_enc->packet_state>OC_PACKET_SETUP_HDR)return TH_EINVAL;
-  if(_qinfo==NULL)_qinfo=&TH_VP31_QUANT_INFO;
+  if(_qinfo==NULL)_qinfo=&TH_DEF_QUANT_INFO;
   /*TODO: Analyze for packing purposes instead of just doing a shallow copy.*/
   memcpy(&_enc->qinfo,_qinfo,sizeof(_enc->qinfo));
   for(qi=0;qi<64;qi++)for(pli=0;pli<3;pli++)for(qti=0;qti<2;qti++){
@@ -861,9 +1035,13 @@ static int oc_enc_set_quant_params(oc_enc_ctx *_enc,
 }
 
 static int oc_enc_init(oc_enc_ctx *_enc,const th_info *_info){
-  th_info info;
-  int     ret;
-  int     pli;
+  th_info   info;
+  size_t    mcu_nmbs;
+  ptrdiff_t mcu_nfrags;
+  int       hdec;
+  int       vdec;
+  int       ret;
+  int       pli;
   /*Clean up the requested settings.*/
   memcpy(&info,_info,sizeof(info));
   info.version_major=TH_VERSION_MAJOR;
@@ -879,6 +1057,15 @@ static int oc_enc_init(oc_enc_ctx *_enc,const th_info *_info){
   _enc->frag_dc=_ogg_calloc(_enc->state.nfrags,sizeof(*_enc->frag_dc));
   _enc->coded_mbis=
    (unsigned *)_ogg_malloc(_enc->state.nmbs*sizeof(*_enc->coded_mbis));
+  hdec=!(_enc->state.info.pixel_fmt&1);
+  vdec=!(_enc->state.info.pixel_fmt&1);
+  /*If chroma is sub-sampled in the vertical direction, we have to encode two
+     super block rows of Y' for each super block row of Cb and Cr.*/
+  _enc->mcu_nvsbs=1<<vdec;
+  mcu_nmbs=_enc->mcu_nvsbs*_enc->state.fplanes[0].nhsbs*(size_t)4;
+  mcu_nfrags=4*mcu_nmbs+(8*mcu_nmbs>>hdec+vdec);
+  _enc->mcu_skip_ssd=(unsigned *)_ogg_malloc(
+   mcu_nfrags*sizeof(*_enc->mcu_skip_ssd));
   for(pli=0;pli<3;pli++){
     _enc->dct_tokens[pli]=(unsigned char **)oc_malloc_2d(64,
      _enc->state.fplanes[pli].nfrags,sizeof(**_enc->dct_tokens));
@@ -930,12 +1117,22 @@ static void oc_enc_clear(th_enc_ctx *_enc){
     oc_free_2d(_enc->extra_bits[pli]);
     oc_free_2d(_enc->dct_tokens[pli]);
   }
+  _ogg_free(_enc->mcu_skip_ssd);
   _ogg_free(_enc->coded_mbis);
   _ogg_free(_enc->frag_dc);
   _ogg_free(_enc->mb_info);
   oc_state_clear(&_enc->state);
 }
 
+static void oc_enc_drop_frame(th_enc_ctx *_enc){
+  /*Use the previous frame's reconstruction.*/
+  _enc->state.ref_frame_idx[OC_FRAME_SELF]=
+   _enc->state.ref_frame_idx[OC_FRAME_PREV];
+  /*Flag motion vector analysis about the frame drop.*/
+  _enc->prevframe_dropped=1;
+  /*Zero the packet.*/
+  oggpackB_reset(&_enc->opb);
+}
 
 static void oc_enc_compress_keyframe(oc_enc_ctx *_enc,int _recode){
   if(_enc->state.info.target_bitrate>0){
@@ -951,7 +1148,7 @@ static void oc_enc_compress_keyframe(oc_enc_ctx *_enc,int _recode){
   if(!_recode&&_enc->state.curframe_num==0){
     if(_enc->state.info.target_bitrate>0){
       oc_enc_update_rc_state(_enc,oggpackB_bytes(&_enc->opb)<<3,
-       OC_INTRA_FRAME,_enc->state.qis[0],1);
+                             OC_INTRA_FRAME,_enc->state.qis[0],1,0);
     }
     oc_enc_compress_keyframe(_enc,1);
   }
@@ -974,8 +1171,9 @@ static void oc_enc_compress_frame(oc_enc_ctx *_enc,int _recode){
          prime feed-forward statistics.*/
       _enc->coded_inter_frame=1;
       if(_enc->state.info.target_bitrate>0){
+        /*Rate control also needs to prime.*/
         oc_enc_update_rc_state(_enc,oggpackB_bytes(&_enc->opb)<<3,
-         OC_INTER_FRAME,_enc->state.qis[0],1);
+         OC_INTER_FRAME,_enc->state.qis[0],1,0);
       }
       oc_enc_compress_frame(_enc,1);
     }
@@ -1206,6 +1404,7 @@ static void oc_img_plane_copy_pad(th_img_plane *_dst,th_img_plane *_src,
   }
 }
 
+#include<stdio.h>
 int th_encode_ycbcr_in(th_enc_ctx *_enc,th_ycbcr_buffer _img){
   th_ycbcr_buffer img;
   int             cframe_width;
@@ -1218,6 +1417,7 @@ int th_encode_ycbcr_in(th_enc_ctx *_enc,th_ycbcr_buffer _img){
   int             vdec;
   int             pli;
   int             refi;
+  int             drop;
   /*Step 1: validate parameters.*/
   if(_enc==NULL||_img==NULL)return TH_EFAULT;
   if(_enc->packet_state==OC_PACKET_DONE)return TH_EINVAL;
@@ -1276,16 +1476,23 @@ int th_encode_ycbcr_in(th_enc_ctx *_enc,th_ycbcr_buffer _img){
    _enc->state.curframe_num-_enc->state.keyframe_num+_enc->dup_count>=
    _enc->keyframe_frequency_force){
     oc_enc_compress_keyframe(_enc,0);
+    drop=0;
   }
-  /*Compress the frame.*/
-  else oc_enc_compress_frame(_enc,0);
+  else{
+    oc_enc_compress_frame(_enc,0);
+    drop=1;
+  }
   oc_restore_fpu(&_enc->state);
-  /*Update state variables.*/
-  _enc->packet_state=OC_PACKET_READY;
+  /*drop currently indicates if the frame is droppable.*/
   if(_enc->state.info.target_bitrate>0){
-    oc_enc_update_rc_state(_enc,oggpackB_bytes(&_enc->opb)<<3,
-     _enc->state.frame_type,_enc->state.qis[0],0);
+    drop=oc_enc_update_rc_state(_enc,oggpackB_bytes(&_enc->opb)<<3,
+     _enc->state.frame_type,_enc->state.qis[0],0,drop);
   }
+  else drop=0;
+  /*drop now indicates if the frame was dropped.*/
+  if(drop)oc_enc_drop_frame(_enc);
+  else _enc->prevframe_dropped=0;
+  _enc->packet_state=OC_PACKET_READY;
   _enc->prev_dup_count=_enc->nqueued_dups=_enc->dup_count;
   _enc->dup_count=0;
 #if defined(OC_DUMP_IMAGES)
@@ -1315,8 +1522,9 @@ int th_encode_packetout(th_enc_ctx *_enc,int _last_p,ogg_packet *_op){
     }
   }
   else return 0;
+  _last_p=_last_p&&_enc->nqueued_dups<=0;
   _op->b_o_s=0;
-  _op->e_o_s=_last_p=_last_p&&_enc->nqueued_dups<=0;
+  _op->e_o_s=_last_p;
   oc_enc_set_granpos(_enc);
   _op->packetno=th_granule_frame(_enc,_enc->state.granpos)+3;
   _op->granulepos=_enc->state.granpos;
