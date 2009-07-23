@@ -397,7 +397,7 @@ typedef void (*oc_set_chroma_mvs_func)(oc_mv _cbmvs[4],const oc_mv _lbmvs[4]);
 
 /*A map from the index in the zig zag scan to the coefficient number in a
    block.*/
-extern const unsigned char OC_FZIG_ZAG[64];
+extern const unsigned char OC_FZIG_ZAG[128];
 /*A map from the coefficient number in a block to its index in the zig zag
    scan.*/
 extern const unsigned char OC_IZIG_ZAG[64];

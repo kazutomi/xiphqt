@@ -641,34 +641,8 @@ int oc_enc_tokenize_ac(oc_enc_ctx *_enc,int _pli,ptrdiff_t _fragi,
   }
   /*Emit the tokens from the best path through the trellis.*/
   stack=*_stack;
-#if defined(OC_X86_ASM)
-  int dc=_qdct[0];
-  __asm__ __volatile__(
-    "pxor %%mm0,%%mm0\n\t"
-    "movq %%mm0,(%[y])\n\t"
-    "movq %%mm0,8(%[y])\n\t"
-    "movq %%mm0,16(%[y])\n\t"
-    "movq %%mm0,24(%[y])\n\t"
-    "movq %%mm0,32(%[y])\n\t"
-    "movq %%mm0,40(%[y])\n\t"
-    "movq %%mm0,48(%[y])\n\t"
-    "movq %%mm0,56(%[y])\n\t"
-    "movq %%mm0,64(%[y])\n\t"
-    "movq %%mm0,72(%[y])\n\t"
-    "movq %%mm0,80(%[y])\n\t"
-    "movq %%mm0,88(%[y])\n\t"
-    "movq %%mm0,96(%[y])\n\t"
-    "movq %%mm0,104(%[y])\n\t"
-    "movq %%mm0,112(%[y])\n\t"
-    "movq %%mm0,120(%[y])\n\t"
-    :
-    :[y]"r"(_qdct)
-    :"memory"
-  );
-  _qdct[0]=dc;
-#else
-  memset(_qdct+1,0,63*sizeof(*_qdct));
-#endif
+  for(zzi=1;zzi<64;zzi++)
+    _qdct[zzi]=0;
   zzi=1;
   ti=best_flags>>1&1;
   bits=tokens[zzi][ti].bits;

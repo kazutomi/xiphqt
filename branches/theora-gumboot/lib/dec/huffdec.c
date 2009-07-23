@@ -371,7 +371,7 @@ int oc_huff_trees_unpack(oc_pack_buf *_opb,
  oc_huff_node *_nodes[TH_NHUFFMAN_TABLES]){
   int i;
   for(i=0;i<TH_NHUFFMAN_TABLES;i++){
-    oc_huff_node nodes[63+13*2+4*6+5*14];
+    oc_huff_node nodes[511];
     int          ret;
     /*Unpack the full tree into a temporary buffer.*/
     ret=oc_huff_tree_unpack(_opb,nodes,sizeof(nodes)/sizeof(*nodes));

@@ -315,6 +315,10 @@ static int oc_dec_init(oc_dec_ctx *_dec,const th_info *_info,
     }
     _dec->pp_sharp_mod[qi]=-(qsum>>11);
   }
+  /*For each fragment, allocate one byte for every DCT coefficient token, plus
+     one byte for extra-bits for each token, plus one more byte for the long
+     EOB run, just in case it's the very last token and has a run length of
+     one.*/
   _dec->dct_tokens=(unsigned char *)_ogg_malloc((64+64+1)*
    _dec->state.nfrags*sizeof(_dec->dct_tokens[0]));
   memcpy(_dec->state.loop_filter_limits,_setup->qinfo.loop_filter_limits,
@@ -1366,42 +1370,17 @@ static void oc_dec_frags_recon_mcu_plane(oc_dec_ctx *_dec,
   eob_runs=_pipe->eob_runs[_pli];
   for(qti=0;qti<2;qti++)dc_quant[qti]=_pipe->dequant[_pli][0][qti][0];
   for(fragii=0;fragii<ncoded_fragis;fragii++){
-    /*This array is made twice as large as necessary so that an invalid zero
-       run cannot cause a buffer overflow.*/
-    OC_ALIGN8(ogg_int16_t dct_coeffs[128]);
+    /*This array is made one element larger because the zig-zag index array
+     * uses the final element as a dumping ground for out-of-range indices
+       to protect us from buffer overflow.*/
+    OC_ALIGN8(ogg_int16_t dct_coeffs[65]);
     ptrdiff_t   fragi;
     int         last_zzi;
     int         zzi;
     ogg_uint16_t const*ac_quant;
     fragi=coded_fragis[fragii];
-#if defined(OC_X86_ASM)
-    /*First zero the buffer.*/
-    /*On K7, etc., this could be replaced with movntq and sfence.*/
-    __asm__ __volatile__(
-      "pxor %%mm0,%%mm0\n\t"
-      "movq %%mm0,(%[y])\n\t"
-      "movq %%mm0,8(%[y])\n\t"
-      "movq %%mm0,16(%[y])\n\t"
-      "movq %%mm0,24(%[y])\n\t"
-      "movq %%mm0,32(%[y])\n\t"
-      "movq %%mm0,40(%[y])\n\t"
-      "movq %%mm0,48(%[y])\n\t"
-      "movq %%mm0,56(%[y])\n\t"
-      "movq %%mm0,64(%[y])\n\t"
-      "movq %%mm0,72(%[y])\n\t"
-      "movq %%mm0,80(%[y])\n\t"
-      "movq %%mm0,88(%[y])\n\t"
-      "movq %%mm0,96(%[y])\n\t"
-      "movq %%mm0,104(%[y])\n\t"
-      "movq %%mm0,112(%[y])\n\t"
-      "movq %%mm0,120(%[y])\n\t"
-      :
-      :[y]"r"(dct_coeffs)
-      :"memory"
-    );
-#else
-    memset(dct_coeffs,0,64*sizeof(*dct_coeffs));
-#endif
+    for(zzi=0;zzi<64;zzi++)
+      dct_coeffs[zzi]=0;
     qti=frags[fragi].mb_mode!=OC_MODE_INTRA;
     ac_quant=_pipe->dequant[_pli][frags[fragi].qii][qti];
     /*Decode the AC coefficients.*/
