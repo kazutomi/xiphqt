@@ -778,7 +778,7 @@ static int oc_enc_block_transform_quantize(oc_enc_ctx *_enc,
     int ci;
     /*We round this dequant product (and not any of the others) because there's
        no iDCT rounding.*/
-    p=(ogg_int16_t)(data[0]*(ogg_int32_t)dequant[0]+15>>5);
+    p=(ogg_int16_t)(data[0]*(ogg_int32_t)dc_dequant+15>>5);
     /*LOOP VECTORIZES.*/
     for(ci=0;ci<64;ci++)data[ci]=p;
   }
