@@ -636,8 +636,7 @@ struct oc_rd_metric{
 static int oc_enc_block_transform_quantize(oc_enc_ctx *_enc,
  oc_enc_pipeline_state *_pipe,int _pli,ptrdiff_t _fragi,int _overhead_bits,
  oc_rd_metric *_mo,oc_token_checkpoint **_stack){
-  OC_ALIGN16(ogg_int16_t  buffer[64]);
-  OC_ALIGN16(ogg_int16_t zzbuffer[64]);
+  OC_ALIGN16(ogg_int16_t  dct[64]);
   OC_ALIGN16(ogg_int16_t  data[64]);
   ogg_uint16_t            dc_dequant;
   const ogg_uint16_t     *dequant;
@@ -675,15 +674,16 @@ static int oc_enc_block_transform_quantize(oc_enc_ctx *_enc,
   borderi=frags[_fragi].borderi;
   qii=frags[_fragi].qii;
   if(qii&~3){
-#if 1
-    /*Enable early skip detection.*/
-    frags[_fragi].coded=0;
-    return 0;
-#else
-    /*Try and code the fragment anyway.*/
-    qii&=3;
-    frags[_fragi].qii=qii;
-#endif
+    if(!_pli){
+      /*Enable early skip detection only for luma blocks.*/
+      frags[_fragi].coded=0;
+      return 0;
+    }
+    else{
+      /*Try and code chroma blocks anyway.*/
+      qii&=3;
+      frags[_fragi].qii=qii;
+    }
   }
   mb_mode=frags[_fragi].mb_mode;
   ref=_enc->state.ref_frame_data[
@@ -731,25 +731,25 @@ static int oc_enc_block_transform_quantize(oc_enc_ctx *_enc,
   }
 #endif
   /*Transform:*/
-  oc_enc_fdct8x8(_enc,buffer,data);
+  oc_enc_fdct8x8(_enc,dct,data);
   /*Quantize the DC coefficient:*/
   qti=mb_mode!=OC_MODE_INTRA;
   enquant=_pipe->enquant[_pli][0][qti];
   dc_dequant=_pipe->dequant[_pli][0][qti][0];
-  v=buffer[0];
+  v=dct[0];
   val=v<<1;
   s=OC_SIGNMASK(val);
   val+=dc_dequant+s^s;
   val=((enquant[0].m*(ogg_int32_t)val>>16)+val>>enquant[0].l)-s;
-  data[0]=OC_CLAMPI(-580,val,580);
+  dc=OC_CLAMPI(-580,val,580);
+  data[0]=dc;
   nonzero=0;
   /*Quantize the AC coefficients:*/
   dequant=_pipe->dequant[_pli][qii][qti];
   enquant=_pipe->enquant[_pli][qii][qti];
   for(zzi=1;zzi<64;zzi++){
-    v=buffer[OC_FZIG_ZAG[zzi]];
+    v=dct[OC_FZIG_ZAG[zzi]];
     d=dequant[zzi];
-    zzbuffer[zzi]=v;
     val=v<<1;
     v=abs(val);
     if(v>=d){
@@ -768,9 +768,8 @@ static int oc_enc_block_transform_quantize(oc_enc_ctx *_enc,
   }
   /*Tokenize.*/
   checkpoint=*_stack;
-  ac_bits=oc_enc_tokenize_ac(_enc,_pli,_fragi,data,dequant,zzbuffer,nonzero+1,
+  ac_bits=oc_enc_tokenize_ac(_enc,_pli,_fragi,data,dequant,dct,nonzero+1,
    _stack,qti?0:3);
-  dc=data[0];
   /*Reconstruct.
     TODO: nonzero may need to be adjusted after tokenization.*/
   if(nonzero==0){
@@ -778,12 +777,12 @@ static int oc_enc_block_transform_quantize(oc_enc_ctx *_enc,
     int ci;
     /*We round this dequant product (and not any of the others) because there's
        no iDCT rounding.*/
-    p=(ogg_int16_t)(data[0]*(ogg_int32_t)dc_dequant+15>>5);
+    p=(ogg_int16_t)(dc*(ogg_int32_t)dc_dequant+15>>5);
     /*LOOP VECTORIZES.*/
     for(ci=0;ci<64;ci++)data[ci]=p;
   }
   else{
-    data[0]*=dc_dequant;
+    data[0]=dc*dc_dequant;
     oc_idct8x8(&_enc->state,data,nonzero+1,nonzero+1);
   }
   if(!qti)oc_enc_frag_recon_intra(_enc,dst,ystride,data);

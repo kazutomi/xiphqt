@@ -526,19 +526,6 @@ static void oc_idct8x8_10(ogg_int16_t _y[64]){
   }
 }
 
-/*This table has been modified from OC_FZIG_ZAG by baking a 4x4 transpose into
-   each quadrant of the destination.*/
-static const unsigned char OC_FZIG_ZAG_MMX[64]={
-   0, 8, 1, 2, 9,16,24,17,
-  10, 3,32,11,18,25, 4,12,
-   5,26,19,40,33,34,41,48,
-  27, 6,13,20,28,21,14, 7,
-  56,49,42,35,43,50,57,36,
-  15,22,29,30,23,44,37,58,
-  51,59,38,45,52,31,60,53,
-  46,39,47,54,61,62,55,63
-};
-
 /*Performs an inverse 8x8 Type-II DCT transform.
   The input is assumed to be scaled by a factor of 4 relative to orthonormal
    version of the transform.*/

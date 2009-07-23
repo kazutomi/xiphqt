@@ -1319,29 +1319,6 @@ static void oc_dec_dc_unpredict_mcu_plane(oc_dec_ctx *_dec,
    (fragy_end-fragy0)*(ptrdiff_t)nhfrags-ncoded_fragis;
 }
 
-#if defined(OC_X86_ASM)
-/*This table has been modified from OC_FZIG_ZAG by baking a 4x4 transpose into
-   each quadrant of the destination.*/
-static const unsigned char OC_FZIG_ZAG_MMX[128]={
-   0, 8, 1, 2, 9,16,24,17,
-  10, 3,32,11,18,25, 4,12,
-   5,26,19,40,33,34,41,48,
-  27, 6,13,20,28,21,14, 7,
-  56,49,42,35,43,50,57,36,
-  15,22,29,30,23,44,37,58,
-  51,59,38,45,52,31,60,53,
-  46,39,47,54,61,62,55,63,
-  64,64,64,64,64,64,64,64,
-  64,64,64,64,64,64,64,64,
-  64,64,64,64,64,64,64,64,
-  64,64,64,64,64,64,64,64,
-  64,64,64,64,64,64,64,64,
-  64,64,64,64,64,64,64,64,
-  64,64,64,64,64,64,64,64,
-  64,64,64,64,64,64,64,64,
-};
-#endif
-
 /*Reconstructs all coded fragments in a single MCU (one or two super block
    rows).
   This requires that each coded fragment have a proper macro block mode and
@@ -1354,6 +1331,7 @@ static const unsigned char OC_FZIG_ZAG_MMX[128]={
 static void oc_dec_frags_recon_mcu_plane(oc_dec_ctx *_dec,
  oc_dec_pipeline_state *_pipe,int _pli){
   unsigned char     *dct_tokens;
+  const unsigned char *dct_fzig_zag;
   ogg_uint16_t       dc_quant[2];
   const oc_fragment *frags;
   const ptrdiff_t   *coded_fragis;
@@ -1363,6 +1341,7 @@ static void oc_dec_frags_recon_mcu_plane(oc_dec_ctx *_dec,
   ptrdiff_t         *eob_runs;
   int                qti;
   dct_tokens=_dec->dct_tokens;
+  dct_fzig_zag=_dec->state.opt_data.dct_fzig_zag;
   frags=_dec->state.frags;
   coded_fragis=_pipe->coded_fragis[_pli];
   ncoded_fragis=_pipe->ncoded_fragis[_pli];
@@ -1418,11 +1397,7 @@ static void oc_dec_frags_recon_mcu_plane(oc_dec_ctx *_dec,
         eob_runs[zzi]=eob;
         ti[zzi]=lti;
         zzi+=rlen;
-#if defined(OC_X86_ASM)
-        dct_coeffs[OC_FZIG_ZAG_MMX[zzi]]=(ogg_int16_t)(coeff*(int)ac_quant[zzi]);
-#else
-        dct_coeffs[OC_FZIG_ZAG[zzi]]=(ogg_int16_t)(coeff*(int)ac_quant[zzi]);
-#endif
+        dct_coeffs[dct_fzig_zag[zzi]]=(ogg_int16_t)(coeff*(int)ac_quant[zzi]);
         zzi+=(eob==0);
       }
     }

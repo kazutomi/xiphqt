@@ -208,21 +208,6 @@ struct oc_quant_token{
   int           qc;
 };
 
-#if defined(OC_X86_ASM)
-/*This table has been modified from OC_FZIG_ZAG by baking a 4x4 transpose into
-   each quadrant of the destination.*/
-static const unsigned char OC_FZIG_ZAG_MMX[64]={
-   0, 8, 1, 2, 9,16,24,17,
-  10, 3,32,11,18,25, 4,12,
-   5,26,19,40,33,34,41,48,
-  27, 6,13,20,28,21,14, 7,
-  56,49,42,35,43,50,57,36,
-  15,22,29,30,23,44,37,58,
-  51,59,38,45,52,31,60,53,
-  46,39,47,54,61,62,55,63,
-};
-#endif
-
 int oc_enc_tokenize_ac(oc_enc_ctx *_enc,int _pli,ptrdiff_t _fragi,
  ogg_int16_t *_qdct,const ogg_uint16_t *_dequant,const ogg_int16_t *_dct,
  int _zzi,oc_token_checkpoint **_stack,int _acmin){
@@ -233,6 +218,7 @@ int oc_enc_tokenize_ac(oc_enc_ctx *_enc,int _pli,ptrdiff_t _fragi,
   ogg_uint32_t         d2_accum[64];
   oc_quant_token       tokens[64][2];
   ogg_uint16_t        *eob_run;
+  const unsigned char *dct_fzig_zag;
   ogg_uint32_t         cost;
   int                  bits;
   int                  eob;
@@ -246,6 +232,7 @@ int oc_enc_tokenize_ac(oc_enc_ctx *_enc,int _pli,ptrdiff_t _fragi,
   int                  qc;
   huffi=_enc->huff_idxs[_enc->state.frame_type][1][_pli+1>>1];
   eob_run=_enc->eob_run[_pli];
+  dct_fzig_zag=_enc->state.opt_data.dct_fzig_zag;
   memset(tokens[0],0,sizeof(tokens[0]));
   best_flags=nzflags=0;
   zflags=1;
@@ -270,7 +257,7 @@ int oc_enc_tokenize_ac(oc_enc_ctx *_enc,int _pli,ptrdiff_t _fragi,
     qc=_qdct[zzi];
     s=-(qc<0);
     qc=qc+s^s;
-    c=_dct[zzi];
+    c=_dct[OC_FZIG_ZAG[zzi]];
     if(qc<=1){
       ogg_uint32_t sum_d2;
       int          nzeros;
@@ -344,7 +331,7 @@ int oc_enc_tokenize_ac(oc_enc_ctx *_enc,int _pli,ptrdiff_t _fragi,
                 token=OC_DCT_RUN_CAT1B+cat;
                 eb=(-val_s<<cat+2)+nzeros-6-(cat<<2);
               }
-              e=(_dct[zzj]+val_s^val_s)-_dequant[zzj];
+              e=(_dct[OC_FZIG_ZAG[zzj]]+val_s^val_s)-_dequant[zzj];
               d2=e*(ogg_int32_t)e+sum_d2-d2_accum[zzj];
               bits=flush_bits+oc_token_bits(_enc,huffi,zzi,token);
               cost=d2+lambda*bits+tokens[zzk][tk].cost;
@@ -363,7 +350,7 @@ int oc_enc_tokenize_ac(oc_enc_ctx *_enc,int _pli,ptrdiff_t _fragi,
               token=OC_DCT_RUN_CAT2A+cat;
               bits=flush_bits+oc_token_bits(_enc,huffi,zzi,token);
               val=2+((val+val_s^val_s)>2);
-              e=(_dct[zzj]+val_s^val_s)-_dequant[zzj]*val;
+              e=(_dct[OC_FZIG_ZAG[zzj]]+val_s^val_s)-_dequant[zzj]*val;
               d2=e*(ogg_int32_t)e+sum_d2-d2_accum[zzj];
               cost=d2+lambda*bits+tokens[zzk][tk].cost;
               if(cost<=best_cost){
@@ -670,11 +657,7 @@ int oc_enc_tokenize_ac(oc_enc_ctx *_enc,int _pli,ptrdiff_t _fragi,
     next=tokens[zzi][ti].next;
     qc=tokens[zzi][ti].qc;
     zzj=(next>>1)-1&63;
-#if defined(OC_X86_ASM)
-    _qdct[OC_FZIG_ZAG_MMX[zzj]]=(ogg_int16_t)(qc*(int)_dequant[zzj]);
-#else
-    _qdct[OC_FZIG_ZAG[zzj]]=(ogg_int16_t)(qc*(int)_dequant[zzj]);
-#endif
+    _qdct[dct_fzig_zag[zzj]]=(ogg_int16_t)(qc*(int)_dequant[zzj]);
     zzi=next>>1;
     ti=next&1;
   }

@@ -65,6 +65,7 @@ typedef struct oc_border_info           oc_border_info;
 typedef struct oc_fragment              oc_fragment;
 typedef struct oc_fragment_plane        oc_fragment_plane;
 typedef struct oc_base_opt_vtable       oc_base_opt_vtable;
+typedef struct oc_base_opt_data         oc_base_opt_data;
 typedef struct oc_state_dispatch_vtable oc_state_dispatch_vtable;
 typedef struct oc_theora_state          oc_theora_state;
 
@@ -297,6 +298,11 @@ struct oc_base_opt_vtable{
   void (*restore_fpu)(void);
 };
 
+/*The shared (encoder and decoder) tables that vary according to which variants
+   of the above functions are used.*/
+struct oc_base_opt_data{
+  const unsigned char *dct_fzig_zag;
+};
 
 
 /*State information common to both the encoder and decoder.*/
@@ -305,6 +311,8 @@ struct oc_theora_state{
   th_info             info;
   /*Table for shared accelerated functions.*/
   oc_base_opt_vtable  opt_vtable;
+  /*Table for shared data used by accelerated functions.*/
+  oc_base_opt_data    opt_data;
   /*CPU flags to detect the presence of extended instruction sets.*/
   ogg_uint32_t        cpu_flags;
   /*The fragment plane descriptions.*/

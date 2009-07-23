@@ -591,6 +591,7 @@ void oc_state_vtable_init_c(oc_theora_state *_state){
   _state->opt_vtable.state_loop_filter_frag_rows=
    oc_state_loop_filter_frag_rows_c;
   _state->opt_vtable.restore_fpu=oc_restore_fpu_c;
+  _state->opt_data.dct_fzig_zag=OC_FZIG_ZAG;
 }
 
 /*Initialize the accelerated function pointers.*/
