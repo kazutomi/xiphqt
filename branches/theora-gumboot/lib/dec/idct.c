@@ -329,10 +329,7 @@ void oc_idct8x8_c(ogg_int16_t _y[64],int _last_zzi,int _ncoefs){
      gets.
     Needless to say we inherited this approach from VP3.*/
   /*Then perform the iDCT.*/
-  if(_last_zzi<3)
-    oc_idct8x8_3(_y,_y);
-  else if(_last_zzi<10)
-    oc_idct8x8_10(_y,_y);
-  else
-    oc_idct8x8_slow(_y,_y);
+  if(_last_zzi<3)oc_idct8x8_3(_y,_y);
+  else if(_last_zzi<10)oc_idct8x8_10(_y,_y);
+  else oc_idct8x8_slow(_y,_y);
 }

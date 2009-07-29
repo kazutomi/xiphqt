@@ -11,7 +11,7 @@
  ********************************************************************
 
   function: mode selection code
-  last mod: $Id$
+  last mod: $Id:$
 
  ********************************************************************/
 #include <limits.h>
@@ -687,7 +687,7 @@ static int oc_enc_block_transform_quantize(oc_enc_ctx *_enc,
   }
   mb_mode=frags[_fragi].mb_mode;
   ref=_enc->state.ref_frame_data[
-   _enc->state.ref_frame_idx[OC_FRAME_FOR_MODE[mb_mode]]]+frag_offs;
+   _enc->state.ref_frame_idx[OC_FRAME_FOR_MODE(mb_mode)]]+frag_offs;
   dst=_enc->state.ref_frame_data[_enc->state.ref_frame_idx[OC_FRAME_SELF]]
    +frag_offs;
   /*Motion compensation:*/
@@ -742,7 +742,6 @@ static int oc_enc_block_transform_quantize(oc_enc_ctx *_enc,
   val+=dc_dequant+s^s;
   val=((enquant[0].m*(ogg_int32_t)val>>16)+val>>enquant[0].l)-s;
   dc=OC_CLAMPI(-580,val,580);
-  data[0]=dc;
   nonzero=0;
   /*Quantize the AC coefficients:*/
   dequant=_pipe->dequant[_pli][qii][qti];
@@ -774,7 +773,7 @@ static int oc_enc_block_transform_quantize(oc_enc_ctx *_enc,
     TODO: nonzero may need to be adjusted after tokenization.*/
   if(nonzero==0){
     ogg_int16_t p;
-    int ci;
+    int         ci;
     /*We round this dequant product (and not any of the others) because there's
        no iDCT rounding.*/
     p=(ogg_int16_t)(dc*(ogg_int32_t)dc_dequant+15>>5);
@@ -1226,7 +1225,7 @@ static void oc_enc_sb_transform_quantize_intra_chroma(oc_enc_ctx *_enc,
 }
 
 /*Analysis stage for an INTRA frame.*/
-int oc_enc_analyze_intra(oc_enc_ctx *_enc,int _recode){
+void oc_enc_analyze_intra(oc_enc_ctx *_enc,int _recode){
   oc_enc_pipeline_state   pipe;
   const unsigned char    *map_idxs;
   int                     nmap_idxs;
@@ -1304,7 +1303,6 @@ int oc_enc_analyze_intra(oc_enc_ctx *_enc,int _recode){
   refi=_enc->state.ref_frame_idx[OC_FRAME_SELF];
   for(pli=0;pli<3;pli++)oc_state_borders_fill_caps(&_enc->state,refi,pli);
   _enc->state.ntotal_coded_fragis=_enc->state.nfrags;
-  return 0;
 }
 
 
@@ -1668,7 +1666,7 @@ static void oc_cost_inter(oc_enc_ctx *_enc,oc_mode_choice *_modec,
   ptrdiff_t              frag_offs;
   src=_enc->state.ref_frame_data[OC_FRAME_IO];
   ref=_enc->state.ref_frame_data[
-   _enc->state.ref_frame_idx[OC_FRAME_FOR_MODE[_mb_mode]]];
+   _enc->state.ref_frame_idx[OC_FRAME_FOR_MODE(_mb_mode)]];
   ystride=_enc->state.ref_ystride[0];
   frag_buf_offs=_enc->state.frag_buf_offs;
   sb_map=_enc->state.sb_maps[_mbi>>2][_mbi&3];
@@ -1851,7 +1849,7 @@ static void oc_cost_inter4mv(oc_enc_ctx *_enc,oc_mode_choice *_modec,
   oc_mode_set_cost(_modec,_enc->lambda);
 }
 
-int oc_enc_analyze(oc_enc_ctx *_enc,int _frame_type,int _recode){
+int oc_enc_analyze_inter(oc_enc_ctx *_enc,int _allow_keyframe,int _recode){
   oc_set_chroma_mvs_func  set_chroma_mvs;
   oc_enc_pipeline_state   pipe;
   oc_qii_state            intra_luma_qs;
@@ -1882,13 +1880,12 @@ int oc_enc_analyze(oc_enc_ctx *_enc,int _frame_type,int _recode){
   unsigned                sbi_end;
   int                     refi;
   int                     pli;
-  if(_frame_type==OC_INTRA_FRAME)return oc_enc_analyze_intra(_enc,_recode);
   set_chroma_mvs=OC_SET_CHROMA_MVS_TABLE[_enc->state.info.pixel_fmt];
-  _enc->state.frame_type=_frame_type;
+  _enc->state.frame_type=OC_INTER_FRAME;
   oc_mode_scheme_chooser_reset(&_enc->chooser);
   oc_enc_tokenize_start(_enc);
   oc_enc_pipeline_init(_enc,&pipe);
-  oc_qii_state_init(&intra_luma_qs);
+  if(_allow_keyframe)oc_qii_state_init(&intra_luma_qs);
   _enc->mv_bits[0]=_enc->mv_bits[1]=0;
   interbits=intrabits=0;
   last_mv[0]=last_mv[1]=prior_mv[0]=prior_mv[1]=0;
@@ -1956,12 +1953,14 @@ int oc_enc_analyze(oc_enc_ctx *_enc,int _frame_type,int _recode){
         }
         oc_mb_intra_satd(_enc,mbi,intra_satd);
         /*Estimate the cost of coding this MB in a keyframe.*/
-        oc_cost_intra(_enc,modes+OC_MODE_INTRA,mbi,
-         pipe.fr+0,&intra_luma_qs,intra_satd,OC_NOSKIP);
-        intrabits+=modes[OC_MODE_INTRA].rate;
-        for(bi=0;bi<4;bi++){
-          oc_qii_state_advance(&intra_luma_qs,&intra_luma_qs,
-           modes[OC_MODE_INTRA].qii[bi]);
+        if(_allow_keyframe){
+          oc_cost_intra(_enc,modes+OC_MODE_INTRA,mbi,
+           pipe.fr+0,&intra_luma_qs,intra_satd,OC_NOSKIP);
+          intrabits+=modes[OC_MODE_INTRA].rate;
+          for(bi=0;bi<4;bi++){
+            oc_qii_state_advance(&intra_luma_qs,&intra_luma_qs,
+             modes[OC_MODE_INTRA].qii[bi]);
+          }
         }
         /*Estimate the cost in a delta frame for various modes.*/
         oc_skip_cost(_enc,&pipe,mbi,skip_ssd);
@@ -2174,7 +2173,7 @@ int oc_enc_analyze(oc_enc_ctx *_enc,int _frame_type,int _recode){
   for(pli=0;pli<3;pli++)oc_state_borders_fill_caps(&_enc->state,refi,pli);
   /*Finish adding flagging overhead costs to inter bit counts to determine if
      we should have coded a key frame instead.*/
-  if(_enc->state.frame_type!=OC_INTRA_FRAME){
+  if(_allow_keyframe){
     if(interbits>intrabits)return 1;
     /*Technically the chroma plane counts are over-estimations, because they
        don't account for continuing runs from the luma planes, but the
