@@ -214,8 +214,8 @@
 <p>
  The ezstream binary release depends on MSVC 2008 runtime libraries.
  These libraries can be downloaded from Microsoft as the
- <code>vcredist_x86.exe</code> file, at no cost, and are
- <a href="http://www.google.com/search?q=vc+2008+redist">easily found via Google</a>.
+ <a href="http://www.microsoft.com/DOWNLOADS/details.aspx?familyid=A5C84275-3B97-4AB7-A40D-3802B2AF5FC2"><code>vcredist_x86.exe</code></a>
+ file, at no cost.
 </p>
 
 <h4>Even more ...</h4>
