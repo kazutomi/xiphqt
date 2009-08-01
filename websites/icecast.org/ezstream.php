@@ -78,7 +78,7 @@
 <h3>Download</h3>
 
 <p style="font-size: larger;">
- Latest version: <b>0.5.4</b>
+ Latest version: <b>0.5.5</b>
  [ <a href="#ez_relnotes_chgs">Changes</a> ]
 <p>
 
@@ -92,8 +92,8 @@
     Source .tar.gz (all platforms)
    </td>
    <td>
-    <a href="http://downloads.xiph.org/releases/ezstream/ezstream-0.5.4.tar.gz">ezstream-0.5.4.tar.gz</a><br/>
-    MD5: 7a83c5de8410dbf14144945c267e6580
+    <a href="http://downloads.xiph.org/releases/ezstream/ezstream-0.5.5.tar.gz">ezstream-0.5.5.tar.gz</a><br/>
+    MD5: d7be03522042087085c7cf44706d0a10
    </td>
   </tr>
   <tr>
@@ -101,8 +101,8 @@
     MS Windows binary (32bit)
    </td>
    <td>
-    <a href="http://downloads.xiph.org/releases/ezstream/ezstream-0.5.4-win32.zip">ezstream-0.5.4-win32.zip</a><br/>
-    MD5: f46c3aa5c443defe0b9eff5565647a07
+    <a href="http://downloads.xiph.org/releases/ezstream/ezstream-0.5.5-win32.zip">ezstream-0.5.5-win32.zip</a><br/>
+    MD5: da42716e9bef62c054ed8a80510e3205
    </td>
   </tr>
  </table>
@@ -257,56 +257,38 @@
 <h3>Release Notes</h3>
 
 <p>
- Ezstream 0.5.4 has been released on March 28th 2009.
+ Ezstream 0.5.5 has been released on August 1st 2009.
 </p>
 
 <p>
- Version 0.5.4 is a maintenance and bugfix release.
+ Version 0.5.5 is a maintenance and minor feature release.
 </p>
 
 <h4 id="ez_relnotes_chgs" name="ez_relnotes_chgs">Changes</h4>
 
 <ul style="font-size: smaller; margin: 1em 3em">
  <li>
-  <code>compat/sys/tree.*</code>:
+  <code>win32/config.h</code>:
   <ul>
    <li>
-     MISC &mdash;
-     Update the tree macros to a newer version.
-     The manual, shipped with ezstream for reference, now has a more friendly
-     2-clause BSD license.
+     FIX &mdash;
+     Re-enable TagLib support in MSVC build.
+     Found by Roman Donchenko.
+     (Ticket #<a href="https://trac.xiph.org/ticket/1535"><code>1535</code></a>)
    </li>
   </ul>
  <li>
   various:
   <ul>
    <li>
-    FIX &mdash;
-    Add a missing metadata charset conversion, and add charset conversions for
-    filenames.
-    From Roman Donchenko.
-   </li>
-   <li>
-    FIX &mdash;
-    Fix build on MinGW.
-    From Roman Donchenko.
+    NEW &mdash;
+    New optional <code>&lt;sourceuser/&gt;</code> configuration option, to
+    change the username used in authentication with Icecast.
+    Suggested by Akos Veres.
    </li>
    <li>
     MISC &mdash;
-    Overhaul and modernize the build system.
-    Ezstream is now expected to build &quot;out of the box&quot; on more
-    systems without configuration tweaks.
-   </li>
-   <li>
-    FIX &mdash;
-    Adjust the build system to better handle optional dependencies.
-    It is now possible to choose between TagLib and libvorbis for reading Ogg
-    Vorbis metadata, or no Vorbis metadata support at all.
-    (Ticket #<a href="https://trac.xiph.org/ticket/1398"><code>1398</code></a>)
-   </li>
-   <li>
-    MISC &mdash;
-    Miscellaneous code maintenance and a bit of cleaning up.
+    Further improvements and minor fixes in the build system.
    </li>
   </ul>
 </ul>
