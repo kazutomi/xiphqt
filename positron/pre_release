@@ -1,9 +1,0 @@
-#!/bin/sh
-# 
-# This script is to gzip the manpages which is needed before one can run
-# python setup.py bdist_rpm
-#
-# This does not fix the bdist_rpm target on Mandrake though, as Mandrake
-# expects bz2 manpages.
-
-gzip -c9 doc/positron.1 > doc/positron.1.gz
