@@ -8,6 +8,45 @@
 <!--#include virtual="/ssi/pagetop.include" -->
 <!--  All your page content goes here  -->
 
+<h3>First beta release of the new encoder</h3>
+<p class="newsdate">2009 August 5</p>
+
+<p>Xiph.Org is pleased to announce the first beta release of our 
+reference implementation of the free Theora video format, codename 
+"Thusnelda".</p>
+
+<p>This release incorporates extensive changes to the encoder's rate 
+control. The encoder is both more configurable and functions better in 
+all configurations. The new options include support for two-pass 
+encoding, the ability to change the bitrate and quality targets 
+dynamically during an encode, and the ability to drop frames to meet
+very low bitrate targets, all commonly-requested features.</p>
+
+<p>This release includes all the major features we intend for 1.1 
+release. Please give it a try. We're particularly interested in 
+sequences it does poorly on, and feedback from framework and 
+applications developers on the new two-pass api. For details
+of how to use the two-pass mode, please check the code in
+the <a href="http://svn.xiph.org/tags/theora/theora-1.1beta1/examples/">examples</a> 
+directory.</p>
+
+<ul>
+<li><a href="http://downloads.xiph.org/releases/theora/libtheora-1.1beta1.tar.bz2">libtheora-1.1beta1.tar.bz2</a></li>
+<li><a href="http://downloads.xiph.org/releases/theora/libtheora-1.1beta1.zip">libtheora-1.1beta1.zip</a></li>
+</ul>
+
+<p>Many thanks to Red Hat and the Mozilla Foundation, who supported this 
+work.</p>
+
+<h3>Firefox 3.5 released with native Theora support</h3>
+<p class="newsdate">2009 June 30</p>
+
+<p>Firefox 3.5 has been
+<a href="http://www.mozilla.com/en-US/firefox/3.5/releasenotes/">released</a>
+including native Ogg Theora+Vorbis support as part of its implementation 
+of the HTML5 media elment set. This is a great day for open media 
+standards on the web, bringing Theora support to millions of new 
+users.</p>
 
 <h3>Second alpha release of the new encoder</h3>
 <p class="newsdate">2009 May 26</p>
