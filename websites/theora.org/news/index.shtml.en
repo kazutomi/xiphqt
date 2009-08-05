@@ -26,7 +26,8 @@ very low bitrate targets, all commonly-requested features.</p>
 release. Please give it a try. We're particularly interested in 
 sequences it does poorly on, and feedback from framework and 
 applications developers on the new two-pass api. For details
-of how to use the two-pass mode, please check the code in
+of how to use the <a href="http://theora.org/doc/libtheora-1.1beta1/theoraenc_8h.html#4a84f982cdd9a3e3c803a29bbde9df0b">two-pass 
+mode</a>, please check the code in
 the <a href="http://svn.xiph.org/tags/theora/theora-1.1beta1/examples/">examples</a> 
 directory.</p>
 
