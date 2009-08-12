@@ -242,8 +242,8 @@ Head on over to the <a href="http://www.Theora.org/svn.html">SVN</a>
  As the Ogg Vorbis format has gained acceptance, components have become
 available to play Ogg files on practically all of the major media players.
 We expect a similar if not superior level of support for Ogg Theora.
-Developers wanted! (if you're interested, sign up for the
-Theora-codecs@xiph.org mailing list).  
+ The open source Firefox and Chrome web browsers have native Theora 
+playback as part of their media element (&lt;video&gt;) element support.
 </div>
 <br/>
 <br/>
