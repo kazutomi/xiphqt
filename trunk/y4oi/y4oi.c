@@ -733,7 +733,7 @@ static frame_t *y4o_read_frame(y4o_in_t *y){
            and seek past */
         p->swap = f;
         p->swap_pos = ftello(f);
-        if(fseeko(f,length,SEEK_CUR)){
+        if(fseeko(f,bytes,SEEK_CUR)){
           fprintf(stderr,"ERROR: unable to advance in frame data; %s\n",strerror(errno));
           return pret;
         }
@@ -2013,18 +2013,15 @@ int main(int argc,char *const *argv){
           if(outoffsets[sno]<0){
             /* there's an already-established gap in the stream.  dup it out */
             if(duplicate_frame(outfile,ty,lastframe,outclock,cutclock,cutticks,outoffsets,sno)){
-              fprintf(stderr,"break\n");
               break;
             }
           }else if (outoffsets[sno]>0){
             trim_from_tail(ty,sno,outclock,outoffsets);
           }else{
             if(limited_prime(ty,sno)){
-              fprintf(stderr,"break\n");
               break;
             }
             if(search_offset(ty,sync_stream,sno,outclock,outoffsets,lastframe)){
-              fprintf(stderr,"break\n");
               break;
             }
             if(s->inq_tail->presync && outoffsets[sno]==0)
