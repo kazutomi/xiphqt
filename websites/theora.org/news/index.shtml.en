@@ -8,6 +8,21 @@
 <!--#include virtual="/ssi/pagetop.include" -->
 <!--  All your page content goes here  -->
 
+<h3>Third beta release</h3>
+<p class="newsdate">2009 August 22</p>
+
+<p>Another week, another release.
+
+<p>Like the last one, the new beta release of the encoder rewrite
+fixes some problems with the new bitrate management. If you had
+trouble with uneven quality with previous 1.1 releases, please
+give this one a try; the behaviour is better.
+
+<ul>
+<li><a href="http://downloads.xiph.org/releases/theora/libtheora-1.1beta3.tar.bz2">libtheora-1.1beta3.tar.bz2</a></li>
+<li><a href="http://downloads.xiph.org/releases/theora/libtheora-1.1beta3.zip">libtheora-1.1beta3.zip</a></li>
+</ul>
+
 <h3>Second beta release</h3>
 <p class="newsdate">2009 August 12</p>
 
