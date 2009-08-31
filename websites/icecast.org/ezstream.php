@@ -78,7 +78,7 @@
 <h3>Download</h3>
 
 <p style="font-size: larger;">
- Latest version: <b>0.5.5</b>
+ Latest version: <b>0.5.6</b>
  [ <a href="#ez_relnotes_chgs">Changes</a> ]
 <p>
 
@@ -92,8 +92,8 @@
     Source .tar.gz (all platforms)
    </td>
    <td>
-    <a href="http://downloads.xiph.org/releases/ezstream/ezstream-0.5.5.tar.gz">ezstream-0.5.5.tar.gz</a><br/>
-    MD5: d7be03522042087085c7cf44706d0a10
+    <a href="http://downloads.xiph.org/releases/ezstream/ezstream-0.5.6.tar.gz">ezstream-0.5.6.tar.gz</a><br/>
+    MD5: 1be68119d44fbe71454a901fa650a359
    </td>
   </tr>
   <tr>
@@ -101,8 +101,8 @@
     MS Windows binary (32bit)
    </td>
    <td>
-    <a href="http://downloads.xiph.org/releases/ezstream/ezstream-0.5.5-win32.zip">ezstream-0.5.5-win32.zip</a><br/>
-    MD5: da42716e9bef62c054ed8a80510e3205
+    <a href="http://downloads.xiph.org/releases/ezstream/ezstream-0.5.6-win32.zip">ezstream-0.5.6-win32.zip</a><br/>
+    MD5: 19c6f28c2de81e6e2fa3e0ed914e6696
    </td>
   </tr>
  </table>
@@ -257,38 +257,65 @@
 <h3>Release Notes</h3>
 
 <p>
- Ezstream 0.5.5 has been released on August 1st 2009.
+ Ezstream 0.5.6 has been released on August 31st 2009.
 </p>
 
 <p>
- Version 0.5.5 is a maintenance and minor feature release.
+ Version 0.5.6 is a maintenance and feature release.
 </p>
 
 <h4 id="ez_relnotes_chgs" name="ez_relnotes_chgs">Changes</h4>
 
 <ul style="font-size: smaller; margin: 1em 3em">
  <li>
-  <code>win32/config.h</code>:
+  <code>ezstream-file.sh</code>:
   <ul>
    <li>
-     FIX &mdash;
-     Re-enable TagLib support in MSVC build.
-     Found by Roman Donchenko.
-     (Ticket #<a href="https://trac.xiph.org/ticket/1535"><code>1535</code></a>)
+     NEW &mdash;
+     Add and install ezstream-file.sh, a new convenience shell script that
+     generates configuration and playlist from a template and command line,
+     respectively.
+     (Bourne shell and POSIX utilities required.)
    </li>
   </ul>
  <li>
-  various:
+  <code>src/ezstream.c</code>:
+  <ul>
+   <li>
+    MISC &mdash;
+    Be more tolerant towards faulty playlists and similar issues.
+    Failure to open a resource (e.g. a media file) is no longer fatal and
+    operation will continue until 100 subsequent errors.
+    Based on an idea from dhorton.
+    (Ticket #<a href="https://trac.xiph.org/ticket/1585"><code>1585</code></a>)
+   </li>
+   <li>
+    NEW &mdash;
+    New command line option -s: Make ezstream function as a line-based
+    shuffling utility.
+   </li>
+  </ul>
+ </li>
+ <li>
+  <code>src/playlist.c</code>:
+  <ul>
+   <li>
+    MISC &mdash;
+    Consider no output from a playlist program to be equivalent to an empty
+    line, indicating that the end of the playlist is reached.
+   </li>
+   <li>
+    FIX &mdash;
+    Do not complain when receiving an empty line from a playlist program.
+   </li>
+  </ul>
+ </li>
+ <li>
+  <code>examples/</code>:
   <ul>
    <li>
     NEW &mdash;
-    New optional <code>&lt;sourceuser/&gt;</code> configuration option, to
-    change the username used in authentication with Icecast.
-    Suggested by Akos Veres.
-   </li>
-   <li>
-    MISC &mdash;
-    Further improvements and minor fixes in the build system.
+    Add a real-world example playlist script with logging feature.
    </li>
   </ul>
 </ul>
