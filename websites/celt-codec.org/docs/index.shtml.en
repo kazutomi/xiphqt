@@ -50,7 +50,7 @@ The first paper describes version 0.3.2 of the codec, while the second describe 
 <ul>
    <li>J.-M. Valin, T. B. Terriberry, C. Montgomery, G. Maxwell, <a href="http://people.xiph.org/~jm/papers/celt_tasl.pdf">A High-Quality Speech and Audio Codec With Less Than 10 ms delay</a>, <i>To appear in IEEE Transactions on Audio, Speech and Language Processing</i>, 2009.
    </li>
-   <li>J.-M. Valin, T. B. Terriberry, G. Maxwell, <a href="http://people.xiph.org/~jm/papers/celt_eusipco2009.pdf">A Full-Bandwidth Audio Codec with Low Complexity and Very Low Delay</a>, <i>Accepted for EUSIPCO 2009</i>.
+   <li>J.-M. Valin, T. B. Terriberry, G. Maxwell, <a href="http://people.xiph.org/~jm/papers/celt_eusipco2009.pdf">A Full-Bandwidth Audio Codec with Low Complexity and Very Low Delay</a>, <i>Proc. EUSIPCO</i>, 2009 (<a href="celt_eusipco09_slides.pdf">slides</a>).
    </li>
 </ul>
 </p>
