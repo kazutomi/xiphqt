@@ -41,6 +41,8 @@ Commands:
   help          Display help for a specific subcommand (eg. "oggz help chop")
 
 Reporting:
+  codecs        Display the list of codecs found in one or more files and
+                their bitstreams.
   diff          Hexdump the packets of two Ogg files and output differences.
   dump          Hexdump packets of an Ogg file, or revert an Ogg file from
                 such a hexdump.
@@ -98,7 +100,7 @@ times separated by a /.
 <h2>Download</h2>
 
 <p>
-The latest version is 0.9.9, released Apr 10 2009.
+The latest version is 1.0.0, released Sep 15 2009.
 <ul>
 <li><a
 href="http://git.xiph.org/?p=liboggz.git;a=tree;f=release_notes">Release
@@ -119,8 +121,8 @@ notes</a></li>
 
 <ul>
 <li><a
-href="http://downloads.xiph.org/releases/liboggz/liboggz-0.9.9.tar.gz">liboggz-0.9.9.tar.gz
-(623 kB)</a>
+href="http://downloads.xiph.org/releases/liboggz/liboggz-1.0.0.tar.gz">liboggz-1.0.0.tar.gz
+(650 kB)</a>
 </li>
 <li><a href="http://downloads.xiph.org/releases/liboggz/">Archive</a></li>
 </ul>
