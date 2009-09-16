@@ -42,6 +42,7 @@ static double sync_secs=1.;
 static ratio force_fps={0,0};
 static int force_sync=0;
 static int force_no_sync=0;
+static int no_rewrite=0;
 static int global_ended=0;
 
 #include <unistd.h>
@@ -810,7 +811,7 @@ static void y4o_free_frame(frame_t *p){
 }
 
 // depth-limited fill.
-// bound attempt to prime any given queue at the point any other queue reaches fill_secs deep
+// bounded attempt to prime any given queue at the point any other queue reaches fill_secs deep
 // actual depth-of-queue is used, not PTS (as PTS is unreliable and could be way off ino the weeds)
 
 static int limited_prime(y4o_in_t *y, int sno){
@@ -1040,13 +1041,14 @@ static int parse_ratio(char *s, ratio *r){
   return 0;
 }
 
-const char *optstring = "b:c:e:f:ho:sSv";
+const char *optstring = "b:c:e:f:ho:sSvN";
 struct option options [] = {
   {"begin",required_argument,NULL,'b'},
   {"cut",required_argument,NULL,'c'},
   {"end",required_argument,NULL,'e'},
   {"force-fps",required_argument,NULL,'f'},
   {"help",no_argument,NULL,'h'},
+  {"no-rewrite",no_argument,NULL,'N'},
   {"output",required_argument,NULL,'o'},
   {"force-sync",no_argument,NULL,'s'},
   {"force-no-sync",no_argument,NULL,'S'},
@@ -1078,11 +1080,14 @@ void usage(FILE *out){
           "  -f --force-fps N:D       : Override declared input fps\n"
           "  -h --help                : print this usage message to stdout and exit\n"
           "                             with status zero\n"
+          "  -N --no-rewrite          : do not rewrite output PTS values.  Retain\n"
+          "                             original PTS values even if input streams\n"
+          "                             were synchronized.\n"
           "  -o --output FILE         : output file/pipe (stdout default)\n"
           "  -s --force-sync          : perform autosync even on streams marked as\n"
           "                             already synchronized\n"
-          "  -S --force-no-sync       : do not perform stream sync and PTS rewrite\n"
-          "                             even on unsynced streams\n"
+          "  -S --force-no-sync       : do not perform stream sync even on unsynced\n"
+          "                             streams\n"
           "  -v --verbose             : turn on all reports\n"
           "\n"
           );
@@ -1136,7 +1141,7 @@ static int search_offset(y4o_in_t *y, int sync, int sno,
         time = sno_clock - last_sno_pts + sync_offset;
         if(!best_frame || fabs(time) <= fabs(best_time)){
           best_time=time;
-          best_frame=p;
+          best_frame=s->inq_tail;
         }
         sync_clock += p->duration;
       }
@@ -1441,19 +1446,20 @@ static cutlist *cuts_into_cutlist(y4o_in_t *y, interval *list, int n, ratio fps)
       double bf = b/s->tickduration - bt;
       double ef = (e<0?0:et - e/s->tickduration);
 
-      /* compensate for cumulative fractional ticks.
-         Rather than choosing the closest frame, we always choose the
-         next; it is better for video to slightly lead than slightly
-         lag. */
-
-      track += bf+ef;
-      if(track-EPSILON>1.){
-        et--;
-        track-=1;
-      }
-      if(track+EPSILON<0.){
-        et++;
-        track+=1;
+      if(e>=0){
+        /* compensate for cumulative fractional ticks.
+           Rather than choosing the closest frame, we always choose the
+           next; it is better for video to slightly lead than slightly
+           lag. */ 
+        track += bf+ef;
+        if(track-EPSILON>1.){
+          et--;
+          track-=1;
+        }
+        if(track+EPSILON<0.){
+          et++;
+          track+=1;
+        }
       }
 
       ret[j].cut[i].begin = bt;
@@ -1473,7 +1479,7 @@ static void write_frame(FILE *outfile, y4o_in_t *y,
                         frame_t *p){
   int sno = p->streamno;
   stream_t *s=y->streams[sno];
-  double outpts = (force_no_sync?p->pts:cutclock[sno]*s->tickduration);
+  double outpts = (no_rewrite?p->pts:cutclock[sno]*s->tickduration);
   cutlist *c=&cut[sno];
 
   /* does the next cut impact this frame? */
@@ -1696,6 +1702,9 @@ int main(int argc,char *const *argv){
     case 'S':
       force_sync=0;
       force_no_sync=1;
+      break;
+    case 'N':
+      no_rewrite=1;
       break;
     case 'o':
       if(outfile)
@@ -2010,6 +2019,9 @@ int main(int argc,char *const *argv){
           pull_write_frame(outfile,y,lastframe,outclock,cutclock,cutticks,sno);
         }else{
           stream_t *s=ty->streams[sno];
+          if(limited_prime(ty,sno)){
+            break;
+          }
           if(outoffsets[sno]<0){
             /* there's an already-established gap in the stream.  dup it out */
             if(duplicate_frame(outfile,ty,lastframe,outclock,cutclock,cutticks,outoffsets,sno)){
@@ -2018,9 +2030,6 @@ int main(int argc,char *const *argv){
           }else if (outoffsets[sno]>0){
             trim_from_tail(ty,sno,outclock,outoffsets);
           }else{
-            if(limited_prime(ty,sno)){
-              break;
-            }
             if(search_offset(ty,sync_stream,sno,outclock,outoffsets,lastframe)){
               break;
             }
