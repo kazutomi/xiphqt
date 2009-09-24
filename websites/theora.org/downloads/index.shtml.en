@@ -14,10 +14,8 @@
   <li>The <strong>libtheora</strong> reference implementation provides
       the standard encoder and decoder under a BSD license.
     <ul>
-      <li>[<a href="http://downloads.xiph.org/releases/theora/libtheora-1.0.tar.bz2">libtheora-1.0.tar.bz2</a>]</li>
-          [<a href="http://downloads.xiph.org/releases/theora/libtheora-1.0.zip">libtheora-1.0.zip</a>]</li>
-      <li>[<a href="http://downloads.xiph.org/releases/theora/libtheora-1.1beta3.tar.bz2">libtheora-1.1beta3.tar.bz2</a>]</li>
-          [<a href="http://downloads.xiph.org/releases/theora/libtheora-1.1beta3.zip">libtheora-1.1beta3.zip</a>]</li>
+      <li>[<a href="http://downloads.xiph.org/releases/theora/libtheora-1.1.0.tar.bz2">libtheora-1.1.0.tar.bz2</a>]</li>
+          [<a href="http://downloads.xiph.org/releases/theora/libtheora-1.1.0.zip">libtheora-1.1.0.zip</a>]</li>
       <li>[<a href="/svn/">SVN information page</a>]</li>
   </li>
 </ul>
@@ -39,6 +37,10 @@
    <li><a href="https://player.helixcommunity.org/2004/downloads/">Helix Player</a></li>
  </ul>
 
-The Wiki contains a <a href="http://wiki.xiph.org/index.php/TheoraSoftwareEncoders">list of Theora encoders</a> and <a href="http://wiki.xiph.org/index.php/TheoraSoftwarePlayers">Theora players</a>.
+<p>The Wiki contains a
+<a href="http://wiki.xiph.org/index.php/TheoraSoftwareEncoders">list of Theora encoders</a>
+and 
+<a href="http://wiki.xiph.org/index.php/TheoraSoftwarePlayers">Theora players</a>.
+</p>
 
 <!--#include virtual="/ssi/pagebottom.include" -->
