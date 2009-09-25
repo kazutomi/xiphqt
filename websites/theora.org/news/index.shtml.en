@@ -25,14 +25,20 @@ applications soon.</p>
 <li><strong>Much faster decoder.</strong></li>
 <li><strong>Two-pass mode</strong> for making files just the size you 
 want them.</li>
-<li><strong>Rigid bitrate controls</strong> trade off quality for live 
-streaming applications.
+<li><strong>Rigid bitrate controls</strong> trade off quality for the 
+needs of live streaming applications.
 </ul>
 
 <p>This release incorporates all the work we've been doing over the last 
 year, and the encoder has been completely rewritten, although some of
 the code had its genesis way back in 2003. It also brings substantial
 performance and robustness improvments to the 1.0 decoder.</p>
+
+<ul>
+<li><a href="http://downloads.xiph.org/releases/theora/libtheora-1.1.0.tar.bz2">http://downloads.xiph.org/releases/theora/libtheora-1.1.0.tar.bz2</a></li>
+<li><a href="http://downloads.xiph.org/releases/theora/libtheora-1.1.0.tar.gz">http://downloads.xiph.org/releases/theora/libtheora-1.1.0.tar.gz</a></li>
+<li><a href="http://downloads.xiph.org/releases/theora/libtheora-1.1.0.zip">http://downloads.xiph.org/releases/theora/libtheora-1.1.0.zip</a></li>
+</ul>
 
 <p>This release is API and ABI compatible with the 1.0 stable release 
 and can be used as a drop in replacement, although some changes are 
@@ -53,12 +59,6 @@ approaching full "constant quality" mode with a predictable output
 size. This should be the preferred encoding method when not doing live
 streaming. Two-pass may also be used with finite buffer constraints,
 for non-live streaming.</p>
-
-<ul>
-<li><a href="http://downloads.xiph.org/releases/theora/libtheora-1.1.0.tar.bz2">http://downloads.xiph.org/releases/theora/libtheora-1.1.0.tar.bz2</a></li>
-<li><a href="http://downloads.xiph.org/releases/theora/libtheora-1.1.0.tar.gz">http://downloads.xiph.org/releases/theora/libtheora-1.1.0.tar.gz</a></li>
-<li><a href="http://downloads.xiph.org/releases/theora/libtheora-1.1.0.zip">http://downloads.xiph.org/releases/theora/libtheora-1.1.0.zip</a></li>
-</ul>
 
 <p>Here is a list of some of the technical improvements in the 1.1 
 encoder.
