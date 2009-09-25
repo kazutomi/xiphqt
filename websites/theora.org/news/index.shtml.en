@@ -8,6 +8,143 @@
 <!--#include virtual="/ssi/pagetop.include" -->
 <!--  All your page content goes here  -->
 
+<h3>Theora 1.1 "Thusnelda" release</h3>
+<p class="newsdate">2009 September 24</p>
+
+<p>After over a month of public testing, we're pleased to declare our 
+1.1 rewrite of libtheora stable. This is the reference implementation 
+for the Theora video codec. Source code for libtheora 1.1.0 is 
+available now, and will be incorporated in major Theora-supporting 
+applications soon.</p>
+
+<p>What's so great about the 1.1 release? The highlights are:</p>
+
+<ul>
+<li><strong>Better-looking videos</strong> <em>or</em></li>
+<li>Smaller files at the same quality.</li>
+<li><strong>Much faster decoder.</strong></li>
+<li><strong>Two-pass mode</strong> for making files just the size you 
+want them.</li>
+<li><strong>Rigid bitrate controls</strong> trade off quality for live 
+streaming applications.
+</ul>
+
+<p>This release incorporates all the work we've been doing over the last 
+year, and the encoder has been completely rewritten, although some of
+the code had its genesis way back in 2003. It also brings substantial
+performance and robustness improvments to the 1.0 decoder.</p>
+
+<p>This release is API and ABI compatible with the 1.0 stable release 
+and can be used as a drop in replacement, although some changes are 
+needed to take advantage of new encoder features like two-pass. We 
+recommend upgrading to all our users.</p>
+
+<p>Rate-control has been substantially overhauled from the 1.0 release.
+The new rate control module hits its target much more accurately and
+obeys strict buffer constraints, including dropping frames if
+necessary. The latter is needed to enable live streaming without
+disconnecting users or pausing to buffer during sudden motion. Obeying
+these constraints can yield substantially worse quality than the 1.0
+encoder, whose rate control did not obey any such constraints, and
+often landed only in the vague neighborhood of the desired rate
+target. The new --soft-target option can relax a few of these
+constraints, but the new two-pass rate control mode gives quality
+approaching full "constant quality" mode with a predictable output
+size. This should be the preferred encoding method when not doing live
+streaming. Two-pass may also be used with finite buffer constraints,
+for non-live streaming.</p>
+
+<ul>
+<li><a href="http://downloads.xiph.org/releases/theora/libtheora-1.1.0.tar.bz2">http://downloads.xiph.org/releases/theora/libtheora-1.1.0.tar.bz2</a></li>
+<li><a href="http://downloads.xiph.org/releases/theora/libtheora-1.1.0.tar.gz">http://downloads.xiph.org/releases/theora/libtheora-1.1.0.tar.gz</a></li>
+<li><a href="http://downloads.xiph.org/releases/theora/libtheora-1.1.0.zip">http://downloads.xiph.org/releases/theora/libtheora-1.1.0.zip</a></li>
+</ul>
+
+<p>Here is a list of some of the technical improvements in the 1.1 
+encoder.
+If you have been following 
+<a href="http://xiphmont.livejournal.com/">Monty's</a>
+<a href="http://advogato.org/person/rillian/diary/109.html">demo 
+pages</a>, many of these will be familiar to you.</p>
+
+<ol>
+<li><p><b>Rate-distortion optimization,</b> which leads to</p>
+ <ol style="list-style: lower-alpha">
+  <li>Better mode decision</li>
+  <li>Better quantization decisions</li>
+ </ol>
+<p>  Most coding decisions only use an approximation of the full RDO
+process for speed reasons, but casting this in a proper RDO framework
+eliminates vast swaths of heuristics and fragile thresholds from the 1.0
+encoder.</p></li>
+
+<li><p><b>Better motion search</b></p>
+<p>  The new motion search generates better results in less time, and
+does not suffer from CPU spikes under heavy motion like the 1.0
+encoder's did.</p></li>
+
+<li><p><b>Better fDCT</b></p>
+<p>  The 1.0 encoder's forward transform was not well-matched to the
+inverse DCT used in the decoder, and was as a result responsible for
+substantial loss of detail and texture at high rates. It has been
+replaced with a forward DCT that gives much smaller round-trip error.
+The inverse DCT in the decoder remains unchanged, for 
+compatibility.</p></li>
+
+<li><p><b>Adaptive quantization</b></p>
+</p>  The bitstream specification has supported changing the quantizer 
+on a block-by-block basis since it was first published in 2004, however 
+only an unreleased proof-of-concept encoder made use of this facility. 
+The 1.1 encoder now uses it to allocate bits more effectively within a
+frame, giving improved quality at higher rates.</p></li>
+
+<li><p><b>Better quantization matrices</b></p>
+<p>  The new matrices give much less ringing and mosquito noise at low
+rates, substantially improving the appearance of high-contrast edges
+(e.g., text).</p></li>
+
+<li><p><b>A real rate-control module</b></p>
+<p>  As mentioned above, the new rate control actually meets its 
+targets, can enforce hard buffer constraints, and has a two-pass mode to 
+allow it to plan allocation decisions in advance.</p></li>
+
+<li><p><b>Expanded rate-control API</b></p>
+<p>  It is now possible to change the target quality, bitrate, buffer
+delay, and keyframe interval in the while encoding. This gives an
+application using libtheora much more control over the final 
+output.</p></li>
+
+<li><p><b>Explicit variable frame rate support in the encoder</b></p>
+<p>  A new API allows an application to cheaply insert duplicate frames
+to maintain A-V sync during live streaming or for hybrid 24/30 fps
+content. The decoder still operates at a fixed frame rate, but can
+report these duplicates to the application, allowing it to skip
+expensive processing.</p></li>
+
+<li><p><b>Support for 4:2:2 and 4:4:4 video</b></p>
+<p>  As with adaptive quantization, the specification has always
+supported the less common 4:2:2 and 4:4:4 chroma subsamplings, useful
+for high contrast material like screencasts and special effects 
+precursors. The 1.0 decoder supported these subsamplings properly. 
+However, the 1.0 encoder couldn't produce streams in these formats.
+They are now supported in the 1.1 encoder.</p></li>
+</ol>
+
+<p>There are many other improvements in this release. The codebase is
+substantially smaller, the examples have all been ported to the 1.x API,
+the MSVC assembly is now in sync with the gcc assembly, and much more.
+We strongly encourage all our users to upgrade.</p>
+
+This is not the end of the story, however. We are continuing to work
+on encoder improvements, and have made significant progress on
+optimizing the decoder on ARM and TI C64x DSP processors, important
+for Theora playback on mobile devices.</p>
+
+<p>Thanks to everyone who contributed to this release, and especially to 
+the Mozilla Foundation, the Wikimedia Foundation, Red Hat, Inc. and
+private donors who supported this work.</p>
+
+
 <h3>Third beta release</h3>
 <p class="newsdate">2009 August 22</p>
 
