@@ -8,8 +8,11 @@
 <!--#include virtual="/ssi/pagetop.include" -->
 <!--  All your page content goes here  -->
 
+<a name="libtheora-1.1.0">
 <h3>Theora 1.1 "Thusnelda" release</h3>
-<p class="newsdate">2009 September 24</p>
+</a>
+<p class="newsdate">2009 September 24
+<a href="#libtheora-1.1.0">&raquo;</a></p>
 
 <p>After over a month of public testing, we're pleased to declare our 
 1.1 rewrite of libtheora stable. This is the reference implementation 
