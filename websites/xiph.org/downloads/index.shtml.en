@@ -99,16 +99,16 @@ end-user download links are provided for convenience:
 <td>libtheora</td>
 <td>1.1.0</td>
 <td>
-	<a href="http://downloads.xiph.org/releases/theora/libtheora-1.1.0.tar.bz2">libtheora-1.1.0.tar.bz2</a><br />
-	<a href="http://downloads.xiph.org/releases/theora/libtheora-1.1.0.zip">libtheora-1.1.0.zip</a>
+	<a href="http://downloads.xiph.org/releases/theora/libtheora-1.1.1.tar.bz2">libtheora-1.1.1.tar.bz2</a><br />
+	<a href="http://downloads.xiph.org/releases/theora/libtheora-1.1.1.zip">libtheora-1.1.1.zip</a>
 </td>
 <td>
 	1.7M<br />
 	2.0M
 </td>
 <td>
-	d0f83cf7f13e2b3bd068a858ca1398ad<br />
-	9ffb36e80bfd46b6eb6848fcf526efcf
+	292ab65cedd5021d6b7ddd117e07cd8e<br />
+	5d29b56dbebe02c9667e92790ab72698
 </td>
 </tr>
 
