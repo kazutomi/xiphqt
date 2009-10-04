@@ -82,7 +82,7 @@
 				<li><a href="http://www.xspf.org/">XSPF:</a> XSPF is the XML format for sharing playlists.</li>
 				<li><a href="/quicktime/">XiphQT:</a> An implementation of our codecs for Apple's Quicktime and Core Audio.</li>
 				<li><a href="/dshow/">oggdsf:</a> An implementation of our codecs for MS Windows.</li>
-				<li><a href="http://www.theora.org/cortado/"</a> A java applet for Web browsers to display our codecs.</li>
+				<li><a href="http://www.theora.org/cortado/">cortado:</a> A java applet for Web browsers to display our codecs.</li>
 			</ul>
 
       <h3>Helper Libraries</h3>
