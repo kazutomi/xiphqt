@@ -80,11 +80,18 @@
 			<h3>Miscellaneous</h3>
 			<ul>
 				<li><a href="http://www.xspf.org/">XSPF:</a> XSPF is the XML format for sharing playlists.</li>
-				<li><a href="/ao/">libao:</a> A cross platform audio library.</li>
 				<li><a href="/quicktime/">XiphQT:</a> An implementation of our codecs for Apple's Quicktime and Core Audio.</li>
 				<li><a href="/dshow/">oggdsf:</a> An implementation of our codecs for MS Windows.</li>
+				<li><a href="http://www.theora.org/cortado/"</a> A java applet for Web browsers to display our codecs.</li>
 			</ul>
 		</div>
+
+    <h3>Helper Libraries</h3>
+    <ul>
+		  <li><a href="/ao/">libao:</a> A cross platform audio library.</li>
+      <li><a href="/oggz/">liboggz:</a> A simple programming interface for reading and writing Ogg files and streams.</li>
+      <li><a href="/fishsound/">libfishsound:</a> A simple programming interface for decoding and encoding audio data using Xiph.Org codecs.</li>
+    </ul>
 
 		<div class="left">
 			<h3>Software for Distributing Media</h3>
