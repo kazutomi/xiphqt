@@ -176,6 +176,33 @@ end-user download links are provided for convenience:
 </td>
 </tr>
 
+<tr>
+<td>liboggz</td>
+<td>1.0.0</td>
+<td>
+        <a href="http://downloads.xiph.org/releases/liboggz/liboggz-1.0.0.tar.gz">liboggz-1.0.0.tar.gz</a>
+</td>
+<td>
+        650K
+</td>
+<td>
+        57359f6f0824b3e9bad85b49a6418514
+</td>
+</tr>
+
+<tr>
+<td>libfishsound</td>
+<td>0.9.2</td>
+<td>
+        <a href="http://downloads.xiph.org/releases/libfishsound/libfishsound-0.9.2.tar.gz">libfishsound-0.9.2.tar.gz</a>
+</td>
+<td>
+        426K
+</td>
+<td>
+        92f5d4de8ecd9ab3333b77224f8d3efd
+</td>
+</tr>
 </table>
 
 <p>You may also <a href="http://downloads.xiph.org/releases/">browse</a>
@@ -188,7 +215,7 @@ source repository.
 <a name="third_party"></a>
 <h1>Third-Party Downloads</h1>
 
-<h2>DirectShow filters - play back .ogg files in Media Player</h2>
+<h2>DirectShow filters - play back ogg files in Media Player</h2>
 
 <p>If you are a Windows user who wants to be able to listen to .ogg files in
 Windows Media Player, then this is what you want.  The Xiph.org DirectShow
@@ -206,6 +233,18 @@ DirectShow application) is closed before installing.
 	Codecs for Windows</a>, version 0.81.15562, 2008-12-06</li>
 	<li><a href="http://xiph.org/dshow/">project page</a> - for
 	other versions, source code, or more information</li>
+</ul>
+
+<h2>Xiph QuickTime components - play back ogg files in QuickTime</h2>
+
+<p>Xiph QuickTime Components (XiphQT) is, in short, the solution for Mac and
+Windows users who want to use Xiph formats in any QuickTime-based application,
+e.g. playing Ogg Vorbis in iTunes or producing Ogg Theora with iMovie.
+</p>
+
+<ul>
+  <li><a href="http://www.xiph.org/quicktime/">project page</a></li>
+  <li><a href="http://www.xiph.org/quicktime/download.html"><downloads</a></li>
 </ul>
 
 <h2>oggdropXPd - easily create Ogg Vorbis files in Windows</h2>
