@@ -29,11 +29,15 @@ Cortado works great as a fall-back-solution for using HTML5's audio and video su
 <h2>Getting Cortado</h2>
 
 <p>
-You can find precompiled binaries of past and current Cortado releases at the <a href="http://downloads.xiph.org/releases/cortado/">Cortado download site</a>. You can fetch the source from <a href="http://git.xiph.org/?p=cortado.git;a=summary">Cortado's Git master copy</a>.
+You can fetch the source from <a href="http://git.xiph.org/?p=cortado.git;a=summary">Cortado's Git master copy</a>.
 </p>
 
 <p>
-Xiph.org also provides a signed version of Cortado at <a href="http://theora.org/cortado.jar">http://theora.org/cortado.jar</a>. You can directly embed this applet without having a local copy.
+An unsigned pre-compiled version is available at <a href="http://theora.org/cortado_unsigned.jar">http://theora.org/cortado_unsigned.jar</a>. The unsigned jar only permits the display of videos located on the same host as the jar file so you must copy this file to your server but using it avoids security warnings.
+</p>
+
+<p>
+Xiph.org also provides a signed version of Cortado at <a href="http://theora.org/cortado.jar">http://theora.org/cortado.jar</a>. You can directly embed this applet without having a local copy but users will be asked to approve the certificate.
 </p>
 
 <h2>Usage example</h2>
