@@ -33,6 +33,17 @@
 
 <h2>Latest <strong style='font-style: italic;'>development</strong> releases</h2>
 
+<h3 id='zero.7.0'>0.7.0</h3>
+<p>CELT 0.7.0 again improves the stereo quality, reduces artefacts at 
+low bitrates (birdies and speech roughness) and fixes many bugs. In 
+addition to the usual bitstream incompatibilities, the API has also 
+changed in this release.
+</p>
+
+<ul>
+<li>Source code: <a href="http://downloads.xiph.org/releases/celt/celt-0.7.0.tar.gz">celt-0.7.0.tar.gz</a></li>
+</ul>
+
 <h3 id='zero.6.1'>0.6.1</h3>
 <p>CELT 0.6.1 improves the stereo quality, especially at lower bit-rates. This breaks bit-stream
 compatibility again, but only for stereo this time.
