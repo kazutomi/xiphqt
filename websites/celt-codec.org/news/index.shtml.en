@@ -30,6 +30,14 @@
 
 <ul class="descriptivelist">
    <li>
+      <h3>Version 0.7.0 released</h3>
+      <p class="submitdate">26 October, 2009</p>
+      <div class="description">
+                <p>Version 0.7.0 has been released, with improvements to the stereo and low birate audio quality. API is incompatible with previous releases.</p>
+      </div>
+   </li>
+
+   <li>
       <h3>Version 0.6.1 released</h3>
       <p class="submitdate">13 July, 2009</p>
       <div class="description">
