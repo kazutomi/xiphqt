@@ -28,7 +28,8 @@
 
 <h2>Source code repository</h2>
 <p>CELT is hosted in <a href="http://git.or.cz/">Git</a> and you can grab the latest code by typing:</p>
-<p>git clone http://git.xiph.org/celt.git</p>
+<p><tt>git clone git://git.xiph.org/celt.git</tt> or<br>
+   <tt>git clone http://git.xiph.org/celt.git</tt></p>
 
 <h2>Latest <strong style='font-style: italic;'>development</strong> releases</h2>
 
