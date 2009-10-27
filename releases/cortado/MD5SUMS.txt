@@ -20,3 +20,4 @@ a3efa0144bf69c021fb1e03e1b3f8e29  cortado-ovt-debug-0.2.1.jar
 b14e8100514df5d84a30d870053bf322  cortado-ovt-stripped-0.2.0.jar
 dd358a9c9a7ab8512856ba00ee05fe89  cortado-ovt-stripped-0.2.1.jar
 d425be3847dbf4b02f1ca707e2d4251d  cortado-ovt-stripped-0.2.2.jar
+32bf01c1b3c3fd37fd5604f1d54db2e0  cortado-0.5.0.tar.gz
