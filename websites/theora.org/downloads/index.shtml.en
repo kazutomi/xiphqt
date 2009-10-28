@@ -11,21 +11,24 @@
 <h2><a name="source">Source</a></h2>
 
 <ul>
-  <li>The <strong>libtheora</strong> reference implementation provides
-      the standard encoder and decoder under a BSD license.
+  <li>
+      <p>The <strong>libtheora</strong> reference implementation 
+      provides the standard encoder and decoder under a BSD license.</p>
     <ul>
       <li>[<a href="http://downloads.xiph.org/releases/theora/libtheora-1.1.1.tar.bz2">libtheora-1.1.1.tar.bz2</a>]</li>
           [<a href="http://downloads.xiph.org/releases/theora/libtheora-1.1.1.zip">libtheora-1.1.1.zip</a>]</li>
-      <li>[<a href="/svn/">SVN information page</a>]</li>
+      <li>[<a href="/svn/">Source code repository</a>]</li>
+    </ul>
+
+      <p>The libtheora implementation depends on the following libraries...</p>
+    <ul>
+      <li><a href="http://downloads.xiph.org/releases/ogg/libogg-1.1.4.tar.gz">libogg-1.1.4</a></li>
+      <li><a href="http://downloads.xiph.org/releases/vorbis/libvorbis-1.2.3.tar.gz">libvorbis-1.2.3</a></li>
+      <li><a href="http://www.libsdl.org/">libSDL 1.2</a> or later for the playback example</li>
+    </ul>
+
   </li>
 </ul>
-
-<p>Both of implementations depend on the following libraries...</p>
- <ul>
-  <li><a href="http://downloads.xiph.org/releases/ogg/libogg-1.1.4.tar.gz">libogg-1.1.4</a></li>
-  <li><a href="http://downloads.xiph.org/releases/vorbis/libvorbis-1.2.3.tar.gz">libvorbis-1.2.3</a></li>
-  <li><a href="http://www.libsdl.org/">libSDL 1.2</a> or later for the playback example</li>
- </ul>
 
 <h2>Cortado</h2>
 <p>
