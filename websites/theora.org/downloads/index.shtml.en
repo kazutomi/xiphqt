@@ -27,6 +27,12 @@
   <li><a href="http://www.libsdl.org/">libSDL 1.2</a> or later for the playback example</li>
  </ul>
 
+<h2>Cortado</h2>
+<p>
+Cortado is a Java applet to enable cross-browser playback of Theora content. The
+<a href="../cortado">Cortado homepage</a> contains useful information and download links.
+</p>
+
 <h2><a name="binaries">Binaries</a></h2>
  <ul>
    <li><a href="http://www.v2v.cc/~j/ffmpeg2theora/">ffmpeg2theora</a>
