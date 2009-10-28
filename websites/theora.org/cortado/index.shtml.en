@@ -43,7 +43,7 @@ Xiph.org also provides a signed version of Cortado at <a href="http://theora.org
 <h2>Usage example</h2>
 
 <p>
-Provided you have a file containing Ogg Theora content named <tt>content.ogv</tt> and a binary of Cortado named <tt>cortado_unsigned.ja</tt> in the same directory as the content you can embed Cortado by including following HTML-snippet into the source-code of your web-page:
+Provided you have a file containing Ogg Theora content named <tt>content.ogv</tt> and a binary of Cortado named <tt>cortado_unsigned.jar</tt> in the same directory as the content you can embed Cortado by including following HTML-snippet into the source-code of your web-page:
 </p>
 
 <p>
