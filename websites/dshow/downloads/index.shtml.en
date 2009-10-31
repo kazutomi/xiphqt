@@ -1,0 +1,55 @@
+<!--#include virtual="/ssi/header.include" -->
+<!-- Enter custom page information and styles here -->
+  <title>Directshow Filters for Ogg Vorbis, Speex, Theora and FLAC: Downloads</title>
+  <style type="text/css">
+  <!--
+  #navlink_ a {
+      text-decoration: underline !important;
+  }
+  -->
+  </style>
+</head>
+<body>
+<!--#include virtual="/common/xiphbar.include" -->
+
+<!--#include virtual="/ssi/pagetop.include" -->
+<!--  All your page content goes here  -->
+
+<h1>Downloads</h1>
+<p>Before instalation follow these steps:
+  <ul>
+    <li>Uninstall any previous version of these filters. (This is important!)<br/>
+        Go to "Add/Remove Programs", remove oggcodecs.</li>
+    <li>Make sure media player or any directshow applications are closed.</li>
+    <li>Run the installer.</li>
+  </ul>
+  
+  Then Windows Media Player or any other DirectShow application (e.g. BSPlayer) will be able to play Ogg Vorbis, Ogg Speex, Ogg Theora, Ogg FLAC and native FLAC files.
+</p>
+
+<h2>Binaries</h2>
+
+<ul>
+    <li>Windows 32-bit Installer: <a href="http://downloads.xiph.org/releases/oggdsf/oggcodecs_0.81.15562-win32.exe">oggcodecs_0.81.15562-win32.exe</a> 1,04MB</li>
+    <li>Windows 64-bit Installer: <a href="http://downloads.xiph.org/releases/oggdsf/oggcodecs_0.81.15562-x64.exe">oggcodecs_0.81.15562-x64.exe</a> 1,23MB</li>
+</ul>
+
+<p>You may also <a href="http://downloads.xiph.org/releases/oggdsf/">browse</a>
+the download directory if you are looking for a specific version.</p>
+
+<h2>Source Code</h2>
+<ul>
+<li>Source code: <a href="http://downloads.xiph.org/releases/oggdsf/oggcodecs_0.81.15562-src.7z">oggcodecs_0.81.15562-src.7z</a> 5,15MB</li>
+</ul>
+
+<p>The latest development version is always available through SVN at <a href="http://svn.xiph.org/trunk/oggdsf/">http://svn.xiph.org/trunk/oggdsf/</a>
+</p>
+
+<h2>Debug symbols</h2>
+
+<ul>
+    <li>Windows 32-bit: <a href="http://downloads.xiph.org/releases/oggdsf/oggcodecs_0.81.15562-pdbs-win32.7z">oggcodecs_0.81.15562-pdbs-win32.7z</a> 3,87MB</li>
+    <li>Windows 64-bit: <a href="http://downloads.xiph.org/releases/oggdsf/oggcodecs_0.81.15562-pdbs-win32.7z">oggcodecs_0.81.15562-pdbs-win32.7z</a> 3,61MB</li>
+</ul>
+
+<!--#include virtual="/ssi/pagebottom.include" -->

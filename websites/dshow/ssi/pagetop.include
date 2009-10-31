@@ -1,0 +1,22 @@
+<div id="thepage">
+
+<div id="xiphlogo">
+  <a href="http://www.xiph.org/"><img src="/images/logos/fish_xiph_org.png" alt="Fish Logo and Xiph.org"/></a>
+</div>
+
+<div id="navbar">
+  <ul>
+    <li><a href="/">Home</a></li>
+    <li><a href="/news/">News</a></li>
+    <li><a href="/downloads/">Downloads</a></li>
+  </ul>
+  <ul>
+    <li><a href="/contact/">Contact</a></li>
+    <li><a href="/history/">History</a></li>
+    <li><a href="/bugs/">Bugs</a></li>
+  </ul>
+</div>
+
+<div id="banners"></div>
+
+<div id="content">

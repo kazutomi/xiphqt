@@ -1,0 +1,11 @@
+html {
+	font:  Verdana, sans-serif;
+	line-height: 1.25em;
+	background-color: white;
+	color: black;
+}
+a:link { color: #208b8b; }
+a:visited { color: #000080; }
+h1 {
+	color: #000080;
+}

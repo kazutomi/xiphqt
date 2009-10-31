@@ -1,0 +1,36 @@
+<!--#include virtual="/ssi/header.include" -->
+<!-- Enter custom page information and styles here -->
+  <title>Directshow Filters for Ogg Vorbis, Speex, Theora and FLAC: Home</title>
+</head>
+<body>
+<!--#include virtual="/common/xiphbar.include" -->
+
+<!--#include virtual="/ssi/pagetop.include" -->
+<!--  All your page content goes here  -->
+
+<h1>Directshow Filters for Ogg Vorbis, Speex, Theora and FLAC</h1>
+
+<p>
+The aim of this project is to provide the most complete implementation of the Xiph.org codecs for Windows and DirectShow. 
+This includes decoders and encoders for all the Xiph.org formats as well as <a href="http://annodex.org/wiki/Main_Page">Annodex</a>. It is released under a BSD license, so 
+they can be used by both open-source and commercial applications. 
+</p>
+
+<h1>News</h1>
+<h2>Version 0.81.15562</h2>
+<p class="newsdate">6 December, 2008</p>
+
+<p>More bugfixes, particularly to Theora and FLAC. Added support for Windows x64 versions.<br/>
+Fore more informations see the <a href="/news/">News</a> page.
+</p>
+
+<h1>Downloads</h1>
+<ul>
+    <li>Windows 32-bit Installer: <a href="http://downloads.xiph.org/releases/oggdsf/oggcodecs_0.81.15562-win32.exe">oggcodecs_0.81.15562-win32.exe</a> 1,04MB</li>
+    <li>Windows 64-bit Installer: <a href="http://downloads.xiph.org/releases/oggdsf/oggcodecs_0.81.15562-x64.exe">oggcodecs_0.81.15562-x64.exe</a> 1,23MB</li>
+</ul>
+<p>For more informations see the <a href="/downloads/">Downloads</a> page.
+</p>
+
+
+<!--#include virtual="/ssi/pagebottom.include" -->

@@ -1,0 +1,58 @@
+<!--#include virtual="/ssi/header.include" -->
+<!-- Enter custom page information and styles here -->
+  <title>Directshow Filters for Ogg Vorbis, Speex, Theora and FLAC: Contact Information</title>
+  <style type="text/css">
+<!--
+
+.vcard {
+	padding-bottom: 1.2em;
+}
+
+.irc {
+	font-family: monospace;
+	font-size: 120%;
+}
+
+-->
+</style>
+
+</head>
+<body>
+<!--#include virtual="/common/xiphbar.include" -->
+
+<!--#include virtual="/ssi/pagetop.include" -->
+<!--  All your page content goes here  -->
+
+<h1>Getting in touch</h1>
+<p>
+The best way to contact members of the Xiph.org Foundation and community 
+is to post to one of the <a 
+href="http://lists.xiph.org/mailman/listinfo/">mailing lists</a> or find
+us on IRC on <a href="http://freenode.net/">irc.freenode.net</a>.
+Try the channels <a class="irc" href="irc://irc.freenode.net/xiph">#xiph</a> for general information, or the 
+general project channels: <a class="irc" href="irc://irc.freenode.net/vorbis">#vorbis</a>, <a class="irc" href="irc://irc.freenode.net/theora">#theora</a>,
+<a class="irc" href="irc://irc.freenode.net/annodex">#annodex</a>.
+</p>
+
+<p>
+Below are the contacts for the DirectShow filters people in the organization.
+</p>
+
+<div class="vcard">
+	<a class="email fn" href="mailto:cristian.adam@gmail.com">Cristian Adam</a>
+	<div class="role"><span>Current maintainer</span></div>
+</div>
+
+<div class="vcard">
+	<a class="email fn" href="mailto:illiminable@gmail.com">Zen Kavanagh</a>
+	<div class="role"><span>Original author</span> </div>
+</div>
+
+<!-- The hcard format http://developers.technorati.com/wiki/hCard
+<div class="vcard">
+ <a class="email fn" href="mailto:"></a>
+ <div class="role"><span></span></div>
+</div>
+-->
+
+<!--#include virtual="/ssi/pagebottom.include" -->

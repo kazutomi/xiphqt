@@ -1,0 +1,36 @@
+<!--#include virtual="/ssi/header.include" -->
+<!-- Enter custom page information and styles here -->
+  <title>Directshow Filters for Ogg Vorbis, Speex, Theora and FLAC: Report Issues</title>
+</head>
+<body>
+<!--#include virtual="/common/xiphbar.include" -->
+
+<!--#include virtual="/ssi/pagetop.include" -->
+<!--  All your page content goes here  -->
+
+<h1>Report Issues</h1>
+<p>If you think "Directshow Filters for Ogg Vorbis, Speex, Theora and FLAC" behaves incorrectly on your machine and would like to let us know - this is the place to do it.
+</p>
+
+<p>Please consider a couple of hints when reporting the problem:
+</p>
+<ul>
+    <li>It is possible that other users have experienced and reported a problem similar to yours. Please check the list of the 
+        known problems. You can also search the <a class='urllink' href='https://trac.xiph.org/report/23' rel='nofollow'>report database</a> 
+        using a simple <a class='urllink' href='https://trac.xiph.org/search' rel='nofollow'>search form</a>. If the problem you experience 
+        seems to be unique or you think you may be able to add some significant information to the previous reports - please do report it.
+    </li>
+    <br/>
+    <li>More detailed information will help us to resolve the problem faster. Especially useful is information about your system configuration, 
+        steps to reproduce the (mis)behaviour and, in extreme cases when oggdsf causes an application crash, a crash backtrace log.
+    </li>
+</ul>
+
+<p>Please follow <a class='urllink' href='https://trac.xiph.org/newticket?component=oggdsf&amp;version=trunk' rel='nofollow'>this link</a> to submit your report. Thank you.
+</p>
+
+<p>For other methods of contacting us please see <a class='wikilink' href='/contact/'>Contact</a> page.
+</p>
+
+
+<!--#include virtual="/ssi/pagebottom.include" -->
