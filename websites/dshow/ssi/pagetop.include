@@ -15,6 +15,14 @@
     <li><a href="/history/">History</a></li>
     <li><a href="/bugs/">Bugs</a></li>
   </ul>
+  <br/>
+  <p style="font-weight:bold;font-size:small">Support us</p>
+  <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=donate@xiph.org&amp;item_name=Donation&amp;item_number=DONATE&amp;return=http://www.theora.org">
+     <div class="paypal" style="padding-top:0.25em">
+     <img src="http://www.paypal.com/en_US/i/btn/x-click-but04.gif"
+        alt="Make a donation via PayPal" />
+     </div>
+    </a> 
 </div>
 
 <div id="banners"></div>
