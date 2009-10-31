@@ -35,7 +35,9 @@
 </ul>
 
 <p>You may also <a href="http://downloads.xiph.org/releases/oggdsf/">browse</a>
-the download directory if you are looking for a specific version.</p>
+the download directory if you are looking for a specific version.<br/> 
+The installers are digitally signed with a certificate provided by <a target="_new" href="http://www.certum.eu/">Unizeto Certum</a>.
+</p>
 
 <h2>Source Code</h2>
 <ul>
