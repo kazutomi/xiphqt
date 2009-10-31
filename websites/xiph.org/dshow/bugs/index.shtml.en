@@ -1,11 +1,11 @@
-<!--#include virtual="/ssi/header.include" -->
+<!--#include virtual="/dshow/ssi/header.include" -->
 <!-- Enter custom page information and styles here -->
   <title>Directshow Filters for Ogg Vorbis, Speex, Theora and FLAC: Report Issues</title>
 </head>
 <body>
 <!--#include virtual="/common/xiphbar.include" -->
 
-<!--#include virtual="../ssi/pagetop.include" -->
+<!--#include virtual="/dshow/ssi/pagetop.include" -->
 <!--  All your page content goes here  -->
 
 <h1>Report Issues</h1>
