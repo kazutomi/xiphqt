@@ -21,7 +21,7 @@ they can be used by both open-source and commercial applications.
 <p class="newsdate">6 December, 2008</p>
 
 <p>More bugfixes, particularly to Theora and FLAC. Added support for Windows x64 versions.<br/>
-Fore more informations see the <a href="/news/">News</a> page.
+Fore more informations see the <a href="/dshow/news/">News</a> page.
 </p>
 
 <h1>Downloads</h1>
@@ -29,7 +29,7 @@ Fore more informations see the <a href="/news/">News</a> page.
     <li>Windows 32-bit Installer: <a href="http://downloads.xiph.org/releases/oggdsf/oggcodecs_0.81.15562-win32.exe">oggcodecs_0.81.15562-win32.exe</a> 1,04MB</li>
     <li>Windows 64-bit Installer: <a href="http://downloads.xiph.org/releases/oggdsf/oggcodecs_0.81.15562-x64.exe">oggcodecs_0.81.15562-x64.exe</a> 1,23MB</li>
 </ul>
-<p>For more informations see the <a href="/downloads/">Downloads</a> page.
+<p>For more informations see the <a href="/dshow/downloads/">Downloads</a> page.
 </p>
 
 
