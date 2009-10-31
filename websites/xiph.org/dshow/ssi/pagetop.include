@@ -7,13 +7,13 @@
 <div id="navbar">
   <ul>
     <li><a href="/">Home</a></li>
-    <li><a href="/news/">News</a></li>
-    <li><a href="/downloads/">Downloads</a></li>
+    <li><a href="/dshow/news/">News</a></li>
+    <li><a href="/dshow/downloads/">Downloads</a></li>
   </ul>
   <ul>
-    <li><a href="/contact/">Contact</a></li>
-    <li><a href="/history/">History</a></li>
-    <li><a href="/bugs/">Bugs</a></li>
+    <li><a href="/dshow/contact/">Contact</a></li>
+    <li><a href="/dshow/history/">History</a></li>
+    <li><a href="/dshow/bugs/">Bugs</a></li>
   </ul>
   <br/>
   <p style="font-weight:bold;font-size:small">Support us</p>
