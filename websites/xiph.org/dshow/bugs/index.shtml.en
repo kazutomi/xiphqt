@@ -5,7 +5,7 @@
 <body>
 <!--#include virtual="/common/xiphbar.include" -->
 
-<!--#include virtual="/ssi/pagetop.include" -->
+<!--#include virtual="../ssi/pagetop.include" -->
 <!--  All your page content goes here  -->
 
 <h1>Report Issues</h1>
