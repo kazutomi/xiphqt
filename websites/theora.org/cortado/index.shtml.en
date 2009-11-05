@@ -39,7 +39,7 @@ release distribution site</a>.
 </p>
 
 <p>
-An unsigned pre-compiled version is available at <a href="http://theora.org/cortado_unsigned.jar">http://theora.org/cortado_unsigned.jar</a>. The unsigned jar only permits the display of videos located on the same host as the jar file so you must copy this file to your server but using it avoids security warnings.
+An unsigned pre-compiled version is available at <a href="http://downloads.xiph.org/releases/cortado/cortado_latest.jar">http://downloads.xiph.org/releases/cortado/cortado_latest.jar</a>. The unsigned jar only permits the display of videos located on the same host as the jar file so you must copy this file to your server but using it avoids security warnings.
 </p>
 
 <p>
@@ -49,12 +49,12 @@ Xiph.org also provides a signed version of Cortado at <a href="http://theora.org
 <h2>Usage example</h2>
 
 <p>
-Provided you have a file containing Ogg Theora content named <tt>content.ogv</tt> and a binary of Cortado named <tt>cortado_unsigned.jar</tt> in the same directory as the content you can embed Cortado by including following HTML-snippet into the source-code of your web-page:
+Provided you have a file containing Ogg Theora content named <tt>content.ogv</tt> and a binary of Cortado named <tt>cortado_latest.jar</tt> in the same directory as the content you can embed Cortado by including following HTML-snippet into the source-code of your web-page:
 </p>
 
 <p>
 <code>
-   &lt;applet code="com.fluendo.player.Cortado.class" archive="cortado_unsigned.jar" width="352" height="288"&gt; <br/>
+   &lt;applet code="com.fluendo.player.Cortado.class" archive="cortado_latest.jar" width="352" height="288"&gt; <br/>
    &nbsp;&nbsp;&lt;param name="url" value="content.ogv"/&gt; <br/>
    &lt;/applet&gt;
 </code>
