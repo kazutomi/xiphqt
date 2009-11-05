@@ -33,6 +33,12 @@ You can fetch the source from <a href="http://git.xiph.org/?p=cortado.git;a=summ
 </p>
 
 <p>
+Source and binary packages are available from the main
+<a href="http://downloads.xiph.org/releases/cortado/">xiph.org 
+release distribution site</a>.
+</p>
+
+<p>
 An unsigned pre-compiled version is available at <a href="http://theora.org/cortado_unsigned.jar">http://theora.org/cortado_unsigned.jar</a>. The unsigned jar only permits the display of videos located on the same host as the jar file so you must copy this file to your server but using it avoids security warnings.
 </p>
 
