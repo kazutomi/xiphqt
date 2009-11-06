@@ -8,6 +8,41 @@
 <!--#include virtual="/ssi/pagetop.include" -->
 <!--  All your page content goes here  -->
 
+<a name="cortado-0.5.1">
+<h3>Cortado 0.5.1 release</h3>
+</p>
+<p class="newsdate">2009 November 5
+<a href="#cordato-0.5.1">&laquo;</a></p>
+
+<p>The <a href="/cortado/">Cortado</a> java applet is a pure java 
+implementation of a Theora decoder. Originally developed by the
+folks at <a href="http://fluendo.com/">Fluendo S.A.</a>, and
+subsequently developed by <a href="http://http://wikimedia.org/">Wikimedia</a>,
+upstream stewardship was recently passed to Xiph.org.</p>
+
+<p>Cortado has been used for many years as a way to support free
+media content on the web, and is still an important component
+as a fallback for browsers which don't yet support Ogg audio and
+video streams natively.</p>
+
+<p>The new maintenance team have now made their second update release of 
+Cortado. Since the last official Fluendo release, version 0.5.1 adds
+
+<ul>
+ <li>Support for baseline Theora features used by the libtheora 1.1 encoder.<li>
+ <li>Better and faster display code.</li>
+ <li>Basic support for Ogg Kate subtitles.</li>
+ <li>Various other bug and robustness fixes.</li>
+</ul>
+</p>
+
+<p>Please visit the <a href="/cortado/">Cortado homepage</a> for more 
+information, including downloads and examples of how to use the 
+applet.</p>
+
+<p>Thanks to everyone who contributed to this release. It was a real 
+community effort.</p>
+
 <a name="libtheora-1.1.1">
 <h3>Theora 1.1.1 release</h3>
 </a>
