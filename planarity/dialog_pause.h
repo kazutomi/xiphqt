@@ -29,7 +29,7 @@
 #define PAUSEBOX_WIDTH 180
 #define PAUSEBOX_HEIGHT 250
 
-#define ABOUTBOX_WIDTH 320
+#define ABOUTBOX_WIDTH 350
 #define ABOUTBOX_HEIGHT 400
 
 extern void pause_dialog(Gameboard *g);
