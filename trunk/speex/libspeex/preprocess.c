@@ -248,6 +248,8 @@ struct SpeexPreprocessState_ {
    void  *fft_lookup;        /**< Lookup table for the FFT */
 #ifdef FIXED_POINT
    int    frame_shift;
+   int    agc_level;
+
 #endif
 };
 
