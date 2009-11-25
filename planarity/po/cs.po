@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gPlanarity 11496\n"
 "Report-Msgid-Bugs-To: Monty <monty@xiph.org>\n"
-"POT-Creation-Date: 2009-11-25 00:22-0500\n"
+"POT-Creation-Date: 2009-11-25 02:29-0500\n"
 "PO-Revision-Date: 2007-05-15 17:58+0200\n"
 "Last-Translator: Petr Pisar <petr.pisar@atlas.cz>\n"
 "Language-Team: Czech <translation-team-cs@lists.sourceforge.net>\n"
@@ -102,7 +102,7 @@ msgstr "gPlanarity"
 msgid "Untangle the mess!"
 msgstr "Rozmotejte šmodrchanec!"
 
-msgid "Drag verticies to eliminate crossed lines."
+msgid "Drag vertices to eliminate crossed lines."
 msgstr "Přesunujte vrcholy, abyste odstranili křížící se čáry."
 
 msgid "The objective may be a complete solution or"
@@ -257,7 +257,7 @@ msgid "Couldn't allocate memory for level name.\n"
 msgstr "Nelze vyhradit paměť pro jméno kola.\n"
 
 #, c-format
-msgid "Couldn't allocate memory for level desciption.\n"
+msgid "Couldn't allocate memory for level description.\n"
 msgstr "Nelze vyhradit paměť pro popis kola.\n"
 
 #, c-format

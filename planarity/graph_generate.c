@@ -207,7 +207,7 @@ int generate_get_meta(int num, graphmeta *gm){
     gm->num = num;
     gm->unlock_plus = i_list_loop[classnum].unlock+1;
     if(asprintf(&gm->desc,i_list_loop[classnum].desc,ordernum)==-1){
-      fprintf(stderr,_("Couldn't allocate memory for level desciption.\n"));
+      fprintf(stderr,_("Couldn't allocate memory for level description.\n"));
       return -1;
     }
 
