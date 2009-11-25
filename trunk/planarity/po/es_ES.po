@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: Monty <monty@xiph.org>\n"
-"POT-Creation-Date: 2009-05-19 17:05-0400\n"
+"POT-Creation-Date: 2009-11-25 00:22-0500\n"
 "PO-Revision-Date: 2009-09-12 19:45-0300\n"
 "Last-Translator: Federico Vera <dktcoding at gmail dot com>\n"
 "Language-Team: Spanish <kde-i18n-doc@kde.org>\n"
@@ -160,22 +160,22 @@ msgstr "Desenrrede este lío!"
 #
 # File: ../dialog_pause.c, line: 194
 msgid "Drag verticies to eliminate crossed lines."
-msgstr "Arrastre los vértices para eliminar los cruces de líneas."
+msgstr "Arrastre los vértices para eliminar los cruces de"
 
 #
 # File: ../dialog_pause.c, line: 195
 msgid "The objective may be a complete solution or"
-msgstr "El objetivo puede ser una solución completa o"
+msgstr "líneas.  El objetivo puede ser una solución"
 
 #
 # File: ../dialog_pause.c, line: 196
 msgid "getting as close as possible to solving an"
-msgstr "acercarse lo más posible a resolver un"
+msgstr "completa o acercarse lo más posible a resolver"
 
 #
 # File: ../dialog_pause.c, line: 197
 msgid "unsolvable puzzle.  Work quickly and"
-msgstr "rompezabezas irresolvible. Trabaje rápido y"
+msgstr "un rompezabezas irresolvible.  Trabaje rápido y"
 
 #
 # File: ../dialog_pause.c, line: 198
