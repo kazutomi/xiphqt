@@ -191,7 +191,7 @@ static void draw_aboutbox(Gameboard *g){
     y+=30;
 
     set_font(c,13,13,0,0);
-    render_bordertext_centered(c,_("Drag verticies to eliminate crossed lines."), w/2,y); y+=16;
+    render_bordertext_centered(c,_("Drag vertices to eliminate crossed lines."), w/2,y); y+=16;
     render_bordertext_centered(c,_("The objective may be a complete solution or"), w/2,y); y+=16;
     render_bordertext_centered(c,_("getting as close as possible to solving an"), w/2,y); y+=16;
     render_bordertext_centered(c,_("unsolvable puzzle.  Work quickly and"), w/2,y); y+=16;

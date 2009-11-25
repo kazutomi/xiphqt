@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: Monty <monty@xiph.org>\n"
-"POT-Creation-Date: 2009-11-25 00:22-0500\n"
+"POT-Creation-Date: 2009-11-25 02:29-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -132,7 +132,7 @@ msgid "Untangle the mess!"
 msgstr ""
 #
 # File: ../dialog_pause.c, line: 194
-msgid "Drag verticies to eliminate crossed lines."
+msgid "Drag vertices to eliminate crossed lines."
 msgstr ""
 #
 # File: ../dialog_pause.c, line: 195
@@ -301,7 +301,7 @@ msgstr ""
 #
 # File: ../graph_generate.c, line: 210
 #, c-format
-msgid "Couldn't allocate memory for level desciption.\n"
+msgid "Couldn't allocate memory for level description.\n"
 msgstr ""
 #
 # File: ../graph_region.c, line: 459
