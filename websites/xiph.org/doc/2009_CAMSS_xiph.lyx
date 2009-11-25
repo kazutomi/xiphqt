@@ -1,0 +1,1905 @@
+#LyX 1.6.2 created this file. For more info see http://www.lyx.org/
+\lyxformat 345
+\begin_document
+\begin_header
+\textclass paper
+\begin_preamble
+\usepackage{multicol}
+\usepackage{tikz}
+\hyphenpenalty=5000
+\tolerance=1000
+\end_preamble
+\use_default_options true
+\language english
+\inputencoding auto
+\font_roman default
+\font_sans default
+\font_typewriter default
+\font_default_family default
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+
+\graphics default
+\paperfontsize 10
+\spacing single
+\use_hyperref true
+\pdf_title "CAMSS Questionnaire - Xiph.Org response"
+\pdf_author "Xiph.Org"
+\pdf_keywords "CAMSS IDABC Theora Xiph.Org video multimedia"
+\pdf_bookmarks true
+\pdf_bookmarksnumbered false
+\pdf_bookmarksopen false
+\pdf_bookmarksopenlevel 1
+\pdf_breaklinks false
+\pdf_pdfborder true
+\pdf_colorlinks false
+\pdf_backref false
+\pdf_pdfusetitle true
+\papersize a4paper
+\use_geometry true
+\use_amsmath 1
+\use_esint 1
+\cite_engine basic
+\use_bibtopic false
+\paperorientation portrait
+\leftmargin 2cm
+\topmargin 1.75cm
+\rightmargin 1.5cm
+\bottommargin 1.75cm
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\defskip medskip
+\quotes_language english
+\papercolumns 1
+\papersides 2
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\author "" 
+\author "" 
+\end_header
+
+\begin_body
+
+\begin_layout Title
+CAMSS Questionnaire
+\end_layout
+
+\begin_layout SubTitle
+Xiph.Org response 
+\end_layout
+
+\begin_layout Author
+
+\size normal
+Benjamin
+\begin_inset space ~
+\end_inset
+
+M.
+\begin_inset space ~
+\end_inset
+
+Schwartz
+\begin_inset space ~
+\end_inset
+
+<bens@alum.mit.edu>, Timothy
+\begin_inset space ~
+\end_inset
+
+B.
+\begin_inset space ~
+\end_inset
+
+Terriberry
+\begin_inset space ~
+\end_inset
+
+<tterribe@xiph.org>,
+\begin_inset Newline newline
+\end_inset
+
+Ralph
+\begin_inset space ~
+\end_inset
+
+Giles
+\begin_inset space ~
+\end_inset
+
+<giles@xiph.org>, Silvia
+\begin_inset space ~
+\end_inset
+
+Pfeiffer
+\begin_inset space ~
+\end_inset
+
+<silviapfeiffer1@gmail.com>,
+\begin_inset Newline newline
+\end_inset
+
+Kat
+\begin_inset space ~
+\end_inset
+
+Walsh
+\begin_inset space ~
+\end_inset
+
+<kat@wikimedia.org>, Greg
+\begin_inset space ~
+\end_inset
+
+Maxwell
+\begin_inset space ~
+\end_inset
+
+<greg@xiph.org>
+\end_layout
+
+\begin_layout Standard
+Xiph.Org was invited to respond to a questionnaire related to a pilot assessment
+ of video codecs in eGovernment for the European Commission.
+ The questionnaire comes from the CAMSS project which is part of an initiative
+ to provide recommendations for interoperable technology.
+ Xiph.Org is a not-for-profit organization that develops free and open multimedia
+ technology well suited to the broad and equitable access requirements inherent
+ in many eGovernment applications.
+ 
+\end_layout
+
+\begin_layout Standard
+This document represents Xiph.Org's response to the CAMSS assessment questions
+ regarding both the Xiph.Org standards development processes and the Theora
+ video coding standard in particular.
+ We are grateful to Clémentine Valayer for giving us the opportunity to
+ describe our processes and standards in detail, and to the IDABC for all
+ their work to improve interoperability of digital systems.
+ It is structured as a point-by-point response to the 
+\begin_inset Quotes eld
+\end_inset
+
+market criteria
+\begin_inset Quotes erd
+\end_inset
+
+ (Part 4) and 
+\begin_inset Quotes eld
+\end_inset
+
+standardisation criteria
+\begin_inset Quotes erd
+\end_inset
+
+ (Part 5) questions.
+ We have endeavored to provide complete, precise, and concise responses.
+ If you would like any further information or clarification regarding Xiph.Org
+ and its standards, please do not hesitate to contact the listed authors.
+\end_layout
+
+\begin_layout Standard
+This document represents a snapshot of the wiki page on which it was developed
+\begin_inset CommandInset citation
+LatexCommand cite
+key "wikilink"
+
+\end_inset
+
+.
+ Any further clarifications may occur on that page.
+ This snapshot of the responses is offered in the hope that it may be useful
+ for print and archival purposes.
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{multicols}{2}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section*
+Part 4: Market Criteria
+\end_layout
+
+\begin_layout Subsection*
+Market support
+\end_layout
+
+\begin_layout Subsubsection*
+Does the standard have strong support in the marketplace?
+\end_layout
+
+\begin_layout Standard
+Yes.
+ For example, among web browsers, support for Xiph's Ogg, Theora, and Vorbis
+ standards is now included by default in Mozilla Firefox, Google Chrome,
+ and the latest versions of Opera, representing hundreds of millions of
+ installed users just in this market alone.
+ On Windows, DirectShow filters exist which also enable all Windows applications
+ that use the DirectShow framework to use Xiph's Ogg, Theora, and Vorbis
+ standards.
+ A QuickTime component exists which enables use of Xiph's Ogg, Theora, and
+ Vorbis standards in all Mac OS X applications that make use of the QuickTime
+ framework --- which includes Safari/Webkit, iMovie, QuickTime, and many
+ others.
+\end_layout
+
+\begin_layout Subsubsection*
+What products exist for this formal specification? 
+\end_layout
+
+\begin_layout Standard
+Theora is a video codec, and as such the required products are encoders,
+ decoders, and transmission systems.
+ All three types of products are widely available for Theora.
+\end_layout
+
+\begin_layout Subsubsection*
+How many implementations of the formal specification are there?
+\end_layout
+
+\begin_layout Standard
+Xiph does not require implementors to acquire any license before implementing
+ the specification.
+ Therefore, we do not have a definitive count of the number of implementations.
+ In addition to the reference implementation, which has been ported to most
+ modern platforms and highly optimized for x86 and ARM CPUs and TI C64x+
+ DSPs, we are aware of a number of independent, conformant or mostly-conformant
+ implementations.
+ These include two C decoders
+\begin_inset CommandInset citation
+LatexCommand cite
+key "cdec"
+
+\end_inset
+
+, a Java decoder
+\begin_inset CommandInset citation
+LatexCommand cite
+key "jheora"
+
+\end_inset
+
+, a C# decoder, an FPGA decoder
+\begin_inset CommandInset citation
+LatexCommand cite
+key "fpgadec"
+
+\end_inset
+
+,and an FPGA encoder
+\begin_inset CommandInset citation
+LatexCommand cite
+key "fpgaenc"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsubsection*
+Are there products from different suppliers in the market that implement
+ this formal specification?
+\end_layout
+
+\begin_layout Standard
+Yes.
+ Corporations such as Atari, Canonical, DailyMotion, Elphel, Fluendo, Google,
+ Mozilla, Novell, Opera, Red
+\begin_inset space ~
+\end_inset
+
+Hat, Sun Microsystems, and Ubisoft have supplied products with an implementation
+ of the Theora standard.
+\end_layout
+
+\begin_layout Subsubsection*
+Are there many products readily available from a variety of suppliers?
+\end_layout
+
+\begin_layout Standard
+Yes.
+ Theora has been deployed in embedded devices, security cameras, video games,
+ video conferencing systems, web browsers, home theater systems, and many
+ other products.
+ A complete, legal, open-source reference implementation can also be downloaded
+ free of charge, including components for all major media frameworks (DirectShow
+, gstreamer, and Quicktime), giving most applications the ability to use
+ the codec.
+\end_layout
+
+\begin_layout Subsubsection*
+What is the market share of the products implementing the formal specification,
+ versus other implementations of competing formal specifications?
+\end_layout
+
+\begin_layout Standard
+Theora playback is extremely widely available, covering virtually the entire
+ market of personal computers.
+ Theora is also increasingly available in mobile and embedded devices.
+ Since we do not require licensing for products that implement the specification
+, we do not have market share numbers that can be compared with competing
+ formal specifications.
+ Because implementations are readily available and free, Theora is included
+ in many products that support multiple codecs, and is sometimes the only
+ video codec included in free software products.
+\end_layout
+
+\begin_layout Subsubsection*
+Who are the end-users of these products implementing the formal specification?
+\end_layout
+
+\begin_layout Standard
+The end users are television viewers, video gamers, web surfers, movie makers,
+ business people, video distribution services, and anyone else who interacts
+ with moving pictures.
+\end_layout
+
+\begin_layout Subsection*
+Maturity
+\end_layout
+
+\begin_layout Subsubsection*
+Are there any existing or planned mechanisms to assess conformity of the
+ implementations of the formal specification?
+\end_layout
+
+\begin_layout Standard
+Yes.
+ In addition to a continuous peer review process, we maintain a suite of
+ test vectors
+\begin_inset CommandInset citation
+LatexCommand cite
+key "theoratest"
+
+\end_inset
+
+ that allow implementors to assess decoder conformity.
+ We also provide free online developer support and testing for those attempting
+ to make a conforming implementation.
+ An online validation service
+\begin_inset CommandInset citation
+LatexCommand cite
+key "oggvalidate"
+
+\end_inset
+
+ is available.
+\end_layout
+
+\begin_layout Subsubsection*
+Is there a reference implementation?
+\end_layout
+
+\begin_layout Standard
+Yes.
+ Xiph maintains a reference implementation called libtheora
+\begin_inset CommandInset citation
+LatexCommand cite
+key "libtheora"
+
+\end_inset
+
+.
+ In addition to serving as a reference, libtheora is also highly optimized
+ to achieve the maximum possible speed, accuracy, reliability, efficiency,
+ and video quality.
+ As a result, many implementors of Theora adopt the reference implementation.
+\end_layout
+
+\begin_layout Subsubsection*
+Is there an open source implementation?
+\end_layout
+
+\begin_layout Standard
+Yes.
+ libtheora is made available under a permissive BSD-like license.
+ Its open-source nature also contributes to its quality as a reference implement
+ation, as implementors are welcome to contribute their improvements to the
+ reference.
+ There are also several other open source implementations in addition to
+ the reference.
+\end_layout
+
+\begin_layout Subsubsection*
+Does the formal specification show wide adoption 
+\emph on
+across different domains
+\emph default
+? 
+\end_layout
+
+\begin_layout Standard
+Yes.
+ In addition to the private companies mentioned in the previous section,
+ Theora has also been specified as the sole format supported by non-profit
+ organizations such as Wikipedia, currently the 6th largest website in the
+ world, and as one of a small number of preferred formats supported by other
+ public institutions, such as the Norwegian government.
+\end_layout
+
+\begin_layout Subsubsection*
+Does the formal specification show wide adoption 
+\emph on
+in an open environment
+\emph default
+?
+\end_layout
+
+\begin_layout Standard
+Yes.
+ On open/free operating systems such as those distributed by Novell/SuSE,
+ Canonical, and Red Hat, Theora is the primary default video codec.
+\end_layout
+
+\begin_layout Subsubsection*
+Does the formal specification show wide adoption 
+\emph on
+in a similar field
+\emph default
+?
+\end_layout
+
+\begin_layout Standard
+Yes.
+ Most prominently, Theora has been used for eGovernment video distribution
+ in the United States at Metavid
+\begin_inset CommandInset citation
+LatexCommand cite
+key "metavid"
+
+\end_inset
+
+.
+ Metavid is the most comprehensive, interactive archive of video footage
+ from the United States legislature.
+ Metavid not only distributes video; they also enable citizen engagement
+ by allowing them to annotate videos and correct transcripts.
+ Metavid distributes its entire archive in Theora format.
+ Metavid's source code is entirely open and reusable for any purpose, providing
+ instant access to best practices for eGovernment with Theora.
+ Metavid's video display component is also available separately as mv_embed
+\begin_inset CommandInset citation
+LatexCommand cite
+key "mv_embed"
+
+\end_inset
+
+, which provides reusable best practices for easy Theora display on the
+ web.
+\end_layout
+
+\begin_layout Standard
+Another important user of Theora is Wikipedia, which distributes video exclusive
+ly in Theora format.
+ Wikipedia's best practices for Theora distribution are encapsulated in
+ OggHandler
+\begin_inset CommandInset citation
+LatexCommand cite
+key "ogghandler"
+
+\end_inset
+
+, which can be freely reused by anyone using the open-source MediaWiki software.
+\end_layout
+
+\begin_layout Subsubsection*
+Has the formal specification been in use and development long enough that
+ most of its initial problems have been overcome?
+\end_layout
+
+\begin_layout Standard
+Yes.
+ Theora was derived from VP3, which was originally released in May 2000.
+ The Theora specification
+\begin_inset CommandInset citation
+LatexCommand cite
+key "theoraspec"
+
+\end_inset
+
+ was completed in 2004.
+ Theora has now been used in a wide variety of applications, on the full
+ spectrum of computing devices.
+\end_layout
+
+\begin_layout Subsubsection*
+Is the underlying technology of the standard well-understood? (e.g., a reference
+ model is well defined, appropriate concepts of the technology are in widespread
+ use, the technology may have been in use for many years, a formal mathematical
+ model is defined, etc.)
+\end_layout
+
+\begin_layout Standard
+Yes.
+ The underlying technology has been in use for nearly a decade, and most
+ of the concepts have been in widespread use for even longer.
+\end_layout
+
+\begin_layout Subsubsection*
+Is the formal specification based upon technology that has not been well-defined
+ and may be relatively new?
+\end_layout
+
+\begin_layout Standard
+No.
+ The formal specification is based on technology from the On2 VP3 codec,
+ which is substantially similar to simple block-transform codecs like H.261.
+ This class of codecs is extremely well understood, and has been in active
+ use for over 20 years.
+\end_layout
+
+\begin_layout Subsubsection*
+Has the formal specification been revised? 
+\end_layout
+
+\begin_layout Standard
+The formal specification of the Theora decoder has been stable for years.
+ However, the text of the specification is continuously revised, based on
+ user feedback, to improve the clarity and accuracy of the description of
+ the technology.
+\end_layout
+
+\begin_layout Subsubsection*
+Is the formal specification under the auspices of an architectural board?
+ 
+\end_layout
+
+\begin_layout Standard
+No.
+ Although officially maintained by the Xiph.Org Foundation, anyone is free
+ to join this organization, and one need not even be a member to make contributi
+ons.
+ However, the core developers will review contributions and make sure they
+ do not contradict the general architecture and they work well with the
+ existing code and the test cases.
+\end_layout
+
+\begin_layout Subsubsection*
+Is the formal specification partitioned in its functionality? 
+\end_layout
+
+\begin_layout Standard
+No.
+ Theora is very deliberately not partitioned, to avoid the confusion created
+ by a "standard" composed of many incompatible "profiles".
+ The Theora standard does not have any optional components.
+ A compliant Theora decoder can correctly process any Theora stream.
+\end_layout
+
+\begin_layout Subsubsection*
+To what extent does each partition participate to its overall functionality?
+ 
+\end_layout
+
+\begin_layout Standard
+N/A.
+\end_layout
+
+\begin_layout Subsubsection*
+To what extent is each partition implemented?
+\end_layout
+
+\begin_layout Standard
+N/A.
+\end_layout
+
+\begin_layout Subsection*
+Re-usability
+\end_layout
+
+\begin_layout Subsubsection*
+Does the formal specification provide guidelines for its implementation
+ in a given organisation?
+\end_layout
+
+\begin_layout Standard
+Yes.
+ For example, the Theora specification
+\begin_inset CommandInset citation
+LatexCommand cite
+key "theoraspec"
+
+\end_inset
+
+ provides "non-normative" advice and explanation for implementors of Theora
+ decoders and encoders, including example algorithms for implementing required
+ mathematical transforms.
+ Xiph also maintains a documentation base
+\begin_inset CommandInset citation
+LatexCommand cite
+key "xiphwiki"
+
+\end_inset
+
+ for implementors who desire more guidelines beyond the specification itself.
+\end_layout
+
+\begin_layout Subsubsection*
+Can other cases where similar systems implement the formal specification
+ be considered as successful implementations and good practices?
+\end_layout
+
+\begin_layout Standard
+Xiph's standards have successfully been implemented by many organisations
+ in a wide variety of environments.
+ We maintain lists
+\begin_inset CommandInset citation
+LatexCommand cite
+key "theorasupport"
+
+\end_inset
+
+ of products which implement Theora support, many of them open source, so
+ that others may use them as a reference when preparing their own products.
+\end_layout
+
+\begin_layout Subsubsection*
+Is its compatibility with related formal specification documented?
+\end_layout
+
+\begin_layout Standard
+Yes.
+ For example, the Theora specification also documents the use of Theora
+ within the standard Ogg encapsulation format
+\begin_inset CommandInset citation
+LatexCommand cite
+key "oggrfc"
+
+\end_inset
+
+, and the TheoraRTP draft specification
+\begin_inset CommandInset citation
+LatexCommand cite
+key "rtpdraft"
+
+\end_inset
+
+ explains how to transmit Theora using the RTP standard
+\begin_inset CommandInset citation
+LatexCommand cite
+key "rtprfc"
+
+\end_inset
+
+.
+ In addition, the specification documents Theora's compatibility with ITU-R
+ B.470, ITU-R B.601, ITU-R B.709, SMPTE-170M, UTF-8
+\begin_inset CommandInset citation
+LatexCommand cite
+key "utf8"
+
+\end_inset
+
+, ISO 10646, and Ogg Vorbis
+\begin_inset CommandInset citation
+LatexCommand cite
+key "vorbisspec"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Section*
+Part 5: Standardisation Criteria
+\end_layout
+
+\begin_layout Subsection*
+Availability of Documentation
+\end_layout
+
+\begin_layout Subsubsection*
+The availability of documentation criteria is linked to cost and online
+ availability.
+ Access to all preliminary results documentation can be online, online for
+ members only, offline, offline, for members only or not available.
+ Access can be free or for a fee.
+\end_layout
+
+\begin_layout Standard
+Every Xiph standard is permanently available online to everyone at no cost.
+ For example, we invite everyone to download the most up-to-date copy of
+ the Theora specification, and the latest revision of the Vorbis specification.
+ All previous revisions are available from Xiph's revision control system
+\begin_inset CommandInset citation
+LatexCommand cite
+key "svn"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsection*
+Intellectual Property Right
+\end_layout
+
+\begin_layout Subsubsection*
+Availability of the IPR or copyright policies of the organisation (available
+ on-line or off-line, or not available); 
+\end_layout
+
+\begin_layout Standard
+The reference implementations of each codec include all necessary IPR and
+ copyright licenses for that codec, including all documentation, and are
+ freely available to everyone.
+\end_layout
+
+\begin_layout Subsubsection*
+Organisation’s governance to disclose any IPR from any contributor (ex-ante,
+ online, offline, for free for all, for a fee for all, for members only,
+ not available)
+\end_layout
+
+\begin_layout Standard
+Xiph does not require the identification of specific patents that may be
+ required to implement a standard; however, it does require an open-source
+ compatible, royalty free license from a contributor for any such patents
+ they may own before the corresponding technology can be included in a standard.
+ These licenses are made available online, for free, to all parties.
+\end_layout
+
+\begin_layout Subsubsection*
+The level of IPR set "mandatory" by the organisation (no patent, royalty
+ free patent, patent and RAND with limited liability , patent and classic
+ RAND, patent with explicit licensing, patent with defensive licensing,
+ or none);
+\end_layout
+
+\begin_layout Standard
+All standards, specifications, and software published by the Xiph.Org Foundation
+ are required to have "open-source compatible" IPR.
+ This means that a contribution must either be entirely clear of any known
+ patents, or any patents that read upon the contribution must be available
+ under a transferable, irrevocable public nonassertion agreement to all
+ people everywhere.
+ For example, see our On2 patent nonassertion warrant
+\begin_inset CommandInset citation
+LatexCommand cite
+key "ON2"
+
+\end_inset
+
+.
+ Other common "royalty free" patent licenses are either not transferable,
+ are revocable under certain conditions (such as patent infringement litigation
+ against the originating party), or otherwise impose restrictions that would
+ prevent distribution under common OSI
+\begin_inset CommandInset citation
+LatexCommand cite
+key "OSI"
+
+\end_inset
+
+-approved licenses.
+ These would not be acceptable.
+\end_layout
+
+\begin_layout Subsubsection*
+The level of IPR "recommended" by the organisation (no patent, royalty free
+ patent, patent and RAND with limited liability, patent and classic RAND,
+ patent with explicit licensing, patent with defensive licensing, or none).
+\end_layout
+
+\begin_layout Standard
+Xiph's recommended IPR requirements are the same as our mandatory requirements.
+\end_layout
+
+\begin_layout Subsection*
+Accessibility
+\end_layout
+
+\begin_layout Subsubsection*
+Does a mechanism that ensures disability support by a formal specification
+ exist? 
+\end_layout
+
+\begin_layout Standard
+Yes.
+ Xiph ensures support for users with disabilities by providing specifications
+ for accessible technologies independent of the codec itself.
+ Notably, the Xiph OggKate
+\begin_inset CommandInset citation
+LatexCommand cite
+key "kate"
+
+\end_inset
+
+ codec for time-aligned text and image content provides support for subtitles
+ for internationalisation, captions for the hearing-impaired, and textual
+ audio descriptions for the visually impaired.
+ Further, Ogg supports multiple tracks of audio and video content in one
+ container, such that sign language tracks and audio descriptions can be
+ included in one file.
+ For this to work, Xiph has defined Skeleton
+\begin_inset CommandInset citation
+LatexCommand cite
+key "skeleton"
+
+\end_inset
+
+ which holds metadata about each track encapsulated within a single Ogg
+ file.
+ When Theora is transmitted or stored in an Ogg container, it is automatically
+ compatible with these accessibility measures.
+\end_layout
+
+\begin_layout Subsubsection*
+Is conformance governance always part of a standard? 
+\end_layout
+
+\begin_layout Standard
+Yes.
+ Xiph's standards always precisely specify the requirements that an implementati
+on must meet in order to be considered conformant.
+\end_layout
+
+\begin_layout Subsubsection*
+Is a conformance test offered to implementers? 
+\end_layout
+
+\begin_layout Standard
+Yes.
+ Xiph maintains a freely available suite of test vectors
+\begin_inset CommandInset citation
+LatexCommand cite
+key "theoratest"
+
+\end_inset
+
+ and an online validation service
+\begin_inset CommandInset citation
+LatexCommand cite
+key "oggvalidate"
+
+\end_inset
+
+ that can be used by anyone to check confirm basic conformance, in addition
+ to tools such as the oggz-validate program included with liboggz, which
+ has been widely used for conformance testing.
+\end_layout
+
+\begin_layout Subsubsection*
+Is conformance validation available to implementers? 
+\end_layout
+
+\begin_layout Standard
+Yes.
+ Informal conformance testing is available to implementors upon request,
+ and Xiph has provided such testing for a number of implementations in the
+ past.
+\end_layout
+
+\begin_layout Subsubsection*
+Is conformance certification available?
+\end_layout
+
+\begin_layout Standard
+Yes.
+ Xiph does not require certification, but maintains the right to withhold
+ the use of our trademarks from implementors who act in bad faith.
+ Implementors may, however, request explicit permission to use our trademarks
+ with a conforming implementation.
+\end_layout
+
+\begin_layout Subsubsection*
+Is localisation of a formal specification possible?
+\end_layout
+
+\begin_layout Standard
+Yes.
+ We welcome anyone who wishes to translate Xiph specifications into other
+ languages.
+ We have no policy requiring that the normative specification be written
+ in English.
+\end_layout
+
+\begin_layout Subsection*
+Interoperability governance
+\end_layout
+
+\begin_layout Subsubsection*
+Open identification in formal specifications
+\end_layout
+
+\begin_layout Standard
+Yes.
+ The Xiph codecs can be precisely identified by their MIME types, as formally
+ defined by IETF RFC 5334
+\begin_inset CommandInset citation
+LatexCommand cite
+key "mime"
+
+\end_inset
+
+, an open specification.
+\end_layout
+
+\begin_layout Subsubsection*
+open negotiation in formal specifications
+\end_layout
+
+\begin_layout Standard
+Yes.
+ For example, a draft RTP specification
+\begin_inset CommandInset citation
+LatexCommand cite
+key "rtpdraft"
+
+\end_inset
+
+ describes how Theora interoperates with the Session Description Protocol
+ (SDP)
+\begin_inset CommandInset citation
+LatexCommand cite
+key "SDP"
+
+\end_inset
+
+, a mechanism for negotiating the parameters of RTP sessions.
+\end_layout
+
+\begin_layout Subsubsection*
+open selection in formal specifications
+\end_layout
+
+\begin_layout Standard
+Yes.
+ There are many open specifications that provide a mechanism for selecting
+ Theora from among many codecs.
+ One such specification is HTML 5 video
+\begin_inset CommandInset citation
+LatexCommand cite
+key "html5"
+
+\end_inset
+
+, which allows the user agent to select Theora based on its MIME type, using
+ the source element.
+ 
+\end_layout
+
+\begin_layout Subsection*
+Meeting and consultation
+\end_layout
+
+\begin_layout Subsubsection*
+Is the organisation is open to all types of companies and organisations
+ and to individuals?
+\end_layout
+
+\begin_layout Standard
+Yes.
+ Xiph welcomes representatives from all companies and organizations as well
+ as all individuals.
+\end_layout
+
+\begin_layout Subsubsection*
+Does the standardisation process may specifically allow participation of
+ members with limited abilities when relevant?
+\end_layout
+
+\begin_layout Standard
+Yes.
+ Standardization occurs almost entirely in text-based, accessible internet
+ communications channels, allowing participants with disabilities to engage
+ fully in the standards development process.
+\end_layout
+
+\begin_layout Subsubsection*
+Are meetings are open to all members?
+\end_layout
+
+\begin_layout Standard
+Xiph meetings are open to everyone.
+ We charge no fee for and place no restrictions on attendance or participation.
+ For example, anyone interested in contributing to the Theora specification
+ may join the Theora development mailing list
+\begin_inset CommandInset citation
+LatexCommand cite
+key "theoradev"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsubsection*
+Can all participate in the formal specification creation process?
+\end_layout
+
+\begin_layout Standard
+Yes.
+ All people are welcome to participate in the specification creation process.
+ No dues or fees are required to participate.
+\end_layout
+
+\begin_layout Subsubsection*
+Can non-members participate in the formal specification creation process?
+\end_layout
+
+\begin_layout Standard
+Yes.
+ Xiph does not maintain an explicit list of members, and no one is excluded
+ from contributing to specifications as they are developed.
+\end_layout
+
+\begin_layout Subsection*
+Consensus
+\end_layout
+
+\begin_layout Subsubsection*
+Does the organisation have a stated objective of reaching consensus when
+ making decisions on standards?
+\end_layout
+
+\begin_layout Standard
+There is no explicitly stated objective of reaching consensus.
+ However, when new contributions are made, the key specification developers
+ will be able to veto the introduction of a new feature.
+ Generally, differences are discussed openly and new features are adapted
+ until they fit the overall architecture of the standard, at which stage
+ they are introduced into the specification, standard and software.
+\end_layout
+
+\begin_layout Subsubsection*
+If consensus is not reached, can the standard be approved?
+\end_layout
+
+\begin_layout Standard
+The standard can be approved without consensus via the decision of a "director"
+ or similar.
+\end_layout
+
+\begin_layout Subsubsection*
+Is there a formal process for external review of standard proposals by interest
+ groups (nonmembers)?
+\end_layout
+
+\begin_layout Standard
+Since anyone may participate in the development process and make proposals,
+ there is no need for a separate formal process to include proposals by
+ nonmembers.
+\end_layout
+
+\begin_layout Subsection*
+Due Process
+\end_layout
+
+\begin_layout Subsubsection*
+Can a member formally appeal or raise objections to a procedure or to a
+ technical specification to an independent, higher instance?
+\end_layout
+
+\begin_layout Standard
+Yes.
+ Even if a member fails an appeal within the organization, because all of
+ the technology Xiph standardizes is open and freely implementable, they
+ are always free to develop their own, competing version.
+ Such competing versions may even still be eligible for standardization
+ under the Xiph umbrella.
+\end_layout
+
+\begin_layout Subsection*
+Changes to the formal specification
+\end_layout
+
+\begin_layout Subsubsection*
+Are suggested changes made to a formal specification presented, evaluated,
+ and approved in the same way as the formal specification was first defined?
+\end_layout
+
+\begin_layout Standard
+The exact same process is used for revisions to the standard as was used
+ for the original development of the standard, and thus the answers to all
+ of the above questions remain the same.
+\end_layout
+
+\begin_layout Subsection*
+Support
+\end_layout
+
+\begin_layout Subsubsection*
+Does the organisation provide support until removal of the published formal
+ specification from public domain?
+\end_layout
+
+\begin_layout Standard
+Xiph.Org standards are never removed from the public domain.
+ Xiph endeavors to provide support for as long as the standard remains in
+ use.
+\end_layout
+
+\begin_layout Subsubsection*
+Does the organisation make the formal specification still available even
+ when in non-maintenance mode?
+\end_layout
+
+\begin_layout Standard
+Yes.
+ All Xiph.Org standards are freely licensed and will always be available.
+\end_layout
+
+\begin_layout Subsubsection*
+Does the organisation add new features and keep the formal specification
+ up-to-date?
+\end_layout
+
+\begin_layout Standard
+Yes.
+ Xiph maintains its ecosystem of standards on a continuous basis.
+\end_layout
+
+\begin_layout Subsubsection*
+Does the organisation rectify problems identified in initial implementations?
+\end_layout
+
+\begin_layout Standard
+Yes.
+ Xiph maintains a problem reporting system
+\begin_inset CommandInset citation
+LatexCommand cite
+key "trac"
+
+\end_inset
+
+ that is open to the public, and invites everyone to submit suggestions
+ for improvements.
+ Improvements are made both to the standards documents and to the reference
+ implementations.
+\end_layout
+
+\begin_layout Subsubsection*
+Does the organisation only create the formal specification?
+\end_layout
+
+\begin_layout Standard
+No.
+ Xiph also produces high-quality reusable reference implementations of its
+ standards, released under an open license.
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{multicols}
+\end_layout
+
+\end_inset
+
+
+
+\begin_inset Newpage pagebreak
+\end_inset
+
+
+\lang english
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+raggedright
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Bibliography
+
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "wikilink"
+
+\end_inset
+
+The Wiki version of this document: 
+\begin_inset Flex URL
+status open
+
+\begin_layout Plain Layout
+
+http://wiki.xiph.org/IDABC_Questionnaire_2009
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "cdec"
+
+\end_inset
+
+FFmpeg (
+\begin_inset Flex URL
+status collapsed
+
+\begin_layout Plain Layout
+
+http://ffmpeg.org/
+\end_layout
+
+\end_inset
+
+) and Qtheora (
+\begin_inset Flex URL
+status open
+
+\begin_layout Plain Layout
+
+http://sourceforge.jp/projects/qtheora/
+\end_layout
+
+\end_inset
+
+) contain third-party C language implementations of Theora decoding.
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "jheora"
+
+\end_inset
+
+Jheora is a Java implementation of Theora decoding.
+ 
+\begin_inset Flex URL
+status collapsed
+
+\begin_layout Plain Layout
+
+http://www.theora.org/cortado/
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "c#"
+
+\end_inset
+
+C# decoder: 
+\begin_inset Flex URL
+status open
+
+\begin_layout Plain Layout
+
+http://www.wreckedgames.com/downloads/cSharpTheora.zip
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "fpgadec"
+
+\end_inset
+
+Verilog (hardware design) decoder: 
+\begin_inset Flex URL
+status collapsed
+
+\begin_layout Plain Layout
+
+http://svn.xiph.org/trunk/theora-fpga/
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "fpgaenc"
+
+\end_inset
+
+Verilog (hardware design) encoder: 
+\begin_inset Flex URL
+status open
+
+\begin_layout Plain Layout
+
+http://sourceforge.net/projects/elphel/
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "theoratest"
+
+\end_inset
+
+Theora testsuite: 
+\begin_inset Flex URL
+status open
+
+\begin_layout Plain Layout
+
+http://v2v.cc/~j/theora_testsuite/
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "oggvalidate"
+
+\end_inset
+
+Ogg validation tool: 
+\begin_inset Flex URL
+status open
+
+\begin_layout Plain Layout
+
+http://validator.xiph.org/
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "libtheora"
+
+\end_inset
+
+libtheora is Xiph.Org's reference implementation of the theora encoder and
+ decoder: 
+\begin_inset Flex URL
+status collapsed
+
+\begin_layout Plain Layout
+
+http://downloads.xiph.org/releases/theora/
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "metavid"
+
+\end_inset
+
+Metavid is an open video archive of the US congress: 
+\begin_inset Flex URL
+status collapsed
+
+\begin_layout Plain Layout
+
+http://metavid.org/
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "mv_embed"
+
+\end_inset
+
+
+mv_embed
+\lang english
+ is the Free Software embedded video engine used by Metavid: 
+\begin_inset Flex URL
+status open
+
+\begin_layout Plain Layout
+
+http://metavid.org/wiki/Mv_Embed
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "ogghandler"
+
+\end_inset
+
+OggHandler is the multimedia display engine used on Wikipedia and other
+ MediaWiki sites: 
+\begin_inset Flex URL
+status collapsed
+
+\begin_layout Plain Layout
+
+http://www.mediawiki.org/wiki/Extension:OggHandler
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "theoraspec"
+
+\end_inset
+
+Theora formal specification: 
+\begin_inset Flex URL
+status collapsed
+
+\begin_layout Plain Layout
+
+http://theora.org/doc/Theora.pdf
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "xiphwiki"
+
+\end_inset
+
+Xiph.Org community wiki: 
+\begin_inset Flex URL
+status collapsed
+
+\begin_layout Plain Layout
+
+http://wiki.xiph.org/Main_Page
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "theorasupport"
+
+\end_inset
+
+A non-exhaustive list of products with Theora support: 
+\begin_inset Flex URL
+status collapsed
+
+\begin_layout Plain Layout
+
+http://wiki.xiph.org/TheoraSoftwarePlayers
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "oggrfc"
+
+\end_inset
+
+RFC 3533 defines the Ogg encapsulation: 
+\begin_inset Flex URL
+status open
+
+\begin_layout Plain Layout
+
+http://www.ietf.org/rfc/rfc3533.txt
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "rtpdraft"
+
+\end_inset
+
+
+Draft specification for RTP transmission of Theora: 
+\lang english
+
+\begin_inset Flex URL
+status open
+
+\begin_layout Plain Layout
+
+http://svn.xiph.org/trunk/theora/doc/draft-ietf-avt-rtp-theora-00.txt
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "rtprfc"
+
+\end_inset
+
+
+RFC 3550 defines RTP: 
+\lang english
+
+\begin_inset Flex URL
+status open
+
+\begin_layout Plain Layout
+
+http://tools.ietf.org/html/rfc3550
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "utf8"
+
+\end_inset
+
+
+RFC 2044 documents the use of UTF-8 on the Internet: 
+\lang english
+
+\begin_inset Flex URL
+status open
+
+\begin_layout Plain Layout
+
+http://tools.ietf.org/html/rfc2044
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "vorbisspec"
+
+\end_inset
+
+
+Vorbis formal specification: 
+\lang english
+
+\begin_inset Flex URL
+status collapsed
+
+\begin_layout Plain Layout
+
+http://xiph.org/vorbis/doc/Vorbis_I_spec.html
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "svn"
+
+\end_inset
+
+
+Xiph.Org's revision control system: 
+\lang english
+
+\begin_inset Flex URL
+status collapsed
+
+\begin_layout Plain Layout
+
+http://svn.xiph.org/
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "ON2"
+
+\end_inset
+
+
+On2 patent non-assert document: 
+\lang english
+
+\begin_inset Flex URL
+status collapsed
+
+\begin_layout Plain Layout
+
+http://svn.xiph.org/trunk/theora/LICENSE
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "OSI"
+
+\end_inset
+
+
+The OSI certified open-source licenses:
+\lang english
+
+\begin_inset Flex URL
+status collapsed
+
+\begin_layout Plain Layout
+
+http://www.opensource.org/
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "kate"
+
+\end_inset
+
+Ogg Kate specification: 
+\begin_inset Flex URL
+status collapsed
+
+\begin_layout Plain Layout
+
+http://wiki.xiph.org/OggKate
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "skeleton"
+
+\end_inset
+
+
+Ogg Skeleton specification: 
+\begin_inset Flex URL
+status collapsed
+
+\begin_layout Plain Layout
+
+http://wiki.xiph.org/Ogg_Skeleton
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Bibliography
+
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "mime"
+
+\end_inset
+
+Xiph.Org mime-type descriptions: 
+\begin_inset Flex URL
+status collapsed
+
+\begin_layout Plain Layout
+
+http://wiki.xiph.org/index.php/MIMETypesCodecs
+\end_layout
+
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+Formal mime specification for Ogg: 
+\begin_inset Flex URL
+status collapsed
+
+\begin_layout Plain Layout
+
+http://tools.ietf.org/html/rfc5334
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Bibliography
+
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "SDP"
+
+\end_inset
+
+RFC 3264 defines SDP 
+\begin_inset Flex URL
+status open
+
+\begin_layout Plain Layout
+
+http://tools.ietf.org/html/rfc3264
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Bibliography
+
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "html5"
+
+\end_inset
+
+HTML5 specification: 
+\begin_inset Flex URL
+status collapsed
+
+\begin_layout Plain Layout
+
+http://www.whatwg.org/specs/web-apps/current-work/multipage/video.html#video
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Bibliography
+
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "theoradev"
+
+\end_inset
+
+Theora development mailing-list: 
+\begin_inset Flex URL
+status collapsed
+
+\begin_layout Plain Layout
+
+http://lists.xiph.org/pipermail/theora-dev/
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Bibliography
+
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "trac"
+
+\end_inset
+
+Xiph.Org problem reporting system: 
+\begin_inset Flex URL
+status collapsed
+
+\begin_layout Plain Layout
+
+https://trac.xiph.org/report
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_body
+\end_document
