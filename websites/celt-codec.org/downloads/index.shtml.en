@@ -33,6 +33,22 @@
 
 <h2>Latest <strong style='font-style: italic;'>development</strong> releases</h2>
 
+<h3 id='zero.7.1'>0.7.1</h3>
+<p>CELT 0.7.1 improves the quality of the packet loss concealment (PLC), but
+does not change the rest of the codec. For this reason it is the first release
+<b>not</b> to break bit-stream compatibility with the previous release (0.7.0). But
+I promise not to do it again, the next CELT release will likely break 
+compatibility once again. Note that the PLC improvements have not been
+completely converted to fixed-point yet, so the fixed-point still uses the old
+PLC. Last thing, the default name of the library was changed to libcelt0.so to
+make it easier to do the transition when the final 1.0 release comes out (with
+frozen bit-stream and API).
+</p>
+
+<ul>
+<li>Source code: <a href="http://downloads.xiph.org/releases/celt/celt-0.7.1.tar.gz">celt-0.7.1.tar.gz</a></li>
+</ul>
+
 <h3 id='zero.7.0'>0.7.0</h3>
 <p>CELT 0.7.0 again improves the stereo quality, reduces artefacts at 
 low bitrates (birdies and speech roughness) and fixes many bugs. In 
