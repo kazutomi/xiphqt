@@ -112,7 +112,7 @@
 <dt><a id="xspf_download"></a><a id="xspf-download-0.1.0.py"></a><a href="http://mayhem-chaos.net/stuff/xspf-download-0.1.0.py">xspf-download-0.1.0.py</a> (GNU/Linux)</dt><dd>A Python script that parses XSPF and M3U files and downloads the files to the local harddrive.</dd> 
 <dt><a id="xspf_php"></a></a><a href="http://xspfphp.sourceforge.net/">XSPF.PHP</a></dt><dd>Generates XSPF playlists from MP3 tags.</dd>
 <dt><a id="xspf_playlist_generator"></a><a href="http://emff.sourceforge.net/playlistgenerator/">XSPF playlist generator</a></dt><dd>Live playlist editor/generator implemented in JavaScript</dd>
-<dt><a id="xspf_to_jspf"></a><a href="http://jchris.mfdz.com/static/jspf_parser/xspf_parser_runner.html">XSPF to JSPF Parser</a> (Javascript)</dt><dd>Converts your XSPF files to <a href="http://wiki.xiph.org/index.php/JSPF_Draft">JSPF</a> ("XSPF on JSON") online.</dd>
+<dt><a id="xspf_to_jspf"></a><a href="http://github.com/jchris/xspf-to-jspf-parser">XSPF to JSPF Parser</a> (Javascript)</dt><dd>Converts your XSPF files to <a href="http://wiki.xiph.org/index.php/JSPF_Draft">JSPF</a> ("XSPF on JSON") online.</dd>
 <dt><a id="xspf_validator"></a><a id="validator"></a><a href="http://validator.xspf.org/">XSPF Validator</a></dt><dd>Online validator for XSPF documents.</dd>
 
 </dl>
@@ -132,7 +132,7 @@
 <dt><a id="pear"></a><a href="http://pear.php.net/package/File_XSPF">PEAR :: Package :: File_XSPF</a> (PHP)</dt><dd>PHP library for parsing and generating XSPF.</dd>
 <dt><a id="ruby"></a><a href="http://rubyforge.org/projects/xspf">Ruby XSPF playlist class</a> (Ruby)</dt><dd>A Ruby library to parse XML Shareable Playlist Format (XSPF) documents and export them to M3U, SMIL, HTML and SoundBlox. License: GNU General Public License (GPL) version 2, Ruby License.</dd>
 <dt><a id="xml_xspf"></a><a id="cpan"></a><a href="http://search.cpan.org/%7Edaniel/XML-XSPF/lib/XML/XSPF.pm">XML::XSPF on CPAN</a> (Perl)</dt><dd>Perl library for parsing and generating XSPF.</dd>
-<dt><a id="xspf_to_jspf"></a><a href="http://jchris.mfdz.com/jspf/xspf_parser_spec.html">XSPF.toJSPF()</a> (JavaScript)</dt><dd><cite>XSPF.toJSPF() is a function for parsing XSPF in Javascript. The resulting Javascript object is easy to use and manipulate to create client-side playlist browsers and media players. The parsed result can also easily be serialized into JSON for easy server-client transport. This allows developers to use one player for handling both XML XSPF and JSON JSPF playlists provided by the server.</cite></dd>
+<dt><a id="xspf_to_jspf"></a><a href="http://github.com/jchris/xspf-to-jspf-parser">XSPF.toJSPF()</a> (JavaScript)</dt><dd><cite>XSPF.toJSPF() is a function for parsing XSPF in Javascript. The resulting Javascript object is easy to use and manipulate to create client-side playlist browsers and media players. The parsed result can also easily be serialized into JSON for easy server-client transport. This allows developers to use one player for handling both XML XSPF and JSON JSPF playlists provided by the server.</cite></dd>
 <dt><a id="xspf4php"></a><a href="http://php4xspf.berlios.de/">XSPF4PHP</a> (PHP)</dt><dd>Set of classes for creating XSPF files from PHP.</dd>
 
 </dl>
