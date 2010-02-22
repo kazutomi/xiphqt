@@ -17,17 +17,18 @@ they can be used by both open-source and commercial applications.
 </p>
 
 <h1>News</h1>
-<h2>Version 0.81.15562</h2>
-<p class="newsdate">6 December, 2008</p>
+<h2>Version 0.82.16930</h2>
+<p class="newsdate">22 February, 2010</p>
 
-<p>More bugfixes, particularly to Theora and FLAC. Added support for Windows x64 versions.<br/>
+<p>More bugfixes, particularly to Theora and FLAC. Added support for Windows 7.<br/>
+HTML5 &lt;video&gt; tehnical preview for Internet Explorer.<br/><br/>
 Fore more informations see the <a href="/dshow/news/">News</a> page.
 </p>
 
 <h1>Downloads</h1>
 <ul>
-    <li>Windows 32-bit Installer: <a href="http://downloads.xiph.org/releases/oggdsf/oggcodecs_0.81.15562-win32.exe">oggcodecs_0.81.15562-win32.exe</a> 1,04MB</li>
-    <li>Windows 64-bit Installer: <a href="http://downloads.xiph.org/releases/oggdsf/oggcodecs_0.81.15562-x64.exe">oggcodecs_0.81.15562-x64.exe</a> 1,23MB</li>
+    <li>Windows 32-bit Installer: <a href="http://downloads.xiph.org/releases/oggdsf/oggcodecs_0.82.16930-win32.exe">oggcodecs_0.82.16930-win32.exe</a> 1,09MB</li>
+    <li>Windows 64-bit Installer: <a href="http://downloads.xiph.org/releases/oggdsf/oggcodecs_0.82.16930-x64.exe">oggcodecs_0.82.16930-x64.exe</a> 1,30MB</li>
 </ul>
 <p>For more informations see the <a href="/dshow/downloads/">Downloads</a> page.
 </p>

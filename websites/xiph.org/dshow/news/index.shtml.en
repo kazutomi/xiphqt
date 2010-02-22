@@ -8,7 +8,33 @@
 <!--#include virtual="/dshow/ssi/pagetop.include" -->
 <!--  All your page content goes here  -->
 
-<h1>News</h1> 
+<h2>Version 0.82.16930</h2>
+<p class="newsdate">22 February, 2010</p>
+
+<h3>Changes this version</h3>
+<ul>
+
+    <li>Updated Theora to version 1.1.1</li>
+    <li>Updated Vorbis to version 1.2.3</li>
+    <li>Windows 7 suppport (note that contextual menu entries in Windows Explorer is not yet available - Ticket #1619)</li>
+    <li>Added support for Theora 4:2:2 and 4:4:4 color sampling formats.</li>
+    <li>Added HTML5 &lt;video&gt; tag support for Microsoft Internet Explorer. This component is not enabled by default in the
+       installer and it is only a technical preview - only basic playback (play/pause by left click button), no seeking, no
+       controls and no HTML5 &lt;video&gt; interfaces support.
+       To use it this functionality in Internet Explorer simply add xmlns="http://www.w3.org/1999/xhtml/video" to the 
+       &lt;video&gt; tag.</li>
+    <li>Added 7.1 channels support for FLAC and support for files bigger than 2GBytes.</li>
+    <li>Prefixed all DirectShow filters with "Xiph.Org". This should simplify usage for GraphEdit/GraphStudio users.</li>
+    <li>Fixed #1474: The installer for 64-bit Stable Version (0.81.15562) - 06.12.2008 it's NOT working properly</li>
+    <li>Fixed #1475: Typo in README</li>
+    <li>Fixed #1490: Theroa video resumes after starting to play in wmp 9 (win xp)</li>
+    <li>Fixed #1491: oggcodecs doesn't work with 6-channel FLACs</li>
+    <li>Fixed #1497: Ogg Theora Video is upside down/flipped in Windows Media Player (v6.4.09 and v7.10)</li>
+    <li>Fixed #1500: directshow filters messes up windows media player file open dialogue</li>
+    <li>Fixed #1546: OGV file(s) are crashing WMP (12)</li>
+    <li>Fixed #1563: DirectShow filter installer does not add proper "PerceivedType" REG_SZ to HKCR\.ext key</li>
+    <li>Fixed #1603: Theora Videos Encoded At Around 480x360 Crash Directshow Filter</li>
+</ul>    
 
 <h2>Version 0.81.15562</h2>
 <p class="newsdate">6 December, 2008</p>
