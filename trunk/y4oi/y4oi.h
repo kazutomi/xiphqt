@@ -247,8 +247,7 @@ extern char *lastprint;
           fprintf(stderr,"%s [%8s]: " format,level?level:"       ",     \
                   NAME?NAME:"",## args);                                \
         }else{                                                          \
-          fprintf(stderr,"%s%s" format,level?level:"",level?": ":""     \
-                  ,## args);                                            \
+          fprintf(stderr,"%s%s" format,level?level:"",level?": ":"",## args); \
         }                                                               \
       }else{                                                            \
         fprintf(stderr,"%s%s" format,level?level:"",                    \

@@ -431,22 +431,21 @@ y4o_in_t *y4o_open_in(FILE *f){
       s->inswap.f[1]=tmpfile();
     }
 
-    if(verbose)
-      switch(s->type){
-      case STREAM_VIDEO:
-        yinfo("Stream #%d, VIDEO %dx%d %d:%d %s %.3ffps %s\n",
-              s->stream_num, s->m.video.w,s->m.video.h, s->m.video.frame_n,s->m.video.frame_d,
-              chromaformat_long[s->m.video.format],s->m.video.fps_n/(double)s->m.video.fps_d,
-              s->m.video.i?"interlaced":"progressive");
-        if(s->m.video.i && force_non_interlaced)
-          yinfo("FORCING NON-INTERLACED\n");
-        break;
-      case STREAM_AUDIO:
-        yinfo("Stream #%d, AUDIO %dHz, %d channel(s) [24bit]\n",
-              s->stream_num, s->m.audio.rate,s->m.audio.ch);
-      default:
-        break;
-      }
+    switch(s->type){
+    case STREAM_VIDEO:
+      yinfo("Stream #%d, VIDEO %dx%d %d:%d %s %.3ffps %s\n",
+            s->stream_num, s->m.video.w,s->m.video.h, s->m.video.frame_n,s->m.video.frame_d,
+            chromaformat_long[s->m.video.format],s->m.video.fps_n/(double)s->m.video.fps_d,
+            s->m.video.i?"interlaced":"progressive");
+      if(s->m.video.i && force_non_interlaced)
+        yinfo("FORCING NON-INTERLACED\n");
+      break;
+    case STREAM_AUDIO:
+      yinfo("Stream #%d, AUDIO %dHz, %d channel(s) [24bit]\n",
+            s->stream_num, s->m.audio.rate,s->m.audio.ch);
+    default:
+      break;
+    }
 
     if(s->type==STREAM_VIDEO && force_non_interlaced) s->m.video.i=PROGRESSIVE;
     if(ll)ll->next=s;
