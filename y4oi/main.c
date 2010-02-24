@@ -28,7 +28,7 @@
 
 int verbose=0;
 static double fill_secs=25.;
-static double sync_secs=1.;
+static double sync_secs=3.;
 ratio force_fps={0,0};
 static int force_sync=0;
 int force_no_sync=0;
@@ -299,17 +299,15 @@ static int discard_head_frame(y4o_in_t *y,stream_t *s, long long *outclock){
   frame_t *p=s->inq_head;
   if(!p) return 1;
 
-  if(verbose){
-    if(s->type==STREAM_VIDEO){
-      yverbose("Stream %d [%s]: Dropping video frame to maintain sync\n",
-            p->streamno,
-            make_time_string((outclock[p->streamno]+s->tick_depth)*s->tickduration));
-    }else{
-      yverbose("Stream %d [%s]: Dropping %gs of audio to maintain sync\n",
-            p->streamno,
-            make_time_string((outclock[p->streamno]+s->tick_depth)*s->tickduration),
-            p->duration);
-    }
+  if(s->type==STREAM_VIDEO){
+    yverbose("Stream %d [%s]: Dropping video frame to maintain sync\n",
+             p->streamno,
+             make_time_string((outclock[p->streamno]+s->tick_depth)*s->tickduration));
+  }else{
+    yverbose("Stream %d [%s]: Dropping %gs of audio to maintain sync\n",
+             p->streamno,
+             make_time_string((outclock[p->streamno]+s->tick_depth)*s->tickduration),
+             p->duration);
   }
 
   y4o_free_frame(p);
@@ -322,17 +320,15 @@ static int discard_tail_frame(y4o_in_t *y,stream_t *s, long long *outclock){
   frame_t *p=s->inq_tail;
   if(!p) return 1;
 
-  if(verbose){
-    if(s->type==STREAM_VIDEO){
-      yverbose("Stream %d [%s]: Dropping video frame to maintain sync\n",
-            p->streamno,
-            make_time_string(outclock[p->streamno]*s->tickduration));
-    }else{
-      yverbose("Stream %d [%s]: Dropping %gs of audio to maintain sync\n",
-            p->streamno,
-            make_time_string(outclock[p->streamno]*s->tickduration),
-            p->duration);
-    }
+  if(s->type==STREAM_VIDEO){
+    yverbose("Stream %d [%s]: Dropping video frame to maintain sync\n",
+             p->streamno,
+             make_time_string(outclock[p->streamno]*s->tickduration));
+  }else{
+    yverbose("Stream %d [%s]: Dropping %gs of audio to maintain sync\n",
+             p->streamno,
+             make_time_string(outclock[p->streamno]*s->tickduration),
+             p->duration);
   }
 
   y4o_free_frame(p);
@@ -364,11 +360,10 @@ static int trim_from_head(y4o_in_t *y,int sno,long long *outclock,double *outoff
         p->duration -= remsamples*s->tickduration;
         s->tick_depth -= remsamples;
 
-        if(verbose)
-          yverbose("Stream %d [%s]: Dropping %gs of audio to maintain sync\n",
-                p->streamno,
-                make_time_string((outclock[sno]+s->tick_depth)*s->tickduration),
-                outoffsets[sno]);
+        yverbose("Stream %d [%s]: Dropping %gs of audio to maintain sync\n",
+                 p->streamno,
+                 make_time_string((outclock[sno]+s->tick_depth)*s->tickduration),
+                 outoffsets[sno]);
 
       }
       outoffsets[sno] = 0.;
@@ -410,10 +405,9 @@ static int trim_from_tail(y4o_in_t *y,int sno,long long *outclock,double *outoff
       if(remsamples>0){
         int bytes = remsamples * s->m.audio.ch*3;
 
-        if(verbose)
-          yverbose("Stream %d [%s]: Dropping %gs of audio to maintain sync\n",
-                p->streamno,make_time_string(outclock[sno]*s->tickduration),
-                outoffsets[sno]);
+        yverbose("Stream %d [%s]: Dropping %gs of audio to maintain sync\n",
+                 p->streamno,make_time_string(outclock[sno]*s->tickduration),
+                 outoffsets[sno]);
 
         /* load frame data into memory and release swap */
         y4o_lock_frame(p);
@@ -666,9 +660,8 @@ static int duplicate_frame(y4o_in_t *y,frame_t **lastframe, long long *outclock,
     /* we only dup the frame if doing so gets us closer to the ideal clock sync */
     if(fabs(outoffsets[sno]+p->duration)<fabs(outoffsets[sno])){
       /* dup it */
-      if(verbose)
-        yverbose("Stream %d [%s]: Repeating video frame to maintain sync\n",
-              p->streamno,make_time_string(outclock[sno]*s->tickduration));
+      yverbose("Stream %d [%s]: Repeating video frame to maintain sync\n",
+               p->streamno,make_time_string(outclock[sno]*s->tickduration));
 
       write_frame(y,outclock,cutclock,cutticks,p);
       outoffsets[sno]+=p->duration;
@@ -686,9 +679,8 @@ static int duplicate_frame(y4o_in_t *y,frame_t **lastframe, long long *outclock,
       int bytes = samples * s->m.audio.ch;
       unsigned char *data=calloc(bytes,1);
 
-      if(verbose)
-        yverbose("Stream %d [%s]: Adding %gs of silence to maintain sync\n",
-              p->streamno,make_time_string(outclock[sno]*s->tickduration),-outoffsets[sno]);
+      yverbose("Stream %d [%s]: Adding %gs of silence to maintain sync\n",
+               p->streamno,make_time_string(outclock[sno]*s->tickduration),-outoffsets[sno]);
 
       lp.data=data;
       lp.len=bytes;
