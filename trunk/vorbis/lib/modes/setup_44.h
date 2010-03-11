@@ -55,9 +55,14 @@ static const int _floor_mapping_44b[11]={
   8,7,7,7,7,7,7,7,7,7,7
 };
 
+static const int _floor_mapping_44c[11]={
+  10,10,10,10,10,10,10,10,10,10,10
+};
+
 static const int *_floor_mapping_44[]={
   _floor_mapping_44a,
   _floor_mapping_44b,
+  _floor_mapping_44c,
 };
 
 static const ve_setup_data_template ve_setup_44_stereo={
