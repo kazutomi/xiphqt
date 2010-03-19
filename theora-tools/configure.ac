@@ -76,7 +76,7 @@ AC_CHECK_FUNC(getopt_long,
 AC_SUBST(GETOPT_OBJS)
 
 AC_CHECK_PROG(HAVE_PKG_CONFIG, pkg-config, yes)
-PKG_CHECK_MODULES(XIPH,ogg >= 1.1 vorbis theora)
+PKG_CHECK_MODULES(XIPH,ogg >= 1.1 vorbis theoraenc >= 1.1 theoradec >= 1.1)
 CFLAGS="$CFLGS $XIPH_CFLAGS"
 LIBS="$LIBS $XIPH_LIBS"
 
