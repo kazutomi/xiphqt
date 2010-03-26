@@ -97,7 +97,7 @@ end-user download links are provided for convenience:
 
 <tr>
 <td>libtheora</td>
-<td>1.1.0</td>
+<td>1.1.1</td>
 <td>
 	<a href="http://downloads.xiph.org/releases/theora/libtheora-1.1.1.tar.bz2">libtheora-1.1.1.tar.bz2</a><br />
 	<a href="http://downloads.xiph.org/releases/theora/libtheora-1.1.1.zip">libtheora-1.1.1.zip</a>
@@ -130,10 +130,14 @@ end-user download links are provided for convenience:
 
 <tr>
 <td>libao</td>
-<td>0.8.8</td>
-<td><a href="http://downloads.xiph.org/releases/ao/libao-0.8.8.tar.gz">libao-0.8.8.tar.gz</a></td>
-<td>396K</td>
-<td>b92cba3cbcf1ee9bc221118a85d23dcd</td>
+<td>1.0.0</td>
+<td><a href="http://downloads.xiph.org/releases/ao/libao-1.0.0.tar.gz">libao-1.0.0.tar.gz</a><br />
+<td><a href="http://downloads.xiph.org/releases/ao/libao-1.0.0.zip">libao-1.0.0.zip</a>
+</td>
+<td>385K<br />
+    497K</td>
+<td>dc8049e5af644d718d4efabbe442325f<br />
+    e4a91f730a2903a157abcc1b62710383</td>
 </tr>
 
 <tr>
