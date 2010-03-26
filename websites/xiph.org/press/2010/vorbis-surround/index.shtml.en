@@ -38,7 +38,7 @@ the libraries and toolchain.
 
 <h3>libvorbis improvements</h3>
 
-libVorbis 1.3.0 was briefly available and an unreleased staging
+libVorbis 1.3.0 was briefly available as an unreleased staging
 snapshot. This official release bumps the version number to 1.3.1 to
 avoid any possible confusion.
 
