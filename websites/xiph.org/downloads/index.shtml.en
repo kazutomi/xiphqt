@@ -79,21 +79,21 @@ end-user download links are provided for convenience:
 
 <tr>
 <td>vorbis-tools</td>
-<td>1.2.0</td>
+<td>1.4.0</td>
 <td>
-	<a href="http://downloads.xiph.org/releases/vorbis/vorbis-tools-1.2.0.tar.gz">vorbis-tools-1.2.0.tar.gz</a><br/>
-	<a href="http://downloads.xiph.org/releases/vorbis/vorbis-tools-1.2.0.7z">vorbis-tools-1.2.0.7z</a>
+	<a href="http://downloads.xiph.org/releases/vorbis/vorbis-tools-1.4.0.tar.gz">vorbis-tools-1.4.0.tar.gz</a><br/>
+	<a href="http://downloads.xiph.org/releases/vorbis/vorbis-tools-1.4.0.zip">vorbis-tools-1.4.0.zip</a>
 <br/>
 	<a href="http://downloads.xiph.org/releases/vorbis/vorbis-tools-win32-bin.7z">vorbis-tools 1.2.0 (win32 binaries)</a>
 </td>
 <td>
-	1.0M<br/>
-	527K<br/>
+	1.3M<br/>
+	1.5K<br/>
 	349K
 </td>
 <td>
-	df976d24e51ef3d87cd462edf747bf9a<br/>
-	57fd2a6e446b3d906bf5199962b9ccfd<br/>
+	567e0fb8d321b2cd7124f8208b8b90e6<br/>
+	05723f81cf692aed32d08974769a3156<br/>
 	530f79112f5a12f60a878ebd62013521
 </td>
 </tr>
