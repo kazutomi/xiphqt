@@ -1,0 +1,96 @@
+<!--#include virtual="/ssi/header.include" -->
+<!-- Enter custom page information and styles here -->
+  <title>March 26, 2010: Xiph.Org releases libao 1.0.0, libVorbis 1.3.1, and vorbis-tools 1.4.0</title>
+</head>
+<body>
+<!--#include virtual="/common/xiphbar.include" -->
+
+<!--#include virtual="/ssi/pagetop.include" -->
+<!--  All your page content goes here  -->
+
+<h3>libao 1.0.0 released</h3>
+<h3>libVorbis 1.3.1 released</h3>
+<h3>vorbis-tools 1.4.0 released</h3>
+
+<p>Xiph.Org announces the release of libao-1.0.0, libvorbis-1.3.1 and
+vorbis-tools-1.4.0. This is a coordinated update of the audio
+libraries and tools to deploy improved surround-sound support across
+the libraries and toolchain.  
+
+<h3>libao improvements</h3>
+
+<ul>
+<li>AO returned to active development
+<li>Added surround channel mapping API and capability
+<li>Updated all drivers on modern installs
+<li>New config file options
+<li>Driver options may be specified in config file
+<li>Support for MacOSX updated to 10.5 and later
+<li>Build in WMM driver rather than using dlopen()
+<li>Added Roar Audio driver
+<li>Added OpenBSD SNDIO driver
+<li>Workaround for ESD non-4096 byte write bug
+<li>Workaround aRts server crash bug
+<li>Workaround for VIA82xx click/crackle bugs under ALSA
+<li>Remove dead/unused drivers (solaris, alasa05, mmsound)
+<li>Numerous patches from multiple downstreams
+</ul>
+
+<h3>libvorbis improvements</h3>
+
+libVorbis 1.3.0 was briefly available and an unreleased staging
+snapshot. This official release bumps the version number to 1.3.1 to
+avoid any possible confusion.
+
+<ul>
+<li> Optimized/coupled surround support for 5.1 encoding at 44.1/48kHz
+<li> Added encoder control call to disable channel coupling
+<li> Corrected an overflow bug in very low-bitrate encoding on 32 bit 
+     machines that caused inflated bitrates
+<li> Numerous API hardening, leak and build fixes 
+<li> Correct bug in 22kHz compand setup that could cause a crash
+<li> Correct bug in 16kHz codebooks that could cause unstable pure 
+     tones at high bitrates
+</ul>
+
+<h3>vorbis-tools improvements</h3>
+
+vorbis-tools 1.4.0 is the first official release of vorbis-tools since
+1.2.x.  1.3.x was never offered as an official snapshot, though
+various versions were widely deployed as patch-sets by distributions.
+
+<ul>
+<li> Implement corrected channel mappings for all input and playback file types
+<li> Correct an possible infinite loop in WAV input reading code when header is corrupt
+<li> Implement "disable_coupling" option for oggenc
+<li> Fix Ctrl-C lockup bug in ogg123
+<li> ogg123 directory playback in sorted order
+<li> Add WAVEFORMATEXTENSIBLE support
+<li> More translations
+<li> Add '-' as stdin/out filename in vcut
+<li> Add -lnetwork check for socket in configure
+<li> Remove 'extra' F parameter from ogg123 remote output
+<li> Numerous code and build fixes 
+</ul>
+
+<h3>Downloads</h3>
+
+<p>The libao 1.0.0 release is available from
+<a href="http://downloads.xiph.org/releases/ao/">http://downloads.xiph.org/releases/ao/</a>
+
+<p>The libvorbis 1.3.1 and vorbis-tools 1.4.0 releases are available from
+<a href="http://downloads.xiph.org/releases/vorbis/">http://downloads.xiph.org/releases/vorbis/</a>
+
+<p>Happy hacking!
+
+<p>Monty
+<br>Xiph.Org
+
+<p><i> The Xiph.Org Foundation is a not-for-profit corporation
+dedicated to open, unencumbered multimedia technology. Xiph's formats
+and software levels the playing field for digital media so that all
+producers and artists can distribute their work for minimal cost,
+without restriction, regardless of affiliation.  May contain traces of
+nuts.</i></p>
+
+<!--#include virtual="/ssi/pagebottom.include" -->
