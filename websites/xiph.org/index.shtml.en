@@ -48,11 +48,12 @@
 	<h1>Xiph in the News</h1>
 
 	<ul class="newslist">
-                <li><a href="press/2010/vorbis-surround/">vorbis-tools 1.4.0 release</a></li>
-                <li><a href="press/2010/vorbis-surround/">libvorbis 1.3.1 release</a></li>
-                <li><a href="press/2010/vorbis-surround/">libao 1.0.0 release</a></li>
+                <li><a href="press/2010/vorbis-surround/">vorbis-tools 1.4.0, libvorbis 1.3.1, and libao 1.0.0 coordinated release</a></li>
                 <li><a href="press/2010/libogg-1.2.0/">libOgg 1.2.0 release</a></li>
                 <li><a href="press/2009/ietf75-bof/">Xiph.Org Supporting IETF75 Royalty Free Codecs BoF</a></li>
+                <li><a href="press/2009/libvorbis-1.2.3/">libVorbis 1.2.3 release</a></li>
+                <li><a href="press/2009/libogg-1.1.4/">libOgg 1.1.4 release</a></li>
+		<li><a href="press/2009/thusnelda-alpha-2/">Second prerelease of next generation 'Thusnelda' encoder</a></li>
 		<li><b><a href="/press/">more headlines &gt;</a></b></li>
 	</ul>
 
