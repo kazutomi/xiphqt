@@ -14,7 +14,7 @@
 	
 	Advantages of Cronus over the current Cortado player:
 	- better decoders with better performance.
- 	- much lower performance consumption:
+ 	- much lower memory consumption:
  	 100 Mbyte instead of 140 Mbyte after playing 10 minutes
  	 of a 640 * 320 Theora video (BigBugBunny.ogv).
  	
