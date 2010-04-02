@@ -33,7 +33,7 @@
 	Dr. m. m. Timothy B. Terriberry pointed out, that this kind of approach is at least since 1993 a
 	reinvention:
 	R. Hashemian, "High Speed Search and Memory Efficient
-    Huffman Coding," 1993.
+    	Huffman Coding," 1993.
 	
 	Castor's bitstream decoding based on:
  	Self developed algorithm, therefore there's no reference.
