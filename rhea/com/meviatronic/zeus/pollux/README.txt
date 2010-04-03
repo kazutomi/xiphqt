@@ -89,5 +89,5 @@
  	
  	Appreciations:
  	
- 	Very thanks to Dr. m. m. Timothy B. Terriberry for reviewing and error correcting
+ 	Very thanks to Timothy B. Terriberry, Ph.D. for reviewing and error correcting
  	the README and Pollux decoder.
