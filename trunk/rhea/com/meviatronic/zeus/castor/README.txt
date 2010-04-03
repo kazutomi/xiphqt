@@ -90,5 +90,5 @@
  	
  	Appreciations:
  	
- 	Very thanks to Dr. m. m. Timothy B. Terriberry for reviewing
+ 	Very thanks to Timothy B. Terriberry, Ph.D. for reviewing
  	the huffman decoding.
