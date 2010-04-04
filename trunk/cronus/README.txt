@@ -19,6 +19,6 @@
  	 of a 640 * 320 Theora video (BigBugBunny.ogv).
  	
  	See:
- 	https://svn.xiph.org/trunk/cronus/com/meviatronic/zeus/helen.README.txt
- 	https://svn.xiph.org/trunk/cronus/com/meviatronic/zeus/castor.README.txt
- 	https://svn.xiph.org/trunk/cronus/com/meviatronic/zeus/pollux.README.txt
+ 	https://svn.xiph.org/trunk/cronus/src/com/meviatronic/zeus/helen.README.txt
+ 	https://svn.xiph.org/trunk/cronus/src/com/meviatronic/zeus/castor.README.txt
+ 	https://svn.xiph.org/trunk/cronus/src/com/meviatronic/zeus/pollux.README.txt
