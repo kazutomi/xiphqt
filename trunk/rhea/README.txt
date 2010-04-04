@@ -7,7 +7,7 @@
 	
 	Rhea is intendend to be a pure Theora/Vorbis player without an underlying
 	multimedia framework. Rhea can be integrated into a Java Sound API plugin,
-	like the Vorbis plugin deployed from www.javazoom.net
+	so it can be used as a Vorbis plugin deployed from www.javazoom.net
 	
 	Rhea contains a Vorbis, Theora and an Ogg API.
 	The project contains an demo audio player to learn how to use the API to 
