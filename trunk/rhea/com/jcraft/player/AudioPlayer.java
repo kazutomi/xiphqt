@@ -25,7 +25,7 @@
 package com.jcraft.player;
 
 import com.meviatronic.zeus.castor.*;
-import com.meviatronic.zeus.helena.*;
+import com.meviatronic.zeus.helen.*;
 import org.xiph.ogg.*;
 
 import java.util.*;
