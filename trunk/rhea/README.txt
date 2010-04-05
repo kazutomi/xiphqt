@@ -18,6 +18,6 @@
 	the one here: http://www.javazoom.net/vorbisspi/vorbisspi.html
 	 
 	See:
- 	https://svn.xiph.org/trunk/rhea/src/com/meviatronic/zeus/helen.README.txt
- 	https://svn.xiph.org/trunk/rhea/src/com/meviatronic/zeus/castor.README.txt
- 	https://svn.xiph.org/trunk/rhea/src/com/meviatronic/zeus/pollux.README.txt
+ 	https://svn.xiph.org/trunk/rhea/src/com/meviatronic/zeus/helen/README.txt
+ 	https://svn.xiph.org/trunk/rhea/src/com/meviatronic/zeus/castor/README.txt
+ 	https://svn.xiph.org/trunk/rhea/src/com/meviatronic/zeus/pollux/README.txt
