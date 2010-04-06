@@ -396,6 +396,8 @@ struct th_rehuff_ctx{
   long              serialno;
   int               processing_headers;
   int               page_ready;
+  ogg_int64_t       initial_gp;
+  ogg_int64_t       initial_page_gp;
   th_info           ti;
   th_comment        tc;
   th_setup_info    *ts;
@@ -415,6 +417,8 @@ static void th_rehuff_init(th_rehuff_ctx *_ctx,const ogg_stream_state *_to,
   _ctx->page_ready=0;
   _ctx->page_data=NULL;
   _ctx->cpage_data=0;
+  _ctx->initial_gp=-1;
+  _ctx->initial_page_gp=-1;
   ogg_stream_init(&_ctx->tp,_ctx->serialno);
 }
 
@@ -441,7 +445,14 @@ static void th_rehuff_copy_page_data(th_rehuff_ctx *_ctx){
   _ctx->og.body=_ctx->page_data+_ctx->og.header_len;
 }
 
-static int th_rehuff_pagein(th_rehuff_ctx *_ctx,ogg_page *_og){
+static int th_rehuff_pagein0(th_rehuff_ctx *_ctx,ogg_page *_og){
+  if(_ctx->processing_headers||_ctx->initial_page_gp==-1){
+    _ctx->initial_page_gp=ogg_page_granulepos(_og);
+  }
+  return ogg_stream_pagein(&_ctx->to,_og);
+}
+
+static int th_rehuff_pagein1(th_rehuff_ctx *_ctx,ogg_page *_og){
   ogg_packet op;
   int        ret;
   ret=ogg_stream_pagein(&_ctx->to,_og);
@@ -450,13 +461,13 @@ static int th_rehuff_pagein(th_rehuff_ctx *_ctx,ogg_page *_og){
   while(ogg_stream_packetout(&_ctx->to,&op)>0){
     int err;
     if(!th_packet_isheader(&op)){
-     ogg_packet oq;
-     err=th_recode_packet_rewrite(_ctx->tr,&op,&oq);
-     if(err<0){
-       ret=err;
-       break;
-     }
-     ogg_stream_packetin(&_ctx->tp,&oq);
+      ogg_packet oq;
+      err=th_recode_packet_rewrite(_ctx->tr,&op,&oq);
+      if(err<0){
+        ret=err;
+        break;
+      }
+      ogg_stream_packetin(&_ctx->tp,&oq);
     }
   }
   /*TODO: Also flush packets after a certain elapsed time.*/
@@ -481,15 +492,8 @@ static size_t th_rehuff_writepage(th_rehuff_ctx *_ctx,FILE *_out){
   size_t ret;
   ret=fwrite(_ctx->og.header,1,_ctx->og.header_len,_out)+
    fwrite(_ctx->og.body,1,_ctx->og.body_len,_out);
-  if(_ctx->processing_headers){
-    _ctx->page_ready=ogg_stream_flush(&_ctx->tp,&_ctx->og)>0;
-    if(_ctx->page_ready)th_rehuff_copy_page_data(_ctx);
-    else _ctx->processing_headers=0;
-  }
-  else{
-    _ctx->page_ready=ogg_stream_pageout(&_ctx->tp,&_ctx->og)>0;
-    if(_ctx->page_ready)th_rehuff_copy_page_data(_ctx);
-  }
+  _ctx->page_ready=ogg_stream_pageout(&_ctx->tp,&_ctx->og)>0;
+  if(_ctx->page_ready)th_rehuff_copy_page_data(_ctx);
   return ret;
 }
 
@@ -628,14 +632,14 @@ static void write_pages(stream_ctx *_sos,int _nsos,int _flush,FILE *_out){
   }
 }
 
-static const stream_ctx_vtbl STREAM_STATE_VTBL={
-  (stream_pagein_func)ogg_stream_pagein,
+static const stream_ctx_vtbl TH_REHUFF0_VTBL={
+  (stream_pagein_func)th_rehuff_pagein0,
   NULL,
   NULL
 };
 
-static const stream_ctx_vtbl TH_REHUFF_VTBL={
-  (stream_pagein_func)th_rehuff_pagein,
+static const stream_ctx_vtbl TH_REHUFF1_VTBL={
+  (stream_pagein_func)th_rehuff_pagein1,
   (stream_pagetime_func)th_rehuff_pagetime,
   (stream_writepage_func)th_rehuff_writepage
 };
@@ -698,6 +702,15 @@ static int queue_page(stream_ctx *_sos,int _nsos,ogg_page *_og){
   return 0;
 }
 
+/*Copy the contents of a packet.*/
+static void copy_packet_data(ogg_packet *_dst,const ogg_packet *_src){
+  unsigned char *packet;
+  packet=_ogg_malloc(_src->bytes*sizeof(*packet));
+  memcpy(packet,_src->packet,_src->bytes*sizeof(*packet));
+  *_dst=*_src;
+  _dst->packet=packet;
+}
+
 static void usage(void){
   fprintf(stderr,"Usage: rehuff [-s <statsout.txt> ] "
    "<infile.ogv> <outfile.ogv>\n");
@@ -740,7 +753,7 @@ static void oc_process_bos0(ogg_page *_og,th_rehuff_ctx **_rehuffs,
     th_rehuff_init(rehuffs+nrehuffs,&test,&ti,theorap);
     /*Advance past the successfully processed header.*/
     ogg_stream_packetout(&rehuffs[nrehuffs].to,NULL);
-    stream_ctx_add(_sos,_nsos,_csos,&STREAM_STATE_VTBL,&rehuffs[nrehuffs].to);
+    stream_ctx_add(_sos,_nsos,_csos,&TH_REHUFF0_VTBL,rehuffs+nrehuffs);
     nrehuffs++;
   }
   else{
@@ -785,6 +798,7 @@ static void oc_process_bos1(ogg_page *_og,th_rehuff_ctx *_rehuffs,
     }
     if(ri>=_nrehuffs){
       fprintf(stderr,"Error: Stream headers changed after first pass.\n");
+      ogg_stream_clear(&test);
       return;
     }
     rehuff=_rehuffs+ri;
@@ -797,10 +811,6 @@ static void oc_process_bos1(ogg_page *_og,th_rehuff_ctx *_rehuffs,
       ogg_stream_pageout(&rehuff->tp,&rehuff->og);
       th_rehuff_copy_page_data(rehuff);
       rehuff->page_ready=1;
-      /*processing_headers now means "flush pages until we run out", to ensure
-         they all appear before any data pages.
-        We don't want to start doing that until all the BOS pages are written.*/
-      rehuff->processing_headers=0;
     }
   }
   else{
@@ -816,7 +826,7 @@ static void oc_process_bos1(ogg_page *_og,th_rehuff_ctx *_rehuffs,
          cpassthroughs*sizeof(*passthroughs));
         *_nsos=0;
         for(ri=0;ri<_nrehuffs;ri++){
-          stream_ctx_add(_sos,_nsos,_csos,&TH_REHUFF_VTBL,_rehuffs+ri);
+          stream_ctx_add(_sos,_nsos,_csos,&TH_REHUFF1_VTBL,_rehuffs+ri);
         }
         for(pi=0;pi<npassthroughs;pi++){
           stream_ctx_add(_sos,_nsos,_csos,&OV_PASSTHROUGH_VTBL,passthroughs+pi);
@@ -832,6 +842,7 @@ static void oc_process_bos1(ogg_page *_og,th_rehuff_ctx *_rehuffs,
        test.serialno);
     }
   }
+  ogg_stream_clear(&test);
   *_passthroughs=passthroughs;
   *_npassthroughs=npassthroughs;
   *_cpassthroughs=cpassthroughs;
@@ -1004,12 +1015,17 @@ int main(int _argc,char **_argv){
           }
         }
       }
-      /*If all Theora streams have all their header packets, stop now so we don't
-         fail if there aren't enough pages in a short stream.*/
+      /*If all Theora streams have all their header packets, stop now so we
+         don't fail if there aren't enough pages in a short stream.*/
       for(ri=0;ri<nrehuffs;ri++)if(rehuffs[ri].processing_headers)break;
       if(ri>=nrehuffs)break;
       /*The header pages/packets will arrive before anything else we care about,
-         or the stream is not obeying spec.*/
+         or the stream is not obeying spec.
+        We never add more than _one_ page without checking for packets to
+         output to make sure that processing_headers gets set to 0 as soon as
+         we hit the first data page with a completed packet.
+        This is needed to compute the granule position of the first packet
+         correctly below.*/
       /*Demux into the appropriate stream.*/
       if(ogg_sync_pageout(&oy,&og)>0)queue_page(sos,nsos,&og);
       else{
@@ -1039,6 +1055,75 @@ int main(int _argc,char **_argv){
     for(;;){
       /*Process all the packets from all the Theora streams.*/
       for(ri=0;ri<nrehuffs;ri++){
+        /*Figure out the granule position to use for the first packet.
+          We'll need to set this when we re-code the stream so that the
+           resulting packets can be repaginated.*/
+        if(rehuffs[ri].initial_gp==-1){
+          ogg_packet ops[255];
+          int        nop;
+          /*We can have at most 255 packets on the first data page.*/
+          for(nop=0;nop<255;){
+            if(ogg_stream_packetout(&rehuffs[ri].to,ops+nop)<=0)break;
+            copy_packet_data(ops+nop,ops+nop);
+            if(th_packet_isheader(ops+nop)){
+              fprintf(stderr,"Error: Headers appeared after data packets "
+               "began in Theora stream 0x%08lX.\n",rehuffs[ri].serialno);
+              exit(1);
+            }
+            if(ops[nop++].granulepos!=-1)break;
+          }
+          /*We found at least one packet, so we got a data page where packets
+             ended for this stream (which we should have, since we know the
+             headers ended).*/
+          if(nop>0){
+            ogg_int64_t frameno;
+            ogg_int64_t keyframeno;
+            int         kgs;
+            int         opi;
+            /*We _should_ have seen a valid page gp; if not report an error.*/
+            if(rehuffs[ri].initial_page_gp==-1){
+              fprintf(stderr,"Error: No granule position set on first page "
+               "with completed data packets in\nstream 0x%08lX.\n",
+               rehuffs[ri].serialno);
+              exit(1);
+            }
+            /*It _should_ match the first valid packet gp; if not report an
+               error.
+              This is just a sanity check in case someone modifies this code.
+              It should be impossible to trigger.*/
+            if(ops[nop-1].granulepos!=rehuffs[ri].initial_page_gp){
+              fprintf(stderr,"Error: Initial page granule position mismatch "
+               "in stream 0x%08lX.\n",rehuffs[ri].serialno);
+              exit(1);
+            }
+            kgs=rehuffs[ri].ti.keyframe_granule_shift;
+            /*Get the keyframe pointer from this gp.*/
+            keyframeno=ops[nop-1].granulepos>>kgs;
+            /*Get the frame number of the _first_ packet in the page from the
+               gp of the last one.*/
+            frameno=keyframeno-(nop-1)+(ops[nop-1].granulepos&(1<<kgs)-1);
+            /*If the keyframe pointer in the first gp points somewhere in the
+               interior of the first page, we need a new keyframe pointer.*/
+            if(frameno<keyframeno){
+              /*If the first packet on the page was a keyframe, use that.*/
+              if(th_packet_iskeyframe(ops+0)>0)keyframeno=frameno;
+              /*Otherwise the keyframe was cut somewhere in the past, and we
+                 don't know where; make up a value to use.*/
+              else keyframeno=frameno-1;
+            }
+            rehuffs[ri].initial_gp=(keyframeno<<kgs)+frameno-keyframeno;
+            /*Set the initial gp on the recoder now so it will match in the
+               second pass.*/
+            th_recode_ctl(rehuffs[ri].tr,TH_DECCTL_SET_GRANPOS,
+             &rehuffs[ri].initial_gp,sizeof(rehuffs[ri].initial_gp));
+            /*And submit all the packets we have ready.*/
+            for(opi=0;opi<nop;opi++){
+              th_recode_packetin(rehuffs[ri].tr,ops+opi,NULL);
+              _ogg_free(ops[opi].packet);
+            }
+          }
+        }
+        /*Otherwise process packets one at a time like normal.*/
         while(ogg_stream_packetout(&rehuffs[ri].to,&op)>0){
           th_recode_packetin(rehuffs[ri].tr,&op,NULL);
         }
@@ -1066,7 +1151,6 @@ int main(int _argc,char **_argv){
       oc_tok_vec        *dc_vecs;
       oc_tok_vec        *ac_vecs;
       ogg_int64_t        bits_wasted;
-      ogg_int64_t        granpos;
       int                converged;
       long               nvecs;
       long               fi;
@@ -1116,10 +1200,10 @@ int main(int _argc,char **_argv){
       huff_codes_print("CODES",codes);
       th_recode_ctl(rehuffs[ri].tr,TH_ENCCTL_SET_HUFFMAN_CODES,
        codes,sizeof(codes));
-      /*TODO: Detect start offset in input video and correct for it.*/
-      granpos=0;
       th_recode_ctl(rehuffs[ri].tr,TH_DECCTL_SET_GRANPOS,
-       &granpos,sizeof(granpos));
+       &rehuffs[ri].initial_gp,sizeof(rehuffs[ri].initial_gp));
+      _ogg_free(ac_vecs);
+      _ogg_free(dc_vecs);
     }
     /*Now read the chain segment a second time and rewrite the packets.*/
     fsetpos(infile,&chain_start);
@@ -1127,7 +1211,7 @@ int main(int _argc,char **_argv){
     nsos=0;
     npassthroughs=0;
     for(ri=0;ri<nrehuffs;ri++){
-      stream_ctx_add(&sos,&nsos,&csos,&TH_REHUFF_VTBL,rehuffs+ri);
+      stream_ctx_add(&sos,&nsos,&csos,&TH_REHUFF1_VTBL,rehuffs+ri);
     }
     /*Only interested in Theora streams.
       Vorbis streams are passed through.
@@ -1144,8 +1228,6 @@ int main(int _argc,char **_argv){
         while(ogg_sync_pageout(&oz,&og)>0){
           /*Is this a mandated initial header? If not, stop parsing.*/
           if(!ogg_page_bos(&og)){
-            /*Don't leak the page; get it into the appropriate stream.*/
-            queue_page(sos,nsos,&og);
             done=1;
             break;
           }
@@ -1156,16 +1238,19 @@ int main(int _argc,char **_argv){
       /*Write the new BOS page.*/
       write_pages(sos,nsos,0,outfile);
     }
-    /*Queue up the rest of the Theora headers.
-      The rest of the streams will write them out as they come to them.*/
+    /*Queue up the remaining of the Theora headers.*/
     for(ri=0;ri<nrehuffs;ri++){
       ogg_packet op;
       while(th_recode_flushheader(rehuffs[ri].tr,&rehuffs[ri].tc,&op)>0){
         ogg_stream_packetin(&rehuffs[ri].tp,&op);
       }
-      rehuffs[ri].processing_headers=1;
     }
-    write_pages(sos,nsos,0,outfile);
+    /*Flush the new Theora headers.
+      The rest of the streams will write theirs out as they come to them.*/
+    write_pages(sos,nsos,1,outfile);
+    /*Don't leak the page that stopped BOS parsing; get it into the
+       appropriate stream.*/
+    queue_page(sos,nsos,&og);
     /*Main re-coding loop.*/
     for(;;){
       if(!buffer_data(infile,&oz))break;
@@ -1191,8 +1276,13 @@ int main(int _argc,char **_argv){
     for(ri=0;ri<npassthroughs;ri++)ov_passthrough_clear(passthroughs+ri);
   }
   while(have_bos0||!(feof(infile)||ferror(infile)));
+  _ogg_free(passthroughs);
+  _ogg_free(rehuffs);
+  _ogg_free(sos);
   ogg_sync_clear(&oy);
   ogg_sync_clear(&oz);
   fclose(outfile);
-  return(0);
+  fclose(infile);
+  if(statsout!=NULL)fclose(statsout);
+  return 0;
 }
