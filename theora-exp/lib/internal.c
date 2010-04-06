@@ -262,7 +262,7 @@ static void oc_set_chroma_mvs10(oc_mv _cbmvs[4],const oc_mv _lbmvs[4]){
   _lmbmv: The luma macro-block level motion vector to fill in for use in
            prediction.
   _lbmvs: The luma block-level motion vectors.*/
-static void oc_set_chroma_mvs11(oc_mv _cbmvs[4][2],const oc_mv _lbmvs[4]){
+static void oc_set_chroma_mvs11(oc_mv _cbmvs[4],const oc_mv _lbmvs[4]){
   memcpy(_cbmvs,_lbmvs,4*sizeof(_lbmvs[0]));
 }
 

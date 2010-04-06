@@ -1826,7 +1826,7 @@ static void oc_impmap_scan(oc_impmap_ctx *_impmap,int _width,int _height){
     png_bytep    *image;
     FILE         *fp;
     char          fname[16];
-    sprintf(fname,"%08iseg.png",_impmap->enc->state.curframe_num);
+    sprintf(fname,"%08iseg.png",(int)_impmap->enc->state.curframe_num);
     fp=fopen(fname,"wb");
     if(fp==NULL)return;
     image=(png_bytep *)oc_malloc_2d(_height,_width,sizeof(image[0][0]));

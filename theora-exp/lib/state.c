@@ -1022,7 +1022,6 @@ int oc_state_dump_frame(const oc_theora_state *_state,int _frame,
   int            y_stride;
   int            u_stride;
   int            v_stride;
-  int            framei;
   int            width;
   int            height;
   int            imgi;
@@ -1054,13 +1053,24 @@ int oc_state_dump_frame(const oc_theora_state *_state,int _frame,
     fclose(fp);
     return TH_EFAULT;
   }
-  framei=_state->ref_frame_idx[_frame];
-  y_row=_state->ref_frame_bufs[framei][0].data;
-  u_row=_state->ref_frame_bufs[framei][1].data;
-  v_row=_state->ref_frame_bufs[framei][2].data;
-  y_stride=_state->ref_frame_bufs[framei][0].ystride;
-  u_stride=_state->ref_frame_bufs[framei][1].ystride;
-  v_stride=_state->ref_frame_bufs[framei][2].ystride;
+  if(_frame!=OC_FRAME_IO){
+    int framei;
+    framei=_state->ref_frame_idx[_frame];
+    y_row=_state->ref_frame_bufs[framei][0].data;
+    u_row=_state->ref_frame_bufs[framei][1].data;
+    v_row=_state->ref_frame_bufs[framei][2].data;
+    y_stride=_state->ref_frame_bufs[framei][0].ystride;
+    u_stride=_state->ref_frame_bufs[framei][1].ystride;
+    v_stride=_state->ref_frame_bufs[framei][2].ystride;
+  }
+  else{
+    y_row=_state->input[0].data;
+    u_row=_state->input[1].data;
+    v_row=_state->input[2].data;
+    y_stride=_state->input[0].ystride;
+    u_stride=_state->input[1].ystride;
+    v_stride=_state->input[2].ystride;
+  }
   /*Chroma up-sampling is just done with a box filter.
     This is very likely what will actually be used in practice on a real
      display, and also removes one more layer to search in for the source of
@@ -1106,7 +1116,7 @@ int oc_state_dump_frame(const oc_theora_state *_state,int _frame,
   png_set_compression_level(png,Z_BEST_COMPRESSION);
   png_set_IHDR(png,info,width,height,16,PNG_COLOR_TYPE_RGB,
    PNG_INTERLACE_NONE,PNG_COMPRESSION_TYPE_DEFAULT,PNG_FILTER_TYPE_DEFAULT);
-  switch(_state->info.colorspace){
+  switch((int)_state->info.colorspace){
     case TH_CS_ITU_REC_470M:{
       png_set_gAMA(png,info,2.2);
       png_set_cHRM_fixed(png,info,31006,31616,

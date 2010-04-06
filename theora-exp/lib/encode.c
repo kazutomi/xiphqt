@@ -1296,12 +1296,157 @@ int oc_enc_coded_block_flags_pack(oc_enc_ctx *_enc,oggpack_buffer *_opb){
   return ret;
 }
 
+#if defined(OC_DUMP_IMAGES)
+static void oc_enc_dump_mc_diff(oc_enc_ctx *_enc){
+  int pli;
+  for(pli=0;pli<3;pli++){
+    oc_fragment_plane *fplane;
+    int                src_ystride;
+    int                dst_framei;
+    int                dst_ystride;
+    int                fragi;
+    src_ystride=_enc->state.input[pli].ystride;
+    dst_framei=_enc->state.ref_frame_idx[OC_FRAME_SELF];
+    dst_ystride=_enc->state.ref_frame_bufs[dst_framei][pli].ystride;
+    fplane=_enc->state.fplanes+pli;
+    for(fragi=fplane->froffset;fragi<fplane->froffset+fplane->nfrags;fragi++){
+      oc_fragment   *frag;
+      ogg_int16_t    pix_buf[64];
+      unsigned char *dst;
+      unsigned char *ref0;
+      unsigned char *ref1;
+      unsigned char *src;
+      int            pixi;
+      int            ref_ystride;
+      int            ref_framei;
+      int            mvoffsets[2];
+      int            y;
+      int            x;
+      frag=_enc->state.frags+fragi;
+      src=frag->buffer[OC_FRAME_IO];
+      if(frag->coded){
+        if(frag->mbmode!=OC_MODE_INTRA){
+          ref_framei=_enc->state.ref_frame_idx[
+           OC_FRAME_FOR_MODE[frag->mbmode]];
+          ref_ystride=_enc->state.ref_frame_bufs[ref_framei][pli].ystride;
+          if(oc_state_get_mv_offsets(&_enc->state,mvoffsets,
+           frag->mv[0],frag->mv[1],ref_ystride,pli)>1){
+            ref0=frag->buffer[ref_framei]+mvoffsets[0];
+            ref1=frag->buffer[ref_framei]+mvoffsets[1];
+            if(frag->border!=NULL){
+              ogg_int64_t mask;
+              mask=frag->border->mask;
+              for(pixi=y=0;y<8;y++){
+                for(x=0;x<8;x++,pixi++){
+                  pix_buf[pixi]=(ogg_int16_t)(((int)mask&1)?
+                   src[x]-((int)ref0[x]+ref1[x]>>1):0);
+                  mask>>=1;
+                }
+                src+=src_ystride;
+                ref0+=ref_ystride;
+                ref1+=ref_ystride;
+              }
+            }
+            else{
+              for(pixi=y=0;y<8;y++){
+                for(x=0;x<8;x++,pixi++){
+                  pix_buf[pixi]=(ogg_int16_t)(src[x]-((int)ref0[x]+ref1[x]>>1));
+                }
+                src+=src_ystride;
+                ref0+=ref_ystride;
+                ref1+=ref_ystride;
+              }
+            }
+          }
+          else{
+            ref0=frag->buffer[ref_framei]+mvoffsets[0];
+            if(frag->border!=NULL){
+              ogg_int64_t mask;
+              mask=frag->border->mask;
+              for(pixi=y=0;y<8;y++){
+                for(x=0;x<8;x++,pixi++){
+                  pix_buf[pixi]=(ogg_int16_t)(((int)mask&1)?src[x]-(int)ref0[x]:0);
+                  mask>>=1;
+                }
+                src+=src_ystride;
+                ref0+=ref_ystride;
+              }
+            }
+            else{
+              for(pixi=y=0;y<8;y++){
+                for(x=0;x<8;x++,pixi++){
+                  pix_buf[pixi]=(ogg_int16_t)(src[x]-(int)ref0[x]);
+                }
+                src+=src_ystride;
+                ref0+=ref_ystride;
+              }
+            }
+          }
+        }
+        else{
+          if(frag->border!=NULL){
+            ogg_int64_t mask;
+            mask=frag->border->mask;
+            for(pixi=y=0;y<8;y++){
+              for(x=0;x<8;x++,pixi++){
+                pix_buf[pixi]=(ogg_int16_t)(((int)mask&1)?src[x]-128:0);
+                mask>>=1;
+              }
+              src+=src_ystride;
+            }
+          }
+          else{
+            for(pixi=y=0;y<8;y++){
+              for(x=0;x<8;x++,pixi++)pix_buf[pixi]=(ogg_int16_t)(src[x]-128);
+              src+=src_ystride;
+            }
+          }
+        }
+      }
+      else{
+        ref_framei=_enc->state.ref_frame_idx[OC_FRAME_PREV];
+        ref_ystride=_enc->state.ref_frame_bufs[ref_framei][pli].ystride;
+        ref0=frag->buffer[ref_framei];
+        if(frag->border!=NULL){
+          ogg_int64_t mask;
+          mask=frag->border->mask;
+          for(pixi=y=0;y<8;y++){
+            for(x=0;x<8;x++,pixi++){
+              pix_buf[pixi]=(ogg_int16_t)(((int)mask&1)?src[x]-ref0[x]:0);
+              mask>>=1;
+            }
+            src+=src_ystride;
+            ref0+=ref_ystride;
+          }
+        }
+        else{
+          for(pixi=y=0;y<8;y++){
+            for(x=0;x<8;x++,pixi++)pix_buf[pixi]=(ogg_int16_t)(src[x]-ref0[x]);
+            src+=src_ystride;
+            ref0+=ref_ystride;
+          }
+        }
+      }
+      dst=frag->buffer[dst_framei];
+      for(pixi=y=0;y<8;y++){
+        for(x=0;x<8;x++,pixi++)dst[x]=(pix_buf[pixi]>>1)+128;
+        dst+=dst_ystride;
+      }
+    }
+  }
+  oc_state_dump_frame(&_enc->state,OC_FRAME_SELF,"mc");
+}
+#endif
+
 /*Performs a motion-compensated fDCT for each fragment coded in a mode other
    than INTRA.*/
 void oc_enc_do_inter_dcts(oc_enc_ctx *_enc){
   int *coded_fragi;
   int *coded_fragi_end;
   int  pli;
+#if defined(OC_DUMP_IMAGES)
+  oc_enc_dump_mc_diff(_enc);
+#endif
   coded_fragi_end=coded_fragi=_enc->state.coded_fragis;
   for(pli=0;pli<3;pli++){
     coded_fragi_end+=_enc->state.ncoded_fragis[pli];
@@ -1481,6 +1626,9 @@ int th_encode_ycbcr_in(th_enc_ctx *_enc,th_ycbcr_buffer _img){
   _enc->state.curframe_num++;
   /*Fill the fragment array with pointers into the user buffer.*/
   oc_state_fill_buffer_ptrs(&_enc->state,OC_FRAME_IO,img);
+#if defined(OC_DUMP_IMAGES)
+  oc_state_dump_frame(&_enc->state,OC_FRAME_IO,"in");
+#endif
   /*Reset the encoding pipeline.*/
   ret=(*_enc->pipe->pipe_start)(_enc->pipe);
   if(ret<0)return ret;

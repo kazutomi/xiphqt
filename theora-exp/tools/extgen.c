@@ -60,7 +60,7 @@ static const double OC_IDCT_MATRIX[8][8]={
   },
   {
     +0.7071075439453125,-0.8314685295335948,
-    +0.3826904296875,    +0.1950868454296142,
+    +0.3826904296875,   +0.1950868454296142,
     -0.7071075439453125,+0.9807858711574227,
     -0.9238739013671875,+0.5555783333256841
   },
@@ -114,9 +114,9 @@ static const unsigned char OC_PAD_MASK_GAIN[256]={
 
 
 
-/*Computes the Cholesky factorization L L^T of the matrix G^T G, where G is the
-   currently selected bass functions restricted to the region of spatial
-   support.
+/*Computes the Cholesky factorization L L^T of the matrix G^T G, where G
+   contains the currently selected basis functions restricted to the region of
+   spatial support.
   The reciprocal of the diagonal element is stored instead of the diagonal
    itself, so that the division only needs to be done once.
   _l:   The L matrix to compute.

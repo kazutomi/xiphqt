@@ -343,7 +343,7 @@ static void find_csf_filters(csf_filter_bank _filters,csf_func _csf,
   The advantage of using Cannon's scheme over theirs is that Cannon's is very
    simple, and contains no unexplained magic constants.
   Current results from Chandler and Hemami give only a small benefit over
-   JPEG200.
+   JPEG2000.
 
   @ARTICLE{Can85,
     author="Mark W. Cannon, Jr.",

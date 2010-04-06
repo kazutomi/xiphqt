@@ -28,11 +28,16 @@ CFLAGS += -DOC_X86ASM
 CFLAGS += -O3 -fomit-frame-pointer -fforce-addr -finline-functions
 #CFLAGS += -ftree-vectorize -ftree-vectorizer-verbose=9
 #CFLAGS += -march=core2
+#CFLAGS += -DOC_DUMP_IMAGES
 # The -g flag will generally include debugging information.
 #CFLAGS += -g
 # Libraries to link with, and the location of library files.
 # Add -lpng -lz if you want to use -DOC_DUMP_IMAGES.
-LIBS = -logg -lvorbis -lvorbisenc `sdl-config --libs`
+LIBS = -logg -lvorbis -lvorbisenc
+SDL_LIBS = `sdl-config --libs`
+ifeq ($(findstring -DOC_DUMP_IMAGES,${CFLAGS}),-DOC_DUMP_IMAGES)
+    LIBS += -lpng -lz
+endif
 
 # ANYTHING BELOW THIS LINE PROBABLY DOES NOT NEED EDITING
 CINCLUDE := -I../include ${CINCLUDE}
@@ -198,7 +203,7 @@ ${ENCODER_EXAMPLE_TARGET}: ${ENCODER_EXAMPLE_OBJS} ${LIBTHEORADEC_TARGET} \
 # player_example
 ${PLAYER_EXAMPLE_TARGET}: ${PLAYER_EXAMPLE_OBJS} ${LIBTHEORADEC_TARGET}
 	mkdir -p ${TARGETBINDIR}
-	${CC} ${CFLAGS} -o $@ ${PLAYER_EXAMPLE_OBJS} ${LIBS} \
+	${CC} ${CFLAGS} -o $@ ${PLAYER_EXAMPLE_OBJS} ${SDL_LIBS} ${LIBS} \
          ${LIBTHEORADEC_TARGET}
 
 # rehuff
