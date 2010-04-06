@@ -97,10 +97,10 @@ int main(int _argc,char *_argv[]){
      "  Name  Width  Height  -an   -ad\n"
      "        720    576     128   117\n"
      "  CIF   352    288     128   117\n"
-     "  QCIF  144    176     128   117\n"
+     "  QCIF  176    144     128   117\n"
      "        720    480     4320  4739\n"
      "  SIF   352    240     4320  4739\n"
-     " The HD TV sizes (1920x1080, 1280x720), really do use square pixels.\n"
+     " The HD TV sizes (1920x1080, 1280x720) really do use square pixels.\n"
      " -o<offset>      The first frame number to use in -d mode.\n"
      "                 If unspecified, 0 is used.\n");
     return -1;

@@ -1067,7 +1067,8 @@ static int oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
       /*Bit costs are stored in the table with extra precision.
         Round them down to whole bits here.*/
       /*LOOP VECTORIZES.*/
-      for(modei=0;modei<OC_NMODES;modei++){
+      bits[0]=bits[0]+(1<<OC_BIT_SCALE-1)>>OC_BIT_SCALE-4;
+      for(modei=1;modei<OC_NMODES;modei++){
         bits[modei]=bits[modei]+(1<<OC_BIT_SCALE-1)>>OC_BIT_SCALE;
       }
       /*Estimate the cost of coding the label for each mode.
@@ -1080,11 +1081,11 @@ static int oc_enc_choose_mbmodes(oc_enc_ctx *_enc){
       /*Add the motion vector bits for each mode that requires them.*/
       mbpmvbitsa=oc_mvbitsa(mbinfo->mvs[0][OC_FRAME_PREV][0],
        mbinfo->mvs[0][OC_FRAME_PREV][1]);
-      mbgmvbitsa=oc_mvbitsa(mbinfo->mvs[1][OC_FRAME_GOLD][0],
+      mbgmvbitsa=oc_mvbitsa(mbinfo->mvs[0][OC_FRAME_GOLD][0],
        mbinfo->mvs[0][OC_FRAME_GOLD][1]);
       mb4mvbitsa=mb4mvbitsb=0;
       for(codedi=0;codedi<ncoded_luma;codedi++){
-        mb4mvbitsa=oc_mvbitsa(bmvs[0][coded[codedi]][0],
+        mb4mvbitsa+=oc_mvbitsa(bmvs[0][coded[codedi]][0],
          bmvs[0][coded[codedi]][1]);
         mb4mvbitsb+=12;
       }
