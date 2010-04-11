@@ -375,40 +375,45 @@ abstract class Output {
   	}
 	
 	public final ImageProducer synthesis(Packet op) throws IOException, EndOfPacketException {
-    	info.loadPacket(op.packetBase, op.packet, op.bytes);
+		info.loadPacket(op.packetBase, op.packet, op.bytes);
 		
 		synchronized(this) {
 			decodeImage();
 		}
 		
 		if(op.granulepos > -1){
-        	granulepos = op.granulepos;
+			granulepos = op.granulepos;
 	  	} else {
-		  	if (granulepos == -1){
-          		granulepos = 0;
-        	} else {
-				if (fType == INTRA_FRAME){
-            		long frames = granulepos & VideoReader.BITMASK[info.keyFrameNumberGranuleShift];
+			if (granulepos == -1){
+				granulepos = 0;
+			} else {
+				if (fType == INTRA_FRAME) {
+					long frames = granulepos & VideoReader.BITMASK[info.keyFrameNumberGranuleShift];
 					
 					granulepos >>>= info.keyFrameNumberGranuleShift;
-            		granulepos += frames + 1;
-            		granulepos <<= info.keyFrameNumberGranuleShift;
-          		} else {
-			  		granulepos++;
-		  		}
-        	}
+					granulepos += frames + 1;
+					granulepos <<= info.keyFrameNumberGranuleShift;
+				} else {
+					granulepos++;
+				}
+			}
 		}
 		CropImageFilter cropFilter = new CropImageFilter(pictureRegionX, pictureRegionY, pictureRegionW, pictureRegionH);
 		return new FilteredImageSource(source, cropFilter);
 	}
 	
+	public final int[] getRGBData() {
+		return dst;
+	}
+
 	public final double granuleTime(long granulePosition) {
 		if(granulePosition >= 0) {
 			return getFrameCount(granulePosition, info.keyFrameNumberGranuleShift, 0) / info.frameRate;
-    	}
-    	return -1;
+		}
+		return -1;
   	}
 	
+
 	private static int getFrameCount (long granulePosition, int keyFrameNumberGranuleShift, int versionRevisionNumber) {
 		if (versionRevisionNumber > 0) {
 			return (int) (granulePosition & VideoReader.BITMASK[keyFrameNumberGranuleShift]) + (int) (granulePosition >>> keyFrameNumberGranuleShift) - 1;
