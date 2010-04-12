@@ -404,7 +404,7 @@ public final class VideoReader extends AudioReader {
 
 		loadPacket(op.packetBase, op.packet, op.bytes);
 	
-        byte[] buffer = new byte[6];
+		byte[] buffer = new byte[6];
 		
 		int packetType = get(8);
 		
@@ -418,17 +418,17 @@ public final class VideoReader extends AudioReader {
 	    
 		if (packetType == 0x80 && op.bos != 0) {
 			if(headerInitialized1) {
-          		return;
-        	}
+				return;
+			}
 			verifyFirstPacket();
 		} else if (packetType == 0x81 && op.bos == 0) {
 			if(headerInitialized2) {
-          		return;
-        	}
+				return;
+			}
 			verifySecondPacket();
 		} else if (packetType == 0x82 && op.bos == 0) {
 			if(headerInitialized3) {
-          		return;
+				return;
         	}
 			verifyThirdPacket();
 		} else {
@@ -659,10 +659,8 @@ public final class VideoReader extends AudioReader {
 		if (node.dereferenced) {
 			node.child = null;
 			node = null;
-		} else {
-			if (node.child != node.childFeed) {
-				node.child = null;
-			}
+		} else if (node.child != node.childFeed) {
+			node.child = null;
 		}
 	}
 	

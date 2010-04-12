@@ -172,7 +172,7 @@ abstract class Output {
 		
 		for (j = pixelOffset; j < pixelRegion; j += 4) {
 	  		lum = Y[py[yCnt]];
-      		u = pu[uvCnt];
+			u = pu[uvCnt];
 			v = pv[uvCnt];
 			r = rU[u];
 			g = rgU[u] + bgV[v];
@@ -217,7 +217,7 @@ abstract class Output {
 		
 		for (j = pixelOffset; j < pixelRegion; j += 4) {
 	  		lum = Y[py[yCnt]];
-      		u = pu[uvCnt];
+			u = pu[uvCnt];
 			v = pv[uvCnt];
 			r = rU[u];
 			g = rgU[u] + bgV[v];
@@ -269,7 +269,7 @@ abstract class Output {
 		
 		for (j = pixelOffset; j < pixelRegion; j += 4) {
 	  		lum = Y[py[yCnt]];
-      		u = pu[uvCnt];
+			u = pu[uvCnt];
 			v = pv[uvCnt];
 			r = rU[u];
 			g = rgU[u] + bgV[v];
