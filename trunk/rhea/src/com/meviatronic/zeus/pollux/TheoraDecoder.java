@@ -2236,7 +2236,7 @@ public final class TheoraDecoder extends Output  {
 		}
 	}
 
-	boolean display() {
+	public boolean display() {
 		if (ncbs == 0 || externFrameCount == internFrameCount) {
 			return false;
 		}
@@ -2256,7 +2256,10 @@ public final class TheoraDecoder extends Output  {
 		externFrameCount = internFrameCount;
 		return true;
 	}
-
+	
+	public final short[][] getYCbCrData() {
+		return ref;
+	}
 	
 	/**
 	 * Frees all system resources, which are bounded to this object.
