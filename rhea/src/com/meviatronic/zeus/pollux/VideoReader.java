@@ -395,7 +395,7 @@ public final class VideoReader extends AudioReader {
 
 		loadPacket(op.packetBase, op.packet, op.bytes);
 	
-        byte[] buffer = new byte[6];
+		byte[] buffer = new byte[6];
 		
 		int packetType = get(8);
 		
@@ -668,10 +668,8 @@ public final class VideoReader extends AudioReader {
 		if (node.dereferenced) {
 			node.child = null;
 			node = null;
-		} else {
-			if (node.child != node.childFeed) {
-				node.child = null;
-			}
+		} else if (node.child != node.childFeed) {
+			node.child = null;
 		}
 	}
 	

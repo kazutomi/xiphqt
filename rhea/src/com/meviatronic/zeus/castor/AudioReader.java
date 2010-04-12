@@ -996,10 +996,8 @@ public class AudioReader {
 		if (node.dereferenced) {
 			node.child = null;
 			node = null;
-		} else {
-			if (node.child != node.childFeed) {
-				node.child = null;
-			}
+		} else if (node.child != node.childFeed) {
+			node.child = null;
 		}
 	}
 	
