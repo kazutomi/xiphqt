@@ -25,6 +25,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -208,6 +209,8 @@ public class DumpVideo {
     public void dumpVideo(File videofile, List outfiles, boolean raw) throws IOException {
         InputStream is = new FileInputStream(videofile);
 
+        boolean onlytime = outfiles.size() == 0;
+
         SyncState oy = new SyncState();
         Page og = new Page();
         Packet op = new Packet();
@@ -258,7 +261,7 @@ public class DumpVideo {
                     if (theoradec != null) {
                         theoradec.takePacket(op);
 
-                        if (theoradec.ycbcrdata != null) {
+                        if (!onlytime && theoradec.ycbcrdata != null) {
                             YUVWriter yuvwriter = (YUVWriter) yuvwriters.get(serialno);
                             if (yuvwriter == null && !outfiles.isEmpty()) {
                                 yuvwriter = new YUVWriter((File) outfiles.get(0), raw);
@@ -280,11 +283,9 @@ public class DumpVideo {
 
     public static void main(String[] args) throws Exception {
 
-        if (args.length < 2) {
-            System.err.println("usage: DumpVideo <videofile> <outfile_1> ... <outfile_n> [--raw>]");
+        if (args.length < 1) {
+            System.err.println("usage: DumpVideo <videofile> [<outfile_1> ... <outfile_n>] [--raw>]");
             System.exit(1);
-
-
         }
 
         boolean raw = false;
@@ -301,9 +302,17 @@ public class DumpVideo {
             outfiles.add(new File(args[i]));
         }
 
+        if(outfiles.size() == 0) {
+            System.out.println("no output files given, will only time decode");
+        }
+
         DumpVideo dv = new DumpVideo();
 
+        Date start = new Date();
         dv.dumpVideo(infile, outfiles, raw);
+        Date end = new Date();
+
+        System.out.println("time: " + (end.getTime() - start.getTime()) + " milliseconds");
 
     }
 }
