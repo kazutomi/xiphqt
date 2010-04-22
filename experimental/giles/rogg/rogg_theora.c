@@ -51,6 +51,13 @@ int aspect_den = 0;
 int fps_set = 0;
 int fps_num = 0;
 int fps_den = 0;
+int crop_set = 0;
+int crop_width = 0;
+int crop_height = 0;
+char crop_xorigin = 0;
+char crop_yorigin = 0;
+int crop_xoffset = 0;
+int crop_yoffset = 0;
 
 /* big endian accessors for the theora header data */
 int get16(unsigned char *data)
@@ -97,12 +104,17 @@ void print_header_info(FILE *out, rogg_page_header *header)
 
 void print_theora_info(FILE *out, unsigned char *data)
 {
+  int full_width = get16(data+10)<<4;
+  int full_height = get16(data+12)<<4;
+  int disp_width = get24(data+14);
+  int disp_height = get24(data+17);
   fprintf(out, "  Theora info header version %d %d %d\n",
 	data[7], data[8], data[9]);
   fprintf(out, "   encoded image %dx%d\n", 
-	get16(data+10)<<4, get16(data+12)<<4);
+	full_width, full_height);
   fprintf(out, "   display image %dx%d at (%d,%d)\n",
-	get24(data+14), get24(data+17), data[20], data[21]);
+	disp_width, disp_height, data[20],
+	full_height - disp_height - data[21]);
   fprintf(out, "   frame rate %d:%d\n", get32(data+22), get32(data+26));
   fprintf(out, "   pixel aspect %d:%d\n", get24(data+30), get24(data+33));
   fprintf(out, "   colour space %d\n", data[36]);
@@ -127,7 +139,8 @@ void print_usage(FILE *out, char *name)
 		  "                common values: \n"
 		  "                        25:1 PAL\n"
 		  "                     30000:1001 NTSC\n"
-		  "                        24:1 film\n");
+		  "                        24:1 film\n"
+		  "    -c wxh+x+y  set the crop region\n");
 }
 
 int parse_args(int *argc, char *argv[])
@@ -161,6 +174,18 @@ int parse_args(int *argc, char *argv[])
 	    fprintf(stderr, "Could not parse frame rate '%s'.\n", argv[arg+1]);
 	    fprintf(stderr, "Try something like 25:1 (PAL) or 30000:1001 (NTSC)\n\n");
 	    fps_set = 0;
+	  }
+	  shift = 2;
+	  break;
+	case 'c':
+	  crop_set = 1;
+	  /* read crop region from the next arg */
+	  if (sscanf(argv[arg+1], "%dx%d%c%d%c%d)", &crop_width, &crop_height,
+	      &crop_xorigin, &crop_xoffset, &crop_yorigin, &crop_yoffset) != 6
+	      || (crop_xorigin != '+' && crop_xorigin != '-')
+	      || (crop_yorigin != '+' && crop_yorigin != '-')) {
+	    fprintf(stderr, "Could not parse crop region '%s'.\n", argv[arg+1]);
+	    crop_set = 0;
 	  }
 	  shift = 2;
 	  break;
@@ -247,6 +272,31 @@ int main(int argc, char *argv[])
 	}
 	if (!memcmp(header.data, "\x80theora", 7)) {
 	  print_theora_info(stdout, header.data);
+	  if (crop_set) {
+	    int full_width = get16(header.data+10)<<4;
+	    int full_height = get16(header.data+12)<<4;
+	    if (crop_xorigin == '-')
+	      crop_xoffset = full_width - crop_width - crop_xoffset;
+	    if (crop_yorigin == '-')
+	      crop_yoffset = full_height - crop_height - crop_yoffset;
+	    if (crop_xoffset < 0 || crop_xoffset + crop_width > full_width
+		|| crop_yoffset < 0 || crop_yoffset + crop_height > full_height) {
+	      fprintf(stderr, "Crop window is not within encoded window.\n");
+	      break;
+	    }
+	    fprintf(stdout, "Setting crop region to %dx%d at (%d,%d)\n",
+		crop_width, crop_height, crop_xoffset, crop_yoffset);
+	    put24(header.data+14, crop_width);
+	    put24(header.data+17, crop_height);
+	    header.data[20] = crop_xoffset;
+	    header.data[21] = full_height - crop_height - crop_yoffset;
+	    /* Put these back so the origin is correct for the next image,
+	       whatever its encoded dimensions. */
+	    if (crop_xorigin == '-')
+	      crop_xoffset = full_width - crop_width - crop_xoffset;
+	    if (crop_yorigin == '-')
+	      crop_yoffset = full_height - crop_height - crop_yoffset;
+	  }
 	  if (aspect_set) {
 	    fprintf(stdout, "Setting aspect ratio to %d:%d\n",
 		aspect_num, aspect_den);
@@ -259,7 +309,7 @@ int main(int argc, char *argv[])
 	    put32(header.data+22, fps_num); /* numerator */
 	    put32(header.data+26, fps_den); /* denominator */
 	  }
-	  if (aspect_set || fps_set) {
+	  if (aspect_set || fps_set || crop_set) {
 	    rogg_page_update_crc(q);
 	    fprintf(stdout, "New settings:\n");
 	    print_theora_info(stdout, header.data); 
