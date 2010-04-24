@@ -1029,7 +1029,7 @@ public final class TheoraDecoder extends Output  {
 				}
 			}
 		
-      		// 7.7 DCT Coefficients
+			// 7.7 DCT Coefficients
 			// 7.7.3 DCT Coefficient Decode
 		
 			int token; // No The current token being decoded.
@@ -1054,7 +1054,7 @@ public final class TheoraDecoder extends Output  {
 					htic = getBuffer & 0xF;
 				}
 				
-				while (traversable(qcbIndex)) {
+				while (qcbIndex.next != qcbIndex) {
 			
 					qcbIndex = qcbIndex.next;
 				
@@ -2404,10 +2404,6 @@ public final class TheoraDecoder extends Output  {
 		node = pointer;
 
 		return pointer;
-	}
-	
-	private boolean traversable(Node node) {
-		return node.next != node ? true : false;
 	}
 	
 	private class Node {
