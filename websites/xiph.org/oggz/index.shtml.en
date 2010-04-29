@@ -100,7 +100,7 @@ times separated by a /.
 <h2>Download</h2>
 
 <p>
-The latest version is 1.1.0, released Oct  8 2009.
+The latest version is 1.1.1, released Apr 29 2009.
 <ul>
 <li><a
 href="http://git.xiph.org/?p=liboggz.git;a=tree;f=release_notes">Release
@@ -121,7 +121,7 @@ notes</a></li>
 
 <ul>
 <li><a
-href="http://downloads.xiph.org/releases/liboggz/liboggz-1.1.0.tar.gz">liboggz-1.1.0.tar.gz
+href="http://downloads.xiph.org/releases/liboggz/liboggz-1.1.1.tar.gz">liboggz-1.1.1.tar.gz
 (651 kB)</a>
 </li>
 <li><a href="http://downloads.xiph.org/releases/liboggz/">Archive</a></li>
