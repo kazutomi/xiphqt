@@ -17,20 +17,20 @@ they can be used by both open-source and commercial applications.
 </p>
 
 <h1>News</h1>
-<h2>Version 0.82.16930</h2>
-<p class="newsdate">22 February, 2010</p>
+<h2>Version 0.83.17220</h2>
+<p class="newsdate">16 May, 2010</p>
 
-<p>More bugfixes, particularly to Theora and FLAC. Added support for Windows 7.<br/>
-HTML5 &lt;video&gt; tehnical preview for Internet Explorer.<br/><br/>
-Fore more informations see the <a href="/dshow/news/">News</a> page.
+<p>Improved file and networking support. More bug fixes, particularly to Theora and FLAC.<br/>
+Updates for Internet Explorer's HTML5 &lt;video&gt; technical preview.<br/><br/>
+Fore more information see the <a href="/dshow/news/">News</a> page.
 </p>
 
 <h1>Downloads</h1>
 <ul>
-    <li>Windows 32-bit Installer: <a href="http://downloads.xiph.org/releases/oggdsf/oggcodecs_0.82.16930-win32.exe">oggcodecs_0.82.16930-win32.exe</a> 1,09MB</li>
-    <li>Windows 64-bit Installer: <a href="http://downloads.xiph.org/releases/oggdsf/oggcodecs_0.82.16930-x64.exe">oggcodecs_0.82.16930-x64.exe</a> 1,30MB</li>
+    <li>Windows 32-bit Installer: <a href="http://downloads.xiph.org/releases/oggdsf/oggcodecs_0.83.17220-win32.exe">oggcodecs_0.83.17220-win32.exe</a> 1,11MB</li>
+    <li>Windows 64-bit Installer: <a href="http://downloads.xiph.org/releases/oggdsf/oggcodecs_0.83.17220-x64.exe">oggcodecs_0.83.17220-x64.exe</a> 1,33MB</li>
 </ul>
-<p>For more informations see the <a href="/dshow/downloads/">Downloads</a> page.
+<p>For more information see the <a href="/dshow/downloads/">Downloads</a> page.
 </p>
 
 

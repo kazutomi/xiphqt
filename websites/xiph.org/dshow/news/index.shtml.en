@@ -8,6 +8,35 @@
 <!--#include virtual="/dshow/ssi/pagetop.include" -->
 <!--  All your page content goes here  -->
 
+<h2>Version 0.83.17220</h2>
+<p class="newsdate">16 May, 2010</p>
+
+<h3>Changes this version</h3>
+<ul>
+
+    <li>Updated libvorbis to version 1.3.1</li>
+    <li>Updated libogg to version 1.2.0</li>
+    <li>Ogg Demux filter has been changed from a source + parser filter to just parser filter. This step allows usage of
+      the following DirectShow filters:
+    <ul>
+        <li><a href="http://msdn.microsoft.com/en-us/library/aa931130.aspx">File Source (Async.)</a> filter which can handle files bigger than 2GB</li>
+        <li><a href="http://msdn.microsoft.com/en-us/library/dd375642%28VS.85%29.aspx">File Source (URL)</a> filter which gives better networking support (proxy, ipv6, etc.)</li>
+    </ul></li>
+    <li>HTML5 &lt;video&gt; plug-in has received a couple of improvements:
+    <ul>
+        <li>URI support given by <a href="http://uriparser.sourceforge.net">uriparser</a> library</li>
+        <li>VMR9 support (instead of VMR7), this requires DirectX9</li>
+        <li>Internet Explorer Standards mode support, instead of just Quirks mode</li>
+        <li>width and height basic attribute support</li>
+    </ul></li>
+    <li>Removed OGM decoding support</li>
+    <li>Fixed playback of Theora files with big ogg pages (e.g. hi-res "Patent Absurdity")</li>
+    <li>Fixed <a href="https://trac.xiph.org/ticket/1447">#1447</a>: common http based ogg streams broken in Vista WMP (atleast vista 64)</li>
+    <li>Fixed <a href="https://trac.xiph.org/ticket/1301">#1301</a>: [OGGDSF] dsfOggDemux2.dll, fails for http with private ip</li>
+    <li>Fixed <a href="https://trac.xiph.org/ticket/1657">#1657</a>: FLAC 7.1 wrong mapped channels</li>
+</ul>
+
+
 <h2>Version 0.82.16930</h2>
 <p class="newsdate">22 February, 2010</p>
 
