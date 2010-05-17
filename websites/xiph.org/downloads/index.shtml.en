@@ -239,8 +239,8 @@ DirectShow application) is closed before installing.
 </p>
 
 <ul>
-	<li><a 	href="http://downloads.xiph.org/releases/oggdsf/oggcodecs_0.81.15562-win32.exe">Ogg
-	Codecs for Windows</a>, version 0.81.15562, 2008-12-06</li>
+	<li><a 	href="http://downloads.xiph.org/releases/oggdsf/oggcodecs_0.83.17220-win32.exe">Ogg
+	Codecs for Windows</a>, version 0.83.17220, 2010-05-16</li>
 	<li><a href="http://xiph.org/dshow/">project page</a> - for
 	other versions, source code, or more information</li>
 </ul>
