@@ -100,7 +100,7 @@ The main change with this release is that it includes API additions from the 1.1
 <h2>DirectShow Filters</h2>
 <p>
 If you just want to listen to Speex files in Windows Media Player, get
-<a href='http://www.illiminable.com/ogg/'>illiminable's DirectShow Filters</a> for Speex.
+<a href='http://xiph.org/dshow/'>Xiph.Org's DirectShow Filters</a> for Speex.
 </p>
 
 
