@@ -1,0 +1,46 @@
+<!--#include virtual="/ssi/header.include" -->
+<!-- Enter custom page information and styles here -->
+  <title>May 19, 2010: Xiph.Org announces support for the WebM open media project</title>
+</head>
+<body>
+<!--#include virtual="/common/xiphbar.include" -->
+
+<!--#include virtual="/ssi/pagetop.include" -->
+<!--  All your page content goes here  -->
+
+<h3>Xiph.Org announces support for the WebM open media project</h3>
+
+<p>The Xiph.Org Foundation is pleased to announce its support of the
+WebM open media project as a project launch partner. As announced
+earlier today at the Google I/O Developer Conference, the WebM format
+combines the VP8 video codec, the Matroska container, and the Vorbis
+audio codec developed by the Xiph into a high-quality, open,
+unencumbered format for video delivery on the Web. Xiph will continue
+to contribute to WebM as a whole and collaborate in its further
+development and deployment.
+
+<p>Success within the Open Source community is vital to the larger
+success of WebM.  Community adoption of a newly opened source base,
+such as VP8, is traditionally fraught with peril.  Xiph was the
+primary organization to develop and promote the earlier VP3 codec when
+open sourced by On2, and we know that substantial work lies ahead of
+us to make WebM a success. Toward that goal, we look forward to
+working with the established community projects also contributing to
+WebM including Matroska, ffmpeg, GStreamer, and Mozilla, as well as
+open-source oriented business leaders such as Google, Opera, Red Hat
+and others.
+
+<p>Kudos to all for the progress we've made, now we've got to get
+back to work.
+
+<p>Monty
+<br>Xiph.Org
+
+<p><i> The Xiph.Org Foundation is a not-for-profit corporation
+dedicated to open, unencumbered multimedia technology. Xiph's formats
+and software levels the playing field for digital media so that all
+producers and artists can distribute their work for minimal cost,
+without restriction, regardless of affiliation.  May contain traces of
+nuts or poorly contained awesome.</i></p>
+
+<!--#include virtual="/ssi/pagebottom.include" -->
