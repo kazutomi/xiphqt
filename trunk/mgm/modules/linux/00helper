@@ -14,6 +14,7 @@
 package MGMmodule::helperST;
 use vars qw(%disk26 %vm26 %proc %net %wi $lastmod $stat_active $net_active $active_if $wi_count $wi_active $vm_active $disk26_active);
 use IO::Seekable;
+use Time::HiRes qw( gettimeofday );
 
 sub module_init{
     my$this=shift;
@@ -131,9 +132,7 @@ sub module_update{
     }
 
 
-    # what a great hack
-    $proc{"cpu"}=~m/(\d+)\s+(\d+)\s+(\d+)\s+(\d+)/;
-    $lastmod=$1+$2+$3+$4; # 100ths of a second, even with 'broken' 2.0 SMP proc
+    $lastmod = [gettimeofday]*100;
 }
 
 bless {};
