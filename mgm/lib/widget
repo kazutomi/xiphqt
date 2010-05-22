@@ -225,9 +225,19 @@ sub set{
 	    configure('-height'=>($bar->{"barlength"}-
 				  $per+$bar->{"cfborder"}));
     }else{
+        # handle another one-off bug in Tk
 	my $border=$bar->{"cfborder"};
-	$bar->{'above'}->
-	    configure('-width'=>($per-2*$bar->{"cfborder"}));
+        if($per-2*$border > 0){
+            $bar->{'above'}->
+                place('-x'=>0);
+            $bar->{'above'}->
+                configure('-width'=>($per-2*$border));
+        }else{
+            $bar->{'above'}->
+                configure('-width'=>(0));
+            $bar->{'above'}->
+                place('-x'=>-1);
+        }
     }
 }
 
