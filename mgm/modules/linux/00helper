@@ -14,7 +14,7 @@
 package MGMmodule::helperST;
 use vars qw(%disk26 %vm26 %proc %net %wi $lastmod $stat_active $net_active $active_if $wi_count $wi_active $vm_active $disk26_active);
 use IO::Seekable;
-use Time::HiRes qw( gettimeofday );
+use Time::HiRes qw( time );
 
 sub module_init{
     my$this=shift;
@@ -132,7 +132,7 @@ sub module_update{
     }
 
 
-    $lastmod = [gettimeofday]*100;
+    $lastmod = time *100.;
 }
 
 bless {};
