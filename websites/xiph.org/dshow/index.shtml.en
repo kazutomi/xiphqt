@@ -8,27 +8,30 @@
 <!--#include virtual="/dshow/ssi/pagetop.include" -->
 <!--  All your page content goes here  -->
 
-<h1>Directshow Filters for Ogg Vorbis, Speex, Theora and FLAC</h1>
+<h1>Directshow Filters for Ogg Vorbis, Speex, Theora, FLAC, and WebM</h1>
 
 <p>
 The aim of this project is to provide the most complete implementation of the Xiph.org codecs for Windows and DirectShow. 
 This includes decoders and encoders for all the Xiph.org formats as well as <a href="http://annodex.org/wiki/Main_Page">Annodex</a>. It is released under a BSD license, so 
 they can be used by both open-source and commercial applications. 
 </p>
+<p>
+WebM support is based on versioned snapshots from <a href="http://code.google.com/p/webm/downloads/list">WebM Project</a>.
+</p>
 
 <h1>News</h1>
-<h2>Version 0.83.17220</h2>
-<p class="newsdate">16 May, 2010</p>
+<h2>Version 0.84.17315</h2>
+<p class="newsdate">30 June, 2010</p>
 
-<p>Improved file and networking support. More bug fixes, particularly to Theora and FLAC.<br/>
-Updates for Internet Explorer's HTML5 &lt;video&gt; technical preview.<br/><br/>
+<p>Adds WebM support, brings one installer for both Windows 32-bit and Windows 64-bit, <br/>
+and, a new project name: "Open Codecs".
+<br/><br/>
 Fore more information see the <a href="/dshow/news/">News</a> page.
 </p>
 
 <h1>Downloads</h1>
 <ul>
-    <li>Windows 32-bit Installer: <a href="http://downloads.xiph.org/releases/oggdsf/oggcodecs_0.83.17220-win32.exe">oggcodecs_0.83.17220-win32.exe</a> 1,11MB</li>
-    <li>Windows 64-bit Installer: <a href="http://downloads.xiph.org/releases/oggdsf/oggcodecs_0.83.17220-x64.exe">oggcodecs_0.83.17220-x64.exe</a> 1,33MB</li>
+    <li>Windows 32/64-bit Installer: <a href="http://downloads.xiph.org/releases/oggdsf/opencodecs_0.84.17315.exe">opencodecs_0.84.17315.exe</a> 2,45MB</li>
 </ul>
 <p>For more information see the <a href="/dshow/downloads/">Downloads</a> page.
 </p>

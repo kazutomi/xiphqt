@@ -8,6 +8,23 @@
 <!--#include virtual="/dshow/ssi/pagetop.include" -->
 <!--  All your page content goes here  -->
 
+<h2>Version 0.84.17315</h2>
+<p class="newsdate">30 June, 2010</p>
+
+<h3>Changes this version</h3>
+<ul>
+    <li>Added WebM support (libvpx 0.9.1, webmdshow 0.9.8.1)</li>
+    <li>Installer updates: </li>
+    <ul>
+        <li>merged Win32 and x64 installers into one installer</li>
+        <li>added support for WebM</li>
+        <li>dropped support for Annodex Muxer, CMML decoder filters </li>
+        <li>added "Open Codecs version" to Internet Explorer User Agent signature</li>
+    </ul>
+    <li>Added WebM support to HTML5 &lt;video&gt; ActiveX plugin.</li>
+    <li>Fixed <a href="https://trac.xiph.org/ticket/1702">#1702</a>: Consider integration of webm and vp8</li>
+</ul>
+
 <h2>Version 0.83.17220</h2>
 <p class="newsdate">16 May, 2010</p>
 
