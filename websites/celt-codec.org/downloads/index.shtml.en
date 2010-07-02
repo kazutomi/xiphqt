@@ -33,6 +33,17 @@
 
 <h2>Latest <strong style='font-style: italic;'>development</strong> releases</h2>
 
+<h3 id='zero.8.0'>0.8.0</h3>
+<p>CELT 0.8.0 brings quality improvements for high bit-rates and for transients in general. It
+also adds the possibility of changing the frame size dynamically, which requires
+a minor change in the API. At last, the new PLC algorithm from 0.7.1 is now
+enabled for the fixed-point builds as well.
+</p>
+
+<ul>
+<li>Source code: <a href="http://downloads.xiph.org/releases/celt/celt-0.8.0.tar.gz">celt-0.8.0.tar.gz</a></li>
+</ul>
+
 <h3 id='zero.7.1'>0.7.1</h3>
 <p>CELT 0.7.1 improves the quality of the packet loss concealment (PLC), but
 does not change the rest of the codec. For this reason it is the first release

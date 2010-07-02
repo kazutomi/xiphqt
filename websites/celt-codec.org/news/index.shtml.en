@@ -30,6 +30,16 @@
 
 <ul class="descriptivelist">
    <li>
+      <h3>Version 0.8.0 released</h3>
+      <p class="submitdate">2 July, 2010</p>
+      <div class="description">
+                <p>Version 0.8.0 has been released, with improvements for high bit-rates 
+                and for transients in general. It also adds the possibility of changing the 
+                frame size dynamically, which requires a minor change in the API. At last, 
+                the new PLC algorithm from 0.7.1 is now enabled for the fixed-point builds as well.</p>
+      </div>
+   </li>
+   <li>
       <h3>Version 0.7.1 released</h3>
       <p class="submitdate">20 January, 2010</p>
       <div class="description">
