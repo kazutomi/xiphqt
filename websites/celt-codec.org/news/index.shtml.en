@@ -36,7 +36,8 @@
                 <p>Version 0.8.0 has been released, with improvements for high bit-rates 
                 and for transients in general. It also adds the possibility of changing the 
                 frame size dynamically, which requires a minor change in the API. At last, 
-                the new PLC algorithm from 0.7.1 is now enabled for the fixed-point builds as well.</p>
+                the new PLC algorithm from 0.7.1 is now enabled for the fixed-point builds as well.
+                Version 0.8.0 is <b>not</b> bit-stream compatible with previous releases.</p>
       </div>
    </li>
    <li>
