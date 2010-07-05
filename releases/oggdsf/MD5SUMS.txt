@@ -94,3 +94,6 @@ f685f560f7a37ed6d6800d2cc665818a  oggcodecs_0.83.17220-src.7z
 0078f76d8aca39b55c3afea1f9dad1c9  opencodecs_0.84.17315.exe
 c0e476dfc37df41a6d2cbbdc9d005de3  opencodecs_0.84.17315_pdbs.7z
 32243cece0f5d901a356e1a03e034d84  opencodecs_0.84.17315_src.7z
+9ae466c2f246bd75d27a49677f782160  opencodecs_0.84.17325.exe
+8a55fea689c662c738345e834a35397d  opencodecs_0.84.17325_pdbs.7z
+b1f84048a16b36cb215ada83f6a05bc0  opencodecs_0.84.17325_src.7z
