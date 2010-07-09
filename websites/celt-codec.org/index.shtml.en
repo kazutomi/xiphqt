@@ -81,6 +81,16 @@
 <h2>Headlines</h2>
 <ul class="descriptivelist">
    <li>
+      <h3>Version 0.8.1 released</h3>
+      <p class="submitdate">8 July, 2010</p>
+      <div class="description">
+                <p>CELT 0.8.1 fixes some bugs introduced in 0.8.0. The bit-stream remains 
+                compatible with 0.8.0, with the caveat that CELT no longer supports frame
+                sizes that have prime factors larger than 5. This should not affect any
+                reasonable application.</p>
+      </div>
+   </li>
+   <li>
       <h3>Version 0.8.0 released</h3>
       <p class="submitdate">2 July, 2010</p>
       <div class="description">
@@ -119,43 +129,6 @@
       </div>
    </li>
 
-   <li>
-      <h3>Version 0.6.0 released</h3>
-      <p class="submitdate">4 July, 2009</p>
-      <div class="description">
-                <p>Version 0.6.0 has just been released, with many quality improvements, including 
-                better stereo coupling, better handling of transients, and better handling of 
-                highly tonal signals. In addition, packet loss robustness has been improved 
-                through the optional use of independent (intra) frames. CELT now supports a 
-                larger dynamic range, suitable for encoding 24-bit audio (float version only).
-                There is also a very early VBR implementation. The <a href="../testing/test.0.6.0.shtml">0.6.0 testing page</a> has more information about this release.</p>
-      </div>
-   </li>
-
-   <li>
-      <h3>Version 0.5.2 released</h3>
-      <p class="submitdate">17 February, 2009</p>
-      <div class="description">
-                <p>Version 0.5.2 has just been released with a few fixes over 0.5.1. On top of that,
-		the pitch prediction was both improved and simplified. The other main change is a 
-		new bit allocation algorithm with better rounding and fine energy allocation. These changes
-		resulted in considerable quality improvements at the smallest frame sizes. As with most prior
-		releases this release breaks compatiblity with older bitstreams. The
-		<a href="../testing/test.0.5.2.shtml">0.5.2 testing page</a> has more information.</p>
-      </div>
-   </li>
-
-   <li>
-      <h3>Version 0.5.1 released</h3>
-      <p class="submitdate">17 December, 2008</p>
-      <div class="description">
-                <p>Version 0.5.1 is out. This release fixes a number of issues with 0.5.0. Several cases
-		where the encoder could fail have been fixed, including one that could cause memory 
-		corruption (and possibly a segfault). In addition, the VQ search has been improved,
-		which results in a small CPU reduction, while fixing some quality problems with low
-		frequency tones. Other than that, there should be no significant quality changes.</p>
-      </div>
-   </li>
 </ul>
 
 <!--#include virtual="/ssi/pagebottom.include" -->
