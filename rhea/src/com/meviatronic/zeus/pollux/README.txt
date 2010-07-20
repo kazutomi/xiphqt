@@ -28,7 +28,7 @@
 	Pollux's huffman decoding based on:
  	Self developed algorithm (deflated binary tree approach -
 	a kind of a 2 pow n compression), therefore there's no reference.
-	Dr. m. m. Timothy B. Terriberry pointed out, that this kind of approach is at least since 1993 a
+	Timothy B. Terriberry, Ph.D. pointed out, that this kind of approach is at least since 1993 a
 	reinvention:
 	R. Hashemian, "High Speed Search and Memory Efficient
     	Huffman Coding," 1993.
@@ -45,7 +45,7 @@
  	- higher degree of content adaptive IDCT on non SIMD architectures.
  	- higher degree of content adaptive edge detection and deblock filtering.
  	- sparseDC mode.
- 	  Dr. m. m. Timothy B. Terriberry pointed out, that there is
+ 	  Timothy B. Terriberry, Ph.D. pointed out, that there is
  	  a separation of the MC from the DCT in developing for a future reference decoder version,
  	  which even avoids such a special sparseDC mode with the same amount of
  	  reducing the calculation amount.
