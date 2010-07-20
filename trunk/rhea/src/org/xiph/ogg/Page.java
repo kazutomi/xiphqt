@@ -125,11 +125,10 @@ public final class Page {
 	
 	void checksum(){
 		int crc_reg = 0;
-	  
+		
 	 	crc_reg = getChecksum(crc_reg, header_base, header, header_len);
-	 	crc_reg = getChecksum(crc_reg, body_base, body, body_len);
-	 
-    	header_base[header + 22] = (byte)crc_reg;
+		crc_reg = getChecksum(crc_reg, body_base, body, body_len);
+		header_base[header + 22] = (byte)crc_reg;
     	header_base[header + 23] = (byte)(crc_reg >>> 8);
     	header_base[header + 24] = (byte)(crc_reg >>> 16);
     	header_base[header + 25] = (byte)(crc_reg >>> 24);

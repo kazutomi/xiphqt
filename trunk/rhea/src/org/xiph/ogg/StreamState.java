@@ -195,7 +195,6 @@ public final class StreamState{
     int _serialno=og.serialno();
     int _pageno=og.pageno();
     int segments=header_base[header+26]&0xff;
-
     // clean up 'returned data'
     {
       int lr=lacing_returned;

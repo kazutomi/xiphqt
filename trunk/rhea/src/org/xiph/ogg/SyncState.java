@@ -137,10 +137,10 @@ public final class SyncState{
         if(next==0)
           next=fill;
 
-        returned=next;
         return (-(next-page));
       }
-      _headerbytes=(data[page+26]&0xff)+27;
+		_headerbytes=(data[page+26]&0xff)+27;
+		
       if(bytes<_headerbytes)
         return (0); // not enough for header + seg table
 
@@ -154,7 +154,7 @@ public final class SyncState{
 
     if(bodybytes+headerbytes>bytes)
       return (0);
-
+	  
     // The whole test page is buffered.  Verify the checksum
     //synchronized(chksum){
       // Grab the checksum bytes, set the header field to zero
