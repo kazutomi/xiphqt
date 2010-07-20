@@ -20,8 +20,8 @@ WebM support is based on versioned snapshots from <a href="http://code.google.co
 </p>
 
 <h1>News</h1>
-<h2>Version 0.84.17315</h2>
-<p class="newsdate">30 June, 2010</p>
+<h2>Version 0.84.17338</h2>
+<p class="newsdate">20 July, 2010</p>
 
 <p>Adds WebM support, brings one installer for both Windows 32-bit and Windows 64-bit, <br/>
 and, a new project name: "Open Codecs".
@@ -31,7 +31,7 @@ Fore more information see the <a href="/dshow/news/">News</a> page.
 
 <h1>Downloads</h1>
 <ul>
-    <li>Windows 32/64-bit Installer: <a href="http://downloads.xiph.org/releases/oggdsf/opencodecs_0.84.17315.exe">opencodecs_0.84.17315.exe</a> 2,45MB</li>
+    <li>Windows 32/64-bit Installer: <a href="http://downloads.xiph.org/releases/oggdsf/opencodecs_0.84.17338.exe">opencodecs_0.84.17338.exe</a> 2,46MB</li>
 </ul>
 <p>For more information see the <a href="/dshow/downloads/">Downloads</a> page.
 </p>

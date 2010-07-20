@@ -8,6 +8,18 @@
 <!--#include virtual="/dshow/ssi/pagetop.include" -->
 <!--  All your page content goes here  -->
 
+<h2>Version 0.84.17338</h2>
+<p class="newsdate">20 July, 2010</p>
+
+<h3>Changes this version</h3>
+<ul>
+    <li>Updated webmdshow to 0.9.9.0</li>
+    <li>Fixed installer script regarding URL registration 
+      (fixes "Open URL..." in Windows Media Player)</li>
+    <li>Fixed Vorbis URL playback which was broken in previous version</li>
+    <li>Installer uses localised "Open" and "Play" shell commands</li>
+</ul>
+
 <h2>Version 0.84.17315</h2>
 <p class="newsdate">30 June, 2010</p>
 
