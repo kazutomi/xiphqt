@@ -11,7 +11,7 @@
 	Features of Pollux's enhanced IDCT:
 	- inplacing.
  	- higher degree of content adaptive calculation.
- 	  Dr. m. m. Timothy B. Terriberry pointed out, that this approach is only helpful in case
+ 	  Timothy B. Terriberry, Ph.D. pointed out, that this approach is only helpful in case
  	  of systems and compilers, which don't have or exploit
  	  the SIMD (Single Instruction Multiple Data) computer architecture.
  	
@@ -28,7 +28,7 @@
 	Pollux's huffman decoding based on:
  	Self developed algorithm (deflated binary tree approach -
 	a kind of a 2 pow n compression), therefore there's no reference.
-	Dr. m. m. Timothy B. Terriberry pointed out, that this kind of approach is at least since 1993 a
+	Timothy B. Terriberry, Ph.D. pointed out, that this kind of approach is at least since 1993 a
 	reinvention:
 	R. Hashemian, "High Speed Search and Memory Efficient
     	Huffman Coding," 1993.
