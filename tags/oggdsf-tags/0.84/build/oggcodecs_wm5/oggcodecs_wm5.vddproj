@@ -1,0 +1,1092 @@
+"DeployProject"
+{
+"VSVersion" = "3:701"
+"ProjectType" = "8:{AB322303-2255-48EF-A496-5904EB18DA55}"
+"IsWebType" = "8:FALSE"
+"ProjectName" = "8:oggcodecs_wm5"
+"LanguageId" = "3:1033"
+"CodePage" = "3:1252"
+"SccProjectName" = "8:"
+"SccLocalPath" = "8:"
+"SccAuxPath" = "8:"
+"SccProvider" = "8:"
+    "Hierarchy"
+    {
+        "Entry"
+        {
+        "MsmKey" = "8:_135BEAEFC32C4B6DB7AEC0ECA1EC2A57"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_49B5A0C0C3EF41CABD16F7E1F0EDD6F7"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_708D16FA486243FB8FDEEB95784A53A4"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_91FB04D52A0D41FA97C02C889A42B27F"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_A86FFD0802364F09AEB3EC2ECF859B1F"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_E834F523D13D4AA3AF0C9A384F341F2D"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+    }
+    "Configurations"
+    {
+        "Debug"
+        {
+        "DisplayName" = "8:Debug"
+        "IsDebugOnly" = "11:TRUE"
+        "IsReleaseOnly" = "11:FALSE"
+        "OutputFilename" = "8:Debug\\oggcodecs_wm5.cab"
+        "PackageFileSize" = "3:-2147483648"
+        "CabType" = "3:1"
+        "SignOutput" = "11:FALSE"
+        "CertificateHash" = "8:"
+        "TimeStampServer" = "8:"
+        }
+        "Release"
+        {
+        "DisplayName" = "8:Release"
+        "IsDebugOnly" = "11:FALSE"
+        "IsReleaseOnly" = "11:TRUE"
+        "OutputFilename" = "8:Release\\oggcodecs_wm5.cab"
+        "PackageFileSize" = "3:-2147483648"
+        "CabType" = "3:1"
+        "SignOutput" = "11:FALSE"
+        "CertificateHash" = "8:75E588AA04977B574EBA1090E44CFD9F6BC8A5F5"
+        "TimeStampServer" = "8:"
+        }
+    }
+    "Deployable"
+    {
+        "File"
+        {
+            "{BA458234-9B71-4F46-8107-E91156377184}:_135BEAEFC32C4B6DB7AEC0ECA1EC2A57"
+            {
+            "SourcePath" = "8:bin\\dsfVorbisDecoder.dll"
+            "TargetName" = "8:dsfVorbisDecoder.dll"
+            "Tag" = "8:"
+            "Folder" = "8:_8BE9216FDC6E4FB1B98829D8873DE833"
+            "Condition" = "8:"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{BA458234-9B71-4F46-8107-E91156377184}:_49B5A0C0C3EF41CABD16F7E1F0EDD6F7"
+            {
+            "SourcePath" = "8:bin\\dsfTheoraDecoder.dll"
+            "TargetName" = "8:dsfTheoraDecoder.dll"
+            "Tag" = "8:"
+            "Folder" = "8:_8BE9216FDC6E4FB1B98829D8873DE833"
+            "Condition" = "8:"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{BA458234-9B71-4F46-8107-E91156377184}:_708D16FA486243FB8FDEEB95784A53A4"
+            {
+            "SourcePath" = "8:bin\\dsfOggDemux2.dll"
+            "TargetName" = "8:dsfOggDemux2.dll"
+            "Tag" = "8:"
+            "Folder" = "8:_8BE9216FDC6E4FB1B98829D8873DE833"
+            "Condition" = "8:"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{BA458234-9B71-4F46-8107-E91156377184}:_91FB04D52A0D41FA97C02C889A42B27F"
+            {
+            "SourcePath" = "8:bin\\wmpinfo.dll"
+            "TargetName" = "8:wmpinfo.dll"
+            "Tag" = "8:"
+            "Folder" = "8:_8BE9216FDC6E4FB1B98829D8873DE833"
+            "Condition" = "8:"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "Register" = "3:0"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{BA458234-9B71-4F46-8107-E91156377184}:_A86FFD0802364F09AEB3EC2ECF859B1F"
+            {
+            "SourcePath" = "8:bin\\dsfSpeexDecoder.dll"
+            "TargetName" = "8:dsfSpeexDecoder.dll"
+            "Tag" = "8:"
+            "Folder" = "8:_8BE9216FDC6E4FB1B98829D8873DE833"
+            "Condition" = "8:"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{BA458234-9B71-4F46-8107-E91156377184}:_E834F523D13D4AA3AF0C9A384F341F2D"
+            {
+            "SourcePath" = "8:bin\\dsfNativeFLACSource.dll"
+            "TargetName" = "8:dsfNativeFLACSource.dll"
+            "Tag" = "8:"
+            "Folder" = "8:_8BE9216FDC6E4FB1B98829D8873DE833"
+            "Condition" = "8:"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+        }
+        "Folder"
+        {
+            "{F6DFDB62-1DD1-498B-89B7-27BAC542EE5A}:_34F71BD39B32414896561F3E1D68A1FA"
+            {
+            "Name" = "8:#1911"
+            "Condition" = "8:"
+            "Property" = "8:%CE1%"
+                "Folders"
+                {
+                }
+            }
+            "{F6DFDB62-1DD1-498B-89B7-27BAC542EE5A}:_4F94174C36AD4B1B8302678AD372CE00"
+            {
+            "Name" = "8:#1912"
+            "Condition" = "8:"
+            "Property" = "8:%CE2%"
+                "Folders"
+                {
+                }
+            }
+            "{D5B00AC1-E6C3-4CC5-90FF-8E0F53D9E5E0}:_8BE9216FDC6E4FB1B98829D8873DE833"
+            {
+            "DefaultLocation" = "8:%InstallDir%"
+            "Name" = "8:#1920"
+            "Condition" = "8:"
+            "Property" = "8:%InstallDir%"
+                "Folders"
+                {
+                }
+            }
+        }
+        "Product"
+        {
+        "Name" = "8:Microsoft Visual Studio"
+        "ProductName" = "8:oggcodecs_wm5"
+        "Manufacturer" = "8:Xiph.Org"
+        "OSVersionMin" = "8:5"
+        "OSVersionMax" = "8:1000"
+        "NoUninstall" = "11:FALSE"
+        "Compress" = "11:TRUE"
+        "CESetupDLL" = "8:"
+        }
+        "ProjectOutput"
+        {
+        }
+        "Registry"
+        {
+            "HKLM"
+            {
+                "Keys"
+                {
+                    "{B1EBC968-6B66-4532-A885-748B79AF4477}:_0C931A26466449309510AFF8D1A4BBA7"
+                    {
+                    "Name" = "8:Software"
+                    "Condition" = "8:"
+                        "Keys"
+                        {
+                            "{B1EBC968-6B66-4532-A885-748B79AF4477}:_C8D04B86817E4707A195CA310DF3EFF9"
+                            {
+                            "Name" = "8:Microsoft"
+                            "Condition" = "8:"
+                                "Keys"
+                                {
+                                    "{B1EBC968-6B66-4532-A885-748B79AF4477}:_28E0E5256F454FD5BDBA68370B802400"
+                                    {
+                                    "Name" = "8:MediaPlayer"
+                                    "Condition" = "8:"
+                                        "Keys"
+                                        {
+                                            "{B1EBC968-6B66-4532-A885-748B79AF4477}:_5A35F2361F654D9EA488BF438E60E59C"
+                                            {
+                                            "Name" = "8:MLS"
+                                            "Condition" = "8:"
+                                                "Keys"
+                                                {
+                                                    "{B1EBC968-6B66-4532-A885-748B79AF4477}:_A3DF367E58DB4DC992ED578250BC69F7"
+                                                    {
+                                                    "Name" = "8:Extensions"
+                                                    "Condition" = "8:"
+                                                        "Keys"
+                                                        {
+                                                        }
+                                                        "Values"
+                                                        {
+                                                            "{C3684F64-58E2-4092-8E3C-D7483080DE5A}:_6B0C4276911F4FF890481E4D11973E66"
+                                                            {
+                                                            "Name" = "8:spx"
+                                                            "Condition" = "8:"
+                                                            "ValueTypes" = "3:1"
+                                                            "Value" = "8:audio"
+                                                            }
+                                                            "{C3684F64-58E2-4092-8E3C-D7483080DE5A}:_A81D7083010E48F0919D40908486F11A"
+                                                            {
+                                                            "Name" = "8:ogv"
+                                                            "Condition" = "8:"
+                                                            "ValueTypes" = "3:1"
+                                                            "Value" = "8:video"
+                                                            }
+                                                            "{C3684F64-58E2-4092-8E3C-D7483080DE5A}:_ED267B02112D4A2B86F6D64FAE5EBF7D"
+                                                            {
+                                                            "Name" = "8:flac"
+                                                            "Condition" = "8:"
+                                                            "ValueTypes" = "3:1"
+                                                            "Value" = "8:audio"
+                                                            }
+                                                            "{C3684F64-58E2-4092-8E3C-D7483080DE5A}:_EDDAE08FF8604B97B08788B8A4C8BD13"
+                                                            {
+                                                            "Name" = "8:ogg"
+                                                            "Condition" = "8:"
+                                                            "ValueTypes" = "3:1"
+                                                            "Value" = "8:audio"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                                "Values"
+                                                {
+                                                }
+                                            }
+                                        }
+                                        "Values"
+                                        {
+                                        }
+                                    }
+                                    "{B1EBC968-6B66-4532-A885-748B79AF4477}:_8E05F953E55841948A98CB919EAD9360"
+                                    {
+                                    "Name" = "8:Multimedia"
+                                    "Condition" = "8:"
+                                        "Keys"
+                                        {
+                                            "{B1EBC968-6B66-4532-A885-748B79AF4477}:_C1C08221BA28442582A29CC7AC96A859"
+                                            {
+                                            "Name" = "8:WMPlayer"
+                                            "Condition" = "8:"
+                                                "Keys"
+                                                {
+                                                    "{B1EBC968-6B66-4532-A885-748B79AF4477}:_0183D3C8663B41BB83909AACFA277D24"
+                                                    {
+                                                    "Name" = "8:Extensions"
+                                                    "Condition" = "8:"
+                                                        "Keys"
+                                                        {
+                                                            "{B1EBC968-6B66-4532-A885-748B79AF4477}:_19D550750A16424A87CF48B5EB4FC542"
+                                                            {
+                                                            "Name" = "8:.ogg"
+                                                            "Condition" = "8:"
+                                                                "Keys"
+                                                                {
+                                                                }
+                                                                "Values"
+                                                                {
+                                                                    "{C3684F64-58E2-4092-8E3C-D7483080DE5A}:_253E836655CB451FA2D5829EA8BEC516"
+                                                                    {
+                                                                    "Name" = "8:Runtime"
+                                                                    "Condition" = "8:"
+                                                                    "ValueTypes" = "3:3"
+                                                                    "Value" = "3:7"
+                                                                    }
+                                                                    "{C3684F64-58E2-4092-8E3C-D7483080DE5A}:_2DFEDA231FDE4588BDFF1EAFF29F7792"
+                                                                    {
+                                                                    "Name" = "8:Permissions"
+                                                                    "Condition" = "8:"
+                                                                    "ValueTypes" = "3:3"
+                                                                    "Value" = "3:31"
+                                                                    }
+                                                                }
+                                                            }
+                                                            "{B1EBC968-6B66-4532-A885-748B79AF4477}:_915B99023DED424CAFB38AE6CFBA5C73"
+                                                            {
+                                                            "Name" = "8:.spx"
+                                                            "Condition" = "8:"
+                                                                "Keys"
+                                                                {
+                                                                }
+                                                                "Values"
+                                                                {
+                                                                    "{C3684F64-58E2-4092-8E3C-D7483080DE5A}:_8974E829381C40CB8753284A31D36162"
+                                                                    {
+                                                                    "Name" = "8:Permissions"
+                                                                    "Condition" = "8:"
+                                                                    "ValueTypes" = "3:3"
+                                                                    "Value" = "3:31"
+                                                                    }
+                                                                    "{C3684F64-58E2-4092-8E3C-D7483080DE5A}:_FF58F1B0B9164BE89D6A60A5B7ED2B74"
+                                                                    {
+                                                                    "Name" = "8:Runtime"
+                                                                    "Condition" = "8:"
+                                                                    "ValueTypes" = "3:3"
+                                                                    "Value" = "3:7"
+                                                                    }
+                                                                }
+                                                            }
+                                                            "{B1EBC968-6B66-4532-A885-748B79AF4477}:_C669585AC5C8425888833155953CD3D1"
+                                                            {
+                                                            "Name" = "8:.flac"
+                                                            "Condition" = "8:"
+                                                                "Keys"
+                                                                {
+                                                                }
+                                                                "Values"
+                                                                {
+                                                                    "{C3684F64-58E2-4092-8E3C-D7483080DE5A}:_62AE7C36D2FF4670BFB599908FC214EC"
+                                                                    {
+                                                                    "Name" = "8:Runtime"
+                                                                    "Condition" = "8:"
+                                                                    "ValueTypes" = "3:3"
+                                                                    "Value" = "3:7"
+                                                                    }
+                                                                    "{C3684F64-58E2-4092-8E3C-D7483080DE5A}:_F1708D1D555246DDB4AB378B261B32AC"
+                                                                    {
+                                                                    "Name" = "8:Permissions"
+                                                                    "Condition" = "8:"
+                                                                    "ValueTypes" = "3:3"
+                                                                    "Value" = "3:31"
+                                                                    }
+                                                                }
+                                                            }
+                                                            "{B1EBC968-6B66-4532-A885-748B79AF4477}:_DFC49C276FB44BBC99A410DFCC970356"
+                                                            {
+                                                            "Name" = "8:.ogv"
+                                                            "Condition" = "8:"
+                                                                "Keys"
+                                                                {
+                                                                }
+                                                                "Values"
+                                                                {
+                                                                    "{C3684F64-58E2-4092-8E3C-D7483080DE5A}:_32DF0DC580FE468E86A8A818C389602D"
+                                                                    {
+                                                                    "Name" = "8:Permissions"
+                                                                    "Condition" = "8:"
+                                                                    "ValueTypes" = "3:3"
+                                                                    "Value" = "3:31"
+                                                                    }
+                                                                    "{C3684F64-58E2-4092-8E3C-D7483080DE5A}:_AEE593137D52405781D25255D2FE99A6"
+                                                                    {
+                                                                    "Name" = "8:Runtime"
+                                                                    "Condition" = "8:"
+                                                                    "ValueTypes" = "3:3"
+                                                                    "Value" = "3:7"
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                        "Values"
+                                                        {
+                                                        }
+                                                    }
+                                                }
+                                                "Values"
+                                                {
+                                                }
+                                            }
+                                        }
+                                        "Values"
+                                        {
+                                        }
+                                    }
+                                }
+                                "Values"
+                                {
+                                }
+                            }
+                        }
+                        "Values"
+                        {
+                        }
+                    }
+                }
+            }
+            "HKCU"
+            {
+                "Keys"
+                {
+                }
+            }
+            "HKCR"
+            {
+                "Keys"
+                {
+                    "{B1EBC968-6B66-4532-A885-748B79AF4477}:_0E71B0C3EEB44FEDBB2D3CBB084BAE98"
+                    {
+                    "Name" = "8:OgvFile"
+                    "Condition" = "8:"
+                        "Keys"
+                        {
+                            "{B1EBC968-6B66-4532-A885-748B79AF4477}:_13AFA5ED6AB94E1EB56746E789A86380"
+                            {
+                            "Name" = "8:Shell"
+                            "Condition" = "8:"
+                                "Keys"
+                                {
+                                    "{B1EBC968-6B66-4532-A885-748B79AF4477}:_5C1D6BFE6A5D48B690025758D3EB5CC1"
+                                    {
+                                    "Name" = "8:Open"
+                                    "Condition" = "8:"
+                                        "Keys"
+                                        {
+                                            "{B1EBC968-6B66-4532-A885-748B79AF4477}:_D630CD185F134F57965F2C92D0F21357"
+                                            {
+                                            "Name" = "8:Command"
+                                            "Condition" = "8:"
+                                                "Keys"
+                                                {
+                                                }
+                                                "Values"
+                                                {
+                                                    "{C3684F64-58E2-4092-8E3C-D7483080DE5A}:_E07A74A5C1EF4F5AA63CA16216BFDF08"
+                                                    {
+                                                    "Name" = "8:"
+                                                    "Condition" = "8:"
+                                                    "ValueTypes" = "3:1"
+                                                    "Value" = "8:wmplayer.exe \"\"%%1\"\""
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        "Values"
+                                        {
+                                        }
+                                    }
+                                }
+                                "Values"
+                                {
+                                }
+                            }
+                            "{B1EBC968-6B66-4532-A885-748B79AF4477}:_7A3A15A41502466DB8A272D6F0079AAA"
+                            {
+                            "Name" = "8:DefaultIcon"
+                            "Condition" = "8:"
+                                "Keys"
+                                {
+                                }
+                                "Values"
+                                {
+                                    "{C3684F64-58E2-4092-8E3C-D7483080DE5A}:_8605E57992164FD1AAD4E64B4CBA6AE6"
+                                    {
+                                    "Name" = "8:"
+                                    "Condition" = "8:"
+                                    "ValueTypes" = "3:1"
+                                    "Value" = "8:%InstallDir%\\wmpinfo,1001"
+                                    }
+                                }
+                            }
+                        }
+                        "Values"
+                        {
+                        }
+                    }
+                    "{B1EBC968-6B66-4532-A885-748B79AF4477}:_44EB0524B97D41C9849F15B7578AD9B3"
+                    {
+                    "Name" = "8:Media Type"
+                    "Condition" = "8:"
+                        "Keys"
+                        {
+                            "{B1EBC968-6B66-4532-A885-748B79AF4477}:_453E96C260F54D378A59B91D9827FDAF"
+                            {
+                            "Name" = "8:Extensions"
+                            "Condition" = "8:"
+                                "Keys"
+                                {
+                                    "{B1EBC968-6B66-4532-A885-748B79AF4477}:_077C003600BA4E359AED2F0478588498"
+                                    {
+                                    "Name" = "8:.flac"
+                                    "Condition" = "8:"
+                                        "Keys"
+                                        {
+                                        }
+                                        "Values"
+                                        {
+                                            "{C3684F64-58E2-4092-8E3C-D7483080DE5A}:_D652075FDFF948E097EBE7880C3F40A8"
+                                            {
+                                            "Name" = "8:Source Filter"
+                                            "Condition" = "8:"
+                                            "ValueTypes" = "3:1"
+                                            "Value" = "8:{6DDA37BA-0553-499a-AE0D-BEBA67204548}"
+                                            }
+                                        }
+                                    }
+                                    "{B1EBC968-6B66-4532-A885-748B79AF4477}:_16DAC21463404B3BAE4D24AF5CADBE29"
+                                    {
+                                    "Name" = "8:.ogv"
+                                    "Condition" = "8:"
+                                        "Keys"
+                                        {
+                                        }
+                                        "Values"
+                                        {
+                                            "{C3684F64-58E2-4092-8E3C-D7483080DE5A}:_2DE98069EAA345619096F37751655973"
+                                            {
+                                            "Name" = "8:Source Filter"
+                                            "Condition" = "8:"
+                                            "ValueTypes" = "3:1"
+                                            "Value" = "8:{E436EBB5-524F-11CE-9F53-0020AF0BA770}"
+                                            }
+                                        }
+                                    }
+                                    "{B1EBC968-6B66-4532-A885-748B79AF4477}:_33C6100E0ADA46EBA34505BFE38CF3C5"
+                                    {
+                                    "Name" = "8:.anx"
+                                    "Condition" = "8:"
+                                        "Keys"
+                                        {
+                                        }
+                                        "Values"
+                                        {
+                                            "{C3684F64-58E2-4092-8E3C-D7483080DE5A}:_B3FB609B097E4899A04C815E32C499F8"
+                                            {
+                                            "Name" = "8:Source Filter"
+                                            "Condition" = "8:"
+                                            "ValueTypes" = "3:1"
+                                            "Value" = "8:{E436EBB5-524F-11CE-9F53-0020AF0BA770}"
+                                            }
+                                        }
+                                    }
+                                    "{B1EBC968-6B66-4532-A885-748B79AF4477}:_56C5F82F658443CF8853F6A3B1E5DB85"
+                                    {
+                                    "Name" = "8:.spx"
+                                    "Condition" = "8:"
+                                        "Keys"
+                                        {
+                                        }
+                                        "Values"
+                                        {
+                                            "{C3684F64-58E2-4092-8E3C-D7483080DE5A}:_0E26777D6905484C84BF8B033AF6B9D6"
+                                            {
+                                            "Name" = "8:Source Filter"
+                                            "Condition" = "8:"
+                                            "ValueTypes" = "3:1"
+                                            "Value" = "8:{E436EBB5-524F-11CE-9F53-0020AF0BA770}"
+                                            }
+                                        }
+                                    }
+                                    "{B1EBC968-6B66-4532-A885-748B79AF4477}:_67D56AD7C7AF4CCCB562EB196756EE00"
+                                    {
+                                    "Name" = "8:.ogg"
+                                    "Condition" = "8:"
+                                        "Keys"
+                                        {
+                                        }
+                                        "Values"
+                                        {
+                                            "{C3684F64-58E2-4092-8E3C-D7483080DE5A}:_1E333FEEBEFB4312B7C4598EEF87C56F"
+                                            {
+                                            "Name" = "8:Source Filter"
+                                            "Condition" = "8:"
+                                            "ValueTypes" = "3:1"
+                                            "Value" = "8:{E436EBB5-524F-11CE-9F53-0020AF0BA770}"
+                                            }
+                                        }
+                                    }
+                                }
+                                "Values"
+                                {
+                                }
+                            }
+                            "{B1EBC968-6B66-4532-A885-748B79AF4477}:_7D675829BCFB4577B368BCC3B6F57145"
+                            {
+                            "Name" = "8:{E436EB83-524F-11CE-9F53-0020AF0BA770}"
+                            "Condition" = "8:"
+                                "Keys"
+                                {
+                                    "{B1EBC968-6B66-4532-A885-748B79AF4477}:_8E5F6817616D48EF9BCD39256E473C5C"
+                                    {
+                                    "Name" = "8:{DD142C1E-0C1E-4381-A24E-0B2D80B6098A}"
+                                    "Condition" = "8:"
+                                        "Keys"
+                                        {
+                                        }
+                                        "Values"
+                                        {
+                                            "{C3684F64-58E2-4092-8E3C-D7483080DE5A}:_505ED4DBD93F48298D7C4ABC0E5106B1"
+                                            {
+                                            "Name" = "8:Source Filter"
+                                            "Condition" = "8:"
+                                            "ValueTypes" = "3:1"
+                                            "Value" = "8:{E436EBB5-524F-11CE-9F53-0020AF0BA770}"
+                                            }
+                                            "{C3684F64-58E2-4092-8E3C-D7483080DE5A}:_994E7E42801441CD968F0BC974D7E080"
+                                            {
+                                            "Name" = "8:0"
+                                            "Condition" = "8:"
+                                            "ValueTypes" = "3:1"
+                                            "Value" = "8:0,4,,4F676753"
+                                            }
+                                        }
+                                    }
+                                }
+                                "Values"
+                                {
+                                }
+                            }
+                        }
+                        "Values"
+                        {
+                        }
+                    }
+                    "{B1EBC968-6B66-4532-A885-748B79AF4477}:_498103A598E34B28873B6A65379081DE"
+                    {
+                    "Name" = "8:.ogg"
+                    "Condition" = "8:"
+                        "Keys"
+                        {
+                        }
+                        "Values"
+                        {
+                            "{C3684F64-58E2-4092-8E3C-D7483080DE5A}:_6D925355F1C14C968509382A2EE8503A"
+                            {
+                            "Name" = "8:"
+                            "Condition" = "8:"
+                            "ValueTypes" = "3:1"
+                            "Value" = "8:OggFile"
+                            }
+                            "{C3684F64-58E2-4092-8E3C-D7483080DE5A}:_90728C395B4F41BF82E0AFEBA71705C2"
+                            {
+                            "Name" = "8:PerceivedType"
+                            "Condition" = "8:"
+                            "ValueTypes" = "3:1"
+                            "Value" = "8:audio"
+                            }
+                            "{C3684F64-58E2-4092-8E3C-D7483080DE5A}:_CF348B2B68FC4DDAB03BC213010D3228"
+                            {
+                            "Name" = "8:Content Type"
+                            "Condition" = "8:"
+                            "ValueTypes" = "3:1"
+                            "Value" = "8:audio/ogg"
+                            }
+                        }
+                    }
+                    "{B1EBC968-6B66-4532-A885-748B79AF4477}:_4D20CDCE4C394BF7984D816B2EABA9D5"
+                    {
+                    "Name" = "8:.spx"
+                    "Condition" = "8:"
+                        "Keys"
+                        {
+                        }
+                        "Values"
+                        {
+                            "{C3684F64-58E2-4092-8E3C-D7483080DE5A}:_91DD351CDB134E66A6863DB64A8C4E4A"
+                            {
+                            "Name" = "8:Content Type"
+                            "Condition" = "8:"
+                            "ValueTypes" = "3:1"
+                            "Value" = "8:audio/ogg"
+                            }
+                            "{C3684F64-58E2-4092-8E3C-D7483080DE5A}:_DEECC5EDF4F1484B82975D8BB9761E44"
+                            {
+                            "Name" = "8:PerceivedType"
+                            "Condition" = "8:"
+                            "ValueTypes" = "3:1"
+                            "Value" = "8:audio"
+                            }
+                            "{C3684F64-58E2-4092-8E3C-D7483080DE5A}:_F019F9906ACE48DEA76E1080BF1BB5F6"
+                            {
+                            "Name" = "8:"
+                            "Condition" = "8:"
+                            "ValueTypes" = "3:1"
+                            "Value" = "8:SpxFile"
+                            }
+                        }
+                    }
+                    "{B1EBC968-6B66-4532-A885-748B79AF4477}:_4D7A05BECF124F658C2A6BD71E5D023D"
+                    {
+                    "Name" = "8:FlacFile"
+                    "Condition" = "8:"
+                        "Keys"
+                        {
+                            "{B1EBC968-6B66-4532-A885-748B79AF4477}:_5E3887103C69447EBE2F39912F9A2017"
+                            {
+                            "Name" = "8:DefaultIcon"
+                            "Condition" = "8:"
+                                "Keys"
+                                {
+                                }
+                                "Values"
+                                {
+                                    "{C3684F64-58E2-4092-8E3C-D7483080DE5A}:_52AAF97C6D9D43D7B0B3CD6F118B6D58"
+                                    {
+                                    "Name" = "8:"
+                                    "Condition" = "8:"
+                                    "ValueTypes" = "3:1"
+                                    "Value" = "8:%InstallDir%\\wmpinfo,1001"
+                                    }
+                                }
+                            }
+                            "{B1EBC968-6B66-4532-A885-748B79AF4477}:_D1598CA7DFA145E5864DF0526BA97405"
+                            {
+                            "Name" = "8:Shell"
+                            "Condition" = "8:"
+                                "Keys"
+                                {
+                                    "{B1EBC968-6B66-4532-A885-748B79AF4477}:_EC50CF9788554460A88632ECA7E225AB"
+                                    {
+                                    "Name" = "8:Open"
+                                    "Condition" = "8:"
+                                        "Keys"
+                                        {
+                                            "{B1EBC968-6B66-4532-A885-748B79AF4477}:_2E95B7329B7842658ACF761A621FE307"
+                                            {
+                                            "Name" = "8:Command"
+                                            "Condition" = "8:"
+                                                "Keys"
+                                                {
+                                                }
+                                                "Values"
+                                                {
+                                                    "{C3684F64-58E2-4092-8E3C-D7483080DE5A}:_3301AF0105E7495A99A7F94BF23DE55A"
+                                                    {
+                                                    "Name" = "8:"
+                                                    "Condition" = "8:"
+                                                    "ValueTypes" = "3:1"
+                                                    "Value" = "8:wmplayer.exe \"\"%%1\"\""
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        "Values"
+                                        {
+                                        }
+                                    }
+                                }
+                                "Values"
+                                {
+                                }
+                            }
+                        }
+                        "Values"
+                        {
+                        }
+                    }
+                    "{B1EBC968-6B66-4532-A885-748B79AF4477}:_4F62671469714FD987BF9ED305AF5129"
+                    {
+                    "Name" = "8:OggFile"
+                    "Condition" = "8:"
+                        "Keys"
+                        {
+                            "{B1EBC968-6B66-4532-A885-748B79AF4477}:_7479DA63F369438BAFE377EC76E3F662"
+                            {
+                            "Name" = "8:Shell"
+                            "Condition" = "8:"
+                                "Keys"
+                                {
+                                    "{B1EBC968-6B66-4532-A885-748B79AF4477}:_016854A3CBA84E61A2DE31CA3C6241F8"
+                                    {
+                                    "Name" = "8:Open"
+                                    "Condition" = "8:"
+                                        "Keys"
+                                        {
+                                            "{B1EBC968-6B66-4532-A885-748B79AF4477}:_3F7EC1DDD36E4A7090317C0C4BF03F4C"
+                                            {
+                                            "Name" = "8:Command"
+                                            "Condition" = "8:"
+                                                "Keys"
+                                                {
+                                                }
+                                                "Values"
+                                                {
+                                                    "{C3684F64-58E2-4092-8E3C-D7483080DE5A}:_ACC02E097DA14B43AA552C08DABC43F2"
+                                                    {
+                                                    "Name" = "8:"
+                                                    "Condition" = "8:"
+                                                    "ValueTypes" = "3:1"
+                                                    "Value" = "8:wmplayer.exe \"\"%%1\"\""
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        "Values"
+                                        {
+                                        }
+                                    }
+                                }
+                                "Values"
+                                {
+                                }
+                            }
+                            "{B1EBC968-6B66-4532-A885-748B79AF4477}:_79331DE79434427EAF20631D0FE09483"
+                            {
+                            "Name" = "8:DefaultIcon"
+                            "Condition" = "8:"
+                                "Keys"
+                                {
+                                }
+                                "Values"
+                                {
+                                    "{C3684F64-58E2-4092-8E3C-D7483080DE5A}:_74F42073E9F743378381F5F1A91E5B1A"
+                                    {
+                                    "Name" = "8:"
+                                    "Condition" = "8:"
+                                    "ValueTypes" = "3:1"
+                                    "Value" = "8:%InstallDir%\\wmpinfo,1001"
+                                    }
+                                }
+                            }
+                        }
+                        "Values"
+                        {
+                        }
+                    }
+                    "{B1EBC968-6B66-4532-A885-748B79AF4477}:_70F60230E5724C99A2C1E278E3C080D8"
+                    {
+                    "Name" = "8:SpxFile"
+                    "Condition" = "8:"
+                        "Keys"
+                        {
+                            "{B1EBC968-6B66-4532-A885-748B79AF4477}:_53A2D339EFCC44F1984842B4DEC7314E"
+                            {
+                            "Name" = "8:DefaultIcon"
+                            "Condition" = "8:"
+                                "Keys"
+                                {
+                                }
+                                "Values"
+                                {
+                                    "{C3684F64-58E2-4092-8E3C-D7483080DE5A}:_77704C5B5EEA4A2FAFE72CDFC79B7B47"
+                                    {
+                                    "Name" = "8:"
+                                    "Condition" = "8:"
+                                    "ValueTypes" = "3:1"
+                                    "Value" = "8:%InstallDir%\\wmpinfo,1001"
+                                    }
+                                }
+                            }
+                            "{B1EBC968-6B66-4532-A885-748B79AF4477}:_C09B4392C68049F886ABD7466869C38C"
+                            {
+                            "Name" = "8:Shell"
+                            "Condition" = "8:"
+                                "Keys"
+                                {
+                                    "{B1EBC968-6B66-4532-A885-748B79AF4477}:_C91972574DDB4A7ABB1405074625BF3D"
+                                    {
+                                    "Name" = "8:Open"
+                                    "Condition" = "8:"
+                                        "Keys"
+                                        {
+                                            "{B1EBC968-6B66-4532-A885-748B79AF4477}:_C82A064FFA0842B1830FD734523418BB"
+                                            {
+                                            "Name" = "8:Command"
+                                            "Condition" = "8:"
+                                                "Keys"
+                                                {
+                                                }
+                                                "Values"
+                                                {
+                                                    "{C3684F64-58E2-4092-8E3C-D7483080DE5A}:_2B2A31D9CF154AD696CCDCCA2A708CC3"
+                                                    {
+                                                    "Name" = "8:"
+                                                    "Condition" = "8:"
+                                                    "ValueTypes" = "3:1"
+                                                    "Value" = "8:wmplayer.exe \"\"%%1\"\""
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        "Values"
+                                        {
+                                        }
+                                    }
+                                }
+                                "Values"
+                                {
+                                }
+                            }
+                        }
+                        "Values"
+                        {
+                        }
+                    }
+                    "{B1EBC968-6B66-4532-A885-748B79AF4477}:_9BB24AFBFA8944AEBAE9CB53A2D41DD8"
+                    {
+                    "Name" = "8:.ogv"
+                    "Condition" = "8:"
+                        "Keys"
+                        {
+                        }
+                        "Values"
+                        {
+                            "{C3684F64-58E2-4092-8E3C-D7483080DE5A}:_4E906869E6374A2881381A3EE34B8F1E"
+                            {
+                            "Name" = "8:"
+                            "Condition" = "8:"
+                            "ValueTypes" = "3:1"
+                            "Value" = "8:OgvFile"
+                            }
+                            "{C3684F64-58E2-4092-8E3C-D7483080DE5A}:_69C6E162C4EA4072A4F1BEE259567FE1"
+                            {
+                            "Name" = "8:PerceivedType"
+                            "Condition" = "8:"
+                            "ValueTypes" = "3:1"
+                            "Value" = "8:video"
+                            }
+                            "{C3684F64-58E2-4092-8E3C-D7483080DE5A}:_CFFF314BC3A34A25983571272908F403"
+                            {
+                            "Name" = "8:Content Type"
+                            "Condition" = "8:"
+                            "ValueTypes" = "3:1"
+                            "Value" = "8:video/ogg"
+                            }
+                        }
+                    }
+                    "{B1EBC968-6B66-4532-A885-748B79AF4477}:_D7298916AC64405C8D4AE15E620F7878"
+                    {
+                    "Name" = "8:.flac"
+                    "Condition" = "8:"
+                        "Keys"
+                        {
+                        }
+                        "Values"
+                        {
+                            "{C3684F64-58E2-4092-8E3C-D7483080DE5A}:_45B74B07FFCF4BB0A35CD2113670DA68"
+                            {
+                            "Name" = "8:Content Type"
+                            "Condition" = "8:"
+                            "ValueTypes" = "3:1"
+                            "Value" = "8:audio/flac"
+                            }
+                            "{C3684F64-58E2-4092-8E3C-D7483080DE5A}:_945FE24885A54EF1B191142757FC446B"
+                            {
+                            "Name" = "8:PerceivedType"
+                            "Condition" = "8:"
+                            "ValueTypes" = "3:1"
+                            "Value" = "8:audio"
+                            }
+                            "{C3684F64-58E2-4092-8E3C-D7483080DE5A}:_C18EE7FA65AB4973BAE03D93AA1650E4"
+                            {
+                            "Name" = "8:"
+                            "Condition" = "8:"
+                            "ValueTypes" = "3:1"
+                            "Value" = "8:FlacFile"
+                            }
+                        }
+                    }
+                    "{B1EBC968-6B66-4532-A885-748B79AF4477}:_F8308018008249EA88EDAC5B5114B19F"
+                    {
+                    "Name" = "8:http"
+                    "Condition" = "8:"
+                        "Keys"
+                        {
+                            "{B1EBC968-6B66-4532-A885-748B79AF4477}:_4D913C4D62F248FE95A6B4A4E0CD26D7"
+                            {
+                            "Name" = "8:Extensions"
+                            "Condition" = "8:"
+                                "Keys"
+                                {
+                                }
+                                "Values"
+                                {
+                                    "{C3684F64-58E2-4092-8E3C-D7483080DE5A}:_0FBC389A62EE4CF2A9CD55BB708A4EDF"
+                                    {
+                                    "Name" = "8:.spx"
+                                    "Condition" = "8:"
+                                    "ValueTypes" = "3:1"
+                                    "Value" = "8:{E436EBB6-524F-11CE-9F53-0020AF0BA770}"
+                                    }
+                                    "{C3684F64-58E2-4092-8E3C-D7483080DE5A}:_19FA1050D6F84195AC113A0081557FEE"
+                                    {
+                                    "Name" = "8:.ogv"
+                                    "Condition" = "8:"
+                                    "ValueTypes" = "3:1"
+                                    "Value" = "8:{E436EBB6-524F-11CE-9F53-0020AF0BA770}"
+                                    }
+                                    "{C3684F64-58E2-4092-8E3C-D7483080DE5A}:_1C237950894C498B99C9C8710D8FC5AB"
+                                    {
+                                    "Name" = "8:.ogg"
+                                    "Condition" = "8:"
+                                    "ValueTypes" = "3:1"
+                                    "Value" = "8:{E436EBB6-524F-11CE-9F53-0020AF0BA770}"
+                                    }
+                                    "{C3684F64-58E2-4092-8E3C-D7483080DE5A}:_7F81A2BE3F38444F844F3143DA64B77A"
+                                    {
+                                    "Name" = "8:.anx"
+                                    "Condition" = "8:"
+                                    "ValueTypes" = "3:1"
+                                    "Value" = "8:{E436EBB6-524F-11CE-9F53-0020AF0BA770}"
+                                    }
+                                }
+                            }
+                        }
+                        "Values"
+                        {
+                        }
+                    }
+                }
+            }
+            "HKU"
+            {
+                "Keys"
+                {
+                }
+            }
+            "HKPU"
+            {
+                "Keys"
+                {
+                }
+            }
+        }
+        "Shortcut"
+        {
+        }
+    }
+}

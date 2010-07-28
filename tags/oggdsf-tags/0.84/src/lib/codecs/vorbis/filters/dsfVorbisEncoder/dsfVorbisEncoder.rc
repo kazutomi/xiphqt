@@ -1,0 +1,131 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "winresrc.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""winresrc.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_VORBIS_ENCODE_SETTINGS DIALOGEX 0, 0, 210, 154
+STYLE DS_SETFONT | WS_CHILD | WS_BORDER
+FONT 8, "MS Shell Dlg", 400, 0, 0x0
+BEGIN
+    CONTROL         "",IDC_SLIDER_QUALITY,"msctls_trackbar32",TBS_NOTICKS | WS_TABSTOP,4,31,202,11
+    LTEXT           "",IDC_LABEL_Q_VALUE,147,19,52,9,WS_BORDER
+    GROUPBOX        "Quality",IDC_GROUP_QUALITY,4,7,202,122
+    RTEXT           "Q-Value",IDC_STATIC_Q_VALUE,90,19,52,9
+    CONTROL         "Use Q-Mode",IDC_CHECK_Q_MODE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,16,65,12
+    CONTROL         "",IDC_SLIDER_TARGET_BITRATE,"msctls_trackbar32",TBS_NOTICKS | WS_TABSTOP,4,57,202,11
+    CONTROL         "",IDC_SLIDER_MIN_BITRATE,"msctls_trackbar32",TBS_NOTICKS | WS_TABSTOP,4,82,202,11
+    CONTROL         "",IDC_SLIDER_MAX_BITRATE,"msctls_trackbar32",TBS_NOTICKS | WS_TABSTOP,4,106,202,11
+    LTEXT           "",IDC_LABEL_TARGET_BITRATE,147,42,52,9,WS_BORDER
+    LTEXT           "",IDC_LABEL_MIN_BITRATE,147,70,52,9,WS_BORDER
+    LTEXT           "",IDC_LABEL_MAX_BITRATE,147,95,52,9,WS_BORDER
+    RTEXT           "Target Bitrate",IDC_STATIC_TARGET_BITRATE,90,42,52,9
+    RTEXT           "Min. Bitrate",IDC_STATIC_MIN_BITRATE,91,70,52,9
+    RTEXT           "Max. Bitrate",IDC_STATIC_MAX_BITRATE,90,94,52,9
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_VORBIS_ENCODE_SETTINGS, DIALOG
+    BEGIN
+        LEFTMARGIN, 4
+        RIGHTMARGIN, 206
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 147
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// English (Australia) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENA)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_AUS
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_VORBIS_ENC_PROPS_STRING "Vorbis Encode Settings"
+END
+
+#endif    // English (Australia) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

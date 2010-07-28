@@ -1,0 +1,88 @@
+// AxPlayer.idl : IDL source for AxPlayer
+//
+
+// This file will be processed by the MIDL tool to
+// produce the type library (AxPlayer.tlb) and marshalling code.
+
+import "oaidl.idl";
+import "ocidl.idl";
+
+[
+	object,
+	uuid(8DEA6524-F708-46AE-9D20-2C8CA0BCF075),
+	dual,
+	nonextensible,
+	helpstring("IVideoTagBehavior Interface"),
+	pointer_default(unique)
+]
+interface IVideoTagBehavior : IDispatch{
+};
+[
+	object,
+	uuid(F3486DCF-295B-499C-97F6-33CB1FC8D783),
+	dual,
+	nonextensible,
+	helpstring("IHTMLEventsSink Interface"),
+	pointer_default(unique)
+]
+interface IHTMLEventsSink : IDispatch{
+};
+[
+	object,
+	uuid(12804362-B793-4237-89BF-AAB42EF969EA),
+	nonextensible,
+	helpstring("IEmbeddedAxEventsSink Interface"),
+	pointer_default(unique)
+]
+interface IEmbeddedAxEventsSink : IUnknown{
+
+    [helpstring("method OnLeftButtonDown")] HRESULT OnLeftButtonDown(LONG x, LONG y);
+    [helpstring("method OnEmbeddedDraw")] HRESULT OnEmbeddedDraw(RECT rect, HDC hdc);
+};
+[
+	object,
+	uuid(C71190BD-F187-4187-8136-820B40C6F629),
+	nonextensible,
+	helpstring("IEmbeddedAx Interface"),
+	pointer_default(unique)
+]
+interface IEmbeddedAx : IUnknown{
+    [helpstring("method SetEventsSink")] HRESULT SetEventsSink(IUnknown* events);
+    [helpstring("method EmbeddedRefresh")] HRESULT EmbeddedRefresh();
+};
+
+[
+	uuid(4856ADA6-564F-41B8-ACAA-E98ABD004A84),
+	version(1.0),
+	helpstring("AxPlayer 1.0 Type Library")
+]
+library AxPlayerLib
+{
+	importlib("stdole2.tlb");
+	[
+		uuid(35E1EB3E-98C3-40FC-9E52-5A7FF0AC394F),
+		helpstring("_IVideoTagBehaviorEvents Interface")
+	]
+	dispinterface _IVideoTagBehaviorEvents
+	{
+		properties:
+		methods:
+	};
+	[
+		uuid(7CC95AE6-C1FA-40CC-AB17-3E91DA2F77CA),
+		helpstring("HTML5 <video> and <audio> implementation")
+	]
+	coclass VideoTagBehavior
+	{
+		[default] interface IVideoTagBehavior;
+		[default, source] dispinterface _IVideoTagBehaviorEvents;
+	};
+	[
+		uuid(8CCDB61D-0D74-464A-84EE-F33C3E1F0B8B),
+		helpstring("HTMLEventsSink Class")
+	]
+	coclass HTMLEventsSink
+	{
+		[default] interface IHTMLEventsSink;
+	};
+};
