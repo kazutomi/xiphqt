@@ -10,7 +10,7 @@ use Tk::Xrm;
 use Tk qw(exit); 
 use CDDB;
 
-$version="Blueberry Armageddon 20041015";
+$version="Blueberry Armageddon 20100731";
 $width=400;
 ($device)=@ARGV;
 
@@ -352,6 +352,23 @@ sub Rescan{
     $tracks=0;
     $output=~s/[^=]+=+\n(.+)/$1/;
     my @toc;
+
+    # CDDB protocol is stupidly designed in many ways, but one of the
+    # biggest is that matching depends on the offset of the first
+    # track... which is neither deterministic from CDROM drive to
+    # CDROM drive, nor a well defined concept in the RedBook spec.
+    # Even worse, it appears that much CDROM software always reports
+    # it as MSF 0 2 0 regardless of what it is, and thus CDDB often
+    # has the offset for the whole disc fucked up.  I've seen discs
+    # encoded in CDDB in one of several different ways, so we try the
+    # ones I know about.
+
+    # 1: Offset drive's track information by 2 sec
+    # 2: Use drive's track information directly
+    # 3: Offset drive's track information to exactly 2 sec
+    # 4: Offset drive's track information to exactly 0 sec
+    # 5: Use drive's track information directly, but set first track to 2 sec
+ 
     foreach (split(/\n/,$output)){
 	if(m/^\s*([0-9]+)\.\s+(\d+)\s+\S+\s+(\d+)/){
 	    my$f=$3+150;
@@ -360,14 +377,14 @@ sub Rescan{
 	    my$m=int($s/60);
 	    $s-=$m*60;
 	    $tracks=$1 if ($1>$tracks);
-	    $leadout=$2+$3+150;
+	    $leadout=$2+$3;
 	    push @toc,"$1 $m $s $f";
 	    $initial=$3 if($1==1);
 	}
     } 
 
     if($tracks>0){
-	my$f=$leadout;
+	my$f=$leadout+150;
 	my$s=int($f/75);
 	$f-=$s*75;
 	my$m=int($s/60);
@@ -381,82 +398,207 @@ sub Rescan{
 	AlbumUpdate();
 	Status("Query failed");
 	Alert("Could not query cdrom; drive empty?",$output);
-    }else{
-	for(my$i=1;$i<=99;$i++){
-	    $trackrip[$i]=1;
-	} 
+	return;
+    }
+
+    for(my$i=1;$i<=99;$i++){
+	$trackrip[$i]=1;
+    } 
 	    
-	Status("Querying database");
-	$toplevel->update();
+    Status("Querying CDDB (format 1)");
+    $toplevel->update();
+
+    # perform cddb query
+    my $cddb = new CDDB(
+	  Host           => 'freedb.freedb.org',
+	  Port           => 8880,
+	  Submit_Address => 'test-submit@freedb.org',
+	  Debug          => 0,
+	) or die $!;
+    my @discs = $cddb->get_discs_by_toc(@toc);
+
+    my@temp=@{$discs[0]};
+      
+    if(!defined(@discs)|| $#discs<0 || !defined(@temp[1])){
+
+	# 2: Use drive's track information directly
+	@toc = [];
+
+	foreach (split(/\n/,$output)){
+	    if(m/^\s*([0-9]+)\.\s+(\d+)\s+\S+\s+(\d+)/){
+		my$f=$3;
+		my$s=int($f/75);
+		$f-=$s*75;
+		my$m=int($s/60);
+		$s-=$m*60;
+		$tracks=$1 if ($1>$tracks);
+		$leadout=$2+$3;
+		push @toc,"$1 $m $s $f";
+		$initial=$3 if($1==1);
+	    }
+	} 
+
+	if($tracks>0){
+	    my$f=$leadout;
+	    my$s=int($f/75);
+	    $f-=$s*75;
+	    my$m=int($s/60);
+	    $s-=$m*60;
+	    push @toc, "999 $m $s $f";
+	}
 
 	# perform cddb query
-	my $cddb = new CDDB() or die $!;
-	my @discs = $cddb->get_discs_by_toc(@toc);
+	$cddb->DESTROY();
+	$cddb = new CDDB() or die $!;
+	Status("Querying CDDB (format 2)");
+	$toplevel->update();
+	@discs = $cddb->get_discs_by_toc(@toc);
+	
+	@temp=@{$discs[0]};
+    }
 
-	my@temp=@{$discs[0]};
-      
-	if(!defined(@discs)|| $#discs<0 || !defined(@temp[1])){
+    if(!defined(@discs)|| $#discs<0 || !defined(@temp[1])){
 
-	    # CDDB protocol is stupidly designed in many ways, but one
-	    # of the biggest is that matching depends on the offset of
-	    # the first track... which is neither deterministic from
-	    # CDROM drive to CDROM drive, nor a well defined concept
-	    # in the RedBook spec.  Even worse, it appears that much
-	    # CDROM software always reports it as MSF 0 2 0 regardless
-	    # of what it is, and thus CDDB often has the offset for
-	    # the whole disc fucked up.
-	    
-	    # retry with 1 0 2 0
-	    
-	    $toc[0]="1 0 2 0";
-	    
+	# 3: Offset drive's track information to exactly 2 sec
+	@toc = [];
+	my $offset;
+
+	foreach (split(/\n/,$output)){
+	    if(m/^\s*([0-9]+)\.\s+(\d+)\s+\S+\s+(\d+)/){
+		if(!defined($offset)){
+		    $offset = 150-$3;
+		}
+		my$f=$3+$offset;
+		my$s=int($f/75);
+		$f-=$s*75;
+		my$m=int($s/60);
+		$s-=$m*60;
+		$tracks=$1 if ($1>$tracks);
+		$leadout=$2+$3;
+		push @toc,"$1 $m $s $f";
+		$initial=$3 if($1==1);
+	    }
+	} 
+
+	if($tracks>0){
+	    my$f=$leadout+$offset;
+	    my$s=int($f/75);
+	    $f-=$s*75;
+	    my$m=int($s/60);
+	    $s-=$m*60;
+	    push @toc, "999 $m $s $f";
+	}
+
+	if($offset != 0){
 	    # perform cddb query
 	    $cddb->DESTROY();
 	    $cddb = new CDDB() or die $!;
-	    Status("Requerying database");
+	    Status("Querying CDDB (format 3)");
+	    $toplevel->update();
+	    @discs = $cddb->get_discs_by_toc(@toc);
+	
+	    @temp=@{$discs[0]};
+	}
+    }
+
+    if(!defined(@discs)|| $#discs<0 || !defined(@temp[1])){
+
+	# 4: Offset drive's track information to exactly 0 sec
+	@toc = [];
+	my $offset;
+
+	foreach (split(/\n/,$output)){
+	    if(m/^\s*([0-9]+)\.\s+(\d+)\s+\S+\s+(\d+)/){
+		if(!defined($offset)){
+		    $offset = -$3;
+		}
+		my$f=$3+$offset;
+		my$s=int($f/75);
+		$f-=$s*75;
+		my$m=int($s/60);
+		$s-=$m*60;
+		$tracks=$1 if ($1>$tracks);
+		$leadout=$2+$3;
+		push @toc,"$1 $m $s $f";
+		$initial=$3 if($1==1);
+	    }
+	} 
+
+	if($tracks>0){
+	    my$f=$leadout+$offset;
+	    my$s=int($f/75);
+	    $f-=$s*75;
+	    my$m=int($s/60);
+	    $s-=$m*60;
+	    push @toc, "999 $m $s $f";
+	}
+
+	if($offset != 0){
+	    # perform cddb query
+	    $cddb->DESTROY();
+	    $cddb = new CDDB() or die $!;
+	    Status("Querying CDDB (format 4)");
+	    $toplevel->update();
+	    @discs = $cddb->get_discs_by_toc(@toc);
+	
+	    @temp=@{$discs[0]};
+	}
+    }
+
+    if(!defined(@discs)|| $#discs<0 || !defined(@temp[1])){
+
+	# 5: Use drive's track information directly, but set first track to 2 sec
+	@toc = [];
+	my $offset;
+
+	foreach (split(/\n/,$output)){
+	    if(m/^\s*([0-9]+)\.\s+(\d+)\s+\S+\s+(\d+)/){
+		if(!defined($offset)){
+		    $offset = $3;
+		}
+		my$f=$3;
+		my$s=int($f/75);
+		$f-=$s*75;
+		my$m=int($s/60);
+		$s-=$m*60;
+		$tracks=$1 if ($1>$tracks);
+		$leadout=$2+$3;
+		push @toc,"$1 $m $s $f";
+		$initial=$3 if($1==1);
+	    }
+	} 
+
+	if($tracks>0){
+	    my$f=$leadout;
+	    my$s=int($f/75);
+	    $f-=$s*75;
+	    my$m=int($s/60);
+	    $s-=$m*60;
+	    push @toc, "999 $m $s $f";
+	}
+
+	if($offset != 150){
+	    $toc[0]="1 0 2 0";
+
+	    # perform cddb query
+	    $cddb->DESTROY();
+	    $cddb = new CDDB() or die $!;
+	    Status("Querying CDDB (format 3)");
 	    $toplevel->update();
 	    @discs = $cddb->get_discs_by_toc(@toc);
 	    
 	    @temp=@{$discs[0]};
+	}
+    }
 	    
-	    if(!defined(@discs)|| $#discs<0 || !defined(@temp[1])){
+    if(!defined(@discs)|| $#discs<0 || !defined(@temp[1])){
 
-
-		Status("Album Loaded; no CDDB entry");
-		for(my$i=1;$i<=$tracks;$i++){
-		    $trackname[$i]="";
-		}
-		$artist="";
-		$album="";
-		$seekrit=0;
-		if($initial>100){
-		    $tracks++;
-		    $trackname[$tracks]="Hidden Track Zero";
-		    $seekrit=1;
-		}
-
-		$cddb->DESTROY();
-		
-		AlbumUpdate();
-		$window_go->configure(-state=>"normal");
-		$window_check->configure(-state=>"normal");
-		return;
-	    }
+	Status("Album Loaded; no CDDB entry");
+	for(my$i=1;$i<=$tracks;$i++){
+	    $trackname[$i]="";
 	}
-
-	my ($genre, $cddb_id, $title) = @{$discs[0]};
-	$title=~/(.+)\s\/\s(.+)/;
-	$artist=$1;
-	$album=$2;
-	$artist=~s/\//:/g;
-	$album=~s/\//:/g;
-	my $disc_info     = $cddb->get_disc_details($genre, $cddb_id);
-	
-	for(my$i=0;$i<$tracks;$i++){
-	    $trackname[$i+1]=$disc_info->{"ttitles"}[$i];
-		$trackname[$i+1]=~s/\//:/g;
-	}
-
+	$artist="";
+	$album="";
 	$seekrit=0;
 	if($initial>100){
 	    $tracks++;
@@ -464,14 +606,41 @@ sub Rescan{
 	    $seekrit=1;
 	}
 
-	Recheck();
-	Status("Album Loaded");
 	$cddb->DESTROY();
-
+	
 	AlbumUpdate();
 	$window_go->configure(-state=>"normal");
 	$window_check->configure(-state=>"normal");
+	return;
     }
+
+    my ($genre, $cddb_id, $title) = @{$discs[0]};
+    $title=~/(.+)\s\/\s(.+)/;
+    $artist=$1;
+    $album=$2;
+    $artist=~s/\//:/g;
+    $album=~s/\//:/g;
+    my $disc_info     = $cddb->get_disc_details($genre, $cddb_id);
+	
+    for(my$i=0;$i<$tracks;$i++){
+	$trackname[$i+1]=$disc_info->{"ttitles"}[$i];
+	$trackname[$i+1]=~s/\//:/g;
+    }
+
+    $seekrit=0;
+    if($initial>100){
+	$tracks++;
+	$trackname[$tracks]="Hidden Track Zero";
+	$seekrit=1;
+    }
+
+    Recheck();
+    Status("Album Loaded");
+    $cddb->DESTROY();
+
+    AlbumUpdate();
+    $window_go->configure(-state=>"normal");
+    $window_check->configure(-state=>"normal");
 }
 
 sub Recheck{
@@ -546,7 +715,7 @@ sub Alert{
     $modal->configure(-background=>$modal->optionGet("background",""));
     
     $modal_shell=$modal->Label(-class=>Alert,Name=>"shell",
-			       Borderwidth=>1,Relief=>raised)->
+			       -borderwidth=>1,-relief=>raised)->
 				   place(-x=>4,-y=>4,-relwidth=>1.0,-relheight=>1.0,
 					 -width=>-8,-height=>-8,-anchor=>'nw');
 
@@ -582,7 +751,7 @@ sub Alert{
     $modal->geometry($width."x".$height."+".int($x)."+".int($y));
 
     $modal->resizable(FALSE,FALSE);
-    $modal->transient($window);
+    #$modal->transient($window);
     $modal_exit->configure(-command=>[sub{$modal->destroy();undef $modal}]);
 }
 
