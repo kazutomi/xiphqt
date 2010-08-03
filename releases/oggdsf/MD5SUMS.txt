@@ -100,3 +100,8 @@ b1f84048a16b36cb215ada83f6a05bc0  opencodecs_0.84.17325_src.7z
 46548b5ba056357428133fad4d90e5ad  opencodecs_0.84.17338_pdbs.7z
 b39726961c63b8a122195b365ae04bf6  opencodecs_0.84.17338_src.7z
 bb79955de890edfd77b0f5c1fa239932  opencodecs_0.84.17338.exe
+da5bdd001c22552d4ab551b3b72e7e85  opencodecs_0.84.17359-wm5.cab
+aaa3cd14e7d8f4654e01f1b2ba5204d6  opencodecs_0.84.17359.exe
+3d7e5ba1795a6c0d2b7ca03b806865d9  opencodecs_0.84.17359_pdbs-wm5.7z
+e1f8327dc7ca3b8b7acdb09e7ff307fd  opencodecs_0.84.17359_pdbs.7z
+941a6ca0992fb0e0eb3db4bf06099998  opencodecs_0.84.17359_src.7z
