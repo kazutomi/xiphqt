@@ -8,6 +8,21 @@
 <!--#include virtual="/dshow/ssi/pagetop.include" -->
 <!--  All your page content goes here  -->
 
+<h2>Version 0.84.17359</h2>
+<p class="newsdate">4 August, 2010</p>
+
+<p>This release adds decoding support for Windows Mobile 5.0 - 6.5. Seeking is disabled
+for Ogg Vorbis, Theora and Speex. WebM/VP8 is not supported, and, there
+are no arm assembly optimizations (theorarm) in this release.</p>
+
+<h3>Changes this version</h3>
+<ul>
+    <li>Released Windows CE decoder package, no WebM/VP8 support for now, only Ogg Vorbis,
+      Theora, FLAC and Speex decoders.</li>
+    <li>Fixed a bug in Theora DirectShow encoder filter when multiple encoder filters were used
+      in the same graph</li>
+</ul>
+
 <h2>Version 0.84.17338</h2>
 <p class="newsdate">20 July, 2010</p>
 
