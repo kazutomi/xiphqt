@@ -1,0 +1,206 @@
+<!--#include virtual="/ssi/videoheader.include" -->
+
+<title>Xiph.Org Video Presentations: A Digital Media Primer for Geeks</title>
+
+<!--#include virtual="/common/xiphbar_video.shtml" -->
+
+<h1>A Digital Media Primer for Geeks</h1>
+<div class="or"><a href="index.html">(...up to the main video page)</a></div>
+
+<!--#include virtual="/ssi/navbar_video.include" -->
+
+<div class="videowrapper">
+  <div class="videowrapper_border">
+    <div class="videowrapper_sizer">
+
+      <!-- Firefox only added DOM support for callbacks in 4.0, so
+	   they must go in the video tag -->
+      <!-- Attributes and source URL set via JA according to dropdpwn
+      selection -->
+      <video 
+	 controls
+	 onplay="dimpage()"
+	 onpause="undimpage()"
+	 onended="undimpage()">
+
+	<!-- Cortado fallback for browsers w/o video, or without Ogg/WebM in video -->
+	<applet 
+	   width="640"
+	   height="360"
+	   class="video" 
+	   archive="cortado_20100917-2.jar"
+	   code="com.fluendo.player.Cortado.class"
+	   url="http://downloads.xiph.org/video/A_Digital_Media_Primer_For_Geeks-360p.ogv"
+	   statusheight="20"
+	   BufferSize="512"
+	   BufferHigh="25"
+	   BufferLow="5">
+	  
+	  <p>Your browser doesn't seem to support WebM, Ogg or Java;
+	    please consider downloading this
+	      video to play in your favorite media player!</p>
+	  
+	</applet>
+      </video>
+    </div>    
+  </div>
+  
+  <!-- Subtitle overlay (driven by javascript in subtitiles.js) -->
+  <div class="srtwrapper">
+    <div class="srt"></div>
+    <div class="absbackground"></div>
+  </div>
+
+  <!-- Addiitional upper video control bar (driven by javascript in video.js) -->
+  <div class="vcwrapper">
+    <div class="vidcontrols">
+
+      <!-- where the video type text is filled in -->
+      <div class="vidtype">
+      </div>
+
+      <!-- Select resolution/bitrate dropdown -->
+      <select class="video-select">	
+	<option src-webm="http://downloads.xiph.org/video/A_Digital_Media_Primer_For_Geeks-360p.webm"
+		src-ogg="http://downloads.xiph.org/video/A_Digital_Media_Primer_For_Geeks-360p.ogv"
+		poster="vid1-poster-360.jpg"
+		video-width="640px" 
+		video-height="360px" 
+		subtitle-font-size="1.6em"
+		subtitle-bottom="60px">
+	  360p</option>
+	<option src-webm="http://downloads.xiph.org/video/A_Digital_Media_Primer_For_Geeks-480p.webm"
+		src-ogg="http://downloads.xiph.org/video/A_Digital_Media_Primer_For_Geeks-480p.ogv"
+		poster="vid1-poster-480.jpg"
+		video-width="854px" 
+		video-height="480px" 
+		subtitle-font-size="2em"
+		subtitle-bottom="80px">
+	  480p</option>
+	<option src-webm="http://downloads.xiph.org/video/A_Digital_Media_Primer_For_Geeks-720p.webm"
+		src-ogg="http://downloads.xiph.org/video/A_Digital_Media_Primer_For_Geeks-720p.ogv"
+		poster="vid1-poster-720.jpg"
+		video-width="1280px" 
+		video-height="720px" 
+		subtitle-font-size="2em"
+		subtitle-bottom="120px">
+	  720p</option>
+      </select>
+      
+      <!-- chapter navigation -->
+      <select class="chapter-select">
+	<option>Chapter Selection</option>
+	<option timecode="0">Opening credits</option>
+	<option timecode="7.298">Intro</option>
+	<option timecode="184.142">Digital vs. Analog</option>
+	<optgroup label="Digital Audio">
+	  <option timecode="540.957">Overview</option>
+	  <option timecode="573.698">Sample Rate</option>
+	  <option timecode="678.01">Aliasing</option>
+	  <option timecode="794.376">Sample Format</option>
+	  <option timecode="930.387">Channel Count</option>
+	</optgroup>
+	<optgroup label="Digital Video">
+	  <option timecode="958.248">Overview</option>
+	  <option timecode="1085.709">Resolution and Aspect</option>
+	  <option timecode="1149.898">Frame Rate</option>
+	  <option timecode="1172.838">Interlacing</option>
+	  <option timecode="1223.472">Gamma</option>
+	  <option timecode="1357.022">Colorspace</option>
+	  <option timecode="1458.582">Chroma Subsampling</option>
+	  <option timecode="1508.506">Chroma Siting</option>
+	  <option timecode="1575.073">Pixel Formats</option>
+	</optgroup>
+	<option timecode="1672.087">Containers</option>
+	<option timecode="1765.472">Conclusion</option>
+      </select>
+      
+      <!-- Subtitle selection (loaded from external file, not pulled
+      from media file) -->
+      <select class="srt-select">
+	<option>
+	  Subtitles: Off</option>
+	<option file="http://downloads.xiph.org/video/A_Digital_Media_Primer_For_Geeks-en_US.srt">
+	  Subtitles: US English</option>
+      </select>
+
+    </div>
+
+    <!-- transparent dim background for addiitonal controls -->
+    <div class="absbackground"> </div>
+
+    <div style="clear: both; font-size: 0px;"></div>
+  </div>
+
+  <div style="clear: both; font-size: 0px;"></div>
+  <div class="videowidth_sizer">
+
+    <p>This first video from Xiph.Org presents the technical
+      foundations of modern digital media via a half-hour firehose of
+      information.  A community contributors called it "a Uni lecture
+      I never got but really wanted."
+
+    <p>The program offers a brief history of digital media, a quick
+      summary of the sampling theorem, and myriad details of low level
+      audio and video characterization and formatting.  It's intended
+      for budding geeks looking to get into video coding, as well as
+      the technically curious who want to know more about the media
+      they wrangle for work or play.</p>
+      
+    <h2><a href="http://wiki.xiph.org/A_Digital_Media_Primer_For_Geeks_%28episode_1%29">Discuss this video: <i>"A Digital Media Primer for Geeks"</i> Discussion Wiki!</a></h2>
+
+    <p>The video moves fast and only glances on a number of
+      rather important topics, so we've set up
+      a <a href="http://wiki.xiph.org/A_Digital_Media_Primer_For_Geeks_%28episode_1%29">Discussion
+	Wiki</a> to get more information, ask questions, and debate.
+      
+    <p><i><b>We also want to hear about problems.</b> HTML5 and the
+	&lt;video&gt; tag are brand new so there's bound to be niggles,
+	hiccups and outright gaping wounds.  Any problems you report will
+	go to the browser and player coders to make sure the
+	problems <b>get fixed</b></i>.
+    
+    <h2>Download this video!</h2>
+
+    <i>"A Digital Media Primer for Geeks"</i> is distributed under
+    a <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/">Creative
+    Commons Attribution-NonCommercial-ShareAlike (BY-NC-SA)
+    license.</a>
+
+    <ul>
+      <li><b style="display: inline;"> WebM Format (Vorbis audio + VP8 video): </b><br>
+	<a href="http://downloads.xiph.org/video/A_Digital_Media_Primer_For_Geeks-360p.webm">
+	  360p/500kbps (132MB)</a> |
+	<a href="http://downloads.xiph.org/video/A_Digital_Media_Primer_For_Geeks-480p.webm">
+	  360p/1500kbps (347MB)</a> |
+	<a href="http://downloads.xiph.org/video/A_Digital_Media_Primer_For_Geeks-720p.webm">
+	  720p/3500kbps (783MB)</a>
+
+      <li><b> Ogg Format (Vorbis audio / Theora video / Kate subtitles + Index): </b><br>
+	<a href="http://downloads.xiph.org/video/A_Digital_Media_Primer_For_Geeks-360p.ogv">
+	  360p/500kbps (136MB)</a> |
+	<a href="http://downloads.xiph.org/video/A_Digital_Media_Primer_For_Geeks-480p.ogv">
+	  360p/1500kbps (356MB)</a> |
+	<a href="http://downloads.xiph.org/video/A_Digital_Media_Primer_For_Geeks-720p.ogv">
+	  720p/3500kbps (832MB)</a>
+    </ul>
+
+    <h3>Download subtitles</h3>
+    
+    <ul>
+      <li><b> Ogg format (Kate): </b><br>
+	<a href="http://downloads.xiph.org/video/A_Digital_Media_Primer_For_Geeks-en_US.kate">
+	  US English</a> 
+      <li><b> SRT format: </b><br>
+	<a href="http://downloads.xiph.org/video/A_Digital_Media_Primer_For_Geeks-en_US.srt">
+	  US English</a> 
+    </ul>
+    <p>We welcome good, technical translations from the community!
+    Please submit translations in SRT or Ogg Kate format
+    to <a href="mailto:video@xiph.org">video@xiph.org</a>.
+
+  </div>
+</div>  
+<!--#include virtual="/ssi/pagebottom.include" -->
+
+
