@@ -121,7 +121,7 @@
 	<select class="srt-select">
 	  <option>
 	    Subtitles: Off</option>
-	  <option file="A_Digital_Media_Primer_For_Geeks-en_US.srt">
+	  <option file="vid1-en_US.srt">
 	    Subtitles: US English</option>
 	</select>
 	
