@@ -1,0 +1,1588 @@
+1
+00:00:08,124 --> 00:00:10,742
+Workstations and high end personal computers have been able to
+
+2
+00:00:10,742 --> 00:00:14,749
+manipulate digital audio pretty easily for about fifteen years now.
+
+3
+00:00:14,749 --> 00:00:17,470
+It's only been about five years that a decent workstation's been able
+
+4
+00:00:17,470 --> 00:00:21,643
+to handle raw video without alot of expensive special purpose hardware.
+
+5
+00:00:21,643 --> 00:00:25,400
+But today even most cheap home PCs have the processor power and
+
+6
+00:00:25,400 --> 00:00:28,092
+storage necessary to really toss raw video around,
+
+7
+00:00:28,092 --> 00:00:30,479
+at least without too much of a struggle. 
+
+8
+00:00:30,479 --> 00:00:33,579
+So now that everyone has all of this cheap capable hardware, 
+
+9
+00:00:33,579 --> 00:00:36,651
+more people, not surprisingly, want to do interesting
+
+10
+00:00:36,651 --> 00:00:39,908
+things with digital media, especially streaming. 
+
+11
+00:00:39,908 --> 00:00:44,017
+YouTube was the first huge success, and now everybody wants in.
+
+12
+00:00:44,017 --> 00:00:47,413
+Well good!  Because this stuff is alot of fun!
+
+13
+00:00:48,250 --> 00:00:51,179
+It's no problem finding consumers for digital media.  
+
+14
+00:00:51,179 --> 00:00:54,649
+But here, I'd like to address the engineers, the mathemeticians, 
+
+15
+00:00:54,649 --> 00:00:57,869
+the hackers, the people who are interested in discovering 
+
+16
+00:00:57,869 --> 00:01:01,302
+and making things and building the technology itself. 
+
+17
+00:01:01,302 --> 00:01:03,282
+The people after my own heart.
+
+18
+00:01:04,250 --> 00:01:08,723
+Digital media, compression especially, is perceived to be super-elite,
+
+19
+00:01:08,723 --> 00:01:12,822
+somehow incredibly more difficult than anything else in computer science. 
+
+20
+00:01:12,822 --> 00:01:15,700
+The big industry players in the field don't mind this perception at all; 
+
+21
+00:01:15,700 --> 00:01:19,734
+it helps justify the staggering number of very basic patents they hold.  
+
+22
+00:01:19,734 --> 00:01:23,870
+They like the image that their media researchers are the best of the best, 
+
+23
+00:01:23,870 --> 00:01:27,738
+so much smarter than anyone else that their brilliant ideas can't 
+
+24
+00:01:27,738 --> 00:01:29,903
+even be understood by mere mortals. 
+
+25
+00:01:30,625 --> 00:01:33,716
+This is bunk.  
+
+26
+00:01:35,205 --> 00:01:38,900
+Digital audio and video and streaming and compression 
+
+27
+00:01:38,900 --> 00:01:42,738
+offer endless deep and stimulating mental challenges, 
+
+28
+00:01:42,738 --> 00:01:44,662
+just like any other discipline. 
+
+29
+00:01:44,662 --> 00:01:47,929
+It seems elite because so few people have been been involved.  
+
+30
+00:01:47,929 --> 00:01:51,223
+So few people have been involved perhaps because so few people 
+
+31
+00:01:51,223 --> 00:01:54,665
+could afford the expensive, special-purpose equipment it required. 
+
+32
+00:01:54,665 --> 00:01:58,792
+But today, just about anyone watching this video has a cheap, 
+
+33
+00:01:58,792 --> 00:02:03,317
+general-purpose computer powerful enough to play with the big boys. 
+
+34
+00:02:05,926 --> 00:02:11,108
+There are battles going on today around HTML5 and browsers 
+
+35
+00:02:11,108 --> 00:02:13,671
+and video and open vs. closed. 
+
+36
+00:02:13,671 --> 00:02:17,048
+So now is a pretty good time to get involved.  
+
+37
+00:02:17,048 --> 00:02:20,000
+The easiest place to start is probably understanding 
+
+38
+00:02:20,000 --> 00:02:22,619
+the technology we have right now.
+
+39
+00:02:23,500 --> 00:02:25,071
+This is an introduction. 
+
+40
+00:02:25,071 --> 00:02:28,180
+Since it's an introduction, it glosses over a ton of details 
+
+41
+00:02:28,180 --> 00:02:30,882
+so that the big picture's a little easier to see.
+
+42
+00:02:30,882 --> 00:02:33,908
+Quite a few people watching are going to be way past anything 
+
+43
+00:02:33,908 --> 00:02:36,378
+that I'm talking about, at least for now.  
+
+44
+00:02:36,378 --> 00:02:39,293
+On the other hand, I'm probably going to go too fast for folks 
+
+45
+00:02:39,293 --> 00:02:44,558
+who really are are brand new to all of this, so if this is all new, relax. 
+
+46
+00:02:44,558 --> 00:02:48,629
+The important thing is to pick out any ideas  that really grab your imagination.
+
+47
+00:02:48,629 --> 00:02:52,497
+Especially pay attention to the terminology surrounding those ideas, 
+
+48
+00:02:52,479 --> 00:02:56,078
+because with those, and Google, and Wikipedia, you can dig 
+
+49
+00:02:56,078 --> 00:02:57,753
+as deep as interests you.
+
+50
+00:02:57,753 --> 00:03:00,094
+So, without any further ado, 
+
+51
+00:03:00,094 --> 00:03:03,351
+welcome to one hell of a new hobby.
+
+52
+00:03:10,291 --> 00:03:13,030
+Sound is the propogation of pressure waves through air, 
+
+53
+00:03:13,030 --> 00:03:16,981
+spreading out from a source like ripples spread from a stone tossed into a pond.
+
+54
+00:03:16,981 --> 00:03:19,489
+A microphone, or the human ear for that matter, 
+
+55
+00:03:19,489 --> 00:03:22,876
+transforms these passing ripples of pressure into an electric signal.  
+
+56
+00:03:22,876 --> 00:03:25,800
+Right, this is middle school science class, everyone remembers this.
+
+57
+00:03:25,800 --> 00:03:26,771
+Moving on.
+
+58
+00:03:27,465 --> 00:03:32,527
+That audio signal is a one-dimensional function, a single value varying over time.  
+
+59
+00:03:32,527 --> 00:03:34,248
+If we slow the 'scope down a bit... 
+
+60
+00:03:36,450 --> 00:03:38,190
+that should be a little easier to see. 
+
+61
+00:03:38,190 --> 00:03:40,688
+A few other aspects of the signal are important.  
+
+62
+00:03:40,688 --> 00:03:43,418
+It's continuous in both value and time;  
+
+63
+00:03:43,418 --> 00:03:46,813
+that is, at any given time it can have any real value, 
+
+64
+00:03:46,813 --> 00:03:50,228
+and there's a smoothly varying value at every point in in time.  
+
+65
+00:03:50,228 --> 00:03:52,439
+No matter how much we zoom in,
+
+66
+00:03:54,068 --> 00:03:58,510 
+there are no discontinuities, no singularities, no instantaneous steps 
+
+67
+00:03:58,510 --> 00:04:01,285
+or points where the signal ceases to exist. 
+
+68
+00:04:03,247 --> 00:04:08,475
+It's defined everywhere. Classic continuous math works very well on these signals.
+
+69
+00:04:11,001 --> 00:04:15,378
+A digital signal on the other hand is discrete in both value and time.
+
+70
+00:04:15,378 --> 00:04:19,107
+In the simplest and most common system, called Pulse Code Modulation,
+
+71
+00:04:19,107 --> 00:04:24,058
+one of a fixed number of possible values directly represents the instantaneous signal amplitude 
+
+72
+00:04:24,058 --> 00:04:30,165
+at points in time spaced a fixed distance apart. The end result is a stream of digits.
+
+73
+00:04:30,674 --> 00:04:35,309
+Now this looks an awful lot like this.  
+
+74
+00:04:35,309 --> 00:04:38,964
+It seems intuitive that we should somehow be able to rigorously transform 
+
+75
+00:04:38,964 --> 00:04:44,683
+one into the other, and good news, the Sampling Theorem says we can and tells us how. 
+
+76
+00:04:44,683 --> 00:04:48,477
+Published in its most recognizable form by Claude Shannon in 1949
+
+77
+00:04:48,477 --> 00:04:52,409
+and built on the work of Nyquist, and Hartley, and tons of others, 
+
+78
+00:04:52,409 --> 00:04:56,138
+the sampling theorem states that not only can we go back and forth between 
+
+79
+00:04:56,138 --> 00:05:00,913
+analog and digital, but also lays down a set of conditions for which conversion 
+
+80
+00:05:00,913 --> 00:05:06,779
+is lossless and the two representations become equivalent and interchangable.  
+
+81
+00:05:06,779 --> 00:05:10,601
+When the lossless conditions aren't met, the sampling theorem tells us 
+
+82
+00:05:10,601 --> 00:05:14,247
+how and how much information is lost or corrupted.
+
+83
+00:05:14,900 --> 00:05:21,270
+Up until very recently, analog technology was the basis for practically everything done with audio, 
+
+84
+00:05:21,270 --> 00:05:25,267
+and that's not because most audio comes from an originally analog source.
+
+85
+00:05:25,267 --> 00:05:28,450
+You may also think that since computers are farily recent, 
+
+86
+00:05:28,450 --> 00:05:31,643
+analog signal technology must have come first.  
+
+87
+00:05:31,643 --> 00:05:34,428
+Nope. Digital is actually older.  
+
+88
+00:05:34,428 --> 00:05:37,611
+The telegraph predates the telephone by half a century 
+
+89
+00:05:37,611 --> 00:05:41,951
+and was already fully mechanically automated by the 1860s, sending coded, 
+
+90
+00:05:41,951 --> 00:05:46,476
+multiplexed digital signals long distances. You know... Tickertape. 
+
+91
+00:05:46,476 --> 00:05:50,427
+Harry Nyquist of Bell Labs was researching telegraph pulse transmission 
+
+92
+00:05:50,427 --> 00:05:53,027
+when he published his description of what later became known 
+
+93
+00:05:53,027 --> 00:05:57,219
+as the Nyquist frequency, the core concept of the sampling theorem.  
+
+94
+00:05:57,219 --> 00:06:01,642
+Now, it's true the telegraph was transmitting symbolic information, text, 
+
+95
+00:06:01,642 --> 00:06:06,883
+not a digitized analog signal, but with the advent of the telephone and radio,
+
+96
+00:06:06,883 --> 00:06:12,000
+analog and digital signal techology progressed rapidly and side-by-side.
+
+97
+00:06:12,699 --> 00:06:18,732
+Audio had always been manipulated as an analog signal because, well, gee it's so much easier.  
+
+98
+00:06:18,732 --> 00:06:23,257
+A second-order lowpass filter, for example, requires two passive components.  
+
+99
+00:06:23,257 --> 00:06:26,505
+An all-analog short-time Fourier transform, a few hundred.  
+
+100
+00:06:26,505 --> 00:06:30,752
+Well, maybe a thousand if you want to build something really fancy.  
+
+101
+00:06:31,844 --> 00:06:35,989
+Processing signals digitally requires millions to billions of transistors 
+
+102
+00:06:35,989 --> 00:06:40,366
+running at microwave frequencies, support hardware at very least to digitize 
+
+103
+00:06:40,366 --> 00:06:43,836
+and reconstruct the analog signals, a complete software ecosystem 
+
+104
+00:06:43,836 --> 00:06:47,362
+for programming and controlling that billion-transistor juggernaut,
+
+105
+00:06:47,362 --> 00:06:51,091
+digital storage just in case you want to keep any of those bits for later...
+
+106
+00:06:51,091 --> 00:06:56,171
+So we come to the conclusion that analog is the only practical way to do much with audio...
+
+107
+00:06:56,171 --> 00:07:07,019
+well, unless you happen to have a billion transistors and all the other things just lying around. 
+
+108
+00:07:07,850 --> 00:07:12,660
+And since we do, digital signal processing becomes very attractive.
+
+109
+00:07:13,363 --> 00:07:18,906
+For one thing, analog componentry just doesn't have the flexibility of a general purpose computer.
+
+110
+00:07:18,906 --> 00:07:21,182
+Adding a new function to this beast... 
+
+111
+00:07:22,191 --> 00:07:24,578
+yeah, it's probably not going to happen.  
+
+112
+00:07:24,578 --> 00:07:26,567
+On a digital processor though...
+
+113
+00:07:28,668 --> 00:07:34,127
+...just write a new program. Software isn't trivial, but it is alot easier.
+
+114
+00:07:34,127 --> 00:07:39,550
+Perhaps more importantly though every analog component is an approximation. 
+
+115
+00:07:39,550 --> 00:07:44,352
+There's no such thing as a perfect transistor, or a perfect inductor, or a perfect capacitor.  
+
+116
+00:07:44,352 --> 00:07:51,569
+In analog, every component adds noise and distortion, usually not very much, but it adds up. 
+
+117
+00:07:51,569 --> 00:07:55,669
+Just transmitting an analog signal, especially over long distances,
+
+118
+00:07:55,669 --> 00:08:00,434
+progressively, measurably, irretrievably corrupts it.  
+
+119
+00:08:00,434 --> 00:08:06,513
+Besides, all of those single-purpose analog components take up alot of space.  
+
+120
+00:08:06,513 --> 00:08:09,946
+Two lines of code on the billion transistors back here 
+
+121
+00:08:09,946 --> 00:08:14,702
+can implement a filter that would require an inductor the size of a refrigerator.
+
+122
+00:08:14,702 --> 00:08:17,941
+Digital systems don't have these drawbacks.  
+
+123
+00:08:17,941 --> 00:08:24,335
+Digital signals can be stored, copied, manipulated and transmitted without adding any noise or distortion. 
+
+124
+00:08:24,335 --> 00:08:26,889
+We do use lossy algorithms from time to time, 
+
+125
+00:08:26,889 --> 00:08:31,284
+but the only unavoidably non-ideal steps are digitization and reconstruction,
+
+126
+00:08:31,284 --> 00:08:35,929
+where digital has to interface with all of that messy analog.  
+
+127
+00:08:35,929 --> 00:08:40,750
+Messy or not, modern conversion stages are very, very good.  
+
+128
+00:08:40,750 --> 00:08:45,849
+By the standards of our ears, we can consider them practically losless as well.
+
+129
+00:08:45,849 --> 00:08:50,429
+With a little extra hardware, then, most of which is now small and inexpensive 
+
+130
+00:08:50,429 --> 00:08:55,379
+due to our modern industrial infrastructure, digital audio is the clear winner over analog.
+
+131
+00:08:55,379 --> 00:09:00,857
+So let us then go about storing it, copying it, manipulating it, and transmitting it.
+
+132
+00:09:04,956 --> 00:09:08,639
+Pulse Code Modulation is the most common representation for raw audio.  
+
+133
+00:09:08,639 --> 00:09:13,867
+Other practical representations do exist, for example the Sigma-Delta coding used by the SACD, 
+
+134
+00:09:13,867 --> 00:09:16,625
+which is a form of Pulse Density Modulation.  
+
+135
+00:09:16,625 --> 00:09:19,687
+That said, Pulse Code Modulation is far and away dominant, 
+
+136
+00:09:19,687 --> 00:09:22,158
+mainly because it's so mathematically convenient.  
+
+137
+00:09:22,158 --> 00:09:26,350
+An audio engineer can spend an entire career without running into anything else.
+
+138
+00:09:26,350 --> 00:09:29,135
+PCM encoding can be characterized in three parameters,
+
+139
+00:09:29,135 --> 00:09:34,187
+making it easy to account for every possible PCM variant with mercifully little hassle.
+
+140
+00:09:34,187 --> 00:09:36,426
+The first parameter is the sampling rate.  
+
+141
+00:09:36,426 --> 00:09:40,886
+The highest frequency an encoding can represent is called the Nyquist Frequency.  
+
+142
+00:09:40,886 --> 00:09:45,124
+The Nyquist frequency of PCM happens to be exactly half the sampling rate.
+
+143
+00:09:45,124 --> 00:09:51,389
+Therefore the sampling rate directly determines the highest possible frequency in the digitized signal.
+
+144
+00:09:51,389 --> 00:09:56,515
+Analog telephone systems traditionally band-limited voice channels to just under 4kHz, 
+
+145
+00:09:56,515 --> 00:10:02,224
+so digital telephony and most classic voice applications use an 8kHz sampling rate, 
+
+146
+00:10:02,224 --> 00:10:07,277
+the minimum sampling rate necessary to capture the entire bandwidth of a 4kHz channel.  
+
+147
+00:10:07,227 --> 00:10:14,263
+This is what an 8kHz sampling rate sounds like--- a bit muffled but perfectly intelligible for voice.  
+
+148
+00:10:17,263 --> 00:10:18,149
+This is the lowest sampling rate that's ever been used widely in practice.
+
+149
+00:10:18,149 --> 00:10:23,322
+From there, as power, and memory, and storage increased, consumer computer hardware
+
+150
+00:10:23,322 --> 00:10:29,642
+went to offering 11, and then 16, and then 22, and then 32kHz sampling.  
+
+151
+00:10:29,642 --> 00:10:33,491
+With each increase in the sampling rate and the Nyquist frequency, 
+
+152
+00:10:33,491 --> 00:10:38,302
+it's obvious that the high end becomes a little clearer and the sound more natural.
+
+153
+00:10:38,301 --> 00:10:44,576
+The Compact Disc uses a 44.1kHz sampling rate, which is again slightly better than 32kHz, 
+
+154
+00:10:44,576 --> 00:10:46,788
+but the gains are becoming less distinct.  
+
+155
+00:10:46,788 --> 00:10:52,053
+44.1kHz is a bit of an oddball choice, especially given that it hadn't been used  for anything 
+
+156
+00:10:52,053 --> 00:10:56,559
+prior to the compact disc, but the huge success of the CD has made it a common rate.
+
+157
+00:10:56,559 --> 00:11:01,195
+The most common hi-fidelity sampling rate aside from the CD is 48kHz.
+
+158
+00:11:05,710 --> 00:11:08,597
+There's vitually no audible difference between the two.  
+
+159
+00:11:08,597 --> 00:11:13,640
+This video, or at least the original version of it, was shot and produced with 48kHz audio, 
+
+160
+00:11:13,640 --> 00:11:18,545
+which happens to be the original standard for high-fidelity audio with video.
+
+161
+00:11:18,545 --> 00:11:25,100
+Super-hi-fidelity sampling rates of 88, and 96, and 192kHz have also appeared. 
+
+162
+00:11:25,100 --> 00:11:30,888
+The reason for the sampling rates beyond 48kHz isn't to extend the audible high frequencies further. 
+
+163
+00:11:30,888 --> 00:11:32,489
+It's for a different reason.
+
+164
+00:11:32,896 --> 00:11:37,319
+Stepping back for just a second, the French mathemetician Jean Baptiste Joseph Fourier 
+
+165
+00:11:37,319 --> 00:11:42,353
+showed that we can also think of signals like audio as a set of component frequencies.  
+
+166
+00:11:42,353 --> 00:11:45,841
+This frequency domain representation is equivalent to the time representation; 
+
+167
+00:11:45,841 --> 00:11:49,719
+the signal is exactly the same, we're just looking at it a different way.  
+
+168
+00:11:49,719 --> 00:11:56,131
+Here we see the frequency domain representation of a hypothetical analog signal we intend to digitally sample.
+
+169
+00:11:56,131 --> 00:11:59,888
+The sampling theorem tells us two essential things about the sampling process. 
+
+170
+00:11:59,888 --> 00:12:04,727
+First, that a digital signal can't represent any frequencies above the Nyquist frequency. 
+
+171
+00:12:04,727 --> 00:12:10,640
+Second, and this is the new part, if we don't remove those frequencies with a lowpass filter before sampling, 
+
+172
+00:12:10,640 --> 00:12:16,414
+the sampling process will fold them down into the representable frequency range as aliasing distortion.
+
+173
+00:12:16,414 --> 00:12:20,069
+Aliasing, in a nutshell, sounds freakin' awful, 
+
+174
+00:12:20,069 --> 00:12:25,242
+so it's essential to remove any beyond-Nyquist frequencies before sampling and after reconstruction.
+
+175
+00:12:25,871 --> 00:12:31,265
+Human frequency perception is considered to extend to about 20kHz. 
+
+176
+00:12:31,265 --> 00:12:37,548
+In 44.1 or 48kHz sampling, the lowpass before the sampling stage has to be extremely sharp 
+
+177
+00:12:37,548 --> 00:12:42,101
+to avoid cutting any audible frequencies below 20kHz 
+
+178
+00:12:42,101 --> 00:12:49,439
+but still not allow frequencies above the Nyquist to leak forward into the sampling process.  
+
+179
+00:12:49,439 --> 00:12:55,342
+This is a difficult filter to build and no practical filter succeeds completely. 
+
+180
+00:12:55,342 --> 00:13:00,024
+If the sampling rate is 96kHz or 192kHz on the other hand, 
+
+181
+00:13:00,024 --> 00:13:07,223
+the lowpass has an extra octave or two for its transition band. This is a much easier filter to build.  
+
+182
+00:13:07,223 --> 00:13:14,348
+Sampling rates beyond 48kHz are actually one of those messy analog stage compromises.
+
+183
+00:13:15,014 --> 00:13:20,844
+The second fundamental PCM parameter is the sample format, that is, the format of each digital number.  
+
+184
+00:13:20,844 --> 00:13:26,285
+A number is a number, but a number can be represented in bits a number of different ways.
+
+185
+00:13:26,942 --> 00:13:30,902
+Early PCM was eight bit linear, encoded as an unsigned byte.  
+
+186
+00:13:30,902 --> 00:13:37,028
+The dynamic range is limited to about 50dB and the quantization noise, as you can hear, is pretty severe. 
+
+187
+00:13:37,028 --> 00:13:39,970
+Eight bit audio is vanishingly rare today.
+
+188
+00:13:41,007 --> 00:13:47,484
+Digital telephony typically uses one of two related non-linear eight bit encodings 
+called A-law and mu-law. 
+
+189
+00:13:47,484 --> 00:13:51,287
+These formats encode a roughly 14 bit dynamic range into eight bits 
+
+190
+00:13:51,287 --> 00:13:54,674
+by spacing the higher amplitude values farther apart. 
+
+191
+00:13:54,674 --> 00:13:59,226
+A-law and mu-law obviously improve quantization noise compared to linear 8-bit, 
+
+192
+00:13:59,226 --> 00:14:03,557
+and voice harmonics especially hide the remaining quantization noise well. 
+
+193
+00:14:03,557 --> 00:14:08,248
+All three eight bit encodings, linear, A-law, and mu-law, are typically paired 
+
+194
+00:14:08,248 --> 00:14:13,328
+with an 8kHz sampling rate, though I'm demonstrating them here at 48kHz.
+
+195
+00:14:13,328 --> 00:14:18,491
+Most modern PCM uses 16 or 24 bit two's-complement signed integers to encode 
+
+196
+00:14:18,491 --> 00:14:23,858
+the range from negative infinity to zero decibels in 16 or 24 bits of precision. 
+
+197
+00:14:23,858 --> 00:14:27,800
+The maximum absolute value corresponds to zero decibels. 
+
+198
+00:14:27,800 --> 00:14:31,584
+As with all the sample formats so far, signals beyond zero decibels 
+
+199
+00:14:31,584 --> 00:14:35,619
+and thus beyond the maximum representable range are clipped.
+
+200
+00:14:35,619 --> 00:14:41,199
+In mixing and mastering, it's not unusual to use floating point numbers for PCM instead of integers.  
+
+201
+00:14:41,199 --> 00:14:47,222
+A 32 bit IEEE754 float, that's the normal kind of floating point you see on current computers, 
+
+202
+00:14:47,222 --> 00:14:52,793
+has 24 bits of resolution, but a seven bit floating point exponent increases the representable range.  
+
+203
+00:14:52,793 --> 00:14:57,040
+Floating point usually represents zero decibels as +/-1.0, 
+
+204
+00:14:57,040 --> 00:15:00,547
+and because floats can obviously represent considerably beyond that, 
+
+205
+00:15:00,547 --> 00:15:05,220
+temporarily exceeding zero decibels during the mixing process doesn't cause clipping.
+
+206
+00:15:05,220 --> 00:15:11,077 
+Floating point PCM takes up more space, so it tends to be used only as an intermediate production format.
+
+207
+00:15:11,077 --> 00:15:15,796
+Lastly, most general purpose computers still read and write data in octet bytes, 
+
+208
+00:15:15,796 --> 00:15:18,489
+so it's important to remember that samples bigger than eight bits 
+
+209
+00:15:18,489 --> 00:15:22,838
+can be in big or little endian order, and both endiannesses are common.  
+
+210
+00:15:22,838 --> 00:15:28,751
+For example, Microsoft WAV files are little endian, and Apple AIFC files tend to be big-endian.  
+
+211
+00:15:28,751 --> 00:15:30,139
+Be aware of it.
+
+212
+00:15:30,870 --> 00:15:34,071
+The third PCM parameter is the number of channels.  
+
+213
+00:15:34,071 --> 00:15:38,485
+The convention in raw PCM is to encode mutiple channels by interleaving the samples 
+
+214
+00:15:38,485 --> 00:15:43,398
+of each channel together into a single stream.  Straightforward and extensible.
+
+215
+00:15:43,398 --> 00:15:47,701
+And that's it!  That describes every PCM representation ever. 
+
+216
+00:15:47,701 --> 00:15:51,578
+Done. Digital audio is _so easy_!  
+
+217
+00:15:51,578 --> 00:15:56,436
+There's more to do of course, but at this point we've got a nice useful chunk of audio data, 
+
+218
+00:15:56,436 --> 00:15:58,092
+so let's get some video too.
+
+219
+00:16:02,571 --> 00:16:08,798
+One could think of video as being like audio but with two additional spatial dimensions, X and Y, 
+
+220
+00:16:08,798 --> 00:16:12,787
+in addition to the dimension of time. This is mathematically sound.  
+
+221
+00:16:12,787 --> 00:16:19,097
+The Sampling Theorem applies to all three video dimensions just as it does the single time dimension of audio.
+
+222
+00:16:19,097 --> 00:16:25,815
+Audio and video are obviously quite different in practice. For one, compared to audio, video is huge. 
+
+223
+00:16:25,815 --> 00:16:29,294
+Raw CD audio is about 1.4 megabits per second. 
+
+224
+00:16:29,294 --> 00:16:33,958
+Raw 1080i HD video is over 700 megabits per second. 
+
+225
+00:16:33,958 --> 00:16:40,056
+That's more than 500 times more data to capture, process and store per second.  
+
+226
+00:16:40,056 --> 00:16:43,711
+By Moore's law... that's... let's see... roughly eight doublings times two years, 
+
+227
+00:16:43,711 --> 00:16:47,838
+so yeah, computers requiring about an extra fifteen years to handle raw video 
+
+228
+00:16:47,838 --> 00:16:51,252
+after getting raw audio down pat was about right.
+
+229
+00:16:51,252 --> 00:16:55,425
+Basic raw video is also just more complex than basic raw audio. 
+
+230
+00:16:55,425 --> 00:16:58,599
+The sheer volume of data currently necessitates a representation 
+
+231
+00:16:58,599 --> 00:17:02,106 
+more efficient than the linear PCM used for audio.  
+
+232
+00:17:02,106 --> 00:17:06,705
+In addition, electronic video comes almost entirely from broadcast television alone,
+
+233
+00:17:06,705 --> 00:17:13,423
+and the standards committees that govern broadcast video have always been very concerned with backward compatability.
+
+234
+00:17:13,423 --> 00:17:17,559  
+Up until just last year in the US, a sixty year old black and white television 
+
+235
+00:17:17,559 --> 00:17:21,038
+could still show a normal analog television broadcast.  
+
+236
+00:17:21,038 --> 00:17:23,879
+That's actually a really neat trick.
+
+237
+00:17:23,879 --> 00:17:28,718
+The downside to backward compatability is that once a detail makes it into a standard, 
+
+238
+00:17:28,718 -->  00:17:30,985
+you can't ever really throw it out again. 
+
+239
+00:17:30,985 --> 00:17:37,305
+Electronic video has never started over from scratch the way audio has multiple times.  
+
+240
+00:17:37,305 --> 00:17:43,958
+Sixty years worth of clever but obsolete hacks necessitated by the passing technology of a given era 
+
+241
+00:17:43,958 --> 00:17:50,102
+have built up into quite a pile, and because digital standards also come from broadcast television, 
+
+242
+00:17:50,102 --> 00:17:54,664
+all these eldritch hacks have been brought forward into the digital standards as well.
+
+243
+00:17:54,664 --> 00:18:00,022
+In short, there are a whole lot more details involved in digital video than there were with audio. 
+
+244
+00:18:00,022 --> 00:18:05,592
+There's no hope of covering them all completely here, so we'll cover the broad fundamentals.
+
+245
+00:18:06,036 --> 00:18:10,857
+The most obvious raw video parameters are the width and height of the picture in pixels. 
+
+246
+00:18:10,857 --> 00:18:15,882
+As simple as that may sound, the pixel dimensions alone don't actually specify the absolute 
+
+247
+00:18:15,882 --> 00:18:22,016
+width and height of the picture, as most broadcast-derived video doesn't use square pixels.
+
+248
+00:18:22,016 --> 00:18:25,005
+The number of scanlines in a broadcast image was fixed, 
+
+249
+00:18:25,005 --> 00:18:29,021
+but the effective number of horizontal pixels was a function of channel bandwidth. 
+
+250
+00:18:29,021 --> 00:18:31,945
+Effective horizontal resolution could result in pixels that were either 
+
+251
+00:18:31,945 --> 00:18:35,489
+narrower or wider than the spacing between scanlines.
+
+252
+00:18:35,489 --> 00:18:38,395
+Standards have generally specified that digitally sampled video 
+
+253
+00:18:38,395 --> 00:18:41,902
+should reflect the real resolution of the original analog source, 
+
+254
+00:18:41,902 --> 00:18:45,566
+so a large amount of digital video also uses non-square pixels. 
+
+255
+00:18:45,566 --> 00:18:49,924
+For example, a normal 4:3 aspect NTSC DVD is typically encoded 
+
+256
+00:18:49,924 --> 00:18:55,374
+with a display resolution of 704 by 480, a ratio wider than 4:3.  
+
+257
+00:18:55,374 --> 00:18:59,640
+In this case, the pixels themselves are assigned an aspect ratio of 10:11, 
+
+258
+00:18:59,640 --> 00:19:04,553
+making them taller than they are wide and narrowing the image horizontally to the
+correct aspect.  
+
+259
+00:19:04,553 --> 00:19:09,800
+Such an image has to be resampled to show properly on a digital display with square pixels.
+
+260
+00:19:10,253 -->  00:19:15,287
+The second obvious video parameter is the frame rate, the number of full frames per second.  
+
+261
+00:19:15,287 --> 00:19:19,655
+Several standard frame rates are in active use. Digital video, in one form or another, 
+
+262
+00:19:19,655 --> 00:19:23,689
+can use all of them.  Or, any other frame rate.  Or even variable rates 
+
+263
+00:19:23,689 --> 00:19:27,113
+where the frame rate changes adaptively over the course of the video. 
+
+264
+00:19:27,113 --> 00:19:32,998
+The higher the frame rate, the smoother the motion and that brings us, unfortunately, to interlacing.
+
+265
+00:19:32,998 --> 00:19:37,967
+In the very earliest days of broadcast video, engineers sought the fastest practical framerate 
+
+266
+00:19:37,967 --> 00:19:42,075
+to smooth motion and to minimize flicker on phosphor-based CRTs.  
+
+267
+00:19:42,075 --> 00:19:45,277
+They were also under pressure to use the least possible bandwidth 
+
+268
+00:19:45,277 --> 00:19:48,182
+for the highest resolution and fastest frame rate.  
+
+269
+00:19:48,182 --> 00:19:51,208
+Their solution was to interlace the video where the even lines 
+
+270
+00:19:51,208 --> 00:19:54,826
+are sent in one pass and the odd lines in the next.  
+
+271
+00:19:54,826 --> 00:19:59,961
+Each pass is called a field and two fields sort of produce one complete frame.
+
+272
+00:19:59,961 --> 00:20:05,319
+"Sort of", because the even and odd fields aren't actually from the same source frame.  
+
+273
+00:20:05,319 --> 00:20:10,797
+In a 60 field per second picture, the source frame rate is actually 60 full frames per second, 
+
+274
+00:20:10,797 --> 00:20:15,386
+and half of each frame, every other line, is simply discarded.  
+
+275
+00:20:15,386 --> 00:20:20,272
+This is why we can't deinterlace a video simply by combining two fields into one frame;
+
+276
+00:20:20,272 --> 00:20:23,039
+they're not actually from one frame to begin with.
+
+277
+00:20:24,047 --> 00:20:29,683
+The cathode ray tube was the only available display technology for most of the history of electronic video. 
+
+278
+00:20:29,683 --> 00:20:32,949
+A CRT's output brightness is nonlinear, approximately equal 
+
+279
+00:20:32,949 --> 00:20:36,585
+to the input controlling voltage raised to the 2.5th power. 
+
+280
+00:20:36,585 --> 00:20:43,821
+This exponent, 2.5, is designated gamma, and so it's often referred to as the gamma of a display.  
+
+281
+00:20:43,821 --> 00:20:50,493
+Cameras, though, are linear, and if you feed a CRT a linear input signal, it looks a
+bit like this.
+
+282
+00:20:51,270 --> 00:20:56,637
+As there were originally to be very few cameras, which were fantastically expensive anyway, 
+
+283
+00:20:56,637 --> 00:21:01,634
+and hopefully many, many television sets which best be as inexpensive as possible, 
+
+284
+00:21:01,634 --> 00:21:08,222
+engineers decided to add the necessary gamma correction circuitry to the cameras rather than the sets. 
+
+285
+00:21:08,222 --> 00:21:13,062
+Video transmitted over the airwaves would thus have a nonlinear intensity using the inverse 
+
+286
+00:21:13,062 --> 00:21:18,271
+of the set's gamma exponent, so that once a camera's signal was finally displayed on the CRT, 
+
+287
+00:21:18,271 --> 00:21:23,305
+the overall response of the system from camera to set was back to linear again.
+
+288
+00:21:23,777 --> 00:21:25,118
+Almost.
+
+289
+00:21:30,393 --> 00:21:33,113
+There were also two other tweaks. 
+
+290
+00:21:33,113 --> 00:21:40,442
+A television camera actually uses a gamma exponent that's the inverse of 2.2, not 2.5.  
+
+291
+00:21:40,442 --> 00:21:43,754
+That's just a correction for viewing in a dim environment. 
+
+292
+00:21:43,754 --> 00:21:48,279
+Also, the exponential curve transitions to a linear ramp near black.  
+
+293
+00:21:48,279 --> 00:21:52,360
+That's just an old hack for suppressing sensor noise in the camera.
+
+294
+00:21:54,941 --> 00:21:57,347
+Gamma correction also had a lucky benefit. 
+
+295
+00:21:57,347 --> 00:22:02,214
+It just so happens that the human eye has a perceptual gamma of about 3.  
+
+296
+00:22:02,214 --> 00:22:05,962
+This is relatively close to the CRT's gamma of 2.5. 
+
+297
+00:22:05,962 --> 00:22:10,607
+An image using gamma correction devotes more resolution to lower intensities, 
+
+298
+00:22:10,607 --> 00:22:14,336
+where the eye happens to have its finest intensity discrimination, 
+
+299
+00:22:14,336 --> 00:22:18,222
+and therefore uses the available scale resolution more efficiently.  
+
+300
+00:22:18,222 --> 00:22:22,784
+Although CRTs are currently vanishing, a standard sRGB computer display 
+
+301
+00:22:22,784 --> 00:22:28,419
+still uses a nonlinear intensity curve similar to television, with a linear ramp near black,
+
+302
+00:22:28,419 --> 00:22:32,491
+followed by an exponential curve with a gamma exponent of 2.4. 
+
+303
+00:22:32,491 --> 00:22:36,636
+This encodes a sixteen bit linear range down into eight bits.
+
+304 
+00:22:37,580 --> 00:22:41,790
+The human eye has three apparent color channels, red, green, and blue, 
+
+305
+00:22:41,790 --> 00:22:47,407
+and most displays use these three colors as additive primaries to produce a full range of color output.  
+
+306
+00:22:49,258 --> 00:22:54,190
+The primary pigments in printing are Cyan, Magenta, and Yellow for the same reason; 
+
+307
+00:22:54,190 --> 00:22:59,381
+pigments are subtractive, and each of these pigments subtracts one pure color from reflected light.  
+
+308
+00:22:59,381 --> 00:23:05,682
+Cyan subtracts red, magenta subtracts green, and yellow subtracts blue.
+
+309
+00:23:05,682 --> 00:23:10,919
+Video can be and sometimes is represented with red, green, and blue color channels, 
+
+310
+00:23:10,919 --> 00:23:17,211
+but RGB video is atypical. The human eye is far more sensitive to luminosity than it is the color, 
+
+311
+00:23:17,211 --> 00:23:21,329
+and RGB tends to spread the energy of an image across all three color channels.  
+
+312
+00:23:21,329 --> 00:23:25,326
+That is, the red plane looks like a red version of the original picture, 
+
+313
+00:23:25,326 --> 00:23:28,769
+the green plane looks like a green version of the original picture, 
+
+314
+00:23:28,769 --> 00:23:32,063
+and the blue plane looks like a blue version of the original picture.  
+
+315
+00:23:32,063 --> 00:23:35,705
+Black and white times three.  Not efficient.
+
+316
+00:23:35,706 --> 00:23:39,438
+For those reasons and because, oh hey, television just happened to start out 
+
+317
+00:23:39,438 --> 00:23:45,017
+as black and white anyway, video usually is represented as a high resolution luma channel, 
+
+318
+00:23:45,017 --> 00:23:51,041
+the black & white, along with additional, often lower resolution chroma channels, the color. 
+
+319
+00:23:51,041 --> 00:23:57,074
+The luma channel, Y, is produced by weighting and then adding the seperate red, green and blue signals.  
+
+320
+00:23:57,074 --> 00:24:01,867
+The chroma channels U and V are then produced by subtracting the luma signal from blue 
+
+321
+00:24:01,867 --> 00:24:04,070
+and the luma signal from red.
+
+322
+00:24:04,070 --> 00:24:11,750
+When YUV is scaled, offset and quantized for digital video, it's usually more correctly called Y'CbCr, 
+
+323
+00:24:11,750 --> 00:24:15,238
+but the more generic term YUV is widely used to decribe 
+
+324
+00:24:15,238 --> 00:24:18,301
+all the analog and digital variants of this color model.
+
+325
+00:24:18,912 --> 00:24:22,983
+The U and V chroma channels can have the same resolution as the Y channel, 
+
+326
+00:24:22,983 --> 00:24:28,674
+but because the human eye has far less spatial color resolution than spatial luminosity resolution, 
+
+327
+00:24:28,674 --> 00:24:34,346
+chroma resolution is usually halved or even quartered in the horizontal direction, the vertical direction, 
+
+328
+00:24:34,346 --> 00:24:39,528
+or both, usually without any significant impact on the apparent raw image quality. 
+
+329
+00:24:39,528 --> 00:24:43,942
+Practically every possible subsampling variant has been used at one time or another,
+
+330
+00:24:43,942 --> 00:24:46,875
+but the common choices today are 
+
+331
+00:24:46,875 --> 00:24:51,187
+4:4:4 video, which isn't actually subsampled at all, 
+
+332
+00:24:51,187 --> 00:24:56,711
+4:2:2 video in which the horizontal resolution of the U and V channels is halved, 
+
+333
+00:24:56,711 --> 00:25:02,587
+and most common of all, 4:2:0 video in which both the horizonal and vertical resolutions 
+
+334
+00:25:02,587 --> 00:25:08,897
+of the chroma channels are halved, resulting in U and V planes that are each one quarter the size of Y.
+
+335
+00:25:08,897 --> 00:25:17,096
+The terms 4:2:2, 4:2:0, 4:1:1 and so on and so forth, aren't complete descriptions of a chroma subsampling. 
+
+336
+00:25:17,096 --> 00:25:21,186
+There's multiple possible ways to position the chroma pixels relative to luma, 
+
+337
+00:25:21,096 --> 00:25:24,776 
+and again, several variants are in active use for each subsampling.  
+
+338
+00:25:24,776 --> 00:25:32,502
+For example, motion JPEG, MPEG-1 video, MPEG-2 video, DV, Theora and WebM all use 
+
+339
+00:25:32,502 --> 00:25:38,137
+or can use 4:2:0 subsampling, but they site the chroma pixels three different ways.
+
+340
+00:25:38,498 --> 00:25:43,023
+Motion JPEG, MPEG1 video, Theora and WebM all site chroma pixels 
+
+341
+00:25:43,023 --> 00:25:46,345
+between luma pixels both horizontally and vertically.
+
+342
+00:25:46,345 --> 00:25:51,989
+MPEG2 sites chroma pixels betwwen lines, but horizontally aligned with every other luma pixel. 
+
+343
+00:25:51,989 --> 00:25:57,106
+Interlaced modes complicate things somewhat, resulting in a siting arrangement that's a tad bizaare.
+
+344
+00:25:57,106 --> 00:26:00,909
+And finally PAL-DV, which is always interlaced, places the chroma pixels 
+
+345
+00:26:00,909 --> 00:26:04,398
+in the same position as every other luma pixel in the horizonatal direction, 
+
+346
+00:26:04,398 --> 00:26:07,303
+and vertically alternates chroma channel on each line.
+
+347
+00:26:07,683 --> 00:26:12,282
+That's just 4:2:0 video. I'll leave the other subsamplings as homework for the
+viewer.  
+
+348
+00:26:12,282 --> 00:26:14,882
+Youv've got the basic idea, moving on.
+
+349
+00:26:15,511 --> 00:26:21,128
+In audio, we always represent multiple channels in a PCM stream by interleaving the samples 
+
+350
+00:26:21,128 --> 00:26:26,383
+from each channel in order. Video uses both packed formats that interleave the color channels, 
+
+351
+00:26:26,383 --> 00:26:30,584
+as well as planar formats that keep the pixels from each channel together in seperate planes 
+
+352
+00:26:30,584 --> 00:26:35,415
+stacked in order in the frame. There are at least 50 different formats in these two broad categories 
+
+353
+00:26:35,415 --> 00:26:41,549
+with possibly ten or fifteen in common use. Each chroma subsampling and different bit-depth requires 
+
+354
+00:26:41,549 --> 00:26:46,574
+a different packing arrangement,  and so a different pixel format.  For a given unique subsampling, 
+
+355
+00:26:46,574 --> 00:26:50,858 
+there are usually also several equivalent formats that consist of trivial channel order 
+
+356
+00:26:50,858 --> 00:26:55,966
+rearrangements or repackings due either to convenience once-upon-a-time on some particular 
+
+357
+00:26:55,966 --> 00:27:00,352
+piece of hardware or sometimes just good old-fashioned spite.
+
+358
+00:27:00,352 --> 00:27:04,692
+Pixels formats are described by a unique name or fourcc code.  
+
+359
+00:27:04,692 --> 00:27:08,115
+There are quite a few of these and there's no sense going over each one now.
+
+360
+00:27:08,115 --> 00:27:13,704
+Google is your friend.  Be aware that fourcc codes for raw video specify the pixel arrangement 
+
+361
+00:27:13,704 --> 00:27:20,339
+and chroma subsampling, but generally don't imply anything certain about chroma siting or color space.  
+
+362
+00:27:20,339 --> 00:27:25,807
+YV12 video to pick one, can use JPEG, MPEG-2 or DV chroma siting, 
+
+363
+00:27:25,807 --> 00:27:28,991
+and any one of several YUV colorspace definitions.
+
+364
+00:27:29,472 --> 00:27:33,913
+That wraps up our not so quick and yet very incomplete tour of raw video. 
+
+365
+00:27:33,913 --> 00:27:38,651
+The good news is we can already get quite alot of real work done using that overview. 
+
+366
+00:27:38,651 --> 00:27:42,528
+In plenty of situations, a frame of video data is a frame of video data.  
+
+367
+00:27:42,528 --> 00:27:46,451
+The details matter, greatly, when it come time to write software, 
+
+368
+00:27:46,452 --> 00:27:52,086
+but for now I am satisfied that the esteemed viewer is broadly aware of the relevant issues.
+
+369
+00:27:55,640 --> 00:27:59,230
+So. We have audio data. We have video data. 
+
+370
+00:27:59,230 --> 00:28:03,246
+What remains is the more familiar non-signal data and straight up engineering 
+
+371
+00:28:03,246 --> 00:28:07,410
+that software developers are used to. And plenty of it!
+
+372
+00:28:07,928 --> 00:28:11,768 
+Chunks of raw audio and video data have no externally visible structure, 
+
+373
+00:28:11,768 -->  00:28:15,173
+but they're often uniformly sized.  We could just string them together 
+
+374
+00:28:15,173 --> 00:28:18,097
+in a rigid pre-determined ordering for streaming and storage, 
+
+375
+00:28:18,097 --> 00:28:21,040
+and some simple systems do approximately that. 
+
+376
+00:28:21,040 --> 00:28:24,195
+Compressed frames though aren't necessarily a predictable size, 
+
+377
+00:28:24,195 --> 00:28:29,405
+and we usually want some flexibility in using a range of different data types in streams.
+
+378
+00:28:29,405 --> 00:28:34,281
+If we string random formless data together, we lose the boundaries that seperate frames 
+
+379
+00:28:34,281 --> 00:28:37,871
+and don't necessarily know what data belongs to which streams.  
+
+380
+00:28:37,871 --> 00:28:42,192
+A stream needs some generalized structure to be generally useful.
+
+381
+00:28:42,192 --> 00:28:46,606
+In addition to our signal data, we also have our PCM and video parameters.  
+
+382
+00:28:46,606 --> 00:28:49,752
+There's probably plenty of other metadata we also want to deal with, 
+
+383
+00:28:49,752 --> 00:28:55,415
+like audio tags and video chapters and subtitles, all essential components of rich media.  
+
+384
+00:28:55,415 --> 00:29:01,633
+It makes sense to place this metadata, that is,  data about the data, within the media itself.
+
+385
+00:29:01,633 --> 00:29:06,445
+Storing and structuring formless data and disparate metadata is the job of a container.  
+
+386
+00:29:06,445 --> 00:29:09,221
+Containers provide framing for the data blobs, 
+
+387
+00:29:09,221 --> 00:29:12,015
+interleave and identify mutliple data streams, 
+
+388
+00:29:12,015 --> 00:29:15,337
+provide timing information, and store the metadata necessary 
+
+389
+00:29:15,337 --> 00:29:19,140
+to parse, navigate, manipulate and present the media.  
+
+390
+00:29:19,140 --> 00:29:22,222
+In general, any container can hold any kind of data.  
+
+391
+00:29:22,222 --> 00:29:24,970
+And data can be put into any container.
+
+392
+00:29:28,801 --> 00:29:32,391 
+In the past thirty minutes, we've covered digital audio, video, 
+
+393
+00:29:32,391 --> 00:29:35,435
+some history, some math and a little engineering. 
+
+394
+00:29:35,435 --> 00:29:39,377
+We've barely scratched the surface, but it's time for a well earned break.
+
+395
+00:29:41,107 --> 00:29:45,373
+There's so much more to talk about, so I hope you'll join me again in our next episode.  
+
+396
+00:29:45,373 --> 00:29:47,159
+Until then--- Cheers!
+

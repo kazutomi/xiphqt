@@ -167,6 +167,7 @@ function SetVideo(dropdown)
 
 // Show/hide our upper control toolbar according to mouseover
 var stick=0; // only one input queue, so a single global stick will do
+var mousein=0;
 function showControls(el){
     var wrapper = findUnder(el,'.vcwrapper');
     if(!wrapper)return;
@@ -175,7 +176,7 @@ function showControls(el){
 }
 
 function hideControls(el){
-    if(!stick){
+    if(!stick && !mousein){
         var wrapper = findUnder(el,'.vcwrapper');
         if(!wrapper)return;
         $(wrapper).animate({opacity: 0.}, {duration: 160, queue: false});
@@ -204,8 +205,12 @@ $(document).ready(function() {
             });
 
         $('.videowrapper_border').each(function() {
-                this.onmouseout=function(){hideControls(this)};
-                this.onmouseover=function(){showControls(this)};
+                this.onmouseout=function(){mousein=0;hideControls(this)};
+                this.onmouseover=function(){mousein=1;showControls(this)};
+            });
+        $('.vcwrapper').each(function() {
+                this.onmouseout=function(){mousein=0;hideControls(this)};
+                this.onmouseover=function(){mousein=1;showControls(this)};
             });
 
         // subtitles and video settings aren't statically set in the
