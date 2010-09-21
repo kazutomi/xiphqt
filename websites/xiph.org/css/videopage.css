@@ -81,6 +81,10 @@ h1 {
     margin: 0px;
 }
 
+.vid_caption {
+    width: 640px;
+}
+
 .absbackground {
     position: absolute;
     bottom: 0px;
