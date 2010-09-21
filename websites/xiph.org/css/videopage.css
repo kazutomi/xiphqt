@@ -58,14 +58,14 @@ h1 {
     color: #0000f0;
 }
 
-.videowrapper {
+.vid_control {
     position: relative;
     float: left;
     margin: 0px;
     padding: 0px;
 }
 
-.videowrapper_border {
+.vid_border {
     position: relative;
     border: 1px solid #9fC0D7;
     margin: 0px;
@@ -73,7 +73,7 @@ h1 {
     font-size: 0px;
 }
 
-.videowrapper_sizer {
+.vid_sizer {
     position: relative;
     width: 640px;
     height: 360px;
