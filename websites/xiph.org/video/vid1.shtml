@@ -29,7 +29,7 @@
 	     width="640"
 	     height="360"
 	     class="video" 
-	     archive="cortado_20100917-2.jar"
+	     archive="http://downloads.xiph.org/video/cortado_20100917-2.jar"
 	     code="com.fluendo.player.Cortado.class"
 	     url="http://downloads.xiph.org/video/A_Digital_Media_Primer_For_Geeks-360p.ogv"
 	     statusheight="20"
