@@ -23,6 +23,11 @@
   text-align: center;
   }
 
+  .hlist{
+  text-align: center;
+  margin-bottom: 1em;
+  }
+
 </style>
 
   <title>Xiph.org: Video</title>
@@ -61,7 +66,7 @@ digital media!
   I never got but really wanted."
 
 <p>
-  <div style="text-align: center;">
+  <div class="hlist">
     <b>
       <a href="vid1.shtml">Watch (or download) this video</a> | 
       <a href="http://wiki.xiph.org/A_Digital_Media_Primer_For_Geeks_%28episode_1%29">Discuss this video</a>
