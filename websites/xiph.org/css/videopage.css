@@ -1,0 +1,147 @@
+#navlink_ a {
+    text-decoration: underline !important;
+}
+
+#navbar {
+    border-right-style: none;
+    clear: both;
+}
+
+#content {
+    border-left-style: none;
+    padding-left: 0px;
+}
+
+#thepage {
+    margin-left: auto;
+    margin-right: auto;
+    width: 920px;
+}
+
+#xiphbar_outer {
+    min-width: 920px;
+}
+
+#xiphlogo {
+    margin: 20px 0px 16px 10px;
+    border: 0px;
+    overflow: hidden;
+}
+
+#xiphlogo img, #xiphlogo a img{
+    float: left;
+    margin-right: 3em;
+}
+
+h1 {
+    padding: 0px;
+    margin: 1.3em 0 8px 0;
+    font-size: 1.5em;
+    position: relative;
+    float: right;
+    margin: 14px;
+    padding-top: 36px;
+    margin-top: -1.3em;
+    font-weight: bold;
+    color: #ff9900;
+}
+
+.or {
+    padding: 0px;
+    margin: 0px;
+    margin-top: -14px;
+    margin-right: 14px;
+    font-size: 1em;
+    position: relative;
+    clear: right;
+    float: right;
+    color: #0000f0;
+}
+
+.videowrapper {
+    position: relative;
+    float: left;
+    margin: 0px;
+    padding: 0px;
+}
+
+.videowrapper_border {
+    position: relative;
+    border: 1px solid #9fC0D7;
+    margin: 0px;
+    padding: 0px;
+    font-size: 0px;
+}
+
+.videowrapper_sizer {
+    position: relative;
+    width: 640px;
+    height: 360px;
+    padding: 0px;
+    margin: 0px;
+}
+
+.absbackground {
+    position: absolute;
+    bottom: 0px;
+    background-color: #000000;
+    opacity: .6;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+}
+
+.srtwrapper {
+    position: absolute;
+    bottom: 60px;
+    left: 1px;
+    z-index: 2;
+    width: 640px;
+}
+
+.srt {
+    color: #ffffff;
+    position: relative;
+    text-align: center;
+    margin-left: 1em;
+    margin-right: 1em;
+    z-index: 3;
+}
+
+.vcwrapper {
+    position: absolute;
+    top: 1px;
+    left: 1px;
+    z-index: 2;
+    width: 640px;
+}
+
+.vidcontrols {
+    position: relative;
+    margin: 3px;
+    padding: 0px;
+    z-index: 3;
+}
+
+.vidtype {
+    font-style: italic;
+    font-weight: bold;
+    font-size: 1.5em;
+    margin-left: .5em;
+    margin-right: .5em;
+    color: #c0c0c0;
+    float: right;
+}
+
+.vidcontrols select {
+    background-color: #606060;
+    color: #e0e0e0;
+    border:1px solid #e0e0e0;
+    margin: 0px;
+    margin-left: 2px;
+}
+
+.vidcontrols select option {
+    background: #606060;
+    color: #e0e0e0;
+}

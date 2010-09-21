@@ -1,0 +1,13 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <link rel="icon" href="/images/logos/xiph.ico" type="image/x-icon"/>
+  <link rel="shortcut icon" href="/images/logos/xiph.ico" type="image/x-icon"/>
+  <link rel="stylesheet" title="Default 50em Width" media="screen" href="/css/screen.css" type="text/css"/>
+  <link rel="stylesheet" title="Default 50em Width" media="screen" href="/css/videopage.css" type="text/css"/>
+
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="subtitles.js"></script>
+  <script type="text/javascript" src="dimmy.js"></script>
+  <script type="text/javascript" src="video.js"></script>
