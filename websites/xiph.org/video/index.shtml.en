@@ -28,6 +28,31 @@
   margin-bottom: 1em;
   }
 
+  #xiphlogo {
+  margin: 20px 0px 16px 10px;
+  border: 0px;
+  overflow: hidden;
+  }
+  
+  #xiphlogo img, #xiphlogo a img{
+  float: left;
+  margin-right: 3em;
+  }
+
+  h1 {
+  padding: 0px;
+  padding-top: 23px;
+  margin: 0px;
+  margin-top: -.5em;
+  margin-left: .5em;
+  margin-right: .5em;
+  font-size: 3em;
+  position: relative;
+  float: right;
+  font-weight: bold;
+  color: #ff9900;
+  }
+
 </style>
 
   <title>Xiph.org: Video</title>
@@ -40,19 +65,13 @@
   </style>
 </head>
 <body>
-<!--#include virtual="/common/xiphbar.include" -->
-
-<div id="thepage">
-
-<div id="xiphlogo">
-  <a href="http://www.xiph.org/">
-    <img src="/images/logos/fish_xiph_org.png" alt="Fish Logo and Xiph.org"/>
-  </a>
-</div>
+  <!--#include virtual="/common/xiphbar_video.shtml" -->
 
 <!--  All your page content goes here  -->
 
-<h1>Xiph.Org Video</h1> 
+<h1>Video</h1> 
+</div>
+<div id="banners"></div>
 
 <p>Xiph.Org has undertaken a series of
 self-produced videos to spread techie-level knowledge about digital media as well
@@ -83,5 +102,4 @@ digital media!
 <hr>
 
 
-</div>
 <!--#include virtual="/ssi/pagebottom.include" -->
