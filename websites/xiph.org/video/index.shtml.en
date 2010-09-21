@@ -42,7 +42,14 @@
 <body>
 <!--#include virtual="/common/xiphbar.include" -->
 
-<!--#include virtual="/ssi/pagetop.include" -->
+<div id="thepage">
+
+<div id="xiphlogo">
+  <a href="http://www.xiph.org/">
+    <img src="/images/logos/fish_xiph_org.png" alt="Fish Logo and Xiph.org"/>
+  </a>
+</div>
+
 <!--  All your page content goes here  -->
 
 <h1>Xiph.Org Video</h1> 
