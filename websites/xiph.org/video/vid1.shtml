@@ -9,131 +9,133 @@
 
 <!--#include virtual="/ssi/navbar_video.include" -->
 
-<div class="videowrapper">
-  <div class="videowrapper_border">
-    <div class="videowrapper_sizer">
-
-      <!-- Firefox only added DOM support for callbacks in 4.0, so
-	   they must go in the video tag -->
-      <!-- Attributes and source URL set via JA according to dropdpwn
-      selection -->
-      <video 
-	 controls
-	 onplay="dimpage()"
-	 onpause="undimpage()"
-	 onended="undimpage()">
-
-	<!-- Cortado fallback for browsers w/o video, or without Ogg/WebM in video -->
-	<applet 
-	   width="640"
-	   height="360"
-	   class="video" 
-	   archive="cortado_20100917-2.jar"
-	   code="com.fluendo.player.Cortado.class"
-	   url="http://downloads.xiph.org/video/A_Digital_Media_Primer_For_Geeks-360p.ogv"
-	   statusheight="20"
-	   BufferSize="512"
-	   BufferHigh="25"
-	   BufferLow="5">
+<div class="vid_wrapper"> 
+  <div class="vid_control">
+    <div class="vid_border">
+      <div class="vid_sizer">
+	
+	<!-- Firefox only added DOM support for callbacks in 4.0, so
+	     they must go in the video tag -->
+	<!-- Attributes and source URL set via JA according to dropdpwn
+	     selection -->
+	<video 
+	   controls
+	   onplay="dimpage()"
+	   onpause="undimpage()"
+	   onended="undimpage()">
 	  
-	  <p>Your browser doesn't seem to support WebM, Ogg or Java;
-	    please consider downloading this
+	  <!-- Cortado fallback for browsers w/o video, or without Ogg/WebM in video -->
+	  <applet 
+	     width="640"
+	     height="360"
+	     class="video" 
+	     archive="cortado_20100917-2.jar"
+	     code="com.fluendo.player.Cortado.class"
+	     url="http://downloads.xiph.org/video/A_Digital_Media_Primer_For_Geeks-360p.ogv"
+	     statusheight="20"
+	     BufferSize="512"
+	     BufferHigh="25"
+	     BufferLow="5">
+	    
+	    <p>Your browser doesn't seem to support WebM, Ogg or Java;
+	      please consider downloading this
 	      video to play in your favorite media player!</p>
-	  
-	</applet>
-      </video>
-    </div>    
-  </div>
-  
-  <!-- Subtitle overlay (driven by javascript in subtitiles.js) -->
-  <div class="srtwrapper">
-    <div class="srt"></div>
-    <div class="absbackground"></div>
-  </div>
-
-  <!-- Addiitional upper video control bar (driven by javascript in video.js) -->
-  <div class="vcwrapper">
-    <div class="vidcontrols">
-
-      <!-- where the video type text is filled in -->
-      <div class="vidtype">
-      </div>
-
-      <!-- Select resolution/bitrate dropdown -->
-      <select class="video-select">	
-	<option src-webm="http://downloads.xiph.org/video/A_Digital_Media_Primer_For_Geeks-360p.webm"
-		src-ogg="http://downloads.xiph.org/video/A_Digital_Media_Primer_For_Geeks-360p.ogv"
-		poster="vid1-poster-360.jpg"
-		video-width="640px" 
-		video-height="360px" 
-		subtitle-font-size="1.6em"
-		subtitle-bottom="60px">
-	  360p</option>
-	<option src-webm="http://downloads.xiph.org/video/A_Digital_Media_Primer_For_Geeks-480p.webm"
-		src-ogg="http://downloads.xiph.org/video/A_Digital_Media_Primer_For_Geeks-480p.ogv"
-		poster="vid1-poster-480.jpg"
-		video-width="854px" 
-		video-height="480px" 
-		subtitle-font-size="2em"
-		subtitle-bottom="80px">
-	  480p</option>
-	<option src-webm="http://downloads.xiph.org/video/A_Digital_Media_Primer_For_Geeks-720p.webm"
-		src-ogg="http://downloads.xiph.org/video/A_Digital_Media_Primer_For_Geeks-720p.ogv"
-		poster="vid1-poster-720.jpg"
-		video-width="1280px" 
-		video-height="720px" 
-		subtitle-font-size="2em"
-		subtitle-bottom="120px">
-	  720p</option>
-      </select>
-      
-      <!-- chapter navigation -->
-      <select class="chapter-select">
-	<option>Chapter Selection</option>
-	<option timecode="0">Opening credits</option>
-	<option timecode="7.298">Intro</option>
-	<option timecode="184.142">Digital vs. Analog</option>
-	<optgroup label="Digital Audio">
-	  <option timecode="540.957">Overview</option>
-	  <option timecode="573.698">Sample Rate</option>
-	  <option timecode="678.01">Aliasing</option>
-	  <option timecode="794.376">Sample Format</option>
-	  <option timecode="930.387">Channel Count</option>
-	</optgroup>
-	<optgroup label="Digital Video">
-	  <option timecode="958.248">Overview</option>
-	  <option timecode="1085.709">Resolution and Aspect</option>
-	  <option timecode="1149.898">Frame Rate</option>
-	  <option timecode="1172.838">Interlacing</option>
-	  <option timecode="1223.472">Gamma</option>
-	  <option timecode="1357.022">Colorspace</option>
-	  <option timecode="1458.582">Chroma Subsampling</option>
-	  <option timecode="1508.506">Chroma Siting</option>
-	  <option timecode="1575.073">Pixel Formats</option>
-	</optgroup>
-	<option timecode="1672.087">Containers</option>
-	<option timecode="1765.472">Conclusion</option>
-      </select>
-      
-      <!-- Subtitle selection (loaded from external file, not pulled
-      from media file) -->
-      <select class="srt-select">
-	<option>
-	  Subtitles: Off</option>
-	<option file="vid1-en_US.srt">
-	  Subtitles: US English</option>
-      </select>
-
+	    
+	  </applet>
+	</video>
+      </div>    
     </div>
 
-    <!-- transparent dim background for addiitonal controls -->
-    <div class="absbackground"> </div>
-
-    <div style="clear: both; font-size: 0px;"></div>
+    <!-- Subtitle overlay (driven by javascript in subtitiles.js) -->
+    <div class="srtwrapper">
+      <div class="srt"></div>
+      <div class="absbackground"></div>
+    </div>
+    
+    <!-- Addiitional upper video control bar (driven by javascript in video.js) -->
+    <div class="vcwrapper">
+      <div class="vidcontrols">
+	
+	<!-- where the video type text is filled in -->
+	<div class="vidtype">
+	</div>
+	
+	<!-- Select resolution/bitrate dropdown -->
+	<select class="video-select">	
+	  <option src-webm="http://downloads.xiph.org/video/A_Digital_Media_Primer_For_Geeks-360p.webm"
+		  src-ogg="http://downloads.xiph.org/video/A_Digital_Media_Primer_For_Geeks-360p.ogv"
+		  poster="vid1-poster-360.png"
+		  video-width="640px" 
+		  video-height="360px" 
+		  subtitle-font-size="1.6em"
+		  subtitle-bottom="60px">
+	    360p</option>
+	  <option src-webm="http://downloads.xiph.org/video/A_Digital_Media_Primer_For_Geeks-480p.webm"
+		  src-ogg="http://downloads.xiph.org/video/A_Digital_Media_Primer_For_Geeks-480p.ogv"
+		  poster="vid1-poster-480.png"
+		  video-width="854px" 
+		  video-height="480px" 
+		  subtitle-font-size="2em"
+		  subtitle-bottom="80px">
+	    480p</option>
+	  <option src-webm="http://downloads.xiph.org/video/A_Digital_Media_Primer_For_Geeks-720p.webm"
+		  src-ogg="http://downloads.xiph.org/video/A_Digital_Media_Primer_For_Geeks-720p.ogv"
+		  poster="vid1-poster-720.png"
+		  video-width="1280px" 
+		  video-height="720px" 
+		  subtitle-font-size="2em"
+		  subtitle-bottom="120px">
+	    720p</option>
+	</select>
+	
+	<!-- chapter navigation -->
+	<select class="chapter-select">
+	  <option>Chapter Selection</option>
+	  <option timecode="0">Opening credits</option>
+	  <option timecode="7.298">Intro</option>
+	  <option timecode="184.142">Digital vs. Analog</option>
+	  <optgroup label="Digital Audio">
+	    <option timecode="540.957">Overview</option>
+	    <option timecode="573.698">Sample Rate</option>
+	    <option timecode="678.01">Aliasing</option>
+	    <option timecode="794.376">Sample Format</option>
+	    <option timecode="930.387">Channel Count</option>
+	  </optgroup>
+	  <optgroup label="Digital Video">
+	    <option timecode="958.248">Overview</option>
+	    <option timecode="1085.709">Resolution and Aspect</option>
+	    <option timecode="1149.898">Frame Rate</option>
+	    <option timecode="1172.838">Interlacing</option>
+	    <option timecode="1223.472">Gamma</option>
+	    <option timecode="1357.022">Colorspace</option>
+	    <option timecode="1458.582">Chroma Subsampling</option>
+	    <option timecode="1508.506">Chroma Siting</option>
+	    <option timecode="1575.073">Pixel Formats</option>
+	  </optgroup>
+	  <option timecode="1672.087">Containers</option>
+	  <option timecode="1765.472">Conclusion</option>
+	</select>
+	
+	<!-- Subtitle selection (loaded from external file, not pulled
+	     from media file) -->
+	<select class="srt-select">
+	  <option>
+	    Subtitles: Off</option>
+	  <option file="A_Digital_Media_Primer_For_Geeks-en_US.srt">
+	    Subtitles: US English</option>
+	</select>
+	
+      </div>
+      
+      <!-- transparent dim background for addiitonal controls -->
+      <div class="absbackground"> </div>
+      
+      <div style="clear: both; font-size: 0px;"></div>
+    </div>
   </div>
 
   <div style="clear: both; font-size: 0px;"></div>
-  <div class="videowidth_sizer">
+  <div class="vid_caption">
 
     <p>This first video from Xiph.Org presents the technical
       foundations of modern digital media via a half-hour firehose of
@@ -189,10 +191,10 @@
     
     <ul>
       <li><b> Ogg format (Kate): </b><br>
-	<a href="vid1-en_US.kate">
+	<a href="http://downloads.xiph.org/video/A_Digital_Media_Primer_For_Geeks-en_US.kate">
 	  US English</a> 
       <li><b> SRT format: </b><br>
-	<a href="vid1-en_US.srt">
+	<a href="http://downloads.xiph.org/video/A_Digital_Media_Primer_For_Geeks-en_US.srt">
 	  US English</a> 
     </ul>
     <p>We welcome good, technical translations from the community!

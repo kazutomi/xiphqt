@@ -109,7 +109,7 @@ function loadSubtitles(subtitleElement, url){
         el.html("");
     }
     if(url) {
-        el.load(url, function (responseText, textStatus, req) { playSubtitles(el,vid)});
+        el.load(url, function (responseText, textStatus, req) {playSubtitles(el,vid)});
     } else {
         el.html("");
     }

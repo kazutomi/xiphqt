@@ -37,7 +37,7 @@ function fixupVideo(video)
 // Search up from one of the control elements until we hit the upper video wrapper
 function findWrapper(el){
     var wrapper = el;
-    while (wrapper && (!wrapper.className || wrapper.className.toLowerCase() != "videowrapper")){
+    while (wrapper && (!wrapper.className || wrapper.className.toLowerCase() != "vid_wrapper")){
         wrapper = wrapper.parentNode;
     }
     return wrapper;
@@ -46,7 +46,7 @@ function findWrapper(el){
 // Search up to video wrapper, then back down to sibling target
 function findUnder(el,target){
     var wrapper = el;
-    while (wrapper && (!wrapper.className || wrapper.className.toLowerCase() != "videowrapper")){
+    while (wrapper && (!wrapper.className || wrapper.className.toLowerCase() != "vid_wrapper")){
         wrapper = wrapper.parentNode;
     }
     if(!wrapper) return;
@@ -89,8 +89,8 @@ function SetVideo(dropdown)
     var srt_wrapper = $(wrapper).find(".srtwrapper")[0];
     var vc_wrapper = $(wrapper).find(".vcwrapper")[0];
     var vidtype = $(wrapper).find(".vidtype")[0];
-    var sizers = $(wrapper).find(".videowrapper_sizer");
-    var sizers2 = $(wrapper).find(".videowidth_sizer");
+    var sizers = $(wrapper).find(".vid_sizer");
+    var sizers2 = $(wrapper).find(".vid_caption");
 
     // reloading the vid will cause it to start over; save play status and playtime
     var playing = !(video.paused);
@@ -204,11 +204,7 @@ $(document).ready(function() {
                 fixupVideo(this);
             });
 
-        $('.videowrapper_border').each(function() {
-                this.onmouseout=function(){mousein=0;hideControls(this)};
-                this.onmouseover=function(){mousein=1;showControls(this)};
-            });
-        $('.vcwrapper').each(function() {
+        $('.vid_control').each(function() {
                 this.onmouseout=function(){mousein=0;hideControls(this)};
                 this.onmouseover=function(){mousein=1;showControls(this)};
             });
