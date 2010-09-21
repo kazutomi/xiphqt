@@ -1,0 +1,75 @@
+<!--#include virtual="/ssi/header.include" -->
+<!-- Enter custom page information and styles here -->
+<style type="text/css">
+  hr {
+  color: #9FC0D7;
+  height: 0px;
+  margin: 0px;
+  padding: 0px;
+  border: 0px;
+  border-bottom: 1px solid #9FC0D7;
+  }
+
+  img.still {
+  float: left;
+  padding: 0px;
+  margin: 1em;
+  margin-right:2em;
+  }
+
+  h2{
+  margin-top: 0px;
+  padding-top: 1em;
+  text-align: center;
+  }
+
+</style>
+
+  <title>Xiph.org: Video</title>
+  <style type="text/css">
+  .doc {
+    list-style: none;
+    margin-left: 0;
+    padding-left: 0;
+  }
+  </style>
+</head>
+<body>
+<!--#include virtual="/common/xiphbar.include" -->
+
+<!--#include virtual="/ssi/pagetop.include" -->
+<!--  All your page content goes here  -->
+
+<h1>Xiph.Org Video</h1> 
+
+<p>Xiph.Org has undertaken a series of
+self-produced videos to spread techie-level knowledge about digital media as well
+as our own work involving new media research.
+
+<p>We've just completed the first video in what we hope to be a long,
+fruitful series about the science and engineering of modern
+digital media!
+
+<hr>
+<div>
+<img class="still" src="tnsj.jpg">
+<h2>Episode 1: A Digital Media Primer for Geeks</h2>
+
+<p>This first video from Xiph.Org presents the technical
+  foundations of modern digital media via a half-hour firehose of
+  information.  One community member called it "a Uni lecture
+  I never got but really wanted."
+
+<p>
+  <div style="text-align: center;">
+    <b>
+      <a href="vid1.shtml">Watch (or download) this video</a> | 
+      <a href="http://wiki.xiph.org/A_Digital_Media_Primer_For_Geeks_%28episode_1%29">Discuss this video</a>
+    </b>
+</div>
+<div style="clear: both;"></div>
+<hr>
+
+
+</div>
+<!--#include virtual="/ssi/pagebottom.include" -->

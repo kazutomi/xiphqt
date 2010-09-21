@@ -5,7 +5,7 @@
 <!--#include virtual="/common/xiphbar_video.shtml" -->
 
 <h1>A Digital Media Primer for Geeks</h1>
-<div class="or"><a href="index.html">(...up to the main video page)</a></div>
+<div class="or"><a href="/video">(...up to the main video page)</a></div>
 
 <!--#include virtual="/ssi/navbar_video.include" -->
 
@@ -139,7 +139,7 @@
 
     <p>This first video from Xiph.Org presents the technical
       foundations of modern digital media via a half-hour firehose of
-      information.  A community contributors called it "a Uni lecture
+      information.  One community member called it "a Uni lecture
       I never got but really wanted."
 
     <p>The program offers a brief history of digital media, a quick
