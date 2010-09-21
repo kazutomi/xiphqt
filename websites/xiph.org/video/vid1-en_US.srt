@@ -12,7 +12,7 @@ It's only been about five years that a decent workstation's been able
 
 4
 00:00:17,470 --> 00:00:21,643
-to handle raw video without alot of expensive special purpose hardware.
+to handle raw video without a lot of expensive special purpose hardware.
 
 5
 00:00:21,643 --> 00:00:25,400
@@ -44,7 +44,7 @@ YouTube was the first huge success, and now everybody wants in.
 
 12
 00:00:44,017 --> 00:00:47,413
-Well good!  Because this stuff is alot of fun!
+Well good!  Because this stuff is a lot of fun!
 
 13
 00:00:48,250 --> 00:00:51,179
@@ -52,7 +52,7 @@ It's no problem finding consumers for digital media.
 
 14
 00:00:51,179 --> 00:00:54,649
-But here, I'd like to address the engineers, the mathemeticians, 
+But here, I'd like to address the engineers, the mathematicians, 
 
 15
 00:00:54,649 --> 00:00:57,869
@@ -204,7 +204,7 @@ welcome to one hell of a new hobby.
 
 52
 00:03:10,291 --> 00:03:13,030
-Sound is the propogation of pressure waves through air, 
+Sound is the propagation of pressure waves through air, 
 
 53
 00:03:13,030 --> 00:03:16,981
@@ -336,7 +336,7 @@ and that's not because most audio comes from an originally analog source.
 
 85
 00:05:25,267 --> 00:05:28,450
-You may also think that since computers are farily recent, 
+You may also think that since computers are fairly recent, 
 
 86
 00:05:28,450 --> 00:05:31,643
@@ -380,7 +380,7 @@ not a digitized analog signal, but with the advent of the telephone and radio,
 
 96
 00:06:06,883 --> 00:06:12,000
-analog and digital signal techology progressed rapidly and side-by-side.
+analog and digital signal technology progressed rapidly and side-by-side.
 
 97
 00:06:12,699 --> 00:06:18,732
@@ -448,7 +448,7 @@ On a digital processor though...
 
 113
 00:07:28,668 --> 00:07:34,127
-...just write a new program. Software isn't trivial, but it is alot easier.
+...just write a new program. Software isn't trivial, but it is a lot easier.
 
 114
 00:07:34,127 --> 00:07:39,550
@@ -472,7 +472,7 @@ progressively, measurably, irretrievably corrupts it.
 
 119
 00:08:00,434 --> 00:08:06,513
-Besides, all of those single-purpose analog components take up alot of space.  
+Besides, all of those single-purpose analog components take up a lot of space.  
 
 120
 00:08:06,513 --> 00:08:09,946
@@ -508,7 +508,7 @@ Messy or not, modern conversion stages are very, very good.
 
 128
 00:08:40,750 --> 00:08:45,849
-By the standards of our ears, we can consider them practically losless as well.
+By the standards of our ears, we can consider them practically lossless as well.
 
 129
 00:08:45,849 --> 00:08:50,429
@@ -628,7 +628,7 @@ The most common hi-fidelity sampling rate aside from the CD is 48kHz.
 
 158
 00:11:05,710 --> 00:11:08,597
-There's vitually no audible difference between the two.  
+There's virtually no audible difference between the two.  
 
 159
 00:11:08,597 --> 00:11:13,640
@@ -652,7 +652,7 @@ It's for a different reason.
 
 164
 00:11:32,896 --> 00:11:37,319
-Stepping back for just a second, the French mathemetician Jean Baptiste Joseph Fourier 
+Stepping back for just a second, the French mathematician Jean Baptiste Joseph Fourier 
 
 165
 00:11:37,319 --> 00:11:42,353
@@ -849,7 +849,7 @@ The third PCM parameter is the number of channels.
 
 213
 00:15:34,071 --> 00:15:38,485
-The convention in raw PCM is to encode mutiple channels by interleaving the samples 
+The convention in raw PCM is to encode multiple channels by interleaving the samples 
 
 214
 00:15:38,485 --> 00:15:43,398
@@ -929,7 +929,7 @@ In addition, electronic video comes almost entirely from broadcast television al
 
 233
 00:17:06,705 --> 00:17:13,423
-and the standards committees that govern broadcast video have always been very concerned with backward compatability.
+and the standards committees that govern broadcast video have always been very concerned with backward compatibility.
 
 234
 00:17:13,423 --> 00:17:17,559  
@@ -945,7 +945,7 @@ That's actually a really neat trick.
 
 237
 00:17:23,879 --> 00:17:28,718
-The downside to backward compatability is that once a detail makes it into a standard, 
+The downside to backward compatibility is that once a detail makes it into a standard, 
 
 238
 00:17:28,718 -->  00:17:30,985
@@ -1275,7 +1275,7 @@ the black & white, along with additional, often lower resolution chroma channels
 
 319
 00:23:51,041 --> 00:23:57,074
-The luma channel, Y, is produced by weighting and then adding the seperate red, green and blue signals.  
+The luma channel, Y, is produced by weighting and then adding the separate red, green and blue signals.  
 
 320
 00:23:57,074 --> 00:24:01,867
@@ -1291,7 +1291,7 @@ When YUV is scaled, offset and quantized for digital video, it's usually more co
 
 323
 00:24:11,750 --> 00:24:15,238
-but the more generic term YUV is widely used to decribe 
+but the more generic term YUV is widely used to describe 
 
 324
 00:24:15,238 --> 00:24:18,301
@@ -1331,7 +1331,7 @@ but the common choices today are
 
 333
 00:24:56,711 --> 00:25:02,587
-and most common of all, 4:2:0 video in which both the horizonal and vertical resolutions 
+and most common of all, 4:2:0 video in which both the horizontal and vertical resolutions 
 
 334
 00:25:02,587 --> 00:25:08,897
@@ -1367,11 +1367,11 @@ between luma pixels both horizontally and vertically.
 
 342
 00:25:46,345 --> 00:25:51,989
-MPEG2 sites chroma pixels betwwen lines, but horizontally aligned with every other luma pixel. 
+MPEG2 sites chroma pixels between lines, but horizontally aligned with every other luma pixel. 
 
 343
 00:25:51,989 --> 00:25:57,106
-Interlaced modes complicate things somewhat, resulting in a siting arrangement that's a tad bizaare.
+Interlaced modes complicate things somewhat, resulting in a siting arrangement that's a tad bizarre.
 
 344
 00:25:57,106 --> 00:26:00,909
@@ -1379,7 +1379,7 @@ And finally PAL-DV, which is always interlaced, places the chroma pixels
 
 345
 00:26:00,909 --> 00:26:04,398
-in the same position as every other luma pixel in the horizonatal direction, 
+in the same position as every other luma pixel in the horizontal direction, 
 
 346
 00:26:04,398 --> 00:26:07,303
@@ -1392,7 +1392,7 @@ viewer.
 
 348
 00:26:12,282 --> 00:26:14,882
-Youv've got the basic idea, moving on.
+You've got the basic idea, moving on.
 
 349
 00:26:15,511 --> 00:26:21,128
@@ -1404,7 +1404,7 @@ from each channel in order. Video uses both packed formats that interleave the c
 
 351
 00:26:26,383 --> 00:26:30,584
-as well as planar formats that keep the pixels from each channel together in seperate planes 
+as well as planar formats that keep the pixels from each channel together in separate planes 
 
 352
 00:26:30,584 --> 00:26:35,415
@@ -1460,7 +1460,7 @@ That wraps up our not so quick and yet very incomplete tour of raw video.
 
 365
 00:27:33,913 --> 00:27:38,651
-The good news is we can already get quite alot of real work done using that overview. 
+The good news is we can already get quite a lot of real work done using that overview. 
 
 366
 00:27:38,651 --> 00:27:42,528
@@ -1512,7 +1512,7 @@ and we usually want some flexibility in using a range of different data types in
 
 378
 00:28:29,405 --> 00:28:34,281
-If we string random formless data together, we lose the boundaries that seperate frames 
+If we string random formless data together, we lose the boundaries that separate frames 
 
 379
 00:28:34,281 --> 00:28:37,871
@@ -1548,7 +1548,7 @@ Containers provide framing for the data blobs,
 
 387
 00:29:09,221 --> 00:29:12,015
-interleave and identify mutliple data streams, 
+interleave and identify multiple data streams, 
 
 388
 00:29:12,015 --> 00:29:15,337
