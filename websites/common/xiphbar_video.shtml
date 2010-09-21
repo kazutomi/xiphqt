@@ -1,0 +1,11 @@
+</head>
+
+<body>
+<!--#include virtual="/common/xiphbar.include" -->
+<div id="thepage">
+
+<div id="xiphlogo">
+  <a href="http://www.xiph.org/">
+    <img src="/images/logos/fish_xiph_org_light.png" 
+	 alt="Fish Logo and Xiph.org"
+	 id="xiphimage"/></a>
