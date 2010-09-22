@@ -175,11 +175,14 @@ function showControls(el){
     stick=0;
 }
 
+var focused_el = 0;
 function hideControls(el){
     if(!stick && !mousein){
         var wrapper = findUnder(el,'.vcwrapper');
         if(!wrapper)return;
         $(wrapper).animate({opacity: 0.}, {duration: 160, queue: false});
+        el.blur();
+        focused_el=0;
     }
 }
 
@@ -188,6 +191,7 @@ function hideControls(el){
 // mousedown.  Sadly, Chrome does not seem to fire any events at all
 // when a Select box is activated by keyboard, only if an option is
 // selected.
+
 function stickControls(el){
     showControls(el);
     stick=1;
@@ -195,6 +199,13 @@ function stickControls(el){
 
 function unstickControls(el){
     stick=0;
+}
+
+function focusControl(el){
+    if(!focused_el || el != focused_el){
+        focused_el = el;
+        stickControls(el);
+    }
 }
 
 $(document).ready(function() {
@@ -216,14 +227,14 @@ $(document).ready(function() {
                 this.onkeydown=function(){stickControls(this);};
                 this.onblur=function(){unstickControls(this);hideControls(this);};
                 this.onselect=function(){unstickControls(this);};
-                this.onfocus=function(){stickControls(this);};
+                this.onfocus=function(){focusControl(this);};
                 this.onchange=function(){SetSubtitles(this);};
                 SetSubtitles(this);
             });
         $('.video-select').each(function() {
                 this.onmousedown=function(){stickControls(this);};
                 this.onkeydown=function(){stickControls(this);};
-                this.onfocus=function(){stickControls(this);};
+                this.onfocus=function(){focusControl(this);};
                 this.onblur=function(){unstickControls(this);hideControls(this);};
                 this.onselect=function(){unstickControls(this);};
                 this.onchange=function(){SetVideo(this);};
@@ -234,7 +245,7 @@ $(document).ready(function() {
                 this.onkeydown=function(){stickControls(this);};
                 this.onblur=function(){unstickControls(this);hideControls(this);};
                 this.onselect=function(){unstickControls(this);};
-                this.onfocus=function(){stickControls(this);};
+                this.onfocus=function(){focusControl(this);};
                 this.onchange=function(){SetTime(this);};
             });
     });
