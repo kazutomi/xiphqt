@@ -158,11 +158,12 @@
       a <a href="http://wiki.xiph.org/A_Digital_Media_Primer_For_Geeks_%28episode_1%29">Discussion
 	Wiki</a> to get more information, ask questions, and debate.
       
-    <p><i><b>We also want to hear about problems.</b> HTML5 and the
-	&lt;video&gt; tag are brand new so there's bound to be niggles,
-	hiccups and outright gaping wounds.  Any problems you report will
-	go to the browser and player coders to make sure the
-	problems <b>get fixed</b></i>.
+    <p><i><b><a href="http://wiki.xiph.org/Playback_Troubleshooting">We
+	also want to hear about problems.</a></b> HTML5 and the
+	&lt;video&gt; tag are brand new so there's bound to be
+	niggles, hiccups and outright gaping wounds.  Any problems you
+	report will go to the browser and player coders to make sure
+	the problems <b>get fixed</b></i>.
     
     <h2>Download this video!</h2>
 
