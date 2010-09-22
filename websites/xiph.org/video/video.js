@@ -119,8 +119,6 @@ function SetVideo(dropdown)
         if(vidtype)$(vidtype).html("Ogg");
     }
 
-    video.load();
-
     // Remove the poster once playback is in progress, as some
     // browsers keep popping it back up at annoying times, like when
     // playback stutters or during seeking.
@@ -163,6 +161,8 @@ function SetVideo(dropdown)
         srt_wrapper.style.width = vid_width;
         srt_wrapper.style.bottom = bottom;
     }
+    video.load();
+
 }
 
 // Show/hide our upper control toolbar according to mouseover
