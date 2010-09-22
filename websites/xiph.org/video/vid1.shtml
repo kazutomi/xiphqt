@@ -172,6 +172,27 @@
     Commons Attribution-NonCommercial-ShareAlike (BY-NC-SA)
     license.</a>
 
+    <h3>Download via HTTP</h3>
+
+    <ul>
+      <li><b style="display: inline;"> WebM Format (Vorbis audio + VP8 video): </b><br>
+	<a href="http://www.archive.org/download/A_Digital_Media_Primer_for_Geeks/A_Digital_Media_Primer_for_Geeks/A_Digital_Media_Primer_For_Geeks-360p.webm">
+	  360p/500kbps (132MB)</a> |
+	<a href="http://www.archive.org/download/A_Digital_Media_Primer_for_Geeks/A_Digital_Media_Primer_for_Geeks/A_Digital_Media_Primer_For_Geeks-480p.webm">
+	  360p/1500kbps (348MB)</a> |
+	<a href="http://www.archive.org/download/A_Digital_Media_Primer_for_Geeks/A_Digital_Media_Primer_for_Geeks/A_Digital_Media_Primer_For_Geeks-720p.webm">
+	  720p/3500kbps (783MB)</a>
+
+      <li><b> Ogg Format (Vorbis audio / Theora video / Kate subtitles + Index): </b><br>
+	<a href="http://www.archive.org/download/A_Digital_Media_Primer_for_Geeks/A_Digital_Media_Primer_for_Geeks/A_Digital_Media_Primer_For_Geeks-360p.ogv">
+	  360p/500kbps (137MB)</a> |
+	<a href="http://www.archive.org/download/A_Digital_Media_Primer_for_Geeks/A_Digital_Media_Primer_for_Geeks/A_Digital_Media_Primer_For_Geeks-480p.ogv">
+	  360p/1500kbps (357MB)</a> |
+	<a href="http://www.archive.org/download/A_Digital_Media_Primer_for_Geeks/A_Digital_Media_Primer_for_Geeks/A_Digital_Media_Primer_For_Geeks-720p.ogv">
+	  720p/3500kbps (832MB)</a>
+    </ul>
+
+    <!-- download.xiph.org download links disabled 
     <ul>
       <li><b style="display: inline;"> WebM Format (Vorbis audio + VP8 video): </b><br>
 	<a href="http://downloads.xiph.org/video/A_Digital_Media_Primer_For_Geeks-360p.webm">
@@ -187,6 +208,27 @@
 	<a href="http://downloads.xiph.org/video/A_Digital_Media_Primer_For_Geeks-480p.ogv">
 	  360p/1500kbps (357MB)</a> |
 	<a href="http://downloads.xiph.org/video/A_Digital_Media_Primer_For_Geeks-720p.ogv">
+	  720p/3500kbps (832MB)</a>
+    </ul>
+    -->
+
+    <h3>Download via bittorent</h3>
+
+    <ul>
+      <li><b style="display: inline;"> WebM Format (Vorbis audio + VP8 video): </b><br>
+	<a href="A_Digital_Media_Primer_For_Geeks-360p.webm.torrent">
+	  360p/500kbps (132MB)</a> |
+	<a href="A_Digital_Media_Primer_For_Geeks-480p.webm.torrent">
+	  360p/1500kbps (348MB)</a> |
+	<a href="A_Digital_Media_Primer_For_Geeks-720p.webm.torrent">
+	  720p/3500kbps (783MB)</a>
+
+      <li><b> Ogg Format (Vorbis audio / Theora video / Kate subtitles + Index): </b><br>
+	<a href="A_Digital_Media_Primer_For_Geeks-360p.ogv.torrent">
+	  360p/500kbps (137MB)</a> |
+	<a href="A_Digital_Media_Primer_For_Geeks-480p.ogv.torrent">
+	  360p/1500kbps (357MB)</a> |
+	<a href="A_Digital_Media_Primer_For_Geeks-720p.ogv.torrent">
 	  720p/3500kbps (832MB)</a>
     </ul>
 
