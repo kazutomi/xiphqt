@@ -63,8 +63,6 @@
     padding-left: 0;
   }
   </style>
-</head>
-<body>
   <!--#include virtual="/common/xiphbar_video.shtml" -->
 
 <!--  All your page content goes here  -->
