@@ -123,8 +123,10 @@
 	<select class="srt-select">
 	  <option>
 	    Subtitles: Off</option>
-	  <option file="vid1-en_US.srt">
+	  <option file="vid1-en.srt">
 	    Subtitles: US English</option>
+	  <option file="vid1-fr.srt">
+	    Subtitles: Français</option>
 	</select>
 	
       </div>
@@ -236,12 +238,11 @@
     <h3>Download subtitles</h3>
     
     <ul>
-      <li><b> Ogg format (Kate): </b><br>
-	<a href="vid1-en_US.kate">
-	  US English</a> 
       <li><b> SRT format: </b><br>
-	<a href="vid1-en_US.srt">
+	<a href="vid1-en.srt"> | 
 	  US English</a> 
+	<a href="vid1-fr.srt">
+	  Français</a> 
     </ul>
     <p>We welcome good, technical translations from the community!
     Please submit translations in SRT or Ogg Kate format
