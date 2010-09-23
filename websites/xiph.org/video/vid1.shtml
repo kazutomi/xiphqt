@@ -29,7 +29,7 @@
 	     width="640"
 	     height="360"
 	     class="video" 
-	     archive="cortado_20100917-2.jar"
+	     archive="http://downloads.xiph.org/video/cortado_latest.jar"
 	     code="com.fluendo.player.Cortado.class">
 	    <!-- Safari ignores 'unknown' params in applet tags; the
 	    must be in explicit <param> tags -->
