@@ -1,0 +1,51 @@
+<!--#include virtual="/ssi/header.include" -->
+<!-- Enter custom page information and styles here -->
+  <title>September 23, 2010: Xiph.Org announces its first documentary video production: "A Digital Media Primer for Geeks"</title>
+</head>
+<body>
+<!--#include virtual="/common/xiphbar.include" -->
+
+<!--#include virtual="/ssi/pagetop.include" -->
+<!--  All your page content goes here  -->
+
+<h3>Xiph.Org announces its first documentary video production: "A Digital Media Primer for Geeks</h3>
+
+
+<p><a href="http://www.xiph.org/video/vid1.shtml">&quot;A Digital
+Media Primer For Geeks&quot;</a> is the first video from Xiph.Org,
+presenting the technical foundations of modern digital media via a
+half-hour firehose of information. Christopher &quot;Monty&quot;
+Montgomery, Red Hat engineer and founder of the Xiph.Org project,
+guides this tour through the foundations of digital video. The program
+offers a brief history of digital media, a quick summary of the
+sampling theorem, and myriad details of low-level audio and video
+characterization and formatting. It's intended for budding geeks
+looking to get into video coding, as well as the technically curious
+who want to know more about the media they wrangle for work or
+play. The video features
+a <a href="http://wiki.xiph.org/A_Digital_Media_Primer_For_Geeks_(episode_1)">
+wiki companion site</a> with transcripts, discussion, and further
+reading.
+
+<p>&quot;Open Source has conquered and filled much of the original
+territory to which it aspired, but the media frontier, especially
+video, is still wide open and unexplored,&quot; Montgomery
+says. &quot;Camera and computer costs have come down to the point
+where hackers on modest budgets can afford to participate.&quot;
+Members of the digital video community have called it &quot;[the] Uni
+lecture I never got but really wanted&quot; and &quot;Carl Sagan on
+speed.&quot; The video is released under
+the <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/">Creative
+Commons CC-BY-NC-SA license for free redistribution and reuse</a>, and
+was created entirely using free and open source software.
+
+
+<p>The Xiph.Org Foundation is a 501(c)(3) nonprofit organization
+dedicated to open, unencumbered multimedia technology. Xiph's formats
+and software level the playing field for digital media so that all
+producers and artists can distribute their work for minimal cost,
+without restriction, regardless of affiliation.  May contain traces of
+nuts.
+
+<!--#include virtual="/ssi/pagebottom.include" -->
+
