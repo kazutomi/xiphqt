@@ -13,6 +13,7 @@
   img.still {
   float: left;
   padding: 0px;
+  border: 0;
   margin: 1em;
   margin-right:2em;
   }
@@ -81,7 +82,7 @@ digital media!
 
 <hr>
 <div>
-<img class="still" src="tnsj.jpg">
+<a href="vid1.shtml"><img class="still" src="tnsj.jpg"></a>
 <h2>Episode 1: A Digital Media Primer for Geeks</h2>
 
 <p>This first video from Xiph.Org presents the technical
@@ -93,7 +94,7 @@ digital media!
   <div class="hlist">
     <b>
       <a href="vid1.shtml">Watch (or download) this video</a> | 
-      <a href="http://wiki.xiph.org/A_Digital_Media_Primer_For_Geeks_%28episode_1%29">Discuss this video</a>
+      <a href="http://wiki.xiph.org/A_Digital_Media_Primer_For_Geeks_%28episode_1%29">Discuss and learn more...</a>
     </b>
 </div>
 <div style="clear: both;"></div>
