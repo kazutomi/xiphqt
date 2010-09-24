@@ -15,9 +15,8 @@
       <p>The <strong>libtheora</strong> reference implementation 
       provides the standard encoder and decoder under a BSD license.</p>
     <ul>
-      <li>[<a href="http://downloads.xiph.org/releases/theora/libtheora-1.1.1.tar.bz2">libtheora-1.1.1.tar.bz2</a>]</li>
+      <li>[<a href="http://downloads.xiph.org/releases/theora/libtheora-1.1.1.tar.bz2">libtheora-1.1.1.tar.bz2</a>]<br/>
           [<a href="http://downloads.xiph.org/releases/theora/libtheora-1.1.1.zip">libtheora-1.1.1.zip</a>]</li>
-      <li>[<a href="/svn/">Source code repository</a>]</li>
     </ul>
 
       <p>The libtheora implementation depends on the following libraries...</p>
@@ -27,6 +26,14 @@
       <li><a href="http://www.libsdl.org/">libSDL 1.2</a> or later for the playback example</li>
     </ul>
 
+      <p>You may also be interesting in testing our unstable releases
+         toward <strong>libtheora 1.2</strong>.</p>
+    <ul>
+      <li>[<a href="http://downloads.xiph.org/releases/theora/libtheora-1.2.0alpha1.tar.xz">libtheora-1.2.0alpha1.tar.xz</a>]<br/>
+          [<a href="http://downloads.xiph.org/releases/theora/libtheora-1.2.0alpha1.tar.gz">libtheora-1.2.0alpha1.tar.gz</a>]<br/>
+          [<a href="http://downloads.xiph.org/releases/theora/libtheora-1.2.0alpha1.zip">libtheora-1.2.0alpha1.zip</a>]</li>
+      <li>[<a href="/svn/">Source code repository</a>]</li>
+    </ul>
   </li>
 </ul>
 
