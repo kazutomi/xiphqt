@@ -117,10 +117,10 @@ end-user download links are provided for convenience:
 
 <tr>
 <td>libspeex</td>
-<td>1.0.5</td>
-<td><a href="http://downloads.xiph.org/releases/speex/speex-1.0.5.tar.gz">speex-1.0.5.tar.gz</a></td>
-<td>534K</td>
-<td>01d6a2de0a88a861304bf517615dea79</td>
+<td>1.2rc1</td>
+<td><a href="http://downloads.xiph.org/releases/speex/speex-1.2rc1.tar.gz">speex-1.2rc1</a></td>
+<td>1.1M</td>
+<td>c4438b22c08e5811ff10e2b06ee9b9ae</td>
 </tr>
 
 <tr>
