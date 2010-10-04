@@ -29,6 +29,7 @@
 	     width="640"
 	     height="360"
 	     class="video" 
+
 	     archive="http://downloads.xiph.org/video/cortado_latest.jar"
 	     code="com.fluendo.player.Cortado.class">
 	    <!-- Safari ignores 'unknown' params in applet tags; the
@@ -243,7 +244,7 @@
 	<a href="vid1-en.srt"> 
 	  US English</a> |
 	<a href="vid1-fr.srt">
-	  Français</a>
+	  Français</a> |
         <a href="vid1-ru.srt">
           Русский</a> 
     </ul>
