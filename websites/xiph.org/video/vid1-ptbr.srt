@@ -1,0 +1,1584 @@
+1
+00:00:08,124 --> 00:00:10,742
+Estações de trabalho e bons computadores pessoais têm sido capazes de
+
+2
+00:00:10,742 --> 00:00:14,749
+manipular áudio digital bastante facilmente há uns 15 anos.
+
+3
+00:00:14,749 --> 00:00:17,470
+Faz apenas uns 5 anos que uma estação de trabalho decente é capaz de
+
+4
+00:00:17,470 --> 00:00:21,643
+lidar com dados não-compactados de vídeo sem o auxílio de hardware especializado e caro.
+
+5
+00:00:21,643 --> 00:00:25,400
+Mas hoje até os PCs caseiros mais baratos têm o poder de processamento
+
+6
+00:00:25,400 --> 00:00:28,092
+e o espaço de armazenamento necessários para realmente jogar dados não-compactados de vídeo pra cá e pra lá,
+
+7
+00:00:28,092 --> 00:00:30,479
+pelo menos o suficiente para fazê-lo sem um esforço demasiado.
+
+8
+00:00:30,479 --> 00:00:33,579
+Por isso, agora que todo mundo possui este equipamento barato e com este potencial,
+
+9
+00:00:33,579 --> 00:00:36,651
+mais gente, como seria de se esperar, quer fazer coisas
+
+10
+00:00:36,651 --> 00:00:39,908
+interessantes com mídias digitais, especialmente <i>streaming</i>.
+
+11
+00:00:39,908 --> 00:00:44,017
+YouTube foi o primeiro enorme sucesso, e agora todo mundo quer entrar nessa.
+
+12
+00:00:44,017 --> 00:00:47,413
+Mas isso é ótimo!  Porque estas coisas são muito divertidas!
+
+13
+00:00:48,250 --> 00:00:51,179
+Não é difícil encontrar consumidores para mídias digitais.
+
+14
+00:00:51,179 --> 00:00:54,649
+Mas aqui eu gostaria de me dirigir aos engenheiros, aos matemáticos,
+
+15
+00:00:54,649 --> 00:00:57,869
+aos hackers, às pessoas que estão interessadas em descobrir
+
+16
+00:00:57,869 --> 00:01:01,302
+e fazer coisas e construir a própria tecnologia.
+
+17
+00:01:01,302 --> 00:01:03,282
+Pessoas assim como eu.
+
+18
+00:01:04,250 --> 00:01:08,723
+Imagina-se que assuntos relacionados a mídias digitais, especialmente compressão, são super-elitistas,
+
+19
+00:01:08,723 --> 00:01:12,822
+de algum modo incrivelmente mais difíceis do que qualquer outra coisa em ciência da computação.
+
+20
+00:01:12,822 --> 00:01:15,700
+Os grandes industriais do ramo não se incomodam nem um pouco com esta percepção;
+
+21
+00:01:15,700 --> 00:01:19,734
+isso ajuda a justificar a quantidade escalante de patentes muito elementares que eles mantêm.
+
+22
+00:01:19,734 --> 00:01:23,870
+Eles gostam da imagem de que pesquisadores de mídia são os melhores dentre os melhores,
+
+23
+00:01:23,870 --> 00:01:27,738
+tão mais inteligentes que todo o resto que suas ideias brilhantes não
+
+24
+00:01:27,738 --> 00:01:29,903
+podem sequer ser compreendidas por meros mortais.
+
+25
+00:01:30,625 --> 00:01:33,716
+Isso é besteira.
+
+26
+00:01:35,205 --> 00:01:38,900
+Áudio e vídeo digitais e <i>streaming</i> e compressão 
+
+27
+00:01:38,900 --> 00:01:42,738
+oferecem infindáveis desafios mentais profundos e estimulantes,
+
+28
+00:01:42,738 --> 00:01:44,662
+assim como qualquer outra disciplina.
+
+29
+00:01:44,662 --> 00:01:47,929
+Se eles parecem elitistas é porque tão pouca gente se envolveu com isso.
+
+30
+00:01:47,929 --> 00:01:51,223
+Mas talvez tão pouca gente se envolveu porque tão pouca gente
+
+31
+00:01:51,223 --> 00:01:54,665
+podia bancar o tipo de equipamento especializado e caro requerido.
+
+32
+00:01:54,665 --> 00:01:58,792
+Mas hoje praticamente qualquer pessoa que está vendo este vídeo possui um computador
+
+33
+00:01:58,792 --> 00:02:03,317
+de uso geral e barato, com poder de processamento suficiente para brincar como gente grande.
+
+34
+00:02:05,926 --> 00:02:11,108
+Existem batalhas sendo travadas hoje acerca do padrão HTML5 e <i>browsers</i>
+
+35
+00:02:11,108 --> 00:02:13,671
+e vídeo e aberto versus fechado.
+
+36
+00:02:13,671 --> 00:02:17,048
+Por isso agora é um momento bastante bom para se envolver.
+
+37
+00:02:17,048 --> 00:02:20,000
+Provavelmente o lugar mais fácil de começar é entender
+
+38
+00:02:20,000 --> 00:02:22,619
+a tecnologia que nós temos neste exato momento.
+
+39
+00:02:23,500 --> 00:02:25,071
+Essa é uma introdução.
+
+40
+00:02:25,071 --> 00:02:28,180
+Por ser uma introdução, vamos passar batido por uma série de detalhes
+
+41
+00:02:28,180 --> 00:02:30,882
+de tal maneira que o panorama geral fique um pouco mais visível.
+
+42
+00:02:30,882 --> 00:02:33,908
+Vários espectadores estarão muito à frente dos assuntos
+
+43
+00:02:33,908 --> 00:02:36,378
+que eu estarei falando, pelo menos por enquanto.
+
+44
+00:02:36,378 --> 00:02:39,293
+Por outro lado, eu provavelmente irei muito rápido para aqueles que são realmente
+
+45
+00:02:39,293 --> 00:02:44,558
+principiantes em tudo isso, mas se tudo o que eu falar for realmente novidade, relaxe.
+
+46
+00:02:44,558 --> 00:02:48,629
+O importante é selecionar ideias que se agarrem à sua imaginação.
+
+47
+00:02:48,629 --> 00:02:52,497
+Preste atenção especialmente à terminologia em volta destas ideias,
+
+48
+00:02:52,479 --> 00:02:56,078
+porque com estes termos, e com o Google e a Wikipedia, você poderá mergulhar
+
+49
+00:02:56,078 --> 00:02:57,753
+tão fundo quanto for o seu interesse.
+
+50
+00:02:57,753 --> 00:03:00,094
+Assim sendo, e sem mais delongas,
+
+51
+00:03:00,094 --> 00:03:03,351
+bem-vindos a um baita de um novo <i>hobby</i>.
+
+52
+00:03:10,291 --> 00:03:13,030
+O som é a propagação de ondas de pressão pelo ar,
+
+53
+00:03:13,030 --> 00:03:16,981
+que se espalham de uma fonte como as ondulações que vemos ao jogar uma pedra em um lago.
+
+54
+00:03:16,981 --> 00:03:19,489
+Um microfone, ou o ouvido humano se você preferir,
+
+55
+00:03:19,489 --> 00:03:22,876
+transformam essas ondulações de pressão em um sinal elétrico.
+
+56
+00:03:22,876 --> 00:03:25,800
+Tá certo, isso parece aula de ciências do colegial, todo mundo se lembra disso.
+
+57
+00:03:25,800 --> 00:03:26,771
+Indo em frente.
+
+58
+00:03:27,465 --> 00:03:32,527
+Este sinal de áudio é uma função unidimensional, um valor que varia com o tempo.
+
+59
+00:03:32,527 --> 00:03:34,248
+Se desacelerarmos o osciloscópio um pouco...
+
+60
+00:03:36,450 --> 00:03:38,190
+deve ficar um pouco mais fácil de perceber.
+
+61
+00:03:38,190 --> 00:03:40,688
+Alguns outros aspectos do sinal são importantes.
+
+62
+00:03:40,688 --> 00:03:43,418
+Ele é contínuo tanto no valor da função quanto no tempo;
+
+63
+00:03:43,418 --> 00:03:46,813
+ou seja, em qualquer instante do tempo ele pode assumir qualquer valor real,
+
+64
+00:03:46,813 --> 00:03:50,228
+e há um valor variando suavemente em qualquer instante do tempo.
+
+65
+00:03:50,228 --> 00:03:52,439
+Não importa o quanto aumentarmos o <i>zoom</i>,
+
+66
+00:03:54,068 --> 00:03:58,510 
+não há descontinuidades ou singularidades, não há saltos instantâneos
+
+67
+00:03:58,510 --> 00:04:01,285
+ou pontos onde o sinal deixe de existir.
+
+68
+00:04:03,247 --> 00:04:08,475
+Ele está definido em toda parte. A matemática contínua clássica funciona muito bem nestes sinais.
+
+69
+00:04:11,001 --> 00:04:15,378
+Um sinal digital, por outro lado, é discreto tanto no valor quanto no tempo.
+
+70
+00:04:15,378 --> 00:04:19,107
+No sistema mais simples e mais comum, chamado de <i>Pulse Code Modulation</i> (Modulação por Código de Pulsos),
+
+71
+00:04:19,107 --> 00:04:24,058
+um valor dentre um número finito de valores possíveis representa a amplitude instantânea do sinal
+
+72
+00:04:24,058 --> 00:04:30,165
+em pontos do tempo espaçados de uma distância fixa. O resultado final é uma sequência de dígitos.
+
+73
+00:04:30,674 --> 00:04:35,309
+Agora isso se parece bastante com isso.
+
+74
+00:04:35,309 --> 00:04:38,964
+Parece intuitivo que pudéssemos de alguma maneira transformar rigorosamente
+
+75
+00:04:38,964 --> 00:04:44,683
+uma representação na outra, e a boa nova é que o Teorema da Amostragem diz que podemos e nos diz como fazê-lo.
+
+76
+00:04:44,683 --> 00:04:48,477
+Publicado na sua forma mais reconhecível por Claude Shannon em 1949
+
+77
+00:04:48,477 --> 00:04:52,409
+e construído a partir do trabalho de Nyquist, Hartley, e muitos outros,
+
+78
+00:04:52,409 --> 00:04:56,138
+o teorema da amostragem diz que não apenas podemos ir de um lado para o outro entre as representações
+
+79
+00:04:56,138 --> 00:05:00,913
+analógica e digital, mas também estabelece um conjunto de condições sob as quais a conversão
+
+80
+00:05:00,913 --> 00:05:06,779
+não tem perdas e as duas representações se tornam equivalentes e intercambiáveis.
+
+81
+00:05:06,779 --> 00:05:10,601
+Quando as condições para a conversão sem perda não são verificadas, o teorema da amostragem nos diz
+
+82
+00:05:10,601 --> 00:05:14,247
+quanta informação é perdida ou corrompida, e como isso acontece.
+
+83
+00:05:14,900 --> 00:05:21,270
+Até bem recentemente, a tecnologia analógica era a base para praticamente tudo o que era feito com áudio,
+
+84
+00:05:21,270 --> 00:05:25,267
+e isso não se deve ao fato de que a maior parte do áudio vem de uma fonte originalmente analógica.
+
+85
+00:05:25,267 --> 00:05:28,450
+Você deve imaginar que, visto que os computadores são relativamente recentes,
+
+86
+00:05:28,450 --> 00:05:31,643
+a tecnologia de sinais analógicos deve ter vindo primeiro.
+
+87
+00:05:31,643 --> 00:05:34,428
+Não. A tecnologia digital é na realidade mais velha.
+
+88
+00:05:34,428 --> 00:05:37,611
+O telégrafo precede o telefone em meio século
+
+89
+00:05:37,611 --> 00:05:41,951
+e já era completamente mecanizado por volta de 1860, enviando sinais digitais
+
+90
+00:05:41,951 --> 00:05:46,476
+codificados e multiplexados a longas distâncias. Você sabe... código-morse. 
+
+91
+00:05:46,476 --> 00:05:50,427
+Harry Nyquist dos Laboratórios Bell estava pesquisando a transmissão de pulsos pelo telégrafo
+
+92
+00:05:50,427 --> 00:05:53,027
+quando ele publicou sua descrição do que viria a ser conhecido posteriormente
+
+93
+00:05:53,027 --> 00:05:57,219
+como a frequência de Nyquist, o conceito fundamental no teorema da amostragem.
+
+94
+00:05:57,219 --> 00:06:01,642
+Bom, é verdade que o telégrafo transmitia informação simbólica, texto,
+
+95
+00:06:01,642 --> 00:06:06,883
+não um sinal analógico digitalizado, mas com o advento do telefone e do rádio
+
+96
+00:06:06,883 --> 00:06:12,000
+a tecnologia de sinais analógicos e digitais progrediu rapidamente e lado-a-lado.
+
+97
+00:06:12,699 --> 00:06:18,732
+Áudio sempre foi manipulado como um sinal analógico porque, puxa, é tão mais fácil.
+
+98
+00:06:18,732 --> 00:06:23,257
+Um filtro passa-baixas de segunda-ordem, por exemplo, requer dois componentes passivos.
+
+99
+00:06:23,257 --> 00:06:26,505
+Uma transformada de Fourier de tempo reduzido (STFT) completamente analógica, poucas centenas.
+
+100
+00:06:26,505 --> 00:06:30,752
+Bom, talvez uns mil se você quiser construir algo realmente caprichado.
+
+101
+00:06:31,844 --> 00:06:35,989
+Processar sinais digitalmente requer entre milhões e bilhões de transistores
+
+102
+00:06:35,989 --> 00:06:40,366
+funcionando em frequências de micro-ondas, hardware de apoio para digitalizar
+
+103
+00:06:40,366 --> 00:06:43,836
+e reconstruir os sinais analógicos, um ecossistema completo de software
+
+104
+00:06:43,836 --> 00:06:47,362
+para programar e controlar aquele monstrengo de um bilhão de transistores,
+
+105
+00:06:47,362 --> 00:06:51,091
+armazenamento digital para se por acaso você quiser guardar alguns daqueles bits para depois...
+
+106
+00:06:51,091 --> 00:06:56,171
+E assim a gente chega à conclusão de que a forma analógica é a única maneira prática de fazer alguma coisa com áudio...
+
+107
+00:06:56,171 --> 00:07:07,019
+bom, a menos que você tenha por acaso um bilhão de transistores e todas essas outras coisas dando sopa.
+
+108
+00:07:07,850 --> 00:07:12,660
+E já que nós temos, o processamento de sinais digitais se torna muito atrativo.
+
+109
+00:07:13,363 --> 00:07:18,906
+Uma das razões é que componentes analógicos simplesmente não têm a flexibilidade de um computador de uso geral.
+
+110
+00:07:18,906 --> 00:07:21,182
+Acrescentar uma funcionalidade a este animal...
+
+111
+00:07:22,191 --> 00:07:24,578
+é, acho que não vai rolar.
+
+112
+00:07:24,578 --> 00:07:26,567
+Em um processador digital no entanto...
+
+113
+00:07:28,668 --> 00:07:34,127
+... é só escrever um novo programa. Escrever software não é trivial, mas é bem mais fácil.
+
+114
+00:07:34,127 --> 00:07:39,550
+Talvez a diferença mais importante é que todo componente analógico é uma aproximação.
+
+115
+00:07:39,550 --> 00:07:44,352
+Não existe um transistor perfeito, ou um indutor perfeito, ou um capacitor perfeito.
+
+116
+00:07:44,352 --> 00:07:51,569
+No domínio analógico, todo componente acrescenta ruído e distorção, normalmente não muito, mas eles se acumulam.
+
+117
+00:07:51,569 --> 00:07:55,669
+Apenas por transmitir um sinal digital, especialmente sobre longas distâncias,
+
+118
+00:07:55,669 --> 00:08:00,434
+progressivamente, mensuravelmente e irrecuperavelmente o corrompe.
+
+119
+00:08:00,434 --> 00:08:06,513
+Além disso, todos aqueles componentes analógicos mono-funcionais ocupam um monte de espaço.
+
+120
+00:08:06,513 --> 00:08:09,946
+Duas linhas de código neste bilhão de transistores aqui
+
+121
+00:08:09,946 --> 00:08:14,702
+podem implementar um filtro que iria requerer um indutor do tamanho de uma geladeira.
+
+122
+00:08:14,702 --> 00:08:17,941
+Sistemas digitais não têm estes inconvenientes.
+
+123
+00:08:17,941 --> 00:08:24,335
+Sinais digitais podem ser armazenados, copiados, manipulados e transmitidos sem acrescentar ruído ou distorção.
+
+124
+00:08:24,335 --> 00:08:26,889
+Às vezes a gente usa algoritmos com perdas,
+
+125
+00:08:26,889 --> 00:08:31,284
+mas os únicos passos não-ideais e inevitáveis são a digitalização e a reconstrução,
+
+126
+00:08:31,284 --> 00:08:35,929
+onde o digital tem que interagir com toda aquela bagunça analógica.
+
+127
+00:08:35,929 --> 00:08:40,750
+Bagunçadas ou não, as etapas de conversão atualmente são muito, muito boas.
+
+128
+00:08:40,750 --> 00:08:45,849
+Pelo padrão de nossos ouvidos, podemos igualmente considerá-las como praticamente sem-perdas.
+
+129
+00:08:45,849 --> 00:08:50,429
+Então com um um pouco de hardware adicional, que hoje em dia é em geral pequeno e barato
+
+130
+00:08:50,429 --> 00:08:55,379
+devido à nossa infra-estrutura industrial moderna, o áudio digital é claramente o vencedor sobre o analógico.
+
+131
+00:08:55,379 --> 00:09:00,857
+Vamos assim nos ocupar de armazená-lo, copiá-lo, manipulá-lo e transmiti-lo.
+
+132
+00:09:04,956 --> 00:09:08,639
+PCM (<i>Pulse Code Modulation</i>) é a representação mais comum para dados não-compactados de áudio.
+
+133
+00:09:08,639 --> 00:09:13,867
+Outras representações práticas existem, por exemplo a codificação Sigma-Delta usada pelo SACD, 
+
+134
+00:09:13,867 --> 00:09:16,625
+que é uma forma de modulação por densidade de pulsos (<i>Pulse Density Modulation</i>).
+
+135
+00:09:16,625 --> 00:09:19,687
+Isto posto, a codificação PCM é disparadamente o padrão dominante,
+
+136
+00:09:19,687 --> 00:09:22,158
+principalmente porque ela é tão conveniente matematicamente.
+
+137
+00:09:22,158 --> 00:09:26,350
+Um engenheiro de áudio pode passar sua carreira inteira sem encontrar nada diferente.
+
+138
+00:09:26,350 --> 00:09:29,135
+A codificação PCM pode ser caracterizada por três parâmetros,
+
+139
+00:09:29,135 --> 00:09:34,187
+facilitando de forma abençoada a explicação de qualquer variante PCM sem confusões.
+
+140
+00:09:34,187 --> 00:09:36,426
+O primeiro parâmetro é a taxa de amostragem.
+
+141
+00:09:36,426 --> 00:09:40,886
+A frequência mais alta que uma codificação permite representar é chamada de Frequência de Nyquist.  
+
+142
+00:09:40,886 --> 00:09:45,124
+A Frequência de Nyquist da codificação PCM é exatamente metade da taxa de amostragem.
+
+143
+00:09:45,124 --> 00:09:51,389
+Portanto a taxa de amostragem determina diretamente a frequência mais alta possível no sinal digitalizado.
+
+144
+00:09:51,389 --> 00:09:56,515
+Sistemas de telefone analógicos tradicionalmente limitavam a banda de frequências dos canais de voz a pouco menos de 4kHz,
+
+145
+00:09:56,515 --> 00:10:02,224
+e então a telefonia digital e a maior parte das técnicas clássicas de processamento de voz usam um taxa de amostragem de 8kHz,
+
+146
+00:10:02,224 --> 00:10:07,277
+que é a mínima taxa de amostragem necessária para representar toda a largura de banda de um canal de 4kHz.
+
+147
+00:10:07,227 --> 00:10:14,263
+É assim que soa uma taxa de amostragem de 8kHz --- um pouco abafado, mas a voz é perfeitamente inteligível.
+
+148
+00:10:14,263 --> 00:10:18,149
+Esta é a taxa de amostragem mais baixa que é amplamente usada na prática.
+
+149
+00:10:18,149 --> 00:10:23,322
+A partir dela, com o crescimento do poder computacional, da memória e do espaço em disco, o hardware dos computadores
+
+150
+00:10:23,322 --> 00:10:29,642
+passaram a oferecer 11, depois 16, depois 22, e depois 32kHz de taxa de amostragem.
+
+151
+00:10:29,642 --> 00:10:33,491
+A cada aumento da taxa de amostragem e da frequência de Nyquist, 
+
+152
+00:10:33,491 --> 00:10:38,302
+é óbvio que a parte mais aguda torna-se mais clara e o som mais natural.
+
+153
+00:10:38,301 --> 00:10:44,576
+O <i>Compact Disc</i> (CD) usa uma taxa de amostragem de 44.1kHz, que mais uma vez é um pouco melhor do que 32kHz, 
+
+154
+00:10:44,576 --> 00:10:46,788
+mas o ganho vai ficando menos discernível.
+
+155
+00:10:46,788 --> 00:10:52,053
+44.1kHz é uma escolha meio bizarra, especialmente dado que ela nunca foi usada para nada
+
+156
+00:10:52,053 --> 00:10:56,559
+antes do <i>compact disc</i>, mas o imenso sucesso do CD tornou-a uma taxa de amostragem comum.
+
+157
+00:10:56,559 --> 00:11:01,195
+A taxa de amostragem de alta-fidelidade mais comum fora a do CD é a de 48kHz.
+
+158
+00:11:05,710 --> 00:11:08,597
+Não há virtualmente nenhuma diferença audível entre as duas.
+
+159
+00:11:08,597 --> 00:11:13,640
+Este vídeo, ou pelo menos a versão original dele, foi rodada e produzida com áudio de 48kHz,
+
+160
+00:11:13,640 --> 00:11:18,545
+que por acaso é o padrão original para áudio de alta-fidelidade combinado com vídeo.
+
+161
+00:11:18,545 --> 00:11:25,100
+Taxas de amostragem de super-alta-fidelidade tais como 88, 96, e 192kHz também apareceram.
+
+162
+00:11:25,100 --> 00:11:30,888
+A razão para as taxas de amostragem acima de 48kHz não é estender mais ainda a faixa de frequências audíveis.
+
+163
+00:11:30,888 --> 00:11:32,489
+É por outra razão.
+
+164
+00:11:32,896 --> 00:11:37,319
+Voltando para trás um segundinho, o matemático Francês Jean Baptiste Joseph Fourier 
+
+165
+00:11:37,319 --> 00:11:42,353
+mostrou que podemos pensar em sinais como áudio como um conjunto de frequências componentes.
+
+166
+00:11:42,353 --> 00:11:45,841
+Esta representação no domínio da frequência é equivalente à representação temporal;
+
+167
+00:11:45,841 --> 00:11:49,719
+o sinal é exatamente o mesmo, só estamos olhando-o de uma forma diferente.
+
+168
+00:11:49,719 --> 00:11:56,131
+Aqui nós vemos a representação no domínio da frequência de um sinal analógico hipotético que pretendemos amostrar digitalmente.
+
+169
+00:11:56,131 --> 00:11:59,888
+O teorema da amostragem nos conta duas coisas essenciais sobre o processo de amostragem.
+
+170
+00:11:59,888 --> 00:12:04,727
+Primeiro, que um sinal digital não é capaz de representar nenhuma frequência acima da frequência de Nyquist.
+
+171
+00:12:04,727 --> 00:12:10,640
+Segundo, e essa é a parte nova, se não removermos aquelas frequências com um filtro passa-baixas antes de amostrar o sinal,
+
+172
+00:12:10,640 --> 00:12:16,414
+o processo de amostragem irá rebater estas frequências para a faixa de frequências representáveis numa forma de distorção conhecida como <i>aliasing</i>.
+
+173
+00:12:16,414 --> 00:12:20,069
+<i>Aliasing</i>, sendo curto e grosso, soa mal pra caramba,
+
+174
+00:12:20,069 --> 00:12:25,242
+e por isso é essencial remover quaisquer frequências acima da frequência de Nyquist antes da amostragem e depois da reconstrução do sinal.
+
+175
+00:12:25,871 --> 00:12:31,265
+Considera-se que a percepção humana de frequências de áudio se estende até uns 20kHz.
+
+176
+00:12:31,265 --> 00:12:37,548
+Nas taxas de 44.1 ou 48kHz, a banda de transição do filtro passa-baixas antes da etapa de amostragem tem que ser extremamente abrupta
+
+177
+00:12:37,548 --> 00:12:42,101
+para evitar o corte de quaisquer frequências audíveis abaixo dos 20kHz
+
+178
+00:12:42,101 --> 00:12:49,439
+mas ao mesmo tempo não permitir que frequências acima da de Nyquist vazem através do processo de amostragem.
+
+179
+00:12:49,439 --> 00:12:55,342
+Esse é um filtro muito difícil de construir, e nenhum filtro é completamente bem-sucedido na prática.
+
+180
+00:12:55,342 --> 00:13:00,024
+Se a taxa de amostragem é de 96kHz ou 192kHz por outro lado,
+
+181
+00:13:00,024 --> 00:13:07,223
+o passa-baixas tem uma ou duas oitavas a mais para a banda de transição. Este é um filtro muito mais fácil de construir.
+
+182
+00:13:07,223 --> 00:13:14,348
+Taxas de amostragem além de 48kHz são na realidade uma das concessões àquela bagunça da etapa analógica.
+
+183
+00:13:15,014 --> 00:13:20,844
+O segundo parâmetro fundamental da PCM é o formato das amostras, ou seja, o formato digital de cada número.
+
+184
+00:13:20,844 --> 00:13:26,285
+Um número é um número, mas um número pode ser representado em bits de inúmeras maneiras.
+
+185
+00:13:26,942 --> 00:13:30,902
+Os primeiros exemplos de PCM usavam codificação linear de oito bits na forma de bytes sem sinal.
+
+186
+00:13:30,902 --> 00:13:37,028
+A faixa dinâmica é limitada a aproximadamente 50dB e o ruído de quantização, como você pode ouvir, é bem sério.
+
+187
+00:13:37,028 --> 00:13:39,970
+Áudio de 8 bits está praticamente desaparecendo hoje em dia.
+
+188
+00:13:41,007 --> 00:13:47,484
+A telefonia digital usa tipicamente uma dentre duas codificações não-lineares de 8 bits relacionadas, chamadas A-law e mu-law.
+
+189
+00:13:47,484 --> 00:13:51,287
+Estes formatos permitem codificar uma faixa dinâmica de quase 14 bits usando apenas 8 bits
+
+190
+00:13:51,287 --> 00:13:54,674
+aumentando o espaço entre os valores de amplitude mais altos.
+
+191
+00:13:54,674 --> 00:13:59,226
+A-law e mu-law obviamente aperfeiçoam o ruído de quantização em comparação à codificação linear de 8-bits,
+
+192
+00:13:59,226 --> 00:14:03,557
+e especialmente os harmônicos da voz escondem bem o resto do ruído de quantização.
+
+193
+00:14:03,557 --> 00:14:08,248
+Todas estas três codificações de oito bits, linear, A-law, e mu-law, aparecem tipicamente ao lado
+
+194
+00:14:08,248 --> 00:14:13,328
+da taxa de amostragem de 8kHz, apesar de eu as estar demonstrando aqui em 48kHz.
+
+195
+00:14:13,328 --> 00:14:18,491
+A maioria das codificações PCM modernas usam inteiros de 16 ou 24 bits com sinal usando complemento de 2 para codificar
+
+196
+00:14:18,491 --> 00:14:23,858
+a faixa de menos infinito até zero decibéis com precisão de 16 ou 24 bits.
+
+197
+00:14:23,858 --> 00:14:27,800
+O maior valor absoluto corresponde a zero decibéis.
+
+198
+00:14:27,800 --> 00:14:31,584
+Como em todos os formatos de amostra até agora, sinais além dos 0 dB
+
+199
+00:14:31,584 --> 00:14:35,619
+e portanto além da máxima faixa representada são cortados (clipados).
+
+200
+00:14:35,619 --> 00:14:41,199
+Na mixagem e masterização, não é incomum o uso de números em ponto flutuante ao invés de inteiros para a representação PCM.
+
+201
+00:14:41,199 --> 00:14:47,222
+Um número em ponto flutuante de 32 bits no padrão IEEE754, que é o tipo normal de ponto flutuante que você vê em computadores atuais,
+
+202
+00:14:47,222 --> 00:14:52,793
+possui uma resolução de 24 bits, mas um expoente de 7 bits aumenta a faixa de valores representáveis.
+
+203
+00:14:52,793 --> 00:14:57,040
+Na representação em ponto flutuante costuma-se associar zero decibéis a +/-1.0, 
+
+204
+00:14:57,040 --> 00:15:00,547
+e já que números em ponto flutuante podem obviamente representar valores muito além destes,
+
+205
+00:15:00,547 --> 00:15:05,220
+passar de zero decibéis temporariamente durante um processo de mixagem não causa <i>clipping</i>.
+
+206
+00:15:05,220 --> 00:15:11,077 
+PCM em ponto flutuante ocupa mais espaço, e por isso ela tende a ser usada apenas como um formato intermediário de produção.
+
+207
+00:15:11,077 --> 00:15:15,796
+Finalmente, a maioria dos computadores de uso geral ainda leem e escrevem dados em bytes de oito bits,
+
+208
+00:15:15,796 --> 00:15:18,489
+então é importante lembrar que amostras de mais de oito bits
+
+209
+00:15:18,489 --> 00:15:22,838
+podem estar tanto na ordem <i>big endian</i> quanto <i>little endian</i>, e os dois tipos de ordenação são comuns.
+
+210
+00:15:22,838 --> 00:15:28,751
+Por exemplo, arquivos Microsoft WAV são <i>little endian</i>, e arquivos Apple AIFC tendem a ser <i>big endian</i>.
+
+211
+00:15:28,751 --> 00:15:30,139
+Fique atento a isto.
+
+212
+00:15:30,870 --> 00:15:34,071
+O terceiro parâmetro da PCM é o número de canais.
+
+213
+00:15:34,071 --> 00:15:38,485
+A convenção em PCM puro é codificar múltiplos canais através do entrelaçamento das amostras
+
+214
+00:15:38,485 --> 00:15:43,398
+de cada canal em um único <i>stream</i> (fluxo) de dados. Simples, direto e extensível.
+
+215
+00:15:43,398 --> 00:15:47,701
+E isso é tudo! Isso descreve qualquer representação PCM que houver.
+
+216
+00:15:47,701 --> 00:15:51,578
+Feito. Áudio digital é <i>tão simples</i>!
+
+217
+00:15:51,578 --> 00:15:56,436
+Evidentemente há mais a ser feito, mas neste ponto já temos um volume legal e útil de dados de áudio,
+
+218
+00:15:56,436 --> 00:15:58,092
+então vamos pegar um pouco de vídeo também.
+
+219
+00:16:02,571 --> 00:16:08,798
+Dá pra pensar em vídeo como sendo parecido com áudio mas com duas dimensões espaciais adicionais, X e Y,
+
+220
+00:16:08,798 --> 00:16:12,787
+além da dimensão do tempo. Isso é matematicamente consistente.
+
+221
+00:16:12,787 --> 00:16:19,097
+O teorema da amostragem se aplica a todas as três dimensões do vídeo, exatamente como no caso da dimensão única (temporal) do áudio.
+
+222
+00:16:19,097 --> 00:16:25,815
+Áudio e vídeo são obviamente bem diferentes na prática. Pra começar, comparado ao áudio, vídeo é enorme.
+
+223
+00:16:25,815 --> 00:16:29,294
+Áudio de CD não-compactado tem aproximadamente 1.4 megabits por segundo.
+
+224
+00:16:29,294 --> 00:16:33,958
+Vídeo HD 1080i não-compactado tem mais de 700 megabits por segundo.
+
+225
+00:16:33,958 --> 00:16:40,056
+Isso é mais do que 500 vezes mais dados para capturar, processar e armazenar por segundo.
+
+226
+00:16:40,056 --> 00:16:43,711
+Pela lei de Moore... isso dá... vamos ver... aproximadamente oito duplicações vezes dois anos,
+
+227
+00:16:43,711 --> 00:16:47,838
+então é isso mesmo, a estimativa de que os computadores precisariam de uns 15 anos a mais para poderem 
+
+228
+00:16:47,838 --> 00:16:51,252
+manipular vídeo não-compactado depois de conseguirem fazer o mesmo com áudio estava mais ou menos certo.
+
+229
+00:16:51,252 --> 00:16:55,425
+Vídeo básico é também simplesmente mais complicado do que áudio básico.
+
+230
+00:16:55,425 --> 00:16:58,599
+O mero volume de dados atualmente torna necessária uma representação
+
+231
+00:16:58,599 --> 00:17:02,106 
+mais eficiente do que a PCM linear usada para o áudio.
+
+232
+00:17:02,106 --> 00:17:06,705
+Além disso, vídeo eletrônico vem quase exclusivamente da televisão aberta,
+
+233
+00:17:06,705 --> 00:17:13,423
+e os comitês de padronização que governam a teledifusão estiveram sempre muito preocupados com a compatibilidade reversa.
+
+234
+00:17:13,423 --> 00:17:17,559  
+Até o ano passado, nos Estados Unidos, uma televisão preto-e-branco de sessenta anos de idade
+
+235
+00:17:17,559 --> 00:17:21,038
+ainda podia exibir uma transmissão analógica normal.
+
+236
+00:17:21,038 --> 00:17:23,879
+Isso é na realidade um truque bem caprichado.
+
+237
+00:17:23,879 --> 00:17:28,718
+O lado ruim da compatibilidade reversa é que no momento que um detalhe se converte em um padrão,
+
+238
+00:17:28,718 -->  00:17:30,985
+você realmente nunca mais pode jogá-lo fora.
+
+239
+00:17:30,985 --> 00:17:37,305
+O vídeo eletrônico nunca pôde começar do zero do jeito que o áudio fez múltiplas vezes.
+
+240
+00:17:37,305 --> 00:17:43,958
+Sessenta anos de gambiarras engenhosas mas obsoletas, feitas necessárias por causa das tecnologias de eras passadas
+
+241
+00:17:43,958 --> 00:17:50,102
+se acumularam em uma pilha e tanto, e como os padrões digitais também vêm da televisão aberta,
+
+242
+00:17:50,102 --> 00:17:54,664
+todas estas gambiarras esquisitas também foram trazidas para dentro dos padrões digitais.
+
+243
+00:17:54,664 --> 00:18:00,022
+Pra resumir, há um bocado a mais de detalhes em relação ao vídeo digital do que havia no áudio.
+
+244
+00:18:00,022 --> 00:18:05,592
+Não há a menor chance de cobri-los todos completamente aqui, então vamos cobrir os aspectos mais fundamentais.
+
+245
+00:18:06,036 --> 00:18:10,857
+Os parâmetros mais óbvios do vídeo são a largura e altura da imagem em pixels.
+
+246
+00:18:10,857 --> 00:18:15,882
+Por mais simples que possa parecer, só as dimensões em pixels não especificam na realidade as verdadeiras
+
+247
+00:18:15,882 --> 00:18:22,016
+largura e altura da imagem, já que a maioria dos vídeos derivados da teledifusão não usam pixels quadrados.
+
+248
+00:18:22,016 --> 00:18:25,005
+O número de linhas de varredura em uma imagem televisionada era fixado,
+
+249
+00:18:25,005 --> 00:18:29,021
+mas o número efetivo de pixels na horizontal era uma função da largura de banda do canal.
+
+250
+00:18:29,021 --> 00:18:31,945
+A resolução horizontal efetiva podia resultar em pixels que eram
+
+251
+00:18:31,945 --> 00:18:35,489
+mais estreitos ou mais largos que o espaçamento entre as linhas de varredura.
+
+252
+00:18:35,489 --> 00:18:38,395
+Os padrões em geral especificam que o vídeo amostrado digitalmente
+
+253
+00:18:38,395 --> 00:18:41,902
+deve refletir a resolução real da fonte original analógica,
+
+254
+00:18:41,902 --> 00:18:45,566
+então uma grande quantidade de vídeo digital também usa pixels não-quadrados.
+
+255
+00:18:45,566 --> 00:18:49,924
+Por exemplo, um DVD NTSC de aspecto normal 4:3 é tipicamente codificado
+
+256
+00:18:49,924 --> 00:18:55,374
+com uma resolução de tela de 704 por 480, uma razão maior do que 4:3.  
+
+257
+00:18:55,374 --> 00:18:59,640
+Neste caso, aos próprios pixels é atribuída uma razão de aspecto de 10:11, 
+
+258
+00:18:59,640 --> 00:19:04,553
+tornando-os mais altos do que largos e estreitando a imagem horizontalmente até o aspecto correto.
+
+259
+00:19:04,553 --> 00:19:09,800
+Uma tal imagem precisa ser reamostrada para ser exibida corretamente em um monitor digital com pixels quadrados.
+
+260
+00:19:10,253 -->  00:19:15,287
+O segundo parâmetro óbvio do vídeo é a frequência dos quadros, o número de quadros exibidos por segundo.
+
+261
+00:19:15,287 --> 00:19:19,655
+São vários os padrões de quadros por segundo em uso corrente. O vídeo digital, em uma de suas muitas formas, 
+
+262
+00:19:19,655 --> 00:19:23,689
+pode usar qualquer um deles. Ou qualquer outra frequência. Ou mesmo frequências variáveis
+
+263
+00:19:23,689 --> 00:19:27,113
+onde o número de quadros por segundo muda adaptativamente ao longo do vídeo.
+
+264
+00:19:27,113 --> 00:19:32,998
+Quanto maior o número de quadros por segundo, mais suave o movimento e isso, infelizmente, nos traz ao <i>interlacing</i>.
+
+265
+00:19:32,998 --> 00:19:37,967
+Nos primórdios do vídeo televisionado, os engenheiros buscavam o maior número possível de quadros por segundo
+
+266
+00:19:37,967 --> 00:19:42,075
+para suavizar o movimento e minimizar o <i>flickering</i> em tubos de raios catódicos à base de fósforo.
+
+267
+00:19:42,075 --> 00:19:45,277
+Eles também eram pressionados a usar a menor largura de banda possível
+
+268
+00:19:45,277 --> 00:19:48,182
+com a melhor resolução e o maior número de quadros possíveis.
+
+269
+00:19:48,182 --> 00:19:51,208
+A solução deles foi intercalar o vídeo onde as linhas pares
+
+270
+00:19:51,208 --> 00:19:54,826
+são mandadas em um passo e as linhas ímpares no seguinte.
+
+271
+00:19:54,826 --> 00:19:59,961
+Cada passo é chamado de um <i>field</i> e dois <i>fields</i> meio que produzem um quadro completo.
+
+272
+00:19:59,961 --> 00:20:05,319
+"Meio que", porque os <i>fields</i> par e ímpar não vêm do mesmo quadro original.
+
+273
+00:20:05,319 --> 00:20:10,797
+Em um vídeo de 60 <i>fields</i> por segundo, o número de quadros por segundo original é na realidade 60 quadros completos por segundo,
+
+274
+00:20:10,797 --> 00:20:15,386
+e metade de cada quadro, linha sim linha não, é simplesmente descartado.
+
+275
+00:20:15,386 --> 00:20:20,272
+É por isso que não podemos desintercalar um vídeo simplesmente combinando dois <i>fields</i> dentro de um quadro;
+
+276
+00:20:20,272 --> 00:20:23,039
+eles na realidade não são de um mesmo quadro, pra começo de conversa.
+
+277
+00:20:24,047 --> 00:20:29,683
+O tubo de raios catódicos era a única tecnologia de monitores disponível durante a maior parte da história do vídeo eletrônico.
+
+278
+00:20:29,683 --> 00:20:32,949
+A intensidade luminosa de saída de um tubo de raios catódicos é não-linear, aproximadamente igual
+
+279
+00:20:32,949 --> 00:20:36,585
+à voltagem de controle da entrada elevada à potência 2.5.
+
+280
+00:20:36,585 --> 00:20:43,821
+Este expoente, 2.5, era representado pela letra gama, e por isso nos referimos frequentemente a ele como o fator gama de um monitor.
+
+281
+00:20:43,821 --> 00:20:50,493
+Câmeras, no entanto, são lineares, e se você enviar um sinal linear a um tubo de raios catódicos a saída se parece um pouco com isso.
+
+282
+00:20:51,270 --> 00:20:56,637
+Como originalmente havia muito poucas câmeras, que eram fantasticamente caras de qualquer modo,
+
+283
+00:20:56,637 --> 00:21:01,634
+e desejavelmente muitos e muitos aparelhos de televisão, idealmente o mais baratos o possível,
+
+284
+00:21:01,634 --> 00:21:08,222
+os engenheiros decidiram adicionar os circuitos necessários para a correção gama às câmeras ao invés de aos aparelhos de TV.
+
+285
+00:21:08,222 --> 00:21:13,062
+Sinais de vídeo transmitidos pelo ar teriam assim uma intensidade não-linear usando o inverso
+
+286
+00:21:13,062 --> 00:21:18,271
+do expoente gama do aparelho, de forma que no momento que um sinal da câmera fosse finalmente exibido no tubo de raios catódicos,
+
+287
+00:21:18,271 --> 00:21:23,305
+a resposta total do sistema da câmera ao aparelho seria linear de novo.
+
+288
+00:21:23,777 --> 00:21:25,118
+Quase.
+
+289
+00:21:30,393 --> 00:21:33,113
+Havia também duas outras gambiarras.
+
+290
+00:21:33,113 --> 00:21:40,442
+Uma câmera de televisão na realidade usava na realidade um expoente gama que era o inverso de 2.2, não de 2.5.
+
+291
+00:21:40,442 --> 00:21:43,754
+Essa era simplesmente uma correção para a visão em ambientes mal iluminados.
+
+292
+00:21:43,754 --> 00:21:48,279
+Além disso, a curva exponencial se tornava uma rampa linear próximo do preto.
+
+293
+00:21:48,279 --> 00:21:52,360
+Essa é só uma velha gambiarra para abafar o ruído dos sensores na câmera.
+
+294
+00:21:54,941 --> 00:21:57,347
+A correção gama afortunadamente também trouxe um benefício.
+
+295
+00:21:57,347 --> 00:22:02,214
+Acontece que o olho humano tem um gama perceptual de aproximadamente 3.
+
+296
+00:22:02,214 --> 00:22:05,962
+Isso é relativamente próximo do gama de 2.5 das TVs.
+
+297
+00:22:05,962 --> 00:22:10,607
+Uma imagem usando correção gama dedica uma resolução maior às intensidades mais baixas,
+
+298
+00:22:10,607 --> 00:22:14,336
+onde por acaso o olho humano tem a mais fina discriminação de intensidade,
+
+299
+00:22:14,336 --> 00:22:18,222
+e portanto usa a escala de resolução disponível mais eficientemente.
+
+300
+00:22:18,222 --> 00:22:22,784
+Apesar de que os tubos de raios catódicos estão atualmente desaparecendo, um monitor de computador padrão sRGB
+
+301
+00:22:22,784 --> 00:22:28,419
+ainda usa uma curva de intensidade não-linear parecida com a da televisão, com uma rampa linear próximo do preto,
+
+302
+00:22:28,419 --> 00:22:32,491
+seguida por uma curva exponencial com um expoente gama de 2.4.
+
+303
+00:22:32,491 --> 00:22:36,636
+Isso permite a codificação de uma faixa linear de 16 bits usando apenas 8 bits.
+
+304 
+00:22:37,580 --> 00:22:41,790
+O olho humano possui três canais de cor aparentes, vermelho, verde e azul,
+
+305
+00:22:41,790 --> 00:22:47,407
+e a maioria dos monitores usam estas três cores como componentes primárias aditivas para produzir uma paleta completa de cores na saída.
+
+306
+00:22:49,258 --> 00:22:54,190
+Os pigmentos primários em impressão são ciano, magenta e amarelo pela mesma razão;
+
+307
+00:22:54,190 --> 00:22:59,381
+pigmentos são subtrativos, e cada um destes pigmentos subtrai uma cor pura da luz refletida.
+
+308
+00:22:59,381 --> 00:23:05,682
+O ciano subtrai o vermelho, magenta subtrai verde e amarelo subtrai azul.
+
+309
+00:23:05,682 --> 00:23:10,919
+Vídeo pode e às vezes é representado com canais de cores vermelha, verde e azul,
+
+310
+00:23:10,919 --> 00:23:17,211
+mas vídeo RGB é atípico. O olho humano é muito mais sensível à luminosidade do que à cor,
+
+311
+00:23:17,211 --> 00:23:21,329
+e o RGB tende a espalhar a energia de uma imagem pelos três canais de cor.
+
+312
+00:23:21,329 --> 00:23:25,326
+Ou seja, o plano vermelho se parece com uma versão vermelha da imagem original,
+
+313
+00:23:25,326 --> 00:23:28,769
+o plano verde se parece com uma versão verde da imagem original,
+
+314
+00:23:28,769 --> 00:23:32,063
+e o plano azul se parece com uma versão azul da imagem original.
+
+315
+00:23:32,063 --> 00:23:35,705
+Preto e branco vezes três. Ineficiente.
+
+316
+00:23:35,706 --> 00:23:39,438
+Por estas razões e porque, quem diria, a televisão por acaso começou sendo
+
+317
+00:23:39,438 --> 00:23:45,017
+preto-e-branco mesmo, vídeo é normalmente representado como um canal de luma de alta resolução,
+
+318
+00:23:45,017 --> 00:23:51,041
+o perto & branco, junto com canais de croma adicionais, frequentemente de resolução mais baixa, para a cor.
+
+319
+00:23:51,041 --> 00:23:57,074
+O canal luma, Y, é produzido ponderando e somando os sinais separados vermelho, verde e azul.
+
+320
+00:23:57,074 --> 00:24:01,867
+Os canais de croma U e V são então produzidos subtraindo o sinal luma do azul
+
+321
+00:24:01,867 --> 00:24:04,070
+e o sinal luma do vermelho respectivamente.
+
+322
+00:24:04,070 --> 00:24:11,750
+Quando o sinal YUV sofre mudanças de escala, translação e quantização para o vídeo digital, ele é mais corretamente denominado Y'CbCr, 
+
+323
+00:24:11,750 --> 00:24:15,238
+mas o termo mais genérico YUV é amplamente usado para descrever
+
+324
+00:24:15,238 --> 00:24:18,301
+todas as variantes analógicas e digitais deste modelo de cor.
+
+325
+00:24:18,912 --> 00:24:22,983
+Os canais de croma U e V podem ter a mesma resolução do canal Y,
+
+326
+00:24:22,983 --> 00:24:28,674
+mas dado que o olho humano possui muito menos resolução espacial para cor do que resolução espacial para luminosidade,
+
+327
+00:24:28,674 --> 00:24:34,346
+a resolução do croma é normalmente dividida por dois ou mesmo por quatro na direção horizontal ou na direção vertical,
+
+328
+00:24:34,346 --> 00:24:39,528
+ou mesmo em ambas, normalmente sem qualquer impacto significativo na qualidade aparente da imagem.
+
+329
+00:24:39,528 --> 00:24:43,942
+Praticamente todas as possíveis variantes de sub-amostragem foram usadas em algum momento,
+
+330
+00:24:43,942 --> 00:24:46,875
+mas as escolhas comuns hoje em dia são
+
+331
+00:24:46,875 --> 00:24:51,187
+vídeo 4:4:4, que na realidade não é sub-amostrado,
+
+332
+00:24:51,187 --> 00:24:56,711
+vídeo 4:2:2 no qual a resolução horizontal dos canais U e V é dividida por dois,
+
+333
+00:24:56,711 --> 00:25:02,587
+e o mais comum de todos, o vídeo 4:2:0 no qual tanto a resolução horizontal quanto a vertical
+
+334
+00:25:02,587 --> 00:25:08,897
+dos canais croma são divididas por dois, resultando em planos U e V que ocupam cada um deles um quarto do tamanho de Y.
+
+335
+00:25:08,897 --> 00:25:17,096
+Os termos 4:2:2, 4:2:0, 4:1:1 e assim por diante não são descrições completas da sub-amostragem do croma.
+
+336
+00:25:17,096 --> 00:25:21,186
+Há múltiplas maneiras possíveis de posicionar os pixels de croma em relação ao luma,
+
+337
+00:25:21,096 --> 00:25:24,776 
+e mais uma vez, inúmeras variantes são atualmente usadas para cada sub-amostragem.
+
+338
+00:25:24,776 --> 00:25:32,502
+Por exemplo, <i>motion JPEG</i>, vídeos MPEG-1 e MPEG-2, DV, Theora e WebM todos usam
+
+339
+00:25:32,502 --> 00:25:38,137
+ou podem usar a sub-amostragem 4:2:0, mas eles posicionam os pixels croma de três maneiras diferentes.
+
+340
+00:25:38,498 --> 00:25:43,023
+<i>Motion JPEG</i>, vídeo MPEG1, Theora e WebM todos posicionam os pixels croma
+
+341
+00:25:43,023 --> 00:25:46,345
+entre os pixels luma tanto horizontalmente quanto verticalmente.
+
+342
+00:25:46,345 --> 00:25:51,989
+MPEG2 posiciona os pixels croma entre as linhas, mas alinhados horizontalmente com os pixels luma, um sim e um não.
+
+343
+00:25:51,989 --> 00:25:57,106
+Os modos intercalados complicam as coisas um tanto, resultando em um arranjo de posicionamento que é um pouquinho bizarro.
+
+344
+00:25:57,106 --> 00:26:00,909
+E finalmente o PAL-DV, que é sempre intercalado, posiciona os pixels croma
+
+345
+00:26:00,909 --> 00:26:04,398
+na mesma posição que os pixels luma pares na direção horizontal,
+
+346
+00:26:04,398 --> 00:26:07,303
+e verticalmente alterna os canais croma a cada linha.
+
+347
+00:26:07,683 --> 00:26:12,282
+Isso é só para o vídeo 4:2:0. Vou deixar as outras sub-amostragens como lição de casa para o espectador.
+
+348
+00:26:12,282 --> 00:26:14,882
+Vocês pegaram a ideia geral, vamos em frente.
+
+349
+00:26:15,511 --> 00:26:21,128
+Em áudio, nós sempre representamos múltiplos canais em um <i>stream</i> PCM entrelaçando as amostras
+
+350
+00:26:21,128 --> 00:26:26,383
+de cada canal em ordem. Em vídeo são usados tanto formatos em pacotes que entrelaçam os canais de cor,
+
+351
+00:26:26,383 --> 00:26:30,584
+quanto formatos planares que mantêm juntos os pixels de cada canal em planos separados
+
+352
+00:26:30,584 --> 00:26:35,415
+empilhados em ordem no quadro. Existem no mínimo 50 formatos diferentes nestas duas grandes categorias
+
+353
+00:26:35,415 --> 00:26:41,549
+sendo possivelmente 10 ou 15 comumente usados. Cada sub-amostragem do croma e nível de quantização diferente requer
+
+354
+00:26:41,549 --> 00:26:46,574
+um empacotamento diferente, assim como um formato de pixel diferente. Para cada sub-amostragem,
+
+355
+00:26:46,574 --> 00:26:50,858 
+existem normalmente vários formatos equivalentes que consistem em reordenações e re-empacotamentos
+
+356
+00:26:50,858 --> 00:26:55,966
+triviais dos canais de cor devido ou à conveniência de um algum hardware em particular
+
+357
+00:26:55,966 --> 00:27:00,352
+de tempos idos ou simplesmente devido ao bom e velho rancor.
+
+358
+00:27:00,352 --> 00:27:04,692
+Formatos de pixels são descritos por uma denominação unívoca ou por um código de 4 caracteres.
+
+359
+00:27:04,692 --> 00:27:08,115
+Existem um monte desses e não faz sentido passar por cada um deles agora.
+
+360
+00:27:08,115 --> 00:27:13,704
+O Google é seu amigo. Fique atento ao fato de que códigos de 4 caracteres para vídeo não-compactado especificam a ordem dos pixels
+
+361
+00:27:13,704 --> 00:27:20,339
+e a sub-amostragem do croma, mas em geral não subentendem nada seguro acerca do posicionamento do croma ou do espaço de cores.
+
+362
+00:27:20,339 --> 00:27:25,807
+Vídeo YV12, pra dar um exemplo, pode usar posicionamento do croma do JPEG, MPEG-2 ou DV,
+
+363
+00:27:25,807 --> 00:27:28,991
+e qualquer um das várias definições de espaço de cor YUV.
+
+364
+00:27:29,472 --> 00:27:33,913
+Isso conclui nosso não tão curto e ainda assim muito incompleto tour pelos padrões de vídeo.
+
+365
+00:27:33,913 --> 00:27:38,651
+O lado bom é que nós já podemos fazer um monte de coisas de verdade apenas com esta visão panorâmica.
+
+366
+00:27:38,651 --> 00:27:42,528
+Em inúmeras situações um quadro de dados de vídeo é apenas um quadro de dados de vídeo.
+
+367
+00:27:42,528 --> 00:27:46,451
+Os detalhes importam, e bastante, quando chega a hora de escrever software,
+
+368
+00:27:46,452 --> 00:27:52,086
+mas neste momento eu estou contente que o estimado espectador está bastante consciente das questões relevantes.
+
+369
+00:27:55,640 --> 00:27:59,230
+Então. Já temos dados de áudio. Já temos dados de vídeo.
+
+370
+00:27:59,230 --> 00:28:03,246
+O que falta são outros dados mais familiares (não sinais) e engenharia correta
+
+371
+00:28:03,246 --> 00:28:07,410
+que desenvolvedores de software estão acostumados. E bastante!
+
+372
+00:28:07,928 --> 00:28:11,768 
+Porções de dados de áudio e vídeo não possuem nenhuma estrutura externa visível,
+
+373
+00:28:11,768 -->  00:28:15,173
+mas eles vêm frequentemente em tamanhos uniformes. Poderíamos simplesmente costurá-los
+
+374
+00:28:15,173 --> 00:28:18,097
+em uma ordem rígida e pré-definida para transmissão e armazenamento,
+
+375
+00:28:18,097 --> 00:28:21,040
+e alguns sistemas simples fazem aproximadamente isso.
+
+376
+00:28:21,040 --> 00:28:24,195
+Quadros compactados por outro lado não têm necessariamente um tamanho previsível,
+
+377
+00:28:24,195 --> 00:28:29,405
+e normalmente queremos ter flexibilidade para usar um certo número de tipos de dados diferentes em <i>streams</i>.
+
+378
+00:28:29,405 --> 00:28:34,281
+Se costurarmos dados aleatórios e amorfos, perderemos as fronteiras que separam os quadros 
+
+379
+00:28:34,281 --> 00:28:37,871
+e não saberemos quais dados pertencem a quais <i>streams</i>.
+
+380
+00:28:37,871 --> 00:28:42,192
+Um <i>stream</i> precisa de uma estrutura genérica para ser útil em geral.
+
+381
+00:28:42,192 --> 00:28:46,606
+Além dos nossos dados dos sinais, temos também os parâmetros do PCM e do vídeo.
+
+382
+00:28:46,606 --> 00:28:49,752
+Provavelmente há uma série de outros meta-dados que gostaríamos de incluir também,
+
+383
+00:28:49,752 --> 00:28:55,415
+como informações sobre o áudio, ou capítulos e legendas do vídeo, todos componentes essenciais de mídias ricas em conteúdo.
+
+384
+00:28:55,415 --> 00:29:01,633
+Faz sentido guardar estes meta-dados, ou seja, dados sobre os dados, dentro da própria mídia.
+
+385
+00:29:01,633 --> 00:29:06,445
+Armazenar e estruturar dados amorfos e meta-dados díspares é a função de um contêiner.
+
+386
+00:29:06,445 --> 00:29:09,221
+Contêineres fornecem enquadramentos para os grupos de dados,
+
+387
+00:29:09,221 --> 00:29:12,015
+intercalam e identificam múltiplos <i>streams</i> de dados,
+
+388
+00:29:12,015 --> 00:29:15,337
+fornecem informação temporal, e armazenam os meta-dados necessários
+
+389
+00:29:15,337 --> 00:29:19,140
+para permitir a análise, navegação, manipulação e apresentação da mídia.
+
+390
+00:29:19,140 --> 00:29:22,222
+Em geral, um contêiner pode guardar qualquer tipo de dado.
+
+391
+00:29:22,222 --> 00:29:24,970
+E dados podem ser colocados em qualquer contêiner.
+
+392
+00:29:28,801 --> 00:29:32,391 
+Nos últimos trinta minutos nós cobrimos áudio digital, vídeo,
+
+393
+00:29:32,391 --> 00:29:35,435
+um tanto de história, um tanto de matemática e um pouco de engenharia.
+
+394
+00:29:35,435 --> 00:29:39,377
+Nós mal arranhamos a superfície, mas é hora de uma merecida pausa.
+
+395
+00:29:41,107 --> 00:29:45,373
+Há muito mais sobre o que falar, então espero vê-los de novo no nosso próximo episódio.
+
+396
+00:29:45,373 --> 00:29:47,159
+Até lá --- Saúde!
+
