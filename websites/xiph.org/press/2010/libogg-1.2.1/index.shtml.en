@@ -1,0 +1,81 @@
+<!--#include virtual="/ssi/header.include" -->
+<!-- Enter custom page information and styles here -->
+  <title>November 1, 2010: Xiph.Org announces libOgg 1.2.1 and libVorbis 1.3.2</title>
+</head>
+<body>
+<!--#include virtual="/common/xiphbar.include" -->
+
+<!--#include virtual="/ssi/pagetop.include" -->
+<!--  All your page content goes here  -->
+
+
+<h3>libOgg 1.2.1 and libVorbis 1.3.2 released</h3>
+
+
+<p>Xiph.Org is pleased to announce a full release of libogg 1.2.1 and libvorbis 1.3.2.  This is not a coordinated release, it was merely convenient to do a release cycle for both at the same time.
+
+<p>Changes and fixes in the new libogg release include:
+
+<ul>
+<li> Various build updates (see SVN)
+<li> Add ogg_stream_pageout_fill() to API to allow applications
+  greater explicit flexibility in page sizing.
+<li> Documentation updates including multiplexing description,
+  terminology and API (incl. ogg_packet_clear(), 
+  ogg_stream_pageout_fill())
+<li> Correction of a possible buffer overwrite in stream encoding on 32 bit 
+  when a single packet exceed 250MB.
+<li> Correction of a read-buffer overrun [without side effects] under 
+  similar circumstances.
+<li> Updates to unit testing to work properly with new page spill
+  heuristic.
+</ul>
+
+<p>Changes and fixes in the new libvorbis release include:
+
+<ul>
+<li> Additional proofing against invalid/malicious 
+   streams in floor, residue, and bos/eos packet trimming 
+   code (see SVN for details). 
+<li> New programming documentation tree for the 
+   low-level libvorbis calls
+<li> Correct handling of vorbisfile serial numbers array 
+   element [0] on non-seekable streams
+<li> Back out an [old] AoTuV HF weighting that was 
+   first enabled in 1.3.0; there are a few samples where I 
+   really don't like the effect it causes.
+<li> Correct timestamp return for granule positions 
+   with high bit set.
+<li> The [undocumented] half-rate decode API made no 
+   attempt to keep the PCM offset tracking consistent in seeks. 
+   Fix and add a testing mode to seeking_example.c to torture 
+   test seeking in half-rate mode.  Also remove requirement that 
+   half-rate mode only work with seekable files.
+<li> Fixed a chaining bug in raw_seeks where seeking 
+   out of the current link would fail due to not 
+   reinitializing the decode machinery.  
+<li> Improvement of seeking strategy reduces the 
+   necessary number of seek callbacks in an open or seek 
+   operation by well over 2/3.
+</ul>
+
+<p>These library releases are ABI and API compatible with previous incarnations of
+libogg.
+
+
+<p>Tarballs and zipfiles of the official release can be found in the
+usual place at <a href="http://downloads.xiph.org/releases/ogg">http://downloads.xiph.org/releases/ogg/</a> and <a href="http://downloads.xiph.org/releases/vorbis">http://downloads.xiph.org/releases/vorbis/</a>.
+
+<p>Happy hacking!
+
+<p>Monty
+<br>Xiph.Org
+
+<p><i> The Xiph.Org Foundation is a not-for-profit corporation
+dedicated to open, unencumbered multimedia technology. Xiph's formats
+and software levels the playing field for digital media so that all
+producers and artists can distribute their work for minimal cost,
+without restriction, regardless of affiliation.  May contain traces of
+nuts.</i></p>
+
+<!--#include virtual="/ssi/pagebottom.include" -->
