@@ -48,12 +48,13 @@
 	<h1>Xiph in the News</h1>
 
 	<ul class="newslist">
+
+	        <li><a href="2010/libogg-1.2.1/">libOgg 1.2.1 and libVorbis 1.3.2 release</a></p>
+
                 <li><a href="press/2010/video">Xiph.Org announces its first documentary video production: "<i>A Digital Media Primer for Geeks</i>"</a></li>
 
                 <li><a href="press/2010/webm/">Xiph.Org announces participation in WebM project</a></li>
       
-                <li><a href="press/2010/vorbis-surround/">vorbis-tools 1.4.0, libvorbis 1.3.1, and libao 1.0.0 coordinated release</a></li>
-                <li><a href="press/2010/libogg-1.2.0/">libOgg 1.2.0 release</a></li>
 		<li><b><a href="/press/">more headlines &gt;</a></b></li>
 	</ul>
 
