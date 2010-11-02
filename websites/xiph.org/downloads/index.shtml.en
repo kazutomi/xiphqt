@@ -44,14 +44,17 @@ end-user download links are provided for convenience:
 <td>libogg</td>
 <td>1.2.1</td>
 <td>
+	<a href="http://downloads.xiph.org/releases/ogg/libogg-1.2.1.tar.bz2">libogg-1.2.1.tar.bz2</a><br/>
 	<a href="http://downloads.xiph.org/releases/ogg/libogg-1.2.1.tar.gz">libogg-1.2.1.tar.gz</a><br/>
 	<a href="http://downloads.xiph.org/releases/ogg/libogg-1.2.1.zip">libogg-1.2.1.zip</a>
 </td>
 <td>
+        314K<br/>
 	396K<br/>
 	482K
 </td>
 <td>
+        84ef7b0cb5f36fdf26341fe5a2aa62f5<br/>
         b998c2420721146df3b3d0e7776c97b9<br/>
 	92222b98cf8ad552dfce7ff0554f218f
 </td>
