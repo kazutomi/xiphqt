@@ -81,6 +81,16 @@
 <h2>Headlines</h2>
 <ul class="descriptivelist">
    <li>
+      <h3>Version 0.9.0 released</h3>
+      <p class="submitdate">6 November, 2010</p>
+      <div class="description">
+                <p>CELT 0.9.0 mainly focuses on quality improvements. The transient handling
+                code has been greatly improved and high-frequency artefacts have been reduced.
+                There have also been lots of small improvements from better tuning of various
+                parameters.</p>
+      </div>
+   </li>
+   <li>
       <h3>Version 0.8.1 released</h3>
       <p class="submitdate">8 July, 2010</p>
       <div class="description">
@@ -101,34 +111,6 @@
                 Version 0.8.0 is <b>not</b> bit-stream compatible with previous releases.</p>
       </div>
    </li>
-   <li>
-      <h3>Version 0.7.1 released</h3>
-      <p class="submitdate">20 January, 2010</p>
-      <div class="description">
-                <p>Version 0.7.1 has been released, with improvements to the packet loss concealment (PLC). It is the first release
-                <b>not</b> to break bit-stream compatibility with the previous release (0.7.0). But
-                I promise not to do it again, the next CELT release will likely break 
-                compatibility once again.</p>
-      </div>
-   </li>
-
-   <li>
-      <h3>Version 0.7.0 released</h3>
-      <p class="submitdate">26 October, 2009</p>
-      <div class="description">
-                <p>Version 0.7.0 has been released, with improvements to the stereo and low birate audio quality. API is incompatible with previous releases.</p>
-      </div>
-   </li>
-
-   <li>
-      <h3>Version 0.6.1 released</h3>
-      <p class="submitdate">13 July, 2009</p>
-      <div class="description">
-                <p>Version 0.6.1 has been released, with improvements to the stereo mode. The mono mode is not
-                affected. </p>
-      </div>
-   </li>
-
 </ul>
 
 <!--#include virtual="/ssi/pagebottom.include" -->

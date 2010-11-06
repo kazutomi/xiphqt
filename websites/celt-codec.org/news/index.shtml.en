@@ -30,6 +30,16 @@
 
 <ul class="descriptivelist">
    <li>
+      <h3>Version 0.9.0 released</h3>
+      <p class="submitdate">6 November, 2010</p>
+      <div class="description">
+                <p>CELT 0.9.0 mainly focuses on quality improvements. The transient handling
+                code has been greatly improved and high-frequency artefacts have been reduced.
+                There have also been lots of small improvements from better tuning of various
+                parameters.</p>
+      </div>
+   </li>
+   <li>
       <h3>Version 0.8.1 released</h3>
       <p class="submitdate">8 July, 2010</p>
       <div class="description">

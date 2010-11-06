@@ -33,6 +33,17 @@
 
 <h2>Latest <strong style='font-style: italic;'>development</strong> releases</h2>
 
+<h3 id='zero.9.0'>0.9.0</h3>
+<p>CELT 0.9.0 brings many quality improvements. The transient handling code has been 
+greatly improved and high-frequency artefacts have been reduced. There have also been
+lots of small improvements from better tuning of various parameters.
+</p>
+
+<ul>
+<li>Source code: <a href="http://downloads.xiph.org/releases/celt/celt-0.9.0.tar.gz">celt-0.9.0.tar.gz</a></li>
+</ul>
+
+
 <h3 id='zero.8.1'>0.8.1</h3>
 <p>CELT 0.8.1 fixes some bugs introduced in 0.8.0. The bit-stream remains 
 compatible with 0.8.0, with the caveat that CELT no longer supports frame
@@ -56,97 +67,6 @@ with previous releases.
 <li>Source code: <a href="http://downloads.xiph.org/releases/celt/celt-0.8.0.tar.gz">celt-0.8.0.tar.gz</a></li>
 </ul>
 
-<h3 id='zero.7.1'>0.7.1</h3>
-<p>CELT 0.7.1 improves the quality of the packet loss concealment (PLC), but
-does not change the rest of the codec. For this reason it is the first release
-<b>not</b> to break bit-stream compatibility with the previous release (0.7.0). But
-I promise not to do it again, the next CELT release will likely break 
-compatibility once again. Note that the PLC improvements have not been
-completely converted to fixed-point yet, so the fixed-point still uses the old
-PLC. Last thing, the default name of the library was changed to libcelt0.so to
-make it easier to do the transition when the final 1.0 release comes out (with
-frozen bit-stream and API).
-</p>
-
-<ul>
-<li>Source code: <a href="http://downloads.xiph.org/releases/celt/celt-0.7.1.tar.gz">celt-0.7.1.tar.gz</a></li>
-</ul>
-
-<h3 id='zero.7.0'>0.7.0</h3>
-<p>CELT 0.7.0 again improves the stereo quality, reduces artefacts at 
-low bitrates (birdies and speech roughness) and fixes many bugs. In 
-addition to the usual bitstream incompatibilities, the API has also 
-changed in this release.
-</p>
-
-<ul>
-<li>Source code: <a href="http://downloads.xiph.org/releases/celt/celt-0.7.0.tar.gz">celt-0.7.0.tar.gz</a></li>
-</ul>
-
-<h3 id='zero.6.1'>0.6.1</h3>
-<p>CELT 0.6.1 improves the stereo quality, especially at lower bit-rates. This breaks bit-stream
-compatibility again, but only for stereo this time.
-</p>
-
-<ul>
-<li>Source code: <a href="http://downloads.us.xiph.org/releases/celt/celt-0.6.1.tar.gz">celt-0.6.1.tar.gz</a></li>
-</ul>
-
-<h3 id='zero.6.0'>0.6.0</h3>
-<p>This release brings in many quality improvements, including better stereo coupling, 
-better handling of transients, and better handling of highly tonal signals. In addition,
-packet loss robustness has been improved through the optional use of independent (intra) frames.
-CELT now supports a larger dynamic range, suitable for encoding 24-bit audio (float version only).
-There is also a very early VBR implementation.
-The <a href="../testing/test.0.6.0.shtml">0.6.0 testing page</a> has more information about this release.
-</p>
-
-<ul>
-<li>Source code: <a href="http://downloads.us.xiph.org/releases/celt/celt-0.6.0.tar.gz">celt-0.6.0.tar.gz</a></li>
-<li>Pre-built CLI encoder/decoder: <a href="http://downloads.us.xiph.org/releases/celt/celt_060_tools_win32.zip">celt_060_tools_win32.zip</a></li> (Windows)
-</li>
-</ul>
-
-<h3 id='zero.5.2'>0.5.2</h3>
-<p>Version 0.5.2 has just been released with a few fixes over 0.5.1. On top of that,
-the pitch prediction was both improved and simplified. The other main change is a 
-new bit allocation algorithm with better rounding and fine energy allocation. These changes
-resulted in considerable quality improvements at the smallest frame sizes. As with most prior releases this
-release breaks compatiblity with older bitstreams.
-The <a href="../testing/test.0.5.2.shtml">0.5.2 testing page</a> has more information about this release.
-</p>
-
-<ul>
-<li>Source code: <a href="http://downloads.us.xiph.org/releases/celt/celt-0.5.2.tar.gz">celt-0.5.2.tar.gz</a></li>
-<li>Pre-built CLI encoder/decoder: <a href="http://downloads.us.xiph.org/releases/celt/celt_052_tools_win32.zip">celt_052_tools_win32.zip</a> (Windows)
-</ul>
-
-<h3 id='zero.5.1.3'>0.5.1.3</h3> <p>This is an update of the original
-0.5.1 release that renames exported library/header symbols and header
-install locations from 'celt*' to 'celt051*' in order to assist in
-packaging and deploying compatability versions of this prerelease
-alongside later, incompatible versions of celt. In addition, this
-release contains fixes to all bugs known to affect the original 0.5.1
-release.
-</p>
-
-<ul>
-<li>
-<a href="http://downloads.us.xiph.org/releases/celt/celt-0.5.1.3.tar.gz">celt-0.5.1.3.tar.gz</a></li>
-</ul>
-
-<h3 id='zero.5.1'>0.5.1</h3>
-<p>This release fixes a number of issues with 0.5.0. Several cases
-where the encoder could fail have been fixed, including one that could cause memory 
-corruption (and possibly a segfault). In addition, the VQ search has been improved,
-which results in a small CPU reduction, while fixing some quality problems with low
-frequency tones. Other than that, there should be no significant quality changes.
-</p>
-
-<ul>
-<li><a href="http://downloads.us.xiph.org/releases/celt/celt-0.5.1.tar.gz">celt-0.5.1.tar.gz</a></li>
-</ul>
-
 
 
 <h2>Older development releases</h2>
@@ -165,6 +85,13 @@ These are older releases, provided mainly for historical reasons.
 <li><a href="http://downloads.us.xiph.org/releases/celt/celt-0.3.2.tar.gz">celt-0.3.2.tar.gz</a></li>
 <li><a href="http://downloads.us.xiph.org/releases/celt/celt-0.4.0.tar.gz">celt-0.4.0.tar.gz</a></li>
 <li><a href="http://downloads.us.xiph.org/releases/celt/celt-0.5.0.tar.gz">celt-0.5.0.tar.gz</a></li>
+<li><a href="http://downloads.us.xiph.org/releases/celt/celt-0.5.1.tar.gz">celt-0.5.1.tar.gz</a></li>
+<li><a href="http://downloads.us.xiph.org/releases/celt/celt-0.5.1.3.tar.gz">celt-0.5.1.3.tar.gz</a></li>
+<li><a href="http://downloads.us.xiph.org/releases/celt/celt-0.5.2.tar.gz">celt-0.5.2.tar.gz</a></li>
+<li><a href="http://downloads.us.xiph.org/releases/celt/celt-0.6.0.tar.gz">celt-0.6.0.tar.gz</a></li>
+<li><a href="http://downloads.us.xiph.org/releases/celt/celt-0.6.1.tar.gz">celt-0.6.1.tar.gz</a></li>
+<li><a href="http://downloads.us.xiph.org/releases/celt/celt-0.7.0.tar.gz">celt-0.7.0.tar.gz</a></li>
+<li><a href="http://downloads.us.xiph.org/releases/celt/celt-0.7.1.tar.gz">celt-0.7.1.tar.gz</a></li>
 </ul>
 
 
