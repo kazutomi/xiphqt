@@ -33,6 +33,15 @@
 
 <h2>Latest <strong style='font-style: italic;'>development</strong> releases</h2>
 
+<h3 id='zero.9.1'>0.9.1</h3>
+<p>CELT 0.9.1 greatly improves the packet loss concealment.
+   This change is especially dramatic in fixed point mode. The 0.9.1 bit-stream is compatible with 0.9.0.</p>
+</p>
+
+<ul>
+<li>Source code: <a href="http://downloads.xiph.org/releases/celt/celt-0.9.0.tar.gz">celt-0.9.1.tar.gz</a></li>
+</ul>
+
 <h3 id='zero.9.0'>0.9.0</h3>
 <p>CELT 0.9.0 brings many quality improvements. The transient handling code has been 
 greatly improved and high-frequency artefacts have been reduced. There have also been

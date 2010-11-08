@@ -81,6 +81,14 @@
 <h2>Headlines</h2>
 <ul class="descriptivelist">
    <li>
+      <h3>Version 0.9.1 released</h3>
+      <p class="submitdate">8 November, 2010</p>
+      <div class="description">
+                <p>CELT 0.9.1 greatly improves the packet loss concealment.
+                   This change is especially dramatic in fixed point mode. The bit-stream is compatible with 0.9.0.</p>
+      </div>
+   </li>
+   <li>
       <h3>Version 0.9.0 released</h3>
       <p class="submitdate">6 November, 2010</p>
       <div class="description">
