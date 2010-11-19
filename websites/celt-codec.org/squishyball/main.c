@@ -1,0 +1,1667 @@
+#define _GNU_SOURCE
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <math.h>
+#include <errno.h>
+#include <vorbis/vorbisfile.h>
+#include <ao/ao.h>
+#include <FLAC/stream_decoder.h>
+#include <getopt.h>
+
+static int verbose=0;
+
+static inline int host_is_big_endian() {
+  union {
+    int32_t pattern;
+    unsigned char bytewise[4];
+  } m;
+  m.pattern = 0xfeedface; /* deadbeef */
+  if (m.bytewise[0] == 0xfe) return 1;
+  return 0;
+}
+
+typedef struct pcm_struct pcm_t;
+
+struct pcm_struct {
+  char *path;
+  int rate;
+  int bits; /* negative indicates IEEE754 float */
+  int ch;
+  char *matrix;
+  void *data;
+  off_t size;
+  int dither;
+};
+
+void free_pcm(pcm_t *pcm){
+  if(pcm){
+    if(pcm->path)free(pcm->path);
+    if(pcm->matrix)free(pcm->matrix);
+    if(pcm->data)free(pcm->data);
+    memset(pcm,0,sizeof(pcm));
+    free(pcm);
+  }
+}
+
+typedef struct{
+  int (*id_func)(char *path,unsigned char *buf);
+  pcm_t *(*load_func)(char *path, FILE *in);
+  char *format;
+} input_format;
+
+/* steal/simplify/expand file ID/load code from oggenc */
+
+/* Macros to read header data */
+#define READ_U32_LE(buf) \
+    (((buf)[3]<<24)|((buf)[2]<<16)|((buf)[1]<<8)|((buf)[0]&0xff))
+
+#define READ_U16_LE(buf) \
+    (((buf)[1]<<8)|((buf)[0]&0xff))
+
+#define READ_U32_BE(buf) \
+    (((buf)[0]<<24)|((buf)[1]<<16)|((buf)[2]<<8)|((buf)[3]&0xff))
+
+#define READ_U16_BE(buf) \
+    (((buf)[0]<<8)|((buf)[1]&0xff))
+
+int wav_id(char *path,unsigned char *buf){
+  if(memcmp(buf, "RIFF", 4))
+    return 0; /* Not wave */
+  if(memcmp(buf+8, "WAVE",4))
+    return 0; /* RIFF, but not wave */
+  return 1;
+}
+
+int aiff_id(char *path,unsigned char *buf){
+  if(memcmp(buf, "FORM", 4))
+    return 0;
+  if(memcmp(buf+8, "AIF",3))
+    return 0;
+  if(buf[11]!='C' && buf[11]!='F')
+    return 0;
+  return 1;
+}
+
+int flac_id(char *path,unsigned char *buf){
+  return memcmp(buf, "fLaC", 4) == 0;
+}
+
+int oggflac_id(char *path,unsigned char *buf){
+  return memcmp(buf, "OggS", 4) == 0 &&
+    (memcmp (buf+28, "\177FLAC", 5) == 0 ||
+     flac_id(path,buf+28));
+}
+
+int vorbis_id(char *path,unsigned char *buf){
+  return memcmp(buf, "OggS", 4) == 0 &&
+    memcmp (buf+28, "\x01vorbis", 7);
+}
+
+int sw_id(char *path,unsigned char *buf){
+  /* if all else fails, look for JM's favorite extension */
+  return memcmp(path+strlen(path)-3,".sw",3)==0;
+}
+
+/* WAV file support ***********************************************************/
+
+static int find_wav_chunk(FILE *in, char *path, char *type, unsigned int *len){
+  unsigned char buf[8];
+
+  while(1){
+    if(fread(buf,1,8,in) < 8){
+      fprintf(stderr, "%s: Unexpected EOF in reading WAV header\n",path);
+      return 0; /* EOF before reaching the appropriate chunk */
+    }
+
+    if(memcmp(buf, type, 4)){
+      *len = READ_U32_LE(buf+4);
+      if(fseek(in, *len, SEEK_CUR))
+        return 0;
+
+      buf[4] = 0;
+    }else{
+      *len = READ_U32_LE(buf+4);
+      return 1;
+    }
+  }
+}
+
+pcm_t *wav_load(char *path, FILE *in){
+  unsigned char buf[40];
+  unsigned int len;
+  pcm_t *pcm = NULL;
+  int i;
+
+  if(fseek(in,12,SEEK_SET)==-1){
+    fprintf(stderr,"%s: Failed to seek\n",path);
+    goto err;
+  }
+
+  pcm = calloc(1,sizeof(pcm_t));
+  pcm->path=strdup(path);
+
+  if(!find_wav_chunk(in, path, "fmt ", &len)){
+    fprintf(stderr,"%s: Failed to find fmt chunk in WAV file\n",path);
+    goto err;
+  }
+
+  if(len < 16){
+    fprintf(stderr, "%s: Unrecognised format chunk in WAV header\n",path);
+    goto err;
+  }
+
+  if(verbose){
+    /* A common error is to have a format chunk that is not 16, 18 or
+     * 40 bytes in size.  This is incorrect, but not fatal, so we only
+     * warn about it instead of refusing to work with the file.
+     * Please, if you have a program that's creating format chunks of
+     * sizes other than 16 or 18 bytes in size, report a bug to the
+     * author.
+     */
+    if(len!=16 && len!=18 && len!=40)
+      fprintf(stderr,
+              "%s: INVALID format chunk in WAV header.\n"
+              " Trying to read anyway (may not work)...\n",path);
+  }
+
+  if(len>40)len=40;
+
+  if(fread(buf,1,len,in) < len){
+    fprintf(stderr,"%s: Unexpected EOF in reading WAV header\n",path);
+    goto err;
+  }
+
+  unsigned int mask = 0;
+  unsigned int format =      READ_U16_LE(buf);
+  unsigned int channels =    READ_U16_LE(buf+2);
+  unsigned int samplerate =  READ_U32_LE(buf+4);
+  //unsigned int bytespersec = READ_U32_LE(buf+8);
+  unsigned int align =       READ_U16_LE(buf+12);
+  unsigned int samplesize =  READ_U16_LE(buf+14);
+  const char *mask_map[32]={
+    "L","R","C","LFE", "BL","BR","CL","CR",
+    "BC","SL","SR","X", "X","X","X","X",
+    "X","X","X","X", "X","X","X","X",
+    "X","X","X","X", "X","X","X","X"};
+
+  if(format == 0xfffe){ /* WAVE_FORMAT_EXTENSIBLE */
+
+    if(len<40){
+      fprintf(stderr,"%s: Extended WAV format header invalid (too small)\n",path);
+      goto err;
+    }
+
+    mask = READ_U32_LE(buf+20);
+    format = READ_U16_LE(buf+24);
+  }
+
+  if(mask==0){
+    switch(channels){
+    case 1:
+      pcm->matrix = strdup("M");
+      break;
+    case 2:
+      pcm->matrix = strdup("L,R");
+      break;
+    case 3:
+      pcm->matrix = strdup("L,R,C");
+      break;
+    case 4:
+      pcm->matrix = strdup("L,R,BL,BR");
+      break;
+    case 5:
+      pcm->matrix = strdup("L,R,C,BL,BR");
+      break;
+    case 6:
+      pcm->matrix = strdup("L,R,C,LFE,BL,BR");
+      break;
+    case 7:
+      pcm->matrix = strdup("L,R,C,LFE,BC,SL,SR");
+      break;
+    default:
+      pcm->matrix = strdup("L,R,C,LFE,BL,BR,SL,SR");
+      break;
+    }
+  }else{
+    pcm->matrix = calloc(32*4,sizeof(char));
+    for(i=0;i<32;i++){
+      if(mask&(1<<i)){
+        strcat(pcm->matrix,mask_map[i]);
+        strcat(pcm->matrix,",");
+      }
+    }
+    pcm->matrix[strlen(pcm->matrix)-1]=0;
+  }
+
+  if(!find_wav_chunk(in, path, "data", &len)){
+    fprintf(stderr,"%s: Failed to find fmt chunk in WAV file\n",path);
+    goto err;
+  }
+
+  if(verbose){
+    if(align != channels * ((samplesize+7)/8)) {
+      /* This is incorrect according to the spec. Warn loudly, then ignore
+       * this value.
+       */
+      fprintf(stderr, "%s: WAV 'block alignment' value is incorrect, "
+              "ignoring.\n"
+              "The software that created this file is incorrect.\n",path);
+    }
+  }
+
+  if((format==1 && (samplesize == 24 || samplesize == 16 || samplesize == 8)) ||
+     (samplesize == 32 && format == 3)){
+    /* OK, good - we have a supported format,
+       now we want to find the size of the file */
+    pcm->rate = samplerate;
+    pcm->ch = channels;
+    pcm->bits = (format==3 ? -samplesize : samplesize);
+
+    if(len){
+      pcm->size = len;
+    }else{
+      long pos;
+      pos = ftell(in);
+      if(fseek(in, 0, SEEK_END) == -1){
+        fprintf(stderr,"%s failed to seek: %s\n",path,strerror(errno));
+        goto err;
+      }else{
+        pcm->size = ftell(in) - pos;
+        fseek(in,pos, SEEK_SET);
+      }
+    }
+
+  }else{
+    fprintf(stderr,
+            "%s: Wav file is unsupported subformat (must be 8,16, or 24 bit PCM\n"
+            "or floating point PCM\n",path);
+    goto err;
+  }
+
+  /* read the samples into memory */
+  switch(pcm->bits){
+  case 8:
+    /* load as 8 bit, expand it out to 16. */
+    pcm->data = calloc(1,pcm->size*2);
+    break;
+  case 24:
+    pcm->dither = 1;
+  case 16:
+    pcm->data = calloc(1,pcm->size);
+    break;
+  case -32:
+    pcm->data = calloc(1,pcm->size);
+    pcm->dither = 1;
+    break;
+  default:
+    /* Won't get here unless the code is modified and the modifier
+       misses expanding here and below */
+    fprintf(stderr,"%s: Unsupported bit depth\n",path);
+    goto err;
+  }
+
+  if(pcm->data == NULL){
+    fprintf(stderr,"Unable to allocate enough memory to load sample into memory\n");
+    goto err;
+  }
+
+  {
+    off_t j=0;
+    while(j<pcm->size){
+      off_t bytes = (pcm->size-j > 65536 ? 65536 : pcm->size-j);
+      if(verbose)
+        fprintf(stderr,"\rLoading %s: %ld to go...       ",path,(long)(pcm->size-j));
+      j+=bytes=fread(pcm->data+j,1,bytes,in);
+      if(bytes==0)break;
+    }
+    if(j<pcm->size){
+      if(verbose)
+        fprintf(stderr,"\r%s: File ended before declared length (%ld < %ld); continuing...\n",path,(long)j,(long)pcm->size);
+      pcm->size=j;
+    }
+
+    /* 8 bit must be expanded to 16 */
+    if(samplesize==8){
+      off_t j;
+      unsigned char *d = pcm->data;
+      for(j=pcm->size-1;j>=0;j--){
+        int val = (d[j]-128)<<8;
+        d[j*2] = val&0xff;
+        d[j*2+1] = (val>>8)&0xff;
+      }
+      pcm->bits=16;
+      pcm->size*=2;
+    }
+  }
+
+  if(verbose)
+    fprintf(stderr,"\r%s: loaded.                 \n",path);
+
+  return pcm;
+ err:
+  free_pcm(pcm);
+  return NULL;
+}
+
+/* AIFF file support ***********************************************************/
+
+int find_aiff_chunk(FILE *in, char *path, char *type, unsigned int *len){
+  unsigned char buf[8];
+  int restarted = 0;
+
+  while(1){
+    if(fread(buf,1,8,in)<8){
+      if(!restarted) {
+        /* Handle out of order chunks by seeking back to the start
+         * to retry */
+        restarted = 1;
+        fseek(in, 12, SEEK_SET);
+        continue;
+      }
+      fprintf(stderr,"%s: Unexpected EOF in AIFF chunk\n",path);
+      return 0;
+    }
+
+    *len = READ_U32_BE(buf+4);
+
+    if(memcmp(buf,type,4)){
+      if((*len) & 0x1)
+        (*len)++;
+
+      if(fseek(in,*len,SEEK_CUR))
+        return 0;
+    }else
+      return 1;
+  }
+}
+
+double read_IEEE80(unsigned char *buf){
+  int s=buf[0]&0xff;
+  int e=((buf[0]&0x7f)<<8)|(buf[1]&0xff);
+  double f=((unsigned long)(buf[2]&0xff)<<24)|
+    ((buf[3]&0xff)<<16)|
+    ((buf[4]&0xff)<<8) |
+    (buf[5]&0xff);
+
+  if(e==32767){
+    if(buf[2]&0x80)
+      return HUGE_VAL; /* Really NaN, but this won't happen in reality */
+    else{
+      if(s)
+        return -HUGE_VAL;
+      else
+        return HUGE_VAL;
+    }
+  }
+
+  f=ldexp(f,32);
+  f+= ((buf[6]&0xff)<<24)|
+    ((buf[7]&0xff)<<16)|
+    ((buf[8]&0xff)<<8) |
+    (buf[9]&0xff);
+  return ldexp(f, e-16446);
+}
+
+static inline void swap(unsigned char *a, unsigned char *b){
+  unsigned char temp=*a;
+  *a=*b;
+  *b=temp;
+}
+
+pcm_t *aiff_load(char *path, FILE *in){
+  pcm_t *pcm = NULL;
+  int aifc; /* AIFC or AIFF? */
+  unsigned int len;
+  unsigned char *buffer;
+  unsigned char buf2[12];
+  int bend = 1;
+
+  if(fseek(in,0,SEEK_SET)==-1){
+    fprintf(stderr,"%s: Failed to seek\n",path);
+    goto err;
+  }
+  if(fread(buf2,1,12,in)!=12){
+    fprintf(stderr,"%s: Failed to read AIFF header\n",path);
+    goto err;
+  }
+
+  pcm = calloc(1,sizeof(pcm_t));
+  pcm->path=strdup(path);
+
+  if(buf2[11]=='C')
+    aifc=1;
+  else
+    aifc=0;
+
+  if(!find_aiff_chunk(in, path, "COMM", &len)){
+    fprintf(stderr,"%s: No common chunk found in AIFF file\n",path);
+    goto err;
+  }
+
+  if(len < 18){
+    fprintf(stderr, "%s: Truncated common chunk in AIFF header\n",path);
+    goto err;
+  }
+
+  buffer = alloca(len);
+
+  if(fread(buffer,1,len,in) < len){
+    fprintf(stderr, "%s: Unexpected EOF in reading AIFF header\n",path);
+    goto err;
+  }
+
+  pcm->ch = READ_U16_BE(buffer);
+  pcm->rate = (int)read_IEEE80(buffer+8);
+  pcm->bits = READ_U16_BE(buffer+6);
+  pcm->size = READ_U32_BE(buffer+2)*pcm->ch*((pcm->bits+7)/8);
+
+  switch(pcm->ch){
+  case 1:
+    pcm->matrix = strdup("M");
+    break;
+  case 2:
+    pcm->matrix = strdup("L,R");
+    break;
+  case 3:
+    pcm->matrix = strdup("L,R,C");
+    break;
+  case 4:
+    pcm->matrix = strdup("L,R,BL,BR");
+    break;
+  }
+
+  if(aifc){
+    if(len < 22){
+      fprintf(stderr, "%s: AIFF-C header truncated.\n",path);
+      goto err;
+    }
+
+    if(!memcmp(buffer+18, "NONE", 4)){
+      bend = 1;
+    }else if(!memcmp(buffer+18, "sowt", 4)){
+      bend = 0;
+    }else{
+      fprintf(stderr, "%s: Can't handle compressed AIFF-C (%c%c%c%c)\n", path,
+              *(buffer+18), *(buffer+19), *(buffer+20), *(buffer+21));
+      goto err;
+    }
+  }
+
+  if(!find_aiff_chunk(in, path, "SSND", &len)){
+    fprintf(stderr, "%s: No SSND chunk found in AIFF file\n",path);
+    goto err;
+  }
+  if(len < 8) {
+    fprintf(stderr,"%s: Corrupted SSND chunk in AIFF header\n",path);
+    goto err;
+  }
+
+  if(fread(buf2,1,8, in) < 8){
+    fprintf(stderr, "%s: Unexpected EOF reading AIFF header\n",path);
+    goto err;
+  }
+
+  int offset = READ_U32_BE(buf2);
+  int blocksize = READ_U32_BE(buf2+4);
+
+  if( blocksize != 0 ||
+      !(pcm->bits==24 || pcm->bits == 16 || pcm->bits == 8)){
+    fprintf(stderr,
+            "%s: Unsupported type of AIFF/AIFC file\n"
+            " Must be 8, 16 or 24 bit integer PCM.\n",path);
+    goto err;
+  }
+
+  fseek(in, offset, SEEK_CUR); /* Swallow some data */
+
+  /* read the samples into memory */
+  switch(pcm->bits){
+  case 8:
+    /* load as 8 bit, expand it out to 16. */
+    pcm->data = calloc(1,pcm->size*2);
+    break;
+  case 24:
+    pcm->dither = 1;
+    /* fall through */
+  default:
+    pcm->data = calloc(1,pcm->size);
+    break;
+  }
+
+  if(pcm->data == NULL){
+    fprintf(stderr,"Unable to allocate enough memory to load sample into memory\n");
+    goto err;
+  }
+
+  {
+    unsigned char *d = pcm->data;
+    off_t j=0;
+    while(j<pcm->size){
+      off_t bytes = (pcm->size-j > 65536 ? 65536 : pcm->size-j);
+      if(verbose)
+        fprintf(stderr,"\rLoading %s: %ld to go...       \r",path,(long)(pcm->size-j));
+      j+=bytes=fread(d+j,1,bytes,in);
+      if(bytes==0)break;
+    }
+    if(j<pcm->size){
+      if(verbose)
+        fprintf(stderr,"\r%s: File ended before declared length (%ld < %ld); continuing...\n",path,(long)j,(long)pcm->size);
+      pcm->size=j;
+    }
+
+    /* 8 bit must be expanded to 16 */
+    switch(pcm->bits){
+    case 8:
+      for(j=pcm->size-1;j>=0;j--){
+        int val = d[j]<<8;
+        d[j*2] = val&0xff;
+        d[j*2+1] = (val>>8)&0xff;
+      }
+      pcm->bits=16;
+      pcm->size*=2;
+      break;
+    case 16:
+      if(bend){
+        for(j=0;j<pcm->size/2;j++)
+          swap(d+j*2,d+j*2+1);
+      }
+      break;
+    case 24:
+      if(bend){
+        for(j=0;j<pcm->size/3;j++)
+          swap(d+j*3,d+j*3+2);
+      }
+      break;
+    }
+  }
+
+  if(verbose)
+    fprintf(stderr,"\r%s: loaded.                 \n",path);
+
+  return pcm;
+ err:
+  free_pcm(pcm);
+  return NULL;
+
+}
+
+/* SW loading to make JM happy *******************************************************/
+
+pcm_t *sw_load(char *path, FILE *in){
+
+  pcm_t *pcm = calloc(1,sizeof(pcm_t));
+  pcm->path=strdup(path);
+  pcm->bits=16;
+  pcm->ch=1;
+  pcm->rate=48000;
+
+  if(fseek(in,0,SEEK_END)==-1){
+    fprintf(stderr,"%s: Failed to seek\n",path);
+    goto err;
+  }
+  pcm->size=ftell(in);
+  if(pcm->size==-1 || fseek(in,0,SEEK_SET)==-1){
+    fprintf(stderr,"%s: Failed to seek\n",path);
+    goto err;
+  }
+
+  pcm->data = calloc(1,pcm->size);
+
+  if(pcm->data == NULL){
+    fprintf(stderr,"Unable to allocate enough memory to load sample into memory\n");
+    goto err;
+  }
+
+  {
+    off_t j=0;
+    while(j<pcm->size){
+      off_t bytes = (pcm->size-j > 65536 ? 65536 : pcm->size-j);
+      if(verbose)
+        fprintf(stderr,"\rLoading %s: %ld to go...       ",path,(long)(pcm->size-j));
+      j+=bytes=fread(pcm->data+j,1,bytes,in);
+      if(bytes==0)break;
+    }
+    if(j<pcm->size){
+      if(verbose)
+        fprintf(stderr,"\r%s: File ended before declared length (%ld < %ld); continuing...\n",path,(long)j,(long)pcm->size);
+      pcm->size=j;
+    }
+  }
+
+  if(verbose)
+    fprintf(stderr,"\r%s: loaded.                 \n",path);
+
+  return pcm;
+ err:
+  free_pcm(pcm);
+  return NULL;
+}
+
+/* FLAC and OggFLAC load support *****************************************************************/
+
+typedef struct {
+  FILE *in;
+  pcm_t *pcm;
+  off_t fill;
+} flac_callback_arg;
+
+/* glorified fread wrapper */
+FLAC__StreamDecoderReadStatus read_callback(const FLAC__StreamDecoder *decoder,
+                                            FLAC__byte buffer[],
+                                            size_t *bytes,
+                                            void *client_data){
+  flac_callback_arg *flac = (flac_callback_arg *)client_data;
+  pcm_t *pcm = flac->pcm;
+
+  if(feof(flac->in)){
+    *bytes = 0;
+    return FLAC__STREAM_DECODER_READ_STATUS_END_OF_STREAM;
+  }else if(ferror(flac->in)){
+    *bytes = 0;
+    return FLAC__STREAM_DECODER_READ_STATUS_ABORT;
+  }
+
+  if(verbose)
+    fprintf(stderr,"\rLoading %s: %ld to go...       ",flac->pcm->path,(long)(pcm->size-flac->fill));
+  *bytes = fread(buffer, sizeof(FLAC__byte), *bytes, flac->in);
+
+  return FLAC__STREAM_DECODER_READ_STATUS_CONTINUE;
+}
+
+FLAC__StreamDecoderWriteStatus write_callback(const FLAC__StreamDecoder *decoder,
+                                              const FLAC__Frame *frame,
+                                              const FLAC__int32 *const buffer[],
+                                              void *client_data){
+  flac_callback_arg *flac = (flac_callback_arg *)client_data;
+  pcm_t *pcm = flac->pcm;
+  int samples = frame->header.blocksize;
+  int channels = frame->header.channels;
+  int bits_per_sample = frame->header.bits_per_sample;
+  off_t fill = flac->fill;
+  int i, j;
+
+  if(pcm->data == NULL){
+    /* lasy initialization */
+    pcm->ch = channels;
+    pcm->bits = (bits_per_sample+7)/8*8;
+    pcm->size *= pcm->bits/8*channels;
+    pcm->data = calloc(pcm->size,1);
+  }
+
+  if(channels != pcm->ch){
+    fprintf(stderr,"\r%s: number of channels changes part way through file\n",pcm->path);
+    return FLAC__STREAM_DECODER_WRITE_STATUS_ABORT;
+  }
+  if(pcm->bits != (bits_per_sample+7)/8*8){
+    fprintf(stderr,"\r%s: bit depth changes part way through file\n",pcm->path);
+    return FLAC__STREAM_DECODER_WRITE_STATUS_ABORT;
+  }
+
+  {
+    unsigned char *d = pcm->data + fill;
+    int shift = pcm->bits - bits_per_sample;
+    switch(pcm->bits){
+    case 16:
+      for (j = 0; j < samples; j++)
+        for (i = 0; i < channels; i++){
+          d[0] = (buffer[i][j]<<shift)&0xff;
+          d[1] = (buffer[i][j]<<shift>>8)&0xff;
+          d+=2;
+          fill+=2;
+        }
+      break;
+    case 24:
+      pcm->dither = 1;
+      for (j = 0; j < samples; j++)
+        for (i = 0; i < channels; i++){
+          d[0] = (buffer[i][j]<<shift)&0xff;
+          d[1] = (buffer[i][j]<<shift>>8)&0xff;
+          d[3] = (buffer[i][j]<<shift>>16)&0xff;
+          d+=3;
+          fill+=3;
+        }
+      break;
+    default:
+      fprintf(stderr,"\r%s: Only 16 and 24 bit FLACs are supported for decode right now.\n",pcm->path);
+      return FLAC__STREAM_DECODER_WRITE_STATUS_ABORT;
+    }
+  }
+  flac->fill=fill;
+
+  return FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
+}
+
+void metadata_callback(const FLAC__StreamDecoder *decoder,
+                       const FLAC__StreamMetadata *metadata,
+                       void *client_data){
+  flac_callback_arg *flac = (flac_callback_arg *)client_data;
+  pcm_t *pcm = flac->pcm;
+
+  switch (metadata->type){
+  case FLAC__METADATA_TYPE_STREAMINFO:
+    pcm->size = metadata->data.stream_info.total_samples; /* temp setting */
+    pcm->rate = metadata->data.stream_info.sample_rate;
+    break;
+  default:
+    break;
+  }
+}
+
+void error_callback(const FLAC__StreamDecoder *decoder,
+                    FLAC__StreamDecoderErrorStatus status,
+                    void *client_data){
+
+  flac_callback_arg *flac = (flac_callback_arg *)client_data;
+  pcm_t *pcm = flac->pcm;
+  fprintf(stderr,"\r%s: Error decoding file.\n",pcm->path);
+}
+
+FLAC__bool eof_callback(const FLAC__StreamDecoder *decoder,
+                        void *client_data){
+  flac_callback_arg *flac = (flac_callback_arg *)client_data;
+  return feof(flac->in)? true : false;
+}
+
+pcm_t *flac_load_i(char *path, FILE *in, int oggp){
+  pcm_t *pcm = calloc(1,sizeof(pcm_t));
+  flac_callback_arg *flac = calloc(1,sizeof(flac_callback_arg));
+  FLAC__StreamDecoder *decoder = FLAC__stream_decoder_new();
+  FLAC__bool ret;
+  FLAC__stream_decoder_set_md5_checking(decoder, true);
+  FLAC__stream_decoder_set_metadata_respond(decoder, FLAC__METADATA_TYPE_STREAMINFO);
+  pcm->path=strdup(path);
+  flac->in=in;
+  flac->pcm=pcm;
+
+  if(oggp)
+    FLAC__stream_decoder_init_ogg_stream(decoder,
+                                         read_callback,
+                                         /*seek_callback=*/0,
+                                         /*tell_callback=*/0,
+                                         /*length_callback=*/0,
+                                         eof_callback,
+                                         write_callback,
+                                         metadata_callback,
+                                         error_callback,
+                                         flac);
+  else
+    FLAC__stream_decoder_init_stream(decoder,
+                                     read_callback,
+                                     /*seek_callback=*/0,
+                                     /*tell_callback=*/0,
+                                     /*length_callback=*/0,
+                                     eof_callback,
+                                     write_callback,
+                                     metadata_callback,
+                                     error_callback,
+                                     flac);
+
+  /* setup and sample reading handled by configured callbacks */
+  ret=FLAC__stream_decoder_process_until_end_of_stream(decoder);
+  FLAC__stream_decoder_finish(decoder);
+  FLAC__stream_decoder_delete(decoder);
+  free(flac);
+  if(!ret){
+    free_pcm(pcm);
+    return NULL;
+  }
+
+  /* set channel matrix */
+  switch(pcm->ch){
+  case 1:
+    pcm->matrix = strdup("M");
+    break;
+  case 2:
+    pcm->matrix = strdup("L,R");
+    break;
+  case 3:
+    pcm->matrix = strdup("L,R,C");
+    break;
+  case 4:
+    pcm->matrix = strdup("L,R,BL,BR");
+    break;
+  case 5:
+    pcm->matrix = strdup("L,R,C,BL,BR");
+    break;
+  case 6:
+    pcm->matrix = strdup("L,R,C,LFE,BL,BR");
+    break;
+  case 7:
+    pcm->matrix = strdup("L,R,C,LFE,BC,SL,SR");
+    break;
+  default:
+    pcm->matrix = strdup("L,R,C,LFE,BL,BR,SL,SR");
+    break;
+  }
+
+  if(verbose)
+    fprintf(stderr,"\r%s: loaded.                 \n",path);
+  return pcm;
+}
+
+pcm_t *flac_load(char *path, FILE *in){
+  return flac_load_i(path,in,0);
+}
+
+pcm_t *oggflac_load(char *path, FILE *in){
+  return flac_load_i(path,in,1);
+}
+
+/* Vorbis load support **************************************************************************/
+pcm_t *vorbis_load(char *path, FILE *in){
+  OggVorbis_File vf;
+  vorbis_info *vi=NULL;
+  pcm_t *pcm=NULL;
+  off_t fill=0;
+  int throttle=0;
+  int last_section=-1;
+
+  memset(&vf,0,sizeof(vf));
+
+  if(fseek(in,0,SEEK_SET)==-1){
+    fprintf(stderr,"%s: Failed to seek\n",path);
+    goto err;
+  }
+
+  if(ov_open_callbacks(in, &vf, NULL, 0, OV_CALLBACKS_NOCLOSE) < 0) {
+    fprintf(stderr,"Input does not appear to be an Ogg bitstream.\n");
+    goto err;
+  }
+
+  vi=ov_info(&vf,-1);
+  pcm->path=strdup(path);
+  pcm->bits=-32;
+  pcm->ch=vi->channels;
+  pcm->rate=vi->rate;
+  pcm->size=ov_pcm_total(&vf,-1)*vi->channels*4;
+  pcm->data=calloc(pcm->size,1);
+
+  switch(pcm->ch){
+  case 1:
+    pcm->matrix = strdup("M");
+    break;
+  case 2:
+    pcm->matrix = strdup("L,R");
+    break;
+  case 3:
+    pcm->matrix = strdup("L,C,R");
+    break;
+  case 4:
+    pcm->matrix = strdup("L,R,BL,BR");
+    break;
+  case 5:
+    pcm->matrix = strdup("L,C,R,BL,BR");
+    break;
+  case 6:
+    pcm->matrix = strdup("L,C,R,BL,BR,LFE");
+    break;
+  case 7:
+    pcm->matrix = strdup("L,C,R,SL,SR,BC,LFE");
+    break;
+  default:
+    pcm->matrix = strdup("L,C,R,SL,SR,BL,BR,LFE");
+    break;
+  }
+
+  while(fill<pcm->size){
+    int current_section;
+    int i,j;
+    float **pcmout;
+    long ret=ov_read_float(&vf,&pcmout,4096,&current_section);
+    unsigned char *d = pcm->data+fill;
+
+    if(current_section!=last_section){
+      last_section=current_section;
+      vi=ov_info(&vf,-1);
+      if(vi->channels != pcm->ch || vi->rate!=pcm->rate){
+        fprintf(stderr,"%s: Chained file changes channel count/sample rate\n",path);
+        goto err;
+      }
+    }
+
+    if(ret<0){
+      fprintf(stderr,"%s: Error while decoding file\n",path);
+      goto err;
+    }
+    if(ret==0){
+      fprintf(stderr,"%s: Audio data ended prematurely\n",path);
+      goto err;
+    }
+
+    if(sizeof(float)==4){
+      /* Assuming IEEE754, which is pedantically incorrect */
+      union {
+        float f;
+        unsigned char c[4];
+      } m;
+      if(host_is_big_endian()){
+        for(i=0;i<ret;i++){
+          for(j=0;j<pcm->ch;j++){
+            m.f=pcmout[j][i];
+            d[0] = m.c[3];
+            d[1] = m.c[2];
+            d[2] = m.c[1];
+            d[3] = m.c[0];
+            d+=4;
+          }
+        }
+      }else{
+        for(i=0;i<ret;i++){
+          for(j=0;j<pcm->ch;j++){
+            m.f=pcmout[j][i];
+            d[0] = m.c[0];
+            d[1] = m.c[1];
+            d[2] = m.c[2];
+            d[3] = m.c[3];
+            d+=4;
+          }
+        }
+      }
+    }else{
+      fprintf(stderr,"Unhandled case: sizeof(float)!=4\n");
+      exit(10);
+    }
+    fill += ret*pcm->ch*3;
+    if (verbose && (throttle&0x3f)==0)
+      fprintf(stderr,"\rLoading %s: %ld to go...       ",pcm->path,(long)(pcm->size-fill));
+    throttle++;
+  }
+  ov_clear(&vf);
+
+  if(verbose)
+    fprintf(stderr,"\r%s: loaded.                 \n",path);
+  return pcm;
+ err:
+  ov_clear(&vf);
+  free_pcm(pcm);
+  return NULL;
+}
+
+#define MAX_ID_LEN 35
+unsigned char buf[MAX_ID_LEN];
+
+/* Define the supported formats here */
+input_format formats[] = {
+  {wav_id,     wav_load,    "wav"},
+  {aiff_id,    aiff_load,   "aiff"},
+  {flac_id,    flac_load,   "flac"},
+  {oggflac_id, oggflac_load,"oggflac"},
+  {vorbis_id,  vorbis_load, "oggvorbis"},
+  {sw_id,      sw_load,     "sw"},
+  {NULL,       NULL,        NULL}
+};
+
+pcm_t *load_audio_file(char *path){
+  FILE *f = fopen(path,"rb");
+  int j=0;
+  int fill;
+
+  if(!f){
+    fprintf(stderr,"Unable to open file %s: %s\n",path,strerror(errno));
+    return NULL;
+  }
+
+  fill = fread(buf, 1, MAX_ID_LEN, f);
+  if(fill<MAX_ID_LEN){
+    fprintf(stderr,"%s: Input file truncated or NULL\n",path);
+    fclose(f);
+    return NULL;
+  }
+
+  while(formats[j].id_func){
+    if(formats[j].id_func(path,buf)){
+      pcm_t *ret=formats[j].load_func(path,f);
+      fclose(f);
+      return ret;
+    }
+    j++;
+  }
+  return NULL;
+}
+
+/* sample formatting helpers ********************************************************/
+
+void float32_to_24(pcm_t *pcm){
+  unsigned char *d = pcm->data;
+  off_t j;
+  for(j=0;j<pcm->size/4;j++){
+    int val=0;
+    int mantissa = d[j*4] | (d[j*4+1]<<8) | ((d[j*4+2]&0x7f)<<16) | (1<<23);
+    int exponent = 127 - ((d[j*4+2]>>7) | ((d[j*4+3]&0x7f)<<1));
+    int sign = d[j*4+3]>>7;
+    if(exponent <= 0){
+      if(exponent == -128){
+        fprintf(stderr,"%s: Input file contains invalid floating point values.\n",pcm->path);
+        exit(6);
+      }
+      if(sign)
+        val = 8388608;
+      else
+        val = 8388607;
+    }else if(exponent <= 24){
+      val = mantissa>>exponent;
+      /* round with tiebreaks toward even */
+      if(((mantissa<<(24-exponent))&0xffffff) + (val&1) > 0x800000) ++val;
+    }
+    if(sign) val= -val;
+
+    d[j*3]=val&0xff;
+    d[j*3+1]=(val>>8)&0xff;
+    d[j*3+2]=(val>>16)&0xff;
+  }
+  pcm->bits=24;
+  pcm->size/=4;
+  pcm->size*=3;
+}
+
+static inline float triangle_ditherval(float *save){
+  float r = rand()/(float)RAND_MAX-.5f;
+  float ret = *save-r;
+  *save = r;
+  return ret;
+}
+
+void float32_to_16(pcm_t *pcm){
+  unsigned char *d = pcm->data;
+  off_t j;
+  union {
+    float f;
+    unsigned char c[4];
+  } m;
+
+  /* again assumes IEEE754, which is not pedantically correct */
+  if(sizeof(float)==4){
+    float t[pcm->ch];
+    int ch=0;
+    memset(t,0,sizeof(t));
+
+    for(j=0;j<pcm->size/4;j++){
+      float val;
+      if(host_is_big_endian()){
+        m.c[0]=d[j*4+3];
+        m.c[1]=d[j*4+2];
+        m.c[2]=d[j*4+1];
+        m.c[3]=d[j*4];
+      }else{
+        m.c[0]=d[j*4];
+        m.c[1]=d[j*4+1];
+        m.c[2]=d[j*4+2];
+        m.c[3]=d[j*4+3];
+      }
+      if(pcm->dither){
+        val = rint(m.f*32768.f + triangle_ditherval(t+ch));
+        ch++;
+        if(ch>pcm->ch)ch=0;
+      }else{
+        val = rint(m.f*32768.f);
+      }
+
+      if(val>=32767.f){
+        d[j*2]=0xff;
+        d[j*2+1]=0x7f;
+      }else if(val<=-32768.f){
+        d[j*2]=0x00;
+        d[j*2+1]=0x80;
+      }else{
+        int iv = (int)val;
+        d[j*2]=iv&0xff;
+        d[j*2+1]=(iv>>8)&0xff;
+      }
+    }
+  }else{
+    fprintf(stderr,"Unhandled case: sizeof(float)!=4\n");
+    exit(10);
+  }
+
+  pcm->bits=16;
+  pcm->size/=2;
+}
+
+void demote_24_to_16(pcm_t *pcm){
+  float t[pcm->ch];
+  unsigned char *d = pcm->data;
+  off_t i;
+  int ch=0;
+  memset(t,0,sizeof(t));
+
+  for(i=0;i<pcm->size/3;i++){
+    int val = ((d[i*3+2]<<24) | (d[i*3+1]<<16) | (d[i*3]<<8))>>8;
+    if(pcm->dither){
+      val = rint (val*(1.f/256.f)+triangle_ditherval(t+ch));
+      ch++;
+      if(ch>pcm->ch)ch=0;
+    }else
+      val = rint (val*(1.f/256.f));
+
+    if(val>32767){
+      d[i*2]=0xff;
+      d[i*2+1]=0x7f;
+    }else if(val<-32768){
+      d[i*2]=0x00;
+      d[i*2+1]=0x80;
+    }else{
+      d[i*2]=val&0xff;
+      d[i*2+1]=(val>>8)&0xff;
+    }
+  }
+
+  pcm->bits=16;
+  pcm->size/=3;
+  pcm->size*=2;
+}
+
+void promote_to_24(pcm_t *pcm){
+  off_t i;
+  unsigned char *ret=realloc(pcm->data,pcm->size*3/2);
+  if(!ret){
+    fprintf(stderr,"Unable to allocate memory while promoting file to 24 bit\n");
+    exit(5);
+  }
+  pcm->data=ret;
+  for(i=pcm->size/2-1;i>=0;i--){
+    ret[i*3+2]=ret[i*2+1];
+    ret[i*3+1]=ret[i*2];
+    ret[i*3]=0;
+  }
+  pcm->bits=24;
+  pcm->size/=2;
+  pcm->size*=3;
+}
+
+void convert_to_16(pcm_t *pcm){
+  switch(pcm->bits){
+  case 16:
+    break;
+  case 24:
+    demote_24_to_16(pcm);
+    break;
+  case -32:
+    float32_to_16(pcm);
+    break;
+  default:
+    fprintf(stderr,"%s: Unsupported sample format.\n",pcm->path);
+    exit(6);
+  }
+}
+
+void convert_to_24(pcm_t *pcm){
+  switch(pcm->bits){
+  case 16:
+    promote_to_24(pcm);
+    break;
+  case 24:
+    break;
+  case -32:
+    float32_to_24(pcm);
+    break;
+  default:
+    fprintf(stderr,"%s: Unsupported sample format.\n",pcm->path);
+    exit(6);
+  }
+}
+
+const char *chlist[]={"M","L","R","C","LFE","SL","SR","BC","BL","BR","CL","CR","X",NULL};
+void tokenize_channels(char *matrix,int *out,int n){
+  int i=0;
+  char *t=strtok(matrix,",");
+  memset(out,0,sizeof(*out)*n);
+
+  while(t){
+    int j=0;
+    while(chlist[j]){
+      if(!strcmp(chlist[j],t))break;
+      j++;
+    }
+    out[i]=j;
+    i++;
+    t=strtok(NULL,",");
+  }
+}
+
+/* pre-permute sample ordering so that playback incurs ~equal
+   CPU/memory/etc load during playback */
+/* A and B must have machine sample formats */
+void reconcile_channel_maps(pcm_t *A, pcm_t *B){
+  /* arbitrary; match B to A */
+  int ai[A->ch],bi[A->ch];
+  int i,j,k;
+  off_t o;
+  int bps = (B->bits+7)/8;
+  int bpf = B->ch*bps;
+  int p[bpf];
+  unsigned char temp[bpf];
+  unsigned char *d;
+
+  tokenize_channels(A->matrix,ai,A->ch);
+  tokenize_channels(B->matrix,bi,A->ch);
+
+  for(i=0;i<A->ch;i++){
+    for(j=0;j<A->ch;j++){
+      if(bi[i]==ai[j]){
+        for(k=0;k<bps;k++)
+          p[i*bps+k]=j*bps+k;
+        break;
+      }
+    }
+  }
+
+  d=B->data;
+  for(o=0;o<B->size;){
+    for(i=0;i<bpf;i++)
+      temp[p[i]]=d[i];
+    memcpy(d,temp,bpf);
+    d+=bpf;
+  }
+
+  free(B->matrix);
+  B->matrix = strdup(A->matrix);
+}
+
+ao_device *setup_playback(int rate, int ch, int bits, char *matrix, char *device){
+  ao_option aoe={0,0,0};
+  ao_device *ret=NULL;
+  ao_sample_format sf;
+  char *aname="";
+  sf.rate=rate;
+  sf.channels=ch;
+  sf.bits=bits;
+  sf.byte_format=AO_FMT_LITTLE;
+  sf.matrix=(ch>2?matrix:0);
+  aoe.key="quiet";
+
+  if(!device){
+    /* if we don't have an explicit device, defaults make this easy */
+    int id = ao_default_driver_id();
+    aname=ao_driver_info(id)->short_name;
+    ret=ao_open_live(id, &sf, &aoe);
+  }else{
+    /* Otherwise... there's some hunting to do. */
+    /* Is the passed device a number or a name? */
+    char *test;
+    int count;
+    ao_info **info_list=ao_driver_info_list(&count); 
+    int number=strtol(device,&test,10);
+    int i;
+
+    if(!device[0] || test[0]) number=-1;
+
+    /* driver info list is sorted by priority */
+    for(i=0;i<count;i++){
+      int j;
+      ao_info *info=info_list[i];
+      ao_option ao={0,0,0};
+      ao_option aoe={0,0,0};
+      int id = ao_driver_id(info->short_name);
+      char buf[80];
+
+      sprintf(buf,"%d",number);
+        ao.key=(number>=0?"id":"dev");
+      ao.value=(number>=0?buf:device);
+      ao.next=&aoe;
+      aname=info->short_name;
+
+      /* don't try to open the driver if it doesn't have the device/id
+         option; it will ignore the option and try to open its default */
+      for(j=0;j<info->option_count;j++)
+        if(!strcmp(info->options[j],ao.key))break;
+      if(j<info->option_count)
+        if((ret=ao_open_live(id,&sf,&ao)))break;
+    }
+  }
+  if(ret && verbose)
+    fprintf(stderr,"Opened %s%s audio device %s%sfor %d bit %d channel %d Hz...\n",
+            (device?"":"default "),aname,
+            (device?device:""),(device?" ":""),bits,ch,rate);
+
+  return ret;
+}
+
+struct option long_options[] = {
+  {"ab",no_argument,0,'a'},
+  {"abx",no_argument,0,'b'},
+  {"card",required_argument,0,'c'},
+  {"force-dither",no_argument,0,'d'},
+  {"end-time",no_argument,0,'e'},
+  {"help",no_argument,0,'h'},
+  {"comparisons",required_argument,0,'n'},
+  {"restart-mode",no_argument,0,'r'},
+  {"start-time",required_argument,0,'s'},
+  {"force-truncate",no_argument,0,'t'},
+  {"verbose",no_argument,0,'v'},
+  {"version",no_argument,0,'V'},
+  {"xxy",no_argument,0,'x'},
+  {0,0,0,0}
+};
+char *short_options="abc:de:hn:rs:tvVx";
+
+void usage(FILE *out){
+  fprintf(out,
+          "\nXiph.Org Squishyball %s\n"
+          "performs simple A/B, A/B/X and X/X/Y sample comparison\n"
+          "testing on the command line\n\n"
+          "USAGE:\n"
+          "  squishyball [options] fileA fileB\n\n"
+          "OPTIONS:\n"
+          "  -a --ab                : Perform randomized A/B test\n"
+          "  -b --abx               : Perform A/B/X test (default)\n"
+          "  -c --card <N|device>   : If a number, output to Nth\n"
+          "                           sound device.  If a device name,\n"
+          "                           use output driver/device matching\n"
+          "                           that device name.\n"
+          "  -d --force-dither      : Always use dither when converting\n"
+          "                           to 16 bit for playback on output\n"
+          "                           devices that do not support 24 bit\n"
+          "                           playback. Currently only affects\n"
+          "                           Vorbis playback; all other files\n"
+          "                           a dithered by default during down-\n"
+          "                           conversion.\n"
+          "  -e --end-time <time>   : Set sample end time for playback\n"
+          "  -h --help              : Print this usage information.\n"
+          "  -n --comparisons <n>   : Set desired number of comparisons\n"
+          "                           (default: 10)\n"
+          "  -r --restart-mode      : Set 'restart mode', where sample\n"
+          "                           playback restarts from start point\n"
+          "                           after every test selection\n"
+          "  -s --start-time <time> : Set start time within sample for\n"
+          "                           playback\n"
+          "  -t --force-truncate    : Always truncate (never dither) when\n"
+          "                           dwon-converting samples to 16 bit for\n"
+          "                           playback.\n"
+          "  -v --verbose           : Produce more progress information.\n"
+          "  -V --version           : Print version and exit.\n"
+          "  -x --xxy               : Perform X/X/Y testing; This is\n"
+          "                           similar to A/B/X testing but A and\n"
+          "                           B are unknown. Instead of choosing\n"
+          "                           if X matches A or B, choose the\n"
+          "                           sample that does not match the other\n"
+          "                           two.\n"
+          "\n"
+          "INTERACTION:\n"
+          "  a b x  : Switch between A and B samples (A/B mode), or A, B\n"
+          "           and X samples (A/B/X mode)\n"
+          "   A B   : Select A or B as preferred sample (A/B mode), or\n"
+          "           sample A or sample B as match to sample X (A/B/X\n"
+          "           testing mode)\n"
+          "  1 2 3  : Switch between first second and third samples\n"
+          "           (X/X/Y testing mode)\n"
+          "  ! @ #  : Indicate the 'odd sample out' as sample 1, 2, or 3\n"
+          "           (X/X/Y testing mode)\n"
+          "  <- ->  : seek back/forward one second\n"
+          "           +shift or five seconds\n"
+          "           +control for 15 seconds\n"
+          "           +meta for one minute\n"
+          " <space> : Pause/resume playback\n"
+          "<bckspce>: Reset playback to start point\n"
+          "    e    : set end playback point to current playback time\n"
+          "           (see also -e above)\n"
+          "    E    : reset end playback time to end of sample\n"
+          "    r    : enable restart mode, where each comparison begins\n"
+          "           from the start time of the sample (see -r above)\n"
+          "    R    : clear restart mode; playback continues without\n"
+          "           interruption after each comparison\n"
+          "    s    : set start playback point to current playback time\n"
+          "           (see also -s above)\n"
+          "    S    : reset start playback time to 0:00:00.00\n"
+          "    ?    : Print this keymap\n"
+          "  Ctrl-C : Abort test early\n"
+          "\n"
+          "SUPPORTED FILE TYPES:\n"
+          "  WAV and WAVEX    : 8, 16, 24 bit linear integer PCM (format 1)\n"
+          "                     32 bit float (format 3)\n"
+          "  AIFF and AIFC    : 8, 16, 24 bit linear integer PCM\n"
+          "  FLAC and OggFLAC : 16 and 24 bit\n"
+          "  SW               : mono signed 16 bit little endian raw\n"
+          "  OggVorbis        : all Vorbis I files\n"
+          "\n"
+          ,VERSION);
+}
+
+static char timebuffer[80];
+static char *make_time_string(double s){
+  long hrs=s/60/60;
+  long min=s/60-hrs*60;
+  long sec=s-hrs*60*60-min*60;
+  long hsec=(s-(int)s)*100;
+  if(hrs>0){
+    snprintf(timebuffer,80,"%ld:%02ld:%02ld.%02ld",hrs,min,sec,hsec);
+  }else if(min>0){
+    snprintf(timebuffer,80,"%ld:%02ld.%02ld",min,sec,hsec);
+  }else{
+    snprintf(timebuffer,80,"%ld.%02ld",sec,hsec);
+  }
+  return timebuffer;
+}
+
+static int parse_time(char *s,double *t){
+  double      secf;
+  long        secl;
+  const char *pos;
+  char       *end;
+  int         err;
+  err=0;
+  secl=0;
+  pos=strchr(optarg,':');
+  if(pos!=NULL){
+    char *pos2;
+    secl=strtol(optarg,&end,10)*60;
+    err|=pos!=end;
+    pos2=strchr(++pos,':');
+    if(pos2!=NULL){
+      secl=(secl+strtol(pos,&end,10))*60;
+      err|=pos2!=end;
+      pos=pos2+1;
+    }
+  }
+  else pos=optarg;
+  secf=strtod(pos,&end);
+  if(err||*end!='\0')return -1;
+
+  *t = secl+secf;
+  return 0;
+}
+
+int main(int argc, char **argv){
+  int c,long_option_index;
+  pcm_t *A=NULL;
+  pcm_t *B=NULL;
+  int test_mode=1;
+  char *device=NULL;
+  int force_dither=0;
+  int force_truncate=0;
+  int restart_mode=0;
+  int tests=10;
+  double start=0;
+  double end=-1;
+  int outbits=0;
+  ao_device *adev=NULL;
+  int decode_to_16=0;
+  /* parse options */
+
+  while((c=getopt_long(argc,argv,short_options,long_options,&long_option_index))!=EOF){
+    switch(c){
+    case 'h':
+      usage(stdout);
+      return 0;
+    case 'a':
+      test_mode=0;
+      break;
+    case 'b':
+      test_mode=1;
+      break;
+    case 'x':
+      test_mode=2;
+      break;
+    case 'c':
+      device=strdup(optarg);
+      break;
+    case 'd':
+      force_dither=1;
+      force_truncate=0;
+      break;
+    case 't':
+      force_dither=0;
+      force_truncate=1;
+      break;
+    case 'n':
+      tests=atoi(optarg);
+      if(tests<1){
+        fprintf(stderr,"Error parsing argument to -n\n");
+        exit(1);
+      }
+      break;
+    case 'e':
+      parse_time(optarg,&end);
+      break;
+    case 's':
+      parse_time(optarg,&start);
+      break;
+    case 'r':
+      restart_mode=1;
+      break;
+    case 'v':
+      verbose=1;
+      break;
+    case 'V':
+      fprintf(stdout,"%s\n",VERSION);
+      exit(0);
+    default:
+      usage(stderr);
+      exit(1);
+    }
+  }
+
+  if(argc-optind!=2){
+    usage(stderr);
+    exit(1);
+  }
+
+  A=load_audio_file(argv[optind]);
+  if(A)
+    B=load_audio_file(argv[optind+1]);
+  if(!B)
+    exit(2);
+
+  /* An overloaded invariant: Only lossy samples that decode to float
+     (eg, Ogg Vorbis) will have bits==-32 but dither set to 0.  If one
+     input sample is 16 bit and the other is -32/0, we want the floats
+     to render down to 16 bit, not 24 bit */
+  if((A->bits==16 && B->bits==-32 && B->dither==0) ||
+     (B->bits==16 && A->bits==-32 && A->dither==0))
+    decode_to_16=1;
+
+  if(!A->dither && force_dither)A->dither=1;
+  if(!B->dither && force_dither)B->dither=1;
+  if(A->bits!=16 && force_truncate)A->dither=0;
+  if(B->bits!=16 && force_truncate)B->dither=0;
+
+  /* Are the samples the same rate?  If not, bail. */
+  if(A->rate != B->rate){
+    fprintf(stderr,"Input sample rates do not match!\n"
+            "\t%s: %dHz\n"
+            "\t%s: %dHz\n"
+            "Aborting\n",A->path,A->rate,B->path,B->rate);
+    exit(3);
+  }
+
+  /* Are the samples the same number of channels?  If not, bail. */
+  if(A->ch != B->ch){
+    fprintf(stderr,"Input channel counts do not match!\n"
+            "\t%s: %dHz\n"
+            "\t%s: %dHz\n"
+            "Aborting\n",A->path,A->ch,B->path,B->ch);
+    exit(3);
+  }
+
+  if(decode_to_16){
+    convert_to_16(A);
+    convert_to_16(B);
+  }
+
+  /* before proceeding, make sure we can open up playback for the
+     requested number of channels and max bit depth; if not, we may
+     need to downconvert. */
+  outbits = abs(A->bits);
+  if(abs(B->bits)>outbits)outbits=abs(B->bits);
+  if(outbits==32)outbits=24;
+
+  /* See if we can get playback with desired bit-depth/channels */
+  ao_initialize();
+  if((adev=setup_playback(A->rate,A->ch,outbits,A->matrix,device))==NULL){
+    /* If opening playback failed for 24 bit, try for 16 */
+    if(outbits>16){
+      if((adev=setup_playback(A->rate,A->ch,16,A->matrix,device))==NULL){
+        fprintf(stderr,"Unable to open audio device for playback.\n");
+        exit(4);
+      }else{
+        if(verbose)
+          fprintf(stderr,"24 bit playback unavailable; down-converting to 16 bit\n");
+
+        /* demote to 16 bit playback right now */
+        convert_to_16(A);
+        convert_to_16(B);
+
+      }
+    }else{
+      fprintf(stderr,"Unable to open audio device for playback.\n");
+      exit(4);
+    }
+  }
+
+  /* Do we need to reconcile sample depths? */
+  if(A->bits!=B->bits || A->bits<0 || B->bits<0){
+    convert_to_24(A);
+    convert_to_24(B);
+  }
+
+  /* Sanity check channel matrices. */
+  if(A->ch>2){
+    if(!A->matrix || !B->matrix){
+      if(A->matrix){
+        if(verbose)
+          fprintf(stderr,"%s: No explicit output channel ordering determined.  Using output\n"
+                  "\tmatrix from %s.\n",B->path,A->path);
+        B->matrix = strdup(A->matrix);
+      }else if (B->matrix){
+        if(verbose)
+          fprintf(stderr,"%s: No explicit output channel ordering determined.  Using output\n"
+                  "\tmatrix from %s.\n",A->path,B->path);
+        A->matrix = strdup(B->matrix);
+      }else{
+        if(verbose)
+          fprintf(stderr,"Neither sample specifies an output channel ordering;\n"
+                  "\ttossing samples at sound card, hoping something reasonable happens.\n");
+      }
+    }else{
+      /* permute/reconcile the matrices before playback begins */
+      if(strcmp(A->matrix,B->matrix))
+        reconcile_channel_maps(A,B);
+    }
+  }
+
+  /* Are the samples the same length?  If not, warn and choose the shorter. */
+  if(A->size!=B->size){
+    if(verbose){
+      fprintf(stderr,"Input sample lengths do not match!\n");
+      fprintf(stderr,"\t%s: %s\n",A->path,make_time_string((double)A->size/A->ch/((A->bits+7)/8)/A->rate));
+      fprintf(stderr,"\t%s: %s\n",B->path,make_time_string((double)B->size/B->ch/((B->bits+7)/8)/B->rate));
+      fprintf(stderr,"Using the shorter sample for playback length...\n");
+    }
+    if(A->size>B->size)
+      A->size=B->size;
+    else
+      B->size=A->size;
+  }
+
+  /* playback loop */
+
+
+
+
+
+
+  /* done */
+  ao_close(adev);
+  ao_shutdown();
+  return 0;
+}
