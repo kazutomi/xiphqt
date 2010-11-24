@@ -16,6 +16,10 @@ AC_PROG_CC
 PKG_CHECK_MODULES([vorbisfile], [vorbisfile])
 PKG_CHECK_MODULES([FLAC], [flac >= 0.8.0])
 PKG_CHECK_MODULES([ao], [ao > 1.0.0])
+AC_CHECK_LIB([ncurses], [initscr],,[AC_MSG_ERROR([ncurses required!])])
+AC_CHECK_LIB([ncurses], [_nc_tinfo_fkeysf], USE_FKEYSF=1, USE_FKEYSF=0)
+AC_CHECK_LIB([m], [cos])
+AC_CHECK_LIB([pthread], [pthread_create])
 
 # Checks for header files.
 AC_HEADER_STDC
@@ -69,9 +73,11 @@ else
                 ;;
         esac
 fi
-CFLAGS="$CFLAGS $cflags_save -DVERSION='\"$VERSION\"' $vorbisfile_CFLAGS $ao_CFLAGS $FLAC_CFLAGS"
-DEBUG="$DEBUG $cflags_save -DVERSION='\\\"$VERSION\\\"' $vorbisfile_CFLAGS $ao_CFLAGS $FLAC_CFLAGS"
-PROFILE="$PROFILE $cflags_save -DVERSION='\\\"$VERSION\\\"' $vorbisfile_CFLAGS $ao_CFLAGS $FLAC_CFLAGS"
+
+COMMON_FLAGS="$cflags_save $vorbisfile_CFLAGS $ao_CFLAGS $FLAC_CFLAGS -DUSE_FKEYSF=$USE_FKEYSF"
+CFLAGS="$CFLAGS -DVERSION='\"$VERSION\"' $COMMON_FLAGS"
+DEBUG="$DEBUG -DVERSION='\\\"$VERSION\\\"' $COMMON_FLAGS"
+PROFILE="$PROFILE -DVERSION='\\\"$VERSION\\\"' $COMMON_FLAGS"
 LIBS="$LIBS $vorbisfile_LIBS $ao_LIBS $FLAC_LIBS"
 AC_SUBST(DEBUG)
 AC_SUBST(PROFILE)

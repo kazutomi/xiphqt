@@ -1,4 +1,7 @@
 #define _GNU_SOURCE
+#define _LARGEFILE_SOURCE
+#define _LARGEFILE64_SOURCE
+#define _FILE_OFFSET_BITS 64
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -8,7 +11,16 @@
 #include <ao/ao.h>
 #include <FLAC/stream_decoder.h>
 #include <getopt.h>
+#include <poll.h>
+#include <pthread.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <time.h>
+#include <ncurses.h>
+#include "mincurses.h"
+#include "tty.h"
 
+#define MAXFILES 10
 static int verbose=0;
 
 static inline int host_is_big_endian() {
@@ -29,7 +41,7 @@ struct pcm_struct {
   int bits; /* negative indicates IEEE754 float */
   int ch;
   char *matrix;
-  void *data;
+  unsigned char *data;
   off_t size;
   int dither;
 };
@@ -274,7 +286,7 @@ pcm_t *wav_load(char *path, FILE *in){
 
   }else{
     fprintf(stderr,
-            "%s: Wav file is unsupported subformat (must be 8,16, or 24 bit PCM\n"
+            "%s: Wav file is unsupported subformat (must be 8,16, or 24-bit PCM\n"
             "or floating point PCM\n",path);
     goto err;
   }
@@ -282,7 +294,7 @@ pcm_t *wav_load(char *path, FILE *in){
   /* read the samples into memory */
   switch(pcm->bits){
   case 8:
-    /* load as 8 bit, expand it out to 16. */
+    /* load as 8-bit, expand it out to 16. */
     pcm->data = calloc(1,pcm->size*2);
     break;
   case 24:
@@ -321,7 +333,7 @@ pcm_t *wav_load(char *path, FILE *in){
       pcm->size=j;
     }
 
-    /* 8 bit must be expanded to 16 */
+    /* 8-bit must be expanded to 16 */
     if(samplesize==8){
       off_t j;
       unsigned char *d = pcm->data;
@@ -466,7 +478,7 @@ pcm_t *aiff_load(char *path, FILE *in){
   case 3:
     pcm->matrix = strdup("L,R,C");
     break;
-  case 4:
+  default:
     pcm->matrix = strdup("L,R,BL,BR");
     break;
   }
@@ -509,7 +521,7 @@ pcm_t *aiff_load(char *path, FILE *in){
       !(pcm->bits==24 || pcm->bits == 16 || pcm->bits == 8)){
     fprintf(stderr,
             "%s: Unsupported type of AIFF/AIFC file\n"
-            " Must be 8, 16 or 24 bit integer PCM.\n",path);
+            " Must be 8-, 16- or 24-bit integer PCM.\n",path);
     goto err;
   }
 
@@ -518,7 +530,7 @@ pcm_t *aiff_load(char *path, FILE *in){
   /* read the samples into memory */
   switch(pcm->bits){
   case 8:
-    /* load as 8 bit, expand it out to 16. */
+    /* load as 8-bit, expand it out to 16. */
     pcm->data = calloc(1,pcm->size*2);
     break;
   case 24:
@@ -550,7 +562,7 @@ pcm_t *aiff_load(char *path, FILE *in){
       pcm->size=j;
     }
 
-    /* 8 bit must be expanded to 16 */
+    /* 8-bit must be expanded to 16 */
     switch(pcm->bits){
     case 8:
       for(j=pcm->size-1;j>=0;j--){
@@ -595,6 +607,7 @@ pcm_t *sw_load(char *path, FILE *in){
   pcm->bits=16;
   pcm->ch=1;
   pcm->rate=48000;
+  pcm->matrix=strdup("M");
 
   if(fseek(in,0,SEEK_END)==-1){
     fprintf(stderr,"%s: Failed to seek\n",path);
@@ -723,7 +736,7 @@ FLAC__StreamDecoderWriteStatus write_callback(const FLAC__StreamDecoder *decoder
         }
       break;
     default:
-      fprintf(stderr,"\r%s: Only 16 and 24 bit FLACs are supported for decode right now.\n",pcm->path);
+      fprintf(stderr,"\r%s: Only 16- and 24-bit FLACs are supported for decode right now.\n",pcm->path);
       return FLAC__STREAM_DECODER_WRITE_STATUS_ABORT;
     }
   }
@@ -1155,7 +1168,7 @@ void promote_to_24(pcm_t *pcm){
   off_t i;
   unsigned char *ret=realloc(pcm->data,pcm->size*3/2);
   if(!ret){
-    fprintf(stderr,"Unable to allocate memory while promoting file to 24 bit\n");
+    fprintf(stderr,"Unable to allocate memory while promoting file to 24-bit\n");
     exit(5);
   }
   pcm->data=ret;
@@ -1201,7 +1214,7 @@ void convert_to_24(pcm_t *pcm){
   }
 }
 
-const char *chlist[]={"M","L","R","C","LFE","SL","SR","BC","BL","BR","CL","CR","X",NULL};
+const char *chlist[]={"X","M","L","R","C","LFE","SL","SR","BC","BL","BR","CL","CR",NULL};
 void tokenize_channels(char *matrix,int *out,int n){
   int i=0;
   char *t=strtok(matrix,",");
@@ -1320,98 +1333,98 @@ ao_device *setup_playback(int rate, int ch, int bits, char *matrix, char *device
 struct option long_options[] = {
   {"ab",no_argument,0,'a'},
   {"abx",no_argument,0,'b'},
-  {"card",required_argument,0,'c'},
-  {"force-dither",no_argument,0,'d'},
+  {"beep-flip",no_argument,0,'B'},
+  {"casual",no_argument,0,'c'},
+  {"device",required_argument,0,'d'},
+  {"force-dither",no_argument,0,'D'},
   {"end-time",no_argument,0,'e'},
   {"help",no_argument,0,'h'},
-  {"comparisons",required_argument,0,'n'},
-  {"restart-mode",no_argument,0,'r'},
+  {"mark-flip",no_argument,0,'M'},
+  {"trials",required_argument,0,'n'},
+  {"restart-after",no_argument,0,'r'},
+  {"restart-every",no_argument,0,'R'},
   {"start-time",required_argument,0,'s'},
+  {"seamless-flip",no_argument,0,'S'},
   {"force-truncate",no_argument,0,'t'},
   {"verbose",no_argument,0,'v'},
   {"version",no_argument,0,'V'},
   {"xxy",no_argument,0,'x'},
   {0,0,0,0}
 };
-char *short_options="abc:de:hn:rs:tvVx";
+char *short_options="abcd:De:hn:rRs:tvVxBMS";
 
 void usage(FILE *out){
   fprintf(out,
-          "\nXiph.Org Squishyball %s\n"
-          "performs simple A/B, A/B/X and X/X/Y sample comparison\n"
-          "testing on the command line\n\n"
+          "\nXiph Squishyball %s\n"
+          "perform sample comparison testing on the command line\n\n"
           "USAGE:\n"
-          "  squishyball [options] fileA fileB\n\n"
+          "  squishyball [options] fileA [fileB [[-c] fileN...]]\n\n"
           "OPTIONS:\n"
           "  -a --ab                : Perform randomized A/B test\n"
-          "  -b --abx               : Perform A/B/X test (default)\n"
-          "  -c --card <N|device>   : If a number, output to Nth\n"
+          "  -b --abx               : Perform randomized A/B/X test\n"
+          "  -B --beep-flip         : Mark transitions between samples with\n"
+          "                           a short beep\n"
+          "  -c --casual            : casual mode; load up to ten\n"
+          "                           samples for non-randomized\n"
+          "                           comparison without trials (default).\n"
+          "  -d --device <N|dev>    : If a number, output to Nth\n"
           "                           sound device.  If a device name,\n"
           "                           use output driver/device matching\n"
           "                           that device name.\n"
-          "  -d --force-dither      : Always use dither when converting\n"
-          "                           to 16 bit for playback on output\n"
-          "                           devices that do not support 24 bit\n"
+          "  -D --force-dither      : Always use dither when converting\n"
+          "                           to 16-bit for playback on output\n"
+          "                           devices that do not support 24-bit\n"
           "                           playback. Currently only affects\n"
           "                           Vorbis playback; all other files\n"
           "                           a dithered by default during down-\n"
           "                           conversion.\n"
           "  -e --end-time <time>   : Set sample end time for playback\n"
           "  -h --help              : Print this usage information.\n"
-          "  -n --comparisons <n>   : Set desired number of comparisons\n"
+          "  -M --mark-flip         : Mark transitions between samples with\n"
+          "                           a short period of silence (default)\n"
+          "  -n --trials <n>        : Set desired number of trials\n"
           "                           (default: 10)\n"
-          "  -r --restart-mode      : Set 'restart mode', where sample\n"
-          "                           playback restarts from start point\n"
-          "                           after every test selection\n"
+          "  -r --restart-after     : Restart playback from sample start\n"
+          "                           after every trial.\n"
+          "  -R --restart-every     : Restart playback from sample start\n"
+          "                           after every 'flip' as well as after\n"
+          "                           every trial.\n"
           "  -s --start-time <time> : Set start time within sample for\n"
           "                           playback\n"
+          "  -S --seamless-flip     : Do not mark transitions between samples;\n"
+          "                           flip with a seamless crossfade\n"
           "  -t --force-truncate    : Always truncate (never dither) when\n"
-          "                           dwon-converting samples to 16 bit for\n"
+          "                           down-converting samples to 16-bit for\n"
           "                           playback.\n"
           "  -v --verbose           : Produce more progress information.\n"
           "  -V --version           : Print version and exit.\n"
-          "  -x --xxy               : Perform X/X/Y testing; This is\n"
-          "                           similar to A/B/X testing but A and\n"
-          "                           B are unknown. Instead of choosing\n"
-          "                           if X matches A or B, choose the\n"
-          "                           sample that does not match the other\n"
-          "                           two.\n"
+          "  -x --xxy               : Perform randomized X/X/Y test.\n"
           "\n"
           "INTERACTION:\n"
-          "  a b x  : Switch between A and B samples (A/B mode), or A, B\n"
-          "           and X samples (A/B/X mode)\n"
-          "   A B   : Select A or B as preferred sample (A/B mode), or\n"
-          "           sample A or sample B as match to sample X (A/B/X\n"
-          "           testing mode)\n"
-          "  1 2 3  : Switch between first second and third samples\n"
-          "           (X/X/Y testing mode)\n"
-          "  ! @ #  : Indicate the 'odd sample out' as sample 1, 2, or 3\n"
-          "           (X/X/Y testing mode)\n"
-          "  <- ->  : seek back/forward one second\n"
-          "           +shift or five seconds\n"
-          "           +control for 15 seconds\n"
-          "           +meta for one minute\n"
-          " <space> : Pause/resume playback\n"
-          "<bckspce>: Reset playback to start point\n"
-          "    e    : set end playback point to current playback time\n"
-          "           (see also -e above)\n"
-          "    E    : reset end playback time to end of sample\n"
-          "    r    : enable restart mode, where each comparison begins\n"
-          "           from the start time of the sample (see -r above)\n"
-          "    R    : clear restart mode; playback continues without\n"
-          "           interruption after each comparison\n"
-          "    s    : set start playback point to current playback time\n"
-          "           (see also -s above)\n"
-          "    S    : reset start playback time to 0:00:00.00\n"
-          "    ?    : Print this keymap\n"
-          "  Ctrl-C : Abort test early\n"
+          "   a b x   : Switch playback between A, B [and X] samples.\n"
+          "    A B    : Choose A or B sample for A/B[/X] trial result.\n"
+          "  1 2 3... : Switch between first, second, etc samples.\n"
+          "   ! @ #   : Choose sample 1, 2, or 3 for X/X/Y trial result.\n"
+          "<ins> <del>: Undo/redo last trial result selection.\n"
+          "  <enter>  : Choose current sample for this trial\n"
+          "   <- ->   : seek back/forward two seconds, +shift for 10 seconds\n"
+          "  <space>  : Pause/resume playback\n"
+          " <backspc> : Reset playback to start point\n"
+          "     e     : set end playback point to current playback time.\n"
+          "     E     : reset end playback time to end of sample\n"
+          "     F     : Toggle through beep-flip/mark-flip/seamless-flip modes.\n"
+          "     r     : Toggle through restart-after/restart-every/no-restart.\n"
+          "     s     : set start playback point to current playback time.\n"
+          "     S     : reset start playback time to 0:00:00.00\n"
+          "     ?     : Print this keymap\n"
+          "    ^-c    : Quit\n"
           "\n"
           "SUPPORTED FILE TYPES:\n"
-          "  WAV and WAVEX    : 8, 16, 24 bit linear integer PCM (format 1)\n"
+          "  WAV and WAVEX    : 8-, 16-, 24-bit linear integer PCM (format 1)\n"
           "                     32 bit float (format 3)\n"
-          "  AIFF and AIFC    : 8, 16, 24 bit linear integer PCM\n"
-          "  FLAC and OggFLAC : 16 and 24 bit\n"
-          "  SW               : mono signed 16 bit little endian raw\n"
+          "  AIFF and AIFC    : 8-, 16-, 24-bit linear integer PCM\n"
+          "  FLAC and OggFLAC : 16- and 24-bit\n"
+          "  SW               : mono signed 16-bit little endian raw\n"
           "  OggVorbis        : all Vorbis I files\n"
           "\n"
           ,VERSION);
@@ -1461,21 +1474,427 @@ static int parse_time(char *s,double *t){
   return 0;
 }
 
+float *fadewindow1;
+float *fadewindow2;
+float *fadewindow3;
+float *beep1;
+float *beep2;
+
+void put_val(unsigned char *d,int bps,float v){
+  int i = rint(v);
+  d[0]=i&0xff;
+  d[1]=(i>>8)&0xff;
+  if(bps==24)
+    d[2]=(i>>16)&0xff;
+}
+
+float get_val(unsigned char *d, int bps){
+  if(bps==16){
+    short i = d[0] | (d[1]<<8);
+    return (float)i;
+  }else{
+    int32_t i = ((d[0]<<8) | (d[1]<<16) | (d[2]<<24))>>8;
+    return (float)i;
+  }
+}
+
+int setup_windows(pcm_t **pcm, int test_files){
+  int i;
+  int fragsamples = pcm[0]->rate/20;  /* 50ms */
+
+  /* precompute the fades/beeps */
+  fadewindow1 = calloc(fragsamples,sizeof(*fadewindow1));
+  fadewindow2 = calloc(fragsamples,sizeof(*fadewindow2));
+  fadewindow3 = calloc(fragsamples,sizeof(*fadewindow3));
+  beep1 = calloc(fragsamples,sizeof(*beep1));
+  beep2 = calloc(fragsamples,sizeof(*beep2));
+
+  if(!fadewindow1 ||
+     !fadewindow2 ||
+     !fadewindow3 ||
+     !beep1 ||
+     !beep2)
+    exit(9);
+
+  /* fadewindow1 is a larger simple crossfade */
+  for(i=0;i<fragsamples;i++){
+    float val = cosf(M_PI*.5f*(i+.5f)/fragsamples);
+    fadewindow1[i] = val*val;
+  }
+
+  /* fadewindow2 goes to silence and back */
+  for(i=0;i<fragsamples/3;i++){
+    float val = cosf(M_PI*1.5f*(i+.5f)/fragsamples);
+    fadewindow2[i] = val*val;
+  }
+  for(;i<fragsamples;i++)
+    fadewindow2[i] = 0.f;
+
+  /* fadewindow3 crossfades with attenuation to give headroom for a beep */
+  for(i=0;i<fragsamples/4;i++){
+    float val = cosf(M_PI*2.f*(i+.5f)/fragsamples);
+    fadewindow3[i] = val*val*.875f+.125f;
+  }
+  for(;i<fragsamples*3/4;i++)
+    fadewindow3[i] = .125f;
+  for(;i<fragsamples;i++){
+    float val = cosf(M_PI*2.f*(i-fragsamples*3/4+.5f)/fragsamples);
+    fadewindow3[i] = val*val*.125f;
+  }
+
+  /* Single beep for flipping */
+  for(i=0;i<fragsamples/4;i++){
+    beep1[i]=0.;
+    beep1[fragsamples-i-1]=0.;
+  }
+  float base = 3.14159f*2.f*500./pcm[0]->rate;
+  for(;i<fragsamples*3/4;i++){
+    float f = i-fragsamples/4+.5;
+    float w = cos(3.14159f*f/fragsamples);
+    float b =
+      sin(f*base)+
+      sin(f*base*3)*.33+
+      sin(f*base*5)*.2+
+      sin(f*base*7)*.14+
+      sin(f*base*9)*.11;
+    w*=w;
+    beep1[i] = w*b*.125;
+  }
+
+  /* Double beep for selection */
+  for(i=0;i<fragsamples/4;i++){
+    beep2[i]=0.;
+    beep2[fragsamples-i-1]=0.;
+  }
+  for(;i<fragsamples/2;i++){
+    float f = i-fragsamples/4+.5;
+    float w = cos(3.14159f*2.*f/fragsamples);
+    float b =
+      sin(f*base)+
+      sin(f*base*3)*.33+
+      sin(f*base*5)*.2+
+      sin(f*base*7)*.14+
+      sin(f*base*9)*.11;
+    w*=w;
+    beep2[i] = w*b*.125;
+  }
+  base = 3.14159f*2.f*1000./pcm[0]->rate;
+  for(;i<fragsamples*3/4;i++){
+    float f = i-fragsamples/2+.5;
+    float w = cos(3.14159f*2.*f/fragsamples);
+    float b =
+      sin(f*base)+
+      sin(f*base*3)*.33+
+      sin(f*base*5)*.2+
+      sin(f*base*7)*.14+
+      sin(f*base*9)*.11;
+    w*=w;
+    beep2[i] = w*b*.125;
+  }
+
+  /* make sure that the samples are at least fragsamples*2 in length! If they're not, extend... */
+  if(pcm[0]->size<fragsamples*2){
+    int fadesize = pcm[0]->size/4;
+    int bps = (pcm[0]->bits+7)/8;
+    int ch = pcm[0]->ch;
+    int bpf = bps*ch;
+
+    for(i=0;i<test_files;i++){
+      int j,k;
+      unsigned char *newd=calloc(fadesize,bpf);
+      if(!newd){
+        fprintf(stderr,"Unable to allocate memory to extend sample to minimum length.\n");
+        exit(5);
+      }
+      memcpy(newd,pcm[i]->data,fragsamples*2*bpf);
+      free(pcm[i]->data);
+      pcm[i]->data=newd;
+
+      newd+=pcm[i]->size-fadesize;
+      for(j=0;j<fadesize;j++){
+        float v = cosf(M_PI*.5f*(i+.5f)/fadesize);
+        for(k=0;k<ch;k++){
+          put_val(newd,bps,v * get_val(newd,bps));
+          newd+=bps;
+        }
+      }
+      pcm[i]->size=fragsamples*2;
+    }
+  }
+  return fragsamples;
+}
+
+typedef struct {
+  pthread_mutex_t mutex;
+  pthread_cond_t main_cond;
+  pthread_cond_t play_cond;
+  pthread_cond_t key_cond;
+  int exiting;
+
+  ao_device *adev;
+  unsigned char *fragment;
+  int fragment_size;
+  int key_waiting;
+} threadstate_t;
+
+/* playback is a degenerate thread that simply allows audio output
+   without blocking */
+void *playback_thread(void *arg){
+  threadstate_t *s = (threadstate_t *)arg;
+  ao_device *adev = s->adev;
+
+  pthread_mutex_lock(&s->mutex);
+  while(1){
+    if(s->exiting){
+      pthread_mutex_unlock(&s->mutex);
+      break;
+    }
+    if(s->fragment_size){
+      int ret;
+      unsigned char *data=s->fragment;
+      int n=s->fragment_size;
+      pthread_mutex_unlock(&s->mutex);
+      ret=ao_play(adev, (void *)data, n);
+      pthread_mutex_lock(&s->mutex);
+      if(ret==0)s->exiting=1;
+      s->fragment_size=0;
+      s->fragment=0;
+      pthread_cond_signal(&s->main_cond);
+      if(s->exiting){
+        pthread_mutex_unlock(&s->mutex);
+        break;
+      }
+    }
+
+    pthread_cond_wait(&s->play_cond,&s->mutex);
+  }
+  ao_close(adev);
+  ao_shutdown();
+  return NULL;
+}
+
+/* keyboard is a degenerate thread that wakes the main thread when
+   keyboard input [may] be available */
+void *fd_thread(void *arg){
+  threadstate_t *s = (threadstate_t *)arg;
+
+  pthread_mutex_lock(&s->mutex);
+  while(1){
+    int ret;
+    struct pollfd fds={STDIN_FILENO,POLLIN,0};
+    if(s->exiting){
+      pthread_mutex_unlock(&s->mutex);
+      break;
+    }
+    pthread_mutex_unlock(&s->mutex);
+    ret=poll(&fds, 1, -1);
+    pthread_mutex_lock(&s->mutex);
+    if(fds.revents&(POLLERR|POLLHUP|POLLNVAL))s->exiting=1;
+    s->key_waiting=1;
+    pthread_cond_signal(&s->main_cond);
+    if(s->exiting){
+      pthread_mutex_unlock(&s->mutex);
+      break;
+    }
+    pthread_cond_wait(&s->key_cond,&s->mutex);
+  }
+  return NULL;
+}
+
+/* fragment is filled such that a crossloop never begins after
+   pcm->size-fragsize, and it always begins from the start of the
+   window, even if that means starting a crossloop late because the
+   endpos moved. */
+void fill_fragment1(unsigned char *out, pcm_t *pcm, off_t start, off_t *pos, off_t end, off_t *loop,int fragsamples){
+  int bps = (pcm->bits+7)/8;
+  int cpf = pcm->ch;
+  int bpf = bps*cpf;
+  int fragsize = fragsamples*bpf;
+
+  /* guard limits here */
+  if(end<fragsize)end=fragsize;
+  if(end>pcm->size)end=pcm->size;
+  if(start<0)start=0;
+  if(start>pcm->size-fragsize)start=pcm->size-fragsize;
+
+  /* we fill a fragment from the data buffer of the passed in pcm_t.
+     It's possible we'll need to crossloop from the end of the sample,
+     and the start/end markers may have moved so that the cursor is
+     outside the strict sample bounds. */
+
+  /* if *loop>0, we're in the process of crosslapping at pos ><
+     start+(fragsize-*loop*bpf). Stay the course. */
+  if(*loop){
+    int lp = *loop;
+    int i,j;
+    unsigned char *A = pcm->data+*pos;
+    unsigned char *B = pcm->data+start+(fragsamples-lp)*bpf;
+    for(i=0;i<fragsamples;i++){
+      if(lp){
+        float w = fadewindow1[--lp];
+        for(j=0;j<cpf;j++){
+          float val = get_val(A,bps)*(1.-w) + get_val(B,bps)*w;
+          put_val(out,val,bps);
+          A+=bps;
+          B+=bps;
+          out+=bps;
+        }
+      }else{
+        /* crossloop finished, the rest is B */
+        memcpy(out,B,bpf);
+        B+=bpf;
+        out+=bpf;
+      }
+    }
+    *loop=0;
+    *pos=B-pcm->data;
+  }else{
+    /* no crossloop in progress... should one be? If the cursor is
+       before start, do nothing.  If it's past end-fragsize, begin a
+       crossloop immediately.  If the current fragment will extend
+       beyond end-fragsize, begin the crossloop at end-fragsize */
+    if(*pos>pcm->size-fragsize){
+      /* Error condiiton; should not be possible */
+      fprintf(stderr,"Internal error; %ld>%ld, Monty fucked up.\n",(long)*pos,(long)pcm->size-fragsize);
+      exit(100);
+    }else if(*pos+fragsize>=end-fragsize){
+      int i,j;
+      unsigned char *A = pcm->data+*pos;
+      unsigned char *B = pcm->data+start;
+      int lp = end-*pos;
+      if(lp<fragsamples)lp=fragsamples; /* If we're late, start immediately, but use full window */
+
+      for(i=0;i<fragsamples;i++){
+        if(--lp>fragsamples){
+          /* still before crossloop begins */
+          memcpy(out,A,bpf);
+          A+=bpf;
+          out+=bpf;
+        }else{
+          /* crosslooping */
+          float w = fadewindow1[lp];
+          for(j=0;j<cpf;j++){
+            float val = get_val(A,bps)*(1.-w) + get_val(B,bps)*w;
+            put_val(out,val,bps);
+            A+=bps;
+            B+=bps;
+            out+=bps;
+          }
+        }
+      }
+      *loop=lp;
+      *pos=(lp==0?B-pcm->data:A-pcm->data);
+    }else{
+      /* no crossloop */
+      unsigned char *A = pcm->data+*pos;
+      memcpy(out,A,fragsize);
+      *loop=0;
+      *pos=A-pcm->data+fragsize;
+    }
+  }
+}
+
+/* fragment is filled such that a crossloop is always 'exactly on
+   schedule' even if that means beginning partway through the window. */
+void fill_fragment2(unsigned char *out, pcm_t *pcm, off_t start, off_t *pos, off_t end, off_t *loop,int fragsamples){
+  int bps = (pcm->bits+7)/8;
+  int cpf = pcm->ch;
+  int bpf = bps*cpf;
+  int fragsize=fragsamples*bpf;
+
+  /* guard limits here */
+  if(end<fragsize)end=fragsize;
+  if(end>pcm->size)end=pcm->size;
+  if(start<0)start=0;
+  if(start>pcm->size-fragsize)start=pcm->size-fragsize;
+
+  /* loop is never in progress for a fill_fragment2; called only during a seek crosslap */
+  unsigned char *A = pcm->data+*pos;
+  if(end-*pos>=fragsize*2){
+    /* no crosslap */
+    memcpy(out,A,fragsize);
+    *loop=0;
+    *pos=A-pcm->data+fragsize;
+  }else{
+    /* just before crossloop, in the middle of a crossloop, or just after crossloop */
+    int i,j;
+    off_t lp = end-*pos;
+    unsigned char *B = pcm->data+start;
+    if(lp<fragsamples)B+=(fragsamples-lp)*bpf;
+
+    for(i=0;i<fragsamples;i++){
+      --lp;
+      if(lp>=fragsamples){
+        /* not yet crosslooping */
+        memcpy(out,A,bpf);
+        A+=bpf;
+        out+=bpf;
+      }else if (lp>=0){
+        /* now crosslooping */
+        float w = fadewindow1[lp];
+        for(j=0;j<cpf;j++){
+          float val = get_val(A,bps)*(1.-w) + get_val(B,bps)*w;
+          put_val(out,val,bps);
+          A+=bps;
+          B+=bps;
+          out+=bps;
+        }
+      }else{
+        /* after crosslap */
+        memcpy(out,B,bpf);
+        B+=bpf;
+        out+=bpf;
+       }
+    }
+    *loop=(lp>0?(lp<fragsamples?lp:fragsamples):0);
+    *pos=(lp>0?A-pcm->data:B-pcm->data);
+  }
+}
+
+void randomize_samples(int *r,int test_mode){
+  switch(test_mode){
+  case 1:
+    r[2] = random()&1;
+    /* fall through */
+  case 0:
+    r[0] = random()&1;
+    r[1] = 1-r[0];
+    break;
+  case 2:
+    r[0] = random()&1;
+    r[1] = random()&1;
+    if(r[0] == r[1])
+      r[2]=1-r[0];
+    else
+      r[2] = random()&1;
+    break;
+  }
+}
+
 int main(int argc, char **argv){
+  int fragsamples;
+  int fragsize;
+  unsigned char *fragmentA;
+  unsigned char *fragmentB;
+  pthread_t playback_handle;
+  pthread_t fd_handle;
+  threadstate_t state;
   int c,long_option_index;
-  pcm_t *A=NULL;
-  pcm_t *B=NULL;
-  int test_mode=1;
+  pcm_t *pcm[MAXFILES];
+  int test_mode=3;
+  int test_files;
   char *device=NULL;
   int force_dither=0;
   int force_truncate=0;
   int restart_mode=0;
+  int beep_mode=1;
   int tests=10;
   double start=0;
   double end=-1;
   int outbits=0;
   ao_device *adev=NULL;
-  int decode_to_16=0;
+  int randomize[MAXFILES];
+  int i;
   /* parse options */
 
   while((c=getopt_long(argc,argv,short_options,long_options,&long_option_index))!=EOF){
@@ -1489,13 +1908,25 @@ int main(int argc, char **argv){
     case 'b':
       test_mode=1;
       break;
+    case 'c':
+      test_mode=3;
+      break;
     case 'x':
       test_mode=2;
       break;
-    case 'c':
-      device=strdup(optarg);
+    case 'M':
+      beep_mode=1;
+      break;
+    case 'B':
+      beep_mode=2;
+      break;
+    case 'S':
+      beep_mode=3;
       break;
     case 'd':
+      device=strdup(optarg);
+      break;
+    case 'D':
       force_dither=1;
       force_truncate=0;
       break;
@@ -1519,6 +1950,9 @@ int main(int argc, char **argv){
     case 'r':
       restart_mode=1;
       break;
+    case 'R':
+      restart_mode=2;
+      break;
     case 'v':
       verbose=1;
       break;
@@ -1531,76 +1965,65 @@ int main(int argc, char **argv){
     }
   }
 
-  if(argc-optind!=2){
-    usage(stderr);
-    exit(1);
+  /* Verify stdin is a tty! */
+
+  test_files=argc-optind;
+  if(test_mode==3){
+    if(test_files<1 || test_files>MAXFILES){
+      usage(stderr);
+      exit(1);
+    }
+  }else{
+    if(test_files!=2){
+      usage(stderr);
+      exit(1);
+    }
   }
 
-  A=load_audio_file(argv[optind]);
-  if(A)
-    B=load_audio_file(argv[optind+1]);
-  if(!B)
-    exit(2);
+  outbits=16;
+  for(i=0;i<test_files;i++){
+    pcm[i]=load_audio_file(argv[optind+i]);
+    if(!pcm[i])exit(2);
 
-  /* An overloaded invariant: Only lossy samples that decode to float
-     (eg, Ogg Vorbis) will have bits==-32 but dither set to 0.  If one
-     input sample is 16 bit and the other is -32/0, we want the floats
-     to render down to 16 bit, not 24 bit */
-  if((A->bits==16 && B->bits==-32 && B->dither==0) ||
-     (B->bits==16 && A->bits==-32 && A->dither==0))
-    decode_to_16=1;
+    if(!pcm[i]->dither && force_dither)pcm[i]->dither=1;
+    if(pcm[i]->bits!=16 && force_truncate)pcm[i]->dither=0;
 
-  if(!A->dither && force_dither)A->dither=1;
-  if(!B->dither && force_dither)B->dither=1;
-  if(A->bits!=16 && force_truncate)A->dither=0;
-  if(B->bits!=16 && force_truncate)B->dither=0;
+    /* Are all samples the same rate?  If not, bail. */
+    if(pcm[0]->rate != pcm[i]->rate){
+      fprintf(stderr,"Input sample rates do not match!\n"
+              "\t%s: %dHz\n"
+              "\t%s: %dHz\n"
+              "Aborting\n",pcm[0]->path,pcm[0]->rate,pcm[i]->path,pcm[i]->rate);
+      exit(3);
+    }
 
-  /* Are the samples the same rate?  If not, bail. */
-  if(A->rate != B->rate){
-    fprintf(stderr,"Input sample rates do not match!\n"
-            "\t%s: %dHz\n"
-            "\t%s: %dHz\n"
-            "Aborting\n",A->path,A->rate,B->path,B->rate);
-    exit(3);
-  }
+    /* Are all samples the same number of channels?  If not, bail. */
+    if(pcm[0]->ch != pcm[i]->ch){
+      fprintf(stderr,"Input channel counts do not match!\n"
+              "\t%s: %dHz\n"
+              "\t%s: %dHz\n"
+              "Aborting\n",pcm[0]->path,pcm[0]->ch,pcm[i]->path,pcm[i]->ch);
+      exit(3);
+    }
 
-  /* Are the samples the same number of channels?  If not, bail. */
-  if(A->ch != B->ch){
-    fprintf(stderr,"Input channel counts do not match!\n"
-            "\t%s: %dHz\n"
-            "\t%s: %dHz\n"
-            "Aborting\n",A->path,A->ch,B->path,B->ch);
-    exit(3);
-  }
-
-  if(decode_to_16){
-    convert_to_16(A);
-    convert_to_16(B);
+    if(abs(pcm[i]->bits)>outbits)outbits=abs(pcm[i]->bits);
   }
 
   /* before proceeding, make sure we can open up playback for the
      requested number of channels and max bit depth; if not, we may
      need to downconvert. */
-  outbits = abs(A->bits);
-  if(abs(B->bits)>outbits)outbits=abs(B->bits);
   if(outbits==32)outbits=24;
-
-  /* See if we can get playback with desired bit-depth/channels */
   ao_initialize();
-  if((adev=setup_playback(A->rate,A->ch,outbits,A->matrix,device))==NULL){
-    /* If opening playback failed for 24 bit, try for 16 */
+  if((adev=setup_playback(pcm[0]->rate,pcm[0]->ch,outbits,pcm[0]->matrix,device))==NULL){
+    /* If opening playback failed for 24-bit, try for 16 */
     if(outbits>16){
-      if((adev=setup_playback(A->rate,A->ch,16,A->matrix,device))==NULL){
+      if((adev=setup_playback(pcm[0]->rate,pcm[0]->ch,16,pcm[0]->matrix,device))==NULL){
         fprintf(stderr,"Unable to open audio device for playback.\n");
         exit(4);
       }else{
         if(verbose)
-          fprintf(stderr,"24 bit playback unavailable; down-converting to 16 bit\n");
-
-        /* demote to 16 bit playback right now */
-        convert_to_16(A);
-        convert_to_16(B);
-
+          fprintf(stderr,"24-bit playback unavailable; down-converting to 16-bit\n");
+        outbits=16;
       }
     }else{
       fprintf(stderr,"Unable to open audio device for playback.\n");
@@ -1608,60 +2031,371 @@ int main(int argc, char **argv){
     }
   }
 
-  /* Do we need to reconcile sample depths? */
-  if(A->bits!=B->bits || A->bits<0 || B->bits<0){
-    convert_to_24(A);
-    convert_to_24(B);
-  }
-
-  /* Sanity check channel matrices. */
-  if(A->ch>2){
-    if(!A->matrix || !B->matrix){
-      if(A->matrix){
-        if(verbose)
-          fprintf(stderr,"%s: No explicit output channel ordering determined.  Using output\n"
-                  "\tmatrix from %s.\n",B->path,A->path);
-        B->matrix = strdup(A->matrix);
-      }else if (B->matrix){
-        if(verbose)
-          fprintf(stderr,"%s: No explicit output channel ordering determined.  Using output\n"
-                  "\tmatrix from %s.\n",A->path,B->path);
-        A->matrix = strdup(B->matrix);
-      }else{
-        if(verbose)
-          fprintf(stderr,"Neither sample specifies an output channel ordering;\n"
-                  "\ttossing samples at sound card, hoping something reasonable happens.\n");
-      }
+  /* reconcile sample depths */
+  for(i=0;i<test_files;i++){
+    if(outbits==16){
+      convert_to_16(pcm[i]);
     }else{
-      /* permute/reconcile the matrices before playback begins */
-      if(strcmp(A->matrix,B->matrix))
-        reconcile_channel_maps(A,B);
+      convert_to_24(pcm[i]);
     }
   }
 
-  /* Are the samples the same length?  If not, warn and choose the shorter. */
-  if(A->size!=B->size){
-    if(verbose){
-      fprintf(stderr,"Input sample lengths do not match!\n");
-      fprintf(stderr,"\t%s: %s\n",A->path,make_time_string((double)A->size/A->ch/((A->bits+7)/8)/A->rate));
-      fprintf(stderr,"\t%s: %s\n",B->path,make_time_string((double)B->size/B->ch/((B->bits+7)/8)/B->rate));
-      fprintf(stderr,"Using the shorter sample for playback length...\n");
+  /* permute/reconcile the matrices before playback begins */
+  /* Invariant: all loaded files have a channel map */
+  for(i=1;i<test_files;i++)
+    if(strcmp(pcm[0]->matrix,pcm[i]->matrix))
+      reconcile_channel_maps(pcm[0],pcm[i]);
+
+  /* Are the samples the same length?  If not, warn and choose the shortest. */
+  {
+    off_t n=pcm[0]->size;
+    int flag=0;
+    for(i=1;i<test_files;i++){
+      if(pcm[i]->size!=n)flag=1;
+      if(pcm[i]->size<n)n=pcm[i]->size;
     }
-    if(A->size>B->size)
-      A->size=B->size;
-    else
-      B->size=A->size;
+
+    if(flag){
+      if(verbose)
+        fprintf(stderr,"Input sample lengths do not match!\n");
+
+      for(i=0;i<test_files;i++){
+        if(verbose)
+        fprintf(stderr,"\t%s: %s\n",pcm[i]->path,
+                make_time_string((double)pcm[i]->size/pcm[i]->ch/((pcm[i]->bits+7)/8)/pcm[i]->rate));
+        pcm[i]->size=n;
+      }
+      if(verbose)
+        fprintf(stderr,"Using the shortest sample for playback length...\n");
+    }
   }
+
+  /* set up various transition windows/beeps */
+  fragsamples=setup_windows(pcm,test_files);
+
+  /* set up terminal */
+  min_init_panel(5);
+
+  /* set up shared state */
+  memset(&state,0,sizeof(state));
+  pthread_mutex_init(&state.mutex,NULL);
+  pthread_cond_init(&state.main_cond,NULL);
+  pthread_cond_init(&state.play_cond,NULL);
+  pthread_cond_init(&state.key_cond,NULL);
+  state.adev=adev;
+
+  /* fire off helper threads */
+  if(pthread_create(&playback_handle,NULL,playback_thread,&state)){
+    fprintf(stderr,"Failed to create playback thread.\n");
+    exit(7);
+  }
+  if(pthread_create(&fd_handle,NULL,fd_thread,&state)){
+    fprintf(stderr,"Failed to create playback thread.\n");
+    exit(7);
+  }
+
+  /* casual mode is not randomized */
+  for(i=0;i<MAXFILES;i++)
+    randomize[i]=i;
+  /* randomize samples for first trial */
+  srandom(time(NULL)+getpid());
+  randomize_samples(randomize,test_mode);
 
   /* playback loop */
+  pthread_mutex_lock(&state.mutex);
+  {
+    int current_sample=randomize[0];
+    int current_choice=0;
+    int flip_to=0;
+    int do_flip=0;
+    int do_select=0;
+    int do_pause=0;
+    int do_seek=0;
+    off_t loop_pos=0;
+    off_t seek_to=0;
+    int bps=(pcm[0]->bits+7)/8;
+    int ch=pcm[0]->ch;
+    int bpf=ch*bps;
+    int rate=pcm[0]->rate;
+    int size=pcm[0]->size;
+    off_t start_pos=rint(start*rate);
+    off_t end_pos=(end>0?rint(end*rate):size);
+    off_t current_pos;
+    int paused=0;
+
+    fragsize=fragsamples*bpf;
+    fragmentA=calloc(fragsize,1);
+    fragmentB=calloc(fragsize,1);
+    if(!fragmentA || !fragmentB){
+      fprintf(stderr,"Failed to allocate internal fragment memory\n");
+      exit(5);
+    }
+    if(start_pos<0)start_pos=0;
+    if(start_pos>size-fragsize)start_pos=size-fragsize;
+    if(end_pos<fragsize)end_pos=fragsize;
+    if(end_pos>size)end_pos=size;
+    current_pos=start_pos;
+
+    while(1){
+
+      int c;
+      if(state.exiting) break;
+
+      if(state.key_waiting && !do_flip && !do_pause && !do_select){
+        /* service keyboard */
+        pthread_mutex_unlock(&state.mutex);
+        c=min_getch(1);
+        switch(c){
+        case ERR:
+          break;
+        case 3:
+          /* control-c */
+
+          pthread_mutex_lock(&state.mutex);
+          state.exiting=1;
+          pthread_mutex_unlock(&state.mutex);
+          break;
+
+        case '0': case '9': case '8': case '7': case '6':
+        case '5': case '4': case '3': case '2': case '1':
+          flip_to=c-'1';
+          do_flip=1;
+          break;
+        case 'a':
+          flip_to=0;
+          do_flip=1;
+          break;
+        case 'b':
+          flip_to=1;
+          do_flip=1;
+          break;
+        case 'x':
+          flip_to=2;
+          do_flip=1;
+          break;
+        case 'A':
+          flip_to=0;
+          do_select=1;
+          break;
+        case 'B':
+          flip_to=1;
+          do_select=1;
+          break;
+        case 'X':
+          flip_to=2;
+          do_select=1;
+          break;
+        case '!':
+          flip_to=0;
+          do_select=1;
+          break;
+        case '@':
+          flip_to=1;
+          do_select=1;
+          break;
+        case '#':
+          flip_to=2;
+          do_select=1;
+          break;
+        case ' ':
+          do_pause=1;
+          break;
+        case KEY_LEFT:
+          seek_to-=pcm[0]->rate*bpf*2;
+          do_seek=1;
+          break;
+        case KEY_RIGHT:
+          seek_to+=pcm[0]->rate*bpf*2;
+          do_seek=1;
+          break;
+        case KEY_SLEFT:
+          seek_to-=pcm[0]->rate*bpf*10;
+          do_seek=1;
+          break;
+        case KEY_SRIGHT:
+          seek_to+=pcm[0]->rate*bpf*10;
+          do_seek=1;
+          break;
+        case KEY_BACKSPACE:
+          seek_to=start_pos;
+          do_seek=1;
+          break;
+        }
+
+        if(do_flip && flip_to==current_choice) do_flip=0;
+
+        switch(test_mode){
+        case 0:
+          if(flip_to>1){
+            do_flip=0;
+            do_select=0;
+          }
+          break;
+        case 1:
+          if(do_select && flip_to>1){
+            do_select=0;
+          }
+        case 2:
+          if(flip_to>2){
+            do_flip=0;
+            do_select=0;
+          }
+          break;
+        case 3:
+          if(flip_to>=test_files)
+            do_flip=0;
+          if(do_select)
+            do_select=0;
+          break;
+        }
+
+        while(current_pos + seek_to>end_pos)seek_to-=(end_pos-start_pos);
+        while(current_pos + seek_to<start_pos)seek_to+=(end_pos-start_pos);
+
+        pthread_mutex_lock(&state.mutex);
+        state.key_waiting=0;
+        pthread_cond_signal(&state.key_cond);
+      }
+
+
+      /* update terminal */
 
 
 
+      if(state.fragment_size==0 && !state.exiting){
+        /* fill audio output */
+        off_t pos=current_pos;
+        pthread_mutex_unlock(&state.mutex);
 
+        if(do_flip){
+          current_choice=flip_to;
+          if(restart_mode==2){
+            seek_to += start_pos-current_pos;
+            do_seek=1;
+          }
+        }
 
+        if(do_select){
+          /* randomize now so we can fill in fragmentB */
+          randomize_samples(randomize,test_mode);
+          if(restart_mode){
+            seek_to += start_pos-current_pos;
+            do_seek=1;
+          }
+        }
+
+        if(paused){
+          memset(fragmentA,0,fragsize);
+          if(do_seek){
+            current_pos+=seek_to;
+            seek_to=0;
+            do_seek=0;
+            loop_pos=0;
+          }
+        }else{
+          fill_fragment1(fragmentA, pcm[current_sample], start_pos, &current_pos, end_pos, &loop_pos, fragsamples);
+          if(do_flip || do_seek || do_select){
+            current_sample=randomize[current_choice];
+            if(do_seek){
+              current_pos=pos+seek_to;
+              fill_fragment2(fragmentB, pcm[current_sample], start_pos, &current_pos, end_pos, &loop_pos, fragsamples);
+              seek_to=0;
+            }else{
+              fill_fragment1(fragmentB, pcm[current_sample], start_pos, &pos, end_pos, &loop_pos, fragsamples);
+            }
+          }
+        }
+
+        if(do_flip || do_select || do_seek){
+          int j;
+          float *wA=fadewindow1, *wB, *beep=0;
+          if(do_select){
+            wA=fadewindow3;
+            beep=beep2;
+          }
+          if(do_flip){
+            /* A and B are crossfaded according to beep mode */
+            beep=0;
+            switch(beep_mode){
+            case 1: /* mark, fadewindow 2 */
+              wA=fadewindow2;
+              break;
+            case 2:
+              wA=fadewindow3;
+              beep=beep1;
+              break;
+            case 3:
+              wA=fadewindow1;
+              break;
+            }
+          }
+          wB=wA+fragsamples-1;
+          for(i=0;i<fragsamples;i++){
+            for(j=0;j<ch;j++){
+              put_val(fragmentA,bps,get_val(fragmentA,bps)**(wA+i) + get_val(fragmentB,bps)**(wB-i)+
+                      (beep?beep[i]:0));
+              fragmentA+=bps;
+              fragmentB+=bps;
+            }
+          }
+          do_flip=0;
+          do_select=0;
+          do_seek=0;
+        }else if(do_pause){
+          int j;
+          if(paused){
+            float *wA=fadewindow1+fragsamples-1;
+            for(i=0;i<fragsamples;i++){
+              for(j=0;j<ch;j++){
+                put_val(fragmentA,bps,get_val(fragmentA,bps)**(wA-i));
+                fragmentA+=bps;
+              }
+            }
+
+          }else{
+            float *wA=fadewindow1;
+            for(i=0;i<fragsamples;i++){
+              for(j=0;j<ch;j++){
+                put_val(fragmentA,bps,get_val(fragmentA,bps)**(wA+i));
+                fragmentA+=bps;
+              }
+            }
+          }
+          paused = !paused;
+          do_pause=0;
+          memset(fragmentB,0,fragsize);
+        }
+
+        pthread_mutex_lock(&state.mutex);
+        state.fragment=fragmentA;
+        state.fragment_size=fragsize;
+        pthread_cond_signal(&state.play_cond);
+      }
+
+      /* wait */
+      if(!state.key_waiting && state.fragment_size>0)
+        pthread_cond_wait(&state.main_cond,&state.mutex);
+    }
+  }
 
   /* done */
-  ao_close(adev);
-  ao_shutdown();
+  /* join */
+  close(STDIN_FILENO);
+  pthread_cond_signal(&state.play_cond);
+  pthread_mutex_unlock(&state.mutex);
+  pthread_join(playback_handle,NULL);
+  pthread_join(fd_handle,NULL);
+
+  /* tear down terminal */
+  min_remove_panel();
+
+
+  for(i=0;i<test_files;i++)
+    free_pcm(pcm[i]);
   return 0;
 }
+
+
+  /* 0         1         2         3        4         5         6         7         8*/
+  /* 2/16/44.1 | trial ??/?? A | <<00:00:00 | 00:00:00 | 00:00:00>> | sre */
+
