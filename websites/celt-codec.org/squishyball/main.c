@@ -1735,7 +1735,7 @@ void *key_thread(void *arg){
    pcm->size-fragsize, and it always begins from the start of the
    window, even if that means starting a crossloop late because the
    endpos moved. */
-void fill_fragment1(unsigned char *out, pcm_t *pcm, off_t start, off_t *pos, off_t end, off_t *loop,int fragsamples){
+void fill_fragment1(unsigned char *out, pcm_t *pcm, off_t start, off_t *pos, off_t end, int *loop,int fragsamples){
   int bps = (pcm->bits+7)/8;
   int cpf = pcm->ch;
   int bpf = bps*cpf;
@@ -1784,14 +1784,14 @@ void fill_fragment1(unsigned char *out, pcm_t *pcm, off_t start, off_t *pos, off
        crossloop immediately.  If the current fragment will extend
        beyond end-fragsize, begin the crossloop at end-fragsize */
     if(*pos>pcm->size-fragsize){
-      /* Error condiiton; should not be possible */
+      /* Error condition; should not be possible */
       fprintf(stderr,"Internal error; %ld>%ld, Monty fucked up.\n",(long)*pos,(long)pcm->size-fragsize);
       exit(100);
     }else if(*pos+fragsize>=end-fragsize){
       int i,j;
       unsigned char *A = pcm->data+*pos;
       unsigned char *B = pcm->data+start;
-      int lp = end-*pos;
+      int lp = (end-*pos)/bpf;
       if(lp<fragsamples)lp=fragsamples; /* If we're late, start immediately, but use full window */
 
       for(i=0;i<fragsamples;i++){
@@ -1812,8 +1812,8 @@ void fill_fragment1(unsigned char *out, pcm_t *pcm, off_t start, off_t *pos, off
           }
         }
       }
-      *loop=lp;
-      *pos=(lp==0?B-pcm->data:A-pcm->data);
+      *loop=(lp<0?0:lp);
+      *pos=(lp<=0?B-pcm->data:A-pcm->data);
     }else{
       /* no crossloop */
       unsigned char *A = pcm->data+*pos;
@@ -1826,7 +1826,7 @@ void fill_fragment1(unsigned char *out, pcm_t *pcm, off_t start, off_t *pos, off
 
 /* fragment is filled such that a crossloop is always 'exactly on
    schedule' even if that means beginning partway through the window. */
-void fill_fragment2(unsigned char *out, pcm_t *pcm, off_t start, off_t *pos, off_t end, off_t *loop,int fragsamples){
+void fill_fragment2(unsigned char *out, pcm_t *pcm, off_t start, off_t *pos, off_t end, int *loop,int fragsamples){
   int bps = (pcm->bits+7)/8;
   int cpf = pcm->ch;
   int bpf = bps*cpf;
@@ -1848,7 +1848,7 @@ void fill_fragment2(unsigned char *out, pcm_t *pcm, off_t start, off_t *pos, off
   }else{
     /* just before crossloop, in the middle of a crossloop, or just after crossloop */
     int i,j;
-    off_t lp = end-*pos;
+    int lp = (end-*pos)/bpf;
     unsigned char *B = pcm->data+start;
     if(lp<fragsamples)B+=(fragsamples-lp)*bpf;
 
@@ -2141,7 +2141,7 @@ int main(int argc, char **argv){
     int do_select=0;
     int do_pause=0;
     int do_seek=0;
-    off_t loop_pos=0;
+    int loop=0;
     off_t seek_to=0;
     int bps=(pcm[0]->bits+7)/8;
     int ch=pcm[0]->ch;
@@ -2294,7 +2294,8 @@ int main(int argc, char **argv){
 
       if(state.fragment_size==0 && !state.exiting){
         /* fill audio output */
-        off_t pos=current_pos;
+        off_t save_pos=current_pos;
+        int save_loop=loop;
         pthread_mutex_unlock(&state.mutex);
 
         if(do_flip){
@@ -2320,18 +2321,18 @@ int main(int argc, char **argv){
             current_pos+=seek_to;
             seek_to=0;
             do_seek=0;
-            loop_pos=0;
+            loop=0;
           }
         }else{
-          fill_fragment1(fragmentA, pcm[current_sample], start_pos, &current_pos, end_pos, &loop_pos, fragsamples);
+          fill_fragment1(fragmentA, pcm[current_sample], start_pos, &current_pos, end_pos, &loop, fragsamples);
           if(do_flip || do_seek || do_select){
             current_sample=randomize[current_choice];
             if(do_seek){
-              current_pos=pos+seek_to;
-              fill_fragment2(fragmentB, pcm[current_sample], start_pos, &current_pos, end_pos, &loop_pos, fragsamples);
+              current_pos=save_pos+seek_to;
+              fill_fragment2(fragmentB, pcm[current_sample], start_pos, &current_pos, end_pos, &loop, fragsamples);
               seek_to=0;
             }else{
-              fill_fragment1(fragmentB, pcm[current_sample], start_pos, &pos, end_pos, &loop_pos, fragsamples);
+              fill_fragment1(fragmentB, pcm[current_sample], start_pos, &save_pos, end_pos, &save_loop, fragsamples);
             }
           }
         }
