@@ -47,6 +47,13 @@
 #include <errno.h>
 #include <poll.h>
 
+#include "mincurses.h"
+
+#define FIFO_SIZE    160
+#define BUFF_SIZE    160
+
+/***************************** INPUT SIDE *******************************/
+
 struct tinfo_fkeys {
   unsigned offset;
   chtype code;
@@ -58,8 +65,6 @@ struct tinfo_fkeys {
 extern const struct tinfo_fkeys _nc_tinfo_fkeys[];
 #endif
 
-#include "mincurses.h"
-
 /* In ncurses, all the keybindings are tied to the SP. Calls into the
    keybinding code all require the SP be set. Low level SP
    management/creation is not exposed, and the high level entry points
@@ -67,7 +72,6 @@ extern const struct tinfo_fkeys _nc_tinfo_fkeys[];
    this reason, we duplicate some code. */
 
 typedef struct tries TRIES;
-#define FIFO_SIZE    200
 
 struct tries {
   TRIES    *child;
@@ -238,6 +242,8 @@ int min_getch(int nonblock){
   return ch;
 }
 
+/***************************** OUTPUT SIDE ******************************/
+
 TTY orig;
 TTY term;
 
@@ -245,21 +251,33 @@ static int outfd;
 static int initted=0;
 static int cursor_line_offset=0;
 static int panel_lines=0;
+static char outbuf[BUFF_SIZE];
+static int buf_fill=0;
 
-int min_putchar(int c){
-  while(1){
-    unsigned char ch = c;
+int min_flush(){
+  int len = buf_fill;
+  char *b = outbuf;
+  while(len){
     int ret;
     errno=0;
-    ret=write(outfd,&ch,1);
+    ret=write(outfd,b,len);
     if(ret<=0){
       if(ret==0 || errno==EINTR)continue;
       return EOF;
     }else{
-      return c;
-      break;
+      b+=ret;
+      len-=ret;
     }
   }
+  return 0;
+}
+
+int min_putchar(int c){
+  outbuf[buf_fill]=c;
+  buf_fill++;
+  if(buf_fill==BUFF_SIZE)
+    return min_flush();
+  return 0;
 }
 
 int min_putp(const char *str){
@@ -267,17 +285,17 @@ int min_putp(const char *str){
 }
 
 int min_write(const char *str,int len){
+  int ret=0;
   while(len){
-    int ret;
-    errno=0;
-    ret=write(outfd,str,len);
-    if(ret<=0){
-      if(ret==0 || errno==EINTR)continue;
-      return EOF;
-    }else{
-      str+=ret;
-      len-=ret;
+    int bytes = (buf_fill+len>BUFF_SIZE ? BUFF_SIZE-buf_fill : len);
+    memcpy(outbuf+buf_fill,str,bytes);
+    buf_fill+=bytes;
+    if(buf_fill==BUFF_SIZE){
+      ret=min_flush();
+      if(ret)return ret;
     }
+    str+=bytes;
+    len-=bytes;
   }
   return 0;
 }
@@ -287,8 +305,8 @@ int min_putstr(const char *str){
   return min_write(str,len);
 }
 
-/* relative-line cursor addressing; no idea where the cursor actually
-   is absolutely */
+/************** high level operations ***********************/
+
 void min_mvcur(int x, int y){
   int yoff = y - cursor_line_offset;
 
@@ -334,11 +352,6 @@ static void setup_term_customize(void){
   }
 }
 
-void resetup_term(void){
-  SET_TTY(outfd,&term);
-  cur_term->Nttyb = term;
-}
-
 extern void _nc_init_acs(void);
 int min_init_panel(int pl){
   int ret = OK;
@@ -374,6 +387,7 @@ int min_init_panel(int pl){
     panel_lines=pl;
     insert_lines(panel_lines);
     initted=1;
+    min_flush();
   }
   return ret;
 }
@@ -385,6 +399,7 @@ void min_remove_panel(){
       min_putp(tparm(delete_line,panel_lines));
     }
     min_showcur();
+    min_flush();
     SET_TTY(outfd,&orig);
     initted=0;
   }
@@ -446,21 +461,6 @@ static int unset_attributes(){
     return 1;
 }
 
-void min_fill(char *buf,char c,int cols){
-  int i;
-  for(i=0;i<cols;i++)
-    buf[i]=c;
-  buf[i]=0;
-}
-
-void min_printover(char *buf,int pos, char *s){
-  int len = strlen(buf);
-  int len2 = strlen(s);
-  int i;
-  for(i=0; i+pos<len && i<len2; i++)
-    buf[i+pos]=s[i];
-}
-
 int min_fg(int c){
   if(set_a_foreground){
     min_putp(tparm(set_a_foreground,c));
@@ -481,34 +481,5 @@ void min_color(int f,int b){
   if(f==-1 || b==-1) unset_attributes();
   if(f!=-1) min_fg(f);
   if(b!=-1) min_bg(b);
-}
-
-void min_hline(char *s,int textcolor){
-  int pos=0,last=0;
-
-  while(s[pos]){
-    /* draw line */
-    while(s[pos] && s[pos]=='_')pos++;
-    if(pos>last){
-      if(!min_gfxmode()){
-	for(;last<pos;last++)
-	  min_putchar(ACS_HLINE);
-	min_textmode();
-      }else{
-	min_write(s+last,pos-last);
-      }
-    }
-
-    /* draw text */
-    while(s[pos] && s[pos]!='_')pos++;
-    if(pos>last){
-      if(textcolor>=0)
-	min_fg(textcolor);
-      min_write(s+last,pos-last);
-      if(textcolor>=0)
-	min_color(-1,-1);
-      last = pos;
-    }
-  }
 }
 
