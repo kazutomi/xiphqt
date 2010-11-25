@@ -16,6 +16,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <time.h>
+#include <signal.h>
 #include <ncurses.h>
 #include "mincurses.h"
 #include "tty.h"
@@ -1038,6 +1039,8 @@ pcm_t *load_audio_file(char *path){
 void float32_to_24(pcm_t *pcm){
   unsigned char *d = pcm->data;
   off_t j;
+  if(verbose)
+    fprintf(stderr,"\rConverting %s to 24 bit... ",pcm->path);
   for(j=0;j<pcm->size/4;j++){
     int val=0;
     int mantissa = d[j*4] | (d[j*4+1]<<8) | ((d[j*4+2]&0x7f)<<16) | (1<<23);
@@ -1063,6 +1066,8 @@ void float32_to_24(pcm_t *pcm){
     d[j*3+1]=(val>>8)&0xff;
     d[j*3+2]=(val>>16)&0xff;
   }
+  if(verbose)
+    fprintf(stderr,"...done.\n");
   pcm->bits=24;
   pcm->size/=4;
   pcm->size*=3;
@@ -1082,6 +1087,10 @@ void float32_to_16(pcm_t *pcm){
     float f;
     unsigned char c[4];
   } m;
+
+  if(verbose)
+    fprintf(stderr,"\r%s %s to 16 bit... ",
+            pcm->dither?"Dithering":"Down-converting",pcm->path);
 
   /* again assumes IEEE754, which is not pedantically correct */
   if(sizeof(float)==4){
@@ -1127,6 +1136,9 @@ void float32_to_16(pcm_t *pcm){
     exit(10);
   }
 
+  if(verbose)
+    fprintf(stderr,"...done.\n");
+
   pcm->bits=16;
   pcm->size/=2;
 }
@@ -1136,6 +1148,11 @@ void demote_24_to_16(pcm_t *pcm){
   unsigned char *d = pcm->data;
   off_t i;
   int ch=0;
+
+  if(verbose)
+    fprintf(stderr,"\r%s %s to 16 bit... ",
+            pcm->dither?"Dithering":"Down-converting",pcm->path);
+
   memset(t,0,sizeof(t));
 
   for(i=0;i<pcm->size/3;i++){
@@ -1159,6 +1176,9 @@ void demote_24_to_16(pcm_t *pcm){
     }
   }
 
+  if(verbose)
+    fprintf(stderr,"...done.\n");
+
   pcm->bits=16;
   pcm->size/=3;
   pcm->size*=2;
@@ -1166,17 +1186,26 @@ void demote_24_to_16(pcm_t *pcm){
 
 void promote_to_24(pcm_t *pcm){
   off_t i;
-  unsigned char *ret=realloc(pcm->data,pcm->size*3/2);
-  if(!ret){
-    fprintf(stderr,"Unable to allocate memory while promoting file to 24-bit\n");
-    exit(5);
+
+  if(verbose)
+    fprintf(stderr,"\rPromoting %s to 24 bit... ",pcm->path);
+
+  {
+    unsigned char *ret=realloc(pcm->data,pcm->size*3/2);
+    if(!ret){
+      fprintf(stderr,"Unable to allocate memory while promoting file to 24-bit\n");
+      exit(5);
+    }
+    pcm->data=ret;
+    for(i=pcm->size/2-1;i>=0;i--){
+      ret[i*3+2]=ret[i*2+1];
+      ret[i*3+1]=ret[i*2];
+      ret[i*3]=0;
+    }
   }
-  pcm->data=ret;
-  for(i=pcm->size/2-1;i>=0;i--){
-    ret[i*3+2]=ret[i*2+1];
-    ret[i*3+1]=ret[i*2];
-    ret[i*3]=0;
-  }
+  if(verbose)
+    fprintf(stderr,"...done.\n");
+
   pcm->bits=24;
   pcm->size/=2;
   pcm->size*=3;
@@ -1304,7 +1333,6 @@ ao_device *setup_playback(int rate, int ch, int bits, char *matrix, char *device
       int j;
       ao_info *info=info_list[i];
       ao_option ao={0,0,0};
-      ao_option aoe={0,0,0};
       int id = ao_driver_id(info->short_name);
       char buf[80];
 
@@ -1484,12 +1512,12 @@ void put_val(unsigned char *d,int bps,float v){
   int i = rint(v);
   d[0]=i&0xff;
   d[1]=(i>>8)&0xff;
-  if(bps==24)
+  if(bps==3)
     d[2]=(i>>16)&0xff;
 }
 
 float get_val(unsigned char *d, int bps){
-  if(bps==16){
+  if(bps==2){
     short i = d[0] | (d[1]<<8);
     return (float)i;
   }else{
@@ -1675,28 +1703,30 @@ void *playback_thread(void *arg){
 
 /* keyboard is a degenerate thread that wakes the main thread when
    keyboard input [may] be available */
-void *fd_thread(void *arg){
+void *key_thread(void *arg){
   threadstate_t *s = (threadstate_t *)arg;
 
   pthread_mutex_lock(&s->mutex);
   while(1){
     int ret;
-    struct pollfd fds={STDIN_FILENO,POLLIN,0};
     if(s->exiting){
       pthread_mutex_unlock(&s->mutex);
       break;
     }
-    pthread_mutex_unlock(&s->mutex);
-    ret=poll(&fds, 1, -1);
-    pthread_mutex_lock(&s->mutex);
-    if(fds.revents&(POLLERR|POLLHUP|POLLNVAL))s->exiting=1;
-    s->key_waiting=1;
-    pthread_cond_signal(&s->main_cond);
+    if(s->key_waiting==0){
+      pthread_mutex_unlock(&s->mutex);
+      ret=min_getch(0);
+      pthread_mutex_lock(&s->mutex);
+    }
     if(s->exiting){
       pthread_mutex_unlock(&s->mutex);
       break;
     }
-    pthread_cond_wait(&s->key_cond,&s->mutex);
+    if(ret!=ERR){
+      s->key_waiting=ret;
+      pthread_cond_signal(&s->main_cond);
+      pthread_cond_wait(&s->key_cond,&s->mutex);
+    }
   }
   return NULL;
 }
@@ -2089,7 +2119,7 @@ int main(int argc, char **argv){
     fprintf(stderr,"Failed to create playback thread.\n");
     exit(7);
   }
-  if(pthread_create(&fd_handle,NULL,fd_thread,&state)){
+  if(pthread_create(&fd_handle,NULL,key_thread,&state)){
     fprintf(stderr,"Failed to create playback thread.\n");
     exit(7);
   }
@@ -2143,8 +2173,8 @@ int main(int argc, char **argv){
 
       if(state.key_waiting && !do_flip && !do_pause && !do_select){
         /* service keyboard */
+        c=state.key_waiting;
         pthread_mutex_unlock(&state.mutex);
-        c=min_getch(1);
         switch(c){
         case ERR:
           break;
@@ -2308,6 +2338,8 @@ int main(int argc, char **argv){
 
         if(do_flip || do_select || do_seek){
           int j;
+          unsigned char *A=fragmentA;
+          unsigned char *B=fragmentB;
           float *wA=fadewindow1, *wB, *beep=0;
           if(do_select){
             wA=fadewindow3;
@@ -2332,23 +2364,23 @@ int main(int argc, char **argv){
           wB=wA+fragsamples-1;
           for(i=0;i<fragsamples;i++){
             for(j=0;j<ch;j++){
-              put_val(fragmentA,bps,get_val(fragmentA,bps)**(wA+i) + get_val(fragmentB,bps)**(wB-i)+
-                      (beep?beep[i]:0));
-              fragmentA+=bps;
-              fragmentB+=bps;
+              put_val(A,bps,get_val(A,bps)**(wA+i) + get_val(B,bps)**(wB-i)+(beep?beep[i]:0));
+              A+=bps;
+              B+=bps;
             }
           }
           do_flip=0;
           do_select=0;
           do_seek=0;
         }else if(do_pause){
+          unsigned char *A=fragmentA;
           int j;
           if(paused){
             float *wA=fadewindow1+fragsamples-1;
             for(i=0;i<fragsamples;i++){
               for(j=0;j<ch;j++){
-                put_val(fragmentA,bps,get_val(fragmentA,bps)**(wA-i));
-                fragmentA+=bps;
+                put_val(A,bps,get_val(A,bps)**(wA-i));
+                A+=bps;
               }
             }
 
@@ -2356,8 +2388,8 @@ int main(int argc, char **argv){
             float *wA=fadewindow1;
             for(i=0;i<fragsamples;i++){
               for(j=0;j<ch;j++){
-                put_val(fragmentA,bps,get_val(fragmentA,bps)**(wA+i));
-                fragmentA+=bps;
+                put_val(A,bps,get_val(A,bps)**(wA+i));
+                A+=bps;
               }
             }
           }
@@ -2380,8 +2412,8 @@ int main(int argc, char **argv){
 
   /* done */
   /* join */
-  close(STDIN_FILENO);
   pthread_cond_signal(&state.play_cond);
+  pthread_cancel(fd_handle);
   pthread_mutex_unlock(&state.mutex);
   pthread_join(playback_handle,NULL);
   pthread_join(fd_handle,NULL);
