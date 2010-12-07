@@ -1,0 +1,47 @@
+<!--#include virtual="/ssi/header.include" -->
+<!-- Enter custom page information and styles here -->
+  <title>December 7, 2010: Xiph.Org announces libOgg 1.2.2</title>
+</head>
+<body>
+<!--#include virtual="/common/xiphbar.include" -->
+
+<!--#include virtual="/ssi/pagetop.include" -->
+<!--  All your page content goes here  -->
+
+
+<h3>libOgg 1.2.2 released</h3>
+
+
+<p>Xiph.Org is pleased to announce a full release of libogg 1.2.2.
+This is a spot release that contains only build and documentation
+fixes.
+
+<p>Changes and fixes in the new libogg release include:
+
+<ul>
+<li> Build fix (types correction) for Mac OS X
+<li> Update win32 project files to Visual Studio 2008
+<li> ogg_stream_pageout_fill documentation fix
+
+<p>This release contains no library code changes, only a type
+correction in a header to allow successful builds on Mac OS X.  A
+similar type change without practical effect was made for correctness
+purposes on BEOS.
+
+<p>Tarballs and zipfiles of the official release can be found in the
+usual place
+at <a href="http://downloads.xiph.org/releases/ogg">http://downloads.xiph.org/releases/ogg/</a>.
+
+<p>Happy hacking!
+
+<p>Monty
+<br>Xiph.Org
+
+<p><i> The Xiph.Org Foundation is a not-for-profit corporation
+dedicated to open, unencumbered multimedia technology. Xiph's formats
+and software levels the playing field for digital media so that all
+producers and artists can distribute their work for minimal cost,
+without restriction, regardless of affiliation.  May contain traces of
+nuts.</i></p>
+
+<!--#include virtual="/ssi/pagebottom.include" -->
