@@ -22,6 +22,7 @@ fixes.
 <li> Build fix (types correction) for Mac OS X
 <li> Update win32 project files to Visual Studio 2008
 <li> ogg_stream_pageout_fill documentation fix
+</ul>
 
 <p>This release contains no library code changes, only a type
 correction in a header to allow successful builds on Mac OS X.  A
