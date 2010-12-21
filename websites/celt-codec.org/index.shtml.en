@@ -39,8 +39,8 @@
         CELT is suitable for both speech and music and currently features:
 </p>
 <ul>
-	<li>Ultra-low latency (typically from 3 to 9 ms) </li>
-	<li>Full audio bandwidth (≥20kHz; sample rates from 32 kHz to 96 kHz)</li>
+	<li>Ultra-low latency (typically from 5 to 22.5 ms) </li>
+	<li>Full audio bandwidth (≥20kHz; sample rates from 8 kHz to 48 kHz)</li>
 	<li>Support for both speech and music</li>
 	<li>A quality/bitrate trade-off competitive with widely used high delay codecs</li>
 	<li>Stereo support</li>
@@ -80,6 +80,13 @@
 
 <h2>Headlines</h2>
 <ul class="descriptivelist">
+   <li>
+      <h3>Version 0.10.0 released</h3>
+      <p class="submitdate">21 December, 2010</p>
+      <div class="description">
+                <p>CELT 0.10.0 has been released with a focus on quality improvements. The bit-stream is <b>not</b> compatible with version 0.9.x. See <a href="http://people.xiph.org/~xiphmont/demo/celt/demo.html">Monty's CELT demo page</a> for more details on recent (and less recent) CELT development.</p>
+      </div>
+   </li>
    <li>
       <h3>Version 0.9.1 released</h3>
       <p class="submitdate">8 November, 2010</p>

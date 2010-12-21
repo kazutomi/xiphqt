@@ -30,6 +30,21 @@
 
 <ul class="descriptivelist">
    <li>
+      <h3>Version 0.10.0 released</h3>
+      <p class="submitdate">21 December, 2010</p>
+      <div class="description">
+                <p>CELT 0.10.0 has been released with a focus on quality improvements. The bit-stream is <b>not</b> compatible with version 0.9.x. See <a href="http://people.xiph.org/~xiphmont/demo/celt/demo.html">Monty's CELT demo page</a> for more details on recent (and less recent) CELT development.</p>
+      </div>
+   </li>
+   <li>
+      <h3>Version 0.9.1 released</h3>
+      <p class="submitdate">8 November, 2010</p>
+      <div class="description">
+                <p>CELT 0.9.1 greatly improves the packet loss concealment.
+                   This change is especially dramatic in fixed point mode. The bit-stream is compatible with 0.9.0.</p>
+      </div>
+   </li>
+   <li>
       <h3>Version 0.9.0 released</h3>
       <p class="submitdate">6 November, 2010</p>
       <div class="description">
