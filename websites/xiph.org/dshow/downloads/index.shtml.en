@@ -30,7 +30,7 @@
 <h2>Binaries</h2>
 
 <ul>
-    <li>Windows 32/64-bit Installer: <a href="http://downloads.xiph.org/releases/oggdsf/opencodecs_0.84.17359.exe">opencodecs_0.84.17359.exe</a> 2,46MB</li>
+    <li>Windows 32/64-bit Installer: <a href="http://downloads.xiph.org/releases/oggdsf/opencodecs_0.85.17766.exe">opencodecs_0.85.17766.exe</a> 2,53MB</li>
     <li>Windows Mobile 5.0 - 6.5 cab package: <a href="http://downloads.xiph.org/releases/oggdsf/opencodecs_0.84.17359-wm5.cab">opencodecs_0.84.17359-wm5.cab</a> 536KB</li>
 </ul>
 
@@ -41,7 +41,7 @@ The installers are digitally signed with a certificate provided by <a target="_n
 
 <h2>Source Code</h2>
 <ul>
-<li>Source code: <a href="http://downloads.xiph.org/releases/oggdsf/opencodecs_0.84.17359_src.7z">opencodecs_0.84.17359_src.7z</a> 5,26MB</li>
+<li>Source code: <a href="http://downloads.xiph.org/releases/oggdsf/opencodecs_0.85.17766_src.7z">opencodecs_0.85.17766_src.7z</a> 5,51MB</li>
 </ul>
 
 <p>The latest development version is always available through SVN at <a href="http://svn.xiph.org/trunk/oggdsf/">http://svn.xiph.org/trunk/oggdsf/</a>
@@ -50,7 +50,7 @@ The installers are digitally signed with a certificate provided by <a target="_n
 <h2>Debug symbols</h2>
 
 <ul>
-    <li>Windows 32/64-bit: <a href="http://downloads.xiph.org/releases/oggdsf/opencodecs_0.84.17359_pdbs.7z"> opencodecs_0.84.17359_pdbs.7z</a> 7,37MB</li>
+    <li>Windows 32/64-bit: <a href="http://downloads.xiph.org/releases/oggdsf/opencodecs_0.85.17766_pdbs.7z"> opencodecs_0.85.17766_pdbs.7z</a> 7,06MB</li>
     <li>Windows Mobile 5.0 - 6.5: <a href="http://downloads.xiph.org/releases/oggdsf/opencodecs_0.84.17359_pdbs-wm5.7z"> opencodecs_0.84.17359_pdbs-wm5.7z</a> 1,06MB</li>
 </ul>
 

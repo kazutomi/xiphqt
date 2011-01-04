@@ -8,6 +8,33 @@
 <!--#include virtual="/dshow/ssi/pagetop.include" -->
 <!--  All your page content goes here  -->
 
+<h2>Version 0.85.17766</h2>
+<p class="newsdate">19 December, 2010</p>
+
+<h3>Changes this version</h3>
+<ul>
+    <li>Updated libvpx to 0.9.5 (Aylesbury)</li>
+    <li>Updated webmdshow to 0.9.12</li>
+    <li>Updated libvorbis to 1.3.2</li>
+    <li>Updated libtremor</li>
+    <li>Updated libtheora to 1.2.0 alpha (SVN)</li>
+    <li>Fixed Speex playback. The previous versions had a Vorbis bug which caused Speex playback to
+       be broken.</li>
+    <li>Added "controls" attribute to HTML5 &lt;video&gt; ActiveX plugin</li>
+    <li>Theora Decoder filter can now be connected to the output of the Theora Encoder filter.</li>
+    <li>Fixed graph freeze when a Vorbis Decoder filter was connected to the output of a 
+      Vorbis Encoder filter.</li>
+    <li>Fixed <a href="https://trac.xiph.org/ticket/1619">#1619</a>: Contextual menu / open</li>
+    <li>Fixed <a href="https://trac.xiph.org/ticket/1737">#1737</a>: No audio on 'A Digital Media Primer for Geeks'</li>
+    <li>Fixed <a href="https://trac.xiph.org/ticket/1738">#1738</a>: dsfVorbisDecoder.dll DirectShow filter doesn't connect to source pin</li>
+    <li>Fixed <a href="https://trac.xiph.org/ticket/1748">#1748</a>: opencodecs unable to cope with less usual audio setups (ogg 6.1, possibly 7.1 
+      and other non-stereo ones)</li>
+</ul>
+
+<p>Note that due to upgrade to Visual Studio 2008 and by the presence of a Vorbis showstopper bug this release does not 
+include a Windows Mobile package.
+</p>
+      
 <h2>Version 0.84.17359</h2>
 <p class="newsdate">4 August, 2010</p>
 
