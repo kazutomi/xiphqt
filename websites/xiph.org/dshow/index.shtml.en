@@ -20,8 +20,8 @@ WebM support is based on versioned snapshots from <a href="http://code.google.co
 </p>
 
 <h1>News</h1>
-<h2>Version 0.85.17766</h2>
-<p class="newsdate">19 December, 2010</p>
+<h2>Version 0.85.17777</h2>
+<p class="newsdate">12 January, 2011</p>
 
 <p>Updates VP8, Theora, and, Vorbis codecs. ActiveX video player gains &quot;controls&quot; attribute support. Various bugfixes.
 </p>
@@ -30,7 +30,7 @@ Fore more information see the <a href="/dshow/news/">News</a> page.
 
 <h1>Downloads</h1>
 <ul>
-    <li>Windows 32/64-bit Installer: <a href="http://downloads.xiph.org/releases/oggdsf/opencodecs_0.85.17766.exe">opencodecs_0.85.17766.exe</a> 2,53MB</li>
+    <li>Windows 32/64-bit Installer: <a href="http://downloads.xiph.org/releases/oggdsf/opencodecs_0.85.17777.exe">opencodecs_0.85.17777.exe</a> 2,53MB</li>
     <li>Windows Mobile 5.0 - 6.5 cab package: <a href="http://downloads.xiph.org/releases/oggdsf/opencodecs_0.84.17359-wm5.cab">opencodecs_0.84.17359-wm5.cab</a> 536KB</li>
 </ul>
 <p>For more information see the <a href="/dshow/downloads/">Downloads</a> page.

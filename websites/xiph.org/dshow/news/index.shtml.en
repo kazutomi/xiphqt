@@ -8,6 +8,16 @@
 <!--#include virtual="/dshow/ssi/pagetop.include" -->
 <!--  All your page content goes here  -->
 
+<h2>Version 0.85.17777</h2>
+<p class="newsdate">12 January, 2011</p>
+
+<h3>Changes this version</h3>
+<ul>
+    <li>Fixed project configuration which referenced two CRT versions in output binaries.
+      The above issue created faulty binaries for Windows XP and it was due migration
+      to Visual Studio 2008.</li>
+</ul>
+
 <h2>Version 0.85.17766</h2>
 <p class="newsdate">19 December, 2010</p>
 
