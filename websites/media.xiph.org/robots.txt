@@ -1,3 +1,8 @@
 User-agent: *
 Disallow *.y4m
+Disallow *.yuv
+Disallow ED/ED-1080-png
+Disallow BBB/BBB-1080-png
+Disallow sintel/sintel_trailer-1080-png
+Disallow sintel/sintel-2k-png
 Disallow munin
