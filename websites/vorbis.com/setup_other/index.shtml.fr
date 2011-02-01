@@ -13,7 +13,7 @@
 <h2>OS/2 :</h2>
 <ul>
   <li><a href="http://silk.apana.org.au/vorbis/">Ogg Vorbis pour OS/2</a> :
-  Lecteur, encodeur, et plugins pour Ogg Vorbis sur les systèmes d'exploitation OS/2.</li>
+  Lecteur, encodeur, et plugins pour Ogg Vorbis sur les systÃ¨mes d'exploitation OS/2.</li>
 </ul>
 <h2>PocketPC :</h2>
 <ul>

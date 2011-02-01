@@ -16,17 +16,17 @@
   <li>libogg / libvorbis / vorbis-tools :
   Ce sont les logiciels standard qui vous permettent de lire
   et encoder des fichiers Ogg Vorbis. Ils sont inclus dans la
-  majorité des Systèmes d'Exploitation. Sinon, vous pouvez les
+  majoritÃ© des SystÃ¨mes d'Exploitation. Sinon, vous pouvez les
   compiler depuis les
   <a href="http://www.xiph.org/downloads/">sources</a>.</li>
 
   <li><a href="http://www.videolan.org/vlc/">VLC media player</a> :
-  VLC est un lecteur multimédia très portable pour divers formats
-  audio et vidéo.</li>
+  VLC est un lecteur multimÃ©dia trÃ¨s portable pour divers formats
+  audio et vidÃ©o.</li>
 
   <li><a href="http://www.xmms.org/">XMMS</a> :
-  Le plus populaire des lecteurs multimédia pour Linux. XMMS
-  lit les fichiers Ogg Vorbis, permet d'éditer les commentaires
+  Le plus populaire des lecteurs multimÃ©dia pour Linux. XMMS
+  lit les fichiers Ogg Vorbis, permet d'Ã©diter les commentaires
   de ces fichiers, et supporte les <span xml:lang="en">streams</span>
   Vorbis.</li>
 </ul>
@@ -37,7 +37,7 @@
   <li>libogg / libvorbis / vorbis-tools :
   Ce sont les logiciels standard qui vous permettent de lire
   et encoder des fichiers Ogg Vorbis. Ils sont inclus dans la
-  majorité des Systèmes d'Exploitation. Sinon, vous pouvez les
+  majoritÃ© des SystÃ¨mes d'Exploitation. Sinon, vous pouvez les
   compiler depuis les
   <a href="http://www.xiph.org/downloads/">sources</a>.</li>
 </ul>

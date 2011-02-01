@@ -19,11 +19,11 @@
 </div>
 
 <p style="font-size: 1.2em;"><b>Pour obtenir le code source, rendez vous sur la
-<a href="http://www.xiph.org/downloads/">page de téléchargement Xiph.org</a>.</b></p>
+<a href="http://www.xiph.org/downloads/">page de tÃ©lÃ©chargement Xiph.org</a>.</b></p>
 
-<p>Pour configurer votre système pour écouter de la musique en Ogg Vorbis, choisissez d'abord
-votre système d'exploitation ci-dessus.</p>
+<p>Pour configurer votre systÃ¨me pour Ã©couter de la musique en Ogg Vorbis, choisissez d'abord
+votre systÃ¨me d'exploitation ci-dessus.</p>
 
-<p>Pour plus de téléchargements, voyez la page <a href="/software">logiciels tiers</a>.</p>
+<p>Pour plus de tÃ©lÃ©chargements, voyez la page <a href="/software">logiciels tiers</a>.</p>
 
 <!--#include virtual="/ssi/pagebottom.include.fr" -->

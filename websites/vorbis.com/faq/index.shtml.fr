@@ -14,16 +14,16 @@
 <ul>
   <li><a href="#what" id="_what">Qu'est-ce que c'est que Ogg Vorbis&nbsp;?</a></li>
   <li><a href="#names" id="_names">Que veulent dire ces noms&nbsp;?</a></li>
-  <li><a href="#mean" id="_mean">D'où viennent les noms? Que représente le logo&nbsp;?</a></li>
+  <li><a href="#mean" id="_mean">D'oÃ¹ viennent les noms? Que reprÃ©sente le logo&nbsp;?</a></li>
   <li><a href="#mimetype" id="_mimetype">Quel est le type de contenu MIME d'un flux Ogg Vorbis&nbsp;?</a></li>
-  <li><a href="#replace" id="_replace">Est-ce que Vorbis remplace complètement le MP3, ou
-  est-ce juste un codec complémentaire&nbsp;?</a></li>
-  <li><a href="#artist" id="_artist">Je suis un artiste. Pourquoi devrais-je être intéressé&nbsp;?</a></li>
-  <li><a href="#fan" id="_fan">Je suis un amateur de musique. Pourquoi devrais-je être
-  intéressé&nbsp;?</a></li>
-  <li><a href="#dev" id="_dev">Je suis un développeur. Pourquoi devrais-je être intéressé&nbsp;?</a></li>
+  <li><a href="#replace" id="_replace">Est-ce que Vorbis remplace complÃ¨tement le MP3, ou
+  est-ce juste un codec complÃ©mentaire&nbsp;?</a></li>
+  <li><a href="#artist" id="_artist">Je suis un artiste. Pourquoi devrais-je Ãªtre intÃ©ressÃ©&nbsp;?</a></li>
+  <li><a href="#fan" id="_fan">Je suis un amateur de musique. Pourquoi devrais-je Ãªtre
+  intÃ©ressÃ©&nbsp;?</a></li>
+  <li><a href="#dev" id="_dev">Je suis un dÃ©veloppeur. Pourquoi devrais-je Ãªtre intÃ©ressÃ©&nbsp;?</a></li>
   <li><a href="#company" id="_company">Je travaille dans une maison de disques. Pourquoi
-  devrais-je être intéressé&nbsp;?</a></li>
+  devrais-je Ãªtre intÃ©ressÃ©&nbsp;?</a></li>
 </ul>
 
 <h2>Licence</h2>
@@ -31,63 +31,63 @@
   <li><a href="#flic" id="_flic">Quelle est la licence du format Ogg Vorbis&nbsp;?</a></li>
   <li><a href="#slic" id="_slic">Quelle licence s'applique aux logiciels Ogg Vorbis
   inclus&nbsp;?</a></li>
-  <li><a href="#com" id="_com">Nous créons des logiciels commerciaux et propriétaires.
+  <li><a href="#com" id="_com">Nous crÃ©ons des logiciels commerciaux et propriÃ©taires.
   Est-ce que je peux utiliser Ogg Vorbis&nbsp;? Quelle licence doit-on payer&nbsp;?</a></li>
-  <li><a href="#sell" id="_sell">Y a-t-il des droits à payer pour distribuer, vendre, ou
+  <li><a href="#sell" id="_sell">Y a-t-il des droits Ã  payer pour distribuer, vendre, ou
   streamer du contenu dans le format Ogg Vorbis&nbsp;?</a></li>
-  <li><a href="#money" id="_money">S'il n'y a pas de droits à payer, comment allez-vous
-  gagner de l'argent avec ce format&nbsp;? Allez-vous réclamer des droits plus tard, quand
+  <li><a href="#money" id="_money">S'il n'y a pas de droits Ã  payer, comment allez-vous
+  gagner de l'argent avec ce format&nbsp;? Allez-vous rÃ©clamer des droits plus tard, quand
   Vorbis deviendra populaire&nbsp;?</a></li>
 </ul>
 
-<h2>Qualité audio</h2>
+<h2>QualitÃ© audio</h2>
 <ul>
-  <li><a href="#lossy" id="_lossy">J'ai entendu dire que Vorbis était un codec
+  <li><a href="#lossy" id="_lossy">J'ai entendu dire que Vorbis Ã©tait un codec
   &laquo;&nbsp;avec pertes&nbsp;&raquo;. Qu'est-ce que cela veut dire&nbsp;?</a></li>
   <li><a href="#sound" id="_sound">Vorbis a-t-il un meilleur rendu sonore que MP3&nbsp;?</a></li>
   <li><a href="#other" id="_other">Pourquoi Ogg Vorbis est-il meilleur que les autres codecs
   &laquo;&nbsp;Nouveau MP3&nbsp;&raquo; qui sont disponibles&nbsp;?</a></li>
   <li><a href="#transcode" id="_transcode">Est-ce que je peux convertir ma collection de MP3
   au format Ogg Vorbis&nbsp;?</a></li>
-  <li><a href="#test" id="_test">Vous dites que Vorbis a une bonne qualité audio. Avez-vous
-  fait un quelconque test pour prouver ça&nbsp;?</a></li>
-  <li><a href="#bugs" id="_bugs">J'ai entendu des extraits de démonstration qui avaient des
+  <li><a href="#test" id="_test">Vous dites que Vorbis a une bonne qualitÃ© audio. Avez-vous
+  fait un quelconque test pour prouver Ã§a&nbsp;?</a></li>
+  <li><a href="#bugs" id="_bugs">J'ai entendu des extraits de dÃ©monstration qui avaient des
   artefacts audible. Pourquoi&nbsp;?</a></li>
-  <li><a href="#quality" id="_quality">A quoi correspond le paramètre de
-  &laquo;&nbsp;Qualité&nbsp;&raquo;&nbsp;?</a></li>
-  <li><a href="#speech" id="_speech">Quels sont les résultats de Vorbis pour la compression
+  <li><a href="#quality" id="_quality">A quoi correspond le paramÃ¨tre de
+  &laquo;&nbsp;QualitÃ©&nbsp;&raquo;&nbsp;?</a></li>
+  <li><a href="#speech" id="_speech">Quels sont les rÃ©sultats de Vorbis pour la compression
   de la voix&nbsp;?</a></li>
 </ul>
 
-<h2>Fonctionnalités</h2>
+<h2>FonctionnalitÃ©s</h2>
 <ul>
   <li><a href="#comments" id="_comments">Ogg Vorbis permet-il d'afficher des informations
-  sur les chansons (titre, artiste) quand le fichier est lu ou streamé&nbsp;?</a></li>
-  <li><a href="#video" id="_video">Et la vidéo&nbsp;?</a></li>
+  sur les chansons (titre, artiste) quand le fichier est lu ou streamÃ©&nbsp;?</a></li>
+  <li><a href="#video" id="_video">Et la vidÃ©o&nbsp;?</a></li>
   <li><a href="#stream" id="_stream">Qu'en est-il du <span xml:lang="en">streaming</span>
   avec Ogg Vorbis&nbsp;?</a></li>
-  <li><a href="#support" id="_support">Quels logiciels et matériels supportent Ogg
+  <li><a href="#support" id="_support">Quels logiciels et matÃ©riels supportent Ogg
   Vorbis&nbsp;?</a></li>
   <li><a href="#container" id="_container">Est-ce que je peux combiner Vorbis et d'autres
-  types de fichiers (comme des paroles de chansons ou des images) dans le même
+  types de fichiers (comme des paroles de chansons ou des images) dans le mÃªme
   fichier&nbsp;?</a></li>
 </ul>
 
-<h2>Développement</h2>
+<h2>DÃ©veloppement</h2>
 <ul>
   <li><a href="#startdev" id="_startdev">Comment est-ce que je peux me familiariser avec
-  le développement d'Ogg Vorbi&nbsp;?</a></li>
-  <li><a href="#fpsupport" id="_fpsupport">Est-il possible de porter l'encodeur/décodeur
+  le dÃ©veloppement d'Ogg Vorbi&nbsp;?</a></li>
+  <li><a href="#fpsupport" id="_fpsupport">Est-il possible de porter l'encodeur/dÃ©codeur
   Vorbis pour une plateforme sans gestion de virgule flottante&nbsp;?</a></li>
 </ul>
 
-<h2>Méta-FAQ</h2>
+<h2>MÃ©ta-FAQ</h2>
 <ul>
-  <li><a href="#FAQmorequestions" id="_FAQmorequestions">J'ai une question à laquelle cette
-  FAQ ne répond pas. Où puis-je trouver de l'aide&nbsp;?</a></li>
-  <li><a href="#FAQcontribute" id="_FAQcontribute">Où peut-on discuter de cette FAQ et
+  <li><a href="#FAQmorequestions" id="_FAQmorequestions">J'ai une question Ã  laquelle cette
+  FAQ ne rÃ©pond pas. OÃ¹ puis-je trouver de l'aide&nbsp;?</a></li>
+  <li><a href="#FAQcontribute" id="_FAQcontribute">OÃ¹ peut-on discuter de cette FAQ et
   y contribuer&nbsp;?</a></li>
-  <li><a href="#FAQcurrent" id="_FAQcurrent">Quand a été mise à jour cette FAQ&nbsp;?</a></li>
+  <li><a href="#FAQcurrent" id="_FAQcurrent">Quand a Ã©tÃ© mise Ã  jour cette FAQ&nbsp;?</a></li>
 </ul>
 
 <hr/>
@@ -95,27 +95,27 @@
 <dl>
   <dt><a href="#_what" id="what">Qu'est-ce que c'est que Ogg Vorbis&nbsp;?</a></dt>
   <dd><p>Ogg Vorbis est un nouveau format de compression. Il est plus ou moins comparable
-  aux autres formats utilisés pour stocker et lire de la musique numérique, comme MP3, VQF,
-  AAC, et d'autres encore. Il est différent de ces formats car il est complètement gratuit,
-  ouvert, et non breveté.</p>
+  aux autres formats utilisÃ©s pour stocker et lire de la musique numÃ©rique, comme MP3, VQF,
+  AAC, et d'autres encore. Il est diffÃ©rent de ces formats car il est complÃ¨tement gratuit,
+  ouvert, et non brevetÃ©.</p>
   </dd>
 
   <dt><a href="#_names" id="names">Que veulent dire ces noms&nbsp;?</a></dt>
   <dd>
     <p/><dl>
       <dt><dfn>Ogg</dfn></dt>
-      <dd>Ogg est le nom du format conteneur pour l'audio, la vidéo et les métadonnées de
+      <dd>Ogg est le nom du format conteneur pour l'audio, la vidÃ©o et les mÃ©tadonnÃ©es de
 	  Xiph.org.</dd>
 
       <dt><dfn>Vorbis</dfn></dt>
-      <dd>Vorbis est le nom d'un système de compression audio spécifiquement développé pour
-	  être contenu dans des conteneurs Ogg. Notez que d'autres formats peuvent être intégrés
+      <dd>Vorbis est le nom d'un systÃ¨me de compression audio spÃ©cifiquement dÃ©veloppÃ© pour
+	  Ãªtre contenu dans des conteneurs Ogg. Notez que d'autres formats peuvent Ãªtre intÃ©grÃ©s
 	  dans des conteneurs Ogg, comme <a href="http://flac.sourceforge.net/">FLAC</a> ou
 	  <a href="http://www.speex.org/">Speex</a>.</dd>
     </dl><p/>
   </dd>
 
-  <dt><a href="#_mean" id="mean">D'où viennent les noms? Que représente le logo&nbsp;?</a></dt>
+  <dt><a href="#_mean" id="mean">D'oÃ¹ viennent les noms? Que reprÃ©sente le logo&nbsp;?</a></dt>
   <dd><p><a href="http://www.xiph.org">Xiph.org</a> maintient
   <a href="http://www.xiph.org/xiphname">une page</a> qui explique l'origine et le sens des
   noms et des logos.</p>
@@ -124,59 +124,59 @@
   <dt><a href="#_mimetype" id="mimetype">Quel est le type de contenu MIME d'un flux Ogg
   Vorbis&nbsp;?</a></dt>
   <dd><p><code>application/ogg</code>.</p>
-  <p>Le type MIME officiel a été approuvé en février 2003. Vous pourrez cependant peut-être
-  rencontrer encore le type MIME expérimental <code>application/x-ogg</code>.</p>
+  <p>Le type MIME officiel a Ã©tÃ© approuvÃ© en fÃ©vrier 2003. Vous pourrez cependant peut-Ãªtre
+  rencontrer encore le type MIME expÃ©rimental <code>application/x-ogg</code>.</p>
   </dd>
 
-  <dt><a href="#_replace" id="replace">Est-ce que Vorbis remplace complètement le MP3, ou
-  est-ce juste un codec complémentaire&nbsp;?</a></dt>
-  <dd><p>Ogg Vorbis a été créé pour remplacer complètement tous les formats audio
-  propriétaires et brevetés. Cela veut dire que vous pouvez encoder votre musique ou vos
-  contenus audio avec Vorbis et ne jamais regarder en arrière.</p>
+  <dt><a href="#_replace" id="replace">Est-ce que Vorbis remplace complÃ¨tement le MP3, ou
+  est-ce juste un codec complÃ©mentaire&nbsp;?</a></dt>
+  <dd><p>Ogg Vorbis a Ã©tÃ© crÃ©Ã© pour remplacer complÃ¨tement tous les formats audio
+  propriÃ©taires et brevetÃ©s. Cela veut dire que vous pouvez encoder votre musique ou vos
+  contenus audio avec Vorbis et ne jamais regarder en arriÃ¨re.</p>
   </dd>
 
-  <dt><a href="#_artist" id="artist">Je suis un artiste. Pourquoi devrais-je être intéressé&nbsp;?</a></dt>
+  <dt><a href="#_artist" id="artist">Je suis un artiste. Pourquoi devrais-je Ãªtre intÃ©ressÃ©&nbsp;?</a></dt>
   <dd><p>Il y a plusieurs raisons :</p>
   <ul>
-    <li>Les fichiers compressés Vorbis sont de plus petite taille, et pourtant sont de
-	qualité comparable. <strong>La meilleure compression de Vorbis diminuera les coûts en
-	bande passante</strong>, et vous évitera ainsi d'être victime de votre popularité.</li>
+    <li>Les fichiers compressÃ©s Vorbis sont de plus petite taille, et pourtant sont de
+	qualitÃ© comparable. <strong>La meilleure compression de Vorbis diminuera les coÃ»ts en
+	bande passante</strong>, et vous Ã©vitera ainsi d'Ãªtre victime de votre popularitÃ©.</li>
 
-    <li>Le champ de commentaire standardisé et facile à éditer de Vorbis vous offre un
-	espace pour pouvoir écrire toutes sortes de notes à propos de vous qui seront
-	distribuées avec la musique ; cela aide les fans à vous trouver vous, votre site,
-	et où acheter vos produits.</li>
+    <li>Le champ de commentaire standardisÃ© et facile Ã  Ã©diter de Vorbis vous offre un
+	espace pour pouvoir Ã©crire toutes sortes de notes Ã  propos de vous qui seront
+	distribuÃ©es avec la musique ; cela aide les fans Ã  vous trouver vous, votre site,
+	et oÃ¹ acheter vos produits.</li>
 
-    <li>Si vous décidez de vendre votre musique au format MP3, vous devrez payer à
+    <li>Si vous dÃ©cidez de vendre votre musique au format MP3, vous devrez payer Ã 
 	Fraunhofer un pourcentage sur chaque vente, parce que vous utilisez leurs brevets.
-	Vorbis est libre de tout brevet ou licence, vous n'aurez donc jamais à payer quiconque
+	Vorbis est libre de tout brevet ou licence, vous n'aurez donc jamais Ã  payer quiconque
 	pour vendre, donner ou diffuser votre propre musique.</li>
   </ul><p/>
   </dd>
 
-  <dt><a href="#_fan" id="fan">Je suis un amateur de musique. Pourquoi devrais-je être
-  intéressé&nbsp;?</a></dt>
-  <dd><p>Parce que Vorbis fournit un format de haute qualité pour écouter votre musique.</p>
+  <dt><a href="#_fan" id="fan">Je suis un amateur de musique. Pourquoi devrais-je Ãªtre
+  intÃ©ressÃ©&nbsp;?</a></dt>
+  <dd><p>Parce que Vorbis fournit un format de haute qualitÃ© pour Ã©couter votre musique.</p>
   <ul>
-    <li>Pour une taille de fichier donnée, Vorbis rend mieux que le MP3. Cela signifie que :
+    <li>Pour une taille de fichier donnÃ©e, Vorbis rend mieux que le MP3. Cela signifie que :
     <ul>
-        <li>Vous pouvez stocker votre discothèque avec la même qualité sonore, mais en
+        <li>Vous pouvez stocker votre discothÃ¨que avec la mÃªme qualitÃ© sonore, mais en
 		prenant moins d'espace.</li>
-        <li><strong>ou bien</strong> vous pouvez stocker votre discothèque dans le même
-		espace, mais avec une meilleure qualité.</li>
+        <li><strong>ou bien</strong> vous pouvez stocker votre discothÃ¨que dans le mÃªme
+		espace, mais avec une meilleure qualitÃ©.</li>
     </ul>
     </li>
 
-    <li>Vorbis jouit déjà d'un bon support parmi les lecteurs multimedia, et le support des
-	lecteurs portables est en cours de développement.</li>
+    <li>Vorbis jouit dÃ©jÃ  d'un bon support parmi les lecteurs multimedia, et le support des
+	lecteurs portables est en cours de dÃ©veloppement.</li>
   </ul><p/>
   </dd>
 
-  <dt><a href="#_dev" id="dev">Je suis un développeur. Pourquoi devrais-je être intéressé&nbsp;?</a></dt>
-  <dd><p>Epic Games (les créateurs d'Unreal Tournament, entre autres) utilisent Vorbis dans
+  <dt><a href="#_dev" id="dev">Je suis un dÃ©veloppeur. Pourquoi devrais-je Ãªtre intÃ©ressÃ©&nbsp;?</a></dt>
+  <dd><p>Epic Games (les crÃ©ateurs d'Unreal Tournament, entre autres) utilisent Vorbis dans
   leurs jeux depuis la sortie d'Unreal Tournament 2003 pour compresser la musique des jeux
-  sans avoir à payer des droits sur chaque jeu vendu pour utiliser des brevets.
-  <strong>Vorbis permet aux développeurs d'économiser de l'argent en évitant d'avoir à
+  sans avoir Ã  payer des droits sur chaque jeu vendu pour utiliser des brevets.
+  <strong>Vorbis permet aux dÃ©veloppeurs d'Ã©conomiser de l'argent en Ã©vitant d'avoir Ã 
   s'acquitter de droits sur des brevets.</strong></p>
   <p>Epic n'est pas seul, voici une liste non exhaustive d'utilisateurs de Vorbis :</p>
   <ul>
@@ -186,21 +186,21 @@
     <li>PopCap Games (Alchemy)</li>
     <li>EA Games (Harry Potter and the Chamber of Secrets)</li>
   </ul>
-  <p>Intéressé&nbsp;? visitez notre <a href="http://www.xiph.org/vorbis/">site pour
-  développeurs</a>.</p>
+  <p>IntÃ©ressÃ©&nbsp;? visitez notre <a href="http://www.xiph.org/vorbis/">site pour
+  dÃ©veloppeurs</a>.</p>
   </dd>
 
   <dt><a href="#_company" id="company">Je travaille dans une maison de disques. Pourquoi
-  devrais-je être intéressé&nbsp;?</a></dt>
+  devrais-je Ãªtre intÃ©ressÃ©&nbsp;?</a></dt>
   <dd><p/>
   <ul>
-    <li>Les encodeurs Vorbis gratuit et offrant un excellent rapport qualité / taille de
-	fichier <em>diminuent les coûts de bande passante</em> et <em>éliminent</em> les coûts
+    <li>Les encodeurs Vorbis gratuit et offrant un excellent rapport qualitÃ© / taille de
+	fichier <em>diminuent les coÃ»ts de bande passante</em> et <em>Ã©liminent</em> les coÃ»ts
 	de licences sur la compression.</li>
 
-    <li>Pensez à une épicerie qui offrirait des échantillons gratuits : vos clients seront
-	plus enclins à acheter votre produit s'il est bien présenté. Vous pouvez ainsi faire
-	découvrir le <em>vrai</em> son de vos artistes à vos clients potentiels avec Ogg
+    <li>Pensez Ã  une Ã©picerie qui offrirait des Ã©chantillons gratuits : vos clients seront
+	plus enclins Ã  acheter votre produit s'il est bien prÃ©sentÃ©. Vous pouvez ainsi faire
+	dÃ©couvrir le <em>vrai</em> son de vos artistes Ã  vos clients potentiels avec Ogg
 	Vorbis.</li>
   </ul>
   </dd>
@@ -212,182 +212,182 @@
 <h3>Licence</h3>
 <dl>
   <dt><a href="#_flic" id="flic">Quelle est la licence du format Ogg Vorbis&nbsp;?</a></dt>
-  <dd><p>La spécification Ogg Vorbis est dans le domaine public. Elle est complètement
+  <dd><p>La spÃ©cification Ogg Vorbis est dans le domaine public. Elle est complÃ¨tement
   gratuite et libre pour tout usage, qu'il soit commercial ou non. Cela signifie que des
-  développeurs commerciaux peuvent écrire de manière indépendante des logiciels utilisant
-  Ogg Vorbis et compatibles avec la spécification sans avoir de droits à payer, et sans
-  aucune limitation. Les logiciels que nous avons développés sont cependant disponibles
-  sous diverses licences logicielles libres / open-source, avec différentes possibilités
+  dÃ©veloppeurs commerciaux peuvent Ã©crire de maniÃ¨re indÃ©pendante des logiciels utilisant
+  Ogg Vorbis et compatibles avec la spÃ©cification sans avoir de droits Ã  payer, et sans
+  aucune limitation. Les logiciels que nous avons dÃ©veloppÃ©s sont cependant disponibles
+  sous diverses licences logicielles libres / open-source, avec diffÃ©rentes possibilitÃ©s
   et restrictions.</p>
   </dd>
 
   <dt><a href="#_slic" id="slic">Quelle licence s'applique aux logiciels Ogg Vorbis
   inclus&nbsp;?</a></dt>
   <dd><p>La plupart (mais pas tous) nos logiciels utilitaires sont rendus disponibles sous
-  licence <a href="http://www.gnu.org/copyleft/gpl.html">GNU GPL</a>. Les bibliothèques et
-  les kits de développement logiciel (SDK) sont placés sous
-  <a href="http://www.xiph.org/licenses/bsd/">notre propre licence, similaire à la BSD</a>.</p>
-  <p>Notez cependant que les développeurs sont toujours libres d'utiliser la spécification
-  pour écrire des implémentations d'Ogg Vorbis sous d'autres licences.</p>
+  licence <a href="http://www.gnu.org/copyleft/gpl.html">GNU GPL</a>. Les bibliothÃ¨ques et
+  les kits de dÃ©veloppement logiciel (SDK) sont placÃ©s sous
+  <a href="http://www.xiph.org/licenses/bsd/">notre propre licence, similaire Ã  la BSD</a>.</p>
+  <p>Notez cependant que les dÃ©veloppeurs sont toujours libres d'utiliser la spÃ©cification
+  pour Ã©crire des implÃ©mentations d'Ogg Vorbis sous d'autres licences.</p>
   </dd>
 
-  <dt><a href="#_com" id="com">Nous créons des logiciels commerciaux et propriétaires.
+  <dt><a href="#_com" id="com">Nous crÃ©ons des logiciels commerciaux et propriÃ©taires.
   Est-ce que je peux utiliser Ogg Vorbis&nbsp;? Quelle licence doit-on payer&nbsp;?</a></dt>
-  <dd><p>Encore une fois, <strong>il n'y a pas de licence à payer pour
+  <dd><p>Encore une fois, <strong>il n'y a pas de licence Ã  payer pour
   <em style='text-transform: uppercase; font-style: normal;'>quelque utilisation que ce
-  soit</em> de la spécification Ogg Vorbis</strong>. En tant que développeur, vous êtes
-  libre de créer, vendre (ou distribuer gratuitement) des implémentations open source ou
-  propriétaires des encodeurs, décodeurs et autres outils Vorbis. Cependant, si vous
-  utilisez nos logiciels au lieu de coder une implémentation indépendante, vous devez
-  respecter les termes de la licence. Nos bibliothèques sont disponibles sous
+  soit</em> de la spÃ©cification Ogg Vorbis</strong>. En tant que dÃ©veloppeur, vous Ãªtes
+  libre de crÃ©er, vendre (ou distribuer gratuitement) des implÃ©mentations open source ou
+  propriÃ©taires des encodeurs, dÃ©codeurs et autres outils Vorbis. Cependant, si vous
+  utilisez nos logiciels au lieu de coder une implÃ©mentation indÃ©pendante, vous devez
+  respecter les termes de la licence. Nos bibliothÃ¨ques sont disponibles sous
   <a href="http://www.xiph.org/licenses/bsd/">notre licence de type BSD</a>, et peuvent
-  être utilisées entièrement ou en partie dans des applications propriétaires.</p>
+  Ãªtre utilisÃ©es entiÃ¨rement ou en partie dans des applications propriÃ©taires.</p>
   </dd>
 
-  <dt><a href="#_sell" id="sell">Y a-t-il des droits à payer pour distribuer, vendre, ou
+  <dt><a href="#_sell" id="sell">Y a-t-il des droits Ã  payer pour distribuer, vendre, ou
   streamer du contenu dans le format Ogg Vorbis&nbsp;?</a></dt>
   <dd><p style="font-weight: bold;">Non.</p>
   </dd>
 
-  <dt><a href="#_money" id="money">S'il n'y a pas de droits à payer, comment allez-vous
-  gagner de l'argent avec ce format&nbsp;? Allez-vous réclamer des droits plus tard, quand
+  <dt><a href="#_money" id="money">S'il n'y a pas de droits Ã  payer, comment allez-vous
+  gagner de l'argent avec ce format&nbsp;? Allez-vous rÃ©clamer des droits plus tard, quand
   Vorbis deviendra populaire&nbsp;?</a></dt>
-  <dd><p>Les bénéfices d'un format sans licence ni brevet dépassent les problèmes de
+  <dd><p>Les bÃ©nÃ©fices d'un format sans licence ni brevet dÃ©passent les problÃ¨mes de
   l'argent que l'on pourrait tirer directement de ce format. Le format Vorbis sera toujours
-  libre, gratuit, et dans le domaine public. Xiph.org examine divers modèles de
-  développement économique ; certains de ceux-ci peuvent conduire à faire payer aux
-  projets commerciaux des droits sur des programmes et des bibliothèques non libres liés à
-  Vorbis. L'encodeur et le décodeur de référence resteront néanmoins toujours open source
-  et des tiers seront toujours libres de les modifier ou de les réimplémenter.</p>
+  libre, gratuit, et dans le domaine public. Xiph.org examine divers modÃ¨les de
+  dÃ©veloppement Ã©conomique ; certains de ceux-ci peuvent conduire Ã  faire payer aux
+  projets commerciaux des droits sur des programmes et des bibliothÃ¨ques non libres liÃ©s Ã 
+  Vorbis. L'encodeur et le dÃ©codeur de rÃ©fÃ©rence resteront nÃ©anmoins toujours open source
+  et des tiers seront toujours libres de les modifier ou de les rÃ©implÃ©menter.</p>
   </dd>
 </dl>
 
 <p><a href="#top">Retour en haut</a></p>
 
 <hr/>
-<h3>Qualité audio</h3>
+<h3>QualitÃ© audio</h3>
 <dl>
-  <dt><a href="#_lossy" id="lossy">J'ai entendu dire que Vorbis était un codec
+  <dt><a href="#_lossy" id="lossy">J'ai entendu dire que Vorbis Ã©tait un codec
   &laquo;&nbsp;avec pertes&nbsp;&raquo;. Qu'est-ce que cela veut dire&nbsp;?</a></dt>
   <dd><p>Il y a deux grandes classes d'algorithmes de compression :</p>
   <dl>
     <dt><dfn>avec pertes</dfn></dt>
-    <dd>Les algorithmes de compression avec pertes <em>suppriment</em> des données pour
-	pouvoir compresser de manière plus efficace. On peut citer comme exemples d'algorithmes
+    <dd>Les algorithmes de compression avec pertes <em>suppriment</em> des donnÃ©es pour
+	pouvoir compresser de maniÃ¨re plus efficace. On peut citer comme exemples d'algorithmes
 	avec pertes <acronym xml:lang="en" title="Joint Photographic Experts Group">JPEG</acronym>,
 	Vorbis, et <acronym xml:lang="en" title="MPEG-1/2 Layer III">MP3</acronym>.</dd>
 
     <dt><dfn>sans pertes</dfn></dt>
-    <dd>Les algorithmes de compression sans pertes produisent des données compressées qui
-	peuvent être décodées de manière à retrouver les données originales. Zip est un format
-	de compression sans pertes courant et générique&nbsp;;
+    <dd>Les algorithmes de compression sans pertes produisent des donnÃ©es compressÃ©es qui
+	peuvent Ãªtre dÃ©codÃ©es de maniÃ¨re Ã  retrouver les donnÃ©es originales. Zip est un format
+	de compression sans pertes courant et gÃ©nÃ©rique&nbsp;;
 	<a href="http://flac.sourceforge.net/">FLAC</a> est un format de compression sans pertes
-	qui est spécifiquement créé pour l'audio..</dd>
+	qui est spÃ©cifiquement crÃ©Ã© pour l'audio..</dd>
   </dl>
   </dd>
 
   <dt><a href="#_sound" id="sound">Vorbis a-t-il un meilleur rendu sonore que MP3&nbsp;?</a></dt>
-  <dd><p>Oui, sans aucun doute. Bien sûr, nous vous invitons à juger par vous-mêmes&nbsp;:
+  <dd><p>Oui, sans aucun doute. Bien sÃ»r, nous vous invitons Ã  juger par vous-mÃªmes&nbsp;:
   allez visiter notre page
   &laquo;&nbsp;<a href="http://www.xiph.org/vorbis/listen.html">Osez comparer</a>&nbsp;&raquo;
-  pour quelques-uns de  nos exemples en écoute.</p></dd>
+  pour quelques-uns de  nos exemples en Ã©coute.</p></dd>
 
   <dt><a href="#_other" id="other">Pourquoi Ogg Vorbis est-il meilleur que les autres codecs
   &laquo;&nbsp;Nouveau MP3&nbsp;&raquo; qui sont disponibles&nbsp;?</a></dt>
-  <dd><p>Vorbis a une meilleure sonorité. Vorbis est libre, donc vous êtes libre de
-  l'utiliser sur votre plateforme préférée. Vorbis n'a pas de restrictions de propriété
+  <dd><p>Vorbis a une meilleure sonoritÃ©. Vorbis est libre, donc vous Ãªtes libre de
+  l'utiliser sur votre plateforme prÃ©fÃ©rÃ©e. Vorbis n'a pas de restrictions de propriÃ©tÃ©
   intellectuelle qui viennent vous barrer le chemin. Et Vorbis n'essaye pas seulement
-  d'avoir une meilleure sonorité, mais aussi de tout faire fondamentalement mieux dans tous
-  les domaines où il le peut.</p>
+  d'avoir une meilleure sonoritÃ©, mais aussi de tout faire fondamentalement mieux dans tous
+  les domaines oÃ¹ il le peut.</p>
   </dd>
 
   <dt><a href="#_transcode" id="transcode">Est-ce que je peux convertir ma collection de MP3
   au format Ogg Vorbis&nbsp;?</a></dt>
-  <dd><p>Vous pouvez convertir en Ogg Vorbis à partir de n'importe quel format. Cependant,
-  convertir à partir d'un format avec pertes, comme MP3, vers un autre format avec pertes,
-  comme Vorbis, est généralement une mauvaise idée. Les encodeurs MP3 et Vorbis atteignent
+  <dd><p>Vous pouvez convertir en Ogg Vorbis Ã  partir de n'importe quel format. Cependant,
+  convertir Ã  partir d'un format avec pertes, comme MP3, vers un autre format avec pertes,
+  comme Vorbis, est gÃ©nÃ©ralement une mauvaise idÃ©e. Les encodeurs MP3 et Vorbis atteignent
   de forts ratios de compression en supprimant des parties, que vous n'entendrez
   probablement pas, des formes d'ondes sonores. Cependant, les codecs MP3 et Vorbis sont
-  très différents, et vont donc supprimer chacun des parties différentes du son, même si
-  certaines se recoupent certainement. Convertir un MP3 en Vorbis implique de décoder le
-  fichier MP3 vers un format non compressé comme WAV, et de le recompresser ensuite en
+  trÃ¨s diffÃ©rents, et vont donc supprimer chacun des parties diffÃ©rentes du son, mÃªme si
+  certaines se recoupent certainement. Convertir un MP3 en Vorbis implique de dÃ©coder le
+  fichier MP3 vers un format non compressÃ© comme WAV, et de le recompresser ensuite en
   utilisant l'encodeur Ogg Vorbis. Il manquera certaines parties du son original, que
-  l'encodeur MP3 a choisi de supprimer, dans le MP3 décodé. L'encodeur Ogg Vorbis va
-  ensuite supprimer d'autres composantes audio quand il comprimera les données. Au mieux,
-  le résultat sera un fichier Ogg qui aura la même sonorité que votre fichier MP3 original,
-  mais il est plus probable que le fichier résultant soit de plus mauvaise qualité que
+  l'encodeur MP3 a choisi de supprimer, dans le MP3 dÃ©codÃ©. L'encodeur Ogg Vorbis va
+  ensuite supprimer d'autres composantes audio quand il comprimera les donnÃ©es. Au mieux,
+  le rÃ©sultat sera un fichier Ogg qui aura la mÃªme sonoritÃ© que votre fichier MP3 original,
+  mais il est plus probable que le fichier rÃ©sultant soit de plus mauvaise qualitÃ© que
   votre MP3 original. Vous ne pouvez en aucun cas obtenir un fichier qui soit meilleur que
   le MP3 original.</p>
   <p>Puisque beaucoup de lecteurs audio peuvent lire les fichiers MP3 <em>et</em> les
   fichiers Ogg, il n'y a pas de raison pour convertir tous vos fichiers dans un format ou
-  l'autre. Si vous aimez Ogg Vorbis, nous vous encourageons à l'utiliser quand vous
-  encodez à partir de sources sans pertes (comme des CD). Quand vous encoderez à partir
+  l'autre. Si vous aimez Ogg Vorbis, nous vous encourageons Ã  l'utiliser quand vous
+  encodez Ã  partir de sources sans pertes (comme des CD). Quand vous encoderez Ã  partir
   d'originaux, vous vous rendrez compte du fait que vous pouvez faire des fichiers Ogg
-  plus petits ou de meilleure qualité (voire les deux) que vos MP3.</p>
+  plus petits ou de meilleure qualitÃ© (voire les deux) que vos MP3.</p>
   <p>(Si vous devez absolument convertir des MP3 en Ogg, il y a divers scripts de
   conversion disponibles sur <a href="http://freshmeat.net/search/?q=convert%20ogg%20mp3">Freshmeat</a>.)</p>
   </dd>
 
-  <dt><a href="#_test" id="test">Vous dites que Vorbis a une bonne qualité audio. Avez-vous
-  fait un quelconque test pour prouver ça&nbsp;?</a></dt>
+  <dt><a href="#_test" id="test">Vous dites que Vorbis a une bonne qualitÃ© audio. Avez-vous
+  fait un quelconque test pour prouver Ã§a&nbsp;?</a></dt>
   <dd><p>Oui. Allez voir notre page <a href="http://www.xiph.org/vorbis/listen.html">Osez
   comparer</a>.</p>
-  <p>De plus, le magazine allemand c't a publié les résultats d'un
+  <p>De plus, le magazine allemand c't a publiÃ© les rÃ©sultats d'un
   <a hreflang="de" href="http://www.heise.de/newsticker/data/anw-08.09.02-000/">test</a>
-  qui a montré que Vorbis avait un meilleur rendu que le MP3 pour les débits / qualités
+  qui a montrÃ© que Vorbis avait un meilleur rendu que le MP3 pour les dÃ©bits / qualitÃ©s
   faibles (environ 64 kbit/s).</p>
   </dd>
 
-  <dt><a href="#_bugs" id="bugs">J'ai entendu des extraits de démonstration qui avaient des
+  <dt><a href="#_bugs" id="bugs">J'ai entendu des extraits de dÃ©monstration qui avaient des
   artefacts audible. Pourquoi&nbsp;?</a></dt>
-  <dd><p>Bien que le format de fichier Vorbis soit standardisé, l'encodeur Vorbis a subit
-  plusieurs cycles de test de bêta et pré-release. Si les fichiers que vous avez entendus
-  ont été encodés avec une version ancienne de l'encodeur, ils peuvent contenir de sérieux
-  bugs qui ont déjà été réparés. Essayez de ré-encoder à partir de l'audio source en
-  utilisant la dernière version de l'encodeur. Si vous pensez que vous avez toujours un
-  bug qui produit des artefacts au-delà du raisonnable, merci d'envoyer un mail à la liste
+  <dd><p>Bien que le format de fichier Vorbis soit standardisÃ©, l'encodeur Vorbis a subit
+  plusieurs cycles de test de bÃªta et prÃ©-release. Si les fichiers que vous avez entendus
+  ont Ã©tÃ© encodÃ©s avec une version ancienne de l'encodeur, ils peuvent contenir de sÃ©rieux
+  bugs qui ont dÃ©jÃ  Ã©tÃ© rÃ©parÃ©s. Essayez de rÃ©-encoder Ã  partir de l'audio source en
+  utilisant la derniÃ¨re version de l'encodeur. Si vous pensez que vous avez toujours un
+  bug qui produit des artefacts au-delÃ  du raisonnable, merci d'envoyer un mail Ã  la liste
   vorbis-dev avec des informations sur le bug.</p>
   </dd>
 
-  <dt><a href="#_quality" id="quality">A quoi correspond le paramètre de
-  &laquo;&nbsp;Qualité&nbsp;&raquo;&nbsp;?</a></dt>
-  <dd><p>La qualité audio Vorbis n'est pas mesurée de manière <em>optimale</em> en
-  kilobits par seconde, mais sur une échelle de -1 à 10 appelée
-  &laquo;&nbsp;qualité&nbsp;&raquo;&nbsp;. Ce changement de terminologie a été introduit
-  par une amélioration de l'algorithme de débit variable, qui donne une meilleure qualité
-  de son pour un débit moyen donné, mais qui se permet une certaine marge de manoeuvre
-  vis-à-vis de cet objectif.</p>
-  <p>Cette nouvelle échelle de mesure n'est pas liée à une caractéristique quantifiable du
-  flux, comme le débit. C'est donc une grandeur assez subjective, mais qui permet d'avoir
-  une base de comparaison plus stable que les autres codecs, et qui envisage déjà le
-  futur&nbsp;: comme Segher Boessenkool l'a expliqué, <q>si vous mettez à jour votre
-  encodeur, et que vous demandez la même qualité, vous obtiendrez des fichiers plus petits
-  avec le même rendu sonore. Si vous demandez le même débit, vous obtiendrez des fichiers
-  qui auront à peu près le même poids, mais avec un rendu quelque peu meilleur.</q>
-  Le premier des deux comportements est l'objectif de la qualité, et c'est pour cette
-  raison que l'encodage à un bitrate donné est maintenant officiellement déconseillé,
-  excepté dans le cas du streaming sur des connexions à faible bande passante.</p>
-  <p>Pour le moment, la qualité 0 est plus ou moins équivalente à 64 kbps en moyenne,
-  la qualité 5 à 160 kbps, et la qualité 10 à 400 kbps. La plupart des gens qui cherchent
-  une qualité proche d'un CD encodent avec une qualité de 5 ou de 6 pour une meilleure
-  stéréophonie. La qualité par défaut est 3, qui, à 110 kbps environ, donne des fichiers
-  plus petits et plus fidèles que des MP3 à 128 kbps.</p>
-  <p>Comme toujours, si vous avez besoin d'une qualité CD, ni Vorbis ni MP3 (ni aucun
+  <dt><a href="#_quality" id="quality">A quoi correspond le paramÃ¨tre de
+  &laquo;&nbsp;QualitÃ©&nbsp;&raquo;&nbsp;?</a></dt>
+  <dd><p>La qualitÃ© audio Vorbis n'est pas mesurÃ©e de maniÃ¨re <em>optimale</em> en
+  kilobits par seconde, mais sur une Ã©chelle de -1 Ã  10 appelÃ©e
+  &laquo;&nbsp;qualitÃ©&nbsp;&raquo;&nbsp;. Ce changement de terminologie a Ã©tÃ© introduit
+  par une amÃ©lioration de l'algorithme de dÃ©bit variable, qui donne une meilleure qualitÃ©
+  de son pour un dÃ©bit moyen donnÃ©, mais qui se permet une certaine marge de manoeuvre
+  vis-Ã -vis de cet objectif.</p>
+  <p>Cette nouvelle Ã©chelle de mesure n'est pas liÃ©e Ã  une caractÃ©ristique quantifiable du
+  flux, comme le dÃ©bit. C'est donc une grandeur assez subjective, mais qui permet d'avoir
+  une base de comparaison plus stable que les autres codecs, et qui envisage dÃ©jÃ  le
+  futur&nbsp;: comme Segher Boessenkool l'a expliquÃ©, <q>si vous mettez Ã  jour votre
+  encodeur, et que vous demandez la mÃªme qualitÃ©, vous obtiendrez des fichiers plus petits
+  avec le mÃªme rendu sonore. Si vous demandez le mÃªme dÃ©bit, vous obtiendrez des fichiers
+  qui auront Ã  peu prÃ¨s le mÃªme poids, mais avec un rendu quelque peu meilleur.</q>
+  Le premier des deux comportements est l'objectif de la qualitÃ©, et c'est pour cette
+  raison que l'encodage Ã  un bitrate donnÃ© est maintenant officiellement dÃ©conseillÃ©,
+  exceptÃ© dans le cas du streaming sur des connexions Ã  faible bande passante.</p>
+  <p>Pour le moment, la qualitÃ© 0 est plus ou moins Ã©quivalente Ã  64 kbps en moyenne,
+  la qualitÃ© 5 Ã  160 kbps, et la qualitÃ© 10 Ã  400 kbps. La plupart des gens qui cherchent
+  une qualitÃ© proche d'un CD encodent avec une qualitÃ© de 5 ou de 6 pour une meilleure
+  stÃ©rÃ©ophonie. La qualitÃ© par dÃ©faut est 3, qui, Ã  110 kbps environ, donne des fichiers
+  plus petits et plus fidÃ¨les que des MP3 Ã  128 kbps.</p>
+  <p>Comme toujours, si vous avez besoin d'une qualitÃ© CD, ni Vorbis ni MP3 (ni aucun
   codec avec pertes) ne peuvent vous fournir une reproduction <em>exacte</em>. Il vaut
   mieux utiliser un codec audio sans pertes comme
   <a href="http://flac.sourceforge.net">FLAC</a>.</p>
   </dd>
 
-  <dt><a href="#_speech" id="speech">Quels sont les résultats de Vorbis pour la compression
+  <dt><a href="#_speech" id="speech">Quels sont les rÃ©sultats de Vorbis pour la compression
   de la voix&nbsp;?</a></dt>
-  <dd><p>Vorbis est une bonne solution, mais ce n'est pas la plus adaptée dans ce cas.
-  Vorbis a été créé pour la compression de musique et un usage générique. Des codecs prévus
-  pour un usage spécifique obtiennent une bien meilleure compression de la voix que Vorbis.
-  Vorbis a également une latence trop grande pour de la téléphonie, un usage courant des
+  <dd><p>Vorbis est une bonne solution, mais ce n'est pas la plus adaptÃ©e dans ce cas.
+  Vorbis a Ã©tÃ© crÃ©Ã© pour la compression de musique et un usage gÃ©nÃ©rique. Des codecs prÃ©vus
+  pour un usage spÃ©cifique obtiennent une bien meilleure compression de la voix que Vorbis.
+  Vorbis a Ã©galement une latence trop grande pour de la tÃ©lÃ©phonie, un usage courant des
   codecs pour la voix. Vous pouvez lire la
   <a href="http://www.speech.cs.cmu.edu/comp.speech/FAQ3.html">FAQ sur l'encodage et la
   compression de la voix</a> pour plus d'informations. Si vous cherchez un codec pour la
-  voix open source et libre de tout brevet, vous pouvez regarder du côté de
+  voix open source et libre de tout brevet, vous pouvez regarder du cÃ´tÃ© de
   <a href="http://www.speex.org/">Speex</a>.</p>
   </dd>
 </dl>
@@ -395,20 +395,20 @@
 <p><a href="#top">Retour en haut</a></p>
 
 <hr/>
-<h3>Fonctionnalités</h3>
+<h3>FonctionnalitÃ©s</h3>
 <dl>
   <dt><a href="#_comments" id="comments">Ogg Vorbis permet-il d'afficher des informations
-  sur les chansons (titre, artiste) quand le fichier est lu ou streamé&nbsp;?</a></dt>
+  sur les chansons (titre, artiste) quand le fichier est lu ou streamÃ©&nbsp;?</a></dt>
   <dd><p>Oui, Vorbis inclut un
   <a href="http://www.xiph.org/vorbis/doc/v-comment.html">champ de commentaires complet
   et flexible</a> pour les informations sur la chanson et l'artiste, ainsi que d'autres
-  données relatives au morceau. L'encodeur officiel, oggenc, vous permet de spécifier ces
-  informations au moment de l'encodage. D'autres outils vous permettent également d'éditer
+  donnÃ©es relatives au morceau. L'encodeur officiel, oggenc, vous permet de spÃ©cifier ces
+  informations au moment de l'encodage. D'autres outils vous permettent Ã©galement d'Ã©diter
   les informations du morceau.</p>
   </dd>
 
-  <dt><a href="#_video" id="video">Et la vidéo&nbsp;?</a></dt>
-  <dd><p>Si vous êtes intéressés par nos progrès sur le codec vidéo, allez sur le site
+  <dt><a href="#_video" id="video">Et la vidÃ©o&nbsp;?</a></dt>
+  <dd><p>Si vous Ãªtes intÃ©ressÃ©s par nos progrÃ¨s sur le codec vidÃ©o, allez sur le site
   Theora&nbsp;: <a href="http://www.theora.org/">theora.org</a>.</p></dd>
 
   <dt><a href="#_stream" id="stream">Qu'en est-il du <span xml:lang="en">streaming</span>
@@ -421,33 +421,33 @@
   </p>
   </dd>
 
-  <dt><a href="#_support" id="support">Quels logiciels et matériels supportent Ogg
+  <dt><a href="#_support" id="support">Quels logiciels et matÃ©riels supportent Ogg
   Vorbis&nbsp;?</a></dt>
   <dd><p>De nombreux programmes supportent l'encodage et la lecture en Ogg Vorbis. Le
   codec est inclus dans des lecteurs populaires comme
   <a href="http://www.winamp.com/">Winamp</a> et
   <a href="http://www.foobar2000.org/">foobar2000</a> sous Windows, ou
-  <a href="http://whamb.com">Whamb</a> pour OS X. Il est également supporté par un certain
+  <a href="http://whamb.com">Whamb</a> pour OS X. Il est Ã©galement supportÃ© par un certain
   nombre d'applications audio comme <a href="http://cdexos.sourceforge.net/">CDex</a> et
-  <a href="http://www.goldwave.com/">GoldWave</a>. Pour une liste plus complète, allez voir
+  <a href="http://www.goldwave.com/">GoldWave</a>. Pour une liste plus complÃ¨te, allez voir
   <a href="http://www.vorbis.com/download.psp">notre page de logiciels</a>.</p>
   <p>Il y a <a href="http://wiki.xiph.org/VorbisHardware">des notes sur le support
-  matériel</a> de Vorbis sur <a href="http://wiki.xiph.org/">le wiki</a>.
+  matÃ©riel</a> de Vorbis sur <a href="http://wiki.xiph.org/">le wiki</a>.
   </p>
   </dd>
 
   <dt><a href="#_container" id="container">Est-ce que je peux combiner Vorbis et d'autres
-  types de fichiers (comme des paroles de chansons ou des images) dans le même
+  types de fichiers (comme des paroles de chansons ou des images) dans le mÃªme
   fichier&nbsp;?</a></dt>
-  <dd><p>Oui. Le format conteneur Ogg a été créé pour permettre de multiplexer plusieurs
-  types de fichiers ensemble. <a href="http://www.theora.org/">Theora</a> sera mixé avec
+  <dd><p>Oui. Le format conteneur Ogg a Ã©tÃ© crÃ©Ã© pour permettre de multiplexer plusieurs
+  types de fichiers ensemble. <a href="http://www.theora.org/">Theora</a> sera mixÃ© avec
   le son au format Vorbis dans un conteneur Ogg pour encoder des films.</p>
-  <p>De plus, <a href="http://flac.sourceforge.net/">FLAC</a> peut être encapsulé dans
-  un conteneur Ogg, et des recherches ont été commencés pour mettre des contenus MNG et
-  MIDI dans des fichiers Ogg. Du code expérimental est disponible dans le module
-  <tt>ogg-tools</tt> sur le <a href="http://www.xiph.org/cvs.html">dépôt CVS de
-  Xiph.org</a>. Les développeurs qui travaillent sur de telles extensions peuvent discuter
-  des problèmes qu'ils rencontrent et poser des questions sur la
+  <p>De plus, <a href="http://flac.sourceforge.net/">FLAC</a> peut Ãªtre encapsulÃ© dans
+  un conteneur Ogg, et des recherches ont Ã©tÃ© commencÃ©s pour mettre des contenus MNG et
+  MIDI dans des fichiers Ogg. Du code expÃ©rimental est disponible dans le module
+  <tt>ogg-tools</tt> sur le <a href="http://www.xiph.org/cvs.html">dÃ©pÃ´t CVS de
+  Xiph.org</a>. Les dÃ©veloppeurs qui travaillent sur de telles extensions peuvent discuter
+  des problÃ¨mes qu'ils rencontrent et poser des questions sur la
   <a href="http://www.xiph.org/ogg/vmail.html">liste de diffusion vorbis-dev</a>.</p>
   </dd>
 </dl>
@@ -455,25 +455,25 @@
 <p><a href="#top">Retour en haut</a></p>
 
 <hr/>
-<h3>Développement</h3>
+<h3>DÃ©veloppement</h3>
 <dl>
   <dt><a href="#_startdev" id="startdev">Comment est-ce que je peux me familiariser avec
-  le développement d'Ogg Vorbi&nbsp;?</a></dt>
+  le dÃ©veloppement d'Ogg Vorbi&nbsp;?</a></dt>
   <dd><p>L'important est de commencer par vous familiariser avec les efforts en cours. Les
   meilleurs moyens d'y arriver sont :</p>
   <ul>
-    <li>Télécharger et compiler la version la plus récente du code en développement à
-	partir du <a href="http://www.xiph.org/cvs.html">dépôt CVS Xiph.org</a>. Les modules
-	importants pour le développement d'Ogg Vorbis sont <tt>ogg</tt>, <tt>vorbis</tt>,
-	<tt>ao</tt> et <tt>vorbis-tools</tt>. Si vous intéressés par l'encapsulation d'autres
+    <li>TÃ©lÃ©charger et compiler la version la plus rÃ©cente du code en dÃ©veloppement Ã 
+	partir du <a href="http://www.xiph.org/cvs.html">dÃ©pÃ´t CVS Xiph.org</a>. Les modules
+	importants pour le dÃ©veloppement d'Ogg Vorbis sont <tt>ogg</tt>, <tt>vorbis</tt>,
+	<tt>ao</tt> et <tt>vorbis-tools</tt>. Si vous intÃ©ressÃ©s par l'encapsulation d'autres
 	types de fichiers dans des fichiers Ogg, le module <tt>ogg-tools</tt> contient du code
 	d'exemple.</li>
 
     <li>Inscrivez-vous aux <a href="http://www.xiph.org/ogg/vmail.html">listes de
-	diffusion vorbis utilisateur et développeur</a>.</li>
+	diffusion vorbis utilisateur et dÃ©veloppeur</a>.</li>
 
-    <li>Venez parler avec les développeurs sur IRC. Ils sont en général sur #vorbis sur
-	irc.freenode.net. Ils peuvent vous en dire plus sur les projets intéressants du
+    <li>Venez parler avec les dÃ©veloppeurs sur IRC. Ils sont en gÃ©nÃ©ral sur #vorbis sur
+	irc.freenode.net. Ils peuvent vous en dire plus sur les projets intÃ©ressants du
 	moment.</li>
   </ul>
   <p>Une fois que vous aurez vu ce que les autres font, vous aurez plus de chances de
@@ -502,38 +502,38 @@ vorbis-tools) will generally not be accepted.</p>
 </dd>
 -->
 
-  <dt><a href="#_fpsupport" id="fpsupport">Est-il possible de porter l'encodeur/décodeur
+  <dt><a href="#_fpsupport" id="fpsupport">Est-il possible de porter l'encodeur/dÃ©codeur
   Vorbis pour une plateforme sans gestion de virgule flottante&nbsp;?</a></dt>
-  <dd><p>Cela a déjà été fait pour le décodeur.</p>
-  <p><a href="http://www.xiph.org/vorbis/">Tremor</a> est une implémentation à
-  virgule fixe du décodeur Vorbis qui peut être utilisée sur les puces des lecteurs
-  portables. Cependant, un <em>en</em>codeur à virgule fixe n'a pas encore été écrit.</p>
+  <dd><p>Cela a dÃ©jÃ  Ã©tÃ© fait pour le dÃ©codeur.</p>
+  <p><a href="http://www.xiph.org/vorbis/">Tremor</a> est une implÃ©mentation Ã 
+  virgule fixe du dÃ©codeur Vorbis qui peut Ãªtre utilisÃ©e sur les puces des lecteurs
+  portables. Cependant, un <em>en</em>codeur Ã  virgule fixe n'a pas encore Ã©tÃ© Ã©crit.</p>
   </dd>
 </dl>
 
 <p><a href="#top">Retour en haut</a></p>
 
 <hr/>
-<h3>Méta-FAQ</h3>
+<h3>MÃ©ta-FAQ</h3>
 <dl>
-  <dt><a href="#_FAQmorequestions" id="FAQmorequestions">J'ai une question à laquelle cette
-  FAQ ne répond pas. Où puis-je trouver de l'aide&nbsp;?</a></dt>
+  <dt><a href="#_FAQmorequestions" id="FAQmorequestions">J'ai une question Ã  laquelle cette
+  FAQ ne rÃ©pond pas. OÃ¹ puis-je trouver de l'aide&nbsp;?</a></dt>
   <dd><p>Il y a des archives des listes de diffusion pour la promotion de Vorbis, les
-  discussions entre utilisateurs, et le développement sur la
+  discussions entre utilisateurs, et le dÃ©veloppement sur la
   <a href="http://www.xiph.org/archives/">page des listes de diffusion de Xiph.org</a>.
   Vous pouvez aussi essayer de poser votre question sur le chan IRC #vorbis
   (irc.freenode.net).</p>
   </dd>
 
-  <dt><a href="#_FAQcontribute" id="FAQcontribute">Où peut-on discuter de cette FAQ et
+  <dt><a href="#_FAQcontribute" id="FAQcontribute">OÃ¹ peut-on discuter de cette FAQ et
   y contribuer&nbsp;?</a></dt>
   <dd><p>La <a href="http://xiph.org/archives/">page des listes de diffusion de Xiph.org</a>
-  contient également des informations sur l'inscription et les archives de la liste de
+  contient Ã©galement des informations sur l'inscription et les archives de la liste de
   diffusion Vorbis. Les contributions sont les bienvenues sur cette liste.</p>
   </dd>
 
-  <dt><a href="#_FAQcurrent" id="FAQcurrent">Quand a été mise à jour cette FAQ&nbsp;?</a></dt>
-  <dd><p>Elle a été mise à jour le 3 Octobre 2003.</p>
+  <dt><a href="#_FAQcurrent" id="FAQcurrent">Quand a Ã©tÃ© mise Ã  jour cette FAQ&nbsp;?</a></dt>
+  <dd><p>Elle a Ã©tÃ© mise Ã  jour le 3 Octobre 2003.</p>
   </dd>
 </dl>
 

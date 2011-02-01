@@ -8,18 +8,18 @@
 <!--#include virtual="/ssi/pagetop.include.fr" -->
 <!--  All your page content goes here  -->
 
-<p>Si vous avez des commentaires, des questions, ou des probl�mes, merci d'envoyer
-un mail � <a href="mailto:feedback@vorbis.com">feedback@vorbis.com</a>.</p>
+<p>Si vous avez des commentaires, des questions, ou des problÃšmes, merci d'envoyer
+un mail Ã  <a href="mailto:feedback@vorbis.com">feedback@vorbis.com</a>.</p>
 
-<p>Pour les contacts presse, merci d'envoyer un mail �
+<p>Pour les contacts presse, merci d'envoyer un mail Ã 
 <a href="mailto:press@vorbis.com">press@vorbis.com</a>.</p>
 
-<p>Vous pouvez vous inscrire � la
+<p>Vous pouvez vous inscrire Ã  la
 <a href="http://lists.xiph.org/mailman/listinfo/vorbis">mailing list Vorbis</a>.<br />
 Vous pouvez aussi lire <a href="http://lists.xiph.org/pipermail/vorbis/">les archives
 de la liste</a>.</p>
 
-<p>Retrouvez-nous sur <acronym xml:lang="en" title="Internet Relay Chat">IRC</acronym> �
+<p>Retrouvez-nous sur <acronym xml:lang="en" title="Internet Relay Chat">IRC</acronym> Ã 
 l'adresse <a href="irc://irc.freenode.net/vorbis"><strong>irc.freenode.net/#vorbis</strong></a>.</p>
 
 <!--#include virtual="/ssi/pagebottom.include.fr" -->

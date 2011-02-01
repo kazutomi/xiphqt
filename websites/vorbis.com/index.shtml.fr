@@ -19,12 +19,12 @@
 </div>
 
 <p style="font-size: 1.2em; font-weight: bold;">Pour obtenir le code source, rendez vous
-sur la <a href="http://www.xiph.org/downloads/" hreflang="en">page de téléchargement Xiph.org</a>.</p>
+sur la <a href="http://www.xiph.org/downloads/" hreflang="en">page de tÃ©lÃ©chargement Xiph.org</a>.</p>
 
 <div style="border-top: 3px solid #d7e0e6;">
 <p style="font-size: 1.25em; font-weight: bold;">
 Ogg Vorbis est une technologie d'encodage et de <span xml:lang="en">streaming</span>
-audio professionnelle, complètement ouverte et sans brevet, avec tous les avantages
+audio professionnelle, complÃ¨tement ouverte et sans brevet, avec tous les avantages
 de l'<span xml:lang="en">Open Source</span>.</p>
 </div>
 
@@ -35,7 +35,7 @@ de l'<span xml:lang="en">Open Source</span>.</p>
   <a href="/faq/">Foire aux questions</a>
   <img src="/images/dot.png" alt="" class="dot"/>
 
-  <a href="http://xiph.org/vorbis/">Développeurs</a>
+  <a href="http://xiph.org/vorbis/">DÃ©veloppeurs</a>
   <img src="/images/dot.png" alt="" class="dot"/>
 
   <a href="/contact/">Nous contacter</a>

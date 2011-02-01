@@ -15,17 +15,17 @@
 <ul>
   <li><a href="http://www.xiph.org/quicktime/">XiphQT</a> :
   Xiph QuickTime Components (XiphQT) est un ensemble de plugins QuickTime qui
-  permettent à iTunes, et d'autres applications basées sur QuickTime, de lire les
+  permettent Ã  iTunes, et d'autres applications basÃ©es sur QuickTime, de lire les
   fichiers Ogg Vorbis.</li>
   
   <li><a href="http://www.videolan.org/vlc/">VLC media player</a> :
-  VLC est un lecteur multimédia très portable pour divers formats
-  audio et vidéo.</li>
+  VLC est un lecteur multimÃ©dia trÃ¨s portable pour divers formats
+  audio et vidÃ©o.</li>
 
   <li><a href="http://www.nouturn.com/oggdrop/">Ogg Drop</a> :
   Ogg Drop encode les fichiers audio et les CD en Vorbis. Il contient
-  également un composant QuickTime qui permet à iTunes de lire des
-  fichiers Ogg Vorbis. Ogg Drop est complètement gratuit.</li>
+  Ã©galement un composant QuickTime qui permet Ã  iTunes de lire des
+  fichiers Ogg Vorbis. Ogg Drop est complÃ¨tement gratuit.</li>
 </ul>
 
 <h2>Encodage :</h2>
@@ -33,8 +33,8 @@
 <ul>
   <li><a href="http://www.nouturn.com/oggdrop/">Ogg Drop</a> :
   Ogg Drop encode les fichiers audio et les CD en Vorbis. Il contient
-  également un composant QuickTime qui permet à iTunes de lire des
-  fichiers Ogg Vorbis. Ogg Drop est complètement gratuit.</li>
+  Ã©galement un composant QuickTime qui permet Ã  iTunes de lire des
+  fichiers Ogg Vorbis. Ogg Drop est complÃ¨tement gratuit.</li>
 </ul>
 
 <!--#include virtual="/ssi/pagebottom.include.fr" -->

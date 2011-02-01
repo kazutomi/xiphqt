@@ -17,7 +17,7 @@ d'autres sites qui ont de la musique au format Ogg Vorbis.</p>
 <tr>
 <td>Artiste - Titre</td>
 <td>Album</td>
-<td>Poids (<acronym title="Méga-octets">Mo</acronym>)</td>
+<td>Poids (<acronym title="MÃ©ga-octets">Mo</acronym>)</td>
 <td>Longueur</td>
 <td>Bitrate (kbps)</td>
 <td>Notes</td>

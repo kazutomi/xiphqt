@@ -27,7 +27,7 @@
   <a href="/software/">Logiciels Tiers</a>
   <img src="/images/dot.png" alt="" class="dot"/>
 
-  <a href="http://xiph.org/vorbis/" hreflang="en">Développeurs</a>
+  <a href="http://xiph.org/vorbis/" hreflang="en">DÃ©veloppeurs</a>
   <img src="/images/dot.png" alt="" class="dot"/>
 
   <a href="/contact/">Contact</a>
@@ -38,7 +38,7 @@
 </div>
 
 <div id="banners">
-  <a href="/music/"><img src="/images/banners/download_music.png" alt="Télécharger de la musique"/></a>
+  <a href="/music/"><img src="/images/banners/download_music.png" alt="TÃ©lÃ©charger de la musique"/></a>
   <a href="/music_links/"><img src="/images/banners/music_sites.png" alt="Liens musique"/></a>
   <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=donate@xiph.org&amp;item_name=Donation&amp;item_number=DONATE&amp;return=http://www.vorbis.com"><img src="/images/banners/donate_today.png" alt="Soutenir maintenant" hreflang="en"/></a>
 </div>

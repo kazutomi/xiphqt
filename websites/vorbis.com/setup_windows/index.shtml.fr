@@ -12,12 +12,12 @@
 
 <h2>Lecture :</h2>
 
-<p>Nous avons un nouveau dÈcodeur basÈ sur Windows DirectShow gr‚ce ‡ nos amis chez
+<p>Nous avons un nouveau d√©codeur bas√© sur Windows DirectShow gr√¢ce √† nos amis chez
 Illiminable. Il vous permettra de lire vos fichiers Ogg Vorbis files dans
 <a href="http://www.microsoft.com/windows/windowsmedia/mp10/default.aspx">Windows Media Player</a>
 et tous les <a href="http://sourceforge.net/project/showfiles.php?group_id=82303&amp;package_id=84358">autres</a>
 <a href="http://www.radlight.net/">lecteurs</a>
-<a href="http://www.inmatrix.com/zplayer/">basÈs sur</a>
+<a href="http://www.inmatrix.com/zplayer/">bas√©s sur</a>
 <a href="http://www.corecoded.com/">DirectShow</a>. Les lecteurs qui n'utilisent pas
 DirectShow n'ont pas besoin de ces filtres.</p>
 
@@ -38,11 +38,11 @@ DirectShow n'ont pas besoin de ces filtres.</p>
   Media Player</a>: le lecteur DirectShow de Microsoft.</li>
   <li><a href="http://www.winamp.com/">Winamp</a> : un des premiers lecteurs MP3 qui lit maintenant les fichiers Ogg Vorbis.</li>
   <li><a href='http://foobar2000.hydrogenaudio.org/'>foobar2000</a>
-  (interface <em>trËs</em> spartiate, compatible Icecast, a le meilleur Èditeur de commentaires existant,
+  (interface <em>tr√®s</em> spartiate, compatible Icecast, a le meilleur √©diteur de commentaires existant,
   et fait du tagging de masse).</li>
   <li>les <a href="https://helixcommunity.org/projects/xiph/">plugins RealPlayer</a>
   permet la lecture des fichiers Ogg Vorbis dans RealPlayer et Helix Player.</li>
-  <li><a href="http://www.zinf.org/">Zinf</a> : un lecteur Libre basÈ sur FreeAmp.</li>
+  <li><a href="http://www.zinf.org/">Zinf</a> : un lecteur Libre bas√© sur FreeAmp.</li>
 </ul>
 
 <h2>Encodage :</h2>
@@ -57,7 +57,7 @@ DirectShow n'ont pas besoin de ces filtres.</p>
   <li><a href="http://www.rarewares.org/ogg.html">OggEnc</a> : un encodeur en ligne de
   commande.</li>
   <li>les <a href="https://helixcommunity.org/projects/xiph/">plugins RealProducer</a>
-  permettent le <span xml:lang="en">streaming</span> des formats de la famille Ogg ‡ partir
+  permettent le <span xml:lang="en">streaming</span> des formats de la famille Ogg √† partir
   des logiciels serveurs de RealNetworks.</li>
 </ul>
 
@@ -68,17 +68,17 @@ pas dans la liste principale pour diverses raisons.</p>
 
 <ul>
   <li><a href="http://corevorbis.corecodec.org/">CoreVorbis</a> : un filtre DirectShow
-  pour dÈcoder diverses sources dont les fichiers OGM et
+  pour d√©coder diverses sources dont les fichiers OGM et
   <a href="http://www.matroska.org/">Matroska</a>.</li>
   <li>Les filtres DS de Tobias: le filtre DirectShow original, mais il n'est plus maintenu.
   [<a href="http://web.archive.org/web/20021004165425/tobias.everwicked.com/oggds.htm">lien archive.org</a>]
   [<a href="http://svn.xiph.org/trunk/oggds/">un peu de code source</a>]
   </li>
   <li><a href="http://www.oggmedia.info/">OggMedia DSF de RadLight</a>: Un set de filtres
-  crÈÈ par les auteurs du lecteur multimÈdia RadLight pour des raisons de compatibilitÈ.</li>
+  cr√©√© par les auteurs du lecteur multim√©dia RadLight pour des raisons de compatibilit√©.</li>
   <li>les <a href="http://www.hydrogenaudio.org/forums/index.php?showtopic=15049">pages de
   Logiciels Vorbis de Hydrogen Audio</a>: une liste de liens vers des logiciels pour Vorbis
-  maintenue par la communautÈ.</li>
+  maintenue par la communaut√©.</li>
 </ul>
 
 <!--#include virtual="/ssi/pagebottom.include.fr" -->
