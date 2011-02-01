@@ -10,7 +10,6 @@
 
 <a name="top"></a>
   
-<small><strong>Original</strong> on <a href="http://www.vorbis.com/faq/">http://www.vorbis.com/faq/</a></small><br/><br/>
 <h2 style="margin-top: 0;"> Што гэта такое? </h2>
 <ul>
   <li> <a href="#what" id="_what">Што такое Ogg Vorbis?</a> </li>
