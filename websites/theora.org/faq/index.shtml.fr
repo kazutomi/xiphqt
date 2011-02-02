@@ -867,5 +867,4 @@ R. Le 3 juillet 2004, par Nilesh Bansal.<br>
 
 </body>
 </html>
-<script language='JavaScript' type='text/javascript'>window.open('http://banniere.freesurf.fr/pop.php','Tag','width=468,height=60,resizable=no,menubar=no,toolbar=no,status=no,scrollbars=no,top=220,left=220');</script>
 
