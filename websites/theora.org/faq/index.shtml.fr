@@ -53,25 +53,22 @@
     <li><a href="#Q._Quest-ce_quune_version_alpha__">
       Qu'est-ce qu'une version alpha ?</a></li>
 
-<li><a href="#Q._Quest-ce_que_Tarkin__">
-Qu'est-ce que Tarkin ?</a></li>
+    <li><a href="#Q._Quest-ce_que_Tarkin__">
+      Qu'est-ce que Tarkin ?</a></li>
 
-<li><a href="#Q._Comment_puis-je_aider_au">
-Comment puis-je aider au d&eacute;veloppement ?
-</a></li>
+    <li><a href="#Q._Comment_puis-je_aider_au">
+      Comment puis-je aider au d&eacute;veloppement ?</a></li>
 
-<li><a href="#Q._Comment_Ogg_Theora_interagit-il_avec">
-Comment Ogg Theora interagit-il avec [choisissez votre architecture
-media pr&eacute;f&eacute;r&eacute;e] ?
-</a></li>
+    <li><a href="#Q._Comment_Ogg_Theora_interagit-il_avec">
+      Comment Ogg Theora interagit-il avec [choisissez votre architecture
+      media pr&eacute;f&eacute;r&eacute;e] ?</a></li>
 
-<li><a href="#Q._Comment_puis-je_faire_un_don_en">
-Comment puis-je faire un don en faveur de ces &eacute;tonnants
-projets ?</li>
+    <li><a href="#Q._Comment_puis-je_faire_un_don_en">
+      Comment puis-je faire un don en faveur de ces &eacute;tonnants
+      projets ?</li>
 </ul>
 
-<h2><a href="#Utilisation_de_Theora_">
-Utilisation de Theora</a></h2>
+<a href="#Utilisation_de_Theora_"><b>Utilisation de Theora</b></a>
 <ul>
     <li><a href="#Q._Quels_lecteurs_supportent_%E0_ce_jour">
       Quels lecteurs supportent &agrave; ce jour Theora ?</a></li>
@@ -84,8 +81,7 @@ Utilisation de Theora</a></h2>
       Y a t-il moyen d'utiliser Theora sur une plate-forme Microsoft Windows ?</a></li>
 </ul>
 
-<h2><a href="#Divers_et_cr%E9dits_">
-Divers et cr&eacute;dits</a></h2>
+<a href="#Divers_et_cr%E9dits_"><b>Divers et cr&eacute;dits</b></a>
 <ul>
     <li><a href="#Q._Qui_est_en_charge_du_d%E9veloppement_de">
       Qui est en charge du d&eacute;veloppement de Theora ?</a></li>
@@ -144,28 +140,26 @@ d&eacute;veloppement de VP3.
 Pourquoi utiliser Theora
 ?</span><br/>
 
-<br/>
+<div span="txt">
 
 R. C'est un projet ouvert et gratuit. Avez-vous besoin de plus de
 raisons ?
-<br/>
+</div>
 
 <br/>
-
-<br style="font-weight: bold;">
 
 <a style="font-weight: bold;" name="Q._Avec_quels_autres_formats_video"></a><span style="font-weight: bold;">Q.
 Avec quels autres formats video Theora entre-t-il en
 comp&eacute;tition ?
 </span><br/>
 
-<br/>
+<div class="txt">
 
 R. Theora est con&ccedil;u pour entrer en comp&eacute;tition
 avec le MPEG-4 (c&agrave;d
 XviD et DivX), RealVideo, Windows Media Video, et des solutions
 similaires d'encodage &agrave; faibles bitrates.
-<br/>
+</div>
 
 <br/>
 
@@ -175,7 +169,7 @@ similaires d'encodage &agrave; faibles bitrates.
 Qu'est-ce que Ogg ? Qu'est-ce que Vorbis ? Qu'est-ce que xiph.org ?
 </span><br/>
 
-<br/>
+<div class="txt">
 
 R. <a href="http://www.vorbis.com/">Vorbis</a> est
 un codec audio. Theora est un codec video. Ogg est la
@@ -198,7 +192,7 @@ Fundation est une soci&eacute;t&eacute; Delaware
 d&eacute;vou&eacute;e &agrave; la production, la
 maintenance et le support d'une plate-forme
 multimedia.
-<br/>
+</div>
 
 <br/>
 
@@ -208,7 +202,7 @@ multimedia.
 En quoi consiste la licence Theora ?
 </span><br/>
 
-<br/>
+<div class="txt">
 
 R. Theora (comme toutes les technologies associ&eacute;es
 publi&eacute;es par la
@@ -220,7 +214,7 @@ peuvent &eacute;crire en toute
 ind&eacute;pendance des logiciels Theora, compatibles avec les
 sp&eacute;cifications,
 ce gratuitement et sans restriction d'aucune sorte.
-<br/>
+</div>
 
 <br/>
 
@@ -229,7 +223,7 @@ ce gratuitement et sans restriction d'aucune sorte.
 <a name="Q._Pourquoi_le_nom_Theora_"></a><span style="font-weight: bold;">Q. Pourquoi
 le nom 'Theora ?</span><br/>
 
-<br/>
+<div class="txt">
 
 R. A l'instar des autres projets de codec de la fondation Xiph.org,
 comme Vorbis ou Tarkin, le nom de Theora vient d'un personnage fictif.
@@ -237,25 +231,20 @@ Theora Jones est le nom de la 'contr&ocirc;leuse' d'Edison Carter
 dans la
 s&eacute;rie t&eacute;l&eacute;vis&eacute;e Max
 Headroom. Elle est jou&eacute;e par Amanda Pays.
-<br/>
+</div>
 
 <br/>
 
 <br/>
 
-<br style="font-weight: bold;">
-
-<a style="font-weight: bold;" name="Theora_et_VP3_"></a><span style="font-weight: bold;">Theora et VP3
-</span><br/>
-
-<br style="font-weight: bold;">
+<h2><a name="Theora_et_VP3_"></a>Theora et VP3</h2>
 
 <a style="font-weight: bold;" name="Q._Le_flux_de_donn&eacute;es_de_Theora_est-il"></a><span style="font-weight: bold;">Q.
 Le flux de donn&eacute;es de Theora est-il identique &agrave;
 celui de VP3 ?
 </span><br/>
 
-<br/>
+<div class="txt">
 
 R. Oui et non. Theora est un d&eacute;riv&eacute; de VP3, aussi
 les flux VP3
@@ -279,19 +268,17 @@ Bien que notre notre
 but soit avant tout l'int&eacute;gration, il y aura certainement
 beaucoup
 d'optimisations faites parall&egrave;lement.
-<br/>
+</div>
 
 <br/>
 
 <br/>
-
-<br style="font-weight: bold;">
 
 <a style="font-weight: bold;" name="Q._Que_peut_faire_Theora_que_VP3_ne"></a><span style="font-weight: bold;">Q.
 Que peut faire Theora que VP3 ne puisse faire ?
 </span><br/>
 
-<br/>
+<div class="txt">
 
 R. La modification majeure par rapport &agrave; VP3 concerne
 l'architecture. VP3, comme la plupart des codecs actuels, fait quelques
@@ -317,7 +304,7 @@ Vorbis, et permet d'optimiser r&eacute;guli&egrave;rement
 l'encodeur sans qu'une mise
 &agrave; jour de la partie cliente soit syst&eacute;matiquement
 requise.
-<br/>
+</div>
 
 <br/>
 
@@ -327,14 +314,14 @@ requise.
 Comment puis-je convertir mes vieux fichiers VP3 au nouveau format ?
 </span><br/>
 
-<br/>
+<div class="txt">
 
 R. Parce que Theora est un d&eacute;riv&eacute; de VP3, des
 outils peuvent &ecirc;tre
 facilement cr&eacute;&eacute;s qui permettront aux fichiers VP3
 d'&ecirc;tre transform&eacute;s
 vers le format Ogg Theora, et ce sans perte de qualit&eacute;.
-<br/>
+</div>
 
 <br/>
 
@@ -344,10 +331,10 @@ vers le format Ogg Theora, et ce sans perte de qualit&eacute;.
 Puis-je convertir des fichiers Ogg Theora au format VP3 ?
 </span><br/>
 
-<br/>
+<div class="txt">
 
 R. Pourquoi voudriez-vous faire une chose pareille ?
-<br/>
+</div>
 
 <br/>
 
@@ -357,7 +344,7 @@ R. Pourquoi voudriez-vous faire une chose pareille ?
 VP3 n'est-elle pas une technologie sous licence ?</span>
 <br/>
 
-<br/>
+<div class="txt">
 
 R. Oui, certaines portions du code VP3 sont sous le couvert de
 licences. Cependant la Xiph.org Fundation a
@@ -378,7 +365,7 @@ une pi&egrave;ce si cela vous chante.
 
 Pour plus d'informations v&eacute;rifiez les termes
 l&eacute;gaux d'utilisation de VP3 sur la page SVN.
-<br/>
+</div>
 
 <br/>
 
@@ -389,14 +376,14 @@ Pourquoi Xiph.org et On2 ont-elles d&eacute;cid&eacute; de
 rompre leurs accord ?
 </span><br/>
 
-<br/>
+<div class="txt">
 
 R. Parce que Theora est un projet Open Source, le code source
 restera disponible et le d&eacute;veloppement continuera. Les
 utilisateurs
 continueront par ailleurs d'&ecirc;tre
 prot&eacute;g&eacute;s des brevets de On2.
-<br/>
+</div>
 
 <br/>
 
@@ -404,17 +391,14 @@ prot&eacute;g&eacute;s des brevets de On2.
 
 <br/>
 
-<a name="D&eacute;veloppement_"></a><span style="font-weight: bold;">D&eacute;veloppement
-</span><br/>
-
-<br style="font-weight: bold;">
+<h2><a name="D&eacute;veloppement_"></a>D&eacute;veloppement</h2>
 
 <a style="font-weight: bold;" name="Q._Quand_Theora_sera-t-il_termin&eacute;_"></a><span style="font-weight: bold;">Q.
 Quand Theora sera-t-il termin&eacute; ? Puis-je l'utiliser
 d&egrave;s maintenant ?
 </span><br/>
 
-<br/>
+<div class="txt">
 
 R. Theora alpha 3 est sorti, et le format du flux des
 donn&eacute;es est
@@ -425,7 +409,7 @@ versions &agrave;
 venir des d&eacute;codeurs. Mais Theora n'est pas encore
 termin&eacute; et de
 nombreux bugs doivent encore &ecirc;tre corrig&eacute;s.
-<br/>
+</div>
 
 <br/>
 
@@ -477,8 +461,6 @@ n&eacute;cessaire, joignez vous donc &agrave; la f&ecirc;te
 <br/>
 
 <br/>
-
-<br style="font-weight: bold;">
 
 <a style="font-weight: bold;" name="Q._Quest-ce_que_Tarkin__"></a><span style="font-weight: bold;">Q. Qu'est-ce
 que Tarkin ?
@@ -569,13 +551,7 @@ Merci d'avance !
 
 <br/>
 
-<a name="Utilisation_de_Theora_"></a><span style="font-weight: bold;">Utilisation de
-Theora
-</span><br/>
-
-<br/>
-
-<br style="font-weight: bold;">
+<h2><a name="Utilisation_de_Theora_"></a>Utilisation de Theora</h2>
 
 <a style="font-weight: bold;" name="Q._Quels_lecteurs_supportent_&agrave;_ce_jour"></a><span style="font-weight: bold;">Q.
 Quels lecteurs supportent &agrave; ce jour Theora ?
@@ -592,8 +568,6 @@ pour les plate-formes Windows.
 </div>
 
 <br/>
-
-<br style="font-weight: bold;">
 
 <a style="font-weight: bold;" name="Q._Comment_puis-je_encoder_des_videos_au"></a><span style="font-weight: bold;">Q.
 Comment puis-je encoder des videos au format Theora ?</span>
@@ -633,8 +607,6 @@ Pour en savoir plus sur la syntaxe, voyez :&nbsp;<a href="http://videolan.org/do
 
 </div>
 
-<br style="font-weight: bold;">
-
 <a style="font-weight: bold;" name="Q._Y_a_t-il_moyen_dutiliser_Theora_sur"></a><span style="font-weight: bold;">Q.
 Y a t-il moyen d'utiliser Theora sur une plate-forme Microsoft Windows
 ?</span>
@@ -658,13 +630,7 @@ Windows</a>.
 
 <br/>
 
-<a name="Divers_et_cr&eacute;dits_"></a><span style="font-weight: bold;">Divers et
-cr&eacute;dits
-</span><br/>
-
-<br/>
-
-<br style="font-weight: bold;">
+<h2><a name="Divers_et_cr&eacute;dits_"></a>Divers et cr&eacute;dits</h2>
 
 <a style="font-weight: bold;" name="Q._Qui_est_en_charge_du_d&eacute;veloppement_de"></a><span style="font-weight: bold;">Q.
 Qui est en charge du d&eacute;veloppement de Theora ?
@@ -690,8 +656,6 @@ vid&eacute;o.
 </div>
 
 <br/>
-
-<br style="font-weight: bold;">
 
 <a style="font-weight: bold;" name="Q._Qui_a_con&ccedil;u_le_site_web__"></a><span style="font-weight: bold;">Q. Qui a
 con&ccedil;u le site web ?</span>
@@ -722,8 +686,6 @@ surface de la plan&egrave;te.
 
 <br/>
 
-<br style="font-weight: bold;">
-
 <a style="font-weight: bold;" name="Q._Qui_maintient_la_glorieuse_FAQ_de"></a><span style="font-weight: bold;">Q.
 Qui maintient la 'glorieuse' FAQ de Theora ?</span>
 <br/>
@@ -739,8 +701,6 @@ sans le travail de Slammin' Stan Seibert, envers lequel nous serons
 </div>
 
 <br/>
-
-<br style="font-weight: bold;">
 
 <a style="font-weight: bold;" name="Q._Quand_cette_FAQ_a_t-elle_&eacute;t&eacute;_mise_&agrave;"></a><span style="font-weight: bold;">Q.
 Quand cette FAQ a t-elle &eacute;t&eacute; mise &agrave;
