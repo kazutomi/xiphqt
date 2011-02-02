@@ -79,6 +79,10 @@ img {
   font-size: .7em;
 }
 
+.byline {
+  text-align: right;
+}
+
 h1, h1 a {
   font-weight: bold;
   color: #ff9900;

@@ -273,10 +273,12 @@
   </dd>
 </dl>
 
+<div class="byline">
 <p>
 Translation by Jason Fragoso of
 <a href="http://www.movavi.com/opensource/">Movavi</a>.
 </p>
+</div>
 
 <hr/>
 
