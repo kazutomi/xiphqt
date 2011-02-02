@@ -1,221 +1,117 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-
-  <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
+<!--#include virtual="/ssi/header.include" -->
+<!-- Enter custom page information and styles here -->
   <title>Terups-FAQ Theora</title>
-
-
 </head>
-
-
 <body>
 
-<div style="margin-left: 80px;">
-Traduction de la FAQ originale que
-vous pouvez retrouver &agrave; cette adresse : <a href="http://www.theora.org/theorafaq.html">http://www.theora.org/theorafaq.html
-</a><br>
+<!--#include virtual="/common/xiphbar.include" -->
 
-<br>
+<!--#include virtual="/ssi/pagetop.include" -->
+<!--  All your page content goes here  -->
 
-<a style="font-weight: bold;" href="#Quest-ce_que_Theora__">
-Qu'est-ce que Theora ?</a><span style="font-weight: bold;">
-</span><br>
+<h1 class="headline">Terups-FAQ Theora</h1>
+<a href="#Quest-ce_que_Theora__"><b>Qu'est-ce que Theora</b></a>
+<br/>
+<ul>
+    <li><a href="#Quest-ce_que_Theora__">Qu'est-ce que Theora ?</a></li>
+    <li><a href="#Q._Quest-ce_que_Theora__">Qu'est-ce que Theora ?</a></li>
+    <li><a href="#Q._Pourquoi_utiliser_Theora">Pourquoi utiliser Theora ?</a></li>
+    <li><a href="#Q._Avec_quels_autres_formats_video">Avec quels autres formats video Theora entre-t-il en comp&eacute;tition ?</a></li>
+    <li><a href="#Q._Quest-ce_que_Ogg__Quest-ce_que">Qu'est-ce que Ogg ? Qu'est-ce que Vorbis ? Qu'est-ce que Xiph.Org ?</a></li>
+    <li><a href="#Q._En_quoi_consiste_la_licence_Theora_">En quoi consiste la licence Theora ?</a></li>
+    <li><a href="#Q._Pourquoi_le_nom_Theora_">Pourquoi le nom 'Theora' ?</a></li>
+</ul>
+<a href="#Theora_et_VP3_"><b>Theora et VP3</b></a>
+<ul>
+    <li><a href="#Q._Le_flux_de_donn%E9es_de_Theora_est-il">
+      Le flux de donn&eacute;es de Theora est-il identique &agrave;
+      celui du VP3 ?</a></li>
 
-<br>
+    <li><a href="#Q._Que_peut_faire_Theora_que_VP3_ne">
+      Que peut faire Theora que VP3 ne puisse faire ?</a></li>
 
-</div>
+    <li><a href="#Q._Comment_puis-je_convertir_mes_vieux">
+      Comment puis-je convertir mes vieux fichiers VP3 au nouveau format ?</a></li>
 
-<div style="margin-left: 120px;"><a href="#Q._Quest-ce_que_Theora__">Qu'est-ce que Theora ?
-</a><br>
+    <li><a href="#Q._Puis-je_convertir_des_fichiers_Ogg">
+      Puis-je convertir des fichiers Ogg Theora au format VP3 ?</a></li>
 
-<a href="#Q._Pourquoi_utiliser_Theora">Pourquoi utiliser
-Theora ?
-</a><br>
+    <li><a href="#Q._VP3_nest-elle_pas_une_technologie">
+      VP3 n'est-elle pas une technologie sous licence ?</a></li>
 
-<a href="#Q._Avec_quels_autres_formats_video">
-Avec quels autres formats video Theora entre-t-il en
-comp&eacute;tition ?
-</a><br>
+    <li><a href="#Q._Pourquoi_Xiph.org_et_On2_ont-elles">
+      Pourquoi Xiph.org et On2 ont-elles d&eacute;cid&eacute; de
+      rompre leurs accords ?</a></li>
+</ul>
 
-<a href="#Q._Quest-ce_que_Ogg__Quest-ce_que">
-Qu'est-ce que Ogg ? Qu'est-ce que Vorbis ? Qu'est-ce que xiph.org ?
-</a><br>
+<a href="#D%E9veloppement_"><b>D&eacute;veloppement</b></a>
+<ul>
+    <li><a href="#Q._Quand_Theora_sera-t-il_termin%E9_">
+      Quand Theora sera-t-il termin&eacute; ? Puis-je l'utiliser
+      d&egrave;s maintenant ?</a></li>
 
-E<a href="#Q._En_quoi_consiste_la_licence_Theora_">n quoi
-consiste la licence Theora ?
-</a><br>
+    <li><a href="#Q._Quest-ce_quune_version_alpha__">
+      Qu'est-ce qu'une version alpha ?</a></li>
 
-<a href="#Q._Pourquoi_le_nom_Theora_">
-Pourquoi le nom 'Theora' ?
-</a><br>
+<li><a href="#Q._Quest-ce_que_Tarkin__">
+Qu'est-ce que Tarkin ?</a></li>
 
-</div>
-
-<div style="margin-left: 80px;"><br>
-
-<br>
-
-<a style="font-weight: bold;" href="#Theora_et_VP3_">
-Theora et VP3</a><span style="font-weight: bold;">
-</span><br>
-
-<br>
-
-<a href="#Q._Le_flux_de_donn%E9es_de_Theora_est-il">
-</a></div>
-
-<div style="margin-left: 120px;"><a href="#Q._Le_flux_de_donn%E9es_de_Theora_est-il">
-Le flux de donn&eacute;es de Theora est-il identique &agrave;
-celui du VP3 ?
-</a><br>
-
-<a href="#Q._Que_peut_faire_Theora_que_VP3_ne">
-Que peut faire Theora que VP3 ne puisse faire ?</a>
-<br>
-
-<a href="#Q._Comment_puis-je_convertir_mes_vieux">
-Comment puis-je convertir mes vieux fichiers VP3 au nouveau format ?</a>
-<br>
-
-<a href="#Q._Puis-je_convertir_des_fichiers_Ogg">
-Puis-je convertir des fichiers Ogg Theora au format VP3 ?
-</a><br>
-
-<a href="#Q._VP3_nest-elle_pas_une_technologie">
-VP3 n'est-elle pas une technologie sous licence ?</a>
-<br>
-
-<a href="#Q._Pourquoi_Xiph.org_et_On2_ont-elles">
-Pourquoi Xiph.org et On2 ont-elles d&eacute;cid&eacute; de
-rompre leurs accords ?
-</a><br>
-
-</div>
-
-<div style="margin-left: 80px;"><br>
-
-<br>
-
-<a href="#D%E9veloppement_"><span style="font-weight: bold;">
-D&eacute;veloppemen</span>t</a>
-<br>
-
-<br>
-
-<a href="#Q._Quand_Theora_sera-t-il_termin%E9_">
-</a></div>
-
-<div style="margin-left: 120px;"><a href="#Q._Quand_Theora_sera-t-il_termin%E9_">
-Quand Theora sera-t-il termin&eacute; ? Puis-je l'utiliser
-d&egrave;s maintenant ?
-</a><br>
-
-<a href="#Q._Quest-ce_quune_version_alpha__">
-Qu'est-ce qu'une version alpha ?
-</a><br>
-
-<a href="#Q._Quest-ce_que_Tarkin__">
-Qu'est-ce que Tarkin ?</a>
-<br>
-
-<a href="#Q._Comment_puis-je_aider_au">
+<li><a href="#Q._Comment_puis-je_aider_au">
 Comment puis-je aider au d&eacute;veloppement ?
-</a><br>
+</a></li>
 
-<a href="#Q._Comment_Ogg_Theora_interagit-il_avec">
+<li><a href="#Q._Comment_Ogg_Theora_interagit-il_avec">
 Comment Ogg Theora interagit-il avec [choisissez votre architecture
 media pr&eacute;f&eacute;r&eacute;e] ?
-</a><br>
+</a></li>
 
-<a href="#Q._Comment_puis-je_faire_un_don_en">
+<li><a href="#Q._Comment_puis-je_faire_un_don_en">
 Comment puis-je faire un don en faveur de ces &eacute;tonnants
-projets ?</a>
-<br>
+projets ?</li>
+</ul>
 
-</div>
+<h2><a href="#Utilisation_de_Theora_">
+Utilisation de Theora</a></h2>
+<ul>
+    <li><a href="#Q._Quels_lecteurs_supportent_%E0_ce_jour">
+      Quels lecteurs supportent &agrave; ce jour Theora ?</a></li>
 
-<div style="margin-left: 80px;"><br>
+    <li><a href="#Q._Comment_puis-je_encoder_des_videos_au">
+      Comment puis-je encoder des vid&eacute;os au format
+      Th&eacute;ora ?</a></li>
 
-<br>
+    <li><a href="#Q._Y_a_t-il_moyen_dutiliser_Theora_sur">
+      Y a t-il moyen d'utiliser Theora sur une plate-forme Microsoft Windows ?</a></li>
+</ul>
 
-<a style="font-weight: bold;" href="#Utilisation_de_Theora_">
-Utilisation de Theora</a><span style="font-weight: bold;">
-</span><br>
+<h2><a href="#Divers_et_cr%E9dits_">
+Divers et cr&eacute;dits</a></h2>
+<ul>
+    <li><a href="#Q._Qui_est_en_charge_du_d%E9veloppement_de">
+      Qui est en charge du d&eacute;veloppement de Theora ?</a></li>
 
-<br>
+    <li><a href="#Q._Qui_a_con%E7u_le_site_web__">
+      Qui a con&ccedil;u le site web ?</a></li>
 
-</div>
+    <li><a href="#Q._Qui_est_le_webmaster_du_site_">
+      Qui est le webmaster du site ?</a></li>
 
-<div style="margin-left: 120px;"><a href="#Q._Quels_lecteurs_supportent_%E0_ce_jour">
-Quels lecteurs supportent &agrave; ce jour Theora ?</a>
-<br>
+    <li><a href="#Q._Qui_maintient_la_glorieuse_FAQ_de">
+      Qui maintient la 'glorieuse' FAQ de Theora ?</a></li>
 
-<a href="#Q._Comment_puis-je_encoder_des_videos_au">
-Comment puis-je encoder des vid&eacute;os au format
-Th&eacute;ora ?</a>
-<br>
+    <li><a href="#Q._Quand_cette_FAQ_a_t-elle_%E9t%E9_mise_%E0">
+      Quand cette FAQ a t-elle &eacute;t&eacute; mise &agrave;
+      jour ?</a></li>
+</ul>
 
-<a href="#Q._Y_a_t-il_moyen_dutiliser_Theora_sur">
-Y a t-il moyen d'utiliser Theora sur une plate-forme Microsoft Windows
-?
-</a><br>
-
-</div>
-
-<div style="margin-left: 80px;"><br>
-
-<br>
-
-<a style="font-weight: bold;" href="#Divers_et_cr%E9dits_">
-Divers et cr&eacute;dits</a><span style="font-weight: bold;">
-</span><br>
-
-<br>
-
-</div>
-
-<div style="margin-left: 120px;"><a href="#Q._Qui_est_en_charge_du_d%E9veloppement_de">
-Qui est en charge du d&eacute;veloppement de Theora ?
-</a><br>
-
-<a href="#Q._Qui_a_con%E7u_le_site_web__">
-Qui a con&ccedil;u le site web ?
-</a><br>
-
-<a href="#Q._Qui_est_le_webmaster_du_site_">
-Qui est le webmaster du site ?</a>
-<br>
-
-<a href="#Q._Qui_maintient_la_glorieuse_FAQ_de">
-Qui maintient la 'glorieuse' FAQ de Theora ?</a>
-<br>
-
-<a href="#Q._Quand_cette_FAQ_a_t-elle_%E9t%E9_mise_%E0">
-Quand cette FAQ a t-elle &eacute;t&eacute; mise &agrave;
-jour ?</a>
-<br>
-
-</div>
-
-<div style="margin-left: 80px;"><br>
-
-<br>
-
-<br>
-
-<a name="Quest-ce_que_Theora__"></a><span style="font-weight: bold;">Qu'est-ce que
-Theora ?
-</span><br>
-
-<br>
+<h2><a name="Quest-ce_que_Theora__"></a>Qu'est-ce que Theora ?</h2>
 
 <a name="Q._Quest-ce_que_Theora__"></a><span style="font-weight: bold;">Q. Qu'est-ce
 que Theora ?
-</span><br>
+</span><br/>
 
-<br>
-
+<br/>
+<div class="txt">
 R. Theora est un projet ouvert de codec,
 d&eacute;velopp&eacute; par la Xiph.org
 Fundation, et qui fait partie du projet Ogg (ce projet a pour but
@@ -225,9 +121,9 @@ Vorbis et le
 conteneur Ogg multim&eacute;dia en une solution
 multim&eacute;dia qui puisse entrer
 en comp&eacute;tition avec le format <a href="http://fr.wikipedia.org/wiki/Mpeg_4">MPEG-4</a>).
-<br>
+<br/>
 
-<br>
+<br/>
 
 Theora est directement d&eacute;riv&eacute; du codec VP3 de On2
 ; &agrave; ce jour les
@@ -237,48 +133,49 @@ dans les ent&ecirc;tes des images, mais Theora va petit
 &agrave; petit diverger et
 s'am&eacute;liorer par rapport au projet initial de
 d&eacute;veloppement de VP3.
-<br>
+</div>
+<br/>
 
-<br>
+<br/>
 
-<br>
+<br/>
 
 <a name="Q._Pourquoi_utiliser_Theora"></a><span style="font-weight: bold;">Q.
 Pourquoi utiliser Theora
-?</span><br>
+?</span><br/>
 
-<br>
+<br/>
 
 R. C'est un projet ouvert et gratuit. Avez-vous besoin de plus de
 raisons ?
-<br>
+<br/>
 
-<br>
+<br/>
 
 <br style="font-weight: bold;">
 
 <a style="font-weight: bold;" name="Q._Avec_quels_autres_formats_video"></a><span style="font-weight: bold;">Q.
 Avec quels autres formats video Theora entre-t-il en
 comp&eacute;tition ?
-</span><br>
+</span><br/>
 
-<br>
+<br/>
 
 R. Theora est con&ccedil;u pour entrer en comp&eacute;tition
 avec le MPEG-4 (c&agrave;d
 XviD et DivX), RealVideo, Windows Media Video, et des solutions
 similaires d'encodage &agrave; faibles bitrates.
-<br>
+<br/>
 
-<br>
+<br/>
 
-<br>
+<br/>
 
 <a name="Q._Quest-ce_que_Ogg__Quest-ce_que"></a><span style="font-weight: bold;">Q.
 Qu'est-ce que Ogg ? Qu'est-ce que Vorbis ? Qu'est-ce que xiph.org ?
-</span><br>
+</span><br/>
 
-<br>
+<br/>
 
 R. <a href="http://www.vorbis.com/">Vorbis</a> est
 un codec audio. Theora est un codec video. Ogg est la
@@ -291,9 +188,9 @@ l'audio est en
 principe un fichier encod&eacute; au format Vorbis &agrave;
 l'int&eacute;rieur d'un fichier
 Ogg.
-<br>
+<br/>
 
-<br>
+<br/>
 
 La <a href="http://www.xiph.org/">Xiph.org</a>
 Fundation est une soci&eacute;t&eacute; Delaware
@@ -301,17 +198,17 @@ Fundation est une soci&eacute;t&eacute; Delaware
 d&eacute;vou&eacute;e &agrave; la production, la
 maintenance et le support d'une plate-forme
 multimedia.
-<br>
+<br/>
 
-<br>
+<br/>
 
-<br>
+<br/>
 
 <a name="Q._En_quoi_consiste_la_licence_Theora_"></a><span style="font-weight: bold;">Q.
 En quoi consiste la licence Theora ?
-</span><br>
+</span><br/>
 
-<br>
+<br/>
 
 R. Theora (comme toutes les technologies associ&eacute;es
 publi&eacute;es par la
@@ -323,16 +220,16 @@ peuvent &eacute;crire en toute
 ind&eacute;pendance des logiciels Theora, compatibles avec les
 sp&eacute;cifications,
 ce gratuitement et sans restriction d'aucune sorte.
-<br>
+<br/>
 
-<br>
+<br/>
 
-<br>
+<br/>
 
 <a name="Q._Pourquoi_le_nom_Theora_"></a><span style="font-weight: bold;">Q. Pourquoi
-le nom 'Theora ?</span><br>
+le nom 'Theora ?</span><br/>
 
-<br>
+<br/>
 
 R. A l'instar des autres projets de codec de la fondation Xiph.org,
 comme Vorbis ou Tarkin, le nom de Theora vient d'un personnage fictif.
@@ -340,25 +237,25 @@ Theora Jones est le nom de la 'contr&ocirc;leuse' d'Edison Carter
 dans la
 s&eacute;rie t&eacute;l&eacute;vis&eacute;e Max
 Headroom. Elle est jou&eacute;e par Amanda Pays.
-<br>
+<br/>
 
-<br>
+<br/>
 
-<br>
+<br/>
 
 <br style="font-weight: bold;">
 
 <a style="font-weight: bold;" name="Theora_et_VP3_"></a><span style="font-weight: bold;">Theora et VP3
-</span><br>
+</span><br/>
 
 <br style="font-weight: bold;">
 
 <a style="font-weight: bold;" name="Q._Le_flux_de_donn&eacute;es_de_Theora_est-il"></a><span style="font-weight: bold;">Q.
 Le flux de donn&eacute;es de Theora est-il identique &agrave;
 celui de VP3 ?
-</span><br>
+</span><br/>
 
-<br>
+<br/>
 
 R. Oui et non. Theora est un d&eacute;riv&eacute; de VP3, aussi
 les flux VP3
@@ -366,14 +263,14 @@ peuvent-ils &ecirc;tre transform&eacute;s en flux Theora
 (moyennant quelques
 modifications mineures de syntaxe), et ce sans re-compression
 (l'inverse n'est cependant pas vrai).
-<br>
+<br/>
 
 Theora sera presque enti&egrave;rement bas&eacute; sur le codec
 VP3 con&ccedil;u par
 On2. Cependant, les donn&eacute;es vid&eacute;o seront fournies
 &agrave; l'int&eacute;rieur d'un
 conteneur Ogg (avec du Vorbis en guise d'audio) ; les fichiers Ogg
-Theora ne seront donc pas identiques aux fichiers VP3. <br>
+Theora ne seront donc pas identiques aux fichiers VP3. <br/>
 
 Il pourrait aussi y avoir quelque int&eacute;r&ecirc;t
 &agrave; utiliser Theora, lorsque la
@@ -382,19 +279,19 @@ Bien que notre notre
 but soit avant tout l'int&eacute;gration, il y aura certainement
 beaucoup
 d'optimisations faites parall&egrave;lement.
-<br>
+<br/>
 
-<br>
+<br/>
 
-<br>
+<br/>
 
 <br style="font-weight: bold;">
 
 <a style="font-weight: bold;" name="Q._Que_peut_faire_Theora_que_VP3_ne"></a><span style="font-weight: bold;">Q.
 Que peut faire Theora que VP3 ne puisse faire ?
-</span><br>
+</span><br/>
 
-<br>
+<br/>
 
 R. La modification majeure par rapport &agrave; VP3 concerne
 l'architecture. VP3, comme la plupart des codecs actuels, fait quelques
@@ -420,47 +317,47 @@ Vorbis, et permet d'optimiser r&eacute;guli&egrave;rement
 l'encodeur sans qu'une mise
 &agrave; jour de la partie cliente soit syst&eacute;matiquement
 requise.
-<br>
+<br/>
 
-<br>
+<br/>
 
-<br>
+<br/>
 
 <a name="Q._Comment_puis-je_convertir_mes_vieux"></a><span style="font-weight: bold;">Q.
 Comment puis-je convertir mes vieux fichiers VP3 au nouveau format ?
-</span><br>
+</span><br/>
 
-<br>
+<br/>
 
 R. Parce que Theora est un d&eacute;riv&eacute; de VP3, des
 outils peuvent &ecirc;tre
 facilement cr&eacute;&eacute;s qui permettront aux fichiers VP3
 d'&ecirc;tre transform&eacute;s
 vers le format Ogg Theora, et ce sans perte de qualit&eacute;.
-<br>
+<br/>
 
-<br>
+<br/>
 
-<br>
+<br/>
 
 <a name="Q._Puis-je_convertir_des_fichiers_Ogg"></a><span style="font-weight: bold;">Q.
 Puis-je convertir des fichiers Ogg Theora au format VP3 ?
-</span><br>
+</span><br/>
 
-<br>
+<br/>
 
 R. Pourquoi voudriez-vous faire une chose pareille ?
-<br>
+<br/>
 
-<br>
+<br/>
 
-<br>
+<br/>
 
 <a name="Q._VP3_nest-elle_pas_une_technologie"></a><span style="font-weight: bold;">Q.
 VP3 n'est-elle pas une technologie sous licence ?</span>
-<br>
+<br/>
 
-<br>
+<br/>
 
 R. Oui, certaines portions du code VP3 sont sous le couvert de
 licences. Cependant la Xiph.org Fundation a
@@ -477,47 +374,47 @@ l'int&eacute;grer dans un produit
 commercial ou dans un projet gratuit, modifier les sources et
 distribuer ces modifications, ou imprimer les sources et en tapisser
 une pi&egrave;ce si cela vous chante.
-<br>
+<br/>
 
 Pour plus d'informations v&eacute;rifiez les termes
 l&eacute;gaux d'utilisation de VP3 sur la page SVN.
-<br>
+<br/>
 
-<br>
+<br/>
 
-<br>
+<br/>
 
 <a name="Q._Pourquoi_Xiph.org_et_On2_ont-elles"></a><span style="font-weight: bold;">Q.
 Pourquoi Xiph.org et On2 ont-elles d&eacute;cid&eacute; de
 rompre leurs accord ?
-</span><br>
+</span><br/>
 
-<br>
+<br/>
 
 R. Parce que Theora est un projet Open Source, le code source
 restera disponible et le d&eacute;veloppement continuera. Les
 utilisateurs
 continueront par ailleurs d'&ecirc;tre
 prot&eacute;g&eacute;s des brevets de On2.
-<br>
+<br/>
 
-<br>
+<br/>
 
-<br>
+<br/>
 
-<br>
+<br/>
 
 <a name="D&eacute;veloppement_"></a><span style="font-weight: bold;">D&eacute;veloppement
-</span><br>
+</span><br/>
 
 <br style="font-weight: bold;">
 
 <a style="font-weight: bold;" name="Q._Quand_Theora_sera-t-il_termin&eacute;_"></a><span style="font-weight: bold;">Q.
 Quand Theora sera-t-il termin&eacute; ? Puis-je l'utiliser
 d&egrave;s maintenant ?
-</span><br>
+</span><br/>
 
-<br>
+<br/>
 
 R. Theora alpha 3 est sorti, et le format du flux des
 donn&eacute;es est
@@ -528,18 +425,16 @@ versions &agrave;
 venir des d&eacute;codeurs. Mais Theora n'est pas encore
 termin&eacute; et de
 nombreux bugs doivent encore &ecirc;tre corrig&eacute;s.
-<br>
+<br/>
 
-<br>
+<br/>
 
-<br>
+<br/>
 
 <a name="Q._Quest-ce_quune_version_alpha__"></a><span style="font-weight: bold;">Q.
 Qu'est-ce qu'une version alpha ?</span>
-<br>
-
-<br>
-
+<br/>
+<div class="txt">
 R. Typiquement, lorsqu'un logiciel est cr&eacute;&eacute; par
 un &eacute;diteur, il
 traverse un certain nombre d'&eacute;tapes avant d'&ecirc;tre
@@ -551,12 +446,12 @@ estampill&eacute; 'pas tout &agrave; fait
 pr&ecirc;t' et qu'ils le testent afin que les auteurs puissent
 corriger les
 bugs lorsque cela s'av&egrave;re n&eacute;cessaire.
-<br>
+<br/>
 
 Du code en version alpha est en g&eacute;n&eacute;ral
 &agrave; usage interne
 uniquement, ce qui signifie que 'personne ne doit voir les sources, le
-programme est loin d'&ecirc;tre termin&eacute;'. <br>
+programme est loin d'&ecirc;tre termin&eacute;'. <br/>
 
 A la fondation Xiph.org, nous publions chaque chose que nous faisons
 afin que les gens puissent nous aider &agrave; pousser le programme
@@ -564,7 +459,7 @@ vers
 l'avant, en nous remontant les bugs et en nous proposant des patches.
 Aussi, pour nous, m&ecirc;me du code 'alpha' doit &ecirc;tre
 publi&eacute;.
-<br>
+<br/>
 
 Nous d&eacute;pendons de la capacit&eacute; des
 d&eacute;veloppeurs de la communaut&eacute; de
@@ -578,17 +473,18 @@ eux aussi les ingr&eacute;dients de leur cru. Si vous pensez avoir
 l'&eacute;toffe
 n&eacute;cessaire, joignez vous donc &agrave; la f&ecirc;te
 &agrave; <a href="http://www.theora.org/lists.html">http://www.theora.org/lists</a>
-<br>
+</div>
+<br/>
 
-<br>
+<br/>
 
 <br style="font-weight: bold;">
 
 <a style="font-weight: bold;" name="Q._Quest-ce_que_Tarkin__"></a><span style="font-weight: bold;">Q. Qu'est-ce
 que Tarkin ?
-</span><br>
+</span><br/>
 
-<br>
+<div class="txt">
 
 R. Tarkin est avant tout un codec exp&eacute;rimental
 bas&eacute; sur le principe
@@ -601,35 +497,36 @@ actuel de la
 vid&eacute;o, c'est pourquoi Xiph.org centrera ses efforts sur
 Theora dans le
 futur proche.
-<br>
+</div>
+<br/>
 
-<br>
+<br/>
 
-<br>
+<br/>
 
 <a name="Q._Comment_puis-je_aider_au"></a><span style="font-weight: bold;">Q. Comment
 puis-je aider au d&eacute;veloppement ?</span>
-<br>
+<br/>
 
-<br>
+<div class="txt">
 
 R. Foncez sur la page <a href="http://www.theora.org/svn.html">SVN</a>
 afin de r&eacute;cup&eacute;rer le code source et
 lachez-vous ! Postez vos contributions en ligne, et signalez-le nous au
 travers de la <a href="http://www.theora.org/lists.html">liste
 de diffusion</a> Theora-dev.
-<br>
+</div>
 
-<br>
+<br/>
 
-<br>
+<br/>
 
 <a name="Q._Comment_Ogg_Theora_interagit-il_avec"></a><span style="font-weight: bold;">Q.
 Comment Ogg Theora interagit-il avec [choisissez votre architecture
 media pr&eacute;f&eacute;r&eacute;e] ?
-</span><br>
+</span><br/>
 
-<br>
+<div class="txt">
 
 R. Au fur-et-&agrave;-mesure que le format Ogg Vorbis a
 gagn&eacute; en
@@ -644,47 +541,47 @@ meilleur, pour Theora. D&eacute;veloppeurs recherch&eacute;s !
 int&eacute;ress&eacute;s, inscrivez-vous &agrave; la liste
 de diffusion
 Theora-codecs@xiph.org).
-<br>
+</div>
 
-<br>
+<br/>
 
-<br>
+<br/>
 
 <a name="Q._Comment_puis-je_faire_un_don_en"></a><span style="font-weight: bold;">Q.
 Comment puis-je faire un don en faveur de ces &eacute;tonnants
 projets ?</span>
-<br>
+<br/>
 
-<br>
+<div class="txt">
 
 R. Waouh, merci ! Vous pouvez trouver plus d'informations &agrave;
 la Xiph.org Fundation en suivant <a href="http://www.xiph.org/donate/">ce lien</a>.
-<br>
+<br/>
 
-<br>
+<br/>
 
 Merci d'avance !
-<br>
+</div>
 
-<br>
+<br/>
 
-<br>
+<br/>
 
-<br>
+<br/>
 
 <a name="Utilisation_de_Theora_"></a><span style="font-weight: bold;">Utilisation de
 Theora
-</span><br>
+</span><br/>
 
-<br>
+<br/>
 
 <br style="font-weight: bold;">
 
 <a style="font-weight: bold;" name="Q._Quels_lecteurs_supportent_&agrave;_ce_jour"></a><span style="font-weight: bold;">Q.
 Quels lecteurs supportent &agrave; ce jour Theora ?
-</span><br>
+</span><br/>
 
-<br>
+<div class="txt">
 
 R. Les principaux lecteurs comme <a href="http://www.mplayerhq.hu/">Mplayer</a>,
 <a href="http://www.xinehq.de/">Xine</a>, <a href="http://www.helixcommunity.org/">Helix</a> et <a href="http://www.videolan.org/">VideoLan</a>
@@ -692,17 +589,17 @@ supportent le Theora. Des <a href="http://www.illiminable.com/ogg/">filtres</a>
 Directshow sont &eacute;galement
 disponibles
 pour les plate-formes Windows.
-<br>
+</div>
 
-<br>
+<br/>
 
 <br style="font-weight: bold;">
 
 <a style="font-weight: bold;" name="Q._Comment_puis-je_encoder_des_videos_au"></a><span style="font-weight: bold;">Q.
 Comment puis-je encoder des videos au format Th&eacute;ora ?</span>
-<br>
+<br/>
 
-<br>
+<div class="txt">
 
 R. Jetez un coup d'oeil sur la <a href="http://people.xiph.org/%7Ej/ogg-theora-microhowto.html">ogg-theora-microhowto</a>,
 et transcodez
@@ -710,14 +607,14 @@ des fichiers .mov quicktime vers des fichiers au format Theora sous
 linux. Vous pouvez utiliser <a href="http://www.annodex.net/anx_theora.html">Libogg</a>
 pour m&eacute;langer des
 vid&eacute;os Theora avec
-de l'audio Vorbis dans un fichier Ogg.<br>
+de l'audio Vorbis dans un fichier Ogg.<br/>
 
-&nbsp;<br>
+&nbsp;<br/>
 
 Un moyen simple de convertir des fichiers .dv et .avi au format Ogg
-Theora est d'utiliser ffmpeg2theora. On peut le trouver ici : <a href="http://www.v2v.cc/%7Ej/ffmpeg2theora/">http://www.v2v.cc/~j/ffmpeg2theora/</a><br>
+Theora est d'utiliser ffmpeg2theora. On peut le trouver ici : <a href="http://www.v2v.cc/%7Ej/ffmpeg2theora/">http://www.v2v.cc/~j/ffmpeg2theora/</a><br/>
 
-<br>
+<br/>
 
 Un moyen d' encoder et de diffuser en direct avec VideoLan
 &nbsp;(VLC). Exemple pour diffuser en direct le dispositif
@@ -732,18 +629,18 @@ v4l:/dev/video:input=3:norm=pal:size=384x288 --sout \&nbsp;</code></small></p>
 par le nom de la vid&eacute;o que vous voulez encoder.
 </p>
 
-Pour en savoir plus sur la syntaxe, voyez :&nbsp;<a href="http://videolan.org/doc/videolan-howto/en/ch09.html">http://videolan.org/doc/videolan-howto/en/ch09.html</a><br>
+Pour en savoir plus sur la syntaxe, voyez :&nbsp;<a href="http://videolan.org/doc/videolan-howto/en/ch09.html">http://videolan.org/doc/videolan-howto/en/ch09.html</a><br/>
 
-<br>
+</div>
 
 <br style="font-weight: bold;">
 
 <a style="font-weight: bold;" name="Q._Y_a_t-il_moyen_dutiliser_Theora_sur"></a><span style="font-weight: bold;">Q.
 Y a t-il moyen d'utiliser Theora sur une plate-forme Microsoft Windows
 ?</span>
-<br>
+<br/>
 
-<br>
+<div class="txt">
 
 R. Oui, vous pouvez lire vos fichiers Theora sur Windows en
 utilisant des <a href="http://www.xiph.org/dshow/">filtres
@@ -753,27 +650,27 @@ Vous pouvez aussi essayer les plugins Theora de <a href="http://www.videolan.org
 ou
 encore <a href="http://www.mplayerhq.hu/">Mplayer pour
 Windows</a>.
-<br>
+</div>
 
-<br>
+<br/>
 
-<br>
+<br/>
 
-<br>
+<br/>
 
 <a name="Divers_et_cr&eacute;dits_"></a><span style="font-weight: bold;">Divers et
 cr&eacute;dits
-</span><br>
+</span><br/>
 
-<br>
+<br/>
 
 <br style="font-weight: bold;">
 
 <a style="font-weight: bold;" name="Q._Qui_est_en_charge_du_d&eacute;veloppement_de"></a><span style="font-weight: bold;">Q.
 Qui est en charge du d&eacute;veloppement de Theora ?
-</span><br>
+</span><br/>
 
-<br>
+<div class="txt">
 
 R. La Xiph.org Fundation est le principal d&eacute;veloppeur de
 Theora, ce
@@ -790,81 +687,75 @@ p&eacute;cuniaire et technique
 de leur impl&eacute;mentation du codec VP3 ainsi que certains de
 leurs outils
 vid&eacute;o.
-<br>
+</div>
 
-<br>
+<br/>
 
 <br style="font-weight: bold;">
 
 <a style="font-weight: bold;" name="Q._Qui_a_con&ccedil;u_le_site_web__"></a><span style="font-weight: bold;">Q. Qui a
 con&ccedil;u le site web ?</span>
-<br>
+<br/>
 
-<br>
+<div class="txt">
 
 R. Ce site web est bas&eacute; sur un concept appel&eacute;
 'Nutrition',
 disponible pour un t&eacute;l&eacute;chargement libre <a href="http://www.oswd.org/">en format ouvert</a>.
 L'auteur
-original est connu sous le nom de 'BrAInDeD-'. <br>
+original est connu sous le nom de 'BrAInDeD-'. <br/>
 
-<br>
+</div>
 
-<br>
+<br/>
 
 <a name="Q._Qui_est_le_webmaster_du_site_"></a><span style="font-weight: bold;">Q.
 Qui est le webmaster du site ?</span>
-<br>
+<br/>
 
-<br>
+<div class="txt">
 
 R. <a href="mailto:manuel@xiph.org">Manuel Lora</a>,
 le plus grand webmaster existant &agrave; la
 surface de la plan&egrave;te.
-<br>
+</div>
 
-<br>
+<br/>
 
 <br style="font-weight: bold;">
 
 <a style="font-weight: bold;" name="Q._Qui_maintient_la_glorieuse_FAQ_de"></a><span style="font-weight: bold;">Q.
 Qui maintient la 'glorieuse' FAQ de Theora ?</span>
-<br>
+<br/>
 
-<br>
+<div class="txt">
 
 R. Pas une personne en particulier pour le moment. Elle a
 &eacute;t&eacute; &eacute;crite &agrave;
-l'origine par Emmet Plant et Dan Miller. Cette FAQ ne serait pas
+l'origine par Emmett Plant et Dan Miller. Cette FAQ ne serait pas
 l&agrave;
 sans le travail de Slammin' Stan Seibert, envers lequel nous serons
 &eacute;ternellement reconnaissant.
-<br>
+</div>
 
-<br>
+<br/>
 
 <br style="font-weight: bold;">
 
 <a style="font-weight: bold;" name="Q._Quand_cette_FAQ_a_t-elle_&eacute;t&eacute;_mise_&agrave;"></a><span style="font-weight: bold;">Q.
 Quand cette FAQ a t-elle &eacute;t&eacute; mise &agrave;
 jour ?
-</span><br>
+</span><br/>
 
-<br>
+<div class="txt">
 
-R. Le 3 juillet 2004, par Nilesh Bansal.<br>
-
-<br>
-
-<br>
-
-<br>
-
-<p>
-<a href="http://validator.w3.org/check?uri=referer"><img src="http://www.w3.org/Icons/valid-html401" alt="Valid HTML 4.01 Transitional" height="31" width="88"></a></p>
+R. Le 3 juillet 2004, par Nilesh Bansal.<br/>
 
 </div>
 
-</body>
-</html>
+<br/>
+
+<br/>
+
+<!--#include virtual="/ssi/pagebottom.include" -->
 
