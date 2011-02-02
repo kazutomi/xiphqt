@@ -274,6 +274,11 @@
 </dl>
 </div>
 
+<p>
+Translation by Jason Fragoso of
+<a href="http://www.movavi.com/opensource/">Movavi</a>.
+</p>
+
 <hr/>
 
 <!--#include virtual="/ssi/pagebottom.include" -->
