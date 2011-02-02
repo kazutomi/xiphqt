@@ -272,7 +272,6 @@
     <p> Ён быў абноўлены 3 кастрычніка 2003 гады. </p>
   </dd>
 </dl>
-</div>
 
 <p>
 Translation by Jason Fragoso of
