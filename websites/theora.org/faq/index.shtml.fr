@@ -78,7 +78,7 @@ Utilisation de Theora</a></h2>
 
     <li><a href="#Q._Comment_puis-je_encoder_des_videos_au">
       Comment puis-je encoder des vid&eacute;os au format
-      Th&eacute;ora ?</a></li>
+      Theora ?</a></li>
 
     <li><a href="#Q._Y_a_t-il_moyen_dutiliser_Theora_sur">
       Y a t-il moyen d'utiliser Theora sur une plate-forme Microsoft Windows ?</a></li>
@@ -596,7 +596,7 @@ pour les plate-formes Windows.
 <br style="font-weight: bold;">
 
 <a style="font-weight: bold;" name="Q._Comment_puis-je_encoder_des_videos_au"></a><span style="font-weight: bold;">Q.
-Comment puis-je encoder des videos au format Th&eacute;ora ?</span>
+Comment puis-je encoder des videos au format Theora ?</span>
 <br/>
 
 <div class="txt">
