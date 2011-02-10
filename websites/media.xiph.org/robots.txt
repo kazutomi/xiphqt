@@ -1,7 +1,9 @@
 User-agent: *
 Disallow *.y4m
 Disallow *.yuv
+Disallow *.sgi
 Disallow ED/ED-1080-png
+Disallow ED/ED-1080-png.tar
 Disallow BBB/BBB-1080-png
 Disallow sintel/sintel_trailer-1080-png
 Disallow sintel/sintel-2k-png
