@@ -81,6 +81,13 @@
 <h2>Headlines</h2>
 <ul class="descriptivelist">
    <li>
+      <h3>Version 0.11.0 and 0.11.1 released</h3>
+      <p class="submitdate">15 February, 2010</p>
+      <div class="description">
+                <p>CELT 0.11.0 (originally not announced) and 0.11.1 has been released with a focus on freezing the bit-stream and updating the API. The bit-stream is now in "soft-freeze" state meaning there is an attempt to keep it fixed, but some bugs may force changes. Version 0.11 includes some minor quality improvements, mostly at high bit-rate. In version 0.11.1, some minor changes to the bit-stream were necessary to address two minor bugs in 0.11. The quality should improve (very) slightly, but not enough to be noticeable in most cases. Several Opus-related bugs have also been fixed.</p>
+      </div>
+   </li>
+   <li>
       <h3>Version 0.10.0 released</h3>
       <p class="submitdate">21 December, 2010</p>
       <div class="description">
@@ -93,37 +100,6 @@
       <div class="description">
                 <p>CELT 0.9.1 greatly improves the packet loss concealment.
                    This change is especially dramatic in fixed point mode. The bit-stream is compatible with 0.9.0.</p>
-      </div>
-   </li>
-   <li>
-      <h3>Version 0.9.0 released</h3>
-      <p class="submitdate">6 November, 2010</p>
-      <div class="description">
-                <p>CELT 0.9.0 mainly focuses on quality improvements. The transient handling
-                code has been greatly improved and high-frequency artefacts have been reduced.
-                There have also been lots of small improvements from better tuning of various
-                parameters.</p>
-      </div>
-   </li>
-   <li>
-      <h3>Version 0.8.1 released</h3>
-      <p class="submitdate">8 July, 2010</p>
-      <div class="description">
-                <p>CELT 0.8.1 fixes some bugs introduced in 0.8.0. The bit-stream remains 
-                compatible with 0.8.0, with the caveat that CELT no longer supports frame
-                sizes that have prime factors larger than 5. This should not affect any
-                reasonable application.</p>
-      </div>
-   </li>
-   <li>
-      <h3>Version 0.8.0 released</h3>
-      <p class="submitdate">2 July, 2010</p>
-      <div class="description">
-                <p>Version 0.8.0 has been released, with improvements for high bit-rates 
-                and for transients in general. It also adds the possibility of changing the 
-                frame size dynamically, which requires a minor change in the API. At last, 
-                the new PLC algorithm from 0.7.1 is now enabled for the fixed-point builds as well.
-                Version 0.8.0 is <b>not</b> bit-stream compatible with previous releases.</p>
       </div>
    </li>
 </ul>
