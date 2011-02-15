@@ -63,41 +63,6 @@
 <li>Source code: <a href="http://downloads.xiph.org/releases/celt/celt-0.9.1.tar.gz">celt-0.9.1.tar.gz</a></li>
 </ul>
 
-<h3 id='zero.9.0'>0.9.0</h3>
-<p>CELT 0.9.0 brings many quality improvements. The transient handling code has been 
-greatly improved and high-frequency artefacts have been reduced. There have also been
-lots of small improvements from better tuning of various parameters.
-</p>
-
-<ul>
-<li>Source code: <a href="http://downloads.xiph.org/releases/celt/celt-0.9.0.tar.gz">celt-0.9.0.tar.gz</a></li>
-</ul>
-
-
-<h3 id='zero.8.1'>0.8.1</h3>
-<p>CELT 0.8.1 fixes some bugs introduced in 0.8.0. The bit-stream remains 
-compatible with 0.8.0, with the caveat that CELT no longer supports frame
-sizes that have prime factors larger than 5. This should not affect any
-reasonable application.
-</p>
-
-<ul>
-<li>Source code: <a href="http://downloads.xiph.org/releases/celt/celt-0.8.1.tar.gz">celt-0.8.1.tar.gz</a></li>
-</ul>
-
-<h3 id='zero.8.0'>0.8.0</h3>
-<p>CELT 0.8.0 brings quality improvements for high bit-rates and for transients in general. It
-also adds the possibility of changing the frame size dynamically, which requires
-a minor change in the API. At last, the new PLC algorithm from 0.7.1 is now
-enabled for the fixed-point builds as well. As is typical for CELT, this release is <b>not</b> compatible
-with previous releases.
-</p>
-
-<ul>
-<li>Source code: <a href="http://downloads.xiph.org/releases/celt/celt-0.8.0.tar.gz">celt-0.8.0.tar.gz</a></li>
-</ul>
-
-
 
 <h2>Older development releases</h2>
 <p>
@@ -122,6 +87,9 @@ These are older releases, provided mainly for historical reasons.
 <li><a href="http://downloads.us.xiph.org/releases/celt/celt-0.6.1.tar.gz">celt-0.6.1.tar.gz</a></li>
 <li><a href="http://downloads.us.xiph.org/releases/celt/celt-0.7.0.tar.gz">celt-0.7.0.tar.gz</a></li>
 <li><a href="http://downloads.us.xiph.org/releases/celt/celt-0.7.1.tar.gz">celt-0.7.1.tar.gz</a></li>
+<li><a href="http://downloads.us.xiph.org/releases/celt/celt-0.8.0.tar.gz">celt-0.8.0.tar.gz</a></li>
+<li><a href="http://downloads.us.xiph.org/releases/celt/celt-0.8.1.tar.gz">celt-0.8.1.tar.gz</a></li>
+<li><a href="http://downloads.us.xiph.org/releases/celt/celt-0.9.0.tar.gz">celt-0.9.0.tar.gz</a></li>
 </ul>
 
 
