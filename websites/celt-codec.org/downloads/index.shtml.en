@@ -33,6 +33,19 @@
 
 <h2>Latest <strong style='font-style: italic;'>development</strong> releases</h2>
 
+<h3 id='zero.11.1'>0.11.1</h3>
+<p>CELT 0.11.1 fixes two minor bugs with 0.11 that affect the bit-stream. The quality should improve (very) slightly, but not enough to be noticeable in most cases. Several Opus-related bugs have also been fixed.</p>
+<ul>
+<li>Source code: <a href="http://downloads.xiph.org/releases/celt/celt-0.11.1.tar.gz">celt-0.11.1.tar.gz</a></li>
+</ul>
+
+<h3 id='zero.11.0'>0.11.0</h3>
+<p>CELT 0.11 introduces API changes that should be close to the final API. The bit-stream is also in "soft-freeze" meaning there is an attempt to keep it fixed, but some bugs may force changes. There are also some minor quality improvements, mostly at high bit-rate. </p>
+<ul>
+<li>Source code: <a href="http://downloads.xiph.org/releases/celt/celt-0.11.0.tar.gz">celt-0.11.0.tar.gz</a></li>
+</ul>
+
+
 <h3 id='zero.10.0'>0.10.0</h3>
 <p>CELT 0.10.0 again brings many quality improvements, mostly through better bit allocation. It also fixes many bugs and regressions, most notably with VBR support. The bit-stream is <b>not</b> compatible with version 0.9.x. See <a href="http://people.xiph.org/~xiphmont/demo/celt/demo.html">Monty's CELT demo page</a> for more details on recent (and less recent) CELT development.</p>
 </p>
