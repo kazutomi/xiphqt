@@ -13,4 +13,6 @@ Disallow sintel
 Disallow sintel/sintel_trailer-1080-png
 Disallow sintel/sintel-2k-png
 Disallow sintel/sintel-1080-png
+Disallow sintel/sintel-4k-png
+Disallow sintel/sintel-4k-png16
 Disallow munin
