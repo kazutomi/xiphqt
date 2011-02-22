@@ -31,7 +31,7 @@
 <ul class="descriptivelist">
    <li>
       <h3>Version 0.11.0 and 0.11.1 released</h3>
-      <p class="submitdate">15 February, 2010</p>
+      <p class="submitdate">15 February, 2011</p>
       <div class="description">
                 <p>CELT 0.11.0 (originally not announced) and 0.11.1 has been released with a focus on freezing the bit-stream and updating the API. The bit-stream is now in "soft-freeze" state meaning there is an attempt to keep it fixed, but some bugs may force changes. Version 0.11 includes some minor quality improvements, mostly at high bit-rate. In version 0.11.1, some minor changes to the bit-stream were necessary to address two minor bugs in 0.11. The quality should improve (very) slightly, but not enough to be noticeable in most cases. Several Opus-related bugs have also been fixed.</p>
       </div>
