@@ -13,8 +13,8 @@
 <p>Xiph.Org is pleased to announce the release of libao version 1.1.0.
 This release consists of minor functionality improvements and several
 important bugfixes.  The 1.1.0 API/ABI is fully backwards compatible
-with 1.0.0; All libao users of libao are encouraged to upgrade to the
-1.1.0 release.
+with 1.0.0; All users of libao are encouraged to upgrade to the 1.1.0
+release.
 
 <h3>bugfixes</h3>
 Bugfixes in this release include:
