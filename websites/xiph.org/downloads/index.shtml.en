@@ -136,14 +136,14 @@ end-user download links are provided for convenience:
 
 <tr>
 <td>libao</td>
-<td>1.0.0</td>
-<td><a href="http://downloads.xiph.org/releases/ao/libao-1.0.0.tar.gz">libao-1.0.0.tar.gz</a><br />
-    <a href="http://downloads.xiph.org/releases/ao/libao-1.0.0.zip">libao-1.0.0.zip</a>
+<td>1.1.0</td>
+<td><a href="http://downloads.xiph.org/releases/ao/libao-1.1.0.tar.gz">libao-1.1.0.tar.gz</a><br />
+    <a href="http://downloads.xiph.org/releases/ao/libao-1.1.0.zip">libao-1.1.0.zip</a>
 </td>
-<td>385K<br />
-    497K</td>
-<td>08283fbe1f587619053a156254afecec<br />
-    7dc5ec21c03f2afc61e95fec29484cd8</td>
+<td>387K<br />
+    500K</td>
+<td>165884e11f436be83e1e3a9b4618eb1f<br />
+    661f999ab6eebf3b58a6a1b38cfb3ece</td>
 </tr>
 
 <tr>
