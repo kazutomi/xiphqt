@@ -49,8 +49,6 @@
   &laquo;&nbsp;Nouveau MP3&nbsp;&raquo; qui sont disponibles&nbsp;?</a></li>
   <li><a href="#transcode" id="_transcode">Est-ce que je peux convertir ma collection de MP3
   au format Ogg Vorbis&nbsp;?</a></li>
-  <li><a href="#test" id="_test">Vous dites que Vorbis a une bonne qualité audio. Avez-vous
-  fait un quelconque test pour prouver ça&nbsp;?</a></li>
   <li><a href="#bugs" id="_bugs">J'ai entendu des extraits de démonstration qui avaient des
   artefacts audible. Pourquoi&nbsp;?</a></li>
   <li><a href="#quality" id="_quality">A quoi correspond le paramètre de
@@ -287,10 +285,8 @@
   </dd>
 
   <dt><a href="#_sound" id="sound">Vorbis a-t-il un meilleur rendu sonore que MP3&nbsp;?</a></dt>
-  <dd><p>Oui, sans aucun doute. Bien sûr, nous vous invitons à juger par vous-mêmes&nbsp;:
-  allez visiter notre page
-  &laquo;&nbsp;<a href="http://www.xiph.org/vorbis/listen.html">Osez comparer</a>&nbsp;&raquo;
-  pour quelques-uns de  nos exemples en écoute.</p></dd>
+  <dd><p>Oui, sans aucun doute. Bien sûr, nous vous invitons à juger par vous-mêmes.</p>
+  </dd>
 
   <dt><a href="#_other" id="other">Pourquoi Ogg Vorbis est-il meilleur que les autres codecs
   &laquo;&nbsp;Nouveau MP3&nbsp;&raquo; qui sont disponibles&nbsp;?</a></dt>
@@ -326,16 +322,6 @@
   plus petits ou de meilleure qualité (voire les deux) que vos MP3.</p>
   <p>(Si vous devez absolument convertir des MP3 en Ogg, il y a divers scripts de
   conversion disponibles sur <a href="http://freshmeat.net/search/?q=convert%20ogg%20mp3">Freshmeat</a>.)</p>
-  </dd>
-
-  <dt><a href="#_test" id="test">Vous dites que Vorbis a une bonne qualité audio. Avez-vous
-  fait un quelconque test pour prouver ça&nbsp;?</a></dt>
-  <dd><p>Oui. Allez voir notre page <a href="http://www.xiph.org/vorbis/listen.html">Osez
-  comparer</a>.</p>
-  <p>De plus, le magazine allemand c't a publié les résultats d'un
-  <a hreflang="de" href="http://www.heise.de/newsticker/data/anw-08.09.02-000/">test</a>
-  qui a montré que Vorbis avait un meilleur rendu que le MP3 pour les débits / qualités
-  faibles (environ 64 kbit/s).</p>
   </dd>
 
   <dt><a href="#_bugs" id="bugs">J'ai entendu des extraits de démonstration qui avaient des
