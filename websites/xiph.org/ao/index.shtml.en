@@ -64,7 +64,6 @@ Please report bugs at <a href="http://trac.xiph.org/">trac.xiph.org</a>.
    restore Mac OS X 10.4 support
 </ul>
 
-<hr/>
 
 <h2 id="release1.0.0">Release 1.0.0 - March 25, 2010</h2>
 <ul>
@@ -89,8 +88,6 @@ Please report bugs at <a href="http://trac.xiph.org/">trac.xiph.org</a>.
 <li>Numerous patches from multiple downstreams
 </ul>
 
-<hr/>
-
 <h2 id="release0.8.8">Release 0.8.8 - May 24, 2007</h2>
 <ul>
 	<li>Source code: <a href="http://downloads.xiph.org/releases/ao/libao-0.8.8.tar.gz">libao-0.8.8.tar.gz</a></li>
@@ -102,8 +99,6 @@ Please report bugs at <a href="http://trac.xiph.org/">trac.xiph.org</a>.
   <li>Few fixes and changes in autotools and configuration files</li>
   <li>PulseAudio plugin replaces polyp</li>
 </ul>
-
-<hr/>
 
 <h2 id="release0.8.6">Release 0.8.6 - January 11, 2005</h2>
 <ul>
