@@ -441,7 +441,7 @@ double def_a(int n, int sub, int delay){
 void set_maxflat(double *fc){
   int i, j;
   for(i=0,j=0;i<order;i++,j++)
-    fc[j] = def_a(order, i, order-1)+(drand48()-.5)*.01;
+    fc[j] = def_a(order, i, order-1);//+(drand48()-.5)*.01;
 
   //for(i=0;i<order;i++,j++)
   //  fc[j] = def_a(order, order-i-1, order-1)+(drand48()-.5)*.01;
@@ -452,6 +452,7 @@ void set_maxflat(double *fc){
   //  fc[j] = def_a(order, order-i-1, order-1)+(drand48()-.5)*.01;
   //fc[j++]=1.;
 }
+
 
 int main(int argc, char *argv[]){
 
@@ -466,10 +467,12 @@ int main(int argc, char *argv[]){
   s_delay = 0;
   
   //double *fc = calloc(num_coefficients, sizeof(*fc));
-
   //set_maxflat(fc);
-  //num_coefficients = (order*2+1)*2;
 
+<<<<<<< .mine
+  //lift_dump(fc);
+  //exit(0);
+  //num_coefficients = (order*2+1)*2;
   //walk_to_minimum_A(fc,1./(1<<10));  
   //walk_to_minimum_A(fc,1./(1<<12));  
   //walk_to_minimum_A(fc,1./(1<<14));  
@@ -478,15 +481,25 @@ int main(int argc, char *argv[]){
     
   //lift_dump(fc);
   //fflush(stdout);
+  //double fc[16]={ 0.494814, -0.117399, 0.053387, -0.029044, 0.016904, -0.010041, 
+  //  0.005928, -0.003415, 0.001890, -0.000988, 0.000478, -0.000208,
+  //  0.000078, -0.000022, 0.000003, 0.000001 };
 
-  double fc[16]={ 0.494814, -0.117399, 0.053387, -0.029044, 0.016904, -0.010041, 
-		  0.005928, -0.003415, 0.001890, -0.000988, 0.000478, -0.000208,
-		  0.000078, -0.000022, 0.000003, 0.000001 };
+  //double fc[16] = {0.496302, -0.119542, 0.055873, -0.031647, 0.019441, -0.012371, 0.007955, -0.005087,
+  //	   0.003196, -0.001951, 0.001144, -0.000635, 0.000327, -0.000152, 0.000060, -0.000017};
+
+  double fc[16] = {0.496355, -0.1196186, 0.05596481, -0.03174554, 0.01954113, -0.01246747, 0.008044547, -0.005165739,
+  	   0.003263023, -0.002006148, 0.001186254, -0.0006671808, 0.0003496294, -0.0001656954, 0.00006832193, -0.00002147376};
+
+  //double fc[16]= {0.4970733, -0.1206598, 0.05718326, -0.03303792, 
+  //  0.02083225, -0.0136748, 0.009122373, -0.006084431,
+  //  0.004005327, -0.002563749, 0.001590537, -0.0009246328,
+  //  0.0005063734, -0.000228745, 8.170831e-05, -2.94743e-05};
 
   //set_maxflat(fc);
   //walk_to_minimum_CSD(fc,1./(1<<16));  
-  //lift_dump(fc);
-  //fflush(stdout);
+  lift_dump(fc);
+  fflush(stdout);
   //walk_to_minimum_CSD(fc,1./(1<<17));  
   //lift_dump(fc);
   //fflush(stdout);
@@ -512,7 +525,6 @@ int main(int argc, char *argv[]){
   walk_to_minimum_CSD(fc,1./(1<<30));  
   //lift_dump(fc);
   //fflush(stdout);
-
 
   lift_dump(fc);
 
