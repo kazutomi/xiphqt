@@ -99,19 +99,148 @@ double gradient_walk(int *c, int m,
   return cost;
 }
 
-void grow_vertex(int *c, int m,
-		 int *allowed_movements,
+int grow_vertex(int *c, int m,
+		 int *movement,
 		 int min_bound, int max_bound,
 		 double (*cost_func)(int *)){
+  
+  int changeflag = 1;
+  int i,count=0;
+  double cost = cost_func(c);
+
+  while(changeflag){
+    changeflag=0;
+    for(i=0;i<m;i++){
+      if(movement[i]){
+	c[i] += movement[i];
+	double test_cost = lift_cost(c);
+	if(test_cost>cost){
+	  changeflag=1;
+	  cost=test_cost;
+	  count++;
+	}else{
+	  c[i] -= movement[i];
+	}
+      }
+    }
+  }
+
+  return count;
+}
+
+void center_of_tope(int *center, int **verticies, int m){
+  int acc[m];
+  int i, j;
+  memset(acc,0,sizeof(acc));
+
+  for(i=0;i<m-1;i++)
+    for(j=0;j<m;j++)
+      acc[j]+=verticies[i][j];
+
+  for(j=0;j<m;j++)
+    center[j] = acc[j] / (m-1);
+}
+
+void grow_secondary_granule(int *minimumc,
+			    int **c, int m,
+			    int *movemask,
+			    int min_bound, int max_bound,
+			    double (*cost_func)(int *),
+			    int *simplexen,
+			    int *granules){
+  int i;
+  
+  // grow the single free vertex
+  int movement = grow_vertex(c[0], m, movemask, min_bound, max_bound, cost_func);
+
+  if(movement<=1){ // 1 is roundoff error slack
+    // we cannot grow a new simplex; the simplex facet is pressed flat
+    // against a convergence ridge.
+
+    // this is the correct point to crest the ridge and walk the granule
+    // down the other side looking for a new minimum.  If it is indeed a new
+    // minimum, grow a new granule.
+
+    for(i=0;i<m;i++)
+      c[0][i] += movemask[i];
+
+    double cost = gradient_walk(c[0], m, min_bound, max_bound, cost_func);
+    int min_num = lookup_minimum(c[0]);
+    if(min_num!=-1){
+      log_minimum(c[0],cost);
+      grow_new_granule(c[0]); // enter recursion
+    }
+    
+    return;
+  }
+
+  // continue recursively spawning secondary simplexes with one
+  // unconstrained vertex from the center of each face of this
+  // simplex.  The new vertex must grow outward (reflect the simplex
+  // through each face).
+  int **secondary_c = malloc((m+1) * sizeof(*secondary_c));
+  secondary_c[0] = malloc(m * sizeof(**new_c));
+
+  for(i=0;i<(m+1);i++){
+    // build a new d-1-tope 'plane'; all the points in the current
+    // simplex minus the i'th one.
+    
+    // fill in the fixed verticies [1 through m]
+    for(j=1;j<m;j++)
+      if(j<=i)
+	secondary_c[j] = new_c[j-1];
+      else
+	secondary_c[j] = new_c[j];
+
+    // first vertex is the unconstrained one
+    center_of_tope(secondary_c[0], secondary_c+1, m);
+
+    // set movemask [reverse of the i'th vertex's movemask]
+    memset(movemask,0,sizeof(*movemask)*m);
+    if(i>0)movemask[i-1]=1;
+    if(i<m)movemask[i]=-1;
+
+    grow_secondary_granule(secondary_c, m, movemask, min_bound, max_bound, cost_func, simplexen);
+  }
+
+  // Each vertex is sitting on a ridge.  Pop over the ridge and
+  // walk gradient down to a minimum. If it's a new minimum, grow a
+  // new granule.
+
+  // this is here and not above to allow each granule to fill out
+  // completely before beginning work on another.
+
+  
+  for(i=0;i<(m+1);i++){
+    // re-set up orthogonal move mask for this vertex
+    memset(movemask,0,sizeof(*movemask)*m);
+    if(i>0)movemask[i-1]=-1;
+    if(i<m)movemask[i]=1;
+    //crest_walk_and_recurse(new_c[i], m, movemask, min_bound, max_bound, cost_func, granules);
+    free(new_c[i]);
+  }
+  
+  free(movemask);
+  free(new_c);
+
+
+
+
+
+
 
 
 
 }
 
+
+
 void grow_new_granule(int *c, int m,
 		      int min_bound, int max_bound,
 		      double (*cost_func)(int *)){
   int i;
+  int simplexen = 1;
+  int granules = 1;
   // Start by growing a new simplex by allowing each vertex to move
   // outward from the center (the local minimum). A vertex continues
   // moving so long as it is moving uphill. For this new simplex, the
@@ -155,12 +284,11 @@ void grow_new_granule(int *c, int m,
     // first vertex is the unconstrained one
     center_of_tope(secondary_c[0], secondary_c+1, m);
 
-    // set movemask [reverse of the i'th vertex's movemask]
-    memset(movemask,0,sizeof(*movemask)*m);
-    if(i>0)movemask[i-1]=1;
-    if(i<m)movemask[i]=-1;
+    // set movemask; must be strictly away from local minimum
+    movemask_away(c, movemask, m);
 
-    grow_secondary_granule(secondary_c, m, movemask, min_bound, max_bound, cost_func);
+    // grow granule
+    grow_secondary_granule(secondary_c, m, movemask, min_bound, max_bound, cost_func, simplexen);
   }
 
   // Each vertex is sitting on a ridge.  Pop over the ridge and
@@ -169,12 +297,14 @@ void grow_new_granule(int *c, int m,
 
   // this is here and not above to allow each granule to fill out
   // completely before beginning work on another.
+
+  
   for(i=0;i<(m+1);i++){
     // re-set up orthogonal move mask for this vertex
     memset(movemask,0,sizeof(*movemask)*m);
     if(i>0)movemask[i-1]=-1;
     if(i<m)movemask[i]=1;
-    crest_walk_and_recurse(new_c[i], m, movemask, min_bound, max_bound, cost_func);
+    //crest_walk_and_recurse(new_c[i], m, movemask, min_bound, max_bound, cost_func, granules);
     free(new_c[i]);
   }
   
