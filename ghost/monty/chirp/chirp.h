@@ -21,9 +21,11 @@ typedef struct {
   float P;  /* phase (radians) */
   float dA; /* amplitude modulation (linear change per sample) */
   float dW; /* frequency modulation (radians per sample^2) */
+  int label;/* used for tracking by outside code */
 } chirp;
 
-extern int estimate_chirps(float *x, float *y, float *window, int len,
+extern int estimate_chirps(float *x, float *y, float *r,
+                           float *window, int len,
                            chirp *c, int n, int iter_limit, float fit_limit);
 extern void advance_chirps(chirp *c, int n, int len);
 
