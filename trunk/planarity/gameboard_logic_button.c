@@ -170,13 +170,14 @@ static cairo_surface_t *cache_button(Gameboard *g,
 						  double y),
 				     double pR,double pG,double pB,double pA,
 				     double fR,double fG,double fB,double fA){
+  cairo_t *wc = gdk_cairo_create(g->w.window);
   cairo_surface_t *ret = 
-    cairo_surface_create_similar (cairo_get_target (g->wc),
+    cairo_surface_create_similar (cairo_get_target (wc),
 				  CAIRO_CONTENT_COLOR_ALPHA,
 				  BUTTON_RADIUS*2+1,
 				  BUTTON_RADIUS*2+1);
-  
   cairo_t *c = cairo_create(ret);
+  cairo_destroy (wc);
 
   cairo_save(c);
   cairo_set_operator(c,CAIRO_OPERATOR_CLEAR);

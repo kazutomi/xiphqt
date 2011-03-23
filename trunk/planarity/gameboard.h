@@ -167,7 +167,6 @@ struct _Gameboard{
   int pushed_curtain;
   void (*redraw_callback)(Gameboard *g);
 
-  cairo_t         *wc;
   cairo_surface_t *vertex;
   cairo_surface_t *vertex_lit;
   cairo_surface_t *vertex_grabbed;

@@ -104,6 +104,7 @@ static void gameboard_realize (GtkWidget *widget){
   Gameboard *g = GAMEBOARD (widget);
   GdkWindowAttr attributes;
   gint      attributes_mask;
+  cairo_t *wc;
 
   GTK_WIDGET_SET_FLAGS (widget, GTK_REALIZED);
 
@@ -132,30 +133,31 @@ static void gameboard_realize (GtkWidget *widget){
   gdk_window_set_user_data (widget->window, widget);
   gtk_widget_set_double_buffered (widget, FALSE);
 
-  g->wc = gdk_cairo_create(widget->window);
+  wc = gdk_cairo_create(widget->window);
 
   g->forescore = 
-    cairo_surface_create_similar (cairo_get_target (g->wc),
+    cairo_surface_create_similar (cairo_get_target (wc),
 				  CAIRO_CONTENT_COLOR_ALPHA,
 				  widget->allocation.width,
 				  SCOREHEIGHT);
 
   g->forebutton = 
-    cairo_surface_create_similar (cairo_get_target (g->wc),
+    cairo_surface_create_similar (cairo_get_target (wc),
 				  CAIRO_CONTENT_COLOR_ALPHA,
 				  widget->allocation.width,
 				  SCOREHEIGHT);
 
   g->background = 
-    cairo_surface_create_similar (cairo_get_target (g->wc),
+    cairo_surface_create_similar (cairo_get_target (wc),
 				  CAIRO_CONTENT_COLOR,
 				  widget->allocation.width,
 				  widget->allocation.height);
   g->foreground = 
-    cairo_surface_create_similar (cairo_get_target (g->wc),
+    cairo_surface_create_similar (cairo_get_target (wc),
 				  CAIRO_CONTENT_COLOR,
 				  widget->allocation.width,
 				  widget->allocation.height);  
+  cairo_destroy(wc);
 
   g->vertex = cache_vertex(g);
   g->vertex_lit = cache_vertex_lit(g);
@@ -174,6 +176,7 @@ static void gameboard_realize (GtkWidget *widget){
 void gameboard_size_allocate (GtkWidget     *widget,
 			      GtkAllocation *allocation){
   Gameboard *g = GAMEBOARD (widget);
+  cairo_t *wc;
 
   if (GTK_WIDGET_REALIZED (widget)){
 
@@ -197,8 +200,6 @@ void gameboard_size_allocate (GtkWidget     *widget,
     if(widget->allocation.width == allocation->width &&
        widget->allocation.height == allocation->height) return;
 
-    if(g->wc)
-      cairo_destroy(g->wc);
     if (g->forescore)
       cairo_surface_destroy(g->forescore);
     if (g->forebutton)
@@ -216,29 +217,30 @@ void gameboard_size_allocate (GtkWidget     *widget,
     gdk_window_move_resize (widget->window, allocation->x, allocation->y, 
 			    allocation->width, allocation->height);
     
-    g->wc = gdk_cairo_create(widget->window);
+    wc = gdk_cairo_create(widget->window);
 
     g->background = 
-      cairo_surface_create_similar (cairo_get_target (g->wc),
+      cairo_surface_create_similar (cairo_get_target (wc),
 				    CAIRO_CONTENT_COLOR, // don't need alpha
 				    allocation->width,
 				    allocation->height);
     g->forescore = 
-      cairo_surface_create_similar (cairo_get_target (g->wc),
+      cairo_surface_create_similar (cairo_get_target (wc),
 				    CAIRO_CONTENT_COLOR_ALPHA,
 				    allocation->width,
 				    SCOREHEIGHT);
     g->forebutton = 
-      cairo_surface_create_similar (cairo_get_target (g->wc),
+      cairo_surface_create_similar (cairo_get_target (wc),
 				    CAIRO_CONTENT_COLOR_ALPHA,
 				    allocation->width,
 				    SCOREHEIGHT);
 
     g->foreground = 
-      cairo_surface_create_similar (cairo_get_target (g->wc),
+      cairo_surface_create_similar (cairo_get_target (wc),
 				    CAIRO_CONTENT_COLOR, // don't need alpha
 				    allocation->width,
 				    allocation->height);  
+    cairo_destroy(wc);
 
     cache_curtain(g);
 

@@ -347,9 +347,13 @@ void gameboard_draw(Gameboard *g, int x, int y, int w, int h){
   cairo_destroy(c);
   
   // blit to window
-  cairo_set_source_surface(g->wc,g->foreground,0,0);
-  cairo_rectangle(g->wc,x,y,w,h);
-  cairo_fill(g->wc);
+  {
+    cairo_t *wc = gdk_cairo_create(g->w.window);
+    cairo_set_source_surface(wc,g->foreground,0,0);
+    cairo_rectangle(wc,x,y,w,h);
+    cairo_fill(wc);
+    cairo_destroy(wc);
+  }
 
   if(g->delayed_background)update_full(g);
   g->first_expose=1;

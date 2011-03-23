@@ -41,12 +41,14 @@
 #define CW 4
 void cache_curtain(Gameboard *g){
   int x,y;
+  cairo_t *wc = gdk_cairo_create(g->w.window);
   cairo_t *c;
   g->curtains=
-    cairo_surface_create_similar (cairo_get_target (g->wc),
+    cairo_surface_create_similar (cairo_get_target (wc),
 				  CAIRO_CONTENT_COLOR_ALPHA,
 				  CW,CW);
-  
+  cairo_destroy(wc);
+
   c = cairo_create(g->curtains);
   cairo_save(c);
   cairo_set_operator(c,CAIRO_OPERATOR_CLEAR);
