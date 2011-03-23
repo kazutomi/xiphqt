@@ -57,13 +57,15 @@ void draw_vertex_with_alpha(cairo_t *c,vertex *v,cairo_surface_t *s,float alpha)
 
 // normal unlit vertex
 cairo_surface_t *cache_vertex(Gameboard *g){
+  cairo_t *wc = gdk_cairo_create(g->w.window);
   cairo_surface_t *ret=
-    cairo_surface_create_similar (cairo_get_target (g->wc),
+    cairo_surface_create_similar (cairo_get_target (wc),
 				  CAIRO_CONTENT_COLOR_ALPHA,
 				  (V_RADIUS+V_LINE)*2,
 				  (V_RADIUS+V_LINE)*2);
   cairo_t *c = cairo_create(ret);
-  
+  cairo_destroy(wc);
+
   cairo_set_line_width(c,V_LINE);
   cairo_arc(c,V_RADIUS+V_LINE,V_RADIUS+V_LINE,V_RADIUS,0,2*M_PI);
   cairo_set_source_rgb(c,V_FILL_IDLE_COLOR);
@@ -77,13 +79,15 @@ cairo_surface_t *cache_vertex(Gameboard *g){
 
 // selected vertex
 cairo_surface_t *cache_vertex_sel(Gameboard *g){
+  cairo_t *wc = gdk_cairo_create(g->w.window);
   cairo_surface_t *ret=
-    cairo_surface_create_similar (cairo_get_target (g->wc),
+    cairo_surface_create_similar (cairo_get_target (wc),
 				  CAIRO_CONTENT_COLOR_ALPHA,
 				  (V_RADIUS+V_LINE)*2,
 				  (V_RADIUS+V_LINE)*2);
   cairo_t *c = cairo_create(ret);
-  
+  cairo_destroy(wc);
+
   cairo_set_line_width(c,V_LINE);
   cairo_arc(c,V_RADIUS+V_LINE,V_RADIUS+V_LINE,V_RADIUS,0,2*M_PI);
   cairo_set_source_rgb(c,V_FILL_LIT_COLOR);
@@ -100,13 +104,15 @@ cairo_surface_t *cache_vertex_sel(Gameboard *g){
 
 // grabbed vertex
 cairo_surface_t *cache_vertex_grabbed(Gameboard *g){
+  cairo_t *wc = gdk_cairo_create(g->w.window);
   cairo_surface_t *ret=
-    cairo_surface_create_similar (cairo_get_target (g->wc),
+    cairo_surface_create_similar (cairo_get_target (wc),
 				  CAIRO_CONTENT_COLOR_ALPHA,
 				  (V_RADIUS+V_LINE)*2,
 				  (V_RADIUS+V_LINE)*2);
   cairo_t *c = cairo_create(ret);
-  
+  cairo_destroy(wc);
+
   cairo_set_line_width(c,V_LINE);
   cairo_arc(c,V_RADIUS+V_LINE,V_RADIUS+V_LINE,V_RADIUS,0,2*M_PI);
   cairo_set_source_rgb(c,V_FILL_LIT_COLOR);
@@ -123,13 +129,15 @@ cairo_surface_t *cache_vertex_grabbed(Gameboard *g){
 
 // vertex under mouse rollover
 cairo_surface_t *cache_vertex_lit(Gameboard *g){
+  cairo_t *wc = gdk_cairo_create(g->w.window);
   cairo_surface_t *ret=
-    cairo_surface_create_similar (cairo_get_target (g->wc),
+    cairo_surface_create_similar (cairo_get_target (wc),
 				  CAIRO_CONTENT_COLOR_ALPHA,
 				  (V_RADIUS+V_LINE)*2,
 				  (V_RADIUS+V_LINE)*2);
   cairo_t *c = cairo_create(ret);
-  
+  cairo_destroy(wc);
+
   cairo_set_line_width(c,V_LINE);
   cairo_arc(c,V_RADIUS+V_LINE,V_RADIUS+V_LINE,V_RADIUS,0,2*M_PI);
   cairo_set_source_rgb(c,V_FILL_LIT_COLOR);
@@ -143,13 +151,15 @@ cairo_surface_t *cache_vertex_lit(Gameboard *g){
 
 // verticies attached to grabbed vertex
 cairo_surface_t *cache_vertex_attached(Gameboard *g){
+  cairo_t *wc = gdk_cairo_create(g->w.window);
   cairo_surface_t *ret=
-    cairo_surface_create_similar (cairo_get_target (g->wc),
+    cairo_surface_create_similar (cairo_get_target (wc),
 				  CAIRO_CONTENT_COLOR_ALPHA,
 				  (V_RADIUS+V_LINE)*2,
 				  (V_RADIUS+V_LINE)*2);
   cairo_t *c = cairo_create(ret);
-  
+  cairo_destroy(wc);
+
   cairo_set_line_width(c,V_LINE);
   cairo_arc(c,V_RADIUS+V_LINE,V_RADIUS+V_LINE,V_RADIUS,0,2*M_PI);
   cairo_set_source_rgb(c,V_FILL_ADJ_COLOR);
@@ -163,13 +173,15 @@ cairo_surface_t *cache_vertex_attached(Gameboard *g){
 
 // vertex being dragged in a group
 cairo_surface_t *cache_vertex_ghost(Gameboard *g){
+  cairo_t *wc = gdk_cairo_create(g->w.window);
   cairo_surface_t *ret=
-    cairo_surface_create_similar (cairo_get_target (g->wc),
+    cairo_surface_create_similar (cairo_get_target (wc),
 				  CAIRO_CONTENT_COLOR_ALPHA,
 				  (V_RADIUS+V_LINE)*2,
 				  (V_RADIUS+V_LINE)*2);
   cairo_t *c = cairo_create(ret);
-  
+  cairo_destroy (wc);
+
   cairo_set_line_width(c,V_LINE);
   cairo_arc(c,V_RADIUS+V_LINE,V_RADIUS+V_LINE,V_RADIUS,0,2*M_PI);
   cairo_set_source_rgb(c,V_FILL_LIT_COLOR);

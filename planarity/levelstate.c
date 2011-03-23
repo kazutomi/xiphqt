@@ -31,6 +31,7 @@
 #include <string.h>
 #include <errno.h>
 #include "graph.h"
+#include "timer.h"
 #include "levelstate.h"
 #include "gameboard.h"
 #include "dialog_pause.h"
@@ -170,15 +171,15 @@ int levelstate_write(){
 	    curr->gm.id,strerror(errno));
     return errno;
   }
-  
-  fprintf(f,"current %d : %s\n",strlen(curr->gm.id),curr->gm.id);
+
+  fprintf(f,"current %d : %s\n",(int)strlen(curr->gm.id),curr->gm.id);
 
   {
     levelstate *l=head;
     while(l){
       fprintf(f,"level %ld %d %d : %s\n",
 	      l->highscore,l->in_progress,
-	      strlen(l->gm.id),l->gm.id);
+	      (int)strlen(l->gm.id),l->gm.id);
       l=l->next;
     }
   }
