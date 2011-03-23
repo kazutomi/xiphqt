@@ -17,7 +17,7 @@
 
 #define _GNU_SOURCE
 #include <math.h>
-#include "sinusoids.h"
+#include "chirp.h"
 #include "scales.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -65,13 +65,13 @@ static int cmp_ascending_W(const void *p1, const void *p2){
 
 */
 
-int estimate_chirps(float *x, float *y, float *window, int len,
+int estimate_chirps(float *x, float *y, float *r, float *window, int len,
                     chirp *c, int n, int iter_limit, float fit_limit){
 
   int i,j,flag=1;
-  float cwork[len];
-  float swork[len];
-  float residue[len];
+  float E0=0;
+  float E1=0;
+  float E2=0;
 
   /* Build a starting reconstruction based on the passied in initial
      chirp estimates */
@@ -85,6 +85,25 @@ int estimate_chirps(float *x, float *y, float *window, int len,
     }
   }
 
+  if(iter_limit==0)
+    for(j=0;j<len;j++)
+      r[j]=(x[j]-y[j])*window[j];
+
+  /* this can be moved out/elsewhere/handled differently, as the
+     window would normally not change */
+  for(i=0;i<len;i++){
+    float jj = i-len*.5+.5;
+    float w2 = window[i]*window[i];
+    float w2j2 = w2*jj*jj;
+    float w2j4 = w2j2*jj*jj;
+    E0 += w2;
+    E1 += w2j2;
+    E2 += w2j4;
+  }
+  E0=2/E0;
+  E1=2/E1;
+  E2=2/E2;
+
   /* outer fit iteration */
   while(flag && iter_limit--){
     flag=0;
@@ -93,7 +112,7 @@ int estimate_chirps(float *x, float *y, float *window, int len,
        the zero, first and second order fits.  Subtractsthe current
        best fits from the input signal and widows the result. */
     for(j=0;j<len;j++)
-      residue[j]=(x[j]-y[j])*window[j];
+      r[j]=(x[j]-y[j])*window[j];
     memset(y,0,sizeof(*y)*len);
 
     /* Sort chirps by descending amplitude */
@@ -105,9 +124,9 @@ int estimate_chirps(float *x, float *y, float *window, int len,
       float aP=0, bP=0;
       float cP=0, dP=0;
       float eP=0, fP=0;
-      float aE=0, bE=0;
-      float cE=0, dE=0;
-      float eE=0, fE=0;
+      float cP2=0, dP2=0;
+      float eP2=0, fP2=0;
+      float eP3=0, fP3=0;
       float aC = cos(c[i].P);
       float aS = sin(c[i].P);
 
@@ -116,69 +135,37 @@ int estimate_chirps(float *x, float *y, float *window, int len,
 	float jj2 = jj*jj;
 	float co = cos((c[i].W + c[i].dW*jj)*jj)*window[j];
 	float si = sin((c[i].W + c[i].dW*jj)*jj)*window[j];
-        float c2 = co*co;
-        float s2 = si*si;
+        float c2 = co*co*jj;
+        float s2 = si*si*jj;
 
         /* add the current estimate back to the residue vector */
-        float yy = residue[j] += (aC*co-aS*si) * (c[i].A + c[i].dA*jj);
+        float yy = r[j] += (aC*co-aS*si) * (c[i].A + c[i].dA*jj);
 
-        /* Cache the basis function premultiplied by jj for the two
-           later fitting loops */
-        cwork[j] = c2*jj;
-        swork[j] = s2*jj;
-
-        /* zero order projection */
+        /* partial zero order projection */
 	aP += co*yy;
 	bP += si*yy;
-        /* the part of the first order fit we can perform before
-           having an updated amplitude/phase.  This saves needing to
-           cache or recomupute yy later.  */
+        /* partial first order projection */
         cP += co*yy*jj;
         dP += si*yy*jj;
-        /* the part of the second order fit we can perform before
-           having an updated amplitude/phase/frequency/ampliude'.
-           This saves needing to cache or recomupute yy later. */
+        cP2 += c2;
+        dP2 += s2;
+        /* partial second order projection */
         eP += co*yy*jj2;
         fP += si*yy*jj2;
-
-        /* integrate the total energy under the curve of each basis
-           function */
-	aE += c2;
-	bE += s2;
-	cE += c2*jj2;
-	dE += s2*jj2;
-        eE += c2*jj2*jj2;
-        fE += s2*jj2*jj2;
+        eP2 += c2*jj;
+        fP2 += s2*jj;
+        eP3 += c2*jj2;
+        fP3 += s2*jj2;
       }
-      /* aP/bP in terms of total basis energy */
-      aP = (aE>0.f ? aP/aE : 0.f);
-      bP = (bE>0.f ? bP/bE : 0.f);
+      /* finish projections, scale in terms of total basis energy */
+      aP *= E0;
+      bP *= E0;
+      cP = (cP-aP*cP2)*E1;
+      dP = (dP-bP*dP2)*E1;
+      eP = (eP-aP*eP2-cP*eP3)*E2;
+      fP = (fP-bP*fP2-dP*fP3)*E2;
 
-      /* the frequency/amplitude' fits converge faster now that we
-         have an updated amplitude/phase estimate.  Finish the portion
-         of the first order projection we couldn't compute above. */
-      for(j=0;j<len;j++){
-        cP -= aP*cwork[j];
-        dP -= bP*swork[j];
-      }
-      /* cP/dP in terms of total basis energy */
-      cP = (cE>0.f ? cP/cE : 0.f);
-      dP = (dE>0.f ? dP/dE : 0.f);
-
-      /* the frequency' fit converges faster now that we have an
-         updated estimates for the other parameters.  Finish the
-         portion of the second order projection we couldn't compute
-         above. */
-      for(j=0;j<len;j++){
-        float jj = j-len*.5+.5;
-        eP -= (aP+cP*jj)*cwork[j]*jj;
-        fP -= (bP+dP*jj)*swork[j]*jj;
-      }
-      /* eP/fP in terms of total basis energy */
-      eP = (eE>0.f ? eP/eE : 0.f);
-      fP = (fE>0.f ? fP/fE : 0.f);
-
-      /* computer new chirp fit estimate from basis projections */
+      /* compute new chirp fit estimate from basis projections */
       lA2 = aP*aP + bP*bP;
       lA = sqrt(lA2);
       lP = -atan2(bP, aP);
@@ -206,7 +193,7 @@ int estimate_chirps(float *x, float *y, float *window, int len,
         float a = c[i].A + c[i].dA*jj;
         float w = (c[i].W + c[i].dW*jj)*jj;
         float v = a*cos(w+c[i].P);
-        residue[j] -= v*window[j];
+        r[j] -= v*window[j];
         y[j] += v;
       }
     }
@@ -225,8 +212,8 @@ void advance_chirps(chirp *c, int n, int len){
   int i;
   for(i=0;i<n;i++){
     c[i].A += c[i].dA*len;
-    c[i].W += c[i].dW*len;
-    c[i].P += c[i].W*len;
+    c[i].P += (c[i].W+c[i].dW*len)*len;
+    c[i].W += c[i].dW*len*2;
   }
 }
 
@@ -249,6 +236,7 @@ int main(){
   float w[1024];
   float x[1024];
   float y[1024];
+  float r[1024];
 
   chirp c[]={
     {.3, 100.*2.*M_PI/BLOCKSIZE, .2, 0, 0},
@@ -263,7 +251,7 @@ int main(){
     x[i]+=cos(jj*2.*M_PI/BLOCKSIZE * (96. + 3./BLOCKSIZE*jj) +1.2);
   }
 
-  int ret=estimate_chirps(x,y,w,BLOCKSIZE,c,2,55,.01);
+  int ret=estimate_chirps(x,y,r,w,BLOCKSIZE,c,2,55,.01);
 
   for(i=0;i<sizeof(c)/sizeof(*c);i++)
     fprintf(stderr,"W:%f\nP:%f\nA:%f\ndW:%f\ndA:%f\nreturned=%d\n\n",
