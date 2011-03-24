@@ -24,8 +24,9 @@ typedef struct {
   int label;/* used for tracking by outside code */
 } chirp;
 
-extern int estimate_chirps(float *x, float *y, float *r,
-                           float *window, int len,
-                           chirp *c, int n, int iter_limit, float fit_limit);
+extern int estimate_chirps(const float *x, float *y, float *r,
+                           const float *window, int len,
+                           chirp *c, int n, int iter_limit,
+                           float fit_limit);
 extern void advance_chirps(chirp *c, int n, int len);
 

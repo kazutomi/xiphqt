@@ -65,7 +65,7 @@ static int cmp_ascending_W(const void *p1, const void *p2){
 
 */
 
-int estimate_chirps(float *x, float *y, float *r, float *window, int len,
+int estimate_chirps(const float *x, float *y, float *r, const float *window, int len,
                     chirp *c, int n, int iter_limit, float fit_limit){
 
   int i,j,flag=1;
@@ -77,11 +77,27 @@ int estimate_chirps(float *x, float *y, float *r, float *window, int len,
      chirp estimates */
   memset(y,0,sizeof(*y)*len);
   for(i=0;i<n;i++){
+    /* initialize phase state for chirp oscillator */
+    float dc = cosf(c[i].dW*2.);
+    float ds = sinf(c[i].dW*2.);
+    float wc = cosf(c[i].W - c[i].dW*len);
+    float ws = sinf(c[i].W - c[i].dW*len);
+    float cc = cosf((.25*c[i].dW*(len-1) - .5*c[i].W)*(len-1) + c[i].P);
+    float cs = sinf((.25*c[i].dW*(len-1) - .5*c[i].W)*(len-1) + c[i].P);
+    float tc;
+
     for(j=0;j<len;j++){
       float jj = j-len*.5+.5;
       float a = c[i].A + c[i].dA*jj;
-      float w = (c[i].W + c[i].dW*jj)*jj;
-      y[j] += a*cos(w+c[i].P);
+      y[j] += a*cc;
+
+      /* chirp oscillator iteration */
+      tc = wc;
+      wc = wc*dc - ws*ds;
+      ws = tc*ds + ws*dc;
+      tc = cc;
+      cc = cc*wc - cs*ws;
+      cs = tc*ws + cs*wc;
     }
   }
 
@@ -130,16 +146,32 @@ int estimate_chirps(float *x, float *y, float *r, float *window, int len,
       float aC = cos(c[i].P);
       float aS = sin(c[i].P);
 
+      /* initialize phase state for chirp oscillator */
+      float dc = cosf(c[i].dW*2.);
+      float ds = sinf(c[i].dW*2.);
+      float wc = cosf(c[i].W - c[i].dW*len);
+      float ws = sinf(c[i].W - c[i].dW*len);
+      float cc = cosf((.25*c[i].dW*(len-1) - .5*c[i].W)*(len-1));
+      float cs = sinf((.25*c[i].dW*(len-1) - .5*c[i].W)*(len-1));
+      float tc;
       for(j=0;j<len;j++){
 	float jj = j-len*.5+.5;
 	float jj2 = jj*jj;
-	float co = cos((c[i].W + c[i].dW*jj)*jj)*window[j];
-	float si = sin((c[i].W + c[i].dW*jj)*jj)*window[j];
+	float co = cc*window[j];
+	float si = cs*window[j];
         float c2 = co*co*jj;
         float s2 = si*si*jj;
 
         /* add the current estimate back to the residue vector */
         float yy = r[j] += (aC*co-aS*si) * (c[i].A + c[i].dA*jj);
+
+        /* chirp oscillator iteration */
+        tc = wc;
+        wc = wc*dc - ws*ds;
+        ws = tc*ds + ws*dc;
+        tc = cc;
+        cc = cc*wc - cs*ws;
+        cs = tc*ws + cs*wc;
 
         /* partial zero order projection */
 	aP += co*yy;
@@ -187,12 +219,28 @@ int estimate_chirps(float *x, float *y, float *r, float *window, int len,
       c[i].dA = ldA;
       c[i].dW += ldW;
 
+      /* reinitialize phase state for chirp oscillator */
+      dc = cosf(c[i].dW*2.);
+      ds = sinf(c[i].dW*2.);
+      wc = cosf(c[i].W - c[i].dW*len);
+      ws = sinf(c[i].W - c[i].dW*len);
+      cc = cosf((.25*c[i].dW*(len-1) - .5*c[i].W)*(len-1) + c[i].P);
+      cs = sinf((.25*c[i].dW*(len-1) - .5*c[i].W)*(len-1) + c[i].P);
+
       /* update the reconstruction/residue vectors with new fit */
       for(j=0;j<len;j++){
         float jj = j-len*.5+.5;
         float a = c[i].A + c[i].dA*jj;
-        float w = (c[i].W + c[i].dW*jj)*jj;
-        float v = a*cos(w+c[i].P);
+        float v = a*cc;
+
+        /* chirp oscillator iteration */
+        tc = wc;
+        wc = wc*dc - ws*ds;
+        ws = tc*ds + ws*dc;
+        tc = cc;
+        cc = cc*wc - cs*ws;
+        cs = tc*ws + cs*wc;
+
         r[j] -= v*window[j];
         y[j] += v;
       }
