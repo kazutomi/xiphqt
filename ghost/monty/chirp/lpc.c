@@ -47,11 +47,9 @@ Carsten Bormann
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include "os.h"
 #include "smallft.h"
 #include "lpc.h"
 #include "scales.h"
-#include "misc.h"
 
 /* Autocorrelation LPC coeff generation algorithm invented by
    N. Levinson in 1947, modified by J. Durbin in 1959. */
@@ -141,13 +139,13 @@ void lpc_predict(float *coeff,float *prime,int m,
       y-=work[o++]*coeff[--p];
 
     *data=work[o]=y;
-    data+=step
+    data+=step;
   }
 }
 
 #define ORDER 16
 void preextrapolate(float *data, int data_n, float *predata,int pre_n){
-  int i,j;
+  int j;
   float lpc[ORDER];
   float *work=alloca(data_n*sizeof(*work));
 
@@ -164,10 +162,9 @@ void preextrapolate(float *data, int data_n, float *predata,int pre_n){
 }
 
 void postextrapolate(float *data, int data_n, float *postdata,int post_n){
-  int i,j;
   float lpc[ORDER];
 
-  lpc_from_data(work,lpc,data_n,ORDER);
+  lpc_from_data(data,lpc,data_n,ORDER);
 
   /* run the predictor filter */
   lpc_predict(lpc,data+data_n-ORDER,ORDER,postdata,post_n,1);
