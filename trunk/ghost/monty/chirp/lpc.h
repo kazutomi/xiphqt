@@ -1,12 +1,12 @@
 /********************************************************************
  *                                                                  *
- * THIS FILE IS PART OF THE OggVorbis SOFTWARE CODEC SOURCE CODE.   *
+ * THIS FILE IS PART OF THE OggGhost SOFTWARE CODEC SOURCE CODE.    *
  * USE, DISTRIBUTION AND REPRODUCTION OF THIS LIBRARY SOURCE IS     *
  * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2002             *
- * by the XIPHOPHORUS Company http://www.xiph.org/                  *
+ * THE OggGhost SOURCE CODE IS (C) COPYRIGHT 1994-2011              *
+ * by the Xiph.Org Foundation http://www.xiph.org/                  *
  *                                                                  *
  ********************************************************************
 
@@ -15,15 +15,10 @@
 
  ********************************************************************/
 
-#ifndef _V_LPC_H_
-#define _V_LPC_H_
+#ifndef _G_LPC_H_
+#define _G_LPC_H_
 
-#include "vorbis/codec.h"
-
-/* simple linear scale LPC code */
-extern float vorbis_lpc_from_data(float *data,float *lpc,int n,int m);
-
-extern void vorbis_lpc_predict(float *coeff,float *prime,int m,
-			       float *data,long n);
+extern void preextrapolate(float *data, int data_n, float *predata,int pre_n);
+extern void postextrapolate(float *data, int data_n, float *postdata,int post_n);
 
 #endif
