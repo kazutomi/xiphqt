@@ -155,7 +155,7 @@ int parse_args(int *argc, char *argv[])
       switch (argv[arg][1]) {
 	case 'v':
 	  verbose = 1;
-	  shift = 1; 
+	  shift = 1;
 	  break;
 	case 'a':
 	  aspect_set = 1;
@@ -248,7 +248,7 @@ int main(int argc, char *argv[])
     } else {
       if (q > p) {
 	fprintf(stdout, "Skipped %d garbage bytes at the start\n", (int)(q-p));
-      } 
+      }
       while (q < e) {
 	o = rogg_scan(q, e-q); /* find the next Ogg page */
 	if (o > q) {
@@ -312,7 +312,7 @@ int main(int argc, char *argv[])
 	  if (aspect_set || fps_set || crop_set) {
 	    rogg_page_update_crc(q);
 	    fprintf(stdout, "New settings:\n");
-	    print_theora_info(stdout, header.data); 
+	    print_theora_info(stdout, header.data);
 	  }
         }
 	q += header.length;

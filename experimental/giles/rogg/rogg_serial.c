@@ -88,7 +88,7 @@ int parse_args(int *argc, char *argv[])
 	fprintf(stderr, "Interal error parsing argument '%s'.\n", argv[arg]);
 	exit(1);
       }
-      memmove(&argv[arg], &argv[arg+shift], left*sizeof(*argv));      
+      memmove(&argv[arg], &argv[arg+shift], left*sizeof(*argv));
       *argc -= shift;
     } else {
       arg++;

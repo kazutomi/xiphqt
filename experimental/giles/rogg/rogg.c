@@ -220,7 +220,7 @@ void rogg_page_update_crc(unsigned char *p)
   int i, length;
 
   rogg_page_get_length(p, &length);
-  
+
   /* calculate the CRC with the CRC header element zeroed */
   p[ROGG_OFFSET_CRC + 0] = 0;
   p[ROGG_OFFSET_CRC + 1] = 0;
