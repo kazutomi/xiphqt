@@ -7,16 +7,17 @@ and fixing simple bitstream errors in mmap()'d files.
 
 Examples:
 
-  rogg_theora will duamp and optionally set the frame rate and
-  the pixel aspect ratio stored in an Ogg Theora stream.
+  rogg_theora will dump and optionally set the frame rate, the
+  pixel aspect ratio and the crop rectangle stored in an Ogg
+  Theora stream.
 
   rogg_eosfix will set the end_of_stream flag on the last page
   of a stream. This is often unset in downloads truncated from
   an icecast stream.
 
   rogg_crcfix will reset the CRCs on all the Ogg pages in a stream.
-  This is mostly useful if the stream has been edited with some non-
-  aware tool.
+  This is mostly useful if the stream has been edited with some
+  non-aware tool.
 
   rogg_pagedump dumps some basic header information for each page
   in a stream.
