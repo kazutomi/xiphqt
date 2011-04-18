@@ -26,6 +26,7 @@
 #include <string.h>
 #include <cairo/cairo.h>
 #include <pthread.h>
+#include <sys/time.h>
 
 float circular_distance(float A,float B){
   float ret = A-B;
@@ -316,6 +317,9 @@ void w_e(char *filebase,graph_run *arg){
   float ret_maxddA[y_n];
   float ret_maxRMS[y_n];
   float ret_maxiter[y_n];
+
+  struct timeval last;
+  gettimeofday(&last,NULL);
 
   /* determine ~ padding needed */
   setup_graphs(arg->x0,arg->x1,arg->xmajor,
@@ -740,24 +744,31 @@ void w_e(char *filebase,graph_run *arg){
       }
     }
 
-    if((x&15)==0){
-      to_png(cC,filebase,"converge");
-      to_png(cA,filebase,"Aerror");
-      to_png(cP,filebase,"Perror");
-      to_png(cW,filebase,"Werror");
-      to_png(cdA,filebase,"dAerror");
-      to_png(cdW,filebase,"dWerror");
-      to_png(cddA,filebase,"ddAerror");
-      to_png(cRMS,filebase,"RMSerror");
+    /* dump a graph update every 10 seconds */
+    {
+      struct timeval now;
+      gettimeofday(&now,NULL);
+      if(now.tv_sec-last.tv_sec + (now.tv_usec-last.tv_usec)/1000000. > 10.){
+        last=now;
 
-      to_png(cC_d,filebase,"convdelta");
-      to_png(cA_d,filebase,"Adelta");
-      to_png(cP_d,filebase,"Pdelta");
-      to_png(cW_d,filebase,"Wdelta");
-      to_png(cdA_d,filebase,"dAdelta");
-      to_png(cdW_d,filebase,"dWdelta");
-      to_png(cddA_d,filebase,"ddAdelta");
-      to_png(cRMS_d,filebase,"RMSdelta");
+        to_png(cC,filebase,"converge");
+        to_png(cA,filebase,"Aerror");
+        to_png(cP,filebase,"Perror");
+        to_png(cW,filebase,"Werror");
+        to_png(cdA,filebase,"dAerror");
+        to_png(cdW,filebase,"dWerror");
+        to_png(cddA,filebase,"ddAerror");
+        to_png(cRMS,filebase,"RMSerror");
+
+        to_png(cC_d,filebase,"convdelta");
+        to_png(cA_d,filebase,"Adelta");
+        to_png(cP_d,filebase,"Pdelta");
+        to_png(cW_d,filebase,"Wdelta");
+        to_png(cdA_d,filebase,"dAdelta");
+        to_png(cdW_d,filebase,"dWdelta");
+        to_png(cddA_d,filebase,"ddAdelta");
+        to_png(cRMS_d,filebase,"RMSdelta");
+      }
     }
 
   }
@@ -771,7 +782,7 @@ int main(){
     /* subtitle1 */     "graphtest1",
     /* subtitle2 */     "graphtest2",
     /* subtitle3 */     "graphtest3",
-    /* blocksize */     2048,
+    /* blocksize */     256,
     /* threads */       8,
 
     /* x0 */            0,
