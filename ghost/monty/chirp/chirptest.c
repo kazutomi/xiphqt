@@ -770,8 +770,25 @@ void w_e(char *filebase,graph_run *arg){
         to_png(cRMS_d,filebase,"RMSdelta");
       }
     }
-
   }
+
+  to_png(cC,filebase,"converge");
+  to_png(cA,filebase,"Aerror");
+  to_png(cP,filebase,"Perror");
+  to_png(cW,filebase,"Werror");
+  to_png(cdA,filebase,"dAerror");
+  to_png(cdW,filebase,"dWerror");
+  to_png(cddA,filebase,"ddAerror");
+  to_png(cRMS,filebase,"RMSerror");
+
+  to_png(cC_d,filebase,"convdelta");
+  to_png(cA_d,filebase,"Adelta");
+  to_png(cP_d,filebase,"Pdelta");
+  to_png(cW_d,filebase,"Wdelta");
+  to_png(cdA_d,filebase,"dAdelta");
+  to_png(cdW_d,filebase,"dWdelta");
+  to_png(cddA_d,filebase,"ddAdelta");
+  to_png(cRMS_d,filebase,"RMSdelta");
 
   fprintf(stderr," done\n");
 }
@@ -795,7 +812,7 @@ int main(){
     /* ymajor */        100,
     /* yminor */        25,
 
-    /* window */        window_functions.hanning,
+    /* window */        window_functions.maxwell1,
     /* fit_tol */       .000001,
     /* gauss_seidel */  1,
     /* fit_W */         1,
