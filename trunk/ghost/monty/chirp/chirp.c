@@ -113,16 +113,21 @@ static int nonlinear_iterate(const float *x,
 
                              float fit_limit,
                              int iter_limit,
+                             int fit_gs,
 
                              int fitW,
                              int fitdA,
                              int fitdW,
                              int fitddA,
+                             int fit_recenter_dW,
+                             float fit_W_alpha,
+                             float fit_dW_alpha,
+
                              int symm_norm,
                              float E0,
                              float E1,
                              float E2,
-                             int fit_compound,
+
                              int bound_edges){
   int i,j;
   int flag=1;
@@ -130,8 +135,8 @@ static int nonlinear_iterate(const float *x,
 
   /* outer fit iteration */
   while(flag && iter_limit>0){
-    iter_limit--;
     flag=0;
+    iter_limit--;
 
     /* precompute the portion of the projection/fit estimate shared by
        the zero, first and second order fits.  Subtracts the current
@@ -157,13 +162,20 @@ static int nonlinear_iterate(const float *x,
       float aC = cos(c->P);
       float aS = sin(c->P);
 
+      /* Not recentering dW allows potential simplification of the
+         nonlinear solver. This code is designed to recenter dW as
+         easily as not, so the following looks a bit silly.  The point
+         of the flag is to emulate/study the behavior of the simplified
+         algorithm */
+      float cdW = fit_recenter_dW ? c->dW : 0;
+
       for(j=0;j<len;j++){
         float jj = j-len*.5+.5;
         float jj2 = jj*jj;
         float co,si,c2,s2;
         float yy=r[j];
 
-        sincosf((c->W + c->dW*jj)*jj,&si,&co);
+        sincosf((c->W + cdW*jj)*jj,&si,&co);
         si*=window[j];
         co*=window[j];
         c2 = co*co*jj;
@@ -182,7 +194,7 @@ static int nonlinear_iterate(const float *x,
         eP += co*yy*jj2;
         fP += si*yy*jj2;
 
-        if(fit_compound){
+        if(fit_gs){
           /* subtract zero order estimate from first */
           cP2 += c2;
           dP2 += s2;
@@ -227,6 +239,17 @@ static int nonlinear_iterate(const float *x,
       if(!fitdW && !fitddA)
         eP=fP=0;
 
+      /* base convergence on relative projection movement this
+         iteration */
+      {
+        float move = (aP*aP + bP*bP)/(c->A*c->A + fit_limit*fit_limit) +
+          (cP*cP + dP*dP)/(c->A*c->A + fit_limit*fit_limit) +
+          (eP*eP + fP*fP)/(c->A*c->A + fit_limit*fit_limit);
+
+        if(fit_limit>0 && move>fit_limit*fit_limit)flag=1;
+        if(fit_limit<0 && move>1e-14)flag=1;
+      }
+
       /* we're fitting to the remaining error; add the fit to date
          back in to relate our newest incremental results to the
          global fit so far.  Note that this does not include W or dW,
@@ -235,29 +258,12 @@ static int nonlinear_iterate(const float *x,
       {
         float A = toAi(c->A, c->P);
         float B = toBi(c->A, c->P);
-        float C = dAtoCi(A,B,c->dA) + cP;
-        float D = dAtoDi(A,B,c->dA) + dP;
-        float E = ddAtoEi(A,B,c->ddA) + eP;
-        float F = ddAtoFi(A,B,c->ddA) + fP;
-        A += aP;
-        B += bP;
-
-        /* base convergence on relative projection movement this
-           iteration */
-
-        float move = (aP*aP + bP*bP)/(A*A + B*B + fit_limit*fit_limit) +
-          (cP*cP + dP*dP)/(A*A + B*B + fit_limit*fit_limit) +
-          (eP*eP + fP*fP)/(A*A + B*B + fit_limit*fit_limit);
-
-        if(fit_limit>0 && move>fit_limit*fit_limit)flag=1;
-        if(fit_limit<0 && move>1e-14)flag=1;
-
-        aP = A;
-        bP = B;
-        cP = C;
-        dP = D;
-        eP = E;
-        fP = F;
+        aP += A;
+        bP += B;
+        cP += dAtoCi(A,B,c->dA);
+        dP += dAtoDi(A,B,c->dA);
+        eP += ddAtoEi(A,B,c->ddA);
+        fP += ddAtoFi(A,B,c->ddA);
 
         /* guard overflow; if we're this far out, assume we're never
            coming back. drop out now. */
@@ -272,9 +278,12 @@ static int nonlinear_iterate(const float *x,
       /* save new estimate */
       c->A = toA(aP,bP);
       c->P = toP(aP,bP);
-      c->W += (fitW ? toW(aP,bP,cP,dP) : 0);
+      c->W += fit_W_alpha*(fitW ? toW(aP,bP,cP,dP) : 0);
       c->dA = (fitdA ? todA(aP,bP,cP,dP) : 0);
-      c->dW += 1.75*(fitdW ? todW(aP,bP,eP,fP) : 0);
+      if(fit_recenter_dW)
+        c->dW += fit_dW_alpha*(fitdW ? todW(aP,bP,eP,fP) : 0);
+      else
+        c->dW = (fitdW ? todW(aP,bP,eP,fP) : 0);
       c->ddA = (fitddA ? toddA(aP,bP,eP,fP) : 0);
 
       if(bound_edges){
@@ -282,7 +291,7 @@ static int nonlinear_iterate(const float *x,
         if(c->W<0){
           c->W = 0; /* clamp frequency to 0 (DC) */
           c->dW = 0; /* if W is 0, the chirp rate must also be 0 to
-                           avoid negative frequencies */
+                                 avoid negative frequencies */
         }
         if(c->W>M_PI){
           c->W = M_PI; /* clamp frequency to Nyquist */
@@ -299,22 +308,24 @@ static int nonlinear_iterate(const float *x,
           c->dW = c->W/len;
         /* ...or exceed Nyquist */
         if(c->W + c->dW*len > M_PI)
-          c->dW = (M_PI - c->W)/len;
+          c->dW = M_PI/len - c->W/len;
         if(c->W - c->dW*len > M_PI)
-          c->dW = (M_PI + c->W)/len;
+          c->dW = c->W/len - M_PI/len;
       }
 
       /* update the reconstruction/residue vectors with new fit */
-      for(j=0;j<len;j++){
-        float jj = j-len*.5+.5;
-        float a = c->A + (c->dA + c->ddA*jj)*jj;
-        float v = a*cosf((c->W + c->dW*jj)*jj + c->P);
-        r[j] -= v*window[j];
-        y[j] += v;
+      {
+        float cdW = fit_recenter_dW ? c->dW : 0;
+        for(j=0;j<len;j++){
+          float jj = j-len*.5+.5;
+          float a = c->A + (c->dA + c->ddA*jj)*jj;
+          float v = a*cosf((c->W + cdW*jj)*jj + c->P);
+          r[j] -= v*window[j];
+          y[j] += v;
+        }
       }
     }
   }
-
   return iter_limit;
 }
 
@@ -334,6 +345,7 @@ static int linear_iterate(const float *x,
 
                           float fit_limit,
                           int iter_limit,
+                          int fit_gs,
 
                           int fitW,
                           int fitdA,
@@ -342,8 +354,7 @@ static int linear_iterate(const float *x,
                           int symm_norm,
                           float E0,
                           float E1,
-                          float E2,
-                          int fit_compound){
+                          float E2){
 
   float *cos_table[n];
   float *sin_table[n];
@@ -410,7 +421,7 @@ static int linear_iterate(const float *x,
       tmpe += ttcos_table[i][j]*ttcos_table[i][j]*window[j]*window[j];
       tmpf += ttsin_table[i][j]*ttsin_table[i][j]*window[j]*window[j];
 
-      /* compound fit terms */
+      /* gs fit terms */
       tmpc2 += cos_table[i][j]*tcos_table[i][j]*window[j]*window[j];
       tmpd2 += sin_table[i][j]*tsin_table[i][j]*window[j]*window[j];
       tmpe3 += tcos_table[i][j]*ttcos_table[i][j]*window[j]*window[j];
@@ -432,7 +443,7 @@ static int linear_iterate(const float *x,
       ttsinE[i] = (tmpf>0.f ? 1./tmpf : 0);
     }
 
-    /* set compound fit terms */
+    /* set gs fit terms */
     tcosC2[i] = tmpc2;
     tsinC2[i] = tmpd2;
     ttcosC2[i] = tmpc;
@@ -455,8 +466,8 @@ static int linear_iterate(const float *x,
   }
 
   while(flag && iter_limit){
-    iter_limit--;
     flag=0;
+    iter_limit--;
     for (i=0;i<n;i++){
 
       float tmpa=0, tmpb=0;
@@ -477,7 +488,7 @@ static int linear_iterate(const float *x,
       tmpa*=cosE[i];
       tmpb*=sinE[i];
 
-      if(fit_compound){
+      if(fit_gs){
         tmpc -= tmpa*tcosC2[i];
         tmpd -= tmpb*tsinC2[i];
       }
@@ -485,7 +496,7 @@ static int linear_iterate(const float *x,
       tmpc*=tcosE[i];
       tmpd*=tsinE[i];
 
-      if(fit_compound){
+      if(fit_gs){
         tmpe -= tmpa*ttcosC2[i] + tmpc*ttcosC3[i];
         tmpf -= tmpb*ttsinC2[i] + tmpd*ttsinC3[i];
       }
@@ -562,7 +573,7 @@ static int linear_iterate(const float *x,
    fitdW : flag indicating that fitting should include the dW parameter.
    fitddA : flag indicating that fitting should include the ddA parameter.
    symm_norm
-   int fit_compound
+   int fit_gs
    int bound_zero
 
    Input estimates affect convergence region and speed and fit
@@ -584,16 +595,19 @@ int estimate_chirps(const float *x,
                     int len,
                     chirp *c,
                     int n,
-                    int iter_limit,
-                    float fit_limit,
 
-                    int linear,
+                    float fit_limit,
+                    int iter_limit,
+                    int fit_gs,
+
                     int fitW,
                     int fitdA,
                     int fitdW,
                     int fitddA,
+                    int nonlinear,
+                    float fit_W_alpha,
+                    float fit_dW_alpha,
                     int symm_norm,
-                    int fit_compound,
                     int bound_zero
                     ){
 
@@ -633,19 +647,21 @@ int estimate_chirps(const float *x,
     }
   }
 
-  if(linear){
+  if(!nonlinear){
     if(bound_zero) return -1;
+    if(fit_W_alpha!=1.0) return -1;
+    if(fit_dW_alpha!=1.0) return -1;
     iter_limit = linear_iterate(x,y,window,len,c,n,
-                                fit_limit,iter_limit,
+                                fit_limit,iter_limit,fit_gs,
                                 fitW,fitdA,fitdW,fitddA,
-                                symm_norm,E0,E1,E2,
-                                fit_compound);
+                                symm_norm,E0,E1,E2);
   }else{
     iter_limit = nonlinear_iterate(x,y,window,len,c,n,
-                                   fit_limit,iter_limit,
+                                   fit_limit,iter_limit,fit_gs,
                                    fitW,fitdA,fitdW,fitddA,
+                                   nonlinear-1,fit_W_alpha,fit_dW_alpha,
                                    symm_norm,E0,E1,E2,
-                                   fit_compound,bound_zero);
+                                   bound_zero);
   }
 
   /* Sort by ascending frequency */
