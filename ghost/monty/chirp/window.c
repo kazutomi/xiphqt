@@ -103,11 +103,27 @@ static void dolphcheb(float *d, int n){
   }
 }
 
+/* sidelobeless window machine optimized for fast convergence */
+static void maxwell1(float *x, int n){
+  int i;
+  float scale = 2*M_PI/n;
+  for(i=0;i<n;i++){
+    float i5 = i+.5;
+    x[i] = pow( 119.72981
+                - 119.24098*cos(scale*i5)
+                + 0.10283622*cos(2*scale*i5)
+                + 0.044013144*cos(3*scale*i5)
+                + 0.97203713*cos(4*scale*i5),
+                1.9730763)/50000.;
+  }
+}
+
 window_bundle window_functions = {
   rectangle,
   hanning,
   vorbis,
   blackmann_harris,
   tgauss_deep,
-  dolphcheb
+  dolphcheb,
+  maxwell1,
 };
