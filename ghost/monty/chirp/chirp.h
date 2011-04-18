@@ -25,23 +25,29 @@ typedef struct {
   int label;/* used for tracking by outside code */
 } chirp;
 
-extern int estimate_chirps(const float *x,
-                           float *y,
-                           const float *window,
-                           int len,
-                           chirp *c,
-                           int n,
-                           int iter_limit,
-                           float fit_limit,
+extern int
+estimate_chirps(const float *x, /* unwindowed input to fit */
+                float *y,       /* unwindowed outptu reconstruction */
+                const float *window, /* window to apply to input/bases */
+                int len,        /* block length */
+                chirp *c,       /* list of chirp estimates/outputs */
+                int n,          /* number of chirps */
+                float fit_limit,/* minimum basis movement to continue iteration */
+                int iter_limit, /* maximum number of iterations */
+                int fit_gs,     /* Use Gauss-Seidel partial updates */
 
-                           int linear,
-                           int fitW,
-                           int fitdA,
-                           int fitdW,
-                           int fitddA,
-                           int symm_norm,
-                           int fit_compound,
-                           int bound_zero);
+                int fitW,       /* fit the W parameter */
+                int fitdA,      /* fit the dA parameter */
+                int fitdW,      /* fit the dW parameter */
+                int fitddA,     /* fit the ddA parameter */
+                int nonlinear,  /* perform a linear fit (0),
+                                   nonlinear fit recentering W only (1)
+                                   nonlinear fit recentering W and dW (2) */
+                float fit_W_alpha, /* W alpha multiplier for nonlinear fit */
+                float fit_dW_alpha,/* dW alpha multiplier for nonlinear fit */
+                int symm_norm,     /* Use symmetric normalization optimization */
+                int bound_zero);   /* prevent W or dW from fitting to negative or
+                                      greater-then-Nyquist frequencies */
 
 extern void advance_chirps(chirp *c, int n, int len);
 
