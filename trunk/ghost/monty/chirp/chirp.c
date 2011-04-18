@@ -136,7 +136,6 @@ static int nonlinear_iterate(const float *x,
   /* outer fit iteration */
   while(flag && iter_limit>0){
     flag=0;
-    iter_limit--;
 
     /* precompute the portion of the projection/fit estimate shared by
        the zero, first and second order fits.  Subtracts the current
@@ -168,21 +167,25 @@ static int nonlinear_iterate(const float *x,
          of the flag is to emulate/study the behavior of the simplified
          algorithm */
       float cdW = fit_recenter_dW ? c->dW : 0;
+      float Wjj = fmodf((.5f-len/2)*c->W,2.f*M_PI);
 
       for(j=0;j<len;j++){
         float jj = j-len*.5+.5;
         float jj2 = jj*jj;
-        float co,si,c2,s2;
+        float co,si;
+        float c2,s2;
         float yy=r[j];
 
-        sincosf((c->W + cdW*jj)*jj,&si,&co);
+        sincosf(Wjj+cdW*jj*jj,&si,&co);
+        Wjj += c->W;
+        if(Wjj>2.*M_PI)Wjj-=2.*M_PI;
         si*=window[j];
         co*=window[j];
         c2 = co*co*jj;
         s2 = si*si*jj;
 
         /* add the current estimate back to the residue vector */
-        r[j] += (aC*co-aS*si) * (c->A + (c->dA + c->ddA*jj)*jj);
+        r[j] += (aC*co-aS*si) * (c->A + c->dA*jj + c->ddA*jj*jj);
 
         /* zero order projection */
         aP += co*yy;
@@ -317,14 +320,15 @@ static int nonlinear_iterate(const float *x,
       {
         float cdW = fit_recenter_dW ? c->dW : 0;
         for(j=0;j<len;j++){
-          float jj = j-len*.5+.5;
-          float a = c->A + (c->dA + c->ddA*jj)*jj;
-          float v = a*cosf((c->W + cdW*jj)*jj + c->P);
+          double jj = j-len*.5+.5;
+          float a = c->A + c->dA*jj + c->ddA*jj*jj;
+          float v = a*cos(cdW*jj*jj + c->P + c->W*jj);
           r[j] -= v*window[j];
           y[j] += v;
         }
       }
     }
+    if(flag) iter_limit--;
   }
   return iter_limit;
 }
@@ -467,7 +471,7 @@ static int linear_iterate(const float *x,
 
   while(flag && iter_limit){
     flag=0;
-    iter_limit--;
+
     for (i=0;i<n;i++){
 
       float tmpa=0, tmpb=0;
@@ -535,6 +539,7 @@ static int linear_iterate(const float *x,
           (tmpe*tmpe + tmpf*tmpf)/(ei[i]*ei[i]+fi[i]*fi[i]+fit_limit*fit_limit) > fit_limit*fit_limit) flag=1;
 
     }
+    if(flag) iter_limit--;
   }
 
   for(i=0;i<n;i++){
