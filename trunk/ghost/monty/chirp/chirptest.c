@@ -603,7 +603,7 @@ void w_e(char *filebase,graph_run *arg){
           if(ret_minA[i]>v)ret_minA[i]=v;
           if(ret_maxA[i]<v)ret_maxA[i]=v;
 
-          v = chirps[i].P - estimates[i].P;
+          v = circular_distance(chirps[i].P, estimates[i].P);
           if(ret_minP[i]>v)ret_minP[i]=v;
           if(ret_maxP[i]<v)ret_maxP[i]=v;
 
@@ -670,7 +670,7 @@ void w_e(char *filebase,graph_run *arg){
 
       /* P delta graph */
       if(swept){
-        set_error_color(cP_d,ret_maxP[yi]-ret_minP[yi],a);
+        set_error_color(cP_d,circular_distance(ret_maxP[yi],ret_minP[yi]),a);
         cairo_rectangle(cP_d,xi+leftpad,yi+toppad,1,1);
         cairo_fill(cP_d);
       }
@@ -812,7 +812,7 @@ int main(){
     /* ymajor */        100,
     /* yminor */        25,
 
-    /* window */        window_functions.maxwell1,
+    /* window */        window_functions.hanning,
     /* fit_tol */       .000001,
     /* gauss_seidel */  1,
     /* fit_W */         1,
@@ -825,8 +825,8 @@ int main(){
     /* symm_norm */     1,
     /* bound_zero */    0,
 
-    /* sweep_steps */   0,
-    /* randomize_p */   0,
+    /* sweep_steps */   16,
+    /* randomize_p */   1,
 
     /* est A range */   0.,0.,
     /* est P range */   0.,0.,
@@ -836,7 +836,7 @@ int main(){
     /* est ddA range */ 0.,0.,
 
     /* ch A range */    1.,1.,
-    /* ch P range */    M_PI/2.,M_PI/2.,
+    /* ch P range */    0,2*M_PI,
     /* ch W range */    0.,0.,
     /* ch dA range */   0.,0.,
     /* ch dW range */   0.,0.,
