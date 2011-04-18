@@ -128,10 +128,10 @@ void *compute_column(void *in){
        input here in the thread */
     if(localinit){
       for(i=0;i<blocksize;i++){
-        float jj = i - blocksize/2 + .5;
-        float A = arg->chirp[y].A + (arg->chirp[y].dA + arg->chirp[y].ddA*jj)*jj;
-        float P = arg->chirp[y].P + (arg->chirp[y].W  + arg->chirp[y].dW *jj)*jj;
-        chirp[i] = A*cosf(P);
+        double jj = i - blocksize/2 + .5;
+        double A = arg->chirp[y].A + arg->chirp[y].dA*jj + arg->chirp[y].ddA*jj*jj;
+        double P = arg->chirp[y].P + arg->chirp[y].W *jj + arg->chirp[y].dW *jj*jj;
+        chirp[i] = A*cos(P);
       }
     }
 
@@ -513,7 +513,7 @@ void w_e(char *filebase,graph_run *arg){
     float rms[y_n];
     int si,sn=(swept && arg->sweep_steps>1 ? arg->sweep_steps : 1);
 
-    fprintf(stderr,"\rW estimate distance vs. W graphs: column %d/%d...",x,x_n-1);
+    fprintf(stderr,"\rW estimate distance vs. W graphs: column %d/%d...",x-arg->x0,x_n-1);
 
     memset(targ,0,sizeof(targ));
 
@@ -572,10 +572,10 @@ void w_e(char *filebase,graph_run *arg){
           targ[i].in=in;
 
         for(i=0;i<blocksize;i++){
-          float jj = i-blocksize/2+.5;
-          float A = chirps[0].A + (chirps[0].dA + chirps[0].ddA*jj)*jj;
-          float P = chirps[0].P + (chirps[0].W  + chirps[0].dW *jj)*jj;
-          in[i] = A*cosf(P);
+          double jj = i-blocksize/2+.5;
+          double A = chirps[0].A + chirps[0].dA*jj + chirps[0].ddA*jj*jj;
+          double P = chirps[0].P + chirps[0].W*jj  + chirps[0].dW *jj*jj;
+          in[i] = A*cos(P);
         }
       }
 
@@ -803,16 +803,16 @@ int main(){
     /* threads */       8,
 
     /* x0 */            0,
-    /* x1 */            800,
-    /* xmajor */        100,
-    /* xminor */        25,
+    /* x1 */            1280,
+    /* xmajor */        10,
+    /* xminor */        5,
 
     /* y0 */            -300,
     /* y1 */            300,
-    /* ymajor */        100,
-    /* yminor */        25,
+    /* ymajor */        30,
+    /* yminor */        15,
 
-    /* window */        window_functions.hanning,
+    /* window */        window_functions.maxwell1,
     /* fit_tol */       .000001,
     /* gauss_seidel */  1,
     /* fit_W */         1,
@@ -825,8 +825,8 @@ int main(){
     /* symm_norm */     1,
     /* bound_zero */    0,
 
-    /* sweep_steps */   16,
-    /* randomize_p */   1,
+    /* sweep_steps */   8,
+    /* randomize_p */   0,
 
     /* est A range */   0.,0.,
     /* est P range */   0.,0.,

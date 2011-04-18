@@ -45,8 +45,10 @@ void set_iter_color(cairo_t *cC, int ret, float a){
     cairo_set_source_rgba(cC,0,.6,.6,a);
   }else if (ret==2){  /* 2 dark cyan */
     cairo_set_source_rgba(cC,0,.4,.8,a);
-  }else{ /* 1 blue */
-    cairo_set_source_rgba(cC,.1,.1,1,a);
+  }else if (ret==1){ /* 1 blue */
+    cairo_set_source_rgba(cC,.1,.2,1,a);
+  }else{ /* dark blue */
+    cairo_set_source_rgba(cC,.2,0,1,a);
   }
 }
 
@@ -167,7 +169,7 @@ void setup_graphs(int start_x_step,
     float w1,w2,w3;
 
     cairo_text_extents(ct, "100", &extents);
-    w1=extents.width*2*11;
+    w1=extents.width*2*12;
     cairo_text_extents(ct, ".000001", &extents);
     w2=extents.width*1.5*7;
     cairo_text_extents(ct, ".0001%", &extents);
@@ -235,18 +237,24 @@ cairo_t *draw_page(char *title,
   }
 
   /* X axis labels */
-  for(i=x0s;i<=x1s;i++){
-    if(i%xmajor==0){
-      char buf[80];
-
-      if(i==0){
-        snprintf(buf,80,"DC");
-      }else{
-        snprintf(buf,80,"%.0f",(float)i/xmajor);
+  {
+    int xadv=0;
+    for(i=x0s;i<=x1s;i++){
+      if(i%xmajor==0){
+        char buf[80];
+        int x = leftpad + i - x0s;
+        if(i==0){
+          snprintf(buf,80,"DC");
+        }else{
+          snprintf(buf,80,"%.0f",(float)i/xmajor);
+        }
+        cairo_text_extents(c, buf, &extents);
+        if(x-extents.width/2 - fontsize > xadv){
+          cairo_move_to(c,x - extents.width/2,y_n+toppad+extents.height+fontsize*.5);
+          cairo_show_text(c,buf);
+          xadv = x+extents.width/2;
+        }
       }
-      cairo_text_extents(c, buf, &extents);
-      cairo_move_to(c,leftpad + i - extents.width/2,y_n+toppad+extents.height+fontsize*.5);
-      cairo_show_text(c,buf);
     }
   }
 
@@ -325,8 +333,9 @@ cairo_t *draw_page(char *title,
       int i;
       float w=cw/11,px=leftpad+x_n;
 
-      for(i=1;i<=100;i++){
+      for(i=0;i<=100;i++){
         switch(i){
+        case 0:
         case 1:
         case 2:
         case 3:
