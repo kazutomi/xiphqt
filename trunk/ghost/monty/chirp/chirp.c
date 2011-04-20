@@ -167,18 +167,31 @@ static int nonlinear_iterate(const float *x,
          of the flag is to emulate/study the behavior of the simplified
          algorithm */
       float cdW = fit_recenter_dW ? c->dW : 0;
-      float Wjj = fmodf((.5f-len/2)*c->W,2.f*M_PI);
 
       for(j=0;j<len;j++){
-        float jj = j-len*.5+.5;
+
+        /* no part of the nonlinear algorithm requires double
+           precision, however the largest source of noise will be from
+           a naive computation of the instantaneous basis or
+           reconstruction chirp phase.  Because dW is usually very
+           small compared to W (especially c->W*jj), (W + dW*jj)*jj
+           quickly becomes noticably short of significant bits.
+
+           We can either calculate everything mod 2PI, use a double
+           for just this calculation (and passing the result to
+           sincos) or decide we don't care.  In the production code we
+           will probably not care as most of the depth in the
+           estimator isn't needed.  Here we'll take the easiest route
+           to have a deep reference and just use doubles. */
+
+        double jj = j-len*.5+.5;
         float jj2 = jj*jj;
-        float co,si;
+        double co,si;
         float c2,s2;
         float yy=r[j];
 
-        sincosf(Wjj+cdW*jj*jj,&si,&co);
-        Wjj += c->W;
-        if(Wjj>2.*M_PI)Wjj-=2.*M_PI;
+        sincos((c->W + cdW*jj)*jj,&si,&co);
+
         si*=window[j];
         co*=window[j];
         c2 = co*co*jj;
