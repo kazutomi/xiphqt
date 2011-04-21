@@ -37,10 +37,12 @@ extern cairo_t *draw_page(char *title,
 extern void setup_graphs(int start_x_step,
                          int end_x_step, /* inclusive; not one past */
                          int x_major_d,
+                         float x_major_f,
 
                          int start_y_step,
                          int end_y_step, /* inclusive; not one past */
                          int y_major_d,
+                         float y_major_f,
 
                          int subtitles,
                          float fs);
