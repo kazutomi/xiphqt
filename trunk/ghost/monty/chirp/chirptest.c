@@ -63,20 +63,20 @@ void set_chirp(chirp *c,
                float dW0, float dW1,
                float ddA0, float ddA1){
 
-  int An,Pn,Wn,dAn,dWn,ddAn;
-  int Ai,Pi,Wi,dAi,dWi,ddAi;
+  float An,Pn,Wn,dAn,dWn,ddAn;
+  float Ai,Pi,Wi,dAi,dWi,ddAi;
 
   xdim = (xdim | (xdim>>4)) & DIM_ESTIMATE_MASK;
   ydim = (ydim | (ydim>>4)) & DIM_ESTIMATE_MASK;
   if(stepn<2)stepn=2;
 
   An=Pn=Wn=dAn=dWn=ddAn=stepn-1;
-  Ai = (rand_p ? drand48() : stepi);
-  Pi = (rand_p ? drand48() : stepi);
-  Wi = (rand_p ? drand48() : stepi);
-  dAi = (rand_p ? drand48() : stepi);
-  dWi = (rand_p ? drand48() : stepi);
-  ddAi = (rand_p ? drand48() : stepi);
+  Ai = (rand_p ? drand48()*An : stepi);
+  Pi = (rand_p ? drand48()*Pn : stepi);
+  Wi = (rand_p ? drand48()*Wn : stepi);
+  dAi = (rand_p ? drand48()*dAn : stepi);
+  dWi = (rand_p ? drand48()*dWn : stepi);
+  ddAi = (rand_p ? drand48()*ddAn : stepi);
 
   switch(xdim){
   case DIM_ESTIMATE_A:
@@ -864,8 +864,8 @@ void w_e(char *filebase,graph_run *arg){
 
         for(i=0;i<blocksize;i++){
           double jj = i-blocksize/2+.5;
-          double A = chirps[0].A + chirps[0].dA*jj + chirps[0].ddA*jj*jj;
-          double P = chirps[0].P + chirps[0].W*jj  + chirps[0].dW *jj*jj;
+          double A = chirps[0].A + (chirps[0].dA + chirps[0].ddA*jj)*jj;
+          double P = chirps[0].P + (chirps[0].W  + chirps[0].dW *jj)*jj;
           in[i] = A*cos(P);
         }
       }
@@ -1096,7 +1096,7 @@ int main(){
   graph_run arg={
     /* fontsize */      12,
     /* subtitle1 */     "Nonlinear (W, dW recentered), G/S, symmetric norm, no ddA fit",
-    /* subtitle2 */     "chirp: A=1.0, swept phase, dA=0 | estimate A=P=dA=dW=0, estimate W = chirp W",
+    /* subtitle2 */     "chirp: A=1.0, dA=0., swept phase | estimate A=P=dA=dW=0, estimate W=chirp W",
     /* subtitle3 */     "hanning window",
     /* xaxis label */   "W (cycles/block)",
     /* yaxis label */   "dW (cycles/block)",
@@ -1122,10 +1122,10 @@ int main(){
     /* x major */       1.,
     /* x minor */       .25,
     /* y dimension */   DIM_CHIRP_dW,
-    /* y steps */       601,
+    /* y steps */       501,
     /* y major */       1.,
     /* y minor */       .5,
-    /* sweep_steps */   8,
+    /* sweep_steps */   32,
     /* randomize_p */   0,
 
     /* est A range */     0.,  0.,  0, /* relative flag */
@@ -1136,10 +1136,10 @@ int main(){
     /* est ddA range */   0.,  0.,  0, /* relative flag */
 
     /* ch A range */    1.,1.,
-    /* ch P range */    0,1.-1./8,
+    /* ch P range */    0.,1.-1./32.,
     /* ch W range */    0.,8.,
     /* ch dA range */   0.,0.,
-    /* ch dW range */   -6.,6.,
+    /* ch dW range */   -5.,5.,
     /* ch ddA range */  0.,0.,
 
     /* converge max */    1,
@@ -1161,16 +1161,16 @@ int main(){
 
   };
 
-  w_e("dW-vs-W",&arg);
+  w_e("dW-vs-W-rand",&arg);
 
   arg.yaxis_label="initial distance from W (cycles/block)";
   arg.y_dim = DIM_ESTIMATE_W;
-  arg.min_est_W = -6.;
-  arg.max_est_W =  6.;
-  arg.min_chirp_dW=0.;
-  arg.max_chirp_dW=0.;
+  arg.min_est_W = -5.;
+  arg.max_est_W =  5.;
+  arg.min_chirp_dW=-1.;
+  arg.max_chirp_dW=1.;
 
-  w_e("estW-vs-W",&arg);
+  w_e("estW-vs-W-rand",&arg);
 
   return 0;
 }
