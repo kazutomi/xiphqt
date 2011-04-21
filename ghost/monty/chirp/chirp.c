@@ -198,7 +198,7 @@ static int nonlinear_iterate(const float *x,
         s2 = si*si*jj;
 
         /* add the current estimate back to the residue vector */
-        r[j] += (aC*co-aS*si) * (c->A + c->dA*jj + c->ddA*jj*jj);
+        r[j] += (aC*co-aS*si) * (c->A + (c->dA + c->ddA*jj)*jj);
 
         /* zero order projection */
         aP += co*yy;
