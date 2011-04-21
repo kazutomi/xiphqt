@@ -79,8 +79,8 @@ void set_error_color(cairo_t *c, float err,float a){
 /********* draw everything in the graph except the graph data itself *******/
 
 static float fontsize=12;
-static int x0s,x1s,xmajor;
-static int y0s,y1s,ymajor;
+static int x0s,x1s,xmajor,xmajorf;
+static int y0s,y1s,ymajor,ymajorf;
 
 /* computed configuration globals */
 int leftpad=0;
@@ -100,10 +100,12 @@ static int y_n=0;
 void setup_graphs(int start_x_step,
                   int end_x_step, /* inclusive; not one past */
                   int x_major_d,
+                  float x_major_f,
 
                   int start_y_step,
                   int end_y_step, /* inclusive; not one past */
                   int y_major_d,
+                  float y_major_f,
 
                   int subtitles,
                   float fs){
@@ -121,16 +123,18 @@ void setup_graphs(int start_x_step,
   x0s=start_x_step;
   x1s=end_x_step;
   xmajor=x_major_d;
+  xmajorf=x_major_f;
   y0s=start_y_step;
   y1s=end_y_step;
   ymajor=y_major_d;
+  ymajorf=y_major_f;
 
   /* y labels */
   cairo_set_font_size(ct, fontsize);
   for(y=y0s+fontsize;y<=y1s;y++){
     if(y%ymajor==0){
       char buf[80];
-      snprintf(buf,80,"%.0f",(float)y/ymajor);
+      snprintf(buf,80,"%.0f",(float)y/ymajor*ymajorf);
       cairo_text_extents(ct, buf, &extents);
       if(extents.width + extents.height*3.5>leftpad)leftpad=extents.width + extents.height*3.5;
     }
@@ -229,7 +233,7 @@ cairo_t *draw_page(char *title,
       int y = toppad+y_n-i+y0s;
       char buf[80];
 
-      snprintf(buf,80,"%.0f",(float)i/ymajor);
+      snprintf(buf,80,"%.0f",(float)i/ymajor*ymajorf);
       cairo_text_extents(c, buf, &extents);
       cairo_move_to(c,leftpad - fontsize*.5 - extents.width,y+extents.height*.5);
       cairo_show_text(c,buf);
@@ -237,28 +241,22 @@ cairo_t *draw_page(char *title,
   }
 
   /* X axis labels */
-  {
-    int xadv=0;
-    for(i=x0s;i<=x1s;i++){
-      if(i%xmajor==0){
-        char buf[80];
-        int x = leftpad + i - x0s;
-        if(i==0){
-          snprintf(buf,80,"DC");
-        }else{
-          snprintf(buf,80,"%.0f",(float)i/xmajor);
-        }
-        cairo_text_extents(c, buf, &extents);
-        if(x-extents.width/2 - fontsize > xadv){
-          cairo_move_to(c,x - extents.width/2,y_n+toppad+extents.height+fontsize*.5);
-          cairo_show_text(c,buf);
-          xadv = x+extents.width/2;
-        }
+  for(i=x0s;i<=x1s;i++){
+    if(i%xmajor==0){
+      char buf[80];
+      int x = leftpad + i - x0s;
+      if(i==0){
+        snprintf(buf,80,"DC");
+      }else{
+        snprintf(buf,80,"%.0f",(float)i/xmajor*xmajorf);
       }
+      cairo_text_extents(c, buf, &extents);
+      cairo_move_to(c,x - extents.width/2,y_n+toppad+extents.height+fontsize*.5);
+      cairo_show_text(c,buf);
     }
   }
 
-  /* Y axis label */
+  /* Y axis caption */
   {
     cairo_matrix_t a;
     cairo_matrix_t b = {0.,-1., 1.,0., 0.,0.}; // account for border!

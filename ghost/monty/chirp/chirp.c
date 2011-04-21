@@ -283,9 +283,9 @@ static int nonlinear_iterate(const float *x,
 
         /* guard overflow; if we're this far out, assume we're never
            coming back. drop out now. */
-        if((aP*aP + bP*bP)>1e20 ||
-           (cP*cP + dP*dP)>1e20 ||
-           (eP*eP + fP*fP)>1e20){
+        if((aP*aP + bP*bP)>1e10 ||
+           (cP*cP + dP*dP)>1e10 ||
+           (eP*eP + fP*fP)>1e10){
           iter_limit=0;
           i=n;
         }
