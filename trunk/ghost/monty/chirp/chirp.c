@@ -133,9 +133,14 @@ static int nonlinear_iterate(const float *x,
   int flag=1;
   float r[len];
 
+  float lasterr=0;
+  float thiserr=0;
+
   /* outer fit iteration */
-  while(flag && iter_limit>0){
+  while((flag || lasterr>thiserr) && iter_limit>0){
     flag=0;
+    lasterr=thiserr;
+    thiserr=0;
 
     /* precompute the portion of the projection/fit estimate shared by
        the zero, first and second order fits.  Subtracts the current
@@ -261,6 +266,7 @@ static int nonlinear_iterate(const float *x,
         float move = (aP*aP + bP*bP)/(c->A*c->A + fit_limit*fit_limit) +
           (cP*cP + dP*dP)/(c->A*c->A + fit_limit*fit_limit) +
           (eP*eP + fP*fP)/(c->A*c->A + fit_limit*fit_limit);
+        thiserr+=move;
 
         if(fit_limit>0 && move>fit_limit*fit_limit)flag=1;
         if(fit_limit<0 && move>1e-14)flag=1;
