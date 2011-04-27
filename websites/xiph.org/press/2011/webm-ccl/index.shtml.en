@@ -1,0 +1,61 @@
+<!--#include virtual="/ssi/header.include" -->
+<!-- Enter custom page information and styles here -->
+  <title>April 25, 2011: WebM Project announces WebM-CCL</title>
+</head>
+<body>
+<!--#include virtual="/common/xiphbar.include" -->
+
+<!--#include virtual="/ssi/pagetop.include" -->
+<!--  All your page content goes here  -->
+
+<h3>WebM Cross-Community License Announced</h3>
+
+<p>The WebM Project today announced an initiative to establish a
+  <a href="http://www.webm-ccl.org/">Community Cross-License</a> (the
+  CCL) with 17 founding members.</p>
+
+<p>Google, Matroska and the Xiph.Org Foundation already make the
+  components of WebM openly available on royalty-free terms.</p>
+
+<p>With the establishment of the CCL, CCL members will agree to
+  license patents they have that may be essential to WebM technologies
+  to other members of the CCL.</p>
+
+<p>The founding members of the initiative are:</p>
+
+<ul>
+  <li>AMD
+  <li>Cisco Systems
+  <li>Google Inc.
+  <li>HiSilicon Technologies (for itself and on behalf of its parent, Huawei)
+  <li>LG Electronics
+  <li>Logitech
+  <li>Matroska
+  <li>MIPS Technologies
+  <li>Mozilla Corporation
+  <li>Opera Software
+  <li>Pantech
+  <li>Quanta Computer
+  <li>Samsung
+  <li>STMicroelectronics (for itself and its affiliate, ST-Ericsson)
+  <li>Texas Instruments
+  <li>Verisilicon Holdings
+  <li>Xiph.Org Foundation
+</ul>
+
+<h3>About the WebM Project</h3>
+
+<p><i>The WebM Project launched in May, 2010 with the goal of
+establishing a high-quality, open video format for the web. Since
+then, WebM support has shipped in millions of web browsers and devices
+worldwide. To learn more,
+visit <a href="http://www.webmproject.org/">webmproject.org</a></i></p>.
+
+<p><i> The Xiph.Org Foundation is a not-for-profit corporation
+dedicated to open, unencumbered multimedia technology. Xiph's formats
+and software level the playing field for digital media so that all
+producers and artists can distribute their work for minimal cost,
+without restriction, regardless of affiliation.  May contain traces of
+nuts.</i></p>
+
+<!--#include virtual="/ssi/pagebottom.include" -->
