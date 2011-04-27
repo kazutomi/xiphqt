@@ -10,7 +10,7 @@
 #include "chirp.h"
 #include "lpc.h"
 
-static int BLOCKSIZE=2048;
+static int BLOCKSIZE=1024;
 static int MAX_CPC=200; /* maximum of 200 chirp candidates per channel */
 
 static float MINdB=-100;
@@ -18,18 +18,18 @@ static float MAXdB=0;
 
 #define AREAS 2
 static float AREA_SIZE[AREAS]={1.,1.};
-static int   AREA_HZOOM[AREAS]={1,1};
-static int   AREA_VZOOM[AREAS]={16,1};
+static int   AREA_HZOOM[AREAS]={1,4};
+static int   AREA_VZOOM[AREAS]={4,4};
 static int   AREA_FRAMEOUT_TRIGGER=1;
 
-static int   WAVEFORM_AREA=-1;
-static int   SPECTROGRAM_AREA=0;
+static int   WAVEFORM_AREA=0;
+static int   SPECTROGRAM_AREA=-1;
 static int   CHIRPOGRAM_AREA=-1;
 
 static int   SPECTRUM_AREA=1;
 static int   SPECTRUM_GRIDFONTSIZE=8;
 
-static int   ENVELOPE_AREA=-11;
+static int   ENVELOPE_AREA=-1;
 
 static int   TRACK_AREA=1;
 
@@ -347,9 +347,12 @@ void spectrum(pcm_t *pcm,float **current_dB,cairo_t *c,off_t pos){
   grid_lines(c,SPECTRUM_AREA);
   cairo_set_line_width(c,.7);
 
-  for(i=0;i<pcm->ch;i++)
+  for(i=0;i<pcm->ch;i++){
+    int j;
+    for(j=0;j<BLOCKSIZE/2+1;j++)
+      current_dB[i][j] = current_dB[i][j];
     frequency_vector_dB(current_dB[i],i,BLOCKSIZE/2+1,SPECTRUM_AREA,c,0);
-
+  }
   cairo_restore(c);
 }
 
@@ -387,6 +390,9 @@ void waveform_vector(float *vec,int ch,int n,
 void waveform(pcm_t *pcm,float *window,float **current,cairo_t *c,off_t pos){
   int i,j;
   float work[BLOCKSIZE];
+  drft_lookup fft;
+  drft_init(&fft, BLOCKSIZE);
+
   cairo_save(c);
   clip_area(c,WAVEFORM_AREA);
   clear_area(c,WAVEFORM_AREA);
@@ -395,10 +401,12 @@ void waveform(pcm_t *pcm,float *window,float **current,cairo_t *c,off_t pos){
   for(i=0;i<pcm->ch;i++){
     for(j=0;j<BLOCKSIZE;j++)
       work[j]= -current[i][j]*window[j];
+
     waveform_vector(work,i,BLOCKSIZE,WAVEFORM_AREA,c,0);
-    waveform_vector(window,i,BLOCKSIZE,WAVEFORM_AREA,c,0);
+    //waveform_vector(window,i,BLOCKSIZE,WAVEFORM_AREA,c,0);
   }
 
+  drft_clear(&fft);
   cairo_restore(c);
 }
 
@@ -702,8 +710,8 @@ void track(pcm_t *pcm,
     for(j=0;j<chirps_used[i];j++)
       fprintf(stderr,"in>>%f:%f:%f::%f:%f ",chirps[i][j].A,chirps[i][j].W*BLOCKSIZE/2./M_PI,chirps[i][j].P,chirps[i][j].dA*BLOCKSIZE,chirps[i][j].dW*BLOCKSIZE*BLOCKSIZE/2/M_PI);
 
-    ret=estimate_chirps(current_block[i],y[i],r[i],window,BLOCKSIZE,
-                    chirps[i],chirps_used[i],50,.01);
+    //ret=estimate_chirps(current_block[i],y[i],r[i],window,BLOCKSIZE,
+    //                  chirps[i],chirps_used[i],50,.01);
     for(j=0;j<chirps_used[i];j++)
       fprintf(stderr,"out(%d)>>%f:%f:%f::%f:%f   ",ret,chirps[i][j].A,chirps[i][j].W*BLOCKSIZE/2./M_PI,chirps[i][j].P,chirps[i][j].dA*BLOCKSIZE,chirps[i][j].dW*BLOCKSIZE*BLOCKSIZE/2./M_PI);
     dump_waveform("x",fitno,current_block[i],BLOCKSIZE);
@@ -730,8 +738,8 @@ void track(pcm_t *pcm,
     for(j=0;j<chirps_used[i];j++)
       fprintf(stderr,"in>>%f:%f:%f::%f:%f ",chirps[i][j].A,chirps[i][j].W*BLOCKSIZE/2./M_PI,chirps[i][j].P,chirps[i][j].dA*BLOCKSIZE,chirps[i][j].dW*BLOCKSIZE*BLOCKSIZE/2/M_PI);
 
-    ret=estimate_chirps(current_block[i],y[i],r[i],(count>10?rec:window),BLOCKSIZE,
-                        chirps[i],chirps_used[i],50,.01);
+    //ret=estimate_chirps(current_block[i],y[i],r[i],(count>10?rec:window),BLOCKSIZE,
+    //                  chirps[i],chirps_used[i],50,.01);
 
     for(j=0;j<chirps_used[i];j++)
       fprintf(stderr,"out(%d)>>%f:%f:%f::%f:%f   ",ret,chirps[i][j].A,chirps[i][j].W*BLOCKSIZE/2./M_PI,chirps[i][j].P,chirps[i][j].dA*BLOCKSIZE,chirps[i][j].dW*BLOCKSIZE*BLOCKSIZE/2./M_PI);
@@ -855,7 +863,7 @@ int main(int argc, char **argv){
   off_t areas_pos[AREAS]={0,0};
 
   pic_w = BLOCKSIZE/2;
-  pic_h = pic_w*9/16;
+  pic_h = pic_w*9/16/2;
 
   drft_init(&fft, BLOCKSIZE);
 
@@ -917,7 +925,7 @@ int main(int argc, char **argv){
     chirps[i]=calloc(MAX_CPC,sizeof(**chirps));
 
   for(j=0;j<BLOCKSIZE;j++)window[j]=1.;
-  hanning(window,window,BLOCKSIZE);
+  //hanning(window,window,BLOCKSIZE);
 
   while(1){
 

@@ -17,6 +17,7 @@
 
 typedef struct {
   void (*rectangle)(float *,int);
+  void (*sine)(float *,int);
   void (*hanning)(float *,int);
   void (*vorbis)(float *,int);
   void (*blackman_harris)(float *,int);

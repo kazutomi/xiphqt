@@ -211,7 +211,6 @@ cairo_t *draw_page(char *title,
     exit(1);
   }
   cairo_t *c = cairo_create(cs);
-  cairo_save(c);
 
   /* clear page to white */
   cairo_set_source_rgb(c,1,1,1);
@@ -220,6 +219,7 @@ cairo_t *draw_page(char *title,
   cairo_set_font_size(c, fontsize);
 
   /* set graph area to transparent */
+  cairo_save(c);
   cairo_set_source_rgba(c,0,0,0,0);
   cairo_set_operator(c,CAIRO_OPERATOR_SOURCE);
   cairo_rectangle(c,leftpad,toppad,x_n,y_n);
