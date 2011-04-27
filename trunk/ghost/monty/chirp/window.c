@@ -28,6 +28,17 @@ static void rectangle(float *x, int n){
     x[i]=1.;
 }
 
+/* sine window */
+static void sine(float *x, int n){
+  int i;
+  float scale = M_PI/n;
+
+  for(i=0;i<n;i++){
+    float i5 = i+.5;
+    x[i] = sin(scale*i5);
+  }
+}
+
 /* Minimum 4-term Blackman Harris; highest sidelobe = -92dB */
 #define A0 .35875f
 #define A1 .48829f
@@ -120,6 +131,7 @@ static void maxwell1(float *x, int n){
 
 window_bundle window_functions = {
   rectangle,
+  sine,
   hanning,
   vorbis,
   blackmann_harris,

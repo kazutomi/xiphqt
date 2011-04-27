@@ -234,7 +234,7 @@ void *compute_column(void *in){
       rms_acc += ee*ee;
     }
     arg->rms_error[y] = sqrt(rms_acc)/sqrt(e_acc);
-    arg->iterations[y] = arg->max_iterations-ret;
+    arg->iterations[y] = arg->max_iterations-ret-1;
     feclearexcept(FE_ALL_EXCEPT);
     feenableexcept(except);
 
@@ -1094,35 +1094,35 @@ void w_e(char *filebase,graph_run *arg){
 
 int main(){
   graph_run arg={
-    /* fontsize */      12,
-    /* subtitle1 */     "Nonlinear (W, dW recentered), G/S, symmetric norm, no ddA fit",
+    /* fontsize */      18,
+    /* subtitle1 */     "Linear estimation, no ddA fit",
     /* subtitle2 */     "chirp: A=1.0, dA=0., swept phase | estimate A=P=dA=dW=0, estimate W=chirp W",
-    /* subtitle3 */     "hanning window",
+    /* subtitle3 */     "sine window",
     /* xaxis label */   "W (cycles/block)",
     /* yaxis label */   "dW (cycles/block)",
 
     /* blocksize */     256,
     /* threads */       8,
 
-    /* window */        window_functions.hanning,
+    /* window */        window_functions.sine,
     /* fit_tol */       .000001,
-    /* gauss_seidel */  1,
+    /* gauss_seidel */  0,
     /* fit_W */         1,
     /* fit_dA */        1,
     /* fit_dW */        1,
     /* fit_ddA */       0,
-    /* nonlinear */     2,
+    /* nonlinear */     0,
     /* W_alpha */       1.,
     /* dW_alpha */      1.75,
-    /* symm_norm */     1,
+    /* symm_norm */     0,
     /* bound_zero */    0,
 
     /* x dimension */   DIM_CHIRP_W,
-    /* x steps */       801,
+    /* x steps */       1001,
     /* x major */       1.,
     /* x minor */       .25,
     /* y dimension */   DIM_CHIRP_dW,
-    /* y steps */       501,
+    /* y steps */       601,
     /* y major */       1.,
     /* y minor */       .5,
     /* sweep_steps */   32,
@@ -1137,9 +1137,9 @@ int main(){
 
     /* ch A range */    1.,1.,
     /* ch P range */    0.,1.-1./32.,
-    /* ch W range */    0.,8.,
+    /* ch W range */    0.,10.,
     /* ch dA range */   0.,0.,
-    /* ch dW range */   -5.,5.,
+    /* ch dW range */   -1.2,1.2,
     /* ch ddA range */  0.,0.,
 
     /* converge max */    1,
@@ -1161,16 +1161,27 @@ int main(){
 
   };
 
-  w_e("dW-vs-W-rand",&arg);
+  w_e("linear-dW-vs-W",&arg);
+  arg.nonlinear=1;
+  w_e("partial-nonlinear-dW-vs-W",&arg);
+  arg.nonlinear=2;
+  w_e("full-nonlinear-dW-vs-W",&arg);
 
+  arg.nonlinear=0;
   arg.yaxis_label="initial distance from W (cycles/block)";
   arg.y_dim = DIM_ESTIMATE_W;
-  arg.min_est_W = -5.;
-  arg.max_est_W =  5.;
+  arg.min_est_W = -1.2;
+  arg.max_est_W =  1.2;
   arg.min_chirp_dW=-1.;
   arg.max_chirp_dW=1.;
 
-  w_e("estW-vs-W-rand",&arg);
+  w_e("linear-estW-vs-W",&arg);
+  arg.nonlinear=1;
+  w_e("partial-nonlinear-estW-vs-W",&arg);
+  arg.nonlinear=2;
+  w_e("full-nonlinear-estW-vs-W",&arg);
+
+  arg.nonlinear=0;
 
   return 0;
 }

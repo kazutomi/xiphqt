@@ -347,7 +347,7 @@ static int nonlinear_iterate(const float *x,
         }
       }
     }
-    if(flag) iter_limit--;
+    iter_limit--;
   }
   return iter_limit;
 }
@@ -397,6 +397,8 @@ static int linear_iterate(const float *x,
   float ei[n], fi[n];
   int i,j;
   int flag=1;
+  float lasterr=0;
+  float thiserr=0;
 
   for (i=0;i<n;i++){
     float tmpa=0;
@@ -488,8 +490,10 @@ static int linear_iterate(const float *x,
     }
   }
 
-  while(flag && iter_limit){
+  while((flag || lasterr>thiserr) && iter_limit>0){
     flag=0;
+    lasterr=thiserr;
+    thiserr=0;
 
     for (i=0;i<n;i++){
 
@@ -543,6 +547,21 @@ static int linear_iterate(const float *x,
           tmpf*ttsin_table[i][j];
       }
 
+
+      /* base convergence on basis projection movement this
+         iteration */
+      {
+        float A2 = ai[i]*ai[i]+bi[i]*bi[i];
+        float move = (tmpa*tmpa + tmpb*tmpb)/(A2 + fit_limit*fit_limit) +
+          (tmpc*tmpc + tmpd*tmpd)/(A2 + fit_limit*fit_limit) +
+          (tmpe*tmpe + tmpf*tmpf)/(A2 + fit_limit*fit_limit);
+        thiserr+=move;
+
+        if(fit_limit>0 && move>fit_limit*fit_limit)flag=1;
+        if(fit_limit<0 && move>1e-14)flag=1;
+      }
+
+
       ai[i] += tmpa;
       bi[i] += tmpb;
       ci[i] += tmpc;
@@ -550,15 +569,18 @@ static int linear_iterate(const float *x,
       ei[i] += tmpe;
       fi[i] += tmpf;
 
-      /* base convergence on basis projection movement this
-         iteration */
-      if( fit_limit<0 ||
-          (tmpa*tmpa + tmpb*tmpb)/(ai[i]*ai[i]+bi[i]*bi[i]+fit_limit*fit_limit) +
-          (tmpc*tmpc + tmpd*tmpd)/(ci[i]*ci[i]+di[i]*di[i]+fit_limit*fit_limit) +
-          (tmpe*tmpe + tmpf*tmpf)/(ei[i]*ei[i]+fi[i]*fi[i]+fit_limit*fit_limit) > fit_limit*fit_limit) flag=1;
+      /* guard overflow; if we're this far out, assume we're never
+         coming back. drop out now. */
+      if((ai[i]*ai[i] + bi[i]*bi[i])>1e10 ||
+         (ci[i]*ci[i] + di[i]*di[i])>1e10 ||
+         (ei[i]*ei[i] + fi[i]*fi[i])>1e10){
+        iter_limit=0;
+        i=n;
+      }
+
 
     }
-    if(flag) iter_limit--;
+    iter_limit--;
   }
 
   for(i=0;i<n;i++){
@@ -672,9 +694,9 @@ int estimate_chirps(const float *x,
   }
 
   if(!nonlinear){
-    if(bound_zero) return -1;
-    if(fit_W_alpha!=1.0) return -1;
-    if(fit_dW_alpha!=1.0) return -1;
+    //if(bound_zero) return -1;
+    //if(fit_W_alpha!=1.0) return -1;
+    //if(fit_dW_alpha!=1.0) return -1;
     iter_limit = linear_iterate(x,y,window,len,c,n,
                                 fit_limit,iter_limit,fit_gs,
                                 fitW,fitdA,fitdW,fitddA,
