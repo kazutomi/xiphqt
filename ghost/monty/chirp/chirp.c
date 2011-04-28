@@ -166,13 +166,6 @@ static int nonlinear_iterate(const float *x,
       float aC = cos(c->P);
       float aS = sin(c->P);
 
-      /* Not recentering dW allows potential simplification of the
-         nonlinear solver. This code is designed to recenter dW as
-         easily as not, so the following looks a bit silly.  The point
-         of the flag is to emulate/study the behavior of the simplified
-         algorithm */
-      float cdW = fit_recenter_dW ? c->dW : 0;
-
       for(j=0;j<len;j++){
 
         /* no part of the nonlinear algorithm requires double
@@ -195,15 +188,29 @@ static int nonlinear_iterate(const float *x,
         float c2,s2;
         float yy=r[j];
 
-        sincos((c->W + cdW*jj)*jj,&si,&co);
+        sincos((c->W + c->dW*jj)*jj,&si,&co);
 
         si*=window[j];
         co*=window[j];
-        c2 = co*co*jj;
-        s2 = si*si*jj;
 
         /* add the current estimate back to the residue vector */
         r[j] += (aC*co-aS*si) * (c->A + (c->dA + c->ddA*jj)*jj);
+
+        /* Not recentering dW allows potential simplification of the
+           nonlinear solver. This code is designed to recenter dW as
+           easily as not, so the following looks a bit silly.  The point
+           of the flag is to emulate/study the behavior of the simplified
+           algorithm */
+
+        if(!fit_recenter_dW){
+          sincos(c->W*jj,&si,&co);
+
+          si*=window[j];
+          co*=window[j];
+        }
+
+        c2 = co*co*jj;
+        s2 = si*si*jj;
 
         /* zero order projection */
         aP += co*yy;
@@ -274,9 +281,9 @@ static int nonlinear_iterate(const float *x,
 
       /* we're fitting to the remaining error; add the fit to date
          back in to relate our newest incremental results to the
-         global fit so far.  Note that this does not include W or dW,
-         as they're already 'subtracted' when the bases are recentered
-         each iteration */
+         global fit so far.  Note that this does not include W (or dW
+         if it is also recentered), as they're already 'subtracted'
+         when the bases are recentered each iteration */
       {
         float A = toAi(c->A, c->P);
         float B = toBi(c->A, c->P);
@@ -286,6 +293,10 @@ static int nonlinear_iterate(const float *x,
         dP += dAtoDi(A,B,c->dA);
         eP += ddAtoEi(A,B,c->ddA);
         fP += ddAtoFi(A,B,c->ddA);
+        if(!fit_recenter_dW){
+          eP += dWtoEi(A,B,c->dW);
+          fP += dWtoFi(A,B,c->dW);
+        }
 
         /* guard overflow; if we're this far out, assume we're never
            coming back. drop out now. */
@@ -337,11 +348,10 @@ static int nonlinear_iterate(const float *x,
 
       /* update the reconstruction/residue vectors with new fit */
       {
-        float cdW = fit_recenter_dW ? c->dW : 0;
         for(j=0;j<len;j++){
           double jj = j-len*.5+.5;
-          float a = c->A + c->dA*jj + c->ddA*jj*jj;
-          float v = a*cos(cdW*jj*jj + c->P + c->W*jj);
+          float a = c->A + (c->dA + c->ddA*jj)*jj;
+          float v = a*cos(c->P + (c->W + c->dW*jj)*jj);
           r[j] -= v*window[j];
           y[j] += v;
         }
@@ -687,9 +697,9 @@ int estimate_chirps(const float *x,
   memset(y,0,sizeof(*y)*len);
   for(i=0;i<n;i++){
     for(j=0;j<len;j++){
-      float jj = j-len*.5+.5;
+      double jj = j-len*.5+.5;
       float a = c[i].A + (c[i].dA + c[i].ddA*jj)*jj;
-      y[j] += a*cosf((c[i].W + c[i].dW*jj)*jj + c[i].P);
+      y[j] += a*cos((c[i].W + c[i].dW*jj)*jj + c[i].P);
     }
   }
 
