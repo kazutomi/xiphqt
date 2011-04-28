@@ -132,6 +132,7 @@ static int nonlinear_iterate(const float *x,
   int i,j;
   int flag=1;
   float r[len];
+  int ret_count=iter_limit;
 
   float lasterr=0;
   float thiserr=0;
@@ -357,9 +358,10 @@ static int nonlinear_iterate(const float *x,
         }
       }
     }
-    if(flag)iter_limit--;
+    if(flag)ret_count--;
+    iter_limit--;
   }
-  return iter_limit;
+  return ret_count;
 }
 
 /* linear estimation iterator; sets fixed basis functions for each
@@ -409,6 +411,7 @@ static int linear_iterate(const float *x,
   int flag=1;
   float lasterr=0;
   float thiserr=0;
+  int ret_count = iter_limit;
 
   for (i=0;i<n;i++){
     float tmpa=0;
@@ -590,7 +593,8 @@ static int linear_iterate(const float *x,
 
 
     }
-    if(flag)iter_limit--;
+    if(flag)ret_count--;
+    iter_limit--;
   }
 
   for(i=0;i<n;i++){
@@ -609,7 +613,7 @@ static int linear_iterate(const float *x,
     free(ttsin_table[i]);
   }
 
-  return iter_limit;
+  return ret_count;
 }
 
 /* Performs an iterative chirp estimation using the passed
