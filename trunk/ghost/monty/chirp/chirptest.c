@@ -1176,15 +1176,19 @@ int main(){
 
   };
 
+  /* Graphs for dW vs W ****************************************/
+
   w_e("linear-dW-vs-W",&arg);
   arg.fit_nonlinear=1;
-  arg.subtitle1="Partial nonlinear estimation, no ddA fit",
+  arg.subtitle1="Partial nonlinear estimation, no ddA fit";
   w_e("partial-nonlinear-dW-vs-W",&arg);
-  arg.subtitle1="Full nonlinear estimation, no ddA fit",
+  arg.subtitle1="Full nonlinear estimation, no ddA fit";
   arg.fit_nonlinear=2;
   w_e("full-nonlinear-dW-vs-W",&arg);
 
-  arg.subtitle1="Linear estimation, no ddA fit",
+  /* Graphs for W estimate distance vs W ************************/
+
+  arg.subtitle1="Linear estimation, no ddA fit";
   arg.fit_nonlinear=0;
   arg.yaxis_label="initial distance from W (cycles/block)";
   arg.y_dim = DIM_ESTIMATE_W;
@@ -1194,12 +1198,34 @@ int main(){
   arg.max_chirp_dW=0.;
 
   w_e("linear-estW-vs-W",&arg);
-  arg.subtitle1="Partial nonlinear estimation, no ddA fit",
+  arg.subtitle1="Partial nonlinear estimation, no ddA fit";
+  arg.subtitle2="chirp: A=1.0, dA=dW=0., swept phase | estimate A=P=dA=dW=0";
   arg.fit_nonlinear=1;
   w_e("partial-nonlinear-estW-vs-W",&arg);
-  arg.subtitle1="Full nonlinear estimation, no ddA fit",
+  arg.subtitle1="Full nonlinear estimation, no ddA fit";
   arg.fit_nonlinear=2;
   w_e("full-nonlinear-estW-vs-W",&arg);
+  arg.fit_nonlinear=0;
+
+  /* Graphs for dA vs W *****************************************/
+
+  arg.subtitle1="Linear estimation, no ddA fit",
+  arg.subtitle2="chirp: A=1.0, dW=0., swept phase | estimate A=P=dA=dW=0, estimate W=chirp W";
+  arg.fit_nonlinear=0;
+  arg.yaxis_label="dA (amplitude delta across block)";
+  arg.y_dim = DIM_CHIRP_dA;
+  arg.min_est_W = 0;
+  arg.max_est_W = 0;
+  arg.min_chirp_dA=-1.;
+  arg.max_chirp_dA=1.;
+
+  w_e("linear-dA-vs-W",&arg);
+  arg.subtitle1="Partial nonlinear estimation, no ddA fit",
+  arg.fit_nonlinear=1;
+  w_e("partial-nonlinear-dA-vs-W",&arg);
+  arg.subtitle1="Full nonlinear estimation, no ddA fit",
+  arg.fit_nonlinear=2;
+  w_e("full-nonlinear-dA-vs-W",&arg);
   arg.fit_nonlinear=0;
 
   return 0;
