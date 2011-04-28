@@ -347,7 +347,7 @@ static int nonlinear_iterate(const float *x,
         }
       }
     }
-    iter_limit--;
+    if(flag)iter_limit--;
   }
   return iter_limit;
 }
@@ -580,7 +580,7 @@ static int linear_iterate(const float *x,
 
 
     }
-    iter_limit--;
+    if(flag)iter_limit--;
   }
 
   for(i=0;i<n;i++){
