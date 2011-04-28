@@ -1116,7 +1116,7 @@ int main(){
     /* xaxis label */   "W (cycles/block)",
     /* yaxis label */   "dW (cycles/block)",
 
-    /* blocksize */     256,
+    /* blocksize */     128,
     /* threads */       8,
 
     /* window */        window_functions.sine,
@@ -1154,7 +1154,7 @@ int main(){
     /* ch P range */    0.,1.-1./32.,
     /* ch W range */    0.,10.,
     /* ch dA range */   0.,0.,
-    /* ch dW range */   -2.4,2.4,
+    /* ch dW range */   -2.5,2.5,
     /* ch ddA range */  0.,0.,
 
     /* converge max */    1,
@@ -1182,16 +1182,14 @@ int main(){
   w_e("partial-nonlinear-dW-vs-W",&arg);
   arg.subtitle1="Full nonlinear estimation, no ddA fit",
   arg.fit_nonlinear=2;
-  //arg.fit_dW_alpha=1.75;
   w_e("full-nonlinear-dW-vs-W",&arg);
-  //arg.fit_dW_alpha=1.;
 
   arg.subtitle1="Linear estimation, no ddA fit",
   arg.fit_nonlinear=0;
   arg.yaxis_label="initial distance from W (cycles/block)";
   arg.y_dim = DIM_ESTIMATE_W;
-  arg.min_est_W = -1.2;
-  arg.max_est_W =  1.2;
+  arg.min_est_W = -2.5;
+  arg.max_est_W =  2.5;
   arg.min_chirp_dW=0.;
   arg.max_chirp_dW=0.;
 
@@ -1201,9 +1199,7 @@ int main(){
   w_e("partial-nonlinear-estW-vs-W",&arg);
   arg.subtitle1="Full nonlinear estimation, no ddA fit",
   arg.fit_nonlinear=2;
-  //arg.fit_dW_alpha=1.75;
   w_e("full-nonlinear-estW-vs-W",&arg);
-  //arg.fit_dW_alpha=1.;
   arg.fit_nonlinear=0;
 
   return 0;

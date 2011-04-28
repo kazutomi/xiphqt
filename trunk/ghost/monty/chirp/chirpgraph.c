@@ -52,6 +52,18 @@ void set_iter_color(cairo_t *cC, int ret, float a){
   }
 }
 
+void set_iter_text_color(cairo_t *cC, int ret){
+  if (ret>75){
+    cairo_set_source_rgba(cC,0,0,0,1); /* black on white*/
+  }else if (ret>35){
+    cairo_set_source_rgba(cC,1,1,1,1); /* white on red/black  */
+  }else if (ret>3){
+    cairo_set_source_rgba(cC,0,0,0,1); /* black on cyan */
+  }else{
+    cairo_set_source_rgba(cC,1,1,1,1); /* white on dark */
+  }
+}
+
 void set_error_color(cairo_t *c, float err,float a){
   if(isnan(err) || fabs(err)>1.){
     cairo_set_source_rgba(c,1,1,1,a); /* white */
@@ -72,6 +84,23 @@ void set_error_color(cairo_t *c, float err,float a){
                             ((err-.000001)/.000009)*.8+.2,1,a); /* cyan->blue */
     }else{
       cairo_set_source_rgba(c,.1,.1,1,a); /* blue */
+    }
+  }
+}
+
+void set_error_text_color(cairo_t *c, float err){
+  if(isnan(err) || fabs(err)>1.){
+    cairo_set_source_rgba(c,0,0,0,1); /* black on white */
+  }else{
+    err=fabs(err);
+    if(err>.5){
+      cairo_set_source_rgba(c,0,0,0,1); /* black on white */
+    }else if(err>.02){
+      cairo_set_source_rgba(c,1,1,1,1); /* white */
+    }else if(err>.000005){
+      cairo_set_source_rgba(c,0,0,0,1); /* black */
+    }else{
+      cairo_set_source_rgba(c,1,1,1,1); /* white */
     }
   }
 }
@@ -355,11 +384,8 @@ cairo_t *draw_page(char *title,
           snprintf(buf,80,"%d",i);
           cairo_text_extents(c, buf, &extents);
           cairo_move_to(c,px+w/2-extents.width*.5,legendy+toppad+legendh*.625+extents.height/2);
-          cairo_set_source_rgba(c,1,1,1,.9);
-          cairo_text_path (c, buf);
-          cairo_stroke_preserve(c);
-          cairo_set_source_rgb(c,0,0,0);
-          cairo_fill(c);
+          set_iter_text_color(c, i);
+          cairo_show_text(c, buf);
 
           break;
         }
@@ -384,41 +410,51 @@ cairo_t *draw_page(char *title,
         case 0:
           buf=(per_p?".0001%":".000001");
           set_error_color(c, 0., 1.);
+          cairo_fill(c);
+          set_error_text_color(c, 0.);
           break;
         case 1:
           buf=(per_p?".001%":".00001");
           set_error_color(c, .00001, 1.);
+          cairo_fill(c);
+          set_error_text_color(c, .00001);
           break;
         case 2:
           buf=(per_p?".01%":".0001");
           set_error_color(c, .0001, 1.);
+          cairo_fill(c);
+          set_error_text_color(c, .0001);
           break;
         case 3:
           buf=(per_p?".1%":".001");
           set_error_color(c, .001, 1.);
+          cairo_fill(c);
+          set_error_text_color(c, .001);
           break;
         case 4:
           buf=(per_p?"1%":".01");
           set_error_color(c, .01, 1.);
+          cairo_fill(c);
+          set_error_text_color(c, .01);
           break;
         case 5:
           buf=(per_p?"10%":".1");
           set_error_color(c, .1, 1.);
+          cairo_fill(c);
+          set_error_text_color(c, .1);
           break;
         case 6:
           buf=(per_p?"100%":"1");
           set_error_color(c, 1., 1.);
+          cairo_fill(c);
+          set_error_text_color(c, 1.);
           break;
         }
-        cairo_fill(c);
 
         cairo_text_extents(c, buf, &extents);
         cairo_move_to(c,px+w/2-extents.width*.5,legendy+toppad+legendh*.625+extents.height/2);
-        cairo_set_source_rgba(c,1,1,1,.9);
-        cairo_text_path (c, buf);
-        cairo_stroke_preserve(c);
-        cairo_set_source_rgb(c,0,0,0);
-        cairo_fill(c);
+        cairo_show_text(c,buf);
+
       }
       cairo_text_extents(c, legend_label, &extents);
       cairo_move_to(c,px-extents.width-legendh*.75,toppad+legendy+legendh*.625+extents.height*.5);
