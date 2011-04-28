@@ -355,7 +355,7 @@ cairo_t *draw_page(char *title,
           snprintf(buf,80,"%d",i);
           cairo_text_extents(c, buf, &extents);
           cairo_move_to(c,px+w/2-extents.width*.5,legendy+toppad+legendh*.625+extents.height/2);
-          cairo_set_source_rgba(c,1,1,1,.7);
+          cairo_set_source_rgba(c,1,1,1,.9);
           cairo_text_path (c, buf);
           cairo_stroke_preserve(c);
           cairo_set_source_rgb(c,0,0,0);
@@ -414,7 +414,7 @@ cairo_t *draw_page(char *title,
 
         cairo_text_extents(c, buf, &extents);
         cairo_move_to(c,px+w/2-extents.width*.5,legendy+toppad+legendh*.625+extents.height/2);
-        cairo_set_source_rgba(c,1,1,1,.7);
+        cairo_set_source_rgba(c,1,1,1,.9);
         cairo_text_path (c, buf);
         cairo_stroke_preserve(c);
         cairo_set_source_rgb(c,0,0,0);

@@ -234,7 +234,7 @@ void *compute_column(void *in){
       rms_acc += ee*ee;
     }
     arg->rms_error[y] = sqrt(rms_acc)/sqrt(e_acc);
-    arg->iterations[y] = arg->max_iterations-ret-1;
+    arg->iterations[y] = arg->max_iterations-ret;
     feclearexcept(FE_ALL_EXCEPT);
     feenableexcept(except);
 
@@ -569,33 +569,48 @@ void w_e(char *filebase,graph_run *arg){
                (arg->subtitle1!=0)+(arg->subtitle2!=0)+(arg->subtitle3!=0),
                arg->fontsize);
 
-  if(!(arg->x_dim==DIM_ESTIMATE_A || arg->y_dim==DIM_ESTIMATE_A) &&
-     arg->min_est_A != arg->max_est_A) est_swept=1;
-  if(!(arg->x_dim==DIM_ESTIMATE_P || arg->y_dim==DIM_ESTIMATE_P) &&
-     arg->min_est_P != arg->max_est_P) est_swept=1;
-  if(!(arg->x_dim==DIM_ESTIMATE_W || arg->y_dim==DIM_ESTIMATE_W) &&
-     arg->min_est_W != arg->max_est_W) est_swept=1;
-  if(!(arg->x_dim==DIM_ESTIMATE_dA || arg->y_dim==DIM_ESTIMATE_dA) &&
-     arg->min_est_dA != arg->max_est_dA) est_swept=1;
-  if(!(arg->x_dim==DIM_ESTIMATE_dW || arg->y_dim==DIM_ESTIMATE_dW) &&
-     arg->min_est_dW != arg->max_est_dW) est_swept=1;
-  if(!(arg->x_dim==DIM_ESTIMATE_ddA || arg->y_dim==DIM_ESTIMATE_ddA) &&
-     arg->min_est_ddA != arg->max_est_ddA) est_swept=1;
+  if(arg->sweep_steps>1){
+    if(!(arg->x_dim==DIM_ESTIMATE_A || arg->y_dim==DIM_ESTIMATE_A) &&
+       arg->min_est_A != arg->max_est_A) est_swept=1;
+    if(!(arg->x_dim==DIM_ESTIMATE_P || arg->y_dim==DIM_ESTIMATE_P) &&
+       arg->min_est_P != arg->max_est_P) est_swept=1;
+    if(!(arg->x_dim==DIM_ESTIMATE_W || arg->y_dim==DIM_ESTIMATE_W) &&
+       arg->min_est_W != arg->max_est_W) est_swept=1;
+    if(!(arg->x_dim==DIM_ESTIMATE_dA || arg->y_dim==DIM_ESTIMATE_dA) &&
+       arg->min_est_dA != arg->max_est_dA) est_swept=1;
+    if(!(arg->x_dim==DIM_ESTIMATE_dW || arg->y_dim==DIM_ESTIMATE_dW) &&
+       arg->min_est_dW != arg->max_est_dW) est_swept=1;
+    if(!(arg->x_dim==DIM_ESTIMATE_ddA || arg->y_dim==DIM_ESTIMATE_ddA) &&
+       arg->min_est_ddA != arg->max_est_ddA) est_swept=1;
 
-  if(!(arg->x_dim==DIM_CHIRP_A || arg->y_dim==DIM_CHIRP_A) &&
-     arg->min_chirp_A != arg->max_chirp_A) chirp_swept=1;
-  if(!(arg->x_dim==DIM_CHIRP_P || arg->y_dim==DIM_CHIRP_P) &&
-     arg->min_chirp_P != arg->max_chirp_P) chirp_swept=1;
-  if(!(arg->x_dim==DIM_CHIRP_W || arg->y_dim==DIM_CHIRP_W) &&
-     arg->min_chirp_W != arg->max_chirp_W) chirp_swept=1;
-  if(!(arg->x_dim==DIM_CHIRP_dA || arg->y_dim==DIM_CHIRP_dA) &&
-     arg->min_chirp_dA != arg->max_chirp_dA) chirp_swept=1;
-  if(!(arg->x_dim==DIM_CHIRP_dW || arg->y_dim==DIM_CHIRP_dW) &&
-     arg->min_chirp_dW != arg->max_chirp_dW) chirp_swept=1;
-  if(!(arg->x_dim==DIM_CHIRP_ddA || arg->y_dim==DIM_CHIRP_ddA) &&
-     arg->min_chirp_ddA != arg->max_chirp_ddA) chirp_swept=1;
+    if(!(arg->x_dim==DIM_CHIRP_A || arg->y_dim==DIM_CHIRP_A) &&
+       arg->min_chirp_A != arg->max_chirp_A) chirp_swept=1;
+    if(!(arg->x_dim==DIM_CHIRP_P || arg->y_dim==DIM_CHIRP_P) &&
+       arg->min_chirp_P != arg->max_chirp_P) chirp_swept=1;
+    if(!(arg->x_dim==DIM_CHIRP_W || arg->y_dim==DIM_CHIRP_W) &&
+       arg->min_chirp_W != arg->max_chirp_W) chirp_swept=1;
+    if(!(arg->x_dim==DIM_CHIRP_dA || arg->y_dim==DIM_CHIRP_dA) &&
+       arg->min_chirp_dA != arg->max_chirp_dA) chirp_swept=1;
+    if(!(arg->x_dim==DIM_CHIRP_dW || arg->y_dim==DIM_CHIRP_dW) &&
+       arg->min_chirp_dW != arg->max_chirp_dW) chirp_swept=1;
+    if(!(arg->x_dim==DIM_CHIRP_ddA || arg->y_dim==DIM_CHIRP_ddA) &&
+       arg->min_chirp_ddA != arg->max_chirp_ddA) chirp_swept=1;
+  }
 
   swept = est_swept | chirp_swept;
+
+  if(arg->y_dim==DIM_CHIRP_A &&
+     arg->min_chirp_A != arg->max_chirp_A) chirp_swept=1;
+  if(arg->y_dim==DIM_CHIRP_P &&
+     arg->min_chirp_P != arg->max_chirp_P) chirp_swept=1;
+  if(arg->y_dim==DIM_CHIRP_W &&
+     arg->min_chirp_W != arg->max_chirp_W) chirp_swept=1;
+  if(arg->y_dim==DIM_CHIRP_dA &&
+     arg->min_chirp_dA != arg->max_chirp_dA) chirp_swept=1;
+  if(arg->y_dim==DIM_CHIRP_dW &&
+     arg->min_chirp_dW != arg->max_chirp_dW) chirp_swept=1;
+  if(arg->y_dim==DIM_CHIRP_ddA &&
+     arg->min_chirp_ddA != arg->max_chirp_ddA) chirp_swept=1;
 
   if(arg->graph_convergence_max)
     cC = draw_page(!swept?"Convergence":"Worst Case Convergence",
@@ -1106,7 +1121,7 @@ int main(){
 
     /* window */        window_functions.sine,
     /* fit_tol */       .000001,
-    /* gauss_seidel */  0,
+    /* gauss_seidel */  1,
     /* fit_W */         1,
     /* fit_dA */        1,
     /* fit_dW */        1,
@@ -1139,7 +1154,7 @@ int main(){
     /* ch P range */    0.,1.-1./32.,
     /* ch W range */    0.,10.,
     /* ch dA range */   0.,0.,
-    /* ch dW range */   -1.2,1.2,
+    /* ch dW range */   -2.4,2.4,
     /* ch ddA range */  0.,0.,
 
     /* converge max */    1,
@@ -1162,26 +1177,34 @@ int main(){
   };
 
   w_e("linear-dW-vs-W",&arg);
-  arg.nonlinear=1;
+  arg.fit_nonlinear=1;
+  arg.subtitle1="Partial nonlinear estimation, no ddA fit",
   w_e("partial-nonlinear-dW-vs-W",&arg);
-  arg.nonlinear=2;
+  arg.subtitle1="Full nonlinear estimation, no ddA fit",
+  arg.fit_nonlinear=2;
+  //arg.fit_dW_alpha=1.75;
   w_e("full-nonlinear-dW-vs-W",&arg);
+  //arg.fit_dW_alpha=1.;
 
-  arg.nonlinear=0;
+  arg.subtitle1="Linear estimation, no ddA fit",
+  arg.fit_nonlinear=0;
   arg.yaxis_label="initial distance from W (cycles/block)";
   arg.y_dim = DIM_ESTIMATE_W;
   arg.min_est_W = -1.2;
   arg.max_est_W =  1.2;
-  arg.min_chirp_dW=-1.;
-  arg.max_chirp_dW=1.;
+  arg.min_chirp_dW=0.;
+  arg.max_chirp_dW=0.;
 
   w_e("linear-estW-vs-W",&arg);
-  arg.nonlinear=1;
+  arg.subtitle1="Partial nonlinear estimation, no ddA fit",
+  arg.fit_nonlinear=1;
   w_e("partial-nonlinear-estW-vs-W",&arg);
-  arg.nonlinear=2;
+  arg.subtitle1="Full nonlinear estimation, no ddA fit",
+  arg.fit_nonlinear=2;
+  //arg.fit_dW_alpha=1.75;
   w_e("full-nonlinear-estW-vs-W",&arg);
-
-  arg.nonlinear=0;
+  //arg.fit_dW_alpha=1.;
+  arg.fit_nonlinear=0;
 
   return 0;
 }
