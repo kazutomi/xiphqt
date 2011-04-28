@@ -837,12 +837,12 @@ void w_e(char *filebase,graph_run *arg){
                   arg->max_chirp_P*2.*M_PI,
                   arg->min_chirp_W*2.*M_PI/blocksize,
                   arg->max_chirp_W*2.*M_PI/blocksize,
-                  arg->min_chirp_dA,
-                  arg->max_chirp_dA,
+                  arg->min_chirp_dA/blocksize,
+                  arg->max_chirp_dA/blocksize,
                   arg->min_chirp_dW*2.*M_PI/blocksize/blocksize,
                   arg->max_chirp_dW*2.*M_PI/blocksize/blocksize,
-                  arg->min_chirp_ddA,
-                  arg->max_chirp_ddA);
+                  arg->min_chirp_ddA/blocksize/blocksize,
+                  arg->max_chirp_ddA/blocksize/blocksize);
 
         set_chirp(estimates+yi,
                   xi,x_n,
@@ -857,12 +857,12 @@ void w_e(char *filebase,graph_run *arg){
                   arg->max_est_P*2.*M_PI,
                   arg->min_est_W*2.*M_PI/blocksize,
                   arg->max_est_W*2.*M_PI/blocksize,
-                  arg->min_est_dA,
-                  arg->max_est_dA,
+                  arg->min_est_dA/blocksize,
+                  arg->max_est_dA/blocksize,
                   arg->min_est_dW*2.*M_PI/blocksize/blocksize,
                   arg->max_est_dW*2.*M_PI/blocksize/blocksize,
-                  arg->min_est_ddA,
-                  arg->max_est_ddA);
+                  arg->min_est_ddA/blocksize/blocksize,
+                  arg->max_est_ddA/blocksize/blocksize);
 
         if(arg->rel_est_A) estimates[yi].A += chirps[yi].A;
         if(arg->rel_est_P) estimates[yi].P += chirps[yi].P;
@@ -1178,13 +1178,13 @@ int main(){
 
   /* Graphs for dW vs W ****************************************/
 
-  w_e("linear-dW-vs-W",&arg);
+  //w_e("linear-dW-vs-W",&arg);
   arg.fit_nonlinear=1;
   arg.subtitle1="Partial nonlinear estimation, no ddA fit";
-  w_e("partial-nonlinear-dW-vs-W",&arg);
+  //w_e("partial-nonlinear-dW-vs-W",&arg);
   arg.subtitle1="Full nonlinear estimation, no ddA fit";
   arg.fit_nonlinear=2;
-  w_e("full-nonlinear-dW-vs-W",&arg);
+  //w_e("full-nonlinear-dW-vs-W",&arg);
 
   /* Graphs for W estimate distance vs W ************************/
 
@@ -1197,14 +1197,14 @@ int main(){
   arg.min_chirp_dW=0.;
   arg.max_chirp_dW=0.;
 
-  w_e("linear-estW-vs-W",&arg);
+  //w_e("linear-estW-vs-W",&arg);
   arg.subtitle1="Partial nonlinear estimation, no ddA fit";
   arg.subtitle2="chirp: A=1.0, dA=dW=0., swept phase | estimate A=P=dA=dW=0";
   arg.fit_nonlinear=1;
-  w_e("partial-nonlinear-estW-vs-W",&arg);
+  //w_e("partial-nonlinear-estW-vs-W",&arg);
   arg.subtitle1="Full nonlinear estimation, no ddA fit";
   arg.fit_nonlinear=2;
-  w_e("full-nonlinear-estW-vs-W",&arg);
+  //w_e("full-nonlinear-estW-vs-W",&arg);
   arg.fit_nonlinear=0;
 
   /* Graphs for dA vs W *****************************************/
@@ -1216,8 +1216,8 @@ int main(){
   arg.y_dim = DIM_CHIRP_dA;
   arg.min_est_W = 0;
   arg.max_est_W = 0;
-  arg.min_chirp_dA=-1.;
-  arg.max_chirp_dA=1.;
+  arg.min_chirp_dA=-2.;
+  arg.max_chirp_dA=2.;
 
   w_e("linear-dA-vs-W",&arg);
   arg.subtitle1="Partial nonlinear estimation, no ddA fit",
