@@ -69,73 +69,77 @@ static float toddA(float Ai, float Bi, float Ei, float Fi){
 }
 
 static float toAi(float A, float P){
-  return A * cosf(-P);
+  return A * cosf(P);
 }
 static float toBi(float A, float P){
-  return A * sinf(-P);
+  return A * -sinf(P);
 }
 
-static float WtoCi(float Ai, float Bi, float W){
-  return W*Bi;
+static float dWtoEi(float A, float P, float dW){
+  return -A*dW*sin(P);
 }
-static float WtoDi(float Ai, float Bi, float W){
-  return -W*Ai;
-}
-static float dWtoEi(float Ai, float Bi, float dW){
-  return dW*Bi;
-}
-static float dWtoFi(float Ai, float Bi, float dW){
-  return -dW*Ai;
+static float dWtoFi(float A, float P, float dW){
+  return -A*dW*cos(P);
 }
 
-static float dAtoCi(float Ai, float Bi, float dA){
-  return (Ai*Ai || Bi*Bi) ? dA*Ai/hypotf(Ai,Bi) : 0.;
+static float dAtoCi(float P, float dA){
+  return dA*cosf(P);
 }
-static float dAtoDi(float Ai, float Bi, float dA){
-  return (Ai*Ai || Bi*Bi) ? dA*Bi/hypotf(Ai,Bi) : 0.;
+static float dAtoDi(float P, float dA){
+  return -dA*sinf(P);
 }
-static float ddAtoEi(float Ai, float Bi, float ddA){
-  return (Ai*Ai || Bi*Bi) ? ddA*Ai/hypotf(Ai,Bi) : 0.;
+static float ddAtoEi(float P, float ddA){
+  return ddA*cos(P);
 }
-static float ddAtoFi(float Ai, float Bi, float ddA){
-  return (Ai*Ai || Bi*Bi) ? ddA*Bi/hypotf(Ai,Bi) : 0.;
+static float ddAtoFi(float P, float ddA){
+  return -ddA*sin(P);
 }
 
-/* Nonlinear estimation iterator; functionally, it should differ from
-   the linear version only in that it restarts the basis functions for
-   each chirp after each new fit. */
-static int nonlinear_iterate(const float *x,
-                             float *y,
-                             const float *window,
-                             int len,
-                             chirp *cc,
-                             int n,
+/* fully nonlinear estimation iterator; it restarts the basis
+   functions (W and dW) and error vector for each chirp after each new
+   fit. Reconstruction (and thus error) are exact calculations. */
+static int full_nonlinear_iterate(const float *x,
+                                  const float *window,
+                                  int len,
+                                  chirp *cc,
+                                  int n,
 
-                             float fit_limit,
-                             int iter_limit,
-                             int fit_gs,
+                                  float fit_limit,
+                                  int iter_limit,
+                                  int fit_gs,
 
-                             int fitW,
-                             int fitdA,
-                             int fitdW,
-                             int fitddA,
-                             int fit_recenter_dW,
-                             float fit_W_alpha,
-                             float fit_dW_alpha,
+                                  int fitW,
+                                  int fitdA,
+                                  int fitdW,
+                                  int fitddA,
+                                  float fit_W_alpha,
+                                  float fit_dW_alpha,
 
-                             int symm_norm,
-                             float E0,
-                             float E1,
-                             float E2,
+                                  int symm_norm,
+                                  float E0,
+                                  float E1,
+                                  float E2,
 
-                             int bound_edges){
+                                  int bound_edges){
   int i,j;
   int flag=1;
   float r[len];
+  float y[len];
   int ret_count=iter_limit;
 
   float lasterr=0;
   float thiserr=0;
+
+  /* Build a starting reconstruction based on the passed-in initial
+     chirp estimates */
+  memset(y,0,sizeof(*y)*len);
+  for(i=0;i<n;i++){
+    for(j=0;j<len;j++){
+      double jj = j-len*.5+.5;
+      float a = cc[i].A + (cc[i].dA + cc[i].ddA*jj)*jj;
+      y[j] += a*cos((cc[i].W + cc[i].dW*jj)*jj + cc[i].P);
+    }
+  }
 
   /* outer fit iteration */
   while((flag || lasterr>thiserr) && iter_limit>0){
@@ -196,19 +200,6 @@ static int nonlinear_iterate(const float *x,
 
         /* add the current estimate back to the residue vector */
         r[j] += (aC*co-aS*si) * (c->A + (c->dA + c->ddA*jj)*jj);
-
-        /* Not recentering dW allows potential simplification of the
-           nonlinear solver. This code is designed to recenter dW as
-           easily as not, so the following looks a bit silly.  The point
-           of the flag is to emulate/study the behavior of the simplified
-           algorithm */
-
-        if(!fit_recenter_dW){
-          sincos(c->W*jj,&si,&co);
-
-          si*=window[j];
-          co*=window[j];
-        }
 
         c2 = co*co*jj;
         s2 = si*si*jj;
@@ -285,28 +276,21 @@ static int nonlinear_iterate(const float *x,
          global fit so far.  Note that this does not include W (or dW
          if it is also recentered), as they're already 'subtracted'
          when the bases are recentered each iteration */
-      {
-        float A = toAi(c->A, c->P);
-        float B = toBi(c->A, c->P);
-        aP += A;
-        bP += B;
-        cP += dAtoCi(A,B,c->dA);
-        dP += dAtoDi(A,B,c->dA);
-        eP += ddAtoEi(A,B,c->ddA);
-        fP += ddAtoFi(A,B,c->ddA);
-        if(!fit_recenter_dW){
-          eP += dWtoEi(A,B,c->dW);
-          fP += dWtoFi(A,B,c->dW);
-        }
+      aP += toAi(c->A, c->P);
+      bP += toBi(c->A, c->P);
+      cP += dAtoCi(c->P,c->dA);
+      dP += dAtoDi(c->P,c->dA);
+      eP += ddAtoEi(c->P,c->ddA);
+      fP += ddAtoFi(c->P,c->ddA);
 
-        /* guard overflow; if we're this far out, assume we're never
-           coming back. drop out now. */
-        if((aP*aP + bP*bP)>1e10 ||
-           (cP*cP + dP*dP)>1e10 ||
-           (eP*eP + fP*fP)>1e10){
-          iter_limit=0;
-          i=n;
-        }
+      /* guard overflow; if we're this far out, assume we're never
+         coming back. drop out now. */
+      if((aP*aP + bP*bP)>1e10 ||
+         (cP*cP + dP*dP)>1e10 ||
+         (eP*eP + fP*fP)>1e10){
+        iter_limit=0;
+        i=n;
+        break;
       }
 
       /* save new estimate */
@@ -314,10 +298,7 @@ static int nonlinear_iterate(const float *x,
       c->P = toP(aP,bP);
       c->W += fit_W_alpha*(fitW ? toW(aP,bP,cP,dP) : 0);
       c->dA = (fitdA ? todA(aP,bP,cP,dP) : 0);
-      if(fit_recenter_dW)
-        c->dW += fit_dW_alpha*(fitdW ? todW(aP,bP,eP,fP) : 0);
-      else
-        c->dW = (fitdW ? todW(aP,bP,eP,fP) : 0);
+      c->dW += fit_dW_alpha*(fitdW ? todW(aP,bP,eP,fP) : 0);
       c->ddA = (fitddA ? toddA(aP,bP,eP,fP) : 0);
 
       if(bound_edges){
@@ -364,15 +345,274 @@ static int nonlinear_iterate(const float *x,
   return ret_count;
 }
 
-/* linear estimation iterator; sets fixed basis functions for each
-   chirp according to the passed in initial estimates. This code looks
-   quite different from the nonlinear estimator above as I wanted to
-   keep the structure very similar to the way it was as originally
-   coded by JM. New techniques are bolted on rather than fully
-   integrated. */
 
+/* partial-nonlinear estimation iterator; it restarts the basis
+   functions (W only).  Reconstruction and error are approximated from
+   basis (as done in the original paper). Basis function is not
+   chirped, regardless of initial dW estimate */
+static int partial_nonlinear_iterate(const float *x,
+                                     const float *window,
+                                     int len,
+                                     chirp *ch,
+                                     int n,
+
+                                     float fit_limit,
+                                     int   iter_limit,
+                                     int   fit_gs,
+
+                                     int fitW,
+                                     int fitdA,
+                                     int fitdW,
+                                     int fitddA,
+                                     float fit_W_alpha,
+
+                                     int symm_norm,
+                                     float E0,
+                                     float E1,
+                                     float E2){
+  int i,j;
+  int flag=1;
+  float y[len];
+
+  float lasterr=0;
+  float thiserr=0;
+  int ret_count=iter_limit;
+
+  float *cos_table[n];
+  float *sin_table[n];
+  float *tcos_table[n];
+  float *tsin_table[n];
+  float *ttcos_table[n];
+  float *ttsin_table[n];
+  float cosE[n], sinE[n];
+  float tcosE[n], tsinE[n];
+  float ttcosE[n], ttsinE[n];
+  float tcosC2[n], tsinC2[n];
+  float ttcosC2[n], ttsinC2[n];
+  float ttcosC3[n], ttsinC3[n];
+
+  float ai[n], bi[n];
+  float ci[n], di[n];
+  float ei[n], fi[n];
+
+  for (i=0;i<n;i++){
+    cos_table[i]=calloc(len,sizeof(**cos_table));
+    sin_table[i]=calloc(len,sizeof(**sin_table));
+    tcos_table[i]=calloc(len,sizeof(**tcos_table));
+    tsin_table[i]=calloc(len,sizeof(**tsin_table));
+    ttcos_table[i]=calloc(len,sizeof(**ttcos_table));
+    ttsin_table[i]=calloc(len,sizeof(**ttsin_table));
+  }
+
+  /* outer fit iteration */
+  while((flag || lasterr>thiserr) && iter_limit>0){
+    flag=0;
+    lasterr=thiserr;
+    thiserr=0;
+
+    memset(y,0,sizeof(y));
+
+    /* Sort chirps by descending amplitude */
+    qsort(ch, n, sizeof(*ch), cmp_descending_A);
+
+    /* Calculate new basis functions */
+    for (i=0;i<n;i++){
+      float tmpa=0;
+      float tmpb=0;
+      float tmpc=0;
+      float tmpd=0;
+      float tmpe=0;
+      float tmpf=0;
+
+      float tmpc2=0;
+      float tmpd2=0;
+      float tmpe3=0;
+      float tmpf3=0;
+
+      /* chirp param -> basis acc */
+      ai[i] = toAi(ch[i].A, ch[i].P);
+      bi[i] = toBi(ch[i].A, ch[i].P);
+      ci[i] = dAtoCi(ch[i].P, ch[i].dA);
+      di[i] = dAtoDi(ch[i].P, ch[i].dA);
+      ei[i] = ddAtoEi(ch[i].P, ch[i].ddA) + dWtoEi(ch[i].A, ch[i].P, ch[i].dW);
+      fi[i] = ddAtoFi(ch[i].P, ch[i].ddA) + dWtoFi(ch[i].A, ch[i].P, ch[i].dW);
+
+      for (j=0;j<len;j++){
+        double jj = j-len/2.+.5;
+        double c,s;
+        sincos(ch[i].W*jj,&s,&c);
+
+        /* save basis funcs */
+        /* calc reconstruction vector */
+        y[j] +=
+          ai[i]*(cos_table[i][j] = c) +
+          bi[i]*(sin_table[i][j] = s) +
+          ci[i]*(tcos_table[i][j] = jj*c) +
+          di[i]*(tsin_table[i][j] = jj*s) +
+          ei[i]*(ttcos_table[i][j] = jj*jj*c) +
+          fi[i]*(ttsin_table[i][j] = jj*jj*s);
+
+        /* The modulation terms */
+        tmpc += tcos_table[i][j]*tcos_table[i][j]*window[j]*window[j];
+        tmpd += tsin_table[i][j]*tsin_table[i][j]*window[j]*window[j];
+
+        if(!symm_norm){
+          /* The sinusoidal terms */
+          tmpa += cos_table[i][j]*cos_table[i][j]*window[j]*window[j];
+          tmpb += sin_table[i][j]*sin_table[i][j]*window[j]*window[j];
+
+          /* The second order modulations */
+          tmpe += ttcos_table[i][j]*ttcos_table[i][j]*window[j]*window[j];
+          tmpf += ttsin_table[i][j]*ttsin_table[i][j]*window[j]*window[j];
+        }
+
+        /* gs fit terms */
+        if(fit_gs){
+          tmpc2 += cos_table[i][j]*tcos_table[i][j]*window[j]*window[j];
+          tmpd2 += sin_table[i][j]*tsin_table[i][j]*window[j]*window[j];
+          tmpe3 += tcos_table[i][j]*ttcos_table[i][j]*window[j]*window[j];
+          tmpf3 += tsin_table[i][j]*ttsin_table[i][j]*window[j]*window[j];
+        }
+      }
+
+      /* Set basis normalizations */
+      if(symm_norm){
+        cosE[i] = sinE[i] = E0;
+        tcosE[i] = tsinE[i] = E1;
+        ttcosE[i] = ttsinE[i] = E2;
+      }else{
+        cosE[i] = (tmpa>1e-20 ? 1./tmpa : 0);
+        sinE[i] = (tmpb>1e-20 ? 1./tmpb : 0);
+        tcosE[i] = (tmpc>1e-20 ? 1./tmpc : 0);
+        tsinE[i] = (tmpd>1e-20 ? 1./tmpd : 0);
+        ttcosE[i] = (tmpe>1e-20 ? 1./tmpe : 0);
+        ttsinE[i] = (tmpf>1e-20 ? 1./tmpf : 0);
+      }
+
+      if(fit_gs){
+        /* set gs fit terms */
+        tcosC2[i] = tmpc2;
+        tsinC2[i] = tmpd2;
+        ttcosC2[i] = tmpc;
+        ttsinC2[i] = tmpd;
+        ttcosC3[i] = tmpe3;
+        ttsinC3[i] = tmpf3;
+      }
+    }
+
+    for (i=0;i<n;i++){
+
+      float tmpa=0, tmpb=0;
+      float tmpc=0, tmpd=0;
+      float tmpe=0, tmpf=0;
+
+      /* (Sort of) project the residual on the four basis functions */
+      for (j=0;j<len;j++){
+        float r = (x[j]-y[j])*window[j]*window[j];
+        tmpa += r*cos_table[i][j];
+        tmpb += r*sin_table[i][j];
+        tmpc += r*tcos_table[i][j];
+        tmpd += r*tsin_table[i][j];
+        tmpe += r*ttcos_table[i][j];
+        tmpf += r*ttsin_table[i][j];
+      }
+
+      tmpa*=cosE[i];
+      tmpb*=sinE[i];
+
+      if(fit_gs){
+        tmpc -= tmpa*tcosC2[i];
+        tmpd -= tmpb*tsinC2[i];
+      }
+
+      tmpc*=tcosE[i];
+      tmpd*=tsinE[i];
+
+      if(fit_gs){
+        tmpe -= tmpa*ttcosC2[i] + tmpc*ttcosC3[i];
+        tmpf -= tmpb*ttsinC2[i] + tmpd*ttsinC3[i];
+      }
+
+      tmpe*=ttcosE[i];
+      tmpf*=ttsinE[i];
+
+      if(!fitW && !fitdA)
+        tmpc=tmpd=0;
+      if(!fitdW && !fitddA)
+        tmpe=tmpf=0;
+
+      /* Update the signal approximation for the next iteration */
+      for (j=0;j<len;j++){
+        y[j] +=
+          tmpa*cos_table[i][j]+
+          tmpb*sin_table[i][j]+
+          tmpc*tcos_table[i][j]+
+          tmpd*tsin_table[i][j]+
+          tmpe*ttcos_table[i][j]+
+          tmpf*ttsin_table[i][j];
+      }
+
+      /* base convergence on basis projection movement this
+         iteration */
+      {
+        float A2 = ai[i]*ai[i]+bi[i]*bi[i];
+        float move = (tmpa*tmpa + tmpb*tmpb)/(A2 + fit_limit*fit_limit) +
+          (tmpc*tmpc + tmpd*tmpd)/(A2 + fit_limit*fit_limit) +
+          (tmpe*tmpe + tmpf*tmpf)/(A2 + fit_limit*fit_limit);
+        thiserr+=move;
+
+        if(fit_limit>0 && move>fit_limit*fit_limit)flag=1;
+        if(fit_limit<0 && move>1e-14)flag=1;
+      }
+
+
+      ai[i] += tmpa;
+      bi[i] += tmpb;
+      ci[i] += tmpc;
+      di[i] += tmpd;
+      ei[i] += tmpe;
+      fi[i] += tmpf;
+
+      /* guard overflow; if we're this far out, assume we're never
+         coming back. drop out now. */
+      if((ai[i]*ai[i] + bi[i]*bi[i])>1e10 ||
+         (ci[i]*ci[i] + di[i]*di[i])>1e10 ||
+         (ei[i]*ei[i] + fi[i]*fi[i])>1e10){
+        iter_limit=0;
+        i=n;
+      }
+
+      /* save new estimate */
+      ch[i].A = toA(ai[i],bi[i]);
+      ch[i].P = toP(ai[i],bi[i]);
+      ch[i].W += fit_W_alpha*(fitW ? toW(ai[i],bi[i],ci[i],di[i]) : 0);
+      ch[i].dA = (fitdA ? todA(ai[i],bi[i],ci[i],di[i]) : 0);
+      ch[i].dW = (fitdW ? todW(ai[i],bi[i],ei[i],fi[i]) : 0);
+      ch[i].ddA = (fitddA ? toddA(ai[i],bi[i],ei[i],fi[i]) : 0);
+
+    }
+    if(flag)ret_count--;
+    iter_limit--;
+  }
+
+  for(i=0;i<n;i++){
+    free(cos_table[i]);
+    free(sin_table[i]);
+    free(tcos_table[i]);
+    free(tsin_table[i]);
+    free(ttcos_table[i]);
+    free(ttsin_table[i]);
+  }
+
+  return ret_count;
+}
+
+/* linear estimation iterator; sets fixed basis functions for each
+   chirp according to the passed in initial estimates. This code
+   follows the paper as exactly as possible (reconstruction is
+   estimated from basis, basis is not chirped regardless of initial
+   estimate, etc). */
 static int linear_iterate(const float *x,
-                          float *y,
                           const float *window,
                           int len,
                           chirp *ch,
@@ -411,7 +651,10 @@ static int linear_iterate(const float *x,
   int flag=1;
   float lasterr=0;
   float thiserr=0;
+  float y[len];
   int ret_count = iter_limit;
+
+  memset(y,0,sizeof(y));
 
   for (i=0;i<n;i++){
     float tmpa=0;
@@ -426,6 +669,15 @@ static int linear_iterate(const float *x,
     float tmpe3=0;
     float tmpf3=0;
 
+    /* seed the basis accumulators from our passed in estimated parameters */
+    /* Don't add in W; this is already included by the basis */
+    ai[i] = toAi(ch[i].A, ch[i].P);
+    bi[i] = toBi(ch[i].A, ch[i].P);
+    ci[i] = dAtoCi(ch[i].P,ch[i].dA);
+    di[i] = dAtoDi(ch[i].P,ch[i].dA);
+    ei[i] = ddAtoEi(ch[i].P, ch[i].ddA) + dWtoEi(ch[i].A, ch[i].P, ch[i].dW);
+    fi[i] = ddAtoFi(ch[i].P, ch[i].ddA) + dWtoFi(ch[i].A, ch[i].P, ch[i].dW);
+
     /* Build a table for the basis functions at each frequency */
     cos_table[i]=calloc(len,sizeof(**cos_table));
     sin_table[i]=calloc(len,sizeof(**sin_table));
@@ -435,17 +687,19 @@ static int linear_iterate(const float *x,
     ttsin_table[i]=calloc(len,sizeof(**ttsin_table));
 
     for (j=0;j<len;j++){
-      float jj = j-len/2.+.5;
-      float c,s;
-      sincosf((ch[i].W + ch[i].dW*jj)*jj,&s,&c);
+      double jj = j-len/2.+.5;
+      double c,s;
+      sincos(ch[i].W*jj,&s,&c);
 
       /* save basis funcs */
-      cos_table[i][j] = c;
-      sin_table[i][j] = s;
-      tcos_table[i][j] = jj*c;
-      tsin_table[i][j] = jj*s;
-      ttcos_table[i][j] = jj*jj*c;
-      ttsin_table[i][j] = jj*jj*s;
+      /* initial reconstruction */
+      y[j] +=
+        ai[i]*(cos_table[i][j] = c) +
+        bi[i]*(sin_table[i][j] = s) +
+        ci[i]*(tcos_table[i][j] = jj*c) +
+        di[i]*(tsin_table[i][j] = jj*s) +
+        ei[i]*(ttcos_table[i][j] = jj*jj*c) +
+        fi[i]*(ttsin_table[i][j] = jj*jj*s);
 
       /* The sinusoidal terms */
       tmpa += cos_table[i][j]*cos_table[i][j]*window[j]*window[j];
@@ -489,18 +743,6 @@ static int linear_iterate(const float *x,
     ttcosC3[i] = tmpe3;
     ttsinC3[i] = tmpf3;
 
-    /* seed the basis accumulators from our passed in estimated parameters */
-    /* Don't add in W or dW; these are already included by the basis */
-    {
-      float A = toAi(ch[i].A, ch[i].P);
-      float B = toBi(ch[i].A, ch[i].P);
-      ai[i] = A;
-      bi[i] = B;
-      ci[i] = dAtoCi(A,B,ch[i].dA);
-      di[i] = dAtoDi(A,B,ch[i].dA);
-      ei[i] = ddAtoEi(A,B,ch[i].ddA);
-      fi[i] = ddAtoFi(A,B,ch[i].ddA);
-    }
   }
 
   while((flag || lasterr>thiserr) && iter_limit>0){
@@ -650,7 +892,6 @@ static int linear_iterate(const float *x,
 */
 
 int estimate_chirps(const float *x,
-                    float *y,
                     const float *window,
                     int len,
                     chirp *c,
@@ -671,7 +912,7 @@ int estimate_chirps(const float *x,
                     int bound_zero
                     ){
 
-  int i,j;
+  int i;
   float E0=0, E1=0, E2=0;
 
   if(symm_norm){
@@ -696,32 +937,28 @@ int estimate_chirps(const float *x,
     if(!fitddA) c[i].ddA=0.;
   }
 
-  /* Build a starting reconstruction based on the passed-in initial
-     chirp estimates */
-  memset(y,0,sizeof(*y)*len);
-  for(i=0;i<n;i++){
-    for(j=0;j<len;j++){
-      double jj = j-len*.5+.5;
-      float a = c[i].A + (c[i].dA + c[i].ddA*jj)*jj;
-      y[j] += a*cos((c[i].W + c[i].dW*jj)*jj + c[i].P);
-    }
-  }
-
-  if(!nonlinear){
-    //if(bound_zero) return -1;
-    //if(fit_W_alpha!=1.0) return -1;
-    //if(fit_dW_alpha!=1.0) return -1;
-    iter_limit = linear_iterate(x,y,window,len,c,n,
+  switch(nonlinear){
+  case 0:
+    iter_limit = linear_iterate(x,window,len,c,n,
                                 fit_limit,iter_limit,fit_gs,
                                 fitW,fitdA,fitdW,fitddA,
                                 symm_norm,E0,E1,E2);
-  }else{
-    iter_limit = nonlinear_iterate(x,y,window,len,c,n,
-                                   fit_limit,iter_limit,fit_gs,
-                                   fitW,fitdA,fitdW,fitddA,
-                                   nonlinear-1,fit_W_alpha,fit_dW_alpha,
-                                   symm_norm,E0,E1,E2,
-                                   bound_zero);
+    break;
+  case 1:
+    iter_limit = partial_nonlinear_iterate(x,window,len,c,n,
+                                           fit_limit,iter_limit,fit_gs,
+                                           fitW,fitdA,fitdW,fitddA,
+                                           fit_W_alpha,
+                                           symm_norm,E0,E1,E2);
+    break;
+  case 2:
+    iter_limit = full_nonlinear_iterate(x,window,len,c,n,
+                                        fit_limit,iter_limit,fit_gs,
+                                        fitW,fitdA,fitdW,fitddA,
+                                        fit_W_alpha,fit_dW_alpha,
+                                        symm_norm,E0,E1,E2,
+                                        bound_zero);
+    break;
   }
 
   /* Sort by ascending frequency */

@@ -179,7 +179,6 @@ int max_y=0;
 void *compute_column(void *in){
   colarg *arg = (colarg *)in;
   int blocksize=arg->blocksize;
-  float rec[blocksize];
   int y,i,ret;
   int except;
   int localinit = !arg->in;
@@ -214,7 +213,7 @@ void *compute_column(void *in){
     fedisableexcept(FE_INEXACT);
     fedisableexcept(FE_UNDERFLOW);
 
-    ret=estimate_chirps(chirp,rec,arg->window,blocksize,
+    ret=estimate_chirps(chirp,arg->window,blocksize,
                         arg->estimate+y,1,arg->fit_tolerance,arg->max_iterations,
                         arg->fit_gauss_seidel,
                         arg->fit_W,
@@ -228,8 +227,13 @@ void *compute_column(void *in){
                         arg->fit_bound_zero);
 
     for(i=0;i<blocksize;i++){
+      double jj = i - blocksize/2 + .5;
+      double A = arg->estimate[y].A + (arg->estimate[y].dA + arg->estimate[y].ddA*jj)*jj;
+      double P = arg->estimate[y].P + (arg->estimate[y].W  + arg->estimate[y].dW *jj)*jj;
+      float  r = A*cos(P);
       float ce = chirp[i]*arg->window[i];
-      float ee = (chirp[i]-rec[i])*arg->window[i];
+      float ee = (chirp[i]-r)*arg->window[i];
+
       e_acc += ce*ce;
       rms_acc += ee*ee;
     }
@@ -1178,13 +1182,13 @@ int main(){
 
   /* Graphs for dW vs W ****************************************/
 
-  //w_e("linear-dW-vs-W",&arg);
+  w_e("linear-dW-vs-W",&arg);
   arg.fit_nonlinear=1;
   arg.subtitle1="Partial nonlinear estimation, no ddA fit";
-  //w_e("partial-nonlinear-dW-vs-W",&arg);
+  w_e("partial-nonlinear-dW-vs-W",&arg);
   arg.subtitle1="Full nonlinear estimation, no ddA fit";
   arg.fit_nonlinear=2;
-  //w_e("full-nonlinear-dW-vs-W",&arg);
+  w_e("full-nonlinear-dW-vs-W",&arg);
 
   /* Graphs for W estimate distance vs W ************************/
 
@@ -1197,35 +1201,14 @@ int main(){
   arg.min_chirp_dW=0.;
   arg.max_chirp_dW=0.;
 
-  //w_e("linear-estW-vs-W",&arg);
+  w_e("linear-estW-vs-W",&arg);
   arg.subtitle1="Partial nonlinear estimation, no ddA fit";
   arg.subtitle2="chirp: A=1.0, dA=dW=0., swept phase | estimate A=P=dA=dW=0";
   arg.fit_nonlinear=1;
-  //w_e("partial-nonlinear-estW-vs-W",&arg);
+  w_e("partial-nonlinear-estW-vs-W",&arg);
   arg.subtitle1="Full nonlinear estimation, no ddA fit";
   arg.fit_nonlinear=2;
-  //w_e("full-nonlinear-estW-vs-W",&arg);
-  arg.fit_nonlinear=0;
-
-  /* Graphs for dA vs W *****************************************/
-
-  arg.subtitle1="Linear estimation, no ddA fit",
-  arg.subtitle2="chirp: A=1.0, dW=0., swept phase | estimate A=P=dA=dW=0, estimate W=chirp W";
-  arg.fit_nonlinear=0;
-  arg.yaxis_label="dA (amplitude delta across block)";
-  arg.y_dim = DIM_CHIRP_dA;
-  arg.min_est_W = 0;
-  arg.max_est_W = 0;
-  arg.min_chirp_dA=-2.;
-  arg.max_chirp_dA=2.;
-
-  w_e("linear-dA-vs-W",&arg);
-  arg.subtitle1="Partial nonlinear estimation, no ddA fit",
-  arg.fit_nonlinear=1;
-  w_e("partial-nonlinear-dA-vs-W",&arg);
-  arg.subtitle1="Full nonlinear estimation, no ddA fit",
-  arg.fit_nonlinear=2;
-  w_e("full-nonlinear-dA-vs-W",&arg);
+  w_e("full-nonlinear-estW-vs-W",&arg);
   arg.fit_nonlinear=0;
 
   return 0;
