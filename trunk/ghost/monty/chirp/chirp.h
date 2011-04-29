@@ -22,12 +22,11 @@ typedef struct {
   float dA; /* amplitude modulation (linear change per sample) */
   float dW; /* frequency modulation (radians per sample^2) */
   float ddA; /* amplitude modulation (linear change per sample^2) */
-  int label;/* used for tracking by outside code */
+  int label; /* used for tracking by outside code */
 } chirp;
 
 extern int
 estimate_chirps(const float *x, /* unwindowed input to fit */
-                float *y,       /* unwindowed outptu reconstruction */
                 const float *window, /* window to apply to input/bases */
                 int len,        /* block length */
                 chirp *c,       /* list of chirp estimates/outputs */

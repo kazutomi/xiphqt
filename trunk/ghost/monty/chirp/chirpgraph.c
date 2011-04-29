@@ -291,7 +291,7 @@ cairo_t *draw_page(char *title,
     cairo_matrix_t b = {0.,-1., 1.,0., 0.,0.}; // account for border!
     cairo_matrix_t d;
     cairo_text_extents(c, yaxis_label, &extents);
-    cairo_move_to(c,extents.height+fontsize,y_n/2+toppad+extents.width*.5);
+    cairo_move_to(c,extents.height+fontsize*.5,y_n/2+toppad+extents.width*.5);
 
     cairo_save(c);
     cairo_get_matrix(c,&a);
@@ -304,7 +304,7 @@ cairo_t *draw_page(char *title,
   /* X axis caption */
   {
     cairo_text_extents(c, xaxis_label, &extents);
-    cairo_move_to(c,pic_w/2-extents.width/2,y_n+toppad+extents.height*2+fontsize*.5);
+    cairo_move_to(c,pic_w/2-extents.width/2,y_n+toppad+extents.height*2+fontsize*.25);
     cairo_show_text(c,xaxis_label);
   }
 
