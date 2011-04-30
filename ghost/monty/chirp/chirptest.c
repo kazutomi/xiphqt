@@ -1132,7 +1132,7 @@ int main(){
     /* fit_ddA */       0,
     /* nonlinear */     0,
     /* W_alpha */       1.,
-    /* dW_alpha */      1.75,
+    /* dW_alpha */      1.,
     /* symm_norm */     0,
     /* bound_zero */    0,
 
@@ -1182,13 +1182,13 @@ int main(){
 
   /* Graphs for dW vs W ****************************************/
 
-  //w_e("linear-dW-vs-W",&arg);
+  w_e("linear-dW-vs-W",&arg);
   arg.fit_nonlinear=1;
   arg.subtitle1="Partial nonlinear estimation, no ddA fit";
-  //w_e("partial-nonlinear-dW-vs-W",&arg);
+  w_e("partial-nonlinear-dW-vs-W",&arg);
   arg.subtitle1="Full nonlinear estimation, no ddA fit";
   arg.fit_nonlinear=2;
-  //w_e("full-nonlinear-dW-vs-W",&arg);
+  w_e("full-nonlinear-dW-vs-W",&arg);
 
   /* Graphs for W estimate distance vs W ************************/
 
@@ -1201,14 +1201,14 @@ int main(){
   arg.min_chirp_dW=0.;
   arg.max_chirp_dW=0.;
 
-  //w_e("linear-estW-vs-W",&arg);
+  w_e("linear-estW-vs-W",&arg);
   arg.subtitle1="Partial nonlinear estimation, no ddA fit";
   arg.subtitle2="chirp: A=1.0, dA=dW=0., swept phase | estimate A=P=dA=dW=0";
   arg.fit_nonlinear=1;
-  //w_e("partial-nonlinear-estW-vs-W",&arg);
+  w_e("partial-nonlinear-estW-vs-W",&arg);
   arg.subtitle1="Full nonlinear estimation, no ddA fit";
   arg.fit_nonlinear=2;
-  //w_e("full-nonlinear-estW-vs-W",&arg);
+  w_e("full-nonlinear-estW-vs-W",&arg);
   arg.fit_nonlinear=0;
 
   /* graphs for different windows */
@@ -1220,23 +1220,23 @@ int main(){
   arg.subtitle1="Linear estimation, no ddA fit";
   arg.window = window_functions.rectangle;
   arg.subtitle3 = "rectangular window";
-  //w_e("linear-estW-vs-W-rectangular",&arg);
+  w_e("linear-estW-vs-W-rectangular",&arg);
 
   arg.window = window_functions.sine;
   arg.subtitle3 = "sine window";
-  //w_e("linear-estW-vs-W-sine",&arg);
+  w_e("linear-estW-vs-W-sine",&arg);
 
   arg.window = window_functions.hanning;
   arg.subtitle3 = "hanning window";
-  //w_e("linear-estW-vs-W-hanning",&arg);
+  w_e("linear-estW-vs-W-hanning",&arg);
 
   arg.window = window_functions.tgauss_deep;
   arg.subtitle3 = "sidelobeless triagular/gaussian window";
-  //w_e("linear-estW-vs-W-sidelobeless",&arg);
+  w_e("linear-estW-vs-W-unimodal",&arg);
 
   arg.window = window_functions.maxwell1;
   arg.subtitle3 = "maxwell (optimized) window";
-  //w_e("linear-estW-vs-W-maxwell",&arg);
+  w_e("linear-estW-vs-W-maxwell",&arg);
 
   arg.min_est_W = -15;
   arg.max_est_W =  15;
@@ -1257,7 +1257,7 @@ int main(){
 
   arg.window = window_functions.tgauss_deep;
   arg.subtitle3 = "sidelobeless triagular/gaussian window";
-  w_e("full-nonlinear-estW-vs-W-sidelobeless",&arg);
+  w_e("full-nonlinear-estW-vs-W-unimodal",&arg);
 
   arg.window = window_functions.maxwell1;
   arg.subtitle3 = "maxwell (optimized) window";
