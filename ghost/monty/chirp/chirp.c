@@ -75,6 +75,14 @@ static float toBi(float A, float P){
   return A * -sinf(P);
 }
 
+static float WtoCi(float A, float P, float W){
+  return -W*A*sinf(P);
+}
+
+static float WtoDi(float A, float P, float W){
+  return -W*A*cosf(P);
+}
+
 static float dWtoEi(float A, float P, float dW){
   return -A*dW*sin(P);
 }
@@ -125,10 +133,6 @@ static int full_nonlinear_iterate(const float *x,
   int flag=1;
   float r[len];
   float y[len];
-  int ret_count=iter_limit;
-
-  float lasterr=0;
-  float thiserr=0;
 
   /* Build a starting reconstruction based on the passed-in initial
      chirp estimates */
@@ -142,10 +146,8 @@ static int full_nonlinear_iterate(const float *x,
   }
 
   /* outer fit iteration */
-  while((flag || lasterr>thiserr) && iter_limit>0){
+  while(flag && iter_limit>0){
     flag=0;
-    lasterr=thiserr;
-    thiserr=0;
 
     /* precompute the portion of the projection/fit estimate shared by
        the zero, first and second order fits.  Subtracts the current
@@ -170,6 +172,7 @@ static int full_nonlinear_iterate(const float *x,
       float eE=0, fE=0;
       float aC = cos(c->P);
       float aS = sin(c->P);
+      float move;
 
       for(j=0;j<len;j++){
 
@@ -246,12 +249,12 @@ static int full_nonlinear_iterate(const float *x,
         eP = (eP-aP*eP2-cP*eP3)*E2;
         fP = (fP-bP*fP2-dP*fP3)*E2;
       }else{
-        aP = (aE?aP/aE:0.);
-        bP = (bE?bP/bE:0.);
-        cP = (cE?(cP-aP*cP2)/cE:0.);
-        dP = (dE?(dP-bP*dP2)/dE:0.);
-        eP = (eE?(eP-aP*eP2-cP*eP3)/eE:0.);
-        fP = (fE?(fP-bP*fP2-dP*fP3)/fE:0.);
+        aP = (aE>1e-20f?aP/aE:0.f);
+        bP = (bE>1e-20f?bP/bE:0.f);
+        cP = (cE>1e-20f?(cP-aP*cP2)/cE:0.f);
+        dP = (dE>1e-20f?(dP-bP*dP2)/dE:0.f);
+        eP = (eE>1e-20f?(eP-aP*eP2-cP*eP3)/eE:0.f);
+        fP = (fE>1e-20f?(fP-bP*fP2-dP*fP3)/fE:0.f);
       }
 
       if(!fitW && !fitdA)
@@ -259,17 +262,7 @@ static int full_nonlinear_iterate(const float *x,
       if(!fitdW && !fitddA)
         eP=fP=0;
 
-      /* base convergence on relative projection movement this
-         iteration */
-      {
-        float move = (aP*aP + bP*bP)/(c->A*c->A + fit_limit*fit_limit) +
-          (cP*cP + dP*dP)/(c->A*c->A + fit_limit*fit_limit) +
-          (eP*eP + fP*fP)/(c->A*c->A + fit_limit*fit_limit);
-        thiserr+=move;
-
-        if(fit_limit>0 && move>fit_limit*fit_limit)flag=1;
-        if(fit_limit<0 && move>1e-14)flag=1;
-      }
+      move = aP*aP + bP*bP;
 
       /* we're fitting to the remaining error; add the fit to date
          back in to relate our newest incremental results to the
@@ -293,13 +286,47 @@ static int full_nonlinear_iterate(const float *x,
         break;
       }
 
-      /* save new estimate */
-      c->A = toA(aP,bP);
-      c->P = toP(aP,bP);
-      c->W += fit_W_alpha*(fitW ? toW(aP,bP,cP,dP) : 0);
-      c->dA = (fitdA ? todA(aP,bP,cP,dP) : 0);
-      c->dW += fit_dW_alpha*(fitdW ? todW(aP,bP,eP,fP) : 0);
-      c->ddA = (fitddA ? toddA(aP,bP,eP,fP) : 0);
+      {
+        chirp old = *c;
+        float cc=0,dd=0;
+        float ee=0,ff=0;
+
+        /* save new estimate */
+        c->A = toA(aP,bP);
+        c->P = toP(aP,bP);
+        c->W += fit_W_alpha*(fitW ? toW(aP,bP,cP,dP) : 0);
+        c->dA = (fitdA ? todA(aP,bP,cP,dP) : 0);
+        c->dW += fit_dW_alpha*(fitdW ? todW(aP,bP,eP,fP) : 0);
+        c->ddA = (fitddA ? toddA(aP,bP,eP,fP) : 0);
+
+        /* base convergence on basis projection movement this
+           iteration, but only consider the contribution of terms we fit. */
+
+        if(fitW){
+          float W = c->W - old.W;
+          cc += WtoCi(c->A,c->P,W);
+          dd += WtoDi(c->A,c->P,W);
+        }
+        if(fitdA){
+          float dA = c->dA - old.dA;
+          cc += dAtoCi(c->P,dA);
+          dd += dAtoDi(c->P,dA);
+        }
+        if(fitdW){
+          float dW = c->dW - old.dW;
+          ee += dWtoEi(c->A,c->P,dW);
+          ff += dWtoFi(c->A,c->P,dW);
+        }
+        if(fitddA){
+          float ddA = c->ddA - old.ddA;
+          ee += ddAtoEi(c->P,ddA);
+          ff += ddAtoFi(c->P,ddA);
+        }
+        move = (move + cc*cc + dd*dd + ee*ee + ff*ff) /
+          (c->A*c->A + fit_limit*fit_limit);
+        if(fit_limit>0 && move>fit_limit*fit_limit)flag=1;
+        if(fit_limit<0 && move>1e-14)flag=1;
+      }
 
       if(bound_edges){
         /* do not allow negative or trans-Nyquist center frequencies */
@@ -339,10 +366,9 @@ static int full_nonlinear_iterate(const float *x,
         }
       }
     }
-    if(flag)ret_count--;
-    iter_limit--;
+    if(flag)iter_limit--;
   }
-  return ret_count;
+  return iter_limit;
 }
 
 
@@ -371,12 +397,8 @@ static int partial_nonlinear_iterate(const float *x,
                                      float E1,
                                      float E2){
   int i,j;
-  int flag=1;
   float y[len];
-
-  float lasterr=0;
-  float thiserr=0;
-  int ret_count=iter_limit;
+  int flag=1;
 
   float *cos_table[n];
   float *sin_table[n];
@@ -405,11 +427,8 @@ static int partial_nonlinear_iterate(const float *x,
   }
 
   /* outer fit iteration */
-  while((flag || lasterr>thiserr) && iter_limit>0){
+  while(flag && iter_limit>0){
     flag=0;
-    lasterr=thiserr;
-    thiserr=0;
-
     memset(y,0,sizeof(y));
 
     /* Sort chirps by descending amplitude */
@@ -481,12 +500,12 @@ static int partial_nonlinear_iterate(const float *x,
         tcosE[i] = tsinE[i] = E1;
         ttcosE[i] = ttsinE[i] = E2;
       }else{
-        cosE[i] = (tmpa>1e-20 ? 1./tmpa : 0);
-        sinE[i] = (tmpb>1e-20 ? 1./tmpb : 0);
-        tcosE[i] = (tmpc>1e-20 ? 1./tmpc : 0);
-        tsinE[i] = (tmpd>1e-20 ? 1./tmpd : 0);
-        ttcosE[i] = (tmpe>1e-20 ? 1./tmpe : 0);
-        ttsinE[i] = (tmpf>1e-20 ? 1./tmpf : 0);
+        cosE[i] = (tmpa>1e-20f ? 1.f/tmpa : 0);
+        sinE[i] = (tmpb>1e-20f ? 1.f/tmpb : 0);
+        tcosE[i] = (tmpc>1e-20f ? 1.f/tmpc : 0);
+        tsinE[i] = (tmpd>1e-20f ? 1.f/tmpd : 0);
+        ttcosE[i] = (tmpe>1e-20f ? 1.f/tmpe : 0);
+        ttsinE[i] = (tmpf>1e-20f ? 1.f/tmpf : 0);
       }
 
       if(fit_gs){
@@ -552,20 +571,6 @@ static int partial_nonlinear_iterate(const float *x,
           tmpf*ttsin_table[i][j];
       }
 
-      /* base convergence on basis projection movement this
-         iteration */
-      {
-        float A2 = ai[i]*ai[i]+bi[i]*bi[i];
-        float move = (tmpa*tmpa + tmpb*tmpb)/(A2 + fit_limit*fit_limit) +
-          (tmpc*tmpc + tmpd*tmpd)/(A2 + fit_limit*fit_limit) +
-          (tmpe*tmpe + tmpf*tmpf)/(A2 + fit_limit*fit_limit);
-        thiserr+=move;
-
-        if(fit_limit>0 && move>fit_limit*fit_limit)flag=1;
-        if(fit_limit<0 && move>1e-14)flag=1;
-      }
-
-
       ai[i] += tmpa;
       bi[i] += tmpb;
       ci[i] += tmpc;
@@ -590,9 +595,39 @@ static int partial_nonlinear_iterate(const float *x,
       ch[i].dW = (fitdW ? todW(ai[i],bi[i],ei[i],fi[i]) : 0);
       ch[i].ddA = (fitddA ? toddA(ai[i],bi[i],ei[i],fi[i]) : 0);
 
+      /* base convergence on basis projection movement this
+         iteration, but only consider the contribution of terms we fit. */
+      {
+        float A2 = ch[i].A*ch[i].A;
+        float move;
+        float cc=0,dd=0;
+        float ee=0,ff=0;
+        if(fitW){
+          float W = toW(ai[i],bi[i],ci[i],di[i]);
+          cc += WtoCi(ch[i].A,ch[i].P,W);
+          dd += WtoDi(ch[i].A,ch[i].P,W);
+        }
+        if(fitdA){
+          float dA = todA(ai[i],bi[i],tmpc,tmpd);
+          cc += dAtoCi(ch[i].P,dA);
+          dd += dAtoDi(ch[i].P,dA);
+        }
+        if(fitdW){
+          float dW = todW(ai[i],bi[i],tmpe,tmpf);
+          ee += dWtoEi(ch[i].A,ch[i].P,dW);
+          ff += dWtoFi(ch[i].A,ch[i].P,dW);
+        }
+        if(fitddA){
+          float ddA = toddA(ai[i],bi[i],tmpe,tmpf);
+          ee += ddAtoEi(ch[i].P,ddA);
+          ff += ddAtoFi(ch[i].P,ddA);
+        }
+        move = (tmpa*tmpa + tmpb*tmpb + cc*cc + dd*dd + ee*ee + ff*ff) / (A2 + fit_limit*fit_limit);
+        if(fit_limit>0 && move>fit_limit*fit_limit)flag=1;
+        if(fit_limit<0 && move>1e-14)flag=1;
+      }
     }
-    if(flag)ret_count--;
-    iter_limit--;
+    if(flag)iter_limit--;
   }
 
   for(i=0;i<n;i++){
@@ -604,7 +639,7 @@ static int partial_nonlinear_iterate(const float *x,
     free(ttsin_table[i]);
   }
 
-  return ret_count;
+  return iter_limit;
 }
 
 /* linear estimation iterator; sets fixed basis functions for each
@@ -649,10 +684,7 @@ static int linear_iterate(const float *x,
   float ei[n], fi[n];
   int i,j;
   int flag=1;
-  float lasterr=0;
-  float thiserr=0;
   float y[len];
-  int ret_count = iter_limit;
 
   memset(y,0,sizeof(y));
 
@@ -727,12 +759,12 @@ static int linear_iterate(const float *x,
       tcosE[i] = tsinE[i] = E1;
       ttcosE[i] = ttsinE[i] = E2;
     }else{
-      cosE[i] = (tmpa>0.f ? 1./tmpa : 0);
-      sinE[i] = (tmpb>0.f ? 1./tmpb : 0);
-      tcosE[i] = (tmpc>0.f ? 1./tmpc : 0);
-      tsinE[i] = (tmpd>0.f ? 1./tmpd : 0);
-      ttcosE[i] = (tmpe>0.f ? 1./tmpe : 0);
-      ttsinE[i] = (tmpf>0.f ? 1./tmpf : 0);
+      cosE[i] = (tmpa>1e-20f ? 1.f/tmpa : 0);
+      sinE[i] = (tmpb>1e-20f ? 1.f/tmpb : 0);
+      tcosE[i] = (tmpc>1e-20f ? 1.f/tmpc : 0);
+      tsinE[i] = (tmpd>1e-20f ? 1.f/tmpd : 0);
+      ttcosE[i] = (tmpe>1e-20f ? 1.f/tmpe : 0);
+      ttsinE[i] = (tmpf>1e-20f ? 1.f/tmpf : 0);
     }
 
     /* set gs fit terms */
@@ -745,10 +777,8 @@ static int linear_iterate(const float *x,
 
   }
 
-  while((flag || lasterr>thiserr) && iter_limit>0){
+  while(flag && iter_limit>0){
     flag=0;
-    lasterr=thiserr;
-    thiserr=0;
 
     for (i=0;i<n;i++){
 
@@ -803,6 +833,15 @@ static int linear_iterate(const float *x,
       }
 
 
+      /* guard overflow; if we're this far out, assume we're never
+         coming back. drop out now. */
+      if((ai[i]*ai[i] + bi[i]*bi[i])>1e10 ||
+         (ci[i]*ci[i] + di[i]*di[i])>1e10 ||
+         (ei[i]*ei[i] + fi[i]*fi[i])>1e10){
+        iter_limit=0;
+        i=n;
+      }
+
       /* base convergence on basis projection movement this
          iteration */
       {
@@ -810,7 +849,6 @@ static int linear_iterate(const float *x,
         float move = (tmpa*tmpa + tmpb*tmpb)/(A2 + fit_limit*fit_limit) +
           (tmpc*tmpc + tmpd*tmpd)/(A2 + fit_limit*fit_limit) +
           (tmpe*tmpe + tmpf*tmpf)/(A2 + fit_limit*fit_limit);
-        thiserr+=move;
 
         if(fit_limit>0 && move>fit_limit*fit_limit)flag=1;
         if(fit_limit<0 && move>1e-14)flag=1;
@@ -824,19 +862,8 @@ static int linear_iterate(const float *x,
       ei[i] += tmpe;
       fi[i] += tmpf;
 
-      /* guard overflow; if we're this far out, assume we're never
-         coming back. drop out now. */
-      if((ai[i]*ai[i] + bi[i]*bi[i])>1e10 ||
-         (ci[i]*ci[i] + di[i]*di[i])>1e10 ||
-         (ei[i]*ei[i] + fi[i]*fi[i])>1e10){
-        iter_limit=0;
-        i=n;
-      }
-
-
     }
-    if(flag)ret_count--;
-    iter_limit--;
+    if(flag)iter_limit--;
   }
 
   for(i=0;i<n;i++){
@@ -855,7 +882,7 @@ static int linear_iterate(const float *x,
     free(ttsin_table[i]);
   }
 
-  return ret_count;
+  return iter_limit;
 }
 
 /* Performs an iterative chirp estimation using the passed
