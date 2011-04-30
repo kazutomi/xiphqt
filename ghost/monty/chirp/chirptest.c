@@ -1231,7 +1231,7 @@ int main(){
   w_e("linear-estW-vs-W-hanning",&arg);
 
   arg.window = window_functions.tgauss_deep;
-  arg.subtitle3 = "sidelobeless triagular/gaussian window";
+  arg.subtitle3 = "sidelobeless triangular/gaussian window";
   w_e("linear-estW-vs-W-unimodal",&arg);
 
   arg.window = window_functions.maxwell1;
@@ -1256,7 +1256,7 @@ int main(){
   w_e("full-nonlinear-estW-vs-W-hanning",&arg);
 
   arg.window = window_functions.tgauss_deep;
-  arg.subtitle3 = "sidelobeless triagular/gaussian window";
+  arg.subtitle3 = "sidelobeless triangular/gaussian window";
   w_e("full-nonlinear-estW-vs-W-unimodal",&arg);
 
   arg.window = window_functions.maxwell1;
