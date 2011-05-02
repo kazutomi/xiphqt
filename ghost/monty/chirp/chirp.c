@@ -322,8 +322,7 @@ static int full_nonlinear_iterate(const float *x,
           ee += ddAtoEi(c->P,ddA);
           ff += ddAtoFi(c->P,ddA);
         }
-        move = (move + cc*cc + dd*dd + ee*ee + ff*ff) /
-          (c->A*c->A + fit_limit*fit_limit);
+        move = move + cc*cc + dd*dd + ee*ee + ff*ff;
         if(fit_limit>0 && move>fit_limit*fit_limit)flag=1;
         if(fit_limit<0 && move>1e-14)flag=1;
       }
@@ -598,7 +597,6 @@ static int partial_nonlinear_iterate(const float *x,
       /* base convergence on basis projection movement this
          iteration, but only consider the contribution of terms we fit. */
       {
-        float A2 = ch[i].A*ch[i].A;
         float move;
         float cc=0,dd=0;
         float ee=0,ff=0;
@@ -622,7 +620,7 @@ static int partial_nonlinear_iterate(const float *x,
           ee += ddAtoEi(ch[i].P,ddA);
           ff += ddAtoFi(ch[i].P,ddA);
         }
-        move = (tmpa*tmpa + tmpb*tmpb + cc*cc + dd*dd + ee*ee + ff*ff) / (A2 + fit_limit*fit_limit);
+        move = tmpa*tmpa + tmpb*tmpb + cc*cc + dd*dd + ee*ee + ff*ff;
         if(fit_limit>0 && move>fit_limit*fit_limit)flag=1;
         if(fit_limit<0 && move>1e-14)flag=1;
       }
@@ -842,25 +840,22 @@ static int linear_iterate(const float *x,
         i=n;
       }
 
-      /* base convergence on basis projection movement this
-         iteration */
-      {
-        float A2 = ai[i]*ai[i]+bi[i]*bi[i];
-        float move = (tmpa*tmpa + tmpb*tmpb)/(A2 + fit_limit*fit_limit) +
-          (tmpc*tmpc + tmpd*tmpd)/(A2 + fit_limit*fit_limit) +
-          (tmpe*tmpe + tmpf*tmpf)/(A2 + fit_limit*fit_limit);
-
-        if(fit_limit>0 && move>fit_limit*fit_limit)flag=1;
-        if(fit_limit<0 && move>1e-14)flag=1;
-      }
-
-
       ai[i] += tmpa;
       bi[i] += tmpb;
       ci[i] += tmpc;
       di[i] += tmpd;
       ei[i] += tmpe;
       fi[i] += tmpf;
+
+      /* base convergence on basis projection movement this
+         iteration */
+      {
+        float move = tmpa*tmpa + tmpb*tmpb +tmpc*tmpc + tmpd*tmpd + tmpe*tmpe + tmpf*tmpf;
+
+        if(fit_limit>0 && move>fit_limit*fit_limit)flag=1;
+        if(fit_limit<0 && move>1e-14)flag=1;
+      }
+
 
     }
     if(flag)iter_limit--;

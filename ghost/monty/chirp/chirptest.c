@@ -1121,7 +1121,7 @@ int main(){
     /* yaxis label */   "dW (cycles/block)",
 
     /* blocksize */     128,
-    /* threads */       8,
+    /* threads */       32,
 
     /* window */        window_functions.sine,
     /* fit_tol */       .000001,
@@ -1162,7 +1162,7 @@ int main(){
     /* ch ddA range */  0.,0.,
 
     /* converge max */    1,
-    /* converge del */    1,
+    /* converge del */    0,
     /* max A error */     1,
     /* A error delta */   0,
     /* max P error */     1,
@@ -1262,6 +1262,45 @@ int main(){
   arg.window = window_functions.maxwell1;
   arg.subtitle3 = "maxwell (optimized) window";
   w_e("full-nonlinear-estW-vs-W-maxwell",&arg);
+
+  /* 1, 1.5, 2nd order */
+  arg.min_est_W = -3;
+  arg.max_est_W =  3;
+  arg.max_chirp_W =  10;
+  arg.window = window_functions.hanning;
+  arg.subtitle3 = "hanning window";
+  arg.fit_dW = 0;
+  arg.fit_dA = 0;
+
+  arg.fit_nonlinear = 2;
+  arg.subtitle1="Fully nonlinear estimation, half-order fit (W only)";
+  w_e("nonlinear-estW-vs-W-.5order",&arg);
+
+  arg.fit_dA=1;
+
+  arg.fit_nonlinear = 0;
+  arg.subtitle1="Linear estimation, first-order fit";
+  w_e("linear-estW-vs-W-1order",&arg);
+
+  arg.fit_nonlinear = 2;
+  arg.subtitle1="Fully nonlinear estimation, first-order fit";
+  w_e("nonlinear-estW-vs-W-1order",&arg);
+
+  arg.fit_dW=1;
+
+  arg.fit_nonlinear = 2;
+  arg.subtitle1="Fully nonlinear estimation, 1.5th-order fit (dW only)";
+  w_e("nonlinear-estW-vs-W-1.5order",&arg);
+
+  arg.fit_ddA=1;
+
+  arg.fit_nonlinear = 0;
+  arg.subtitle1="Linear estimation, second-order fit";
+  w_e("linear-estW-vs-W-2order",&arg);
+
+  arg.fit_nonlinear = 2;
+  arg.subtitle1="Fully nonlinear estimation, second-order fit";
+  w_e("nonlinear-estW-vs-W-2order",&arg);
 
 
   return 0;
