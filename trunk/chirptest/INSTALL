@@ -1,0 +1,18 @@
+This code builds a single, standalone graphing application 'chirp',
+which puts the linearized sinusoidal/chirp estimation code through its
+paces with varied inputs and graphs the results.
+
+REQUIREMENTS:
+
+A GNU-ish build system (automake, autoconf, GNU make)
+Cairo development libraries (libcairo and headers)
+A reasonably serious amount of CPU
+
+BUILD (from SVN):
+
+./autogen.sh
+make
+
+RUN:
+
+./chirp

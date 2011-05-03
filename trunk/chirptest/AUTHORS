@@ -1,0 +1,3 @@
+Benchmarking, graphing: Monty <monty@xiph.org>
+Original estimator code: Jean-Marc Valin <jm@xiph.org>
+Additional optimizations and windows: Greg Maxwell <greg@xiph.org>
