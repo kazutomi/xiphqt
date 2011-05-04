@@ -705,7 +705,8 @@ void w_e(char *filebase,graph_run *arg){
                    arg->xaxis_label,
                    arg->yaxis_label,
                    "Iterations:",
-                   DT_iterations);
+                   DT_iterations,
+                   arg->x_dim==DIM_CHIRP_W ||arg->x_dim==DIM_ESTIMATE_W);
   if(swept && arg->graph_convergence_delta)
     cC_d = draw_page("Convergence Delta",
                      arg->subtitle1,
@@ -714,7 +715,8 @@ void w_e(char *filebase,graph_run *arg){
                      arg->xaxis_label,
                      arg->yaxis_label,
                      "Iteration span:",
-                     DT_iterations);
+                     DT_iterations,
+                     arg->x_dim==DIM_CHIRP_W ||arg->x_dim==DIM_ESTIMATE_W);
 
   if(arg->graph_Aerror_max)
     cA = draw_page(!swept?"A (Amplitude) Error":"Maximum A (Amplitude) Error",
@@ -724,7 +726,8 @@ void w_e(char *filebase,graph_run *arg){
                    arg->xaxis_label,
                    arg->yaxis_label,
                    "Percentage Error:",
-                   DT_percent);
+                   DT_percent,
+                   arg->x_dim==DIM_CHIRP_W ||arg->x_dim==DIM_ESTIMATE_W);
   if(swept && arg->graph_Aerror_delta)
     cA_d = draw_page("A (Amplitude) Delta",
                      arg->subtitle1,
@@ -733,7 +736,8 @@ void w_e(char *filebase,graph_run *arg){
                      arg->xaxis_label,
                      arg->yaxis_label,
                      "Delta:",
-                     DT_abserror);
+                     DT_abserror,
+                     arg->x_dim==DIM_CHIRP_W ||arg->x_dim==DIM_ESTIMATE_W);
 
   if(arg->graph_Perror_max)
     cP = draw_page(!swept?"P (Phase) Error":"Maximum P (Phase) Error",
@@ -743,7 +747,9 @@ void w_e(char *filebase,graph_run *arg){
                    arg->xaxis_label,
                    arg->yaxis_label,
                    "Error (radians):",
-                   DT_abserror);
+                   DT_abserror,
+                   arg->x_dim==DIM_CHIRP_W ||arg->x_dim==DIM_ESTIMATE_W);
+
   if(swept && arg->graph_Perror_delta)
     cP_d = draw_page("Phase Delta",
                      arg->subtitle1,
@@ -752,7 +758,8 @@ void w_e(char *filebase,graph_run *arg){
                      arg->xaxis_label,
                      arg->yaxis_label,
                      "Delta (radians):",
-                     DT_abserror);
+                     DT_abserror,
+                     arg->x_dim==DIM_CHIRP_W ||arg->x_dim==DIM_ESTIMATE_W);
 
   if(arg->fit_W){
     if(arg->graph_Werror_max)
@@ -763,7 +770,9 @@ void w_e(char *filebase,graph_run *arg){
                      arg->xaxis_label,
                      arg->yaxis_label,
                      "Error (cycles/block):",
-                     DT_abserror);
+                     DT_abserror,
+                     arg->x_dim==DIM_CHIRP_W ||arg->x_dim==DIM_ESTIMATE_W);
+
     if(swept && arg->graph_Werror_delta)
       cW_d = draw_page("Frequency Delta",
                        arg->subtitle1,
@@ -772,7 +781,8 @@ void w_e(char *filebase,graph_run *arg){
                        arg->xaxis_label,
                        arg->yaxis_label,
                        "Delta (cycles/block):",
-                       DT_abserror);
+                       DT_abserror,
+                       arg->x_dim==DIM_CHIRP_W ||arg->x_dim==DIM_ESTIMATE_W);
   }
 
   if(arg->fit_dA){
@@ -784,7 +794,9 @@ void w_e(char *filebase,graph_run *arg){
                       arg->xaxis_label,
                       arg->yaxis_label,
                       "Error:",
-                      DT_abserror);
+                      DT_abserror,
+                      arg->x_dim==DIM_CHIRP_W ||arg->x_dim==DIM_ESTIMATE_W);
+
     if(swept && arg->graph_dAerror_delta)
       cdA_d = draw_page("Amplitude Modulation Delta",
                         arg->subtitle1,
@@ -793,7 +805,8 @@ void w_e(char *filebase,graph_run *arg){
                         arg->xaxis_label,
                         arg->yaxis_label,
                         "Delta:",
-                        DT_abserror);
+                        DT_abserror,
+                        arg->x_dim==DIM_CHIRP_W ||arg->x_dim==DIM_ESTIMATE_W);
   }
 
   if(arg->fit_dW){
@@ -805,7 +818,8 @@ void w_e(char *filebase,graph_run *arg){
                       arg->xaxis_label,
                       arg->yaxis_label,
                       "Error (cycles/block):",
-                      DT_abserror);
+                      DT_abserror,
+                      arg->x_dim==DIM_CHIRP_W ||arg->x_dim==DIM_ESTIMATE_W);
     if(swept && arg->graph_dWerror_delta)
       cdW_d = draw_page("Chirp Rate Delta",
                         arg->subtitle1,
@@ -814,7 +828,8 @@ void w_e(char *filebase,graph_run *arg){
                         arg->xaxis_label,
                         arg->yaxis_label,
                         "Delta (cycles/block):",
-                        DT_abserror);
+                        DT_abserror,
+                        arg->x_dim==DIM_CHIRP_W ||arg->x_dim==DIM_ESTIMATE_W);
   }
 
   if(arg->fit_ddA){
@@ -827,7 +842,8 @@ void w_e(char *filebase,graph_run *arg){
                        arg->xaxis_label,
                        arg->yaxis_label,
                        "Error:",
-                       DT_abserror);
+                       DT_abserror,
+                       arg->x_dim==DIM_CHIRP_W ||arg->x_dim==DIM_ESTIMATE_W);
     if(swept && arg->graph_ddAerror_delta)
       cddA_d = draw_page("Amplitude Modulation Squared Delta",
                          arg->subtitle1,
@@ -836,7 +852,8 @@ void w_e(char *filebase,graph_run *arg){
                          arg->xaxis_label,
                          arg->yaxis_label,
                          "Delta:",
-                         DT_abserror);
+                         DT_abserror,
+                         arg->x_dim==DIM_CHIRP_W ||arg->x_dim==DIM_ESTIMATE_W);
   }
 
   if(arg->graph_RMSerror_max)
@@ -848,7 +865,9 @@ void w_e(char *filebase,graph_run *arg){
                      arg->xaxis_label,
                      arg->yaxis_label,
                      "Percentage Error:",
-                     DT_percent);
+                     DT_percent,
+                     arg->x_dim==DIM_CHIRP_W ||arg->x_dim==DIM_ESTIMATE_W);
+
   if(swept && arg->graph_RMSerror_delta)
     cRMS_d = draw_page("RMS Error Delta",
                        arg->subtitle1,
@@ -857,7 +876,8 @@ void w_e(char *filebase,graph_run *arg){
                        arg->xaxis_label,
                        arg->yaxis_label,
                        "Percentage Delta:",
-                       DT_percent);
+                       DT_percent,
+                       arg->x_dim==DIM_CHIRP_W ||arg->x_dim==DIM_ESTIMATE_W);
 
   if(arg->window)
     arg->window(window,blocksize);
@@ -1406,18 +1426,19 @@ int main(){
   arg.min_est_W = 0;
   arg.max_est_W = 0;
   arg.y_dim = DIM_CHIRP_dW;
+  arg.subtitle2="chirp: A=1.0, dA=0., swept phase | estimate A=P=dA=dW=0, estimate W=chirp W",
   arg.window = window_functions.sine;
   arg.subtitle3 = "sine window";
   arg.yaxis_label = "dW (cycles/block)",
 
   arg.subtitle1="linear estimation, symmetric normalization, no ddA fit";
-  w_e("linear-dW-vs-W-symmetric",&arg);
+  //w_e("linear-dW-vs-W-symmetric",&arg);
   arg.fit_nonlinear=1;
   arg.subtitle1="Partial nonlinear estimation, symmetric normalization, no ddA fit";
-  w_e("partial-nonlinear-dW-vs-W-symmetric",&arg);
+  //w_e("partial-nonlinear-dW-vs-W-symmetric",&arg);
   arg.subtitle1="Full nonlinear estimation, symmetric normalization, no ddA fit";
   arg.fit_nonlinear=2;
-  w_e("full-nonlinear-dW-vs-W-symmetric",&arg);
+  //w_e("full-nonlinear-dW-vs-W-symmetric",&arg);
 
   /* Graphs for W estimate distance vs W ************************/
 
@@ -1430,15 +1451,54 @@ int main(){
   arg.min_chirp_dW=0.;
   arg.max_chirp_dW=0.;
 
-  w_e("linear-estW-vs-W-symmetric",&arg);
+  //w_e("linear-estW-vs-W-symmetric",&arg);
   arg.subtitle1="Partial nonlinear estimation, symmetric normalization, no ddA fit";
   arg.subtitle2="chirp: A=1.0, dA=dW=0., swept phase | estimate A=P=dA=dW=0";
   arg.fit_nonlinear=1;
-  w_e("partial-nonlinear-estW-vs-W-symmetric",&arg);
+  //w_e("partial-nonlinear-estW-vs-W-symmetric",&arg);
   arg.subtitle1="Full nonlinear estimation, symmetric normalization, no ddA fit";
   arg.fit_nonlinear=2;
-  w_e("full-nonlinear-estW-vs-W-symmetric",&arg);
+  //w_e("full-nonlinear-estW-vs-W-symmetric",&arg);
   arg.fit_nonlinear=0;
+
+  /* W alpha *****************************************************/
+  /* Y axis = estW */
+  arg.subtitle1="full nonlinear estimation, no ddA fit, W centered";
+  arg.min_chirp_W = arg.max_chirp_W = rint(arg.blocksize/4);
+
+  arg.fit_W_alpha_min = 0;
+  arg.fit_W_alpha_max = 2;
+  arg.x_dim = DIM_ALPHA_W;
+  arg.xaxis_label = "alphaW",
+
+  arg.fit_nonlinear = 2;
+  arg.fit_symm_norm = 0;
+
+  arg.yaxis_label="initial distance from W (cycles/block)";
+  arg.y_dim = DIM_ESTIMATE_W;
+  arg.min_est_W = -3;
+  arg.max_est_W =  3;
+
+  arg.window = window_functions.rectangle;
+  arg.subtitle3 = "rectangular window";
+  w_e("nonlinear-estW-vs-alphaW-rectangle",&arg);
+
+  arg.window = window_functions.sine;
+  arg.subtitle3 = "sine window";
+  w_e("nonlinear-estW-vs-alphaW-sine",&arg);
+
+  arg.window = window_functions.hanning;
+  arg.subtitle3 = "rectangular hanning";
+  w_e("nonlinear-estW-vs-alphaW-hanning",&arg);
+
+  arg.window = window_functions.tgauss_deep;
+  arg.subtitle3 = "unimodal triangular/gaussian window";
+  w_e("nonlinear-estW-vs-alphaW-unimodal",&arg);
+
+  arg.window = window_functions.maxwell1;
+  arg.subtitle3 = "maxwell (optimized) window";
+  w_e("nonlinear-estW-vs-alphaW-maxwell",&arg);
+
 
 
 

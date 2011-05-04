@@ -33,7 +33,8 @@ extern cairo_t *draw_page(char *title,
                           char *xaxis_label,
                           char *yaxis_label,
                           char *legend_label,
-                          int datatype);
+                          int datatype,
+                          int xdcp);
 extern void setup_graphs(int start_x_step,
                          int end_x_step, /* inclusive; not one past */
                          int x_major_d,
