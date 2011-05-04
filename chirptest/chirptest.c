@@ -1374,7 +1374,7 @@ int main(){
 
   arg.fit_nonlinear = 0;
   arg.subtitle1="Linear estimation, first-order fit";
-  w_e("linear-estW-vs-W-1order",&arg);
+  //w_e("linear-estW-vs-W-1order",&arg);
 
   arg.fit_nonlinear = 2;
   arg.subtitle1="Fully nonlinear estimation, first-order fit";
@@ -1395,6 +1395,50 @@ int main(){
   arg.fit_nonlinear = 2;
   arg.subtitle1="Fully nonlinear estimation, second-order fit";
   //w_e("nonlinear-estW-vs-W-2order",&arg);
+
+  /**************** symmetric norm tests ********************/
+
+  arg.fit_nonlinear = 0;
+  arg.fit_symm_norm = 1;
+  arg.fit_ddA=0;
+  arg.min_chirp_dW = -2.5;
+  arg.max_chirp_dW =  2.5;
+  arg.min_est_W = 0;
+  arg.max_est_W = 0;
+  arg.y_dim = DIM_CHIRP_dW;
+  arg.window = window_functions.sine;
+  arg.subtitle3 = "sine window";
+
+  arg.subtitle1="linear estimation, symmetric normalization, no ddA fit";
+  w_e("linear-dW-vs-W-symmetric",&arg);
+  arg.fit_nonlinear=1;
+  arg.subtitle1="Partial nonlinear estimation, symmetric normalization, no ddA fit";
+  w_e("partial-nonlinear-dW-vs-W-symmetric",&arg);
+  arg.subtitle1="Full nonlinear estimation, symmetric normalization, no ddA fit";
+  arg.fit_nonlinear=2;
+  w_e("full-nonlinear-dW-vs-W-symmetric",&arg);
+
+  /* Graphs for W estimate distance vs W ************************/
+
+  arg.subtitle1="Linear estimation, symmetric normalization, no ddA fit";
+  arg.fit_nonlinear=0;
+  arg.yaxis_label="initial distance from W (cycles/block)";
+  arg.y_dim = DIM_ESTIMATE_W;
+  arg.min_est_W = -2.5;
+  arg.max_est_W =  2.5;
+  arg.min_chirp_dW=0.;
+  arg.max_chirp_dW=0.;
+
+  w_e("linear-estW-vs-W-symmetric",&arg);
+  arg.subtitle1="Partial nonlinear estimation, symmetric normalization, no ddA fit";
+  arg.subtitle2="chirp: A=1.0, dA=dW=0., swept phase | estimate A=P=dA=dW=0";
+  arg.fit_nonlinear=1;
+  w_e("partial-nonlinear-estW-vs-W-symmetric",&arg);
+  arg.subtitle1="Full nonlinear estimation, symmetric normalization, no ddA fit";
+  arg.fit_nonlinear=2;
+  w_e("full-nonlinear-estW-vs-W-symmetric",&arg);
+  arg.fit_nonlinear=0;
+
 
 
   return 0;
