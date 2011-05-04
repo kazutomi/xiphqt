@@ -28,12 +28,154 @@
 #include <pthread.h>
 #include <sys/time.h>
 
+typedef struct {
+  float fontsize;
+  char *subtitle1;
+  char *subtitle2;
+  char *subtitle3;
+  char *xaxis_label;
+  char *yaxis_label;
+
+  int blocksize;
+  int threads;
+
+  void (*window)(float *,int n);
+  float fit_tolerance;
+
+  int fit_gauss_seidel;
+  int fit_W;
+  int fit_dA;
+  int fit_dW;
+  int fit_ddA;
+  int fit_nonlinear;
+  int fit_symm_norm;
+  int fit_bound_zero;
+
+  float fit_W_alpha_min;
+  float fit_W_alpha_max;
+  float fit_dW_alpha_min;
+  float fit_dW_alpha_max;
+
+  int x_dim;
+  int x_steps;
+  float x_major;
+  float x_minor;
+  int y_dim;
+  int y_steps;
+  float y_major;
+  float y_minor;
+  int sweep_steps;
+
+  /* If the randomize flag is unset and min!=max, a param is swept
+     from min to max (inclusive) divided into <sweep_steps>
+     increments.  If the rand flag is set, <sweep_steps> random values
+     in the range min to max instead. */
+  int sweep_or_rand_p;
+
+  float min_est_A;
+  float max_est_A;
+  int rel_est_A;
+
+  float min_est_P;
+  float max_est_P;
+  int rel_est_P;
+
+  float min_est_W;
+  float max_est_W;
+  int rel_est_W;
+
+  float min_est_dA;
+  float max_est_dA;
+  int rel_est_dA;
+
+  float min_est_dW;
+  float max_est_dW;
+  int rel_est_dW;
+
+  float min_est_ddA;
+  float max_est_ddA;
+  int rel_est_ddA;
+
+  float min_chirp_A;
+  float max_chirp_A;
+
+  float min_chirp_P;
+  float max_chirp_P;
+
+  float min_chirp_W;
+  float max_chirp_W;
+
+  float min_chirp_dA;
+  float max_chirp_dA;
+
+  float min_chirp_dW;
+  float max_chirp_dW;
+
+  float min_chirp_ddA;
+  float max_chirp_ddA;
+
+  /* generate which graphs? */
+  int graph_convergence_max;
+  int graph_convergence_delta;
+
+  int graph_Aerror_max;
+  int graph_Aerror_delta;
+
+  int graph_Perror_max;
+  int graph_Perror_delta;
+
+  int graph_Werror_max;
+  int graph_Werror_delta;
+
+  int graph_dAerror_max;
+  int graph_dAerror_delta;
+
+  int graph_dWerror_max;
+  int graph_dWerror_delta;
+
+  int graph_ddAerror_max;
+  int graph_ddAerror_delta;
+
+  int graph_RMSerror_max;
+  int graph_RMSerror_delta;
+
+}  graph_run;
+
 float circular_distance(float A,float B){
   float ret = A-B;
   while(ret<-M_PI)ret+=2*M_PI;
   while(ret>=M_PI)ret-=2*M_PI;
   return ret;
 }
+
+typedef struct {
+  float fit_W_alpha;
+  float fit_dW_alpha;
+} colvec;
+
+typedef struct {
+  float *in;
+  float *window;
+  int blocksize;
+  int max_iterations;
+  float fit_tolerance;
+
+  int fit_gauss_seidel;
+  int fit_W;
+  int fit_dA;
+  int fit_dW;
+  int fit_ddA;
+  int fit_nonlinear; /* 0==linear, 1==W-recentered, 2==W,dW-recentered */
+  int fit_symm_norm;
+  int fit_bound_zero;
+
+  chirp *chirp;
+  chirp *estimate;
+  colvec *sweep;
+  float *rms_error;
+  int *iterations;
+
+} colarg;
 
 #define DIM_ESTIMATE_A 1
 #define DIM_ESTIMATE_P 2
@@ -50,6 +192,9 @@ float circular_distance(float A,float B){
 #define DIM_CHIRP_dW  (5<<4)
 #define DIM_CHIRP_ddA (6<<4)
 #define DIM_CHIRP_MASK 0xf0
+
+#define DIM_ALPHA_W (1<<8)
+#define DIM_ALPHA_dW (2<<8)
 
 /* ranges are inclusive */
 void set_chirp(chirp *c,
@@ -141,33 +286,57 @@ void set_chirp(chirp *c,
 
 }
 
+float W_alpha(graph_run *arg,
+              int xi, int xn, int xdim,
+              int yi, int yn, int ydim,
+              int stepi, int stepn, int rand_p){
+
+  float Ai,An;
+
+  if(stepn<2)stepn=2;
+  An=stepn-1;
+  Ai = (rand_p ? drand48()*An : stepi);
+
+  if(xdim==DIM_ALPHA_W){
+    An = xn-1;
+    Ai = xi;
+  }
+
+  if(ydim==DIM_ALPHA_W){
+    An = yn-1;
+    Ai = yi;
+  }
+
+  return arg->fit_W_alpha_min +
+    (arg->fit_W_alpha_max-arg->fit_W_alpha_min) / An * Ai;
+}
+
+float dW_alpha(graph_run *arg,
+              int xi, int xn, int xdim,
+              int yi, int yn, int ydim,
+              int stepi, int stepn, int rand_p){
+
+  float Ai,An;
+
+  if(stepn<2)stepn=2;
+  An=stepn-1;
+  Ai = (rand_p ? drand48()*An : stepi);
+
+  if(xdim==DIM_ALPHA_dW){
+    An = xn-1;
+    Ai = xi;
+  }
+
+  if(ydim==DIM_ALPHA_dW){
+    An = yn-1;
+    Ai = yi;
+  }
+
+  return arg->fit_dW_alpha_min +
+    (arg->fit_dW_alpha_max-arg->fit_dW_alpha_min) / An * Ai;
+}
+
 /*********************** Plot single estimate vs. chirp **********************/
-
-typedef struct {
-  float *in;
-  float *window;
-  int blocksize;
-  int max_iterations;
-  float fit_tolerance;
-
-  int fit_gauss_seidel;
-  int fit_W;
-  int fit_dA;
-  int fit_dW;
-  int fit_ddA;
-  int fit_nonlinear; /* 0==linear, 1==W-recentered, 2==W,dW-recentered */
-  float fit_W_alpha;
-  float fit_dW_alpha;
-  int fit_symm_norm;
-  int fit_bound_zero;
-
-  chirp *chirp;
-  chirp *estimate;
-  float *rms_error;
-  int *iterations;
-
-} colarg;
-
 
 pthread_mutex_t ymutex = PTHREAD_MUTEX_INITIALIZER;
 int next_y=0;
@@ -221,8 +390,8 @@ void *compute_column(void *in){
                         arg->fit_dW,
                         arg->fit_ddA,
                         arg->fit_nonlinear,
-                        arg->fit_W_alpha,
-                        arg->fit_dW_alpha,
+                        arg->sweep[y].fit_W_alpha,
+                        arg->sweep[y].fit_dW_alpha,
                         arg->fit_symm_norm,
                         arg->fit_bound_zero);
 
@@ -247,116 +416,6 @@ void *compute_column(void *in){
   if(localinit)free(chirp);
   return NULL;
 }
-
-typedef struct {
-  float fontsize;
-  char *subtitle1;
-  char *subtitle2;
-  char *subtitle3;
-  char *xaxis_label;
-  char *yaxis_label;
-
-  int blocksize;
-  int threads;
-
-  void (*window)(float *,int n);
-  float fit_tolerance;
-
-  int fit_gauss_seidel;
-  int fit_W;
-  int fit_dA;
-  int fit_dW;
-  int fit_ddA;
-  int fit_nonlinear;
-  float fit_W_alpha;
-  float fit_dW_alpha;
-  int fit_symm_norm;
-  int fit_bound_zero;
-
-  int x_dim;
-  int x_steps;
-  float x_major;
-  float x_minor;
-  int y_dim;
-  int y_steps;
-  float y_major;
-  float y_minor;
-  int sweep_steps;
-
-  /* If the randomize flag is unset and min!=max, a param is swept
-     from min to max (inclusive) divided into <sweep_steps>
-     increments.  If the rand flag is set, <sweep_steps> random values
-     in the range min to max instead. */
-  int sweep_or_rand_p;
-
-  float min_est_A;
-  float max_est_A;
-  int rel_est_A;
-
-  float min_est_P;
-  float max_est_P;
-  int rel_est_P;
-
-  float min_est_W;
-  float max_est_W;
-  int rel_est_W;
-
-  float min_est_dA;
-  float max_est_dA;
-  int rel_est_dA;
-
-  float min_est_dW;
-  float max_est_dW;
-  int rel_est_dW;
-
-  float min_est_ddA;
-  float max_est_ddA;
-  int rel_est_ddA;
-
-  float min_chirp_A;
-  float max_chirp_A;
-
-  float min_chirp_P;
-  float max_chirp_P;
-
-  float min_chirp_W;
-  float max_chirp_W;
-
-  float min_chirp_dA;
-  float max_chirp_dA;
-
-  float min_chirp_dW;
-  float max_chirp_dW;
-
-  float min_chirp_ddA;
-  float max_chirp_ddA;
-
-  /* generate which graphs? */
-  int graph_convergence_max;
-  int graph_convergence_delta;
-
-  int graph_Aerror_max;
-  int graph_Aerror_delta;
-
-  int graph_Perror_max;
-  int graph_Perror_delta;
-
-  int graph_Werror_max;
-  int graph_Werror_delta;
-
-  int graph_dAerror_max;
-  int graph_dAerror_delta;
-
-  int graph_dWerror_max;
-  int graph_dWerror_delta;
-
-  int graph_ddAerror_max;
-  int graph_ddAerror_delta;
-
-  int graph_RMSerror_max;
-  int graph_RMSerror_delta;
-
-}  graph_run;
 
 /* performs a W initial estimate error vs chirp W plot.  Ignores the
    est and chirp arguments for W; these are pulled from the x and y setup */
@@ -411,6 +470,7 @@ void w_e(char *filebase,graph_run *arg){
   int swept=0;
   int chirp_swept=0;
   int est_swept=0;
+  int fit_swept=0;
 
   float ret_minA[y_n];
   float ret_minP[y_n];
@@ -489,6 +549,14 @@ void w_e(char *filebase,graph_run *arg){
     minX = arg->min_chirp_ddA;
     maxX = arg->max_chirp_ddA;
     break;
+  case DIM_ALPHA_W:
+    minX = arg->fit_W_alpha_min;
+    maxX = arg->fit_W_alpha_max;
+    break;
+  case DIM_ALPHA_dW:
+    minX = arg->fit_dW_alpha_min;
+    maxX = arg->fit_dW_alpha_max;
+    break;
   }
 
   switch(arg->y_dim){
@@ -539,6 +607,14 @@ void w_e(char *filebase,graph_run *arg){
   case DIM_CHIRP_ddA:
     minY = arg->min_chirp_ddA;
     maxY = arg->max_chirp_ddA;
+    break;
+  case DIM_ALPHA_W:
+    minY = arg->fit_W_alpha_min;
+    maxY = arg->fit_W_alpha_max;
+    break;
+  case DIM_ALPHA_dW:
+    minY = arg->fit_dW_alpha_min;
+    maxY = arg->fit_dW_alpha_max;
     break;
   }
 
@@ -599,9 +675,14 @@ void w_e(char *filebase,graph_run *arg){
        arg->min_chirp_dW != arg->max_chirp_dW) chirp_swept=1;
     if(!(arg->x_dim==DIM_CHIRP_ddA || arg->y_dim==DIM_CHIRP_ddA) &&
        arg->min_chirp_ddA != arg->max_chirp_ddA) chirp_swept=1;
+
+    if(!(arg->x_dim==DIM_ALPHA_W || arg->y_dim==DIM_ALPHA_W) &&
+       arg->fit_W_alpha_min != arg->fit_W_alpha_max) fit_swept=1;
+    if(!(arg->x_dim==DIM_ALPHA_dW || arg->y_dim==DIM_ALPHA_dW) &&
+       arg->fit_dW_alpha_min != arg->fit_dW_alpha_max) fit_swept=1;
   }
 
-  swept = est_swept | chirp_swept;
+  swept = est_swept | chirp_swept | fit_swept;
 
   if(arg->y_dim==DIM_CHIRP_A &&
      arg->min_chirp_A != arg->max_chirp_A) chirp_swept=1;
@@ -788,6 +869,7 @@ void w_e(char *filebase,graph_run *arg){
   for(xi=0;xi<x_n;xi++){
     chirp chirps[y_n];
     chirp estimates[y_n];
+    colvec fitvec[y_n];
     int iter[y_n];
     float rms[y_n];
     int si,sn=(swept && arg->sweep_steps>1 ? arg->sweep_steps : 1);
@@ -808,13 +890,12 @@ void w_e(char *filebase,graph_run *arg){
       targ[i].fit_dW=arg->fit_dW;
       targ[i].fit_ddA=arg->fit_ddA;
       targ[i].fit_nonlinear=arg->fit_nonlinear;
-      targ[i].fit_W_alpha=arg->fit_W_alpha;
-      targ[i].fit_dW_alpha=arg->fit_dW_alpha;
       targ[i].fit_symm_norm=arg->fit_symm_norm;
       targ[i].fit_bound_zero=arg->fit_bound_zero;
       targ[i].chirp=chirps;
       //targ[i].in=NULL;
       targ[i].estimate=estimates;
+      targ[i].sweep=fitvec;
       targ[i].rms_error=rms;
       targ[i].iterations=iter;
     }
@@ -827,6 +908,17 @@ void w_e(char *filebase,graph_run *arg){
       /* compute/set chirp and est parameters, potentially compute the
          chirp waveform */
       for(yi=0;yi<y_n;yi++){
+
+        fitvec[yi].fit_W_alpha = W_alpha(arg,
+                                         xi,x_n,arg->x_dim,
+                                         y_n-yi-1,y_n,arg->y_dim,
+                                         si,sn,
+                                         arg->sweep_or_rand_p);
+        fitvec[yi].fit_dW_alpha = dW_alpha(arg,
+                                           xi,x_n,arg->x_dim,
+                                           y_n-yi-1,y_n,arg->y_dim,
+                                           si,sn,
+                                           arg->sweep_or_rand_p);
 
         set_chirp(chirps+yi,
                   xi,x_n,
@@ -1131,10 +1223,12 @@ int main(){
     /* fit_dW */        1,
     /* fit_ddA */       0,
     /* nonlinear */     0,
-    /* W_alpha */       1.,
-    /* dW_alpha */      1.,
     /* symm_norm */     0,
     /* bound_zero */    0,
+    /* W_alpha_min */   1.,
+    /* W_alpha_max */   1.,
+    /* dW_alpha_min */  1.,
+    /* dW_alpha_max */  1.,
 
     /* x dimension */   DIM_CHIRP_W,
     /* x steps */       1001,
@@ -1261,7 +1355,7 @@ int main(){
 
   arg.window = window_functions.maxwell1;
   arg.subtitle3 = "maxwell (optimized) window";
-  w_e("full-nonlinear-estW-vs-W-maxwell",&arg);
+  //w_e("full-nonlinear-estW-vs-W-maxwell",&arg);
 
   /* 1, 1.5, 2nd order */
   arg.min_est_W = -3;
@@ -1280,7 +1374,7 @@ int main(){
 
   arg.fit_nonlinear = 0;
   arg.subtitle1="Linear estimation, first-order fit";
-  //w_e("linear-estW-vs-W-1order",&arg);
+  w_e("linear-estW-vs-W-1order",&arg);
 
   arg.fit_nonlinear = 2;
   arg.subtitle1="Fully nonlinear estimation, first-order fit";
