@@ -11,7 +11,7 @@ bin_PROGRAMS = chirp
 chirp_SOURCES = chirp.c chirp.h chirpgraph.c chirpgraph.h window.c window.h chirptest.c 
 
 debug:
-        $(MAKE) all CFLAGS="@DEBUG@"
+	$(MAKE) all CFLAGS="@DEBUG@"
 
 profile:
-        $(MAKE) all CFLAGS="@PROFILE@"
+	$(MAKE) all CFLAGS="@PROFILE@"
