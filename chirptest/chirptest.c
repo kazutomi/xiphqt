@@ -1408,6 +1408,7 @@ int main(){
   arg.y_dim = DIM_CHIRP_dW;
   arg.window = window_functions.sine;
   arg.subtitle3 = "sine window";
+  arg.yaxis_label = "W (cycles/block)",
 
   arg.subtitle1="linear estimation, symmetric normalization, no ddA fit";
   w_e("linear-dW-vs-W-symmetric",&arg);
