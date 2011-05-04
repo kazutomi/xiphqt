@@ -1499,7 +1499,71 @@ int main(){
   arg.subtitle3 = "maxwell (optimized) window";
   w_e("nonlinear-estW-vs-alphaW-maxwell",&arg);
 
+  /* dW alpha *****************************************************/
 
+  arg.fit_W_alpha_min = 1.;
+  arg.fit_W_alpha_max = 1.;
+  arg.fit_dW_alpha_min = 0;
+  arg.fit_dW_alpha_max = 2;
+  arg.x_dim = DIM_ALPHA_dW;
+  arg.xaxis_label = "alphadW",
+
+  arg.fit_nonlinear = 2;
+  arg.fit_symm_norm = 0;
+
+  arg.yaxis_label="initial distance from W (cycles/block)";
+  arg.y_dim = DIM_ESTIMATE_W;
+  arg.min_est_W = -3;
+  arg.max_est_W =  3;
+
+  arg.window = window_functions.rectangle;
+  arg.subtitle3 = "rectangular window";
+  w_e("nonlinear-estW-vs-alphadW-rectangle",&arg);
+
+  arg.window = window_functions.sine;
+  arg.subtitle3 = "sine window";
+  w_e("nonlinear-estW-vs-alphadW-sine",&arg);
+
+  arg.window = window_functions.hanning;
+  arg.subtitle3 = "rectangular hanning";
+  w_e("nonlinear-estW-vs-alphadW-hanning",&arg);
+
+  arg.window = window_functions.tgauss_deep;
+  arg.subtitle3 = "unimodal triangular/gaussian window";
+  w_e("nonlinear-estW-vs-alphadW-unimodal",&arg);
+
+  arg.window = window_functions.maxwell1;
+  arg.subtitle3 = "maxwell (optimized) window";
+  w_e("nonlinear-estW-vs-alphadW-maxwell",&arg);
+
+
+
+  arg.yaxis_label="dW (cycles/block)";
+  arg.y_dim = DIM_CHIRP_dW;
+  arg.min_est_W =  0;
+  arg.max_est_W =  0;
+  arg.min_chirp_dW = -3;
+  arg.max_chirp_dW =  3;
+
+  arg.window = window_functions.rectangle;
+  arg.subtitle3 = "rectangular window";
+  w_e("nonlinear-dW-vs-alphadW-rectangle",&arg);
+
+  arg.window = window_functions.sine;
+  arg.subtitle3 = "sine window";
+  w_e("nonlinear-dW-vs-alphadW-sine",&arg);
+
+  arg.window = window_functions.hanning;
+  arg.subtitle3 = "rectangular hanning";
+  w_e("nonlinear-dW-vs-alphadW-hanning",&arg);
+
+  arg.window = window_functions.tgauss_deep;
+  arg.subtitle3 = "unimodal triangular/gaussian window";
+  w_e("nonlinear-dW-vs-alphadW-unimodal",&arg);
+
+  arg.window = window_functions.maxwell1;
+  arg.subtitle3 = "maxwell (optimized) window";
+  w_e("nonlinear-dW-vs-alphadW-maxwell",&arg);
 
 
   return 0;
