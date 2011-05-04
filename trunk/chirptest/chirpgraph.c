@@ -229,7 +229,8 @@ cairo_t *draw_page(char *title,
                    char *xaxis_label,
                    char *yaxis_label,
                    char *legend_label,
-                   int datatype){
+                   int datatype,
+                   int xdcp){
 
   int i;
   cairo_text_extents_t extents;
@@ -274,7 +275,7 @@ cairo_t *draw_page(char *title,
     if(i%xmajor==0){
       char buf[80];
       int x = leftpad + i - x0s;
-      if(i==0){
+      if(i==0 && xdcp){
         snprintf(buf,80,"DC");
       }else{
         snprintf(buf,80,"%.0f",(float)i/xmajor*xmajorf);
