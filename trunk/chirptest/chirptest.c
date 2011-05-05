@@ -1253,7 +1253,6 @@ int main(){
     /* x dimension */   DIM_CHIRP_W,
     /* x steps */       1001,
     /* x major */       1.,
-    /* x minor */       .25,
     /* y dimension */   DIM_CHIRP_dW,
     /* y steps */       601,
     /* y major */       1.,
@@ -1463,11 +1462,12 @@ int main(){
 
   /* W alpha *****************************************************/
   /* Y axis = estW */
+  arg.x_minor=.0625;
   arg.subtitle1="full nonlinear estimation, no ddA fit, W centered";
   arg.min_chirp_W = arg.max_chirp_W = rint(arg.blocksize/4);
 
   arg.fit_W_alpha_min = 0;
-  arg.fit_W_alpha_max = 2;
+  arg.fit_W_alpha_max = 3.125;
   arg.x_dim = DIM_ALPHA_W;
   arg.xaxis_label = "alphaW",
 
@@ -1504,7 +1504,7 @@ int main(){
   arg.fit_W_alpha_min = 1.;
   arg.fit_W_alpha_max = 1.;
   arg.fit_dW_alpha_min = 0;
-  arg.fit_dW_alpha_max = 2;
+  arg.fit_dW_alpha_max = 3.125;
   arg.x_dim = DIM_ALPHA_dW;
   arg.xaxis_label = "alphadW",
 
@@ -1535,8 +1535,6 @@ int main(){
   arg.window = window_functions.maxwell1;
   arg.subtitle3 = "maxwell (optimized) window";
   w_e("nonlinear-estW-vs-alphadW-maxwell",&arg);
-
-
 
   arg.yaxis_label="dW (cycles/block)";
   arg.y_dim = DIM_CHIRP_dW;
