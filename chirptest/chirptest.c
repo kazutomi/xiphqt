@@ -1253,6 +1253,7 @@ int main(){
     /* x dimension */   DIM_CHIRP_W,
     /* x steps */       1001,
     /* x major */       1.,
+    /* x minor */       .25,
     /* y dimension */   DIM_CHIRP_dW,
     /* y steps */       601,
     /* y major */       1.,
