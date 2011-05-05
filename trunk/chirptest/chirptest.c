@@ -1220,6 +1220,23 @@ void w_e(char *filebase,graph_run *arg){
   to_png(cddA_d,filebase,"ddAdelta");
   to_png(cRMS_d,filebase,"RMSdelta");
 
+  destroy_page(cC);
+  destroy_page(cA);
+  destroy_page(cP);
+  destroy_page(cW);
+  destroy_page(cdA);
+  destroy_page(cdW);
+  destroy_page(cddA);
+  destroy_page(cRMS);
+  destroy_page(cC_d);
+  destroy_page(cA_d);
+  destroy_page(cP_d);
+  destroy_page(cW_d);
+  destroy_page(cdA_d);
+  destroy_page(cdW_d);
+  destroy_page(cddA_d);
+  destroy_page(cRMS_d);
+
   fprintf(stderr," done\n");
 }
 
@@ -1325,7 +1342,7 @@ int main(){
   //w_e("full-nonlinear-estW-vs-W",&arg);
   arg.fit_nonlinear=0;
 
-  /* graphs for different windows */
+  /* graphs for different windows *******************************/
 
   arg.min_est_W = -2.5;
   arg.max_est_W =  2.5;
@@ -1377,7 +1394,7 @@ int main(){
   arg.subtitle3 = "maxwell (optimized) window";
   //w_e("full-nonlinear-estW-vs-W-maxwell",&arg);
 
-  /* 1, 1.5, 2nd order */
+  /* 1, 1.5, 2nd order **********************************************/
   arg.min_est_W = -3;
   arg.max_est_W =  3;
   arg.max_chirp_W =  10;
@@ -1468,7 +1485,7 @@ int main(){
   arg.min_chirp_W = arg.max_chirp_W = rint(arg.blocksize/4);
 
   arg.fit_W_alpha_min = 0;
-  arg.fit_W_alpha_max = 3.125;
+  arg.fit_W_alpha_max = 2.;
   arg.x_dim = DIM_ALPHA_W;
   arg.xaxis_label = "alphaW",
 
@@ -1482,23 +1499,23 @@ int main(){
 
   arg.window = window_functions.rectangle;
   arg.subtitle3 = "rectangular window";
-  w_e("nonlinear-estW-vs-alphaW-rectangle",&arg);
+  //w_e("nonlinear-estW-vs-alphaW-rectangle",&arg);
 
   arg.window = window_functions.sine;
   arg.subtitle3 = "sine window";
-  w_e("nonlinear-estW-vs-alphaW-sine",&arg);
+  //w_e("nonlinear-estW-vs-alphaW-sine",&arg);
 
   arg.window = window_functions.hanning;
   arg.subtitle3 = "rectangular hanning";
-  w_e("nonlinear-estW-vs-alphaW-hanning",&arg);
+  //w_e("nonlinear-estW-vs-alphaW-hanning",&arg);
 
   arg.window = window_functions.tgauss_deep;
   arg.subtitle3 = "unimodal triangular/gaussian window";
-  w_e("nonlinear-estW-vs-alphaW-unimodal",&arg);
+  //w_e("nonlinear-estW-vs-alphaW-unimodal",&arg);
 
   arg.window = window_functions.maxwell1;
   arg.subtitle3 = "maxwell (optimized) window";
-  w_e("nonlinear-estW-vs-alphaW-maxwell",&arg);
+  //w_e("nonlinear-estW-vs-alphaW-maxwell",&arg);
 
   /* dW alpha *****************************************************/
 
@@ -1519,23 +1536,23 @@ int main(){
 
   arg.window = window_functions.rectangle;
   arg.subtitle3 = "rectangular window";
-  w_e("nonlinear-estW-vs-alphadW-rectangle",&arg);
+  //w_e("nonlinear-estW-vs-alphadW-rectangle",&arg);
 
   arg.window = window_functions.sine;
   arg.subtitle3 = "sine window";
-  w_e("nonlinear-estW-vs-alphadW-sine",&arg);
+  //w_e("nonlinear-estW-vs-alphadW-sine",&arg);
 
   arg.window = window_functions.hanning;
   arg.subtitle3 = "rectangular hanning";
-  w_e("nonlinear-estW-vs-alphadW-hanning",&arg);
+  //w_e("nonlinear-estW-vs-alphadW-hanning",&arg);
 
   arg.window = window_functions.tgauss_deep;
   arg.subtitle3 = "unimodal triangular/gaussian window";
-  w_e("nonlinear-estW-vs-alphadW-unimodal",&arg);
+  //w_e("nonlinear-estW-vs-alphadW-unimodal",&arg);
 
   arg.window = window_functions.maxwell1;
   arg.subtitle3 = "maxwell (optimized) window";
-  w_e("nonlinear-estW-vs-alphadW-maxwell",&arg);
+  //w_e("nonlinear-estW-vs-alphadW-maxwell",&arg);
 
   arg.yaxis_label="dW (cycles/block)";
   arg.y_dim = DIM_CHIRP_dW;
@@ -1546,23 +1563,137 @@ int main(){
 
   arg.window = window_functions.rectangle;
   arg.subtitle3 = "rectangular window";
-  w_e("nonlinear-dW-vs-alphadW-rectangle",&arg);
+  //w_e("nonlinear-dW-vs-alphadW-rectangle",&arg);
 
   arg.window = window_functions.sine;
   arg.subtitle3 = "sine window";
-  w_e("nonlinear-dW-vs-alphadW-sine",&arg);
+  //w_e("nonlinear-dW-vs-alphadW-sine",&arg);
 
   arg.window = window_functions.hanning;
-  arg.subtitle3 = "rectangular hanning";
-  w_e("nonlinear-dW-vs-alphadW-hanning",&arg);
+  arg.subtitle3 = "hanning window";
+  //w_e("nonlinear-dW-vs-alphadW-hanning",&arg);
 
   arg.window = window_functions.tgauss_deep;
   arg.subtitle3 = "unimodal triangular/gaussian window";
-  w_e("nonlinear-dW-vs-alphadW-unimodal",&arg);
+  //w_e("nonlinear-dW-vs-alphadW-unimodal",&arg);
 
   arg.window = window_functions.maxwell1;
   arg.subtitle3 = "maxwell (optimized) window";
-  w_e("nonlinear-dW-vs-alphadW-maxwell",&arg);
+  //w_e("nonlinear-dW-vs-alphadW-maxwell",&arg);
+
+  /* replot earlier fits with opt dW alpha *************************/
+  arg.min_chirp_dW = 0;
+  arg.max_chirp_dW = 0;
+  arg.min_est_W = -9.375;
+  arg.max_est_W =  9.375;
+  arg.min_chirp_W =  0;
+  arg.max_chirp_W =  25;
+  arg.fit_nonlinear = 2;
+  arg.x_minor = .25;
+  arg.x_dim = DIM_CHIRP_W;
+  arg.y_dim = DIM_ESTIMATE_W;
+
+  arg.subtitle1="Fully nonlinear estimation, no ddA fit";
+  arg.xaxis_label="W (cycles/block)";
+  arg.yaxis_label="initial distance from W (cycles/block)";
+
+
+  arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.;
+  arg.window = window_functions.rectangle;
+  arg.subtitle3 = "rectangular window";
+  //w_e("nodWa-estW-vs-W-rectangular",&arg);
+  arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 2.2;
+  arg.subtitle3 = "rectangular window, dW alpha = 2.2";
+  //w_e("optdWa-estW-vs-W-rectangular",&arg);
+
+  arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.;
+  arg.window = window_functions.sine;
+  arg.subtitle3 = "sine window";
+  //w_e("nodWa-estW-vs-W-sine",&arg);
+  arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.711;
+  arg.subtitle3 = "sine window, dW alpha = 1.711";
+  //w_e("optdWa-estW-vs-W-sine",&arg);
+
+  arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.;
+  arg.window = window_functions.hanning;
+  arg.subtitle3 = "hanning window";
+  //w_e("nodWa-estW-vs-W-hanning",&arg);
+  arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.618;
+  arg.subtitle3 = "hanning window, dW alpha = 1.618";
+  //w_e("optdWa-estW-vs-W-hanning",&arg);
+
+  arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.;
+  arg.window = window_functions.tgauss_deep;
+  arg.subtitle3 = "unimodal triangular/gaussian window";
+  //w_e("nodWa-estW-vs-W-unimodal",&arg);
+  arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.526;
+  arg.subtitle3 = "unimodal triangular/gaussian window, dW alpha = 1.526";
+  //w_e("optdWa-estW-vs-W-unimodal",&arg);
+
+  arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.;
+  arg.window = window_functions.maxwell1;
+  arg.subtitle3 = "maxwell (optimized) window";
+  //w_e("nodWa-estW-vs-W-maxwell",&arg);
+  arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.554;
+  arg.subtitle3 = "maxwell (optimized) window, dW alpha = 1.554";
+  //w_e("optdWa-estW-vs-W-maxwell",&arg);
+
+
+  arg.min_chirp_dW = -9.375;
+  arg.max_chirp_dW = 9.375;
+  arg.min_est_W = 0;
+  arg.max_est_W = 0;
+  arg.min_chirp_W =  0;
+  arg.max_chirp_W =  25;
+  arg.fit_nonlinear = 2;
+  arg.x_minor = .25;
+  arg.x_dim = DIM_CHIRP_W;
+  arg.y_dim = DIM_CHIRP_dW;
+
+  arg.subtitle1="Fully nonlinear estimation, no ddA fit";
+  arg.xaxis_label="W (cycles/block)";
+  arg.yaxis_label="dW (cycles/block)";
+
+
+  arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.;
+  arg.window = window_functions.rectangle;
+  arg.subtitle3 = "rectangular window";
+  w_e("nodWa-dW-vs-W-rectangular",&arg);
+  arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 2.125;
+  arg.subtitle3 = "rectangular window, dW alpha = 2.125";
+  w_e("optdWa-dW-vs-W-rectangular",&arg);
+
+  arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.;
+  arg.window = window_functions.sine;
+  arg.subtitle3 = "sine window";
+  w_e("nodWa-dW-vs-W-sine",&arg);
+  arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.711;
+  arg.subtitle3 = "sine window, dW alpha = 1.711";
+  w_e("optdWa-dW-vs-W-sine",&arg);
+
+  arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.;
+  arg.window = window_functions.hanning;
+  arg.subtitle3 = "hanning window";
+  w_e("nodWa-dW-vs-W-hanning",&arg);
+  arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.618;
+  arg.subtitle3 = "hanning window, dW alpha = 1.618";
+  w_e("optdWa-dW-vs-W-hanning",&arg);
+
+  arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.;
+  arg.window = window_functions.tgauss_deep;
+  arg.subtitle3 = "unimodal triangular/gaussian window";
+  w_e("nodWa-dW-vs-W-unimodal",&arg);
+  arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.526;
+  arg.subtitle3 = "unimodal triangular/gaussian window, dW alpha = 1.526";
+  w_e("optdWa-dW-vs-W-unimodal",&arg);
+
+  arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.;
+  arg.window = window_functions.maxwell1;
+  arg.subtitle3 = "maxwell (optimized) window";
+  w_e("nodWa-dW-vs-W-maxwell",&arg);
+  arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.554;
+  arg.subtitle3 = "maxwell (optimized) window, dW alpha = 1.554";
+  w_e("optdWa-dW-vs-W-maxwell",&arg);
 
 
   return 0;
