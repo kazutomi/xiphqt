@@ -355,7 +355,7 @@ void *compute_column(void *in){
   int except;
   int localinit = !arg->in;
   float *chirp = localinit ? malloc(sizeof(*chirp)*blocksize) : arg->in;
-  float *work=arg->white_noise?malloc(sizeof(*chirp)*blocksize):NULL;
+  float *work=arg->white_noise?malloc(sizeof(*work)*blocksize):NULL;
 
   while(1){
     float rms_acc=0.;
