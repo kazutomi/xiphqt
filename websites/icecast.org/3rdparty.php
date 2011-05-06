@@ -69,6 +69,7 @@
 <table border=1 cellpadding=5 cellspacing=0 width=90% bordercolor="#000000">
 <tr><td><b>Application</b></td><td><b>Platform</b></td><td><b>Download Link</b></td></tr>
 <tr><td>CAJUN</td><td>???</td><td><a href="http://www.cajun.nu/">http://www.cajun.nu/</a></td></tr>
+<tr><td>Amptracker</td><td>Web Service</td><td><a href="http://amptracker.com/">http://amptracker.com/</a></td></tr>
 </table>
 </center>
 </div>
