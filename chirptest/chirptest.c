@@ -114,6 +114,8 @@ typedef struct {
   float min_chirp_ddA;
   float max_chirp_ddA;
 
+  float white_noise;
+
   /* generate which graphs? */
   int graph_convergence_max;
   int graph_convergence_delta;
@@ -169,6 +171,7 @@ typedef struct {
   int fit_symm_norm;
   int fit_bound_zero;
 
+  float white_noise;
   chirp *chirp;
   chirp *estimate;
   colvec *sweep;
@@ -352,6 +355,7 @@ void *compute_column(void *in){
   int except;
   int localinit = !arg->in;
   float *chirp = localinit ? malloc(sizeof(*chirp)*blocksize) : arg->in;
+  float *work=arg->white_noise?malloc(sizeof(*chirp)*blocksize):NULL;
 
   while(1){
     float rms_acc=0.;
@@ -376,13 +380,19 @@ void *compute_column(void *in){
         double P = arg->chirp[y].P + (arg->chirp[y].W  + arg->chirp[y].dW *jj)*jj;
         chirp[i] = A*cos(P);
       }
+      if(arg->white_noise){
+        for(i=0;i<blocksize;i++){
+          float v = (drand48()-drand48())*2.45; /* (0dB RMS white noise) */
+          work[i] = chirp[i]+v*arg->white_noise;
+        }
+      }
     }
 
     except=feenableexcept(FE_ALL_EXCEPT);
     fedisableexcept(FE_INEXACT);
     fedisableexcept(FE_UNDERFLOW);
 
-    ret=estimate_chirps(chirp,arg->window,blocksize,
+    ret=estimate_chirps(work?work:chirp,arg->window,blocksize,
                         arg->estimate+y,1,arg->fit_tolerance,arg->max_iterations,
                         arg->fit_gauss_seidel,
                         arg->fit_W,
@@ -397,11 +407,12 @@ void *compute_column(void *in){
 
     for(i=0;i<blocksize;i++){
       double jj = i - blocksize/2 + .5;
-      double A = arg->estimate[y].A + (arg->estimate[y].dA + arg->estimate[y].ddA*jj)*jj;
-      double P = arg->estimate[y].P + (arg->estimate[y].W  + arg->estimate[y].dW *jj)*jj;
-      float  r = A*cos(P);
+      double Ae = arg->estimate[y].A + (arg->estimate[y].dA + arg->estimate[y].ddA*jj)*jj;
+      double Pe = arg->estimate[y].P + (arg->estimate[y].W  + arg->estimate[y].dW *jj)*jj;
+
+      float  re = Ae*cos(Pe);
       float ce = chirp[i]*arg->window[i];
-      float ee = (chirp[i]-r)*arg->window[i];
+      float ee = (chirp[i]-re)*arg->window[i];
 
       e_acc += ce*ce;
       rms_acc += ee*ee;
@@ -414,6 +425,7 @@ void *compute_column(void *in){
   }
 
   if(localinit)free(chirp);
+  if(work)free(work);
   return NULL;
 }
 
@@ -697,6 +709,8 @@ void w_e(char *filebase,graph_run *arg){
   if(arg->y_dim==DIM_CHIRP_ddA &&
      arg->min_chirp_ddA != arg->max_chirp_ddA) chirp_swept=1;
 
+  if(arg->white_noise != 0.) chirp_swept=1;
+
   if(arg->graph_convergence_max)
     cC = draw_page(!swept?"Convergence":"Worst Case Convergence",
                    arg->subtitle1,
@@ -916,6 +930,7 @@ void w_e(char *filebase,graph_run *arg){
       //targ[i].in=NULL;
       targ[i].estimate=estimates;
       targ[i].sweep=fitvec;
+      targ[i].white_noise=arg->white_noise;
       targ[i].rms_error=rms;
       targ[i].iterations=iter;
     }
@@ -1292,6 +1307,8 @@ int main(){
     /* ch dW range */   -2.5,2.5,
     /* ch ddA range */  0.,0.,
 
+    /* additive white noise */ 0.,
+
     /* converge max */    1,
     /* converge del */    0,
     /* max A error */     1,
@@ -1324,6 +1341,7 @@ int main(){
   /* Graphs for W estimate distance vs W ************************/
 
   arg.subtitle1="Linear estimation, no ddA fit";
+  arg.subtitle2="chirp: A=1.0, dA=dW=0., swept phase | estimate A=P=dA=dW=0";
   arg.fit_nonlinear=0;
   arg.yaxis_label="initial distance from W (cycles/block)";
   arg.y_dim = DIM_ESTIMATE_W;
@@ -1334,7 +1352,6 @@ int main(){
 
   //w_e("linear-estW-vs-W",&arg);
   arg.subtitle1="Partial nonlinear estimation, no ddA fit";
-  arg.subtitle2="chirp: A=1.0, dA=dW=0., swept phase | estimate A=P=dA=dW=0";
   arg.fit_nonlinear=1;
   //w_e("partial-nonlinear-estW-vs-W",&arg);
   arg.subtitle1="Full nonlinear estimation, no ddA fit";
@@ -1460,6 +1477,7 @@ int main(){
   /* Graphs for W estimate distance vs W ************************/
 
   arg.subtitle1="Linear estimation, symmetric normalization, no ddA fit";
+  arg.subtitle2="chirp: A=1.0, dA=dW=0., swept phase | estimate A=P=dA=dW=0";
   arg.fit_nonlinear=0;
   arg.yaxis_label="initial distance from W (cycles/block)";
   arg.y_dim = DIM_ESTIMATE_W;
@@ -1470,7 +1488,6 @@ int main(){
 
   //w_e("linear-estW-vs-W-symmetric",&arg);
   arg.subtitle1="Partial nonlinear estimation, symmetric normalization, no ddA fit";
-  arg.subtitle2="chirp: A=1.0, dA=dW=0., swept phase | estimate A=P=dA=dW=0";
   arg.fit_nonlinear=1;
   //w_e("partial-nonlinear-estW-vs-W-symmetric",&arg);
   arg.subtitle1="Full nonlinear estimation, symmetric normalization, no ddA fit";
@@ -1485,7 +1502,7 @@ int main(){
   arg.min_chirp_W = arg.max_chirp_W = rint(arg.blocksize/4);
 
   arg.fit_W_alpha_min = 0;
-  arg.fit_W_alpha_max = 2.;
+  arg.fit_W_alpha_max = 2.01612903225806451612;
   arg.x_dim = DIM_ALPHA_W;
   arg.xaxis_label = "alphaW",
 
@@ -1555,6 +1572,7 @@ int main(){
   //w_e("nonlinear-estW-vs-alphadW-maxwell",&arg);
 
   arg.yaxis_label="dW (cycles/block)";
+  arg.subtitle2="chirp: A=1.0, dA=0., swept phase | estimate A=P=dA=dW=0, estimate W=chirp W",
   arg.y_dim = DIM_CHIRP_dW;
   arg.min_est_W =  0;
   arg.max_est_W =  0;
@@ -1590,20 +1608,21 @@ int main(){
   arg.max_chirp_W =  25;
   arg.fit_nonlinear = 2;
   arg.x_minor = .25;
+
   arg.x_dim = DIM_CHIRP_W;
   arg.y_dim = DIM_ESTIMATE_W;
 
   arg.subtitle1="Fully nonlinear estimation, no ddA fit";
+  arg.subtitle2="chirp: A=1.0, dA=dW=0., swept phase | estimate A=P=dA=dW=0";
   arg.xaxis_label="W (cycles/block)";
   arg.yaxis_label="initial distance from W (cycles/block)";
-
 
   arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.;
   arg.window = window_functions.rectangle;
   arg.subtitle3 = "rectangular window";
   //w_e("nodWa-estW-vs-W-rectangular",&arg);
-  arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 2.2;
-  arg.subtitle3 = "rectangular window, dW alpha = 2.2";
+  arg.fit_dW_alpha_min = arg.fit_dW_alpha_max=2.2;
+  arg.subtitle3 = "rectangular window, dW alpha=2.2";
   //w_e("optdWa-estW-vs-W-rectangular",&arg);
 
   arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.;
@@ -1611,7 +1630,7 @@ int main(){
   arg.subtitle3 = "sine window";
   //w_e("nodWa-estW-vs-W-sine",&arg);
   arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.711;
-  arg.subtitle3 = "sine window, dW alpha = 1.711";
+  arg.subtitle3 = "sine window, dW alpha=1.711";
   //w_e("optdWa-estW-vs-W-sine",&arg);
 
   arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.;
@@ -1619,7 +1638,7 @@ int main(){
   arg.subtitle3 = "hanning window";
   //w_e("nodWa-estW-vs-W-hanning",&arg);
   arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.618;
-  arg.subtitle3 = "hanning window, dW alpha = 1.618";
+  arg.subtitle3 = "hanning window, dW alpha=1.618";
   //w_e("optdWa-estW-vs-W-hanning",&arg);
 
   arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.;
@@ -1627,7 +1646,7 @@ int main(){
   arg.subtitle3 = "unimodal triangular/gaussian window";
   //w_e("nodWa-estW-vs-W-unimodal",&arg);
   arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.526;
-  arg.subtitle3 = "unimodal triangular/gaussian window, dW alpha = 1.526";
+  arg.subtitle3 = "unimodal triangular/gaussian window, dW alpha=1.526";
   //w_e("optdWa-estW-vs-W-unimodal",&arg);
 
   arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.;
@@ -1635,7 +1654,7 @@ int main(){
   arg.subtitle3 = "maxwell (optimized) window";
   //w_e("nodWa-estW-vs-W-maxwell",&arg);
   arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.554;
-  arg.subtitle3 = "maxwell (optimized) window, dW alpha = 1.554";
+  arg.subtitle3 = "maxwell (optimized) window, dW alpha=1.554";
   //w_e("optdWa-estW-vs-W-maxwell",&arg);
 
 
@@ -1651,49 +1670,69 @@ int main(){
   arg.y_dim = DIM_CHIRP_dW;
 
   arg.subtitle1="Fully nonlinear estimation, no ddA fit";
+  arg.subtitle2="chirp: A=1.0, dA=0., swept phase | estimate A=P=dA=dW=0, estimate W=chirp W";
   arg.xaxis_label="W (cycles/block)";
   arg.yaxis_label="dW (cycles/block)";
-
 
   arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.;
   arg.window = window_functions.rectangle;
   arg.subtitle3 = "rectangular window";
-  w_e("nodWa-dW-vs-W-rectangular",&arg);
+  //w_e("nodWa-dW-vs-W-rectangular",&arg);
   arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 2.125;
-  arg.subtitle3 = "rectangular window, dW alpha = 2.125";
-  w_e("optdWa-dW-vs-W-rectangular",&arg);
+  arg.subtitle3 = "rectangular window, dW alpha=2.125";
+  //w_e("optdWa-dW-vs-W-rectangular",&arg);
 
   arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.;
   arg.window = window_functions.sine;
   arg.subtitle3 = "sine window";
-  w_e("nodWa-dW-vs-W-sine",&arg);
+  //w_e("nodWa-dW-vs-W-sine",&arg);
   arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.711;
-  arg.subtitle3 = "sine window, dW alpha = 1.711";
-  w_e("optdWa-dW-vs-W-sine",&arg);
+  arg.subtitle3 = "sine window, dW alpha=1.711";
+  //w_e("optdWa-dW-vs-W-sine",&arg);
 
   arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.;
   arg.window = window_functions.hanning;
   arg.subtitle3 = "hanning window";
-  w_e("nodWa-dW-vs-W-hanning",&arg);
+  //w_e("nodWa-dW-vs-W-hanning",&arg);
   arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.618;
-  arg.subtitle3 = "hanning window, dW alpha = 1.618";
-  w_e("optdWa-dW-vs-W-hanning",&arg);
+  arg.subtitle3 = "hanning window, dW alpha=1.618";
+  //w_e("optdWa-dW-vs-W-hanning",&arg);
 
   arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.;
   arg.window = window_functions.tgauss_deep;
   arg.subtitle3 = "unimodal triangular/gaussian window";
-  w_e("nodWa-dW-vs-W-unimodal",&arg);
+  //w_e("nodWa-dW-vs-W-unimodal",&arg);
   arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.526;
-  arg.subtitle3 = "unimodal triangular/gaussian window, dW alpha = 1.526";
-  w_e("optdWa-dW-vs-W-unimodal",&arg);
+  arg.subtitle3 = "unimodal triangular/gaussian window, dW alpha=1.526";
+  //w_e("optdWa-dW-vs-W-unimodal",&arg);
 
   arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.;
   arg.window = window_functions.maxwell1;
   arg.subtitle3 = "maxwell (optimized) window";
-  w_e("nodWa-dW-vs-W-maxwell",&arg);
+  //w_e("nodWa-dW-vs-W-maxwell",&arg);
   arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.554;
-  arg.subtitle3 = "maxwell (optimized) window, dW alpha = 1.554";
-  w_e("optdWa-dW-vs-W-maxwell",&arg);
+  arg.subtitle3 = "maxwell (optimized) window, dW alpha=1.554";
+  //w_e("optdWa-dW-vs-W-maxwell",&arg);
+
+  /* Noise graphs *****************************************************/
+  arg.blocksize = 2048;
+  arg.min_chirp_dW = 0;
+  arg.max_chirp_dW = 0;
+  arg.min_est_W = -9.375;
+  arg.max_est_W = 9.375;
+  arg.x_dim = DIM_CHIRP_W;
+  arg.y_dim = DIM_ESTIMATE_W;
+  arg.subtitle1="Fully nonlinear estimation, no ddA fit, blocksize=2048";
+  arg.subtitle2="chirp: A=1.0, dA=dW=0., swept phase | estimate A=P=dA=dW=0";
+  arg.xaxis_label="W (cycles/block)";
+  arg.yaxis_label="initial distance from W (cycles/block)";
+
+  arg.window = window_functions.tgauss_deep;
+  arg.white_noise = fromdB(-10.);
+  arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.526;
+  arg.subtitle3 = "unimodal window, dW alpha=1.526, white noise=-10dB RMS";
+  w_e("noise-10dB-dW-vs-W-unimodal",&arg);
+
 
 
   return 0;
