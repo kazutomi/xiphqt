@@ -365,7 +365,7 @@ void *compute_column(void *in){
     y=next_y;
     if(y>=max_y){
       pthread_mutex_unlock(&ymutex);
-      return NULL;
+      break;
     }
     next_y++;
     pthread_mutex_unlock(&ymutex);
@@ -1264,7 +1264,7 @@ int main(){
     /* xaxis label */   "W (cycles/block)",
     /* yaxis label */   "dW (cycles/block)",
 
-    /* blocksize */     128,
+    /* blocksize */     256,
     /* threads */       32,
 
     /* window */        window_functions.sine,
@@ -1715,23 +1715,61 @@ int main(){
   //w_e("optdWa-dW-vs-W-maxwell",&arg);
 
   /* Noise graphs *****************************************************/
-  arg.blocksize = 2048;
   arg.min_chirp_dW = 0;
   arg.max_chirp_dW = 0;
-  arg.min_est_W = -9.375;
-  arg.max_est_W = 9.375;
-  arg.x_dim = DIM_CHIRP_W;
-  arg.y_dim = DIM_ESTIMATE_W;
-  arg.subtitle1="Fully nonlinear estimation, no ddA fit, blocksize=2048";
+  arg.white_noise = fromdB(-40);
+  arg.subtitle1="Fully nonlinear estimation, no ddA fit, white noise=-40dB RMS";
   arg.subtitle2="chirp: A=1.0, dA=dW=0., swept phase | estimate A=P=dA=dW=0";
-  arg.xaxis_label="W (cycles/block)";
+  arg.x_minor=.0625;
+  arg.fit_dW_alpha_min = 0;
+  arg.fit_dW_alpha_max = 3.125;
+  arg.x_dim = DIM_ALPHA_dW;
+  arg.xaxis_label = "alphadW",
   arg.yaxis_label="initial distance from W (cycles/block)";
+  arg.y_dim = DIM_ESTIMATE_W;
+  arg.min_est_W = -3;
+  arg.max_est_W =  3;
+
+  arg.window = window_functions.sine;
+  arg.subtitle3 = "sine window";
+  w_e("nononlinear-40dBnoise-estW-vs-alphadW-sine",&arg);
+
+  arg.window = window_functions.hanning;
+  arg.subtitle3 = "rectangular hanning";
+  w_e("nonlinear-40dBnoise-estW-vs-alphadW-hanning",&arg);
 
   arg.window = window_functions.tgauss_deep;
-  arg.white_noise = fromdB(-10.);
-  arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.526;
-  arg.subtitle3 = "unimodal window, dW alpha=1.526, white noise=-10dB RMS";
-  w_e("noise-10dB-dW-vs-W-unimodal",&arg);
+  arg.subtitle3 = "unimodal triangular/gaussian window";
+  w_e("nonlinear-40dBnoise-estW-vs-alphadW-unimodal",&arg);
+
+  arg.window = window_functions.maxwell1;
+  arg.subtitle3 = "maxwell (optimized) window";
+  w_e("nonlinear-40dBnoise-estW-vs-alphadW-maxwell",&arg);
+
+
+  arg.yaxis_label="dW (cycles/block)";
+  arg.subtitle2="chirp: A=1.0, dA=0., swept phase | estimate A=P=dA=dW=0, estimate W=chirp W",
+  arg.y_dim = DIM_CHIRP_dW;
+  arg.min_est_W =  0;
+  arg.max_est_W =  0;
+  arg.min_chirp_dW = -3;
+  arg.max_chirp_dW =  3;
+
+  arg.window = window_functions.sine;
+  arg.subtitle3 = "sine window";
+  w_e("nonlinear-40dBnoise-dW-vs-alphadW-sine",&arg);
+
+  arg.window = window_functions.hanning;
+  arg.subtitle3 = "hanning window";
+  w_e("nonlinear-40dBnoise-dW-vs-alphadW-hanning",&arg);
+
+  arg.window = window_functions.tgauss_deep;
+  arg.subtitle3 = "unimodal triangular/gaussian window";
+  w_e("nonlinear-40dBnoise-dW-vs-alphadW-unimodal",&arg);
+
+  arg.window = window_functions.maxwell1;
+  arg.subtitle3 = "maxwell (optimized) window";
+  w_e("nonlinear-40dBnoise-dW-vs-alphadW-maxwell",&arg);
 
 
 
