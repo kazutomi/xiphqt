@@ -73,7 +73,7 @@ static void hanning(float *x, int n){
 static void tgauss_deep(float *x, int n){
   int i;
   for(i=0;i<n;i++){
-    float f = (i-n/2.)/(n/2.);
+    float f = (i+.5-n/2.)/(n/2.);
     x[i] = exp(-TGB*pow(f,2)) * pow(1.-fabs(f),TGA);
   }
 }
