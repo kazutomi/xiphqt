@@ -146,6 +146,17 @@ void setup_graphs(int start_x_step,
   cairo_font_extents_t fextents;
   int y;
 
+  fontsize=12;
+  leftpad=0;
+  rightpad=0;
+  toppad=0;
+  bottompad=0;
+  legendy=0;
+  legendh=0;
+  pic_w=0;
+  pic_h=0;
+  titleheight=0.;
+
   x_n = end_x_step-start_x_step+1;
   y_n = end_y_step-start_y_step+1;
   fontsize=fs;
