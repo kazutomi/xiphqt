@@ -117,27 +117,35 @@ typedef struct {
   float white_noise;
 
   /* generate which graphs? */
+  int graph_convergence_av;
   int graph_convergence_max;
   int graph_convergence_delta;
 
+  int graph_Aerror_av;
   int graph_Aerror_max;
   int graph_Aerror_delta;
 
+  int graph_Perror_av;
   int graph_Perror_max;
   int graph_Perror_delta;
 
+  int graph_Werror_av;
   int graph_Werror_max;
   int graph_Werror_delta;
 
+  int graph_dAerror_av;
   int graph_dAerror_max;
   int graph_dAerror_delta;
 
+  int graph_dWerror_av;
   int graph_dWerror_max;
   int graph_dWerror_delta;
 
+  int graph_ddAerror_av;
   int graph_ddAerror_max;
   int graph_ddAerror_delta;
 
+  int graph_RMSerror_av;
   int graph_RMSerror_max;
   int graph_RMSerror_delta;
 
@@ -175,7 +183,8 @@ typedef struct {
   chirp *chirp;
   chirp *estimate;
   colvec *sweep;
-  float *rms_error;
+  float *ssq_error;
+  float *ssq_energy;
   int *iterations;
 
 } colarg;
@@ -355,11 +364,10 @@ void *compute_column(void *in){
   int except;
   int localinit = !arg->in;
   float *chirp = localinit ? malloc(sizeof(*chirp)*blocksize) : arg->in;
-  float *work=arg->white_noise?malloc(sizeof(*work)*blocksize):NULL;
 
   while(1){
-    float rms_acc=0.;
-    float e_acc=0.;
+    float energy_acc=0.;
+    float error_acc=0.;
 
     pthread_mutex_lock(&ymutex);
     y=next_y;
@@ -379,11 +387,12 @@ void *compute_column(void *in){
         double A = arg->chirp[y].A + (arg->chirp[y].dA + arg->chirp[y].ddA*jj)*jj;
         double P = arg->chirp[y].P + (arg->chirp[y].W  + arg->chirp[y].dW *jj)*jj;
         chirp[i] = A*cos(P);
+        energy_acc += chirp[i]*chirp[i]*arg->window[i]*arg->window[i];
       }
       if(arg->white_noise){
         for(i=0;i<blocksize;i++){
           float v = (drand48()-drand48())*2.45; /* (0dB RMS white noise) */
-          work[i] = chirp[i]+v*arg->white_noise;
+          chirp[i]+=v*arg->white_noise;
         }
       }
     }
@@ -392,7 +401,7 @@ void *compute_column(void *in){
     fedisableexcept(FE_INEXACT);
     fedisableexcept(FE_UNDERFLOW);
 
-    ret=estimate_chirps(work?work:chirp,arg->window,blocksize,
+    ret=estimate_chirps(chirp,arg->window,blocksize,
                         arg->estimate+y,1,arg->fit_tolerance,arg->max_iterations,
                         arg->fit_gauss_seidel,
                         arg->fit_W,
@@ -407,25 +416,20 @@ void *compute_column(void *in){
 
     for(i=0;i<blocksize;i++){
       double jj = i - blocksize/2 + .5;
-      double Ae = arg->estimate[y].A + (arg->estimate[y].dA + arg->estimate[y].ddA*jj)*jj;
-      double Pe = arg->estimate[y].P + (arg->estimate[y].W  + arg->estimate[y].dW *jj)*jj;
-
-      float  re = Ae*cos(Pe);
-      float ce = chirp[i]*arg->window[i];
-      float ee = (chirp[i]-re)*arg->window[i];
-
-      e_acc += ce*ce;
-      rms_acc += ee*ee;
+      double A = arg->estimate[y].A + (arg->estimate[y].dA + arg->estimate[y].ddA*jj)*jj;
+      double P = arg->estimate[y].P + (arg->estimate[y].W  + arg->estimate[y].dW *jj)*jj;
+      float r = A*cos(P);
+      float e = (chirp[i]-r)*arg->window[i];
+      error_acc += e*e;
     }
-    arg->rms_error[y] = sqrt(rms_acc)/sqrt(e_acc);
+    arg->ssq_energy[y] = energy_acc;
+    arg->ssq_error[y] = error_acc;
     arg->iterations[y] = arg->max_iterations-ret;
     feclearexcept(FE_ALL_EXCEPT);
     feenableexcept(except);
-
   }
 
   if(localinit)free(chirp);
-  if(work)free(work);
   return NULL;
 }
 
@@ -442,30 +446,23 @@ void w_e(char *filebase,graph_run *arg){
   int x_n = arg->x_steps;
   int y_n = arg->y_steps;
 
-  /* graphs:
+  cairo_t *cC_w=NULL;
+  cairo_t *cA_w=NULL;
+  cairo_t *cP_w=NULL;
+  cairo_t *cW_w=NULL;
+  cairo_t *cdA_w=NULL;
+  cairo_t *cdW_w=NULL;
+  cairo_t *cddA_w=NULL;
+  cairo_t *cRMS_w=NULL;
 
-     convergence
-     Aerror
-     Perror
-     Werror
-     dAerror
-     dWerror
-     ddAerror
-     rms fit error
-
-     generate for:
-     worst case across sweep (0-7)
-     delta across sweep (8-15)
-  */
-
-  cairo_t *cC=NULL;
-  cairo_t *cA=NULL;
-  cairo_t *cP=NULL;
-  cairo_t *cW=NULL;
-  cairo_t *cdA=NULL;
-  cairo_t *cdW=NULL;
-  cairo_t *cddA=NULL;
-  cairo_t *cRMS=NULL;
+  cairo_t *cC_m=NULL;
+  cairo_t *cA_m=NULL;
+  cairo_t *cP_m=NULL;
+  cairo_t *cW_m=NULL;
+  cairo_t *cdA_m=NULL;
+  cairo_t *cdW_m=NULL;
+  cairo_t *cddA_m=NULL;
+  cairo_t *cRMS_m=NULL;
 
   cairo_t *cC_d=NULL;
   cairo_t *cA_d=NULL;
@@ -501,6 +498,17 @@ void w_e(char *filebase,graph_run *arg){
   float ret_maxddA[y_n];
   float ret_maxRMS[y_n];
   float ret_maxiter[y_n];
+
+  float ret_sqA[y_n];
+  float ret_enA[y_n];
+  float ret_sqP[y_n];
+  float ret_sqW[y_n];
+  float ret_sqdA[y_n];
+  float ret_sqdW[y_n];
+  float ret_sqddA[y_n];
+  float ret_sqERR[y_n];
+  float ret_sqENE[y_n];
+  float ret_sumiter[y_n];
 
   float minX=0,maxX=0;
   float minY=0,maxY=0;
@@ -711,16 +719,26 @@ void w_e(char *filebase,graph_run *arg){
 
   if(arg->white_noise != 0.) chirp_swept=1;
 
-  if(arg->graph_convergence_max)
-    cC = draw_page(!swept?"Convergence":"Worst Case Convergence",
-                   arg->subtitle1,
-                   arg->subtitle2,
-                   arg->subtitle3,
-                   arg->xaxis_label,
-                   arg->yaxis_label,
-                   "Iterations:",
-                   DT_iterations,
-                   arg->x_dim==DIM_CHIRP_W ||arg->x_dim==DIM_ESTIMATE_W);
+  if(arg->graph_convergence_av)
+    cC_m = draw_page(!swept?"Convergence":"Average Convergence",
+                     arg->subtitle1,
+                     arg->subtitle2,
+                     arg->subtitle3,
+                     arg->xaxis_label,
+                     arg->yaxis_label,
+                     "Iterations:",
+                     DT_iterations,
+                     arg->x_dim==DIM_CHIRP_W ||arg->x_dim==DIM_ESTIMATE_W);
+  if(swept && arg->graph_convergence_max)
+    cC_w = draw_page("Worst Case Convergence",
+                     arg->subtitle1,
+                     arg->subtitle2,
+                     arg->subtitle3,
+                     arg->xaxis_label,
+                     arg->yaxis_label,
+                     "Iterations:",
+                     DT_iterations,
+                     arg->x_dim==DIM_CHIRP_W ||arg->x_dim==DIM_ESTIMATE_W);
   if(swept && arg->graph_convergence_delta)
     cC_d = draw_page("Convergence Delta",
                      arg->subtitle1,
@@ -732,16 +750,26 @@ void w_e(char *filebase,graph_run *arg){
                      DT_iterations,
                      arg->x_dim==DIM_CHIRP_W ||arg->x_dim==DIM_ESTIMATE_W);
 
-  if(arg->graph_Aerror_max)
-    cA = draw_page(!swept?"A (Amplitude) Error":"Maximum A (Amplitude) Error",
-                   arg->subtitle1,
-                   arg->subtitle2,
-                   arg->subtitle3,
-                   arg->xaxis_label,
-                   arg->yaxis_label,
-                   "Percentage Error:",
-                   DT_percent,
+  if(arg->graph_Aerror_av)
+    cA_m = draw_page(!swept?"A (Amplitude) Error":"A (Amplitude) Mean Squared Error",
+                     arg->subtitle1,
+                     arg->subtitle2,
+                     arg->subtitle3,
+                     arg->xaxis_label,
+                     arg->yaxis_label,
+                     "Percent Error:",
+                     DT_percent,
                    arg->x_dim==DIM_CHIRP_W ||arg->x_dim==DIM_ESTIMATE_W);
+  if(swept && arg->graph_Aerror_max)
+    cA_w = draw_page("A (Amplitude) Worst Case Error",
+                     arg->subtitle1,
+                     arg->subtitle2,
+                     arg->subtitle3,
+                     arg->xaxis_label,
+                     arg->yaxis_label,
+                     "Percent Error:",
+                     DT_percent,
+                     arg->x_dim==DIM_CHIRP_W ||arg->x_dim==DIM_ESTIMATE_W);
   if(swept && arg->graph_Aerror_delta)
     cA_d = draw_page("A (Amplitude) Delta",
                      arg->subtitle1,
@@ -749,12 +777,23 @@ void w_e(char *filebase,graph_run *arg){
                      arg->subtitle3,
                      arg->xaxis_label,
                      arg->yaxis_label,
-                     "Delta:",
-                     DT_abserror,
+                     "Percent Error Delta:",
+                     DT_percent,
                      arg->x_dim==DIM_CHIRP_W ||arg->x_dim==DIM_ESTIMATE_W);
 
-  if(arg->graph_Perror_max)
-    cP = draw_page(!swept?"P (Phase) Error":"Maximum P (Phase) Error",
+  if(arg->graph_Perror_av)
+    cP_m = draw_page(!swept?"P (Phase) Error":"P (Phase) Mean Squared Error",
+                   arg->subtitle1,
+                   arg->subtitle2,
+                   arg->subtitle3,
+                   arg->xaxis_label,
+                   arg->yaxis_label,
+                   "Error (radians):",
+                   DT_abserror,
+                   arg->x_dim==DIM_CHIRP_W ||arg->x_dim==DIM_ESTIMATE_W);
+
+  if(swept && arg->graph_Perror_max)
+    cP_w = draw_page("P (Phase) Worst Case Error",
                    arg->subtitle1,
                    arg->subtitle2,
                    arg->subtitle3,
@@ -776,8 +815,19 @@ void w_e(char *filebase,graph_run *arg){
                      arg->x_dim==DIM_CHIRP_W ||arg->x_dim==DIM_ESTIMATE_W);
 
   if(arg->fit_W){
-    if(arg->graph_Werror_max)
-      cW = draw_page(!swept?"W (Frequency) Error":"Maximum W (Frequency) Error",
+    if(arg->graph_Werror_av)
+      cW_m = draw_page(!swept?"W (Frequency) Error":"W (Frequency) Mean Squared Error",
+                     arg->subtitle1,
+                     arg->subtitle2,
+                     arg->subtitle3,
+                     arg->xaxis_label,
+                     arg->yaxis_label,
+                     "Error (cycles/block):",
+                     DT_abserror,
+                     arg->x_dim==DIM_CHIRP_W ||arg->x_dim==DIM_ESTIMATE_W);
+
+    if(swept && arg->graph_Werror_max)
+      cW_w = draw_page("W (Frequency) Worst Case Error",
                      arg->subtitle1,
                      arg->subtitle2,
                      arg->subtitle3,
@@ -800,8 +850,19 @@ void w_e(char *filebase,graph_run *arg){
   }
 
   if(arg->fit_dA){
-    if(arg->graph_dAerror_max)
-      cdA = draw_page(!swept?"dA (Amplitude Modulation) Error":"Maximum dA (Amplitude Modulation) Error",
+    if(arg->graph_dAerror_av)
+      cdA_m = draw_page(!swept?"dA (Amplitude Modulation) Error":"dA (Amplitude Modulation) Mean Squared Error",
+                      arg->subtitle1,
+                      arg->subtitle2,
+                      arg->subtitle3,
+                      arg->xaxis_label,
+                      arg->yaxis_label,
+                      "Error:",
+                      DT_abserror,
+                      arg->x_dim==DIM_CHIRP_W ||arg->x_dim==DIM_ESTIMATE_W);
+
+    if(swept && arg->graph_dAerror_max)
+      cdA_w = draw_page("dA (Amplitude Modulation) Worst Case Error",
                       arg->subtitle1,
                       arg->subtitle2,
                       arg->subtitle3,
@@ -824,8 +885,8 @@ void w_e(char *filebase,graph_run *arg){
   }
 
   if(arg->fit_dW){
-    if(arg->graph_dWerror_max)
-      cdW = draw_page(!swept?"dW (Chirp Rate) Error":"Maximum dW (Chirp Rate) Error",
+    if(arg->graph_dWerror_av)
+      cdW_m = draw_page(!swept?"dW (Chirp Rate) Error":"dW (Chirp Rate) Mean Squared Error",
                       arg->subtitle1,
                       arg->subtitle2,
                       arg->subtitle3,
@@ -834,6 +895,18 @@ void w_e(char *filebase,graph_run *arg){
                       "Error (cycles/block):",
                       DT_abserror,
                       arg->x_dim==DIM_CHIRP_W ||arg->x_dim==DIM_ESTIMATE_W);
+
+    if(swept && arg->graph_dWerror_max)
+      cdW_w = draw_page("dW (Chirp Rate) Worst Case Error",
+                      arg->subtitle1,
+                      arg->subtitle2,
+                      arg->subtitle3,
+                      arg->xaxis_label,
+                      arg->yaxis_label,
+                      "Error (cycles/block):",
+                      DT_abserror,
+                      arg->x_dim==DIM_CHIRP_W ||arg->x_dim==DIM_ESTIMATE_W);
+
     if(swept && arg->graph_dWerror_delta)
       cdW_d = draw_page("Chirp Rate Delta",
                         arg->subtitle1,
@@ -847,9 +920,9 @@ void w_e(char *filebase,graph_run *arg){
   }
 
   if(arg->fit_ddA){
-    if(arg->graph_ddAerror_max)
-      cddA = draw_page(!swept?"ddA (Amplitude Modulation Squared) Error":
-                       "Maximum ddA (Amplitude Modulation Squared) Error",
+    if(arg->graph_ddAerror_av)
+      cddA_m = draw_page(!swept?"ddA (Amplitude Modulation Squared) Error":
+                         "ddA (Amplitude Modulation Squared) Mean Squared Error",
                        arg->subtitle1,
                        arg->subtitle2,
                        arg->subtitle3,
@@ -858,6 +931,18 @@ void w_e(char *filebase,graph_run *arg){
                        "Error:",
                        DT_abserror,
                        arg->x_dim==DIM_CHIRP_W ||arg->x_dim==DIM_ESTIMATE_W);
+
+    if(swept && arg->graph_ddAerror_max)
+      cddA_w = draw_page("ddA (Amplitude Modulation Squared) Worst Case Error",
+                       arg->subtitle1,
+                       arg->subtitle2,
+                       arg->subtitle3,
+                       arg->xaxis_label,
+                       arg->yaxis_label,
+                       "Error:",
+                       DT_abserror,
+                       arg->x_dim==DIM_CHIRP_W ||arg->x_dim==DIM_ESTIMATE_W);
+
     if(swept && arg->graph_ddAerror_delta)
       cddA_d = draw_page("Amplitude Modulation Squared Delta",
                          arg->subtitle1,
@@ -870,26 +955,36 @@ void w_e(char *filebase,graph_run *arg){
                          arg->x_dim==DIM_CHIRP_W ||arg->x_dim==DIM_ESTIMATE_W);
   }
 
-  if(arg->graph_RMSerror_max)
-    cRMS = draw_page(swept?"Maximum RMS Fit Error":
-                     "RMS Fit Error",
-                     arg->subtitle1,
-                     arg->subtitle2,
-                     arg->subtitle3,
-                     arg->xaxis_label,
-                     arg->yaxis_label,
-                     "Percentage Error:",
-                     DT_percent,
-                     arg->x_dim==DIM_CHIRP_W ||arg->x_dim==DIM_ESTIMATE_W);
-
-  if(swept && arg->graph_RMSerror_delta)
-    cRMS_d = draw_page("RMS Error Delta",
+  if(arg->graph_RMSerror_av)
+    cRMS_m = draw_page(!swept ? "RMS Fit Error" : "RMS Fit Error (Full Sweep)",
                        arg->subtitle1,
                        arg->subtitle2,
                        arg->subtitle3,
                        arg->xaxis_label,
                        arg->yaxis_label,
-                       "Percentage Delta:",
+                       "Percentage Error:",
+                       DT_percent,
+                       arg->x_dim==DIM_CHIRP_W ||arg->x_dim==DIM_ESTIMATE_W);
+
+  if(swept && arg->graph_RMSerror_max)
+    cRMS_w = draw_page("RMS Worst Case Fit Error",
+                       arg->subtitle1,
+                       arg->subtitle2,
+                       arg->subtitle3,
+                       arg->xaxis_label,
+                       arg->yaxis_label,
+                       "Percentage Error:",
+                       DT_percent,
+                       arg->x_dim==DIM_CHIRP_W ||arg->x_dim==DIM_ESTIMATE_W);
+
+  if(swept && arg->graph_RMSerror_delta)
+    cRMS_d = draw_page("RMS Fit Error Delta",
+                       arg->subtitle1,
+                       arg->subtitle2,
+                       arg->subtitle3,
+                       arg->xaxis_label,
+                       arg->yaxis_label,
+                       "Percentage Error:",
                        DT_percent,
                        arg->x_dim==DIM_CHIRP_W ||arg->x_dim==DIM_ESTIMATE_W);
 
@@ -905,7 +1000,8 @@ void w_e(char *filebase,graph_run *arg){
     chirp estimates[y_n];
     colvec fitvec[y_n];
     int iter[y_n];
-    float rms[y_n];
+    float error[y_n];
+    float energy[y_n];
     int si,sn=(swept && arg->sweep_steps>1 ? arg->sweep_steps : 1);
 
     fprintf(stderr,"\r%s: column %d/%d...",filebase,xi,x_n-1);
@@ -931,7 +1027,8 @@ void w_e(char *filebase,graph_run *arg){
       targ[i].estimate=estimates;
       targ[i].sweep=fitvec;
       targ[i].white_noise=arg->white_noise;
-      targ[i].rms_error=rms;
+      targ[i].ssq_error=error;
+      targ[i].ssq_energy=energy;
       targ[i].iterations=iter;
     }
 
@@ -1025,46 +1122,69 @@ void w_e(char *filebase,graph_run *arg){
       /* accumulate results for this pass */
       if(si==0){
         for(i=0;i<y_n;i++){
-          ret_minA[i]=ret_maxA[i]=chirps[i].A - estimates[i].A;
-          ret_minP[i]=ret_maxP[i]=circular_distance(chirps[i].P,estimates[i].P);
-          ret_minW[i]=ret_maxW[i]=chirps[i].W - estimates[i].W;
-          ret_mindA[i]=ret_maxdA[i]=chirps[i].dA - estimates[i].dA;
-          ret_mindW[i]=ret_maxdW[i]=chirps[i].dW - estimates[i].dW;
-          ret_minddA[i]=ret_maxddA[i]=chirps[i].ddA - estimates[i].ddA;
-          ret_minRMS[i]=ret_maxRMS[i]=rms[i];
-          ret_miniter[i]=ret_maxiter[i]=iter[i];
+          float Aen = chirps[i].A;
+          float Ae = chirps[i].A - estimates[i].A;
+          float Pe = circular_distance(chirps[i].P,estimates[i].P);
+          float We = chirps[i].W - estimates[i].W;
+          float dAe = chirps[i].dA - estimates[i].dA;
+          float dWe = chirps[i].dW - estimates[i].dW;
+          float ddAe = chirps[i].ddA - estimates[i].ddA;
+          ret_sqA[i]=(ret_minA[i]=ret_maxA[i]=Ae)*Ae;
+          ret_enA[i]=Aen*Aen;
+          ret_sqP[i]=(ret_minP[i]=ret_maxP[i]=Pe)*Pe;
+          ret_sqW[i]=(ret_minW[i]=ret_maxW[i]=We)*We;
+          ret_sqdA[i]=(ret_mindA[i]=ret_maxdA[i]=dAe)*dAe;
+          ret_sqdW[i]=(ret_mindW[i]=ret_maxdW[i]=dWe)*dWe;
+          ret_sqddA[i]=(ret_minddA[i]=ret_maxddA[i]=ddAe)*ddAe;
+          ret_minRMS[i]=ret_maxRMS[i]=
+            (energy[i]>1e-20?sqrt(error[i])/sqrt(energy[i]):1.);
+          ret_sqERR[i]=error[i];
+          ret_sqENE[i]=energy[i];
+          ret_sumiter[i]=ret_miniter[i]=ret_maxiter[i]=iter[i];
         }
       }else{
         for(i=0;i<y_n;i++){
           float v = chirps[i].A - estimates[i].A;
           if(ret_minA[i]>v)ret_minA[i]=v;
           if(ret_maxA[i]<v)ret_maxA[i]=v;
+          ret_sqA[i]+=v*v;
+          ret_enA[i]+=chirps[i].A*chirps[i].A;
 
           v = circular_distance(chirps[i].P, estimates[i].P);
           if(ret_minP[i]>v)ret_minP[i]=v;
           if(ret_maxP[i]<v)ret_maxP[i]=v;
+          ret_sqP[i]+=v*v;
 
           v = chirps[i].W - estimates[i].W;
           if(ret_minW[i]>v)ret_minW[i]=v;
           if(ret_maxW[i]<v)ret_maxW[i]=v;
+          ret_sqW[i]+=v*v;
 
           v = chirps[i].dA - estimates[i].dA;
           if(ret_mindA[i]>v)ret_mindA[i]=v;
           if(ret_maxdA[i]<v)ret_maxdA[i]=v;
+          ret_sqdA[i]+=v*v;
 
           v = chirps[i].dW - estimates[i].dW;
           if(ret_mindW[i]>v)ret_mindW[i]=v;
           if(ret_maxdW[i]<v)ret_maxdW[i]=v;
+          ret_sqdW[i]+=v*v;
 
           v = chirps[i].ddA - estimates[i].ddA;
           if(ret_minddA[i]>v)ret_minddA[i]=v;
           if(ret_maxddA[i]<v)ret_maxddA[i]=v;
+          ret_sqddA[i]+=v*v;
 
-          if(ret_minRMS[i]>rms[i])ret_minRMS[i]=rms[i];
-          if(ret_maxRMS[i]<rms[i])ret_maxRMS[i]=rms[i];
+          v=(energy[i]>1e-20?sqrt(error[i])/sqrt(energy[i]):1.);
+          if(ret_minRMS[i]>v)ret_minRMS[i]=v;
+          if(ret_maxRMS[i]<v)ret_maxRMS[i]=v;
+          ret_sqERR[i]+=error[i];
+          ret_sqENE[i]+=energy[i];
 
           if(ret_miniter[i]>iter[i])ret_miniter[i]=iter[i];
           if(ret_maxiter[i]<iter[i])ret_maxiter[i]=iter[i];
+          ret_sumiter[i]+=iter[i];
+
         }
       }
     }
@@ -1077,11 +1197,18 @@ void w_e(char *filebase,graph_run *arg){
       if(x%xminori==0 || y%yminori==0) a = .8;
       if(x%xmajori==0 || y%ymajori==0) a = .3;
 
-      /* Convergence graph */
-      if(cC){
-        set_iter_color(cC,ret_maxiter[yi],a);
-        cairo_rectangle(cC,xi+leftpad,yi+toppad,1,1);
-        cairo_fill(cC);
+      /* Average convergence graph */
+      if(cC_m){
+        set_iter_color(cC_m,rint(ret_sumiter[yi]/sn),a);
+        cairo_rectangle(cC_m,xi+leftpad,yi+toppad,1,1);
+        cairo_fill(cC_m);
+      }
+
+      /* Worst case convergence graph */
+      if(cC_w){
+        set_iter_color(cC_w,ret_maxiter[yi],a);
+        cairo_rectangle(cC_w,xi+leftpad,yi+toppad,1,1);
+        cairo_fill(cC_w);
       }
 
       /* Convergence delta graph */
@@ -1091,11 +1218,19 @@ void w_e(char *filebase,graph_run *arg){
         cairo_fill(cC_d);
       }
 
-      /* A error graph */
-      if(cA){
-        set_error_color(cA,MAX(fabs(ret_maxA[yi]),fabs(ret_minA[yi])),a);
-        cairo_rectangle(cA,xi+leftpad,yi+toppad,1,1);
-        cairo_fill(cA);
+      /* A MSE graph */
+      if(cA_m){
+        set_error_color(cA_m,(ret_enA[yi]>1e-20?
+                            sqrt(ret_sqA[yi])/sqrt(ret_enA[yi]) : 1.),a);
+        cairo_rectangle(cA_m,xi+leftpad,yi+toppad,1,1);
+        cairo_fill(cA_m);
+      }
+
+      /* A peak error graph */
+      if(cA_w){
+        set_error_color(cA_w,MAX(fabs(ret_maxA[yi]),fabs(ret_minA[yi])),a);
+        cairo_rectangle(cA_w,xi+leftpad,yi+toppad,1,1);
+        cairo_fill(cA_w);
       }
 
       /* A delta graph */
@@ -1105,11 +1240,18 @@ void w_e(char *filebase,graph_run *arg){
         cairo_fill(cA_d);
       }
 
-      /* P error graph */
-      if(cP){
-        set_error_color(cP,MAX(fabs(ret_maxP[yi]),fabs(ret_minP[yi])),a);
-        cairo_rectangle(cP,xi+leftpad,yi+toppad,1,1);
-        cairo_fill(cP);
+      /* P MSE graph */
+      if(cP_m){
+        set_error_color(cP_m,sqrt(ret_sqP[yi]/sn),a);
+        cairo_rectangle(cP_m,xi+leftpad,yi+toppad,1,1);
+        cairo_fill(cP_m);
+      }
+
+      /* P peak error graph */
+      if(cP_w){
+        set_error_color(cP_w,MAX(fabs(ret_maxP[yi]),fabs(ret_minP[yi])),a);
+        cairo_rectangle(cP_w,xi+leftpad,yi+toppad,1,1);
+        cairo_fill(cP_w);
       }
 
       /* P delta graph */
@@ -1119,11 +1261,18 @@ void w_e(char *filebase,graph_run *arg){
         cairo_fill(cP_d);
       }
 
-      if(cW){
-        /* W error graph */
-        set_error_color(cW,MAX(fabs(ret_maxW[yi]),fabs(ret_minW[yi]))/2./M_PI*blocksize,a);
-        cairo_rectangle(cW,xi+leftpad,yi+toppad,1,1);
-        cairo_fill(cW);
+      if(cW_m){
+        /* W MSE graph */
+        set_error_color(cW_m,sqrt(ret_sqW[yi]/sn)/2./M_PI*blocksize,a);
+        cairo_rectangle(cW_m,xi+leftpad,yi+toppad,1,1);
+        cairo_fill(cW_m);
+      }
+
+      if(cW_w){
+        /* W peak error graph */
+        set_error_color(cW_w,MAX(fabs(ret_maxW[yi]),fabs(ret_minW[yi]))/2./M_PI*blocksize,a);
+        cairo_rectangle(cW_w,xi+leftpad,yi+toppad,1,1);
+        cairo_fill(cW_w);
       }
 
         /* W delta graph */
@@ -1133,12 +1282,20 @@ void w_e(char *filebase,graph_run *arg){
         cairo_fill(cW_d);
       }
 
-      if(cdA){
-        /* dA error graph */
-        set_error_color(cdA,MAX(fabs(ret_maxdA[yi]),fabs(ret_mindA[yi]))*blocksize,a);
-        cairo_rectangle(cdA,xi+leftpad,yi+toppad,1,1);
-        cairo_fill(cdA);
+      if(cdA_m){
+        /* dA MSE graph */
+        set_error_color(cdA_m,sqrt(ret_sqdA[yi]/sn)*blocksize,a);
+        cairo_rectangle(cdA_m,xi+leftpad,yi+toppad,1,1);
+        cairo_fill(cdA_m);
       }
+
+      if(cdA_w){
+        /* dA peak error graph */
+        set_error_color(cdA_w,MAX(fabs(ret_maxdA[yi]),fabs(ret_mindA[yi]))*blocksize,a);
+        cairo_rectangle(cdA_w,xi+leftpad,yi+toppad,1,1);
+        cairo_fill(cdA_w);
+      }
+
         /* dA delta graph */
       if(cdA_d){
         set_error_color(cdA_d,(ret_maxdA[yi]-ret_mindA[yi])*blocksize,a);
@@ -1146,11 +1303,18 @@ void w_e(char *filebase,graph_run *arg){
         cairo_fill(cdA_d);
       }
 
-      if(cdW){
-        /* dW error graph */
-        set_error_color(cdW,MAX(fabs(ret_maxdW[yi]),fabs(ret_mindW[yi]))/2./M_PI*blocksize*blocksize,a);
-        cairo_rectangle(cdW,xi+leftpad,yi+toppad,1,1);
-        cairo_fill(cdW);
+      if(cdW_m){
+        /* dW MSE graph */
+        set_error_color(cdW_m,sqrt(ret_sqdW[yi]/sn)/2./M_PI*blocksize*blocksize,a);
+        cairo_rectangle(cdW_m,xi+leftpad,yi+toppad,1,1);
+        cairo_fill(cdW_m);
+      }
+
+      if(cdW_w){
+        /* dW peak error graph */
+        set_error_color(cdW_w,MAX(fabs(ret_maxdW[yi]),fabs(ret_mindW[yi]))/2./M_PI*blocksize*blocksize,a);
+        cairo_rectangle(cdW_w,xi+leftpad,yi+toppad,1,1);
+        cairo_fill(cdW_w);
       }
 
       /* dW delta graph */
@@ -1160,11 +1324,18 @@ void w_e(char *filebase,graph_run *arg){
         cairo_fill(cdW_d);
       }
 
-      if(cddA){
-        /* ddA error graph */
-        set_error_color(cddA,MAX(fabs(ret_maxddA[yi]),fabs(ret_minddA[yi]))*blocksize*blocksize,a);
-        cairo_rectangle(cddA,xi+leftpad,yi+toppad,1,1);
-        cairo_fill(cddA);
+      if(cddA_m){
+        /* ddA MSE graph */
+        set_error_color(cddA_m,sqrt(ret_sqddA[yi]/sn)*blocksize*blocksize,a);
+        cairo_rectangle(cddA_m,xi+leftpad,yi+toppad,1,1);
+        cairo_fill(cddA_m);
+      }
+
+      if(cddA_w){
+        /* ddA peak error graph */
+        set_error_color(cddA_w,MAX(fabs(ret_maxddA[yi]),fabs(ret_minddA[yi]))*blocksize*blocksize,a);
+        cairo_rectangle(cddA_w,xi+leftpad,yi+toppad,1,1);
+        cairo_fill(cddA_w);
       }
 
       /* dA delta graph */
@@ -1175,13 +1346,21 @@ void w_e(char *filebase,graph_run *arg){
       }
 
       /* RMS error graph */
-      if(cRMS){
-        set_error_color(cRMS,ret_maxRMS[yi],a);
-        cairo_rectangle(cRMS,xi+leftpad,yi+toppad,1,1);
-        cairo_fill(cRMS);
+      if(cRMS_m){
+        set_error_color(cRMS_m,
+                        ret_sqENE[yi]>1e-20?
+                        sqrt(ret_sqERR[yi])/sqrt(ret_sqENE[yi]):1,a);
+        cairo_rectangle(cRMS_m,xi+leftpad,yi+toppad,1,1);
+        cairo_fill(cRMS_m);
       }
 
-      /* RMS delta graph */
+      /* RMS peak error graph */
+      if(cRMS_w){
+        set_error_color(cRMS_w,ret_maxRMS[yi],a);
+        cairo_rectangle(cRMS_w,xi+leftpad,yi+toppad,1,1);
+        cairo_fill(cRMS_w);
+      }
+
       if(cRMS_d){
         set_error_color(cRMS_d,ret_maxRMS[yi]-ret_minRMS[yi],a);
         cairo_rectangle(cRMS_d,xi+leftpad,yi+toppad,1,1);
@@ -1189,21 +1368,30 @@ void w_e(char *filebase,graph_run *arg){
       }
     }
 
-    /* dump a graph update every 10 seconds */
+    /* dump a graph update every 20 seconds */
     {
       struct timeval now;
       gettimeofday(&now,NULL);
-      if(now.tv_sec-last.tv_sec + (now.tv_usec-last.tv_usec)/1000000. > 10.){
+      if(now.tv_sec-last.tv_sec + (now.tv_usec-last.tv_usec)/1000000. > 20.){
         last=now;
 
-        to_png(cC,filebase,"converge");
-        to_png(cA,filebase,"Aerror");
-        to_png(cP,filebase,"Perror");
-        to_png(cW,filebase,"Werror");
-        to_png(cdA,filebase,"dAerror");
-        to_png(cdW,filebase,"dWerror");
-        to_png(cddA,filebase,"ddAerror");
-        to_png(cRMS,filebase,"RMSerror");
+        to_png(cC_w,filebase,"convmax");
+        to_png(cA_w,filebase,"Amaxerror");
+        to_png(cP_w,filebase,"Pmaxerror");
+        to_png(cW_w,filebase,"Wmaxerror");
+        to_png(cdA_w,filebase,"dAmaxerror");
+        to_png(cdW_w,filebase,"dWmaxerror");
+        to_png(cddA_w,filebase,"ddAmaxerror");
+        to_png(cRMS_w,filebase,"RMSmaxerror");
+
+        to_png(cC_m,filebase,"convmean");
+        to_png(cA_m,filebase,"Amse");
+        to_png(cP_m,filebase,"Pmse");
+        to_png(cW_m,filebase,"Wmse");
+        to_png(cdA_m,filebase,"dAmse");
+        to_png(cdW_m,filebase,"dWmse");
+        to_png(cddA_m,filebase,"ddAmse");
+        to_png(cRMS_m,filebase,"RMSmse");
 
         to_png(cC_d,filebase,"convdelta");
         to_png(cA_d,filebase,"Adelta");
@@ -1213,18 +1401,28 @@ void w_e(char *filebase,graph_run *arg){
         to_png(cdW_d,filebase,"dWdelta");
         to_png(cddA_d,filebase,"ddAdelta");
         to_png(cRMS_d,filebase,"RMSdelta");
+
       }
     }
   }
 
-  to_png(cC,filebase,"converge");
-  to_png(cA,filebase,"Aerror");
-  to_png(cP,filebase,"Perror");
-  to_png(cW,filebase,"Werror");
-  to_png(cdA,filebase,"dAerror");
-  to_png(cdW,filebase,"dWerror");
-  to_png(cddA,filebase,"ddAerror");
-  to_png(cRMS,filebase,"RMSerror");
+  to_png(cC_w,filebase,"convmax");
+  to_png(cA_w,filebase,"Amaxerror");
+  to_png(cP_w,filebase,"Pmaxerror");
+  to_png(cW_w,filebase,"Wmaxerror");
+  to_png(cdA_w,filebase,"dAmaxerror");
+  to_png(cdW_w,filebase,"dWmaxerror");
+  to_png(cddA_w,filebase,"ddAmaxerror");
+  to_png(cRMS_w,filebase,"RMSmaxerror");
+
+  to_png(cC_m,filebase,"convmean");
+  to_png(cA_m,filebase,"Amse");
+  to_png(cP_m,filebase,"Pmse");
+  to_png(cW_m,filebase,"Wmse");
+  to_png(cdA_m,filebase,"dAmse");
+  to_png(cdW_m,filebase,"dWmse");
+  to_png(cddA_m,filebase,"ddAmse");
+  to_png(cRMS_m,filebase,"RMSmse");
 
   to_png(cC_d,filebase,"convdelta");
   to_png(cA_d,filebase,"Adelta");
@@ -1235,14 +1433,24 @@ void w_e(char *filebase,graph_run *arg){
   to_png(cddA_d,filebase,"ddAdelta");
   to_png(cRMS_d,filebase,"RMSdelta");
 
-  destroy_page(cC);
-  destroy_page(cA);
-  destroy_page(cP);
-  destroy_page(cW);
-  destroy_page(cdA);
-  destroy_page(cdW);
-  destroy_page(cddA);
-  destroy_page(cRMS);
+  destroy_page(cC_w);
+  destroy_page(cA_w);
+  destroy_page(cP_w);
+  destroy_page(cW_w);
+  destroy_page(cdA_w);
+  destroy_page(cdW_w);
+  destroy_page(cddA_w);
+  destroy_page(cRMS_w);
+
+  destroy_page(cC_m);
+  destroy_page(cA_m);
+  destroy_page(cP_m);
+  destroy_page(cW_m);
+  destroy_page(cdA_m);
+  destroy_page(cdW_m);
+  destroy_page(cddA_m);
+  destroy_page(cRMS_m);
+
   destroy_page(cC_d);
   destroy_page(cA_d);
   destroy_page(cP_d);
@@ -1264,8 +1472,8 @@ int main(){
     /* xaxis label */   "W (cycles/block)",
     /* yaxis label */   "dW (cycles/block)",
 
-    /* blocksize */     256,
-    /* threads */       32,
+    /* blocksize */     128,
+    /* threads */       8,
 
     /* window */        window_functions.sine,
     /* fit_tol */       .000001,
@@ -1309,21 +1517,29 @@ int main(){
 
     /* additive white noise */ 0.,
 
+    /* converge av */     1,
     /* converge max */    1,
     /* converge del */    0,
+    /* avg A error */     1,
     /* max A error */     1,
     /* A error delta */   0,
+    /* avg P error */     1,
     /* max P error */     1,
     /* P error delta */   0,
+    /* avg W error */     1,
     /* max W error */     1,
     /* W error delta */   0,
+    /* avg dA error */    1,
     /* max dA error */    1,
     /* dA error delta */  0,
+    /* avg dW error */    1,
     /* max dW error */    1,
     /* dW error delta */  0,
+    /* avg ddA error */   1,
     /* max ddA error */   1,
     /* ddA error delta */ 0,
-    /* max RMS error */   1,
+    /* RMS global error */1,
+    /* RMS peak error */  1,
     /* RMS error delta */ 0,
 
   };
@@ -1717,8 +1933,9 @@ int main(){
   /* Noise graphs *****************************************************/
   arg.min_chirp_dW = 0;
   arg.max_chirp_dW = 0;
+  arg.min_chirp_W = arg.max_chirp_W = rint(arg.blocksize/4);
   arg.white_noise = fromdB(-40);
-  arg.subtitle1="Fully nonlinear estimation, no ddA fit, white noise=-40dB RMS";
+  arg.subtitle1="Fully nonlinear estimation, no ddA fit, W centered, white noise=-40dB RMS";
   arg.subtitle2="chirp: A=1.0, dA=dW=0., swept phase | estimate A=P=dA=dW=0";
   arg.x_minor=.0625;
   arg.fit_dW_alpha_min = 0;
@@ -1730,21 +1947,34 @@ int main(){
   arg.min_est_W = -3;
   arg.max_est_W =  3;
 
-  arg.window = window_functions.sine;
-  arg.subtitle3 = "sine window";
-  w_e("nononlinear-40dBnoise-estW-vs-alphadW-sine",&arg);
+  arg.window = window_functions.tgauss_deep;
+  arg.subtitle3 = "unimodal triangular/gaussian window";
+  //w_e("nonlinear-40dBnoise-estW-vs-alphadW-unimodal",&arg);
+
+  arg.white_noise = fromdB(-60);
+  arg.subtitle1="Fully nonlinear estimation, no ddA fit, W centered, white noise=-60dB RMS";
+  //w_e("nonlinear-60dBnoise-estW-vs-alphadW-unimodal",&arg);
+
+  arg.white_noise = fromdB(-20);
+  arg.subtitle1="Fully nonlinear estimation, no ddA fit, W centered, white noise=-20dB RMS";
+  //w_e("nonlinear-20dBnoise-estW-vs-alphadW-unimodal",&arg);
+
+  arg.subtitle1="Fully nonlinear estimation, no ddA fit, W centered, white noise=-40dB RMS";
+
+
+
 
   arg.window = window_functions.hanning;
   arg.subtitle3 = "rectangular hanning";
-  w_e("nonlinear-40dBnoise-estW-vs-alphadW-hanning",&arg);
+  //w_e("nonlinear-40dBnoise-estW-vs-alphadW-hanning",&arg);
 
   arg.window = window_functions.tgauss_deep;
   arg.subtitle3 = "unimodal triangular/gaussian window";
-  w_e("nonlinear-40dBnoise-estW-vs-alphadW-unimodal",&arg);
+  //w_e("nonlinear-40dBnoise-estW-vs-alphadW-unimodal",&arg);
 
   arg.window = window_functions.maxwell1;
   arg.subtitle3 = "maxwell (optimized) window";
-  w_e("nonlinear-40dBnoise-estW-vs-alphadW-maxwell",&arg);
+  //w_e("nonlinear-40dBnoise-estW-vs-alphadW-maxwell",&arg);
 
 
   arg.yaxis_label="dW (cycles/block)";
@@ -1755,21 +1985,33 @@ int main(){
   arg.min_chirp_dW = -3;
   arg.max_chirp_dW =  3;
 
-  arg.window = window_functions.sine;
-  arg.subtitle3 = "sine window";
-  w_e("nonlinear-40dBnoise-dW-vs-alphadW-sine",&arg);
-
-  arg.window = window_functions.hanning;
-  arg.subtitle3 = "hanning window";
-  w_e("nonlinear-40dBnoise-dW-vs-alphadW-hanning",&arg);
-
+  arg.subtitle1="Fully nonlinear estimation, no ddA fit, W centered, white noise=-60dB RMS";
+  arg.white_noise = fromdB(-60);
   arg.window = window_functions.tgauss_deep;
   arg.subtitle3 = "unimodal triangular/gaussian window";
-  w_e("nonlinear-40dBnoise-dW-vs-alphadW-unimodal",&arg);
+  w_e("nonlinear-60dBnoise-dW-vs-alphadW-unimodal",&arg);
 
-  arg.window = window_functions.maxwell1;
-  arg.subtitle3 = "maxwell (optimized) window";
-  w_e("nonlinear-40dBnoise-dW-vs-alphadW-maxwell",&arg);
+  arg.subtitle1="Fully nonlinear estimation, no ddA fit, W centered, white noise=-40dB RMS";
+  arg.white_noise = fromdB(-40);
+  //w_e("nonlinear-40dBnoise-dW-vs-alphadW-unimodal",&arg);
+
+  arg.subtitle1="Fully nonlinear estimation, no ddA fit, W centered, white noise=-20dB RMS";
+  arg.white_noise = fromdB(-20);
+  //w_e("nonlinear-20dBnoise-dW-vs-alphadW-unimodal",&arg);
+
+
+
+  //arg.window = window_functions.hanning;
+  //arg.subtitle3 = "hanning window";
+  //w_e("nonlinear-40dBnoise-dW-vs-alphadW-hanning",&arg);
+
+  //arg.window = window_functions.tgauss_deep;
+  //arg.subtitle3 = "unimodal triangular/gaussian window";
+  //w_e("nonlinear-40dBnoise-dW-vs-alphadW-unimodal",&arg);
+
+  //arg.window = window_functions.maxwell1;
+  //arg.subtitle3 = "maxwell (optimized) window";
+  //w_e("nonlinear-40dBnoise-dW-vs-alphadW-maxwell",&arg);
 
 
 
