@@ -30,6 +30,7 @@
 
 typedef struct {
   float fontsize;
+  char *filebase;
   char *subtitle1;
   char *subtitle2;
   char *subtitle3;
@@ -149,7 +150,7 @@ typedef struct {
   int graph_RMSerror_max;
   int graph_RMSerror_delta;
 
-}  graph_run;
+}  graph_1chirp_arg;
 
 float circular_distance(float A,float B){
   float ret = A-B;
@@ -298,7 +299,7 @@ void set_chirp(chirp *c,
 
 }
 
-float W_alpha(graph_run *arg,
+float W_alpha(graph_1chirp_arg *arg,
               int xi, int xn, int xdim,
               int yi, int yn, int ydim,
               int stepi, int stepn, int rand_p){
@@ -323,7 +324,7 @@ float W_alpha(graph_run *arg,
     (arg->fit_W_alpha_max-arg->fit_W_alpha_min) / An * Ai;
 }
 
-float dW_alpha(graph_run *arg,
+float dW_alpha(graph_1chirp_arg *arg,
               int xi, int xn, int xdim,
               int yi, int yn, int ydim,
               int stepi, int stepn, int rand_p){
@@ -433,10 +434,741 @@ void *compute_column(void *in){
   return NULL;
 }
 
+static char subtitle1[320];
+static char subtitle2[320];
+static char subtitle3[320];
+static char filebase[320];
+
+char *dim_to_abbrv(int dim){
+  switch(dim){
+  case DIM_ESTIMATE_A:
+    return "estA";
+  case DIM_ESTIMATE_P:
+    return "estP";
+  case DIM_ESTIMATE_W:
+    return "estW";
+  case DIM_ESTIMATE_dA:
+    return "estdA";
+  case DIM_ESTIMATE_dW:
+    return "estdW";
+  case DIM_ESTIMATE_ddA:
+    return "estddA";
+  case DIM_CHIRP_A:
+    return "A";
+  case DIM_CHIRP_P:
+    return "P";
+  case DIM_CHIRP_W:
+    return "W";
+  case DIM_CHIRP_dA:
+    return "dA";
+  case DIM_CHIRP_dW:
+    return "dW";
+  case DIM_CHIRP_ddA:
+    return "ddA";
+  case DIM_ALPHA_W:
+    return "alphaW";
+  case DIM_ALPHA_dW:
+    return "alphadW";
+  }
+  return NULL;
+}
+
+void setup_titles_1chirp(graph_1chirp_arg *arg){
+  if(!arg->subtitle1){
+
+    int fits = (arg->fit_W || (arg->fit_dA && arg->fit_nonlinear==0)) ? 1:0;
+    fits |= (arg->fit_dA || (arg->fit_W && arg->fit_nonlinear==0)) ? 2:0;
+    fits |= (arg->fit_dW || (arg->fit_ddA && arg->fit_nonlinear==0)) ? 4:0;
+    fits |= (arg->fit_ddA || (arg->fit_dW && arg->fit_nonlinear==0)) ? 8:0;
+
+    subtitle1[0]=0;
+    switch(arg->fit_nonlinear){
+    case 0: /* linear estimation */
+      strcat(subtitle1,"Linear estimation,");
+      break;
+    case 1: /* partial nonlinear estimation */
+      strcat(subtitle1,"Partial nonlinear estimation,");
+      break;
+    case 2: /* full nonlinear estimation */
+      strcat(subtitle1,"Full nonlinear estimation,");
+      break;
+    default:
+      fprintf(stderr,"Unknown nonlinear setting\n");
+      exit(1);
+    }
+
+    switch(fits){
+    case 0:
+      strcat(subtitle1," zero-order fit");
+      break;
+    case 1:
+      strcat(subtitle1," first-order fit (no dA)");
+      break;
+    case 2:
+      strcat(subtitle1," first-order fit (no W)");
+      break;
+    case 3:
+      strcat(subtitle1," first-order fit");
+      break;
+
+    case 4:
+      strcat(subtitle1," second-order fit (no W, dA, ddA)");
+      break;
+    case 5:
+      strcat(subtitle1," second-order fit (no dA, ddA)");
+      break;
+    case 6:
+      strcat(subtitle1," second-order fit (no W, ddA)");
+      break;
+    case 7:
+      strcat(subtitle1," second-order fit (no ddA)");
+      break;
+
+    case 8:
+      strcat(subtitle1," second-order fit (no W, dA, dW)");
+      break;
+    case 9:
+      strcat(subtitle1," second-order fit (no dA, dW)");
+      break;
+    case 10:
+      strcat(subtitle1," second-order fit (no W, dW)");
+      break;
+    case 11:
+      strcat(subtitle1," second-order fit (no dW)");
+      break;
+
+    case 12:
+      strcat(subtitle1," second-order fit (no W, dA)");
+      break;
+    case 13:
+      strcat(subtitle1," second-order fit (no dA)");
+      break;
+    case 14:
+      strcat(subtitle1," second-order fit (no W)");
+      break;
+    case 15:
+      strcat(subtitle1," second-order fit");
+      break;
+    }
+
+    if(arg->white_noise != 0.){
+      char buf[80];
+      snprintf(buf,80,", white noise @ %.1fdB",todB(arg->white_noise));
+      strcat(subtitle1,buf);
+    }
+
+    arg->subtitle1 = subtitle1;
+  }
+
+  /* subtitle2 */
+  if(!arg->subtitle2){
+    int zeroes=0;
+    int swept=0;
+    int expl=0;
+
+    char buf[80];
+    subtitle2[0]=0;
+    strcat(subtitle2,"chirp:[");
+
+    if(arg->min_chirp_A==0 && (arg->max_chirp_A==0 || arg->sweep_steps<2) &&
+       arg->x_dim != DIM_CHIRP_A && arg->y_dim != DIM_CHIRP_A)
+      zeroes++;
+    if(arg->min_chirp_P==0 && (arg->max_chirp_P==0 || arg->sweep_steps<2) &&
+       arg->x_dim != DIM_CHIRP_P && arg->y_dim != DIM_CHIRP_P)
+      zeroes++;
+    if(arg->min_chirp_W==0 && (arg->max_chirp_W==0 || arg->sweep_steps<2) &&
+       arg->x_dim != DIM_CHIRP_W && arg->y_dim != DIM_CHIRP_W)
+      zeroes++;
+    if(arg->min_chirp_dA==0 && (arg->max_chirp_dA==0 || arg->sweep_steps<2) &&
+       arg->x_dim != DIM_CHIRP_dA && arg->y_dim != DIM_CHIRP_dA)
+      zeroes++;
+    if(arg->min_chirp_dW==0 && (arg->max_chirp_dW==0 || arg->sweep_steps<2) &&
+       arg->x_dim != DIM_CHIRP_dW && arg->y_dim != DIM_CHIRP_dW)
+      zeroes++;
+    if(arg->min_chirp_ddA==0 && (arg->max_chirp_ddA==0 || arg->sweep_steps<2) &&
+       arg->x_dim != DIM_CHIRP_ddA && arg->y_dim != DIM_CHIRP_ddA)
+      zeroes++;
+
+    if(arg->min_chirp_A==arg->max_chirp_A || arg->sweep_steps<2){
+      if(arg->min_chirp_A!=0 || zeroes<2){
+        if(arg->x_dim != DIM_CHIRP_A && arg->y_dim != DIM_CHIRP_A){
+          snprintf(buf,80,"A=%.0fdB",todB(arg->min_chirp_A));
+          strcat(subtitle2,buf);
+          expl++;
+        }
+      }
+    }
+
+    if(arg->min_chirp_P==arg->max_chirp_P || arg->sweep_steps<2){
+      if(arg->min_chirp_P!=0 || zeroes<2){
+        if(arg->x_dim != DIM_CHIRP_P && arg->y_dim != DIM_CHIRP_P){
+          if(expl)strcat(subtitle2,", ");
+          snprintf(buf,80,"P=%.1f",arg->min_chirp_P);
+          strcat(subtitle2,buf);
+          expl++;
+        }
+      }
+    }
+
+    if(arg->min_chirp_W==arg->max_chirp_W || arg->sweep_steps<2){
+      if(arg->min_chirp_W!=0 || zeroes<2){
+        if(arg->x_dim != DIM_CHIRP_W && arg->y_dim != DIM_CHIRP_W){
+          if(expl)strcat(subtitle2,", ");
+          snprintf(buf,80,"W=Nyquist/%.0f",(arg->blocksize/2)/arg->min_chirp_W);
+          strcat(subtitle2,buf);
+          expl++;
+        }
+      }
+    }
+
+    if(arg->min_chirp_dA==arg->max_chirp_dA || arg->sweep_steps<2){
+      if(arg->min_chirp_dA!=0 || zeroes<2){
+        if(arg->x_dim != DIM_CHIRP_dA && arg->y_dim != DIM_CHIRP_dA){
+          if(expl)strcat(subtitle2,", ");
+          snprintf(buf,80,"dA=%.1f",arg->min_chirp_dA);
+          strcat(subtitle2,buf);
+          expl++;
+        }
+      }
+    }
+
+    if(arg->min_chirp_dW==arg->max_chirp_dW || arg->sweep_steps<2){
+      if(arg->min_chirp_dW!=0 || zeroes<2){
+        if(arg->x_dim != DIM_CHIRP_dW && arg->y_dim != DIM_CHIRP_dW){
+          if(expl)strcat(subtitle2,", ");
+          snprintf(buf,80,"dW=%.1f",arg->min_chirp_dW);
+          strcat(subtitle2,buf);
+          expl++;
+        }
+      }
+    }
+
+    if(arg->min_chirp_ddA==arg->max_chirp_ddA || arg->sweep_steps<2){
+      if(arg->min_chirp_ddA!=0 || zeroes<2){
+        if(arg->x_dim != DIM_CHIRP_ddA && arg->y_dim != DIM_CHIRP_ddA){
+          if(expl)strcat(subtitle2,", ");
+          snprintf(buf,80,"ddA=%.1f",arg->min_chirp_ddA);
+          strcat(subtitle2,buf);
+          expl++;
+        }
+      }
+    }
+
+    if(expl && zeroes>1)
+      strcat(subtitle2,", ");
+
+    if(arg->min_chirp_A==0 && (arg->max_chirp_A==0 || arg->sweep_steps<2) &&
+       zeroes>1 && arg->x_dim != DIM_CHIRP_A && arg->y_dim != DIM_CHIRP_A)
+      strcat(subtitle2,"A=");
+    if(arg->min_chirp_P==0 && (arg->max_chirp_P==0 || arg->sweep_steps<2) &&
+       zeroes>1 && arg->x_dim != DIM_CHIRP_P && arg->y_dim != DIM_CHIRP_P)
+      strcat(subtitle2,"P=");
+    if(arg->min_chirp_W==0 && (arg->max_chirp_W==0 || arg->sweep_steps<2) &&
+       zeroes>1 && arg->x_dim != DIM_CHIRP_W && arg->y_dim != DIM_CHIRP_W)
+      strcat(subtitle2,"W=");
+    if(arg->min_chirp_dA==0 && (arg->max_chirp_dA==0 || arg->sweep_steps<2) &&
+       zeroes>1 && arg->x_dim != DIM_CHIRP_dA && arg->y_dim != DIM_CHIRP_dA)
+      strcat(subtitle2,"dA=");
+    if(arg->min_chirp_dW==0 && (arg->max_chirp_dW==0 || arg->sweep_steps<2) &&
+       zeroes>1 && arg->x_dim != DIM_CHIRP_dW && arg->y_dim != DIM_CHIRP_dW)
+      strcat(subtitle2,"dW=");
+    if(arg->min_chirp_ddA==0 && (arg->max_chirp_ddA==0 || arg->sweep_steps<2) &&
+       zeroes>1 && arg->x_dim != DIM_CHIRP_ddA && arg->y_dim != DIM_CHIRP_ddA)
+      strcat(subtitle2,"ddA=");
+    if(zeroes>1)
+      strcat(subtitle2,"0");
+
+    {
+      char buf[320];
+      buf[0]=0;
+      if(arg->min_chirp_A!=arg->max_chirp_A && arg->sweep_steps>1 &&
+         arg->x_dim!=DIM_CHIRP_A && arg->y_dim!=DIM_CHIRP_A){
+        strcat(buf,"A");
+        swept++;
+      }
+      if(arg->min_chirp_P!=arg->max_chirp_P && arg->sweep_steps>1 &&
+         arg->x_dim!=DIM_CHIRP_P && arg->y_dim!=DIM_CHIRP_P){
+        if(swept)strcat(buf,",");
+        strcat(buf,"P");
+        swept++;
+      }
+      if(arg->min_chirp_W!=arg->max_chirp_W && arg->sweep_steps>1 &&
+         arg->x_dim!=DIM_CHIRP_W && arg->y_dim!=DIM_CHIRP_W){
+        if(swept)strcat(buf,",");
+        strcat(buf,"W");
+        swept++;
+      }
+      if(arg->min_chirp_dA!=arg->max_chirp_dA && arg->sweep_steps>1 &&
+         arg->x_dim!=DIM_CHIRP_dA && arg->y_dim!=DIM_CHIRP_dA){
+        if(swept)strcat(buf,",");
+        strcat(buf,"dA");
+        swept++;
+      }
+      if(arg->min_chirp_dW!=arg->max_chirp_dW && arg->sweep_steps>1 &&
+         arg->x_dim!=DIM_CHIRP_dW && arg->y_dim!=DIM_CHIRP_dW){
+        if(swept)strcat(buf,",");
+        strcat(buf,"dW");
+        swept++;
+      }
+      if(arg->min_chirp_ddA!=arg->max_chirp_ddA && arg->sweep_steps>1 &&
+         arg->x_dim!=DIM_CHIRP_ddA && arg->y_dim!=DIM_CHIRP_ddA){
+        if(swept)strcat(buf,",");
+        strcat(buf,"ddA");
+        swept++;
+      }
+
+      if(swept){
+        if(expl || zeroes>1)
+          strcat(subtitle2,", ");
+
+        strcat(subtitle2,"swept ");
+        strcat(subtitle2,buf);
+      }
+    }
+
+    strcat(subtitle2,"] estimate:[");
+    zeroes=0;
+    expl=0;
+    swept=0;
+    if(arg->min_est_A==0 && (arg->max_est_A==0 || arg->sweep_steps<2) &&
+       arg->x_dim != DIM_ESTIMATE_A && arg->y_dim != DIM_ESTIMATE_A &&
+       !arg->rel_est_A)
+      zeroes++;
+    if(arg->min_est_P==0 && (arg->max_est_P==0 || arg->sweep_steps<2) &&
+       arg->x_dim != DIM_ESTIMATE_P && arg->y_dim != DIM_ESTIMATE_P &&
+       !arg->rel_est_P)
+      zeroes++;
+    if(arg->min_est_W==0 && (arg->max_est_W==0 || arg->sweep_steps<2) &&
+       arg->x_dim != DIM_ESTIMATE_W && arg->y_dim != DIM_ESTIMATE_W &&
+       !arg->rel_est_W)
+      zeroes++;
+    if(arg->min_est_dA==0 && (arg->max_est_dA==0 || arg->sweep_steps<2) &&
+       arg->x_dim != DIM_ESTIMATE_dA && arg->y_dim != DIM_ESTIMATE_dA &&
+       !arg->rel_est_dA)
+      zeroes++;
+    if(arg->min_est_dW==0 && (arg->max_est_dW==0 || arg->sweep_steps<2) &&
+       arg->x_dim != DIM_ESTIMATE_dW && arg->y_dim != DIM_ESTIMATE_dW &&
+       !arg->rel_est_dW)
+      zeroes++;
+    if(arg->min_est_ddA==0 && (arg->max_est_ddA==0 || arg->sweep_steps<2) &&
+       arg->x_dim != DIM_ESTIMATE_ddA && arg->y_dim != DIM_ESTIMATE_ddA &&
+       !arg->rel_est_ddA)
+      zeroes++;
+
+    if(arg->min_est_A==arg->max_est_A || arg->sweep_steps<2){
+      if(arg->min_est_A==0 && arg->rel_est_A){
+        strcat(subtitle2,"A=chirp A");
+        expl++;
+      }else
+        if(arg->min_est_A!=0 || zeroes<2){
+          if(arg->x_dim != DIM_ESTIMATE_A && arg->y_dim != DIM_ESTIMATE_A){
+            snprintf(buf,80,"A=%.0fdB",todB(arg->min_est_A));
+            strcat(subtitle2,buf);
+            if(arg->rel_est_A)strcat(subtitle2,"(relative)");
+            expl++;
+          }
+        }
+    }
+
+    if(arg->min_est_P==arg->max_est_P || arg->sweep_steps<2){
+      if(arg->min_est_P==0 && arg->rel_est_P){
+        if(expl)strcat(subtitle2,", ");
+        strcat(subtitle2,"P=chirp P");
+        expl++;
+      }else
+        if(arg->min_est_P!=0 || zeroes<2){
+          if(arg->x_dim != DIM_ESTIMATE_P && arg->y_dim != DIM_ESTIMATE_P){
+            if(expl)strcat(subtitle2,", ");
+            snprintf(buf,80,"P=%.1f",arg->min_est_P);
+            strcat(subtitle2,buf);
+            if(arg->rel_est_P)strcat(subtitle2,"(relative)");
+            expl++;
+          }
+        }
+    }
+
+    if(arg->min_est_W==arg->max_est_W || arg->sweep_steps<2){
+      if(arg->min_est_W==0 && arg->rel_est_W){
+        if(expl)strcat(subtitle2,", ");
+        strcat(subtitle2,"W=chirp W");
+        expl++;
+      }else
+        if(arg->min_est_W!=0 || zeroes<2){
+          if(arg->x_dim != DIM_ESTIMATE_W && arg->y_dim != DIM_ESTIMATE_W){
+            if(expl)strcat(subtitle2,", ");
+            snprintf(buf,80,"W=Nyquist/%.0f",(arg->blocksize/2)/arg->min_est_W);
+            strcat(subtitle2,buf);
+            if(arg->rel_est_W)strcat(subtitle2,"(relative)");
+            expl++;
+          }
+        }
+    }
+
+    if(arg->min_est_dA==arg->max_est_dA || arg->sweep_steps<2){
+      if(arg->min_est_dA==0 && arg->rel_est_dA){
+        if(expl)strcat(subtitle2,", ");
+        strcat(subtitle2,"dA=chirp dA");
+        expl++;
+      }else
+        if(arg->min_est_dA!=0 || zeroes<2){
+          if(arg->x_dim != DIM_ESTIMATE_dA && arg->y_dim != DIM_ESTIMATE_dA){
+            if(expl)strcat(subtitle2,", ");
+            snprintf(buf,80,"dA=%.1f",arg->min_est_dA);
+            strcat(subtitle2,buf);
+            if(arg->rel_est_dA)strcat(subtitle2,"(relative)");
+          expl++;
+          }
+        }
+    }
+
+    if(arg->min_est_dW==arg->max_est_dW || arg->sweep_steps<2){
+      if(arg->min_est_dW==0 && arg->rel_est_dW){
+        if(expl)strcat(subtitle2,", ");
+        strcat(subtitle2,"dW=chirp dW");
+        expl++;
+      }else
+        if(arg->min_est_dW!=0 || zeroes<2){
+          if(arg->x_dim != DIM_ESTIMATE_dW && arg->y_dim != DIM_ESTIMATE_dW){
+            if(expl)strcat(subtitle2,", ");
+            snprintf(buf,80,"dW=%.1f",arg->min_est_dW);
+            strcat(subtitle2,buf);
+            if(arg->rel_est_dW)strcat(subtitle2,"(relative)");
+            expl++;
+          }
+        }
+    }
+
+    if(arg->min_est_ddA==arg->max_est_ddA || arg->sweep_steps<2){
+      if(arg->min_est_ddA==0 && arg->rel_est_ddA){
+        if(expl)strcat(subtitle2,", ");
+        strcat(subtitle2,"ddA=chirp ddA");
+        expl++;
+      }else
+        if(arg->min_est_ddA!=0 || zeroes<2){
+          if(arg->x_dim != DIM_ESTIMATE_ddA && arg->y_dim != DIM_ESTIMATE_ddA){
+            if(expl)strcat(subtitle2,", ");
+            snprintf(buf,80,"ddA=%.1f",arg->min_est_ddA);
+            strcat(subtitle2,buf);
+            if(arg->rel_est_ddA)strcat(subtitle2,"(relative)");
+            expl++;
+          }
+        }
+    }
+    
+    if(expl && zeroes>1)
+      strcat(subtitle2,", ");
+
+    if(arg->min_est_A==0 && (arg->max_est_A==0 || arg->sweep_steps<2) &&
+       zeroes>1 && arg->x_dim != DIM_ESTIMATE_A &&
+       arg->y_dim != DIM_ESTIMATE_A && !arg->rel_est_A)
+      strcat(subtitle2,"A=");
+    if(arg->min_est_P==0 && (arg->max_est_P==0 || arg->sweep_steps<2) &&
+       zeroes>1 && arg->x_dim != DIM_ESTIMATE_P &&
+       arg->y_dim != DIM_ESTIMATE_P && !arg->rel_est_P)
+      strcat(subtitle2,"P=");
+    if(arg->min_est_W==0 && (arg->max_est_W==0 || arg->sweep_steps<2) &&
+       zeroes>1 && arg->x_dim != DIM_ESTIMATE_W &&
+       arg->y_dim != DIM_ESTIMATE_W && !arg->rel_est_W)
+      strcat(subtitle2,"W=");
+    if(arg->min_est_dA==0 && (arg->max_est_dA==0 || arg->sweep_steps<2) &&
+       zeroes>1 && arg->x_dim != DIM_ESTIMATE_dA &&
+       arg->y_dim != DIM_ESTIMATE_dA && !arg->rel_est_dA)
+      strcat(subtitle2,"dA=");
+    if(arg->min_est_dW==0 && (arg->max_est_dW==0 || arg->sweep_steps<2) &&
+       zeroes>1 && arg->x_dim != DIM_ESTIMATE_dW &&
+       arg->y_dim != DIM_ESTIMATE_dW && !arg->rel_est_dW)
+      strcat(subtitle2,"dW=");
+    if(arg->min_est_ddA==0 && (arg->max_est_ddA==0 || arg->sweep_steps<2) &&
+       zeroes>1 && arg->x_dim != DIM_ESTIMATE_ddA &&
+       arg->y_dim != DIM_ESTIMATE_ddA && !arg->rel_est_ddA)
+      strcat(subtitle2,"ddA=");
+    if(zeroes>1)
+      strcat(subtitle2,"0");
+
+    {
+      char buf[320];
+      buf[0]=0;
+      if(arg->min_est_A!=arg->max_est_A && arg->sweep_steps>1 &&
+         arg->x_dim!=DIM_ESTIMATE_A && arg->y_dim!=DIM_ESTIMATE_A){
+        strcat(buf,"A");
+        if(arg->rel_est_A)strcat(buf,"(relative)");
+        swept++;
+      }
+      if(arg->min_est_P!=arg->max_est_P && arg->sweep_steps>1 &&
+         arg->x_dim!=DIM_ESTIMATE_P && arg->y_dim!=DIM_ESTIMATE_P){
+        if(swept)strcat(buf,",");
+        strcat(buf,"P");
+        if(arg->rel_est_P)strcat(buf,"(relative)");
+        swept++;
+      }
+      if(arg->min_est_W!=arg->max_est_W && arg->sweep_steps>1 &&
+         arg->x_dim!=DIM_ESTIMATE_W && arg->y_dim!=DIM_ESTIMATE_W){
+        if(swept)strcat(buf,",");
+        strcat(buf,"W");
+        if(arg->rel_est_W)strcat(buf,"(relative)");
+        swept++;
+      }
+      if(arg->min_est_dA!=arg->max_est_dA && arg->sweep_steps>1 &&
+         arg->x_dim!=DIM_ESTIMATE_dA && arg->y_dim!=DIM_ESTIMATE_dA){
+        if(swept)strcat(buf,",");
+        strcat(buf,"dA");
+        if(arg->rel_est_dA)strcat(buf,"(relative)");
+        swept++;
+      }
+      if(arg->min_est_dW!=arg->max_est_dW && arg->sweep_steps>1 &&
+         arg->x_dim!=DIM_ESTIMATE_dW && arg->y_dim!=DIM_ESTIMATE_dW){
+        if(swept)strcat(buf,",");
+        strcat(buf,"dW");
+        if(arg->rel_est_dW)strcat(buf,"(relative)");
+        swept++;
+      }
+      if(arg->min_est_ddA!=arg->max_est_ddA && arg->sweep_steps>1 &&
+         arg->x_dim!=DIM_ESTIMATE_ddA && arg->y_dim!=DIM_ESTIMATE_ddA){
+        if(swept)strcat(buf,",");
+        strcat(buf,"ddA");
+        if(arg->rel_est_ddA)strcat(buf,"(relative)");
+        swept++;
+      }
+
+      if(swept){
+        if(expl || zeroes>1)
+          strcat(subtitle2,", ");
+
+        strcat(subtitle2," swept ");
+        strcat(subtitle2,buf);
+      }
+    }
+
+    strcat(subtitle2,"]");
+    arg->subtitle2 = subtitle2;
+  }
+
+  if(!arg->subtitle3){
+    char buf[80];
+    subtitle3[0]=0;
+
+    if(arg->window == window_functions.rectangle)
+      strcat(subtitle3,"rectangular window");
+    if(arg->window == window_functions.sine)
+      strcat(subtitle3,"sine window");
+    if(arg->window == window_functions.hanning)
+      strcat(subtitle3,"hanning window");
+    if(arg->window == window_functions.vorbis)
+      strcat(subtitle3,"vorbis window");
+    if(arg->window == window_functions.blackman_harris)
+      strcat(subtitle3,"blackmann-harris window");
+    if(arg->window == window_functions.tgauss_deep)
+      strcat(subtitle3,"unimodal triangular/gaussian window");
+    if(arg->window == window_functions.dolphcheb)
+      strcat(subtitle3,"dolph-chebyshev window");
+    if(arg->window == window_functions.maxwell1)
+      strcat(subtitle3,"maxwell (optimized) window");
+
+    if(arg->x_dim != DIM_ALPHA_W && arg->y_dim != DIM_ALPHA_W){
+      if(arg->fit_W_alpha_min==arg->fit_W_alpha_max || arg->sweep_steps<2){
+        if(arg->fit_W_alpha_min!=1.0){
+          snprintf(buf,80,", alpha_W=%.2f",arg->fit_W_alpha_min);
+          strcat(subtitle3,buf);
+        }
+      }
+      if(arg->fit_W_alpha_min!=arg->fit_W_alpha_max && arg->sweep_steps>1){
+        snprintf(buf,80,", swept alpha_W");
+        strcat(subtitle3,buf);
+      }
+    }
+
+    if(arg->x_dim != DIM_ALPHA_dW && arg->y_dim != DIM_ALPHA_dW){
+      if(arg->fit_dW_alpha_min==arg->fit_dW_alpha_max || arg->sweep_steps<2){
+        if(arg->fit_dW_alpha_min!=1.0){
+          snprintf(buf,80,", alpha_dW=%.3f",arg->fit_dW_alpha_min);
+          strcat(subtitle3,buf);
+        }
+      }
+      if(arg->fit_dW_alpha_min!=arg->fit_dW_alpha_max && arg->sweep_steps>1){
+        snprintf(buf,80,", swept alpha_dW");
+        strcat(subtitle3,buf);
+      }
+    }
+    arg->subtitle3=subtitle3;
+  }
+
+  if(!arg->xaxis_label){
+    switch(arg->x_dim){
+    case DIM_ESTIMATE_A:
+      if(arg->rel_est_A)
+        arg->xaxis_label="initial estimate distance from A";
+      else
+        arg->xaxis_label="initial estimated A";
+      break;
+    case DIM_ESTIMATE_P:
+      if(arg->rel_est_P)
+        arg->xaxis_label="initial estimate distance from P (radians)";
+      else
+        arg->xaxis_label="initial estimated P (radians)";
+      break;
+    case DIM_ESTIMATE_W:
+      if(arg->rel_est_W)
+        arg->xaxis_label="initial estimate distance from W (cycles/block)";
+      else
+        arg->xaxis_label="initial estimated W (cycles/block)";
+      break;
+    case DIM_ESTIMATE_dA:
+      if(arg->rel_est_dA)
+        arg->xaxis_label="initial estimate distance from dA";
+      else
+        arg->xaxis_label="initial estimated dA";
+      break;
+    case DIM_ESTIMATE_dW:
+      if(arg->rel_est_dW)
+        arg->xaxis_label="initial estimate distance from dW (cycles/block)";
+      else
+        arg->xaxis_label="initial estimated dW (cycles/block)";
+      break;
+    case DIM_ESTIMATE_ddA:
+      if(arg->rel_est_ddA)
+        arg->xaxis_label="initial estimate distance from ddA";
+      else
+        arg->xaxis_label="initial estimated ddA";
+      break;
+    case DIM_CHIRP_A:
+      arg->xaxis_label="A";
+      break;
+    case DIM_CHIRP_P:
+      arg->xaxis_label="P (radians)";
+      break;
+    case DIM_CHIRP_W:
+      arg->xaxis_label="W (cycles/block)";
+      break;
+    case DIM_CHIRP_dA:
+      arg->xaxis_label="dA";
+      break;
+    case DIM_CHIRP_dW:
+      arg->xaxis_label="dW (cycles/block)";
+      break;
+    case DIM_CHIRP_ddA:
+      arg->xaxis_label="ddA";
+      break;
+    case DIM_ALPHA_W:
+      arg->xaxis_label="alpha_W";
+      break;
+    case DIM_ALPHA_dW:
+      arg->xaxis_label="alpha_dW";
+      break;
+    }
+  }
+
+  if(!arg->yaxis_label){
+    switch(arg->y_dim){
+    case DIM_ESTIMATE_A:
+      if(arg->rel_est_A)
+        arg->yaxis_label="initial estimate distance from A";
+      else
+        arg->yaxis_label="initial estimated A";
+      break;
+    case DIM_ESTIMATE_P:
+      if(arg->rel_est_P)
+        arg->yaxis_label="initial estimate distance from P (radians)";
+      else
+        arg->yaxis_label="initial estimated P (radians)";
+      break;
+    case DIM_ESTIMATE_W:
+      if(arg->rel_est_W)
+        arg->yaxis_label="initial estimate distance from W (cycles/block)";
+      else
+        arg->yaxis_label="initial estimated W (cycles/block)";
+      break;
+    case DIM_ESTIMATE_dA:
+      if(arg->rel_est_dA)
+        arg->yaxis_label="initial estimate distance from dA";
+      else
+        arg->yaxis_label="initial estimated dA";
+      break;
+    case DIM_ESTIMATE_dW:
+      if(arg->rel_est_dW)
+        arg->yaxis_label="initial estimate distance from dW (cycles/block)";
+      else
+        arg->yaxis_label="initial estimated dW (cycles/block)";
+      break;
+    case DIM_ESTIMATE_ddA:
+      if(arg->rel_est_ddA)
+        arg->yaxis_label="initial estimate distance from ddA";
+      else
+        arg->yaxis_label="initial estimated ddA";
+      break;
+    case DIM_CHIRP_A:
+      arg->yaxis_label="A";
+      break;
+    case DIM_CHIRP_P:
+      arg->yaxis_label="P (radians)";
+      break;
+    case DIM_CHIRP_W:
+      arg->yaxis_label="W (cycles/block)";
+      break;
+    case DIM_CHIRP_dA:
+      arg->yaxis_label="dA";
+      break;
+    case DIM_CHIRP_dW:
+      arg->yaxis_label="dW (cycles/block)";
+      break;
+    case DIM_CHIRP_ddA:
+      arg->yaxis_label="ddA";
+      break;
+    case DIM_ALPHA_W:
+      arg->yaxis_label="alpha_W";
+      break;
+    case DIM_ALPHA_dW:
+      arg->yaxis_label="alpha_dW";
+      break;
+    }
+  }
+
+  if(!arg->filebase){
+    filebase[0]=0;
+
+    switch(arg->fit_nonlinear){
+    case 0:
+      strcat(filebase,"linear-");
+      break;
+    case 1:
+      strcat(filebase,"partial-nonlinear-");
+      break;
+    case 2:
+      strcat(filebase,"full-nonlinear-");
+      break;
+    }
+
+    strcat(filebase,dim_to_abbrv(arg->y_dim));
+    strcat(filebase,"-vs-");
+    strcat(filebase,dim_to_abbrv(arg->x_dim));
+    strcat(filebase,"-");
+
+    if(arg->window == window_functions.rectangle)
+      strcat(filebase,"rectangular");
+    if(arg->window == window_functions.sine)
+      strcat(filebase,"sine");
+    if(arg->window == window_functions.hanning)
+      strcat(filebase,"hanning");
+    if(arg->window == window_functions.vorbis)
+      strcat(filebase,"vorbis");
+    if(arg->window == window_functions.blackman_harris)
+      strcat(filebase,"blackmann-harris");
+    if(arg->window == window_functions.tgauss_deep)
+      strcat(filebase,"unimodal triangular/gaussian window");
+    if(arg->window == window_functions.dolphcheb)
+      strcat(filebase,"dolph-chebyshev");
+    if(arg->window == window_functions.maxwell1)
+      strcat(filebase,"maxwell");
+
+    arg->filebase=filebase;
+  }
+}
+
 /* performs a W initial estimate error vs chirp W plot.  Ignores the
    est and chirp arguments for W; these are pulled from the x and y setup */
 
-void w_e(char *filebase,graph_run *arg){
+void graph_1chirp(char *filepre,graph_1chirp_arg *inarg){
+  graph_1chirp_arg args=*inarg;
+  graph_1chirp_arg *arg=&args;
   int threads=arg->threads;
   int blocksize = arg->blocksize;
   float window[blocksize];
@@ -517,8 +1249,16 @@ void w_e(char *filebase,graph_run *arg){
   int xmajori,ymajori;
   int xminori,yminori;
 
+  char *filebase;
+
   struct timeval last;
   gettimeofday(&last,NULL);
+  setup_titles_1chirp(arg);
+
+  filebase=calloc(strlen(filepre)+strlen(arg->filebase?arg->filebase:"")+1,
+                  sizeof(*filebase));
+  strcat(filebase,filepre);
+  strcat(filebase,arg->filebase);
 
   switch(arg->x_dim){
   case DIM_ESTIMATE_A:
@@ -1463,17 +2203,12 @@ void w_e(char *filebase,graph_run *arg){
   fprintf(stderr," done\n");
 }
 
-int main(){
-  graph_run arg={
+void init_arg(graph_1chirp_arg *arg){
+  *arg=(graph_1chirp_arg){
     /* fontsize */      18,
-    /* subtitle1 */     "Linear estimation, no ddA fit",
-    /* subtitle2 */     "chirp: A=1.0, dA=0., swept phase | estimate A=P=dA=dW=0, estimate W=chirp W",
-    /* subtitle3 */     "sine window",
-    /* xaxis label */   "W (cycles/block)",
-    /* yaxis label */   "dW (cycles/block)",
-
-    /* blocksize */     128,
-    /* threads */       8,
+    /* titles */        0,0,0,0,0,0,
+    /* blocksize */     256,
+    /* threads */       32,
 
     /* window */        window_functions.sine,
     /* fit_tol */       .000001,
@@ -1490,11 +2225,11 @@ int main(){
     /* dW_alpha_min */  1.,
     /* dW_alpha_max */  1.,
 
-    /* x dimension */   DIM_CHIRP_W,
+    /* x dimension */   0,
     /* x steps */       1001,
     /* x major */       1.,
     /* x minor */       .25,
-    /* y dimension */   DIM_CHIRP_dW,
+    /* y dimension */   0,
     /* y steps */       601,
     /* y major */       1.,
     /* y minor */       .25,
@@ -1510,509 +2245,338 @@ int main(){
 
     /* ch A range */    1.,1.,
     /* ch P range */    0.,1.-1./32.,
-    /* ch W range */    0.,10.,
+    /* ch W range */    0.,0.,
     /* ch dA range */   0.,0.,
-    /* ch dW range */   -2.5,2.5,
+    /* ch dW range */   0.,0.,
     /* ch ddA range */  0.,0.,
 
     /* additive white noise */ 0.,
 
-    /* converge av */     1,
-    /* converge max */    1,
-    /* converge del */    0,
-    /* avg A error */     1,
-    /* max A error */     1,
-    /* A error delta */   0,
-    /* avg P error */     1,
-    /* max P error */     1,
-    /* P error delta */   0,
-    /* avg W error */     1,
-    /* max W error */     1,
-    /* W error delta */   0,
-    /* avg dA error */    1,
-    /* max dA error */    1,
-    /* dA error delta */  0,
-    /* avg dW error */    1,
-    /* max dW error */    1,
-    /* dW error delta */  0,
-    /* avg ddA error */   1,
-    /* max ddA error */   1,
-    /* ddA error delta */ 0,
-    /* RMS global error */1,
-    /* RMS peak error */  1,
-    /* RMS error delta */ 0,
-
+    /* error graphs: average/MSE, worst case (peak), delta */
+    /* converge */     0,1,0,
+    /* A error  */     0,1,0,
+    /* P error */      0,1,0,
+    /* W error */      0,1,0,
+    /* dA error */     0,1,0,
+    /* dW error */     0,1,0,
+    /* ddA error */    0,1,0,
+    /* RMS error */    0,1,0,
   };
+}
 
-  /* Graphs for dW vs W ****************************************/
 
-  //w_e("linear-dW-vs-W",&arg);
-  arg.fit_nonlinear=1;
-  arg.subtitle1="Partial nonlinear estimation, no ddA fit";
-  //w_e("partial-nonlinear-dW-vs-W",&arg);
-  arg.subtitle1="Full nonlinear estimation, no ddA fit";
-  arg.fit_nonlinear=2;
-  //w_e("full-nonlinear-dW-vs-W",&arg);
+int main(){
+  graph_1chirp_arg arg;
 
-  /* Graphs for W estimate distance vs W ************************/
+  /* Graphs for linear v. partial-nonlinear v. full-nonlinear ***************/
+  /* dW vs W ****************************************************************/
+  init_arg(&arg);
+  arg.max_chirp_W=10.;
+  arg.min_chirp_dW=-2.5;
+  arg.max_chirp_dW=2.5;
+  arg.x_dim=DIM_CHIRP_W;
+  arg.y_dim=DIM_CHIRP_dW;
 
-  arg.subtitle1="Linear estimation, no ddA fit";
-  arg.subtitle2="chirp: A=1.0, dA=dW=0., swept phase | estimate A=P=dA=dW=0";
   arg.fit_nonlinear=0;
-  arg.yaxis_label="initial distance from W (cycles/block)";
-  arg.y_dim = DIM_ESTIMATE_W;
-  arg.min_est_W = -2.5;
-  arg.max_est_W =  2.5;
-  arg.min_chirp_dW=0.;
-  arg.max_chirp_dW=0.;
+  graph_1chirp("algo-",&arg);
 
-  //w_e("linear-estW-vs-W",&arg);
-  arg.subtitle1="Partial nonlinear estimation, no ddA fit";
   arg.fit_nonlinear=1;
-  //w_e("partial-nonlinear-estW-vs-W",&arg);
-  arg.subtitle1="Full nonlinear estimation, no ddA fit";
+  graph_1chirp("algo-",&arg);
+
   arg.fit_nonlinear=2;
-  //w_e("full-nonlinear-estW-vs-W",&arg);
+  graph_1chirp("algo-",&arg);
+
+  /* Graphs for linear v. partial-nonlinear v. full-nonlinear ***************/
+  /* estW vs W **************************************************************/
+  init_arg(&arg);
+  arg.max_chirp_W=10.;
+  arg.min_est_W=-2.5;
+  arg.max_est_W=2.5;
+  arg.x_dim=DIM_CHIRP_W;
+  arg.y_dim=DIM_ESTIMATE_W;
+
+  arg.fit_nonlinear=0;
+  graph_1chirp("algo-",&arg);
+
+  arg.fit_nonlinear=1;
+  graph_1chirp("algo-",&arg);
+
+  arg.fit_nonlinear=2;
+  graph_1chirp("algo-",&arg);
   arg.fit_nonlinear=0;
 
-  /* graphs for different windows *******************************/
+  /* Graphs for comparison of various windows *******************************/
+  /* estW vs W **************************************************************/
+  init_arg(&arg);
+  arg.min_est_W=-2.5;
+  arg.max_est_W=2.5;
+  arg.max_chirp_W=10;
+  arg.x_dim=DIM_CHIRP_W;
+  arg.y_dim=DIM_ESTIMATE_W;
 
-  arg.min_est_W = -2.5;
-  arg.max_est_W =  2.5;
-  arg.max_chirp_W =  10;
   arg.fit_nonlinear = 0;
-  arg.subtitle1="Linear estimation, no ddA fit";
+
   arg.window = window_functions.rectangle;
-  arg.subtitle3 = "rectangular window";
-  //w_e("linear-estW-vs-W-rectangular",&arg);
-
+  graph_1chirp("win-",&arg);
   arg.window = window_functions.sine;
-  arg.subtitle3 = "sine window";
-  //w_e("linear-estW-vs-W-sine",&arg);
-
+  graph_1chirp("win-",&arg);
   arg.window = window_functions.hanning;
-  arg.subtitle3 = "hanning window";
-  //w_e("linear-estW-vs-W-hanning",&arg);
-
+  graph_1chirp("win-",&arg);
   arg.window = window_functions.tgauss_deep;
-  arg.subtitle3 = "unimodal triangular/gaussian window";
-  //w_e("linear-estW-vs-W-unimodal",&arg);
-
+  graph_1chirp("win-",&arg);
   arg.window = window_functions.maxwell1;
-  arg.subtitle3 = "maxwell (optimized) window";
-  //w_e("linear-estW-vs-W-maxwell",&arg);
+  graph_1chirp("win-",&arg);
 
   arg.min_est_W = -15;
   arg.max_est_W =  15;
   arg.max_chirp_W =  25;
   arg.fit_nonlinear = 2;
-  arg.subtitle1="Fully nonlinear estimation, no ddA fit";
   arg.window = window_functions.rectangle;
-  arg.subtitle3 = "rectangular window";
-  //w_e("full-nonlinear-estW-vs-W-rectangular",&arg);
-
+  graph_1chirp("win-",&arg);
   arg.window = window_functions.sine;
-  arg.subtitle3 = "sine window";
-  //w_e("full-nonlinear-estW-vs-W-sine",&arg);
-
+  graph_1chirp("win-",&arg);
   arg.window = window_functions.hanning;
-  arg.subtitle3 = "hanning window";
-  //w_e("full-nonlinear-estW-vs-W-hanning",&arg);
-
+  graph_1chirp("win-",&arg);
   arg.window = window_functions.tgauss_deep;
-  arg.subtitle3 = "unimodal triangular/gaussian window";
-  //w_e("full-nonlinear-estW-vs-W-unimodal",&arg);
-
+  graph_1chirp("win-",&arg);
   arg.window = window_functions.maxwell1;
-  arg.subtitle3 = "maxwell (optimized) window";
-  //w_e("full-nonlinear-estW-vs-W-maxwell",&arg);
+  graph_1chirp("win-",&arg);
 
-  /* 1, 1.5, 2nd order **********************************************/
-  arg.min_est_W = -3;
-  arg.max_est_W =  3;
-  arg.max_chirp_W =  10;
-  arg.window = window_functions.hanning;
-  arg.subtitle3 = "hanning window";
-  arg.fit_dW = 0;
+  /* Graphs for .5, 1, 1.5, 2nd order ***************************************/
+  /* estW vs W **************************************************************/
+  init_arg(&arg);
+  arg.min_est_W=-3;
+  arg.max_est_W=3;
+  arg.max_chirp_W=10;
+  arg.x_dim=DIM_CHIRP_W;
+  arg.y_dim=DIM_ESTIMATE_W;
+  arg.fit_W = 1;
   arg.fit_dA = 0;
+  arg.fit_dW = 0;
+  arg.fit_ddA = 0;
+  arg.window = window_functions.hanning;
 
   arg.fit_nonlinear = 2;
-  arg.subtitle1="Fully nonlinear estimation, half-order fit (W only)";
-  //w_e("nonlinear-estW-vs-W-.5order",&arg);
+  graph_1chirp("order.5-",&arg);
 
   arg.fit_dA=1;
 
   arg.fit_nonlinear = 0;
-  arg.subtitle1="Linear estimation, first-order fit";
-  //w_e("linear-estW-vs-W-1order",&arg);
+  graph_1chirp("order1-",&arg);
 
   arg.fit_nonlinear = 2;
-  arg.subtitle1="Fully nonlinear estimation, first-order fit";
-  //w_e("nonlinear-estW-vs-W-1order",&arg);
+  graph_1chirp("order1-",&arg);
 
   arg.fit_dW=1;
 
   arg.fit_nonlinear = 2;
-  arg.subtitle1="Fully nonlinear estimation, 1.5th-order fit (dW only)";
-  //w_e("nonlinear-estW-vs-W-1.5order",&arg);
+  graph_1chirp("order1.5-",&arg);
 
   arg.fit_ddA=1;
 
   arg.fit_nonlinear = 0;
-  arg.subtitle1="Linear estimation, second-order fit";
-  //w_e("linear-estW-vs-W-2order",&arg);
+  graph_1chirp("order2-",&arg);
 
   arg.fit_nonlinear = 2;
-  arg.subtitle1="Fully nonlinear estimation, second-order fit";
-  //w_e("nonlinear-estW-vs-W-2order",&arg);
+  graph_1chirp("order2-",&arg);
 
-  /**************** symmetric norm tests ********************/
-
-  arg.fit_nonlinear = 0;
-  arg.fit_symm_norm = 1;
-  arg.fit_ddA=0;
+  /* Symmetric norm *********************************************************/
+  /* dW vs W ****************************************************************/
+  init_arg(&arg);
   arg.min_chirp_dW = -2.5;
   arg.max_chirp_dW =  2.5;
-  arg.min_est_W = 0;
-  arg.max_est_W = 0;
-  arg.y_dim = DIM_CHIRP_dW;
-  arg.subtitle2="chirp: A=1.0, dA=0., swept phase | estimate A=P=dA=dW=0, estimate W=chirp W",
-  arg.window = window_functions.sine;
-  arg.subtitle3 = "sine window";
-  arg.yaxis_label = "dW (cycles/block)",
+  arg.max_chirp_W=10;
+  arg.x_dim=DIM_CHIRP_W;
+  arg.y_dim=DIM_CHIRP_dW;
 
-  arg.subtitle1="linear estimation, symmetric normalization, no ddA fit";
-  //w_e("linear-dW-vs-W-symmetric",&arg);
-  arg.fit_nonlinear=1;
-  arg.subtitle1="Partial nonlinear estimation, symmetric normalization, no ddA fit";
-  //w_e("partial-nonlinear-dW-vs-W-symmetric",&arg);
-  arg.subtitle1="Full nonlinear estimation, symmetric normalization, no ddA fit";
-  arg.fit_nonlinear=2;
-  //w_e("full-nonlinear-dW-vs-W-symmetric",&arg);
+  arg.fit_symm_norm = 1;
 
-  /* Graphs for W estimate distance vs W ************************/
-
-  arg.subtitle1="Linear estimation, symmetric normalization, no ddA fit";
-  arg.subtitle2="chirp: A=1.0, dA=dW=0., swept phase | estimate A=P=dA=dW=0";
   arg.fit_nonlinear=0;
-  arg.yaxis_label="initial distance from W (cycles/block)";
-  arg.y_dim = DIM_ESTIMATE_W;
-  arg.min_est_W = -2.5;
-  arg.max_est_W =  2.5;
-  arg.min_chirp_dW=0.;
-  arg.max_chirp_dW=0.;
-
-  //w_e("linear-estW-vs-W-symmetric",&arg);
-  arg.subtitle1="Partial nonlinear estimation, symmetric normalization, no ddA fit";
+  graph_1chirp("symmetric-",&arg);
   arg.fit_nonlinear=1;
-  //w_e("partial-nonlinear-estW-vs-W-symmetric",&arg);
-  arg.subtitle1="Full nonlinear estimation, symmetric normalization, no ddA fit";
+  graph_1chirp("symmetric-",&arg);
   arg.fit_nonlinear=2;
-  //w_e("full-nonlinear-estW-vs-W-symmetric",&arg);
-  arg.fit_nonlinear=0;
+  graph_1chirp("symmetric-",&arg);
 
-  /* W alpha *****************************************************/
-  /* Y axis = estW */
-  arg.x_minor=.0625;
-  arg.subtitle1="full nonlinear estimation, no ddA fit, W centered";
+  /* estW vs W **************************************************************/
+  init_arg(&arg);
+  arg.min_est_W=-2.5;
+  arg.max_est_W=2.5;
+  arg.max_chirp_W=10;
+  arg.x_dim=DIM_CHIRP_W;
+  arg.y_dim=DIM_ESTIMATE_W;
+
+  arg.fit_symm_norm = 1;
+
+  arg.fit_nonlinear=0;
+  graph_1chirp("symmetric-",&arg);
+  arg.fit_nonlinear=1;
+  graph_1chirp("symmetric-",&arg);
+  arg.fit_nonlinear=2;
+  graph_1chirp("symmetric-",&arg);
+
+  /* W alpha ****************************************************************/
+  /* estW vs alphaW *********************************************************/
+  init_arg(&arg);
   arg.min_chirp_W = arg.max_chirp_W = rint(arg.blocksize/4);
-
   arg.fit_W_alpha_min = 0;
   arg.fit_W_alpha_max = 2.01612903225806451612;
-  arg.x_dim = DIM_ALPHA_W;
-  arg.xaxis_label = "alphaW",
-
-  arg.fit_nonlinear = 2;
-  arg.fit_symm_norm = 0;
-
-  arg.yaxis_label="initial distance from W (cycles/block)";
-  arg.y_dim = DIM_ESTIMATE_W;
   arg.min_est_W = -3;
   arg.max_est_W =  3;
+  arg.x_dim = DIM_ALPHA_W;
+  arg.y_dim = DIM_ESTIMATE_W;
+  arg.x_minor=.0625;
+
+  arg.fit_nonlinear = 2;
 
   arg.window = window_functions.rectangle;
-  arg.subtitle3 = "rectangular window";
-  //w_e("nonlinear-estW-vs-alphaW-rectangle",&arg);
+  graph_1chirp("alphaW-",&arg);
 
   arg.window = window_functions.sine;
-  arg.subtitle3 = "sine window";
-  //w_e("nonlinear-estW-vs-alphaW-sine",&arg);
+  graph_1chirp("alphaW-",&arg);
 
   arg.window = window_functions.hanning;
-  arg.subtitle3 = "rectangular hanning";
-  //w_e("nonlinear-estW-vs-alphaW-hanning",&arg);
+  graph_1chirp("alphaW-",&arg);
 
   arg.window = window_functions.tgauss_deep;
-  arg.subtitle3 = "unimodal triangular/gaussian window";
-  //w_e("nonlinear-estW-vs-alphaW-unimodal",&arg);
+  graph_1chirp("alphaW-",&arg);
 
   arg.window = window_functions.maxwell1;
-  arg.subtitle3 = "maxwell (optimized) window";
-  //w_e("nonlinear-estW-vs-alphaW-maxwell",&arg);
+  graph_1chirp("alphaW-",&arg);
 
-  /* dW alpha *****************************************************/
-
-  arg.fit_W_alpha_min = 1.;
-  arg.fit_W_alpha_max = 1.;
+  /* dW alpha ***************************************************************/
+  /* estW vs alphadW ********************************************************/
+  init_arg(&arg);
+  arg.min_chirp_W = arg.max_chirp_W = rint(arg.blocksize/4);
   arg.fit_dW_alpha_min = 0;
   arg.fit_dW_alpha_max = 3.125;
-  arg.x_dim = DIM_ALPHA_dW;
-  arg.xaxis_label = "alphadW",
-
-  arg.fit_nonlinear = 2;
-  arg.fit_symm_norm = 0;
-
-  arg.yaxis_label="initial distance from W (cycles/block)";
-  arg.y_dim = DIM_ESTIMATE_W;
   arg.min_est_W = -3;
   arg.max_est_W =  3;
+  arg.x_dim = DIM_ALPHA_dW;
+  arg.y_dim = DIM_ESTIMATE_W;
+  arg.x_minor=.0625;
+  arg.fit_nonlinear = 2;
+
+  arg.graph_Aerror_max=0;
+  arg.graph_Perror_max=0;
+  arg.graph_Werror_max=0;
+  arg.graph_dAerror_max=0;
+  arg.graph_dWerror_max=0;
+  arg.graph_ddAerror_max=0;
+  arg.graph_RMSerror_max=0;
+  arg.white_noise=fromdB(-80.);
 
   arg.window = window_functions.rectangle;
-  arg.subtitle3 = "rectangular window";
-  //w_e("nonlinear-estW-vs-alphadW-rectangle",&arg);
-
+  graph_1chirp("alphadW-",&arg);
   arg.window = window_functions.sine;
-  arg.subtitle3 = "sine window";
-  //w_e("nonlinear-estW-vs-alphadW-sine",&arg);
-
+  graph_1chirp("alphadW-",&arg);
   arg.window = window_functions.hanning;
-  arg.subtitle3 = "rectangular hanning";
-  //w_e("nonlinear-estW-vs-alphadW-hanning",&arg);
-
+  graph_1chirp("alphadW-",&arg);
   arg.window = window_functions.tgauss_deep;
-  arg.subtitle3 = "unimodal triangular/gaussian window";
-  //w_e("nonlinear-estW-vs-alphadW-unimodal",&arg);
-
+  graph_1chirp("alphadW-",&arg);
   arg.window = window_functions.maxwell1;
-  arg.subtitle3 = "maxwell (optimized) window";
-  //w_e("nonlinear-estW-vs-alphadW-maxwell",&arg);
+  graph_1chirp("alphadW-",&arg);
 
-  arg.yaxis_label="dW (cycles/block)";
-  arg.subtitle2="chirp: A=1.0, dA=0., swept phase | estimate A=P=dA=dW=0, estimate W=chirp W",
   arg.y_dim = DIM_CHIRP_dW;
-  arg.min_est_W =  0;
-  arg.max_est_W =  0;
+  arg.min_est_W = 0;
+  arg.max_est_W = 0;
   arg.min_chirp_dW = -3;
   arg.max_chirp_dW =  3;
 
   arg.window = window_functions.rectangle;
-  arg.subtitle3 = "rectangular window";
-  //w_e("nonlinear-dW-vs-alphadW-rectangle",&arg);
-
+  graph_1chirp("alphadW-",&arg);
   arg.window = window_functions.sine;
-  arg.subtitle3 = "sine window";
-  //w_e("nonlinear-dW-vs-alphadW-sine",&arg);
-
+  graph_1chirp("alphadW-",&arg);
   arg.window = window_functions.hanning;
-  arg.subtitle3 = "hanning window";
-  //w_e("nonlinear-dW-vs-alphadW-hanning",&arg);
-
+  graph_1chirp("alphadW-",&arg);
   arg.window = window_functions.tgauss_deep;
-  arg.subtitle3 = "unimodal triangular/gaussian window";
-  //w_e("nonlinear-dW-vs-alphadW-unimodal",&arg);
-
+  graph_1chirp("alphadW-",&arg);
   arg.window = window_functions.maxwell1;
-  arg.subtitle3 = "maxwell (optimized) window";
-  //w_e("nonlinear-dW-vs-alphadW-maxwell",&arg);
+  graph_1chirp("alphadW-",&arg);
 
-  /* replot earlier fits with opt dW alpha *************************/
-  arg.min_chirp_dW = 0;
-  arg.max_chirp_dW = 0;
+  /* replot algo fits with opt dW alpha *************************************/
+  /* estW vs W **************************************************************/
+  init_arg(&arg);
   arg.min_est_W = -9.375;
   arg.max_est_W =  9.375;
   arg.min_chirp_W =  0;
   arg.max_chirp_W =  25;
-  arg.fit_nonlinear = 2;
-  arg.x_minor = .25;
-
   arg.x_dim = DIM_CHIRP_W;
   arg.y_dim = DIM_ESTIMATE_W;
 
-  arg.subtitle1="Fully nonlinear estimation, no ddA fit";
-  arg.subtitle2="chirp: A=1.0, dA=dW=0., swept phase | estimate A=P=dA=dW=0";
-  arg.xaxis_label="W (cycles/block)";
-  arg.yaxis_label="initial distance from W (cycles/block)";
+  arg.fit_nonlinear = 2;
 
   arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.;
   arg.window = window_functions.rectangle;
-  arg.subtitle3 = "rectangular window";
-  //w_e("nodWa-estW-vs-W-rectangular",&arg);
+  graph_1chirp("nonopt-",&arg);
   arg.fit_dW_alpha_min = arg.fit_dW_alpha_max=2.2;
-  arg.subtitle3 = "rectangular window, dW alpha=2.2";
-  //w_e("optdWa-estW-vs-W-rectangular",&arg);
+  graph_1chirp("opt-",&arg);
 
   arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.;
   arg.window = window_functions.sine;
-  arg.subtitle3 = "sine window";
-  //w_e("nodWa-estW-vs-W-sine",&arg);
+  graph_1chirp("nonopt-",&arg);
   arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.711;
-  arg.subtitle3 = "sine window, dW alpha=1.711";
-  //w_e("optdWa-estW-vs-W-sine",&arg);
+  graph_1chirp("opt-",&arg);
 
   arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.;
   arg.window = window_functions.hanning;
-  arg.subtitle3 = "hanning window";
-  //w_e("nodWa-estW-vs-W-hanning",&arg);
+  graph_1chirp("nonopt-",&arg);
   arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.618;
-  arg.subtitle3 = "hanning window, dW alpha=1.618";
-  //w_e("optdWa-estW-vs-W-hanning",&arg);
+  graph_1chirp("opt-",&arg);
 
   arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.;
   arg.window = window_functions.tgauss_deep;
-  arg.subtitle3 = "unimodal triangular/gaussian window";
-  //w_e("nodWa-estW-vs-W-unimodal",&arg);
-  arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.526;
-  arg.subtitle3 = "unimodal triangular/gaussian window, dW alpha=1.526";
-  //w_e("optdWa-estW-vs-W-unimodal",&arg);
+  graph_1chirp("nonopt-",&arg);
+  arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.5;
+  graph_1chirp("opt-",&arg);
 
   arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.;
   arg.window = window_functions.maxwell1;
-  arg.subtitle3 = "maxwell (optimized) window";
-  //w_e("nodWa-estW-vs-W-maxwell",&arg);
+  graph_1chirp("nonopt-",&arg);
   arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.554;
-  arg.subtitle3 = "maxwell (optimized) window, dW alpha=1.554";
-  //w_e("optdWa-estW-vs-W-maxwell",&arg);
+  graph_1chirp("opt-",&arg);
 
-
+  /* dW vs W **************************************************************/
   arg.min_chirp_dW = -9.375;
   arg.max_chirp_dW = 9.375;
   arg.min_est_W = 0;
   arg.max_est_W = 0;
-  arg.min_chirp_W =  0;
-  arg.max_chirp_W =  25;
-  arg.fit_nonlinear = 2;
-  arg.x_minor = .25;
-  arg.x_dim = DIM_CHIRP_W;
   arg.y_dim = DIM_CHIRP_dW;
-
-  arg.subtitle1="Fully nonlinear estimation, no ddA fit";
-  arg.subtitle2="chirp: A=1.0, dA=0., swept phase | estimate A=P=dA=dW=0, estimate W=chirp W";
-  arg.xaxis_label="W (cycles/block)";
-  arg.yaxis_label="dW (cycles/block)";
 
   arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.;
   arg.window = window_functions.rectangle;
-  arg.subtitle3 = "rectangular window";
-  //w_e("nodWa-dW-vs-W-rectangular",&arg);
+  graph_1chirp("nonopt-",&arg);
   arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 2.125;
-  arg.subtitle3 = "rectangular window, dW alpha=2.125";
-  //w_e("optdWa-dW-vs-W-rectangular",&arg);
+  graph_1chirp("opt-",&arg);
 
   arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.;
   arg.window = window_functions.sine;
-  arg.subtitle3 = "sine window";
-  //w_e("nodWa-dW-vs-W-sine",&arg);
+  graph_1chirp("nonopt-",&arg);
   arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.711;
-  arg.subtitle3 = "sine window, dW alpha=1.711";
-  //w_e("optdWa-dW-vs-W-sine",&arg);
+  graph_1chirp("opt-",&arg);
 
   arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.;
   arg.window = window_functions.hanning;
-  arg.subtitle3 = "hanning window";
-  //w_e("nodWa-dW-vs-W-hanning",&arg);
+  graph_1chirp("nonopt-",&arg);
   arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.618;
-  arg.subtitle3 = "hanning window, dW alpha=1.618";
-  //w_e("optdWa-dW-vs-W-hanning",&arg);
+  graph_1chirp("opt-",&arg);
 
   arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.;
   arg.window = window_functions.tgauss_deep;
-  arg.subtitle3 = "unimodal triangular/gaussian window";
-  //w_e("nodWa-dW-vs-W-unimodal",&arg);
-  arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.526;
-  arg.subtitle3 = "unimodal triangular/gaussian window, dW alpha=1.526";
-  //w_e("optdWa-dW-vs-W-unimodal",&arg);
+  graph_1chirp("nonopt-",&arg);
+  arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.5;
+  graph_1chirp("opt-",&arg);
 
   arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.;
   arg.window = window_functions.maxwell1;
-  arg.subtitle3 = "maxwell (optimized) window";
-  //w_e("nodWa-dW-vs-W-maxwell",&arg);
+  graph_1chirp("nonopt-",&arg);
   arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.554;
-  arg.subtitle3 = "maxwell (optimized) window, dW alpha=1.554";
-  //w_e("optdWa-dW-vs-W-maxwell",&arg);
+  graph_1chirp("opt-",&arg);
 
-  /* Noise graphs *****************************************************/
-  arg.min_chirp_dW = 0;
-  arg.max_chirp_dW = 0;
-  arg.min_chirp_W = arg.max_chirp_W = rint(arg.blocksize/4);
-  arg.white_noise = fromdB(-40);
-  arg.subtitle1="Fully nonlinear estimation, no ddA fit, W centered, white noise=-40dB RMS";
-  arg.subtitle2="chirp: A=1.0, dA=dW=0., swept phase | estimate A=P=dA=dW=0";
-  arg.x_minor=.0625;
-  arg.fit_dW_alpha_min = 0;
-  arg.fit_dW_alpha_max = 3.125;
-  arg.x_dim = DIM_ALPHA_dW;
-  arg.xaxis_label = "alphadW",
-  arg.yaxis_label="initial distance from W (cycles/block)";
-  arg.y_dim = DIM_ESTIMATE_W;
-  arg.min_est_W = -3;
-  arg.max_est_W =  3;
-
-  arg.window = window_functions.tgauss_deep;
-  arg.subtitle3 = "unimodal triangular/gaussian window";
-  //w_e("nonlinear-40dBnoise-estW-vs-alphadW-unimodal",&arg);
-
-  arg.white_noise = fromdB(-60);
-  arg.subtitle1="Fully nonlinear estimation, no ddA fit, W centered, white noise=-60dB RMS";
-  //w_e("nonlinear-60dBnoise-estW-vs-alphadW-unimodal",&arg);
-
-  arg.white_noise = fromdB(-20);
-  arg.subtitle1="Fully nonlinear estimation, no ddA fit, W centered, white noise=-20dB RMS";
-  //w_e("nonlinear-20dBnoise-estW-vs-alphadW-unimodal",&arg);
-
-  arg.subtitle1="Fully nonlinear estimation, no ddA fit, W centered, white noise=-40dB RMS";
+  /* Noise graphs ***********************************************************/
 
 
-
-
-  arg.window = window_functions.hanning;
-  arg.subtitle3 = "rectangular hanning";
-  //w_e("nonlinear-40dBnoise-estW-vs-alphadW-hanning",&arg);
-
-  arg.window = window_functions.tgauss_deep;
-  arg.subtitle3 = "unimodal triangular/gaussian window";
-  //w_e("nonlinear-40dBnoise-estW-vs-alphadW-unimodal",&arg);
-
-  arg.window = window_functions.maxwell1;
-  arg.subtitle3 = "maxwell (optimized) window";
-  //w_e("nonlinear-40dBnoise-estW-vs-alphadW-maxwell",&arg);
-
-
-  arg.yaxis_label="dW (cycles/block)";
-  arg.subtitle2="chirp: A=1.0, dA=0., swept phase | estimate A=P=dA=dW=0, estimate W=chirp W",
-  arg.y_dim = DIM_CHIRP_dW;
-  arg.min_est_W =  0;
-  arg.max_est_W =  0;
-  arg.min_chirp_dW = -3;
-  arg.max_chirp_dW =  3;
-
-  arg.subtitle1="Fully nonlinear estimation, no ddA fit, W centered, white noise=-60dB RMS";
-  arg.white_noise = fromdB(-60);
-  arg.window = window_functions.tgauss_deep;
-  arg.subtitle3 = "unimodal triangular/gaussian window";
-  w_e("nonlinear-60dBnoise-dW-vs-alphadW-unimodal",&arg);
-
-  arg.subtitle1="Fully nonlinear estimation, no ddA fit, W centered, white noise=-40dB RMS";
-  arg.white_noise = fromdB(-40);
-  //w_e("nonlinear-40dBnoise-dW-vs-alphadW-unimodal",&arg);
-
-  arg.subtitle1="Fully nonlinear estimation, no ddA fit, W centered, white noise=-20dB RMS";
-  arg.white_noise = fromdB(-20);
-  //w_e("nonlinear-20dBnoise-dW-vs-alphadW-unimodal",&arg);
-
-
-
-  //arg.window = window_functions.hanning;
-  //arg.subtitle3 = "hanning window";
-  //w_e("nonlinear-40dBnoise-dW-vs-alphadW-hanning",&arg);
-
-  //arg.window = window_functions.tgauss_deep;
-  //arg.subtitle3 = "unimodal triangular/gaussian window";
-  //w_e("nonlinear-40dBnoise-dW-vs-alphadW-unimodal",&arg);
-
-  //arg.window = window_functions.maxwell1;
-  //arg.subtitle3 = "maxwell (optimized) window";
-  //w_e("nonlinear-40dBnoise-dW-vs-alphadW-maxwell",&arg);
-
+  /* Two chirp discrimination graphs ****************************************/
 
 
   return 0;

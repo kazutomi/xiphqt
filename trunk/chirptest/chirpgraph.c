@@ -360,6 +360,7 @@ cairo_t *draw_page(char *title,
   /* color legend */
   {
     float cw;
+    float ly;
     cairo_text_extents(c, "100", &extents);
     cw=extents.width*2*11;
     cairo_text_extents(c, ".000001", &extents);
@@ -395,7 +396,8 @@ cairo_t *draw_page(char *title,
 
           snprintf(buf,80,"%d",i);
           cairo_text_extents(c, buf, &extents);
-          cairo_move_to(c,px+w/2-extents.width*.5,legendy+toppad+legendh*.625+extents.height/2);
+          cairo_move_to(c,px+w/2-extents.width*.5,
+                        ly=legendy+toppad+legendh*.625+extents.height/2);
           set_iter_text_color(c, i);
           cairo_show_text(c, buf);
 
@@ -403,7 +405,7 @@ cairo_t *draw_page(char *title,
         }
       }
       cairo_text_extents(c, legend_label, &extents);
-      cairo_move_to(c,px-extents.width-legendh*.75,toppad+legendy+legendh*.625+extents.height*.5);
+      cairo_move_to(c,px-extents.width-legendh*.75,ly);
       cairo_show_text(c,legend_label);
     }else{
       int per_p = (datatype==DT_percent);
@@ -464,12 +466,13 @@ cairo_t *draw_page(char *title,
         }
 
         cairo_text_extents(c, buf, &extents);
-        cairo_move_to(c,px+w/2-extents.width*.5,legendy+toppad+legendh*.625+extents.height/2);
+        cairo_move_to(c,px+w/2-extents.width*.5,
+                      ly=legendy+toppad+legendh*.625+extents.height/2);
         cairo_show_text(c,buf);
 
       }
       cairo_text_extents(c, legend_label, &extents);
-      cairo_move_to(c,px-extents.width-legendh*.75,toppad+legendy+legendh*.625+extents.height*.5);
+      cairo_move_to(c,px-extents.width-legendh*.75,ly);
       cairo_show_text(c,legend_label);
     }
   }
