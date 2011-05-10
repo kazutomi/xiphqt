@@ -1153,7 +1153,7 @@ void setup_titles_1chirp(graph_1chirp_arg *arg){
     if(arg->window == window_functions.blackman_harris)
       strcat(filebase,"blackmann-harris");
     if(arg->window == window_functions.tgauss_deep)
-      strcat(filebase,"unimodal triangular/gaussian window");
+      strcat(filebase,"unimodal");
     if(arg->window == window_functions.dolphcheb)
       strcat(filebase,"dolph-chebyshev");
     if(arg->window == window_functions.maxwell1)
@@ -2278,13 +2278,13 @@ int main(){
   arg.y_dim=DIM_CHIRP_dW;
 
   arg.fit_nonlinear=0;
-  graph_1chirp("algo-",&arg);
+  //graph_1chirp("algo-",&arg);
 
   arg.fit_nonlinear=1;
-  graph_1chirp("algo-",&arg);
+  //graph_1chirp("algo-",&arg);
 
   arg.fit_nonlinear=2;
-  graph_1chirp("algo-",&arg);
+  //graph_1chirp("algo-",&arg);
 
   /* Graphs for linear v. partial-nonlinear v. full-nonlinear ***************/
   /* estW vs W **************************************************************/
@@ -2296,14 +2296,13 @@ int main(){
   arg.y_dim=DIM_ESTIMATE_W;
 
   arg.fit_nonlinear=0;
-  graph_1chirp("algo-",&arg);
+  //graph_1chirp("algo-",&arg);
 
   arg.fit_nonlinear=1;
-  graph_1chirp("algo-",&arg);
+  //graph_1chirp("algo-",&arg);
 
   arg.fit_nonlinear=2;
-  graph_1chirp("algo-",&arg);
-  arg.fit_nonlinear=0;
+  //graph_1chirp("algo-",&arg);
 
   /* Graphs for comparison of various windows *******************************/
   /* estW vs W **************************************************************/
@@ -2317,30 +2316,30 @@ int main(){
   arg.fit_nonlinear = 0;
 
   arg.window = window_functions.rectangle;
-  graph_1chirp("win-",&arg);
+  //graph_1chirp("win-",&arg);
   arg.window = window_functions.sine;
-  graph_1chirp("win-",&arg);
+  //graph_1chirp("win-",&arg);
   arg.window = window_functions.hanning;
-  graph_1chirp("win-",&arg);
+  //graph_1chirp("win-",&arg);
   arg.window = window_functions.tgauss_deep;
-  graph_1chirp("win-",&arg);
+  //graph_1chirp("win-",&arg);
   arg.window = window_functions.maxwell1;
-  graph_1chirp("win-",&arg);
+  //graph_1chirp("win-",&arg);
 
   arg.min_est_W = -15;
   arg.max_est_W =  15;
   arg.max_chirp_W =  25;
   arg.fit_nonlinear = 2;
   arg.window = window_functions.rectangle;
-  graph_1chirp("win-",&arg);
+  //graph_1chirp("win-",&arg);
   arg.window = window_functions.sine;
-  graph_1chirp("win-",&arg);
+  //graph_1chirp("win-",&arg);
   arg.window = window_functions.hanning;
-  graph_1chirp("win-",&arg);
+  //graph_1chirp("win-",&arg);
   arg.window = window_functions.tgauss_deep;
-  graph_1chirp("win-",&arg);
+  //graph_1chirp("win-",&arg);
   arg.window = window_functions.maxwell1;
-  graph_1chirp("win-",&arg);
+  //graph_1chirp("win-",&arg);
 
   /* Graphs for .5, 1, 1.5, 2nd order ***************************************/
   /* estW vs W **************************************************************/
@@ -2357,28 +2356,28 @@ int main(){
   arg.window = window_functions.hanning;
 
   arg.fit_nonlinear = 2;
-  graph_1chirp("order.5-",&arg);
+  //graph_1chirp("order.5-",&arg);
 
   arg.fit_dA=1;
 
   arg.fit_nonlinear = 0;
-  graph_1chirp("order1-",&arg);
+  //graph_1chirp("order1-",&arg);
 
   arg.fit_nonlinear = 2;
-  graph_1chirp("order1-",&arg);
+  //graph_1chirp("order1-",&arg);
 
   arg.fit_dW=1;
 
   arg.fit_nonlinear = 2;
-  graph_1chirp("order1.5-",&arg);
+  //graph_1chirp("order1.5-",&arg);
 
   arg.fit_ddA=1;
 
   arg.fit_nonlinear = 0;
-  graph_1chirp("order2-",&arg);
+  //graph_1chirp("order2-",&arg);
 
   arg.fit_nonlinear = 2;
-  graph_1chirp("order2-",&arg);
+  //graph_1chirp("order2-",&arg);
 
   /* Symmetric norm *********************************************************/
   /* dW vs W ****************************************************************/
@@ -2392,11 +2391,11 @@ int main(){
   arg.fit_symm_norm = 1;
 
   arg.fit_nonlinear=0;
-  graph_1chirp("symmetric-",&arg);
+  //graph_1chirp("symmetric-",&arg);
   arg.fit_nonlinear=1;
-  graph_1chirp("symmetric-",&arg);
+  //graph_1chirp("symmetric-",&arg);
   arg.fit_nonlinear=2;
-  graph_1chirp("symmetric-",&arg);
+  //graph_1chirp("symmetric-",&arg);
 
   /* estW vs W **************************************************************/
   init_arg(&arg);
@@ -2409,11 +2408,11 @@ int main(){
   arg.fit_symm_norm = 1;
 
   arg.fit_nonlinear=0;
-  graph_1chirp("symmetric-",&arg);
+  //graph_1chirp("symmetric-",&arg);
   arg.fit_nonlinear=1;
-  graph_1chirp("symmetric-",&arg);
+  //graph_1chirp("symmetric-",&arg);
   arg.fit_nonlinear=2;
-  graph_1chirp("symmetric-",&arg);
+  //graph_1chirp("symmetric-",&arg);
 
   /* W alpha ****************************************************************/
   /* estW vs alphaW *********************************************************/
@@ -2430,19 +2429,19 @@ int main(){
   arg.fit_nonlinear = 2;
 
   arg.window = window_functions.rectangle;
-  graph_1chirp("alphaW-",&arg);
+  //graph_1chirp("alphaW-",&arg);
 
   arg.window = window_functions.sine;
-  graph_1chirp("alphaW-",&arg);
+  //graph_1chirp("alphaW-",&arg);
 
   arg.window = window_functions.hanning;
-  graph_1chirp("alphaW-",&arg);
+  //graph_1chirp("alphaW-",&arg);
 
   arg.window = window_functions.tgauss_deep;
-  graph_1chirp("alphaW-",&arg);
+  //graph_1chirp("alphaW-",&arg);
 
   arg.window = window_functions.maxwell1;
-  graph_1chirp("alphaW-",&arg);
+  //graph_1chirp("alphaW-",&arg);
 
   /* dW alpha ***************************************************************/
   /* estW vs alphadW ********************************************************/
@@ -2467,15 +2466,15 @@ int main(){
   arg.white_noise=fromdB(-80.);
 
   arg.window = window_functions.rectangle;
-  graph_1chirp("alphadW-",&arg);
+  //graph_1chirp("alphadW-",&arg);
   arg.window = window_functions.sine;
-  graph_1chirp("alphadW-",&arg);
+  //graph_1chirp("alphadW-",&arg);
   arg.window = window_functions.hanning;
-  graph_1chirp("alphadW-",&arg);
+  //graph_1chirp("alphadW-",&arg);
   arg.window = window_functions.tgauss_deep;
-  graph_1chirp("alphadW-",&arg);
+  //graph_1chirp("alphadW-",&arg);
   arg.window = window_functions.maxwell1;
-  graph_1chirp("alphadW-",&arg);
+  //graph_1chirp("alphadW-",&arg);
 
   arg.y_dim = DIM_CHIRP_dW;
   arg.min_est_W = 0;
@@ -2484,15 +2483,15 @@ int main(){
   arg.max_chirp_dW =  3;
 
   arg.window = window_functions.rectangle;
-  graph_1chirp("alphadW-",&arg);
+  //graph_1chirp("alphadW-",&arg);
   arg.window = window_functions.sine;
-  graph_1chirp("alphadW-",&arg);
+  //graph_1chirp("alphadW-",&arg);
   arg.window = window_functions.hanning;
-  graph_1chirp("alphadW-",&arg);
+  //graph_1chirp("alphadW-",&arg);
   arg.window = window_functions.tgauss_deep;
-  graph_1chirp("alphadW-",&arg);
+  //graph_1chirp("alphadW-",&arg);
   arg.window = window_functions.maxwell1;
-  graph_1chirp("alphadW-",&arg);
+  //graph_1chirp("alphadW-",&arg);
 
   /* replot algo fits with opt dW alpha *************************************/
   /* estW vs W **************************************************************/
@@ -2508,33 +2507,33 @@ int main(){
 
   arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.;
   arg.window = window_functions.rectangle;
-  graph_1chirp("nonopt-",&arg);
-  arg.fit_dW_alpha_min = arg.fit_dW_alpha_max=2.2;
-  graph_1chirp("opt-",&arg);
+  //graph_1chirp("nonopt-",&arg);
+  arg.fit_dW_alpha_min = arg.fit_dW_alpha_max=2.25;
+  //graph_1chirp("opt-",&arg);
 
   arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.;
   arg.window = window_functions.sine;
-  graph_1chirp("nonopt-",&arg);
+  //graph_1chirp("nonopt-",&arg);
   arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.711;
-  graph_1chirp("opt-",&arg);
+  //graph_1chirp("opt-",&arg);
 
   arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.;
   arg.window = window_functions.hanning;
-  graph_1chirp("nonopt-",&arg);
+  //graph_1chirp("nonopt-",&arg);
   arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.618;
-  graph_1chirp("opt-",&arg);
+  //graph_1chirp("opt-",&arg);
 
   arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.;
   arg.window = window_functions.tgauss_deep;
-  graph_1chirp("nonopt-",&arg);
+  //graph_1chirp("nonopt-",&arg);
   arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.5;
-  graph_1chirp("opt-",&arg);
+  //graph_1chirp("opt-",&arg);
 
   arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.;
   arg.window = window_functions.maxwell1;
-  graph_1chirp("nonopt-",&arg);
+  //graph_1chirp("nonopt-",&arg);
   arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.554;
-  graph_1chirp("opt-",&arg);
+  //graph_1chirp("opt-",&arg);
 
   /* dW vs W **************************************************************/
   arg.min_chirp_dW = -9.375;
@@ -2545,36 +2544,119 @@ int main(){
 
   arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.;
   arg.window = window_functions.rectangle;
-  graph_1chirp("nonopt-",&arg);
-  arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 2.125;
-  graph_1chirp("opt-",&arg);
+  //graph_1chirp("nonopt-",&arg);
+  arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 2.25;
+  //graph_1chirp("opt-",&arg);
 
   arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.;
   arg.window = window_functions.sine;
-  graph_1chirp("nonopt-",&arg);
+  //graph_1chirp("nonopt-",&arg);
   arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.711;
-  graph_1chirp("opt-",&arg);
+  //graph_1chirp("opt-",&arg);
 
   arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.;
   arg.window = window_functions.hanning;
-  graph_1chirp("nonopt-",&arg);
+  //graph_1chirp("nonopt-",&arg);
   arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.618;
-  graph_1chirp("opt-",&arg);
+  //graph_1chirp("opt-",&arg);
 
   arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.;
   arg.window = window_functions.tgauss_deep;
-  graph_1chirp("nonopt-",&arg);
+  //graph_1chirp("nonopt-",&arg);
   arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.5;
-  graph_1chirp("opt-",&arg);
+  //graph_1chirp("opt-",&arg);
 
   arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.;
   arg.window = window_functions.maxwell1;
-  graph_1chirp("nonopt-",&arg);
+  //graph_1chirp("nonopt-",&arg);
   arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.554;
-  graph_1chirp("opt-",&arg);
+  //graph_1chirp("opt-",&arg);
 
-  /* Noise graphs ***********************************************************/
+  /* Noise graphs; replot algo***********************************************/
+  /* Graphs for linear v. partial-nonlinear v. full-nonlinear ***************/
 
+  {
+    int noise;
+    for(noise=-80;noise<0;noise+=20){
+      int win;
+      for(win=0;win<5;win++){
+        char buf[80];
+
+        /* dW vs W **********************************************************/
+        init_arg(&arg);
+        arg.max_chirp_W=10.;
+        arg.min_chirp_dW=-2.5;
+        arg.max_chirp_dW=2.5;
+        arg.x_dim=DIM_CHIRP_W;
+        arg.y_dim=DIM_CHIRP_dW;
+
+        arg.graph_convergence_av=1;
+        arg.graph_Aerror_av=1;
+        arg.graph_Perror_av=1;
+        arg.graph_Werror_av=1;
+        arg.graph_dAerror_av=1;
+        arg.graph_dWerror_av=1;
+        arg.graph_ddAerror_av=1;
+        arg.graph_RMSerror_av=1;
+
+        arg.graph_Aerror_max=0;
+        arg.graph_Perror_max=0;
+        arg.graph_Werror_max=0;
+        arg.graph_dAerror_max=0;
+        arg.graph_dWerror_max=0;
+        arg.graph_ddAerror_max=0;
+        arg.graph_RMSerror_max=0;
+
+        switch(win){
+        case 0:
+          arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 2.25;
+          arg.window = window_functions.rectangle;
+          break;
+        case 1:
+          arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.711;
+          arg.window = window_functions.sine;
+          break;
+        case 2:
+          arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.618;
+          arg.window = window_functions.hanning;
+          break;
+        case 3:
+          arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.5;
+          arg.window = window_functions.tgauss_deep;
+          break;
+        case 4:
+          arg.fit_dW_alpha_min = arg.fit_dW_alpha_max = 1.554;
+          arg.window = window_functions.maxwell1;
+          break;
+        }
+
+        arg.white_noise=fromdB(noise);
+        snprintf(buf,80,"n%d-",-noise);
+        arg.fit_nonlinear=0;
+        graph_1chirp(buf,&arg);
+        arg.fit_nonlinear=1;
+        graph_1chirp(buf,&arg);
+        arg.fit_nonlinear=2;
+        graph_1chirp(buf,&arg);
+
+        /* estW vs W ********************************************************/
+        arg.min_chirp_dW=0;
+        arg.max_chirp_dW=0;
+        arg.max_chirp_W=10.;
+        arg.min_est_W=-2.5;
+        arg.max_est_W=2.5;
+        arg.x_dim=DIM_CHIRP_W;
+        arg.y_dim=DIM_ESTIMATE_W;
+
+        arg.fit_nonlinear=0;
+        graph_1chirp(buf,&arg);
+        arg.fit_nonlinear=1;
+        graph_1chirp(buf,&arg);
+        arg.fit_nonlinear=2;
+        graph_1chirp(buf,&arg);
+      }
+    }
+  }
 
   /* Two chirp discrimination graphs ****************************************/
 
