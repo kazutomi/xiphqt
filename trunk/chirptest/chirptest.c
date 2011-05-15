@@ -2995,6 +2995,7 @@ int main(){
   arg.chirp_alt.W_1 = rint(arg.blocksize/4)+1;
   arg.alt_p=1;
   arg.sweep_or_rand_p=1;
+  arg.sweep_steps=128;
 
   arg.x_dim=DIM_CHIRP_W;
   arg.chirp.W_0 = -25;
@@ -3054,6 +3055,7 @@ int main(){
 
   /* dW vs W *****************************************************************/
 
+  arg.sweep_steps=32;
   arg.chirp.A_0 = arg.chirp.A_1 = 0.;
 
   arg.y_dim=DIM_CHIRP_dW;
