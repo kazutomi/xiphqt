@@ -269,7 +269,7 @@ cairo_t *draw_page(char *title,
 
   /* Y axis numeric labels */
   cairo_set_source_rgb(c,0,0,0);
-  for(i=y0s+fontsize;i<=y1s;i++){
+  for(i=y0s+fontsize/2;i<=y1s;i++){
     if(i%ymajor==0){
       int y = toppad+y_n-i+y0s;
       char buf[80];

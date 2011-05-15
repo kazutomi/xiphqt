@@ -3052,56 +3052,65 @@ int main(){
   arg.window = window_functions.maxwell1;
   graph_1chirp("2ch-",&arg);
 
-  /* A vs dW *****************************************************************/
+  /* dW vs W *****************************************************************/
 
-  /* relative to alt chirp */
-  arg.chirp.W_0 = arg.chirp.W_1 = 0;
+  arg.chirp.A_0 = arg.chirp.A_1 = 0.;
 
-  arg.x_dim=DIM_CHIRP_dW;
-  arg.chirp.dW_0 = -5;
-  arg.chirp.dW_1 = 5;
-  arg.xaxis_label = "test chirp dW (cycles/block)";
+  arg.y_dim=DIM_CHIRP_dW;
+  arg.chirp.dW_0 = -10.;
+  arg.chirp.dW_1 = 10.;
+  arg.y_major = 1;
+  arg.y_minor = .25;
+  arg.yaxis_label = "test chirp dW (cycles/block)";
 
-  arg.fit_nonlinear=0;
-  arg.window = window_functions.rectangle;
-  graph_1chirp("2ch-",&arg);
-  arg.window = window_functions.sine;
-  graph_1chirp("2ch-",&arg);
-  arg.window = window_functions.hanning;
-  graph_1chirp("2ch-",&arg);
-  arg.window = window_functions.tgauss_deep;
-  graph_1chirp("2ch-",&arg);
-  arg.window = window_functions.maxwell1;
-  graph_1chirp("2ch-",&arg);
+  {
+    int amp;
+    for(amp=-60;amp<=0;amp+=20){
 
-  arg.fit_nonlinear=1;
-  arg.window = window_functions.rectangle;
-  graph_1chirp("2ch-",&arg);
-  arg.window = window_functions.sine;
-  graph_1chirp("2ch-",&arg);
-  arg.window = window_functions.hanning;
-  graph_1chirp("2ch-",&arg);
-  arg.window = window_functions.tgauss_deep;
-  graph_1chirp("2ch-",&arg);
-  arg.window = window_functions.maxwell1;
-  graph_1chirp("2ch-",&arg);
+      arg.chirp.A_0=arg.chirp.A_1=amp;
 
-  arg.fit_nonlinear=2;
-  arg.fit_dW_alpha_0 = arg.fit_dW_alpha_1 = 2.25;
-  arg.window = window_functions.rectangle;
-  graph_1chirp("2ch-",&arg);
-  arg.fit_dW_alpha_0 = arg.fit_dW_alpha_1 = 1.711;
-  arg.window = window_functions.sine;
-  graph_1chirp("2ch-",&arg);
-  arg.fit_dW_alpha_0 = arg.fit_dW_alpha_1 = 1.618;
-  arg.window = window_functions.hanning;
-  graph_1chirp("2ch-",&arg);
-  arg.fit_dW_alpha_0 = arg.fit_dW_alpha_1 = 1.5;
-  arg.window = window_functions.tgauss_deep;
-  graph_1chirp("2ch-",&arg);
-  arg.fit_dW_alpha_0 = arg.fit_dW_alpha_1 = 1.554;
-  arg.window = window_functions.maxwell1;
-  graph_1chirp("2ch-",&arg);
+      arg.fit_nonlinear=0;
+      arg.window = window_functions.rectangle;
+      graph_1chirp("2ch-",&arg);
+      arg.window = window_functions.sine;
+      graph_1chirp("2ch-",&arg);
+      arg.window = window_functions.hanning;
+      graph_1chirp("2ch-",&arg);
+      arg.window = window_functions.tgauss_deep;
+      graph_1chirp("2ch-",&arg);
+      arg.window = window_functions.maxwell1;
+      graph_1chirp("2ch-",&arg);
+
+      arg.fit_nonlinear=1;
+      arg.window = window_functions.rectangle;
+      graph_1chirp("2ch-",&arg);
+      arg.window = window_functions.sine;
+      graph_1chirp("2ch-",&arg);
+      arg.window = window_functions.hanning;
+      graph_1chirp("2ch-",&arg);
+      arg.window = window_functions.tgauss_deep;
+      graph_1chirp("2ch-",&arg);
+      arg.window = window_functions.maxwell1;
+      graph_1chirp("2ch-",&arg);
+
+      arg.fit_nonlinear=2;
+      arg.fit_dW_alpha_0 = arg.fit_dW_alpha_1 = 2.25;
+      arg.window = window_functions.rectangle;
+      graph_1chirp("2ch-",&arg);
+      arg.fit_dW_alpha_0 = arg.fit_dW_alpha_1 = 1.711;
+      arg.window = window_functions.sine;
+      graph_1chirp("2ch-",&arg);
+      arg.fit_dW_alpha_0 = arg.fit_dW_alpha_1 = 1.618;
+      arg.window = window_functions.hanning;
+      graph_1chirp("2ch-",&arg);
+      arg.fit_dW_alpha_0 = arg.fit_dW_alpha_1 = 1.5;
+      arg.window = window_functions.tgauss_deep;
+      graph_1chirp("2ch-",&arg);
+      arg.fit_dW_alpha_0 = arg.fit_dW_alpha_1 = 1.554;
+      arg.window = window_functions.maxwell1;
+      graph_1chirp("2ch-",&arg);
+    }
+  }
 
 #endif
 
