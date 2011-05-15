@@ -158,7 +158,6 @@ typedef struct {
 } colvec;
 
 typedef struct {
-  float *in;
   float *window;
   int blocksize;
   int max_iterations;
@@ -205,6 +204,7 @@ typedef struct {
 
 /* ranges are inclusive */
 void set_chirp(chirp *c,
+               int blocksize,
                float xmin, float xmax,
                int xi, int xn, int xdim,
                float ymin, float ymax,
@@ -310,6 +310,17 @@ void set_chirp(chirp *c,
     break;
   }
 
+  P0*=2.*M_PI;
+  P1*=2.*M_PI;
+  W0*=2.*M_PI/blocksize;
+  W1*=2.*M_PI/blocksize;
+  dA0/=blocksize;
+  dA1/=blocksize;
+  dW0*=2.*M_PI/blocksize/blocksize;
+  dW1*=2.*M_PI/blocksize/blocksize;
+  ddA0/=blocksize/blocksize;
+  ddA1/=blocksize/blocksize;
+
   c->A = fromdB(A0 + (A1-A0) / An * Ai);
   if(todB(c->A)<-120)c->A=0.;
 
@@ -395,8 +406,7 @@ void *compute_column(void *in){
   int blocksize=arg->blocksize;
   int y,i,ret;
   int except;
-  int localinit = !arg->in;
-  float *cv = localinit ? malloc(sizeof(*cv)*blocksize) : arg->in;
+            float *cv = malloc(sizeof(*cv)*blocksize);
   int cimult=(arg->alt_chirp_p?2:1);
   int ym;
 
@@ -415,33 +425,29 @@ void *compute_column(void *in){
     ym=y*cimult;
     arg->estimate[ym].label=0;
 
-    /* if the input is uninitialized, it's because we're sweeping or
-       randomizing chirp components across the column; generate the
-       input here in the thread */
-    if(localinit){
+    for(i=0;i<blocksize;i++){
+      double jj = i - blocksize/2 + .5;
+      double A = arg->chirp[ym].A + (arg->chirp[ym].dA + arg->chirp[ym].ddA*jj)*jj;
+      double P = arg->chirp[ym].P + (arg->chirp[ym].W  + arg->chirp[ym].dW *jj)*jj;
+      cv[i] = A*cos(P);
+      energy_acc += cv[i]*cv[i]*arg->window[i]*arg->window[i];
+    }
+    if(arg->white_noise){
       for(i=0;i<blocksize;i++){
-        double jj = i - blocksize/2 + .5;
-        double A = arg->chirp[ym].A + (arg->chirp[ym].dA + arg->chirp[ym].ddA*jj)*jj;
-        double P = arg->chirp[ym].P + (arg->chirp[ym].W  + arg->chirp[ym].dW *jj)*jj;
-        cv[i] = A*cos(P);
-        energy_acc += cv[i]*cv[i]*arg->window[i]*arg->window[i];
-      }
-      if(arg->white_noise){
-        for(i=0;i<blocksize;i++){
-          float v = (drand48()-drand48())*2.45; /* (0dB RMS white noise) */
-          cv[i]+=v*arg->white_noise;
-        }
-      }
-      if(arg->alt_chirp_p){
-        arg->estimate[ym+1].label=1;
-        for(i=0;i<blocksize;i++){
-          double jj = i - blocksize/2 + .5;
-          double A = arg->chirp[ym+1].A + (arg->chirp[ym+1].dA + arg->chirp[ym+1].ddA*jj)*jj;
-          double P = arg->chirp[ym+1].P + (arg->chirp[ym+1].W  + arg->chirp[ym+1].dW *jj)*jj;
-          cv[i] += A*cos(P);
-        }
+        float v = (drand48()-drand48())*2.45; /* (0dB RMS white noise) */
+        cv[i]+=v*arg->white_noise;
       }
     }
+    if(arg->alt_chirp_p){
+      arg->estimate[ym+1].label=1;
+      for(i=0;i<blocksize;i++){
+        double jj = i - blocksize/2 + .5;
+        double A = arg->chirp[ym+1].A + (arg->chirp[ym+1].dA + arg->chirp[ym+1].ddA*jj)*jj;
+        double P = arg->chirp[ym+1].P + (arg->chirp[ym+1].W  + arg->chirp[ym+1].dW *jj)*jj;
+        cv[i] += A*cos(P);
+      }
+    }
+
     except=fegetexcept();
     fedisableexcept(FE_INEXACT);
     fedisableexcept(FE_UNDERFLOW);
@@ -487,7 +493,7 @@ void *compute_column(void *in){
     feenableexcept(except);
   }
 
-  if(localinit)free(cv);
+  free(cv);
   return NULL;
 }
 
@@ -1324,7 +1330,6 @@ void graph_1chirp(char *filepre,graph_1chirp_arg *inarg){
   int threads=arg->threads;
   int blocksize = arg->blocksize;
   float window[blocksize];
-  float in[blocksize];
   int i,xi,yi;
 
   int x_n = arg->x_steps;
@@ -1642,23 +1647,6 @@ void graph_1chirp(char *filepre,graph_1chirp_arg *inarg){
 
   swept = est_swept | chirp_swept | fit_swept;
 
-  if(arg->y_dim==DIM_CHIRP_A &&
-     arg->chirp.A_0 != arg->chirp.A_1) chirp_swept=1;
-  if(arg->y_dim==DIM_CHIRP_P &&
-     arg->chirp.P_0 != arg->chirp.P_1) chirp_swept=1;
-  if(arg->y_dim==DIM_CHIRP_W &&
-     arg->chirp.W_0 != arg->chirp.W_1) chirp_swept=1;
-  if(arg->y_dim==DIM_CHIRP_dA &&
-     arg->chirp.dA_0 != arg->chirp.dA_1) chirp_swept=1;
-  if(arg->y_dim==DIM_CHIRP_dW &&
-     arg->chirp.dW_0 != arg->chirp.dW_1) chirp_swept=1;
-  if(arg->y_dim==DIM_CHIRP_ddA &&
-     arg->chirp.ddA_0 != arg->chirp.ddA_1) chirp_swept=1;
-
-  /* force per-thread local generation of chirp */
-  if(arg->white_noise != 0.) chirp_swept=1;
-  if(arg->alt_p != 0.) chirp_swept=1;
-
   if(arg->graph_convergence_av)
     cC_m = draw_page(!swept?"Convergence":"Average Convergence",
                      arg->subtitle1,
@@ -1668,7 +1656,8 @@ void graph_1chirp(char *filepre,graph_1chirp_arg *inarg){
                      arg->yaxis_label,
                      "Iterations:",
                      DT_iterations,
-                     arg->x_dim==DIM_CHIRP_W ||arg->x_dim==DIM_ESTIMATE_W);
+                     (arg->x_dim==DIM_CHIRP_W && !arg->chirp.W_rel)||
+                     (arg->x_dim==DIM_ESTIMATE_W && !arg->est.W_rel));
   if(swept && arg->graph_convergence_max)
     cC_w = draw_page("Worst Case Convergence",
                      arg->subtitle1,
@@ -1678,7 +1667,8 @@ void graph_1chirp(char *filepre,graph_1chirp_arg *inarg){
                      arg->yaxis_label,
                      "Iterations:",
                      DT_iterations,
-                     arg->x_dim==DIM_CHIRP_W ||arg->x_dim==DIM_ESTIMATE_W);
+                     (arg->x_dim==DIM_CHIRP_W && !arg->chirp.W_rel)||
+                     (arg->x_dim==DIM_ESTIMATE_W && !arg->est.W_rel));
   if(swept && arg->graph_convergence_delta)
     cC_d = draw_page("Convergence Delta",
                      arg->subtitle1,
@@ -1688,7 +1678,8 @@ void graph_1chirp(char *filepre,graph_1chirp_arg *inarg){
                      arg->yaxis_label,
                      "Iteration span:",
                      DT_iterations,
-                     arg->x_dim==DIM_CHIRP_W ||arg->x_dim==DIM_ESTIMATE_W);
+                     (arg->x_dim==DIM_CHIRP_W && !arg->chirp.W_rel)||
+                     (arg->x_dim==DIM_ESTIMATE_W && !arg->est.W_rel));
 
   if(arg->graph_Aerror_av)
     cA_m = draw_page(!swept?"A (Amplitude) Error":"A (Amplitude) Mean Squared Error",
@@ -1699,7 +1690,8 @@ void graph_1chirp(char *filepre,graph_1chirp_arg *inarg){
                      arg->yaxis_label,
                      "Percent Error:",
                      DT_percent,
-                   arg->x_dim==DIM_CHIRP_W ||arg->x_dim==DIM_ESTIMATE_W);
+                     (arg->x_dim==DIM_CHIRP_W && !arg->chirp.W_rel)||
+                     (arg->x_dim==DIM_ESTIMATE_W && !arg->est.W_rel));
   if(swept && arg->graph_Aerror_max)
     cA_w = draw_page("A (Amplitude) Worst Case Error",
                      arg->subtitle1,
@@ -1709,7 +1701,8 @@ void graph_1chirp(char *filepre,graph_1chirp_arg *inarg){
                      arg->yaxis_label,
                      "Percent Error:",
                      DT_percent,
-                     arg->x_dim==DIM_CHIRP_W ||arg->x_dim==DIM_ESTIMATE_W);
+                     (arg->x_dim==DIM_CHIRP_W && !arg->chirp.W_rel)||
+                     (arg->x_dim==DIM_ESTIMATE_W && !arg->est.W_rel));
   if(swept && arg->graph_Aerror_delta)
     cA_d = draw_page("A (Amplitude) Delta",
                      arg->subtitle1,
@@ -1719,29 +1712,32 @@ void graph_1chirp(char *filepre,graph_1chirp_arg *inarg){
                      arg->yaxis_label,
                      "Percent Error Delta:",
                      DT_percent,
-                     arg->x_dim==DIM_CHIRP_W ||arg->x_dim==DIM_ESTIMATE_W);
+                     (arg->x_dim==DIM_CHIRP_W && !arg->chirp.W_rel)||
+                     (arg->x_dim==DIM_ESTIMATE_W && !arg->est.W_rel));
 
   if(arg->graph_Perror_av)
     cP_m = draw_page(!swept?"P (Phase) Error":"P (Phase) Mean Squared Error",
-                   arg->subtitle1,
-                   arg->subtitle2,
-                   arg->subtitle3,
-                   arg->xaxis_label,
-                   arg->yaxis_label,
-                   "Error (radians):",
-                   DT_abserror,
-                   arg->x_dim==DIM_CHIRP_W ||arg->x_dim==DIM_ESTIMATE_W);
+                     arg->subtitle1,
+                     arg->subtitle2,
+                     arg->subtitle3,
+                     arg->xaxis_label,
+                     arg->yaxis_label,
+                     "Error (radians):",
+                     DT_abserror,
+                     (arg->x_dim==DIM_CHIRP_W && !arg->chirp.W_rel)||
+                     (arg->x_dim==DIM_ESTIMATE_W && !arg->est.W_rel));
 
   if(swept && arg->graph_Perror_max)
     cP_w = draw_page("P (Phase) Worst Case Error",
-                   arg->subtitle1,
-                   arg->subtitle2,
-                   arg->subtitle3,
-                   arg->xaxis_label,
-                   arg->yaxis_label,
-                   "Error (radians):",
-                   DT_abserror,
-                   arg->x_dim==DIM_CHIRP_W ||arg->x_dim==DIM_ESTIMATE_W);
+                     arg->subtitle1,
+                     arg->subtitle2,
+                     arg->subtitle3,
+                     arg->xaxis_label,
+                     arg->yaxis_label,
+                     "Error (radians):",
+                     DT_abserror,
+                     (arg->x_dim==DIM_CHIRP_W && !arg->chirp.W_rel)||
+                     (arg->x_dim==DIM_ESTIMATE_W && !arg->est.W_rel));
 
   if(swept && arg->graph_Perror_delta)
     cP_d = draw_page("Phase Delta",
@@ -1752,7 +1748,8 @@ void graph_1chirp(char *filepre,graph_1chirp_arg *inarg){
                      arg->yaxis_label,
                      "Delta (radians):",
                      DT_abserror,
-                     arg->x_dim==DIM_CHIRP_W ||arg->x_dim==DIM_ESTIMATE_W);
+                     (arg->x_dim==DIM_CHIRP_W && !arg->chirp.W_rel)||
+                     (arg->x_dim==DIM_ESTIMATE_W && !arg->est.W_rel));
 
   if(arg->fit_W){
     if(arg->graph_Werror_av)
@@ -1764,7 +1761,8 @@ void graph_1chirp(char *filepre,graph_1chirp_arg *inarg){
                      arg->yaxis_label,
                      "Error (cycles/block):",
                      DT_abserror,
-                     arg->x_dim==DIM_CHIRP_W ||arg->x_dim==DIM_ESTIMATE_W);
+                     (arg->x_dim==DIM_CHIRP_W && !arg->chirp.W_rel)||
+                     (arg->x_dim==DIM_ESTIMATE_W && !arg->est.W_rel));
 
     if(swept && arg->graph_Werror_max)
       cW_w = draw_page("W (Frequency) Worst Case Error",
@@ -1775,7 +1773,8 @@ void graph_1chirp(char *filepre,graph_1chirp_arg *inarg){
                      arg->yaxis_label,
                      "Error (cycles/block):",
                      DT_abserror,
-                     arg->x_dim==DIM_CHIRP_W ||arg->x_dim==DIM_ESTIMATE_W);
+                     (arg->x_dim==DIM_CHIRP_W && !arg->chirp.W_rel)||
+                     (arg->x_dim==DIM_ESTIMATE_W && !arg->est.W_rel));
 
     if(swept && arg->graph_Werror_delta)
       cW_d = draw_page("Frequency Delta",
@@ -1786,20 +1785,22 @@ void graph_1chirp(char *filepre,graph_1chirp_arg *inarg){
                        arg->yaxis_label,
                        "Delta (cycles/block):",
                        DT_abserror,
-                       arg->x_dim==DIM_CHIRP_W ||arg->x_dim==DIM_ESTIMATE_W);
+                       (arg->x_dim==DIM_CHIRP_W && !arg->chirp.W_rel)||
+                       (arg->x_dim==DIM_ESTIMATE_W && !arg->est.W_rel));
   }
 
   if(arg->fit_dA){
     if(arg->graph_dAerror_av)
       cdA_m = draw_page(!swept?"dA (Amplitude Modulation) Error":"dA (Amplitude Modulation) Mean Squared Error",
-                      arg->subtitle1,
-                      arg->subtitle2,
-                      arg->subtitle3,
-                      arg->xaxis_label,
-                      arg->yaxis_label,
-                      "Error:",
-                      DT_abserror,
-                      arg->x_dim==DIM_CHIRP_W ||arg->x_dim==DIM_ESTIMATE_W);
+                        arg->subtitle1,
+                        arg->subtitle2,
+                        arg->subtitle3,
+                        arg->xaxis_label,
+                        arg->yaxis_label,
+                        "Error:",
+                        DT_abserror,
+                        (arg->x_dim==DIM_CHIRP_W && !arg->chirp.W_rel)||
+                        (arg->x_dim==DIM_ESTIMATE_W && !arg->est.W_rel));
 
     if(swept && arg->graph_dAerror_max)
       cdA_w = draw_page("dA (Amplitude Modulation) Worst Case Error",
@@ -1810,7 +1811,8 @@ void graph_1chirp(char *filepre,graph_1chirp_arg *inarg){
                       arg->yaxis_label,
                       "Error:",
                       DT_abserror,
-                      arg->x_dim==DIM_CHIRP_W ||arg->x_dim==DIM_ESTIMATE_W);
+                        (arg->x_dim==DIM_CHIRP_W && !arg->chirp.W_rel)||
+                        (arg->x_dim==DIM_ESTIMATE_W && !arg->est.W_rel));
 
     if(swept && arg->graph_dAerror_delta)
       cdA_d = draw_page("Amplitude Modulation Delta",
@@ -1821,31 +1823,34 @@ void graph_1chirp(char *filepre,graph_1chirp_arg *inarg){
                         arg->yaxis_label,
                         "Delta:",
                         DT_abserror,
-                        arg->x_dim==DIM_CHIRP_W ||arg->x_dim==DIM_ESTIMATE_W);
+                        (arg->x_dim==DIM_CHIRP_W && !arg->chirp.W_rel)||
+                        (arg->x_dim==DIM_ESTIMATE_W && !arg->est.W_rel));
   }
 
   if(arg->fit_dW){
     if(arg->graph_dWerror_av)
       cdW_m = draw_page(!swept?"dW (Chirp Rate) Error":"dW (Chirp Rate) Mean Squared Error",
-                      arg->subtitle1,
-                      arg->subtitle2,
-                      arg->subtitle3,
-                      arg->xaxis_label,
-                      arg->yaxis_label,
-                      "Error (cycles/block):",
-                      DT_abserror,
-                      arg->x_dim==DIM_CHIRP_W ||arg->x_dim==DIM_ESTIMATE_W);
+                        arg->subtitle1,
+                        arg->subtitle2,
+                        arg->subtitle3,
+                        arg->xaxis_label,
+                        arg->yaxis_label,
+                        "Error (cycles/block):",
+                        DT_abserror,
+                        (arg->x_dim==DIM_CHIRP_W && !arg->chirp.W_rel)||
+                        (arg->x_dim==DIM_ESTIMATE_W && !arg->est.W_rel));
 
     if(swept && arg->graph_dWerror_max)
       cdW_w = draw_page("dW (Chirp Rate) Worst Case Error",
-                      arg->subtitle1,
-                      arg->subtitle2,
-                      arg->subtitle3,
-                      arg->xaxis_label,
-                      arg->yaxis_label,
-                      "Error (cycles/block):",
-                      DT_abserror,
-                      arg->x_dim==DIM_CHIRP_W ||arg->x_dim==DIM_ESTIMATE_W);
+                        arg->subtitle1,
+                        arg->subtitle2,
+                        arg->subtitle3,
+                        arg->xaxis_label,
+                        arg->yaxis_label,
+                        "Error (cycles/block):",
+                        DT_abserror,
+                        (arg->x_dim==DIM_CHIRP_W && !arg->chirp.W_rel)||
+                        (arg->x_dim==DIM_ESTIMATE_W && !arg->est.W_rel));
 
     if(swept && arg->graph_dWerror_delta)
       cdW_d = draw_page("Chirp Rate Delta",
@@ -1856,32 +1861,35 @@ void graph_1chirp(char *filepre,graph_1chirp_arg *inarg){
                         arg->yaxis_label,
                         "Delta (cycles/block):",
                         DT_abserror,
-                        arg->x_dim==DIM_CHIRP_W ||arg->x_dim==DIM_ESTIMATE_W);
+                        (arg->x_dim==DIM_CHIRP_W && !arg->chirp.W_rel)||
+                        (arg->x_dim==DIM_ESTIMATE_W && !arg->est.W_rel));
   }
 
   if(arg->fit_ddA){
     if(arg->graph_ddAerror_av)
       cddA_m = draw_page(!swept?"ddA (Amplitude Modulation Squared) Error":
                          "ddA (Amplitude Modulation Squared) Mean Squared Error",
-                       arg->subtitle1,
-                       arg->subtitle2,
-                       arg->subtitle3,
-                       arg->xaxis_label,
-                       arg->yaxis_label,
-                       "Error:",
-                       DT_abserror,
-                       arg->x_dim==DIM_CHIRP_W ||arg->x_dim==DIM_ESTIMATE_W);
+                         arg->subtitle1,
+                         arg->subtitle2,
+                         arg->subtitle3,
+                         arg->xaxis_label,
+                         arg->yaxis_label,
+                         "Error:",
+                         DT_abserror,
+                         (arg->x_dim==DIM_CHIRP_W && !arg->chirp.W_rel)||
+                         (arg->x_dim==DIM_ESTIMATE_W && !arg->est.W_rel));
 
     if(swept && arg->graph_ddAerror_max)
       cddA_w = draw_page("ddA (Amplitude Modulation Squared) Worst Case Error",
-                       arg->subtitle1,
-                       arg->subtitle2,
-                       arg->subtitle3,
-                       arg->xaxis_label,
-                       arg->yaxis_label,
-                       "Error:",
-                       DT_abserror,
-                       arg->x_dim==DIM_CHIRP_W ||arg->x_dim==DIM_ESTIMATE_W);
+                         arg->subtitle1,
+                         arg->subtitle2,
+                         arg->subtitle3,
+                         arg->xaxis_label,
+                         arg->yaxis_label,
+                         "Error:",
+                         DT_abserror,
+                         (arg->x_dim==DIM_CHIRP_W && !arg->chirp.W_rel)||
+                         (arg->x_dim==DIM_ESTIMATE_W && !arg->est.W_rel));
 
     if(swept && arg->graph_ddAerror_delta)
       cddA_d = draw_page("Amplitude Modulation Squared Delta",
@@ -1892,7 +1900,8 @@ void graph_1chirp(char *filepre,graph_1chirp_arg *inarg){
                          arg->yaxis_label,
                          "Delta:",
                          DT_abserror,
-                         arg->x_dim==DIM_CHIRP_W ||arg->x_dim==DIM_ESTIMATE_W);
+                         (arg->x_dim==DIM_CHIRP_W && !arg->chirp.W_rel)||
+                         (arg->x_dim==DIM_ESTIMATE_W && !arg->est.W_rel));
   }
 
   if(arg->graph_RMSerror_av)
@@ -1904,7 +1913,8 @@ void graph_1chirp(char *filepre,graph_1chirp_arg *inarg){
                        arg->yaxis_label,
                        "Percentage Error:",
                        DT_percent,
-                       arg->x_dim==DIM_CHIRP_W ||arg->x_dim==DIM_ESTIMATE_W);
+                       (arg->x_dim==DIM_CHIRP_W && !arg->chirp.W_rel)||
+                       (arg->x_dim==DIM_ESTIMATE_W && !arg->est.W_rel));
 
   if(swept && arg->graph_RMSerror_max)
     cRMS_w = draw_page("RMS Worst Case Fit Error",
@@ -1915,7 +1925,8 @@ void graph_1chirp(char *filepre,graph_1chirp_arg *inarg){
                        arg->yaxis_label,
                        "Percentage Error:",
                        DT_percent,
-                       arg->x_dim==DIM_CHIRP_W ||arg->x_dim==DIM_ESTIMATE_W);
+                       (arg->x_dim==DIM_CHIRP_W && !arg->chirp.W_rel)||
+                       (arg->x_dim==DIM_ESTIMATE_W && !arg->est.W_rel));
 
   if(swept && arg->graph_RMSerror_delta)
     cRMS_d = draw_page("RMS Fit Error Delta",
@@ -1926,7 +1937,8 @@ void graph_1chirp(char *filepre,graph_1chirp_arg *inarg){
                        arg->yaxis_label,
                        "Percentage Error:",
                        DT_percent,
-                       arg->x_dim==DIM_CHIRP_W ||arg->x_dim==DIM_ESTIMATE_W);
+                       (arg->x_dim==DIM_CHIRP_W && !arg->chirp.W_rel)||
+                       (arg->x_dim==DIM_ESTIMATE_W && !arg->est.W_rel));
 
   if(arg->window)
     arg->window(window,blocksize);
@@ -1949,7 +1961,6 @@ void graph_1chirp(char *filepre,graph_1chirp_arg *inarg){
     memset(targ,0,sizeof(targ));
 
     for(i=0;i<threads;i++){
-      if(!chirp_swept)targ[i].in=in;
       targ[i].window=window;
       targ[i].blocksize=blocksize;
       targ[i].max_iterations=100;
@@ -2001,6 +2012,7 @@ void graph_1chirp(char *filepre,graph_1chirp_arg *inarg){
                                            arg->sweep_or_rand_p);
 
         set_chirp(chirps+ym,
+                  blocksize,
                   minX,maxX,
                   xi,x_n,
                   arg->x_dim&DIM_CHIRP_MASK,
@@ -2011,18 +2023,19 @@ void graph_1chirp(char *filepre,graph_1chirp_arg *inarg){
                   arg->sweep_or_rand_p,
                   arg->chirp.A_0,
                   arg->chirp.A_1,
-                  arg->chirp.P_0*2.*M_PI,
-                  arg->chirp.P_1*2.*M_PI,
-                  arg->chirp.W_0*2.*M_PI/blocksize,
-                  arg->chirp.W_1*2.*M_PI/blocksize,
-                  arg->chirp.dA_0/blocksize,
-                  arg->chirp.dA_1/blocksize,
-                  arg->chirp.dW_0*2.*M_PI/blocksize/blocksize,
-                  arg->chirp.dW_1*2.*M_PI/blocksize/blocksize,
-                  arg->chirp.ddA_0/blocksize/blocksize,
-                  arg->chirp.ddA_1/blocksize/blocksize);
+                  arg->chirp.P_0,
+                  arg->chirp.P_1,
+                  arg->chirp.W_0,
+                  arg->chirp.W_1,
+                  arg->chirp.dA_0,
+                  arg->chirp.dA_1,
+                  arg->chirp.dW_0,
+                  arg->chirp.dW_1,
+                  arg->chirp.ddA_0,
+                  arg->chirp.ddA_1);
 
         set_chirp(estimates+ym,
+                  blocksize,
                   minX,maxX,
                   xi,x_n,
                   arg->x_dim&DIM_ESTIMATE_MASK,
@@ -2033,57 +2046,55 @@ void graph_1chirp(char *filepre,graph_1chirp_arg *inarg){
                   arg->sweep_or_rand_p,
                   arg->est.A_0,
                   arg->est.A_1,
-                  arg->est.P_0*2.*M_PI,
-                  arg->est.P_1*2.*M_PI,
-                  arg->est.W_0*2.*M_PI/blocksize,
-                  arg->est.W_1*2.*M_PI/blocksize,
-                  arg->est.dA_0/blocksize,
-                  arg->est.dA_1/blocksize,
-                  arg->est.dW_0*2.*M_PI/blocksize/blocksize,
-                  arg->est.dW_1*2.*M_PI/blocksize/blocksize,
-                  arg->est.ddA_0/blocksize/blocksize,
-                  arg->est.ddA_1/blocksize/blocksize);
+                  arg->est.P_0,
+                  arg->est.P_1,
+                  arg->est.W_0,
+                  arg->est.W_1,
+                  arg->est.dA_0,
+                  arg->est.dA_1,
+                  arg->est.dW_0,
+                  arg->est.dW_1,
+                  arg->est.ddA_0,
+                  arg->est.ddA_1);
 
         if(arg->alt_p){
           set_chirp(chirps+ym+1,
-                    minX,maxX,
-                    xi,x_n,0,
-                    minY,maxY,
-                    y_n-yi-1,y_n,0,
+                    blocksize,
+                    0,0,0,0,0,
+                    0,0,0,0,0,
                     si,sn,
                     arg->sweep_or_rand_p,
                     arg->chirp_alt.A_0,
                     arg->chirp_alt.A_1,
-                    arg->chirp_alt.P_0*2.*M_PI,
-                    arg->chirp_alt.P_1*2.*M_PI,
-                    arg->chirp_alt.W_0*2.*M_PI/blocksize,
-                    arg->chirp_alt.W_1*2.*M_PI/blocksize,
-                    arg->chirp_alt.dA_0/blocksize,
-                    arg->chirp_alt.dA_1/blocksize,
-                    arg->chirp_alt.dW_0*2.*M_PI/blocksize/blocksize,
-                    arg->chirp_alt.dW_1*2.*M_PI/blocksize/blocksize,
-                    arg->chirp_alt.ddA_0/blocksize/blocksize,
-                    arg->chirp_alt.ddA_1/blocksize/blocksize);
+                    arg->chirp_alt.P_0,
+                    arg->chirp_alt.P_1,
+                    arg->chirp_alt.W_0,
+                    arg->chirp_alt.W_1,
+                    arg->chirp_alt.dA_0,
+                    arg->chirp_alt.dA_1,
+                    arg->chirp_alt.dW_0,
+                    arg->chirp_alt.dW_1,
+                    arg->chirp_alt.ddA_0,
+                    arg->chirp_alt.ddA_1);
 
           set_chirp(estimates+ym+1,
-                    minX,maxX,
-                    xi,x_n,0,
-                    minY,maxY,
-                    y_n-yi-1,y_n,0,
+                    blocksize,
+                    0,0,0,0,0,
+                    0,0,0,0,0,
                     si,sn,
                     arg->sweep_or_rand_p,
                     arg->est_alt.A_0,
                     arg->est_alt.A_1,
-                    arg->est_alt.P_0*2.*M_PI,
-                    arg->est_alt.P_1*2.*M_PI,
-                    arg->est_alt.W_0*2.*M_PI/blocksize,
-                    arg->est_alt.W_1*2.*M_PI/blocksize,
-                    arg->est_alt.dA_0/blocksize,
-                    arg->est_alt.dA_1/blocksize,
-                    arg->est_alt.dW_0*2.*M_PI/blocksize/blocksize,
-                    arg->est_alt.dW_1*2.*M_PI/blocksize/blocksize,
-                    arg->est_alt.ddA_0/blocksize/blocksize,
-                    arg->est_alt.ddA_1/blocksize/blocksize);
+                    arg->est_alt.P_0,
+                    arg->est_alt.P_1,
+                    arg->est_alt.W_0,
+                    arg->est_alt.W_1,
+                    arg->est_alt.dA_0,
+                    arg->est_alt.dA_1,
+                    arg->est_alt.dW_0,
+                    arg->est_alt.dW_1,
+                    arg->est_alt.ddA_0,
+                    arg->est_alt.ddA_1);
 
           /* alt chirp can be relative to chirp */
           if(arg->chirp_alt.A_rel)
@@ -2122,18 +2133,6 @@ void graph_1chirp(char *filepre,graph_1chirp_arg *inarg){
         if(arg->est.dW_rel) estimates[ym].dW += chirps[ym].dW;
         if(arg->est.ddA_rel) estimates[ym].ddA += chirps[ym].ddA;
 
-      }
-
-      if(!chirp_swept){
-        for(i=0;i<threads;i++)
-          targ[i].in=in;
-
-        for(i=0;i<blocksize;i++){
-          double jj = i-blocksize/2+.5;
-          double A = chirps[0].A + (chirps[0].dA + chirps[0].ddA*jj)*jj;
-          double P = chirps[0].P + (chirps[0].W  + chirps[0].dW *jj)*jj;
-          in[i] = A*cos(P);
-        }
       }
 
       /* compute column */
@@ -2523,6 +2522,7 @@ void init_arg(graph_1chirp_arg *arg){
     /* sweep_steps */   32,
     /* randomize_p */   0,
 
+    /* ESTIMATE */
     (rel_param){
       /* est A range */  -999.,-999.,  0, /* relative flag */
       /* est P range */     0.,  0.,  0, /* relative flag */
@@ -2531,6 +2531,8 @@ void init_arg(graph_1chirp_arg *arg){
       /* est dW range */    0.,  0.,  0, /* relative flag */
       /* est ddA range */   0.,  0.,  0, /* relative flag */
     },
+
+    /* CHIRP */
     (rel_param){
       /* ch A range */    0.,0., 0,
       /* ch P range */    0.,1.-1./32., 0,
@@ -2539,6 +2541,8 @@ void init_arg(graph_1chirp_arg *arg){
       /* ch dW range */   0.,0., 0,
       /* ch ddA range */  0.,0., 0,
     },
+
+    /* ALT_ESTIMATE */
     (rel_param){
       /* alt est A range */  -999.,-999.,  0, /* relative flag */
       /* alt est P range */     0.,  0.,  0, /* relative flag */
@@ -2547,6 +2551,8 @@ void init_arg(graph_1chirp_arg *arg){
       /* alt est dW range */    0.,  0.,  0, /* relative flag */
       /* alt est ddA range */   0.,  0.,  0, /* relative flag */
     },
+
+    /* ALT_CHIRP */
     (rel_param){
       /* alt ch A range */    0.,0., 0,
       /* alt ch P range */    0.,1.-1./32., 0,
@@ -2985,8 +2991,8 @@ int main(){
   /* A vs W *****************************************************************/
   init_arg(&arg);
 
-  arg.chirp_alt.W_0 = rint(arg.blocksize/4)+1;
-  arg.chirp_alt.W_1 = rint(arg.blocksize/4)-1;
+  arg.chirp_alt.W_0 = rint(arg.blocksize/4)-1;
+  arg.chirp_alt.W_1 = rint(arg.blocksize/4)+1;
   arg.alt_p=1;
   arg.sweep_or_rand_p=1;
 
@@ -2994,6 +3000,8 @@ int main(){
   arg.chirp.W_0 = -25;
   arg.chirp.W_1 = +25;
   arg.chirp.W_rel = 1; /* relative to alt chirp W */
+  arg.x_major = 5;
+  arg.x_minor = .5;
   arg.xaxis_label = "test chirp relative W (cycles/block)";
 
   arg.y_dim=DIM_CHIRP_A;
@@ -3046,9 +3054,8 @@ int main(){
 
   /* A vs dW *****************************************************************/
 
-  /* randomized/relative to alt chirp */
-  arg.chirp.W_0 = -1;
-  arg.chirp.W_1 = 1;
+  /* relative to alt chirp */
+  arg.chirp.W_0 = arg.chirp.W_1 = 0;
 
   arg.x_dim=DIM_CHIRP_dW;
   arg.chirp.dW_0 = -5;
