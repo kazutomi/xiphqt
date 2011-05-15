@@ -52,27 +52,7 @@ typedef struct {
   float ddA_0;
   float ddA_1;
   int   ddA_rel;
-} est_param;
-
-typedef struct {
-  float A_0;
-  float A_1;
-
-  float P_0;
-  float P_1;
-
-  float W_0;
-  float W_1;
-
-  float dA_0;
-  float dA_1;
-
-  float dW_0;
-  float dW_1;
-
-  float ddA_0;
-  float ddA_1;
-} chirp_param;
+} rel_param;
 
 typedef struct {
   float fontsize;
@@ -119,12 +99,12 @@ typedef struct {
      in the range min to max instead. */
   int sweep_or_rand_p;
 
-  est_param est;
-  chirp_param chirp;
+  rel_param est;   /* params may be relative to chirp */
+  rel_param chirp; /* params may be relative to alt chirp */
 
   /* optionally add a second est/chirp */
-  est_param est_alt;
-  chirp_param chirp_alt;
+  rel_param est_alt; /* params may be relative to alt chirp */
+  rel_param chirp_alt; /* params may be relative to chirp */
   int alt_p;
 
   /* optionally add noise */
@@ -225,7 +205,9 @@ typedef struct {
 
 /* ranges are inclusive */
 void set_chirp(chirp *c,
+               float xmin, float xmax,
                int xi, int xn, int xdim,
+               float ymin, float ymax,
                int yi, int yn, int ydim,
                int stepi, int stepn, int rand_p,
                float A0, float A1,
@@ -252,26 +234,38 @@ void set_chirp(chirp *c,
 
   switch(xdim){
   case DIM_ESTIMATE_A:
+    A0 = xmin;
+    A1 = xmax;
     An = xn-1;
     Ai = xi;
     break;
   case DIM_ESTIMATE_P:
+    P0 = xmin;
+    P1 = xmax;
     Pn = xn-1;
     Pi = xi;
     break;
   case DIM_ESTIMATE_W:
+    W0 = xmin;
+    W1 = xmax;
     Wn = xn-1;
     Wi = xi;
     break;
   case DIM_ESTIMATE_dA:
+    dA0 = xmin;
+    dA1 = xmax;
     dAn = xn-1;
     dAi = xi;
     break;
   case DIM_ESTIMATE_dW:
+    dW0 = xmin;
+    dW1 = xmax;
     dWn = xn-1;
     dWi = xi;
     break;
   case DIM_ESTIMATE_ddA:
+    ddA0 = xmin;
+    ddA1 = xmax;
     ddAn = xn-1;
     ddAi = xi;
     break;
@@ -279,26 +273,38 @@ void set_chirp(chirp *c,
 
   switch(ydim){
   case DIM_ESTIMATE_A:
+    A0 = ymin;
+    A1 = ymax;
     An = yn-1;
     Ai = yi;
     break;
   case DIM_ESTIMATE_P:
+    P0 = ymin;
+    P1 = ymax;
     Pn = yn-1;
     Pi = yi;
     break;
   case DIM_ESTIMATE_W:
+    W0 = ymin;
+    W1 = ymax;
     Wn = yn-1;
     Wi = yi;
     break;
   case DIM_ESTIMATE_dA:
+    dA0 = ymin;
+    dA1 = ymax;
     dAn = yn-1;
     dAi = yi;
     break;
   case DIM_ESTIMATE_dW:
+    dW0 = ymin;
+    dW1 = ymax;
     dWn = yn-1;
     dWi = yi;
     break;
   case DIM_ESTIMATE_ddA:
+    ddA0 = ymin;
+    ddA1 = ymax;
     ddAn = yn-1;
     ddAi = yi;
     break;
@@ -316,7 +322,9 @@ void set_chirp(chirp *c,
 }
 
 float W_alpha(float A0, float A1,
+              float xmin, float xmax,
               int xi, int xn, int xdim,
+              float ymin, float ymax,
               int yi, int yn, int ydim,
               int stepi, int stepn, int rand_p){
 
@@ -327,11 +335,15 @@ float W_alpha(float A0, float A1,
   Ai = (rand_p ? drand48()*An : stepi);
 
   if(xdim==DIM_ALPHA_W){
+    A0 = xmin;
+    A1 = xmax;
     An = xn-1;
     Ai = xi;
   }
 
   if(ydim==DIM_ALPHA_W){
+    A0 = ymin;
+    A1 = ymax;
     An = yn-1;
     Ai = yi;
   }
@@ -340,7 +352,9 @@ float W_alpha(float A0, float A1,
 }
 
 float dW_alpha(float A0, float A1,
+              float xmin, float xmax,
               int xi, int xn, int xdim,
+              float ymin, float ymax,
               int yi, int yn, int ydim,
               int stepi, int stepn, int rand_p){
 
@@ -351,11 +365,15 @@ float dW_alpha(float A0, float A1,
   Ai = (rand_p ? drand48()*An : stepi);
 
   if(xdim==DIM_ALPHA_dW){
+    A0 = xmin;
+    A1 = xmax;
     An = xn-1;
     Ai = xi;
   }
 
   if(ydim==DIM_ALPHA_dW){
+    A0 = ymin;
+    A1 = ymax;
     An = yn-1;
     Ai = yi;
   }
@@ -610,109 +628,156 @@ void setup_titles_1chirp(graph_1chirp_arg *arg){
     strcat(subtitle2,"chirp:[");
 
     if(arg->chirp.A_0<-120 && (arg->chirp.A_1<-120 || arg->sweep_steps<2) &&
-       arg->x_dim != DIM_CHIRP_A && arg->y_dim != DIM_CHIRP_A)
+       arg->x_dim != DIM_CHIRP_A && arg->y_dim != DIM_CHIRP_A &&
+       !arg->chirp.A_rel)
       zeroes++;
     if(arg->chirp.P_0==0 && (arg->chirp.P_1==0 || arg->sweep_steps<2) &&
-       arg->x_dim != DIM_CHIRP_P && arg->y_dim != DIM_CHIRP_P)
+       arg->x_dim != DIM_CHIRP_P && arg->y_dim != DIM_CHIRP_P &&
+       !arg->chirp.A_rel)
       zeroes++;
     if(arg->chirp.W_0==0 && (arg->chirp.W_1==0 || arg->sweep_steps<2) &&
-       arg->x_dim != DIM_CHIRP_W && arg->y_dim != DIM_CHIRP_W)
+       arg->x_dim != DIM_CHIRP_W && arg->y_dim != DIM_CHIRP_W &&
+       !arg->chirp.W_rel)
       zeroes++;
     if(arg->chirp.dA_0==0 && (arg->chirp.dA_1==0 || arg->sweep_steps<2) &&
-       arg->x_dim != DIM_CHIRP_dA && arg->y_dim != DIM_CHIRP_dA)
+       arg->x_dim != DIM_CHIRP_dA && arg->y_dim != DIM_CHIRP_dA &&
+       !arg->chirp.dA_rel)
       zeroes++;
     if(arg->chirp.dW_0==0 && (arg->chirp.dW_1==0 || arg->sweep_steps<2) &&
-       arg->x_dim != DIM_CHIRP_dW && arg->y_dim != DIM_CHIRP_dW)
+       arg->x_dim != DIM_CHIRP_dW && arg->y_dim != DIM_CHIRP_dW &&
+       !arg->chirp.dW_rel)
       zeroes++;
     if(arg->chirp.ddA_0==0 && (arg->chirp.ddA_1==0 || arg->sweep_steps<2) &&
-       arg->x_dim != DIM_CHIRP_ddA && arg->y_dim != DIM_CHIRP_ddA)
+       arg->x_dim != DIM_CHIRP_ddA && arg->y_dim != DIM_CHIRP_ddA &&
+       !arg->chirp.ddA_rel)
       zeroes++;
 
     if(arg->chirp.A_0==arg->chirp.A_1 || arg->sweep_steps<2){
-      if(arg->chirp.A_0>=-120 || zeroes<2){
-        if(arg->x_dim != DIM_CHIRP_A && arg->y_dim != DIM_CHIRP_A){
-          snprintf(buf,80,"A=%.0fdB",arg->chirp.A_0);
-          strcat(subtitle2,buf);
-          expl++;
+      if(arg->chirp.A_0<-120 && arg->chirp.A_rel){
+        strcat(subtitle2,"A=reference A");
+        expl++;
+      }else
+        if(arg->chirp.A_0>=-120 || zeroes<2){
+          if(arg->x_dim != DIM_CHIRP_A && arg->y_dim != DIM_CHIRP_A){
+            snprintf(buf,80,"A=%.0fdB",arg->chirp.A_0);
+            strcat(subtitle2,buf);
+            if(arg->chirp.A_rel)strcat(subtitle2,"(relative)");
+            expl++;
+          }
         }
-      }
     }
 
     if(arg->chirp.P_0==arg->chirp.P_1 || arg->sweep_steps<2){
-      if(arg->chirp.P_0!=0 || zeroes<2){
-        if(arg->x_dim != DIM_CHIRP_P && arg->y_dim != DIM_CHIRP_P){
-          if(expl)strcat(subtitle2,", ");
-          snprintf(buf,80,"P=%.1f",arg->chirp.P_0);
-          strcat(subtitle2,buf);
-          expl++;
+      if(arg->chirp.P_0==0 && arg->chirp.P_rel){
+        if(expl)strcat(subtitle2,", ");
+        strcat(subtitle2,"P=reference P");
+        expl++;
+      }else
+        if(arg->chirp.P_0!=0 || zeroes<2){
+          if(arg->x_dim != DIM_CHIRP_P && arg->y_dim != DIM_CHIRP_P){
+            if(expl)strcat(subtitle2,", ");
+            snprintf(buf,80,"P=%.1f",arg->chirp.P_0);
+            strcat(subtitle2,buf);
+            if(arg->chirp.P_rel)strcat(subtitle2,"(relative)");
+            expl++;
+          }
         }
-      }
     }
 
     if(arg->chirp.W_0==arg->chirp.W_1 || arg->sweep_steps<2){
-      if(arg->chirp.W_0!=0 || zeroes<2){
-        if(arg->x_dim != DIM_CHIRP_W && arg->y_dim != DIM_CHIRP_W){
-          if(expl)strcat(subtitle2,", ");
-          snprintf(buf,80,"W=Nyquist/%.0f",(arg->blocksize/2)/arg->chirp.W_0);
-          strcat(subtitle2,buf);
-          expl++;
+      if(arg->chirp.W_0==0 && arg->chirp.W_rel){
+        if(expl)strcat(subtitle2,", ");
+        strcat(subtitle2,"W=reference W");
+        expl++;
+      }else
+        if(arg->chirp.W_0!=0 || zeroes<2){
+          if(arg->x_dim != DIM_CHIRP_W && arg->y_dim != DIM_CHIRP_W){
+            if(expl)strcat(subtitle2,", ");
+            snprintf(buf,80,"W=Nyquist/%.0f",(arg->blocksize/2)/arg->chirp.W_0);
+            strcat(subtitle2,buf);
+            if(arg->chirp.W_rel)strcat(subtitle2,"(relative)");
+            expl++;
+          }
         }
-      }
     }
 
     if(arg->chirp.dA_0==arg->chirp.dA_1 || arg->sweep_steps<2){
-      if(arg->chirp.dA_0!=0 || zeroes<2){
-        if(arg->x_dim != DIM_CHIRP_dA && arg->y_dim != DIM_CHIRP_dA){
-          if(expl)strcat(subtitle2,", ");
-          snprintf(buf,80,"dA=%.1f",arg->chirp.dA_0);
-          strcat(subtitle2,buf);
+      if(arg->chirp.dA_0==0 && arg->chirp.dA_rel){
+        if(expl)strcat(subtitle2,", ");
+        strcat(subtitle2,"dA=reference dA");
+        expl++;
+      }else
+        if(arg->chirp.dA_0!=0 || zeroes<2){
+          if(arg->x_dim != DIM_CHIRP_dA && arg->y_dim != DIM_CHIRP_dA){
+            if(expl)strcat(subtitle2,", ");
+            snprintf(buf,80,"dA=%.1f",arg->chirp.dA_0);
+            strcat(subtitle2,buf);
+            if(arg->chirp.dA_rel)strcat(subtitle2,"(relative)");
           expl++;
+          }
         }
-      }
     }
 
     if(arg->chirp.dW_0==arg->chirp.dW_1 || arg->sweep_steps<2){
-      if(arg->chirp.dW_0!=0 || zeroes<2){
-        if(arg->x_dim != DIM_CHIRP_dW && arg->y_dim != DIM_CHIRP_dW){
-          if(expl)strcat(subtitle2,", ");
-          snprintf(buf,80,"dW=%.1f",arg->chirp.dW_0);
-          strcat(subtitle2,buf);
-          expl++;
+      if(arg->chirp.dW_0==0 && arg->chirp.dW_rel){
+        if(expl)strcat(subtitle2,", ");
+        strcat(subtitle2,"dW=reference dW");
+        expl++;
+      }else
+        if(arg->chirp.dW_0!=0 || zeroes<2){
+          if(arg->x_dim != DIM_CHIRP_dW && arg->y_dim != DIM_CHIRP_dW){
+            if(expl)strcat(subtitle2,", ");
+            snprintf(buf,80,"dW=%.1f",arg->chirp.dW_0);
+            strcat(subtitle2,buf);
+            if(arg->chirp.dW_rel)strcat(subtitle2,"(relative)");
+            expl++;
+          }
         }
-      }
     }
 
     if(arg->chirp.ddA_0==arg->chirp.ddA_1 || arg->sweep_steps<2){
-      if(arg->chirp.ddA_0!=0 || zeroes<2){
-        if(arg->x_dim != DIM_CHIRP_ddA && arg->y_dim != DIM_CHIRP_ddA){
-          if(expl)strcat(subtitle2,", ");
-          snprintf(buf,80,"ddA=%.1f",arg->chirp.ddA_0);
-          strcat(subtitle2,buf);
-          expl++;
+      if(arg->chirp.ddA_0==0 && arg->chirp.ddA_rel){
+        if(expl)strcat(subtitle2,", ");
+        strcat(subtitle2,"ddA=reference ddA");
+        expl++;
+      }else
+        if(arg->chirp.ddA_0!=0 || zeroes<2){
+          if(arg->x_dim != DIM_CHIRP_ddA && arg->y_dim != DIM_CHIRP_ddA){
+            if(expl)strcat(subtitle2,", ");
+            snprintf(buf,80,"ddA=%.1f",arg->chirp.ddA_0);
+            strcat(subtitle2,buf);
+            if(arg->chirp.ddA_rel)strcat(subtitle2,"(relative)");
+            expl++;
+          }
         }
-      }
     }
 
     if(expl && zeroes>1)
       strcat(subtitle2,", ");
 
     if(arg->chirp.A_0<-120 && (arg->chirp.A_1<-120 || arg->sweep_steps<2) &&
-       zeroes>1 && arg->x_dim != DIM_CHIRP_A && arg->y_dim != DIM_CHIRP_A)
+       zeroes>1 && arg->x_dim != DIM_CHIRP_A &&
+       arg->y_dim != DIM_CHIRP_A && !arg->chirp.A_rel)
       strcat(subtitle2,"A=");
     if(arg->chirp.P_0==0 && (arg->chirp.P_1==0 || arg->sweep_steps<2) &&
-       zeroes>1 && arg->x_dim != DIM_CHIRP_P && arg->y_dim != DIM_CHIRP_P)
+       zeroes>1 && arg->x_dim != DIM_CHIRP_P &&
+       arg->y_dim != DIM_CHIRP_P && !arg->chirp.P_rel)
       strcat(subtitle2,"P=");
     if(arg->chirp.W_0==0 && (arg->chirp.W_1==0 || arg->sweep_steps<2) &&
-       zeroes>1 && arg->x_dim != DIM_CHIRP_W && arg->y_dim != DIM_CHIRP_W)
+       zeroes>1 && arg->x_dim != DIM_CHIRP_W &&
+       arg->y_dim != DIM_CHIRP_W && !arg->chirp.W_rel)
       strcat(subtitle2,"W=");
     if(arg->chirp.dA_0==0 && (arg->chirp.dA_1==0 || arg->sweep_steps<2) &&
-       zeroes>1 && arg->x_dim != DIM_CHIRP_dA && arg->y_dim != DIM_CHIRP_dA)
+       zeroes>1 && arg->x_dim != DIM_CHIRP_dA &&
+       arg->y_dim != DIM_CHIRP_dA && !arg->chirp.dA_rel)
       strcat(subtitle2,"dA=");
     if(arg->chirp.dW_0==0 && (arg->chirp.dW_1==0 || arg->sweep_steps<2) &&
-       zeroes>1 && arg->x_dim != DIM_CHIRP_dW && arg->y_dim != DIM_CHIRP_dW)
+       zeroes>1 && arg->x_dim != DIM_CHIRP_dW &&
+       arg->y_dim != DIM_CHIRP_dW && !arg->chirp.dW_rel)
       strcat(subtitle2,"dW=");
     if(arg->chirp.ddA_0==0 && (arg->chirp.ddA_1==0 || arg->sweep_steps<2) &&
-       zeroes>1 && arg->x_dim != DIM_CHIRP_ddA && arg->y_dim != DIM_CHIRP_ddA)
+       zeroes>1 && arg->x_dim != DIM_CHIRP_ddA &&
+       arg->y_dim != DIM_CHIRP_ddA && !arg->chirp.ddA_rel)
       strcat(subtitle2,"ddA=");
     if(zeroes>1)
       strcat(subtitle2,"0");
@@ -723,36 +788,42 @@ void setup_titles_1chirp(graph_1chirp_arg *arg){
       if(arg->chirp.A_0!=arg->chirp.A_1 && arg->sweep_steps>1 &&
          arg->x_dim!=DIM_CHIRP_A && arg->y_dim!=DIM_CHIRP_A){
         strcat(buf,"A");
+        if(arg->chirp.A_rel)strcat(buf,"(relative)");
         swept++;
       }
       if(arg->chirp.P_0!=arg->chirp.P_1 && arg->sweep_steps>1 &&
          arg->x_dim!=DIM_CHIRP_P && arg->y_dim!=DIM_CHIRP_P){
         if(swept)strcat(buf,",");
         strcat(buf,"P");
+        if(arg->chirp.P_rel)strcat(buf,"(relative)");
         swept++;
       }
       if(arg->chirp.W_0!=arg->chirp.W_1 && arg->sweep_steps>1 &&
          arg->x_dim!=DIM_CHIRP_W && arg->y_dim!=DIM_CHIRP_W){
         if(swept)strcat(buf,",");
         strcat(buf,"W");
+        if(arg->chirp.W_rel)strcat(buf,"(relative)");
         swept++;
       }
       if(arg->chirp.dA_0!=arg->chirp.dA_1 && arg->sweep_steps>1 &&
          arg->x_dim!=DIM_CHIRP_dA && arg->y_dim!=DIM_CHIRP_dA){
         if(swept)strcat(buf,",");
         strcat(buf,"dA");
+        if(arg->chirp.dA_rel)strcat(buf,"(relative)");
         swept++;
       }
       if(arg->chirp.dW_0!=arg->chirp.dW_1 && arg->sweep_steps>1 &&
          arg->x_dim!=DIM_CHIRP_dW && arg->y_dim!=DIM_CHIRP_dW){
         if(swept)strcat(buf,",");
         strcat(buf,"dW");
+        if(arg->chirp.dW_rel)strcat(buf,"(relative)");
         swept++;
       }
       if(arg->chirp.ddA_0!=arg->chirp.ddA_1 && arg->sweep_steps>1 &&
          arg->x_dim!=DIM_CHIRP_ddA && arg->y_dim!=DIM_CHIRP_ddA){
         if(swept)strcat(buf,",");
         strcat(buf,"ddA");
+        if(arg->chirp.ddA_rel)strcat(buf,"(relative)");
         swept++;
       }
 
@@ -1028,6 +1099,12 @@ void setup_titles_1chirp(graph_1chirp_arg *arg){
         strcat(subtitle3,buf);
       }
     }
+
+    {
+      snprintf(buf,80,", blocksize=%d",arg->blocksize);
+      strcat(subtitle3,buf);
+    }
+
     arg->subtitle3=subtitle3;
   }
 
@@ -1070,22 +1147,40 @@ void setup_titles_1chirp(graph_1chirp_arg *arg){
         arg->xaxis_label="initial estimated ddA";
       break;
     case DIM_CHIRP_A:
-      arg->xaxis_label="A (dB)";
+      if(arg->chirp.A_rel)
+        arg->xaxis_label="chirp distance from reference A (dB)";
+      else
+        arg->xaxis_label="A (dB)";
       break;
     case DIM_CHIRP_P:
-      arg->xaxis_label="P (radians)";
+      if(arg->chirp.P_rel)
+        arg->xaxis_label="chirp distance from reference P (radians)";
+      else
+        arg->xaxis_label="P (radians)";
       break;
     case DIM_CHIRP_W:
-      arg->xaxis_label="W (cycles/block)";
+      if(arg->chirp.W_rel)
+        arg->xaxis_label="chirp distance from reference W (cycles/block)";
+      else
+        arg->xaxis_label="W (cycles/block)";
       break;
     case DIM_CHIRP_dA:
-      arg->xaxis_label="dA";
+      if(arg->chirp.dA_rel)
+        arg->xaxis_label="chirp distance from reference dA";
+      else
+        arg->xaxis_label="dA";
       break;
     case DIM_CHIRP_dW:
-      arg->xaxis_label="dW (cycles/block)";
+      if(arg->chirp.dW_rel)
+        arg->xaxis_label="chirp distance from reference dW (cycles/block)";
+      else
+        arg->xaxis_label="dW (cycles/block)";
       break;
     case DIM_CHIRP_ddA:
-      arg->xaxis_label="ddA";
+      if(arg->chirp.ddA_rel)
+        arg->xaxis_label="chirp distance from reference ddA";
+      else
+        arg->xaxis_label="ddA";
       break;
     case DIM_ALPHA_W:
       arg->xaxis_label="alpha_W";
@@ -1135,22 +1230,40 @@ void setup_titles_1chirp(graph_1chirp_arg *arg){
         arg->yaxis_label="initial estimated ddA";
       break;
     case DIM_CHIRP_A:
-      arg->yaxis_label="A (dB)";
+      if(arg->chirp.A_rel)
+        arg->xaxis_label="chirp distance from reference A (dB)";
+      else
+        arg->yaxis_label="A (dB)";
       break;
     case DIM_CHIRP_P:
-      arg->yaxis_label="P (radians)";
+      if(arg->chirp.A_rel)
+        arg->xaxis_label="chirp distance from reference P (radians)";
+      else
+        arg->yaxis_label="P (radians)";
       break;
     case DIM_CHIRP_W:
-      arg->yaxis_label="W (cycles/block)";
+      if(arg->chirp.A_rel)
+        arg->xaxis_label="chirp distance from reference W (cycles/block)";
+      else
+        arg->yaxis_label="W (cycles/block)";
       break;
     case DIM_CHIRP_dA:
-      arg->yaxis_label="dA";
+      if(arg->chirp.A_rel)
+        arg->xaxis_label="chirp distance from reference dA";
+      else
+        arg->yaxis_label="dA";
       break;
     case DIM_CHIRP_dW:
-      arg->yaxis_label="dW (cycles/block)";
+      if(arg->chirp.A_rel)
+        arg->xaxis_label="chirp distance from reference dW (cycles/block)";
+      else
+        arg->yaxis_label="dW (cycles/block)";
       break;
     case DIM_CHIRP_ddA:
-      arg->yaxis_label="ddA";
+      if(arg->chirp.A_rel)
+        arg->xaxis_label="chirp distance from reference ddA";
+      else
+        arg->yaxis_label="ddA";
       break;
     case DIM_ALPHA_W:
       arg->yaxis_label="alpha_W";
@@ -1439,13 +1552,53 @@ void graph_1chirp(char *filepre,graph_1chirp_arg *inarg){
   }
 
   if( rint(xmajori*fabsf(maxX-minX)/arg->x_major) != x_n-1){
-    fprintf(stderr,"Xmajor or Xminor results in non-integer pixel increment.\n");
-    exit(1);
+    float adj = (x_n-1.)/xmajori - fabsf(maxX-minX);
+    if(minX==0){
+      if(minX<maxX){
+        maxX+=adj;
+      }else{
+        maxX-=adj;
+      }
+    }else if(maxX==0){
+      if(minX<maxX){
+        minX-=adj;
+      }else{
+        minX+=adj;
+      }
+    }else{
+      if(minX<maxX){
+        minX-=adj/2;
+        maxX+=adj/2;
+      }else{
+        minX+=adj/2;
+        maxX-=adj/2;
+      }
+    }
   }
 
   if( rint(ymajori*fabsf(maxY-minY)/arg->y_major) != y_n-1){
-    fprintf(stderr,"Ymajor or Yminor results in non-integer pixel increment.\n");
-    exit(1);
+    float adj = (y_n-1.)/ymajori - fabsf(maxY-minY);
+    if(minY==0){
+      if(minY<maxY){
+        maxY+=adj;
+      }else{
+        maxY-=adj;
+      }
+    }else if(maxY==0){
+      if(minY<maxY){
+        minY-=adj;
+      }else{
+        minY+=adj;
+      }
+    }else{
+      if(minY<maxY){
+        minY-=adj/2;
+        maxY+=adj/2;
+      }else{
+        minY+=adj/2;
+        maxY-=adj/2;
+      }
+    }
   }
 
   /* determine ~ padding needed */
@@ -1832,20 +1985,26 @@ void graph_1chirp(char *filepre,graph_1chirp_arg *inarg){
 
         fitvec[yi].fit_W_alpha = W_alpha(arg->fit_W_alpha_0,
                                          arg->fit_W_alpha_1,
+                                         minX,maxX,
                                          xi,x_n,arg->x_dim,
+                                         minY,maxY,
                                          y_n-yi-1,y_n,arg->y_dim,
                                          si,sn,
                                          arg->sweep_or_rand_p);
         fitvec[yi].fit_dW_alpha = dW_alpha(arg->fit_dW_alpha_0,
                                            arg->fit_dW_alpha_1,
+                                           minX,maxX,
                                            xi,x_n,arg->x_dim,
+                                           minY,maxY,
                                            y_n-yi-1,y_n,arg->y_dim,
                                            si,sn,
                                            arg->sweep_or_rand_p);
 
         set_chirp(chirps+ym,
+                  minX,maxX,
                   xi,x_n,
                   arg->x_dim&DIM_CHIRP_MASK,
+                  minY,maxY,
                   y_n-yi-1,y_n,
                   arg->y_dim&DIM_CHIRP_MASK,
                   si,sn,
@@ -1864,8 +2023,10 @@ void graph_1chirp(char *filepre,graph_1chirp_arg *inarg){
                   arg->chirp.ddA_1/blocksize/blocksize);
 
         set_chirp(estimates+ym,
+                  minX,maxX,
                   xi,x_n,
                   arg->x_dim&DIM_ESTIMATE_MASK,
+                  minY,maxY,
                   y_n-yi-1,y_n,
                   arg->y_dim&DIM_ESTIMATE_MASK,
                   si,sn,
@@ -1883,18 +2044,11 @@ void graph_1chirp(char *filepre,graph_1chirp_arg *inarg){
                   arg->est.ddA_0/blocksize/blocksize,
                   arg->est.ddA_1/blocksize/blocksize);
 
-        if(arg->est.A_rel) estimates[ym].A =
-                             fromdB(todB(estimates[ym].A) + todB(chirps[ym].A));
-        if(arg->est.P_rel) estimates[ym].P += chirps[ym].P;
-        if(arg->est.W_rel) estimates[ym].W += chirps[ym].W;
-        if(arg->est.dA_rel) estimates[ym].dA += chirps[ym].dA;
-        if(arg->est.dW_rel) estimates[ym].dW += chirps[ym].dW;
-        if(arg->est.ddA_rel) estimates[ym].ddA += chirps[ym].ddA;
-
         if(arg->alt_p){
-          ym++;
-          set_chirp(chirps+ym,
+          set_chirp(chirps+ym+1,
+                    minX,maxX,
                     xi,x_n,0,
+                    minY,maxY,
                     y_n-yi-1,y_n,0,
                     si,sn,
                     arg->sweep_or_rand_p,
@@ -1911,8 +2065,10 @@ void graph_1chirp(char *filepre,graph_1chirp_arg *inarg){
                     arg->chirp_alt.ddA_0/blocksize/blocksize,
                     arg->chirp_alt.ddA_1/blocksize/blocksize);
 
-          set_chirp(estimates+ym,
+          set_chirp(estimates+ym+1,
+                    minX,maxX,
                     xi,x_n,0,
+                    minY,maxY,
                     y_n-yi-1,y_n,0,
                     si,sn,
                     arg->sweep_or_rand_p,
@@ -1929,14 +2085,43 @@ void graph_1chirp(char *filepre,graph_1chirp_arg *inarg){
                     arg->est_alt.ddA_0/blocksize/blocksize,
                     arg->est_alt.ddA_1/blocksize/blocksize);
 
-          if(arg->est_alt.A_rel) estimates[ym].A +=
-                                   fromdB(todB(estimates[ym].A) + todB(chirps[ym].A));
-          if(arg->est_alt.P_rel) estimates[ym].P += chirps[ym].P;
-          if(arg->est_alt.W_rel) estimates[ym].W += chirps[ym].W;
-          if(arg->est_alt.dA_rel) estimates[ym].dA += chirps[ym].dA;
-          if(arg->est_alt.dW_rel) estimates[ym].dW += chirps[ym].dW;
-          if(arg->est_alt.ddA_rel) estimates[ym].ddA += chirps[ym].ddA;
+          /* alt chirp can be relative to chirp */
+          if(arg->chirp_alt.A_rel)
+            chirps[ym+1].A = fromdB(todB(chirps[ym].A) + todB(chirps[ym+1].A));
+          if(arg->chirp_alt.P_rel) chirps[ym+1].P += chirps[ym].P;
+          if(arg->chirp_alt.W_rel) chirps[ym+1].W += chirps[ym].W;
+          if(arg->chirp_alt.dA_rel) chirps[ym+1].dA += chirps[ym].dA;
+          if(arg->chirp_alt.dW_rel) chirps[ym+1].dW += chirps[ym].dW;
+          if(arg->chirp_alt.ddA_rel) chirps[ym+1].ddA += chirps[ym].ddA;
+
+          /* chirp can be relative to alt chirp */
+          if(arg->chirp.A_rel)
+            chirps[ym].A = fromdB(todB(chirps[ym].A) + todB(chirps[ym+1].A));
+          if(arg->chirp.P_rel) chirps[ym].P += chirps[ym+1].P;
+          if(arg->chirp.W_rel) chirps[ym].W += chirps[ym+1].W;
+          if(arg->chirp.dA_rel) chirps[ym].dA += chirps[ym+1].dA;
+          if(arg->chirp.dW_rel) chirps[ym].dW += chirps[ym+1].dW;
+          if(arg->chirp.ddA_rel) chirps[ym].ddA += chirps[ym+1].ddA;
+
+          /* alt estimate can be relative to alt chirp */
+          if(arg->est_alt.A_rel)
+            estimates[ym+1].A = fromdB(todB(estimates[ym+1].A) + todB(chirps[ym+1].A));
+          if(arg->est_alt.P_rel) estimates[ym+1].P += chirps[ym+1].P;
+          if(arg->est_alt.W_rel) estimates[ym+1].W += chirps[ym+1].W;
+          if(arg->est_alt.dA_rel) estimates[ym+1].dA += chirps[ym+1].dA;
+          if(arg->est_alt.dW_rel) estimates[ym+1].dW += chirps[ym+1].dW;
+          if(arg->est_alt.ddA_rel) estimates[ym+1].ddA += chirps[ym+1].ddA;
         }
+
+        /* estimate can be relative to chirp */
+        if(arg->est.A_rel) estimates[ym].A =
+                             fromdB(todB(estimates[ym].A) + todB(chirps[ym].A));
+        if(arg->est.P_rel) estimates[ym].P += chirps[ym].P;
+        if(arg->est.W_rel) estimates[ym].W += chirps[ym].W;
+        if(arg->est.dA_rel) estimates[ym].dA += chirps[ym].dA;
+        if(arg->est.dW_rel) estimates[ym].dW += chirps[ym].dW;
+        if(arg->est.ddA_rel) estimates[ym].ddA += chirps[ym].ddA;
+
       }
 
       if(!chirp_swept){
@@ -2338,7 +2523,7 @@ void init_arg(graph_1chirp_arg *arg){
     /* sweep_steps */   32,
     /* randomize_p */   0,
 
-    (est_param){
+    (rel_param){
       /* est A range */  -999.,-999.,  0, /* relative flag */
       /* est P range */     0.,  0.,  0, /* relative flag */
       /* est W range */     0.,  0.,  1, /* relative flag */
@@ -2346,15 +2531,15 @@ void init_arg(graph_1chirp_arg *arg){
       /* est dW range */    0.,  0.,  0, /* relative flag */
       /* est ddA range */   0.,  0.,  0, /* relative flag */
     },
-    (chirp_param){
-      /* ch A range */    0.,0.,
-      /* ch P range */    0.,1.-1./32.,
-      /* ch W range */    0.,0.,
-      /* ch dA range */   0.,0.,
-      /* ch dW range */   0.,0.,
-      /* ch ddA range */  0.,0.,
+    (rel_param){
+      /* ch A range */    0.,0., 0,
+      /* ch P range */    0.,1.-1./32., 0,
+      /* ch W range */    0.,0., 0,
+      /* ch dA range */   0.,0., 0,
+      /* ch dW range */   0.,0., 0,
+      /* ch ddA range */  0.,0., 0,
     },
-    (est_param){
+    (rel_param){
       /* alt est A range */  -999.,-999.,  0, /* relative flag */
       /* alt est P range */     0.,  0.,  0, /* relative flag */
       /* alt est W range */     0.,  0.,  1, /* relative flag */
@@ -2362,13 +2547,13 @@ void init_arg(graph_1chirp_arg *arg){
       /* alt est dW range */    0.,  0.,  0, /* relative flag */
       /* alt est ddA range */   0.,  0.,  0, /* relative flag */
     },
-    (chirp_param){
-      /* alt ch A range */    0.,0.,
-      /* alt ch P range */    0.,1.-1./32.,
-      /* alt ch W range */    0.,0.,
-      /* alt ch dA range */   0.,0.,
-      /* alt ch dW range */   0.,0.,
-      /* alt ch ddA range */  0.,0.,
+    (rel_param){
+      /* alt ch A range */    0.,0., 0,
+      /* alt ch P range */    0.,1.-1./32., 0,
+      /* alt ch W range */    0.,0., 0,
+      /* alt ch dA range */   0.,0., 0,
+      /* alt ch dW range */   0.,0., 0,
+      /* alt ch ddA range */  0.,0., 0,
     },
     /* alt chirp p */ 0,
 
@@ -2800,14 +2985,16 @@ int main(){
   /* A vs W *****************************************************************/
   init_arg(&arg);
 
-  arg.chirp_alt.W_0 = arg.chirp_alt.W_1 = rint(arg.blocksize/4);
+  arg.chirp_alt.W_0 = rint(arg.blocksize/4)+1;
+  arg.chirp_alt.W_1 = rint(arg.blocksize/4)-1;
   arg.alt_p=1;
   arg.sweep_or_rand_p=1;
 
   arg.x_dim=DIM_CHIRP_W;
-  arg.chirp.W_0 = arg.chirp_alt.W_0 - 12.5;
-  arg.chirp.W_1 = arg.chirp_alt.W_1 + 12.5;
-  arg.xaxis_label = "test chirp W (cycles/block)";
+  arg.chirp.W_0 = -25;
+  arg.chirp.W_1 = +25;
+  arg.chirp.W_rel = 1; /* relative to alt chirp W */
+  arg.xaxis_label = "test chirp relative W (cycles/block)";
 
   arg.y_dim=DIM_CHIRP_A;
   arg.chirp.A_0 = -100.;
@@ -2857,10 +3044,11 @@ int main(){
   arg.window = window_functions.maxwell1;
   graph_1chirp("2ch-",&arg);
 
-
   /* A vs dW *****************************************************************/
 
-  arg.chirp.W_0 = arg.chirp.W_1 = arg.chirp_alt.W_0;
+  /* randomized/relative to alt chirp */
+  arg.chirp.W_0 = -1;
+  arg.chirp.W_1 = 1;
 
   arg.x_dim=DIM_CHIRP_dW;
   arg.chirp.dW_0 = -5;
