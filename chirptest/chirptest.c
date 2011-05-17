@@ -405,8 +405,7 @@ void *compute_column(void *in){
   colarg *arg = (colarg *)in;
   int blocksize=arg->blocksize;
   int y,i,ret;
-  int except;
-            float *cv = malloc(sizeof(*cv)*blocksize);
+  float *cv = malloc(sizeof(*cv)*blocksize);
   int cimult=(arg->alt_chirp_p?2:1);
   int ym;
 
@@ -448,11 +447,6 @@ void *compute_column(void *in){
       }
     }
 
-    except=fegetexcept();
-    fedisableexcept(FE_INEXACT);
-    fedisableexcept(FE_UNDERFLOW);
-    feenableexcept(FE_ALL_EXCEPT & ~(FE_INEXACT|FE_UNDERFLOW));
-
     ret=estimate_chirps(cv,arg->window,blocksize,
                         arg->estimate+ym,cimult,
                         arg->fit_tolerance,
@@ -489,8 +483,6 @@ void *compute_column(void *in){
     arg->ssq_energy[y] = energy_acc;
     arg->ssq_error[y] = error_acc;
     arg->iterations[y] = arg->max_iterations-ret;
-    feclearexcept(FE_ALL_EXCEPT);
-    feenableexcept(except);
   }
 
   free(cv);
@@ -1409,8 +1401,14 @@ void graph_1chirp(char *filepre,graph_1chirp_arg *inarg){
   int ydB=0;
 
   char *filebase;
-
+  int except;
   struct timeval last;
+
+  except=fegetexcept();
+  fedisableexcept(FE_INEXACT);
+  fedisableexcept(FE_UNDERFLOW);
+  feenableexcept(FE_ALL_EXCEPT & ~(FE_INEXACT|FE_UNDERFLOW));
+
   gettimeofday(&last,NULL);
   setup_titles_1chirp(arg);
 
@@ -2485,6 +2483,9 @@ void graph_1chirp(char *filepre,graph_1chirp_arg *inarg){
   destroy_page(cdW_d);
   destroy_page(cddA_d);
   destroy_page(cRMS_d);
+
+  feclearexcept(FE_ALL_EXCEPT);
+  feenableexcept(except);
 
   fprintf(stderr," done\n");
 }
