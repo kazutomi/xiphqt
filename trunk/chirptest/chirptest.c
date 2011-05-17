@@ -3068,49 +3068,51 @@ int main(){
   {
     int amp;
     for(amp=-60;amp<=0;amp+=20){
+      char buf[80];
+      snprintf(buf,80,"2ch-%d-",-amp);
 
       arg.chirp.A_0=arg.chirp.A_1=amp;
 
       arg.fit_nonlinear=0;
       arg.window = window_functions.rectangle;
-      graph_1chirp("2ch-",&arg);
+      graph_1chirp(buf,&arg);
       arg.window = window_functions.sine;
-      graph_1chirp("2ch-",&arg);
+      graph_1chirp(buf,&arg);
       arg.window = window_functions.hanning;
-      graph_1chirp("2ch-",&arg);
+      graph_1chirp(buf,&arg);
       arg.window = window_functions.tgauss_deep;
-      graph_1chirp("2ch-",&arg);
+      graph_1chirp(buf,&arg);
       arg.window = window_functions.maxwell1;
-      graph_1chirp("2ch-",&arg);
+      graph_1chirp(buf,&arg);
 
       arg.fit_nonlinear=1;
       arg.window = window_functions.rectangle;
-      graph_1chirp("2ch-",&arg);
+      graph_1chirp(buf,&arg);
       arg.window = window_functions.sine;
-      graph_1chirp("2ch-",&arg);
+      graph_1chirp(buf,&arg);
       arg.window = window_functions.hanning;
-      graph_1chirp("2ch-",&arg);
+      graph_1chirp(buf,&arg);
       arg.window = window_functions.tgauss_deep;
-      graph_1chirp("2ch-",&arg);
+      graph_1chirp(buf,&arg);
       arg.window = window_functions.maxwell1;
-      graph_1chirp("2ch-",&arg);
+      graph_1chirp(buf,&arg);
 
       arg.fit_nonlinear=2;
       arg.fit_dW_alpha_0 = arg.fit_dW_alpha_1 = 2.25;
       arg.window = window_functions.rectangle;
-      graph_1chirp("2ch-",&arg);
+      graph_1chirp(buf,&arg);
       arg.fit_dW_alpha_0 = arg.fit_dW_alpha_1 = 1.711;
       arg.window = window_functions.sine;
-      graph_1chirp("2ch-",&arg);
+      graph_1chirp(buf,&arg);
       arg.fit_dW_alpha_0 = arg.fit_dW_alpha_1 = 1.618;
       arg.window = window_functions.hanning;
-      graph_1chirp("2ch-",&arg);
+      graph_1chirp(buf,&arg);
       arg.fit_dW_alpha_0 = arg.fit_dW_alpha_1 = 1.5;
       arg.window = window_functions.tgauss_deep;
-      graph_1chirp("2ch-",&arg);
+      graph_1chirp(buf,&arg);
       arg.fit_dW_alpha_0 = arg.fit_dW_alpha_1 = 1.554;
       arg.window = window_functions.maxwell1;
-      graph_1chirp("2ch-",&arg);
+      graph_1chirp(buf,&arg);
     }
   }
 
