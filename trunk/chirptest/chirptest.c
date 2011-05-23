@@ -829,7 +829,10 @@ void setup_titles_1chirp(graph_1chirp_arg *arg){
         if(expl || zeroes>1)
           strcat(subtitle2,", ");
 
-        strcat(subtitle2,"swept ");
+        if(arg->sweep_or_rand_p)
+          strcat(subtitle2,"randomized ");
+        else
+          strcat(subtitle2,"swept ");
         strcat(subtitle2,buf);
       }
     }
@@ -1042,7 +1045,10 @@ void setup_titles_1chirp(graph_1chirp_arg *arg){
         if(expl || zeroes>1)
           strcat(subtitle2,", ");
 
-        strcat(subtitle2," swept ");
+        if(arg->sweep_or_rand_p)
+          strcat(subtitle2,"randomized ");
+        else
+          strcat(subtitle2," swept ");
         strcat(subtitle2,buf);
       }
     }
@@ -2495,7 +2501,7 @@ void init_arg(graph_1chirp_arg *arg){
     /* fontsize */      18,
     /* titles */        0,0,0,0,0,0,
     /* blocksize */     256,
-    /* threads */       32,
+    /* threads */       8,
 
     /* window */        window_functions.sine,
     /* fit_tol */       .000001,
@@ -3012,6 +3018,13 @@ int main(){
   arg.y_major = 20;
   arg.y_minor = 5;
   arg.yaxis_label = "test chirp amplitude (dB)";
+
+
+  arg.est.A_rel = 1;
+  arg.est_alt.A_rel = 1;
+
+  arg.est.W_0 = arg.est.W_1 = 1;
+  arg.est_alt.W_0 = arg.est_alt.W_1 = -1;
 
   arg.fit_nonlinear=0;
   arg.window = window_functions.rectangle;
