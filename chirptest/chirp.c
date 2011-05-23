@@ -174,6 +174,8 @@ static int full_nonlinear_iterate(const float *x,
       float aS = sin(c->P);
       float move;
 
+      if(c->A==-1) continue;
+
       for(j=0;j<len;j++){
 
         /* no part of the nonlinear algorithm requires double
@@ -280,8 +282,9 @@ static int full_nonlinear_iterate(const float *x,
       if((aP*aP + bP*bP)>1e10 ||
          (cP*cP + dP*dP)>1e10 ||
          (eP*eP + fP*fP)>1e10){
-        flag=1;
-        continue;
+        /* mark this chirp inactive */
+        c->A=-1;
+        break;
       }
 
       {
@@ -445,6 +448,8 @@ static int partial_nonlinear_iterate(const float *x,
       float tmpe3=0;
       float tmpf3=0;
 
+      if(ch[i].A==-1) continue;
+
       /* chirp param -> basis acc */
       ai[i] = toAi(ch[i].A, ch[i].P);
       bi[i] = toBi(ch[i].A, ch[i].P);
@@ -568,20 +573,29 @@ static int partial_nonlinear_iterate(const float *x,
           tmpf*ttsin_table[i][j];
       }
 
-      /* guard overflow */
-      if((ai[i]*ai[i] + bi[i]*bi[i])>1e10 ||
-         (ci[i]*ci[i] + di[i]*di[i])>1e10 ||
-         (ei[i]*ei[i] + fi[i]*fi[i])>1e10){
-        flag=1;
-        continue;
-      }
-
       ai[i] += tmpa;
       bi[i] += tmpb;
       ci[i] += tmpc;
       di[i] += tmpd;
       ei[i] += tmpe;
       fi[i] += tmpf;
+
+      /* guard overflow */
+      if((ai[i]*ai[i] + bi[i]*bi[i])>1e10 ||
+         (ci[i]*ci[i] + di[i]*di[i])>1e10 ||
+         (ei[i]*ei[i] + fi[i]*fi[i])>1e10){
+        for (j=0;j<len;j++){
+          y[j] +=
+            ai[i]*cos_table[i][j]+
+            bi[i]*sin_table[i][j]+
+            ci[i]*tcos_table[i][j]+
+            di[i]*tsin_table[i][j]+
+            ei[i]*ttcos_table[i][j]+
+            fi[i]*ttsin_table[i][j];
+        }
+        ch[i].A=-1;
+        continue;
+      }
 
       /* save new estimate */
       ch[i].A = toA(ai[i],bi[i]);
@@ -695,6 +709,8 @@ static int linear_iterate(const float *x,
     float tmpd2=0;
     float tmpe3=0;
     float tmpf3=0;
+
+    if(ch[i].A==-1)continue;
 
     /* seed the basis accumulators from our passed in estimated parameters */
     /* Don't add in W; this is already included by the basis */
@@ -827,21 +843,29 @@ static int linear_iterate(const float *x,
           tmpf*ttsin_table[i][j];
       }
 
-
-      /* guard overflow */
-      if((ai[i]*ai[i] + bi[i]*bi[i])>1e10 ||
-         (ci[i]*ci[i] + di[i]*di[i])>1e10 ||
-         (ei[i]*ei[i] + fi[i]*fi[i])>1e10){
-        flag=1;
-        continue;
-      }
-
       ai[i] += tmpa;
       bi[i] += tmpb;
       ci[i] += tmpc;
       di[i] += tmpd;
       ei[i] += tmpe;
       fi[i] += tmpf;
+
+      /* guard overflow */
+      if((ai[i]*ai[i] + bi[i]*bi[i])>1e10 ||
+         (ci[i]*ci[i] + di[i]*di[i])>1e10 ||
+         (ei[i]*ei[i] + fi[i]*fi[i])>1e10){
+        for (j=0;j<len;j++){
+          y[j] +=
+            ai[i]*cos_table[i][j]+
+            bi[i]*sin_table[i][j]+
+            ci[i]*tcos_table[i][j]+
+            di[i]*tsin_table[i][j]+
+            ei[i]*ttcos_table[i][j]+
+            fi[i]*ttsin_table[i][j];
+        }
+        ch[i].A=-1;
+        continue;
+      }
 
       /* base convergence on basis projection movement this
          iteration */
@@ -858,12 +882,17 @@ static int linear_iterate(const float *x,
   }
 
   for(i=0;i<n;i++){
-    ch[i].A = toA(ai[i],bi[i]);
-    ch[i].P = toP(ai[i],bi[i]);
-    ch[i].W += (fitW ? toW(ai[i],bi[i],ci[i],di[i]) : 0);
-    ch[i].dA = (fitdA ? todA(ai[i],bi[i],ci[i],di[i]) : 0);
-    ch[i].dW += (fitdW ? todW(ai[i],bi[i],ei[i],fi[i]) : 0);
-    ch[i].ddA = (fitddA ? toddA(ai[i],bi[i],ei[i],fi[i]) : 0);
+    if(ch[i].A!=-1){
+      ch[i].A = toA(ai[i],bi[i]);
+      ch[i].P = toP(ai[i],bi[i]);
+      ch[i].W += (fitW ? toW(ai[i],bi[i],ci[i],di[i]) : 0);
+      ch[i].dA = (fitdA ? todA(ai[i],bi[i],ci[i],di[i]) : 0);
+      ch[i].dW += (fitdW ? todW(ai[i],bi[i],ei[i],fi[i]) : 0);
+      ch[i].ddA = (fitddA ? toddA(ai[i],bi[i],ei[i],fi[i]) : 0);
+    }else{
+      memset(ch+i,0,sizeof(ch[i]));
+      ch[i].A=-1;
+    }
 
     free(cos_table[i]);
     free(sin_table[i]);
