@@ -276,14 +276,12 @@ static int full_nonlinear_iterate(const float *x,
       eP += ddAtoEi(c->P,c->ddA);
       fP += ddAtoFi(c->P,c->ddA);
 
-      /* guard overflow; if we're this far out, assume we're never
-         coming back. drop out now. */
+      /* guard overflow */
       if((aP*aP + bP*bP)>1e10 ||
          (cP*cP + dP*dP)>1e10 ||
          (eP*eP + fP*fP)>1e10){
-        iter_limit=0;
-        i=n;
-        break;
+        flag=1;
+        continue;
       }
 
       {
@@ -577,13 +575,12 @@ static int partial_nonlinear_iterate(const float *x,
       ei[i] += tmpe;
       fi[i] += tmpf;
 
-      /* guard overflow; if we're this far out, assume we're never
-         coming back. drop out now. */
+      /* guard overflow */
       if((ai[i]*ai[i] + bi[i]*bi[i])>1e10 ||
          (ci[i]*ci[i] + di[i]*di[i])>1e10 ||
          (ei[i]*ei[i] + fi[i]*fi[i])>1e10){
-        iter_limit=0;
-        i=n;
+        flag=1;
+        continue;
       }
 
       /* save new estimate */
@@ -831,13 +828,12 @@ static int linear_iterate(const float *x,
       }
 
 
-      /* guard overflow; if we're this far out, assume we're never
-         coming back. drop out now. */
+      /* guard overflow */
       if((ai[i]*ai[i] + bi[i]*bi[i])>1e10 ||
          (ci[i]*ci[i] + di[i]*di[i])>1e10 ||
          (ei[i]*ei[i] + fi[i]*fi[i])>1e10){
-        iter_limit=0;
-        i=n;
+        flag=1;
+        continue;
       }
 
       ai[i] += tmpa;
