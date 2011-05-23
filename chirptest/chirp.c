@@ -568,13 +568,6 @@ static int partial_nonlinear_iterate(const float *x,
           tmpf*ttsin_table[i][j];
       }
 
-      ai[i] += tmpa;
-      bi[i] += tmpb;
-      ci[i] += tmpc;
-      di[i] += tmpd;
-      ei[i] += tmpe;
-      fi[i] += tmpf;
-
       /* guard overflow */
       if((ai[i]*ai[i] + bi[i]*bi[i])>1e10 ||
          (ci[i]*ci[i] + di[i]*di[i])>1e10 ||
@@ -582,6 +575,13 @@ static int partial_nonlinear_iterate(const float *x,
         flag=1;
         continue;
       }
+
+      ai[i] += tmpa;
+      bi[i] += tmpb;
+      ci[i] += tmpc;
+      di[i] += tmpd;
+      ei[i] += tmpe;
+      fi[i] += tmpf;
 
       /* save new estimate */
       ch[i].A = toA(ai[i],bi[i]);
