@@ -2995,6 +2995,9 @@ int main(){
 
 #if 1
   /* Two chirp discrimination graphs ****************************************/
+  /* First, graphs using a poor initial estimate with a zero
+     amplitude.  This defeats the sorting/energy subtraction and
+     illustrates sidelobe capture. */
   /* A vs W *****************************************************************/
   init_arg(&arg);
 
@@ -3005,10 +3008,10 @@ int main(){
   arg.sweep_steps=128;
 
   arg.x_dim=DIM_CHIRP_W;
-  arg.chirp.W_0 = -25;
-  arg.chirp.W_1 = +25;
+  arg.chirp.W_0 = 0;
+  arg.chirp.W_1 = +20;
   arg.chirp.W_rel = 1; /* relative to alt chirp W */
-  arg.x_major = 5;
+  arg.x_major = 1;
   arg.x_minor = .5;
   arg.xaxis_label = "test chirp relative W (cycles/block)";
 
@@ -3019,56 +3022,96 @@ int main(){
   arg.y_minor = 5;
   arg.yaxis_label = "test chirp amplitude (dB)";
 
-
-  arg.est.A_rel = 1;
-  arg.est_alt.A_rel = 1;
-
-  arg.est.W_0 = arg.est.W_1 = 1;
-  arg.est_alt.W_0 = arg.est_alt.W_1 = -1;
-
   arg.fit_nonlinear=0;
   arg.window = window_functions.rectangle;
-  graph_1chirp("2ch-",&arg);
+  graph_1chirp("2ch-0A-",&arg);
   arg.window = window_functions.sine;
-  graph_1chirp("2ch-",&arg);
+  graph_1chirp("2ch-0A-",&arg);
   arg.window = window_functions.hanning;
-  graph_1chirp("2ch-",&arg);
+  graph_1chirp("2ch-0A-",&arg);
   arg.window = window_functions.tgauss_deep;
-  graph_1chirp("2ch-",&arg);
+  graph_1chirp("2ch-0A-",&arg);
   arg.window = window_functions.maxwell1;
-  graph_1chirp("2ch-",&arg);
+  graph_1chirp("2ch-0A-",&arg);
 
   arg.fit_nonlinear=1;
   arg.window = window_functions.rectangle;
-  graph_1chirp("2ch-",&arg);
+  graph_1chirp("2ch-0A-",&arg);
   arg.window = window_functions.sine;
-  graph_1chirp("2ch-",&arg);
+  graph_1chirp("2ch-0A-",&arg);
   arg.window = window_functions.hanning;
-  graph_1chirp("2ch-",&arg);
+  graph_1chirp("2ch-0A-",&arg);
   arg.window = window_functions.tgauss_deep;
-  graph_1chirp("2ch-",&arg);
+  graph_1chirp("2ch-0A-",&arg);
   arg.window = window_functions.maxwell1;
-  graph_1chirp("2ch-",&arg);
+  graph_1chirp("2ch-0A-",&arg);
 
   arg.fit_nonlinear=2;
   arg.fit_dW_alpha_0 = arg.fit_dW_alpha_1 = 2.25;
   arg.window = window_functions.rectangle;
-  graph_1chirp("2ch-",&arg);
+  graph_1chirp("2ch-0A-",&arg);
   arg.fit_dW_alpha_0 = arg.fit_dW_alpha_1 = 1.711;
   arg.window = window_functions.sine;
-  graph_1chirp("2ch-",&arg);
+  graph_1chirp("2ch-0A-",&arg);
   arg.fit_dW_alpha_0 = arg.fit_dW_alpha_1 = 1.618;
   arg.window = window_functions.hanning;
-  graph_1chirp("2ch-",&arg);
+  graph_1chirp("2ch-0A-",&arg);
   arg.fit_dW_alpha_0 = arg.fit_dW_alpha_1 = 1.5;
   arg.window = window_functions.tgauss_deep;
-  graph_1chirp("2ch-",&arg);
+  graph_1chirp("2ch-0A-",&arg);
   arg.fit_dW_alpha_0 = arg.fit_dW_alpha_1 = 1.554;
   arg.window = window_functions.maxwell1;
-  graph_1chirp("2ch-",&arg);
+  graph_1chirp("2ch-0A-",&arg);
+
+  /* Alter the above graphs to use an estimate with accurate
+     amplitude */
+  arg.est.A_rel=1;
+  arg.est_alt.A_rel=1;
+
+  arg.fit_nonlinear=0;
+  arg.window = window_functions.rectangle;
+  graph_1chirp("2ch-AA-",&arg);
+  arg.window = window_functions.sine;
+  graph_1chirp("2ch-AA-",&arg);
+  arg.window = window_functions.hanning;
+  graph_1chirp("2ch-AA-",&arg);
+  arg.window = window_functions.tgauss_deep;
+  graph_1chirp("2ch-AA-",&arg);
+  arg.window = window_functions.maxwell1;
+  graph_1chirp("2ch-AA-",&arg);
+
+  arg.fit_nonlinear=1;
+  arg.window = window_functions.rectangle;
+  graph_1chirp("2ch-AA-",&arg);
+  arg.window = window_functions.sine;
+  graph_1chirp("2ch-AA-",&arg);
+  arg.window = window_functions.hanning;
+  graph_1chirp("2ch-AA-",&arg);
+  arg.window = window_functions.tgauss_deep;
+  graph_1chirp("2ch-AA-",&arg);
+  arg.window = window_functions.maxwell1;
+  graph_1chirp("2ch-AA-",&arg);
+
+  arg.fit_nonlinear=2;
+  arg.fit_dW_alpha_0 = arg.fit_dW_alpha_1 = 2.25;
+  arg.window = window_functions.rectangle;
+  graph_1chirp("2ch-AA-",&arg);
+  arg.fit_dW_alpha_0 = arg.fit_dW_alpha_1 = 1.711;
+  arg.window = window_functions.sine;
+  graph_1chirp("2ch-AA-",&arg);
+  arg.fit_dW_alpha_0 = arg.fit_dW_alpha_1 = 1.618;
+  arg.window = window_functions.hanning;
+  graph_1chirp("2ch-AA-",&arg);
+  arg.fit_dW_alpha_0 = arg.fit_dW_alpha_1 = 1.5;
+  arg.window = window_functions.tgauss_deep;
+  graph_1chirp("2ch-AA-",&arg);
+  arg.fit_dW_alpha_0 = arg.fit_dW_alpha_1 = 1.554;
+  arg.window = window_functions.maxwell1;
+  graph_1chirp("2ch-AA-",&arg);
+
 
   /* dW vs W *****************************************************************/
-
+#if 0
   arg.sweep_steps=32;
   arg.chirp.A_0 = arg.chirp.A_1 = 0.;
 
@@ -3129,7 +3172,7 @@ int main(){
       graph_1chirp(buf,&arg);
     }
   }
-
+#endif
 #endif
 
   return 0;

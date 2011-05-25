@@ -84,10 +84,10 @@ static float WtoDi(float A, float P, float W){
 }
 
 static float dWtoEi(float A, float P, float dW){
-  return -A*dW*sin(P);
+  return -A*dW*sinf(P);
 }
 static float dWtoFi(float A, float P, float dW){
-  return -A*dW*cos(P);
+  return -A*dW*cosf(P);
 }
 
 static float dAtoCi(float P, float dA){
@@ -97,10 +97,10 @@ static float dAtoDi(float P, float dA){
   return -dA*sinf(P);
 }
 static float ddAtoEi(float P, float ddA){
-  return ddA*cos(P);
+  return ddA*cosf(P);
 }
 static float ddAtoFi(float P, float ddA){
-  return -ddA*sin(P);
+  return -ddA*sinf(P);
 }
 
 /* fully nonlinear estimation iterator; it restarts the basis
@@ -284,7 +284,7 @@ static int full_nonlinear_iterate(const float *x,
          (eP*eP + fP*fP)>1e10){
         /* mark this chirp inactive */
         c->A=-1;
-        break;
+        continue;
       }
 
       {
