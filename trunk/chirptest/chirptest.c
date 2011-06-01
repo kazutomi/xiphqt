@@ -2109,7 +2109,7 @@ void graph_1chirp(char *filepre,graph_1chirp_arg *inarg){
           if(arg->chirp_alt.dA_rel) chirps[ym+1].dA += chirps[ym].dA;
           if(arg->chirp_alt.dW_rel) chirps[ym+1].dW += chirps[ym].dW;
           if(arg->chirp_alt.ddA_rel) chirps[ym+1].ddA += chirps[ym].ddA;
-          if(arg->chirp_alt.W_trunc) chirps[ym+1].W = rint(chirps[ym+1].W);
+          if(arg->chirp_alt.W_trunc) chirps[ym+1].W = rint(chirps[ym+1].W/2./M_PI*blocksize)/blocksize*2.*M_PI;
 
           /* chirp can be relative to alt chirp */
           if(arg->chirp.A_rel)
@@ -2128,9 +2128,9 @@ void graph_1chirp(char *filepre,graph_1chirp_arg *inarg){
           if(arg->est_alt.dA_rel) estimates[ym+1].dA += chirps[ym+1].dA;
           if(arg->est_alt.dW_rel) estimates[ym+1].dW += chirps[ym+1].dW;
           if(arg->est_alt.ddA_rel) estimates[ym+1].ddA += chirps[ym+1].ddA;
-          if(arg->est_alt.W_trunc) estimates[ym+1].W = rint(estimates[ym+1].W);
+          if(arg->est_alt.W_trunc) estimates[ym+1].W = rint(estimates[ym+1].W/2./M_PI*blocksize)/blocksize*2.*M_PI;
         }
-        if(arg->chirp.W_trunc) chirps[ym].W = rint(chirps[ym].W);
+        if(arg->chirp.W_trunc) chirps[ym].W = rint(chirps[ym].W/2./M_PI*blocksize)/blocksize*2.*M_PI;
 
         /* estimate can be relative to chirp */
         if(arg->est.A_rel) estimates[ym].A =
@@ -2140,7 +2140,7 @@ void graph_1chirp(char *filepre,graph_1chirp_arg *inarg){
         if(arg->est.dA_rel) estimates[ym].dA += chirps[ym].dA;
         if(arg->est.dW_rel) estimates[ym].dW += chirps[ym].dW;
         if(arg->est.ddA_rel) estimates[ym].ddA += chirps[ym].ddA;
-        if(arg->est.W_trunc) estimates[ym].W = rint(estimates[ym].W);
+        if(arg->est.W_trunc) estimates[ym].W = rint(estimates[ym].W/2./M_PI*blocksize)/blocksize*2.*M_PI;
 
       }
 
@@ -3068,10 +3068,25 @@ int main(){
   arg.window = window_functions.maxwell1;
   graph_1chirp("2ch-0A-",&arg);
 
-  /* Alter the above graphs to use an estimate with accurate
-     amplitude */
+  /* Alter the above graphs to use an accurate estimate */
+  arg.est.W_0=arg.est.W_1=0;
+  arg.est_alt.W_0=arg.est_alt.W_1=0;
+
   arg.est.A_rel=1;
   arg.est_alt.A_rel=1;
+  arg.est.A_0=-.1;
+  arg.est.A_1=.1;
+  arg.est_alt.A_0=-.1;
+  arg.est_alt.A_1=.1;
+
+  arg.est.P_rel=1;
+  arg.est_alt.P_rel=1;
+  arg.est.P_0=-.1;
+  arg.est.P_1=.1;
+  arg.est_alt.P_0=-.1;
+  arg.est_alt.P_1=.1;
+
+  arg.sweep_steps=32;
 
   arg.fit_nonlinear=0;
   arg.window = window_functions.rectangle;
@@ -3115,16 +3130,26 @@ int main(){
   graph_1chirp("2ch-AA-",&arg);
 
   /* Simulate an estimate taken from an initial FFT  */
+  arg.sweep_steps=32;
+
   arg.est.A_rel=1;
   arg.est_alt.A_rel=1;
-  arg.est.A_0=arg.est.A_1=-.01;
-  arg.est_alt.A_0=arg.est_alt.A_1=0;
+  arg.est.A_0=0;
+  arg.est.A_1=-6;
+  arg.est_alt.A_0=0;
+  arg.est_alt.A_1=6;
 
+  arg.est.P_rel=1;
   arg.est_alt.P_rel=1;
-  arg.est.P_0=arg.est.P_1=0;
-  arg.est_alt.P_0=arg.est_alt.P_1=0;
+  arg.est.P_0=-.1;
+  arg.est.P_1=.1;
+  arg.est_alt.P_0=-.1;
+  arg.est_alt.P_1=.1;
 
-  arg.est.W_trunc=1;
+  arg.est.W_0=0;
+  arg.est.W_1=.5;
+  arg.est_alt.W_0=0;
+  arg.est_alt.W_1=-.5;
 
   arg.fit_nonlinear=0;
   arg.window = window_functions.rectangle;
