@@ -2506,7 +2506,7 @@ void init_arg(graph_1chirp_arg *arg){
     /* fontsize */      18,
     /* titles */        0,0,0,0,0,0,
     /* blocksize */     256,
-    /* threads */       8,
+    /* threads */       32,
 
     /* window */        window_functions.sine,
     /* fit_tol */       .000001,
@@ -3086,8 +3086,6 @@ int main(){
   arg.est_alt.P_0=-.1;
   arg.est_alt.P_1=.1;
 
-  arg.sweep_steps=32;
-
   arg.fit_nonlinear=0;
   arg.window = window_functions.rectangle;
   graph_1chirp("2ch-AA-",&arg);
@@ -3130,8 +3128,6 @@ int main(){
   graph_1chirp("2ch-AA-",&arg);
 
   /* Simulate an estimate taken from an initial FFT  */
-  arg.sweep_steps=32;
-
   arg.est.A_rel=1;
   arg.est_alt.A_rel=1;
   arg.est.A_0=0;
@@ -3194,10 +3190,7 @@ int main(){
 
 
   /* dW vs W *****************************************************************/
-#if 0
   arg.sweep_steps=32;
-  arg.chirp.A_0 = arg.chirp.A_1 = 0.;
-
   arg.y_dim=DIM_CHIRP_dW;
   arg.chirp.dW_0 = -10.;
   arg.chirp.dW_1 = 10.;
@@ -3255,7 +3248,6 @@ int main(){
       graph_1chirp(buf,&arg);
     }
   }
-#endif
 #endif
 
   return 0;
