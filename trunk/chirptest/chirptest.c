@@ -40,7 +40,6 @@ typedef struct {
   float W_0;
   float W_1;
   int   W_rel;
-  int   W_trunc;
 
   float dA_0;
   float dA_1;
@@ -2109,7 +2108,6 @@ void graph_1chirp(char *filepre,graph_1chirp_arg *inarg){
           if(arg->chirp_alt.dA_rel) chirps[ym+1].dA += chirps[ym].dA;
           if(arg->chirp_alt.dW_rel) chirps[ym+1].dW += chirps[ym].dW;
           if(arg->chirp_alt.ddA_rel) chirps[ym+1].ddA += chirps[ym].ddA;
-          if(arg->chirp_alt.W_trunc) chirps[ym+1].W = rint(chirps[ym+1].W/2./M_PI*blocksize)/blocksize*2.*M_PI;
 
           /* chirp can be relative to alt chirp */
           if(arg->chirp.A_rel)
@@ -2128,9 +2126,7 @@ void graph_1chirp(char *filepre,graph_1chirp_arg *inarg){
           if(arg->est_alt.dA_rel) estimates[ym+1].dA += chirps[ym+1].dA;
           if(arg->est_alt.dW_rel) estimates[ym+1].dW += chirps[ym+1].dW;
           if(arg->est_alt.ddA_rel) estimates[ym+1].ddA += chirps[ym+1].ddA;
-          if(arg->est_alt.W_trunc) estimates[ym+1].W = rint(estimates[ym+1].W/2./M_PI*blocksize)/blocksize*2.*M_PI;
         }
-        if(arg->chirp.W_trunc) chirps[ym].W = rint(chirps[ym].W/2./M_PI*blocksize)/blocksize*2.*M_PI;
 
         /* estimate can be relative to chirp */
         if(arg->est.A_rel) estimates[ym].A =
@@ -2140,7 +2136,6 @@ void graph_1chirp(char *filepre,graph_1chirp_arg *inarg){
         if(arg->est.dA_rel) estimates[ym].dA += chirps[ym].dA;
         if(arg->est.dW_rel) estimates[ym].dW += chirps[ym].dW;
         if(arg->est.ddA_rel) estimates[ym].ddA += chirps[ym].ddA;
-        if(arg->est.W_trunc) estimates[ym].W = rint(estimates[ym].W/2./M_PI*blocksize)/blocksize*2.*M_PI;
 
       }
 
@@ -2538,7 +2533,7 @@ void init_arg(graph_1chirp_arg *arg){
     (rel_param){
       /* est A range */  -999.,-999.,  0, /* relative flag */
       /* est P range */     0.,  0.,  0, /* relative flag */
-      /* est W range */     0.,  0.,  1,  0,/* rel, trunc */
+      /* est W range */     0.,  0.,  1, /* relative flag */
       /* est dA range */    0.,  0.,  0, /* relative flag */
       /* est dW range */    0.,  0.,  0, /* relative flag */
       /* est ddA range */   0.,  0.,  0, /* relative flag */
@@ -2548,7 +2543,7 @@ void init_arg(graph_1chirp_arg *arg){
     (rel_param){
       /* ch A range */    0.,0., 0,
       /* ch P range */    0.,1.-1./32., 0,
-      /* ch W range */    0.,0., 0, 0,
+      /* ch W range */    0.,0., 0,
       /* ch dA range */   0.,0., 0,
       /* ch dW range */   0.,0., 0,
       /* ch ddA range */  0.,0., 0,
@@ -2558,7 +2553,7 @@ void init_arg(graph_1chirp_arg *arg){
     (rel_param){
       /* alt est A range */  -999.,-999.,  0, /* relative flag */
       /* alt est P range */     0.,  0.,  0, /* relative flag */
-      /* alt est W range */     0.,  0.,  1, 0, /* rel, trunc */
+      /* alt est W range */     0.,  0.,  1, /* relative flag */
       /* alt est dA range */    0.,  0.,  0, /* relative flag */
       /* alt est dW range */    0.,  0.,  0, /* relative flag */
       /* alt est ddA range */   0.,  0.,  0, /* relative flag */
@@ -2568,7 +2563,7 @@ void init_arg(graph_1chirp_arg *arg){
     (rel_param){
       /* alt ch A range */    0.,0., 0,
       /* alt ch P range */    0.,1.-1./32., 0,
-      /* alt ch W range */    0.,0., 0, 0,
+      /* alt ch W range */    0.,0., 0,
       /* alt ch dA range */   0.,0., 0,
       /* alt ch dW range */   0.,0., 0,
       /* alt ch ddA range */  0.,0., 0,
