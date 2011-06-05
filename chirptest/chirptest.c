@@ -2599,13 +2599,13 @@ int main(){
   arg.y_dim=DIM_CHIRP_dW;
 
   arg.fit_nonlinear=0;
-  //graph_1chirp("algo-",&arg);
+  graph_1chirp("algo-",&arg);
 
   arg.fit_nonlinear=1;
-  //graph_1chirp("algo-",&arg);
+  graph_1chirp("algo-",&arg);
 
   arg.fit_nonlinear=2;
-  //graph_1chirp("algo-",&arg);
+  graph_1chirp("algo-",&arg);
 
   /* Graphs for linear v. partial-nonlinear v. full-nonlinear ***************/
   /* estW vs W **************************************************************/
@@ -3187,7 +3187,7 @@ int main(){
   /* dW vs W *****************************************************************/
   arg.sweep_steps=32;
   arg.y_dim=DIM_CHIRP_dW;
-  arg.chirp.dW_0 = -10.;
+  arg.chirp.dW_0 = 0.;
   arg.chirp.dW_1 = 10.;
   arg.y_major = 1;
   arg.y_minor = .25;
