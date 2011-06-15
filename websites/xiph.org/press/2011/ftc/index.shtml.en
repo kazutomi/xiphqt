@@ -1,0 +1,613 @@
+<!--#include virtual="/ssi/header.include" -->
+<!-- Enter custom page information and styles here -->
+  <title>June 14, 2011: Xiph.Org Comments for the Federal Trade Commission Patent Standards Workshop</title>
+</head>
+<body>
+<!--#include virtual="/common/xiphbar.include" -->
+
+<!--#include virtual="/ssi/pagetop.include" -->
+<!--  All your page content goes here  -->
+
+<h2>Xiph.Org Comments for the Federal Trade Commission Patent Standards Workshop</h2>
+
+
+<p>
+<i><a href="ftc-comments-20110614.pdf">Original PDF version of this document</a>
+<br>
+This document's intended audience is law and policy wonks.  As such it
+uses technical legal language that may not be immediately accessible
+to a wide audience. If in doubt, please consult a patent attorney
+before posting long rants to Reddit or Slashdot.
+</i>
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+
+
+<P>
+Patents affect standards in a fundamentally different way from any other
+ context.
+Competition normally limits the value of a patent, with that value determined
+ by the advantage of the patented technique over the next best option.
+However, patents essential to the implementation of a standard gain their value
+ from network effects.
+The innovation often plays no role.
+This gives the holder of such a patent the ability to hinder or eliminate
+ entire markets which would compete with their own offerings.
+
+<P>
+Participants in Standards Setting Organizations (SSOs) cannot be certain that
+ patent claims will not arise after the standard has been set.
+This handicaps the standards setting process, stifling the adoption of
+ innovative technologies.
+The problem is particularly acute for royalty-free standards, where the
+ incentives for patent holders to cooperate are lower and the costs of failure
+ are higher.
+
+<P>
+To help reduce these negative effects, The Xiph.Org Foundation recommends that
+ the FTC work to require specific, ex ante disclosure of patents or patent
+ applications that would read on standards under development, that failure to
+ disclose exhaust the patent, and assertion of such a patent ex post be deemed
+ anti-competitive.
+This should apply not only to standards development activities that the patent
+ holder participates in or knows about, but those it <em>should</em> have known
+ about.
+Furthermore, vague infringement allegations or activities designed to avoid an
+ SSO's disclosure requirements or undermine the standards process should also
+ be deemed anti-competitive.
+
+<H3><A NAME="SECTION00010000000000000000">
+The Importance of Royalty-Free Standards
+</H3>
+
+<P>
+A fundamental reason that the internet and the web have seen such
+ remarkable growth, rapid innovation, and an extraordinary creation of
+ value for the entire world is that people can build new things on the web
+ without asking anyone for permission.
+To quote Chris Blizzard from Mozilla&nbsp;[<A
+ HREF="#Bli10">1</A>]:
+
+<P>
+<BLOCKQUOTE>
+It's worth saying twice.
+Anyone can create technology or services on the web and they don't have to ask
+ anyone for permission to do it.
+This is why we've had billions of dollars of investment and a fundamental shift
+ in the way that western society acts and communicates--all in the course of a
+ very short period of time.
+
+</BLOCKQUOTE>
+
+<P>
+The internet is powerful because it is common infrastructure based on 
+ public, royalty-free standards as mainstream, common, accepted,
+ important--and overlooked--as the public standards that bring us running
+ water, the electric grid, and the highway system. These royalty-free 
+standards provide substantial value, both to consumers and
+to the businesses that interoperate with them. 
+
+<P>
+To give some recent examples which help put a real price tag on this value,
+ Google acquired On2 Technologies last year for 124.6 million dollars.
+Google then released On2's flagship product, the VP8 video codec, with a
+ royalty-free patent license as part of the WebM project&nbsp;[<A
+ HREF="#WebM">2</A>].
+Google also recently acquired Global IP Solutions (GIPS) for 68.2 million
+ dollars, and has opened up its real-time communications
+ stack&nbsp;[<A
+ HREF="#WebRTC-code">3</A>] for use in the developing WebRTC standards,
+ royalty-free.
+Royalty-free internet standards such as these constitute investments
+ totaling billions of dollars, and serve as the foundation for a significant
+ fraction of the US economy.
+
+<P>
+Traditionally, Reasonable And Non-Discriminatory (RAND) licensing has been the
+ goal of government attempts to ensure fairness in the role of patents in
+ standards-setting.
+However, RAND is generally believed to be neither reasonable nor
+ non-discriminatory&nbsp;[<A
+ HREF="#Fro02">4</A>], and in a royalty-free environment this is
+ especially true.
+There are now many business models that would be destroyed by <em>any</em>
+ per-unit licensing cost.
+
+<P>
+Multi-billion dollar companies such as Microsoft (market cap $204 billion),
+ Google (market cap $164 billion), and Skype (recently acquired by Microsoft
+ for $8.5 billion) give away end-user software such as web browsers or VoIP
+ applications at no cost, creating a potentially unlimited liability.
+Smaller companies would be harmed even by the legal requirement to
+ <em>count</em> how many copies are distributed.
+Mozilla, for example, distributes the vast majority of its software over a
+ large network of volunteer mirrors and Content Distribution Networks (CDNs)
+ over which they have no direct control.
+There are also numerous third-party download sites which provide an enormous
+ array of software downloads for free, funded by advertising revenue.
+This business scales precisely because they do not have to ask permission or
+ negotiate a relationship for providing accurate download statistics to each
+ vendor whose software they distribute.
+
+<P>
+The SILK voice codec recently developed by Skype provides another example of
+ why giving away your inventions can make good business sense.
+In testing, Skype found that calls made using SILK lasted 10 minutes longer
+ than those using the lower-quality G.729 codec&nbsp;[<A
+ HREF="#Sky11">5</A>].
+This is obviously extremely valuable if one is in the business of selling
+ phone calls.
+Skype has now contributed the technology behind the SILK codec to the Internet
+ Engineering Task Force (IETF) for standardization, royalty-free,, so that
+ their users can enjoy this quality regardless of which networks Skype has to
+ interoperate with.
+
+<P>
+Much of the value of successful royalty-free standards comes from near-universal
+ adoption, but they are particularly vulnerable to patent hold-up.
+A royalty-bearing standard can absorb new patents into the pool formed
+ around it with relatively little disruption, affecting the profitability of
+ those using it only at the margin.
+However, a single patent holder demanding royalties prevents a formerly
+ royalty-free standard from being used with many business models where it was
+ practical before.
+This vulnerability also gives them a higher burden of proof before market
+ participants are willing to adopt them, making it more difficult to establish
+ such standards in the first place.
+
+<H3><A NAME="SECTION00020000000000000000">
+The Anomalous Value of Patents in Standards
+</H3>
+
+<P>
+The March 2011 FTC report on Aligning Patent Notice and Remedies with
+ Competition&nbsp;[<A
+ HREF="#FTC11">6</A>] says,
+
+<BLOCKQUOTE>
+A patent does not necessarily confer market power because patented inventions
+ often compete with alternative technologies. &#8230;
+[T]he market reward earned by the patentee, and the economic value of the
+ invention, will depend upon the extent to which consumers prefer the patented
+technology over alternatives.
+&#8230;
+[O]ften, competition from acceptable alternatives will limit the market
+ reward that a patent owner receives.
+</BLOCKQUOTE>
+
+However, the point of having standards is to set aside competition in areas
+ where interoperability is more valuable than innovation.
+Products that implement standards, particularly communications standards, may
+ still compete on quality, efficiency, robustness, and security. There is
+ still room for innovation in these areas, as well as in the products built on
+ top of these standards.
+However, innovation in the technology essential to the
+ standard itself would break compatibility and destroy the value of
+ the standard.
+All the competition over that technology happens during the formation of the
+ standard itself.
+
+<P>
+When patents are disclosed ex ante, during the standardization process, many
+ courses of action are available.
+If the patents are owned by small and medium enterprises, or individual
+ inventors, it may be feasible to acquire them directly, as Google did with On2
+ and GIPS, rewarding the inventors exactly as intended.
+When held by entrenched interests who refuse to offer a license on suitable
+ terms, they can be designed around, limiting their value to the innovation
+ they provide, again exactly as intended.
+
+<P>
+Continuing to quote the FTC report,
+
+<BLOCKQUOTE>
+But ex post licensing to manufacturers that sell products developed or obtained
+ independently of the patentee can distort competition in technology markets
+ and deter innovation.
+The failure of the patentee and manufacturer to license ex ante with technology
+ transfer results in duplicated R&amp;D effort.
+When a manufacturer chooses technology for a product design without knowledge
+ of a later-asserted patent, it makes that choice without important cost
+ information, which deprives consumers of the benefits of competition in the
+ technology market.
+If the manufacturer has sunk costs into using the technology, the patentee can
+ use that investment as negotiating leverage for a higher royalty than the
+ patented technology could have commanded ex ante, when competing with
+ alternatives.
+The increased uncertainty and higher costs associated with ex post licensing
+ can deter innovation by manufacturers.
+
+</BLOCKQUOTE>
+
+<P>
+Interoperability requirements make this situation even worse.
+Once proponents of a standard have invested billions of dollars building,
+ deploying, and advertising it, creating substantial network effects, the
+ leverage a patentee commands is not just "higher" than it would have been ex
+ ante.
+It is unbounded.
+
+<P>
+To remedy this, the FTC makes several recommendations to improve notice in
+  patent claims.
+However, the issue of notice is fundamentally unsolvable.
+The patent application process is an adversarial system, with large incentives
+ for the minimal possible compliance with disclosure obligations.
+For software, such disclosures are particularly poor, as the
+ October 2003 FTC report on The Proper Balance of Competition and Patent Law
+ Policy&nbsp;[<A
+ HREF="#FTC03">7</A>] notes: "Several panelists discounted the value of patent
+ disclosures, because the disclosure of a software product's underlying source
+ code is not required."
+The absence of source code in patents with a software component makes it
+ especially difficult to tell whether a proposed standard would infringe.
+Although it's possible to improve notice, applicants can devise avoidance
+ strategies much more quickly than legislation and regulation can be
+ implemented to combat them.
+
+<P>
+The application process takes multiple years, during which time the applicant
+ can revise their claims.
+This means that even if every granted patent provided perfect notice, SSOs
+ would still not be able to determine whether some application might
+ be revised so as to read on a proposed standard.
+Even if clearance research by an SSO (for those few that have a formal process
+ for it) were perfect, which it cannot be, a standard would have to be held in
+ limbo for many years to ensure no third-party claims arose. 
+In the internet world, which sometimes measures time-to-market in weeks, this
+ kind of delay is intolerable.
+
+<P>
+When the World Wide Web Consortium (W3C) was considering Xiph's Theora video
+ codec for inclusion in HTML5, one opponent argued privately that Theora's
+ clearly written, detailed specification endangered its royalty-free status,
+ because it made it easier to modify the claims of an open patent application
+ to ensure they read on the format.
+This argument was raised in 2008.
+The Theora specification was originally published in 2004, mostly describing
+ technology first sold to the public in the year 2000.
+If even this much delay cannot provide confidence of non-infringement from
+ as-yet unpublished claims, then improving notice is no help at all.
+
+<P>
+Although in theory such practices are not permitted by the patent office, which
+ requires that claim revisions continue to cover only the original
+ invention&nbsp;[<A
+ HREF="#PTO1-121">8</A>], they do occur.
+The astronomical payoff if successful, and lack of any real penalty for failure
+ (merely a rejected application) virtually guarantee that some will try.
+We have seen at least one granted patent, deemed "essential" for a major
+ standard years after it was finalized, where the claims were altered so
+ drastically that they did not even cover the same subject matter as the
+ initial claims--a fact we discovered only by looking at the file wrapper
+ after noticing a startling disconnect between the claims and the abstract.
+
+<P>
+If notice is never sufficient to assure the developers of a standard that
+ there are no unknown third-party claims, then one must give the patent holders
+ themselves the incentives to do so.
+With RAND standards, these incentives are clear.
+Historically, most patent holders have tried to get as many patents as possible
+ into the initial pool created around such a standard, in order to guarantee a
+ share of the agreed-upon royalties.
+However, some have not&nbsp;[<A
+ HREF="#Ram07">9</A>].
+
+<P>
+With royalty-free standards, even these imperfect incentives disappear.
+Patent holders have no clear motivation to disclose voluntarily, especially
+large, entrenched interests which may be unwilling to license on royalty-free
+ terms and which cannot be bought out.
+If they can refuse to disclose what cannot be found by others, they prevent the
+ development of alternatives.
+
+<H3><A NAME="SECTION00030000000000000000">
+The Problem of Absent Parties</A>
+</H3>
+
+<P>
+Most SSOs have rules requiring the disclosure of any known patents from
+ participants, and the Federal Register notice for this workshop&nbsp;[<A
+ HREF="#FTCFRN">10</A>]
+ lists many of their drawbacks.
+The active subversion of one SSO's process by members of a competing patent
+ pool exacerbates these problems.
+There are a number of examples of licensors of a royalty-bearing standard
+ working against the formation of a competing royalty-free standard.
+There are many tools available for such an attack beyond mere patent hold-up.
+
+<P>
+Patentees will frequently avoid participation in working groups in order to
+ avoid triggering disclosure requirements.
+They need not have actual patents that read on the competing standard.
+The mere uncertainty created by their non-participation is sufficient to cast
+ doubt on the ability of the SSO's disclosure policy to prevent hold-up.
+Worse, they can make claims in other venues, without being bound by rules
+ requiring them to identify the patent owners or the specific patent or
+ application numbers.
+
+<P>
+This was a common tactic during the debate over the inclusion of Theora in
+ HTML5, most famously with the claim&nbsp;[<A
+ HREF="#Oze10">11</A>] by Larry Horn, CEO of the
+ MPEG-LA, that,
+ "Virtually all codecs are based on patented technology," and "No one in the
+ market should be under the misimpression that other codecs such as Theora are
+ patent-free."
+These non-specific claims are carefully constructed to give the impression
+ that Theora must be encumbered with royalty-bearing patents without ever
+ explicitly saying so<A HREF="#foot36"><SUP>1</SUP></A>.
+Others, such as Steve Jobs, were more explicit&nbsp;[<A
+ HREF="#Job10">12</A>]: "All video codecs
+ are covered by patents. A patent pool is being assembled to go after Theora
+ and other 'open source' codecs now."
+The intent in both cases is clear: to discourage adoption.
+No specific claims against Theora were ever made by the MPEG-LA or any of its
+ member organizations, and no patent pool around Theora ever surfaced.
+
+<P>
+Competitors may continue to impact the standards process even while avoiding
+ direct participation.
+Members of the competing pool can coordinate their activities, so that only
+ some of them need participate.
+They can hire contractors to represent them or find other loopholes that avoid
+ triggering disclosure requirements.
+Depending on the details of the SSO's rules, this may allow them to encourage
+ the adoption of techniques covered by their patents without disclosure or to
+ slow down the working group process if it has avoided these techniques.
+The latter confers a potential time-to-market advantage.
+
+<H3><A NAME="SECTION00040000000000000000">
+SSO Disclosure Rules are Insufficient</A>
+</H3>
+
+<P>
+Even ignoring the problem of absent parties, the rules governing discussion of
+ patents and licensing are often vague and ineffective.There is a fear that establishing concrete rules may constitute unlawful
+ collusion, and they frequently ask for guidance on their policies for
+ antitrust concerns&nbsp;[<A
+ HREF="#DOJ07">13</A>].
+This problem is compounded by the international nature of standards, since the
+ law varies from jurisdiction to jurisdiction, and no one is an expert on all
+ jurisdictions.
+This leads to concerns that <em>any</em> discussion of licensing terms or even
+ the scope of patent claims may have legal ramifications, and this discussion
+ is frequently disallowed&nbsp;[<A
+ HREF="#Wen11a">14</A>,<A
+ HREF="#Wen11b">15</A>].
+
+<P>
+In the worst case, an SSO may disallow the consideration of patents entirely
+ when choosing technology for a standard, relying merely on an agreement to
+ license the results on RAND terms.
+This leads to licensing of patents completely out of proportion to their market
+ value.
+No attempt can be made to avoid patents, and since unpatented techniques are
+ unlikely to be the best in every technical category, the result is almost
+ surely guaranteed to be patented, even if the technical difference between
+ the chosen technologies and unencumbered alternatives is very small.
+But it gets worse.
+
+<P>
+If you are a contributor to a RAND standard development process, it is very
+ important that some of
+ your patented technology makes it into the final standard.
+If it does, you can cross-license your patents with the other "insiders" and
+ completely avoid paying to use the resulting format.
+Even if your goal is not to profit from your participation, failure to get
+ some patents into the result guarantees that you will have to <em>pay</em> to
+ use the fruits of your own labors.
+The final standard ends up rife with inconsequential or even detrimental
+ technology that could easily have been avoided.
+
+<H3><A NAME="SECTION00050000000000000000">
+No Mechanism to Resolve Disputes</A>
+</H3>
+
+<P>
+Most SSOs also lack a dispute resolution mechanism to handle cases where the
+ patented status of a technology is contested, and it is unclear such disputes
+ <em>could</em> be resolved outside of a courtroom.
+In the case of a baseline video codec for HTML5, the relevant part of the
+ standard was simply removed, and there is now no standard in this area.
+Different browser vendors support different codecs, and a website must encode
+ all of their videos in multiple formats if they want to support all users.
+Many websites choose to use only one format, and simply do not support users
+ whose browser cannot play it back.
+One choice raises the cost of providing video on the web, while the other harms
+ users by denying them service.
+With upcoming real-time web communication standards, the situation is even
+ worse, as the first option is no longer available.
+Since the end-user clients must communicate directly, if they do not support a
+ common format, they cannot talk to each other at all.
+
+<P>
+The inability to resolve disputes allows patent holders to use disclosures as
+ an asymmetric weapon.
+It is very easy to list a patent number and claim infringement, without even
+ specifying which part of the proposed standard the patent allegedly reads on.
+This makes it very difficult and expensive to verify whether there is
+ infringement, which part of the standard must be removed or modified to avoid
+ it, and whether or not such a work-around or alternative does avoid it.
+Even after <i>In re Seagate</i>&nbsp;[<A
+ HREF="#Sea08">16</A>], conservative legal departments
+ are loath to let engineers examine the contents of patents for fear of willful
+ infringement claims, so many working group participants will not.
+
+<P>
+If some participants do consult a patent attorney and do a private analysis, 
+ the standard advice is not to disclose the results (which would waive
+ privilege), meaning the analysis must be replicated by each organization
+ that wishes to adopt the standard.
+Once a rightsholder asserts infringement, there may be no obligation to update
+ that claim as the standard changes, leaving the SSO at the mercy of the
+ rightsholder to declare that the infringement has been cured.
+Counterintuitively, finding no infringement is the most difficult situation of
+ all.
+This gives the working group the uncomfortable choice of leaving the
+ standard as-is or adopting an inferior alternative.
+The first choice leaves doubt in the minds of those who have not done their own
+ analysis, or who reach a different conclusion, and hinders adoption.
+The second option unnecessarily reduces the quality of the standard.
+Since those who contributed a technology to the standard have often deployed it
+ experimentally or in a limited context beforehand, adopting an alternative may
+ even be seen as an admission of infringement on their part, making them 
+ reluctant to approve.
+
+
+<H3><A NAME="SECTION00060000000000000000">
+Summary and Recommendations</A>
+</H3>
+
+<P>
+In summary, based on its experience and analysis of royalty-free technology
+standards, the Xiph.Org Foundation
+recommends that the FTC take the following actions:
+
+<P>
+
+<UL>
+<LI>Require specific, ex ante disclosure of patents or patent applications
+         that would read on standards under public development.
+        Failure to disclose should exhaust the patent, and assertion of such a
+         patent ex post should be deemed anti-competitive.
+        This guarantees ex ante disclosure, limiting the ability of patent
+         holders to demand compensation proportional to network effects and
+         switching costs rather than the value of the underlying technology.
+
+<P>
+</LI>
+<LI>Create a legal framework in which patent holders can receive
+         notice of public standards development activities occurring in
+         their sector, and apply these disclosure rules to all parties so
+         notified, even if they do not participate in the standardization
+         process.
+        Similar to public notice in class-action law, this shifts the burden of
+         determining if a patent reads on a standard to the patent holder.
+        If the patent holder cannot be bothered to determine if their patent
+         reads on a particular standard, then the intrinsic value of the
+         technology, ex ante, must necessarily be small.
+
+<P>
+</LI>
+<LI>Issue clear guidance to patent holders that vague infringement allegations
+         or activities
+         designed to avoid an SSO's disclosure requirements or undermine the
+         standards process are anti-competitive.
+        This will help alleviate active subversion of the standardization
+         process by members of a competing pool and allow the resulting
+         standards to compete on price and technical value.
+
+<P>
+</LI>
+</UL>
+
+<H3>Footnotes</H3>
+
+<DL>
+<DT><A NAME="foot36">... so</A><A
+ HREF="node3.html#tex2html1"><SUP>1</SUP></A></DT>
+<DD>In fact, before being acquired by Google, On2
+ held several patents on the technology in Theora, but released them under an
+ irrevocable royalty-free license, so the statements are factually correct.</DD>
+</DL>
+
+<H3><A NAME="SECTION00070000000000000000">
+Bibliography</A>
+</H3><DL COMPACT><DD>
+
+<P></P><DT><A NAME="Bli10">1</A>
+<DD>
+<TT><A NAME="tex2html1"
+  HREF="http://www.0xdeadbeef.com/weblog/2010/01/html5-video-and-h-264-what-history-tells-us-and-why-were-standing-with-the-web/">http://www.0xdeadbeef.com/weblog/2010/01/html5-video-and-h-264-what-history-tells-us-and-why-were-standing-with-the-web/</A></TT>.
+
+<P></P><DT><A NAME="WebM">2</A>
+<DD>
+<TT><A NAME="tex2html2"
+  HREF="http://www.webmproject.org/">http://www.webmproject.org/</A></TT>.
+
+<P></P><DT><A NAME="WebRTC-code">3</A>
+<DD>
+<TT><A NAME="tex2html3"
+  HREF="http://sites.google.com/site/webrtc/">http://sites.google.com/site/webrtc/</A></TT>.
+
+<P></P><DT><A NAME="Fro02">4</A>
+<DD>
+<TT><A NAME="tex2html4"
+  HREF="http://www.ftc.gov/opp/intellect/020417jefferyfromm.pdf">http://www.ftc.gov/opp/intellect/020417jefferyfromm.pdf</A></TT>.
+
+<P></P><DT><A NAME="Sky11">5</A>
+<DD>
+<TT><A NAME="tex2html5"
+  HREF="http://blogs.skype.com/en/2010/09/the_power_of_silk.html">http://blogs.skype.com/en/2010/09/the_power_of_silk.html</A></TT>.
+
+<P></P><DT><A NAME="FTC11">6</A>
+<DD>
+<TT><A NAME="tex2html6"
+  HREF="http://www.ftc.gov/os/2011/03/110307patentreport.pdf">http://www.ftc.gov/os/2011/03/110307patentreport.pdf</A></TT>.
+
+<P></P><DT><A NAME="FTC03">7</A>
+<DD>
+<TT><A NAME="tex2html7"
+  HREF="http://www.ftc.gov/os/2003/10/innovationrpt.pdf">http://www.ftc.gov/os/2003/10/innovationrpt.pdf</A></TT>.
+
+<P></P><DT><A NAME="PTO1-121">8</A>
+<DD>
+<TT><A NAME="tex2html8"
+  HREF="http://www.uspto.gov/web/offices/pac/mpep/documents/appxr_1_121.htm">http://www.uspto.gov/web/offices/pac/mpep/documents/appxr_1_121.htm</A></TT>.
+
+<P></P><DT><A NAME="Ram07">9</A>
+<DD>
+<TT><A NAME="tex2html9"
+  HREF="http://europa.eu/rapid/pressReleasesAction.do?reference=MEMO/07/330">http://europa.eu/rapid/pressReleasesAction.do?reference=MEMO/07/330</A></TT>.
+
+<P></P><DT><A NAME="FTCFRN">10</A>
+<DD>
+<TT><A NAME="tex2html10"
+  HREF="http://www.ftc.gov/os/fedreg/2011/05/110509standardsettingfrn.pdf">http://www.ftc.gov/os/fedreg/2011/05/110509standardsettingfrn.pdf</A></TT>.
+
+<P></P><DT><A NAME="Oze10">11</A>
+<DD>
+<TT><A NAME="tex2html11"
+  HREF="http://www.streamingmedia.com/Articles/ReadArticle.aspx?ArticleID=65782">http://www.streamingmedia.com/Articles/ReadArticle.aspx?ArticleID=65782</A></TT>.
+
+<P></P><DT><A NAME="Job10">12</A>
+<DD>
+<TT><A NAME="tex2html12"
+  HREF="http://www.theregister.co.uk/2010/04/30/steve_jobs_claims_ogg_theora_attack/">http://www.theregister.co.uk/2010/04/30/steve_jobs_claims_ogg_theora_attack/</A></TT>.
+
+<P></P><DT><A NAME="DOJ07">13</A>
+<DD>
+<TT><A NAME="tex2html13"
+  HREF="http://www.justice.gov/atr/public/speeches/223363.htm">http://www.justice.gov/atr/public/speeches/223363.htm</A></TT>.
+
+<P></P><DT><A NAME="Wen11a">14</A>
+<DD>
+<TT><A NAME="tex2html14"
+  HREF="http://www.ietf.org/mail-archive/web/codec/current/msg01237.html">http://www.ietf.org/mail-archive/web/codec/current/msg01237.html</A></TT>.
+
+<P></P><DT><A NAME="Wen11b">15</A>
+<DD>
+<TT><A NAME="tex2html15"
+  HREF="http://www.ietf.org/mail-archive/web/codec/current/msg02345.html">http://www.ietf.org/mail-archive/web/codec/current/msg02345.html</A></TT>.
+
+<P></P><DT><A NAME="Sea08">16</A>
+<DD>
+<TT><A NAME="tex2html16"
+  HREF="http://www.cafc.uscourts.gov/opinions/M830.pdf">http://www.cafc.uscourts.gov/opinions/M830.pdf</A></TT>.
+</DL>
+
+<h3>About the Xiph.Org Foundation</h3>
+
+<p><i> The Xiph.Org Foundation is a not-for-profit corporation
+dedicated to open, unencumbered multimedia technology. Xiph's formats
+and software level the playing field for digital media so that all
+producers and artists can distribute their work for minimal cost,
+without restriction, regardless of affiliation.  May contain traces of
+nuts.</i></p>
+
+<!--#include virtual="/ssi/pagebottom.include" -->
