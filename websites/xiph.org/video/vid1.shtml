@@ -126,6 +126,8 @@
 	    Subtitles: Off</option>
 	  <option file="vid1-en.srt">
 	    Subtitles: US English</option>
+          <option file="vid1-es.srt">
+            Subtitles: Español</option>
 	  <option file="vid1-fr.srt">
 	    Subtitles: Français</option>
 	  <option file="vid1-de.srt">
@@ -226,6 +228,8 @@
       <li><b> SRT format: </b><br>
 	<a href="vid1-en.srt"> 
 	  US English</a> |
+        <a href="vid1-es.srt">
+          Español</a> |
 	<a href="vid1-fr.srt">
 	  Français</a> |
 	<a href="vid1-de.srt">
