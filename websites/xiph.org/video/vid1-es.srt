@@ -56,7 +56,7 @@ Pero aquí me interesa hablarle a los ingenieros, a los matemáticos,
 
 15
 00:00:54,649 --> 00:00:57,869
-a los hackers y la gente a quien le interesa descubrir
+a los “hackers” y la gente a quien le interesa descubrir
 
 16
 00:00:57,869 --> 00:01:01,302
@@ -228,7 +228,7 @@ Continuemos.
 
 58
 00:03:27,465 --> 00:03:32,527
-Esa señal de audio es una uni-dimensional  un valor único que varía con el tiempo.
+Esa señal de audio es una uni-dimensional – un valor único que varía con el tiempo.
 
 59
 00:03:32,527 --> 00:03:34,248
@@ -460,7 +460,7 @@ No hay tal cosa como un transistor perfecto, o un inductor perfecto, o un capaci
 
 116
 00:07:44,352 --> 00:07:51,569
-En análogo, todo componente añade sonido y distorsión  no mucho en general, pero se acumula. 
+En análogo, todo componente añade sonido y distorsión – no mucho en general, pero se acumula. 
 
 117
 00:07:51,569 --> 00:07:55,669
@@ -584,7 +584,7 @@ que es el sampling rate mínimo necesario para capturar el ancho de banda de un 
 
 147
 00:10:07,227 --> 00:10:14,263
-Así es como suena un sampling rate de 8kHz  un poco fogoso pero perfectamente entendible para voz.
+Así es como suena un sampling rate de 8kHz – un poco fogoso pero perfectamente entendible para voz.
 
 148
 00:10:17,263 --> 00:10:18,149
@@ -680,7 +680,7 @@ Primero, que una señal digital no puede representar ninguna frecuencia sobre la
 
 171
 00:12:04,727 --> 00:12:10,640
-Segundo  y esto es lo nuevo  si no removemos esas frecuencias con un filtro de pasabajo antes de muestrear,
+Segundo – y esto es lo nuevo – si no removemos esas frecuencias con un filtro de pasabajo antes de muestrear,
 
 172
 00:12:10,640 --> 00:12:16,414
@@ -1060,7 +1060,7 @@ En los primeros días de transmisión de video, muchos ingenieros buscaban el fr
 
 266
 00:19:37,967 --> 00:19:42,075
-para mejorar el flujo de video y minimizar el parpadeo en televisores de tubo (CRTs).
+para mejorar el flujo de video y minimizar el “parpadeo” en televisores de tubo (CRTs).
 
 267
 00:19:42,075 --> 00:19:45,277
@@ -1084,7 +1084,7 @@ Cada paso se llama un campo y dos campos más o menos producen una imagen comple
 
 272
 00:19:59,961 --> 00:20:05,319
-Más o menos porque los campos no son en realidad parte de la misma imagen original.
+“Más o menos” porque los campos no son en realidad parte de la misma imagen original.
 
 273
 00:20:05,319 --> 00:20:10,797
@@ -1092,7 +1092,7 @@ En una imagen de 60 campos/segundo, el frame rate de la imagen original es 60 im
 
 274
 00:20:10,797 --> 00:20:15,386
-y la mitad de cada imagen  una de cada dos líneas  simplemente se descarta.
+y la mitad de cada imagen – una de cada dos líneas – simplemente se descarta.
 
 275
 00:20:15,386 --> 00:20:20,272
@@ -1272,11 +1272,11 @@ uno de blanco y negro, y otros canales croma adicionales de baja resolución.
 
 319
 00:23:51,041 --> 00:23:57,074
-El canal luma, Y, se produce al medir y luego añadir las señales rojas, verdes y azules.
+El canal luma, “Y”, se produce al medir y luego añadir las señales rojas, verdes y azules.
 
 320
 00:23:57,074 --> 00:24:01,867
-Los canales croma U y V se producen al restar la señal luma de la señal azul
+Los canales croma “U” y “V” se producen al restar la señal luma de la señal azul
 
 321
 00:24:01,867 --> 00:24:04,070
@@ -1296,7 +1296,7 @@ todas las variantes análogas y digitales de este modelo de color.
 
 325
 00:24:18,912 --> 00:24:22,983
-Los canales croma U y V pueden tener la misma resolución que el canal Y,
+Los canales croma “U” y “V” pueden tener la misma resolución que el canal Y,
 
 326
 00:24:22,983 --> 00:24:28,674
@@ -1324,7 +1324,7 @@ el video 4:4:4, que en realidad no es sub-muestreado (sub-sampled),
 
 332
 00:24:51,187 --> 00:24:56,711
-el video 4:2:2 en el que las resoluciones croma U y V se reducen a la mitad,
+el video 4:2:2 en el que las resoluciones croma “U” y “V” se reducen a la mitad,
 
 333
 00:24:56,711 --> 00:25:02,587
@@ -1428,7 +1428,7 @@ o algunas veces simplemente a un buen antojo.
 
 358
 00:27:00,352 --> 00:27:04,692
-Los formatos de pixeles se describen con un nombre único en código fourcc.
+Los formatos de pixeles se describen con un nombre único en código “fourcc”.
 
 359
 00:27:04,692 --> 00:27:08,115
@@ -1436,7 +1436,7 @@ Hay muchos de estos nombres y no tiene sentido ir por cada uno de ellos ahora mi
 
 360
 00:27:08,115 --> 00:27:13,704
-Google es tu amigo.  Ten en mente que los códigos fourcc para video puro especifican el arreglo de pixeles
+Google es tu amigo.  Ten en mente que los códigos “fourcc” para video puro especifican el arreglo de pixeles
 
 361
 00:27:13,704 --> 00:27:20,339
@@ -1488,7 +1488,7 @@ Trozos de data de audio y de video no tienen una estructura visible externa,
 
 373
 00:28:11,768 -->  00:28:15,173
-pero su tamaño es uniforme.  Podemos simplemente amarrarlos
+pero su tamaño es uniforme.  Podemos simplemente “amarrarlos”
 
 374
 00:28:15,173 --> 00:28:18,097
@@ -1532,7 +1532,7 @@ como etiquetas de capítulos y subtítulos de audio y video, componentes esencia
 
 384
 00:28:55,415 --> 00:29:01,633
-Tiene sentido colocar esta metadata  o sea, data sobre la data  en el proyecto mismo de multimedia.
+Tiene sentido colocar esta metadata – o sea, data sobre la data – en el proyecto mismo de multimedia.
 
 385
 00:29:01,633 --> 00:29:06,445
