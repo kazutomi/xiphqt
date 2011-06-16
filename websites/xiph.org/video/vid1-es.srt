@@ -4,19 +4,19 @@ Computadores profesionales y sistemas de muy alta calidad
 
 2
 00:00:10,742 --> 00:00:14,749
-han podido manipular audio digital con facilidad desde hace casi quince años.
+han podido manipular audio digital con facilidad desde hace casi quince aÃ±os.
 
 3
 00:00:14,749 --> 00:00:17,470
-Sólo hace cinco años que un computador decente ha podido
+SÃ³lo hace cinco aÃ±os que un computador decente ha podido
 
 4
 00:00:17,470 --> 00:00:21,643
-trabajar con formatos de vídeo sin necesitar equipo adicional.
+trabajar con formatos de vÃ­deo sin necesitar equipo adicional.
 
 5
 00:00:21,643 --> 00:00:25,400
-Pero hoy, aún los computadores más baratos tienen el poder de procesamiento
+Pero hoy, aÃºn los computadores mÃ¡s baratos tienen el poder de procesamiento
 
 6
 00:00:25,400 --> 00:00:28,092
@@ -36,47 +36,47 @@ hay mas personas que, sin duda, desean hacer proyectos
 
 10
 00:00:36,651 --> 00:00:39,908
-más interesantes en áreas de multimedia digital, especialmente vídeo.
+mÃ¡s interesantes en Ã¡reas de multimedia digital, especialmente vÃ­deo.
 
 11
 00:00:39,908 --> 00:00:44,017
-YouTube fue el primer gran éxito, y ahora todo el mundo quiere entrar.
+YouTube fue el primer gran Ã©xito, y ahora todo el mundo quiere entrar.
 
 12
 00:00:44,017 --> 00:00:47,413
-Y, pues, ¡que bueno!  ¡Este campo es de lo mejor!
+Y, pues, Â¡que bueno!  Â¡Este campo es de lo mejor!
 
 13
 00:00:48,250 --> 00:00:51,179
-No es difícil encontrar consumidores de media digital.
+No es difÃ­cil encontrar consumidores de media digital.
 
 14
 00:00:51,179 --> 00:00:54,649
-Pero aquí me interesa hablarle a los ingenieros, a los matemáticos,
+Pero aquÃ­ me interesa hablarle a los ingenieros, a los matemÃ¡ticos,
 
 15
 00:00:54,649 --> 00:00:57,869
-a los “hackers” y la gente a quien le interesa descubrir
+a los Â“hackersÂ” y la gente a quien le interesa descubrir
 
 16
 00:00:57,869 --> 00:01:01,302
-y crear cosas y construir tecnologías.
+y crear cosas y construir tecnologÃ­as.
 
 17
 00:01:01,302 --> 00:01:03,282
-Son las personas que van tras de mi propio corazón.
+Son las personas que van tras de mi propio corazÃ³n.
 
 18
 00:01:04,250 --> 00:01:08,723
-La media digital, especialmente la compresión, se percibe como elitista,
+La media digital, especialmente la compresiÃ³n, se percibe como elitista,
 
 19
 00:01:08,723 --> 00:01:12,822
-y mucho más difícil que cualquier otra cosa en las ciencias de computación.
+y mucho mÃ¡s difÃ­cil que cualquier otra cosa en las ciencias de computaciÃ³n.
 
 20
 00:01:12,822 --> 00:01:15,700
-A los grandes de la industria no les molesta esta percepción;
+A los grandes de la industria no les molesta esta percepciÃ³n;
 
 21
 00:01:15,700 --> 00:01:19,734
@@ -88,7 +88,7 @@ A ellos les gusta la imagen de que sus investigadores son de lo mejor,
 
 23
 00:01:23,870 --> 00:01:27,738
-tan más inteligentes que el resto del mundo, que sus ideas
+tan mÃ¡s inteligentes que el resto del mundo, que sus ideas
 
 24
 00:01:27,738 --> 00:01:29,903
@@ -96,11 +96,11 @@ no las podemos entender nosotros, los meros mortales.
 
 25
 00:01:30,625 --> 00:01:33,716
-Esto son  patrañas.
+Esto son  patraÃ±as.
 
 26
 00:01:35,205 --> 00:01:38,900
-La compresión y streaming de audio y video digital
+La compresiÃ³n y streaming de audio y video digital
 
 27
 00:01:38,900 --> 00:01:42,738
@@ -120,7 +120,7 @@ Muy poca gente se ha envuelto tal vez porque muy pocos
 
 31
 00:01:51,223 --> 00:01:54,665
-podían pagar por el equipo tan costoso que solía ser necesario.
+podÃ­an pagar por el equipo tan costoso que solÃ­a ser necesario.
 
 32
 00:01:54,665 --> 00:01:58,792
@@ -128,11 +128,11 @@ Pero ahora, casi cualquier persona viendo este video tiene un computador
 
 33
 00:01:58,792 --> 00:02:03,317
-barato y de uso básico capaz de compararse con los chicos grandes.
+barato y de uso bÃ¡sico capaz de compararse con los chicos grandes.
 
 34
 00:02:05,926 --> 00:02:11,108
-Hay batallas librándose hoy mismo sobre HTML-5 y navegadores web
+Hay batallas librÃ¡ndose hoy mismo sobre HTML-5 y navegadores web
 
 35
 00:02:11,108 --> 00:02:13,671
@@ -144,47 +144,47 @@ Es un momento ideal para envolverse en todo esto.
 
 37
 00:02:17,048 --> 00:02:20,000
-La forma más facil para empezar es entendiendo
+La forma mÃ¡s facil para empezar es entendiendo
 
 38
 00:02:20,000 --> 00:02:22,619
-la tecnología que tenemos al momento.
+la tecnologÃ­a que tenemos al momento.
 
 39
 00:02:23,500 --> 00:02:25,071
-Esta es una introducción.
+Esta es una introducciÃ³n.
 
 40
 00:02:25,071 --> 00:02:28,180
-Como es una introducción, hay muchos detalles que no se incluyen
+Como es una introducciÃ³n, hay muchos detalles que no se incluyen
 
 41
 00:02:28,180 --> 00:02:30,882
-sino que es un resumen más general sobre el tema.
+sino que es un resumen mÃ¡s general sobre el tema.
 
 42
 00:02:30,882 --> 00:02:33,908
-Muchos de ustedes ya conocerán mucho 
+Muchos de ustedes ya conocerÃ¡n mucho 
 
 43
 00:02:33,908 --> 00:02:36,378
-de lo que estaré hablando, al menos por ahora.
+de lo que estarÃ© hablando, al menos por ahora.
 
 44
 00:02:36,378 --> 00:02:40,293
-Por otro lado, es posible que para otros voy a ir muy rápido,;
+Por otro lado, es posible que para otros voy a ir muy rÃ¡pido,;
 
 45
 00:02:40,293 --> 00:02:44,558
-si eres totalmente nuevo a este tema: relájate.
+si eres totalmente nuevo a este tema: relÃ¡jate.
 
 46
 00:02:44,558 --> 00:02:48,629
-Lo importante es escuchar las ideas que capturen tu imaginación.
+Lo importante es escuchar las ideas que capturen tu imaginaciÃ³n.
 
 47
 00:02:48,629 --> 00:02:52,497
-Pon atención al vocabulario que se use sobre esas ideas
+Pon atenciÃ³n al vocabulario que se use sobre esas ideas
 
 48
 00:02:52,479 --> 00:02:56,078
@@ -192,35 +192,35 @@ porque luego puedes buscar en Google y Wikipedia,
 
 49
 00:02:56,078 --> 00:02:57,753
-y así investigar tanto como te interese.
+y asÃ­ investigar tanto como te interese.
 
 50
 00:02:57,753 --> 00:03:00,094
-Así que, sin más preámbulos,
+AsÃ­ que, sin mÃ¡s preÃ¡mbulos,
 
 51
 00:03:00,094 --> 00:03:03,351
-bienvenido a la nueva afición de tu vida.
+bienvenido a la nueva aficiÃ³n de tu vida.
 
 52
 00:03:10,291 --> 00:03:13,030
-Un sonido es una propagación de ondas de presión de aire, 
+Un sonido es una propagaciÃ³n de ondas de presiÃ³n de aire, 
 
 53
 00:03:13,030 --> 00:03:16,981
-expandiéndose desde un orígen, como cuando lanzas una piedra a un lago.
+expandiÃ©ndose desde un orÃ­gen, como cuando lanzas una piedra a un lago.
 
 54
 00:03:16,981 --> 00:03:19,489
-Un micrófono, y también el oído humano,
+Un micrÃ³fono, y tambiÃ©n el oÃ­do humano,
 
 55
 00:03:19,489 --> 00:03:22,876
-convierten estas ondas de presión en señales eléctricas.
+convierten estas ondas de presiÃ³n en seÃ±ales elÃ©ctricas.
 
 56
 00:03:22,876 --> 00:03:25,800
-Esto es ciencia básica y puede que ya lo sepas.
+Esto es ciencia bÃ¡sica y puede que ya lo sepas.
 
 57
 00:03:25,800 --> 00:03:26,771
@@ -228,7 +228,7 @@ Continuemos.
 
 58
 00:03:27,465 --> 00:03:32,527
-Esa señal de audio es una uni-dimensional – un valor único que varía con el tiempo.
+Esa seÃ±al de audio es una uni-dimensional Â– un valor Ãºnico que varÃ­a con el tiempo.
 
 59
 00:03:32,527 --> 00:03:34,248
@@ -236,15 +236,15 @@ Si reducimos la velocidad un poco...
 
 60
 00:03:36,450 --> 00:03:38,190
-puedes ver la función más claramente.
+puedes ver la funciÃ³n mÃ¡s claramente.
 
 61
 00:03:38,190 --> 00:03:40,688
-Ciertos otros aspectos de la señal son importantes.
+Ciertos otros aspectos de la seÃ±al son importantes.
 
 62
 00:03:40,688 --> 00:03:43,418
-La señal es continua tanto en valor como en tiempo; 
+La seÃ±al es continua tanto en valor como en tiempo; 
 
 63
 00:03:43,418 --> 00:03:46,813
@@ -252,51 +252,51 @@ o sea, en todo momento va a tener cualquier valor real,
 
 64
 00:03:46,813 --> 00:03:50,228
-y ese valor varía sólo levemente de momento a momento.
+y ese valor varÃ­a sÃ³lo levemente de momento a momento.
 
 65
 00:03:50,228 --> 00:03:52,439
-No importa cuánto nos acerquemos,
+No importa cuÃ¡nto nos acerquemos,
 
 66
 00:03:54,068 --> 00:03:58,510 
-no hay descontinuidades, ni singularidades, ni saltos instantáneos
+no hay descontinuidades, ni singularidades, ni saltos instantÃ¡neos
 
 67
 00:03:58,510 --> 00:04:01,285
-o puntos en los que la señal deja de existir.
+o puntos en los que la seÃ±al deja de existir.
 
 68
 00:04:03,247 --> 00:04:08,475
-Está bien definida en todo lugar.  Estas señales se definen en términos básicos de la matemática continua.
+EstÃ¡ bien definida en todo lugar.  Estas seÃ±ales se definen en tÃ©rminos bÃ¡sicos de la matemÃ¡tica continua.
 
 69
 00:04:11,001 --> 00:04:15,378
-Una señal digital, por otra parte, es discreta tanto en valor como en tiempo.
+Una seÃ±al digital, por otra parte, es discreta tanto en valor como en tiempo.
 
 70
 00:04:15,378 --> 00:04:19,107
-En el sistema más simple y más común, llamado modulación de códigos de impulso (PCM en inglés),
+En el sistema mÃ¡s simple y mÃ¡s comÃºn, llamado modulaciÃ³n de cÃ³digos de impulso (PCM en inglÃ©s),
 
 71
 00:04:19,107 --> 00:04:24,058
-uno de entre varios posibles valores representa la amplitud de señal 
+uno de entre varios posibles valores representa la amplitud de seÃ±al 
 
 72
 00:04:24,058 --> 00:04:30,165
-en puntos de tiempo separados a distancias fijas.  El resultado es una serie de dígitos.
+en puntos de tiempo separados a distancias fijas.  El resultado es una serie de dÃ­gitos.
 
 73
 00:04:30,674 --> 00:04:35,309
-Esto se ve muy parecido a lo que ves aquí.
+Esto se ve muy parecido a lo que ves aquÃ­.
 
 74
 00:04:35,309 --> 00:04:39,964
-Parecería que deberíamos poder convertir de una señal a otra con precisón,
+ParecerÃ­a que deberÃ­amos poder convertir de una seÃ±al a otra con precisÃ³n,
 
 75
 00:04:39,964 --> 00:04:44,683
-y, de hecho, el Teorema de Sampling confirma y explica cómo hacer esto.
+y, de hecho, el Teorema de Sampling confirma y explica cÃ³mo hacer esto.
 
 76
 00:04:44,683 --> 00:04:48,477
@@ -308,31 +308,31 @@ y compuesto en la obra de Nyquist y Hartley, entre otros,
 
 78
 00:04:52,409 --> 00:04:56,138
-el teorema de sampling ice que podemos alternar entre señales análogas y
+el teorema de sampling ice que podemos alternar entre seÃ±ales anÃ¡logas y
 
 79
 00:04:56,138 --> 00:05:00,913
-señales digitales, y también muestra condiciones con las cuales la conversión 
+seÃ±ales digitales, y tambiÃ©n muestra condiciones con las cuales la conversiÃ³n 
 
 80
 00:05:00,913 --> 00:05:06,779
-ocurrirá sin pérdida y las dos representaciones serán equivalentes e intercambiables.
+ocurrirÃ¡ sin pÃ©rdida y las dos representaciones serÃ¡n equivalentes e intercambiables.
 
 81
 00:05:06,779 --> 00:05:10,601
-Cuando las condiciones sin pérdida no se cumplen, el teorema nos dice
+Cuando las condiciones sin pÃ©rdida no se cumplen, el teorema nos dice
 
 82
 00:05:10,601 --> 00:05:14,247
-cómo y cuál información se pierde o se corrompe.
+cÃ³mo y cuÃ¡l informaciÃ³n se pierde o se corrompe.
 
 83
 00:05:14,900 --> 00:05:21,270
-Hasta muy recientemente, la tecnología análoga era la base para prácticamente todo audio, 
+Hasta muy recientemente, la tecnologÃ­a anÃ¡loga era la base para prÃ¡cticamente todo audio, 
 
 84
 00:05:21,270 --> 00:05:25,267
-y eso no era porque la mayoría del audio proviene de una fuente análoga.
+y eso no era porque la mayorÃ­a del audio proviene de una fuente anÃ¡loga.
 
 85
 00:05:25,267 --> 00:05:28,450
@@ -340,31 +340,31 @@ Tal vez piensas que como los computadores son relativamente recientes,
 
 86
 00:05:28,450 --> 00:05:31,643
-la tecnología se señales análogas debió haber llegado primero.
+la tecnologÃ­a se seÃ±ales anÃ¡logas debiÃ³ haber llegado primero.
 
 87
 00:05:31,643 --> 00:05:34,428
-Nop.  La digital es más antigua.
+Nop.  La digital es mÃ¡s antigua.
 
 88
 00:05:34,428 --> 00:05:37,611
-El telégrafo es más antiguo que el teléfono por medio siglo,
+El telÃ©grafo es mÃ¡s antiguo que el telÃ©fono por medio siglo,
 
 89
 00:05:37,611 --> 00:05:41,951
-y ya estaba completamente automatizado para los 1860s, enviando señales
+y ya estaba completamente automatizado para los 1860s, enviando seÃ±ales
 
 90
 00:05:41,951 --> 00:05:46,476
-codificadas y multifacéticas a través de largas distancias.
+codificadas y multifacÃ©ticas a travÃ©s de largas distancias.
 
 91
 00:05:46,476 --> 00:05:50,427
-Harry Nyquist de los Laboratorios Bell investigaba transmisiónes de telegráfo
+Harry Nyquist de los Laboratorios Bell investigaba transmisiÃ³nes de telegrÃ¡fo
 
 92
 00:05:50,427 --> 00:05:53,027
-cuando publicó su descripción de lo que se vino a conocer como
+cuando publicÃ³ su descripciÃ³n de lo que se vino a conocer como
 
 93
 00:05:53,027 --> 00:05:57,219
@@ -372,19 +372,19 @@ la frequencia Nyquist, el concepto clave del teorema de sampling.
 
 94
 00:05:57,219 --> 00:06:01,642
-Ahora, es cierto que el telégrafo transmitía información simbólica (texto)
+Ahora, es cierto que el telÃ©grafo transmitÃ­a informaciÃ³n simbÃ³lica (texto)
 
 95
 00:06:01,642 --> 00:06:06,883
-y no una señal de audio digitalizada, pero con la llegada del teléfono y la radio
+y no una seÃ±al de audio digitalizada, pero con la llegada del telÃ©fono y la radio
 
 96
 00:06:06,883 --> 00:06:12,000
-las tecnologías análogas y digitales progresaron rápidamente y a la par una con otra.
+las tecnologÃ­as anÃ¡logas y digitales progresaron rÃ¡pidamente y a la par una con otra.
 
 97
 00:06:12,699 --> 00:06:18,732
-El audio siempre se ha manipulado como una señal análoga ya que, pues, era la forma más fácil..  
+El audio siempre se ha manipulado como una seÃ±al anÃ¡loga ya que, pues, era la forma mÃ¡s fÃ¡cil..  
 
 98
 00:06:18,732 --> 00:06:23,257
@@ -392,7 +392,7 @@ Un filtro sencillo de pasabajo, por ejemplo, requiere dos componentes pasivos.
 
 99
 00:06:23,257 --> 00:06:26,505
-Un transformador análogo Fourier requiere varios cientos de componentes.  
+Un transformador anÃ¡logo Fourier requiere varios cientos de componentes.  
 
 100
 00:06:26,505 --> 00:06:30,752
@@ -400,7 +400,7 @@ O tal vez varios miles si quieres construir algo de calidad.
 
 101
 00:06:31,844 --> 00:06:35,989
-Procesar señales digitalmente require millones o billones de transistores 
+Procesar seÃ±ales digitalmente require millones o billones de transistores 
 
 102
 00:06:35,989 --> 00:06:40,366
@@ -408,7 +408,7 @@ operando a frequencias de microondas, mas equipo de apoyo al menos para digitali
 
 103
 00:06:40,366 --> 00:06:43,836
-y reconstruir las señales análogas, un ecosistema de software
+y reconstruir las seÃ±ales anÃ¡logas, un ecosistema de software
 
 104
 00:06:43,836 --> 00:06:47,362
@@ -416,27 +416,27 @@ para programar y controlar ese monstruo de billones de transistores
 
 105
 00:06:47,362 --> 00:06:51,091
-y almacenamiento digital en caso de que quieras guardar esos bits para otro día...
+y almacenamiento digital en caso de que quieras guardar esos bits para otro dÃ­a...
 
 106
 00:06:51,091 --> 00:06:56,171
-Podemos concluir entonces que análogo es la manera más practica de trabajar con audio...
+Podemos concluir entonces que anÃ¡logo es la manera mÃ¡s practica de trabajar con audio...
 
 107
 00:06:56,171 --> 00:07:07,019
-a menos que tengas un billón de transistores y todo lo demás a tu disposición.
+a menos que tengas un billÃ³n de transistores y todo lo demÃ¡s a tu disposiciÃ³n.
 
 108
 00:07:07,850 --> 00:07:12,660
-Y como nosotros sí lo tenemos, el procesamiento digital sí resulta más atractivo.
+Y como nosotros sÃ­ lo tenemos, el procesamiento digital sÃ­ resulta mÃ¡s atractivo.
 
 109
 00:07:13,363 --> 00:07:18,906
-Por un lado, los equipos análogos no tienen la flexibilidad que tiene un computador.
+Por un lado, los equipos anÃ¡logos no tienen la flexibilidad que tiene un computador.
 
 110
 00:07:18,906 --> 00:07:21,182
-Añadir una nueva función a esta bestia...
+AÃ±adir una nueva funciÃ³n a esta bestia...
 
 111
 00:07:22,191 --> 00:07:24,578
@@ -448,11 +448,11 @@ Pero en un procesador digital...
 
 113
 00:07:28,668 --> 00:07:34,127
-...sólo hace falta escribir un programa nuevo.  No es súper fácil, pero es mucho más fácil.
+...sÃ³lo hace falta escribir un programa nuevo.  No es sÃºper fÃ¡cil, pero es mucho mÃ¡s fÃ¡cil.
 
 114
 00:07:34,127 --> 00:07:39,550
-Lo que es tal vez más importante es que todo componente análogo es una aproximación.
+Lo que es tal vez mÃ¡s importante es que todo componente anÃ¡logo es una aproximaciÃ³n.
 
 115
 00:07:39,550 --> 00:07:44,352
@@ -460,27 +460,27 @@ No hay tal cosa como un transistor perfecto, o un inductor perfecto, o un capaci
 
 116
 00:07:44,352 --> 00:07:51,569
-En análogo, todo componente añade sonido y distorsión – no mucho en general, pero se acumula. 
+En anÃ¡logo, todo componente aÃ±ade sonido y distorsiÃ³n Â– no mucho en general, pero se acumula. 
 
 117
 00:07:51,569 --> 00:07:55,669
-Sólo transmitir una señal digital, especialmente a través de distancias largas,
+SÃ³lo transmitir una seÃ±al digital, especialmente a travÃ©s de distancias largas,
 
 118
 00:07:55,669 --> 00:08:00,434
-corrompe la señal progresivamente e irreparablemente.  
+corrompe la seÃ±al progresivamente e irreparablemente.  
 
 119
 00:08:00,434 --> 00:08:06,513
-Además, todos esos componentes análogos ocupan mucho espacio.  
+AdemÃ¡s, todos esos componentes anÃ¡logos ocupan mucho espacio.  
 
 120
 00:08:06,513 --> 00:08:09,946
-Dos líneas de código en los billones de transistores aquí atrás
+Dos lÃ­neas de cÃ³digo en los billones de transistores aquÃ­ atrÃ¡s
 
 121
 00:08:09,946 --> 00:08:14,702
-pueden implementar un filtro que requeriría un inductor del tamaño de un refrigerador.
+pueden implementar un filtro que requerirÃ­a un inductor del tamaÃ±o de un refrigerador.
 
 122
 00:08:14,702 --> 00:08:17,941
@@ -488,79 +488,79 @@ Los sistemas digitales no tienen estas desventajas.
 
 123
 00:08:17,941 --> 00:08:24,335
-Las señales digitales se pueden almacenar, copiar, manipular y transmitir sin añadir ruido o distorsión. 
+Las seÃ±ales digitales se pueden almacenar, copiar, manipular y transmitir sin aÃ±adir ruido o distorsiÃ³n. 
 
 124
 00:08:24,335 --> 00:08:26,889
-Sí usamos algoritmos con pérdida de tiempo en tiempo,
+SÃ­ usamos algoritmos con pÃ©rdida de tiempo en tiempo,
 
 125
 00:08:26,889 --> 00:08:31,284
-pero los únicos pasos no-ideales e inevadibles son la digitalización y la reconstrucción,
+pero los Ãºnicos pasos no-ideales e inevadibles son la digitalizaciÃ³n y la reconstrucciÃ³n,
 
 126
 00:08:31,284 --> 00:08:35,929
-en la cual lo digital debe interactuar con toda esa complicación análoga.  
+en la cual lo digital debe interactuar con toda esa complicaciÃ³n anÃ¡loga.  
 
 127
 00:08:35,929 --> 00:08:40,750
-Complicado o no, los métodos modernos de conversión son muy, muy buenos.
+Complicado o no, los mÃ©todos modernos de conversiÃ³n son muy, muy buenos.
 
 128
 00:08:40,750 --> 00:08:45,849
-Para los estándares de nuestros oídos, los podemos considerar prácticamente sin pérdidas.
+Para los estÃ¡ndares de nuestros oÃ­dos, los podemos considerar prÃ¡cticamente sin pÃ©rdidas.
 
 129
 00:08:45,849 --> 00:08:50,429
-Con un poco de equipo adicional, pues, mucho del cual es ahora pequeño y bajo en costo,
+Con un poco de equipo adicional, pues, mucho del cual es ahora pequeÃ±o y bajo en costo,
 
 130
 00:08:50,429 --> 00:08:55,379
-dada nuestra tecnología moderna, el audio digital triunfa fácilmente sobre el audio análogo.
+dada nuestra tecnologÃ­a moderna, el audio digital triunfa fÃ¡cilmente sobre el audio anÃ¡logo.
 
 131
 00:08:55,379 --> 00:09:00,857
-Así que aprendamos ahora cómo almacenarlo, copiarlo, manipularlo, y transmitirlo.
+AsÃ­ que aprendamos ahora cÃ³mo almacenarlo, copiarlo, manipularlo, y transmitirlo.
 
 132
 00:09:04,956 --> 00:09:08,639
-La modulación de códigos de impulsos (PCM) es la representación más común de audio puro.
+La modulaciÃ³n de cÃ³digos de impulsos (PCM) es la representaciÃ³n mÃ¡s comÃºn de audio puro.
 
 133
 00:09:08,639 --> 00:09:13,867
-Existen otras representaciones prácticas, por ejemplo el codigo Sigma-Delta usado por el SACD,
+Existen otras representaciones prÃ¡cticas, por ejemplo el codigo Sigma-Delta usado por el SACD,
 
 134
 00:09:13,867 --> 00:09:16,625
-que es una forma de modulación por densidad de impulsos.  
+que es una forma de modulaciÃ³n por densidad de impulsos.  
 
 135
 00:09:16,625 --> 00:09:19,687
-Dicho esto, el PCM es el método dominante
+Dicho esto, el PCM es el mÃ©todo dominante
 
 136
 00:09:19,687 --> 00:09:22,158
-mayormente porque es conveniente matemáticamente.
+mayormente porque es conveniente matemÃ¡ticamente.
 
 137
 00:09:22,158 --> 00:09:26,350
-Un ingeniero de audio puede dedicar una carrera entera trabajando sólo con esta modulación.
+Un ingeniero de audio puede dedicar una carrera entera trabajando sÃ³lo con esta modulaciÃ³n.
 
 138
 00:09:26,350 --> 00:09:29,135
-La codificación PCM se puede caracterizar en tres parámetros;
+La codificaciÃ³n PCM se puede caracterizar en tres parÃ¡metros;
 
 139
 00:09:29,135 --> 00:09:34,187
-esto hace fácil distinguir entre toda variante posible de PCM sin mucha dificultad.
+esto hace fÃ¡cil distinguir entre toda variante posible de PCM sin mucha dificultad.
 
 140
 00:09:34,187 --> 00:09:36,426
-El primer parámetro es la tasa de sampling (sampling rate).
+El primer parÃ¡metro es la tasa de sampling (sampling rate).
 
 141
 00:09:36,426 --> 00:09:40,886
-La frecuencia más alta que puede representar un código se llama la Frecuencia Nyquist.
+La frecuencia mÃ¡s alta que puede representar un cÃ³digo se llama la Frecuencia Nyquist.
 
 142
 00:09:40,886 --> 00:09:45,124
@@ -568,31 +568,31 @@ La frecuencia Nyquist de un PCM es exactamente la mitad de su sampling rate.
 
 143
 00:09:45,124 --> 00:09:51,389
-Por eso, el sampling rate determina la frecuencia más alta posible de la señal digital.
+Por eso, el sampling rate determina la frecuencia mÃ¡s alta posible de la seÃ±al digital.
 
 144
 00:09:51,389 --> 00:09:56,515
-Los sistemas de teléfonos análogos limitaban los canales de voz a sólo 4kHz, 
+Los sistemas de telÃ©fonos anÃ¡logos limitaban los canales de voz a sÃ³lo 4kHz, 
 
 145
 00:09:56,515 --> 00:10:02,224
-así que la telefonía digital y muchas de las aplicaciones de voz clásicas usan un sampling rate de 8kHz,
+asÃ­ que la telefonÃ­a digital y muchas de las aplicaciones de voz clÃ¡sicas usan un sampling rate de 8kHz,
 
 146
 00:10:02,224 --> 00:10:07,277
-que es el sampling rate mínimo necesario para capturar el ancho de banda de un canal de 4kHz.
+que es el sampling rate mÃ­nimo necesario para capturar el ancho de banda de un canal de 4kHz.
 
 147
 00:10:07,227 --> 00:10:14,263
-Así es como suena un sampling rate de 8kHz – un poco fogoso pero perfectamente entendible para voz.
+AsÃ­ es como suena un sampling rate de 8kHz Â– un poco fogoso pero perfectamente entendible para voz.
 
 148
 00:10:17,263 --> 00:10:18,149
-Este es el sampling rate más bajo que se ha usado ampliamente.
+Este es el sampling rate mÃ¡s bajo que se ha usado ampliamente.
 
 149
 00:10:18,149 --> 00:10:23,322
-A partir de ahí, mientras la capacidad, memoria y almacenamiento aumentaron, los computadores
+A partir de ahÃ­, mientras la capacidad, memoria y almacenamiento aumentaron, los computadores
 
 150
 00:10:23,322 --> 00:10:29,642
@@ -604,7 +604,7 @@ Con cada aumenteo en el sampling rate y la frecuencia Nyquist,
 
 152
 00:10:33,491 --> 00:10:38,302
-es obvio que el sonido se vuelve más claro y más natural.
+es obvio que el sonido se vuelve mÃ¡s claro y mÃ¡s natural.
 
 153
 00:10:38,301 --> 00:10:44,576
@@ -616,59 +616,59 @@ pero las ventajas se notan menos a estos niveles.
 
 155
 00:10:46,788 --> 00:10:52,053
-44.1kHz es un valor inusual, especialmente porque no se había usado nunca anteriormente
+44.1kHz es un valor inusual, especialmente porque no se habÃ­a usado nunca anteriormente
 
 156
 00:10:52,053 --> 00:10:56,559
-antes del disco compacto, pero el éxito rotundo del CD lo ha hecho un sampling rate común.
+antes del disco compacto, pero el Ã©xito rotundo del CD lo ha hecho un sampling rate comÃºn.
 
 157
 00:10:56,559 --> 00:11:01,195
-El otro sampling rate común de alta fidelidad es 48kHz.
+El otro sampling rate comÃºn de alta fidelidad es 48kHz.
 
 158
 00:11:05,710 --> 00:11:08,597
-No hay casi ninguna diferencia notable al oído humano entre estos dos niveles.
+No hay casi ninguna diferencia notable al oÃ­do humano entre estos dos niveles.
 
 159
 00:11:08,597 --> 00:11:13,640
-Este video, o al menos la versión original, se filmó y produjo con audio a 48kHz,
+Este video, o al menos la versiÃ³n original, se filmÃ³ y produjo con audio a 48kHz,
 
 160
 00:11:13,640 --> 00:11:18,545
-que es el estándar original para audio con vídeo de alta fidelidad.
+que es el estÃ¡ndar original para audio con vÃ­deo de alta fidelidad.
 
 161
 00:11:18,545 --> 00:11:25,100
-También existen sampling rates de super alta fidelidad de 88, 96, y 192kHz.
+TambiÃ©n existen sampling rates de super alta fidelidad de 88, 96, y 192kHz.
 
 162
 00:11:25,100 --> 00:11:30,888
-La razón para niveles por encima de 48kHz no es extender las frequencias aún más.
+La razÃ³n para niveles por encima de 48kHz no es extender las frequencias aÃºn mÃ¡s.
 
 163
 00:11:30,888 --> 00:11:32,489
-La razón es otra.
+La razÃ³n es otra.
 
 164
 00:11:32,896 --> 00:11:37,319
-Veamos: El matemático francés Jean Baptiste Joseph Fourier mostró que
+Veamos: El matemÃ¡tico francÃ©s Jean Baptiste Joseph Fourier mostrÃ³ que
 
 165
 00:11:37,319 --> 00:11:42,353
-podemos pensar en señales de audio como un conjunto de frequencias de componentes.
+podemos pensar en seÃ±ales de audio como un conjunto de frequencias de componentes.
 
 166
 00:11:42,353 --> 00:11:45,841
-Esta representación de dominios de frequencia es equivalente a una representación de tiempo;
+Esta representaciÃ³n de dominios de frequencia es equivalente a una representaciÃ³n de tiempo;
 
 167
 00:11:45,841 --> 00:11:49,719
-la señal es exactamente la misma, sólo que la estamos viendo de un punto de vista diferente.
+la seÃ±al es exactamente la misma, sÃ³lo que la estamos viendo de un punto de vista diferente.
 
 168
 00:11:49,719 --> 00:11:56,131
-Aquí vemos la representación de dominios de frequencia de una señal análoga que queremos convertir a digital.
+AquÃ­ vemos la representaciÃ³n de dominios de frequencia de una seÃ±al anÃ¡loga que queremos convertir a digital.
 
 169
 00:11:56,131 --> 00:11:59,888
@@ -676,27 +676,27 @@ El teorema de sampling nos dice dos cosas esenciales sobre el proceso de muestre
 
 170
 00:11:59,888 --> 00:12:04,727
-Primero, que una señal digital no puede representar ninguna frecuencia sobre la frequencia Nyquist.
+Primero, que una seÃ±al digital no puede representar ninguna frecuencia sobre la frequencia Nyquist.
 
 171
 00:12:04,727 --> 00:12:10,640
-Segundo – y esto es lo nuevo – si no removemos esas frecuencias con un filtro de pasabajo antes de muestrear,
+Segundo Â– y esto es lo nuevo Â– si no removemos esas frecuencias con un filtro de pasabajo antes de muestrear,
 
 172
 00:12:10,640 --> 00:12:16,414
-el proceso de muestreo las va a tratar de representar bajo una frecuencia aceptable, como distorsión dentada.
+el proceso de muestreo las va a tratar de representar bajo una frecuencia aceptable, como distorsiÃ³n dentada.
 
 173
 00:12:16,414 --> 00:12:20,069
-Esta distorsión, en resumen, suena muy, muy mal,
+Esta distorsiÃ³n, en resumen, suena muy, muy mal,
 
 174
 00:12:20,069 --> 00:12:25,242
-así que es esencial remover frecuencias sobre la frecuencia Nyquist antes de convertir una señal.
+asÃ­ que es esencial remover frecuencias sobre la frecuencia Nyquist antes de convertir una seÃ±al.
 
 175
 00:12:25,871 --> 00:12:31,265
-La percepción humana de frequencias se extiende hasta más o menos 20kHz.
+La percepciÃ³n humana de frequencias se extiende hasta mÃ¡s o menos 20kHz.
 
 176
 00:12:31,265 --> 00:12:37,548
@@ -712,7 +712,7 @@ y a la vez evite que frecuencias por encima de la Nyquist se infiltren en el pro
 
 179
 00:12:49,439 --> 00:12:55,342
-Este es un filtro difícil de construir y ningún filtro en particular lo logra totalmente.
+Este es un filtro difÃ­cil de construir y ningÃºn filtro en particular lo logra totalmente.
 
 180
 00:12:55,342 --> 00:13:00,024
@@ -720,19 +720,19 @@ Si el sampling rate es de 96kHz o de 192kHz, por otro lado,
 
 181
 00:13:00,024 --> 00:13:07,223
-el pasabajo tiene una o dos octavas adicionales para su banda de transición.  Este es un filtro más fácil de construir.
+el pasabajo tiene una o dos octavas adicionales para su banda de transiciÃ³n.  Este es un filtro mÃ¡s fÃ¡cil de construir.
 
 182
 00:13:07,223 --> 00:13:14,348
-Sampling rates mayores de 48kHz son más que nada un compromiso inexacto entre análogo y digital.
+Sampling rates mayores de 48kHz son mÃ¡s que nada un compromiso inexacto entre anÃ¡logo y digital.
 
 183
 00:13:15,014 --> 00:13:20,844
-El segundo parámetro importante del PCM es el formato del sample, es decir, el formato de cada número digital.
+El segundo parÃ¡metro importante del PCM es el formato del sample, es decir, el formato de cada nÃºmero digital.
 
 184
 00:13:20,844 --> 00:13:26,285
-Un número es un número, pero se puede representar en bits en varias formas.
+Un nÃºmero es un nÃºmero, pero se puede representar en bits en varias formas.
 
 185
 00:13:26,942 --> 00:13:30,902
@@ -740,15 +740,15 @@ Los PCM antiguos eran de ocho bits lineares, codificados usando un byte no-firma
 
 186
 00:13:30,902 --> 00:13:37,028
-El alcance dinámico está limitado a 50dB y el sonido de cuantificación, como puedes oir, es severo.
+El alcance dinÃ¡mico estÃ¡ limitado a 50dB y el sonido de cuantificaciÃ³n, como puedes oir, es severo.
 
 187
 00:13:37,028 --> 00:13:39,970
-El audio de ocho bits está desapareciendo actualmente.
+El audio de ocho bits estÃ¡ desapareciendo actualmente.
 
 188
 00:13:41,007 --> 00:13:47,484
-La telefonía digital usa una de dos codificaciones no lineares de ocho bits, llamadas A-law y mu-law.
+La telefonÃ­a digital usa una de dos codificaciones no lineares de ocho bits, llamadas A-law y mu-law.
 
 189
 00:13:47,484 --> 00:13:51,287
@@ -760,51 +760,51 @@ expandiendo los valores de mayor amplitud a mayor distancia.
 
 191
 00:13:54,674 --> 00:13:59,226
-A-law y mu-law aumentan el sonido de cuantificación comparado con el 8-bit linear
+A-law y mu-law aumentan el sonido de cuantificaciÃ³n comparado con el 8-bit linear
 
 192
 00:13:59,226 --> 00:14:03,557
-y armonías de voces esconden bien el resto del sonido de cuantificación.
+y armonÃ­as de voces esconden bien el resto del sonido de cuantificaciÃ³n.
 
 193
 00:14:03,557 --> 00:14:08,248
-Todos estas codificaciones de 8-bits: linear, A-law y mu-law típicamente se parean
+Todos estas codificaciones de 8-bits: linear, A-law y mu-law tÃ­picamente se parean
 
 194
 00:14:08,248 --> 00:14:13,328
-con un sampling rate de 8kHz, aunque aquí lo estoy demostrando a 48kHz.
+con un sampling rate de 8kHz, aunque aquÃ­ lo estoy demostrando a 48kHz.
 
 195
 00:14:13,328 --> 00:14:18,491
-La mayoría de los PCM modernos usan íntegros de 16 ó 24-bits para codificar
+La mayorÃ­a de los PCM modernos usan Ã­ntegros de 16 Ã³ 24-bits para codificar
 
 196
 00:14:18,491 --> 00:14:23,858
-el registro desde infinidad negativa hasta cero decibeles a 16 ó 24 bits de precisión.
+el registro desde infinidad negativa hasta cero decibeles a 16 Ã³ 24 bits de precisiÃ³n.
 
 197
 00:14:23,858 --> 00:14:27,800
-El valor absoluto máximo corresponde a zero decibeles.
+El valor absoluto mÃ¡ximo corresponde a zero decibeles.
 
 198
 00:14:27,800 --> 00:14:31,584
-Como con todos los formatos de sample hasta ahora, las señales por encima de cero decibeles
+Como con todos los formatos de sample hasta ahora, las seÃ±ales por encima de cero decibeles
 
 199
 00:14:31,584 --> 00:14:35,619
-y por tanto fuera del registro máximo se eliminan.
+y por tanto fuera del registro mÃ¡ximo se eliminan.
 
 200
 00:14:35,619 --> 00:14:41,199
-Al mezclar y masterizar, no es inusual usar puntos flotantes para PCM en vez de números íntegros.
+Al mezclar y masterizar, no es inusual usar puntos flotantes para PCM en vez de nÃºmeros Ã­ntegros.
 
 201
 00:14:41,199 --> 00:14:47,222
-Un punto flotante IEEE754 de 32 bits, que es el punto típico que encuentras en computadores modernos
+Un punto flotante IEEE754 de 32 bits, que es el punto tÃ­pico que encuentras en computadores modernos
 
 202
 00:14:47,222 --> 00:14:52,793
-tiene 24 bits de resolución, pero un punto flotante exponente de 7 bits aumenta el registro representable.
+tiene 24 bits de resoluciÃ³n, pero un punto flotante exponente de 7 bits aumenta el registro representable.
 
 203
 00:14:52,793 --> 00:14:57,040
@@ -812,27 +812,27 @@ Un punto flotante por lo general representa cero decibeles como +/-1.0,
 
 204
 00:14:57,040 --> 00:15:00,547
-y ya que flota, se puede representar considerablemente por encima o por debajo de ese número;
+y ya que flota, se puede representar considerablemente por encima o por debajo de ese nÃºmero;
 
 205
 00:15:00,547 --> 00:15:05,220
-así, excedir cero decibeles temporeramente durante el proceso de mezcla no causa recortes de audio (clipping).
+asÃ­, excedir cero decibeles temporeramente durante el proceso de mezcla no causa recortes de audio (clipping).
 
 206
 00:15:05,220 --> 00:15:11,077 
-PCM con puntos flotantes toma más espacio para almacenar, por lo que sólo se debe usar durante la producción.
+PCM con puntos flotantes toma mÃ¡s espacio para almacenar, por lo que sÃ³lo se debe usar durante la producciÃ³n.
 
 207
 00:15:11,077 --> 00:15:15,796
-Por último, la mayoría de los computadores todavía leen y escriben data en bytes octetos,
+Por Ãºltimo, la mayorÃ­a de los computadores todavÃ­a leen y escriben data en bytes octetos,
 
 208
 00:15:15,796 --> 00:15:18,489
-así que es importante recordar que samples mayores de 8-bits
+asÃ­ que es importante recordar que samples mayores de 8-bits
 
 209
 00:15:18,489 --> 00:15:22,838
-pueden estar en un extremo (endianidad) grande o pequeño, y ambos son comunes.
+pueden estar en un extremo (endianidad) grande o pequeÃ±o, y ambos son comunes.
 
 210
 00:15:22,838 --> 00:15:28,751
@@ -844,15 +844,15 @@ Ten esto en cuenta.
 
 212
 00:15:30,870 --> 00:15:34,071
-El tercer parámetro de PCM es el número de canales.
+El tercer parÃ¡metro de PCM es el nÃºmero de canales.
 
 213
 00:15:34,071 --> 00:15:38,485
-Lo común en PCM puros es codificar muchos canales entrelazando los samples
+Lo comÃºn en PCM puros es codificar muchos canales entrelazando los samples
 
 214
 00:15:38,485 --> 00:15:43,398
-de cada canal y volviéndolos uno.  Simple y repetible.
+de cada canal y volviÃ©ndolos uno.  Simple y repetible.
 
 215
 00:15:43,398 --> 00:15:47,701
@@ -860,31 +860,31 @@ Y eso es todo!  Esto describe toda representacion de PCM que existe.
 
 216
 00:15:47,701 --> 00:15:51,578
-Y así terminamos.  El audio digital es _muy facil_!
+Y asÃ­ terminamos.  El audio digital es _muy facil_!
 
 217
 00:15:51,578 --> 00:15:56,436
-Hay mucho más que hacer, por supuesto, pero en este punto tenemos suficiente data de audio,
+Hay mucho mÃ¡s que hacer, por supuesto, pero en este punto tenemos suficiente data de audio,
 
 218
 00:15:56,436 --> 00:15:58,092
-así que veamos algo de vídeo también.
+asÃ­ que veamos algo de vÃ­deo tambiÃ©n.
 
 219
 00:16:02,571 --> 00:16:08,798
-Se podría ver a un video como si fuera audio pero con dos dimensiones: X y Y,
+Se podrÃ­a ver a un video como si fuera audio pero con dos dimensiones: X y Y,
 
 220
 00:16:08,798 --> 00:16:12,787
-además de la dimensión de tiempo.  Esto tiene sentido matemáticamente.
+ademÃ¡s de la dimensiÃ³n de tiempo.  Esto tiene sentido matemÃ¡ticamente.
 
 221
 00:16:12,787 --> 00:16:19,097
-El Teorema de Sampling aplica a las tres dimensiones de un video así como a la única dimensión del audio.
+El Teorema de Sampling aplica a las tres dimensiones de un video asÃ­ como a la Ãºnica dimensiÃ³n del audio.
 
 222
 00:16:19,097 --> 00:16:25,815
-El audio y el video son obviamente diferentes en práctica.  Para empezar, comparado con el audio, un video es enorme.
+El audio y el video son obviamente diferentes en prÃ¡ctica.  Para empezar, comparado con el audio, un video es enorme.
 
 223
 00:16:25,815 --> 00:16:29,294
@@ -892,19 +892,19 @@ Audio puro de CD usa cerca de 1.4 megabits por segundo.
 
 224
 00:16:29,294 --> 00:16:33,958
-Video puro de alta definición 1080i usa sobre 700 megabits por segundo.
+Video puro de alta definiciÃ³n 1080i usa sobre 700 megabits por segundo.
 
 225
 00:16:33,958 --> 00:16:40,056
-Es más de 500 veces más data para capturar, procesar, y almacenar cada segunto.
+Es mÃ¡s de 500 veces mÃ¡s data para capturar, procesar, y almacenar cada segunto.
 
 226
 00:16:40,056 --> 00:16:43,711
-Según la ley de Moore, eso es... veamos... cerca de ocho duplicaciones, por dos años,
+SegÃºn la ley de Moore, eso es... veamos... cerca de ocho duplicaciones, por dos aÃ±os,
 
 227
 00:16:43,711 --> 00:16:47,838
-sí, un computador requeriría unos quince años extra para procesar video puro
+sÃ­, un computador requerirÃ­a unos quince aÃ±os extra para procesar video puro
 
 228
 00:16:47,838 --> 00:16:51,252
@@ -912,71 +912,71 @@ luego de terminar de procesar audio puro.
 
 229
 00:16:51,252 --> 00:16:55,425
-Un video puro básico es también más complejo que un audio puro básico.
+Un video puro bÃ¡sico es tambiÃ©n mÃ¡s complejo que un audio puro bÃ¡sico.
 
 230
 00:16:55,425 --> 00:16:58,599
-La gran cantidad de data necesita una representación
+La gran cantidad de data necesita una representaciÃ³n
 
 231
 00:16:58,599 --> 00:17:02,106 
-más eficiente que el PCM linear que usamos para el audio.
+mÃ¡s eficiente que el PCM linear que usamos para el audio.
 
 232
 00:17:02,106 --> 00:17:06,705
-Además, el video electrónico viene casi enteramente de transmisiones por televisión,
+AdemÃ¡s, el video electrÃ³nico viene casi enteramente de transmisiones por televisiÃ³n,
 
 233
 00:17:06,705 --> 00:17:13,423
-y los comités de estándares para la televisión siempre se han preocupados por mantener compatibilidad.
+y los comitÃ©s de estÃ¡ndares para la televisiÃ³n siempre se han preocupados por mantener compatibilidad.
 
 234
 00:17:13,423 --> 00:17:17,559  
-Hasta hace sólo casi un año en los EEUU, un televisor blanco y negro de sesenta años
+Hasta hace sÃ³lo casi un aÃ±o en los EEUU, un televisor blanco y negro de sesenta aÃ±os
 
 235
 00:17:17,559 --> 00:17:21,038
-todavía podía mostrar una transmisión normal análoga de televisión.
+todavÃ­a podÃ­a mostrar una transmisiÃ³n normal anÃ¡loga de televisiÃ³n.
 
 236
 00:17:21,038 --> 00:17:23,879
-Eso era sin duda algo muy útil para la industria.
+Eso era sin duda algo muy Ãºtil para la industria.
 
 237
 00:17:23,879 --> 00:17:28,718
-Lo malo de la compatibilidad retroactiva es que una ves un detalle se convierte en estándar,
+Lo malo de la compatibilidad retroactiva es que una ves un detalle se convierte en estÃ¡ndar,
 
 238
 00:17:28,718 -->  00:17:30,985
-no se puede eliminar fácilmente.
+no se puede eliminar fÃ¡cilmente.
 
 239
 00:17:30,985 --> 00:17:37,305
-El vídeo electrónico nunca se ha recomenzado desde cero en la forma en que el audio sí se ha reconstruido.
+El vÃ­deo electrÃ³nico nunca se ha recomenzado desde cero en la forma en que el audio sÃ­ se ha reconstruido.
 
 240
 00:17:37,305 --> 00:17:43,958
-Sesenta años de cambios necesitados por una tecnología obsoleta de una era antigua
+Sesenta aÃ±os de cambios necesitados por una tecnologÃ­a obsoleta de una era antigua
 
 241
 00:17:43,958 --> 00:17:50,102
-se han acumulado en grande, y ya que los estándares digitales también provienen de la industria de televisión,
+se han acumulado en grande, y ya que los estÃ¡ndares digitales tambiÃ©n provienen de la industria de televisiÃ³n,
 
 242
 00:17:50,102 --> 00:17:54,664
-todos estos cambios se han transferido a los estándares digitales también.
+todos estos cambios se han transferido a los estÃ¡ndares digitales tambiÃ©n.
 
 243
 00:17:54,664 --> 00:18:00,022
-Para resumir, hay muchos más detalles envueltos en un video digital que los que hay con audio.
+Para resumir, hay muchos mÃ¡s detalles envueltos en un video digital que los que hay con audio.
 
 244
 00:18:00,022 --> 00:18:05,592
-No hay manera de cubrirlos todos aquí, así que hablaremos de los fundamentos principales.
+No hay manera de cubrirlos todos aquÃ­, asÃ­ que hablaremos de los fundamentos principales.
 
 245
 00:18:06,036 --> 00:18:10,857
-El parámetro más obvio del video puro es el ancho y la altura de la imagen en pixeles.
+El parÃ¡metro mÃ¡s obvio del video puro es el ancho y la altura de la imagen en pixeles.
 
 246
 00:18:10,857 --> 00:18:15,882
@@ -984,43 +984,43 @@ Por tan simple como suene, las dimenciones solas en realidad no especifican
 
 247
 00:18:15,882 --> 00:18:22,016
-el ancho y alto absoluto de una imagen, ya que la mayoría de los videos no usan pixeles cuadrados.
+el ancho y alto absoluto de una imagen, ya que la mayorÃ­a de los videos no usan pixeles cuadrados.
 
 248
 00:18:22,016 --> 00:18:25,005
-El número de trazos por linea en una imagen de video para transmisión se hizo fija,
+El nÃºmero de trazos por linea en una imagen de video para transmisiÃ³n se hizo fija,
 
 249
 00:18:25,005 --> 00:18:29,021
-pero el número de pixeles horizontales dependía de la banda de ancho del canal de TV.
+pero el nÃºmero de pixeles horizontales dependÃ­a de la banda de ancho del canal de TV.
 
 250
 00:18:29,021 --> 00:18:31,945
-La resolución horizontal podía resultar en pixeles que eran más estrechos
+La resoluciÃ³n horizontal podÃ­a resultar en pixeles que eran mÃ¡s estrechos
 
 251
 00:18:31,945 --> 00:18:35,489
-o más anchos que el espacio entre las líneas de trazo en el televisor.
+o mÃ¡s anchos que el espacio entre las lÃ­neas de trazo en el televisor.
 
 252
 00:18:35,489 --> 00:18:38,395
-Varios estándares han especificado que los videos convertidos digitalmente
+Varios estÃ¡ndares han especificado que los videos convertidos digitalmente
 
 253
 00:18:38,395 --> 00:18:41,902
-deben reflejar la resolución de la fuente análoga original,
+deben reflejar la resoluciÃ³n de la fuente anÃ¡loga original,
 
 254
 00:18:41,902 --> 00:18:45,566
-por lo que una gran cantidad de video digital también usa pixeles que no son cuadrados.
+por lo que una gran cantidad de video digital tambiÃ©n usa pixeles que no son cuadrados.
 
 255
 00:18:45,566 --> 00:18:49,924
-Por ejemplo, un DVD normal NTSC con aspecto 4:3 está codificado típicamente
+Por ejemplo, un DVD normal NTSC con aspecto 4:3 estÃ¡ codificado tÃ­picamente
 
 256
 00:18:49,924 --> 00:18:55,374
-con una resolució de 704 por 480, que es un aspecto mayor que 4:3.
+con una resoluciÃ³ de 704 por 480, que es un aspecto mayor que 4:3.
 
 257
 00:18:55,374 --> 00:18:59,640
@@ -1028,19 +1028,19 @@ En este caso, a los pixeles se les asigna un aspecto de 10:11,
 
 258
 00:18:59,640 --> 00:19:04,553
-haciéndolos más altos que anchos y reduciento la imagen horizontalmente hasta el aspecto correcto.
+haciÃ©ndolos mÃ¡s altos que anchos y reduciento la imagen horizontalmente hasta el aspecto correcto.
 
 259
 00:19:04,553 --> 00:19:09,800
-Esa imagen debe ser re-muestreada (re-sampled) para adaptarse a una proyección digital con pixeles cuadrados.
+Esa imagen debe ser re-muestreada (re-sampled) para adaptarse a una proyecciÃ³n digital con pixeles cuadrados.
 
 260
 00:19:10,253 -->  00:19:15,287
-El segundo parámetro obvio de video es el frame rate: la cantidad de imágenes por segundo.
+El segundo parÃ¡metro obvio de video es el frame rate: la cantidad de imÃ¡genes por segundo.
 
 261
 00:19:15,287 --> 00:19:19,655
-Varios frame rates estándares se usan comúnmente.  El video digital, por lo general,
+Varios frame rates estÃ¡ndares se usan comÃºnmente.  El video digital, por lo general,
 
 262
 00:19:19,655 --> 00:19:23,689
@@ -1056,55 +1056,55 @@ Mientras mayor es el frame rate, mejor es el flujo del video; con esto llegamos 
 
 265
 00:19:32,998 --> 00:19:37,967
-En los primeros días de transmisión de video, muchos ingenieros buscaban el frame rate más rapido posible
+En los primeros dÃ­as de transmisiÃ³n de video, muchos ingenieros buscaban el frame rate mÃ¡s rapido posible
 
 266
 00:19:37,967 --> 00:19:42,075
-para mejorar el flujo de video y minimizar el “parpadeo” en televisores de tubo (CRTs).
+para mejorar el flujo de video y minimizar el Â“parpadeoÂ” en televisores de tubo (CRTs).
 
 267
 00:19:42,075 --> 00:19:45,277
-Estaban bajo presión para usar el menor ancho de banda posible
+Estaban bajo presiÃ³n para usar el menor ancho de banda posible
 
 268
 00:19:45,277 --> 00:19:48,182
-para la mayor resolución y el frame rate más veloz.
+para la mayor resoluciÃ³n y el frame rate mÃ¡s veloz.
 
 269
 00:19:48,182 --> 00:19:51,208
-Su solución fue el entrelazar el video para que las líneas pares se enviaran en un paso
+Su soluciÃ³n fue el entrelazar el video para que las lÃ­neas pares se enviaran en un paso
 
 270
 00:19:51,208 --> 00:19:54,826
-y las línes impares se enviaran en el próximo paso.
+y las lÃ­nes impares se enviaran en el prÃ³ximo paso.
 
 271
 00:19:54,826 --> 00:19:59,961
-Cada paso se llama un campo y dos campos más o menos producen una imagen completa.
+Cada paso se llama un campo y dos campos mÃ¡s o menos producen una imagen completa.
 
 272
 00:19:59,961 --> 00:20:05,319
-“Más o menos” porque los campos no son en realidad parte de la misma imagen original.
+Â“MÃ¡s o menosÂ” porque los campos no son en realidad parte de la misma imagen original.
 
 273
 00:20:05,319 --> 00:20:10,797
-En una imagen de 60 campos/segundo, el frame rate de la imagen original es 60 imágenes por segundo,
+En una imagen de 60 campos/segundo, el frame rate de la imagen original es 60 imÃ¡genes por segundo,
 
 274
 00:20:10,797 --> 00:20:15,386
-y la mitad de cada imagen – una de cada dos líneas – simplemente se descarta.
+y la mitad de cada imagen Â– una de cada dos lÃ­neas Â– simplemente se descarta.
 
 275
 00:20:15,386 --> 00:20:20,272
-Por esta razón no se puede desenlazar un video combinando dos campos en uno;
+Por esta razÃ³n no se puede desenlazar un video combinando dos campos en uno;
 
 276
 00:20:20,272 --> 00:20:23,039
-ya que no provienen de la misma imagen de por sí.
+ya que no provienen de la misma imagen de por sÃ­.
 
 277
 00:20:24,047 --> 00:20:29,683
-El tubo de rayos catódicos (CRT) era la única tecnología disponible durante la mayoría de la historia del video.
+El tubo de rayos catÃ³dicos (CRT) era la Ãºnica tecnologÃ­a disponible durante la mayorÃ­a de la historia del video.
 
 278
 00:20:29,683 --> 00:20:32,949
@@ -1116,35 +1116,35 @@ voltaje de entrada elevado a la 2.5va potencia.
 
 280
 00:20:36,585 --> 00:20:43,821
-Este exponente, 2.5, es un gamma designado, y se le llama comúnmente el gamma de exposición.
+Este exponente, 2.5, es un gamma designado, y se le llama comÃºnmente el gamma de exposiciÃ³n.
 
 281
 00:20:43,821 --> 00:20:50,493
-Las cámaras, sin embargo, son lineares, y si alimentas a un CRT con una señal linear de entrada, se verá algo así.
+Las cÃ¡maras, sin embargo, son lineares, y si alimentas a un CRT con una seÃ±al linear de entrada, se verÃ¡ algo asÃ­.
 
 282
 00:20:51,270 --> 00:20:56,637
-Ya que originalmente habían muy pocas cámaras, y muy costosas, 
+Ya que originalmente habÃ­an muy pocas cÃ¡maras, y muy costosas, 
 
 283
 00:20:56,637 --> 00:21:01,634
-y se esperaba con suerte que surgieran muchos equipos de televisión bajos en costo,
+y se esperaba con suerte que surgieran muchos equipos de televisiÃ³n bajos en costo,
 
 284
 00:21:01,634 --> 00:21:08,222
-los ingenieros decidieron añadir correción de gamma a las cámaras y no a los televisores.
+los ingenieros decidieron aÃ±adir correciÃ³n de gamma a las cÃ¡maras y no a los televisores.
 
 285
 00:21:08,222 --> 00:21:13,062
-Así, un video transmitido por ondas de aire tendría una intensidad no-linear igual al inverso
+AsÃ­, un video transmitido por ondas de aire tendrÃ­a una intensidad no-linear igual al inverso
 
 286
 00:21:13,062 --> 00:21:18,271
-del exponente de gamma del televisor, y una vez que la señal de una cámara se expusiera en el TV,
+del exponente de gamma del televisor, y una vez que la seÃ±al de una cÃ¡mara se expusiera en el TV,
 
 287
 00:21:18,271 --> 00:21:23,305
-la comunicación del sistema desde la cámara hacia el televisor volvería a ser linear.
+la comunicaciÃ³n del sistema desde la cÃ¡mara hacia el televisor volverÃ­a a ser linear.
 
 288
 00:21:23,777 --> 00:21:25,118
@@ -1152,31 +1152,31 @@ Casi.
 
 289
 00:21:30,393 --> 00:21:33,113
-También hubo otras alteraciones.
+TambiÃ©n hubo otras alteraciones.
 
 290
 00:21:33,113 --> 00:21:40,442
-Una cámara de televisión usa un exponente de gamma que es en realidad 2.2 en vez de 2.5.
+Una cÃ¡mara de televisiÃ³n usa un exponente de gamma que es en realidad 2.2 en vez de 2.5.
 
 291
 00:21:40,442 --> 00:21:43,754
-Esto es una correción para ver televisión en un ambiente opaco.
+Esto es una correciÃ³n para ver televisiÃ³n en un ambiente opaco.
 
 292
 00:21:43,754 --> 00:21:48,279
-Además, la curva exponencial se transiciona a una rampa linear cerca del color negro.
+AdemÃ¡s, la curva exponencial se transiciona a una rampa linear cerca del color negro.
 
 293
 00:21:48,279 --> 00:21:52,360
-Esto es una alteración antigua para suprimir el sonido del sensor de la cámara.
+Esto es una alteraciÃ³n antigua para suprimir el sonido del sensor de la cÃ¡mara.
 
 294
 00:21:54,941 --> 00:21:57,347
-La corrección de gamma tambien tuvo un beneficio afortunado.
+La correcciÃ³n de gamma tambien tuvo un beneficio afortunado.
 
 295
 00:21:57,347 --> 00:22:02,214
-Sucede que el ojo humano tiene una percepción de gamma de alrededor de 3.0.
+Sucede que el ojo humano tiene una percepciÃ³n de gamma de alrededor de 3.0.
 
 296
 00:22:02,214 --> 00:22:05,962
@@ -1184,23 +1184,23 @@ Esto es relativamente cerca de la gamma de un CRT, 2.5.
 
 297
 00:22:05,962 --> 00:22:10,607
-Una imagen con corrección de gamma dedica una mayor resolución a las intensidades más bajas
+Una imagen con correcciÃ³n de gamma dedica una mayor resoluciÃ³n a las intensidades mÃ¡s bajas
 
 298
 00:22:10,607 --> 00:22:14,336
-para las cuales el ojo tiene una más fina discriminación de intensidad
+para las cuales el ojo tiene una mÃ¡s fina discriminaciÃ³n de intensidad
 
 299
 00:22:14,336 --> 00:22:18,222
-y puede usar la resolución disponible más eficientemente.
+y puede usar la resoluciÃ³n disponible mÃ¡s eficientemente.
 
 300
 00:22:18,222 --> 00:22:22,784
-Aunque los CRTs están desapareciendo actualmente, el monitor de una computadora RGB estándar
+Aunque los CRTs estÃ¡n desapareciendo actualmente, el monitor de una computadora RGB estÃ¡ndar
 
 301
 00:22:22,784 --> 00:22:28,419
-todavía usa una curva de intensidad no-linear como la de un televisor, con una rampa linear cerca del color negro,
+todavÃ­a usa una curva de intensidad no-linear como la de un televisor, con una rampa linear cerca del color negro,
 
 302
 00:22:28,419 --> 00:22:32,491
@@ -1216,11 +1216,11 @@ El ojo humano tiene tres canales aparentes de color: rojo, verde, y azul,
 
 305
 00:22:41,790 --> 00:22:47,407
-y la mayoría de los monitores usan estos tres colores como aditivos primarios para producir un registro completo de color.
+y la mayorÃ­a de los monitores usan estos tres colores como aditivos primarios para producir un registro completo de color.
 
 306
 00:22:49,258 --> 00:22:54,190
-Los pigmentos primarios de impresión son cyan, magenta, y amarillo por la misma razón;
+Los pigmentos primarios de impresiÃ³n son cyan, magenta, y amarillo por la misma razÃ³n;
 
 307
 00:22:54,190 --> 00:22:59,381
@@ -1236,23 +1236,23 @@ El video se puede y se suele representar con canales rojo, verde, y azul,
 
 310
 00:23:10,919 --> 00:23:17,211
-pero el video RGB (red, green, blue) no es típico.  El ojo humano es más sensitivo a la luminosidad que a un color,
+pero el video RGB (red, green, blue) no es tÃ­pico.  El ojo humano es mÃ¡s sensitivo a la luminosidad que a un color,
 
 311
 00:23:17,211 --> 00:23:21,329
-y el RGB tiende a distribuir la energia de una imagen a través de los tres canales de color.
+y el RGB tiende a distribuir la energia de una imagen a travÃ©s de los tres canales de color.
 
 312
 00:23:21,329 --> 00:23:25,326
-En otras palabras, el plano rojo se ve como una versión roja de la imagen original,
+En otras palabras, el plano rojo se ve como una versiÃ³n roja de la imagen original,
 
 313
 00:23:25,326 --> 00:23:28,769
-y el plano verde se ve como una versió verde de la imagen original,
+y el plano verde se ve como una versiÃ³ verde de la imagen original,
 
 314
 00:23:28,769 --> 00:23:32,063
-y el plano azul se ve como una versión azul de la imagen original.
+y el plano azul se ve como una versiÃ³n azul de la imagen original.
 
 315
 00:23:32,063 --> 00:23:35,705
@@ -1260,51 +1260,51 @@ Blanco y negro multiplicado por tres.  No es eficiente.
 
 316
 00:23:35,706 --> 00:23:39,438
-Por esas razones y por que, bueno, la televisión comenzó en blanco y negro después de todo,
+Por esas razones y por que, bueno, la televisiÃ³n comenzÃ³ en blanco y negro despuÃ©s de todo,
 
 317
 00:23:39,438 --> 00:23:45,017
-el video se representa usualmente como un canal luma de alta resolución,
+el video se representa usualmente como un canal luma de alta resoluciÃ³n,
 
 318
 00:23:45,017 --> 00:23:51,041
-uno de blanco y negro, y otros canales croma adicionales de baja resolución.
+uno de blanco y negro, y otros canales croma adicionales de baja resoluciÃ³n.
 
 319
 00:23:51,041 --> 00:23:57,074
-El canal luma, “Y”, se produce al medir y luego añadir las señales rojas, verdes y azules.
+El canal luma, Â“YÂ”, se produce al medir y luego aÃ±adir las seÃ±ales rojas, verdes y azules.
 
 320
 00:23:57,074 --> 00:24:01,867
-Los canales croma “U” y “V” se producen al restar la señal luma de la señal azul
+Los canales croma Â“UÂ” y Â“VÂ” se producen al restar la seÃ±al luma de la seÃ±al azul
 
 321
 00:24:01,867 --> 00:24:04,070
-y la señal luma de la señal roja.
+y la seÃ±al luma de la seÃ±al roja.
 
 322
 00:24:04,070 --> 00:24:11,750
-Cuando se escala el YUV, adaptado para video digital, es usualmente más correcto llamarlo Y'CbCr,
+Cuando se escala el YUV, adaptado para video digital, es usualmente mÃ¡s correcto llamarlo Y'CbCr,
 
 323
 00:24:11,750 --> 00:24:15,238
-ya que el término generico YUV se usa para describir
+ya que el tÃ©rmino generico YUV se usa para describir
 
 324
 00:24:15,238 --> 00:24:18,301
-todas las variantes análogas y digitales de este modelo de color.
+todas las variantes anÃ¡logas y digitales de este modelo de color.
 
 325
 00:24:18,912 --> 00:24:22,983
-Los canales croma “U” y “V” pueden tener la misma resolución que el canal Y,
+Los canales croma Â“UÂ” y Â“VÂ” pueden tener la misma resoluciÃ³n que el canal Y,
 
 326
 00:24:22,983 --> 00:24:28,674
-pero ya que el ojo humano tiene menos resolución espacial de color que resolución espacial de luminosidad,
+pero ya que el ojo humano tiene menos resoluciÃ³n espacial de color que resoluciÃ³n espacial de luminosidad,
 
 327
 00:24:28,674 --> 00:24:34,346
-la resolución baja por lo general se reduce a la mitad o a un cuarto en la dirección horizontal, vertical,
+la resoluciÃ³n baja por lo general se reduce a la mitad o a un cuarto en la direcciÃ³n horizontal, vertical,
 
 328
 00:24:34,346 --> 00:24:39,528
@@ -1312,7 +1312,7 @@ o en ambas, usualmente sin impactar la calidad visual de la imagen significativa
 
 329
 00:24:39,528 --> 00:24:43,942
-Prácticamente toda variante posible de subsampling se ha usado en algún momento u otro,
+PrÃ¡cticamente toda variante posible de subsampling se ha usado en algÃºn momento u otro,
 
 330
 00:24:43,942 --> 00:24:46,875
@@ -1324,19 +1324,19 @@ el video 4:4:4, que en realidad no es sub-muestreado (sub-sampled),
 
 332
 00:24:51,187 --> 00:24:56,711
-el video 4:2:2 en el que las resoluciones croma “U” y “V” se reducen a la mitad,
+el video 4:2:2 en el que las resoluciones croma Â“UÂ” y Â“VÂ” se reducen a la mitad,
 
 333
 00:24:56,711 --> 00:25:02,587
-y el más comun, el video 4:2:0, en el que las resoluciones horizontales y verticales
+y el mÃ¡s comun, el video 4:2:0, en el que las resoluciones horizontales y verticales
 
 334
 00:25:02,587 --> 00:25:08,897
-de los canales bajos se reducen a la mitad, resultando en planos U y V que son un cuarto del tamaño de Y.
+de los canales bajos se reducen a la mitad, resultando en planos U y V que son un cuarto del tamaÃ±o de Y.
 
 335
 00:25:08,897 --> 00:25:17,096
-Los términos 4:2:2, 4:2:0 y 4:1:1, no son descripciones completas de un subsampling croma.
+Los tÃ©rminos 4:2:2, 4:2:0 y 4:1:1, no son descripciones completas de un subsampling croma.
 
 336
 00:25:17,096 --> 00:25:21,186
@@ -1368,7 +1368,7 @@ El MPEG2 los posiciona entre lineas, pero alineados horizontalmente con cada dos
 
 343
 00:25:51,989 --> 00:25:57,106
-Formatos entrelazados complican las cosas un poco, resultando en un posicionamiento que es un poco extraño.
+Formatos entrelazados complican las cosas un poco, resultando en un posicionamiento que es un poco extraÃ±o.
 
 344
 00:25:57,106 --> 00:26:00,909
@@ -1376,23 +1376,23 @@ Y finalmente, el video PAL-DV, que siempre es entrelazado, posiciona los pixeles
 
 345
 00:26:00,909 --> 00:26:04,398
-en la misma posición que cada segundo pixel luma en la dirección horizontal,
+en la misma posiciÃ³n que cada segundo pixel luma en la direcciÃ³n horizontal,
 
 346
 00:26:04,398 --> 00:26:07,303
-y verticalmente alterna el canal croma en cada línea.
+y verticalmente alterna el canal croma en cada lÃ­nea.
 
 347
 00:26:07,683 --> 00:26:12,282
-Y esto es solamente video 4:2:0.  Dejaré los otros subsamplings como tarea para tí.
+Y esto es solamente video 4:2:0.  DejarÃ© los otros subsamplings como tarea para tÃ­.
 
 348
 00:26:12,282 --> 00:26:14,882
-Ya tienes la idea básica; continuemos con algo nuevo.
+Ya tienes la idea bÃ¡sica; continuemos con algo nuevo.
 
 349
 00:26:15,511 --> 00:26:21,128
-En el audio, siempre representamos múltiples canales en un stream PCM entrelazando los samples
+En el audio, siempre representamos mÃºltiples canales en un stream PCM entrelazando los samples
 
 350
 00:26:21,128 --> 00:26:26,383
@@ -1400,15 +1400,15 @@ de cada canal en orden.  El video usa ambos formatos que entrelazan los canales 
 
 351
 00:26:26,383 --> 00:26:30,584
-así como formatos planares que mantienen los pixeles de cada canal juntos en líneas separadas,
+asÃ­ como formatos planares que mantienen los pixeles de cada canal juntos en lÃ­neas separadas,
 
 352
 00:26:30,584 --> 00:26:35,415
-acumuladas en orden dentro de la imagen.  Hay al menos 50 formatos en estas dos categorías
+acumuladas en orden dentro de la imagen.  Hay al menos 50 formatos en estas dos categorÃ­as
 
 353
 00:26:35,415 --> 00:26:41,549
-con al menos diez o quince en uso común.  Cada subsampling croma y profundidad de bit requieren
+con al menos diez o quince en uso comÃºn.  Cada subsampling croma y profundidad de bit requieren
 
 354
 00:26:41,549 --> 00:26:46,574
@@ -1420,7 +1420,7 @@ hay por lo general varios formatos equivalentes que consisten de ordenes trivial
 
 356
 00:26:50,858 --> 00:26:55,966
-de arreglos de canales debidos a costumbres antiguas o a algún tipo de equipo en particular
+de arreglos de canales debidos a costumbres antiguas o a algÃºn tipo de equipo en particular
 
 357
 00:26:55,966 --> 00:27:00,352
@@ -1428,7 +1428,7 @@ o algunas veces simplemente a un buen antojo.
 
 358
 00:27:00,352 --> 00:27:04,692
-Los formatos de pixeles se describen con un nombre único en código “fourcc”.
+Los formatos de pixeles se describen con un nombre Ãºnico en cÃ³digo Â“fourccÂ”.
 
 359
 00:27:04,692 --> 00:27:08,115
@@ -1436,11 +1436,11 @@ Hay muchos de estos nombres y no tiene sentido ir por cada uno de ellos ahora mi
 
 360
 00:27:08,115 --> 00:27:13,704
-Google es tu amigo.  Ten en mente que los códigos “fourcc” para video puro especifican el arreglo de pixeles
+Google es tu amigo.  Ten en mente que los cÃ³digos Â“fourccÂ” para video puro especifican el arreglo de pixeles
 
 361
 00:27:13,704 --> 00:27:20,339
-y el subsampling croma, pero en general no especifican nada en específico sobre posicionamiento de colores.
+y el subsampling croma, pero en general no especifican nada en especÃ­fico sobre posicionamiento de colores.
 
 362
 00:27:20,339 --> 00:27:25,807
@@ -1452,7 +1452,7 @@ y una de muchas posibles definiciones de espacio de color YUV.
 
 364
 00:27:29,472 --> 00:27:33,913
-Esto concluye nuestro recorrido no muy corto y aún así muy incompleto sobre video.
+Esto concluye nuestro recorrido no muy corto y aÃºn asÃ­ muy incompleto sobre video.
 
 365
 00:27:33,913 --> 00:27:38,651
@@ -1468,7 +1468,7 @@ Los detalles importan, de gran manera, cuando toca escribir programas de softwar
 
 368
 00:27:46,452 --> 00:27:52,086
-pero por ahora estoy satisfecho de que tú ya estás informado sobre los asuntos relevantes.
+pero por ahora estoy satisfecho de que tÃº ya estÃ¡s informado sobre los asuntos relevantes.
 
 369
 00:27:55,640 --> 00:27:59,230
@@ -1476,7 +1476,7 @@ Entonces.  Tenemos data de audio.  Tenemos data de video.
 
 370
 00:27:59,230 --> 00:28:03,246
-Lo que falta es incluir data tradicional y algo de ingeniería simple
+Lo que falta es incluir data tradicional y algo de ingenierÃ­a simple
 
 371
 00:28:03,246 --> 00:28:07,410
@@ -1488,11 +1488,11 @@ Trozos de data de audio y de video no tienen una estructura visible externa,
 
 373
 00:28:11,768 -->  00:28:15,173
-pero su tamaño es uniforme.  Podemos simplemente “amarrarlos”
+pero su tamaÃ±o es uniforme.  Podemos simplemente Â“amarrarlosÂ”
 
 374
 00:28:15,173 --> 00:28:18,097
-en un orden rígido y predeterminado para uso en streaming y almacenamiento,
+en un orden rÃ­gido y predeterminado para uso en streaming y almacenamiento,
 
 375
 00:28:18,097 --> 00:28:21,040
@@ -1500,7 +1500,7 @@ y algunos programas simples hacen precisamente esto.
 
 376
 00:28:21,040 --> 00:28:24,195
-Las imágenes comprimidas, sin embargo, no tienen necesariamente un tamaño predecible,
+Las imÃ¡genes comprimidas, sin embargo, no tienen necesariamente un tamaÃ±o predecible,
 
 377
 00:28:24,195 --> 00:28:29,405
@@ -1508,35 +1508,35 @@ y usualmente queremos algo de flexibilidad para usar una variedad de formatos de
 
 378
 00:28:29,405 --> 00:28:34,281
-Si amarramos data al azar, podemos perder los límites que separan a las imágenes
+Si amarramos data al azar, podemos perder los lÃ­mites que separan a las imÃ¡genes
 
 379
 00:28:34,281 --> 00:28:37,871
-y no poder saber cuál data pertenece a cuál proyecto.
+y no poder saber cuÃ¡l data pertenece a cuÃ¡l proyecto.
 
 380
 00:28:37,871 --> 00:28:42,192
-Un proyecto necesita una estructura generalizada para ser útíl generalmente.
+Un proyecto necesita una estructura generalizada para ser ÃºtÃ­l generalmente.
 
 381
 00:28:42,192 --> 00:28:46,606
-Además de nuestra data de señal, también tenemos parámetros de PCM y de video.
+AdemÃ¡s de nuestra data de seÃ±al, tambiÃ©n tenemos parÃ¡metros de PCM y de video.
 
 382
 00:28:46,606 --> 00:28:49,752
-También probablemente hay mucha metadata con la que trabajar,
+TambiÃ©n probablemente hay mucha metadata con la que trabajar,
 
 383
 00:28:49,752 --> 00:28:55,415
-como etiquetas de capítulos y subtítulos de audio y video, componentes esenciales de multimedia.
+como etiquetas de capÃ­tulos y subtÃ­tulos de audio y video, componentes esenciales de multimedia.
 
 384
 00:28:55,415 --> 00:29:01,633
-Tiene sentido colocar esta metadata – o sea, data sobre la data – en el proyecto mismo de multimedia.
+Tiene sentido colocar esta metadata Â– o sea, data sobre la data Â– en el proyecto mismo de multimedia.
 
 385
 00:29:01,633 --> 00:29:06,445
-El trabajo de un contenedor es almacenar y estructurar data que no tiene forma específica.
+El trabajo de un contenedor es almacenar y estructurar data que no tiene forma especÃ­fica.
 
 386
 00:29:06,445 --> 00:29:09,221
@@ -1544,11 +1544,11 @@ Los contenedores proveen la estructura para los cuerpos de data,
 
 387
 00:29:09,221 --> 00:29:12,015
-entrelazan e identifican mútiples fuentes de data,
+entrelazan e identifican mÃºtiples fuentes de data,
 
 388
 00:29:12,015 --> 00:29:15,337
-proveen imformación sobre tiempo, y almacenan la metadata necesaria
+proveen imformaciÃ³n sobre tiempo, y almacenan la metadata necesaria
 
 389
 00:29:15,337 --> 00:29:19,140
@@ -1568,7 +1568,7 @@ En los pasados treinta minutos, hemos aprendido sobre audio digital, video,
 
 393
 00:29:32,391 --> 00:29:35,435
-algo de historia, algo de matemática, y un poco de ingeniería.
+algo de historia, algo de matemÃ¡tica, y un poco de ingenierÃ­a.
 
 394
 00:29:35,435 --> 00:29:39,377
@@ -1576,8 +1576,8 @@ Solamente hemos tocado la superficie de estos temas, pero es tiempo de un buen m
 
 395
 00:29:41,107 --> 00:29:45,373
-Hay mucho más de qué hablar, así que espero que me acompañes de nuevo en nuestro próximo episodio.
+Hay mucho mÃ¡s de quÃ© hablar, asÃ­ que espero que me acompaÃ±es de nuevo en nuestro prÃ³ximo episodio.
 
 396
 00:29:45,373 --> 00:29:47,159
-Hasta entonces, ¡buena suerte!
+Hasta entonces, Â¡buena suerte!
