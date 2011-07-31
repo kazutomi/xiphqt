@@ -1,0 +1,28 @@
+in frontend mode status is printed in json format and should be parsed
+one line at a time, example line:
+ {"duration": 28.953000, "position": 1.76, "audio_kbps":  59, "video_kbps": 292, "remaining": 15.45}
+last line indicates result, if all went well you get:
+ {"result": "ok"}
+if input could not be parsed at all you get:
+ {"result": "file does not exist or has unknown data format."}
+
+example in python to parse ffmpeg2theora in frontend mode:
+
+'''
+import os
+import simplejson
+
+cmd = "ffmpeg2theora  --frontend ..."
+f_stdout, f_stdin, f_stderr = os.popen3(cmd)
+info = {}
+line = f_stdout.readline().strip()
+while line:
+    try:
+        info = simplejson.loads(line)
+
+        #do something with info dict here
+    except:
+        pass
+    line = f_stdout.readline().strip()
+'''
+
