@@ -67,6 +67,12 @@
 		project page</a>) uses Speex for in-game chat.
 	</dd>
 
+        <dt><a href='http://media.io/'>media.io</a></dt>
+	<dd>
+		media.io is an online media format conversion service.
+		It supports Speex files as input.
+	</dd>
+
 	<dt><a href='http://mumble.sourceforge.net/'>Mumble</a></dt>
 	<dd>
 		Mumble is a voice chat application for gamers. Includes 
