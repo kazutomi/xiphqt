@@ -30,7 +30,7 @@
 
 	<dt><a href="http://www.openwengo.org/">Wengo</a></dt>
 	<dd>
-		Wengo is a Skype-line VoIP service with an open client that uses Speex wideband.
+		Wengo is a Skype-like VoIP service with an open client that uses Speex wideband.
 	</dd>
 
 	<dt><a href="http://www.freeswitch.org/">FreeSWITCH</a></dt>
