@@ -639,6 +639,10 @@ public final class VorbisDecoder extends Output {
 		float[] angleVector;
 		float m, a, newM, newA;
 		
+		if (magnitude == null) {
+			return;
+		}
+
 		for (int i = magnitude.length - 1; i >= 0; i--) {
 			magnitudeVector = residue[magnitude[i]];
 			angleVector = residue[angle[i]];
