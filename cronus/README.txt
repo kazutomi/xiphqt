@@ -16,7 +16,7 @@
 	- better decoders with better performance.
  	- much lower memory consumption:
  	 100 Mbyte instead of 140 Mbyte after playing 10 minutes
- 	 of a 640 * 320 Theora video (BigBugBunny.ogv).
+ 	 of a 640 * 320 Theora video (BigBuckBunny.ogv).
  	
  	See:
  	https://svn.xiph.org/trunk/cronus/src/com/meviatronic/zeus/helen/README.txt
