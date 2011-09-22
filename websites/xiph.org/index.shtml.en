@@ -112,6 +112,7 @@
 				<li><a href="http://flac.sourceforge.net">FLAC:</a> Free Lossless Audio Codec</li>
 				<li><a href="http://speex.org/">Speex:</a> Speech codec</li>
 				<li><a href="http://celt-codec.org/">CELT:</a> Very low-delay audio codec</li>
+				<li><a href="http://opus-codec.org/">Opus:</a> IETF Interactive speech/audio codec</li>
 				<li><a href="http://wiki.xiph.org/Metadata">Ogg Metadata:</a> Arbitrary metadata format</li>
 			</ul>
 		</div>
