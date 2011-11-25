@@ -17,7 +17,7 @@
 
 <h5>Bugs</h5>
 
-<p>The official ways to report bugs are to send a message to the icecast-dev <a href="mailinglist.php">mailing list</a>, submit a bug report to <a href="http://bugs.xiph.org/">http://bugs.xiph.org/</a> or alternately  go to the <a href="irc://irc.freenode.net/icecast/">#icecast</a> channel on irc.freenode.net.  Please submit this information in one of these ways.</p>
+<p>The official ways to report bugs are to send a message to the icecast-dev <a href="mailinglist.php">mailing list</a>, submit a bug report to <a href="https://trac.xiph.org/">https://trac.xiph.org/</a> or alternately  go to the <a href="irc://irc.freenode.net/icecast/">#icecast</a> channel on irc.freenode.net.  Please submit this information in one of these ways.</p>
 
 <h5>E-mail</h5>
 <p>Email the webmaster if you notice a broken link, outdated or inaccurate information, or another flaw on icecast.org.  For questions, use the mailing list above.</p>
