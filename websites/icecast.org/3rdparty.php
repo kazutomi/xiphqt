@@ -10,18 +10,22 @@
 <p>These source clients are known to work with icecast2</p>
 <table border=1 cellpadding=5 cellspacing=0 width=90% bordercolor="#000000">
 <tr><td><b>Application</b></td><td><b>Platform</b></td><td><b>Download Link</b></td></tr>
-<tr><td>ices</td><td>Unix</td><td><a href="http://www.icecast.org/ices.php">http://www.icecast.org/ices.php</a></td></tr>
-<tr><td>Oddcast</td><td>Windows 98/NT/2000/XP</td><td><a href="http://www.oddsock.org/tools">http://www.oddsock.org/tools</a></td></tr>
-<tr><td>Muse</td><td>Unix</td><td><a href="http://muse.dyne.org">http://muse.dyne.org</a></td></tr>
-<tr><td>Darkice</td><td>Unix</td><td><a href="http://darkice.sourceforge.net/">http://darkice.sourceforge.net/</a></td></tr>
-<tr><td>SAM2</td><td>Windows 98/NT/2000/XP</td><td><a href="http://www.spacialaudio.com">http://www.spacialaudio.com</a></td></tr>
-<tr><td>ezstream</td><td>Windows 98/NT/2000/XP Unix</td><td><a href="http://www.icecast.org/ezstream.php">http://www.icecast.org/ezstream.php</a></td></tr>
+<tr><td>ices</td><td>Linux/Unix</td><td><a href="http://www.icecast.org/ices.php">http://www.icecast.org/ices.php</a></td></tr>
+<tr><td>Oddcast</td><td>Windows</td><td><a href="http://www.oddsock.org/tools">http://www.oddsock.org/tools</a></td></tr>
+<tr><td>Muse</td><td>Linux/Unix</td><td><a href="http://muse.dyne.org">http://muse.dyne.org</a></td></tr>
+<tr><td>Darkice</td><td>Linux/Unix</td><td><a href="http://darkice.sourceforge.net/">http://darkice.sourceforge.net/</a></td></tr>
+<tr><td>SAM2</td><td>Windows</td><td><a href="http://www.spacialaudio.com">http://www.spacialaudio.com</a></td></tr>
+<tr><td>ezstream</td><td>Windows</td><td><a href="http://www.icecast.org/ezstream.php">http://www.icecast.org/ezstream.php</a></td></tr>
 <tr><td>Nicecast</td><td>Mac OSX</td><td><a href="http://www.rogueamoeba.com/nicecast/">http://www.rogueamoeba.com/nicecast/</a></td></tr>
-<tr><td>IceGenerator</td><td>Unix</td><td><a href="http://sourceforge.net/projects/icegenerator">http://sourceforge.net/projects/icegenerator</a></td></tr>
+<tr><td>IceGenerator</td><td>Linux/Unix</td><td><a href="http://sourceforge.net/projects/icegenerator">http://sourceforge.net/projects/icegenerator</a></td></tr>
 <tr><td>Orban Opticodec-PC</td><td>Windows</td><td><a href="http://www.orban.com/orban/products/stream/1010_overview.html">http://www.orban.com/</a></td></tr>
 <tr><td>freej</td><td>Unix</td><td><a href="http://freej.org">http://freej.org/</a></td></tr>
-<tr><td>Traktor DJ Studio 3</td><td>MacOS X, Windows XP</td><td><a href="http://www.native-instruments.com/index.php?id=traktor3_us">Native Instruments</a></td></tr>
-<tr><td>Savonet/Liquidsoap</td><td>Unix, Windows</td><td><a href="http://savonet.sourceforge.net/">http://savonet.sourceforge.net/</a></td></tr>
+<tr><td>Traktor DJ Studio 3</td><td>MacOS X, Windows</td><td><a href="http://www.native-instruments.com/index.php?id=traktor3_us">Native Instruments</a></td></tr>
+<tr><td>Savonet/Liquidsoap</td><td>Linux/Unix, Windows</td><td><a href="http://savonet.sourceforge.net/">http://savonet.sourceforge.net/</a></td></tr>
+<tr><td>DeeFuzzer</td><td>Linux/Unix</td><a href="http://svn.parisson.org/deefuzzer">http://svn.parisson.org/deefuzzer</a></td></tr>
+<tr><td>RoarAudio</td><td>Linux/Unix, Windows</td><a href="http://roaraudio.keep-cool.org/roaraudio.html">http://roaraudio.keep-cool.org/roaraudio.html</a></td></tr>
+<tr><td>RoarAudio PlayList Daemon</td><td>Linux/Unix</td><a href="http://roaraudio.keep-cool.org/rpld.html">http://roaraudio.keep-cool.org/rpld.html</a></td></tr>
+<tr><td>butt - broadcast using this tool</td><td>Linux/Unix, Mac OSX, Windows</td><a href="http://butt.sourceforge.net/">http://butt.sourceforge.net/</a></td></tr>
 </table>
 </center>
 </div>
