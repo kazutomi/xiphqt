@@ -30,6 +30,12 @@
 <p>
 * <a href="http://www.radiolivre.org/icecast">Montando um Servidor de Webradio (Portuguese)</a>
 </p>
+<p>
+* <a href="https://docs.indymedia.org/Sysadmin/IceCastPtBr">Guide on how to use and admin Icecast2 (Portuguese)</a>
+</p>
+<p>
+* <a href="https://docs.indymedia.org/Sysadmin/WebTVPt">HowTo - Video streaming to an Icecast2 server (Portuguese)</a>
+</p>
 </div>
 <div class="roundbottom">
 <img src="/images/corner_bottomleft.jpg" class="corner" style="display: none" />
