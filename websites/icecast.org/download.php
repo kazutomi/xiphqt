@@ -48,7 +48,7 @@ Older releases can be found <a href="http://downloads.xiph.org/releases/icecast"
 </tr>
 <tr><td>shout-python</td><td>Python bindings for libshout 2</td><td><a href="http://downloads.us.xiph.org/releases/libshout/shout-python-0.2.1.tar.gz">shout-python-0.2.1.tar.gz</a></td></tr>
 <tr><td>shout-perl</td><td>Perl bindings for libshout 2</td><td><a href="http://downloads.us.xiph.org/releases/libshout/Shout-2.1.tar.gz">Shout-2.1.tar.gz</a></td></tr>
-<tr><td>ruby-shout</td><td>Ruby bindings for libshout 2</td><td><a href="https://github.com/niko/ruby-shout">https://github.com/niko/ruby-shout</a><a href="http://www.dingoskidneys.com/~jaredj/shout.html">http://www.dingoskidneys.com/~jaredj/shout.html</a></td></tr>
+<tr><td>ruby-shout</td><td>Ruby bindings for libshout 2</td><td><a href="https://github.com/niko/ruby-shout">https://github.com/niko/ruby-shout</a> <a href="http://www.dingoskidneys.com/~jaredj/shout.html">http://www.dingoskidneys.com/~jaredj/shout.html</a></td></tr>
 <tr><td>ocaml-shout</td><td>OCaml bindings for libshout2</td><td><a href="http://savonet.sourceforge.net/">http://savonet.sourceforge.net/</a></td></tr>
 <tr><td>shoutpy</td><td>shoutpy uses Boost.Python to expose libshout 2 to Python, through a separately usable C++ wrapper<td><a href="http://dingoskidneys.com/shoutpy/">http://dingoskidneys.com/shoutpy/</a></td></tr>
 <tr><td>libshout-java</td><td>Java bindings for libshout<td><a href="http://benow.ca/index?page=project&project=libshout-java">http://benow.ca/index?page=project&project=libshout-java</a></td></tr>
@@ -96,7 +96,8 @@ All older releases can be found here:
 </div>
 </div>
 -->
-
+<!-- hiding this, source is still on mirror 
+     and it's been old and unsupported long enough
 <br><br>
 <div class="roundcont">
 <div class="roundtop">
@@ -117,5 +118,6 @@ We still provide download links to builds and utilities that we no longer suppor
 <img src="/images/corner_bottomleft.jpg" class="corner" style="display: none" />
 </div>
 </div>
+-->
 <br><br>
 <? include "common/footer.php"; ?>
