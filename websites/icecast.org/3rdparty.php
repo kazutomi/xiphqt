@@ -19,7 +19,7 @@
 <tr><td>Nicecast</td><td>Mac OSX</td><td><a href="http://www.rogueamoeba.com/nicecast/">http://www.rogueamoeba.com/nicecast/</a></td></tr>
 <tr><td>IceGenerator</td><td>Linux/Unix</td><td><a href="http://sourceforge.net/projects/icegenerator">http://sourceforge.net/projects/icegenerator</a></td></tr>
 <tr><td>Orban Opticodec-PC</td><td>Windows</td><td><a href="http://www.orban.com/orban/products/stream/1010_overview.html">http://www.orban.com/</a></td></tr>
-<tr><td>freej</td><td>Unix</td><td><a href="http://freej.org">http://freej.org/</a></td></tr>
+<tr><td>freej</td><td>Linux/Unix</td><td><a href="http://freej.org">http://freej.org/</a></td></tr>
 <tr><td>Traktor DJ Studio 3</td><td>MacOS X, Windows</td><td><a href="http://www.native-instruments.com/index.php?id=traktor3_us">Native Instruments</a></td></tr>
 <tr><td>Savonet/Liquidsoap</td><td>Linux/Unix, Windows</td><td><a href="http://savonet.sourceforge.net/">http://savonet.sourceforge.net/</a></td></tr>
 <tr><td>DeeFuzzer</td><td>Linux/Unix</td><td><a href="http://svn.parisson.org/deefuzzer">http://svn.parisson.org/deefuzzer</a></td></tr>
@@ -46,13 +46,13 @@
 <p>These media players are known to work with icecast2</p>
 <table border=1 cellpadding=5 cellspacing=0 width=90% bordercolor="#000000">
 <tr><td><b>Application</b></td><td><b>Platform</b></td><td><b>Download Link</b></td></tr>
-<tr><td>foobar2000 (mp3 + ogg vorbis)</td><td>Windows 98/NT/2000/XP</td><td><a href="http://www.foobar2000.org">http://www.foobar2000.org</a></td></tr>
-<tr><td>winamp 2.x, 5.x (Not 3.x)(mp3 + ogg vorbis)</td><td>Windows 98/NT/2000/XP</td><td><a href="http://www.winamp.com">http://www.winamp.com</a></td></tr>
-<tr><td>XMMS(mp3 + ogg vorbis)</td><td>Unix</td><td><a href="http://www.xmms.org">http://www.xmms.org</a></td></tr>
-<tr><td>Zinf(mp3 + ogg vorbis)</td><td>Unix/Windows</td><td><a href="http://zinf.sourceforge.net">http://zinf.sourceforge.net</a></td></tr>
-<tr><td>MPlayer</td><td>Windows 98/NT/2000/XP Unix Mac OSX</td><td><a href="http://www.mplayerhq.hu">http://www.mplayerhq.hu</a></td></tr>
-<tr><td>Xine</td><td>Unix</td><td><a href="http://www.xinehq.de">http://www.xinehq.de</a></td></tr>
-<tr><td>VLC</td><td> Windows 98/NT/2000/XP Unix Mac OSX</td><td><a href="http://www.videolan.org">http://www.videolan.org</a></td></tr>
+<tr><td>foobar2000 (mp3 + ogg vorbis)</td><td>Windows</td><td><a href="http://www.foobar2000.org">http://www.foobar2000.org</a></td></tr>
+<tr><td>winamp 2.x, 5.x (Not 3.x)(mp3 + ogg vorbis)</td><td>Windows</td><td><a href="http://www.winamp.com">http://www.winamp.com</a></td></tr>
+<tr><td>XMMS(mp3 + ogg vorbis)</td><td>Linux/Unix</td><td><a href="http://www.xmms.org">http://www.xmms.org</a></td></tr>
+<tr><td>Zinf(mp3 + ogg vorbis)</td><td>Linux/Unix, Windows</td><td><a href="http://zinf.sourceforge.net">http://zinf.sourceforge.net</a></td></tr>
+<tr><td>MPlayer</td><td>Linux/Unix, Windows, Mac OSX</td><td><a href="http://www.mplayerhq.hu">http://www.mplayerhq.hu</a></td></tr>
+<tr><td>Xine</td><td>Linux/Unix</td><td><a href="http://www.xinehq.de">http://www.xinehq.de</a></td></tr>
+<tr><td>VLC</td><td>Linux/Unix, Windows, Mac OSX</td><td><a href="http://www.videolan.org">http://www.videolan.org</a></td></tr>
 </table>
 </center>
 </div>
@@ -72,7 +72,7 @@
 <p>Miscellaneous other *stuff*</p>
 <table border=1 cellpadding=5 cellspacing=0 width=90% bordercolor="#000000">
 <tr><td><b>Application</b></td><td><b>Platform</b></td><td><b>Download Link</b></td></tr>
-<tr><td>CAJUN</td><td>???</td><td><a href="http://www.cajun.nu/">http://www.cajun.nu/</a></td></tr>
+<tr><td>CAJUN</td><td>?</td><td><a href="http://www.cajun.nu/">http://www.cajun.nu/</a></td></tr>
 <tr><td>Amptracker</td><td>Web Service</td><td><a href="http://amptracker.com/">http://amptracker.com/</a></td></tr>
 </table>
 </center>
