@@ -12,6 +12,7 @@
 <table border=1 cellpadding=5 cellspacing=0 width=90% bordercolor="#000000">
 <tr><td><b>Platform</b></td><td><b>Download Link</b></td></tr>
 <tr><td>Windows NT/2000/XP</td><td><a href="http://downloads.xiph.org/releases/icecast/icecast2_win32_2.3.2_setup.exe">icecast2_win32_2.3.2_setup.exe</a></td></tr>
+<tr><td>Linux/Unix</td><td>Most distributions provide ready to use <a href="#binary_packages">binary packages</a> of Icecast.</td></tr>
 </table>
 </center>
 <br></br>
@@ -20,7 +21,7 @@
 <table border=1 cellpadding=5 cellspacing=0 width=90% bordercolor="#000000">
 <tr><td><b>Platform</b></td><td><b>Download Link</b></td></tr>
 <tr><td>All</td><td><a href="http://downloads.xiph.org/releases/icecast/icecast-2.3.2.tar.gz">icecast-2.3.2.tar.gz</a></td></tr>
-<tr><td>RPM-compatable</td><td><a href="http://downloads.xiph.org/releases/icecast/icecast-2.3.2-0.src.rpm">icecast-2.3.2-0.src.rpm</a></td></tr>
+<tr><td>RPM-compatible</td><td><a href="http://downloads.xiph.org/releases/icecast/icecast-2.3.2-0.src.rpm">icecast-2.3.2-0.src.rpm</a></td></tr>
 </table>
 <br>
 Older releases can be found <a href="http://downloads.xiph.org/releases/icecast">Here</a>
@@ -119,5 +120,28 @@ We still provide download links to builds and utilities that we no longer suppor
 </div>
 </div>
 -->
+<br><br>
+<div class="roundcont">
+<div class="roundtop">
+<img src="/images/corner_topleft.jpg" class="corner" style="display: none" />
+</div>
+<div class="newscontent">
+<h4>Linux/Unix distribution packages.</h4>
+<a name="binary_packages"></a>
+Most current Linux and Unix distributions provide either prebuilt binary packages or a way to build your own package of Icecast. 
+This is the preferred way to install Icecast, as distribution packaging is tuned to make icecast fit well into your system.
+In most cases packaging will also provide necessary scripts/files to make icecast start as a service on boot.
+For details please refer to the package repository section of your distribution's fine manual. People have also written 'installing Icecast' HowTos for many distributions. 
+<br><br>
+Hints that you might find useful:<br>
+<ul>
+<li>Debian and its derivatives (e.g. Ubuntu) name the package 'icecast2'.
+<li>For RHEL and CentOS the icecast package is available from the EPEL repository.
+</ul>
+</div>
+<div class="roundbottom">
+<img src="/images/corner_bottomleft.jpg" class="corner" style="display: none" />
+</div>
+</div>
 <br><br>
 <? include "common/footer.php"; ?>
