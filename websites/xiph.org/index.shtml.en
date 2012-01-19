@@ -45,18 +45,19 @@
 <!--  All your page content goes here  -->
 
 	<p style="font-size: 1.17em;">The <span class="xiph">Xiph.Org Foundation</span> is a non-profit corporation dedicated to protecting the foundations of Internet multimedia from control by private interests. Our purpose is to support and develop free, open protocols and software to serve the public, developer and business markets.</p>
-	<h1>Xiph in the News</h1>
+	<h1>Xiph Community Updates</h1>
+
+	<ul class="newslist">
+        <!--#include virtual="/planet-teaser/teaser.html" -->
+        <li><b><a href="http://planet.xiph.org">more updates at Planet Xiph &gt;</a></b></li>
+       </ul>
+
+	<h1>Xiph.Org in the News</h1>
 
 	<ul class="newslist">
 
 	        <li><a href="press/2011/ftc">Xiph.Org Submits Comments to the Federal Trade Commission Patent Standards Workshop</a></p>
 	        <li><a href="press/2011/webm-ccl">WebM Community Cross-License initiative Announced</a></p>
-	        <li><a href="press/2011/libao-1.1.0">libao 1.1.0 release</a></p>
-	        <li><a href="press/2010/libogg-1.2.2">libOgg 1.2.2 release</a></p>
-	        <li><a href="press/2010/libogg-1.2.1">libOgg 1.2.1 and libVorbis 1.3.2 release</a></p>
-
-                <li><a href="press/2010/video">Xiph.Org announces its first documentary video production: "<i>A Digital Media Primer for Geeks</i>"</a></li>
-      
 		<li><b><a href="/press/">more headlines &gt;</a></b></li>
 	</ul>
 
