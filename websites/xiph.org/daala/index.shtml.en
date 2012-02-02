@@ -1,0 +1,46 @@
+<!--#include virtual="/ssi/header.include" -->
+<!-- Enter custom page information and styles here -->
+  <title>Xiph.org :: daala video</title>
+</head>
+<body>
+<!--#include virtual="/common/xiphbar.include" -->
+
+<!--#include virtual="/ssi/pagetop.include" -->
+<!--  All your page content goes here  -->
+
+<h1>Daala video compression</h1>
+<p>
+Daala is the code-name for a new video compression technology.
+The effort is a collaboration between Mozilla Foundation,
+Xiph.Org Foundation and other contributors.
+</p>
+
+<p>
+The goal of the project is to provide a free to implement,
+use and distribute digital media format and reference
+implementation with technical performance superior to h.265.
+</p>
+
+<a name="source"><h2>Source</h2></a>
+
+<p>
+If you're interested in our progress, or in helping out,
+development code is available from our
+<a href="https://git.xiph.org/?p=users/giles/daala-giles.git">working repository</a>.
+</p>
+
+<code>
+git clone https://git.xiph.org/users/giles/daala-giles.git
+</code>
+
+<a name="documenation"><h2>Documentation</h2></a>
+
+<p>
+For some of the ideas we've worked on, see Tim's
+presentation slides, 
+"<a href="http://people.xiph.org/~tterribe/pubs/lca2012/auckland/intro_to_video1.pdf">An Introduction to Video Coding</a>",
+from the Auckland meeting in January, 2012.
+</p> 
+
+
+<!--#include virtual="/ssi/pagebottom.include" -->
