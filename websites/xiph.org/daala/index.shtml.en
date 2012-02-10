@@ -26,11 +26,11 @@ implementation with technical performance superior to h.265.
 <p>
 If you're interested in our progress, or in helping out,
 development code is available from our
-<a href="https://git.xiph.org/?p=users/giles/daala-giles.git">working repository</a>.
+<a href="https://git.xiph.org/?p=daala.git">working repository</a>.
 </p>
 
 <code>
-git clone https://git.xiph.org/users/giles/daala-giles.git
+git clone https://git.xiph.org/daala.git
 </code>
 
 <a name="documenation"><h2>Documentation</h2></a>
