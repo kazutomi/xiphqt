@@ -31,8 +31,8 @@ supports:
   <li>Sun/NetBSD/OpenBSD</li>
   <li>IRIX</li>
   <li>NAS (Network Audio Server)</li>
-  <li>Roar Audio</li>
-  <li>OpenBSD SNDIO</li>
+  <li>RoarAudio (Modern, multi-OS, networked Sound System)</li>
+  <li>OpenBSD's sndio</li>
   
 </ul>
 <p>
