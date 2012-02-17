@@ -29,9 +29,11 @@ development code is available from our
 <a href="https://git.xiph.org/?p=daala.git">working repository</a>.
 </p>
 
+<blockquote>
 <code>
 git clone https://git.xiph.org/daala.git
 </code>
+</blockquote>
 
 <a name="documenation"><h2>Documentation</h2></a>
 
