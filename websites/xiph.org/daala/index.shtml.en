@@ -40,7 +40,25 @@ For some of the ideas we've worked on, see Tim's
 presentation slides, 
 "<a href="http://people.xiph.org/~tterribe/pubs/lca2012/auckland/intro_to_video1.pdf">An Introduction to Video Coding</a>",
 from the Auckland meeting in January, 2012.
-</p> 
+Video recordings of the presentation are also available, but unfortunately
+not for the first part day.</p>
 
+<ul>
+<li>Part 1: Transform Coding (no video)</li>
+<li>Part 2: Entropy Coding
+     <a href="http://people.xiph.org/~giles/2012/daala-intro-201201-part2.ogv"</a>part 2</a>
+     (starts at slide 51)
+</li>
+<li>Part 3: Probability Modeling
+     <a href="http://people.xiph.org/~giles/2012/daala-intro-201201-part3a.ogv"</a>part 3a</a>
+     <a href="http://people.xiph.org/~giles/2012/daala-intro-201201-part3b.ogv"</a>part 3b</a>
+     (starts at slide 92)
+</li>
+<li>Part 4: Motion Compensation
+     <a href="http://people.xiph.org/~giles/2012/daala-intro-201201-part4a.ogv"</a>part 4a</a>
+     <a href="http://people.xiph.org/~giles/2012/daala-intro-201201-part4b.ogv"</a>part 4b</a>
+     (starts at slide 139)
+</li>
+</ul>
 
 <!--#include virtual="/ssi/pagebottom.include" -->
