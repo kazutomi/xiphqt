@@ -34,6 +34,24 @@ function fixupVideo(video)
 
 }
 
+// If the URL has a time offset query, set the video offset
+var uri_time = -1;
+function check_set_time(video, query)
+{
+    var queries = query.split("?");
+    for(q in queries) {
+        var f = queries[q].split("=");
+        var key = f[0];
+        var value = f[1];
+
+        if(key == "time"){
+            if(video && !(value===undefined))
+                uri_time = parseFloat(value);
+        }
+    }
+}
+
+
 // Search up from one of the control elements until we hit the upper video wrapper
 function findWrapper(el){
     var wrapper = el;
@@ -95,6 +113,10 @@ function SetVideo(dropdown)
     // reloading the vid will cause it to start over; save play status and playtime
     var playing = !(video.paused);
     var position = video.currentTime;
+    if(uri_time > 0) {
+        position = uri_time;
+        uri_time = -1;
+    }
 
     // update the video, video wrapper, and control wrapper size
     video.style.width = vid_width;
@@ -140,7 +162,7 @@ function SetVideo(dropdown)
     // the old vid left off until metadata has successfully loaded;
     // push the rest of the playback resume process into a callback
     video.addEventListener("loadedmetadata",
-                         function() {
+                           function() {
                                // don't set if zero; that will drop the poster and cause preload
                                if(position>0)
                                    video.currentTime = position;
@@ -215,6 +237,12 @@ $(document).ready(function() {
                 fixupVideo(this);
             });
 
+        // the URI might have an anchor requesting a specific time
+        // offset
+        $('video').each(function() {
+                check_set_time(this, window.location.search);
+            });
+
         $('.vid_control').each(function() {
                 this.onmouseout=function(){mousein=0;hideControls(this)};
                 this.onmouseover=function(){mousein=1;showControls(this)};
@@ -248,5 +276,6 @@ $(document).ready(function() {
                 this.onfocus=function(){focusControl(this);};
                 this.onchange=function(){SetTime(this);};
             });
+
     });
 
