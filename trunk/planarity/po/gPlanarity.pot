@@ -8,10 +8,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: Monty <monty@xiph.org>\n"
-"POT-Creation-Date: 2009-11-25 02:29-0500\n"
+"POT-Creation-Date: 2012-03-25 11:48-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -183,14 +184,14 @@ msgid ""
 msgstr ""
 #
 # File: ../gameboard.c, line: 78
-# File: ../gameboard.c, line: 189
+# File: ../gameboard.c, line: 192
 #, c-format
 msgid ""
 "Clipping and/or expanding this board to the current window size...\n"
 "\n"
 msgstr ""
 #
-# File: ../gameboard.c, line: 184
+# File: ../gameboard.c, line: 187
 #, c-format
 msgid ""
 "\n"
@@ -207,12 +208,12 @@ msgstr ""
 msgid "rather many, really"
 msgstr ""
 #
-# File: ../gameboard_draw_main.c, line: 370
+# File: ../gameboard_draw_main.c, line: 374
 #, c-format
 msgid "ERROR:  Could not load board icon \"%s\"\n"
 msgstr ""
 #
-# File: ../gameboard_draw_main.c, line: 436
+# File: ../gameboard_draw_main.c, line: 440
 #, c-format
 msgid "ERROR:  Could not save board icon \"%s\"\n"
 msgstr ""
@@ -332,14 +333,14 @@ msgstr ""
 msgid " or fewer"
 msgstr ""
 #
-# File: ../levelstate.c, line: 169
+# File: ../levelstate.c, line: 170
 #, c-format
 msgid ""
 "ERROR:  Could not save game state file \"%s\":\n"
 "\t%s\n"
 msgstr ""
 #
-# File: ../levelstate.c, line: 216
+# File: ../levelstate.c, line: 217
 #, c-format
 msgid ""
 "ERROR:  Could not read game state file \"%s\":\n"
