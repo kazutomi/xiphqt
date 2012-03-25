@@ -3,7 +3,7 @@
 # and Fuck its little dog Libtool too
 
 TARGET  = gPlanarity
-CC      = gcc 
+CC      = gcc
 LD      = gcc
 export INSTALL = install
 PREFIX  = /usr/local
@@ -64,11 +64,11 @@ all-recursive:
 
 debug:
 	pkg-config --cflags "gtk+-2.0 $(GTKVER) cairo $(CAIROVER) freetype2" 1>/dev/null
-	$(MAKE) target CFLAGS='-g -Wall -W -Wno-unused-parameter -D__NO_MATH_INLINES $(GCF) $(ADD_DEF)'
+	$(MAKE) target CFLAGS='-g -Wall -W -Wno-unused-parameter -D__NO_MATH_INLINES $(GCF) $(ADD_DEF) $(CLFAGS)'
 
 profile:
 	pkg-config --cflags "gtk+-2.0 $(GTKVER) cairo $(CAIROVER) freetype2" 1>/dev/null
-	$(MAKE) target CFLAGS='-pg -g -O2 -ffast-math $(GCF) $(ADD_DEF)" LIBS="$(LIBS) -lgprof-helper'
+	$(MAKE) target CFLAGS='-pg -g -O2 -ffast-math $(GCF) $(ADD_DEF) $(CFLAGS)'
 
 clean: clean-local clean-recursive
 
@@ -91,7 +91,7 @@ endif
 
 target:  $(OBJ) 
 	./touch-version
-	$(LD) $(OBJ) $(CFLAGS) -o $(TARGET) $(LIBS) $(LDF)
+	$(LD) $(OBJ) $(CFLAGS) -o $(TARGET) $(LIBS) -lm $(LDF)
 
 install: install-local install-recursive
 
