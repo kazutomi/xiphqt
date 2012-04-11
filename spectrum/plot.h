@@ -71,8 +71,13 @@ struct _Plot{
   int res;
   int noise;
   int *rate;
+  int maxrate;
 
-  int xgrid[11];
+  float lin_major;
+  float lin_minor;
+  int lin_mult;
+
+  int xgrid[20];
   int xgrids;
   int xtic[200];
   int xtics;

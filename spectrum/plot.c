@@ -28,6 +28,18 @@
 #include <gdk/gdkkeysyms.h>
 #include "plot.h"
 
+static double log_lfreqs[6]={1.,10.,100.,1000.,10000.,100000};
+static double log_tfreqs[37]={5.,6.,7.,8.,9.,20.,30.,40.,50.,60.,70.,80.,90.
+			 ,200.,300.,400.,500.,600.,700.,800.,900.,
+			 2000.,3000.,4000.,5000.,6000.,7000.,8000.,9000.,
+			 20000.,30000,40000,50000,60000,70000,80000,90000};
+
+static double iso_lfreqs[12]={31.,63.,125.,250.,500.,1000.,2000.,4000.,8000.,
+                              16000.,32000., 64000.};
+static double iso_tfreqs[24]={25.,40.,50.,80.,100.,160.,200.,315.,400.,630.,
+                              800.,1250.,1600.,2500.,3150.,5000.,6300.,10000.,
+                              12500.,20000.,25000.,40000.,50000.,80000.};
+
 static GtkDrawingAreaClass *parent_class = NULL;
 
 static void compute_imp_scale(GtkWidget *widget){
@@ -64,57 +76,80 @@ static void compute_imp_scale(GtkWidget *widget){
 static void compute_metadata(GtkWidget *widget){
   Plot *p=PLOT(widget);
   int width=widget->allocation.width-p->padx;
+  int rate=p->maxrate;
+  int nyq=p->maxrate/2.;
   int i;
+
+  p->xgrids=0;
+  p->xtics=0;
 
   /* find the places to plot the x grid lines according to scale */
   switch(p->scale){
   case 0: /* log */
     {
-      double lfreqs[6]={1.,10.,100.,1000.,10000.,100000};
-      double tfreqs[37]={5.,6.,7.,8.,9.,20.,30.,40.,50.,60.,70.,80.,90.
-			 ,200.,300.,400.,500.,600.,700.,800.,900.,
-			 2000.,3000.,4000.,5000.,6000.,7000.,8000.,9000.,
-			 20000.,30000,40000,50000,60000,70000,80000,90000};
-      for(i=0;i<6;i++)
-	p->xgrid[i]=rint( (log10(lfreqs[i])-log10(5.))/(log10(100000.)-log10(5.)) * (width-1))+p->padx;
-      for(i=0;i<37;i++)
-	p->xtic[i]=rint( (log10(tfreqs[i])-log10(5.))/(log10(100000.)-log10(5.)) * (width-1))+p->padx;
-      p->xgrids=6;
-      p->xtics=37;
+      for(i=0;i<6;i++){
+        if(log_lfreqs[i]<(nyq-.1))
+          p->xgrids=i+1;
+      }
+      for(i=0;i<37;i++){
+        if(log_tfreqs[i]<(nyq-.1))
+          p->xtics=i+1;
+      }
+
+      for(i=0;i<p->xgrids;i++)
+	p->xgrid[i]=rint( (log10(log_lfreqs[i])-log10(5.))/(log10(nyq)-log10(5.)) * (width-1))+p->padx;
+      for(i=0;i<p->xtics;i++)
+	p->xtic[i]=rint( (log10(log_tfreqs[i])-log10(5.))/(log10(nyq)-log10(5.)) * (width-1))+p->padx;
     }
-    
+
     break;
   case 1: /* ISO log */
     {
-      double lfreqs[10]={31.,63.,125.,250.,500.,1000.,2000.,4000.,8000.,16000.};
-      double tfreqs[20]={25.,40.,50.,80.,100.,160.,200.,315.,400.,630.,800.,
-			1250.,1600.,2500.,3150.,5000.,6300.,10000.,12500.,20000.};
-      for(i=0;i<10;i++)
-	p->xgrid[i]=rint( (log2(lfreqs[i])-log2(25.))/(log2(20000.)-log2(25.)) * (width-1))+p->padx;
-      for(i=0;i<20;i++)
-	p->xtic[i]=rint( (log2(tfreqs[i])-log2(25.))/(log2(20000.)-log2(25.)) * (width-1))+p->padx;
-      p->xgrids=10;
-      p->xtics=20;
-    }
-
-    break;
-  case 2: /* linear; 2kHz spacing */
-    {
-      float lfreq;
-      for(i=0;i<11;i++){
-	lfreq=i*2000.;
-	p->xgrid[i]=rint(lfreq/20000. * (width-1))+p->padx;
+      for(i=0;i<12;i++){
+        if(iso_lfreqs[i]<(nyq-.1))
+          p->xgrids=i+1;
       }
-	
-      p->xgrids=11;
-      p->xtics=0;
-      while((lfreq=(p->xtics+1)*500.)<20000.)
-	p->xtic[p->xtics++]=rint(lfreq/20000. * (width-1))+p->padx;
+      for(i=0;i<24;i++){
+        if(iso_tfreqs[i]<(nyq-.1))
+          p->xtics=i+1;
+      }
+
+      for(i=0;i<p->xgrids;i++)
+	p->xgrid[i]=rint( (log2(iso_lfreqs[i])-log2(25.))/(log2(nyq)-log2(25.)) * (width-1))+p->padx;
+      for(i=0;i<p->xtics;i++)
+	p->xtic[i]=rint( (log2(iso_tfreqs[i])-log2(25.))/(log2(nyq)-log2(25.)) * (width-1))+p->padx;
+    }
+
+    break;
+  case 2: /* linear spacing */
+    {
+      int j;
+      for(i=0;;i++){
+        if(i*p->lin_major >= nyq-.1 || i*p->lin_major>=100000-.1)
+          break;
+        p->xgrids=i+1;
+      }
+      for(i=0;;i++){
+        if(i*p->lin_minor >= nyq-.1 || i*p->lin_minor>=100000-.1)
+          break;
+        if(i%p->lin_mult!=0)
+          p->xtics++;
+      }
+
+      for(i=0;i<p->xgrids;i++){
+        double lfreq=i*p->lin_major;
+        p->xgrid[i]=rint(lfreq/nyq * (width-1))+p->padx;
+      }
+      j=0;
+      for(i=0;i<p->xtics;i++,j++){
+        double lfreq;
+        if(j%p->lin_mult==0)j++;
+        lfreq=j*p->lin_minor;
+        p->xtic[i]=rint(lfreq/nyq * (width-1))+p->padx;
+      }
     }
     break;
-    
   }
-
 }
 
 GdkColor chcolor(int ch){
@@ -553,41 +588,53 @@ static gboolean expose( GtkWidget *widget, GdkEventExpose *event ){
 
 static void size_request (GtkWidget *widget,GtkRequisition *requisition){
   Plot *p=PLOT(widget);
-  requisition->width = 800;
-  requisition->height = 440;
+  requisition->width = 400;
+  requisition->height = 400;
   int axisy=0,axisx=0,pady=0,padx=0,phax=0,px,py,i;
 
   /* find max lin layout */
   {
     int max=0;
+    int maxy=0;
     for(i=0;p->lin_layout[i];i++){
+      if(p->lin_major*i >= p->maxrate/2-.1)break;
       pango_layout_get_pixel_size(p->lin_layout[i],&px,&py);
       if(px>max)max=px;
       if(py>pady)pady=py;
+      if(py>maxy)maxy=py;
     }
-    max*=i;
+    max+=maxy*1.5;
+    max*=i+1;
     if(axisx<max)axisx=max;
   }
   /* find max log layout */
   {
     int max=0;
+    int maxy=0;
     for(i=0;p->log_layout[i];i++){
+      if(log_lfreqs[i] >= p->maxrate/2-.1)break;
       pango_layout_get_pixel_size(p->log_layout[i],&px,&py);
       if(px>max)max=px;
       if(py>pady)pady=py;
+      if(py>maxy)maxy=py;
     }
-    max*=i;
+    max+=maxy*1.5;
+    max*=i+1;
     if(axisx<max)axisx=max;
   }
   /* find max iso layout */
   {
     int max=0;
+    int maxy=0;
     for(i=0;p->iso_layout[i];i++){
+      if(iso_lfreqs[i] >= p->maxrate/2-.1)break;
       pango_layout_get_pixel_size(p->iso_layout[i],&px,&py);
       if(px>max)max=px;
       if(py>pady)pady=py;
+      if(py>maxy)maxy=py;
     }
-    max*=i;
+    max+=maxy*1.5;
+    max*=i+1;
     if(axisx<max)axisx=max;
   }
   /* find max db layout */
@@ -598,8 +645,8 @@ static void size_request (GtkWidget *widget,GtkRequisition *requisition){
       if(py>max)max=py;
       if(px>padx)padx=px;
     }
-    axisy=(max+5)*8;
-    if(axisy<max)axisx=max;
+    axisy=(max)*8;
+    if(axisy<max)axisy=max;
   }
   /* find max imped layout */
   {
@@ -609,8 +656,8 @@ static void size_request (GtkWidget *widget,GtkRequisition *requisition){
       if(py>max)max=py;
       if(px>padx)padx=px;
     }
-    axisy=(max+5)*8;
-    if(axisy<max)axisx=max;
+    axisy=(max)*8;
+    if(axisy<max)axisy=max;
   }
   /* find max phase layout */
   {
@@ -620,8 +667,8 @@ static void size_request (GtkWidget *widget,GtkRequisition *requisition){
       if(py>max)max=py;
       if(px>phax)phax=px;
     }
-    axisy=(max+5)*8;
-    if(axisy<max)axisx=max;
+    axisy=(max)*8;
+    if(axisy<max)axisy=max;
   }
   
   if(requisition->width<axisx+padx)requisition->width=axisx+padx;
@@ -694,23 +741,57 @@ GtkWidget* plot_new (int size, int groups, int *channels, int *rate){
   Plot *p=PLOT(ret);
   int g,i;
   int ch=0;
-
+  int maxrate=-1;
   p->groups = groups;
-  for(g=0;g<groups;g++)
+  for(g=0;g<groups;g++){
     ch+=channels[g];
+    if(rate[g]>maxrate)maxrate=rate[g];
+  }
+
   p->total_ch = ch;
 
   p->ch=channels;
   p->rate=rate;
+  p->maxrate=maxrate;
+
+  if(maxrate > 100000){
+    p->lin_major = 10000.;
+    p->lin_minor = 2000.;
+    p->lin_mult = 5;
+  }else if(maxrate > 50000){
+    p->lin_major = 5000.;
+    p->lin_minor = 1000.;
+    p->lin_mult = 5;
+  }else{
+    p->lin_major=2000.;
+    p->lin_minor=500.;
+    p->lin_mult=4;
+  }
 
   /* generate all the text layouts we'll need */
+  /* linear X scale */
   {
-    char *labels[11]={"DC","2kHz","4kHz","6kHz","8kHz","10kHz","12kHz",
-		      "14kHz","16kHz","18kHz",""};
-    p->lin_layout=calloc(12,sizeof(*p->lin_layout));
-    for(i=0;i<11;i++)
-      p->lin_layout[i]=gtk_widget_create_pango_layout(ret,labels[i]);
+    if(maxrate>100000){
+      char *labels[11]={"DC","10kHz","20kHz","30kHz","40kHz","50kHz","60kHz",
+                        "70kHz","80kHz","90kHz",""};
+      p->lin_layout=calloc(12,sizeof(*p->lin_layout));
+      for(i=0;i<11;i++)
+        p->lin_layout[i]=gtk_widget_create_pango_layout(ret,labels[i]);
+    }else if(maxrate > 50000){
+      char *labels[11]={"DC","5kHz","10kHz","15kHz","20kHz","25kHz","30kHz",
+                        "35kHz","40kHz","45kHz",""};
+      p->lin_layout=calloc(12,sizeof(*p->lin_layout));
+      for(i=0;i<11;i++)
+        p->lin_layout[i]=gtk_widget_create_pango_layout(ret,labels[i]);
+    }else{
+      char *labels[14]={"DC","2kHz","4kHz","6kHz","8kHz","10kHz","12kHz",
+                        "14kHz","16kHz","18kHz","20kHz","22kHz","24kHz",""};
+      p->lin_layout=calloc(15,sizeof(*p->lin_layout));
+      for(i=0;i<14;i++)
+        p->lin_layout[i]=gtk_widget_create_pango_layout(ret,labels[i]);
+    }
   }
+  /* phase Y scale */
   {
     char *labels[37]={"-180\xC2\xB0","-170\xC2\xB0","-160\xC2\xB0",
 		      "-150\xC2\xB0","-140\xC2\xB0","-130\xC2\xB0",
@@ -729,12 +810,14 @@ GtkWidget* plot_new (int size, int groups, int *channels, int *rate){
     for(i=0;i<37;i++)
       p->phase_layout[i]=gtk_widget_create_pango_layout(ret,labels[i]);
   }
+  /* log X scale */
   {
     char *labels[6]={"1Hz","10Hz","100Hz","1kHz","10kHz",""};
     p->log_layout=calloc(7,sizeof(*p->log_layout));
     for(i=0;i<6;i++)
       p->log_layout[i]=gtk_widget_create_pango_layout(ret,labels[i]);
   }
+  /* Impedence Y scale */
   {
     char *labels[9]={"10M\xCE\xA9","1M\xCE\xA9","100k\xCE\xA9","10k\xCE\xA9",
 		     "1k\xCE\xA9","100\xCE\xA9","10\xCE\xA9","1\xCE\xA9",".1\xCE\xA9"};
@@ -742,13 +825,15 @@ GtkWidget* plot_new (int size, int groups, int *channels, int *rate){
     for(i=0;i<9;i++)
       p->imp_layout[i]=gtk_widget_create_pango_layout(ret,labels[i]);
   }
+  /* ISO log X scale */
   {
-    char *labels[10]={"31Hz","63Hz","125Hz","250Hz","500Hz","1kHz","2kHz",
-		      "4kHz","8kHz","16kHz"};
-    p->iso_layout=calloc(11,sizeof(*p->iso_layout));
-    for(i=0;i<10;i++)
+    char *labels[12]={"31Hz","63Hz","125Hz","250Hz","500Hz","1kHz","2kHz",
+		      "4kHz","8kHz","16kHz","32kHz","64kHz"};
+    p->iso_layout=calloc(13,sizeof(*p->iso_layout));
+    for(i=0;i<12;i++)
       p->iso_layout[i]=gtk_widget_create_pango_layout(ret,labels[i]);
   }
+  /* dB Y scale */
   {
     char *labels[57]={"-140dB","-135dB","-130dB","-125dB","-120dB","-115dB",
 		      "-110dB","-105dB","-100dB","-95dB","-90dB","-85dB",

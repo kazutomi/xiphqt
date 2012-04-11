@@ -891,6 +891,12 @@ float **process_fetch(int res, int scale, int mode, int link,
   int ch,ci,i,j,fi;
   float **data;
   float **ph;
+  float maxrate=-1.;
+  float nyq;
+
+  for(fi=0;fi<inputs;fi++)
+    if(rate[fi]>maxrate)maxrate=rate[fi];
+  nyq=maxrate/2.;
 
   *yfloor=NULL;
 
@@ -956,23 +962,23 @@ float **process_fetch(int res, int scale, int mode, int link,
 	switch(scale){
 	case 0: /* log */
 	  lfreq= pow(10.,(i-off)/(width-1)
-		     * (log10(100000.)-log10(5.))
+		     * (log10(nyq)-log10(5.))
 		     + log10(5.)) * loff;
 	  hfreq= pow(10.,(i+off)/(width-1)
-		     * (log10(100000.)-log10(5.))
+		     * (log10(nyq)-log10(5.))
 		     + log10(5.)) * hoff;
 	  break;
 	case 1: /* ISO */
 	  lfreq= pow(2.,(i-off)/(width-1)
-		     * (log2(20000.)-log2(25.))
+		     * (log2(nyq)-log2(25.))
 		     + log2(25.)) * loff;
 	  hfreq= pow(2.,(i+off)/(width-1)
-		     * (log2(20000.)-log2(25.))
+		     * (log2(nyq)-log2(25.))
 		     + log2(25.)) *hoff;
 	  break;
 	case 2: /* screen-resolution linear */
-	  lfreq=(i-off)*20000./(width-1)*loff;
-	  hfreq=(i+off)*20000./(width-1)*hoff;
+	  lfreq=(i-off)*nyq/(width-1)*loff;
+	  hfreq=(i+off)*nyq/(width-1)*hoff;
 	  break;
 	}
 
