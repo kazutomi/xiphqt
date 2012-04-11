@@ -27,7 +27,7 @@ MANDIR=$(PREFIX)/man
 
 SRC = main.c process.c panel.c plot.c
 OBJ = main.o process.o panel.o plot.o
-GCF = -DETCDIR=\\\"$(ETCDIR)\\\" `pkg-config --cflags gtk+-2.0` -DG_DISABLE_DEPRECATED -DGDK_DISABLE_DEPRECATED -DGTK_DISABLE_DEPRECATED -DGDK_PIXBUF_DISABLE_DEPRECATED
+GCF = -DETCDIR=\\\"$(ETCDIR)\\\" `pkg-config --cflags gtk+-2.0`
 
 all:	
 	$(MAKE) target CFLAGS="-O3 -ffast-math -fomit-frame-pointer $(GCF) $(ADD_DEF)"
