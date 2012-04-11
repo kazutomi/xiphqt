@@ -210,10 +210,17 @@ int input_load(void){
 	  lch =   READ_U16_LE(buf+2); 
 	  lrate = READ_U32_LE(buf+4);
 	  lbits = READ_U16_LE(buf+14);
-	  
+
+          /* Add cooked WAVE_FORMAT_EXTENSIBLE support */
+          if(ltype == 65534){
+            int cbSize = READ_U16_LE(buf+16);
+            if(cbSize>=22)
+              ltype = READ_U16_LE(buf + 24); 
+	  }
+
 	  if(ltype!=1){
-	    fprintf(stderr,"%s:\n\tWAVE file not PCM.\n",inputname[fi]);
-	    return 1;
+            fprintf(stderr,"%s:\n\tWAVE file not PCM.\n",inputname[fi]);
+            return 1;
 	  }
 	      
 	  if(bits[fi]==-1)bits[fi]=lbits;
