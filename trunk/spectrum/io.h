@@ -47,7 +47,7 @@
 #define readbuffersize 8192
 
 extern int input_load(void);
-extern int input_read(void);
+extern int input_read(int loop_p, int partial_p);
 extern int rewind_files(void);
 
 extern int inputs;
@@ -61,6 +61,7 @@ extern char *inputname[MAX_FILES];
 extern int seekable[MAX_FILES];
 extern int global_seekable;
 
+extern int blockslice[MAX_FILES];
 extern int blockbufferfill[MAX_FILES];
 extern float **blockbuffer;
 #endif

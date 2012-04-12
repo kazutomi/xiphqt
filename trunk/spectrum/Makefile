@@ -25,18 +25,23 @@ BINDIR=$(PREFIX)/bin
 ETCDIR=/etc/spectrum
 MANDIR=$(PREFIX)/man
 
-SRC = main.c process.c panel.c plot.c io.c
-OBJ = main.o process.o panel.o plot.o io.o
+SRC = spectrum.c waveform.c spec_process.c wave_process.c spec_panel.c wave_panel.c spec_plot.c wave_plot.c io.c
+SPECTRUM_OBJ = spectrum.o spec_process.o spec_panel.o spec_plot.o io.o
+WAVEFORM_OBJ = waveform.o wave_process.o wave_panel.o wave_plot.o io.o
+OBJ = $(SPECTRUM_OBJ) $(WAVEFORM_OBJ)
+
 GCF = -DETCDIR=\\\"$(ETCDIR)\\\" `pkg-config --cflags gtk+-2.0`
 
+CFLAGS := ${CFLAGS} $(GCF) $(ADD_DEF)
+
 all:	
-	$(MAKE) target CFLAGS="-O3 -ffast-math -fomit-frame-pointer $(GCF) $(ADD_DEF)"
+	$(MAKE) target CFLAGS="${CFLAGS} -O3 -ffast-math -fomit-frame-pointer"
 
 debug:
-	$(MAKE) target CFLAGS="-g -Wall -W -Wno-unused-parameter -D__NO_MATH_INLINES $(GCF) $(ADD_DEF)"
+	$(MAKE) target CFLAGS="${CFLAGS} -g -Wall -W -Wno-unused-parameter -D__NO_MATH_INLINES"
 
 profile:
-	$(MAKE) target CFLAGS="-pg -g -O3 -ffast-math $(GCF) $(ADD_DEF)" LIBS="-lgprof-helper "
+	$(MAKE) target CFLAGS="${CFLAGS} -pg -g -O3 -ffast-math" LIBS="-lgprof-helper "
 
 clean:
 	rm -f $(OBJ) *.d *.d.* gmon.out spectrum
@@ -55,15 +60,23 @@ ifeq ($(MAKECMDGOALS),target)
 include $(SRC:.c=.d)
 endif
 
-target:  $(OBJ) spectrum-wisdomrc
+spectrum:  $(SPECTRUM_OBJ) spectrum-wisdomrc
 	./touch-version
-	$(LD) $(OBJ) $(CFLAGS) -o spectrum $(LIBS) `pkg-config --libs gtk+-2.0` -lpthread -lfftw3f -lm 
+	$(LD) $(SPECTRUM_OBJ) -o spectrum $(LIBS) $(CFLAGS) `pkg-config --libs gtk+-2.0` -lpthread -lfftw3f -lm 
+
+waveform:  $(WAVEFORM_OBJ) 
+	./touch-version
+	$(LD) $(WAVEFORM_OBJ) -o waveform $(LIBS) $(CFLAGS) `pkg-config --libs gtk+-2.0` -lpthread -lm 
+
+target:  spectrum waveform
 
 install: target
 	$(INSTALL) -d -m 0755 $(BINDIR)
 	$(INSTALL) -m 0755 spectrum $(BINDIR)
+	$(INSTALL) -m 0755 waveform $(BINDIR)
 	$(INSTALL) -d -m 0755 $(ETCDIR)
 	$(INSTALL) -m 0644 spectrum-gtkrc $(ETCDIR)
+	$(INSTALL) -m 0644 waveform-gtkrc $(ETCDIR)
 	$(INSTALL) -m 0644 spectrum-wisdomrc $(ETCDIR)
 #	$(INSTALL) -d -m 0755 $(MANDIR)
 #	$(INSTALL) -d -m 0755 $(MANDIR)/man1

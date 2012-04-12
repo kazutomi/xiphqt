@@ -23,9 +23,15 @@
 
 #include "io.h"
 
+int bits[MAX_FILES] = {-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1};
+int bigendian[MAX_FILES] = {-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1};
+int channels[MAX_FILES] = {-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1};
+int rate[MAX_FILES] = {-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1};
+int signedp[MAX_FILES] = {-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1};
+
 extern sig_atomic_t acc_loop;
 extern int blocksize;
-static int blockslice[MAX_FILES]= {-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1};
+int blockslice[MAX_FILES]= {-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1};
 
 float **blockbuffer=0;
 int blockbufferfill[MAX_FILES]={0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0};
@@ -371,28 +377,17 @@ int input_load(void){
 	
       }
 
-      /* select the full-block slice size: ~10fps */
-      blockslice[fi]=rate[fi]/10;
-      while(blockslice[fi]>blocksize/2)blockslice[fi]/=2;
-      total_ch += channels[fi];
-
       if(length[fi]!=-1)
 	bytesleft[fi]=length[fi]*channels[fi]*((bits[fi]+7)/8);
-      
+      total_ch += channels[fi];
+
     }else{
       fprintf(stderr,"Unable to open %s: %s\n",inputname[fi],strerror(errno));
       exit(1);
     }
   }
 
-  blockbuffer=malloc(total_ch*sizeof(*blockbuffer));
-  
-  for(i=0;i<total_ch;i++){
-    blockbuffer[i]=calloc(blocksize,sizeof(**blockbuffer));
-  }
-  
   return 0;
-
 }
 
 /* Convert new data from readbuffer into the blockbuffers until the
@@ -506,23 +501,33 @@ static void LBEconvert(void){
      loop unset: return EOF if all streams have hit EOF
    pad individual EOF streams out with zeroes until global EOF is hit  */
 
-int input_read(void){
-  int i,fi,ch=0;
+int input_read(int loop, int partialok){
+  int i,j,fi,ch=0;
   int eof=1;
   int notdone=1;
+  int rewound[total_ch];
+  memset(rewound,0,sizeof(rewound));
+
+  if(blockbuffer==0){
+    blockbuffer=malloc(total_ch*sizeof(*blockbuffer));
+    
+    for(i=0;i<total_ch;i++){
+      blockbuffer[i]=calloc(blocksize,sizeof(**blockbuffer));
+    }
+  }
 
   for(fi=0;fi<inputs;fi++){
-    
     /* shift according to slice */
-    if(blockbufferfill[fi]==blocksize){
-      if(blockslice[fi]<blocksize){
-	for(i=0;i<channels[fi];i++)
-	  memmove(blockbuffer[i+ch],blockbuffer[i+ch]+blockslice[fi],
-		  (blocksize-blockslice[fi])*sizeof(**blockbuffer));
-	blockbufferfill[fi]-=blockslice[fi];
-      }else
-	blockbufferfill[fi]=0;
-    }
+    if(blockslice[fi]<blocksize)
+      for(i=ch;i<channels[fi]+ch;i++)
+        memmove(blockbuffer[i],blockbuffer[i]+blockslice[fi],
+                (blocksize-blockslice[fi])*sizeof(**blockbuffer));
+    blockbufferfill[fi]-=blockslice[fi];
+    if(blockbufferfill[fi]<0)
+      blockbufferfill[fi]=0;
+    for(i=ch;i<channels[fi]+ch;i++)
+      for(j=blockbufferfill[fi];j<blocksize;j++)
+        blockbuffer[i][j]=NAN;
     ch+=channels[fi];
   }
 
@@ -531,11 +536,11 @@ int input_read(void){
 
     /* if there's data left to be pulled out of a readbuffer, do that */
     LBEconvert();
-    
+
     ch=0;
     for(fi=0;fi<inputs;fi++){
       if(blockbufferfill[fi]!=blocksize){
-	
+
 	/* shift the read buffer before fill if there's a fractional
 	   frame in it */
 	if(readbufferptr[fi]!=readbufferfill[fi] && readbufferptr[fi]>0){
@@ -547,39 +552,44 @@ int input_read(void){
 	  readbufferfill[fi]=0;
 	  readbufferptr[fi]=0;
 	}
-	
+
 	/* attempt to top off the readbuffer */
 	{
 	  long actually_readbytes=0,readbytes=readbuffersize-readbufferfill[fi];
 
 	  if(readbytes>0)
 	    actually_readbytes=fread(readbuffer[fi]+readbufferfill[fi],1,readbytes,f[fi]);
-	    
-	  if(actually_readbytes<0){
-	    fprintf(stderr,"Input read error from %s: %s\n",inputname[fi],strerror(errno));
+
+	  if(actually_readbytes<=0 && ferror(f[fi])){
+	    fprintf(stderr,"Input read error from %s: %s\n",
+                    inputname[fi],strerror(ferror(f[fi])));
 	  }else if (actually_readbytes==0){
-	    /* don't process any partially-filled blocks; the
-	       stairstep at the end could pollute results badly */
-	    
-	    memset(readbuffer[fi],0,readbuffersize);
-	    bytesleft[fi]=0;
-	    readbufferfill[fi]=0;
-	    readbufferptr[fi]=0;
-	    blockbufferfill[fi]=0;
-	  
+            /* real, hard EOF/error in a partially filled block */
+            if(!partialok){
+              /* partial frame is *not* ok.  zero it out. */
+              memset(readbuffer[fi],0,readbuffersize);
+              bytesleft[fi]=0;
+              readbufferfill[fi]=0;
+              readbufferptr[fi]=0;
+              blockbufferfill[fi]=0;
+            }
+            if(loop && (!rewound[fi] || (partialok && blockbufferfill[fi]))){
+              /* rewind this file and continue */
+              fseek(f[fi],offset[fi],SEEK_SET);
+              if(length[fi]!=-1)
+                bytesleft[fi]=length[fi]*channels[fi]*((bits[fi]+7)/8);
+              notdone=1;
+              rewound[fi]=1;
+            }
 	  }else{
+            /* got a read */
 	    bytesleft[fi]-=actually_readbytes;
 	    readbufferfill[fi]+=actually_readbytes;
-	    
-	    /* conditionally clear global EOF */
-	    if(acc_loop){
-	      if(seekable[fi])eof=0;
-	    }else{
-	      eof=0;
-	    }
-	    notdone=1;
+            notdone=1;
 	  }
 	}
+      }else{
+        eof=0;
       }
       ch += channels[fi];
     }
