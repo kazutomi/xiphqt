@@ -25,8 +25,8 @@ BINDIR=$(PREFIX)/bin
 ETCDIR=/etc/spectrum
 MANDIR=$(PREFIX)/man
 
-SRC = main.c process.c panel.c plot.c
-OBJ = main.o process.o panel.o plot.o
+SRC = main.c process.c panel.c plot.c io.c
+OBJ = main.o process.o panel.o plot.o io.o
 GCF = -DETCDIR=\\\"$(ETCDIR)\\\" `pkg-config --cflags gtk+-2.0`
 
 all:	

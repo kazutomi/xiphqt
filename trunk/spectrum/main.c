@@ -33,7 +33,6 @@ int eventpipe[2];
 char *version;
 char *inputname[MAX_FILES];
 int inputs=0;
-int total_ch=0;
 int blocksize = 131072;
 
 int bits[MAX_FILES] = {-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1};
