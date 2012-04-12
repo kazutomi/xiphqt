@@ -21,22 +21,19 @@
  * 
  */
 
-#ifndef _IO_H_
-#define _IO_H_
+#ifndef _WAVEFORM_H_
+#define _WAVEFORM_H_
 
-#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #define _ISOC99_SOURCE
 #define _FILE_OFFSET_BITS 64
 #define _REENTRANT 1
-#define __USE_GNU 1
-#endif
-
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
+#define __USE_GNU 1
 #include <pthread.h>
 #include <string.h>
 #include <math.h>
@@ -46,23 +43,54 @@
 #define MAX_FILES 16
 #define readbuffersize 8192
 
-extern int input_load(void);
-extern int input_read(int loop_p, int partial_p);
-extern int rewind_files(void);
+extern int blocksize;
 
-extern int inputs;
-extern int total_ch;
-extern int bits[MAX_FILES];
-extern int bigendian[MAX_FILES];
-extern int channels[MAX_FILES];
-extern int rate[MAX_FILES];
-extern int signedp[MAX_FILES];
-extern char *inputname[MAX_FILES];
-extern int seekable[MAX_FILES];
-extern int global_seekable;
+static inline float todB(float x){
+  return logf((x)*(x)+1e-30f)*4.34294480f;
+}
 
-extern int blockslice[MAX_FILES];
-extern int blockbufferfill[MAX_FILES];
-extern float **blockbuffer;
+#ifdef UGLY_IEEE754_FLOAT32_HACK
+
+static inline float todB_a(const float *x){
+  union {
+    int32_t i;
+    float f;
+  } ix;
+  ix.f = *x;
+  ix.i = ix.i&0x7fffffff;
+  return (float)(ix.i * 7.17711438e-7f -764.6161886f);
+}
+
+#else
+
+static inline float todB_a(const float *x){
+  return todB(*x);
+}
+
+#endif
+
+#ifndef max
+#define max(x,y) ((x)>(y)?(x):(y))
+#endif
+
+
+#define toOC(n)     (log(n)*1.442695f-5.965784f)
+#define fromOC(o)   (exp(((o)+5.965784f)*.693147f))
+
+extern int eventpipe[2];
+
+extern void panel_go(int argc,char *argv[]);
+extern void *process_thread(void *dummy);
+extern float **process_fetch(int *, int *, int);
+
+extern pthread_mutex_t feedback_mutex;
+extern int feedback_increment;
+extern float **feedback_instant;
+extern sig_atomic_t acc_rewind;
+extern sig_atomic_t acc_loop;
+
+extern sig_atomic_t process_active;
+extern sig_atomic_t process_exit;
+
 #endif
 

@@ -22,6 +22,7 @@
  */
 
 #include "analyzer.h"
+#include "io.h"
 #include <signal.h>
 #include <getopt.h>
 #include <fenv.h>  // Thank you C99!
@@ -34,12 +35,6 @@ char *version;
 char *inputname[MAX_FILES];
 int inputs=0;
 int blocksize = 131072;
-
-int bits[MAX_FILES] = {-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1};
-int bigendian[MAX_FILES] = {-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1};
-int channels[MAX_FILES] = {-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1};
-int rate[MAX_FILES] = {-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1};
-int signedp[MAX_FILES] = {-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1};
 
 void handler(int sig){
   signal(sig,SIG_IGN);
@@ -71,7 +66,7 @@ struct option options [] = {
         {"signed",no_argument,NULL,'s'},
         {"unsigned",no_argument,NULL,'u'},
         {"help",no_argument,NULL,'h'},
-        {"fft-size",required_argument,NULL,'h'},
+        {"fft-size",required_argument,NULL,'F'},
 
         {NULL,0,NULL,0}
 };
@@ -207,6 +202,7 @@ void sigill_handler(int sig){
 }
 
 int main(int argc, char **argv){
+  int fi;
 
   version=strstr(VERSION,"version.h");
   if(version){
@@ -286,6 +282,14 @@ int main(int argc, char **argv){
   signal(SIGSEGV,handler);
 
   if(input_load())exit(1);
+
+  /* select the full-block slice size: ~10fps */
+  for(fi=0;fi<inputs;fi++){
+    blockslice[fi]=rate[fi]/10;
+    while(blockslice[fi]>blocksize/2)blockslice[fi]/=2;
+  }
+
+  /* go */
   panel_go(argc,argv);
 
   return(0);

@@ -135,19 +135,10 @@ static int process(){
 
   if(acc_rewind)
     rewind_files();
-
-  eof_all=input_read();
-
-  if(eof_all){
-    if(acc_loop && !acc_rewind){
-      acc_rewind=1;
-      return process();
-    } else {
-      acc_rewind=0;
-      return 0;
-    }
-  }
   acc_rewind=0;
+
+  if(input_read(acc_loop,0))
+    return 0;
 
   if(acc_clear)
     rundata_clear();

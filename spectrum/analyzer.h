@@ -91,17 +91,6 @@ extern float **process_fetch(int res, int scale, int mode, int link,
 			     float *ymax, float *pmax, float *pmin,
 			     float **floor, int noise);
 
-extern int inputs;
-extern int total_ch;
-extern int bits[MAX_FILES];
-extern int bigendian[MAX_FILES];
-extern int channels[MAX_FILES];
-extern int rate[MAX_FILES];
-extern int signedp[MAX_FILES];
-extern char *inputname[MAX_FILES];
-extern int seekable[MAX_FILES];
-extern int global_seekable;
-
 extern pthread_mutex_t feedback_mutex;
 extern int feedback_increment;
 extern float **feedback_acc;
