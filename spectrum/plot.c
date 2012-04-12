@@ -1,6 +1,6 @@
 /*
  *
- *  gt2 spectrum analyzer
+ *  gtk2 spectrum analyzer
  *    
  *      Copyright (C) 2004 Monty
  *
@@ -494,6 +494,14 @@ static void draw(GtkWidget *widget){
 
   }
   
+
+  {
+    GdkGCValues values;
+    //gdk_gc_get_values(p->drawgc,&values);
+    values.line_width=2;
+    gdk_gc_set_values(p->drawgc,&values,GDK_GC_LINE_WIDTH);
+  }
+
   /* draw actual data */
   if(p->ydata){
     int cho=0;
@@ -557,6 +565,15 @@ static void draw(GtkWidget *widget){
       cho+=p->ch[gi];
     }
   }
+
+  {
+    GdkGCValues values;
+    //gdk_gc_get_values(p->drawgc,&values);
+    values.line_width=1;
+    gdk_gc_set_values(p->drawgc,&values,GDK_GC_LINE_WIDTH);
+  }
+
+
 }
 
 static void draw_and_expose(GtkWidget *widget){
