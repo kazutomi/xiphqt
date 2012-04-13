@@ -132,7 +132,7 @@ static void draw(GtkWidget *widget){
     gdk_gc_set_rgb_fg_color(p->drawgc,&rgb);
 
     for(i=0;i<p->xtics;i++)
-      gdk_draw_line(p->backing,p->drawgc,p->xtic[i],0,p->xtic[i],height-p->pady);
+      gdk_draw_line(p->backing,p->drawgc,p->xtic[i],0,p->xtic[i],height-p->pady-1);
   }
 
   PangoLayout **proper=p->x_layout[p->spanchoice];
@@ -223,7 +223,7 @@ static void draw(GtkWidget *widget){
     gdk_gc_set_rgb_fg_color(p->drawgc,&rgb);
 
     for(i=0;i<p->xgrids;i++)
-      gdk_draw_line(p->backing,p->drawgc,p->xgrid[i],0,p->xgrid[i],height-p->pady);
+      gdk_draw_line(p->backing,p->drawgc,p->xgrid[i],0,p->xgrid[i],height-p->pady-1);
   }
 
   /* zero line */
@@ -355,58 +355,58 @@ static void draw(GtkWidget *widget){
               }
               break;
             case 2: /* lollipop */
-
               {
-                if(0){
-                  int x0=-1;
-                  float yH=NAN,yL=NAN;
-                  int acc=0;
-                  for(k=0;k<spann;k++){
-                    int x1 = rint(k*spani);
-                    float y1 = data[k]*ym;
+                int x0=-1;
+                float yH=NAN,yL=NAN;
+                int acc=0;
 
-                    if(x1>x0){
-                      /* once too dense, the lollipop graph drops back
-                         to just lines */
-                      if(isnan(yL) || yL>0)
-                        yL=0;
-                      if(isnan(yH) || yH<0)
-                        yH=0;
+                rgb.red=0x8000;
+                rgb.green=0x8000;
+                rgb.blue=0x8000;
+                gdk_gc_set_rgb_fg_color(p->twogc,&rgb);
+
+                for(k=0;k<spann;k++){
+                  int x1 = rint(k*spani);
+                  float y1 = data[k]*ym;
+
+                  if(x1>x0){
+                    if(!isnan(yL) || !isnan(yH)){
+                      if(isnan(yL) || yL>0)yL=0;
+                      if(isnan(yH) || yH<0)yH=0;
                       gdk_draw_line(p->backing,p->twogc,
                                     x0+padx,rint(yL)+cp,x0+padx,
                                     rint(yH)+cp);
-                      acc=1;
-                      yH=yL=y1;
-                    }else{
-                      acc++;
                     }
+                    yH=yL=y1;
+                  }else{
                     if(!isnan(y1)){
                       if(y1<yL || isnan(yL))yL=y1;
                       if(y1>yH || isnan(yH))yH=y1;
                     }
-                    x0=x1;
                   }
-                  {
-                    int x1 = rint(k*spani);
-                    if(isnan(yL) || yL>0)
-                      yL=0;
-                    if(isnan(yH) || yH<0)
-                      yH=0;
+                  x0=x1;
+                }
+                {
+                  int x1 = rint(k*spani);
+                  if(!isnan(yL) || !isnan(yH)){
+                    if(isnan(yL) || yL>0)yL=0;
+                    if(isnan(yH) || yH<0)yH=0;
                     gdk_draw_line(p->backing,p->twogc,
-                                  x0+padx,rint(yL)+cp,x0+padx,rint(yH)+cp);
+                                  x0+padx,rint(yL)+cp,x0+padx,
+                                  rint(yH)+cp);
                   }
-                }else{
-                  for(k=0;k<spann;k++){
-                    int x = rint(k*spani);
-                    float y = data[k]*ym;
-                    if(!isnan(y)){
-                      gdk_draw_line(p->backing,p->twogc,
-                                    x+padx,cp,x+padx,rint(y)+cp);
+                }
 
-                      gdk_draw_arc(p->backing,p->twogc,
-                                   0,x+padx-5,rint(y)+cp-5,
-                                   9,9,0,23040);
-                    }
+                rgb = chcolor(i);
+                gdk_gc_set_rgb_fg_color(p->twogc,&rgb);
+
+                for(k=0;k<spann;k++){
+                  int x = rint(k*spani);
+                  float y = data[k]*ym;
+                  if(!isnan(y)){
+                    gdk_draw_arc(p->backing,p->twogc,
+                                 0,x+padx-5,rint(y)+cp-5,
+                                 9,9,0,23040);
                   }
                 }
               }
