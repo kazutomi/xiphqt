@@ -107,10 +107,13 @@ float **process_fetch(int *blockslice,int *overslice,int span,
           float drange=todB(range)-scale;
           for(k=0;k<spann;k++){
             if(data[k]<0){
-              *(plotdatap++)=-(todB(data[k])-scale)/drange;
+              *plotdatap=-(todB(data[k])-scale)/drange;
+              if(*plotdatap>0.)*plotdatap=0.;
             }else{
-              *(plotdatap++)=(todB(data[k])-scale)/drange;
+              *plotdatap=(todB(data[k])-scale)/drange;
+              if(*plotdatap<0.)*plotdatap=0.;
             }
+            plotdatap++;
           }
         }else{
           for(k=0;k<spann;k++)
