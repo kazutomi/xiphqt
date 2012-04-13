@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
+#include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 #include "wave_plot.h"
 
@@ -35,15 +36,15 @@ static void compute_metadata(GtkWidget *widget){
   int width=widget->allocation.width-p->padx;
   int i,j;
 
-  p->xgrids=10;
+  p->xgrids=11;
   p->xtics=30;
 
   for(i=0;i<p->xgrids;i++)
-    p->xgrid[i]=rint(i/(float)(p->xgrids) * (width-1))+p->padx;
+    p->xgrid[i]=rint(i/(float)(p->xgrids-1) * (width-1))+p->padx;
 
   for(i=0,j=0;i<p->xtics;i++,j++){
     if(j%4==0)j++;
-    p->xtic[i]=rint(j/(float)(p->xgrids*4) * (width-1))+p->padx;
+    p->xtic[i]=rint(j/(float)((p->xgrids-1)*4) * (width-1))+p->padx;
   }
 }
 
@@ -111,7 +112,7 @@ static void draw(GtkWidget *widget){
     gdk_draw_rectangle(p->backing,gc,1,0,height-p->pady,width,p->pady);
 
     gc=parent->style->white_gc;
-    gdk_draw_rectangle(p->backing,gc,1,padx,0,width-padx,height-p->pady+1);
+    gdk_draw_rectangle(p->backing,gc,1,padx,0,width-padx,height-p->pady);
   }
 
   /* draw the light x grid */
@@ -176,10 +177,7 @@ static void draw(GtkWidget *widget){
     for(i=-8;i<9;i+=4){
       int y=rint(center + center*i/9);
 
-      if(i==0)
-        gdk_draw_line(p->backing,widget->style->black_gc,padx,y,width,y);
-      else
-        gdk_draw_line(p->backing,p->drawgc,padx,y,width,y);
+      gdk_draw_line(p->backing,p->drawgc,padx,y,width,y);
 
       pango_layout_get_pixel_size(p->y_layout[p->rchoice][p->schoice][i/4+2],
                                   &px,&py);
@@ -222,6 +220,11 @@ static void draw(GtkWidget *widget){
       gdk_draw_line(p->backing,p->drawgc,p->xgrid[i],0,p->xgrid[i],height-p->pady);
   }
 
+  /* zero line */
+  {
+    int center = (height-p->pady)/2;
+    gdk_draw_line(p->backing,widget->style->black_gc,padx,center,width,center);
+  }
 
   {
     GdkGCValues values;
@@ -232,6 +235,69 @@ static void draw(GtkWidget *widget){
 
   /* draw actual data */
   if(p->ydata){
+    int ch=0,fi,i,j,k;
+    const GdkRectangle clip = {p->padx,0,width-p->padx,height-p->pady};
+    const GdkRectangle noclip = {0,0,width,height};
+    GdkColor rgb;
+
+    gdk_gc_set_clip_rectangle (p->drawgc, &clip);
+
+    for(fi=0;fi<p->groups;fi++){
+      int copies = (int)ceil(p->blockslice[fi]/p->overslice[fi]);
+      int spann = ceil(p->rate[fi]/1000000.*p->span)+1;
+
+      for(i=ch;i<ch+p->ch[fi];i++){
+        if(p->ch_active[i]){
+          int offset=0;
+          rgb = chcolor(i);
+          gdk_gc_set_rgb_fg_color(p->drawgc,&rgb);
+
+          for(j=0;j<copies;j++){
+            float *data=p->ydata[i]+offset;
+            int wp=width-p->padx;
+            float spani = 1000000./p->span/p->rate[fi]*wp;
+            int hp=height-p->pady;
+            int cp=hp/2;
+            float ym=hp*8./18./p->range;
+
+            switch(p->type){
+            case 0: /* zero-hold */
+
+
+
+
+
+              break;
+            case 1: /* linear interpolation */
+
+              for(k=0;k<spann-1;k++){
+                int x0 = rint(k*spani)+padx;
+                int x1 = rint((k+1)*spani)+padx;
+                if(!isnan(data[k]) && !isnan(data[k+1])){
+                  int y0 = rint(data[k]*ym)+cp;
+                  int y1 = rint(data[k+1]*ym)+cp;
+
+                  gdk_draw_line(p->backing,p->drawgc,x0,y0,x1,y1);
+                }
+              }
+
+              break;
+            case 2: /* lollipop */
+
+
+
+              break;
+            }
+
+            offset+=spann;
+          }
+        }
+      }
+      ch+=p->ch[fi];
+    }
+
+    gdk_gc_set_clip_rectangle(p->drawgc, &noclip);
+
   }
 
   {
@@ -384,42 +450,41 @@ GtkWidget* plot_new (int size, int groups, int *channels, int *rate){
   /* generate all the text layouts we'll need */
   /* linear X scale */
   {
-    char *labels[13][11]={
-      {"","100ms","200ms","300ms","400ms","500ms","600ms","700ms","800ms","900ms",""},
-      {"","50ms","100ms","150ms","200ms","250ms","300ms","350ms","400ms","450ms",""},
-      {"","20ms","40ms","60ms","80ms","100ms","120ms","140ms","160ms","180ms",""},
-      {"","10ms","20ms","30ms","40ms","50ms","60ms","70ms","80ms","90ms",""},
-      {"","5ms","10ms","15ms","20ms","25ms","30ms","35ms","40ms","45ms",""},
-      {"","2ms","4ms","6ms","8ms","10ms","12ms","14ms","16ms","18ms",""},
-      {"","1ms","2ms","3ms","4ms","5ms","6ms","7ms","8ms","9ms",""},
-      {"","100\xC2\xBCs","200\xC2\xBCs","300\xC2\xBCs","400\xC2\xBCs","500\xC2\xBCs",
-       "600\xC2\xBCs","700\xC2\xBCs","800\xC2\xBCs","900\xC2\xBCs",""},
-      {"","50\xC2\xBCs","100\xC2\xBCs","150\xC2\xBCs","200\xC2\xBCs","250\xC2\xBCs",
-       "300\xC2\xBCs","350\xC2\xBCs","400\xC2\xBCs","450\xC2\xBCs",""},
-      {"","20\xC2\xBCs","40\xC2\xBCs","60\xC2\xBCs","80\xC2\xBCs","100\xC2\xBCs",
-       "120\xC2\xBCs","140\xC2\xBCs","160\xC2\xBCs","180\xC2\xBCs",""},
-      {"","10\xC2\xBCs","20\xC2\xBCs","30\xC2\xBCs","40\xC2\xBCs","50\xC2\xBCs",
-       "60\xC2\xBCs","70\xC2\xBCs","80\xC2\xBCs","90\xC2\xBCs",""},
-      {"","5\xC2\xBCs","10\xC2\xBCs","15\xC2\xBCs","20\xC2\xBCs","25\xC2\xBCs",
-       "30\xC2\xBCs","35\xC2\xBCs","40\xC2\xBCs","45\xC2\xBCs",""},
-      {"","2\xC2\xBCs","4\xC2\xBCs","6\xC2\xBCs","8\xC2\xBCs","10\xC2\xBCs",
-       "12\xC2\xBCs","14\xC2\xBCs","16\xC2\xBCs","18\xC2\xBCs",""}};
+    char *labels[13][12]={
+      {"","100ms","200ms","300ms","400ms","500ms","600ms","700ms","800ms","900ms","",""},
+      {"","50ms","100ms","150ms","200ms","250ms","300ms","350ms","400ms","450ms","",""},
+      {"","20ms","40ms","60ms","80ms","100ms","120ms","140ms","160ms","180ms","",""},
+      {"","10ms","20ms","30ms","40ms","50ms","60ms","70ms","80ms","90ms","",""},
+      {"","5ms","10ms","15ms","20ms","25ms","30ms","35ms","40ms","45ms","",""},
+      {"","2ms","4ms","6ms","8ms","10ms","12ms","14ms","16ms","18ms","",""},
+      {"","1ms","2ms","3ms","4ms","5ms","6ms","7ms","8ms","9ms","",""},
+      {"",".5ms","1ms","1.5ms","2ms","2.5ms","3ms","3.5ms","4ms","4.5ms","",""},
+      {"",".2ms",".4ms",".6ms",".8ms","1ms","1.2ms","1.4ms","1.6ms","1.8ms","",""},
+
+      {"","100\xCE\xBCs","200\xCE\xBCs","300\xCE\xBCs","400\xCE\xBCs","500\xCE\xBCs",
+       "600\xCE\xBCs","700\xCE\xBCs","800\xCE\xBCs","900\xCE\xBCs","",""},
+      {"","50\xCE\xBCs","100\xCE\xBCs","150\xCE\xBCs","200\xCE\xBCs","250\xCE\xBCs",
+       "300\xCE\xBCs","350\xCE\xBCs","400\xCE\xBCs","450\xCE\xBCs","",""},
+      {"","20\xCE\xBCs","40\xCE\xBCs","60\xCE\xBCs","80\xCE\xBCs","100\xCE\xBCs",
+       "120\xCE\xBCs","140\xCE\xBCs","160\xCE\xBCs","180\xCE\xBCs","",""},
+      {"","10\xCE\xBCs","20\xCE\xBCs","30\xCE\xBCs","40\xCE\xBCs","50\xCE\xBCs",
+       "60\xCE\xBCs","70\xCE\xBCs","80\xCE\xBCs","90\xCE\xBCs","",""}};
 
     p->x_layout=calloc(13,sizeof(*p->x_layout));
-    for(i=0;i<12;i++){
-      p->x_layout[i]=calloc(11,sizeof(**p->x_layout));
-      for(j=0;j<10;j++)
+    for(i=0;i<13;i++){
+      p->x_layout[i]=calloc(12,sizeof(**p->x_layout));
+      for(j=0;j<11;j++)
         p->x_layout[i][j]=gtk_widget_create_pango_layout(ret,labels[i][j]);
     }
   }
 
   /* phase Y scale */
   {
-    char *label1[6] = {"1",".5",".2",".1",".01",".001"};
-    char *label1a[6] = {".5",".25",".1",".05",".005",".0005"};
+    char *label1[6] = {"1.0","0.5","0.2","0.1",".01",".001"};
+    char *label1a[6] = {"0.5","0.25","0.1","0.05",".005",".0005"};
 
-    char *labeln1[6] = {"-1","-.5","-.2","-.1","-.01","-.001"};
-    char *labeln1a[6] = {"-.5","-.25","-.1","-.05","-.005","-.0005"};
+    char *labeln1[6] = {"-1.0","-0.5","-0.2","-0.1","-.01","-.001"};
+    char *labeln1a[6] = {"-0.5","-0.25","-0.1","-0.05","-.005","-.0005"};
 
     char *label2[6] = {"0dB","-6dB","-14dB","-20dB","-40dB","-60dB"};
     char *label3[5] = {"0","-65dB","-96dB","-120dB","-160dB"};
@@ -486,7 +551,7 @@ float **plot_get (Plot *p){
   return(p->ydata);
 }
 
-void plot_setting (Plot *p, int range, int scale, int interval, int span, int rangechoice, int scalechoice, int spanchoice,
+void plot_setting (Plot *p, float range, int scale, int interval, int span, int rangechoice, int scalechoice, int spanchoice,int type,
                    int *blockslice, int *overslice){
   GtkWidget *widget=GTK_WIDGET(p);
   p->range=range;
@@ -496,6 +561,7 @@ void plot_setting (Plot *p, int range, int scale, int interval, int span, int ra
   p->rchoice=rangechoice;
   p->schoice=scalechoice;
   p->spanchoice=spanchoice;
+  p->type=type;
 
   if(blockslice){
     if(!p->blockslice)

@@ -46,10 +46,10 @@ static struct panel {
   GtkWidget *plot;
   GtkWidget *run;
   GtkWidget **chbuttons;
-
+  GtkWidget *rangemenu;
 } p;
 
-int plot_range=0;
+float plot_range=0;
 int plot_scale=0;
 int plot_span=0;
 int plot_rchoice=0;
@@ -58,10 +58,34 @@ int plot_spanchoice=0;
 int plot_interval=0;
 int plot_trigger=0;
 int plot_hold=0;
+int plot_type=0;
 int plot_last_update=0;
 int *active;
 
 int overslice[MAX_FILES]= {-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1};
+
+static void set_slices(int interval, int span){
+
+  /* update interval limited to < 25fps */
+  int temp = (interval < 50000 ? 50000:interval),fi;
+
+  if(temp <= span){
+    /* if the fps-limited update interval is shorter than or equal to
+       the span, we simply frame limit */
+    for(fi=0;fi<inputs;fi++){
+      blockslice[fi]=rint(rate[fi]/1000000.*temp);
+      overslice[fi]=rint(rate[fi]/1000000.*temp);
+    }
+  }else{
+    /* if the limited update interval is longer than the span, we
+       overdraw */
+    for(fi=0;fi<inputs;fi++)
+      blockslice[fi]=rint(rate[fi]/1000000.*temp);
+    for(fi=0;fi<inputs;fi++){
+      overslice[fi]=rint(rate[fi]/1000000.*interval);
+    }
+  }
+}
 
 static void replot(struct panel *p){
   /* update the waveform display; send new data */
@@ -145,33 +169,37 @@ static void set_fg(GtkWidget *c, gpointer in){
     gtk_container_forall (GTK_CONTAINER(c),set_fg,in);
 }
 
+static int rangechange_ign=0;
 static void rangechange(GtkWidget *widget,struct panel *p){
-  int choice=gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
-  plot_rchoice=choice;
-  switch(choice){
-  case 0:
-    plot_range=0;
-    break;
-  case 1:
-    plot_range=-6;
-    break;
-  case 2:
-    plot_range=-14;
-    break;
-  case 3:
-    plot_range=-20;
-    break;
-  case 4:
-    plot_range=-40;
-    break;
-  case 5:
-    plot_range=-60;
-    break;
+  if(!rangechange_ign){
+    int choice=gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
+    plot_rchoice=choice;
+    switch(choice){
+    case 0:
+      plot_range=1;
+      break;
+    case 1:
+      plot_range=.5;
+      break;
+    case 2:
+      plot_range=.2;
+      break;
+    case 3:
+      plot_range=.1;
+      break;
+    case 4:
+      plot_range=.01;
+      break;
+    case 5:
+      plot_range=.001;
+      break;
+    }
+    plot_setting(PLOT(p->plot),plot_range,plot_scale,plot_interval,plot_span,plot_rchoice,plot_schoice,plot_spanchoice,plot_type,NULL,NULL);
   }
-  plot_setting(PLOT(p->plot),plot_range,plot_scale,plot_interval,plot_span,plot_rchoice,plot_schoice,plot_spanchoice,NULL,NULL);
 }
 
 static void scalechange(GtkWidget *widget,struct panel *p){
+  int i;
   int choice=gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
   plot_schoice=choice;
   switch(choice){
@@ -191,7 +219,36 @@ static void scalechange(GtkWidget *widget,struct panel *p){
     plot_scale=-160;
     break;
   }
-  plot_setting(PLOT(p->plot),plot_range,plot_scale,plot_interval,plot_span,plot_rchoice,plot_schoice,plot_spanchoice,NULL,NULL);
+
+  rangechange_ign=1;
+  if(choice==0){
+    char *entries[]={"1.0",
+                     "0.5",
+                     "0.2",
+                     "0.1",
+                     "0.01",
+                     "0.001"};
+    for(i=0;i<6;i++){
+      gtk_combo_box_remove_text (GTK_COMBO_BOX (p->rangemenu), i);
+      gtk_combo_box_insert_text (GTK_COMBO_BOX (p->rangemenu), i, entries[i]);
+    }
+
+  }else{
+    char *entries[]={"0dB",
+                     "-6dB",
+                     "-14dB",
+                     "-20dB",
+                     "-40dB",
+                     "-60dB"};
+    for(i=0;i<6;i++){
+      gtk_combo_box_remove_text (GTK_COMBO_BOX (p->rangemenu), i);
+      gtk_combo_box_insert_text (GTK_COMBO_BOX (p->rangemenu), i, entries[i]);
+    }
+  }
+  gtk_combo_box_set_active(GTK_COMBO_BOX(p->rangemenu),plot_rchoice);
+  rangechange_ign=0;
+
+  plot_setting(PLOT(p->plot),plot_range,plot_scale,plot_interval,plot_span,plot_rchoice,plot_schoice,plot_spanchoice,plot_type,NULL,NULL);
 }
 
 static void spanchange(GtkWidget *widget,struct panel *p){
@@ -239,25 +296,9 @@ static void spanchange(GtkWidget *widget,struct panel *p){
     break;
   }
 
-  /* update interval limited to < 25fps */
-  int temp = (plot_interval < 50000 ? 50000:plot_interval),fi;
+  set_slices(plot_interval,plot_span);
 
-  if(temp <= plot_span){
-    /* if the fps-limited update interval is shorter than or equal to
-       the span, we simply frame limit */
-    for(fi=0;fi<inputs;fi++){
-      blockslice[fi]=rate[fi]*temp/1000000;
-      overslice[fi]=rate[fi]*temp/1000000;
-    }
-  }else{
-    /* if the limited update interval is longer than the span, we
-       overdraw */
-    for(fi=0;fi<inputs;fi++)
-      blockslice[fi]=rate[fi]*temp/1000000;
-    for(fi=0;fi<inputs;fi++)
-      overslice[fi]=rate[fi]*plot_interval/1000000;
-  }
-  plot_setting(PLOT(p->plot),plot_range,plot_scale,plot_interval,plot_span,plot_rchoice,plot_schoice,plot_spanchoice,blockslice,overslice);
+  plot_setting(PLOT(p->plot),plot_range,plot_scale,plot_interval,plot_span,plot_rchoice,plot_schoice,plot_spanchoice,plot_type,blockslice,overslice);
 }
 
 /* intervals that are >= the span and would result in > 25fps are overdrawn */
@@ -305,25 +346,9 @@ static void intervalchange(GtkWidget *widget,struct panel *p){
     break;
   }
 
-  /* update interval limited to < 25fps */
-  int temp = (plot_interval < 50000 ? 50000:plot_interval),fi;
+  set_slices(plot_interval,plot_span);
 
-  if(temp <= plot_span){
-    /* if the fps-limited update interval is shorter than or equal to
-       the span, we simply frame limit */
-    for(fi=0;fi<inputs;fi++){
-      blockslice[fi]=rate[fi]*temp/1000000;
-      overslice[fi]=rate[fi]*temp/1000000;
-    }
-  }else{
-    /* if the limited update interval is longer than the span, we
-       overdraw */
-    for(fi=0;fi<inputs;fi++)
-      blockslice[fi]=rate[fi]*temp/1000000;
-    for(fi=0;fi<inputs;fi++)
-      overslice[fi]=rate[fi]*plot_interval/1000000;
-  }
-  plot_setting(PLOT(p->plot),plot_range,plot_scale,plot_interval,plot_span,plot_rchoice,plot_schoice,plot_spanchoice,blockslice,overslice);
+  plot_setting(PLOT(p->plot),plot_range,plot_scale,plot_interval,plot_span,plot_rchoice,plot_schoice,plot_spanchoice,plot_type,blockslice,overslice);
 }
 
 static void triggerchange(GtkWidget *widget,struct panel *p){
@@ -350,6 +375,11 @@ static void holdchange(GtkWidget *widget,struct panel *p){
   plot_hold=gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
   replot(p);
   plot_draw(PLOT(p->plot));
+}
+
+static void plotchange(GtkWidget *widget,struct panel *p){
+  plot_type=gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
+  plot_setting(PLOT(p->plot),plot_range,plot_scale,plot_interval,plot_span,plot_rchoice,plot_schoice,plot_spanchoice,plot_type,blockslice,overslice);
 }
 
 static void loopchange(GtkWidget *widget,struct panel *p){
@@ -482,12 +512,15 @@ void panel_create(struct panel *panel){
 
       for(i=ch;i<ch+channels[fi];i++){
 	GtkWidget *button=panel->chbuttons[i]=gtk_toggle_button_new();
+        GdkColor rgb = chcolor(i);
 
         sprintf(buffer,"channel %d", i-ch);
         gtk_button_set_label(GTK_BUTTON(button),buffer);
 
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button),1);  
 	g_signal_connect (G_OBJECT (button), "clicked", G_CALLBACK (chlabels), panel);
+
+        set_fg(button,&rgb);
 	gtk_box_pack_start(GTK_BOX(rightbox),button,0,0,0);
       }
 
@@ -505,77 +538,100 @@ void panel_create(struct panel *panel){
   /* add the action buttons */
   /* range */
   {
+    GtkWidget *box=gtk_hbox_new(1,1);
+
     GtkWidget *menu=gtk_combo_box_new_text();
-    char *entries[]={"\xC2\xB1""1.0 / 0dBFS",
-                     "\xC2\xB1""0.5 / -6dBFS",
-                     "\xC2\xB1""0.2 / -14dBFS",
-                     "\xC2\xB1""0.1 / -20dBFS",
-                     "\xC2\xB1""0.01 / -40dBFS",
-                     "\xC2\xB1""0.001 / -60dBFS"};
+    char *entries[]={"","","","","",""};
     for(i=0;i<6;i++)
       gtk_combo_box_append_text (GTK_COMBO_BOX (menu), entries[i]);
-    gtk_combo_box_set_active(GTK_COMBO_BOX(menu),0);
-    gtk_box_pack_start(GTK_BOX(bbox),menu,0,0,0);
     g_signal_connect (G_OBJECT (menu), "changed",
 		      G_CALLBACK (rangechange), panel);
-  }
+    panel->rangemenu = menu;
 
-  /* scale */
-  {
-    GtkWidget *menu=gtk_combo_box_new_text();
-    char *entries[]={"linear","-65dB+","-96dB+","-120dB+","-160dB+"};
+    GtkWidget *menu2=gtk_combo_box_new_text();
+    char *entries2[]={"linear","-65dB","-96dB","-120dB","-160dB"};
     for(i=0;i<5;i++)
-      gtk_combo_box_append_text (GTK_COMBO_BOX (menu), entries[i]);
-    gtk_combo_box_set_active(GTK_COMBO_BOX(menu),0);
-    gtk_box_pack_start(GTK_BOX(bbox),menu,0,0,0);
-    g_signal_connect (G_OBJECT (menu), "changed",
+      gtk_combo_box_append_text (GTK_COMBO_BOX (menu2), entries2[i]);
+    g_signal_connect (G_OBJECT (menu2), "changed",
 		      G_CALLBACK (scalechange), panel);
+
+    gtk_box_pack_start(GTK_BOX(box),menu2,1,1,0);
+    gtk_box_pack_start(GTK_BOX(box),menu,1,1,0);
+    gtk_box_pack_start(GTK_BOX(bbox),box,0,0,0);
+    gtk_combo_box_set_active(GTK_COMBO_BOX(menu),0);
+    gtk_combo_box_set_active(GTK_COMBO_BOX(menu2),0);
   }
 
   /* span */
   {
+    GtkWidget *box=gtk_hbox_new(1,1);
+    GtkWidget *label=gtk_label_new ("span: ");
+    gtk_misc_set_alignment(GTK_MISC(label), 1.0f, 0.5f);
+
     GtkWidget *menu=gtk_combo_box_new_text();
-    char *entries[]={"1s span",
-                     "500ms span","200ms span","100ms span",
-                     "50ms span","20ms span","10ms span",
-                     "5ms span","2ms span","1ms span",
-                     "500\xCE\xBCs span","200\xCE\xBCs span",
-                     "100\xCE\xBCs span"};
+    char *entries[]={"1s",
+                     "500ms","200ms","100ms",
+                     "50ms","20ms","10ms",
+                     "5ms","2ms","1ms",
+                     "500\xCE\xBCs","200\xCE\xBCs",
+                     "100\xCE\xBCs"};
     for(i=0;i<13;i++)
       gtk_combo_box_append_text (GTK_COMBO_BOX (menu), entries[i]);
-    gtk_combo_box_set_active(GTK_COMBO_BOX(menu),0);
-    gtk_box_pack_start(GTK_BOX(bbox),menu,0,0,0);
     g_signal_connect (G_OBJECT (menu), "changed",
 		      G_CALLBACK (spanchange), panel);
+    gtk_combo_box_set_active(GTK_COMBO_BOX(menu),0);
+
+
+    gtk_box_pack_start(GTK_BOX(box),label,1,1,0);
+    gtk_box_pack_start(GTK_BOX(box),menu,1,1,0);
+    gtk_box_pack_start(GTK_BOX(bbox),box,0,0,0);
   }
 
   /* trigger */
   {
+    GtkWidget *box=gtk_hbox_new(1,1);
+
     GtkWidget *menu=gtk_combo_box_new_text();
     char *entries[]={"free run"};
     for(i=0;i<1;i++)
       gtk_combo_box_append_text (GTK_COMBO_BOX (menu), entries[i]);
     gtk_combo_box_set_active(GTK_COMBO_BOX(menu),0);
-    gtk_box_pack_start(GTK_BOX(bbox),menu,0,0,0);
     g_signal_connect (G_OBJECT (menu), "changed",
 		      G_CALLBACK (triggerchange), panel);
+
+    /* interval */
+
+    GtkWidget *menu2=gtk_combo_box_new_text();
+    char *entries2[]={"1s",
+                      "500ms","200ms","100ms",
+                      "50ms","20ms","10ms",
+                      "5ms","2ms","1ms",
+                      "500\xCE\xBCs","200\xCE\xBCs",
+                      "100\xCE\xBCs"};
+    for(i=0;i<13;i++)
+      gtk_combo_box_append_text (GTK_COMBO_BOX (menu2), entries2[i]);
+    g_signal_connect (G_OBJECT (menu2), "changed",
+		      G_CALLBACK (intervalchange), panel);
+    gtk_combo_box_set_active(GTK_COMBO_BOX(menu2),3);
+
+
+    gtk_box_pack_start(GTK_BOX(box),menu,1,1,0);
+    gtk_box_pack_start(GTK_BOX(box),menu2,1,1,0);
+    gtk_box_pack_start(GTK_BOX(bbox),box,0,0,0);
+
+
   }
 
-  /* interval */
+  /* plot type */
   {
     GtkWidget *menu=gtk_combo_box_new_text();
-    char *entries[]={"1s interval",
-                     "500ms interval","200ms interval","100ms interval",
-                     "50ms interval","20ms interval","10ms interval",
-                     "5ms interval","2ms interval","1ms interval",
-                     "500\xCE\xBCs interval","200\xCE\xBCs interval",
-                     "100\xCE\xBCsinterval "};
-    for(i=0;i<13;i++)
+    char *entries[]={"zero-hold","interpolated","lollipop"};
+    for(i=0;i<3;i++)
       gtk_combo_box_append_text (GTK_COMBO_BOX (menu), entries[i]);
-    gtk_combo_box_set_active(GTK_COMBO_BOX(menu),3);
-    gtk_box_pack_start(GTK_BOX(bbox),menu,0,0,0);
+    gtk_combo_box_set_active(GTK_COMBO_BOX(menu),0);
     g_signal_connect (G_OBJECT (menu), "changed",
-		      G_CALLBACK (intervalchange), panel);
+		      G_CALLBACK (plotchange), panel);
+    gtk_box_pack_start(GTK_BOX(bbox),menu,0,0,0);
   }
 
   {
@@ -605,9 +661,9 @@ void panel_create(struct panel *panel){
     button=gtk_toggle_button_new_with_mnemonic("_loop");
     gtk_widget_add_accelerator (button, "activate", panel->group, GDK_l, 0, 0);
     g_signal_connect (G_OBJECT (button), "clicked", G_CALLBACK (loopchange), panel);
-    gtk_box_pack_start(GTK_BOX(box),button,1,1,0);
     gtk_widget_set_sensitive(button,global_seekable);
 
+    gtk_box_pack_start(GTK_BOX(box),button,1,1,0);
     gtk_box_pack_start(GTK_BOX(bbox),box,0,0,0);
   }
 

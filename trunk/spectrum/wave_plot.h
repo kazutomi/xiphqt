@@ -59,10 +59,11 @@ struct _Plot{
   int *ch_active;
   int total_ch;
 
-  int range;
+  float range;
   int scale;
   int interval;
   int span;
+  int type;
 
   int rchoice;
   int schoice;
@@ -98,9 +99,9 @@ struct _PlotClass{
 GType          plot_get_type        (void);
 GtkWidget*     plot_new             (int n, int inputs, int *channels, int *rate);
 void	       plot_refresh         (Plot *m);
-void	       plot_setting         (Plot *p, int range, int scale, int interval, int span,
+void	       plot_setting         (Plot *p, float range, int scale, int interval, int span,
                                      int rangechoice, int scalechoice, int spanchoice,
-                                     int *blockslice, int *overslice);
+                                     int type, int *blockslice, int *overslice);
 void	       plot_draw            (Plot *m);
 void	       plot_clear           (Plot *m);
 int 	       plot_width           (Plot *m);
