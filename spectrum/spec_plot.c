@@ -242,7 +242,7 @@ static void draw(GtkWidget *widget){
     gdk_draw_rectangle(p->backing,gc,1,0,height-p->pady,width,p->pady);
 
     gc=parent->style->white_gc;
-    gdk_draw_rectangle(p->backing,gc,1,padx,0,width-padx,height-p->pady+1);
+    gdk_draw_rectangle(p->backing,gc,1,padx,0,width-padx,height-p->pady);
   }
 
   /* draw the noise floor if active */
@@ -541,18 +541,15 @@ static void draw(GtkWidget *widget){
 		int ly = y;
 		int lp = prev;
 		
-		if(ly>=height-p->pady)ly=height-p->pady;
-		if(lp>=height-p->pady)lp=height-p->pady;
-		
-		gdk_draw_line(p->backing,p->drawgc,padx+i-1,lp,padx+i,ly);
-		
-		ly++;
-		lp++;
-		
-		if(ly>=height-p->pady)ly=height-p->pady;
-		if(lp>=height-p->pady)lp=height-p->pady;
-		
-		gdk_draw_line(p->backing,p->drawgc,padx+i-1,lp,padx+i,ly);
+		if(lp>=height-p->pady-1)lp=height-p->pady-1;
+
+		if(ly>=height-p->pady-1){
+                  ly=height-p->pady-1;
+                  gdk_draw_line(p->backing,p->drawgc,padx+i-1,lp,padx+i,ly);
+                  gdk_draw_point(p->backing,p->drawgc,padx+i,ly);
+                }else{
+                  gdk_draw_line(p->backing,p->drawgc,padx+i-1,lp,padx+i,ly);
+                }
 	      }
 	      first=1;
 	      prev=y;

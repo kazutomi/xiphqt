@@ -392,7 +392,7 @@ int input_load(void){
 
 /* Convert new data from readbuffer into the blockbuffers until the
    blockbuffer is full */
-static void LBEconvert(void){
+static void LBEconvert(){
   float scale=1./2147483648.;
   int ch=0,fi;
 
@@ -405,6 +405,7 @@ static void LBEconvert(void){
       channels[fi]/bytes*channels[fi]*bytes+readbufferptr[fi];
 
     int bfill = blockbufferfill[fi];
+    int tosize = blocksize + blockslice[fi];
     int rptr = readbufferptr[fi];
     unsigned char *rbuf = readbuffer[fi];
 
@@ -413,7 +414,7 @@ static void LBEconvert(void){
       switch(bytes){
       case 1:
 	
-	while(bfill<blocksize && rptr<readlimit){
+	while(bfill<tosize && rptr<readlimit){
 	  for(j=ch;j<channels[fi]+ch;j++)
 	    blockbuffer[j][bfill]=((rbuf[rptr++]<<24)^xor)*scale;
 	  bfill++;
@@ -423,7 +424,7 @@ static void LBEconvert(void){
       case 2:
       
 	if(bigendian[fi]){
-	  while(bfill<blocksize && rptr<readlimit){
+	  while(bfill<tosize && rptr<readlimit){
 	    for(j=ch;j<channels[fi]+ch;j++){
 	      blockbuffer[j][bfill]=
 		(((rbuf[rptr+1]<<16)| (rbuf[rptr]<<24))^xor)*scale;
@@ -432,7 +433,7 @@ static void LBEconvert(void){
 	    bfill++;
 	  }
 	}else{
-	  while(bfill<blocksize && rptr<readlimit){
+	  while(bfill<tosize && rptr<readlimit){
 	    for(j=ch;j<channels[fi]+ch;j++){
 	      blockbuffer[j][bfill]=
 		(((rbuf[rptr]<<16)| (rbuf[rptr+1]<<24))^xor)*scale;
@@ -446,7 +447,7 @@ static void LBEconvert(void){
       case 3:
 	
 	if(bigendian[fi]){
-	  while(bfill<blocksize && rptr<readlimit){
+	  while(bfill<tosize && rptr<readlimit){
 	    for(j=ch;j<channels[fi]+ch;j++){
 	      blockbuffer[j][bfill]=
 		(((rbuf[rptr+2]<<8)|(rbuf[rptr+1]<<16)|(rbuf[rptr]<<24))^xor)*scale;
@@ -455,7 +456,7 @@ static void LBEconvert(void){
 	    bfill++;
 	  }
 	}else{
-	  while(bfill<blocksize && rptr<readlimit){
+	  while(bfill<tosize && rptr<readlimit){
 	    for(j=ch;j<channels[fi]+ch;j++){
 	      blockbuffer[j][bfill]=
 		(((rbuf[rptr]<<8)|(rbuf[rptr+1]<<16)|(rbuf[rptr+2]<<24))^xor)*scale;
@@ -468,7 +469,7 @@ static void LBEconvert(void){
       case 4:
 	
 	if(bigendian[fi]){
-	  while(bfill<blocksize && rptr<readlimit){
+	  while(bfill<tosize && rptr<readlimit){
 	    for(j=ch;j<channels[fi]+ch;j++){
 	      blockbuffer[j][bfill]=
 		(((rbuf[rptr+3])|(rbuf[rptr+2]<<8)|(rbuf[rptr+1]<<16)|(rbuf[rptr+3]<<24))^xor)*scale;
@@ -477,7 +478,7 @@ static void LBEconvert(void){
 	    bfill++;
 	  }
 	}else{
-	  while(bfill<blocksize && rptr<readlimit){
+	  while(bfill<tosize && rptr<readlimit){
 	    for(j=ch;j<channels[fi]+ch;j++){
 	      blockbuffer[j][bfill]=
 		(((rbuf[rptr])|(rbuf[rptr+1]<<8)|(rbuf[rptr+2]<<16)|(rbuf[rptr+3]<<24))^xor)*scale;
@@ -491,7 +492,7 @@ static void LBEconvert(void){
     }
     ch+=channels[fi];
     blockbufferfill[fi]=bfill;
-    readbufferptr[fi]=rptr;    
+    readbufferptr[fi]=rptr;
   }
 }
 
@@ -510,26 +511,28 @@ int input_read(int loop, int partialok){
 
   if(blockbuffer==0){
     blockbuffer=malloc(total_ch*sizeof(*blockbuffer));
-    
+
     for(i=0;i<total_ch;i++){
-      blockbuffer[i]=calloc(blocksize,sizeof(**blockbuffer));
+      blockbuffer[i]=calloc(blocksize*2,sizeof(**blockbuffer));
     }
   }
 
+  /* if this is first frame, do we allow a single slice or fully
+     fill the buffer */
   for(fi=0;fi<inputs;fi++){
-    /* shift according to slice */
-    if(blockslice[fi]<blocksize)
+    if(blockbufferfill[fi]==0){
       for(i=ch;i<channels[fi]+ch;i++)
-        memmove(blockbuffer[i],blockbuffer[i]+blockslice[fi],
-                (blocksize-blockslice[fi])*sizeof(**blockbuffer));
-    blockbufferfill[fi]-=blockslice[fi];
-    if(blockbufferfill[fi]<0)
-      blockbufferfill[fi]=0;
-    for(i=ch;i<channels[fi]+ch;i++)
-      for(j=blockbufferfill[fi];j<blocksize;j++)
-        blockbuffer[i][j]=NAN;
-    ch+=channels[fi];
+        for(j=0;j<blocksize;j++)
+          blockbuffer[i][j]=NAN;
+      if(partialok){
+        blockbufferfill[fi]=blocksize;
+      }else{
+        blockbufferfill[fi]=blockslice[fi];
+      }
+    }
   }
+
+  /* try to fill buffer to blocksize+slice before performing shift */
 
   while(notdone){
     notdone=0;
@@ -539,7 +542,7 @@ int input_read(int loop, int partialok){
 
     ch=0;
     for(fi=0;fi<inputs;fi++){
-      if(blockbufferfill[fi]!=blocksize){
+      if(blockbufferfill[fi]!=blocksize+blockslice[fi]){
 
 	/* shift the read buffer before fill if there's a fractional
 	   frame in it */
@@ -594,6 +597,21 @@ int input_read(int loop, int partialok){
       ch += channels[fi];
     }
   }
+
+  /* shift */
+  for(fi=0,ch=0;fi<inputs;fi++){
+    if(blockbufferfill[fi]>blocksize){
+      for(i=ch;i<channels[fi]+ch;i++)
+        memmove(blockbuffer[i],blockbuffer[i]+(blockbufferfill[fi]-blocksize),
+                blocksize*sizeof(**blockbuffer));
+      blockbufferfill[fi]=blocksize;
+    }
+    for(i=ch;i<channels[fi]+ch;i++)
+      for(j=blockbufferfill[fi];j<blocksize;j++)
+        blockbuffer[i][j]=NAN;
+    ch+=channels[fi];
+  }
+
   return eof;
 }
 

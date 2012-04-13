@@ -84,7 +84,7 @@ float **process_fetch(int *blockslice,int *overslice,int span){
   int fi,i,j,k,ch;
 
   init_process();
-  if(!blockslice || !overslice)return NULL;
+  if(!blockslice || !overslice || !blockbuffer)return NULL;
 
   /* by channel */
   ch=0;
@@ -95,17 +95,16 @@ float **process_fetch(int *blockslice,int *overslice,int span){
        ceil(blockslice/overslice) back-to-back spans */
 
     int copies = (int)ceil(blockslice[fi]/overslice[fi]);
-    int spann = rate[fi]*span/1000000;
+    int spann = ceil(rate[fi]/1000000.*span)+1;
 
     for(i=ch;i<ch+channels[fi];i++){
-      int offset=0;
+      int offset=blocksize-spann;
       float *plotdatap=plot_data[i];
-      pthread_mutex_lock(&feedback_mutex);
       for(j=0;j<copies;j++){
         float *data=blockbuffer[i]+offset;
         for(k=0;k<spann;k++)
           *(plotdatap++)=data[k];
-        offset+=overslice[fi];
+        offset-=overslice[fi];
       }
     }
     ch+=channels[fi];
