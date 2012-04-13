@@ -101,8 +101,14 @@ static void draw(GtkWidget *widget){
   int padx = p->padx;
 
   if(!p->drawgc){
+    GdkGCValues values;
     p->drawgc=gdk_gc_new(p->backing);
+    p->twogc=gdk_gc_new(p->backing);
     gdk_gc_copy(p->drawgc,widget->style->black_gc);
+    gdk_gc_copy(p->twogc,widget->style->black_gc);
+
+    gdk_gc_set_line_attributes(p->twogc,2,GDK_LINE_SOLID,GDK_CAP_PROJECTING,
+                               GDK_JOIN_MITER);
   }
 
   /* clear the old rectangle out */
@@ -226,13 +232,6 @@ static void draw(GtkWidget *widget){
     gdk_draw_line(p->backing,widget->style->black_gc,padx,center,width,center);
   }
 
-  {
-    GdkGCValues values;
-    //gdk_gc_get_values(p->drawgc,&values);
-    values.line_width=2;
-    gdk_gc_set_values(p->drawgc,&values,GDK_GC_LINE_WIDTH);
-  }
-
   /* draw actual data */
   if(p->ydata){
     int ch=0,fi,i,j,k;
@@ -240,7 +239,7 @@ static void draw(GtkWidget *widget){
     const GdkRectangle noclip = {0,0,width,height};
     GdkColor rgb;
 
-    gdk_gc_set_clip_rectangle (p->drawgc, &clip);
+    gdk_gc_set_clip_rectangle (p->twogc, &clip);
 
     for(fi=0;fi<p->groups;fi++){
       int copies = (int)ceil(p->blockslice[fi]/p->overslice[fi]);
@@ -250,7 +249,7 @@ static void draw(GtkWidget *widget){
         if(p->ch_active[i]){
           int offset=0;
           rgb = chcolor(i);
-          gdk_gc_set_rgb_fg_color(p->drawgc,&rgb);
+          gdk_gc_set_rgb_fg_color(p->twogc,&rgb);
 
           for(j=0;j<copies;j++){
             float *data=p->ydata[i]+offset;
@@ -262,25 +261,101 @@ static void draw(GtkWidget *widget){
 
             switch(p->type){
             case 0: /* zero-hold */
+              {
+                int x0=0;
+                float yH=NAN,yL=NAN;
+                int acc=0;
+                for(k=0;k<spann;k++){
+                  int x1 = rint(k*spani);
+                  float y1 = data[k]*ym;
 
+                  if(x1>x0){
+                    if(acc>1){
+                      if(!isnan(yL)&&!isnan(yH))
+                        gdk_draw_line(p->backing,p->twogc,
+                                      x0+padx,rint(yL)+cp,x0+padx,
+                                      rint(yH)+cp);
+                    }else{
+                      if(!isnan(yL)){
+                        gdk_draw_line(p->backing,p->twogc,
+                                      x0+padx,rint(yL)+cp,x1+padx,rint(yL)+cp);
 
+                        if(!isnan(yH))
+                          gdk_draw_line(p->backing,p->twogc,
+                                        x1+padx,rint(yL)+cp,x1+padx,rint(y1)+cp);
+                      }
+                    }
 
+                    acc=1;
+                    yH=yL=y1;
+                  }else{
+                    acc++;
+                    if(!isnan(y1)){
+                      if(y1<yL || isnan(yL))yL=y1;
+                      if(y1>yH || isnan(yH))yH=y1;
+                    }
+                  }
+                  x0=x1;
+                }
+                {
+                  int x1 = rint(k*spani);
 
-
-              break;
-            case 1: /* linear interpolation */
-
-              for(k=0;k<spann-1;k++){
-                int x0 = rint(k*spani)+padx;
-                int x1 = rint((k+1)*spani)+padx;
-                if(!isnan(data[k]) && !isnan(data[k+1])){
-                  int y0 = rint(data[k]*ym)+cp;
-                  int y1 = rint(data[k+1]*ym)+cp;
-
-                  gdk_draw_line(p->backing,p->drawgc,x0,y0,x1,y1);
+                  if(x1<=x0 || acc>1){
+                    if(!isnan(yL)&&!isnan(yH))
+                      gdk_draw_line(p->backing,p->twogc,
+                                    x0+padx,rint(yL)+cp,x0+padx,rint(yH)+cp);
+                  }else{
+                    if(!isnan(yL)){
+                      gdk_draw_line(p->backing,p->twogc,
+                                    x0+padx,rint(yL)+cp,x1+padx,rint(yL)+cp);
+                    }
+                  }
                 }
               }
+              break;
+            case 1: /* linear interpolation */
+              {
+                int x0=-1,x1=-1,x2;
+                float y0=NAN,y1a=NAN,y1b=NAN,y1;
 
+                for(k=1;k<spann;k++){
+                  x2 = rint((k+1)*spani);
+                  y1 = data[k]*ym;
+                  if(x0<x1){
+                    if(!isnan(y1) && !isnan(y0))
+                      gdk_draw_line(p->backing,p->twogc,
+                                    x0+padx,rint(y0)+cp,x1+padx,rint(y1)+cp);
+                    y1a=y1b=y1;
+                  }else{
+                    if(!isnan(y1)){
+                      if(y1<y1a || isnan(y1a))y1a=y1;
+                      if(y1>y1b || isnan(y1b))y1b=y1;
+                    }
+                    if(x1<x2){
+                      if(!isnan(y1a) && !isnan(y1b))
+                        gdk_draw_line(p->backing,p->twogc,
+                                      x1+padx,rint(y1a)+cp,x1+padx,rint(y1b)+cp);
+                    }
+                  }
+                  x0=x1;x1=x2;y0=y1;
+                }
+
+                y1 = data[k]*ym;
+                if(x0<x1){
+                  if(!isnan(y1) && !isnan(y0))
+                    gdk_draw_line(p->backing,p->twogc,
+                                  x0+padx,rint(y0)+cp,x1+padx,rint(y1)+cp);
+                  y1a=y1b=y1;
+                }else{
+                  if(!isnan(y1)){
+                    if(y1<y1a || isnan(y1a))y1a=y1;
+                    if(y1>y1b || isnan(y1b))y1b=y1;
+                  }
+                  if(!isnan(y1a) && !isnan(y1b))
+                    gdk_draw_line(p->backing,p->twogc,
+                                  x1+padx,rint(y1a)+cp,x1+padx,rint(y1b)+cp);
+                }
+              }
               break;
             case 2: /* lollipop */
 
@@ -295,19 +370,7 @@ static void draw(GtkWidget *widget){
       }
       ch+=p->ch[fi];
     }
-
-    gdk_gc_set_clip_rectangle(p->drawgc, &noclip);
-
   }
-
-  {
-    GdkGCValues values;
-    //gdk_gc_get_values(p->drawgc,&values);
-    values.line_width=1;
-    gdk_gc_set_values(p->drawgc,&values,GDK_GC_LINE_WIDTH);
-  }
-
-
 }
 
 static void draw_and_expose(GtkWidget *widget){
