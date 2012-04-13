@@ -240,6 +240,7 @@ static void draw(GtkWidget *widget){
     GdkColor rgb;
 
     gdk_gc_set_clip_rectangle (p->twogc, &clip);
+    //gdk_gc_set_clip_rectangle (p->drawgc, &clip);
 
     for(fi=0;fi<p->groups;fi++){
       int copies = (int)ceil(p->blockslice[fi]/p->overslice[fi]);
@@ -250,6 +251,7 @@ static void draw(GtkWidget *widget){
           int offset=0;
           rgb = chcolor(i);
           gdk_gc_set_rgb_fg_color(p->twogc,&rgb);
+          //gdk_gc_set_rgb_fg_color(p->drawgc,&rgb);
 
           for(j=0;j<copies;j++){
             float *data=p->ydata[i]+offset;
@@ -262,7 +264,7 @@ static void draw(GtkWidget *widget){
             switch(p->type){
             case 0: /* zero-hold */
               {
-                int x0=0;
+                int x0=-1;
                 float yH=NAN,yL=NAN;
                 int acc=0;
                 for(k=0;k<spann;k++){
@@ -359,8 +361,60 @@ static void draw(GtkWidget *widget){
               break;
             case 2: /* lollipop */
 
+              {
+                if(spani<1.){
+                  int x0=-1;
+                  float yH=NAN,yL=NAN;
+                  int acc=0;
+                  for(k=0;k<spann;k++){
+                    int x1 = rint(k*spani);
+                    float y1 = data[k]*ym;
+                  
+                    if(x1>x0){
+                      /* once too dense, the lollipop graph drops back
+                         to just lines */
+                      if(isnan(yL) || yL>0)
+                        yL=0;
+                      if(isnan(yH) || yH<0)
+                        yH=0;
+                      gdk_draw_line(p->backing,p->twogc,
+                                    x0+padx,rint(yL)+cp,x0+padx,
+                                    rint(yH)+cp);
+                      acc=1;
+                      yH=yL=y1;
+                    }else{
+                      acc++;
+                    }
+                    if(!isnan(y1)){
+                      if(y1<yL || isnan(yL))yL=y1;
+                      if(y1>yH || isnan(yH))yH=y1;
+                    }
+                    x0=x1;
+                  }
+                  {
+                    int x1 = rint(k*spani);
+                    if(isnan(yL) || yL>0)
+                      yL=0;
+                    if(isnan(yH) || yH<0)
+                      yH=0;
+                    gdk_draw_line(p->backing,p->twogc,
+                                  x0+padx,rint(yL)+cp,x0+padx,rint(yH)+cp);
+                  }
+                }else{
+                  for(k=0;k<spann;k++){
+                    int x = rint(k*spani);
+                    float y = data[k]*ym;
+                    if(!isnan(y)){
+                      gdk_draw_line(p->backing,p->twogc,
+                                    x+padx,cp,x+padx,rint(y)+cp);
 
-
+                      gdk_draw_arc(p->backing,p->twogc,
+                                   0,x+padx-5,rint(y)+cp-5,
+                                   9,9,0,23040);
+                    }
+                  }
+                }
+              }
               break;
             }
 
@@ -370,6 +424,7 @@ static void draw(GtkWidget *widget){
       }
       ch+=p->ch[fi];
     }
+    //gdk_gc_set_clip_rectangle (p->drawgc, &noclip);
   }
 }
 
