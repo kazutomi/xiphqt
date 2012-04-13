@@ -67,7 +67,9 @@ int overslice[MAX_FILES]= {-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1};
 static void set_slices(int interval, int span){
 
   /* update interval limited to < 25fps */
-  int temp = (interval < 50000 ? 50000:interval),fi;
+  //int temp = (interval < 50000 ? 50000:interval),fi;
+
+  int temp=interval,fi;
 
   pthread_mutex_lock(&ioparam_mutex);
   if(temp <= span){

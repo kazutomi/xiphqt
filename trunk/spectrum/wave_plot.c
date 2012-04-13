@@ -107,7 +107,7 @@ static void draw(GtkWidget *widget){
     gdk_gc_copy(p->drawgc,widget->style->black_gc);
     gdk_gc_copy(p->twogc,widget->style->black_gc);
 
-    gdk_gc_set_line_attributes(p->twogc,2,GDK_LINE_SOLID,GDK_CAP_PROJECTING,
+    gdk_gc_set_line_attributes(p->twogc,2,GDK_LINE_SOLID,GDK_CAP_BUTT,
                                GDK_JOIN_MITER);
   }
 
@@ -259,13 +259,13 @@ static void draw(GtkWidget *widget){
             float spani = 1000000./p->span/p->rate[fi]*wp;
             int hp=height-p->pady;
             int cp=hp/2;
-            float ym=hp*8./18./p->range;
+            float ym=hp*8./18.;
 
             switch(p->type){
             case 0: /* zero-hold */
               {
                 int x0=-1;
-                float yH=NAN,yL=NAN;
+                float yH=NAN,yL=NAN,y0=NAN;
                 int acc=0;
                 for(k=0;k<spann;k++){
                   int x1 = rint(k*spani);
@@ -277,15 +277,14 @@ static void draw(GtkWidget *widget){
                         gdk_draw_line(p->backing,p->twogc,
                                       x0+padx,rint(yL)+cp,x0+padx,
                                       rint(yH)+cp);
-                    }else{
-                      if(!isnan(yL)){
-                        gdk_draw_line(p->backing,p->twogc,
-                                      x0+padx,rint(yL)+cp,x1+padx,rint(yL)+cp);
+                    }
+                    if(!isnan(y0)){
+                      gdk_draw_line(p->backing,p->twogc,
+                                    x0+padx-1,rint(y0)+cp,x1+padx+1,rint(y0)+cp);
 
-                        if(!isnan(yH))
-                          gdk_draw_line(p->backing,p->twogc,
-                                        x1+padx,rint(yL)+cp,x1+padx,rint(y1)+cp);
-                      }
+                      if(!isnan(y1))
+                        gdk_draw_line(p->backing,p->twogc,
+                                      x1+padx,rint(y0)+cp,x1+padx,rint(y1)+cp);
                     }
 
                     acc=1;
@@ -298,6 +297,7 @@ static void draw(GtkWidget *widget){
                     }
                   }
                   x0=x1;
+                  y0=y1;
                 }
                 {
                   int x1 = rint(k*spani);
@@ -306,56 +306,51 @@ static void draw(GtkWidget *widget){
                     if(!isnan(yL)&&!isnan(yH))
                       gdk_draw_line(p->backing,p->twogc,
                                     x0+padx,rint(yL)+cp,x0+padx,rint(yH)+cp);
-                  }else{
-                    if(!isnan(yL)){
-                      gdk_draw_line(p->backing,p->twogc,
-                                    x0+padx,rint(yL)+cp,x1+padx,rint(yL)+cp);
-                    }
                   }
                 }
               }
               break;
             case 1: /* linear interpolation */
               {
-                int x0=-1,x1=-1,x2;
-                float y0=NAN,y1a=NAN,y1b=NAN,y1;
+                int x0=-1;
+                float yH=NAN,yL=NAN,y0=NAN;
+                int acc=0;
+                for(k=0;k<spann;k++){
+                  int x1 = rint(k*spani);
+                  float y1 = data[k]*ym;
 
-                for(k=1;k<spann;k++){
-                  x2 = rint((k+1)*spani);
-                  y1 = data[k]*ym;
-                  if(x0<x1){
-                    if(!isnan(y1) && !isnan(y0))
+                  if(x1>x0){
+                    if(acc>1){
+                      if(!isnan(yL) && !isnan(yH))
+                        gdk_draw_line(p->backing,p->twogc,
+                                      x0+padx,rint(yL)+cp,x0+padx,
+                                      rint(yH)+cp);
+                    }
+                    if(!isnan(y0) && !isnan(y1)){
                       gdk_draw_line(p->backing,p->twogc,
                                     x0+padx,rint(y0)+cp,x1+padx,rint(y1)+cp);
-                    y1a=y1b=y1;
-                  }else{
-                    if(!isnan(y1)){
-                      if(y1<y1a || isnan(y1a))y1a=y1;
-                      if(y1>y1b || isnan(y1b))y1b=y1;
                     }
-                    if(x1<x2){
-                      if(!isnan(y1a) && !isnan(y1b))
-                        gdk_draw_line(p->backing,p->twogc,
-                                      x1+padx,rint(y1a)+cp,x1+padx,rint(y1b)+cp);
-                    }
-                  }
-                  x0=x1;x1=x2;y0=y1;
-                }
 
-                y1 = data[k]*ym;
-                if(x0<x1){
-                  if(!isnan(y1) && !isnan(y0))
-                    gdk_draw_line(p->backing,p->twogc,
-                                  x0+padx,rint(y0)+cp,x1+padx,rint(y1)+cp);
-                  y1a=y1b=y1;
-                }else{
-                  if(!isnan(y1)){
-                    if(y1<y1a || isnan(y1a))y1a=y1;
-                    if(y1>y1b || isnan(y1b))y1b=y1;
+                    acc=1;
+                    yH=yL=y1;
+                  }else{
+                    acc++;
+                    if(!isnan(y1)){
+                      if(y1<yL || isnan(yL))yL=y1;
+                      if(y1>yH || isnan(yH))yH=y1;
+                    }
                   }
-                  if(!isnan(y1a) && !isnan(y1b))
-                    gdk_draw_line(p->backing,p->twogc,
-                                  x1+padx,rint(y1a)+cp,x1+padx,rint(y1b)+cp);
+                  x0=x1;
+                  y0=y1;
+                }
+                {
+                  int x1 = rint(k*spani);
+
+                  if(x1<=x0 || acc>1){
+                    if(!isnan(yL) && !isnan(yH))
+                      gdk_draw_line(p->backing,p->twogc,
+                                    x0+padx,rint(yL)+cp,x0+padx,rint(yH)+cp);
+                  }
                 }
               }
               break;
@@ -369,7 +364,7 @@ static void draw(GtkWidget *widget){
                   for(k=0;k<spann;k++){
                     int x1 = rint(k*spani);
                     float y1 = data[k]*ym;
-                  
+
                     if(x1>x0){
                       /* once too dense, the lollipop graph drops back
                          to just lines */
@@ -649,7 +644,7 @@ void plot_refresh (Plot *p){
 
   if(!p->configured)return;
 
-  data = process_fetch(p->blockslice, p->overslice, p->span);
+  data = process_fetch(p->blockslice, p->overslice, p->span,p->scale,p->range);
   p->ydata=data;
 }
 

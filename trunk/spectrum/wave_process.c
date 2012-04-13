@@ -80,7 +80,8 @@ void *process_thread(void *dummy){
   return NULL;
 }
 
-float **process_fetch(int *blockslice,int *overslice,int span){
+float **process_fetch(int *blockslice,int *overslice,int span,
+                      int scale,float range){
   int fi,i,j,k,ch;
 
   init_process();
@@ -102,8 +103,19 @@ float **process_fetch(int *blockslice,int *overslice,int span){
       float *plotdatap=plot_data[i];
       for(j=0;j<copies;j++){
         float *data=blockbuffer[i]+offset;
-        for(k=0;k<spann;k++)
-          *(plotdatap++)=data[k];
+        if(scale){
+          float drange=todB(range)-scale;
+          for(k=0;k<spann;k++){
+            if(data[k]<0){
+              *(plotdatap++)=-(todB(data[k])-scale)/drange;
+            }else{
+              *(plotdatap++)=(todB(data[k])-scale)/drange;
+            }
+          }
+        }else{
+          for(k=0;k<spann;k++)
+            *(plotdatap++)=(data[k]/range);
+        }
         offset-=overslice[fi];
       }
     }

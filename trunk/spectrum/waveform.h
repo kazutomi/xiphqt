@@ -81,7 +81,7 @@ extern int eventpipe[2];
 
 extern void panel_go(int argc,char *argv[]);
 extern void *process_thread(void *dummy);
-extern float **process_fetch(int *, int *, int);
+extern float **process_fetch(int *, int *, int, int, float);
 
 extern pthread_mutex_t feedback_mutex;
 extern int feedback_increment;
