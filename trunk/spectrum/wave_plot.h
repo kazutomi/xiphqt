@@ -46,6 +46,7 @@ struct _Plot{
   GtkDrawingArea canvas;  
   GdkPixmap *backing;
   GdkGC     *drawgc;
+  GdkGC     *twogc;
 
   PangoLayout ***x_layout;
   PangoLayout ****y_layout;
