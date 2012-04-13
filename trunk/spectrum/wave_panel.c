@@ -69,6 +69,7 @@ static void set_slices(int interval, int span){
   /* update interval limited to < 25fps */
   int temp = (interval < 50000 ? 50000:interval),fi;
 
+  pthread_mutex_lock(&ioparam_mutex);
   if(temp <= span){
     /* if the fps-limited update interval is shorter than or equal to
        the span, we simply frame limit */
@@ -85,6 +86,7 @@ static void set_slices(int interval, int span){
       overslice[fi]=rint(rate[fi]/1000000.*interval);
     }
   }
+  pthread_mutex_unlock(&ioparam_mutex);
 }
 
 static void replot(struct panel *p){

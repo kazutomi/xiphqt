@@ -46,6 +46,7 @@
 #define MAX_FILES 16
 #define readbuffersize 8192
 
+extern pthread_mutex_t ioparam_mutex;
 extern int input_load(void);
 extern int input_read(int loop_p, int partial_p);
 extern int rewind_files(void);
