@@ -23,6 +23,7 @@
 
 #include "io.h"
 
+pthread_mutex_t ioparam_mutex=PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 int bits[MAX_FILES] = {-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1};
 int bigendian[MAX_FILES] = {-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1};
 int channels[MAX_FILES] = {-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1};
@@ -392,7 +393,7 @@ int input_load(void){
 
 /* Convert new data from readbuffer into the blockbuffers until the
    blockbuffer is full */
-static void LBEconvert(){
+static void LBEconvert(int *localslice){
   float scale=1./2147483648.;
   int ch=0,fi;
 
@@ -405,7 +406,7 @@ static void LBEconvert(){
       channels[fi]/bytes*channels[fi]*bytes+readbufferptr[fi];
 
     int bfill = blockbufferfill[fi];
-    int tosize = blocksize + blockslice[fi];
+    int tosize = blocksize + localslice[fi];
     int rptr = readbufferptr[fi];
     unsigned char *rbuf = readbuffer[fi];
 
@@ -507,7 +508,12 @@ int input_read(int loop, int partialok){
   int eof=1;
   int notdone=1;
   int rewound[total_ch];
+  int localslice[MAX_FILES];
   memset(rewound,0,sizeof(rewound));
+
+  pthread_mutex_lock(&ioparam_mutex);
+  memcpy(localslice,blockslice,sizeof(localslice));
+  pthread_mutex_unlock(&ioparam_mutex);
 
   if(blockbuffer==0){
     blockbuffer=malloc(total_ch*sizeof(*blockbuffer));
@@ -527,7 +533,7 @@ int input_read(int loop, int partialok){
       if(partialok){
         blockbufferfill[fi]=blocksize;
       }else{
-        blockbufferfill[fi]=blockslice[fi];
+        blockbufferfill[fi]=localslice[fi];
       }
     }
   }
@@ -538,11 +544,11 @@ int input_read(int loop, int partialok){
     notdone=0;
 
     /* if there's data left to be pulled out of a readbuffer, do that */
-    LBEconvert();
+    LBEconvert(localslice);
 
     ch=0;
     for(fi=0;fi<inputs;fi++){
-      if(blockbufferfill[fi]!=blocksize+blockslice[fi]){
+      if(blockbufferfill[fi]!=blocksize+localslice[fi]){
 
 	/* shift the read buffer before fill if there's a fractional
 	   frame in it */

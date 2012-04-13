@@ -362,7 +362,7 @@ static void draw(GtkWidget *widget){
             case 2: /* lollipop */
 
               {
-                if(spani<1.){
+                if(0){
                   int x0=-1;
                   float yH=NAN,yL=NAN;
                   int acc=0;
