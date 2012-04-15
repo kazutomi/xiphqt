@@ -259,7 +259,7 @@ static void draw(GtkWidget *widget){
             float spani = 1000000./p->span/p->rate[fi]*wp;
             int hp=height-p->pady;
             int cp=hp/2;
-            float ym=hp*8./18.;
+            float ym=hp*-8./18;
 
             switch(p->type){
             case 0: /* zero-hold */
