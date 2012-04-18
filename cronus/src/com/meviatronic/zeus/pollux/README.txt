@@ -45,7 +45,7 @@
  	- higher degree of content adaptive IDCT on non SIMD architectures.
  	- higher degree of content adaptive edge detection and deblock filtering.
  	- sparseDC mode.
- 	  Dr. m. m. Timothy B. Terriberry pointed out, that there is
+ 	  Timothy B. Terriberry, Ph.D. pointed out, that there is
  	  a separation of the MC from the DCT in developing for a future reference decoder version,
  	  which even avoids such a special sparseDC mode with the same amount of
  	  reducing the calculation amount.
