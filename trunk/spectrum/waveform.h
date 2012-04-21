@@ -40,9 +40,6 @@
 #include <signal.h>
 #include <fcntl.h>
 
-#define MAX_FILES 16
-#define readbuffersize 8192
-
 extern int blocksize;
 
 static inline float todB(float x){

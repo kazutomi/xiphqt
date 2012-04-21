@@ -41,8 +41,6 @@
 #include <fcntl.h>
 #include <fftw3.h>
 
-#define MAX_FILES 16
-#define readbuffersize 8192
 /* blocksize for the FFT */
 extern int blocksize;
 

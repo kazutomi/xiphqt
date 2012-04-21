@@ -162,19 +162,22 @@ static void noise(GtkWidget *widget,struct panel *p){
 static void depthchange(GtkWidget *widget,struct panel *p){
   int choice=gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
   switch(choice){
-  case 0: /* 10dB */
+  case 0: /* 1dB */
+    plot_depth=1;
+    break;
+  case 1: /* 10dB */
     plot_depth=10;
     break;
-  case 1: /* 20dB */
+  case 2: /* 20dB */
     plot_depth=20;
     break;
-  case 2: /* 45dB */
+  case 3: /* 45dB */
     plot_depth=45;
     break;
-  case 3: /* 90dB */
+  case 4: /* 90dB */
     plot_depth=90;
     break;
-  case 4: /*140dB */
+  case 5: /*140dB */
     plot_depth=140;
     break;
   }
@@ -601,14 +604,14 @@ void panel_create(struct panel *panel){
   /* depth */
   {
     GtkWidget *menu=gtk_combo_box_new_text();
-    char *entries[]={"10dB","20dB","45dB","90dB","140dB"};
-    for(i=0;i<5;i++)
+    char *entries[]={"1dB","10dB","20dB","45dB","90dB","140dB"};
+    for(i=0;i<6;i++)
       gtk_combo_box_append_text (GTK_COMBO_BOX (menu), entries[i]);
-    gtk_combo_box_set_active(GTK_COMBO_BOX(menu),3);
     gtk_box_pack_start(GTK_BOX(bbox),menu,0,0,0);
     
     g_signal_connect (G_OBJECT (menu), "changed",
 		      G_CALLBACK (depthchange), panel);
+    gtk_combo_box_set_active(GTK_COMBO_BOX(menu),5);
   }
   
   /* mode */
