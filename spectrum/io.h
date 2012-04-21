@@ -44,7 +44,7 @@
 #include <fcntl.h>
 
 #define MAX_FILES 16
-#define readbuffersize 8192
+#define readbuffersize 512
 
 extern pthread_mutex_t ioparam_mutex;
 extern int input_load(void);

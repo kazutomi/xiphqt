@@ -79,6 +79,8 @@ struct _Plot{
 
   int xgrid[20];
   int xgrids;
+  int xlgrid[20];
+  int xlgrids;
   int xtic[200];
   int xtics;
 
