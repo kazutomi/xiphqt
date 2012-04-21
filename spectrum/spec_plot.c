@@ -488,6 +488,12 @@ static void draw(GtkWidget *widget){
       gdk_draw_line(p->backing,p->drawgc,p->xgrid[i],0,p->xgrid[i],height-p->pady);
   }
 
+  /* clip rectangle from here on out */
+  {
+    const GdkRectangle clip = {p->padx,0,width-p->padx,height-p->pady};
+    gdk_gc_set_clip_rectangle (p->drawgc, &clip);
+  }
+
   /* phase?  draw in phase and tics on right axis */
   if(phase){
     GdkColor rgb={0,0xd000,0x0000,0x0000};
@@ -617,6 +623,13 @@ static void draw(GtkWidget *widget){
       cho+=p->ch[gi];
     }
   }
+
+  /* remove clip rectangle */
+  {
+    const GdkRectangle noclip = {0,0,width,height};
+    gdk_gc_set_clip_rectangle (p->drawgc, &noclip);
+  }
+
 }
 
 static void draw_and_expose(GtkWidget *widget){
