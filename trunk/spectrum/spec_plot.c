@@ -556,12 +556,8 @@ static void draw(GtkWidget *widget){
   }
 
 
-  {
-    GdkGCValues values;
-    //gdk_gc_get_values(p->drawgc,&values);
-    values.line_width=2;
-    gdk_gc_set_values(p->drawgc,&values,GDK_GC_LINE_WIDTH);
-  }
+  gdk_gc_set_line_attributes(p->drawgc,2,GDK_LINE_SOLID,GDK_CAP_BUTT,
+                             GDK_JOIN_MITER);
 
   /* draw actual data */
   if(p->ydata){
@@ -602,15 +598,7 @@ static void draw(GtkWidget *widget){
 		int ly = y;
 		int lp = prev;
 
-		if(lp>=height-p->pady-1)lp=height-p->pady-1;
-
-		if(ly>=height-p->pady-1){
-                  ly=height-p->pady-1;
-                  gdk_draw_line(p->backing,p->drawgc,padx+i-1,lp,padx+i,ly);
-                  gdk_draw_point(p->backing,p->drawgc,padx+i,ly);
-                }else{
-                  gdk_draw_line(p->backing,p->drawgc,padx+i-1,lp,padx+i,ly);
-                }
+                gdk_draw_line(p->backing,p->drawgc,padx+i-1,lp,padx+i,ly);
 	      }
 	      first=1;
 	      prev=y;
