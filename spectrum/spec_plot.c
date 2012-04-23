@@ -29,9 +29,9 @@
 #include "spec_plot.h"
 
 static double log_lfreqs[5]={10.,100.,1000.,10000.,100000};
-static double log_llfreqs[18]={10.,20.,30.,50.,100.,200.,300.,500.,
+static double log_llfreqs[15]={10.,20.,30.,50.,100.,200.,300.,500.,
                               1000.,2000.,3000.,5000.,10000.,
-                              20000.,30000.,50000.,100000};
+                              20000.,30000.};
 static double log_tfreqs[37]={5.,6.,7.,8.,9.,20.,30.,40.,50.,60.,70.,80.,90.
 			 ,200.,300.,400.,500.,600.,700.,800.,900.,
 			 2000.,3000.,4000.,5000.,6000.,7000.,8000.,9000.,
@@ -94,7 +94,7 @@ static void compute_metadata(GtkWidget *widget){
         if(log_lfreqs[i]<(nyq-.1))
           p->xgrids=i+1;
       }
-      for(i=0;i<18;i++){
+      for(i=0;i<15;i++){
         if(log_llfreqs[i]<(nyq-.1))
           p->xlgrids=i+1;
       }
@@ -874,12 +874,12 @@ GtkWidget* plot_new (int size, int groups, int *channels, int *rate){
   }
   /* log X scale */
   {
-    char *labels[17]={"10Hz","20Hz","30Hz","50Hz","100Hz",
+    char *labels[15]={"10Hz","20Hz","30Hz","50Hz","100Hz",
                      "200Hz","300Hz","500Hz","1kHz",
                      "2kHz","3kHz","5kHz","10kHz",
-                     "20kHz","30kHz",""};
-    p->log_layout=calloc(18,sizeof(*p->log_layout));
-    for(i=0;i<17;i++)
+                     "20kHz","30kHz"};
+    p->log_layout=calloc(16,sizeof(*p->log_layout));
+    for(i=0;i<15;i++)
       p->log_layout[i]=gtk_widget_create_pango_layout(ret,labels[i]);
   }
   /* Impedence Y scale */
