@@ -579,7 +579,7 @@ void panel_create(struct panel *panel){
   /* scale */
   {
     GtkWidget *menu=gtk_combo_box_new_text();
-    char *entries[]={"single-pixel","1/24th octave","1/12th octave","1/3 octave"};
+    char *entries[]={"unsmoothed","1/24th octave","1/12th octave","1/3 octave"};
     for(i=0;i<4;i++)
       gtk_combo_box_append_text (GTK_COMBO_BOX (menu), entries[i]);
     gtk_combo_box_set_active(GTK_COMBO_BOX(menu),plot_res);
@@ -699,12 +699,14 @@ void panel_create(struct panel *panel){
   }
 
   /* noise floor */
+#if 0
   {
     GtkWidget *button=gtk_toggle_button_new_with_mnemonic("sample _noise floor");
     gtk_widget_add_accelerator (button, "activate", panel->group, GDK_n, 0, 0);
     g_signal_connect (G_OBJECT (button), "toggled", G_CALLBACK (noise), panel);
     gtk_box_pack_start(GTK_BOX(bbox),button,0,0,0);
   }
+#endif
 
   gtk_box_pack_end(GTK_BOX(rightbox),bbox,0,0,0);
   gtk_box_pack_start(GTK_BOX(mainbox),rightbox,0,0,0);
