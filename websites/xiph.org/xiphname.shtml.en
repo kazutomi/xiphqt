@@ -126,7 +126,7 @@ significance, but it's an indirect, uninteresting story.
 <p>
 <a href="/vorbis/">Ogg Vorbis</a> (pronouned [vōr'bĭs]) was the first CODEC in
 developed as part of the Xiph.org multimedia project, begun
-immediately after <a href="about.html#fraunhofer">Fraunhofer issued
+immediately after <a href="about/#fraunhofer">Fraunhofer issued
 its 'Letter of Infringement' to freeware MP3 encoder efforts</a>.
 Vorbis is intended to go head-to-head with MPEG codecs like AAC
 and has historically achieved comparable or better quality.
