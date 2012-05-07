@@ -33,14 +33,14 @@ end-user download links are provided for convenience:
 <table border="1" cellspacing="0" cellpadding="2" style="border-collapse: collapse; border-color: #cccccc; line-height: 1.4;">
 
 <tr style="font-weight: bold;">
-<td>Library</td>
-<td>Stable Version</td>
-<td>Download Link</td>
-<td>Size</td>
-<td>md5</td>
+<th>Library</th>
+<th>Stable Version</th>
+<th>Download Link</th>
+<th>Size</th>
+<th>md5</th>
 </tr>
 
-<tr>
+<tr style="font-family:monospace;">
 <td>libogg</td>
 <td>1.3.0</td>
 <td>
@@ -60,18 +60,18 @@ end-user download links are provided for convenience:
 </td>
 </tr>
 
-<tr>
+<tr style="font-family:monospace;">
 <td>libvorbis</td>
-<td>1.3.2</td>
+<td>1.3.3</td>
 <td>
-	<a href="http://downloads.xiph.org/releases/vorbis/libvorbis-1.3.2.tar.bz2">libvorbis-1.3.2.tar.bz2</a><br/>
-	<a href="http://downloads.xiph.org/releases/vorbis/libvorbis-1.3.2.tar.gz">libvorbis-1.3.2.tar.gz</a><br/>
-	<a href="http://downloads.xiph.org/releases/vorbis/libvorbis-1.3.2.zip">libvorbis-1.3.2.zip</a>
+	<a href="http://downloads.xiph.org/releases/vorbis/libvorbis-1.3.3.tar.xz">libvorbis-1.3.3.tar.xz</a><br/>
+	<a href="http://downloads.xiph.org/releases/vorbis/libvorbis-1.3.3.tar.gz">libvorbis-1.3.3.tar.gz</a><br/>
+	<a href="http://downloads.xiph.org/releases/vorbis/libvorbis-1.3.3.zip">libvorbis-1.3.3.zip</a>
 </td>
 <td>
-	1.2M<br/>
-	1.4M<br/>
-	1.7M
+	1.0M<br/>
+	1.5M<br/>
+	1.8M
 </td>
 <td>
         798a4211221073c1409f26eac4567e8b<br/>
@@ -80,7 +80,7 @@ end-user download links are provided for convenience:
 </td>
 </tr>
 
-<tr>
+<tr style="font-family:monospace;">
 <td>vorbis-tools</td>
 <td>1.4.0</td>
 <td>
@@ -101,7 +101,7 @@ end-user download links are provided for convenience:
 </td>
 </tr>
 
-<tr>
+<tr style="font-family:monospace;">
 <td>libtheora</td>
 <td>1.1.1</td>
 <td>
@@ -118,7 +118,7 @@ end-user download links are provided for convenience:
 </td>
 </tr>
 
-<tr>
+<tr style="font-family:monospace;">
 <td>libspeex</td>
 <td>1.2rc1</td>
 <td><a href="http://downloads.xiph.org/releases/speex/speex-1.2rc1.tar.gz">speex-1.2rc1</a></td>
@@ -126,7 +126,7 @@ end-user download links are provided for convenience:
 <td>c4438b22c08e5811ff10e2b06ee9b9ae</td>
 </tr>
 
-<tr>
+<tr style="font-family:monospace;">
 <td>libflac</td>
 <td>1.2.1</td>
 <td><a href="http://downloads.xiph.org/releases/flac/flac-1.2.1.tar.gz">flac-1.2.1.tar.gz</a></td>
@@ -134,7 +134,7 @@ end-user download links are provided for convenience:
 <td>153c8b15a54da428d1f0fadc756c22c7</td>
 </tr>
 
-<tr>
+<tr style="font-family:monospace;">
 <td>libao</td>
 <td>1.1.0</td>
 <td><a href="http://downloads.xiph.org/releases/ao/libao-1.1.0.tar.gz">libao-1.1.0.tar.gz</a><br />
@@ -146,7 +146,7 @@ end-user download links are provided for convenience:
     02f7e79eefb715a819bc7c8659478b7c</td>
 </tr>
 
-<tr>
+<tr style="font-family:monospace;">
 <td>libxspf</td>
 <td>1.2.0</td>
 <td>
@@ -169,7 +169,7 @@ end-user download links are provided for convenience:
 </td>
 </tr>
 
-<tr>
+<tr style="font-family:monospace;">
 <td>vorbis-java</td>
 <td>1.0.0-beta</td>
 <td>
@@ -186,7 +186,7 @@ end-user download links are provided for convenience:
 </td>
 </tr>
 
-<tr>
+<tr style="font-family:monospace;">
 <td>liboggz</td>
 <td>1.0.2, 1.1.1</td>
 <td>
@@ -203,7 +203,7 @@ end-user download links are provided for convenience:
 </td>
 </tr>
 
-<tr>
+<tr style="font-family:monospace;">
 <td>libfishsound</td>
 <td>1.0.0</td>
 <td>
