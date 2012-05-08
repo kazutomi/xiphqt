@@ -248,10 +248,12 @@ static void draw(GtkWidget *widget){
   }
 
   {
+    const GdkRectangle noclip = {0,0,width,height};
     GdkGCValues values;
     //gdk_gc_get_values(p->drawgc,&values);
     values.line_width=1;
     gdk_gc_set_values(p->drawgc,&values,GDK_GC_LINE_WIDTH);
+    gdk_gc_set_clip_rectangle (p->drawgc, &noclip);
   }
 
   /* clear the old rectangle out */
@@ -460,14 +462,20 @@ static void draw(GtkWidget *widget){
       int ymid = rint(height-p->pady-1 - (height-p->pady) * ydel);
 
       if(ymid>=height-p->pady)break;
+
       if(ymid>=0){
         int px,py;
-        pango_layout_get_pixel_size(p->db_layout[yval/100+1400],&px,&py);
+        int label = yval/100+2000;
 
-        gdk_draw_layout (p->backing,
-                         widget->style->black_gc,
-                         padx-px-2, ymid-py/2,
-                         p->db_layout[yval/100+1400]);
+        if(label>=0 && label<=4000){
+          pango_layout_get_pixel_size(p->db_layout[yval/100+2000],&px,&py);
+
+          gdk_draw_layout (p->backing,
+                           widget->style->black_gc,
+                           padx-px-2, ymid-py/2,
+                           p->db_layout[yval/100+2000]);
+        }
+
         gdk_draw_line(p->backing,p->drawgc,padx,ymid,width,ymid);
       }
       yval-=majordel;
@@ -556,7 +564,7 @@ static void draw(GtkWidget *widget){
   }
 
 
-  gdk_gc_set_line_attributes(p->drawgc,2,GDK_LINE_SOLID,GDK_CAP_BUTT,
+  gdk_gc_set_line_attributes(p->drawgc,p->bold+1,GDK_LINE_SOLID,GDK_CAP_BUTT,
                              GDK_JOIN_MITER);
 
   /* draw actual data */
@@ -611,13 +619,6 @@ static void draw(GtkWidget *widget){
       cho+=p->ch[gi];
     }
   }
-
-  /* remove clip rectangle */
-  {
-    const GdkRectangle noclip = {0,0,width,height};
-    gdk_gc_set_clip_rectangle (p->drawgc, &noclip);
-  }
-
 }
 
 static void draw_and_expose(GtkWidget *widget){
@@ -798,7 +799,7 @@ GType plot_get_type (void){
   return m_type;
 }
 
-GtkWidget* plot_new (int size, int groups, int *channels, int *rate){
+GtkWidget* plot_new (int size, int groups, int *channels, int *rate, int bold){
   GtkWidget *ret= GTK_WIDGET (g_object_new (plot_get_type (), NULL));
   Plot *p=PLOT(ret);
   int g,i;
@@ -815,6 +816,7 @@ GtkWidget* plot_new (int size, int groups, int *channels, int *rate){
   p->ch=channels;
   p->rate=rate;
   p->maxrate=maxrate;
+  p->bold=bold;
 
   if(maxrate > 100000){
     p->lin_major = 10000.;
@@ -901,13 +903,13 @@ GtkWidget* plot_new (int size, int groups, int *channels, int *rate){
   /* dB Y scale */
   {
     char buf[10];
-    p->db_layout=calloc(2811,sizeof(*p->db_layout));
-    for(i=-1400;i<1400;i++){
+    p->db_layout=calloc(4002,sizeof(*p->db_layout));
+    for(i=-2000;i<=2000;i++){
       if(i%10==0)
         snprintf(buf,10,"%ddB",i/10);
       else
         snprintf(buf,10,"%.1fdB",i*.1);
-      p->db_layout[i+1400]=gtk_widget_create_pango_layout(ret,buf);
+      p->db_layout[i+2000]=gtk_widget_create_pango_layout(ret,buf);
     }
   }
 
@@ -1010,8 +1012,8 @@ void plot_refresh (Plot *p, int *process){
       p->phtimer = TIMERFRAMES;
   }
 
-  if(ymax<p->depth-140.)ymax=p->depth-140.;
-  if(ymax>140.)ymax=140.;
+  if(ymax<p->depth-p->ymax_limit)ymax=p->depth-p->ymax_limit;
+  if(ymax>p->ymax_limit)ymax=p->ymax_limit;
   if(pmax>180)pmax=180;
   if(pmin<-180)pmin=-180;
 
@@ -1031,7 +1033,7 @@ void plot_refresh (Plot *p, int *process){
   p->disp_pmin = p->pmin;
 
   /* finally, align phase/response zeros on phase graphs */
-  if(p->disp_ymax>-140){
+  if(p->disp_ymax>-p->ymax_limit){
     if(p->link == LINK_PHASE){
       /* In a phase/response graph, 0dB/0degrees are bound and always on-screen. */
       float mzero = (height-1)/p->disp_depth*p->disp_ymax;
@@ -1067,7 +1069,7 @@ void plot_clear (Plot *p){
     for(i=0;i<p->total_ch;i++)
       for(j=0;j<width;j++)
 	p->ydata[i][j]=NAN;
-  p->ymax=p->depth-140;
+  p->ymax=p->depth-p->ymax_limit;
   p->pmax=0;
   p->pmin=0;
   draw_and_expose(widget);
@@ -1086,7 +1088,12 @@ void plot_setting (Plot *p, int res, int scale, int mode, int link, int depth, i
   p->link=link;
   p->noise=noise;
 
-  p->ymax=-140;
+  if(depth>140)
+    p->ymax_limit=depth;
+  else
+    p->ymax_limit=140;
+
+  p->ymax=-p->ymax_limit;
   p->pmax=0;
   p->pmin=0;
 

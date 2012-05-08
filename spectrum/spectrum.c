@@ -35,6 +35,7 @@ char *version;
 char *inputname[MAX_FILES];
 int inputs=0;
 int blocksize = 131072;
+int bold=0;
 
 void handler(int sig){
   signal(sig,SIG_IGN);
@@ -55,9 +56,10 @@ void handler(int sig){
   gtk_main_quit();
 }
 
-const char *optstring = "-r:c:EeBlb:suhF:";
+const char *optstring = "-r:c:EeBlb:suhF:T";
 
 struct option options [] = {
+        {"bold",no_argument,NULL,'T'},
         {"rate",required_argument,NULL,'r'},
         {"channels",required_argument,NULL,'c'},
         {"big-endian",no_argument,NULL,'E'},
@@ -83,6 +85,7 @@ static void usage(FILE *f){
 "                               PCM. Default bit depth is normally read from\n"
 "                               the file/stream header or set to 16 bits\n"
 "                               for raw input.\n"
+"  -T --bold                  : plot spectrum with thicker/bolder lines.\n"
 "  -B -E --big-endian         : Force input to be read as big endian.\n"
 "                               Default endianness is normally read from the\n"
 "                               file/stream header or set to host"
@@ -128,6 +131,9 @@ void parse_command_line(int argc, char **argv){
 	exit(1);
       }
       inputname[inputs++]=strdup(optarg);
+      break;
+    case 'T':
+      bold = 1;
       break;
     case 'b':
       /* force bit width */
@@ -290,7 +296,7 @@ int main(int argc, char **argv){
   }
 
   /* go */
-  panel_go(argc,argv);
+  panel_go(argc,argv,bold);
 
   return(0);
 }

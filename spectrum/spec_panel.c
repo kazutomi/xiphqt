@@ -180,6 +180,9 @@ static void depthchange(GtkWidget *widget,struct panel *p){
   case 5: /*140dB */
     plot_depth=140;
     break;
+  case 6: /*200dB */
+    plot_depth=200;
+    break;
   }
   plot_setting(PLOT(p->plot),plot_res,plot_scale,plot_mode,plot_link,plot_depth,plot_noise);
 }
@@ -449,7 +452,7 @@ static void rewindchange(GtkWidget *widget,struct panel *p){
 }
 
 extern char *version;
-void panel_create(struct panel *panel){
+void panel_create(struct panel *panel, int bold){
   int i;
 
   GtkWidget *topplace,*topal,*topalb;
@@ -514,7 +517,7 @@ void panel_create(struct panel *panel){
 		    G_CALLBACK (shutdown), NULL);
 
   /* add the spectrum plot box */
-  panel->plot=plot_new(blocksize/2+1,inputs,channels,rate);
+  panel->plot=plot_new(blocksize/2+1,inputs,channels,rate,bold);
   gtk_box_pack_end(GTK_BOX(leftbox),panel->plot,1,1,0);
   gtk_box_pack_start(GTK_BOX(mainbox),leftbox,1,1,0);
   
@@ -604,14 +607,14 @@ void panel_create(struct panel *panel){
   /* depth */
   {
     GtkWidget *menu=gtk_combo_box_new_text();
-    char *entries[]={"1dB","10dB","20dB","45dB","90dB","140dB"};
-    for(i=0;i<6;i++)
+    char *entries[]={"1dB","10dB","20dB","45dB","90dB","140dB","200dB"};
+    for(i=0;i<7;i++)
       gtk_combo_box_append_text (GTK_COMBO_BOX (menu), entries[i]);
     gtk_box_pack_start(GTK_BOX(bbox),menu,0,0,0);
     
     g_signal_connect (G_OBJECT (menu), "changed",
 		      G_CALLBACK (depthchange), panel);
-    gtk_combo_box_set_active(GTK_COMBO_BOX(menu),5);
+    gtk_combo_box_set_active(GTK_COMBO_BOX(menu),4);
   }
   
   /* mode */
@@ -759,7 +762,7 @@ static int look_for_gtkrc(char *filename){
   return 1;
 }
 
-void panel_go(int argc,char *argv[]){
+void panel_go(int argc,char *argv[],int bold){
   char *homedir=getenv("HOME");
   int found=0;
   memset(&p,0,sizeof(p));
@@ -814,7 +817,7 @@ void panel_go(int argc,char *argv[]){
   gtk_rc_add_default_file("spectrum-gtkrc");
   gtk_init (&argc, &argv);
 
-  panel_create(&p);
+  panel_create(&p, bold);
   animate_fish(&p);
 
   /* set up watching the event pipe */
