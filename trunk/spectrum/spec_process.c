@@ -524,7 +524,7 @@ float **process_fetch(int res, int scale, int mode, int link,
   }
   
   ch=0;
-  *ymax = -150.;
+  *ymax = -210.;
   *pmax = -180.;
   *pmin = 180.;
   for(fi=0;fi<inputs;fi++){
@@ -743,7 +743,7 @@ float **process_fetch(int res, int scale, int mode, int link,
 	   falloffs of > 40dB or an original test magnitude under
 	   -70dB. */
 	{
-	  float max = -140;
+	  float max = -200;
 	  for(i=0;i<width;i++){
 	    float v = r[i] = todB_a(r+i)*.5;
 	    if(v>max)max=v;

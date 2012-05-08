@@ -99,12 +99,16 @@ struct _Plot{
   float disp_pmax;
   float disp_pmin;
 
+  float ymax_limit;
+
   float padx;
   float phax;
   float pady;
 
   int ymaxtimer;
   int phtimer;
+
+  int bold;
 };
 
 struct _PlotClass{
@@ -114,7 +118,7 @@ struct _PlotClass{
 };
 
 GType          plot_get_type        (void);
-GtkWidget*     plot_new             (int n, int inputs, int *channels, int *rate);
+GtkWidget*     plot_new             (int n, int inputs, int *channels, int *rate, int bold);
 void	       plot_refresh         (Plot *m, int *process);
 void	       plot_setting         (Plot *m, int res, int scale, int mode, int link, int depth, int noise);
 void	       plot_draw            (Plot *m);
