@@ -45,7 +45,7 @@
 extern int blocksize;
 
 static inline float todB(float x){
-  return logf((x)*(x)+1e-45f)*4.34294480f;
+  return log((double)(x)*(x)+1e-50)*4.34294480;
 }
 
 #ifdef UGLY_IEEE754_FLOAT32_HACK

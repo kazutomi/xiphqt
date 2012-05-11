@@ -323,6 +323,7 @@ float **process_fetch(int res, int scale, int mode, int link,
   int ch,ci,i,j,fi;
   float **data;
   float **ph;
+  float *normptr;
   float maxrate=-1.;
   float nyq;
 
@@ -508,7 +509,8 @@ float **process_fetch(int res, int scale, int mode, int link,
   }
   
   /* mode selects the base data set */
-  switch(mode){    
+  normptr=NULL;
+  switch(mode){
   case 0: /* independent / instant */
     data=feedback_instant;
     ph=ph_instant;
@@ -517,9 +519,14 @@ float **process_fetch(int res, int scale, int mode, int link,
     data=feedback_max;
     ph=ph_max;
     break;
-  case 2:
+  case 2: /* independent / accumulate */
     data=feedback_acc;
     ph=ph_acc;
+    break;
+  case 3: /* independent / average */
+    data=feedback_acc;
+    ph=ph_acc;
+    normptr=feedback_count;
     break;
   }
   
@@ -530,6 +537,7 @@ float **process_fetch(int res, int scale, int mode, int link,
   for(fi=0;fi<inputs;fi++){
     float *L = xmappingL[fi];
     float *H = xmappingH[fi];
+    float normalize = normptr ? 1./normptr[fi] : 1.;
 
     switch(link){
     case LINK_INDEPENDENT:
@@ -557,6 +565,7 @@ float **process_fetch(int res, int scale, int mode, int link,
 	      sum+=m[last]*del;
 	    }
 
+            sum*=normalize;
 	    sum=todB_a(&sum)*.5;
 	    if(sum>*ymax)*ymax=sum;
 	    y[i]=sum;	  
@@ -595,7 +604,8 @@ float **process_fetch(int res, int scale, int mode, int link,
 	}
       
 	for(i=0;i<width;i++){
-	  float sum=todB_a(y+i)*.5;
+          float sum=y[i]*normalize;
+	  sum=todB_a(&sum)*.5;
 	  if(sum>*ymax)*ymax=sum;
 	  y[i]=sum;	  
 	}
@@ -642,6 +652,7 @@ float **process_fetch(int res, int scale, int mode, int link,
 	  
 	  for(i=0;i<width;i++){
 	    float v = (y[i]>0?y[i]:0);
+            v*=normalize;
 	    float sum=todB_a(&v)*.5;
 	    if(sum>*ymax)*ymax=sum;
 	    y[i]=sum;	  
@@ -679,6 +690,7 @@ float **process_fetch(int res, int scale, int mode, int link,
 		r[i]=sum;
 	      }else{
 		sum=(r[i]>sum?0.f:sum-r[i]);
+                sum*=normalize;
 		y[i]=todB_a(&sum)*.5;
 		if(y[i]>*ymax)*ymax=y[i];
 	      }
@@ -725,8 +737,8 @@ float **process_fetch(int res, int scale, int mode, int link,
 	      }else{
 		/* the shunt */
 		/* 'r' collected at source, 'sum' across the shunt */
-		float V=sqrt(r[i]);
-		float S=sqrt(sum);
+		float V=sqrt(r[i]*normalize);
+		float S=sqrt(sum*normalize);
 		
 		if(S>(1e-5) && V>S){
 		  y[i] = shunt*(V-S)/S;

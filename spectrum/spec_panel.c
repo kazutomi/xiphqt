@@ -579,7 +579,6 @@ void panel_create(struct panel *panel, int bold){
   GtkWidget *bbox=gtk_vbox_new(0,0);
 
   /* add the action buttons */
-  /* scale */
   {
     GtkWidget *menu=gtk_combo_box_new_text();
     char *entries[]={"unsmoothed","1/24th octave","1/12th octave","1/3 octave"};
@@ -591,9 +590,10 @@ void panel_create(struct panel *panel, int bold){
 		      G_CALLBACK (reschange), panel);
   }
 
+  /* scale */
   {
     GtkWidget *menu=gtk_combo_box_new_text();
-    char *entries[]={"log scale","ISO log scale","linear scale"};
+    char *entries[]={"log frequency","ISO frequency","linear frequency"};
     for(i=0;i<3;i++)
       gtk_combo_box_append_text (GTK_COMBO_BOX (menu), entries[i]);
     gtk_combo_box_set_active(GTK_COMBO_BOX(menu),plot_scale);
@@ -620,8 +620,8 @@ void panel_create(struct panel *panel, int bold){
   /* mode */
   {
     GtkWidget *menu=gtk_combo_box_new_text();
-    char *entries[]={"realtime","maximum","accumulate"};
-    for(i=0;i<3;i++)
+    char *entries[]={"realtime","maximum","accumulate","average"};
+    for(i=0;i<4;i++)
       gtk_combo_box_append_text (GTK_COMBO_BOX (menu), entries[i]);
     gtk_combo_box_set_active(GTK_COMBO_BOX(menu),plot_mode);
     gtk_box_pack_start(GTK_BOX(bbox),menu,0,0,0);
