@@ -964,45 +964,48 @@ void plot_refresh (Plot *p, int *process){
     if(ymax<12)
       ymax=12;
     else
-      ymax *=1.8;
+      ymax*=1.8;
     break;
   }
 
   if(p->mode == 0){
     /* "Instantaneous' mode scale regression is conditional and
-       damped. Start the timer/run the timer while any one scale measure
-       should be dropping by more than 50px. If any peaks occur above,
-       reset timer.  Once timer runs out, drop 5px per frame */
-#define PXTHRESH 25
+       damped. Start the timer/run the timer while any one scale
+       measure should be dropping by more than 25% of the current
+       depth. If any peaks occur above, reset timer.  Once timer runs
+       out, drop PXEDL px per frame */
+    /* todo:  might be nice to use a bessel function to track the scale
+       shifts */
+#define THRESH .25
 #define PXDEL 10.
 #define TIMERFRAMES 20
     if(p->ymax>ymax){
-      float oldzero = (height-1)/p->depth*p->ymax;
-      float newzero = (height-1)/p->depth*ymax;
+      float oldzero = height/p->depth*p->ymax;
+      float newzero = height/p->depth*ymax;
 
-      if(newzero+PXTHRESH<oldzero){
-	if(p->ymaxtimer){
-	  p->ymaxtimer--;
-	}else{
-	  p->ymax = (oldzero-PXDEL)*p->depth/(height-1);
-	}
+      if(oldzero-newzero > height*THRESH){
+        if(p->ymaxtimer){
+          p->ymaxtimer--;
+        }else{
+          p->ymax = (oldzero-PXDEL)*p->depth/(height-1);
+        }
       }else{
-	p->ymaxtimer = TIMERFRAMES;
+        p->ymaxtimer = TIMERFRAMES;
       }
     }else
       p->ymaxtimer = TIMERFRAMES;
 
     if(p->pmax>pmax || p->pmin<pmin){
-      float newmax = (height-1)/(p->pmax-p->pmin)*(p->pmax-pmax);
-      float newmin = (height-1)/(p->pmax-p->pmin)*(pmin-p->pmin);
+      float newmax = height/(p->pmax-p->pmin)*(p->pmax-pmax);
+      float newmin = height/(p->pmax-p->pmin)*(pmin-p->pmin);
 
-      if(newmax>PXTHRESH || newmin>PXTHRESH){
+      if(newmax>height*THRESH || newmin>height*THRESH){
 	if(p->phtimer){
 	  p->phtimer--;
 	}else{
-	  if(newmax>PXTHRESH)
+	  if(newmax>height*THRESH)
 	    p->pmax -= PXDEL/(height-1)*(p->pmax-p->pmin);
-	  if(newmin>PXTHRESH)
+	  if(newmin>height*THRESH)
 	    p->pmin += PXDEL/(height-1)*(p->pmax-p->pmin);
 	}
       }else{
