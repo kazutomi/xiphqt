@@ -928,6 +928,10 @@ void plot_refresh (Plot *p, int *process){
   int height=GTK_WIDGET(p)->allocation.height-p->pady;
   float **data;
 
+#define THRESH .25
+#define PXDEL 10.
+#define TIMERFRAMES 20
+
   if(!p->configured)return;
 
   if(process)
@@ -973,9 +977,6 @@ void plot_refresh (Plot *p, int *process){
        out, drop PXEDL px per frame */
     /* todo:  might be nice to use a bessel function to track the scale
        shifts */
-#define THRESH .25
-#define PXDEL 10.
-#define TIMERFRAMES 20
     if(p->ymax>ymax){
       float oldzero = height/p->depth*p->ymax;
       float newzero = height/p->depth*ymax;
@@ -1036,8 +1037,18 @@ void plot_refresh (Plot *p, int *process){
   if(p->disp_ymax>-p->ymax_limit){
     if(p->link == LINK_PHASE){
       /* In a phase/response graph, 0dB/0degrees are bound and always on-screen. */
-      float mzero = (height-1)/p->disp_depth*p->disp_ymax;
-      float pzero = (height-1)/(p->disp_pmax-p->disp_pmin)*p->disp_pmax;
+      float pzero,mzero = (height-1)/p->disp_depth*p->disp_ymax;
+
+      /* move mag zero back onscreen if it's off */
+      if(mzero < height*THRESH){
+        p->disp_ymax = (p->disp_depth*height*THRESH)/(height-1);
+      }
+      if(mzero > height*(1-THRESH)){
+        p->disp_ymax = (p->disp_depth*height*(1-THRESH))/(height-1);
+      }
+
+      mzero = (height-1)/p->disp_depth*p->disp_ymax;
+      pzero = (height-1)/(p->disp_pmax-p->disp_pmin)*p->disp_pmax;
 
       if(mzero<pzero){
 	/* straightforward; move the dB range down */
@@ -1045,15 +1056,16 @@ void plot_refresh (Plot *p, int *process){
       }else{
 	/* a little harder as phase has a min and a max.
 	   First increase the pmax to match the dB zero. */
+
 	p->disp_pmax = p->disp_pmin/(1-(height-1)/mzero);
 	pzero = (height-1)/(p->disp_pmax-p->disp_pmin)*p->disp_pmax;
 
 	/* That worked, but might have run p->max overrange */
 	if(p->disp_pmax>180.){
-	  /* only way to reconcile this one is to increase the pdepth */
+	  /* reconcile by allowing mag to overrange */
 	  p->disp_pmax = 180.;
 	  pzero = (height-1)/(p->disp_pmax-p->disp_pmin)*p->disp_pmax;
-	  p->disp_depth = (height-1)/pzero*p->disp_ymax;
+          p->disp_ymax = p->disp_depth*pzero/(height-1);
 	}
       }
     }
