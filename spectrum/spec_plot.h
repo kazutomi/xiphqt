@@ -47,11 +47,15 @@ struct _Plot{
   GdkPixmap *backing;
   GdkGC     *drawgc;
   GdkGC     *dashes;
+  GdkGC     *graygc;
 
   PangoLayout **lin_layout;
   PangoLayout **log_layout;
   PangoLayout **iso_layout;
   PangoLayout **db_layout;
+  PangoLayout **db_layout1;
+  PangoLayout *db_layoutdB;
+  PangoLayout *db_layoutN;
   PangoLayout **imp_layout;
   PangoLayout **phase_layout;
 

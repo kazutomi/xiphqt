@@ -46,7 +46,9 @@ static struct panel {
   GtkWidget *plot;
   GtkWidget *run;
   GtkWidget **chbuttons;
-  
+  GtkWidget *bwtable;
+  GtkWidget *bwbutton;
+  GtkWidget *bwmodebutton;
 } p;
 
 int plot_scale=0;
@@ -56,6 +58,8 @@ int plot_hold=0;
 int plot_depth=90;
 int plot_noise=0;
 int plot_last_update=0;
+int plot_bw=0;
+int plot_bwmode=0;
 int *active;
 
 static void replot(struct panel *p){
@@ -431,11 +435,29 @@ static void rewindchange(GtkWidget *widget,struct panel *p){
   acc_rewind=1;
 }
 
+static void bwchange(GtkWidget *widget,struct panel *p){
+  plot_bw=gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
+  if(plot_bw==0){
+    gtk_widget_hide(p->bwmodebutton);
+    gtk_container_remove(GTK_CONTAINER(p->bwtable),p->bwbutton);
+    gtk_table_attach_defaults(GTK_TABLE(p->bwtable),p->bwbutton,0,2,0,1);
+  }else{
+    gtk_container_remove(GTK_CONTAINER(p->bwtable),p->bwbutton);
+    gtk_table_attach_defaults(GTK_TABLE(p->bwtable),p->bwbutton,0,1,0,1);
+    gtk_widget_show(p->bwmodebutton);
+  }
+}
+
+static void bwmodechange(GtkWidget *widget,struct panel *p){
+  plot_bwmode=gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
+}
+
 extern char *version;
 void panel_create(struct panel *panel, int bold){
   int i;
 
   GtkWidget *topplace,*topal,*topalb;
+  GtkWidget *leftplace,*leftal,*leftalb;
 
   GtkWidget *topframe=gtk_frame_new (NULL);
   GtkWidget *toplabel=gtk_label_new (NULL);
@@ -497,8 +519,12 @@ void panel_create(struct panel *panel, int bold){
 		    G_CALLBACK (shutdown), NULL);
 
   /* add the spectrum plot box */
+  leftplace=gtk_table_new(1,1,0);
   panel->plot=plot_new(blocksize/2+1,inputs,channels,rate,bold);
-  gtk_box_pack_end(GTK_BOX(leftbox),panel->plot,1,1,0);
+  gtk_table_attach_defaults(GTK_TABLE(leftplace),
+			    panel->plot,0,1,0,1);
+
+  gtk_box_pack_end(GTK_BOX(leftbox),leftplace,1,1,0);
   gtk_box_pack_start(GTK_BOX(mainbox),leftbox,1,1,0);
   
   /*fish */
@@ -560,31 +586,59 @@ void panel_create(struct panel *panel, int bold){
 
   /* add the action buttons */
 
-  /* scale */
   {
-    GtkWidget *menu=gtk_combo_box_new_text();
-    char *entries[]={"log frequency","ISO frequency","linear frequency"};
+  /* bandwidth mode */
+    GtkWidget *tbox=panel->bwtable=gtk_table_new(2,2,0);
+
+    GtkWidget *menu=panel->bwbutton=gtk_combo_box_new_text();
+    char *entries[]={"native","display"};
+    //"1Hz","3Hz","10Hz","30Hz","100Hz","300Hz","1kHz",
+    //"1/24oct","1/12oct","1/6oct","1/3oct"};
+
+    for(i=0;i<2;i++)
+      gtk_combo_box_append_text (GTK_COMBO_BOX (menu), entries[i]);
+    //gtk_combo_box_set_active(GTK_COMBO_BOX(menu),0);
+    
+    g_signal_connect (G_OBJECT (menu), "changed",
+    		      G_CALLBACK (bwchange), panel);
+
+    GtkWidget *menu2=panel->bwmodebutton=gtk_combo_box_new_text();
+    char *entries2[]={"RBW","VBW"};
+    for(i=0;i<2;i++)
+      gtk_combo_box_append_text (GTK_COMBO_BOX (menu2), entries2[i]);
+    
+    g_signal_connect (G_OBJECT (menu2), "changed",
+    		      G_CALLBACK (bwmodechange), panel);
+    gtk_combo_box_set_active(GTK_COMBO_BOX(menu2),0);
+
+    gtk_table_attach_defaults(GTK_TABLE(tbox),menu,0,1,0,1);
+    gtk_table_attach_defaults(GTK_TABLE(tbox),menu2,1,2,0,1);
+
+    /* scale */
+    /* depth */
+
+    GtkWidget *menu3=gtk_combo_box_new_text();
+    char *entries3[]={"log freq","ISO freq","linear freq"};
     for(i=0;i<3;i++)
-      gtk_combo_box_append_text (GTK_COMBO_BOX (menu), entries[i]);
-    gtk_combo_box_set_active(GTK_COMBO_BOX(menu),plot_scale);
+      gtk_combo_box_append_text (GTK_COMBO_BOX (menu3), entries3[i]);
+    gtk_combo_box_set_active(GTK_COMBO_BOX(menu3),plot_scale);
     plot_setting(PLOT(panel->plot),plot_scale,plot_mode,plot_link,plot_depth,plot_noise);
-    gtk_box_pack_start(GTK_BOX(bbox),menu,0,0,0);
     
-    g_signal_connect (G_OBJECT (menu), "changed",
+    g_signal_connect (G_OBJECT (menu3), "changed",
 		      G_CALLBACK (scalechange), panel);
-  }
-  
-  /* depth */
-  {
-    GtkWidget *menu=gtk_combo_box_new_text();
-    char *entries[]={"1dB","10dB","20dB","45dB","90dB","140dB","200dB"};
+
+    GtkWidget *menu4=gtk_combo_box_new_text();
+    char *entries4[]={"1dB","10dB","20dB","45dB","90dB","140dB","200dB"};
     for(i=0;i<7;i++)
-      gtk_combo_box_append_text (GTK_COMBO_BOX (menu), entries[i]);
-    gtk_box_pack_start(GTK_BOX(bbox),menu,0,0,0);
+      gtk_combo_box_append_text (GTK_COMBO_BOX (menu4), entries4[i]);
     
-    g_signal_connect (G_OBJECT (menu), "changed",
+    g_signal_connect (G_OBJECT (menu4), "changed",
 		      G_CALLBACK (depthchange), panel);
-    gtk_combo_box_set_active(GTK_COMBO_BOX(menu),4);
+    gtk_combo_box_set_active(GTK_COMBO_BOX(menu4),4);
+
+    gtk_table_attach_defaults(GTK_TABLE(tbox),menu3,0,1,1,2);
+    gtk_table_attach_defaults(GTK_TABLE(tbox),menu4,1,2,1,2);
+    gtk_box_pack_start(GTK_BOX(bbox),tbox,0,0,0);
   }
   
   /* mode */
@@ -612,6 +666,7 @@ void panel_create(struct panel *panel, int bold){
 		      G_CALLBACK (linkchange), panel);
   }
   
+
   {
     GtkWidget *sep=gtk_hseparator_new();
     gtk_box_pack_start(GTK_BOX(bbox),sep,0,0,4);
@@ -686,6 +741,7 @@ void panel_create(struct panel *panel, int bold){
 
     
   gtk_widget_show_all(panel->toplevel);
+  gtk_combo_box_set_active(GTK_COMBO_BOX(panel->bwbutton),0);
   //gtk_window_set_resizable(GTK_WINDOW(panel->toplevel),0);
 
 }

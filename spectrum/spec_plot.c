@@ -248,6 +248,20 @@ static void draw(GtkWidget *widget){
     gdk_gc_set_line_attributes(p->dashes, 1, GDK_LINE_ON_OFF_DASH, GDK_CAP_BUTT, GDK_JOIN_MITER);
     gdk_gc_set_dashes(p->dashes,0,(signed char *)"\002\002",2);
   }
+  if(!p->graygc){
+    GdkColor rgb_bg;
+    GdkColor rgb_fg;
+    GdkGCValues v;
+    p->graygc=gdk_gc_new(p->backing);
+    gdk_gc_copy(p->graygc, p->drawgc);
+    gdk_gc_get_values(p->graygc,&v);
+    gdk_colormap_query_color(gdk_gc_get_colormap(p->graygc),v.foreground.pixel,&rgb_fg);
+    gdk_colormap_query_color(gdk_gc_get_colormap(p->graygc),v.background.pixel,&rgb_bg);
+    rgb_fg.red = (rgb_fg.red*3 + rgb_bg.red*2)/5;
+    rgb_fg.green = (rgb_fg.green*3 + rgb_bg.green*2)/5;
+    rgb_fg.blue = (rgb_fg.blue*3 + rgb_bg.blue*2)/5;
+    gdk_gc_set_rgb_fg_color(p->graygc,&rgb_fg);
+  }
 
   {
     const GdkRectangle clip = {p->padx,0,width-p->padx,height-p->pady};
@@ -462,28 +476,84 @@ static void draw(GtkWidget *widget){
     ymin = (p->disp_ymax - p->disp_depth)*1000;
     yval = rint((p->disp_ymax*1000/majordel)+1)*majordel;
 
-    while(1){
-      float ydel = (yval - ymin)/(p->disp_depth*1000);
-      int ymid = rint(height-p->pady-1 - (height-p->pady) * ydel);
+    {
+      int px,py,pxdB,pxN,pxMAX;
+      pango_layout_get_pixel_size(p->db_layoutN,&pxN,&py);
+      pango_layout_get_pixel_size(p->db_layoutdB,&pxdB,&py);
+      pango_layout_get_pixel_size(p->db_layout[0],&pxMAX,&py);
+      pxMAX+=pxdB;
 
-      if(ymid>=height-p->pady)break;
+      while(1){
+        float ydel = (yval - ymin)/(p->disp_depth*1000);
+        int ymid = rint(height-p->pady-1 - (height-p->pady) * ydel);
 
-      if(ymid>=0){
-        int px,py;
-        int label = yval/100+2000;
+        if(ymid>=height-p->pady)break;
 
-        if(label>=0 && label<=4000  && ymid+py/2 < height-p->pady){
-          pango_layout_get_pixel_size(p->db_layout[yval/100+2000],&px,&py);
+        if(ymid>=0){
+          int do_dB=0;
+          int label = yval/100+2000;
 
-          gdk_draw_layout (p->backing,
-                           widget->style->black_gc,
-                           padx-px-2, ymid-py/2,
-                           p->db_layout[yval/100+2000]);
+          if(label>=0 && label<=4000 /* in range check */
+             && (p->scale<2 || ymid+py/2 < height-p->pady) /* don't collide with DC label */
+             ){
+
+            if(label%10){ /* fractional (decimal) dB */
+              int sofar=0;
+              /*  -.9dB
+                 -9.9dB
+                  -99.9
+                 -999.9 */
+
+              if(fabsf(yval*.001)<9.98){
+                gdk_draw_layout (p->backing,
+                                 p->graygc,
+                                 padx-pxdB-2, ymid-py/2,
+                                 p->db_layoutdB);
+                sofar+=pxdB;
+              }
+
+              pango_layout_get_pixel_size(p->db_layout1[abs(yval/100)%10],&px,&py);
+              sofar+=px;
+              gdk_draw_layout (p->backing,
+                               p->graygc,
+                               padx-sofar-2, ymid-py/2,
+                               p->db_layout1[abs(yval/100)%10]);
+
+              if(yval/1000!=0){ /* no leading zero please */
+                pango_layout_get_pixel_size(p->db_layout[yval/1000+200],&px,&py);
+                sofar+=px;
+                gdk_draw_layout (p->backing,
+                                 p->graygc,
+                                 padx-sofar-2, ymid-py/2,
+                                 p->db_layout[yval/1000+200]);
+              }else{
+                if(yval<0){
+                  /* need to explicitly place negative */
+                  sofar+=pxN;
+                  gdk_draw_layout (p->backing,
+                                   p->graygc,
+                                   padx-sofar-2, ymid-py/2,
+                                   p->db_layoutN);
+                }
+              }
+            }else{
+              gdk_draw_layout (p->backing,
+                               widget->style->black_gc,
+                               padx-pxdB-2, ymid-py/2,
+                               p->db_layoutdB);
+
+              pango_layout_get_pixel_size(p->db_layout[yval/1000+200],&px,&py);
+
+              gdk_draw_layout (p->backing,
+                               widget->style->black_gc,
+                               padx-px-pxdB-2, ymid-py/2,
+                               p->db_layout[yval/1000+200]);
+            }
+          }
+          gdk_draw_line(p->backing,p->drawgc,padx,ymid,width,ymid);
         }
-
-        gdk_draw_line(p->backing,p->drawgc,padx,ymid,width,ymid);
+        yval-=majordel;
       }
-      yval-=majordel;
     }
   }
 
@@ -706,14 +776,15 @@ static void size_request (GtkWidget *widget,GtkRequisition *requisition){
   /* find max db layout */
   {
     int max=0;
-    for(i=0;p->db_layout[i];i++){
-      pango_layout_get_pixel_size(p->db_layout[i],&px,&py);
-      if(px>padx)padx=px;
-    }
+    int px2;
+    pango_layout_get_pixel_size(p->db_layoutdB,&px2,&py);
+    pango_layout_get_pixel_size(p->db_layout[0],&px,&py);
+    if(px+px2>padx)padx=px+px2;
     axisy=(max)*8;
     if(axisy<max)axisy=max;
   }
   /* find max imped layout */
+#if 0
   {
     int max=0;
     for(i=0;p->imp_layout[i];i++){
@@ -724,6 +795,8 @@ static void size_request (GtkWidget *widget,GtkRequisition *requisition){
     axisy=(max)*8;
     if(axisy<max)axisy=max;
   }
+#endif
+
   /* find max phase layout */
   {
     int max=0;
@@ -902,18 +975,28 @@ GtkWidget* plot_new (int size, int groups, int *channels, int *rate, int bold){
     for(i=0;i<12;i++)
       p->iso_layout[i]=gtk_widget_create_pango_layout(ret,labels[i]);
   }
-  /* dB Y scale */
+  /* dB Y scale (integer) */
   {
     char buf[10];
-    p->db_layout=calloc(4002,sizeof(*p->db_layout));
-    for(i=-2000;i<=2000;i++){
-      if(i%10==0)
-        snprintf(buf,10,"%ddB",i/10);
-      else
-        snprintf(buf,10,"%.1fdB",i*.1);
-      p->db_layout[i+2000]=gtk_widget_create_pango_layout(ret,buf);
+    p->db_layout=calloc(402,sizeof(*p->db_layout));
+    for(i=-200;i<=200;i++){
+      snprintf(buf,10," %d",i);
+      p->db_layout[i+200]=gtk_widget_create_pango_layout(ret,buf);
     }
   }
+  /* dB Y scale (decimal) */
+  {
+    char buf[10];
+    p->db_layout1=calloc(10,sizeof(*p->db_layout1));
+    for(i=0;i<10;i++){
+      snprintf(buf,10,".%d",i);
+      p->db_layout1[i]=gtk_widget_create_pango_layout(ret,buf);
+    }
+  }
+  /* dB Y scale (dB) */
+  p->db_layoutdB=gtk_widget_create_pango_layout(ret,"dB");
+  /* dB Y scale (-) */
+  p->db_layoutN=gtk_widget_create_pango_layout(ret,"-");
 
   p->ch_active=calloc(ch,sizeof(*p->ch_active));
   p->ch_process=calloc(ch,sizeof(*p->ch_process));
