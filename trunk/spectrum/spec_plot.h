@@ -68,7 +68,6 @@ struct _Plot{
   int mode;
   int link;
   int scale;
-  int res;
   int noise;
   int *rate;
   int maxrate;
@@ -120,7 +119,7 @@ struct _PlotClass{
 GType          plot_get_type        (void);
 GtkWidget*     plot_new             (int n, int inputs, int *channels, int *rate, int bold);
 void	       plot_refresh         (Plot *m, int *process);
-void	       plot_setting         (Plot *m, int res, int scale, int mode, int link, int depth, int noise);
+void	       plot_setting         (Plot *m, int scale, int mode, int link, int depth, int noise);
 void	       plot_draw            (Plot *m);
 void	       plot_clear           (Plot *m);
 int 	       plot_width           (Plot *m);

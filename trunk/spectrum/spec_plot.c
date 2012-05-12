@@ -214,9 +214,11 @@ static void draw(GtkWidget *widget){
   int height=widget->allocation.height;
   int width=widget->allocation.width;
   GtkWidget *parent=gtk_widget_get_parent(widget);
+#if 0
   int impedence = (p->link == LINK_IMPEDENCE_p1 ||
 		   p->link == LINK_IMPEDENCE_1 ||
 		   p->link == LINK_IMPEDENCE_10);
+#endif
   int phase = (p->link == LINK_PHASE);
   int padx = p->padx;
 
@@ -248,12 +250,12 @@ static void draw(GtkWidget *widget){
   }
 
   {
-    const GdkRectangle noclip = {0,0,width,height};
+    const GdkRectangle clip = {p->padx,0,width-p->padx,height-p->pady};
     GdkGCValues values;
     //gdk_gc_get_values(p->drawgc,&values);
     values.line_width=1;
     gdk_gc_set_values(p->drawgc,&values,GDK_GC_LINE_WIDTH);
-    gdk_gc_set_clip_rectangle (p->drawgc, &noclip);
+    gdk_gc_set_clip_rectangle (p->drawgc, &clip);
   }
 
   /* clear the old rectangle out */
@@ -267,6 +269,7 @@ static void draw(GtkWidget *widget){
   }
 
   /* draw the noise floor if active */
+  #if 0
   if(p->floor){
     GdkColor rgb = {0,0xd000,0xd000,0xd000};
     gdk_gc_set_rgb_fg_color(p->drawgc,&rgb);
@@ -281,6 +284,7 @@ static void draw(GtkWidget *widget){
 	gdk_draw_line(p->backing,p->drawgc,padx+i,y,padx+i,height-p->pady-1);
     }
   }
+  #endif
 
   /* draw the light x grid */
   {
@@ -322,7 +326,8 @@ static void draw(GtkWidget *widget){
   }
 
   /* draw the y grid */
-  if(impedence){ /* impedence mode */
+  //if(impedence){ /* impedence mode */
+  if(0){
 
     /* light grid */
 
@@ -448,7 +453,7 @@ static void draw(GtkWidget *widget){
       yval-=subminordel;
     }
 
-    /* Dark W grid */
+    /* Dark Y grid */
     rgb.red=0x0000;
     rgb.green=0xc000;
     rgb.blue=0xc000;
@@ -467,7 +472,7 @@ static void draw(GtkWidget *widget){
         int px,py;
         int label = yval/100+2000;
 
-        if(label>=0 && label<=4000){
+        if(label>=0 && label<=4000  && ymid+py/2 < height-p->pady){
           pango_layout_get_pixel_size(p->db_layout[yval/100+2000],&px,&py);
 
           gdk_draw_layout (p->backing,
@@ -494,12 +499,6 @@ static void draw(GtkWidget *widget){
 
     for(i=0;i<p->xgrids;i++)
       gdk_draw_line(p->backing,p->drawgc,p->xgrid[i],0,p->xgrid[i],height-p->pady);
-  }
-
-  /* clip rectangle from here on out */
-  {
-    const GdkRectangle clip = {p->padx,0,width-p->padx,height-p->pady};
-    gdk_gc_set_clip_rectangle (p->drawgc, &clip);
   }
 
   /* phase?  draw in phase and tics on right axis */
@@ -564,7 +563,7 @@ static void draw(GtkWidget *widget){
   }
 
 
-  gdk_gc_set_line_attributes(p->drawgc,p->bold+1,GDK_LINE_SOLID,GDK_CAP_BUTT,
+  gdk_gc_set_line_attributes(p->drawgc,p->bold+1,GDK_LINE_SOLID,GDK_CAP_PROJECTING,
                              GDK_JOIN_MITER);
 
   /* draw actual data */
@@ -577,42 +576,45 @@ static void draw(GtkWidget *widget){
 
       for(ch=cho;ch<cho+p->ch[gi];ch++){
 	if(p->ch_active[ch]){
-	  int prev;
-	  int first=0;
-	  float yprev=NAN;
 
 	  rgb = chcolor(ch);
 	  gdk_gc_set_rgb_fg_color(p->drawgc,&rgb);
 
 	  for(i=0;i<width-padx;i++){
-	    float val=p->ydata[ch][i];
-	    int y;
+	    float valmin=p->ydata[ch][i*2];
+	    float valmax=p->ydata[ch][i*2+1];
+            float ymin, ymax;
 
-	    if(isnan(yprev) || isnan(val)){
-	      yprev = val;
-	    }else{
-	      yprev = val;
+            if(!isnan(valmin) && !isnan(valmax)){
 
-	      if(impedence){ /* log scale for impedence */
-		y =rint( (log10(p->disp_ymax)-log10(val))/(log10(p->disp_ymax)-log10(.1)) *
-			 (height-p->pady-1));
-	      }else if(phase && ch==cho+1){
-		y= rint((height-p->pady-1)/(p->disp_pmax-p->disp_pmin)*(p->disp_pmax-val));
-	      }else{
-		y= rint((height-p->pady-1)/p->disp_depth*(p->disp_ymax-val));
-	      }
+              //if(impedence){ /* log scale for impedence */
+              if(0){
 
-	      if(first && (y<height-p->pady || prev<height-p->pady)){
-		int ly = y;
-		int lp = prev;
+                ymin = rint( (log10(p->disp_ymax)-log10(valmin))/
+                             (log10(p->disp_ymax)-log10(.1)) *
+                             (height-p->pady-1));
+                ymax = rint( (log10(p->disp_ymax)-log10(valmax))/
+                             (log10(p->disp_ymax)-log10(.1)) *
+                             (height-p->pady-1));
 
-                gdk_draw_line(p->backing,p->drawgc,padx+i-1,lp,padx+i,ly);
-	      }
-	      first=1;
-	      prev=y;
-	    }
+              }else if(phase && ch==cho+1){
 
+                ymin = rint((height-p->pady-1)/
+                            (p->disp_pmax-p->disp_pmin)*
+                            (p->disp_pmax-valmin));
+                ymax = rint((height-p->pady-1)/
+                            (p->disp_pmax-p->disp_pmin)*
+                            (p->disp_pmax-valmax));
 
+              }else{
+
+                ymin = rint((height-p->pady-1)/p->disp_depth*(p->disp_ymax-valmin));
+                ymax = rint((height-p->pady-1)/p->disp_depth*(p->disp_ymax-valmax));
+
+              }
+
+              gdk_draw_line(p->backing,p->drawgc,padx+i,ymin,padx+i,ymax);
+            }
 	  }
 	}
       }
@@ -925,21 +927,16 @@ void plot_refresh (Plot *p, int *process){
   int width=GTK_WIDGET(p)->allocation.width-p->padx;
   int height=GTK_WIDGET(p)->allocation.height-p->pady;
   float **data;
-  float *floor;
 
   if(!p->configured)return;
 
   if(process)
     memcpy(p->ch_process,process,p->total_ch*sizeof(*process));
 
-  data = process_fetch(p->res, p->scale, p->mode, p->link,
-		       p->ch_process,width,&ymax,&pmax,&pmin,&floor,p->noise);
+  data = process_fetch(p->scale, p->mode, p->link,
+		       p->ch_process,width,&ymax,&pmax,&pmin);
 
   p->ydata=data;
-  if(floor)
-    p->floor=floor;
-  else
-    p->floor=NULL;
 
   /* graph limit updates are conditional depending on mode/link */
   pmax+=5;
@@ -951,13 +948,12 @@ void plot_refresh (Plot *p, int *process){
   case LINK_INDEPENDENT:
   case LINK_SUMMED:
   case LINK_PHASE:
-  case LINK_THD:
-  case LINK_THDN:
     {
       float dBpp = p->depth/height;
       ymax += dBpp*10;
     }
     break;
+#if 0
   case LINK_IMPEDENCE_p1:
   case LINK_IMPEDENCE_1:
   case LINK_IMPEDENCE_10:
@@ -966,6 +962,7 @@ void plot_refresh (Plot *p, int *process){
     else
       ymax*=1.8;
     break;
+#endif
   }
 
   if(p->mode == 0){
@@ -1070,8 +1067,8 @@ void plot_clear (Plot *p){
 
   if(p->ydata)
     for(i=0;i<p->total_ch;i++)
-      for(j=0;j<width;j++)
-	p->ydata[i][j]=NAN;
+      for(j=0;j<width*2;j++)
+	p->ydata[i][j]=-300;
   p->ymax=p->depth-p->ymax_limit;
   p->pmax=0;
   p->pmin=0;
@@ -1082,9 +1079,8 @@ float **plot_get (Plot *p){
   return(p->ydata);
 }
 
-void plot_setting (Plot *p, int res, int scale, int mode, int link, int depth, int noise){
+void plot_setting (Plot *p, int scale, int mode, int link, int depth, int noise){
   GtkWidget *widget=GTK_WIDGET(p);
-  p->res=res;
   p->scale=scale;
   p->mode=mode;
   p->depth=depth;

@@ -33,28 +33,21 @@ int feedback_increment=0;
 
 float *feedback_count;
 float **plot_data;
-float *plot_floor=NULL;
-float **work_floor=NULL;
 float *process_work;
 
 float **feedback_acc;
 float **feedback_max;
 float **feedback_instant;
 
-/* Gentlemen, power up the Variance hammer */
-float **floor_y;
-float **floor_yy;
-int floor_count;
-
 float **ph_acc;
 float **ph_max;
 float **ph_instant;
 
 float **xmappingL;
+float **xmappingM;
 float **xmappingH;
 int metascale = -1;
 int metawidth = -1;
-int metares = -1;
 int metanoise = 0;
 
 sig_atomic_t acc_clear=0;
@@ -74,8 +67,6 @@ static void init_process(void){
     feedback_acc=malloc(total_ch*sizeof(*feedback_acc));
     feedback_max=malloc(total_ch*sizeof(*feedback_max));
     feedback_instant=malloc(total_ch*sizeof(*feedback_instant));
-    floor_y=malloc(total_ch*sizeof(*floor_y));
-    floor_yy=malloc(total_ch*sizeof(*floor_yy));
 
     ph_acc=malloc(total_ch*sizeof(*ph_acc));
     ph_max=malloc(total_ch*sizeof(*ph_max));
@@ -84,8 +75,6 @@ static void init_process(void){
     freqbuffer=fftwf_malloc((blocksize+2)*sizeof(*freqbuffer));
     for(i=0;i<total_ch;i++){
 
-      floor_y[i]=calloc(blocksize/2+1,sizeof(**floor_y));
-      floor_yy[i]=calloc(blocksize/2+1,sizeof(**floor_yy));
       feedback_acc[i]=calloc(blocksize/2+1,sizeof(**feedback_acc));
       feedback_max[i]=calloc(blocksize/2+1,sizeof(**feedback_max));
       feedback_instant[i]=calloc(blocksize/2+1,sizeof(**feedback_instant));
@@ -169,11 +158,6 @@ static int process(){
 	  float sqI = I*I;
 	  float sqM = sqR+sqI;
 
-	  if(noise==1){
-	    floor_yy[i][j>>1]+=sqM*sqM;
-	    floor_y[i][j>>1]+=sqM;
-	  }
-	  
 	  /* deal with phase accumulate/rotate */
 	  if(i==ch){
 	    /* normalize/store ref for later rotation */
@@ -215,8 +199,7 @@ static int process(){
     }
     ch+=channels[fi];
   }
-  if(noise==1)
-    floor_count++;
+
   feedback_increment++;
   write(eventpipe[1],"",1);
   return 1;
@@ -303,23 +286,15 @@ void process_dump(int mode){
 
 }
 
-void clear_noise_floor(){
-  int i;
-  for(i=0;i<total_ch;i++){
-    memset(floor_y[i],0,(blocksize/2+1)*sizeof(**floor_y));
-    memset(floor_yy[i],0,(blocksize/2+1)*sizeof(**floor_yy));
-  }
-  floor_count=0;
-}
-
 /* how many bins to 'trim' off the edge of calculated data when we
    know we've hit a boundary of marginal measurement */
 #define binspan 5
 
-float **process_fetch(int res, int scale, int mode, int link, 
-		      int *active, int width, 
-		      float *ymax, float *pmax, float *pmin,
-		      float **yfloor,int noise){
+/* the data returned is now 2 vals per bin; a min and a max.  The spec
+   plot merely draws a vertical line between. */
+float **process_fetch(int scale, int mode, int link,
+		      int *active, int width,
+		      float *ymax, float *pmax, float *pmin){
   int ch,ci,i,j,fi;
   float **data;
   float **ph;
@@ -333,22 +308,12 @@ float **process_fetch(int res, int scale, int mode, int link,
     if(rate[fi]>maxrate)maxrate=rate[fi];
   nyq=maxrate/2.;
 
-  *yfloor=NULL;
-
   /* are our scale mappings up to date? */
-  if(res != metares || scale != metascale || width != metawidth){
+  if(scale != metascale || width != metawidth){
     if(!xmappingL) xmappingL = calloc(inputs, sizeof(*xmappingL));
+    if(!xmappingM) xmappingM = calloc(inputs, sizeof(*xmappingM));
     if(!xmappingH) xmappingH = calloc(inputs, sizeof(*xmappingH));
     metanoise=-1;
-
-    if(!work_floor)
-      work_floor = calloc(total_ch,sizeof(*work_floor));
-    for(i=0;i<total_ch;i++){
-      if(work_floor[i])
-	work_floor[i] = realloc(work_floor[i],(width+1)*sizeof(**work_floor));
-      else
-	work_floor[i] = calloc((width+1),sizeof(**work_floor));
-    }
 
     for(fi=0;fi<inputs;fi++){
 
@@ -358,6 +323,11 @@ float **process_fetch(int res, int scale, int mode, int link,
       }else{
 	xmappingL[fi] = malloc((width+1)*sizeof(**xmappingL));
       }
+      if(xmappingM[fi]){
+	xmappingM[fi] = realloc(xmappingM[fi],(width+1)*sizeof(**xmappingM));
+      }else{
+	xmappingM[fi] = malloc((width+1)*sizeof(**xmappingM));
+      }
       if(xmappingH[fi]){
 	xmappingH[fi] = realloc(xmappingH[fi],(width+1)*sizeof(**xmappingH));
       }else{
@@ -366,39 +336,25 @@ float **process_fetch(int res, int scale, int mode, int link,
 
       metascale = scale;
       metawidth = width;
-      metares = res;
 
-      
       /* generate new numbers */
       for(i=0;i<width;i++){
-	float off=0;
+	float off=.5;
 	float loff=1.;
 	float hoff=1.;
-	float lfreq,hfreq;
+	float lfreq,mfreq,hfreq;
 
-	switch(res){
-	case 0: /* screen-resolution */
-	  off=1.;
-	  break;
-	case 1: /* 1/24th octave */
-	  loff = .95918945710913818816;
-	  hoff = 1.04254690518999138632;
-	  break;
-	case 2: /* 1/12th octave */
-	  loff = .94387431268169349664;
-	  hoff = 1.05946309435929526455;
-	  break;
-	case 3: /* 1/3th octave */
-	  loff = .79370052598409973738;
-	  hoff = 1.25992104989487316475;
-	  break;
-	}
+        /* awaiting new RBW/ VBW code */
+        off=.5;
 
 	switch(scale){
 	case 0: /* log */
 	  lfreq= pow(10.,(i-off)/(width-1)
 		     * (log10(nyq)-log10(5.))
 		     + log10(5.)) * loff;
+	  mfreq= pow(10.,((float)i)/(width-1)
+		     * (log10(nyq)-log10(5.))
+		     + log10(5.));
 	  hfreq= pow(10.,(i+off)/(width-1)
 		     * (log10(nyq)-log10(5.))
 		     + log10(5.)) * hoff;
@@ -407,24 +363,31 @@ float **process_fetch(int res, int scale, int mode, int link,
 	  lfreq= pow(2.,(i-off)/(width-1)
 		     * (log2(nyq)-log2(25.))
 		     + log2(25.)) * loff;
+	  mfreq= pow(2.,((float)i)/(width-1)
+		     * (log2(nyq)-log2(25.))
+		     + log2(25.));
 	  hfreq= pow(2.,(i+off)/(width-1)
 		     * (log2(nyq)-log2(25.))
 		     + log2(25.)) *hoff;
 	  break;
 	case 2: /* screen-resolution linear */
 	  lfreq=(i-off)*nyq/(width-1)*loff;
+	  mfreq=((float)i)*nyq/(width-1);
 	  hfreq=(i+off)*nyq/(width-1)*hoff;
 	  break;
 	}
 
 	xmappingL[fi][i]=lfreq/(rate[fi]*.5)*(blocksize/2);
+	xmappingM[fi][i]=mfreq/(rate[fi]*.5)*(blocksize/2);
 	xmappingH[fi][i]=hfreq/(rate[fi]*.5)*(blocksize/2);
 
       }
-      
+
       for(i=0;i<width;i++){
 	if(xmappingL[fi][i]<0.)xmappingL[fi][i]=0.;
 	if(xmappingL[fi][i]>blocksize/2.)xmappingL[fi][i]=blocksize/2.;
+	if(xmappingM[fi][i]<0.)xmappingM[fi][i]=0.;
+	if(xmappingM[fi][i]>blocksize/2.)xmappingM[fi][i]=blocksize/2.;
 	if(xmappingH[fi][i]<0.)xmappingH[fi][i]=0.;
 	if(xmappingH[fi][i]>blocksize/2.)xmappingH[fi][i]=blocksize/2.;
       }
@@ -432,82 +395,12 @@ float **process_fetch(int res, int scale, int mode, int link,
 
     for(i=0;i<total_ch;i++)
       if(plot_data[i]){
-	plot_data[i] = realloc(plot_data[i],(width+1)*sizeof(**plot_data));
+	plot_data[i] = realloc(plot_data[i],(width+1)*2*sizeof(**plot_data));
       }else{
-	plot_data[i] = malloc((width+1)*sizeof(**plot_data));
+	plot_data[i] = malloc((width+1)*2*sizeof(**plot_data));
       }
   }
 
-  /* 'illustrate' the noise floor */
-  if(noise){
-    if(plot_floor)
-      plot_floor=realloc(plot_floor,(width+1)*sizeof(*plot_floor));
-    else
-      plot_floor=calloc((width+1),sizeof(*plot_floor));
-    
-    if(metanoise!=link){
-      float *y = plot_floor;
-      int ch=0;
-      metanoise=link;
-      for(i=0;i<width;i++)
-	y[i]=-300;
-      
-      for(fi=0;fi<inputs;fi++){
-	float *L = xmappingL[fi];
-	float *H = xmappingH[fi];
-	float d = 1./floor_count;
-	
-	for(ci=0;ci<channels[fi];ci++){
-	  float *fy = floor_y[ci+ch];
-	  float *fyy = floor_yy[ci+ch];
-	  float *w = work_floor[ci+ch];
-	  
-	  for(i=0;i<width;i++){
-	    int first=floor(L[i]);
-	    int last=floor(H[i]);
-	    float esum;
-	    float vsum;
-	    float v = fyy[first]*floor_count - fy[first]*fy[first];
-	    
-	    if(first==last){
-	      float del=H[i]-L[i];
-	      esum=fy[first]*del;
-	      vsum=v*del;
-	    }else{
-	      float del=1.-(L[i]-first);
-	      esum=fy[first]*del;
-	      vsum=v*del;
-	      
-	      for(j=first+1;j<last;j++){
-		v = fyy[j]*floor_count - fy[j]*fy[j];
-		esum+=fy[j];
-		vsum+=v;
-	      }
-	      
-	      v = fyy[last]*floor_count - fy[last]*fy[last];
-	      del=(H[i]-last);
-	      esum+=fy[last]*del;
-	      vsum+=v*del;
-	    }
-	    vsum = 10*sqrt(vsum)*d;
-	    esum*=d;
-	    w[i] = esum+vsum*10;
-	    esum = todB_a(w+i)*.5;
-	    
-	    if(esum>y[i])y[i]=esum;
-	  }
-	}
-	ch+=channels[fi];
-      }
-    }
-    if(link == LINK_INDEPENDENT && mode==0)
-      *yfloor=plot_floor;
-  }else{
-    for(i=0;i<total_ch;i++)
-      memset(work_floor[i],0,width*sizeof(**work_floor));
-    metanoise=-1;
-  }
-  
   /* mode selects the base data set */
   normptr=NULL;
   switch(mode){
@@ -536,39 +429,66 @@ float **process_fetch(int res, int scale, int mode, int link,
   *pmin = 180.;
   for(fi=0;fi<inputs;fi++){
     float *L = xmappingL[fi];
+    float *M = xmappingM[fi];
     float *H = xmappingH[fi];
     float normalize = normptr ? 1./normptr[fi] : 1.;
 
     switch(link){
     case LINK_INDEPENDENT:
-      
+
       for(ci=0;ci<channels[fi];ci++){
-	float *y = plot_data[ci+ch];
-	float *m = data[ci+ch];
 	if(active[ch+ci]){
+          float *y = plot_data[ci+ch];
+          float *m = data[ci+ch];
+          int prevbin;
+          float prevy;
 	  for(i=0;i<width;i++){
-	    int first=floor(L[i]);
-	    int last=floor(H[i]);
-	    float sum;
-	    
+	    int first=ceil(L[i]);
+	    int last=ceil(H[i]);
+	    float firsty,lasty,min,max;
+
+            /* don't allow roundoff error to skip a bin entirely */
+            if(i>0 && prevbin<first)first=prevbin;
+            prevbin=last;
+
 	    if(first==last){
-	      float del=H[i]-L[i];
-	      sum=m[first]*del;
+	      float del=M[i]-floor(M[i]);
+              int mid = floor(M[i]);
+              float a = todB(m[mid]*normalize);
+              float b = todB(m[mid+1]*normalize);
+	      firsty=lasty=min=max=(a+(b-a)*del);
+
 	    }else{
-	      float del=1.-(L[i]-first);
-	      sum=m[first]*del;
-	      
-	      for(j=first+1;j<last;j++)
-		sum+=m[j];
-	      
-	      del=(H[i]-last);
-	      sum+=m[last]*del;
+	      firsty=min=max=m[first];
+	      for(j=first+1;j<last;j++){
+                if(m[j]<min)min=m[j];
+                if(m[j]>max)max=m[j];
+              }
+              lasty=todB(m[j-1]*normalize);
+              firsty=todB(firsty*normalize);
+              min=todB(min*normalize);
+              max=todB(max*normalize);
 	    }
 
-            sum*=normalize;
-	    sum=todB_a(&sum)*.5;
-	    if(sum>*ymax)*ymax=sum;
-	    y[i]=sum;	  
+            max*=.5;
+            min*=.5;
+	    if(max>*ymax)*ymax=max;
+
+            /* link non-overlapping bins into contiguous lines */
+            if(i>0){
+              float midpoint = (prevy+firsty)*.25;
+
+              if(midpoint<min)min=midpoint;
+              if(midpoint>max)max=midpoint;
+
+              if(midpoint<y[i*2-2])y[i*2-2]=midpoint;
+              if(midpoint>y[i*2-1])y[i*2-1]=midpoint;
+            }
+
+	    y[i*2]=min;
+	    y[i*2+1]=max;
+
+            prevy=lasty;
 	  }
 	}
       }
@@ -576,214 +496,223 @@ float **process_fetch(int res, int scale, int mode, int link,
 
     case LINK_SUMMED:
       {
-	float *y = plot_data[ch];
-	memset(y,0,(width+1)*sizeof(*y));
-      
-	for(ci=0;ci<channels[fi];ci++){
-	  float *m = data[ci+ch];
-	  if(active[ch+ci]){
-	    for(i=0;i<width;i++){
-	      int first=floor(L[i]);
-	      int last=floor(H[i]);
-	      
-	      if(first==last){
-		float del=H[i]-L[i];
-		y[i]+=m[first]*del;
-	      }else{
-		float del=1.-(L[i]-first);
-		y[i]+=m[first]*del;
-		
-		for(j=first+1;j<last;j++)
-		  y[i]+=m[j];
-		
-		del=(H[i]-last);
-		y[i]+=m[last]*del;
-	      }
-	    }
-	  }
-	}
-      
-	for(i=0;i<width;i++){
-          float sum=y[i]*normalize;
-	  sum=todB_a(&sum)*.5;
-	  if(sum>*ymax)*ymax=sum;
-	  y[i]=sum;	  
-	}
+        float *y = plot_data[ch];
+        float **m = data+ch;
+        int prevbin;
+        float prevy;
+        for(i=0;i<width;i++){
+          int first=ceil(L[i]);
+          int last=ceil(H[i]);
+          float firsty,lasty,min,max;
+
+          /* don't allow roundoff error to skip a bin entirely */
+          if(i>0 && prevbin<first)first=prevbin;
+          prevbin=last;
+
+          if(first==last){
+            float a=0.;
+            float b=0.;
+            int mid = floor(M[i]);
+            float del=M[i]-floor(M[i]);
+            for(ci=0;ci<channels[fi];ci++){
+              if(active[ch+ci]){
+                a+=m[ci][mid];
+                b+=m[ci][mid+1];
+              }
+            }
+            a=todB(a*normalize);
+            b=todB(b*normalize);
+            firsty=lasty=min=max=(a+(b-a)*del);
+          }else{
+            float a=0.;
+            for(ci=0;ci<channels[fi];ci++){
+              if(active[ch+ci]) a+=m[ci][first];
+            }
+            firsty=min=max=a;
+
+            for(j=first+1;j<last;j++){
+              a=0.;
+              for(ci=0;ci<channels[fi];ci++){
+                if(active[ch+ci]) a+=m[ci][j];
+              }
+              if(a<min)min=a;
+              if(a>max)max=a;
+            }
+
+            lasty=todB(a*normalize);
+            firsty=todB(firsty*normalize);
+            min=todB(min*normalize);
+            max=todB(max*normalize);
+          }
+
+          min*=.5;
+          max*=.5;
+
+          if(max>*ymax)*ymax=max;
+
+          /* link non-overlapping bins into contiguous lines */
+          if(i>0){
+            float midpoint = (prevy+firsty)*.25;
+
+            if(midpoint<min)min=midpoint;
+            if(midpoint>max)max=midpoint;
+
+            if(midpoint<y[i*2-2])y[i*2-2]=midpoint;
+            if(midpoint>y[i*2-1])y[i*2-1]=midpoint;
+          }
+
+          y[i*2]=min;
+          y[i*2+1]=max;
+
+          prevy=lasty;
+        }
       }
       break;
-      
+
     case LINK_SUB_FROM:
       {
 	float *y = plot_data[ch];
 	if(active[ch]==0){
-	  for(i=0;i<width;i++)
+	  for(i=0;i<width*2+2;i++)
 	    y[i]=-300;
 	}else{
-	  for(ci=0;ci<channels[fi];ci++){
-	    float *m = data[ci+ch];
-	    if(ci==0 || active[ch+ci]){
-	      for(i=0;i<width;i++){
-		int first=floor(L[i]);
-		int last=floor(H[i]);
-		float sum;
-		
-		if(first==last){
-		  float del=H[i]-L[i];
-		  sum=m[first]*del;
-		}else{
-		  float del=1.-(L[i]-first);
-		  sum=m[first]*del;
-		  
-		  for(j=first+1;j<last;j++)
-		    sum+=m[j];
-		  
-		  del=(H[i]-last);
-		  sum+=m[last]*del;
-		}
-		
-		if(ci==0){
-		  y[i]=sum;
-		}else{
-		  y[i]-=sum;
-		}
-	      }
-	    }
-	  }
-	  
-	  for(i=0;i<width;i++){
-	    float v = (y[i]>0?y[i]:0);
-            v*=normalize;
-	    float sum=todB_a(&v)*.5;
-	    if(sum>*ymax)*ymax=sum;
-	    y[i]=sum;	  
-	  }
-	}
+          float *y = plot_data[ch];
+          float **m = data+ch;
+          int prevbin;
+          float prevy;
+          for(i=0;i<width;i++){
+            int first=ceil(L[i]);
+            int last=ceil(H[i]);
+            float firsty,lasty,min,max;
+
+            /* don't allow roundoff error to skip a bin entirely */
+            if(i>0 && prevbin<first)first=prevbin;
+            prevbin=last;
+
+            if(first==last){
+              int mid = floor(M[i]);
+              float del=M[i]-floor(M[i]);
+              float a=m[0][mid];
+              float b=m[0][mid+1];
+              for(ci=1;ci<channels[fi];ci++){
+                if(active[ch+ci]){
+                  a-=m[ci][mid];
+                  b-=m[ci][mid+1];
+                }
+              }
+              a=todB(a*normalize);
+              b=todB(b*normalize);
+              firsty=lasty=min=max=(a+(b-a)*del);
+            }else{
+              float a=m[0][first];
+              for(ci=1;ci<channels[fi];ci++){
+                if(active[ch+ci]) a-=m[ci][first];
+              }
+              firsty=min=max=a;
+
+              for(j=first+1;j<last;j++){
+                a=m[0][j];
+                for(ci=1;ci<channels[fi];ci++){
+                  if(active[ch+ci]) a-=m[ci][j];
+                }
+                if(a<min)min=a;
+                if(a>max)max=a;
+              }
+
+              lasty=todB(a*normalize);
+              firsty=todB(firsty*normalize);
+              min=todB(min*normalize);
+              max=todB(max*normalize);
+            }
+
+            min*=.5;
+            max*=.5;
+
+            if(max>*ymax)*ymax=max;
+
+            /* link non-overlapping bins into contiguous lines */
+            if(i>0){
+              float midpoint = (prevy+firsty)*.25;
+
+              if(midpoint<min)min=midpoint;
+              if(midpoint>max)max=midpoint;
+
+              if(midpoint<y[i*2-2])y[i*2-2]=midpoint;
+              if(midpoint>y[i*2-1])y[i*2-1]=midpoint;
+            }
+
+            y[i*2]=min;
+            y[i*2+1]=max;
+
+            prevy=lasty;
+          }
+        }
       }
       break;
     case LINK_SUB_REF:
       {
-	float *r = plot_data[ch];
-	for(ci=0;ci<channels[fi];ci++){
-	  float *y = plot_data[ch+ci];
-	  float *m = data[ci+ch];
-	  if(ci==0 || active[ch+ci]){
-	    for(i=0;i<width;i++){
-	      int first=floor(L[i]);
-	      int last=floor(H[i]);
-	      float sum;
-	      
-	      if(first==last){
-		float del=H[i]-L[i];
-		sum=m[first]*del;
-	      }else{
-		float del=1.-(L[i]-first);
-		sum=m[first]*del;
-		
-		for(j=first+1;j<last;j++)
-		  sum+=m[j];
-		
-		del=(H[i]-last);
-		sum+=m[last]*del;
-	      }
-	      
-	      if(ci==0){
-		r[i]=sum;
-	      }else{
-		sum=(r[i]>sum?0.f:sum-r[i]);
-                sum*=normalize;
-		y[i]=todB_a(&sum)*.5;
-		if(y[i]>*ymax)*ymax=y[i];
-	      }
-	    }
-	  }
-	}
+        float *y = plot_data[ch];
+        for(i=0;i<width*2+2;i++)
+          y[i]=-300;
       }
-      break;
-      
-    case LINK_IMPEDENCE_p1:
-    case LINK_IMPEDENCE_1:
-    case LINK_IMPEDENCE_10:
       {
-	float shunt = (link == LINK_IMPEDENCE_p1?.1:(link == LINK_IMPEDENCE_1?1:10));
-	float *r = plot_data[ch];
+        float *r = data[ch];
+        for(ci=1;ci<channels[fi];ci++){
+          if(active[ch+ci]){
+            float *y = plot_data[ci+ch];
+            float *m = data[ci+ch];
+            int prevbin;
+            float prevy;
+            for(i=0;i<width;i++){
+              int first=ceil(L[i]);
+              int last=ceil(H[i]);
+              float firsty,lasty,min,max;
 
-	for(ci=0;ci<channels[fi];ci++){
-	  float *y = plot_data[ci+ch];
-	  float *m = data[ch+ci];
-	  
-	  if(ci==0 || active[ch+ci]){
-	    for(i=0;i<width;i++){
-	      int first=floor(L[i]);
-	      int last=floor(H[i]);
-	      float sum;
-	      
-	      if(first==last){
-		float del=H[i]-L[i];
-		sum=m[first]*del;
-	      }else{
-		float del=1.-(L[i]-first);
-		sum=m[first]*del;
-		
-		for(j=first+1;j<last;j++)
-		  sum+=m[j];
-		
-		del=(H[i]-last);
-		sum+=m[last]*del;
-	      }
+              /* don't allow roundoff error to skip a bin entirely */
+              if(i>0 && prevbin<first)first=prevbin;
+              prevbin=last;
 
-	      if(ci==0){
-		/* stash the reference in the work vector */
-		r[i]=sum;
-	      }else{
-		/* the shunt */
-		/* 'r' collected at source, 'sum' across the shunt */
-		float V=sqrt(r[i]*normalize);
-		float S=sqrt(sum*normalize);
-		
-		if(S>(1e-5) && V>S){
-		  y[i] = shunt*(V-S)/S;
-		}else{
-		  y[i] = NAN;
-		}
-	      }
-	    }
-	  }
-	}
-	    
-	/* scan the resulting buffers for marginal data that would
-	   produce spurious output. Specifically we look for sharp
-	   falloffs of > 40dB or an original test magnitude under
-	   -70dB. */
-	{
-	  float max = -200;
-	  for(i=0;i<width;i++){
-	    float v = r[i] = todB_a(r+i)*.5;
-	    if(v>max)max=v;
-	  }
+              if(first==last){
+                float del=M[i]-floor(M[i]);
+                int mid = floor(M[i]);
+                float a = todB((m[mid]-r[mid])*normalize);
+                float b = todB((m[mid+1]-r[mid])*normalize);
+                firsty=lasty=min=max=(a+(b-a)*del);
 
-	  for(ci=1;ci<channels[fi];ci++){
-	    if(active[ch+ci]){
-	      float *y = plot_data[ci+ch];	      
-	      for(i=0;i<width;i++){
-		if(r[i]<max-40 || r[i]<-70){
-		  int j=i-binspan;
-		  if(j<0)j=0;
-		  for(;j<i;j++)
-		    y[j]=NAN;
-		  for(;j<width;j++){
-		    if(r[j]>max-40 && r[j]>-70)break;
-		    y[j]=NAN;
-		  }
-		  i=j+3;
-		  for(;j<i && j<width;j++){
-		    y[j]=NAN;
-		  }
-		}
-		if(!isnan(y[i]) && y[i]>*ymax)*ymax = y[i];
-	      }
-	    }
- 	  }
-	}
+              }else{
+                firsty=min=max=m[first]-r[first];
+                for(j=first+1;j<last;j++){
+                  if(m[j]<min)min=m[j]-r[j];
+                  if(m[j]>max)max=m[j]-r[j];
+                }
+                lasty=todB((m[j-1]-r[j-1])*normalize);
+                firsty=todB(firsty*normalize);
+                min=todB(min*normalize);
+                max=todB(max*normalize);
+              }
+
+              max*=.5;
+              min*=.5;
+              if(max>*ymax)*ymax=max;
+
+              /* link non-overlapping bins into contiguous lines */
+              if(i>0){
+                float midpoint = (prevy+firsty)*.25;
+
+                if(midpoint<min)min=midpoint;
+                if(midpoint>max)max=midpoint;
+
+                if(midpoint<y[i*2-2])y[i*2-2]=midpoint;
+                if(midpoint>y[i*2-1])y[i*2-1]=midpoint;
+              }
+
+              y[i*2]=min;
+              y[i*2+1]=max;
+
+              prevy=lasty;
+            }
+          }
+        }
       }
       break;
 
@@ -794,129 +723,109 @@ float **process_fetch(int res, int scale, int mode, int link,
 	float *op = plot_data[ch+1];
 
 	float *r = data[ch];
-	float *rn = work_floor[ch];
 	float *m = data[ch+1];
-	float *mn = work_floor[ch+1];
 	float *p = ph[ch+1];
-	float mag[width];
 
 	if(feedback_count[ch]==0){
-	  memset(om,0,width*sizeof(*om));
-	  memset(op,0,width*sizeof(*op));
+	  memset(om,0,width*2*sizeof(*om));
+	  memset(op,0,width*2*sizeof(*op));
 	}else{
 	  /* two vectors only; response and phase */
-	  /* response */
+	  /* response is a standard minmax vector */
+          /* phase is averaged to screen resolution */
 	  if(active[ch] || active[ch+1]){
-	    for(i=0;i<width;i++){
-	      int first=floor(L[i]);
-	      int last=floor(H[i]);
-	      float sumR,sumM;
-	      
-	      if(first==last){
-		float del=H[i]-L[i];
-		sumR=r[first]*del;
-		sumM=m[first]*del;
-	      }else{
-		float del=1.-(L[i]-first);
-		sumR=r[first]*del;
-		sumM=m[first]*del;
-		
-		for(j=first+1;j<last;j++){
-		  sumR+=r[j];
-		  sumM+=m[j];
-		}
 
-		del=(H[i]-last);
-		sumR+=r[last]*del;
-		sumM+=m[last]*del;
-	      }
-	      
-	      if(sumR>rn[i] && sumM>mn[i]){
-		mag[i] = todB_a(&sumR)*.5;
-		sumM /= sumR;
-		om[i] = todB_a(&sumM)*.5;
-	      }else{
-		om[i] = NAN;
-	      }
-	    }
-	  }
-	  
-	  /* phase */
-	  if(active[ch+1]){
-	    for(i=0;i<width;i++){
-	      int first=floor(L[i]);
-	      int last=floor(H[i]);
-	      float sumR,sumI;
-	      
-	      if(first==last){
-		float del=H[i]-L[i];
-		sumR=p[(first<<1)]*del;
-		sumI=p[(first<<1)+1]*del;
-	      }else{
-		float del=1.-(L[i]-first);
-		sumR=p[(first<<1)]*del;
-		sumI=p[(first<<1)+1]*del;
-		
-		for(j=first+1;j<last;j++){
-		  sumR+=p[(j<<1)];
-		  sumI+=p[(j<<1)+1];
-		}
+            int prevbin;
+            float prevy;
+            float prevP=0;
+            for(i=0;i<width;i++){
+              int first=ceil(L[i]);
+              int last=ceil(H[i]);
+              float firsty,lasty,min,max;
+              float P,R,I;
 
-		del=(H[i]-last);
-		sumR+=p[(last<<1)]*del;
-		sumI+=p[(last<<1)+1]*del;
-	      }
+              /* don't allow roundoff error to skip a bin entirely */
+              if(i>0 && prevbin<first)first=prevbin;
+              prevbin=last;
 
-	      if(!isnan(om[i])){
-		op[i] = atan2(sumI,sumR)*57.29;
-	      }else{
-		op[i]=NAN;
-	      }
-	    }
-	  }
-	  
-	  /* scan the resulting buffers for marginal data that would
-	     produce spurious output. Specifically we look for sharp
-	     falloffs of > 40dB or an original test magnitude under
-	     -70dB. */
-	  if(active[ch] || active[ch+1]){
-	    for(i=0;i<width;i++){
-	      if(isnan(om[i])){
-		int j=i-binspan;
-		if(j<0)j=0;
-		for(;j<i;j++){
-		  om[j]=NAN;
-		  op[j]=NAN;
-		}
-		for(;j<width;j++){
-		  if(!isnan(om[j]))break;
-		  om[j]=NAN;
-		  op[j]=NAN;
-		}
-		i=j+3;
-		for(;j<i && j<width;j++){
-		  om[j]=NAN;
-		  op[j]=NAN;
-		}
-	      }
-	      if(om[i]>*ymax)*ymax = om[i];
-	      if(op[i]>*pmax)*pmax = op[i];
-	      if(op[i]<*pmin)*pmin = op[i];
-	      
-	    }
-	  }
+              if(first==last){
+                float del=M[i]-floor(M[i]);
+                int mid = floor(M[i]);
+                float a = todB(m[mid]/r[mid]);
+                float b = todB(m[mid+1]/r[mid+1]);
+                firsty=lasty=min=max=(a+(b-a)*del);
+
+                if(active[ch+1]){
+                  float aP = (isnan(a) ? NAN : atan2f(p[mid*2+1],p[mid*2]));
+                  float bP = (isnan(b) ? NAN : atan2f(p[mid*2+3],p[mid*2+2]));
+                  P=(aP+(bP-aP)*del)*57.29;
+                }
+
+              }else{
+                firsty=min=max=m[first]/r[first];
+                R = p[first*2];
+                I = p[first*2+1];
+
+                for(j=first+1;j<last;j++){
+                  float a = m[j]/r[j];
+                  if(a<min)min=a;
+                  if(a>max)max=a;
+                  R += p[j*2];
+                  I += p[j*2+1];
+                }
+
+                lasty=todB(m[j-1]/r[j-1]);
+                firsty=todB(firsty);
+                min=todB(min);
+                max=todB(max);
+
+                if(active[ch+1])
+                  P = atan2f(I,R)*57.29;
+              }
+
+              max*=.5;
+              min*=.5;
+              if(max>*ymax)*ymax=max;
+              if(P>*pmax)*pmax = P;
+	      if(P<*pmin)*pmin = P;
+
+              if(active[ch+1] && min>-70){
+                float midpoint = (prevP+P)*.5;
+                op[i*2]=P;
+                op[i*2+1]=P;
+
+                /* link phase into contiguous line */
+                if(i){
+                  if(midpoint<P) op[i*2]=midpoint;
+                  if(midpoint>P) op[i*2+1]=midpoint;
+                  if(midpoint<op[i*2-2]) op[i*2-2]=midpoint;
+                  if(midpoint>op[i*2-1]) op[i*2-1]=midpoint;
+                }
+              }else{
+                op[i*2]=op[i*2+1]=NAN;
+              }
+
+              /* link non-overlapping bins into contiguous lines */
+              if(i>0){
+                float midpoint = (prevy+firsty)*.25;
+
+                if(midpoint<min)min=midpoint;
+                if(midpoint>max)max=midpoint;
+
+                if(midpoint<om[i*2-2])om[i*2-2]=midpoint;
+                if(midpoint>om[i*2-1])om[i*2-1]=midpoint;
+              }
+
+              om[i*2]=min;
+              om[i*2+1]=max;
+
+              prevy=lasty;
+              prevP=P;
+            }
+          }
 	}
       }
       break;
-      
-    case LINK_THD: /* THD */
-    case LINK_THD2: /* THD-2 */
-    case LINK_THDN: /* THD+N */
-    case LINK_THDN2: /* THD+N-2 */
-      
-      
-      break;
-      
     }
     ch+=channels[fi];
   }
