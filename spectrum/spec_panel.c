@@ -140,6 +140,7 @@ static void dump(GtkWidget *widget,struct panel *p){
   process_dump(plot_mode);
 }
 
+#if 0
 static void noise(GtkWidget *widget,struct panel *p){
   if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))){
     if(plot_noise){
@@ -160,7 +161,7 @@ static void noise(GtkWidget *widget,struct panel *p){
       gtk_button_set_label(GTK_BUTTON(widget),"sample _noise floor");
   }
 }
-
+#endif
 
 static void depthchange(GtkWidget *widget,struct panel *p){
   int choice=gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
@@ -479,9 +480,19 @@ void panel_create(struct panel *panel, int bold){
 	   version);
 
   /* the Fucking Fish */
-  for(i=0;i<19;i++)
+  for(i=0;i<19;i++){
+    int j,k,lines = sizeof(ff_colormap)/sizeof(*ff_colormap) + sizeof(*ff_xpm)/sizeof(**ff_xpm) + 1;
+    char *ff_temp[lines];
+
+    ff_temp[0]=ff_header;
+    for(j=0,k=1;j<sizeof(ff_colormap)/sizeof(*ff_colormap);j++,k++)
+      ff_temp[k]=ff_colormap[j];
+    for(j=0;j<sizeof(*ff_xpm)/sizeof(**ff_xpm);j++,k++)
+      ff_temp[k]=ff_xpm[i][j];
+
     panel->ff[i]=gdk_pixmap_create_from_xpm_d(root,
-					      panel->fb+i,NULL,ff_xpm[i]);
+					      panel->fb+i,NULL,ff_temp);
+  }
   panel->twirlimage=gtk_image_new_from_pixmap(panel->ff[0],panel->fb[0]);
 
   active = calloc(total_ch,sizeof(*active));
