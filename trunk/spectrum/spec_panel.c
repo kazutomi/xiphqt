@@ -498,19 +498,29 @@ void panel_create(struct panel *panel, int bold){
   //gtk_widget_set_size_request(GTK_WIDGET(panel->toplevel),1024,400);
 
   /* the Fucking Fish */
-  for(i=0;i<19;i++){
-    int j,k,lines = sizeof(ff_colormap)/sizeof(*ff_colormap) + sizeof(*ff_xpm)/sizeof(**ff_xpm) + 1;
-    char *ff_temp[lines];
-    GdkImage *ti;
+  {
+    GdkPixmap *tb;
+    GdkPixmap *tp=gdk_pixmap_create_from_xpm_d(root,&tb,NULL,fisharray);
+    GdkGC *cgc=gdk_gc_new(tp);
+    GdkGC *bgc=gdk_gc_new(tb);
+    int w, h;
 
-    ff_temp[0]=ff_header;
-    for(j=0,k=1;j<sizeof(ff_colormap)/sizeof(*ff_colormap);j++,k++)
-      ff_temp[k]=ff_colormap[j];
-    for(j=0;j<sizeof(*ff_xpm)/sizeof(**ff_xpm);j++,k++)
-      ff_temp[k]=ff_xpm[i][j];
+    gdk_drawable_get_size(tp,&w,&h);
+    w/=19;
 
-    panel->ff[i]=gdk_pixmap_create_from_xpm_d(root,panel->fb+i,NULL,ff_temp);
+    for(i=0;i<19;i++){
+      panel->ff[i]=gdk_pixmap_new(tp,w,h,-1);
+      panel->fb[i]=gdk_pixmap_new(tb,w,h,-1);
+      gdk_draw_drawable(panel->ff[i],cgc,tp,i*w,0,0,0,w,h);
+      gdk_draw_drawable(panel->fb[i],bgc,tb,i*w,0,0,0,w,h);
+    }
+
+    g_object_unref(cgc);
+    g_object_unref(bgc);
+    g_object_unref(tp);
+    g_object_unref(tb);
   }
+
   panel->twirlimage=gtk_image_new_from_pixmap(panel->ff[0],panel->fb[0]);
 
   active = calloc(total_ch,sizeof(*active));
