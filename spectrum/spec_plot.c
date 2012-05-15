@@ -754,7 +754,7 @@ static void size_request (GtkWidget *widget,GtkRequisition *requisition){
       if(py>maxy)maxy=py;
     }
     max+=maxy*1.5;
-    max*=(i+1)*4;
+    max*=(i+1)*3;
     if(axisx<max)axisx=max;
   }
   /* find max iso layout */
@@ -953,10 +953,10 @@ GtkWidget* plot_new (int size, int groups, int *channels, int *rate, int bold){
   }
   /* log X scale */
   {
-    char *labels[15]={"10Hz","20Hz","30Hz","50Hz","100Hz",
-                     "200Hz","300Hz","500Hz","1kHz",
-                     "2kHz","3kHz","5kHz","10kHz",
-                     "20kHz","30kHz"};
+    char *labels[15]={"10Hz","20","30","50","100Hz",
+                     "200","300","500","1kHz",
+                     "2k","3k","5k","10kHz",
+                     "20k","30k"};
     p->log_layout=calloc(16,sizeof(*p->log_layout));
     for(i=0;i<15;i++)
       p->log_layout[i]=gtk_widget_create_pango_layout(ret,labels[i]);
