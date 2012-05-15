@@ -438,13 +438,17 @@ static void rewindchange(GtkWidget *widget,struct panel *p){
 static void bwchange(GtkWidget *widget,struct panel *p){
   plot_bw=gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
   if(plot_bw==0){
-    gtk_widget_hide(p->bwmodebutton);
-    gtk_container_remove(GTK_CONTAINER(p->bwtable),p->bwbutton);
-    gtk_table_attach_defaults(GTK_TABLE(p->bwtable),p->bwbutton,0,2,0,1);
+
+    gtk_widget_set_sensitive(GTK_WIDGET(p->bwmodebutton),0);
+    //gtk_widget_hide(p->bwmodebutton);
+    //gtk_container_remove(GTK_CONTAINER(p->bwtable),p->bwbutton);
+    //gtk_table_attach_defaults(GTK_TABLE(p->bwtable),p->bwbutton,0,2,0,1);
   }else{
-    gtk_container_remove(GTK_CONTAINER(p->bwtable),p->bwbutton);
-    gtk_table_attach_defaults(GTK_TABLE(p->bwtable),p->bwbutton,0,1,0,1);
-    gtk_widget_show(p->bwmodebutton);
+
+    gtk_widget_set_sensitive(GTK_WIDGET(p->bwmodebutton),1);
+    //gtk_container_remove(GTK_CONTAINER(p->bwtable),p->bwbutton);
+    //gtk_table_attach_defaults(GTK_TABLE(p->bwtable),p->bwbutton,0,1,0,1);
+    //gtk_widget_show(p->bwmodebutton);
   }
 }
 
@@ -491,6 +495,8 @@ void panel_create(struct panel *panel, int bold){
   gtk_window_add_accel_group (GTK_WINDOW(panel->toplevel), panel->group);
 
   gtk_window_set_title(GTK_WINDOW(panel->toplevel),(const gchar *)"Spectrum Analyzer");
+  gtk_window_set_default_size(GTK_WINDOW(panel->toplevel),1024,400);
+  //gtk_widget_set_size_request(GTK_WIDGET(panel->toplevel),1024,400);
 
   /* the Fucking Fish */
   for(i=0;i<19;i++){
@@ -587,7 +593,6 @@ void panel_create(struct panel *panel, int bold){
       gtk_alignment_set_padding(GTK_ALIGNMENT(al),0,10,0,0);
       gtk_box_pack_start(GTK_BOX(rightbox),al,0,0,0);
 
-
       ch+=channels[fi];
 
     }
@@ -629,7 +634,7 @@ void panel_create(struct panel *panel, int bold){
     /* depth */
 
     GtkWidget *menu3=gtk_combo_box_new_text();
-    char *entries3[]={"log freq","ISO freq","linear freq"};
+    char *entries3[]={"log","ISO","linear"};
     for(i=0;i<3;i++)
       gtk_combo_box_append_text (GTK_COMBO_BOX (menu3), entries3[i]);
     gtk_combo_box_set_active(GTK_COMBO_BOX(menu3),plot_scale);

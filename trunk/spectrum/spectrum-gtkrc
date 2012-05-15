@@ -10,15 +10,19 @@ style "button-poppy" {
         bg[NORMAL]="#c0d0e0" 
         bg[ACTIVE]="#e0f0ff" 
         bg[PRELIGHT]="#e0f0ff" 
+        bg[INSENSITIVE]="#c0d0e0" 
 
         fg[NORMAL]="#000000" 
         fg[ACTIVE]="#000000" 
         fg[PRELIGHT]="#000000" 
         fg[SELECTED]="#000000" 
+        fg[INSENSITIVE]="#000000" 
+
         text[NORMAL]="#000000" 
         text[ACTIVE]="#000000" 
         text[PRELIGHT]="#000000" 
         text[SELECTED]="#000000" 
+	text[INSENSITIVE]="#8ea0be" 
 }
 
 style "panel" {
