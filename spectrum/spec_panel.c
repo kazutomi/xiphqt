@@ -489,7 +489,6 @@ void panel_create(struct panel *panel, int bold){
   gtk_widget_set_name(rightframebox,"controlpanel");
   gtk_widget_set_name(topbox,"panel");
 
-
   panel->toplevel=gtk_window_new (GTK_WINDOW_TOPLEVEL);
   panel->group = gtk_accel_group_new ();
   gtk_window_add_accel_group (GTK_WINDOW(panel->toplevel), panel->group);
@@ -517,7 +516,6 @@ void panel_create(struct panel *panel, int bold){
   active = calloc(total_ch,sizeof(*active));
 
   gtk_container_add (GTK_CONTAINER (panel->toplevel), topbox);
-
   gtk_frame_set_shadow_type(GTK_FRAME(rightframe),GTK_SHADOW_ETCHED_IN);
 
   g_signal_connect (G_OBJECT (panel->toplevel), "delete_event",
@@ -685,16 +683,18 @@ void panel_create(struct panel *panel, int bold){
   }
   
 
+  {
+    GtkWidget *sep=gtk_hseparator_new();
+    gtk_box_pack_start(GTK_BOX(bbox),sep,0,0,4);
+  }
+
   /* run/pause */
   {
-    GtkWidget *al=gtk_alignment_new(0,0,1,0);
     GtkWidget *button=gtk_toggle_button_new_with_mnemonic("_run");
     gtk_widget_add_accelerator (button, "activate", panel->group, GDK_space, 0, 0);
     gtk_widget_add_accelerator (button, "activate", panel->group, GDK_r, 0, 0);
     g_signal_connect (G_OBJECT (button), "clicked", G_CALLBACK (runchange), panel);
-    gtk_container_add(GTK_CONTAINER(al),button);
-    gtk_alignment_set_padding(GTK_ALIGNMENT(al),8,0,0,0);
-    gtk_box_pack_start(GTK_BOX(bbox),al,0,0,0);
+    gtk_box_pack_start(GTK_BOX(bbox),button,0,0,0);
     panel->run=button;
   }
   
@@ -753,12 +753,9 @@ void panel_create(struct panel *panel, int bold){
 #endif
 
   gtk_box_pack_end(GTK_BOX(rightbox),bbox,0,0,0);
-    
   gtk_widget_show_all(panel->toplevel);
   gtk_combo_box_set_active(GTK_COMBO_BOX(panel->bwbutton),0);
   gtk_key_snooper_install(watch_keyboard,panel);
-
-  //gtk_window_set_resizable(GTK_WINDOW(panel->toplevel),0);
 
 }
 

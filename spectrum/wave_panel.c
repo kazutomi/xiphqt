@@ -406,85 +406,101 @@ static void chlabels(GtkWidget *widget,struct panel *p){
   plot_set_active(PLOT(p->plot),active);
 }
 
+static gint watch_keyboard(GtkWidget *grab_widget,
+                           GdkEventKey *event,
+                           gpointer func_data){
+  struct panel *p=(struct panel *)func_data;
+
+  if(event->type == GDK_KEY_PRESS){
+    if(event->state == GDK_CONTROL_MASK){
+      if(event->keyval == GDK_w) { shutdown(); return TRUE; }
+      if(event->keyval == GDK_q) { shutdown(); return TRUE; }
+    }
+  }
+  return FALSE;
+}
+
 extern char *version;
 void panel_create(struct panel *panel){
   int i;
 
-  GtkWidget *topplace,*topal,*topalb;
-
-  GtkWidget *topframe=gtk_frame_new (NULL);
+  GtkWidget *topbox=gtk_hbox_new(0,0);
   GtkWidget *toplabel=gtk_label_new (NULL);
-  GtkWidget *quitbutton=gtk_button_new_with_mnemonic("_quit");
-  GtkWidget *mainbox=gtk_hbox_new(0,6);
+  GtkWidget *rightframe=gtk_frame_new (NULL);
+  GtkWidget *leftlabel=gtk_label_new (NULL);
   GdkWindow *root=gdk_get_default_root_window();
+  GtkWidget *righttopbox=gtk_vbox_new(0,0);
+  GtkWidget *rightframebox=gtk_event_box_new();
   GtkWidget *rightbox=gtk_vbox_new(0,0);
-  GtkWidget *leftbox=gtk_vbox_new(0,6);
+  GtkWidget *lefttable=gtk_table_new(3,2,0);
+
+  gtk_container_set_border_width (GTK_CONTAINER (righttopbox), 6);
+  gtk_container_set_border_width (GTK_CONTAINER (rightbox), 6);
+  gtk_widget_set_name(rightframebox,"controlpanel");
+  gtk_widget_set_name(topbox,"panel");
 
   panel->toplevel=gtk_window_new (GTK_WINDOW_TOPLEVEL);
   panel->group = gtk_accel_group_new ();
   gtk_window_add_accel_group (GTK_WINDOW(panel->toplevel), panel->group);
 
-  char versionmarkup[240];
-  snprintf(versionmarkup,240," <span size=\"large\" weight=\"bold\" "
-	   "style=\"italic\" foreground=\"dark blue\">"
-	   "Waveform Viewer</span>  <span size=\"small\" foreground=\"#606060\">"
-	   "revision %s</span> ",
-	   version);
+  gtk_window_set_title(GTK_WINDOW(panel->toplevel),(const gchar *)"Waveform Viewer");
+  gtk_window_set_default_size(GTK_WINDOW(panel->toplevel),1024,400);
+  //gtk_widget_set_size_request(GTK_WIDGET(panel->toplevel),1024,400);
 
   /* the Fucking Fish */
-  for(i=0;i<19;i++)
-    panel->ff[i]=gdk_pixmap_create_from_xpm_d(root,
-					      panel->fb+i,NULL,ff_xpm[i]);
+  for(i=0;i<19;i++){
+    int j,k,lines = sizeof(ff_colormap)/sizeof(*ff_colormap) + sizeof(*ff_xpm)/sizeof(**ff_xpm) + 1;
+    char *ff_temp[lines];
+    GdkImage *ti;
+
+    ff_temp[0]=ff_header;
+    for(j=0,k=1;j<sizeof(ff_colormap)/sizeof(*ff_colormap);j++,k++)
+      ff_temp[k]=ff_colormap[j];
+    for(j=0;j<sizeof(*ff_xpm)/sizeof(**ff_xpm);j++,k++)
+      ff_temp[k]=ff_xpm[i][j];
+
+    panel->ff[i]=gdk_pixmap_create_from_xpm_d(root,panel->fb+i,NULL,ff_temp);
+  }
   panel->twirlimage=gtk_image_new_from_pixmap(panel->ff[0],panel->fb[0]);
 
   active = calloc(total_ch,sizeof(*active));
 
-  topplace=gtk_table_new(1,1,0);
-  topalb=gtk_hbox_new(0,0);
-  topal=gtk_alignment_new(1,0,0,0);
-
-  gtk_widget_set_name(quitbutton,"quitbutton");
-
-  gtk_box_pack_start(GTK_BOX(topalb),quitbutton,0,0,0);
-  gtk_container_add (GTK_CONTAINER(topal),topalb);
-  
-  gtk_table_attach_defaults(GTK_TABLE(topplace),
-			    topal,0,1,0,1);
-  gtk_table_attach_defaults(GTK_TABLE(topplace),
-			    topframe,0,1,0,1);
-    
-  gtk_container_add (GTK_CONTAINER (panel->toplevel), topplace);
-  gtk_container_set_border_width (GTK_CONTAINER (quitbutton), 3);
-
-  g_signal_connect (G_OBJECT (quitbutton), "clicked",
-		    G_CALLBACK (shutdown), NULL);
-  gtk_widget_add_accelerator (quitbutton, "activate", panel->group, GDK_q, 0, 0);
-
-  gtk_container_set_border_width (GTK_CONTAINER (topframe), 3);
-  gtk_container_set_border_width (GTK_CONTAINER (mainbox), 3);
-  gtk_frame_set_shadow_type(GTK_FRAME(topframe),GTK_SHADOW_ETCHED_IN);
-  gtk_frame_set_label_widget(GTK_FRAME(topframe),toplabel);
-  gtk_label_set_markup(GTK_LABEL(toplabel),versionmarkup);
-
-  gtk_container_add (GTK_CONTAINER(topframe), mainbox);
+  gtk_container_add (GTK_CONTAINER (panel->toplevel), topbox);
+  gtk_frame_set_shadow_type(GTK_FRAME(rightframe),GTK_SHADOW_ETCHED_IN);
 
   g_signal_connect (G_OBJECT (panel->toplevel), "delete_event",
 		    G_CALLBACK (shutdown), NULL);
 
+  /* underlying boxes/frames */
+  gtk_box_pack_start(GTK_BOX(topbox),lefttable,1,1,0);
+  gtk_box_pack_start(GTK_BOX(topbox),righttopbox,0,0,0);
+
+  gtk_box_pack_end(GTK_BOX (righttopbox),rightframebox,1,1,0);
+  gtk_container_add (GTK_CONTAINER (rightframebox),rightframe);
+  gtk_container_add (GTK_CONTAINER (rightframe), rightbox);
+
   /* add the waveform plot box */
   panel->plot=plot_new(blocksize,inputs,channels,rate);
-  gtk_box_pack_end(GTK_BOX(leftbox),panel->plot,1,1,0);
-  gtk_box_pack_start(GTK_BOX(mainbox),leftbox,1,1,0);
-  
-  /*fish */
-  {
-    GtkWidget *box=gtk_hbox_new(1,1);
-    GtkWidget *fishbox=gtk_hbox_new(0,0);
-    gtk_box_pack_end(GTK_BOX(fishbox),panel->twirlimage,0,0,0);
-    gtk_container_set_border_width (GTK_CONTAINER (fishbox), 3);
+  gtk_table_attach_defaults (GTK_TABLE (lefttable), panel->plot,0,1,1,2);
+  gtk_table_set_row_spacing (GTK_TABLE (lefttable), 0, 6);
+  gtk_table_set_row_spacing (GTK_TABLE (lefttable), 1, 4);
+  gtk_table_set_col_spacing (GTK_TABLE (lefttable), 0, 2);
 
-    gtk_box_pack_start(GTK_BOX(box),fishbox,0,0,0);
-    gtk_box_pack_start(GTK_BOX(rightbox),box,0,0,0);
+  /* fish */
+  {
+    GtkWidget *toptable = gtk_table_new(1,1,0);
+    GtkWidget *fishbox=gtk_alignment_new(.5,.5,0,0);
+    GtkWidget *sepbox=gtk_alignment_new(.5,.85,.7,0);
+    GtkWidget *topsep=gtk_hseparator_new();
+
+
+    gtk_container_set_border_width (GTK_CONTAINER (toptable), 1);
+    gtk_box_pack_start(GTK_BOX(righttopbox),toptable,0,0,0);
+    gtk_container_add (GTK_CONTAINER (sepbox), topsep);
+    gtk_container_add(GTK_CONTAINER(fishbox),panel->twirlimage);
+    gtk_table_attach_defaults (GTK_TABLE (toptable), fishbox,0,1,0,1);
+    gtk_table_attach_defaults (GTK_TABLE (toptable), sepbox,0,1,0,1);
+
   }
 
   /* rate */
@@ -495,48 +511,45 @@ void panel_create(struct panel *panel){
     int ch=0;
     char buffer[160];
     GtkWidget *label;
-    //GtkWidget *vbox=gtk_vbox_new(1,1);
-
-    GtkWidget *sep=gtk_hseparator_new();
-    gtk_box_pack_start(GTK_BOX(rightbox),sep,0,0,6);
 
     panel->chbuttons = calloc(total_ch,sizeof(*panel->chbuttons));
     for(fi=0;fi<inputs;fi++){
+      GtkWidget *al=gtk_alignment_new(0,0,1,0);
+      GtkWidget *vbox=gtk_vbox_new(0,0);
       
       char *lastslash = strrchr(inputname[fi],'/');
       sprintf(buffer,"%s",(lastslash?lastslash+1:inputname[fi]));
       label=gtk_label_new(buffer);
       gtk_widget_set_name(label,"readout");
-      gtk_box_pack_start(GTK_BOX(rightbox),label,0,0,0);
-
+      gtk_box_pack_start(GTK_BOX(vbox),label,0,0,0);
+      
       sprintf(buffer,"%dHz %dbit",rate[fi],bits[fi]);
       label=gtk_label_new(buffer);
       gtk_widget_set_name(label,"readout");
-      gtk_box_pack_start(GTK_BOX(rightbox),label,0,0,0);
+      gtk_box_pack_start(GTK_BOX(vbox),label,0,0,0);
 
       for(i=ch;i<ch+channels[fi];i++){
 	GtkWidget *button=panel->chbuttons[i]=gtk_toggle_button_new();
-        GdkColor rgb = chcolor(i);
 
         sprintf(buffer,"channel %d", i-ch);
         gtk_button_set_label(GTK_BUTTON(button),buffer);
 
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button),1);  
 	g_signal_connect (G_OBJECT (button), "clicked", G_CALLBACK (chlabels), panel);
-
-        set_fg(button,&rgb);
-	gtk_box_pack_start(GTK_BOX(rightbox),button,0,0,0);
+	gtk_box_pack_start(GTK_BOX(vbox),button,0,0,0);
       }
 
-      GtkWidget *sep=gtk_hseparator_new();
-      gtk_box_pack_start(GTK_BOX(rightbox),sep,0,0,6);
+      gtk_container_add(GTK_CONTAINER(al),vbox);
+      gtk_alignment_set_padding(GTK_ALIGNMENT(al),0,10,0,0);
+      gtk_box_pack_start(GTK_BOX(rightbox),al,0,0,0);
 
       ch+=channels[fi];
 
     }
     chlabels(NULL,panel);
   }
-  
+
+  /* add the action buttons */
   GtkWidget *bbox=gtk_vbox_new(0,0);
 
   /* add the action buttons */
@@ -682,10 +695,8 @@ void panel_create(struct panel *panel){
   }
 
   gtk_box_pack_end(GTK_BOX(rightbox),bbox,0,0,0);
-  gtk_box_pack_start(GTK_BOX(mainbox),rightbox,0,0,0);
-
   gtk_widget_show_all(panel->toplevel);
-  //gtk_window_set_resizable(GTK_WINDOW(panel->toplevel),0);
+  gtk_key_snooper_install(watch_keyboard,panel);
 
 }
 

@@ -8,8 +8,9 @@ style "button-poppy" {
 	GtkButton::interior-focus = 0
 
         bg[NORMAL]="#a8b0c0" 
-        bg[ACTIVE]="#d0e0f0" 
-        bg[PRELIGHT]="#e0f0ff" 
+        bg[ACTIVE]="#b0d0ff" 
+        bg[PRELIGHT]="#d0e0f0" 
+        bg[SELECTED]="#d0e0f0" 
         bg[INSENSITIVE]="#a8b0c0" 
 
         fg[NORMAL]="#000000" 
@@ -76,13 +77,13 @@ class "GtkMenu" style "button-poppy"
 widget_class "*Menu*" style "button-poppy"
 
 widget_class "*.GtkMenuItem.*" style "button-poppy"
-widget_class "*Sep*" style "button-poppy"
 widget_class "*Frame*" style "button-poppy"
 
 widget "*.GtkComboBox*" style "button-poppy"
 widget "*.GtkToggleButton*" style "button-poppy"
 widget "*.GtkButton*" style "button-poppy"
 widget "*.controlpanel" style "controlpanel"
+widget "*.controlpanel.*Sep*" style "button-poppy"
 widget "*.readout" style "readout"
 
 
