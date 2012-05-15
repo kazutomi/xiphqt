@@ -7,10 +7,10 @@ style "button-poppy" {
 	GtkButton::focus-line-width = 1
 	GtkButton::interior-focus = 0
 
-        bg[NORMAL]="#c0d0e0" 
-        bg[ACTIVE]="#e0f0ff" 
+        bg[NORMAL]="#a8b0c0" 
+        bg[ACTIVE]="#d0e0f0" 
         bg[PRELIGHT]="#e0f0ff" 
-        bg[INSENSITIVE]="#c0d0e0" 
+        bg[INSENSITIVE]="#a8b0c0" 
 
         fg[NORMAL]="#000000" 
         fg[ACTIVE]="#000000" 
