@@ -242,6 +242,7 @@ static void draw(GtkWidget *widget){
     p->drawgc=gdk_gc_new(p->backing);
     gdk_gc_copy(p->drawgc,widget->style->black_gc);
   }
+
   if(!p->dashes){
     p->dashes=gdk_gc_new(p->backing);
     gdk_gc_copy(p->dashes, p->drawgc);
@@ -826,7 +827,6 @@ static gboolean configure(GtkWidget *widget, GdkEventConfigure *event){
 			      widget->allocation.width,
 			      widget->allocation.height,
 			      -1);
-
   p->ydata=NULL;
   p->configured=1;
 
@@ -838,7 +838,9 @@ static gboolean configure(GtkWidget *widget, GdkEventConfigure *event){
 }
 
 static void plot_class_init (PlotClass *class){
+  int i,w,h;
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (class);
+  GdkWindow *root=gdk_get_default_root_window();
   parent_class = g_type_class_peek_parent (class);
 
   widget_class->expose_event = expose;
@@ -1208,3 +1210,4 @@ void plot_set_active(Plot *p, int *a, int *b){
   plot_refresh(p,NULL);
   draw_and_expose(widget);
 }
+
