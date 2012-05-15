@@ -74,6 +74,7 @@ static int process(){
 }
 
 void *process_thread(void *dummy){
+  init_process();
   while(!process_exit && process());
   process_active=0;
   write(eventpipe[1],"",1);
