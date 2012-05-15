@@ -145,7 +145,7 @@
 
 <ul style="font-size: smaller; margin: 1em 3em">
  <li>
-  libshout 2.2.x + libshout dependencies<br/>
+  libshout 2.2.x or later + libshout dependencies<br/>
   <a href="http://www.icecast.org/download.php">http://www.icecast.org/download.php</a>
  </li>
  <li>
