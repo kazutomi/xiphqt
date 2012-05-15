@@ -25,7 +25,7 @@ supports:
   <li>aRts (Analog RealTime Synth, used by KDE)
   <li>PulseAudio (next generation GNOME sound server)</li>
   <li>esd (EsounD or Enlightened Sound Daemon)</li>
-  <li>MacOS X</li>
+  <li>Mac OS X</li>
   <li>Windows (98 and later)</li>
   <li>AIX</li>
   <li>Sun/NetBSD/OpenBSD</li>
