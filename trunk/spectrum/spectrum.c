@@ -35,7 +35,7 @@ char *version;
 char *inputname[MAX_FILES];
 int inputs=0;
 int blocksize = 131072;
-int bold=0;
+extern int plot_bold;
 
 void handler(int sig){
   signal(sig,SIG_IGN);
@@ -133,7 +133,7 @@ void parse_command_line(int argc, char **argv){
       inputname[inputs++]=strdup(optarg);
       break;
     case 'T':
-      bold = 1;
+      plot_bold = 1;
       break;
     case 'b':
       /* force bit width */
@@ -296,7 +296,7 @@ int main(int argc, char **argv){
   }
 
   /* go */
-  panel_go(argc,argv,bold);
+  panel_go(argc,argv);
 
   return(0);
 }

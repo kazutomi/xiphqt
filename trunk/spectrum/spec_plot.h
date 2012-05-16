@@ -48,6 +48,7 @@ struct _Plot{
   GdkGC     *drawgc;
   GdkGC     *dashes;
   GdkGC     *graygc;
+  GdkGC     *phasegc;
 
   PangoLayout **lin_layout;
   PangoLayout **log_layout;
@@ -112,6 +113,7 @@ struct _Plot{
   int phtimer;
 
   int bold;
+  int autoscale;
 };
 
 struct _PlotClass{
@@ -121,7 +123,7 @@ struct _PlotClass{
 };
 
 GType          plot_get_type        (void);
-GtkWidget*     plot_new             (int n, int inputs, int *channels, int *rate, int bold);
+GtkWidget*     plot_new             (int n, int inputs, int *channels, int *rate);
 void	       plot_refresh         (Plot *m, int *process);
 void	       plot_setting         (Plot *m, int scale, int mode, int link, int depth, int noise);
 void	       plot_draw            (Plot *m);
@@ -129,6 +131,11 @@ void	       plot_clear           (Plot *m);
 int 	       plot_width           (Plot *m);
 float**        plot_get             (Plot *m);
 void           plot_set_active      (Plot *m, int *, int *);
+void           plot_set_autoscale   (Plot *m, int);
+void           plot_set_bold   (Plot *m, int);
+
+int            plot_get_left_pad    (Plot *m);
+int            plot_get_right_pad   (Plot *m);
 
 GdkColor chcolor(int ch);
 
