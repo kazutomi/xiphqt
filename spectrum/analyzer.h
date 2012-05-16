@@ -78,7 +78,7 @@ static inline float todB_a(const float *x){
 
 extern int eventpipe[2];
 
-extern void panel_go(int argc,char *argv[], int bold);
+extern void panel_go(int argc,char *argv[]);
 extern int input_load();
 extern void *process_thread(void *dummy);
 extern void process_dump(int mode);

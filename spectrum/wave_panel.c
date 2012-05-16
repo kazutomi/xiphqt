@@ -450,7 +450,7 @@ void panel_create(struct panel *panel){
   /* the Fucking Fish */
   {
     GdkPixmap *tb;
-    GdkPixmap *tp=gdk_pixmap_create_from_xpm_d(root,&tb,NULL,fisharray);
+    GdkPixmap *tp=gdk_pixmap_create_from_xpm_d(root,&tb,NULL,fisharray_xpm);
     GdkGC *cgc=gdk_gc_new(tp);
     GdkGC *bgc=gdk_gc_new(tb);
     int w, h;
