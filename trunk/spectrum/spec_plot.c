@@ -1047,8 +1047,6 @@ void plot_refresh (Plot *p, int *process){
 
   p->ydata=data;
 
-  if(!p->autoscale)return;
-
   /* graph limit updates are conditional depending on mode/link */
   pmax+=5;
   pmin-=5;
@@ -1092,7 +1090,7 @@ void plot_refresh (Plot *p, int *process){
         if(p->ymaxtimer){
           p->ymaxtimer--;
         }else{
-          p->ymax = (oldzero-PXDEL)*p->depth/(height-1);
+            ymax = (oldzero-PXDEL)*p->depth/(height-1);
         }
       }else{
         p->ymaxtimer = TIMERFRAMES;
@@ -1127,20 +1125,23 @@ void plot_refresh (Plot *p, int *process){
   pmax+=10;
   pmin-=10;
 
-  if(p->mode == 0){
-    if(ymax>p->ymax)p->ymax=ymax;
-    if(pmax>p->pmax)p->pmax=pmax;
-    if(pmin<p->pmin)p->pmin=pmin;
-  }else{
-    p->ymax=ymax;
-    p->pmax=pmax;
-    p->pmin=pmin;
-  }
-
   p->disp_depth = p->depth;
-  p->disp_ymax = p->ymax;
-  p->disp_pmax = p->pmax;
-  p->disp_pmin = p->pmin;
+
+  if(p->autoscale){
+    if(p->mode == 0){
+      if(ymax>p->ymax)p->ymax=ymax;
+      if(pmax>p->pmax)p->pmax=pmax;
+      if(pmin<p->pmin)p->pmin=pmin;
+    }else{
+      p->ymax=ymax;
+      p->pmax=pmax;
+      p->pmin=pmin;
+    }
+
+    p->disp_ymax = p->ymax;
+    p->disp_pmax = p->pmax;
+    p->disp_pmin = p->pmin;
+  }
 
   /* finally, align phase/response zeros on phase graphs */
   if(p->disp_ymax>-p->ymax_limit){
@@ -1183,7 +1184,8 @@ void plot_refresh (Plot *p, int *process){
 
 void plot_clear (Plot *p){
   GtkWidget *widget=GTK_WIDGET(p);
-  int width=GTK_WIDGET(p)->allocation.width-p->padx;
+  int phase = (p->link == LINK_PHASE);
+  int width=GTK_WIDGET(p)->allocation.width-p->padx-(phase ? p->phax : 0);
   int i,j;
 
   if(p->ydata)
