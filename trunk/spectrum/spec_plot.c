@@ -76,10 +76,21 @@ static void compute_imp_scale(GtkWidget *widget){
 
 }
 
+int phase_active_p(Plot *p){
+  if(p->link == LINK_PHASE){
+    int cho=0;
+    int gi;
+    for(gi=0;gi<p->groups;gi++)
+      if(p->ch[gi]>1 && p->ch_active[cho+1])
+        return 1;
+  }
+  return 0;
+}
+
 static void compute_metadata(GtkWidget *widget){
   Plot *p=PLOT(widget);
-  int phase = (p->link == LINK_PHASE);
-  int width=widget->allocation.width-p->padx-(phase?p->phax:0);
+  int phase = phase_active_p(p);
+  int width = widget->allocation.width-p->padx-(phase?p->phax:0);
   int rate=p->maxrate;
   int nyq=p->maxrate/2.;
   int i;
@@ -220,7 +231,7 @@ static void draw(GtkWidget *widget){
 		   p->link == LINK_IMPEDENCE_1 ||
 		   p->link == LINK_IMPEDENCE_10);
 #endif
-  int phase = (p->link == LINK_PHASE);
+  int phase = phase_active_p(p);
   int padx = p->padx;
   int phax = phase ? p->phax : 0;
   int pwidth = width - padx - phax;
@@ -1028,7 +1039,7 @@ GtkWidget* plot_new (int size, int groups, int *channels, int *rate){
 
 void plot_refresh (Plot *p, int *process){
   float ymax,pmax,pmin;
-  int phase = (p->link == LINK_PHASE);
+  int phase = phase_active_p(p);
   int width=GTK_WIDGET(p)->allocation.width-p->padx-(phase ? p->phax : 0);
   int height=GTK_WIDGET(p)->allocation.height-p->pady;
   float **data;
@@ -1145,7 +1156,7 @@ void plot_refresh (Plot *p, int *process){
 
   /* finally, align phase/response zeros on phase graphs */
   if(p->disp_ymax>-p->ymax_limit){
-    if(p->link == LINK_PHASE){
+    if(phase){
       /* In a phase/response graph, 0dB/0degrees are bound and always on-screen. */
       float pzero,mzero = (height-1)/p->disp_depth*p->disp_ymax;
 
@@ -1184,7 +1195,7 @@ void plot_refresh (Plot *p, int *process){
 
 void plot_clear (Plot *p){
   GtkWidget *widget=GTK_WIDGET(p);
-  int phase = (p->link == LINK_PHASE);
+  int phase = phase_active_p(p);
   int width=GTK_WIDGET(p)->allocation.width-p->padx-(phase ? p->phax : 0);
   int i,j;
 
@@ -1255,5 +1266,5 @@ int plot_get_left_pad (Plot *m){
 }
 
 int plot_get_right_pad (Plot *m){
-  return (m->link==LINK_PHASE ? m->phax : 0);
+  return (phase_active_p(m) ? m->phax : 0);
 }
