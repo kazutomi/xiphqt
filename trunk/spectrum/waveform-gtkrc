@@ -41,7 +41,6 @@ style "panel" {
 
 }
 
-
 style "controlpanel" {
 	bg[NORMAL]="#b0a494" 
 
@@ -53,6 +52,35 @@ style "controlpanel" {
 	fg[ACTIVE]="#000000"
 	fg[PRELIGHT]="#000000" 
 
+}
+
+style "top-control" {
+	font_name = "sans 8"
+	
+        base[NORMAL]="#c8c0b0" 
+        base[ACTIVE]="#f0d8b4"  
+        bg[NORMAL]="#c8c0b0" 
+        bg[ACTIVE]="#f0d8b4" 
+        bg[PRELIGHT]="#f0e0d0"  
+        bg[SELECTED]="#f0e0d0"  
+        base[PRELIGHT]="#f0e0d0"   
+        base[SELECTED]="#f0e0d0"  
+        base[INSENSITIVE]="#c0c0c0"
+
+	text[NORMAL]="#000000"
+}
+
+style "top-label" {
+	font_name = "sans 8"
+	fg[NORMAL]="#405080" 
+	fg[PRELIGHT]="#405080" 
+	fg[ACTIVE]="#405080" 
+	fg[SELECTED]="#405080" 
+	fg[INSENSITIVE]="#405080" 
+}
+
+style "top-readout" {
+	font_name = "sans 8"
 }
 
 style "panel-text" {
@@ -70,7 +98,11 @@ style "readout" {
 
 class "*" style "panel"
 
-widget "*.GtkLabel" style "panel-text"
+widget "*.top-control*" style "top-control"
+widget "*.top-label*" style "top-label"
+widget "*.top-readout*" style "top-readout"
+
+widget "*.controlpanel.GtkLabel" style "panel-text"
 widget "*.Plot" style "scale-text"
 
 widget "*.GtkEntry" style "readout"

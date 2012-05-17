@@ -58,11 +58,18 @@ int plot_spanchoice=0;
 int plot_interval=0;
 int plot_trigger=0;
 int plot_hold=0;
+int plot_bold=0;
+int plot_sep=0;
+
 int plot_type=0;
 int plot_last_update=0;
 int *active;
 
 int overslice[MAX_FILES]= {-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1};
+
+static void override_base(GtkWidget *w, int active){
+  gtk_widget_modify_base (w, GTK_STATE_NORMAL, &w->style->bg[active?GTK_STATE_ACTIVE:GTK_STATE_NORMAL]);
+}
 
 static void set_slices(int interval, int span){
 
@@ -180,21 +187,33 @@ static void rangechange(GtkWidget *widget,struct panel *p){
     plot_rchoice=choice;
     switch(choice){
     case 0:
-      plot_range=1;
+      plot_range=16;
       break;
     case 1:
-      plot_range=.5;
+      plot_range=8;
       break;
     case 2:
-      plot_range=.2;
+      plot_range=4;
       break;
     case 3:
-      plot_range=.1;
+      plot_range=2;
       break;
     case 4:
-      plot_range=.01;
+      plot_range=1;
       break;
     case 5:
+      plot_range=.5;
+      break;
+    case 6:
+      plot_range=.2;
+      break;
+    case 7:
+      plot_range=.1;
+      break;
+    case 8:
+      plot_range=.01;
+      break;
+    case 9:
       plot_range=.001;
       break;
     }
@@ -226,25 +245,35 @@ static void scalechange(GtkWidget *widget,struct panel *p){
 
   rangechange_ign=1;
   if(choice==0){
-    char *entries[]={"1.0",
-                     "0.5",
-                     "0.2",
-                     "0.1",
-                     "0.01",
-                     "0.001"};
-    for(i=0;i<6;i++){
+    char *entries[]={
+      "16.0",
+      "8.0",
+      "4.0",
+      "2.0",
+      "1.0",
+      "0.5",
+      "0.2",
+      "0.1",
+      "0.01",
+      "0.001"};
+    for(i=0;i<10;i++){
       gtk_combo_box_remove_text (GTK_COMBO_BOX (p->rangemenu), i);
       gtk_combo_box_insert_text (GTK_COMBO_BOX (p->rangemenu), i, entries[i]);
     }
 
   }else{
-    char *entries[]={"0dB",
-                     "-6dB",
-                     "-14dB",
-                     "-20dB",
-                     "-40dB",
-                     "-60dB"};
-    for(i=0;i<6;i++){
+    char *entries[]={
+      "24dB",
+      "18dB",
+      "12dB",
+      "6dB",
+      "0dB",
+      "-6dB",
+      "-14dB",
+      "-20dB",
+      "-40dB",
+      "-60dB"};
+    for(i=0;i<10;i++){
       gtk_combo_box_remove_text (GTK_COMBO_BOX (p->rangemenu), i);
       gtk_combo_box_insert_text (GTK_COMBO_BOX (p->rangemenu), i, entries[i]);
     }
@@ -377,8 +406,21 @@ static void runchange(GtkWidget *widget,struct panel *p){
 
 static void holdchange(GtkWidget *widget,struct panel *p){
   plot_hold=gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+  override_base(widget,plot_bold);
   replot(p);
   plot_draw(PLOT(p->plot));
+}
+
+static void boldchange(GtkWidget *widget,struct panel *p){
+  plot_bold=gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+  override_base(widget,plot_bold);
+  plot_set_bold(PLOT(p->plot),plot_bold);
+}
+
+static void sepchange(GtkWidget *widget,struct panel *p){
+  plot_sep=gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+  override_base(widget,plot_sep);
+  plot_set_sep(PLOT(p->plot),plot_sep);
 }
 
 static void plotchange(GtkWidget *widget,struct panel *p){
@@ -424,31 +466,80 @@ extern char *version;
 void panel_create(struct panel *panel){
   int i;
 
-  GtkWidget *topbox=gtk_hbox_new(0,0);
-  GtkWidget *toplabel=gtk_label_new (NULL);
-  GtkWidget *rightframe=gtk_frame_new (NULL);
-  GtkWidget *leftlabel=gtk_label_new (NULL);
   GdkWindow *root=gdk_get_default_root_window();
+  GtkWidget *topbox=gtk_hbox_new(0,0);
+  GtkWidget *rightframe=gtk_frame_new (NULL);
   GtkWidget *righttopbox=gtk_vbox_new(0,0);
   GtkWidget *rightframebox=gtk_event_box_new();
   GtkWidget *rightbox=gtk_vbox_new(0,0);
-  GtkWidget *lefttable=gtk_table_new(3,2,0);
+  GtkWidget *lefttable=gtk_table_new(4,2,0);
+  GtkWidget *plot_control_al;
+  GtkWidget *wbold;
 
-  gtk_container_set_border_width (GTK_CONTAINER (righttopbox), 6);
-  gtk_container_set_border_width (GTK_CONTAINER (rightbox), 6);
-  gtk_widget_set_name(rightframebox,"controlpanel");
-  gtk_widget_set_name(topbox,"panel");
+  active = calloc(total_ch,sizeof(*active));
 
   panel->toplevel=gtk_window_new (GTK_WINDOW_TOPLEVEL);
   panel->group = gtk_accel_group_new ();
   gtk_window_add_accel_group (GTK_WINDOW(panel->toplevel), panel->group);
-
   gtk_window_set_title(GTK_WINDOW(panel->toplevel),(const gchar *)"Waveform Viewer");
   gtk_window_set_default_size(GTK_WINDOW(panel->toplevel),1024,400);
   //gtk_widget_set_size_request(GTK_WIDGET(panel->toplevel),1024,400);
+  gtk_container_add (GTK_CONTAINER (panel->toplevel), topbox);
+  g_signal_connect (G_OBJECT (panel->toplevel), "delete_event",
+		    G_CALLBACK (shutdown), NULL);
+  gtk_widget_set_name(topbox,"panel");
+
+  /* underlying boxes/frames */
+  gtk_box_pack_start(GTK_BOX(topbox),lefttable,1,1,0);
+  gtk_box_pack_start(GTK_BOX(topbox),righttopbox,0,0,0);
+
+  /* plot control checkboxes */
+  {
+    GtkWidget *al=plot_control_al=gtk_alignment_new(0,0,0,0);
+    GtkWidget *box=gtk_hbox_new(0,6);
+    GtkWidget *hold_display=gtk_check_button_new_with_mnemonic("_hold display");
+    GtkWidget *trace_sep=gtk_check_button_new_with_mnemonic("trace _separation");
+    wbold=gtk_check_button_new_with_mnemonic("_bold");
+    gtk_table_attach(GTK_TABLE (lefttable), al,0,1,1,2,GTK_FILL,GTK_FILL,0,0);
+    gtk_container_add(GTK_CONTAINER (al),box);
+    gtk_box_pack_start(GTK_BOX(box),hold_display,0,0,0);
+    gtk_box_pack_start(GTK_BOX(box),wbold,0,0,0);
+    gtk_box_pack_start(GTK_BOX(box),trace_sep,0,0,0);
+
+    gtk_widget_set_name(hold_display,"top-control");
+    gtk_widget_set_name(wbold,"top-control");
+    gtk_widget_set_name(trace_sep,"top-control");
+    g_signal_connect (G_OBJECT (hold_display), "clicked", G_CALLBACK (holdchange), panel);
+    gtk_widget_add_accelerator (hold_display, "activate", panel->group, GDK_h, 0, 0);
+    g_signal_connect (G_OBJECT (wbold), "clicked", G_CALLBACK (boldchange), panel);
+    gtk_widget_add_accelerator (wbold, "activate", panel->group, GDK_b, 0, 0);
+    g_signal_connect (G_OBJECT (trace_sep), "clicked", G_CALLBACK (sepchange), panel);
+    gtk_widget_add_accelerator (trace_sep, "activate", panel->group, GDK_s, 0, 0);
+
+  }
+
+  /* add the waveform plot box */
+  panel->plot=plot_new(blocksize,inputs,channels,rate);
+  gtk_table_attach_defaults (GTK_TABLE (lefttable), panel->plot,0,1,2,3);
+  gtk_table_set_row_spacing (GTK_TABLE (lefttable), 2, 4);
+  gtk_table_set_col_spacing (GTK_TABLE (lefttable), 0, 2);
+
+  /* right control frame */
+  gtk_container_set_border_width (GTK_CONTAINER (righttopbox), 6);
+  gtk_container_set_border_width (GTK_CONTAINER (rightbox), 6);
+  gtk_frame_set_shadow_type(GTK_FRAME(rightframe),GTK_SHADOW_ETCHED_IN);
+  gtk_widget_set_name(rightframebox,"controlpanel");
+  gtk_box_pack_end(GTK_BOX (righttopbox),rightframebox,1,1,0);
+  gtk_container_add (GTK_CONTAINER (rightframebox),rightframe);
+  gtk_container_add (GTK_CONTAINER (rightframe), rightbox);
+
 
   /* the Fucking Fish */
   {
+    GtkWidget *toptable = gtk_table_new(2,1,0);
+    GtkWidget *fishbox=gtk_alignment_new(.5,.5,0,0);
+    GtkWidget *sepbox=gtk_alignment_new(.5,.85,.7,0);
+    GtkWidget *topsep=gtk_hseparator_new();
     GdkPixmap *tb;
     GdkPixmap *tp=gdk_pixmap_create_from_xpm_d(root,&tb,NULL,fisharray_xpm);
     GdkGC *cgc=gdk_gc_new(tp);
@@ -469,40 +560,8 @@ void panel_create(struct panel *panel){
     g_object_unref(bgc);
     g_object_unref(tp);
     g_object_unref(tb);
-  }
 
-  panel->twirlimage=gtk_image_new_from_pixmap(panel->ff[0],panel->fb[0]);
-
-  active = calloc(total_ch,sizeof(*active));
-
-  gtk_container_add (GTK_CONTAINER (panel->toplevel), topbox);
-  gtk_frame_set_shadow_type(GTK_FRAME(rightframe),GTK_SHADOW_ETCHED_IN);
-
-  g_signal_connect (G_OBJECT (panel->toplevel), "delete_event",
-		    G_CALLBACK (shutdown), NULL);
-
-  /* underlying boxes/frames */
-  gtk_box_pack_start(GTK_BOX(topbox),lefttable,1,1,0);
-  gtk_box_pack_start(GTK_BOX(topbox),righttopbox,0,0,0);
-
-  gtk_box_pack_end(GTK_BOX (righttopbox),rightframebox,1,1,0);
-  gtk_container_add (GTK_CONTAINER (rightframebox),rightframe);
-  gtk_container_add (GTK_CONTAINER (rightframe), rightbox);
-
-  /* add the waveform plot box */
-  panel->plot=plot_new(blocksize,inputs,channels,rate);
-  gtk_table_attach_defaults (GTK_TABLE (lefttable), panel->plot,0,1,1,2);
-  gtk_table_set_row_spacing (GTK_TABLE (lefttable), 0, 6);
-  gtk_table_set_row_spacing (GTK_TABLE (lefttable), 1, 4);
-  gtk_table_set_col_spacing (GTK_TABLE (lefttable), 0, 2);
-
-  /* fish */
-  {
-    GtkWidget *toptable = gtk_table_new(1,1,0);
-    GtkWidget *fishbox=gtk_alignment_new(.5,.5,0,0);
-    GtkWidget *sepbox=gtk_alignment_new(.5,.85,.7,0);
-    GtkWidget *topsep=gtk_hseparator_new();
-
+    panel->twirlimage=gtk_image_new_from_pixmap(panel->ff[0],panel->fb[0]);
 
     gtk_container_set_border_width (GTK_CONTAINER (toptable), 1);
     gtk_box_pack_start(GTK_BOX(righttopbox),toptable,0,0,0);
@@ -510,7 +569,7 @@ void panel_create(struct panel *panel){
     gtk_container_add(GTK_CONTAINER(fishbox),panel->twirlimage);
     gtk_table_attach_defaults (GTK_TABLE (toptable), fishbox,0,1,0,1);
     gtk_table_attach_defaults (GTK_TABLE (toptable), sepbox,0,1,0,1);
-
+    gtk_table_set_row_spacing (GTK_TABLE (toptable), 0, 6);
   }
 
   /* rate */
@@ -568,8 +627,8 @@ void panel_create(struct panel *panel){
     GtkWidget *box=gtk_hbox_new(1,1);
 
     GtkWidget *menu=gtk_combo_box_new_text();
-    char *entries[]={"","","","","",""};
-    for(i=0;i<6;i++)
+    char *entries[]={"","","","","","","","","",""};
+    for(i=0;i<10;i++)
       gtk_combo_box_append_text (GTK_COMBO_BOX (menu), entries[i]);
     g_signal_connect (G_OBJECT (menu), "changed",
 		      G_CALLBACK (rangechange), panel);
@@ -585,7 +644,7 @@ void panel_create(struct panel *panel){
     gtk_box_pack_start(GTK_BOX(box),menu2,1,1,0);
     gtk_box_pack_start(GTK_BOX(box),menu,1,1,0);
     gtk_box_pack_start(GTK_BOX(bbox),box,0,0,0);
-    gtk_combo_box_set_active(GTK_COMBO_BOX(menu),0);
+    gtk_combo_box_set_active(GTK_COMBO_BOX(menu),4);
     gtk_combo_box_set_active(GTK_COMBO_BOX(menu2),0);
   }
 
@@ -676,37 +735,31 @@ void panel_create(struct panel *panel){
     panel->run=button;
   }
 
-  /* hold */
   /* loop */
+  /* rewind */
   {
     GtkWidget *box=gtk_hbox_new(1,1);
-    GtkWidget *button=gtk_toggle_button_new_with_mnemonic("_hold");
-    gtk_widget_add_accelerator (button, "activate", panel->group, GDK_h, 0, 0);
-    g_signal_connect (G_OBJECT (button), "clicked", G_CALLBACK (holdchange), panel);
-    gtk_box_pack_start(GTK_BOX(box),button,1,1,0);
-
-    button=gtk_toggle_button_new_with_mnemonic("_loop");
+    GtkWidget *button=gtk_toggle_button_new_with_mnemonic("_loop");
     gtk_widget_add_accelerator (button, "activate", panel->group, GDK_l, 0, 0);
     g_signal_connect (G_OBJECT (button), "clicked", G_CALLBACK (loopchange), panel);
     gtk_widget_set_sensitive(button,global_seekable);
+    gtk_box_pack_start(GTK_BOX(box),button,1,1,0);
 
+    button=gtk_button_new_with_mnemonic("re_wind");
+    gtk_widget_add_accelerator (button, "activate", panel->group, GDK_w, 0, 0);
+    g_signal_connect (G_OBJECT (button), "clicked", G_CALLBACK (rewindchange), panel);
+    gtk_widget_set_sensitive(button,global_seekable);
     gtk_box_pack_start(GTK_BOX(box),button,1,1,0);
     gtk_box_pack_start(GTK_BOX(bbox),box,0,0,0);
   }
 
-  /* clear */
-  /* rewind */
-  {
-    GtkWidget *button=gtk_button_new_with_mnemonic("re_wind");
-    gtk_widget_add_accelerator (button, "activate", panel->group, GDK_w, 0, 0);
-    g_signal_connect (G_OBJECT (button), "clicked", G_CALLBACK (rewindchange), panel);
-    gtk_widget_set_sensitive(button,global_seekable);
-    gtk_box_pack_start(GTK_BOX(bbox),button,1,1,0);
-  }
-
   gtk_box_pack_end(GTK_BOX(rightbox),bbox,0,0,0);
   gtk_widget_show_all(panel->toplevel);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(wbold),plot_bold);
+
   gtk_key_snooper_install(watch_keyboard,panel);
+
+  gtk_alignment_set_padding(GTK_ALIGNMENT(plot_control_al),0,0,plot_get_left_pad(PLOT(panel->plot)),0);
 
 }
 

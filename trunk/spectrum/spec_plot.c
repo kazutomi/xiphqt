@@ -225,22 +225,6 @@ static void draw(GtkWidget *widget){
   int phax = phase ? p->phax : 0;
   int pwidth = width - padx - phax;
 
-  if(phase){
-    /* are any of the phase channels actually active? */
-    int gi;
-    int ch=0;
-
-    phase = 0;
-    for(gi=0;gi<p->groups && !phase;gi++){
-      if(p->ch_active[ch+1]){
-	phase=1;
-	break;
-      }
-
-      ch+=p->ch[gi];
-    }
-  }
-
   if(!p->drawgc){
     p->drawgc=gdk_gc_new(p->backing);
     gdk_gc_copy(p->drawgc,widget->style->black_gc);
