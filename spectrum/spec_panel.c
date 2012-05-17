@@ -218,6 +218,7 @@ static void set_via_active(struct panel *p, int *active, int *bactive){
     ch+=channels[fi];
   }
   plot_set_active(PLOT(p->plot),active,bactive);  
+  gtk_alignment_set_padding(GTK_ALIGNMENT(p->plot_label_al),0,0,0,plot_get_right_pad(PLOT(p->plot)));
 }
 
 static void chlabels(GtkWidget *widget,struct panel *p){
@@ -384,7 +385,7 @@ static void chlabels(GtkWidget *widget,struct panel *p){
     }
     break;
   }
-
+  gtk_alignment_set_padding(GTK_ALIGNMENT(p->plot_label_al),0,0,0,plot_get_right_pad(PLOT(p->plot)));
 }
 
 static void scalechange(GtkWidget *widget,struct panel *p){
