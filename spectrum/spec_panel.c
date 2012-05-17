@@ -522,8 +522,6 @@ void panel_create(struct panel *panel){
   gtk_box_pack_start(GTK_BOX(topbox),lefttable,1,1,0);
   gtk_box_pack_start(GTK_BOX(topbox),righttopbox,0,0,0);
 
-  panel->plot=plot_new(blocksize/2+1,inputs,channels,rate);
-
   /* plot control checkboxes */
   {
     GtkWidget *al=plot_control_al=gtk_alignment_new(0,0,0,0);
@@ -578,8 +576,8 @@ void panel_create(struct panel *panel){
   }
 
   /* add the spectrum plot box */
+  panel->plot=plot_new(blocksize/2+1,inputs,channels,rate);
   gtk_table_attach_defaults (GTK_TABLE (lefttable), panel->plot,0,1,2,3);
-  //gtk_table_set_row_spacing (GTK_TABLE (lefttable), 0, 4);
   gtk_table_set_row_spacing (GTK_TABLE (lefttable), 2, 4);
   gtk_table_set_col_spacing (GTK_TABLE (lefttable), 0, 2);
 

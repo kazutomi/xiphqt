@@ -99,6 +99,19 @@ static void draw(GtkWidget *widget){
   int width=widget->allocation.width;
   GtkWidget *parent=gtk_widget_get_parent(widget);
   int padx = p->padx;
+  int num_active=0;
+
+  /* how many channels actually active right now?  Need to know if
+     trace sep is enabled */
+  if(p->trace_sep){
+    int fi,ch=0;
+    for(fi=0;fi<p->groups;fi++){
+      for(i=ch;i<ch+p->ch[fi];i++)
+        if(p->ch_active[i])
+          num_active++;
+      ch+=p->ch[fi];
+    }
+  }
 
   if(!p->drawgc){
     GdkGCValues values;
@@ -106,9 +119,8 @@ static void draw(GtkWidget *widget){
     p->twogc=gdk_gc_new(p->backing);
     gdk_gc_copy(p->drawgc,widget->style->black_gc);
     gdk_gc_copy(p->twogc,widget->style->black_gc);
-
-    gdk_gc_set_line_attributes(p->twogc,2,GDK_LINE_SOLID,GDK_CAP_BUTT,
-                               GDK_JOIN_MITER);
+    gdk_gc_set_line_attributes(p->twogc,p->bold+1,GDK_LINE_SOLID,
+                               GDK_CAP_PROJECTING,GDK_JOIN_MITER);
   }
 
   /* clear the old rectangle out */
@@ -238,9 +250,17 @@ static void draw(GtkWidget *widget){
     const GdkRectangle clip = {p->padx,0,width-p->padx,height-p->pady};
     const GdkRectangle noclip = {0,0,width,height};
     GdkColor rgb;
+    int y_sep=0;
+    int cp;
 
     gdk_gc_set_clip_rectangle (p->twogc, &clip);
-    //gdk_gc_set_clip_rectangle (p->drawgc, &clip);
+
+    if(p->trace_sep && num_active>1){
+      y_sep = (height-p->pady)/18*16/num_active;
+      cp = y_sep/2+(height-p->pady)/18;
+    }else{
+      cp = (height-p->pady)/2;
+    }
 
     for(fi=0;fi<p->groups;fi++){
       int copies = (int)ceil(p->blockslice[fi]/p->overslice[fi]);
@@ -251,14 +271,12 @@ static void draw(GtkWidget *widget){
           int offset=0;
           rgb = chcolor(i);
           gdk_gc_set_rgb_fg_color(p->twogc,&rgb);
-          //gdk_gc_set_rgb_fg_color(p->drawgc,&rgb);
 
           for(j=0;j<copies;j++){
             float *data=p->ydata[i]+offset;
             int wp=width-p->padx;
             float spani = 1000000./p->span/p->rate[fi]*wp;
             int hp=height-p->pady;
-            int cp=hp/2;
             float ym=hp*-8./18;
 
             switch(p->type){
@@ -280,7 +298,7 @@ static void draw(GtkWidget *widget){
                     }
                     if(!isnan(y0)){
                       gdk_draw_line(p->backing,p->twogc,
-                                    x0+padx-1,rint(y0)+cp,x1+padx+1,rint(y0)+cp);
+                                    x0+padx,rint(y0)+cp,x1+padx,rint(y0)+cp);
 
                       if(!isnan(y1))
                         gdk_draw_line(p->backing,p->twogc,
@@ -415,6 +433,7 @@ static void draw(GtkWidget *widget){
 
             offset+=spann;
           }
+          cp+=y_sep;
         }
       }
       ch+=p->ch[fi];
@@ -593,20 +612,20 @@ GtkWidget* plot_new (int size, int groups, int *channels, int *rate){
 
   /* phase Y scale */
   {
-    char *label1[6] = {"1.0","0.5","0.2","0.1",".01",".001"};
-    char *label1a[6] = {"0.5","0.25","0.1","0.05",".005",".0005"};
+    char *label1[10] = {"16.0","8.0","4.0","2.0","1.0","0.5","0.2","0.1",".01",".001"};
+    char *label1a[10] = {"8.0","4.0","2.0","1.0","0.5","0.25","0.1","0.05",".005",".0005"};
 
-    char *labeln1[6] = {"-1.0","-0.5","-0.2","-0.1","-.01","-.001"};
-    char *labeln1a[6] = {"-0.5","-0.25","-0.1","-0.05","-.005","-.0005"};
+    char *labeln1[10] = {"-16.0","-8.0","-4.0","-2.0","-1.0","-0.5","-0.2","-0.1","-.01","-.001"};
+    char *labeln1a[10] = {"-8.0","-4.0","-2.0","-1.0","-0.5","-0.25","-0.1","-0.05","-.005","-.0005"};
 
-    char *label2[6] = {"0dB","-6dB","-14dB","-20dB","-40dB","-60dB"};
+    char *label2[10] = {"24dB","18dB","12dB","6dB","0dB","-6dB","-14dB","-20dB","-40dB","-60dB"};
     char *label3[5] = {"0","-65dB","-96dB","-120dB","-160dB"};
 
-    int val2[6] = {0,-6,-14,-20,-40,-60};
+    int val2[10] = {24,18,12,6,0,-6,-14,-20,-40,-60};
     int val3[5] = {0,-65,-96,-120,-160};
 
-    p->y_layout=calloc(6,sizeof(*p->y_layout));
-    for(i=0;i<6;i++){
+    p->y_layout=calloc(10,sizeof(*p->y_layout));
+    for(i=0;i<10;i++){
       p->y_layout[i]=calloc(5,sizeof(**p->y_layout));
       p->y_layout[i][0]=calloc(6,sizeof(***p->y_layout));
 
@@ -630,7 +649,9 @@ GtkWidget* plot_new (int size, int groups, int *channels, int *rate){
   }
 
   p->ch_active=calloc(ch,sizeof(*p->ch_active));
-  
+
+  p->autoscale=1;
+
   plot_clear(p);
   return ret;
 }
@@ -704,3 +725,27 @@ void plot_set_active(Plot *p, int *a){
   draw_and_expose(widget);
 }
 
+void plot_set_autoscale(Plot *p, int a){
+  GtkWidget *widget=GTK_WIDGET(p);
+  p->autoscale=a;
+  plot_refresh(p);
+  draw_and_expose(widget);
+}
+
+void plot_set_bold(Plot *p, int b){
+  GtkWidget *widget=GTK_WIDGET(p);
+  p->bold=b;
+  gdk_gc_set_line_attributes(p->twogc,p->bold+1,GDK_LINE_SOLID,
+                             GDK_CAP_PROJECTING,GDK_JOIN_MITER);
+  draw_and_expose(widget);
+}
+
+void plot_set_sep(Plot *p, int b){
+  GtkWidget *widget=GTK_WIDGET(p);
+  p->trace_sep=b;
+  draw_and_expose(widget);
+}
+
+int plot_get_left_pad (Plot *m){
+  return m->padx;
+}

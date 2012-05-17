@@ -89,6 +89,9 @@ struct _Plot{
   float phax;
   float pady;
 
+  int bold;
+  int autoscale;
+  int trace_sep;
 };
 
 struct _PlotClass{
@@ -108,6 +111,10 @@ void	       plot_clear           (Plot *m);
 int 	       plot_width           (Plot *m);
 float**        plot_get             (Plot *m);
 void           plot_set_active      (Plot *m, int *);
+void           plot_set_autoscale   (Plot *m, int);
+void           plot_set_bold        (Plot *m, int);
+void           plot_set_sep         (Plot *m, int);
+int            plot_get_left_pad    (Plot *m);
 
 GdkColor chcolor(int ch);
 

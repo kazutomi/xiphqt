@@ -41,7 +41,6 @@ style "panel" {
 
 }
 
-
 style "controlpanel" {
 	bg[NORMAL]="#8ea0be" 
 
@@ -62,9 +61,11 @@ style "top-control" {
         base[ACTIVE]="#c0e0ff" 
         bg[NORMAL]="#b0c0d8"
         bg[ACTIVE]="#c0e0ff" 
+        bg[PRELIGHT]="#d0e6ff" 
+        bg[SELECTED]="#d0e6ff" 
         base[PRELIGHT]="#d0e6ff" 
         base[SELECTED]="#d0e6ff" 
-        base[INSENSITIVE]="#b0c0d8"  
+        base[INSENSITIVE]="#c0c0c0"  
 
 	text[NORMAL]="#000000"
 }
@@ -81,8 +82,6 @@ style "top-label" {
 style "top-readout" {
 	font_name = "sans 8"
 }
-
-
 
 style "scale-text" {
 	font_name = "sans 7"

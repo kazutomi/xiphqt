@@ -34,6 +34,7 @@ char *version;
 char *inputname[MAX_FILES];
 int inputs=0;
 int blocksize = 131072; /* starting default */
+extern int plot_bold;
 
 void handler(int sig){
   signal(sig,SIG_IGN);
@@ -53,9 +54,10 @@ void handler(int sig){
   gtk_main_quit();
 }
 
-const char *optstring = "-r:c:EeBlb:suh";
+const char *optstring = "-r:c:EeBlb:suhT";
 
 struct option options [] = {
+        {"bold",no_argument,NULL,'T'},
         {"rate",required_argument,NULL,'r'},
         {"channels",required_argument,NULL,'c'},
         {"big-endian",no_argument,NULL,'E'},
@@ -99,6 +101,7 @@ static void usage(FILE *f){
 "                               Signedness is normally read from the \n"
 "                               file/stream header or set to signed for raw\n"
 "                               input.\n"
+"  -T --bold                  : plot spectrum with thicker/bolder lines.\n"
 "  -u --unsigned              : Force input to be read as unsigned PCM.\n"
 "                               Signedness is normally read from the \n"
 "                               file/stream header or set to signed for raw\n"
@@ -123,6 +126,9 @@ void parse_command_line(int argc, char **argv){
 	exit(1);
       }
       inputname[inputs++]=strdup(optarg);
+      break;
+    case 'T':
+      plot_bold = 1;
       break;
     case 'b':
       /* force bit width */
