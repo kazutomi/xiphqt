@@ -25,7 +25,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
-#include <gdk/gdkkeysyms.h>
+#include <gdk/gdk.h>
 #include "spec_plot.h"
 
 static double log_lfreqs[5]={10.,100.,1000.,10000.,100000};

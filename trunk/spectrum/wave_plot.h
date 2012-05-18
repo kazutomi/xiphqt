@@ -26,9 +26,7 @@
 
 #include <glib.h>
 #include <glib-object.h>
-#include <gtk/gtkcontainer.h>
-#include <gtk/gtksignal.h>
-#include <gtk/gtkdrawingarea.h>
+#include <gtk/gtk.h>
 
 G_BEGIN_DECLS
 
