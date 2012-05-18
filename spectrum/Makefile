@@ -30,7 +30,7 @@ SPECTRUM_OBJ = spectrum.o spec_process.o spec_panel.o spec_plot.o io.o
 WAVEFORM_OBJ = waveform.o wave_process.o wave_panel.o wave_plot.o io.o
 OBJ = $(SPECTRUM_OBJ) $(WAVEFORM_OBJ)
 
-GCF = -DETCDIR=\\\"$(ETCDIR)\\\" `pkg-config --cflags gtk+-2.0`
+GCF = -DETCDIR=\\\"$(ETCDIR)\\\" `pkg-config --cflags gtk+-2.0` -DGTK_DISABLE_SINGLE_INCLUDES
 
 CFLAGS := ${CFLAGS} $(GCF) $(ADD_DEF)
 

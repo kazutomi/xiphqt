@@ -26,7 +26,7 @@
 #include <math.h>
 #include <string.h>
 #include <gtk/gtk.h>
-#include <gdk/gdkkeysyms.h>
+#include <gdk/gdk.h>
 #include "wave_plot.h"
 
 static GtkDrawingAreaClass *parent_class = NULL;
