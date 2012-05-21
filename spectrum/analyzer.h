@@ -2,7 +2,7 @@
  *
  *  gtk2 spectrum analyzer
  *    
- *      Copyright \(C\) 2004-2012 Monty
+ *      Copyright (C) 2004-2012 Monty
  *
  *  This analyzer is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
