@@ -40,13 +40,8 @@ typedef struct _Plot       Plot;
 typedef struct _PlotClass  PlotClass;
 
 struct _Plot{
-
-  GtkDrawingArea canvas;  
-  GdkPixmap *backing;
-  GdkGC     *drawgc;
-  GdkGC     *dashes;
-  GdkGC     *graygc;
-  GdkGC     *phasegc;
+  GtkDrawingArea   canvas;
+  cairo_surface_t *backing;
 
   PangoLayout **lin_layout;
   PangoLayout **log_layout;
@@ -135,7 +130,7 @@ void           plot_set_bold   (Plot *m, int);
 int            plot_get_left_pad    (Plot *m);
 int            plot_get_right_pad   (Plot *m);
 
-GdkColor chcolor(int ch);
+GdkColor chcolor(cairo_t *c, int ch);
 
 G_END_DECLS
 

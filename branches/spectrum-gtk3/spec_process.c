@@ -1,7 +1,7 @@
 /*
  *
- *  gtk2 spectrum analyzer
- *    
+ *  gtk3 spectrum analyzer
+ *
  *      Copyright (C) 2004-2012 Monty
  *
  *  This analyzer is free software; you can redistribute it and/or modify
@@ -119,8 +119,6 @@ extern int plot_noise;
 /* return 0 on EOF, 1 otherwise */
 static int process(){
   int fi,i,j,ch;
-  int eof_all;
-  int noise=plot_noise;  
 
   if(acc_rewind)
     rewind_files();
