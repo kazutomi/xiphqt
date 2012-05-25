@@ -26,6 +26,7 @@
 #include <math.h>
 #include <string.h>
 #include <gdk/gdk.h>
+#include <cairo/cairo.h>
 #include "spec_plot.h"
 
 static double log_lfreqs[5]={10.,100.,1000.,10000.,100000};
@@ -45,37 +46,6 @@ static double iso_tfreqs[24]={25.,40.,50.,80.,100.,160.,200.,315.,400.,630.,
 
 static GtkDrawingAreaClass *parent_class = NULL;
 
-static void compute_imp_scale(GtkWidget *widget){
-  Plot *p=PLOT(widget);
-  int height=widget->allocation.height-p->pady;
-  int i;
-  double lfreqs[9]={10000000.,1000000.,100000.,10000.,1000.,100.,10.,1.,.1};
-  double tfreqs[64]={9000000.,8000000.,7000000.,6000000.,
-		     5000000.,4000000.,3000000.,2000000.,
-		     900000.,800000.,700000.,600000.,
-		     500000.,400000.,300000.,200000.,
-		     90000.,80000.,70000.,60000.,
-		     50000.,40000.,30000.,20000.,
-		     9000.,8000.,7000.,6000.,
-		     5000.,4000.,3000.,2000.,
-		     900.,800.,700.,600.,
-		     500.,400.,300.,200.,
-		     90.,80.,70.,60.,
-		     50.,40.,30.,20,
-		     9.,8.,7.,6.,
-		     5.,4.,3.,2.,
-		     .9,.8,.7,.6,
-		     .5,.4,.3,.2};
-
-  for(i=0;i<9;i++)
-    p->ygrid[i]=rint( (log10(p->disp_ymax)-log10(lfreqs[i]))/(log10(p->disp_ymax)-log10(.1)) * (height-1));
-  for(i=0;i<64;i++)
-    p->ytic[i]=rint( (log10(p->disp_ymax)-log10(tfreqs[i]))/(log10(p->disp_ymax)-log10(.1)) * (height-1));
-  p->ygrids=9;
-  p->ytics=64;
-
-}
-
 int phase_active_p(Plot *p){
   if(p->link == LINK_PHASE){
     int cho=0;
@@ -90,8 +60,8 @@ int phase_active_p(Plot *p){
 static void compute_metadata(GtkWidget *widget){
   Plot *p=PLOT(widget);
   int phase = phase_active_p(p);
-  int width = widget->allocation.width-p->padx-(phase?p->phax:0);
-  int rate=p->maxrate;
+  int width = gtk_widget_get_allocated_width(widget)-
+    p->padx-(phase?p->phax:0);
   int nyq=p->maxrate/2.;
   int i;
 
@@ -176,152 +146,104 @@ static void compute_metadata(GtkWidget *widget){
   }
 }
 
-GdkColor chcolor(int ch){
+GdkColor chcolor(cairo_t *c, int ch){
   GdkColor rgb={0,0,0,0};
-
   switch(ch%7){
   case 0:
     rgb.red=0x4000;
     rgb.green=0x4000;
     rgb.blue=0x4000;
+    if(c)cairo_set_source_rgb(c,.25,.25,.25);
     break;
   case 1:
     rgb.red=0xd000;
     rgb.green=0x0000;
     rgb.blue=0x0000;
+    if(c)cairo_set_source_rgb(c,.8125,0,0);
     break;
   case 2:
     rgb.red=0x0000;
     rgb.green=0xb000;
     rgb.blue=0x0000;
+    if(c)cairo_set_source_rgb(c,0,.6875,0);
     break;
   case 3:
     rgb.red=0x0000;
     rgb.green=0x0000;
     rgb.blue=0xf000;
+    if(c)cairo_set_source_rgb(c,0,0,.9375);
     break;
   case 4:
     rgb.red=0xc000;
     rgb.green=0xc000;
     rgb.blue=0x0000;
+    if(c)cairo_set_source_rgb(c,.75,.75,.75);
     break;
   case 5:
     rgb.red=0x0000;
     rgb.green=0xc000;
     rgb.blue=0xc000;
+    if(c)cairo_set_source_rgb(c,0,.75,.75);
     break;
   case 6:
     rgb.red=0xc000;
     rgb.green=0x0000;
     rgb.blue=0xe000;
+    if(c)cairo_set_source_rgb(c,.75,0,.875);
     break;
   }
 
   return rgb;
 }
 
-static void draw(GtkWidget *widget){
+static gboolean draw(GtkWidget *widget, cairo_t *c){
   int i;
   Plot *p=PLOT(widget);
-  int height=widget->allocation.height;
-  int width=widget->allocation.width;
-  GtkWidget *parent=gtk_widget_get_parent(widget);
-#if 0
-  int impedence = (p->link == LINK_IMPEDENCE_p1 ||
-		   p->link == LINK_IMPEDENCE_1 ||
-		   p->link == LINK_IMPEDENCE_10);
-#endif
+  GtkStyleContext *context = gtk_widget_get_style_context (widget);
   int phase = phase_active_p(p);
+  int height = gtk_widget_get_allocated_height(widget);
+  int width = gtk_widget_get_allocated_width(widget);
   int padx = p->padx;
   int phax = phase ? p->phax : 0;
   int pwidth = width - padx - phax;
 
-  if(!p->drawgc){
-    p->drawgc=gdk_gc_new(p->backing);
-    gdk_gc_copy(p->drawgc,widget->style->black_gc);
-  }
+  GdkRGBA gray;
+  GdkRGBA rgb_bg;
+  GdkRGBA rgb_fg;
 
-  if(!p->dashes){
-    p->dashes=gdk_gc_new(p->backing);
-    gdk_gc_copy(p->dashes, p->drawgc);
-    gdk_gc_set_line_attributes(p->dashes, 1, GDK_LINE_ON_OFF_DASH, GDK_CAP_BUTT, GDK_JOIN_MITER);
-    gdk_gc_set_dashes(p->dashes,0,(signed char *)"\002\002",2);
-  }
-  if(!p->graygc){
-    GdkColor rgb_bg;
-    GdkColor rgb_fg;
-    GdkGCValues v;
-    p->graygc=gdk_gc_new(p->backing);
-    gdk_gc_copy(p->graygc, p->drawgc);
-    gdk_gc_get_values(p->graygc,&v);
-    gdk_colormap_query_color(gdk_gc_get_colormap(p->graygc),v.foreground.pixel,&rgb_fg);
-    gdk_colormap_query_color(gdk_gc_get_colormap(p->graygc),v.background.pixel,&rgb_bg);
-    rgb_fg.red = (rgb_fg.red*3 + rgb_bg.red*2)/5;
-    rgb_fg.green = (rgb_fg.green*3 + rgb_bg.green*2)/5;
-    rgb_fg.blue = (rgb_fg.blue*3 + rgb_bg.blue*2)/5;
-    gdk_gc_set_rgb_fg_color(p->graygc,&rgb_fg);
-  }
-  if(!p->phasegc){
-    GdkColor rgb={0,0x8000,0x0000,0x0000};
-    p->phasegc=gdk_gc_new(p->backing);
-    gdk_gc_set_rgb_fg_color(p->phasegc,&rgb);
-    gdk_gc_set_line_attributes(p->phasegc,1,GDK_LINE_SOLID,GDK_CAP_PROJECTING,GDK_JOIN_MITER);
-  }
+  gtk_style_context_get_color (context, GTK_STATE_FLAG_NORMAL, &rgb_fg);
+  gtk_style_context_get_background_color (context, GTK_STATE_FLAG_NORMAL, &rgb_bg);
 
-  {
-    const GdkRectangle clip = {p->padx,0,pwidth,height-p->pady};
-    GdkGCValues values;
-    //gdk_gc_get_values(p->drawgc,&values);
-    values.line_width=1;
-    gdk_gc_set_values(p->drawgc,&values,GDK_GC_LINE_WIDTH);
-    gdk_gc_set_clip_rectangle (p->drawgc, &clip);
-  }
+  gray.alpha = 1.;
+  gray.red = (rgb_fg.red*3 + rgb_bg.red*2)/5;
+  gray.green = (rgb_fg.green*3 + rgb_bg.green*2)/5;
+  gray.blue = (rgb_fg.blue*3 + rgb_bg.blue*2)/5;
+
+  cairo_set_line_width(c,1);
 
   /* clear the old rectangle out */
-  {
-    GdkGC *gc=parent->style->bg_gc[0];
-    gdk_draw_rectangle(p->backing,gc,1,0,0,padx,height);
-    gdk_draw_rectangle(p->backing,gc,1,0,height-p->pady,width,p->pady);
-    if(phase)
-      gdk_draw_rectangle(p->backing,gc,1,width-phax,0,phax,height);
+  gdk_cairo_set_source_rgba (c, &rgb_bg);
+  cairo_rectangle (c,0,0,padx,height);
+  cairo_rectangle(c,0,height-p->pady,width,p->pady);
+  if(phase)
+    cairo_rectangle(c,width-phax,0,phax,height);
+  cairo_fill(c);
 
-    gc=parent->style->white_gc;
-    gdk_draw_rectangle(p->backing,gc,1,padx,0,pwidth,height-p->pady);
-  }
+  cairo_set_source_rgb (c, 1,1,1);
+  cairo_rectangle(c,padx,0,pwidth,height-p->pady);
+  cairo_fill(c);
 
-  /* draw the noise floor if active */
-  #if 0
-  if(p->floor){
-    GdkColor rgb = {0,0xd000,0xd000,0xd000};
-    gdk_gc_set_rgb_fg_color(p->drawgc,&rgb);
-
-    for(i=0;i<pwidth;i++){
-      float val=p->floor[i];
-      int y;
-
-      /* No noise floor is passed back for display in the modes where it's irrelevant */
-      y= rint((height-p->pady-1)/p->disp_depth*(p->disp_ymax-val));
-      if(y<height-p->pady)
-	gdk_draw_line(p->backing,p->drawgc,padx+i,y,padx+i,height-p->pady-1);
-    }
-  }
-  #endif
+  cairo_set_line_cap(c,CAIRO_LINE_CAP_SQUARE);
 
   /* draw the light x grid */
-  {
-    int i;
-    GdkColor rgb={0,0,0,0};
-
-    rgb.red=0xc000;
-    rgb.green=0xff00;
-    rgb.blue=0xff00;
-    gdk_gc_set_rgb_fg_color(p->drawgc,&rgb);
-
-    for(i=0;i<p->xtics;i++)
-      gdk_draw_line(p->backing,p->drawgc,p->xtic[i],0,p->xtic[i],height-p->pady);
+  cairo_set_source_rgb(c, .75, 1, 1);
+  for(i=0;i<p->xtics;i++){
+    cairo_move_to(c,p->xtic[i]+.5,.5);
+    cairo_line_to(c,p->xtic[i]+.5,height-p->pady+.5);
   }
+  cairo_stroke(c);
 
-    /* draw the x labels */
+  /* draw the x labels */
   {
     PangoLayout **proper;
     switch(p->scale){
@@ -335,56 +257,20 @@ static void draw(GtkWidget *widget){
       proper=p->lin_layout;
       break;
     }
+    gdk_cairo_set_source_rgba (c, &rgb_fg);
     for(i=0;i<p->xlgrids;i++){
       int px,py;
       pango_layout_get_pixel_size(proper[i],&px,&py);
 
-      if(p->xlgrid[i]+(px/2)<width)
-        gdk_draw_layout (p->backing,
-                         widget->style->black_gc,
-                         p->xlgrid[i]-(px/2), height-py+2,
-                         proper[i]);
+      if(p->xlgrid[i]+(px/2)<width){
+        cairo_move_to(c,p->xlgrid[i]-(px/2)+.5, height-py+2.5);
+        pango_cairo_show_layout(c,proper[i]);
+      }
     }
   }
 
-  /* draw the y grid */
-  //if(impedence){ /* impedence mode */
-  if(0){
-
-    /* light grid */
-
-    GdkColor rgb={0,0,0,0};
-    rgb.red=0xc000;
-    rgb.green=0xff00;
-    rgb.blue=0xff00;
-    gdk_gc_set_rgb_fg_color(p->drawgc,&rgb);
-
-    compute_imp_scale(widget);
-
-    for(i=0;i<p->ytics;i++)
-      gdk_draw_line(p->backing,p->drawgc,padx,p->ytic[i],pwidth,p->ytic[i]);
-
-    /* dark grid */
-    rgb.red=0x0000;
-    rgb.green=0xc000;
-    rgb.blue=0xc000;
-
-    gdk_gc_set_rgb_fg_color(p->drawgc,&rgb);
-
-    for(i=0;i<p->ygrids;i++){
-      int px,py;
-      pango_layout_get_pixel_size(p->imp_layout[i],&px,&py);
-
-      gdk_draw_layout (p->backing,
-		       widget->style->black_gc,
-		       padx-px-2, p->ygrid[i]-py/2,
-		       p->imp_layout[i]);
-
-      gdk_draw_line(p->backing,p->drawgc,padx,p->ygrid[i],pwidth,p->ygrid[i]);
-    }
-
-  }else{
-    GdkColor rgb={0,0,0,0};
+  {
+    /* draw the y grid */
     float emheight = (height-p->pady)/p->pady;
     float emperdB = emheight/p->disp_depth;
     float pxperdB = (height-p->pady)/p->disp_depth;
@@ -449,42 +335,41 @@ static void draw(GtkWidget *widget){
     }
 
     /* Light Y grid */
-    rgb.red=0xc000;
-    rgb.green=0xff00;
-    rgb.blue=0xff00;
-    gdk_gc_set_rgb_fg_color(p->drawgc,&rgb);
-    gdk_gc_set_rgb_fg_color(p->dashes,&rgb);
-
     float ymin = (p->disp_ymax - p->disp_depth)*1000;
     int yval = rint((p->disp_ymax*1000/subminordel)+1)*subminordel;
+    cairo_set_source_rgb(c,.75,1,1);
 
     while(1){
       float ydel = (yval - ymin)/(p->disp_depth*1000);
       int ymid = rint(height-p->pady-1 - (height-p->pady) * ydel);
+      double d[2]={2,3};
 
       if(ymid>=height-p->pady)break;
 
       if(ymid>=0){
         if(yval % majordel == 0){
         }else if(yval % minordel == 0){
-          gdk_draw_line(p->backing,p->drawgc,padx,ymid,width-phax,ymid);
+          cairo_move_to(c,padx+.5,ymid+.5);
+          cairo_line_to(c,width-phax+.5,ymid+.5);
         }else{
-          gdk_draw_line(p->backing,p->dashes,padx,ymid,width-phax,ymid);
+          cairo_stroke(c);
+
+          cairo_set_dash(c,d,2,0);
+          cairo_move_to(c,padx+.5,ymid+.5);
+          cairo_line_to(c,width-phax+.5,ymid+.5);
+          cairo_stroke(c);
+          cairo_set_dash(c,d,0,0);
         }
       }
       yval-=subminordel;
     }
+    cairo_stroke(c);
 
     /* Dark Y grid */
-    rgb.red=0x0000;
-    rgb.green=0xc000;
-    rgb.blue=0xc000;
-    gdk_gc_set_rgb_fg_color(p->drawgc,&rgb);
-
-    ymin = (p->disp_ymax - p->disp_depth)*1000;
-    yval = rint((p->disp_ymax*1000/majordel)+1)*majordel;
-
     {
+      ymin = (p->disp_ymax - p->disp_depth)*1000;
+      yval = rint((p->disp_ymax*1000/majordel)+1)*majordel;
+
       int px,py,pxdB,pxN,pxMAX;
       pango_layout_get_pixel_size(p->db_layoutN,&pxN,&py);
       pango_layout_get_pixel_size(p->db_layoutdB,&pxdB,&py);
@@ -498,7 +383,6 @@ static void draw(GtkWidget *widget){
         if(ymid>=height-p->pady)break;
 
         if(ymid>=0){
-          int do_dB=0;
           int label = yval/100+2000;
 
           if(label>=0 && label<=4000 /* in range check */
@@ -512,53 +396,49 @@ static void draw(GtkWidget *widget){
                   -99.9
                  -999.9 */
 
+              cairo_save(c);
+              gdk_cairo_set_source_rgba(c,&gray);
+
               if(fabsf(yval*.001)<9.98){
-                gdk_draw_layout (p->backing,
-                                 p->graygc,
-                                 padx-pxdB-2, ymid-py/2,
-                                 p->db_layoutdB);
+                cairo_move_to(c,padx-pxdB-1.5, ymid-py/2+.5);
+                pango_cairo_show_layout(c,p->db_layoutdB);
                 sofar+=pxdB;
               }
 
               pango_layout_get_pixel_size(p->db_layout1[abs(yval/100)%10],&px,&py);
               sofar+=px;
-              gdk_draw_layout (p->backing,
-                               p->graygc,
-                               padx-sofar-2, ymid-py/2,
-                               p->db_layout1[abs(yval/100)%10]);
+              cairo_move_to(c,padx-sofar-1.5, ymid-py/2+.5);
+              pango_cairo_show_layout(c,p->db_layout1[abs(yval/100)%10]);
 
               if(yval/1000!=0){ /* no leading zero please */
                 pango_layout_get_pixel_size(p->db_layout[yval/1000+200],&px,&py);
                 sofar+=px;
-                gdk_draw_layout (p->backing,
-                                 p->graygc,
-                                 padx-sofar-2, ymid-py/2,
-                                 p->db_layout[yval/1000+200]);
+                cairo_move_to(c,padx-sofar-1.5, ymid-py/2+.5);
+                pango_cairo_show_layout(c,p->db_layout[yval/1000+200]);
               }else{
                 if(yval<0){
                   /* need to explicitly place negative */
                   sofar+=pxN;
-                  gdk_draw_layout (p->backing,
-                                   p->graygc,
-                                   padx-sofar-2, ymid-py/2,
-                                   p->db_layoutN);
+                  cairo_move_to(c,padx-sofar-1.5, ymid-py/2+.5);
+                  pango_cairo_show_layout(c,p->db_layoutN);
                 }
               }
+              cairo_restore(c);
             }else{
-              gdk_draw_layout (p->backing,
-                               widget->style->black_gc,
-                               padx-pxdB-2, ymid-py/2,
-                               p->db_layoutdB);
+              gdk_cairo_set_source_rgba(c,&rgb_fg);
+              cairo_move_to(c,padx-pxdB-1.5, ymid-py/2+.5);
+              pango_cairo_show_layout(c,p->db_layoutdB);
 
               pango_layout_get_pixel_size(p->db_layout[yval/1000+200],&px,&py);
-
-              gdk_draw_layout (p->backing,
-                               widget->style->black_gc,
-                               padx-px-pxdB-2, ymid-py/2,
-                               p->db_layout[yval/1000+200]);
+              cairo_move_to(c,padx-px-pxdB-1.5, ymid-py/2+.5);
+              pango_cairo_show_layout(c,p->db_layout[yval/1000+200]);
             }
           }
-          gdk_draw_line(p->backing,p->drawgc,padx,ymid,width-phax,ymid);
+
+          cairo_set_source_rgb(c,0,.75,.75);
+          cairo_move_to(c,padx+.5,ymid+.5);
+          cairo_line_to(c,width-phax+.5,ymid+.5);
+          cairo_stroke(c);
         }
         yval-=majordel;
       }
@@ -568,20 +448,18 @@ static void draw(GtkWidget *widget){
   /* dark x grid */
   {
     int i;
-    GdkColor rgb={0,0,0,0};
-
-    rgb.red=0x0000;
-    rgb.green=0xc000;
-    rgb.blue=0xc000;
-    gdk_gc_set_rgb_fg_color(p->drawgc,&rgb);
-
-    for(i=0;i<p->xgrids;i++)
-      gdk_draw_line(p->backing,p->drawgc,p->xgrid[i],0,p->xgrid[i],height-p->pady);
+    cairo_set_source_rgb(c,0,.75,.75);
+    for(i=0;i<p->xgrids;i++){
+      cairo_move_to(c,p->xgrid[i]+.5,.5);
+      cairo_line_to(c,p->xgrid[i]+.5,height-p->pady+.5);
+    }
+    cairo_stroke(c);
   }
 
-
-  gdk_gc_set_line_attributes(p->drawgc,p->bold+1,GDK_LINE_SOLID,GDK_CAP_PROJECTING,
-                             GDK_JOIN_MITER);
+  cairo_save(c);
+  cairo_set_line_width(c,p->bold+1);
+  cairo_rectangle(c,padx,0,pwidth,height-p->pady);
+  cairo_clip(c);
 
   /* draw actual data */
   if(p->ydata){
@@ -589,13 +467,11 @@ static void draw(GtkWidget *widget){
     int gi;
     for(gi=0;gi<p->groups;gi++){
       int ch;
-      GdkColor rgb;
 
       for(ch=cho;ch<cho+p->ch[gi];ch++){
 	if(p->ch_active[ch]){
 
-	  rgb = chcolor(ch);
-	  gdk_gc_set_rgb_fg_color(p->drawgc,&rgb);
+	  chcolor(c,ch);
 
 	  for(i=0;i<pwidth;i++){
 	    float valmin=p->ydata[ch][i*2];
@@ -604,17 +480,7 @@ static void draw(GtkWidget *widget){
 
             if(!isnan(valmin) && !isnan(valmax)){
 
-              //if(impedence){ /* log scale for impedence */
-              if(0){
-
-                ymin = rint( (log10(p->disp_ymax)-log10(valmin))/
-                             (log10(p->disp_ymax)-log10(.1)) *
-                             (height-p->pady-1));
-                ymax = rint( (log10(p->disp_ymax)-log10(valmax))/
-                             (log10(p->disp_ymax)-log10(.1)) *
-                             (height-p->pady-1));
-
-              }else if(phase && ch==cho+1){
+              if(phase && ch==cho+1){
 
                 ymin = rint((height-p->pady-1)/
                             (p->disp_pmax-p->disp_pmin)*
@@ -630,14 +496,18 @@ static void draw(GtkWidget *widget){
 
               }
 
-              gdk_draw_line(p->backing,p->drawgc,padx+i,ymin,padx+i,ymax);
+              cairo_move_to(c,padx+i+.5,ymin+.5);
+              cairo_line_to(c,padx+i+.5,ymax+.5);
             }
 	  }
+          cairo_stroke(c);
 	}
       }
       cho+=p->ch[gi];
     }
   }
+
+  cairo_restore(c);
 
   /* phase?  draw in phase and tics on right axis */
   if(phase){
@@ -648,6 +518,8 @@ static void draw(GtkWidget *widget){
     step=2;
     if(del>8)step=1;
 
+    cairo_set_source_rgb(0,.5,0,0);
+
     for(i=0;i<38;i++){
       if(((label-i)&1)==0 || step==1){
 	int ymid=rint(del * (i*10+off));
@@ -655,9 +527,8 @@ static void draw(GtkWidget *widget){
 
 	if(label-i>=0 && label-i<37 && ymid>=p->pady/2 && ymid<height-p->pady/2){
           pango_layout_get_pixel_size(p->phase_layout[label-i],&px,&py);
-	  gdk_draw_layout (p->backing,p->phasegc,
-			   width-p->phax+2, ymid-py/2,
-			   p->phase_layout[label-i]);
+          cairo_move_to(c,width-p->phax+2.5, ymid-py/2+.5);
+          pango_cairo_show_layout(c,p->phase_layout[label-i]);
 	}
       }
     }
@@ -667,24 +538,31 @@ static void draw(GtkWidget *widget){
 	int ymid=rint(del * (i+off));
         int pv = rint(p->pmax - ymid/(float)(height-p->pady) * (p->pmax - p->pmin));
 	if(ymid>=height-p->pady)break;
-	if(ymid>=0 && pv>=-180 && pv<=180)
-	  gdk_draw_line(p->backing,p->phasegc,width-p->phax-(i%5==0?15:10),ymid,width-p->phax-(i%5==0?5:7),ymid);
+	if(ymid>=0 && pv>=-180 && pv<=180){
+          cairo_move_to(c,width-p->phax-(i%5==0?15:10)+.5,
+                        ymid+.5);
+          cairo_line_to(c,width-p->phax-(i%5==0?5:7)+.5,ymid+.5);
+        }
       }
     }else if(del>5){
       for(i=0;;i++){
 	int ymid=rint(del * (i*2+off));
         int pv = rint(p->pmax - ymid/(float)(height-p->pady) * (p->pmax - p->pmin));
 	if(ymid>=height-p->pady)break;
-	if(ymid>=0 && pv>=-180 && pv<=180)
-	  gdk_draw_line(p->backing,p->phasegc,width-p->phax-12,ymid,width-p->phax-7,ymid);
+	if(ymid>=0 && pv>=-180 && pv<=180){
+          cairo_move_to(c,width-p->phax-12+.5,ymid+.5);
+          cairo_line_to(c,width-p->phax-7,ymid);
+        }
       }
     } else if(del>2){
       for(i=0;;i++){
 	int ymid=rint(del * (i*5+off));
         int pv = rint(p->pmax - ymid/(float)(height-p->pady) * (p->pmax - p->pmin));
 	if(ymid>=height-p->pady)break;
-	if(ymid>=0 && pv>=-180 && pv<=180)
-	  gdk_draw_line(p->backing,p->phasegc,width-p->phax-15,ymid,width-p->phax-5,ymid);
+	if(ymid>=0 && pv>=-180 && pv<=180){
+          cairo_move_to(c,width-p->phax-15+.5,ymid+.5);
+          cairo_line_to(c,width-p->phax-5+.5,ymid+.5);
+        }
       }
     }
 
@@ -694,9 +572,12 @@ static void draw(GtkWidget *widget){
         int pv = rint(p->pmax - ymid/(float)(height-p->pady) * (p->pmax - p->pmin));
         if(ymid>=height-p->pady)break;
 	if(ymid>=0 && pv>=-180 && pv<=180){
-          gdk_draw_line(p->backing,p->phasegc,width-p->phax-5,ymid-1,width-p->phax-1,ymid-1);
-          gdk_draw_line(p->backing,p->phasegc,width-p->phax-25,ymid,width-p->phax-1,ymid);
-          gdk_draw_line(p->backing,p->phasegc,width-p->phax-5,ymid+1,width-p->phax-1,ymid+1);
+          cairo_move_to(c,width-p->phax-5+.5,ymid-1+.5);
+          cairo_line_to(c,width-p->phax-1+.5,ymid-1+.5);
+          cairo_move_to(c,width-p->phax-25+.5,ymid+.5);
+          cairo_line_to(c,width-p->phax-1+.5,ymid+.5);
+          cairo_move_to(c,width-p->phax-5+.5,ymid+1+.5);
+          cairo_line_to(c,width-p->phax-1+.5,ymid+1+.5);
         }
       }
     }else{
@@ -705,8 +586,10 @@ static void draw(GtkWidget *widget){
 	int ymid=rint(del * (i*10+off));
         int pv = rint(p->pmax - ymid/(float)(height-p->pady) * (p->pmax - p->pmin));
 	if(ymid>=height-p->pady)break;
-	if(ymid>=0 && pv>=-180 && pv<=180)
-	  gdk_draw_line(p->backing,p->phasegc,width-p->phax-15,ymid,width-p->phax-5,ymid);
+	if(ymid>=0 && pv>=-180 && pv<=180){
+          cairo_move_to(c,width-p->phax-15+.5,ymid+.5);
+          cairo_line_to(c,width-p->phax-5+.5,ymid+.5);
+        }
       }
 
       for(i=0;;i++){
@@ -714,38 +597,17 @@ static void draw(GtkWidget *widget){
         int pv = rint((p->pmax - ymid/(float)(height-p->pady) * (p->pmax - p->pmin))/10);
         if(ymid>=height-p->pady)break;
 	if(ymid>=0 && pv>=-18 && pv<=18 && (pv&1)==0){
-          gdk_draw_line(p->backing,p->phasegc,width-p->phax-5,ymid-1,width-p->phax-1,ymid-1);
-          gdk_draw_line(p->backing,p->phasegc,width-p->phax-25,ymid,width-p->phax-1,ymid);
-          gdk_draw_line(p->backing,p->phasegc,width-p->phax-5,ymid+1,width-p->phax-1,ymid+1);
+          cairo_move_to(c,width-p->phax-5+.5,ymid-1+.5);
+          cairo_line_to(c,width-p->phax-1+.5,ymid-1+.5);
+          cairo_move_to(c,width-p->phax-25+.5,ymid+.5);
+          cairo_line_to(c,width-p->phax-1+.5,ymid+.5);
+          cairo_move_to(c,width-p->phax-5+.5,ymid+1+.5);
+          cairo_line_to(c,width-p->phax-1+.5,ymid+1+.5);
         }
       }
     }
+    cairo_stroke(c);
   }
-}
-
-static void draw_and_expose(GtkWidget *widget){
-  Plot *p=PLOT(widget);
-  if(!GDK_IS_DRAWABLE(p->backing))return;
-  draw(widget);
-  if(!GTK_WIDGET_DRAWABLE(widget))return;
-  if(!GDK_IS_DRAWABLE(widget->window))return;
-  gdk_draw_drawable(widget->window,
-		    widget->style->fg_gc[GTK_WIDGET_STATE (widget)],
-		    p->backing,
-		    0, 0,
-		    0, 0,
-		    widget->allocation.width,
-		    widget->allocation.height);
-}
-
-static gboolean expose( GtkWidget *widget, GdkEventExpose *event ){
-  Plot *p=PLOT(widget);
-  gdk_draw_drawable(widget->window,
-		    widget->style->fg_gc[GTK_WIDGET_STATE (widget)],
-		    p->backing,
-		    event->area.x, event->area.y,
-		    event->area.x, event->area.y,
-		    event->area.width, event->area.height);
 
   return FALSE;
 }
@@ -846,18 +708,68 @@ static void size_request (GtkWidget *widget,GtkRequisition *requisition){
   p->phax=phax+2;
 }
 
+static void get_preferred_width (GtkWidget *widget,
+                                 gint *minw, gint *w){
+  GtkRequisition r;
+  size_request(widget,&r);
+  *minw=*w=r.width;
+}
+
+static void get_preferred_height (GtkWidget *widget,
+                                  gint *minh, gint *h){
+  GtkRequisition r;
+  size_request(widget,&r);
+  *minh=*h=r.height;
+}
+
+#if 0
+static void call_expose(GtkWidget *widget){
+  GdkRectangle rect={0,0,0,0};
+  rect.width=gtk_widget_get_allocated_width(widget);
+  rect.height=gtk_widget_get_allocated_height(widget);
+  gdk_window_invalidate_rect (gtk_widget_get_window(widget),&rect,FALSE);
+}
+#endif
+
+static void draw_and_expose(GtkWidget *widget){
+  Plot *p=PLOT(widget);
+  if(p->backing){
+    GtkAllocation a;
+    cairo_t *c = cairo_create(p->backing);
+    draw(widget,c);
+    cairo_destroy(c);
+
+    gtk_widget_get_allocation(widget,&a);
+    c = gdk_cairo_create (gtk_widget_get_window(widget));
+    cairo_set_source_surface (c, p->backing, a.x, a.y);
+    cairo_paint (c);
+    cairo_destroy (c);
+  }
+}
+
+static gboolean expose(GtkWidget *widget, cairo_t *c){
+  Plot *p=PLOT(widget);
+  int w=gtk_widget_get_allocated_width(widget);
+  int h=gtk_widget_get_allocated_height(widget);
+
+  cairo_set_source_surface (c, p->backing, 0, 0);
+  cairo_rectangle(c,0,0,w,h);
+  cairo_fill(c);
+  return FALSE;
+}
+
 static gboolean configure(GtkWidget *widget, GdkEventConfigure *event){
   Plot *p=PLOT(widget);
-
-  if (p->backing)
-    g_object_unref(p->backing);
-
-  p->backing = gdk_pixmap_new(widget->window,
-			      widget->allocation.width,
-			      widget->allocation.height,
-			      -1);
   p->ydata=NULL;
   p->configured=1;
+
+  if (p->backing)
+    cairo_surface_destroy(p->backing);
+
+  p->backing = cairo_image_surface_create
+    (CAIRO_FORMAT_RGB24,
+     gtk_widget_get_allocated_width(widget),
+     gtk_widget_get_allocated_height(widget));
 
   compute_metadata(widget);
   plot_refresh(p,NULL);
@@ -867,20 +779,21 @@ static gboolean configure(GtkWidget *widget, GdkEventConfigure *event){
 }
 
 static void plot_class_init (PlotClass *class){
-  int i,w,h;
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (class);
-  GdkWindow *root=gdk_get_default_root_window();
   parent_class = g_type_class_peek_parent (class);
 
-  widget_class->expose_event = expose;
+  widget_class->draw = expose;
   widget_class->configure_event = configure;
-  widget_class->size_request = size_request;
+  widget_class->get_preferred_width = get_preferred_width;
+  widget_class->get_preferred_height = get_preferred_height;
 }
 
 static void plot_init (Plot *p){
   p->mode=0;
   p->scale=0;
   p->depth=45.;
+  gtk_widget_set_has_window(GTK_WIDGET(p),FALSE);
+  gtk_widget_set_double_buffered (GTK_WIDGET(p), FALSE);
 }
 
 GType plot_get_type (void){
@@ -1040,8 +953,9 @@ GtkWidget* plot_new (int size, int groups, int *channels, int *rate){
 void plot_refresh (Plot *p, int *process){
   float ymax,pmax,pmin;
   int phase = phase_active_p(p);
-  int width=GTK_WIDGET(p)->allocation.width-p->padx-(phase ? p->phax : 0);
-  int height=GTK_WIDGET(p)->allocation.height-p->pady;
+  int width=gtk_widget_get_allocated_width(GTK_WIDGET(p))-
+    p->padx-(phase ? p->phax : 0);
+  int height=gtk_widget_get_allocated_height(GTK_WIDGET(p))-p->pady;
   float **data;
 
 #define THRESH .25
@@ -1196,7 +1110,8 @@ void plot_refresh (Plot *p, int *process){
 void plot_clear (Plot *p){
   GtkWidget *widget=GTK_WIDGET(p);
   int phase = phase_active_p(p);
-  int width=GTK_WIDGET(p)->allocation.width-p->padx-(phase ? p->phax : 0);
+  int width=gtk_widget_get_allocated_width(GTK_WIDGET(p))-
+    p->padx-(phase ? p->phax : 0);
   int i,j;
 
   if(p->ydata)

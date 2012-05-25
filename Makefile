@@ -30,7 +30,7 @@ SPECTRUM_OBJ = spectrum.o spec_process.o spec_panel.o spec_plot.o io.o
 WAVEFORM_OBJ = waveform.o wave_process.o wave_panel.o wave_plot.o io.o
 OBJ = $(SPECTRUM_OBJ) $(WAVEFORM_OBJ)
 
-GCF = -DETCDIR=\\\"$(ETCDIR)\\\" `pkg-config --cflags gtk+-2.0` -DGTK_DISABLE_SINGLE_INCLUDES
+GCF = `pkg-config --cflags gtk+-3.0` -DETCDIR=$(ETCDIR) -DGTK_DISABLE_SINGLE_INCLUDES -DGSEAL_ENABLE #-DGDK_DISABLE_DEPRECATED -DGTK_DISABLE_DEPRECATED -DGSEAL_ENABLE
 
 CFLAGS := ${CFLAGS} $(GCF) $(ADD_DEF)
 
@@ -41,7 +41,7 @@ debug:
 	$(MAKE) target CFLAGS="${CFLAGS} -g -Wall -W -Wno-unused-parameter -D__NO_MATH_INLINES"
 
 profile:
-	$(MAKE) target CFLAGS="${CFLAGS} -pg -g -O3 -ffast-math" LIBS="-lgprof-helper "
+	$(MAKE) target CFLAGS="${CFLAGS} -pg -g -O3 -ffast-math"
 
 clean:
 	rm -f $(OBJ) *.d *.d.* gmon.out spectrum
@@ -62,13 +62,13 @@ endif
 
 spectrum:  $(SPECTRUM_OBJ) spectrum-wisdomrc
 	./touch-version
-	$(LD) $(SPECTRUM_OBJ) -o spectrum $(LIBS) $(CFLAGS) `pkg-config --libs gtk+-2.0` -lpthread -lfftw3f -lm 
+	$(LD) $(SPECTRUM_OBJ) -o spectrum $(LIBS) $(CFLAGS) `pkg-config --libs gtk+-3.0` -lpthread -lfftw3f -lm 
 
 waveform:  $(WAVEFORM_OBJ) 
 	./touch-version
-	$(LD) $(WAVEFORM_OBJ) -o waveform $(LIBS) $(CFLAGS) `pkg-config --libs gtk+-2.0` -lpthread -lm 
+	$(LD) $(WAVEFORM_OBJ) -o waveform $(LIBS) $(CFLAGS) `pkg-config --libs gtk+-3.0` -lpthread -lm 
 
-target:  spectrum waveform
+target:  spectrum # waveform
 
 install: target
 	$(INSTALL) -d -m 0755 $(BINDIR)
