@@ -1,5 +1,0 @@
-This is basic benchmarking code for the algorithm presented in "An
-Iterative Linearised Solution to the Sinusoidal Parameter Estimation
-Problem".  The intent is to provide known good results for comparison
-with independent implementations and future improvements.
-
