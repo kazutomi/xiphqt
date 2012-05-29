@@ -8,5 +8,11 @@
 
 </div>
 </div>
+<div style="text-align:center;">
+ <div style="text-align:center;display:inline-block;border:2px solid;width:66%;margin:30px;padding:5px;">
+  <div style="text-align:center;font-size:125%;">—The CELT codec has been merged into the IETF <a href="http://opus-codec.org/">Opus codec</a>—
+  </div>
+ </div>
+</div>
 </body>
 </html>

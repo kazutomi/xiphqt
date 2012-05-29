@@ -1,3 +1,9 @@
+<div style="text-align:center;">
+ <div style="text-align:center;display:inline-block;border:2px solid;width:66%;margin:30px;padding:5px;">
+  <div style="text-align:center;font-size:125%;">—The CELT codec has been merged into the IETF <a href="http://opus-codec.org/">Opus codec</a>—
+  </div>
+ </div>
+</div>
 <div id="thepage">
 <div id="xiphlogo">
   <a href="http://www.xiph.org/"><img src="/images/logos/fish_xiph_org.png" alt="Fish Logo and Xiph.org"/></a>
