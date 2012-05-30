@@ -1,4 +1,4 @@
-<? include "common/header.php"; ?>
+<? include "inc/header.php"; ?>
 <h2>Icecast Load Test Results #2 (by oddsock)</h2>
 <div class="roundcont">
 <div class="roundtop">

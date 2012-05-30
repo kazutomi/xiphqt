@@ -1,4 +1,4 @@
-<? include "common/header.php"; ?>
+<? include "inc/header.php"; ?>
 <h2>Icecast Directory Listing Specification</h2>
 <div class="roundcont">
 <div class="roundtop">

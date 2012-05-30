@@ -1,4 +1,4 @@
-<? include "common/header.php"; ?>
+<? include "inc/header.php"; ?>
 <h2>Subversion</h2>
 <div class="roundcont">
 <div class="roundtop">
@@ -55,6 +55,6 @@ $ make
 </div>
 </div>
 <br><br>
-<? include "common/footer.php"; ?>
+<? include "inc/footer.php"; ?>
 
 

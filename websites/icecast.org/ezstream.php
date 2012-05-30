@@ -1,4 +1,4 @@
-<? include "common/header.php"; ?>
+<? include "inc/header.php"; ?>
 
 <style type="text/css">
  <!--
@@ -396,4 +396,4 @@
 
 <br/>
 
-<? include "common/footer.php"; ?>
+<? include "inc/footer.php"; ?>

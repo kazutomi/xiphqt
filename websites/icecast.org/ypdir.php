@@ -1,4 +1,4 @@
-<? include "common/header.php"; ?>
+<? include "inc/header.php"; ?>
 <h2>Stream Directory Information</h2>
 <div class="roundcont">
 <div class="roundtop">
@@ -26,6 +26,6 @@ And as always, if you'd like to contribute to Xiph.org, read about it here -> <a
 <br><br>
 
 <br><br>
-<? include "common/footer.php"; ?>
+<? include "inc/footer.php"; ?>
 
 

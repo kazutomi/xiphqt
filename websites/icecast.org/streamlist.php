@@ -1,5 +1,5 @@
 <? $nopad = 1; ?>
-<? include "common/header.php"; ?>
+<? include "inc/header.php"; ?>
 
 <div class="newscontent">
 <blockquote>

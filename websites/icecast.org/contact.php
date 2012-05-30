@@ -1,4 +1,4 @@
-<? include "common/header.php"; ?>
+<? include "inc/header.php"; ?>
 <h2>Contacts</h2>
 <div class="roundcont">
 <div class="roundtop">
@@ -33,6 +33,6 @@ webmaster@xiph.org
 </div>
 
 <br><br>
-<? include "common/footer.php"; ?>
+<? include "inc/footer.php"; ?>
 
 
