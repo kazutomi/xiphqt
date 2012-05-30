@@ -3,7 +3,7 @@
 <tr>
 
   <td>
-    <img id="xiphbanner" src="/images/logos/xiphbar.png" 
+    <img id="xiphbanner" src="/common/xiphbar.png" 
          alt="Xiph logo" width="231" height="17"/>
   </td>
 
