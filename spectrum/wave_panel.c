@@ -805,12 +805,14 @@ static int look_for_gtkrc(char *filename){
   return 1;
 }
 
+#define STR(X) #X
+
 void panel_go(int argc,char *argv[]){
   char *homedir=getenv("HOME");
   int found=0;
   memset(&p,0,sizeof(p));
 
-  found|=look_for_gtkrc(ETCDIR"/waveform-gtkrc");
+  found|=look_for_gtkrc(STR(ETCDIR)"/waveform-gtkrc");
   {
     char *rcdir=getenv("HOME");
     if(rcdir){
@@ -841,14 +843,14 @@ void panel_go(int argc,char *argv[]){
 	    "\t./waveform-gtkrc\n"
 	    "\t$(SPECTRUM_RCDIR)/waveform-gtkrc\n"
 	    "\t~/.spectrum/waveform-gtkrc\n\t"
-	    ETCDIR"/wavegform-gtkrc\n"
+	    STR(ETCDIR)"/wavegform-gtkrc\n"
 	    "This configuration file is used to tune the color, font and other detail aspects\n"
 	    "of the user interface.  Although the viewer will work without it, the UI\n"
 	    "appearence will likely make the application harder to use due to missing visual\n"
 	    "cues.\n");
   }
 
-  gtk_rc_add_default_file(ETCDIR"/waveform-gtkrc");
+  gtk_rc_add_default_file(STR(ETCDIR)"/waveform-gtkrc");
   if(homedir){
     char *rcfile="/.waveform-gtkrc";
     char *homerc=calloc(1,strlen(homedir)+strlen(rcfile)+1);

@@ -17,7 +17,7 @@
 # ADD_DEF=
 
 
-CC=gcc 
+CC=gcc
 LD=gcc
 INSTALL=install
 PREFIX=/usr/local
@@ -30,18 +30,18 @@ SPECTRUM_OBJ = spectrum.o spec_process.o spec_panel.o spec_plot.o io.o
 WAVEFORM_OBJ = waveform.o wave_process.o wave_panel.o wave_plot.o io.o
 OBJ = $(SPECTRUM_OBJ) $(WAVEFORM_OBJ)
 
-GCF = -DETCDIR=\\\"$(ETCDIR)\\\" `pkg-config --cflags gtk+-2.0` -DGTK_DISABLE_SINGLE_INCLUDES
+GCF = `pkg-config --cflags gtk+-2.0` -DETCDIR=$(ETCDIR) -DGTK_DISABLE_SINGLE_INCLUDES
 
 CFLAGS := ${CFLAGS} $(GCF) $(ADD_DEF)
 
-all:	
+all:
 	$(MAKE) target CFLAGS="${CFLAGS} -O3 -ffast-math -fomit-frame-pointer"
 
 debug:
 	$(MAKE) target CFLAGS="${CFLAGS} -g -Wall -W -Wno-unused-parameter -D__NO_MATH_INLINES"
 
 profile:
-	$(MAKE) target CFLAGS="${CFLAGS} -pg -g -O3 -ffast-math" LIBS="-lgprof-helper "
+	$(MAKE) target CFLAGS="${CFLAGS} -pg -g -O3 -ffast-math"
 
 clean:
 	rm -f $(OBJ) *.d *.d.* gmon.out spectrum
