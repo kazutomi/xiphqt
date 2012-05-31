@@ -875,12 +875,14 @@ static int look_for_gtkrc(char *filename){
   return 1;
 }
 
+#define STR(X) #X
+
 void panel_go(int argc,char *argv[]){
   char *homedir=getenv("HOME");
   int found=0;
   memset(&p,0,sizeof(p));
 
-  found|=look_for_gtkrc(ETCDIR"/spectrum-gtkrc");
+  found|=look_for_gtkrc(STR(ETCDIR) "/spectrum-gtkrc");
   {
     char *rcdir=getenv("HOME");
     if(rcdir){
@@ -911,14 +913,14 @@ void panel_go(int argc,char *argv[]){
 	    "\t./spectrum-gtkrc\n"
 	    "\t$(SPECTRUM_RCDIR)/spectrum-gtkrc\n"
 	    "\t~/.spectrum/spectrum-gtkrc\n\t"
-	    ETCDIR"/spectrum-gtkrc\n"
+	    STR(ETCDIR) "/spectrum-gtkrc\n"
 	    "This configuration file is used to tune the color, font and other detail aspects\n"
 	    "of the user interface.  Although the analyzer will work without it, the UI\n"
 	    "appearence will likely make the application harder to use due to missing visual\n"
 	    "cues.\n");
   }
 
-  gtk_rc_add_default_file(ETCDIR"/spectrum-gtkrc");
+  gtk_rc_add_default_file(STR(ETCDIR) "/spectrum-gtkrc");
   if(homedir){
     char *rcfile="/.spectrum-gtkrc";
     char *homerc=calloc(1,strlen(homedir)+strlen(rcfile)+1);
