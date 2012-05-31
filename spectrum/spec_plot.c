@@ -68,9 +68,9 @@ static void compute_imp_scale(GtkWidget *widget){
 		     .5,.4,.3,.2};
 
   for(i=0;i<9;i++)
-    p->ygrid[i]=rint( (log10(p->disp_ymax)-log10(lfreqs[i]))/(log10(p->disp_ymax)-log10(.1)) * (height-1));
+    p->ygrid[i]=rint( (log10(p->ymax)-log10(lfreqs[i]))/(log10(p->ymax)-log10(.1)) * (height-1));
   for(i=0;i<64;i++)
-    p->ytic[i]=rint( (log10(p->disp_ymax)-log10(tfreqs[i]))/(log10(p->disp_ymax)-log10(.1)) * (height-1));
+    p->ytic[i]=rint( (log10(p->ymax)-log10(tfreqs[i]))/(log10(p->ymax)-log10(.1)) * (height-1));
   p->ygrids=9;
   p->ytics=64;
 
@@ -127,7 +127,7 @@ static void compute_metadata(GtkWidget *widget){
   case 1: /* ISO log */
     {
       for(i=0;i<12;i++){
-        if(iso_lfreqs[i]<(nyq-.1)){
+       if(iso_lfreqs[i]<(nyq-.1)){
           p->xgrids=i+1;
           p->xlgrids=i+1;
         }
@@ -300,7 +300,7 @@ static void draw(GtkWidget *widget){
       int y;
 
       /* No noise floor is passed back for display in the modes where it's irrelevant */
-      y= rint((height-p->pady-1)/p->disp_depth*(p->disp_ymax-val));
+      y= rint((height-p->pady-1)/p->depth*(p->ymax-val));
       if(y<height-p->pady)
 	gdk_draw_line(p->backing,p->drawgc,padx+i,y,padx+i,height-p->pady-1);
     }
@@ -386,8 +386,8 @@ static void draw(GtkWidget *widget){
   }else{
     GdkColor rgb={0,0,0,0};
     float emheight = (height-p->pady)/p->pady;
-    float emperdB = emheight/p->disp_depth;
-    float pxperdB = (height-p->pady)/p->disp_depth;
+    float emperdB = emheight/p->depth;
+    float pxperdB = (height-p->pady)/p->depth;
 
     /* we want no more than <n> major lines per graph */
     int maxmajorper = 15;
@@ -411,7 +411,7 @@ static void draw(GtkWidget *widget){
       /* minimum em seperation? */
       if(emperdB>majorsep*majordeltest[i] &&
          /* Not over the number of lines limit? */
-         p->disp_depth*majordeltest[i]<maxmajorper){
+         p->depth*majordeltest[i]<maxmajorper){
         majordel=majordellist[i];
         break;
       }
@@ -455,11 +455,11 @@ static void draw(GtkWidget *widget){
     gdk_gc_set_rgb_fg_color(p->drawgc,&rgb);
     gdk_gc_set_rgb_fg_color(p->dashes,&rgb);
 
-    float ymin = (p->disp_ymax - p->disp_depth)*1000;
-    int yval = rint((p->disp_ymax*1000/subminordel)+1)*subminordel;
+    float ymin = (p->ymax - p->depth)*1000;
+    int yval = rint((p->ymax*1000/subminordel)+1)*subminordel;
 
     while(1){
-      float ydel = (yval - ymin)/(p->disp_depth*1000);
+      float ydel = (yval - ymin)/(p->depth*1000);
       int ymid = rint(height-p->pady-1 - (height-p->pady) * ydel);
 
       if(ymid>=height-p->pady)break;
@@ -481,8 +481,8 @@ static void draw(GtkWidget *widget){
     rgb.blue=0xc000;
     gdk_gc_set_rgb_fg_color(p->drawgc,&rgb);
 
-    ymin = (p->disp_ymax - p->disp_depth)*1000;
-    yval = rint((p->disp_ymax*1000/majordel)+1)*majordel;
+    ymin = (p->ymax - p->depth)*1000;
+    yval = rint((p->ymax*1000/majordel)+1)*majordel;
 
     {
       int px,py,pxdB,pxN,pxMAX;
@@ -492,7 +492,7 @@ static void draw(GtkWidget *widget){
       pxMAX+=pxdB;
 
       while(1){
-        float ydel = (yval - ymin)/(p->disp_depth*1000);
+        float ydel = (yval - ymin)/(p->depth*1000);
         int ymid = rint(height-p->pady-1 - (height-p->pady) * ydel);
 
         if(ymid>=height-p->pady)break;
@@ -607,26 +607,26 @@ static void draw(GtkWidget *widget){
               //if(impedence){ /* log scale for impedence */
               if(0){
 
-                ymin = rint( (log10(p->disp_ymax)-log10(valmin))/
-                             (log10(p->disp_ymax)-log10(.1)) *
+                ymin = rint( (log10(p->ymax)-log10(valmin))/
+                             (log10(p->ymax)-log10(.1)) *
                              (height-p->pady-1));
-                ymax = rint( (log10(p->disp_ymax)-log10(valmax))/
-                             (log10(p->disp_ymax)-log10(.1)) *
+                ymax = rint( (log10(p->ymax)-log10(valmax))/
+                             (log10(p->ymax)-log10(.1)) *
                              (height-p->pady-1));
 
               }else if(phase && ch==cho+1){
 
                 ymin = rint((height-p->pady-1)/
-                            (p->disp_pmax-p->disp_pmin)*
-                            (p->disp_pmax-valmin));
+                            (p->pmax-p->pmin)*
+                            (p->pmax-valmin));
                 ymax = rint((height-p->pady-1)/
-                            (p->disp_pmax-p->disp_pmin)*
-                            (p->disp_pmax-valmax));
+                            (p->pmax-p->pmin)*
+                            (p->pmax-valmax));
 
               }else{
 
-                ymin = rint((height-p->pady-1)/p->disp_depth*(p->disp_ymax-valmin));
-                ymax = rint((height-p->pady-1)/p->disp_depth*(p->disp_ymax-valmax));
+                ymin = rint((height-p->pady-1)/p->depth*(p->ymax-valmin));
+                ymax = rint((height-p->pady-1)/p->depth*(p->ymax-valmax));
 
               }
 
@@ -641,24 +641,23 @@ static void draw(GtkWidget *widget){
 
   /* phase?  draw in phase and tics on right axis */
   if(phase){
-    float depth = p->disp_pmax-p->disp_pmin;
-    int label=ceil(p->disp_pmax/10+18),i;
+    float depth = p->pmax-p->pmin;
+    int label=ceil(p->pmax/10+18),i;
     float del=(height-p->pady-1)/depth,step;
-    float off=p->disp_pmax-ceil(p->disp_pmax*.1)*10;
+    float off=p->pmax-ceil(p->pmax*.1)*10;
     step=2;
     if(del>8)step=1;
 
-    for(i=0;i<38;i++){
-      if(((label-i)&1)==0 || step==1){
-	int ymid=rint(del * (i*10+off));
+    for(i=0;;i++){
+      int ymid=rint(del * (i*10+off));
+      int pv = rint((p->pmax - ymid/(float)(height-p->pady) * (p->pmax - p->pmin))/10);
+      if(ymid>=height-p->pady)break;
+      if(ymid>=0 && pv>=-18 && pv<=18 && (pv&1)==0){
 	int px,py;
-
-	if(label-i>=0 && label-i<37 && ymid>=p->pady/2 && ymid<height-p->pady/2){
-          pango_layout_get_pixel_size(p->phase_layout[label-i],&px,&py);
-	  gdk_draw_layout (p->backing,p->phasegc,
-			   width-p->phax+2, ymid-py/2,
-			   p->phase_layout[label-i]);
-	}
+        pango_layout_get_pixel_size(p->phase_layout[pv+18],&px,&py);
+        gdk_draw_layout (p->backing,p->phasegc,
+                         width-p->phax+2, ymid-py/2,
+                         p->phase_layout[pv+18]);
       }
     }
 
@@ -846,6 +845,174 @@ static void size_request (GtkWidget *widget,GtkRequisition *requisition){
   p->phax=phax+2;
 }
 
+
+static void filter_reset(pole2 *p, double val){
+  p->x[0]=p->x[1]=val;
+  p->y[0]=p->y[1]=val;
+}
+
+static void filter_make_critical(double w, pole2 *f){
+  double w0 = tan(M_PI*w*pow(pow(2,.5)-1,-.5));
+  f->a  = w0*w0/(1+(2*w0)+w0*w0);
+  f->b1 = 2*f->a*(1/(w0*w0)-1);
+  f->b2 = 1-(4*f->a+f->b1);
+  filter_reset(f,0);
+}
+
+static double filter_filter(double x, pole2 *p){
+  double y =
+    p->a*x + 2*p->a*p->x[0] + p->a*p->x[1] +
+    p->b1*p->y[0] + p->b2*p->y[1];
+  p->y[1] = p->y[0]; p->y[0] = y;
+  p->x[1] = p->x[0]; p->x[0] = x;
+  return y;
+}
+
+#define THRESH .25
+#define TIMERFRAMES 20
+
+void plot_rescale (Plot *p, int request_reset){
+  float ymax,pmax,pmin;
+  int phase = phase_active_p(p);
+  int width=GTK_WIDGET(p)->allocation.width-p->padx-(phase ? p->phax : 0);
+  int height=GTK_WIDGET(p)->allocation.height-p->pady;
+  float **data;
+
+  if(!p->configured)return;
+
+  data = process_fetch(p->scale, p->mode, p->link,
+		       p->ch_process,width,&ymax,&pmax,&pmin);
+
+  p->ydata=data;
+
+  if(!p->autoscale) return;
+
+  /* graph limit updates are conditional depending on mode/link */
+  switch(p->link){
+  case LINK_INDEPENDENT:
+  case LINK_SUMMED:
+  case LINK_PHASE:
+    {
+      float dBpp = p->depth/height;
+      ymax += dBpp*25;
+    }
+    break;
+  }
+  if(ymax<p->depth-p->ymax_limit)ymax=p->depth-p->ymax_limit;
+  if(ymax>p->ymax_limit)ymax=p->ymax_limit;
+
+  pmax+=10;
+  pmin-=10;
+  if(pmax<5)pmax=5;
+  if(pmax>190)pmax=190;
+  if(pmin>-20)pmin=-20;
+  if(pmin<-190)pmin=-190;
+
+
+  /* phase/response zeros align on phase graphs; verify targets
+     against phase constraints */
+  if(phase){
+    float pzero,mzero = height/p->depth*ymax;
+
+    /* move mag zero back onscreen if it's off */
+    if(mzero < height*THRESH){
+      ymax = (p->depth*height*THRESH)/height;
+    }
+    if(mzero > height*(1-THRESH)){
+      ymax = (p->depth*height*(1-THRESH))/height;
+    }
+
+    mzero = height/p->depth*ymax;
+    pzero = height/(pmax-pmin)*pmax;
+
+    if(mzero<pzero){
+      /* straightforward; move the dB range down */
+      ymax = pzero*p->depth/height;
+    }else{
+      /* a little harder as phase has a min and a max.
+         First increase the pmax to match the dB zero. */
+
+      pmax = pmin/(1-height/mzero);
+      pzero = height/(pmax-pmin)*pmax;
+
+      /* That worked, but might have run p->max overrange */
+      if(pmax>190.){
+        /* reconcile by allowing mag to overrange */
+        pmax = 190.;
+        pzero = height/(pmax-pmin)*pmax;
+        ymax = p->depth*pzero/height;
+        p->ymaxtimer=0;
+      }
+    }
+  }
+
+  if(request_reset){
+    p->ymax=p->ymax_target=ymax;
+    filter_reset(&p->ymax_damp,p->ymax);
+    p->ymaxtimer=TIMERFRAMES;
+
+    if(phase){
+      p->pmax=p->pmax_target=pmax;
+      p->pmin=p->pmin_target=pmin;
+      filter_reset(&p->pmax_damp,p->pmax);
+      filter_reset(&p->pmin_damp,p->pmin);
+      p->pmaxtimer=TIMERFRAMES;
+      p->pmintimer=TIMERFRAMES;
+    }
+
+  }else{
+    /* conditionally set new damped ymax target */
+    if(p->ymaxtimer>0 && ymax < p->ymax*(1-THRESH))
+      p->ymaxtimer--;
+
+    if(ymax > p->ymax_target){
+      p->ymax_target=ymax;
+      p->ymaxtimer=TIMERFRAMES;
+    }
+
+    if(p->ymaxtimer<=0)
+      p->ymax_target=ymax;
+
+    /* update ymax through scale damping filter */
+    p->ymax = filter_filter(p->ymax_target,&p->ymax_damp);
+
+    /* apply same hyteresis and update to phase */
+    if(phase){
+
+      if(p->pmaxtimer>0 && pmax < p->pmax*(1-THRESH))
+        p->pmaxtimer--;
+      if(pmax > p->pmax_target){
+        p->pmax_target=pmax;
+        p->pmaxtimer=TIMERFRAMES;
+      }
+      if(p->pmaxtimer<=0)
+        p->pmax_target=pmax;
+      p->pmax = filter_filter(p->pmax_target,&p->pmax_damp);
+
+      if(p->pmintimer>0 && pmin > p->pmin*(1-THRESH))
+        p->pmintimer--;
+      if(pmin < p->pmin_target){
+        p->pmin_target=pmin;
+        p->pmintimer=TIMERFRAMES;
+      }
+      if(p->pmintimer<=0)
+        p->pmin_target=pmin;
+      p->pmin = filter_filter(p->pmin_target,&p->pmin_damp);
+    }
+  }
+
+  if(phase){
+    /* when phase is active, the p->ymax in use is dictated by
+       p->pmax/p->pmin, which in turn already took the desired ymax
+       into consideration above */
+    p->ymax = p->depth*p->pmax/(p->pmax-p->pmin);
+  }
+
+  fprintf(stderr,"ymax=(%f|%f->%f) pmax=(%f|%f) pmin=(%f|%f) \n",
+          ymax, p->ymax, p->ymax_target, pmax,p->pmax,pmin,p->pmin);
+
+}
+
 static gboolean configure(GtkWidget *widget, GdkEventConfigure *event){
   Plot *p=PLOT(widget);
 
@@ -860,7 +1027,7 @@ static gboolean configure(GtkWidget *widget, GdkEventConfigure *event){
   p->configured=1;
 
   compute_metadata(widget);
-  plot_refresh(p,NULL);
+  plot_rescale(p,0);
   draw_and_expose(widget);
 
   return TRUE;
@@ -1033,164 +1200,22 @@ GtkWidget* plot_new (int size, int groups, int *channels, int *rate){
 
   p->autoscale=1;
 
+  filter_make_critical(.04,&p->ymax_damp);
+  filter_make_critical(.04,&p->pmax_damp);
+  filter_make_critical(.04,&p->pmin_damp);
+
   plot_clear(p);
   return ret;
 }
 
 void plot_refresh (Plot *p, int *process){
-  float ymax,pmax,pmin;
-  int phase = phase_active_p(p);
-  int width=GTK_WIDGET(p)->allocation.width-p->padx-(phase ? p->phax : 0);
-  int height=GTK_WIDGET(p)->allocation.height-p->pady;
-  float **data;
-
-#define THRESH .25
-#define PXDEL 10.
-#define TIMERFRAMES 20
 
   if(!p->configured)return;
 
   if(process)
     memcpy(p->ch_process,process,p->total_ch*sizeof(*process));
 
-  data = process_fetch(p->scale, p->mode, p->link,
-		       p->ch_process,width,&ymax,&pmax,&pmin);
-
-  p->ydata=data;
-
-  /* graph limit updates are conditional depending on mode/link */
-  pmax+=5;
-  pmin-=5;
-  if(pmax<5)pmax=5;
-  if(pmin>-30)pmin=-30;
-
-  switch(p->link){
-  case LINK_INDEPENDENT:
-  case LINK_SUMMED:
-  case LINK_PHASE:
-    {
-      float dBpp = p->depth/height;
-      ymax += dBpp*10;
-    }
-    break;
-#if 0
-  case LINK_IMPEDENCE_p1:
-  case LINK_IMPEDENCE_1:
-  case LINK_IMPEDENCE_10:
-    if(ymax<12)
-      ymax=12;
-    else
-      ymax*=1.8;
-    break;
-#endif
-  }
-
-  if(p->mode == 0){
-    /* "Instantaneous' mode scale regression is conditional and
-       damped. Start the timer/run the timer while any one scale
-       measure should be dropping by more than 25% of the current
-       depth. If any peaks occur above, reset timer.  Once timer runs
-       out, drop PXEDL px per frame */
-    /* todo:  might be nice to use a bessel function to track the scale
-       shifts */
-    if(p->ymax>ymax){
-      float oldzero = height/p->depth*p->ymax;
-      float newzero = height/p->depth*ymax;
-
-      if(oldzero-newzero > height*THRESH){
-        if(p->ymaxtimer){
-          p->ymaxtimer--;
-        }else{
-            ymax = (oldzero-PXDEL)*p->depth/(height-1);
-        }
-      }else{
-        p->ymaxtimer = TIMERFRAMES;
-      }
-    }else
-      p->ymaxtimer = TIMERFRAMES;
-
-    if(p->pmax>pmax || p->pmin<pmin){
-      float newmax = height/(p->pmax-p->pmin)*(p->pmax-pmax);
-      float newmin = height/(p->pmax-p->pmin)*(pmin-p->pmin);
-
-      if(newmax>height*THRESH || newmin>height*THRESH){
-	if(p->phtimer){
-	  p->phtimer--;
-	}else{
-	  if(newmax>height*THRESH)
-	    p->pmax -= PXDEL/(height-1)*(p->pmax-p->pmin);
-	  if(newmin>height*THRESH)
-	    p->pmin += PXDEL/(height-1)*(p->pmax-p->pmin);
-	}
-      }else{
-	p->phtimer = TIMERFRAMES;
-      }
-    }else
-      p->phtimer = TIMERFRAMES;
-  }
-
-  if(ymax<p->depth-p->ymax_limit)ymax=p->depth-p->ymax_limit;
-  if(ymax>p->ymax_limit)ymax=p->ymax_limit;
-  if(pmax>180)pmax=180;
-  if(pmin<-180)pmin=-180;
-  pmax+=10;
-  pmin-=10;
-
-  p->disp_depth = p->depth;
-
-  if(p->autoscale){
-    if(p->mode == 0){
-      if(ymax>p->ymax)p->ymax=ymax;
-      if(pmax>p->pmax)p->pmax=pmax;
-      if(pmin<p->pmin)p->pmin=pmin;
-    }else{
-      p->ymax=ymax;
-      p->pmax=pmax;
-      p->pmin=pmin;
-    }
-
-    p->disp_ymax = p->ymax;
-    p->disp_pmax = p->pmax;
-    p->disp_pmin = p->pmin;
-  }
-
-  /* finally, align phase/response zeros on phase graphs */
-  if(p->disp_ymax>-p->ymax_limit){
-    if(phase){
-      /* In a phase/response graph, 0dB/0degrees are bound and always on-screen. */
-      float pzero,mzero = (height-1)/p->disp_depth*p->disp_ymax;
-
-      /* move mag zero back onscreen if it's off */
-      if(mzero < height*THRESH){
-        p->disp_ymax = (p->disp_depth*height*THRESH)/(height-1);
-      }
-      if(mzero > height*(1-THRESH)){
-        p->disp_ymax = (p->disp_depth*height*(1-THRESH))/(height-1);
-      }
-
-      mzero = (height-1)/p->disp_depth*p->disp_ymax;
-      pzero = (height-1)/(p->disp_pmax-p->disp_pmin)*p->disp_pmax;
-
-      if(mzero<pzero){
-	/* straightforward; move the dB range down */
-	p->disp_ymax = pzero*p->disp_depth/(height-1);
-      }else{
-	/* a little harder as phase has a min and a max.
-	   First increase the pmax to match the dB zero. */
-
-	p->disp_pmax = p->disp_pmin/(1-(height-1)/mzero);
-	pzero = (height-1)/(p->disp_pmax-p->disp_pmin)*p->disp_pmax;
-
-	/* That worked, but might have run p->max overrange */
-	if(p->disp_pmax>190.){
-	  /* reconcile by allowing mag to overrange */
-	  p->disp_pmax = 190.;
-	  pzero = (height-1)/(p->disp_pmax-p->disp_pmin)*p->disp_pmax;
-          p->disp_ymax = p->disp_depth*pzero/(height-1);
-	}
-      }
-    }
-  }
+  plot_rescale(p, 0);
 }
 
 void plot_clear (Plot *p){
@@ -1203,9 +1228,14 @@ void plot_clear (Plot *p){
     for(i=0;i<p->total_ch;i++)
       for(j=0;j<width*2;j++)
 	p->ydata[i][j]=-300;
-  p->ymax=p->depth-p->ymax_limit;
-  p->pmax=0;
-  p->pmin=0;
+
+  p->ymax_target=p->ymax;
+  p->pmax_target=p->pmax;
+  p->pmin_target=p->pmin;
+  filter_reset(&p->ymax_damp,p->ymax);
+  filter_reset(&p->pmax_damp,p->pmax);
+  filter_reset(&p->pmin_damp,p->pmin);
+
   draw_and_expose(widget);
 }
 
@@ -1215,23 +1245,32 @@ float **plot_get (Plot *p){
 
 void plot_setting (Plot *p, int scale, int mode, int link, int depth, int noise){
   GtkWidget *widget=GTK_WIDGET(p);
+  int phase = phase_active_p(p);
+  int request_scale_reset=0;
+
   p->scale=scale;
-  p->mode=mode;
-  p->depth=depth;
-  p->link=link;
   p->noise=noise;
 
-  if(depth>140)
-    p->ymax_limit=depth;
-  else
-    p->ymax_limit=140;
-
-  p->ymax=-p->ymax_limit;
-  p->pmax=0;
-  p->pmin=0;
+  if(p->depth != depth ||
+     p->mode != mode ||
+     p->link!=link){
+    if(depth>140)
+      p->ymax_limit=depth;
+    else
+      p->ymax_limit=140;
+    request_scale_reset=1;
+  }
 
   compute_metadata(widget);
-  plot_refresh(p,NULL);
+
+  if(!phase && phase_active_p(p))
+    request_scale_reset=1;
+
+  p->depth=depth;
+  p->mode=mode;
+  p->link=link;
+
+  plot_rescale(p,request_scale_reset);
   draw_and_expose(widget);
 }
 
@@ -1244,14 +1283,14 @@ void plot_set_active(Plot *p, int *a, int *b){
   GtkWidget *widget=GTK_WIDGET(p);
   memcpy(p->ch_active,a,p->total_ch*sizeof(*a));
   memcpy(p->ch_process,b,p->total_ch*sizeof(*b));
-  plot_refresh(p,NULL);
+  plot_rescale(p,1);
   draw_and_expose(widget);
 }
 
 void plot_set_autoscale(Plot *p, int a){
   GtkWidget *widget=GTK_WIDGET(p);
   p->autoscale=a;
-  plot_refresh(p,NULL);
+  plot_rescale(p,a);
   draw_and_expose(widget);
 }
 

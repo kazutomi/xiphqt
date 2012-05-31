@@ -39,6 +39,14 @@ G_BEGIN_DECLS
 typedef struct _Plot       Plot;
 typedef struct _PlotClass  PlotClass;
 
+typedef struct {
+  double a;
+  double b1;
+  double b2;
+  double x[2];
+  double y[2];
+} pole2;
+
 struct _Plot{
 
   GtkDrawingArea canvas;  
@@ -96,10 +104,16 @@ struct _Plot{
   float pmax;
   float pmin;
 
-  float disp_depth;
-  float disp_ymax;
-  float disp_pmax;
-  float disp_pmin;
+  pole2 ymax_damp;
+  pole2 pmax_damp;
+  pole2 pmin_damp;
+
+  float ymax_target;
+  float pmax_target;
+  float pmin_target;
+  int ymaxtimer;
+  int pmaxtimer;
+  int pmintimer;
 
   float ymax_limit;
 
@@ -107,8 +121,6 @@ struct _Plot{
   float phax;
   float pady;
 
-  int ymaxtimer;
-  int phtimer;
 
   int bold;
   int autoscale;
