@@ -135,6 +135,7 @@ void parse_command_line(int argc, char **argv){
       {
 	int a=atoi(optarg);
 	bits[inputs]=a;
+	bits_force[inputs]=1;
 	if(a!=8 && a!=16 && a!=24 && a!=32){
 	  usage(stderr);
 	  exit(1);
@@ -144,12 +145,14 @@ void parse_command_line(int argc, char **argv){
     case 'B':case 'E':
       /* force big endian */
       bigendian[inputs]=1;
+      bigendian_force[inputs]=1;
       break;
     case 'c':
       /* force channels */
       {
 	int a=atoi(optarg);
 	channels[inputs]=a;
+	channels_force[inputs]=1;
 	if(a<1 || a>32){
 	  usage(stderr);
 	  exit(1);
@@ -159,6 +162,7 @@ void parse_command_line(int argc, char **argv){
     case 'l':case 'e':
       /* force little endian */
       bigendian[inputs]=0;
+      bigendian_force[inputs]=1;
       break;
     case 'h':
       usage(stdout);
@@ -168,6 +172,7 @@ void parse_command_line(int argc, char **argv){
       {
 	int a=atoi(optarg);
 	rate[inputs]=a;
+	rate_force[inputs]=1;
 	if(a<4000 || a>200000){
 	  usage(stderr);
 	  exit(1);
@@ -177,10 +182,12 @@ void parse_command_line(int argc, char **argv){
     case 's':
       /* force signed */
       signedp[inputs]=1;
+      signed_force[inputs]=1;
       break;
     case 'u':
       /* force unsigned */
       signedp[inputs]=0;
+      signed_force[inputs]=1;
       break;
     default:
       usage(stderr);

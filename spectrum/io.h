@@ -53,11 +53,18 @@ extern int rewind_files(void);
 
 extern int inputs;
 extern int total_ch;
+
 extern int bits[MAX_FILES];
 extern int bigendian[MAX_FILES];
 extern int channels[MAX_FILES];
 extern int rate[MAX_FILES];
 extern int signedp[MAX_FILES];
+extern int bits_force[MAX_FILES];
+extern int bigendian_force[MAX_FILES];
+extern int channels_force[MAX_FILES];
+extern int rate_force[MAX_FILES];
+extern int signed_force[MAX_FILES];
+
 extern char *inputname[MAX_FILES];
 extern int seekable[MAX_FILES];
 extern int global_seekable;

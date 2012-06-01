@@ -1,26 +1,29 @@
 /*
  *
  *  gtk2 spectrum analyzer
- *    
+ *
  *      Copyright (C) 2004-2012 Monty
  *
  *  This analyzer is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2, or (at your option)
  *  any later version.
- *   
+ *
  *  The analyzer is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- *   
+ *
  *  You should have received a copy of the GNU General Public License
  *  along with Postfish; see the file COPYING.  If not, write to the
  *  Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * 
+ *
  */
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #include "io.h"
 
 pthread_mutex_t ioparam_mutex=PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
@@ -29,6 +32,12 @@ int bigendian[MAX_FILES] = {-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1};
 int channels[MAX_FILES] = {-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1};
 int rate[MAX_FILES] = {-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1};
 int signedp[MAX_FILES] = {-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1};
+
+int bits_force[MAX_FILES] = {0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0};
+int bigendian_force[MAX_FILES] = {0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0};
+int channels_force[MAX_FILES] = {0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0};
+int rate_force[MAX_FILES] = {0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0};
+int signed_force[MAX_FILES] = {0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0};
 
 extern sig_atomic_t acc_loop;
 extern int blocksize;
@@ -46,6 +55,7 @@ static off_t offset[MAX_FILES]={0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0};
 static off_t length[MAX_FILES]= {-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1};
 static off_t bytesleft[MAX_FILES]= {-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1};
 int seekable[MAX_FILES]={0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0};
+int isapipe[MAX_FILES]={0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0};
 int global_seekable=0;
 int total_ch=0;
 
@@ -76,7 +86,7 @@ double read_IEEE80(unsigned char *buf){
     ((buf[3]&0xff)<<16)|
     ((buf[4]&0xff)<<8) |
     (buf[5]&0xff);
-  
+
   if(e==32767){
     if(buf[2]&0x80)
       return HUGE_VAL; /* Really NaN, but this won't happen in reality */
@@ -87,13 +97,13 @@ double read_IEEE80(unsigned char *buf){
 	return HUGE_VAL;
     }
   }
-  
+
   f=ldexp(f,32);
   f+= ((buf[6]&0xff)<<24)|
     ((buf[7]&0xff)<<16)|
     ((buf[8]&0xff)<<8) |
     (buf[9]&0xff);
-  
+
   return ldexp(f, e-16446);
 }
 
@@ -112,7 +122,7 @@ static int find_chunk(FILE *in, char *type, unsigned int *len, int endian){
     if(memcmp(buf,type,4)){
 
       if((*len) & 0x1)(*len)++;
-      
+
       for(i=0;i<*len;i++)
 	if(fgetc(in)==EOF)return 0;
 
@@ -120,9 +130,275 @@ static int find_chunk(FILE *in, char *type, unsigned int *len, int endian){
   }
 }
 
-int input_load(void){
+/* used to load or reload an input */
+static int load_one_input(int fi){
+  int i,reload=0;
 
-  int stdinp=0,i,fi;
+  if(f[fi]){
+    fclose(f[fi]);
+    f[fi]=NULL;
+    reload=1;
+    total_ch -= channels[fi];
+    blockbufferfill[fi]=0;
+    readbufferptr[fi]=0;
+    readbufferfill[fi]=0;
+  }
+
+  if(!strcmp(inputname[fi],"/dev/stdin") && fi==0){
+    int newfd=dup(STDIN_FILENO);
+    f[fi]=fdopen(newfd,"rb");
+  }else{
+    f[fi]=fopen(inputname[fi],"rb");
+  }
+
+  seekable[fi]=0;
+
+  /* Crappy! Use a lib to do this for pete's sake! */
+  if(f[fi]){
+    char headerid[12];
+    off_t filelength;
+
+    /* parse header (well, sort of) and get file size */
+    seekable[fi]=(fseek(f[fi],0,SEEK_CUR)?0:1);
+
+    if(!seekable[fi]){
+      filelength=-1;
+    }else{
+      fseek(f[fi],0,SEEK_END);
+      filelength=ftello(f[fi]);
+      fseek(f[fi],0,SEEK_SET);
+      global_seekable=1;
+    }
+
+    fread(headerid,1,12,f[fi]);
+    if(!strncmp(headerid,"RIFF",4) && !strncmp(headerid+8,"WAVE",4)){
+      unsigned int chunklen;
+
+      if(find_chunk(f[fi],"fmt ",&chunklen,0)){
+        int ltype;
+        int lch;
+        int lrate;
+        int lbits;
+        unsigned char *buf=alloca(chunklen);
+
+        fread(buf,1,chunklen,f[fi]);
+
+        ltype = READ_U16_LE(buf);
+        lch =   READ_U16_LE(buf+2);
+        lrate = READ_U32_LE(buf+4);
+        lbits = READ_U16_LE(buf+14);
+
+        /* Add cooked WAVE_FORMAT_EXTENSIBLE support */
+        if(ltype == 65534){
+          int cbSize = READ_U16_LE(buf+16);
+          if(cbSize>=22)
+            ltype = READ_U16_LE(buf + 24);
+        }
+
+        if(ltype!=1){
+          fprintf(stderr,"%s:\n\tWAVE file not PCM.\n",inputname[fi]);
+          return 1;
+        }
+
+        if(!bits_force[fi])bits[fi]=lbits;
+        if(!channels_force[fi])channels[fi]=lch;
+        if(!signed_force[fi]){
+          signedp[fi]=0;
+          if(bits[fi]>8)signedp[fi]=1;
+        }
+        if(!bigendian_force[fi])bigendian[fi]=0;
+        if(!rate_force[fi]){
+          if(lrate<4000 || lrate>192000){
+            fprintf(stderr,"%s:\n\tSampling rate out of bounds\n",inputname[fi]);
+            return 1;
+          }
+          rate[fi]=lrate;
+        }
+
+        if(find_chunk(f[fi],"data",&chunklen,0)){
+          off_t pos=ftello(f[fi]);
+          int bytes=(bits[fi]+7)/8;
+          if(seekable[fi])
+            filelength=
+              (filelength-pos)/
+              (channels[fi]*bytes)*
+              (channels[fi]*bytes)+pos;
+
+          if(chunklen==0UL ||
+             chunklen==0x7fffffffUL ||
+             chunklen==0xffffffffUL){
+            if(filelength==-1){
+              length[fi]=-1;
+              fprintf(stderr,"%s: Incomplete header; assuming stream.\n",inputname[fi]);
+            }else{
+              length[fi]=(filelength-pos)/(channels[fi]*bytes);
+              fprintf(stderr,"%s: Incomplete header; using actual file size.\n",inputname[fi]);
+            }
+          }else if(filelength==-1 || chunklen+pos<=filelength){
+            length[fi]=(chunklen/(channels[fi]*bytes));
+            fprintf(stderr,"%s: Using declared file size (%ld).\n",
+                    inputname[fi],(long)length[fi]*channels[fi]*bytes);
+
+          }else{
+
+            length[fi]=(filelength-pos)/(channels[fi]*bytes);
+            fprintf(stderr,"%s: File truncated; Using actual file size.\n",inputname[fi]);
+          }
+          offset[fi]=ftello(f[fi]);
+        } else {
+          fprintf(stderr,"%s: WAVE file has no \"data\" chunk following \"fmt \".\n",inputname[fi]);
+          return 1;
+        }
+      }else{
+        fprintf(stderr,"%s: WAVE file has no \"fmt \" chunk.\n",inputname[fi]);
+        return 1;
+      }
+
+    }else if(!strncmp(headerid,"FORM",4) && !strncmp(headerid+8,"AIF",3)){
+      unsigned int len;
+      int aifc=0;
+      if(headerid[11]=='C')aifc=1;
+      unsigned char *buffer;
+      char buf2[8];
+
+      int lch;
+      int lbits;
+      int lrate;
+      int bytes;
+
+      /* look for COMM */
+      if(!find_chunk(f[fi], "COMM", &len,1)){
+        fprintf(stderr,"%s: AIFF file has no \"COMM\" chunk.\n",inputname[fi]);
+        return 1;
+      }
+
+      if(len < 18 || (aifc && len<22)) {
+        fprintf(stderr,"%s: AIFF COMM chunk is truncated.\n",inputname[fi]);
+        return 1;
+      }
+
+      buffer = alloca(len);
+
+      if(fread(buffer,1,len,f[fi]) < len){
+        fprintf(stderr, "%s: Unexpected EOF in reading AIFF header\n",inputname[fi]);
+        return 1;
+      }
+
+      lch = READ_U16_BE(buffer);
+      lbits = READ_U16_BE(buffer+6);
+      lrate = (int)read_IEEE80(buffer+8);
+
+      if(!bits_force[fi])bits[fi]=lbits;
+      bytes=(bits[fi]+7)/8;
+      if(!signed_force[fi])signedp[fi]=1;
+      if(!rate_force[fi]){
+        if(lrate<4000 || lrate>192000){
+          fprintf(stderr,"%s:\n\tSampling rate out of bounds\n",inputname[fi]);
+          return 1;
+        }
+        rate[fi]=lrate;
+      }
+      if(!channels_force[fi])channels[fi]=lch;
+
+      if(!bigendian_force[fi]){
+        if(aifc){
+          if(!memcmp(buffer+18, "NONE", 4)) {
+            bigendian[fi] = 1;
+          }else if(!memcmp(buffer+18, "sowt", 4)) {
+            bigendian[fi] = 0;
+          }else{
+            fprintf(stderr, "%s: Spectrum supports only linear PCM AIFF-C files.\n",inputname[fi]);
+            return 1;
+          }
+        }else
+          bigendian[fi] = 1;
+      }
+      if(!find_chunk(f[fi], "SSND", &len, 1)){
+        fprintf(stderr,"%s: AIFF file has no \"SSND\" chunk.\n",inputname[fi]);
+        return 1;
+      }
+
+      if(fread(buf2,1,8,f[fi]) < 8){
+        fprintf(stderr,"%s: Unexpected EOF reading AIFF header\n",inputname[fi]);
+        return 1;
+      }
+
+      {
+        int loffset = READ_U32_BE(buf2);
+        int lblocksize = READ_U32_BE(buf2+4);
+
+        /* swallow some data */
+        for(i=0;i<loffset;i++)
+          if(fgetc(f[fi])==EOF)break;
+
+        if( lblocksize == 0 && (bits[fi] == 24 || bits[fi] == 16 || bits[fi] == 8)){
+
+          off_t pos=ftello(f[fi]);
+
+          if(seekable[fi])
+            filelength=
+              (filelength-pos)/
+              (channels[fi]*bytes)*
+              (channels[fi]*bytes)+pos;
+
+          if(len==0UL ||
+             len==0x7fffffffUL ||
+	       len==0xffffffffUL){
+            if(filelength==-1){
+              length[fi]=-1;
+              fprintf(stderr,"%s: Incomplete header; assuming stream.\n",inputname[fi]);
+            }else{
+              length[fi]=(filelength-pos)/(channels[fi]*bytes);
+              fprintf(stderr,"%s: Incomplete header; using actual file size.\n",inputname[fi]);
+            }
+          }else if(filelength==-1 || (len+pos-loffset-8)<=filelength){
+            length[fi]=((len-loffset-8)/(channels[fi]*bytes));
+            fprintf(stderr,"%s: Using declared file size.\n",inputname[fi]);
+
+          }else{
+            length[fi]=(filelength-pos)/(channels[fi]*bytes);
+            fprintf(stderr,"%s: File truncated; Using actual file size.\n",inputname[fi]);
+          }
+          offset[fi]=pos;
+        }else{
+          fprintf(stderr, "%s: Spectrum supports only linear PCM AIFF-C files.\n",inputname[fi]);
+          return 1;
+        }
+      }
+    } else {
+      /* must be raw input */
+      fprintf(stderr,"Input has no header; assuming raw stream/file.\n");
+
+      if(!channels_force[fi])channels[fi]=1;
+      if(!rate_force[fi])rate[fi]=44100;
+      if(!bits_force[fi])bits[fi]=16;
+      if(!signed_force[fi])signedp[fi]=1;
+      if(!bigendian_force[fi])bigendian[fi]=host_is_big_endian();
+
+      offset[fi]=0;
+      length[fi]=-1;
+      if(seekable[fi])length[fi]=filelength/(channels[fi]*((bits[fi]+7)/8));
+
+      memcpy(readbuffer[fi],headerid,12);
+      readbufferfill[fi]=12;
+
+    }
+
+    if(length[fi]!=-1)
+      bytesleft[fi]=length[fi]*channels[fi]*((bits[fi]+7)/8);
+    total_ch += channels[fi];
+
+  }else{
+    fprintf(stderr,"Unable to open %s: %s\n",inputname[fi],strerror(errno));
+    return 1;
+  }
+
+  return 0;
+
+}
+
+int input_load(void){
+  int fi;
   if(inputs==0){
     /* look at stdin... is it a file, pipe, tty...? */
     if(isatty(STDIN_FILENO)){
@@ -132,260 +408,18 @@ int input_load(void){
 	      "give more details.\n");
       return 1;
     }
-    stdinp=1;    /* file coming in via stdin */
-    inputname[0]=strdup("stdin");
+    inputname[0]=strdup("/dev/stdin");
     inputs++;
   }
 
   for(fi=0;fi<inputs;fi++){
+    struct stat sb;
+    isapipe[fi]=0;
+    if(!stat(inputname[fi],&sb))
+      isapipe[fi]=S_ISFIFO(sb.st_mode);
 
-    if(stdinp && fi==0){
-      int newfd=dup(STDIN_FILENO);
-      f[fi]=fdopen(newfd,"rb");
-    }else{
-      f[fi]=fopen(inputname[fi],"rb");
-    }
-    seekable[fi]=0;
-
-    /* Crappy! Use a lib to do this for pete's sake! */
-    if(f[fi]){
-      char headerid[12];
-      off_t filelength;
-	
-      /* parse header (well, sort of) and get file size */
-      seekable[fi]=(fseek(f[fi],0,SEEK_CUR)?0:1);
-
-      if(!seekable[fi]){
-	filelength=-1;
-      }else{
-	fseek(f[fi],0,SEEK_END);
-	filelength=ftello(f[fi]);
-	fseek(f[fi],0,SEEK_SET);
-	global_seekable=1;
-      }
-      
-      fread(headerid,1,12,f[fi]);
-      if(!strncmp(headerid,"RIFF",4) && !strncmp(headerid+8,"WAVE",4)){
-	unsigned int chunklen;
-      
-	if(find_chunk(f[fi],"fmt ",&chunklen,0)){
-	  int ltype;
-	  int lch;
-	  int lrate;
-	  int lbits;
-	  unsigned char *buf=alloca(chunklen);
-	
-	  fread(buf,1,chunklen,f[fi]);
-	
-	  ltype = READ_U16_LE(buf); 
-	  lch =   READ_U16_LE(buf+2); 
-	  lrate = READ_U32_LE(buf+4);
-	  lbits = READ_U16_LE(buf+14);
-
-          /* Add cooked WAVE_FORMAT_EXTENSIBLE support */
-          if(ltype == 65534){
-            int cbSize = READ_U16_LE(buf+16);
-            if(cbSize>=22)
-              ltype = READ_U16_LE(buf + 24); 
-	  }
-
-	  if(ltype!=1){
-            fprintf(stderr,"%s:\n\tWAVE file not PCM.\n",inputname[fi]);
-            return 1;
-	  }
-	      
-	  if(bits[fi]==-1)bits[fi]=lbits;
-	  if(channels[fi]==-1)channels[fi]=lch;
-	  if(signedp[fi]==-1){
-	    signedp[fi]=0;
-	    if(bits[fi]>8)signedp[fi]=1;
-	  }
-	  if(bigendian[fi]==-1)bigendian[fi]=0;
-	  if(rate[fi]==-1){
-	    if(lrate<4000 || lrate>192000){
-	      fprintf(stderr,"%s:\n\tSampling rate out of bounds\n",inputname[fi]);
-	      return 1;
-	    }
-	    rate[fi]=lrate;
-	  }
-
-	  if(find_chunk(f[fi],"data",&chunklen,0)){
-	    off_t pos=ftello(f[fi]);
-	    int bytes=(bits[fi]+7)/8;
-	    if(seekable[fi])
-	      filelength=
-		(filelength-pos)/
-		(channels[fi]*bytes)*
-		(channels[fi]*bytes)+pos;
-	    
-	    if(chunklen==0UL ||
-	       chunklen==0x7fffffffUL || 
-	       chunklen==0xffffffffUL){
-	      if(filelength==-1){
-		length[fi]=-1;
-		fprintf(stderr,"%s: Incomplete header; assuming stream.\n",inputname[fi]);
-	      }else{
-		length[fi]=(filelength-pos)/(channels[fi]*bytes);
-		fprintf(stderr,"%s: Incomplete header; using actual file size.\n",inputname[fi]);
-	      }
-	    }else if(filelength==-1 || chunklen+pos<=filelength){
-	      length[fi]=(chunklen/(channels[fi]*bytes));
-	      fprintf(stderr,"%s: Using declared file size (%ld).\n",
-		      inputname[fi],(long)length[fi]*channels[fi]*bytes);
-	      
-	    }else{
-	      
-	      length[fi]=(filelength-pos)/(channels[fi]*bytes);
-	      fprintf(stderr,"%s: File truncated; Using actual file size.\n",inputname[fi]);
-	    }
-	    offset[fi]=ftello(f[fi]);
-	  } else {
-	    fprintf(stderr,"%s: WAVE file has no \"data\" chunk following \"fmt \".\n",inputname[fi]);
-	    return 1;
-	  }
-	}else{
-	  fprintf(stderr,"%s: WAVE file has no \"fmt \" chunk.\n",inputname[fi]);
-	  return 1;
-	}
-      
-      }else if(!strncmp(headerid,"FORM",4) && !strncmp(headerid+8,"AIF",3)){
-	unsigned int len;
-	int aifc=0;
-	if(headerid[11]=='C')aifc=1;
-	unsigned char *buffer;
-	char buf2[8];
-	
-	int lch;
-	int lbits;
-	int lrate;
-	int bytes;
-	
-	/* look for COMM */
-	if(!find_chunk(f[fi], "COMM", &len,1)){
-	  fprintf(stderr,"%s: AIFF file has no \"COMM\" chunk.\n",inputname[fi]);
-	  return 1;
-	}
-	
-	if(len < 18 || (aifc && len<22)) {
-	  fprintf(stderr,"%s: AIFF COMM chunk is truncated.\n",inputname[fi]);
-	  return 1;
-	}
-	
-	buffer = alloca(len);
-	
-	if(fread(buffer,1,len,f[fi]) < len){
-	  fprintf(stderr, "%s: Unexpected EOF in reading AIFF header\n",inputname[fi]);
-	  return 1;
-	}
-	
-	lch = READ_U16_BE(buffer);
-	lbits = READ_U16_BE(buffer+6);
-	lrate = (int)read_IEEE80(buffer+8);
-      
-	if(bits[fi]==-1)bits[fi]=lbits;
-	bytes=(bits[fi]+7)/8;
-	if(signedp[fi]==-1)signedp[fi]=1;
-	if(rate[fi]==-1){
-	  if(lrate<4000 || lrate>192000){
-	    fprintf(stderr,"%s:\n\tSampling rate out of bounds\n",inputname[fi]);
-	    return 1;
-	  }
-	  rate[fi]=lrate;
-	}
-	if(channels[fi]==-1)channels[fi]=lch;
-	
-	if(bigendian[fi]==-1){
-	  if(aifc){
-	    if(!memcmp(buffer+18, "NONE", 4)) {
-	      bigendian[fi] = 1;
-	    }else if(!memcmp(buffer+18, "sowt", 4)) {
-	      bigendian[fi] = 0;
-	    }else{
-	      fprintf(stderr, "%s: Spectrum supports only linear PCM AIFF-C files.\n",inputname[fi]);
-	      return 1;
-	    }
-	  }else
-	    bigendian[fi] = 1;
-	}
-	if(!find_chunk(f[fi], "SSND", &len, 1)){
-	  fprintf(stderr,"%s: AIFF file has no \"SSND\" chunk.\n",inputname[fi]);
-	  return 1;
-	}
-	
-	if(fread(buf2,1,8,f[fi]) < 8){
-	  fprintf(stderr,"%s: Unexpected EOF reading AIFF header\n",inputname[fi]);
-	  return 1;
-	}
-	
-	{
-	  int loffset = READ_U32_BE(buf2);
-	  int lblocksize = READ_U32_BE(buf2+4);
-	  
-	  /* swallow some data */
-	  for(i=0;i<loffset;i++)
-	    if(fgetc(f[fi])==EOF)break;
-	  
-	  if( lblocksize == 0 && (bits[fi] == 24 || bits[fi] == 16 || bits[fi] == 8)){
-	    
-	    off_t pos=ftello(f[fi]);
-	    
-	    if(seekable[fi])
-	      filelength=
-		(filelength-pos)/
-		(channels[fi]*bytes)*
-		(channels[fi]*bytes)+pos;
-	  
-	    if(len==0UL ||
-	       len==0x7fffffffUL || 
-	       len==0xffffffffUL){
-	      if(filelength==-1){
-		length[fi]=-1;
-		fprintf(stderr,"%s: Incomplete header; assuming stream.\n",inputname[fi]);
-	      }else{
-		length[fi]=(filelength-pos)/(channels[fi]*bytes);
-		fprintf(stderr,"%s: Incomplete header; using actual file size.\n",inputname[fi]);
-	      }
-	    }else if(filelength==-1 || (len+pos-loffset-8)<=filelength){
-	      length[fi]=((len-loffset-8)/(channels[fi]*bytes));
-	      fprintf(stderr,"%s: Using declared file size.\n",inputname[fi]);
-	      
-	    }else{
-	      length[fi]=(filelength-pos)/(channels[fi]*bytes);
-	      fprintf(stderr,"%s: File truncated; Using actual file size.\n",inputname[fi]);
-	    }
-	    offset[fi]=pos;
-	  }else{
-	    fprintf(stderr, "%s: Spectrum supports only linear PCM AIFF-C files.\n",inputname[fi]);
-	    return 1;
-	  }
-	}
-      } else {
-	/* must be raw input */
-	fprintf(stderr,"Input has no header; assuming raw stream/file.\n");
-      
-	if(channels[fi]==-1)channels[fi]=1;
-	if(rate[fi]==-1)rate[fi]=44100;
-	if(bits[fi]==-1)bits[fi]=16;
-	if(signedp[fi]==-1)signedp[fi]=1;
-	if(bigendian[fi]==-1)bigendian[fi]=host_is_big_endian();
-      
-	offset[fi]=0;
-	length[fi]=-1;
-	if(seekable[fi])length[fi]=filelength/(channels[fi]*((bits[fi]+7)/8));
-	
-	memcpy(readbuffer[fi],headerid,12);
-	readbufferfill[fi]=12;
-	
-      }
-
-      if(length[fi]!=-1)
-	bytesleft[fi]=length[fi]*channels[fi]*((bits[fi]+7)/8);
-      total_ch += channels[fi];
-
-    }else{
-      fprintf(stderr,"Unable to open %s: %s\n",inputname[fi],strerror(errno));
+    if(load_one_input(fi))
       exit(1);
-    }
   }
 
   return 0;
@@ -401,7 +435,7 @@ static void LBEconvert(int *localslice){
     int bytes=(bits[fi]+7)/8;
     int j;
     int32_t xor=(signedp[fi]?0:0x80000000UL);
-    
+
     int readlimit=(readbufferfill[fi]-readbufferptr[fi])/
       channels[fi]/bytes*channels[fi]*bytes+readbufferptr[fi];
 
@@ -411,19 +445,19 @@ static void LBEconvert(int *localslice){
     unsigned char *rbuf = readbuffer[fi];
 
     if(readlimit){
-      
+
       switch(bytes){
       case 1:
-	
+
 	while(bfill<tosize && rptr<readlimit){
 	  for(j=ch;j<channels[fi]+ch;j++)
 	    blockbuffer[j][bfill]=((rbuf[rptr++]<<24)^xor)*scale;
 	  bfill++;
 	}
 	break;
-	
+
       case 2:
-      
+
 	if(bigendian[fi]){
 	  while(bfill<tosize && rptr<readlimit){
 	    for(j=ch;j<channels[fi]+ch;j++){
@@ -444,9 +478,9 @@ static void LBEconvert(int *localslice){
 	  }
 	}
 	break;
-	
+
       case 3:
-	
+
 	if(bigendian[fi]){
 	  while(bfill<tosize && rptr<readlimit){
 	    for(j=ch;j<channels[fi]+ch;j++){
@@ -468,7 +502,7 @@ static void LBEconvert(int *localslice){
 	}
 	break;
       case 4:
-	
+
 	if(bigendian[fi]){
 	  while(bfill<tosize && rptr<readlimit){
 	    for(j=ch;j<channels[fi]+ch;j++){
@@ -498,7 +532,7 @@ static void LBEconvert(int *localslice){
 }
 
 /* when we return, the blockbuffer is full or we're at EOF */
-/* EOF cases: 
+/* EOF cases:
      loop set: return EOF if all seekable streams have hit EOF
      loop unset: return EOF if all streams have hit EOF
    pad individual EOF streams out with zeroes until global EOF is hit  */
@@ -574,21 +608,28 @@ int input_read(int loop, int partialok){
                     inputname[fi],strerror(ferror(f[fi])));
 	  }else if (actually_readbytes==0){
             /* real, hard EOF/error in a partially filled block */
-            if(!partialok){
-              /* partial frame is *not* ok.  zero it out. */
-              memset(readbuffer[fi],0,readbuffersize);
-              bytesleft[fi]=0;
-              readbufferfill[fi]=0;
-              readbufferptr[fi]=0;
-              blockbufferfill[fi]=0;
-            }
-            if(loop && (!rewound[fi] || (partialok && blockbufferfill[fi]))){
-              /* rewind this file and continue */
-              fseek(f[fi],offset[fi],SEEK_SET);
-              if(length[fi]!=-1)
-                bytesleft[fi]=length[fi]*channels[fi]*((bits[fi]+7)/8);
+            /* if this input is a pipe, reload its input state */
+            if(!seekable[fi] && isapipe[fi] && !load_one_input(fi)){
+              fprintf(stderr,"reloading....\n");
               notdone=1;
-              rewound[fi]=1;
+            }else{
+
+              if(!partialok){
+                /* partial frame is *not* ok.  zero it out. */
+                memset(readbuffer[fi],0,readbuffersize);
+                bytesleft[fi]=0;
+                readbufferfill[fi]=0;
+                readbufferptr[fi]=0;
+                blockbufferfill[fi]=0;
+              }
+              if(loop && (!rewound[fi] || (partialok && blockbufferfill[fi]))){
+                /* rewind this file and continue */
+                fseek(f[fi],offset[fi],SEEK_SET);
+                if(length[fi]!=-1)
+                  bytesleft[fi]=length[fi]*channels[fi]*((bits[fi]+7)/8);
+                notdone=1;
+                rewound[fi]=1;
+              }
             }
 	  }else{
             /* got a read */

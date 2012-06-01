@@ -898,6 +898,7 @@ void plot_rescale (Plot *p, int request_reset){
     }
     break;
   }
+
   if(ymax<p->depth-p->ymax_limit)ymax=p->depth-p->ymax_limit;
   if(ymax>p->ymax_limit)ymax=p->ymax_limit;
 
@@ -907,7 +908,6 @@ void plot_rescale (Plot *p, int request_reset){
   if(pmax>190)pmax=190;
   if(pmin>-20)pmin=-20;
   if(pmin<-190)pmin=-190;
-
 
   /* phase/response zeros align on phase graphs; verify targets
      against phase constraints */
@@ -1007,15 +1007,11 @@ void plot_rescale (Plot *p, int request_reset){
        into consideration above */
     p->ymax = p->depth*p->pmax/(p->pmax-p->pmin);
   }
-
-  fprintf(stderr,"ymax=(%f|%f->%f) pmax=(%f|%f) pmin=(%f|%f) \n",
-          ymax, p->ymax, p->ymax_target, pmax,p->pmax,pmin,p->pmin);
-
 }
 
 static gboolean configure(GtkWidget *widget, GdkEventConfigure *event){
   Plot *p=PLOT(widget);
-
+  int rescale = !p->configured;
   if (p->backing)
     g_object_unref(p->backing);
 
@@ -1027,7 +1023,7 @@ static gboolean configure(GtkWidget *widget, GdkEventConfigure *event){
   p->configured=1;
 
   compute_metadata(widget);
-  plot_rescale(p,0);
+  plot_rescale(p,rescale);
   draw_and_expose(widget);
 
   return TRUE;
@@ -1204,7 +1200,6 @@ GtkWidget* plot_new (int size, int groups, int *channels, int *rate){
   filter_make_critical(.04,&p->pmax_damp);
   filter_make_critical(.04,&p->pmin_damp);
 
-  plot_clear(p);
   return ret;
 }
 
