@@ -17,7 +17,7 @@ style "button-poppy" {
         fg[ACTIVE]="#000000" 
         fg[PRELIGHT]="#000000" 
         fg[SELECTED]="#000000" 
-        fg[INSENSITIVE]="#000000" 
+        fg[INSENSITIVE]="#b0a494" 
 
         text[NORMAL]="#000000" 
         text[ACTIVE]="#000000" 
