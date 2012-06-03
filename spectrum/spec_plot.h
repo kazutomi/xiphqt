@@ -54,7 +54,7 @@ typedef struct {
   int phase_active;
 
   float **data;
-  float *active;
+  int *active;
   float ymax;
   float pmax;
   float pmin;

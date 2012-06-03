@@ -137,10 +137,16 @@ static int load_one_input(int fi){
     fclose(f[fi]);
     f[fi]=NULL;
     reload=1;
-    total_ch -= channels[fi];
     blockbufferfill[fi]=0;
     readbufferptr[fi]=0;
     readbufferfill[fi]=0;
+    if(blockbuffer){
+      for(i=0;i<total_ch;i++)
+        if(blockbuffer[i])free(blockbuffer[i]);
+      free(blockbuffer);
+      blockbuffer=NULL;
+    }
+    total_ch -= channels[fi];
   }
 
   if(!strcmp(inputname[fi],"/dev/stdin") && fi==0){
@@ -393,7 +399,6 @@ static int load_one_input(int fi){
   }
 
   return 0;
-
 }
 
 int input_load(void){
@@ -543,6 +548,12 @@ static void LBEconvert(int *localslice){
     blockbufferfill[fi]=bfill;
     readbufferptr[fi]=rptr;
   }
+}
+
+void set_blockslice(int slice, int fi){
+  pthread_mutex_lock(&ioparam_mutex);
+  blockslice[fi]=slice;
+  pthread_mutex_unlock(&ioparam_mutex);
 }
 
 /* when we return, the blockbuffer is full or we're at EOF */
