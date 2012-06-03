@@ -251,8 +251,10 @@ void *process_thread(void *dummy){
     if(!process_exit && pipe_reload()){
       /* ah, at least one input was a pipe */
       init_process();
+      rundata_clear();
       metareload=1;
       pthread_mutex_unlock(&feedback_mutex);
+      write(eventpipe[1],"",1);
     }else{
       pthread_mutex_unlock(&feedback_mutex);
       break;
