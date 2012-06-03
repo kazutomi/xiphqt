@@ -1,24 +1,24 @@
 /*
  *
  *  gtk2 spectrum analyzer
- *    
+ *
  *      Copyright (C) 2004-2012 Monty
  *
  *  This analyzer is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2, or (at your option)
  *  any later version.
- *   
+ *
  *  The analyzer is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- *   
+ *
  *  You should have received a copy of the GNU General Public License
  *  along with Postfish; see the file COPYING.  If not, write to the
  *  Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * 
+ *
  */
 
 #include "analyzer.h"
@@ -26,31 +26,30 @@
 
 static float *window=NULL;
 static float *freqbuffer=0;
-static fftwf_plan plan;
+static fftwf_plan plan=NULL;
+static int prev_total_ch=-1;
 
 pthread_mutex_t feedback_mutex=PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 int feedback_increment=0;
 
-float *feedback_count;
-float **plot_data;
-float *process_work;
+float *feedback_count=NULL;
+float *process_work=NULL;
 
-float **feedback_acc;
-float **feedback_max;
-float **feedback_instant;
+float **feedback_acc=NULL;
+float **feedback_max=NULL;
+float **feedback_instant=NULL;
 
-float **ph_acc;
-float **ph_max;
-float **ph_instant;
+float **ph_acc=NULL;
+float **ph_max=NULL;
+float **ph_instant=NULL;
 
-float **xmappingL;
-float **xmappingM;
-float **xmappingH;
+float **xmappingL=NULL;
+float **xmappingM=NULL;
+float **xmappingH=NULL;
 int metascale = -1;
 int metawidth = -1;
-int metanoise = 0;
+int metareload = 0;
 
-sig_atomic_t acc_clear=0;
 sig_atomic_t acc_rewind=0;
 sig_atomic_t acc_loop=0;
 
@@ -59,10 +58,50 @@ sig_atomic_t process_exit=0;
 
 static void init_process(void){
   int i;
-  if(window==NULL){
+
+  if(!window || prev_total_ch != total_ch){
+
+    if(plan)fftwf_destroy_plan(plan);
+
+    if(feedback_acc){
+      for(i=0;i<prev_total_ch;i++)
+        if(feedback_acc[i])free(feedback_acc[i]);
+      free(feedback_acc);
+    }
+    if(feedback_max){
+      for(i=0;i<prev_total_ch;i++)
+        if(feedback_max[i])free(feedback_max[i]);
+      free(feedback_max);
+    }
+    if(feedback_instant){
+      for(i=0;i<prev_total_ch;i++)
+        if(feedback_instant[i])free(feedback_instant[i]);
+      free(feedback_instant);
+    }
+    if(ph_acc){
+      for(i=0;i<prev_total_ch;i++)
+        if(ph_acc[i])free(ph_acc[i]);
+      free(ph_acc);
+    }
+    if(ph_max){
+      for(i=0;i<prev_total_ch;i++)
+        if(ph_max[i])free(ph_max[i]);
+      free(ph_max);
+    }
+    if(ph_instant){
+      for(i=0;i<prev_total_ch;i++)
+        if(ph_instant[i])free(ph_instant[i]);
+      free(ph_instant);
+    }
+
+    if(process_work)free(process_work);
+    if(feedback_count)free(feedback_count);
+
+    if(freqbuffer)free(freqbuffer);
+    if(window)free(window);
+
     process_work=calloc(blocksize+2,sizeof(*process_work));
     feedback_count=calloc(total_ch,sizeof(*feedback_count));
-    plot_data=calloc(total_ch,sizeof(*plot_data));
 
     feedback_acc=malloc(total_ch*sizeof(*feedback_acc));
     feedback_max=malloc(total_ch*sizeof(*feedback_max));
@@ -84,6 +123,8 @@ static void init_process(void){
       ph_instant[i]=calloc(blocksize+2,sizeof(**ph_instant));
     }
 
+    prev_total_ch = total_ch;
+
     plan=fftwf_plan_dft_r2c_1d(blocksize,freqbuffer,
                                (fftwf_complex *)freqbuffer,
                                FFTW_ESTIMATE);
@@ -99,6 +140,7 @@ static void init_process(void){
 
 void rundata_clear(){
   int i,j;
+  pthread_mutex_lock(&feedback_mutex);
   for(i=0;i<total_ch;i++){
     feedback_count[i]=0;
     memset(feedback_acc[i],0,(blocksize/2+1)*sizeof(**feedback_acc));
@@ -111,16 +153,12 @@ void rundata_clear(){
       ph_instant[i][j]=0;
     }
   }
-  acc_clear=0;
+  pthread_mutex_unlock(&feedback_mutex);
 }
-
-extern int plot_noise;
 
 /* return 0 on EOF, 1 otherwise */
 static int process(){
   int fi,i,j,ch;
-  int eof_all;
-  int noise=plot_noise;  
 
   if(acc_rewind)
     rewind_files();
@@ -129,25 +167,22 @@ static int process(){
   if(input_read(acc_loop,0))
     return 0;
 
-  if(acc_clear)
-    rundata_clear();
-
   /* by channel */
   ch=0;
   for(fi=0;fi<inputs;fi++){
     if(blockbufferfill[fi]){
       for(i=ch;i<ch+channels[fi];i++){
-	
+
 	float *data=blockbuffer[i];
 
 	/* window the blockbuffer into the FFT buffer */
 	for(j=0;j<blocksize;j++){
 	  freqbuffer[j]=data[j]*window[j];
 	}
-	
+
 	/* transform */
 	fftwf_execute(plan);
-	
+
 	pthread_mutex_lock(&feedback_mutex);
 
 	/* perform desired accumulations */
@@ -178,22 +213,22 @@ static int process(){
 
 	    ph_acc[i][j]+=pR;
 	    ph_acc[i][j+1]+=pI;
-	    
+
 	    if(feedback_max[i][j>>1]<sqM){
 	      ph_max[i][j]=pR;
 	      ph_max[i][j+1]=pI;
 	    }
 	  }
-	  
+
 	  feedback_instant[i][j>>1]=sqM;
 	  feedback_acc[i][j>>1]+=sqM;
-	  
+
 	  if(feedback_max[i][j>>1]<sqM)
 	    feedback_max[i][j>>1]=sqM;
-	  
+
 	}
 	feedback_count[i]++;
-	
+
 	pthread_mutex_unlock(&feedback_mutex);
       }
     }
@@ -206,8 +241,23 @@ static int process(){
 }
 
 void *process_thread(void *dummy){
+  pthread_mutex_lock(&feedback_mutex);
   init_process();
-  while(!process_exit && process());
+  pthread_mutex_unlock(&feedback_mutex);
+
+  while(1){
+    while(!process_exit && process());
+    pthread_mutex_lock(&feedback_mutex);
+    if(!process_exit && pipe_reload()){
+      /* ah, at least one input was a pipe */
+      init_process();
+      metareload=1;
+      pthread_mutex_unlock(&feedback_mutex);
+    }else{
+      pthread_mutex_unlock(&feedback_mutex);
+      break;
+    }
+  }
   process_active=0;
   write(eventpipe[1],"",1);
   return NULL;
@@ -217,104 +267,156 @@ void process_dump(int mode){
   int fi,i,j,ch;
   FILE *out;
 
-  {   
-    out=fopen("accumulate.m","w");
-    ch = 0;
-    for(fi=0;fi<inputs;fi++){
-      for(i=0;i<blocksize/2+1;i++){
-	fprintf(out,"%f ",(double)i*rate[fi]/blocksize);
-	
-	for(j=ch;j<ch+channels[fi];j++)
-	  fprintf(out,"%f ",todB(feedback_acc[j][i])*.5);
-	fprintf(out,"\n");
-      }
+  pthread_mutex_lock(&feedback_mutex);
+
+  out=fopen("accumulate.m","w");
+  ch = 0;
+  for(fi=0;fi<inputs;fi++){
+    for(i=0;i<blocksize/2+1;i++){
+      fprintf(out,"%f ",(double)i*rate[fi]/blocksize);
+
+      for(j=ch;j<ch+channels[fi];j++)
+        fprintf(out,"%f ",todB(feedback_acc[j][i])*.5);
       fprintf(out,"\n");
-      ch+=channels[fi];
     }
-    fclose(out);
+    fprintf(out,"\n");
+    ch+=channels[fi];
   }
+  fclose(out);
 
-  {   
-    out=fopen("max.m","w");
-    ch = 0;
-    for(fi=0;fi<inputs;fi++){
-      for(i=0;i<blocksize/2+1;i++){
-	fprintf(out,"%f ",(double)i*rate[fi]/blocksize);
-	
-	for(j=ch;j<ch+channels[fi];j++)
-	  fprintf(out,"%f ",todB(feedback_max[j][i])*.5);
-	fprintf(out,"\n");
-      }
+  out=fopen("max.m","w");
+  ch = 0;
+  for(fi=0;fi<inputs;fi++){
+    for(i=0;i<blocksize/2+1;i++){
+      fprintf(out,"%f ",(double)i*rate[fi]/blocksize);
+
+      for(j=ch;j<ch+channels[fi];j++)
+        fprintf(out,"%f ",todB(feedback_max[j][i])*.5);
       fprintf(out,"\n");
-      ch+=channels[fi];
     }
-    fclose(out);
+    fprintf(out,"\n");
+    ch+=channels[fi];
   }
+  fclose(out);
 
-  {   
-    out=fopen("instant.m","w");
-    ch = 0;
-    for(fi=0;fi<inputs;fi++){
-      for(i=0;i<blocksize/2+1;i++){
-	fprintf(out,"%f ",(double)i*rate[fi]/blocksize);
-	
-	for(j=ch;j<ch+channels[fi];j++)
-	  fprintf(out,"%f ",todB(feedback_instant[j][i])*.5);
-	fprintf(out,"\n");
-      }
+  out=fopen("instant.m","w");
+  ch = 0;
+  for(fi=0;fi<inputs;fi++){
+    for(i=0;i<blocksize/2+1;i++){
+      fprintf(out,"%f ",(double)i*rate[fi]/blocksize);
+
+      for(j=ch;j<ch+channels[fi];j++)
+        fprintf(out,"%f ",todB(feedback_instant[j][i])*.5);
       fprintf(out,"\n");
-      ch+=channels[fi];
     }
-    fclose(out);
+    fprintf(out,"\n");
+    ch+=channels[fi];
   }
+  fclose(out);
 
-  {   
-    out=fopen("accphase.m","w");
-    ch = 0;
-    for(fi=0;fi<inputs;fi++){
+  out=fopen("accphase.m","w");
+  ch = 0;
+  for(fi=0;fi<inputs;fi++){
 
-      /* phase */ 
-      for(i=0;i<blocksize+2;i+=2){
-	fprintf(out,"%f ",(double)i*.5*rate[fi]/blocksize);
-	fprintf(out,"%f ",atan2(ph_acc[ch+1][i+1],ph_acc[ch+1][i])*57.29);
-	fprintf(out,"\n");
-      }
+    /* phase */
+    for(i=0;i<blocksize+2;i+=2){
+      fprintf(out,"%f ",(double)i*.5*rate[fi]/blocksize);
+      fprintf(out,"%f ",atan2(ph_acc[ch+1][i+1],ph_acc[ch+1][i])*57.29);
       fprintf(out,"\n");
-      ch+=channels[fi];
     }
-    fclose(out);
+    fprintf(out,"\n");
+    ch+=channels[fi];
   }
+  fclose(out);
 
+  pthread_mutex_unlock(&feedback_mutex);
 }
 
 /* how many bins to 'trim' off the edge of calculated data when we
    know we've hit a boundary of marginal measurement */
 #define binspan 5
 
+static fetchdata fetch_ret;
+
 /* the data returned is now 2 vals per bin; a min and a max.  The spec
    plot merely draws a vertical line between. */
-float **process_fetch(int scale, int mode, int link,
-		      int *active, int width,
-		      float *ymax, float *pmax, float *pmin){
+fetchdata *process_fetch(int scale, int mode, int link,
+                         int *process_in, int process_n,
+                         int height, int width){
   int ch,ci,i,j,fi;
   float **data;
   float **ph;
   float *normptr;
   float maxrate=-1.;
   float nyq;
+  int process[total_ch];
 
+  pthread_mutex_lock(&feedback_mutex);
   init_process();
+
+  if(total_ch!=fetch_ret.total_ch){
+    if(fetch_ret.data){
+      for(i=0;i<fetch_ret.total_ch;i++)
+        if(fetch_ret.data[i])free(fetch_ret.data[i]);
+      free(fetch_ret.data);
+      fetch_ret.data=NULL;
+    }
+    if(fetch_ret.active){
+      free(fetch_ret.active);
+      fetch_ret.active=NULL;
+    }
+  }
+
+  if(!fetch_ret.data)
+    fetch_ret.data = calloc(total_ch,sizeof(*fetch_ret.data));
+
+  if(!fetch_ret.active)
+    fetch_ret.active = calloc(total_ch,sizeof(*fetch_ret.active));
+
+  fetch_ret.groups=inputs;
+  fetch_ret.scale=scale;
+  fetch_ret.mode=mode;
+  fetch_ret.link=link;
+
+  fetch_ret.height=height;
+  fetch_ret.width=width;
+  fetch_ret.total_ch=total_ch;
+  fetch_ret.increment=feedback_increment;
+  memcpy(fetch_ret.bits,bits,sizeof(fetch_ret.bits));
+  memcpy(fetch_ret.channels,channels,sizeof(fetch_ret.channels));
+  memcpy(fetch_ret.rate,rate,sizeof(fetch_ret.rate));
+
+  /* the passed in process array length doesn't necesarity match the
+     current number of channels */
+  for(i=0;i<process_n && i<total_ch;i++)
+    fetch_ret.active[i] = process[i] = process_in[i];
+  for(;i<total_ch;i++)
+    fetch_ret.active[i] = process[i] = 0;
 
   for(fi=0;fi<inputs;fi++)
     if(rate[fi]>maxrate)maxrate=rate[fi];
+
   nyq=maxrate/2.;
+  fetch_ret.maxrate=maxrate;
+  fetch_ret.reload=metareload;
+  metareload=0;
+
+  if(link == LINK_PHASE){
+    int cho=0;
+    int gi;
+    fetch_ret.phase_active=0;
+    for(gi=0;gi<inputs;gi++)
+      if(channels[gi]>1 && fetch_ret.active[cho+1]){
+        fetch_ret.phase_active=1;
+        break;
+      }
+  }
 
   /* are our scale mappings up to date? */
   if(scale != metascale || width != metawidth){
     if(!xmappingL) xmappingL = calloc(inputs, sizeof(*xmappingL));
     if(!xmappingM) xmappingM = calloc(inputs, sizeof(*xmappingM));
     if(!xmappingH) xmappingH = calloc(inputs, sizeof(*xmappingH));
-    metanoise=-1;
 
     for(fi=0;fi<inputs;fi++){
 
@@ -395,10 +497,11 @@ float **process_fetch(int scale, int mode, int link,
     }
 
     for(i=0;i<total_ch;i++)
-      if(plot_data[i]){
-	plot_data[i] = realloc(plot_data[i],(width+1)*2*sizeof(**plot_data));
+      if(fetch_ret.data[i]){
+	fetch_ret.data[i] = realloc
+          (fetch_ret.data[i],(width+1)*2*sizeof(**fetch_ret.data));
       }else{
-	plot_data[i] = malloc((width+1)*2*sizeof(**plot_data));
+	fetch_ret.data[i] = malloc((width+1)*2*sizeof(**fetch_ret.data));
       }
   }
 
@@ -423,11 +526,11 @@ float **process_fetch(int scale, int mode, int link,
     normptr=feedback_count;
     break;
   }
-  
+
   ch=0;
-  *ymax = -210.;
-  *pmax = -180.;
-  *pmin = 180.;
+  fetch_ret.ymax = -210.;
+  fetch_ret.pmax = -180.;
+  fetch_ret.pmin = 180.;
   for(fi=0;fi<inputs;fi++){
     float *L = xmappingL[fi];
     float *M = xmappingM[fi];
@@ -438,8 +541,8 @@ float **process_fetch(int scale, int mode, int link,
     case LINK_INDEPENDENT:
 
       for(ci=0;ci<channels[fi];ci++){
-	if(active[ch+ci]){
-          float *y = plot_data[ci+ch];
+	if(process[ch+ci]){
+          float *y = fetch_ret.data[ci+ch];
           float *m = data[ci+ch];
           int prevbin;
           float prevy;
@@ -473,7 +576,7 @@ float **process_fetch(int scale, int mode, int link,
 
             max*=.5;
             min*=.5;
-	    if(max>*ymax)*ymax=max;
+	    if(max>fetch_ret.ymax)fetch_ret.ymax=max;
 
             /* link non-overlapping bins into contiguous lines */
             if(i>0){
@@ -496,8 +599,20 @@ float **process_fetch(int scale, int mode, int link,
       break;
 
     case LINK_SUMMED:
+
+      /* display first channel, but only if any channels in the group
+         are processed */
       {
-        float *y = plot_data[ch];
+        int any=0;
+        for(i=ch;i<ch+channels[fi];i++){
+          if(fetch_ret.active[i])any=1;
+          fetch_ret.active[i]=0;
+        }
+        fetch_ret.active[ch]=any;
+      }
+
+      {
+        float *y = fetch_ret.data[ch];
         float **m = data+ch;
         int prevbin;
         float prevy;
@@ -516,7 +631,7 @@ float **process_fetch(int scale, int mode, int link,
             int mid = floor(M[i]);
             float del=M[i]-floor(M[i]);
             for(ci=0;ci<channels[fi];ci++){
-              if(active[ch+ci]){
+              if(process[ch+ci]){
                 a+=m[ci][mid];
                 b+=m[ci][mid+1];
               }
@@ -527,14 +642,14 @@ float **process_fetch(int scale, int mode, int link,
           }else{
             float a=0.;
             for(ci=0;ci<channels[fi];ci++){
-              if(active[ch+ci]) a+=m[ci][first];
+              if(process[ch+ci]) a+=m[ci][first];
             }
             firsty=min=max=a;
 
             for(j=first+1;j<last;j++){
               a=0.;
               for(ci=0;ci<channels[fi];ci++){
-                if(active[ch+ci]) a+=m[ci][j];
+                if(process[ch+ci]) a+=m[ci][j];
               }
               if(a<min)min=a;
               if(a>max)max=a;
@@ -549,7 +664,7 @@ float **process_fetch(int scale, int mode, int link,
           min*=.5;
           max*=.5;
 
-          if(max>*ymax)*ymax=max;
+          if(max>fetch_ret.ymax)fetch_ret.ymax=max;
 
           /* link non-overlapping bins into contiguous lines */
           if(i>0){
@@ -571,96 +686,106 @@ float **process_fetch(int scale, int mode, int link,
       break;
 
     case LINK_SUB_FROM:
-      {
-	float *y = plot_data[ch];
-	if(active[ch]==0){
-	  for(i=0;i<width*2+2;i++)
-	    y[i]=-300;
-	}else{
-          float *y = plot_data[ch];
-          float **m = data+ch;
-          int prevbin;
-          float prevy;
-          for(i=0;i<width;i++){
-            int first=ceil(L[i]);
-            int last=ceil(H[i]);
-            float firsty,lasty,min,max;
 
-            /* don't allow roundoff error to skip a bin entirely */
-            if(i>0 && prevbin<first)first=prevbin;
-            prevbin=last;
+      for(i=ch;i<ch+channels[fi];i++)
+        fetch_ret.active[i]=0;
 
-            if(first==last){
-              int mid = floor(M[i]);
-              float del=M[i]-floor(M[i]);
-              float a=m[0][mid];
-              float b=m[0][mid+1];
+      if(process[ch]==0){
+        float *y = fetch_ret.data[ch];
+        for(i=0;i<width*2+2;i++)
+          y[i]=-300;
+      }else{
+        float *y = fetch_ret.data[ch];
+        float **m = data+ch;
+        int prevbin;
+        float prevy;
+
+        fetch_ret.active[ch]=1;
+
+        for(i=0;i<width;i++){
+          int first=ceil(L[i]);
+          int last=ceil(H[i]);
+          float firsty,lasty,min,max;
+
+          /* don't allow roundoff error to skip a bin entirely */
+          if(i>0 && prevbin<first)first=prevbin;
+          prevbin=last;
+
+          if(first==last){
+            int mid = floor(M[i]);
+            float del=M[i]-floor(M[i]);
+            float a=m[0][mid];
+            float b=m[0][mid+1];
+            for(ci=1;ci<channels[fi];ci++){
+              if(process[ch+ci]){
+                a-=m[ci][mid];
+                b-=m[ci][mid+1];
+              }
+            }
+            a=todB(a*normalize);
+            b=todB(b*normalize);
+            firsty=lasty=min=max=(a+(b-a)*del);
+          }else{
+            float a=m[0][first];
+            for(ci=1;ci<channels[fi];ci++){
+              if(process[ch+ci]) a-=m[ci][first];
+            }
+            firsty=min=max=a;
+
+            for(j=first+1;j<last;j++){
+              a=m[0][j];
               for(ci=1;ci<channels[fi];ci++){
-                if(active[ch+ci]){
-                  a-=m[ci][mid];
-                  b-=m[ci][mid+1];
-                }
+                if(process[ch+ci]) a-=m[ci][j];
               }
-              a=todB(a*normalize);
-              b=todB(b*normalize);
-              firsty=lasty=min=max=(a+(b-a)*del);
-            }else{
-              float a=m[0][first];
-              for(ci=1;ci<channels[fi];ci++){
-                if(active[ch+ci]) a-=m[ci][first];
-              }
-              firsty=min=max=a;
-
-              for(j=first+1;j<last;j++){
-                a=m[0][j];
-                for(ci=1;ci<channels[fi];ci++){
-                  if(active[ch+ci]) a-=m[ci][j];
-                }
-                if(a<min)min=a;
-                if(a>max)max=a;
-              }
-
-              lasty=todB(a*normalize);
-              firsty=todB(firsty*normalize);
-              min=todB(min*normalize);
-              max=todB(max*normalize);
+              if(a<min)min=a;
+              if(a>max)max=a;
             }
 
-            min*=.5;
-            max*=.5;
-
-            if(max>*ymax)*ymax=max;
-
-            /* link non-overlapping bins into contiguous lines */
-            if(i>0){
-              float midpoint = (prevy+firsty)*.25;
-
-              if(midpoint<min)min=midpoint;
-              if(midpoint>max)max=midpoint;
-
-              if(midpoint<y[i*2-2])y[i*2-2]=midpoint;
-              if(midpoint>y[i*2-1])y[i*2-1]=midpoint;
-            }
-
-            y[i*2]=min;
-            y[i*2+1]=max;
-
-            prevy=lasty;
+            lasty=todB(a*normalize);
+            firsty=todB(firsty*normalize);
+            min=todB(min*normalize);
+            max=todB(max*normalize);
           }
+
+          min*=.5;
+          max*=.5;
+
+          if(max>fetch_ret.ymax)fetch_ret.ymax=max;
+
+          /* link non-overlapping bins into contiguous lines */
+          if(i>0){
+            float midpoint = (prevy+firsty)*.25;
+
+            if(midpoint<min)min=midpoint;
+            if(midpoint>max)max=midpoint;
+
+            if(midpoint<y[i*2-2])y[i*2-2]=midpoint;
+            if(midpoint>y[i*2-1])y[i*2-1]=midpoint;
+          }
+
+          y[i*2]=min;
+          y[i*2+1]=max;
+
+          prevy=lasty;
         }
       }
       break;
     case LINK_SUB_REF:
-      {
-        float *y = plot_data[ch];
-        for(i=0;i<width*2+2;i++)
-          y[i]=-300;
-      }
+
       {
         float *r = data[ch];
+        float *y = fetch_ret.data[ch];
+        for(i=0;i<width*2+2;i++)
+          y[i]=-300;
+
+        /* first channel in each display group not shown; used as a
+           reference */
+        fetch_ret.active[ch]=0;
+
+        /* process 1->n */
         for(ci=1;ci<channels[fi];ci++){
-          if(active[ch+ci]){
-            float *y = plot_data[ci+ch];
+          if(process[ch+ci]){
+            float *y = fetch_ret.data[ci+ch];
             float *m = data[ci+ch];
             int prevbin;
             float prevy;
@@ -694,7 +819,7 @@ float **process_fetch(int scale, int mode, int link,
 
               max*=.5;
               min*=.5;
-              if(max>*ymax)*ymax=max;
+              if(max>fetch_ret.ymax)fetch_ret.ymax=max;
 
               /* link non-overlapping bins into contiguous lines */
               if(i>0){
@@ -719,9 +844,12 @@ float **process_fetch(int scale, int mode, int link,
 
     case LINK_PHASE: /* response/phase */
 
+      for(i=ch+2;i<ch+channels[fi];i++)
+        fetch_ret.active[i]=0;
+
       if(channels[fi]>=2){
-	float *om = plot_data[ch];
-	float *op = plot_data[ch+1];
+	float *om = fetch_ret.data[ch];
+	float *op = fetch_ret.data[ch+1];
 
 	float *r = data[ch];
 	float *m = data[ch+1];
@@ -734,7 +862,7 @@ float **process_fetch(int scale, int mode, int link,
 	  /* two vectors only; response and phase */
 	  /* response is a standard minmax vector */
           /* phase is averaged to screen resolution */
-	  if(active[ch] || active[ch+1]){
+	  if(process[ch] || process[ch+1]){
 
             int prevbin;
             float prevy;
@@ -756,7 +884,7 @@ float **process_fetch(int scale, int mode, int link,
                 float b = todB(m[mid+1]/r[mid+1]);
                 firsty=lasty=min=max=(a+(b-a)*del);
 
-                if(active[ch+1]){
+                if(process[ch+1]){
                   float aP = (isnan(a) ? NAN : atan2f(p[mid*2+1],p[mid*2]));
                   float bP = (isnan(b) ? NAN : atan2f(p[mid*2+3],p[mid*2+2]));
                   P=(aP+(bP-aP)*del)*57.29;
@@ -780,17 +908,17 @@ float **process_fetch(int scale, int mode, int link,
                 min=todB(min);
                 max=todB(max);
 
-                if(active[ch+1])
+                if(process[ch+1])
                   P = atan2f(I,R)*57.29;
               }
 
               max*=.5;
               min*=.5;
-              if(max>*ymax)*ymax=max;
-              if(P>*pmax)*pmax = P;
-	      if(P<*pmin)*pmin = P;
+              if(max>fetch_ret.ymax)fetch_ret.ymax=max;
+              if(P>fetch_ret.pmax)fetch_ret.pmax = P;
+	      if(P<fetch_ret.pmin)fetch_ret.pmin = P;
 
-              if(active[ch+1] && min>-70){
+              if(process[ch+1] && min>-70){
                 float midpoint = (prevP+P)*.5;
                 op[i*2]=P;
                 op[i*2+1]=P;
@@ -830,7 +958,7 @@ float **process_fetch(int scale, int mode, int link,
     }
     ch+=channels[fi];
   }
-  
-  return plot_data;
-}
 
+  pthread_mutex_unlock(&feedback_mutex);
+  return &fetch_ret;
+}
