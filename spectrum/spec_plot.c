@@ -29,9 +29,9 @@
 #include "spec_plot.h"
 
 static double log_lfreqs[5]={10.,100.,1000.,10000.,100000};
-static double log_llfreqs[15]={10.,20.,30.,50.,100.,200.,300.,500.,
+static double log_llfreqs[16]={10.,20.,30.,50.,100.,200.,300.,500.,
                               1000.,2000.,3000.,5000.,10000.,
-                              20000.,30000.};
+                               20000.,30000.,50000.};
 static double log_tfreqs[37]={5.,6.,7.,8.,9.,20.,30.,40.,50.,60.,70.,80.,90.
 			 ,200.,300.,400.,500.,600.,700.,800.,900.,
 			 2000.,3000.,4000.,5000.,6000.,7000.,8000.,9000.,
@@ -45,68 +45,25 @@ static double iso_tfreqs[24]={25.,40.,50.,80.,100.,160.,200.,315.,400.,630.,
 
 static GtkDrawingAreaClass *parent_class = NULL;
 
-static void compute_imp_scale(GtkWidget *widget){
-  Plot *p=PLOT(widget);
-  int height=widget->allocation.height-p->pady;
-  int i;
-  double lfreqs[9]={10000000.,1000000.,100000.,10000.,1000.,100.,10.,1.,.1};
-  double tfreqs[64]={9000000.,8000000.,7000000.,6000000.,
-		     5000000.,4000000.,3000000.,2000000.,
-		     900000.,800000.,700000.,600000.,
-		     500000.,400000.,300000.,200000.,
-		     90000.,80000.,70000.,60000.,
-		     50000.,40000.,30000.,20000.,
-		     9000.,8000.,7000.,6000.,
-		     5000.,4000.,3000.,2000.,
-		     900.,800.,700.,600.,
-		     500.,400.,300.,200.,
-		     90.,80.,70.,60.,
-		     50.,40.,30.,20,
-		     9.,8.,7.,6.,
-		     5.,4.,3.,2.,
-		     .9,.8,.7,.6,
-		     .5,.4,.3,.2};
+static void compute_xgrid(Plot *p, fetchdata *f){
+  if(p->maxrate!=f->maxrate || p->scale!=f->scale || p->width != f->width){
+    GtkWidget *widget=GTK_WIDGET(p);
+    int width = widget->allocation.width-p->padx-(f->phase_active?p->phax:0);
+    int nyq=f->maxrate/2.;
+    int i,j;
 
-  for(i=0;i<9;i++)
-    p->ygrid[i]=rint( (log10(p->ymax)-log10(lfreqs[i]))/(log10(p->ymax)-log10(.1)) * (height-1));
-  for(i=0;i<64;i++)
-    p->ytic[i]=rint( (log10(p->ymax)-log10(tfreqs[i]))/(log10(p->ymax)-log10(.1)) * (height-1));
-  p->ygrids=9;
-  p->ytics=64;
+    p->xgrids=0;
+    p->xtics=0;
 
-}
+    /* find the places to plot the x grid lines according to scale */
+    switch(f->scale){
+    case 0: /* log */
 
-int phase_active_p(Plot *p){
-  if(p->link == LINK_PHASE){
-    int cho=0;
-    int gi;
-    for(gi=0;gi<p->groups;gi++)
-      if(p->ch[gi]>1 && p->ch_active[cho+1])
-        return 1;
-  }
-  return 0;
-}
-
-static void compute_metadata(GtkWidget *widget){
-  Plot *p=PLOT(widget);
-  int phase = phase_active_p(p);
-  int width = widget->allocation.width-p->padx-(phase?p->phax:0);
-  int rate=p->maxrate;
-  int nyq=p->maxrate/2.;
-  int i;
-
-  p->xgrids=0;
-  p->xtics=0;
-
-  /* find the places to plot the x grid lines according to scale */
-  switch(p->scale){
-  case 0: /* log */
-    {
       for(i=0;i<5;i++){
         if(log_lfreqs[i]<(nyq-.1))
           p->xgrids=i+1;
       }
-      for(i=0;i<15;i++){
+      for(i=0;i<16;i++){
         if(log_llfreqs[i]<(nyq-.1))
           p->xlgrids=i+1;
       }
@@ -116,18 +73,17 @@ static void compute_metadata(GtkWidget *widget){
       }
 
       for(i=0;i<p->xgrids;i++)
-	p->xgrid[i]=rint( (log10(log_lfreqs[i])-log10(5.))/(log10(nyq)-log10(5.)) * (width-1))+p->padx;
+        p->xgrid[i]=rint( (log10(log_lfreqs[i])-log10(5.))/(log10(nyq)-log10(5.)) * (width-1))+p->padx;
       for(i=0;i<p->xlgrids;i++)
-	p->xlgrid[i]=rint( (log10(log_llfreqs[i])-log10(5.))/(log10(nyq)-log10(5.)) * (width-1))+p->padx;
+        p->xlgrid[i]=rint( (log10(log_llfreqs[i])-log10(5.))/(log10(nyq)-log10(5.)) * (width-1))+p->padx;
       for(i=0;i<p->xtics;i++)
-	p->xtic[i]=rint( (log10(log_tfreqs[i])-log10(5.))/(log10(nyq)-log10(5.)) * (width-1))+p->padx;
-    }
+        p->xtic[i]=rint( (log10(log_tfreqs[i])-log10(5.))/(log10(nyq)-log10(5.)) * (width-1))+p->padx;
 
-    break;
-  case 1: /* ISO log */
-    {
+      break;
+    case 1: /* ISO log */
+
       for(i=0;i<12;i++){
-       if(iso_lfreqs[i]<(nyq-.1)){
+        if(iso_lfreqs[i]<(nyq-.1)){
           p->xgrids=i+1;
           p->xlgrids=i+1;
         }
@@ -138,15 +94,30 @@ static void compute_metadata(GtkWidget *widget){
       }
 
       for(i=0;i<p->xgrids;i++)
-	p->xgrid[i]=p->xlgrid[i]=rint( (log2(iso_lfreqs[i])-log2(25.))/(log2(nyq)-log2(25.)) * (width-1))+p->padx;
+        p->xgrid[i]=p->xlgrid[i]=rint( (log2(iso_lfreqs[i])-log2(25.))/(log2(nyq)-log2(25.)) * (width-1))+p->padx;
       for(i=0;i<p->xtics;i++)
-	p->xtic[i]=rint( (log2(iso_tfreqs[i])-log2(25.))/(log2(nyq)-log2(25.)) * (width-1))+p->padx;
-    }
+        p->xtic[i]=rint( (log2(iso_tfreqs[i])-log2(25.))/(log2(nyq)-log2(25.)) * (width-1))+p->padx;
 
-    break;
-  case 2: /* linear spacing */
-    {
-      int j;
+      break;
+    case 2: /* linear spacing */
+
+      if(f->maxrate > 100000){
+        p->lin_major = 10000.;
+        p->lin_minor = 2000.;
+        p->lin_mult = 5;
+        p->lin_layout = p->lin_layout_200;
+      }else if(f->maxrate > 50000){
+        p->lin_major = 5000.;
+        p->lin_minor = 1000.;
+        p->lin_mult = 5;
+        p->lin_layout = p->lin_layout_100;
+      }else{
+        p->lin_major=2000.;
+        p->lin_minor=500.;
+        p->lin_mult=4;
+        p->lin_layout = p->lin_layout_50;
+      }
+
       for(i=0;;i++){
         if(i*p->lin_major >= nyq-.1 || i*p->lin_major>=100000-.1)
           break;
@@ -171,8 +142,8 @@ static void compute_metadata(GtkWidget *widget){
         lfreq=j*p->lin_minor;
         p->xtic[i]=rint(lfreq/nyq * (width-1))+p->padx;
       }
+      break;
     }
-    break;
   }
 }
 
@@ -220,27 +191,27 @@ GdkColor chcolor(int ch){
   return rgb;
 }
 
-static void draw(GtkWidget *widget){
+void plot_draw(Plot *p, fetchdata *f, plotparams *pp){
   int i;
-  Plot *p=PLOT(widget);
+  GtkWidget *widget=GTK_WIDGET(p);
+  GtkWidget *parent=gtk_widget_get_parent(widget);
   int height=widget->allocation.height;
   int width=widget->allocation.width;
-  GtkWidget *parent=gtk_widget_get_parent(widget);
-#if 0
-  int impedence = (p->link == LINK_IMPEDENCE_p1 ||
-		   p->link == LINK_IMPEDENCE_1 ||
-		   p->link == LINK_IMPEDENCE_10);
-#endif
-  int phase = phase_active_p(p);
+
+  if(!GDK_IS_DRAWABLE(p->backing))return;
+  if(!pp)return;
+  if(!f)return;
+
+  int phase = f->phase_active;
   int padx = p->padx;
   int phax = phase ? p->phax : 0;
   int pwidth = width - padx - phax;
 
+  /* lazy GC init */
   if(!p->drawgc){
     p->drawgc=gdk_gc_new(p->backing);
     gdk_gc_copy(p->drawgc,widget->style->black_gc);
   }
-
   if(!p->dashes){
     p->dashes=gdk_gc_new(p->backing);
     gdk_gc_copy(p->dashes, p->drawgc);
@@ -268,10 +239,10 @@ static void draw(GtkWidget *widget){
     gdk_gc_set_line_attributes(p->phasegc,1,GDK_LINE_SOLID,GDK_CAP_PROJECTING,GDK_JOIN_MITER);
   }
 
+  /* set clip rectangle */
   {
     const GdkRectangle clip = {p->padx,0,pwidth,height-p->pady};
     GdkGCValues values;
-    //gdk_gc_get_values(p->drawgc,&values);
     values.line_width=1;
     gdk_gc_set_values(p->drawgc,&values,GDK_GC_LINE_WIDTH);
     gdk_gc_set_clip_rectangle (p->drawgc, &clip);
@@ -289,23 +260,11 @@ static void draw(GtkWidget *widget){
     gdk_draw_rectangle(p->backing,gc,1,padx,0,pwidth,height-p->pady);
   }
 
-  /* draw the noise floor if active */
-  #if 0
-  if(p->floor){
-    GdkColor rgb = {0,0xd000,0xd000,0xd000};
-    gdk_gc_set_rgb_fg_color(p->drawgc,&rgb);
-
-    for(i=0;i<pwidth;i++){
-      float val=p->floor[i];
-      int y;
-
-      /* No noise floor is passed back for display in the modes where it's irrelevant */
-      y= rint((height-p->pady-1)/p->depth*(p->ymax-val));
-      if(y<height-p->pady)
-	gdk_draw_line(p->backing,p->drawgc,padx+i,y,padx+i,height-p->pady-1);
-    }
-  }
-  #endif
+  compute_xgrid(p,f);
+  p->maxrate=f->maxrate;
+  p->scale=f->scale;
+  p->phase_active=f->phase_active;
+  p->width=f->width;
 
   /* draw the light x grid */
   {
@@ -318,10 +277,11 @@ static void draw(GtkWidget *widget){
     gdk_gc_set_rgb_fg_color(p->drawgc,&rgb);
 
     for(i=0;i<p->xtics;i++)
-      gdk_draw_line(p->backing,p->drawgc,p->xtic[i],0,p->xtic[i],height-p->pady);
+      gdk_draw_line(p->backing,p->drawgc,p->xtic[i],0,
+                    p->xtic[i],height-p->pady);
   }
 
-    /* draw the x labels */
+  /* draw the x labels */
   {
     PangoLayout **proper;
     switch(p->scale){
@@ -348,46 +308,11 @@ static void draw(GtkWidget *widget){
   }
 
   /* draw the y grid */
-  //if(impedence){ /* impedence mode */
-  if(0){
-
-    /* light grid */
-
-    GdkColor rgb={0,0,0,0};
-    rgb.red=0xc000;
-    rgb.green=0xff00;
-    rgb.blue=0xff00;
-    gdk_gc_set_rgb_fg_color(p->drawgc,&rgb);
-
-    compute_imp_scale(widget);
-
-    for(i=0;i<p->ytics;i++)
-      gdk_draw_line(p->backing,p->drawgc,padx,p->ytic[i],pwidth,p->ytic[i]);
-
-    /* dark grid */
-    rgb.red=0x0000;
-    rgb.green=0xc000;
-    rgb.blue=0xc000;
-
-    gdk_gc_set_rgb_fg_color(p->drawgc,&rgb);
-
-    for(i=0;i<p->ygrids;i++){
-      int px,py;
-      pango_layout_get_pixel_size(p->imp_layout[i],&px,&py);
-
-      gdk_draw_layout (p->backing,
-		       widget->style->black_gc,
-		       padx-px-2, p->ygrid[i]-py/2,
-		       p->imp_layout[i]);
-
-      gdk_draw_line(p->backing,p->drawgc,padx,p->ygrid[i],pwidth,p->ygrid[i]);
-    }
-
-  }else{
+  {
     GdkColor rgb={0,0,0,0};
     float emheight = (height-p->pady)/p->pady;
-    float emperdB = emheight/p->depth;
-    float pxperdB = (height-p->pady)/p->depth;
+    float emperdB = emheight/pp->depth;
+    float pxperdB = (height-p->pady)/pp->depth;
 
     /* we want no more than <n> major lines per graph */
     int maxmajorper = 15;
@@ -411,7 +336,7 @@ static void draw(GtkWidget *widget){
       /* minimum em seperation? */
       if(emperdB>majorsep*majordeltest[i] &&
          /* Not over the number of lines limit? */
-         p->depth*majordeltest[i]<maxmajorper){
+         pp->depth*majordeltest[i]<maxmajorper){
         majordel=majordellist[i];
         break;
       }
@@ -419,9 +344,11 @@ static void draw(GtkWidget *widget){
 
     /* choose appropriate minor and subminor spacing */
     int minordellist[]=
-      { 10,  25,  50,  100, 250, 500, 1000, 2500, 5000, 10000, 25000, -1, -1};
+      { 10,  25,  50,  100, 250, 500, 1000, 2500, 5000,
+        10000, 25000, -1, -1};
     float minordeltest[]=
-      {100,  40,  20,   10,   4,   2,    1,   .4,   .2,   .1,    .04, -1, -1};
+      {100,  40,  20,   10,   4,   2,    1,   .4,   .2,
+       .1,    .04, -1, -1};
 
     for(i=0;minordellist[i]>0;i++){
       /* minimum px seperation? */
@@ -448,18 +375,18 @@ static void draw(GtkWidget *widget){
       }
     }
 
-    /* Light Y grid */
+    /* draw the light Y grid */
     rgb.red=0xc000;
     rgb.green=0xff00;
     rgb.blue=0xff00;
     gdk_gc_set_rgb_fg_color(p->drawgc,&rgb);
     gdk_gc_set_rgb_fg_color(p->dashes,&rgb);
 
-    float ymin = (p->ymax - p->depth)*1000;
-    int yval = rint((p->ymax*1000/subminordel)+1)*subminordel;
+    float ymin = (pp->ymax - pp->depth)*1000;
+    int yval = rint((pp->ymax*1000/subminordel)+1)*subminordel;
 
     while(1){
-      float ydel = (yval - ymin)/(p->depth*1000);
+      float ydel = (yval - ymin)/(pp->depth*1000);
       int ymid = rint(height-p->pady-1 - (height-p->pady) * ydel);
 
       if(ymid>=height-p->pady)break;
@@ -475,14 +402,14 @@ static void draw(GtkWidget *widget){
       yval-=subminordel;
     }
 
-    /* Dark Y grid */
+    /* draw the dark Y grid */
     rgb.red=0x0000;
     rgb.green=0xc000;
     rgb.blue=0xc000;
     gdk_gc_set_rgb_fg_color(p->drawgc,&rgb);
 
-    ymin = (p->ymax - p->depth)*1000;
-    yval = rint((p->ymax*1000/majordel)+1)*majordel;
+    ymin = (pp->ymax - pp->depth)*1000;
+    yval = rint((pp->ymax*1000/majordel)+1)*majordel;
 
     {
       int px,py,pxdB,pxN,pxMAX;
@@ -492,25 +419,25 @@ static void draw(GtkWidget *widget){
       pxMAX+=pxdB;
 
       while(1){
-        float ydel = (yval - ymin)/(p->depth*1000);
+        float ydel = (yval - ymin)/(pp->depth*1000);
         int ymid = rint(height-p->pady-1 - (height-p->pady) * ydel);
 
         if(ymid>=height-p->pady)break;
 
         if(ymid>=0){
-          int do_dB=0;
           int label = yval/100+2000;
 
           if(label>=0 && label<=4000 /* in range check */
-             && (p->scale<2 || ymid+py/2 < height-p->pady) /* don't collide with DC label */
+             && (p->scale<2 || ymid+py/2 < height-p->pady)
+             /* don't collide with DC label */
              ){
 
             if(label%10){ /* fractional (decimal) dB */
               int sofar=0;
               /*  -.9dB
-                 -9.9dB
+                  -9.9dB
                   -99.9
-                 -999.9 */
+                  -999.9 */
 
               if(fabsf(yval*.001)<9.98){
                 gdk_draw_layout (p->backing,
@@ -565,7 +492,7 @@ static void draw(GtkWidget *widget){
     }
   }
 
-  /* dark x grid */
+  /* draw the dark x grid */
   {
     int i;
     GdkColor rgb={0,0,0,0};
@@ -576,84 +503,74 @@ static void draw(GtkWidget *widget){
     gdk_gc_set_rgb_fg_color(p->drawgc,&rgb);
 
     for(i=0;i<p->xgrids;i++)
-      gdk_draw_line(p->backing,p->drawgc,p->xgrid[i],0,p->xgrid[i],height-p->pady);
+      gdk_draw_line(p->backing,p->drawgc,p->xgrid[i],0,
+                    p->xgrid[i],height-p->pady);
   }
 
 
-  gdk_gc_set_line_attributes(p->drawgc,p->bold+1,GDK_LINE_SOLID,GDK_CAP_PROJECTING,
-                             GDK_JOIN_MITER);
+  gdk_gc_set_line_attributes(p->drawgc,pp->bold+1,GDK_LINE_SOLID,
+                             GDK_CAP_PROJECTING, GDK_JOIN_MITER);
 
   /* draw actual data */
-  if(p->ydata){
+  if(f->data){
     int cho=0;
     int gi;
-    for(gi=0;gi<p->groups;gi++){
+    for(gi=0;gi<f->groups;gi++){
       int ch;
       GdkColor rgb;
 
-      for(ch=cho;ch<cho+p->ch[gi];ch++){
-	if(p->ch_active[ch]){
+      for(ch=cho;ch<cho+f->channels[gi];ch++){
+        if(f->active[ch]){
 
-	  rgb = chcolor(ch);
-	  gdk_gc_set_rgb_fg_color(p->drawgc,&rgb);
+          rgb = chcolor(ch);
+          gdk_gc_set_rgb_fg_color(p->drawgc,&rgb);
 
-	  for(i=0;i<pwidth;i++){
-	    float valmin=p->ydata[ch][i*2];
-	    float valmax=p->ydata[ch][i*2+1];
+          for(i=0;i<pwidth;i++){
+            float valmin=f->data[ch][i*2];
+            float valmax=f->data[ch][i*2+1];
             float ymin, ymax;
 
             if(!isnan(valmin) && !isnan(valmax)){
 
-              //if(impedence){ /* log scale for impedence */
-              if(0){
-
-                ymin = rint( (log10(p->ymax)-log10(valmin))/
-                             (log10(p->ymax)-log10(.1)) *
-                             (height-p->pady-1));
-                ymax = rint( (log10(p->ymax)-log10(valmax))/
-                             (log10(p->ymax)-log10(.1)) *
-                             (height-p->pady-1));
-
-              }else if(phase && ch==cho+1){
+              if(phase && ch==cho+1){
 
                 ymin = rint((height-p->pady-1)/
-                            (p->pmax-p->pmin)*
-                            (p->pmax-valmin));
+                            (pp->pmax-pp->pmin)*
+                            (pp->pmax-valmin));
                 ymax = rint((height-p->pady-1)/
-                            (p->pmax-p->pmin)*
-                            (p->pmax-valmax));
+                            (pp->pmax-pp->pmin)*
+                            (pp->pmax-valmax));
 
               }else{
 
-                ymin = rint((height-p->pady-1)/p->depth*(p->ymax-valmin));
-                ymax = rint((height-p->pady-1)/p->depth*(p->ymax-valmax));
+                ymin = rint((height-p->pady-1)/pp->depth*(pp->ymax-valmin));
+                ymax = rint((height-p->pady-1)/pp->depth*(pp->ymax-valmax));
 
               }
 
               gdk_draw_line(p->backing,p->drawgc,padx+i,ymin,padx+i,ymax);
             }
-	  }
-	}
+          }
+        }
       }
-      cho+=p->ch[gi];
+      cho+=f->channels[gi];
     }
   }
 
-  /* phase?  draw in phase and tics on right axis */
+  /* draw in phase labels and tics on right axis */
+  /* currently messy as hell cut&paste spaghetti, but working */
   if(phase){
-    float depth = p->pmax-p->pmin;
-    int label=ceil(p->pmax/10+18),i;
-    float del=(height-p->pady-1)/depth,step;
-    float off=p->pmax-ceil(p->pmax*.1)*10;
-    step=2;
-    if(del>8)step=1;
+    float depth = pp->pmax-pp->pmin;
+    float del=(height-p->pady-1)/depth;
+    float off=pp->pmax-ceil(pp->pmax*.1)*10;
 
     for(i=0;;i++){
       int ymid=rint(del * (i*10+off));
-      int pv = rint((p->pmax - ymid/(float)(height-p->pady) * (p->pmax - p->pmin))/10);
+      int pv = rint((pp->pmax - ymid/(float)(height-p->pady) *
+                     (pp->pmax - pp->pmin))/10);
       if(ymid>=height-p->pady)break;
       if(ymid>=0 && pv>=-18 && pv<=18 && (pv&1)==0){
-	int px,py;
+        int px,py;
         pango_layout_get_pixel_size(p->phase_layout[pv+18],&px,&py);
         gdk_draw_layout (p->backing,p->phasegc,
                          width-p->phax+2, ymid-py/2,
@@ -663,78 +580,86 @@ static void draw(GtkWidget *widget){
 
     if(del>10){
       for(i=0;;i++){
-	int ymid=rint(del * (i+off));
-        int pv = rint(p->pmax - ymid/(float)(height-p->pady) * (p->pmax - p->pmin));
-	if(ymid>=height-p->pady)break;
-	if(ymid>=0 && pv>=-180 && pv<=180)
-	  gdk_draw_line(p->backing,p->phasegc,width-p->phax-(i%5==0?15:10),ymid,width-p->phax-(i%5==0?5:7),ymid);
+        int ymid=rint(del * (i+off));
+        int pv = rint(pp->pmax - ymid/(float)(height-p->pady) *
+                      (pp->pmax - pp->pmin));
+        if(ymid>=height-p->pady)break;
+        if(ymid>=0 && pv>=-180 && pv<=180)
+          gdk_draw_line(p->backing,p->phasegc,width-p->phax-(i%5==0?15:10),
+                        ymid,width-p->phax-(i%5==0?5:7),ymid);
       }
     }else if(del>5){
       for(i=0;;i++){
-	int ymid=rint(del * (i*2+off));
-        int pv = rint(p->pmax - ymid/(float)(height-p->pady) * (p->pmax - p->pmin));
-	if(ymid>=height-p->pady)break;
-	if(ymid>=0 && pv>=-180 && pv<=180)
-	  gdk_draw_line(p->backing,p->phasegc,width-p->phax-12,ymid,width-p->phax-7,ymid);
+        int ymid=rint(del * (i*2+off));
+        int pv = rint(pp->pmax - ymid/(float)(height-p->pady) *
+                      (pp->pmax - pp->pmin));
+        if(ymid>=height-p->pady)break;
+        if(ymid>=0 && pv>=-180 && pv<=180)
+          gdk_draw_line(p->backing,p->phasegc,width-p->phax-12,ymid,
+                        width-p->phax-7,ymid);
       }
     } else if(del>2){
       for(i=0;;i++){
-	int ymid=rint(del * (i*5+off));
-        int pv = rint(p->pmax - ymid/(float)(height-p->pady) * (p->pmax - p->pmin));
-	if(ymid>=height-p->pady)break;
-	if(ymid>=0 && pv>=-180 && pv<=180)
-	  gdk_draw_line(p->backing,p->phasegc,width-p->phax-15,ymid,width-p->phax-5,ymid);
+        int ymid=rint(del * (i*5+off));
+        int pv = rint(pp->pmax - ymid/(float)(height-p->pady) *
+                      (pp->pmax - pp->pmin));
+        if(ymid>=height-p->pady)break;
+        if(ymid>=0 && pv>=-180 && pv<=180)
+          gdk_draw_line(p->backing,p->phasegc,width-p->phax-15,ymid,
+                        width-p->phax-5,ymid);
       }
     }
 
     if(del>=2){
       for(i=0;;i++){
         int ymid=rint(del * (i*10+off));
-        int pv = rint(p->pmax - ymid/(float)(height-p->pady) * (p->pmax - p->pmin));
+        int pv = rint(pp->pmax - ymid/(float)(height-p->pady) *
+                      (pp->pmax - pp->pmin));
         if(ymid>=height-p->pady)break;
-	if(ymid>=0 && pv>=-180 && pv<=180){
-          gdk_draw_line(p->backing,p->phasegc,width-p->phax-5,ymid-1,width-p->phax-1,ymid-1);
-          gdk_draw_line(p->backing,p->phasegc,width-p->phax-25,ymid,width-p->phax-1,ymid);
-          gdk_draw_line(p->backing,p->phasegc,width-p->phax-5,ymid+1,width-p->phax-1,ymid+1);
+        if(ymid>=0 && pv>=-180 && pv<=180){
+          gdk_draw_line(p->backing,p->phasegc,width-p->phax-5,ymid-1,
+                        width-p->phax-1,ymid-1);
+          gdk_draw_line(p->backing,p->phasegc,width-p->phax-25,ymid,
+                        width-p->phax-1,ymid);
+          gdk_draw_line(p->backing,p->phasegc,width-p->phax-5,ymid+1,
+                        width-p->phax-1,ymid+1);
         }
       }
     }else{
 
       for(i=0;;i++){
-	int ymid=rint(del * (i*10+off));
-        int pv = rint(p->pmax - ymid/(float)(height-p->pady) * (p->pmax - p->pmin));
-	if(ymid>=height-p->pady)break;
-	if(ymid>=0 && pv>=-180 && pv<=180)
-	  gdk_draw_line(p->backing,p->phasegc,width-p->phax-15,ymid,width-p->phax-5,ymid);
+        int ymid=rint(del * (i*10+off));
+        int pv = rint(pp->pmax - ymid/(float)(height-p->pady) *
+                      (pp->pmax - pp->pmin));
+        if(ymid>=height-p->pady)break;
+        if(ymid>=0 && pv>=-180 && pv<=180)
+          gdk_draw_line(p->backing,p->phasegc,width-p->phax-15,ymid,
+                        width-p->phax-5,ymid);
       }
 
       for(i=0;;i++){
         int ymid=rint(del * (i*10+off));
-        int pv = rint((p->pmax - ymid/(float)(height-p->pady) * (p->pmax - p->pmin))/10);
+        int pv = rint((pp->pmax - ymid/(float)(height-p->pady) *
+                       (pp->pmax - pp->pmin))/10);
         if(ymid>=height-p->pady)break;
-	if(ymid>=0 && pv>=-18 && pv<=18 && (pv&1)==0){
-          gdk_draw_line(p->backing,p->phasegc,width-p->phax-5,ymid-1,width-p->phax-1,ymid-1);
-          gdk_draw_line(p->backing,p->phasegc,width-p->phax-25,ymid,width-p->phax-1,ymid);
-          gdk_draw_line(p->backing,p->phasegc,width-p->phax-5,ymid+1,width-p->phax-1,ymid+1);
+        if(ymid>=0 && pv>=-18 && pv<=18 && (pv&1)==0){
+          gdk_draw_line(p->backing,p->phasegc,width-p->phax-5,ymid-1,
+                        width-p->phax-1,ymid-1);
+          gdk_draw_line(p->backing,p->phasegc,width-p->phax-25,ymid,
+                        width-p->phax-1,ymid);
+          gdk_draw_line(p->backing,p->phasegc,width-p->phax-5,ymid+1,
+                        width-p->phax-1,ymid+1);
         }
       }
     }
   }
-}
 
-static void draw_and_expose(GtkWidget *widget){
-  Plot *p=PLOT(widget);
-  if(!GDK_IS_DRAWABLE(p->backing))return;
-  draw(widget);
-  if(!GTK_WIDGET_DRAWABLE(widget))return;
-  if(!GDK_IS_DRAWABLE(widget->window))return;
   gdk_draw_drawable(widget->window,
-		    widget->style->fg_gc[GTK_WIDGET_STATE (widget)],
-		    p->backing,
-		    0, 0,
-		    0, 0,
-		    widget->allocation.width,
-		    widget->allocation.height);
+                    widget->style->fg_gc[GTK_WIDGET_STATE (widget)],
+                    p->backing,
+                    0, 0,
+                    0, 0,
+                    width, height);
 }
 
 static gboolean expose( GtkWidget *widget, GdkEventExpose *event ){
@@ -759,15 +684,14 @@ static void size_request (GtkWidget *widget,GtkRequisition *requisition){
   {
     int max=0;
     int maxy=0;
-    for(i=0;p->lin_layout[i];i++){
-      if(p->lin_major*i >= p->maxrate/2-.1)break;
-      pango_layout_get_pixel_size(p->lin_layout[i],&px,&py);
+    for(i=0;p->lin_layout_50[i];i++){
+      pango_layout_get_pixel_size(p->lin_layout_50[i],&px,&py);
       if(px>max)max=px;
       if(py>pady)pady=py;
       if(py>maxy)maxy=py;
     }
-    max+=maxy*1.5;
     max*=i+1;
+    max+=maxy*1.5;
     if(axisx<max)axisx=max;
   }
   /* find max log layout */
@@ -775,14 +699,13 @@ static void size_request (GtkWidget *widget,GtkRequisition *requisition){
     int max=0;
     int maxy=0;
     for(i=0;p->log_layout[i];i++){
-      if(log_lfreqs[i] >= p->maxrate/2-.1)break;
       pango_layout_get_pixel_size(p->log_layout[i],&px,&py);
       if(px>max)max=px;
       if(py>pady)pady=py;
       if(py>maxy)maxy=py;
     }
+    max*=(i+1);
     max+=maxy*1.5;
-    max*=(i+1)*3;
     if(axisx<max)axisx=max;
   }
   /* find max iso layout */
@@ -790,17 +713,15 @@ static void size_request (GtkWidget *widget,GtkRequisition *requisition){
     int max=0;
     int maxy=0;
     for(i=0;p->iso_layout[i];i++){
-      if(iso_lfreqs[i] >= p->maxrate/2-.1)break;
       pango_layout_get_pixel_size(p->iso_layout[i],&px,&py);
       if(px>max)max=px;
       if(py>pady)pady=py;
       if(py>maxy)maxy=py;
     }
-    max+=maxy*1.5;
     max*=i+1;
+    max+=maxy*1.5;
     if(axisx<max)axisx=max;
   }
-
 
   /* find max db layout */
   {
@@ -812,20 +733,6 @@ static void size_request (GtkWidget *widget,GtkRequisition *requisition){
     axisy=(max)*8;
     if(axisy<max)axisy=max;
   }
-  /* find max imped layout */
-#if 0
-  {
-    int max=0;
-    for(i=0;p->imp_layout[i];i++){
-      pango_layout_get_pixel_size(p->imp_layout[i],&px,&py);
-      //if(py>max)max=py;
-      if(px>padx)padx=px;
-    }
-    axisy=(max)*8;
-    if(axisy<max)axisy=max;
-  }
-#endif
-
   /* find max phase layout */
   {
     int max=0;
@@ -845,173 +752,8 @@ static void size_request (GtkWidget *widget,GtkRequisition *requisition){
   p->phax=phax+2;
 }
 
-
-static void filter_reset(pole2 *p, double val){
-  p->x[0]=p->x[1]=val;
-  p->y[0]=p->y[1]=val;
-}
-
-static void filter_make_critical(double w, pole2 *f){
-  double w0 = tan(M_PI*w*pow(pow(2,.5)-1,-.5));
-  f->a  = w0*w0/(1+(2*w0)+w0*w0);
-  f->b1 = 2*f->a*(1/(w0*w0)-1);
-  f->b2 = 1-(4*f->a+f->b1);
-  filter_reset(f,0);
-}
-
-static double filter_filter(double x, pole2 *p){
-  double y =
-    p->a*x + 2*p->a*p->x[0] + p->a*p->x[1] +
-    p->b1*p->y[0] + p->b2*p->y[1];
-  p->y[1] = p->y[0]; p->y[0] = y;
-  p->x[1] = p->x[0]; p->x[0] = x;
-  return y;
-}
-
-#define THRESH .25
-#define TIMERFRAMES 20
-
-void plot_rescale (Plot *p, int request_reset){
-  float ymax,pmax,pmin;
-  int phase = phase_active_p(p);
-  int width=GTK_WIDGET(p)->allocation.width-p->padx-(phase ? p->phax : 0);
-  int height=GTK_WIDGET(p)->allocation.height-p->pady;
-  float **data;
-
-  if(!p->configured)return;
-
-  data = process_fetch(p->scale, p->mode, p->link,
-		       p->ch_process,width,&ymax,&pmax,&pmin);
-
-  p->ydata=data;
-
-  if(!p->autoscale) return;
-
-  /* graph limit updates are conditional depending on mode/link */
-  switch(p->link){
-  case LINK_INDEPENDENT:
-  case LINK_SUMMED:
-  case LINK_PHASE:
-    {
-      float dBpp = p->depth/height;
-      ymax += dBpp*25;
-    }
-    break;
-  }
-
-  if(ymax<p->depth-p->ymax_limit)ymax=p->depth-p->ymax_limit;
-  if(ymax>p->ymax_limit)ymax=p->ymax_limit;
-
-  pmax+=10;
-  pmin-=10;
-  if(pmax<5)pmax=5;
-  if(pmax>190)pmax=190;
-  if(pmin>-20)pmin=-20;
-  if(pmin<-190)pmin=-190;
-
-  /* phase/response zeros align on phase graphs; verify targets
-     against phase constraints */
-  if(phase){
-    float pzero,mzero = height/p->depth*ymax;
-
-    /* move mag zero back onscreen if it's off */
-    if(mzero < height*THRESH){
-      ymax = (p->depth*height*THRESH)/height;
-    }
-    if(mzero > height*(1-THRESH)){
-      ymax = (p->depth*height*(1-THRESH))/height;
-    }
-
-    mzero = height/p->depth*ymax;
-    pzero = height/(pmax-pmin)*pmax;
-
-    if(mzero<pzero){
-      /* straightforward; move the dB range down */
-      ymax = pzero*p->depth/height;
-    }else{
-      /* a little harder as phase has a min and a max.
-         First increase the pmax to match the dB zero. */
-
-      pmax = pmin/(1-height/mzero);
-      pzero = height/(pmax-pmin)*pmax;
-
-      /* That worked, but might have run p->max overrange */
-      if(pmax>190.){
-        /* reconcile by allowing mag to overrange */
-        pmax = 190.;
-        pzero = height/(pmax-pmin)*pmax;
-        ymax = p->depth*pzero/height;
-        p->ymaxtimer=0;
-      }
-    }
-  }
-
-  if(request_reset){
-    p->ymax=p->ymax_target=ymax;
-    filter_reset(&p->ymax_damp,p->ymax);
-    p->ymaxtimer=TIMERFRAMES;
-
-    if(phase){
-      p->pmax=p->pmax_target=pmax;
-      p->pmin=p->pmin_target=pmin;
-      filter_reset(&p->pmax_damp,p->pmax);
-      filter_reset(&p->pmin_damp,p->pmin);
-      p->pmaxtimer=TIMERFRAMES;
-      p->pmintimer=TIMERFRAMES;
-    }
-
-  }else{
-    /* conditionally set new damped ymax target */
-    if(p->ymaxtimer>0 && ymax < p->ymax*(1-THRESH))
-      p->ymaxtimer--;
-
-    if(ymax > p->ymax_target){
-      p->ymax_target=ymax;
-      p->ymaxtimer=TIMERFRAMES;
-    }
-
-    if(p->ymaxtimer<=0)
-      p->ymax_target=ymax;
-
-    /* update ymax through scale damping filter */
-    p->ymax = filter_filter(p->ymax_target,&p->ymax_damp);
-
-    /* apply same hyteresis and update to phase */
-    if(phase){
-
-      if(p->pmaxtimer>0 && pmax < p->pmax*(1-THRESH))
-        p->pmaxtimer--;
-      if(pmax > p->pmax_target){
-        p->pmax_target=pmax;
-        p->pmaxtimer=TIMERFRAMES;
-      }
-      if(p->pmaxtimer<=0)
-        p->pmax_target=pmax;
-      p->pmax = filter_filter(p->pmax_target,&p->pmax_damp);
-
-      if(p->pmintimer>0 && pmin > p->pmin*(1-THRESH))
-        p->pmintimer--;
-      if(pmin < p->pmin_target){
-        p->pmin_target=pmin;
-        p->pmintimer=TIMERFRAMES;
-      }
-      if(p->pmintimer<=0)
-        p->pmin_target=pmin;
-      p->pmin = filter_filter(p->pmin_target,&p->pmin_damp);
-    }
-  }
-
-  if(phase){
-    /* when phase is active, the p->ymax in use is dictated by
-       p->pmax/p->pmin, which in turn already took the desired ymax
-       into consideration above */
-    p->ymax = p->depth*p->pmax/(p->pmax-p->pmin);
-  }
-}
-
 static gboolean configure(GtkWidget *widget, GdkEventConfigure *event){
   Plot *p=PLOT(widget);
-  int rescale = !p->configured;
   if (p->backing)
     g_object_unref(p->backing);
 
@@ -1019,20 +761,13 @@ static gboolean configure(GtkWidget *widget, GdkEventConfigure *event){
 			      widget->allocation.width,
 			      widget->allocation.height,
 			      -1);
-  p->ydata=NULL;
   p->configured=1;
-
-  compute_metadata(widget);
-  plot_rescale(p,rescale);
-  draw_and_expose(widget);
-
+  replot(0,0,0);
   return TRUE;
 }
 
 static void plot_class_init (PlotClass *class){
-  int i,w,h;
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (class);
-  GdkWindow *root=gdk_get_default_root_window();
   parent_class = g_type_class_peek_parent (class);
 
   widget_class->expose_event = expose;
@@ -1041,9 +776,6 @@ static void plot_class_init (PlotClass *class){
 }
 
 static void plot_init (Plot *p){
-  p->mode=0;
-  p->scale=0;
-  p->depth=45.;
 }
 
 GType plot_get_type (void){
@@ -1062,67 +794,62 @@ GType plot_get_type (void){
       0
     };
 
-    m_type = g_type_register_static (GTK_TYPE_DRAWING_AREA, "Plot", &m_info, 0);
+    m_type = g_type_register_static (GTK_TYPE_DRAWING_AREA, "Plot",
+                                     &m_info, 0);
   }
 
   return m_type;
 }
 
-GtkWidget* plot_new (int size, int groups, int *channels, int *rate){
+GtkWidget* plot_new (void){
   GtkWidget *ret= GTK_WIDGET (g_object_new (plot_get_type (), NULL));
   Plot *p=PLOT(ret);
-  int g,i;
-  int ch=0;
-  int maxrate=-1;
-  p->groups = groups;
-  for(g=0;g<groups;g++){
-    ch+=channels[g];
-    if(rate[g]>maxrate)maxrate=rate[g];
-  }
-
-  p->total_ch = ch;
-
-  p->ch=channels;
-  p->rate=rate;
-  p->maxrate=maxrate;
-
-  if(maxrate > 100000){
-    p->lin_major = 10000.;
-    p->lin_minor = 2000.;
-    p->lin_mult = 5;
-  }else if(maxrate > 50000){
-    p->lin_major = 5000.;
-    p->lin_minor = 1000.;
-    p->lin_mult = 5;
-  }else{
-    p->lin_major=2000.;
-    p->lin_minor=500.;
-    p->lin_mult=4;
-  }
+  int i;
 
   /* generate all the text layouts we'll need */
   /* linear X scale */
   {
-    if(maxrate>100000){
-      char *labels[11]={"DC","10kHz","20kHz","30kHz","40kHz","50kHz","60kHz",
-                        "70kHz","80kHz","90kHz",""};
-      p->lin_layout=calloc(12,sizeof(*p->lin_layout));
-      for(i=0;i<11;i++)
-        p->lin_layout[i]=gtk_widget_create_pango_layout(ret,labels[i]);
-    }else if(maxrate > 50000){
-      char *labels[11]={"DC","5kHz","10kHz","15kHz","20kHz","25kHz","30kHz",
-                        "35kHz","40kHz","45kHz",""};
-      p->lin_layout=calloc(12,sizeof(*p->lin_layout));
-      for(i=0;i<11;i++)
-        p->lin_layout[i]=gtk_widget_create_pango_layout(ret,labels[i]);
-    }else{
-      char *labels[14]={"DC","2kHz","4kHz","6kHz","8kHz","10kHz","12kHz",
-                        "14kHz","16kHz","18kHz","20kHz","22kHz","24kHz",""};
-      p->lin_layout=calloc(15,sizeof(*p->lin_layout));
-      for(i=0;i<14;i++)
-        p->lin_layout[i]=gtk_widget_create_pango_layout(ret,labels[i]);
-    }
+    char *labels[10]={"DC","10kHz","20kHz","30kHz","40kHz","50kHz","60kHz",
+                        "70kHz","80kHz","90kHz"};
+    p->lin_layout_200=calloc(11,sizeof(*p->lin_layout_200));
+    for(i=0;i<10;i++)
+      p->lin_layout_200[i]=gtk_widget_create_pango_layout(ret,labels[i]);
   }
+  {
+    char *labels[10]={"DC","5kHz","10kHz","15kHz","20kHz","25kHz","30kHz",
+                      "35kHz","40kHz","45kHz"};
+    p->lin_layout_100=calloc(11,sizeof(*p->lin_layout_100));
+    for(i=0;i<10;i++)
+      p->lin_layout_100[i]=gtk_widget_create_pango_layout(ret,labels[i]);
+  }
+  {
+    char *labels[13]={"DC","2kHz","4kHz","6kHz","8kHz","10kHz","12kHz",
+                      "14kHz","16kHz","18kHz","20kHz","22kHz","24kHz"};
+    p->lin_layout_50=calloc(14,sizeof(*p->lin_layout_50));
+    for(i=0;i<13;i++)
+      p->lin_layout_50[i]=gtk_widget_create_pango_layout(ret,labels[i]);
+  }
+
+  /* log X scale */
+  {
+    char *labels[16]={"10Hz","20","30","50","100Hz",
+                     "200","300","500","1kHz",
+                     "2k","3k","5k","10kHz",
+                      "20k","30k","50k"};
+    p->log_layout=calloc(17,sizeof(*p->log_layout));
+    for(i=0;i<16;i++)
+      p->log_layout[i]=gtk_widget_create_pango_layout(ret,labels[i]);
+  }
+
+  /* ISO log X scale */
+  {
+    char *labels[12]={"31Hz","63Hz","125Hz","250Hz","500Hz","1kHz","2kHz",
+		      "4kHz","8kHz","16kHz","32kHz","64kHz"};
+    p->iso_layout=calloc(13,sizeof(*p->iso_layout));
+    for(i=0;i<12;i++)
+      p->iso_layout[i]=gtk_widget_create_pango_layout(ret,labels[i]);
+  }
+
   /* phase Y scale */
   {
     char *labels[37]={"-180\xC2\xB0","-170\xC2\xB0","-160\xC2\xB0",
@@ -1142,32 +869,7 @@ GtkWidget* plot_new (int size, int groups, int *channels, int *rate){
     for(i=0;i<37;i++)
       p->phase_layout[i]=gtk_widget_create_pango_layout(ret,labels[i]);
   }
-  /* log X scale */
-  {
-    char *labels[15]={"10Hz","20","30","50","100Hz",
-                     "200","300","500","1kHz",
-                     "2k","3k","5k","10kHz",
-                     "20k","30k"};
-    p->log_layout=calloc(16,sizeof(*p->log_layout));
-    for(i=0;i<15;i++)
-      p->log_layout[i]=gtk_widget_create_pango_layout(ret,labels[i]);
-  }
-  /* Impedence Y scale */
-  {
-    char *labels[9]={"10M\xCE\xA9","1M\xCE\xA9","100k\xCE\xA9","10k\xCE\xA9",
-		     "1k\xCE\xA9","100\xCE\xA9","10\xCE\xA9","1\xCE\xA9",".1\xCE\xA9"};
-    p->imp_layout=calloc(10,sizeof(*p->imp_layout));
-    for(i=0;i<9;i++)
-      p->imp_layout[i]=gtk_widget_create_pango_layout(ret,labels[i]);
-  }
-  /* ISO log X scale */
-  {
-    char *labels[12]={"31Hz","63Hz","125Hz","250Hz","500Hz","1kHz","2kHz",
-		      "4kHz","8kHz","16kHz","32kHz",""};
-    p->iso_layout=calloc(13,sizeof(*p->iso_layout));
-    for(i=0;i<12;i++)
-      p->iso_layout[i]=gtk_widget_create_pango_layout(ret,labels[i]);
-  }
+
   /* dB Y scale (integer) */
   {
     char buf[10];
@@ -1177,6 +879,7 @@ GtkWidget* plot_new (int size, int groups, int *channels, int *rate){
       p->db_layout[i+200]=gtk_widget_create_pango_layout(ret,buf);
     }
   }
+
   /* dB Y scale (decimal) */
   {
     char buf[10];
@@ -1186,113 +889,15 @@ GtkWidget* plot_new (int size, int groups, int *channels, int *rate){
       p->db_layout1[i]=gtk_widget_create_pango_layout(ret,buf);
     }
   }
+
   /* dB Y scale (dB) */
   p->db_layoutdB=gtk_widget_create_pango_layout(ret,"dB");
+
   /* dB Y scale (-) */
   p->db_layoutN=gtk_widget_create_pango_layout(ret,"-");
 
-  p->ch_active=calloc(ch,sizeof(*p->ch_active));
-  p->ch_process=calloc(ch,sizeof(*p->ch_process));
-
-  p->autoscale=1;
-
-  filter_make_critical(.04,&p->ymax_damp);
-  filter_make_critical(.04,&p->pmax_damp);
-  filter_make_critical(.04,&p->pmin_damp);
-
+  p->phase_active=0;
   return ret;
-}
-
-void plot_refresh (Plot *p, int *process){
-
-  if(!p->configured)return;
-
-  if(process)
-    memcpy(p->ch_process,process,p->total_ch*sizeof(*process));
-
-  plot_rescale(p, 0);
-}
-
-void plot_clear (Plot *p){
-  GtkWidget *widget=GTK_WIDGET(p);
-  int phase = phase_active_p(p);
-  int width=GTK_WIDGET(p)->allocation.width-p->padx-(phase ? p->phax : 0);
-  int i,j;
-
-  if(p->ydata)
-    for(i=0;i<p->total_ch;i++)
-      for(j=0;j<width*2;j++)
-	p->ydata[i][j]=-300;
-
-  p->ymax_target=p->ymax;
-  p->pmax_target=p->pmax;
-  p->pmin_target=p->pmin;
-  filter_reset(&p->ymax_damp,p->ymax);
-  filter_reset(&p->pmax_damp,p->pmax);
-  filter_reset(&p->pmin_damp,p->pmin);
-
-  draw_and_expose(widget);
-}
-
-float **plot_get (Plot *p){
-  return(p->ydata);
-}
-
-void plot_setting (Plot *p, int scale, int mode, int link, int depth, int noise){
-  GtkWidget *widget=GTK_WIDGET(p);
-  int phase = phase_active_p(p);
-  int request_scale_reset=0;
-
-  p->scale=scale;
-  p->noise=noise;
-
-  if(p->depth != depth ||
-     p->mode != mode ||
-     p->link!=link){
-    if(depth>140)
-      p->ymax_limit=depth;
-    else
-      p->ymax_limit=140;
-    request_scale_reset=1;
-  }
-
-  compute_metadata(widget);
-
-  if(!phase && phase_active_p(p))
-    request_scale_reset=1;
-
-  p->depth=depth;
-  p->mode=mode;
-  p->link=link;
-
-  plot_rescale(p,request_scale_reset);
-  draw_and_expose(widget);
-}
-
-void plot_draw (Plot *p){
-  GtkWidget *widget=GTK_WIDGET(p);
-  draw_and_expose(widget);
-}
-
-void plot_set_active(Plot *p, int *a, int *b){
-  GtkWidget *widget=GTK_WIDGET(p);
-  memcpy(p->ch_active,a,p->total_ch*sizeof(*a));
-  memcpy(p->ch_process,b,p->total_ch*sizeof(*b));
-  plot_rescale(p,1);
-  draw_and_expose(widget);
-}
-
-void plot_set_autoscale(Plot *p, int a){
-  GtkWidget *widget=GTK_WIDGET(p);
-  p->autoscale=a;
-  plot_rescale(p,a);
-  draw_and_expose(widget);
-}
-
-void plot_set_bold(Plot *p, int b){
-  GtkWidget *widget=GTK_WIDGET(p);
-  p->bold=b;
-  draw_and_expose(widget);
 }
 
 int plot_get_left_pad (Plot *m){
@@ -1300,5 +905,13 @@ int plot_get_left_pad (Plot *m){
 }
 
 int plot_get_right_pad (Plot *m){
-  return (phase_active_p(m) ? m->phax : 0);
+  return (m->phase_active ? m->phax : 0);
+}
+
+int plot_width (Plot *m){
+  return GTK_WIDGET(m)->allocation.width;
+}
+
+int plot_height (Plot *m){
+  return GTK_WIDGET(m)->allocation.height;
 }

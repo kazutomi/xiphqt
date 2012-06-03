@@ -18,7 +18,7 @@
  *  along with Postfish; see the file COPYING.  If not, write to the
  *  Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * 
+ *
  */
 
 #include "analyzer.h"
@@ -26,31 +26,28 @@
 #include <gdk/gdkkeysyms.h>
 #include "fisharray.h"
 #include "spec_plot.h"
-#include "io.h"
 
-sig_atomic_t increment_fish=0;
+GtkWidget *twirlimage;
+GdkPixmap *ff[19];
+GdkBitmap *fb[19];
 
-static struct panel {
-  GtkWidget *twirlimage;
-  GdkPixmap *ff[19];
-  GdkBitmap *fb[19];
+GtkAccelGroup *group;
+GtkWidget *toplevel;
 
-  GtkAccelGroup *group;
-  GtkWidget *toplevel;
+guint fishframe_timer;
+int fishframe_init;
+int fishframe;
 
+GtkWidget *plot;
+GtkWidget *run;
+GtkWidget **chbuttons;
+GtkWidget *bwtable;
+GtkWidget *bwbutton;
+GtkWidget *bwmodebutton;
+GtkWidget *plot_label_al;
 
-  guint fishframe_timer;
-  int fishframe_init;
-  int fishframe;
-
-  GtkWidget *plot;
-  GtkWidget *run;
-  GtkWidget **chbuttons;
-  GtkWidget *bwtable;
-  GtkWidget *bwbutton;
-  GtkWidget *bwmodebutton;
-  GtkWidget *plot_label_al;
-} p;
+int plot_ch=0;
+int plot_inputs=0;
 
 int plot_scale=0;
 int plot_mode=0;
@@ -59,117 +56,304 @@ int plot_hold=0;
 int plot_lock_y=0;
 int plot_depth=90;
 int plot_noise=0;
-int plot_last_update=0;
 int plot_bw=0;
 int plot_bwmode=0;
 int plot_bold=0;
 int *active;
 
-static void override_base(GtkWidget *w, int active){
-  gtk_widget_modify_base (w, GTK_STATE_NORMAL, &w->style->bg[active?GTK_STATE_ACTIVE:GTK_STATE_NORMAL]);
-}
+/* first up... the Fucking Fish */
+sig_atomic_t increment_fish=0;
 
-static void replot(struct panel *p){
-  int i,lactive[total_ch];
-  for(i=0;i<total_ch;i++)
-    lactive[i]=gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(p->chbuttons[i]));
-
-  /* update the spectral display; send new data */
-  if(!plot_hold){
-    pthread_mutex_lock(&feedback_mutex);
-    plot_refresh(PLOT(p->plot),lactive);
-    plot_last_update=feedback_increment;
-    pthread_mutex_unlock(&feedback_mutex);
-  }
-}
-
-static void shutdown(void){
-  gtk_main_quit();
-}
-
-/* gotta have the Fucking Fish */
-static int reanimate_fish(struct panel *p){
-  if(process_active || (p->fishframe>0 && p->fishframe<12)){
+static int reanimate_fish(void){
+  if(process_active || (fishframe>0 && fishframe<12)){
     /* continue spinning */
-    if(increment_fish)p->fishframe++;
-    if(p->fishframe>=12)p->fishframe=0;
+    if(increment_fish || fishframe>0)fishframe++;
+    if(fishframe==1)increment_fish=0;
+    if(fishframe>=12)fishframe=0;
 
-    gtk_image_set_from_pixmap(GTK_IMAGE(p->twirlimage),
-                              p->ff[p->fishframe],
-                              p->fb[p->fishframe]);
+    gtk_image_set_from_pixmap(GTK_IMAGE(twirlimage),
+                              ff[fishframe],
+                              fb[fishframe]);
 
-    if(p->fishframe==0 && !process_active){
+    if(fishframe==0 && !process_active){
       /* reschedule to blink */
-      p->fishframe_timer=
-	g_timeout_add(rand()%1000*30,(GSourceFunc)reanimate_fish,p);
+      fishframe_timer=
+	g_timeout_add(rand()%1000*30,(GSourceFunc)reanimate_fish,NULL);
       return FALSE;
     }
 
   }else{
-    p->fishframe++;
-    if(p->fishframe<=1)p->fishframe=12;
-    if(p->fishframe>=19)p->fishframe=0;
+    fishframe++;
+    if(fishframe<=1)fishframe=12;
+    if(fishframe>=19)fishframe=0;
 
-    gtk_image_set_from_pixmap(GTK_IMAGE(p->twirlimage),
-                              p->ff[p->fishframe],
-                              p->fb[p->fishframe]);
+    gtk_image_set_from_pixmap(GTK_IMAGE(twirlimage),
+                              ff[fishframe],
+                              fb[fishframe]);
 
-    if(p->fishframe==12){
+    if(fishframe==12){
       /* reschedule to animate */
-      p->fishframe_timer=
-	g_timeout_add(10,(GSourceFunc)reanimate_fish,p);
+      fishframe_timer=
+	g_timeout_add(10,(GSourceFunc)reanimate_fish,NULL);
       return FALSE;
     }
-    if(p->fishframe==0){
+    if(fishframe==0){
       /* reschedule to blink */
-      p->fishframe_timer=
-	g_timeout_add(rand()%1000*30,(GSourceFunc)reanimate_fish,p);
+      fishframe_timer=
+	g_timeout_add(rand()%1000*30,(GSourceFunc)reanimate_fish,NULL);
       return FALSE;
     }
   }
   return TRUE;
 }
 
-static void animate_fish(struct panel *p){
-  if(p->fishframe_init){
-    g_source_remove(p->fishframe_timer);
-    p->fishframe_timer=
-      g_timeout_add(70,(GSourceFunc)reanimate_fish,p);
+static void animate_fish(void){
+  if(fishframe_init){
+    g_source_remove(fishframe_timer);
+    fishframe_timer=
+      g_timeout_add(70,(GSourceFunc)reanimate_fish,NULL);
   }else{
-    p->fishframe_init=1;
-    p->fishframe_timer=
-      g_timeout_add(rand()%1000*30,(GSourceFunc)reanimate_fish,p);
+    fishframe_init=1;
+    fishframe_timer=
+      g_timeout_add(rand()%1000*30,(GSourceFunc)reanimate_fish,NULL);
   }
 }
 
-static void dump(GtkWidget *widget,struct panel *p){
+/* autoscale movement calculation and damping */
+
+typedef struct {
+  float a;
+  float b1;
+  float b2;
+  float x[2];
+  float y[2];
+} pole2;
+
+static float plot_ymax_target;
+static int plot_ymaxtimer;
+static pole2 plot_ymax_damp;
+static float plot_pmax_target;
+static pole2 plot_pmax_damp;
+static int plot_pmaxtimer;
+static float plot_pmin_target;
+static pole2 plot_pmin_damp;
+static int plot_pmintimer;
+
+static void filter_reset(pole2 *p, float val){
+  p->x[0]=p->x[1]=val;
+  p->y[0]=p->y[1]=val;
+}
+
+static void filter_make_critical(float w, pole2 *f){
+  float w0 = tan(M_PI*w*pow(pow(2,.5)-1,-.5));
+  f->a  = w0*w0/(1+(2*w0)+w0*w0);
+  f->b1 = 2*f->a*(1/(w0*w0)-1);
+  f->b2 = 1-(4*f->a+f->b1);
+  filter_reset(f,0);
+}
+
+static float filter_filter(float x, pole2 *p){
+  float y =
+    p->a*x + 2*p->a*p->x[0] + p->a*p->x[1] +
+    p->b1*p->y[0] + p->b2*p->y[1];
+  p->y[1] = p->y[0]; p->y[0] = y;
+  p->x[1] = p->x[0]; p->x[0] = x;
+  return y;
+}
+
+#define HYSTERESIS_THRESHOLD .25
+#define HYSTERESIS_TIMERFRAMES 30
+
+static void calculate_autoscale (fetchdata *f,
+                                 plotparams *pp,
+                                 int request_reset){
+  int phase = f->phase_active;
+  int height = f->height;
+  int plot_ymax_limit = (plot_depth>140 ? plot_depth : 140);
+  float ymax = f->ymax;
+  float pmax = f->pmax;
+  float pmin = f->pmin;
+
+  /* graph limit updates are conditional depending on mode/link */
+  switch(f->link){
+  case LINK_INDEPENDENT:
+  case LINK_SUMMED:
+  case LINK_PHASE:
+    {
+      float dBpp = plot_depth/height;
+      ymax += dBpp*25;
+    }
+    break;
+  }
+
+  if(ymax<plot_depth - plot_ymax_limit) ymax=plot_depth-plot_ymax_limit;
+  if(ymax>plot_ymax_limit)ymax=plot_ymax_limit;
+
+  pmax+=10;
+  pmin-=10;
+  if(pmax<5)pmax=5;
+  if(pmax>190)pmax=190;
+  if(pmin>-20)pmin=-20;
+  if(pmin<-190)pmin=-190;
+
+  /* phase/response zeros align on phase graphs; verify targets
+     against phase constraints */
+  if(phase){
+    float pzero,mzero = height/plot_depth*ymax;
+
+    /* move mag zero back onscreen if it's off */
+    if(mzero < height*HYSTERESIS_THRESHOLD){
+      ymax = (plot_depth*height*HYSTERESIS_THRESHOLD)/height;
+    }
+    if(mzero > height*(1-HYSTERESIS_THRESHOLD)){
+      ymax = (plot_depth*height*(1-HYSTERESIS_THRESHOLD))/height;
+    }
+
+    mzero = height/plot_depth*ymax;
+    pzero = height/(pmax-pmin)*pmax;
+
+    if(mzero<pzero){
+      /* straightforward; move the dB range down */
+      ymax = pzero*plot_depth/height;
+    }else{
+      /* a little harder as phase has a min and a max.
+         First increase the pmax to match the dB zero. */
+
+      pmax = pmin/(1-height/mzero);
+      pzero = height/(pmax-pmin)*pmax;
+
+      /* That worked, but might have run pmax overrange */
+      if(pmax>190.){
+        /* reconcile by allowing mag to overrange */
+        pmax = 190.;
+        pzero = height/(pmax-pmin)*pmax;
+        ymax = plot_depth*pzero/height;
+        plot_ymaxtimer=0;
+      }
+    }
+  }
+
+  if(request_reset){
+    pp->ymax=plot_ymax_target=ymax;
+    filter_reset(&plot_ymax_damp,pp->ymax);
+    plot_ymaxtimer=HYSTERESIS_TIMERFRAMES;
+
+    if(phase){
+      pp->pmax=plot_pmax_target=pmax;
+      pp->pmin=plot_pmin_target=pmin;
+      filter_reset(&plot_pmax_damp,pp->pmax);
+      filter_reset(&plot_pmin_damp,pp->pmin);
+      plot_pmaxtimer=HYSTERESIS_TIMERFRAMES;
+      plot_pmintimer=HYSTERESIS_TIMERFRAMES;
+    }
+
+  }else{
+    /* conditionally set new damped ymax target */
+    if(plot_ymaxtimer>0)
+      plot_ymaxtimer--;
+
+    if(ymax > plot_ymax_target-plot_depth*HYSTERESIS_THRESHOLD)
+      plot_ymaxtimer=HYSTERESIS_TIMERFRAMES;
+
+    if(ymax > plot_ymax_target || plot_ymaxtimer<=0)
+      plot_ymax_target=ymax;
+
+    /* update ymax through scale damping filter */
+    pp->ymax = filter_filter(plot_ymax_target,&plot_ymax_damp);
+
+    /* apply same hyteresis and update to phase */
+    if(phase){
+
+      if(plot_pmaxtimer>0)
+        plot_pmaxtimer--;
+      if(plot_pmintimer>0)
+        plot_pmintimer--;
+
+      if(pmax > plot_pmax_target*(1-HYSTERESIS_THRESHOLD))
+        plot_pmaxtimer=HYSTERESIS_TIMERFRAMES;
+      if(pmax > plot_pmax_target || plot_pmaxtimer<=0)
+        plot_pmax_target=pmax;
+
+      if(pmin < plot_pmin_target*(1-HYSTERESIS_THRESHOLD))
+        plot_pmintimer=HYSTERESIS_TIMERFRAMES;
+      if(pmin < plot_pmin_target || plot_pmintimer<=0)
+        plot_pmin_target=pmin;
+
+      pp->pmax = filter_filter(plot_pmax_target,&plot_pmax_damp);
+      pp->pmin = filter_filter(plot_pmin_target,&plot_pmin_damp);
+
+    }
+  }
+
+  if(phase){
+    /* when phase is active, the plot_ymax in use is dictated by
+       plot_pmax/plot_pmin, which in turn already took the desired ymax
+       into consideration above */
+    pp->ymax = plot_depth*pp->pmax/(pp->pmax-pp->pmin);
+  }
+}
+
+/* a gtk2 hack to override checkbox background color */
+static void override_base(GtkWidget *w, int active){
+  gtk_widget_modify_base
+    (w, GTK_STATE_NORMAL,
+     &w->style->bg[active?GTK_STATE_ACTIVE:GTK_STATE_NORMAL]);
+}
+
+/* scale_reset != 0  requests an instant optimal rescale */
+/* inactive_reset    performs a reset only if processing is not active */
+/*  scale_damp != 0  requests a normal animated rescaling operation.
+                     It processing is not active, this is promoted to
+                     an instant optimal rescale */
+/* plot_lock_y overrides all scaling requests */
+
+static plotparams pp;
+static int oldphase=0;
+void replot(int scale_reset, int inactive_reset, int scale_damp){
+  int i,process[plot_ch];
+
+  for(i=0;i<plot_ch;i++)
+    process[i]=gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(chbuttons[i]));
+
+  /* update the spectral display; send new data */
+  fetchdata *f = process_fetch
+    (plot_scale, plot_mode, plot_link,
+     process, plot_ch, plot_height(PLOT(plot)), plot_width(PLOT(plot)));
+
+  /* the fetched data may indicate the underlying file data has
+     changed... */
+  if(f->reload){
+    /* rebuild the button and file lists */
+
+
+
+  }
+
+ 
+  if(!plot_lock_y){
+    if(scale_reset ||
+       (f->phase_active != oldphase) ||
+       (!process_active && (inactive_reset || scale_damp)))
+      calculate_autoscale(f,&pp,1);
+    else if(scale_damp)
+      calculate_autoscale(f,&pp,0);
+  }
+  oldphase = f->phase_active;
+
+  pp.depth=plot_depth;
+  pp.bold=plot_bold;
+  plot_draw(PLOT(plot),f,&pp);
+}
+
+static void shutdown(void){
+  gtk_main_quit();
+}
+
+static void dump(GtkWidget *widget,gpointer in){
   process_dump(plot_mode);
 }
 
-#if 0
-static void noise(GtkWidget *widget,struct panel *p){
-  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))){
-    if(plot_noise){
-      plot_noise=0;
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget),0);
-      clear_noise_floor();
-      plot_setting(PLOT(p->plot),plot_scale,plot_mode,plot_link,plot_depth,0);
-    }else{
-      plot_noise=1;
-      plot_setting(PLOT(p->plot),plot_scale,plot_mode,plot_link,plot_depth,0);
-    }
-  }else{
-    if(plot_noise){
-      gtk_button_set_label(GTK_BUTTON(widget),"clear _noise floor");
-      plot_noise=2;
-      plot_setting(PLOT(p->plot),plot_scale,plot_mode,plot_link,plot_depth,1);
-    }else
-      gtk_button_set_label(GTK_BUTTON(widget),"sample _noise floor");
-  }
-}
-#endif
-
-static void depthchange(GtkWidget *widget,struct panel *p){
+static void depthchange(GtkWidget *widget,gpointer in){
   int choice=gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
   switch(choice){
   case 0: /* 1dB */
@@ -190,11 +374,11 @@ static void depthchange(GtkWidget *widget,struct panel *p){
   case 5: /*140dB */
     plot_depth=140;
     break;
-  case 6: /*200dB */
-    plot_depth=200;
+  case 6: /*190dB */
+    plot_depth=190;
     break;
   }
-  plot_setting(PLOT(p->plot),plot_scale,plot_mode,plot_link,plot_depth,plot_noise);
+  replot(1,1,0);
 }
 
 static void set_fg(GtkWidget *c, gpointer in){
@@ -209,152 +393,122 @@ static void set_fg(GtkWidget *c, gpointer in){
     gtk_container_forall (GTK_CONTAINER(c),set_fg,in);
 }
 
-static void set_via_active(struct panel *p, int *active, int *bactive){
-  int fi,i;
-  int ch=0;
-  for(fi=0;fi<inputs;fi++){
-    for(i=ch;i<ch+channels[fi];i++)
-      gtk_widget_set_sensitive(p->chbuttons[i],1);
-    ch+=channels[fi];
-  }
-  plot_set_active(PLOT(p->plot),active,bactive);  
-  gtk_alignment_set_padding(GTK_ALIGNMENT(p->plot_label_al),0,0,0,plot_get_right_pad(PLOT(p->plot)));
-}
-
-static void chlabels(GtkWidget *widget,struct panel *p){
+static void chlabels(GtkWidget *widget,gpointer in){
   /* scan state, update labels on channel buttons, set sensitivity
      based on grouping and mode */
   int fi,ch,i;
   char buf[80];
-  int bactive[total_ch];
-
-  for(i=0;i<total_ch;i++)
-    bactive[i]=active[i]=gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(p->chbuttons[i]));
 
   /* set sensitivity */
   switch(plot_link){
   case LINK_SUB_REF:
-
-    /*  first channel in each group insensitive/inactive, used as a reference */
+    /* first channel in each group insensitive/inactive, used as a
+       reference */
     ch=0;
-    for(fi=0;fi<inputs;fi++){
+    for(fi=0;fi<plot_inputs;fi++){
       for(i=ch;i<ch+channels[fi];i++){
 	if(i==ch){
-	  gtk_widget_set_sensitive(p->chbuttons[i],0);
-	  active[i]=0; /* do not frob widget, only plot settings */
+	  gtk_widget_set_sensitive(chbuttons[i],0);
 	}else{
-	  gtk_widget_set_sensitive(p->chbuttons[i],1);
+	  gtk_widget_set_sensitive(chbuttons[i],1);
 	}
       }
       ch+=channels[fi];
     }
- 
-    plot_set_active(PLOT(p->plot),active,bactive);
-    break;    
+    break;
 
   case LINK_SUMMED: /* summing mode */
   case LINK_SUB_FROM: /* subtract channels from reference */
+  case LINK_INDEPENDENT: /* normal/independent mode */
+
     ch=0;
-    for(fi=0;fi<inputs;fi++){
-      int any=0;
-      for(i=ch;i<ch+channels[fi];i++){
-	if(active[i])any=1;
-	active[i]=0;
-      }
-      active[ch]=any;
+    for(fi=0;fi<plot_inputs;fi++){
+      for(i=ch;i<ch+channels[fi];i++)
+        gtk_widget_set_sensitive(chbuttons[i],1);
       ch+=channels[fi];
     }
-
-    set_via_active(p,active,bactive);
     break;
-
-  case LINK_INDEPENDENT: /* normal/independent mode */
-    set_via_active(p,active,bactive);
-    break;    
 
   case LINK_PHASE: /* response/phase */
     ch=0;
-    for(fi=0;fi<inputs;fi++){
+    for(fi=0;fi<plot_inputs;fi++){
       for(i=ch;i<ch+channels[fi];i++)
 	if(channels[fi]<2){
-	  gtk_widget_set_sensitive(p->chbuttons[i],0);
-	  active[i]=0;
+	  gtk_widget_set_sensitive(chbuttons[i],0);
 	}else{
 	  if(i<ch+2){
-	    gtk_widget_set_sensitive(p->chbuttons[i],1);
+	    gtk_widget_set_sensitive(chbuttons[i],1);
 	  }else{
-	    gtk_widget_set_sensitive(p->chbuttons[i],0);
-	    active[i]=0;
+	    gtk_widget_set_sensitive(chbuttons[i],0);
 	  }
 	}
       ch+=channels[fi];
     }
-    plot_set_active(PLOT(p->plot),active,bactive);
-    break;    
+    break;
   }
 
   /* set labels */
   switch(plot_link){
   case LINK_SUB_REF:
     ch=0;
-    for(fi=0;fi<inputs;fi++){
+    for(fi=0;fi<plot_inputs;fi++){
       for(i=ch;i<ch+channels[fi];i++){
 	if(i==ch){
-	  gtk_button_set_label(GTK_BUTTON(p->chbuttons[i]),"reference");
+	  gtk_button_set_label(GTK_BUTTON(chbuttons[i]),"reference");
 	}else{
 	  sprintf(buf,"channel %d", i-ch);
-	  gtk_button_set_label(GTK_BUTTON(p->chbuttons[i]),buf);
+	  gtk_button_set_label(GTK_BUTTON(chbuttons[i]),buf);
 	}
       }
       ch+=channels[fi];
     }
-    break;    
+    break;
   case LINK_SUB_FROM:
     ch=0;
-    for(fi=0;fi<inputs;fi++){
+    for(fi=0;fi<plot_inputs;fi++){
       for(i=ch;i<ch+channels[fi];i++){
 	if(i==ch){
-	  gtk_button_set_label(GTK_BUTTON(p->chbuttons[i]),"output");
+	  gtk_button_set_label(GTK_BUTTON(chbuttons[i]),"output");
 	}else{
 	  sprintf(buf,"channel %d", i-ch);
-	  gtk_button_set_label(GTK_BUTTON(p->chbuttons[i]),buf);
+	  gtk_button_set_label(GTK_BUTTON(chbuttons[i]),buf);
 	}
       }
       ch+=channels[fi];
     }
-    break;    
+    break;
 
   case LINK_INDEPENDENT:
   case LINK_SUMMED:
 
     ch=0;
-    for(fi=0;fi<inputs;fi++){
+    for(fi=0;fi<plot_inputs;fi++){
       for(i=ch;i<ch+channels[fi];i++){
 	sprintf(buf,"channel %d", i-ch);
-	gtk_button_set_label(GTK_BUTTON(p->chbuttons[i]),buf);
+	gtk_button_set_label(GTK_BUTTON(chbuttons[i]),buf);
       }
       ch+=channels[fi];
     }
-    break;    
+    break;
 
   case LINK_PHASE:
 
     ch=0;
-    for(fi=0;fi<inputs;fi++){
+    for(fi=0;fi<plot_inputs;fi++){
       for(i=ch;i<ch+channels[fi];i++){
 	if(channels[fi]<2){
-	  gtk_button_set_label(GTK_BUTTON(p->chbuttons[i]),"unused");
+	  gtk_button_set_label(GTK_BUTTON(chbuttons[i]),"unused");
 	}else if(i==ch){
-	  gtk_button_set_label(GTK_BUTTON(p->chbuttons[i]),"response");
+	  gtk_button_set_label(GTK_BUTTON(chbuttons[i]),"response");
 	}else if(i==ch+1){
-	  gtk_button_set_label(GTK_BUTTON(p->chbuttons[i]),"phase");
+	  gtk_button_set_label(GTK_BUTTON(chbuttons[i]),"phase");
 	}else{
-	  gtk_button_set_label(GTK_BUTTON(p->chbuttons[i]),"unused");
+	  gtk_button_set_label(GTK_BUTTON(chbuttons[i]),"unused");
 	}
       }
       ch+=channels[fi];
     }
-    break;    
+    break;
   }
 
   /* set colors */
@@ -362,11 +516,11 @@ static void chlabels(GtkWidget *widget,struct panel *p){
   case LINK_SUMMED:
   case LINK_SUB_FROM:
     ch=0;
-    for(fi=0;fi<inputs;fi++){
+    for(fi=0;fi<plot_inputs;fi++){
       GdkColor rgb = chcolor(ch);
 
       for(i=ch;i<ch+channels[fi];i++){
-	GtkWidget *button=p->chbuttons[i];	
+	GtkWidget *button=chbuttons[i];
 	set_fg(button,&rgb);
       }
       ch+=channels[fi];
@@ -375,113 +529,104 @@ static void chlabels(GtkWidget *widget,struct panel *p){
 
   default:
     ch=0;
-    for(fi=0;fi<inputs;fi++){
+    for(fi=0;fi<plot_inputs;fi++){
       for(i=ch;i<ch+channels[fi];i++){
 	GdkColor rgb = chcolor(i);
-	GtkWidget *button=p->chbuttons[i];
+	GtkWidget *button=chbuttons[i];
 	set_fg(button,&rgb);
       }
       ch+=channels[fi];
     }
     break;
   }
-  gtk_alignment_set_padding(GTK_ALIGNMENT(p->plot_label_al),0,0,0,plot_get_right_pad(PLOT(p->plot)));
+
+  if(widget)replot(0,1,0);
+  gtk_alignment_set_padding(GTK_ALIGNMENT(plot_label_al),0,0,0,
+                            plot_get_right_pad(PLOT(plot)));
 }
 
-static void scalechange(GtkWidget *widget,struct panel *p){
+static void scalechange(GtkWidget *widget,gpointer in){
   plot_scale=gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
-  plot_setting(PLOT(p->plot),plot_scale,plot_mode,plot_link,plot_depth,plot_noise);
+  replot(0,0,0);
 }
 
-static void modechange(GtkWidget *widget,struct panel *p){
+static void modechange(GtkWidget *widget,gpointer in){
   plot_mode=gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
-  replot(p);
-  plot_setting(PLOT(p->plot),plot_scale,plot_mode,plot_link,plot_depth,plot_noise);
+  replot(0,1,0);
 }
 
-static void linkchange(GtkWidget *widget,struct panel *p){
+static void linkchange(GtkWidget *widget,gpointer in){
   plot_link=gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
-  replot(p);
-  plot_setting(PLOT(p->plot),plot_scale,plot_mode,plot_link,plot_depth,plot_noise);
-  chlabels(widget,p);
-  gtk_alignment_set_padding(GTK_ALIGNMENT(p->plot_label_al),0,0,0,plot_get_right_pad(PLOT(p->plot)));
+  chlabels(NULL,NULL);
+  gtk_alignment_set_padding(GTK_ALIGNMENT(plot_label_al),
+                            0,0,0,plot_get_right_pad(PLOT(plot)));
+  replot(0,1,0);
 }
 
-static void runchange(GtkWidget *widget,struct panel *p){
+static void runchange(GtkWidget *widget,gpointer in){
   if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))){
     if(!process_active){
       pthread_t thread_id;
       process_active=1;
       process_exit=0;
-      animate_fish(p);
+      animate_fish();
       pthread_create(&thread_id,NULL,&process_thread,NULL);
     }
   }else{
     process_exit=1;
-    while(process_active)sched_yield();
+    //while(process_active)sched_yield();
   }
 }
 
-static void holdchange(GtkWidget *widget,struct panel *p){
+static void holdchange(GtkWidget *widget,gpointer in){
   plot_hold=gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
   override_base(widget,plot_hold);
-  replot(p);
-  plot_draw(PLOT(p->plot));
+  replot(0,1,0);
 }
 
-static void lockchange(GtkWidget *widget,struct panel *p){
+static void lockchange(GtkWidget *widget,gpointer in){
   plot_lock_y=gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
   override_base(widget,plot_lock_y);
-  plot_set_autoscale(PLOT(p->plot),!plot_lock_y);
+  if(!plot_lock_y)replot(0,1,0);
 }
 
-static void boldchange(GtkWidget *widget,struct panel *p){
+static void boldchange(GtkWidget *widget,gpointer in){
   plot_bold=gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
   override_base(widget,plot_bold);
-  plot_set_bold(PLOT(p->plot),plot_bold);
+  replot(0,0,0);
 }
 
-static void loopchange(GtkWidget *widget,struct panel *p){
+static void loopchange(GtkWidget *widget,gpointer in){
   acc_loop=gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
 }
 
-static void clearchange(GtkWidget *widget,struct panel *p){
-  acc_clear=1;
-  plot_clear(PLOT(p->plot));
-  if(!process_active){
-    rundata_clear();
-  }
+static void clearchange(GtkWidget *widget,gpointer in){
+  rundata_clear();
+  replot(0,0,0);
 }
 
-static void rewindchange(GtkWidget *widget,struct panel *p){
+static void rewindchange(GtkWidget *widget,gpointer in){
   acc_rewind=1;
 }
 
-static void bwchange(GtkWidget *widget,struct panel *p){
+static void bwchange(GtkWidget *widget,gpointer in){
   plot_bw=gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
   if(plot_bw==0){
-
-    gtk_widget_set_sensitive(GTK_WIDGET(p->bwmodebutton),0);
-    //gtk_widget_hide(p->bwmodebutton);
-    //gtk_container_remove(GTK_CONTAINER(p->bwtable),p->bwbutton);
-    //gtk_table_attach_defaults(GTK_TABLE(p->bwtable),p->bwbutton,0,2,0,1);
+    gtk_widget_set_sensitive(GTK_WIDGET(bwmodebutton),0);
   }else{
-
-    gtk_widget_set_sensitive(GTK_WIDGET(p->bwmodebutton),1);
-    //gtk_container_remove(GTK_CONTAINER(p->bwtable),p->bwbutton);
-    //gtk_table_attach_defaults(GTK_TABLE(p->bwtable),p->bwbutton,0,1,0,1);
-    //gtk_widget_show(p->bwmodebutton);
+    gtk_widget_set_sensitive(GTK_WIDGET(bwmodebutton),1);
   }
+  replot(0,1,0);
 }
 
-static void bwmodechange(GtkWidget *widget,struct panel *p){
+static void bwmodechange(GtkWidget *widget,gpointer in){
   plot_bwmode=gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
+  replot(0,1,0);
 }
 
 static gint watch_keyboard(GtkWidget *grab_widget,
                            GdkEventKey *event,
-                           gpointer func_data){
-  struct panel *p=(struct panel *)func_data;
+                           gpointer in){
 
   if(event->type == GDK_KEY_PRESS){
     if(event->state == GDK_CONTROL_MASK){
@@ -493,7 +638,7 @@ static gint watch_keyboard(GtkWidget *grab_widget,
 }
 
 extern char *version;
-void panel_create(struct panel *panel){
+void panel_create(void){
   int i;
 
   GdkWindow *root=gdk_get_default_root_window();
@@ -506,16 +651,17 @@ void panel_create(struct panel *panel){
   GtkWidget *plot_control_al;
   GtkWidget *wbold;
 
-  active = calloc(total_ch,sizeof(*active));
+  active = calloc(plot_ch,sizeof(*active));
 
-  panel->toplevel=gtk_window_new (GTK_WINDOW_TOPLEVEL);
-  panel->group = gtk_accel_group_new ();
-  gtk_window_add_accel_group (GTK_WINDOW(panel->toplevel), panel->group);
-  gtk_window_set_title(GTK_WINDOW(panel->toplevel),(const gchar *)"Spectrum Analyzer");
-  gtk_window_set_default_size(GTK_WINDOW(panel->toplevel),1024,400);
-  //gtk_widget_set_size_request(GTK_WIDGET(panel->toplevel),1024,400);
-  gtk_container_add (GTK_CONTAINER (panel->toplevel), topbox);
-  g_signal_connect (G_OBJECT (panel->toplevel), "delete_event",
+  toplevel=gtk_window_new (GTK_WINDOW_TOPLEVEL);
+  group = gtk_accel_group_new ();
+  gtk_window_add_accel_group (GTK_WINDOW(toplevel), group);
+  gtk_window_set_title(GTK_WINDOW(toplevel),
+                       (const gchar *)"Spectrum Analyzer");
+  gtk_window_set_default_size(GTK_WINDOW(toplevel),1024,400);
+  //gtk_widget_set_size_request(GTK_WIDGET(toplevel),1024,400);
+  gtk_container_add (GTK_CONTAINER (toplevel), topbox);
+  g_signal_connect (G_OBJECT (toplevel), "delete_event",
 		    G_CALLBACK (shutdown), NULL);
   gtk_widget_set_name(topbox,"panel");
 
@@ -539,20 +685,27 @@ void panel_create(struct panel *panel){
     gtk_widget_set_name(lock_range,"top-control");
     gtk_widget_set_name(hold_display,"top-control");
     gtk_widget_set_name(wbold,"top-control");
-    g_signal_connect (G_OBJECT (hold_display), "clicked", G_CALLBACK (holdchange), panel);
-    gtk_widget_add_accelerator (hold_display, "activate", panel->group, GDK_h, 0, 0);
-    g_signal_connect (G_OBJECT (lock_range), "clicked", G_CALLBACK (lockchange), panel);
-    gtk_widget_add_accelerator (lock_range, "activate", panel->group, GDK_y, 0, 0);
-    gtk_widget_add_accelerator (lock_range, "activate", panel->group, GDK_Y, 0, 0);
-    g_signal_connect (G_OBJECT (wbold), "clicked", G_CALLBACK (boldchange), panel);
-    gtk_widget_add_accelerator (wbold, "activate", panel->group, GDK_b, 0, 0);
+    g_signal_connect (G_OBJECT (hold_display), "clicked",
+                      G_CALLBACK (holdchange), NULL);
+    gtk_widget_add_accelerator (hold_display, "activate",
+                                group, GDK_h, 0, 0);
+    g_signal_connect (G_OBJECT (lock_range), "clicked",
+                      G_CALLBACK (lockchange), NULL);
+    gtk_widget_add_accelerator (lock_range, "activate",
+                                group, GDK_y, 0, 0);
+    gtk_widget_add_accelerator (lock_range, "activate",
+                                group, GDK_Y, 0, 0);
+    g_signal_connect (G_OBJECT (wbold), "clicked",
+                      G_CALLBACK (boldchange), NULL);
+    gtk_widget_add_accelerator (wbold, "activate",
+                                group, GDK_b, 0, 0);
 
   }
 
   /* plot informational labels */
   {
     char buf[80];
-    GtkWidget *al=panel->plot_label_al=gtk_alignment_new(1,.5,0,0);
+    GtkWidget *al=plot_label_al=gtk_alignment_new(1,.5,0,0);
     GtkWidget *box=gtk_hbox_new(0,2);
     GtkWidget *text1=gtk_label_new("window:");
     GtkWidget *text2=gtk_label_new("sin^4  ");
@@ -577,8 +730,8 @@ void panel_create(struct panel *panel){
   }
 
   /* add the spectrum plot box */
-  panel->plot=plot_new(blocksize/2+1,inputs,channels,rate);
-  gtk_table_attach_defaults (GTK_TABLE (lefttable), panel->plot,0,1,2,3);
+  plot=plot_new();
+  gtk_table_attach_defaults (GTK_TABLE (lefttable), plot,0,1,2,3);
   gtk_table_set_row_spacing (GTK_TABLE (lefttable), 2, 4);
   gtk_table_set_col_spacing (GTK_TABLE (lefttable), 0, 2);
 
@@ -607,10 +760,10 @@ void panel_create(struct panel *panel){
     w/=19;
 
     for(i=0;i<19;i++){
-      panel->ff[i]=gdk_pixmap_new(tp,w,h,-1);
-      panel->fb[i]=gdk_pixmap_new(tb,w,h,-1);
-      gdk_draw_drawable(panel->ff[i],cgc,tp,i*w,0,0,0,w,h);
-      gdk_draw_drawable(panel->fb[i],bgc,tb,i*w,0,0,0,w,h);
+      ff[i]=gdk_pixmap_new(tp,w,h,-1);
+      fb[i]=gdk_pixmap_new(tb,w,h,-1);
+      gdk_draw_drawable(ff[i],cgc,tp,i*w,0,0,0,w,h);
+      gdk_draw_drawable(fb[i],bgc,tb,i*w,0,0,0,w,h);
     }
 
     g_object_unref(cgc);
@@ -618,12 +771,12 @@ void panel_create(struct panel *panel){
     g_object_unref(tp);
     g_object_unref(tb);
 
-    panel->twirlimage=gtk_image_new_from_pixmap(panel->ff[0],panel->fb[0]);
+    twirlimage=gtk_image_new_from_pixmap(ff[0],fb[0]);
 
     gtk_container_set_border_width (GTK_CONTAINER (toptable), 1);
     gtk_box_pack_start(GTK_BOX(righttopbox),toptable,0,0,0);
     gtk_container_add (GTK_CONTAINER (sepbox), topsep);
-    gtk_container_add(GTK_CONTAINER(fishbox),panel->twirlimage);
+    gtk_container_add(GTK_CONTAINER(fishbox),twirlimage);
     gtk_table_attach_defaults (GTK_TABLE (toptable), fishbox,0,1,1,2);
     gtk_table_attach_defaults (GTK_TABLE (toptable), sepbox,0,1,1,2);
     gtk_table_set_row_spacing (GTK_TABLE (toptable), 0, 6);
@@ -638,27 +791,28 @@ void panel_create(struct panel *panel){
     char buffer[160];
     GtkWidget *label;
 
-    panel->chbuttons = calloc(total_ch,sizeof(*panel->chbuttons));
-    for(fi=0;fi<inputs;fi++){
+    chbuttons = calloc(plot_ch,sizeof(*chbuttons));
+    for(fi=0;fi<plot_inputs;fi++){
       GtkWidget *al=gtk_alignment_new(0,0,1,0);
       GtkWidget *vbox=gtk_vbox_new(0,0);
-      
+
       char *lastslash = strrchr(inputname[fi],'/');
       sprintf(buffer,"%s",(lastslash?lastslash+1:inputname[fi]));
       label=gtk_label_new(buffer);
       gtk_widget_set_name(label,"readout");
       gtk_box_pack_start(GTK_BOX(vbox),label,0,0,0);
-      
+
       sprintf(buffer,"%dHz %dbit",rate[fi],bits[fi]);
       label=gtk_label_new(buffer);
       gtk_widget_set_name(label,"readout");
       gtk_box_pack_start(GTK_BOX(vbox),label,0,0,0);
 
       for(i=ch;i<ch+channels[fi];i++){
-	GtkWidget *button=panel->chbuttons[i]=gtk_toggle_button_new();
+	GtkWidget *button=chbuttons[i]=gtk_toggle_button_new();
 
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button),1);  
-	g_signal_connect (G_OBJECT (button), "clicked", G_CALLBACK (chlabels), panel);
+	g_signal_connect (G_OBJECT (button), "clicked",
+                          G_CALLBACK (chlabels), NULL);
 	gtk_box_pack_start(GTK_BOX(vbox),button,0,0,0);
       }
 
@@ -669,7 +823,7 @@ void panel_create(struct panel *panel){
       ch+=channels[fi];
 
     }
-    chlabels(NULL,panel);
+    chlabels(NULL,NULL);
   }
   
   /* add the action buttons */
@@ -677,9 +831,9 @@ void panel_create(struct panel *panel){
 
   {
   /* bandwidth mode */
-    GtkWidget *tbox=panel->bwtable=gtk_table_new(2,2,0);
+    GtkWidget *tbox=bwtable=gtk_table_new(2,2,0);
 
-    GtkWidget *menu=panel->bwbutton=gtk_combo_box_new_text();
+    GtkWidget *menu=bwbutton=gtk_combo_box_new_text();
     char *entries[]={"native","display"};
     //"1Hz","3Hz","10Hz","30Hz","100Hz","300Hz","1kHz",
     //"1/24oct","1/12oct","1/6oct","1/3oct"};
@@ -689,15 +843,15 @@ void panel_create(struct panel *panel){
     //gtk_combo_box_set_active(GTK_COMBO_BOX(menu),0);
     
     g_signal_connect (G_OBJECT (menu), "changed",
-    		      G_CALLBACK (bwchange), panel);
+    		      G_CALLBACK (bwchange), NULL);
 
-    GtkWidget *menu2=panel->bwmodebutton=gtk_combo_box_new_text();
+    GtkWidget *menu2=bwmodebutton=gtk_combo_box_new_text();
     char *entries2[]={"RBW","VBW"};
     for(i=0;i<2;i++)
       gtk_combo_box_append_text (GTK_COMBO_BOX (menu2), entries2[i]);
     
     g_signal_connect (G_OBJECT (menu2), "changed",
-    		      G_CALLBACK (bwmodechange), panel);
+    		      G_CALLBACK (bwmodechange), NULL);
     gtk_combo_box_set_active(GTK_COMBO_BOX(menu2),0);
 
     gtk_table_attach_defaults(GTK_TABLE(tbox),menu,0,1,0,1);
@@ -711,18 +865,17 @@ void panel_create(struct panel *panel){
     for(i=0;i<3;i++)
       gtk_combo_box_append_text (GTK_COMBO_BOX (menu3), entries3[i]);
     gtk_combo_box_set_active(GTK_COMBO_BOX(menu3),plot_scale);
-    plot_setting(PLOT(panel->plot),plot_scale,plot_mode,plot_link,plot_depth,plot_noise);
     
     g_signal_connect (G_OBJECT (menu3), "changed",
-		      G_CALLBACK (scalechange), panel);
+		      G_CALLBACK (scalechange), NULL);
 
     GtkWidget *menu4=gtk_combo_box_new_text();
-    char *entries4[]={"1dB","10dB","20dB","45dB","90dB","140dB","200dB"};
+    char *entries4[]={"1dB","10dB","20dB","45dB","90dB","140dB","190dB"};
     for(i=0;i<7;i++)
       gtk_combo_box_append_text (GTK_COMBO_BOX (menu4), entries4[i]);
     
     g_signal_connect (G_OBJECT (menu4), "changed",
-		      G_CALLBACK (depthchange), panel);
+		      G_CALLBACK (depthchange), NULL);
     gtk_combo_box_set_active(GTK_COMBO_BOX(menu4),4);
 
     gtk_table_attach_defaults(GTK_TABLE(tbox),menu3,0,1,1,2);
@@ -742,19 +895,25 @@ void panel_create(struct panel *panel){
     gtk_box_pack_start(GTK_BOX(bbox),menu,0,0,0);
     
     g_signal_connect (G_OBJECT (menu), "changed",
-		      G_CALLBACK (modechange), panel);
+		      G_CALLBACK (modechange), NULL);
   }
   
   /* link */
   {
     GtkWidget *menu=gtk_combo_box_new_text();
+    char *entries[LINKS]={"independent",
+                          "sum",
+                          "subtract ref",
+                          "subtract from",
+                          "response/phase"};
+
     for(i=0;i<LINKS;i++)
-      gtk_combo_box_append_text (GTK_COMBO_BOX (menu), link_entries[i]);
+      gtk_combo_box_append_text (GTK_COMBO_BOX (menu), entries[i]);
     gtk_combo_box_set_active(GTK_COMBO_BOX(menu),0);
     gtk_box_pack_start(GTK_BOX(bbox),menu,0,0,0);
     
     g_signal_connect (G_OBJECT (menu), "changed",
-		      G_CALLBACK (linkchange), panel);
+		      G_CALLBACK (linkchange), NULL);
   }
   
 
@@ -766,11 +925,11 @@ void panel_create(struct panel *panel){
   /* run/pause */
   {
     GtkWidget *button=gtk_toggle_button_new_with_mnemonic("_run");
-    gtk_widget_add_accelerator (button, "activate", panel->group, GDK_space, 0, 0);
-    gtk_widget_add_accelerator (button, "activate", panel->group, GDK_r, 0, 0);
-    g_signal_connect (G_OBJECT (button), "clicked", G_CALLBACK (runchange), panel);
+    gtk_widget_add_accelerator (button, "activate", group, GDK_space, 0, 0);
+    gtk_widget_add_accelerator (button, "activate", group, GDK_r, 0, 0);
+    g_signal_connect (G_OBJECT (button), "clicked", G_CALLBACK (runchange), NULL);
     gtk_box_pack_start(GTK_BOX(bbox),button,0,0,0);
-    panel->run=button;
+    run=button;
   }
   
   /* loop */
@@ -778,15 +937,15 @@ void panel_create(struct panel *panel){
   {
     GtkWidget *box=gtk_hbox_new(1,1);
     GtkWidget *button=gtk_toggle_button_new_with_mnemonic("_loop");
-    gtk_widget_add_accelerator (button, "activate", panel->group, GDK_l, 0, 0);
-    g_signal_connect (G_OBJECT (button), "clicked", G_CALLBACK (loopchange), panel);
+    gtk_widget_add_accelerator (button, "activate", group, GDK_l, 0, 0);
+    g_signal_connect (G_OBJECT (button), "clicked", G_CALLBACK (loopchange), NULL);
     gtk_box_pack_start(GTK_BOX(box),button,1,1,0);
     gtk_widget_set_sensitive(button,global_seekable);
     
 
     button=gtk_button_new_with_mnemonic("re_wind");
-    gtk_widget_add_accelerator (button, "activate", panel->group, GDK_w, 0, 0);
-    g_signal_connect (G_OBJECT (button), "clicked", G_CALLBACK (rewindchange), panel);
+    gtk_widget_add_accelerator (button, "activate", group, GDK_w, 0, 0);
+    g_signal_connect (G_OBJECT (button), "clicked", G_CALLBACK (rewindchange), NULL);
     gtk_widget_set_sensitive(button,global_seekable);
     gtk_box_pack_start(GTK_BOX(box),button,1,1,0);
     
@@ -798,14 +957,14 @@ void panel_create(struct panel *panel){
   {
     GtkWidget *box=gtk_hbox_new(1,1);
     GtkWidget *button=gtk_button_new_with_mnemonic("_clear data");
-    gtk_widget_add_accelerator (button, "activate", panel->group, GDK_c, 0, 0);
-    g_signal_connect (G_OBJECT (button), "clicked", G_CALLBACK (clearchange), panel);
+    gtk_widget_add_accelerator (button, "activate", group, GDK_c, 0, 0);
+    g_signal_connect (G_OBJECT (button), "clicked", G_CALLBACK (clearchange), NULL);
     gtk_box_pack_start(GTK_BOX(box),button,1,1,0);
     
 
     button=gtk_button_new_with_mnemonic("_dump data");
-    gtk_widget_add_accelerator (button, "activate", panel->group, GDK_d, 0, 0);
-    g_signal_connect (G_OBJECT (button), "clicked", G_CALLBACK (dump), panel);
+    gtk_widget_add_accelerator (button, "activate", group, GDK_d, 0, 0);
+    g_signal_connect (G_OBJECT (button), "clicked", G_CALLBACK (dump), NULL);
     gtk_box_pack_start(GTK_BOX(box),button,1,1,0);
 
     gtk_box_pack_start(GTK_BOX(bbox),box,0,0,0);
@@ -815,28 +974,27 @@ void panel_create(struct panel *panel){
 #if 0
   {
     GtkWidget *button=gtk_toggle_button_new_with_mnemonic("sample _noise floor");
-    gtk_widget_add_accelerator (button, "activate", panel->group, GDK_n, 0, 0);
-    g_signal_connect (G_OBJECT (button), "toggled", G_CALLBACK (noise), panel);
+    gtk_widget_add_accelerator (button, "activate", group, GDK_n, 0, 0);
+    g_signal_connect (G_OBJECT (button), "toggled", G_CALLBACK (noise), NULL);
     gtk_box_pack_start(GTK_BOX(bbox),button,0,0,0);
   }
 #endif
 
   gtk_box_pack_end(GTK_BOX(rightbox),bbox,0,0,0);
-  gtk_widget_show_all(panel->toplevel);
-  gtk_combo_box_set_active(GTK_COMBO_BOX(panel->bwbutton),0);
+  gtk_widget_show_all(toplevel);
+  gtk_combo_box_set_active(GTK_COMBO_BOX(bwbutton),0);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(wbold),plot_bold);
 
-  gtk_key_snooper_install(watch_keyboard,panel);
+  gtk_key_snooper_install(watch_keyboard,NULL);
 
-  gtk_alignment_set_padding(GTK_ALIGNMENT(plot_control_al),0,0,plot_get_left_pad(PLOT(panel->plot)),0);
-  gtk_alignment_set_padding(GTK_ALIGNMENT(panel->plot_label_al),0,0,0,plot_get_right_pad(PLOT(panel->plot)));
+  gtk_alignment_set_padding(GTK_ALIGNMENT(plot_control_al),0,0,plot_get_left_pad(PLOT(plot)),0);
+  gtk_alignment_set_padding(GTK_ALIGNMENT(plot_label_al),0,0,0,plot_get_right_pad(PLOT(plot)));
 
 }
 
 static gboolean async_event_handle(GIOChannel *channel,
 				   GIOCondition condition,
 				   gpointer data){
-  struct panel *panel=data;
   char buf[1];
 
   /* read all pending */
@@ -845,24 +1003,20 @@ static gboolean async_event_handle(GIOChannel *channel,
   increment_fish=1;
 
   /* check playback status and update the run button if needed */
-  if(process_active && panel->run && 
-     !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(panel->run)))
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(panel->run),1);
-  if(!process_active && panel->run && 
-     gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(panel->run)))
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(panel->run),0);
+  if(process_active && run &&
+     !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(run)))
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(run),1);
+  if(!process_active && run &&
+     gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(run)))
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(run),0);
 
   /* update the spectral display; send new data */
-  pthread_mutex_lock(&feedback_mutex);
-  if(plot_last_update!=feedback_increment){
-    pthread_mutex_unlock(&feedback_mutex);
-    replot(panel);
-    plot_draw(PLOT(panel->plot));
+  if(!plot_hold)replot(0,0,1);
 
-    while (gtk_events_pending())
-      gtk_main_iteration();
-  }else
-    pthread_mutex_unlock(&feedback_mutex);
+  /* if we're near CPU limit, service the rest of Gtk over next async
+     update request */
+  while (gtk_events_pending())
+    gtk_main_iteration();
 
   return TRUE;
 }
@@ -880,7 +1034,6 @@ static int look_for_gtkrc(char *filename){
 void panel_go(int argc,char *argv[]){
   char *homedir=getenv("HOME");
   int found=0;
-  memset(&p,0,sizeof(p));
 
   found|=look_for_gtkrc(STR(ETCDIR) "/spectrum-gtkrc");
   {
@@ -906,17 +1059,21 @@ void panel_go(int argc,char *argv[]){
   found|=look_for_gtkrc("./spectrum-gtkrc");
 
   if(!found){
-  
-    fprintf(stderr,"Could not find the spectrum-gtkrc configuration file normally\n"
+
+    fprintf(stderr,
+            "Could not find the spectrum-gtkrc configuration file normally\n"
 	    "installed in one of the following places:\n"
 
 	    "\t./spectrum-gtkrc\n"
 	    "\t$(SPECTRUM_RCDIR)/spectrum-gtkrc\n"
 	    "\t~/.spectrum/spectrum-gtkrc\n\t"
 	    STR(ETCDIR) "/spectrum-gtkrc\n"
-	    "This configuration file is used to tune the color, font and other detail aspects\n"
-	    "of the user interface.  Although the analyzer will work without it, the UI\n"
-	    "appearence will likely make the application harder to use due to missing visual\n"
+	    "This configuration file is used to tune the color, "
+            "font and other detail aspects\n"
+	    "of the user interface.  Although the analyzer will "
+            "work without it, the UI\n"
+	    "appearence will likely make the application harder to "
+            "use due to missing visual\n"
 	    "cues.\n");
   }
 
@@ -932,32 +1089,28 @@ void panel_go(int argc,char *argv[]){
   gtk_rc_add_default_file("spectrum-gtkrc");
   gtk_init (&argc, &argv);
 
-  panel_create(&p);
-  animate_fish(&p);
+  plot_ch = total_ch; /* true now, won't necessarily be true later */
+  plot_inputs = inputs; /* true now, won't necessarily be true later */
+
+  filter_make_critical(.04,&plot_ymax_damp);
+  filter_make_critical(.04,&plot_pmax_damp);
+  filter_make_critical(.04,&plot_pmin_damp);
+
+  panel_create();
+  animate_fish();
 
   /* set up watching the event pipe */
   {
     GIOChannel *channel = g_io_channel_unix_new (eventpipe[0]);
-    guint id;
-
     g_io_channel_set_encoding (channel, NULL, NULL);
     g_io_channel_set_buffered (channel, FALSE);
     g_io_channel_set_close_on_unref (channel, TRUE);
-
-    id = g_io_add_watch (channel, G_IO_IN, async_event_handle, &p);
-
+    g_io_add_watch (channel, G_IO_IN, async_event_handle, NULL);
     g_io_channel_unref (channel);
-
   }
-  
+
   /* we want to be running by default */
-  {
-    pthread_t thread_id;
-    animate_fish(&p);
-    process_active=1;
-    pthread_create(&thread_id,NULL,&process_thread,NULL);
-  }
-
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(run),TRUE);
   gtk_main ();
 
 }

@@ -39,7 +39,6 @@ int channels_force[MAX_FILES] = {0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0};
 int rate_force[MAX_FILES] = {0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0};
 int signed_force[MAX_FILES] = {0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0};
 
-extern sig_atomic_t acc_loop;
 extern int blocksize;
 int blockslice[MAX_FILES]= {-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1};
 
@@ -425,6 +424,21 @@ int input_load(void){
   return 0;
 }
 
+/* attempts to reopen any inputs that are pipes.  Does not check for
+   EOF, ignores non-fifo inputs.  Returns nonzero if any pipes
+   reopened. */
+
+int pipe_reload(){
+  int fi;
+  int ret=0;
+  for(fi=0;fi<inputs;fi++)
+    if(!seekable[fi] && isapipe[fi] && !load_one_input(fi)){
+      fprintf(stderr,"reloading....\n");
+      ret=1;
+    }
+  return ret;
+}
+
 /* Convert new data from readbuffer into the blockbuffers until the
    blockbuffer is full */
 static void LBEconvert(int *localslice){
@@ -608,28 +622,21 @@ int input_read(int loop, int partialok){
                     inputname[fi],strerror(ferror(f[fi])));
 	  }else if (actually_readbytes==0){
             /* real, hard EOF/error in a partially filled block */
-            /* if this input is a pipe, reload its input state */
-            if(!seekable[fi] && isapipe[fi] && !load_one_input(fi)){
-              fprintf(stderr,"reloading....\n");
+            if(!partialok){
+              /* partial frame is *not* ok.  zero it out. */
+              memset(readbuffer[fi],0,readbuffersize);
+              bytesleft[fi]=0;
+              readbufferfill[fi]=0;
+              readbufferptr[fi]=0;
+              blockbufferfill[fi]=0;
+            }
+            if(loop && seekable[fi] && (!rewound[fi] || (partialok && blockbufferfill[fi]))){
+              /* rewind this file and continue */
+              fseek(f[fi],offset[fi],SEEK_SET);
+              if(length[fi]!=-1)
+                bytesleft[fi]=length[fi]*channels[fi]*((bits[fi]+7)/8);
               notdone=1;
-            }else{
-
-              if(!partialok){
-                /* partial frame is *not* ok.  zero it out. */
-                memset(readbuffer[fi],0,readbuffersize);
-                bytesleft[fi]=0;
-                readbufferfill[fi]=0;
-                readbufferptr[fi]=0;
-                blockbufferfill[fi]=0;
-              }
-              if(loop && (!rewound[fi] || (partialok && blockbufferfill[fi]))){
-                /* rewind this file and continue */
-                fseek(f[fi],offset[fi],SEEK_SET);
-                if(length[fi]!=-1)
-                  bytesleft[fi]=length[fi]*channels[fi]*((bits[fi]+7)/8);
-                notdone=1;
-                rewound[fi]=1;
-              }
+              rewound[fi]=1;
             }
 	  }else{
             /* got a read */

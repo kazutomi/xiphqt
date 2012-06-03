@@ -1,24 +1,24 @@
 /*
  *
  *  gtk2 spectrum analyzer
- *    
+ *
  *      Copyright (C) 2004-2012 Monty
  *
  *  This analyzer is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2, or (at your option)
  *  any later version.
- *   
+ *
  *  The analyzer is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- *   
+ *
  *  You should have received a copy of the GNU General Public License
  *  along with Postfish; see the file COPYING.  If not, write to the
  *  Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * 
+ *
  */
 
 #ifndef __PLOT_H__
@@ -27,6 +27,7 @@
 #include <glib.h>
 #include <glib-object.h>
 #include <gtk/gtk.h>
+#include "io.h"
 
 G_BEGIN_DECLS
 
@@ -40,22 +41,48 @@ typedef struct _Plot       Plot;
 typedef struct _PlotClass  PlotClass;
 
 typedef struct {
-  double a;
-  double b1;
-  double b2;
-  double x[2];
-  double y[2];
-} pole2;
+  int bits[MAX_FILES];
+  int channels[MAX_FILES];
+  int rate[MAX_FILES];
+  int groups;
+  int total_ch;
+  int maxrate;
+  int reload;
+  int scale;
+  int mode;
+  int link;
+  int phase_active;
+
+  float **data;
+  float *active;
+  float ymax;
+  float pmax;
+  float pmin;
+  int height;
+  int width;
+  int increment;
+} fetchdata;
+
+typedef struct {
+  float ymax;
+  float pmax;
+  float pmin;
+  float depth;
+  float bold;
+} plotparams;
 
 struct _Plot{
 
-  GtkDrawingArea canvas;  
+  GtkDrawingArea canvas;
   GdkPixmap *backing;
   GdkGC     *drawgc;
   GdkGC     *dashes;
   GdkGC     *graygc;
   GdkGC     *phasegc;
 
+  PangoLayout **lin_layout_200;
+  PangoLayout **lin_layout_100;
+  PangoLayout **lin_layout_50;
   PangoLayout **lin_layout;
   PangoLayout **log_layout;
   PangoLayout **iso_layout;
@@ -67,21 +94,11 @@ struct _Plot{
   PangoLayout **phase_layout;
 
   int configured;
-  float **ydata;
-  float *floor;
-
-  int groups;
-  int *ch;
-  int *ch_active;
-  int *ch_process;
   int total_ch;
-  int datasize;
-  int mode;
-  int link;
   int scale;
-  int noise;
-  int *rate;
   int maxrate;
+  int phase_active;
+  int width;
 
   float lin_major;
   float lin_minor;
@@ -99,31 +116,9 @@ struct _Plot{
   int ytic[200];
   int ytics;
 
-  float depth;
-  float ymax;
-  float pmax;
-  float pmin;
-
-  pole2 ymax_damp;
-  pole2 pmax_damp;
-  pole2 pmin_damp;
-
-  float ymax_target;
-  float pmax_target;
-  float pmin_target;
-  int ymaxtimer;
-  int pmaxtimer;
-  int pmintimer;
-
-  float ymax_limit;
-
   float padx;
   float phax;
   float pady;
-
-
-  int bold;
-  int autoscale;
 };
 
 struct _PlotClass{
@@ -133,21 +128,15 @@ struct _PlotClass{
 };
 
 GType          plot_get_type        (void);
-GtkWidget*     plot_new             (int n, int inputs, int *channels, int *rate);
-void	       plot_refresh         (Plot *m, int *process);
-void	       plot_setting         (Plot *m, int scale, int mode, int link, int depth, int noise);
-void	       plot_draw            (Plot *m);
-void	       plot_clear           (Plot *m);
-int 	       plot_width           (Plot *m);
-float**        plot_get             (Plot *m);
-void           plot_set_active      (Plot *m, int *, int *);
-void           plot_set_autoscale   (Plot *m, int);
-void           plot_set_bold   (Plot *m, int);
-
+GtkWidget*     plot_new             (void);
+void	       plot_draw            (Plot *m, fetchdata *f, plotparams *pp);
 int            plot_get_left_pad    (Plot *m);
 int            plot_get_right_pad   (Plot *m);
+int            plot_height          (Plot *m);
+int            plot_width           (Plot *m);
 
 GdkColor chcolor(int ch);
+extern void replot(int scale_reset, int inactive_reset, int scale_damp);
 
 G_END_DECLS
 
