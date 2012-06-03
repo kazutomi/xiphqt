@@ -375,6 +375,23 @@ fetchdata *process_fetch(int scale, int mode, int link,
   if(!fetch_ret.active)
     fetch_ret.active = calloc(total_ch,sizeof(*fetch_ret.active));
 
+  /* the passed in process array doesn't necesarily match the
+     current channel structure.  Copy group by group. */
+  {
+    int ch_now=0;
+    int ch_in=0;
+    for(i=0;i<inputs;i++){
+      int ci;
+      for(ci=0;ci<channels[i] && ci<fetch_ret.channels[i];ci++)
+        process[ch_now+ci] = process_in[ch_in+ci];
+      for(;ci<channels[i];ci++)
+        process[ch_now+ci] = 0;
+      ch_now+=channels[i];
+      ch_in+=fetch_ret.channels[i];
+    }
+    memcpy(fetch_ret.active,process,total_ch*sizeof(*process));
+  }
+
   fetch_ret.groups=inputs;
   fetch_ret.scale=scale;
   fetch_ret.mode=mode;
@@ -384,19 +401,13 @@ fetchdata *process_fetch(int scale, int mode, int link,
   fetch_ret.width=width;
   fetch_ret.total_ch=total_ch;
   fetch_ret.increment=feedback_increment;
-  memcpy(fetch_ret.bits,bits,sizeof(fetch_ret.bits));
-  memcpy(fetch_ret.channels,channels,sizeof(fetch_ret.channels));
-  memcpy(fetch_ret.rate,rate,sizeof(fetch_ret.rate));
-
-  /* the passed in process array length doesn't necesarity match the
-     current number of channels */
-  for(i=0;i<process_n && i<total_ch;i++)
-    fetch_ret.active[i] = process[i] = process_in[i];
-  for(;i<total_ch;i++)
-    fetch_ret.active[i] = process[i] = 0;
 
   for(fi=0;fi<inputs;fi++)
     if(rate[fi]>maxrate)maxrate=rate[fi];
+
+  memcpy(fetch_ret.bits,bits,sizeof(fetch_ret.bits));
+  memcpy(fetch_ret.channels,channels,sizeof(fetch_ret.channels));
+  memcpy(fetch_ret.rate,rate,sizeof(fetch_ret.rate));
 
   nyq=maxrate/2.;
   fetch_ret.maxrate=maxrate;
@@ -415,7 +426,7 @@ fetchdata *process_fetch(int scale, int mode, int link,
   }
 
   /* are our scale mappings up to date? */
-  if(scale != metascale || width != metawidth){
+  if(scale != metascale || width != metawidth || fetch_ret.reload){
     if(!xmappingL) xmappingL = calloc(inputs, sizeof(*xmappingL));
     if(!xmappingM) xmappingM = calloc(inputs, sizeof(*xmappingM));
     if(!xmappingH) xmappingH = calloc(inputs, sizeof(*xmappingH));
@@ -498,13 +509,14 @@ fetchdata *process_fetch(int scale, int mode, int link,
       }
     }
 
-    for(i=0;i<total_ch;i++)
+    for(i=0;i<total_ch;i++){
       if(fetch_ret.data[i]){
 	fetch_ret.data[i] = realloc
           (fetch_ret.data[i],(width+1)*2*sizeof(**fetch_ret.data));
       }else{
 	fetch_ret.data[i] = malloc((width+1)*2*sizeof(**fetch_ret.data));
       }
+    }
   }
 
   /* mode selects the base data set */

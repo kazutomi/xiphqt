@@ -49,6 +49,7 @@
 extern pthread_mutex_t ioparam_mutex;
 extern int input_load(void);
 extern int pipe_reload(void);
+extern void set_blockslice(int slice, int fi);
 extern int input_read(int loop_p, int partial_p);
 extern int rewind_files(void);
 
