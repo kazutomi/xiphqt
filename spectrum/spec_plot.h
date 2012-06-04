@@ -29,17 +29,6 @@
 #include <gtk/gtk.h>
 #include "io.h"
 
-G_BEGIN_DECLS
-
-#define PLOT_TYPE            (plot_get_type ())
-#define PLOT(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), PLOT_TYPE, Plot))
-#define PLOT_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), PLOT_TYPE, PlotClass))
-#define IS_PLOT(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PLOT_TYPE))
-#define IS_PLOT_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), PLOT_TYPE))
-
-typedef struct _Plot       Plot;
-typedef struct _PlotClass  PlotClass;
-
 typedef struct {
   int bits[MAX_FILES];
   int channels[MAX_FILES];
@@ -70,6 +59,17 @@ typedef struct {
   float depth;
   float bold;
 } plotparams;
+
+G_BEGIN_DECLS
+
+#define PLOT_TYPE            (plot_get_type ())
+#define PLOT(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), PLOT_TYPE, Plot))
+#define PLOT_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), PLOT_TYPE, PlotClass))
+#define IS_PLOT(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PLOT_TYPE))
+#define IS_PLOT_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), PLOT_TYPE))
+
+typedef struct _Plot       Plot;
+typedef struct _PlotClass  PlotClass;
 
 struct _Plot{
 
