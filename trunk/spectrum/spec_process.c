@@ -29,26 +29,26 @@ static float *freqbuffer=0;
 static fftwf_plan plan=NULL;
 static int prev_total_ch=-1;
 
-pthread_mutex_t feedback_mutex=PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
-int feedback_increment=0;
+static pthread_mutex_t feedback_mutex=PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
+static int feedback_increment=0;
 
-float *feedback_count=NULL;
-float *process_work=NULL;
+static float *feedback_count=NULL;
+static float *process_work=NULL;
 
-float **feedback_acc=NULL;
-float **feedback_max=NULL;
-float **feedback_instant=NULL;
+static float **feedback_acc=NULL;
+static float **feedback_max=NULL;
+static float **feedback_instant=NULL;
 
-float **ph_acc=NULL;
-float **ph_max=NULL;
-float **ph_instant=NULL;
+static float **ph_acc=NULL;
+static float **ph_max=NULL;
+static float **ph_instant=NULL;
 
-float **xmappingL=NULL;
-float **xmappingM=NULL;
-float **xmappingH=NULL;
-int metascale = -1;
-int metawidth = -1;
-int metareload = 0;
+static float **xmappingL=NULL;
+static float **xmappingM=NULL;
+static float **xmappingH=NULL;
+static int metascale = -1;
+static int metawidth = -1;
+static int metareload = 0;
 
 sig_atomic_t acc_rewind=0;
 sig_atomic_t acc_loop=0;
@@ -343,8 +343,7 @@ static fetchdata fetch_ret;
 /* the data returned is now 2 vals per bin; a min and a max.  The spec
    plot merely draws a vertical line between. */
 fetchdata *process_fetch(int scale, int mode, int link,
-                         int *process_in, int process_n,
-                         int height, int width){
+                         int *process_in, int height, int width){
   int ch,ci,i,j,fi;
   float **data;
   float **ph;

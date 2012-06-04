@@ -1,24 +1,24 @@
 /*
  *
  *  gtk2 waveform viewer
- *    
+ *
  *      Copyright (C) 2004-2012 Monty
  *
  *  This analyzer is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2, or (at your option)
  *  any later version.
- *   
+ *
  *  The analyzer is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- *   
+ *
  *  You should have received a copy of the GNU General Public License
  *  along with Postfish; see the file COPYING.  If not, write to the
  *  Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * 
+ *
  */
 
 #ifndef __PLOT_H__
@@ -27,6 +27,36 @@
 #include <glib.h>
 #include <glib-object.h>
 #include <gtk/gtk.h>
+#include "io.h"
+
+typedef struct {
+  int bits[MAX_FILES];
+  int channels[MAX_FILES];
+  int rate[MAX_FILES];
+  int groups;
+  int total_ch;
+  int maxrate;
+  int reload;
+
+  int span;
+  int scale;
+  int range;
+
+  float **data;
+  int *active;
+  int increment;
+} fetchdata;
+
+typedef struct {
+  int bold;
+  int trace_sep;
+  int span;
+  int plotchoice;
+  int spanchoice;
+  int rangechoice;
+  int scalechoice;
+} plotparams;
+
 
 G_BEGIN_DECLS
 
@@ -40,8 +70,7 @@ typedef struct _Plot       Plot;
 typedef struct _PlotClass  PlotClass;
 
 struct _Plot{
-
-  GtkDrawingArea canvas;  
+  GtkDrawingArea canvas;
   GdkPixmap *backing;
   GdkGC     *drawgc;
   GdkGC     *twogc;
@@ -50,28 +79,9 @@ struct _Plot{
   PangoLayout ****y_layout;
 
   int configured;
-  float **ydata;
-  int size;
 
-  int groups;
-  int *ch;
-  int *ch_active;
-  int total_ch;
-
-  float range;
   int scale;
-  int interval;
-  int span;
-  int type;
-
-  int rchoice;
-  int schoice;
-  int spanchoice;
-
-  int *blockslice;
-  int *overslice;
-
-  int *rate;
+  int width;
 
   int xgrid[20];
   int xgrids;
@@ -84,12 +94,7 @@ struct _Plot{
   int ytics;
 
   float padx;
-  float phax;
   float pady;
-
-  int bold;
-  int autoscale;
-  int trace_sep;
 };
 
 struct _PlotClass{
@@ -99,23 +104,12 @@ struct _PlotClass{
 };
 
 GType          plot_get_type        (void);
-GtkWidget*     plot_new             (int n, int inputs, int *channels, int *rate);
-void	       plot_refresh         (Plot *m);
-void	       plot_setting         (Plot *p, float range, int scale, int interval, int span,
-                                     int rangechoice, int scalechoice, int spanchoice,
-                                     int type, int *blockslice, int *overslice);
-void	       plot_draw            (Plot *m);
-void	       plot_clear           (Plot *m);
-int 	       plot_width           (Plot *m);
-float**        plot_get             (Plot *m);
-void           plot_set_active      (Plot *m, int *);
-void           plot_set_autoscale   (Plot *m, int);
-void           plot_set_bold        (Plot *m, int);
-void           plot_set_sep         (Plot *m, int);
+GtkWidget*     plot_new             (void);
+void	       plot_draw            (Plot *m, fetchdata *f, plotparams *pp);
 int            plot_get_left_pad    (Plot *m);
 
 GdkColor chcolor(int ch);
-
+extern void replot(void);
 G_END_DECLS
 
 #endif

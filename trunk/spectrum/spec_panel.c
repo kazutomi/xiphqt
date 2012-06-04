@@ -572,7 +572,8 @@ static void bwmodechange(GtkWidget *widget,gpointer in){
 }
 
 /* rate, channels, bits, channel active buttons */
-static void create_chbuttons(int *active){
+static void create_chbuttons(int *bits, int *rate, int *channels,
+                             int *active){
   int i,fi;
   int ch=0;
   char buffer[160];
@@ -649,20 +650,11 @@ void replot(int scale_reset, int inactive_reset, int scale_damp){
   /* update the spectral display; send new data */
   fetchdata *f = process_fetch
     (plot_scale, plot_mode, plot_link,
-     process, plot_ch, plot_height(PLOT(plot)), plot_width(PLOT(plot)));
-
-  fprintf(stderr,"%f %f %d\n",f->ymax,f->data[0][0],f->active[0]);
+     process, plot_height(PLOT(plot)), plot_width(PLOT(plot)));
 
   /* the fetched data may indicate the underlying file data has
      changed... */
   if(f->reload){
-
-    /* update group block slices */
-    for(i=0;i<f->groups;i++){
-      int sl=f->rate[i]/10;
-      while(sl>blocksize/2)sl/=2;
-      set_blockslice(sl,i);
-    }
 
     /* remove old group labels and channel buttons */
     destroy_chbuttons();
@@ -672,12 +664,12 @@ void replot(int scale_reset, int inactive_reset, int scale_damp){
 
     /* create new buttons/labels */
     {
-      int newprocess[total_ch];
+      int newprocess[f->total_ch];
       for(i=0;i<plot_ch && i<old_ch;i++)
         newprocess[i]=process[i];
       for(;i<plot_ch;i++)
         newprocess[i]=0;
-      create_chbuttons(newprocess);
+      create_chbuttons(f->bits,f->rate,f->channels,newprocess);
     }
   }
 
@@ -861,7 +853,7 @@ void panel_create(void){
     gtk_table_set_row_spacing (GTK_TABLE (toptable), 0, 6);
   }
 
-  create_chbuttons(NULL);
+  create_chbuttons(bits,rate,channels,NULL);
 
   /* add the action buttons */
   GtkWidget *bbox=gtk_vbox_new(0,0);

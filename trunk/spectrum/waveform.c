@@ -1,24 +1,24 @@
 /*
  *
  *  gtk2 waveform viewer
- *    
+ *
  *      Copyright (C) 2004-2012 Monty
  *
  *  This analyzer is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2, or (at your option)
  *  any later version.
- *   
+ *
  *  The analyzer is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- *   
+ *
  *  You should have received a copy of the GNU General Public License
  *  along with Postfish; see the file COPYING.  If not, write to the
  *  Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * 
+ *
  */
 
 #include "waveform.h"
@@ -202,6 +202,15 @@ void sigill_handler(int sig){
   if(sig==SIGILL)sigill=1;
 }
 
+void blocksize_callback(void){
+  int fi;
+  /* set block size equal to maximum input rate + epsilon*/
+  /* (maximum display width: 1s, maximum update interval 1s) */
+  blocksize=0;
+  for(fi=0;fi<inputs;fi++)
+    if(rate[fi]>blocksize)blocksize=rate[fi]+16;
+}
+
 int main(int argc, char **argv){
   int fi;
 
@@ -237,7 +246,7 @@ int main(int argc, char **argv){
   feenableexcept(FE_INEXACT);
   feenableexcept(FE_UNDERFLOW);
   feenableexcept(FE_OVERFLOW);
-#endif 
+#endif
 
   /* Linux Altivec support has a very annoying problem; by default,
      math on denormalized floats will simply crash the program.  FFTW3
@@ -250,12 +259,12 @@ int main(int argc, char **argv){
 #ifdef __PPC
 #include <altivec.h>
   signal(SIGILL,sigill_handler);
-  
+
 #if (defined __GNUC__) && (__GNUC__ == 3) && ! (defined __APPLE_CC__)
-  __vector unsigned short noTrap = 
+  __vector unsigned short noTrap =
     (__vector unsigned short){0,0,0,0,0,0,0x1,0};
 #else
-  vector unsigned short noTrap = 
+  vector unsigned short noTrap =
     (vector unsigned short)(0,0,0,0,0,0,0x1,0);
 #endif
 
@@ -267,7 +276,7 @@ int main(int argc, char **argv){
   if(pipe(eventpipe)){
     fprintf(stderr,"Unable to open event pipe:\n"
             "  %s\n",strerror(errno));
-    
+
     exit(1);
   }
 
@@ -275,20 +284,14 @@ int main(int argc, char **argv){
   if(fcntl(eventpipe[0], F_SETFL, O_NONBLOCK)){
     fprintf(stderr,"Unable to set O_NONBLOCK on event pipe:\n"
             "  %s\n",strerror(errno));
-    
+
     exit(1);
   }
 
   //signal(SIGINT,handler);
   signal(SIGSEGV,handler);
 
-  if(input_load())exit(1);
-
-  /* set block size equal to maximum input rate */
-  /* (maximum display width: 1s, maximum update interval 1s) */
-  blocksize=0;
-  for(fi=0;fi<inputs;fi++)
-    if(rate[fi]>blocksize)blocksize=rate[fi];
+  if(input_load(blocksize_callback))exit(1);
 
   /* begin with a display width of 1s */
   /* begin with an update interval (blockslice) of 100ms */

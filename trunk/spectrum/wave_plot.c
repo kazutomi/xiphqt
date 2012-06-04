@@ -1,24 +1,24 @@
 /*
  *
  *  gtk2 waveform viewer
- *    
+ *
  *      Copyright (C) 2004-2012 Monty
  *
  *  This analyzer is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2, or (at your option)
  *  any later version.
- *   
+ *
  *  The analyzer is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- *   
+ *
  *  You should have received a copy of the GNU General Public License
  *  along with Postfish; see the file COPYING.  If not, write to the
  *  Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * 
+ *
  */
 
 #include "waveform.h"
@@ -31,20 +31,23 @@
 
 static GtkDrawingAreaClass *parent_class = NULL;
 
-static void compute_metadata(GtkWidget *widget){
-  Plot *p=PLOT(widget);
+static void compute_xgrid(Plot *p){
+  GtkWidget *widget=GTK_WIDGET(p);
   int width=widget->allocation.width-p->padx;
-  int i,j;
+  if(p->width != width){
+    int i,j;
 
-  p->xgrids=11;
-  p->xtics=30;
+    p->xgrids=11;
+    p->xtics=30;
 
-  for(i=0;i<p->xgrids;i++)
-    p->xgrid[i]=rint(i/(float)(p->xgrids-1) * (width-1))+p->padx;
+    for(i=0;i<p->xgrids;i++)
+      p->xgrid[i]=rintf(i/(float)(p->xgrids-1) * (width-1))+p->padx;
 
-  for(i=0,j=0;i<p->xtics;i++,j++){
-    if(j%4==0)j++;
-    p->xtic[i]=rint(j/(float)((p->xgrids-1)*4) * (width-1))+p->padx;
+    for(i=0,j=0;i<p->xtics;i++,j++){
+      if(j%4==0)j++;
+      p->xtic[i]=rintf(j/(float)((p->xgrids-1)*4) * (width-1))+p->padx;
+    }
+    p->width=width;
   }
 }
 
@@ -88,38 +91,48 @@ GdkColor chcolor(int ch){
     rgb.blue=0xe000;
     break;
   }
-  
+
   return rgb;
 }
 
-static void draw(GtkWidget *widget){
+void plot_draw(Plot *p, fetchdata *f, plotparams *pp){
   int i;
-  Plot *p=PLOT(widget);
+  GtkWidget *widget=GTK_WIDGET(p);
+  GtkWidget *parent=gtk_widget_get_parent(widget);
   int height=widget->allocation.height;
   int width=widget->allocation.width;
-  GtkWidget *parent=gtk_widget_get_parent(widget);
   int padx = p->padx;
   int num_active=0;
+  float center = (height-p->pady)/2.;
+
+  if(!GDK_IS_DRAWABLE(p->backing))return;
+  if(!pp)return;
+  if(!f)return;
 
   /* how many channels actually active right now?  Need to know if
      trace sep is enabled */
-  if(p->trace_sep){
+  if(pp->trace_sep){
     int fi,ch=0;
-    for(fi=0;fi<p->groups;fi++){
-      for(i=ch;i<ch+p->ch[fi];i++)
-        if(p->ch_active[i])
+    for(fi=0;fi<f->groups;fi++){
+      for(i=ch;i<ch+f->channels[fi];i++)
+        if(f->active[i])
           num_active++;
-      ch+=p->ch[fi];
+      ch+=f->channels[fi];
     }
   }
 
   if(!p->drawgc){
-    GdkGCValues values;
     p->drawgc=gdk_gc_new(p->backing);
     p->twogc=gdk_gc_new(p->backing);
     gdk_gc_copy(p->drawgc,widget->style->black_gc);
     gdk_gc_copy(p->twogc,widget->style->black_gc);
-    gdk_gc_set_line_attributes(p->twogc,p->bold+1,GDK_LINE_SOLID,
+  }
+
+  if(pp->plotchoice==2){
+    gdk_gc_set_line_attributes(p->twogc,pp->bold+1,GDK_LINE_SOLID,
+                               GDK_CAP_BUTT,GDK_JOIN_MITER);
+  }else{
+    gdk_gc_set_line_attributes(p->twogc,pp->bold+1,GDK_LINE_SOLID,
                                GDK_CAP_PROJECTING,GDK_JOIN_MITER);
   }
 
@@ -132,6 +145,8 @@ static void draw(GtkWidget *widget){
     gc=parent->style->white_gc;
     gdk_draw_rectangle(p->backing,gc,1,padx,0,width-padx,height-p->pady);
   }
+
+  compute_xgrid(p);
 
   /* draw the light x grid */
   {
@@ -147,7 +162,7 @@ static void draw(GtkWidget *widget){
       gdk_draw_line(p->backing,p->drawgc,p->xtic[i],0,p->xtic[i],height-p->pady-1);
   }
 
-  PangoLayout **proper=p->x_layout[p->spanchoice];
+  PangoLayout **proper=p->x_layout[pp->spanchoice];
 
   for(i=0;i<p->xgrids;i++){
     int px,py;
@@ -159,11 +174,9 @@ static void draw(GtkWidget *widget){
                      proper[i]);
   }
 
-
   /* draw the light y grid */
   {
     GdkColor rgb={0,0,0,0};
-    int center = (height-p->pady)/2;
 
     rgb.red=0xc000;
     rgb.green=0xff00;
@@ -171,8 +184,8 @@ static void draw(GtkWidget *widget){
     gdk_gc_set_rgb_fg_color(p->drawgc,&rgb);
 
     for(i=1;i<8;i++){
-      int y1=rint(center + center*i/9);
-      int y2=rint(center - center*i/9);
+      int y1=rintf(center + center*i/9.);
+      int y2=rintf(center - center*i/9.);
       gdk_draw_line(p->backing,p->drawgc,padx,y1,width,y1);
       gdk_draw_line(p->backing,p->drawgc,padx,y2,width,y2);
     }
@@ -181,11 +194,10 @@ static void draw(GtkWidget *widget){
   /* dark y grid */
   {
     GdkColor rgb={0,0,0,0};
-    int center = (height-p->pady)/2;
     int px,py;
 
-    gdk_draw_line(p->backing,p->drawgc,padx,center-1,width,center-1);
-    gdk_draw_line(p->backing,p->drawgc,padx,center+1,width,center+1);
+    gdk_draw_line(p->backing,p->drawgc,padx,rintf(center-1),width,rintf(center-1));
+    gdk_draw_line(p->backing,p->drawgc,padx,rintf(center+1),width,rintf(center+1));
 
     rgb.red=0x0000;
     rgb.green=0xc000;
@@ -193,12 +205,12 @@ static void draw(GtkWidget *widget){
     gdk_gc_set_rgb_fg_color(p->drawgc,&rgb);
 
     for(i=-8;i<9;i+=4){
-      int y=rint(center + center*i/9);
+      int y=rintf(center + center*i/9.);
 
       gdk_draw_line(p->backing,p->drawgc,padx,y,width,y);
 
-      pango_layout_get_pixel_size(p->y_layout[p->rchoice][p->schoice][i/4+2],
-                                  &px,&py);
+      pango_layout_get_pixel_size
+        (p->y_layout[pp->rangechoice][pp->scalechoice][i/4+2],&px,&py);
 
       if(i<=0){
         rgb.red=0x0000;
@@ -214,7 +226,7 @@ static void draw(GtkWidget *widget){
       gdk_draw_layout (p->backing,
                        p->drawgc,
                        padx-px-2, y-py/2,
-                       p->y_layout[p->rchoice][p->schoice][i/4+2]);
+                       p->y_layout[pp->rangechoice][pp->scalechoice][i/4+2]);
 
       rgb.red=0x0000;
       rgb.green=0xc000;
@@ -235,226 +247,204 @@ static void draw(GtkWidget *widget){
     gdk_gc_set_rgb_fg_color(p->drawgc,&rgb);
 
     for(i=0;i<p->xgrids;i++)
-      gdk_draw_line(p->backing,p->drawgc,p->xgrid[i],0,p->xgrid[i],height-p->pady-1);
+      gdk_draw_line(p->backing,p->drawgc,p->xgrid[i],0,p->xgrid[i],
+                    height-p->pady-1);
   }
 
-  /* zero line */
+  /* center/zero line */
   {
-    int center = (height-p->pady)/2;
-    gdk_draw_line(p->backing,widget->style->black_gc,padx,center,width,center);
+    gdk_draw_line(p->backing,widget->style->black_gc,padx,
+                  rintf(center),width,rintf(center));
   }
 
   /* draw actual data */
-  if(p->ydata){
-    int ch=0,fi,i,j,k;
+  if(f->data){
+    int ch=0,ach=0,fi,i,k;
     const GdkRectangle clip = {p->padx,0,width-p->padx,height-p->pady};
-    const GdkRectangle noclip = {0,0,width,height};
     GdkColor rgb;
-    int y_sep=0;
-    int cp;
 
     gdk_gc_set_clip_rectangle (p->twogc, &clip);
 
-    if(p->trace_sep && num_active>1){
-      y_sep = (height-p->pady)/18*16/num_active;
-      cp = y_sep/2+(height-p->pady)/18;
-    }else{
-      cp = (height-p->pady)/2;
-    }
+    for(fi=0;fi<f->groups;fi++){
+      int spann = ceil(f->rate[fi]/1000000.*pp->span)+1;
 
-    for(fi=0;fi<p->groups;fi++){
-      int copies = (int)ceil(p->blockslice[fi]/p->overslice[fi]);
-      int spann = ceil(p->rate[fi]/1000000.*p->span)+1;
+      for(i=ch;i<ch+f->channels[fi];i++){
 
-      for(i=ch;i<ch+p->ch[fi];i++){
-        if(p->ch_active[i]){
-          int offset=0;
+        if(f->active[i]){
+          float *data=f->data[i];
+          int wp=width-p->padx;
+          float spani = 1000000./f->span/f->rate[fi]*wp;
+          int hp=height-p->pady;
+          float ym=hp*-8./18;
+          float cp = pp->trace_sep ?
+            (height-p->pady)*(16*i+8)/(float)(18*num_active)+
+            (height-p->pady)/18. : center;
+
+          ach++;
           rgb = chcolor(i);
           gdk_gc_set_rgb_fg_color(p->twogc,&rgb);
 
-          for(j=0;j<copies;j++){
-            float *data=p->ydata[i]+offset;
-            int wp=width-p->padx;
-            float spani = 1000000./p->span/p->rate[fi]*wp;
-            int hp=height-p->pady;
-            float ym=hp*-8./18;
+          switch(pp->plotchoice){
+          case 0: /* zero-hold */
+            {
+              int x0=-1;
+              float yH=NAN,yL=NAN,y0=NAN;
+              int acc=0;
+              for(k=0;k<spann;k++){
+                int x1 = rintf(k*spani);
+                float y1 = data[k]*ym;
 
-            switch(p->type){
-            case 0: /* zero-hold */
-              {
-                int x0=-1;
-                float yH=NAN,yL=NAN,y0=NAN;
-                int acc=0;
-                for(k=0;k<spann;k++){
-                  int x1 = rint(k*spani);
-                  float y1 = data[k]*ym;
-
-                  if(x1>x0){
-                    if(acc>1){
-                      if(!isnan(yL)&&!isnan(yH))
-                        gdk_draw_line(p->backing,p->twogc,
-                                      x0+padx,rint(yL)+cp,x0+padx,
-                                      rint(yH)+cp);
-                    }
-                    if(!isnan(y0)){
-                      gdk_draw_line(p->backing,p->twogc,
-                                    x0+padx,rint(y0)+cp,x1+padx,rint(y0)+cp);
-
-                      if(!isnan(y1))
-                        gdk_draw_line(p->backing,p->twogc,
-                                      x1+padx,rint(y0)+cp,x1+padx,rint(y1)+cp);
-                    }
-
-                    acc=1;
-                    yH=yL=y1;
-                  }else{
-                    acc++;
-                    if(!isnan(y1)){
-                      if(y1<yL || isnan(yL))yL=y1;
-                      if(y1>yH || isnan(yH))yH=y1;
-                    }
-                  }
-                  x0=x1;
-                  y0=y1;
-                }
-                {
-                  int x1 = rint(k*spani);
-
-                  if(x1<=x0 || acc>1){
+                if(x1>x0){
+                  if(acc>1){
                     if(!isnan(yL)&&!isnan(yH))
                       gdk_draw_line(p->backing,p->twogc,
-                                    x0+padx,rint(yL)+cp,x0+padx,rint(yH)+cp);
+                                    x0+padx,rintf(yL+cp),x0+padx,
+                                    rintf(yH+cp));
                   }
+                  if(!isnan(y0)){
+                    gdk_draw_line(p->backing,p->twogc,
+                                  x0+padx,rintf(y0+cp),x1+padx,rintf(y0+cp));
+
+                    if(!isnan(y1))
+                      gdk_draw_line(p->backing,p->twogc,
+                                    x1+padx,rintf(y0+cp),x1+padx,rintf(y1+cp));
+                  }
+
+                  acc=1;
+                  yH=yL=y1;
+                }else{
+                  acc++;
+                  if(!isnan(y1)){
+                    if(y1<yL || isnan(yL))yL=y1;
+                    if(y1>yH || isnan(yH))yH=y1;
+                  }
+                }
+                x0=x1;
+                y0=y1;
+              }
+              {
+                int x1 = rintf(k*spani);
+
+                if(x1<=x0 || acc>1){
+                  if(!isnan(yL)&&!isnan(yH))
+                    gdk_draw_line(p->backing,p->twogc,
+                                  x0+padx,rintf(yL+cp),x0+padx,rintf(yH+cp));
                 }
               }
-              break;
-            case 1: /* linear interpolation */
-              {
-                int x0=-1;
-                float yH=NAN,yL=NAN,y0=NAN;
-                int acc=0;
-                for(k=0;k<spann;k++){
-                  int x1 = rint(k*spani);
-                  float y1 = data[k]*ym;
+            }
+            break;
+          case 1: /* linear interpolation (first-order hold) */
+            {
+              int x0=-1;
+              float yH=NAN,yL=NAN,y0=NAN;
+              int acc=0;
+              for(k=0;k<spann;k++){
+                int x1 = rintf(k*spani);
+                float y1 = data[k]*ym;
 
-                  if(x1>x0){
-                    if(acc>1){
-                      if(!isnan(yL) && !isnan(yH))
-                        gdk_draw_line(p->backing,p->twogc,
-                                      x0+padx,rint(yL)+cp,x0+padx,
-                                      rint(yH)+cp);
-                    }
-                    if(!isnan(y0) && !isnan(y1)){
-                      gdk_draw_line(p->backing,p->twogc,
-                                    x0+padx,rint(y0)+cp,x1+padx,rint(y1)+cp);
-                    }
-
-                    acc=1;
-                    yH=yL=y1;
-                  }else{
-                    acc++;
-                    if(!isnan(y1)){
-                      if(y1<yL || isnan(yL))yL=y1;
-                      if(y1>yH || isnan(yH))yH=y1;
-                    }
-                  }
-                  x0=x1;
-                  y0=y1;
-                }
-                {
-                  int x1 = rint(k*spani);
-
-                  if(x1<=x0 || acc>1){
+                if(x1>x0){
+                  if(acc>1){
                     if(!isnan(yL) && !isnan(yH))
                       gdk_draw_line(p->backing,p->twogc,
-                                    x0+padx,rint(yL)+cp,x0+padx,rint(yH)+cp);
+                                    x0+padx,rintf(yL+cp),x0+padx,
+                                    rintf(yH+cp));
                   }
+                  if(!isnan(y0) && !isnan(y1)){
+                    gdk_draw_line(p->backing,p->twogc,
+                                  x0+padx,rintf(y0+cp),x1+padx,rintf(y1+cp));
+                  }
+
+                  acc=1;
+                  yH=yL=y1;
+                }else{
+                  acc++;
+                  if(!isnan(y1)){
+                    if(y1<yL || isnan(yL))yL=y1;
+                    if(y1>yH || isnan(yH))yH=y1;
+                  }
+                }
+                x0=x1;
+                y0=y1;
+              }
+              {
+                int x1 = rintf(k*spani);
+
+                if(x1<=x0 || acc>1){
+                  if(!isnan(yL) && !isnan(yH))
+                    gdk_draw_line(p->backing,p->twogc,
+                                  x0+padx,rintf(yL+cp),x0+padx,rintf(yH+cp));
                 }
               }
-              break;
-            case 2: /* lollipop */
-              {
-                int x0=-1;
-                float yH=NAN,yL=NAN;
-                int acc=0;
+            }
+            break;
+          case 2: /* lollipop */
+            {
+              int x0=-1;
+              float yH=NAN,yL=NAN;
 
-                rgb.red=0x8000;
-                rgb.green=0x8000;
-                rgb.blue=0x8000;
-                gdk_gc_set_rgb_fg_color(p->twogc,&rgb);
+              rgb.red=0x8000;
+              rgb.green=0x8000;
+              rgb.blue=0x8000;
+              gdk_gc_set_rgb_fg_color(p->twogc,&rgb);
 
-                for(k=0;k<spann;k++){
-                  int x1 = rint(k*spani);
-                  float y1 = data[k]*ym;
+              for(k=0;k<spann;k++){
+                int x1 = rintf(k*spani);
+                float y1 = data[k]*ym;
 
-                  if(x1>x0){
-                    if(!isnan(yL) || !isnan(yH)){
-                      if(isnan(yL) || yL>0)yL=0;
-                      if(isnan(yH) || yH<0)yH=0;
-                      gdk_draw_line(p->backing,p->twogc,
-                                    x0+padx,rint(yL)+cp,x0+padx,
-                                    rint(yH)+cp);
-                    }
-                    yH=yL=y1;
-                  }else{
-                    if(!isnan(y1)){
-                      if(y1<yL || isnan(yL))yL=y1;
-                      if(y1>yH || isnan(yH))yH=y1;
-                    }
-                  }
-                  x0=x1;
-                }
-                {
-                  int x1 = rint(k*spani);
+                if(x1>x0){
                   if(!isnan(yL) || !isnan(yH)){
                     if(isnan(yL) || yL>0)yL=0;
                     if(isnan(yH) || yH<0)yH=0;
                     gdk_draw_line(p->backing,p->twogc,
-                                  x0+padx,rint(yL)+cp,x0+padx,
-                                  rint(yH)+cp);
+                                  x0+padx,rintf(yL+cp),x0+padx,
+                                  rintf(yH+cp));
+                  }
+                  yH=yL=y1;
+                }else{
+                  if(!isnan(y1)){
+                    if(y1<yL || isnan(yL))yL=y1;
+                    if(y1>yH || isnan(yH))yH=y1;
                   }
                 }
-
-                rgb = chcolor(i);
-                gdk_gc_set_rgb_fg_color(p->twogc,&rgb);
-
-                for(k=0;k<spann;k++){
-                  int x = rint(k*spani);
-                  float y = data[k]*ym;
-                  if(!isnan(y)){
-                    gdk_draw_arc(p->backing,p->twogc,
-                                 0,x+padx-5,rint(y)+cp-5,
-                                 9,9,0,23040);
-                  }
+                x0=x1;
+              }
+              {
+                if(!isnan(yL) || !isnan(yH)){
+                  if(isnan(yL) || yL>0)yL=0;
+                  if(isnan(yH) || yH<0)yH=0;
+                  gdk_draw_line(p->backing,p->twogc,
+                                x0+padx,rintf(yL+cp),x0+padx,
+                                rintf(yH+cp));
                 }
               }
-              break;
-            }
 
-            offset+=spann;
+              rgb = chcolor(i);
+              gdk_gc_set_rgb_fg_color(p->twogc,&rgb);
+
+              for(k=0;k<spann;k++){
+                int x = rintf(k*spani);
+                float y = data[k]*ym;
+                if(!isnan(y)){
+                  gdk_draw_arc(p->backing,p->twogc,
+                               0,x+padx-5,rintf(y+cp-5),
+                               9,9,0,23040);
+                }
+              }
+            }
+            break;
           }
-          cp+=y_sep;
         }
       }
-      ch+=p->ch[fi];
+      ch+=f->channels[fi];
     }
-    //gdk_gc_set_clip_rectangle (p->drawgc, &noclip);
   }
-}
 
-static void draw_and_expose(GtkWidget *widget){
-  Plot *p=PLOT(widget);
-  if(!GDK_IS_DRAWABLE(p->backing))return;
-  draw(widget);
-  if(!GTK_WIDGET_DRAWABLE(widget))return;
-  if(!GDK_IS_DRAWABLE(widget->window))return;
   gdk_draw_drawable(widget->window,
-		    widget->style->fg_gc[GTK_WIDGET_STATE (widget)],
-		    p->backing,
-		    0, 0,
-		    0, 0,
-		    widget->allocation.width,
-		    widget->allocation.height);
+                    widget->style->fg_gc[GTK_WIDGET_STATE (widget)],
+                    p->backing,
+                    0, 0,
+                    0, 0,
+                    width, height);
 }
 
 static gboolean expose( GtkWidget *widget, GdkEventExpose *event ){
@@ -473,7 +463,7 @@ static void size_request (GtkWidget *widget,GtkRequisition *requisition){
   Plot *p=PLOT(widget);
   requisition->width = 400;
   requisition->height = 200;
-  int axisy=0,axisx=0,pady=0,padx=0,phax=0,px,py,i;
+  int axisy=0,axisx=0,pady=0,padx=0,px,py,i;
 
   /* find max X layout */
   {
@@ -506,12 +496,10 @@ static void size_request (GtkWidget *widget,GtkRequisition *requisition){
   if(requisition->height<axisy+pady)requisition->height=axisy+pady;
   p->padx=padx;
   p->pady=pady;
-  p->phax=phax;
 }
 
 static gboolean configure(GtkWidget *widget, GdkEventConfigure *event){
   Plot *p=PLOT(widget);
-
   if (p->backing)
     g_object_unref(p->backing);
 
@@ -520,13 +508,8 @@ static gboolean configure(GtkWidget *widget, GdkEventConfigure *event){
 			      widget->allocation.height,
 			      -1);
 
-  p->ydata=NULL;
   p->configured=1;
-
-  compute_metadata(widget);
-  plot_refresh(p);
-  draw_and_expose(widget);
-
+  replot();
   return TRUE;
 }
 
@@ -557,27 +540,18 @@ GType plot_get_type (void){
       (GInstanceInitFunc) plot_init,
       0
     };
-    
-    m_type = g_type_register_static (GTK_TYPE_DRAWING_AREA, "Plot", &m_info, 0);
+
+    m_type = g_type_register_static (GTK_TYPE_DRAWING_AREA, "Plot",
+                                     &m_info, 0);
   }
 
   return m_type;
 }
 
-GtkWidget* plot_new (int size, int groups, int *channels, int *rate){
+GtkWidget* plot_new (void){
   GtkWidget *ret= GTK_WIDGET (g_object_new (plot_get_type (), NULL));
   Plot *p=PLOT(ret);
-  int g,i,j;
-  int ch=0;
-  p->groups = groups;
-  for(g=0;g<groups;g++)
-    ch+=channels[g];
-
-  p->total_ch = ch;
-
-  p->ch=channels;
-  p->rate=rate;
-  p->size=size;
+  int i,j;
 
   /* generate all the text layouts we'll need */
   /* linear X scale */
@@ -648,102 +622,7 @@ GtkWidget* plot_new (int size, int groups, int *channels, int *rate){
     }
   }
 
-  p->ch_active=calloc(ch,sizeof(*p->ch_active));
-
-  p->autoscale=1;
-
-  plot_clear(p);
   return ret;
-}
-
-void plot_refresh (Plot *p){
-  float ymax,pmax,pmin;
-  int width=GTK_WIDGET(p)->allocation.width-p->padx;
-  int height=GTK_WIDGET(p)->allocation.height-p->pady;
-  float **data;
-  float *floor;
-
-  if(!p->configured)return;
-
-  data = process_fetch(p->blockslice, p->overslice, p->span,p->scale,p->range);
-  p->ydata=data;
-}
-
-void plot_clear (Plot *p){
-  GtkWidget *widget=GTK_WIDGET(p);
-  int width=GTK_WIDGET(p)->allocation.width-p->padx;
-  int i,j;
-
-  if(p->ydata)
-    for(i=0;i<p->total_ch;i++)
-      for(j=0;j<p->size;j++)
-	p->ydata[i][j]=NAN;
-  draw_and_expose(widget);
-}
-
-float **plot_get (Plot *p){
-  return(p->ydata);
-}
-
-void plot_setting (Plot *p, float range, int scale, int interval, int span, int rangechoice, int scalechoice, int spanchoice,int type,
-                   int *blockslice, int *overslice){
-  GtkWidget *widget=GTK_WIDGET(p);
-  p->range=range;
-  p->scale=scale;
-  p->span=span;
-  p->interval=interval;
-  p->rchoice=rangechoice;
-  p->schoice=scalechoice;
-  p->spanchoice=spanchoice;
-  p->type=type;
-
-  if(blockslice){
-    if(!p->blockslice)
-      p->blockslice=calloc(p->groups,sizeof(*p->blockslice));
-    memcpy(p->blockslice, blockslice, p->groups*sizeof(*p->blockslice));
-  }
-  if(overslice){
-    if(!p->overslice)
-      p->overslice=calloc(p->groups,sizeof(*p->overslice));
-    memcpy(p->overslice, overslice, p->groups*sizeof(*p->blockslice));
-  }
-
-  compute_metadata(widget);
-  plot_refresh(p);
-  draw_and_expose(widget);
-}
-
-void plot_draw (Plot *p){
-  GtkWidget *widget=GTK_WIDGET(p);
-  draw_and_expose(widget);
-}
-
-void plot_set_active(Plot *p, int *a){
-  GtkWidget *widget=GTK_WIDGET(p);
-  memcpy(p->ch_active,a,p->total_ch*sizeof(*a));
-  plot_refresh(p);
-  draw_and_expose(widget);
-}
-
-void plot_set_autoscale(Plot *p, int a){
-  GtkWidget *widget=GTK_WIDGET(p);
-  p->autoscale=a;
-  plot_refresh(p);
-  draw_and_expose(widget);
-}
-
-void plot_set_bold(Plot *p, int b){
-  GtkWidget *widget=GTK_WIDGET(p);
-  p->bold=b;
-  gdk_gc_set_line_attributes(p->twogc,p->bold+1,GDK_LINE_SOLID,
-                             GDK_CAP_PROJECTING,GDK_JOIN_MITER);
-  draw_and_expose(widget);
-}
-
-void plot_set_sep(Plot *p, int b){
-  GtkWidget *widget=GTK_WIDGET(p);
-  p->trace_sep=b;
-  draw_and_expose(widget);
 }
 
 int plot_get_left_pad (Plot *m){

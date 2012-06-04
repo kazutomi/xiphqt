@@ -85,8 +85,7 @@ extern void *process_thread(void *dummy);
 extern void process_dump(int mode);
 extern void rundata_clear();
 extern fetchdata *process_fetch(int scale, int mode, int link,
-                                 int *process, int process_n,
-                                 int height, int width);
+                                 int *process, int height, int width);
 
 extern sig_atomic_t acc_rewind;
 extern sig_atomic_t acc_loop;

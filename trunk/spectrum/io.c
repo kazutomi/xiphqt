@@ -26,7 +26,7 @@
 #include <unistd.h>
 #include "io.h"
 
-pthread_mutex_t ioparam_mutex=PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
+static pthread_mutex_t ioparam_mutex=PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 int bits[MAX_FILES] = {-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1};
 int bigendian[MAX_FILES] = {-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1};
 int channels[MAX_FILES] = {-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1};
@@ -57,6 +57,8 @@ int seekable[MAX_FILES]={0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0};
 int isapipe[MAX_FILES]={0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0};
 int global_seekable=0;
 int total_ch=0;
+
+static void (*lc)(void)=NULL;
 
 static int host_is_big_endian() {
   int32_t pattern = 0xfeedface; /* deadbeef */
@@ -131,12 +133,11 @@ static int find_chunk(FILE *in, char *type, unsigned int *len, int endian){
 
 /* used to load or reload an input */
 static int load_one_input(int fi){
-  int i,reload=0;
+  int i;
 
   if(f[fi]){
     fclose(f[fi]);
     f[fi]=NULL;
-    reload=1;
     blockbufferfill[fi]=0;
     readbufferptr[fi]=0;
     readbufferfill[fi]=0;
@@ -401,7 +402,7 @@ static int load_one_input(int fi){
   return 0;
 }
 
-int input_load(void){
+int input_load(void (*load_callback)(void)){
   int fi;
   if(inputs==0){
     /* look at stdin... is it a file, pipe, tty...? */
@@ -426,6 +427,11 @@ int input_load(void){
       exit(1);
   }
 
+  if(load_callback){
+    lc = load_callback;
+    load_callback();
+  }
+
   return 0;
 }
 
@@ -441,6 +447,8 @@ int pipe_reload(){
       fprintf(stderr,"reloading....\n");
       ret=1;
     }
+
+  if(ret && lc)lc();
   return ret;
 }
 
