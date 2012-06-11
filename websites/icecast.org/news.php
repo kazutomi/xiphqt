@@ -18,14 +18,14 @@ We are pleased to announce the next release of Icecast. A summary of the changes
 <p>
 <br />
 <ul>
-<li>Security
+<li>Security -
 We fixed 3 security issues.
 <ul>
   <li>Improved HTTPS cipher handling and added support for chained certificates.
   <li>Allow the source password to be undefined. There was a corner case, where a default password would have taken effect. It would require the admin to remove the 'source-password' from the icecast config to take effect. Default configs ship with the password set, so this vulnerability doesn't trigger there.
   <li>Prevent error log injection of control characters by substituting non-alphanumeric characters with a '.' (CVE-2011-4612). Injection attempts can be identified via access.log, as that stores URL encoded requests. Investigation if further logging code needs to have sanitized output is ongoing.
 </ul><br />
-<li>Bugfixes
+<li>Bugfixes -
 This is mostly a bug-fix release to flush out the accumulated, mostly small, fixes.<br />
 <ul>
   <li>On-demand relaying - Reject listeners while reconnecting. Fix stats for relays withoug mount section.
@@ -35,7 +35,6 @@ This is mostly a bug-fix release to flush out the accumulated, mostly small, fix
   <li>XSPF file installation
   <li>Fix case of global listeners count becoming out of sync.
   <li>Setting an interval of 0 in mount should disable shoutcast metadata inserts.
-  <li>Default for non-Ogg content is now Latin-1 (aka ISO-8859-1).  Ogg content still uses UTF-8.
 </ul><br />
 <li>Authentication
 <ul>
