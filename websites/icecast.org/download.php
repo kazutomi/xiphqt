@@ -6,12 +6,12 @@
 </div>
 <div class="newscontent">
 
-<h4>Icecast Current Release (2.3.2)</h4>
+<h4>Icecast Current Release (2.3.3)</h4>
 <center>
 <p>Binary Packages</p>
 <table border=1 cellpadding=5 cellspacing=0 width=90% bordercolor="#000000">
 <tr><td><b>Platform</b></td><td><b>Download Link</b></td></tr>
-<tr><td>Windows NT/2000/XP</td><td><a href="http://downloads.xiph.org/releases/icecast/icecast2_win32_2.3.2_setup.exe">icecast2_win32_2.3.2_setup.exe</a></td></tr>
+<tr><td>Windows NT/2000/XP</td><td>Updated installer will be available ASAP.<!--<a href="http://downloads.xiph.org/releases/icecast/icecast2_win32_2.3.3_setup.exe">icecast2_win32_2.3.3_setup.exe</a>--></td></tr>
 <tr><td>Linux/Unix</td><td>Most distributions provide ready to use <a href="#binary_packages">binary packages</a> of Icecast.</td></tr>
 </table>
 </center>
@@ -20,8 +20,8 @@
 <p>Source Packages</p>
 <table border=1 cellpadding=5 cellspacing=0 width=90% bordercolor="#000000">
 <tr><td><b>Platform</b></td><td><b>Download Link</b></td></tr>
-<tr><td>All</td><td><a href="http://downloads.xiph.org/releases/icecast/icecast-2.3.2.tar.gz">icecast-2.3.2.tar.gz</a></td></tr>
-<tr><td>RPM-compatible</td><td><a href="http://downloads.xiph.org/releases/icecast/icecast-2.3.2-0.src.rpm">icecast-2.3.2-0.src.rpm</a></td></tr>
+<tr><td>All</td><td><a href="http://downloads.xiph.org/releases/icecast/icecast-2.3.3.tar.gz">icecast-2.3.3.tar.gz</a></td></tr>
+<!--Let's see if people complain... <tr><td>RPM-compatible</td><td><a href="http://downloads.xiph.org/releases/icecast/icecast-2.3.2-0.src.rpm">icecast-2.3.2-0.src.rpm</a></td></tr>-->
 </table>
 <br>
 Older releases can be found <a href="http://downloads.xiph.org/releases/icecast">Here</a>

@@ -28,9 +28,9 @@ We fixed 3 security issues.
 <li>Bugfixes -
 This is mostly a bug-fix release to flush out the accumulated, mostly small, fixes.<br />
 <ul>
-  <li>On-demand relaying - Reject listeners while reconnecting. Fix stats for relays withoug mount section.
+  <li>On-demand relaying - Reject listeners while reconnecting. Fix stats for relays without mount section.
   <li>Prevent too frequent YP updates.
-  <li>Only allow raw metadata updates from same IP as connected source (unless user is admin). This adresses broken client software that issues updates without being connected.
+  <li>Only allow raw metadata updates from same IP as connected source (unless user is admin). This addresses broken client software that issues updates without being connected.
   <li>Minor memory leaks
   <li>XSPF file installation
   <li>Fix case of global listeners count becoming out of sync.
