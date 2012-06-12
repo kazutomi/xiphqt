@@ -3,7 +3,7 @@
 <div class="roundtop">
 <img alt="" src="/images/corner_topleft.jpg" class="corner" style="display: none" />
 </div>
-<div class="newscontent">
+<div id="release_2.3.3" class="newscontent">
 <h3>Icecast Release 2.3.3</h3>
 We are pleased to announce the next release of Icecast. A summary of the changes are listed below
 <br />
@@ -61,7 +61,7 @@ Posted June 11, 2012 by dm8tbr
 <br />
 <br />
 
-<div class="roundcont">
+<div id="release_2.3.2" class="roundcont">
 <div class="roundtop">
 <img alt="" src="/images/corner_topleft.jpg" class="corner" style="display: none" />
 </div>
@@ -154,7 +154,7 @@ Posted June 2, 2008 by karl
 <br />
 <br />
 
-<div class="roundcont">
+<div id="release_2.3.1" class="roundcont">
 <div class="roundtop">
 <img alt="" src="/images/corner_topleft.jpg" class="corner" style="display: none" />
 </div>
@@ -258,7 +258,7 @@ Posted November 14, 2005 by oddsock
 <br>
 <br>
 
-<div class="roundcont">
+<div id="release_2.3.0" class="roundcont">
 <div class="roundtop">
 <img alt="" src="/images/corner_topleft.jpg" class="corner" style="display: none" />
 </div>
@@ -403,7 +403,7 @@ Posted September 22, 2005 by oddsock
 
 <br>
 <br>
-<div class="roundcont">
+<div id="release_2.2.0" class="roundcont">
 <div class="roundtop">
 <img alt="" src="/images/corner_topleft.jpg" class="corner" style="display: none" />
 </div>
@@ -511,7 +511,7 @@ Posted December 21, 2004 by oddsock
 
 <br>
 <br>
-<div class="roundcont">
+<div id="release_2.1.0" class="roundcont">
 <div class="roundtop">
 <img alt="" src="/images/corner_topleft.jpg" class="corner" style="display: none" />
 </div>
@@ -579,7 +579,7 @@ Posted November 4, 2004 by oddsock
 
 <br>
 <br>
-<div class="roundcont">
+<div id="release_2.0.2" class="roundcont">
 <div class="roundtop">
 <img alt="" src="/images/corner_topleft.jpg" class="corner" style="display: none" />
 </div>
@@ -601,7 +601,7 @@ Posted September 24, 2004 by oddsock
 
 <br>
 <br>
-<div class="roundcont">
+<div id="release_2.0.1" class="roundcont">
 <div class="roundtop">
 <img alt="" src="/images/corner_topleft.jpg" class="corner" style="display: none" />
 </div>
@@ -625,7 +625,7 @@ Posted May 12, 2004 by oddsock
 
 <br>
 <br>
-<div class="roundcont">
+<div id="ices_release_2.0.0" class="roundcont">
 <div class="roundtop">
 <img alt="" src="/images/corner_topleft.jpg" class="corner" style="display: none" />
 </div>
@@ -650,7 +650,7 @@ Posted Mar 11, 2004 by karl
 <br>
 <br>
 
-<div class="roundcont">
+<div id="release_2.0.0" class="roundcont">
 <div class="roundtop">
 <img alt="" src="/images/corner_topleft.jpg" class="corner" style="display: none" />
 </div>
