@@ -58,7 +58,7 @@ int plot_hold=0;
 int plot_lock_y=0;
 int plot_depth=90;
 int plot_noise=0;
-int plot_bw=0;
+int plot_bwchoice=0;
 int plot_bwmode=0;
 int plot_bold=0;
 
@@ -192,7 +192,7 @@ static void calculate_autoscale (fetchdata *f,
 
   pmax+=10;
   pmin-=10;
-  if(pmax<5)pmax=5;
+  if(pmax<10)pmax=10;
   if(pmax>190)pmax=190;
   if(pmin>-20)pmin=-20;
   if(pmin<-190)pmin=-190;
@@ -505,10 +505,7 @@ static void modechange(GtkWidget *widget,gpointer in){
 
 static void linkchange(GtkWidget *widget,gpointer in){
   plot_link=gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
-  chlabels(NULL,NULL);
-  gtk_alignment_set_padding(GTK_ALIGNMENT(plot_label_al),
-                            0,0,0,plot_get_right_pad(PLOT(plot)));
-  replot(0,1,0);
+  chlabels(widget,NULL);
 }
 
 static void runchange(GtkWidget *widget,gpointer in){
@@ -557,8 +554,8 @@ static void rewindchange(GtkWidget *widget,gpointer in){
 }
 
 static void bwchange(GtkWidget *widget,gpointer in){
-  plot_bw=gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
-  if(plot_bw==0){
+  plot_bwchoice=gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
+  if(plot_bwchoice==0){
     gtk_widget_set_sensitive(GTK_WIDGET(bwmodebutton),0);
   }else{
     gtk_widget_set_sensitive(GTK_WIDGET(bwmodebutton),1);
@@ -650,7 +647,10 @@ void replot(int scale_reset, int inactive_reset, int scale_damp){
   /* update the spectral display; send new data */
   fetchdata *f = process_fetch
     (plot_scale, plot_mode, plot_link,
-     process, plot_height(PLOT(plot)), plot_width(PLOT(plot)));
+     bw_values[plot_bwchoice],plot_bwmode,
+     process, PLOT(plot));
+
+  if(!f)return;
 
   /* the fetched data may indicate the underlying file data has
      changed... */
@@ -716,6 +716,7 @@ void panel_create(void){
   GdkWindow *root=gdk_get_default_root_window();
   GtkWidget *topbox=gtk_hbox_new(0,0);
   GtkWidget *rightframe=gtk_frame_new (NULL);
+  GtkWidget *righttopal=gtk_alignment_new(.5,.5,1.,1.);
   GtkWidget *righttopbox=gtk_vbox_new(0,0);
   GtkWidget *rightframebox=gtk_event_box_new();
   GtkWidget *lefttable=gtk_table_new(4,2,0);
@@ -738,7 +739,8 @@ void panel_create(void){
 
   /* underlying boxes/frames */
   gtk_box_pack_start(GTK_BOX(topbox),lefttable,1,1,0);
-  gtk_box_pack_start(GTK_BOX(topbox),righttopbox,0,0,0);
+  gtk_box_pack_start(GTK_BOX(topbox),righttopal,0,0,0);
+  gtk_container_add(GTK_CONTAINER(righttopal),righttopbox);
 
   /* plot control checkboxes */
   {
@@ -804,10 +806,11 @@ void panel_create(void){
   plot=plot_new();
   gtk_table_attach_defaults (GTK_TABLE (lefttable), plot,0,1,2,3);
   gtk_table_set_row_spacing (GTK_TABLE (lefttable), 2, 4);
-  gtk_table_set_col_spacing (GTK_TABLE (lefttable), 0, 2);
+  //gtk_table_set_col_spacing (GTK_TABLE (lefttable), 0, 2);
 
   /* right control frame */
-  gtk_container_set_border_width (GTK_CONTAINER (righttopbox), 6);
+  gtk_alignment_set_padding(GTK_ALIGNMENT(righttopal),6,6,2,6);
+  //gtk_container_set_border_width (GTK_CONTAINER (righttopbox), 6);
   gtk_container_set_border_width (GTK_CONTAINER (rightbox), 6);
   gtk_frame_set_shadow_type(GTK_FRAME(rightframe),GTK_SHADOW_ETCHED_IN);
   gtk_widget_set_name(rightframebox,"controlpanel");
@@ -863,25 +866,22 @@ void panel_create(void){
     GtkWidget *tbox=bwtable=gtk_table_new(2,2,0);
 
     GtkWidget *menu=bwbutton=gtk_combo_box_new_text();
-    char *entries[]={"native","display"};
-    //"1Hz","3Hz","10Hz","30Hz","100Hz","300Hz","1kHz",
-    //"1/24oct","1/12oct","1/6oct","1/3oct"};
+    for(i=0;bw_entries[i];i++)
+      gtk_combo_box_append_text (GTK_COMBO_BOX (menu), bw_entries[i]);
 
-    for(i=0;i<2;i++)
-      gtk_combo_box_append_text (GTK_COMBO_BOX (menu), entries[i]);
-    //gtk_combo_box_set_active(GTK_COMBO_BOX(menu),0);
-    
     g_signal_connect (G_OBJECT (menu), "changed",
     		      G_CALLBACK (bwchange), NULL);
 
     GtkWidget *menu2=bwmodebutton=gtk_combo_box_new_text();
-    char *entries2[]={"RBW","VBW"};
-    for(i=0;i<2;i++)
+    char *entries2[]={"ampl","power","psd","video",NULL};
+    for(i=0;entries2[i];i++)
       gtk_combo_box_append_text (GTK_COMBO_BOX (menu2), entries2[i]);
-    
+
     g_signal_connect (G_OBJECT (menu2), "changed",
     		      G_CALLBACK (bwmodechange), NULL);
+
     gtk_combo_box_set_active(GTK_COMBO_BOX(menu2),0);
+    gtk_combo_box_set_active(GTK_COMBO_BOX(menu),0);
 
     gtk_table_attach_defaults(GTK_TABLE(tbox),menu,0,1,0,1);
     gtk_table_attach_defaults(GTK_TABLE(tbox),menu2,1,2,0,1);
@@ -894,7 +894,7 @@ void panel_create(void){
     for(i=0;i<3;i++)
       gtk_combo_box_append_text (GTK_COMBO_BOX (menu3), entries3[i]);
     gtk_combo_box_set_active(GTK_COMBO_BOX(menu3),plot_scale);
-    
+
     g_signal_connect (G_OBJECT (menu3), "changed",
 		      G_CALLBACK (scalechange), NULL);
 
@@ -902,7 +902,7 @@ void panel_create(void){
     char *entries4[]={"1dB","10dB","20dB","45dB","90dB","140dB","190dB"};
     for(i=0;i<7;i++)
       gtk_combo_box_append_text (GTK_COMBO_BOX (menu4), entries4[i]);
-    
+
     g_signal_connect (G_OBJECT (menu4), "changed",
 		      G_CALLBACK (depthchange), NULL);
     gtk_combo_box_set_active(GTK_COMBO_BOX(menu4),4);
@@ -913,38 +913,39 @@ void panel_create(void){
     gtk_box_pack_start(GTK_BOX(bbox),tbox,0,0,0);
 
   }
-  
+
   /* mode */
   {
     GtkWidget *menu=gtk_combo_box_new_text();
-    char *entries[]={"current frame","maximum","accumulate","average"};
-    for(i=0;i<4;i++)
+    char *entries[]={"instantaneous","maximum","accumulate","average",NULL};
+    for(i=0;entries[i];i++)
       gtk_combo_box_append_text (GTK_COMBO_BOX (menu), entries[i]);
     gtk_combo_box_set_active(GTK_COMBO_BOX(menu),plot_mode);
     gtk_box_pack_start(GTK_BOX(bbox),menu,0,0,0);
-    
+
     g_signal_connect (G_OBJECT (menu), "changed",
 		      G_CALLBACK (modechange), NULL);
   }
-  
+
   /* link */
   {
     GtkWidget *menu=gtk_combo_box_new_text();
-    char *entries[LINKS]={"independent",
-                          "sum",
-                          "subtract ref",
-                          "subtract from",
-                          "response/phase"};
+    char *entries[]={"independent",
+                     "sum",
+                     "subtract ref",
+                     "subtract from",
+                     "response/phase",
+                     NULL};
 
-    for(i=0;i<LINKS;i++)
+    for(i=0;entries[i];i++)
       gtk_combo_box_append_text (GTK_COMBO_BOX (menu), entries[i]);
     gtk_combo_box_set_active(GTK_COMBO_BOX(menu),0);
     gtk_box_pack_start(GTK_BOX(bbox),menu,0,0,0);
-    
+
     g_signal_connect (G_OBJECT (menu), "changed",
 		      G_CALLBACK (linkchange), NULL);
   }
-  
+
 
   {
     GtkWidget *sep=gtk_hseparator_new();
@@ -960,7 +961,7 @@ void panel_create(void){
     gtk_box_pack_start(GTK_BOX(bbox),button,0,0,0);
     run=button;
   }
-  
+
   /* loop */
   /* rewind */
   {
@@ -970,17 +971,17 @@ void panel_create(void){
     g_signal_connect (G_OBJECT (button), "clicked", G_CALLBACK (loopchange), NULL);
     gtk_box_pack_start(GTK_BOX(box),button,1,1,0);
     gtk_widget_set_sensitive(button,global_seekable);
-    
+
 
     button=gtk_button_new_with_mnemonic("re_wind");
     gtk_widget_add_accelerator (button, "activate", group, GDK_w, 0, 0);
     g_signal_connect (G_OBJECT (button), "clicked", G_CALLBACK (rewindchange), NULL);
     gtk_widget_set_sensitive(button,global_seekable);
     gtk_box_pack_start(GTK_BOX(box),button,1,1,0);
-    
+
     gtk_box_pack_start(GTK_BOX(bbox),box,0,0,0);
   }
-  
+
   /* clear */
   /* dump */
   {
@@ -989,7 +990,7 @@ void panel_create(void){
     gtk_widget_add_accelerator (button, "activate", group, GDK_c, 0, 0);
     g_signal_connect (G_OBJECT (button), "clicked", G_CALLBACK (clearchange), NULL);
     gtk_box_pack_start(GTK_BOX(box),button,1,1,0);
-    
+
 
     button=gtk_button_new_with_mnemonic("_dump data");
     gtk_widget_add_accelerator (button, "activate", group, GDK_d, 0, 0);
@@ -1143,4 +1144,3 @@ void panel_go(int argc,char *argv[]){
   gtk_main ();
 
 }
-

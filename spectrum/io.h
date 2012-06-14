@@ -44,10 +44,9 @@
 #include <fcntl.h>
 
 #define MAX_FILES 16
-#define readbuffersize 512
+extern pthread_mutex_t blockbuffer_mutex;
 
-extern int input_load(void (*load_callback)(void));
-extern void set_blockslice(int slice, int fi);
+extern int input_load(void);
 extern int pipe_reload(void);
 extern int input_read(int loop_p, int partial_p);
 extern int rewind_files(void);
@@ -70,8 +69,9 @@ extern char *inputname[MAX_FILES];
 extern int seekable[MAX_FILES];
 extern int global_seekable;
 
-extern int blockslice[MAX_FILES];
+extern sig_atomic_t blockslice_frac;
 extern int blockbufferfill[MAX_FILES];
+extern int blockbuffernew[MAX_FILES];
 extern float **blockbuffer;
 #endif
 

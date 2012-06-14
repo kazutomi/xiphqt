@@ -33,7 +33,7 @@ int eventpipe[2];
 char *version;
 char *inputname[MAX_FILES];
 int inputs=0;
-int blocksize = 131072; /* starting default */
+int blocksize=0;
 extern int plot_bold;
 
 void handler(int sig){
@@ -202,15 +202,6 @@ void sigill_handler(int sig){
   if(sig==SIGILL)sigill=1;
 }
 
-void blocksize_callback(void){
-  int fi;
-  /* set block size equal to maximum input rate + epsilon*/
-  /* (maximum display width: 1s, maximum update interval 1s) */
-  blocksize=0;
-  for(fi=0;fi<inputs;fi++)
-    if(rate[fi]>blocksize)blocksize=rate[fi]+16;
-}
-
 int main(int argc, char **argv){
   int fi;
 
@@ -291,12 +282,17 @@ int main(int argc, char **argv){
   //signal(SIGINT,handler);
   signal(SIGSEGV,handler);
 
-  if(input_load(blocksize_callback))exit(1);
+  if(input_load())exit(1);
+
+  /* set block size equal to maximum input rate + epsilon*/
+  /* (maximum display width: 1s, maximum update interval 1s) */
+  blocksize=0;
+  for(fi=0;fi<inputs;fi++)
+    if(rate[fi]>blocksize)blocksize=rate[fi]+16;
 
   /* begin with a display width of 1s */
   /* begin with an update interval (blockslice) of 100ms */
-  for(fi=0;fi<inputs;fi++)
-    blockslice[fi]=rate[fi]/10;
+  blockslice_frac = 10;
 
   panel_go(argc,argv);
 

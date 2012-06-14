@@ -26,12 +26,23 @@
 #include <unistd.h>
 #include "io.h"
 
-static pthread_mutex_t ioparam_mutex=PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
+#define readsize 512
+
+/* locks access to file metadata and blockbuffer data */
+pthread_mutex_t blockbuffer_mutex=PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
+
 int bits[MAX_FILES] = {-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1};
 int bigendian[MAX_FILES] = {-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1};
 int channels[MAX_FILES] = {-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1};
 int rate[MAX_FILES] = {-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1};
 int signedp[MAX_FILES] = {-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1};
+
+int total_ch=0;
+
+float **blockbuffer=0;
+int blockbufferfill[MAX_FILES]={0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0};
+int blockbuffernew[MAX_FILES]={0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0};
+/* end list of locked buffers */
 
 int bits_force[MAX_FILES] = {0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0};
 int bigendian_force[MAX_FILES] = {0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0};
@@ -39,13 +50,13 @@ int channels_force[MAX_FILES] = {0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0};
 int rate_force[MAX_FILES] = {0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0};
 int signed_force[MAX_FILES] = {0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0};
 
-extern int blocksize;
-int blockslice[MAX_FILES]= {-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1};
+extern int blocksize; /* set only at startup */
+sig_atomic_t blockslice_frac;
+static int blockslice_count=0;
+static int blockslice_started=0;
+static int blockslices[MAX_FILES]={0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0};
 
-float **blockbuffer=0;
-int blockbufferfill[MAX_FILES]={0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0};
-
-static unsigned char readbuffer[MAX_FILES][readbuffersize];
+static unsigned char readbuffer[MAX_FILES][readsize];
 static int readbufferfill[MAX_FILES]={0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0};
 static int readbufferptr[MAX_FILES]={0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0};
 
@@ -56,9 +67,6 @@ static off_t bytesleft[MAX_FILES]= {-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-
 int seekable[MAX_FILES]={0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0};
 int isapipe[MAX_FILES]={0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0};
 int global_seekable=0;
-int total_ch=0;
-
-static void (*lc)(void)=NULL;
 
 static int host_is_big_endian() {
   int32_t pattern = 0xfeedface; /* deadbeef */
@@ -131,14 +139,13 @@ static int find_chunk(FILE *in, char *type, unsigned int *len, int endian){
   }
 }
 
-/* used to load or reload an input */
-static int load_one_input(int fi){
+static void close_one_input(int fi){
   int i;
-
   if(f[fi]){
     fclose(f[fi]);
     f[fi]=NULL;
     blockbufferfill[fi]=0;
+    blockbuffernew[fi]=0;
     readbufferptr[fi]=0;
     readbufferfill[fi]=0;
     if(blockbuffer){
@@ -148,7 +155,13 @@ static int load_one_input(int fi){
       blockbuffer=NULL;
     }
     total_ch -= channels[fi];
+    channels[fi]=0;
   }
+}
+
+/* used to load or reload an input */
+static int load_one_input(int fi){
+  int i;
 
   if(!strcmp(inputname[fi],"/dev/stdin") && fi==0){
     int newfd=dup(STDIN_FILENO);
@@ -176,7 +189,10 @@ static int load_one_input(int fi){
       global_seekable=1;
     }
 
-    fread(headerid,1,12,f[fi]);
+    if(fread(headerid,1,12,f[fi])==0 && feof(f[fi])){
+      close_one_input(fi);
+      return 1;
+    }
     if(!strncmp(headerid,"RIFF",4) && !strncmp(headerid+8,"WAVE",4)){
       unsigned int chunklen;
 
@@ -402,15 +418,14 @@ static int load_one_input(int fi){
   return 0;
 }
 
-int input_load(void (*load_callback)(void)){
+int input_load(void){
   int fi;
   if(inputs==0){
     /* look at stdin... is it a file, pipe, tty...? */
     if(isatty(STDIN_FILENO)){
       fprintf(stderr,
-	      "Spectrum requires either an input file on the command line\n"
-	      "or stream data piped|redirected to stdin. spectrum -h will\n"
-	      "give more details.\n");
+	      "Input file on the command line or stream data\n"
+              "piped|redirected to stdin. -h will give more details.\n");
       return 1;
     }
     inputname[0]=strdup("/dev/stdin");
@@ -427,34 +442,27 @@ int input_load(void (*load_callback)(void)){
       exit(1);
   }
 
-  if(load_callback){
-    lc = load_callback;
-    load_callback();
-  }
-
   return 0;
 }
 
-/* attempts to reopen any inputs that are pipes.  Does not check for
-   EOF, ignores non-fifo inputs.  Returns nonzero if any pipes
-   reopened. */
+/* attempts to reopen a pipe at EOF.  Ignores non-fifo inputs.
+   Returns nonzero if a pipe reopens, 0 otherwise */
 
 int pipe_reload(){
   int fi;
   int ret=0;
   for(fi=0;fi<inputs;fi++)
-    if(!seekable[fi] && isapipe[fi] && !load_one_input(fi)){
-      fprintf(stderr,"reloading....\n");
+    if(!seekable[fi] && f[fi]==NULL && isapipe[fi] &&
+       !load_one_input(fi)){
+      fprintf(stderr,"reopened input %d\n",fi);
       ret=1;
     }
-
-  if(ret && lc)lc();
   return ret;
 }
 
 /* Convert new data from readbuffer into the blockbuffers until the
-   blockbuffer is full */
-static void LBEconvert(int *localslice){
+   blockbuffer is full or the readbuffer is empty */
+static void LBEconvert(void){
   float scale=1./2147483648.;
   int ch=0,fi;
 
@@ -467,7 +475,7 @@ static void LBEconvert(int *localslice){
       channels[fi]/bytes*channels[fi]*bytes+readbufferptr[fi];
 
     int bfill = blockbufferfill[fi];
-    int tosize = blocksize + localslice[fi];
+    int tosize = blocksize + blockslices[fi];
     int rptr = readbufferptr[fi];
     unsigned char *rbuf = readbuffer[fi];
 
@@ -558,30 +566,51 @@ static void LBEconvert(int *localslice){
   }
 }
 
-void set_blockslice(int slice, int fi){
-  pthread_mutex_lock(&ioparam_mutex);
-  blockslice[fi]=slice;
-  pthread_mutex_unlock(&ioparam_mutex);
+/* blockslices are tracked/locked over a one second period */
+static void blockslice_advance(void){
+  int fi;
+  int frac = blockslice_frac;
+  int count;
+
+  /* strict determinism is nice */
+  if(!blockslice_started)blockslice_count=0;
+
+  count = blockslice_count + (1000000/frac);
+  for(fi=0;fi<inputs;fi++){
+    int prevsample = rint((double)rate[fi]*blockslice_count/1000000);
+    int thissample = rint((double)rate[fi]*count/1000000);
+
+    blockslices[fi] = thissample - prevsample;
+    if(blockslices[fi]<1)blockslices[fi]=1;
+    if(blockslices[fi]>blocksize)blockslices[fi]=blocksize;
+
+  }
+
+  blockslice_count = count;
+  if(blockslice_count>=1000000)blockslice_count-=1000000;
+  blockslice_started = 1;
 }
 
-/* when we return, the blockbuffer is full or we're at EOF */
-/* EOF cases:
-     loop set: return EOF if all seekable streams have hit EOF
-     loop unset: return EOF if all streams have hit EOF
-   pad individual EOF streams out with zeroes until global EOF is hit  */
+/* input_read returns:
+   -1 if a pipe hits EOF
+    0 if all at EOF and nothing to process
+    1 if new data ready to process
+
+   All access to blockbuffer[0,blocksize) is locked, as is the
+   blockbuffer metadata
+*/
 
 int input_read(int loop, int partialok){
-  int i,j,fi,ch=0;
-  int eof=1;
+  int i,j,fi,ch;
   int notdone=1;
+  int ret=0;
   int rewound[total_ch];
-  int localslice[MAX_FILES];
   memset(rewound,0,sizeof(rewound));
 
-  pthread_mutex_lock(&ioparam_mutex);
-  memcpy(localslice,blockslice,sizeof(localslice));
-  pthread_mutex_unlock(&ioparam_mutex);
+  /* also handles initialization */
+  if(!blockslice_started)blockslice_advance();
 
+  pthread_mutex_lock(&blockbuffer_mutex);
   if(blockbuffer==0){
     blockbuffer=malloc(total_ch*sizeof(*blockbuffer));
 
@@ -592,7 +621,8 @@ int input_read(int loop, int partialok){
 
   /* if this is first frame, do we allow a single slice or fully
      fill the buffer */
-  for(fi=0;fi<inputs;fi++){
+  ch=0;
+  for(fi=0,ch=0;fi<inputs;fi++){
     if(blockbufferfill[fi]==0){
       for(i=ch;i<channels[fi]+ch;i++)
         for(j=0;j<blocksize;j++)
@@ -600,107 +630,111 @@ int input_read(int loop, int partialok){
       if(partialok){
         blockbufferfill[fi]=blocksize;
       }else{
-        blockbufferfill[fi]=localslice[fi];
+        blockbufferfill[fi]=blockslices[fi];
       }
     }
   }
-
-  /* try to fill buffer to blocksize+slice before performing shift */
+  pthread_mutex_unlock(&blockbuffer_mutex);
 
   while(notdone){
     notdone=0;
 
-    /* if there's data left to be pulled out of a readbuffer, do that */
-    LBEconvert(localslice);
+    /* if there's data left to be pulled out of a readbuffer, do
+       that */
+    /* not locked: new data is either fed into a yet-inactive
+       buffer or to the end (past the blocksize) of an active
+       buffer */
+    LBEconvert();
 
-    ch=0;
+    /* fill readbuffers */
     for(fi=0;fi<inputs;fi++){
-      if(blockbufferfill[fi]!=blocksize+localslice[fi]){
 
-	/* shift the read buffer before fill if there's a fractional
-	   frame in it */
-	if(readbufferptr[fi]!=readbufferfill[fi] && readbufferptr[fi]>0){
-	  memmove(readbuffer[fi],readbuffer[fi]+readbufferptr[fi],
-		  (readbufferfill[fi]-readbufferptr[fi])*sizeof(**readbuffer));
-	  readbufferfill[fi]-=readbufferptr[fi];
-	  readbufferptr[fi]=0;
-	}else{
-	  readbufferfill[fi]=0;
-	  readbufferptr[fi]=0;
-	}
-
-	/* attempt to top off the readbuffer */
-	{
-	  long actually_readbytes=0,readbytes=readbuffersize-readbufferfill[fi];
-
-	  if(readbytes>0)
-	    actually_readbytes=fread(readbuffer[fi]+readbufferfill[fi],1,readbytes,f[fi]);
-
-	  if(actually_readbytes<=0 && ferror(f[fi])){
-	    fprintf(stderr,"Input read error from %s: %s\n",
-                    inputname[fi],strerror(ferror(f[fi])));
-	  }else if (actually_readbytes==0){
-            /* real, hard EOF/error in a partially filled block */
-            if(!partialok){
-              /* partial frame is *not* ok.  zero it out. */
-              memset(readbuffer[fi],0,readbuffersize);
-              bytesleft[fi]=0;
-              readbufferfill[fi]=0;
-              readbufferptr[fi]=0;
-              blockbufferfill[fi]=0;
-            }
-            if(loop && seekable[fi] && (!rewound[fi] || (partialok && blockbufferfill[fi]))){
-              /* rewind this file and continue */
-              fseek(f[fi],offset[fi],SEEK_SET);
-              if(length[fi]!=-1)
-                bytesleft[fi]=length[fi]*channels[fi]*((bits[fi]+7)/8);
-              notdone=1;
-              rewound[fi]=1;
-            }
-	  }else{
-            /* got a read */
-	    bytesleft[fi]-=actually_readbytes;
-	    readbufferfill[fi]+=actually_readbytes;
-            notdone=1;
-	  }
-	}
-      }else{
-        eof=0;
+      /* drain what's already been processed before fill */
+      if(readbufferptr[fi]>0){
+        if(readbufferptr[fi]!=readbufferfill[fi]){
+          /* partial frame; shift it */
+          memmove(readbuffer[fi],readbuffer[fi]+readbufferptr[fi],
+                  (readbufferfill[fi]-readbufferptr[fi]));
+          readbufferfill[fi]-=readbufferptr[fi];
+          readbufferptr[fi]=0;
+        }else{
+          /* all processed, just empty */
+          readbufferfill[fi]=0;
+          readbufferptr[fi]=0;
+        }
       }
-      ch += channels[fi];
+
+      /* attempt to top off the readbuffer if the given blockbuffer
+         isn't full */
+      if(readbufferfill[fi]<readsize &&
+         blockbufferfill[fi]<blocksize+blockslices[fi]){
+        int readbytes=readsize-readbufferfill[fi];
+        int actually_readbytes =
+          fread(readbuffer[fi]+readbufferfill[fi],1,readbytes,f[fi]);
+
+        if(actually_readbytes<=0 && ferror(f[fi])){
+          fprintf(stderr,"Input read error from %s: %s\n",
+                  inputname[fi],strerror(ferror(f[fi])));
+        }else if (actually_readbytes==0){
+          if(isapipe[fi] && !seekable[fi]){
+            /* attempt to reopen a pipe immediately; kick out */
+            close_one_input(fi);
+            return -1;
+          }
+          if(loop && seekable[fi] && (!rewound[fi] || readbufferfill[fi])){
+            /* real, hard EOF/error in a partially filled block */
+            /* rewind this file and continue */
+            fseek(f[fi],offset[fi],SEEK_SET);
+            if(length[fi]!=-1)
+              bytesleft[fi]=length[fi]*channels[fi]*((bits[fi]+7)/8);
+            notdone=1;
+            rewound[fi]=1;
+          }
+        }else{
+          /* got a read */
+          bytesleft[fi]-=actually_readbytes;
+          readbufferfill[fi]+=actually_readbytes;
+          notdone=1;
+        }
+      }
     }
   }
 
-  /* shift */
+  /* at this point, all buffers are fully topped off or at eof */
+  pthread_mutex_lock(&blockbuffer_mutex);
+
+  /* shift any updated blockbuffers and mark them new */
   for(fi=0,ch=0;fi<inputs;fi++){
-    if(blockbufferfill[fi]>blocksize){
+    if(blockbufferfill[fi]>=blocksize+(partialok?1:blockslices[fi])){
       for(i=ch;i<channels[fi]+ch;i++)
-        memmove(blockbuffer[i],blockbuffer[i]+(blockbufferfill[fi]-blocksize),
+        memmove(blockbuffer[i],blockbuffer[i]+
+                (blockbufferfill[fi]-blocksize),
                 blocksize*sizeof(**blockbuffer));
       blockbufferfill[fi]=blocksize;
+      blockbuffernew[fi]=1;
+      ret=1;
     }
-    for(i=ch;i<channels[fi]+ch;i++)
-      for(j=blockbufferfill[fi];j<blocksize;j++)
-        blockbuffer[i][j]=NAN;
-    ch+=channels[fi];
   }
+  blockslice_advance();
+  pthread_mutex_unlock(&blockbuffer_mutex);
 
-  return eof;
+  return ret;
 }
 
 int rewind_files(){
   int fi;
-  for(fi=0;fi<inputs;fi++){
-    if(!seekable[fi])
-      return 1;
-  }
 
   for(fi=0;fi<inputs;fi++){
-    blockbufferfill[fi]=0;
-    readbufferptr[fi]=0;
-    readbufferfill[fi]=0;
-    fseek(f[fi],offset[fi],SEEK_SET);
-    if(length[fi]!=-1)bytesleft[fi]=length[fi]*channels[fi]*((bits[fi]+7)/8);
+    if(seekable[fi]){
+      blockbufferfill[fi]=0;
+      blockbuffernew[fi]=0;
+      readbufferptr[fi]=0;
+      readbufferfill[fi]=0;
+      fseek(f[fi],offset[fi],SEEK_SET);
+      if(length[fi]!=-1)bytesleft[fi]=length[fi]*channels[fi]*((bits[fi]+7)/8);
+    }
   }
+
+  blockslice_started=0;
   return 0;
 }
