@@ -214,15 +214,6 @@ void sigill_handler(int sig){
   if(sig==SIGILL)sigill=1;
 }
 
-void blockslice_callback(void){
-  int fi;
-  /* select the full-block slice size: ~10fps */
-  for(fi=0;fi<inputs;fi++){
-    blockslice[fi]=rate[fi]/10;
-    while(blockslice[fi]>blocksize/2)blockslice[fi]/=2;
-  }
-}
-
 int main(int argc, char **argv){
 
   version=strstr(VERSION,"version.h");
@@ -302,7 +293,8 @@ int main(int argc, char **argv){
   //signal(SIGINT,handler);
   signal(SIGSEGV,handler);
 
-  if(input_load(blockslice_callback))exit(1);
+  blockslice_frac=10;
+  if(input_load())exit(1);
 
   /* go */
   panel_go(argc,argv);

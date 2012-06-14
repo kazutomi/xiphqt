@@ -44,7 +44,6 @@ typedef struct {
 
   float **data;
   int *active;
-  int increment;
 } fetchdata;
 
 typedef struct {

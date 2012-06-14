@@ -30,18 +30,21 @@ static fftwf_plan plan=NULL;
 static int prev_total_ch=-1;
 
 static pthread_mutex_t feedback_mutex=PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
-static int feedback_increment=0;
+static pthread_mutex_t bw_mutex=PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 
 static float *feedback_count=NULL;
 static float *process_work=NULL;
 
-static float **feedback_acc=NULL;
-static float **feedback_max=NULL;
-static float **feedback_instant=NULL;
+static float **mag_acc=NULL;
+static float **mag_max=NULL;
+static float **mag_instant=NULL;
 
-static float **ph_acc=NULL;
-static float **ph_max=NULL;
-static float **ph_instant=NULL;
+static float **phI_acc=NULL;
+static float **phQ_acc=NULL;
+static float **phI_max=NULL;
+static float **phQ_max=NULL;
+static float **phI_instant=NULL;
+static float **phQ_instant=NULL;
 
 static float **xmappingL=NULL;
 static float **xmappingM=NULL;
@@ -63,35 +66,51 @@ static void init_process(void){
 
     if(plan)fftwf_destroy_plan(plan);
 
-    if(feedback_acc){
+    if(mag_acc){
       for(i=0;i<prev_total_ch;i++)
-        if(feedback_acc[i])free(feedback_acc[i]);
-      free(feedback_acc);
+        if(mag_acc[i])free(mag_acc[i]);
+      free(mag_acc);
     }
-    if(feedback_max){
+    if(mag_max){
       for(i=0;i<prev_total_ch;i++)
-        if(feedback_max[i])free(feedback_max[i]);
-      free(feedback_max);
+        if(mag_max[i])free(mag_max[i]);
+      free(mag_max);
     }
-    if(feedback_instant){
+    if(mag_instant){
       for(i=0;i<prev_total_ch;i++)
-        if(feedback_instant[i])free(feedback_instant[i]);
-      free(feedback_instant);
+        if(mag_instant[i])free(mag_instant[i]);
+      free(mag_instant);
     }
-    if(ph_acc){
+
+    if(phI_acc){
       for(i=0;i<prev_total_ch;i++)
-        if(ph_acc[i])free(ph_acc[i]);
-      free(ph_acc);
+        if(phI_acc[i])free(phI_acc[i]);
+      free(phI_acc);
     }
-    if(ph_max){
+    if(phQ_acc){
       for(i=0;i<prev_total_ch;i++)
-        if(ph_max[i])free(ph_max[i]);
-      free(ph_max);
+        if(phQ_acc[i])free(phQ_acc[i]);
+      free(phQ_acc);
     }
-    if(ph_instant){
+    if(phI_max){
       for(i=0;i<prev_total_ch;i++)
-        if(ph_instant[i])free(ph_instant[i]);
-      free(ph_instant);
+        if(phI_max[i])free(phI_max[i]);
+      free(phI_max);
+    }
+    if(phQ_max){
+      for(i=0;i<prev_total_ch;i++)
+        if(phQ_max[i])free(phQ_max[i]);
+      free(phQ_max);
+    }
+    if(phI_instant){
+      for(i=0;i<prev_total_ch;i++)
+        if(phI_instant[i])free(phI_instant[i]);
+      free(phI_instant);
+    }
+    if(phQ_instant){
+      for(i=0;i<prev_total_ch;i++)
+        if(phQ_instant[i])free(phQ_instant[i]);
+      free(phQ_instant);
     }
 
     if(process_work)free(process_work);
@@ -103,24 +122,32 @@ static void init_process(void){
     process_work=calloc(blocksize+2,sizeof(*process_work));
     feedback_count=calloc(total_ch,sizeof(*feedback_count));
 
-    feedback_acc=malloc(total_ch*sizeof(*feedback_acc));
-    feedback_max=malloc(total_ch*sizeof(*feedback_max));
-    feedback_instant=malloc(total_ch*sizeof(*feedback_instant));
+    mag_acc=calloc(total_ch,sizeof(*mag_acc));
+    mag_max=calloc(total_ch,sizeof(*mag_max));
+    mag_instant=calloc(total_ch,sizeof(*mag_instant));
 
-    ph_acc=malloc(total_ch*sizeof(*ph_acc));
-    ph_max=malloc(total_ch*sizeof(*ph_max));
-    ph_instant=malloc(total_ch*sizeof(*ph_instant));
+    phI_acc=calloc(total_ch,sizeof(*phI_acc));
+    phQ_acc=calloc(total_ch,sizeof(*phQ_acc));
+    phI_max=calloc(total_ch,sizeof(*phI_max));
+    phQ_max=calloc(total_ch,sizeof(*phQ_max));
+    phI_instant=calloc(total_ch,sizeof(*phI_instant));
+    phQ_instant=calloc(total_ch,sizeof(*phQ_instant));
 
     freqbuffer=fftwf_malloc((blocksize+2)*sizeof(*freqbuffer));
     for(i=0;i<total_ch;i++){
 
-      feedback_acc[i]=calloc(blocksize/2+1,sizeof(**feedback_acc));
-      feedback_max[i]=calloc(blocksize/2+1,sizeof(**feedback_max));
-      feedback_instant[i]=calloc(blocksize/2+1,sizeof(**feedback_instant));
+      mag_acc[i]=calloc(blocksize/2+1,sizeof(**mag_acc));
+      mag_max[i]=calloc(blocksize/2+1,sizeof(**mag_max));
+      mag_instant[i]=calloc(blocksize/2+1,sizeof(**mag_instant));
 
-      ph_acc[i]=calloc(blocksize+2,sizeof(**ph_acc));
-      ph_max[i]=calloc(blocksize+2,sizeof(**ph_max));
-      ph_instant[i]=calloc(blocksize+2,sizeof(**ph_instant));
+      if(i>0){
+        phI_acc[i]=calloc(blocksize/2+1,sizeof(**phI_acc));
+        phI_max[i]=calloc(blocksize/2+1,sizeof(**phI_max));
+        phI_instant[i]=calloc(blocksize/2+1,sizeof(**phI_instant));
+        phQ_acc[i]=calloc(blocksize/2+1,sizeof(**phQ_acc));
+        phQ_max[i]=calloc(blocksize/2+1,sizeof(**phQ_max));
+        phQ_instant[i]=calloc(blocksize/2+1,sizeof(**phQ_instant));
+      }
     }
 
     prev_total_ch = total_ch;
@@ -139,49 +166,72 @@ static void init_process(void){
 }
 
 void rundata_clear(){
-  int i,j;
+  int i;
   pthread_mutex_lock(&feedback_mutex);
   for(i=0;i<total_ch;i++){
     feedback_count[i]=0;
-    memset(feedback_acc[i],0,(blocksize/2+1)*sizeof(**feedback_acc));
-    memset(feedback_max[i],0,(blocksize/2+1)*sizeof(**feedback_max));
-    memset(feedback_instant[i],0,(blocksize/2+1)*sizeof(**feedback_instant));
+    memset(mag_acc[i],0,(blocksize/2+1)*sizeof(**mag_acc));
+    memset(mag_max[i],0,(blocksize/2+1)*sizeof(**mag_max));
+    memset(mag_instant[i],0,(blocksize/2+1)*sizeof(**mag_instant));
 
-    for(j=0;j<blocksize+2;j++){
-      ph_acc[i][j]=0;
-      ph_max[i][j]=0;
-      ph_instant[i][j]=0;
+    if(i>0){
+      memset(phI_acc[i],0,(blocksize/2+1)*sizeof(**phI_acc));
+      memset(phQ_acc[i],0,(blocksize/2+1)*sizeof(**phQ_acc));
+      memset(phI_max[i],0,(blocksize/2+1)*sizeof(**phI_max));
+      memset(phQ_max[i],0,(blocksize/2+1)*sizeof(**phQ_max));
+      memset(phI_instant[i],0,(blocksize/2+1)*sizeof(**phI_instant));
+      memset(phQ_instant[i],0,(blocksize/2+1)*sizeof(**phQ_instant));
     }
   }
   pthread_mutex_unlock(&feedback_mutex);
 }
 
-/* return 0 on EOF, 1 otherwise */
-static int process(){
-  int fi,i,j,ch;
+char *bw_entries[]=
+  {"native","display",
+   ".1Hz",".3Hz","1Hz","3Hz","10Hz","30Hz","100Hz",NULL};
+float bw_values[]=
+  {0., 0., .1, .3, 1, 3, 10, 30, 100};
 
-  if(acc_rewind)
-    rewind_files();
-  acc_rewind=0;
+//static int bandwidth_choice=0;
+//static float bandwidth=-1;
+//static int detector_mode=0;
 
-  if(input_read(acc_loop,0))
-    return 0;
+void set_bandwidth_detector(int bw, int det){
+#if 0
+  pthread_mutex_lock(&bw_mutex);
+  bandwidth_choice=bw;
+  detector_mode=det;
+  compute_bandwidth();
+  pthread_mutex_unlock(&bw_mutex);
 
+  pthread_mutex_lock(&feedback_mutex);
+  rundata_clear();
+  accumulate_feedback();
+  pthread_mutex_unlock(&feedback_mutex);
+#endif
+}
+
+static void process(void){
   /* by channel */
-  ch=0;
+  int i,j,fi,ch=0;
   for(fi=0;fi<inputs;fi++){
-    if(blockbufferfill[fi]){
+    if(blockbuffernew[fi]){
+      blockbuffernew[fi]=0;
       for(i=ch;i<ch+channels[fi];i++){
 
+        pthread_mutex_lock(&bw_mutex);
 	float *data=blockbuffer[i];
 
-	/* window the blockbuffer into the FFT buffer */
+	/* window the blockbuffer into the FFT buffer, save a copy of
+           current frame for BW changes */
 	for(j=0;j<blocksize;j++){
-	  freqbuffer[j]=data[j]*window[j];
+	  freqbuffer[j]=window[j]*data[j];
 	}
 
 	/* transform */
 	fftwf_execute(plan);
+
+        pthread_mutex_unlock(&bw_mutex);
 
 	pthread_mutex_lock(&feedback_mutex);
 
@@ -192,6 +242,7 @@ static int process(){
 	  float sqR = R*R;
 	  float sqI = I*I;
 	  float sqM = sqR+sqI;
+          //float M = sqrtf(sqM);
 
 	  /* deal with phase accumulate/rotate */
 	  if(i==ch){
@@ -208,23 +259,23 @@ static int process(){
 	    pR = (rR*R - rI*I);
 	    pI = (rR*I + rI*R);
 
-	    ph_instant[i][j]=pR;
-	    ph_instant[i][j+1]=pI;
+	    phI_instant[i][j>>1]=pR;
+	    phQ_instant[i][j>>1]=pI;
 
-	    ph_acc[i][j]+=pR;
-	    ph_acc[i][j+1]+=pI;
+	    phI_acc[i][j>>1]+=pR;
+	    phQ_acc[i][j>>1]+=pI;
 
-	    if(feedback_max[i][j>>1]<sqM){
-	      ph_max[i][j]=pR;
-	      ph_max[i][j+1]=pI;
+	    if(mag_max[i][j>>1]<sqM){
+	      phI_max[i][j>>1]=pR;
+	      phQ_max[i][j>>1]=pI;
 	    }
 	  }
 
-	  feedback_instant[i][j>>1]=sqM;
-	  feedback_acc[i][j>>1]+=sqM;
+	  mag_instant[i][j>>1]=sqM;
+	  mag_acc[i][j>>1]+=sqM;
 
-	  if(feedback_max[i][j>>1]<sqM)
-	    feedback_max[i][j>>1]=sqM;
+	  if(mag_max[i][j>>1]<sqM)
+	    mag_max[i][j>>1]=sqM;
 
 	}
 	feedback_count[i]++;
@@ -234,32 +285,42 @@ static int process(){
     }
     ch+=channels[fi];
   }
-
-  feedback_increment++;
-  write(eventpipe[1],"",1);
-  return 1;
 }
 
 void *process_thread(void *dummy){
+  int ret;
   pthread_mutex_lock(&feedback_mutex);
   init_process();
   pthread_mutex_unlock(&feedback_mutex);
 
-  while(1){
-    while(!process_exit && process());
-    pthread_mutex_lock(&feedback_mutex);
-    if(!process_exit && pipe_reload()){
-      /* ah, at least one input was a pipe */
-      init_process();
-      rundata_clear();
-      metareload=1;
-      pthread_mutex_unlock(&feedback_mutex);
-      write(eventpipe[1],"",1);
-    }else{
-      pthread_mutex_unlock(&feedback_mutex);
-      break;
+  while(!process_exit){
+
+    if(acc_rewind) rewind_files();
+    acc_rewind=0;
+
+    ret=input_read(acc_loop,0);
+    if(ret==0) break;
+    if(ret==-1){
+      /* a pipe returned EOF; attempt reopen */
+      pthread_mutex_lock(&feedback_mutex);
+      if(pipe_reload()){
+        init_process();
+        rundata_clear();
+        metareload=1;
+        pthread_mutex_unlock(&feedback_mutex);
+        write(eventpipe[1],"",1);
+        continue;
+      }else{
+        pthread_mutex_unlock(&feedback_mutex);
+        break;
+      }
     }
+
+    process();
+    write(eventpipe[1],"",1);
   }
+
+  /* eof on all inputs */
   process_active=0;
   write(eventpipe[1],"",1);
   return NULL;
@@ -278,7 +339,7 @@ void process_dump(int mode){
       fprintf(out,"%f ",(double)i*rate[fi]/blocksize);
 
       for(j=ch;j<ch+channels[fi];j++)
-        fprintf(out,"%f ",todB(feedback_acc[j][i])*.5);
+        fprintf(out,"%f ",todB(mag_acc[j][i])*.5);
       fprintf(out,"\n");
     }
     fprintf(out,"\n");
@@ -293,7 +354,7 @@ void process_dump(int mode){
       fprintf(out,"%f ",(double)i*rate[fi]/blocksize);
 
       for(j=ch;j<ch+channels[fi];j++)
-        fprintf(out,"%f ",todB(feedback_max[j][i])*.5);
+        fprintf(out,"%f ",todB(mag_max[j][i])*.5);
       fprintf(out,"\n");
     }
     fprintf(out,"\n");
@@ -308,7 +369,7 @@ void process_dump(int mode){
       fprintf(out,"%f ",(double)i*rate[fi]/blocksize);
 
       for(j=ch;j<ch+channels[fi];j++)
-        fprintf(out,"%f ",todB(feedback_instant[j][i])*.5);
+        fprintf(out,"%f ",todB(mag_instant[j][i])*.5);
       fprintf(out,"\n");
     }
     fprintf(out,"\n");
@@ -323,7 +384,7 @@ void process_dump(int mode){
     /* phase */
     for(i=0;i<blocksize+2;i+=2){
       fprintf(out,"%f ",(double)i*.5*rate[fi]/blocksize);
-      fprintf(out,"%f ",atan2(ph_acc[ch+1][i+1],ph_acc[ch+1][i])*57.29);
+      fprintf(out,"%f ",atan2(phQ_acc[ch+1][i>>1],phI_acc[ch+1][i>>1])*57.29);
       fprintf(out,"\n");
     }
     fprintf(out,"\n");
@@ -343,17 +404,21 @@ static fetchdata fetch_ret;
 /* the data returned is now 2 vals per bin; a min and a max.  The spec
    plot merely draws a vertical line between. */
 fetchdata *process_fetch(int scale, int mode, int link,
-                         int *process_in, int height, int width){
+                         float bw, int bwmode,
+                         int *process_in, Plot *plot){
   int ch,ci,i,j,fi;
   float **data;
-  float **ph;
+  float **phI;
+  float **phQ;
   float *normptr;
   float maxrate=-1.;
   float nyq;
-  int process[total_ch];
+  int *process;
+  int width=-1;
 
   pthread_mutex_lock(&feedback_mutex);
   init_process();
+  process = alloca(total_ch*sizeof(*process));
 
   if(total_ch!=fetch_ret.total_ch){
     if(fetch_ret.data){
@@ -388,7 +453,19 @@ fetchdata *process_fetch(int scale, int mode, int link,
       ch_now+=channels[i];
       ch_in+=fetch_ret.channels[i];
     }
+
     memcpy(fetch_ret.active,process,total_ch*sizeof(*process));
+  }
+
+  fetch_ret.phase_active=0;
+  if(link == LINK_PHASE){
+    int cho=0;
+    int gi;
+    for(gi=0;gi<inputs;gi++)
+      if(channels[gi]>1 && fetch_ret.active[cho+1]){
+        fetch_ret.phase_active=1;
+        break;
+      }
   }
 
   fetch_ret.groups=inputs;
@@ -396,10 +473,9 @@ fetchdata *process_fetch(int scale, int mode, int link,
   fetch_ret.mode=mode;
   fetch_ret.link=link;
 
-  fetch_ret.height=height;
-  fetch_ret.width=width;
+  fetch_ret.height=plot_height(plot);
+  fetch_ret.width=width=plot_width(plot,fetch_ret.phase_active);
   fetch_ret.total_ch=total_ch;
-  fetch_ret.increment=feedback_increment;
 
   for(fi=0;fi<inputs;fi++)
     if(rate[fi]>maxrate)maxrate=rate[fi];
@@ -412,17 +488,6 @@ fetchdata *process_fetch(int scale, int mode, int link,
   fetch_ret.maxrate=maxrate;
   fetch_ret.reload=metareload;
   metareload=0;
-
-  if(link == LINK_PHASE){
-    int cho=0;
-    int gi;
-    fetch_ret.phase_active=0;
-    for(gi=0;gi<inputs;gi++)
-      if(channels[gi]>1 && fetch_ret.active[cho+1]){
-        fetch_ret.phase_active=1;
-        break;
-      }
-  }
 
   /* are our scale mappings up to date? */
   if(scale != metascale || width != metawidth || fetch_ret.reload){
@@ -459,7 +524,6 @@ fetchdata *process_fetch(int scale, int mode, int link,
 	float hoff=1.;
 	float lfreq,mfreq,hfreq;
 
-        /* awaiting new RBW/ VBW code */
         off=.5;
 
 	switch(scale){
@@ -522,20 +586,24 @@ fetchdata *process_fetch(int scale, int mode, int link,
   normptr=NULL;
   switch(mode){
   case 0: /* independent / instant */
-    data=feedback_instant;
-    ph=ph_instant;
+    data=mag_instant;
+    phI=phI_instant;
+    phQ=phQ_instant;
     break;
   case 1: /* independent / max */
-    data=feedback_max;
-    ph=ph_max;
+    data=mag_max;
+    phI=phI_max;
+    phQ=phQ_max;
     break;
   case 2: /* independent / accumulate */
-    data=feedback_acc;
-    ph=ph_acc;
+    data=mag_acc;
+    phI=phI_acc;
+    phQ=phQ_acc;
     break;
   case 3: /* independent / average */
-    data=feedback_acc;
-    ph=ph_acc;
+    data=mag_acc;
+    phI=phI_acc;
+    phQ=phQ_acc;
     normptr=feedback_count;
     break;
   }
@@ -544,6 +612,7 @@ fetchdata *process_fetch(int scale, int mode, int link,
   fetch_ret.ymax = -210.;
   fetch_ret.pmax = -180.;
   fetch_ret.pmin = 180.;
+
   for(fi=0;fi<inputs;fi++){
     float *L = xmappingL[fi];
     float *M = xmappingM[fi];
@@ -555,6 +624,7 @@ fetchdata *process_fetch(int scale, int mode, int link,
 
       for(ci=0;ci<channels[fi];ci++){
 	if(process[ch+ci]){
+
           float *y = fetch_ret.data[ci+ch];
           float *m = data[ci+ch];
           int prevbin;
@@ -866,7 +936,8 @@ fetchdata *process_fetch(int scale, int mode, int link,
 
 	float *r = data[ch];
 	float *m = data[ch+1];
-	float *p = ph[ch+1];
+	float *pI = phI[ch+1];
+	float *pQ = phQ[ch+1];
 
 	if(feedback_count[ch]==0){
 	  memset(om,0,width*2*sizeof(*om));
@@ -898,22 +969,22 @@ fetchdata *process_fetch(int scale, int mode, int link,
                 firsty=lasty=min=max=(a+(b-a)*del);
 
                 if(process[ch+1]){
-                  float aP = (isnan(a) ? NAN : atan2f(p[mid*2+1],p[mid*2]));
-                  float bP = (isnan(b) ? NAN : atan2f(p[mid*2+3],p[mid*2+2]));
+                  float aP = (isnan(a) ? NAN : atan2f(pQ[mid],pI[mid]));
+                  float bP = (isnan(b) ? NAN : atan2f(pQ[mid+1],pI[mid+1]));
                   P=(aP+(bP-aP)*del)*57.29;
                 }
 
               }else{
                 firsty=min=max=m[first]/r[first];
-                R = p[first*2];
-                I = p[first*2+1];
+                R = pI[first];
+                I = pQ[first];
 
                 for(j=first+1;j<last;j++){
                   float a = m[j]/r[j];
                   if(a<min)min=a;
                   if(a>max)max=a;
-                  R += p[j*2];
-                  I += p[j*2+1];
+                  R += pI[j];
+                  I += pQ[j];
                 }
 
                 lasty=todB(m[j-1]/r[j-1]);

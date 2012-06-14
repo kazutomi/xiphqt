@@ -45,10 +45,15 @@ static double iso_tfreqs[24]={25.,40.,50.,80.,100.,160.,200.,315.,400.,630.,
 
 static GtkDrawingAreaClass *parent_class = NULL;
 
+#define PHAX_MIN 6
+
 static void compute_xgrid(Plot *p, fetchdata *f){
-  if(p->maxrate!=f->maxrate || p->scale!=f->scale || p->width != f->width){
+  if(p->maxrate!=f->maxrate ||
+     p->scale!=f->scale ||
+     p->width != f->width){
     GtkWidget *widget=GTK_WIDGET(p);
-    int width = widget->allocation.width-p->padx-(f->phase_active?p->phax:0);
+    int width = widget->allocation.width-p->padx-
+      (f->phase_active?p->phax:PHAX_MIN);
     int nyq=f->maxrate/2.;
     int i,j;
 
@@ -204,7 +209,7 @@ void plot_draw(Plot *p, fetchdata *f, plotparams *pp){
 
   int phase = f->phase_active;
   int padx = p->padx;
-  int phax = phase ? p->phax : 0;
+  int phax = phase ? p->phax : PHAX_MIN;
   int pwidth = width - padx - phax;
 
   /* lazy GC init */
@@ -253,8 +258,7 @@ void plot_draw(Plot *p, fetchdata *f, plotparams *pp){
     GdkGC *gc=parent->style->bg_gc[0];
     gdk_draw_rectangle(p->backing,gc,1,0,0,padx,height);
     gdk_draw_rectangle(p->backing,gc,1,0,height-p->pady,width,p->pady);
-    if(phase)
-      gdk_draw_rectangle(p->backing,gc,1,width-phax,0,phax,height);
+    gdk_draw_rectangle(p->backing,gc,1,width-phax,0,phax,height);
 
     gc=parent->style->white_gc;
     gdk_draw_rectangle(p->backing,gc,1,padx,0,pwidth,height-p->pady);
@@ -263,8 +267,8 @@ void plot_draw(Plot *p, fetchdata *f, plotparams *pp){
   compute_xgrid(p,f);
   p->maxrate=f->maxrate;
   p->scale=f->scale;
-  p->phase_active=f->phase_active;
   p->width=f->width;
+  p->phase_active=f->phase_active;
 
   /* draw the light x grid */
   {
@@ -569,11 +573,11 @@ void plot_draw(Plot *p, fetchdata *f, plotparams *pp){
       int pv = rint((pp->pmax - ymid/(float)(height-p->pady) *
                      (pp->pmax - pp->pmin))/10);
       if(ymid>=height-p->pady)break;
-      if(ymid>=0 && pv>=-18 && pv<=18 && (pv&1)==0){
+      if(ymid>=0 && pv>=-18 && pv<=18 && ((pv&1)==0 || del>2)){
         int px,py;
         pango_layout_get_pixel_size(p->phase_layout[pv+18],&px,&py);
         gdk_draw_layout (p->backing,p->phasegc,
-                         width-p->phax+2, ymid-py/2,
+                         width-phax+2, ymid-py/2,
                          p->phase_layout[pv+18]);
       }
     }
@@ -585,8 +589,8 @@ void plot_draw(Plot *p, fetchdata *f, plotparams *pp){
                       (pp->pmax - pp->pmin));
         if(ymid>=height-p->pady)break;
         if(ymid>=0 && pv>=-180 && pv<=180)
-          gdk_draw_line(p->backing,p->phasegc,width-p->phax-(i%5==0?15:10),
-                        ymid,width-p->phax-(i%5==0?5:7),ymid);
+          gdk_draw_line(p->backing,p->phasegc,width-phax-(i%5==0?15:10),
+                        ymid,width-phax-(i%5==0?5:7),ymid);
       }
     }else if(del>5){
       for(i=0;;i++){
@@ -595,8 +599,8 @@ void plot_draw(Plot *p, fetchdata *f, plotparams *pp){
                       (pp->pmax - pp->pmin));
         if(ymid>=height-p->pady)break;
         if(ymid>=0 && pv>=-180 && pv<=180)
-          gdk_draw_line(p->backing,p->phasegc,width-p->phax-12,ymid,
-                        width-p->phax-7,ymid);
+          gdk_draw_line(p->backing,p->phasegc,width-phax-12,ymid,
+                        width-phax-7,ymid);
       }
     } else if(del>2){
       for(i=0;;i++){
@@ -605,8 +609,8 @@ void plot_draw(Plot *p, fetchdata *f, plotparams *pp){
                       (pp->pmax - pp->pmin));
         if(ymid>=height-p->pady)break;
         if(ymid>=0 && pv>=-180 && pv<=180)
-          gdk_draw_line(p->backing,p->phasegc,width-p->phax-15,ymid,
-                        width-p->phax-5,ymid);
+          gdk_draw_line(p->backing,p->phasegc,width-phax-15,ymid,
+                        width-phax-5,ymid);
       }
     }
 
@@ -617,12 +621,12 @@ void plot_draw(Plot *p, fetchdata *f, plotparams *pp){
                       (pp->pmax - pp->pmin));
         if(ymid>=height-p->pady)break;
         if(ymid>=0 && pv>=-180 && pv<=180){
-          gdk_draw_line(p->backing,p->phasegc,width-p->phax-5,ymid-1,
-                        width-p->phax-1,ymid-1);
-          gdk_draw_line(p->backing,p->phasegc,width-p->phax-25,ymid,
-                        width-p->phax-1,ymid);
-          gdk_draw_line(p->backing,p->phasegc,width-p->phax-5,ymid+1,
-                        width-p->phax-1,ymid+1);
+          gdk_draw_line(p->backing,p->phasegc,width-phax-5,ymid-1,
+                        width-phax-1,ymid-1);
+          gdk_draw_line(p->backing,p->phasegc,width-phax-25,ymid,
+                        width-phax-1,ymid);
+          gdk_draw_line(p->backing,p->phasegc,width-phax-5,ymid+1,
+                        width-phax-1,ymid+1);
         }
       }
     }else{
@@ -633,8 +637,8 @@ void plot_draw(Plot *p, fetchdata *f, plotparams *pp){
                       (pp->pmax - pp->pmin));
         if(ymid>=height-p->pady)break;
         if(ymid>=0 && pv>=-180 && pv<=180)
-          gdk_draw_line(p->backing,p->phasegc,width-p->phax-15,ymid,
-                        width-p->phax-5,ymid);
+          gdk_draw_line(p->backing,p->phasegc,width-phax-15,ymid,
+                        width-phax-5,ymid);
       }
 
       for(i=0;;i++){
@@ -643,12 +647,12 @@ void plot_draw(Plot *p, fetchdata *f, plotparams *pp){
                        (pp->pmax - pp->pmin))/10);
         if(ymid>=height-p->pady)break;
         if(ymid>=0 && pv>=-18 && pv<=18 && (pv&1)==0){
-          gdk_draw_line(p->backing,p->phasegc,width-p->phax-5,ymid-1,
-                        width-p->phax-1,ymid-1);
-          gdk_draw_line(p->backing,p->phasegc,width-p->phax-25,ymid,
-                        width-p->phax-1,ymid);
-          gdk_draw_line(p->backing,p->phasegc,width-p->phax-5,ymid+1,
-                        width-p->phax-1,ymid+1);
+          gdk_draw_line(p->backing,p->phasegc,width-phax-5,ymid-1,
+                        width-phax-1,ymid-1);
+          gdk_draw_line(p->backing,p->phasegc,width-phax-25,ymid,
+                        width-phax-1,ymid);
+          gdk_draw_line(p->backing,p->phasegc,width-phax-5,ymid+1,
+                        width-phax-1,ymid+1);
         }
       }
     }
@@ -761,8 +765,13 @@ static gboolean configure(GtkWidget *widget, GdkEventConfigure *event){
 			      widget->allocation.width,
 			      widget->allocation.height,
 			      -1);
-  p->configured=1;
-  replot(0,0,0);
+
+  if(!p->configured){
+    p->configured=1;
+    replot(1,0,0);
+  }else{
+    replot(0,0,0);
+  }
   return TRUE;
 }
 
@@ -832,9 +841,9 @@ GtkWidget* plot_new (void){
 
   /* log X scale */
   {
-    char *labels[16]={"10Hz","20","30","50","100Hz",
+    char *labels[16]={"10","20","30","50","100",
                      "200","300","500","1kHz",
-                     "2k","3k","5k","10kHz",
+                     "2kHz","3kHz","5k","10kHz",
                       "20k","30k","50k"};
     p->log_layout=calloc(17,sizeof(*p->log_layout));
     for(i=0;i<16;i++)
@@ -843,7 +852,7 @@ GtkWidget* plot_new (void){
 
   /* ISO log X scale */
   {
-    char *labels[12]={"31Hz","63Hz","125Hz","250Hz","500Hz","1kHz","2kHz",
+    char *labels[12]={"31","63","125","250","500","1kHz","2kHz",
 		      "4kHz","8kHz","16kHz","32kHz","64kHz"};
     p->iso_layout=calloc(13,sizeof(*p->iso_layout));
     for(i=0;i<12;i++)
@@ -896,7 +905,6 @@ GtkWidget* plot_new (void){
   /* dB Y scale (-) */
   p->db_layoutN=gtk_widget_create_pango_layout(ret,"-");
 
-  p->phase_active=0;
   return ret;
 }
 
@@ -905,13 +913,13 @@ int plot_get_left_pad (Plot *m){
 }
 
 int plot_get_right_pad (Plot *m){
-  return (m->phase_active ? m->phax : 0);
+  return (m->phase_active ? m->phax : PHAX_MIN);
 }
 
-int plot_width (Plot *m){
-  return GTK_WIDGET(m)->allocation.width;
+int plot_width (Plot *m,int ph){
+  return GTK_WIDGET(m)->allocation.width-m->padx-(ph?m->phax:PHAX_MIN);
 }
 
 int plot_height (Plot *m){
-  return GTK_WIDGET(m)->allocation.height;
+  return GTK_WIDGET(m)->allocation.height-m->pady;
 }

@@ -69,6 +69,42 @@ static inline float todB_a(const float *x){
 
 #endif
 
+/* atan2f approximation, max error: < +/- .0004 degrees */
+/* return value is degrees, not radians */
+#define cA 0.43157974f
+#define cB 0.67848403f
+#define cC 0.08595542f
+#define cD 57.2957795f
+#define cE 90.f
+
+static inline float fast_atan2f_deg(float y, float x) {
+  float x2 = x*x;
+  float y2 = y*y;
+  if(x2<y2){
+    return -cD * x*y*(y2 + cA*x2) / ((y2 + cB*x2) * (y2 + cC*x2)) +
+      copysignf(cE,y);
+  }else{
+    return  cD * x*y*(x2 + cA*y2) / ((x2 + cB*y2) * (x2 + cC*y2)) +
+      copysignf(cE,y) - copysignf(cE,x*y);
+  }
+}
+
+
+static inline float invSqrt(float x){
+  float xhalf = 0.5f*x;
+  union
+  {
+    float x;
+    int i;
+  } u;
+  u.x = x;
+  u.i = 0x5f375a86f - (u.i >> 1);
+  u.x *= 1.5f - xhalf * u.x * u.x;
+  u.x *= 1.5f - xhalf * u.x * u.x;
+  return u.x;
+}
+
+
 #ifndef max
 #define max(x,y) ((x)>(y)?(x):(y))
 #endif
@@ -85,12 +121,16 @@ extern void *process_thread(void *dummy);
 extern void process_dump(int mode);
 extern void rundata_clear();
 extern fetchdata *process_fetch(int scale, int mode, int link,
-                                 int *process, int height, int width);
+                                float bw, int bwmode,
+                                int *process, Plot *plot);
 
 extern sig_atomic_t acc_rewind;
 extern sig_atomic_t acc_loop;
 extern sig_atomic_t process_active;
 extern sig_atomic_t process_exit;
+
+extern char *bw_entries[];
+extern float bw_values[];
 
 #define LINKS 5
 #define LINK_INDEPENDENT  0

@@ -24,9 +24,6 @@
 #include "waveform.h"
 #include "io.h"
 
-static pthread_mutex_t feedback_mutex=PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
-static int feedback_increment=0;
-
 sig_atomic_t process_active=0;
 sig_atomic_t process_exit=0;
 
@@ -35,42 +32,49 @@ sig_atomic_t acc_loop=0;
 
 static int metareload = 0;
 
-static void init_process(void){
+static void process_init(){
+  if(blocksize==0){
+    int fi;
+    /* set block size equal to maximum input rate + epsilon */
+    /* (maximum display width: 1s, maximum update interval 1s) */
+    for(fi=0;fi<inputs;fi++)
+      if(rate[fi]>blocksize)blocksize=rate[fi]+16;
+  }
 }
 
 /* return 0 on EOF, 1 otherwise */
-static int process(){
-  if(acc_rewind)
-    rewind_files();
-  acc_rewind=0;
-
-  if(input_read(acc_loop,1))
-    return 0;
-
-  feedback_increment++;
-  write(eventpipe[1],"",1);
-  return 1;
-}
-
 void *process_thread(void *dummy){
-  pthread_mutex_lock(&feedback_mutex);
-  init_process();
-  pthread_mutex_unlock(&feedback_mutex);
+  int ret;
 
-  while(1){
-    while(!process_exit && process());
-    pthread_mutex_lock(&feedback_mutex);
-    if(!process_exit && pipe_reload()){
-      /* ah, at least one input was a pipe */
-      init_process();
-      metareload=1;
-      pthread_mutex_unlock(&feedback_mutex);
-      write(eventpipe[1],"",1);
-    }else{
-      pthread_mutex_unlock(&feedback_mutex);
-      break;
+  while(!process_exit){
+
+    process_init();
+
+    if(acc_rewind) rewind_files();
+    acc_rewind=0;
+
+    ret=input_read(acc_loop,1);
+    if(ret==0) break;
+    if(ret==-1){
+      /* a pipe returned EOF; attempt reopen */
+      pthread_mutex_lock(&blockbuffer_mutex);
+      if(pipe_reload()){
+        blocksize=0;
+        metareload=1;
+        pthread_mutex_unlock(&blockbuffer_mutex);
+        write(eventpipe[1],"",1);
+        continue;
+      }else{
+        pthread_mutex_unlock(&blockbuffer_mutex);
+        break;
+      }
     }
+
+    write(eventpipe[1],"",1);
+
   }
+
+  /* eof on all inputs */
   process_active=0;
   write(eventpipe[1],"",1);
   return NULL;
@@ -82,13 +86,11 @@ fetchdata *process_fetch(int span, int scale, float range,
   int fi,i,k,ch;
   int process[total_ch];
 
-  pthread_mutex_lock(&feedback_mutex);
+  pthread_mutex_lock(&blockbuffer_mutex);
   if(!blockbuffer){
-    pthread_mutex_unlock(&feedback_mutex);
+    pthread_mutex_unlock(&blockbuffer_mutex);
     return NULL;
   }
-
-  init_process();
 
   if(metareload){
     if(fetch_ret.data){
@@ -134,7 +136,6 @@ fetchdata *process_fetch(int span, int scale, float range,
   fetch_ret.span=span;
   fetch_ret.range=range;
   fetch_ret.total_ch=total_ch;
-  fetch_ret.increment=feedback_increment;
 
   memcpy(fetch_ret.bits,bits,sizeof(fetch_ret.bits));
   memcpy(fetch_ret.channels,channels,sizeof(fetch_ret.channels));
@@ -173,6 +174,6 @@ fetchdata *process_fetch(int span, int scale, float range,
     ch+=channels[fi];
   }
 
-  pthread_mutex_unlock(&feedback_mutex);
+  pthread_mutex_unlock(&blockbuffer_mutex);
   return &fetch_ret;
 }

@@ -68,7 +68,7 @@ waveform:  $(WAVEFORM_OBJ)
 	./touch-version
 	$(LD) $(WAVEFORM_OBJ) -o waveform $(LIBS) $(CFLAGS) `pkg-config --libs gtk+-2.0` -lpthread -lm 
 
-target:  spectrum waveform
+target:  waveform spectrum
 
 install: target
 	$(INSTALL) -d -m 0755 $(BINDIR)

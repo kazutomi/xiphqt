@@ -49,7 +49,6 @@ typedef struct {
   float pmin;
   int height;
   int width;
-  int increment;
 } fetchdata;
 
 typedef struct {
@@ -133,7 +132,7 @@ void	       plot_draw            (Plot *m, fetchdata *f, plotparams *pp);
 int            plot_get_left_pad    (Plot *m);
 int            plot_get_right_pad   (Plot *m);
 int            plot_height          (Plot *m);
-int            plot_width           (Plot *m);
+int            plot_width           (Plot *m,int ph);
 
 GdkColor chcolor(int ch);
 extern void replot(int scale_reset, int inactive_reset, int scale_damp);

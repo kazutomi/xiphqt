@@ -60,7 +60,6 @@ int plot_type=0;
 int plot_hold=0;
 int plot_bold=0;
 int plot_sep=0;
-int plot_rate[MAX_FILES] = {-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1};
 
 /* first up... the Fucking Fish */
 sig_atomic_t increment_fish=0;
@@ -119,14 +118,6 @@ static void animate_fish(void){
     fishframe_timer=
       g_timeout_add(rand()%1000*30,(GSourceFunc)reanimate_fish,NULL);
   }
-}
-
-static void set_slices(int interval, int span){
-  int fi;
-  /* update interval limited to < 25fps */
-  //int temp = (interval < 50000 ? 50000:interval),fi;
-  for(fi=0;fi<plot_inputs;fi++)
-    set_blockslice(rint(plot_rate[fi]/1000000.*interval),fi);
 }
 
 static void override_base(GtkWidget *w, int active){
@@ -287,7 +278,6 @@ static void spanchange(GtkWidget *widget,gpointer in){
     break;
   }
 
-  set_slices(plot_interval,plot_span);
   replot();
 }
 
@@ -295,48 +285,48 @@ static void intervalchange(GtkWidget *widget,gpointer in){
   int choice=gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
   switch(choice){
   case 0:
-    plot_interval=1000000;
+    plot_interval=1;
     break;
   case 1:
-    plot_interval=500000;
+    plot_interval=2;
     break;
   case 2:
-    plot_interval=200000;
+    plot_interval=5;
     break;
   case 3:
-    plot_interval=100000;
+    plot_interval=10;
     break;
   case 4:
-    plot_interval=50000; // 20/sec
+    plot_interval=20;
     break;
   case 5:
-    plot_interval=20000; // 50/sec
+    plot_interval=50;
     break;
   case 6:
-    plot_interval=10000;
+    plot_interval=100;
     break;
   case 7:
-    plot_interval=5000;
+    plot_interval=200;
     break;
   case 8:
-    plot_interval=2000;
+    plot_interval=500;
     break;
   case 9:
     plot_interval=1000;
     break;
   case 10:
-    plot_interval=500;
+    plot_interval=2000;
     break;
   case 11:
-    plot_interval=200;
+    plot_interval=5000;
     break;
   case 12:
-    plot_interval=100;
+    plot_interval=10000;
     break;
   }
 
-  set_slices(plot_interval,plot_span);
-  replot();
+  blockslice_frac = plot_interval;
+  //replot();
 }
 
 static void triggerchange(GtkWidget *widget,gpointer in){
@@ -465,10 +455,6 @@ void replot(void){
   /* the fetched data may indicate the underlying file data has
      changed... */
   if(f->reload){
-
-    /* update group block slices */
-    memcpy(plot_rate,f->rate,sizeof(plot_rate));
-    set_slices(plot_interval,plot_span);
 
     /* remove old group labels and channel buttons */
     destroy_chbuttons();
@@ -875,7 +861,6 @@ void panel_go(int argc,char *argv[]){
 
   plot_ch = total_ch; /* true now, won't necessarily be true later */
   plot_inputs = inputs; /* true now, won't necessarily be true later */
-  memcpy(plot_rate,rate,sizeof(plot_rate));
 
   panel_create();
   animate_fish();
