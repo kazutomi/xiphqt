@@ -181,7 +181,7 @@ static void calculate_autoscale (fetchdata *f,
   case LINK_SUMMED:
   case LINK_PHASE:
     {
-      float dBpp = plot_depth/height;
+      float dBpp = (float)plot_depth/height;
       ymax += dBpp*25;
     }
     break;
@@ -486,8 +486,8 @@ static void depthchange(GtkWidget *widget,gpointer in){
   case 5: /*140dB */
     plot_depth=140;
     break;
-  case 6: /*190dB */
-    plot_depth=190;
+  case 6: /*200dB */
+    plot_depth=200;
     break;
   }
   replot(1,1,0);
@@ -899,7 +899,7 @@ void panel_create(void){
 		      G_CALLBACK (scalechange), NULL);
 
     GtkWidget *menu4=gtk_combo_box_new_text();
-    char *entries4[]={"1dB","10dB","20dB","45dB","90dB","140dB","190dB"};
+    char *entries4[]={"1dB","10dB","20dB","45dB","90dB","140dB","200dB"};
     for(i=0;i<7;i++)
       gtk_combo_box_append_text (GTK_COMBO_BOX (menu4), entries4[i]);
 
