@@ -24,8 +24,6 @@ AC_PROG_LIBTOOL
 PKG_CHECK_MODULES([vorbisfile], [vorbisfile])
 PKG_CHECK_MODULES([FLAC], [flac >= 0.8.0])
 PKG_CHECK_MODULES([ao], [ao > 1.0.0])
-AC_CHECK_LIB([ncurses], [initscr],,[AC_MSG_ERROR([ncurses required!])])
-AC_CHECK_LIB([ncurses], [_nc_tinfo_fkeysf], USE_FKEYSF=1, USE_FKEYSF=0)
 AC_CHECK_LIB([m], [cos])
 AC_CHECK_LIB([pthread], [pthread_create])
 
