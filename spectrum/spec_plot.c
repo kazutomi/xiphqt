@@ -45,7 +45,7 @@ static double iso_tfreqs[24]={25.,40.,50.,80.,100.,160.,200.,315.,400.,630.,
 
 static GtkDrawingAreaClass *parent_class = NULL;
 
-#define PHAX_MIN 6
+#define PHAX_MIN 8
 
 static void compute_xgrid(Plot *p, fetchdata *f){
   if(p->maxrate!=f->maxrate ||
@@ -549,6 +549,11 @@ void plot_draw(Plot *p, fetchdata *f, plotparams *pp){
                 ymax = rint((height-p->pady-1)/pp->depth*(pp->ymax-valmax));
 
               }
+
+              if(ymin>32767)ymin=32767;
+              if(ymax>32767)ymax=32767;
+              if(ymin<-32768)ymin=-32768;
+              if(ymax<-32768)ymax=-32768;
 
               gdk_draw_line(p->backing,p->drawgc,padx+i,ymin,padx+i,ymax);
             }
