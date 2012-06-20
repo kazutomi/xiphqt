@@ -69,41 +69,13 @@ static inline float todB_a(const float *x){
 
 #endif
 
-/* atan2f approximation, max error: < +/- .0004 degrees */
-/* return value is degrees, not radians */
-#define cA 0.43157974f
-#define cB 0.67848403f
-#define cC 0.08595542f
-#define cD 57.2957795f
-#define cE 90.f
 
-static inline float fast_atan2f_deg(float y, float x) {
-  float x2 = x*x;
-  float y2 = y*y;
-  if(x2<y2){
-    return -cD * x*y*(y2 + cA*x2) / ((y2 + cB*x2) * (y2 + cC*x2)) +
-      copysignf(cE,y);
-  }else{
-    return  cD * x*y*(x2 + cA*y2) / ((x2 + cB*y2) * (x2 + cC*y2)) +
-      copysignf(cE,y) - copysignf(cE,x*y);
-  }
+static inline float fast_atan_cmp(float y, float x) {
+  if(x*x>y*y)
+    return y/x + copysignf(2.,y) - copysignf(2.,y*x);
+  else
+    return -x/y + copysignf(2.,y);
 }
-
-
-static inline float invSqrt(float x){
-  float xhalf = 0.5f*x;
-  union
-  {
-    float x;
-    int i;
-  } u;
-  u.x = x;
-  u.i = 0x5f375a86f - (u.i >> 1);
-  u.x *= 1.5f - xhalf * u.x * u.x;
-  u.x *= 1.5f - xhalf * u.x * u.x;
-  return u.x;
-}
-
 
 #ifndef max
 #define max(x,y) ((x)>(y)?(x):(y))
@@ -120,24 +92,37 @@ extern int input_load();
 extern void *process_thread(void *dummy);
 extern void process_dump(int mode);
 extern void rundata_clear();
-extern fetchdata *process_fetch(int scale, int mode, int link,
-                                float bw, int bwmode,
+extern fetchdata *process_fetch(int scale, int mode, int link, int det,
                                 int *process, Plot *plot);
+extern void set_bandwidth(int bw);
 
 extern sig_atomic_t acc_rewind;
 extern sig_atomic_t acc_loop;
 extern sig_atomic_t process_active;
 extern sig_atomic_t process_exit;
 
+extern char *det_entries[];
+extern char *mode_entries[];
 extern char *bw_entries[];
 extern float bw_values[];
+extern int no_replot;
 
-#define LINKS 5
 #define LINK_INDEPENDENT  0
 #define LINK_SUMMED       1
-#define LINK_SUB_REF      2
-#define LINK_SUB_FROM     3
-#define LINK_PHASE        4
+#define LINK_PHASE        2
+#define LINK_THD          3
+
+#define MODE_REALTIME     0
+#define MODE_MAX          1
+#define MODE_AVERAGE      2
+#define MODE_TOTAL        3
+
+#define DET_MINMAX        0
+#define DET_SUM           1
+#define DET_DENSITY       2
+#define DET_RMS           3
+#define DET_LINEAR        4
+#define DET_LOG           5
 
 #endif
 
