@@ -746,7 +746,7 @@ void panel_create(void){
     snprintf(buf,80,"%d",blocksize);
 
     GtkWidget *text4=gtk_label_new(buf);
-    gtk_table_attach(GTK_TABLE (lefttable), al,0,1,1,2,GTK_FILL,GTK_FILL,0,0);
+    gtk_table_attach(GTK_TABLE (lefttable), al,1,2,1,2,GTK_FILL,GTK_FILL,0,0);
     gtk_container_add(GTK_CONTAINER (al),box);
 
     gtk_box_pack_end(GTK_BOX(box),text4,0,0,0);
@@ -763,7 +763,7 @@ void panel_create(void){
 
   /* add the spectrum plot box */
   plot=plot_new();
-  gtk_table_attach_defaults (GTK_TABLE (lefttable), plot,0,1,2,3);
+  gtk_table_attach_defaults (GTK_TABLE (lefttable), plot,0,2,2,3);
   gtk_table_set_row_spacing (GTK_TABLE (lefttable), 2, 4);
   //gtk_table_set_col_spacing (GTK_TABLE (lefttable), 0, 2);
 
