@@ -180,7 +180,7 @@ static void init_process(void){
         mag_acc[j]=calloc(blocksize/2+2,sizeof(**mag_acc));
         mag_max[j]=calloc(blocksize/2+2,sizeof(**mag_max));
         mag_instant[j]=calloc(blocksize/2+2,sizeof(**mag_instant));
-        if(j==ch+1){
+        if(j>ch){
           phR_acc[j]=calloc(blocksize/2+2,sizeof(**phR_acc));
           phR_max[j]=calloc(blocksize/2+2,sizeof(**phR_max));
           phR_instant[j]=calloc(blocksize/2+2,sizeof(**phR_instant));
@@ -275,22 +275,22 @@ static void process(void){
         if(i==ch)
           memcpy(refbuffer,freqbuffer,(blocksize+2)*sizeof(*refbuffer));
 
-        if(i==ch+1){
+        if(i>ch){
           for(j=0;j<blocksize+2;j+=2){
-            float I = freqbuffer[j];
-            float Q = freqbuffer[j+1];
-            float rI = refbuffer[j];
-            float rQ = refbuffer[j+1];
-            freqbuffer[j>>1] = I*I+Q*Q;
-            phR_work[j>>1] = (rI*I + rQ*Q);
-            phI_work[j>>1] = (rI*Q - rQ*I);
+            float R = freqbuffer[j];
+            float I = freqbuffer[j+1];
+            float rR = refbuffer[j];
+            float rI = refbuffer[j+1];
+            freqbuffer[j>>1] = R*R+I*I;
+            phR_work[j>>1] = (rR*R + rI*I);
+            phI_work[j>>1] = (rR*I - rI*R);
           }
         }else{
           float acc=0.;
           for(j=0;j<blocksize+2;j+=2){
-            float I = refbuffer[j];
-            float Q = refbuffer[j+1];
-            acc+=freqbuffer[j>>1] = I*I+Q*Q;
+            float R = refbuffer[j];
+            float I = refbuffer[j+1];
+            acc+=freqbuffer[j>>1] = R*R+I*I;
           }
         }
 
@@ -303,7 +303,7 @@ static void process(void){
 	pthread_mutex_lock(&feedback_mutex);
 
         /* perform desired accumulations */
-        if(i==ch+1){
+        if(i>ch){
 
           for(j=0;j<blocksize/2+1;j++){
 
@@ -1026,25 +1026,45 @@ fetchdata *process_fetch(int scale, int mode, int link, int det,
 
       /* display first channel, but only if any channels in the group
          are processed */
+      /* this is a summation of the input signals, not a sum of
+         manitude or power spectrum.  It operates by summing
+         equivalents of the FFTs of the original inputs (equivalent to
+         summing the time-domain signals).  We can't recover the
+         original FFT of channel 0, but the sqrt of the power spectrum
+         is the equivalent with each sinusoid rotated to purely
+         positive-real.  The ph arrays store the subsequent channels
+         rotated relative to channel 0 (multiplied by ch 0's complex
+         conjugate), so the fact that we can't recover the original
+         channel 0 phase doesn't affect the final answer */
+
       {
         int any=0;
         float *y = fetch_ret.data[ch];
         float work[blocksize/2+1];
-        memset(work,0,sizeof(work));
 
-        for(i=ch;i<ch+channels[fi];i++){
-          if(fetch_ret.active[i]){
-            for(j=0;j<blocksize/2+1;j++)
-              work[j]+=data[i][j];
-            any=1;
+        for(j=0;j<blocksize/2+1;j++)
+          work[j]=sqrtf(data[ch][j]);
+
+        for(j=0;j<blocksize/2+1;j++){
+          float R=0.;
+          float I=0.;
+          for(i=ch;i<ch+channels[fi];i++){
+            if(fetch_ret.active[i]){
+              if(ch==i){
+                R+=work[j];
+              }else{
+                R += phR[i][j] / work[j];
+                I += phR[i][j] / work[j];
+              }
+            }
           }
+          work[j]=R*R+I*I;
+        }
+        fetch_ret.active[ch]=1;
+        for(i=ch+1;i<ch+channels[fi];i++)
           fetch_ret.active[i]=0;
-        }
-        fetch_ret.active[ch]=any;
-        if(any){
-          mag_to_display(work, y, &fetch_ret.ymax,
-                         fi, width, normalize, det, 1);
-        }
+        mag_to_display(work, y, &fetch_ret.ymax,
+                       fi, width, normalize, det, 1);
       }
       break;
 
