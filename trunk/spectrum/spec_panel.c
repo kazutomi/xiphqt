@@ -769,7 +769,6 @@ void panel_create(void){
 
   /* right control frame */
   gtk_alignment_set_padding(GTK_ALIGNMENT(righttopal),6,6,2,6);
-  //gtk_container_set_border_width (GTK_CONTAINER (righttopbox), 6);
   gtk_container_set_border_width (GTK_CONTAINER (rightbox), 6);
   gtk_frame_set_shadow_type(GTK_FRAME(rightframe),GTK_SHADOW_ETCHED_IN);
   gtk_widget_set_name(rightframebox,"controlpanel");

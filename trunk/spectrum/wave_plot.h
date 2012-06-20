@@ -74,9 +74,6 @@ struct _Plot{
   GdkGC     *drawgc;
   GdkGC     *twogc;
 
-  PangoLayout ***x_layout;
-  PangoLayout ****y_layout;
-
   int configured;
 
   int scale;

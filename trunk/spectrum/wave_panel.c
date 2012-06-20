@@ -46,6 +46,9 @@ GtkWidget **groupboxes;
 GtkWidget *scalemenu;
 GtkWidget *rangemenu;
 
+GtkWidget *scale_label1;
+GtkWidget *scale_label2;
+
 int plot_ch=0;
 int plot_inputs=0;
 
@@ -170,6 +173,21 @@ static void rangechange(GtkWidget *widget,gpointer in){
     }
     replot();
   }
+
+  {
+    char b[80];
+    if(plot_schoice==0)
+      if(plot_range/2>=.99){
+        snprintf(b,80,"%gFS/div ",plot_range/2);
+      }else if(plot_range/2>=.00099){
+        snprintf(b,80,"%gmFS/div ",plot_range*500);
+      }else{
+        snprintf(b,80,"%g\xCE\xBC""FS/div ",plot_range*500000);
+      }
+    else
+      snprintf(b,80,"%.2gdBFS/div ",todB((plot_range)-todB(plot_scale))/2);
+    gtk_label_set_text(GTK_LABEL(scale_label1),b);
+  }
 }
 
 static void scalechange(GtkWidget *widget,gpointer in){
@@ -280,6 +298,17 @@ static void spanchange(GtkWidget *widget,gpointer in){
   }
 
   replot();
+
+  {
+    char b[80];
+    if(plot_span>=10000){
+      snprintf(b,80,"%gms/div",plot_span/10000.);
+    }else{
+      snprintf(b,80,"%g\xCE\xBCs/div",plot_span/10.);
+    }
+    gtk_label_set_text(GTK_LABEL(scale_label2),b);
+  }
+
 }
 
 static void intervalchange(GtkWidget *widget,gpointer in){
@@ -511,7 +540,7 @@ void panel_create(void){
   GtkWidget *rightframe=gtk_frame_new (NULL);
   GtkWidget *righttopbox=gtk_vbox_new(0,0);
   GtkWidget *rightframebox=gtk_event_box_new();
-  GtkWidget *lefttable=gtk_table_new(4,2,0);
+  GtkWidget *lefttable=gtk_table_new(4,3,0);
   GtkWidget *plot_control_al;
   GtkWidget *wbold;
 
@@ -541,7 +570,7 @@ void panel_create(void){
     GtkWidget *trace_sep=
       gtk_check_button_new_with_mnemonic("trace _separation");
     wbold=gtk_check_button_new_with_mnemonic("_bold");
-    gtk_table_attach(GTK_TABLE (lefttable), al,0,1,1,2,GTK_FILL,GTK_FILL,0,0);
+    gtk_table_attach(GTK_TABLE (lefttable), al,1,2,1,2,GTK_FILL,GTK_FILL,0,0);
     gtk_container_add(GTK_CONTAINER (al),box);
     gtk_box_pack_start(GTK_BOX(box),hold_display,0,0,0);
     gtk_box_pack_start(GTK_BOX(box),wbold,0,0,0);
@@ -561,11 +590,34 @@ void panel_create(void){
     gtk_widget_add_accelerator (trace_sep, "activate", group, GDK_s, 0, 0);
   }
 
+  /* plot informational labels */
+  {
+    char buf[80];
+    GtkWidget *al=gtk_alignment_new(1,.5,0,0);
+    GtkWidget *box=gtk_hbox_new(0,2);
+    GtkWidget *text1=gtk_label_new("scales:");
+    GtkWidget *text2=scale_label1=gtk_label_new("");
+    GtkWidget *text3=scale_label2=gtk_label_new("");
+
+    gtk_table_attach(GTK_TABLE (lefttable), al,2,3,1,2,GTK_FILL,GTK_FILL,0,0);
+    gtk_container_add(GTK_CONTAINER (al),box);
+
+    gtk_box_pack_end(GTK_BOX(box),text3,0,0,0);
+    gtk_box_pack_end(GTK_BOX(box),text2,0,0,0);
+    gtk_box_pack_end(GTK_BOX(box),text1,0,0,0);
+
+    gtk_widget_set_name(text1,"top-label");
+    gtk_widget_set_name(text2,"top-readout");
+    gtk_widget_set_name(text3,"top-readout");
+
+  }
+
   /* add the waveform plot box */
   plot=plot_new();
-  gtk_table_attach_defaults (GTK_TABLE (lefttable), plot,0,1,2,3);
-  gtk_table_set_row_spacing (GTK_TABLE (lefttable), 2, 4);
-  gtk_table_set_col_spacing (GTK_TABLE (lefttable), 0, 2);
+  gtk_table_attach_defaults (GTK_TABLE (lefttable), plot,1,3,2,3);
+  gtk_table_set_row_spacing (GTK_TABLE (lefttable), 2, 6);
+  gtk_table_set_col_spacing (GTK_TABLE (lefttable), 0, 6);
+  gtk_table_set_col_spacing (GTK_TABLE (lefttable), 2, 2);
 
   /* right control frame */
   gtk_container_set_border_width (GTK_CONTAINER (righttopbox), 6);
