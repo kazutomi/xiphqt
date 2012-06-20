@@ -162,18 +162,6 @@ void plot_draw(Plot *p, fetchdata *f, plotparams *pp){
       gdk_draw_line(p->backing,p->drawgc,p->xtic[i],0,p->xtic[i],height-p->pady-1);
   }
 
-  PangoLayout **proper=p->x_layout[pp->spanchoice];
-
-  for(i=0;i<p->xgrids;i++){
-    int px,py;
-    pango_layout_get_pixel_size(proper[i],&px,&py);
-
-    gdk_draw_layout (p->backing,
-                     widget->style->black_gc,
-                     p->xgrid[i]-(px/2), height-py+2,
-                     proper[i]);
-  }
-
   /* draw the light y grid */
   {
     GdkColor rgb={0,0,0,0};
@@ -208,30 +196,6 @@ void plot_draw(Plot *p, fetchdata *f, plotparams *pp){
       int y=rintf(center + center*i/9.);
 
       gdk_draw_line(p->backing,p->drawgc,padx,y,width,y);
-
-      pango_layout_get_pixel_size
-        (p->y_layout[pp->rangechoice][pp->scalechoice][i/4+2],&px,&py);
-
-      if(i<=0){
-        rgb.red=0x0000;
-        rgb.green=0x0000;
-        rgb.blue=0x0000;
-      }else{
-        rgb.red=0xc000;
-        rgb.green=0x0000;
-        rgb.blue=0x0000;
-      }
-      gdk_gc_set_rgb_fg_color(p->drawgc,&rgb);
-
-      gdk_draw_layout (p->backing,
-                       p->drawgc,
-                       padx-px-2, y-py/2,
-                       p->y_layout[pp->rangechoice][pp->scalechoice][i/4+2]);
-
-      rgb.red=0x0000;
-      rgb.green=0xc000;
-      rgb.blue=0xc000;
-      gdk_gc_set_rgb_fg_color(p->drawgc,&rgb);
 
     }
   }
@@ -465,33 +429,6 @@ static void size_request (GtkWidget *widget,GtkRequisition *requisition){
   requisition->height = 200;
   int axisy=0,axisx=0,pady=0,padx=0,px,py,i;
 
-  /* find max X layout */
-  {
-    int max=0;
-    int maxy=0;
-    for(i=0;p->x_layout[1][i];i++){
-      pango_layout_get_pixel_size(p->x_layout[1][i],&px,&py);
-      if(px>max)max=px;
-      if(py>pady)pady=py;
-      if(py>maxy)maxy=py;
-    }
-    max+=maxy*2.;
-    max*=i+1;
-    if(axisx<max)axisx=max;
-  }
-
-  /* find max Y layout */
-  {
-    int max=0;
-    for(i=0;p->y_layout[5][4][i];i++){
-      pango_layout_get_pixel_size(p->y_layout[5][4][i],&px,&py);
-      if(py>max)max=py;
-      if(px>padx)padx=px;
-    }
-    axisy=(max)*8;
-    if(axisy<max)axisy=max;
-  }
-
   if(requisition->width<axisx+padx)requisition->width=axisx+padx;
   if(requisition->height<axisy+pady)requisition->height=axisy+pady;
   p->padx=padx;
@@ -552,75 +489,6 @@ GtkWidget* plot_new (void){
   GtkWidget *ret= GTK_WIDGET (g_object_new (plot_get_type (), NULL));
   Plot *p=PLOT(ret);
   int i,j;
-
-  /* generate all the text layouts we'll need */
-  /* linear X scale */
-  {
-    char *labels[13][12]={
-      {"","100ms","200ms","300ms","400ms","500ms","600ms","700ms","800ms","900ms","",""},
-      {"","50ms","100ms","150ms","200ms","250ms","300ms","350ms","400ms","450ms","",""},
-      {"","20ms","40ms","60ms","80ms","100ms","120ms","140ms","160ms","180ms","",""},
-      {"","10ms","20ms","30ms","40ms","50ms","60ms","70ms","80ms","90ms","",""},
-      {"","5ms","10ms","15ms","20ms","25ms","30ms","35ms","40ms","45ms","",""},
-      {"","2ms","4ms","6ms","8ms","10ms","12ms","14ms","16ms","18ms","",""},
-      {"","1ms","2ms","3ms","4ms","5ms","6ms","7ms","8ms","9ms","",""},
-      {"",".5ms","1ms","1.5ms","2ms","2.5ms","3ms","3.5ms","4ms","4.5ms","",""},
-      {"",".2ms",".4ms",".6ms",".8ms","1ms","1.2ms","1.4ms","1.6ms","1.8ms","",""},
-
-      {"","100\xCE\xBCs","200\xCE\xBCs","300\xCE\xBCs","400\xCE\xBCs","500\xCE\xBCs",
-       "600\xCE\xBCs","700\xCE\xBCs","800\xCE\xBCs","900\xCE\xBCs","",""},
-      {"","50\xCE\xBCs","100\xCE\xBCs","150\xCE\xBCs","200\xCE\xBCs","250\xCE\xBCs",
-       "300\xCE\xBCs","350\xCE\xBCs","400\xCE\xBCs","450\xCE\xBCs","",""},
-      {"","20\xCE\xBCs","40\xCE\xBCs","60\xCE\xBCs","80\xCE\xBCs","100\xCE\xBCs",
-       "120\xCE\xBCs","140\xCE\xBCs","160\xCE\xBCs","180\xCE\xBCs","",""},
-      {"","10\xCE\xBCs","20\xCE\xBCs","30\xCE\xBCs","40\xCE\xBCs","50\xCE\xBCs",
-       "60\xCE\xBCs","70\xCE\xBCs","80\xCE\xBCs","90\xCE\xBCs","",""}};
-
-    p->x_layout=calloc(13,sizeof(*p->x_layout));
-    for(i=0;i<13;i++){
-      p->x_layout[i]=calloc(12,sizeof(**p->x_layout));
-      for(j=0;j<11;j++)
-        p->x_layout[i][j]=gtk_widget_create_pango_layout(ret,labels[i][j]);
-    }
-  }
-
-  /* phase Y scale */
-  {
-    char *label1[10] = {"16.0","8.0","4.0","2.0","1.0","0.5","0.2","0.1",".01",".001"};
-    char *label1a[10] = {"8.0","4.0","2.0","1.0","0.5","0.25","0.1","0.05",".005",".0005"};
-
-    char *labeln1[10] = {"-16.0","-8.0","-4.0","-2.0","-1.0","-0.5","-0.2","-0.1","-.01","-.001"};
-    char *labeln1a[10] = {"-8.0","-4.0","-2.0","-1.0","-0.5","-0.25","-0.1","-0.05","-.005","-.0005"};
-
-    char *label2[10] = {"24dB","18dB","12dB","6dB","0dB","-6dB","-14dB","-20dB","-40dB","-60dB"};
-    char *label3[5] = {"0","-65dB","-96dB","-120dB","-160dB"};
-
-    int val2[10] = {24,18,12,6,0,-6,-14,-20,-40,-60};
-    int val3[5] = {0,-65,-96,-120,-160};
-
-    p->y_layout=calloc(10,sizeof(*p->y_layout));
-    for(i=0;i<10;i++){
-      p->y_layout[i]=calloc(5,sizeof(**p->y_layout));
-      p->y_layout[i][0]=calloc(6,sizeof(***p->y_layout));
-
-      p->y_layout[i][0][0]=gtk_widget_create_pango_layout(ret,label1[i]);
-      p->y_layout[i][0][1]=gtk_widget_create_pango_layout(ret,label1a[i]);
-      p->y_layout[i][0][2]=gtk_widget_create_pango_layout(ret,label3[0]);
-      p->y_layout[i][0][3]=gtk_widget_create_pango_layout(ret,labeln1a[i]);
-      p->y_layout[i][0][4]=gtk_widget_create_pango_layout(ret,labeln1[i]);
-
-      for(j=1;j<5;j++){
-        char buf[10];
-        p->y_layout[i][j]=calloc(6,sizeof(***p->y_layout));
-        p->y_layout[i][j][0]=gtk_widget_create_pango_layout(ret,label2[i]);
-        p->y_layout[i][j][2]=gtk_widget_create_pango_layout(ret,label3[j]);
-        p->y_layout[i][j][4]=gtk_widget_create_pango_layout(ret,label2[i]);
-        sprintf(buf,"%ddB",(val2[i]+val3[j])/2);
-        p->y_layout[i][j][1]=gtk_widget_create_pango_layout(ret,buf);
-        p->y_layout[i][j][3]=gtk_widget_create_pango_layout(ret,buf);
-      }
-    }
-  }
 
   return ret;
 }
