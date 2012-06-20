@@ -654,7 +654,7 @@ void panel_create(void){
     char *entries[]={"1s",
                      "500ms","200ms","100ms",
                      "50ms","20ms","10ms",
-                     "5ms","2ms","1ms",NULL,
+                     "5ms","2ms","1ms",
                      "500\xCE\xBCs","200\xCE\xBCs",
                      "100\xCE\xBCs"};
     for(i=0;entries[i];i++)

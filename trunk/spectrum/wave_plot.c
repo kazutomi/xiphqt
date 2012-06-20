@@ -393,7 +393,7 @@ void plot_draw(Plot *p, fetchdata *f, plotparams *pp){
 
                 if(x1>x0){
                   if(!isnan(yL) || !isnan(yH)){
-                    if(isnan(yL) || yL>0)yL=0;
+                    if(isnan(yL) || yL>0)yL=pp->bold;
                     if(isnan(yH) || yH<0)yH=0;
                     gdk_draw_line(p->backing,p->twogc,
                                   x0+padx,rintf(yL+cp),x0+padx,
@@ -410,7 +410,7 @@ void plot_draw(Plot *p, fetchdata *f, plotparams *pp){
               }
               {
                 if(!isnan(yL) || !isnan(yH)){
-                  if(isnan(yL) || yL>0)yL=0;
+                  if(isnan(yL) || yL>0)yL=pp->bold;
                   if(isnan(yH) || yH<0)yH=0;
                   gdk_draw_line(p->backing,p->twogc,
                                 x0+padx,rintf(yL+cp),x0+padx,
