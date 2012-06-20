@@ -43,6 +43,7 @@ GtkWidget *plot;
 GtkWidget *run;
 GtkWidget **chbuttons;
 GtkWidget **groupboxes;
+GtkWidget *scalemenu;
 GtkWidget *rangemenu;
 
 int plot_ch=0;
@@ -619,96 +620,85 @@ void panel_create(void){
   GtkWidget *bbox=gtk_vbox_new(0,0);
 
   {
-    /* range */
-    GtkWidget *box=gtk_hbox_new(1,1);
-
-    GtkWidget *menu=gtk_combo_box_new_text();
-    char *entries[]={"","","","","","","","","",""};
-    for(i=0;i<10;i++)
+    /* scale */
+    GtkWidget *menu=scalemenu=gtk_combo_box_new_text();
+    char *entries[]={"linear","-65dB","-96dB","-120dB","-160dB",NULL};
+    for(i=0;entries[i];i++)
       gtk_combo_box_append_text (GTK_COMBO_BOX (menu), entries[i]);
+    gtk_box_pack_start(GTK_BOX(bbox),menu,1,1,0);
+    g_signal_connect (G_OBJECT (menu), "changed",
+		      G_CALLBACK (scalechange), NULL);
+  }
+
+  {
+    /* range */
+    GtkWidget *menu=rangemenu=gtk_combo_box_new_text();
+    char *entries[]={"","","","","","","","","","",NULL};
+    for(i=0;entries[i];i++)
+      gtk_combo_box_append_text (GTK_COMBO_BOX (menu), entries[i]);
+    gtk_box_pack_start(GTK_BOX(bbox),menu,1,1,0);
     g_signal_connect (G_OBJECT (menu), "changed",
 		      G_CALLBACK (rangechange), NULL);
-    rangemenu = menu;
 
-    GtkWidget *menu2=gtk_combo_box_new_text();
-    char *entries2[]={"linear","-65dB","-96dB","-120dB","-160dB"};
-    for(i=0;i<5;i++)
-      gtk_combo_box_append_text (GTK_COMBO_BOX (menu2), entries2[i]);
-    g_signal_connect (G_OBJECT (menu2), "changed",
-		      G_CALLBACK (scalechange), NULL);
-
-    gtk_box_pack_start(GTK_BOX(box),menu2,1,1,0);
-    gtk_box_pack_start(GTK_BOX(box),menu,1,1,0);
-    gtk_box_pack_start(GTK_BOX(bbox),box,0,0,0);
-    gtk_combo_box_set_active(GTK_COMBO_BOX(menu),4);
-    gtk_combo_box_set_active(GTK_COMBO_BOX(menu2),0);
+  }
+  gtk_combo_box_set_active(GTK_COMBO_BOX(scalemenu),0);
+  gtk_combo_box_set_active(GTK_COMBO_BOX(rangemenu),4);
+  {
+    GtkWidget *sep=gtk_hseparator_new();
+    gtk_box_pack_start(GTK_BOX(bbox),sep,0,0,4);
   }
 
   /* span */
   {
-    GtkWidget *box=gtk_hbox_new(1,1);
-    GtkWidget *label=gtk_label_new ("span: ");
-    gtk_misc_set_alignment(GTK_MISC(label), 1.0f, 0.5f);
-
     GtkWidget *menu=gtk_combo_box_new_text();
-    char *entries[]={"1s",
-                     "500ms","200ms","100ms",
-                     "50ms","20ms","10ms",
-                     "5ms","2ms","1ms",
-                     "500\xCE\xBCs","200\xCE\xBCs",
-                     "100\xCE\xBCs"};
+    char *entries[]={"1s span",
+                     "500ms span","200ms span","100ms span",
+                     "50ms span","20ms span","10ms span",
+                     "5ms span","2ms span","1ms span",
+                     "500\xCE\xBCs span","200\xCE\xBCs span",
+                     "100\xCE\xBCs span",NULL};
     for(i=0;entries[i];i++)
       gtk_combo_box_append_text (GTK_COMBO_BOX (menu), entries[i]);
     g_signal_connect (G_OBJECT (menu), "changed",
 		      G_CALLBACK (spanchange), NULL);
     gtk_combo_box_set_active(GTK_COMBO_BOX(menu),0);
-
-
-    gtk_box_pack_start(GTK_BOX(box),label,1,1,0);
-    gtk_box_pack_start(GTK_BOX(box),menu,1,1,0);
-    gtk_box_pack_start(GTK_BOX(bbox),box,0,0,0);
+    gtk_box_pack_start(GTK_BOX(bbox),menu,1,1,0);
   }
 
   /* trigger */
   {
-    GtkWidget *box=gtk_hbox_new(1,1);
-
     GtkWidget *menu=gtk_combo_box_new_text();
-    char *entries[]={"free run"};
-    for(i=0;i<1;i++)
+    char *entries[]={"free run",NULL};
+    for(i=0;entries[i];i++)
       gtk_combo_box_append_text (GTK_COMBO_BOX (menu), entries[i]);
     gtk_combo_box_set_active(GTK_COMBO_BOX(menu),0);
     g_signal_connect (G_OBJECT (menu), "changed",
 		      G_CALLBACK (triggerchange), NULL);
+    gtk_box_pack_start(GTK_BOX(bbox),menu,1,1,0);
+  }
 
-    /* interval */
-
-    GtkWidget *menu2=gtk_combo_box_new_text();
-    char *entries2[]={"1s",
+  /* interval */
+  {
+    GtkWidget *menu=gtk_combo_box_new_text();
+    char *entries[]={"1s",
                       "500ms","200ms","100ms",
                       "50ms","20ms","10ms",
                       "5ms","2ms","1ms",
                       "500\xCE\xBCs","200\xCE\xBCs",
-                      "100\xCE\xBCs"};
-    for(i=0;i<13;i++)
-      gtk_combo_box_append_text (GTK_COMBO_BOX (menu2), entries2[i]);
-    g_signal_connect (G_OBJECT (menu2), "changed",
+                      "100\xCE\xBCs",NULL};
+    for(i=0;entries[i];i++)
+      gtk_combo_box_append_text (GTK_COMBO_BOX (menu), entries[i]);
+    g_signal_connect (G_OBJECT (menu), "changed",
 		      G_CALLBACK (intervalchange), NULL);
-    gtk_combo_box_set_active(GTK_COMBO_BOX(menu2),3);
-
-
-    gtk_box_pack_start(GTK_BOX(box),menu,1,1,0);
-    gtk_box_pack_start(GTK_BOX(box),menu2,1,1,0);
-    gtk_box_pack_start(GTK_BOX(bbox),box,0,0,0);
-
-
+    gtk_combo_box_set_active(GTK_COMBO_BOX(menu),3);
+    gtk_box_pack_start(GTK_BOX(bbox),menu,1,1,0);
   }
 
   /* plot type */
   {
     GtkWidget *menu=gtk_combo_box_new_text();
-    char *entries[]={"zero-hold","interpolated","lollipop"};
-    for(i=0;i<3;i++)
+    char *entries[]={"zero-hold","interpolated","lollipop",NULL};
+    for(i=0;entries[i];i++)
       gtk_combo_box_append_text (GTK_COMBO_BOX (menu), entries[i]);
     gtk_combo_box_set_active(GTK_COMBO_BOX(menu),0);
     g_signal_connect (G_OBJECT (menu), "changed",
