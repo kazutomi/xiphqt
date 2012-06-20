@@ -654,10 +654,10 @@ void panel_create(void){
     char *entries[]={"1s",
                      "500ms","200ms","100ms",
                      "50ms","20ms","10ms",
-                     "5ms","2ms","1ms",
+                     "5ms","2ms","1ms",NULL,
                      "500\xCE\xBCs","200\xCE\xBCs",
                      "100\xCE\xBCs"};
-    for(i=0;i<13;i++)
+    for(i=0;entries[i];i++)
       gtk_combo_box_append_text (GTK_COMBO_BOX (menu), entries[i]);
     g_signal_connect (G_OBJECT (menu), "changed",
 		      G_CALLBACK (spanchange), NULL);
@@ -799,7 +799,8 @@ static int look_for_gtkrc(char *filename){
   return 1;
 }
 
-#define STR(X) #X
+#define iSTR(x) #x
+#define STR(x) iSTR(x)
 
 void panel_go(int argc,char *argv[]){
   char *homedir=getenv("HOME");
@@ -847,16 +848,6 @@ void panel_go(int argc,char *argv[]){
 	    "cues.\n");
   }
 
-  gtk_rc_add_default_file(STR(ETCDIR)"/waveform-gtkrc");
-  if(homedir){
-    char *rcfile="/.waveform-gtkrc";
-    char *homerc=calloc(1,strlen(homedir)+strlen(rcfile)+1);
-    strcat(homerc,homedir);
-    strcat(homerc,rcfile);
-    gtk_rc_add_default_file(homerc);
-  }
-  gtk_rc_add_default_file(".waveform-gtkrc");
-  gtk_rc_add_default_file("waveform-gtkrc");
   gtk_init (&argc, &argv);
 
   plot_ch = total_ch; /* true now, won't necessarily be true later */

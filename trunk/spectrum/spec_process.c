@@ -24,27 +24,59 @@
 #include "analyzer.h"
 #include "io.h"
 
+char *det_entries[]={
+  "V<span rise=\"-1000\" size=\"small\">peak</span> min/max",
+  "V<span rise=\"-1000\" size=\"small\">peak</span>"
+   "<span rise=\"4000\" size=\"x-small\">2</span> sum",
+  "V<span rise=\"-1000\" size=\"small\">rms</span>"
+   "<span rise=\"4000\" size=\"x-small\">2</span>/Hz avg",
+
+  "V<span rise=\"-1000\" size=\"small\">rms</span>"
+   "<span rise=\"4000\" size=\"x-small\">2</span> avg",
+  "V<span rise=\"-1000\" size=\"small\">rms</span> avg",
+  "log V<span rise=\"-1000\" size=\"small\">rms</span> avg",
+  NULL};
+
+/* when detector is set to 'video', run total mode as an average */
+char *mode_entries[]={
+  "realtime",
+  "time maximum",
+  "time average",
+  "time sum",NULL};
+
+char *bw_entries[]=
+  {"FFT native",
+   "1Hz","3Hz","10Hz","30Hz","100Hz",
+   "octave/24","octave/12","octave/6","octave/3",NULL};
+float bw_values[]=
+  {0., 0., 1, 3, 10, 30, 100, -24., -12., -6., -3.};
+
+
 static float *window=NULL;
 static float *freqbuffer=0;
-static fftwf_plan plan=NULL;
+static float *refbuffer=0;
+
+static fftwf_plan freqplan=NULL;
+
 static int prev_total_ch=-1;
 
 static pthread_mutex_t feedback_mutex=PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 static pthread_mutex_t bw_mutex=PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 
 static float *feedback_count=NULL;
-static float *process_work=NULL;
 
 static float **mag_acc=NULL;
 static float **mag_max=NULL;
 static float **mag_instant=NULL;
 
+static float **phR_acc=NULL;
 static float **phI_acc=NULL;
-static float **phQ_acc=NULL;
+static float **phR_max=NULL;
 static float **phI_max=NULL;
-static float **phQ_max=NULL;
+static float **phR_instant=NULL;
 static float **phI_instant=NULL;
-static float **phQ_instant=NULL;
+static float *phR_work=NULL;
+static float *phI_work=NULL;
 
 static float **xmappingL=NULL;
 static float **xmappingM=NULL;
@@ -60,11 +92,11 @@ sig_atomic_t process_active=0;
 sig_atomic_t process_exit=0;
 
 static void init_process(void){
-  int i;
+  int i,j,ch;
 
   if(!window || prev_total_ch != total_ch){
 
-    if(plan)fftwf_destroy_plan(plan);
+    if(freqplan)fftwf_destroy_plan(freqplan);
 
     if(mag_acc){
       for(i=0;i<prev_total_ch;i++)
@@ -82,77 +114,87 @@ static void init_process(void){
       free(mag_instant);
     }
 
+    if(phR_acc){
+      for(i=0;i<prev_total_ch;i++)
+        if(phR_acc[i])free(phR_acc[i]);
+      free(phR_acc);
+    }
     if(phI_acc){
       for(i=0;i<prev_total_ch;i++)
         if(phI_acc[i])free(phI_acc[i]);
       free(phI_acc);
     }
-    if(phQ_acc){
+    if(phR_max){
       for(i=0;i<prev_total_ch;i++)
-        if(phQ_acc[i])free(phQ_acc[i]);
-      free(phQ_acc);
+        if(phR_max[i])free(phR_max[i]);
+      free(phR_max);
     }
     if(phI_max){
       for(i=0;i<prev_total_ch;i++)
         if(phI_max[i])free(phI_max[i]);
       free(phI_max);
     }
-    if(phQ_max){
+    if(phR_instant){
       for(i=0;i<prev_total_ch;i++)
-        if(phQ_max[i])free(phQ_max[i]);
-      free(phQ_max);
+        if(phR_instant[i])free(phR_instant[i]);
+      free(phR_instant);
     }
     if(phI_instant){
       for(i=0;i<prev_total_ch;i++)
         if(phI_instant[i])free(phI_instant[i]);
       free(phI_instant);
     }
-    if(phQ_instant){
-      for(i=0;i<prev_total_ch;i++)
-        if(phQ_instant[i])free(phQ_instant[i]);
-      free(phQ_instant);
-    }
 
-    if(process_work)free(process_work);
     if(feedback_count)free(feedback_count);
 
     if(freqbuffer)free(freqbuffer);
+    if(refbuffer)free(refbuffer);
+    if(phR_work)free(phR_work);
+    if(phI_work)free(phI_work);
     if(window)free(window);
 
-    process_work=calloc(blocksize+2,sizeof(*process_work));
     feedback_count=calloc(total_ch,sizeof(*feedback_count));
 
     mag_acc=calloc(total_ch,sizeof(*mag_acc));
     mag_max=calloc(total_ch,sizeof(*mag_max));
     mag_instant=calloc(total_ch,sizeof(*mag_instant));
 
+    phR_acc=calloc(total_ch,sizeof(*phR_acc));
     phI_acc=calloc(total_ch,sizeof(*phI_acc));
-    phQ_acc=calloc(total_ch,sizeof(*phQ_acc));
+    phR_max=calloc(total_ch,sizeof(*phR_max));
     phI_max=calloc(total_ch,sizeof(*phI_max));
-    phQ_max=calloc(total_ch,sizeof(*phQ_max));
+    phR_instant=calloc(total_ch,sizeof(*phR_instant));
     phI_instant=calloc(total_ch,sizeof(*phI_instant));
-    phQ_instant=calloc(total_ch,sizeof(*phQ_instant));
+    phR_work=calloc(blocksize/2+2,sizeof(*phR_work));
+    phI_work=calloc(blocksize/2+2,sizeof(*phI_work));
 
     freqbuffer=fftwf_malloc((blocksize+2)*sizeof(*freqbuffer));
-    for(i=0;i<total_ch;i++){
+    refbuffer=fftwf_malloc((blocksize+2)*sizeof(*refbuffer));
 
-      mag_acc[i]=calloc(blocksize/2+1,sizeof(**mag_acc));
-      mag_max[i]=calloc(blocksize/2+1,sizeof(**mag_max));
-      mag_instant[i]=calloc(blocksize/2+1,sizeof(**mag_instant));
-
-      if(i>0){
-        phI_acc[i]=calloc(blocksize/2+1,sizeof(**phI_acc));
-        phI_max[i]=calloc(blocksize/2+1,sizeof(**phI_max));
-        phI_instant[i]=calloc(blocksize/2+1,sizeof(**phI_instant));
-        phQ_acc[i]=calloc(blocksize/2+1,sizeof(**phQ_acc));
-        phQ_max[i]=calloc(blocksize/2+1,sizeof(**phQ_max));
-        phQ_instant[i]=calloc(blocksize/2+1,sizeof(**phQ_instant));
+    ch=0;
+    for(i=0;i<inputs;i++){
+      for(j=ch;j<ch+channels[i];j++){
+        /* +2, not +1, to have a single 'one-past' value that is
+           accessed but not used.  it simplifies the boundary
+           condiitons in the bin_display code */
+        mag_acc[j]=calloc(blocksize/2+2,sizeof(**mag_acc));
+        mag_max[j]=calloc(blocksize/2+2,sizeof(**mag_max));
+        mag_instant[j]=calloc(blocksize/2+2,sizeof(**mag_instant));
+        if(j==ch+1){
+          phR_acc[j]=calloc(blocksize/2+2,sizeof(**phR_acc));
+          phR_max[j]=calloc(blocksize/2+2,sizeof(**phR_max));
+          phR_instant[j]=calloc(blocksize/2+2,sizeof(**phR_instant));
+          phI_acc[j]=calloc(blocksize/2+2,sizeof(**phI_acc));
+          phI_max[j]=calloc(blocksize/2+2,sizeof(**phI_max));
+          phI_instant[j]=calloc(blocksize/2+2,sizeof(**phI_instant));
+        }
       }
+      ch+=channels[i];
     }
 
     prev_total_ch = total_ch;
 
-    plan=fftwf_plan_dft_r2c_1d(blocksize,freqbuffer,
+    freqplan=fftwf_plan_dft_r2c_1d(blocksize,freqbuffer,
                                (fftwf_complex *)freqbuffer,
                                FFTW_ESTIMATE);
 
@@ -162,6 +204,7 @@ static void init_process(void){
     for(i=0;i<blocksize;i++)window[i]*=window[i];
     for(i=0;i<blocksize;i++)window[i]=sin(window[i]*M_PIl*.5);
     for(i=0;i<blocksize;i++)window[i]*=window[i]/(blocksize/4)*.778;
+
   }
 }
 
@@ -173,42 +216,42 @@ void rundata_clear(){
     memset(mag_acc[i],0,(blocksize/2+1)*sizeof(**mag_acc));
     memset(mag_max[i],0,(blocksize/2+1)*sizeof(**mag_max));
     memset(mag_instant[i],0,(blocksize/2+1)*sizeof(**mag_instant));
-
-    if(i>0){
+    if(phR_acc[i])
+      memset(phR_acc[i],0,(blocksize/2+1)*sizeof(**phR_acc));
+    if(phI_acc[i])
       memset(phI_acc[i],0,(blocksize/2+1)*sizeof(**phI_acc));
-      memset(phQ_acc[i],0,(blocksize/2+1)*sizeof(**phQ_acc));
+    if(phR_max[i])
+      memset(phR_max[i],0,(blocksize/2+1)*sizeof(**phR_max));
+    if(phI_max[i])
       memset(phI_max[i],0,(blocksize/2+1)*sizeof(**phI_max));
-      memset(phQ_max[i],0,(blocksize/2+1)*sizeof(**phQ_max));
-      memset(phI_instant[i],0,(blocksize/2+1)*sizeof(**phI_instant));
-      memset(phQ_instant[i],0,(blocksize/2+1)*sizeof(**phQ_instant));
-    }
+    if(phR_instant[i])
+      memset(phR_instant[i],0,(blocksize/2+1)*sizeof(**phR_instant));
+    if(phI_instant[i])
+    memset(phI_instant[i],0,(blocksize/2+1)*sizeof(**phI_instant));
   }
   pthread_mutex_unlock(&feedback_mutex);
 }
 
-char *bw_entries[]=
-  {"native","display",
-   ".1Hz",".3Hz","1Hz","3Hz","10Hz","30Hz","100Hz",NULL};
-float bw_values[]=
-  {0., 0., .1, .3, 1, 3, 10, 30, 100};
-
-//static int bandwidth_choice=0;
+static int bandwidth_choice=0;
 //static float bandwidth=-1;
-//static int detector_mode=0;
+static int feedback_bandwidth=0;
 
-void set_bandwidth_detector(int bw, int det){
-#if 0
+extern GtkWidget *clearbutton;
+void set_bandwidth(int bw){
+
   pthread_mutex_lock(&bw_mutex);
   bandwidth_choice=bw;
-  detector_mode=det;
-  compute_bandwidth();
-  pthread_mutex_unlock(&bw_mutex);
+  //compute_bwfilter();
+  //compute_bandwidth();
 
   pthread_mutex_lock(&feedback_mutex);
+  feedback_bandwidth=bw;
   rundata_clear();
-  accumulate_feedback();
+  //accumulate_feedback();
+
   pthread_mutex_unlock(&feedback_mutex);
-#endif
+  pthread_mutex_unlock(&bw_mutex);
+
 }
 
 static void process(void){
@@ -220,67 +263,86 @@ static void process(void){
       for(i=ch;i<ch+channels[fi];i++){
 
         pthread_mutex_lock(&bw_mutex);
-	float *data=blockbuffer[i];
 
-	/* window the blockbuffer into the FFT buffer, save a copy of
-           current frame for BW changes */
+	float *data=blockbuffer[i];
 	for(j=0;j<blocksize;j++){
 	  freqbuffer[j]=window[j]*data[j];
 	}
 
 	/* transform */
-	fftwf_execute(plan);
+        fftwf_execute(freqplan);
 
-        pthread_mutex_unlock(&bw_mutex);
+        if(i==ch)
+          memcpy(refbuffer,freqbuffer,(blocksize+2)*sizeof(*refbuffer));
+
+        if(i==ch+1){
+          for(j=0;j<blocksize+2;j+=2){
+            float I = freqbuffer[j];
+            float Q = freqbuffer[j+1];
+            float rI = refbuffer[j];
+            float rQ = refbuffer[j+1];
+            freqbuffer[j>>1] = I*I+Q*Q;
+            phR_work[j>>1] = (rI*I + rQ*Q);
+            phI_work[j>>1] = (rI*Q - rQ*I);
+          }
+        }else{
+          float acc=0.;
+          for(j=0;j<blocksize+2;j+=2){
+            float I = refbuffer[j];
+            float Q = refbuffer[j+1];
+            acc+=freqbuffer[j>>1] = I*I+Q*Q;
+          }
+        }
+
+        if(bandwidth_choice>1){
+          /* alters buffers in-place */
+
+
+        }
 
 	pthread_mutex_lock(&feedback_mutex);
 
-	/* perform desired accumulations */
-	for(j=0;j<blocksize+2;j+=2){
-	  float R = freqbuffer[j];
-	  float I = freqbuffer[j+1];
-	  float sqR = R*R;
-	  float sqI = I*I;
-	  float sqM = sqR+sqI;
-          //float M = sqrtf(sqM);
+        /* perform desired accumulations */
+        if(i==ch+1){
 
-	  /* deal with phase accumulate/rotate */
-	  if(i==ch){
-	    /* normalize/store ref for later rotation */
-	    process_work[j] = R;
-	    process_work[j+1] = -I;
+          for(j=0;j<blocksize/2+1;j++){
 
-	  }else{
-	    /* rotate signed square phase according to ref for phase calculation */
-	    float pR;
-	    float pI;
-	    float rR = process_work[j];
-	    float rI = process_work[j+1];
-	    pR = (rR*R - rI*I);
-	    pI = (rR*I + rI*R);
+            mag_instant[i][j]=freqbuffer[j];
+            mag_acc[i][j]+=freqbuffer[j];
+            if(mag_max[i][j]<freqbuffer[j])
+              mag_max[i][j]=freqbuffer[j];
 
-	    phI_instant[i][j>>1]=pR;
-	    phQ_instant[i][j>>1]=pI;
-
-	    phI_acc[i][j>>1]+=pR;
-	    phQ_acc[i][j>>1]+=pI;
-
-	    if(mag_max[i][j>>1]<sqM){
-	      phI_max[i][j>>1]=pR;
-	      phQ_max[i][j>>1]=pI;
+	    phR_acc[i][j]+=phR_work[j];
+	    phI_acc[i][j]+=phI_work[j];
+	    if(mag_max[i][j]<freqbuffer[j]){
+	      phR_max[i][j]=phR_work[j];
+	      phI_max[i][j]=phI_work[j];
 	    }
-	  }
+          }
 
-	  mag_instant[i][j>>1]=sqM;
-	  mag_acc[i][j>>1]+=sqM;
+          /* swap instant, don't copy */
+          float *temp = phR_work;
+          phR_work = phR_instant[i];
+          phR_instant[i] = temp;
 
-	  if(mag_max[i][j>>1]<sqM)
-	    mag_max[i][j>>1]=sqM;
+          temp = phI_work;
+          phI_work = phI_instant[i];
+          phI_instant[i] = temp;
+
+        }else{
+          for(j=0;j<blocksize/2+1;j++){
+
+            mag_instant[i][j]=freqbuffer[j];
+            mag_acc[i][j]+=freqbuffer[j];
+            if(mag_max[i][j]<freqbuffer[j])
+              mag_max[i][j]=freqbuffer[j];
+          }
 
 	}
 	feedback_count[i]++;
 
 	pthread_mutex_unlock(&feedback_mutex);
+        pthread_mutex_unlock(&bw_mutex);
       }
     }
     ch+=channels[fi];
@@ -384,7 +446,7 @@ void process_dump(int mode){
     /* phase */
     for(i=0;i<blocksize+2;i+=2){
       fprintf(out,"%f ",(double)i*.5*rate[fi]/blocksize);
-      fprintf(out,"%f ",atan2(phQ_acc[ch+1][i>>1],phI_acc[ch+1][i>>1])*57.29);
+      fprintf(out,"%f ",atan2(phI_acc[ch+1][i>>1],phR_acc[ch+1][i>>1])*57.29);
       fprintf(out,"\n");
     }
     fprintf(out,"\n");
@@ -395,6 +457,339 @@ void process_dump(int mode){
   pthread_mutex_unlock(&feedback_mutex);
 }
 
+/* takes V^2, returns dBV */
+static void bin_minmax(float *in, float *out, float *ymax,
+                       int width, float norm,
+                       float *L, float *M, float *H){
+  int i,j;
+  int prevbin;
+  float prevy;
+  float dBnorm = todB(norm);
+
+  for(i=0;i<width;i++){
+    int first=ceil(L[i]);
+    int last=ceil(H[i]);
+    float firsty,lasty,min,max;
+
+    /* don't allow roundoff error to skip a bin entirely */
+    if(i>0 && prevbin<first)first=prevbin;
+    prevbin=last;
+
+    if(first==last){
+      /* interpolate between two bins */
+      float del=M[i]-floor(M[i]);
+      int mid = floor(M[i]);
+      firsty=lasty=min=max =
+        (todB(in[mid])*(1.-del)+todB(in[mid+1])*del+dBnorm)*.5;
+    }else{
+      firsty=min=max=in[first];
+      for(j=first+1;j<last;j++){
+        if(in[j]<min)min=in[j];
+        if(in[j]>max)max=in[j];
+      }
+      lasty=(todB(in[j-1])+dBnorm)*.5;
+      firsty=(todB(firsty)+dBnorm)*.5;
+      min=(todB(min)+dBnorm)*.5;
+      max=(todB(max)+dBnorm)*.5;
+    }
+
+    if(max>*ymax)*ymax=max;
+
+    /* link non-overlapping bins into contiguous lines */
+    if(i>0){
+      float midpoint = (prevy+firsty)*.5;
+
+      if(midpoint<min)min=midpoint;
+      if(midpoint>max)max=midpoint;
+
+      if(midpoint<out[i*2-2])out[i*2-2]=midpoint;
+      if(midpoint>out[i*2-1])out[i*2-1]=midpoint;
+    }
+
+    out[i*2]=min;
+    out[i*2+1]=max;
+
+    prevy=lasty;
+  }
+}
+
+static void ph_minmax(float *R, float *I, float *out,
+                      float *pmin, float *pmax, int width,
+                      float *L, float *M, float *H){
+  int i,j;
+  int prevbin;
+  float prevmin;
+  float prevmax;
+
+  for(i=0;i<width;i++){
+    int first=ceil(L[i]);
+    int last=ceil(H[i]);
+    float min,max;
+
+    /* don't allow roundoff error to skip a bin entirely */
+    if(i>0 && prevbin<first)first=prevbin;
+    prevbin=last;
+
+    if(first==last){
+      /* interpolate between two bins, do it in log space */
+      float del=M[i]-floor(M[i]);
+      int mid = floor(M[i]);
+      float aP = atan2f(I[mid],R[mid]);
+      float bP = atan2f(I[mid+1],R[mid+1]);
+      min=max = (aP+(bP-aP)*del)*(360/M_PI/2);
+    }else{
+      int min_i,max_i;
+      min=max =  fast_atan_cmp(I[first],R[first]);
+      min_i=max_i = first;
+      for(j=first+1;j<last;j++){
+        float P = fast_atan_cmp(I[j],R[j]);
+        if(P<min){
+          min=P;
+          min_i=j;
+        }
+        if(P>max){
+          max=P;
+          max_i=j;
+        }
+      }
+
+      min=atan2f(I[min_i],R[min_i])*(360/M_PI/2);
+      if(max_i==min_i)
+        max=min;
+      else
+        max=atan2f(I[max_i],R[max_i])*(360/M_PI/2);
+    }
+
+    if(max>*pmax)*pmax=max;
+    if(min<*pmin)*pmin=min;
+
+    /* link non-overlapping bins into contiguous lines */
+    if(i>0){
+      if(prevmin>max){
+        float midpoint = (prevmin+max)*.5;
+        out[i*2-2]=midpoint;
+        max=midpoint;
+      }else if(prevmax<min){
+        float midpoint = (prevmax+min)*.5;
+        out[i*2-1]=midpoint;
+        min=midpoint;
+      }
+    }
+
+    out[i*2]=min;
+    out[i*2+1]=max;
+
+    prevmin=min;
+    prevmax=max;
+  }
+}
+
+/* input is always V^2 */
+/* detector mode 1: sum */
+/* detector mode 2: rms/Hz average */
+/* detector mode 3: rms average */
+/* detector mode 4: mag average */
+/* detector mode 5: log average */
+static void bin_display(float *di, float *out, float *ymax,
+                        int det, int width, float norm,
+                        float *L, float *M, float *H, int link){
+  int i,j;
+  int prevbin;
+  float prevy;
+  float dBnorm = todB(norm)*.5;
+  float *in = di;
+
+  if(det==DET_LINEAR){
+    in=alloca(sizeof(*in)*(blocksize/2+1));
+    for(i=0;i<blocksize/2+1;i++)
+      in[i]=sqrtf(di[i]);
+  }
+  if(det==DET_LOG){
+    in=alloca(sizeof(*in)*(blocksize/2+1));
+    for(i=0;i<blocksize/2+1;i++)
+      in[i]=todB(di[i])*.5;
+  }
+  if(det!=DET_SUM) dBnorm += -3.0103; /* adjust from Vpk to Vrms */
+
+  for(i=0;i<width;i++){
+    int first=floor(L[i]);
+    int last=floor(H[i]);
+    float min,max,sum=0.,sdel=0.;
+
+    /* don't allow roundoff error to skip a bin entirely */
+    if(i>0 && prevbin<first)first=prevbin;
+    prevbin=last;
+
+    if(first==last){
+      float m = (H[i]+L[i])*.5-first;
+      sdel = H[i]-L[i];
+      sum = (in[first]*(1.-m) + in[first+1]*m)*sdel;
+    }else{
+      float del = first+1-L[i];
+      float m = 1.-del*.5;
+
+      sdel = del;
+      sum = (in[first]*(1.-m) + in[first+1]*m)*del;
+
+      for(j=first+1;j<last;j++){
+        sum+=in[j];
+        sdel+=1.;
+      }
+
+      sdel += del = H[i]-last;
+      m = del*.5;
+      sum += (in[last]*(1.-m) + in[last+1]*m)*del;
+    }
+
+    switch(det){
+    case DET_SUM:
+      sum = todB(sum)*.5+dBnorm;
+      break;
+    case DET_DENSITY:
+    case DET_RMS:
+      sum = todB(sum/sdel)*.5+dBnorm;
+      break;
+    case DET_LINEAR:
+      sum = todB(sum/sdel)+dBnorm;
+      break;
+    case DET_LOG:
+      sum = sum/sdel+dBnorm;
+      break;
+    }
+
+    min=max=sum;
+
+    if(link){
+      if(sum>*ymax)*ymax=sum;
+
+      /* link non-overlapping bins into contiguous lines */
+      if(i>0){
+        float midpoint = (prevy+sum)*.5;
+        if(midpoint<min)min=midpoint;
+        if(midpoint>max)max=midpoint;
+
+        if(midpoint<out[i*2-2])out[i*2-2]=midpoint;
+        if(midpoint>out[i*2-1])out[i*2-1]=midpoint;
+      }
+    }
+
+    out[i*2]=min;
+    out[i*2+1]=max;
+
+    prevy=sum;
+  }
+}
+
+static void display_link_lines(float *d, int width){
+  int i;
+  float prevy;
+
+  for(i=0;i<width;i++){
+    float min,max,sum;
+    min=max=sum=d[i*2];
+
+    /* link non-overlapping bins into contiguous lines */
+    if(i>0){
+      float midpoint = (prevy+sum)*.5;
+      if(midpoint<min)min=midpoint;
+      if(midpoint>max)max=midpoint;
+
+      if(midpoint<d[i*2-2])d[i*2-2]=midpoint;
+      if(midpoint>d[i*2-1])d[i*2-1]=midpoint;
+    }
+
+    d[i*2]=min;
+    d[i*2+1]=max;
+
+    prevy=sum;
+  }
+}
+
+static void ph_display(float *iR, float *iI, float *out,
+                       float *pmin, float *pmax, int width,
+                       float *L, float *M, float *H){
+  int i,j;
+  int prevbin;
+  float prevP;
+
+  for(i=0;i<width;i++){
+    int first=floor(L[i]);
+    int last=floor(H[i]);
+    float min,max,R,I,P;
+
+    /* don't allow roundoff error to skip a bin entirely */
+    if(i>0 && prevbin<first)first=prevbin;
+    prevbin=last;
+
+    if(first==last){
+      float m = (H[i]+L[i])*.5-first;
+      R = (iR[first]*(1.-m) + iR[first+1]*m);
+      I = (iI[first]*(1.-m) + iI[first+1]*m);
+    }else{
+      float del = first+1-L[i];
+      float m = 1.-del*.5;
+      R = (iR[first]*(1.-m) + iR[first+1]*m)*del;
+      I = (iI[first]*(1.-m) + iI[first+1]*m)*del;
+
+      for(j=first+1;j<last;j++){
+        R+=iR[j];
+        I+=iI[j];
+      }
+
+      del = H[i]-last;
+      m = del*.5;
+      R += (iR[last]*(1.-m) + iR[last+1]*m)*del;
+      I += (iI[last]*(1.-m) + iI[last+1]*m)*del;
+    }
+
+    min=max=P = atan2f(I,R)*(360/M_PI/2);
+
+    if(max>*pmax)*pmax=max;
+    if(min<*pmin)*pmin=min;
+
+    /* link non-overlapping bins into contiguous lines */
+    if(i>0){
+      float midpoint = (prevP+P)*.5;
+      if(midpoint<min)min=midpoint;
+      if(midpoint>max)max=midpoint;
+
+      if(midpoint<out[i*2-2])out[i*2-2]=midpoint;
+      if(midpoint>out[i*2-1])out[i*2-1]=midpoint;
+    }
+
+    out[i*2]=min;
+    out[i*2+1]=max;
+
+    prevP=P;
+  }
+}
+
+
+void mag_to_display(float *in, float *out, float *ymax,
+                    int fi, int width, float norm, int det, int link){
+  if(det){
+    if(det==DET_DENSITY) norm*=(float)blocksize/rate[fi];
+    bin_display(in, out, ymax, det, width, norm,
+                xmappingL[fi], xmappingM[fi], xmappingH[fi], link);
+  }else{
+    bin_minmax(in, out, ymax, width, norm,
+               xmappingL[fi], xmappingM[fi], xmappingH[fi]);
+  }
+}
+
+void phase_to_display(float *I, float *Q, float *out,
+                      float *pmin, float *pmax,
+                      int fi, int width,int det){
+
+  if(det){ /* display averaging */
+    ph_display(I, Q, out, pmin, pmax, width,
+               xmappingL[fi], xmappingM[fi], xmappingH[fi]);
+  }else{
+    ph_minmax(I, Q, out, pmin, pmax, width,
+              xmappingL[fi], xmappingM[fi], xmappingH[fi]);
+  }
+}
+
 /* how many bins to 'trim' off the edge of calculated data when we
    know we've hit a boundary of marginal measurement */
 #define binspan 5
@@ -403,13 +798,12 @@ static fetchdata fetch_ret;
 
 /* the data returned is now 2 vals per bin; a min and a max.  The spec
    plot merely draws a vertical line between. */
-fetchdata *process_fetch(int scale, int mode, int link,
-                         float bw, int bwmode,
+fetchdata *process_fetch(int scale, int mode, int link, int det,
                          int *process_in, Plot *plot){
   int ch,ci,i,j,fi;
   float **data;
+  float **phR;
   float **phI;
-  float **phQ;
   float *normptr;
   float maxrate=-1.;
   float nyq;
@@ -585,25 +979,25 @@ fetchdata *process_fetch(int scale, int mode, int link,
   /* mode selects the base data set */
   normptr=NULL;
   switch(mode){
-  case 0: /* independent / instant */
+  case MODE_REALTIME: /* independent / instant */
     data=mag_instant;
+    phR=phR_instant;
     phI=phI_instant;
-    phQ=phQ_instant;
     break;
-  case 1: /* independent / max */
+  case MODE_MAX: /* independent / max */
     data=mag_max;
+    phR=phR_max;
     phI=phI_max;
-    phQ=phQ_max;
     break;
-  case 2: /* independent / accumulate */
+  case MODE_TOTAL: /* independent / accumulate */
     data=mag_acc;
+    phR=phR_acc;
     phI=phI_acc;
-    phQ=phQ_acc;
     break;
-  case 3: /* independent / average */
+  case MODE_AVERAGE: /* independent / average */
     data=mag_acc;
+    phR=phR_acc;
     phI=phI_acc;
-    phQ=phQ_acc;
     normptr=feedback_count;
     break;
   }
@@ -614,69 +1008,16 @@ fetchdata *process_fetch(int scale, int mode, int link,
   fetch_ret.pmin = 180.;
 
   for(fi=0;fi<inputs;fi++){
-    float *L = xmappingL[fi];
-    float *M = xmappingM[fi];
-    float *H = xmappingH[fi];
-    float normalize = normptr ? 1./normptr[fi] : 1.;
+    float normalize = (normptr && normptr[fi]) ? 1./normptr[fi] : 1.;
 
     switch(link){
     case LINK_INDEPENDENT:
 
       for(ci=0;ci<channels[fi];ci++){
 	if(process[ch+ci]){
-
-          float *y = fetch_ret.data[ci+ch];
-          float *m = data[ci+ch];
-          int prevbin;
-          float prevy;
-	  for(i=0;i<width;i++){
-	    int first=ceil(L[i]);
-	    int last=ceil(H[i]);
-	    float firsty,lasty,min,max;
-
-            /* don't allow roundoff error to skip a bin entirely */
-            if(i>0 && prevbin<first)first=prevbin;
-            prevbin=last;
-
-	    if(first==last){
-	      float del=M[i]-floor(M[i]);
-              int mid = floor(M[i]);
-              float a = todB(m[mid]*normalize);
-              float b = todB(m[mid+1]*normalize);
-	      firsty=lasty=min=max=(a+(b-a)*del);
-
-	    }else{
-	      firsty=min=max=m[first];
-	      for(j=first+1;j<last;j++){
-                if(m[j]<min)min=m[j];
-                if(m[j]>max)max=m[j];
-              }
-              lasty=todB(m[j-1]*normalize);
-              firsty=todB(firsty*normalize);
-              min=todB(min*normalize);
-              max=todB(max*normalize);
-	    }
-
-            max*=.5;
-            min*=.5;
-	    if(max>fetch_ret.ymax)fetch_ret.ymax=max;
-
-            /* link non-overlapping bins into contiguous lines */
-            if(i>0){
-              float midpoint = (prevy+firsty)*.25;
-
-              if(midpoint<min)min=midpoint;
-              if(midpoint>max)max=midpoint;
-
-              if(midpoint<y[i*2-2])y[i*2-2]=midpoint;
-              if(midpoint>y[i*2-1])y[i*2-1]=midpoint;
-            }
-
-	    y[i*2]=min;
-	    y[i*2+1]=max;
-
-            prevy=lasty;
-	  }
+          mag_to_display(data[ch+ci], fetch_ret.data[ch+ci],
+                          &fetch_ret.ymax,
+                         fi, width, normalize, det, 1);
 	}
       }
       break;
@@ -687,240 +1028,22 @@ fetchdata *process_fetch(int scale, int mode, int link,
          are processed */
       {
         int any=0;
+        float *y = fetch_ret.data[ch];
+        float work[blocksize/2+1];
+        memset(work,0,sizeof(work));
+
         for(i=ch;i<ch+channels[fi];i++){
-          if(fetch_ret.active[i])any=1;
+          if(fetch_ret.active[i]){
+            for(j=0;j<blocksize/2+1;j++)
+              work[j]+=data[i][j];
+            any=1;
+          }
           fetch_ret.active[i]=0;
         }
         fetch_ret.active[ch]=any;
-      }
-
-      {
-        float *y = fetch_ret.data[ch];
-        float **m = data+ch;
-        int prevbin;
-        float prevy;
-        for(i=0;i<width;i++){
-          int first=ceil(L[i]);
-          int last=ceil(H[i]);
-          float firsty,lasty,min,max;
-
-          /* don't allow roundoff error to skip a bin entirely */
-          if(i>0 && prevbin<first)first=prevbin;
-          prevbin=last;
-
-          if(first==last){
-            float a=0.;
-            float b=0.;
-            int mid = floor(M[i]);
-            float del=M[i]-floor(M[i]);
-            for(ci=0;ci<channels[fi];ci++){
-              if(process[ch+ci]){
-                a+=m[ci][mid];
-                b+=m[ci][mid+1];
-              }
-            }
-            a=todB(a*normalize);
-            b=todB(b*normalize);
-            firsty=lasty=min=max=(a+(b-a)*del);
-          }else{
-            float a=0.;
-            for(ci=0;ci<channels[fi];ci++){
-              if(process[ch+ci]) a+=m[ci][first];
-            }
-            firsty=min=max=a;
-
-            for(j=first+1;j<last;j++){
-              a=0.;
-              for(ci=0;ci<channels[fi];ci++){
-                if(process[ch+ci]) a+=m[ci][j];
-              }
-              if(a<min)min=a;
-              if(a>max)max=a;
-            }
-
-            lasty=todB(a*normalize);
-            firsty=todB(firsty*normalize);
-            min=todB(min*normalize);
-            max=todB(max*normalize);
-          }
-
-          min*=.5;
-          max*=.5;
-
-          if(max>fetch_ret.ymax)fetch_ret.ymax=max;
-
-          /* link non-overlapping bins into contiguous lines */
-          if(i>0){
-            float midpoint = (prevy+firsty)*.25;
-
-            if(midpoint<min)min=midpoint;
-            if(midpoint>max)max=midpoint;
-
-            if(midpoint<y[i*2-2])y[i*2-2]=midpoint;
-            if(midpoint>y[i*2-1])y[i*2-1]=midpoint;
-          }
-
-          y[i*2]=min;
-          y[i*2+1]=max;
-
-          prevy=lasty;
-        }
-      }
-      break;
-
-    case LINK_SUB_FROM:
-
-      for(i=ch;i<ch+channels[fi];i++)
-        fetch_ret.active[i]=0;
-
-      if(process[ch]==0){
-        float *y = fetch_ret.data[ch];
-        for(i=0;i<width*2+2;i++)
-          y[i]=-300;
-      }else{
-        float *y = fetch_ret.data[ch];
-        float **m = data+ch;
-        int prevbin;
-        float prevy;
-
-        fetch_ret.active[ch]=1;
-
-        for(i=0;i<width;i++){
-          int first=ceil(L[i]);
-          int last=ceil(H[i]);
-          float firsty,lasty,min,max;
-
-          /* don't allow roundoff error to skip a bin entirely */
-          if(i>0 && prevbin<first)first=prevbin;
-          prevbin=last;
-
-          if(first==last){
-            int mid = floor(M[i]);
-            float del=M[i]-floor(M[i]);
-            float a=m[0][mid];
-            float b=m[0][mid+1];
-            for(ci=1;ci<channels[fi];ci++){
-              if(process[ch+ci]){
-                a-=m[ci][mid];
-                b-=m[ci][mid+1];
-              }
-            }
-            a=todB(a*normalize);
-            b=todB(b*normalize);
-            firsty=lasty=min=max=(a+(b-a)*del);
-          }else{
-            float a=m[0][first];
-            for(ci=1;ci<channels[fi];ci++){
-              if(process[ch+ci]) a-=m[ci][first];
-            }
-            firsty=min=max=a;
-
-            for(j=first+1;j<last;j++){
-              a=m[0][j];
-              for(ci=1;ci<channels[fi];ci++){
-                if(process[ch+ci]) a-=m[ci][j];
-              }
-              if(a<min)min=a;
-              if(a>max)max=a;
-            }
-
-            lasty=todB(a*normalize);
-            firsty=todB(firsty*normalize);
-            min=todB(min*normalize);
-            max=todB(max*normalize);
-          }
-
-          min*=.5;
-          max*=.5;
-
-          if(max>fetch_ret.ymax)fetch_ret.ymax=max;
-
-          /* link non-overlapping bins into contiguous lines */
-          if(i>0){
-            float midpoint = (prevy+firsty)*.25;
-
-            if(midpoint<min)min=midpoint;
-            if(midpoint>max)max=midpoint;
-
-            if(midpoint<y[i*2-2])y[i*2-2]=midpoint;
-            if(midpoint>y[i*2-1])y[i*2-1]=midpoint;
-          }
-
-          y[i*2]=min;
-          y[i*2+1]=max;
-
-          prevy=lasty;
-        }
-      }
-      break;
-    case LINK_SUB_REF:
-
-      {
-        float *r = data[ch];
-        float *y = fetch_ret.data[ch];
-        for(i=0;i<width*2+2;i++)
-          y[i]=-300;
-
-        /* first channel in each display group not shown; used as a
-           reference */
-        fetch_ret.active[ch]=0;
-
-        /* process 1->n */
-        for(ci=1;ci<channels[fi];ci++){
-          if(process[ch+ci]){
-            float *y = fetch_ret.data[ci+ch];
-            float *m = data[ci+ch];
-            int prevbin;
-            float prevy;
-            for(i=0;i<width;i++){
-              int first=ceil(L[i]);
-              int last=ceil(H[i]);
-              float firsty,lasty,min,max;
-
-              /* don't allow roundoff error to skip a bin entirely */
-              if(i>0 && prevbin<first)first=prevbin;
-              prevbin=last;
-
-              if(first==last){
-                float del=M[i]-floor(M[i]);
-                int mid = floor(M[i]);
-                float a = todB((m[mid]-r[mid])*normalize);
-                float b = todB((m[mid+1]-r[mid])*normalize);
-                firsty=lasty=min=max=(a+(b-a)*del);
-
-              }else{
-                firsty=min=max=m[first]-r[first];
-                for(j=first+1;j<last;j++){
-                  if(m[j]<min)min=m[j]-r[j];
-                  if(m[j]>max)max=m[j]-r[j];
-                }
-                lasty=todB((m[j-1]-r[j-1])*normalize);
-                firsty=todB(firsty*normalize);
-                min=todB(min*normalize);
-                max=todB(max*normalize);
-              }
-
-              max*=.5;
-              min*=.5;
-              if(max>fetch_ret.ymax)fetch_ret.ymax=max;
-
-              /* link non-overlapping bins into contiguous lines */
-              if(i>0){
-                float midpoint = (prevy+firsty)*.25;
-
-                if(midpoint<min)min=midpoint;
-                if(midpoint>max)max=midpoint;
-
-                if(midpoint<y[i*2-2])y[i*2-2]=midpoint;
-                if(midpoint>y[i*2-1])y[i*2-1]=midpoint;
-              }
-
-              y[i*2]=min;
-              y[i*2+1]=max;
-
-              prevy=lasty;
-            }
-          }
+        if(any){
+          mag_to_display(work, y, &fetch_ret.ymax,
+                         fi, width, normalize, det, 1);
         }
       }
       break;
@@ -931,112 +1054,42 @@ fetchdata *process_fetch(int scale, int mode, int link,
         fetch_ret.active[i]=0;
 
       if(channels[fi]>=2){
-	float *om = fetch_ret.data[ch];
-	float *op = fetch_ret.data[ch+1];
+        if(process[ch]){
+          /* response */
+          if(det==DET_MINMAX){
+            /* unsmoothed */
+            float work[blocksize/2+1];
+            float *r = data[ch];
+            float *m = data[ch+1];
+            for(j=0;j<blocksize/2+1;j++)
+              work[j]=m[j]/r[j];
+            mag_to_display(work, fetch_ret.data[ch], &fetch_ret.ymax,
+                           fi, width, 1, det, 1);
+          }else{
+            /* smoothed by bin */
+            float *out=fetch_ret.data[ch];
+            float r[width*2];
+            float m[width*2];
+            float dummy=-210;
+            mag_to_display(data[ch], r, &dummy,
+                           fi, width, 1, det, 0);
+            mag_to_display(data[ch+1], m, &dummy,
+                           fi, width, 1, det, 0);
 
-	float *r = data[ch];
-	float *m = data[ch+1];
-	float *pI = phI[ch+1];
-	float *pQ = phQ[ch+1];
-
-	if(feedback_count[ch]==0){
-	  memset(om,0,width*2*sizeof(*om));
-	  memset(op,0,width*2*sizeof(*op));
-	}else{
-	  /* two vectors only; response and phase */
-	  /* response is a standard minmax vector */
-          /* phase is averaged to screen resolution */
-	  if(process[ch] || process[ch+1]){
-
-            int prevbin;
-            float prevy;
-            float prevP=0;
-            for(i=0;i<width;i++){
-              int first=ceil(L[i]);
-              int last=ceil(H[i]);
-              float firsty,lasty,min,max;
-              float P,R,I;
-
-              /* don't allow roundoff error to skip a bin entirely */
-              if(i>0 && prevbin<first)first=prevbin;
-              prevbin=last;
-
-              if(first==last){
-                float del=M[i]-floor(M[i]);
-                int mid = floor(M[i]);
-                float a = todB(m[mid]/r[mid]);
-                float b = todB(m[mid+1]/r[mid+1]);
-                firsty=lasty=min=max=(a+(b-a)*del);
-
-                if(process[ch+1]){
-                  float aP = (isnan(a) ? NAN : atan2f(pQ[mid],pI[mid]));
-                  float bP = (isnan(b) ? NAN : atan2f(pQ[mid+1],pI[mid+1]));
-                  P=(aP+(bP-aP)*del)*57.29;
-                }
-
-              }else{
-                firsty=min=max=m[first]/r[first];
-                R = pI[first];
-                I = pQ[first];
-
-                for(j=first+1;j<last;j++){
-                  float a = m[j]/r[j];
-                  if(a<min)min=a;
-                  if(a>max)max=a;
-                  R += pI[j];
-                  I += pQ[j];
-                }
-
-                lasty=todB(m[j-1]/r[j-1]);
-                firsty=todB(firsty);
-                min=todB(min);
-                max=todB(max);
-
-                if(process[ch+1])
-                  P = atan2f(I,R)*57.29;
-              }
-
-              max*=.5;
-              min*=.5;
-              if(max>fetch_ret.ymax)fetch_ret.ymax=max;
-              if(P>fetch_ret.pmax)fetch_ret.pmax = P;
-	      if(P<fetch_ret.pmin)fetch_ret.pmin = P;
-
-              if(process[ch+1] && min>-70){
-                float midpoint = (prevP+P)*.5;
-                op[i*2]=P;
-                op[i*2+1]=P;
-
-                /* link phase into contiguous line */
-                if(i){
-                  if(midpoint<P) op[i*2]=midpoint;
-                  if(midpoint>P) op[i*2+1]=midpoint;
-                  if(midpoint<op[i*2-2]) op[i*2-2]=midpoint;
-                  if(midpoint>op[i*2-1]) op[i*2-1]=midpoint;
-                }
-              }else{
-                op[i*2]=op[i*2+1]=NAN;
-              }
-
-              /* link non-overlapping bins into contiguous lines */
-              if(i>0){
-                float midpoint = (prevy+firsty)*.25;
-
-                if(midpoint<min)min=midpoint;
-                if(midpoint>max)max=midpoint;
-
-                if(midpoint<om[i*2-2])om[i*2-2]=midpoint;
-                if(midpoint>om[i*2-1])om[i*2-1]=midpoint;
-              }
-
-              om[i*2]=min;
-              om[i*2+1]=max;
-
-              prevy=lasty;
-              prevP=P;
+            fetch_ret.ymax = out[0] = out[1] = m[0]-r[0];
+            for(j=2;j<width*2;j+=2){
+              out[j+1]=out[j]=m[j]-r[j];
+              if(out[j+1]>fetch_ret.ymax)fetch_ret.ymax = out[j+1];
             }
+            display_link_lines(out, width);
           }
-	}
+        }
+        if(process[ch+1]){
+          /* phase */
+          phase_to_display(phR[ch+1], phI[ch+1], fetch_ret.data[ch+1],
+                           &fetch_ret.pmin, &fetch_ret.pmax,
+                           fi, width, det);
+        }
       }
       break;
     }

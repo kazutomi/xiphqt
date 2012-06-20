@@ -51,9 +51,7 @@ static void compute_xgrid(Plot *p, fetchdata *f){
   if(p->maxrate!=f->maxrate ||
      p->scale!=f->scale ||
      p->width != f->width){
-    GtkWidget *widget=GTK_WIDGET(p);
-    int width = widget->allocation.width-p->padx-
-      (f->phase_active?p->phax:PHAX_MIN);
+    int width = f->width;
     int nyq=f->maxrate/2.;
     int i,j;
 

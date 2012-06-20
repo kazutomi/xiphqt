@@ -7,80 +7,90 @@ style "button-poppy" {
 	GtkButton::focus-line-width = 1
 	GtkButton::interior-focus = 1
 
-        bg[NORMAL]="#b0c0d8" 
-        bg[ACTIVE]="#c0e0ff" 
-        bg[PRELIGHT]="#d0e6ff" 
-        bg[SELECTED]="#d0e6ff" 
-        bg[INSENSITIVE]="#b0c0d8"  
 
-        fg[NORMAL]="#000000" 
-        fg[ACTIVE]="#000000" 
-        fg[PRELIGHT]="#000000" 
-        fg[SELECTED]="#000000" 
-        fg[INSENSITIVE]="#8ea0be" 
+        GtkExpander :: expander-size = 8
+        GtkExpander :: expander-spacing = 20
+        GtkToggle :: toggle-size = 8
+        GtkToggle :: toggle-spacing = 20
 
-        text[NORMAL]="#000000" 
-        text[ACTIVE]="#000000" 
-        text[PRELIGHT]="#000000" 
-        text[SELECTED]="#000000" 
-	text[INSENSITIVE]="#8ea0be" 
+        bg[NORMAL]="#b0c0d8"
+        bg[ACTIVE]="#c0e0ff"
+        bg[PRELIGHT]="#d0e6ff"
+        bg[SELECTED]="#d0e6ff"
+        bg[INSENSITIVE]="#b0c0d8"
+
+        fg[NORMAL]="#000000"
+        fg[ACTIVE]="#000000"
+        fg[PRELIGHT]="#000000"
+        fg[SELECTED]="#000000"
+        fg[INSENSITIVE]="#8ea0be"
+
+        text[NORMAL]="#000000"
+        text[ACTIVE]="#000000"
+        text[PRELIGHT]="#000000"
+        text[SELECTED]="#000000"
+	text[INSENSITIVE]="#8ea0be"
 }
 
 style "panel" {
-	bg[NORMAL]="#d0d0d0" 
-	bg[ACTIVE]="#d0d0d0" 
-	bg[PRELIGHT]="#d0d0d0" 
-      
+	bg[NORMAL]="#d0d0d0"
+	bg[ACTIVE]="#d0d0d0"
+	bg[PRELIGHT]="#d0d0d0"
+
 	text[NORMAL]="#000000"
 	text[ACTIVE]="#000000"
-	text[PRELIGHT]="#000000" 
+	text[PRELIGHT]="#000000"
 
 	fg[NORMAL]="#000000"
 	fg[ACTIVE]="#000000"
-	fg[PRELIGHT]="#000000" 
-
+	fg[PRELIGHT]="#000000"
 }
 
 style "controlpanel" {
-	bg[NORMAL]="#8ea0be" 
+	bg[NORMAL]="#8ea0be"
 
 	text[NORMAL]="#000000"
 	text[ACTIVE]="#000000"
-	text[PRELIGHT]="#000000" 
+	text[PRELIGHT]="#000000"
 
 	fg[NORMAL]="#000000"
 	fg[ACTIVE]="#000000"
-	fg[PRELIGHT]="#000000" 
+	fg[PRELIGHT]="#000000"
 
 }
 
 style "top-control" {
 	font_name = "sans 8"
-	
+
         base[NORMAL]="#b0c0d8"
-        base[ACTIVE]="#c0e0ff" 
+        base[ACTIVE]="#c0e0ff"
         bg[NORMAL]="#b0c0d8"
-        bg[ACTIVE]="#c0e0ff" 
-        bg[PRELIGHT]="#d0e6ff" 
-        bg[SELECTED]="#d0e6ff" 
-        base[PRELIGHT]="#d0e6ff" 
-        base[SELECTED]="#d0e6ff" 
-        base[INSENSITIVE]="#c0c0c0"  
+        bg[ACTIVE]="#c0e0ff"
+        bg[PRELIGHT]="#d0e6ff"
+        bg[SELECTED]="#d0e6ff"
+        base[PRELIGHT]="#d0e6ff"
+        base[SELECTED]="#d0e6ff"
+        base[INSENSITIVE]="#c0c0c0"
 
 	text[NORMAL]="#000000"
 }
 
 style "top-label" {
 	font_name = "sans 8"
-	fg[NORMAL]="#405080" 
-	fg[PRELIGHT]="#405080" 
-	fg[ACTIVE]="#405080" 
-	fg[SELECTED]="#405080" 
-	fg[INSENSITIVE]="#405080" 
+	fg[NORMAL]="#405080"
+	fg[PRELIGHT]="#405080"
+	fg[ACTIVE]="#405080"
+	fg[SELECTED]="#405080"
+	fg[INSENSITIVE]="#405080"
 }
 
 style "top-readout" {
 	font_name = "sans 8"
+}
+
+style "panel-text" {
+	font_name = "sans 8"
+	fg[NORMAL]="#505080"
 }
 
 style "scale-text" {
@@ -97,7 +107,9 @@ widget "*.top-control*" style "top-control"
 widget "*.top-label*" style "top-label"
 widget "*.top-readout*" style "top-readout"
 
+widget "*.controlpanel*.GtkLabel" style "panel-text"
 widget "*.Plot" style "scale-text"
+
 widget "*.GtkEntry" style "readout"
 class "GtkMenu" style "button-poppy"
 widget_class "*Menu*" style "button-poppy"
@@ -111,7 +123,4 @@ widget "*.GtkButton*" style "button-poppy"
 widget "*.controlpanel" style "controlpanel"
 widget "*.controlpanel.*Sep*" style "button-poppy"
 widget "*.readout" style "readout"
-
-
-
 
