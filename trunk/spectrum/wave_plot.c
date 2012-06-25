@@ -239,7 +239,7 @@ void plot_draw(Plot *p, fetchdata *f, plotparams *pp){
           int wp=width-p->padx;
           float spani = 1000000./f->span/f->rate[fi]*wp;
           int hp=height-p->pady;
-          float ym=hp*-8./18;
+          float ym=hp*-8./36;
           float cp = pp->trace_sep ?
             (height-p->pady)*(16*i+8)/(float)(18*num_active)+
             (height-p->pady)/18. : center;
