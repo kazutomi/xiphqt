@@ -193,7 +193,7 @@ static void calculate_autoscale (fetchdata *f,
     break;
   }
 
-  if(ymax<plot_depth - plot_ymax_limit) ymax=plot_depth-plot_ymax_limit;
+  if(ymax<-plot_ymax_limit) ymax=-plot_ymax_limit;
   if(ymax>plot_ymax_limit)ymax=plot_ymax_limit;
 
   pmax+=10;
@@ -241,7 +241,13 @@ static void calculate_autoscale (fetchdata *f,
   }
 
   if(request_reset){
-    pp->ymax=plot_ymax_target=ymax;
+    plot_ymax_target=ymax;
+
+    /* clamp target range *here* */
+    if(plot_ymax_target<plot_depth - plot_ymax_limit)
+      plot_ymax_target=plot_depth-plot_ymax_limit;
+
+    pp->ymax=plot_ymax_target;
     filter_reset(&plot_ymax_damp,pp->ymax);
     plot_ymaxtimer=HYSTERESIS_TIMERFRAMES;
 
@@ -264,6 +270,10 @@ static void calculate_autoscale (fetchdata *f,
 
     if(ymax > plot_ymax_target || plot_ymaxtimer<=0)
       plot_ymax_target=ymax;
+
+    /* ...and *here* */
+    if(plot_ymax_target<plot_depth - plot_ymax_limit)
+      plot_ymax_target=plot_depth-plot_ymax_limit;
 
     /* update ymax through scale damping filter */
     pp->ymax = filter_filter(plot_ymax_target,&plot_ymax_damp);
