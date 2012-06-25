@@ -258,6 +258,10 @@ void plot_draw(Plot *p, fetchdata *f, plotparams *pp){
                 int x1 = rintf(k*spani);
                 float y1 = data[k]*ym;
 
+                /* clamp for shorts in the X protocol; gdk does not guard */
+                if(y1>20000.f)y1=20000.f;
+                if(y1<-20000.f)y1=-20000.f;
+
                 if(x1>x0){
                   if(acc>1){
                     if(!isnan(yL)&&!isnan(yH))
@@ -305,6 +309,10 @@ void plot_draw(Plot *p, fetchdata *f, plotparams *pp){
               for(k=0;k<spann;k++){
                 int x1 = rintf(k*spani);
                 float y1 = data[k]*ym;
+
+                /* clamp for shorts in the X protocol; gdk does not guard */
+                if(y1>20000.f)y1=20000.f;
+                if(y1<-20000.f)y1=-20000.f;
 
                 if(x1>x0){
                   if(acc>1){
@@ -355,6 +363,10 @@ void plot_draw(Plot *p, fetchdata *f, plotparams *pp){
                 int x1 = rintf(k*spani);
                 float y1 = data[k]*ym;
 
+                /* clamp for shorts in the X protocol; gdk does not guard */
+                if(y1>20000.f)y1=20000.f;
+                if(y1<-20000.f)y1=-20000.f;
+
                 if(x1>x0){
                   if(!isnan(yL) || !isnan(yH)){
                     if(isnan(yL) || yL>0)yL=pp->bold;
@@ -388,6 +400,11 @@ void plot_draw(Plot *p, fetchdata *f, plotparams *pp){
               for(k=0;k<spann;k++){
                 int x = rintf(k*spani);
                 float y = data[k]*ym;
+
+                /* clamp for shorts in the X protocol; gdk does not guard */
+                if(y>20000.f)y=20000.f;
+                if(y<-20000.f)y=-20000.f;
+
                 if(!isnan(y)){
                   gdk_draw_arc(p->backing,p->twogc,
                                0,x+padx-5,rintf(y+cp-5),
