@@ -170,10 +170,14 @@ static void rangechange(GtkWidget *widget,gpointer in){
     case 9:
       plot_range=.001;
       break;
+    case 10:
+      plot_range=.0001;
+      break;
     }
     replot();
   }
 
+#if 0
   {
     char b[80];
     if(plot_schoice==0)
@@ -188,6 +192,7 @@ static void rangechange(GtkWidget *widget,gpointer in){
       snprintf(b,80,"%.2gdBFS/div ",todB((plot_range)-todB(plot_scale))/2);
     gtk_label_set_text(GTK_LABEL(scale_label1),b);
   }
+#endif
 }
 
 static void scalechange(GtkWidget *widget,gpointer in){
@@ -215,37 +220,44 @@ static void scalechange(GtkWidget *widget,gpointer in){
   rangechange_ign=1;
   if(choice==0){
     char *entries[]={
-      "16.0",
-      "8.0",
-      "4.0",
-      "2.0",
-      "1.0",
-      "0.5",
-      "0.2",
-      "0.1",
-      "0.01",
-      "0.001"};
-    for(i=0;i<10;i++){
+      "16.0/div",
+      "8.0/div",
+      "4.0/div",
+      "2.0/div",
+      "1.0/div",
+      "0.5/div",
+      "0.2/div",
+      "0.1/div",
+      "0.01/div",
+      "0.001/div",
+      "0.0001/div"};
+    for(i=0;i<11;i++){
       gtk_combo_box_remove_text (GTK_COMBO_BOX (rangemenu), i);
       gtk_combo_box_insert_text (GTK_COMBO_BOX (rangemenu), i, entries[i]);
     }
 
   }else{
     char *entries[]={
-      "24dB",
-      "18dB",
-      "12dB",
-      "6dB",
-      "0dB",
-      "-6dB",
-      "-14dB",
-      "-20dB",
-      "-40dB",
-      "-60dB"};
+      "24dB@div",
+      "18dB@div",
+      "12dB@div",
+      "6dB@div",
+      "0dB@div",
+      "-6dB@div",
+      "-14dB@div",
+      "-20dB@div",
+      "-40dB@div",
+      "-60dB@div",
+    };
     for(i=0;i<10;i++){
       gtk_combo_box_remove_text (GTK_COMBO_BOX (rangemenu), i);
       gtk_combo_box_insert_text (GTK_COMBO_BOX (rangemenu), i, entries[i]);
     }
+    gtk_combo_box_remove_text (GTK_COMBO_BOX (rangemenu), i);
+  }
+  if(plot_rchoice==10){
+    plot_rchoice=9;
+    plot_range=.001;
   }
   gtk_combo_box_set_active(GTK_COMBO_BOX(rangemenu),plot_rchoice);
   rangechange_ign=0;
@@ -299,6 +311,7 @@ static void spanchange(GtkWidget *widget,gpointer in){
 
   replot();
 
+#if 0
   {
     char b[80];
     if(plot_span>=10000){
@@ -308,7 +321,7 @@ static void spanchange(GtkWidget *widget,gpointer in){
     }
     gtk_label_set_text(GTK_LABEL(scale_label2),b);
   }
-
+#endif
 }
 
 static void intervalchange(GtkWidget *widget,gpointer in){
@@ -672,17 +685,6 @@ void panel_create(void){
   GtkWidget *bbox=gtk_vbox_new(0,0);
 
   {
-    /* scale */
-    GtkWidget *menu=scalemenu=gtk_combo_box_new_text();
-    char *entries[]={"linear","-65dB","-96dB","-120dB","-160dB",NULL};
-    for(i=0;entries[i];i++)
-      gtk_combo_box_append_text (GTK_COMBO_BOX (menu), entries[i]);
-    gtk_box_pack_start(GTK_BOX(bbox),menu,1,1,0);
-    g_signal_connect (G_OBJECT (menu), "changed",
-		      G_CALLBACK (scalechange), NULL);
-  }
-
-  {
     /* range */
     GtkWidget *menu=rangemenu=gtk_combo_box_new_text();
     char *entries[]={"","","","","","","","","","",NULL};
@@ -693,20 +695,20 @@ void panel_create(void){
 		      G_CALLBACK (rangechange), NULL);
 
   }
-  gtk_combo_box_set_active(GTK_COMBO_BOX(scalemenu),0);
-  gtk_combo_box_set_active(GTK_COMBO_BOX(rangemenu),4);
 
-  /* plot type */
   {
-    GtkWidget *menu=gtk_combo_box_new_text();
-    char *entries[]={"zero-hold","interpolated","lollipop",NULL};
+    /* scale */
+    GtkWidget *menu=scalemenu=gtk_combo_box_new_text();
+    char *entries[]={"linear","-65dB","-96dB","-120dB","-160dB",NULL};
     for(i=0;entries[i];i++)
       gtk_combo_box_append_text (GTK_COMBO_BOX (menu), entries[i]);
-    gtk_combo_box_set_active(GTK_COMBO_BOX(menu),0);
+    gtk_box_pack_start(GTK_BOX(bbox),menu,1,1,0);
     g_signal_connect (G_OBJECT (menu), "changed",
-		      G_CALLBACK (plotchange), NULL);
-    gtk_box_pack_start(GTK_BOX(bbox),menu,0,0,0);
+		      G_CALLBACK (scalechange), NULL);
   }
+
+  gtk_combo_box_set_active(GTK_COMBO_BOX(scalemenu),0);
+  gtk_combo_box_set_active(GTK_COMBO_BOX(rangemenu),4);
 
   {
     GtkWidget *sep=gtk_hseparator_new();
@@ -716,12 +718,20 @@ void panel_create(void){
   /* span */
   {
     GtkWidget *menu=gtk_combo_box_new_text();
-    char *entries[]={"1s span",
-                     "500ms span","200ms span","100ms span",
-                     "50ms span","20ms span","10ms span",
-                     "5ms span","2ms span","1ms span",
-                     "500\xCE\xBCs span","200\xCE\xBCs span",
-                     "100\xCE\xBCs span",NULL};
+    char *entries[]={"100ms/div",
+                     "50ms/div",
+                     "20ms/divn",
+                     "10ms/div",
+                     "5ms/div",
+                     "2ms/div",
+                     "1ms/div",
+                     "500\xCE\xBCs/div",
+                     "200\xCE\xBCs/div",
+                     "100\xCE\xBCs/div",
+                     "50\xCE\xBCs/div",
+                     "20\xCE\xBCs/div",
+                     "10\xCE\xBCs/div",
+                     NULL};
     for(i=0;entries[i];i++)
       gtk_combo_box_append_text (GTK_COMBO_BOX (menu), entries[i]);
     g_signal_connect (G_OBJECT (menu), "changed",
@@ -757,6 +767,18 @@ void panel_create(void){
 		      G_CALLBACK (intervalchange), NULL);
     gtk_combo_box_set_active(GTK_COMBO_BOX(menu),3);
     gtk_box_pack_start(GTK_BOX(bbox),menu,1,1,0);
+  }
+
+  /* plot type */
+  {
+    GtkWidget *menu=gtk_combo_box_new_text();
+    char *entries[]={"zero-hold","interpolated","lollipop",NULL};
+    for(i=0;entries[i];i++)
+      gtk_combo_box_append_text (GTK_COMBO_BOX (menu), entries[i]);
+    gtk_combo_box_set_active(GTK_COMBO_BOX(menu),0);
+    g_signal_connect (G_OBJECT (menu), "changed",
+		      G_CALLBACK (plotchange), NULL);
+    gtk_box_pack_start(GTK_BOX(bbox),menu,0,0,0);
   }
 
   {
