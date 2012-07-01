@@ -200,6 +200,7 @@ static void init_process(void){
 
     /* construct proper window (sin^4 I'd think) */
     window = calloc(blocksize,sizeof(*window));
+
     for(i=0;i<blocksize;i++)window[i]=sin(M_PIl*i/blocksize);
     for(i=0;i<blocksize;i++)window[i]*=window[i];
     for(i=0;i<blocksize;i++)window[i]=sin(window[i]*M_PIl*.5);
@@ -477,10 +478,10 @@ static void bin_minmax(float *in, float *out, float *ymax,
 
     if(first==last){
       /* interpolate between two bins */
-      float del=M[i]-floor(M[i]);
-      int mid = floor(M[i]);
+      float m = (H[i]+L[i])*.5-first;
+      float del = H[i]-L[i];
       firsty=lasty=min=max =
-        (todB(in[mid])*(1.-del)+todB(in[mid+1])*del+dBnorm)*.5;
+        (todB(in[first])*(1.-m)+todB(in[first+1])*m+dBnorm)*.5;
     }else{
       firsty=min=max=in[first];
       for(j=first+1;j<last;j++){
@@ -513,8 +514,14 @@ static void bin_minmax(float *in, float *out, float *ymax,
   }
 }
 
+static float aadd(float a, float b){
+  double c = (double)a+b+M_PI;
+  double d = floor(c/(2*M_PI));
+  return (c - d*2*M_PI - M_PI);
+}
+
 static void ph_minmax(float *R, float *I, float *out,
-                      float *pmin, float *pmax, int width,
+                      float *pmin, float *pmax, int width, float adj,
                       float *L, float *M, float *H){
   int i,j;
   int prevbin;
@@ -531,12 +538,10 @@ static void ph_minmax(float *R, float *I, float *out,
     prevbin=last;
 
     if(first==last){
-      /* interpolate between two bins, do it in log space */
-      float del=M[i]-floor(M[i]);
-      int mid = floor(M[i]);
-      float aP = atan2f(I[mid],R[mid]);
-      float bP = atan2f(I[mid+1],R[mid+1]);
-      min=max = (aP+(bP-aP)*del)*(360/M_PI/2);
+      float m = (H[i]+L[i])*.5-first;
+      float aP = aadd(atan2f(I[first],R[first]),adj*first);
+      float bP = aadd(atan2f(I[first+1],R[first+1]),adj*(first+1));
+      min=max = (aP+(bP-aP)*m)*(360/M_PI/2);
     }else{
       int min_i,max_i;
       min=max =  fast_atan_cmp(I[first],R[first]);
@@ -553,11 +558,11 @@ static void ph_minmax(float *R, float *I, float *out,
         }
       }
 
-      min=atan2f(I[min_i],R[min_i])*(360/M_PI/2);
+      min=aadd(atan2f(I[min_i],R[min_i]),adj*min_i)*(360/M_PI/2);
       if(max_i==min_i)
         max=min;
       else
-        max=atan2f(I[max_i],R[max_i])*(360/M_PI/2);
+        max=aadd(atan2f(I[max_i],R[max_i]),adj*max_i)*(360/M_PI/2);
     }
 
     if(max>*pmax)*pmax=max;
@@ -592,7 +597,7 @@ static void ph_minmax(float *R, float *I, float *out,
 /* detector mode 5: log average */
 static void bin_display(float *di, float *out, float *ymax,
                         int det, int width, float norm,
-                        float *L, float *M, float *H, int link){
+                        float *L, float *M, float *H, int relative){
   int i,j;
   int prevbin;
   float prevy;
@@ -609,7 +614,15 @@ static void bin_display(float *di, float *out, float *ymax,
     for(i=0;i<blocksize/2+1;i++)
       in[i]=todB(di[i])*.5;
   }
-  if(det!=DET_SUM) dBnorm += -3.0103; /* adjust from Vpk to Vrms */
+  if(det==DET_SUM && relative){
+    /* in this case, the equivalent of summing the r/p would be a
+       power average once we get here */
+    det=DET_RMS;
+  }
+  if(det!=DET_SUM && !relative)
+    dBnorm += -3.0103; /* adjust from Vpk to Vrms, but not in relative
+                          mode (correction only meaningful with absolute
+                          values) */
 
   for(i=0;i<width;i++){
     int first=floor(L[i]);
@@ -623,7 +636,13 @@ static void bin_display(float *di, float *out, float *ymax,
     if(first==last){
       float m = (H[i]+L[i])*.5-first;
       sdel = H[i]-L[i];
-      sum = (in[first]*(1.-m) + in[first+1]*m)*sdel;
+      if(det==DET_LOG)
+        sum = (in[first]*(1.-m) + in[first+1]*m)*sdel;
+      else{
+        /* this is still a division of energy, but perform a visually
+           pleasing interpolation */
+        sum = fromdB(todB(in[first])*(1.-m) + todB(in[first+1])*m)*sdel;
+      }
     }else{
       float del = first+1-L[i];
       float m = 1.-del*.5;
@@ -631,9 +650,17 @@ static void bin_display(float *di, float *out, float *ymax,
       sdel = del;
       sum = (in[first]*(1.-m) + in[first+1]*m)*del;
 
-      for(j=first+1;j<last;j++){
-        sum+=in[j];
-        sdel+=1.;
+      if(first+1<last){
+        sum+=in[first+1]*.5;
+        sdel+=.5;
+
+        for(j=first+2;j<last;j++){
+          sum+=in[j];
+          sdel+=1.;
+        }
+
+        sum+=in[j]*.5;
+        sdel+=.5;
       }
 
       sdel += del = H[i]-last;
@@ -659,34 +686,7 @@ static void bin_display(float *di, float *out, float *ymax,
 
     min=max=sum;
 
-    if(link){
-      if(sum>*ymax)*ymax=sum;
-
-      /* link non-overlapping bins into contiguous lines */
-      if(i>0){
-        float midpoint = (prevy+sum)*.5;
-        if(midpoint<min)min=midpoint;
-        if(midpoint>max)max=midpoint;
-
-        if(midpoint<out[i*2-2])out[i*2-2]=midpoint;
-        if(midpoint>out[i*2-1])out[i*2-1]=midpoint;
-      }
-    }
-
-    out[i*2]=min;
-    out[i*2+1]=max;
-
-    prevy=sum;
-  }
-}
-
-static void display_link_lines(float *d, int width){
-  int i;
-  float prevy;
-
-  for(i=0;i<width;i++){
-    float min,max,sum;
-    min=max=sum=d[i*2];
+    if(sum>*ymax)*ymax=sum;
 
     /* link non-overlapping bins into contiguous lines */
     if(i>0){
@@ -694,12 +694,12 @@ static void display_link_lines(float *d, int width){
       if(midpoint<min)min=midpoint;
       if(midpoint>max)max=midpoint;
 
-      if(midpoint<d[i*2-2])d[i*2-2]=midpoint;
-      if(midpoint>d[i*2-1])d[i*2-1]=midpoint;
+      if(midpoint<out[i*2-2])out[i*2-2]=midpoint;
+      if(midpoint>out[i*2-1])out[i*2-1]=midpoint;
     }
 
-    d[i*2]=min;
-    d[i*2+1]=max;
+    out[i*2]=min;
+    out[i*2+1]=max;
 
     prevy=sum;
   }
@@ -728,12 +728,21 @@ static void ph_display(float *iR, float *iI, float *out,
     }else{
       float del = first+1-L[i];
       float m = 1.-del*.5;
+
       R = (iR[first]*(1.-m) + iR[first+1]*m)*del;
       I = (iI[first]*(1.-m) + iI[first+1]*m)*del;
 
-      for(j=first+1;j<last;j++){
-        R+=iR[j];
-        I+=iI[j];
+      if(first+1<last){
+        R+=iR[first+1]*.5;
+        I+=iI[first+1]*.5;
+
+        for(j=first+2;j<last;j++){
+          R+=iR[j];
+          I+=iI[j];
+        }
+
+        R+=iR[j]*.5;
+        I+=iI[j]*.5;
       }
 
       del = H[i]-last;
@@ -742,7 +751,7 @@ static void ph_display(float *iR, float *iI, float *out,
       I += (iI[last]*(1.-m) + iI[last+1]*m)*del;
     }
 
-    min=max=P = atan2f(I,R)*(360/M_PI/2);
+    min=max=P = atan2f(I,R)*(360/2/M_PI);
 
     if(max>*pmax)*pmax=max;
     if(min<*pmin)*pmin=min;
@@ -764,13 +773,103 @@ static void ph_display(float *iR, float *iI, float *out,
   }
 }
 
+static void ph_display_delay(float *iR, float *iI, float *out,
+                             float *pmin, float *pmax, int width, float adj,
+                             float *L, float *M, float *H){
+  int i,j;
+  int prevbin;
+  float prevP;
+
+  /* perform a progressive partial rotation across the bin */
+  float unitR = cos(adj);
+  float unitI = sin(adj);
+
+  for(i=0;i<width;i++){
+    int first=floor(L[i]);
+    int last=floor(H[i]);
+    float min,max,R,I,P;
+
+    /* don't allow roundoff error to skip a bin entirely */
+    if(i>0 && prevbin<first)first=prevbin;
+    prevbin=last;
+
+    if(first==last){
+      float m = (H[i]+L[i])*.5-first;
+      float rotR = iR[first]*(1.-m);
+      float rotI = iI[first]*(1.-m);
+
+      R = unitR*rotR + unitI*rotI + iR[first+1]*m;
+      I = unitR*rotI - unitI*rotR + iI[first+1]*m;
+
+    }else{
+      float del = first+1-L[i];
+      float m = 1.-del*.5;
+      float rotR = iR[first]*(1.-m);
+      float rotI = iI[first]*(1.-m);
+
+      R = (unitR*rotR + unitI*rotI + iR[first+1]*m)*del;
+      I = (unitR*rotI - unitI*rotR + iI[first+1]*m)*del;
+
+      if(first+1<last){
+        R += iR[first+1]*.5;
+        I += iI[first+1]*.5;
+
+        for(j=first+2;j<last;j++){
+          rotR = (unitR*R + unitI*I);
+          rotI = (unitR*I - unitI*R);
+
+          R = rotR+iR[j];
+          I = rotI+iI[j];
+        }
+
+        rotR = (unitR*R + unitI*I);
+        rotI = (unitR*I - unitI*R);
+
+        R = rotR+iR[j]*.5;
+        I = rotI+iI[j]*.5;
+      }
+
+      del = H[i]-last;
+      m = del*.5;
+
+      R += iR[last]*(1.-m)*del;
+      I += iI[last]*(1.-m)*del;
+
+      rotR = (unitR*R + unitI*I);
+      rotI = (unitR*I - unitI*R);
+
+      R = rotR + iR[last+1]*m*del;
+      I = rotI + iI[last+1]*m*del;
+    }
+
+    min=max=P = aadd(atan2f(I,R),adj*(last+1))*(360/M_PI/2);
+
+    if(max>*pmax)*pmax=max;
+    if(min<*pmin)*pmin=min;
+
+    /* link non-overlapping bins into contiguous lines */
+    if(i>0){
+      float midpoint = (prevP+P)*.5;
+      if(midpoint<min)min=midpoint;
+      if(midpoint>max)max=midpoint;
+
+      if(midpoint<out[i*2-2])out[i*2-2]=midpoint;
+      if(midpoint>out[i*2-1])out[i*2-1]=midpoint;
+    }
+
+    out[i*2]=min;
+    out[i*2+1]=max;
+
+    prevP=P;
+  }
+}
 
 void mag_to_display(float *in, float *out, float *ymax,
-                    int fi, int width, float norm, int det, int link){
+                    int fi, int width, float norm, int det, int relative){
   if(det){
-    if(det==DET_DENSITY) norm*=(float)blocksize/rate[fi];
+    if(det==DET_DENSITY && !relative) norm*=(float)blocksize/rate[fi];
     bin_display(in, out, ymax, det, width, norm,
-                xmappingL[fi], xmappingM[fi], xmappingH[fi], link);
+                xmappingL[fi], xmappingM[fi], xmappingH[fi], relative);
   }else{
     bin_minmax(in, out, ymax, width, norm,
                xmappingL[fi], xmappingM[fi], xmappingH[fi]);
@@ -779,15 +878,58 @@ void mag_to_display(float *in, float *out, float *ymax,
 
 void phase_to_display(float *I, float *Q, float *out,
                       float *pmin, float *pmax,
-                      int fi, int width,int det){
+                      int fi, int width, int det,
+                      float norm){
 
   if(det){ /* display averaging */
-    ph_display(I, Q, out, pmin, pmax, width,
-               xmappingL[fi], xmappingM[fi], xmappingH[fi]);
+    if(norm != 0.){
+      ph_display_delay(I, Q, out, pmin, pmax, width, norm,
+                 xmappingL[fi], xmappingM[fi], xmappingH[fi]);
+    }else{
+      ph_display(I, Q, out, pmin, pmax, width,
+                 xmappingL[fi], xmappingM[fi], xmappingH[fi]);
+    }
   }else{
-    ph_minmax(I, Q, out, pmin, pmax, width,
+    ph_minmax(I, Q, out, pmin, pmax, width, norm,
               xmappingL[fi], xmappingM[fi], xmappingH[fi]);
   }
+}
+
+int ascfloat(const void *a, const void *b){
+  float A = *(float *)a;
+  float B = *(float *)b;
+  if(A<B)return -1;
+  if(A>B)return 1;
+  return 0;
+}
+
+float norm_calc(float *data,int n,int rate){
+  /* normalized to median value calculated from 1kHz to 1/2 nyquist */
+  int i;
+  int x0 = 100.*blocksize/rate;
+  int x1 = blocksize*3/8;
+  float sum=0.;
+
+  for(i=x0;i<x1;i++)
+    sum += data[i];
+  return -todB(sum/(x1-x0))*.5;
+}
+
+float norm_ph(float *dataR, float *dataI,int n,int rate){
+  int i,j;
+  int x0 = 100.*blocksize/rate;
+  int x1 = x0+blocksize/4;
+  int delcount=0, revcount=0;
+  float delsum=0.;
+
+  float sumR=0.;
+  float sumI=0.;
+  for(i=x0+1;i<x1;i++){
+    sumR += dataR[i-1]*dataR[i] + dataI[i-1]*dataI[i];
+    sumI += dataR[i-1]*dataI[i] - dataI[i-1]*dataR[i];
+  }
+
+  return -atan2f(sumI,sumR);
 }
 
 /* how many bins to 'trim' off the edge of calculated data when we
@@ -852,7 +994,7 @@ fetchdata *process_fetch(int scale, int mode, int link, int det,
   }
 
   fetch_ret.phase_active=0;
-  if(link == LINK_PHASE){
+  if(link == LINK_PHASE || link == LINK_NORMPHASE){
     int cho=0;
     int gi;
     for(gi=0;gi<inputs;gi++)
@@ -866,6 +1008,8 @@ fetchdata *process_fetch(int scale, int mode, int link, int det,
   fetch_ret.scale=scale;
   fetch_ret.mode=mode;
   fetch_ret.link=link;
+  memset(&fetch_ret.dBnorm,0,sizeof(fetch_ret.dBnorm));
+  memset(&fetch_ret.phdelay,0,sizeof(fetch_ret.phdelay));
 
   fetch_ret.height=plot_height(plot);
   fetch_ret.width=width=plot_width(plot,fetch_ret.phase_active);
@@ -1017,7 +1161,7 @@ fetchdata *process_fetch(int scale, int mode, int link, int det,
 	if(process[ch+ci]){
           mag_to_display(data[ch+ci], fetch_ret.data[ch+ci],
                           &fetch_ret.ymax,
-                         fi, width, normalize, det, 1);
+                         fi, width, normalize, det, 0);
 	}
       }
       break;
@@ -1064,11 +1208,12 @@ fetchdata *process_fetch(int scale, int mode, int link, int det,
         for(i=ch+1;i<ch+channels[fi];i++)
           fetch_ret.active[i]=0;
         mag_to_display(work, y, &fetch_ret.ymax,
-                       fi, width, normalize, det, 1);
+                       fi, width, normalize, det, 0);
       }
       break;
 
     case LINK_PHASE: /* response/phase */
+    case LINK_NORMPHASE:
 
       for(i=ch+2;i<ch+channels[fi];i++)
         fetch_ret.active[i]=0;
@@ -1076,39 +1221,41 @@ fetchdata *process_fetch(int scale, int mode, int link, int det,
       if(channels[fi]>=2){
         if(process[ch]){
           /* response */
-          if(det==DET_MINMAX){
-            /* unsmoothed */
-            float work[blocksize/2+1];
-            float *r = data[ch];
-            float *m = data[ch+1];
-            for(j=0;j<blocksize/2+1;j++)
-              work[j]=m[j]/r[j];
-            mag_to_display(work, fetch_ret.data[ch], &fetch_ret.ymax,
-                           fi, width, 1, det, 1);
-          }else{
-            /* smoothed by bin */
-            float *out=fetch_ret.data[ch];
-            float r[width*2];
-            float m[width*2];
-            float dummy=-210;
-            mag_to_display(data[ch], r, &dummy,
-                           fi, width, 1, det, 0);
-            mag_to_display(data[ch+1], m, &dummy,
-                           fi, width, 1, det, 0);
+          float work[blocksize/2+1];
+          float *r = data[ch];
+          float *m = data[ch+1];
+          float ymax = -210.f;
+          for(j=0;j<blocksize/2+1;j++)
+            work[j]=m[j]/r[j];
 
-            fetch_ret.ymax = out[0] = out[1] = m[0]-r[0];
-            for(j=2;j<width*2;j+=2){
-              out[j+1]=out[j]=m[j]-r[j];
-              if(out[j+1]>fetch_ret.ymax)fetch_ret.ymax = out[j+1];
-            }
-            display_link_lines(out, width);
+          if(link == LINK_NORMPHASE)
+            fetch_ret.dBnorm[fi] =
+              norm_calc(work,blocksize/2+1,rate[fi]);
+
+          mag_to_display(work, fetch_ret.data[ch], &ymax,
+                         fi, width, 1, det, 1);
+
+          if(link == LINK_NORMPHASE){
+            for(j=0;j<width*2+2;j++)
+              fetch_ret.data[ch][j]+=fetch_ret.dBnorm[fi];
+            ymax+=fetch_ret.dBnorm[fi];
           }
+
+          if(ymax>fetch_ret.ymax)fetch_ret.ymax=ymax;
+
         }
         if(process[ch+1]){
           /* phase */
+          double norm =
+            (link == LINK_NORMPHASE ?
+             norm_ph(phR[ch+1], phI[ch+1], blocksize/2+1,rate[fi]):
+             0.);
+
           phase_to_display(phR[ch+1], phI[ch+1], fetch_ret.data[ch+1],
                            &fetch_ret.pmin, &fetch_ret.pmax,
-                           fi, width, det);
+                           fi, width, det, norm);
+
+          fetch_ret.phdelay[fi] = norm*blocksize/(2.*M_PI*rate[fi]);
         }
       }
       break;

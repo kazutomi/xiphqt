@@ -49,6 +49,10 @@ GtkWidget *detectorbutton;
 GtkWidget *modebutton;
 GtkWidget *clearbutton;
 GtkWidget *plot_label_al;
+GtkWidget *toplabel0;
+GtkWidget *toplabel1;
+GtkWidget *topreadout0;
+GtkWidget *topreadout1;
 
 int plot_ch=0;
 int plot_inputs=0;
@@ -186,6 +190,7 @@ static void calculate_autoscale (fetchdata *f,
   case LINK_INDEPENDENT:
   case LINK_SUMMED:
   case LINK_PHASE:
+  case LINK_NORMPHASE:
     {
       float dBpp = (float)plot_depth/height;
       ymax += dBpp*25;
@@ -329,6 +334,46 @@ static void set_fg(GtkWidget *c, gpointer in){
     gtk_container_forall (GTK_CONTAINER(c),set_fg,in);
 }
 
+static void set_readout_window(void){
+  char buf[80];
+  gtk_label_set_markup(GTK_LABEL(toplabel0),"window:");
+  gtk_label_set_markup(GTK_LABEL(topreadout0),
+                       "sin<span rise=\"4000\" "
+                       "size=\"x-small\">4</span>");
+  gtk_label_set_markup(GTK_LABEL(toplabel1),"  points:");
+  snprintf(buf,80,"%d",blocksize);
+  gtk_label_set_markup(GTK_LABEL(topreadout1),buf);
+}
+
+static void set_readout_normph(fetchdata *f){
+  char bufa[80];
+  char bufb[1024];
+  int i;
+
+  gtk_label_set_markup(GTK_LABEL(toplabel0),"norm:");
+  snprintf(bufb,80,"%.02gdB",f->dBnorm[0]);
+  for(i=1;i<f->groups;i++){
+    snprintf(bufa,80,",%.02gdB",f->dBnorm[i]);
+    strcat(bufb,bufa);
+  }
+
+  gtk_label_set_markup(GTK_LABEL(topreadout0),bufb);
+  gtk_label_set_markup(GTK_LABEL(toplabel1),"  delay:");
+
+  bufb[0]=0;
+  for(i=0;i<f->groups;i++){
+    if(i)strcat(bufb,",");
+    if(f->phdelay[i] >= .001){
+      snprintf(bufa,80,"%.02fms",f->phdelay[i]*1000);
+    }else{
+      snprintf(bufa,80,"%.02f\xCE\xBCs",f->phdelay[i]*1000000);
+    }
+    strcat(bufb,bufa);
+  }
+  gtk_label_set_markup(GTK_LABEL(topreadout1),bufb);
+
+}
+
 static void chlabels(GtkWidget *widget,gpointer in){
   /* scan state, update labels on channel buttons, set sensitivity
      based on grouping and mode */
@@ -349,6 +394,7 @@ static void chlabels(GtkWidget *widget,gpointer in){
     break;
 
   case LINK_PHASE: /* response/phase */
+  case LINK_NORMPHASE: /* normalized response/phase */
     ch=0;
     for(fi=0;fi<plot_inputs;fi++){
       for(i=ch;i<ch+channels[fi];i++)
@@ -383,6 +429,7 @@ static void chlabels(GtkWidget *widget,gpointer in){
     break;
 
   case LINK_PHASE:
+  case LINK_NORMPHASE:
 
     ch=0;
     for(fi=0;fi<plot_inputs;fi++){
@@ -431,6 +478,8 @@ static void chlabels(GtkWidget *widget,gpointer in){
   }
 
   if(widget)replot(0,1,0);
+  if(plot_link!=LINK_NORMPHASE)set_readout_window();
+
   gtk_alignment_set_padding(GTK_ALIGNMENT(plot_label_al),0,0,0,
                             plot_get_right_pad(PLOT(plot)));
 }
@@ -465,7 +514,7 @@ static void depthchange(GtkWidget *widget,gpointer in){
 
 static void scalechange(GtkWidget *widget,gpointer in){
   plot_scale=gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
-  replot(0,0,0);
+  replot(0,1,0);
 }
 
 static void modechange(GtkWidget *widget,gpointer in){
@@ -647,14 +696,26 @@ void replot(int scale_reset, int inactive_reset, int scale_damp){
        (f->phase_active != oldphase) ||
        (!process_active && inactive_reset))
       calculate_autoscale(f,&pp,1);
-    else if(scale_damp && process_active)
+    else if(scale_damp && process_active){
+      if(process_active && inactive_reset){
+        /* try out a heuristic hack to poke updates in the butt when
+           we make a setting change; still damped, but we begin
+           slewing scale immediately */
+        plot_ymaxtimer=0;
+        plot_pmaxtimer=0;
+        plot_pmintimer=0;
+      }
       calculate_autoscale(f,&pp,0);
+    }
   }
   oldphase = f->phase_active;
 
   pp.depth=plot_depth;
   pp.bold=plot_bold;
   plot_draw(PLOT(plot),f,&pp);
+
+  if(plot_link == LINK_NORMPHASE)
+    set_readout_normph(f);
 }
 
 static void shutdown(void){
@@ -746,16 +807,14 @@ void panel_create(void){
 
   /* plot informational labels */
   {
-    char buf[80];
     GtkWidget *al=plot_label_al=gtk_alignment_new(1,.5,0,0);
     GtkWidget *box=gtk_hbox_new(0,2);
-    GtkWidget *text1=gtk_label_new("window:");
-    GtkWidget *text2=gtk_label_new("sin^4  ");
-    GtkWidget *text3=gtk_label_new("points:");
+    GtkWidget *text1=toplabel0=gtk_label_new(NULL);
+    GtkWidget *text2=topreadout0=gtk_label_new(NULL);
+    GtkWidget *text3=toplabel1=gtk_label_new(NULL);
+    GtkWidget *text4=topreadout1=gtk_label_new(NULL);
 
-    snprintf(buf,80,"%d",blocksize);
-
-    GtkWidget *text4=gtk_label_new(buf);
+    //set_readout_window();
     gtk_table_attach(GTK_TABLE (lefttable), al,1,2,1,2,GTK_FILL,GTK_FILL,0,0);
     gtk_container_add(GTK_CONTAINER (al),box);
 
@@ -900,6 +959,7 @@ void panel_create(void){
     char *entries[]={"independent",
                      "sum channels",
                      "response/phase",
+                     "r/ph deviation",
                      NULL};
 
     for(i=0;entries[i];i++)
