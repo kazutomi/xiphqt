@@ -72,6 +72,7 @@ static inline float todB_a(const float *x){
 #define fromdB(x) (exp((x)*.11512925f))
 
 static inline float fast_atan_cmp(float y, float x) {
+  if(y*y<1e-12f && x*x<1e-12f) return NAN;
   if(x*x>y*y)
     return y/x + copysignf(2.,y) - copysignf(2.,y*x);
   else
