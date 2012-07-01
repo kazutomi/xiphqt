@@ -519,6 +519,11 @@ static float aadd(float a, float b){
   return (c - d*2*M_PI - M_PI);
 }
 
+static float wrap_atan2f(float y, float x){
+  if(y*y<1e-12f && x*x<1e-12f) return NAN;
+  return atan2f(y,x);
+}
+
 static void ph_minmax(float *R, float *I, float *out,
                       float *pmin, float *pmax, int width, float adj,
                       float *L, float *M, float *H){
@@ -538,8 +543,8 @@ static void ph_minmax(float *R, float *I, float *out,
 
     if(first==last){
       float m = (H[i]+L[i])*.5-first;
-      float aP = aadd(atan2f(I[first],R[first]),adj*first);
-      float bP = aadd(atan2f(I[first+1],R[first+1]),adj*(first+1));
+      float aP = aadd(wrap_atan2f(I[first],R[first]),adj*first);
+      float bP = aadd(wrap_atan2f(I[first+1],R[first+1]),adj*(first+1));
       min=max = (aP+(bP-aP)*m)*(360/M_PI/2);
     }else{
       int min_i,max_i;
@@ -557,11 +562,11 @@ static void ph_minmax(float *R, float *I, float *out,
         }
       }
 
-      min=aadd(atan2f(I[min_i],R[min_i]),adj*min_i)*(360/M_PI/2);
+      min=aadd(wrap_atan2f(I[min_i],R[min_i]),adj*min_i)*(360/M_PI/2);
       if(max_i==min_i)
         max=min;
       else
-        max=aadd(atan2f(I[max_i],R[max_i]),adj*max_i)*(360/M_PI/2);
+        max=aadd(wrap_atan2f(I[max_i],R[max_i]),adj*max_i)*(360/M_PI/2);
     }
 
     if(max>*pmax)*pmax=max;
@@ -750,7 +755,7 @@ static void ph_display(float *iR, float *iI, float *out,
       I += (iI[last]*(1.-m) + iI[last+1]*m)*del;
     }
 
-    min=max=P = atan2f(I,R)*(360/2/M_PI);
+    min=max=P = wrap_atan2f(I,R)*(360/2/M_PI);
 
     if(max>*pmax)*pmax=max;
     if(min<*pmin)*pmin=min;
@@ -841,7 +846,7 @@ static void ph_display_delay(float *iR, float *iI, float *out,
       I = rotI + iI[last+1]*m*del;
     }
 
-    min=max=P = aadd(atan2f(I,R),adj*(last+1))*(360/M_PI/2);
+    min=max=P = aadd(wrap_atan2f(I,R),adj*(last+1))*(360/M_PI/2);
 
     if(max>*pmax)*pmax=max;
     if(min<*pmin)*pmin=min;
