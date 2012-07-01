@@ -46,9 +46,6 @@ GtkWidget **groupboxes;
 GtkWidget *scalemenu;
 GtkWidget *rangemenu;
 
-GtkWidget *scale_label1;
-GtkWidget *scale_label2;
-
 int plot_ch=0;
 int plot_inputs=0;
 
@@ -176,23 +173,6 @@ static void rangechange(GtkWidget *widget,gpointer in){
     }
     replot();
   }
-
-#if 0
-  {
-    char b[80];
-    if(plot_schoice==0)
-      if(plot_range/2>=.99){
-        snprintf(b,80,"%gFS/div ",plot_range/2);
-      }else if(plot_range/2>=.00099){
-        snprintf(b,80,"%gmFS/div ",plot_range*500);
-      }else{
-        snprintf(b,80,"%g\xCE\xBC""FS/div ",plot_range*500000);
-      }
-    else
-      snprintf(b,80,"%.2gdBFS/div ",todB((plot_range)-todB(plot_scale))/2);
-    gtk_label_set_text(GTK_LABEL(scale_label1),b);
-  }
-#endif
 }
 
 static void scalechange(GtkWidget *widget,gpointer in){
@@ -311,17 +291,6 @@ static void spanchange(GtkWidget *widget,gpointer in){
 
   replot();
 
-#if 0
-  {
-    char b[80];
-    if(plot_span>=10000){
-      snprintf(b,80,"%gms/div",plot_span/10000.);
-    }else{
-      snprintf(b,80,"%g\xCE\xBCs/div",plot_span/10.);
-    }
-    gtk_label_set_text(GTK_LABEL(scale_label2),b);
-  }
-#endif
 }
 
 static void intervalchange(GtkWidget *widget,gpointer in){
@@ -601,28 +570,6 @@ void panel_create(void){
     g_signal_connect (G_OBJECT (trace_sep), "clicked",
                       G_CALLBACK (sepchange), NULL);
     gtk_widget_add_accelerator (trace_sep, "activate", group, GDK_s, 0, 0);
-  }
-
-  /* plot informational labels */
-  {
-    char buf[80];
-    GtkWidget *al=gtk_alignment_new(1,.5,0,0);
-    GtkWidget *box=gtk_hbox_new(0,2);
-    GtkWidget *text1=gtk_label_new("scales:");
-    GtkWidget *text2=scale_label1=gtk_label_new("");
-    GtkWidget *text3=scale_label2=gtk_label_new("");
-
-    gtk_table_attach(GTK_TABLE (lefttable), al,2,3,1,2,GTK_FILL,GTK_FILL,0,0);
-    gtk_container_add(GTK_CONTAINER (al),box);
-
-    gtk_box_pack_end(GTK_BOX(box),text3,0,0,0);
-    gtk_box_pack_end(GTK_BOX(box),text2,0,0,0);
-    gtk_box_pack_end(GTK_BOX(box),text1,0,0,0);
-
-    gtk_widget_set_name(text1,"top-label");
-    gtk_widget_set_name(text2,"top-readout");
-    gtk_widget_set_name(text3,"top-readout");
-
   }
 
   /* add the waveform plot box */
