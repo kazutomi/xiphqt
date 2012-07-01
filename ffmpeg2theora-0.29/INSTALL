@@ -1,0 +1,62 @@
+Compiling from tarball or subversion:
+-----------------------
+you need
+- scons (http://www.scons.org/)
+- the latest version of libtheora <http://downloads.xiph.org/releases/theora/>
+- ffmpeg git <http://ffmpeg.org> by running ./get_ffmpeg.sh
+  (this script downloads ffmpeg and runs configure and compiles ffmpeg)
+- for subtitles support, libkate <http://code.google.com/p/libkate/>,
+  or by running ./get_libkate.sh (this script downloads libkate, and
+  builds libkate)
+
+if you did not install ffmpeg but want to staticly link it
+(recomended by ffmpeg developers) update PKG_CONFIG_PATH to
+point to your ffmpeg source:
+
+ export PKG_CONFIG_PATH=/path/to/ffmpeg_src:$PKG_CONFIG_PATH
+
+now you can build ffmpeg2theora:
+ scons
+
+to make a static binary
+ scons static=1
+
+
+Installation
+------------
+install ffmpeg2theora in /usr/local/bin:
+
+ scons install
+
+Unless you specify a different prefix,
+you will need root privileges for this, ie.:
+
+ sudo scons install
+
+to install to another prefix:
+
+ scons install prefix=/usr
+
+vhook suppport
+--------------
+
+right now vhooks only work if you install ffmpeg and use 
+the installed shared libs. otherwise one gets errors like this:
+ undefined symbol: av_read_frame
+this is a known limitation of vhooks in ffmpeg.
+
+subtitles suppport
+------------------
+
+Subtitles for multiple languages can be encoded from one or more utf-8
+SubRip format files (.srt) if you have libkate installed. Subtitles will
+be merged into the output Ogg stream as multiplexed Kate streams.
+
+For example, to encode a video with both German and Italian subtitles:
+
+./ffmpeg2theora -o ouput.ogv --subtitles german.srt --subtitles-language de_DE \
+                             --subtitles italian.srt --subtitles-language it   \
+                   input.avi
+
+See subtitles.txt for more information on how to add subtitles to your videos.
+
