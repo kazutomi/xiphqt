@@ -47,6 +47,8 @@ typedef struct {
   float ymax;
   float pmax;
   float pmin;
+  float dBnorm[MAX_FILES];
+  float phdelay[MAX_FILES];
   int height;
   int width;
 } fetchdata;

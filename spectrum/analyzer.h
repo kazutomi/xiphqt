@@ -69,6 +69,7 @@ static inline float todB_a(const float *x){
 
 #endif
 
+#define fromdB(x) (exp((x)*.11512925f))
 
 static inline float fast_atan_cmp(float y, float x) {
   if(x*x>y*y)
@@ -110,7 +111,8 @@ extern int no_replot;
 #define LINK_INDEPENDENT  0
 #define LINK_SUMMED       1
 #define LINK_PHASE        2
-#define LINK_THD          3
+#define LINK_NORMPHASE    3
+#define LINK_THD          4
 
 #define MODE_REALTIME     0
 #define MODE_MAX          1
