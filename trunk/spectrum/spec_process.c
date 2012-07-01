@@ -310,15 +310,13 @@ static void process(void){
 
             mag_instant[i][j]=freqbuffer[j];
             mag_acc[i][j]+=freqbuffer[j];
-            if(mag_max[i][j]<freqbuffer[j])
-              mag_max[i][j]=freqbuffer[j];
-
 	    phR_acc[i][j]+=phR_work[j];
 	    phI_acc[i][j]+=phI_work[j];
-	    if(mag_max[i][j]<freqbuffer[j]){
+            if(mag_max[i][j]<freqbuffer[j]){
+              mag_max[i][j]=freqbuffer[j];
 	      phR_max[i][j]=phR_work[j];
 	      phI_max[i][j]=phI_work[j];
-	    }
+            }
           }
 
           /* swap instant, don't copy */
@@ -468,8 +466,8 @@ static void bin_minmax(float *in, float *out, float *ymax,
   float dBnorm = todB(norm);
 
   for(i=0;i<width;i++){
-    int first=ceil(L[i]);
-    int last=ceil(H[i]);
+    int first=floor(L[i]);
+    int last=floor(H[i]);
     float firsty,lasty,min,max;
 
     /* don't allow roundoff error to skip a bin entirely */
@@ -483,12 +481,13 @@ static void bin_minmax(float *in, float *out, float *ymax,
       firsty=lasty=min=max =
         (todB(in[first])*(1.-m)+todB(in[first+1])*m+dBnorm)*.5;
     }else{
-      firsty=min=max=in[first];
-      for(j=first+1;j<last;j++){
+      firsty=lasty=min=max=in[first+1];
+      for(j=first+2;j<last;j++){
         if(in[j]<min)min=in[j];
         if(in[j]>max)max=in[j];
+        lasty=in[j-1];
       }
-      lasty=(todB(in[j-1])+dBnorm)*.5;
+      lasty=(todB(lasty)+dBnorm)*.5;
       firsty=(todB(firsty)+dBnorm)*.5;
       min=(todB(min)+dBnorm)*.5;
       max=(todB(max)+dBnorm)*.5;
@@ -529,8 +528,8 @@ static void ph_minmax(float *R, float *I, float *out,
   float prevmax;
 
   for(i=0;i<width;i++){
-    int first=ceil(L[i]);
-    int last=ceil(H[i]);
+    int first=floor(L[i]);
+    int last=floor(H[i]);
     float min,max;
 
     /* don't allow roundoff error to skip a bin entirely */
@@ -544,9 +543,9 @@ static void ph_minmax(float *R, float *I, float *out,
       min=max = (aP+(bP-aP)*m)*(360/M_PI/2);
     }else{
       int min_i,max_i;
-      min=max =  fast_atan_cmp(I[first],R[first]);
-      min_i=max_i = first;
-      for(j=first+1;j<last;j++){
+      min=max =  fast_atan_cmp(I[first+1],R[first+1]);
+      min_i=max_i = first+1;
+      for(j=first+2;j<last;j++){
         float P = fast_atan_cmp(I[j],R[j]);
         if(P<min){
           min=P;
