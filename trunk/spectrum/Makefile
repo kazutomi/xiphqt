@@ -47,20 +47,16 @@ clean:
 	rm -f $(OBJ) *.d *.d.* gmon.out spectrum
 
 distclean: clean
-	rm -f spectrum-wisdomrc
 
 %.d: %.c
 	$(CC) -M $(CFLAGS) $< > $@.$$$$; sed 's,\($*\)\.o[ :]*,\1.o $@ : ,g' < $@.$$$$ > $@; rm -f $@.$$$$
 
-spectrum-wisdomrc:
-	fftwf-wisdom -v -o spectrum-wisdomrc \
-	rif8192 rib8192
 
 ifeq ($(MAKECMDGOALS),target)
 include $(SRC:.c=.d)
 endif
 
-spectrum:  $(SPECTRUM_OBJ) spectrum-wisdomrc
+spectrum:  $(SPECTRUM_OBJ)
 	./touch-version
 	$(LD) $(SPECTRUM_OBJ) -o spectrum $(LIBS) $(CFLAGS) `pkg-config --libs gtk+-2.0` -lpthread -lfftw3f -lm 
 
@@ -77,7 +73,6 @@ install: target
 	$(INSTALL) -d -m 0755 $(ETCDIR)
 	$(INSTALL) -m 0644 spectrum-gtkrc $(ETCDIR)
 	$(INSTALL) -m 0644 waveform-gtkrc $(ETCDIR)
-	$(INSTALL) -m 0644 spectrum-wisdomrc $(ETCDIR)
 #	$(INSTALL) -d -m 0755 $(MANDIR)
 #	$(INSTALL) -d -m 0755 $(MANDIR)/man1
 #	$(INSTALL) -m 0644 spectrum.1 $(MANDIR)/man1
