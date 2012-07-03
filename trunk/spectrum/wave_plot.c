@@ -241,7 +241,7 @@ void plot_draw(Plot *p, fetchdata *f, plotparams *pp){
         if(f->active[i]){
           float *data=f->data[i];
           float cp = pp->trace_sep ?
-            (height-p->pady)*(16*i+8)/(float)(18*num_active)+
+            (height-p->pady)*(16*ach+8)/(float)(18*num_active)+
             (height-p->pady)/18. : center;
 
           ach++;
