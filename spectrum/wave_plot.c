@@ -182,7 +182,6 @@ void plot_draw(Plot *p, fetchdata *f, plotparams *pp){
   /* dark y grid */
   {
     GdkColor rgb={0,0,0,0};
-    int px,py;
 
     gdk_draw_line(p->backing,p->drawgc,padx,rintf(center-1),width,rintf(center-1));
     gdk_draw_line(p->backing,p->drawgc,padx,rintf(center+1),width,rintf(center+1));
@@ -230,16 +229,17 @@ void plot_draw(Plot *p, fetchdata *f, plotparams *pp){
     gdk_gc_set_clip_rectangle (p->twogc, &clip);
 
     for(fi=0;fi<f->groups;fi++){
-      int spann = ceil(f->rate[fi]/1000000.*pp->span)+1;
+      int spann = ceil(f->rate[fi]/1000000.*pp->span)+2;
+      int wp=width-p->padx;
+      int hp=height-p->pady;
+      float ym=hp*-8./36;
+      float spani = 1000000./f->span/f->rate[fi]*wp;
+      float xo = padx + f->offsets[fi]*spani;
 
       for(i=ch;i<ch+f->channels[fi];i++){
 
         if(f->active[i]){
           float *data=f->data[i];
-          int wp=width-p->padx;
-          float spani = 1000000./f->span/f->rate[fi]*wp;
-          int hp=height-p->pady;
-          float ym=hp*-8./36;
           float cp = pp->trace_sep ?
             (height-p->pady)*(16*i+8)/(float)(18*num_active)+
             (height-p->pady)/18. : center;
@@ -251,11 +251,11 @@ void plot_draw(Plot *p, fetchdata *f, plotparams *pp){
           switch(pp->plotchoice){
           case 0: /* zero-hold */
             {
-              int x0=-1;
+              int x0=rintf(xo-1);
               float yH=NAN,yL=NAN,y0=NAN;
               int acc=0;
               for(k=0;k<spann;k++){
-                int x1 = rintf(k*spani);
+                int x1 = rintf(k*spani+xo);
                 float y1 = data[k]*ym;
 
                 /* clamp for shorts in the X protocol; gdk does not guard */
@@ -266,16 +266,16 @@ void plot_draw(Plot *p, fetchdata *f, plotparams *pp){
                   if(acc>1){
                     if(!isnan(yL)&&!isnan(yH))
                       gdk_draw_line(p->backing,p->twogc,
-                                    x0+padx,rintf(yL+cp),x0+padx,
+                                    x0,rintf(yL+cp),x0,
                                     rintf(yH+cp));
                   }
                   if(!isnan(y0)){
                     gdk_draw_line(p->backing,p->twogc,
-                                  x0+padx,rintf(y0+cp),x1+padx,rintf(y0+cp));
+                                  x0,rintf(y0+cp),x1,rintf(y0+cp));
 
                     if(!isnan(y1))
                       gdk_draw_line(p->backing,p->twogc,
-                                    x1+padx,rintf(y0+cp),x1+padx,rintf(y1+cp));
+                                    x1,rintf(y0+cp),x1,rintf(y1+cp));
                   }
 
                   acc=1;
@@ -291,23 +291,23 @@ void plot_draw(Plot *p, fetchdata *f, plotparams *pp){
                 y0=y1;
               }
               {
-                int x1 = rintf(k*spani);
+                int x1 = rintf(k*spani+xo);
 
                 if(x1<=x0 || acc>1){
                   if(!isnan(yL)&&!isnan(yH))
                     gdk_draw_line(p->backing,p->twogc,
-                                  x0+padx,rintf(yL+cp),x0+padx,rintf(yH+cp));
+                                  x0,rintf(yL+cp),x0,rintf(yH+cp));
                 }
               }
             }
             break;
           case 1: /* linear interpolation (first-order hold) */
             {
-              int x0=-1;
+              int x0=rint(xo-1);
               float yH=NAN,yL=NAN,y0=NAN;
               int acc=0;
               for(k=0;k<spann;k++){
-                int x1 = rintf(k*spani);
+                int x1 = rintf(k*spani+xo);
                 float y1 = data[k]*ym;
 
                 /* clamp for shorts in the X protocol; gdk does not guard */
@@ -318,12 +318,12 @@ void plot_draw(Plot *p, fetchdata *f, plotparams *pp){
                   if(acc>1){
                     if(!isnan(yL) && !isnan(yH))
                       gdk_draw_line(p->backing,p->twogc,
-                                    x0+padx,rintf(yL+cp),x0+padx,
+                                    x0,rintf(yL+cp),x0,
                                     rintf(yH+cp));
                   }
                   if(!isnan(y0) && !isnan(y1)){
                     gdk_draw_line(p->backing,p->twogc,
-                                  x0+padx,rintf(y0+cp),x1+padx,rintf(y1+cp));
+                                  x0,rintf(y0+cp),x1,rintf(y1+cp));
                   }
 
                   acc=1;
@@ -339,19 +339,19 @@ void plot_draw(Plot *p, fetchdata *f, plotparams *pp){
                 y0=y1;
               }
               {
-                int x1 = rintf(k*spani);
+                int x1 = rintf(k*spani+xo);
 
                 if(x1<=x0 || acc>1){
                   if(!isnan(yL) && !isnan(yH))
                     gdk_draw_line(p->backing,p->twogc,
-                                  x0+padx,rintf(yL+cp),x0+padx,rintf(yH+cp));
+                                  x0,rintf(yL+cp),x0,rintf(yH+cp));
                 }
               }
             }
             break;
           case 2: /* lollipop */
             {
-              int x0=-1;
+              int x0=rintf(xo-1);
               float yH=NAN,yL=NAN;
 
               rgb.red=0x8000;
@@ -360,7 +360,7 @@ void plot_draw(Plot *p, fetchdata *f, plotparams *pp){
               gdk_gc_set_rgb_fg_color(p->twogc,&rgb);
 
               for(k=0;k<spann;k++){
-                int x1 = rintf(k*spani);
+                int x1 = rintf(k*spani+xo);
                 float y1 = data[k]*ym;
 
                 /* clamp for shorts in the X protocol; gdk does not guard */
@@ -372,7 +372,7 @@ void plot_draw(Plot *p, fetchdata *f, plotparams *pp){
                     if(isnan(yL) || yL>0)yL=pp->bold;
                     if(isnan(yH) || yH<0)yH=0;
                     gdk_draw_line(p->backing,p->twogc,
-                                  x0+padx,rintf(yL+cp),x0+padx,
+                                  x0,rintf(yL+cp),x0,
                                   rintf(yH+cp));
                   }
                   yH=yL=y1;
@@ -398,7 +398,7 @@ void plot_draw(Plot *p, fetchdata *f, plotparams *pp){
               gdk_gc_set_rgb_fg_color(p->twogc,&rgb);
 
               for(k=0;k<spann;k++){
-                int x = rintf(k*spani);
+                int x = rintf(k*spani+xo);
                 float y = data[k]*ym;
 
                 /* clamp for shorts in the X protocol; gdk does not guard */
@@ -407,7 +407,7 @@ void plot_draw(Plot *p, fetchdata *f, plotparams *pp){
 
                 if(!isnan(y)){
                   gdk_draw_arc(p->backing,p->twogc,
-                               0,x+padx-5,rintf(y+cp-5),
+                               0,x-5,rintf(y+cp-5),
                                9,9,0,23040);
                 }
               }
@@ -444,7 +444,7 @@ static void size_request (GtkWidget *widget,GtkRequisition *requisition){
   Plot *p=PLOT(widget);
   requisition->width = 400;
   requisition->height = 200;
-  int axisy=0,axisx=0,pady=0,padx=0,px,py,i;
+  int axisy=0,axisx=0,pady=0,padx=0;
 
   if(requisition->width<axisx+padx)requisition->width=axisx+padx;
   if(requisition->height<axisy+pady)requisition->height=axisy+pady;
@@ -504,9 +504,6 @@ GType plot_get_type (void){
 
 GtkWidget* plot_new (void){
   GtkWidget *ret= GTK_WIDGET (g_object_new (plot_get_type (), NULL));
-  Plot *p=PLOT(ret);
-  int i,j;
-
   return ret;
 }
 

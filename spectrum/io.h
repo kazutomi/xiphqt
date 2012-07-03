@@ -70,6 +70,10 @@ extern int seekable[MAX_FILES];
 extern int global_seekable;
 
 extern sig_atomic_t blockslice_frac;
+extern int blockslice_count;
+extern int blockslice_cursor[MAX_FILES];
+extern int blockslice_eof[MAX_FILES];
+extern int blockslice_adv[MAX_FILES];
 extern int blockbufferfill[MAX_FILES];
 extern int blockbuffernew[MAX_FILES];
 extern float **blockbuffer;

@@ -44,6 +44,7 @@ typedef struct {
 
   float **data;
   int *active;
+  float offsets[MAX_FILES];
 } fetchdata;
 
 typedef struct {

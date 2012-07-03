@@ -52,9 +52,20 @@ int signed_force[MAX_FILES] = {0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0};
 
 extern int blocksize; /* set only at startup */
 sig_atomic_t blockslice_frac;
-static int blockslice_count=0;
+int blockslice_count=0;
 static int blockslice_started=0;
 static int blockslices[MAX_FILES]={0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0};
+
+/* used to determine the slight sample timing offsets between the
+   blockbuffer heads of inputs with different, non-interger-ratio
+   sampling rates, or an input that's not a multiple of the requested
+   blockslice fraction.  It lists the sample position within this
+   second of one-past the last sample read */
+int blockslice_cursor[MAX_FILES]={0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0};
+/* used to indicate which inputs have reached eof */
+int blockslice_eof[MAX_FILES]={0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0};
+/* how much the blockbuffer was advanced last read for this input */
+int blockslice_adv[MAX_FILES]={0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0};
 
 static unsigned char readbuffer[MAX_FILES][readsize];
 static int readbufferfill[MAX_FILES]={0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0};
@@ -566,29 +577,44 @@ static void LBEconvert(void){
   }
 }
 
+static void blockslice_init(void){
+
+  /* strict determinism is nice */
+  if(!blockslice_started){
+    int frac = blockslice_frac;
+    int fi;
+
+    blockslice_count=0;
+    memset(blockslice_cursor,0,sizeof(blockslice_cursor));
+    memset(blockslice_eof,0,sizeof(blockslice_eof));
+    blockslice_started = 1;
+
+    for(fi=0;fi<inputs;fi++)
+      blockslices[fi] = rate[fi]/frac;
+  }
+}
+
 /* blockslices are tracked/locked over a one second period */
 static void blockslice_advance(void){
   int fi;
   int frac = blockslice_frac;
-  int count;
-
-  /* strict determinism is nice */
-  if(!blockslice_started)blockslice_count=0;
-
-  count = blockslice_count + (1000000/frac);
-  for(fi=0;fi<inputs;fi++){
-    int prevsample = rint((double)rate[fi]*blockslice_count/1000000);
-    int thissample = rint((double)rate[fi]*count/1000000);
-
-    blockslices[fi] = thissample - prevsample;
-    if(blockslices[fi]<1)blockslices[fi]=1;
-    if(blockslices[fi]>blocksize)blockslices[fi]=blocksize;
-
-  }
+  int count = blockslice_count + (1000000/frac);
 
   blockslice_count = count;
+  count += (1000000/frac);
+
+  for(fi=0;fi<inputs;fi++){
+    int nextsample = rint((double)rate[fi]*count/1000000);
+
+    blockslice_cursor[fi] += blockslice_adv[fi];
+    if(blockslice_adv[fi] < blockslices[fi])
+      blockslice_eof[fi]=1;
+    else
+      blockslices[fi] = nextsample - blockslice_cursor[fi];
+    if(blockslice_cursor[fi] >= rate[fi]) blockslice_cursor[fi]-=rate[fi];
+
+  }
   if(blockslice_count>=1000000)blockslice_count-=1000000;
-  blockslice_started = 1;
 }
 
 /* input_read returns:
@@ -607,8 +633,7 @@ int input_read(int loop, int partialok){
   int rewound[total_ch];
   memset(rewound,0,sizeof(rewound));
 
-  /* also handles initialization */
-  if(!blockslice_started)blockslice_advance();
+  blockslice_init();
 
   pthread_mutex_lock(&blockbuffer_mutex);
   if(blockbuffer==0){
@@ -710,13 +735,17 @@ int input_read(int loop, int partialok){
         memmove(blockbuffer[i],blockbuffer[i]+
                 (blockbufferfill[fi]-blocksize),
                 blocksize*sizeof(**blockbuffer));
+
+      blockslice_adv[fi] = blockbufferfill[fi]-blocksize;
+
       blockbufferfill[fi]=blocksize;
       blockbuffernew[fi]=1;
       ret=1;
+    }else{
+      blockslice_adv[fi]=0;
     }
   }
   blockslice_advance();
-  pthread_mutex_unlock(&blockbuffer_mutex);
 
   return ret;
 }

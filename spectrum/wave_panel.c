@@ -342,8 +342,8 @@ static void intervalchange(GtkWidget *widget,gpointer in){
 }
 
 static void triggerchange(GtkWidget *widget,gpointer in){
-  //int choice=gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
-  /* nothing but free-run supported right now */
+  plot_trigger=gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
+  set_trigger(plot_trigger,0,plot_interval,plot_span);
 }
 
 static void runchange(GtkWidget *widget,gpointer in){
@@ -657,6 +657,18 @@ void panel_create(void){
   gtk_combo_box_set_active(GTK_COMBO_BOX(scalemenu),0);
   gtk_combo_box_set_active(GTK_COMBO_BOX(rangemenu),4);
 
+  /* plot type */
+  {
+    GtkWidget *menu=gtk_combo_box_new_text();
+    char *entries[]={"zero-hold","interpolated","lollipop",NULL};
+    for(i=0;entries[i];i++)
+      gtk_combo_box_append_text (GTK_COMBO_BOX (menu), entries[i]);
+    gtk_combo_box_set_active(GTK_COMBO_BOX(menu),0);
+    g_signal_connect (G_OBJECT (menu), "changed",
+		      G_CALLBACK (plotchange), NULL);
+    gtk_box_pack_start(GTK_BOX(bbox),menu,0,0,0);
+  }
+
   {
     GtkWidget *sep=gtk_hseparator_new();
     gtk_box_pack_start(GTK_BOX(bbox),sep,0,0,4);
@@ -690,7 +702,7 @@ void panel_create(void){
   /* trigger */
   {
     GtkWidget *menu=gtk_combo_box_new_text();
-    char *entries[]={"free run",NULL};
+    char *entries[]={"free run","0\xE2\x86\x91 trigger","0\xE2\x86\x93 trigger",NULL};
     for(i=0;entries[i];i++)
       gtk_combo_box_append_text (GTK_COMBO_BOX (menu), entries[i]);
     gtk_combo_box_set_active(GTK_COMBO_BOX(menu),0);
@@ -714,18 +726,6 @@ void panel_create(void){
 		      G_CALLBACK (intervalchange), NULL);
     gtk_combo_box_set_active(GTK_COMBO_BOX(menu),3);
     gtk_box_pack_start(GTK_BOX(bbox),menu,1,1,0);
-  }
-
-  /* plot type */
-  {
-    GtkWidget *menu=gtk_combo_box_new_text();
-    char *entries[]={"zero-hold","interpolated","lollipop",NULL};
-    for(i=0;entries[i];i++)
-      gtk_combo_box_append_text (GTK_COMBO_BOX (menu), entries[i]);
-    gtk_combo_box_set_active(GTK_COMBO_BOX(menu),0);
-    g_signal_connect (G_OBJECT (menu), "changed",
-		      G_CALLBACK (plotchange), NULL);
-    gtk_box_pack_start(GTK_BOX(bbox),menu,0,0,0);
   }
 
   {
