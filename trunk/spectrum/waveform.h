@@ -81,6 +81,7 @@ extern void panel_go(int argc,char *argv[]);
 extern void *process_thread(void *dummy);
 extern fetchdata *process_fetch(int span, int scale, float range,
                                 int *process);
+extern void set_trigger(int ttype, int tch, int sliced, int span);
 
 extern sig_atomic_t acc_rewind;
 extern sig_atomic_t acc_loop;

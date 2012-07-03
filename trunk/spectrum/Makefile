@@ -62,7 +62,7 @@ spectrum:  $(SPECTRUM_OBJ)
 
 waveform:  $(WAVEFORM_OBJ) 
 	./touch-version
-	$(LD) $(WAVEFORM_OBJ) -o waveform $(LIBS) $(CFLAGS) `pkg-config --libs gtk+-2.0` -lpthread -lm 
+	$(LD) $(WAVEFORM_OBJ) -o waveform $(LIBS) $(CFLAGS) `pkg-config --libs gtk+-2.0` -lpthread -lfftw3f -lm 
 
 target:  waveform spectrum
 

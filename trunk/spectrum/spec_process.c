@@ -360,6 +360,9 @@ void *process_thread(void *dummy){
     acc_rewind=0;
 
     ret=input_read(acc_loop,0);
+    /* returns with blockbuffer mutex held */
+    pthread_mutex_unlock(&blockbuffer_mutex);
+
     if(ret==0) break;
     if(ret==-1){
       /* a pipe returned EOF; attempt reopen */
@@ -477,7 +480,6 @@ static void bin_minmax(float *in, float *out, float *ymax,
     if(first==last){
       /* interpolate between two bins */
       float m = (H[i]+L[i])*.5-first;
-      float del = H[i]-L[i];
       firsty=lasty=min=max =
         (todB(in[first])*(1.-m)+todB(in[first+1])*m+dBnorm)*.5;
     }else{
@@ -920,11 +922,9 @@ float norm_calc(float *data,int n,int rate){
 }
 
 float norm_ph(float *dataR, float *dataI,int n,int rate){
-  int i,j;
+  int i;
   int x0 = 100.*blocksize/rate;
   int x1 = x0+blocksize/4;
-  int delcount=0, revcount=0;
-  float delsum=0.;
 
   float sumR=0.;
   float sumI=0.;
@@ -1186,7 +1186,6 @@ fetchdata *process_fetch(int scale, int mode, int link, int det,
          channel 0 phase doesn't affect the final answer */
 
       {
-        int any=0;
         float *y = fetch_ret.data[ch];
         float work[blocksize/2+1];
 
