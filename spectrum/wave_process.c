@@ -277,7 +277,7 @@ static float trigger_search(triggerstate *t, float *blockbuffer, int bn, int tri
                 /* linear interpolation can further refine the result in most cases */
                 float x = *lap / (*lap-prev);
                 float ret = (t->triggersearch+x)/
-                  (float)(t->rate*t->oversample_factor);
+                  (t->rate*t->oversample_factor);
                 /* apply holdoff */
                 t->triggersearch -= t->rate*t->oversample_factor/t->holdoffd;
                 /* return trigger */
@@ -289,7 +289,7 @@ static float trigger_search(triggerstate *t, float *blockbuffer, int bn, int tri
                 /* linear interpolation can further refine the result in most cases */
                 float x = *lap / (*lap-prev);
                 float ret = (t->triggersearch+x)/
-                  (float)(t->rate*t->oversample_factor);
+                  (t->rate*t->oversample_factor);
                 /* apply holdoff */
                 t->triggersearch -= t->rate*t->oversample_factor/t->holdoffd;
                 /* return trigger */
