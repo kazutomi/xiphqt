@@ -577,11 +577,12 @@ static void LBEconvert(void){
   }
 }
 
+static int blockslice_frac_prev;
 static void blockslice_init(void){
 
   /* strict determinism is nice */
   if(!blockslice_started){
-    int frac = blockslice_frac;
+    int frac = blockslice_frac_prev = blockslice_frac;
     int fi;
 
     blockslice_count=0;
@@ -598,10 +599,11 @@ static void blockslice_init(void){
 static void blockslice_advance(void){
   int fi;
   int frac = blockslice_frac;
-  int count = blockslice_count + (1000000/frac);
+  int count = blockslice_count + (1000000/blockslice_frac_prev);
 
   blockslice_count = count;
   count += (1000000/frac);
+  blockslice_frac_prev = frac;
 
   for(fi=0;fi<inputs;fi++){
     int nextsample = rint((double)rate[fi]*count/1000000);
