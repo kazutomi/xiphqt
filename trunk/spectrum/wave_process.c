@@ -226,7 +226,11 @@ static int trigger_try_lap(triggerstate *t, float *blockbuffer, int bn){
 
 /* returns location of trigger as number of seconds behind head of
    blockbuffer, or <0 if none */
-static float trigger_search(triggerstate *t, float *blockbuffer, int bn, int triggertype){
+static float trigger_search(triggerstate *t, float *blockbuffer,
+                            int bn, int triggertype){
+
+  float ret = -1;
+
   if(t->lappos+t->sample_n>bn || t->lappos<0){
     /* we got behind */
     t->lappos=bn-t->sample_n;
@@ -236,7 +240,7 @@ static float trigger_search(triggerstate *t, float *blockbuffer, int bn, int tri
   while(1){
     if(t->lapfill<2){
       if(trigger_try_lap(t,blockbuffer, blocksize)){
-        return -1; /* need more blockbuffer data */
+        return ret;
       }
     }else{
 
@@ -244,14 +248,14 @@ static float trigger_search(triggerstate *t, float *blockbuffer, int bn, int tri
       int span_begin = t->spansamples * t->oversample_factor;
 
       if(t->triggersearch <= span_begin){
-        return -1; /* need more blockbuffer data */
+        return ret;
       }else{
         /* distance back from logical head of the sample buffer to lap tail */
         int overlap_end = (t->lappos + t->sample_n/2) * t->oversample_factor;
 
         if(t->triggersearch <= overlap_end){
           if(trigger_try_lap(t,blockbuffer,blocksize)){
-            return -1; /* need more blockbuffer data */
+            return ret;
           }
         }else{
 
@@ -276,24 +280,20 @@ static float trigger_search(triggerstate *t, float *blockbuffer, int bn, int tri
               if(prev<=0 && *lap>0){
                 /* linear interpolation can further refine the result in most cases */
                 float x = *lap / (*lap-prev);
-                float ret = (t->triggersearch+x)/
+                ret = (t->triggersearch+x)/
                   (t->rate*t->oversample_factor);
                 /* apply holdoff */
                 t->triggersearch -= t->rate*t->oversample_factor/t->holdoffd;
-                /* return trigger */
-                return ret;
               }
               break;
             case 2: /* -0 */
               if(prev>0 && *lap<=0){
                 /* linear interpolation can further refine the result in most cases */
                 float x = *lap / (*lap-prev);
-                float ret = (t->triggersearch+x)/
+                ret = (t->triggersearch+x)/
                   (t->rate*t->oversample_factor);
                 /* apply holdoff */
                 t->triggersearch -= t->rate*t->oversample_factor/t->holdoffd;
-                /* return trigger */
-                return ret;
               }
               break;
             }
