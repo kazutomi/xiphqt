@@ -34,7 +34,7 @@ Older releases can be found <a href="http://downloads.xiph.org/releases/icecast"
 </div>
 
 <br><br>
-<div class="roundcont">
+<div class="roundcont" id="lib">
 <div class="roundtop">
 <img src="/images/corner_topleft.jpg" class="corner" style="display: none" />
 </div>

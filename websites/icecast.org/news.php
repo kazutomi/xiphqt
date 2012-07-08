@@ -60,6 +60,47 @@ Posted June 11, 2012 by dm8tbr
 </div>	
 <br />
 <br />
+<div id="libshout_release_2.3.1" class="roundcont">
+<div class="roundtop">
+<img alt="" src="/images/corner_topleft.jpg" class="corner" style="display: none" />
+</div>
+<div class="newscontent">
+<h3>libShout Release 2.3.1</h3>
+<p>Added support for Opus, contributed by Greg Maxwell.</p>
+
+<p>Download libshout 2.3.1 from the <a href="/download.php#lib">Download page</a>.</p>
+
+<div class="poster">
+Posted May 25, 2012 by dm8tbr
+</div> 
+</div>
+<div class="roundbottom">
+<img alt="" src="/images/corner_bottomleft.jpg" class="corner" style="display: none" />
+</div>
+</div>	
+
+<br>
+<br>
+<div id="libshout_release_2.3.0" class="roundcont">
+<div class="roundtop">
+<img alt="" src="/images/corner_topleft.jpg" class="corner" style="display: none" />
+</div>
+<div class="newscontent">
+<h3>libShout Release 2.3.0</h3>
+<p>Added support for WebM streams, contributed by David Richards.</p>
+
+
+<div class="poster">
+Posted Feb 2, 2012 by dm8tbr
+</div> 
+</div>
+<div class="roundbottom">
+<img alt="" src="/images/corner_bottomleft.jpg" class="corner" style="display: none" />
+</div>
+</div>	
+
+<br>
+<br>
 
 <div id="release_2.3.2" class="roundcont">
 <div class="roundtop">

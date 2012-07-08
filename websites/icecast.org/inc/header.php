@@ -7,12 +7,12 @@
 <html>
 <head>
 <title>Icecast.org</title>
-<link rel="stylesheet" type="text/css" href="inc/style.css" />
-<link rel="stylesheet" type="text/css" href="common/xiphbar.css" />
+<link rel="stylesheet" type="text/css" href="/inc/style.css" />
+<link rel="stylesheet" type="text/css" href="/common/xiphbar.css" />
 <? include "common/xiphbar.include"; ?>
 <table width="100%" border=0 cellpadding=0 cellspacing=0 bgcolor=black>
-<tr><td colspan=3><img alt="Icecast Logo" src="images/icecast.png"></td></tr>
-<tr><td colspan=3 bgcolor="#7B96C6" height=3><img alt="Icecast Logo" src="images/blue.png" height=3></td></tr>
+<tr><td colspan=3><img alt="Icecast Logo" src="/images/icecast.png"></td></tr>
+<tr><td colspan=3 bgcolor="#7B96C6" height=3><img alt="blue divider" src="/images/blue.png" height=3></td></tr>
 <tr>
 <td colspan=3 bgcolor="black">
 	<center>
@@ -33,7 +33,7 @@
 	</table>
 	</center>
 </td></tr>
-<tr><td colspan=3 bgcolor="#7B96C6" height=3><img alt="Icecast Logo" src="images/blue.png" height=3></td></tr>
+<tr><td colspan=3 bgcolor="#7B96C6" height=3><img alt="blue divider" src="/images/blue.png" height=3></td></tr>
 <tr><td colspan=3><br><br></td></tr>
 <tr>
 <?
