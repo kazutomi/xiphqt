@@ -27,7 +27,7 @@ Please note that while Opus and WebM are considered production ready, there migh
 <li>Bugfixes -
 <ul>
   <li> Fixes for some race conditions
-  <li> Allow (standard strftime(3)) %x codes in <dump-file>. Disabled for win32.
+  <li> Allow (standard strftime(3)) %x codes in &lt;dump-file&gt;. Disabled for win32.
   <li> Dropped debian packaging directory as debian use their own.
 </ul><br />
 </ul>
