@@ -3,6 +3,48 @@
 <div class="roundtop">
 <img alt="" src="/images/corner_topleft.jpg" class="corner" style="display: none" />
 </div>
+<div id="release_2.4-beta" class="newscontent">
+<h3>Icecast Release 2.4-beta</h3>
+We are pleased to announce a beta release of Icecast. A summary of the changes is listed below
+<br />
+Please note that while Opus and WebM are considered production ready, there might be other problems in this release. We appreciate feedback and discussion on the icecast-dev mailing list!
+<br />
+<br />
+<p>Downloads:<br />
+<center>
+<table border=0>
+<tr><td>Source :</td><td><a href="http://downloads.xiph.org/releases/icecast/icecast-2.4-beta.tar.gz">icecast-2.4-beta.tar.gz</a></td></tr>
+</table>
+</center>
+<p>
+<br />
+<ul>
+<li>New features -
+<ul>
+  <li> Support for Ogg Opus streams
+  <li> Support for WebM streams
+</ul><br />
+<li>Bugfixes -
+<ul>
+  <li> Fixes for some race conditions
+  <li> Allow (standard strftime(3)) %x codes in <dump-file>. Disabled for win32.
+  <li> Dropped debian packaging directory as debian use their own.
+</ul><br />
+</ul>
+<div class="poster">
+Posted July 18, 2012 by dm8tbr
+</div> 
+</div>
+<div class="roundbottom">
+<img alt="" src="/images/corner_bottomleft.jpg" class="corner" style="display: none" />
+</div>
+</div>	
+<br />
+<br />
+<div class="roundcont">
+<div class="roundtop">
+<img alt="" src="/images/corner_topleft.jpg" class="corner" style="display: none" />
+</div>
 <div id="release_2.3.3" class="newscontent">
 <h3>Icecast Release 2.3.3</h3>
 We are pleased to announce the next release of Icecast. A summary of the changes are listed below
