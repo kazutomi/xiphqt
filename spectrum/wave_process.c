@@ -369,10 +369,10 @@ void *process_thread(void *dummy){
 
 void set_trigger(int ttype, int tch, int sliced, int span){
   pthread_mutex_lock(&blockbuffer_mutex);
-  if(!blockbuffer){
-    pthread_mutex_unlock(&blockbuffer_mutex);
-    return;
-  }
+  //if(!blockbuffer){
+  //pthread_mutex_unlock(&blockbuffer_mutex);
+  //return;
+  //}
 
   /* if trigger params have changed, clear out current state */
   if(trigger_type!=ttype || trigger_channel!=tch){
@@ -381,12 +381,16 @@ void set_trigger(int ttype, int tch, int sliced, int span){
   }
 
   /* set up trigger if one if called for */
-  if(ttype && !trigger){
-    int fi = ch_to_fi(tch);
-    trigger_channel = tch;
-    trigger_type = ttype;
-    trigger = trigger_create(rate[fi], sliced, span);
-    blockslice_frac = 200;
+  if(ttype){
+    if(!trigger){
+      int fi = ch_to_fi(tch);
+      trigger_channel = tch;
+      trigger_type = ttype;
+      trigger = trigger_create(rate[fi], sliced, span);
+      blockslice_frac = 200;
+    }else{
+      trigger->holdoffd = sliced;
+    }
   }else{
     blockslice_frac = sliced;
   }
