@@ -338,6 +338,7 @@ static void intervalchange(GtkWidget *widget,gpointer in){
   }
 
   blockslice_frac = plot_interval;
+  set_trigger(plot_trigger,0,plot_interval,plot_span);
   //replot();
 }
 
