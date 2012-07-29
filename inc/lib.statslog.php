@@ -8,7 +8,7 @@ class statsLog
     
     public static function playlistAccessed($mountpoint_id, $stream_name)
     {
-        $db = DirXiphOrgLogDBC::getInstance();
+/*        $db = DirXiphOrgLogDBC::getInstance();
 
         $ip = utils::getRealIp();
         $ip = $ip !== false ? $ip : '127.0.0.1';
@@ -19,12 +19,13 @@ class statsLog
         $sql = sprintf($sql, date('Ymd'), $mountpoint_id,
                         $db->escape(hash('md5', $stream_name)),
                         $db->escape($ip));
-        $db->query($sql);
+        $db->query($sql);*/
+        return true;
     }
     
     public static function keywordsSearched($search_type, $search_keywords)
     {
-        $db = DirXiphOrgLogDBC::getInstance();
+/*        $db = DirXiphOrgLogDBC::getInstance();
         
         $ip = utils::getRealIp();
         $ip = $ip !== false ? $ip : '127.0.0.1';
@@ -34,7 +35,8 @@ class statsLog
               ."VALUES ('%s', %d, INET_ATON('%s'));";
         $sql = sprintf($sql, date('Ymd'), $db->escape($search_keywords),
                         intval($search_type), $db->escape($ip));
-        $db->query($sql);
+        $db->query($sql);*/
+        return true;
     }
 }
 

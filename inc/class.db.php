@@ -3,8 +3,6 @@
 /**
  * Database interfaces.
  *
- * @version $Id$
- * @copyright 2005-2007
  * @author Vincent Tabard
  */
 

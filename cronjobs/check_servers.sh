@@ -17,7 +17,9 @@ else
 	echo "Creating lockfile..."
 	touch "$LOCKFILE"
 	echo "Running check_servers.php..."
-	/usr/bin/php5 `dirname $0`/check_servers.php > $LOGFILE 2>&1
+	/usr/bin/php5 `dirname $0`/check_servers1.php > $LOGFILE 2>&1
+date >> /tmp/${ENVIRONMENT}_list
+cat $LOGFILE >> /tmp/${ENVIRONMENT}_list
 	rm "$LOCKFILE"
 	echo "OK."
 fi

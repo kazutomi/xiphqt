@@ -1,0 +1,20 @@
+inc:
+ * class.db.php: MySQL connection + querying
+ * class.izterator*.php: resultset iterator + factory (=> migrate to SPL?)
+ * class.mc.php: Memcache connection + querying (probably useless)
+ * class.mountpoint.php: a mountpoint (== stream), linking to 1+ server
+ * class.server.php: an instance of a mountpoint on a particular Icecast server
+ * class.sphinxApi.php: Sphinx connection + querying
+ * class.tag.php: a genre tag
+ * class.ypclient.php: test client class + load test code
+ * inc.db.php: initializes the database connection
+ * inc.mc.php: initializes the memcache connection
+ * inc.templating.php: initializes the templating system (Smarty)
+ * lib.apilog.php: API logging (not in use currently)
+ * lib.dir.php: helper functions (directory-specific, fixme: not in a class)
+ * lib.errors.php: error handling (mail)
+ * lib.genfile.php: generated files (file cache of heavy queries)
+ * lib.statslog.php: Stats logging (not in use currently)
+ * lib.utils.php: helper functions (generic)
+ * lib.uuidgend.php: generation of UUIDs (for SIDs)
+ * prepend.php: loads all the other files (even if they're not really needed :/)

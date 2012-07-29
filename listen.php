@@ -118,7 +118,7 @@ switch ($file_type)
         }
 
         // Data
-        echo implode("\r\n", $playlist);
+        echo implode("\r\n", $playlist)."\r\n";
         break;
     case FILE_TYPE_XSPF:
         // Header

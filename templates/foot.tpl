@@ -6,7 +6,7 @@
 				<h4>Queries:</h4>
 				<ul>
 {foreach item=query from=$sql_debug}
-					<li>[{$query.time} ms] {$query.query|truncate}</li>
+					<li>[{$query.time} ms] {$query.query}</li>
 {/foreach}
 				</ul>
 {/if}
