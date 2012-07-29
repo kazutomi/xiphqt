@@ -170,6 +170,11 @@ table.servers-list td.tune-in p.format span.stream {
         width: 990px;
 }
 
+.no-link {
+	color: #333;
+	text-decoration: none;
+}
+
 /* Tag list */
 .inline-tags {
     list-style-type: none;

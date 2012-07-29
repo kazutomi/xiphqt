@@ -18,8 +18,12 @@ define('MAX_STREAMS_ON_HOMEPAGE', 20);
 
 try
 {
-//    $query = 'SELECT * FROM `mountpoint` ORDER BY `listeners` DESC LIMIT %d;';
-    $query = 'SELECT `id` FROM `mountpoint` ORDER BY RAND() LIMIT %d;';
+//    $query = 'SELECT `id` FROM `mountpoint` ORDER BY `listeners` DESC LIMIT %d;';
+    $query = 'SELECT m.`id`, SUM(s.`checked`) / COUNT(*) AS `checked` '
+            .'FROM `mountpoint` AS m INNER JOIN `server` AS s ON m.`id` = s.`mountpoint_id` '
+            .'GROUP BY m.`id` '
+            .'HAVING `checked` = 1 ORDER BY m.`listeners` DESC LIMIT %d;';
+//    $query = 'SELECT `id` FROM `mountpoint` ORDER BY RAND() LIMIT %d;';
     $query = sprintf($query, MAX_STREAMS_ON_HOMEPAGE);
     $data = $db->selectQuery($query);
 	$res = array();

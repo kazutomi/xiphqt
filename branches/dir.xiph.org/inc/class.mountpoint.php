@@ -4,7 +4,7 @@ class Mountpoint
 {
     protected $mountpoint_id = 0;
     protected static $table_name = 'mountpoint';
-    protected $cache_expiration = 60;
+    protected $cache_expiration = 120;
     public $loaded = false;
     
     protected $stream_name;

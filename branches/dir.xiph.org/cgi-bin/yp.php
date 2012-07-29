@@ -43,7 +43,7 @@ switch ($_REQUEST['action'])
 		try
 		{
 		    // Check the args are here
-		    $mandatory_args = array('sn', 'type', 'genre', 'b', 'listenurl');
+		    $mandatory_args = array('sn', 'type', 'genre', 'listenurl');
 		    foreach ($mandatory_args as $a)
 		    {
 		        if (!array_key_exists($a, $_REQUEST) || empty($_REQUEST[$a]))
@@ -73,13 +73,27 @@ switch ($_REQUEST['action'])
 		    }
 		    // Genre, space-normalized
 		    $genre = clean_string($_REQUEST['genre']);
-		    $genre = str_replace(array('+', '-', '*', '<', '>', '~', '"', '(', ')', '|', '!', '?', ',', ';', ':', '/'),
-							     array(' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '),
+		    $genre = str_replace(array('+', '-', '*', '<', '>', '~', '"', '(', ')', '|', '!', '?', ',', ';', ':', '/', '&'),
+							     array(' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '),
 							     $genre);
 		    $genre = preg_replace('/\s+/', ' ', $genre);
-		    $genre_list = array_slice(explode(' ', $genre), 0, 10);
+		    $genre_list = array_slice(explode(' ', trim($genre)), 0, 10);
 		    // Bitrate
-		    $bitrate = clean_string($_REQUEST['b']);
+		    if  (isset($_REQUEST['b']) && !empty($_REQUEST['b']))
+			    $bitrate = clean_string($_REQUEST['b']);
+		    else if  (isset($_REQUEST['bitrate']) && !empty($_REQUEST['bitrate']))
+			    $bitrate = clean_string($_REQUEST['bitrate']);
+		    else
+		    {
+			    $x = str_replace(";", "&", urldecode(substr(strrchr(file_get_contents('php://input'), "&"), 1)));
+			    parse_str ($x , $hack);
+			    if (isset($hack['quality']))
+				    $bitrate = "Quality " . clean_string($hack['quality']);
+			    else if (isset($hack['bitrate']))
+				    $bitrate = clean_string($hack['bitrate']);
+			    else
+				    throw new ServerRefusedAPIException('Not enough arguments.', SERVER_REFUSED_MISSING_ARG, 'b');
+		    }
 		    // Listen URL
 		    $listen_url = clean_string($_REQUEST['listenurl']);
             // Verify the URL
@@ -190,7 +204,7 @@ switch ($_REQUEST['action'])
 			    header("YPResponse: 1");
 			    header("YPMessage: Successfully added.");
 			    header("SID: ".$sid);
-			    header("TouchFreq: 250");
+			    header("TouchFreq: 242");
                 
                 // Log stuff
                 APILog::request(REQUEST_ADD, true, $listen_url, $server_id,

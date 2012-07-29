@@ -49,7 +49,7 @@ try
             {
                 $fp = @fsockopen($url['host'],
                                  array_key_exists('port', $url) ? $url['port'] : 80, // as per HTTP RFC
-                                 $errno, $errstr, 5);
+                                 $errno, $errstr, 3);
                 if (!$fp)
                 {
                     $count++;

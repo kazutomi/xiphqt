@@ -4,7 +4,7 @@ class Server
 {
     protected $server_id = 0;
     protected static $table_name = 'server';
-    protected static $cache_expiration = 60;
+    protected static $cache_expiration = 120;
     public $loaded = false;
     
     protected $mountpoint_id;

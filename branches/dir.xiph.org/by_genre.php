@@ -13,6 +13,12 @@ if ($page_n > (MAX_SEARCH_RESULTS / MAX_RESULTS_PER_PAGE))
 }
 if (array_key_exists('PATH_INFO', $_SERVER))
 {
+	if (substr($_SERVER['PATH_INFO'], -5) == '.xspf')
+	{
+	    $output_format = 'xspf';
+	    $_SERVER['PATH_INFO'] = substr($_SERVER['PATH_INFO'], 0, -5);
+	}
+	
 	$search_string = preg_replace('|^/([^\s/]+).*$|', '$1', $_SERVER['PATH_INFO']);
 	$search_string = substr($search_string, 0, 15);
 	$tpl->assign('search_keyword', $search_string);
@@ -101,6 +107,8 @@ else
 	$tpl->assign('display_tag_cloud', true);
 }
 
+if (empty($output_format) || $output_format != 'xspf')
+{
 // Header
 $tpl->display("head.tpl");
 
@@ -129,5 +137,12 @@ if (ENVIRONMENT != 'prod')
 }
 $tpl->assign("/search/by_genre");
 $tpl->display('foot.tpl');
+}
+elseif ($output_format == 'xspf')
+{
+  header('Content-Type: application/xspf+xml');
+  $tpl->assign('xspf_title', 'Search results for '.$search_string);
+  $tpl->display('search_results.xspf.tpl');
+}
 
 ?>

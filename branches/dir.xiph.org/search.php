@@ -64,7 +64,17 @@ if ($keyword !== false)
 			// Cache miss. Now query the database.
 			try
 			{
-                $query = 'SELECT * FROM `mountpoint` WHERE `stream_name` LIKE "%1$s" OR `description` LIKE "%1$s" OR `id` IN (SELECT `mountpoint_id` FROM `mountpoints_tags` AS mt INNER JOIN `tag` AS t ON mt.`tag_id` = t.`id` WHERE `tag_name` IN (%2$s)) ORDER BY `listeners` DESC LIMIT %3$d;';
+//                $query = 'SELECT * FROM `mountpoint` WHERE `stream_name` LIKE "%1$s" OR `description` LIKE "%1$s" OR `id` IN (SELECT `mountpoint_id` FROM `mountpoints_tags` AS mt INNER JOIN `tag` AS t ON mt.`tag_id` = t.`id` WHERE `tag_name` IN (%2$s)) ORDER BY `listeners` DESC LIMIT %3$d;';
+                 $query = 'SELECT m.* FROM '
+                                .'(SELECT * FROM `mountpoint` '
+                                .'WHERE `stream_name` LIKE "%1$s" OR `description` LIKE "%1$s" '
+                                .'OR `id` IN '
+                                        .'(SELECT `mountpoint_id` FROM `mountpoints_tags` AS mt '
+                                        .'INNER JOIN `tag` AS t ON mt.`tag_id` = t.`id` '
+                                        .'WHERE `tag_name` IN (%2$s)) '
+                                .'ORDER BY `listeners` DESC) AS m '
+                         .'INNER JOIN `server` AS s ON m.`id` = s.`mountpoint_id` ' 
+                         .'GROUP BY m.`id` ORDER BY NULL';
                 $query = sprintf($query,
                                  mysql_real_escape_string($search_string),
                                  $search_in,
