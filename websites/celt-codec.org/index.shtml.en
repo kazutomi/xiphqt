@@ -8,7 +8,7 @@
 }
 -->
 </style>
-<base href="http://www.celt-codec.org/">
+<base href="http://www.celt-codec.org/" />
 </head>
 <body>
 <!--#include virtual="/common/xiphbar.include" -->
