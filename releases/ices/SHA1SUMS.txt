@@ -12,5 +12,7 @@ b0be0f041c311b7b3b1c6b015062daecdc314ccf  ices-2.0.0.tar.bz2
 cd43fc86a0e091883f35fed39f56cec3d3f7db48  ices-2.0.0.tar.gz
 045e8419c494d77162668e8362b3c9ddc4b4974c  ices-2.0.1.tar.bz2
 bad9ec3f03121efcc9028ed0ed92c4c0d68b0a40  ices-2.0.1.tar.gz
+9e8c9c0e6104d26c6b2b42cd30aaaa03ded8f964  ices-2.0.2.tar.bz2
+fa3447f378f85547e2793121c04a247a9d7e77fc  ices-2.0.2.tar.gz
 c81137f0341b4ec78dfa1bdd6d82a99b2fd2c903  ices-2.0-Beta3.tar.gz
 13ddf746027e2a2d95ddada9b04d2d2ec2d20ec9  ices-2.0-Beta4.tar.gz
