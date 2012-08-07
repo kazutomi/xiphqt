@@ -22,13 +22,13 @@ to pick up.</p>
   <br />
  <li>Bugfixes -
   <ul>
-   <li> Updated Documentation(Closes: <a href="https://trac.xiph.org/ticket/1238">#1238</a>)
+   <li> Updated Documentation (Closes: <a href="https://trac.xiph.org/ticket/1238">#1238</a>)
    <li> Fixed double shout_close() (Closes: <a href="https://trac.xiph.org/ticket/720">#720</a>)
    <li> Reduced error to warning in case of duplicate serial number.
-   <li> Fixed handling of <reconnectattempts> when set to zero (Closes: <a href="https://trac.xiph.org/ticket/735">#735</a>)
+   <li> Fixed handling of &lt;reconnectattempts&gt; when set to zero (Closes: <a href="https://trac.xiph.org/ticket/735">#735</a>)
    <li> Did some code cleanup and hardening (Closes: <a href="https://trac.xiph.org/ticket/1795">#1795</a>)
    <li> Enabled compiler warnings (Closes: <a href="https://trac.xiph.org/ticket/1796">#1796</a>)
-   <li> Added <retry-initial> (Closes: <a href="https://trac.xiph.org/ticket/994">#994</a>)
+   <li> Added &lt;retry-initial&gt; (Closes: <a href="https://trac.xiph.org/ticket/994">#994</a>)
    <li> Updated handling of empty strings in config file (Closes: <a href="https://trac.xiph.org/ticket/1875">#1875</a>)
    <li> Updated build system
   </ul>
