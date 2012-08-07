@@ -14,23 +14,26 @@ Ices is a source client for Icecast streaming media server. It takes audio from 
 of the defined inputs and (re)encodes the audio for streaming to icecast for listeners
 to pick up.</p>
 <p>
-<li>New features -
 <ul>
-  <li> Support for RoarAudio input
-</ul><br />
-<li>Bugfixes -
-<ul>
-  <li>  Updated Documentation(Closes: #1238)
-  <li>  Fixed double shout_close() (Closes: #720)
-  <li>  Reduced error to warning in case of duplicate serial number.
-  <li>  Fixed handling of <reconnectattempts> when set to zero (Closes: #735)
-  <li>  Did some code cleanup and hardening (Closes: #1795)
-  <li>  Enabled compiler warnings (Closes: #1796)
-  <li>  Added <retry-initial> (Closes: #994)
-  <li>  Updated handling of empty strings in config file (Closes: #1875)
-  <li>  Updated build system
-</ul><br />
-</ul>
+ <li>New features -
+  <ul>
+   <li> Support for RoarAudio input
+  </ul>
+  <br />
+ <li>Bugfixes -
+  <ul>
+   <li> Updated Documentation(Closes: #1238)
+   <li> Fixed double shout_close() (Closes: #720)
+   <li> Reduced error to warning in case of duplicate serial number.
+   <li> Fixed handling of <reconnectattempts> when set to zero (Closes: #735)
+   <li> Did some code cleanup and hardening (Closes: #1795)
+   <li> Enabled compiler warnings (Closes: #1796)
+   <li> Added <retry-initial> (Closes: #994)
+   <li> Updated handling of empty strings in config file (Closes: #1875)
+   <li> Updated build system
+  </ul>
+  <br />
+ </ul>
 </p>
 <p>Download Ices 2.0.2 from the <a href="ices.php">Ices page</a>.</p>
 
