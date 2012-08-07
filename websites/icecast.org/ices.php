@@ -9,7 +9,9 @@
 <br></br>
 <p>Ices 2.x supports sending an Ogg Vorbis stream to an Icecast server.</p>
 <p>This can be live audio (e.g. from a sound card) or Ogg Vorbis files from a play list.</p>
-<p>Documentation for ices2 can be found <a href="docs/ices-2.0.1/">here</a></p>
+<p>Documentation for ices2 can be found <a href="docs/ices-2.0.2/">here</a>
+   (<a href="docs/ices-trunk/">trunk</a>).
+</p>
 </div>
 <div class="roundbottom">
 <img src="/images/corner_bottomleft.jpg" class="corner" style="display: none" />
