@@ -1,54 +1,55 @@
 <h2>News</h2>
 <div class="roundcont">
-<div class="roundtop">
-<img alt="" src="/images/corner_topleft.jpg" class="corner" style="display: none" />
-</div>
-<div id="ices_release_2.0.2" class="roundcont">
-<div class="roundtop">
-<img alt="" src="/images/corner_topleft.jpg" class="corner" style="display: none" />
-</div>
-<div class="newscontent">
-<h3>Ices Release 2.0.2</h3>
-<p>After far a long time the icecast development team has released Ices version 2.0.2.
-Ices is a source client for Icecast streaming media server. It takes audio from one
-of the defined inputs and (re)encodes the audio for streaming to icecast for listeners
-to pick up.</p>
-<p>
-<ul>
- <li>New features -
-  <ul>
-   <li> Support for RoarAudio input
-  </ul>
-  <br />
- <li>Bugfixes -
-  <ul>
-   <li> Updated Documentation (Closes: <a href="https://trac.xiph.org/ticket/1238">#1238</a>)
-   <li> Fixed double shout_close() (Closes: <a href="https://trac.xiph.org/ticket/720">#720</a>)
-   <li> Reduced error to warning in case of duplicate serial number.
-   <li> Fixed handling of &lt;reconnectattempts&gt; when set to zero (Closes: <a href="https://trac.xiph.org/ticket/735">#735</a>)
-   <li> Did some code cleanup and hardening (Closes: <a href="https://trac.xiph.org/ticket/1795">#1795</a>)
-   <li> Enabled compiler warnings (Closes: <a href="https://trac.xiph.org/ticket/1796">#1796</a>)
-   <li> Added &lt;retry-initial&gt; (Closes: <a href="https://trac.xiph.org/ticket/994">#994</a>)
-   <li> Updated handling of empty strings in config file (Closes: <a href="https://trac.xiph.org/ticket/1875">#1875</a>)
-   <li> Updated build system
-  </ul>
-  <br />
- </ul>
-</p>
-<p>Download Ices 2.0.2 from the <a href="ices.php">Ices page</a>.</p>
+ <div class="roundtop">
+  <img alt="" src="/images/corner_topleft.jpg" class="corner" style="display: none" />
+ </div>
+ <div id="ices_release_2.0.2" class="newscontent">
+  <h3>Ices Release 2.0.2</h3>
+  <p>After far a long time the icecast development team has released Ices version 2.0.2.
+     Ices is a source client for Icecast streaming media server. It takes audio from one
+     of the defined inputs and (re)encodes the audio for streaming to icecast for listeners
+     to pick up.
+  </p>
+  <p>
+   <ul>
+    <li>New features -
+     <ul>
+      <li> Support for RoarAudio input
+     </ul>
+     <br />
+    <li>Bugfixes -
+     <ul>
+      <li> Updated Documentation (Closes: <a href="https://trac.xiph.org/ticket/1238">#1238</a>)
+      <li> Fixed double shout_close() (Closes: <a href="https://trac.xiph.org/ticket/720">#720</a>)
+      <li> Reduced error to warning in case of duplicate serial number.
+      <li> Fixed handling of &lt;reconnectattempts&gt; when set to zero (Closes: <a href="https://trac.xiph.org/ticket/735">#735</a>)
+      <li> Did some code cleanup and hardening (Closes: <a href="https://trac.xiph.org/ticket/1795">#1795</a>)
+      <li> Enabled compiler warnings (Closes: <a href="https://trac.xiph.org/ticket/1796">#1796</a>)
+      <li> Added &lt;retry-initial&gt; (Closes: <a href="https://trac.xiph.org/ticket/994">#994</a>)
+      <li> Updated handling of empty strings in config file (Closes: <a href="https://trac.xiph.org/ticket/1875">#1875</a>)
+      <li> Updated build system
+     </ul>
+     <br />
+   </ul>
+  </p>
+  <p>Download Ices 2.0.2 from the <a href="ices.php">Ices page</a>.</p>
 
-<div class="poster">
-Posted Aug 6, 2012 by dm8tbr
-</div>
-</div>
-<div class="roundbottom">
-<img alt="" src="/images/corner_bottomleft.jpg" class="corner" style="display: none" />
-</div>
+  <div class="poster">
+   Posted Aug 6, 2012 by dm8tbr
+  </div>
+ </div>
+ <div class="roundbottom">
+  <img alt="" src="/images/corner_bottomleft.jpg" class="corner" style="display: none" />
+ </div>
 </div>
 <br />
 <br />
 
 
+<div class="roundcont">
+<div class="roundtop">
+<img alt="" src="/images/corner_topleft.jpg" class="corner" style="display: none" />
+</div>
 <div id="release_2.4-beta" class="newscontent">
 <h3>Icecast Release 2.4-beta</h3>
 We are pleased to announce a beta release of Icecast. A summary of the changes is listed below
@@ -88,6 +89,7 @@ Posted July 18, 2012 by dm8tbr
 
 <br />
 <br />
+
 
 <div class="roundcont">
 <div class="roundtop">
@@ -148,8 +150,10 @@ Posted June 11, 2012 by dm8tbr
 <img alt="" src="/images/corner_bottomleft.jpg" class="corner" style="display: none" />
 </div>
 </div>	
+
 <br />
 <br />
+
 <div id="libshout_release_2.3.1" class="roundcont">
 <div class="roundtop">
 <img alt="" src="/images/corner_topleft.jpg" class="corner" style="display: none" />
