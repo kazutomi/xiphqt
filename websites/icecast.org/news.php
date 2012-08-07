@@ -41,6 +41,10 @@ to pick up.</p>
 Posted Aug 6, 2012 by dm8tbr
 </div>
 </div>
+<div class="roundbottom">
+<img alt="" src="/images/corner_bottomleft.jpg" class="corner" style="display: none" />
+</div>
+</div>
 <br />
 <br />
 
@@ -81,8 +85,10 @@ Posted July 18, 2012 by dm8tbr
 <img alt="" src="/images/corner_bottomleft.jpg" class="corner" style="display: none" />
 </div>
 </div>	
+
 <br />
 <br />
+
 <div class="roundcont">
 <div class="roundtop">
 <img alt="" src="/images/corner_topleft.jpg" class="corner" style="display: none" />
