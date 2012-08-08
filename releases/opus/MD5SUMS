@@ -9,7 +9,10 @@ f58214e530928aa3db1dec217d5dfcd4  opus-0.9.1.tar.gz
 0c18f0aac37f1ed955f5d694ddd88000  opus-0.9.9.tar.gz
 afbda2fd20dc08e6075db0f60297a137  opus-0.9.10.tar.gz
 c7161b247a8437ae6b0f11dd872e69e8  opus-0.9.14.tar.gz
+1c2d30090595f4250027f7a04b114c8b  opus-1.0.0-rc.tar.gz
+3475592fc2fe4aafc6239bf879a6e884  opus-1.0.1-rc.tar.gz
 93b77749ada4b47400eea55354bcb361  opus_testvectors-draft11.tar.gz
+93b77749ada4b47400eea55354bcb361  opus_testvectors.tar.gz
 29fde870339e744377f0ec8cfd49efa5  opus-tools-0.1.2.tar.gz
 3a09456d9b8eb82c102fd1e166919980  opus-tools-0.1.3.tar.gz
 82dddc3482f066f2f84557fc643b2b09  opus-tools-0.1.4.tar.gz
