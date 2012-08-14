@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
   rogg_page_header header;
 
   for (i = 1; i < argc; i++) {
-    f = open(argv[i], O_RDWR);
+    f = open(argv[i], O_RDONLY);
     if (f < 0) {
 	fprintf(stderr, "couldn't open '%s'\n", argv[i]);
 	continue;
@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
 	close(f);
 	continue;
     }
-    p = mmap(0, s.st_size, PROT_READ|PROT_WRITE,
+    p = mmap(0, s.st_size, PROT_READ,
 	MAP_SHARED, f, 0);
     if (p == MAP_FAILED) {
 	fprintf(stderr, "couldn't mmap '%s'\n", argv[i]);
