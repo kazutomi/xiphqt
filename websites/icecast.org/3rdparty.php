@@ -24,7 +24,7 @@
 <tr><td>Savonet/Liquidsoap</td><td>Linux/Unix, Windows</td><td><a href="http://savonet.sourceforge.net/">http://savonet.sourceforge.net/</a></td></tr>
 <tr><td>DeeFuzzer</td><td>Linux/Unix</td><td><a href="http://svn.parisson.org/deefuzzer">http://svn.parisson.org/deefuzzer</a></td></tr>
 <tr><td>RoarAudio</td><td>Linux/Unix, Windows</td><td><a href="http://roaraudio.keep-cool.org/roaraudio.html">http://roaraudio.keep-cool.org/roaraudio.html</a></td></tr>
-<tr><td>RoarAudio PlayList Daemon</td><td>Linux/Unix</td><td><a href="http://roaraudio.keep-cool.org/rpld.html">http://roaraudio.keep-cool.org/rpld.html</a></td></tr>
+<tr><td>RoarAudio PlayList Daemon</td><td>Linux/Unix, Windows</td><td><a href="http://roaraudio.keep-cool.org/rpld.html">http://roaraudio.keep-cool.org/rpld.html</a></td></tr>
 <tr><td>butt - broadcast using this tool</td><td>Linux/Unix, Mac OSX, Windows</td><td><a href="http://butt.sourceforge.net/">http://butt.sourceforge.net/</a></td></tr>
 <tr><td>Mixxx</td><td>Linux/Unix, Mac OSX, Windows</td><td><a href="http://mixxx.org/">http://mixxx.org/</a></td></tr>
 </table>
