@@ -38,3 +38,4 @@ edb31f63d00ca272f7e15ebe5a56759a  cortado-ovt-debug-0.6.0.jar
 9f7be90fdf14666f7b7e644fac1886d7  cortado-ovtk-debug-0.6.0.jar
 8090c90e8265dc2b09379f14ee2432de  cortado-ovtk-stripped-0.6.0.jar
 c7fb0c656a99e46ceed63e18f9735804  cortado-ovt-stripped-0.6.0.jar
+b95bf358493566f450d3aeb379692436  cortado-ovt-signed-0.6.0.jar
