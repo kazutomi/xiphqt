@@ -1,3 +1,46 @@
+
+dependencies - debian packages (possibly incomplete):
+memcached
+php5-memcached
+php5-memcache
+php5-cli
+smarty
+mysql-server
+#http://ftp.belnet.be/pub/ftp.pureftpd.org/misc/php-jenkins-hash/jenkins-0.9.tar.gz
+
+Rough steps to get a production site up and running:
+
+cd /var/www/
+svn co http://svn.xiph.org/branches/dir.xiph.org/
+ln -s /var/www/dir.xiph.org/docs/apache-vhost.conf /etc/apache2/sites-available/dir.xiph.org
+a2ensite dir.xiph.org
+a2dissite default
+a2enmod rewrite expires
+rm /etc/apache2/apache2.conf
+ln -s /var/www/dir.xiph.org/docs/apache2.conf /etc/apache2/apache2.conf
+/etc/init.d/apache2 restart
+#memcached.conf doesn't need editing/substitution?
+rm /etc/mysql/my.cnf
+ln -s /var/www/dir.xiph.org/docs/my.cnf /etc/mysql/my.cnf
+/etc/init.d/mysql restart
+mysql -p -h localhost -u root
+CREATE DATABASE `dir_xiph_org` ;
+CREATE USER 'dir_xiph_org'@'localhost' IDENTIFIED BY 'somepassword';
+GRANT USAGE ON * . * TO 'dir_xiph_org'@'localhost' IDENTIFIED BY 'somepassword' WITH MAX_QUERIES_PER_HOUR 0 MAX_CONNECTIONS_PER_HOUR 0 MAX_UPDATES_PER_HOUR 0 MAX_USER_CONNECTIONS 0 ;
+GRANT ALL PRIVILEGES ON `dir_xiph_org` . * TO 'dir_xiph_org'@'localhost';
+mysql -p -h localhost -u root dir_xiph_org < schema.sql
+chown www-data /var/www/dir.xiph.org/c_templates
+vi /var/www/dir.xiph.org/docs/apache-vhost.conf
+#add line 4: SetEnv ENVIRONMENT prod
+
+
+notes:
+ * if output is blank, make sure c_templates is writeable and you have run the php scripts in cron at least once!
+
+
+c_templates:
+ * must be writeable by web-server
+
 inc:
  * class.db.php: MySQL connection + querying
  * class.izterator*.php: resultset iterator + factory (=> migrate to SPL?)
