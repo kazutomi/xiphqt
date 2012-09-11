@@ -101,4 +101,7 @@ include_once(dirname(__FILE__).'/lib.utils.php');
 include_once(dirname(__FILE__).'/lib.apilog.php');
 include_once(dirname(__FILE__).'/lib.statslog.php');
 
+// quick hack to get around lack of php-jenkins-hash
+function jenkins_hash_hex($str) { return sha1($str); }
+
 ?>

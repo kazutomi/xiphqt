@@ -1,7 +1,8 @@
 <?php
 
 #include_once(dirname(__FILE__).'/template-lite/class.template.php');
-include_once('/usr/share/php/smarty/Smarty.class.php');
+#include_once('/usr/share/php/smarty/Smarty.class.php');
+include_once('/usr/share/php/smarty/libs/Smarty.class.php');
 #/usr/share/php/smarty/Smarty_Compiler.class.php
 
 // Templating

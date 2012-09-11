@@ -1,3 +1,4 @@
+Icecast YP
 
 dependencies - debian packages (possibly incomplete):
 memcached
@@ -32,7 +33,9 @@ mysql -p -h localhost -u root dir_xiph_org < schema.sql
 chown www-data /var/www/dir.xiph.org/c_templates
 vi /var/www/dir.xiph.org/docs/apache-vhost.conf
 #add line 4: SetEnv ENVIRONMENT prod
-
+#replace next two lines with svn external
+cd /var/www/dir.xiph.org/
+svn co http://svn.xiph.org/websites/common/
 
 notes:
  * if output is blank, make sure c_templates is writeable and you have run the php scripts in cron at least once!
