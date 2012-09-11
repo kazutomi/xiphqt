@@ -9,7 +9,7 @@
 <!--  All your page content goes here  -->
 
 
-<h2>The Internet Engineering Task Force (IETF) standardizes the Opus audio codec as RFC 6716<br>Opus reference implementation 1.0.1 released</h2>
+<h2>The IETF standardizes the Opus audio codec as RFC 6716<br>Opus reference implementation 1.0.1 released</h2>
 
 <p>Mozilla and the Xiph.Org Foundation are pleased to announce
 the <a href="http://www.ietf.org/">Internet Engineering Task Force
@@ -40,9 +40,9 @@ elements as:</p>
 </ul>
 
 <p>
-<a href="http://www.opus-codec.org/comparison/"><img src="//hacks.mozilla.org/wp-content/uploads/2012/08/opus-quality-500.png"
-alt="Illustration of the quality of different codecs" height="370"
-width="500"></a>
+<a href="http://www.opus-codec.org/comparison/">
+<img src="http://hacks.mozilla.org/wp-content/uploads/2012/08/opus-quality-500.png" alt="Illustration of the quality of different codecs" height="370"
+width="500" style="padding: 10px 60px 10px 60px; margin: 20px; border: solid 1px #80a0ff" ></a>
 </p>
 
 <p>Most importantly, Opus adapts within these operating points,
