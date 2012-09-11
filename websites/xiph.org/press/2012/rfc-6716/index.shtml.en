@@ -1,0 +1,131 @@
+<!--#include virtual="/ssi/header.include" -->
+<!-- Enter custom page information and styles here -->
+  <title>September 11, 2012: Opus is now RFC6716, 1.0.1 released</title>
+</head>
+<body>
+<!--#include virtual="/common/xiphbar.include" -->
+
+<!--#include virtual="/ssi/pagetop.include" -->
+<!--  All your page content goes here  -->
+
+
+<h3>The Internet Engineering Task Force (IETF) standardizes Opus as RFC 6716<br>Opus reference implementation 1.0.1 released</h3>
+
+<p>Mozilla and the Xiph.Org Foundation are pleased to announce
+the <a href="http://www.ietf.org/">Internet Engineering Task Force
+(IETF)</a> has standardized Opus
+as <a href="http://tools.ietf.org/html/rfc6716">RFC 6716</a>. Opus is
+the first state-of-the-art, fully Free and Open audio codec ratified
+by a major standards organization.</p>
+
+
+<h2>_The_ Highly Flexible Codec</h2> 
+
+<p>Existing audio codecs focus on a narrow set of applications, such as
+either voice or music in a narrow range of bitrates, real-time streaming,
+storage applications, and so on.  This is one reason there are <i>so
+many</i> audio codecs, and nobody expects a single codec to be optimal
+across a wide range of uses.</p>
+
+<p>That is, until now: Opus's "sweet spot" dominates nearly the entire
+audio-coding application space. Amongst its weaponry are such diverse
+elements as:</p>
+
+<ul>
+    <li>Fearfully low latency: Frame sizes from 2.5 ms to 60 ms</li>
+    <li>Surprising voice and music quality (it beats all other comers across its operating range, including Vorbis and AAC)</li>
+    <li>Ruthless bitrate efficiency from 6 kb/s to 512 kb/s</li>
+    <li>Mono and stereo support (> stereo as paired channels)</li>
+    <li>Narrowband 8 kHz to fullband 48 kHz (enjoy high fidelity in your comfy chair)</li>
+</ul>
+
+<p>
+<a href="http://www.opus-codec.org/comparison/"><img src="//hacks.mozilla.org/wp-content/uploads/2012/08/opus-quality-500.png"
+alt="Illustration of the quality of different codecs" height="370"
+width="500"></a>
+</p>
+
+<p>Most importantly, Opus adapts within these operating points,
+altering its stream parameters in-band and seamlessly from frame to
+frame. Doing all of this with proprietary standards would require
+multiple codecs and custom code to glue them together. Opus replaces
+all these other codecs with better quality, greater efficiency, a
+small footprint, and does so out-of-the-box.</p>
+
+<h2>Use Cases</h2>
+
+<p>Opus is primarily designed for use in interactive applications on the
+Internet, including voice over IP (VoIP), teleconferencing, in-game
+chatting, and live, distributed music performances. The IETF recently
+announced 
+<a
+href="http://www.ietf.org/mail-archive/web/rtcweb/current/msg05267.html">
+"strong consensus" to adopt Opus as a mandatory-to-implement (MTI)
+codec</a> for WebRTC, an upcoming standard for real-time communication
+on the web. Despite its low latency, Opus also excels at streaming and
+storage applications, beating existing high-delay codecs like Vorbis
+and HE-AAC. It's great for internet radio, adaptive streaming, game
+sound effects,
+and <a href="https://hacks.mozilla.org/2012/07/firefox-beta-15-supports-the-new-opus-audio-format/">much
+more</a>.</p>
+
+<p>Although the RFC announcement may be only a day old, Opus is
+already supported in applications such
+as <a href="http://getfirefox.com">Firefox</a>, <a href="http://gstreamer.net">GStreamer</a>, <a href="http://ffmpeg.org">FFMpeg</a>, <a href="http://foobar2000.org">foobar2000</a>, <A href="http://codecguide.com/changelogs_full.htm">K-Lite
+Codec Pack</a>,
+and <a href="http://code.google.com/p/lavfilters/">lavfilters</a>,
+with upcoming support
+in <a href="http://videolan.org">VLC</a>, <a href="http://www.rockbox.org/">rockbox</a>
+and <a href="http://mumble.info/">Mumble</a>.</p>
+
+<h2>Free and Open</h2>
+
+<p>Another reason there are <i>so many</i> audio codecs: silly licensing restrictions.  Would you base a business on technology a competitor controls?</p>
+
+<p>That's why the Opus specification and complete source are Free, Open, and available for any use whatsoever without IP restrictions, explicit licensing or royalties.</p>
+
+<p>Opus was developed and tested in a public, fully transparent process
+within the IETF, proof that open collaboration can produce a better
+audio codec than proprietary, secretive, patent-encumbered systems.  Open
+standards benefit-- and benefit from-- open source organizations and traditional
+commercial software companies alike. Opus itself is the result of a
+collaboration including Broadcom, Google, the IETF, Microsoft (through
+Skype), Mozilla, Microsoft, Octasic and Xiph.Org.</p>
+
+<h2>Do Want!</h2>
+
+<p>The Opus specification is available in <a
+href="http://tools.ietf.org/html/rfc6716">RFC 6716</a>, which includes
+the reference implementation. <a
+href="http://opus-codec.org/downloads/">Ongoing, up-to-date software
+releases are also available</a>.  Both links include the
+full high-quality encoder used in listening tests.  We will continue
+to improve Opus's efficiency, quality, and performance as Free and
+Open source. For more information about Opus in general, visit the <a
+href="http://opus-codec.org/">Opus website</a>.
+Stay tuned, as we are now working on doing the <a
+href="https://www.ietf.org/mailman/listinfo/video-codec">same thing
+for video</a>.<p>
+
+<p>Happy Hacking!</p>
+<p>Jean-Marc Valin, Mozilla<br>
+Monty Montgomery, Xiph.Org</p>
+
+<p><i> Mozilla is a proudly non-profit organization dedicated to
+keeping the power of the Web in people’s hands. We’re a global
+community of users, contributors and developers working to innovate on
+your behalf. When you use Firefox, or any Mozilla product, you become
+a part of that community, helping us build a brighter future for the
+Web.
+</i>
+</p>
+
+<p><i>
+The Xiph.Org Foundation is a not-for-profit corporation dedicated to
+open, unencumbered multimedia technology. Xiph's formats and software
+level the playing field for digital media so that all producers and
+artists can distribute their work for minimal cost, without
+restriction, regardless of affiliation. May contain traces of nuts.
+</i></p>
+
+<!--#include virtual="/ssi/pagebottom.include" -->
