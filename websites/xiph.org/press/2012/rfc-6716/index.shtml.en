@@ -72,7 +72,7 @@ more</a>.</p>
 <p>Although the RFC announcement may be only a day old, Opus is
 already supported in applications such
 as <a href="http://getfirefox.com">Firefox</a>, <a href="http://gstreamer.net">GStreamer</a>, <a href="http://ffmpeg.org">FFMpeg</a>, <a href="http://foobar2000.org">foobar2000</a>, <A href="http://codecguide.com/changelogs_full.htm">K-Lite
-Codec Pack</a>,
+Codec Pack</a>, <a href="http://www.un4seen.com/bass.html">BASS audio library</a>,
 and <a href="http://code.google.com/p/lavfilters/">lavfilters</a>,
 with upcoming support
 in <a href="http://videolan.org">VLC</a>, <a href="http://www.rockbox.org/">rockbox</a>
