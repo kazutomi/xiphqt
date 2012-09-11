@@ -9,7 +9,7 @@
 <!--  All your page content goes here  -->
 
 
-<h3>The Internet Engineering Task Force (IETF) standardizes the Opus audio codec as RFC 6716<br>Opus reference implementation 1.0.1 released</h3>
+<h2>The Internet Engineering Task Force (IETF) standardizes the Opus audio codec as RFC 6716<br>Opus reference implementation 1.0.1 released</h2>
 
 <p>Mozilla and the Xiph.Org Foundation are pleased to announce
 the <a href="http://www.ietf.org/">Internet Engineering Task Force
@@ -19,7 +19,7 @@ the first state-of-the-art, fully Free and Open audio codec ratified
 by a major standards organization.</p>
 
 
-<h2>_The_ Highly Flexible Codec</h2> 
+<h3>_The_ Highly Flexible Codec</h3> 
 
 <p>Existing audio codecs focus on a narrow set of applications, such as
 either voice or music in a narrow range of bitrates, real-time streaming,
@@ -52,7 +52,7 @@ multiple codecs and custom code to glue them together. Opus replaces
 all these other codecs with better quality, greater efficiency, a
 small footprint, and does so out-of-the-box.</p>
 
-<h2>Use Cases</h2>
+<h3>Use Cases</h3>
 
 <p>Opus is primarily designed for use in interactive applications on the
 Internet, including voice over IP (VoIP), teleconferencing, in-game
@@ -78,7 +78,7 @@ with upcoming support
 in <a href="http://videolan.org">VLC</a>, <a href="http://www.rockbox.org/">rockbox</a>
 and <a href="http://mumble.info/">Mumble</a>.</p>
 
-<h2>Free and Open</h2>
+<h3>Free and Open</h3>
 
 <p>Another reason there are <i>so many</i> audio codecs: silly licensing restrictions.  Would you base a business on technology a competitor controls?</p>
 
@@ -92,7 +92,7 @@ commercial software companies alike. Opus itself is the result of a
 collaboration including Broadcom, Google, the IETF, Microsoft (through
 Skype), Mozilla, Microsoft, Octasic and Xiph.Org.</p>
 
-<h2>Do Want!</h2>
+<h3>Do Want!</h3>
 
 <p>The Opus specification is available in <a
 href="http://tools.ietf.org/html/rfc6716">RFC 6716</a>, which includes
