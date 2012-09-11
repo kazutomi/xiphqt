@@ -1,6 +1,6 @@
 <!--#include virtual="/ssi/header.include" -->
 <!-- Enter custom page information and styles here -->
-  <title>September 11, 2012: Opus is now RFC6716, 1.0.1 released</title>
+  <title>September 11, 2012: Opus audio codec is now RFC6716, Opus 1.0.1 reference source released</title>
 </head>
 <body>
 <!--#include virtual="/common/xiphbar.include" -->
@@ -9,7 +9,7 @@
 <!--  All your page content goes here  -->
 
 
-<h3>The Internet Engineering Task Force (IETF) standardizes Opus as RFC 6716<br>Opus reference implementation 1.0.1 released</h3>
+<h3>The Internet Engineering Task Force (IETF) standardizes the Opus audio codec as RFC 6716<br>Opus reference implementation 1.0.1 released</h3>
 
 <p>Mozilla and the Xiph.Org Foundation are pleased to announce
 the <a href="http://www.ietf.org/">Internet Engineering Task Force
