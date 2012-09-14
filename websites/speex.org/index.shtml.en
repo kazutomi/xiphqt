@@ -15,6 +15,9 @@
 <!--#include virtual="/ssi/pagetop.include" -->
 <!--  All your page content goes here  -->
 
+<div style="text-align:center;font-size:125%;">—The Speex codec has been obsoleted by <a href="http://opus-codec.org/">Opus</a>. It will continue to be available, but since Opus is better than Speex in all aspects, users are encouraged to switch—
+  </div>
+
 <h1>Speex: A Free Codec For Free Speech</h1>
 <h2>Overview</h2>
 <p>
