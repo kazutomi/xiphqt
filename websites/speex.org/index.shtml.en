@@ -12,11 +12,17 @@
 </head>
 <body>
 <!--#include virtual="/common/xiphbar.include" -->
+
+<div style="text-align:center;">
+ <div style="text-align:center;display:inline-block;border:2px solid;width:66%;margin:30px;padding:5px;background-color:#fc9;">
+   <div style="text-align:center;font-size:125%;">—The Speex codec has been obsoleted by <a href="http://opus-codec.org/">Opus</a>. It will continue to be available, but since Opus is better than Speex in all aspects, users are encouraged to switch—
+  </div>
+ </div>
+</div>
+
 <!--#include virtual="/ssi/pagetop.include" -->
 <!--  All your page content goes here  -->
 
-<div style="text-align:center;font-size:125%;">—The Speex codec has been obsoleted by <a href="http://opus-codec.org/">Opus</a>. It will continue to be available, but since Opus is better than Speex in all aspects, users are encouraged to switch—
-  </div>
 
 <h1>Speex: A Free Codec For Free Speech</h1>
 <h2>Overview</h2>
