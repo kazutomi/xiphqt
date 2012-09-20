@@ -132,6 +132,8 @@
 	    Subtitles: Français</option>
 	  <option file="vid1-de.srt">
 	    Subtitles: Deutsch</option>
+	  <option file="vid1-it.srt">
+	    Subtitles: Italiano</option>
 	  <option file="vid1-ptbr.srt">
 	    Subtitles: Português (Brazil)</option>
           <option file="vid1-ru.srt">
@@ -234,6 +236,8 @@
 	  Français</a> |
 	<a href="vid1-de.srt">
 	  Deutsch</a> |
+	<a href="vid1-it.srt">
+	  Italiano</a> |
 	<a href="vid1-ptbr.srt">
 	  Português (Brazil)</a> |
         <a href="vid1-ru.srt">
