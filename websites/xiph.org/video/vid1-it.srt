@@ -1,10 +1,10 @@
-﻿1
+1
 00:00:05,400 --> 00:00:07,242
 L'ABC dei media digitali per geek.
 
 2
 00:00:08,124 --> 00:00:10,742
-Le workstation ed i computer di fascia alta gia' da 15 anni
+Le workstation ed i computer di fascia alta già da 15 anni
 
 3
 00:00:10,742 --> 00:00:14,749
@@ -12,19 +12,19 @@ sono capaci di manipolare l'audio digitale molto facilmente.
 
 4
 00:00:14,749 --> 00:00:17,470
-Ed e' da 5 anni che anche le normali workstation son capaci
+Ed è da 5 anni che anche le normali workstation son capaci
 
 5
 00:00:17,470 --> 00:00:21,643
-di manipolare video grezzo senza la necessita' di hardware dedicato.
+di manipolare video grezzo senza la necessità di hardware dedicato.
 
 6
 00:00:21,643 --> 00:00:25,400
-Ma oggi anche il piu' economico dei PC domestici ha la potenza di calcolo
+Ma oggi anche il più economico dei PC domestici ha la potenza di calcolo
 
 7
 00:00:25,400 --> 00:00:28,092
-e la capacita' d'immagazzinamento per produrre e pubblicare
+e la capacità d'immagazzinamento per produrre e pubblicare
 
 8
 00:00:28,092 --> 00:00:30,479
@@ -36,7 +36,7 @@ Ed ora che chiunque ha a disposizione l'hardware a basso costo,
 
 10
 00:00:33,579 --> 00:00:36,651
-sempre piu' persone, ovviamente, cercano di creare
+sempre più persone, ovviamente, cercano di creare
 
 11
 00:00:36,651 --> 00:00:39,908
@@ -48,11 +48,11 @@ Youtube per primo ha raggiunto il successo, ed ora tutti cercano di imitarlo.
 
 13
 00:00:44,017 --> 00:00:47,413
-Ed e' un bene! Perche' questa roba e' molto divertente!
+Ed è un bene! Perché questa roba è molto divertente!
 
 14
 00:00:48,250 --> 00:00:51,179
-Non e' affatto difficile trovare un pubblico per i media digitali
+Non è affatto difficile trovare un pubblico per i media digitali
 
 15
 00:00:51,179 --> 00:00:54,649
@@ -77,7 +77,7 @@ viene percepito come specialistico,
 
 20
 00:01:08,723 --> 00:01:12,822
-qualcosa di incredibile difficolta' che non ha eguali in informatica.
+qualcosa di incredibile difficoltà che non ha eguali in informatica.
 
 21
 00:01:12,822 --> 00:01:15,700
@@ -102,7 +102,7 @@ non possano essere comprese dai comuni mortali.
 
 26
 00:01:30,625 --> 00:01:33,716
-Ma questa e' solo fuffa.
+Ma questa è solo fuffa.
 
 27
 00:01:35,205 --> 00:01:38,900
@@ -118,11 +118,11 @@ proprio come ogni altra disciplina.
 
 30
 00:01:44,662 --> 00:01:47,929
-Questa sembra specialistica perche' poche persone ne sono a conoscenza.
+Questa sembra specialistica perché poche persone ne sono a conoscenza.
 
 31
 00:01:47,929 --> 00:01:51,223
-Forse se ne sono interessati in pochi perche' erano in pochi
+Forse se ne sono interessati in pochi perché erano in pochi
 
 32
 00:01:51,223 --> 00:01:54,665
@@ -136,7 +136,7 @@ Ma oggi tutti coloro che sono capaci di guardare questo video
 34
 00:01:58,792 --> 00:02:03,317
 hanno un PC economico e general-purpose,
-abbastanza potente per fare cio' che prima era riservato alle workstation.
+abbastanza potente per fare ciò che prima era riservato alle workstation.
 
 35
 00:02:05,926 --> 00:02:11,108
@@ -148,11 +148,11 @@ dei video, delle soluzioni libere contro quelle proprietarie.
 
 37
 00:02:13,671 --> 00:02:17,048
-Questo e' un buon momento per farsi coinvolgere
+Questo è un buon momento per farsi coinvolgere
 
 38
 00:02:17,048 --> 00:02:20,000
-e il punto migliore per cominciare e' probabilmente
+e il punto migliore per cominciare è probabilmente
 
 39
 00:02:20,000 --> 00:02:22,619
@@ -160,7 +160,7 @@ comprendere la tecnologia che abbiamo di fronte oggi.
 
 40
 00:02:23,500 --> 00:02:25,071
-Questo video e' un'introduzione
+Questo video è un'introduzione
 
 41
 00:02:25,071 --> 00:02:28,180
@@ -168,28 +168,28 @@ e, proprio per questo, sorvoleremo su molti dettagli
 
 42
 00:02:28,180 --> 00:02:30,882
-in modo da rendere piu' semplice il quadro generale.
+in modo da rendere più semplice il quadro generale.
 
 43
 00:02:30,882 --> 00:02:33,908
-Ci sara' qualcuno di voi che conoscera' gia' molti degli aspetti
+Ci sarà qualcuno di voi che conoscerà già molti degli aspetti
 
 44
 00:02:33,908 --> 00:02:36,378
-di cui parlero' adesso, almeno all'inizio.
+di cui parlerò adesso, almeno all'inizio.
 
 45
 00:02:36,378 --> 00:02:39,293
-E d'altro canto, andro' inevitabilmente troppo veloce per coloro
+E d'altro canto, andrò inevitabilmente troppo veloce per coloro
 
 46
 00:02:39,293 --> 00:02:44,558
 che non hanno mai sentito parlare di queste cose;
-se e' cosi' non preoccupatevi.
+se è così non preoccupatevi.
 
 47
 00:02:44,558 --> 00:02:48,629
-L'importante e' afferrare l'idea, un concetto che catturi l'attenzione.
+L'importante è afferrare l'idea, un concetto che catturi l'attenzione.
 
 48
 00:02:48,629 --> 00:02:52,497
@@ -197,7 +197,7 @@ In particolare, prestate attenzione ai termini che useremo nella descrizione
 
 49
 00:02:52,479 --> 00:02:56,078
-perche' basteranno questi, insieme a Google e Wikipedia, per approfondire
+perché basteranno questi, insieme a Google e Wikipedia, per approfondire
 
 50
 00:02:56,078 --> 00:02:57,753
@@ -218,7 +218,7 @@ ed audio digitale
 
 54
 00:03:10,291 --> 00:03:13,030
-Il suono e' la propagazione, attraverso un mezzo, di onde
+Il suono è la propagazione, attraverso un mezzo, di onde
 
 55
 00:03:13,030 --> 00:03:16,981
@@ -234,7 +234,7 @@ trasforma queste variazioni di pressione in segnale elettrico.
 
 58
 00:03:22,876 --> 00:03:25,800
-Beh, questo lo sapevamo gia' dai tempi della scuola.
+Beh, questo lo sapevamo già ai tempi della scuola.
 
 59
 00:03:25,800 --> 00:03:26,771
@@ -242,7 +242,7 @@ Ma andiamo avanti.
 
 60
 00:03:27,465 --> 00:03:32,527
-Il segnale audio e' una funzione, un valore che varia col tempo.
+Il segnale audio è una funzione, un valore che varia col tempo.
 
 61
 00:03:32,527 --> 00:03:34,248
@@ -250,7 +250,7 @@ Se rallentiamo un pochino l'oscilloscopio...
 
 62
 00:03:36,450 --> 00:03:38,190
-sara' piu' semplice vederlo.
+sarà più semplice vederlo.
 
 63
 00:03:38,190 --> 00:03:40,688
@@ -258,15 +258,15 @@ Ci sono altri aspetti del segnale audio che vale la pena osservare.
 
 64
 00:03:40,688 --> 00:03:43,418
-E' continuo nei valori e nel tempo;
+È continuo nei valori e nel tempo;
 
 65
 00:03:43,418 --> 00:03:46,813
-e cio' vuol dire che in ogni istante puo' assumere ogni valore reale,
+e ciò vuol dire che in ogni istante può assumere ogni valore reale,
 
 66
 00:03:46,813 --> 00:03:50,228
-e che questo valore puo' variare in modo uniforme nel tempo.
+e che questo valore può variare in modo uniforme nel tempo.
 
 67
 00:03:50,228 --> 00:03:52,439
@@ -274,31 +274,31 @@ A prescindere dal nostro livello di zoom
 
 68
 00:03:54,068 --> 00:03:58,510
-non troverete mai discontinuita', mai punti singolari, mai gradini
+non troverete mai discontinuità, mai punti singolari, mai gradini
 
 69
 00:03:58,510 --> 00:04:01,285
-ne' tantomeno istanti in cui il segnale risulti assente.
+né tantomeno istanti in cui il segnale risulti assente.
 
 70
 00:04:03,247 --> 00:04:08,475
-Il segnale e' una funzione definita ovunque e la matematica classica puo' andarci a nozze.
+Il segnale è una funzione definita ovunque e la matematica classica può andarci a nozze.
 
 71
 00:04:11,001 --> 00:04:15,378
-D'altro canto, un segnale digitale e' discreto sia nel valore sia nel tempo.
+D'altro canto, un segnale digitale è discreto sia nel valore sia nel tempo.
 
 72
 00:04:15,378 --> 00:04:19,107
-Nella sua forma piu' semplice, chiamata Pulse Code Modulation (PCM),
+Nella sua forma più semplice, chiamata Pulse Code Modulation (PCM),
 
 73
 00:04:19,107 --> 00:04:24,058
-l'ampiezza del segnale in un certo istante ci e' indicata da solo uno dei possibili valori,
+l'ampiezza del segnale in un certo istante è rappresentata da solo uno dei possibili valori,
 
 74
 00:04:24,058 --> 00:04:30,165
-rilevati in istanti temporali rigorosamente cadenzati. Il risultato e' una sequenza di cifre.
+rilevati in istanti temporali rigorosamente cadenzati. Il risultato è una sequenza di cifre.
 
 75
 00:04:30,674 --> 00:04:35,309
@@ -310,15 +310,15 @@ Risulta intuitivo pensare di poter passare da una forma all'altra
 
 77
 00:04:38,964 --> 00:04:44,683
-e la buona notizia e' che il teorema del campionamento ci dice che si puo' fare, e anche come.
+e la buona notizia è che il teorema del campionamento ci dice che si può fare, e anche come.
 
 78
 00:04:44,683 --> 00:04:48,477
-Nella sua forma piu' nota e' stato reso pubblico nel 1949 da Claude Shannon
+Nella sua forma più nota è stato reso pubblico nel 1949 da Claude Shannon
 
 79
 00:04:48,477 --> 00:04:52,409
-che si baso' sui lavori di Nyquist, Hartley e molti altri.
+che si basò sui lavori di Nyquist, Hartley e molti altri.
 
 80
 00:04:52,409 --> 00:04:56,138
@@ -346,7 +346,7 @@ Fino a tempi recenti la tecnologia analogica veniva usata per tutte le elaborazi
 
 86
 00:05:21,270 --> 00:05:25,267
-ma non certo perche' le sorgenti audio fossero di tipo analogico.
+ma non certo perché le sorgenti audio fossero di tipo analogico.
 
 87
 00:05:25,267 --> 00:05:28,450
@@ -358,7 +358,7 @@ la tecnologia analogica sia per forza nata prima.
 
 89
 00:05:31,643 --> 00:05:34,428
-Niente affatto. Il digitale e' arrivato prima.
+Niente affatto. Il digitale è arrivato prima.
 
 90
 00:05:34,428 --> 00:05:37,611
@@ -366,7 +366,7 @@ Il telegrafo ha preceduto il telefono di mezzo secolo
 
 91
 00:05:37,611 --> 00:05:41,951
-ed era gia' completamente meccanizzato nel 1860; si mandavano segnali digitali,
+ed era già completamente meccanizzato nel 1860; si mandavano segnali digitali,
 
 92
 00:05:41,951 --> 00:05:46,476
@@ -378,7 +378,7 @@ Harry Nyquist dei laboratori Bell stava facendo ricerche sulle trasmissioni a im
 
 94
 00:05:50,427 --> 00:05:53,027
-quando pubblico' la descrizione di quella che in seguito
+quando pubblicò la descrizione di quella che in seguito
 
 95
 00:05:53,027 --> 00:05:57,219
@@ -398,7 +398,7 @@ diede impulso alle tecnologie analogica e digitale che crebbero di pari passo.
 
 99
 00:06:12,699 --> 00:06:18,732
-L'audio e' sempre stato elaborato in analogico perche', perbacco, e' piu' facile.
+L'audio è sempre stato elaborato in analogico perché, perbacco, è più facile.
 
 100
 00:06:18,732 --> 00:06:23,257
@@ -434,27 +434,27 @@ parecchio spazio di memorizzazione per conservare il lavoro per il futuro...
 
 108
 00:06:51,091 --> 00:06:56,171
-Verrebbe da pensare che quella analogica sia la strada piu' semplice per l'elaborazione audio,
+Verrebbe da pensare che quella analogica sia la strada più semplice per l'elaborazione audio,
 
 109
 00:06:56,171 --> 00:07:07,019
-a meno che uno non abbia gia' miliardi di transistor e tutta quella roba a portata di mano.
+a meno che uno non abbia già miliardi di transistor e tutta quella roba a portata di mano.
 
 110
 00:07:07,850 --> 00:07:12,660
-E visto che oggi ce l'abbiamo, l'elaborazione digitale e' divenuta piu' interessante.
+E visto che oggi ce l'abbiamo, l'elaborazione digitale è divenuta più interessante.
 
 111
 00:07:13,363 --> 00:07:18,906
-Innanzitutto, i circuiti analogici non hanno la flessibilita' di un computer.
+Innanzitutto, i circuiti analogici non hanno la flessibilità di un computer.
 
 112
 00:07:18,906 --> 00:07:21,182
-Aggiungere una funzionalita' a questo mostro
+Aggiungere una funzionalità a questo mostro
 
 113
 00:07:22,191 --> 00:07:24,578
-beh... e' praticamente impossibile.
+beh... è praticamente impossibile.
 
 114
 00:07:24,578 --> 00:07:26,567
@@ -462,11 +462,11 @@ Invece, su un sistema di elaborazione digitale basta scrivere
 
 115
 00:07:28,668 --> 00:07:34,127
-un nuovo programma. Scrivere software non e' banale, ma e' di sicuro piu' semplice.
+un nuovo programma. Scrivere software non è banale, ma è di sicuro più semplice.
 
 116
 00:07:34,127 --> 00:07:39,550
-Un'altra importante considerazione e' che ogni componente analogico e' imperfetto.
+Un'altra importante considerazione è che ogni componente analogico è imperfetto.
 
 117
 00:07:39,550 --> 00:07:44,352
@@ -478,7 +478,7 @@ quindi ogni componente introduce rumore e distorsione, generalmente non molto ma
 
 119
 00:07:51,569 --> 00:07:55,669
-Gia' solo la trasmissione di un segnale analogico, specie se su lunghe distanze,
+Già solo la trasmissione di un segnale analogico, specie se su lunghe distanze,
 
 120
 00:07:55,669 --> 00:08:00,434
@@ -486,7 +486,7 @@ lo rovina progressivamente e irreversibilmente.
 
 121
 00:08:00,434 --> 00:08:06,513
-Inoltre la componentistica analogica e' ingombrante.
+Inoltre la componentistica analogica è ingombrante.
 
 122
 00:08:06,513 --> 00:08:09,946
@@ -506,7 +506,7 @@ Nella forma digitale, i nostri segnali possono essere copiati, elaborati e trasm
 
 126
 00:08:24,335 --> 00:08:26,889
-E' anche vero che ogni tanto usiamo algoritmi lossy
+È anche vero che ogni tanto usiamo algoritmi lossy
 
 127
 00:08:26,889 --> 00:08:31,284
@@ -514,11 +514,11 @@ ma le uniche fasi non ideali restano il campionamento e la riconversione,
 
 128
 00:08:31,284 --> 00:08:35,929
-quando e' inevitabile interfacciarsi col mondo analogico.
+quando è inevitabile interfacciarsi col mondo analogico.
 
 129
 00:08:35,929 --> 00:08:40,750
-In ogni caso, oggi la qualita' delle conversioni e' veramente elevata
+In ogni caso, oggi la qualità delle conversioni è veramente elevata
 
 130
 00:08:40,750 --> 00:08:45,849
@@ -526,7 +526,7 @@ e il nostro sistema uditivo le percepisce come se fossero lossless.
 
 131
 00:08:45,849 --> 00:08:50,429
-L'hardware necessario oggi e' diventato economico ed ha dimensioni ridotte,
+L'hardware necessario oggi è diventato economico ed ha dimensioni ridotte,
 
 132
 00:08:50,429 --> 00:08:55,379
@@ -542,7 +542,7 @@ L'audio digitale "nudo e crudo"
 
 135
 00:09:04,956 --> 00:09:08,639
-La forma piu' comune per l'audio grezzo e' la Pulse Code Modulation (PCM).
+La forma più comune per l'audio grezzo è la Pulse Code Modulation (PCM).
 
 136
 00:09:08,639 --> 00:09:13,867
@@ -550,15 +550,15 @@ Ci sono anche altre rappresentazioni, come la modulazione sigma-delta usata nei 
 
 137
 00:09:13,867 --> 00:09:16,625
-che si basa sulla densita' degli impulsi ed e' detta PDM.
+che si basa sulla densità degli impulsi ed è detta PDM.
 
 138
 00:09:16,625 --> 00:09:19,687
-Comunque la PCM e' di gran lunga piu' usata,
+Comunque la PCM è di gran lunga più usata,
 
 139
 00:09:19,687 --> 00:09:22,158
-anche perche' e' matematicamente piu' comoda.
+anche perché è matematicamente più comoda.
 
 140
 00:09:22,158 --> 00:09:26,350
@@ -574,19 +574,19 @@ rendendo relativamente semplice la gestione di ogni possibile variante.
 
 143
 00:09:34,187 --> 00:09:36,426
-Il primo parametro e' la frequenza di campionamento.
+Il primo parametro è la frequenza di campionamento.
 
 144
 00:09:36,426 --> 00:09:40,886
-La frequenza piu' alta che una codifica puo' rappresentare e' detta frequenza di Nyquist.
+La frequenza più alta che una codifica può rappresentare è detta frequenza di Nyquist.
 
 145
 00:09:40,886 --> 00:09:45,124
-Nella PCM la frequenza di Nyquist e' esattamente la meta' della frequenza di campionamento.
+Nella PCM la frequenza di Nyquist è esattamente la metà della frequenza di campionamento.
 
 146
 00:09:45,124 --> 00:09:51,389
-Quindi la frequenza di campionamento influenza direttamente la frequenza piu' alta che troveremo nel segnale digitale.
+Quindi la frequenza di campionamento influenza direttamente la frequenza più alta che troveremo nel segnale digitale.
 
 147
 00:09:51,389 --> 00:09:56,515
@@ -602,11 +602,11 @@ la minima frequenza di campionamento necessaria a catturare una intera banda amp
 
 150
 00:10:07,227 --> 00:10:14,263
-Ecco l'effetto della mia voce campionata ad 8 kHz: e' un po' smorzata ma resta intelligibile.
+Ecco l'effetto della mia voce campionata ad 8 kHz: è un po' smorzata ma resta intelligibile.
 
 151
 00:10:14,263 --> 00:10:18,149
-Questa resta la piu' bassa frequenza di campionamento mai usata nella pratica.
+Questa resta la più bassa frequenza di campionamento mai usata nella pratica.
 
 152
 00:10:18,149 --> 00:10:23,322
@@ -614,7 +614,7 @@ E quando la potenza, la memoria e i dischi crebbero, l'hardware per computer
 
 153
 00:10:23,322 --> 00:10:29,642
-riusci' a salire a campionamenti di 11, poi a 16, poi a 22 e anche a 32 kHz.
+riuscì a salire a campionamenti di 11, poi a 16, poi a 22 e anche a 32 kHz.
 
 154
 00:10:29,642 --> 00:10:33,491
@@ -622,11 +622,11 @@ Ovviamente, con l'incremento nella frequenza di campionamento e nella frequenza 
 
 155
 00:10:33,491 --> 00:10:38,302
-le alte frequenze si sentivano piu' chiaramente ed il suono divenne piu' naturale.
+le alte frequenze si sentivano più chiaramente ed il suono divenne più naturale.
 
 156
 00:10:38,301 --> 00:10:44,576
-I Compact Disc usano un campionamento a 44.1 kHz, che e' un po' meglio di 32 kHz,
+I Compact Disc usano un campionamento a 44.1 kHz, che è un po' meglio di 32 kHz,
 
 157
 00:10:44,576 --> 00:10:46,788
@@ -634,7 +634,7 @@ anche se le differenze sono meno evidenti.
 
 158
 00:10:46,788 --> 00:10:52,053
-La scelta di 44.1 kHz e' un po' insolita, soprattutto se considerate che questa frequenza non era
+La scelta di 44.1 kHz è un po' insolita, soprattutto se considerate che questa frequenza non era
 
 159
 00:10:52,053 --> 00:10:56,559
@@ -642,7 +642,7 @@ mai stata utilizzata prima, ma l'enorme successo dei CD l'ha resa molto comune.
 
 160
 00:10:56,559 --> 00:11:01,195
-La frequenza di campionamento piu' comune, a parte il settore dei CD, e' di 48 kHz.
+La frequenza di campionamento più comune, a parte il settore dei CD, è di 48 kHz.
 
 161
 00:11:05,710 --> 00:11:08,597
@@ -650,23 +650,23 @@ E non ci sono differenze percepibili tra le due.
 
 162
 00:11:08,597 --> 00:11:13,640
-Ad esempio, questo video (o almeno l'originale) e' stato girato e prodotto con audio a 48 kHz,
+Ad esempio, questo video (o almeno l'originale) è stato girato e prodotto con audio a 48 kHz,
 
 163
 00:11:13,640 --> 00:11:18,545
-perche' e' questo lo standard per l'audio ad alta fedelta' nel settore video.
+perché è questo lo standard per l'audio ad alta fedeltà nel settore video.
 
 164
 00:11:18,545 --> 00:11:25,100
-Sono in uso anche frequenze di campionamento a super-alta fedelta' di 88, 96 e 192 kHz.
+Sono in uso anche frequenze di campionamento a super-alta fedeltà di 88, 96 e 192 kHz.
 
 165
 00:11:25,100 --> 00:11:30,888
-L'introduzione di queste frequenze di campionamento non e' legata all'estensione del campo uditivo.
+L'introduzione di queste frequenze di campionamento non è legata all'estensione del campo uditivo.
 
 166
 00:11:30,888 --> 00:11:32,489
-Il motivo e' un altro.
+Il motivo è un altro.
 
 167
 00:11:32,896 --> 00:11:37,319
@@ -678,11 +678,11 @@ che possiamo scomporre i segnali (anche l'audio) nell'insieme di frequenze che l
 
 169
 00:11:42,353 --> 00:11:45,841
-Questa rappresentazione nel dominio della frequenza e' equivalente a quella nel dominio del tempo:
+Questa rappresentazione nel dominio della frequenza è equivalente a quella nel dominio del tempo:
 
 170
 00:11:45,841 --> 00:11:49,719
-il segnale e' lo stesso ma lo descriviamo in maniera diversa.
+il segnale è lo stesso ma lo descriviamo in maniera diversa.
 
 171
 00:11:49,719 --> 00:11:56,131
@@ -694,15 +694,15 @@ Il teorema del campionamento ci dice due cose fondamentali del processo di campi
 
 173
 00:11:59,888 --> 00:12:04,727
-Primo: il segnale digitale non puo' catturare le frequenze piu' elevate di quella di Nyquist.
+Primo: il segnale digitale non può catturare le frequenze più elevate di quella di Nyquist.
 
 174
 00:12:04,727 --> 00:12:10,640
-Secondo (e' questa la novita'): se non tagliamo via quelle frequenze con un filtro passa-basso,
+Secondo (è questa la novità): se non tagliamo via quelle frequenze con un filtro passa-basso,
 
 175
 00:12:10,640 --> 00:12:16,414
-il campionamento le riportera' tra le frequenze catturate in forma di distorsioni da aliasing.
+il campionamento le riporterà tra le frequenze catturate in forma di distorsioni da aliasing.
 
 176
 00:12:16,414 --> 00:12:20,069
@@ -710,7 +710,7 @@ E, detto in breve, l'aliasing suona malissimo.
 
 177
 00:12:20,069 --> 00:12:25,242
-Quindi e' essenziale rimuovere ogni frequenza piu' elevata di quella di Nyquist prima del campionamento e dopo la riconversione.
+Quindi è essenziale rimuovere ogni frequenza più elevata di quella di Nyquist prima del campionamento e dopo la riconversione.
 
 178
 00:12:25,871 --> 00:12:31,265
@@ -730,7 +730,7 @@ ma comunque tagliare le frequenze sopra quella di Nyquist che rovinerebbero il c
 
 182
 00:12:49,439 --> 00:12:55,342
-Un filtro cosi' e' difficile da realizzare e non ci riesce completamente.
+Un filtro così è difficile da realizzare e non ci riesce completamente.
 
 183
 00:12:55,342 --> 00:13:00,024
@@ -738,7 +738,7 @@ Invece, se il campionamento avviene a 96 o 192 kHz
 
 184
 00:13:00,024 --> 00:13:07,223
-il filtro passa-basso puo' agire su un'altra ottava (o due) per filtrare. E questo filtro e' piu' semplice.
+il filtro passa-basso può agire su un'altra ottava (o due) per filtrare. E questo filtro è più semplice.
 
 185
 00:13:07,223 --> 00:13:14,348
@@ -746,11 +746,11 @@ Le frequenze di campionamento oltre i 48 kHz sono dovute proprio all'origine ana
 
 186
 00:13:15,014 --> 00:13:20,844
-Il secondo parametro fondamentale e' il formato del campione, cioe' il formato di ogni valore rilevato.
+Il secondo parametro fondamentale è il formato del campione, cioè il formato di ogni valore rilevato.
 
 187
 00:13:20,844 --> 00:13:26,285
-Un numero e' sempre un numero ma in informatica un numero si puo' rappresentare in un gran numero di modi.
+Un numero è sempre un numero ma in informatica un numero si può rappresentare in un gran numero di modi.
 
 188
 00:13:26,942 --> 00:13:30,902
@@ -762,7 +762,7 @@ La gamma dinamica era limitata a 50 dB ed il rumore di quantizzazione, come stat
 
 190
 00:13:37,028 --> 00:13:39,970
-Infatti l'audio ad 8 bit e' quasi svanito ai nostri giorni.
+Infatti l'audio ad 8 bit è quasi svanito ai nostri giorni.
 
 191
 00:13:41,007 --> 00:13:47,484
@@ -806,7 +806,7 @@ I loro valore massimo coincide con zero decibel.
 
 201
 00:14:27,800 --> 00:14:31,584
-In tutti i formati visti finora, i segnali piu' forti di zero decibel,
+In tutti i formati visti finora, i segnali più forti di zero decibel,
 
 202
 00:14:31,584 --> 00:14:35,619
@@ -814,11 +814,11 @@ e dunque maggiori del massimo rappresentabile, vengono tagliati. Persi.
 
 203
 00:14:35,619 --> 00:14:41,199
-Negli studi di missaggio e' consueto l'uso di numeri reali per la PCM, al posto degli interi.
+Negli studi di missaggio è consueto l'uso di numeri reali per la PCM, al posto degli interi.
 
 204
 00:14:41,199 --> 00:14:47,222
-Un numero reale a 32 bit, come da standard IEEE 754, e' lo stesso usato dai computer
+Un numero reale a 32 bit, come da standard IEEE 754, è lo stesso usato dai computer
 
 205
 00:14:47,222 --> 00:14:52,793
@@ -826,11 +826,11 @@ ed, oltre a 24 bit di risoluzione, ha anche 7 bit dedicati all'esponente per est
 
 206
 00:14:52,793 --> 00:14:57,040
-Nei numeri reali il valore di zero decibel e' su +/- 1.0
+Nei numeri reali il valore di zero decibel è su +/- 1.0
 
 207
 00:14:57,040 --> 00:15:00,547
-ma un numero reale puo' anche assumere valori decisamente piu' elevati di 1
+ma un numero reale può anche assumere valori decisamente più elevati di 1
 
 208
 00:15:00,547 --> 00:15:05,220
@@ -846,7 +846,7 @@ Un ultimo punto: i PC leggono e scrivono dati in ottetti di bit, i byte,
 
 211
 00:15:15,796 --> 00:15:18,489
-dunque bisogna tener presente che i campioni piu' grandi di 8 bit possono essere immagazzinati
+dunque bisogna tener presente che i campioni più grandi di 8 bit possono essere immagazzinati
 
 212
 00:15:18,489 --> 00:15:22,838
@@ -854,7 +854,7 @@ con ordine little endian o con il big endian, e sono entrambi utilizzati normalm
 
 213
 00:15:22,838 --> 00:15:28,751
-Per esempio, i file Wav di Microsoft sono little endian e gli AIFC di Apple in big endian.
+Per esempio, i file Wav di Microsoft sono in little endian e gli AIFC di Apple in big endian.
 
 214
 00:15:28,751 --> 00:15:30,139
@@ -862,7 +862,7 @@ Sappiatelo.
 
 215
 00:15:30,870 --> 00:15:34,071
-Il terzo parametro della codifica PCM e' il numero di canali.
+Il terzo parametro della codifica PCM è il numero di canali.
 
 216
 00:15:34,071 --> 00:15:38,485
@@ -874,15 +874,15 @@ in sequenza nello stesso stream, una soluzione immediata e scalabile.
 
 218
 00:15:43,398 --> 00:15:47,701
-Ed e' tutto! Con questi parametri si descrive ogni stream PCM.
+Ed è tutto! Con questi parametri si descrive ogni stream PCM.
 
 219
 00:15:47,701 --> 00:15:51,578
-Chiuso. L'audio digitale e' proprio semplice!
+Chiuso. L'audio digitale è proprio semplice!
 
 220
 00:15:51,578 --> 00:15:56,436
-Ci sarebbe anche altro da dire, ovvio, ma adesso che sappiamo cosa c'e' in un blocco di dati audio
+Ci sarebbe anche altro da dire, ovvio, ma adesso che sappiamo cosa c'è in un blocco di dati audio
 
 221
 00:15:56,436 --> 00:15:58,092
@@ -899,7 +899,7 @@ Possiamo pensare al segnale video come se fosse l'audio, notando che esso ha le 
 
 224
 00:16:08,798 --> 00:16:12,787
-oltre alla dimensione temporale. Matematicamente e' valido.
+oltre alla dimensione temporale. Matematicamente è valido.
 
 225
 00:16:12,787 --> 00:16:19,097
@@ -907,7 +907,7 @@ Allora possiamo applicare lo stesso teorema del campionamento alle sue tre dimen
 
 226
 00:16:19,097 --> 00:16:25,815
-Siamo d'accordo, audio e video sono molto diversi. I dati richiesti per il video sono molti, molti di piu'.
+Siamo d'accordo, audio e video sono molto diversi. I dati richiesti per il video sono molti, molti di più.
 
 227
 00:16:25,815 --> 00:16:29,294
@@ -919,15 +919,15 @@ Il video grezzo 1080i HD richiede oltre 700 megabit per secondo,
 
 229
 00:16:33,958 --> 00:16:40,056
-quindi piu' di 500 volte tanto. Tutta roba da catturare, elaborare ed immagazzinare ogni secondo.
+quindi più di 500 volte tanto. Tutta roba da catturare, elaborare ed immagazzinare ogni secondo.
 
 230
 00:16:40,056 --> 00:16:43,711
-Secondo la legge di Moore... vediamo... piu' o meno 8 raddoppi, ciascuno in 2 anni...
+Secondo la legge di Moore... vediamo... più o meno 8 raddoppi, ciascuno in 2 anni...
 
 231
 00:16:43,711 --> 00:16:47,838
-e quindi i computer dovrebbero richiedere circa 15 anni in piu' per maneggiare il video grezzo
+e quindi i computer dovrebbero richiedere circa 15 anni in più per maneggiare il video grezzo
 
 232
 00:16:47,838 --> 00:16:51,252
@@ -935,7 +935,7 @@ dal momento in cui riuscissero a gestire l'audio grezzo.
 
 233
 00:16:51,252 --> 00:16:55,425
-Il video e' pero' piu' complesso dell'audio.
+Il video è però più complesso dell'audio.
 
 234
 00:16:55,425 --> 00:16:58,599
@@ -943,15 +943,15 @@ La mole di dati video deve essere rappresentata
 
 235
 00:16:58,599 --> 00:17:02,106
-in un modo piu' efficiente rispetto alla semplicita' della PCM lineare.
+in un modo più efficiente rispetto alla semplicità della PCM lineare.
 
 236
 00:17:02,106 --> 00:17:06,705
-In piu', considerate che il video digitale viene in gran parte dal segnale televisivo
+In più, considerate che il video digitale viene in gran parte dal segnale televisivo
 
 237
 00:17:06,705 --> 00:17:13,423
-e l'industria della televisione ha da sempre un occhio di riguardo per la compatibilita' col passato.
+e l'industria della televisione ha da sempre un occhio di riguardo per la compatibilità col passato.
 
 238
 00:17:13,423 --> 00:17:17,559
@@ -963,15 +963,15 @@ erano ancora capaci di funzionare con la TV analogica.
 
 240
 00:17:21,038 --> 00:17:23,879
-E' un bel trucco, no?
+È un bel trucco, no?
 
 241
 00:17:23,879 --> 00:17:28,718
-Lo svantaggio della retrocompatibilita' e' questo: una volta che uno standard si impone,
+Lo svantaggio della retrocompatibilità è questo: una volta che uno standard si impone,
 
 242
 00:17:28,718 --> 00:17:30,985
-dopo non puoi piu' liberartene.
+dopo non puoi più liberartene.
 
 243
 00:17:30,985 --> 00:17:37,305
@@ -983,7 +983,7 @@ Dopo una storia di oltre sessant'anni, i trucchi introdotti nella TV
 
 245
 00:17:43,958 --> 00:17:50,102
-sono diventati un bel po' e poiche' la TV digitale e' ancora il motore del video digitale,
+sono diventati un bel po' e poiché la TV digitale è ancora il motore del video digitale,
 
 246
 00:17:50,102 --> 00:17:54,664
@@ -991,7 +991,7 @@ tutti quegli accrocchi ce li siamo ritrovati anche negli standard per il video d
 
 247
 00:17:54,664 --> 00:18:00,022
-Saro' breve, perche' i dettagli del video digitale sono molti di piu' rispetto all'audio
+Sarò breve, perché i dettagli del video digitale sono molti di più rispetto all'audio
 
 248
 00:18:00,022 --> 00:18:05,592
@@ -999,11 +999,11 @@ e sarebbe impossibile discuterli tutti in questo episodio, quindi parleremo dei 
 
 249
 00:18:06,036 --> 00:18:10,857
-I parametri piu' ovvi sono certamente la larghezza e l'altezza dell'immagine in pixel.
+I parametri più ovvi sono certamente la larghezza e l'altezza dell'immagine in pixel.
 
 250
 00:18:10,857 --> 00:18:15,882
-Purtroppo non e' cosi' semplice, perche' la dimensione in pixel in se' non ci dice nulla riguardo ad
+Purtroppo non è così semplice, perché la dimensione in pixel in sé non ci dice nulla riguardo ad
 
 251
 00:18:15,882 --> 00:18:22,016
@@ -1023,7 +1023,7 @@ E quindi capita che le righe orizzontali siano costituite da pixel
 
 255
 00:18:31,945 --> 00:18:35,489
-piu' stretti o piu' larghi di quanto siano alti.
+più stretti o più larghi di quanto siano alti.
 
 256
 00:18:35,489 --> 00:18:38,395
@@ -1035,31 +1035,31 @@ conservi la risoluzione originale della fonte analogica,
 
 258
 00:18:41,902 --> 00:18:45,566
-quindi e' facile imbattersi in video digitali che usano pixel non quadrati.
+quindi è facile imbattersi in video digitali che usano pixel non quadrati.
 
 259
 00:18:45,566 --> 00:18:49,924
-Per esempio, un DVD NTSC con rapporto d'aspetto 4:3 ha in realta'
+Per esempio, un DVD NTSC con rapporto d'aspetto 4:3 ha in realtà
 
 260
 00:18:49,924 --> 00:18:55,374
-una risoluzione di 704 x 480 punti, ben piu' largo di 4:3.
+una risoluzione di 704 x 480 punti, ben più largo di 4:3.
 
 261
 00:18:55,374 --> 00:18:59,640
-In questo caso, i pixel hanno un rapporto d'aspetto 10:11 e quindi sono piu' alti che larghi:
+In questo caso, i pixel hanno un rapporto d'aspetto 10:11 e quindi sono più alti che larghi:
 
 262
 00:18:59,640 --> 00:19:04,553
-l'effetto e' di ridurre la larghezza dell'immagine per avere il rapporto d'aspetto 4:3.
+l'effetto è di ridurre la larghezza dell'immagine per avere il rapporto d'aspetto 4:3.
 
 263
 00:19:04,553 --> 00:19:09,800
-Un'immagine cosi' dovra' essere corretta per essere mostrata correttamente sui display con pixel quadrati.
+Un'immagine così dovrà essere corretta per essere mostrata correttamente sui display con pixel quadrati.
 
 264
 00:19:10,253 --> 00:19:15,287
-Il secondo parametro e' ovviamente il frame rate, il numero di fotogrammi al secondo.
+Il secondo parametro è ovviamente il frame rate, il numero di fotogrammi al secondo.
 
 265
 00:19:15,287 --> 00:19:19,655
@@ -1067,15 +1067,15 @@ Nell'uso comune sono diffusi diversi frame rate standard e il video digitale, in
 
 266
 00:19:19,655 --> 00:19:23,689
-puo' usarli un po' tutti, o anche altri fuori standard. Esistono perfino frame rate variabili
+può usarli un po' tutti, o anche altri fuori standard. Esistono perfino frame rate variabili
 
 267
 00:19:23,689 --> 00:19:27,113
-in cui la velocita' di aggiornamento varia lungo la durata del video.
+in cui la velocità di aggiornamento varia lungo la durata del video.
 
 268
 00:19:27,113 --> 00:19:32,998
-Con frame rate piu' elevati otteniamo movimenti piu' fluidi, e quindi niente interlacciamento.
+Con frame rate più elevati otteniamo movimenti più fluidi, e quindi niente interlacciamento.
 
 269
 00:19:32,998 --> 00:19:37,967
@@ -1107,19 +1107,19 @@ Ogni passo fu chiamato semiquadro e due semiquadri costituivano all'incirca un f
 
 276
 00:19:59,961 --> 00:20:05,319
-Si, "all'incirca", perche' i semiquadri pari e dispari non venivano mica dalla stessa immagine.
+Si, "all'incirca", perché i semiquadri pari e dispari non venivano mica dalla stessa immagine.
 
 277
 00:20:05,319 --> 00:20:10,797
-In una trasmissione a 60 semiquadri al secondo, la sorgente e' effettivamente ripresa 60 volte al secondo
+In una trasmissione a 60 semiquadri al secondo, la sorgente è effettivamente ripresa 60 volte al secondo
 
 278
 00:20:10,797 --> 00:20:15,386
-ma meta' del fotogramma (le righe dispari o le righe pari) viene scartata, non serve.
+ma metà del fotogramma (le righe dispari o le righe pari) viene scartata, non serve.
 
 279
 00:20:15,386 --> 00:20:20,272
-Ecco perche' non si puo' ricostruire il fotogramma semplicemente ricombinando due semiquadri:
+Ecco perché non si può ricostruire il fotogramma semplicemente ricombinando due semiquadri:
 
 280
 00:20:20,272 --> 00:20:23,039
@@ -1127,15 +1127,15 @@ essi non provengono dallo stesso fotogramma!
 
 281
 00:20:24,047 --> 00:20:29,683
-La tecnologia a tubo catodico, o CRT, e' stata l'unica per buona parte della storia del video.
+La tecnologia a tubo catodico, o CRT, è stata l'unica per buona parte della storia del video.
 
 282
 00:20:29,683 --> 00:20:32,949
-La luminosita' di un vecchio CRT non era lineare,
+La luminosità di un vecchio CRT non era lineare,
 
 283
 00:20:32,949 --> 00:20:36,585
-bensi' legata alla tensione di controllo da un esponente di 2.5.
+bensì legata alla tensione di controllo da un esponente di 2.5.
 
 284
 00:20:36,585 --> 00:20:43,821
@@ -1143,11 +1143,11 @@ Questo esponente si chiama gamma e da qui nasce l'espressione "correzione gamma 
 
 285
 00:20:43,821 --> 00:20:50,493
-Al contrario, la videocamera ha una luminosita' lineare e collegandole direttamente un CRT si vedrebbe questo.
+Al contrario, la videocamera ha una luminosità lineare e collegandole direttamente un CRT si vedrebbe questo.
 
 286
 00:20:51,270 --> 00:20:56,637
-Poiche' in origine c'erano ben poche telecamere, tra l'altro costosissime,
+Poiché in origine c'erano ben poche telecamere, tra l'altro costosissime,
 
 287
 00:20:56,637 --> 00:21:01,634
@@ -1159,15 +1159,15 @@ i tecnici decisero di applicare la correzione del gamma agli apparati di ripresa
 
 289
 00:21:08,222 --> 00:21:13,062
-Dunque il segnale video trasmesso via etere viaggiava con una luminosita' che usava l'inverso
+Dunque il segnale video trasmesso via etere viaggiava con una luminosità che usava l'inverso
 
 290
 00:21:13,062 --> 00:21:18,271
-dell'esponente gamma, cosi' che, una volta giunto sul display,
+dell'esponente gamma, così che, una volta giunto sul display,
 
 291
 00:21:18,271 --> 00:21:23,305
-veniva ripristinato alla luminosita' lineare originale.
+veniva ripristinato alla luminosità lineare originale.
 
 292
 00:21:23,777 --> 00:21:25,118
@@ -1179,39 +1179,39 @@ Ci sono ancora un paio di dettagli...
 
 294
 00:21:33,113 --> 00:21:40,442
-Una telecamera televisiva in realta' usa un esponente gamma che risulta inverso di 2.2, non 2.5.
+Una telecamera televisiva in realtà usa un esponente gamma che risulta inverso di 2.2, non 2.5.
 
 295
 00:21:40,442 --> 00:21:43,754
-E' stato scelto questo valore per migliorare la visione negli ambienti oscuri.
+È stato scelto questo valore per migliorare la visione negli ambienti oscuri.
 
 296
 00:21:43,754 --> 00:21:48,279
-Inoltre la curva esponenziale diventa lineare in prossimita' del nero:
+Inoltre la curva esponenziale diventa lineare in prossimità del nero:
 
 297
 00:21:48,279 --> 00:21:52,360
-e' un espediente per evitare il rumore dovuto alla sensibilita' del sensore della videocamera.
+è un espediente per evitare il rumore dovuto alla sensibilità del sensore della videocamera.
 
 298
 00:21:54,941 --> 00:21:57,347
-La correzione del gamma aveva pero' un effetto positivo:
+La correzione del gamma aveva però un effetto positivo:
 
 299
 00:21:57,347 --> 00:22:02,214
-Si da' il caso che l'occhio umano abbia un gamma percettivo pari a 3,
+Si dà il caso che l'occhio umano abbia un gamma percettivo pari a 3,
 
 300
 00:22:02,214 --> 00:22:05,962
-il che e' molto, molto simile al gamma di un CRT di 2.5.
+il che è molto, molto simile al gamma di un CRT di 2.5.
 
 301
 00:22:05,962 --> 00:22:10,607
-Un'immagine che sfrutta la correzione gamma riserva maggior risoluzione alle basse intensita'
+Un'immagine che sfrutta la correzione gamma riserva maggior risoluzione alle basse intensità,
 
 302
 00:22:10,607 --> 00:22:14,336
-di cui gli occhi possono apprezzare maggiormente i dettagli,
+di cui gli occhi possono apprezzare meglio i dettagli,
 
 303
 00:22:14,336 --> 00:22:18,222
@@ -1223,7 +1223,7 @@ Sebbene i CRT siano ormai in estinzione, un normale monitor sRGB
 
 305
 00:22:22,784 --> 00:22:28,419
-usa ancora una curva di intensita' non lineare simile alla TV, con la rampa lineare nella zona del nero,
+usa ancora una curva di intensità non lineare simile alla TV, con la rampa lineare nella zona del nero,
 
 306
 00:22:28,419 --> 00:22:32,491
@@ -1243,7 +1243,7 @@ Molti display usano una combinazione additiva di questi tre colori per produrre 
 
 310
 00:22:49,258 --> 00:22:54,190
-I colori principali delle stampanti sono invece il ciano, il magenta ed il giallo ma l'idea di base e' la stessa.
+I colori principali delle stampanti sono invece il ciano, il magenta ed il giallo ma l'idea di base è la stessa.
 
 311
 00:22:54,190 --> 00:22:59,381
@@ -1259,11 +1259,11 @@ I video si possono rappresentare con le informazioni su rosso, verde e blu
 
 314
 00:23:10,919 --> 00:23:17,211
-ma e' una soluzione atipica. L'occhio umano e' piu' sensibile alla luminosita' che al colore
+ma è una soluzione atipica. L'occhio umano è più sensibile alla luminosità che al colore
 
 315
 00:23:17,211 --> 00:23:21,329
-e la codifica RGB distribuisce la luminosita' dell'immagine sui tre canali colore.
+e la codifica RGB distribuisce la luminosità dell'immagine sui tre canali colore.
 
 316
 00:23:21,329 --> 00:23:25,326
@@ -1279,11 +1279,11 @@ ed il canale blu come una versione blu dell'originale.
 
 319
 00:23:32,063 --> 00:23:35,705
-Insomma, il bianco e nero moltiplicato per tre: non e' efficiente.
+Insomma, il bianco e nero moltiplicato per tre: no, non è efficiente.
 
 320
 00:23:35,706 --> 00:23:39,438
-Per questo motivo e per lo strano caso che la TV e' nata in bianco e nero,
+Per questo motivo e per lo strano caso che la TV è nata in bianco e nero,
 
 321
 00:23:39,438 --> 00:23:45,017
@@ -1291,7 +1291,7 @@ il video si rappresenta generalmente con un canale luma ad alta risoluzione,
 
 322
 00:23:45,017 --> 00:23:51,041
-che poi e' il bianco e nero, con l'aggiunta di altri canali croma a minore risoluzione, i colori.
+che poi è il bianco e nero, con l'aggiunta di altri canali croma a minore risoluzione, i colori.
 
 323
 00:23:51,041 --> 00:23:57,074
@@ -1307,11 +1307,11 @@ e poi il luma dal rosso.
 
 326
 00:24:04,070 --> 00:24:11,750
-La terna di valori YUV, elaborata per il video digitale, andrebbe chiamata piu' correttamente Y'CbCr
+La terna di valori YUV, elaborata per il video digitale, andrebbe chiamata più correttamente Y'CbCr
 
 327
 00:24:11,750 --> 00:24:15,238
-ma la sua denominazione generica YUV e' tuttavia molto usata
+ma la sua denominazione generica YUV è tuttavia molto usata
 
 328
 00:24:15,238 --> 00:24:18,301
@@ -1323,23 +1323,23 @@ I canali croma U e V potrebbero usare la stessa risoluzione del canale luma Y
 
 330
 00:24:22,983 --> 00:24:28,674
-ma dato che l'occhio umano e' meno sensibile alla distribuzione spaziale del colore,
+ma, dato che l'occhio umano è meno sensibile alla distribuzione spaziale del colore,
 
 331
 00:24:28,674 --> 00:24:34,346
-la risoluzione dei canali croma e' generalmente ridotta a meta' o anche un quarto, in orizzontale
+la risoluzione dei canali croma è generalmente ridotta a metà o anche un quarto, in orizzontale
 
 332
 00:24:34,346 --> 00:24:39,528
-e/o in verticale, senza una perdita di qualita' apprezzabile.
+e/o in verticale, senza una perdita di qualità apprezzabile.
 
 333
 00:24:39,528 --> 00:24:43,942
-Questa riduzione (subsampling) e' stata applicata in ogni sua possibile variante
+Questa riduzione (subsampling) è stata applicata in ogni sua possibile variante
 
 334
 00:24:43,942 --> 00:24:46,875
-ma le piu' comuni oggi sono
+ma le più comuni oggi sono
 
 335
 00:24:46,875 --> 00:24:51,187
@@ -1347,15 +1347,15 @@ ma le piu' comuni oggi sono
 
 336
 00:24:51,187 --> 00:24:56,711
-4:2:2, in cui la risoluzione orizzontale dei canali U e V e' dimezzata,
+4:2:2, in cui la risoluzione orizzontale dei canali U e V è dimezzata,
 
 337
 00:24:56,711 --> 00:25:02,587
-e 4:2:0, la piu' comune, in cui sia la risoluzione orizzontale sia quella verticale
+e 4:2:0, la più comune, in cui sia la risoluzione orizzontale sia quella verticale
 
 338
 00:25:02,587 --> 00:25:08,897
-dei canali croma e' dimezzata, col risultato di avere piani U e V di dimensione un quarto di quello Y.
+dei canali croma è dimezzata, col risultato di avere piani U e V di dimensione un quarto di quello Y.
 
 339
 00:25:08,897 --> 00:25:17,096
@@ -1363,7 +1363,7 @@ Usare le abbreviazioni 4:2:2, 4:2:0 o 4:1:1 o anche altre non descrive puntualme
 
 340
 00:25:17,096 --> 00:25:21,186
-e il loro subsampling perche' ci sono molti modi di intercalare le informazioni rispetto al canale luma
+e il loro subsampling perchè ci sono molti modi di intercalare le informazioni rispetto al canale luma
 
 341
 00:25:21,186 --> 00:25:24,776
@@ -1391,11 +1391,11 @@ L'MPEG-2 inserisce i pixel croma tra due linee, allineandoli orizzontalmente coi
 
 347
 00:25:51,989 --> 00:25:57,106
-La modalita' interlacciata complica le cose, portando a strategie di piazzamento un po' strane.
+La modalità interlacciata complica le cose, portando a strategie di piazzamento un po' strane.
 
 348
 00:25:57,106 --> 00:26:00,909
-Infine c'e' il PAL-DV, che e' sempre interlacciato, che inserisce i pixel croma
+Infine c'è il PAL-DV, che è sempre interlacciato, che inserisce i pixel croma
 
 349
 00:26:00,909 --> 00:26:04,398
@@ -1407,16 +1407,16 @@ ma verticalmente alterna i canali croma, riga per riga.
 
 351
 00:26:07,683 --> 00:26:12,282
-E questo e' sono il video 4:2:0. Potete esercitarvi sugli altri subsampling.
+E questo è sono il video 4:2:0. Potete scoprire da soli gli altri subsampling.
 
 352
 00:26:12,282 --> 00:26:14,882
 Una volta compresa l'idea di base...
-Passiamo ad altro.
+Beh, passiamo ad altro.
 
 353
 00:26:15,511 --> 00:26:21,128
-Nei file audio multicanale abbiamo inserito i campionamenti di ciascuno di essi in ordine.
+Nei file audio a più canali abbiamo inserito i campionamenti di ciascuno di essi in ordine.
 
 354
 00:26:21,128 --> 00:26:26,383
@@ -1428,15 +1428,15 @@ sia formati planari che racchiudono i pixel in diversi piani da sovrapporre
 
 356
 00:26:30,584 --> 00:26:35,415
-per realizzare l'intero fotogramma. Queste due tipologie raggruppano in realta' piu' di 50 formati
+per realizzare l'intero fotogramma. Queste due tipologie raggruppano in realtà più di 50 formati
 
 357
 00:26:35,415 --> 00:26:41,549
-con piu' di una dozzina di uso comune. Ogni combinazione di subsampling croma e profondita' di colore
+con più di una dozzina di uso comune. Ogni combinazione di subsampling croma e profondità di colore
 
 358
 00:26:41,549 --> 00:26:46,574
-porta con se' una organizzazione particolare, un nuovo formato di pixel. Per ciascun subsampling
+porta con sé una organizzazione particolare, un nuovo formato di pixel. Per ciascun subsampling
 
 359
 00:26:46,574 --> 00:26:50,858
@@ -1444,7 +1444,7 @@ ci sono poi varianti che si differenziano banalmente per l'ordine dei canali
 
 360
 00:26:50,858 --> 00:26:55,966
-o un impacchettamento dei dati un po' diverso perche' fu utile in una particolare piattaforma
+o un impacchettamento dei dati un po' diverso perché fu utile in una particolare piattaforma
 
 361
 00:26:55,966 --> 00:27:00,352
@@ -1452,7 +1452,7 @@ e talvolta perfino per semplice puntiglio.
 
 362
 00:27:00,352 --> 00:27:04,692
-I diversi formati di pixel si indicacno con un nome unico detto codice FOURCC,
+I diversi formati di pixel si indicano con un nome unico detto codice FOURCC,
 
 363
 00:27:04,692 --> 00:27:08,115
@@ -1460,15 +1460,15 @@ ne esistono numerosi ma non avrebbe senso fermarsi a descriverli tutti.
 
 364
 00:27:08,115 --> 00:27:13,704
-Google puo' darvi una mano ma attenti: per il video grezzo il codice FOURCC vi indica solo l'organizzazione
+Google può darvi una mano ma attenti: per il video grezzo il codice FOURCC vi indica solo l'organizzazione
 
 365
 00:27:13,704 --> 00:27:20,339
-dei pixel ed il subsampling croma, ma nulla su dove stanno le informazioni, ne' sugli spazi colore.
+dei pixel ed il subsampling croma, ma nulla su dove stanno le informazioni, né sugli spazi colore.
 
 366
 00:27:20,339 --> 00:27:25,807
-Il video YV12, ad esempio, puo' piazzare le informazioni croma secondo le regole JPEG, MPEG-2 o DV
+Il video YV12, ad esempio, può piazzare le informazioni croma secondo le regole JPEG, MPEG-2 o DV
 
 367
 00:27:25,807 --> 00:27:28,991
@@ -1480,11 +1480,11 @@ Questo sintetizza un po' il nostro breve (ed incompleto) viaggio nel video grezz
 
 369
 00:27:33,913 --> 00:27:38,651
-La buona notizia e' che tutto questo basta per fare gia' un sacco di cose.
+La buona notizia è che tutto questo basta per fare già un sacco di cose.
 
 370
 00:27:38,651 --> 00:27:42,528
-In moltissime situazioni un fotogramma di dati video e' solo un fotogramma di dati video.
+In moltissime situazioni un fotogramma di dati video è solo un fotogramma di dati video.
 
 371
 00:27:42,528 --> 00:27:46,451
@@ -1492,7 +1492,7 @@ I dettagli diventano rilevanti quando parliamo di scrivere software ma per adess
 
 372
 00:27:46,452 --> 00:27:52,086
-sono lieto di aver dato ai cordiali spettatori una ampia panoramica dei concetti piu' importanti.
+sono lieto di aver dato ai cordiali spettatori una ampia panoramica dei concetti più importanti.
 
 373
 00:27:52,336 --> 00:27:55,536
@@ -1505,11 +1505,11 @@ Quindi, abbiamo dati audio ed abbiamo dati video.
 
 375
 00:27:59,230 --> 00:28:03,246
-Ci resta da conoscere la parte piu' familiare ma non legata ai segnali, una parte di tecnologia
+Ci resta da conoscere la parte più familiare ma non legata ai segnali, una parte di tecnologia
 
 376
 00:28:03,246 --> 00:28:07,410
-che gli sviluppatori conoscono bene. E ce n'e' in abbondanza!
+che gli sviluppatori conoscono bene. E ce n'è in abbondanza!
 
 377
 00:28:07,928 --> 00:28:11,768
@@ -1525,7 +1525,7 @@ secondo un ordine ben definito, anche se rigido, per conservarli o mandarli in s
 
 380
 00:28:18,097 --> 00:28:21,040
-e ci sono soluzioni che effettivamente lavorano cosi'.
+e ci sono soluzioni che effettivamente lavorano così.
 
 381
 00:28:21,040 --> 00:28:24,195
@@ -1533,7 +1533,7 @@ Tuttavia i frame compressi non sempre hanno una dimensione prevedibile
 
 382
 00:28:24,195 --> 00:28:29,405
-e per i nostri scopi sarebbe preferibile una certa flessibilita' nei formati da stipare in un flusso dati.
+e per i nostri scopi sarebbe preferibile una certa flessibilità nei formati da stipare in un flusso dati.
 
 383
 00:28:29,405 --> 00:28:34,281
@@ -1549,7 +1549,7 @@ Una sequenza audio video deve avere una certa struttura per rimanere utilizzabil
 
 386
 00:28:42,192 --> 00:28:46,606
-In aggiunta ai nostri dati, c'e' bisogno anche dei parametri per l'audio PCM e per il video,
+In aggiunta ai nostri dati, c'è bisogno anche dei parametri per l'audio PCM e per il video,
 
 387
 00:28:46,606 --> 00:28:49,752
@@ -1557,7 +1557,7 @@ e probabilmente molti altri metadati che vogliamo far viaggiare insieme allo str
 
 388
 00:28:49,752 --> 00:28:55,415
-come etichette per l'audio o capitoli e sottotitoli per il video, per una visione piu' confortevole.
+come etichette per l'audio o capitoli e sottotitoli per il video, per una visione più confortevole.
 
 389
 00:28:55,415 --> 00:29:01,633
@@ -1565,7 +1565,7 @@ Ha dunque senso inserire i metadati (dati che riguardano i dati) nello stesso me
 
 390
 00:29:01,633 --> 00:29:06,445
-Conservare ed organizzare dati informi e vari metadati e' il compito del contenitore.
+Conservare ed organizzare dati informi e vari metadati è il compito del contenitore.
 
 391
 00:29:06,445 --> 00:29:09,221
@@ -1589,7 +1589,7 @@ In generale, ogni contenitore gestisce qualsiasi tipo di dati
 
 396
 00:29:22,222 --> 00:29:24,970
-e ogni tipo di dato puo' finire in ogni tipo di contenitore.
+e ogni tipo di dato può finire in ogni tipo di contenitore.
 
 397
 00:29:25,720 --> 00:29:28,520
@@ -1605,11 +1605,11 @@ visto un po' di storia, un po' di matematica e di ingegneria,
 
 400
 00:29:35,435 --> 00:29:39,377
-ma abbiamo appena grattato in superficie ed e' gia' il momento di fermarci.
+ma abbiamo appena grattato in superficie ed è già il momento di fermarci.
 
 401
 00:29:41,107 --> 00:29:45,373
-C'e' davvero tanto altro di cui parlare, quindi spero vogliate seguirmi anche nel prossimo episodio.
+C'è davvero tanto altro di cui parlare, quindi spero vogliate seguirmi anche nel prossimo episodio.
 
 402
 00:29:45,373 --> 00:29:47,159
