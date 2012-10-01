@@ -124,6 +124,7 @@ static cairo_font_face_t *init_font(char *list, int slant,int bold){
   char *fontface;
   FcPattern *fc_pattern;
   FcBool scalable;
+  FcResult fc_result;
   
   fc_pattern = FcNameParse((unsigned char *)list);
 
@@ -140,7 +141,7 @@ static cairo_font_face_t *init_font(char *list, int slant,int bold){
   // fill in missing defaults
   FcDefaultSubstitute(fc_pattern);
   // find a font face on our list if possible
-  fc_pattern = FcFontMatch(0, fc_pattern, 0);
+  fc_pattern = FcFontMatch(0, fc_pattern, &fc_result);
 
   if(!fc_pattern){
     fprintf(stderr,_("\nUnable to find any suitable %s fonts!\n"
