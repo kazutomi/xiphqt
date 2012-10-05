@@ -7,6 +7,8 @@ define('CONTENT_TYPE_MP3', 103);
 define('CONTENT_TYPE_NSV', 104);
 define('CONTENT_TYPE_AAC', 105);
 define('CONTENT_TYPE_AACPLUS', 106);
+define('CONTENT_TYPE_OPUS', 107);
+define('CONTENT_TYPE_WEBM', 108);
 
 /**
  * Returns the content type ID.
