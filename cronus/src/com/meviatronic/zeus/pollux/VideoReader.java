@@ -378,7 +378,8 @@ public final class VideoReader extends AudioReader {
 		short[] bmsPointer = bms[bmi];
 		short[] bmsPointer1 = bms[bmj];
 		
-		for (ci = 0, qmin = 16; ci < 64; ci++) {
+		for (ci = 0; ci < 64; ci++) {
+			qmin = 16;
 			bmci = (2 * (qiEnd - qi) * bmsPointer[ci] + 2 * (qi - qiStart) * bmsPointer1[ci] + qrSizesValue) / (2 * qrSizesValue);
 			if (ci > 0 && qti == 0) {
 				qmin = 8;
