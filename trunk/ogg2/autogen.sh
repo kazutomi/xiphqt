@@ -20,7 +20,7 @@ echo "checking for autoconf... "
         DIE=1
 }
 
-VERSIONGREP="sed -e s/.*[^0-9\.]\([0-9]\.[0-9]\).*/\1/"
+VERSIONGREP="sed -e s/.*[^0-9\.]\([0-9]\.[0-9]\{1,\}\).*/\1/"
 VERSIONMKINT="sed -e s/[^0-9]//"
                                                                                 
 # do we need automake?
