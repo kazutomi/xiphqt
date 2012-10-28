@@ -948,15 +948,16 @@ public final class TheoraDecoder extends Output  {
 							}
 						}
 					
-						mVectsChroma1PointerArray = mVectsPointer[4];
-					
 						if (chromaFormat == CHROMA420) {
+							mVectsChroma1PointerArray = mVectsPointer[4];
+							
 							sum = sumABx + sumCDx;
 							mVectsChroma1PointerArray[0] = (byte) ((sum + (sum < 0 ? -2 : 2)) / 4);
 
 							sum = sumABy + sumCDy;
 							mVectsChroma1PointerArray[1] = (byte) ((sum + (sum < 0 ? -2 : 2)) / 4);
 						} else if (chromaFormat == CHROMA422) {
+							mVectsChroma1PointerArray = mVectsPointer[4];
 							mVectsChroma2PointerArray = mVectsPointer[5];
 				
 							mVectsChroma1PointerArray[0] = (byte) ((sumABx + (sumABx < 0 ? -1 : 1)) / 2);
