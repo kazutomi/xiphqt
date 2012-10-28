@@ -2,7 +2,7 @@
  *
  *  squishyio
  *
- *      Copyright (C) 2010 Xiph.Org
+ *      Copyright (C) 2010-2012 Xiph.Org
  *
  *  squishyball is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -32,6 +32,7 @@
 #include <errno.h>
 #include <ao/ao.h>
 #include <vorbis/vorbisfile.h>
+#include <opus/opusfile.h>
 #include <FLAC/stream_decoder.h>
 #include <unistd.h>
 #include "squishyio.h"
@@ -117,6 +118,11 @@ static int oggflac_id(const char *path,unsigned char *buf){
 static int vorbis_id(const char *path,unsigned char *buf){
   return memcmp(buf, "OggS", 4) == 0 &&
     memcmp (buf+28, "\x01vorbis", 7) == 0;
+}
+
+static int opus_id(const char *path,unsigned char *buf){
+  return memcmp(buf, "OggS", 4) == 0 &&
+    memcmp (buf+28, "OpusHead", 8) == 0;
 }
 
 static int sw_id(const char *path,unsigned char *buf){
@@ -992,7 +998,132 @@ static pcm_t *vorbis_load(const char *path, FILE *in){
   return NULL;
 }
 
-#define MAX_ID_LEN 35
+/* Opus load support **************************************************************************/
+
+int opc_read(void *_stream,unsigned char *_ptr,int _nbytes){
+  return fread(_ptr,1,_nbytes,_stream);
+}
+
+int opc_seek(void *_stream,opus_int64 _offset,int _whence){
+  return fseek(_stream,_offset,_whence);
+}
+
+opus_int64 opc_tell(void *_stream){
+  return ftell(_stream);
+}
+
+int opc_close(void *_stream){
+  return 0;
+}
+
+static OpusFileCallbacks opus_callbacks =
+  { opc_read,opc_seek,opc_tell,opc_close };
+
+static pcm_t *opus_load(const char *path, FILE *in){
+  OggOpusFile *of;
+  pcm_t *pcm=NULL;
+  off_t fill=0;
+  int last_section=-1;
+  int i,j;
+
+  if(fseek(in,0,SEEK_SET)==-1){
+    fprintf(stderr,"%s: Failed to seek\n",path);
+    goto err;
+  }
+
+  of = op_open_callbacks(in, &opus_callbacks , NULL, 0, NULL);
+  if(!of){
+    fprintf(stderr,"Input does not appear to be an Opus bitstream.\n");
+    goto err;
+  }
+
+  pcm = calloc(1,sizeof(pcm_t));
+  pcm->name=strdup(trim_path(path));
+  pcm->savebits=16;
+  pcm->ch=op_channel_count(of,-1);
+  pcm->rate=48000;
+  pcm->samples=op_pcm_total(of,-1);
+
+  pcm->data = calloc(pcm->ch,sizeof(*pcm->data));
+  if(pcm->data == NULL){
+    fprintf(stderr,"Unable to allocate enough memory to load sample into memory\n");
+    goto err;
+  }
+  for(i=0;i<pcm->ch;i++){
+    pcm->data[i] = calloc(pcm->samples,sizeof(**pcm->data));
+    if(pcm->data[i] == NULL){
+      fprintf(stderr,"Unable to allocate enough memory to load sample into memory\n");
+      goto err;
+    }
+  }
+
+  switch(pcm->ch){
+  case 1:
+    pcm->matrix = strdup("M");
+    break;
+  case 2:
+    pcm->matrix = strdup("L,R");
+    break;
+  case 3:
+    pcm->matrix = strdup("L,C,R");
+    break;
+  case 4:
+    pcm->matrix = strdup("L,R,BL,BR");
+    break;
+  case 5:
+    pcm->matrix = strdup("L,C,R,BL,BR");
+    break;
+  case 6:
+    pcm->matrix = strdup("L,C,R,BL,BR,LFE");
+    break;
+  case 7:
+    pcm->matrix = strdup("L,C,R,SL,SR,BC,LFE");
+    break;
+  default:
+    pcm->matrix = strdup("L,C,R,SL,SR,BL,BR,LFE");
+    break;
+  }
+
+  while(fill<pcm->samples){
+    int current_section;
+    int i;
+    float pcmout[4096];
+    long ret=op_read_float(of,pcmout,4096,&current_section);
+
+    if(current_section!=last_section){
+      last_section=current_section;
+      if(op_channel_count(of,-1) != pcm->ch){
+        fprintf(stderr,"%s: Chained file changes channel count\n",path);
+        goto err;
+      }
+    }
+
+    if(ret<0){
+      fprintf(stderr,"%s: Error while decoding file\n",path);
+      goto err;
+    }
+    if(ret==0){
+      fprintf(stderr,"%s: Audio data ended prematurely\n",path);
+      goto err;
+    }
+
+    for(j=0;j<ret;j++){
+      for(i=0;i<pcm->ch;i++)
+        pcm->data[i][j]=pcmout[fill+i];
+      fill+=pcm->ch;
+    }
+
+  }
+  op_free(of);
+
+  return pcm;
+ err:
+  op_clear(of);
+  free_pcm(pcm);
+  return NULL;
+}
+
+#define MAX_ID_LEN 36
 unsigned char buf[MAX_ID_LEN];
 
 /* Define the supported formats here */
@@ -1002,6 +1133,7 @@ static input_format formats[] = {
   {flac_id,    flac_load,   "flac"},
   {oggflac_id, oggflac_load,"oggflac"},
   {vorbis_id,  vorbis_load, "oggvorbis"},
+  {opus_id,    opus_load,   "oggopus"},
   {sw_id,      sw_load,     "sw"},
   {NULL,       NULL,        NULL}
 };
@@ -1159,4 +1291,3 @@ int squishyio_save_file(const char *path, pcm_t *pcm, int overwrite){
     return 1;
   }
 }
-

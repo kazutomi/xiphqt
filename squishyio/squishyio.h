@@ -2,7 +2,7 @@
  *
  *  squishyio
  *
- *      Copyright (C) 2010 Xiph.Org
+ *      Copyright (C) 2010-2012 Xiph.Org
  *
  *  squishyball is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
