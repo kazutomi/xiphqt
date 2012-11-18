@@ -77,6 +77,17 @@ $query = sprintf($query_pattern, $where);
 $other = $db->singleQuery($query)->current('count');
 printf("other.value %s\n", $other);
 
-//echo("OK.\n");
+// RADIONOMY
+$where = "s.listen_url LIKE 'http://%.radionomy.com:80/%'";
+$query = sprintf($query_pattern, $where);
+$radionomy = $db->singleQuery($query)->current('count');
+printf("radionomy.value %s\n", $radionomy);
+
+// Total minus radionomy
+$where = "s.listen_url NOT LIKE 'http://%.radionomy.com:80/%'";
+$query = sprintf($query_pattern, $where);
+$totalmr = $db->singleQuery($query)->current('count');
+printf("totalmr.value %s\n", $totalmr);
+
 
 ?>

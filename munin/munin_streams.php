@@ -82,6 +82,12 @@ $query = "SELECT COUNT(*) AS count FROM `server` WHERE `last_touched_from` LIKE 
 $radionomy = $db->singleQuery($query)->current('count');
 printf("radionomy.value %s\n", $radionomy);
 
+// total minus radionomy
+$query = "SELECT COUNT(*) AS count FROM `server` WHERE `last_touched_from` NOT LIKE '52089%'";
+$totalmr = $db->singleQuery($query)->current('count');
+printf("totalmr.value %s\n", $totalmr);
+
+
 //echo("OK.\n");
 
 ?>

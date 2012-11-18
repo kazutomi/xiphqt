@@ -112,6 +112,10 @@ if [ "$1" = "config" ]; then
 	echo 'radionomy.type GAUGE'
 	echo 'radionomy.min 0'
 	echo 'radionomy.info The number of Radionomy streams listed.'
+	echo 'totalmr.label total minus Radionomy'
+	echo 'totalmr.type GAUGE'
+	echo 'totalmr.min 0'
+	echo 'totalmr.info The number of streams listed, excluding Radionomy.'
 	exit 0
 fi
 
