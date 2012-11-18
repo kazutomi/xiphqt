@@ -11,9 +11,9 @@ if (ENVIRONMENT == 'preprod')
 	define('DATA_DB_PASS', '6.NvxjR7B5j3Q');
 	define('DATA_DB_NAME', 'dir_xiph_org_test');
 	
-	define('LOG_DB_HOST', 'theetete.radiopytagor.org');
+	define('LOG_DB_HOST', 'localhost');
 	define('LOG_DB_USER', 'dir_xiph_org_t');
-	define('LOG_DB_PASS', 'y2V1ydXuXwLKg');
+	define('LOG_DB_PASS', '6.NvxjR7B5j3Q');
 	define('LOG_DB_NAME', 'dir_xiph_org_test');
 }
 elseif (ENVIRONMENT == 'prod')
@@ -23,9 +23,9 @@ elseif (ENVIRONMENT == 'prod')
 	define('DATA_DB_PASS', '5wCjLEVmAJnmM');
 	define('DATA_DB_NAME', 'dir_xiph_org');
 	
-	define('LOG_DB_HOST', 'theetete.radiopytagor.org');
+	define('LOG_DB_HOST', 'localhost');
 	define('LOG_DB_USER', 'dir_xiph_org');
-	define('LOG_DB_PASS', 'xf0M1E1cup0FM');
+	define('LOG_DB_PASS', '5wCjLEVmAJnmM');
 	define('LOG_DB_NAME', 'dir_xiph_org');
 }
 else

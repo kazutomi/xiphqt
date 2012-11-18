@@ -1,6 +1,6 @@
 <?php
 
-define('ERROR_RECIPIENT', 'annie.dupont1137@gmail.com');
+define('ERROR_RECIPIENT', 'root@localhost');
 define('ERROR_SENDER', 'bug');
 
 function mail_error($mail_to, $mail_from,
@@ -13,7 +13,7 @@ function mail_error($mail_to, $mail_from,
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
     <head>
         <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
-        <title>Erreur</title>
+        <title>Error</title>
         <style type="text/css">
 
         </style>
