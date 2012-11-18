@@ -5,7 +5,7 @@ class APILog
     public static function log($result, $listen_url = null,
                                $server_id = null, $mountpoint_id = null)
     {
-/*        $db = DirXiphOrgLogDBC::getInstance();
+        $db = DirXiphOrgLogDBC::getInstance();
         
         $ip = utils::getRealIp();
         $ip = $ip !== false ? $ip : '127.0.0.1';
@@ -17,7 +17,7 @@ class APILog
                              $ip,
                              $listen_url !== null ? hash('md5', $listen_url) : 0,
                              $server_id, $mountpoint_id);
-        $db->noReturnQuery($sql);*/
+        $db->noReturnQuery($sql);
         return true;
     }
     
@@ -70,7 +70,7 @@ class APILog
     
     public static function serverRefused($reason, $listen_url = false)
     {
-/*        $db = DirXiphOrgLogDBC::getInstance();
+        $db = DirXiphOrgLogDBC::getInstance();
         
         $ip = utils::getRealIp();
         $ip = $ip !== false ? $ip : '127.0.0.1';
@@ -82,7 +82,7 @@ class APILog
                              $ip,
                              $listen_url != false ? $db->escape($listen_url) : '',
                              $listen_url != false ? sprintf('%u', crc32($listen_url)) : 0);
-        $db->noReturnQuery($sql);*/
+        $db->noReturnQuery($sql);
         return true;
     }
     
