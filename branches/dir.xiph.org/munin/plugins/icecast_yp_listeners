@@ -108,6 +108,14 @@ if [ "$1" = "config" ]; then
 	echo 'other.type GAUGE'
 	echo 'other.min 0'
 	echo 'other.info The number of other stream listeners.'
+	echo 'radionomy.label radionomy'
+	echo 'radionomy.type GAUGE'
+	echo 'radionomy.min 0'
+	echo 'radionomy.info The number of other stream listeners.'
+	echo 'totalmr.label total minus radionomy'
+	echo 'totalmr.type GAUGE'
+	echo 'totalmr.min 0'
+	echo 'totalmr.info The total number of stream listeners, excluding Radionomy.'
 	exit 0
 fi
 
