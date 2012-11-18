@@ -12,20 +12,22 @@ $memcache = DirXiphOrgMCC::getInstance();
 // Old stuff that "timeouted"
 try
 {
-	$toDelete = $db->selectQuery('SELECT `id` FROM `server` WHERE `last_touched_at` <= DATE_SUB(NOW(), INTERVAL 10 MINUTE);');
+	$toDelete = $db->selectQuery('SELECT `id` FROM `server` WHERE `last_touched_at` <= DATE_SUB(NOW(), INTERVAL 20 MINUTE);');
 	
 	while (!$toDelete->endOf())
 	{
-	printf("Processing %s... ", $toDelete->current('id'));
+	printf("%s Processing %s... ", date(DATE_ATOM), $toDelete->current('id'));
         $server = Server::retrieveByPk($toDelete->current('id'));
         $mp_id = $server->getMountpointId();
         $mountpoint = Mountpoint::retrieveByPk($mp_id);
         $server->remove();
-	echo "ok.\n";
         if ($mountpoint instanceOf Mountpoint && !$mountpoint->hasLinkedServers())
         {
         	$mountpoint->remove();
+		printf("removing mountpoint... ");
         }
+
+	echo "ok.\n";
 		
 		// Next!
 		$toDelete->next();

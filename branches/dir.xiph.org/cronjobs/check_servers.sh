@@ -12,7 +12,7 @@ LOGFILE=/tmp/${ENVIRONMENT}_check_servers.log
 if [ -f "$LOCKFILE" ]
 then
 	echo "An instance is already running."
-	exit 2
+	exit 0
 else
 	echo "Creating lockfile..."
 	touch "$LOCKFILE"
