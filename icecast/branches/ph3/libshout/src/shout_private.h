@@ -72,14 +72,8 @@ struct shout {
 	char *useragent;
 	/* mountpoint for this stream */
 	char *mount;
-	/* name of the stream */
-	char *name;
-	/* homepage of the stream */
-	char *url;
-	/* genre of the stream */
-	char *genre;
-	/* description of the stream */
-	char *description;
+	/* all the meta data about the stream */
+        util_dict *meta;
 	/* icecast 1.x dumpfile */
 	char *dumpfile;
 	/* username to use for HTTP auth. */

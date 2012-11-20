@@ -303,3 +303,19 @@ char *_shout_util_dict_urlencode(util_dict *dict, char delim)
 
 	return res;
 }
+
+const char *_shout_util_dict_next(util_dict **dict, const char **key, const char **val) {
+	*key = NULL;
+	*val = NULL;
+
+	if (!dict)
+		return NULL;
+	*dict = (*dict)->next;
+	while (*dict && !(*dict)->key)
+		*dict = (*dict)->next;
+	if (!*dict)
+		return NULL;
+	*key = (*dict)->key;
+	*val = (*dict)->val;
+	return *key;
+}
