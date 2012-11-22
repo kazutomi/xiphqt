@@ -112,7 +112,7 @@ fi
 
 SHOUT_REQUIRES="ogg"
 
-PKG_CHECK_MODULES([VORBIS], [vorbis], [
+PKG_CHECK_MODULES(VORBIS, vorbis, [
     HAVE_VORBIS="yes"
     SHOUT_REQUIRES="$SHOUT_REQUIRES, vorbis"
   ], [
