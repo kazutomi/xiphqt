@@ -639,17 +639,15 @@ const char *shout_get_dumpfile(shout_t *self)
 int shout_set_audio_info(shout_t *self, const char *name, const char *value)
 {
 	if (!self)
-		return self->error = SHOUTERR_INSANE;
+		return SHOUTERR_INSANE;
 
 	return self->error = _shout_util_dict_set(self->audio_info, name, value);
 }
 
 const char *shout_get_audio_info(shout_t *self, const char *name)
 {
-	if (!self) {
-		self->error = SHOUTERR_INSANE;
+	if (!self)
 		return NULL;
-	}
 
 	return _shout_util_dict_get(self->audio_info, name);
 }
@@ -659,7 +657,7 @@ int shout_set_meta(shout_t *self, const char *name, const char *value)
 	size_t i;
 
 	if (!self)
-		return self->error = SHOUTERR_INSANE;
+		return SHOUTERR_INSANE;
 
 	if (self->state != SHOUT_STATE_UNCONNECTED)
 		return self->error = SHOUTERR_CONNECTED;
@@ -673,10 +671,8 @@ int shout_set_meta(shout_t *self, const char *name, const char *value)
 
 const char *shout_get_meta(shout_t *self, const char *name)
 {
-	if (!self) {
-		self->error = SHOUTERR_INSANE;
+	if (!self)
 		return NULL;
-	}
 
 	return _shout_util_dict_get(self->meta, name);
 }
