@@ -656,11 +656,17 @@ const char *shout_get_audio_info(shout_t *self, const char *name)
 
 int shout_set_meta(shout_t *self, const char *name, const char *value)
 {
+	size_t i;
+
 	if (!self)
 		return self->error = SHOUTERR_INSANE;
 
 	if (self->state != SHOUT_STATE_UNCONNECTED)
 		return self->error = SHOUTERR_CONNECTED;
+
+	for (i = 0; name[i]; i++)
+		if ((name[i] < 'a' || name[i] > 'z') && (name[i] < '0' || name[i] > '9'))
+			return self->error = SHOUTERR_INSANE;
 
 	return self->error = _shout_util_dict_set(self->meta, name, value);
 }
