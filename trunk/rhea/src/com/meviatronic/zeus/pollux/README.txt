@@ -11,7 +11,7 @@
 	Features of Pollux's enhanced IDCT:
 	- inplacing.
  	- higher degree of content adaptive calculation.
- 	  Dr. m. m. Timothy B. Terriberry pointed out, that this approach is only helpful in case
+ 	  Timothy B. Terriberry, Ph.D. pointed out, that this approach is only helpful in case
  	  of systems and compilers, which don't have or exploit
  	  the SIMD (Single Instruction Multiple Data) computer architecture.
  	
@@ -91,3 +91,4 @@
  	
  	Very thanks to Timothy B. Terriberry, Ph.D. for reviewing and error correcting
  	the README and Pollux decoder.
+
