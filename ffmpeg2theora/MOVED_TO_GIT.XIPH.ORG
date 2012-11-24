@@ -1,0 +1,5 @@
+this repository was migrated to git:
+
+  https://git.xiph.org/?p=ffmpeg2theora.git;a=summary
+
+  git clone git://git.xiph.org/ffmpeg2theora.git
