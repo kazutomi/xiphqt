@@ -111,7 +111,7 @@ notes</a></li>
 <h3>Binaries</h3>
 
 <ul>
-<li>Debian: <tt>aptitude install oggz-tools</tt></li>
+<li>Debian: <tt>apt-get install oggz-tools</tt></li>
 <li>Fedora: <tt>yum install liboggz</tt></li>
 <li>Gentoo: <tt>emerge liboggz</tt></li>
 <li><a href="http://people.xiph.org/~j/oggz/">Windows binaries</a></li>
