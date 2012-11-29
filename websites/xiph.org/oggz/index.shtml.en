@@ -129,10 +129,9 @@ href="http://downloads.xiph.org/releases/liboggz/liboggz-1.1.1.tar.gz">liboggz-1
 
 <h3>Git</h3>
 
-This assumes that you begin with an empty working directory:
+You can check out the current development code with:
 
 <blockquote><pre>
-$ git init
 $ git clone git://git.xiph.org/liboggz.git
 </pre></blockquote>
 
