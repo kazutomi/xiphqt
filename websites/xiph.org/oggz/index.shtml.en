@@ -136,8 +136,8 @@ $ git init
 $ git clone git://git.xiph.org/liboggz.git
 </pre></blockquote>
 
-There is an up-to-date clone of this repo on github:
-<a href="http://github.com/kfish/liboggz/tree/master">http://github.com/kfish/liboggz/tree/master</a>.
+You can also browse this repository online:
+<a href="https://git.xiph.org/?p=liboggz.git;a=summary">https://git.xiph.org/?p=liboggz.git;a=summary</a>.
 
 <h2>Dependencies</h2>
 
