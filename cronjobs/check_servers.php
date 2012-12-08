@@ -20,7 +20,7 @@ $memcache = DirXiphOrgMCC::getInstance();
 // Old stuff that "timeouted"
 try
 {
-    $res = $db->selectQuery('SELECT `id`, `listen_url` FROM `server` WHERE `checked` = 0;');
+    $res = $db->selectQuery('SELECT `id`, `listen_url` FROM `server` WHERE `checked` = 0');
     while (!$res->endOf())
     {
         try
@@ -41,54 +41,63 @@ try
             {
                 throw new ToDeleteException();
             }
-            
-            // Try to open a connection to the server
-            $ok = false;
-            $count = 0;
-            while ($count < 3 && !$ok)
+
+            // Check if this is a radionomy host.
+            // If yes, trust it blindly as they can't figure out their IDS and constantly fail checks and destabilize listings.
+            if (preg_match('/^streaming20.\.radionomy.com$/', $url['host']))
             {
-                $fp = @fsockopen($url['host'],
-                                 array_key_exists('port', $url) ? $url['port'] : 80, // as per HTTP RFC
-                                 $errno, $errstr, 3);
-                if (!$fp)
-                {
-                    $count++;
-                    continue;
-                }
-                
-                // Now send a request
-                $req = sprintf("GET %s HTTP/1.0\r\n\r\n", $url['path']);
-                $r = fwrite($fp, $req);
-                if (!$r || $r != strlen($req))
-                {
-                    fclose($fp);
-                    $count++;
-                    continue;
-                }
-                $r = 0;
-                $headers = array();
-                do
-                {
-                    $data = fgets($fp);
-                    if (trim($data) != '')
-                    {
-                        list($header, $value) = explode(':', $data);
-                        $headers[strtolower(trim($header))] = trim($value);
-                    }
-                    $r++;
-                }
-                while (trim($data) != '' && $r < 10);
-                
-                // Extremely dangerous, disabled.
-/*              if (!array_key_exists('server', $headers)
-                    || !stristr($headers['server'], 'icecast'))
-                {
-                    throw new ToDeleteException();
-                }*/
-                fclose($fp);
-                
-                $count++;
                 $ok = true;
+            }
+            else
+            {
+                // Try to open a connection to the server
+                $ok = false;
+                $count = 0;
+                while ($count < 3 && !$ok)
+                {
+                    $fp = @fsockopen($url['host'],
+                                     array_key_exists('port', $url) ? $url['port'] : 80, // as per HTTP RFC
+                                     $errno, $errstr, 3);
+                    if (!$fp)
+                    {
+                        $count++;
+                        continue;
+                    }
+                
+                    // Now send a request
+                    $req = sprintf("GET %s HTTP/1.0\r\n\r\n", $url['path']);
+                    $r = fwrite($fp, $req);
+                    if (!$r || $r != strlen($req))
+                    {
+                        fclose($fp);
+                        $count++;
+                        continue;
+                    }
+                    $r = 0;
+                    $headers = array();
+                    do
+                    {
+                        $data = fgets($fp);
+                        if (trim($data) != '')
+                        {
+                            list($header, $value) = explode(':', $data);
+                            $headers[strtolower(trim($header))] = trim($value);
+                        }
+                        $r++;
+                    }
+                    while (trim($data) != '' && $r < 10);
+                
+                    // Extremely dangerous, disabled.
+/*                  if (!array_key_exists('server', $headers)
+                        || !stristr($headers['server'], 'icecast'))
+                    {
+                        throw new ToDeleteException();
+                    }*/
+                    fclose($fp);
+                
+                    $count++;
+                    $ok = true;
+                }
             }
             if (!$ok)
             {
