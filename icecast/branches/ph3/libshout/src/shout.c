@@ -656,7 +656,7 @@ int shout_set_meta(shout_t *self, const char *name, const char *value)
 {
 	size_t i;
 
-	if (!self)
+	if (!self || !name)
 		return SHOUTERR_INSANE;
 
 	if (self->state != SHOUT_STATE_UNCONNECTED)
