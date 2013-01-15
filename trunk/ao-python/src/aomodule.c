@@ -4,7 +4,7 @@
 static ao_option *
 dict_to_options(PyObject *dict)
 {
-  int pos = 0;
+  Py_ssize_t pos = 0;
   PyObject *key, *val;
   ao_option *head = NULL;
   int ret;
@@ -144,6 +144,7 @@ py_ao_new(PyObject *self, PyObject *args, PyObject *kwargs)
 
   retobj = (ao_Object *) PyObject_NEW(ao_Object, &ao_Type);
   retobj->dev = dev;
+  retobj->driver_id = driver_id;
   return (PyObject *) retobj;
 }
 
@@ -160,11 +161,16 @@ py_ao_driver_id(PyObject *self, PyObject *args)
   int driver_id;
   char *str = NULL;
 
-  if (!PyArg_ParseTuple(args, "s", &str))
-    return NULL;
+  if (self != NULL) {
+    ao_Object *ao_self = (ao_Object *) self;
+    driver_id = ao_self->driver_id;
+  } else {
+    if (!PyArg_ParseTuple(args, "s", &str))
+      return NULL;
 
-  driver_id = ao_driver_id(str);
-
+    driver_id = ao_driver_id(str);
+  }
+  
   if (driver_id == -1) {
     PyErr_SetString(Py_aoError, "No such driver");
     return NULL;
@@ -185,7 +191,7 @@ py_ao_driver_info(PyObject *self, PyObject *args)
 
     /* It's a method */
     ao_Object *ao_self = (ao_Object *) self;
-    info = ao_driver_info(ao_self->dev->driver_id);
+    info = ao_driver_info(ao_self->driver_id);
 
   } else {
 
