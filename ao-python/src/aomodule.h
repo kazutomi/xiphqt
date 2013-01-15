@@ -9,6 +9,7 @@
 typedef struct {
   PyObject_HEAD
   ao_device *dev;
+  int driver_id;
 } ao_Object;
 
 static PyObject *Py_aoError;
