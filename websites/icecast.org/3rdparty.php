@@ -27,6 +27,7 @@
 <tr><td>RoarAudio PlayList Daemon</td><td>Linux/Unix, Windows</td><td><a href="http://roaraudio.keep-cool.org/rpld.html">http://roaraudio.keep-cool.org/rpld.html</a></td></tr>
 <tr><td>butt - broadcast using this tool</td><td>Linux/Unix, Mac OSX, Windows</td><td><a href="http://butt.sourceforge.net/">http://butt.sourceforge.net/</a></td></tr>
 <tr><td>Mixxx</td><td>Linux/Unix, Mac OSX, Windows</td><td><a href="http://mixxx.org/">http://mixxx.org/</a></td></tr>
+<tr><td>iCast</td><td>iOS</td><td><a href="http://icast.anthonymyatt.net">http://icast.anthonymyatt.net</a></td></tr>
 </table>
 </center>
 </div>
