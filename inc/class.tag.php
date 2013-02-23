@@ -115,7 +115,7 @@ class Tag
 		    catch (SQLNoResultException $e)
 		    {
 		        return array();
-	        }
+	            }
 		}
     }
     
