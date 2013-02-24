@@ -12,3 +12,8 @@ ch4-samplequant.c also requires the 'squishyio' library from Xiph.org
 SVN and the commandline:
 
 gcc ch4-samplequant.c -o ch4-samplequant -lm -lcairo -lfftw3f -lsquishyio
+
+The source is mostly cut-and-paste spaghetti of the worst kind.
+However, it wasn't intended to be used at any point in the future,
+just spit out some images and done.  So... point and laugh if you
+like, but try not to rupture anything.  It's not worth it!

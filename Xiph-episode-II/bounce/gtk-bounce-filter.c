@@ -461,6 +461,8 @@ int run_convolution_filter(convofilter *f,
   return 1;
 }
 
+/* the below was just for testing and calibration of the hand-drawn
+   filters while I was assembling them */
 #if 0
 #define fromdB(x) (exp((x)*.11512925f))
 int main(int argc, char **argv){

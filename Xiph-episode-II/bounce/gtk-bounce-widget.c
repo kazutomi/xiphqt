@@ -1,13 +1,15 @@
 #include "gtk-bounce.h"
 #include "gtk-bounce-widget.h"
 
-/* implement a peudowidget (rowwidget) for most entries in the panel */
+/* implement a pseudowidget (rowwidget) for most entries in the panel.
+   We want a darm gtk3-ish look, though we're actually using gtk2. */
 
 /* Because we're in a GtkFixed that's being scrolled around, but
    drawing is being done to the GdkWindow owned by the toplevel, the
    clip region is set incorrectly to allow us to overdraw things in
    the toplevel outside our parents' bounds.  Follow the tree up and
    reclip. */
+
 static void narrow_clip(GtkWidget *w,GdkRectangle *area){
   int x1 = w->allocation.x;
   int y1 = w->allocation.y;

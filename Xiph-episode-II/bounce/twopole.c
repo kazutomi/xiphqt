@@ -1,4 +1,4 @@
-/* specific filter recipes with thanks to Alex Matulich
+/* specific two-pole filter recipes with thanks to Alex Matulich
    http://unicorn.us.com/alex/2polefilters.html */
 
 #include <math.h>
