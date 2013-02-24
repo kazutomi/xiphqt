@@ -6,23 +6,27 @@
 
 extern int header_out(FILE *out, int rate, int bits, int channels);
 
+/* hardware buffering and latency parameters */
 static snd_pcm_uframes_t pframes = 128;
 static snd_pcm_uframes_t pframes_mark = 128*8;
 static snd_pcm_uframes_t bframes = 4096;
 
-/* only apply to ch0 and ch1 */
-
+/* only apply noise shaping to ch0 and ch1 */
 static shapestate shapestate_ch0;
 static shapestate shapestate_ch1;
 
+/* aIIR and FIR filters */
 static notchfilter *notch[2]={0,0};
 static convofilter *lowpass;
 static convostate *lowpass_state[2]={0,0};
+
+/* filter tracking state; allows soft-on/off behavior */
 static int active_1kHz_notch;
 static int active_lp_filter;
 static int state_1kHz_modulation = 0;
 static float amplitude_1kHz_modmix = 0;
 
+/* direct-to-ALSA setup */
 static int param_setup_i(snd_pcm_t *devhandle, int dir, int rate,
                          int format, int channels){
   int ret;
@@ -152,8 +156,8 @@ static int param_setup(snd_pcm_t *devhandle, int dir, int rate,
                        int bits, int *channels){
 
   /* The eMagic 2|6 only does 24 bit playback if also using 6
-     channels.  The Focusrite Scarlett 2i2 can only do 32 bit
-     output */
+     channels.  Some newer DACs like the Focusrite Scarlett 2i2 can
+     only do 32 bit output.  Try 'em all, we can convert. */
   int format_list[3] = {SND_PCM_FORMAT_S16_LE,
                         SND_PCM_FORMAT_S24_3LE,
                         SND_PCM_FORMAT_S32_LE};
