@@ -1,0 +1,14 @@
+These C files are quick little Cairo applications used to generate
+images for the various animations in the Xiph Episode II video
+"Digital Show & Tell".  Each one generates a series of PNG images that
+are then stitched togetehr into an animation using a utility like
+ffmpeg or mplayer, or an editor like Cinelerra.
+
+Compile each with the commandline:
+
+gcc inname.c -o outname -lm -lcairo -lfftw3f
+
+ch4-samplequant.c also requires the 'squishyio' library from Xiph.org
+SVN and the commandline:
+
+gcc ch4-samplequant.c -o ch4-samplequant -lm -lcairo -lfftw3f -lsquishyio
