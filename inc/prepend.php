@@ -91,7 +91,10 @@ include_once(dirname(__FILE__).'/class.tag.php');
 // Inclusions
 include_once(dirname(__FILE__).'/inc.db.php');
 include_once(dirname(__FILE__).'/inc.mc.php');
+if (!preg_match ('/yp.php/i' , $_SERVER['SCRIPT_FILENAME']))
+{
 include_once(dirname(__FILE__).'/inc.templating.php');
+}
 
 // Libs
 include_once(dirname(__FILE__).'/lib.genfile.php');
