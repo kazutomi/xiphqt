@@ -57,18 +57,18 @@ GtkWidget *topreadout1;
 int plot_ch=0;
 int plot_inputs=0;
 
-int plot_scale=0;
+int plot_scale=2;
 int plot_mode=0;
 int plot_mode_save=0;
 int plot_modes=4;
 int plot_link=0;
 int plot_hold=0;
 int plot_lock_y=0;
-int plot_depth=90;
+int plot_depth=140;
 int plot_noise=0;
 int plot_bwchoice=0;
-int plot_detchoice=0;
-int plot_bold=0;
+int plot_detchoice=1;
+int plot_bold=1;
 
 int no_replot=0;
 
@@ -923,7 +923,7 @@ void panel_create(void){
 
     for(i=0;det_entries[i];i++)
       gtk_combo_box_append_text (GTK_COMBO_BOX (menu), det_entries[i]);
-    gtk_combo_box_set_active(GTK_COMBO_BOX(menu),0);
+    gtk_combo_box_set_active(GTK_COMBO_BOX(menu),1);
     gtk_box_pack_start(GTK_BOX(bbox),menu,0,0,0);
     g_signal_connect (G_OBJECT (menu), "changed",
                       G_CALLBACK (detectorchange), NULL);
@@ -936,7 +936,7 @@ void panel_create(void){
                      "140dB","200dB",NULL};
     for(i=0;entries[i];i++)
       gtk_combo_box_append_text (GTK_COMBO_BOX (menu), entries[i]);
-    gtk_combo_box_set_active(GTK_COMBO_BOX(menu),4);
+    gtk_combo_box_set_active(GTK_COMBO_BOX(menu),5);
     gtk_box_pack_start(GTK_BOX(bbox),menu,0,0,0);
     g_signal_connect (G_OBJECT (menu), "changed",
                       G_CALLBACK (depthchange), NULL);

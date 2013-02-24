@@ -921,19 +921,51 @@ float norm_calc(float *data,int n,int rate){
   return -todB(sum/(x1-x0))*.5;
 }
 
-float norm_ph(float *dataR, float *dataI,int n,int rate){
-  int i;
-  int x0 = 100.*blocksize/rate;
-  int x1 = x0+blocksize/4;
+int valcomp(const void *a, const void *b){
+  if((float *)a<(float*)b)return -1;
+  if((float *)a>(float*)b)return 1;
+  return 0;
+}
 
+float norm_ph(float *dataR, float *dataI,int n,int rate){
+  int i,j;
+  int x0 = 100.*blocksize/rate;
+  int x1 = 18000.*blocksize/rate;
   float sumR=0.;
   float sumI=0.;
+  int ph_over = (blocksize/2)/64;
+
+  if(x1>blocksize/2)x1=blocksize*7/16;
+
   for(i=x0+1;i<x1;i++){
-    sumR += dataR[i-1]*dataR[i] + dataI[i-1]*dataI[i];
-    sumI += dataR[i-1]*dataI[i] - dataI[i-1]*dataR[i];
+    float R = dataR[i-1]*dataR[i] + dataI[i-1]*dataI[i];
+    float I = dataR[i-1]*dataI[i] - dataI[i-1]*dataR[i];
+    float iM = 1./(hypot(R,I));
+    sumR += R*iM;
+    sumI += I*iM;
   }
 
-  return -atan2f(sumI,sumR);
+  /* determine offset for maximal flatness */
+  float adj = -atan2(sumI,sumR);
+  float unitR = cosf(adj);
+  float unitI = sinf(adj);
+  float valstack[(x1-x0)/ph_over+1];
+  int stackcount=0;
+  for(i=x0;i+ph_over<=x1;i+=ph_over){
+    sumR=0;
+    sumI=0;
+    for(j=0;j<ph_over;j++){
+      float R = unitR*sumR + unitI*sumI + dataR[i+j];
+      float I = unitR*sumI - unitI*sumR + dataI[i+j];
+      sumR = R;
+      sumI = I;
+    }
+    /* the residual phase offset after first-stage correction */
+    float a=aadd(wrap_atan2f(sumI,sumR),adj*(i+j-1));
+    valstack[stackcount++] = a/(i+j-1);
+  }
+  qsort(valstack,stackcount,sizeof(*valstack),valcomp);
+  return adj-valstack[stackcount/2];
 }
 
 /* how many bins to 'trim' off the edge of calculated data when we
@@ -1071,14 +1103,14 @@ fetchdata *process_fetch(int scale, int mode, int link, int det,
 	switch(scale){
 	case 0: /* log */
 	  lfreq= pow(10.,(i-off)/(width-1)
-		     * (log10(nyq)-log10(5.))
-		     + log10(5.)) * loff;
+		     * (log10(nyq)-log10(10.))
+		     + log10(10.)) * loff;
 	  mfreq= pow(10.,((float)i)/(width-1)
-		     * (log10(nyq)-log10(5.))
-		     + log10(5.));
+		     * (log10(nyq)-log10(10.))
+		     + log10(10.));
 	  hfreq= pow(10.,(i+off)/(width-1)
-		     * (log10(nyq)-log10(5.))
-		     + log10(5.)) * hoff;
+		     * (log10(nyq)-log10(10.))
+		     + log10(10.)) * hoff;
 	  break;
 	case 1: /* ISO */
 	  lfreq= pow(2.,(i-off)/(width-1)
@@ -1257,6 +1289,9 @@ fetchdata *process_fetch(int scale, int mode, int link, int det,
           phase_to_display(phR[ch+1], phI[ch+1], fetch_ret.data[ch+1],
                            &fetch_ret.pmin, &fetch_ret.pmax,
                            fi, width, det, norm);
+
+          /* if phase wraps around, set full scale */
+          /* XXX todo */
 
           fetch_ret.phdelay[fi] = norm*blocksize/(2.*M_PI*rate[fi]);
         }

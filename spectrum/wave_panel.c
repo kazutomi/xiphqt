@@ -59,7 +59,7 @@ int plot_interval=0;
 int plot_trigger=0;
 int plot_type=0;
 int plot_hold=0;
-int plot_bold=0;
+int plot_bold=1;
 int plot_sep=0;
 
 /* first up... the Fucking Fish */
@@ -526,6 +526,7 @@ void panel_create(void){
   GtkWidget *lefttable=gtk_table_new(4,3,0);
   GtkWidget *plot_control_al;
   GtkWidget *wbold;
+  GtkWidget *triggerbutton;
 
   rightbox=gtk_vbox_new(0,0);
 
@@ -696,13 +697,13 @@ void panel_create(void){
       gtk_combo_box_append_text (GTK_COMBO_BOX (menu), entries[i]);
     g_signal_connect (G_OBJECT (menu), "changed",
 		      G_CALLBACK (spanchange), NULL);
-    gtk_combo_box_set_active(GTK_COMBO_BOX(menu),0);
+    gtk_combo_box_set_active(GTK_COMBO_BOX(menu),8);
     gtk_box_pack_start(GTK_BOX(bbox),menu,1,1,0);
   }
 
   /* trigger */
   {
-    GtkWidget *menu=gtk_combo_box_new_text();
+    GtkWidget *menu=triggerbutton=gtk_combo_box_new_text();
     char *entries[]={"free run","0\xE2\x86\x91 trigger","0\xE2\x86\x93 trigger",NULL};
     for(i=0;entries[i];i++)
       gtk_combo_box_append_text (GTK_COMBO_BOX (menu), entries[i]);
@@ -772,6 +773,7 @@ void panel_create(void){
   gtk_key_snooper_install(watch_keyboard,NULL);
 
   gtk_alignment_set_padding(GTK_ALIGNMENT(plot_control_al),0,0,plot_get_left_pad(PLOT(plot)),0);
+  gtk_combo_box_set_active(GTK_COMBO_BOX(triggerbutton),1);
 
 }
 

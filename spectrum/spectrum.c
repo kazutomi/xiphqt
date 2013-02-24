@@ -34,7 +34,7 @@ int eventpipe[2];
 char *version;
 char *inputname[MAX_FILES];
 int inputs=0;
-int blocksize = 131072;
+int blocksize = 32768;
 extern int plot_bold;
 
 void handler(int sig){
