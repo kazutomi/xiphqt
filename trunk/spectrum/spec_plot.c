@@ -32,7 +32,7 @@ static double log_lfreqs[5]={10.,100.,1000.,10000.,100000};
 static double log_llfreqs[16]={10.,20.,30.,50.,100.,200.,300.,500.,
                               1000.,2000.,3000.,5000.,10000.,
                                20000.,30000.,50000.};
-static double log_tfreqs[37]={5.,6.,7.,8.,9.,20.,30.,40.,50.,60.,70.,80.,90.
+static double log_tfreqs[32]={20.,30.,40.,50.,60.,70.,80.,90.
 			 ,200.,300.,400.,500.,600.,700.,800.,900.,
 			 2000.,3000.,4000.,5000.,6000.,7000.,8000.,9000.,
 			 20000.,30000,40000,50000,60000,70000,80000,90000};
@@ -70,17 +70,17 @@ static void compute_xgrid(Plot *p, fetchdata *f){
         if(log_llfreqs[i]<(nyq-.1))
           p->xlgrids=i+1;
       }
-      for(i=0;i<37;i++){
+      for(i=0;i<32;i++){
         if(log_tfreqs[i]<(nyq-.1))
           p->xtics=i+1;
       }
 
       for(i=0;i<p->xgrids;i++)
-        p->xgrid[i]=rint( (log10(log_lfreqs[i])-log10(5.))/(log10(nyq)-log10(5.)) * (width-1))+p->padx;
+        p->xgrid[i]=rint( (log10(log_lfreqs[i])-log10(10.))/(log10(nyq)-log10(10.)) * (width-1))+p->padx;
       for(i=0;i<p->xlgrids;i++)
-        p->xlgrid[i]=rint( (log10(log_llfreqs[i])-log10(5.))/(log10(nyq)-log10(5.)) * (width-1))+p->padx;
+        p->xlgrid[i]=rint( (log10(log_llfreqs[i])-log10(10.))/(log10(nyq)-log10(10.)) * (width-1))+p->padx;
       for(i=0;i<p->xtics;i++)
-        p->xtic[i]=rint( (log10(log_tfreqs[i])-log10(5.))/(log10(nyq)-log10(5.)) * (width-1))+p->padx;
+        p->xtic[i]=rint( (log10(log_tfreqs[i])-log10(10.))/(log10(nyq)-log10(10.)) * (width-1))+p->padx;
 
       break;
     case 1: /* ISO log */
