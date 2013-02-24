@@ -64,6 +64,11 @@
     padding-left: 0;
   }
   </style>
+
+  <link rel="alternate" type="application/atom+xml" 
+	title="Latest Videos Feed"
+        href="atom-feed.xml">
+
   <!--#include virtual="/common/xiphbar_video.shtml" -->
 
 <!--  All your page content goes here  -->
