@@ -2,6 +2,10 @@
 
 <title>Xiph.Org Video Presentations: A Digital Media Primer for Geeks</title>
 
+<link rel="alternate" type="application/atom+xml" 
+      title="Latest Videos Feed"
+      href="atom-feed.xml">
+  
 <!--#include virtual="/common/xiphbar_video.shtml" -->
 
 <h1>A Digital Media Primer for Geeks</h1>
