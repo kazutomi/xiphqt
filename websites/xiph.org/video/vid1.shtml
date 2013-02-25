@@ -28,23 +28,7 @@
 	   onpause="undimpage()"
 	   onended="undimpage()">
 	  
-	  <!-- Cortado fallback for browsers w/o video, or without Ogg/WebM in video -->
-	  <!-- Nope, dropping Cortado fallback.  java in the web browser is dead as a doornail -->
-	  <div class="fallback">
-	  <p>
-	    Your browser doesn't seem to support HTML5 WebM or Ogg
-	    video.  Please consider upgrading to an
-	    open-standards-compliant web browser such
-	    as <a href="http://www.getfirefox.net">Firefox</a> or
-	    downloading this video to watch in your favorite media
-	    player.</p>
-
-	  <div>
-	  <a href="http://www.getfirefox.net"><img border="0"
-	  src="http://www.getfirefox.net/banner/160x60_download.png"
-	  width="160" height="60" border="0" alt="firefox"></a>
-	  </div>
-	  </div>
+	  <!--#include virtual="fallback.include" -->
 
 	</video>
       </div>    

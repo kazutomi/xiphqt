@@ -8,7 +8,7 @@
 	    <p>
 	      Please consider upgrading to an
 	      open-standards-compliant web browser such as
-	      <a href="http://www.getfirefox.net">Firefox</a>,
+	      <a href="http://www.getfirefox.org">Firefox</a>,
 	      <a href="https://www.google.com/intl/en/chrome/browser/">Chrome</a>
 	      or
 	      <a href="http://www.opera.com/download/">Opera</a>, or
@@ -18,9 +18,16 @@
 	    </p>
 
 	    <div>
-	      <a href="http://www.getfirefox.net"><img border="0"
-	         src="http://www.getfirefox.net/banner/160x60_download.png"
-	         width="160" height="60" border="0" alt="firefox">
+	      <a href="//affiliates.mozilla.org/link/banner/33816">
+	        <img src="//affiliates.mozilla.org/media/uploads/banners/f5eeeddc214ed8ef15e48bc80e1f53b0da4f0574.png" alt="Download Firefox" width="125" height="125" border="0">
               </a>
 	    </div>
 	  </div>
+
+
+
+
+
+
+
+
