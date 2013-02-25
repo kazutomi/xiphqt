@@ -19,6 +19,13 @@
     </author>
 
     <summary type="html"><![CDATA[
+    <video controls width="640" height="360">
+      <source src="http://downloads.xiph.org/video/A_Digital_Media_Primer_For_Geeks-360p.ogv"
+              type="video/ogg">
+      <source src="http://downloads.xiph.org/video/A_Digital_Media_Primer_For_Geeks-360p.webm"
+              type="video/webm">
+    </video>
+
     <p>
       This first video from Xiph.Org presents the technical foundations of
       modern digital media via a half-hour firehose of information. One
