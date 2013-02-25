@@ -1,0 +1,182 @@
+<!--#include virtual="/ssi/videoheader.include" -->
+
+<title>Xiph.Org Video Presentations: Digital Show &amp; Tell</title>
+
+<link rel="alternate" type="application/atom+xml" 
+      title="Latest Videos Feed"
+      href="atom-feed.xml">
+  
+<!--#include virtual="/common/xiphbar_video.shtml" -->
+
+<h1>Digital Show &amp; Tell</h1>
+<div class="or"><a href="/video">(...up to the main video page)</a></div>
+
+<!--#include virtual="/ssi/navbar_video.include" -->
+
+<div class="vid_wrapper"> 
+  <div class="vid_control">
+    <div class="vid_border">
+      <div class="vid_sizer">
+	
+	<!-- Firefox only added DOM support for callbacks in 4.0, so
+	     they must go in the video tag -->
+	<!-- Attributes and source URL set via JA according to dropdpwn
+	     selection -->
+	<video 
+	   controls
+	   onplay="dimpage()"
+	   onpause="undimpage()"
+	   onended="undimpage()">
+
+	  <!--#include virtual="fallback.include" -->
+
+	</video>
+      </div>    
+    </div>
+
+    <!-- Subtitle overlay (driven by javascript in subtitiles.js) -->
+    <div class="srtwrapper">
+      <div class="baseline">Baseline</div>
+      <div class="srt"></div>
+      <div class="absbackground"></div>
+    </div>
+    
+    <!-- Addiitional upper video control bar (driven by javascript in video.js) -->
+    <div class="vcwrapper">
+      <div class="vidcontrols">
+	
+	<!-- where the video type text is filled in -->
+	<div class="vidtype">
+	</div>
+	
+	<select class="video-select">	
+	  <option src-webm="https://media.xiph.org/monty/episode-02/02-Digital_Show_and_Tell-360p.webm"
+		  src-ogg="http://downloads.xiph.org/video/Digital_Show_and_Tell-360p.ogv"
+		  poster="vid2-poster-360.jpg"
+		  video-width="640px" 
+		  video-height="360px" 
+		  subtitle-font-size="1.6em"
+		  subtitle-bottom="40px">
+	    360p</option>
+	  <option src-webm="https://media.xiph.org/monty/episode-02/02-Digital_Show_and_Tell-480p.webm"
+		  src-ogg="http://downloads.xiph.org/video/Digital_Show_and_Tell-480p.ogv"
+		  poster="vid2-poster-480.jpg"
+		  video-width="848px" 
+		  video-height="480px" 
+		  subtitle-font-size="2em"
+		  subtitle-bottom="40px">
+	    480p</option>
+	  <option src-webm="https://media.xiph.org/monty/episode-02/02-Digital_Show_and_Tell-720p.webm"
+		  src-ogg="http://downloads.xiph.org/video/Digital_Show_and_Tell-720p.ogv"
+		  poster="vid2-poster-720.jpg"
+		  video-width="1280px" 
+		  video-height="720px" 
+		  subtitle-font-size="3em"
+		  subtitle-bottom="60px">
+	    720p</option>
+	  </select>
+
+	<!-- chapter navigation -->
+	<select class="chapter-select">
+	  <option>Chapter Selection</option>
+	  <option timecode="0">title</option>
+	  <option timecode="7.882">intro</option>
+	  <option timecode="45.044">veritas ex machina</option>
+	  <option timecode="216.424">stairsteps</option>
+	  <option timecode="520.978">bit-depth</option>
+	  <option timecode="695.820">dither</option>
+	  <option timecode="1039.496">bandlimitation and timing</option>
+	  <option timecode="1315.981">epilogue</option>
+	  <option timecode="1398.772">end credits</option>
+	</select>
+	
+	<!-- Subtitle selection (loaded from external file, not pulled
+	     from media file) -->
+	<select class="srt-select">
+	  <option>
+	    Subtitles: Off</option>
+	  <option file="vid2-en.vtt">
+	    Subtitles: US English</option>
+	</select>
+	
+      </div>
+      
+      <!-- transparent dim background for addiitonal controls -->
+      <div class="absbackground"> </div>
+      
+      <div style="clear: both; font-size: 0px;"></div>
+    </div>
+  </div>
+
+  <div style="clear: both; font-size: 0px;"></div>
+  <div class="vid_caption">
+
+    <p> 
+      Continuing the "firehose" tradition of maximum information density, Xiph.Org's
+      second video on digital media explores multiple facets of digital
+      audio signals and how they <i>really</i> behave in the real
+      world.
+    </p>
+    <p>
+      Demonstrations of sampling, quantization, bit-depth, and dither
+      explore digital audio behavior on real audio equipment using
+      both modern digital analysis and vintage analog bench
+      equipment... just in case we can't trust those newfangled
+      digital gizmos.  You can also download the source code for each
+      demo and try it all for yourself!
+    </p>
+      
+    <h2><a href="http://wiki.xiph.org/Digital_Show_and_Tell/Episode_02">Discuss
+    and learn more: <i>"Digital Show &amp; Tell"</i> the
+    Wiki-edition!</a></h2>
+
+    <p>Like the <a href="vid1.shtml">previous episode</a>, this video
+      moves fast and only glances on a number of rather important
+      topics, so we've set up
+      a <a href="http://wiki.xiph.org/Digital_Show_and_Tell/Episode_02">Wiki</a>
+      to get more information, ask questions, and debate.
+      
+    <h2>Download this video!</h2>
+
+    <i>"Digital Show &amp; Tell"</i> is distributed under
+    a <a href="http://creativecommons.org/licenses/by-sa/3.0/">Creative
+    Commons Attribution-ShareAlike (BY-SA)
+    license.</a>
+
+    <br/><br/>
+    <b>Download via HTTP</b>
+
+    <ul>
+      <li><b style="display: inline;"> WebM Format (Vorbis audio + VP8 video): </b><br>
+	<a href="http://downloads.xiph.org/video/Digital_Show_&_Tell-360p.webm">
+	  360p/500kbps (117MB)</a> |
+	<a href="http://downloads.xiph.org/video/Digital_Show_&_Tell-480p.webm">
+	  480p/1500kbps (294MB)</a> |
+	<a href="http://downloads.xiph.org/video/Digital_Show_&_Tell-720p.webm">
+	  720p/3500kbps (640MB)</a>
+
+      <li><b> Ogg Format (Vorbis audio / Theora video / Kate subtitles + Index): </b><br>
+	<a href="http://downloads.xiph.org/video/Digital_Show_&_Tell-360p.ogv">
+	  360p/500kbps (115MB)</a> |
+	<a href="http://downloads.xiph.org/video/Digital_Show_&_Tell-480p.ogv">
+	  480p/1500kbps (293MB)</a> |
+	<a href="http://downloads.xiph.org/video/Digital_Show_&_Tell-720p.ogv">
+	  720p/3500kbps (637MB)</a>
+    </ul>
+
+    <h3>Download subtitles</h3>
+    
+    <ul>
+      <li><b> VTT format: </b><br>
+	<a href="vid2-en.vtt"> 
+	  US English</a>
+    </ul>
+    <p>We welcome good, technical translations from the community!
+    Please submit translations in SRT, VTT or Ogg Kate format
+    to <a href="mailto:video@xiph.org">video@xiph.org</a>.
+
+  </div>
+</div>  
+<!--#include virtual="/ssi/pagebottom.include" -->
+
+
