@@ -40,11 +40,11 @@
   padding-top: 1.5em;
   padding-bottom: 0em;
   font-weight: bold;
-  font-size: 12px;
   text-align: center;
 }
 
 .fallback div{
+  padding-top: 1.5em;
   margin-left: auto;
   margin-right: auto;
   width: 125px;
@@ -57,6 +57,7 @@
   margin: 0px;
   height: 100%;
   width: 100%;
+  font-size: 12px;
   background-color: #d0e0f0;
 }
 
