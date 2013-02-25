@@ -33,6 +33,31 @@
     margin-right: 3em;
 }
 
+.fallback p{
+  margin: 0px;
+  padding: 2em;
+  padding-top: 1.5em;
+  font-weight: bold;
+  font-size: large;
+  text-align: center;
+}
+
+.fallback div{
+  margin-left: auto;
+  margin-right: auto;
+  width: 160px;
+  height: 80px;
+}
+
+.fallback {
+  position: relative;
+  padding: 0px;
+  margin: 0px;
+  height: 100%;
+  width: 100%;
+  background-color: #d0e0f0;
+}
+
 h1 {
     padding: 0px;
     margin: 1.3em 0 8px 0;
@@ -110,6 +135,11 @@ h1 {
     margin-left: 1em;
     margin-right: 1em;
     z-index: 3;
+}
+
+.baseline {
+    position: absolute;
+    visibility: hidden;
 }
 
 .vcwrapper {
