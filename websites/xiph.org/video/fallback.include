@@ -2,7 +2,7 @@
 	  <!-- dropping Cortado fallback.  Java in the browser is dead as a doornail -->
 	  <div class="fallback">
   	    <p>
-	      Your browser doesn't seem to support HTML5 WebM or Ogg
+	      Your browser doesn't seem to support HTML5 WebM&nbsp;or&nbsp;Ogg
 	      video.
 	    </p>
 	    <p>
@@ -13,7 +13,7 @@
 	      or
 	      <a href="http://www.opera.com/download/">Opera</a>, or
 	      downloading this video to watch in your favorite media
-	      player such as <a href="http://www.videolan.org/vlc/index.html">VLC<a> or
+	      player such as <a href="http://www.videolan.org/vlc/index.html">VLC</a> or
 	      <a href="http://www.getmiro.com/">Miro</a>.
 	    </p>
 

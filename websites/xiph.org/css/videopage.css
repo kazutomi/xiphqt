@@ -35,18 +35,20 @@
 
 .fallback p{
   margin: 0px;
-  padding: 2em;
+  padding-left: 2em;
+  padding-right: 2em;
   padding-top: 1.5em;
+  padding-bottom: 0em;
   font-weight: bold;
-  font-size: large;
+  font-size: 12px;
   text-align: center;
 }
 
 .fallback div{
   margin-left: auto;
   margin-right: auto;
-  width: 160px;
-  height: 80px;
+  width: 125px;
+  height: 125px;
 }
 
 .fallback {
