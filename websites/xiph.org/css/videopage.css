@@ -35,16 +35,16 @@
 
 .fallback p{
   margin: 0px;
-  padding-left: 2em;
-  padding-right: 2em;
-  padding-top: 1.5em;
-  padding-bottom: 0em;
+  padding-left: 1.5em;
+  padding-right: 1.5em;
+  padding-top: 1em;
+  padding-bottom: 1em;
   font-weight: bold;
   text-align: center;
 }
 
 .fallback div{
-  padding-top: 1.5em;
+  padding: 1em;
   margin-left: auto;
   margin-right: auto;
   width: 125px;
@@ -57,8 +57,16 @@
   margin: 0px;
   height: 100%;
   width: 100%;
-  font-size: 12px;
+  font-size: 11px;
   background-color: #d0e0f0;
+  display: table;
+}
+
+.fallback .vcenter{
+  display: table-cell;
+  vertical-align: middle; 
+  text-align: center; 
+  padding: .5em;
 }
 
 h1 {
