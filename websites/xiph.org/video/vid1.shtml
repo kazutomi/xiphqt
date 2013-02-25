@@ -29,26 +29,23 @@
 	   onended="undimpage()">
 	  
 	  <!-- Cortado fallback for browsers w/o video, or without Ogg/WebM in video -->
-	  <applet 
-	     width="640"
-	     height="360"
-	     class="video" 
+	  <!-- Nope, dropping Cortado fallback.  java in the web browser is dead as a doornail -->
+	  <div class="fallback">
+	  <p>
+	    Your browser doesn't seem to support HTML5 WebM or Ogg
+	    video.  Please consider upgrading to an
+	    open-standards-compliant web browser such
+	    as <a href="http://www.getfirefox.net">Firefox</a> or
+	    downloading this video to watch in your favorite media
+	    player.</p>
 
-	     archive="http://downloads.xiph.org/video/cortado_latest.jar"
-	     code="com.fluendo.player.Cortado.class">
-	    <!-- Safari ignores 'unknown' params in applet tags; the
-	    must be in explicit <param> tags -->
-	    <param name="url" value="http://downloads.xiph.org/video/A_Digital_Media_Primer_For_Geeks-360p.ogv">
-	    <param name="statusheight" value="20">
-	    <param name="BufferSize" value="512">
-	    <param name="BufferHigh" value="25">
-	    <param name="BufferLow" value="5">
-	    
-	    <p>Your browser doesn't seem to support WebM, Ogg or Java;
-	      please consider downloading this
-	      video to play in your favorite media player!</p>
-	    
-	  </applet>
+	  <div>
+	  <a href="http://www.getfirefox.net"><img border="0"
+	  src="http://www.getfirefox.net/banner/160x60_download.png"
+	  width="160" height="60" border="0" alt="firefox"></a>
+	  </div>
+	  </div>
+
 	</video>
       </div>    
     </div>

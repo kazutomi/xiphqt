@@ -31,10 +31,10 @@ function toMilliSeconds(t) {
     if(t) {
         var p = t.split(':');
         for(i=0;i<p.length;i++)
-            ms = ms * 60 + parseInt('1'+p[i].replace(',', ' ')) - 100;
+            ms = ms * 60 + parseInt('1'+p[i].replace(/,|\./g, ' ')) - 100;
         ms*=1000;
         if(i){
-            var m = p[i-1].split(',');
+            var m = p[i-1].split(/,|\./);
             if(m[1]) ms+= parseInt(m[1]);
         }
     }
@@ -87,7 +87,37 @@ function playSubtitles(subtitleElement,vid) {
                 }
                 if(subtitle > 0 && subtitles[subtitle].o > currentTime*1000) {
                     if(current_subtitle != subtitle){
-                        subtitleElement.html(subtitles[subtitle].t);
+                        var text = subtitles[subtitle].t;
+                        subtitleElement.html(text);
+			var hgt = subtitleElement.innerHeight();
+			var baseline = $(document.querySelector('.baseline')).outerHeight();
+			if(hgt > baseline*1.5 && hgt < baseline*2.5) {
+			    var split = text.split(''),
+			    len = text.length,
+			    liners = [], breaks = [],
+			    res = 0, rnum = 0, top, btm, tlen, blen, t, tt, splim = 1000000;
+
+			    for(var j = 0; j < len; j++) {
+				if(split[j] === ' ') {
+				    breaks.push(j);
+				}
+			    }
+
+			    for(var k = 0, kk = breaks.length; k < kk; k++) {
+				top = text.substr(0,breaks[k]).replace(/\ /g,'^').split('');
+				btm = text.substr(breaks[k]+1,len).replace(/\ /g,'^').split('');
+				liners.push(Math.abs(top.length - btm.length));
+			    }
+			    for(var c = 0, cc = liners.length; c < cc; c++) {
+				if(liners[c] < splim) {
+				    res = c;
+				    splim = liners[c];
+				}
+			    }
+			    res = breaks[res];
+			    subtitleElement.html(text.substr(0,res+1)+'<br>'+text.substr(res+1,len));
+			}
+			
                         current_subtitle = subtitle;
                     }
                 }else{

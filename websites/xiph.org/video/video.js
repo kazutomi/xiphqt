@@ -8,9 +8,8 @@ function fixupVideo(video)
     var videoElement = false;
 
     if ((video.canPlayType &&
-	 (video.canPlayType("video/ogg;codecs=\"theora,vorbis\"") == "probably" ||
-          video.canPlayType("video/webm;codecs=\"vp8,vorbis\"") == "probably")) ||
-        (!video.canPlayType && video.play)) {
+	 (video.canPlayType("video/ogg; codecs=\"theora, vorbis\"") == "probably" ||
+          video.canPlayType("video/webm; codecs=\"vp8, vorbis\"") == "probably"))) {
         videoElement = true;
     }
 
@@ -190,16 +189,38 @@ function SetVideo(dropdown)
 // Show/hide our upper control toolbar according to mouseover
 var stick=0; // only one input queue, so a single global stick will do
 var mousein=0;
-function showControls(el){
+var mousetimeout;
+var showtimeout;
+var playonce=0;
+
+function showControls(el,delay){
     var wrapper = findUnder(el,'.vcwrapper');
+    var video = findUnder(el,'video');
+    var playing = !(video.paused);
+    var position = video.currentTime;
     if(!wrapper)return;
-    $(wrapper).animate({opacity: 1}, {duration: 160, queue: false});
+    if(!mousein){
+	clearTimeout(showtimeout);
+	showtimeout=setTimeout(function(){
+	    $(wrapper).animate({opacity: 1}, {duration: 160, queue: false});},
+			       delay);
+	mousein=1;
+    }
+    clearTimeout(mousetimeout);
+    if(playonce)
+	mousetimeout=setTimeout(function(){mousein=0;hideControls(el);},2000);
+    if(position)playonce=1;
     stick=0;
 }
 
 var focused_el = 0;
 function hideControls(el){
-    if(!stick && !mousein){
+    var video = findUnder(el,'video');
+    var playing = !(video.paused);
+    var position = video.currentTime;
+    if(position)playonce=1;
+    clearTimeout(showtimeout);
+    if(!stick && !mousein && playonce){
         var wrapper = findUnder(el,'.vcwrapper');
         if(!wrapper)return;
         $(wrapper).animate({opacity: 0.}, {duration: 160, queue: false});
@@ -245,7 +266,8 @@ $(document).ready(function() {
 
         $('.vid_control').each(function() {
                 this.onmouseout=function(){mousein=0;hideControls(this)};
-                this.onmouseover=function(){mousein=1;showControls(this)};
+                this.onmouseover=function(){showControls(this,0)};
+                this.onmousemove=function(){showControls(this,500)};
             });
 
         // subtitles and video settings aren't statically set in the

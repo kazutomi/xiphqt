@@ -1,0 +1,26 @@
+
+	  <!-- dropping Cortado fallback.  Java in the browser is dead as a doornail -->
+	  <div class="fallback">
+  	    <p>
+	      Your browser doesn't seem to support HTML5 WebM or Ogg
+	      video.
+	    </p>
+	    <p>
+	      Please consider upgrading to an
+	      open-standards-compliant web browser such as
+	      <a href="http://www.getfirefox.net">Firefox</a>,
+	      <a href="https://www.google.com/intl/en/chrome/browser/">Chrome</a>
+	      or
+	      <a href="http://www.opera.com/download/">Opera</a>, or
+	      downloading this video to watch in your favorite media
+	      player such as <a href="http://www.videolan.org/vlc/index.html">VLC<a> or
+	      <a href="http://www.getmiro.com/">Miro</a>.
+	    </p>
+
+	    <div>
+	      <a href="http://www.getfirefox.net"><img border="0"
+	         src="http://www.getfirefox.net/banner/160x60_download.png"
+	         width="160" height="60" border="0" alt="firefox">
+              </a>
+	    </div>
+	  </div>
