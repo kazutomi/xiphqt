@@ -52,6 +52,7 @@
 
     <!-- Subtitle overlay (driven by javascript in subtitiles.js) -->
     <div class="srtwrapper">
+      <div class="baseline">Baseline</div>
       <div class="srt"></div>
       <div class="absbackground"></div>
     </div>
