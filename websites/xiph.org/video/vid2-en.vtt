@@ -10,7 +10,7 @@ A few months ago, I wrote an article on digital audio and why 24bit/192kHz music
 
 3
 00:00:18.430 --> 00:00:23.433
-In the article, I mentioned--almost in passing-- that a digital waveform is not a stairstep,
+In the article, I mentioned--almost in passing--that a digital waveform is not a stairstep,
 
 4
 00:00:23.433 --> 00:00:28.680
@@ -18,7 +18,7 @@ and you certainly don't get a stairstep when you convert from digital back to an
 
 5
 00:00:29.865 --> 00:00:33.865
-Of everything in the entire article, *that* was the number one thing people wrote about.
+Of everything in the entire article, <b>that</b> was the number one thing people wrote about.
 
 6
 00:00:33.865 --> 00:00:37.221
@@ -30,7 +30,7 @@ about basic digital signal behavior.
 
 8
 00:00:39.894 --> 00:00:45.285
-Since there's interest, let's take a little time to play with some _simple_ digital signals.
+Since there's interest, let's take a little time to play with some <u>simple</u> digital signals.
 
 9
 00:00:49.747 --> 00:00:51.006
@@ -656,7 +656,7 @@ When we convert a digital signal back to analog,
 
 164
 00:08:48.233 --> 00:08:50.900
-the result is _also_ smooth regardless of the bit depth.
+the result is <u>also</u> smooth regardless of the bit depth.
 
 165
 00:08:50.900 --> 00:08:53.193
@@ -804,7 +804,7 @@ then it's mathematically equivalent in every way.
 
 200
 00:10:47.646 --> 00:10:49.225
-It _is_ tape hiss.
+It <u>is</u> tape hiss.
 
 201
 00:10:49.225 --> 00:10:51.774
@@ -866,7 +866,7 @@ any guesses?...
 
 215
 00:11:27.604 --> 00:11:28.980
-_with_ advanced noise reduction.
+<u>with</u> advanced noise reduction.
 
 216
 00:11:28.980 --> 00:11:32.062
@@ -954,7 +954,7 @@ that aren't influenced by the input.
 
 237
 00:12:25.256 --> 00:12:27.081
-Let's _watch_ what dither does.
+Let's <u>watch</u> what dither does.
 
 238
 00:12:27.081 --> 00:12:30.078
@@ -1154,7 +1154,7 @@ again with the gain brought way up...
 
 287
 00:14:56.020 --> 00:14:59.977
-Lastly, dithered quantization noise _is_ higher power overall
+Lastly, dithered quantization noise <u>is</u> higher power overall
 
 288
 00:14:59.977 --> 00:15:04.276
@@ -1242,7 +1242,7 @@ Maybe if the CD had been 14 bits as originally designed,
 
 309
 00:16:59.806 --> 00:17:01.513
-dither _might_ be more important.
+dither <u>might</u> be more important.
 
 310
 00:17:01.989 --> 00:17:02.644
@@ -1514,7 +1514,7 @@ but Gibbs effect ripples aren't added by filters,
 
 377
 00:20:15.252 --> 00:20:18.836
-they're just part of what a bandlimited signal _is_.
+they're just part of what a bandlimited signal <u>is</u>.
 
 378
 00:20:18.836 --> 00:20:20.798
