@@ -10,17 +10,15 @@ function fixupVideo(video)
     if ((video.canPlayType &&
 	 (video.canPlayType("video/ogg; codecs=\"theora, vorbis\"") == "probably" ||
           video.canPlayType("video/webm; codecs=\"vp8, vorbis\"") == "probably"))) {
+	video.innerHTML="";
           videoElement = true;
     }
 
     if (!videoElement) {
 
-        // replace <video> with its contents
-        while (video.firstChild) {
-            video.parentNode.insertBefore(video.firstChild, video);
-        }
-        video.parentNode.removeChild(video);
-
+	var fallback=$.get("fallback.include", function(data) {
+	    video.parentNode.innerHTML=data;
+	});
         // Also kill off the HTML5-specific vid controls
 
         var controls = $(".vidcontrols");

@@ -28,7 +28,7 @@
 	   onpause="undimpage()"
 	   onended="undimpage()">
 
-	  <!--#include virtual="fallback.include" -->
+	  <div><img src="vid2-poster-360.jpg"></div>
 
 	</video>
       </div>    
