@@ -81,7 +81,7 @@
 self-produced videos to spread techie-level knowledge about digital media as well
 as our own work involving new media research.
 
-<p>We've just completed the first video in what we hope to be a long,
+<p>We've just completed the second video in what we hope to be a long,
 fruitful series about the science and engineering of modern
 digital media!
 
@@ -103,7 +103,26 @@ digital media!
     </b>
 </div>
 <div style="clear: both;"></div>
-<hr>
 
+<hr>
+<div>
+<a href="vid2.shtml"><img class="still" src="vid2.jpg"></a>
+<h2><span style="color:red">new!</span> Episode 2: Digital Show &amp; Tell</h2>
+
+<p>The second video from Xiph.Org explores multiple facets of digital
+  audio signals and how they <i>really</i> behave in the real world.
+  Sampling, quantization, dither, band-limiting, and vintage bench
+  equipment all in one video!
+</p>
+
+<p>
+  <div class="hlist">
+    <b>
+      <a href="vid2.shtml">Watch (or download) this video</a> | 
+      <a href="https://wiki.xiph.org/Digital_Show_and_Tell/Episode_02">Discuss and learn more...</a>
+    </b>
+</div>
+<div style="clear: both;"></div>
+<hr>
 
 <!--#include virtual="/ssi/pagebottom.include" -->

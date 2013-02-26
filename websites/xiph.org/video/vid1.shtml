@@ -121,7 +121,7 @@
 	  <option file="vid1-it.srt">
 	    Subtitles: Italiano</option>
 	  <option file="vid1-ptbr.srt">
-	    Subtitles: Português (Brazil)</option>
+	    Subtitles: Português</option>
           <option file="vid1-ru.srt">
             Subtitles: Русский</option>
 	</select>

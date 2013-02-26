@@ -1,21 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
   <title>video.xiph.org</title>
-  <subtitle>a blog about startups and code</subtitle>
+  <subtitle>Xiph.Org's video series about digital media</subtitle>
 
   <link rel="alternate" type="text/html" href="http://video.xiph.org/" />
   <link rel="self" type="application/atom+xml" href="http://video.xiph.org/atom-feed.xml" />
   <id>http://video.xiph.org/atom-feed.xml</id>
-  <updated>2013-02-24T23:40:46Z</updated>
+  <updated>2013-02-26T09:40:46Z</updated>
+
 
   <entry>
-    <title>Episode 1: A Digital Media Primer for Geeks</title>
+    <title>Episode 01: A Digital Media Primer for Geeks</title>
     <link rel="alternate" type="text/html" href="/vid1.shtml" />
     <id>tag:video.xiph.org,2013:/vid1.shtml</id>
     <updated>2013-02-24T23:40:46Z</updated>
 
     <author>
-      <name>Xiph.org</name>
+      <name>Xiph.Org</name>
     </author>
 
     <summary type="html"><![CDATA[
@@ -42,4 +43,40 @@
     ]]>
     </summary>
   </entry>
+
+  <entry>
+    <title>Episode 02: Digital Show &amp; Tell</title>
+    <link rel="alternate" type="text/html" href="/vid2.shtml" />
+    <id>tag:video.xiph.org,2013:/vid2.shtml</id>
+    <updated>2013-02-26T09:40:46Z</updated>
+
+    <author>
+      <name>Xiph.Org</name>
+    </author>
+
+    <summary type="html"><![CDATA[
+    <video controls width="640" height="360">
+      <source src="http://downloads.xiph.org/video/Digital_Show_&_Tell-360p.ogv"
+              type="video/ogg">
+      <source src="http://downloads.xiph.org/video/Digital_Show_&_Tell-360p.webm"
+              type="video/webm">
+    </video>
+    <p> 
+      Continuing the "firehose" tradition of maximum information density, Xiph.Org's
+      second video on digital media explores multiple facets of digital
+      audio signals and how they <i>really</i> behave in the real
+      world.
+    </p>
+    <p>
+      Demonstrations of sampling, quantization, bit-depth, and dither
+      explore digital audio behavior on real audio equipment using
+      both modern digital analysis and vintage analog bench
+      equipment... just in case we can't trust those newfangled
+      digital gizmos.  You can also download the source code for each
+      demo and try it all for yourself!
+    </p>
+    ]]>
+    </summary>
+  </entry>
+
 </feed>
