@@ -97,6 +97,8 @@
 	    Subtitles: Off</option>
 	  <option file="02-Digital_Show_and_Tell.en.vtt">
 	    Subtitles: US English</option>
+	  <option file="02-Digital_Show_and_Tell.fr.vtt">
+	    Subtitles: French</option>
 	</select>
 	
       </div>

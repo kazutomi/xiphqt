@@ -1,0 +1,1773 @@
+WEBVTT
+
+1
+00:00:08.252 --> 00:00:11.550
+Bonjour, je suis Monty Montgomery de Red Hat et Xiph.Org.
+
+2
+00:00:11.550 --> 00:00:18.430
+Il y a quelques mois, j'ai écrit un article sur l'audio numérique et pourquoi le téléchargement de musique en 24bit/192kHz n'a pas de sens.
+
+3
+00:00:18.430 --> 00:00:23.433
+Dans l'article, j'ai mentionné, en passant, qu'une forme d'onde numérique n'est pas un escalier,
+
+4
+00:00:23.433 --> 00:00:28.680
+et qu'on n'obtient certainement pas un escalier quand on converti du numérique vers l'analogique.
+
+5
+00:00:29.865 --> 00:00:33.865
+De tout l'article, ça a été la chose que les gens ont le plus commenté.
+
+6
+00:00:33.865 --> 00:00:37.221
+En fait, plus de la moitié des courriels que j'ai reçus étaient des questions et commentaires
+
+7
+00:00:37.221 --> 00:00:39.663
+à propos de notions de base sur les signaux numériques
+
+8
+00:00:39.894 --> 00:00:45.285
+Comme il y a de l'intérêt, prenons un peu de temps pour jouer avec quelques signaux numériques simples.
+
+9
+00:00:49.747 --> 00:00:51.006
+Supposons pour un moment
+
+10
+00:00:51.006 --> 00:00:54.089
+que nous n'avons aucune idée de la façon dont se comportent les signaux numériques.
+
+11
+00:00:54.734 --> 00:00:56.841
+Dans ce cas, ça n'a pas de sens pour nous
+
+12
+00:00:56.841 --> 00:00:59.049
+d'utiliser de l'équipement de test numérique.
+
+13
+00:00:59.049 --> 00:01:00.937
+Heureusement pour cet exercice, il existe encore
+
+14
+00:01:00.937 --> 00:01:04.020
+beaucoup d'équipement de labo analogique fonctionnel.
+
+15
+00:01:04.020 --> 00:01:05.972
+D'abord, nous avons besoin d'un générateur de signaux
+
+16
+00:01:05.972 --> 00:01:08.190
+pour fournir les signaux analogiques d'entrée;
+
+17
+00:01:08.190 --> 00:01:12.692
+dans ce cas-ci, un HP3325 de 1978.
+
+18
+00:01:12.692 --> 00:01:14.153
+C'est encore un très bon générateur,
+
+19
+00:01:14.153 --> 00:01:15.614
+alors si on fait abstraction de la grandeur,
+
+20
+00:01:15.614 --> 00:01:16.532
+du poids,
+
+21
+00:01:16.532 --> 00:01:17.577
+de la consommation,
+
+22
+00:01:17.577 --> 00:01:18.910
+et du ventilateur bruyant,
+
+23
+00:01:18.910 --> 00:01:20.329
+on peut les trouver sur eBay.
+
+24
+00:01:20.329 --> 00:01:23.863
+Occasionnellement pour à peine plus que les frais de livraison.
+
+25
+00:01:24.617 --> 00:01:28.500
+Ensuite, nous observerons nos formes d'onde analogiques sur des oscilloscopes analogiques,
+
+26
+00:01:28.500 --> 00:01:31.550
+comme ce Tektronix 2246 datant du milieu des années 90,
+
+27
+00:01:31.550 --> 00:01:34.761
+un des derniers et des meilleurs oscilloscopes analogiques à être fabriqués.
+
+28
+00:01:34.761 --> 00:01:36.807
+Tous les labos maison devraient en avoir un.
+
+29
+00:01:37.716 --> 00:01:40.852
+Enfin, nous inspecterons le spectre fréquenciel de nos signaux
+
+30
+00:01:40.852 --> 00:01:43.177
+à l'aide de l'analyseur de specte analogique.
+
+31
+00:01:43.177 --> 00:01:47.732
+Ce HP3585 de la même ligne de produits que le générateur de signaux.
+
+32
+00:01:47.732 --> 00:01:50.615
+Comme le reste de l'équipement, il a un microcontroleur rudimentaire
+
+33
+00:01:50.615 --> 00:01:52.905
+et ridiculement énorme,
+
+34
+00:01:52.905 --> 00:01:56.276
+mais le parcours du signal de l'entrée à l'affichage
+
+35
+00:01:56.276 --> 00:01:58.537
+est complètement analogique.
+
+36
+00:01:58.537 --> 00:02:00.329
+Tout cet équipement est antique,
+
+37
+00:02:00.329 --> 00:02:01.993
+mais à part pour l'encombrement,
+
+38
+00:02:01.993 --> 00:02:03.844
+les specifications sont encore très bonnes.
+
+39
+00:02:04.536 --> 00:02:06.868
+En ce moment, nous avons notre générateur de signaux
+
+40
+00:02:06.868 --> 00:02:12.829
+réglé pour produire une belle onde sinusoïdale de 1kHz à un volt RMS,
+
+41
+00:02:13.414 --> 00:02:15.220
+nous voyons l'onde sinusoïdale sur l'oscilloscope,
+
+42
+00:02:15.220 --> 00:02:21.428
+pouvons vérifier qu'elle est en effet à 1kHz et un volt RMS,
+
+43
+00:02:21.428 --> 00:02:24.108
+ce qui est 2.8V crête-à-crête,
+
+44
+00:02:24.308 --> 00:02:27.561
+et qui est conforme à ce qu'affiche l'analyseur de spectre.
+
+45
+00:02:27.561 --> 00:02:30.644
+L'analyseur montre aussi un faible niveau de bruit blanc
+
+46
+00:02:30.644 --> 00:02:32.190
+et juste un peu de distortion harmonique,
+
+47
+00:02:32.190 --> 00:02:36.649
+avec la plus haute crête à environ 70dB sous la fondamentale.
+
+48
+00:02:36.649 --> 00:02:38.612
+Ceci n'a aucun effet sur nos demos,
+
+49
+00:02:38.612 --> 00:02:40.574
+mais je voulais quand-même le souligner maintenant
+
+50
+00:02:40.574 --> 00:02:42.452
+juste au cas où vous ne le remarqueriez que plus tard.
+
+51
+00:02:44.036 --> 00:02:47.142
+Maintenant, ajoutons l'échantillonnage numérique dans le milieu.
+
+52
+00:02:48.557 --> 00:02:51.024
+Pour la conversion, nous utiliserons un banal
+
+53
+00:02:51.024 --> 00:02:53.374
+convertisseur audio eMagic USB1.
+
+54
+00:02:53.374 --> 00:02:55.337
+Il a déjà plus de dix ans,
+
+55
+00:02:55.337 --> 00:02:57.257
+et devient obsolète.
+
+56
+00:02:57.964 --> 00:03:02.676
+Un convertisseur récent peut facilement avoir des spécifications meilleures par un ordre de grandeur.
+
+57
+00:03:03.076 --> 00:03:07.924
+Plat, linéarité, gigue, bruit, tout...
+
+58
+00:03:07.924 --> 00:03:09.353
+vous n'avez probablement pas remarqué.
+
+59
+00:03:09.353 --> 00:03:11.604
+Juste parce qu'on peut mesurer une amélioration
+
+60
+00:03:11.604 --> 00:03:13.609
+ça ne veut pas dire qu'on peut l'entendre,
+
+61
+00:03:13.609 --> 00:03:16.404
+et même ces boîtes bas de gamme étaient déjà
+
+62
+00:03:16.404 --> 00:03:18.643
+à la limite de la transparence idéale.
+
+63
+00:03:20.244 --> 00:03:22.825
+Le eMagic est connecté à mon ThinkPad,
+
+64
+00:03:22.825 --> 00:03:26.121
+qui affiche une onde numérique et un spectre pour fins de comparaison,
+
+65
+00:03:26.121 --> 00:03:28.788
+ensuite le ThinkPad redonne le signal numérique 
+
+66
+00:03:28.788 --> 00:03:30.921
+au eMagic pour re-conversion analogique
+
+67
+00:03:30.921 --> 00:03:33.332
+et observation sur les oscilloscopes en sortie.
+
+68
+00:03:33.332 --> 00:03:35.582
+De l'entrée à la sortie, de gauche à droite.
+
+69
+00:03:40.211 --> 00:03:41.214
+OK, on peut maintenant débuter.
+
+70
+00:03:41.214 --> 00:03:43.924
+Nous commençons par convertir un signal analogique en numérique
+
+71
+00:03:43.924 --> 00:03:47.347
+et ensuite de retour à l'analogique sans aucune autre étape.
+
+72
+00:03:47.347 --> 00:03:49.268
+Le générateur de signaux est réglé pour produire
+
+73
+00:03:49.268 --> 00:03:52.649
+une onde sinusoïdale de 1kHz comme avant.
+
+74
+00:03:52.649 --> 00:03:57.428
+Nous pouvons voir notre onde sinusoïdale analogique sur notre oscilloscope d'entrée.
+
+75
+00:03:57.428 --> 00:04:01.694
+Nous numérisons nos signaux à 16 bit PCM à 44,1kHz,
+
+76
+00:04:01.694 --> 00:04:03.828
+comme sur un CD.
+
+77
+00:04:03.828 --> 00:04:07.156
+Le spectre du signal numérisé correspond parfaitement à ce que nous avons vu plus tôt. et...
+
+78
+00:04:07.156 --> 00:04:10.836
+à ce que nous voyons maintenant sur l'analyseur de spectre analogique,
+
+79
+00:04:10.836 --> 00:04:15.154
+à l'exception de son entrée à haute impédance causant juste un peu plus de bruit.
+
+80
+00:04:15.154 --> 00:04:15.956
+Pour l'instant
+
+81
+00:04:18.248 --> 00:04:20.798
+l'afficheur de l'onde montre notre sinusoïde numérisée
+
+82
+00:04:20.798 --> 00:04:23.966
+comme un escalier, avec une marche par échantillon.
+
+83
+00:04:23.966 --> 00:04:26.388
+Et quand nous regardons le signal de sortie
+
+84
+00:04:26.388 --> 00:04:29.054
+qui a été converti de numérique à analogique, nous voyons...
+
+85
+00:04:29.054 --> 00:04:32.052
+Il est exactement comme la sinusoïde originale.
+
+86
+00:04:32.052 --> 00:04:33.483
+Pas d'escalier.
+
+87
+00:04:33.914 --> 00:04:37.193
+OK, 1kHz est quand-même une fréquence relativement basse,
+
+88
+00:04:37.193 --> 00:04:40.633
+peut-être que les marches d'escalier sont juste
+difficiles à voir ou qu'elles ont été lissées.
+
+89
+00:04:40.739 --> 00:04:49.492
+D'accord, Choisissons
+une fréquence plus élevée, près de Nyquist, disons 15kHz.
+
+90
+00:04:49.492 --> 00:04:53.545
+Maintenant l'onde sinusoïdale est représentés par moins de trois échantillons par cycle, et...
+
+91
+00:04:53.545 --> 00:04:55.838
+la forme d'onde numérique est plutôt affreuse.
+
+92
+00:04:55.838 --> 00:04:59.798
+Disons que les apparences sont trompeuses. La sortie analogique...
+
+93
+00:05:01.876 --> 00:05:06.033
+reste une sin parfaite, exactement comme l'originale.
+
+94
+00:05:06.633 --> 00:05:09.228
+Continuons à monter.
+
+95
+00:05:17.353 --> 00:05:20.151
+16kHz....
+
+96
+00:05:23.198 --> 00:05:25.616
+17kHz...
+
+97
+00:05:28.201 --> 00:05:29.945
+18kHz...
+
+98
+00:05:33.822 --> 00:05:35.548
+19kHz...
+
+99
+00:05:40.457 --> 00:05:42.465
+20kHz.
+
+100
+00:05:49.097 --> 00:05:52.350
+Bienvenue à la limite supérieure de l'audition humaine.
+
+101
+00:05:52.350 --> 00:05:54.377
+La forme d'onde en sortie est toujours parfaite.
+
+102
+00:05:54.377 --> 00:05:58.025
+Pas de forme irrégulière, pas de chute brutale du signal, pas d'escalier.
+
+103
+00:05:58.025 --> 00:06:01.342
+Alors, où sont passés les escaliers?
+
+104
+00:06:01.342 --> 00:06:03.198
+Ne répondez pas, c'est une question piège.
+
+105
+00:06:03.198 --> 00:06:04.318
+Ils n'ont jamais été là.
+
+106
+00:06:04.318 --> 00:06:06.652
+Dessiner une onde numérique comme un escalier
+
+107
+00:06:08.712 --> 00:06:10.772
+était incorrect dès le départ.
+
+108
+00:06:10.942 --> 00:06:11.998
+Pourquoi?
+
+109
+00:06:11.998 --> 00:06:14.366
+Un escalier est une fonction continue dans le temps.
+
+110
+00:06:14.366 --> 00:06:16.201
+Il est irrégulier et en pièces,
+
+111
+00:06:16.201 --> 00:06:19.700
+mais il a une valeur associée à chaque point dans le temps.
+
+112
+00:06:19.700 --> 00:06:22.004
+Un signal échantillonné est entièrement différent.
+
+113
+00:06:22.004 --> 00:06:23.337
+Il est discret dans le temps;
+
+114
+00:06:23.337 --> 00:06:27.337
+il n'a de valeur qu'à chaque point d'échantillonnage instantanné
+
+115
+00:06:27.337 --> 00:06:32.596
+et il est non-défini, sans aucune valeur, partout ailleurs.
+
+116
+00:06:32.596 --> 00:06:36.666
+Un signal discret dans le temps est mieux dessiné comme ceci.
+
+117
+00:06:40.020 --> 00:06:42.974
+La contre-partie analogique, continue, d'un signal numérique
+
+118
+00:06:42.974 --> 00:06:45.364
+passe doucement par chaque échantillon,
+
+119
+00:06:45.364 --> 00:06:50.153
+et c'est vrai autant pour les hautes fréquences que pour les basses.
+
+120
+00:06:50.153 --> 00:06:53.033
+Maintenant, la partie intéressante et pas évidente du tout est la suivante:
+
+121
+00:06:53.033 --> 00:06:55.454
+il n'y a qu'un seul signal limité en fréquence qui passe 
+
+122
+00:06:55.454 --> 00:06:57.417
+exactement par chaque échantillon.
+
+123
+00:06:57.417 --> 00:06:58.708
+C'est une solution unique.
+
+124
+00:06:58.708 --> 00:07:01.246
+Alors si on echantillonne un signal limité en fréquence
+
+125
+00:07:01.246 --> 00:07:02.612
+et qu'on le re-converti en analogique,
+
+126
+00:07:02.612 --> 00:07:06.462
+l'entrée originale est aussi la seule sortie possible.
+
+127
+00:07:06.462 --> 00:07:07.838
+Et avant que vous ne disiez
+
+128
+00:07:07.838 --> 00:07:11.721
+"Oh, je peux dessiner un signal différent qui passe par ces points."
+
+129
+00:07:11.721 --> 00:07:14.283
+Et bien oui vous pouvez, mais...
+
+130
+00:07:17.268 --> 00:07:20.521
+s'il diffère même un peu de l'original,
+
+131
+00:07:20.521 --> 00:07:24.905
+il contient des fréquences égales ou supérieures à Nyquist,
+
+132
+00:07:24.905 --> 00:07:26.185
+ne respecte pas la limite de fréquence
+
+133
+00:07:26.185 --> 00:07:28.358
+et n'est pas une solution valide.
+
+134
+00:07:28.574 --> 00:07:30.036
+Alors comment les gens se trompent-ils
+
+135
+00:07:30.036 --> 00:07:32.702
+et pensent aux signaux numériques comme étant des escaliers?
+
+136
+00:07:32.702 --> 00:07:34.900
+Je peux penser à deux bonnes raisons.
+
+137
+00:07:34.900 --> 00:07:37.956
+D'abord, il est facile de convertir un signal échantillonné
+
+138
+00:07:37.972 --> 00:07:39.294
+en un véritable escalier.
+
+139
+00:07:39.294 --> 00:07:42.409
+Il n'y a qu'à étendre chaque échantillon en avançant jusqu'au prochain échantillon.
+
+140
+00:07:42.409 --> 00:07:44.414
+C'est une conversion d'ordre zéro,
+
+141
+00:07:44.414 --> 00:07:47.913
+et c'est une partie importante de la manière dont certains convertisseurs numérique-à-analogique fonctionnent,
+
+142
+00:07:47.913 --> 00:07:50.089
+surtout les plus simples.
+
+143
+00:07:50.089 --> 00:07:55.591
+Alors, quiconque cherque "conversion analogique à numérique"
+
+144
+00:07:55.592 --> 00:07:59.550
+va probablement voir un diagramme d'une onde en escalier quelque part,
+
+145
+00:07:59.550 --> 00:08:01.982
+mais ce n'est pas une conversion finale,
+
+146
+00:08:01.982 --> 00:08:04.250
+et ce n'est pas le signal qui resort.
+
+147
+00:08:04.944 --> 00:08:05.684
+Deuxièmement,
+
+148
+00:08:05.684 --> 00:08:07.529
+et c'est la raison la plus probable,
+
+149
+00:08:07.529 --> 00:08:09.449
+des ingénieurs qui devraient faire mieux,
+
+150
+00:08:09.449 --> 00:08:10.441
+comme moi,
+
+151
+00:08:10.441 --> 00:08:13.193
+dessinent des escaliers même s'ils sont techniquement incorrects.
+
+152
+00:08:13.193 --> 00:08:15.571
+C'est comme une version unidimensionnelle des
+
+153
+00:08:15.571 --> 00:08:17.395
+gros carreaux dans un éditeur d'image.
+
+154
+00:08:17.395 --> 00:08:19.241
+Les pixels ne sont pas carrés eux non plus,
+
+155
+00:08:19.241 --> 00:08:23.081
+ils sont des échantillons d'un espace de fonctions bidimensionnel et ils sont donc aussi,
+
+156
+00:08:23.081 --> 00:08:26.366
+conceptuellement, des points infiniment petits.
+
+157
+00:08:26.366 --> 00:08:28.500
+En pratique, c'est très embêtant de voir
+
+158
+00:08:28.500 --> 00:08:30.804
+ou manipuler n'importe quoi d'infiniment petit.
+
+159
+00:08:30.804 --> 00:08:32.212
+Alors, ca sera des gros carrés.
+
+160
+00:08:32.212 --> 00:08:35.966
+Les dessins d'escaliers numériques sont exactement la même chose.
+
+161
+00:08:35.966 --> 00:08:37.684
+C'est juste un dessin commode.
+
+162
+00:08:37.684 --> 00:08:40.404
+Les escaliers ne sont pas vraiment là.
+
+163
+00:08:45.652 --> 00:08:48.233
+Quand on re-convertit un signal numérique vers l'analogique,
+
+164
+00:08:48.233 --> 00:08:50.900
+le résultat est <u>aussi</u> lisse, peu importe le nombre de bits.
+
+165
+00:08:50.900 --> 00:08:53.193
+24 bits ou 16 bits...
+
+166
+00:08:53.193 --> 00:08:54.196
+ou 8 bits...
+
+167
+00:08:54.196 --> 00:08:55.486
+ça ne change rien.
+
+168
+00:08:55.486 --> 00:08:57.534
+Alors est-ce à dire que le nombre de bits
+
+169
+00:08:57.534 --> 00:08:58.953
+ne fait aucune différence?
+
+170
+00:08:59.245 --> 00:09:00.521
+Évidemment pas.
+
+171
+00:09:02.121 --> 00:09:06.046
+Le canal 2 ici est la même entrée sinusoïdale,
+
+172
+00:09:06.046 --> 00:09:09.086
+mais nous la quantifions avec tramage sur huit bits.
+
+173
+00:09:09.086 --> 00:09:14.174
+Sur l'oscilloscope, nous voyons toujours une belle
+sinusoïde lisse sur le canal 2.
+
+174
+00:09:14.174 --> 00:09:18.014
+Regardez attentivement, et vous verrez aussi un
+peu plus de bruit.
+
+175
+00:09:18.014 --> 00:09:19.305
+C'est un indice.
+
+176
+00:09:19.305 --> 00:09:21.273
+Si on regarde le spectre du signal...
+
+177
+00:09:22.889 --> 00:09:23.732
+aha!
+
+178
+00:09:23.732 --> 00:09:26.398
+Notre sinusoïde est toujours présente et intacte,
+
+179
+00:09:26.398 --> 00:09:28.490
+mais le niveau de bruit du signal à huit bits
+
+180
+00:09:28.490 --> 00:09:32.470
+sur le deuxième canal est beaucoup plus élevé.
+
+181
+00:09:32.948 --> 00:09:36.148
+Et voilà la différence que fait le nombre de bits.
+
+182
+00:09:36.148 --> 00:09:37.434
+C'est tout!
+
+183
+00:09:37.822 --> 00:09:39.956
+Quand on numérise un signal, on commence par l'échantillonner.
+
+184
+00:09:39.956 --> 00:09:42.366
+L'échantillonnage est parfait; il ne perd rien.
+
+185
+00:09:42.366 --> 00:09:45.626
+Mais ensuite on le quantifie,
+et la quantification ajoute du bruit.
+
+186
+00:09:47.827 --> 00:09:50.793
+Le nombre de bits détermine la quantité de bruit
+
+187
+00:09:50.793 --> 00:09:52.569
+et donc le niveau du
+bruit de fond.
+
+188
+00:10:00.170 --> 00:10:03.646
+À quoi ressemble ce bruit de quantification?
+
+189
+00:10:03.646 --> 00:10:06.012
+Écoutons notre sinusoïde à huit bits.
+
+190
+00:10:12.521 --> 00:10:15.273
+Il est probablement difficile d'entendre quoi que ce soit d'autre que la sinusoïde.
+
+191
+00:10:15.273 --> 00:10:18.740
+Écoutons seulement le bruit, après avoir enlevé la sinusoïde
+
+192
+00:10:18.740 --> 00:10:21.683
+et augmentons le gain un peu parce que le bruit est faible.
+
+193
+00:10:32.009 --> 00:10:35.049
+Ceux d'entre vous qui avez déja utilisé de l'équipement d'enregistrement analogique
+
+194
+00:10:35.049 --> 00:10:36.670
+se sont probablement dit:
+
+195
+00:10:36.670 --> 00:10:40.382
+"Mon Dieu! Ca sonne comme du bruit statique de ruban magnétique!"
+
+196
+00:10:40.382 --> 00:10:41.929
+Eh bien, ca ne fait pas que sonner comme du bruit de ruban magnétique,
+
+197
+00:10:41.929 --> 00:10:43.433
+ça se comporte comme ça aussi,
+
+198
+00:10:43.433 --> 00:10:45.225
+et si nous utilisons un tramage gaussien
+
+199
+00:10:45.225 --> 00:10:47.646
+alors c'est mathématiquement équivalent à tous points de vue.
+
+200
+00:10:47.646 --> 00:10:49.225
+<u>C'est</u> du bruit de ruban magnétique.
+
+201
+00:10:49.225 --> 00:10:51.774
+Intuitivement, ça veut dire que nous pouvons mesurer ce bruit
+
+202
+00:10:51.774 --> 00:10:54.196
+et donc le plancher de bruit des rubans magnétiques audio
+
+203
+00:10:54.196 --> 00:10:56.233
+en bits au lieu de décibels,
+
+204
+00:10:56.233 --> 00:10:59.902
+pour mettre les choses dans une perspective numérique.
+
+205
+00:10:59.902 --> 00:11:03.028
+Les cassettes audio...
+
+206
+00:11:03.028 --> 00:11:05.449
+pour ceux qui sont assez agés pour s'en souvenir,
+
+207
+00:11:05.449 --> 00:11:09.161
+pouvaient aller jusqu'à
+neuf bits dans des conditions parfaites,
+
+208
+00:11:09.161 --> 00:11:11.209
+malgré que cinq à six bits était plus commun,
+
+209
+00:11:11.209 --> 00:11:13.876
+surtout si c'était un enregistrement effectué sur une platine à cassette.
+
+210
+00:11:13.876 --> 00:11:19.422
+Tout à fait... vos cassettes de mix n'avaient que six bits...
+avec de la chance!
+
+211
+00:11:19.837 --> 00:11:22.345
+Les meilleurs magnétophones professionnels à ruban
+
+212
+00:11:22.345 --> 00:11:24.553
+utilisés dans les studios pouvaient tout juste atteindre...
+
+213
+00:11:24.553 --> 00:11:26.473
+vous devinez?...
+
+214
+00:11:26.473 --> 00:11:27.604
+13 bits
+
+215
+00:11:27.604 --> 00:11:28.980
+<u>avec</u> une suppression de bruit avancée.
+
+216
+00:11:28.980 --> 00:11:32.062
+Et c'est pour ca que voir 'DDD' sur un disque compact
+
+217
+00:11:32.062 --> 00:11:35.208
+a déja été tout un signe de qualité.
+
+218
+00:11:40.116 --> 00:11:42.825
+Je ne cesse de mentionner que je quantifie avec tramage,
+
+219
+00:11:42.825 --> 00:11:44.734
+alors qu'est-ce que le tramage exactement?
+
+220
+00:11:44.734 --> 00:11:47.284
+Et plus important encore, qu'est que ça fait?
+
+221
+00:11:47.284 --> 00:11:49.876
+La façon la plus simple de quantifier un signal est de choisir
+
+222
+00:11:49.876 --> 00:11:52.329
+l'amplitude numérique la plus proche
+
+223
+00:11:52.329 --> 00:11:54.377
+de l'amplitude analogique originale.
+
+224
+00:11:54.377 --> 00:11:55.337
+Évident, n'est-ce pas?
+
+225
+00:11:55.337 --> 00:11:57.545
+Malheureusement, le bruit exact qu'on obtient
+
+226
+00:11:57.545 --> 00:11:59.220
+de cette quantification simpliste
+
+227
+00:11:59.220 --> 00:12:02.174
+dépend un peu du signal d'entrée,
+
+228
+00:12:02.174 --> 00:12:04.596
+alors on risque d'obtenir un bruit qui est inconsistant,
+
+229
+00:12:04.596 --> 00:12:06.142
+qui cause de la distortion,
+
+230
+00:12:06.142 --> 00:12:09.054
+ou qui est indésirable pour une autre raison.
+
+231
+00:12:09.054 --> 00:12:11.764
+Le tramage est un bruit spécialement conçu pour
+
+232
+00:12:11.764 --> 00:12:15.273
+se substituer au bruit produit par une quantification simpliste.
+
+233
+00:12:15.273 --> 00:12:18.025
+Le tramage n'enterre pas ou ne masque pas le bruit de quantification,
+
+234
+00:12:18.025 --> 00:12:20.190
+il le remplace
+
+235
+00:12:20.190 --> 00:12:22.612
+par les caractéristiques de bruit de notre choix
+
+236
+00:12:22.612 --> 00:12:24.794
+et qui ne sont pas influencées par l'entrée.
+
+237
+00:12:25.256 --> 00:12:27.081
+<u>Regardons</u> ce que fait le tramage.
+
+238
+00:12:27.081 --> 00:12:30.078
+Le générateur de signaux produit trop de bruit pour ce test
+
+239
+00:12:30.431 --> 00:12:33.161
+alors nous allons produire un une onde sinusoïdale
+
+240
+00:12:33.161 --> 00:12:34.782
+mathématiquement parfaite avec le ThinkPad
+
+241
+00:12:34.782 --> 00:12:38.205
+et la quantifier à huit bits, aver tramage.
+
+242
+00:12:39.006 --> 00:12:41.342
+Nous observons une belle sinusoïde sur l'afficheur d'onde
+
+243
+00:12:41.342 --> 00:12:43.452
+et sur l'oscilloscope de sortie
+
+244
+00:12:44.222 --> 00:12:44.972
+et...
+
+245
+00:12:46.588 --> 00:12:49.375
+une fois que l'analyseur de spectre est prêt...
+
+246
+00:12:50.713 --> 00:12:53.588
+un pic en fréquence avec un plancher de bruit uniforme
+
+247
+00:12:56.864 --> 00:12:58.611
+sur les deux afficheurs de spectre
+
+248
+00:12:58.611 --> 00:12:59.646
+exactement comme avant
+
+249
+00:12:59.646 --> 00:13:01.549
+Encore une fois, ceci est avec tramage.
+
+250
+00:13:02.196 --> 00:13:04.225
+Maintenant, j'enlève le tramage.
+
+251
+00:13:05.779 --> 00:13:07.913
+Le bruit de quantification, que le tramage a dispersé
+
+252
+00:13:07.913 --> 00:13:09.577
+en un beau plancher de bruit tout plat,
+
+253
+00:13:09.577 --> 00:13:12.286
+s'empile pour produire des pics de distortion harmonique.
+
+254
+00:13:12.286 --> 00:13:16.030
+Le plancher de bruit est plus bas, mais le niveau de distortion est maintenant différent de zéro,
+
+255
+00:13:16.030 --> 00:13:19.668
+et les pics de distortion sont maintenant plus forts que le bruit de tramage n'était.
+
+256
+00:13:19.668 --> 00:13:22.318
+À huit bits, cet effet est exagéré.
+
+257
+00:13:22.488 --> 00:13:24.200
+À seize bits,
+
+258
+00:13:24.692 --> 00:13:25.929
+même sans tramage,
+
+259
+00:13:25.929 --> 00:13:28.308
+la distortion harmonique sera si faible
+
+260
+00:13:28.308 --> 00:13:30.708
+qu'elle sera complètement inaudible.
+
+261
+00:13:30.708 --> 00:13:34.581
+Malgré tout, nous pouvons utiliser le tramage pour l'éliminer complètement
+
+262
+00:13:34.581 --> 00:13:36.489
+si nous le désirons.
+
+263
+00:13:37.642 --> 00:13:39.273
+Désactivons le tramage une fois de plus pour un instant,
+
+264
+00:13:40.934 --> 00:13:43.444
+on observe que le niveau absolu de distortion
+
+265
+00:13:43.444 --> 00:13:47.070
+de la quantification sans tramage reste approximativement constant
+
+266
+00:13:47.070 --> 00:13:49.033
+peu importe d'amplitude du signal d'entrée.
+
+267
+00:13:49.033 --> 00:13:51.998
+Mais quand le niveau du signal descend sous un demi bit,
+
+268
+00:13:51.998 --> 00:13:54.036
+tout est quantifié à zéro.
+
+269
+00:13:54.036 --> 00:13:54.910
+Dans un sens,
+
+270
+00:13:54.910 --> 00:13:58.557
+tout quantifier à zéro n'est que 100% de distortion!
+
+271
+00:13:58.833 --> 00:14:01.588
+Le tramage élimine cette distortion-là aussi.
+
+272
+00:14:01.588 --> 00:14:03.599
+Réactivons le tramage et...
+
+273
+00:14:03.599 --> 00:14:06.377
+re-voici notre signal à 1/4 bit,
+
+274
+00:14:06.377 --> 00:14:09.076
+avec notre beau plancher de bruit tout plat.
+
+275
+00:14:09.630 --> 00:14:11.220
+Il n'est pas nécessaire que le plancher de bruit soit plat.
+
+276
+00:14:11.220 --> 00:14:12.798
+Le tramage est un bruit de notre choix,
+
+277
+00:14:12.798 --> 00:14:15.006
+alors choisissons un bruit aussi inoffensif
+
+278
+00:14:15.006 --> 00:14:17.017
+et difficile à percevoir que possible.
+
+279
+00:14:18.142 --> 00:14:22.484
+Notre ouïe est à son plus sensible aux fréquences moyennes, entre 2kHz et 4kHz,
+
+280
+00:14:22.484 --> 00:14:25.438
+alors c'est l'endroit où le bruit de fond sera le plus apparent.
+
+281
+00:14:25.438 --> 00:14:29.406
+Nous pouvons modeler le bruit de tramage pour l'écarter des fréquences plus sensibles
+
+282
+00:14:29.406 --> 00:14:31.241
+et l'amener là où l'audition est moins sensible,
+
+283
+00:14:31.241 --> 00:14:33.910
+habituellement aux fréquences les plus élevées.
+
+284
+00:14:34.249 --> 00:14:37.460
+Le bruit de tramage 16 bits est normalement beaucoup trop faible pour être entendu,
+
+285
+00:14:37.460 --> 00:14:39.668
+mais écoutons notre exemple de bruit modelé,
+
+286
+00:14:39.668 --> 00:14:42.234
+encore avec un gain très élevé...
+
+287
+00:14:56.020 --> 00:14:59.977
+En dernier lieu, le bruit de quantification avec tramage <u>a</u> une puissance plus élevée en tout
+
+288
+00:14:59.977 --> 00:15:04.276
+comparativement au bruit de quantification sans tramage, même si on l'entend moins.
+
+289
+00:15:04.276 --> 00:15:07.902
+On peut le voir sur un VU-mètre durant les passages presque silencieux.
+
+290
+00:15:07.902 --> 00:15:10.537
+Mais le tramage n'est pas qu'un choix à prendre ou à laisser.
+
+291
+00:15:10.537 --> 00:15:14.712
+On peut réduire la puissance du tramage pour trouver l'équilibre entre moins de bruit et
+
+292
+00:15:14.712 --> 00:15:18.313
+un peu de distortion pour minimiser l'effet global.
+
+293
+00:15:19.605 --> 00:15:22.790
+Nous allons aussi moduler le signal d'entrés comme ceci:
+
+294
+00:15:27.098 --> 00:15:30.206
+...pour montrer comment une entrée variable affecte le bruit de quantification.
+
+295
+00:15:30.206 --> 00:15:33.289
+Avec la puissance de tramage maximale, le bruit est uniforme, constant,
+
+296
+00:15:33.289 --> 00:15:35.643
+et sans forme, exactement tel qu'attendu:
+
+297
+00:15:40.937 --> 00:15:42.772
+Alors qu'on reduit la puissance du tramage,
+
+298
+00:15:42.772 --> 00:15:46.356
+l'entrée affecte de plus en plus l'amplitude et le caractère
+
+299
+00:15:46.356 --> 00:15:47.977
+du bruit de quantification:
+
+300
+00:16:09.883 --> 00:16:13.844
+Le tramage modelé se comporte de façon similaire,
+
+301
+00:16:13.844 --> 00:16:16.553
+mais le modelage produit un avantage intéressant en plus.
+
+302
+00:16:16.553 --> 00:16:18.804
+Pour faire une histoire courte, il est possible d'utiliser
+
+303
+00:16:18.804 --> 00:16:20.937
+une puissance de tramage légèrement inférieure avant que l'entrée
+
+304
+00:16:20.937 --> 00:16:23.662
+ait autant d'effet sur la sortie.
+
+305
+00:16:49.172 --> 00:16:51.508
+Malgré tout le temps que je viens de passer sur le tramage,
+
+306
+00:16:51.508 --> 00:16:53.012
+on parle ici de différences
+
+307
+00:16:53.012 --> 00:16:56.372
+qui commencent 100 décibels sous le niveau maximal.
+
+308
+00:16:56.372 --> 00:16:59.806
+Peut-être que si le CD avait eu 14 bits tel que conçu à l'origine,
+
+309
+00:16:59.806 --> 00:17:01.513
+le tramage <u>pourrait</u> être important.
+
+310
+00:17:01.989 --> 00:17:02.644
+Peut-être.
+
+311
+00:17:02.644 --> 00:17:05.438
+À 16 bits, vraiment, c'est du pareil au même.
+
+312
+00:17:05.438 --> 00:17:08.019
+On peut penser au tramage comme d'une police d'assurance
+
+313
+00:17:08.019 --> 00:17:11.443
+qui donne quelques décibels supplémentaires de gamme dynamique
+
+314
+00:17:11.443 --> 00:17:12.804
+juste au cas où.
+
+315
+00:17:12.990 --> 00:17:14.196
+Le fait est, tout de même,
+
+316
+00:17:14.196 --> 00:17:16.361
+que personne n'a jamais ruiné un superbe enregistrement
+
+317
+00:17:16.361 --> 00:17:19.182
+en n'appliquant pas de tramage à la version finale.
+
+318
+00:17:24.414 --> 00:17:25.790
+Nous avons utilisé des ondes sinusoïdales.
+
+319
+00:17:25.790 --> 00:17:28.254
+Elles sont un choix évident quand ce qu'on veut observer
+
+320
+00:17:28.254 --> 00:17:32.212
+est le comportement d'un système à une certaine fréquence isolée.
+
+321
+00:17:32.212 --> 00:17:34.217
+Maintenant, observons quelque chose d'un peu plus complexe.
+
+322
+00:17:34.217 --> 00:17:35.923
+Qu'attendons-nous voir
+
+323
+00:17:35.923 --> 00:17:39.671
+quand je remplace l'entrée pour une onde carrée...
+
+324
+00:17:42.718 --> 00:17:45.921
+L'oscilloscope d'entrée confirme notre onde carrée de 1kHz.
+
+325
+00:17:45.921 --> 00:17:47.351
+L'oscilloscope de sortie montre...
+
+326
+00:17:48.614 --> 00:17:51.102
+Exactement ce qu'il doit montrer.
+
+327
+00:17:51.102 --> 00:17:53.900
+Qu'est-ce qu'une onde carré en fait?
+
+328
+00:17:54.654 --> 00:17:57.982
+Eh bien, disons que c'est une forme d'onde avec une valeur positive
+
+329
+00:17:57.982 --> 00:18:00.788
+pour un demi-cycle, et qui prend instantanément
+
+330
+00:18:00.788 --> 00:18:02.910
+une valeur négative pour l'autre moitié.
+
+331
+00:18:02.910 --> 00:18:05.076
+Mais ça ne nous dit pas grand chose d'utile
+
+332
+00:18:05.076 --> 00:18:07.241
+sur comment cette entrée
+
+333
+00:18:07.241 --> 00:18:09.378
+devient cette sortie.
+
+334
+00:18:10.132 --> 00:18:12.713
+Alors nous devons nous rappeler que toute forme d'onde
+
+335
+00:18:12.713 --> 00:18:15.508
+est aussi la somme de fréquences discrètes,
+
+336
+00:18:15.508 --> 00:18:18.302
+et une onde carrée est une somme particulièrement simple
+
+337
+00:18:18.302 --> 00:18:19.636
+une fondamentale et
+
+338
+00:18:19.636 --> 00:18:22.228
+une série infinie d'harmoniques impaires.
+
+339
+00:18:22.228 --> 00:18:24.597
+Si on les additionne toutes, on obtient une onde carrée.
+
+340
+00:18:26.398 --> 00:18:27.433
+À première vue,
+
+341
+00:18:27.433 --> 00:18:29.225
+ça ne semble pas très utile non plus.
+
+342
+00:18:29.225 --> 00:18:31.561
+Il faut additionner un nombre infini d'harmoniques
+
+343
+00:18:31.561 --> 00:18:33.108
+pour obtenir la réponse.
+
+344
+00:18:33.108 --> 00:18:35.977
+Ah, mais nous n'avons pas un nombre infini d'harmoniques.
+
+345
+00:18:36.960 --> 00:18:39.902
+Nous utilisont un filre anti-repliment particulièrement affûté
+
+346
+00:18:39.902 --> 00:18:42.206
+qui coupe juste au-dessus de 20kHz,
+
+347
+00:18:42.206 --> 00:18:44.158
+pour que notre signal soit limité en fréquence,
+
+348
+00:18:44.158 --> 00:18:46.421
+ce qui veut dire que nous obtenons ceci:
+
+349
+00:18:52.500 --> 00:18:56.468
+...et c'est exactement ce que nous voyons sur l'oscilloscope de sortie.
+
+350
+00:18:56.468 --> 00:18:59.550
+L'oscillation qu'on peut voir autour des transitions d'un signal limité en fréquence
+
+351
+00:18:59.550 --> 00:19:00.926
+est appelé l'effet de Gibbs.
+
+352
+00:19:00.926 --> 00:19:04.137
+Il se produit lorsqu'on coupe une partie du domaine des fréquences
+
+353
+00:19:04.137 --> 00:19:07.006
+au milieu d'une énergie non-nulle.
+
+354
+00:19:07.006 --> 00:19:09.854
+La règle approximative est que plus la coupure est abrupte,
+
+355
+00:19:09.854 --> 00:19:11.188
+plus l'oscillation est forte,
+
+356
+00:19:11.188 --> 00:19:12.777
+ce qui est à peu près vrai,
+
+357
+00:19:12.777 --> 00:19:14.900
+mais il faut faire attention à la façon de le voir.
+
+358
+00:19:14.900 --> 00:19:15.774
+Par exemple...
+
+359
+00:19:15.774 --> 00:19:19.529
+à quoi peut-on s'attendre de notre filtre anti-repliment abrupte
+
+360
+00:19:19.529 --> 00:19:23.181
+si je l'applique au signal une deuxième fois?
+
+361
+00:19:34.136 --> 00:19:37.588
+Exception faite de l'ajout de quelques fractions de cycles de délai,
+
+362
+00:19:37.588 --> 00:19:39.348
+la réponse est...
+
+363
+00:19:39.348 --> 00:19:40.857
+absolument rien.
+
+364
+00:19:41.257 --> 00:19:43.302
+Le signal est déja limité en fréquence.
+
+365
+00:19:43.656 --> 00:19:46.590
+Le limiter une seconde fois ne change rien.
+
+366
+00:19:46.590 --> 00:19:50.686
+Une deuxième application ne peut enlever des fréquences qui ont déja été enlevées.
+
+367
+00:19:52.070 --> 00:19:53.737
+Et c'est l'important.
+
+368
+00:19:53.737 --> 00:19:56.233
+Le gens pensent aux oscillations comme si elles étaient un genre d'artéfact
+
+369
+00:19:56.233 --> 00:19:59.945
+qui est ajouté par les filtres anti-repliment,
+
+370
+00:19:59.945 --> 00:20:01.737
+insinuant que les oscillations s'aggravent
+
+371
+00:20:01.737 --> 00:20:03.913
+à chaque fois que le signal passe à travers.
+
+372
+00:20:03.913 --> 00:20:05.950
+Nous pouvons constater que dans ce cas-ci, ça n'est pas arrivé.
+
+373
+00:20:05.950 --> 00:20:09.492
+Alors était-ce vraiment le filtre qui a ajouté les oscillations la première fois?
+
+374
+00:20:09.492 --> 00:20:10.537
+Non, pas exactement.
+
+375
+00:20:10.537 --> 00:20:12.126
+C'est une distinction subtile,
+
+376
+00:20:12.126 --> 00:20:15.252
+mais le oscillations de l'effet Gibbs ne sont pas crées par les filtres,
+
+377
+00:20:15.252 --> 00:20:18.836
+elles sont une partie intégrante de ce qu'un signal limité en fréquence <u>est</u>.
+
+378
+00:20:18.836 --> 00:20:20.798
+Meme si nous construisons synthétiquement
+
+379
+00:20:20.798 --> 00:20:23.508
+ce qui ressemble à une onde carrée numérique parfaite,
+
+380
+00:20:23.508 --> 00:20:26.206
+elle est toujours limitée par la bande passante du canal.
+
+381
+00:20:26.206 --> 00:20:29.140
+Souvenons nous que la représentation en escalier est erronée.
+
+382
+00:20:29.140 --> 00:20:32.222
+Nous avois affaire à des échantillons instantannés,
+
+383
+00:20:32.222 --> 00:20:36.148
+et un seul signal limité en fréquence passe par tous ces échantillons.
+
+384
+00:20:36.148 --> 00:20:39.614
+Tout ce que nous avons fait en dessinant notre onde carrée apparemment parfaite
+
+385
+00:20:39.614 --> 00:20:43.198
+a été d'aligner les échantillons de telle sorte qu'ils paraissent
+
+386
+00:20:43.198 --> 00:20:47.785
+ne pas avoir d'oscillations si nous jouons à "relions les points".
+
+387
+00:20:47.785 --> 00:20:49.449
+Mais le signal original limité en fréquence,
+
+388
+00:20:49.449 --> 00:20:52.742
+avec toutes ses oscillaitons, était toujours là.
+
+389
+00:20:54.004 --> 00:20:56.542
+Et cela nous mène à un autre point important.
+
+390
+00:20:56.542 --> 00:20:59.550
+Vous avez probablement déjà entendu que la précision temporelle d'un signal numérique
+
+391
+00:20:59.550 --> 00:21:02.409
+est limitée par sa fréquence d'échantillonnage; dit autrement,
+
+392
+00:21:02.409 --> 00:21:05.140
+que les signaux numériques ne peuvent représenter quoi que ce soit
+
+393
+00:21:05.140 --> 00:21:08.041
+qui se passe entre les échantillons...
+
+394
+00:21:08.041 --> 00:21:11.422
+insinuant que les les impulsions ou les attaques rapides soivent coïncider
+
+395
+00:21:11.422 --> 00:21:14.473
+exactement avec un échantillon, ou sinon le temps est faussé...
+
+396
+00:21:14.473 --> 00:21:16.219
+ou même qu'ils disparaissent.
+
+397
+00:21:16.711 --> 00:21:20.820
+À ce point-ci, nous pouvons facilement voir pourquoi cette conclusion est erronée.
+
+398
+00:21:20.820 --> 00:21:23.742
+Encore une fois, nos signaux d'entrée sont limités en fréquence.
+
+399
+00:21:23.742 --> 00:21:26.036
+Et les signaux numériques sont des échantillons,
+
+400
+00:21:26.036 --> 00:21:29.340
+pas des escaliers, pas "relier les points".
+
+401
+00:21:31.572 --> 00:21:34.592
+Nous pouvons certainement, par exemple,
+
+402
+00:21:36.777 --> 00:21:39.337
+mettre le front montant de notre onde carrée limitée en fréquence
+
+403
+00:21:39.337 --> 00:21:42.004
+là ou nous le voulons entre les échantillons.
+
+404
+00:21:42.004 --> 00:21:44.354
+C'est parfaitement représenté
+
+405
+00:21:47.508 --> 00:21:50.218
+et c'est parfaitement reconstruit.
+
+406
+00:22:04.620 --> 00:22:06.526
+Comme dans le dernier épisode,
+
+407
+00:22:06.526 --> 00:22:08.393
+nous avons couvert un grand nombre de sujets,
+
+408
+00:22:08.393 --> 00:22:10.868
+et malgré tout seulement effleuré chacun d'eux.
+
+409
+00:22:10.868 --> 00:22:13.620
+Et même, mes omissions sont encore plus nombreuses cette fois-ci...
+
+410
+00:22:13.620 --> 00:22:16.286
+mais c'est un bon point pour s'arrêter.
+
+411
+00:22:16.286 --> 00:22:17.833
+Ou peut-être un bon point pour commencer.
+
+412
+00:22:17.833 --> 00:22:18.708
+Approfondissez.
+
+413
+00:22:18.708 --> 00:22:19.710
+Expérimentez.
+
+414
+00:22:19.710 --> 00:22:21.374
+J'ai choisi mes démonstrations avec soin
+
+415
+00:22:21.374 --> 00:22:23.668
+pour qu'elles soient simples et produisent des résultats clairs.
+
+416
+00:22:23.668 --> 00:22:26.217
+Vous pouvez reproduire chacune d'entre elles par vous-même si vous les désirez.
+
+417
+00:22:26.217 --> 00:22:28.766
+Mais soyons réalistes, parfois on en apprend plus
+
+418
+00:22:28.766 --> 00:22:30.516
+sur des beaux jouets en les ouvrant
+
+419
+00:22:30.516 --> 00:22:32.553
+et en étudiant toutes les pièces à l'intérieur.
+
+420
+00:22:32.553 --> 00:22:35.230
+C'est bien ainsi, nous somme des ingénieurs.
+
+421
+00:22:35.230 --> 00:22:36.350
+Amusez-vous avec les paramètres des demos,
+
+422
+00:22:36.350 --> 00:22:37.972
+modifiez le code,
+
+423
+00:22:37.972 --> 00:22:39.774
+créez d'autres expériences.
+
+424
+00:22:39.774 --> 00:22:40.692
+Le code source pour tout,
+
+425
+00:22:40.692 --> 00:22:42.398
+incluant la petite application demo à boutons,
+
+426
+00:22:42.398 --> 00:22:44.361
+est disponible à Xiph.Org.
+
+427
+00:22:44.361 --> 00:22:45.940
+En cours d'experimentation,
+
+428
+00:22:45.940 --> 00:22:47.401
+vous rencontrerez probablement quelque chose
+
+429
+00:22:47.401 --> 00:22:49.950
+que vous n'attendez pas et ne pouvez expliquer.
+
+430
+00:22:49.950 --> 00:22:51.198
+Ne vous en faites pas!
+
+431
+00:22:51.198 --> 00:22:54.537
+Malgré ma remarque plus tôt, Wikipedia est fantastique pour
+
+432
+00:22:54.537 --> 00:22:56.788
+ce genre de recherche.
+
+433
+00:22:56.788 --> 00:22:59.956
+Si vous êtes vraiment sérieux et voulez comprendre les signaux,
+
+434
+00:22:59.956 --> 00:23:03.337
+plusieurs universités ont du matériel avancé en ligne,
+
+435
+00:23:03.337 --> 00:23:07.380
+comme les modules "Signals and Systems" 6.003 et 6.007
+
+436
+00:23:07.380 --> 00:23:08.798
+à MIT OpenCourseWare.
+
+437
+00:23:08.798 --> 00:23:11.593
+Et évidemment, il y a toujours la communauté Xiph.Org.
+
+438
+00:23:12.792 --> 00:23:13.929
+Que vous fouilliez plus ou non,
+
+439
+00:23:13.929 --> 00:23:14.974
+Je n'ai plus de café,
+
+440
+00:23:14.974 --> 00:23:16.436
+alors à la prochaine,
+
+441
+00:23:16.436 --> 00:23:19.316
+bonne expérimentation!
