@@ -170,8 +170,9 @@
     
     <ul>
       <li><b> VTT format: </b><br>
-	<a href="vid2-en.vtt"> 
-	  US English</a>
+        <a href="02-Digital_Show_and_Tell.en.vtt">US English</a>
+	<a href="02-Digital_Show_and_Tell.fr.vtt">French</a>
+      </li>
     </ul>
     <p>We welcome good, technical translations from the community!
     Please submit translations in SRT, VTT or Ogg Kate format
