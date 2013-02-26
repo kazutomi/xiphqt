@@ -14,11 +14,11 @@ Dans l'article, j'ai mentionné, en passant, qu'une forme d'onde numérique n'es
 
 4
 00:00:23.433 --> 00:00:28.680
-et qu'on n'obtient certainement pas un escalier quand on converti du numérique vers l'analogique.
+et qu'on n'obtient certainement pas un escalier quand on convertit du numérique vers l'analogique.
 
 5
 00:00:29.865 --> 00:00:33.865
-De tout l'article, ça a été la chose que les gens ont le plus commenté.
+De tout l'article, ça a été la chose qui a généré le plus de commentaires
 
 6
 00:00:33.865 --> 00:00:37.221
@@ -688,7 +688,7 @@ Le canal 2 ici est la même entrée sinusoïdale,
 
 172
 00:09:06.046 --> 00:09:09.086
-mais nous la quantifions avec tramage sur huit bits.
+mais nous la quantifions avec tramage (dither) sur huit bits.
 
 173
 00:09:09.086 --> 00:09:14.174
@@ -796,7 +796,7 @@ Eh bien, ca ne fait pas que sonner comme du bruit de ruban magnétique,
 
 198
 00:10:43.433 --> 00:10:45.225
-et si nous utilisons un tramage gaussien
+et si nous utilisons un tramage (dither) gaussien
 
 199
 00:10:45.225 --> 00:10:47.646
@@ -1178,7 +1178,7 @@ un peu de distortion pour minimiser l'effet global.
 
 293
 00:15:19.605 --> 00:15:22.790
-Nous allons aussi moduler le signal d'entrés comme ceci:
+Nous allons aussi moduler le signal d'entrée comme ceci:
 
 294
 00:15:27.098 --> 00:15:30.206
@@ -1386,7 +1386,7 @@ Ah, mais nous n'avons pas un nombre infini d'harmoniques.
 
 345
 00:18:36.960 --> 00:18:39.902
-Nous utilisons un filre anti-repliment particulièrement abrupte
+Nous utilisons un filtre anti-repliment particulièrement abrupte
 
 346
 00:18:39.902 --> 00:18:42.206
@@ -1534,7 +1534,7 @@ Souvenons nous que la représentation en escalier est erronée.
 
 382
 00:20:29.140 --> 00:20:32.222
-Nous avois affaire à des échantillons instantannés,
+Nous avons affaire à des échantillons instantannés,
 
 383
 00:20:32.222 --> 00:20:36.148
@@ -1582,7 +1582,7 @@ qui se passe entre les échantillons...
 
 394
 00:21:08.041 --> 00:21:11.422
-insinuant que les les impulsions ou les attaques rapides doivent coïncider
+insinuant que les impulsions ou les attaques rapides doivent coïncider
 
 395
 00:21:11.422 --> 00:21:14.473
