@@ -80,7 +80,7 @@
 	<select class="chapter-select">
 	  <option>Chapter Selection</option>
 	  <option timecode="0">title</option>
-	  <option timecode="7.882">intro</option>
+	  <option timecode="7.882">introduction</option>
 	  <option timecode="45.044">veritas ex machina</option>
 	  <option timecode="216.424">stairsteps</option>
 	  <option timecode="520.978">bit-depth</option>
@@ -126,14 +126,14 @@
       demo and try it all for yourself!
     </p>
       
-    <h2><a href="http://wiki.xiph.org/Digital_Show_and_Tell/Episode_02">Discuss
+    <h2><a href="http://wiki.xiph.org/Videos/Digital_Show_and_Tell">Discuss
     and learn more: <i>"Digital Show &amp; Tell"</i> the
     Wiki-edition!</a></h2>
 
     <p>Like the <a href="vid1.shtml">previous episode</a>, this video
       moves fast and only glances on a number of rather important
       topics, so we've set up
-      a <a href="http://wiki.xiph.org/Digital_Show_and_Tell/Episode_02">Wiki</a>
+      a <a href="http://wiki.xiph.org/Videos/Digital_Show_and_Tell">Wiki</a>
       to get more information, ask questions, and debate.
       
     <h2>Download this video!</h2>
