@@ -9,5 +9,6 @@
 
   <script type="text/javascript" src="jquery.js"></script>
   <script type="text/javascript" src="subtitles.js"></script>
+  <script type="text/javascript" src="clickbox.js"></script>
   <script type="text/javascript" src="dimmy.js"></script>
   <script type="text/javascript" src="video.js"></script>
