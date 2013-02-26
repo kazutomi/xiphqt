@@ -3,7 +3,6 @@
   <ul>
     <li><a href="/about/">About</a></li>
     <li><a href="/press/">Press</a></li>
-    <li><a href="/donate/">Donate</a></li>
     <li><a href="/contact/">Contact</a></li>
     <li><a href="http://wiki.xiph.org/index.php/Main_Page">Wiki</a></li>
   </ul>
@@ -16,6 +15,10 @@
   <ul>
     <li><a href="/#resources">Resources by Project</a></li>
   </ul>
+  <ul>
+    <li><a href="/donate/"><div id="donate">Donate</div></a></li>
+  </ul>
+  <div id="donate2">The Xiph.Org Foundation is a non-profit organization supported by your donations</div>
 </div>
 
 <div id="banners"></div>

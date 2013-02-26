@@ -119,3 +119,29 @@ blockquote code {
   color: #888888;
   clear: both;
 }
+
+li a div#donate {
+  border-radius: 6px;
+  border: 1px solid #cdddff;
+  padding: .2em;
+  background-color: #ffd880;
+  width: auto;
+  margin-left: 1em;
+  margin-right: 0;
+  text-align: center;
+  font-style: italic;
+  font-size: 130%;
+  margin-top: 2em;
+  line-height: 1.4;
+}
+
+div#donate2 {
+  text-align: center;
+  font-size: .7em;
+  line-height: 1.2;
+  font-weight: normal;
+  color: #666666;
+  text-decoration: none;
+  margin: -.75em 0 1em 1em;
+  padding: 0px;
+}
