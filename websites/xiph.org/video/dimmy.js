@@ -33,6 +33,7 @@ function dimfg() {
         }
 
         document.getElementById("xiphimage").style.opacity=".5";
+        document.getElementById("donate").style.opacity=".25";
     }
 }
 
@@ -40,6 +41,7 @@ function undimfg() {
     if (document.styleSheets) {
 
         document.getElementById("xiphimage").style.opacity="1";
+        document.getElementById("donate").style.opacity="1";
 
         for (var i=0; i<document.styleSheets.length; i++) {
             var styleSheet=document.styleSheets[i];

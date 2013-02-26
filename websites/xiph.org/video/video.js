@@ -10,7 +10,7 @@ function fixupVideo(video)
     if ((video.canPlayType &&
 	 (video.canPlayType("video/ogg; codecs=\"theora, vorbis\"") == "probably" ||
           video.canPlayType("video/webm; codecs=\"vp8, vorbis\"") == "probably"))) {
-        videoElement = true;
+          videoElement = true;
     }
 
     if (!videoElement) {
@@ -196,6 +196,8 @@ var playonce=0;
 function showControls(el,delay){
     var wrapper = findUnder(el,'.vcwrapper');
     var video = findUnder(el,'video');
+    if(!video) return;
+    if(!wrapper)return;
     var playing = !(video.paused);
     var position = video.currentTime;
     if(!wrapper)return;
@@ -216,6 +218,7 @@ function showControls(el,delay){
 var focused_el = 0;
 function hideControls(el){
     var video = findUnder(el,'video');
+    if(!video) return;
     var playing = !(video.paused);
     var position = video.currentTime;
     if(position)playonce=1;
@@ -298,6 +301,9 @@ $(document).ready(function() {
                 this.onfocus=function(){focusControl(this);};
                 this.onchange=function(){SetTime(this);};
             });
+        $('.cb').each(function() {
+                SetClickboxes(this);
+	});
 
     });
 
