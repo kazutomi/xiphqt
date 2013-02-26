@@ -1,0 +1,46 @@
+<!--#include virtual="/ssi/header.include" -->
+<!-- Enter custom page information and styles here -->
+  <title>February 26, 2013: Digital Show &amp; Tell</title>
+</head>
+<body>
+<!--#include virtual="/common/xiphbar.include" -->
+
+<!--#include virtual="/ssi/pagetop.include" -->
+<!--  All your page content goes here  -->
+
+
+<h3>Digital Show &amp; Tell</h3>
+
+<p>Xiph.Org is pleased to announce that we've
+completed <a href="http://video.xiph.org/vid2.shtml">_Digital Show &
+Tell_, our second major video on digital media</a>.  This time we
+explore multiple facets of digital audio signals and how they really
+behave in the real world.
+
+<p>Demonstrations of sampling, quantization, bit-depth, and dither
+show digital audio behavior on real audio equipment using both
+modern digital analysis and vintage analog bench
+equipment... just in case we can't trust those newfangled digital
+gizmos.  You can also download the source code for each demo and
+try it all for yourself!
+
+<p>Like the our previous
+vid <a href="http://video.xiph.org/vid1.shtml">_A Digital Media Primer
+for Geeks_</a>, this video moves fast and only glances on a number of
+rather important topics, so we've also set up
+a <a href="http://wiki.xiph.org/Videos/Digital_Show_and_Tell">Wiki</a>
+to get more information, ask questions, and debate.
+
+<p>We hope you enjoy it, and Happy Hacking!
+
+<p>Monty
+<br>Xiph.Org
+
+<p><i> The Xiph.Org Foundation is a not-for-profit corporation
+dedicated to open, unencumbered multimedia technology. Xiph's formats
+and software levels the playing field for digital media so that all
+producers and artists can distribute their work for minimal cost,
+without restriction, regardless of affiliation.  May contain traces of
+nuts.</i></p>
+
+<!--#include virtual="/ssi/pagebottom.include" -->
