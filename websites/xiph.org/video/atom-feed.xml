@@ -56,9 +56,9 @@
 
     <summary type="html"><![CDATA[
     <video controls width="640" height="360">
-      <source src="http://downloads.xiph.org/video/Digital_Show_&_Tell-360p.ogv"
+      <source src="http://downloads.xiph.org/video/Digital_Show_and_Tell-360p.ogv"
               type="video/ogg">
-      <source src="http://downloads.xiph.org/video/Digital_Show_&_Tell-360p.webm"
+      <source src="https://media.xiph.org/monty/episode-02/02-Digital_Show_and_Tell.360p.webm"
               type="video/webm">
     </video>
     <p> 
