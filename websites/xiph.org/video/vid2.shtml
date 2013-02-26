@@ -95,7 +95,7 @@
 	<select class="srt-select">
 	  <option>
 	    Subtitles: Off</option>
-	  <option file="vid2-en.vtt">
+	  <option file="02-Digital_Show_and_Tell.en.vtt">
 	    Subtitles: US English</option>
 	</select>
 	
