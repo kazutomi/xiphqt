@@ -40,7 +40,13 @@
       <div class="srt"></div>
       <div class="absbackground"></div>
     </div>
-    
+
+    <!-- Clickable overlay boxes -->
+    <div class="cbwrapper">
+      <a class="cb" file="02-Digital_Show_and_Tell.cb"></a>
+      <div class="cbicon"><img src="click.png"></div>
+    </div>
+
     <!-- Addiitional upper video control bar (driven by javascript in video.js) -->
     <div class="vcwrapper">
       <div class="vidcontrols">
@@ -113,11 +119,10 @@
   <div style="clear: both; font-size: 0px;"></div>
   <div class="vid_caption">
 
-    <p> 
-      Continuing the "firehose" tradition of maximum information density, Xiph.Org's
-      second video on digital media explores multiple facets of digital
-      audio signals and how they <i>really</i> behave in the real
-      world.
+    <p> Continuing the "firehose" tradition of maximum information
+      density, Xiph.Org's second video on digital media explores
+      multiple facets of digital audio signals and how
+      they <i>really</i> behave in the real world.
     </p>
     <p>
       Demonstrations of sampling, quantization, bit-depth, and dither

@@ -192,3 +192,38 @@ h1 {
     background: #606060;
     color: #e0e0e0;
 }
+
+.cb {
+    position: absolute;
+    z-index: 1;
+    display: none;
+}
+
+.clickclass1 {
+    border-radius: 4px;
+    border-bottom: 1px solid #8c8cff;
+    border-right: 1px solid #8c8cff;
+    background-image: linear-gradient(to bottom,rgba(255,255,255,.05),rgba(255,255,255,.10));
+}
+
+.clickclass2 {
+    border-radius: 4px;
+    border-bottom: 1px solid #8c8cff;
+    border-right: 1px solid #8c8cff;
+    background-image: linear-gradient(to bottom,rgba(0,0,255,.05),rgba(0,0,255,.1));
+}
+
+.clickclass3 {
+    border-radius: 4px;
+    border-bottom: 1px solid #8c8cff;
+    border-right: 1px solid #8c8cff;
+    background-image: linear-gradient(to bottom,rgba(255,255,255,.10),rgba(255,255,255,.15));
+}
+
+.cbicon{
+    display: none;
+    position: absolute;
+    margin-top: -14px;
+    margin-left: -14px;
+    z-index: 2;
+}
