@@ -126,7 +126,7 @@ Ce HP3585 de la même ligne de produits que le générateur de signaux.
 
 32
 00:01:47.732 --> 00:01:50.615
-Comme le reste de l'équipement, il a un microcontroleur rudimentaire
+Comme le reste de l'équipement, il a un microcontrôleur rudimentaire
 
 33
 00:01:50.615 --> 00:01:52.905
@@ -355,12 +355,12 @@ difficiles à voir ou qu'elles ont été lissées.
 
 89
 00:04:40.739 --> 00:04:49.492
-D'accord, Choisissons
+D'accord, choisissons
 une fréquence plus élevée, près de Nyquist, disons 15kHz.
 
 90
 00:04:49.492 --> 00:04:53.545
-Maintenant l'onde sinusoïdale est représentés par moins de trois échantillons par cycle, et...
+Maintenant l'onde sinusoïdale est représentée par moins de trois échantillons par cycle, et...
 
 91
 00:04:53.545 --> 00:04:55.838
@@ -372,7 +372,7 @@ Disons que les apparences sont trompeuses. La sortie analogique...
 
 93
 00:05:01.876 --> 00:05:06.033
-reste une sin parfaite, exactement comme l'originale.
+reste une sinusoïde parfaite, exactement comme l'originale.
 
 94
 00:05:06.633 --> 00:05:09.228
@@ -496,7 +496,7 @@ C'est une solution unique.
 
 124
 00:06:58.708 --> 00:07:01.246
-Alors si on echantillonne un signal limité en fréquence
+Alors si on échantillonne un signal limité en fréquence
 
 125
 00:07:01.246 --> 00:07:02.612
@@ -520,7 +520,7 @@ Et bien oui vous pouvez, mais...
 
 130
 00:07:17.268 --> 00:07:20.521
-s'il diffère même un peu de l'original,
+s'il diffère ne serait-ce qu'un peu de l'original,
 
 131
 00:07:20.521 --> 00:07:24.905
@@ -536,11 +536,11 @@ et n'est pas une solution valide.
 
 134
 00:07:28.574 --> 00:07:30.036
-Alors comment les gens se trompent-ils
+Alors pourquoi les gens se trompent-ils
 
 135
 00:07:30.036 --> 00:07:32.702
-et pensent aux signaux numériques comme étant des escaliers?
+et pensent-ils aux signaux numériques comme étant des escaliers?
 
 136
 00:07:32.702 --> 00:07:34.900
@@ -572,7 +572,7 @@ surtout les plus simples.
 
 143
 00:07:50.089 --> 00:07:55.591
-Alors, quiconque cherque "conversion analogique à numérique"
+Alors, quiconque cherche "conversion analogique à numérique"
 
 144
 00:07:55.592 --> 00:07:59.550
@@ -845,7 +845,7 @@ surtout si c'était un enregistrement effectué sur une platine à cassette.
 
 210
 00:11:13.876 --> 00:11:19.422
-Tout à fait... vos cassettes de mix n'avaient que six bits...
+Tout à fait... vos cassettes de "mix" n'avaient que six bits...
 avec de la chance!
 
 211
@@ -926,7 +926,7 @@ qui cause de la distortion,
 
 230
 00:12:06.142 --> 00:12:09.054
-ou qui est indésirable pour une autre raison.
+ou qui est indésirable pour d'autres raisons.
 
 231
 00:12:09.054 --> 00:12:11.764
@@ -962,7 +962,7 @@ Le générateur de signaux produit trop de bruit pour ce test
 
 239
 00:12:30.431 --> 00:12:33.161
-alors nous allons produire un une onde sinusoïdale
+alors nous allons produire une onde sinusoïdale
 
 240
 00:12:33.161 --> 00:12:34.782
@@ -1070,7 +1070,7 @@ de la quantification sans tramage reste approximativement constant
 
 266
 00:13:47.070 --> 00:13:49.033
-peu importe d'amplitude du signal d'entrée.
+peu importe l'amplitude du signal d'entrée.
 
 267
 00:13:49.033 --> 00:13:51.998
@@ -1294,11 +1294,11 @@ Maintenant, observons quelque chose d'un peu plus complexe.
 
 322
 00:17:34.217 --> 00:17:35.923
-Qu'attendons-nous voir
+Qu'attendons-nous de voir
 
 323
 00:17:35.923 --> 00:17:39.671
-quand je remplace l'entrée pour une onde carrée...
+quand je remplace l'entrée par une onde carrée...
 
 324
 00:17:42.718 --> 00:17:45.921
@@ -1350,7 +1350,7 @@ est aussi la somme de fréquences discrètes,
 
 336
 00:18:15.508 --> 00:18:18.302
-et une onde carrée est une somme particulièrement simple
+et une onde carrée est une somme particulièrement simple:
 
 337
 00:18:18.302 --> 00:18:19.636
@@ -1386,7 +1386,7 @@ Ah, mais nous n'avons pas un nombre infini d'harmoniques.
 
 345
 00:18:36.960 --> 00:18:39.902
-Nous utilisont un filre anti-repliment particulièrement affûté
+Nous utilisons un filre anti-repliment particulièrement abrupte
 
 346
 00:18:39.902 --> 00:18:42.206
@@ -1582,7 +1582,7 @@ qui se passe entre les échantillons...
 
 394
 00:21:08.041 --> 00:21:11.422
-insinuant que les les impulsions ou les attaques rapides soivent coïncider
+insinuant que les les impulsions ou les attaques rapides doivent coïncider
 
 395
 00:21:11.422 --> 00:21:14.473
@@ -1762,7 +1762,7 @@ Que vous fouilliez plus ou non,
 
 439
 00:23:13.929 --> 00:23:14.974
-Je n'ai plus de café,
+je n'ai plus de café,
 
 440
 00:23:14.974 --> 00:23:16.436
