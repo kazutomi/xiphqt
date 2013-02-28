@@ -111,19 +111,19 @@
 	  <option>
 	    Subtitles: Off</option>
 	  <option file="vid1-en.srt">
-	    Subtitles: US English</option>
+	    US English</option>
           <option file="vid1-es.srt">
-            Subtitles: Español</option>
+            Español</option>
 	  <option file="vid1-fr.srt">
-	    Subtitles: Français</option>
+	    Français</option>
 	  <option file="vid1-de.srt">
-	    Subtitles: Deutsch</option>
+	    Deutsch</option>
 	  <option file="vid1-it.srt">
-	    Subtitles: Italiano</option>
+	    Italiano</option>
 	  <option file="vid1-ptbr.srt">
-	    Subtitles: Português</option>
+	    Português (Brazil)</option>
           <option file="vid1-ru.srt">
-            Subtitles: Русский</option>
+            Русский</option>
 	</select>
 	
       </div>

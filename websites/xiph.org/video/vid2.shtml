@@ -102,9 +102,11 @@
 	  <option>
 	    Subtitles: Off</option>
 	  <option file="02-Digital_Show_and_Tell.en.vtt">
-	    Subtitles: US English</option>
+	    US English</option>
 	  <option file="02-Digital_Show_and_Tell.fr.vtt">
-	    Subtitles: French</option>
+	    French</option>
+	  <option file="02-Digital_Show_and_Tell.ptbr.vtt">
+	    Português (Brazil)</option>
 	</select>
 	
       </div>
@@ -175,8 +177,9 @@
     
     <ul>
       <li><b> VTT format: </b><br>
-        <a href="02-Digital_Show_and_Tell.en.vtt">US English</a>
-	<a href="02-Digital_Show_and_Tell.fr.vtt">French</a>
+        <a href="02-Digital_Show_and_Tell.en.vtt">US English</a> |
+	<a href="02-Digital_Show_and_Tell.fr.vtt">French</a> |
+	<a href="02-Digital_Show_and_Tell.ptbr.vtt">Português (Brazil)</a>
       </li>
     </ul>
     <p>We welcome good, technical translations from the community!
