@@ -6,14 +6,14 @@
   <link rel="alternate" type="text/html" href="http://video.xiph.org/" />
   <link rel="self" type="application/atom+xml" href="http://video.xiph.org/atom-feed.xml" />
   <id>http://video.xiph.org/atom-feed.xml</id>
-  <updated>2013-02-26T09:40:46Z</updated>
+  <updated>2013-03-01T09:40:46Z</updated>
 
 
   <entry>
     <title>Episode 01: A Digital Media Primer for Geeks</title>
-    <link rel="alternate" type="text/html" href="/vid1.shtml" />
+    <link rel="alternate" type="text/html" href="http://video.xiph.org/vid1.shtml" />
     <id>tag:video.xiph.org,2013:/vid1.shtml</id>
-    <updated>2013-02-24T23:40:46Z</updated>
+    <updated>2013-03-01T09:40:45Z</updated>
 
     <author>
       <name>Xiph.Org</name>
@@ -40,15 +40,16 @@
       to get into video coding, as well as the technically curious who want to
       know more about the media they wrangle for work or play.
     </p>
+    <p><i>Apologies for the refreshed feed; The original used a relative URL link that not all readers were handing as expected.</i></p>
     ]]>
     </summary>
   </entry>
 
   <entry>
     <title>Episode 02: Digital Show &amp; Tell</title>
-    <link rel="alternate" type="text/html" href="/vid2.shtml" />
+    <link rel="alternate" type="text/html" href="http://video.xiph.org/vid2.shtml" />
     <id>tag:video.xiph.org,2013:/vid2.shtml</id>
-    <updated>2013-02-26T09:40:46Z</updated>
+    <updated>2013-03-01T09:40:46Z</updated>
 
     <author>
       <name>Xiph.Org</name>
@@ -75,6 +76,7 @@
       digital gizmos.  You can also download the source code for each
       demo and try it all for yourself!
     </p>
+    <p><i>Apologies for the refreshed feed; The original used a relative URL link that not all readers were handing as expected.</i></p>
     ]]>
     </summary>
   </entry>
