@@ -1,0 +1,15 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+md5sums:
+dbeb9fa0f808fc0064e4461e769c184a  flac-1.3.0pre1.tar.xz
+
+sha256sums:
+2fa4f97aa4af8b37b1518ca2f8e4864549042686e00efa8d2d2cea7797f19b19  flac-1.3.0pre1.tar.xz
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iEYEARECAAYFAlEyhAYACgkQbKQad0O41sjZtgCgqyBOnO94q16OE9gEdQY80a5Q
+bfwAoKbXGZLlD3nL7WFDxv84i8WWlxxv
+=QLRs
+-----END PGP SIGNATURE-----
