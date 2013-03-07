@@ -28,7 +28,17 @@ function content_type_lookup($content_type)
 	{
 		return CONTENT_TYPE_OGG_THEORA;
 	}
+	elseif ($content_type == "application/ogg+opus")
+	{
+		return CONTENT_TYPE_OPUS;
+	}
 	
+	// WebM
+	if ($content_type == "video/webm" || $content_type == "audio/webm" )
+        {
+                return CONTENT_TYPE_WEBM;
+        }
+
 	// MP3
 	elseif ($content_type == "audio/mpeg" || $content_type == "audio/x-mpeg" || $content_type == 'application/mp3')
 	{
@@ -72,6 +82,12 @@ function get_media_type_string($type_id)
 		case CONTENT_TYPE_OGG_THEORA:
 			$type = 'Ogg Theora';
 			break;
+                case CONTENT_TYPE_OPUS:
+                        $type = 'Opus';
+                        break;
+                case CONTENT_TYPE_WEBM:
+                        $type = 'WebM';
+                        break;
 		case CONTENT_TYPE_MP3:
 			$type = 'MP3';
 			break;
@@ -105,6 +121,12 @@ function get_media_type_url($type_id)
                         break;
                 case CONTENT_TYPE_OGG_THEORA:
                         $type = 'Ogg_Theora';
+                        break;
+                case CONTENT_TYPE_OPUS:
+                        $type = 'Opus';
+                        break;
+                case CONTENT_TYPE_WEBM:
+                        $type = 'WebM';
                         break;
                 case CONTENT_TYPE_MP3:
                         $type = 'MP3';
@@ -151,6 +173,16 @@ function get_mime_type_string($type_id, $full_type=false)
 			    $type .= '+theora';
 			}
 			break;
+                case CONTENT_TYPE_OPUS:
+                        $type = 'application/ogg';
+			if ($full_type)
+			{
+			    $type .= '+opus';
+			}
+                        break;
+                case CONTENT_TYPE_WEBM:
+                        $type = 'video/webm';
+                        break;
 		case CONTENT_TYPE_MP3:
 			$type = 'audio/mpeg';
 			break;

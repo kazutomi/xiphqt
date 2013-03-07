@@ -18,6 +18,8 @@ $tpl->assign('tag_cloud', genfile::get(genfile::makeGenfileName('tagcloud')));
 $tpl->assign('servers_total', $memcache->get(ENVIRONMENT.'_servers_total'));
 $tpl->assign('servers_mp3', $memcache->get(ENVIRONMENT.'_servers_'.CONTENT_TYPE_MP3));
 $tpl->assign('servers_vorbis', $memcache->get(ENVIRONMENT.'_servers_'.CONTENT_TYPE_OGG_VORBIS));
+$tpl->assign('servers_opus', $memcache->get(ENVIRONMENT.'_servers_'.CONTENT_TYPE_OPUS));
+$tpl->assign('servers_webm', $memcache->get(ENVIRONMENT.'_servers_'.CONTENT_TYPE_WEBM));
 $tpl->display('index.tpl');
 
 // Footer
