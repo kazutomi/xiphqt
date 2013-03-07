@@ -8,6 +8,15 @@
 {if !empty($servers_vorbis)}
 							<li>Ogg Vorbis: <strong>{$servers_vorbis|intval}</strong></li>
 {/if}
+{if !empty($servers_opus)}
+							<li>Opus: <strong>{$servers_opus|intval}</strong></li>
+{/if}
+{if !empty($servers_webm)}
+							<li>WebM: <strong>{$servers_webm|intval}</strong></li>
+{/if}
+{if !empty($servers_theora)}
+							<li>Theora: <strong>{$servers_theora|intval}</strong></li>
+{/if}
 {if !empty($servers_mp3)}
 							<li>MP3: <strong>{$servers_mp3|intval}</strong></li>
 {/if}
@@ -55,10 +64,12 @@
 						<h3>By format</h3>
 						<div id="search-format">
 							<ul>
+								<li><a href="{$root_url}/by_format/Opus">Opus</a></li>
 								<li><a href="{$root_url}/by_format/Ogg_Vorbis">Ogg Vorbis</a></li>
 								<li><a href="{$root_url}/by_format/MP3">MP3</a></li>
 								<li><a href="{$root_url}/by_format/AAC">AAC</a></li>
 								<li><a href="{$root_url}/by_format/AAC+">AAC+</a></li>
+								<li><a href="{$root_url}/by_format/WebM">WebM</a></li>
 								<li><a href="{$root_url}/by_format/Ogg_Theora">Ogg Theora</a></li>
 								<li><a href="{$root_url}/by_format/NSV">NSV</a></li>
 							</ul>

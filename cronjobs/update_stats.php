@@ -19,6 +19,20 @@ $query = sprintf($query_pattern, $where);
 $count = $db->singleQuery($query)->current('count');
 $memcache->set(ENVIRONMENT.'_servers_'.CONTENT_TYPE_MP3, $count, false, 600); // 10 minutes
 
+// Opus
+$where = array();
+$where = sprintf($where_pattern, CONTENT_TYPE_OPUS);
+$query = sprintf($query_pattern, $where);
+$count = $db->singleQuery($query)->current('count');
+$memcache->set(ENVIRONMENT.'_servers_'.CONTENT_TYPE_OPUS, $count, false, 600); // 10 minutes
+
+// WebM
+$where = array();
+$where = sprintf($where_pattern, CONTENT_TYPE_WEBM);
+$query = sprintf($query_pattern, $where);
+$count = $db->singleQuery($query)->current('count');
+$memcache->set(ENVIRONMENT.'_servers_'.CONTENT_TYPE_WEBM, $count, false, 600); // 10 minutes
+
 // Vorbis
 $where = array();
 $where = sprintf($where_pattern, CONTENT_TYPE_OGG_VORBIS);
