@@ -101,10 +101,14 @@
 	<select class="srt-select">
 	  <option>
 	    Subtitles: Off</option>
+	  <option file="02-Digital_Show_and_Tell.cz.vtt">
+	    Czech</option>
 	  <option file="02-Digital_Show_and_Tell.en.vtt">
 	    US English</option>
 	  <option file="02-Digital_Show_and_Tell.fr.vtt">
 	    French</option>
+	  <option file="02-Digital_Show_and_Tell.it.vtt">
+	    Italiano</option>
 	  <option file="02-Digital_Show_and_Tell.ptbr.vtt">
 	    Português (Brazil)</option>
 	</select>
@@ -177,8 +181,10 @@
     
     <ul>
       <li><b> VTT format: </b><br>
+        <a href="02-Digital_Show_and_Tell.cz.vtt">Czech</a> |
         <a href="02-Digital_Show_and_Tell.en.vtt">US English</a> |
 	<a href="02-Digital_Show_and_Tell.fr.vtt">French</a> |
+	<a href="02-Digital_Show_and_Tell.it.vtt">Italiano</a> |
 	<a href="02-Digital_Show_and_Tell.ptbr.vtt">Português (Brazil)</a>
       </li>
     </ul>

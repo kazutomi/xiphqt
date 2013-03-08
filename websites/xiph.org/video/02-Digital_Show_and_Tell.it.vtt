@@ -1,0 +1,1797 @@
+WEBVTT
+
+1
+00:00:05.702 --> 00:00:07.788
+Mondo digitale: mostriamo e raccontiamo
+
+2
+00:00:08.252 --> 00:00:11.550
+Salve! Sono Monty Montgomery di Red Hat e Xiph.Org.
+
+3
+00:00:11.550 --> 00:00:18.430
+Alcuni mesi fa scrissi un articolo sull'audio digitale e sul perché l'esistenza di campionamenti a 24 bit e 192 kHz non abbia senso.
+
+4
+00:00:18.440 --> 00:00:23.433
+Tra le altre cose dicevo - molto velocemente - che un campionamento digitale non è a gradini.
+
+5
+00:00:23.433 --> 00:00:28.680
+e di sicuro non è un segnale a gradini ciò che si ottiene con la conversione in analogico.
+
+6
+00:00:29.865 --> 00:00:33.865
+Di tutto ciò che dicevo, questo è ciò di cui in seguito hanno scritto di più.
+
+7
+00:00:33.865 --> 00:00:37.221
+In effetti, più della metà delle email che ho ricevuto conteneva domande e commenti
+
+8
+00:00:37.221 --> 00:00:39.663
+su concetti basilari dei segnali digitali.
+
+9
+00:00:39.894 --> 00:00:44.285
+Dato che vi interessa, vediamo di sperimentare un po' con dei semplici segnali digitali.
+
+10
+00:00:45.035 --> 00:00:49.135
+(la verità dalla macchina, NdT)
+
+11
+00:00:49.747 --> 00:00:51.006
+Supponiamo per un istante
+
+12
+00:00:51.006 --> 00:00:54.089
+di non conoscere nulla sul funzionamento dei segnali digitali.
+
+13
+00:00:54.734 --> 00:00:56.841
+In questo caso non ha alcun senso per noi
+
+14
+00:00:56.841 --> 00:00:59.049
+l'uso di apparecchiature digitali per i nostri test.
+
+15
+00:00:59.049 --> 00:01:00.937
+Per fortuna, possiamo svolgere i nostri esempi
+
+16
+00:01:00.937 --> 00:01:04.020
+con apparecchiature analogiche, che sono ancora molto diffuse.
+
+17
+00:01:04.020 --> 00:01:05.972
+Per prima cosa prendiamo un generatore di segnale
+
+18
+00:01:05.972 --> 00:01:08.190
+che useremo per costruire i segnali analogici d'ingresso,
+
+19
+00:01:08.190 --> 00:01:12.692
+e sarà un HP3325 del 1978.
+
+20
+00:01:12.692 --> 00:01:14.153
+È ancora un ottimo apparecchio quindi,
+
+21
+00:01:14.153 --> 00:01:15.614
+se per voi non è un problema l'ingombro,
+
+22
+00:01:15.614 --> 00:01:16.532
+né il peso,
+
+23
+00:01:16.532 --> 00:01:17.577
+né il consumo di corrente,
+
+24
+00:01:17.577 --> 00:01:18.910
+né il rumore della ventola
+
+25
+00:01:18.910 --> 00:01:20.329
+lo potete ancora trovare su eBay.
+
+26
+00:01:20.329 --> 00:01:23.863
+D'occasione lo pagate poco più delle sole spese di spedizione.
+
+27
+00:01:24.617 --> 00:01:28.500
+Poi osserveremo le forme d'onda generate su un oscilloscopio analogico
+
+28
+00:01:28.500 --> 00:01:31.550
+come questo Tektronix 2246 della metà degli anni 90,
+
+29
+00:01:31.550 --> 00:01:34.761
+uno degli ultimi mai realizzati, ed è ancora validissimo.
+
+30
+00:01:34.761 --> 00:01:36.807
+Ogni vero laboratorio dovrebbe averne uno...
+
+31
+00:01:37.716 --> 00:01:40.852
+E infine osserveremo lo spettro delle frequenze dei nostri segnali
+
+32
+00:01:40.852 --> 00:01:43.177
+usando un analizzatore di spettro, sempre analogico.
+
+33
+00:01:43.177 --> 00:01:47.732
+Questo è l'HP3585, stessa linea produttiva del generatore di segnale.
+
+34
+00:01:47.732 --> 00:01:50.615
+Tutti gli apparecchi che usiamo hanno un microcontrollore,
+
+35
+00:01:50.615 --> 00:01:52.905
+primitivo e grossolano se vogliamo,
+
+36
+00:01:52.905 --> 00:01:56.276
+ma la circuiteria che elabora il segnale dall'input allo schermo
+
+37
+00:01:56.276 --> 00:01:58.537
+è tutta analogica.
+
+38
+00:01:58.537 --> 00:02:00.329
+Certo, si tratta di apparecchi datati
+
+39
+00:02:00.329 --> 00:02:01.993
+ma, peso e dimensioni a parte,
+
+40
+00:02:01.993 --> 00:02:03.844
+hanno ancora qualità tecniche di tutto rispetto.
+
+41
+00:02:04.536 --> 00:02:06.868
+Adesso abbiamo impostato il generatore di segnale
+
+42
+00:02:06.868 --> 00:02:12.829
+per produrre una bella onda sinusoidale a 1 kHz e 1 V efficace (RMS),
+
+43
+00:02:13.414 --> 00:02:15.220
+osserviamo l'onda sinusoidale sull'oscilloscopio,
+
+44
+00:02:15.220 --> 00:02:21.428
+verificando che è effettivamente ad 1 kHz e un volt efficace,
+
+45
+00:02:21.428 --> 00:02:24.108
+che poi sarebbe 2.8 V picco-picco,
+
+46
+00:02:24.308 --> 00:02:27.561
+e che tutto torna anche nell'analizzatore di spettro.
+
+47
+00:02:27.561 --> 00:02:30.644
+L'analizzatore mostra anche un po' di rumore bianco
+
+48
+00:02:30.644 --> 00:02:32.190
+e un pochino di distorsione armonica,
+
+49
+00:02:32.190 --> 00:02:36.649
+che raggiunge il picco 70dB sotto la fondamentale.
+
+50
+00:02:36.649 --> 00:02:38.612
+Beh, questo non cambia nulla nel nostro esempio
+
+51
+00:02:38.612 --> 00:02:40.574
+ma volevo farvelo notare adesso
+
+52
+00:02:40.574 --> 00:02:42.452
+perché avreste potuto rilevarlo tra poco.
+
+53
+00:02:44.036 --> 00:02:47.142
+Ora inseriamo un campionamento digitale a metà percorso
+
+54
+00:02:48.557 --> 00:02:51.024
+e per questa conversione useremo un banale, normalissimo
+
+55
+00:02:51.024 --> 00:02:53.374
+dispositivo audio eMagic USB1.
+
+56
+00:02:53.374 --> 00:02:55.337
+È un giocattolo che ha ormai una decina d'anni
+
+57
+00:02:55.337 --> 00:02:57.257
+e possiamo quasi considerarlo vecchio.
+
+58
+00:02:57.964 --> 00:03:02.676
+Probabilmente un convertitore più recente ha caratteristiche tecniche superiori
+
+59
+00:03:03.076 --> 00:03:07.924
+per robustezza, linearità, jitter, rumore, per tutto quanto
+
+60
+00:03:07.924 --> 00:03:09.353
+ma può darsi che non si noti la differenza.
+
+61
+00:03:09.353 --> 00:03:11.604
+Il fatto di poter "misurare" un miglioramento
+
+62
+00:03:11.604 --> 00:03:13.609
+non vuol dire necessariamente poterlo "sentire"
+
+63
+00:03:13.609 --> 00:03:16.404
+perché anche questi scatolotti di livello consumer
+
+64
+00:03:16.404 --> 00:03:18.643
+offrono già ottimi livelli di conversione.
+
+65
+00:03:20.244 --> 00:03:22.825
+Ho connesso l'eMagic al mio ThinkPad
+
+66
+00:03:22.825 --> 00:03:26.121
+che mostra la forma d'onda digitale e lo spettro come paragone,
+
+67
+00:03:26.121 --> 00:03:28.788
+poi il ThinkPad manda indietro il segnale digitale di nuovo
+
+68
+00:03:28.788 --> 00:03:30.921
+all'eMagic che lo riconverte in analogico
+
+69
+00:03:30.921 --> 00:03:33.332
+così noi lo osserviamo nell'analizzatore.
+
+70
+00:03:33.332 --> 00:03:35.582
+Dall'input all'output, vanno da sinistra a destra.
+
+71
+00:03:36.532 --> 00:03:39.532
+Gradinate...
+
+72
+00:03:40.211 --> 00:03:41.214
+Ok, partiamo!
+
+73
+00:03:41.214 --> 00:03:43.924
+Cominciamo col convertire un segnale analogico in digitale
+
+74
+00:03:43.924 --> 00:03:47.347
+e poi di nuovo in analogico senza altri interventi.
+
+75
+00:03:47.347 --> 00:03:49.268
+Il generatore di segnale è ancora impostato
+
+76
+00:03:49.268 --> 00:03:52.649
+per l'onda sinusoidale a 1 kHz, come poco fa.
+
+77
+00:03:52.649 --> 00:03:57.428
+Possiamo vedere la forma d'onda sinusoidale sull'oscilloscopio dell'ingresso.
+
+78
+00:03:57.428 --> 00:04:01.694
+Ora campioniamo il segnale a 16 bit e 44.1 kHz,
+
+79
+00:04:01.694 --> 00:04:03.828
+come avviene in un CD.
+
+80
+00:04:03.828 --> 00:04:07.156
+Lo spettro del segnale campionato corrisponde a ciò che era prima e...
+
+81
+00:04:07.156 --> 00:04:10.836
+a ciò che vediamo ora sull'analizzatore di spettro analogico,
+
+82
+00:04:10.836 --> 00:04:15.154
+a parte il disturbo dovuto all'ingresso ad alta impedenza.
+
+83
+00:04:15.154 --> 00:04:15.956
+E adesso,
+
+84
+00:04:18.248 --> 00:04:20.798
+se osserviamo la nostra onda sinusoidale campionata
+
+85
+00:04:20.798 --> 00:04:23.966
+la vediamo come una gradinata - un campione, un gradino,
+
+86
+00:04:23.966 --> 00:04:26.388
+ma se guardiamo il segnale d'uscita
+
+87
+00:04:26.388 --> 00:04:29.054
+che è stato convertito da digitale ad analogico, vediamo...
+
+88
+00:04:29.054 --> 00:04:32.052
+che è esattamente come l'onda sinusoidale originale.
+
+89
+00:04:32.052 --> 00:04:33.483
+Senza scalettature.
+
+90
+00:04:33.914 --> 00:04:37.193
+D'accordo, 1 kHz è una frequenza piuttosto bassa
+
+91
+00:04:37.193 --> 00:04:40.633
+e i gradini potrebbero solo essere difficili
+da cogliere o attenuati.
+
+92
+00:04:40.739 --> 00:04:49.492
+Sta bene: scegliamo una frequenza maggiore,
+prossima alla frequenza di Nyquist, diciamo 15 kHz.
+
+93
+00:04:49.492 --> 00:04:53.545
+Ora l'onda è rappresentata da meno di tre campioni per ogni periodo e
+
+94
+00:04:53.545 --> 00:04:55.838
+il segnale campionato è veramente brutto.
+
+95
+00:04:55.838 --> 00:04:59.798
+Ebbene, l'aspetto può ingannare, l'uscita analogica infatti
+
+96
+00:05:01.876 --> 00:05:06.033
+è ancora una perfetta onda sinusoidale, come l'originale.
+
+97
+00:05:06.633 --> 00:05:09.228
+Continuiamo a salire...
+
+98
+00:05:17.353 --> 00:05:20.151
+16 kHz...
+
+99
+00:05:23.198 --> 00:05:25.616
+17 kHz...
+
+100
+00:05:28.201 --> 00:05:29.945
+18 kHz...
+
+101
+00:05:33.822 --> 00:05:35.548
+19 kHz...
+
+102
+00:05:40.457 --> 00:05:42.465
+20 kHz.
+
+103
+00:05:49.097 --> 00:05:52.350
+Siamo al limite dell'udito umano
+
+104
+00:05:52.350 --> 00:05:54.377
+e l'uscita è ancora perfetta.
+
+105
+00:05:54.377 --> 00:05:58.025
+Niente bordi dentellati, frastagliati o a gradino.
+
+106
+00:05:58.025 --> 00:06:01.342
+E allora, dove sono finiti i gradini?
+
+107
+00:06:01.342 --> 00:06:03.198
+Non rispondete, è una domanda a trabocchetto.
+
+108
+00:06:03.198 --> 00:06:04.318
+Perché i gradini non ci sono mai stati.
+
+109
+00:06:04.318 --> 00:06:06.652
+Disegnare un'onda digitale a gradini
+
+110
+00:06:08.712 --> 00:06:10.772
+è sbagliato fin dall'inizio.
+
+111
+00:06:10.942 --> 00:06:11.998
+Il perché?
+
+112
+00:06:11.998 --> 00:06:14.366
+Perché l'onda a gradini è una funzione continua,
+
+113
+00:06:14.366 --> 00:06:16.201
+dentellata, a tratti,
+
+114
+00:06:16.201 --> 00:06:19.700
+ed ha un preciso valore in ogni istante nel tempo
+
+115
+00:06:19.700 --> 00:06:22.004
+Un segnale campionato è del tutto diverso,
+
+116
+00:06:22.004 --> 00:06:23.337
+è tempo-discreto
+
+117
+00:06:23.337 --> 00:06:27.337
+ed ha valore solo negli istanti di campionamento
+
+118
+00:06:27.337 --> 00:06:32.596
+mentre è indefinito - non ha alcun valore! - all'infuori di questi.
+
+119
+00:06:32.596 --> 00:06:36.666
+Un segnale tempo-discreto andrebbe disegnato
+correttamente come un grafico a lecca-lecca.
+
+120
+00:06:40.020 --> 00:06:42.974
+La controparte analogica di un segnale digitale è continua,
+
+121
+00:06:42.974 --> 00:06:45.364
+passa esattamente per tutti i campioni,
+
+122
+00:06:45.364 --> 00:06:50.153
+e ciò è vero anche per le alte frequenze, non solo per quelle basse.
+
+123
+00:06:50.153 --> 00:06:53.033
+Il concetto chiave - anche se non sembra ovvio - è che
+
+124
+00:06:53.033 --> 00:06:55.454
+esiste un solo segnale a banda limitata che attraversa
+
+125
+00:06:55.454 --> 00:06:57.417
+esattamente tutti i campioni.
+
+126
+00:06:57.417 --> 00:06:58.708
+È una soluzione unica.
+
+127
+00:06:58.708 --> 00:07:01.246
+Quindi, quando campioniamo un segnale a banda limitata
+
+128
+00:07:01.246 --> 00:07:02.612
+e lo riconvertiamo,
+
+129
+00:07:02.612 --> 00:07:06.462
+l'input originale è anche l'unico output possibile.
+
+130
+00:07:06.462 --> 00:07:07.838
+E nel caso qualcuno dicesse
+
+131
+00:07:07.838 --> 00:07:11.721
+"Beh, io posso tracciare un segnale diverso che attraversa gli stessi punti."
+
+132
+00:07:11.721 --> 00:07:14.283
+Certo, si può fare, però...
+
+133
+00:07:17.268 --> 00:07:20.521
+se è diverso dall'originale, anche di pochissimo,
+
+134
+00:07:20.521 --> 00:07:24.905
+esso contiene frequenze uguali o maggiori di quella di Nyquist,
+
+135
+00:07:24.905 --> 00:07:26.185
+il che contraddice l'ipotesi di segnale limitato in banda
+
+136
+00:07:26.185 --> 00:07:28.358
+e quindi non è una soluzione valida.
+
+137
+00:07:28.574 --> 00:07:30.036
+Dunque, come nasce la confusione
+
+138
+00:07:30.036 --> 00:07:32.702
+di immaginare i segnali digitali come fossero dentellati?
+
+139
+00:07:32.702 --> 00:07:34.900
+Posso darmi due spiegazioni.
+
+140
+00:07:34.900 --> 00:07:37.956
+La prima è che è molto semplice convertire un segnale digitale
+
+141
+00:07:37.972 --> 00:07:39.294
+in un vero segnale dentellato,
+
+142
+00:07:39.294 --> 00:07:42.409
+basta estendere temporalmente il valore di ogni campione fino al prossimo.
+
+143
+00:07:42.409 --> 00:07:44.414
+Questo è ciò che si chiama ricostruttore
+(o mantenitore) di ordine zero (ZOH)
+
+144
+00:07:44.414 --> 00:07:47.913
+ed è una parte importante del funzionamento di alcuni DAC,
+
+145
+00:07:47.913 --> 00:07:50.089
+in particolare dei più semplici.
+
+146
+00:07:50.089 --> 00:07:55.591
+Quindi chiunque si interessi alla conversione digitale-analogica
+
+147
+00:07:55.592 --> 00:07:59.550
+si imbatterà probabilmente in grafici di forme d'onda dentellate prima o poi
+
+148
+00:07:59.550 --> 00:08:01.982
+ma quelle forme d'onda non rappresentano la conversione completa
+
+149
+00:08:01.982 --> 00:08:04.250
+e di certo non il segnale che ne uscirà fuori.
+
+150
+00:08:04.944 --> 00:08:05.684
+Seconda causa,
+
+151
+00:08:05.684 --> 00:08:07.529
+e credo più probabile,
+
+152
+00:08:07.529 --> 00:08:09.449
+sono ingegneri che dovrebbero ben sapere,
+
+153
+00:08:09.449 --> 00:08:10.441
+come me,
+
+154
+00:08:10.441 --> 00:08:13.193
+che la forma d'onda dentellata è tecnicamente sbagliata.
+
+155
+00:08:13.193 --> 00:08:15.571
+Questa faccenda è la versione monodimensionale
+
+156
+00:08:15.571 --> 00:08:17.395
+della questione dei puntini in un editor d'immagini.
+
+157
+00:08:17.395 --> 00:08:19.241
+I pixel non sono quadrati,
+
+158
+00:08:19.241 --> 00:08:23.081
+sono campionamenti di uno spazio bidimensionale e anch'essi
+
+159
+00:08:23.081 --> 00:08:26.366
+sono, concettualmente, punti infinitesimali.
+
+160
+00:08:26.366 --> 00:08:28.500
+Nella pratica è un lavoro immane vedere
+
+161
+00:08:28.500 --> 00:08:30.804
+o manipolare qualcosa di infinitesimale,
+
+162
+00:08:30.804 --> 00:08:32.212
+ed ecco il perché dei quadratoni.
+
+163
+00:08:32.212 --> 00:08:35.966
+Le forme d'onda a gradini sono proprio la stessa cosa,
+
+164
+00:08:35.966 --> 00:08:37.684
+sono solo più comode da tracciare
+
+165
+00:08:37.684 --> 00:08:40.404
+ma i gradini non ci sono per davvero.
+
+166
+00:08:40.970 --> 00:08:45.144
+Profondità (o risoluzione) in bit
+
+167
+00:08:45.652 --> 00:08:48.233
+Quando si riconverte un segnale digitale ad analogico
+
+168
+00:08:48.233 --> 00:08:50.900
+l'onda risultante è liscia, a prescindere dalla risoluzione in bit,
+
+169
+00:08:50.900 --> 00:08:53.193
+che siano 24 bit o 16 bit...
+
+170
+00:08:53.193 --> 00:08:54.196
+o anche 8 bit...
+
+171
+00:08:54.196 --> 00:08:55.486
+non importa.
+
+172
+00:08:55.486 --> 00:08:57.534
+Questo vuol dire che la risoluzione in bit
+
+173
+00:08:57.534 --> 00:08:58.953
+non influisce per niente?
+
+174
+00:08:59.245 --> 00:09:00.521
+Ovviamente no.
+
+175
+00:09:02.121 --> 00:09:06.046
+Sul canale 2 poniamo la stessa onda sinusoidale in ingresso
+
+176
+00:09:06.046 --> 00:09:09.086
+ma campioniamola con soli 8 bit e usando il dither.
+
+177
+00:09:09.086 --> 00:09:14.174
+Sull'oscilloscopio troviamo ancora
+un'onda sinusoidale perfetta sul canale 2.
+
+178
+00:09:14.174 --> 00:09:18.014
+Se la osserviamo meglio, vedremo anche un po' più di rumore.
+
+179
+00:09:18.014 --> 00:09:19.305
+Ci siamo arrivati.
+
+180
+00:09:19.305 --> 00:09:21.273
+Se guardiamo lo spettro del segnale...
+
+181
+00:09:22.889 --> 00:09:23.732
+aha!
+
+182
+00:09:23.732 --> 00:09:26.398
+L'onda sinusoidale è ancora inalterata
+
+183
+00:09:26.398 --> 00:09:28.490
+ma il livello di rumore del segnale campionato a 8 bit
+
+184
+00:09:28.490 --> 00:09:32.470
+sul secondo canale è molto maggiore!
+
+185
+00:09:32.948 --> 00:09:36.148
+Ecco dove il numero di bit fa la differenza:
+
+186
+00:09:36.148 --> 00:09:37.434
+sta qui.
+
+187
+00:09:37.822 --> 00:09:39.956
+Quando digitalizziamo un segnale, prima lo campioniamo
+
+188
+00:09:39.956 --> 00:09:42.366
+e questo passaggio è perfetto, senza perdita di informazioni.
+
+189
+00:09:42.366 --> 00:09:45.626
+Ma il processo di quantizzazione, questo si che introduce rumore.
+
+190
+00:09:47.827 --> 00:09:50.793
+Il numero di bit determina la quantità di rumore
+
+191
+00:09:50.793 --> 00:09:52.569
+e quindi il livello del rumore di fondo.
+
+192
+00:10:00.170 --> 00:10:03.646
+E come "suona" questo rumore di quantizzazione?
+
+193
+00:10:03.646 --> 00:10:06.012
+Ascoltiamo la nostra onda sinusoidale a 8 bit.
+
+194
+00:10:12.521 --> 00:10:15.273
+È forse difficile sentire altro, che non sia il tono.
+
+195
+00:10:15.273 --> 00:10:18.740
+Allora ascoltiamo solo il rumore, eliminando l'onda,
+
+196
+00:10:18.740 --> 00:10:21.683
+ed aumentiamo il guadagno, dato che il rumore è lieve.
+
+197
+00:10:32.009 --> 00:10:35.049
+Quelli di voi che hanno usato apparecchi audio analogici
+
+198
+00:10:35.049 --> 00:10:36.670
+probabilmente hanno pensato:
+
+199
+00:10:36.670 --> 00:10:40.382
+"Perbacco! Ma sembra il sibilo del nastro!"
+
+200
+00:10:40.382 --> 00:10:41.929
+Beh, non soltanto suona come il sibilo del nastro
+
+201
+00:10:41.929 --> 00:10:43.433
+ma si comporta anche allo stesso modo
+
+202
+00:10:43.433 --> 00:10:45.225
+e se introduciamo un dithering gaussiano
+
+203
+00:10:45.225 --> 00:10:47.646
+lo rendiamo del tutto equivalente.
+
+204
+00:10:47.646 --> 00:10:49.225
+Questo È il sibilo del nastro.
+
+205
+00:10:49.225 --> 00:10:51.774
+Avete capito bene: questo significa che possiamo misurare il sibilo del nastro,
+
+206
+00:10:51.774 --> 00:10:54.196
+e quindi il rumore di fondo dei nastri magnetici,
+
+207
+00:10:54.196 --> 00:10:56.233
+in bit, anziché in decibel,
+
+208
+00:10:56.233 --> 00:10:59.902
+così da vedere tutto in ottica digitale.
+
+209
+00:10:59.902 --> 00:11:03.028
+Le cassette,
+
+210
+00:11:03.028 --> 00:11:05.449
+per quelli di voi abbastanza vecchi da ricordarle,
+
+211
+00:11:05.449 --> 00:11:09.161
+raggiungevano nove bit in condizioni ideali,
+
+212
+00:11:09.161 --> 00:11:11.209
+ma cinque o sei in condizioni tipiche.
+
+213
+00:11:11.209 --> 00:11:13.876
+specialmente se si registrava col mangiacassette.
+
+214
+00:11:13.876 --> 00:11:19.422
+È così: le vostre compilation usavano risoluzione a 6 bit...
+nel migliore dei casi!
+
+215
+00:11:19.837 --> 00:11:22.345
+I migliori nastri da bobina, usati dai professionisti
+
+216
+00:11:22.345 --> 00:11:24.553
+negli studi di registrazione raggiungevano appena...
+
+217
+00:11:24.553 --> 00:11:26.473
+indovinate quanto...?
+
+218
+00:11:26.473 --> 00:11:27.604
+13 bit
+
+219
+00:11:27.604 --> 00:11:28.980
+con l'ausilio di sofisticate tecniche di riduzione del rumore.
+
+220
+00:11:28.980 --> 00:11:32.062
+Ed ecco spiegato perché l'etichetta "DDD" sui Compact Disc
+
+221
+00:11:32.062 --> 00:11:35.208
+è stato un gran bel passo avanti.
+
+222
+00:11:40.116 --> 00:11:42.825
+Continuo a dire che nella quantizzazione usiamo il dither
+
+223
+00:11:42.825 --> 00:11:44.734
+ma esattamente cos'è il "dithering"?
+
+224
+00:11:44.734 --> 00:11:47.284
+E, più importante, cosa fa?
+
+225
+00:11:47.284 --> 00:11:49.876
+Il metodo più semplice per la quantizzazione del segnale è
+
+226
+00:11:49.876 --> 00:11:52.329
+scegliere il valore digitale più prossimo
+
+227
+00:11:52.329 --> 00:11:54.377
+all'ampiezza analogica originale.
+
+228
+00:11:54.377 --> 00:11:55.337
+È ovvio.
+
+229
+00:11:55.337 --> 00:11:57.545
+Sfortunatamente, il rumore che si ottiene
+
+230
+00:11:57.545 --> 00:11:59.220
+con questo semplice metodo
+
+231
+00:11:59.220 --> 00:12:02.174
+dipende dal segnale d'ingresso
+
+232
+00:12:02.174 --> 00:12:04.596
+quindi potremmo ottenere rumore impercettibile
+
+233
+00:12:04.596 --> 00:12:06.142
+o che causa distorsioni
+
+234
+00:12:06.142 --> 00:12:09.054
+o altri tipi di disturbi indesiderati.
+
+235
+00:12:09.054 --> 00:12:11.764
+Il "dither" è un rumore costruito apposta
+
+236
+00:12:11.764 --> 00:12:15.273
+in modo da sostituire quello introdotto dalla quantizzazione.
+
+237
+00:12:15.273 --> 00:12:18.025
+Il dithering non cancella o maschera il rumore di quantizzazione,
+
+238
+00:12:18.025 --> 00:12:20.190
+piuttosto lo rimpiazza
+
+239
+00:12:20.190 --> 00:12:22.612
+con altro rumore con caratteristiche scelte da noi
+
+240
+00:12:22.612 --> 00:12:24.794
+in modo che non venga influenzato dal segnale d'ingresso.
+
+241
+00:12:25.256 --> 00:12:27.081
+Proviamo a "guardare" cosa fa il dithering.
+
+242
+00:12:27.081 --> 00:12:30.078
+Il generatore di segnale mostra troppo rumore per questo test
+
+243
+00:12:30.431 --> 00:12:33.161
+e quindi genereremo un'onda sinusoidale
+
+244
+00:12:33.161 --> 00:12:34.782
+matematicamente perfetta col ThinkPad
+
+245
+00:12:34.782 --> 00:12:38.205
+per poi quantizzarla a 8 bit col dithering.
+
+246
+00:12:39.006 --> 00:12:41.342
+Osserviamo l'onda sinusoidale sul display
+
+247
+00:12:41.342 --> 00:12:43.452
+e sull'oscilloscopio di uscita
+
+248
+00:12:44.222 --> 00:12:44.972
+e...
+
+249
+00:12:46.588 --> 00:12:49.375
+quando l'analizzatore di spettro lo troverà...
+
+250
+00:12:50.713 --> 00:12:53.588
+un picco di frequenza ben chiaro, con un rumore di fondo uniforme
+
+251
+00:12:56.864 --> 00:12:58.611
+su entrambi i display
+
+252
+00:12:58.611 --> 00:12:59.646
+esattamente come prima.
+
+253
+00:12:59.646 --> 00:13:01.549
+Questo avviene con il dither.
+
+254
+00:13:02.196 --> 00:13:04.225
+Ora disattivo il dithering.
+
+255
+00:13:05.779 --> 00:13:07.913
+Il rumore di quantizzazione, che era stato attutito dal dither
+
+256
+00:13:07.913 --> 00:13:09.577
+in un rumore di fondo uniforme,
+
+257
+00:13:09.577 --> 00:13:12.286
+ora di concentra in picchi di distorsione armonica.
+
+258
+00:13:12.286 --> 00:13:16.030
+Il rumore di fondo è più basso ma la distorsione c'è
+
+259
+00:13:16.030 --> 00:13:19.668
+e i picchi di distorsione si fanno più elevati di
+quanto non fosse il rumore dovuto al dithering.
+
+260
+00:13:19.668 --> 00:13:22.318
+Usando 8 bit l'effetto è evidentissimo,
+
+261
+00:13:22.488 --> 00:13:24.200
+con 16 bit,
+
+262
+00:13:24.692 --> 00:13:25.929
+anche senza dithering,
+
+263
+00:13:25.929 --> 00:13:28.308
+il livello di distorsione armonica diventa così basso
+
+264
+00:13:28.308 --> 00:13:30.708
+da essere del tutto impercettibile.
+
+265
+00:13:30.708 --> 00:13:34.581
+Anche qui possiamo usare il dither per eliminarlo del tutto
+
+266
+00:13:34.581 --> 00:13:36.489
+se vogliamo.
+
+267
+00:13:37.642 --> 00:13:39.273
+Spegnendo il dithering per un momento
+
+268
+00:13:40.934 --> 00:13:43.444
+noterete che il livello della distorsione
+
+269
+00:13:43.444 --> 00:13:47.070
+appare ora approssimativamente costante,
+
+270
+00:13:47.070 --> 00:13:49.033
+a prescindere dall'ampiezza dell'ingresso.
+
+271
+00:13:49.033 --> 00:13:51.998
+Ma quando il livello del segnale scende a meno di mezzo bit
+
+272
+00:13:51.998 --> 00:13:54.036
+il risultato è una quantizzazione nulla.
+
+273
+00:13:54.036 --> 00:13:54.910
+In un certo senso,
+
+274
+00:13:54.910 --> 00:13:58.557
+tutto ciò che si quantizza a zero, è pura distorsione!
+
+275
+00:13:58.833 --> 00:14:01.588
+Col dither possiamo eliminare anche questa.
+
+276
+00:14:01.588 --> 00:14:03.599
+Riattiviamo il dither...
+
+277
+00:14:03.599 --> 00:14:06.377
+e riecco il nostro segnale a 1/4 di bit,
+
+278
+00:14:06.377 --> 00:14:09.076
+col suo solito rumore di fondo piatto.
+
+279
+00:14:09.630 --> 00:14:11.220
+Il rumore di fondo però non deve per forza essere piatto,
+
+280
+00:14:11.220 --> 00:14:12.798
+visto che il dither è un rumore che scegliamo noi
+
+281
+00:14:12.798 --> 00:14:15.006
+tanto vale sceglierne uno che faccia ciò che ci serve
+
+282
+00:14:15.006 --> 00:14:17.017
+ma che sia difficilissimo da cogliere.
+
+283
+00:14:18.142 --> 00:14:22.484
+Il nostro udito è molto sensibile nella banda da 2 kHz a 4 kHz,
+
+284
+00:14:22.484 --> 00:14:25.438
+ed è lì che percepiamo di più il rumore in sottofondo.
+
+285
+00:14:25.438 --> 00:14:29.406
+Allora scegliamo per il dither un profilo lontano dalle frequenze sensibili
+
+286
+00:14:29.406 --> 00:14:31.241
+e più vicino a quelle che percepiamo meno,
+
+287
+00:14:31.241 --> 00:14:33.910
+che generalmente sono le più alte.
+
+288
+00:14:34.249 --> 00:14:37.460
+Il dither a 16 bit normalmente è troppo lieve da sentire
+
+289
+00:14:37.460 --> 00:14:39.668
+ma proviamo ad ascoltare il nostro rumore adattato,
+
+290
+00:14:39.668 --> 00:14:42.234
+ovviamente con un gran bel guadagno...
+
+291
+00:14:56.020 --> 00:14:59.977
+Concludiamo dicendo che il rumore di dither ha una potenza maggiore
+
+292
+00:14:59.977 --> 00:15:04.276
+rispetto al rumore di quantizzazione senza dither, anche se si sente di meno,
+
+293
+00:15:04.276 --> 00:15:07.902
+ed è facile osservarlo con un VU meter nei passaggi di silenzio.
+
+294
+00:15:07.902 --> 00:15:10.537
+Inoltre, col dither non basta decidere se usarlo o non usarlo,
+
+295
+00:15:10.537 --> 00:15:14.712
+è possibile che l'intensità vada ridotta così da avere meno rumore
+
+296
+00:15:14.712 --> 00:15:18.313
+a compensare una piccola distorsione e minimizzarne l'effetto.
+
+297
+00:15:19.605 --> 00:15:22.790
+Facciamo variare il segnale d'ingresso così:
+
+298
+00:15:27.098 --> 00:15:30.206
+vedremo come un ingresso variabile influisca sul rumore di quantizzazione
+
+299
+00:15:30.206 --> 00:15:33.289
+Applicato al massimo, il dithering produce il rumore uniforme
+
+300
+00:15:33.289 --> 00:15:35.643
+e monotono che ci aspettiamo.
+
+301
+00:15:40.937 --> 00:15:42.772
+Ma riducendo l'intensità del dithering
+
+302
+00:15:42.772 --> 00:15:46.356
+man mano l'ampiezza e l'aspetto del rumore di quantizzazione cambiano
+
+303
+00:15:46.356 --> 00:15:47.977
+a causa del segnale d'ingresso.
+
+304
+00:16:09.883 --> 00:16:13.844
+Il dither ottimizzato si comporta alla stessa maniera
+
+305
+00:16:13.844 --> 00:16:16.553
+ma il suo profilo ci porta un vantaggio in più:
+
+306
+00:16:16.553 --> 00:16:18.804
+in sintesi, può bastare
+
+307
+00:16:18.804 --> 00:16:20.937
+minore intensità del dither per impedire che
+
+308
+00:16:20.937 --> 00:16:23.662
+l'input abbia un effetto sensibile sull'output.
+
+309
+00:16:49.172 --> 00:16:51.508
+Anche se abbiamo dedicato molto tempo al dithering
+
+310
+00:16:51.508 --> 00:16:53.012
+stiamo sempre parlando di alterazioni
+
+311
+00:16:53.012 --> 00:16:56.372
+che avvengono a -100 decibel, o anche più giù.
+
+312
+00:16:56.372 --> 00:16:59.806
+Forse, se i CD avessero usato 14 bit, com'era nel progetto originale,
+
+313
+00:16:59.806 --> 00:17:01.513
+il dithering avrebbe avuto un peso più rilevante.
+
+314
+00:17:01.989 --> 00:17:02.644
+Forse.
+
+315
+00:17:02.644 --> 00:17:05.438
+In realtà, con 16 bit è più un concetto.
+
+316
+00:17:05.438 --> 00:17:08.019
+Possiamo considerarlo un paracadute
+
+317
+00:17:08.019 --> 00:17:11.443
+che concede diversi decibel in più di gamma dinamica,
+
+318
+00:17:11.443 --> 00:17:12.804
+se proprio dovessero servire.
+
+319
+00:17:12.990 --> 00:17:14.196
+La realtà, infatti, è che
+
+320
+00:17:14.196 --> 00:17:16.361
+non basta dimenticare il dithering
+
+321
+00:17:16.361 --> 00:17:19.082
+per rovinare un master di qualità.
+
+322
+00:17:19.532 --> 00:17:24.032
+La sincronia nei segnali a banda limitata
+
+323
+00:17:24.414 --> 00:17:25.790
+Fin qui abbiamo usato onde sinusoidali
+
+324
+00:17:25.790 --> 00:17:28.254
+perché ci servono ad osservare il comportamento
+
+325
+00:17:28.254 --> 00:17:32.212
+del sistema in risposta ad una data frequenza.
+
+326
+00:17:32.212 --> 00:17:34.217
+Ora passiamo a qualcosa di più complesso.
+
+327
+00:17:34.217 --> 00:17:35.923
+Cosa dovremmo aspettarci
+
+328
+00:17:35.923 --> 00:17:39.671
+se cambiassimo il segnale in un'onda quadra...?
+
+329
+00:17:42.718 --> 00:17:45.921
+L'oscilloscopio dell'input conferma l'onda quadra a 1 kHz.
+
+330
+00:17:45.921 --> 00:17:47.351
+L'oscilloscopio in uscita mostra...
+
+331
+00:17:48.614 --> 00:17:51.102
+esattamente ciò che mi aspettavo!
+
+332
+00:17:51.102 --> 00:17:53.900
+Chiediamoci: cos'è davvero un'onda quadra?
+
+333
+00:17:54.654 --> 00:17:57.982
+La prima risposta che mi viene è: un'onda positiva
+
+334
+00:17:57.982 --> 00:18:00.788
+per metà periodo che poi istantaneamente assume
+
+335
+00:18:00.788 --> 00:18:02.910
+un valore negativo nell'altra metà.
+
+336
+00:18:02.910 --> 00:18:05.076
+Ma non ci serve a capire come mai
+
+337
+00:18:05.076 --> 00:18:07.241
+il nostro segnale d'ingresso
+
+338
+00:18:07.241 --> 00:18:09.378
+diventa questo segnale d'uscita.
+
+339
+00:18:10.132 --> 00:18:12.713
+Ricordiamo allora che ogni forma d'onda si costruisce come
+
+340
+00:18:12.713 --> 00:18:15.508
+somma di infinite onde a frequenze discrete
+
+341
+00:18:15.508 --> 00:18:18.302
+e un'onda quadra è un caso particolarmente semplice
+
+342
+00:18:18.302 --> 00:18:19.636
+di un'onda fondamentale e
+
+343
+00:18:19.636 --> 00:18:22.228
+un'infinita serie di armoniche dispari.
+
+344
+00:18:22.228 --> 00:18:24.597
+Sommandole tutte, si otterrà l'onda quadra.
+
+345
+00:18:26.398 --> 00:18:27.433
+A prima vista
+
+346
+00:18:27.433 --> 00:18:29.225
+neanche questo concetto sembra molto utile:
+
+347
+00:18:29.225 --> 00:18:31.561
+infatti bisogna sommare infinite armoniche
+
+348
+00:18:31.561 --> 00:18:33.108
+per avere la risposta.
+
+349
+00:18:33.108 --> 00:18:35.977
+Ma attenti, qui non abbiamo infinite armoniche perché
+
+350
+00:18:36.960 --> 00:18:39.902
+stiamo usando un filtro con anti-alias
+
+351
+00:18:39.902 --> 00:18:42.206
+che taglia le frequenze sopra i 20 kHz,
+
+352
+00:18:42.206 --> 00:18:44.158
+quindi il segnale è a banda limitata.
+
+353
+00:18:44.158 --> 00:18:46.421
+Il che significa che abbiamo questo
+
+354
+00:18:52.500 --> 00:18:56.468
+che è esattamente ciò che l'oscilloscopio ci mostra.
+
+355
+00:18:56.468 --> 00:18:59.550
+Le oscillazioni che vedete nel segnale al posto degli spigoli
+
+356
+00:18:59.550 --> 00:19:00.926
+sono chiamate "fenomeno di Gibbs".
+
+357
+00:19:00.926 --> 00:19:04.137
+Succede quando si sceglie di limitare le frequenze, escludendo
+
+358
+00:19:04.137 --> 00:19:07.006
+zone del dominio che ne contengono di significative.
+
+359
+00:19:07.006 --> 00:19:09.854
+Come regola empirica, più marcato è lo spigolo,
+
+360
+00:19:09.854 --> 00:19:11.188
+e più ampio sarà il ripple,
+
+361
+00:19:11.188 --> 00:19:12.777
+come possiamo vedere,
+
+362
+00:19:12.777 --> 00:19:14.900
+ma attenzione a questo concetto.
+
+363
+00:19:14.900 --> 00:19:15.774
+Ad esempio...
+
+364
+00:19:15.774 --> 00:19:19.529
+come pensate si comporterà il filtro anti-alias
+
+365
+00:19:19.529 --> 00:19:23.181
+se faccio passare il segnale una seconda volta?
+
+366
+00:19:34.136 --> 00:19:37.588
+A parte d'aggiunta di un po' di ritardo,
+
+367
+00:19:37.588 --> 00:19:39.348
+la risposta è...
+
+368
+00:19:39.348 --> 00:19:40.857
+che non cambia nulla!
+
+369
+00:19:41.257 --> 00:19:43.302
+Il segnale usato è già limitato in banda
+
+370
+00:19:43.656 --> 00:19:46.590
+e limitarlo di nuovo non lo altera più,
+
+371
+00:19:46.590 --> 00:19:50.686
+non si possono tagliare frequenze che già non ci sono più.
+
+372
+00:19:52.070 --> 00:19:53.737
+E questo risultato è importante
+
+373
+00:19:53.737 --> 00:19:56.233
+perché spesso si pensa che i ripple sono un tipo di distorsione
+
+374
+00:19:56.233 --> 00:19:59.945
+introdotta dai filtri anti-alias o dai ricostruttori,
+
+375
+00:19:59.945 --> 00:20:01.737
+e molti sono convinti che peggiorino l'effetto
+
+376
+00:20:01.737 --> 00:20:03.913
+ogni volta che intervengono sul segnale.
+
+377
+00:20:03.913 --> 00:20:05.950
+Ma abbiamo appena visto che questo non succede,
+
+378
+00:20:05.950 --> 00:20:09.492
+quindi era davvero il filtro a causare i ripple la prima volta?
+
+379
+00:20:09.492 --> 00:20:10.537
+No, niente affatto.
+
+380
+00:20:10.537 --> 00:20:12.126
+È una sottigliezza da cogliere.
+
+381
+00:20:12.126 --> 00:20:15.252
+I ripple del fenomeno di Gibbs non sono aggiunti dal filtro
+
+382
+00:20:15.252 --> 00:20:18.836
+ma sono parte di ogni segnale limitato in banda.
+
+383
+00:20:18.836 --> 00:20:20.798
+Anche se costruissimo un'onda
+
+384
+00:20:20.798 --> 00:20:23.508
+dall'aspetto di onda quadra perfetta,
+
+385
+00:20:23.508 --> 00:20:26.206
+essa sarebbe sempre limitata dalla larghezza di banda del canale.
+
+386
+00:20:26.206 --> 00:20:29.140
+Ricordiamo sempre che i grafici a gradini sono fuorvianti,
+
+387
+00:20:29.140 --> 00:20:32.222
+i dati veri sono i campionamenti istantanei
+
+388
+00:20:32.222 --> 00:20:36.148
+e solo un unico segnale limitato in banda li attraversa tutti.
+
+389
+00:20:36.148 --> 00:20:39.614
+L'errore che abbiamo fatto nel tracciare l'onda quadra perfetta
+
+390
+00:20:39.614 --> 00:20:43.198
+è stato semplicemente connettere i campioni,
+
+391
+00:20:43.198 --> 00:20:47.785
+come se fosse unisci-i-puntini - e dove non c'è ripple.
+
+392
+00:20:47.785 --> 00:20:49.449
+Ma il segnale originale, a banda limitata,
+
+393
+00:20:49.449 --> 00:20:53.542
+i ripple li ha, ed eccoli qua.
+
+394
+00:20:54.004 --> 00:20:56.542
+Il che ci porta ad un'altra importante questione.
+
+395
+00:20:56.542 --> 00:20:59.550
+Si sente dire che la precisione temporale di un segnale digitale
+
+396
+00:20:59.550 --> 00:21:02.409
+sia limitata dalla frequenza di campionamento. Ovvero,
+
+397
+00:21:02.409 --> 00:21:05.140
+in altre parole, che il segnale digitale non può cogliere
+
+398
+00:21:05.140 --> 00:21:08.041
+nulla che cada tra due campionamenti,
+
+399
+00:21:08.041 --> 00:21:11.422
+con la conseguenza che impulsi o salite brusche vanno allineati
+
+400
+00:21:11.422 --> 00:21:14.473
+esattamente con i campioni, per non alterare i tempi
+
+401
+00:21:14.473 --> 00:21:16.219
+o per non perderli del tutto.
+
+402
+00:21:16.711 --> 00:21:20.820
+Giunti a questo punto, sappiamo che ciò non è vero.
+
+403
+00:21:20.820 --> 00:21:23.742
+Ricordiamo che i segnali d'ingresso sono limitati in banda
+
+404
+00:21:23.742 --> 00:21:26.036
+e che i segnali digitali sono una sequenza di campioni,
+
+405
+00:21:26.036 --> 00:21:29.340
+non di gradinate, non di unisci-i-puntini.
+
+406
+00:21:31.572 --> 00:21:34.592
+E possiamo, ad esempio,
+
+407
+00:21:36.777 --> 00:21:39.337
+porre il fronte di salita dell'onda quadra a banda
+
+408
+00:21:39.337 --> 00:21:42.004
+limitata ovunque vogliamo tra i campioni.
+
+409
+00:21:42.004 --> 00:21:44.354
+È rappresentata perfettamente
+
+410
+00:21:47.508 --> 00:21:50.218
+ed è ricostruita perfettamente.
+
+411
+00:21:56.207 --> 00:22:01.811
+In conclusione...
+
+412
+00:22:04.620 --> 00:22:06.526
+Come è avvenuto nell'episodio precedente
+
+413
+00:22:06.526 --> 00:22:08.393
+abbiamo toccato un'ampia varietà di argomenti,
+
+414
+00:22:08.393 --> 00:22:10.868
+accennando brevemente di ciascuno.
+
+415
+00:22:10.868 --> 00:22:13.620
+Può darsi, stavolta sento di aver omesso più cose
+
+416
+00:22:13.620 --> 00:22:16.286
+ma ritengo questo un buon punto in cui fermarsi.
+
+417
+00:22:16.286 --> 00:22:17.833
+O magari da cui cominciare, no?
+
+418
+00:22:17.833 --> 00:22:18.708
+Fate ricerche.
+
+419
+00:22:18.708 --> 00:22:19.710
+Sperimentate.
+
+420
+00:22:19.710 --> 00:22:21.374
+Ho scelto con cura gli esempi da mostrare
+
+421
+00:22:21.374 --> 00:22:23.668
+perché fossero semplici e chiari nei risultati.
+
+422
+00:22:23.668 --> 00:22:26.217
+Potete rifarli tutti da soli, se volete.
+
+423
+00:22:26.217 --> 00:22:28.766
+E diciamocelo, a volte si impara di più
+
+424
+00:22:28.766 --> 00:22:30.516
+su un giocattolo nuovo, solo aprendolo
+
+425
+00:22:30.516 --> 00:22:32.553
+e studiando i pezzi che ne tiriamo fuori.
+
+426
+00:22:32.553 --> 00:22:35.230
+Ma va bene così, per gli ingegneri.
+
+427
+00:22:35.230 --> 00:22:36.350
+Alterate i parametri degli esempi,
+
+428
+00:22:36.350 --> 00:22:37.972
+modificate il codice,
+
+429
+00:22:37.972 --> 00:22:39.774
+mettete su esperimenti del tutto nuovi.
+
+430
+00:22:39.774 --> 00:22:40.692
+Il codice sorgente di tutto,
+
+431
+00:22:40.692 --> 00:22:42.398
+inclusa la piccola demo in cui premo i pulsanti,
+
+432
+00:22:42.398 --> 00:22:44.361
+lo trovate su Xiph.Org.
+
+433
+00:22:44.361 --> 00:22:45.940
+Durante il corso degli esperimenti
+
+434
+00:22:45.940 --> 00:22:47.401
+è probabile che vi imbattiate in qualcosa
+
+435
+00:22:47.401 --> 00:22:49.950
+che non vi aspettavate e che non sapete spiegare.
+
+436
+00:22:49.950 --> 00:22:51.198
+Ma non preoccupatevi!
+
+437
+00:22:51.198 --> 00:22:54.537
+Critiche a parte, Wikipedia è molto utile
+
+438
+00:22:54.537 --> 00:22:56.788
+per questo tipo di ricerche.
+
+439
+00:22:56.788 --> 00:22:59.956
+E se vi interessa davvero studiare i segnali,
+
+440
+00:22:59.956 --> 00:23:03.337
+molte università hanno dell'ottimo materiale didattico online,
+
+441
+00:23:03.337 --> 00:23:07.380
+come il corso 6003 (primavera 2010) e i supplementi RES 6-007 (primavera 2011)
+
+442
+00:23:07.380 --> 00:23:09.138
+intitolati "Signals and Systems" all'OpenCourseWare del MIT.
+
+443
+00:23:09.198 --> 00:23:12.193
+E poi c'è sempre la nostra community di Xiph.Org.
+
+444
+00:23:12.792 --> 00:23:13.929
+Beh, ricerche o no,
+
+445
+00:23:13.929 --> 00:23:14.974
+io ho finito il caffè
+
+446
+00:23:14.974 --> 00:23:16.436
+quindi alla prossima
+
+447
+00:23:16.436 --> 00:23:18.216
+e buon hacking a tutti!
+
