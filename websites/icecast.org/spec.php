@@ -8,7 +8,11 @@
 <br>
 <div class="newscontent">
 <h3>Description</h3>
-<br></br>
+<br>
+<h2>Please note that this page is currently very much out of date.<br>
+Its contents should not be used for new implementations of clients or directories.</h2>
+<p>Please contact the icecast-dev mailing list instead if you have questions.<p>
+<br>
 <p>This document will describe the proposed protocol and components to be used for building a directory server (YP Server) for icecast2 and possibly other servers as well.  This document will be a work in progress.
 <h3>Overview</h3>
 <p>The need to centrally list streaming broadcasts has been done a bunch of times before with moderate degrees of success.  This approach tries to take the good parts of each and hopefully create a better incarnation.  The key aspect of this system will be simplicity.  Simplicity, in the protocol and maintenance of the system, will take precedence in the design process.</p>
