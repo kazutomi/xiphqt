@@ -1,5 +1,6 @@
 //===========================================================================
 //Copyright (C) 2003, 2004 Zentaro Kavanagh
+//          (C) 2013 Cristian Adam
 //
 //Redistribution and use in source and binary forms, with or without
 //modification, are permitted provided that the following conditions
@@ -29,7 +30,8 @@
 //SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //===========================================================================
 #pragma once
-#include "oggmuxdllstuff.h"
+
+#include "FilterRegistration.h"
 #include "OggMuxFilter.h"
 #include <libOOOgg/OggPaginator.h>
 #include <libOOOgg/OggMuxStream.h>
@@ -37,12 +39,10 @@
 #include "FLACMetadataSplitter.h"
 #include <time.h>
 #include <fstream>
-#include <windows.h>
-using namespace std;
 
 class OggMuxFilter;
 
-class OGG_MUX_API OggMuxInputPin
+class OggMuxInputPin
 	:	public CBaseInputPin
 	,	public BasicSeekPassThrough
 {
@@ -50,23 +50,16 @@ public:
 	OggMuxInputPin(OggMuxFilter* inParentFilter, CCritSec* inFilterLock, HRESULT* inHR, OggMuxStream* inMuxStream);
 	virtual ~OggMuxInputPin(void);
 
-	//COM Setup
 	DECLARE_IUNKNOWN
-	STDMETHODIMP NonDelegatingQueryInterface(REFIID riid, void **ppv);
+	
+    STDMETHODIMP NonDelegatingQueryInterface(REFIID riid, void **ppv);
 
-	/// Gets an indexed media type, that this pin will accept.
 	virtual HRESULT GetMediaType(int inPosition, CMediaType* outMediaType);
-
-	/// Checks whether this pin will accepted the proposed media type.
 	virtual HRESULT CheckMediaType(const CMediaType* inMediaType);
-
-	/// Notification that this media type has been selected for the connection.
 	virtual HRESULT SetMediaType(const CMediaType* inMediaType);
 
-	/// Receives a sample from an upstream filter.
 	STDMETHODIMP Receive(IMediaSample* inSample);
 
-	/// Notification that the stream has ended
 	virtual STDMETHODIMP EndOfStream();
 
 	/// Notification that the output pin of an upstream filter has connected.
@@ -92,5 +85,4 @@ protected:
 	
 	OggPaginator mPaginator;
 	OggMuxStream* mMuxStream;
-	//fstream debugLog;
 };
