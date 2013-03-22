@@ -70,4 +70,11 @@ There are also <a href="http://wiki.xiph.org/Daala">daala notes</a> on the Xiph.
 </li>
 </ul>
 
+IETF drafts
+<ul>
+<li><a href="http://tools.ietf.org/html/draft-terriberry-codingtools">draft-terriberry-codingtools</a></li>
+<li><a href="http://tools.ietf.org/html/draft-egge-videocodec-tdlt">draft-egge-videocodec-tdlt</a></li>
+<li><a href="http://tools.ietf.org/html/draft-valin-videocodec-pvq">draft-valin-videocodec-pvq</a></lo>
+</ul>
+
 <!--#include virtual="/ssi/pagebottom.include" -->
