@@ -1,4 +1,70 @@
 <h2>News</h2>
+
+<div class="roundcont">
+<div class="roundtop">
+<img alt="" src="/images/corner_topleft.jpg" class="corner" style="display: none" />
+</div>
+<div id="release_2.4-beta2" class="newscontent">
+<h3>Icecast Release 2.4-beta2</h3>
+We are pleased to announce a second beta release of Icecast. A summary of the changes is listed below, for details please refere to the ChangeLog.
+<br />
+Please note that while Opus and WebM are considered production ready, there might be other problems in this release. We appreciate feedback and discussion on the icecast-dev mailing list!
+<br />
+<br />
+<p>Downloads:<br />
+<center>
+<table border=0>
+<tr><td>Source :</td><td><a href="http://downloads.xiph.org/releases/icecast/icecast-2.4-beta2.tar.gz">icecast-2.4-beta2.tar.gz</a></td></tr>
+</table>
+</center>
+<p>
+<br />
+<ul>
+<li>New features -
+<ul>
+  <li> Now compiles for win32 using mingw
+  <li> Added options "headers" and "header_prefix" to URL based listener auth.
+  <li>         Updated listener_remove handler:
+   <ul>
+     <li>added ip= and agent=,
+     <li>Some cleanup &amp;&amp; made code more uniform,
+     <li>avoid int for size_t vars.
+     <li>close #1422 <a class="closed ticket" href="http://trac.xiph.org/ticket/1422" title="enhancement: RFE: Additional POST data upon listener_remove if listener_add is ... (closed: fixed)">#1422</a>
+   </ul>
+  <li> Allow full URLs to be returned by the master server. close <a class="closed ticket" href="http://trac.xiph.org/ticket/1878" title="enhancement: [PATCH] This patch adds the possibility to put full urls in the list of ... (closed: fixed)">#1878</a>
+  <li>Highly experimental HTTP PUT support. ref #1812
+        We are handling it the same as we would handle a SOURCE request.
+        Due to legacy code, sender MUST send proper content-type header,
+        if content type is not audio/mpeg!<br />
+        Can be tested using real-time encoded output and piping it into
+
+        <pre>| curl -u username:password -H "Content-type: application/ogg" -T - http://localhost:8000/mountname.ogg</pre>
+
+        Note that this example has ZERO timing, so a simple 'cat *.ogg' will
+        fail.
+        Whatever feeds the pipe must do it at proper timing for real-time
+        playback!
+</ul><br />
+<li>Bugfixes -
+<ul>
+  <li> Send proper HTTP headers in responses to clients. close <a class="closed ticket" href="http://trac.xiph.org/ticket/1639" title="defect: Icecast doesn't export http headers (closed: fixed)">#1639</a>, see <a class="closed ticket" href="http://trac.xiph.org/ticket/1870" title="defect: icecast should send 'expires' in all cases (closed: fixed)">#1870</a> and <a class="new ticket" href="http://trac.xiph.org/ticket/1885" title="enhancement: Icecast should allow manual HTTP header configuration (new)">#1885</a>.
+  <li> corrected Content-Length: header in admin (raw) requests. Thanks to paluh for reporting.
+  <li> Escape log entries in access log (close: <a class="closed ticket" href="http://trac.xiph.org/ticket/1916" title="defect: Fix &amp; Verify proper escaping of HTTP related variables when e.g. printing ... (closed: fixed)">#1916</a> some fixes still pending)
+</ul><br />
+</ul>
+<div class="poster">
+Posted March 30, 2013 by dm8tbr
+</div> 
+</div>
+<div class="roundbottom">
+<img alt="" src="/images/corner_bottomleft.jpg" class="corner" style="display: none" />
+</div>
+</div>	
+
+<br />
+<br />
+
+
 <div class="roundcont">
  <div class="roundtop">
   <img alt="" src="/images/corner_topleft.jpg" class="corner" style="display: none" />
