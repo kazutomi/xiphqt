@@ -4,14 +4,16 @@ Hash: SHA1
 md5sums:
 dbeb9fa0f808fc0064e4461e769c184a  flac-1.3.0pre1.tar.xz
 55e16ba84ab102b054d73eddbe77e268  flac-1.3.0pre2.tar.xz
+a65d33e67b75849a6c90b31a865f18ae  flac-1.3.0pre3.tar.xz
 
 sha256sums:
 2fa4f97aa4af8b37b1518ca2f8e4864549042686e00efa8d2d2cea7797f19b19  flac-1.3.0pre1.tar.xz
 6362f95f17c1f3099bc1d3e9c2911a4850e7445b57effa095ffe351d5cfbb825  flac-1.3.0pre2.tar.xz
+ec98a43a578c3734c0e99aeba9995830548122513b964121f58dac30516d7fba  flac-1.3.0pre3.tar.xz
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.12 (GNU/Linux)
 
-iEYEARECAAYFAlE7HXgACgkQbKQad0O41sgE+wCfU3R42UWV+CbG9qK4ME3mfN0b
-JKkAoIJc/MB51vWB4627+3Bxc0hQC+IZ
-=u+on
+iEYEARECAAYFAlFZWN8ACgkQbKQad0O41si04gCfeMK5YBSuG1h6NQ5wS0BMFytN
+KdoAoMGMvmn2rC9Fu/b0vNzfhhinQVKh
+=p7le
 -----END PGP SIGNATURE-----
