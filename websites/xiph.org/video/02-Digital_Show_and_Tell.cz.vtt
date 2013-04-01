@@ -12,7 +12,7 @@ proč nemá smysl stahovat hudbu v kvalitě 24bitů/192kHz.
 
 3
 00:00:18.430 --> 00:00:23.433
-V článku jsem se zmínil o tom,
+V článku jsem zmínil,
 že digitální signál nemá schodový průběh
 
 4
@@ -22,7 +22,7 @@ rozhodně schody nezískáte.
 
 5
 00:00:29.865 --> 00:00:33.865
-Právě <b>tohle</b> bylo hlavní téma,
+Právě tohle bylo hlavní téma,
 o kterém lidé začali diskutovat.
 
 6
@@ -36,8 +36,8 @@ k chování digitálního signálu.
 
 8
 00:00:39.894 --> 00:00:45.285
-Když vás to tolik zajímá, pohraji si s nějakými
-jednoduchými digitálními signály.
+Pojďme si pohrát s jednoduchými digitálními
+signály, když je o ně takový zájem.
 
 9
 00:00:49.747 --> 00:00:51.006
@@ -81,19 +81,19 @@ Je to stále dobrý generátor.
 
 19
 00:01:14.153 --> 00:01:15.614
-Pokud vám nevadí jeho rozměry,
+Pokud se smíříte s jeho rozměry,
 
 20
 00:01:15.614 --> 00:01:16.532
-hmotnost,
+hmotností,
 
 21
 00:01:16.532 --> 00:01:17.577
-spotřeba
+spotřebou
 
 22
 00:01:17.577 --> 00:01:18.910
-a hlučný větrák,
+a hlučným větrákem,
 
 23
 00:01:18.910 --> 00:01:20.329
@@ -136,11 +136,11 @@ Tento HP3585 je ze stejné produktové
 
 32
 00:01:47.732 --> 00:01:50.615
-Stejně jako ostatní přístroje obsahuje omezený
+Jako ostatní přístroje obsahuje velmi omezený
 
 33
 00:01:50.615 --> 00:01:52.905
-a komicky rozměrný mikrokontrolér,
+a neúměrně velký mikrokontrolér,
 
 34
 00:01:52.905 --> 00:01:56.276
@@ -164,7 +164,7 @@ mají stále výborné parametry.
 
 39
 00:02:04.536 --> 00:02:06.868
-Právě generujeme sinusovku
+Právě teď generujeme sinusový průběh
 
 40
 00:02:06.868 --> 00:02:12.829
@@ -180,11 +180,11 @@ která má skutečně 1kHz a 1V efektivně,
 
 43
 00:02:21.428 --> 00:02:24.108
-což odpovídá amplitudě 2.8V.
+což odpovídá mezivrcholovému rozkmitu 2.8V.
 
 44
 00:02:24.308 --> 00:02:27.561
-A to odpovídá i měření na spektrálním analyzátoru,
+A tomu odpovídá i měření na spektrálním analyzátoru,
 
 45
 00:02:27.561 --> 00:02:30.644
@@ -200,19 +200,19 @@ s nejvyšším vrcholem asi 70dB pod úrovní signálu.
 
 48
 00:02:36.649 --> 00:02:38.612
-V našem případě je bezvýznamné,
+V našich pokusech nehraje roli,
 
 49
 00:02:38.612 --> 00:02:40.574
-ale chtěl jsem na něj upozornit,
+ale rád bych na něj upozornil dřív,
 
 50
 00:02:40.574 --> 00:02:42.452
-pro případ že byste si jej nevšimli. 
+než si ho sami všimnete. 
 
 51
 00:02:44.036 --> 00:02:47.142
-A teď přidáme digitální vzorkování. 
+A teď do cesty postavíme digitální vzorkování.
 
 52
 00:02:48.557 --> 00:02:51.024
@@ -232,12 +232,12 @@ a dávno překonaná.
 
 56
 00:02:57.964 --> 00:03:02.676
-Současný konvertor lehko překoná její parametry.
+Současné převodníky daleko předčí její parametry:
 
 57
 00:03:03.076 --> 00:03:07.924
-Plochost, linearita,
-jitter, šum, prostě všechno...
+plochost, linearita,
+chvění, šum, prostě všechno...
 
 58
 00:03:07.924 --> 00:03:09.353
@@ -245,15 +245,15 @@ jitter, šum, prostě všechno...
 
 59
 00:03:09.353 --> 00:03:11.604
-Že něco můžeme změřit neznamená,
+Rozdíl se sice dá změřit,
 
 60
 00:03:11.604 --> 00:03:13.609
-že jsme schopni to slyšet.
+ne nutně však i slyšet.
 
 61
 00:03:13.609 --> 00:03:16.404
-A už tyhle staré krabičky
+Už tyhle staré krabičky
 
 62
 00:03:16.404 --> 00:03:18.643
@@ -310,7 +310,7 @@ Osciloskop na vstupu ukazuje analogovou sinusovku.
 
 75
 00:03:57.428 --> 00:04:01.694
-Signál převedeme pulzně kódovou modulací na 16bitů/44.1kHz,
+Signál převedeme pulzně kódovou modulací na 16bitů/44,1kHz,
 
 76
 00:04:01.694 --> 00:04:03.828
@@ -323,7 +323,7 @@ odpovídá tomu, co jsme viděli dříve...
 
 78
 00:04:07.156 --> 00:04:10.836
-...a co vidíme na spektrálním analyzátoru,
+a co vidíme na spektrálním analyzátoru,
 
 79
 00:04:10.836 --> 00:04:15.154
@@ -379,11 +379,11 @@ méně než třemi vzorky na periodu
 
 91
 00:04:53.545 --> 00:04:55.838
-a digitální průběh nevypadá dobře.
+a digitální průběh nevypadá hezky.
 
 92
 00:04:55.838 --> 00:04:59.798
-Vzhled klame. Na analogovém výstupu...
+Zdání klame. Na analogovém výstupu...
 
 93
 00:05:01.876 --> 00:05:06.033
@@ -423,8 +423,7 @@ Výstupní signál je stále dokonalý.
 
 102
 00:05:54.377 --> 00:05:58.025
-Žádné roztřepené okraje,
-žádné hrany, žádné schody.
+Žádné zuby, žádné hrany, žádné schody.
 
 103
 00:05:58.025 --> 00:06:01.342
@@ -480,8 +479,8 @@ a všude jinde není definován -- nemá hodnotu.
 
 116
 00:06:32.596 --> 00:06:36.666
-V čase diskrétní signál
-by se měl kreslit jako bodový graf. 
+Korektní kresba v čase diskrétního
+signálu je bodový graf.
 
 117
 00:06:40.020 --> 00:06:42.974
@@ -489,7 +488,7 @@ Odpovídající spojitý analogový signál
 
 118
 00:06:42.974 --> 00:06:45.364
-probíhá hladce každým bodem
+probíhá hladce každým bodem,
 
 119
 00:06:45.364 --> 00:06:50.153
@@ -610,11 +609,11 @@ Za druhé
 
 148
 00:08:05.684 --> 00:08:07.529
-(a pravděpodobněji),
+(a pravděpodobněji):
 
 149
 00:08:07.529 --> 00:08:09.449
-inženýři, kteří věci rozumí lépe,
+i inženýři, kteří věci rozumí,
 
 150
 00:08:09.449 --> 00:08:10.441
@@ -638,7 +637,7 @@ Pixely také nejsou čtvercové,
 
 155
 00:08:19.241 --> 00:08:23.081
-jsou to vzorky dvourozměrné funkce,
+jsou to hodnoty dvourozměrné funkce,
 
 156
 00:08:23.081 --> 00:08:26.366
@@ -650,7 +649,7 @@ Pracovat s čímkoliv nekonečně malým
 
 158
 00:08:28.500 --> 00:08:30.804
-je ale osinou v zadku.
+je ale opruz.
 
 159
 00:08:30.804 --> 00:08:32.212
@@ -695,7 +694,7 @@ Znamená to tedy, že počet bitů
 
 169
 00:08:57.534 --> 00:08:58.953
-je irelevantní?
+nehraje roli?
 
 170
 00:08:59.245 --> 00:09:00.521
@@ -703,7 +702,7 @@ Rozhodně ne.
 
 171
 00:09:02.121 --> 00:09:06.046
-2. kanál obsahuje stejnou sinusovku,
+Druhý kanál obsahuje stejnou sinusovku,
 
 172
 00:09:06.046 --> 00:09:09.086
@@ -735,7 +734,7 @@ Naše sinusovka je nedotčená,
 
 179
 00:09:26.398 --> 00:09:28.490
-ale úroveň šumu 8 bitového signálu
+ale úroveň šumu 8-bitového signálu
 
 180
 00:09:28.490 --> 00:09:32.470
@@ -762,7 +761,7 @@ nevzniká žádná ztráta.
 185
 00:09:42.366 --> 00:09:45.626
 Pak ale signál kvantizujeme
-a kvantizace přidává šum.
+a kvantizací vzniká šum.
 
 186
 00:09:47.827 --> 00:09:50.793
@@ -802,7 +801,7 @@ možná jste si právě pomysleli:
 
 195
 00:10:36.670 --> 00:10:40.382
-„No ne! To zní jako šum magnetické pásky!“
+„No ne! To zní jako syčení magnetické pásky!“
 
 196
 00:10:40.382 --> 00:10:41.929
@@ -818,27 +817,27 @@ A pokud použijeme Gaussův dithering,
 
 199
 00:10:45.225 --> 00:10:47.646
-je tento šum a šum pásky matematicky shodný.
+je tento šum a syčení pásky matematicky shodné.
 
 200
 00:10:47.646 --> 00:10:49.225
-<u>Je</u> to šum magnetické pásky.
+Je to syčení magnetické pásky.
  
 201
 00:10:49.225 --> 00:10:51.774
-To znamená, že můžeme měřit šum pásky
+To znamená, že můžeme měřit
 
 202
 00:10:51.774 --> 00:10:54.196
-a tím pádem úroveň šumu magnetické pásky
+úroveň šumu magnetické pásky
 
 203
 00:10:54.196 --> 00:10:56.233
-pomocí bitů místo decibelů.
+pomocí bitů místo decibelů
 
 204
 00:10:56.233 --> 00:10:59.902
-A pohlížet na něj digitálně.
+a pohlížet na něj digitálně.
 
 205
 00:10:59.902 --> 00:11:03.028
@@ -846,7 +845,7 @@ Magnetofonové kazety...
 
 206
 00:11:03.028 --> 00:11:05.449
-Pokud je pamatujete,
+(pokud je pamatujete)
 
 207
 00:11:05.449 --> 00:11:09.161
@@ -858,7 +857,7 @@ v praxi spíše 5 nebo 6,
 
 209
 00:11:11.209 --> 00:11:13.876
-pokud jste nahrávali pomocí kazeťáku.
+pokud jste nahrávali na magnetofonu.
 
 210
 00:11:13.876 --> 00:11:19.422
@@ -874,7 +873,7 @@ používané ve studiích stěží dosáhly...
 
 213
 00:11:24.553 --> 00:11:26.473
-uhádnete?...
+...uhádnete?
 
 214
 00:11:26.473 --> 00:11:27.604
@@ -918,7 +917,7 @@ nejbližší okamžité výchylce.
 
 224
 00:11:54.377 --> 00:11:55.337
-Očividně...
+Očividně.
 
 225
 00:11:55.337 --> 00:11:57.545
@@ -934,7 +933,7 @@ je závislý na vstupním signálu.
 
 228
 00:12:02.174 --> 00:12:04.596
-Takže vznikne šum, který je nekonzistentní,
+Takže vznikne šum, který je proměnlivý,
 
 229
 00:12:04.596 --> 00:12:06.142
@@ -955,7 +954,7 @@ který nahrazuje šum vzniklý jednoduchou kvantizací.
 233
 00:12:15.273 --> 00:12:18.025
 Dithering nepřehlušuje
-ani nemaskuje kvantizační šum,
+ani nenuluje kvantizační šum,
 
 234
 00:12:18.025 --> 00:12:20.190
@@ -975,23 +974,24 @@ Podíváme se, co dithering dělá.
 
 238
 00:12:27.081 --> 00:12:30.078
-Protože generátor produkuje příliš mnoho šumu,
+Šum našeho generátoru
+je pro tento pokus moc vysoký,
 
 239
 00:12:30.431 --> 00:12:33.161
-budeme pro tento pokus generovat sinusovku
+budeme tedy generovat sinusovku
 
 240
 00:12:33.161 --> 00:12:34.782
-pomocí ThinkPadu.
+pomocí ThinkPadu
 
 241
 00:12:34.782 --> 00:12:38.205
-Kvantizujeme jí na 8 bitů s ditheringem.
+a kvantizujeme jí na 8 bitů s ditheringem.
 
 242
 00:12:39.006 --> 00:12:41.342
-Na displeji vidíme pěknou sinusovku,
+Na displeji vidíme krásnou sinusovku,
 
 243
 00:12:41.342 --> 00:12:43.452
@@ -1007,7 +1007,8 @@ až se obnoví spektrální analyzátor...
 
 246
 00:12:50.713 --> 00:12:53.588
-čistou frekvenční špičku a konstantní hladinu šumu 
+uvidíme čistou frekvenční
+špičku a konstantní hladinu šumu 
 
 247
 00:12:56.864 --> 00:12:58.611
@@ -1023,7 +1024,7 @@ Opakuji, teď používám dithering.
 
 250
 00:13:02.196 --> 00:13:04.225
-Teď dithering vypnu.
+A teď dithering vypnu.
 
 251
 00:13:05.779 --> 00:13:07.913
@@ -1043,7 +1044,8 @@ Hladina šumu je nižší, ale úroveň zkreslení je nenulová
 
 255
 00:13:16.030 --> 00:13:19.668
-a špičky zkreslení jsou výš, než byla hladina šumu při ditheringu.
+a špičky zkreslení jsou výš,
+než byla hladina šumu při ditheringu.
 
 256
 00:13:19.668 --> 00:13:22.318
@@ -1059,19 +1061,19 @@ dokonce i bez ditheringu,
 
 259
 00:13:25.929 --> 00:13:28.308
-bude harmonické zkreslení velmi nízké,
+bude harmonické zkreslení tak nízké,
 
 260
 00:13:28.308 --> 00:13:30.708
-téměř neslyšitelné.
+že ho vůbec neuslyšíme.
 
 261
 00:13:30.708 --> 00:13:34.581
-Přesto můžeme dithering použít
+Přesto můžeme dithering použít,
 
 262
 00:13:34.581 --> 00:13:36.489
-pro úplnou eliminaci zkreslení.
+chceme-li zkreslení eliminovat.
 
 263
 00:13:37.642 --> 00:13:39.273
@@ -1103,7 +1105,7 @@ Dá se říct,
 
 270
 00:13:54.910 --> 00:13:58.557
-že cokoliv kvantizováno na nulu má 100% zkreslení!
+že cokoliv kvantizováno na nulu má 100% zkreslení.
 
 271
 00:13:58.833 --> 00:14:01.588
@@ -1111,19 +1113,19 @@ I toto zkreslení dithering eliminuje.
 
 272
 00:14:01.588 --> 00:14:03.599
-Zapneme dithering a...
+Zapneme dithering...
 
 273
 00:14:03.599 --> 00:14:06.377
-náš signál je zpět s úrovní 1/4 bitu,
+a náš signál je zpět s úrovní 1/4 bitu,
 
 274
 00:14:06.377 --> 00:14:09.076
-včetně vyrovnané hladiny šumu.
+včetně rovnoměrné hladiny šumu.
 
 275
 00:14:09.630 --> 00:14:11.220
-Hladina šumu nemusí být vyrovnaná.
+Hladina šumu nemusí být rovnoměrná.
 
 276
 00:14:11.220 --> 00:14:12.798
@@ -1131,15 +1133,15 @@ Dither je signál dle našeho výběru.
 
 277
 00:14:12.798 --> 00:14:15.006
-Vyberme šum tak nenápadný a nepostřehnutelný,
+Vyberme tedy šum co nejméně nápadný 
 
 278
 00:14:15.006 --> 00:14:17.017
-jak je jen možné.
+a těžko postřehnutelný.
 
 279
 00:14:18.142 --> 00:14:22.484
-Náš sluch je nejcitlivější na pásmo 2kHz -- 4kHz,
+Náš sluch je nejcitlivější na pásmo 2kHz - 4kHz,
 
 280
 00:14:22.484 --> 00:14:25.438
@@ -1167,12 +1169,12 @@ ale poslechněme si náš tvarovaný šum
 
 286
 00:14:39.668 --> 00:14:42.234
-při mnohem vyšší hlasitosti...
+při mnohem vyšší hlasitosti.
 
 287
 00:14:56.020 --> 00:14:59.977
-Kvantizační šum s ditheringem
-přenáší vyšší výkon
+Ještě něco: kvantizační šum
+s ditheringem přenáší vyšší výkon
 
 288
 00:14:59.977 --> 00:15:04.276
@@ -1180,7 +1182,8 @@ než bez ditheringu, přestože zní tišeji.
 
 289
 00:15:04.276 --> 00:15:07.902
-To je možné vidět na VU metru během tichých pasáží.
+To je možné vidět na VU metru
+během tichých pasáží.
 
 290
 00:15:07.902 --> 00:15:10.537
@@ -1202,15 +1205,15 @@ Teď budeme vstupní signál takto modulovat...
 
 294
 00:15:27.098 --> 00:15:30.206
-...abychom ukázali, jak to ovlivní kvantizační šum.
+abychom ukázali, jak to ovlivní kvantizační šum.
 
 295
 00:15:30.206 --> 00:15:33.289
-Při plné úrovni je šum ditheringu (podle předpokladu)
+Při plné úrovni je šum ditheringu
 
 296
 00:15:33.289 --> 00:15:35.643
-rovnoměrný, konstantní a jednotvárný.
+homogenní, stálý a rovnoměrný.
 
 297
 00:15:40.937 --> 00:15:42.772
@@ -1235,11 +1238,11 @@ ale tvarování nám poskytuje jednu výhodu:
 
 302
 00:16:16.553 --> 00:16:18.804
-Můžeme použít dithering s nižší úrovní
+Můžeme o něco snížit úroveň ditheringu
 
 303
 00:16:18.804 --> 00:16:20.937
-při stejném ovlivnění výstupního signálu
+a stále získat výstup méně ovlivněný
 
 304
 00:16:20.937 --> 00:16:23.662
@@ -1308,8 +1311,8 @@ Jsou jasnou volbou,
 
 320
 00:17:28.254 --> 00:17:32.212
-pokud chceme vidět chování
-signálu izolované frekvence.
+pokud chceme zkoumat vlatnosti
+soustavy při izolované frekvenci.
 
 321
 00:17:32.212 --> 00:17:34.217
@@ -1393,7 +1396,7 @@ Na první pohled
 
 341
 00:18:27.433 --> 00:18:29.225
-nám ani toto nepomůže.
+nám ani to nepomůže.
 
 342
 00:18:29.225 --> 00:18:31.561
@@ -1459,19 +1462,19 @@ Což je zhruba pravda,
 
 357
 00:19:12.777 --> 00:19:14.900
-ale je potřeba být opatrný.
+ovšem při jisté opatrnosti.
 
 358
 00:19:14.900 --> 00:19:15.774
-Například...
+Například:
 
 359
 00:19:15.774 --> 00:19:19.529
-Co očekáváte, že se stane, když náš signál projde
+co očekáváte, že se stane, když signál projde
 
 360
 00:19:19.529 --> 00:19:23.181
-naším antialiasingovým filtrem podruhé?
+antialiasingovým filtrem podruhé?
 
 361
 00:19:34.136 --> 00:19:37.588
@@ -1534,7 +1537,7 @@ Rozhodně ne.
 
 375
 00:20:10.537 --> 00:20:12.126
-Je to jemná nuance,
+Je to drobná nuance,
 
 376
 00:20:12.126 --> 00:20:15.252
@@ -1606,15 +1609,15 @@ frekvencí digitálního signálu.
 392
 00:21:02.409 --> 00:21:05.140
 Jinak řečeno: digitální signál
-nemůže zachytit cokoliv,
+nemůže popsat cokoliv,
 
 393
 00:21:05.140 --> 00:21:08.041
-co se odehraje mezi vzorky...
+co se odehraje mezi vzorky.
 
 394
 00:21:08.041 --> 00:21:11.422
-z toho by plynulo,
+Z toho by plynulo,
 že strmé hrany musí být zarovnány
 
 395
@@ -1669,20 +1672,20 @@ Stejně jako v předchozím díle
 
 407
 00:22:06.526 --> 00:22:08.393
-jsme probrali mnoho témat,
+jsme se dotkli mnoha témat,
 
 408
 00:22:08.393 --> 00:22:10.868
-avšak zdaleka ne do hloubky.
+ale zdaleka jsme žádné nevyčerpali.
 
 409
 00:22:10.868 --> 00:22:13.620
 Pokud nic jiného, mé hříchy
-opominutí se tímto prohloubily...
+zanedbání se prohloubily
 
 410
 00:22:13.620 --> 00:22:16.286
-Tímto bychom mohli skončit.
+a tímto bychom mohli skončit.
 
 411
 00:22:16.286 --> 00:22:17.833
@@ -1698,7 +1701,7 @@ Experimentujte.
 
 414
 00:22:19.710 --> 00:22:21.374
-Svoje pokusy jsem vybral pečlivě,
+Svoje ukázky jsem vybral pečlivě,
 
 415
 00:22:21.374 --> 00:22:23.668
@@ -1706,7 +1709,7 @@ aby byly jednoduché a s jasnými výsledky.
 
 416
 00:22:23.668 --> 00:22:26.217
-Kterýkoliv z nich si můžete sami zopakovat.
+Kterýkoliv z nich můžete sami zopakovat.
 
 417
 00:22:26.217 --> 00:22:28.766
@@ -1742,7 +1745,7 @@ Zdrojové kódy ke všemu,
 
 425
 00:22:40.692 --> 00:22:42.398
-včetně předváděcí aplikace s tlačítky,
+včetně předváděcí aplikace s tlačítky
 
 426
 00:22:42.398 --> 00:22:44.361
@@ -1754,7 +1757,7 @@ Při experimentování
 
 428
 00:22:45.940 --> 00:22:47.401
-pravděpodobně narazíte na něco neočekávaného,
+vás nejspíš zaskočí něco,
 
 429
 00:22:47.401 --> 00:22:49.950
@@ -1766,15 +1769,15 @@ pravděpodobně narazíte na něco neočekávaného,
 
 431
 00:22:51.198 --> 00:22:54.537
-Nehledě na mojí předchozí poznámku o Wikipedii,
+Pro rychlý průzkum je výborným místem Wikipedia,
 
 432
 00:22:54.537 --> 00:22:56.788
-je výborným místem pro příležitostný výzkum.
+nehledě na to, jak jsem si ji dobíral.
 
 433
 00:22:56.788 --> 00:22:59.956
-A pokud to myslíte se zpracováním signálů vážně,
+A pokud budete chtít signálům opravdu porozumět,
 
 434
 00:22:59.956 --> 00:23:03.337
@@ -1798,7 +1801,7 @@ Pokusy nepokusy,
 
 439
 00:23:13.929 --> 00:23:14.974
-došla mi káva.
+mě došla káva.
 
 440
 00:23:14.974 --> 00:23:16.436
