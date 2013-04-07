@@ -4,6 +4,51 @@
 <div class="roundtop">
 <img alt="" src="/images/corner_topleft.jpg" class="corner" style="display: none" />
 </div>
+<div id="release_2.4-beta3" class="newscontent">
+<h3>Icecast Release 2.4-beta3</h3>
+We are pleased to announce a third beta release of Icecast. A summary of the changes is listed below, for details please refere to the ChangeLog.
+<br />
+Please note that while Opus and WebM are considered production ready, there might be other problems in this release. We appreciate feedback and discussion on the icecast-dev mailing list!
+<br />
+<br />
+<p>Downloads:<br />
+<center>
+<table border=0>
+<tr><td>Source :</td><td><a href="http://downloads.xiph.org/releases/icecast/icecast-2.4-beta3.tar.gz">icecast-2.4-beta3.tar.gz</a></td></tr>
+</table>
+</center>
+<p>
+<br />
+<ul>
+<li>New features -
+<ul>
+  <li> <em>Default mount.</em> - 
+     This <mount type="default"> allows you to define a global set of defaults
+     for ALL mounts.
+     This way you can use e.g. url-auth for sources and or listeners also for
+     dynamically generated mounts.
+</ul><br />
+<li>Bugfixes -
+<ul>
+  <li> Some fixes and improvements.
+</ul><br />
+</ul>
+<div class="poster">
+Posted April 6, 2013 by dm8tbr
+</div> 
+</div>
+<div class="roundbottom">
+<img alt="" src="/images/corner_bottomleft.jpg" class="corner" style="display: none" />
+</div>
+</div>	
+
+<br />
+<br />
+
+<div class="roundcont">
+<div class="roundtop">
+<img alt="" src="/images/corner_topleft.jpg" class="corner" style="display: none" />
+</div>
 <div id="release_2.4-beta2" class="newscontent">
 <h3>Icecast Release 2.4-beta2</h3>
 We are pleased to announce a second beta release of Icecast. A summary of the changes is listed below, for details please refere to the ChangeLog.
