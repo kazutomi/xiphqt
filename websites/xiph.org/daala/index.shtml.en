@@ -50,6 +50,14 @@ for historical reasons.
 For overall progress and goals see <a href="http://wiki.xiph.org/Daala">daala notes</a> on the Xiph.Org wiki.
 </p>
 
+<p>IETF drafts</p>
+<ul>
+<li><a href="http://tools.ietf.org/html/draft-terriberry-codingtools">draft-terriberry-codingtools</a></li>
+<li><a href="http://tools.ietf.org/html/draft-egge-videocodec-tdlt">draft-egge-videocodec-tdlt</a></li>
+<li><a href="http://tools.ietf.org/html/draft-valin-videocodec-pvq">draft-valin-videocodec-pvq</a></lo>
+</ul>
+
+<p>
 For some of the ideas we've worked on, see Tim's
 presentation slides, 
 "<a href="http://people.xiph.org/~tterribe/pubs/lca2012/auckland/intro_to_video1.pdf">An Introduction to Video Coding</a>",
@@ -78,13 +86,6 @@ not for the first part day.</p>
      <a href="http://media.basilgohar.com/derf-talks/20120126162137.MTS.webm">HD part 4b</a>
      (starts at slide 139)
 </li>
-</ul>
-
-IETF drafts
-<ul>
-<li><a href="http://tools.ietf.org/html/draft-terriberry-codingtools">draft-terriberry-codingtools</a></li>
-<li><a href="http://tools.ietf.org/html/draft-egge-videocodec-tdlt">draft-egge-videocodec-tdlt</a></li>
-<li><a href="http://tools.ietf.org/html/draft-valin-videocodec-pvq">draft-valin-videocodec-pvq</a></lo>
 </ul>
 
 <!--#include virtual="/ssi/pagebottom.include" -->
