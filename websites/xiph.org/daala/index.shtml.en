@@ -39,7 +39,7 @@ git clone https://git.xiph.org/daala.git
 Development discussion takes place at
 <a href="irc://irc.freenode.net/theora">#theora on irc.freenode.net</a>
 for historical reasons.
-(&rarr;<a href="" onclick="document.getElementById('chatbox').innerHTML='<iframe src=\'http://webchat.freenode.net/?channels=theora\' width=800 height=600/>';return false;">web interface</a>)
+(&rarr;<a href="" onclick="document.getElementById('chatbox').innerHTML='<iframe src=\'https://webchat.freenode.net/?channels=theora\' width=800 height=600/>';return false;">web interface</a>)
 </p>
 
 <div id="chatbox" style="text-align:center;"></div>
