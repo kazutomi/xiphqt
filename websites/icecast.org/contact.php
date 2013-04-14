@@ -13,7 +13,7 @@
 <p>The Icecast <a href="mailinglist.php">Mailing Lists</a> (and their archives) are one of the first places to check for questions that may have been answered in the past.</p>
 
 <h5>IRC</h5>
-<p>IRC is potentially the fastest way to get an answer, if you're lucky. Our official channel is #icecast on irc.freenode.net.</p>
+<p>IRC is potentially the fastest way to get an answer, if you're lucky. Our official channel is <a href="http://webchat.freenode.net?randomnick=1&channels=icecast&uio=d4" target="_blank">#icecast on irc.freenode.net.</a></p>
 
 <h5>Bugs</h5>
 
