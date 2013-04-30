@@ -1,7 +1,7 @@
 <div id="thepage">
 
 <div id="xiphlogo">
-  <a href="http://www.xiph.org/"><img src="/images/logos/fish_xiph_org.png" alt="Fish Logo and Xiph.org"/></a>
+  <a href="https://www.xiph.org/"><img src="/images/logos/fish_xiph_org.png" alt="Fish Logo and Xiph.org"/></a>
 </div>
 
 <div id="navbar">
@@ -10,11 +10,11 @@
     <li><a href="/press/">Press</a></li>
     <li><a href="/donate/">Donate</a></li>
     <li><a href="/contact/">Contact</a></li>
-    <li><a href="http://wiki.xiph.org/index.php/Main_Page">Wiki</a></li>
+    <li><a href="https://wiki.xiph.org/index.php/Main_Page">Wiki</a></li>
   </ul>
   <ul>
     <li><a href="/downloads/">Downloads</a></li>
-    <li><a href="http://trac.xiph.org/">Bugs</a></li>
+    <li><a href="https://trac.xiph.org/">Bugs</a></li>
     <li><a href="/doc/">Documentation</a></li>
     <li><a href="/video/">Videos</a></li>
   </ul>
