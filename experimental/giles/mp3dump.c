@@ -18,7 +18,7 @@ typedef struct {
   int emphasis;
 } mp3header;
 
-int parse(const unsigned char *p, mp3header *header)
+static int parse(const unsigned char *p, mp3header *header)
 {
   const int bitrates[16] = 
 	{0,  32000,  40000,  48000,  56000,  64000,  80000,  96000,
@@ -44,7 +44,7 @@ int parse(const unsigned char *p, mp3header *header)
 }
 
 /* calculate the size of an mp3 frame from its header */
-int framesize(mp3header *header)
+static int framesize(mp3header *header)
 {
   int size;
   int scale;
@@ -60,7 +60,7 @@ int framesize(mp3header *header)
   return size;
 }
 
-int dump_header(mp3header *header, FILE *out)
+static int dump_header(mp3header *header, FILE *out)
 {
   fprintf(out, "  version %d layer %d", header->version, header->layer);
   if (header->version == 1 && header->layer == 1)
@@ -76,7 +76,7 @@ int dump_header(mp3header *header, FILE *out)
   return 0;
 }
 
-int is_mpack(const unsigned char *p, const unsigned char *e) {
+static int is_mpack(const unsigned char *p, const unsigned char *e) {
   /* do we have enough room to see a 4 byte header? */
   if (p > e) return 0;
   if (e - p < 4) return 0;
@@ -88,7 +88,7 @@ int is_mpack(const unsigned char *p, const unsigned char *e) {
   return 0;
 }
 
-int is_mpsys(const unsigned char *p, const unsigned char *e) {
+static int is_mpsys(const unsigned char *p, const unsigned char *e) {
   /* do we have enough room to see a 4 byte header? */
   if (p > e) return 0;
   if (e - p < 4) return 0;
@@ -100,7 +100,7 @@ int is_mpsys(const unsigned char *p, const unsigned char *e) {
   return 0;
 }
 
-int is_mpmap(const unsigned char *p, const unsigned char *e) {
+static int is_mpmap(const unsigned char *p, const unsigned char *e) {
   /* do we have enough room to see a 4 byte header? */
   if (p > e) return 0;
   if (e - p < 4) return 0;
@@ -112,7 +112,7 @@ int is_mpmap(const unsigned char *p, const unsigned char *e) {
   return 0;
 }
   
-int is_mp3(const unsigned char *p, const unsigned char *e) {
+static int is_mp3(const unsigned char *p, const unsigned char *e) {
   /* do we have enough room to see a 4 byte header? */
   if (p > e) return 0;
   if (e - p < 4) return 0;
@@ -128,7 +128,7 @@ int is_mp3(const unsigned char *p, const unsigned char *e) {
   return 0;
 }
 
-int is_id3(const unsigned char *p, const unsigned char *e) {
+static int is_id3(const unsigned char *p, const unsigned char *e) {
   /* do we have enough room to see a 4 byte header? */
   if (p > e) return 0;
   if (e - p < 10) return 0;
