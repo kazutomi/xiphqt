@@ -148,7 +148,7 @@ int dump(FILE *in, FILE *out)
   mp3header header;
   unsigned char *buf, *p, *e, *q;
   long length, skip;
-  long hbytes;
+  long hbytes = 0;
 
   fseek(in, 0, SEEK_END);
   length = ftell(in);
