@@ -129,7 +129,7 @@ static int is_mp3(const unsigned char *p, const unsigned char *e) {
 }
 
 static int is_id3(const unsigned char *p, const unsigned char *e) {
-  /* do we have enough room to see a 4 byte header? */
+  /* do we have enough room to see a 10 byte header? */
   if (p > e) return 0;
   if (e - p < 10) return 0;
   /* do we have a sync pattern? */
