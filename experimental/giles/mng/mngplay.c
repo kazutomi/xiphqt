@@ -17,7 +17,7 @@
 
 	Raphael Assenat <raph :at: raphnet.net>
 	2003/11/26:    added command line options to run in alternate color depths.
-	               
+
 */
 
 #include <stdio.h>
@@ -156,7 +156,7 @@ mng_bool mymngopenstream(mng_handle mng)
 	}
 
 	/* no MNG streams in this Ogg file */
-	fprintf(stderr, "Couldn't find a MNG stream in Ogg file '%s'\n", 
+	fprintf(stderr, "Couldn't find a MNG stream in Ogg file '%s'\n",
 		mymng->filename);
 	return MNG_FALSE;
 	}
@@ -222,7 +222,7 @@ mng_bool mymngprocessheader(mng_handle mng,
 	
 	screen = SDL_SetVideoMode(width,height, mymng->sdl_video_depth, SDL_SWSURFACE);
 	if (screen == NULL) {
-		fprintf(stderr, "unable to allocate %dx%d video memory: %s\n", 
+		fprintf(stderr, "unable to allocate %dx%d video memory: %s\n",
 			width, height, SDL_GetError());
 		return MNG_FALSE;
 	}
@@ -246,12 +246,12 @@ mng_bool mymngprocessheader(mng_handle mng,
 	}
 
 /*
-	printf("RGBA Masks: %08X %08X %08X %08X\n", 
+	printf("RGBA Masks: %08X %08X %08X %08X\n",
 				mymng->surface->format->Rmask,
 				mymng->surface->format->Gmask,
 				mymng->surface->format->Bmask,
 				mymng->surface->format->Amask);
-	printf("RGBA Shifts: %08X %08X %08X %08X\n", 
+	printf("RGBA Shifts: %08X %08X %08X %08X\n",
 				mymng->surface->format->Rshift,
 				mymng->surface->format->Gshift,
 				mymng->surface->format->Bshift,
@@ -331,12 +331,12 @@ mng_ptr mymnggetcanvasline(mng_handle mng, mng_uint32 line)
 	/* dereference our structure */
 	mymng = (mngstuff*)mng_get_userdata(mng);
 
-	/* we assume any necessary locking has happened 
+	/* we assume any necessary locking has happened
 	   outside, in the frame level code */
 	row = mymng->surface->pixels + mymng->surface->pitch*line;
 
 //	fprintf(stderr, "   returning pointer to line %d (%p)\n", line, row);
- 
+
 	return (row);	
 }
 
@@ -499,7 +499,7 @@ int checkevents(mng_handle mng)
 	/* we have an event; process it */
 	switch (event.type) {
 		case SDL_QUIT:
-			mymngquit(mng);	/* quit */ 
+			mymngquit(mng);	/* quit */
 			break;
 		case SDL_MOUSEBUTTONDOWN:
 		case SDL_MOUSEBUTTONUP:

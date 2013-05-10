@@ -20,7 +20,7 @@ typedef struct {
 
 static int parse(const unsigned char *p, mp3header *header)
 {
-  const int bitrates[16] = 
+  const int bitrates[16] =
 	{0,  32000,  40000,  48000,  56000,  64000,  80000,  96000,
          112000, 128000, 160000, 192000, 224000, 256000, 320000, 0};
   const int samplerates[4] = {44100, 48000, 32000};
@@ -51,7 +51,7 @@ static int framesize(mp3header *header)
 
   if (header->layer == 1) scale = 48;
   else scale = 144;
-  
+
   size = header->bitrate * scale / header->freq;
   /* divide by an extra factor of 2 for MPEG-2? */
 
@@ -111,7 +111,7 @@ static int is_mpmap(const unsigned char *p, const unsigned char *e) {
 
   return 0;
 }
-  
+
 static int is_mp3(const unsigned char *p, const unsigned char *e) {
   /* do we have enough room to see a 4 byte header? */
   if (p > e) return 0;
@@ -178,7 +178,7 @@ int dump(FILE *in, FILE *out)
     if (is_id3(p, e)) {
       if (p - q) fprintf(out, "LOST SYNC\n");
       skip = 10 + (p[9] | (p[8] << 7) | (p[7] << 14) | (p[6] << 21));
-      fprintf(out, " id3 header at 0x%08lx (%ld bytes)\n", 
+      fprintf(out, " id3 header at 0x%08lx (%ld bytes)\n",
 	(long)(p-buf), skip);
       p += skip;
       hbytes += skip;
@@ -187,7 +187,7 @@ int dump(FILE *in, FILE *out)
       if (p - q) fprintf(out, "LOST SYNC\n");
       parse(p, &header);
       skip = framesize(&header);
-      fprintf(out, " mp3 header at 0x%08lx (%ld bytes)\n", 
+      fprintf(out, " mp3 header at 0x%08lx (%ld bytes)\n",
 	(long)(p-buf), skip);
       dump_header(&header, out);
       p += skip;

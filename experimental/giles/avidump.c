@@ -338,7 +338,7 @@ int dump_chunk_strh(const char *type, uint32_t len, FILE *in, FILE *out)
 
 		fprintf(out, " %d Hz", rate/scale);
 		fprintf(out, " %d bits per sample", samplesize*8);
- 
+
 		fprintf(out, "\n    flags 0x%08x", flags);
 		fprintf(out, "\n    priority %d", priority);
 		fprintf(out, "\n    language %d", language);
@@ -411,7 +411,7 @@ int dump_chunk_strf(const char *type, uint32_t len, FILE *in, FILE *out)
 			case 0x0102: fprintf(out, " (IBM aLAW)"); break;
 			case 0x0103: fprintf(out, " (IBM ADPCM)"); break;
 			default: fprintf(out, " (unknown)"); break;
-		} 
+		}
 		fprintf(out, " blockalign %d", blockalign);
 		fprintf(out, "\n    datarate %d bytes per second", datarate);
 

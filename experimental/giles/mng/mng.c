@@ -40,10 +40,10 @@ int read_uint32(FILE *in, uint32_t *value)
 
     bytes = fread(data, 1, 4, in);
     if (bytes != 4) return -1;
-    
+
     *value = (data[0] << 24) | (data[1] << 16) | (data[2] << 8) | data[3];
 
-    return 0;    
+    return 0;
 }
 
 int put_uint32(unsigned char *buffer, uint32_t value)
@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
 	infilename = argv[1];
 	in = fopen(infilename, "rb");
 	if (in == NULL) {
-	    fprintf(stderr, "unable to open input file '%s'\n", 
+	    fprintf(stderr, "unable to open input file '%s'\n",
 		infilename);
 	    exit(2);
 	}
@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
       /* get the MHDR */
     ret = read_uint32(in, &length);
     if (length != 28) {
-	fprintf(stderr, "warning: MHDR is %d bytes instead of 28\n", 
+	fprintf(stderr, "warning: MHDR is %d bytes instead of 28\n",
 		bytes - 4);
     }
     /* be slightly permissive on spec breakage */
@@ -172,7 +172,7 @@ int main(int argc, char *argv[])
 	fwrite(og.header, 1, og.header_len, out);
 	fwrite(og.body, 1, og.body_len, out);
     }
-   
+
     ogg_stream_clear(&os);
 
     if (in != stdin) fclose(in);

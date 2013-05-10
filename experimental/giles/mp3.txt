@@ -19,7 +19,7 @@ C (copyright flag)
 O (original/copy flag) 1 = original
 EM (emphasis) 00 = none
 
-bitrate is a 4 bit enum, with a lookup table that varies by version 
+bitrate is a 4 bit enum, with a lookup table that varies by version
 according to the following table
 
 version: MPEG-1 Layer 1 Layer 2 Layer 3 MPEG-2 LSF Layer 1 Layer 2/3	

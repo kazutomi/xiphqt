@@ -14,8 +14,8 @@
 #include <string.h>
 #include <stdio.h>
 
-/* JPEG marker codes 
-   - these are the second bytes; a marker consistes of 0xff 
+/* JPEG marker codes
+   - these are the second bytes; a marker consistes of 0xff
      followed by the type codes given below. */
 typedef enum {
 
