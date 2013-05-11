@@ -70,6 +70,10 @@ switch ($_REQUEST['action'])
 			    {
 				    $media_type .= '+vorbis';
 			    }
+			    elseif (preg_match('/opus/i', $_REQUEST['stype']))
+			    {
+				    $media_type .= '+opus';
+			    }
 		    }
 		    // Genre, space-normalized
 		    $genre = clean_string($_REQUEST['genre']);
@@ -102,10 +106,17 @@ switch ($_REQUEST['action'])
             {
                 throw new ServerRefusedAPIException('Could not parse listen_url.', SERVER_REFUSED_PARSE_ERROR, $listen_url);
             }
+
+            if ( preg_match('/^dev.local$/', $url['host']))
+            {
+                throw new ServerRefusedAPIException('Illegal listen_url. Don\'t test against a production server, thanks! ', SERVER_REFUSED_ILLEGAL_URL, $listen_url);
+            }
+
             if (empty($url['scheme']) || $url['scheme'] != 'http'
                 || !array_key_exists('host', $url)
                 || !preg_match('/^.*[A-Za-z0-9\-]+\.[A-Za-z0-9]+$/', $url['host'])
-                || preg_match('/^(10\.|192\.168\.|127\.)/', $url['host']))
+                || preg_match('/^(10\.|192\.168\.|127\.)/', $url['host'])
+                || preg_match('/^.*\.local$/', $url['host']))
             {
                 throw new ServerRefusedAPIException('Illegal listen_url. Incorrect <hostname>.', SERVER_REFUSED_ILLEGAL_URL, $listen_url);
             }
@@ -205,7 +216,6 @@ switch ($_REQUEST['action'])
 			    header("YPMessage: Successfully added.");
 			    header("SID: ".$sid);
 			    header("TouchFreq: 242");
-                
                 // Log stuff
                 APILog::request(REQUEST_ADD, true, $listen_url, $server_id,
                                 $mp_id);
@@ -416,7 +426,7 @@ switch ($_REQUEST['action'])
             // Log stuff
             APILog::request(REQUEST_REMOVE, false, $listen_url,
                             $server_id !== false ? $server_id : null,
-                            $mp_id !== false ? $mp_id : null);
+                            $mp_id !== false ? $mp_id : 1);
 		}
 	    catch (APIException $e)
 	    {
@@ -428,7 +438,7 @@ switch ($_REQUEST['action'])
             // Log stuff
             APILog::request(REQUEST_REMOVE, false, $listen_url,
                             $server_id !== false ? $server_id : null,
-                            $mp_id !== false ? $mp_id : null);
+                            $mp_id !== false ? $mp_id : 2);
 	    }
 		
 		break;
