@@ -48,11 +48,6 @@ Below are some point contacts for particular people in the organization.
 </div>
 
 <div class="vcard">
-	<a class="email fn" href="mailto:manuel@xiph.org">Manuel Lora</a>
-	<div class="role"><span>Project Manager</span></div>
-</div>
-
-<div class="vcard">
 	<a class="email fn" href="mailto:trosedale@brllawgroup.com">Tom Rosedale</a>
 	<div class="role"><span>Legal Counsel</span></div>
 	<div class="org"><a class="url" href="http://www.brllawgroup.com/">BRL Law Group LLP</a></div>
