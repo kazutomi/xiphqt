@@ -187,6 +187,10 @@ int dump(FILE *in, FILE *out)
       if (p - q) fprintf(out, "LOST SYNC\n");
       parse(p, &header);
       skip = framesize(&header);
+      if (skip <= 4) {
+        fprintf(out, " can't calculate frame size\n");
+        break;
+      }
       fprintf(out, " mp3 header at 0x%08lx (%ld bytes)\n",
 	(long)(p-buf), skip);
       dump_header(&header, out);
