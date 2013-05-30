@@ -50,6 +50,10 @@ for historical reasons.
 For overall progress and goals see <a href="http://wiki.xiph.org/Daala">daala notes</a> on the Xiph.Org wiki.
 </p>
 
+<ul>
+<li><a href="https://mf4.xiph.org/jenkins/job/daala-autotools/ws/doc/html/index.html">Reference API documentation</a></li>
+</ul>
+
 <p>IETF drafts</p>
 <ul>
 <li><a href="http://tools.ietf.org/html/draft-terriberry-codingtools">draft-terriberry-codingtools</a></li>
