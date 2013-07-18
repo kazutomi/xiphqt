@@ -57,7 +57,10 @@
 <tr><td>Zinf(mp3 + ogg vorbis)</td><td>Linux/Unix, Windows</td><td><a href="http://zinf.sourceforge.net">http://zinf.sourceforge.net</a></td></tr>
 <tr><td>MPlayer</td><td>Linux/Unix, Windows, Mac OSX</td><td><a href="http://www.mplayerhq.hu">http://www.mplayerhq.hu</a></td></tr>
 <tr><td>Xine</td><td>Linux/Unix</td><td><a href="http://www.xine-project.org/home">http://www.xine-project.org/home</a></td></tr>
-<tr><td>VLC</td><td>Linux/Unix, Windows, Mac OSX</td><td><a href="http://www.videolan.org">http://www.videolan.org</a></td></tr>
+<tr><td>VLC</td><td>Linux/Unix, Windows, Mac OSX, Android</td><td><a href="http://www.videolan.org">http://www.videolan.org</a></td></tr>
+<tr><td>FStream</td><td>iOS</td><td><a href="https://itunes.apple.com/app/fstream/id289892007">https://itunes.apple.com/app/fstream/id289892007</a></td></tr>
+<tr><td>TuneIn Radio</td><td>iOS</td><td><a href="https://itunes.apple.com/app/tunein-radio/id418987775">https://itunes.apple.com/app/tunein-radio/id418987775</a></td></tr>
+<tr><td>Internet Radio Box</td><td>iOS</td><td><a href="https://itunes.apple.com/app/internet-radio-box/id293623806">https://itunes.apple.com/app/internet-radio-box/id293623806</a></td></tr>
 </table>
 </center>
 </div>
