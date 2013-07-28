@@ -32,7 +32,50 @@
 							</td>
 							<td class="tune-in">
 							    <p class="format">Tune in:</p>
+{if $stream->getMediaTypeId() == '101' || $stream->getMediaTypeId() == '107'}
+								<audio controls preload=none id='player' onloadedmetadata='displayData(event)>' > 
+{if $stream->getMediaTypeId() == '101'}
+								{php}
+									// Get the servers associated with this mountpoint
+									$servers = Server::retrieveByMountpointId($this->_tpl_vars['stream']->getId());
+
+									// Build the list
+									$list = array();
+									if ($servers !== false && $servers !== array())
+									{
+									    foreach ($servers as $s)
+									    {
+									                //$list[] = $s->getListenUrl();
+									                echo('									<source src=\'' . $s->getListenUrl() . '\' type=\'audio/ogg; codecs="opus"\'>');
+									    }
+									}
+								{/php}
+{elseif $stream->getMediaTypeId() == '107'}
+								{php}
+									// Get the servers associated with this mountpoint
+									$servers = Server::retrieveByMountpointId($this->_tpl_vars['stream']->getId());
+
+									// Build the list
+									$list = array();
+									if ($servers !== false && $servers !== array())
+									{
+									    foreach ($servers as $s)
+									    {
+									                //$list[] = $s->getListenUrl();
+									                echo('									<source src=\'' . $s->getListenUrl() . '\' type=\'audio/ogg; codecs="opus"\'>');
+									    }
+									}
+								{/php}
+{/if}
+<p>Your browser doesn't support HTML audio. Sorry.</p>
+  </audio>
+{/if}
 								<p>[ <a href="{$root_url}/listen/{$stream->getId()}/listen.m3u" title="Listen to '{$stream->getStreamName()|truncate:20:"...":true|escape}'"{* class="tune-in-button"*} onclick="javascript:pageTracker._trackPageview('/stream/listen/m3u');">M3U</a> | <a href="{$root_url}/listen/{$stream->getId()}/listen.xspf" title="Listen to '{$stream->getStreamName()|truncate:20:"...":true|escape}'"{* class="tune-in-button"*} onclick="javascript:pageTracker._trackPageview('/stream/listen/xspf');">XSPF</a> ]</p>
+
+
+
+
+
 {if $stream->getMediaTypeId() != ''}
 								<p class="format"{if $stream->getBitrate() != ''} title="{if is_numeric($stream->getBitrate())}{$stream->getBitrate()|intval} kbps{else}{$stream->getBitrate()}{/if}"{/if}>
 									<a href="{$root_url}/by_format/{$stream->getMediaTypeId()|get_media_type_url}" class="no-link" title="More {$stream->getMediaTypeId()|get_media_type} streams">{$stream->getMediaTypeId()|get_media_type}<span class="stream"> stream</span></a>
