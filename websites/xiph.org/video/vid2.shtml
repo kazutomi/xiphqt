@@ -56,7 +56,7 @@
 	</div>
 	
 	<select class="video-select">	
-	  <option src-webm="https://media.xiph.org/monty/episode-02/02-Digital_Show_and_Tell.360p.webm"
+	  <option src-webm="http://downloads.xiph.org/video/Digital_Show_and_Tell-360p.webm"
 		  src-ogg="http://downloads.xiph.org/video/Digital_Show_and_Tell-360p.ogv"
 		  poster="vid2-poster-360.jpg"
 		  video-width="640px" 
@@ -64,7 +64,7 @@
 		  subtitle-font-size="1.6em"
 		  subtitle-bottom="40px">
 	    360p</option>
-	  <option src-webm="https://media.xiph.org/monty/episode-02/02-Digital_Show_and_Tell.480p.webm"
+	  <option src-webm="http://downloads.xiph.org/video/Digital_Show_and_Tell-480p.webm"
 		  src-ogg="http://downloads.xiph.org/video/Digital_Show_and_Tell-480p.ogv"
 		  poster="vid2-poster-480.jpg"
 		  video-width="848px" 
@@ -72,7 +72,7 @@
 		  subtitle-font-size="2em"
 		  subtitle-bottom="40px">
 	    480p</option>
-	  <option src-webm="https://media.xiph.org/monty/episode-02/02-Digital_Show_and_Tell.720p.webm"
+	  <option src-webm="http://downloads.xiph.org/video/Digital_Show_and_Tell-720p.webm"
 		  src-ogg="http://downloads.xiph.org/video/Digital_Show_and_Tell-720p.ogv"
 		  poster="vid2-poster-720.jpg"
 		  video-width="1280px" 
@@ -161,11 +161,11 @@
 
     <ul>
       <li><b style="display: inline;"> WebM Format (Vorbis audio + VP8 video): </b><br>
-	<a href="https://media.xiph.org/monty/episode-02/02-Digital_Show_and_Tell.360p.webm">
+	<a href="http://downloads.xiph.org/video/Digital_Show_and_Tell-360p.webm">
 	  360p/500kbps (117MB)</a> |
-	<a href="https://media.xiph.org/monty/episode-02/02-Digital_Show_and_Tell.480p.webm">
+	<a href="http://downloads.xiph.org/video/Digital_Show_and_Tell-480p.webm">
 	  480p/1500kbps (294MB)</a> |
-	<a href="https://media.xiph.org/monty/episode-02/02-Digital_Show_and_Tell.720p.webm">
+	<a href="http://downloads.xiph.org/video/Digital_Show_and_Tell-720p.webm">
 	  720p/3500kbps (640MB)</a>
 
       <li><b> Ogg Format (Vorbis audio / Theora video / Kate subtitles + Index): </b><br>
