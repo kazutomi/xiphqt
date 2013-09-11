@@ -37,8 +37,7 @@ git clone https://git.xiph.org/daala.git
 
 <p>
 Development discussion takes place at
-<a href="irc://irc.freenode.net/daala">#daala on irc.freenode.net</a>
-for historical reasons.
+<a href="irc://irc.freenode.net/daala">#daala on irc.freenode.net</a>.
 (&rarr;<a href="" onclick="document.getElementById('chatbox').innerHTML='<iframe src=\'https://webchat.freenode.net/?channels=daala\' width=800 height=600/>';return false;">web interface</a>)
 </p>
 
