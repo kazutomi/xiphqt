@@ -37,7 +37,7 @@ char *lastprint="";
 static int no_rewrite=0;
 static int global_ended=0;
 
-const char *optstring = "b:c:e:f:F:ho:sSvqNi";
+const char *optstring = "b:c:e:f:F:ho:sSvqNiW:Y:";
 struct option options [] = {
   {"begin",required_argument,NULL,'b'},
   {"cut",required_argument,NULL,'c'},
@@ -52,13 +52,15 @@ struct option options [] = {
   {"force-no-sync",no_argument,NULL,'S'},
   {"quiet",no_argument,NULL,'q'},
   {"verbose",required_argument,NULL,'v'},
+  {"wav",required_argument,NULL,'W'},
+  {"yuv",required_argument,NULL,'Y'},
 
   {NULL,0,NULL,0}
 };
 
 void usage(FILE *out){
   fprintf(out,
-          "\ny4oi 20100222\n"
+          "\ny4oi 20131003\n"
           "performs basic operations on yuv4ogg interchange streams in prep for\n"
           "theora encoding\n\n"
 
@@ -86,19 +88,21 @@ void usage(FILE *out){
           "  -N --no-rewrite           : do not rewrite output PTS values.  Retain\n"
           "                              original PTS values even if input streams\n"
           "                              were synchronized.\n"
-          "  -o --output FILE          : output file/pipe (stdout default)\n"
+          "  -o --output FILE          : y4o output file/pipe (stdout default)\n"
           "  -q --quiet                : completely silent operation\n"
           "  -s --force-sync           : perform autosync even on streams marked as\n"
           "                              already synchronized\n"
           "  -S --force-no-sync        : do not perform stream sync even on unsynced\n"
           "                              streams\n"
           "  -v --verbose              : increase verbosity level by one\n"
+          "  -W --wav FILE             : output audio to FILE in wave format.\n"
+          "  -Y --yuv FILE             : output video to FILE in yuv4mpeg2 format.\n"
           "\n"
-          "VIDEO FILTERS/OPTIONS:\n"
+          /*          "VIDEO FILTERS/OPTIONS:\n"
           "\n"
           "OUTPUT FILTERS/OPTIONS:\n"
           "  output                    : output y4o stream to a file or pipe.\n"
-          "               file=<value> . destination file; default is stdout\n\n"
+          "               file=<value> . destination file; default is stdout\n\n"*/
           );
 }
 
@@ -776,6 +780,8 @@ int main(int argc,char *const *argv){
   int infiles=0,i;
 
   char *outfile=NULL;
+  char *wavfile=NULL;
+  char *yuvfile=NULL;
 
   int primary_video=-1;
   int primary_audio=-1;
@@ -842,6 +848,16 @@ int main(int argc,char *const *argv){
         free(outfile);
       outfile=strdup(optarg);
       break;
+    case 'W':
+      if(wavfile)
+        free(wavfile);
+      wavfile=strdup(optarg);
+      break;
+    case 'Y':
+      if(yuvfile)
+        free(yuvfile);
+      yuvfile=strdup(optarg);
+      break;
     default:
       usage(stderr);
       exit(1);
@@ -868,11 +884,10 @@ int main(int argc,char *const *argv){
   if(!filter_is_last_output()){
     char *buffer=NULL;
     /* add an implicit output filter */
-    if(outfile){
-      asprintf(&buffer,"output:file=%s",outfile);
-    }else{
-      asprintf(&buffer,"output");
-    }
+    asprintf(&buffer,"output%s%s%s%s%s%s",
+             outfile?":file=":"", outfile?outfile:"",
+             wavfile?":wav=":"", wavfile?wavfile:"",
+             yuvfile?":yuv=":"", yuvfile?yuvfile:"");
 
     if(filter_append(buffer)){
       exit(1);
