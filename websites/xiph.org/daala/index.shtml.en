@@ -36,9 +36,14 @@ git clone https://git.xiph.org/daala.git
 </blockquote>
 
 <p>
-Development discussion takes place at
+Development discussion takes place in
 <a href="irc://irc.freenode.net/daala">#daala on irc.freenode.net</a>.
 (&rarr;<a href="" onclick="document.getElementById('chatbox').innerHTML='<iframe src=\'https://webchat.freenode.net/?channels=daala\' width=800 height=600/>';return false;">web interface</a>)
+<br>
+And on the
+<a href="http://lists.xiph.org/mailman/listinfo/daala">daala@xiph.org</a>
+mailing list
+(<a href="http://lists.xiph.org/pipermail/daala/">archives</a>)
 </p>
 
 <div id="chatbox" style="text-align:center;"></div>
