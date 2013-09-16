@@ -107,7 +107,7 @@ static int read_container_header(FILE *f, int *sync){
   /* S%c = sync */
 
   {
-    char *token, *value;
+    char *token; //, *value;
     char tag;
 
     *sync=-1;
@@ -118,7 +118,7 @@ static int read_container_header(FILE *f, int *sync){
          token = strtok(NULL, " ")) {
       if (token[0] == '\0') continue;   /* skip empty strings */
       tag = token[0];
-      value = token + 1;
+      //value = token + 1;
       switch (tag) {
       case 'S':
         switch(token[1]){
@@ -208,7 +208,7 @@ static stream_t *read_stream_header(FILE *f){
     */
 
     {
-      char *token, *value;
+      char *token;//, *value;
       char tag;
       int i;
       s->m.video.format=-1;
@@ -220,7 +220,7 @@ static stream_t *read_stream_header(FILE *f){
            token = strtok(NULL, " ")) {
         if (token[0] == '\0') continue;   /* skip empty strings */
         tag = token[0];
-        value = token + 1;
+        //value = token + 1;
         switch (tag) {
         case 'W':
           s->m.video.w = atoi(token+1);
@@ -354,7 +354,7 @@ static stream_t *read_stream_header(FILE *f){
     */
 
     {
-      char *token, *value;
+      char *token;//, *value;
       char tag;
 
       /* parse fields */
@@ -363,7 +363,7 @@ static stream_t *read_stream_header(FILE *f){
            token = strtok(NULL, " ")) {
         if (token[0] == '\0') continue;   /* skip empty strings */
         tag = token[0];
-        value = token + 1;
+        //value = token + 1;
         switch (tag) {
         case 'R':
           s->m.audio.rate = atoi(token+1);
@@ -542,7 +542,7 @@ frame_t *y4o_read_frame(y4o_in_t *y){
      P%g = pts */
 
   {
-    char *token, *value;
+    char *token;//, *value;
     char tag;
 
     streamno=-1;
@@ -555,7 +555,7 @@ frame_t *y4o_read_frame(y4o_in_t *y){
          token = strtok(NULL, " ")) {
       if (token[0] == '\0') continue;   /* skip empty strings */
       tag = token[0];
-      value = token + 1;
+      //value = token + 1;
       switch (tag) {
       case 'S':
         streamno = atoi(token+1);
