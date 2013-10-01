@@ -21,6 +21,14 @@ use and distribute digital media format and reference
 implementation with technical performance superior to h.265.
 </p>
 
+<a name="demos"><h2>Technology demos</h2></a>
+
+<ul>
+<li><a href="http://people.xiph.org/~xiphmont/demo/daala/demo1.shtml">Next generation video: Introducing Daala</a>
+<li><a href="http://people.xiph.org/~xiphmont/demo/daala/demo2.shtml">Introducing Daala part 2: Frequency Domain Intra Prediction</a>
+<li><a href="http://people.xiph.org/~xiphmont/demo/daala/demo3.shtml">Introducing Daala part 3: Time/Frequency Resolution Switching</a>
+</ul>
+
 <a name="source"><h2>Source</h2></a>
 
 <p>
