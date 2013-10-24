@@ -129,7 +129,7 @@ char *translateformat1[]={
   NULL,
   NULL,
   "420jpeg",   //2 chroma sample is centered vertically and horizontally between luma samples
-  "420",       //3 chroma sample is centered vertically between lines, cosited horizontally */
+  "420mpeg2",       //3 chroma sample is centered vertically between lines, cosited horizontally */
   "420paldv",  //4 chroma sample is cosited vertically and horizontally */
   NULL,
   NULL,
@@ -143,9 +143,9 @@ char *translateformat2[]={
   NULL,        // no fallback
   NULL,        // no fallback
   "420jpeg",
-  "420",
+  "420mpeg2",
   "420paldv",
-  "420",       // Use mpeg 420 as fallback
+  "420mpeg2",       // Use mpeg 420 as fallback
   "422",
   "422",
   "422",       // use mpeg 422 as a fallback
