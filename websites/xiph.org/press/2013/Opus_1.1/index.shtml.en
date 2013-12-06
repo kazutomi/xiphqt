@@ -1,0 +1,50 @@
+<!--#include virtual="/ssi/header.include" -->
+<!-- Enter custom page information and styles here -->
+  <title>December 5, 2013: Xiph.Org announces libOpus 1.1</title>
+</head>
+<body>
+<!--#include virtual="/common/xiphbar.include" -->
+
+<!--#include virtual="/ssi/pagetop.include" -->
+<!--  All your page content goes here  -->
+
+
+<h3>libOpus 1.1 released</h3>
+
+<p>Xiph.Org is pleased to announce that after more than two years of
+development, we've released Opus 1.1.
+
+<p>The 1.1 release includes:
+<ul>
+<li>New analysis code and tuning that significantly improves encoding
+quality, especially for variable-bitrate (VBR)
+<li>Automatic, dynamic detection of speech or music to decide the optimal encoding mode on the fly
+<li>Additional surround tuning for 5.1 and
+7.1 encoding from 45kbps (that's <em>total</em> bitrate, not
+per-channel), and high quality surround starting at around
+128kbps.
+<li>Speed improvements on all architectures, especially ARM, where
+decoding uses around 40% less CPU and encoding uses around 30% less CPU.
+</ul>
+
+<p>Of course, the libopus 1.1 release is still fully compliant with
+the official Opus specification (RFC 6716). Download it from the
+website at <a href="//opus-codec.org/">http://opus-codec.org/</a>
+
+<p>Opus 1.1 improvements are further explained in a detailed demo and
+documentation page at
+<a href="//people.xiph.org/~xiphmont/demo/opus/demo3.shtml">http://people.xiph.org/~xiphmont/demo/opus/demo3.shtml</a>
+
+<p>Cheers!
+
+<p>Jean-Marc
+<br>Xiph.Org
+
+<p><i> The Xiph.Org Foundation is a not-for-profit corporation
+dedicated to open, unencumbered multimedia technology. Xiph's formats
+and software levels the playing field for digital media so that all
+producers and artists can distribute their work for minimal cost,
+without restriction, regardless of affiliation.  May contain traces of
+nuts.</i></p>
+
+<!--#include virtual="/ssi/pagebottom.include" -->
