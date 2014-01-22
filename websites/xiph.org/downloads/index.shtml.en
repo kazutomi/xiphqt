@@ -62,21 +62,21 @@ end-user download links are provided for convenience:
 
 <tr>
 <td>libvorbis</td>
-<td>1.3.3</td>
+<td>1.3.4</td>
 <td>
-	<a href="http://downloads.xiph.org/releases/vorbis/libvorbis-1.3.3.tar.xz">libvorbis-1.3.3.tar.xz</a><br/>
-	<a href="http://downloads.xiph.org/releases/vorbis/libvorbis-1.3.3.tar.gz">libvorbis-1.3.3.tar.gz</a><br/>
-	<a href="http://downloads.xiph.org/releases/vorbis/libvorbis-1.3.3.zip">libvorbis-1.3.3.zip</a>
+	<a href="http://downloads.xiph.org/releases/vorbis/libvorbis-1.3.4.tar.xz">libvorbis-1.3.4.tar.xz</a><br/>
+	<a href="http://downloads.xiph.org/releases/vorbis/libvorbis-1.3.4.tar.gz">libvorbis-1.3.4.tar.gz</a><br/>
+	<a href="http://downloads.xiph.org/releases/vorbis/libvorbis-1.3.4.zip">libvorbis-1.3.4.zip</a>
 </td>
 <td>
 	1.0M<br/>
-	1.5M<br/>
+	1.6M<br/>
 	1.8M
 </td>
 <td>
-        71b649d3e08e63ece16649df906ce8b9<br/>
-        6b1a36f0d72332fae5130688e65efe1f<br/>
-        1913c028236e0a6d3e99fec07ce624c7
+  8851c593a52d1ef9c526d95174873852<br/>
+  55f2288055e44754275a17c9a2497391<br/>
+  2356675ce2c50f3612b3575ab07135bf
 </td>
 </tr>
 
