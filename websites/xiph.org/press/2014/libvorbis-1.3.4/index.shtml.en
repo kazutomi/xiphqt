@@ -1,0 +1,34 @@
+<!--#include virtual="/ssi/header.include" -->
+<!-- Enter custom page information and styles here -->
+  <title>January 22, 2014: Xiph.Org announces libVorbis 1.3.4</title>
+</head>
+<body>
+<!--#include virtual="/common/xiphbar.include" -->
+
+<!--#include virtual="/ssi/pagetop.include" -->
+<!--  All your page content goes here  -->
+
+
+<h3>libVorbis 1.3.4 released</h3>
+
+
+<p>Xiph.Org is pleased to announce a full release of libvorbis 1.3.4
+The primary feature of this release is reduced static data size in libvorbisenc, as well as associated minor changes required to libvorbis and libvorbisfile.  The release also contains minor build fixes and build system updates.  There are no functional changes over the previous 1.3.3 release.
+
+<p>Tarballs and zipfiles of the official release can be found in the
+usual place
+at <a href="http://downloads.xiph.org/releases/vorbis">http://downloads.xiph.org/releases/vorbis/</a>.
+
+<p>Happy hacking!
+
+<p>Monty
+<br>Xiph.Org
+
+<p><i> The Xiph.Org Foundation is a not-for-profit corporation
+dedicated to open, unencumbered multimedia technology. Xiph's formats
+and software levels the playing field for digital media so that all
+producers and artists can distribute their work for minimal cost,
+without restriction, regardless of affiliation.  May contain traces of
+nuts.</i></p>
+
+<!--#include virtual="/ssi/pagebottom.include" -->
