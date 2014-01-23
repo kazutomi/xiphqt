@@ -1,5 +1,54 @@
 <h2>News</h2>
 
+
+<div class="roundcont">
+<div class="roundtop">
+<img alt="" src="/images/corner_topleft.jpg" class="corner" style="display: none" />
+</div>
+<div id="release_2.4-beta4" class="newscontent">
+<h3>Icecast Release 2.4-beta4</h3>
+We are pleased to announce a third beta release of Icecast. A summary of the changes is listed below, for details please refere to the <a href="http://svn.xiph.org/icecast/tags/icecast-2.4-beta4/ChangeLog">ChangeLog</a>.
+<br />
+Please note that while Opus and WebM are considered production ready, there might be other problems in this release. We appreciate feedback and discussion on the icecast-dev mailing list!
+<br />
+<br />
+<p>Downloads:<br />
+<center>
+<table border=0>
+<tr><td>Source :</td><td><a href="http://downloads.xiph.org/releases/icecast/icecast-2.4-beta4.tar.gz">icecast-2.4-beta4.tar.gz</a></td></tr>
+<tr><td>Windows build :</td><td><a href="http://downloads.xiph.org/releases/icecast/icecast_win32_2.4_beta4.zip">icecast_win32_2.4_beta4.zip</a></td></tr>
+</table>
+</center>
+<p>
+<br />
+<ul>
+<li>New features -
+<ul>
+  <li> <em>HTTP PUT support complete</em> - 
+     Completed HTTP PUT support, send 100-continue-header,
+     if client requests it. We need to adhere to HTTP1.1 here.
+</ul><br />
+<li>Bugfixes -
+<ul>
+  <li> Fixed a memory leak. Lost headers of stream because of wrong ref
+        counter in associated refbuf objects.
+  <li> avoid memory leak in _parse_mount() when "type"-attribuet is set
+  <li> Updated web interface to be more XHTML compliant.
+  <li> Some fixes and improvements.
+</ul><br />
+</ul>
+<div class="poster">
+Posted January 23, 2014 by dm8tbr
+</div> 
+</div>
+<div class="roundbottom">
+<img alt="" src="/images/corner_bottomleft.jpg" class="corner" style="display: none" />
+</div>
+</div>	
+
+<br />
+<br />
+
 <div class="roundcont">
 <div class="roundtop">
 <img alt="" src="/images/corner_topleft.jpg" class="corner" style="display: none" />

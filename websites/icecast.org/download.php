@@ -23,6 +23,22 @@
 <tr><td>All</td><td><a href="http://downloads.xiph.org/releases/icecast/icecast-2.3.3.tar.gz">icecast-2.3.3.tar.gz</a></td></tr>
 <!--Let's see if people complain... <tr><td>RPM-compatible</td><td><a href="http://downloads.xiph.org/releases/icecast/icecast-2.3.2-0.src.rpm">icecast-2.3.2-0.src.rpm</a></td></tr>-->
 </table>
+<h4>Icecast Beta Release (2.4 beta 4 aka 2.3.99.4)</h4>
+<center>
+<p>Binary Packages</p>
+<table border=1 cellpadding=5 cellspacing=0 width=90% bordercolor="#000000">
+<tr><td><b>Platform</b></td><td><b>Download Link</b></td></tr>
+<tr><td>Windows build</td><td><a href="http://downloads.xiph.org/releases/icecast/icecast_win32_2.4_beta4.zip">icecast_win32_2.4_beta4.zip</a></td></tr>
+<tr><td>Linux/Unix</td><td>Thomas provides test builds, packaged for various distributions, using his <a href="https://build.opensuse.org/package/show/home:dm8tbr/icecast">OBS project for Icecast</a>. There are <a href="http://download.opensuse.org/repositories/home:/dm8tbr/">package repositories</a> that can be added to the distro package manager. Those are not intended for production use and should be only used for testing.</td></tr>
+</table>
+</center>
+<br></br>
+<center>
+<p>Source Packages</p>
+<table border=1 cellpadding=5 cellspacing=0 width=90% bordercolor="#000000">
+<tr><td><b>Platform</b></td><td><b>Download Link</b></td></tr>
+<tr><td>All</td><td><a href="http://downloads.xiph.org/releases/icecast/icecast-2.4-beta4.tar.gz">icecast-2.4-beta4.tar.gz</a></td></tr>
+</table>
 <br>
 Older releases can be found <a href="http://downloads.xiph.org/releases/icecast">Here</a>
 </center>
