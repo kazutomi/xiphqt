@@ -23,6 +23,7 @@
 <tr><td>All</td><td><a href="http://downloads.xiph.org/releases/icecast/icecast-2.3.3.tar.gz">icecast-2.3.3.tar.gz</a></td></tr>
 <!--Let's see if people complain... <tr><td>RPM-compatible</td><td><a href="http://downloads.xiph.org/releases/icecast/icecast-2.3.2-0.src.rpm">icecast-2.3.2-0.src.rpm</a></td></tr>-->
 </table>
+</center>
 <h4>Icecast Beta Release (2.4 beta 4 aka 2.3.99.4)</h4>
 <center>
 <p>Binary Packages</p>
