@@ -15,8 +15,7 @@
 <p>These DirectShow filters will let you play your Ogg Vorbis files in
 <a href="http://www.microsoft.com/windows/windowsmedia/default.mspx">Windows Media Player</a>,
 and <a href=""></a><a href="http://sourceforge.net/project/showfiles.php?group_id=82303&amp;package_id=84358">other</a>
-<a href="http://www.corecoded.com/">DirectShow</a>
-<a href="http://www.inmatrix.com/zplayer/">based</a>
+<a href="http://www.corecoded.com/">DirectShow</a>-<a href="http://www.inmatrix.com/zplayer/">based</a>
 <a href="http://www.radlight.net/">players</a>. Players not based on DirectShow
 do not need these filters.</p>
 
