@@ -26,7 +26,7 @@ do not need these filters.</p>
 
 <h2>Players:</h2>
 
-<p>DirectShow based players only need the above filters.</p>
+<p>DirectShow-based players only need the above filters.</p>
 
 <ul>
   <li><a href="http://sourceforge.net/project/showfiles.php?group_id=82303&amp;package_id=84358">Media Player Classic</a>: An OpenSource DirectShow player with a minimalist interface.</li>
