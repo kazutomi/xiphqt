@@ -119,5 +119,5 @@ if [ "$1" = "config" ]; then
 	exit 0
 fi
 
-ENVIRONMENT=prod php5 /var/www/dir.xiph.org/cronjobs/munin_listeners.php
+ENVIRONMENT=prod php5 /var/www/dir.xiph.org/munin/munin_listeners.php
 

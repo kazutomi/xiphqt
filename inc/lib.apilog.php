@@ -5,19 +5,21 @@ class APILog
     public static function log($result, $listen_url = null,
                                $server_id = null, $mountpoint_id = null)
     {
-        $db = DirXiphOrgLogDBC::getInstance();
+	if (ENVIRONMENT != 'prod'){
+	        $db = DirXiphOrgLogDBC::getInstance();
         
-        $ip = utils::getRealIp();
-        $ip = $ip !== false ? $ip : '127.0.0.1';
+        	$ip = utils::getRealIp();
+       		$ip = $ip !== false ? $ip : '127.0.0.1';
         
-        $sql = 'INSERT INTO `api_log_%s` (`message`, `remote_ip`, `listen_url_hash`, `server_id`, `mountpoint_id`) '
-              .'VALUES ("%s", INET_ATON("%s"), "%s", %d, %d);';
-        $sql = sprintf($sql, date('Ymd'),
-                             $db->escape($result),
-                             $ip,
-                             $listen_url !== null ? hash('md5', $listen_url) : 0,
-                             $server_id, $mountpoint_id);
+	        $sql = 'INSERT INTO `api_log_%s` (`message`, `remote_ip`, `listen_url_hash`, `server_id`, `mountpoint_id`) '
+	              .'VALUES ("%s", INET_ATON("%s"), "%s", %d, %d);';
+	        $sql = sprintf($sql, date('Ymd'),
+        	                     $db->escape($result),
+                	             $ip,
+                        	     $listen_url !== null ? hash('md5', $listen_url) : 0,
+	                             $server_id, $mountpoint_id);
         $db->noReturnQuery($sql);
+	}
         return true;
     }
     

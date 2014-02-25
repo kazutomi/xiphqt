@@ -1,0 +1,77 @@
+#!/bin/sh
+# -*- sh -*-
+
+: << =cut
+
+=head1 NAME
+
+icecast yp unchecked - Plugin to monitor Icecast YP unchecked entries
+
+=head1 CONFIGURATION
+
+No configuration
+
+=head1 AUTHOR
+
+Unknown author
+
+=head1 LICENSE
+
+Unknown license
+
+=head1 BUGS
+
+=over 4
+
+=item SuSE: passive connections rejected
+
+At least one SuSE netstat appears to report "passive connections
+rejected because of time stamp"
+
+We have never seen that, patch requested.
+
+=back
+
+=head1 MAGIC MARKERS
+
+ #%# family=auto
+ #%# capabilities=autoconf
+
+=cut
+
+. $MUNIN_LIBDIR/plugins/plugin.sh
+
+if [ "$1" = "autoconf" ]; then
+	echo yes
+	exit 0
+fi
+
+if [ "$1" = "config" ]; then
+
+	echo 'graph_title Icecast YP unchecked streams'
+	echo 'graph_args -l 0'
+	echo 'graph_vlabel unchecked streams in the directory'
+	echo 'graph_category yp'
+#	echo 'graph_period second'
+	echo 'graph_info This graph shows the number of unchecked stations in YP.'
+	echo 'total.label total'
+	echo 'total.type GAUGE'
+	echo 'total.min 0'
+	echo 'total.info The total number of unchecked streams.'
+	echo 'totalmr.label total minus radionomy'
+	echo 'totalmr.type GAUGE'
+	echo 'totalmr.min 0'
+	echo 'totalmr.info The total number of unchecked streams, minus radionomy.'
+	echo 'radionomy.label radionomy'
+	echo 'radionomy.type GAUGE'
+	echo 'radionomy.min 0'
+	echo 'radionomy.info The number of unchecked Radionomy streams.'
+	echo 'radionomyslow.label radionomy_205/207'
+	echo 'radionomyslow.type GAUGE'
+	echo 'radionomyslow.min 0'
+	echo 'radionomyslow.info The number of unchecked Radionomy streams.'
+	exit 0
+fi
+
+ENVIRONMENT=prod php5 /var/www/dir.xiph.org/munin/munin_unchecked.php
+
