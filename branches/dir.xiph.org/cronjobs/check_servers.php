@@ -20,7 +20,7 @@ $memcache = DirXiphOrgMCC::getInstance();
 // Old stuff that "timeouted"
 try
 {
-    $res = $db->selectQuery('SELECT `id`, `listen_url` FROM `server` WHERE `checked` = 0');
+    $res = $db->selectQuery('SELECT `id`, `listen_url` FROM `server` WHERE `checked` = 0;');
     while (!$res->endOf())
     {
         try

@@ -1,0 +1,9 @@
+# make sure a user that has the necessary access rights has this in cron!
+
+*/5  * *   *   *      ENVIRONMENT=prod php5 /var/www/dir.xiph.org/cronjobs/generate_xml.php >/dev/null
+*    * *   *   *      ENVIRONMENT=prod php5 /var/www/dir.xiph.org/cronjobs/generate_top.php >/dev/null
+*/5  * *   *   *      ENVIRONMENT=prod php5 /var/www/dir.xiph.org/cronjobs/generate_tagcloud.php >/dev/null
+*    * *   *   *      ENVIRONMENT=prod php5 /var/www/dir.xiph.org/cronjobs/update_stats.php >/dev/null
+*    * *   *   *      ENVIRONMENT=prod /var/www/dir.xiph.org/cronjobs/check_servers.sh >/dev/null
+*    * *   *   *      ENVIRONMENT=prod php5 /var/www/dir.xiph.org/cronjobs/prune_mountpoints.php >/dev/null
+

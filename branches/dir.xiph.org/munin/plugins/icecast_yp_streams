@@ -119,7 +119,7 @@ if [ "$1" = "config" ]; then
 	exit 0
 fi
 
-ENVIRONMENT=prod php5 /var/www/dir.xiph.org/cronjobs/munin_streams.php
+ENVIRONMENT=prod php5 /var/www/dir.xiph.org/munin/munin_streams.php
 
 #netstat -s | awk '
 #/active connections ope/  { print "active.value " $1 }
