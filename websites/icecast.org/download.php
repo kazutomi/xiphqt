@@ -11,7 +11,7 @@
 <p>Binary Packages</p>
 <table border=1 cellpadding=5 cellspacing=0 width=90% bordercolor="#000000">
 <tr><td><b>Platform</b></td><td><b>Download Link</b></td></tr>
-<tr><td>Windows NT/2000/XP</td><td>Updated installer will be available ASAP.<!--<a href="http://downloads.xiph.org/releases/icecast/icecast2_win32_2.3.3_setup.exe">icecast2_win32_2.3.3_setup.exe</a>--></td></tr>
+<tr><td>Windows NT/2000/XP</td><td>Updated installer will be available again for 2.4.0.<!--<a href="http://downloads.xiph.org/releases/icecast/icecast2_win32_2.3.3_setup.exe">icecast2_win32_2.3.3_setup.exe</a>--></td></tr>
 <tr><td>Linux/Unix</td><td>Most distributions provide ready to use <a href="#binary_packages">binary packages</a> of Icecast.</td></tr>
 </table>
 </center>
@@ -29,7 +29,7 @@
 <p>Binary Packages</p>
 <table border=1 cellpadding=5 cellspacing=0 width=90% bordercolor="#000000">
 <tr><td><b>Platform</b></td><td><b>Download Link</b></td></tr>
-<tr><td>Windows build</td><td><a href="http://downloads.xiph.org/releases/icecast/icecast_win32_2.4_beta4.zip">icecast_win32_2.4_beta4.zip</a></td></tr>
+<tr><td>Windows build</td><td><a href="http://downloads.xiph.org/releases/icecast/icecast_win32_2.4_beta5.zip">icecast_win32_2.4_beta5.zip</a></td></tr>
 <tr><td>Linux/Unix</td><td>Thomas provides test builds, packaged for various distributions, using his <a href="https://build.opensuse.org/package/show/home:dm8tbr/icecast">OBS project for Icecast</a>. There are <a href="http://download.opensuse.org/repositories/home:/dm8tbr/">package repositories</a> that can be added to the distro package manager. Those are not intended for production use and should be only used for testing.</td></tr>
 </table>
 </center>
@@ -38,7 +38,7 @@
 <p>Source Packages</p>
 <table border=1 cellpadding=5 cellspacing=0 width=90% bordercolor="#000000">
 <tr><td><b>Platform</b></td><td><b>Download Link</b></td></tr>
-<tr><td>All</td><td><a href="http://downloads.xiph.org/releases/icecast/icecast-2.4-beta4.tar.gz">icecast-2.4-beta4.tar.gz</a></td></tr>
+<tr><td>All</td><td><a href="http://downloads.xiph.org/releases/icecast/icecast-2.4-beta5.tar.gz">icecast-2.4-beta5.tar.gz</a></td></tr>
 </table>
 <br>
 Older releases can be found <a href="http://downloads.xiph.org/releases/icecast">Here</a>

@@ -5,6 +5,52 @@
 <div class="roundtop">
 <img alt="" src="/images/corner_topleft.jpg" class="corner" style="display: none" />
 </div>
+<div id="release_2.4-beta5" class="newscontent">
+<h3>Icecast Release 2.4-beta5</h3>
+We are pleased to announce a third beta release of Icecast. A summary of the changes is listed below, for details please refere to the <a href="http://svn.xiph.org/icecast/tags/icecast-2.4-beta5/ChangeLog">ChangeLog</a>.
+<br />
+Please note that while Opus and WebM are considered production ready, there might be other problems in this release. We appreciate feedback and discussion on the icecast-dev mailing list!
+<br />
+<br />
+<p>Downloads:<br />
+<center>
+<table border=0>
+<tr><td>Source :</td><td><a href="http://downloads.xiph.org/releases/icecast/icecast-2.4-beta4.tar.gz">icecast-2.4-beta5.tar.gz</a></td></tr>
+<tr><td>Windows build :</td><td><a href="http://downloads.xiph.org/releases/icecast/icecast_win32_2.4_beta4.zip">icecast_win32_2.4_beta5.zip</a></td></tr>
+</table>
+</center>
+<p>
+<br />
+<ul>
+<li>New features -
+<ul>
+  <li> <em>Web interface redone</em> - 
+          Web output properly redone, credit to ePirat.
+          Now validates completely as XHTML1.0 strict.
+	  Also improves rendering on mobile devices.
+  <li> Send charset in HTTP headers for everything, excluding file-serv and streams.
+</ul><br />
+<li>Bugfixes -
+<ul>
+  <li>reverting <a href="https://trac.xiph.org/changeset/18945">r18945</a> for now as using -b breaks things. Reopening <a href=<http://trac.xiph.org/ticket/1866">#1886</a>, patch needs rework.
+</ul><br />
+</ul>
+<div class="poster">
+Posted March 01, 2014 by dm8tbr
+</div> 
+</div>
+<div class="roundbottom">
+<img alt="" src="/images/corner_bottomleft.jpg" class="corner" style="display: none" />
+</div>
+</div>	
+
+<br />
+<br />
+
+<div class="roundcont">
+<div class="roundtop">
+<img alt="" src="/images/corner_topleft.jpg" class="corner" style="display: none" />
+</div>
 <div id="release_2.4-beta4" class="newscontent">
 <h3>Icecast Release 2.4-beta4</h3>
 We are pleased to announce a third beta release of Icecast. A summary of the changes is listed below, for details please refere to the <a href="http://svn.xiph.org/icecast/tags/icecast-2.4-beta4/ChangeLog">ChangeLog</a>.
