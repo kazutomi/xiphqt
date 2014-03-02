@@ -37,6 +37,12 @@ vi /var/www/dir.xiph.org/docs/apache-vhost.conf
 cd /var/www/dir.xiph.org/
 svn co http://svn.xiph.org/websites/common/
 
+#EXPERIMENTAL JSON API
+#compile, install, activate json modules in mysql: lib_mysqludf_json.so
+ln -s /var/www/dir.xiph.org/api /var/www/api.dir.xiph.org
+#The proof of concept is intentionally done as bash-script-cgi to be unsuitable for production use and requiring a proper rewrite.
+#Contributions are welcome. Use icecast-dev@xiph.org mailing list and https://trac.xiph.org/ticket/1958 for discussion.
+
 notes:
  * if output is blank, make sure c_templates is writeable and you have run the php scripts in cron at least once!
 
