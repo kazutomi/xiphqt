@@ -15,8 +15,8 @@ Please note that while Opus and WebM are considered production ready, there migh
 <p>Downloads:<br />
 <center>
 <table border=0>
-<tr><td>Source :</td><td><a href="http://downloads.xiph.org/releases/icecast/icecast-2.4-beta4.tar.gz">icecast-2.4-beta5.tar.gz</a></td></tr>
-<tr><td>Windows build :</td><td><a href="http://downloads.xiph.org/releases/icecast/icecast_win32_2.4_beta4.zip">icecast_win32_2.4_beta5.zip</a></td></tr>
+<tr><td>Source :</td><td><a href="http://downloads.xiph.org/releases/icecast/icecast-2.4-beta5.tar.gz">icecast-2.4-beta5.tar.gz</a></td></tr>
+<tr><td>Windows build :</td><td><a href="http://downloads.xiph.org/releases/icecast/icecast_win32_2.4_beta5.zip">icecast_win32_2.4_beta5.zip</a></td></tr>
 </table>
 </center>
 <p>
