@@ -32,7 +32,7 @@ Please note that while Opus and WebM are considered production ready, there migh
 </ul><br />
 <li>Bugfixes -
 <ul>
-  <li>reverting <a href="https://trac.xiph.org/changeset/18945">r18945</a> for now as using -b breaks things. Reopening <a href=<http://trac.xiph.org/ticket/1866">#1886</a>, patch needs rework.
+  <li>reverting <a href="https://trac.xiph.org/changeset/18945">r18945</a> for now as using -b breaks things. Reopening <a href="http://trac.xiph.org/ticket/1866">#1886</a>, patch needs rework.
 </ul><br />
 </ul>
 <div class="poster">
