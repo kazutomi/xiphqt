@@ -7,7 +7,7 @@
 </div>
 <div id="release_2.4-beta5" class="newscontent">
 <h3>Icecast Release 2.4-beta5</h3>
-We are pleased to announce a third beta release of Icecast. A summary of the changes is listed below, for details please refere to the <a href="http://svn.xiph.org/icecast/tags/icecast-2.4-beta5/ChangeLog">ChangeLog</a>.
+We are pleased to announce a fifth beta release of Icecast. A summary of the changes is listed below, for details please refere to the <a href="http://svn.xiph.org/icecast/tags/icecast-2.4-beta5/ChangeLog">ChangeLog</a>.
 <br />
 Please note that while Opus and WebM are considered production ready, there might be other problems in this release. We appreciate feedback and discussion on the icecast-dev mailing list!
 <br />
@@ -53,7 +53,7 @@ Posted March 01, 2014 by dm8tbr
 </div>
 <div id="release_2.4-beta4" class="newscontent">
 <h3>Icecast Release 2.4-beta4</h3>
-We are pleased to announce a third beta release of Icecast. A summary of the changes is listed below, for details please refere to the <a href="http://svn.xiph.org/icecast/tags/icecast-2.4-beta4/ChangeLog">ChangeLog</a>.
+We are pleased to announce a fourth beta release of Icecast. A summary of the changes is listed below, for details please refere to the <a href="http://svn.xiph.org/icecast/tags/icecast-2.4-beta4/ChangeLog">ChangeLog</a>.
 <br />
 Please note that while Opus and WebM are considered production ready, there might be other problems in this release. We appreciate feedback and discussion on the icecast-dev mailing list!
 <br />
