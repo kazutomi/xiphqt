@@ -12,14 +12,14 @@
 <h2>Documentation</h2>
 
 <ul>
-  <li><a href="/faq/">Frequently Asked Questions</a></li>
+  <li><a href="../faq/">Frequently Asked Questions</a></li>
 </ul>
 
 <ul>
-  <li><a href="/doc/Theora.pdf">Theora Format Specification</a></li>
-  <li><a href="/doc/libtheora-1.2/">libtheora 1.2 API references</a> (in development)</li>
-  <li><a href="/doc/libtheora-1.1/">libtheora 1.1 API references</a></li>
-  <li><a href="/doc/libtheora-1.0/">libtheora 1.0 API references</a></li>
+  <li><a href="Theora.pdf">Theora Format Specification</a></li>
+  <li><a href="libtheora-1.2/">libtheora 1.2 API references</a> (in development)</li>
+  <li><a href="libtheora-1.1/">libtheora 1.1 API references</a></li>
+  <li><a href="libtheora-1.0/">libtheora 1.0 API references</a></li>
 </ul>
 
 <ul>
