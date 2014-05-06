@@ -30,7 +30,7 @@
 <tr><td>Mixxx</td><td>Linux/Unix, Mac OSX, Windows</td><td><a href="http://mixxx.org/">http://mixxx.org/</a></td></tr>
 <tr><td>iCast</td><td>iOS</td><td><a href="http://icast.anthonymyatt.net">http://icast.anthonymyatt.net</a></td></tr>
 <tr><td>MPD - Music Player Daemon</td><td>Linux/Unix, Mac OSX</td><td><a href="http://mpd.wikia.com/wiki/Music_Player_Daemon_Wiki">http://mpd.wikia.com/wiki/Music_Player_Daemon_Wiki</a></td></tr>
-<tr><td>KRADradio</td><td>iOS</td><td>Linux/Unix<a href="http://kradradio.com/">http://kradradio.com/</a></td></tr>
+<tr><td>KRADradio</td><td>Linux/Unix<a href="http://kradradio.com/">http://kradradio.com/</a></td></tr>
 </table>
 </center>
 </div>
