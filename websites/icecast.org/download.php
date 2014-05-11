@@ -6,13 +6,13 @@
 </div>
 <div class="newscontent">
 
-<h4>Icecast Current Release (2.3.3)</h4>
+<h4>Icecast Current Release (2.4.0)</h4>
 <center>
 <p>Binary Packages</p>
 <table border=1 cellpadding=5 cellspacing=0 width=90% bordercolor="#000000">
 <tr><td><b>Platform</b></td><td><b>Download Link</b></td></tr>
-<tr><td>Windows NT/2000/XP</td><td>Updated installer will be available again for 2.4.0.<!--<a href="http://downloads.xiph.org/releases/icecast/icecast2_win32_2.3.3_setup.exe">icecast2_win32_2.3.3_setup.exe</a>--></td></tr>
-<tr><td>Linux/Unix</td><td>Most distributions provide ready to use <a href="#binary_packages">binary packages</a> of Icecast.</td></tr>
+<tr><td>Windows</td><td><a href="http://downloads.xiph.org/releases/icecast/icecast_win32_2.4.0.zip">icecast_win32_2.4.0.zip</a></td></tr>
+<tr><td>Linux/Unix</td><td>Most distributions provide ready to use <a href="#binary_packages">binary packages</a> of Icecast. Thomas provides test builds, packaged for various distributions, using his <a href="https://build.opensuse.org/package/show/home:dm8tbr/icecast">OBS project for Icecast</a>. There are <a href="http://download.opensuse.org/repositories/home:/dm8tbr/">package repositories</a> that can be added to the distro package manager.</td></tr>
 </table>
 </center>
 <br></br>
@@ -20,10 +20,11 @@
 <p>Source Packages</p>
 <table border=1 cellpadding=5 cellspacing=0 width=90% bordercolor="#000000">
 <tr><td><b>Platform</b></td><td><b>Download Link</b></td></tr>
-<tr><td>All</td><td><a href="http://downloads.xiph.org/releases/icecast/icecast-2.3.3.tar.gz">icecast-2.3.3.tar.gz</a></td></tr>
+<tr><td>All</td><td><a href="http://downloads.xiph.org/releases/icecast/icecast-2.4.0.tar.gz">icecast-2.4.0.tar.gz</a></td></tr>
 <!--Let's see if people complain... <tr><td>RPM-compatible</td><td><a href="http://downloads.xiph.org/releases/icecast/icecast-2.3.2-0.src.rpm">icecast-2.3.2-0.src.rpm</a></td></tr>-->
 </table>
 </center>
+<!-- currently no beta
 <h4>Icecast Beta Release (2.4 beta 5 aka 2.3.99.5)</h4>
 <center>
 <p>Binary Packages</p>
@@ -40,6 +41,7 @@
 <tr><td><b>Platform</b></td><td><b>Download Link</b></td></tr>
 <tr><td>All</td><td><a href="http://downloads.xiph.org/releases/icecast/icecast-2.4-beta5.tar.gz">icecast-2.4-beta5.tar.gz</a></td></tr>
 </table>
+-->
 <br>
 Older releases can be found <a href="http://downloads.xiph.org/releases/icecast">Here</a>
 </center>
@@ -153,7 +155,7 @@ For details please refer to the package repository section of your distribution'
 Hints that you might find useful:<br>
 <ul>
 <li>Debian and its derivatives (e.g. Ubuntu) name the package 'icecast2'.
-<li>For RHEL and CentOS the icecast package is available from the EPEL repository.
+<li>For RHEL and CentOS the icecast package is available from the <a href="https://fedoraproject.org/wiki/EPEL">EPEL repository</a>.
 </ul>
 </div>
 <div class="roundbottom">

@@ -5,9 +5,86 @@
 <div class="roundtop">
 <img alt="" src="/images/corner_topleft.jpg" class="corner" style="display: none" />
 </div>
+<div id="release_2.4.0" class="newscontent">
+<h3>Icecast Release 2.4.0</h3>
+We are pleased to announce release 2.4.0 of Icecast. A summary of the changes is listed below, for details please refer to the <a href="http://svn.xiph.org/icecast/tags/icecast-2.4-beta5/ChangeLog">ChangeLog</a>.
+<br />
+<br />
+<br />
+<p>Downloads:<br />
+<center>
+<table border=0>
+<tr><td>Source :</td><td><a href="http://downloads.xiph.org/releases/icecast/icecast-2.4.0.tar.gz">icecast-2.4.0.tar.gz</a></td></tr>
+<tr><td>Windows build :</td><td><a href="http://downloads.xiph.org/releases/icecast/icecast_win32_2.4.0.zip">icecast_win32_2.4.0.zip</a></td></tr>
+</table>
+</center>
+<p>
+<br />
+<ul>
+  <li> Support for Ogg Opus streams
+  <li> Support for WebM streams
+  <li> HTTP 1.1 PUT support for source connections. Deprecating SOURCE method.
+  <li> <em>Default mount.</em> -
+       This <mount type="default"> allows you to define a global set of defaults
+       for ALL mounts.
+       This way you can use e.g. url-auth for sources and or listeners also for
+       dynamically generated mounts.
+  <li> <em>Web interface redone</em> -
+  <ul>
+    <li> Web output properly redone, credit to ePirat.
+    <li> Added &lt;audio&gt; element for supported audio streams.
+    <li> Now validates completely as XHTML1.0 strict.
+    <li> Also improves rendering on mobile devices.
+  </ul>
+  <li> Added basic JSON API (/status-json.xsl) based on a xml2json template by Doeke Zanstra (see xml2json.xslt). Output is roughly limited to data also visible through status.xsl.
+  <li> Send charset in HTTP headers for everything, excluding file-serv and streams.
+  <li> Allow (standard strftime(3)) %x codes in &lt;dump-file&gt;. Disabled for win32.
+  <li> Added stream_start_iso8601, server_start_iso8601 to statitics.
+       ISO8601 compliante timestamps for statistics. Should make usage in
+       e.g. JSON much easier.
+       Added as new variables to avoid breaking backwards compatibility.
+  <li> Now compiles for win32 using mingw
+  <li> Added options "headers" and "header_prefix" to URL based listener auth.
+  <li> Updated listener_remove handler, added ip= and agent=,
+  <li> Allow full URLs to be returned by the master server.
+</ul>
+<h3>Fixes</h3>
+<ul>
+  <li> <strong>SECURITY FIX</strong> - Override supplementary groups if <changeowner> is used
+  <li> Fixes for some race conditions
+  <li> Dropped debian packaging directory as debian use their own.
+  <li> Send proper HTTP headers in responses to clients.
+  <li> corrected Content-Length: header in admin (raw) requests. Thanks to paluh for reporting.
+  <li> Escape log entries in access log
+  <li> Fixed a memory leak. Lost headers of stream because of wrong ref
+        counter in associated refbuf objects.
+  <li> avoid memory leak in _parse_mount() when "type"-attribute is set
+  <li> Updated web interface to be XHTML compliant.
+  <li> Removed status2.xsl from release. It was only a broken example file anyway.
+</ul>
+<h3>Known issues</h3>
+<ul>
+  <li> Will crash if certain config tags are left empty.
+  <li> Webinterface shows Login when using just stream_auth.
+</ul>
+<div class="poster">
+Posted May 06, 2014 by tbr
+</div> 
+</div>
+<div class="roundbottom">
+<img alt="" src="/images/corner_bottomleft.jpg" class="corner" style="display: none" />
+</div>
+</div>	
+
+<br />
+<br />
+<div class="roundcont">
+<div class="roundtop">
+<img alt="" src="/images/corner_topleft.jpg" class="corner" style="display: none" />
+</div>
 <div id="release_2.4-beta5" class="newscontent">
 <h3>Icecast Release 2.4-beta5</h3>
-We are pleased to announce a fifth beta release of Icecast. A summary of the changes is listed below, for details please refere to the <a href="http://svn.xiph.org/icecast/tags/icecast-2.4-beta5/ChangeLog">ChangeLog</a>.
+We are pleased to announce a fifth beta release of Icecast. A summary of the changes is listed below, for details please refer to the <a href="http://svn.xiph.org/icecast/tags/icecast-2.4-beta5/ChangeLog">ChangeLog</a>.
 <br />
 Please note that while Opus and WebM are considered production ready, there might be other problems in this release. We appreciate feedback and discussion on the icecast-dev mailing list!
 <br />
@@ -53,7 +130,7 @@ Posted March 01, 2014 by dm8tbr
 </div>
 <div id="release_2.4-beta4" class="newscontent">
 <h3>Icecast Release 2.4-beta4</h3>
-We are pleased to announce a fourth beta release of Icecast. A summary of the changes is listed below, for details please refere to the <a href="http://svn.xiph.org/icecast/tags/icecast-2.4-beta4/ChangeLog">ChangeLog</a>.
+We are pleased to announce a fourth beta release of Icecast. A summary of the changes is listed below, for details please refer to the <a href="http://svn.xiph.org/icecast/tags/icecast-2.4-beta4/ChangeLog">ChangeLog</a>.
 <br />
 Please note that while Opus and WebM are considered production ready, there might be other problems in this release. We appreciate feedback and discussion on the icecast-dev mailing list!
 <br />
@@ -101,7 +178,7 @@ Posted January 23, 2014 by dm8tbr
 </div>
 <div id="release_2.4-beta3" class="newscontent">
 <h3>Icecast Release 2.4-beta3</h3>
-We are pleased to announce a third beta release of Icecast. A summary of the changes is listed below, for details please refere to the ChangeLog.
+We are pleased to announce a third beta release of Icecast. A summary of the changes is listed below, for details please refer to the ChangeLog.
 <br />
 Please note that while Opus and WebM are considered production ready, there might be other problems in this release. We appreciate feedback and discussion on the icecast-dev mailing list!
 <br />
@@ -146,7 +223,7 @@ Posted April 6, 2013 by dm8tbr
 </div>
 <div id="release_2.4-beta2" class="newscontent">
 <h3>Icecast Release 2.4-beta2</h3>
-We are pleased to announce a second beta release of Icecast. A summary of the changes is listed below, for details please refere to the ChangeLog.
+We are pleased to announce a second beta release of Icecast. A summary of the changes is listed below, for details please refer to the ChangeLog.
 <br />
 Please note that while Opus and WebM are considered production ready, there might be other problems in this release. We appreciate feedback and discussion on the icecast-dev mailing list!
 <br />
