@@ -7,7 +7,7 @@
 </div>
 <div id="release_2.4.0" class="newscontent">
 <h3>Icecast Release 2.4.0</h3>
-We are pleased to announce release 2.4.0 of Icecast. A summary of the changes is listed below, for details please refer to the <a href="http://svn.xiph.org/icecast/tags/icecast-2.4-beta5/ChangeLog">ChangeLog</a>.
+We are pleased to announce release 2.4.0 of Icecast. A summary of the changes is listed below, for details please refer to the <a href="http://svn.xiph.org/icecast/tags/icecast-2.4.0/ChangeLog">ChangeLog</a>.
 <br />
 <br />
 <br />
