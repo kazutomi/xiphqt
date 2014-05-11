@@ -50,7 +50,7 @@ We are pleased to announce release 2.4.0 of Icecast. A summary of the changes is
 </ul>
 <h3>Fixes</h3>
 <ul>
-  <li> <strong>SECURITY FIX</strong> - Override supplementary groups if <changeowner> is used
+  <li> <strong>SECURITY FIX</strong> - Override supplementary groups if &lt;changeowner&gt; is used
   <li> Fixes for some race conditions
   <li> Dropped debian packaging directory as debian use their own.
   <li> Send proper HTTP headers in responses to clients.
