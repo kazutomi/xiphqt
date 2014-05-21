@@ -45,6 +45,8 @@ git clone https://git.xiph.org/daala.git
 </blockquote>
 
 <p>
+We have a <a href="https://wiki.xiph.org/Daala_Quickstart">Quickstart
+ Guide</a> to help you get the code built and running.
 Development discussion takes place in
 <a href="irc://irc.freenode.net/daala">#daala on irc.freenode.net</a>.
 (&rarr;<a href="" onclick="document.getElementById('chatbox').innerHTML='<iframe src=\'https://webchat.freenode.net/?channels=daala\' width=800 height=600/>';return false;">web interface</a>)
