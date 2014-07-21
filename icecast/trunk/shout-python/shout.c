@@ -393,7 +393,7 @@ static PyObject* pshoutobj_close(ShoutObject* self) {
 
 static PyObject* pshoutobj_send(ShoutObject* self, PyObject* args) {
   const unsigned char* data;
-  size_t len;
+  int len;
   int res;
 
   if (!PyArg_ParseTuple(args, "s#", &data, &len))
