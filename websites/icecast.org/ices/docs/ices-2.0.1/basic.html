@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Icecast Docs &mdash; Basic Setup</title>
+	<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="description" content="Icecast is free server software for streaming multimedia.">
+<link type="text/plain" rel="author" href="/humans.txt" />
+<link rel="canonical" href="http://icecast.org/ices/docs/ices-2.0.1/basic.html">
+<!-- CSS -->
+<link rel="stylesheet" type="text/css" href="/assets/css/style.css" media="screen, print" />
+
+</head>
+
+  <body>
+
+    <header>
+  
+    
+    <div id="xiphbar">
+      <div>
+        <a href="http://www.xiph.org/"><img src="/assets/img/xiph-community.svg" alt="the xiph open source community"/></a>
+        <ul>
+          
+            <li><a href="http://www.xiph.org/">Xiph.org</a></li>
+          
+            <li><a href="http://www.opus-codec.org/">Opus</a></li>
+          
+            <li><a href="http://xiph.org/flac/">FLAC</a></li>
+          
+            <li><a href="http://www.icecast.org/">Icecast</a></li>
+          
+            <li><a href="http://www.vorbis.com/">Vorbis</a></li>
+          
+            <li><a href="http://www.theora.org/">Theora</a></li>
+          
+            <li><a href="http://www.speex.org/">Speex</a></li>
+          
+            <li><a href="http://www.xspf.org/">XSPF</a></li>
+          
+        </ul>
+      </div>
+    </div>
+  
+  <h1><a href="/" title="Home page">Icecast</a> <span>is free server software for streaming multimedia.</span></h1>
+  <nav>
+    <label for="toggle-nav" title="Toggle navigation"></label>
+    <input type="checkbox" id="toggle-nav" />
+    <ul>
+      
+        
+        
+          
+            
+          
+          <li><a href="/download">Download</a></li>
+        
+          
+            
+          
+          <li><a href="/docs">Docs</a></li>
+        
+          
+            
+          
+          <li><a href="/apps">Apps</a></li>
+        
+          
+            
+          
+          <li><a href="http://dir.xiph.org/">Streams</a></li>
+        
+          
+            
+          
+          <li><a href="/ices">Ices</a></li>
+        
+          
+            
+          
+          <li><a href="/svn">Subversion</a></li>
+        
+          
+            
+          
+          <li><a href="/contact">Contact</a></li>
+        
+      
+    </ul>
+  </nav>
+</header>
+
+
+    <section>
+      <h2>IceS 2.0.1 Docs &mdash; Basic Setup</h2>
+      <article>
+  <h3 id="what-does-ices-require">What does IceS require?</h3>
+  <p>IceS v2 is not a graphical application, it’s purpose is to stream whatever it is given into a stream for feeding to the Icecast streaming server. It does however require the following:</p>
+
+  <ul>
+    <li>libogg available at <a href="http://www.vorbis.com/">www.vorbis.com</a></li>
+    <li>libvorbis available at <a href="http://www.vorbis.com/">www.vorbis.com</a></li>
+    <li>libxml2 available at <a href="http://xmlsoft.org/">xmlsoft</a></li>
+    <li>libshout 2 available at <a href="http://www.icecast.org/">The Icecast site</a></li>
+  </ul>
+
+  <p>Please note that in many cases, pre-built packages are split into two, a run-time package, typically consisting of the actual run-time library and a development package, consisting of the support files needed to compile and link the application.  </p>
+
+  <p>The following are optional</p>
+
+  <ul>
+    <li>ALSA. driver and libs available at <a href="http://www.alsa-project.org/">The ALSA site</a></li>
+  </ul>
+
+</article>
+
+<article>
+  <h3 id="what-does-ices-do">What does IceS do?</h3>
+  <p>IceS reads audio data from an input and sends the audio data to one or more files or icecast servers. Before it’s actually sent out, some processing maybe performed, typically resampling and/or downmixing to produce streams suited to various bandwidth requirements.  </p>
+
+  <p>The streams produced are Ogg Vorbis streams so while icecast 2 is capable of streaming these streams, other streaming servers may not be.</p>
+
+</article>
+
+<article>
+  <h3 id="what-input-can-ices-handle">What input can IceS handle?</h3>
+  <p>Several inputs currently exist, but some maybe dependant on certain platforms or if certain drivers or libraries are available.  </p>
+
+  <ul>
+    <li>OSS - Open Sound System. Typically used on linux based systems to get live input from a soundcard.</li>
+    <li>ALSA - Advanced Linux Sound Architecture. Like OSS but with various improvements for linux based systems.</li>
+    <li>stdinpcm - Uses standard input to receive PCM audio.</li>
+    <li>playlist - Uses a playlist to read audio files for processing.</li>
+    <li>sun - like OSS, but for Sun Solaris, also works for OpenBSD</li>
+  </ul>
+
+</article>
+
+<article>
+  <h3 id="how-do-you-start-ices">How do you start IceS?</h3>
+  <p>The configuration of IceS is done via an XML based config file. Which you supply as an argument to the program at invocation time. For example:  </p>
+
+  <p><code>ices /etc/ices.xml</code></p>
+
+</article>
+
+    </section>
+
+    <footer>
+  <p>&copy; 2004-2014 Xiph.Org.<br />All rights reserved.</p>
+</footer>
+
+  </body>
+</html>

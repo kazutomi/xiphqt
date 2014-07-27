@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Icecast &mdash; Subversion</title>
+	<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="description" content="Icecast is free server software for streaming multimedia.">
+<link type="text/plain" rel="author" href="/humans.txt" />
+<link rel="canonical" href="http://icecast.org/svn/">
+<!-- CSS -->
+<link rel="stylesheet" type="text/css" href="/assets/css/style.css" media="screen, print" />
+
+</head>
+
+  <body>
+
+    <header>
+  
+    
+    <div id="xiphbar">
+      <div>
+        <a href="http://www.xiph.org/"><img src="/assets/img/xiph-community.svg" alt="the xiph open source community"/></a>
+        <ul>
+          
+            <li><a href="http://www.xiph.org/">Xiph.org</a></li>
+          
+            <li><a href="http://www.opus-codec.org/">Opus</a></li>
+          
+            <li><a href="http://xiph.org/flac/">FLAC</a></li>
+          
+            <li><a href="http://www.icecast.org/">Icecast</a></li>
+          
+            <li><a href="http://www.vorbis.com/">Vorbis</a></li>
+          
+            <li><a href="http://www.theora.org/">Theora</a></li>
+          
+            <li><a href="http://www.speex.org/">Speex</a></li>
+          
+            <li><a href="http://www.xspf.org/">XSPF</a></li>
+          
+        </ul>
+      </div>
+    </div>
+  
+  <h1><a href="/" title="Home page">Icecast</a> <span>is free server software for streaming multimedia.</span></h1>
+  <nav>
+    <label for="toggle-nav" title="Toggle navigation"></label>
+    <input type="checkbox" id="toggle-nav" />
+    <ul>
+      
+        
+        
+          
+            
+          
+          <li><a href="/download">Download</a></li>
+        
+          
+            
+          
+          <li><a href="/docs">Docs</a></li>
+        
+          
+            
+          
+          <li><a href="/apps">Apps</a></li>
+        
+          
+            
+          
+          <li><a href="http://dir.xiph.org/">Streams</a></li>
+        
+          
+            
+          
+          <li><a href="/ices">Ices</a></li>
+        
+          
+            
+          
+          <li><a href="/svn">Subversion</a></li>
+        
+          
+            
+          
+          <li><a href="/contact">Contact</a></li>
+        
+      
+    </ul>
+  </nav>
+</header>
+
+
+    <section>
+      <h2>Subversion</h2>
+<article>
+  <h3 id="access-to-subversion-repository">Access to subversion repository</h3>
+
+  <p>Xiph.org has switched from CVS to using Subversion. More information regarding subversion can be found <a href="http://subversion.tigris.org/">here</a>.  </p>
+
+  <p>Before following these instructions make sure that you have a copy of Subversion installed. These instructions will assume that you are using a command-line version.</p>
+
+  <h4 id="create-a-place-to-store-the-local-repository">1. Create a place to store the local repository</h4>
+
+  <div class="highlight"><pre><code class="language-sh" data-lang="sh"><span class="nv">$ </span>mkdir <span class="nv">$HOME</span>/xiphrepository  <span class="c"># Obviously this name can be whatever you&#39;d like..</span>
+                              <span class="c"># this is an example.</span>
+<span class="nv">$ </span><span class="nb">cd</span> <span class="nv">$HOME</span>/xiphrepository</code></pre></div>
+
+  <h4 id="checkout-the-main-icecast-trunk">2. Checkout the main Icecast trunk</h4>
+  <p>Note: You must have libtool, autoconf, and automake to perform this step.</p>
+
+  <div class="highlight"><pre><code class="language-sh" data-lang="sh"><span class="nv">$ </span>svn co http://svn.xiph.org/icecast/trunk/icecast/ icecast
+A  icecast/debian
+A  icecast/debian/icecast2.postinst
+A  icecast/debian/icecast2.postrm
+A  icecast/debian/icecast2.default
+A  icecast/debian/control
+....
+Checked out revision 6618.  <span class="c"># Note your revision may be different</span></code></pre></div>
+
+  <h4 id="run-autogensh-in-the-main-icecast-root">3. Run autogen.sh in the main Icecast root</h4>
+
+  <div class="highlight"><pre><code class="language-sh" data-lang="sh"><span class="nv">$ </span><span class="nb">cd</span> <span class="nv">$HOME</span>/xiphrepository/icecast
+<span class="nv">$ </span>./autogen.sh
+Checking <span class="k">for</span> automake version
+found automake-1.6
+found aclocal-1.6
+Generating configuration files <span class="k">for</span> icecast, please wait....
+aclocal-1.6  -I m4
+autoheader
+libtoolize --automake
+automake-1.6 --add-missing
+...
+config.status: creating win32/Makefile
+config.status: creating win32/res/Makefile
+config.status: creating config.h
+config.status: executing depfiles commands</code></pre></div>
+
+  <h4 id="verfiy-everything-by-performing-a-make">4. Verfiy everything by performing a make</h4>
+
+  <div class="highlight"><pre><code class="language-sh" data-lang="sh"><span class="nv">$ </span><span class="nb">cd</span> <span class="nv">$HOME</span>/xiphrepository/icecast
+<span class="nv">$ </span>make</code></pre></div>
+
+</article>
+
+
+    </section>
+
+    <footer>
+  <p>&copy; 2004-2014 Xiph.Org.<br />All rights reserved.</p>
+</footer>
+
+  </body>
+</html>

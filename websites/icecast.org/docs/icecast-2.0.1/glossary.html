@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Icecast Docs &mdash; Glossary</title>
+	<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="description" content="Icecast is free server software for streaming multimedia.">
+<link type="text/plain" rel="author" href="/humans.txt" />
+<link rel="canonical" href="http://icecast.org/docs/icecast-2.0.1/glossary.html">
+<!-- CSS -->
+<link rel="stylesheet" type="text/css" href="/assets/css/style.css" media="screen, print" />
+
+</head>
+
+  <body>
+
+    <header>
+  
+    
+    <div id="xiphbar">
+      <div>
+        <a href="http://www.xiph.org/"><img src="/assets/img/xiph-community.svg" alt="the xiph open source community"/></a>
+        <ul>
+          
+            <li><a href="http://www.xiph.org/">Xiph.org</a></li>
+          
+            <li><a href="http://www.opus-codec.org/">Opus</a></li>
+          
+            <li><a href="http://xiph.org/flac/">FLAC</a></li>
+          
+            <li><a href="http://www.icecast.org/">Icecast</a></li>
+          
+            <li><a href="http://www.vorbis.com/">Vorbis</a></li>
+          
+            <li><a href="http://www.theora.org/">Theora</a></li>
+          
+            <li><a href="http://www.speex.org/">Speex</a></li>
+          
+            <li><a href="http://www.xspf.org/">XSPF</a></li>
+          
+        </ul>
+      </div>
+    </div>
+  
+  <h1><a href="/" title="Home page">Icecast</a> <span>is free server software for streaming multimedia.</span></h1>
+  <nav>
+    <label for="toggle-nav" title="Toggle navigation"></label>
+    <input type="checkbox" id="toggle-nav" />
+    <ul>
+      
+        
+        
+          
+            
+          
+          <li><a href="/download">Download</a></li>
+        
+          
+            
+          
+          <li><a href="/docs">Docs</a></li>
+        
+          
+            
+          
+          <li><a href="/apps">Apps</a></li>
+        
+          
+            
+          
+          <li><a href="http://dir.xiph.org/">Streams</a></li>
+        
+          
+            
+          
+          <li><a href="/ices">Ices</a></li>
+        
+          
+            
+          
+          <li><a href="/svn">Subversion</a></li>
+        
+          
+            
+          
+          <li><a href="/contact">Contact</a></li>
+        
+      
+    </ul>
+  </nav>
+</header>
+
+
+    <section>
+      <h2>Icecast 2.0.1 Docs &mdash; Glossary</h2>
+      <article>
+  <dl>
+    <dt>Source client</dt>
+    <dd>A source client is an external program which is responsible for sending content data to Icecast.<br />
+Some source clients that support Icecast 2 are Oddcast, Ices 2, Ices 0.3 and DarkIce.</dd>
+    <dt>Slave server (Relay)</dt>
+    <dd>The slave server in a relay configuration is the server that is pulling the data from the master server.
+It acts as a listening client to the master server.</dd>
+    <dt>Master server (Relay)</dt>
+    <dd>The master server in a relay configuration is the server that has the stream that is being relayed.</dd>
+    <dt>Mountpoint</dt>
+    <dd>A mountpoint is a resource on the Icecast server that represents a single broadcast stream. Mountpoints are
+named similar to files (<code>/mystream.ogg</code>, <code>/mymp3stream</code>).<br />
+When listeners connect to Icecast, they must specify the mountpoint in the request (i.e. <code>http://192.168.1.10:8000/mystream.ogg</code>).
+Additionally, source clients must specify a mountpoint when they connect as well. Statistics are kept track of by mountpoint.
+Mountpoints are a fundamental aspect of Icecast 2 and how it is organized.</dd>
+    <dt>Fallback mountpoint</dt>
+    <dd>A fallback mountpoint is configured with a parent mountpoint. In the event of the parent mountpoint losing connection with Icecast,
+Icecast will then move all clients currently connected to the now defunct mountpoint to it’s fallback mountpoint.</dd>
+  </dl>
+
+</article>
+
+    </section>
+
+    <footer>
+  <p>&copy; 2004-2014 Xiph.Org.<br />All rights reserved.</p>
+</footer>
+
+  </body>
+</html>

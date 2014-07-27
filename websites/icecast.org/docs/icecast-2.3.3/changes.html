@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Icecast Docs &mdash; Changes</title>
+	<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="description" content="Icecast is free server software for streaming multimedia.">
+<link type="text/plain" rel="author" href="/humans.txt" />
+<link rel="canonical" href="http://icecast.org/docs/icecast-2.3.3/changes.html">
+<!-- CSS -->
+<link rel="stylesheet" type="text/css" href="/assets/css/style.css" media="screen, print" />
+
+</head>
+
+  <body>
+
+    <header>
+  
+    
+    <div id="xiphbar">
+      <div>
+        <a href="http://www.xiph.org/"><img src="/assets/img/xiph-community.svg" alt="the xiph open source community"/></a>
+        <ul>
+          
+            <li><a href="http://www.xiph.org/">Xiph.org</a></li>
+          
+            <li><a href="http://www.opus-codec.org/">Opus</a></li>
+          
+            <li><a href="http://xiph.org/flac/">FLAC</a></li>
+          
+            <li><a href="http://www.icecast.org/">Icecast</a></li>
+          
+            <li><a href="http://www.vorbis.com/">Vorbis</a></li>
+          
+            <li><a href="http://www.theora.org/">Theora</a></li>
+          
+            <li><a href="http://www.speex.org/">Speex</a></li>
+          
+            <li><a href="http://www.xspf.org/">XSPF</a></li>
+          
+        </ul>
+      </div>
+    </div>
+  
+  <h1><a href="/" title="Home page">Icecast</a> <span>is free server software for streaming multimedia.</span></h1>
+  <nav>
+    <label for="toggle-nav" title="Toggle navigation"></label>
+    <input type="checkbox" id="toggle-nav" />
+    <ul>
+      
+        
+        
+          
+            
+          
+          <li><a href="/download">Download</a></li>
+        
+          
+            
+          
+          <li><a href="/docs">Docs</a></li>
+        
+          
+            
+          
+          <li><a href="/apps">Apps</a></li>
+        
+          
+            
+          
+          <li><a href="http://dir.xiph.org/">Streams</a></li>
+        
+          
+            
+          
+          <li><a href="/ices">Ices</a></li>
+        
+          
+            
+          
+          <li><a href="/svn">Subversion</a></li>
+        
+          
+            
+          
+          <li><a href="/contact">Contact</a></li>
+        
+      
+    </ul>
+  </nav>
+</header>
+
+
+    <section>
+      <h2>Icecast 2.3.3 Docs &mdash; Changes</h2>
+      <article>
+  <h3 id="version-23">Version 2.3</h3>
+
+  <h4 id="new-features">New Features</h4>
+
+  <ul>
+    <li>Streaming support for ogg speex, ogg flac, ogg midi</li>
+    <li>Intro file support, per mount settable</li>
+    <li>On-demand relays, global and per-relay settable</li>
+    <li>Fallback to file, extends on the intro file handling.</li>
+    <li>New mount-level settings:
+      <ul>
+        <li>public, type/subtype, genre settings, stream description,</li>
+        <li>stream url, stream name, bitrate (override what is sent from the source client)</li>
+        <li>mp3 metadata interval</li>
+        <li>on-[dis]connect scripts can be stated per-mount, invoked at source start/stop and take 1 arg which is the mountpoint.</li>
+      </ul>
+    </li>
+    <li>New URL listener authenticator .included is an example php-based application that can be used in conjunction with the url authenticator to manage a simple subscription-based broadcast.</li>
+    <li>HTPasswd authenticator uses in-memory structures now.</li>
+    <li>On demand files now can be fed through an authenticator</li>
+    <li>Update to admin/web xslt interface</li>
+  </ul>
+
+  <h4 id="fixes">Fixes</h4>
+
+  <ul>
+    <li>real/helix works</li>
+    <li>win32 access log correct</li>
+    <li>stats client is stable now (<code>curl -X STATS http://admin@host:port/</code>)</li>
+    <li>show mountpoints on stats that are inactive but have an active fallback</li>
+    <li>more updates over HUP possible</li>
+  </ul>
+
+</article>
+
+    </section>
+
+    <footer>
+  <p>&copy; 2004-2014 Xiph.Org.<br />All rights reserved.</p>
+</footer>
+
+  </body>
+</html>

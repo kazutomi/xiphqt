@@ -1,0 +1,410 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Icecast</title>
+    <description>Icecast is free server software for streaming multimedia.</description>
+    <link>http://icecast.org/</link>
+    <atom:link href="http://icecast.org/feed.xml" rel="self" type="application/rss+xml" />
+    
+      <item>
+        <title>Icecast Release 2.4.0</title>
+        <description>&lt;p&gt;We are pleased to announce release 2.4.0 of Icecast.
+A summary of the changes is listed below, for details please
+refer to the &lt;a href=&quot;http://svn.xiph.org/icecast/tags/icecast-2.4.0/ChangeLog&quot;&gt;ChangeLog&lt;/a&gt;.  &lt;/p&gt;
+
+&lt;h4 id=&quot;downloads&quot;&gt;Downloads&lt;/h4&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Source: &lt;a href=&quot;http://downloads.xiph.org/releases/icecast/icecast-2.4.0.tar.gz&quot;&gt;icecast-2.4.0.tar.gz&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;Windows &lt;a href=&quot;http://downloads.xiph.org/releases/icecast/icecast_win32_2.4.0.zip&quot;&gt;icecast_win32_2.4.0.zip&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&quot;new-features&quot;&gt;New features&lt;/h4&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Support for Ogg Opus streams&lt;/li&gt;
+  &lt;li&gt;Support for WebM streams&lt;/li&gt;
+  &lt;li&gt;HTTP 1.1 PUT support for source connections. Deprecating SOURCE method.&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;Default mount&lt;/em&gt;&lt;br /&gt;
+This allows you to define a global set of defaults for &lt;em&gt;all&lt;/em&gt; mounts.
+This way you can use e.g. url-auth for sources and or listeners also for dynamically generated mounts.&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;Web interface redone&lt;/em&gt;
+    &lt;ul&gt;
+      &lt;li&gt;Web output properly redone, credit to ePirat.&lt;/li&gt;
+      &lt;li&gt;Added &lt;code&gt;&amp;lt;audio&amp;gt;&lt;/code&gt; element for supported audio streams.&lt;/li&gt;
+      &lt;li&gt;Now validates completely as XHTML1.0 strict.&lt;/li&gt;
+      &lt;li&gt;Improves rendering on mobile devices.&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;Added basic JSON API (&lt;code&gt;/status-json.xsl&lt;/code&gt;) based on a xml2json template by Doeke Zanstra (see &lt;code&gt;xml2json.xslt&lt;/code&gt;).
+Output is roughly limited to data also visible through &lt;code&gt;status.xsl&lt;/code&gt;.&lt;/li&gt;
+  &lt;li&gt;Send charset in HTTP headers for everything, excluding file-serv and streams.&lt;/li&gt;
+  &lt;li&gt;Allow (standard &lt;code&gt;strftime(3)&lt;/code&gt;) &lt;code&gt;%x&lt;/code&gt; codes in &lt;code&gt;&amp;lt;dump-file&amp;gt;&lt;/code&gt;. Disabled for win32.&lt;/li&gt;
+  &lt;li&gt;Added stream_start_iso8601, server_start_iso8601 to statitics. ISO8601 compliante timestamps for statistics.
+Should make usage in e.g. JSON much easier. Added as new variables to avoid breaking backwards compatibility.&lt;/li&gt;
+  &lt;li&gt;Now compiles for win32 using mingw&lt;/li&gt;
+  &lt;li&gt;Added options &lt;code&gt;headers&lt;/code&gt; and &lt;code&gt;header_prefix&lt;/code&gt; to URL based listener auth.&lt;/li&gt;
+  &lt;li&gt;Updated listener_remove handler, added &lt;code&gt;ip=&lt;/code&gt; and &lt;code&gt;agent=&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;Allow full URLs to be returned by the master server.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&quot;fixes&quot;&gt;Fixes&lt;/h4&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;Security Fix&lt;/strong&gt;: Override supplementary groups if &lt;code&gt;&amp;lt;changeowner&amp;gt;&lt;/code&gt; is used&lt;/li&gt;
+  &lt;li&gt;Fixes for some race conditions&lt;/li&gt;
+  &lt;li&gt;Dropped debian packaging directory as debian use their own.&lt;/li&gt;
+  &lt;li&gt;Send proper HTTP headers in responses to clients.&lt;/li&gt;
+  &lt;li&gt;Corrected &lt;code&gt;Content-Length&lt;/code&gt; header in admin (raw) requests. Thanks to paluh for reporting.&lt;/li&gt;
+  &lt;li&gt;Escape log entries in access log&lt;/li&gt;
+  &lt;li&gt;Fixed a memory leak. Lost headers of stream because of wrong ref counter in associated refbuf objects.&lt;/li&gt;
+  &lt;li&gt;Avoid memory leak in &lt;code&gt;_parse_mount()&lt;/code&gt; when &lt;code&gt;type&lt;/code&gt;-attribute is set&lt;/li&gt;
+  &lt;li&gt;Updated web interface to be XHTML compliant.&lt;/li&gt;
+  &lt;li&gt;Removed &lt;code&gt;status2.xsl&lt;/code&gt; from release. It was only a broken example file anyway.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&quot;known-issues&quot;&gt;Known issues&lt;/h4&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Will crash if certain config tags are left empty.&lt;/li&gt;
+  &lt;li&gt;Webinterface shows Login when using just &lt;code&gt;stream_auth&lt;/code&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+        <pubDate>Tue, 06 May 2014 22:00:00 +0000</pubDate>
+        <link>http://icecast.org/news/icecast-release-2_4_0/</link>
+        <guid isPermaLink="true">http://icecast.org/news/icecast-release-2_4_0/</guid>
+      </item>
+    
+      <item>
+        <title>Icecast Release 2.4-beta5</title>
+        <description>&lt;p&gt;We are pleased to announce a fifth beta release of Icecast.&lt;br /&gt;
+A summary of the changes is listed below, for details please
+refer to the &lt;a href=&quot;http://svn.xiph.org/icecast/tags/icecast-2.4-beta5/ChangeLog&quot;&gt;ChangeLog&lt;/a&gt;.  &lt;/p&gt;
+
+&lt;p&gt;Please note that while Opus and WebM are considered production ready, there might
+be other problems in this release. We appreciate feedback and discussion on the
+icecast-dev &lt;a href=&quot;/contact&quot;&gt;mailing list&lt;/a&gt;!&lt;/p&gt;
+
+&lt;h4 id=&quot;downloads&quot;&gt;Downloads&lt;/h4&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Source: &lt;a href=&quot;http://downloads.xiph.org/releases/icecast/icecast-2.4-beta5.tar.gz&quot;&gt;icecast-2.4-beta5.tar.gz&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;Windows &lt;a href=&quot;http://downloads.xiph.org/releases/icecast/icecast_win32_2.4_beta5.zip&quot;&gt;icecast_win32_2.4_beta5.zip&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&quot;changes&quot;&gt;Changes&lt;/h4&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;New features:
+    &lt;ul&gt;
+      &lt;li&gt;&lt;em&gt;Web interface redone&lt;/em&gt;&lt;br /&gt;
+Web output properly redone, credit to ePirat. Now validates completely as XHTML1.0 strict.&lt;br /&gt;
+Also improves rendering on mobile devices.&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;Bugfixes:
+    &lt;ul&gt;
+      &lt;li&gt;Reverting &lt;a href=&quot;https://trac.xiph.org/changeset/18945&quot;&gt;r18945&lt;/a&gt; for now as using &lt;code&gt;-b&lt;/code&gt; breaks things.
+Reopening &lt;a href=&quot;https://trac.xiph.org/ticket/1886&quot;&gt;#1886&lt;/a&gt;, patch needs rework.&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+</description>
+        <pubDate>Sat, 01 Mar 2014 22:00:00 +0000</pubDate>
+        <link>http://icecast.org/news/icecast-release-2_4-beta5/</link>
+        <guid isPermaLink="true">http://icecast.org/news/icecast-release-2_4-beta5/</guid>
+      </item>
+    
+      <item>
+        <title>Icecast Release 2.4-beta4</title>
+        <description>&lt;p&gt;We are pleased to announce a fourth beta release of Icecast.&lt;br /&gt;
+A summary of the changes is listed below, for details please
+refer to the &lt;a href=&quot;http://svn.xiph.org/icecast/tags/icecast-2.4-beta4/ChangeLog&quot;&gt;ChangeLog&lt;/a&gt;.  &lt;/p&gt;
+
+&lt;p&gt;Please note that while Opus and WebM are considered production ready, there might
+be other problems in this release. We appreciate feedback and discussion on the
+icecast-dev &lt;a href=&quot;/contact&quot;&gt;mailing list&lt;/a&gt;!&lt;/p&gt;
+
+&lt;h4 id=&quot;downloads&quot;&gt;Downloads&lt;/h4&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Source: &lt;a href=&quot;http://downloads.xiph.org/releases/icecast/icecast-2.4-beta4.tar.gz&quot;&gt;icecast-2.4-beta4.tar.gz&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;Windows &lt;a href=&quot;http://downloads.xiph.org/releases/icecast/icecast_win32_2.4_beta4.zip&quot;&gt;icecast_win32_2.4_beta4.zip&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&quot;changes&quot;&gt;Changes&lt;/h4&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;New features:
+    &lt;ul&gt;
+      &lt;li&gt;&lt;em&gt;HTTP PUT support&lt;/em&gt;&lt;br /&gt;
+Completed HTTP PUT support, send 100-continue-header,
+if client requests it. We need to adhere to HTTP1.1 here.&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;Bugfixes:
+    &lt;ul&gt;
+      &lt;li&gt;Fixed a memory leak. Lost headers of stream because of wrong ref counter in associated refbuf objects.&lt;/li&gt;
+      &lt;li&gt;Avoid memory leak in &lt;code&gt;_parse_mount()&lt;/code&gt; when &lt;code&gt;type&lt;/code&gt;-attribute is set.&lt;/li&gt;
+      &lt;li&gt;Updated web interface to be more XHTML compliant.&lt;/li&gt;
+      &lt;li&gt;Some fixes and improvements.&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+</description>
+        <pubDate>Thu, 23 Jan 2014 22:00:00 +0000</pubDate>
+        <link>http://icecast.org/news/icecast-release-2_4-beta4/</link>
+        <guid isPermaLink="true">http://icecast.org/news/icecast-release-2_4-beta4/</guid>
+      </item>
+    
+      <item>
+        <title>Icecast Release 2.4-beta3</title>
+        <description>&lt;p&gt;We are pleased to announce a third beta release of Icecast.&lt;br /&gt;
+A summary of the changes is listed below, for details please
+refer to the &lt;a href=&quot;http://svn.xiph.org/icecast/tags/icecast-2.4-beta3/ChangeLog&quot;&gt;ChangeLog&lt;/a&gt;.  &lt;/p&gt;
+
+&lt;p&gt;Please note that while Opus and WebM are considered production ready, there might
+be other problems in this release. We appreciate feedback and discussion on the
+icecast-dev &lt;a href=&quot;/contact&quot;&gt;mailing list&lt;/a&gt;!&lt;/p&gt;
+
+&lt;h4 id=&quot;downloads&quot;&gt;Downloads&lt;/h4&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Source: &lt;a href=&quot;http://downloads.xiph.org/releases/icecast/icecast-2.4-beta3.tar.gz&quot;&gt;icecast-2.4-beta3.tar.gz&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;Windows Setup: Not available&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&quot;changes&quot;&gt;Changes&lt;/h4&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;New features:
+    &lt;ul&gt;
+      &lt;li&gt;&lt;em&gt;Default mount&lt;/em&gt;&lt;br /&gt;
+This allows you to define a global set of defaults for &lt;em&gt;all&lt;/em&gt; mounts.
+This way you can use e.g. url-auth for sources and or listeners also
+for dynamically generated mounts.&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;Bugfixes:
+    &lt;ul&gt;
+      &lt;li&gt;Some fixes and improvements.&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+</description>
+        <pubDate>Sat, 06 Apr 2013 22:00:00 +0000</pubDate>
+        <link>http://icecast.org/news/icecast-release-2_4-beta3/</link>
+        <guid isPermaLink="true">http://icecast.org/news/icecast-release-2_4-beta3/</guid>
+      </item>
+    
+      <item>
+        <title>Icecast Release 2.4-beta2</title>
+        <description>&lt;p&gt;We are pleased to announce a second beta release of Icecast.&lt;br /&gt;
+A summary of the changes is listed below, for details please
+refer to the &lt;a href=&quot;http://svn.xiph.org/icecast/tags/icecast-2.4-beta2/ChangeLog&quot;&gt;ChangeLog&lt;/a&gt;.  &lt;/p&gt;
+
+&lt;p&gt;Please note that while Opus and WebM are considered production ready, there might
+be other problems in this release. We appreciate feedback and discussion on the
+icecast-dev &lt;a href=&quot;/contact&quot;&gt;mailing list&lt;/a&gt;!&lt;/p&gt;
+
+&lt;h4 id=&quot;downloads&quot;&gt;Downloads&lt;/h4&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Source: &lt;a href=&quot;http://downloads.xiph.org/releases/icecast/icecast-2.4-beta2.tar.gz&quot;&gt;icecast-2.4-beta2.tar.gz&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;Windows Setup: Not available&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&quot;changes&quot;&gt;Changes&lt;/h4&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;New features:
+    &lt;ul&gt;
+      &lt;li&gt;Now compiles for win32 using mingw&lt;/li&gt;
+      &lt;li&gt;Added options &lt;code&gt;headers&lt;/code&gt; and &lt;code&gt;header_prefix&lt;/code&gt; to URL based listener auth.&lt;/li&gt;
+      &lt;li&gt;Updated &lt;code&gt;listener_remove&lt;/code&gt; handler:
+        &lt;ul&gt;
+          &lt;li&gt;Added &lt;code&gt;ip=&lt;/code&gt; and &lt;code&gt;agent=&lt;/code&gt;&lt;/li&gt;
+          &lt;li&gt;Some cleanup &amp;amp; made code more uniform&lt;/li&gt;
+          &lt;li&gt;Avoid &lt;code&gt;int&lt;/code&gt; for &lt;code&gt;size_t&lt;/code&gt; vars&lt;/li&gt;
+          &lt;li&gt;Close &lt;a href=&quot;https://trac.xiph.org/ticket/1422&quot;&gt;#1422&lt;/a&gt;&lt;/li&gt;
+        &lt;/ul&gt;
+      &lt;/li&gt;
+      &lt;li&gt;Allow full URLs to be returned by the master server. (Closes &lt;a href=&quot;http://trac.xiph.org/ticket/1878&quot;&gt;#1878&lt;/a&gt;)&lt;/li&gt;
+      &lt;li&gt;Highly experimental HTTP PUT support. (&lt;a href=&quot;https://trac.xiph.org/ticket/1812&quot;&gt;#1812&lt;/a&gt;)&lt;br /&gt;
+We are handling it the same as we would handle a SOURCE request. Due to legacy code,
+sender &lt;strong&gt;must&lt;/strong&gt; send proper &lt;code&gt;content-type&lt;/code&gt; header, if content type is not &lt;code&gt;audio/mpeg&lt;/code&gt;!
+Can be tested using real-time encoded output and piping it into&lt;br /&gt;
+&lt;code&gt;| curl -u username:password -H &quot;Content-type: application/ogg&quot; -T - http://localhost:8000/mountname.ogg&lt;/code&gt;&lt;br /&gt;
+Note that this example has &lt;strong&gt;zero timing&lt;/strong&gt;, so a simple &lt;code&gt;cat *.ogg&lt;/code&gt; will fail. Whatever feeds the pipe must do
+it at proper timing for real-time playback!&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;Bugfixes:
+    &lt;ul&gt;
+      &lt;li&gt;Send proper HTTP headers in responses to clients.
+(Closes &lt;a href=&quot;http://trac.xiph.org/ticket/1639&quot;&gt;#1639&lt;/a&gt;,
+Ref &lt;a href=&quot;http://trac.xiph.org/ticket/1870&quot;&gt;#1870&lt;/a&gt; and
+&lt;a href=&quot;http://trac.xiph.org/ticket/1885&quot;&gt;#1885&lt;/a&gt;)&lt;/li&gt;
+      &lt;li&gt;Corrected &lt;code&gt;Content-Length&lt;/code&gt; header in admin (raw) requests. Thanks to paluh for reporting.&lt;/li&gt;
+      &lt;li&gt;Escape log entries in access log (Close: &lt;a href=&quot;http://trac.xiph.org/ticket/1916&quot;&gt;#1916&lt;/a&gt;, some fixes still pending)&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+</description>
+        <pubDate>Sat, 30 Mar 2013 22:00:00 +0000</pubDate>
+        <link>http://icecast.org/news/icecast-release-2_4-beta2/</link>
+        <guid isPermaLink="true">http://icecast.org/news/icecast-release-2_4-beta2/</guid>
+      </item>
+    
+      <item>
+        <title>Ices Release 2.0.2</title>
+        <description>&lt;p&gt;After far a long time the icecast development team has released Ices version 2.0.2.&lt;br /&gt;
+Ices is a source client for Icecast streaming media server.
+It takes audio from one of the defined inputs and (re)encodes the audio for streaming
+to icecast for listeners to pick up.&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;New features:
+    &lt;ul&gt;
+      &lt;li&gt;Support for RoarAudio input&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;Bugfixes:
+    &lt;ul&gt;
+      &lt;li&gt;Updated Documentation (Closes: &lt;a href=&quot;https://trac.xiph.org/ticket/1238&quot;&gt;#1238&lt;/a&gt;)&lt;/li&gt;
+      &lt;li&gt;Fixed double shout_close() (Closes: &lt;a href=&quot;https://trac.xiph.org/ticket/720&quot;&gt;#720&lt;/a&gt;)&lt;/li&gt;
+      &lt;li&gt;Reduced error to warning in case of duplicate serial number.&lt;/li&gt;
+      &lt;li&gt;Fixed handling of &lt;code&gt;&amp;lt;reconnectattempts&amp;gt;&lt;/code&gt; when set to zero (Closes: &lt;a href=&quot;https://trac.xiph.org/ticket/735&quot;&gt;#735&lt;/a&gt;)&lt;/li&gt;
+      &lt;li&gt;Did some code cleanup and hardening (Closes: &lt;a href=&quot;https://trac.xiph.org/ticket/1795&quot;&gt;#1795&lt;/a&gt;)&lt;/li&gt;
+      &lt;li&gt;Enabled compiler warnings (Closes: &lt;a href=&quot;https://trac.xiph.org/ticket/1796&quot;&gt;#1796&lt;/a&gt;)&lt;/li&gt;
+      &lt;li&gt;Added &lt;code&gt;&amp;lt;retry-initial&amp;gt;&lt;/code&gt; (Closes: &lt;a href=&quot;https://trac.xiph.org/ticket/994&quot;&gt;#994&lt;/a&gt;)&lt;/li&gt;
+      &lt;li&gt;Updated handling of empty strings in config file (Closes: &lt;a href=&quot;https://trac.xiph.org/ticket/1875&quot;&gt;#1875&lt;/a&gt;)&lt;/li&gt;
+      &lt;li&gt;Updated build system&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Download Ices 2.0.2 from the &lt;a href=&quot;/ices&quot;&gt;Ices page&lt;/a&gt;.&lt;/p&gt;
+</description>
+        <pubDate>Mon, 06 Aug 2012 22:00:00 +0000</pubDate>
+        <link>http://icecast.org/news/ices-release-2_0_2/</link>
+        <guid isPermaLink="true">http://icecast.org/news/ices-release-2_0_2/</guid>
+      </item>
+    
+      <item>
+        <title>Icecast Release 2.4-beta</title>
+        <description>&lt;p&gt;We are pleased to announce a beta release of Icecast. A summary of the changes is listed below.&lt;br /&gt;
+Please note that while Opus and WebM are considered production ready, there might be other problems
+in this release. We appreciate feedback and discussion on the icecast-dev &lt;a href=&quot;/contact&quot;&gt;mailing list&lt;/a&gt;!&lt;/p&gt;
+
+&lt;h4 id=&quot;downloads&quot;&gt;Downloads&lt;/h4&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Source: &lt;a href=&quot;http://downloads.xiph.org/releases/icecast/icecast-2.4-beta.tar.gz&quot;&gt;icecast-2.4-beta.tar.gz&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;Windows Setup: Not available&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&quot;changes&quot;&gt;Changes&lt;/h4&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;New features:
+    &lt;ul&gt;
+      &lt;li&gt;Support for Ogg Opus streams&lt;/li&gt;
+      &lt;li&gt;Support for WebM streams&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;Bugfixes:
+    &lt;ul&gt;
+      &lt;li&gt;Fixes for some race conditions&lt;/li&gt;
+      &lt;li&gt;Allow (standard &lt;code&gt;strftime(3)&lt;/code&gt;) &lt;code&gt;%x&lt;/code&gt; codes in &lt;code&gt;&amp;lt;dump-file&amp;gt;&lt;/code&gt;. Disabled for win32.&lt;/li&gt;
+      &lt;li&gt;Dropped debian packaging directory as debian use their own.&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+</description>
+        <pubDate>Wed, 18 Jul 2012 22:00:00 +0000</pubDate>
+        <link>http://icecast.org/news/icecast-release-2_4-beta/</link>
+        <guid isPermaLink="true">http://icecast.org/news/icecast-release-2_4-beta/</guid>
+      </item>
+    
+      <item>
+        <title>Icecast Release 2.3.3</title>
+        <description>&lt;p&gt;We are pleased to announce the next release of Icecast. A summary of the changes are listed below.&lt;/p&gt;
+
+&lt;h4 id=&quot;downloads&quot;&gt;Downloads&lt;/h4&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Source: &lt;a href=&quot;http://downloads.xiph.org/releases/icecast/icecast-2.3.3.tar.gz&quot;&gt;icecast-2.3.3.tar.gz&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;Windows Setup: Not available&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&quot;changes&quot;&gt;Changes&lt;/h4&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Security (fixed 3 security issues):
+    &lt;ul&gt;
+      &lt;li&gt;Improved HTTPS cipher handling and added support for chained certificates.&lt;/li&gt;
+      &lt;li&gt;Allow the source password to be undefined. There was a corner case, where a default password would have taken effect. It would require the admin to remove the ‘source-password’ from the icecast config to take effect. Default configs ship with the password set, so this vulnerability doesn’t trigger there.&lt;/li&gt;
+      &lt;li&gt;Prevent error log injection of control characters by substituting non-alphanumeric characters with a &lt;code&gt;.&lt;/code&gt; (CVE-2011-4612). Injection attempts can be identified via &lt;code&gt;access.log&lt;/code&gt;, as that stores URL encoded requests. Investigation if further logging code needs to have sanitized output is ongoing.&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;Bugfixes (this is mostly a bug-fix release to flush out the accumulated, mostly small, fixes):
+    &lt;ul&gt;
+      &lt;li&gt;On-demand relaying - Reject listeners while reconnecting. Fix stats for relays without mount section.&lt;/li&gt;
+      &lt;li&gt;Prevent too frequent YP updates.&lt;/li&gt;
+      &lt;li&gt;Only allow raw metadata updates from same IP as connected source (unless user is admin). This addresses broken client software that issues updates without being connected.&lt;/li&gt;
+      &lt;li&gt;Minor memory leaks&lt;/li&gt;
+      &lt;li&gt;XSPF file installation&lt;/li&gt;
+      &lt;li&gt;Fix case of global listeners count becoming out of sync.&lt;/li&gt;
+      &lt;li&gt;Setting an interval of 0 in mount should disable shoutcast metadata inserts.&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;Authentication
+    &lt;ul&gt;
+      &lt;li&gt;Sources can now be authenticated via URL, like listeners.
+Post info is&lt;br /&gt;
+&lt;code&gt;action=stream_auth&amp;amp;mount=/stream&amp;amp;ip=IP&amp;amp;server=SERVER&amp;amp;port=8000&amp;amp;user=fred&amp;amp;pass=pass&lt;/code&gt;&lt;br /&gt;
+As admin requests can come in for a stream (eg metadata update) these requests can be issued while stream is active. For these &lt;code&gt;&amp;amp;admin=1&lt;/code&gt; is added to the POST details.&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;XSL update
+    &lt;ul&gt;
+      &lt;li&gt;Automatically generate VCLT playlist like we do with M3U, the mountpoint extension is &lt;code&gt;.vclt&lt;/code&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;Documentation updates&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+        <pubDate>Mon, 11 Jun 2012 22:00:00 +0000</pubDate>
+        <link>http://icecast.org/news/icecast-release-2_3_3/</link>
+        <guid isPermaLink="true">http://icecast.org/news/icecast-release-2_3_3/</guid>
+      </item>
+    
+      <item>
+        <title>libshout Release 2.3.1</title>
+        <description>&lt;p&gt;Added support for Opus, contributed by Greg Maxwell.  &lt;/p&gt;
+
+&lt;p&gt;Download libshout 2.3.1 from the &lt;a href=&quot;/download&quot;&gt;download page&lt;/a&gt;.&lt;/p&gt;
+</description>
+        <pubDate>Fri, 25 May 2012 00:00:00 +0000</pubDate>
+        <link>http://icecast.org/news/libshout-release-2_3_1/</link>
+        <guid isPermaLink="true">http://icecast.org/news/libshout-release-2_3_1/</guid>
+      </item>
+    
+      <item>
+        <title>libshout Release 2.3.0</title>
+        <description>&lt;p&gt;Added support for WebM streams, contributed by David Richards.  &lt;/p&gt;
+
+&lt;p&gt;Download libshout 2.3.0 from the &lt;a href=&quot;/download&quot;&gt;download page&lt;/a&gt;.&lt;/p&gt;
+</description>
+        <pubDate>Thu, 02 Feb 2012 00:00:00 +0000</pubDate>
+        <link>http://icecast.org/news/libshout-release-2_3_0/</link>
+        <guid isPermaLink="true">http://icecast.org/news/libshout-release-2_3_0/</guid>
+      </item>
+    
+  </channel>
+</rss>

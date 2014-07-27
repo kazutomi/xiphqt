@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Icecast Docs &mdash; Server Statistics</title>
+	<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="description" content="Icecast is free server software for streaming multimedia.">
+<link type="text/plain" rel="author" href="/humans.txt" />
+<link rel="canonical" href="http://icecast.org/docs/icecast-2.0.2/server-stats.html">
+<!-- CSS -->
+<link rel="stylesheet" type="text/css" href="/assets/css/style.css" media="screen, print" />
+
+</head>
+
+  <body>
+
+    <header>
+  
+    
+    <div id="xiphbar">
+      <div>
+        <a href="http://www.xiph.org/"><img src="/assets/img/xiph-community.svg" alt="the xiph open source community"/></a>
+        <ul>
+          
+            <li><a href="http://www.xiph.org/">Xiph.org</a></li>
+          
+            <li><a href="http://www.opus-codec.org/">Opus</a></li>
+          
+            <li><a href="http://xiph.org/flac/">FLAC</a></li>
+          
+            <li><a href="http://www.icecast.org/">Icecast</a></li>
+          
+            <li><a href="http://www.vorbis.com/">Vorbis</a></li>
+          
+            <li><a href="http://www.theora.org/">Theora</a></li>
+          
+            <li><a href="http://www.speex.org/">Speex</a></li>
+          
+            <li><a href="http://www.xspf.org/">XSPF</a></li>
+          
+        </ul>
+      </div>
+    </div>
+  
+  <h1><a href="/" title="Home page">Icecast</a> <span>is free server software for streaming multimedia.</span></h1>
+  <nav>
+    <label for="toggle-nav" title="Toggle navigation"></label>
+    <input type="checkbox" id="toggle-nav" />
+    <ul>
+      
+        
+        
+          
+            
+          
+          <li><a href="/download">Download</a></li>
+        
+          
+            
+          
+          <li><a href="/docs">Docs</a></li>
+        
+          
+            
+          
+          <li><a href="/apps">Apps</a></li>
+        
+          
+            
+          
+          <li><a href="http://dir.xiph.org/">Streams</a></li>
+        
+          
+            
+          
+          <li><a href="/ices">Ices</a></li>
+        
+          
+            
+          
+          <li><a href="/svn">Subversion</a></li>
+        
+          
+            
+          
+          <li><a href="/contact">Contact</a></li>
+        
+      
+    </ul>
+  </nav>
+</header>
+
+
+    <section>
+      <h2>Icecast 2.0.2 Docs &mdash; Server Statistics</h2>
+      <article>
+  <h3 id="overview">Overview</h3>
+  <p>This section contains information about the server statistics available from Icecast.
+An example stats XML tree will be shown and each element will be described. The following
+example stats tree will be used:</p>
+
+  <div class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="cp">&lt;?xml version=&quot;1.0&quot;?&gt;</span>
+<span class="nt">&lt;icestats&gt;</span>
+	<span class="nt">&lt;client_connections&gt;</span>13<span class="nt">&lt;/client_connections&gt;</span>
+	<span class="nt">&lt;connections&gt;</span>14<span class="nt">&lt;/connections&gt;</span>
+	<span class="nt">&lt;source_connections&gt;</span>1<span class="nt">&lt;/source_connections&gt;</span>
+	<span class="nt">&lt;sources&gt;</span>1<span class="nt">&lt;/sources&gt;</span>
+	<span class="nt">&lt;source</span> <span class="na">mount=</span><span class="s">&quot;/test.ogg&quot;</span><span class="nt">&gt;</span>
+		<span class="nt">&lt;artist&gt;&lt;/artist&gt;</span>
+		<span class="nt">&lt;audio_info&gt;</span>ice-samplerate=32000;ice-bitrate=Quality -1;ice-channels=1<span class="nt">&lt;/audio_info&gt;</span>
+		<span class="nt">&lt;ice-bitrate&gt;</span>Quality -1<span class="nt">&lt;/ice-bitrate&gt;</span>
+		<span class="nt">&lt;ice-channels&gt;</span>1<span class="nt">&lt;/ice-channels&gt;</span>
+		<span class="nt">&lt;ice-samplerate&gt;</span>32000<span class="nt">&lt;/ice-samplerate&gt;</span>
+		<span class="nt">&lt;listeners&gt;</span>0<span class="nt">&lt;/listeners&gt;</span>
+		<span class="nt">&lt;public&gt;</span>0<span class="nt">&lt;/public&gt;</span>
+		<span class="nt">&lt;title&gt;&lt;/title&gt;</span>
+		<span class="nt">&lt;type&gt;</span>Ogg Vorbis<span class="nt">&lt;/type&gt;</span>
+	<span class="nt">&lt;/source&gt;</span>
+<span class="nt">&lt;/icestats&gt;</span></code></pre></div>
+
+  <h4 id="general-statistics">General Statistics</h4>
+
+  <dl>
+    <dt>client-connections</dt>
+    <dd>Client connections are basically anything that is not a source connection.
+These include listeners (not concurrent, but cumulative), any admin function
+accesses, and any static content (file serving) accesses.</dd>
+    <dt>source-connections</dt>
+    <dd>Source connections are the number of times (cumulative not currently connected)
+a source has connected to Icecast.</dd>
+    <dt>connections</dt>
+    <dd>The total of client + source connections.</dd>
+    <dt>sources</dt>
+    <dd>The total of currently connected sources (mountpoints).</dd>
+  </dl>
+
+  <h4 id="source-specific-statistics">Source-specific Statistics</h4>
+
+  <dl>
+    <dt>artist</dt>
+    <dd>Artist of the current song (metadata set by source client).</dd>
+    <dt>title</dt>
+    <dd>Title of the current song (metadata set by source client).</dd>
+    <dt>audio-info</dt>
+    <dd>Information about the bitrate/samplerate/quality of the stream
+(set by source client). Also used for YP entries.</dd>
+    <dt>ice-bitrate, ice-samplerate, ice-channels</dt>
+    <dd>Information about the bitrate/samplerate/quality of the stream
+(set by source client).</dd>
+    <dt>listeners</dt>
+    <dd>The number of currently connected listeners.</dd>
+    <dt>public</dt>
+    <dd>Flag that indicates whether this mount is being listed on a YP (sey by source client).</dd>
+    <dt>type</dt>
+    <dd>Media type of the stream.</dd>
+  </dl>
+
+</article>
+
+    </section>
+
+    <footer>
+  <p>&copy; 2004-2014 Xiph.Org.<br />All rights reserved.</p>
+</footer>
+
+  </body>
+</html>

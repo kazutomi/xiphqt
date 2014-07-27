@@ -1,0 +1,18 @@
+# humanstxt.org
+
+# TEAM
+
+Frontend developer: Kai Kubasta
+Site: kaikubasta.de
+Twitter: @kaikubasta
+Location: Berlin, Germany
+
+# THANKS
+
+Fira Sans & Fira Mono typeface: Erik Spiekermann, Ralph du Carrois, Mozilla
+
+# SITE
+
+Last update: 2014/05/19
+Language: English
+Standards: HTML5, CSS3

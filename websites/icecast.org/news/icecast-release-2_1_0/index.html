@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Icecast &mdash; Icecast Release 2.1.0</title>
+	<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="description" content="Icecast is free server software for streaming multimedia.">
+<link type="text/plain" rel="author" href="/humans.txt" />
+<link rel="canonical" href="http://icecast.org/news/icecast-release-2_1_0/">
+<!-- CSS -->
+<link rel="stylesheet" type="text/css" href="/assets/css/style.css" media="screen, print" />
+
+</head>
+
+  <body>
+
+    <header>
+  
+    
+    <div id="xiphbar">
+      <div>
+        <a href="http://www.xiph.org/"><img src="/assets/img/xiph-community.svg" alt="the xiph open source community"/></a>
+        <ul>
+          
+            <li><a href="http://www.xiph.org/">Xiph.org</a></li>
+          
+            <li><a href="http://www.opus-codec.org/">Opus</a></li>
+          
+            <li><a href="http://xiph.org/flac/">FLAC</a></li>
+          
+            <li><a href="http://www.icecast.org/">Icecast</a></li>
+          
+            <li><a href="http://www.vorbis.com/">Vorbis</a></li>
+          
+            <li><a href="http://www.theora.org/">Theora</a></li>
+          
+            <li><a href="http://www.speex.org/">Speex</a></li>
+          
+            <li><a href="http://www.xspf.org/">XSPF</a></li>
+          
+        </ul>
+      </div>
+    </div>
+  
+  <h1><a href="/" title="Home page">Icecast</a> <span>is free server software for streaming multimedia.</span></h1>
+  <nav>
+    <label for="toggle-nav" title="Toggle navigation"></label>
+    <input type="checkbox" id="toggle-nav" />
+    <ul>
+      
+        
+        
+          
+            
+          
+          <li><a href="/download">Download</a></li>
+        
+          
+            
+          
+          <li><a href="/docs">Docs</a></li>
+        
+          
+            
+          
+          <li><a href="/apps">Apps</a></li>
+        
+          
+            
+          
+          <li><a href="http://dir.xiph.org/">Streams</a></li>
+        
+          
+            
+          
+          <li><a href="/ices">Ices</a></li>
+        
+          
+            
+          
+          <li><a href="/svn">Subversion</a></li>
+        
+          
+            
+          
+          <li><a href="/contact">Contact</a></li>
+        
+      
+    </ul>
+  </nav>
+</header>
+
+
+    <section>
+      <article>
+	<h3>Icecast Release 2.1.0</h3>
+	<p>After about 8 months in development, version 2.1.0 of Icecast has been released.  </p>
+
+<h4 id="new-features-for-21-in-no-particular-order">New features for 2.1 (in no particular order)</h4>
+
+<h5 id="listener-authentication">Listener Authentication</h5>
+<p>Icecast now supports listener authentication. This provides a mechanism for creating/maintaining
+users and passwords for listeners. Currently, we only have implemented a simple, file-based storage
+for users and passwords. New authenticators are on the horizon (such as URL-based or possibly
+MySQL based) New admin pages were also added for the maintenance of users/passwords. Please
+check the docs for a more detailed description of this new feature.  </p>
+
+<h5 id="multi-level-fallbacks">Multi-Level Fallbacks</h5>
+<p>Multi-level fallbacks allow for specifications of a series of fallback mounts that you can use
+to automatically move listeners in the event of a source being disconnected. In the event of
+new listeners attaching to the source stream that has been disconnected, they are routed to
+the fallback mount (if specified). Icecast now has fallback-override capability as well which
+means that in the event of a source stream failure, listeners are moved to the fallback mount,
+and then automatically recaptured when the original source stream returns.  </p>
+
+<h5 id="burst-on-connect">Burst-On-Connect</h5>
+<p>This is an new, optional config setting which will send a initial burst of data to connecting
+listeners. This has the effect of reducing (significantly) the startup buffer latency from the
+end-user perspective. This option is enabled by default.  </p>
+
+<h4 id="new-enhancements-for-21">New enhancements for 2.1</h4>
+
+<h5 id="update-to-admin-interface">Update to admin interface</h5>
+<p>This interface has been cleaned up quite a bit and made a bit nicer.</p>
+
+<h5 id="rewrite-of-the-yp-listing-code">Rewrite of the YP listing code</h5>
+<p>The icecast yp code has received a complete overhaul by karl, and it’s
+a much more stable and failure-resistant implementation.</p>
+
+<h5 id="lots-and-lots-of-bugs-fixed">Lots and lots of bugs fixed</h5>
+<p>Check the ChangeLog for a complete list of these…</p>
+
+<p>Download Icecast 2.1.0 from the <a href="/download">download page</a>.</p>
+
+	<aside>Posted <strong>Nov 4, 2004</strong> by <strong>oddsock</strong></aside>
+</article>
+<p><a href="/news">Back to index</a></p>
+    </section>
+
+    <footer>
+  <p>&copy; 2004-2014 Xiph.Org.<br />All rights reserved.</p>
+</footer>
+
+  </body>
+</html>

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Icecast &mdash; Icecast Release 2.4-beta2</title>
+	<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="description" content="Icecast is free server software for streaming multimedia.">
+<link type="text/plain" rel="author" href="/humans.txt" />
+<link rel="canonical" href="http://icecast.org/news/icecast-release-2_4-beta2/">
+<!-- CSS -->
+<link rel="stylesheet" type="text/css" href="/assets/css/style.css" media="screen, print" />
+
+</head>
+
+  <body>
+
+    <header>
+  
+    
+    <div id="xiphbar">
+      <div>
+        <a href="http://www.xiph.org/"><img src="/assets/img/xiph-community.svg" alt="the xiph open source community"/></a>
+        <ul>
+          
+            <li><a href="http://www.xiph.org/">Xiph.org</a></li>
+          
+            <li><a href="http://www.opus-codec.org/">Opus</a></li>
+          
+            <li><a href="http://xiph.org/flac/">FLAC</a></li>
+          
+            <li><a href="http://www.icecast.org/">Icecast</a></li>
+          
+            <li><a href="http://www.vorbis.com/">Vorbis</a></li>
+          
+            <li><a href="http://www.theora.org/">Theora</a></li>
+          
+            <li><a href="http://www.speex.org/">Speex</a></li>
+          
+            <li><a href="http://www.xspf.org/">XSPF</a></li>
+          
+        </ul>
+      </div>
+    </div>
+  
+  <h1><a href="/" title="Home page">Icecast</a> <span>is free server software for streaming multimedia.</span></h1>
+  <nav>
+    <label for="toggle-nav" title="Toggle navigation"></label>
+    <input type="checkbox" id="toggle-nav" />
+    <ul>
+      
+        
+        
+          
+            
+          
+          <li><a href="/download">Download</a></li>
+        
+          
+            
+          
+          <li><a href="/docs">Docs</a></li>
+        
+          
+            
+          
+          <li><a href="/apps">Apps</a></li>
+        
+          
+            
+          
+          <li><a href="http://dir.xiph.org/">Streams</a></li>
+        
+          
+            
+          
+          <li><a href="/ices">Ices</a></li>
+        
+          
+            
+          
+          <li><a href="/svn">Subversion</a></li>
+        
+          
+            
+          
+          <li><a href="/contact">Contact</a></li>
+        
+      
+    </ul>
+  </nav>
+</header>
+
+
+    <section>
+      <article>
+	<h3>Icecast Release 2.4-beta2</h3>
+	<p>We are pleased to announce a second beta release of Icecast.<br />
+A summary of the changes is listed below, for details please
+refer to the <a href="http://svn.xiph.org/icecast/tags/icecast-2.4-beta2/ChangeLog">ChangeLog</a>.  </p>
+
+<p>Please note that while Opus and WebM are considered production ready, there might
+be other problems in this release. We appreciate feedback and discussion on the
+icecast-dev <a href="/contact">mailing list</a>!</p>
+
+<h4 id="downloads">Downloads</h4>
+
+<ul>
+  <li>Source: <a href="http://downloads.xiph.org/releases/icecast/icecast-2.4-beta2.tar.gz">icecast-2.4-beta2.tar.gz</a></li>
+  <li>Windows Setup: Not available</li>
+</ul>
+
+<h4 id="changes">Changes</h4>
+
+<ul>
+  <li>New features:
+    <ul>
+      <li>Now compiles for win32 using mingw</li>
+      <li>Added options <code>headers</code> and <code>header_prefix</code> to URL based listener auth.</li>
+      <li>Updated <code>listener_remove</code> handler:
+        <ul>
+          <li>Added <code>ip=</code> and <code>agent=</code></li>
+          <li>Some cleanup &amp; made code more uniform</li>
+          <li>Avoid <code>int</code> for <code>size_t</code> vars</li>
+          <li>Close <a href="https://trac.xiph.org/ticket/1422">#1422</a></li>
+        </ul>
+      </li>
+      <li>Allow full URLs to be returned by the master server. (Closes <a href="http://trac.xiph.org/ticket/1878">#1878</a>)</li>
+      <li>Highly experimental HTTP PUT support. (<a href="https://trac.xiph.org/ticket/1812">#1812</a>)<br />
+We are handling it the same as we would handle a SOURCE request. Due to legacy code,
+sender <strong>must</strong> send proper <code>content-type</code> header, if content type is not <code>audio/mpeg</code>!
+Can be tested using real-time encoded output and piping it into<br />
+<code>| curl -u username:password -H "Content-type: application/ogg" -T - http://localhost:8000/mountname.ogg</code><br />
+Note that this example has <strong>zero timing</strong>, so a simple <code>cat *.ogg</code> will fail. Whatever feeds the pipe must do
+it at proper timing for real-time playback!</li>
+    </ul>
+  </li>
+  <li>Bugfixes:
+    <ul>
+      <li>Send proper HTTP headers in responses to clients.
+(Closes <a href="http://trac.xiph.org/ticket/1639">#1639</a>,
+Ref <a href="http://trac.xiph.org/ticket/1870">#1870</a> and
+<a href="http://trac.xiph.org/ticket/1885">#1885</a>)</li>
+      <li>Corrected <code>Content-Length</code> header in admin (raw) requests. Thanks to paluh for reporting.</li>
+      <li>Escape log entries in access log (Close: <a href="http://trac.xiph.org/ticket/1916">#1916</a>, some fixes still pending)</li>
+    </ul>
+  </li>
+</ul>
+
+
+	<aside>Posted <strong>Mar 30, 2013</strong> by <strong>dm8tbr</strong></aside>
+</article>
+<p><a href="/news">Back to index</a></p>
+    </section>
+
+    <footer>
+  <p>&copy; 2004-2014 Xiph.Org.<br />All rights reserved.</p>
+</footer>
+
+  </body>
+</html>

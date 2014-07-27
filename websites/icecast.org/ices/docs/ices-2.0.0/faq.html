@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Icecast Docs &mdash; Frequently Asked Questions</title>
+	<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="description" content="Icecast is free server software for streaming multimedia.">
+<link type="text/plain" rel="author" href="/humans.txt" />
+<link rel="canonical" href="http://icecast.org/ices/docs/ices-2.0.0/faq.html">
+<!-- CSS -->
+<link rel="stylesheet" type="text/css" href="/assets/css/style.css" media="screen, print" />
+
+</head>
+
+  <body>
+
+    <header>
+  
+    
+    <div id="xiphbar">
+      <div>
+        <a href="http://www.xiph.org/"><img src="/assets/img/xiph-community.svg" alt="the xiph open source community"/></a>
+        <ul>
+          
+            <li><a href="http://www.xiph.org/">Xiph.org</a></li>
+          
+            <li><a href="http://www.opus-codec.org/">Opus</a></li>
+          
+            <li><a href="http://xiph.org/flac/">FLAC</a></li>
+          
+            <li><a href="http://www.icecast.org/">Icecast</a></li>
+          
+            <li><a href="http://www.vorbis.com/">Vorbis</a></li>
+          
+            <li><a href="http://www.theora.org/">Theora</a></li>
+          
+            <li><a href="http://www.speex.org/">Speex</a></li>
+          
+            <li><a href="http://www.xspf.org/">XSPF</a></li>
+          
+        </ul>
+      </div>
+    </div>
+  
+  <h1><a href="/" title="Home page">Icecast</a> <span>is free server software for streaming multimedia.</span></h1>
+  <nav>
+    <label for="toggle-nav" title="Toggle navigation"></label>
+    <input type="checkbox" id="toggle-nav" />
+    <ul>
+      
+        
+        
+          
+            
+          
+          <li><a href="/download">Download</a></li>
+        
+          
+            
+          
+          <li><a href="/docs">Docs</a></li>
+        
+          
+            
+          
+          <li><a href="/apps">Apps</a></li>
+        
+          
+            
+          
+          <li><a href="http://dir.xiph.org/">Streams</a></li>
+        
+          
+            
+          
+          <li><a href="/ices">Ices</a></li>
+        
+          
+            
+          
+          <li><a href="/svn">Subversion</a></li>
+        
+          
+            
+          
+          <li><a href="/contact">Contact</a></li>
+        
+      
+    </ul>
+  </nav>
+</header>
+
+
+    <section>
+      <h2>IceS 2.0.0 Docs &mdash; Frequently Asked Questions</h2>
+      <article>
+  <p>This for those questions people have asked as it wasn’t covered in the documentation</p>
+
+  <h4 id="can-ices-play-mp3-files">Can ices play mp3 files</h4>
+  <p>No, there hasn’t been much interest in handling MP3 with ices 2. The older version ices 0.x maybe of interest in such cases.</p>
+
+  <h4 id="how-do-i-encode-from-line-in">How do I encode from Line-In</h4>
+  <p>IceS will read from the DSP on the soundcard, but where that gets the audio from depends on the mixer settings. Use a utility like aumix/alsamixer to see the settings and change the capture or recording device. Usually the default is the Mic</p>
+
+  <h4 id="when-i-start-ices-2-it-seems-to-get-stuck-not-doing-anything">When I start ices 2 it seems to get stuck not doing anything</h4>
+  <p>If you are using live input, check to see if something else is holding the recording device (typically /dev/dsp) open. A good candidate is esd. What happens is that the driver only allows one application to have the device open at any one time, a second attempt will just block.  </p>
+
+  <h4 id="ices-reports-a-message-about-failing-to-set-samplerate-on-live-input">Ices reports a message about failing to set samplerate on live input</h4>
+  <p>Some hardware/drivers are limited in the settings they support. Sometimes they only support one samplerate like 48khz. You have to experiment if the documentation for the device is not specific.</p>
+
+  <h4 id="can-i-do-crossfading-with-the-playlist">Can I do crossfading with the playlist</h4>
+  <p>Ices does not do much in the way manipulating the audio itself, resampling and downmixing are available as that has a direct effect on encoding an outgoing stream. Ices can still be used in conjunction with other applications such as xmms by making ices read from the say the dsp (eg oss, alsa etc), that way anything that is played by that other application is encoded and sent to Icecast.</p>
+
+  <h4 id="my-player-seems-unable-to-play-the-stream">My player seems unable to play the stream</h4>
+  <p>If the stream looks to be getting to the player then it will be how the player is handling it. The usual causes of this are: </p>
+
+  <ul>
+    <li>missing “.ogg” extension. Both ices and icecast do not care about the extension however some apps use the extension to determine which plugin to use.</li>
+    <li>Missing Ogg Vorbis plugin. The winamp lite versions were known for this.</li>
+    <li>Are you running Winamp 3. This is a discontinued product and had problems with the vorbis plugin, either use the later v2.9 series or v5.</li>
+  </ul>
+
+  <h4 id="the-sound-quality-is-poor">The sound quality is poor</h4>
+  <p>Ogg Vorbis is a lossy compression technology, so quality of the sound is reduced, however with live input the source of audio can be poor depending on the soundcard and the system it’s in. As an initial test just record a wav file from the DSP (using eg rec, arecord etc) and listen to the quality of the audio recorded. If the source of audio is poor then encoding it to Ogg Vorbis is not going to improve it.<br />
+The reasons for poor audio from the DSP can be difficult to resolve, search for information on audio quality. It could be driver related or maybe some interference from some other device.<br />
+Here are some links where further information can be found:<br />
+<a href="http://www.djcj.org/LAU/guide/index.php">http://www.djcj.org/LAU/guide/index.php</a><br />
+<a href="http://www.linuxdj.com/audio/lad/index.php3">http://www.linuxdj.com/audio/lad/index.php3</a>  </p>
+
+</article>
+
+    </section>
+
+    <footer>
+  <p>&copy; 2004-2014 Xiph.Org.<br />All rights reserved.</p>
+</footer>
+
+  </body>
+</html>

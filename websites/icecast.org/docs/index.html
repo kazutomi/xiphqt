@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Icecast &mdash; Documentation and Information</title>
+	<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="description" content="Icecast is free server software for streaming multimedia.">
+<link type="text/plain" rel="author" href="/humans.txt" />
+<link rel="canonical" href="http://icecast.org/docs/">
+<!-- CSS -->
+<link rel="stylesheet" type="text/css" href="/assets/css/style.css" media="screen, print" />
+
+</head>
+
+  <body>
+
+    <header>
+  
+    
+    <div id="xiphbar">
+      <div>
+        <a href="http://www.xiph.org/"><img src="/assets/img/xiph-community.svg" alt="the xiph open source community"/></a>
+        <ul>
+          
+            <li><a href="http://www.xiph.org/">Xiph.org</a></li>
+          
+            <li><a href="http://www.opus-codec.org/">Opus</a></li>
+          
+            <li><a href="http://xiph.org/flac/">FLAC</a></li>
+          
+            <li><a href="http://www.icecast.org/">Icecast</a></li>
+          
+            <li><a href="http://www.vorbis.com/">Vorbis</a></li>
+          
+            <li><a href="http://www.theora.org/">Theora</a></li>
+          
+            <li><a href="http://www.speex.org/">Speex</a></li>
+          
+            <li><a href="http://www.xspf.org/">XSPF</a></li>
+          
+        </ul>
+      </div>
+    </div>
+  
+  <h1><a href="/" title="Home page">Icecast</a> <span>is free server software for streaming multimedia.</span></h1>
+  <nav>
+    <label for="toggle-nav" title="Toggle navigation"></label>
+    <input type="checkbox" id="toggle-nav" />
+    <ul>
+      
+        
+        
+          
+            
+          
+          <li><a href="/download">Download</a></li>
+        
+          
+            
+          
+          <li><a href="/docs">Docs</a></li>
+        
+          
+            
+          
+          <li><a href="/apps">Apps</a></li>
+        
+          
+            
+          
+          <li><a href="http://dir.xiph.org/">Streams</a></li>
+        
+          
+            
+          
+          <li><a href="/ices">Ices</a></li>
+        
+          
+            
+          
+          <li><a href="/svn">Subversion</a></li>
+        
+          
+            
+          
+          <li><a href="/contact">Contact</a></li>
+        
+      
+    </ul>
+  </nav>
+</header>
+
+
+    <section>
+      <h2>Documentation and Information</h2>
+
+<article>
+  <h3 id="official-documentation">Official Documentation</h3>
+
+  <p>Here is an index to the Icecast documentation we know about. If there is
+something out there on the Web that you know about, but is not listed here,
+<a href="/contact">contact us</a>.</p>
+
+  <p>The latest official Icecast documentation is available <a href="/docs/latest">here</a>.</p>
+
+  <p>All Docs:</p>
+
+  <ul>
+    <li>
+      <p><a href="/docs/icecast-2.4.0/">Icecast 2.4.0 Docs</a></p>
+    </li>
+    <li>
+      <p><a href="/docs/icecast-2.3.3/">Icecast 2.3.3 Docs</a></p>
+    </li>
+    <li>
+      <p><a href="/docs/icecast-2.3.2/">Icecast 2.3.2 Docs</a></p>
+    </li>
+    <li>
+      <p><a href="/docs/icecast-2.3.1/">Icecast 2.3.1 Docs</a></p>
+    </li>
+    <li>
+      <p><a href="/docs/icecast-2.3.0/">Icecast 2.3.0 Docs</a></p>
+    </li>
+    <li>
+      <p><a href="/docs/icecast-2.2.0/">Icecast 2.2.0 Docs</a></p>
+    </li>
+    <li>
+      <p><a href="/docs/icecast-2.1.0/">Icecast 2.1.0 Docs</a></p>
+    </li>
+    <li>
+      <p><a href="/docs/icecast-2.0.2/">Icecast 2.0.2 Docs</a></p>
+    </li>
+    <li>
+      <p><a href="/docs/icecast-2.0.1/">Icecast 2.0.1 Docs</a></p>
+    </li>
+  </ul>
+
+  <p>Also, we have a simple <a href="/faq">FAQ</a>.</p>
+
+</article>
+
+<article>
+  <h3 id="setup">Setup</h3>
+
+  <h4 id="what-platforms-are-supported">What platforms are supported?</h4>
+  <p>Icecast is being developed on Linux and Windows, and is being tested with major Unices.</p>
+
+  <h4 id="how-do-i-set-up-icecast">How do I set up Icecast?</h4>
+  <p>Go to the Icecast <a href="/docs">Documentation</a> Page and follow
+the instructions for your version there.</p>
+
+</article>
+
+<article>
+  <h3 id="administration">Administration</h3>
+
+  <h4 id="how-can-i-view-the-stream-status-page">How can I view the stream status page?</h4>
+  <p>Check your icecast configuration file for an element called <code>&lt;webroot&gt;</code>. This directory
+contains web stuff. In it, place a file called <code>status.xsl</code> that transforms an XML file
+containing stream data into a web page (either XHTML or HTML). There are sample XSL
+stylesheets available in icecast/web/ in the CVS distribution of Icecast.
+In addition, the web directory can hold multiple status transforms, if you
+can’t decide which one you want.</p>
+
+</article>
+
+<article>
+  <h3 id="interoperability">Interoperability</h3>
+
+  <h4 id="what-can-i-use-to-listen-to-an-icecast-stream">What can I use to listen to an Icecast stream?</h4>
+  <p>We maintain a list of Icecast-compatible audio players <a href="/apps">here</a>.</p>
+
+</article>
+
+
+    </section>
+
+    <footer>
+  <p>&copy; 2004-2014 Xiph.Org.<br />All rights reserved.</p>
+</footer>
+
+  </body>
+</html>

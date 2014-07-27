@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Icecast</title>
+	<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="description" content="Icecast is free server software for streaming multimedia.">
+<link type="text/plain" rel="author" href="/humans.txt" />
+<link rel="canonical" href="http://icecast.org/">
+<!-- CSS -->
+<link rel="stylesheet" type="text/css" href="/assets/css/style.css" media="screen, print" />
+
+</head>
+
+  <body>
+
+    <header>
+  
+    
+    <div id="xiphbar">
+      <div>
+        <a href="http://www.xiph.org/"><img src="/assets/img/xiph-community.svg" alt="the xiph open source community"/></a>
+        <ul>
+          
+            <li><a href="http://www.xiph.org/">Xiph.org</a></li>
+          
+            <li><a href="http://www.opus-codec.org/">Opus</a></li>
+          
+            <li><a href="http://xiph.org/flac/">FLAC</a></li>
+          
+            <li><a href="http://www.icecast.org/">Icecast</a></li>
+          
+            <li><a href="http://www.vorbis.com/">Vorbis</a></li>
+          
+            <li><a href="http://www.theora.org/">Theora</a></li>
+          
+            <li><a href="http://www.speex.org/">Speex</a></li>
+          
+            <li><a href="http://www.xspf.org/">XSPF</a></li>
+          
+        </ul>
+      </div>
+    </div>
+  
+  <h1><a href="/" title="Home page">Icecast</a> <span>is free server software for streaming multimedia.</span></h1>
+  <nav>
+    <label for="toggle-nav" title="Toggle navigation"></label>
+    <input type="checkbox" id="toggle-nav" />
+    <ul>
+      
+        
+        
+          
+            
+          
+          <li><a href="/download">Download</a></li>
+        
+          
+            
+          
+          <li><a href="/docs">Docs</a></li>
+        
+          
+            
+          
+          <li><a href="/apps">Apps</a></li>
+        
+          
+            
+          
+          <li><a href="http://dir.xiph.org/">Streams</a></li>
+        
+          
+            
+          
+          <li><a href="/ices">Ices</a></li>
+        
+          
+            
+          
+          <li><a href="/svn">Subversion</a></li>
+        
+          
+            
+          
+          <li><a href="/contact">Contact</a></li>
+        
+      
+    </ul>
+  </nav>
+</header>
+
+
+    <section>
+      <article>
+	<h3>About Icecast 2</h3>
+	<p>Icecast is a streaming media server which currently supports Ogg
+	Vorbis and MP3 audio streams. It can be used to create an Internet
+	radio station or a privately running jukebox and many things in
+	between. It is very versatile in that new formats can be added
+	relatively easily and supports open standards for commuincation and
+	interaction.</p>
+	<p>Icecast is distributed under the GNU GPL, version 2.</p>
+</article>
+<h2>Latest News</h2>
+
+  <article>
+    <h3>Icecast Release 2.4.0</h3>
+    <p>We are pleased to announce release 2.4.0 of Icecast.
+A summary of the changes is listed below, for details please
+refer to the <a href="http://svn.xiph.org/icecast/tags/icecast-2.4.0/ChangeLog">ChangeLog</a>.  </p>
+
+<h4 id="downloads">Downloads</h4>
+
+<ul>
+  <li>Source: <a href="http://downloads.xiph.org/releases/icecast/icecast-2.4.0.tar.gz">icecast-2.4.0.tar.gz</a></li>
+  <li>Windows <a href="http://downloads.xiph.org/releases/icecast/icecast_win32_2.4.0.zip">icecast_win32_2.4.0.zip</a></li>
+</ul>
+
+<h4 id="new-features">New features</h4>
+
+<ul>
+  <li>Support for Ogg Opus streams</li>
+  <li>Support for WebM streams</li>
+  <li>HTTP 1.1 PUT support for source connections. Deprecating SOURCE method.</li>
+  <li><em>Default mount</em><br />
+This allows you to define a global set of defaults for <em>all</em> mounts.
+This way you can use e.g. url-auth for sources and or listeners also for dynamically generated mounts.</li>
+  <li><em>Web interface redone</em>
+    <ul>
+      <li>Web output properly redone, credit to ePirat.</li>
+      <li>Added <code>&lt;audio&gt;</code> element for supported audio streams.</li>
+      <li>Now validates completely as XHTML1.0 strict.</li>
+      <li>Improves rendering on mobile devices.</li>
+    </ul>
+  </li>
+  <li>Added basic JSON API (<code>/status-json.xsl</code>) based on a xml2json template by Doeke Zanstra (see <code>xml2json.xslt</code>).
+Output is roughly limited to data also visible through <code>status.xsl</code>.</li>
+  <li>Send charset in HTTP headers for everything, excluding file-serv and streams.</li>
+  <li>Allow (standard <code>strftime(3)</code>) <code>%x</code> codes in <code>&lt;dump-file&gt;</code>. Disabled for win32.</li>
+  <li>Added stream_start_iso8601, server_start_iso8601 to statitics. ISO8601 compliante timestamps for statistics.
+Should make usage in e.g. JSON much easier. Added as new variables to avoid breaking backwards compatibility.</li>
+  <li>Now compiles for win32 using mingw</li>
+  <li>Added options <code>headers</code> and <code>header_prefix</code> to URL based listener auth.</li>
+  <li>Updated listener_remove handler, added <code>ip=</code> and <code>agent=</code></li>
+  <li>Allow full URLs to be returned by the master server.</li>
+</ul>
+
+<h4 id="fixes">Fixes</h4>
+
+<ul>
+  <li><strong>Security Fix</strong>: Override supplementary groups if <code>&lt;changeowner&gt;</code> is used</li>
+  <li>Fixes for some race conditions</li>
+  <li>Dropped debian packaging directory as debian use their own.</li>
+  <li>Send proper HTTP headers in responses to clients.</li>
+  <li>Corrected <code>Content-Length</code> header in admin (raw) requests. Thanks to paluh for reporting.</li>
+  <li>Escape log entries in access log</li>
+  <li>Fixed a memory leak. Lost headers of stream because of wrong ref counter in associated refbuf objects.</li>
+  <li>Avoid memory leak in <code>_parse_mount()</code> when <code>type</code>-attribute is set</li>
+  <li>Updated web interface to be XHTML compliant.</li>
+  <li>Removed <code>status2.xsl</code> from release. It was only a broken example file anyway.</li>
+</ul>
+
+<h4 id="known-issues">Known issues</h4>
+
+<ul>
+  <li>Will crash if certain config tags are left empty.</li>
+  <li>Webinterface shows Login when using just <code>stream_auth</code>.</li>
+</ul>
+
+    <aside>Posted <strong>May 6, 2014</strong> by <strong>dm8tbr</strong> &mdash; <a href="/news/icecast-release-2_4_0/">URL</a></aside>
+  </article>
+
+  <article>
+    <h3>Icecast Release 2.4-beta5</h3>
+    <p>We are pleased to announce a fifth beta release of Icecast.<br />
+A summary of the changes is listed below, for details please
+refer to the <a href="http://svn.xiph.org/icecast/tags/icecast-2.4-beta5/ChangeLog">ChangeLog</a>.  </p>
+
+<p>Please note that while Opus and WebM are considered production ready, there might
+be other problems in this release. We appreciate feedback and discussion on the
+icecast-dev <a href="/contact">mailing list</a>!</p>
+
+<h4 id="downloads">Downloads</h4>
+
+<ul>
+  <li>Source: <a href="http://downloads.xiph.org/releases/icecast/icecast-2.4-beta5.tar.gz">icecast-2.4-beta5.tar.gz</a></li>
+  <li>Windows <a href="http://downloads.xiph.org/releases/icecast/icecast_win32_2.4_beta5.zip">icecast_win32_2.4_beta5.zip</a></li>
+</ul>
+
+<h4 id="changes">Changes</h4>
+
+<ul>
+  <li>New features:
+    <ul>
+      <li><em>Web interface redone</em><br />
+Web output properly redone, credit to ePirat. Now validates completely as XHTML1.0 strict.<br />
+Also improves rendering on mobile devices.</li>
+    </ul>
+  </li>
+  <li>Bugfixes:
+    <ul>
+      <li>Reverting <a href="https://trac.xiph.org/changeset/18945">r18945</a> for now as using <code>-b</code> breaks things.
+Reopening <a href="https://trac.xiph.org/ticket/1886">#1886</a>, patch needs rework.</li>
+    </ul>
+  </li>
+</ul>
+
+
+    <aside>Posted <strong>Mar 1, 2014</strong> by <strong>dm8tbr</strong> &mdash; <a href="/news/icecast-release-2_4-beta5/">URL</a></aside>
+  </article>
+
+<p><a href="/news">See all news</a></p>
+
+    </section>
+
+    <footer>
+  <p>&copy; 2004-2014 Xiph.Org.<br />All rights reserved.</p>
+</footer>
+
+  </body>
+</html>

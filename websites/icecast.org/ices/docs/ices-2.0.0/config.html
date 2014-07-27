@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Icecast Docs &mdash; Config File</title>
+	<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="description" content="Icecast is free server software for streaming multimedia.">
+<link type="text/plain" rel="author" href="/humans.txt" />
+<link rel="canonical" href="http://icecast.org/ices/docs/ices-2.0.0/config.html">
+<!-- CSS -->
+<link rel="stylesheet" type="text/css" href="/assets/css/style.css" media="screen, print" />
+
+</head>
+
+  <body>
+
+    <header>
+  
+    
+    <div id="xiphbar">
+      <div>
+        <a href="http://www.xiph.org/"><img src="/assets/img/xiph-community.svg" alt="the xiph open source community"/></a>
+        <ul>
+          
+            <li><a href="http://www.xiph.org/">Xiph.org</a></li>
+          
+            <li><a href="http://www.opus-codec.org/">Opus</a></li>
+          
+            <li><a href="http://xiph.org/flac/">FLAC</a></li>
+          
+            <li><a href="http://www.icecast.org/">Icecast</a></li>
+          
+            <li><a href="http://www.vorbis.com/">Vorbis</a></li>
+          
+            <li><a href="http://www.theora.org/">Theora</a></li>
+          
+            <li><a href="http://www.speex.org/">Speex</a></li>
+          
+            <li><a href="http://www.xspf.org/">XSPF</a></li>
+          
+        </ul>
+      </div>
+    </div>
+  
+  <h1><a href="/" title="Home page">Icecast</a> <span>is free server software for streaming multimedia.</span></h1>
+  <nav>
+    <label for="toggle-nav" title="Toggle navigation"></label>
+    <input type="checkbox" id="toggle-nav" />
+    <ul>
+      
+        
+        
+          
+            
+          
+          <li><a href="/download">Download</a></li>
+        
+          
+            
+          
+          <li><a href="/docs">Docs</a></li>
+        
+          
+            
+          
+          <li><a href="/apps">Apps</a></li>
+        
+          
+            
+          
+          <li><a href="http://dir.xiph.org/">Streams</a></li>
+        
+          
+            
+          
+          <li><a href="/ices">Ices</a></li>
+        
+          
+            
+          
+          <li><a href="/svn">Subversion</a></li>
+        
+          
+            
+          
+          <li><a href="/contact">Contact</a></li>
+        
+      
+    </ul>
+  </nav>
+</header>
+
+
+    <section>
+      <h2>IceS 2.0.0 Docs &mdash; Config File</h2>
+      <article>
+  <p>The ices 2 configuration file is in XML format, which is described in detail below. There are some sample XML files provided in the distribution under the conf directory which show the main way ices is used.  </p>
+
+  <ul>
+    <li>live audio streaming, takes audio from the soundcard which can be captured from say the Mic, line-In, or CD.</li>
+    <li>playlist audio streaming, takes pre-encoded Ogg Vorbis files and either sends them as-is or re-encodes them to different settings</li>
+  </ul>
+
+</article>
+
+<article>
+  <h3 id="general-layout">General layout</h3>
+
+  <div class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="cp">&lt;?xml version=&quot;1.0&quot;?&gt;</span>
+<span class="nt">&lt;ices&gt;</span>
+    general settings
+    stream section
+<span class="nt">&lt;/ices&gt;</span></code></pre></div>
+
+</article>
+
+<article>
+  <h3 id="general-settings">General settings</h3>
+  <p>These apply to IceS as a whole. The example below gives a useful example to work to</p>
+
+  <div class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="nt">&lt;background&gt;</span>0<span class="nt">&lt;/background&gt;</span>
+<span class="nt">&lt;logpath&gt;</span>/var/log/ices<span class="nt">&lt;/logpath&gt;</span>
+<span class="nt">&lt;logfile&gt;</span>ices.log<span class="nt">&lt;/logfile&gt;</span>
+<span class="nt">&lt;logsize&gt;</span>2048<span class="nt">&lt;/logsize&gt;</span>
+<span class="nt">&lt;loglevel&gt;</span>3<span class="nt">&lt;/loglevel&gt;</span>
+<span class="nt">&lt;consolelog&gt;</span>0<span class="nt">&lt;/consolelog&gt;</span>
+<span class="nt">&lt;pidfile&gt;</span>/var/log/ices/ices.pid<span class="nt">&lt;/pidfile&gt;</span></code></pre></div>
+
+  <dl>
+    <dt>background</dt>
+    <dd>Set to 1 if you want IceS to put itself into the background.</dd>
+    <dt>logpath</dt>
+    <dd>A directory that can be written to by the user that IceS runs as. This can be anywhere you want but as log files are created, write access to the stated must be given.</dd>
+    <dt>logfile</dt>
+    <dd>The name of the logfile created. On log re-opening the existing logfile is renamed to <code>&lt;logfile&gt;.1</code></dd>
+    <dt>logsize</dt>
+    <dd>When the log file reaches this size (in kilobytes) then the log file will be cycled (the default is 2Meg)</dd>
+    <dt>loglevel</dt>
+    <dd>A number that represents the amount of logging performed.
+-	1 - Only error messages are logged
+-	2 - The above and warning messages are logged
+-	3 - The above and information messages are logged
+-	4 - The above and debug messages are logged</dd>
+    <dt>consolelog</dt>
+    <dd>A value of 1 will cause the log messages to appear on the console instead of the log files. Setting this to 1 is generally discouraged as logs are cycled and writing to screen can cause stalls in the application, which is a problem for timing critical applications.</dd>
+    <dt>pidfile</dt>
+    <dd>State a filename with path to be created at start time. This file will then contain a single number which represents the process id of the running IceS. This process id can then be used to signal the application of certain events.</dd>
+  </dl>
+
+</article>
+
+<article>
+  <h3 id="stream-section">Stream section</h3>
+  <p>This describes how the input and outgoing streams are configured.</p>
+
+  <div class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="nt">&lt;stream&gt;</span>
+    Metadata
+    Input
+    Instance
+<span class="nt">&lt;/stream&gt;</span></code></pre></div>
+
+  <h4 id="metadata">Metadata</h4>
+
+  <div class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="nt">&lt;metadata&gt;</span>
+	<span class="nt">&lt;name&gt;</span>My Stream<span class="nt">&lt;/name&gt;</span>
+	<span class="nt">&lt;genre&gt;</span>Rock<span class="nt">&lt;/genre&gt;</span>
+	<span class="nt">&lt;description&gt;</span>A short description of your stream<span class="nt">&lt;/description&gt;</span>
+	<span class="nt">&lt;url&gt;</span>http://mysite.org<span class="nt">&lt;/url&gt;</span>
+<span class="nt">&lt;/metadata&gt;</span></code></pre></div>
+
+  <p>This section describes what metadata information is passed in the headers at connection time to icecast. This applies to each instance defined within the stream section but maybe overridden by a per-instance <code>&lt;metadata&gt;</code> section.</p>
+
+  <h4 id="input">Input</h4>
+  <p>This section deals with getting the audio data into IceS. There are a few ways that can happen. Typically it’s either from a playlist or via a soundcard.  </p>
+
+  <p>The layout is consistent between the different input modules. Within the input section a module tag is needed to identify the module in question. The rest are made up of param tags specific to the module. There can be several param tags supplied to a module. Details of the module parameters are shown later.</p>
+
+  <h4 id="instance">Instance</h4>
+  <p>Multiple instances can be defined to allow for multiple encodings, this is useful for encoding the same input to multiple bitrates. Each instance defines a particular set actions that occur on the passed in audio. Any modifications to the input data is isolated to the instance.</p>
+
+  <div class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="nt">&lt;instance&gt;</span>
+	hostname
+    port
+    password
+    mount
+    yp
+    resample
+    downmix
+    savefile
+    encode
+<span class="nt">&lt;/instance&gt;</span></code></pre></div>
+
+  <dl>
+    <dt>hostname</dt>
+    <dd>State the hostname of the icecast to contact, this can be a name or IP address and can be IPv4 or IPv6 on systems that support IPv6. The default is localhost.</dd>
+    <dt>port</dt>
+    <dd>State the port to connect to, this will be the port icecast is listening on, typically 8000 but can be any.</dd>
+    <dt>password</dt>
+    <dd>For providing a stream, a username/password has to be provided, and must match what icecast expects.</dd>
+    <dt>mount</dt>
+    <dd>Mountpoints are used to identify a particular stream on a icecast server, they must begin with / and for the sake of certain listening clients should end with the .ogg extension.</dd>
+    <dt>yp</dt>
+    <dd>By default streams will not be advertised on a YP server unless this is set, and only then if the icecast if configured to talk to YP servers.</dd>
+  </dl>
+
+  <h4 id="resample">Resample</h4>
+
+  <div class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="nt">&lt;resample&gt;</span>
+    <span class="nt">&lt;in-rate&gt;</span>44100<span class="nt">&lt;/in-rate&gt;</span>
+    <span class="nt">&lt;out-rate&gt;</span>22050<span class="nt">&lt;/out-rate&gt;</span>
+<span class="nt">&lt;/resample&gt;</span></code></pre></div>
+
+  <p>When encoding or re-encoding, there is a point where you take PCM audio and encode to Ogg Vorbis. In some situations a particular encoded stream may require a lower samplerate to achieve a lower bitrate. The resample will modify the audio data before it enters the encoder, but does not affect other instances.  </p>
+
+  <p>The most common values used are 48000, 44100, 22050 and 11025, and is really only used to resample to a lower samplerate, going to a higher rate serves no purpose within IceS.</p>
+
+  <h4 id="downmix">Downmix</h4>
+
+  <div class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="nt">&lt;downmix&gt;</span>1<span class="nt">&lt;/downmix&gt;</span></code></pre></div>
+
+  <p>Some streams want to reduce the bitrate further, reducing the number of channels used to just 1. Converting stereo to mono is fairly common and when this is set to 1 the number of channels encoded is just 1. Like resample, this only affects the one instance it’s enabled in.</p>
+
+  <h4 id="savefile">Savefile</h4>
+
+  <div class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="nt">&lt;savefile&gt;</span>/home/ices/dump/stream1.ogg<span class="nt">&lt;/savefile&gt;</span></code></pre></div>
+
+  <p>Sometimes the stream transmitted wants to be saved to disk. This can be useful for live recordings.</p>
+
+  <h4 id="encode">encode</h4>
+
+  <div class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="nt">&lt;encode&gt;</span>  
+    <span class="nt">&lt;quality&gt;</span>0<span class="nt">&lt;/quality&gt;</span>
+    <span class="nt">&lt;nominal-bitrate&gt;</span>65536<span class="nt">&lt;/nominal-bitrate&gt;</span>
+    <span class="nt">&lt;maximum-bitrate&gt;</span>131072<span class="nt">&lt;/maximum-bitrate&gt;</span>
+    <span class="nt">&lt;minimum-bitrate&gt;</span>-1<span class="nt">&lt;/minimum-bitrate&gt;</span>
+    <span class="nt">&lt;managed&gt;</span>0<span class="nt">&lt;/managed&gt;</span>
+    <span class="nt">&lt;samplerate&gt;</span>22050<span class="nt">&lt;/samplerate&gt;</span>
+    <span class="nt">&lt;channels&gt;</span>1<span class="nt">&lt;/channels&gt;</span>
+<span class="nt">&lt;/encode&gt;</span></code></pre></div>
+
+  <p>Remove this section if you don’t want your files reencoded when using playback or RoarAudio input module.</p>
+
+  <dl>
+    <dt>quality</dt>
+    <dd>State a quality measure for the encoder. The range goes from -1 to 10 where -1 is the lowest bitrate selection (default 3), and decimals can also be stated, so for example 1.5 is valid. The actual bitrate used will depend on the tuning in the vorbis libs, the samplerate, channels and the audio to encode. A quality of 0 at 44100hz and 2 channels is typically around the 64kbps mark.</dd>
+    <dt>nominal-bitrate</dt>
+    <dd>State a bitrate that the encoder should try to keep to. This can be used as an alternative to selecting quality.</dd>
+    <dt>managed</dt>
+    <dd>State 1 to enable full bitrate management in the encoder. This is used with nominal-bitrate, maximum-bitrate and minimum-bitrate to produce a stream with more strict bitrate requirements. Enabling this currently leads to higher CPU usage.</dd>
+    <dt>maximum-bitrate</dt>
+    <dd>State bitrate in bits per second to limit max bandwidth used on a stream. Only applies if managed is enabled.</dd>
+    <dt>minimum-bitrate</dt>
+    <dd>State bitrate in bits per second to limit minimum bandwidth used on a stream. Only applies if managed is enabled, this option has very little use so should not really be needed.</dd>
+    <dt>samplerate</dt>
+    <dd>State the samplerate used for the encoding, this should be either the same as the input or the result of the resample. Getting the samplerate wrong will cause the audio to be represented wrong and therefore sound like it’s running too fast or too slow.</dd>
+    <dt>channels</dt>
+    <dd>State the number of channels to use in the encoding. This will either be the number of channels from the input or 1 if downmix is enabled.</dd>
+  </dl>
+
+</article>
+
+    </section>
+
+    <footer>
+  <p>&copy; 2004-2014 Xiph.Org.<br />All rights reserved.</p>
+</footer>
+
+  </body>
+</html>

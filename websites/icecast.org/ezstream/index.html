@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Icecast &mdash; Ezstream</title>
+	<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="description" content="Icecast is free server software for streaming multimedia.">
+<link type="text/plain" rel="author" href="/humans.txt" />
+<link rel="canonical" href="http://icecast.org/ezstream/">
+<!-- CSS -->
+<link rel="stylesheet" type="text/css" href="/assets/css/style.css" media="screen, print" />
+
+</head>
+
+  <body>
+
+    <header>
+  
+    
+    <div id="xiphbar">
+      <div>
+        <a href="http://www.xiph.org/"><img src="/assets/img/xiph-community.svg" alt="the xiph open source community"/></a>
+        <ul>
+          
+            <li><a href="http://www.xiph.org/">Xiph.org</a></li>
+          
+            <li><a href="http://www.opus-codec.org/">Opus</a></li>
+          
+            <li><a href="http://xiph.org/flac/">FLAC</a></li>
+          
+            <li><a href="http://www.icecast.org/">Icecast</a></li>
+          
+            <li><a href="http://www.vorbis.com/">Vorbis</a></li>
+          
+            <li><a href="http://www.theora.org/">Theora</a></li>
+          
+            <li><a href="http://www.speex.org/">Speex</a></li>
+          
+            <li><a href="http://www.xspf.org/">XSPF</a></li>
+          
+        </ul>
+      </div>
+    </div>
+  
+  <h1><a href="/" title="Home page">Icecast</a> <span>is free server software for streaming multimedia.</span></h1>
+  <nav>
+    <label for="toggle-nav" title="Toggle navigation"></label>
+    <input type="checkbox" id="toggle-nav" />
+    <ul>
+      
+        
+        
+          
+            
+          
+          <li><a href="/download">Download</a></li>
+        
+          
+            
+          
+          <li><a href="/docs">Docs</a></li>
+        
+          
+            
+          
+          <li><a href="/apps">Apps</a></li>
+        
+          
+            
+          
+          <li><a href="http://dir.xiph.org/">Streams</a></li>
+        
+          
+            
+          
+          <li><a href="/ices">Ices</a></li>
+        
+          
+            
+          
+          <li><a href="/svn">Subversion</a></li>
+        
+          
+            
+          
+          <li><a href="/contact">Contact</a></li>
+        
+      
+    </ul>
+  </nav>
+</header>
+
+
+    <section>
+      <h2>Ezstream</h2>
+<article>
+  <h3 id="about-ezstream">About Ezstream</h3>
+  <p>Ezstream is a command line source client for Icecast media streaming servers. 
+It began as the successor of the old “shout” utility, and has since gained a 
+lot of useful features.  </p>
+
+  <p>In its basic mode of operation, it streams media files or data from standard input 
+without reencoding and thus requires only very little CPU resources. 
+It can also use various external decoders and encoders to reencode from one 
+format to another, and stream the result to an Icecast server. 
+Additional features include scriptable playlist and metadata handling. 
+All of its features make ezstream a very flexible source client.</p>
+
+  <p>Supported media formats for streaming are MP3, Ogg Vorbis and Ogg Theora. 
+Native metadata support includes MP3 (ID3v1 only) and Ogg Vorbis, and many 
+more formats when the optional <a href="http://taglib.github.io">TagLib</a> support has
+been compiled in.  </p>
+
+  <p>Ezstream is free software and licensed under the GNU General Public License.</p>
+</article>
+
+<article>
+  <h3 id="download">Download</h3>
+
+  <h4 id="latest-version-056">Latest version: 0.5.6</h4>
+  <p><a href="#changes">Changes</a>  </p>
+
+  <ul>
+    <li>Source .tar.gz (all platforms)
+      <ul>
+        <li><a href="http://downloads.xiph.org/releases/ezstream/ezstream-0.5.6.tar.gz">ezstream-0.5.6.tar.gz</a></li>
+        <li>MD5: 1be68119d44fbe71454a901fa650a359</li>
+      </ul>
+    </li>
+    <li>MS Windows binary (32bit)
+      <ul>
+        <li><a href="http://downloads.xiph.org/releases/ezstream/ezstream-0.5.6-win32.zip">ezstream-0.5.6-win32.zip</a></li>
+        <li>MD5: 19c6f28c2de81e6e2fa3e0ed914e6696</li>
+      </ul>
+    </li>
+  </ul>
+
+  <p>Older releases can be found at <a href="http://downloads.xiph.org/releases/ezstream/">downloads.xiph.org/releases/ezstream</a>.</p>
+</article>
+
+<article>
+  <h3 id="further-information">Further Information</h3>
+
+  <h4 id="dependencies">Dependencies</h4>
+  <p>Ezstream depends on:</p>
+
+  <ul>
+    <li><a href="/download/">libshout</a> 2.2.x or later + libshout dependencies</li>
+    <li><a href="http://xmlsoft.org/">libxml</a> 2.x</li>
+  </ul>
+
+  <p>Ezstream optionally uses:</p>
+
+  <ul>
+    <li>For reading metadata from Ogg Vorbis files:
+      <ul>
+        <li><a href="http://taglib.github.io">TagLib</a> 1.x (1.4 or newer recommended) <strong>or</strong></li>
+        <li><a href="http://www.vorbis.com/">libvorbis</a> 1.x</li>
+      </ul>
+    </li>
+    <li>For basic non-ASCII charset support in metadata and filenames:
+      <ul>
+        <li>GNU <a href="http://www.gnu.org/software/libiconv/">libiconv</a>, if <code>iconv()</code> is not available in the system C library.</li>
+      </ul>
+    </li>
+  </ul>
+
+  <h4 id="unix-linux-bsd-solaris-">UNIX (Linux, *BSD, Solaris, …)</h4>
+  <p>On UNIX and UNIX-like systems, such as Linux and *BSD, binary packages for the required
+libraries are usually available. To compile ezstream, ensure that the respective -devel
+packages are installed as well, if applicable. Further steps, and more, are explained in
+the <code>README</code> and <code>INSTALL</code> files inside the distribution package.<br />
+It might be a good idea to check whether the operating system vendor
+provides a binary package of a recent ezstream release and install that
+one instead of building from source.</p>
+
+  <h4 id="windows">Windows</h4>
+
+  <p>Windows users can simply copy the <code>ezstream.exe</code> file from the binary distribution
+archive (.ZIP) to any location of their choosing. Users, who wish to be able to
+run ezstream anywhere on their system, can add the directory that contains <code>ezstream.exe</code>
+to their PATH environment variable.<br />
+The ezstream binary release depends on MSVC 2008 runtime libraries.<br />
+These libraries can be downloaded from Microsoft as the <a href="http://www.microsoft.com/DOWNLOADS/details.aspx?familyid=A5C84275-3B97-4AB7-A40D-3802B2AF5FC2"><code>vcredist_x86.exe</code></a> file, at no cost.</p>
+
+  <h4 id="even-more">Even more…</h4>
+  <p>Comprehensive documentation of ezstream and its configuration is included in the man page <code>ezstream(1)</code>.
+Those, who are interested in how ezstream development progresses, can stay informed by occasionally
+looking at the <a href="http://svn.xiph.org/trunk/ezstream/NEWS"><code>NEWS file</code></a>. It is kept up-to-date with
+important changes in ezstream as they happen.</p>
+
+</article>
+
+<article>
+  <h3 id="release-notes">Release Notes</h3>
+  <p>Ezstream 0.5.6 has been released on August 31st 2009.</p>
+
+  <p>Version 0.5.6 is a maintenance and feature release.</p>
+
+  <h4 id="changes">Changes</h4>
+
+  <ul>
+    <li><code>ezstream-file.sh</code>:
+      <ul>
+        <li>NEW: Add and install ezstream-file.sh, a new convenience shell
+script that generates configuration and playlist from a template and
+command line, respectively. (Bourne shell and POSIX utilities required.)</li>
+      </ul>
+    </li>
+    <li><code>src/ezstream.c</code>:
+      <ul>
+        <li>MISC: Be more tolerant towards faulty playlists and similar issues.
+Failure to open a resource (e.g. a media file) is no longer fatal and
+operation will continue until 100 subsequent errors. 
+Based on an idea from dhorton. (Ticket <a href="https://trac.xiph.org/ticket/1585">#1585</a>)</li>
+        <li>NEW: New command line option <code>-s</code>: Make ezstream function as a
+line-based shuffling utility.</li>
+      </ul>
+    </li>
+    <li><code>src/playlist.c</code>:
+      <ul>
+        <li>MISC: Consider no output from a playlist program to be equivalent
+to an empty line, indicating that the end of the playlist is reached.</li>
+        <li>FIX: Do not complain when receiving an empty line from a playlist program.</li>
+      </ul>
+    </li>
+    <li><code>examples/</code>:
+      <ul>
+        <li>NEW: Add a real-world example playlist script with logging feature.</li>
+      </ul>
+    </li>
+  </ul>
+
+</article>
+
+<article>
+  <h3 id="support">Support</h3>
+
+  <h4 id="reporting-problems">Reporting Problems</h4>
+  <p>In case of problems with ezstream, please make sure to re-read the documentation
+first and double-check your configuration. A lot of effort has been put into the
+<code>ezstream(1)</code> manual, and it should — at least in theory — answer all questions.</p>
+
+  <p>Of course, ezstream isn’t immune to bugs.
+After <a href="https://trac.xiph.org/report/21">checking if your bug is already known</a>,
+or a newer ezstream release fixes your problem, it is much appreciated
+that you <a href="https://trac.xiph.org/newticket?component=ezstream">file your bug report</a>
+with the Xiph.org bug tracker.</p>
+
+  <p>Please be as specific and verbose as necessary when submitting a problem report.
+Also, please include a valid e-mail address when reporting an issue, in case
+there are follow-up questions.</p>
+
+  <p>Your contribution and efforts are very much appreciated. Thank you!</p>
+
+  <h4 id="contact">Contact</h4>
+  <p>The current maintainer of ezstream is Moritz Grimm (<code>mdgrimm at gmx dot net</code>).</p>
+
+</article>
+
+    </section>
+
+    <footer>
+  <p>&copy; 2004-2014 Xiph.Org.<br />All rights reserved.</p>
+</footer>
+
+  </body>
+</html>

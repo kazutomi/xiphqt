@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Icecast &mdash; Load Test Results</title>
+	<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="description" content="Icecast is free server software for streaming multimedia.">
+<link type="text/plain" rel="author" href="/humans.txt" />
+<link rel="canonical" href="http://icecast.org/loadtest/2/">
+<!-- CSS -->
+<link rel="stylesheet" type="text/css" href="/assets/css/style.css" media="screen, print" />
+
+</head>
+
+  <body>
+
+    <header>
+  
+    
+    <div id="xiphbar">
+      <div>
+        <a href="http://www.xiph.org/"><img src="/assets/img/xiph-community.svg" alt="the xiph open source community"/></a>
+        <ul>
+          
+            <li><a href="http://www.xiph.org/">Xiph.org</a></li>
+          
+            <li><a href="http://www.opus-codec.org/">Opus</a></li>
+          
+            <li><a href="http://xiph.org/flac/">FLAC</a></li>
+          
+            <li><a href="http://www.icecast.org/">Icecast</a></li>
+          
+            <li><a href="http://www.vorbis.com/">Vorbis</a></li>
+          
+            <li><a href="http://www.theora.org/">Theora</a></li>
+          
+            <li><a href="http://www.speex.org/">Speex</a></li>
+          
+            <li><a href="http://www.xspf.org/">XSPF</a></li>
+          
+        </ul>
+      </div>
+    </div>
+  
+  <h1><a href="/" title="Home page">Icecast</a> <span>is free server software for streaming multimedia.</span></h1>
+  <nav>
+    <label for="toggle-nav" title="Toggle navigation"></label>
+    <input type="checkbox" id="toggle-nav" />
+    <ul>
+      
+        
+        
+          
+            
+          
+          <li><a href="/download">Download</a></li>
+        
+          
+            
+          
+          <li><a href="/docs">Docs</a></li>
+        
+          
+            
+          
+          <li><a href="/apps">Apps</a></li>
+        
+          
+            
+          
+          <li><a href="http://dir.xiph.org/">Streams</a></li>
+        
+          
+            
+          
+          <li><a href="/ices">Ices</a></li>
+        
+          
+            
+          
+          <li><a href="/svn">Subversion</a></li>
+        
+          
+            
+          
+          <li><a href="/contact">Contact</a></li>
+        
+      
+    </ul>
+  </nav>
+</header>
+
+
+    <section>
+      <h2>Load Test Results</h2>
+<article>
+  <h3 id="load-test-2">Load Test 2</h3>
+
+  <h4 id="description">Description</h4>
+
+  <p>Ok, here we go with another Icecast load test. In this test we are going to
+try to answer the following questions:</p>
+
+  <ul>
+    <li>How does adding additional sources affect Icecast?
+We will look at a few metrics to try to answer this as complete as possible.</li>
+    <li>Are there any limits to the number of sources that can be hosted on a single Icecast instance?</li>
+    <li>What happens if we add a bunch of listeners to a high-source-count setup?</li>
+  </ul>
+
+  <h4 id="test-hardware">Test Hardware</h4>
+
+  <p>I used the same hardware as in the <a href="/loadtest/1/">first load test</a>.  </p>
+
+  <p>2 of these (one for running Icecast, and one for sources/listeners):</p>
+
+  <ul>
+    <li>Server: Dell Poweredge 1850</li>
+    <li>Memory: 2GB</li>
+    <li>CPU: 3GHz Xeon (single processors running in hyperthreaded mode)</li>
+    <li>Network: 2 GBit Ethernet (although only one was used for the testing) connected via a GBit ethernet switch.</li>
+    <li>OS: Red Hat Enterprise Linux 3 (2.4 kernel)</li>
+  </ul>
+
+  <h4 id="the-load-tests">The Load Test(s)</h4>
+
+  <p>For this particular load test we used the same listener load script
+from the <a href="/loadtest/1/">first load test</a>,
+and added a new script for creating source clients.  </p>
+
+  <p>We created mountpoints with the following script:</p>
+
+  <div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="c">#!/bin/sh</span>
+<span class="c">#</span>
+<span class="nv">max</span><span class="o">=</span>700
+<span class="c"># how long to sleep between each set of ezstreams, can be decimal  0.5</span>
+<span class="nv">delay</span><span class="o">=</span>2
+ 
+<span class="nb">echo</span> &gt; out
+<span class="nv">count</span><span class="o">=</span>1
+<span class="k">while</span> <span class="o">[</span> <span class="s2">&quot;$count&quot;</span> -le <span class="s2">&quot;$max&quot;</span> <span class="o">]</span>
+<span class="k">do</span>
+   ezstream -c conf/ezstream_mp3_<span class="nv">$count</span>.xml &gt;&gt; out <span class="p">&amp;</span>
+   ezstream -c conf/ezstream_vorbis_<span class="nv">$count</span>.xml &gt;&gt; out <span class="p">&amp;</span>
+   <span class="nb">let </span><span class="nv">count</span><span class="o">=</span><span class="nv">$count</span>+1
+   ezstream -c conf/ezstream_mp3_<span class="nv">$count</span>.xml &gt;&gt; out <span class="p">&amp;</span>
+   ezstream -c conf/ezstream_vorbis_<span class="nv">$count</span>.xml &gt;&gt; out <span class="p">&amp;</span>
+   <span class="nb">let </span><span class="nv">count</span><span class="o">=</span><span class="nv">$count</span>+1
+   ezstream -c conf/ezstream_mp3_<span class="nv">$count</span>.xml &gt;&gt; out <span class="p">&amp;</span>
+   ezstream -c conf/ezstream_vorbis_<span class="nv">$count</span>.xml &gt;&gt; out <span class="p">&amp;</span>
+   <span class="nb">let </span><span class="nv">count</span><span class="o">=</span><span class="nv">$count</span>+1
+   ezstream -c conf/ezstream_mp3_<span class="nv">$count</span>.xml &gt;&gt; out <span class="p">&amp;</span>
+   ezstream -c conf/ezstream_vorbis_<span class="nv">$count</span>.xml &gt;&gt; out <span class="p">&amp;</span>
+   <span class="nb">let </span><span class="nv">count</span><span class="o">=</span><span class="nv">$count</span>+1
+   ezstream -c conf/ezstream_mp3_<span class="nv">$count</span>.xml &gt;&gt; out <span class="p">&amp;</span>
+   ezstream -c conf/ezstream_vorbis_<span class="nv">$count</span>.xml &gt;&gt; out <span class="p">&amp;</span>
+   <span class="nb">let </span><span class="nv">count</span><span class="o">=</span><span class="nv">$count</span>+1
+   <span class="o">[</span> <span class="s2">&quot;$delay&quot;</span> !<span class="o">=</span> <span class="s2">&quot;&quot;</span> <span class="o">]</span> <span class="o">&amp;&amp;</span> sleep <span class="nv">$delay</span>
+<span class="k">done</span>
+<span class="nb">wait</span>
+<span class="nb">echo</span> <span class="s2">&quot;done&quot;</span></code></pre></div>
+
+  <p>This script creates 10 new source client connections (5 MP3 and 5 Vorbis) every 2 seconds.
+The config files (<code>exstream_*.xml</code>) were all precreated and were all identical with the exception
+of the mountpoint (which was a counter from 1 to 1400). These ezstream instances looped the same
+file over and over (metadata updates were perform in between each loop - this is automatically done by ezstream).</p>
+
+  <h4 id="first-test-source-client-ramp-up-to-1400">First Test: Source Client Ramp Up to 1400</h4>
+
+  <p>The idea here is to ramp up (in a regular fashion) the number of source clients to a value of 1400.
+Why 1400 ? Well, 1400 sources ended up with a VSZ of 1GB, and while I probably could have gone
+higher, the purpose of this test was not to see the max number of sources that <em>can</em> be attached,
+but rather can a large number of them be attached without icecast saturating somewhere, and what
+kind of memory/cpu was taken up by such a “large number” source test.  </p>
+
+  <p>So let us try to determine how much memory is taken by each source client. We will measure this by
+looking at the VSZ value for icecast (as reported by <code>ps -aux</code>).  </p>
+
+  <p>The first graph shows VSZ and source count.  </p>
+
+  <p><a href="/loadtest/LoadTest2_VSZ_vs_sources.png"><img src="/loadtest/LoadTest2_VSZ_vs_sources.png" alt="VSZ of Icecast vs Sources" /></a></p>
+
+  <p>So lets take a look at some of the raw data, here is the VSZ and source number values, along with a
+delta representing the different between the current and previous VSZ value divided by the number of
+sources that were added. This effectively represents the KB overhead per source.<br />
+<em>Note that VSZ is reported in KB.</em></p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>VSZ Icecast</th>
+        <th>Number of Sources</th>
+        <th>Delta per source</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>10648</td>
+        <td>0.00</td>
+        <td> </td>
+      </tr>
+      <tr>
+        <td>21512</td>
+        <td>20.00</td>
+        <td>543.20</td>
+      </tr>
+      <tr>
+        <td>28012</td>
+        <td>30.00</td>
+        <td>650.00</td>
+      </tr>
+      <tr>
+        <td>41836</td>
+        <td>50.00</td>
+        <td>691.20</td>
+      </tr>
+      <tr>
+        <td>48308</td>
+        <td>60.00</td>
+        <td>647.20</td>
+      </tr>
+      <tr>
+        <td>61388</td>
+        <td>80.00</td>
+        <td>654.00</td>
+      </tr>
+      <tr>
+        <td>68008</td>
+        <td>90.00</td>
+        <td>662.00</td>
+      </tr>
+      <tr>
+        <td>79772</td>
+        <td>110.00</td>
+        <td>588.20</td>
+      </tr>
+      <tr>
+        <td>88440</td>
+        <td>120.00</td>
+        <td>866.80</td>
+      </tr>
+      <tr>
+        <td>100336</td>
+        <td>140.00</td>
+        <td>594.80</td>
+      </tr>
+      <tr>
+        <td>107704</td>
+        <td>150.00</td>
+        <td>736.80</td>
+      </tr>
+      <tr>
+        <td>118568</td>
+        <td>170.00</td>
+        <td>543.20</td>
+      </tr>
+      <tr>
+        <td>128520</td>
+        <td>180.00</td>
+        <td>995.20</td>
+      </tr>
+      <tr>
+        <td>140900</td>
+        <td>200.00</td>
+        <td>619.00</td>
+      </tr>
+      <tr>
+        <td>147112</td>
+        <td>210.00</td>
+        <td>621.20</td>
+      </tr>
+      <tr>
+        <td>158020</td>
+        <td>230.00</td>
+        <td>545.40</td>
+      </tr>
+      <tr>
+        <td>168340</td>
+        <td>240.00</td>
+        <td>1032.00</td>
+      </tr>
+      <tr>
+        <td>180912</td>
+        <td>260.00</td>
+        <td>628.60</td>
+      </tr>
+      <tr>
+        <td>186864</td>
+        <td>270.00</td>
+        <td>595.20</td>
+      </tr>
+      <tr>
+        <td>200940</td>
+        <td>290.00</td>
+        <td>703.80</td>
+      </tr>
+      <tr>
+        <td>207288</td>
+        <td>300.00</td>
+        <td>634.80</td>
+      </tr>
+      <tr>
+        <td>219812</td>
+        <td>320.00</td>
+        <td>626.20</td>
+      </tr>
+      <tr>
+        <td>227348</td>
+        <td>330.00</td>
+        <td>753.60</td>
+      </tr>
+      <tr>
+        <td>234200</td>
+        <td>350.00</td>
+        <td>342.60</td>
+      </tr>
+      <tr>
+        <td>247384</td>
+        <td>360.00</td>
+        <td>1318.40</td>
+      </tr>
+      <tr>
+        <td>254232</td>
+        <td>380.00</td>
+        <td>342.40</td>
+      </tr>
+      <tr>
+        <td>267556</td>
+        <td>400.00</td>
+        <td>666.20</td>
+      </tr>
+      <tr>
+        <td>274164</td>
+        <td>410.00</td>
+        <td>660.80</td>
+      </tr>
+      <tr>
+        <td>287348</td>
+        <td>430.00</td>
+        <td>659.20</td>
+      </tr>
+      <tr>
+        <td>294196</td>
+        <td>440.00</td>
+        <td>684.80</td>
+      </tr>
+      <tr>
+        <td>306760</td>
+        <td>460.00</td>
+        <td>628.20</td>
+      </tr>
+      <tr>
+        <td>313476</td>
+        <td>470.00</td>
+        <td>671.60</td>
+      </tr>
+      <tr>
+        <td>327072</td>
+        <td>490.00</td>
+        <td>679.80</td>
+      </tr>
+      <tr>
+        <td>334944</td>
+        <td>500.00</td>
+        <td>787.20</td>
+      </tr>
+      <tr>
+        <td>346900</td>
+        <td>520.00</td>
+        <td>597.80</td>
+      </tr>
+      <tr>
+        <td>354636</td>
+        <td>530.00</td>
+        <td>773.60</td>
+      </tr>
+      <tr>
+        <td>366304</td>
+        <td>550.00</td>
+        <td>583.40</td>
+      </tr>
+      <tr>
+        <td>374184</td>
+        <td>560.00</td>
+        <td>788.00</td>
+      </tr>
+      <tr>
+        <td>387084</td>
+        <td>580.00</td>
+        <td>645.00</td>
+      </tr>
+      <tr>
+        <td>394820</td>
+        <td>600.00</td>
+        <td>386.80</td>
+      </tr>
+      <tr>
+        <td>406204</td>
+        <td>610.00</td>
+        <td>1138.40</td>
+      </tr>
+      <tr>
+        <td>414984</td>
+        <td>630.00</td>
+        <td>439.00</td>
+      </tr>
+      <tr>
+        <td>427420</td>
+        <td>640.00</td>
+        <td>1243.60</td>
+      </tr>
+      <tr>
+        <td>434136</td>
+        <td>660.00</td>
+        <td>335.80</td>
+      </tr>
+      <tr>
+        <td>447712</td>
+        <td>670.00</td>
+        <td>1357.60</td>
+      </tr>
+      <tr>
+        <td>454556</td>
+        <td>690.00</td>
+        <td>342.20</td>
+      </tr>
+      <tr>
+        <td>466984</td>
+        <td>700.00</td>
+        <td>1242.80</td>
+      </tr>
+      <tr>
+        <td>474740</td>
+        <td>720.00</td>
+        <td>387.80</td>
+      </tr>
+      <tr>
+        <td>488184</td>
+        <td>740.00</td>
+        <td>672.20</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>Average Delta per Source: 693.91  </p>
+
+  <p>Ok, that’s probably enough data to make a conclusion. Looks like each new addition of a source
+client is causing an increase of (on average) 672.20KB of memory in the icecast process. This means
+we’d expect an increase of 1400*.672 = .95GB in the VSZ for Icecast compared to its initial value.
+From our graph we can see the initial value of ~ 15MB and a final value of .95GB for a net increase
+in the range that we were expecting.  </p>
+
+  <p>Next let us look at CPU used by icecast. The following graph shows the CPU utilization
+(user/system/wait io) for the box running Icecast. It is important to note that only icecast was
+running on this box, so any cpu activity is associated with Icecast. Also note that initially, I
+used PCT_CPU as returned by <code>ps -augx</code>, however it was determined that this value was not
+representative of actual PCT_CPU of the process. Thus I opted to used the cpu utilization of the
+machine itself to get a more accurate representation.  </p>
+
+  <p><a href="/loadtest/LoadTest2_UserSystemIOWait_vs_sources.png"><img src="/loadtest/LoadTest2_UserSystemIOWait_vs_sources.png" alt="graph" /></a></p>
+
+  <p>From this graph you can see that total cpu went from about 5% (2.5% user/ 2.5% system) up to about
+20% (10% user / 10% system) during the course of the sources attaching. There is a general upward
+trend in increasing CPU time, however, it is fairly regular and relatively small. So we’d conclude
+that Icecast is doing a very efficient job in handling this number of sources.  </p>
+
+  <h4 id="second-test-adding-listeners-to-the-1400-source-client-config">Second Test: Adding Listeners to the 1400 source client config</h4>
+
+  <p>This test is really a combination of the first test I did (max listeners) and this test (max
+sources) to see how the system reacts to a system with a good number of listeners and sources
+combined. To start off, source clients were ramped up to 1400 (just like in the First Test), and
+then I ramped up to 5600 concurrent listeners. These listeners were randomly distributed across the
+1400 available attached mountpoints and connected and stayed connected for the duration of the test.
+Why 5600 ? The machine that I was running listeners on ended up running out of resource (number of
+processes) at that point.  </p>
+
+  <p>Let us first take a look at the Icecast process VSZ (Virtual Memory Size).  </p>
+
+  <p><a href="/loadtest/LoadTest2_VSZ_vs_sources_and_listeners.png"><img src="/loadtest/LoadTest2_VSZ_vs_sources_and_listeners.png" alt="graph" /></a></p>
+
+  <p>In the above diagram, the sources are represented by a red line and listeners by a blue (red shaded
+area is the VSZ of Icecast). As can be seen, the VSZ of the icecast process significantly increases
+with the addition of new sources (this is something that we found and discussed above in this
+document) but that it remains flat upon the addition of new listeners. This is good news for those
+of you who want to have a low memory footprint but still want a large number of listeners.  </p>
+
+  <p>Let us now look at system CPU as a function of these two metrics (source count and listener count).
+The next graph shows system CPU utilization (User/System/IOWait) as reported by vmstat.  </p>
+
+  <p><a href="/loadtest/LoadTest2_UserSystem_vs_sources_and_listeners.png"><img src="/loadtest/LoadTest2_UserSystem_vs_sources_and_listeners.png" alt="graph" /></a></p>
+
+  <p>The effects are fairly subtle in this diagram, but what is shown is a relatively constantly
+increasing cpu utilization during the source client rampup, and a similar increase in CPU
+utilization during the listener ramp up. The slope of the line representing the increase in CPU
+utilization seems to be steeper with the source ramp up as compared to the listener ramp up. This
+would imply that the addition of new sources will imply a larger CPU utilization than the addition
+of new listeners. This is exactly what we would expect.  </p>
+
+  <p>So what did we learn from this test? We saw that icecast memory does not appreciably increase with
+the addition of listeners (which it does with the addition of sources). We also saw that CPU
+utilization is slightly higher for processing sources than listeners.</p>
+
+  <h4 id="results">Results</h4>
+
+  <p>The first graph shows user and system CPU usage for the box as a function of listeners.  </p>
+
+  <p><a href="/loadtest/cpu.jpg"><img src="/loadtest/cpu.jpg" alt="user/CPU usage graph" /></a></p>
+
+  <p>From this graph, you can see that the maximum number of listeners that I could simulate was about 14000.
+It is important to note that this is not a limitation of icecast, but rather of the hardware that I used.
+It can be seen that the total cpu utilization is about 20% at 14000 listeners, with a breakdown of ~ 15%
+system and 5% user CPU. It can also be seen that system and user CPU utilization basically follows a fairly
+linear progression upwards, so if you assume this, I would calculate the max number of listeners capable
+on a single Icecast instance (given similarly sized hardware to mine) would be 14000 * 4 = 56000
+(you probably don’t want to run at &gt; 80% cpu utilization).</p>
+
+  <p>Speaking of network activity, the next graph shows network packets sent out by the Icecast box as
+a function of listeners.  </p>
+
+  <p><a href="/loadtest/network.jpg"><img src="/loadtest/network.jpg" alt="Network stats/listeners graph" /></a></p>
+
+  <p>It can be seen that network packets increase linearly with listeners just as CPU did. Note that these
+metric are in “packets”, not in “bytes”, so it’s not exactly clear at what point the network would become
+saturated. However given that each client is retrieving a 12kbps stream, with 14000 clients that would be
+14000 * 12 = 168,000 bps + 10% TCP Overhead = ~ 184Mbps. So we had plenty of room for more listeners
+with a GBit card. And using our derived max of 56000 listeners and assuming the 12kbps stream rate that
+we used, that would mean:<br />
+56000 * 12 + 10% TCP Overhead = ~ 740Mbps.  </p>
+
+  <p>Note that most broadcasters don’t use 12kbps for a stream, so I would say that for MOST broadcasters,
+you will almost always be limited by your network interface. Definitely if you are using 10/100 equipment,
+and quite possibly even if using GBit equipment.</p>
+
+  <h4 id="conclusions">Conclusions</h4>
+
+  <p>So to answer our questions: </p>
+
+  <h5 id="how-does-adding-additional-sources-affect-icecast">How does adding additional sources affect Icecast?</h5>
+  <p>We found that each source client adds about 672KB to the virtual size of the Icecast process.
+This ends up being the the limiting factor when determining the number of sources you can host
+on a single Icecast instance.</p>
+
+  <h5 id="are-there-any-limits-to-the-number-of-sources-that-can-be-hosted-on-a-single-icecast-instance">Are there any limits to the number of sources that can be hosted on a single Icecast instance?</h5>
+  <p>Certainly there are, I ran into a limit of 1400 on the hardware I used, with the addition of
+additional RAM I would have been able to increase that value.</p>
+
+  <h5 id="what-happens-if-we-add-a-bunch-of-listeners-to-a-high-source-count-setup">What happens if we add a bunch of listeners to a high-source-count setup?</h5>
+  <p>We found that listeners do not seem to affect Icecast too much with regard to memory,
+and that it adds less load to the CPU as do sources. In the case of listeners, the network
+will be your limiting factor (which we found and reported in our previous load test).</p>
+
+  <aside>Posted <strong>Nov 12, 2005</strong> by <strong>oddsock</strong> (© 2005 Ed Zaleski)</aside>
+</article>
+
+<p><a href="/loadtest/">Back to overview</a></p>
+
+    </section>
+
+    <footer>
+  <p>&copy; 2004-2014 Xiph.Org.<br />All rights reserved.</p>
+</footer>
+
+  </body>
+</html>

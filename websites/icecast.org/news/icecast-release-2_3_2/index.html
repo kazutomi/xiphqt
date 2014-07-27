@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Icecast &mdash; Icecast Release 2.3.2</title>
+	<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="description" content="Icecast is free server software for streaming multimedia.">
+<link type="text/plain" rel="author" href="/humans.txt" />
+<link rel="canonical" href="http://icecast.org/news/icecast-release-2_3_2/">
+<!-- CSS -->
+<link rel="stylesheet" type="text/css" href="/assets/css/style.css" media="screen, print" />
+
+</head>
+
+  <body>
+
+    <header>
+  
+    
+    <div id="xiphbar">
+      <div>
+        <a href="http://www.xiph.org/"><img src="/assets/img/xiph-community.svg" alt="the xiph open source community"/></a>
+        <ul>
+          
+            <li><a href="http://www.xiph.org/">Xiph.org</a></li>
+          
+            <li><a href="http://www.opus-codec.org/">Opus</a></li>
+          
+            <li><a href="http://xiph.org/flac/">FLAC</a></li>
+          
+            <li><a href="http://www.icecast.org/">Icecast</a></li>
+          
+            <li><a href="http://www.vorbis.com/">Vorbis</a></li>
+          
+            <li><a href="http://www.theora.org/">Theora</a></li>
+          
+            <li><a href="http://www.speex.org/">Speex</a></li>
+          
+            <li><a href="http://www.xspf.org/">XSPF</a></li>
+          
+        </ul>
+      </div>
+    </div>
+  
+  <h1><a href="/" title="Home page">Icecast</a> <span>is free server software for streaming multimedia.</span></h1>
+  <nav>
+    <label for="toggle-nav" title="Toggle navigation"></label>
+    <input type="checkbox" id="toggle-nav" />
+    <ul>
+      
+        
+        
+          
+            
+          
+          <li><a href="/download">Download</a></li>
+        
+          
+            
+          
+          <li><a href="/docs">Docs</a></li>
+        
+          
+            
+          
+          <li><a href="/apps">Apps</a></li>
+        
+          
+            
+          
+          <li><a href="http://dir.xiph.org/">Streams</a></li>
+        
+          
+            
+          
+          <li><a href="/ices">Ices</a></li>
+        
+          
+            
+          
+          <li><a href="/svn">Subversion</a></li>
+        
+          
+            
+          
+          <li><a href="/contact">Contact</a></li>
+        
+      
+    </ul>
+  </nav>
+</header>
+
+
+    <section>
+      <article>
+	<h3>Icecast Release 2.3.2</h3>
+	<p>We are pleased to announce the next release of Icecast.
+A summary of the changes are listed below.</p>
+
+<h4 id="downloads">Downloads</h4>
+
+<ul>
+  <li>Source: <a href="http://downloads.xiph.org/releases/icecast/icecast-2.3.2.tar.gz">icecast-2.3.2.tar.gz</a></li>
+  <li>SRPM: <a href="http://downloads.xiph.org/releases/icecast/icecast-2.3.2-0.src.rpm">icecast-2.3.2-0.src.rpm</a></li>
+  <li>Windows Setup: <a href="http://downloads.xiph.org/releases/icecast/icecast2_win32_2.3.2_setup.exe">icecast2_win32_2.3.2_setup.exe</a></li>
+</ul>
+
+<h4 id="changes">Changes</h4>
+
+<ul>
+  <li>Character set support. Most non-Ogg streams (eg MP3) send metadata as Latin1 but it could be in
+other character sets.<br />
+As icecast uses UTF-8, we need to convert to UTF-8 so that web pages and
+stream directories render correctly.
+    <ul>
+      <li>Allow a per-mount <code>&lt;charset&gt;</code> setting. For when source clients do not indicate which
+character set is in use.</li>
+      <li>A <code>charset=</code> parameter to the metadata request.</li>
+      <li>Default for non-Ogg content is now Latin-1 (aka ISO-8859-1). Ogg content still uses UTF-8.</li>
+    </ul>
+  </li>
+  <li>Authentication:
+    <ul>
+      <li>Each mountpoint authentication is isolated so one mount authentication does not
+slow another mountpoint authentication down.</li>
+      <li>XSL pages can require authentication.</li>
+      <li>Add some sanity checks for incorrect settings.</li>
+    </ul>
+  </li>
+  <li>Listening socket update
+    <ul>
+      <li>Allow multiple ports to be allocated which allow multiple shoutcast source
+clients to stream on the same icecast instance.</li>
+      <li>No internal limit on the number of listen sockets that can be used.</li>
+      <li>Allow for a listen socket to be marked SSL capable. While any client could connect
+on these, the idea is really for <code>/admin</code> requests.</li>
+      <li>Allow for a <code>&lt;listen-socket&gt;</code> to bind to ipv4 and ipv6</li>
+    </ul>
+  </li>
+  <li>XSL update
+    <ul>
+      <li>XSL pages include an xspf link for non-auth streams.</li>
+      <li>XSL pages in both webroot and adminroot can take a <code>mount=</code> arg to limit which stats are transformed.</li>
+      <li>XSL files can specify the content-type to return to the client. It is no longer fixed to html</li>
+    </ul>
+  </li>
+  <li>Updates for stream directory handling
+    <ul>
+      <li>A stream is not registered with the directory until after the first minute has passed.
+Some streams have been stuck in a connect/disconnect loop.</li>
+      <li>Increase retry time on failure, if the stream add is rejected then it will be down to
+a misconfiguration so a long retry delay is performed.</li>
+      <li>A YP server that is not responding is ignored for a while.</li>
+    </ul>
+  </li>
+  <li>Updates for Win32. Newer versions of dependency libs (libxml2/libxslt/libcurl etc).
+Buffer overflow fixes when many streams are active.</li>
+  <li>Accept/Ban IP support. Now takes filenames for explicitly accepting or denying requests from specified IP addresses.<br />
+Useful in cases where firewall access is not available. The files, if defined, are re-read automatically if updated.</li>
+  <li>A Mountpoint is exported to the slaves even if no mount section is defined for it.
+You can still use the hidden setting to prevent that from happening.</li>
+  <li>Relays handle redirection (HTTP 302) if one is received at startup.</li>
+  <li>Automatically generate XSPF playlist like we do with M3U, the mountpoint extension is .xspf</li>
+  <li>Header updates for proxy handling and certain clients like some shoutcast source clients and flash players.</li>
+  <li>Added Kate/Skeleton codecs to Ogg handler.</li>
+  <li>Various stats cleanups. Added some global stats (server ID, email contact etc).</li>
+  <li>The streamlist passed from master to slave had a limited length, so if there were many streams then some could of been left out.</li>
+  <li>Documentation updates.</li>
+  <li>Relay startup/shutdown is cleaner.</li>
+  <li>Several build cleanups.</li>
+  <li>Several resource leaks and race conditions fixed.</li>
+</ul>
+
+	<aside>Posted <strong>Jun 2, 2008</strong> by <strong>karl</strong></aside>
+</article>
+<p><a href="/news">Back to index</a></p>
+    </section>
+
+    <footer>
+  <p>&copy; 2004-2014 Xiph.Org.<br />All rights reserved.</p>
+</footer>
+
+  </body>
+</html>

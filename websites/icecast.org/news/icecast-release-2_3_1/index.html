@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Icecast &mdash; Icecast Release 2.3.1</title>
+	<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="description" content="Icecast is free server software for streaming multimedia.">
+<link type="text/plain" rel="author" href="/humans.txt" />
+<link rel="canonical" href="http://icecast.org/news/icecast-release-2_3_1/">
+<!-- CSS -->
+<link rel="stylesheet" type="text/css" href="/assets/css/style.css" media="screen, print" />
+
+</head>
+
+  <body>
+
+    <header>
+  
+    
+    <div id="xiphbar">
+      <div>
+        <a href="http://www.xiph.org/"><img src="/assets/img/xiph-community.svg" alt="the xiph open source community"/></a>
+        <ul>
+          
+            <li><a href="http://www.xiph.org/">Xiph.org</a></li>
+          
+            <li><a href="http://www.opus-codec.org/">Opus</a></li>
+          
+            <li><a href="http://xiph.org/flac/">FLAC</a></li>
+          
+            <li><a href="http://www.icecast.org/">Icecast</a></li>
+          
+            <li><a href="http://www.vorbis.com/">Vorbis</a></li>
+          
+            <li><a href="http://www.theora.org/">Theora</a></li>
+          
+            <li><a href="http://www.speex.org/">Speex</a></li>
+          
+            <li><a href="http://www.xspf.org/">XSPF</a></li>
+          
+        </ul>
+      </div>
+    </div>
+  
+  <h1><a href="/" title="Home page">Icecast</a> <span>is free server software for streaming multimedia.</span></h1>
+  <nav>
+    <label for="toggle-nav" title="Toggle navigation"></label>
+    <input type="checkbox" id="toggle-nav" />
+    <ul>
+      
+        
+        
+          
+            
+          
+          <li><a href="/download">Download</a></li>
+        
+          
+            
+          
+          <li><a href="/docs">Docs</a></li>
+        
+          
+            
+          
+          <li><a href="/apps">Apps</a></li>
+        
+          
+            
+          
+          <li><a href="http://dir.xiph.org/">Streams</a></li>
+        
+          
+            
+          
+          <li><a href="/ices">Ices</a></li>
+        
+          
+            
+          
+          <li><a href="/svn">Subversion</a></li>
+        
+          
+            
+          
+          <li><a href="/contact">Contact</a></li>
+        
+      
+    </ul>
+  </nav>
+</header>
+
+
+    <section>
+      <article>
+	<h3>Icecast Release 2.3.1</h3>
+	<h4 id="downloads">Downloads</h4>
+
+<ul>
+  <li>Source: <a href="http://downloads.xiph.org/releases/icecast/icecast-2.3.1.tar.gz">icecast-2.3.1.tar.gz</a></li>
+  <li>SRPM: <a href="http://downloads.xiph.org/releases/icecast/icecast-2.3.1-0.src.rpm">icecast-2.3.1-0.src.rpm</a></li>
+  <li>Windows Setup: <a href="http://downloads.xiph.org/releases/icecast/icecast2_win32_v2.3.1_setup.exe">icecast2_win32_v2.3.1_setup.exe</a></li>
+</ul>
+
+<h4 id="new-features-for-231">New features for 2.3.1</h4>
+
+<ul>
+  <li>new tag <code>&lt;logsize&gt;</code> in <code>&lt;logging&gt;</code> state the trigger size (in KB) for cycling the log files.</li>
+  <li>new tag <code>&lt;logarchive&gt;</code> in <code>&lt;logging&gt;</code> enable (<code>1</code>) if you want to use a timestamp for an extension when cycling logs.</li>
+</ul>
+
+<h4 id="fixes-for-231">Fixes for 2.3.1</h4>
+
+<ul>
+  <li>Handling of certain shoutcast source clients is fixed, this typically affected NSV source clients </li>
+  <li>A race in source shutdown when listeners are authenticated could lead to server crash </li>
+  <li>An audio glitch was possible in playback of vorbis streams when a new logical stream started (eg metadata update). </li>
+  <li>Stats speedup. Processing large numbers of stats was slow. Typically only seen when using lots of streams on the same server. </li>
+  <li>404 responses were being sent back in some places, now 403 is sent back. </li>
+  <li>Auth URL now handles the authentication to scripts better.<br />
+The order in which username/password are selected is
+    <ul>
+      <li>url is http://user:pass@host:port/….</li>
+      <li><code>&lt;param name="username"&gt;</code> and <code>&lt;param name="password"&gt;</code></li>
+      <li>with <code>listener_add</code>/<code>remove</code>, listener supplied username/password is used.</li>
+    </ul>
+  </li>
+  <li>A streams intro file can now be changed, using HUP, on active streams. </li>
+  <li>Mount without a name crashed the server </li>
+  <li>Various documentation updates </li>
+</ul>
+
+	<aside>Posted <strong>Nov 30, 2005</strong> by <strong>oddsock</strong></aside>
+</article>
+<p><a href="/news">Back to index</a></p>
+    </section>
+
+    <footer>
+  <p>&copy; 2004-2014 Xiph.Org.<br />All rights reserved.</p>
+</footer>
+
+  </body>
+</html>

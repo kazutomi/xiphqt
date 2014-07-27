@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Icecast &mdash; Icecast Release 2.4-beta4</title>
+	<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="description" content="Icecast is free server software for streaming multimedia.">
+<link type="text/plain" rel="author" href="/humans.txt" />
+<link rel="canonical" href="http://icecast.org/news/icecast-release-2_4-beta4/">
+<!-- CSS -->
+<link rel="stylesheet" type="text/css" href="/assets/css/style.css" media="screen, print" />
+
+</head>
+
+  <body>
+
+    <header>
+  
+    
+    <div id="xiphbar">
+      <div>
+        <a href="http://www.xiph.org/"><img src="/assets/img/xiph-community.svg" alt="the xiph open source community"/></a>
+        <ul>
+          
+            <li><a href="http://www.xiph.org/">Xiph.org</a></li>
+          
+            <li><a href="http://www.opus-codec.org/">Opus</a></li>
+          
+            <li><a href="http://xiph.org/flac/">FLAC</a></li>
+          
+            <li><a href="http://www.icecast.org/">Icecast</a></li>
+          
+            <li><a href="http://www.vorbis.com/">Vorbis</a></li>
+          
+            <li><a href="http://www.theora.org/">Theora</a></li>
+          
+            <li><a href="http://www.speex.org/">Speex</a></li>
+          
+            <li><a href="http://www.xspf.org/">XSPF</a></li>
+          
+        </ul>
+      </div>
+    </div>
+  
+  <h1><a href="/" title="Home page">Icecast</a> <span>is free server software for streaming multimedia.</span></h1>
+  <nav>
+    <label for="toggle-nav" title="Toggle navigation"></label>
+    <input type="checkbox" id="toggle-nav" />
+    <ul>
+      
+        
+        
+          
+            
+          
+          <li><a href="/download">Download</a></li>
+        
+          
+            
+          
+          <li><a href="/docs">Docs</a></li>
+        
+          
+            
+          
+          <li><a href="/apps">Apps</a></li>
+        
+          
+            
+          
+          <li><a href="http://dir.xiph.org/">Streams</a></li>
+        
+          
+            
+          
+          <li><a href="/ices">Ices</a></li>
+        
+          
+            
+          
+          <li><a href="/svn">Subversion</a></li>
+        
+          
+            
+          
+          <li><a href="/contact">Contact</a></li>
+        
+      
+    </ul>
+  </nav>
+</header>
+
+
+    <section>
+      <article>
+	<h3>Icecast Release 2.4-beta4</h3>
+	<p>We are pleased to announce a fourth beta release of Icecast.<br />
+A summary of the changes is listed below, for details please
+refer to the <a href="http://svn.xiph.org/icecast/tags/icecast-2.4-beta4/ChangeLog">ChangeLog</a>.  </p>
+
+<p>Please note that while Opus and WebM are considered production ready, there might
+be other problems in this release. We appreciate feedback and discussion on the
+icecast-dev <a href="/contact">mailing list</a>!</p>
+
+<h4 id="downloads">Downloads</h4>
+
+<ul>
+  <li>Source: <a href="http://downloads.xiph.org/releases/icecast/icecast-2.4-beta4.tar.gz">icecast-2.4-beta4.tar.gz</a></li>
+  <li>Windows <a href="http://downloads.xiph.org/releases/icecast/icecast_win32_2.4_beta4.zip">icecast_win32_2.4_beta4.zip</a></li>
+</ul>
+
+<h4 id="changes">Changes</h4>
+
+<ul>
+  <li>New features:
+    <ul>
+      <li><em>HTTP PUT support</em><br />
+Completed HTTP PUT support, send 100-continue-header,
+if client requests it. We need to adhere to HTTP1.1 here.</li>
+    </ul>
+  </li>
+  <li>Bugfixes:
+    <ul>
+      <li>Fixed a memory leak. Lost headers of stream because of wrong ref counter in associated refbuf objects.</li>
+      <li>Avoid memory leak in <code>_parse_mount()</code> when <code>type</code>-attribute is set.</li>
+      <li>Updated web interface to be more XHTML compliant.</li>
+      <li>Some fixes and improvements.</li>
+    </ul>
+  </li>
+</ul>
+
+
+	<aside>Posted <strong>Jan 23, 2014</strong> by <strong>dm8tbr</strong></aside>
+</article>
+<p><a href="/news">Back to index</a></p>
+    </section>
+
+    <footer>
+  <p>&copy; 2004-2014 Xiph.Org.<br />All rights reserved.</p>
+</footer>
+
+  </body>
+</html>
