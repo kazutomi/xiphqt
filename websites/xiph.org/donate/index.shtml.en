@@ -11,7 +11,7 @@
 <p>If you can afford to donate some money and want to support the Xiph.org Foundation, you may do so via Paypal by clicking on the icon below.</p>
 
 <p style='text-align: center;'>
-	<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=donate@xiph.org&amp;item_name=Donation&amp;item_number=DONATE&amp;return=http://www.xiph.org"><img src="http://www.paypal.com/images/lgo/logo3.gif" alt="paypal logo"/></a>
+	<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=donate@xiph.org&amp;item_name=Donation&amp;item_number=DONATE&amp;return=https://www.xiph.org"><img src="https://www.paypal.com/images/lgo/logo3.gif" alt="paypal logo"/></a>
 </p>
 
 <p>You can also send a check or money order to:</p><br/>
