@@ -35,27 +35,20 @@ color: red;
 <pre>
  {
    "playlist" : {
-     "title"         : "JSPF example", // name of the playlist
-     "creator"       : "Joe", // name of the person who created the playlist
-     "annotation"    : "Super playlist", // comment on the playlist
+     "title"         : "Two Songs From Thriller", // name of the playlist
+     "creator"       : "MJ Fan", // name of the person who created the playlist
      "track"         : [
        {
-         "location"      : ["http://example.com/1.ogg", "http://example.com/1.mp3"], // alternate versions
-         "title"         : "Track title",
-         "creator"       : "Artist name",
-         "annotation"    : "I like this song",
-         "info"          : "http://example.com/track-1", // more info about this track
-         "image"         : "http://example.com/example-1.jpg", // album art
-         "album"         : "Album title"
+         "location"      : ["http://example.com/billiejean.mp3"], 
+         "title"         : "Billie Jean",
+         "creator"       : "Michael Jackson",
+         "album"         : "Thriller"
        }, 
        {
-         "location"      : ["http://example.com/2.ogg", "http://example.com/2.mp3"], 
-         "title"         : "Track title 2",
-         "creator"       : "Artist name 2",
-         "annotation"    : "I like this second song too",
-         "info"          : "http://example.com/track-2", 
-         "image"         : "http://example.com/example-2.jpg",
-         "album"         : "Album title 2"
+       "location"      : ["http://example.com/thegirlismine.mp3"], 
+       "title"         : "The Girl Is Mine",
+       "creator"       : "Michael Jackson",
+       "album"         : "Thriller"
        }
      ]
    }
