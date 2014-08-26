@@ -30,7 +30,39 @@ color: red;
 
 <p>This is documented by example, per the JSON below. The example below was engineered by (in order of how many contributions they made) Sebastian Pipping, Chris Anderson and Ivo Emanuel Gonçalves.</p>  
 
-<p>Example JSPF file:</p>
+<p>A simplified version, without the full range of features:</p>
+
+<pre>
+ {
+   "playlist" : {
+     "title"         : "JSPF example", // name of the playlist
+     "creator"       : "Joe", // name of the person who created the playlist
+     "annotation"    : "Super playlist", // comment on the playlist
+     "track"         : [
+       {
+         "location"      : ["http://example.com/1.ogg", "http://example.com/1.mp3"], // alternate versions
+         "title"         : "Track title",
+         "creator"       : "Artist name",
+         "annotation"    : "I like this song",
+         "info"          : "http://example.com/track-1", // more info about this track
+         "image"         : "http://example.com/example-1.jpg", // album art
+         "album"         : "Album title"
+       }, 
+       {
+         "location"      : ["http://example.com/2.ogg", "http://example.com/2.mp3"], 
+         "title"         : "Track title 2",
+         "creator"       : "Artist name 2",
+         "annotation"    : "I like this second song too",
+         "info"          : "http://example.com/track-2", 
+         "image"         : "http://example.com/example-2.jpg",
+         "album"         : "Album title 2"
+       }
+     ]
+   }
+ }
+</pre>
+
+<p>Comprehensive example:</p>
 <pre>
  {
    "playlist" : {
