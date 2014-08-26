@@ -60,7 +60,7 @@ color: red;
  {
    "playlist" : {
      "title"         : "JSPF example",
-     "creator"       : "Artist name",
+     "creator"       : "Name of playlist author",
      "annotation"    : "Super playlist",
      "info"          : "http://example.com/",
      "location"      : "http://example.com/",
