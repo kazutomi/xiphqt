@@ -19,18 +19,12 @@
 
 <p>XSPF is the XML format for sharing playlists.</p>
 <ul>
-<li>It is <em>free</em> and <em>open</em> -- No proprietary lock-in.</li>
-<li>It is <em>portable</em> -- You should be able to send a playlist to your friend and have it work.</li>
-<li>It is <em>well-engineered</em> -- Most playlist formats get the easy things wrong.</li>
+<li>It is <em>portable</em>. You should be able to carry a playlist from one place to another.</li>
+<li>It is <em>well-engineered</em>. Most playlist formats have bugs that make life harder for programmers and users.</li>
+<li>It is <em>free</em> (as in liberty) and <em>open</em>. No proprietary lock-in.</li>
 </ul>
-<dl>
-<dt>Unlike M3U</dt>
-<dd>XSPF is XML.</dd>
-<dt>Unlike SMIL</dt>
-<dd>XSPF is simple.</dd>
-<dt>Unlike ASX</dt>
-<dd>XSPF is open.</dd>
-</dl>
+
+<p>Need JSON instead of XML? Use <a href="/jspf">JSPF</a>, the JSON Shareable Playlist Format.</p>
 
 
 <!--#include virtual="/ssi/pagebottom.include" -->
