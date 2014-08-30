@@ -1,18 +1,28 @@
 # humanstxt.org
 
-# TEAM
-
+/* TEAM */
 Frontend developer: Kai Kubasta
-Site: kaikubasta.de
+Site: http://kaikubasta.de
 Twitter: @kaikubasta
 Location: Berlin, Germany
 
-# THANKS
+Website developer: Marvin Scholz
+Site: http://epir.at
+Twitter: @ePirat
+Location: Berlin, Germany
 
+Icecast Maintainer: Thomas B. Rücker
+Site: http://blog.ruecker.fi
+Twitter: @tbr23
+Location: Tampere, Finland
+
+/* THANKS */
 Fira Sans & Fira Mono typeface: Erik Spiekermann, Ralph du Carrois, Mozilla
 
-# SITE
 
-Last update: 2014/05/19
+/* SITE */
+Last update: 2014/08/30
 Language: English
 Standards: HTML5, CSS3
+
+Site generate using Jekyll Static Site Generator (http://jekyllrb.com)
