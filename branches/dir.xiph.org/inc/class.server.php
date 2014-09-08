@@ -204,17 +204,17 @@ class Server
 		{
             $query = 'INSERT INTO `%1$s` (`mountpoint_id`, `sid`, '
                     .'`current_song`, `listen_url`, `listeners`, '
-                    .'`last_touched_at`, `last_touched_from`, `checked`) '
+                    .'`last_touched_at`, `last_touched_from`, `last_touched_ua`, `checked`) '
 	    		    .'VALUES (%2$d, "%3$s", %4$s, "%5$s", %6$d, %7$s, '
-	    		    .'INET_ATON("%8$s"), %9$d);';
+	    		    .'INET_ATON("%8$s"), "%9$s", %10$d);';
 	    }
 	    else
 	    {
     		$query = 'UPDATE `%1$s` SET `mountpoint_id` = %2$d, `sid` = "%3$s", '
     		        .'`current_song` = %4$s, `listen_url` = "%5$s", '
     		        .'`listeners` = %6$d, `last_touched_at` = %7$s, '
-    		        .'`last_touched_from` = INET_ATON("%8$s"), '
-    		        .'`checked` = %9$d WHERE `id` = %10$d;';
+    		        .'`last_touched_from` = INET_ATON("%8$s"), `last_touched_ua` = "%9$s", '
+    		        .'`checked` = %10$d WHERE `id` = %11$d;';
         }
 	    $query = sprintf($query, self::$table_name,
 	                             $this->mountpoint_id,
@@ -224,6 +224,7 @@ class Server
 							     ($this->listeners != null) ? $this->listeners : 0,
 							     ($this->last_touched_at != null) ? '"'.mysql_real_escape_string($this->last_touched_at).'"' : 'NOW()',
 							     mysql_real_escape_string($this->last_touched_from),
+							     mysql_real_escape_string($this->last_touched_ua),
 							     ($this->checked != null) ? $this->checked : 0,
 							     intval($this->server_id));
 	    
@@ -391,6 +392,7 @@ class Server
         $this->listeners = intval($a['listeners']);
         $this->last_touched_at = $a['last_touched_at'];
         $this->last_touched_from = $a['last_touched_from'];
+        $this->last_touched_ua = $a['last_touched_ua'];
         $this->checked = $a['checked'];
         
         $this->loaded = true;
@@ -414,6 +416,7 @@ class Server
         $a['listeners'] = intval($this->listeners);
         $a['last_touched_at'] = $this->last_touched_at;
         $a['last_touched_from'] = $this->last_touched_from;
+        $a['last_touched_ua'] = $this->last_touched_ua;
         $a['checked'] = $this->checked;
         
         return $a;
@@ -497,6 +500,16 @@ class Server
     public function getLastTouchedFrom()
     {
         return $this->last_touched_from;
+    }
+
+    public function setLastTouchedUA($f)
+    {
+        $this->last_touched_ua = $f;
+    }
+    
+    public function getLastTouchedUA()
+    {
+        return $this->last_touched_ua;
     }
     
     public function setChecked($c)
