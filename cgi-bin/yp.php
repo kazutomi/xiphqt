@@ -14,6 +14,8 @@ define('SERVER_REFUSED_MISSING_ARG', 0);
 define('SERVER_REFUSED_PARSE_ERROR', 1);
 define('SERVER_REFUSED_ILLEGAL_URL', 2);
 define('SERVER_REFUSED_DUPLICATE',   3);
+define('SERVER_REFUSED_DEFAULT_CFG', 4);
+define('SERVER_REFUSED_BLACKLIST_URL', 5);
 
 // Do we have enough data?
 if (!array_key_exists('action', $_REQUEST))
@@ -66,13 +68,13 @@ switch ($_REQUEST['action'])
 			    {
 				    $media_type .= '+theora';
 			    }
-			    elseif (preg_match('/vorbis/i', $_REQUEST['stype']))
-			    {
-				    $media_type .= '+vorbis';
-			    }
 			    elseif (preg_match('/opus/i', $_REQUEST['stype']))
 			    {
 				    $media_type .= '+opus';
+			    }
+			    elseif (preg_match('/vorbis/i', $_REQUEST['stype']))
+			    {
+				    $media_type .= '+vorbis';
 			    }
 		    }
 		    // Genre, space-normalized
@@ -100,6 +102,9 @@ switch ($_REQUEST['action'])
 		    }
 		    // Listen URL
 		    $listen_url = clean_string($_REQUEST['listenurl']);
+//ugly hack to get Opus right
+                    if (preg_match('/\.opus$/', $listen_url))
+                       $media_type = 'application/ogg+opus';
             // Verify the URL
             $url = @parse_url($listen_url);
             if (!$url)
@@ -111,16 +116,40 @@ switch ($_REQUEST['action'])
             {
                 throw new ServerRefusedAPIException('Illegal listen_url. Don\'t test against a production server, thanks! ', SERVER_REFUSED_ILLEGAL_URL, $listen_url);
             }
+// Refuse all default stream names
+//                || (preg_match('/^$/', $stream_name)
+            if (preg_match('/^Unspecified\ name$/', $stream_name)
+                || preg_match('/^This\ is\ my\ server\ name$/', $stream_name)
+                || preg_match('/^Stream Name$/', $stream_name)
+                || preg_match('/^(S|s)tream(|-128|-64|-96|-256)$/', $stream_name)
+                || preg_match('/^My\ Station\ name$/', $stream_name)
+                || preg_match('/^-$/', $stream_name)
+                || preg_match('/^Auto-DJ$/', $stream_name)
+                || preg_match('/^AutoDJ$/', $stream_name)
+                || preg_match('/^Instreamer$/', $stream_name))
+              {
+                 throw new ServerRefusedAPIException('Default "stream name" detected, please configure your source client, thanks! ', SERVER_REFUSED_DEFAULT_CFG, $stream_name);
+              }
 
             if (empty($url['scheme']) || $url['scheme'] != 'http'
                 || !array_key_exists('host', $url)
                 || !preg_match('/^.*[A-Za-z0-9\-]+\.[A-Za-z0-9]+$/', $url['host'])
-                || preg_match('/^(10\.|192\.168\.|127\.)/', $url['host'])
-                || preg_match('/^.*\.local$/', $url['host']))
+                || preg_match('/^(10\.|192\.168\.|127\.|0\.0\.0\.0)/', $url['host'])
+                || preg_match('/^(.*\.|)example\.(com|org)$/', $url['host'])
+                || preg_match('/^.*\.local$/', $url['host'])
+               )
             {
                 throw new ServerRefusedAPIException('Illegal listen_url. Incorrect <hostname>.', SERVER_REFUSED_ILLEGAL_URL, $listen_url);
             }
 		
+            if (
+                preg_match('/^(lazaradio\.hu|ice\.mwsc\.tmt\.de|host504\.com|bristol\.railroadradio\.net|www\.kolombiaestereo\.com|radiowanderbuehne\.org|live\.raincitystream\.com|roubaix\.fr\.shinsen-radio\.com)$/', $url['host'])
+                || preg_match('/^(lepesradio\.hu|laradiohd\.com|s-radio\.whyza\.net|213\.240\.254\.147|radio\.adrenalin\.fm|99\.93\.26\.131)$/', $url['host'])
+                || preg_match('/^(delux-streams\.eu|radio\.status\.ks\.ua|campus\.longmusic\.com|stream1\.getradio\.ru)$/', $url['host'])
+               )
+            {
+                throw new ServerRefusedAPIException('Illegal listen_url. Incorrect <hostname> fails stream check and was blacklisted. Contact webmaster@icecast.org after correcting it on your side.', SERVER_REFUSED_BLACKLIST_URL, $listen_url);
+            }
 		    // Cluster password
 		    $cluster_password = array_key_exists('cpswd', $_REQUEST)
 		                            ? clean_string($_REQUEST['cpswd'])
@@ -190,6 +219,8 @@ switch ($_REQUEST['action'])
 		        $server->setSid($sid);
 		        $server->setListenUrl($listen_url);
 		        $server->setLastTouchedFrom($ip);
+                        $ua = array_key_exists('HTTP_USER_AGENT', $_SERVER) ? $_SERVER['HTTP_USER_AGENT'] : 'none';
+                        $server->setLastTouchedUA($ua);
 		        
 		        $server_id = $server->save();
 		        
@@ -300,6 +331,9 @@ switch ($_REQUEST['action'])
 		    $server->setListeners($listeners);
 		    $server->setLastTouchedFrom($ip);
 		    $server->setLastTouchedAt();
+                    $ua = array_key_exists('HTTP_USER_AGENT', $_SERVER) ? $_SERVER['HTTP_USER_AGENT'] : 'none' ;
+                    $server->setLastTouchedUA($ua);
+		        
 		    $res = $server->save();
 		    
 		    if ($res !== false)
