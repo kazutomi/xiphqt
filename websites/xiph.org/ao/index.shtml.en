@@ -39,6 +39,24 @@ supports:
 Please report bugs at <a href="http://trac.xiph.org/">trac.xiph.org</a>.
 </p>
 
+<h2 id=release1.2.0">Release 1.2.0 - January 27, 2014</h2>
+
+<ul>
+      <li>Source code: <a href="http://downloads.xiph.org/releases/ao/libao-1.2.0.tar.gz">libao-1.2.0.tar.gz</a></li>
+</ul>
+
+<h3 id="changes1.2.0">Changelog</h3>
+<ul>
+  <li>Added missing ao_file_extension() (see Trac #1841)</li>
+  <li>Fixed memory leak in ao_shutdown() (see Trac #1799)</li>
+  <li>Updated manpage libao.conf.5 (see Trac #1822)</li>
+  <li>Corrected doc/ao_play.html (see Trac #1808)</li>
+  <li>Latency adjustments</li>
+  <li>Implement PulseAudio client_name (see Trac #1924)</li>
+  <li>Other ALSA, Pulse, Roar, sndio and MacOS driver improvements</li>
+</ul>
+
+
 <h2 id="release1.1.0">Release 1.1.0 - February 21, 2011</h2>
 <ul>
       <li>Source code: <a href="http://downloads.xiph.org/releases/ao/libao-1.1.0.tar.gz">libao-1.1.0.tar.gz</a></li>
