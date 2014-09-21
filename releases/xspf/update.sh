@@ -21,6 +21,7 @@ function downloadLibXspf() { # $1 version, $2 extension
 function appendChecksum() { # $1 version, $2 extension
 	md5sum libxspf-$1.$2 >> MD5SUMS
 	sha1sum libxspf-$1.$2 >> SHA1SUMS
+	sha256sum libxspf-$1.$2 >> SHA256SUMS.txt
 }
 
 
