@@ -37,7 +37,7 @@ end-user download links are provided for convenience:
 <th>Stable Version</th>
 <th>Download Link</th>
 <th>Size</th>
-<th>md5</th>
+<th>SHA-256 checksum</th>
 </tr>
 
 <tr>
@@ -54,9 +54,9 @@ end-user download links are provided for convenience:
 	627K
 </td>
 <td>
-        b72e1a1dbadff3248e4ed62a4177e937<br/>
-	5c3a34309d8b98640827e5d0991a4015<br/>
-        621b890fb8ce1383327df1d5bd000817
+        e19ee34711d7af328cb26287f4137e70630e7261b17cbe3cd41011d73a654692<br/>
+        3f687ccdd5ac8b52d76328fbbfebc70c459a40ea891dbf3dccb74a210826e79b<br/>
+        957b4168a03932e02853db340cfddd0fa89b6ca80073a54f7c827372c3606350
 </td>
 </tr>
 
@@ -74,9 +74,9 @@ end-user download links are provided for convenience:
 	1.8M
 </td>
 <td>
-  55f2288055e44754275a17c9a2497391<br/>
-  8851c593a52d1ef9c526d95174873852<br/>
-  2356675ce2c50f3612b3575ab07135bf
+        2f05497d29195dc23ee952a24ee3973a74e6277569c4c2eca0ec5968e541f372<br/>
+        eee09a0a13ec38662ff949168fe897a25d2526529bc7e805305f381c219a1ecb<br/>
+        3ff32a216e278c1a3fbad5098cae6b8c5b406b536a2d587a006f07396bae000e
 </td>
 </tr>
 
@@ -87,17 +87,14 @@ end-user download links are provided for convenience:
 	<a href="http://downloads.xiph.org/releases/vorbis/vorbis-tools-1.4.0.tar.gz">vorbis-tools-1.4.0.tar.gz</a><br/>
 	<a href="http://downloads.xiph.org/releases/vorbis/vorbis-tools-1.4.0.zip">vorbis-tools-1.4.0.zip</a>
 <br/>
-	<a href="http://downloads.xiph.org/releases/vorbis/vorbis-tools-win32-bin.7z">vorbis-tools 1.2.0 (win32 binaries)</a>
 </td>
 <td>
 	1.3M<br/>
-	1.5K<br/>
-	349K
+	1.5K
 </td>
 <td>
-	567e0fb8d321b2cd7124f8208b8b90e6<br/>
-	05723f81cf692aed32d08974769a3156<br/>
-	530f79112f5a12f60a878ebd62013521
+        a389395baa43f8e5a796c99daf62397e435a7e73531c9f44d9084055a05d22bc<br/>
+        61f60f889fdd78dadc1cb57b9ee1912c58dc3ba8de7569c2d2f69a3f431ac884
 </td>
 </tr>
 
@@ -110,11 +107,11 @@ end-user download links are provided for convenience:
 </td>
 <td>
 	1.7M<br />
-	2.0M
+	2.2M
 </td>
 <td>
-	292ab65cedd5021d6b7ddd117e07cd8e<br />
-	5d29b56dbebe02c9667e92790ab72698
+        b6ae1ee2fa3d42ac489287d3ec34c5885730b1296f0801ae577a35193d3affbc<br/>
+        f644fef154f7a80e7258c8baec5c510f594d720835855cddce322b924934ba36
 </td>
 </tr>
 
@@ -122,8 +119,8 @@ end-user download links are provided for convenience:
 <td>libspeex</td>
 <td>1.2rc1</td>
 <td><a href="http://downloads.xiph.org/releases/speex/speex-1.2rc1.tar.gz">speex-1.2rc1</a></td>
-<td>1.1M</td>
-<td>c4438b22c08e5811ff10e2b06ee9b9ae</td>
+<td>1.0M</td>
+<td>342f30dc57bd4a6dad41398365baaa690429660b10d866b7d508e8f1179cb7a6</td>
 </tr>
 
 <tr>
@@ -131,7 +128,7 @@ end-user download links are provided for convenience:
 <td>1.3.0</td>
 <td><a href="https://svn.xiph.org/releases/flac/flac-1.3.0.tar.xz">flac-1.3.0.tar.xz</a></td>
 <td>1.0M</td>
-<td>13b5c214cee8373464d3d65dee362cdd</td>
+<td>342f30dc57bd4a6dad41398365baaa690429660b10d866b7d508e8f1179cb7a6</td>
 </tr>
 
 <tr>
@@ -142,8 +139,10 @@ end-user download links are provided for convenience:
 </td>
 <td>388K<br />
     500K</td>
-<td>2b2508c29bc97e4dc218fa162cf883c8<br />
-    02f7e79eefb715a819bc7c8659478b7c</td>
+<td>
+        29de5bb9b1726ba890455ef7e562d877df87811febb0d99ee69164b88c171bd4<br/>
+        31157b5c7c63e9bb66555d317d87fbcec281f03509aac393a75fa9ec0be25059
+</td>
 </tr>
 
 <tr>
@@ -156,16 +155,16 @@ end-user download links are provided for convenience:
         <a href="http://downloads.xiph.org/releases/xspf/libxspf-1.2.0.zip">libxspf-1.2.0.zip</a>
 </td>
 <td>
-        368K<br />
-        524K<br />
-        264K<br />
-        672K
+        364K<br />
+        516K<br />
+        256K<br />
+        667K
 </td>
 <td>
-        eceb3bf8fd4af3b09ea06c5c029cd647<br />
-        d3276bf6c7f86442b72629a3e7b8bd5b<br />
-        751ded6addfbdaefb475b192b90304f2<br />
-        1372b7f26c617541a32ab1d88a1cdea6
+        ba9e93a0066469b074b4022b480004651ad3aa5b4313187fd407d833f79b43a5<br/>
+        672e6e0ecc22ca9ad3315d5d9695d22f2f1d540c7ad5c1a950f4658f80f9a1d1<br/>
+        17d011a2972babe40c9d0cbce3609fde76d119896654e6f7e550081ed62b2869<br/>
+        02be7ad21e912b783d3324f1332e6e2b0de5c4e555b21e6078870b477efc88a6
 </td>
 </tr>
 
@@ -181,8 +180,8 @@ end-user download links are provided for convenience:
         1.0M
 </td>
 <td>
-        1648f9bac284a701f87f306e1058f004<br />
-        8ae70d703014b2d9cf51962315d5f891
+        0f2703843f2062027c1d9a3084e5ab85afc41f2be554091e59fc067bd53419d9<br/>
+        dd89c3782b4d97cb89af3caef6050d9c7997e520db4972107e0a4eb7b5af273d
 </td>
 </tr>
 
@@ -198,8 +197,8 @@ end-user download links are provided for convenience:
         686K
 </td>
 <td>
-	39368dd201b581cab634da5db6e6b32f<br/>
-	3649a657f8e368b881ba8b1b57381ff7
+	be7deb35ecc25b5d1e6b8dd4dd21194e2bc93ca9c9e055e4289c1dc98f480f08<br/>
+	6bafadb1e0a9ae4ac83304f38621a5621b8e8e32927889e65a98706d213d415a
 </td>
 </tr>
 
@@ -213,7 +212,7 @@ end-user download links are provided for convenience:
         435K
 </td>
 <td>
-	02c5c7b361a35c9da3cf311d68800dab
+	2e0b57ce2fecc9375eef72938ed08ac8c8f6c5238e1cae24458f0b0e8dade7c7
 </td>
 </tr>
 </table>
