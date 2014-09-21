@@ -55,37 +55,37 @@
           
             
           
-          <li><a href="/download">Download</a></li>
+          <li class=""><a href="/download">Download</a></li>
         
           
             
           
-          <li><a href="/docs">Docs</a></li>
+          <li class=""><a href="/docs">Docs</a></li>
         
           
             
           
-          <li><a href="/apps">Apps</a></li>
+          <li class=""><a href="/apps">Apps</a></li>
         
           
             
           
-          <li><a href="http://dir.xiph.org/">Streams</a></li>
+          <li class=""><a href="http://dir.xiph.org/">Streams</a></li>
         
           
             
           
-          <li><a href="/ices">Ices</a></li>
+          <li class=""><a href="/ices">IceS</a></li>
         
           
             
           
-          <li><a href="/svn">Subversion</a></li>
+          <li class=""><a href="/svn">Subversion</a></li>
         
           
             
           
-          <li><a href="/contact">Contact</a></li>
+          <li class=""><a href="/contact">Contact</a></li>
         
       
     </ul>
@@ -98,23 +98,23 @@
 	<h3>Icecast Release 2.2.0</h3>
 	<p>On the heels of version 2.1.0, we are releasing 2.2.0 with some new key features.</p>
 
-<h4 id="new-features-for-220-in-no-particular-order">New features for 2.2.0 (in no particular order)</h4>
+<h4>New features for 2.2.0 (in no particular order)</h4>
 
-<h5 id="theora-video-support">Theora Video support</h5>
+<h5>Theora Video support</h5>
 <p>Icecast now supports video streaming via theora. Currently, we require the latest
 (alpha 4) version of libtheora. This is an optional compile, so if you don’t have
 theora then Icecast will safely ignore it.</p>
 
-<h5 id="shoutcast-style-source-client-support">Shoutcast style source client support</h5>
+<h5>Shoutcast style source client support</h5>
 <p>Icecast now supports the connection protocol used by the Shoutcast DSP source client.
 This is the same connection protocol used by their NSV encoding tools. This means that
 not only can you use the Shoutcast DSP to stream to Icecast, but that you can also
 stream NSV via their tools.  </p>
 
-<h5 id="aac-is-added-as-a-supported-streaming-format">AAC is added as a supported streaming format</h5>
+<h5>AAC is added as a supported streaming format</h5>
 <p>Not too many source clients support streaming in this format, but we support it.</p>
 
-<h5 id="cluster-password">Cluster password</h5>
+<h5>Cluster password</h5>
 <p>Now you can specify a cluster password as a option in the config. This will allow you
 to cluster multiple servers/mounts into a single listing on the stream directory. Note
 that this is different than “grouping” which groups together streams coming from the
@@ -123,27 +123,27 @@ same stream and will only be listed <em>once</em> in the stream directory. When 
 tunes into a cluster, they will be served an m3u file with all the clusters for that
 stream. </p>
 
-<h5 id="playlist-log">Playlist Log</h5>
+<h5>Playlist Log</h5>
 <p>This is an option setting that will create an audit trail of metadata that comes through
 Icecast. It is a single file that contains information for all mountpoints. </p>
 
-<h5 id="range-support-for-static-files">Range Support for static files</h5>
+<h5>Range Support for static files</h5>
 <p>We now support seeking in files served off the icecast fserve.</p>
 
-<h5 id="metadata-update-via-admin">Metadata Update via Admin</h5>
+<h5>Metadata Update via Admin</h5>
 <p>We now support metadata updates via the admin interface for both MP3 <em>and</em> Ogg Vorbis streams.</p>
 
-<h5 id="per-mount-hidden-stats-and-yp-prevention">Per mount hidden stats and YP prevention</h5>
+<h5>Per mount hidden stats and YP prevention</h5>
 <p>You many now indicate certains mounts to be excluded (i.e. hidden) from the main status.xsl page.
 This is useful when using local private relays. You can also override the YP setting (as in disable)
 on a per-mount basis. Also useful for local private relays.</p>
 
-<h5 id="multiple-example-config-files">Multiple example config files</h5>
+<h5>Multiple example config files</h5>
 <p>We now have multiple config files for you to use as a base. A “simple” one for quick-start, and a
 more detailed “advanced” one with all the features, as well as a “shoutcast compatable” one, which
 shows how you’d config for using the shoutcast DSP.</p>
 
-<h5 id="relay-userpass">Relay user/pass</h5>
+<h5>Relay user/pass</h5>
 <p>You can now specify authentication used by a relay. This is for the case where you have listener
 authentication enabled for a mountpoint, and want to connect a relay to it.</p>
 

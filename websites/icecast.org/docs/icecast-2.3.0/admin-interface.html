@@ -55,37 +55,37 @@
           
             
           
-          <li><a href="/download">Download</a></li>
+          <li class=""><a href="/download">Download</a></li>
         
           
             
           
-          <li><a href="/docs">Docs</a></li>
+          <li class="on"><a href="/docs">Docs</a></li>
         
           
             
           
-          <li><a href="/apps">Apps</a></li>
+          <li class=""><a href="/apps">Apps</a></li>
         
           
             
           
-          <li><a href="http://dir.xiph.org/">Streams</a></li>
+          <li class=""><a href="http://dir.xiph.org/">Streams</a></li>
         
           
             
           
-          <li><a href="/ices">Ices</a></li>
+          <li class=""><a href="/ices">IceS</a></li>
         
           
             
           
-          <li><a href="/svn">Subversion</a></li>
+          <li class=""><a href="/svn">Subversion</a></li>
         
           
             
           
-          <li><a href="/contact">Contact</a></li>
+          <li class=""><a href="/contact">Contact</a></li>
         
       
     </ul>
@@ -94,9 +94,16 @@
 
 
     <section>
+      
+      
+      <aside class="error">
+        <strong>Please note:</strong> This doc is for an older Icecast version, you can find the latest doc
+        <a href="/docs/icecast-latest">here</a>.
+      </aside>
+      
       <h2>Icecast 2.3.0 Docs &mdash; Admin Interface</h2>
       <article>
-  <h3 id="overview">Overview</h3>
+  <h3>Overview</h3>
   <p>This section contains information about the admin interface of icecast. Through this interface the user can manipulate many server features. From it you can gather statistics, move listeners from mountpoint to mountpoint, disconnect connected sources, disconnect connected listeners, and many other activities. Each function is enumerated here as well as an example usage of the function.</p>
 
   <p>Each of these functions requires HTTP authentication via the appropriate username and password. For mount-specific functions, you may use either the <code>&lt;admin-username&gt;</code> and <code>&lt;admin-password&gt;</code> specified in the icecast config file, or the username and password specified for that mountpoint (if any). For general functions (not specific to a single mountpoint), you must use the admin username and password. It is also important to note that in all the examples 192.168.1.10 is used as the example host and 8000 is used as the example port for the Icecast server.</p>
@@ -104,12 +111,12 @@
 </article>
 
 <article>
-  <h3 id="admin-functions-mount-specific">Admin Functions (mount specific)</h3>
+  <h3>Admin Functions (mount specific)</h3>
   <p>All these admin functions are mount specific in that they only apply to a particular mountpoint
 (as opposed to applying to the entire server). Each of these functions requires a mountpoint to
 be specified as input.</p>
 
-  <h4 id="metadata-update">Metadata Update</h4>
+  <h4>Metadata Update</h4>
 
   <p>This function provides the ability for either a source client or any external program to update
 the metadata information for a particular mountpoint.</p>
@@ -117,7 +124,7 @@ the metadata information for a particular mountpoint.</p>
   <p>Example:<br />
 <code>http://192.168.1.10:8000/admin/metadata?mount=/mystream&amp;mode=updinfo&amp;song=ACDC+Back+In+Black</code></p>
 
-  <h4 id="fallback-update">Fallback Update</h4>
+  <h4>Fallback Update</h4>
   <p>This function provides the ability for either a source client or any external program to update the
 “fallback mountpoint” for a particular mountpoint. Fallback mounts are those that are used in the even
 of a source client disconnection. If a source client disconnects for some reason that all currently
@@ -126,14 +133,14 @@ connected clients are sent immediately to the fallback mountpoint.</p>
   <p>Example:<br />
 <code>http://192.168.1.10:8000/admin/fallbacks?mount=/mystream.ogg&amp;fallback=/myfallback.ogg</code></p>
 
-  <h4 id="list-clients">List Clients</h4>
+  <h4>List Clients</h4>
   <p>This function lists all the clients currently connected to a specific mountpoint. The results are sent
 back in XML form.</p>
 
   <p>Example:<br />
 <code>http://192.168.1.10:8000/admin/listclients?mount=/mystream.ogg</code></p>
 
-  <h4 id="move-clients-listeners">Move Clients (Listeners)</h4>
+  <h4>Move Clients (Listeners)</h4>
   <p>This function provides the ability to migrate currently connected listeners from one mountpoint to another.
 This function requires 2 mountpoints to be passed in: mount (the <em>from</em> mountpoint) and destination
 (the <em>to</em> mountpoint). After processing this function all currently connected listeners on mount will
@@ -143,7 +150,7 @@ already feeding it a stream.</p>
   <p>Example:
 <code>http://192.168.1.10:8000/admin/moveclients?mount=/mystream.ogg&amp;destination=/mynewstream.ogg</code></p>
 
-  <h4 id="kill-client-listener">Kill Client (Listener)</h4>
+  <h4>Kill Client (Listener)</h4>
   <p>This function provides the ability to disconnect a specific listener of a currently connected mountpoint.
 Listeners are identified by a unique id that can be retrieved by via the “List Clients” admin function.
 This id must be passed in to the request via the variable <code>id</code>. After processing this request, the listener will no longer be
@@ -152,7 +159,7 @@ connected to the mountpoint.</p>
   <p>Example:
 <code>http://192.168.1.10:8000/admin/killclient?mount=/mystream.ogg&amp;id=21</code></p>
 
-  <h4 id="kill-source">Kill Source</h4>
+  <h4>Kill Source</h4>
   <p>This function will provide the ability to disconnect a specific mountpoint from the server. The mountpoint
 to be disconnected is specified via the variable <code>mount</code>.</p>
 
@@ -162,9 +169,9 @@ to be disconnected is specified via the variable <code>mount</code>.</p>
 </article>
 
 <article>
-  <h3 id="admin-functions-general">Admin Functions (general)</h3>
+  <h3>Admin Functions (general)</h3>
 
-  <h4 id="stats">Stats</h4>
+  <h4>Stats</h4>
   <p>The stats function provides the ability to query the internal statistics kept by the Icecast server.
 Almost all information about the internal workings of the server such as the mountpoints connected,
 how many client requests have been served, how many listeners for each mountpoint, etc, are available
@@ -175,7 +182,7 @@ however this syntax should not be used and will eventually become deprecated!</p
   <p>Example:<br />
 <code>http://192.168.1.10:8000/admin/stats</code></p>
 
-  <h4 id="list-mounts">List Mounts</h4>
+  <h4>List Mounts</h4>
   <p>The list mounts function provides the ability to view all the currently connected mountpoints.</p>
 
   <p>Example:
@@ -184,7 +191,7 @@ however this syntax should not be used and will eventually become deprecated!</p
 </article>
 
 <article>
-  <h3 id="web-based-admin-interface">Web-Based Admin Interface</h3>
+  <h3>Web-Based Admin Interface</h3>
   <p>As an alternative to manually invoking these URLs, a web-based admin interface was developed. This
 interface provides the same functions that were identified and described above but presents them in
 a little nicer way. The web-based admin Interface to Icecast is shipped with Icecast provided in the

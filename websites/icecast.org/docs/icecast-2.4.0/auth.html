@@ -55,37 +55,37 @@
           
             
           
-          <li><a href="/download">Download</a></li>
+          <li class=""><a href="/download">Download</a></li>
         
           
             
           
-          <li><a href="/docs">Docs</a></li>
+          <li class="on"><a href="/docs">Docs</a></li>
         
           
             
           
-          <li><a href="/apps">Apps</a></li>
+          <li class=""><a href="/apps">Apps</a></li>
         
           
             
           
-          <li><a href="http://dir.xiph.org/">Streams</a></li>
+          <li class=""><a href="http://dir.xiph.org/">Streams</a></li>
         
           
             
           
-          <li><a href="/ices">Ices</a></li>
+          <li class=""><a href="/ices">IceS</a></li>
         
           
             
           
-          <li><a href="/svn">Subversion</a></li>
+          <li class=""><a href="/svn">Subversion</a></li>
         
           
             
           
-          <li><a href="/contact">Contact</a></li>
+          <li class=""><a href="/contact">Contact</a></li>
         
       
     </ul>
@@ -94,9 +94,11 @@
 
 
     <section>
+      
+      
       <h2>Icecast 2.4.0 Docs &mdash; Authentication</h2>
-      <article>
-  <h3 id="listener-authentication">Listener Authentication</h3>
+      <article id="listener-authentication">
+  <h3>Listener Authentication</h3>
   <p>Listener authentication is a feature of Icecast which allows you to secure a certain mountpoint such that in order to listen,
 a listener must pass some verification test. With this feature, a simple pay-for-play operation (eg. user/pass), or some filtering
 based on the listener connection can be performed. This section will show you the basics of setting up and maintaining this component.  </p>
@@ -116,8 +118,8 @@ source client, relay or a webroot based file. They do apply to intro files or fa
 
 </article>
 
-<article>
-  <h3 id="htpasswd-listener-authentication">htpasswd Listener Authentication</h3>
+<article id="htpasswd-listener-authentication">
+  <h3>htpasswd Listener Authentication</h3>
   <p>In order to use listener authentication, you <strong>must</strong> configure a mount specific option. This means that you have to provide
 a <code>&lt;mount&gt;</code> section in the main icecast config file. The following is an example:</p>
 
@@ -144,7 +146,7 @@ Note there is no way to specify a “max connections” for a particular user.  
 
   <p>Icecast supports a mixture of streams that require listener authentication and those that do not.</p>
 
-  <h4 id="configuring-users-and-passwords">Configuring Users and Passwords</h4>
+  <h4>Configuring Users and Passwords</h4>
   <p>Once the appropriate entries are made to the config file, connect your source client (using the mountpoint you named in
 the config file). To configure users and passwords for this stream you must use the web-based admin interface. Navigate to
 <code>http://server:ip/admin/stats.xsl</code> to begin. If you have configured everything properly, you should see a screen like the
@@ -164,7 +166,7 @@ in the fields and clicking “Add”.<br />
 Note that usernames <strong>must</strong> be unique and there are <strong>no</strong> restrictions on passwords. You can delete users by clicking the appropriate
 delete link next to each user.</p>
 
-  <h4 id="finishing-it-all-off">Finishing it all off</h4>
+  <h4>Finishing it all off</h4>
   <p>Ok, so you’ve created your users, and you have everything setup properly, how do your users login? Well, we’ve provided a simple login
 form that you can use for this purpose. This page (<code>http://server:port/auth.xsl</code>) will bring up a form that users can use to enter their
 username and password.</p>
@@ -176,8 +178,8 @@ your stream.</p>
 
 </article>
 
-<article>
-  <h3 id="url">URL</h3>
+<article id="url">
+  <h3>URL</h3>
 
   <p>Authenticating listeners via the URL method involves Icecast, when a listener connects, issuing requests to a web server
 and checking the response headers. If a certain header is sent back then the listener connecting is allowed to continue,
@@ -215,12 +217,12 @@ have to provide a <code>&lt;mount&gt;</code> section in the main Icecast config 
   <p>The options are described below in more detail, each of which is optional, but in each case, within the POST data,
 the value for each setting is encoded.</p>
 
-  <h4 id="mountadd">mount_add</h4>
+  <h4>mount_add</h4>
 
   <p>This URL is for informing the auth server of a stream starting. No listener information is passed for this,
 but it can be used to initialise any details the auth server may have.  </p>
 
-  <h5 id="post-details">POST Details</h5>
+  <h5>POST Details</h5>
   <dl>
     <dt>action</dt>
     <dd><code>mount_add</code></dd>
@@ -232,14 +234,14 @@ but it can be used to initialise any details the auth server may have.  </p>
     <dd>the server port</dd>
   </dl>
 
-  <h5 id="example">Example</h5>
+  <h5>Example</h5>
   <p><code>action=mount_add&amp;mount=/live&amp;server=icecast.example.org&amp;port=8000</code></p>
 
-  <h4 id="mountremove">mount_remove</h4>
+  <h4>mount_remove</h4>
   <p>This URL is for informing the auth server of a stream finishing, like the start option, no listener details
 are passed.  </p>
 
-  <h5 id="post-details-1">POST Details</h5>
+  <h5>POST Details</h5>
   <dl>
     <dt>action</dt>
     <dd><code>mount_remove</code></dd>
@@ -251,15 +253,15 @@ are passed.  </p>
     <dd>the server port</dd>
   </dl>
 
-  <h5 id="example-1">Example</h5>
+  <h5>Example</h5>
   <p><code>action=mount_remove&amp;mount=/live&amp;server=icecast.example.org&amp;port=8000</code></p>
 
-  <h4 id="listeneradd">listener_add</h4>
+  <h4>listener_add</h4>
   <p>This is most likely to be used if anything. When a listener connects, before anything is sent back to them, this
 request is processed. The default action is to reject a listener unless the auth server sends back a response header
 which may be stated in the <code>header</code> option.</p>
 
-  <h5 id="post-details-2">POST Details</h5>
+  <h5>POST Details</h5>
   <dl>
     <dt>action</dt>
     <dd><code>listener_add</code></dd>
@@ -287,13 +289,13 @@ which may be stated in the <code>header</code> option.</p>
 so for instance the requested URL can be <code>/stream.ogg&amp;session=xyz</code>, but note that each option data is
 escaped before being passed via POST.</p>
 
-  <h5 id="example-2">Example</h5>
+  <h5>Example</h5>
   <p><code>action=listener_add&amp;server=icecast.example.org&amp;port=8000&amp;client=1&amp;mount=/live&amp;user=&amp;pass=&amp;ip=127.0.0.1&amp;agent=My%20player</code>  </p>
 
-  <h4 id="listenerremove">listener_remove</h4>
+  <h4>listener_remove</h4>
   <p>This URL is for when a listener connection closes.</p>
 
-  <h5 id="post-details-3">POST Details</h5>
+  <h5>POST Details</h5>
   <dl>
     <dt>action</dt>
     <dd><code>listener_remove</code></dd>
@@ -319,15 +321,15 @@ escaped before being passed via POST.</p>
     <dd>number of seconds the listener was connected for</dd>
   </dl>
 
-  <h5 id="example-3">Example</h5>
+  <h5>Example</h5>
   <p><code>action=listener_remove&amp;server=icecast.example.org&amp;port=8000&amp;client=1&amp;mount=/live&amp;user=&amp;pass=&amp;duration=3600&amp;ip=127.0.0.1&amp;agent=My%20player</code></p>
 
-  <h4 id="streamauth">stream_auth</h4>
+  <h4>stream_auth</h4>
   <p>Technically this does not belong to listener authentication, but due to its similarity it is explained here too.<br />
 When a source connects, before anything is sent back to them, this request is processed. The default action is to
 reject a source unless the auth server sends back a response header which may be stated in the <code>header</code> option.</p>
 
-  <h5 id="post-details-4">POST Details</h5>
+  <h5>POST Details</h5>
   <dl>
     <dt>action</dt>
     <dd><code>stream_auth</code></dd>
@@ -348,10 +350,10 @@ reject a source unless the auth server sends back a response header which may be
   <p><strong>Note:</strong> As admin requests can come in for a stream (eg. metadata update) these requests can be issued while
 stream is active. For these <code>admin</code> is set to <code>1</code> in POST details.</p>
 
-  <h5 id="example-4">Example</h5>
+  <h5>Example</h5>
   <p><code>action=stream_auth&amp;mount=/stream.ogg&amp;ip=192.0.2.0&amp;server=icecast.example.org&amp;port=8000&amp;user=source&amp;pass=password&amp;admin=1</code></p>
 
-  <h4 id="other-options">Other Options</h4>
+  <h4>Other Options</h4>
 
   <dl>
     <dt>auth_header</dt>
@@ -372,8 +374,8 @@ Those headers are prepended by the value of header_prefix and sent as POST param
 
 </article>
 
-<article>
-  <h3 id="a-note-about-players-and-authentication">A note about players and authentication</h3>
+<article id="note-player-auth">
+  <h3>A note about players and authentication</h3>
   <p>We do not have an exaustive list of players that support listener authentication.<br />
 We use standard HTTP basic authentication, and in general, many media players support this if they support anything at all.
 Winamp and Foobar2000 support HTTP basic authentication on Windows, and XMMS supports it on UNIX platforms. Winamp/XMMS at
@@ -381,8 +383,8 @@ least support the passing of query parameters, other players may also do.</p>
 
 </article>
 
-<article>
-  <h3 id="source-authentication">Source Authentication</h3>
+<article id="source-auth">
+  <h3>Source Authentication</h3>
   <p>Source authentication is a feature of Icecast which allows you to secure a certain mountpoint such that in order to stream to it,
 a source client must pass some verification test. This section will show you the basics of setting up and maintaining this component.<br />
 To define source authentication, a group of tags are specified in the <code>&lt;mount&gt;</code> group relating to the mountpoint.  </p>
@@ -394,13 +396,13 @@ To define source authentication, a group of tags are specified in the <code>&lt;
     <li>URL: issue web requests (eg. PHP) to match authentication</li>
   </ul>
 
-  <h4 id="url-authentication-streamauth">URL authentication: <code>stream_auth</code></h4>
+  <h4>URL authentication: <code>stream_auth</code></h4>
   <p>A <code>&lt;mount&gt;</code> can contain a section <code>&lt;authentication type="url"&gt;</code> and therein
 <code>&lt;option name="stream_auth" value="http://auth.example.org/source.php"/&gt;</code>. When a source connects, before anything is sent back to
 them, this request is processed. The default action is to reject a source unless the auth server sends back a response header which may
 be stated in the <code>header</code> option (same as listener auth).  </p>
 
-  <h5 id="post-details-5">POST Details</h5>
+  <h5>POST Details</h5>
   <dl>
     <dt>action</dt>
     <dd><code>stream_auth</code></dd>
@@ -421,7 +423,7 @@ be stated in the <code>header</code> option (same as listener auth).  </p>
   <p><strong>Note:</strong> As admin requests can come in for a stream (eg. metadata update) these requests can be issued while
 stream is active. For these <code>admin</code> is set to <code>1</code> in POST details.</p>
 
-  <h5 id="example-5">Example</h5>
+  <h5>Example</h5>
   <p><code>action=stream_auth&amp;mount=/stream.ogg&amp;ip=192.0.2.0&amp;server=icecast.example.org&amp;port=8000&amp;user=source&amp;pass=password&amp;admin=1</code></p>
 
 </article>

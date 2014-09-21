@@ -55,37 +55,37 @@
           
             
           
-          <li><a href="/download">Download</a></li>
+          <li class=""><a href="/download">Download</a></li>
         
           
             
           
-          <li><a href="/docs">Docs</a></li>
+          <li class="on"><a href="/docs">Docs</a></li>
         
           
             
           
-          <li><a href="/apps">Apps</a></li>
+          <li class=""><a href="/apps">Apps</a></li>
         
           
             
           
-          <li><a href="http://dir.xiph.org/">Streams</a></li>
+          <li class=""><a href="http://dir.xiph.org/">Streams</a></li>
         
           
             
           
-          <li><a href="/ices">Ices</a></li>
+          <li class=""><a href="/ices">IceS</a></li>
         
           
             
           
-          <li><a href="/svn">Subversion</a></li>
+          <li class=""><a href="/svn">Subversion</a></li>
         
           
             
           
-          <li><a href="/contact">Contact</a></li>
+          <li class=""><a href="/contact">Contact</a></li>
         
       
     </ul>
@@ -94,11 +94,18 @@
 
 
     <section>
+      
+      
+      <aside class="error">
+        <strong>Please note:</strong> This doc is for an older Icecast version, you can find the latest doc
+        <a href="/docs/icecast-latest">here</a>.
+      </aside>
+      
       <h2>Icecast 2.1.0 Docs &mdash; FAQ</h2>
       <article>
-  <h3 id="general-questions">General Questions</h3>
+  <h3>General Questions</h3>
 
-  <h4 id="what-is-icecast">What is Icecast?</h4>
+  <h4>What is Icecast?</h4>
   <p>Icecast, the project, is a collection of programs and libraries for streaming audio over the Internet. This includes:
 *	icecast, a program that streams audio data to listeners
 *	libshout, a library for communicating with Icecast servers
@@ -107,26 +114,26 @@
   <p>A source client is an external program which is responsible for sending content data to icecast. Some source clients that
 support icecast 2 are Oddcast, Ices 2, Ices 0.3, and DarkIce.</p>
 
-  <h4 id="what-is-icecast-the-program">What is icecast, the program?</h4>
+  <h4>What is icecast, the program?</h4>
   <p>icecast streams audio to listeners, and is compatible with Nullsoft’s Shoutcast.</p>
 
-  <h4 id="what-is-libshout">What is libshout?</h4>
+  <h4>What is libshout?</h4>
   <p>libshout is a library for communicating with and sending data to an Icecast server. It handles the socket connection,
 the timing of the data, and prevents bad data from getting to the Icecast server.</p>
 
-  <h4 id="what-is-ices">What is IceS?</h4>
+  <h4>What is IceS?</h4>
   <p>IceS is a program (source client) that sends audio data to an Icecast server to broadcast to clients.<br />
 IceS can either read audio data from disk, such as from Ogg Vorbis files, or sample live audio from a sound card and encode
 it on the fly.</p>
 
-  <h4 id="how-can-i-view-the-stream-status-page">How can I view the stream status page?</h4>
+  <h4>How can I view the stream status page?</h4>
   <p>Check your icecast configuration file for an element called <code>&lt;webroot&gt;</code>. This directory contains web stuff. In it, place a file called “status.xsl” that transforms an XML file containing stream data into a web page (either XHTML or HTML).  </p>
 
   <p>There are sample XSL stylesheets available in icecast/web/ in the CVS distribution of icecast.  </p>
 
   <p>In addition, the web directory can hold multiple status transforms, if you can’t decide which one you want.  </p>
 
-  <h4 id="what-can-i-use-to-listen-to-an-icecast-stream">What can I use to listen to an Icecast stream?</h4>
+  <h4>What can I use to listen to an Icecast stream?</h4>
   <p>We maintain a list of Icecast-compatible audio players at <a href="http://www.icecast.org/">icecast.org</a>.</p>
 </article>
 

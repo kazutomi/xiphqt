@@ -55,37 +55,37 @@
           
             
           
-          <li><a href="/download">Download</a></li>
+          <li class=""><a href="/download">Download</a></li>
         
           
             
           
-          <li><a href="/docs">Docs</a></li>
+          <li class="on"><a href="/docs">Docs</a></li>
         
           
             
           
-          <li><a href="/apps">Apps</a></li>
+          <li class=""><a href="/apps">Apps</a></li>
         
           
             
           
-          <li><a href="http://dir.xiph.org/">Streams</a></li>
+          <li class=""><a href="http://dir.xiph.org/">Streams</a></li>
         
           
             
           
-          <li><a href="/ices">Ices</a></li>
+          <li class=""><a href="/ices">IceS</a></li>
         
           
             
           
-          <li><a href="/svn">Subversion</a></li>
+          <li class=""><a href="/svn">Subversion</a></li>
         
           
             
           
-          <li><a href="/contact">Contact</a></li>
+          <li class=""><a href="/contact">Contact</a></li>
         
       
     </ul>
@@ -94,9 +94,16 @@
 
 
     <section>
+      
+      
+      <aside class="error">
+        <strong>Please note:</strong> This doc is for an older Icecast version, you can find the latest doc
+        <a href="/docs/icecast-latest">here</a>.
+      </aside>
+      
       <h2>Icecast 2.0.1 Docs &mdash; YP Directories</h2>
       <article>
-  <h3 id="overview">Overview</h3>
+  <h3>Overview</h3>
   <p>A YP (Yellow Pages) directory is a listing of broadcast streams. Icecast 2 has it own YP directory located at
 <a href="http://dir.xiph.org">http://dir.xiph.org</a>. Currently Icecast can only be listed in an Icecast-supported YP directory.<br />
 This means that you cannot list your stream in the Shoutcast YP directory.</p>
@@ -107,7 +114,7 @@ a combination of settings in the Icecast configuration file and also in your sou
 </article>
 
 <article>
-  <h3 id="configuring-icecast-for-yp-support">Configuring Icecast for YP Support</h3>
+  <h3>Configuring Icecast for YP Support</h3>
   <p>First of all, Icecast must have been built with YP support. This is automatically done if you have libcurl installed.
 If libcurl is not detected when icecats is compiled, then YP support is disabled.<br />
 If Icecast has been built with YP support, then the following configuration options control the YP directory settings:</p>
@@ -122,7 +129,7 @@ If Icecast has been built with YP support, then the following configuration opti
 </article>
 
 <article>
-  <h3 id="configuring-your-source-client-for-yp-support">Configuring Your Source Client for YP Support</h3>
+  <h3>Configuring Your Source Client for YP Support</h3>
   <p>This is usually covered in the source client documentation. More specifically, the source client needs to provide
 the HTTP header <code>Ice-Public: 1</code> on connect in order to enable YP listing of the stream.<br />
 If a mountpoint is being listed on a YP, then you will see some additional statistics relating to the YP such as

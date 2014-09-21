@@ -55,37 +55,37 @@
           
             
           
-          <li><a href="/download">Download</a></li>
+          <li class=""><a href="/download">Download</a></li>
         
           
             
           
-          <li><a href="/docs">Docs</a></li>
+          <li class="on"><a href="/docs">Docs</a></li>
         
           
             
           
-          <li><a href="/apps">Apps</a></li>
+          <li class=""><a href="/apps">Apps</a></li>
         
           
             
           
-          <li><a href="http://dir.xiph.org/">Streams</a></li>
+          <li class=""><a href="http://dir.xiph.org/">Streams</a></li>
         
           
             
           
-          <li><a href="/ices">Ices</a></li>
+          <li class="on"><a href="/ices">IceS</a></li>
         
           
             
           
-          <li><a href="/svn">Subversion</a></li>
+          <li class=""><a href="/svn">Subversion</a></li>
         
           
             
           
-          <li><a href="/contact">Contact</a></li>
+          <li class=""><a href="/contact">Contact</a></li>
         
       
     </ul>
@@ -94,6 +94,13 @@
 
 
     <section>
+      
+      
+      <aside class="error">
+        <strong>Please note:</strong> This doc is for an older Icecast version, you can find the latest doc
+        <a href="/docs/icecast-latest">here</a>.
+      </aside>
+      
       <h2>IceS 2.0.0 Docs &mdash; Config File</h2>
       <article>
   <p>The ices 2 configuration file is in XML format, which is described in detail below. There are some sample XML files provided in the distribution under the conf directory which show the main way ices is used.  </p>
@@ -106,7 +113,7 @@
 </article>
 
 <article>
-  <h3 id="general-layout">General layout</h3>
+  <h3>General layout</h3>
 
   <div class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="cp">&lt;?xml version=&quot;1.0&quot;?&gt;</span>
 <span class="nt">&lt;ices&gt;</span>
@@ -117,7 +124,7 @@
 </article>
 
 <article>
-  <h3 id="general-settings">General settings</h3>
+  <h3>General settings</h3>
   <p>These apply to IceS as a whole. The example below gives a useful example to work to</p>
 
   <div class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="nt">&lt;background&gt;</span>0<span class="nt">&lt;/background&gt;</span>
@@ -152,7 +159,7 @@
 </article>
 
 <article>
-  <h3 id="stream-section">Stream section</h3>
+  <h3>Stream section</h3>
   <p>This describes how the input and outgoing streams are configured.</p>
 
   <div class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="nt">&lt;stream&gt;</span>
@@ -161,7 +168,7 @@
     Instance
 <span class="nt">&lt;/stream&gt;</span></code></pre></div>
 
-  <h4 id="metadata">Metadata</h4>
+  <h4>Metadata</h4>
 
   <div class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="nt">&lt;metadata&gt;</span>
 	<span class="nt">&lt;name&gt;</span>My Stream<span class="nt">&lt;/name&gt;</span>
@@ -172,12 +179,12 @@
 
   <p>This section describes what metadata information is passed in the headers at connection time to icecast. This applies to each instance defined within the stream section but maybe overridden by a per-instance <code>&lt;metadata&gt;</code> section.</p>
 
-  <h4 id="input">Input</h4>
+  <h4>Input</h4>
   <p>This section deals with getting the audio data into IceS. There are a few ways that can happen. Typically it’s either from a playlist or via a soundcard.  </p>
 
   <p>The layout is consistent between the different input modules. Within the input section a module tag is needed to identify the module in question. The rest are made up of param tags specific to the module. There can be several param tags supplied to a module. Details of the module parameters are shown later.</p>
 
-  <h4 id="instance">Instance</h4>
+  <h4>Instance</h4>
   <p>Multiple instances can be defined to allow for multiple encodings, this is useful for encoding the same input to multiple bitrates. Each instance defines a particular set actions that occur on the passed in audio. Any modifications to the input data is isolated to the instance.</p>
 
   <div class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="nt">&lt;instance&gt;</span>
@@ -205,7 +212,7 @@
     <dd>By default streams will not be advertised on a YP server unless this is set, and only then if the icecast if configured to talk to YP servers.</dd>
   </dl>
 
-  <h4 id="resample">Resample</h4>
+  <h4>Resample</h4>
 
   <div class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="nt">&lt;resample&gt;</span>
     <span class="nt">&lt;in-rate&gt;</span>44100<span class="nt">&lt;/in-rate&gt;</span>
@@ -216,19 +223,19 @@
 
   <p>The most common values used are 48000, 44100, 22050 and 11025, and is really only used to resample to a lower samplerate, going to a higher rate serves no purpose within IceS.</p>
 
-  <h4 id="downmix">Downmix</h4>
+  <h4>Downmix</h4>
 
   <div class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="nt">&lt;downmix&gt;</span>1<span class="nt">&lt;/downmix&gt;</span></code></pre></div>
 
   <p>Some streams want to reduce the bitrate further, reducing the number of channels used to just 1. Converting stereo to mono is fairly common and when this is set to 1 the number of channels encoded is just 1. Like resample, this only affects the one instance it’s enabled in.</p>
 
-  <h4 id="savefile">Savefile</h4>
+  <h4>Savefile</h4>
 
   <div class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="nt">&lt;savefile&gt;</span>/home/ices/dump/stream1.ogg<span class="nt">&lt;/savefile&gt;</span></code></pre></div>
 
   <p>Sometimes the stream transmitted wants to be saved to disk. This can be useful for live recordings.</p>
 
-  <h4 id="encode">encode</h4>
+  <h4>encode</h4>
 
   <div class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="nt">&lt;encode&gt;</span>  
     <span class="nt">&lt;quality&gt;</span>0<span class="nt">&lt;/quality&gt;</span>

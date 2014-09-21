@@ -55,37 +55,37 @@
           
             
           
-          <li><a href="/download">Download</a></li>
+          <li class=""><a href="/download">Download</a></li>
         
           
             
           
-          <li><a href="/docs">Docs</a></li>
+          <li class="on"><a href="/docs">Docs</a></li>
         
           
             
           
-          <li><a href="/apps">Apps</a></li>
+          <li class=""><a href="/apps">Apps</a></li>
         
           
             
           
-          <li><a href="http://dir.xiph.org/">Streams</a></li>
+          <li class=""><a href="http://dir.xiph.org/">Streams</a></li>
         
           
             
           
-          <li><a href="/ices">Ices</a></li>
+          <li class="on"><a href="/ices">IceS</a></li>
         
           
             
           
-          <li><a href="/svn">Subversion</a></li>
+          <li class=""><a href="/svn">Subversion</a></li>
         
           
             
           
-          <li><a href="/contact">Contact</a></li>
+          <li class=""><a href="/contact">Contact</a></li>
         
       
     </ul>
@@ -94,30 +94,37 @@
 
 
     <section>
+      
+      
+      <aside class="error">
+        <strong>Please note:</strong> This doc is for an older Icecast version, you can find the latest doc
+        <a href="/docs/icecast-latest">here</a>.
+      </aside>
+      
       <h2>IceS 2.0.2 Docs &mdash; Frequently Asked Questions</h2>
       <article>
   <p>This for those questions people have asked as it wasn’t covered in the documentation</p>
 
-  <h4 id="can-ices-play-mp3-files">Can ices play mp3 files</h4>
+  <h4>Can ices play mp3 files</h4>
   <p>No, there hasn’t been much interest in handling MP3 with ices 2. The older version ices 0.x maybe of interest in such cases. If you really want to encode the Vorbis stream from non-vorbis files then you can play them with an external application, eg xmms, and use ices 2 to capture from the soundcard, but be aware that any conversion from one lossy format to another is bad so make sure the original material is high quality.</p>
 
-  <h4 id="how-do-i-encode-from-line-in">How do I encode from Line-In</h4>
+  <h4>How do I encode from Line-In</h4>
   <p>IceS will read from the DSP on the soundcard, but where that gets the audio from depends on the mixer settings. Use a utility like aumix/alsamixer to see the settings and change the capture or recording device. Usually the default is the Mic</p>
 
-  <h4 id="when-i-start-ices-2-it-seems-to-get-stuck-not-doing-anything">When I start ices 2 it seems to get stuck not doing anything</h4>
+  <h4>When I start ices 2 it seems to get stuck not doing anything</h4>
   <p>If you are using live input, check to see if something else is holding the recording device (typically /dev/dsp) open. A good candidate is esd. What happens is that the driver only allows one application to have the device open at any one time, a second attempt will just block.<br />
 Some OSS drivers allow multiple opens but on ALSA you can configure a virtual device in asound.conf, type dsnoop/dmix, which allows access for multiple apps.</p>
 
-  <h4 id="ices-reports-a-message-about-failing-to-set-samplerate-on-live-input">Ices reports a message about failing to set samplerate on live input</h4>
+  <h4>Ices reports a message about failing to set samplerate on live input</h4>
   <p>Some hardware/drivers are limited in the settings they support. Sometimes they only support one samplerate like 48khz. You have to experiment if the documentation for the device is not specific.</p>
 
-  <h4 id="can-i-do-crossfading-with-the-playlist">Can I do crossfading with the playlist</h4>
+  <h4>Can I do crossfading with the playlist</h4>
   <p>Ices does not do much in the way manipulating the audio itself, resampling and downmixing are available as that has a direct effect on encoding an outgoing stream. Ices can still be used in conjunction with other applications such as xmms by making ices read from the say the dsp (eg oss, alsa etc), that way anything that is played by that other application is encoded and sent to icecast.</p>
 
-  <h4 id="my-player-connects-but-i-dont-hear-anything">My player connects but I don’t hear anything</h4>
+  <h4>My player connects but I don’t hear anything</h4>
   <p>If you are getting data through to the player and the settings show like the samplerate and chnnels then it is probably the mixer settings which are set incorrectly and ices can only read silence. A common example, ALSA may have many levels in the mixer and by default they are all muted.</p>
 
-  <h4 id="my-player-seems-unable-to-play-the-stream">My player seems unable to play the stream</h4>
+  <h4>My player seems unable to play the stream</h4>
   <p>If the stream looks to be getting to the player then it will be how the player is handling it. The usual causes of this are: </p>
 
   <ul>
@@ -126,7 +133,7 @@ Some OSS drivers allow multiple opens but on ALSA you can configure a virtual de
     <li>Are you running Winamp 3. This is a discontinued product and had problems with the vorbis plugin, either use the later v2.9 series or v5.</li>
   </ul>
 
-  <h4 id="the-sound-quality-is-poor">The sound quality is poor</h4>
+  <h4>The sound quality is poor</h4>
   <p>Ogg Vorbis is a lossy compression technology, so quality of the sound is reduced, however with live input the source of audio can be poor depending on the soundcard and the system it’s in. As an initial test just record a wav file from the DSP (using eg rec, arecord etc) and listen to the quality of the audio recorded. If the source of audio is poor then encoding it to Ogg Vorbis is not going to improve it.<br />
 The reasons for poor audio from the DSP can be difficult to resolve, search for information on audio quality. It could be driver related or maybe some interference from some other device.<br />
 Here are some links where further information can be found:<br />

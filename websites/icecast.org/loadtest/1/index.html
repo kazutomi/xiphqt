@@ -55,37 +55,37 @@
           
             
           
-          <li><a href="/download">Download</a></li>
+          <li class=""><a href="/download">Download</a></li>
         
           
             
           
-          <li><a href="/docs">Docs</a></li>
+          <li class=""><a href="/docs">Docs</a></li>
         
           
             
           
-          <li><a href="/apps">Apps</a></li>
+          <li class=""><a href="/apps">Apps</a></li>
         
           
             
           
-          <li><a href="http://dir.xiph.org/">Streams</a></li>
+          <li class=""><a href="http://dir.xiph.org/">Streams</a></li>
         
           
             
           
-          <li><a href="/ices">Ices</a></li>
+          <li class=""><a href="/ices">IceS</a></li>
         
           
             
           
-          <li><a href="/svn">Subversion</a></li>
+          <li class=""><a href="/svn">Subversion</a></li>
         
           
             
           
-          <li><a href="/contact">Contact</a></li>
+          <li class=""><a href="/contact">Contact</a></li>
         
       
     </ul>
@@ -96,9 +96,9 @@
     <section>
       <h2>Load Test Results</h2>
 <article>
-  <h3 id="load-test-1">Load Test 1</h3>
+  <h3>Load Test 1</h3>
 
-  <h4 id="description">Description</h4>
+  <h4>Description</h4>
 
   <p>The purpose of this document is to report the findings of a load test that was performed
 on the 2.3 RC3 version of Icecast.  </p>
@@ -115,7 +115,7 @@ under load, but rather provide some insight into what happens to Icecast when lo
     <li>What does the network utilization look like for large numbers of listeners?</li>
   </ul>
 
-  <h4 id="test-hardware">Test Hardware</h4>
+  <h4>Test Hardware</h4>
 
   <p>In order to test a large number of listeners, I knew that the network would be the first
 limiting factor. So for this reason, I performed this test using gigabit ethernet (1000 Mbit/sec)
@@ -131,7 +131,7 @@ The specs of each of the boxes were identical and looked like:</p>
     <li>OS: Red Hat Enterprise Linux 3 (2.4 kernel)</li>
   </ul>
 
-  <h4 id="the-load-test">The Load Test</h4>
+  <h4>The Load Test</h4>
 
   <p>We simulated listeners with the following script:</p>
 
@@ -194,7 +194,7 @@ the data.  </p>
   <p>For this test, only one stream was being sent to icecast, and it was being sourced using an
 OddcastV3 client sending a ~12kbps vorbis stream (Aotuvb4, quality -2, 11025Hz, Mono).</p>
 
-  <h4 id="results">Results</h4>
+  <h4>Results</h4>
 
   <p>The first graph shows user and system CPU usage for the box as a function of listeners.  </p>
 
@@ -225,16 +225,16 @@ we used, that would mean:<br />
 you will almost always be limited by your network interface. Definitely if you are using 10/100 equipment,
 and quite possibly even if using GBit equipment.</p>
 
-  <h4 id="conclusion">Conclusion</h4>
+  <h4>Conclusion</h4>
 
   <p>So to answer our questions: </p>
 
-  <h5 id="is-there-a-maximum-number-of-listeners-that-icecast-can-reliably-handle">Is there a maximum number of listeners that Icecast can reliably handle?</h5>
+  <h5>Is there a maximum number of listeners that Icecast can reliably handle?</h5>
   <p>Well, we know that it can definitely handle 14000 concurrent users given a similarly sized hardware
 configuration. We all conclude that icecast itself can handle even more concurrent users, with the
 main limitation most likely being the network interface.</p>
 
-  <h5 id="what-kind-of-cpu-utilization-occurs-in-icecast-configurations-with-large-numbers-of-listeners">What kind of CPU utilization occurs in Icecast configurations with large numbers of listeners?</h5>
+  <h5>What kind of CPU utilization occurs in Icecast configurations with large numbers of listeners?</h5>
   <p>Looks like icecast follows a rather linear progression of cpu utilization with about 1/4 of the total
 CPU time spend in user time, and the other 3/4 in system time. For 14000 concurrent users I saw 20%
 total utilization, with a breakdown of 5% user and 15% system.</p>

@@ -55,37 +55,37 @@
           
             
           
-          <li><a href="/download">Download</a></li>
+          <li class=""><a href="/download">Download</a></li>
         
           
             
           
-          <li><a href="/docs">Docs</a></li>
+          <li class="on"><a href="/docs">Docs</a></li>
         
           
             
           
-          <li><a href="/apps">Apps</a></li>
+          <li class=""><a href="/apps">Apps</a></li>
         
           
             
           
-          <li><a href="http://dir.xiph.org/">Streams</a></li>
+          <li class=""><a href="http://dir.xiph.org/">Streams</a></li>
         
           
             
           
-          <li><a href="/ices">Ices</a></li>
+          <li class=""><a href="/ices">IceS</a></li>
         
           
             
           
-          <li><a href="/svn">Subversion</a></li>
+          <li class=""><a href="/svn">Subversion</a></li>
         
           
             
           
-          <li><a href="/contact">Contact</a></li>
+          <li class=""><a href="/contact">Contact</a></li>
         
       
     </ul>
@@ -94,9 +94,16 @@
 
 
     <section>
+      
+      
+      <aside class="error">
+        <strong>Please note:</strong> This doc is for an older Icecast version, you can find the latest doc
+        <a href="/docs/icecast-latest">here</a>.
+      </aside>
+      
       <h2>Icecast 2.0.2 Docs &mdash; Relaying</h2>
       <article>
-  <h3 id="overview">Overview</h3>
+  <h3>Overview</h3>
   <p>Relaying is the process by which one server mirrors one or more streams from a remote server. The servers
 need not be of the same type (i.e. Icecast can relay from Shoutcast). Relaying is used primarily for large
 broadcasts that need to distribute listening clients across multiple physical machines.</p>
@@ -104,7 +111,7 @@ broadcasts that need to distribute listening clients across multiple physical ma
 </article>
 
 <article>
-  <h3 id="type-of-relays">Type of Relays</h3>
+  <h3>Type of Relays</h3>
   <p>There are two types of relays that icecast supports.<br />
 The first type is when both master and slave servers are Icecast 2 servers. In this case, a “master-slave” relay
 can be setup such that all that needs to be done is configure the slave server with the connection information
@@ -119,7 +126,7 @@ a Shoutcast server, you must use the “single-broadcast” relay and specify a 
 </article>
 
 <article>
-  <h3 id="setting-up-a-master-slave-relay">Setting Up a Master-Slave Relay</h3>
+  <h3>Setting Up a Master-Slave Relay</h3>
   <p>In order to setup a relay of this type both servers (the one you wish to relay and the one doing the relaying)
 need to be Icecast 2 servers. The following configuration snippet is used as an example:</p>
 
@@ -139,7 +146,7 @@ be identical to those on the master server. </p>
 </article>
 
 <article>
-  <h3 id="setting-up-a-single-broadcast-relay">Setting Up a Single-Broadcast Relay</h3>
+  <h3>Setting Up a Single-Broadcast Relay</h3>
   <p>In this case, the master server need not be an Icecast 2 server. Supported master servers for a single-broadcast
 relay are Shoutcast, Icecast 1.x, and of course Icecast 2. The following configuration snippet is used as an example:</p>
 

@@ -260,6 +260,7 @@ header {
 #xiphbar {
 	background-color: #666666;
 	height: 2.25em;
+	box-shadow: 0 .25em .25em rgba(0,0,0,.5);
 }
 #xiphbar h2 {
 	display: none;
@@ -424,11 +425,25 @@ nav a:focus:after {
 }
 
 /* Content */
-section > article:not(:last-child) {
-	margin-bottom: 2em;
-}
 section h2 {
 	margin-bottom: 1em;
+}
+section > a:link,
+section > a:visited {
+	color: #29495C;
+}
+section > a:hover {
+	text-decoration: none;
+}
+.error {
+	background-color: #DBCAD5;
+	color: #5C2949;
+	padding: .5em 2em;
+	margin: -1em 0 1em 0;
+	border: 1px solid #5C2949;
+}
+section > article:not(:last-child) {
+	margin-bottom: 2em;
 }
 article {
 	background-color: #001826;
@@ -439,6 +454,14 @@ article h3 {
 	text-shadow: 1px 1px 0 rgba(0,0,0,0.5);
 	margin-bottom: 0.7em;
 	border-bottom: 2px solid #29495C;
+}
+article h4,
+article h5 {
+	margin-top: 2em;
+}
+article h3 + h4,
+article h3 + h5 {
+	margin-top: 0;
 }
 article > *:not(:last-child) {
 	margin-bottom: 1em;
@@ -461,6 +484,20 @@ article nav ul {
 	padding: 0;
 	margin-top: 0;
 }
+article aside {
+	color: #29495C;
+	text-align: center;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	padding: 1em 2em 0 2em;
+	margin: 2em -2em -1em -2em;
+	border-top: 2px solid #29495C;
+}
+article aside a:link,
+article aside a:visited {
+	font-weight: bold;
+	text-decoration: none;
+}
 .play:link,
 .play:visited {
 	background-color: #000E17;
@@ -478,19 +515,48 @@ article nav ul {
 .play span {
 	font-weight: bold;
 }
-aside {
-	color: #29495C;
-	text-align: center;
-	letter-spacing: 0.1em;
-	text-transform: uppercase;
-	padding: 1em 2em 0 2em;
-	margin: 2em -2em -1em -2em;
-	border-top: 2px solid #29495C;
+ul.buttons {
+	display: -webkit-box;
+	display: -moz-box;
+	display: -ms-flexbox;
+	display: -webkit-flex;
+	display: flex;
+	-webkit-flex-flow: row;
+	flex-direction: row;
+	-webkit-box-pack: justify;
+	-moz-box-pack: justify;
+	-webkit-justify-content: space-between;
+	-ms-flex-pack: justify;
+	justify-content: space-between;
+	padding: 0;
+	list-style: none;
 }
-aside a:link,
-aside a:visited {
+ul.buttons li {
+	width: 49%;
+}
+ul.buttons a {
+	background-color: #000E17;
+	color: #FFFFFF;
+	font-size: 1.25em;
 	font-weight: bold;
 	text-decoration: none;
+	display: block;
+	padding: 1em;
+}
+ul.buttons a:hover {
+	text-decoration: underline;
+}
+ul.buttons .linux {
+	background: #000E17 url('../img/logo-linux.svg') no-repeat 95% 50%;
+	background-size: 2em;
+}
+ul.buttons .windows {
+	background: #000E17 url('../img/logo-windows.svg') no-repeat 95% 50%;
+	background-size: 2em;
+}
+ul.buttons span {
+	display: inline-block;
+	margin-top: 1em;
 }
 
 /* Footer */
@@ -503,7 +569,7 @@ footer a:visited {
 	color: #29495C;
 }
 
-/* Responsive */
+/* Desktop and tablet */
 @media only screen and (max-width: 1024px) {
 	#xiphbar > div > a {
 		text-align: center;
@@ -529,7 +595,19 @@ footer a:visited {
 		border-right: none;
 		border-bottom: 2px solid #29495C;
 	}
+	ul.buttons {
+		-webkit-flex-flow: column;
+		flex-direction: column;
+	}
+	ul.buttons li {
+		width: 100%;
+	}
+	ul.buttons li:not(:last-child) {
+		margin-bottom: 1em;
+	}
 }
+
+/* Tablet and smartphone */
 @media only screen and (max-width: 768px) {
 	* {
 		-ms-text-size-adjust: 100%;
@@ -635,6 +713,8 @@ footer a:visited {
 		border-bottom: 2px solid #29495C;
 	}
 }
+
+/* Smartphone */
 @media only screen and (max-width: 450px) {
 	body > *:not(:first-child) {
 		width: 100%;
@@ -666,6 +746,10 @@ footer a:visited {
 	section h2,
 	section > p {
 		padding: 0 1em;
+	}
+	.error {
+		border-right: none;
+		border-left: none;
 	}
 	article > *:not(:first-child) {
 		text-align: justify;
@@ -725,13 +809,14 @@ footer a:visited {
 	article a:after {
 		content: ' [' attr(href) ']';
 	}
-	aside {
+	article aside {
 		text-transform: none;
 		padding: 0;
 		margin: 0;
 		border-top: none;
 	}
 }
+
 /* Highlight (Solarized Dark) */
 .highlight{background-color:#073642;color:#93a1a1}
 .highlight .c{color:#586e75 !important;}

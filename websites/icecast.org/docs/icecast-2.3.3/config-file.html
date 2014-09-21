@@ -55,37 +55,37 @@
           
             
           
-          <li><a href="/download">Download</a></li>
+          <li class=""><a href="/download">Download</a></li>
         
           
             
           
-          <li><a href="/docs">Docs</a></li>
+          <li class="on"><a href="/docs">Docs</a></li>
         
           
             
           
-          <li><a href="/apps">Apps</a></li>
+          <li class=""><a href="/apps">Apps</a></li>
         
           
             
           
-          <li><a href="http://dir.xiph.org/">Streams</a></li>
+          <li class=""><a href="http://dir.xiph.org/">Streams</a></li>
         
           
             
           
-          <li><a href="/ices">Ices</a></li>
+          <li class=""><a href="/ices">IceS</a></li>
         
           
             
           
-          <li><a href="/svn">Subversion</a></li>
+          <li class=""><a href="/svn">Subversion</a></li>
         
           
             
           
-          <li><a href="/contact">Contact</a></li>
+          <li class=""><a href="/contact">Contact</a></li>
         
       
     </ul>
@@ -94,9 +94,16 @@
 
 
     <section>
+      
+      
+      <aside class="error">
+        <strong>Please note:</strong> This doc is for an older Icecast version, you can find the latest doc
+        <a href="/docs/icecast-latest">here</a>.
+      </aside>
+      
       <h2>Icecast 2.3.3 Docs &mdash; Config File</h2>
       <article>
-  <h3 id="overview">Overview</h3>
+  <h3>Overview</h3>
   <p>This section will describe each section of the config file and is grouped into the following sections:</p>
 
   <ul>
@@ -216,7 +223,7 @@ The value for this setting is provided by the owner of the Directory server.</dd
 <article>
   <h3 id="misc">Misc Server Settings</h3>
 
-  <h4 id="server-wide-settings">Server wide settings</h4>
+  <h4>Server wide settings</h4>
 
   <div class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="nt">&lt;hostname&gt;</span>localhost<span class="nt">&lt;/hostname&gt;</span>
 <span class="nt">&lt;location&gt;</span>earth<span class="nt">&lt;/location&gt;</span>
@@ -326,7 +333,7 @@ server connects as if its a listener to the sending server.<br />
 There are two types of relay setups:<br />
 a “Master server relay” or a “Specific Mountpoint relay.”</p>
 
-  <h4 id="master-relay">Master Relay</h4>
+  <h4>Master Relay</h4>
 
   <p>A Master server relay is only supported between Icecast servers and is used to relay a number of
 mountpoints from a remote Icecast server.</p>
@@ -369,7 +376,7 @@ relay, you still may want those relays to only pull the stream when there is at 
 The typical case here is to avoid surplus bandwidth costs when no one is listening.  </dd>
   </dl>
 
-  <h4 id="specific-mountpoint-relay">Specific Mountpoint Relay</h4>
+  <h4>Specific Mountpoint Relay</h4>
 
   <p>If only specific mountpoints need to be relayed, then you can configure Icecast with a “Specific Mountpoint Relay”.</p>
 

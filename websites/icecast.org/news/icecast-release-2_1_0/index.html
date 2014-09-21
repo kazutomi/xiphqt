@@ -55,37 +55,37 @@
           
             
           
-          <li><a href="/download">Download</a></li>
+          <li class=""><a href="/download">Download</a></li>
         
           
             
           
-          <li><a href="/docs">Docs</a></li>
+          <li class=""><a href="/docs">Docs</a></li>
         
           
             
           
-          <li><a href="/apps">Apps</a></li>
+          <li class=""><a href="/apps">Apps</a></li>
         
           
             
           
-          <li><a href="http://dir.xiph.org/">Streams</a></li>
+          <li class=""><a href="http://dir.xiph.org/">Streams</a></li>
         
           
             
           
-          <li><a href="/ices">Ices</a></li>
+          <li class=""><a href="/ices">IceS</a></li>
         
           
             
           
-          <li><a href="/svn">Subversion</a></li>
+          <li class=""><a href="/svn">Subversion</a></li>
         
           
             
           
-          <li><a href="/contact">Contact</a></li>
+          <li class=""><a href="/contact">Contact</a></li>
         
       
     </ul>
@@ -98,16 +98,16 @@
 	<h3>Icecast Release 2.1.0</h3>
 	<p>After about 8 months in development, version 2.1.0 of Icecast has been released.  </p>
 
-<h4 id="new-features-for-21-in-no-particular-order">New features for 2.1 (in no particular order)</h4>
+<h4>New features for 2.1 (in no particular order)</h4>
 
-<h5 id="listener-authentication">Listener Authentication</h5>
+<h5>Listener Authentication</h5>
 <p>Icecast now supports listener authentication. This provides a mechanism for creating/maintaining
 users and passwords for listeners. Currently, we only have implemented a simple, file-based storage
 for users and passwords. New authenticators are on the horizon (such as URL-based or possibly
 MySQL based) New admin pages were also added for the maintenance of users/passwords. Please
 check the docs for a more detailed description of this new feature.  </p>
 
-<h5 id="multi-level-fallbacks">Multi-Level Fallbacks</h5>
+<h5>Multi-Level Fallbacks</h5>
 <p>Multi-level fallbacks allow for specifications of a series of fallback mounts that you can use
 to automatically move listeners in the event of a source being disconnected. In the event of
 new listeners attaching to the source stream that has been disconnected, they are routed to
@@ -115,21 +115,21 @@ the fallback mount (if specified). Icecast now has fallback-override capability 
 means that in the event of a source stream failure, listeners are moved to the fallback mount,
 and then automatically recaptured when the original source stream returns.  </p>
 
-<h5 id="burst-on-connect">Burst-On-Connect</h5>
+<h5>Burst-On-Connect</h5>
 <p>This is an new, optional config setting which will send a initial burst of data to connecting
 listeners. This has the effect of reducing (significantly) the startup buffer latency from the
 end-user perspective. This option is enabled by default.  </p>
 
-<h4 id="new-enhancements-for-21">New enhancements for 2.1</h4>
+<h4>New enhancements for 2.1</h4>
 
-<h5 id="update-to-admin-interface">Update to admin interface</h5>
+<h5>Update to admin interface</h5>
 <p>This interface has been cleaned up quite a bit and made a bit nicer.</p>
 
-<h5 id="rewrite-of-the-yp-listing-code">Rewrite of the YP listing code</h5>
+<h5>Rewrite of the YP listing code</h5>
 <p>The icecast yp code has received a complete overhaul by karl, and it’s
 a much more stable and failure-resistant implementation.</p>
 
-<h5 id="lots-and-lots-of-bugs-fixed">Lots and lots of bugs fixed</h5>
+<h5>Lots and lots of bugs fixed</h5>
 <p>Check the ChangeLog for a complete list of these…</p>
 
 <p>Download Icecast 2.1.0 from the <a href="/download">download page</a>.</p>

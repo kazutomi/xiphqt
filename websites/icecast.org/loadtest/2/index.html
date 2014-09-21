@@ -55,37 +55,37 @@
           
             
           
-          <li><a href="/download">Download</a></li>
+          <li class=""><a href="/download">Download</a></li>
         
           
             
           
-          <li><a href="/docs">Docs</a></li>
+          <li class=""><a href="/docs">Docs</a></li>
         
           
             
           
-          <li><a href="/apps">Apps</a></li>
+          <li class=""><a href="/apps">Apps</a></li>
         
           
             
           
-          <li><a href="http://dir.xiph.org/">Streams</a></li>
+          <li class=""><a href="http://dir.xiph.org/">Streams</a></li>
         
           
             
           
-          <li><a href="/ices">Ices</a></li>
+          <li class=""><a href="/ices">IceS</a></li>
         
           
             
           
-          <li><a href="/svn">Subversion</a></li>
+          <li class=""><a href="/svn">Subversion</a></li>
         
           
             
           
-          <li><a href="/contact">Contact</a></li>
+          <li class=""><a href="/contact">Contact</a></li>
         
       
     </ul>
@@ -96,9 +96,9 @@
     <section>
       <h2>Load Test Results</h2>
 <article>
-  <h3 id="load-test-2">Load Test 2</h3>
+  <h3>Load Test 2</h3>
 
-  <h4 id="description">Description</h4>
+  <h4>Description</h4>
 
   <p>Ok, here we go with another Icecast load test. In this test we are going to
 try to answer the following questions:</p>
@@ -110,7 +110,7 @@ We will look at a few metrics to try to answer this as complete as possible.</li
     <li>What happens if we add a bunch of listeners to a high-source-count setup?</li>
   </ul>
 
-  <h4 id="test-hardware">Test Hardware</h4>
+  <h4>Test Hardware</h4>
 
   <p>I used the same hardware as in the <a href="/loadtest/1/">first load test</a>.  </p>
 
@@ -124,7 +124,7 @@ We will look at a few metrics to try to answer this as complete as possible.</li
     <li>OS: Red Hat Enterprise Linux 3 (2.4 kernel)</li>
   </ul>
 
-  <h4 id="the-load-tests">The Load Test(s)</h4>
+  <h4>The Load Test(s)</h4>
 
   <p>For this particular load test we used the same listener load script
 from the <a href="/loadtest/1/">first load test</a>,
@@ -167,7 +167,7 @@ The config files (<code>exstream_*.xml</code>) were all precreated and were all 
 of the mountpoint (which was a counter from 1 to 1400). These ezstream instances looped the same
 file over and over (metadata updates were perform in between each loop - this is automatically done by ezstream).</p>
 
-  <h4 id="first-test-source-client-ramp-up-to-1400">First Test: Source Client Ramp Up to 1400</h4>
+  <h4>First Test: Source Client Ramp Up to 1400</h4>
 
   <p>The idea here is to ramp up (in a regular fashion) the number of source clients to a value of 1400.
 Why 1400 ? Well, 1400 sources ended up with a VSZ of 1GB, and while I probably could have gone
@@ -466,7 +466,7 @@ machine itself to get a more accurate representation.  </p>
 trend in increasing CPU time, however, it is fairly regular and relatively small. So we’d conclude
 that Icecast is doing a very efficient job in handling this number of sources.  </p>
 
-  <h4 id="second-test-adding-listeners-to-the-1400-source-client-config">Second Test: Adding Listeners to the 1400 source client config</h4>
+  <h4>Second Test: Adding Listeners to the 1400 source client config</h4>
 
   <p>This test is really a combination of the first test I did (max listeners) and this test (max
 sources) to see how the system reacts to a system with a good number of listeners and sources
@@ -502,7 +502,7 @@ of new listeners. This is exactly what we would expect.  </p>
 the addition of listeners (which it does with the addition of sources). We also saw that CPU
 utilization is slightly higher for processing sources than listeners.</p>
 
-  <h4 id="results">Results</h4>
+  <h4>Results</h4>
 
   <p>The first graph shows user and system CPU usage for the box as a function of listeners.  </p>
 
@@ -533,20 +533,20 @@ we used, that would mean:<br />
 you will almost always be limited by your network interface. Definitely if you are using 10/100 equipment,
 and quite possibly even if using GBit equipment.</p>
 
-  <h4 id="conclusions">Conclusions</h4>
+  <h4>Conclusions</h4>
 
   <p>So to answer our questions: </p>
 
-  <h5 id="how-does-adding-additional-sources-affect-icecast">How does adding additional sources affect Icecast?</h5>
+  <h5>How does adding additional sources affect Icecast?</h5>
   <p>We found that each source client adds about 672KB to the virtual size of the Icecast process.
 This ends up being the the limiting factor when determining the number of sources you can host
 on a single Icecast instance.</p>
 
-  <h5 id="are-there-any-limits-to-the-number-of-sources-that-can-be-hosted-on-a-single-icecast-instance">Are there any limits to the number of sources that can be hosted on a single Icecast instance?</h5>
+  <h5>Are there any limits to the number of sources that can be hosted on a single Icecast instance?</h5>
   <p>Certainly there are, I ran into a limit of 1400 on the hardware I used, with the addition of
 additional RAM I would have been able to increase that value.</p>
 
-  <h5 id="what-happens-if-we-add-a-bunch-of-listeners-to-a-high-source-count-setup">What happens if we add a bunch of listeners to a high-source-count setup?</h5>
+  <h5>What happens if we add a bunch of listeners to a high-source-count setup?</h5>
   <p>We found that listeners do not seem to affect Icecast too much with regard to memory,
 and that it adds less load to the CPU as do sources. In the case of listeners, the network
 will be your limiting factor (which we found and reported in our previous load test).</p>

@@ -55,37 +55,37 @@
           
             
           
-          <li><a href="/download">Download</a></li>
+          <li class=""><a href="/download">Download</a></li>
         
           
             
           
-          <li><a href="/docs">Docs</a></li>
+          <li class="on"><a href="/docs">Docs</a></li>
         
           
             
           
-          <li><a href="/apps">Apps</a></li>
+          <li class=""><a href="/apps">Apps</a></li>
         
           
             
           
-          <li><a href="http://dir.xiph.org/">Streams</a></li>
+          <li class=""><a href="http://dir.xiph.org/">Streams</a></li>
         
           
             
           
-          <li><a href="/ices">Ices</a></li>
+          <li class=""><a href="/ices">IceS</a></li>
         
           
             
           
-          <li><a href="/svn">Subversion</a></li>
+          <li class=""><a href="/svn">Subversion</a></li>
         
           
             
           
-          <li><a href="/contact">Contact</a></li>
+          <li class=""><a href="/contact">Contact</a></li>
         
       
     </ul>
@@ -94,9 +94,16 @@
 
 
     <section>
+      
+      
+      <aside class="error">
+        <strong>Please note:</strong> This doc is for an older Icecast version, you can find the latest doc
+        <a href="/docs/icecast-latest">here</a>.
+      </aside>
+      
       <h2>Icecast 2.2.0 Docs &mdash; Basic Setup</h2>
       <article>
-  <h3 id="basic-requirements">Basic Requirements</h3>
+  <h3>Basic Requirements</h3>
   <p>This section will describe the essential requirements in setting up a simple Internet radio station. It is by no means a complete list but should give you enough to get started.</p>
 
   <p>There are two major components involved: the streaming server (Icecast in this case) and the source client.<br />
@@ -107,7 +114,7 @@ The Icecast server will be the place where all listeners of your station will co
 </article>
 
 <article>
-  <h3 id="the-basics">The Basics</h3>
+  <h3>The Basics</h3>
 
   <p>Each Icecast server can house multiple broadcasts (or mountpoints) each containing a separate stream of content. A ‘mountpoint’ is a unique name on your server identifying a particular stream - it looks like a filename, such as ‘/stream.ogg’. A listener can only listen to a single mountpoint at a time. This means you can have a single Icecast server contain either multiple broadcasts with different content, or possibly the same broadcast but with streams of different bitrates or qualities. In this case each broadcast or stream is a separate mountpoint.</p>
 

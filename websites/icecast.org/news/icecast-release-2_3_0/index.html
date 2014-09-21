@@ -55,37 +55,37 @@
           
             
           
-          <li><a href="/download">Download</a></li>
+          <li class=""><a href="/download">Download</a></li>
         
           
             
           
-          <li><a href="/docs">Docs</a></li>
+          <li class=""><a href="/docs">Docs</a></li>
         
           
             
           
-          <li><a href="/apps">Apps</a></li>
+          <li class=""><a href="/apps">Apps</a></li>
         
           
             
           
-          <li><a href="http://dir.xiph.org/">Streams</a></li>
+          <li class=""><a href="http://dir.xiph.org/">Streams</a></li>
         
           
             
           
-          <li><a href="/ices">Ices</a></li>
+          <li class=""><a href="/ices">IceS</a></li>
         
           
             
           
-          <li><a href="/svn">Subversion</a></li>
+          <li class=""><a href="/svn">Subversion</a></li>
         
           
             
           
-          <li><a href="/contact">Contact</a></li>
+          <li class=""><a href="/contact">Contact</a></li>
         
       
     </ul>
@@ -106,24 +106,24 @@
   <li>Windows: <a href="http://downloads.xiph.org/releases/icecast/icecast2_win32_v2.3.0_setup.exe">icecast2_win32_v2.3.0_setup.exe</a></li>
 </ul>
 
-<h4 id="new-features-for-230">New features for 2.3.0</h4>
+<h4>New features for 2.3.0</h4>
 
-<h5 id="intro-file-support---per-mount-settable">Intro file support - per mount settable</h5>
+<h5>Intro file support - per mount settable</h5>
 <p>Intro files will play when a listener first connects to a stream. This is designed for station
 jingles and the like. If you don’t broadcast in ogg vorbis, you must make sure the
 bitrate/samplerate/number of channels match up to your stream.</p>
 
-<h5 id="on-demand-relays-global-and-per-relay-settable">On-demand relays, global and per-relay settable</h5>
+<h5>On-demand relays, global and per-relay settable</h5>
 <p>On demand relays only connect to the relayed content when there are listeners attached to the
 relay. This can save bandwidth in certain cases.</p>
 
-<h5 id="fallback-to-file-extends-on-the-intro-file-handling">Fallback to file, extends on the intro file handling</h5>
+<h5>Fallback to file, extends on the intro file handling</h5>
 <p>With this feature, you can specify a “fallback file” which will be played in a loop and sent
 your currently connected listeners in the event of a source client disconnect. This means your
 listeners stay connected while you fix your disconnect problem. Same rules regarding
 bitrate/samplerate/number of channels apply as with intro files.</p>
 
-<h5 id="new-mount-level-settings">New mount-level settings</h5>
+<h5>New mount-level settings</h5>
 
 <ul>
   <li>public, type/subtype, genre settings, stream description, stream url, stream name,
@@ -132,14 +132,14 @@ bitrate (override what is sent from the source client)</li>
   <li>on-(dis)connect scripts can be stated per-mount, invoked at source start/stop and take 1 arg which is the mountpoint.</li>
 </ul>
 
-<h5 id="new-url-listener-authenticator">New URL listener authenticator</h5>
+<h5>New URL listener authenticator</h5>
 <p>This delegates your listener authorization to an external application. URL calls are made on
 listener connect/disconnect as well as source connect/disconnect. It is meant for large
 broadcasters who have existing authentication systems that need to be integrated into. Included
 is an example php-based application that can be used in conjunction with the url authenticator to
 manage a simple subscription-based broadcast. </p>
 
-<h5 id="other-new-features">Other new features:</h5>
+<h5>Other new features:</h5>
 
 <ul>
   <li>HTPasswd authenticator uses in-memory structures now</li>
@@ -149,7 +149,7 @@ manage a simple subscription-based broadcast. </p>
   <li>Icecast can now be installed as a win32 service</li>
 </ul>
 
-<h4 id="fixes-for-230">Fixes for 2.3.0</h4>
+<h4>Fixes for 2.3.0</h4>
 
 <ul>
   <li>real/helix works</li>

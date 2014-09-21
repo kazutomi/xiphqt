@@ -55,37 +55,37 @@
           
             
           
-          <li><a href="/download">Download</a></li>
+          <li class=""><a href="/download">Download</a></li>
         
           
             
           
-          <li><a href="/docs">Docs</a></li>
+          <li class=""><a href="/docs">Docs</a></li>
         
           
             
           
-          <li><a href="/apps">Apps</a></li>
+          <li class=""><a href="/apps">Apps</a></li>
         
           
             
           
-          <li><a href="http://dir.xiph.org/">Streams</a></li>
+          <li class=""><a href="http://dir.xiph.org/">Streams</a></li>
         
           
             
           
-          <li><a href="/ices">Ices</a></li>
+          <li class=""><a href="/ices">IceS</a></li>
         
           
             
           
-          <li><a href="/svn">Subversion</a></li>
+          <li class="on"><a href="/svn">Subversion</a></li>
         
           
             
           
-          <li><a href="/contact">Contact</a></li>
+          <li class=""><a href="/contact">Contact</a></li>
         
       
     </ul>
@@ -96,19 +96,19 @@
     <section>
       <h2>Subversion</h2>
 <article>
-  <h3 id="access-to-subversion-repository">Access to subversion repository</h3>
+  <h3>Access to subversion repository</h3>
 
   <p>Xiph.org has switched from CVS to using Subversion. More information regarding subversion can be found <a href="http://subversion.tigris.org/">here</a>.  </p>
 
   <p>Before following these instructions make sure that you have a copy of Subversion installed. These instructions will assume that you are using a command-line version.</p>
 
-  <h4 id="create-a-place-to-store-the-local-repository">1. Create a place to store the local repository</h4>
+  <h4>1. Create a place to store the local repository</h4>
 
   <div class="highlight"><pre><code class="language-sh" data-lang="sh"><span class="nv">$ </span>mkdir <span class="nv">$HOME</span>/xiphrepository  <span class="c"># Obviously this name can be whatever you&#39;d like..</span>
                               <span class="c"># this is an example.</span>
 <span class="nv">$ </span><span class="nb">cd</span> <span class="nv">$HOME</span>/xiphrepository</code></pre></div>
 
-  <h4 id="checkout-the-main-icecast-trunk">2. Checkout the main Icecast trunk</h4>
+  <h4>2. Checkout the main Icecast trunk</h4>
   <p>Note: You must have libtool, autoconf, and automake to perform this step.</p>
 
   <div class="highlight"><pre><code class="language-sh" data-lang="sh"><span class="nv">$ </span>svn co http://svn.xiph.org/icecast/trunk/icecast/ icecast
@@ -120,7 +120,7 @@ A  icecast/debian/control
 ....
 Checked out revision 6618.  <span class="c"># Note your revision may be different</span></code></pre></div>
 
-  <h4 id="run-autogensh-in-the-main-icecast-root">3. Run autogen.sh in the main Icecast root</h4>
+  <h4>3. Run autogen.sh in the main Icecast root</h4>
 
   <div class="highlight"><pre><code class="language-sh" data-lang="sh"><span class="nv">$ </span><span class="nb">cd</span> <span class="nv">$HOME</span>/xiphrepository/icecast
 <span class="nv">$ </span>./autogen.sh
@@ -138,7 +138,7 @@ config.status: creating win32/res/Makefile
 config.status: creating config.h
 config.status: executing depfiles commands</code></pre></div>
 
-  <h4 id="verfiy-everything-by-performing-a-make">4. Verfiy everything by performing a make</h4>
+  <h4>4. Verfiy everything by performing a make</h4>
 
   <div class="highlight"><pre><code class="language-sh" data-lang="sh"><span class="nv">$ </span><span class="nb">cd</span> <span class="nv">$HOME</span>/xiphrepository/icecast
 <span class="nv">$ </span>make</code></pre></div>
