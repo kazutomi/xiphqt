@@ -1,0 +1,2 @@
+0f2703843f2062027c1d9a3084e5ab85afc41f2be554091e59fc067bd53419d9  vorbis-java-1.0.0-beta.tar.gz
+dd89c3782b4d97cb89af3caef6050d9c7997e520db4972107e0a4eb7b5af273d  vorbis-java-1.0.0-beta.zip
