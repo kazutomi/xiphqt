@@ -104,7 +104,7 @@
 			<ul>
 				<li><a href="/paranoia/">CD Paranoia</a> Robust CD audio extraction </li>
 				<li><a href="http://icecast.org/">Icecast:</a> Streaming server</li>
-				<li><a href="http://icecast.org/ices.php">Ices:</a> Source client for Icecast Server</li>
+				<li><a href="http://icecast.org/ices/">IceS:</a> Source client for Icecast Server</li>
 			</ul>
 
 			<h3>Codecs</h3>
