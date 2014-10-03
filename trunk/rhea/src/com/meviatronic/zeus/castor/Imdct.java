@@ -62,7 +62,7 @@ final class Imdct {
 		C = new float[nQuarter];
 		bitreversedIndex = new int[nEighth];
 	
-		int log2n = (int) (Math.log(n) / Math.log(2));
+		int log2n = (int) Math.rint((Math.log(n) / Math.log(2)));
 	  
 	  	lEnd = log2n - 3;
 	  
