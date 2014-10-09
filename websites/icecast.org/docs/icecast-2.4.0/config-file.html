@@ -453,7 +453,7 @@ limit bandwidth costs when no one is listening.</dd>
 <article>
   <h3 id="mountsettings">Mount Specific Settings</h3>
 
-  <div class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="nt">&lt;mount&gt;</span>
+  <div class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="nt">&lt;mount</span> <span class="na">type=</span><span class="s">&quot;normal&quot;</span><span class="nt">&gt;</span>
     <span class="nt">&lt;mount-name&gt;</span>/example-complex.ogg<span class="nt">&lt;/mount-name&gt;</span>
     <span class="nt">&lt;username&gt;</span>othersource<span class="nt">&lt;/username&gt;</span>
     <span class="nt">&lt;password&gt;</span>hackmemore<span class="nt">&lt;/password&gt;</span>
@@ -494,6 +494,12 @@ across a configuration file re-read even on active streams, however some only ap
 ends.</p>
 
   <dl>
+    <dt>type</dt>
+    <dd>The type of the mount point (default: “normal”). A mount of type “default”
+can be used to specify common values for multiple mountpoints. You can use the mount-name
+setting to specify a wildcard name (e.g. “*.ogg”) to apply these settings to a subset
+of the specified mounts (this experimental feature is available, but please keep in mind that it might
+change in some way for the next release).</dd>
     <dt>mount-name</dt>
     <dd>The name of the mount point for which these settings apply.</dd>
     <dt>username</dt>
