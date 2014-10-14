@@ -109,6 +109,8 @@
 	    French</option>
 	  <option file="02-Digital_Show_and_Tell.it.vtt">
 	    Italiano</option>
+	  <option file="02-Digital_Show_and_Tell.pl.vtt">
+	    Polski</option>
 	  <option file="02-Digital_Show_and_Tell.ptbr.vtt">
 	    Português (Brazil)</option>
 	  <option file="02-Digital_Show_and_Tell.es.vtt">
@@ -187,6 +189,7 @@
         <a href="02-Digital_Show_and_Tell.en.vtt">US English</a> |
 	<a href="02-Digital_Show_and_Tell.fr.vtt">French</a> |
 	<a href="02-Digital_Show_and_Tell.it.vtt">Italiano</a> |
+	<a href="02-Digital_Show_and_Tell.pl.vtt">Polski</a> |
 	<a href="02-Digital_Show_and_Tell.ptbr.vtt">Português (Brazil)</a> |
 	<a href="02-Digital_Show_and_Tell.es.vtt">Spanish</a>
       </li>
