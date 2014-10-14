@@ -45,8 +45,7 @@ function strip(s) {
     return s.replace(/^\s+|\s+$/g,"");
 }
 
-function playSubtitles(subtitleElement,vid) {
-    var srt = subtitleElement.text();
+function playSubtitles(subtitleElement,vid,srt) {
     subtitleElement.text('');
     srt = srt.replace(/\r\n|\r|\n/g, '\n');
     var subtitles = {};
@@ -139,7 +138,7 @@ function loadSubtitles(subtitleElement, url){
         el.html("");
     }
     if(url) {
-        el.load(url, function (responseText, textStatus, req) {playSubtitles(el,vid)});
+        el.load(url, function (responseText, textStatus, req) {playSubtitles(el,vid,responseText)});
     } else {
         el.html("");
     }
