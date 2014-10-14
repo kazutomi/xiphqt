@@ -65,6 +65,9 @@ function playSubtitles(subtitleElement,vid) {
           i = strip(st[1].split(' --> ')[0]);
           o = strip(st[1].split(' --> ')[1]);
           t = st[2];
+	    if(n==442){
+		alert(t);
+}
           if(st.length > 2) {
             for(j=3; j<st.length;j++)
               t += '\n'+st[j];
