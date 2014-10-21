@@ -1,6 +1,12 @@
 # humanstxt.org
 
 /* TEAM */
+
+Icecast Maintainer: Thomas B. Rücker
+Site: http://blog.ruecker.fi
+Twitter: @tbr23
+Location: Tampere, Finland
+
 Frontend developer: Kai Kubasta
 Site: http://kaikubasta.de
 Twitter: @kaikubasta
@@ -11,17 +17,12 @@ Site: http://epir.at
 Twitter: @ePirat
 Location: Berlin, Germany
 
-Icecast Maintainer: Thomas B. Rücker
-Site: http://blog.ruecker.fi
-Twitter: @tbr23
-Location: Tampere, Finland
-
 /* THANKS */
 Fira Sans & Fira Mono typeface: Erik Spiekermann, Ralph du Carrois, Mozilla
 
 
 /* SITE */
-Last update: 2014/08/30
+Last update: 2014/10/21
 Language: English
 Standards: HTML5, CSS3
 

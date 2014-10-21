@@ -70,6 +70,16 @@
 	color: #001826;
 	text-shadow: none;
 }
+.hidden {
+	clip: rect(0 0 0 0);
+	overflow: hidden;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	position: absolute;
+	border: 0;
+}
 
 /* Typography */
 h1,
@@ -262,9 +272,6 @@ header {
 	height: 2.25em;
 	box-shadow: 0 .25em .25em rgba(0,0,0,.5);
 }
-#xiphbar h2 {
-	display: none;
-}
 #xiphbar > div {
 	width: 75%;
 	margin: 0 auto;
@@ -338,9 +345,6 @@ nav {
 	margin: 0 auto;
 	border-top: 2px solid #29495C;
 	border-bottom: 2px solid #29495C;
-}
-nav h2 {
-	display: none;
 }
 nav label,
 #toggle-nav {
@@ -441,6 +445,12 @@ section > a:hover {
 	padding: .5em 2em;
 	margin: -1em 0 1em 0;
 	border: 1px solid #5C2949;
+}
+.error a {
+	color: #5C2949;
+}
+.error a:hover {
+	text-decoration: none;
 }
 section > article:not(:last-child) {
 	margin-bottom: 2em;
