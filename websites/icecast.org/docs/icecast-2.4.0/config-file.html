@@ -97,8 +97,9 @@
       
       <h2>Icecast 2.4.0 Docs &mdash; Config File</h2>
       
-      <article>
-  <h3>Overview</h3>
+      
+<article>
+  <h3 id="overview">Overview</h3>
   <p>This section will describe each section of the config file and is grouped into the following sections:</p>
 
   <ul>
@@ -116,7 +117,7 @@
 </article>
 
 <article>
-  <h3>A word of warning</h3>
+  <h3 id="a-word-of-warning">A word of warning</h3>
   <p>Please note that, especially for new Icecast users, editing the config file can be quite tricky.
 <strong>It is thus recommended to make a backup of the original config file and then start by just changing all
 passwords, nothing else.</strong> You can then use the source-password to bring up an initial stream and get more
@@ -244,7 +245,7 @@ The value for this setting is provided by the owner of the Directory server.</dd
 <article>
   <h3 id="misc">Misc Server Settings</h3>
 
-  <h4>Server wide settings</h4>
+  <h4 id="server-wide-settings">Server wide settings</h4>
 
   <div class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="nt">&lt;hostname&gt;</span>localhost<span class="nt">&lt;/hostname&gt;</span>
 <span class="nt">&lt;location&gt;</span>earth<span class="nt">&lt;/location&gt;</span>
@@ -354,7 +355,7 @@ server connects as if its a listener to the sending server.<br />
 There are two types of relay setups:<br />
 a “Master server relay” or a “Specific Mountpoint relay.”</p>
 
-  <h4>Master Relay</h4>
+  <h4 id="master-relay">Master Relay</h4>
 
   <p>A Master server relay is only supported between Icecast servers and is used to relay a number of
 mountpoints from a remote Icecast server.</p>
@@ -397,7 +398,7 @@ relay, you still may want those relays to only pull the stream when there is at 
 The typical case here is to avoid surplus bandwidth costs when no one is listening.  </dd>
   </dl>
 
-  <h4>Specific Mountpoint Relay</h4>
+  <h4 id="specific-mountpoint-relay">Specific Mountpoint Relay</h4>
 
   <p>If only specific mountpoints need to be relayed, then you can configure Icecast with a “Specific Mountpoint Relay”.</p>
 

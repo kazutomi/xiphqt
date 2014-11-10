@@ -246,6 +246,16 @@ a:focus,
 a:active {
 	color: #29495C;
 }
+a.permalink:link,
+a.permalink:visited {
+	text-decoration: none;
+	display: none;
+}
+a.permalink:hover,
+*:hover > a.permalink {
+	display: inline-block;
+	padding-left: .25em;
+}
 
 /* Body */
 body {
@@ -261,7 +271,8 @@ body > *:not(:first-child) {
 }
 
 /* Header */
-header {
+header,
+.header {
 	background-color: #001826;
 	position: relative;
 	margin-bottom: 2em;
@@ -318,7 +329,8 @@ header {
 #xiphbar a:active {
 	color: #FFFFFF;
 }
-header h1 {
+header h1,
+.header h1 {
 	color: #29495C;
 	text-shadow: 1px 1px 0 rgba(0,0,0,0.5);
 	width: 75%;
@@ -326,31 +338,39 @@ header h1 {
 	margin: 0 auto;
 }
 header h1 a:link,
-header h1 a:visited {
+header h1 a:visited,
+.header h1 a:link,
+.header h1 a:visited {
 	color: #FFFFFF;
 	font-weight: bold;
 	text-decoration: none;
 	border-bottom: none;
 }
 header h1 a:hover,
-header h1 a:focus {
+header h1 a:focus, 
+.header h1 a:hover,
+.header h1 a:focus {
 	text-decoration: underline;
 }
-header h1 a:active {
+header h1 a:active,
+.header h1 a:active {
 	color: #29495C;
 }
 
 /* Navigation */
-nav {
+nav,
+.nav {
 	margin: 0 auto;
 	border-top: 2px solid #29495C;
 	border-bottom: 2px solid #29495C;
 }
 nav label,
+.nav label,
 #toggle-nav {
 	display: none;
 }
-nav label:before {
+nav label:before,
+.nav label:before {
 	content: '\2261';
 	color: #29495C;
 	font-size: 4em;
@@ -359,35 +379,45 @@ nav label:before {
 	top: 0.9em;
 	right: 0.5em;
 }
-nav label.nobar:before {
+nav label.nobar:before,
+.nav label.nobar:before {
 	top: 0.4em;
 }
 nav label:hover,
-nav label:hover:before {
+nav label:hover:before,
+.nav label:hover,
+.nav label:hover:before {
 	color: #FFFFFF;
 	cursor: pointer;
 }
 #toggle-nav:checked + ul {
 	display: block;
 }
-nav ul {
+nav ul,
+.nav ul {
 	margin: 0 auto;
 }
 nav ul:before,
-nav ul:after {
+nav ul:after,
+.nav ul:before,
+.nav ul:after {
 	display: table;
 	content: ' ';
 	clear: both;
 }
-nav li {
+nav li,
+.nav li {
 	display: table-cell;
 	width: 1%;
 }
-nav li.on a {
+nav li.on a,
+.nav li.on a {
 	font-weight: bold;
 }
 nav a:link,
-nav a:visited {
+nav a:visited,
+.nav a:link,
+.nav a:visited {
 	background-color: #001826;
 	color: #FFFFFF
 	;letter-spacing: 0.1em;
@@ -401,10 +431,12 @@ nav a:visited {
 	border-bottom: none;
 	position: relative;
 }
-nav li:last-child a {
+nav li:last-child a,
+.nav li:last-child a {
 	border-right: none;
 }
-nav a:after {
+nav a:after,
+.nav a:after {
 	content: '\0020';
 	color: transparent;
 	width: 100%;
@@ -417,26 +449,34 @@ nav a:after {
 	filter: alpha(opacity=0);
 	border: 5px solid #29495C;
 }
-nav a:focus {
+nav a:focus,
+.nav a:focus {
 	color: #29495C;
 }
 nav a:hover:after,
 nav a:active:after,
-nav a:focus:after {
+nav a:focus:after,
+.nav a:hover:after,
+.nav a:active:after,
+.nav a:focus:after {
 	opacity: 1;
 	-ms-filter: none;
 	filter: none;
 }
 
 /* Content */
-section h2 {
+section h2,
+.section h2 {
 	margin-bottom: 1em;
 }
 section > a:link,
-section > a:visited {
+section > a:visited,
+.section > a:link,
+.section > a:visited {
 	color: #29495C;
 }
-section > a:hover {
+section > a:hover,
+.section > a:hover {
 	text-decoration: none;
 }
 .error {
@@ -452,49 +492,63 @@ section > a:hover {
 .error a:hover {
 	text-decoration: none;
 }
-section > article:not(:last-child) {
+section > article:not(:last-child),
+.section > .article:not(:last-child) {
 	margin-bottom: 2em;
 }
-article {
+article,
+.article {
 	background-color: #001826;
 	color: #FFFFFF;
 	padding: 2em;
 }
-article h3 {
+article h3,
+.article h3 {
 	text-shadow: 1px 1px 0 rgba(0,0,0,0.5);
 	margin-bottom: 0.7em;
 	border-bottom: 2px solid #29495C;
 }
 article h4,
-article h5 {
+article h5,
+.article h4,
+.article h5 {
 	margin-top: 2em;
 }
 article h3 + h4,
-article h3 + h5 {
+article h3 + h5,
+.article h3 + h4,
+.article h3 + h5 {
 	margin-top: 0;
 }
-article > *:not(:last-child) {
+article > *:not(:last-child),
+.article > *:not(:last-child) {
 	margin-bottom: 1em;
 }
-article img {
+article img,
+.article img {
 	max-width: 100%;
 }
-article ul {
+article ul,
+.article ul {
 	padding-left: 1em;
 	margin-top: 1em;
 }
-article li > ul {
+article li > ul,
+.article li > ul {
 	margin-top: 0;
 }
-article nav {
+article nav,
+.article .nav {
 	border-right: 2px solid #29495C;
 	border-left: 2px solid #29495C;
 }
-article nav ul {
+article nav ul,
+.article .nav ul {
 	padding: 0;
 	margin-top: 0;
 }
-article aside {
+article aside,
+.article .aside {
 	color: #29495C;
 	text-align: center;
 	letter-spacing: 0.1em;
@@ -504,7 +558,9 @@ article aside {
 	border-top: 2px solid #29495C;
 }
 article aside a:link,
-article aside a:visited {
+article aside a:visited,
+.article .aside a:link,
+.article .aside a:visited {
 	font-weight: bold;
 	text-decoration: none;
 }
@@ -570,12 +626,15 @@ ul.buttons span {
 }
 
 /* Footer */
-footer {
+footer,
+.footer {
 	text-align: center;
 	padding: 2em 0;
 }
 footer a:link,
-footer a:visited {
+footer a:visited,
+.footer a:link,
+.footer a:visited {
 	color: #29495C;
 }
 
@@ -590,18 +649,23 @@ footer a:visited {
 		display: none;
 	}
 	article nav ul:before,
-	nav ul:after {
+	.article .nav ul:before,
+	nav ul:after,
+	.nav ul:after {
 		display: block;
 	}
-	article nav li {
+	article nav li,
+	.article .nav li {
 		display: block;
 		width: auto;
 	}
-	article nav a:after {
+	article nav a:after,
+	.article .nav a:after {
 		border-right: 7px solid #29495C;
 		border-left: 7px solid #29495C;
 	}
-	article nav li:not(:last-child) a {
+	article nav li:not(:last-child) a,
+	.article .nav li:not(:last-child) a {
 		border-right: none;
 		border-bottom: 2px solid #29495C;
 	}
@@ -703,22 +767,30 @@ footer a:visited {
 	.table-flipscroll td:last-child {
 		border-bottom: 2px solid #000E17;
 	}
-	nav {
+	nav,
+	.nav {
 		width: auto;
 	}
 	nav ul:before,
-	nav ul:after {
+	nav ul:after,
+	.nav ul:before,
+	.nav ul:after {
 		display: block;
 	}
-	nav li {
+	nav li,
+	.nav li {
 		display: block;
 		width: auto;
 	}
-	nav a:after {
+	nav a:after,
+	nav a:after,
+	.nav a:after,
+	.nav a:after {
 		border-right: 7px solid #29495C;
 		border-left: 7px solid #29495C;
 	}
-	nav li:not(:last-child) a {
+	nav li:not(:last-child) a,
+	.nav li:not(:last-child) a {
 		border-right: none;
 		border-bottom: 2px solid #29495C;
 	}
@@ -739,35 +811,43 @@ footer a:visited {
 	#xiphbar img {
 		max-width: 100%;
 	}
-	header h1 {
+	header h1,
+	.header h1 {
 		line-height: 1;
 		padding: 1em;
 		width: auto;
 	}
-	header h1 span {
+	header h1 span,
+	.header h1 span {
 		display: none;
 	}
-	header nav label {
+	header nav label,
+	.header nav label {
 		display: block;
 	}
-	header nav ul {
+	header nav ul,
+	.header nav ul {
 		display: none;
 	}
 	section h2,
-	section > p {
+	section > p,
+	.section h2,
+	.section > p {
 		padding: 0 1em;
 	}
 	.error {
 		border-right: none;
 		border-left: none;
 	}
-	article > *:not(:first-child) {
+	article > *:not(:first-child):not(.buttons),
+	.article > *:not(:first-child):not(.buttons) {
 		text-align: justify;
 	}
 	.play {
 		width: 100%;
 	}
-	footer {
+	footer,
+	.footer {
 		padding: 2em;
 	}
 }
@@ -803,23 +883,29 @@ footer a:visited {
 		border: 1px solid #000000;
 	}
 	#xiphbar,
-	nav {
+	nav,
+	.nav {
 		display: none;
 	}
-	header {
+	header,
+	.header {
 		box-shadow: none;
 		margin: 0;
 	}
-	article {
+	article,
+	.article {
 		padding: 0 1em;
 	}
-	article h3 {
+	article h3,
+	.article h3 {
 		border-bottom: none;
 	}
-	article a:after {
+	article a:after,
+	.article a:after {
 		content: ' [' attr(href) ']';
 	}
-	article aside {
+	article aside,
+	.article aside {
 		text-transform: none;
 		padding: 0;
 		margin: 0;
