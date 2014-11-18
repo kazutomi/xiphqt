@@ -29,6 +29,7 @@ implementation with technical performance superior to h.265.
 <li><a href="http://people.xiph.org/~xiphmont/demo/daala/demo3.shtml">Introducing Daala part 3: Time/Frequency Resolution Switching</a>
 <li><a href="http://people.xiph.org/~xiphmont/demo/daala/demo4.shtml">Introducing Daala part 4: Chroma from Luma</a>
 <li><a href="https://people.xiph.org/~jm/daala/paint_demo/">Daala: Painting Images For Fun (and Profit?)</a>
+<li><a href="https://people.xiph.org/~jm/daala/pvq_demo/">Daala: Perceptual Vector Quantization (PVQ)</a>
 </ul>
 
 <a name="source"><h2>Source</h2></a>
