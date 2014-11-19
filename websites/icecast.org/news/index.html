@@ -14,7 +14,7 @@
 
   <body>
 
-    <header>
+    <div class="header">
   
     
     <div id="xiphbar">
@@ -44,7 +44,7 @@
     </div>
   
   <h1><a href="/" title="Home page">Icecast</a> <span>is free server software for streaming multimedia.</span></h1>
-  <nav>
+  <div class="nav">
     <h2 class="hidden">Page navigation</h2>
     <label for="toggle-nav" title="Toggle navigation"></label>
     <input type="checkbox" id="toggle-nav" />
@@ -89,14 +89,65 @@
         
       
     </ul>
-  </nav>
-</header>
+  </div>
+</div>
 
 
-    <section>
+    <div class="section">
       <h2>News Archive</h2>
 
-  <article>
+  <div class="article">
+    <h3>Icecast Release 2.4.1</h3>
+    <p>We are pleased to announce release 2.4.1 of Icecast.
+This is a pure bugfix-only release. Upgrading to it is recommended due to security fixes.
+A summary of the changes is listed below, for details please
+refer to the <a href="http://svn.xiph.org/icecast/tags/icecast-2.4.1/ChangeLog">ChangeLog</a>.  </p>
+
+<h4>Downloads</h4>
+
+<ul>
+  <li>Source: <a href="http://downloads.xiph.org/releases/icecast/icecast-2.4.1.tar.gz">icecast-2.4.1.tar.gz</a></li>
+  <li>Windows <a href="http://downloads.xiph.org/releases/icecast/icecast_win32_2.4.1.zip">icecast_win32_2.4.1.zip</a></li>
+</ul>
+
+<h4>Fixes</h4>
+
+<ul>
+  <li>Fix autogen.sh to work properly on OS X</li>
+  <li>Removed threadpool from the example config (it is long gone and unused)</li>
+  <li>More detailed logging:
+    * Add source IP adress to source start/stop logging
+    * Add mountpoints to some log lines</li>
+  <li>Fix logging to send errors to STDERR prior to opening log files</li>
+  <li>Fix <code>&lt;auth&gt;</code> in default mounts (<code>&lt;mount type="default"&gt;</code>) to work properly</li>
+  <li>Fix the JSON status API (<code>status-json.xsl</code>), which could return invalid JSON in some cases</li>
+  <li>SSL Security improvements:
+    * Disable SSLv3
+    * Disable SSL compression
+    * Updated the default ciphers to be more secure</li>
+  <li>Handle empty strings in config file better</li>
+  <li>Fix logging of client connection duration time on Windows</li>
+  <li>Fix possibly broken XML on Windows</li>
+  <li>Require <code>Content-Type</code> header for PUT requests</li>
+  <li>Fix on-connect and on-disconnect script STDIN/STDOUT/STDERR corruption due to shared file descriptors.</li>
+  <li>Fix JSON access by adding support for global and mount specific <a href="/docs/icecast-2.4.1/config-file.html#global-headers">custom HTTP headers</a></li>
+</ul>
+
+<h4>Known issues</h4>
+
+<ul>
+  <li>HTTP PUT implementation currently doesn’t support chunked encoding yet.</li>
+  <li>HTTP PUT with “Expect: 100-Continue” receives first a “100” and soon after a “200”, instead of the “200” at the end of transmission.</li>
+  <li>Caution should be exercised when using <code>&lt;on-connect&gt;</code> or <code>&lt;on-disconnect&gt;</code>, as there is a small chance of stream file descriptors being mixed up with script file descriptors, if the FD numbers go above 1024. This will be further addressed in the next Icecast release.</li>
+  <li>Don’t use comments inside <code>&lt;http-headers&gt;</code> as it will prevent processing of further <code>&lt;header&gt;</code> tags.</li>
+  <li>Webinterface shows Login when using just <code>stream_auth</code>.</li>
+</ul>
+
+
+    <div class="aside">Posted <strong>Nov 19, 2014</strong> by <strong>ePirat</strong> &mdash; <a href="/news/icecast-release-2_4_1/">Permalink</a></div>
+  </div>
+
+  <div class="article">
     <h3>Icecast Release 2.4.0</h3>
     <p>We are pleased to announce release 2.4.0 of Icecast.
 A summary of the changes is listed below, for details please
@@ -160,10 +211,10 @@ Should make usage in e.g. JSON much easier. Added as new variables to avoid brea
   <li>Webinterface shows Login when using just <code>stream_auth</code>.</li>
 </ul>
 
-    <aside>Posted <strong>May 6, 2014</strong> by <strong>dm8tbr</strong> &mdash; <a href="/news/icecast-release-2_4_0/">Permalink</a></aside>
-  </article>
+    <div class="aside">Posted <strong>May 6, 2014</strong> by <strong>dm8tbr</strong> &mdash; <a href="/news/icecast-release-2_4_0/">Permalink</a></div>
+  </div>
 
-  <article>
+  <div class="article">
     <h3>Icecast Release 2.4-beta5</h3>
     <p>We are pleased to announce a fifth beta release of Icecast.<br />
 A summary of the changes is listed below, for details please
@@ -199,10 +250,10 @@ Reopening <a href="https://trac.xiph.org/ticket/1886">#1886</a>, patch needs rew
 </ul>
 
 
-    <aside>Posted <strong>Mar 1, 2014</strong> by <strong>dm8tbr</strong> &mdash; <a href="/news/icecast-release-2_4-beta5/">Permalink</a></aside>
-  </article>
+    <div class="aside">Posted <strong>Mar 1, 2014</strong> by <strong>dm8tbr</strong> &mdash; <a href="/news/icecast-release-2_4-beta5/">Permalink</a></div>
+  </div>
 
-  <article>
+  <div class="article">
     <h3>Icecast Release 2.4-beta4</h3>
     <p>We are pleased to announce a fourth beta release of Icecast.<br />
 A summary of the changes is listed below, for details please
@@ -240,10 +291,10 @@ if client requests it. We need to adhere to HTTP1.1 here.</li>
 </ul>
 
 
-    <aside>Posted <strong>Jan 23, 2014</strong> by <strong>dm8tbr</strong> &mdash; <a href="/news/icecast-release-2_4-beta4/">Permalink</a></aside>
-  </article>
+    <div class="aside">Posted <strong>Jan 23, 2014</strong> by <strong>dm8tbr</strong> &mdash; <a href="/news/icecast-release-2_4-beta4/">Permalink</a></div>
+  </div>
 
-  <article>
+  <div class="article">
     <h3>Icecast Release 2.4-beta3</h3>
     <p>We are pleased to announce a third beta release of Icecast.<br />
 A summary of the changes is listed below, for details please
@@ -279,10 +330,10 @@ for dynamically generated mounts.</li>
 </ul>
 
 
-    <aside>Posted <strong>Apr 6, 2013</strong> by <strong>dm8tbr</strong> &mdash; <a href="/news/icecast-release-2_4-beta3/">Permalink</a></aside>
-  </article>
+    <div class="aside">Posted <strong>Apr 6, 2013</strong> by <strong>dm8tbr</strong> &mdash; <a href="/news/icecast-release-2_4-beta3/">Permalink</a></div>
+  </div>
 
-  <article>
+  <div class="article">
     <h3>Icecast Release 2.4-beta2</h3>
     <p>We are pleased to announce a second beta release of Icecast.<br />
 A summary of the changes is listed below, for details please
@@ -337,10 +388,10 @@ Ref <a href="http://trac.xiph.org/ticket/1870">#1870</a> and
 </ul>
 
 
-    <aside>Posted <strong>Mar 30, 2013</strong> by <strong>dm8tbr</strong> &mdash; <a href="/news/icecast-release-2_4-beta2/">Permalink</a></aside>
-  </article>
+    <div class="aside">Posted <strong>Mar 30, 2013</strong> by <strong>dm8tbr</strong> &mdash; <a href="/news/icecast-release-2_4-beta2/">Permalink</a></div>
+  </div>
 
-  <article>
+  <div class="article">
     <h3>Ices Release 2.0.2</h3>
     <p>After far a long time the icecast development team has released Ices version 2.0.2.<br />
 Ices is a source client for Icecast streaming media server.
@@ -370,10 +421,10 @@ to icecast for listeners to pick up.</p>
 
 <p>Download Ices 2.0.2 from the <a href="/ices">Ices page</a>.</p>
 
-    <aside>Posted <strong>Aug 6, 2012</strong> by <strong>dm8tbr</strong> &mdash; <a href="/news/ices-release-2_0_2/">Permalink</a></aside>
-  </article>
+    <div class="aside">Posted <strong>Aug 6, 2012</strong> by <strong>dm8tbr</strong> &mdash; <a href="/news/ices-release-2_0_2/">Permalink</a></div>
+  </div>
 
-  <article>
+  <div class="article">
     <h3>Icecast Release 2.4-beta</h3>
     <p>We are pleased to announce a beta release of Icecast. A summary of the changes is listed below.<br />
 Please note that while Opus and WebM are considered production ready, there might be other problems
@@ -404,10 +455,10 @@ in this release. We appreciate feedback and discussion on the icecast-dev <a hre
   </li>
 </ul>
 
-    <aside>Posted <strong>Jul 18, 2012</strong> by <strong>dm8tbr</strong> &mdash; <a href="/news/icecast-release-2_4-beta/">Permalink</a></aside>
-  </article>
+    <div class="aside">Posted <strong>Jul 18, 2012</strong> by <strong>dm8tbr</strong> &mdash; <a href="/news/icecast-release-2_4-beta/">Permalink</a></div>
+  </div>
 
-  <article>
+  <div class="article">
     <h3>Icecast Release 2.3.3</h3>
     <p>We are pleased to announce the next release of Icecast. A summary of the changes are listed below.</p>
 
@@ -455,28 +506,28 @@ As admin requests can come in for a stream (eg metadata update) these requests c
   <li>Documentation updates</li>
 </ul>
 
-    <aside>Posted <strong>Jun 11, 2012</strong> by <strong>dm8tbr</strong> &mdash; <a href="/news/icecast-release-2_3_3/">Permalink</a></aside>
-  </article>
+    <div class="aside">Posted <strong>Jun 11, 2012</strong> by <strong>dm8tbr</strong> &mdash; <a href="/news/icecast-release-2_3_3/">Permalink</a></div>
+  </div>
 
-  <article>
+  <div class="article">
     <h3>libshout Release 2.3.1</h3>
     <p>Added support for Opus, contributed by Greg Maxwell.  </p>
 
 <p>Download libshout 2.3.1 from the <a href="/download">download page</a>.</p>
 
-    <aside>Posted <strong>May 25, 2012</strong> by <strong>dm8tbr</strong> &mdash; <a href="/news/libshout-release-2_3_1/">Permalink</a></aside>
-  </article>
+    <div class="aside">Posted <strong>May 25, 2012</strong> by <strong>dm8tbr</strong> &mdash; <a href="/news/libshout-release-2_3_1/">Permalink</a></div>
+  </div>
 
-  <article>
+  <div class="article">
     <h3>libshout Release 2.3.0</h3>
     <p>Added support for WebM streams, contributed by David Richards.  </p>
 
 <p>Download libshout 2.3.0 from the <a href="/download">download page</a>.</p>
 
-    <aside>Posted <strong>Feb 2, 2012</strong> by <strong>dm8tbr</strong> &mdash; <a href="/news/libshout-release-2_3_0/">Permalink</a></aside>
-  </article>
+    <div class="aside">Posted <strong>Feb 2, 2012</strong> by <strong>dm8tbr</strong> &mdash; <a href="/news/libshout-release-2_3_0/">Permalink</a></div>
+  </div>
 
-  <article>
+  <div class="article">
     <h3>Icecast Release 2.3.2</h3>
     <p>We are pleased to announce the next release of Icecast.
 A summary of the changes are listed below.</p>
@@ -555,10 +606,10 @@ You can still use the hidden setting to prevent that from happening.</li>
   <li>Several resource leaks and race conditions fixed.</li>
 </ul>
 
-    <aside>Posted <strong>Jun 2, 2008</strong> by <strong>karl</strong> &mdash; <a href="/news/icecast-release-2_3_2/">Permalink</a></aside>
-  </article>
+    <div class="aside">Posted <strong>Jun 2, 2008</strong> by <strong>karl</strong> &mdash; <a href="/news/icecast-release-2_3_2/">Permalink</a></div>
+  </div>
 
-  <article>
+  <div class="article">
     <h3>Icecast Release 2.3.1</h3>
     <h4>Downloads</h4>
 
@@ -596,20 +647,20 @@ The order in which username/password are selected is
   <li>Various documentation updates </li>
 </ul>
 
-    <aside>Posted <strong>Nov 30, 2005</strong> by <strong>oddsock</strong> &mdash; <a href="/news/icecast-release-2_3_1/">Permalink</a></aside>
-  </article>
+    <div class="aside">Posted <strong>Nov 30, 2005</strong> by <strong>oddsock</strong> &mdash; <a href="/news/icecast-release-2_3_1/">Permalink</a></div>
+  </div>
 
-  <article>
+  <div class="article">
     <h3>More Load Test Report</h3>
     <p>We’ve done another round of load testing, this time going through a 
 “large number of sources” test as well as a comparison test with Shoutcast.  </p>
 
 <p>All our load testing reports can be found <a href="/loadtest">here</a>.</p>
 
-    <aside>Posted <strong>Nov 14, 2005</strong> by <strong>oddsock</strong> &mdash; <a href="/news/more-load-test-reports/">Permalink</a></aside>
-  </article>
+    <div class="aside">Posted <strong>Nov 14, 2005</strong> by <strong>oddsock</strong> &mdash; <a href="/news/more-load-test-reports/">Permalink</a></div>
+  </div>
 
-  <article>
+  <div class="article">
     <h3>Icecast Release 2.3.0</h3>
     <p>We are pleased to announce the next release of Icecast.</p>
 
@@ -677,10 +728,10 @@ manage a simple subscription-based broadcast. </p>
   <li>avoid small writes to reduce TCP overhead.</li>
 </ul>
 
-    <aside>Posted <strong>Sep 23, 2005</strong> by <strong>oddsock</strong> &mdash; <a href="/news/icecast-release-2_3_0/">Permalink</a></aside>
-  </article>
+    <div class="aside">Posted <strong>Sep 23, 2005</strong> by <strong>oddsock</strong> &mdash; <a href="/news/icecast-release-2_3_0/">Permalink</a></div>
+  </div>
 
-  <article>
+  <div class="article">
     <h3>Load Test Report</h3>
     <p>We’ve done a load test of our soon-to-be released Icecast 2.3 to hopefully answer some
 of the questions that have popped up recently about Icecast’s ability to work in high
@@ -688,10 +739,10 @@ traffic situtations.  </p>
 
 <p>This report can be found <a href="/loadtest">here</a>.</p>
 
-    <aside>Posted <strong>Sep 22, 2005</strong> by <strong>oddsock</strong> &mdash; <a href="/news/load-test-report/">Permalink</a></aside>
-  </article>
+    <div class="aside">Posted <strong>Sep 22, 2005</strong> by <strong>oddsock</strong> &mdash; <a href="/news/load-test-report/">Permalink</a></div>
+  </div>
 
-  <article>
+  <div class="article">
     <h3>Icecast Release 2.2.0</h3>
     <p>On the heels of version 2.1.0, we are releasing 2.2.0 with some new key features.</p>
 
@@ -746,10 +797,10 @@ authentication enabled for a mountpoint, and want to connect a relay to it.</p>
 
 <p>Download Icecast 2.2.0 from the <a href="/download">download page</a>.</p>
 
-    <aside>Posted <strong>Dec 21, 2004</strong> by <strong>oddsock</strong> &mdash; <a href="/news/icecast-release-2_2_0/">Permalink</a></aside>
-  </article>
+    <div class="aside">Posted <strong>Dec 21, 2004</strong> by <strong>oddsock</strong> &mdash; <a href="/news/icecast-release-2_2_0/">Permalink</a></div>
+  </div>
 
-  <article>
+  <div class="article">
     <h3>Icecast Release 2.1.0</h3>
     <p>After about 8 months in development, version 2.1.0 of Icecast has been released.  </p>
 
@@ -789,20 +840,20 @@ a much more stable and failure-resistant implementation.</p>
 
 <p>Download Icecast 2.1.0 from the <a href="/download">download page</a>.</p>
 
-    <aside>Posted <strong>Nov 4, 2004</strong> by <strong>oddsock</strong> &mdash; <a href="/news/icecast-release-2_1_0/">Permalink</a></aside>
-  </article>
+    <div class="aside">Posted <strong>Nov 4, 2004</strong> by <strong>oddsock</strong> &mdash; <a href="/news/icecast-release-2_1_0/">Permalink</a></div>
+  </div>
 
-  <article>
+  <div class="article">
     <h3>Icecast Release 2.0.2</h3>
     <p>This patch release fixes an exploit found by Luigi Auriemma.
 We recommend that all users currently upgrade to this patch release.  </p>
 
 <p>Download Icecast 2.0.2 from the <a href="/download">download page</a>.</p>
 
-    <aside>Posted <strong>Sep 24, 2004</strong> by <strong>oddsock</strong> &mdash; <a href="/news/icecast-release-2_0_2/">Permalink</a></aside>
-  </article>
+    <div class="aside">Posted <strong>Sep 24, 2004</strong> by <strong>oddsock</strong> &mdash; <a href="/news/icecast-release-2_0_2/">Permalink</a></div>
+  </div>
 
-  <article>
+  <div class="article">
     <h3>Icecast Release 2.0.1</h3>
     <p>This patch release fixes a overflow buffer which can cause server crashes under
 certain circumstances. This release contains ONLY the fix for this issue. We are
@@ -811,10 +862,10 @@ near future.  </p>
 
 <p>Download Icecast 2.0.1 from the <a href="/download">download page</a>.</p>
 
-    <aside>Posted <strong>May 12, 2004</strong> by <strong>oddsock</strong> &mdash; <a href="/news/icecast-release-2_0_1/">Permalink</a></aside>
-  </article>
+    <div class="aside">Posted <strong>May 12, 2004</strong> by <strong>oddsock</strong> &mdash; <a href="/news/icecast-release-2_0_1/">Permalink</a></div>
+  </div>
 
-  <article>
+  <div class="article">
     <h3>IceS Release 2.0.0</h3>
     <p>After far too long in development and testing, the icecast development team has
 released Ices version 2.0.0. Ices is a source client for Icecast streaming media
@@ -823,10 +874,10 @@ for streaming to icecast for listeners to pick up.  </p>
 
 <p>Download Ices 2.0.0 from the <a href="/ices">Ices page</a>.</p>
 
-    <aside>Posted <strong>Mar 11, 2004</strong> by <strong>karl</strong> &mdash; <a href="/news/ices-release-2_0_0/">Permalink</a></aside>
-  </article>
+    <div class="aside">Posted <strong>Mar 11, 2004</strong> by <strong>karl</strong> &mdash; <a href="/news/ices-release-2_0_0/">Permalink</a></div>
+  </div>
 
-  <article>
+  <div class="article">
     <h3>Icecast Release 2.0.0</h3>
     <p>After years in development and years in alpha testing, the Icecast development team
 has released version 2.0.0 of its streaming media server. Icecast2 supports Ogg Vorbis
@@ -842,10 +893,10 @@ features just waiting to be implemented.  </p>
 make things easier to access and to get at the information you need faster.
 Please let us know what you think.</p>
 
-    <aside>Posted <strong>Jan 7, 2004</strong> by <strong>oddsock</strong> &mdash; <a href="/news/icecast-release-2_0_0/">Permalink</a></aside>
-  </article>
+    <div class="aside">Posted <strong>Jan 7, 2004</strong> by <strong>oddsock</strong> &mdash; <a href="/news/icecast-release-2_0_0/">Permalink</a></div>
+  </div>
 
-  <article>
+  <div class="article">
     <h3>Broadcasting Contest</h3>
     <p>Well I’ve been thinking about running a contest for a long time now, and here’s the idea: I
 will offer broadcasting space on my machine (which is connected on a very high speed connection)
@@ -856,45 +907,45 @@ offer them space to broadcast from. So anyone out there is eligible for this - a
 who don’t have the ability to broadcast now to apply!
 Email me at <a href="&#109;&#097;&#105;&#108;&#116;&#111;:&#098;&#097;&#114;&#097;&#116;&#104;&#064;&#105;&#099;&#101;&#099;&#097;&#115;&#116;&#046;&#111;&#114;&#103;">&#098;&#097;&#114;&#097;&#116;&#104;&#064;&#105;&#099;&#101;&#099;&#097;&#115;&#116;&#046;&#111;&#114;&#103;</a> or email <a href="team@icecast.org">team@icecast.org</a></p>
 
-    <aside>Posted <strong>Apr 10, 1999</strong> by <strong>Barath Raghavan</strong> &mdash; <a href="/news/broadcasting-contest/">Permalink</a></aside>
-  </article>
+    <div class="aside">Posted <strong>Apr 10, 1999</strong> by <strong>Barath Raghavan</strong> &mdash; <a href="/news/broadcasting-contest/">Permalink</a></div>
+  </div>
 
-  <article>
+  <div class="article">
     <h3>Icecast Release 1.1.4</h3>
     <p>There’s no reason to delay this release, so <a href="http://downloads.xiph.org/releases/icecast/icecast-1.1.4.tar.gz">icecast 1.1.4</a>
 is out the door.
 Read the changelog for more information.</p>
 
-    <aside>Posted <strong>Apr 1, 1999</strong> by <strong>Barath Raghavan</strong> &mdash; <a href="/news/icecast-release-1_1_4/">Permalink</a></aside>
-  </article>
+    <div class="aside">Posted <strong>Apr 1, 1999</strong> by <strong>Barath Raghavan</strong> &mdash; <a href="/news/icecast-release-1_1_4/">Permalink</a></div>
+  </div>
 
-  <article>
+  <div class="article">
     <h3>Hooking up with Green Witch</h3>
     <p>Great news! I have just hooked up with the Green Witch folks so that I can dedicate more time to icecast as well as get it some minor funding while keeping it GPL. icecast will remain GPL and owned by the individuals who have written it.
 Read more at <a href="https://web.archive.org/web/19990508182349/http://www.greenwitch.com/press/ice-4199.html">http://www.greenwitch.com/press/ice-4199.html</a>. </p>
 
-    <aside>Posted <strong>Apr 1, 1999</strong> by <strong>Jack Moffitt</strong> &mdash; <a href="/news/green-witch-hookup/">Permalink</a></aside>
-  </article>
+    <div class="aside">Posted <strong>Apr 1, 1999</strong> by <strong>Jack Moffitt</strong> &mdash; <a href="/news/green-witch-hookup/">Permalink</a></div>
+  </div>
 
-  <article>
+  <div class="article">
     <h3>Article in Entertainment Weekly</h3>
     <p>There is an article in <a href="http://www.ew.com/ew/article/0,,272887,00.html">entertainment weekly</a> about us and shoutcast :)
 Here’s a scanned version of the article <a href="/images/ew-icecast.jpg">here</a></p>
 
-    <aside>Posted <strong>Mar 29, 1999</strong> by <strong>Barath Raghavan</strong> &mdash; <a href="/news/article-in-entertainment-weekly/">Permalink</a></aside>
-  </article>
+    <div class="aside">Posted <strong>Mar 29, 1999</strong> by <strong>Barath Raghavan</strong> &mdash; <a href="/news/article-in-entertainment-weekly/">Permalink</a></div>
+  </div>
 
-  <article>
+  <div class="article">
     <h3>Mixmaster Mike live</h3>
     <p>Just thought I’d let everyone know that Mixmaster Mike himself is on live via icecast.
 Try the <del>56kbps version</del> or the <del>24kbps version</del>.
 Also in attendence are some other famous DJ’s…
 enjoy.</p>
 
-    <aside>Posted <strong>Mar 25, 1999</strong> by <strong>Jack Moffitt</strong> &mdash; <a href="/news/mixmaster-mike-live-via-icecast/">Permalink</a></aside>
-  </article>
+    <div class="aside">Posted <strong>Mar 25, 1999</strong> by <strong>Jack Moffitt</strong> &mdash; <a href="/news/mixmaster-mike-live-via-icecast/">Permalink</a></div>
+  </div>
 
-  <article>
+  <div class="article">
     <h3>SxSW</h3>
     <p>SxSW was awesome. I got to meet a lot of artists and small labels, and I had some really
 interesting conversations with some really interesting people. The <a href="https://web.archive.org/web/19991005001058/http://207.181.249.18/">Green Witch</a> received a
@@ -902,10 +953,10 @@ lot of new content and we broadcasted a lot of it live from the floor.
 In other news, 1.3 is coming along quite nicely, and maybe we’ll have something out there
 for you to yell at us about any day now. :)</p>
 
-    <aside>Posted <strong>Mar 23, 1999</strong> by <strong>Jack Moffitt</strong> &mdash; <a href="/news/SxSW/">Permalink</a></aside>
-  </article>
+    <div class="aside">Posted <strong>Mar 23, 1999</strong> by <strong>Jack Moffitt</strong> &mdash; <a href="/news/SxSW/">Permalink</a></div>
+  </div>
 
-  <article>
+  <div class="article">
     <h3>South by Southwest</h3>
     <p>Right now Jack has finished up a day at <a href="https://web.archive.org/web/19990504185130/http://sxsw.com/">South by Southwest</a>
 in Austin, Texas.
@@ -913,15 +964,15 @@ He’s there presenting with the folks from the <a href="https://web.archive.org
 in sharing booth space with us.
 Hopefully we’ll have some reports back from him soon. </p>
 
-    <aside>Posted <strong>Mar 18, 1999</strong> by <strong>Barath Raghavan</strong> &mdash; <a href="/news/south-by-southwest/">Permalink</a></aside>
-  </article>
+    <div class="aside">Posted <strong>Mar 18, 1999</strong> by <strong>Barath Raghavan</strong> &mdash; <a href="/news/south-by-southwest/">Permalink</a></div>
+  </div>
 
 
-    </section>
+    </div>
 
-    <footer>
+    <div class="footer">
   <p>&copy; 2004-2014 Xiph.Org.<br />All rights reserved.</p>
-</footer>
+</div>
 
   </body>
 </html>

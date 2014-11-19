@@ -14,7 +14,7 @@
 
   <body>
 
-    <header>
+    <div class="header">
   
     
     <div id="xiphbar">
@@ -44,7 +44,7 @@
     </div>
   
   <h1><a href="/" title="Home page">Icecast</a> <span>is free server software for streaming multimedia.</span></h1>
-  <nav>
+  <div class="nav">
     <h2 class="hidden">Page navigation</h2>
     <label for="toggle-nav" title="Toggle navigation"></label>
     <input type="checkbox" id="toggle-nav" />
@@ -89,20 +89,20 @@
         
       
     </ul>
-  </nav>
-</header>
+  </div>
+</div>
 
 
-    <section>
+    <div class="section">
       
       <h2>Icecast 2.3.0 Docs &mdash; Config File</h2>
       
-      <aside class="error">
+      <div class="aside error">
         <strong>Please note:</strong> This doc is for an older Icecast version, you can find the latest doc
         <a href="/docs/icecast-latest">here</a>.
-      </aside>
+      </div>
       
-      <article>
+      <div class="article">
   <h3>Overview</h3>
   <p>This section will describe each section of the config file and is grouped into the following sections:</p>
 
@@ -118,9 +118,9 @@
     <li><a href="#security">Security</a></li>
   </ul>
 
-</article>
+</div>
 
-<article>
+<div class="article">
   <h3 id="limits">Limits</h3>
 
   <div class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="nt">&lt;limits&gt;</span>
@@ -167,9 +167,9 @@ This will have the effect of reducing the startup time for the stream from the p
 this is to quickly fill the pre-buffer used by media players. The default is 64 kbytes which is a typical size used by most clients so changing it is not usually required. This setting applies to all mountpoints.</dd>
   </dl>
 
-</article>
+</div>
 
-<article>
+<div class="article">
   <h3 id="authentication">Authentication</h3>
 
   <div class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="nt">&lt;authentication&gt;</span>
@@ -195,9 +195,9 @@ to relay. The default username is <code>relay</code></dd>
 administration screens, etc. A list of these functions can be found in the “Administration” section of the manual.</dd>
   </dl>
 
-</article>
+</div>
 
-<article>
+<div class="article">
   <h3 id="yp">YP Directory Settings</h3>
 
   <div class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="nt">&lt;directory&gt;</span>
@@ -217,9 +217,9 @@ The recommended value should be sufficient for most directory servers.</dd>
 The value for this setting is provided by the owner of the Directory server.</dd>
   </dl>
 
-</article>
+</div>
 
-<article>
+<div class="article">
   <h3 id="misc">Misc Server Settings</h3>
 
   <div class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="nt">&lt;hostname&gt;</span>localhost<span class="nt">&lt;hostname&gt;</span>
@@ -257,9 +257,9 @@ The value for this setting is provided by the owner of the Directory server.</dd
     <dd>An optional mountpoint to use when shoutcast DSP compatible clients connect. The default is /stream but can be overridden here to use an alternative name which may include an extension that some clients require for certain formats.</dd>
   </dl>
 
-</article>
+</div>
 
-<article>
+<div class="article">
   <h3 id="relay">Relay Settings</h3>
 
   <div class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="nt">&lt;master-server&gt;</span>127.0.0.1<span class="nt">&lt;/master-server&gt;</span>
@@ -374,9 +374,9 @@ this must be <code>/</code>.</dd>
 <code>1</code>: enabled, <code>0</code>: disabled (default is <code>&lt;relays-on-demand&gt;</code>).</dd>
   </dl>
 
-</article>
+</div>
 
-<article>
+<div class="article">
   <h3 id="mountsettings">Mount Specific Settings</h3>
 
   <div class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="nt">&lt;mount&gt;</span>
@@ -514,9 +514,9 @@ The processing of the stream does not wait for the script to end.<br />
 <em>This option is not available on Win32</em></dd>
   </dl>
 
-</article>
+</div>
 
-<article>
+<div class="article">
   <h3 id="path">Path Settings</h3>
 
   <div class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="nt">&lt;paths&gt;</span>
@@ -551,9 +551,9 @@ for the web-based admin interface. The admin directory contained within the icec
 For example: <code>&lt;alias source="/foo" dest="/bar"&gt;</code></dd>
   </dl>
 
-</article>
+</div>
 
-<article>
+<div class="article">
   <h3 id="log">Logging Settings</h3>
 
   <div class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="nt">&lt;logging&gt;</span>
@@ -599,9 +599,9 @@ prevent the filling up of filesystems for people who don’t care (or know) that
     </dd>
   </dl>
 
-</article>
+</div>
 
-<article>
+<div class="article">
   <h3 id="security">Security Settings</h3>
 
   <div class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="nt">&lt;security&gt;</span>
@@ -624,13 +624,13 @@ The chrooted path is specified by the <code>&lt;basedir&gt;</code> configuration
 These need to be valid users on the system.</dd>
   </dl>
 
-</article>
+</div>
 
-    </section>
+    </div>
 
-    <footer>
+    <div class="footer">
   <p>&copy; 2004-2014 Xiph.Org.<br />All rights reserved.</p>
-</footer>
+</div>
 
   </body>
 </html>

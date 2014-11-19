@@ -14,7 +14,7 @@
 
   <body>
 
-    <header>
+    <div class="header">
   
     
     <div id="xiphbar">
@@ -44,7 +44,7 @@
     </div>
   
   <h1><a href="/" title="Home page">Icecast</a> <span>is free server software for streaming multimedia.</span></h1>
-  <nav>
+  <div class="nav">
     <h2 class="hidden">Page navigation</h2>
     <label for="toggle-nav" title="Toggle navigation"></label>
     <input type="checkbox" id="toggle-nav" />
@@ -89,16 +89,21 @@
         
       
     </ul>
-  </nav>
-</header>
+  </div>
+</div>
 
 
-    <section>
+    <div class="section">
       
       <h2>Icecast 2.4.0 Docs &mdash; Basic Setup</h2>
       
+      <div class="aside error">
+        <strong>Please note:</strong> This doc is for an older Icecast version, you can find the latest doc
+        <a href="/docs/icecast-latest">here</a>.
+      </div>
       
-<article>
+      
+<div class="article">
   <h3 id="basic-requirements">Basic Requirements</h3>
   <p>This section will describe the essential requirements in setting up a simple Internet radio station. It is by no means a complete list but should give you enough to get started. Please also note that those are generic instructions. If you installed a Linux/Unix distribution package, then it will likely come with different paths, different means of starting it, etc. In that case please also refer to the documentation of that distribution and or a distribution specific How-To.</p>
 
@@ -107,9 +112,9 @@ The Icecast server will be the place where all listeners of your station will co
 
   <p>It is important to note that not all source clients work with Icecast 2. You will need to check to make sure that Icecast 2 is supported by your chosen source client.</p>
 
-</article>
+</div>
 
-<article>
+<div class="article">
   <h3 id="the-basics">The Basics</h3>
 
   <p>Each Icecast server can house multiple broadcasts (or mountpoints) each containing a separate stream of content. A ‘mountpoint’ is a unique name on your server identifying a particular stream - it looks like a filename, such as ‘/stream.ogg’. A listener can only listen to a single mountpoint at a time. This means you can have a single Icecast server contain either multiple broadcasts with different content, or possibly the same broadcast but with streams of different bitrates or qualities. In this case each broadcast or stream is a separate mountpoint.</p>
@@ -158,14 +163,14 @@ source password - from <code>&lt;source-password&gt;</code>  </p>
   <p>Once you have configured your source client, you should be able to connect it to the Icecast server. Verify that it is connected by hitting the stats.xml URL that was mentioned above.  </p>
 
   <p>Now that you have the source connnected, listening to the stream involves simply opening the appropriate following URL in a browser: <code>http://yourip:port/mounpoint-you-specified</code>. So, for instance, if you attached your source client to an icecast server located at <code>192.0.2.23:8000</code> with a mountpoint of <code>/mystream.ogg</code>, then you would open: <code>http://192.0.2.23:8000/mystream.ogg</code> or <code>http://192.0.2.23:8000/mystream.ogg.m3u</code>. Note that the URL with <code>.m3u</code> extention will serve up a link that opens most media players. Also it is important to note that m3u need not contain only MP3 stream, it can contain streams of arbitrary content-type and is used by Icecast to serve a playlist that represents your broadcast to listening clients. Alternatively you can open up the stream URL directly within your media player (<code>http://192.0.2.23:8000/mystream.ogg</code> in this case)</p>
-</article>
+</div>
 
 
-    </section>
+    </div>
 
-    <footer>
+    <div class="footer">
   <p>&copy; 2004-2014 Xiph.Org.<br />All rights reserved.</p>
-</footer>
+</div>
 
   </body>
 </html>

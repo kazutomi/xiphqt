@@ -14,7 +14,7 @@
 
   <body>
 
-    <header>
+    <div class="header">
   
     
     <div id="xiphbar">
@@ -44,7 +44,7 @@
     </div>
   
   <h1><a href="/" title="Home page">Icecast</a> <span>is free server software for streaming multimedia.</span></h1>
-  <nav>
+  <div class="nav">
     <h2 class="hidden">Page navigation</h2>
     <label for="toggle-nav" title="Toggle navigation"></label>
     <input type="checkbox" id="toggle-nav" />
@@ -89,20 +89,20 @@
         
       
     </ul>
-  </nav>
-</header>
+  </div>
+</div>
 
 
-    <section>
+    <div class="section">
       
       <h2>Icecast 2.3.0 Docs &mdash; YP Directories</h2>
       
-      <aside class="error">
+      <div class="aside error">
         <strong>Please note:</strong> This doc is for an older Icecast version, you can find the latest doc
         <a href="/docs/icecast-latest">here</a>.
-      </aside>
+      </div>
       
-      <article>
+      <div class="article">
   <h3>Overview</h3>
   <p>A YP (Yellow Pages) directory is a listing of broadcast streams. Icecast 2 has it own YP directory located at
 <a href="http://dir.xiph.org">http://dir.xiph.org</a>. Currently Icecast can only be listed in an Icecast-supported YP directory.<br />
@@ -111,9 +111,9 @@ This means that you cannot list your stream in the Shoutcast YP directory.</p>
   <p>In the Icecast configuration file are all the currently available YP directory servers. Listing your stream in a YP is
 a combination of settings in the Icecast configuration file and also in your source client.</p>
 
-</article>
+</div>
 
-<article>
+<div class="article">
   <h3>Configuring Icecast for YP Support</h3>
   <p>First of all, Icecast must have been built with YP support. This is automatically done if you have libcurl installed.
 If libcurl is not detected when icecats is compiled, then YP support is disabled.<br />
@@ -126,22 +126,22 @@ If Icecast has been built with YP support, then the following configuration opti
 
   <p>Multiple directory XML chunks can be specified in order to be listed in multiple directories.</p>
 
-</article>
+</div>
 
-<article>
+<div class="article">
   <h3>Configuring Your Source Client for YP Support</h3>
   <p>This is usually covered in the source client documentation. More specifically, the source client needs to provide
 the HTTP header <code>Ice-Public: 1</code> on connect in order to enable YP listing of the stream.<br />
 If a mountpoint is being listed on a YP, then you will see some additional statistics relating to the YP such as
 <code>last-touch</code>, <code>currently-playing</code>, etc.</p>
 
-</article>
+</div>
 
-    </section>
+    </div>
 
-    <footer>
+    <div class="footer">
   <p>&copy; 2004-2014 Xiph.Org.<br />All rights reserved.</p>
-</footer>
+</div>
 
   </body>
 </html>

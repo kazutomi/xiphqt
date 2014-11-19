@@ -7,6 +7,59 @@
     <atom:link href="http://icecast.org/feed.xml" rel="self" type="application/rss+xml" />
     
       <item>
+        <title>Icecast Release 2.4.1</title>
+        <description>&lt;p&gt;We are pleased to announce release 2.4.1 of Icecast.
+This is a pure bugfix-only release. Upgrading to it is recommended due to security fixes.
+A summary of the changes is listed below, for details please
+refer to the &lt;a href=&quot;http://svn.xiph.org/icecast/tags/icecast-2.4.1/ChangeLog&quot;&gt;ChangeLog&lt;/a&gt;.  &lt;/p&gt;
+
+&lt;h4&gt;Downloads&lt;/h4&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Source: &lt;a href=&quot;http://downloads.xiph.org/releases/icecast/icecast-2.4.1.tar.gz&quot;&gt;icecast-2.4.1.tar.gz&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;Windows &lt;a href=&quot;http://downloads.xiph.org/releases/icecast/icecast_win32_2.4.1.zip&quot;&gt;icecast_win32_2.4.1.zip&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4&gt;Fixes&lt;/h4&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Fix autogen.sh to work properly on OS X&lt;/li&gt;
+  &lt;li&gt;Removed threadpool from the example config (it is long gone and unused)&lt;/li&gt;
+  &lt;li&gt;More detailed logging:
+    * Add source IP adress to source start/stop logging
+    * Add mountpoints to some log lines&lt;/li&gt;
+  &lt;li&gt;Fix logging to send errors to STDERR prior to opening log files&lt;/li&gt;
+  &lt;li&gt;Fix &lt;code&gt;&amp;lt;auth&amp;gt;&lt;/code&gt; in default mounts (&lt;code&gt;&amp;lt;mount type=&quot;default&quot;&amp;gt;&lt;/code&gt;) to work properly&lt;/li&gt;
+  &lt;li&gt;Fix the JSON status API (&lt;code&gt;status-json.xsl&lt;/code&gt;), which could return invalid JSON in some cases&lt;/li&gt;
+  &lt;li&gt;SSL Security improvements:
+    * Disable SSLv3
+    * Disable SSL compression
+    * Updated the default ciphers to be more secure&lt;/li&gt;
+  &lt;li&gt;Handle empty strings in config file better&lt;/li&gt;
+  &lt;li&gt;Fix logging of client connection duration time on Windows&lt;/li&gt;
+  &lt;li&gt;Fix possibly broken XML on Windows&lt;/li&gt;
+  &lt;li&gt;Require &lt;code&gt;Content-Type&lt;/code&gt; header for PUT requests&lt;/li&gt;
+  &lt;li&gt;Fix on-connect and on-disconnect script STDIN/STDOUT/STDERR corruption due to shared file descriptors.&lt;/li&gt;
+  &lt;li&gt;Fix JSON access by adding support for global and mount specific &lt;a href=&quot;/docs/icecast-2.4.1/config-file.html#global-headers&quot;&gt;custom HTTP headers&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4&gt;Known issues&lt;/h4&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;HTTP PUT implementation currently doesn’t support chunked encoding yet.&lt;/li&gt;
+  &lt;li&gt;HTTP PUT with “Expect: 100-Continue” receives first a “100” and soon after a “200”, instead of the “200” at the end of transmission.&lt;/li&gt;
+  &lt;li&gt;Caution should be exercised when using &lt;code&gt;&amp;lt;on-connect&amp;gt;&lt;/code&gt; or &lt;code&gt;&amp;lt;on-disconnect&amp;gt;&lt;/code&gt;, as there is a small chance of stream file descriptors being mixed up with script file descriptors, if the FD numbers go above 1024. This will be further addressed in the next Icecast release.&lt;/li&gt;
+  &lt;li&gt;Don’t use comments inside &lt;code&gt;&amp;lt;http-headers&amp;gt;&lt;/code&gt; as it will prevent processing of further &lt;code&gt;&amp;lt;header&amp;gt;&lt;/code&gt; tags.&lt;/li&gt;
+  &lt;li&gt;Webinterface shows Login when using just &lt;code&gt;stream_auth&lt;/code&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
+</description>
+        <pubDate>Wed, 19 Nov 2014 14:34:23 +0000</pubDate>
+        <link>http://icecast.org/news/icecast-release-2_4_1/</link>
+        <guid isPermaLink="true">http://icecast.org/news/icecast-release-2_4_1/</guid>
+      </item>
+    
+      <item>
         <title>Icecast Release 2.4.0</title>
         <description>&lt;p&gt;We are pleased to announce release 2.4.0 of Icecast.
 A summary of the changes is listed below, for details please
@@ -393,17 +446,6 @@ As admin requests can come in for a stream (eg metadata update) these requests c
         <pubDate>Fri, 25 May 2012 00:00:00 +0000</pubDate>
         <link>http://icecast.org/news/libshout-release-2_3_1/</link>
         <guid isPermaLink="true">http://icecast.org/news/libshout-release-2_3_1/</guid>
-      </item>
-    
-      <item>
-        <title>libshout Release 2.3.0</title>
-        <description>&lt;p&gt;Added support for WebM streams, contributed by David Richards.  &lt;/p&gt;
-
-&lt;p&gt;Download libshout 2.3.0 from the &lt;a href=&quot;/download&quot;&gt;download page&lt;/a&gt;.&lt;/p&gt;
-</description>
-        <pubDate>Thu, 02 Feb 2012 00:00:00 +0000</pubDate>
-        <link>http://icecast.org/news/libshout-release-2_3_0/</link>
-        <guid isPermaLink="true">http://icecast.org/news/libshout-release-2_3_0/</guid>
       </item>
     
   </channel>

@@ -14,7 +14,7 @@
 
   <body>
 
-    <header>
+    <div class="header">
   
     
     <div id="xiphbar">
@@ -44,7 +44,7 @@
     </div>
   
   <h1><a href="/" title="Home page">Icecast</a> <span>is free server software for streaming multimedia.</span></h1>
-  <nav>
+  <div class="nav">
     <h2 class="hidden">Page navigation</h2>
     <label for="toggle-nav" title="Toggle navigation"></label>
     <input type="checkbox" id="toggle-nav" />
@@ -89,15 +89,15 @@
         
       
     </ul>
-  </nav>
-</header>
+  </div>
+</div>
 
 
-    <section>
+    <div class="section">
       
       <h2>IceS 2.0.0 Docs &mdash; Config File</h2>
       
-      <article>
+      <div class="article">
   <p>The ices 2 configuration file is in XML format, which is described in detail below. There are some sample XML files provided in the distribution under the conf directory which show the main way ices is used.  </p>
 
   <ul>
@@ -105,9 +105,9 @@
     <li>playlist audio streaming, takes pre-encoded Ogg Vorbis files and either sends them as-is or re-encodes them to different settings</li>
   </ul>
 
-</article>
+</div>
 
-<article>
+<div class="article">
   <h3>General layout</h3>
 
   <div class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="cp">&lt;?xml version=&quot;1.0&quot;?&gt;</span>
@@ -116,9 +116,9 @@
     stream section
 <span class="nt">&lt;/ices&gt;</span></code></pre></div>
 
-</article>
+</div>
 
-<article>
+<div class="article">
   <h3>General settings</h3>
   <p>These apply to IceS as a whole. The example below gives a useful example to work to</p>
 
@@ -151,9 +151,9 @@
     <dd>State a filename with path to be created at start time. This file will then contain a single number which represents the process id of the running IceS. This process id can then be used to signal the application of certain events.</dd>
   </dl>
 
-</article>
+</div>
 
-<article>
+<div class="article">
   <h3>Stream section</h3>
   <p>This describes how the input and outgoing streams are configured.</p>
 
@@ -261,13 +261,13 @@
     <dd>State the number of channels to use in the encoding. This will either be the number of channels from the input or 1 if downmix is enabled.</dd>
   </dl>
 
-</article>
+</div>
 
-    </section>
+    </div>
 
-    <footer>
+    <div class="footer">
   <p>&copy; 2004-2014 Xiph.Org.<br />All rights reserved.</p>
-</footer>
+</div>
 
   </body>
 </html>

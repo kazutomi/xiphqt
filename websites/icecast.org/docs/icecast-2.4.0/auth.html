@@ -14,7 +14,7 @@
 
   <body>
 
-    <header>
+    <div class="header">
   
     
     <div id="xiphbar">
@@ -44,7 +44,7 @@
     </div>
   
   <h1><a href="/" title="Home page">Icecast</a> <span>is free server software for streaming multimedia.</span></h1>
-  <nav>
+  <div class="nav">
     <h2 class="hidden">Page navigation</h2>
     <label for="toggle-nav" title="Toggle navigation"></label>
     <input type="checkbox" id="toggle-nav" />
@@ -89,16 +89,21 @@
         
       
     </ul>
-  </nav>
-</header>
+  </div>
+</div>
 
 
-    <section>
+    <div class="section">
       
       <h2>Icecast 2.4.0 Docs &mdash; Authentication</h2>
       
+      <div class="aside error">
+        <strong>Please note:</strong> This doc is for an older Icecast version, you can find the latest doc
+        <a href="/docs/icecast-latest">here</a>.
+      </div>
       
-<article>
+      
+<div class="article">
   <h3 id="listener-authentication">Listener Authentication</h3>
   <p>Listener authentication is a feature of Icecast which allows you to secure a certain mountpoint such that in order to listen,
 a listener must pass some verification test. With this feature, a simple pay-for-play operation (eg. user/pass), or some filtering
@@ -117,9 +122,9 @@ that authentication can apply to listeners of source clients or relays.  </p>
   <p>The listener authentication within a specified mount in the icecast XML configuration can apply to either to a stream from a
 source client, relay or a webroot based file. They do apply to intro files or fallback streams.</p>
 
-</article>
+</div>
 
-<article>
+<div class="article">
   <h3 id="htpasswd-listener-authentication">htpasswd Listener Authentication</h3>
   <p>In order to use listener authentication, you <strong>must</strong> configure a mount specific option. This means that you have to provide
 a <code>&lt;mount&gt;</code> section in the main icecast config file. The following is an example:</p>
@@ -177,9 +182,9 @@ username and password.</p>
   <p>This page will serve a m3u with the username and password and in most cases should open the correct media player and begin playing
 your stream.</p>
 
-</article>
+</div>
 
-<article>
+<div class="article">
   <h3 id="url">URL</h3>
 
   <p>Authenticating listeners via the URL method involves Icecast, when a listener connects, issuing requests to a web server
@@ -373,18 +378,18 @@ Those headers are prepended by the value of header_prefix and sent as POST param
     <dd>This is the prefix used for passing client headers. See headers for details.</dd>
   </dl>
 
-</article>
+</div>
 
-<article id="note-player-auth">
+<div class="article" id="note-player-auth">
   <h3 id="a-note-about-players-and-authentication">A note about players and authentication</h3>
   <p>We do not have an exaustive list of players that support listener authentication.<br />
 We use standard HTTP basic authentication, and in general, many media players support this if they support anything at all.
 Winamp and Foobar2000 support HTTP basic authentication on Windows, and XMMS supports it on UNIX platforms. Winamp/XMMS at
 least support the passing of query parameters, other players may also do.</p>
 
-</article>
+</div>
 
-<article id="source-auth">
+<div class="article" id="source-auth">
   <h3 id="source-authentication">Source Authentication</h3>
   <p>Source authentication is a feature of Icecast which allows you to secure a certain mountpoint such that in order to stream to it,
 a source client must pass some verification test. This section will show you the basics of setting up and maintaining this component.<br />
@@ -427,13 +432,13 @@ stream is active. For these <code>admin</code> is set to <code>1</code> in POST 
   <h5 id="example-5">Example</h5>
   <p><code>action=stream_auth&amp;mount=/stream.ogg&amp;ip=192.0.2.0&amp;server=icecast.example.org&amp;port=8000&amp;user=source&amp;pass=password&amp;admin=1</code></p>
 
-</article>
+</div>
 
-    </section>
+    </div>
 
-    <footer>
+    <div class="footer">
   <p>&copy; 2004-2014 Xiph.Org.<br />All rights reserved.</p>
-</footer>
+</div>
 
   </body>
 </html>

@@ -14,7 +14,7 @@
 
   <body>
 
-    <header>
+    <div class="header">
   
     
     <div id="xiphbar">
@@ -44,7 +44,7 @@
     </div>
   
   <h1><a href="/" title="Home page">Icecast</a> <span>is free server software for streaming multimedia.</span></h1>
-  <nav>
+  <div class="nav">
     <h2 class="hidden">Page navigation</h2>
     <label for="toggle-nav" title="Toggle navigation"></label>
     <input type="checkbox" id="toggle-nav" />
@@ -89,23 +89,28 @@
         
       
     </ul>
-  </nav>
-</header>
+  </div>
+</div>
 
 
-    <section>
+    <div class="section">
       
       <h2>Icecast 2.4.0 Docs &mdash; Server Statistics</h2>
       
+      <div class="aside error">
+        <strong>Please note:</strong> This doc is for an older Icecast version, you can find the latest doc
+        <a href="/docs/icecast-latest">here</a>.
+      </div>
       
-<article>
+      
+<div class="article">
   <h3 id="overview">Overview</h3>
   <p>Icecast provides extensive run time statistics. Both in the form of active connection numbers and cumulative
 counters (since server startup or respectively source connection startup).</p>
 
-</article>
+</div>
 
-<article>
+<div class="article">
   <h3 id="xslt">HTML interface, XSLT generated</h3>
 
   <p>Icecast comes with a basic, XHTML web interface. It exposes a basic set of server statistics that should
@@ -114,9 +119,9 @@ information (see section on raw XML data below).<br />
 <strong>We strongly discourage attempts to scrape data from the web interface</strong> as we do not consider this an
 API and will change it, even completely, between versions!<br />
 <strong>The preferred ways are custom XSLT, JSON and raw XML.</strong></p>
-</article>
+</div>
 
-<article>
+<div class="article">
   <h3 id="xslt_advanced">Advanced machine readable data, XSLT generated</h3>
 
   <p>Icecast uses the very powerful libXSLT engine to transform its internal raw statistical data into custom tailored interfaces.
@@ -127,9 +132,9 @@ Many people have written custom XSLT code that produces e.g. plain text “now p
 to not break backwards compatibility of this interface in the future, still we recommend to design robust software that
 can deal with possible changes like addition or removal of variables.</p>
 
-</article>
+</div>
 
-<article>
+<div class="article">
   <h3 id="available_raw_data">Available raw data</h3>
 
   <p>This section contains information about the raw XML server statistics data available inside Icecast. An example
@@ -349,13 +354,13 @@ This field is deprecated and may be removed in a future version, please use <cod
   <p>Additional data can be accessed through the admin interface, as every page of the admin
 interface has an XML equivalent. </p>
 
-</article>
+</div>
 
-    </section>
+    </div>
 
-    <footer>
+    <div class="footer">
   <p>&copy; 2004-2014 Xiph.Org.<br />All rights reserved.</p>
-</footer>
+</div>
 
   </body>
 </html>

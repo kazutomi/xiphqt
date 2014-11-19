@@ -14,7 +14,7 @@
 
   <body>
 
-    <header>
+    <div class="header">
   
     
     <div id="xiphbar">
@@ -44,7 +44,7 @@
     </div>
   
   <h1><a href="/" title="Home page">Icecast</a> <span>is free server software for streaming multimedia.</span></h1>
-  <nav>
+  <div class="nav">
     <h2 class="hidden">Page navigation</h2>
     <label for="toggle-nav" title="Toggle navigation"></label>
     <input type="checkbox" id="toggle-nav" />
@@ -89,15 +89,15 @@
         
       
     </ul>
-  </nav>
-</header>
+  </div>
+</div>
 
 
-    <section>
+    <div class="section">
       
       <h2>IceS 2.0.0 Docs &mdash; Basic Setup</h2>
       
-      <article>
+      <div class="article">
   <h3>What does IceS require?</h3>
   <p>IceS v2 is not a graphical application, it’s purpose is to stream whatever it is given into a stream for feeding to the Icecast streaming server. It does however require the following:</p>
 
@@ -116,17 +116,17 @@
     <li>ALSA. driver and libs available at <a href="http://www.alsa-project.org/">The ALSA site</a></li>
   </ul>
 
-</article>
+</div>
 
-<article>
+<div class="article">
   <h3>What does IceS do?</h3>
   <p>IceS reads audio data from an input and sends the audio data to one or more files or icecast servers. Before it’s actually sent out, some processing maybe performed, typically resampling and/or downmixing to produce streams suited to various bandwidth requirements.  </p>
 
   <p>The streams produced are Ogg Vorbis streams so while icecast 2 is capable of streaming these streams, other streaming servers may not be.</p>
 
-</article>
+</div>
 
-<article>
+<div class="article">
   <h3>What input can IceS handle?</h3>
   <p>Several inputs currently exist, but some maybe dependant on certain platforms or if certain drivers or libraries are available.  </p>
 
@@ -138,21 +138,21 @@
     <li>sun - like OSS, but for Sun Solaris, also works for OpenBSD</li>
   </ul>
 
-</article>
+</div>
 
-<article>
+<div class="article">
   <h3>How do you start IceS?</h3>
   <p>The configuration of IceS is done via an XML based config file. Which you supply as an argument to the program at invocation time. For example:  </p>
 
   <p><code>ices /etc/ices.xml</code></p>
 
-</article>
+</div>
 
-    </section>
+    </div>
 
-    <footer>
+    <div class="footer">
   <p>&copy; 2004-2014 Xiph.Org.<br />All rights reserved.</p>
-</footer>
+</div>
 
   </body>
 </html>

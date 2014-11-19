@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Icecast &ndash; Icecast Release 2.4.1</title>
+	<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<link type="text/plain" rel="author" href="/humans.txt" />
+<link rel="canonical" href="http://icecast.org/news/icecast-release-2_4_1/">
+<!-- CSS -->
+<link rel="stylesheet" type="text/css" href="/assets/css/style.min.css" media="screen, print" />
+
+</head>
+
+  <body>
+
+    <div class="header">
+  
+    
+    <div id="xiphbar">
+      <h3 class="hidden">Projects by Xiph.Org</h3>
+      <div>
+        <a href="http://www.xiph.org/"><img src="/assets/img/xiph-community.svg" alt="the xiph open source community"/></a>
+        <ul>
+          
+            <li><a href="http://www.xiph.org/">Xiph.org</a></li>
+          
+            <li><a href="http://www.opus-codec.org/">Opus</a></li>
+          
+            <li><a href="http://xiph.org/flac/">FLAC</a></li>
+          
+            <li><a href="http://www.icecast.org/">Icecast</a></li>
+          
+            <li><a href="http://www.vorbis.com/">Vorbis</a></li>
+          
+            <li><a href="http://www.theora.org/">Theora</a></li>
+          
+            <li><a href="http://www.speex.org/">Speex</a></li>
+          
+            <li><a href="http://www.xspf.org/">XSPF</a></li>
+          
+        </ul>
+      </div>
+    </div>
+  
+  <h1><a href="/" title="Home page">Icecast</a> <span>is free server software for streaming multimedia.</span></h1>
+  <div class="nav">
+    <h2 class="hidden">Page navigation</h2>
+    <label for="toggle-nav" title="Toggle navigation"></label>
+    <input type="checkbox" id="toggle-nav" />
+    <ul>
+      
+        
+        
+          
+            
+          
+          <li class=""><a href="/docs">Docs</a></li>
+        
+          
+            
+          
+          <li class=""><a href="/download">Download</a></li>
+        
+          
+            
+          
+          <li class=""><a href="/apps">Apps</a></li>
+        
+          
+            
+          
+          <li class=""><a href="/ices">IceS</a></li>
+        
+          
+            
+          
+          <li class=""><a href="http://dir.xiph.org/">Streams</a></li>
+        
+          
+            
+          
+          <li class=""><a href="/svn">Subversion</a></li>
+        
+          
+            
+          
+          <li class=""><a href="/contact">Contact</a></li>
+        
+      
+    </ul>
+  </div>
+</div>
+
+
+    <div class="section">
+      <div class="article">
+	<h3>Icecast Release 2.4.1</h3>
+	<p>We are pleased to announce release 2.4.1 of Icecast.
+This is a pure bugfix-only release. Upgrading to it is recommended due to security fixes.
+A summary of the changes is listed below, for details please
+refer to the <a href="http://svn.xiph.org/icecast/tags/icecast-2.4.1/ChangeLog">ChangeLog</a>.  </p>
+
+<h4>Downloads</h4>
+
+<ul>
+  <li>Source: <a href="http://downloads.xiph.org/releases/icecast/icecast-2.4.1.tar.gz">icecast-2.4.1.tar.gz</a></li>
+  <li>Windows <a href="http://downloads.xiph.org/releases/icecast/icecast_win32_2.4.1.zip">icecast_win32_2.4.1.zip</a></li>
+</ul>
+
+<h4>Fixes</h4>
+
+<ul>
+  <li>Fix autogen.sh to work properly on OS X</li>
+  <li>Removed threadpool from the example config (it is long gone and unused)</li>
+  <li>More detailed logging:
+    * Add source IP adress to source start/stop logging
+    * Add mountpoints to some log lines</li>
+  <li>Fix logging to send errors to STDERR prior to opening log files</li>
+  <li>Fix <code>&lt;auth&gt;</code> in default mounts (<code>&lt;mount type="default"&gt;</code>) to work properly</li>
+  <li>Fix the JSON status API (<code>status-json.xsl</code>), which could return invalid JSON in some cases</li>
+  <li>SSL Security improvements:
+    * Disable SSLv3
+    * Disable SSL compression
+    * Updated the default ciphers to be more secure</li>
+  <li>Handle empty strings in config file better</li>
+  <li>Fix logging of client connection duration time on Windows</li>
+  <li>Fix possibly broken XML on Windows</li>
+  <li>Require <code>Content-Type</code> header for PUT requests</li>
+  <li>Fix on-connect and on-disconnect script STDIN/STDOUT/STDERR corruption due to shared file descriptors.</li>
+  <li>Fix JSON access by adding support for global and mount specific <a href="/docs/icecast-2.4.1/config-file.html#global-headers">custom HTTP headers</a></li>
+</ul>
+
+<h4>Known issues</h4>
+
+<ul>
+  <li>HTTP PUT implementation currently doesn’t support chunked encoding yet.</li>
+  <li>HTTP PUT with “Expect: 100-Continue” receives first a “100” and soon after a “200”, instead of the “200” at the end of transmission.</li>
+  <li>Caution should be exercised when using <code>&lt;on-connect&gt;</code> or <code>&lt;on-disconnect&gt;</code>, as there is a small chance of stream file descriptors being mixed up with script file descriptors, if the FD numbers go above 1024. This will be further addressed in the next Icecast release.</li>
+  <li>Don’t use comments inside <code>&lt;http-headers&gt;</code> as it will prevent processing of further <code>&lt;header&gt;</code> tags.</li>
+  <li>Webinterface shows Login when using just <code>stream_auth</code>.</li>
+</ul>
+
+
+	<div class="aside">Posted <strong>Nov 19, 2014</strong> by <strong>ePirat</strong></div>
+</div>
+<p><a href="/news">Back to index</a></p>
+    </div>
+
+    <div class="footer">
+  <p>&copy; 2004-2014 Xiph.Org.<br />All rights reserved.</p>
+</div>
+
+  </body>
+</html>

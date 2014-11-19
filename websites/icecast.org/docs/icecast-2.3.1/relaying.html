@@ -14,7 +14,7 @@
 
   <body>
 
-    <header>
+    <div class="header">
   
     
     <div id="xiphbar">
@@ -44,7 +44,7 @@
     </div>
   
   <h1><a href="/" title="Home page">Icecast</a> <span>is free server software for streaming multimedia.</span></h1>
-  <nav>
+  <div class="nav">
     <h2 class="hidden">Page navigation</h2>
     <label for="toggle-nav" title="Toggle navigation"></label>
     <input type="checkbox" id="toggle-nav" />
@@ -89,28 +89,28 @@
         
       
     </ul>
-  </nav>
-</header>
+  </div>
+</div>
 
 
-    <section>
+    <div class="section">
       
       <h2>Icecast 2.3.1 Docs &mdash; Relaying</h2>
       
-      <aside class="error">
+      <div class="aside error">
         <strong>Please note:</strong> This doc is for an older Icecast version, you can find the latest doc
         <a href="/docs/icecast-latest">here</a>.
-      </aside>
+      </div>
       
-      <article>
+      <div class="article">
   <h3>Overview</h3>
   <p>Relaying is the process by which one server mirrors one or more streams from a remote server. The servers
 need not be of the same type (i.e. Icecast can relay from Shoutcast). Relaying is used primarily for large
 broadcasts that need to distribute listening clients across multiple physical machines.</p>
 
-</article>
+</div>
 
-<article>
+<div class="article">
   <h3>Type of Relays</h3>
   <p>There are two types of relays that icecast supports.<br />
 The first type is when both master and slave servers are Icecast 2 servers. In this case, a “master-slave” relay
@@ -123,9 +123,9 @@ as well.  </p>
 server IP, port and mount and only the mountpoint specified is relayed. In order to relay a broadcast stream on
 a Shoutcast server, you must use the “single-broadcast” relay and specify a mountpoint of <code>/</code>.</p>
 
-</article>
+</div>
 
-<article>
+<div class="article">
   <h3>Setting Up a Master-Slave Relay</h3>
   <p>In order to setup a relay of this type both servers (the one you wish to relay and the one doing the relaying)
 need to be Icecast 2 servers. The following configuration snippet is used as an example:</p>
@@ -143,9 +143,9 @@ and will begin to relay all mountpoints connected to the master server. Addition
 and if so, the slave server will relay those as well. Note that the names of the mountpoints on the slave server will
 be identical to those on the master server. </p>
 
-</article>
+</div>
 
-<article>
+<div class="article">
   <h3>Setting Up a Single-Broadcast Relay</h3>
   <p>In this case, the master server need not be an Icecast 2 server. Supported master servers for a single-broadcast
 relay are Shoutcast, Icecast 1.x, and of course Icecast 2. The following configuration snippet is used as an example:</p>
@@ -167,13 +167,13 @@ Additionally, if the server is a Shoutcast server, then the <code>&lt;mount&gt;<
 And if you want the Shoutcast relay stream to have metadata contained within it (Shoutcast metadata is embedded
 in the stream itself) then the <code>&lt;relay-shoutcast-metadata&gt;</code> needs to be set to <code>1</code>.</p>
 
-</article>
+</div>
 
-    </section>
+    </div>
 
-    <footer>
+    <div class="footer">
   <p>&copy; 2004-2014 Xiph.Org.<br />All rights reserved.</p>
-</footer>
+</div>
 
   </body>
 </html>

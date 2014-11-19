@@ -14,7 +14,7 @@
 
   <body>
 
-    <header>
+    <div class="header">
   
     
     <div id="xiphbar">
@@ -44,7 +44,7 @@
     </div>
   
   <h1><a href="/" title="Home page">Icecast</a> <span>is free server software for streaming multimedia.</span></h1>
-  <nav>
+  <div class="nav">
     <h2 class="hidden">Page navigation</h2>
     <label for="toggle-nav" title="Toggle navigation"></label>
     <input type="checkbox" id="toggle-nav" />
@@ -89,16 +89,21 @@
         
       
     </ul>
-  </nav>
-</header>
+  </div>
+</div>
 
 
-    <section>
+    <div class="section">
       
       <h2>Icecast 2.4.0 Docs &mdash; Config File</h2>
       
+      <div class="aside error">
+        <strong>Please note:</strong> This doc is for an older Icecast version, you can find the latest doc
+        <a href="/docs/icecast-latest">here</a>.
+      </div>
       
-<article>
+      
+<div class="article">
   <h3 id="overview">Overview</h3>
   <p>This section will describe each section of the config file and is grouped into the following sections:</p>
 
@@ -114,9 +119,9 @@
     <li><a href="#security">Security</a></li>
   </ul>
 
-</article>
+</div>
 
-<article>
+<div class="article">
   <h3 id="a-word-of-warning">A word of warning</h3>
   <p>Please note that, especially for new Icecast users, editing the config file can be quite tricky.
 <strong>It is thus recommended to make a backup of the original config file and then start by just changing all
@@ -135,9 +140,9 @@ don’t use them (e.g. <code>&lt;webroot&gt;&lt;/webroot&gt;</code>).  </p>
 
   <p>Also check the Icecast error.log for additional hints in case of all problems!</p>
 
-</article>
+</div>
 
-<article>
+<div class="article">
   <h3 id="limits">Limits</h3>
 
   <div class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="nt">&lt;limits&gt;</span>
@@ -188,9 +193,9 @@ than your desired burst-size. Failure to do so might result in aborted listener 
 initial burst leading to the connection already exceeding the queue-size limit.</dd>
   </dl>
 
-</article>
+</div>
 
-<article>
+<div class="article">
   <h3 id="authentication">Authentication</h3>
 
   <div class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="nt">&lt;authentication&gt;</span>
@@ -218,9 +223,9 @@ to relay. The default username is <code>relay</code></dd>
 administration screens, etc. A list of these functions can be found in the “Administration” section of the manual.</dd>
   </dl>
 
-</article>
+</div>
 
-<article>
+<div class="article">
   <h3 id="yp">Stream Directory Settings</h3>
 
   <div class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="nt">&lt;directory&gt;</span>
@@ -240,9 +245,9 @@ The recommended value should be sufficient for most directory servers.</dd>
 The value for this setting is provided by the owner of the Directory server.</dd>
   </dl>
 
-</article>
+</div>
 
-<article>
+<div class="article">
   <h3 id="misc">Misc Server Settings</h3>
 
   <h4 id="server-wide-settings">Server wide settings</h4>
@@ -345,9 +350,9 @@ Also, for proper Shoutcast DSP compatibility, you must define a listen socket wi
 of <code>8000</code> and it must not also be defined as <code>shoutcast-compat</code>. See the example config file in the distribution for more info.</dd>
   </dl>
 
-</article>
+</div>
 
-<article>
+<div class="article">
   <h3 id="relay">Relaying Streams</h3>
 
   <p>This section contains the servers relay settings. The relays are implemented using a pull system where the receiving
@@ -449,9 +454,9 @@ but it is up to the remote server on whether it sends any.<br />
 limit bandwidth costs when no one is listening.</dd>
   </dl>
 
-</article>
+</div>
 
-<article>
+<div class="article">
   <h3 id="mountsettings">Mount Specific Settings</h3>
 
   <div class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="nt">&lt;mount</span> <span class="na">type=</span><span class="s">&quot;normal&quot;</span><span class="nt">&gt;</span>
@@ -609,9 +614,9 @@ The processing of the stream does not wait for the script to end.<br />
 <em>This option is not available on Win32</em></dd>
   </dl>
 
-</article>
+</div>
 
-<article>
+<div class="article">
   <h3 id="path">Path Settings</h3>
 
   <div class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="nt">&lt;paths&gt;</span>
@@ -656,9 +661,9 @@ The format of the file is simple, one IP per line.</dd>
 For example: <code>&lt;alias source="/foo" dest="/bar"&gt;</code></dd>
   </dl>
 
-</article>
+</div>
 
-<article>
+<div class="article">
   <h3 id="log">Logging Settings</h3>
 
   <div class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="nt">&lt;logging&gt;</span>
@@ -708,9 +713,9 @@ prevent the filling up of filesystems for people who don’t care (or know) that
     </dd>
   </dl>
 
-</article>
+</div>
 
-<article>
+<div class="article">
   <h3 id="security">Security Settings</h3>
 
   <div class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="nt">&lt;security&gt;</span>
@@ -733,13 +738,13 @@ The chrooted path is specified by the <code>&lt;basedir&gt;</code> configuration
 These need to be valid users on the system.</dd>
   </dl>
 
-</article>
+</div>
 
-    </section>
+    </div>
 
-    <footer>
+    <div class="footer">
   <p>&copy; 2004-2014 Xiph.Org.<br />All rights reserved.</p>
-</footer>
+</div>
 
   </body>
 </html>
