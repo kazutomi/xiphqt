@@ -23,7 +23,7 @@ end-user download links are provided for convenience:
   <li><a href="https://xiph.org/flac/download.html">FLAC</a></li>
   <li><a href="http://www.theora.org/">Theora</a></li>
   <li><a href="http://www.speex.org/downloads/">Speex</a></li>
-  <li><a href="http://www.icecast.org/download.php">Icecast</a></li>
+  <li><a href="http://www.icecast.org/download/">Icecast</a></li>
 </ul>
 
 <p>Also see the <a href="#third_party">Third-Party Downloads</a> below.</p>
