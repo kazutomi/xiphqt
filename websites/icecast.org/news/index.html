@@ -116,15 +116,21 @@ refer to the <a href="http://svn.xiph.org/icecast/tags/icecast-2.4.1/ChangeLog">
   <li>Fix autogen.sh to work properly on OS X</li>
   <li>Removed threadpool from the example config (it is long gone and unused)</li>
   <li>More detailed logging:
-    * Add source IP adress to source start/stop logging
-    * Add mountpoints to some log lines</li>
+    <ul>
+      <li>Add source IP adress to source start/stop logging</li>
+      <li>Add mountpoints to some log lines</li>
+    </ul>
+  </li>
   <li>Fix logging to send errors to STDERR prior to opening log files</li>
   <li>Fix <code>&lt;auth&gt;</code> in default mounts (<code>&lt;mount type="default"&gt;</code>) to work properly</li>
   <li>Fix the JSON status API (<code>status-json.xsl</code>), which could return invalid JSON in some cases</li>
   <li>SSL Security improvements:
-    * Disable SSLv3
-    * Disable SSL compression
-    * Updated the default ciphers to be more secure</li>
+    <ul>
+      <li>Disable SSLv3</li>
+      <li>Disable SSL compression</li>
+      <li>Updated the default ciphers to be more secure</li>
+    </ul>
+  </li>
   <li>Handle empty strings in config file better</li>
   <li>Fix logging of client connection duration time on Windows</li>
   <li>Fix possibly broken XML on Windows</li>
