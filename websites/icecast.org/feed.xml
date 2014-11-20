@@ -45,7 +45,7 @@ refer to the &lt;a href=&quot;http://svn.xiph.org/icecast/tags/icecast-2.4.1/Cha
   &lt;li&gt;Fix logging of client connection duration time on Windows&lt;/li&gt;
   &lt;li&gt;Fix possibly broken XML on Windows&lt;/li&gt;
   &lt;li&gt;Require &lt;code&gt;Content-Type&lt;/code&gt; header for PUT requests&lt;/li&gt;
-  &lt;li&gt;Fix on-connect and on-disconnect script STDIN/STDOUT/STDERR corruption due to shared file descriptors.&lt;/li&gt;
+  &lt;li&gt;Fix on-connect and on-disconnect script STDIN/STDOUT/STDERR corruption due to shared file descriptors. (CVE-2014-9018)&lt;/li&gt;
   &lt;li&gt;Fix JSON access by adding support for global and mount specific &lt;a href=&quot;/docs/icecast-2.4.1/config-file.html#global-headers&quot;&gt;custom HTTP headers&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 
