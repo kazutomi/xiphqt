@@ -1,21 +1,35 @@
 -----BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+Hash: SHA256
 
 md5sums:
 dbeb9fa0f808fc0064e4461e769c184a  flac-1.3.0pre1.tar.xz
 55e16ba84ab102b054d73eddbe77e268  flac-1.3.0pre2.tar.xz
 a65d33e67b75849a6c90b31a865f18ae  flac-1.3.0pre3.tar.xz
 ac950a591e5a0e0cd03d71cf980c4cb8  flac-1.3.0pre4.tar.xz
+8af20333d83a332cffc1da595fdf2629  flac-1.3.1pre1.tar.xz
+71dab07d503ea1ef47ad9aa83f7a8548  flac-1.3.1pre1-win.zip
 
 sha256sums:
 2fa4f97aa4af8b37b1518ca2f8e4864549042686e00efa8d2d2cea7797f19b19  flac-1.3.0pre1.tar.xz
 6362f95f17c1f3099bc1d3e9c2911a4850e7445b57effa095ffe351d5cfbb825  flac-1.3.0pre2.tar.xz
 ec98a43a578c3734c0e99aeba9995830548122513b964121f58dac30516d7fba  flac-1.3.0pre3.tar.xz
 d576807abffb5a75ac34ccd42992b213ff0c769129df0564eac3732eb5fc821e  flac-1.3.0pre4.tar.xz
+f5ea970b4dfe3b9665641af745b139faf71fdfcf0eb0f54e919a9715d72fb781  flac-1.3.1pre1.tar.xz
+e0b268e46d3c37d22db4bcd4649926b22af1df8b7effc6aef701d05afdd7aa50  flac-1.3.1pre1-win.zip
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
+Version: GnuPG v1
 
-iEYEARECAAYFAlF87SYACgkQbKQad0O41shmrgCbBcDNU63wtRS3X8FBATHHNo5f
-Gr4AoKi3zhdgfkEL1k6q7gVGI+b5VJxs
-=wnZQ
+iQIcBAEBCAAGBQJUdDvWAAoJEEXYQ7zIiotI6IgQAKmO8iG2ql7SSMfUOPwi+L6v
+ZhEiAMOZ5bpefyZz9fYyJCu/kQEfDZ+0/oOAF+TYq5n3ur8OWvULecD1fq+U6vHe
+a6B9aYcjamIKWgA9WDK619T2LwJxJOd/5WX21CYXrOUzOj+56NLm8BSe1Ziq3hbi
+YO2G6z0gIhQtZPFP/JDBoKGEf9ffvxo+BxKE0uxipUTaEAGzaiUKDO75llqcrqkn
+G9m3/qRnJ5imb7+6Gt8KWRPjRXaXR33X6DLFW0o13fBTvmQIjaFniN+Mbwo8h5B4
+VRm7dmPF05bik5JODnHBvFDCf1LsmvtBDpFRZg1TAmpegUhpkuuB3G8SBAAeEwyk
+0d5tKjoHDCIQgjpTkaQiwEQP6Vy+JyYGTsgKBzmpHlw261KadRAqG3Lvjlq6+8GK
+/Q8ZPcrK5ypC/YKqwFmzv//ZtWOF2/AnyVKA9A3OmOP0x9//Kj/TQ916QivvNKA4
+LBarRrsxYaDxG5/5CaiqhAJIwEwSbjEEjqr0vdtqkucDgJ8jDu0vesQorQXx9dec
+Tt1h3JgyIeYW5J/DyhxGF8EYln9HpWMMi3zes7nd0pD+oVVIPSfc3CboVbojmRjv
+uuIUhFuVaFOsezXk7kQm0JvwflYaNpkPp38SD/r/LSnXPMPQeoq28e38/c0VVEMC
+Pnzamk1oR4EF4D52ZbIn
+=CEft
 -----END PGP SIGNATURE-----
