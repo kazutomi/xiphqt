@@ -126,7 +126,7 @@ end-user download links are provided for convenience:
 <tr>
 <td>libflac</td>
 <td>1.3.1</td>
-<td><a href="https://svn.xiph.org/releases/flac/flac-1.3.1.tar.xz">flac-1.3.1.tar.xz</a></td>
+<td><a href="http://downloads.xiph.org/releases/flac/flac-1.3.1.tar.xz">flac-1.3.1.tar.xz</a></td>
 <td>920K</td>
 <td>4773c0099dba767d963fd92143263be338c48702172e8754b9bc5103efe1c56c</td>
 </tr>
