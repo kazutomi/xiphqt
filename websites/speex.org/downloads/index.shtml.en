@@ -16,7 +16,7 @@
 <!--  All your page content goes here  -->
 <h1>Downloads</h1>
 <p>
-   The latest development version of Speex is always available through Git by at <a href="http://git.xiph.org/speex.git">http://git.xiph.org/speex.git</a>. 
+   The latest development versions of Speex and SpeexDSP are always available through Git at <a href="http://git.xiph.org/speex.git">http://git.xiph.org/speex.git</a> and <a href="http://git.xiph.org/speexdsp.git">http://git.xiph.org/speexdsp.git</a>, respectively.
 
 	Note that packaging information for Debian can be found on the 
 	<a href="packages/">packages page</a>. In addition, <a href="http://rarewares.hydrogenaudio.org/">RareWares</a>
@@ -28,6 +28,19 @@
 
 
 <h2>Current <strong style='font-style: italic;'>Unstable</strong> Release (recommended)</h2>
+
+<h3 id='one.1.2rc2'>1.2rc2</h3>
+<p>This release splits the speex codec library and the speex DSP library
+into separate source trees. Both projects received build-system improvements,
+bugfixes, and cleanup.  The speex codec's VBR tuning was improved, while the
+speexdsp resampler got some NEON optimizations.</p>
+
+<span>Downloads:</span>
+<ul>
+<li><a href="http://downloads.xiph.org/releases/speex/speex-1.2rc2.tar.gz">Speex Codec Source Code</a></li>
+<li><a href="http://downloads.xiph.org/releases/speex/speexdsp-1.2rc2.tar.gz">Speex DSP Source Code</a></li>
+</ul>
+
 
 <h3 id='one.1.2rc1'>1.2rc1</h3>
 <p>This release adds support for acoustic echo cancellation with multiple 
