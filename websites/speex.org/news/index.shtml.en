@@ -30,6 +30,17 @@
 
 <ul class="descriptivelist">
 	<li>
+		<h3>Speex 1.2rc2 and SpeexDSP 1.2rc2 are out</h3>
+		<p class="submitdate">December 6, 2014</p>
+		<div class="description">
+                <p>This release splits the speex codec library and the speex DSP library
+                   into separate source trees. Both projects received build-system
+                   improvements, bugfixes, and cleanup. The speex codec's VBR tuning was
+                   improved, while the speexdsp resampler got some NEON optimizations.
+                </p>
+		</div>
+	</li>
+	<li>
 		<h3>Speex 1.2rc1 is out</h3>
 		<p class="submitdate">July 23, 2008</p>
 		<div class="description">
