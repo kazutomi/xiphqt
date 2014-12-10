@@ -212,6 +212,80 @@ Macros for small tasks are ok, longer ones should be, when possible, inline func
 <span class="cm"> * an here is even more cool text</span>
 <span class="cm"> */</span></code></pre></div>
 
+  <h4>TAGs for Comments</h4>
+
+  <p>The following tags should be used in comments, when necessary, for easier finding stuff that needs to be reviewed or handled in future release.</p>
+
+  <h5>Actions</h5>
+
+  <ul>
+    <li>REVIEW: Ask for a review of this.</li>
+    <li>REWRITE: Ask for a rewrite of this section.</li>
+    <li>TODO: Ask for implementation of a feature.</li>
+    <li>FIXME: Ask correcting an implementation.</li>
+    <li>REMOVE: Remove a block or feature.</li>
+    <li>DOCUMENT: Documentation for this block or feature is missing, incomplete or wrong and needs update.</li>
+  </ul>
+
+  <h5>Conditions</h5>
+
+  <ul>
+    <li>
+      <table>
+        <tbody>
+          <tr>
+            <td>[BEFORE</td>
+            <td>AFTER</td>
+            <td>IN] RELEASE $version: This is relevant to release $version. $version can also be NEXT.</td>
+          </tr>
+        </tbody>
+      </table>
+    </li>
+    <li>
+      <table>
+        <tbody>
+          <tr>
+            <td>[BEFORE</td>
+            <td>AFTER</td>
+            <td>IN] YEAR $yyyy: This is relevant to (4-digit) year $yyyy</td>
+          </tr>
+        </tbody>
+      </table>
+    </li>
+  </ul>
+
+  <h5>Extra Tags</h5>
+
+  <ul>
+    <li>IMPORTANT: This is an important problem.</li>
+    <li>SECURITY: This is security critical.</li>
+    <li>LEAK: This leaks some resource (memory, file descriptors, …)</li>
+  </ul>
+
+  <h5>Syntax</h5>
+
+  <div class="highlight"><pre><code class="language-c" data-lang="c"><span class="cm">/* [CONDITION[ CONDITION[...]]] [EXTRA TAGS] ACTION [#TICKET]: DESCRIPTION</span>
+<span class="cm"> * [LONG DESCRIPTION]</span>
+<span class="cm"> */</span></code></pre></div>
+
+  <h5>Examples</h5>
+
+  <div class="highlight"><pre><code class="language-c" data-lang="c"><span class="cm">/* BEFORE RELEASE 2.5.3 REVIEW #1234: Should we convert A to B?</span>
+<span class="cm"> * A is according to standard REF0. This standard was superseded by</span>
+<span class="cm"> * standard REF1 which could be implemented with option B.</span>
+<span class="cm"> * This may break early clients of standard REF0 not being aware of SOMETHING.</span>
+<span class="cm"> */</span></code></pre></div>
+
+  <div class="highlight"><pre><code class="language-c" data-lang="c"><span class="cm">/* IN YEAR 2022 REWRITE: Change copyright statement as license expires. */</span></code></pre></div>
+
+  <div class="highlight"><pre><code class="language-c" data-lang="c"><span class="cm">/* LEAK FIXME #1234: Fix case object can not be added to queue. */</span></code></pre></div>
+
+  <div class="highlight"><pre><code class="language-c" data-lang="c"><span class="cm">/* BEFORE RELEASE NEXT IMPORTANT SECURITY FIXME #1234: Do not expose passwords</span>
+<span class="cm"> * on authentication failure of backend server</span>
+<span class="cm"> */</span></code></pre></div>
+
+  <div class="highlight"><pre><code class="language-c" data-lang="c"><span class="cm">/* AFTER RELEASE 2.5.3 REMOVE: Remove support for Icecast 1.x style SOURCE requests */</span></code></pre></div>
+
 </div>
 
     </div>
