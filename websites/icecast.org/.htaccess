@@ -1,0 +1,26 @@
+Redirect seeother /svn /download/
+Redirect seeother /mailinglist.php /contact/
+Redirect seeother /svn.php /download/
+
+Redirect permanent /3rdparty.php /apps/
+Redirect permanent /community.php /contact/
+Redirect permanent /contact.php /contact/
+Redirect permanent /docs.php /docs/
+Redirect permanent /download.php /download/
+Redirect permanent /ezstream.php /ezstream/
+Redirect permanent /faq.php /faq/
+Redirect permanent /ices.php /ices/
+Redirect permanent /index.php /index.html
+Redirect permanent /loadtest.php /loadtest/
+Redirect permanent /loadtest1.php /loadtest/1/
+Redirect permanent /loadtest2.php /loadtest/2/
+Redirect permanent /loadtest3.php /loadtest/3/
+Redirect permanent /docs/icecast-latest /docs/latest/
+Redirect permanent /docs/ices-latest/ /ices/docs/latest/
+
+# Add this when YP Specs are ready
+# Redirect permanent /spec.php /cake
+
+# Docs redirects, adjust these for new versions
+Redirect temp /docs/latest /docs/icecast-2.4.1/
+Redirect temp /ices/docs/latest/ /ices/docs/ices-2.0.2/

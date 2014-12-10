@@ -80,7 +80,7 @@
           
             
           
-          <li class=""><a href="/svn">Subversion</a></li>
+          <li class=""><a href="/contribute">Contributing</a></li>
         
           
             
@@ -146,6 +146,24 @@ that can be added to the distro package manager.</li>
   <h4>Source Clients</h4>
   <p>In addition to Icecast, you will most likely need to download a source client for creating the actual stream.
 We suggest that you download one from our <a href="/apps">third-party applications</a> page.</p>
+</div>
+
+<div class="article" id="git">
+  <h3>Clone Git Repository</h3>
+
+  <p>Additionally to the release tarballs we have a <a href="https://git.xiph.org/?p=icecast-server.git;a=summary">public git repository</a> where we do our development, that anyone can clone.</p>
+
+  <p>To get the latest development state:</p>
+
+  <div class="highlight"><pre><code class="language-sh" data-lang="sh">git clone --recursive https://git.xiph.org/icecast-server.git</code></pre></div>
+
+  <p>If your git version does not support <code>--recursive</code> clones, do</p>
+
+  <div class="highlight"><pre><code class="language-sh" data-lang="sh">git clone https://git.xiph.org/icecast-server.git
+<span class="nb">cd </span>icecast-server
+git submodule update --init</code></pre></div>
+
+  <p>For further instruction, see our Wiki page: <a href="https://wiki.xiph.org/Icecast/Git_workflow">Icecast Git Workflow</a></p>
 </div>
 
 <div class="article" id="bindings">
