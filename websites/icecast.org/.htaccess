@@ -22,5 +22,5 @@ Redirect permanent /docs/ices-latest /ices/docs/latest
 # Redirect permanent /spec.php /cake
 
 # Docs redirects, adjust these for new versions
-Alias /docs/latest ./docs/icecast-2.4.1
-Alias /ices/docs/latest ./ices/docs/ices-2.0.2
+Redirect temp /docs/latest ./docs/icecast-2.4.1
+Redirect temp /ices/docs/latest ./ices/docs/ices-2.0.2
