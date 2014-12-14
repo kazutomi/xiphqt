@@ -97,14 +97,37 @@
       <h2>Contributing</h2>
 <div class="article">
 
-  <h3>C Coding Style</h3>
+  <h3 class="no_toc" id="c-coding-style">C Coding Style</h3>
   <p>Proposal for Icecast</p>
 
-  <h4>Formatting</h4>
+  <h4 class="no_toc" id="contents">Contents</h4>
+
+<ul id="markdown-toc">
+  <li><a href="#formatting">Formatting</a>    <ul>
+      <li><a href="#brace-placement">Brace Placement</a></li>
+      <li><a href="#if-then-else-formatting">If Then Else Formatting</a></li>
+      <li><a href="#switch-formatting">switch Formatting</a></li>
+      <li><a href="#section">?:</a></li>
+      <li><a href="#functions">Functions</a></li>
+    </ul>
+  </li>
+  <li><a href="#macros-and-inline-functions">Macros and inline functions</a></li>
+  <li><a href="#comments">Comments</a></li>
+  <li><a href="#tags-for-comments">TAGs for Comments</a>    <ul>
+      <li><a href="#actions">Actions</a></li>
+      <li><a href="#conditions">Conditions</a></li>
+      <li><a href="#extra-tags">Extra Tags</a></li>
+      <li><a href="#syntax">Syntax</a></li>
+      <li><a href="#examples">Examples</a></li>
+    </ul>
+  </li>
+</ul>
+
+  <h4 id="formatting">Formatting</h4>
   <p>Indent with (4) spaces, no tabs.<br />
 A Line Should Not Exceed 80 Characters.</p>
 
-  <h5>Brace Placement</h5>
+  <h5 id="brace-placement">Brace Placement</h5>
   <p>All <code>if</code>, <code>while</code>, <code>for</code> and <code>do</code> statements should either have braces or be on a single line.
 Do not put parens next to keywords. Put a space between.</p>
 
@@ -127,7 +150,7 @@ if it helps readability:</p>
 
   <p>(Should be used only where it really makes sense and stays readable)</p>
 
-  <h5>If Then Else Formatting</h5>
+  <h5 id="if-then-else-formatting">If Then Else Formatting</h5>
 
   <p>Recommended way:</p>
 
@@ -139,7 +162,7 @@ if it helps readability:</p>
     <span class="cm">/* code */</span>
 <span class="p">}</span></code></pre></div>
 
-  <h5>switch Formatting</h5>
+  <h5 id="switch-formatting">switch Formatting</h5>
   <p>Falling through a case statement into the next case statement shall be permitted as long as a comment is included.</p>
 
   <div class="highlight"><pre><code class="language-c" data-lang="c"><span class="k">switch</span> <span class="p">(</span><span class="n">something</span><span class="p">)</span> <span class="p">{</span>
@@ -157,7 +180,7 @@ if it helps readability:</p>
     <span class="k">break</span><span class="p">;</span>
 <span class="p">}</span></code></pre></div>
 
-  <h5>?:</h5>
+  <h5 id="section">?:</h5>
 
   <div class="highlight"><pre><code class="language-c" data-lang="c"><span class="p">(</span><span class="n">condition</span><span class="p">)</span> <span class="o">?</span> <span class="n">funct1</span><span class="p">()</span> <span class="o">:</span> <span class="n">func2</span><span class="p">();</span></code></pre></div>
 
@@ -167,7 +190,7 @@ if it helps readability:</p>
     <span class="o">?</span> <span class="kt">long</span> <span class="nl">statement</span>
     <span class="p">:</span> <span class="n">another</span> <span class="kt">long</span> <span class="n">statement</span><span class="p">;</span></code></pre></div>
 
-  <h5>Functions</h5>
+  <h5 id="functions">Functions</h5>
   <p>Functions should limit themselves to a single page of code.
 Unlike conditions, functions should have the curly brace on a newline.
 No whitespace between function name and brace.</p>
@@ -185,7 +208,7 @@ No whitespace between function name and brace.</p>
     <span class="cm">/* code */</span>
 <span class="p">}</span></code></pre></div>
 
-  <h4>Macros and inline functions</h4>
+  <h4 id="macros-and-inline-functions">Macros and inline functions</h4>
   <p>Don’t change syntax via macro substitution.
 Macros for small tasks are ok, longer ones should be, when possible, inline functions</p>
 
@@ -198,7 +221,7 @@ Macros for small tasks are ok, longer ones should be, when possible, inline func
 
   <div class="highlight"><pre><code class="language-c" data-lang="c"><span class="cp">#define ADD(x,y) ((x) + (y))</span></code></pre></div>
 
-  <h4>Comments</h4>
+  <h4 id="comments">Comments</h4>
   <p>For comments, <code>//</code> should never be used but instead <code>/* comment here */</code>.  </p>
 
   <p>If the comment is about what a special if case does, it should be on the next line:</p>
@@ -212,11 +235,11 @@ Macros for small tasks are ok, longer ones should be, when possible, inline func
 <span class="cm"> * an here is even more cool text</span>
 <span class="cm"> */</span></code></pre></div>
 
-  <h4>TAGs for Comments</h4>
+  <h4 id="tags-for-comments">TAGs for Comments</h4>
 
   <p>The following tags should be used in comments, when necessary, for easier finding stuff that needs to be reviewed or handled in future release.</p>
 
-  <h5>Actions</h5>
+  <h5 id="actions">Actions</h5>
 
   <ul>
     <li>REVIEW: Ask for a review of this.</li>
@@ -227,14 +250,14 @@ Macros for small tasks are ok, longer ones should be, when possible, inline func
     <li>DOCUMENT: Documentation for this block or feature is missing, incomplete or wrong and needs update.</li>
   </ul>
 
-  <h5>Conditions</h5>
+  <h5 id="conditions">Conditions</h5>
 
   <ul>
     <li>[BEFORE|AFTER|IN] RELEASE $version: This is relevant to release $version. $version can also be NEXT.</li>
     <li>[BEFORE|AFTER|IN] YEAR $yyyy: This is relevant to (4-digit) year $yyyy</li>
   </ul>
 
-  <h5>Extra Tags</h5>
+  <h5 id="extra-tags">Extra Tags</h5>
 
   <ul>
     <li>IMPORTANT: This is an important problem.</li>
@@ -242,13 +265,13 @@ Macros for small tasks are ok, longer ones should be, when possible, inline func
     <li>LEAK: This leaks some resource (memory, file descriptors, …)</li>
   </ul>
 
-  <h5>Syntax</h5>
+  <h5 id="syntax">Syntax</h5>
 
   <div class="highlight"><pre><code class="language-c" data-lang="c"><span class="cm">/* [CONDITION[ CONDITION[...]]] [EXTRA TAGS] ACTION [#TICKET]: DESCRIPTION</span>
 <span class="cm"> * [LONG DESCRIPTION]</span>
 <span class="cm"> */</span></code></pre></div>
 
-  <h5>Examples</h5>
+  <h5 id="examples">Examples</h5>
 
   <div class="highlight"><pre><code class="language-c" data-lang="c"><span class="cm">/* BEFORE RELEASE 2.5.3 REVIEW #1234: Should we convert A to B?</span>
 <span class="cm"> * A is according to standard REF0. This standard was superseded by</span>
