@@ -146,6 +146,11 @@ switch ($_REQUEST['action'])
                 preg_match('/^(lazaradio\.hu|ice\.mwsc\.tmt\.de|host504\.com|bristol\.railroadradio\.net|www\.kolombiaestereo\.com|radiowanderbuehne\.org|live\.raincitystream\.com|roubaix\.fr\.shinsen-radio\.com)$/', $url['host'])
                 || preg_match('/^(lepesradio\.hu|laradiohd\.com|s-radio\.whyza\.net|213\.240\.254\.147|radio\.adrenalin\.fm|99\.93\.26\.131)$/', $url['host'])
                 || preg_match('/^(delux-streams\.eu|radio\.status\.ks\.ua|campus\.longmusic\.com|stream1\.getradio\.ru)$/', $url['host'])
+                || preg_match('/^(servercristianonetwork\.com|haiku\.it\.su\.se|floodkik\.no-ip\.org|anytime-fm\.i1234\.me)$/', $url['host'])
+                || preg_match('/^(108\.46\.109\.251|laveteranacentro\.com|prosoftnetwork\.com|radioonce\.mx|carter\.sgc-univ\.net)$/', $url['host'])
+                || preg_match('/^(se-lkr2\.stream\.sevenbroadcasting\.se|tv7n\.com|ohmbrew\.com|latinafm\.com\.ve|streamcenter.pro)$/', $url['host'])
+                || preg_match('/^(radioutopia\.ondametadona\.net|www\.sentimientosradio\.com|magictodayradio\.net|radiohd\.com\.ve)$/', $url['host'])
+                || preg_match('/^(mfa05\.mfa\.go\.th|www\.radiompt\.com\.br)$/', $url['host'])
                )
             {
                 throw new ServerRefusedAPIException('Illegal listen_url. Incorrect <hostname> fails stream check and was blacklisted. Contact webmaster@icecast.org after correcting it on your side.', SERVER_REFUSED_BLACKLIST_URL, $listen_url);
