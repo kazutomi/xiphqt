@@ -112,9 +112,15 @@ switch ($_REQUEST['action'])
                 throw new ServerRefusedAPIException('Could not parse listen_url.', SERVER_REFUSED_PARSE_ERROR, $listen_url);
             }
 
-            if ( preg_match('/^dev.local$/', $url['host']))
+            if ( preg_match('/^(dev\.local|testvm\.hivane\.net)$/', $url['host']))
             {
                 throw new ServerRefusedAPIException('Illegal listen_url. Don\'t test against a production server, thanks! ', SERVER_REFUSED_ILLEGAL_URL, $listen_url);
+            }
+// Abusers:
+// WFKU - banned for spam
+            if ( preg_match('/^(92\.246\.30\.112)$/', $url['host']))
+            {
+                throw new ServerRefusedAPIException('Your server has been banned for abuse, have a nice day! ', SERVER_REFUSED_ILLEGAL_URL, $listen_url);
             }
 // Refuse all default stream names
 //                || (preg_match('/^$/', $stream_name)
@@ -150,7 +156,12 @@ switch ($_REQUEST['action'])
                 || preg_match('/^(108\.46\.109\.251|laveteranacentro\.com|prosoftnetwork\.com|radioonce\.mx|carter\.sgc-univ\.net)$/', $url['host'])
                 || preg_match('/^(se-lkr2\.stream\.sevenbroadcasting\.se|tv7n\.com|ohmbrew\.com|latinafm\.com\.ve|streamcenter.pro)$/', $url['host'])
                 || preg_match('/^(radioutopia\.ondametadona\.net|www\.sentimientosradio\.com|magictodayradio\.net|radiohd\.com\.ve)$/', $url['host'])
-                || preg_match('/^(mfa05\.mfa\.go\.th|www\.radiompt\.com\.br)$/', $url['host'])
+                || preg_match('/^(mfa05\.mfa\.go\.th|www\.radiompt\.com\.br|stream\.pick-nik\.ru|stream\.ufostation\.ru|salomefm\.com)$/', $url['host'])
+                || preg_match('/^(str0\.zenon-media\.com|livehost\.com\.br|radio\.sfa\.fathi\.eu\.org|belfast\.fm|localhost\.com|ix\.clpw\.ru)$/', $url['host'])
+                || preg_match('/^(truecolorsradio\.com|misionera.org\.ve|thevibefmstlucia\.net|www\.radiounivo\.com|66\.135\.42\.116)$/', $url['host'])
+                || preg_match('/^(laperladeltuy\.com\.ve|i-stereo\.ru|topeslaradio\.net|apollo21\.cdnstream\.com|educativa105\.org)$/', $url['host'])
+                || preg_match('/^(www\.Meghedi\.com|live\.ultra-byte\.ro|vps\.ds106rad\.io|streaming\.rtz\.rs|streaming\.radioparacin\.rs)$/', $url['host'])
+                || preg_match('/^(netradiofm\.com|195\.24\.224\.77|vaststream\.com|www\.radio8\.de)$/', $url['host'])
                )
             {
                 throw new ServerRefusedAPIException('Illegal listen_url. Incorrect <hostname> fails stream check and was blacklisted. Contact webmaster@icecast.org after correcting it on your side.', SERVER_REFUSED_BLACKLIST_URL, $listen_url);
@@ -366,7 +377,7 @@ switch ($_REQUEST['action'])
 		{
 		    // Return failure
 		    header("YPResponse: 0");
-		    header("YPMessage: SID does not exist. Check your firewall, your server may be unreachable from outside.");
+		    header("YPMessage: SID does not exist. Check your firewall and icecast 'hostname' setting, your server may be unreachable.");
 		    
             // Log stuff
             APILog::request(REQUEST_TOUCH, false, null, null, null);
