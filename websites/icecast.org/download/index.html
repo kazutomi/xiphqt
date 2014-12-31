@@ -99,14 +99,14 @@
   <h3>Icecast Current Release (2.4.1)</h3>
 
   <p>The latest Icecast release can be downloaded below. For Windows there is a binary release in an installer, for Linux/UNIX
-there is the source package.</p>
+we provide the sources.</p>
 
   <ul class="buttons">
   
   <li>
     <a class="linux" href="http://downloads.xiph.org/releases/icecast/icecast-2.4.1.tar.gz">Icecast for Linux/Unix</a>
     <span>
-      <em>.TAR.GZ (2.3 MB)</em>, Source Package
+      <em>.tar.gz (2.3 MB)</em>, Source Tarball
     </span>
   </li>
   
@@ -114,7 +114,7 @@ there is the source package.</p>
   <li>
     <a class="windows" href="http://downloads.xiph.org/releases/icecast/icecast_win32_2.4.1.exe">Icecast for Windows</a>
     <span>
-      <em>.exe (5.0 MB)</em>, Installer
+      <em>.exe (5.0 MB)</em>, Binary Installer
     </span>
   </li>
   
@@ -130,14 +130,15 @@ there is the source package.</p>
 This is the preferred way to install Icecast, as distribution packaging is tuned to make Icecast fit well into your system. In most cases packaging will also provide necessary scripts/files to make Icecast start as a service on boot.<br />
 For details please refer to the package repository section of your distribution’s fine manual.  </p>
 
-  <p>Hints that you might find useful:</p>
+  <h5>Official packages of current Icecast</h5>
 
   <ul>
-    <li>Thomas provides official Icecast builds, packaged for various distributions, using his
+    <li>Thomas provides official builds of latest Icecast, packaged for various distributions, using his
 <a href="https://build.opensuse.org/package/show/home:dm8tbr/icecast">OBS project</a> for Icecast.</li>
     <li>There are <a href="http://download.opensuse.org/repositories/home:/dm8tbr/">package repositories</a>
-that can be added to the distro package manager.</li>
+that can be added to the distro package manager. You can think of it as a “PPA” or whatever your distro calls this.</li>
     <li>Debian and its derivatives (e.g. Ubuntu) name the package <code>icecast2</code>.</li>
+    <li>Packages are built with openSSL enabled, to ease setting up HTTPS streaming/access.</li>
   </ul>
 
   <h4>Older Releases</h4>

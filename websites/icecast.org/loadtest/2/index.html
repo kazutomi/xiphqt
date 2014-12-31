@@ -140,7 +140,7 @@ and added a new script for creating source clients.  </p>
  
 <span class="nb">echo</span> &gt; out
 <span class="nv">count</span><span class="o">=</span>1
-<span class="k">while</span> <span class="o">[</span> <span class="s2">&quot;$count&quot;</span> -le <span class="s2">&quot;$max&quot;</span> <span class="o">]</span>
+<span class="k">while</span> <span class="o">[</span> <span class="s2">&quot;</span><span class="nv">$count</span><span class="s2">&quot;</span> -le <span class="s2">&quot;</span><span class="nv">$max</span><span class="s2">&quot;</span> <span class="o">]</span>
 <span class="k">do</span>
    ezstream -c conf/ezstream_mp3_<span class="nv">$count</span>.xml &gt;&gt; out <span class="p">&amp;</span>
    ezstream -c conf/ezstream_vorbis_<span class="nv">$count</span>.xml &gt;&gt; out <span class="p">&amp;</span>
@@ -157,7 +157,7 @@ and added a new script for creating source clients.  </p>
    ezstream -c conf/ezstream_mp3_<span class="nv">$count</span>.xml &gt;&gt; out <span class="p">&amp;</span>
    ezstream -c conf/ezstream_vorbis_<span class="nv">$count</span>.xml &gt;&gt; out <span class="p">&amp;</span>
    <span class="nb">let </span><span class="nv">count</span><span class="o">=</span><span class="nv">$count</span>+1
-   <span class="o">[</span> <span class="s2">&quot;$delay&quot;</span> !<span class="o">=</span> <span class="s2">&quot;&quot;</span> <span class="o">]</span> <span class="o">&amp;&amp;</span> sleep <span class="nv">$delay</span>
+   <span class="o">[</span> <span class="s2">&quot;</span><span class="nv">$delay</span><span class="s2">&quot;</span> !<span class="o">=</span> <span class="s2">&quot;&quot;</span> <span class="o">]</span> <span class="o">&amp;&amp;</span> sleep <span class="nv">$delay</span>
 <span class="k">done</span>
 <span class="nb">wait</span>
 <span class="nb">echo</span> <span class="s2">&quot;done&quot;</span></code></pre></div>
