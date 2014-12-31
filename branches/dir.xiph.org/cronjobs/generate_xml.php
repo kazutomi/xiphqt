@@ -3,7 +3,7 @@
 // Inclusions
 include_once(dirname(__FILE__).'/../inc/prepend.php');
 
-ini_set('memory_limit', '128M');
+ini_set('memory_limit', '192M');
 
 define('XML_OUTPUT', dirname(__FILE__).'/../xml/yp.xml');
 
