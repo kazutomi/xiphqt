@@ -30,6 +30,17 @@
 
 <ul class="descriptivelist">
 	<li>
+		<h3>SpeexDSP 1.2rc3 is out</h3>
+		<p class="submitdate">January 3, 2015</p>
+		<div class="description">
+                <p>This brown-paper-bag release adds two headers that should
+                   have been included with SpeexDSP 1.2rc2. These are needed
+                   to build the resampler with NEON optimizations and to build
+                   SpeexDSP without the Speex codec library.
+                </p>
+		</div>
+	</li>
+	<li>
 		<h3>Speex 1.2rc2 and SpeexDSP 1.2rc2 are out</h3>
 		<p class="submitdate">December 6, 2014</p>
 		<div class="description">

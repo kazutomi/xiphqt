@@ -29,7 +29,20 @@
 
 <h2>Current <strong style='font-style: italic;'>Unstable</strong> Release (recommended)</h2>
 
-<h3 id='one.1.2rc2'>1.2rc2</h3>
+<h3 id='one.1.2rc3'>SpeexDSP 1.2rc3</h3>
+    <p>This brown-paper-bag release adds two headers that should
+       have been included with SpeexDSP 1.2rc2. These are needed
+       to build the resampler with NEON optimizations and to build
+       SpeexDSP without the Speex codec library.
+    </p>
+
+<span>Downloads:</span>
+<ul>
+<li><a href="http://downloads.xiph.org/releases/speex/speexdsp-1.2rc3.tar.gz">Speex DSP Source Code</a></li>
+</ul>
+
+
+<h3 id='one.1.2rc2'>Speex 1.2rc2 and SpeexDSP 1.2rc2</h3>
 <p>This release splits the speex codec library and the speex DSP library
 into separate source trees. Both projects received build-system improvements,
 bugfixes, and cleanup.  The speex codec's VBR tuning was improved, while the
