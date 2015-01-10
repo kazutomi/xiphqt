@@ -16,6 +16,7 @@ define('SERVER_REFUSED_ILLEGAL_URL', 2);
 define('SERVER_REFUSED_DUPLICATE',   3);
 define('SERVER_REFUSED_DEFAULT_CFG', 4);
 define('SERVER_REFUSED_BLACKLIST_URL', 5);
+define('SERVER_REFUSED_SUSPENDED_RANGE', 6);
 
 // Do we have enough data?
 if (!array_key_exists('action', $_REQUEST))
@@ -112,7 +113,7 @@ switch ($_REQUEST['action'])
                 throw new ServerRefusedAPIException('Could not parse listen_url.', SERVER_REFUSED_PARSE_ERROR, $listen_url);
             }
 
-            if ( preg_match('/^(dev\.local|testvm\.hivane\.net)$/', $url['host']))
+            if ( preg_match('/^(dev\.local|testvm\.hivane\.net|backup\.abidingradio\.com)$/', $url['host']))
             {
                 throw new ServerRefusedAPIException('Illegal listen_url. Don\'t test against a production server, thanks! ', SERVER_REFUSED_ILLEGAL_URL, $listen_url);
             }
@@ -121,6 +122,13 @@ switch ($_REQUEST['action'])
             if ( preg_match('/^(92\.246\.30\.112)$/', $url['host']))
             {
                 throw new ServerRefusedAPIException('Your server has been banned for abuse, have a nice day! ', SERVER_REFUSED_ILLEGAL_URL, $listen_url);
+            }
+//*.*hostingcenter.com - banned for high number of misconfigured instances and failing to get in touch.
+            if ( preg_match('/^(.*\.(direct|server)hostingcenter.com)$/', $url['host'])
+                || preg_match('/^(192\.240\.(97|102)\..*)$/', $ip)
+                || preg_match('/^(50\.7\..*)$/', $ip))
+            {
+                throw new ServerRefusedAPIException('The network range in which your server resides has been suspended due to a high number of wrongly configured servers! Please contact webmaster@xiph.org urgently!', SERVER_REFUSED_SUSPENDED_RANGE, $listen_url);
             }
 // Refuse all default stream names
 //                || (preg_match('/^$/', $stream_name)
@@ -142,12 +150,13 @@ switch ($_REQUEST['action'])
                 || !preg_match('/^.*[A-Za-z0-9\-]+\.[A-Za-z0-9]+$/', $url['host'])
                 || preg_match('/^(10\.|192\.168\.|127\.|0\.0\.0\.0)/', $url['host'])
                 || preg_match('/^(.*\.|)example\.(com|org)$/', $url['host'])
-                || preg_match('/^.*\.local$/', $url['host'])
+                || preg_match('/^.*\.(local|onion)$/', $url['host'])
                )
             {
                 throw new ServerRefusedAPIException('Illegal listen_url. Incorrect <hostname>.', SERVER_REFUSED_ILLEGAL_URL, $listen_url);
             }
-		
+// All these hostnames have been blacklisted for being misconfigured, unreachable or causing problems. People should read documentation, avoid problems...
+//                || preg_match('/^()$/', $url['host'])
             if (
                 preg_match('/^(lazaradio\.hu|ice\.mwsc\.tmt\.de|host504\.com|bristol\.railroadradio\.net|www\.kolombiaestereo\.com|radiowanderbuehne\.org|live\.raincitystream\.com|roubaix\.fr\.shinsen-radio\.com)$/', $url['host'])
                 || preg_match('/^(lepesradio\.hu|laradiohd\.com|s-radio\.whyza\.net|213\.240\.254\.147|radio\.adrenalin\.fm|99\.93\.26\.131)$/', $url['host'])
@@ -161,10 +170,21 @@ switch ($_REQUEST['action'])
                 || preg_match('/^(truecolorsradio\.com|misionera.org\.ve|thevibefmstlucia\.net|www\.radiounivo\.com|66\.135\.42\.116)$/', $url['host'])
                 || preg_match('/^(laperladeltuy\.com\.ve|i-stereo\.ru|topeslaradio\.net|apollo21\.cdnstream\.com|educativa105\.org)$/', $url['host'])
                 || preg_match('/^(www\.Meghedi\.com|live\.ultra-byte\.ro|vps\.ds106rad\.io|streaming\.rtz\.rs|streaming\.radioparacin\.rs)$/', $url['host'])
-                || preg_match('/^(netradiofm\.com|195\.24\.224\.77|vaststream\.com|www\.radio8\.de)$/', $url['host'])
+                || preg_match('/^(netradiofm\.com|195\.24\.224\.77|vaststream\.com|www\.radio8\.de|lafieraipiales\.com|stream\.martini-multimedia\.net)$/', $url['host'])
+                || preg_match('/^(sabambufm\.com|midght-madness\.is-a-rockstar\.com|relay1\.oxyradio\.net|stream\.ipv6\.frequence3\.net)$/', $url['host'])
+                || preg_match('/^(janebarcelos.com.br|royal-host\.net|live\.radioanjangsanabogor\.com|eclectica\.mx|live\.rtr\.fm|player\.morcegaofm\.com\.br)$/', $url['host'])
+                || preg_match('/^(salyut\.scenesat\.com|nukmradio\.com|osbleianos.com.br|radio2\.promodeejay\.net|stream1\.letsgozik\.org)$/', $url['host'])
+                || preg_match('/^(tigerstream\.k2d\.com|novafmms\.com\.br|ondaradio\.com\.mx|mysuarafm\.com|italodiscohits\.com)$/', $url['host'])
+                || preg_match('/^(reliastream\.com|walsh\.g-innova.com\.ar|recitation\.no-ip\.org|services\.lwbcast\.org|305stream\.com)$/', $url['host'])
+                || preg_match('/^(www\.clubkydz\.com|marca\.com|radioyan\.com|radio\.ya\.dn\.ua|radio\.radiozlatousti\.rs|radioprovinciafm\.com)$/', $url['host'])
+                || preg_match('/^(www\.growradio\.org|radiolatina\.com\.ar|radiocomunidadargentina\.org|radiocfa\.com\.br|quibario\.com)$/', $url['host'])
+                || preg_match('/^(marketing\.com\.sv|larumbos\.com|kdx\.hobby-site\.org|fmmonterrico.com|cooldradio.com)$/', $url['host'])
+                || preg_match('/^(mai\.com\.es|manain\.org|positiviemixcafe\.com|7la\.fm|live\.unbandsoundz\.org\.uk|207\.210\.120\.98)$/', $url['host'])
+                || preg_match('/^(140\.78\.254\.133|estudio100\.com|frisby\.com\.co|217\.144\.56\.128|ceomedia\.cl)$/', $url['host'])
+                || preg_match('/^(electronic-dream\.com|radio\.3rd\.name|radiodurisima\.com)$/', $url['host'])
                )
             {
-                throw new ServerRefusedAPIException('Illegal listen_url. Incorrect <hostname> fails stream check and was blacklisted. Contact webmaster@icecast.org after correcting it on your side.', SERVER_REFUSED_BLACKLIST_URL, $listen_url);
+                throw new ServerRefusedAPIException('Illegal listen_url. Incorrect <hostname> fails stream check and was blacklisted. Contact webmaster@icecast.org after correcting it on your side. "listenurl" as shown in your admin interface MUST work!', SERVER_REFUSED_BLACKLIST_URL, $listen_url);
             }
 		    // Cluster password
 		    $cluster_password = array_key_exists('cpswd', $_REQUEST)
@@ -183,7 +203,7 @@ switch ($_REQUEST['action'])
 		    $server = Server::retrieveByListenUrl($listen_url);
 		    if ($server instanceOf Server)
 		    {
-		        throw new ServerRefusedAPIException('Entry already in the YP.', SERVER_REFUSED_DUPLICATE, $listen_url);
+		        throw new ServerRefusedAPIException('Entry already in the YP. If this happens constantly your server is misconfigured! Verify that "listenurl" is reachable!', SERVER_REFUSED_DUPLICATE, $listen_url);
 		    }
 	        
 		    // Look for the mountpoint (different listen URL, same stream name)
