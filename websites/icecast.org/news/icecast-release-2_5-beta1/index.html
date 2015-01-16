@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Icecast Release 2.5 beta1 &mdash; Icecast</title>
+	<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<link type="text/plain" rel="author" href="/humans.txt" />
+<link rel="canonical" href="http://icecast.org/news/icecast-release-2_5-beta1/">
+<!-- CSS -->
+<link rel="stylesheet" type="text/css" href="/assets/css/style.min.css" media="screen, print" />
+
+</head>
+
+  <body>
+
+    <div class="header">
+  
+    
+    <div id="xiphbar">
+      <h3 class="hidden">Projects by Xiph.Org</h3>
+      <div>
+        <a href="http://www.xiph.org/"><img src="/assets/img/xiph-community.svg" alt="the xiph open source community"/></a>
+        <ul>
+          
+            <li><a href="http://www.xiph.org/">Xiph.org</a></li>
+          
+            <li><a href="http://www.opus-codec.org/">Opus</a></li>
+          
+            <li><a href="http://xiph.org/flac/">FLAC</a></li>
+          
+            <li><a href="http://www.icecast.org/">Icecast</a></li>
+          
+            <li><a href="http://www.vorbis.com/">Vorbis</a></li>
+          
+            <li><a href="http://www.theora.org/">Theora</a></li>
+          
+            <li><a href="http://www.speex.org/">Speex</a></li>
+          
+            <li><a href="http://www.xspf.org/">XSPF</a></li>
+          
+        </ul>
+      </div>
+    </div>
+  
+  <h1><a href="/" title="Home page">Icecast</a> <span>is free server software for streaming multimedia.</span></h1>
+  <div class="nav">
+    <h2 class="hidden">Page navigation</h2>
+    <label for="toggle-nav" title="Toggle navigation"></label>
+    <input type="checkbox" id="toggle-nav" />
+    <ul>
+      
+        
+        
+          
+            
+          
+          <li class=""><a href="/docs">Docs</a></li>
+        
+          
+            
+          
+          <li class=""><a href="/download">Download</a></li>
+        
+          
+            
+          
+          <li class=""><a href="/apps">Apps</a></li>
+        
+          
+            
+          
+          <li class=""><a href="/ices">IceS</a></li>
+        
+          
+            
+          
+          <li class=""><a href="http://dir.xiph.org/">Streams</a></li>
+        
+          
+            
+          
+          <li class=""><a href="/contribute">Contributing</a></li>
+        
+          
+            
+          
+          <li class=""><a href="/contact">Contact</a></li>
+        
+      
+    </ul>
+  </div>
+</div>
+
+
+    <div class="section">
+      <div class="article">
+	<h3>Icecast Release 2.5 beta1</h3>
+	<p>We are pleased to announce Icecast 2.5 beta1 (2.4.99.1).
+This is a beta release and not recommended for production use.
+A summary of the changes is listed below, for details please
+refer to the <a href="http://git.xiph.org/?p=icecast-server.git;a=blob;f=ChangeLog;h=5afed8cc60f3ac66de43df46cffa5c37a01ef15a;hb=refs/heads/release-2.4.99.1">ChangeLog</a>.  </p>
+
+<h4>Downloads</h4>
+
+<ul>
+  <li>Source: <a href="http://downloads.xiph.org/releases/icecast/icecast-2.5-beta1.tar.gz">icecast-2.5-beta1.tar.gz</a></li>
+  <li>Windows <a href="http://downloads.xiph.org/releases/icecast/icecast_win32_2.5-beta1.exe">icecast_win32_2.5-beta1.exe</a></li>
+</ul>
+
+<h4>New features</h4>
+
+<ul>
+  <li>
+    <role> replaces old style <authentication> items
+</authentication></role>
+  </li>
+  <li>
+    <event> triggers
+</event>
+  </li>
+  <li>
+    <resource> replaces <alias> and offers more functionality
+</alias></resource>
+  </li>
+  <li>additional stream metadata exposed</li>
+  <li>additional stats XML output (e.g. listeners, used by e.g. licensing services, may need ?omode=legacy)</li>
+</ul>
+
+<h4>Known issues</h4>
+
+<ul>
+  <li>HTTP PUT implementation currently doesn’t support chunked encoding yet.</li>
+  <li>HTTP PUT with “Expect: 100-Continue” receives first a “100” and soon after a “200”, instead of the “200” at the end of transmission.</li>
+  <li>Caution should be exercised when using <code>&lt;on-connect&gt;</code> or <code>&lt;on-disconnect&gt;</code>, as there is a small chance of stream file descriptors being mixed up with script file descriptors, if the FD numbers go above 1024. This will be further addressed in the final release.</li>
+  <li>Login problems for admin if mount has auth defined (fixed in git for next beta)</li>
+  <li>JSON exposes listener details if queried with mount (fixed in git for next beta)</li>
+</ul>
+
+	<div class="aside">Posted <strong>Dec 31, 2014</strong> by <strong>tbr</strong></div>
+</div>
+<p><a href="/news">Back to index</a></p>
+    </div>
+
+    <div class="footer">
+	<p><a href="https://plus.google.com/100957455777699991449/about">
+		<img alt="Google+" title="Find uns on Google+" src="/assets/img/google-plus.svg" style="width: 20px;">
+	   </a>
+	</p>
+	<p>&copy; 2004-2015 Xiph.Org. All rights reserved.</p>
+</div>
+
+  </body>
+</html>
