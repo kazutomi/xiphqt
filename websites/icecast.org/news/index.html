@@ -97,6 +97,52 @@
       <h2>News Archive</h2>
 
   <div class="article">
+    <h3>Icecast Release 2.5 beta1</h3>
+    <p>We are pleased to announce Icecast 2.5 beta1 (2.4.99.1).
+This is a beta release and not recommended for production use.
+A summary of the changes is listed below, for details please
+refer to the <a href="http://git.xiph.org/?p=icecast-server.git;a=blob;f=ChangeLog;h=5afed8cc60f3ac66de43df46cffa5c37a01ef15a;hb=refs/heads/release-2.4.99.1">ChangeLog</a>.  </p>
+
+<h4>Downloads</h4>
+
+<ul>
+  <li>Source: <a href="http://downloads.xiph.org/releases/icecast/icecast-2.5-beta1.tar.gz">icecast-2.5-beta1.tar.gz</a></li>
+  <li>Windows <a href="http://downloads.xiph.org/releases/icecast/icecast_win32_2.5-beta1.exe">icecast_win32_2.5-beta1.exe</a></li>
+</ul>
+
+<h4>New features</h4>
+
+<ul>
+  <li>
+    <role> replaces old style <authentication> items
+</authentication></role>
+  </li>
+  <li>
+    <event> triggers
+</event>
+  </li>
+  <li>
+    <resource> replaces <alias> and offers more functionality
+</alias></resource>
+  </li>
+  <li>additional stream metadata exposed</li>
+  <li>additional stats XML output (e.g. listeners, used by e.g. licensing services, may need ?omode=legacy)</li>
+</ul>
+
+<h4>Known issues</h4>
+
+<ul>
+  <li>HTTP PUT implementation currently doesn’t support chunked encoding yet.</li>
+  <li>HTTP PUT with “Expect: 100-Continue” receives first a “100” and soon after a “200”, instead of the “200” at the end of transmission.</li>
+  <li>Caution should be exercised when using <code>&lt;on-connect&gt;</code> or <code>&lt;on-disconnect&gt;</code>, as there is a small chance of stream file descriptors being mixed up with script file descriptors, if the FD numbers go above 1024. This will be further addressed in the final release.</li>
+  <li>Login problems for admin if mount has auth defined (fixed in git for next beta)</li>
+  <li>JSON exposes listener details if queried with mount (fixed in git for next beta)</li>
+</ul>
+
+    <div class="aside">Posted <strong>Dec 31, 2014</strong> by <strong>tbr</strong> &mdash; <a href="/news/icecast-release-2_5-beta1/">Permalink</a></div>
+  </div>
+
+  <div class="article">
     <h3>Icecast Release 2.4.1</h3>
     <p>We are pleased to announce release 2.4.1 of Icecast.
 This is a pure bugfix-only release. Upgrading to it is recommended due to security fixes.
@@ -107,7 +153,7 @@ refer to the <a href="http://svn.xiph.org/icecast/tags/icecast-2.4.1/ChangeLog">
 
 <ul>
   <li>Source: <a href="http://downloads.xiph.org/releases/icecast/icecast-2.4.1.tar.gz">icecast-2.4.1.tar.gz</a></li>
-  <li>Windows <a href="http://downloads.xiph.org/releases/icecast/icecast_win32_2.4.1.zip">icecast_win32_2.4.1.zip</a></li>
+  <li>Windows <a href="http://downloads.xiph.org/releases/icecast/icecast_win32_2.4.1.exe">icecast_win32_2.4.1.exe</a></li>
 </ul>
 
 <h4>Fixes</h4>
@@ -981,7 +1027,7 @@ Hopefully we’ll have some reports back from him soon. </p>
 		<img alt="Google+" title="Find uns on Google+" src="/assets/img/google-plus.svg" style="width: 20px;">
 	   </a>
 	</p>
-	<p>&copy; 2004-2014 Xiph.Org. All rights reserved.</p>
+	<p>&copy; 2004-2015 Xiph.Org. All rights reserved.</p>
 </div>
 
   </body>
