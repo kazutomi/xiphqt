@@ -97,21 +97,22 @@
       <h2>Ezstream</h2>
 <div class="article" id="about">
   <h3>About Ezstream</h3>
-  <p>Ezstream is a command line source client for Icecast media streaming servers. 
-It began as the successor of the old “shout” utility, and has since gained a 
-lot of useful features.  </p>
 
-  <p>In its basic mode of operation, it streams media files or data from standard input 
-without reencoding and thus requires only very little CPU resources. 
-It can also use various external decoders and encoders to reencode from one 
-format to another, and stream the result to an Icecast server. 
-Additional features include scriptable playlist and metadata handling. 
+  <p>Ezstream is a command line source client for Icecast media streaming servers.
+It began as the successor of the old “shout” utility, and has since gained a
+lot of useful features.</p>
+
+  <p>In its basic mode of operation, it streams media files or data from standard
+input without reencoding and thus requires only very little CPU resources.
+It can also use various external decoders and encoders to reencode from one
+format to another, and stream the result to an Icecast server.
+Additional features include scriptable playlist and metadata handling.
 All of its features make ezstream a very flexible source client.</p>
 
-  <p>Supported media formats for streaming are MP3, Ogg Vorbis and Ogg Theora. 
-Native metadata support includes MP3 (ID3v1 only) and Ogg Vorbis, and many 
+  <p>Supported media formats for streaming are MP3, Ogg Vorbis and Ogg Theora.
+Native metadata support includes MP3 (ID3v1 only) and Ogg Vorbis, and many
 more formats when the optional <a href="http://taglib.github.io">TagLib</a> support has
-been compiled in.  </p>
+been compiled in.</p>
 
   <p>Ezstream is free software and licensed under the GNU General Public License.</p>
 </div>
@@ -119,25 +120,25 @@ been compiled in.  </p>
 <div class="article" id="download">
   <h3>Download</h3>
 
-  <h4>Latest version: 0.5.6</h4>
-  <p><a href="#changes">Changes</a>  </p>
+  <h4>Latest version: 0.6.0</h4>
 
   <ul>
     <li>Source .tar.gz (all platforms)
       <ul>
-        <li><a href="http://downloads.xiph.org/releases/ezstream/ezstream-0.5.6.tar.gz">ezstream-0.5.6.tar.gz</a></li>
-        <li>MD5: 1be68119d44fbe71454a901fa650a359</li>
-      </ul>
-    </li>
-    <li>MS Windows binary (32bit)
-      <ul>
-        <li><a href="http://downloads.xiph.org/releases/ezstream/ezstream-0.5.6-win32.zip">ezstream-0.5.6-win32.zip</a></li>
-        <li>MD5: 19c6f28c2de81e6e2fa3e0ed914e6696</li>
+        <li><a href="http://downloads.xiph.org/releases/ezstream/ezstream-0.6.0.tar.gz">ezstream-0.6.0.tar.gz</a></li>
+        <li>SHA256: <code>f86eb8163b470c3acbc182b42406f08313f85187bd9017afb8b79b02f03635c9</code></li>
       </ul>
     </li>
   </ul>
 
-  <p>Older releases can be found at <a href="http://downloads.xiph.org/releases/ezstream/">downloads.xiph.org/releases/ezstream</a>.</p>
+  <h4>Older releases</h4>
+
+  <p>Older releases can be found at
+<a href="http://downloads.xiph.org/releases/ezstream/">downloads.xiph.org/releases/ezstream</a>.</p>
+
+  <p>The last official build for MS Windows is available here:
+<a href="http://downloads.xiph.org/releases/ezstream/ezstream-0.5.6-win32.zip">ezstream-0.5.6-win32.zip</a>
+(MD5: <code>19c6f28c2de81e6e2fa3e0ed914e6696</code>).</p>
 </div>
 
 <div class="article" id="further-information">
@@ -147,7 +148,8 @@ been compiled in.  </p>
   <p>Ezstream depends on:</p>
 
   <ul>
-    <li><a href="/download/">libshout</a> 2.2.x or later + libshout dependencies</li>
+    <li><a href="/download/">libshout</a>
+2.2.x or later + libshout dependencies</li>
     <li><a href="http://xmlsoft.org/">libxml</a> 2.x</li>
   </ul>
 
@@ -162,102 +164,127 @@ been compiled in.  </p>
     </li>
     <li>For basic non-ASCII charset support in metadata and filenames:
       <ul>
-        <li>GNU <a href="http://www.gnu.org/software/libiconv/">libiconv</a>, if <code>iconv()</code> is not available in the system C library.</li>
+        <li>GNU <a href="http://www.gnu.org/software/libiconv/">libiconv</a>, if <code>iconv()</code> is not
+available in the system C library.</li>
       </ul>
     </li>
   </ul>
 
   <h4>UNIX (Linux, *BSD, Solaris, …)</h4>
-  <p>On UNIX and UNIX-like systems, such as Linux and *BSD, binary packages for the required
-libraries are usually available. To compile ezstream, ensure that the respective -devel
-packages are installed as well, if applicable. Further steps, and more, are explained in
-the <code>README</code> and <code>INSTALL</code> files inside the distribution package.<br />
+
+  <p>On UNIX and UNIX-like systems, such as Linux and *BSD, binary packages for the
+required libraries are usually available. To compile ezstream, ensure that the
+respective -devel packages are installed as well, if applicable. Further steps,
+and more, are explained in the <code>README</code> and <code>INSTALL</code> files inside the
+distribution package.<br />
 It might be a good idea to check whether the operating system vendor
 provides a binary package of a recent ezstream release and install that
 one instead of building from source.</p>
 
-  <h4>Windows</h4>
+  <h4>MS Windows</h4>
 
-  <p>Windows users can simply copy the <code>ezstream.exe</code> file from the binary distribution
-archive (.ZIP) to any location of their choosing. Users, who wish to be able to
-run ezstream anywhere on their system, can add the directory that contains <code>ezstream.exe</code>
-to their PATH environment variable.<br />
-The ezstream binary release depends on MSVC 2008 runtime libraries.<br />
-These libraries can be downloaded from Microsoft as the <a href="http://www.microsoft.com/DOWNLOADS/details.aspx?familyid=A5C84275-3B97-4AB7-A40D-3802B2AF5FC2"><code>vcredist_x86.exe</code></a> file, at no cost.</p>
+  <p>Due to technical constraints, MS Windows is no longer a supported platform for
+ezstream. Unsupported builds of older versions of ezstream are still
+available, however.</p>
 
-  <h4>Even more…</h4>
-  <p>Comprehensive documentation of ezstream and its configuration is included in the man page <code>ezstream(1)</code>.
-Those, who are interested in how ezstream development progresses, can stay informed by occasionally
-looking at the <a href="http://svn.xiph.org/trunk/ezstream/NEWS"><code>NEWS file</code></a>. It is kept up-to-date with
-important changes in ezstream as they happen.</p>
-
+  <p>Windows users can simply copy the <code>ezstream.exe</code> file from the binary
+distribution archive (.ZIP) to any location of their choosing. Users, who wish
+to be able to run ezstream anywhere on their system, can add the directory
+that contains <code>ezstream.exe</code> to their PATH environment variable.<br />
+The ezstream binary release depends on MSVC 2008 runtime libraries.
+These libraries can be downloaded from Microsoft as the
+<a href="http://www.microsoft.com/DOWNLOADS/details.aspx?familyid=A5C84275-3B97-4AB7-A40D-3802B2AF5FC2"><code>vcredist_x86.exe</code></a>
+file, at no cost.</p>
 </div>
 
 <div class="article" id="release-notes">
   <h3>Release Notes</h3>
-  <p>Ezstream 0.5.6 has been released on August 31st 2009.</p>
+  <p>Ezstream 0.6.0 has been released on January 18th 2015.</p>
 
-  <p>Version 0.5.6 is a maintenance and feature release.</p>
+  <p>Version 0.6.0 is a security and maintenance release.</p>
+
+  <ul>
+    <li>
+      <p>This release contains a <strong>SECURITY FIX</strong> for a command injection
+vulnerability that was found and reported by Alexandre Rebert:</p>
+
+      <p>The previous handling of metadata placeholders allowed for arbitrary shell
+commands to be trivially injected and executed as the ezstream user, via
+malicious media files.</p>
+
+      <p>This vulnerability depends on both a configuration using metadata
+placeholders and the user streaming media files from untrusted sources
+without noticing `commands` or $(commands) in artist or title fields.</p>
+
+      <p>While the group of actually affected users may be limited, all users are
+advised to upgrade.</p>
+    </li>
+    <li>
+      <p>This release requires existing users to <strong>ADJUST</strong> their <strong>CONFIGURATION</strong>:</p>
+
+      <p>To protect against the injection vulnerability above, metadata is now
+properly quoted and escaped from the shell. This means that any extra
+quoting must be removed from configuration files.</p>
+
+      <p>Remove all quoting from metadata placeholders in <code>&lt;encode/&gt;</code> and <code>&lt;decode/&gt;</code>
+commands, e.g. replace <code>"@M@"</code> with <code>@M@</code>, and <code>"@T@"</code> with <code>@T@</code>, etc.
+Without these changes, stream metadata will look both wrong and the injection
+vulnerability may be re-introduced.</p>
+
+      <p>Configuration examples have been adjusted accordingly.</p>
+    </li>
+  </ul>
 
   <h4>Changes</h4>
 
   <ul>
-    <li><code>ezstream-file.sh</code>:
-      <ul>
-        <li>NEW: Add and install ezstream-file.sh, a new convenience shell
-script that generates configuration and playlist from a template and
-command line, respectively. (Bourne shell and POSIX utilities required.)</li>
-      </ul>
-    </li>
     <li><code>src/ezstream.c</code>:
       <ul>
-        <li>MISC: Be more tolerant towards faulty playlists and similar issues.
-Failure to open a resource (e.g. a media file) is no longer fatal and
-operation will continue until 100 subsequent errors. 
-Based on an idea from dhorton. (Ticket <a href="https://trac.xiph.org/ticket/1585">#1585</a>)</li>
-        <li>NEW: New command line option <code>-s</code>: Make ezstream function as a
-line-based shuffling utility.</li>
+        <li>FIX: Prevent certain characters from being interpreted by the shell.</li>
+        <li>FIX: Prevent ezstream from entering an infinite loop when stopping to send
+data to standard input. From gquintard.
+(Ticket <a href="https://trac.xiph.org/ticket/2045">#2045</a>)</li>
       </ul>
     </li>
-    <li><code>src/playlist.c</code>:
+    <li>various:
       <ul>
-        <li>MISC: Consider no output from a playlist program to be equivalent
-to an empty line, indicating that the end of the playlist is reached.</li>
-        <li>FIX: Do not complain when receiving an empty line from a playlist program.</li>
-      </ul>
-    </li>
-    <li><code>examples/</code>:
-      <ul>
-        <li>NEW: Add a real-world example playlist script with logging feature.</li>
+        <li>NEW: Add new <code>&lt;metadata_refreshinterval/&gt;</code> feature from Matthew Adams (with
+minor changes plus documentation.) This allows for recurring and custom
+metadata updates in between song changes via <code>&lt;metadata_progname/&gt;</code>.</li>
+        <li>NEW: Add new command line option <code>-m</code> to disable any active metadata
+updates. Idea from Richard Thomas.
+(Ticket <a href="https://trac.xiph.org/ticket/1620">#1620</a>)</li>
       </ul>
     </li>
   </ul>
-
 </div>
 
 <div class="article" id="support">
   <h3>Support</h3>
 
   <h4>Reporting Problems</h4>
-  <p>In case of problems with ezstream, please make sure to re-read the documentation
-first and double-check your configuration. A lot of effort has been put into the
-<code>ezstream(1)</code> manual, and it should — at least in theory — answer all questions.</p>
+
+  <p>In case of problems with ezstream, please make sure to re-read the
+documentation first and double-check your configuration. A lot of effort has
+been put into the <code>ezstream(1)</code> manual, and it should – at least in theory –
+answer all questions.</p>
 
   <p>Of course, ezstream isn’t immune to bugs.
-After <a href="https://trac.xiph.org/report/21">checking if your bug is already known</a>,
-or a newer ezstream release fixes your problem, it is much appreciated
-that you <a href="https://trac.xiph.org/newticket?component=ezstream">file your bug report</a>
+After
+<a href="https://trac.xiph.org/report/21">checking if your bug is already known</a>,
+or a newer ezstream release fixes your problem, it is much appreciated that you
+<a href="https://trac.xiph.org/newticket?component=ezstream">file your bug report</a>
 with the Xiph.org bug tracker.</p>
 
-  <p>Please be as specific and verbose as necessary when submitting a problem report.
-Also, please include a valid e-mail address when reporting an issue, in case
-there are follow-up questions.</p>
+  <p>Please be as specific and verbose as necessary when submitting a problem
+report. Also, please include a valid e-mail address when reporting an issue,
+in case there are follow-up questions.</p>
 
   <p>Your contribution and efforts are very much appreciated. Thank you!</p>
 
   <h4>Contact</h4>
-  <p>The current maintainer of ezstream is Moritz Grimm (<code>mdgrimm at gmx dot net</code>).</p>
 
+  <p>The current maintainer of ezstream is Moritz Grimm (<code>mgrimm at mrsserver dot net</code>).</p>
 </div>
 
     </div>
@@ -267,7 +294,7 @@ there are follow-up questions.</p>
 		<img alt="Google+" title="Find uns on Google+" src="/assets/img/google-plus.svg" style="width: 20px;">
 	   </a>
 	</p>
-	<p>&copy; 2004-2014 Xiph.Org. All rights reserved.</p>
+	<p>&copy; 2004-2015 Xiph.Org. All rights reserved.</p>
 </div>
 
   </body>
